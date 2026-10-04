@@ -20,6 +20,8 @@
   --shadow: 0 1px 0 rgba(255,255,255,.04) inset, 0 20px 40px -24px rgba(0,0,0,.7);
   --font: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   --mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+  /* Motion-Tokens (Skill motion-viz §2) */
+  --ease-out: cubic-bezier(.2, .7, .2, 1); --t-fast: 150ms; --t-slow: 450ms; --rise: 12px;
 }
 @media (prefers-color-scheme: light) {
   :root:not([data-theme="dark"]) {
@@ -49,7 +51,8 @@ code { font: 600 .88em var(--mono); background: var(--surface-2); border: 1px so
 .wrap { max-width: 1240px; margin-inline: auto; padding-inline: 24px; }
 
 /* Kopfzeile */
-.top { position: sticky; top: 0; z-index: 10; border-bottom: 1px solid var(--line); background: color-mix(in srgb, var(--bg) 92%, transparent); backdrop-filter: blur(8px); }
+/* Kopfzeile: Fortschrittslinie folgt dem Lesefortschritt; kein backdrop-filter (Nexus-App-Fenster malt auf der CPU) */
+.top { position: sticky; top: 0; z-index: 10; border-bottom: 1px solid var(--line); background: var(--bg); }
 .top .wrap { display: flex; align-items: center; gap: 16px; padding-block: 12px; flex-wrap: wrap; }
 .brand { display: flex; align-items: center; gap: 10px; font-weight: 800; color: var(--fg); text-decoration: none; }
 .brand-mark { width: 34px; height: 34px; border-radius: var(--radius); display: grid; place-items: center; background: var(--accent); color: var(--accent-ink); }
@@ -71,7 +74,9 @@ aside h1 { font-size: 28px; line-height: 1.12; font-weight: 800; letter-spacing:
 .lead { color: var(--fg-2); font-size: 14.5px; }
 .toc { border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); padding: 10px; display: grid; gap: 2px; box-shadow: var(--shadow); }
 .toc a { display: flex; align-items: center; gap: 10px; padding: 7px 8px; border-radius: var(--radius); color: var(--fg); text-decoration: none; font-weight: 600; font-size: 14px; }
+.toc a { transition: background var(--t-fast), color var(--t-fast); }
 .toc a:hover { background: var(--surface-2); }
+.toc a[aria-current="true"] { background: color-mix(in srgb, var(--accent) 16%, transparent); }
 .toc a .n { font: 700 11px/1 var(--mono); color: var(--accent); width: 18px; }
 .toc a .cnt { margin-left: auto; font: 600 12px var(--mono); color: var(--fg-2); font-variant-numeric: tabular-nums; }
 .toc a.done .cnt { color: var(--ok); }
@@ -214,8 +219,17 @@ footer .wrap { display: flex; justify-content: space-between; flex-wrap: wrap; g
   .phase > summary { flex-wrap: wrap; }
   .phase > summary .meta { width: 100%; justify-content: flex-start; padding-left: 46px; }
 }
-@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } .phase > summary .chev { transition: none; } *, *::before { animation: none !important; transition: none !important; } }
+/* Einblenden beim ersten Sichtbarwerden (Klasse rv setzt erst das Skript) */
+.progress { position: absolute; left: 0; right: 0; bottom: -1px; height: 2px; background: var(--accent); transform-origin: 0 50%; transform: scaleX(var(--p, 0)); pointer-events: none; }
+@supports (animation-timeline: scroll()) {
+  .progress { animation: progress linear both; animation-timeline: scroll(root); }
+  @keyframes progress { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+}
+.rv { opacity: 0; transform: translateY(var(--rise)); transition: opacity var(--t-slow) var(--ease-out), transform var(--t-slow) var(--ease-out); transition-delay: var(--d, 0ms); }
+.rv.in { opacity: 1; transform: none; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } .phase > summary .chev { transition: none; } *:not(.progress), *::before { animation: none !important; transition: none !important; } .rv { opacity: 1; transform: none; } }
 @media print {
+  .rv { opacity: 1 !important; transform: none !important; transition: none !important; }
   .top, .start .paths, .cmd button, .toc, .journey { display: none; }
   .lay { display: block; padding: 0; }
   aside { position: static; margin-bottom: 16px; }
@@ -253,6 +267,7 @@ footer .wrap { display: flex; justify-content: space-between; flex-wrap: wrap; g
       </div>
     </div>
   </div>
+  <span class="progress" aria-hidden="true"></span>
 </header>
 
 <main id="start" class="wrap lay">
@@ -735,9 +750,34 @@ python3 ~/dev_ws/tools/check_ports.py</pre></div></div></li>
     document.querySelectorAll('[data-en-aria]').forEach(el => { const de = keep(el, 'deAria', el.getAttribute('aria-label')); el.setAttribute('aria-label', en ? el.dataset.enAria : de); });
     document.querySelectorAll('[data-en-alt]').forEach(el => { const de = keep(el, 'deAlt', el.alt); el.alt = en ? el.dataset.enAlt : de; });
     document.querySelectorAll('[data-lang]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.lang === lang)));
-    tocHtml(); wsLinks(); update();
+    tocHtml(); wsLinks(); update(); spy();
   };
   document.querySelectorAll('[data-lang]').forEach(b => b.addEventListener('click', () => { setLang(b.dataset.lang); store('setup_guide_lang', b.dataset.lang); }));
+
+  // Seiten-Motion (Skill motion-viz): Fortschrittslinie, aktive Phase im Inhaltsverzeichnis, Einblenden beim ersten Sichtbarwerden
+  const bar = document.querySelector('.progress');
+  let spyRaf = 0;
+  // aktive Phase = letzte Phase, deren Kopf oberhalb von 40 % der Fensterhöhe liegt
+  function spy() {
+    spyRaf = 0;
+    if (!CSS.supports('animation-timeline: scroll()')) { const max = root.scrollHeight - innerHeight; bar.style.setProperty('--p', max > 0 ? Math.min(1, scrollY / max) : 0); }
+    let cur = '';
+    for (const ph of phases) { if (ph.getBoundingClientRect().top < innerHeight * .4) cur = `#${ph.id}`; else break; }
+    toc.querySelectorAll('a').forEach(a => a.setAttribute('aria-current', String(a.getAttribute('href') === cur)));
+  }
+  addEventListener('scroll', () => { if (!spyRaf) spyRaf = requestAnimationFrame(spy); }, { passive: true });
+  addEventListener('resize', () => { if (!spyRaf) spyRaf = requestAnimationFrame(spy); }, { passive: true });
+  phases.forEach(ph => ph.addEventListener('toggle', () => { if (!spyRaf) spyRaf = requestAnimationFrame(spy); }));
+  if (!reduce && 'IntersectionObserver' in window) {
+    const done = e => { if (e.target !== e.currentTarget || e.propertyName !== 'opacity') return; const el = e.currentTarget; el.classList.remove('rv', 'in'); el.style.removeProperty('--d'); };
+    const rv = new IntersectionObserver(es => es.forEach(en => {
+      if (!en.isIntersecting) return;
+      en.target.classList.add('in'); rv.unobserve(en.target);
+    }), { threshold: .05, rootMargin: '0px 0px -6% 0px' });
+    const add = (el, d = 0) => { el.classList.add('rv'); if (d) el.style.setProperty('--d', `${d}ms`); el.addEventListener('transitionend', done); rv.observe(el); };
+    [...document.querySelectorAll('aside > *, .start, .journey')].forEach((el, i) => add(el, Math.min(i, 7) * 60));
+    phases.forEach(el => add(el));
+  }
 
   const qPath = new URLSearchParams(location.search).get('path');
   root.dataset.path = ['pre', 'install'].includes(qPath) ? qPath : (store('setup_guide_path') || 'install');

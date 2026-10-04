@@ -23,7 +23,7 @@
   --font: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   --mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
   --ease-out: cubic-bezier(.2, .7, .2, 1); --ease-io: cubic-bezier(.65, 0, .35, 1);
-  --t-fast: 150ms; --t-base: 250ms; --t-slow: 450ms;
+  --t-fast: 150ms; --t-base: 250ms; --t-slow: 450ms; --rise: 12px;
 }
 @media (prefers-color-scheme: light) {
   :root:not([data-theme="dark"]) {
@@ -286,7 +286,22 @@ footer a { text-decoration: underline; text-underline-offset: 3px; }
   .back span { display: none; }
 }
 @media (max-width: 420px) { .brand small { display: none; } .tools { margin-left: auto; } }
-@media (prefers-reduced-motion: reduce) { .fn, .chip, .ring .st rect { transition: none; } }
+
+/* Seiten-Motion wie project_docs.html: Fortschrittslinie, aktiver Bereich in der Kopfzeile, Einblenden (nach .fn, damit .rv gilt) */
+.progress { position: absolute; left: 0; right: 0; bottom: -1px; height: 2px; background: var(--accent); transform-origin: 0 50%; transform: scaleX(var(--p, 0)); pointer-events: none; }
+@supports (animation-timeline: scroll()) {
+  .progress { animation: progress linear both; animation-timeline: scroll(root); }
+  @keyframes progress { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+}
+.here { display: inline-flex; align-items: center; gap: 8px; min-width: 0; font: 700 12px/1.2 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--fg); }
+.here::before { content: ""; width: 1px; height: 22px; background: var(--line-strong); }
+.here:empty { display: none; }
+.here .ico { width: 16px; height: 16px; color: var(--c); }
+@media (max-width: 760px) { .here { display: none; } }
+.rv { opacity: 0; transform: translateY(var(--rise)); transition: opacity var(--t-slow) var(--ease-out), transform var(--t-slow) var(--ease-out); transition-delay: var(--d, 0ms); }
+.rv.in { opacity: 1; transform: none; }
+@media print { .rv { opacity: 1 !important; transform: none !important; transition: none !important; } }
+@media (prefers-reduced-motion: reduce) { .fn, .chip, .ring .st rect { transition: none; } .rv { opacity: 1; transform: none; } }
 </style>
 </head>
 <body>
@@ -331,6 +346,7 @@ footer a { text-decoration: underline; text-underline-offset: 3px; }
 <header class="top">
   <div class="wrap">
     <a class="brand" href="project_docs.html"><span class="brand-mark"><svg class="ico"><use href="#i-arm"/></svg></span><span>Interakt Control Robot<small data-en="Function atlas">Funktionsatlas</small></span></a>
+    <span class="here" id="here" aria-hidden="true"></span>
     <a class="back" href="project_docs.html#ablaeufe" aria-label="Projekt-Doku" data-en-aria="Project docs"><svg class="ico"><use href="#i-go"/></svg><span data-en="Project docs">Projekt-Doku</span></a>
     <div class="tools">
       <div class="seg" role="group" aria-label="Sprache / Language">
@@ -343,6 +359,7 @@ footer a { text-decoration: underline; text-underline-offset: 3px; }
       </div>
     </div>
   </div>
+  <span class="progress" aria-hidden="true"></span>
 </header>
 
 <main id="start" class="wrap">
@@ -2038,6 +2055,7 @@ const FLOWS = (() => {
     empty.hidden = n > 0;
     count.textContent = `${n} / ${cards.length}`;
     count.setAttribute('aria-label', L([`${n} von ${cards.length} Funktionen`, `${n} of ${cards.length} functions`]));
+    spy();
   }
 
   // Ablauf anzeigen: Kopf, Ring (Kreislauf), Flow-Graph, Funktionen dieses Ablaufs
@@ -2145,10 +2163,48 @@ const FLOWS = (() => {
     document.querySelectorAll('[data-en-aria]').forEach(el => { const de = keep(el, 'deAria', el.getAttribute('aria-label')); el.setAttribute('aria-label', en ? el.dataset.enAria : de); });
     document.querySelectorAll('[data-en-ph]').forEach(el => { const de = keep(el, 'dePh', el.placeholder); el.placeholder = en ? el.dataset.enPh : de; });
     document.querySelectorAll('[data-lang]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.lang === l)));
-    decorate(); renderAreas(); filter();
+    decorate(); renderAreas(); filter(); renderHere();
     if (curCard) showFlow(curCard.dataset.f, curCard);
   };
   document.querySelectorAll('[data-lang]').forEach(b => b.addEventListener('click', () => { setLang(b.dataset.lang); store('project_docs_lang', b.dataset.lang); }));
+
+  // Seiten-Motion (Skill motion-viz): Fortschrittslinie, aktiver Bereich in der Kopfzeile, Einblenden beim ersten Sichtbarwerden
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const bar = document.querySelector('.progress'), here = document.getElementById('here');
+  let hereKey = '', spyRaf = 0;
+  function renderHere() {
+    const a = AREAS[hereKey];
+    here.innerHTML = a ? `${ico(a.icon)}<span>${a[lang()]}</span>` : '';
+    if (!a) return;
+    here.style.setProperty('--c', `var(--${a.hue})`);
+    if (!reduce) here.animate({ opacity: [0, 1] }, { duration: 250, easing: 'cubic-bezier(.2, .7, .2, 1)' });
+  }
+  // aktiver Bereich = letzte sichtbare Zwischenüberschrift oberhalb von 40 % der Fensterhöhe
+  function spy() {
+    spyRaf = 0;
+    if (!CSS.supports('animation-timeline: scroll()')) { const max = root.scrollHeight - innerHeight; bar.style.setProperty('--p', max > 0 ? Math.min(1, scrollY / max) : 0); }
+    let k = '';
+    for (const h of document.querySelectorAll('.grp-h:not([hidden])')) { if (h.getBoundingClientRect().top < innerHeight * .4) k = h.dataset.a; else break; }
+    if (k !== hereKey) { hereKey = k; renderHere(); }
+  }
+  addEventListener('scroll', () => { if (!spyRaf) spyRaf = requestAnimationFrame(spy); }, { passive: true });
+  addEventListener('resize', () => { if (!spyRaf) spyRaf = requestAnimationFrame(spy); }, { passive: true });
+
+  // Einblenden einmal; Kopf gestaffelt, Karten je Schub gestaffelt (max. 8), danach Klassen weg (eigene Übergänge der Karten gelten wieder)
+  if (!reduce && 'IntersectionObserver' in window) {
+    const done = e => { if (e.target !== e.currentTarget || e.propertyName !== 'opacity') return; const el = e.currentTarget; el.classList.remove('rv', 'in'); el.style.removeProperty('--d'); };
+    const rv = new IntersectionObserver(es => {
+      let k = 0;
+      es.forEach(en => {
+        if (!en.isIntersecting) return;
+        if (!en.target.style.getPropertyValue('--d')) en.target.style.setProperty('--d', `${Math.min(k++, 7) * 50}ms`);
+        en.target.classList.add('in'); rv.unobserve(en.target);
+      });
+    }, { threshold: .12, rootMargin: '0px 0px -6% 0px' });
+    const add = (el, d = 0) => { el.classList.add('rv'); if (d) el.style.setProperty('--d', `${d}ms`); el.addEventListener('transitionend', done); rv.observe(el); };
+    [...document.querySelectorAll('.hero-txt > *, .facts > li')].forEach((el, i) => add(el, Math.min(i, 7) * 60));
+    document.querySelectorAll('.filter, .panel, .cards > .grp-h, .cards > .fn').forEach(el => add(el));
+  }
 
   // Kennzahlen aus den Daten statt fest im Text
   document.querySelector('[data-count="fn"]').textContent = cards.length;
