@@ -268,4 +268,4 @@
 
 ---
 
-[⬅ Previous: 3D Vision & Autonomous Grasping](vision_grasping.html) · [🏠 Overview](../readme-en.html) · [⬆ Top](#top) · [Next: VR Teleoperation (Meta Quest 3) ➡](vr_quest3.html)
+[⬅ Previous: 3D Vision & Autonomous Grasping](vision_grasping.html) · [🏠 Overview](../readme-en.html) · ⬆ Top · [Next: VR Teleoperation (Meta Quest 3) ➡](vr_quest3.html)

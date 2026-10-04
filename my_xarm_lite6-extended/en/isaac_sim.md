@@ -31,4 +31,4 @@
 
 ---
 
-[⬅ Previous: Robot Control UI & Motion Backend](robot_control_ui.html) · [🏠 Overview](../readme-en.html) · [⬆ Top](#top) · [Next: VLA-M: Vision-Language-Action Chat ➡](vla.html)
+[⬅ Previous: Robot Control UI & Motion Backend](robot_control_ui.html) · [🏠 Overview](../readme-en.html) · ⬆ Top · [Next: VLA-M: Vision-Language-Action Chat ➡](vla.html)

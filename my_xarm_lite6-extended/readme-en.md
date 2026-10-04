@@ -60,7 +60,7 @@ A research and evaluation platform for **multimodal teleoperation** of the UFact
   <img src="img/monitoring_dashboard.png" width="32%" alt="Monitoring Dashboard – overview">
 </p>
 
-*Top: **Robot Control UI** (area Move: header with E-STOP, area bar, Digital Twin viewport, Cartesian jogging) and **Nexus Webapp** (start popup RUN DEV SETUP, FAKE). Bottom: **VLA-M** with a plan of four steps waiting for *Execute*, **Touch Panel** (view Move) and **Monitoring Dashboard** (overview). All in FAKE mode – more screenshots next to each function in [`docs/en/`](docs/en/).*
+*Top: **Robot Control UI** (area Move: header with E-STOP, area bar, Digital Twin viewport, Cartesian jogging) and **Nexus Webapp** (start popup RUN DEV SETUP, FAKE). Bottom: **VLA-M** with a plan of four steps waiting for *Execute*, **Touch Panel** (view Move) and **Monitoring Dashboard** (overview). All in FAKE mode – more screenshots next to each function in `docs/en/`.*
 
 ## 🚀 Quickstart (simulation, no hardware)
 

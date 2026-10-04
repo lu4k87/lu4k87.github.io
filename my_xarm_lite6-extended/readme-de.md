@@ -60,7 +60,7 @@ Eine Forschungs- und Evaluationsplattform für die **multimodale Teleoperation**
   <img src="img/monitoring_dashboard.png" width="32%" alt="Monitoring Dashboard – Übersicht">
 </p>
 
-*Oben: **Robot Control UI** (Bereich Move: Header mit E-STOP, Bereichs-Leiste, Digital-Twin-Viewport, kartesisches Jogging) und **Nexus Webapp** (Start-Popup RUN DEV SETUP, FAKE). Unten: **VLA-M** mit einem Plan aus vier Schritten, der auf *Execute* wartet, **Touch Panel** (Ansicht Move) und **Monitoring Dashboard** (Übersicht). Alles im FAKE-Modus – weitere Screenshots direkt bei jeder Funktion in [`docs/de/`](docs/de/).*
+*Oben: **Robot Control UI** (Bereich Move: Header mit E-STOP, Bereichs-Leiste, Digital-Twin-Viewport, kartesisches Jogging) und **Nexus Webapp** (Start-Popup RUN DEV SETUP, FAKE). Unten: **VLA-M** mit einem Plan aus vier Schritten, der auf *Execute* wartet, **Touch Panel** (Ansicht Move) und **Monitoring Dashboard** (Übersicht). Alles im FAKE-Modus – weitere Screenshots direkt bei jeder Funktion in `docs/de/`.*
 
 ## 🚀 Schnellstart (Simulation, ohne Hardware)
 

@@ -111,4 +111,4 @@
 
 ---
 
-[⬅ Previous: Voice & Gaze Control](voice_gaze.html) · [🏠 Overview](../readme-en.html) · [⬆ Top](#top) · [Next: Robot Control UI & Motion Backend ➡](robot_control_ui.html)
+[⬅ Previous: Voice & Gaze Control](voice_gaze.html) · [🏠 Overview](../readme-en.html) · ⬆ Top · [Next: Robot Control UI & Motion Backend ➡](robot_control_ui.html)

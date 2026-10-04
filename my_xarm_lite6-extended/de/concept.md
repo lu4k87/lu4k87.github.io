@@ -4,7 +4,7 @@
 
 [🏠 Übersicht](../readme-de.html) · [🇬🇧 English](../en/concept.html) · Kapitel 1, 2, 4
 
-**Inhalt:** [1. 📋 Projektübersicht](#1--projektübersicht) · [2. 🔬 Architektur & Leitprinzipien](#2--architektur--leitprinzipien) · [4. 🕹️ Multimodale Technologien & Interaktionskonzepte](#4--multimodale-technologien--interaktionskonzepte)
+**Inhalt:** 1. 📋 Projektübersicht · 2. 🔬 Architektur & Leitprinzipien · 4. 🕹️ Multimodale Technologien & Interaktionskonzepte
 
 ---
 
@@ -146,4 +146,4 @@ Eine zentrale Oberfläche bündelt alle Systemzustände und entlastet den Operat
 
 ---
 
-[🏠 Übersicht](../readme-de.html) · [⬆ Nach oben](#top) · [Weiter: Installation & Voraussetzungen ➡](installation.html)
+[🏠 Übersicht](../readme-de.html) · ⬆ Nach oben · [Weiter: Installation & Voraussetzungen ➡](installation.html)
