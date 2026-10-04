@@ -4,7 +4,7 @@
 
 [🏠 Overview](../readme-en.html) · [🇩🇪 Deutsch](../de/concept.html) · Chapter 1, 2, 4
 
-**Contents:** 1. 📋 Project Overview · 2. 🔬 Architecture & Guiding Principles · 4. 🕹️ Multimodal Technologies & Interaction Concepts
+**Contents:** [1. 📋 Project Overview](#1--project-overview) · [2. 🔬 Architecture & Guiding Principles](#2--architecture--guiding-principles) · [4. 🕹️ Multimodal Technologies & Interaction Concepts](#4--multimodal-technologies--interaction-concepts)
 
 ---
 
@@ -146,4 +146,4 @@ A central user interface bundles all system states to relieve the operator:
 
 ---
 
-[🏠 Overview](../readme-en.html) · ⬆ Top · [Next: Installation & Requirements ➡](installation.html)
+[🏠 Overview](../readme-en.html) · [⬆ Top](#top) · [Next: Installation & Requirements ➡](installation.html)

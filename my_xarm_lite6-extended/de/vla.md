@@ -131,4 +131,4 @@ Robot Control UI (VLA-M) --/vla/*--> vla_bridge: LLM-Agent (Plan, Prüfung, Reco
 
 ---
 
-[⬅ Zurück: Digital Twin in NVIDIA Isaac Sim](isaac_sim.html) · [🏠 Übersicht](../readme-de.html) · ⬆ Nach oben · [Weiter: Monitoring Dashboard ➡](monitoring.html)
+[⬅ Zurück: Digital Twin in NVIDIA Isaac Sim](isaac_sim.html) · [🏠 Übersicht](../readme-de.html) · [⬆ Nach oben](#top) · [Weiter: Monitoring Dashboard ➡](monitoring.html)

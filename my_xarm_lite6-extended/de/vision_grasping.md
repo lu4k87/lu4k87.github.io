@@ -646,4 +646,4 @@
 
 ---
 
-[⬅ Zurück: Betriebsmodi & Gamepad-Teleoperation](teleoperation.html) · [🏠 Übersicht](../readme-de.html) · ⬆ Nach oben · [Weiter: Sprach- & Blicksteuerung ➡](voice_gaze.html)
+[⬅ Zurück: Betriebsmodi & Gamepad-Teleoperation](teleoperation.html) · [🏠 Übersicht](../readme-de.html) · [⬆ Nach oben](#top) · [Weiter: Sprach- & Blicksteuerung ➡](voice_gaze.html)

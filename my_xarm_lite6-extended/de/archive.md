@@ -4,7 +4,7 @@
 
 [🏠 Übersicht](../readme-de.html) · [🇬🇧 English](../en/archive.html) · Kapitel 10
 
-**Inhalt:** 10. 🗄️ Archiv / Architektur-Entscheidungen & Veraltete Konzepte
+**Inhalt:** [10. 🗄️ Archiv / Architektur-Entscheidungen & Veraltete Konzepte](#10--archiv--architektur-entscheidungen--veraltete-konzepte)
 
 ---
 
@@ -30,4 +30,4 @@ In der Vergangenheit erforderte der Start des Systems das manuelle Ausführen me
 
 ---
 
-[⬅ Zurück: Repository-Struktur](repository_structure.html) · [🏠 Übersicht](../readme-de.html) · ⬆ Nach oben
+[⬅ Zurück: Repository-Struktur](repository_structure.html) · [🏠 Übersicht](../readme-de.html) · [⬆ Nach oben](#top)

@@ -4,7 +4,7 @@
 
 [🏠 Übersicht](../readme-de.html) · [🇬🇧 English](../en/teleoperation.html) · Kapitel 3.1, 3.2, 5
 
-**Inhalt:** 3.1 Betriebsmodi: FAKE vs. REAL (Hardware Interfaces) · 3.2 Funktion: Gamepad Teleoperation & Harter Kollisionsschutz · 5. 🎮 Gamepad-Steuerung — Technische Tiefenanalyse
+**Inhalt:** [3.1 Betriebsmodi: FAKE vs. REAL (Hardware Interfaces)](#31-betriebsmodi-fake-vs-real-hardware-interfaces) · [3.2 Funktion: Gamepad Teleoperation & Harter Kollisionsschutz](#32-funktion-gamepad-teleoperation--harter-kollisionsschutz) · [5. 🎮 Gamepad-Steuerung — Technische Tiefenanalyse](#5--gamepad-steuerung--technische-tiefenanalyse)
 
 ---
 
@@ -474,4 +474,4 @@ Status-Feedback an `/ui/joy_button_presses` nach jeder Zustandsänderung.
 
 ---
 
-[⬅ Zurück: System starten & betreiben](running.html) · [🏠 Übersicht](../readme-de.html) · ⬆ Nach oben · [Weiter: 3D-Vision & autonomes Greifen ➡](vision_grasping.html)
+[⬅ Zurück: System starten & betreiben](running.html) · [🏠 Übersicht](../readme-de.html) · [⬆ Nach oben](#top) · [Weiter: 3D-Vision & autonomes Greifen ➡](vision_grasping.html)

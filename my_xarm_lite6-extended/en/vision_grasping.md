@@ -646,4 +646,4 @@
 
 ---
 
-[⬅ Previous: Operating Modes & Gamepad Teleoperation](teleoperation.html) · [🏠 Overview](../readme-en.html) · ⬆ Top · [Next: Voice & Gaze Control ➡](voice_gaze.html)
+[⬅ Previous: Operating Modes & Gamepad Teleoperation](teleoperation.html) · [🏠 Overview](../readme-en.html) · [⬆ Top](#top) · [Next: Voice & Gaze Control ➡](voice_gaze.html)

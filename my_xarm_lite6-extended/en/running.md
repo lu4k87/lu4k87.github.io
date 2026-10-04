@@ -4,7 +4,7 @@
 
 [🏠 Overview](../readme-en.html) · [🇩🇪 Deutsch](../de/running.html) · Chapter 1.1, 7
 
-**Contents:** 1.1 ⚡ 5-Minute Quickstart (Pure Simulation) · 7. 🚀 Execution: How to Run the System
+**Contents:** [1.1 ⚡ 5-Minute Quickstart (Pure Simulation)](#11--5-minute-quickstart-pure-simulation) · [7. 🚀 Execution: How to Run the System](#7--execution-how-to-run-the-system)
 
 ---
 
@@ -323,7 +323,7 @@ sudo sysctl -p /etc/sysctl.d/60-cyclonedds.conf
 | **Robot does not respond (`Connection refused` / timeout)** | Subnet mismatch or physical controller box powered off. | Verify the xArm controller is switched on. Ensure your workstation network interface is configured with a static IPv4 address in the same subnet (e.g., `192.168.1.xxx`, netmask `255.255.255.0`). Verify connectivity using `ping 192.168.1.xxx`. |
 | **Web UI displays "DISCONNECTED" (Red status indicator)** | `rosbridge_server` (Port 9090) is offline or blocked. | Check if the WebSocket bridge is active (`ros2 run rosbridge_server rosbridge_websocket`). Inspect the browser developer console (F12) for WebSocket connection refusals. Ensure no local firewall blocks port 9090. |
 | **Gamepad input does not move the robot arm** | Joy node assigned wrong joystick device or wrong mode. | Check whether the Xbox controller is recognized by Linux (`ls -l /dev/input/js*`). Test stick inputs using `jstest /dev/input/js0`. Verify MoveIt Servo is active (check `/servo_server/status`). |
-| **Point cloud lags or freezes in RViz2** | Linux kernel UDP socket buffer overflow under high DDS throughput. | Execute the kernel buffer expansion commands detailed in Section 7.8 (`sudo sysctl -w net.core.rmem_max=2147483647`). |
+| **Point cloud lags or freezes in RViz2** | Linux kernel UDP socket buffer overflow under high DDS throughput. | Execute the kernel buffer expansion commands detailed in [Section 7.8](#78-cyclonedds-udp-buffer-overflows-point-cloud-lag) (`sudo sysctl -w net.core.rmem_max=2147483647`). |
 | **Robot motion stops abruptly / Servo refuses jogging** | Hard table barrier or Singularity collision guard engaged. | Check `/ui/collision_msg` for active boundary alerts. Inspect `/servo_server/status` codes (`0` = no warning, `1` = approaching singularity, `2` = halt: singularity, `3` = approaching collision, `4` = halt: collision, `5` = halt: joint bound). Drive the arm upwards using the LT trigger to clear the caution zone. |
 | **Stereolabs ZED Mini camera fails to initialize** | Camera connected to USB 2.0 port or insufficient USB bandwidth. | Plug the ZED Mini strictly into a blue **USB 3.0 / 3.1** port directly on the PC motherboard (avoid unpowered USB extension hubs). Check detection via `lsusb` and `ZED_Diagnostic`. |
 | **Voice command listener fails with missing IDL** | Custom ROS 2 IDL package not sourced in environment. | Execute `source install/setup.bash` in the terminal to expose the `whisper_idl/action/Inference` interface definition. |
@@ -334,4 +334,4 @@ sudo sysctl -p /etc/sysctl.d/60-cyclonedds.conf
 
 ---
 
-[⬅ Previous: Installation & Requirements](installation.html) · [🏠 Overview](../readme-en.html) · ⬆ Top · [Next: Operating Modes & Gamepad Teleoperation ➡](teleoperation.html)
+[⬅ Previous: Installation & Requirements](installation.html) · [🏠 Overview](../readme-en.html) · [⬆ Top](#top) · [Next: Operating Modes & Gamepad Teleoperation ➡](teleoperation.html)

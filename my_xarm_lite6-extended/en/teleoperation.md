@@ -4,7 +4,7 @@
 
 [🏠 Overview](../readme-en.html) · [🇩🇪 Deutsch](../de/teleoperation.html) · Chapter 3.1, 3.2, 5
 
-**Contents:** 3.1 Operating Modes: FAKE vs. REAL (Hardware Interfaces) · 3.2 Feature: Gamepad Teleoperation & Hard Collision Protection · 5. 🎮 Gamepad Control — Deep Dive
+**Contents:** [3.1 Operating Modes: FAKE vs. REAL (Hardware Interfaces)](#31-operating-modes-fake-vs-real-hardware-interfaces) · [3.2 Feature: Gamepad Teleoperation & Hard Collision Protection](#32-feature-gamepad-teleoperation--hard-collision-protection) · [5. 🎮 Gamepad Control — Deep Dive](#5--gamepad-control--deep-dive)
 
 ---
 
@@ -483,4 +483,4 @@ Status feedback is published to `/ui/joy_button_presses` after every state trans
 
 ---
 
-[⬅ Previous: Running the System](running.html) · [🏠 Overview](../readme-en.html) · ⬆ Top · [Next: 3D Vision & Autonomous Grasping ➡](vision_grasping.html)
+[⬅ Previous: Running the System](running.html) · [🏠 Overview](../readme-en.html) · [⬆ Top](#top) · [Next: 3D Vision & Autonomous Grasping ➡](vision_grasping.html)

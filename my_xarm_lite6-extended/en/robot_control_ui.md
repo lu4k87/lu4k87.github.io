@@ -794,4 +794,4 @@
 
 ---
 
-[⬅ Previous: VR Teleoperation (Meta Quest 3)](vr_quest3.html) · [🏠 Overview](../readme-en.html) · ⬆ Top · [Next: Digital Twin in NVIDIA Isaac Sim ➡](isaac_sim.html)
+[⬅ Previous: VR Teleoperation (Meta Quest 3)](vr_quest3.html) · [🏠 Overview](../readme-en.html) · [⬆ Top](#top) · [Next: Digital Twin in NVIDIA Isaac Sim ➡](isaac_sim.html)

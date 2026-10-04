@@ -204,4 +204,4 @@ dev_ws/
 
 ---
 
-[⬅ Previous: Monitoring Dashboard](monitoring.html) · [🏠 Overview](../readme-en.html) · ⬆ Top · [Next: Archive & Deprecated Concepts ➡](archive.html)
+[⬅ Previous: Monitoring Dashboard](monitoring.html) · [🏠 Overview](../readme-en.html) · [⬆ Top](#top) · [Next: Archive & Deprecated Concepts ➡](archive.html)

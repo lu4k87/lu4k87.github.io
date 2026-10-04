@@ -4,7 +4,7 @@
 
 [🏠 Übersicht](../readme-de.html) · [🇬🇧 English](../en/installation.html) · Kapitel 6
 
-**Inhalt:** 6. 📦 Abhängigkeiten & Voraussetzungen
+**Inhalt:** [6. 📦 Abhängigkeiten & Voraussetzungen](#6--abhängigkeiten--voraussetzungen)
 
 > [!TIP]
 > **Neuer Arbeitsplatz?** Der [Setup-Guide](../project_setup_guide.html) (DE/EN, verlinkt in der Projekt-Doku – Footer-Knopf **Projekt-Doku** der Nexus Webapp) führt als Checkliste durch alle Schritte – Hardware, Ubuntu, ROS 2, Workspace, Netzwerk, Abnahme – wahlweise für einen vorinstallierten PC.
@@ -241,4 +241,4 @@ GitHub ist die einzige Quelle; jeder Rechner hat einen eigenen Klon in `~/dev_ws
 
 ---
 
-[⬅ Zurück: Konzept & Architektur](concept.html) · [🏠 Übersicht](../readme-de.html) · ⬆ Nach oben · [Weiter: System starten & betreiben ➡](running.html)
+[⬅ Zurück: Konzept & Architektur](concept.html) · [🏠 Übersicht](../readme-de.html) · [⬆ Nach oben](#top) · [Weiter: System starten & betreiben ➡](running.html)
