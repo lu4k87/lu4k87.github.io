@@ -1,5 +1,5 @@
 <!doctype html>
-<!-- Arbeitsweise: wie Mensch und Claude Code im dev_ws zusammenarbeiten – Kreislauf einer Anfrage, Datenfluss
+<!-- Arbeitsweise: Software entwickeln mit VS Code + Claude Code im dev_ws – Arbeitsplatz, Einrichtung, Kreislauf einer Anfrage, Datenfluss
      zwischen Chat, Hooks, Skills, Agenten und Repo, Werkzeugkasten, Leitplanken, Git + Doku, Gedächtnis.
      Design „Interakt Control Robot“ (docs/brand/brand.yaml), volle Fensterbreite mit schmalem Rand.
      Flow-Graph: Engine unverändert aus .claude/skills/flow-graph/flow_graph_template.html, nur SPEC eigen.
@@ -143,7 +143,7 @@ main.wrap { max-width: calc(1320px + 2 * var(--gut)); margin-inline: auto; } /* 
 .tr .p { font: 700 13.5px/1.4 var(--mono); padding-left: calc(var(--d, 0) * 22px); display: flex; gap: 8px; align-items: center; white-space: nowrap; }
 .tr .p .ico { width: 16px; height: 16px; color: var(--hue, var(--accent)); }
 .tr .w { font-size: 14.5px; line-height: 1.45; }
-.tr .w code { font-size: 12.5px; }
+.tr .w code { font-size: 12.5px; white-space: nowrap; }
 .tr .w .chip { padding: 2px 6px; font-size: 12.5px; margin-left: 6px; }
 @media (max-width: 640px) { .tree { grid-template-columns: minmax(0, 1fr); } .tr .p { white-space: normal; overflow-wrap: anywhere; } }
 .wire { padding: 16px 18px; display: grid; gap: 12px; align-content: start; }
@@ -538,7 +538,7 @@ footer a { font-weight: 700; color: var(--fg); }
   <div class="wrap">
     <a class="brand" href="project_docs.html"><span class="brand-mark"><svg class="ico"><use href="#i-loop"/></svg></span><span><span data-en="Claude Workflow">Claude Workflow</span><small>Interakt Control Robot · dev_ws</small></span></a>
     <nav aria-label="Abschnitte" data-en-aria="Sections">
-      <a href="#einrichtung" data-en="Setup">Einrichtung</a><a href="#kreislauf" data-en="Cycle">Kreislauf</a><a href="#datenfluss" data-en="Data flow">Datenfluss</a><a href="#werkzeug" data-en="Toolkit">Werkzeugkasten</a><a href="#leitplanken" data-en="Guardrails">Leitplanken</a>
+      <a href="#arbeitsplatz" data-en="Workplace">Arbeitsplatz</a><a href="#einrichtung" data-en="Setup">Einrichtung</a><a href="#kreislauf" data-en="Cycle">Kreislauf</a><a href="#datenfluss" data-en="Data flow">Datenfluss</a><a href="#werkzeug" data-en="Toolkit">Werkzeugkasten</a><a href="#leitplanken" data-en="Guardrails">Leitplanken</a>
       <a href="#zusammenarbeit" data-en="Collaboration">Zusammenarbeit</a><a href="#sicherheit" data-en="Safety">Sicherheit</a><a href="#git" data-en="Git &amp;amp; docs">Git &amp; Doku</a><a href="#gedaechtnis" data-en="Memory">Gedächtnis</a>
     </nav>
     <div class="tools">
@@ -552,11 +552,12 @@ footer a { font-weight: 700; color: var(--fg); }
   <!-- ═════════ Hero ═════════ -->
   <section class="hero" aria-labelledby="h-hero">
     <div class="hero-main">
-      <span class="eyebrow" data-en="How we work · Human + Claude Code">Arbeitsweise · Mensch + Claude Code</span>
-      <h1 id="h-hero" data-en="Working with Claude&amp;nbsp;Code: how it runs and how it is set up">Zusammenarbeit mit Claude&nbsp;Code: wie sie abläuft und wie sie eingerichtet ist</h1>
+      <span class="eyebrow" data-en="Software development · VS Code + Claude Code">Softwareentwicklung · VS Code + Claude Code</span>
+      <h1 id="h-hero" data-en="Developing software with VS&amp;nbsp;Code and Claude&amp;nbsp;Code">Software entwickeln mit VS&nbsp;Code und Claude&nbsp;Code</h1>
       <p class="claim" data-en="The human leads. &lt;em&gt;The AI assists.&lt;/em&gt;">Der Mensch führt. <em>Die KI assistiert.</em></p>
-      <p class="abstract" data-en="The robot&#x27;s guiding principle also applies to how it is built: &lt;b&gt;you set direction, make decisions and give approval.&lt;/b&gt; Claude plans, builds, tests, documents and commits, guided by &lt;b&gt;rules&lt;/b&gt; (&lt;code&gt;AGENTS.md&lt;/code&gt;), &lt;b&gt;knowledge&lt;/b&gt; (skills, memory), &lt;b&gt;helpers&lt;/b&gt; (project agents, scripts) and &lt;b&gt;guardrails&lt;/b&gt; (hooks) that all live in the repo and grow with every chat.">Der Leitsatz des Roboters gilt auch für seine Entwicklung: <b>Du gibst Richtung, Entscheidung und Freigabe.</b> Claude plant, baut, prüft, dokumentiert und committet – geführt von <b>Regeln</b> (<code>AGENTS.md</code>), <b>Wissen</b> (Skills, Memory), <b>Helfern</b> (Projekt-Agenten, Skripte) und <b>Leitplanken</b> (Hooks), die alle im Repo liegen und mit jedem Chat mitwachsen.</p>
+      <p class="abstract" data-en="One editor, one repo: in &lt;b&gt;VS&amp;nbsp;Code&lt;/b&gt; the &lt;b&gt;Claude&amp;nbsp;Code extension&lt;/b&gt; runs right next to the code; you set direction, decide and sign off, Claude plans, builds, tests and commits. &lt;b&gt;Rules, knowledge, helpers and guardrails&lt;/b&gt; live as files in the repo for that.">Ein Editor, ein Repo: In <b>VS&nbsp;Code</b> läuft die <b>Erweiterung Claude&nbsp;Code</b> direkt neben dem Code – du gibst Richtung, Entscheidung und Abnahme, Claude plant, baut, prüft und committet. <b>Regeln, Wissen, Helfer und Leitplanken</b> liegen dafür als Dateien im Repo.</p>
       <div class="chips">
+        <span class="chip" style="--hue: var(--accent)"><svg class="ico"><use href="#i-code"/></svg><b>VS Code</b> <span data-en="workplace">Arbeitsplatz</span></span>
         <span class="chip" style="--hue: var(--accent)"><svg class="ico"><use href="#i-book"/></svg><b>AGENTS.md</b> <span data-en="rules">Regeln</span></span>
         <span class="chip" style="--hue: var(--teal)"><svg class="ico"><use href="#i-layers"/></svg><b>.claude/skills</b> <span data-en="knowledge">Wissen</span></span>
         <span class="chip" style="--hue: var(--indigo)"><svg class="ico"><use href="#i-bot"/></svg><b>.claude/agents</b> <span data-en="helpers">Helfer</span></span>
@@ -578,7 +579,8 @@ footer a { font-weight: 700; color: var(--fg); }
       <div class="panel brief">
         <span class="eyebrow" data-en="In one sentence">In einem Satz</span>
         <dl>
-          <dt data-en="Rules">Regeln</dt><dd data-en="&lt;code&gt;AGENTS.md&lt;/code&gt; tells every chat what applies, safety first."><code>AGENTS.md</code> sagt jedem Chat, was gilt – Sicherheit zuerst.</dd>
+          <dt>VS Code</dt><dd data-en="Chat next to the code: selection as context, links jump to the line, every change as a diff.">Chat neben dem Code: Markierung als Kontext, Links springen zur Zeile, jede Änderung als Diff.</dd>
+          <dt data-en="Rules">Regeln</dt><dd data-en="&lt;code&gt;AGENTS.md&lt;/code&gt; tells every chat what applies: limits, names, format, Definition of Done."><code>AGENTS.md</code> sagt jedem Chat, was gilt: Grenzen, Namen, Format, Definition of Done.</dd>
           <dt>Skills</dt><dd data-en="Knowledge per topic, loaded only when the request needs it.">Wissen je Thema, geladen nur, wenn die Anfrage es braucht.</dd>
           <dt data-en="Agents">Agenten</dt><dd data-en="Helpers with their own context for search, tests and reviews.">Helfer mit eigenem Kontext für Suche, Tests und Reviews.</dd>
           <dt>Hooks</dt><dd data-en="Check automatically before and after every step.">Prüfen automatisch vor und nach jedem Schritt.</dd>
@@ -596,8 +598,8 @@ footer a { font-weight: 700; color: var(--fg); }
       <ul>
         <li data-en="Say &lt;b&gt;what&lt;/b&gt; should be built; short is enough">Sagt, <b>was</b> entstehen soll – kurz reicht</li>
         <li data-en="Decide on questions and variants">Entscheidet bei Rückfragen und Varianten</li>
-        <li data-en="Approve REAL motion; nobody else can">Gibt REAL-Bewegung frei, sonst niemand</li>
-        <li data-en="Sign off: preview, screenshots, status chips">Nimmt ab: Vorschau, Screenshots, Status-Chips</li>
+        <li data-en="Grants permissions: commands outside the allow list, risky actions">Erteilt Freigaben: Befehle außerhalb der Erlaubt-Liste, riskante Aktionen</li>
+        <li data-en="Signs off: diff in the editor, preview, status chips">Nimmt ab: Diff im Editor, Vorschau, Status-Chips</li>
       </ul>
     </div>
     <div class="join" aria-hidden="true"><svg class="ico"><use href="#i-go"/></svg></div>
@@ -625,9 +627,49 @@ footer a { font-weight: 700; color: var(--fg); }
   </div>
 
 
-  <!-- ═════════ 00 Einrichtung ═════════ -->
+  <!-- ═════════ 00 Arbeitsplatz ═════════ -->
+  <section class="blk" id="arbeitsplatz" aria-labelledby="h-ws">
+    <span class="eyebrow chap" data-en="00 · Workplace">00 · Arbeitsplatz</span>
+    <div class="blk-head">
+      <h2 id="h-ws" data-en="VS&amp;nbsp;Code is the workplace, Claude&amp;nbsp;Code works inside it">VS&nbsp;Code ist der Arbeitsplatz – Claude&nbsp;Code arbeitet darin mit</h2>
+      <p class="lead" data-en="Code, terminal, Git and chat share one window: the &lt;b&gt;Claude&amp;nbsp;Code extension&lt;/b&gt; opens chats as tabs next to the files and works directly in the workspace. You see every step, every change and every command, and step in where needed.">Code, Terminal, Git und Chat teilen sich ein Fenster: Die <b>Erweiterung Claude&nbsp;Code</b> öffnet Chats als Tabs neben den Dateien und arbeitet direkt im Workspace. Du siehst jeden Schritt, jede Änderung und jeden Befehl – und greifst ein, wo nötig.</p>
+    </div>
+    <div class="mem">
+      <div class="panel mc" style="--hue: var(--accent)"><h3><svg class="ico"><use href="#i-chat"/></svg><span data-en="Chat next to the code">Chat neben dem Code</span></h3><p data-en="Claude&amp;nbsp;Code in the side panel, several chats as tabs: one topic per chat, title with prefix (&lt;code&gt;[RCU]&lt;/code&gt;, &lt;code&gt;[Doku]&lt;/code&gt; …).">Claude&nbsp;Code im Seitenpanel, mehrere Chats als Tabs: ein Thema je Chat, Titel mit Präfix (<code>[RCU]</code>, <code>[Doku]</code> …).</p><span class="tag" data-en="Claude Code extension">Erweiterung Claude Code</span></div>
+      <div class="panel mc" style="--hue: var(--teal)"><h3><svg class="ico"><use href="#i-code"/></svg><span data-en="Selection is context">Markierung ist Kontext</span></h3><p data-en="Selected code and the open file go along automatically. Answers link to &lt;code&gt;file:line&lt;/code&gt;; one click jumps there in the editor.">Markierter Code und die offene Datei gehen automatisch mit. Antworten verlinken <code>Datei:Zeile</code> – ein Klick springt im Editor hin.</p><span class="tag" data-en="IDE context">IDE-Kontext</span></div>
+      <div class="panel mc" style="--hue: var(--gold)"><h3><svg class="ico"><use href="#i-check"/></svg><span data-en="Every change visible">Jede Änderung sichtbar</span></h3><p data-en="Edits appear as a diff, commands with their output. Anything outside the allow list asks first in a permission dialog.">Edits erscheinen als Diff, Befehle mit ihrer Ausgabe. Alles außerhalb der Erlaubt-Liste fragt vorher im Berechtigungs-Dialog.</p><span class="tag" data-en="Diff · permissions">Diff · Berechtigungen</span></div>
+      <div class="panel mc" style="--hue: var(--violet)"><h3><svg class="ico"><use href="#i-win"/></svg><span data-en="Answers as cards">Antworten als Karten</span></h3><p data-en="Mod &lt;code&gt;answer-cards&lt;/code&gt; turns answers into cards with answer buttons; a status line below the prompt shows the stack state.">Mod <code>answer-cards</code> macht aus Antworten Karten mit Antwort-Buttons; eine Statuszeile unter dem Prompt zeigt den Stack-Zustand.</p><span class="tag">CLAUDE_CODE_PLUGIN_DIRS</span></div>
+      <div class="panel mc" style="--hue: var(--indigo)"><h3><svg class="ico"><use href="#i-spark"/></svg><span data-en="Previews in the browser">Vorschauen im Browser</span></h3><p data-en="UI variants as claude.ai artifacts with screenshots and comments. “Send to chat” carries your decision back into VS&amp;nbsp;Code.">UI-Varianten als claude.ai-Artifacts mit Screenshots und Kommentaren. „An Chat senden“ bringt deine Entscheidung zurück in VS&nbsp;Code.</p><span class="tag">claude.ai Artifacts</span></div>
+      <div class="panel mc" style="--hue: var(--green)"><h3><svg class="ico"><use href="#i-user"/></svg><span data-en="On the go">Unterwegs dabei</span></h3><p data-en="Remote Control and push notifications: follow running chats on the phone and answer questions while away from the desk.">Remote Control und Push-Benachrichtigungen: laufende Chats am Handy verfolgen und Rückfragen beantworten, auch fern vom Schreibtisch.</p><span class="tag">remoteControlAtStartup</span></div>
+      <div class="panel mc" style="--hue: var(--gold)"><h3><svg class="ico"><use href="#i-warn"/></svg><span data-en="Problems from the editor">Probleme aus dem Editor</span></h3><p data-en="Claude reads the diagnostics of VS&amp;nbsp;Code (linter, type errors) directly; hooks also check every changed file.">Claude liest die Diagnosen von VS&nbsp;Code (Linter, Typfehler) direkt mit; zusätzlich prüfen Hooks jede geänderte Datei.</p><span class="tag">getDiagnostics</span></div>
+      <div class="panel mc" style="--hue: var(--teal)"><h3><svg class="ico"><use href="#i-brain"/></svg><span data-en="Model and depth">Modell und Denktiefe</span></h3><p data-en="Opus as the default, effort set per model; the same values on every computer from &lt;code&gt;user-settings.json&lt;/code&gt;.">Opus als Standard, Denktiefe (Effort) je Modell; auf allen Rechnern gleich aus <code>user-settings.json</code>.</p><span class="tag">model · effortLevel</span></div>
+    </div>
+    <div class="dod">
+      <div class="panel commit-path">
+        <h3 data-en="A working day">Ein Arbeitstag</h3>
+        <div class="cp">
+          <div class="cp-s" style="--hue: var(--green)"><span class="dot"><svg class="ico"><use href="#i-term"/></svg></span><b data-en="Open VS&amp;nbsp;Code, sync">VS&nbsp;Code öffnen, abgleichen</b><p data-en="&lt;code&gt;tools/ws_sync.sh&lt;/code&gt;: pull, build changed packages, align settings and memory."><code>tools/ws_sync.sh</code>: Pull, geänderte Pakete bauen, Settings und Memory abgleichen.</p></div>
+          <div class="cp-s" style="--hue: var(--accent)"><span class="dot"><svg class="ico"><use href="#i-chat"/></svg></span><b data-en="One chat per task">Ein Chat je Aufgabe</b><p data-en="Write the goal, not instructions. The situation report shows what other chats are editing right now.">Ziel schreiben statt Anleitung. Das Lagebild zeigt, was andere Chats gerade bearbeiten.</p></div>
+          <div class="cp-s" style="--hue: var(--indigo)"><span class="dot"><svg class="ico"><use href="#i-layers"/></svg></span><b data-en="Work in parallel">Parallel arbeiten</b><p data-en="A second chat tab for another topic; the file register prevents both from overwriting each other.">Zweiter Chat-Tab für ein anderes Thema; das Datei-Register verhindert, dass sich beide überschreiben.</p></div>
+          <div class="cp-s" style="--hue: var(--gold)"><span class="dot"><svg class="ico"><use href="#i-q"/></svg></span><b data-en="Decide and sign off">Entscheiden und abnehmen</b><p data-en="Questions by button, variants in the preview, changes as a diff in the editor.">Rückfragen per Button, Varianten in der Vorschau, Änderungen als Diff im Editor.</p></div>
+          <div class="cp-s" style="--hue: var(--violet)"><span class="dot"><svg class="ico"><use href="#i-git"/></svg></span><b data-en="Pushed at the end">Am Ende gepusht</b><p data-en="Every finished task is committed and pushed; the next computer starts from the same state.">Jede fertige Aufgabe ist committet und gepusht – der nächste Rechner startet mit demselben Stand.</p></div>
+        </div>
+      </div>
+      <div class="panel tree">
+        <h3 data-en="Three computers, one state">Drei Rechner, ein Stand</h3>
+        <div class="tr"><span class="p" style="--hue: var(--green)"><svg class="ico"><use href="#i-git"/></svg>Git · main</span><span class="w" data-en="Single source for laptop, lab PC and home PC">Einzige Quelle für Laptop, Labor-PC und Home-PC</span></div>
+        <div class="tr" style="--d:1"><span class="p"><svg class="ico"><use href="#i-repo"/></svg><span data-en="In the repo">Im Repo</span></span><span class="w" data-en="Rules, skills, hooks, agents, mods, memory">Regeln, Skills, Hooks, Agenten, Mods, Memory</span></div>
+        <div class="tr" style="--d:1"><span class="p" style="--hue: var(--gold)"><svg class="ico"><use href="#i-key"/></svg><span data-en="Per computer">Je Rechner</span></span><span class="w" data-en="User settings (model, effort, mods), filled in by &lt;code&gt;ws_sync.sh&lt;/code&gt;">Benutzer-Settings (Modell, Effort, Mods), ergänzt von <code>ws_sync.sh</code></span></div>
+        <div class="tr" style="--d:1"><span class="p" style="--hue: var(--teal)"><svg class="ico"><use href="#i-chat"/></svg><span data-en="Local only">Nur lokal</span></span><span class="w" data-en="Chat histories, continue with &lt;code&gt;claude&amp;nbsp;--resume&lt;/code&gt;">Chat-Verläufe, fortsetzen mit <code>claude&nbsp;--resume</code></span></div>
+        <div class="tr" style="--d:1"><span class="p" style="--hue: var(--violet)"><svg class="ico"><use href="#i-win"/></svg><span data-en="On the account">Am Konto</span></span><span class="w" data-en="Artifacts, claude.ai skills, Remote Control">Artifacts, claude.ai-Skills, Remote Control</span></div>
+        <div class="tr" style="--d:1"><span class="p" style="--hue: var(--teal)"><svg class="ico"><use href="#i-loop"/></svg>Antigravity · Gemini</span><span class="w" data-en="Same rules, skills and memory via symlinks in &lt;code&gt;.agents/&lt;/code&gt;">Dieselben Regeln, Skills und Memory über Symlinks in <code>.agents/</code></span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═════════ 01 Einrichtung ═════════ -->
   <section class="blk" id="einrichtung" aria-labelledby="h-setup">
-    <span class="eyebrow chap" data-en="00 · Setup">00 · Einrichtung</span>
+    <span class="eyebrow chap" data-en="01 · Setup">01 · Einrichtung</span>
     <div class="blk-head">
       <h2 id="h-setup" data-en="How Claude Code is set up in this repo">So ist Claude Code in diesem Repo eingerichtet</h2>
       <p class="lead" data-en="Everything Claude should know and follow about the project lives &lt;b&gt;as a file in the repo&lt;/b&gt;: versioned, tested and identical on laptop, lab and home PC (sync: &lt;code&gt;tools/ws_sync.sh&lt;/code&gt;). Only chat histories stay local, artifacts live on claude.ai.">Alles, was Claude über das Projekt wissen und einhalten soll, liegt <b>als Datei im Repo</b> – versioniert, getestet und auf Laptop, Labor- und Home-PC gleich (Abgleich: <code>tools/ws_sync.sh</code>). Nur Chat-Verläufe liegen lokal, Artifacts auf claude.ai.</p>
@@ -639,6 +681,7 @@ footer a { font-weight: 700; color: var(--fg); }
         <div class="tr" style="--d:1"><span class="p"><svg class="ico"><use href="#i-book"/></svg>AGENTS.md</span><span class="w" data-en="Rules for every chat: safety, names, answer format, UI rules, map, Definition of Done&lt;span class=&quot;chip&quot;&gt;117 lines&lt;/span&gt;">Regeln für jeden Chat: Sicherheit, Namen, Antwortformat, UI-Regeln, Karte, Definition of Done<span class="chip">117 Zeilen</span></span></div>
         <div class="tr" style="--d:1"><span class="p"><svg class="ico"><use href="#i-book"/></svg>src/&lt;pkg&gt;/CLAUDE.md</span><span class="w" data-en="Module maps of the large packages (Robot Control UI, Monitoring, vla_bridge, Nexus)">Modul-Karten der großen Pakete (Robot Control UI, Monitoring, vla_bridge, Nexus)</span></div>
         <div class="tr" style="--d:1"><span class="p" style="--hue: var(--gold)"><svg class="ico"><use href="#i-key"/></svg>.claude/settings.json</span><span class="w" data-en="Hooks on five events, allowed check commands, blocked folders, plugins">Hooks an fünf Ereignissen, erlaubte Prüfbefehle, gesperrte Ordner, Plugins</span></div>
+        <div class="tr" style="--d:1"><span class="p" style="--hue: var(--gold)"><svg class="ico"><use href="#i-key"/></svg>.claude/user-settings.json</span><span class="w" data-en="Template for &lt;code&gt;~/.claude/settings.json&lt;/code&gt; on every computer: model, effort per model, mods, Remote Control">Vorlage für <code>~/.claude/settings.json</code> auf allen Rechnern: Modell, Effort je Modell, Mods, Remote Control</span></div>
         <div class="tr" style="--d:1"><span class="p" style="--hue: var(--gold)"><svg class="ico"><use href="#i-shield"/></svg>.claude/hooks/</span><span class="w" data-en="7 Python hooks + test suites &lt;code&gt;test_hooks.py&lt;/code&gt;, &lt;code&gt;test_skills.py&lt;/code&gt;">7 Python-Hooks + Testsuites <code>test_hooks.py</code>, <code>test_skills.py</code></span></div>
         <div class="tr" style="--d:1"><span class="p" style="--hue: var(--teal)"><svg class="ico"><use href="#i-layers"/></svg>.claude/skills/</span><span class="w" data-en="20 skills, scripts and templates in the skill&#x27;s folder">20 Skills, Skripte und Vorlagen im Ordner des Skills</span></div>
         <div class="tr" style="--d:1"><span class="p" style="--hue: var(--indigo)"><svg class="ico"><use href="#i-bot"/></svg>.claude/agents/</span><span class="w" data-en="6 project agents (role, model, tools, loaded skills)">6 Projekt-Agenten (Rolle, Modell, Tools, geladene Skills)</span></div>
@@ -662,7 +705,7 @@ footer a { font-weight: 700; color: var(--fg); }
   <span class="k">"deny"</span>:  <span class="c">12 × Read(build/, install/, log/, *.min.js, …)</span>
 }</pre>
         <div class="env">
-          <div style="--hue: var(--accent)"><b><svg class="ico"><use href="#i-code"/></svg>VS Code + Claude Code</b><p data-en="Chat in the editor, file links jump to the line">Chat im Editor, Datei-Links springen zur Zeile</p></div>
+          <div style="--hue: var(--accent)"><b><svg class="ico"><use href="#i-code"/></svg><span data-en="User settings">Benutzer-Settings</span></b><p data-en="&lt;code&gt;user-settings.json&lt;/code&gt; → &lt;code&gt;~/.claude/settings.json&lt;/code&gt;: model, effort, mods, Remote Control"><code>user-settings.json</code> → <code>~/.claude/settings.json</code>: Modell, Effort, Mods, Remote Control</p></div>
           <div style="--hue: var(--violet)"><b><svg class="ico"><use href="#i-win"/></svg>claude.ai Artifacts</b><p data-en="Preview pages with comments and “Send to chat”">Vorschau-Seiten mit Kommentaren und „An Chat senden“</p></div>
           <div style="--hue: var(--gold)"><b><svg class="ico"><use href="#i-key"/></svg><span data-en="Permissions">Berechtigungen</span></b><p data-en="Check commands allowed, risky ones ask, build folders blocked">Prüfbefehle frei, Riskantes fragt nach, Build-Ordner gesperrt</p></div>
           <div style="--hue: var(--green)"><b><svg class="ico"><use href="#i-git"/></svg><span data-en="Git hook">Git-Hook</span></b><p data-en="&lt;code&gt;tools/install_hooks.sh&lt;/code&gt; sets up &lt;code&gt;pre-commit&lt;/code&gt;"><code>tools/install_hooks.sh</code> richtet <code>pre-commit</code> ein</p></div>
@@ -671,9 +714,9 @@ footer a { font-weight: 700; color: var(--fg); }
     </div>
   </section>
 
-  <!-- ═════════ 01 Kreislauf ═════════ -->
+  <!-- ═════════ 02 Kreislauf ═════════ -->
   <section class="blk" id="kreislauf" aria-labelledby="h-kreis">
-    <span class="eyebrow chap" data-en="01 · Cycle">01 · Kreislauf</span>
+    <span class="eyebrow chap" data-en="02 · Cycle">02 · Kreislauf</span>
     <div class="blk-head">
       <h2 id="h-kreis" data-en="Ten steps from request to answer">Zehn Schritte von der Anfrage bis zur Antwort</h2>
       <p class="lead" data-en="Every request runs through the same cycle, &lt;b&gt;only as far as it needs&lt;/b&gt;: a plain question ends after step&amp;nbsp;2, a new UI feature goes through all ten. The ring shows the active step as you scroll.">Jede Anfrage läuft durch denselben Kreis – <b>nur so weit, wie sie es braucht</b>: Eine reine Frage endet nach Schritt&nbsp;2, eine neue UI-Funktion geht durch alle zehn. Der Ring zeigt beim Scrollen den aktiven Schritt.</p>
@@ -738,9 +781,9 @@ footer a { font-weight: 700; color: var(--fg); }
     </div>
   </section>
 
-  <!-- ═════════ 02 Datenfluss ═════════ -->
+  <!-- ═════════ 03 Datenfluss ═════════ -->
   <section class="blk" id="datenfluss" aria-labelledby="h-fluss">
-    <span class="eyebrow chap" data-en="02 · Data flow">02 · Datenfluss</span>
+    <span class="eyebrow chap" data-en="03 · Data flow">03 · Datenfluss</span>
     <div class="blk-head">
       <h2 id="h-fluss" data-en="Who talks to whom?">Wer spricht mit wem?</h2>
       <p class="lead" data-en="Five lanes from left to right: &lt;b&gt;human → chat with context → helpers → guardrails → repo&lt;/b&gt;. Pick a scenario and follow the task; touching a node shows its inputs and outputs, ←/→ steps, &lt;code&gt;K&lt;/code&gt; pauses.">Fünf Bahnen von links nach rechts: <b>Mensch → Chat mit Kontext → Helfer → Leitplanken → Repo</b>. Szenario wählen und dem Auftrag folgen; Knoten berühren zeigt Ein- und Ausgänge, ←/→ schaltet Schritte, <code>K</code> pausiert.</p>
@@ -777,9 +820,9 @@ footer a { font-weight: 700; color: var(--fg); }
     </figure>
   </section>
 
-  <!-- ═════════ 03 Werkzeugkasten ═════════ -->
+  <!-- ═════════ 04 Werkzeugkasten ═════════ -->
   <section class="blk" id="werkzeug" aria-labelledby="h-kit">
-    <span class="eyebrow chap" data-en="03 · Toolkit">03 · Werkzeugkasten</span>
+    <span class="eyebrow chap" data-en="04 · Toolkit">04 · Werkzeugkasten</span>
     <div class="blk-head">
       <h2 id="h-kit" data-en="Skills, agents, hooks and scripts work together">Skills, Agenten, Hooks und Skripte greifen ineinander</h2>
       <p class="lead" data-en="&lt;b&gt;Skills&lt;/b&gt; carry the knowledge, &lt;b&gt;agents&lt;/b&gt; are thin shells that load a skill and work in isolation, &lt;b&gt;hooks&lt;/b&gt; enforce rules automatically, &lt;b&gt;scripts&lt;/b&gt; deliver the evidence. Touch or click an element to see its connections."><b>Skills</b> tragen das Wissen, <b>Agenten</b> sind dünne Hüllen, die einen Skill laden und isoliert arbeiten, <b>Hooks</b> setzen Regeln maschinell durch, <b>Skripte</b> liefern den Beleg. Ein Element berühren oder anklicken zeigt seine Verbindungen.</p>
@@ -882,9 +925,9 @@ footer a { font-weight: 700; color: var(--fg); }
     </div>
   </section>
 
-  <!-- ═════════ 04 Leitplanken ═════════ -->
+  <!-- ═════════ 05 Leitplanken ═════════ -->
   <section class="blk" id="leitplanken" aria-labelledby="h-life">
-    <span class="eyebrow chap" data-en="04 · Guardrails">04 · Leitplanken</span>
+    <span class="eyebrow chap" data-en="05 · Guardrails">05 · Leitplanken</span>
     <div class="blk-head">
       <h2 id="h-life" data-en="Hooks in the rhythm of a chat">Hooks im Takt eines Chats</h2>
       <p class="lead" data-en="Rules that only exist as text get forgotten, so &lt;b&gt;hooks check at seven fixed points&lt;/b&gt;, from “chat starts” to “commit”. They add context, warn, ask you or block, never silently.">Regeln, die nur im Text stehen, werden vergessen – deshalb prüfen <b>Hooks an sieben festen Stellen</b>, von „Chat startet“ bis „Commit“. Sie geben Kontext, warnen, fragen dich oder blockieren, nie stillschweigend.</p>
@@ -905,9 +948,9 @@ footer a { font-weight: 700; color: var(--fg); }
     </div>
   </section>
 
-  <!-- ═════════ 05 Zusammenarbeit ═════════ -->
+  <!-- ═════════ 06 Zusammenarbeit ═════════ -->
   <section class="blk" id="zusammenarbeit" aria-labelledby="h-collab">
-    <span class="eyebrow chap" data-en="05 · Collaboration">05 · Zusammenarbeit</span>
+    <span class="eyebrow chap" data-en="06 · Collaboration">06 · Zusammenarbeit</span>
     <div class="blk-head">
       <h2 id="h-collab" data-en="Questions, previews and answers: one&amp;nbsp;numbering system">Fragen, Vorschauen und Antworten – ein&nbsp;Nummernsystem</h2>
       <p class="lead" data-en="Decisions happen where you make them best: in the dialog, on the preview page or via a button in the answer. &lt;b&gt;The same number&lt;/b&gt; (&lt;code&gt;F1&lt;/code&gt;, variant &lt;code&gt;A&lt;/code&gt;, change &lt;code&gt;1&lt;/code&gt;) applies everywhere.">Entscheidungen fallen dort, wo du sie am besten triffst: im Dialog, auf der Vorschau-Seite oder per Knopf in der Antwort. <b>Dieselbe Nummer</b> (<code>F1</code>, Variante <code>A</code>, Änderung <code>1</code>) gilt überall.</p>
@@ -966,30 +1009,30 @@ footer a { font-weight: 700; color: var(--fg); }
     </div>
   </section>
 
-  <!-- ═════════ 06 Sicherheit ═════════ -->
+  <!-- ═════════ 07 Sicherheit ═════════ -->
   <section class="blk" id="sicherheit" aria-labelledby="h-safe">
-    <span class="eyebrow chap" data-en="06 · Safety">06 · Sicherheit</span>
+    <span class="eyebrow chap" data-en="07 · Safety">07 · Sicherheit</span>
     <div class="blk-head">
-      <h2 id="h-safe" data-en="§&amp;nbsp;0 takes precedence over everything else">§&nbsp;0 hat Vorrang vor allem anderen</h2>
-      <p class="lead" data-en="A chat can move a real robot and disturb running stacks. That is why fixed rules apply, and &lt;b&gt;hooks catch what would still slip through&lt;/b&gt;.">Ein Chat kann einen echten Roboter bewegen und laufende Stacks stören. Darum gelten feste Regeln – und <b>Hooks fangen ab, was trotzdem durchrutschen würde</b>.</p>
+      <h2 id="h-safe" data-en="What Claude may do without you, and what not">Was Claude ohne dich darf – und was nicht</h2>
+      <p class="lead" data-en="Claude runs commands and edits directly in your workspace. &lt;b&gt;Permissions, &lt;code&gt;AGENTS.md&lt;/code&gt; §&amp;nbsp;0 and hooks&lt;/b&gt; decide where it works freely, where it asks and what it never does.">Claude führt Befehle und Edits direkt in deinem Workspace aus. <b>Berechtigungen, <code>AGENTS.md</code> §&nbsp;0 und Hooks</b> legen fest, wo Claude frei arbeitet, wo es fragt und was es nie tut.</p>
     </div>
     <div class="safe">
       <div class="panel rules">
-        <div class="rule" style="--hue: var(--red)"><svg class="ico"><use href="#i-arm"/></svg><b data-en="No REAL motion without your approval">Keine REAL-Bewegung ohne deine Freigabe</b><p data-en="Tests run in the FAKE stack in their own domain. Approvals apply only in this chat and must be renewed after an account switch.">Tests laufen im FAKE-Stack in eigener Domain. Freigaben gelten nur in diesem Chat, nach einem Kontowechsel neu.</p></div>
-        <div class="rule" style="--hue: var(--gold)"><svg class="ico"><use href="#i-lock"/></svg><b data-en="Leave running stacks alone">Laufende Stacks nicht anfassen</b><p data-en="No broad &lt;code&gt;pkill -f&lt;/code&gt;; only own processes by PID, after checking &lt;code&gt;ROS_DOMAIN_ID&lt;/code&gt; in &lt;code&gt;/proc/&amp;lt;pid&amp;gt;/environ&lt;/code&gt;.">Kein breites <code>pkill -f</code>; nur eigene Prozesse per PID, vorher <code>ROS_DOMAIN_ID</code> in <code>/proc/&lt;pid&gt;/environ</code> prüfen.</p></div>
-        <div class="rule" style="--hue: var(--accent)"><svg class="ico"><use href="#i-test"/></svg><b data-en="Test in isolation">Isoliert testen</b><p data-en="&lt;code&gt;grasp_e2e&lt;/code&gt; → domain&amp;nbsp;94 · Monitoring → domain&amp;nbsp;97 · Nexus with its own config · headless Chrome with its own profile and port."><code>grasp_e2e</code> → Domain&nbsp;94 · Monitoring → Domain&nbsp;97 · Nexus mit eigener Config · Headless Chrome mit eigenem Profil und Port.</p></div>
-        <div class="rule" style="--hue: var(--green)"><svg class="ico"><use href="#i-shield"/></svg><b data-en="Never weaken the safety chain">Sicherheitskette nie abschwächen</b><p data-en="E-STOP, sandbox, pre-collision check, control lock: changes only when agreed and with &lt;code&gt;safety-reviewer&lt;/code&gt; before the commit.">E-STOP, Sandbox, Kollisionsvorprüfung, Control-Lock: Änderungen nur abgestimmt und mit <code>safety-reviewer</code> vor dem Commit.</p></div>
-        <div class="rule" style="--hue: var(--violet)"><svg class="ico"><use href="#i-loop"/></svg><b data-en="Clean up what you start">Aufräumen, was man startet</b><p data-en="Stop own nodes, launches, test servers and headless Chrome by PID when done, and report it in the answer.">Eigene Nodes, Launches, Test-Server und Headless Chrome nach Abschluss per PID beenden und in der Antwort melden.</p></div>
+        <div class="rule" style="--hue: var(--gold)"><svg class="ico"><use href="#i-key"/></svg><b data-en="Permissions: free, ask, blocked">Berechtigungen: frei, fragen, gesperrt</b><p data-en="16 fixed check commands run without asking; everything else asks in VS&amp;nbsp;Code first. Build folders, certificates and minified files are blocked from reading.">16 feste Prüfbefehle laufen ohne Nachfrage, alles andere fragt in VS&nbsp;Code nach. Build-Ordner, Zertifikate und Minified-Dateien sind fürs Lesen gesperrt.</p></div>
+        <div class="rule" style="--hue: var(--accent)"><svg class="ico"><use href="#i-lock"/></svg><b data-en="Other people&#x27;s work stays untouched">Fremde Arbeit bleibt unberührt</b><p data-en="No broad &lt;code&gt;pkill -f&lt;/code&gt;, only own processes by PID. Files of other chats only after agreement, never committed along, never &lt;code&gt;--force&lt;/code&gt;.">Kein breites <code>pkill -f</code>, nur eigene Prozesse per PID. Dateien anderer Chats nur nach Abstimmung, nie mitcommitten, nie <code>--force</code>.</p></div>
+        <div class="rule" style="--hue: var(--accent)"><svg class="ico"><use href="#i-test"/></svg><b data-en="Test in isolation">Isoliert testen</b><p data-en="Tests never disturb what is running: own port, own config copy, own Chrome profile, own &lt;code&gt;ROS_DOMAIN_ID&lt;/code&gt; (e.g. 94, 97).">Tests stören nie, was gerade läuft: eigener Port, eigene Config-Kopie, eigenes Chrome-Profil, eigene <code>ROS_DOMAIN_ID</code> (z.&nbsp;B. 94, 97).</p></div>
+        <div class="rule" style="--hue: var(--violet)"><svg class="ico"><use href="#i-loop"/></svg><b data-en="Clean up what you start">Aufräumen, was man startet</b><p data-en="Stop own nodes, test servers and headless Chrome by PID when done, and report it in the answer.">Eigene Nodes, Test-Server und Headless Chrome nach Abschluss per PID beenden und in der Antwort melden.</p></div>
+        <div class="rule" style="--hue: var(--red)"><svg class="ico"><use href="#i-arm"/></svg><b data-en="Project-specific: the code drives real hardware">Projektspezifisch: der Code steuert echte Hardware</b><p data-en="Because this software moves a robot: real motion (REAL) only with your approval in the chat. E-STOP, sandbox and pre-collision check are never weakened; &lt;code&gt;safety-reviewer&lt;/code&gt; before the commit.">Weil diese Software einen Roboter bewegt: echte Bewegung (REAL) nur mit deiner Freigabe im Chat. E-STOP, Sandbox und Kollisionsvorprüfung nie abschwächen; <code>safety-reviewer</code> vor dem Commit.</p></div>
       </div>
       <div class="panel guard">
         <h3 data-en="What happens when Claude …">Was passiert, wenn Claude …</h3>
         <div class="g-btns" role="group" aria-label="Fall wählen" data-en-aria="Choose a case">
-          <button type="button" data-case="pkill" aria-pressed="false" data-en="… runs pkill -f ros2">… pkill -f ros2 ausführt</button>
-          <button type="button" data-case="ip" aria-pressed="false" data-en="… uses the real robot_ip">… die echte robot_ip nutzt</button>
-          <button type="button" data-case="domain" aria-pressed="false" data-en="… starts ROS without ROS_DOMAIN_ID">… ROS ohne ROS_DOMAIN_ID startet</button>
-          <button type="button" data-case="gen" aria-pressed="false" data-en="… edits *.gen.css by hand">… *.gen.css von Hand ändert</button>
-          <button type="button" data-case="motion" aria-pressed="false" data-en="… commits the Motion Handler">… den Motion Handler committet</button>
           <button type="button" data-case="peer" aria-pressed="false" data-en="… edits a file of another chat">… eine Datei eines anderen Chats ändert</button>
+          <button type="button" data-case="gen" aria-pressed="false" data-en="… edits *.gen.css by hand">… *.gen.css von Hand ändert</button>
+          <button type="button" data-case="pkill" aria-pressed="false" data-en="… runs pkill -f ros2">… pkill -f ros2 ausführt</button>
+          <button type="button" data-case="domain" aria-pressed="false" data-en="… starts ROS without ROS_DOMAIN_ID">… ROS ohne ROS_DOMAIN_ID startet</button>
+          <button type="button" data-case="motion" aria-pressed="false" data-en="… commits the Motion Handler">… den Motion Handler committet</button>
+          <button type="button" data-case="ip" aria-pressed="false" data-en="… uses the real robot_ip">… die echte robot_ip nutzt</button>
         </div>
         <div class="g-chain">
           <div class="gs" data-k="act"><span class="k" data-en="Action">Aktion</span><span class="v">Fall wählen</span></div>
@@ -1005,9 +1048,9 @@ footer a { font-weight: 700; color: var(--fg); }
     </div>
   </section>
 
-  <!-- ═════════ 07 Git + Doku ═════════ -->
+  <!-- ═════════ 08 Git + Doku ═════════ -->
   <section class="blk" id="git" aria-labelledby="h-git">
-    <span class="eyebrow chap" data-en="07 · Git &amp;amp; docs">07 · Git &amp; Doku</span>
+    <span class="eyebrow chap" data-en="08 · Git &amp;amp; docs">08 · Git &amp; Doku</span>
     <div class="blk-head">
       <h2 id="h-git" data-en="Every task ends with commit, push and&amp;nbsp;updated docs">Jede Aufgabe endet mit Commit, Push und&nbsp;nachgezogener Doku</h2>
       <p class="lead" data-en="Almost one in four commits is docs, and that is intended: &lt;b&gt;docs are written in the same step as the code&lt;/b&gt;, not at the end of the semester. Touch a bar to see the number.">Fast jeder vierte Commit ist Doku, und das ist Absicht: <b>Doku entsteht im selben Zug wie der Code</b>, nicht am Ende des Semesters. Balken berühren zeigt die Zahl.</p>
@@ -1101,9 +1144,9 @@ footer a { font-weight: 700; color: var(--fg); }
     </div>
   </section>
 
-  <!-- ═════════ 08 Gedächtnis ═════════ -->
+  <!-- ═════════ 09 Gedächtnis ═════════ -->
   <section class="blk" id="gedaechtnis" aria-labelledby="h-mem">
-    <span class="eyebrow chap" data-en="08 · Memory">08 · Gedächtnis</span>
+    <span class="eyebrow chap" data-en="09 · Memory">09 · Gedächtnis</span>
     <div class="blk-head">
       <h2 id="h-mem" data-en="Every correction becomes a rule">Aus jeder Korrektur wird eine Regel</h2>
       <p class="lead" data-en="A chat forgets, the repo does not: whatever you correct once ends up in memory, in &lt;code&gt;AGENTS.md&lt;/code&gt; or in a skill. Where possible, &lt;b&gt;a hook then checks it automatically&lt;/b&gt;, so the workflow gets more precise with every chat.">Ein Chat vergisst, das Repo nicht: Was du einmal korrigierst, landet im Memory, in <code>AGENTS.md</code> oder in einem Skill. Wo es geht, <b>prüft es danach ein Hook maschinell</b> – so wird der Workflow mit jedem Chat genauer.</p>
@@ -1130,7 +1173,7 @@ footer a { font-weight: 700; color: var(--fg); }
       <div class="panel mc" style="--hue: var(--violet)"><h3><svg class="ico"><use href="#i-brain"/></svg>Memory</h3><p data-en="11 entries, e.g. “Project pages square”, “Keep TODOS current”, “Parallel chats: 3-way merge”. The index &lt;code&gt;MEMORY.md&lt;/code&gt; comes with every chat.">11 Einträge, z.&nbsp;B. „Projektseiten kantig“, „TODOS aktuell halten“, „Parallel chats: 3-way merge“. Index <code>MEMORY.md</code> liegt jedem Chat bei.</p><span class="tag" data-en="In the repo · on every computer">im Repo · auf allen Rechnern</span></div>
       <div class="panel mc" style="--hue: var(--teal)"><h3><svg class="ico"><use href="#i-check"/></svg>TODOS.md</h3><p data-en="Open items and decisions, read only via &lt;code&gt;grep&lt;/code&gt;. Claude changes only the status, new items only at your request; done items are deleted.">Offene Punkte und Entscheidungen, nur per <code>grep</code> gelesen. Claude ändert nur den Status, neue Punkte nur auf deinen Wunsch; Erledigtes wird gelöscht.</p><span class="tag">Repo</span></div>
       <div class="panel mc" style="--hue: var(--indigo)"><h3><svg class="ico"><use href="#i-chat"/></svg><span data-en="Parallel chats">Parallele Chats</span></h3><p data-en="File register, &lt;code&gt;SendMessage&lt;/code&gt; to peers, same file → prepare in the scratchpad, then a 3-way merge. Other chats&#x27; changes are never committed along.">Datei-Register, <code>SendMessage</code> an Peers, gleiche Datei → im Scratchpad vorbereiten, dann 3-Wege-Merge. Fremde Änderungen werden nie mitcommittet.</p><span class="tag">Hook chat_claims.py</span></div>
-      <div class="panel mc" style="--hue: var(--gold)"><h3><svg class="ico"><use href="#i-key"/></svg><span data-en="Account switch">Kontowechsel</span></h3><p data-en="Limit, logout, other account: carry on without a greeting, check &lt;code&gt;git status&lt;/code&gt; first. Artifacts belong to the account → publish again; ask for REAL approvals again.">Limit, Logout, anderes Konto: ohne Begrüßung weiterarbeiten, vorher <code>git status</code> prüfen. Artifacts hängen am Konto → neu veröffentlichen; REAL-Freigaben neu einholen.</p><span class="tag acc" data-en="Artifacts belong to the account">Artifacts hängen am Konto</span></div>
+      <div class="panel mc" style="--hue: var(--gold)"><h3><svg class="ico"><use href="#i-key"/></svg><span data-en="Account switch">Kontowechsel</span></h3><p data-en="Limit, logout, other account: carry on without a greeting, check &lt;code&gt;git status&lt;/code&gt; first. Artifacts belong to the account → publish again; ask for approvals again.">Limit, Logout, anderes Konto: ohne Begrüßung weiterarbeiten, vorher <code>git status</code> prüfen. Artifacts hängen am Konto → neu veröffentlichen; Freigaben neu einholen.</p><span class="tag acc" data-en="Artifacts belong to the account">Artifacts hängen am Konto</span></div>
     </div>
   </section>
 

@@ -390,6 +390,18 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 10px 24px; align-items: cent
   .gaze-cursor .ring { animation: none; stroke-dashoffset: 30; }
   .index a { transition: none; }
 }
+
+/* ── Lesefortschritt, aktiver Abschnitt, Einblenden (Motion wie project_docs.html / project_presentation.html) ── */
+.progress { position: absolute; left: 0; right: 0; bottom: -1px; height: 2px; background: var(--accent); transform-origin: 0 50%; transform: scaleX(var(--p, 0)); pointer-events: none; }
+@supports (animation-timeline: scroll()) {
+  .progress { animation: progress linear both; animation-timeline: scroll(root); }
+  @keyframes progress { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+}
+.top nav a { transition: background .15s, color .15s; }
+.top nav a[aria-current="true"] { background: color-mix(in srgb, var(--accent) 16%, transparent); color: var(--fg); }
+.rv { opacity: 0; transform: translateY(12px); transition: opacity .45s cubic-bezier(.2,.7,.2,1), transform .45s cubic-bezier(.2,.7,.2,1); transition-delay: var(--d, 0ms); }
+.rv.in { opacity: 1; transform: none; }
+@media (prefers-reduced-motion: reduce) { .rv { opacity: 1; transform: none; transition: none; } }
 </style>
 </head>
 <body>
@@ -435,6 +447,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 10px 24px; align-items: cent
       <a href="#uebersicht">Übersicht</a>
     </nav>
   </div>
+  <span class="progress" aria-hidden="true"></span>
 </header>
 
 <main id="start">
@@ -465,7 +478,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 10px 24px; align-items: cent
       <figure class="hero-shot" style="margin:0">
         <img src="img/presentation/hero.jpg" alt="xArm Lite 6 über dem Arbeitstisch mit ArUco-Markern und farbigen Greifobjekten" width="1400" height="934">
         <div class="hud" aria-hidden="true">
-          <span class="chip"><span class="dot"></span>Mode FAKE ARM</span>
+          <span class="chip"><span class="dot"></span>FAKE + REAL</span>
           <span class="chip">IDLE</span>
           <span class="chip">Tempo 60 %</span>
           <span class="chip"><svg class="ico" style="width:13px;height:13px"><use href="#i-lock"/></svg>this PC</span>
@@ -494,7 +507,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 10px 24px; align-items: cent
         <div class="feat" style="--hue: var(--teal)"><span class="badge-ico"><svg class="ico"><use href="#i-eye"/></svg></span><span class="k-t">Kontrolle · Überwachung</span><b>Alles im Blick. Jederzeit eingreifen.</b><p>Roboterzustand, Umgebung (ZED, OctoMap) und Bewegungsausführung live; Monitoring Dashboard und Blackbox zeichnen mit.</p></div>
         <div class="feat" style="--hue: var(--violet)"><span class="badge-ico"><svg class="ico"><use href="#i-spark"/></svg></span><span class="k-t">Assistive Autonomie</span><b>Die KI plant. Der Mensch gibt frei.</b><p>Der Agent macht aus Sprache Bewegungsabläufe; Entscheidung und Feedback des Menschen steuern jeden Schritt.</p></div>
         <div class="feat" style="--hue: var(--green)"><span class="badge-ico"><svg class="ico"><use href="#i-globe"/></svg></span><span class="k-t">Web · Remote</span><b>Öffnen statt installieren.</b><p>Bedienung komplett im Browser: am Roboter-PC, aus dem Heimnetz oder in der Quest 3 per WebXR.</p></div>
-        <div class="feat" style="--hue: var(--gold)"><span class="badge-ico"><svg class="ico"><use href="#i-shield"/></svg></span><span class="k-t">Sicherheit</span><b>Eine Kette für jede Eingabe.</b><p>Control-Lock, Kollisionsvorprüfung, MoveIt und E-STOP gelten für alle zehn Steuerwege gleich.</p></div>
+        <div class="feat" style="--hue: var(--gold)"><span class="badge-ico"><svg class="ico"><use href="#i-shield"/></svg></span><span class="k-t">Sicherheit</span><b>Eine Kette für jede Eingabe.</b><p>E-STOP, Bodenschutz und MoveIt für alle zehn Steuerwege; der Control-Lock gibt immer nur einem Client die Steuerung.</p></div>
         <div class="feat" style="--hue: var(--teal)"><span class="badge-ico"><svg class="ico"><use href="#i-code"/></svg></span><span class="k-t">Open Source</span><b>Offen, nachbaubar, erweiterbar.</b><p>Eigene Pakete unter Apache 2.0, aufgebaut auf ROS 2 Humble und MoveIt 2.</p></div>
         <div class="feat" style="--hue: var(--indigo)"><span class="badge-ico"><svg class="ico"><use href="#i-blocks"/></svg></span><span class="k-t">Multimodal · Modular</span><b>Austauschbar statt festgelegt.</b><p>Bessere Eingabegeräte, Kameras, KI-Modelle oder Software-Module ersetzen die alten einzeln; feste ROS-2-Schnittstellen halten den Rest unverändert. Als Nächstes wird auch der Roboterarm austauschbar (geplant).</p></div>
       </div>
@@ -653,13 +666,13 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 10px 24px; align-items: cent
             </div>
             <p class="tagline">Hinschauen und halten. Schaltflächen am Bildrand lösen die Bewegung aus.</p>
             <div class="blocks">
-              <div class="blk"><h4>Funktionen</h4><ul class="list"><li><b>Fixation ≈ 1 s:</b> der Blick ersetzt den Klick</li><li><b>7 Richtungen:</b> vor, zurück, seitlich, hoch, runter, drehen</li><li><b>Greifer + Home:</b> per Blick schalten</li></ul></div>
+              <div class="blk"><h4>Funktionen</h4><ul class="list"><li><b>Fixation ≈ 1 s:</b> der Blick ersetzt den Klick</li><li><b>8 Bewegungsfelder:</b> vor, zurück, links, rechts, hoch, runter, drehen</li><li><b>Greifer + Home:</b> per Blick schalten</li></ul></div>
               <div class="blk"><h4>Bedienung</h4><ul class="map">
               <li><span class="key" style="color:var(--teal)">Ränder</span><span>Vor · Zurück · Links · Rechts</span></li>
-              <li><span class="key" style="color:var(--teal)">Ecken</span><span>Hoch · Runter · Drehen</span></li>
-              <li><span class="key a">Unten</span><span>Greifer · Blicksteuerung an/aus</span></li>
+              <li><span class="key" style="color:var(--teal)">Ecken</span><span>Hoch, Runter rechts · Drehen links oben</span></li>
+              <li><span class="key a">Ecken</span><span>Home oben, Greifer unten rechts · Blick an/aus unten links</span></li>
             </ul></div>
-              <div class="blk safe"><h4>Sicherheit</h4><ul class="list"><li><b>Tempo begrenzt:</b> 0,10 m/s · 0,5 rad/s</li><li><b>Bremszone:</b> ab Z 40 mm sanft abbremsen</li><li><b>Hard-Stop:</b> bei Z 33 mm</li></ul></div>
+              <div class="blk safe"><h4>Sicherheit</h4><ul class="list"><li><b>Tempo in 3 Stufen:</b> abwärts höchstens Stufe 2</li><li><b>Bremszone:</b> ab Z 40 mm sanft abbremsen</li><li><b>Hard-Stop:</b> bei Z 33 mm</li></ul></div>
             </div>
           </div>
         </article>
@@ -670,7 +683,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 10px 24px; align-items: cent
             <div class="voice">
               <div class="wave" id="wave" aria-hidden="true"></div>
               <div class="said">
-                <span>„Home“</span><span>„schneller“</span><span>„langsamer“</span><span>„Scan objects“</span><span>„Gehe zur Zielpose“</span>
+                <span>„Fahre zur Startposition“</span><span>„Szene scannen“</span><span>„schneller“</span><span>„Greifer schließen“</span><span>„Not-Aus“</span>
               </div>
             </div>
           </div>
@@ -681,7 +694,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 10px 24px; align-items: cent
             </div>
             <p class="tagline">Sagen statt klicken. Kurze Befehle lösen fertige Abläufe aus.</p>
             <div class="blocks">
-              <div class="blk"><h4>Funktionen</h4><ul class="list"><li><b>Zweisprachig:</b> Befehle auf Deutsch und Englisch</li><li><b>Befehle:</b> Home, Tempo, Scan, Zielpose</li><li><b>Erkennung:</b> 50–120 ms auf der GPU</li></ul></div>
+              <div class="blk"><h4>Funktionen</h4><ul class="list"><li><b>Zweisprachig:</b> Befehle auf Deutsch und Englisch</li><li><b>Befehle:</b> Startposition, Scan, Zielpose, Tempo, Greifer, Not-Aus</li><li><b>Erkennung:</b> 50–120 ms auf der GPU</li></ul></div>
               <div class="blk"><h4>Bedienung</h4><ul class="map">
               <li><span class="key x">X</span><span>oder Mikrofon-Knopf in der UI</span></li>
               <li><span class="key" style="color:var(--gold)">5 s</span><span>Hörfenster, dann Befehl</span></li>
@@ -711,11 +724,11 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 10px 24px; align-items: cent
               <span class="badge-ico"><svg class="ico"><use href="#i-key"/></svg></span>
               <div><h3>Tastatur</h3><div class="kind">Kürzel in der Robot Control UI</div></div>
             </div>
-            <p class="tagline">Schnell ohne Maus. Die Leertaste stoppt überall.</p>
+            <p class="tagline">Schnell ohne Maus. Die Leertaste stoppt überall außer in Textfeldern.</p>
             <div class="blocks">
               <div class="blk"><h4>Funktionen</h4><ul class="list"><li><b>Kürzel:</b> Gizmo, Ansicht, Ton, Reset</li><li><b>Chat:</b> Enter sendet die Aufgabe</li><li><b>Tab:</b> Fokus von Bedienelement zu Bedienelement</li></ul></div>
               <div class="blk"><h4>Bedienung</h4><ul class="map">
-              <li><span class="key b">Space</span><span><b>Not-Aus</b>, überall</span></li>
+              <li><span class="key b">Space</span><span><b>Not-Aus</b>, außer beim Tippen</span></li>
               <li><span class="key" style="color:var(--violet)">T · R · G</span><span>Gizmo: Schieben, Drehen, ein/aus</span></li>
               <li><span class="key">Pos1</span><span>3D-Ansicht einpassen</span></li>
               <li><span class="key">M</span><span>Ton an/aus</span></li>
@@ -854,7 +867,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 10px 24px; align-items: cent
           <div class="body">
             <div class="title-row">
               <span class="badge-ico"><svg class="ico"><use href="#i-chat"/></svg></span>
-              <div><h3>VLA-M-Chat</h3><div class="kind">LLM-Agent · lokal, offline</div></div>
+              <div><h3>VLA-M-Chat</h3><div class="kind">LLM-Agent · lokal oder Cloud</div></div>
             </div>
             <p class="tagline">Aufgabe eintippen, Plan prüfen, ausführen. Ein Klick: <b>Grasp</b> oder <b>Place here</b>.</p>
             <div class="blocks">
@@ -943,7 +956,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 10px 24px; align-items: cent
         <svg class="ico octo"><use href="#i-octo"/></svg>
         <b>E-STOP wirkt immer</b>
         <button type="button" class="estop" id="ch-estop" aria-pressed="false">E-STOP testen</button>
-        <div class="ways"><span>Space</span><span>roter Knopf</span><span>Touch Panel</span><span>VR: 2× Grip + 2× Trigger</span></div>
+        <div class="ways"><span>Space</span><span>roter Knopf</span><span>Touch Panel</span><span>Sprache: „Not-Aus“</span><span>VR: 2× Grip + 2× Trigger</span></div>
       </div>
 
       <div class="numbers">
@@ -972,10 +985,10 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 10px 24px; align-items: cent
           <tbody>
             <tr style="--hue: var(--accent)"><th scope="row"><span class="cell"><svg class="ico"><use href="#i-mon"/></svg>Robot Control UI</span></th><td><i class="m full" title="ja"></i></td><td><i class="m full"></i></td><td><i class="m full"></i></td><td><i class="m full"></i></td><td><i class="m full"></i></td><td><i class="m full"></i></td></tr>
             <tr style="--hue: var(--accent)"><th scope="row"><span class="cell"><svg class="ico"><use href="#i-pad"/></svg>Gamepad</span></th><td><i class="m full"></i></td><td><i class="m part"></i></td><td><i class="m full"></i></td><td><i class="m full"></i></td><td><i class="m none"></i></td><td><i class="m none"></i></td></tr>
-            <tr style="--hue: var(--indigo)"><th scope="row"><span class="cell"><svg class="ico"><use href="#i-vr"/></svg>VR Quest 3</span></th><td><i class="m full"></i></td><td><i class="m full"></i></td><td><i class="m full"></i></td><td><i class="m full"></i></td><td><i class="m part"></i></td><td><i class="m full"></i></td></tr>
+            <tr style="--hue: var(--indigo)"><th scope="row"><span class="cell"><svg class="ico"><use href="#i-vr"/></svg>VR Quest 3</span></th><td><i class="m full"></i></td><td><i class="m full"></i></td><td><i class="m full"></i></td><td><i class="m full"></i></td><td><i class="m full"></i></td><td><i class="m full"></i></td></tr>
             <tr style="--hue: var(--teal)"><th scope="row"><span class="cell"><svg class="ico"><use href="#i-eye"/></svg>Blick</span></th><td><i class="m full"></i></td><td><i class="m part"></i></td><td><i class="m full"></i></td><td><i class="m full"></i></td><td><i class="m full"></i></td><td><i class="m none"></i></td></tr>
-            <tr style="--hue: var(--gold)"><th scope="row"><span class="cell"><svg class="ico"><use href="#i-mic"/></svg>Sprache</span></th><td><i class="m none"></i></td><td><i class="m none"></i></td><td><i class="m none"></i></td><td><i class="m full"></i></td><td><i class="m part"></i></td><td><i class="m none"></i></td></tr>
-            <tr style="--hue: var(--violet)"><th scope="row"><span class="cell"><svg class="ico"><use href="#i-chat"/></svg>VLA-M-Chat</span></th><td><i class="m none"></i></td><td><i class="m none"></i></td><td><i class="m full"></i></td><td><i class="m none"></i></td><td><i class="m full"></i></td><td><i class="m none"></i></td></tr>
+            <tr style="--hue: var(--gold)"><th scope="row"><span class="cell"><svg class="ico"><use href="#i-mic"/></svg>Sprache</span></th><td><i class="m part"></i></td><td><i class="m part"></i></td><td><i class="m full"></i></td><td><i class="m full"></i></td><td><i class="m part"></i></td><td><i class="m full"></i></td></tr>
+            <tr style="--hue: var(--violet)"><th scope="row"><span class="cell"><svg class="ico"><use href="#i-chat"/></svg>VLA-M-Chat</span></th><td><i class="m none"></i></td><td><i class="m none"></i></td><td><i class="m full"></i></td><td><i class="m full"></i></td><td><i class="m full"></i></td><td><i class="m none"></i></td></tr>
             <tr style="--hue: var(--violet)"><th scope="row"><span class="cell"><svg class="ico"><use href="#i-key"/></svg>Tastatur</span></th><td><i class="m none"></i></td><td><i class="m none"></i></td><td><i class="m none"></i></td><td><i class="m none"></i></td><td><i class="m none"></i></td><td><i class="m full"></i></td></tr>
             <tr style="--hue: var(--green)"><th scope="row"><span class="cell"><svg class="ico"><use href="#i-tab"/></svg>Touch Panel</span></th><td><i class="m full"></i></td><td><i class="m full"></i></td><td><i class="m full"></i></td><td><i class="m full"></i></td><td><i class="m none"></i></td><td><i class="m full"></i></td></tr>
           </tbody>
@@ -984,7 +997,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 10px 24px; align-items: cent
       <p class="mx-sum" id="mx-sum" aria-live="polite">Fähigkeit im Tabellenkopf anklicken: Welche Wege können das?</p>
       <div class="legend">
         <span><i class="m full"></i>direkt</span>
-        <span><i class="m part"></i>teilweise (z. B. nur Yaw, nur Auswahl)</span>
+        <span><i class="m part"></i>teilweise (z. B. nur Yaw, nur feste Posen)</span>
         <span><i class="m none"></i>nicht über diesen Weg</span>
       </div>
     </div>
@@ -1024,8 +1037,18 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 10px 24px; align-items: cent
     const WAYS = [['Gamepad', 'i-pad', 'accent'], ['VR Quest 3', 'i-vr', 'indigo'], ['Blick', 'i-eye', 'teal'], ['Sprache', 'i-mic', 'gold'], ['Tastatur', 'i-key', 'violet'],
       ['Touch Panel', 'i-tab', 'green'], ['Control UI', 'i-mon', 'accent'], ['3D-Gizmo', 'i-gizmo', 'indigo'], ['VLA-Chat', 'i-chat', 'violet'], ['Remote', 'i-net', 'teal']];
     const CASES = [['ok', 'Normaler Befehl'], ['lock', 'Zweiter Bediener'], ['table', 'Bahn in den Tisch'], ['reach', 'Ziel außer Reichweite']];
-    const BLOCK = { lock: [1, 'GESPERRT', 'Ein anderer Client hat die Steuerung. Erst „Request control“, dann Freigabe am Roboter-PC.'],
-      table: [2, 'GEBREMST', 'Die Vorprüfung schaut 0,1 s voraus und stoppt die Abwärtsfahrt 91 mm über dem Tisch (TCP).'],
+    // Vorprüfung je Weg: Gamepad über teleop_pre_collision_checker, Jog-Wege über das Twist-Gate des Watchdogs,
+    // Blick mit eigener Bremszone, geplante Bahnen über MoveIt mit Boden (docs/de/running.md, teleoperation.md, voice_gaze.md)
+    const PRE = {
+      pad: ['0,1 s voraus · Stopp 91 mm', 'Die Vorprüfung schaut 0,1 s voraus und stoppt die Abwärtsfahrt 91 mm über dem Tisch (TCP).'],
+      jog: ['Bodensperre im Watchdog', 'Der Watchdog bremst die Abwärtsfahrt vor dem Z Collision Level; ohne aktuelle TCP-Position bleibt abwärts gesperrt.'],
+      gaze: ['Bremszone 40 mm · Stopp 33 mm', 'Ab Z 40 mm bremst die Blicksteuerung sanft ab, bei Z 33 mm folgt der Hard-Stop; der Watchdog sperrt zusätzlich am Z Collision Level.'],
+      plan: ['Boden in der Planung', 'MoveIt plant mit Tisch und Boden als Hindernis: Eine Bahn in den Tisch wird verworfen, der Arm bleibt stehen.'],
+    };
+    const PRE_OF = ['pad', 'jog', 'gaze', 'plan', 'plan', 'jog', 'jog', 'plan', 'plan', 'jog'];
+    const LOCK_MSG = ['Remote-Gamepad gesperrt: Ein anderer Client hat die Steuerung. Das lokale Gamepad am Roboter-PC geht direkt an /joy und ist nicht an den Control-Lock gebunden.',
+      'Ein anderer Client hat die Steuerung. Erst „Request control“, dann Freigabe am Roboter-PC.'];
+    const BLOCK = { lock: [1, 'GESPERRT', ''], table: [2, 'GEBREMST', ''],
       reach: [3, 'KEINE LÖSUNG', 'MoveIt findet keine Bahn: Das Ziel liegt außerhalb der 440 mm Reichweite. Der Arm bleibt stehen.'] };
     const links = $$('#chain .link'), arrows = $$('#chain .arrow');
     links.forEach(l => { const st = document.createElement('span'); st.className = 'st'; st.textContent = '—'; l.appendChild(st); });
@@ -1038,6 +1061,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 10px 24px; align-items: cent
     const setWay = i => {
       way = i; const [n, ic, c] = WAYS[i], inp = links[0];
       $('use', inp).setAttribute('href', `#${ic}`); $('b', inp).textContent = n; $('.ico', inp).style.color = `var(--${c})`;
+      $('span:not(.st)', links[2]).textContent = PRE[PRE_OF[i]][0];
       $$('#ch-ways [data-w]').forEach(b => b.setAttribute('aria-pressed', String(+b.dataset.w === i)));
     };
     const wait = (ms, r) => new Promise(res => setTimeout(() => res(r === run), reduce ? 0 : ms));
@@ -1051,12 +1075,13 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 10px 24px; align-items: cent
         links[i].classList.remove('run');
         if (i === blockAt) {
           links[i].classList.add('block'); $('.st', links[i]).textContent = BLOCK[kase][1];
-          msg(BLOCK[kase][1], 'red', BLOCK[kase][2]); return;
+          const why = kase === 'lock' ? LOCK_MSG[way === 0 ? 0 : 1] : kase === 'table' ? PRE[PRE_OF[way]][1] : BLOCK[kase][2];
+          msg(BLOCK[kase][1], 'red', why); return;
         }
         links[i].classList.add('ok'); $('.st', links[i]).textContent = i === links.length - 1 ? 'FÄHRT' : 'OK';
         if (arrows[i]) arrows[i].classList.add('flow');
       }
-      msg('FREIGABE', 'green', `${WAYS[way][0]}: Jedes Glied hat geprüft, der Arm fährt. Dieselbe Kette gilt für alle zehn Wege.`);
+      msg('FREIGABE', 'green', `${WAYS[way][0]}: Jedes Glied hat geprüft, der Arm fährt. Die Vorprüfung passt sich dem Steuerweg an, E-STOP und MoveIt gelten für alle zehn.`);
     };
     $$('#ch-ways [data-w]').forEach(b => b.addEventListener('click', () => { setWay(+b.dataset.w); send(); }));
     $$('#ch-cases [data-c]').forEach(b => b.addEventListener('click', () => { kase = b.dataset.c; $$('#ch-cases [data-c]').forEach(x => x.setAttribute('aria-pressed', String(x === b))); send(); }));
@@ -1087,6 +1112,32 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 10px 24px; align-items: cent
         $('#mx-sum').textContent = `${th.textContent}: ${full.length} Wege direkt${part.length ? `, ${part.length} teilweise (${part.join(', ')})` : ''}.`;
       });
     });
+  })();
+  // ── Lesefortschritt, aktiver Abschnitt, Einblenden beim ersten Sichtbarwerden ──
+  (() => {
+    const root = document.documentElement, $$ = (q, el = document) => [...el.querySelectorAll(q)];
+    const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const bar = document.querySelector('.progress');
+    if (!CSS.supports('animation-timeline: scroll()')) {
+      let raf = 0;
+      const set = () => { raf = 0; const max = root.scrollHeight - innerHeight; bar.style.setProperty('--p', max > 0 ? Math.min(1, scrollY / max) : 0); };
+      addEventListener('scroll', () => { if (!raf) raf = requestAnimationFrame(set); }, { passive: true });
+      set();
+    }
+    const nav = new Map($$('.top nav a').map(a => [a.getAttribute('href').slice(1), a]));
+    const spy = new IntersectionObserver(es => es.forEach(e => {
+      if (e.isIntersecting) nav.forEach((a, id) => a.setAttribute('aria-current', String(id === e.target.id)));
+    }), { rootMargin: '-35% 0px -60% 0px' });
+    nav.forEach((a, id) => { const sec = document.getElementById(id); if (sec) spy.observe(sec); });
+    new IntersectionObserver(([e]) => { if (e.isIntersecting) nav.forEach(a => a.setAttribute('aria-current', 'false')); }, { rootMargin: '-35% 0px -60% 0px' })
+      .observe(document.querySelector('.hero'));
+    if (reduce || !('IntersectionObserver' in window)) return;
+    const done = e => { if (e.target !== e.currentTarget || e.propertyName !== 'opacity') return; e.target.classList.remove('rv', 'in'); e.target.style.removeProperty('--d'); };
+    const rv = new IntersectionObserver(es => es.forEach(en => { if (en.isIntersecting) { en.target.classList.add('in'); rv.unobserve(en.target); } }), { threshold: .1, rootMargin: '0px 0px -6% 0px' });
+    const add = (el, d = 0) => { el.classList.add('rv'); if (d) el.style.setProperty('--d', `${d}ms`); el.addEventListener('transitionend', done); rv.observe(el); };
+    $$('.hero .wrap > *').forEach((el, i) => add(el, i * 90));
+    $$('.block-head, .card, .ch-bar, .chain, .estop-band, .table-scroll').forEach(el => add(el));
+    $$('.feats, .numbers').forEach(g => [...g.children].forEach((el, i) => add(el, Math.min(i, 7) * 50)));
   })();
 </script>
 </body>
