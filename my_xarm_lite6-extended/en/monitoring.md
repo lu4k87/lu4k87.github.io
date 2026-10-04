@@ -2,7 +2,7 @@
 
 # 📊 Monitoring: Monitoring Dashboard
 
-[🏠 Overview](../README.html) · [🇩🇪 Deutsch](../de/monitoring.html) · Chapter 8
+[🏠 Overview](../readme-en.html) · [🇩🇪 Deutsch](../de/monitoring.html) · Chapter 8
 
 **Contents:** [8. 📊 Monitoring Dashboard](#8--monitoring-dashboard)
 
@@ -52,4 +52,4 @@ ros2 launch http_monitoring_dashboard_p8083 monitoring_dashboard.launch.py   # p
 
 ---
 
-[⬅ Previous: VLA-M: Vision-Language-Action Chat](vla.html) · [🏠 Overview](../README.html) · [⬆ Top](#top) · [Next: Repository Structure ➡](repository_structure.html)
+[⬅ Previous: VLA-M: Vision-Language-Action Chat](vla.html) · [🏠 Overview](../readme-en.html) · [⬆ Top](#top) · [Next: Repository Structure ➡](repository_structure.html)

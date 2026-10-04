@@ -2,7 +2,7 @@
 
 # 🚀 Running the System
 
-[🏠 Overview](../README.html) · [🇩🇪 Deutsch](../de/running.html) · Chapter 1.1, 7
+[🏠 Overview](../readme-en.html) · [🇩🇪 Deutsch](../de/running.html) · Chapter 1.1, 7
 
 **Contents:** [1.1 ⚡ 5-Minute Quickstart (Pure Simulation)](#11--5-minute-quickstart-pure-simulation) · [7. 🚀 Execution: How to Run the System](#7--execution-how-to-run-the-system)
 
@@ -334,4 +334,4 @@ sudo sysctl -p /etc/sysctl.d/60-cyclonedds.conf
 
 ---
 
-[⬅ Previous: Installation & Requirements](installation.html) · [🏠 Overview](../README.html) · [⬆ Top](#top) · [Next: Operating Modes & Gamepad Teleoperation ➡](teleoperation.html)
+[⬅ Previous: Installation & Requirements](installation.html) · [🏠 Overview](../readme-en.html) · [⬆ Top](#top) · [Next: Operating Modes & Gamepad Teleoperation ➡](teleoperation.html)

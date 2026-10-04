@@ -2,7 +2,7 @@
 
 # 🧊 Digital Twin in NVIDIA Isaac Sim
 
-[🏠 Overview](../README.html) · [🇩🇪 Deutsch](../de/isaac_sim.html) · Chapter 3.7
+[🏠 Overview](../readme-en.html) · [🇩🇪 Deutsch](../de/isaac_sim.html) · Chapter 3.7
 
 ---
 
@@ -31,4 +31,4 @@
 
 ---
 
-[⬅ Previous: Robot Control UI & Motion Backend](robot_control_ui.html) · [🏠 Overview](../README.html) · [⬆ Top](#top) · [Next: VLA-M: Vision-Language-Action Chat ➡](vla.html)
+[⬅ Previous: Robot Control UI & Motion Backend](robot_control_ui.html) · [🏠 Overview](../readme-en.html) · [⬆ Top](#top) · [Next: VLA-M: Vision-Language-Action Chat ➡](vla.html)

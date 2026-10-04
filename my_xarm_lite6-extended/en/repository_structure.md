@@ -2,7 +2,7 @@
 
 # 🗂️ Repository Structure
 
-[🏠 Overview](../README.html) · [🇩🇪 Deutsch](../de/repository_structure.html) · Chapter 9
+[🏠 Overview](../readme-en.html) · [🇩🇪 Deutsch](../de/repository_structure.html) · Chapter 9
 
 ---
 
@@ -204,4 +204,4 @@ dev_ws/
 
 ---
 
-[⬅ Previous: Monitoring Dashboard](monitoring.html) · [🏠 Overview](../README.html) · [⬆ Top](#top) · [Next: Archive & Deprecated Concepts ➡](archive.html)
+[⬅ Previous: Monitoring Dashboard](monitoring.html) · [🏠 Overview](../readme-en.html) · [⬆ Top](#top) · [Next: Archive & Deprecated Concepts ➡](archive.html)

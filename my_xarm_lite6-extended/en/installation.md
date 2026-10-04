@@ -2,7 +2,7 @@
 
 # 📦 Installation & Requirements
 
-[🏠 Overview](../README.html) · [🇩🇪 Deutsch](../de/installation.html) · Chapter 6
+[🏠 Overview](../readme-en.html) · [🇩🇪 Deutsch](../de/installation.html) · Chapter 6
 
 **Contents:** [6. 📦 Dependencies & Requirements](#6--dependencies--requirements)
 
@@ -246,4 +246,4 @@ GitHub is the only source; each computer has its own clone in `~/dev_ws` (Ubuntu
 
 ---
 
-[⬅ Previous: Concept & Architecture](concept.html) · [🏠 Overview](../README.html) · [⬆ Top](#top) · [Next: Running the System ➡](running.html)
+[⬅ Previous: Concept & Architecture](concept.html) · [🏠 Overview](../readme-en.html) · [⬆ Top](#top) · [Next: Running the System ➡](running.html)

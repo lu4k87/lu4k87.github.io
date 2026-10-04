@@ -2,7 +2,7 @@
 
 # 🗄️ Archive & Deprecated Concepts
 
-[🏠 Overview](../README.html) · [🇩🇪 Deutsch](../de/archive.html) · Chapter 10
+[🏠 Overview](../readme-en.html) · [🇩🇪 Deutsch](../de/archive.html) · Chapter 10
 
 **Contents:** [10. 🗄️ Archive / Architectural Decisions & Deprecated Concepts](#10--archive--architectural-decisions--deprecated-concepts)
 
@@ -30,4 +30,4 @@ In the past, starting the system required launching multiple `.sh` scripts (`lit
 
 ---
 
-[⬅ Previous: Repository Structure](repository_structure.html) · [🏠 Overview](../README.html) · [⬆ Top](#top)
+[⬅ Previous: Repository Structure](repository_structure.html) · [🏠 Overview](../readme-en.html) · [⬆ Top](#top)

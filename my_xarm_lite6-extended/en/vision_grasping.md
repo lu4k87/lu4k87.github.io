@@ -2,7 +2,7 @@
 
 # 👁️ 3D Vision & Autonomous Grasping
 
-[🏠 Overview](../README.html) · [🇩🇪 Deutsch](../de/vision_grasping.html) · Chapter 3.3
+[🏠 Overview](../readme-en.html) · [🇩🇪 Deutsch](../de/vision_grasping.html) · Chapter 3.3
 
 ---
 
@@ -646,4 +646,4 @@
 
 ---
 
-[⬅ Previous: Operating Modes & Gamepad Teleoperation](teleoperation.html) · [🏠 Overview](../README.html) · [⬆ Top](#top) · [Next: Voice & Gaze Control ➡](voice_gaze.html)
+[⬅ Previous: Operating Modes & Gamepad Teleoperation](teleoperation.html) · [🏠 Overview](../readme-en.html) · [⬆ Top](#top) · [Next: Voice & Gaze Control ➡](voice_gaze.html)

@@ -13,7 +13,7 @@
 </p>
 
 <p align="center">
-  <a href="README.html">🇬🇧 <b>Read in English</b></a> &nbsp;·&nbsp;
+  <a href="readme-en.html">🇬🇧 <b>Read in English</b></a> &nbsp;·&nbsp;
   <a href="project_docs.html">📚 <b>Projekt-Doku</b></a> &nbsp;·&nbsp;
   <a href="project_manual.html">📘 <b>Handbuch</b></a> &nbsp;·&nbsp;
   <a href="project_setup_guide.html">🛠️ <b>Setup-Guide</b></a> &nbsp;·&nbsp;

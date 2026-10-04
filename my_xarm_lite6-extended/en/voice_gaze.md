@@ -2,7 +2,7 @@
 
 # 🗣️ Voice & Gaze Control
 
-[🏠 Overview](../README.html) · [🇩🇪 Deutsch](../de/voice_gaze.html) · Chapter 3.4
+[🏠 Overview](../readme-en.html) · [🇩🇪 Deutsch](../de/voice_gaze.html) · Chapter 3.4
 
 ---
 
@@ -268,4 +268,4 @@
 
 ---
 
-[⬅ Previous: 3D Vision & Autonomous Grasping](vision_grasping.html) · [🏠 Overview](../README.html) · [⬆ Top](#top) · [Next: VR Teleoperation (Meta Quest 3) ➡](vr_quest3.html)
+[⬅ Previous: 3D Vision & Autonomous Grasping](vision_grasping.html) · [🏠 Overview](../readme-en.html) · [⬆ Top](#top) · [Next: VR Teleoperation (Meta Quest 3) ➡](vr_quest3.html)

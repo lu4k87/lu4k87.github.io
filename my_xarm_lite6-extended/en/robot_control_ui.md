@@ -2,7 +2,7 @@
 
 # 🖥️ Robot Control UI & Motion Backend
 
-[🏠 Overview](../README.html) · [🇩🇪 Deutsch](../de/robot_control_ui.html) · Chapter 3.6
+[🏠 Overview](../readme-en.html) · [🇩🇪 Deutsch](../de/robot_control_ui.html) · Chapter 3.6
 
 ---
 
@@ -794,4 +794,4 @@
 
 ---
 
-[⬅ Previous: VR Teleoperation (Meta Quest 3)](vr_quest3.html) · [🏠 Overview](../README.html) · [⬆ Top](#top) · [Next: Digital Twin in NVIDIA Isaac Sim ➡](isaac_sim.html)
+[⬅ Previous: VR Teleoperation (Meta Quest 3)](vr_quest3.html) · [🏠 Overview](../readme-en.html) · [⬆ Top](#top) · [Next: Digital Twin in NVIDIA Isaac Sim ➡](isaac_sim.html)

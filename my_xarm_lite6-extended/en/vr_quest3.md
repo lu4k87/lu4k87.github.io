@@ -2,7 +2,7 @@
 
 # 🥽 VR Teleoperation (Meta Quest 3)
 
-[🏠 Overview](../README.html) · [🇩🇪 Deutsch](../de/vr_quest3.html) · Chapter 3.5
+[🏠 Overview](../readme-en.html) · [🇩🇪 Deutsch](../de/vr_quest3.html) · Chapter 3.5
 
 ---
 
@@ -111,4 +111,4 @@
 
 ---
 
-[⬅ Previous: Voice & Gaze Control](voice_gaze.html) · [🏠 Overview](../README.html) · [⬆ Top](#top) · [Next: Robot Control UI & Motion Backend ➡](robot_control_ui.html)
+[⬅ Previous: Voice & Gaze Control](voice_gaze.html) · [🏠 Overview](../readme-en.html) · [⬆ Top](#top) · [Next: Robot Control UI & Motion Backend ➡](robot_control_ui.html)
