@@ -1,0 +1,1093 @@
+<!doctype html>
+<!-- Showcase „Interakt Control Robot“: 10 Steuerwege, Sicherheitskette, Übersicht.
+     Aus .claude/skills/preview/showcase_template.html (dort Layout/Design pflegen), Bilder statt base64:
+     docs/img/presentation/{hero,rcu,gaze}.jpg. Öffnen: direkt als Datei oder über die Nexus Webapp
+     unter /ws/docs/project_showcase.html. Verlinkt aus project_docs.html und project_presentation.html. -->
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Interakt Control Robot</title>
+<link rel="stylesheet" href="fonts/fonts.css">
+<style>
+/* Layout: Leitstand-Blueprint – Hero mit Foto + HUD, danach zwei Kartenraster (Geräte / Steuerwege), Sicherheitskette, Matrix. Tokens folgen ui_shared/ui_tokens.css. */
+:root {
+  --radius: 2px; /* Ecken: kantig, höchstens 2 px (Wunsch User 04.10.2026, Hook prüft) */
+  color-scheme: dark;
+  --bg: #0a0f19;
+  --surface: #0f1727;
+  --surface-2: #131d31;
+  --line: #1f2c44;
+  --line-strong: #2f4163;
+  --fg: #e8eef8;
+  --fg-2: #c3cfe0;
+  --accent: #38bdf8;
+  --accent-ink: #04121c;
+  --indigo: #818cf8;
+  --teal: #2dd4bf;
+  --violet: #a78bfa;
+  --gold: #f0b429;
+  --green: #10b981;
+  --red: #ef4444;
+  --axis-x: #ef4444;
+  --axis-y: #10b981;
+  --axis-z: #38bdf8;
+  --grid: rgba(56, 189, 248, .07);
+  --shadow: 0 1px 0 rgba(255,255,255,.04) inset, 0 20px 40px -24px rgba(0,0,0,.7);
+  --font-display: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-body: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+  --r-lg: var(--radius);
+  --r-md: var(--radius);
+}
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    color-scheme: light;
+    --bg: #f2f5fa; --surface: #ffffff; --surface-2: #eef3f9; --line: #d7e0ec; --line-strong: #b7c5d9;
+    --fg: #0b1424; --fg-2: #2c3b52; --accent: #0277b6; --accent-ink: #ffffff;
+    --indigo: #4f46e5; --teal: #0f766e; --violet: #7c3aed; --gold: #a15c00; --green: #047857; --red: #dc2626;
+    --axis-x: #dc2626; --axis-y: #059669; --axis-z: #0284c7;
+    --grid: rgba(2, 119, 182, .07);
+    --shadow: 0 1px 2px rgba(15,30,60,.06), 0 16px 32px -24px rgba(15,30,60,.35);
+  }
+}
+:root[data-theme="light"] {
+  color-scheme: light;
+  --bg: #f2f5fa; --surface: #ffffff; --surface-2: #eef3f9; --line: #d7e0ec; --line-strong: #b7c5d9;
+  --fg: #0b1424; --fg-2: #2c3b52; --accent: #0277b6; --accent-ink: #ffffff;
+  --indigo: #4f46e5; --teal: #0f766e; --violet: #7c3aed; --gold: #a15c00; --green: #047857; --red: #dc2626;
+  --axis-x: #dc2626; --axis-y: #059669; --axis-z: #0284c7;
+  --grid: rgba(2, 119, 182, .07);
+  --shadow: 0 1px 2px rgba(15,30,60,.06), 0 16px 32px -24px rgba(15,30,60,.35);
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font: 500 16px/1.55 var(--font-body);
+  -webkit-font-smoothing: antialiased;
+}
+a { color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: var(--radius); }
+h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; margin: 0; }
+p { margin: 0; }
+.mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+.wrap { max-width: 1240px; margin-inline: auto; padding-inline: 20px; }
+svg { display: block; }
+.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+
+/* ── Kopfzeile ── */
+.top {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20;
+  background: color-mix(in srgb, var(--bg) 86%, transparent);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--line);
+}
+.top .wrap { display: flex; align-items: center; gap: 24px; padding-block: 12px; }
+.brand { display: flex; align-items: center; gap: 10px; text-decoration: none; font-weight: 800; letter-spacing: -.01em; }
+.brand-mark { width: 34px; height: 34px; border-radius: var(--radius); display: grid; place-items: center; background: var(--accent); color: var(--accent-ink); }
+.brand small { display: block; font: 600 11px/1 var(--font-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--fg-2); margin-top: 3px; }
+.top nav { margin-left: auto; display: flex; gap: 4px; flex-wrap: wrap; }
+.top nav a { text-decoration: none; font-size: 14px; font-weight: 600; padding: 7px 12px; border-radius: var(--radius); color: var(--fg-2); }
+.top nav a:hover { background: var(--surface-2); color: var(--fg); }
+
+/* ── Hero ── */
+.hero { padding-block: 56px 40px; }
+.hero .wrap { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.08fr); gap: 48px; align-items: center; }
+.eyebrow { font: 700 12px/1 var(--font-mono); letter-spacing: .14em; text-transform: uppercase; color: var(--accent); display: flex; align-items: center; gap: 10px; }
+.eyebrow::before { content: ""; width: 22px; height: 2px; background: currentColor; border-radius: 2px; }
+.hero h1 { font-size: clamp(38px, 5.4vw, 66px); line-height: 1.02; letter-spacing: -.035em; font-weight: 800; margin-top: 18px; }
+.hero h1 em { font-style: normal; color: var(--accent); }
+.lede { margin-top: 18px; font-size: 18px; color: var(--fg-2); max-width: 46ch; }
+
+.hero-facts { list-style: none; margin: 18px 0 0; padding: 0; display: grid; gap: 8px; max-width: 48ch; }
+.hero-facts li { display: flex; gap: 10px; align-items: flex-start; font-size: 15px; line-height: 1.4; color: var(--fg-2); }
+.hero-facts .ico { width: 18px; height: 18px; margin-top: 1px; color: var(--accent); }
+.hero-facts b { color: var(--fg); }
+.index { margin-top: 30px; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; }
+.index a {
+  text-decoration: none; display: grid; justify-items: center; gap: 8px; padding: 14px 6px 12px;
+  border: 1px solid var(--line); border-radius: var(--r-md); background: var(--surface);
+  font-size: 12.5px; font-weight: 700; text-align: center; line-height: 1.2;
+  transition: border-color .15s, transform .15s;
+}
+.index a:hover { border-color: var(--hue, var(--accent)); transform: translateY(-2px); }
+.index a .ico { color: var(--hue, var(--accent)); width: 24px; height: 24px; }
+
+.hero-shot { position: relative; border-radius: var(--radius); overflow: hidden; border: 1px solid var(--line-strong); box-shadow: var(--shadow); aspect-ratio: 3 / 2; max-width: 100%; background: var(--surface-2); }
+.hero-shot img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.hud { position: absolute; inset: 14px 14px auto 14px; display: flex; flex-wrap: wrap; gap: 6px; }
+.hud-bottom { position: absolute; left: 14px; bottom: 14px; display: flex; gap: 6px; flex-wrap: wrap; }
+.chip {
+  display: inline-flex; align-items: center; gap: 7px; padding: 6px 10px; border-radius: var(--radius);
+  font: 700 12px/1 var(--font-mono); letter-spacing: .03em;
+  background: rgba(8, 13, 24, .82); color: #e8eef8; border: 1px solid rgba(255,255,255,.14);
+  backdrop-filter: blur(6px);
+}
+.chip .dot { width: 7px; height: 7px; border-radius: 50%; background: #38bdf8; }
+.chip.stop { background: #dc2626; border-color: #f87171; color: #fff; margin-left: auto; }
+.chip.stop kbd { font: inherit; font-size: 10.5px; padding: 2px 5px; border-radius: var(--radius); background: rgba(255,255,255,.2); }
+
+/* ── Kernmerkmale: 8 Kacheln (Stichwort, Leitsatz, ein Satz Fakten) ── */
+.feats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
+.feat { display: grid; align-content: start; gap: 8px; min-width: 0; padding: 18px; border: 1px solid var(--line); border-radius: var(--r-md); background: var(--surface); box-shadow: var(--shadow); }
+.feat .badge-ico { margin-bottom: 4px; }
+.feat .k-t { font: 700 11.5px/1.2 var(--font-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--hue); }
+.feat b { font-size: 17px; font-weight: 800; line-height: 1.25; letter-spacing: -.01em; }
+.feat p { font-size: 14px; line-height: 1.5; color: var(--fg-2); }
+@media (max-width: 1020px) { .feats { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 520px) { .feats { grid-template-columns: minmax(0, 1fr); } }
+
+/* ── Abschnitte ── */
+section.block { padding-block: 56px; border-top: 1px solid var(--line); }
+.block-head { display: flex; align-items: end; justify-content: space-between; gap: 24px; flex-wrap: wrap; margin-bottom: 28px; }
+.block-head h2 { font-size: clamp(30px, 3.6vw, 44px); letter-spacing: -.03em; font-weight: 800; line-height: 1.05; margin-top: 12px; }
+.block-head p { color: var(--fg-2); max-width: 44ch; font-size: 16px; }
+
+.grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 18px; }
+.span-12 { grid-column: span 12; }
+
+.card {
+  --hue: var(--accent);
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg);
+  overflow: hidden; display: flex; flex-direction: column; min-width: 0; box-shadow: var(--shadow);
+  scroll-margin-top: 80px;
+}
+.card.wide { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); }
+.visual {
+  position: relative; padding: 22px; display: grid; place-items: center;
+  background:
+    linear-gradient(var(--grid) 1px, transparent 1px) 0 0 / 24px 24px,
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px) 0 0 / 24px 24px,
+    radial-gradient(120% 90% at 50% 0%, color-mix(in srgb, var(--hue) 14%, transparent), transparent 70%),
+    var(--surface-2);
+  border-bottom: 1px solid var(--line);
+  min-height: 240px;
+}
+.card.wide .visual { border-bottom: 0; border-right: 1px solid var(--line); min-height: 340px; }
+.visual svg { width: 100%; height: auto; max-width: 560px; }
+.body { padding: 22px 22px 24px; display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.title-row { display: flex; align-items: center; gap: 12px; }
+.badge-ico { width: 40px; height: 40px; border-radius: var(--radius); display: grid; place-items: center; color: var(--hue); background: color-mix(in srgb, var(--hue) 14%, transparent); border: 1px solid color-mix(in srgb, var(--hue) 35%, transparent); flex: none; }
+.title-row h3 { font-size: 21px; letter-spacing: -.02em; font-weight: 800; line-height: 1.15; }
+.title-row .kind { font: 600 11.5px/1.2 var(--font-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--fg-2); margin-top: 3px; }
+.tagline { color: var(--fg-2); font-size: 15px; }
+
+/* Tastenspalte so breit wie die breiteste Taste der Liste (subgrid) */
+.map { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: minmax(84px, max-content) minmax(0, 1fr); gap: 7px 14px; }
+.map li { grid-column: 1 / -1; display: grid; grid-template-columns: subgrid; align-items: center; font-size: 14.5px; }
+.map li b { font-weight: 700; }
+.key {
+  justify-self: start; font: 700 12px/1 var(--font-mono); padding: 6px 8px; border-radius: var(--radius); white-space: nowrap;
+  background: var(--surface-2); border: 1px solid var(--line-strong);
+}
+.key.a { color: var(--green); } .key.b { color: var(--red); } .key.x { color: var(--axis-z); } .key.y { color: var(--gold); }
+
+/* Raster je Modul-Karte: Funktionen · Bedienung · Sicherheit */
+.blocks { display: grid; gap: 16px; }
+.blk { display: grid; gap: 8px; align-content: start; }
+.blk h4 { font: 700 11.5px/1.2 var(--font-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--hue); }
+.list { margin: 0; padding-left: 20px; display: grid; gap: 5px; font-size: 14.5px; }
+.list li::marker { color: var(--hue); }
+.blk.safe .list li::marker { content: "✓  "; }
+/* Zickzack: jede 2. Modul-Karte mit Bild rechts (nur breite Ansicht) */
+@media (min-width: 1021px) {
+  :is(#geraete, #wege) .card.wide:nth-child(even) { grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); }
+  :is(#geraete, #wege) .card.wide:nth-child(even) .visual { order: 2; border-right: 0; border-left: 1px solid var(--line); }
+}
+
+/* SVG-Farbklassen */
+.s-body { fill: var(--surface); stroke: var(--line-strong); stroke-width: 2; }
+.s-part { fill: var(--surface-2); stroke: var(--line-strong); stroke-width: 2; }
+.s-hue { fill: color-mix(in srgb, var(--hue) 22%, var(--surface)); stroke: var(--hue); stroke-width: 2; }
+.s-gold { fill: color-mix(in srgb, var(--gold) 20%, var(--surface)); stroke: var(--gold); stroke-width: 2; }
+.s-green { fill: color-mix(in srgb, var(--green) 22%, var(--surface)); stroke: var(--green); stroke-width: 2; }
+.s-red { fill: color-mix(in srgb, var(--red) 22%, var(--surface)); stroke: var(--red); stroke-width: 2; }
+.s-blue { fill: color-mix(in srgb, var(--axis-z) 22%, var(--surface)); stroke: var(--axis-z); stroke-width: 2; }
+.s-yellow { fill: color-mix(in srgb, var(--gold) 22%, var(--surface)); stroke: var(--gold); stroke-width: 2; }
+.s-txt { fill: var(--fg); font: 700 13px var(--font-mono); text-anchor: middle; dominant-baseline: central; }
+.s-txt-sm { fill: var(--fg-2); font: 600 11px var(--font-mono); text-anchor: middle; dominant-baseline: central; letter-spacing: .04em; }
+.s-wave { fill: none; stroke: var(--gold); stroke-width: 2.5; stroke-linecap: round; }
+.s-hint { fill: none; stroke: var(--hue); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.s-dash { fill: none; stroke: var(--line-strong); stroke-width: 2; stroke-dasharray: 5 6; }
+.s-ax-x { stroke: var(--axis-x); fill: var(--axis-x); }
+.s-ax-y { stroke: var(--axis-y); fill: var(--axis-y); }
+.s-ax-z { stroke: var(--axis-z); fill: var(--axis-z); }
+
+/* Blicksteuerung */
+.gaze { position: relative; width: 100%; max-width: 560px; aspect-ratio: 16 / 9; border-radius: var(--radius); overflow: hidden; border: 1px solid var(--line-strong); }
+.gaze img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.visual .gaze-cursor { position: absolute; max-width: none; left: 50%; top: 5.5%; width: 64px; height: 64px; transform: translate(-50%, -18%); }
+.gaze-cursor circle { fill: none; stroke-width: 4; }
+.gaze-cursor .ring-bg { stroke: rgba(255,255,255,.35); }
+.gaze-cursor .ring { stroke: #38bdf8; stroke-linecap: round; stroke-dasharray: 151; stroke-dashoffset: 40; transform: rotate(-90deg); transform-origin: 32px 32px; animation: dwell 1.6s ease-in-out infinite; }
+.gaze-cursor .pupil { fill: #38bdf8; stroke: #fff; stroke-width: 2; }
+@keyframes dwell { 0% { stroke-dashoffset: 151; } 62%, 100% { stroke-dashoffset: 0; } }
+.gaze-tag { position: absolute; right: 10px; bottom: 10px; }
+
+/* Sprache */
+.voice { width: 100%; display: grid; gap: 16px; justify-items: center; }
+.wave { display: flex; align-items: center; gap: 4px; height: 76px; }
+.wave i { width: 5px; border-radius: var(--radius); background: var(--hue); opacity: .9; }
+.said { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; }
+.said span { font-size: 13.5px; font-weight: 700; padding: 7px 11px; border-radius: var(--radius); background: var(--surface); border: 1px solid var(--line-strong); }
+
+/* Tastatur */
+.keys { display: grid; grid-template-columns: repeat(4, 54px); gap: 8px; justify-content: center; }
+.cap {
+  height: 54px; border-radius: var(--radius); display: grid; place-items: center; text-align: center;
+  font: 700 15px/1.1 var(--font-mono); background: var(--surface); color: var(--fg);
+  border: 1px solid var(--line-strong);
+}
+.cap small { display: block; font: 600 9.5px/1 var(--font-body); letter-spacing: .04em; text-transform: uppercase; margin-top: 3px; color: var(--fg-2); }
+.cap.space { grid-column: span 4; height: 50px; border-color: var(--red); color: var(--red); background: color-mix(in srgb, var(--red) 10%, var(--surface)); }
+.cap.hot { border-color: var(--hue); color: var(--hue); }
+
+/* Tablet */
+.tablet { width: min(100%, 300px); aspect-ratio: 4 / 3; border-radius: var(--radius); padding: 10px; background: var(--fg); box-shadow: var(--shadow); }
+.screen { width: 100%; height: 100%; border-radius: var(--radius); background: var(--bg); display: grid; grid-template-rows: auto 1fr auto; gap: 7px; padding: 8px; }
+.scr-head { display: flex; align-items: center; gap: 6px; }
+.scr-head .m { font: 700 9px/1 var(--font-mono); padding: 4px 6px; border-radius: var(--radius); border: 1px solid var(--line-strong); color: var(--fg); }
+.scr-head .e { margin-left: auto; font: 800 9.5px/1 var(--font-mono); padding: 5px 8px; border-radius: var(--radius); background: var(--red); color: #fff; }
+.scr-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.scr-grid span { border-radius: var(--radius); background: var(--surface); border: 1px solid var(--line-strong); display: grid; place-items: center; font: 700 10px/1.1 var(--font-body); color: var(--fg); text-align: center; padding: 4px; }
+.scr-grid span.on { border-color: var(--hue); color: var(--hue); }
+.scr-slide { height: 20px; border-radius: var(--radius); background: var(--surface); border: 1px solid var(--line-strong); position: relative; font: 700 9px/18px var(--font-mono); text-align: center; color: var(--fg-2); }
+.scr-slide::before { content: ""; position: absolute; left: 2px; top: 2px; width: 34px; height: 14px; border-radius: var(--radius); background: var(--hue); }
+
+/* Robot Control UI */
+.shot { position: relative; width: 100%; border-radius: var(--radius); overflow: hidden; border: 1px solid var(--line-strong); }
+.shot img { width: 100%; height: auto; display: block; }
+.pin {
+  position: absolute; width: 28px; height: 28px; margin: -14px 0 0 -14px; border-radius: 50%;
+  display: grid; place-items: center; font: 800 13px/1 var(--font-mono);
+  background: var(--accent); color: var(--accent-ink); box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 30%, transparent), 0 4px 10px rgba(0,0,0,.4);
+}
+.pins { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 18px; }
+.pins li { display: grid; grid-template-columns: 28px minmax(0, 1fr); gap: 10px; font-size: 14.5px; align-items: start; }
+.pins li .n { width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; font: 800 12px/1 var(--font-mono); background: var(--accent); color: var(--accent-ink); }
+.pins li b { display: block; font-weight: 800; }
+.pins li span { color: var(--fg-2); font-size: 13.5px; }
+.card.rcu .visual { padding: 18px; }
+.card.wide.rcu { grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); }
+@media (max-width: 1020px) { .card.wide.rcu { grid-template-columns: 1fr; } }
+
+/* VLA-Chat */
+.chat { width: 100%; max-width: 340px; display: grid; gap: 10px; }
+.bubble { padding: 10px 13px; border-radius: var(--radius); font-size: 13.5px; line-height: 1.5; }
+.bubble.me { justify-self: end; max-width: 88%; background: color-mix(in srgb, var(--hue) 24%, var(--surface)); border: 1px solid color-mix(in srgb, var(--hue) 50%, transparent); border-bottom-right-radius: var(--radius); }
+.plan { background: var(--surface); border: 1px solid var(--line-strong); border-radius: var(--radius); padding: 10px 12px; display: grid; gap: 6px; }
+.plan-h { font: 700 10.5px/1 var(--font-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--hue); }
+.plan ol { margin: 0; padding-left: 20px; font-size: 13px; display: grid; gap: 2px; }
+.plan .btns { display: flex; gap: 6px; margin-top: 4px; }
+.plan .btns span { font: 700 11px/1 var(--font-body); padding: 7px 10px; border-radius: var(--radius); border: 1px solid var(--line-strong); }
+.plan .btns .go { border-color: var(--accent); color: var(--accent); }
+
+/* Sicherheitskette */
+.chain { display: flex; align-items: stretch; gap: 10px; flex-wrap: wrap; }
+.link { flex: 1 1 160px; min-width: 0; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px; display: grid; gap: 8px; align-content: start; }
+.link .ico { color: var(--accent); width: 26px; height: 26px; }
+.link b { font-size: 15.5px; font-weight: 800; }
+.link span { font-size: 13.5px; color: var(--fg-2); }
+.arrow { display: grid; place-items: center; color: var(--line-strong); flex: none; }
+.arrow svg { width: 22px; height: 22px; }
+.estop-band {
+  margin-top: 12px; border-radius: var(--radius); padding: 14px 18px; display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+  border: 1.5px solid var(--red); background: color-mix(in srgb, var(--red) 9%, var(--surface));
+}
+.estop-band .octo { width: 42px; height: 42px; color: var(--red); flex: none; }
+.estop-band b { font-size: 17px; font-weight: 800; color: var(--red); letter-spacing: .02em; }
+.estop-band .ways { display: flex; flex-wrap: wrap; gap: 6px; margin-left: auto; }
+.estop-band .ways span { font: 700 12px/1 var(--font-mono); padding: 7px 10px; border-radius: var(--radius); background: var(--surface); border: 1px solid var(--line-strong); }
+.numbers { margin-top: 18px; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+.num { border: 1px solid var(--line); border-radius: var(--radius); padding: 16px; background: var(--surface); }
+.num strong { display: block; font: 800 30px/1 var(--font-mono); letter-spacing: -.03em; }
+.num span { display: block; margin-top: 8px; font-size: 13.5px; color: var(--fg-2); }
+
+/* Kette zum Ausprobieren: Befehl läuft Glied für Glied */
+.ch-bar { display: grid; gap: 10px; margin-bottom: 14px; }
+.ch-row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.ch-row > .lbl { font: 700 11.5px/1 var(--font-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--fg-2); min-width: 92px; }
+.pill { --c: var(--accent); display: inline-flex; align-items: center; gap: 7px; font: 700 13px/1 var(--font-body); min-height: 38px; padding: 0 12px; border-radius: var(--radius); background: var(--surface); color: var(--fg); border: 1px solid var(--line-strong); cursor: pointer; transition: border-color .15s, background .15s, transform .15s; }
+.pill .ico { width: 16px; height: 16px; color: var(--c); }
+.pill[aria-pressed="true"] { border-color: var(--c); background: color-mix(in srgb, var(--c) 16%, var(--surface)); }
+.pill:active { transform: scale(.97); }
+.pill.go { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.pill:disabled { opacity: .5; cursor: default; }
+.link { transition: border-color .25s, background .25s, transform .25s; position: relative; }
+.link .st { font: 700 11px/1 var(--font-mono); letter-spacing: .06em; padding: 4px 7px; border-radius: var(--radius); border: 1px solid var(--line-strong); justify-self: start; min-height: 19px; }
+.link.run { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, var(--surface)); transform: translateY(-3px); }
+.link.ok { border-color: var(--green); }
+.link.ok .st { border-color: var(--green); color: var(--green); }
+.link.block { border-color: var(--red); background: color-mix(in srgb, var(--red) 10%, var(--surface)); }
+.link.block .st { border-color: var(--red); color: var(--red); }
+.link.block { animation: shake .35s; }
+.arrow.flow { color: var(--accent); }
+.ch-msg { margin-top: 12px; min-height: 1.6em; font-weight: 700; font-size: 15px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.ch-msg .tag { font: 700 11px/1 var(--font-mono); letter-spacing: .06em; padding: 5px 8px; border-radius: var(--radius); border: 1px solid currentColor; }
+.estop-band button.estop { font: 800 13px/1 var(--font-mono); letter-spacing: .06em; color: #fff; background: #dc2626; border: 1.5px solid #f87171; border-radius: var(--radius); min-height: 44px; padding: 0 16px; cursor: pointer; }
+.estop-band button.estop[aria-pressed="true"] { background: var(--surface); color: var(--red); }
+@keyframes shake { 25% { transform: translateX(-4px); } 75% { transform: translateX(4px); } }
+
+/* Hero: 3D-Lite-6 über dem Foto (Foto bleibt ohne WebGL) */
+.chip .dot.move { background: var(--gold); }
+
+/* Matrix: Fähigkeit anklicken hebt die Spalte hervor */
+thead th button { all: unset; cursor: pointer; padding: 4px 6px; border-radius: var(--radius); }
+thead th button:focus-visible { outline: 2px solid var(--accent); }
+thead th button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); }
+td.hl, th.hl { background: color-mix(in srgb, var(--accent) 10%, transparent); }
+.mx-sum { margin-top: 12px; min-height: 1.5em; font-weight: 700; }
+
+/* Matrix */
+.table-scroll { overflow-x: auto; border: 1px solid var(--line); border-radius: var(--r-lg); background: var(--surface); }
+table { width: 100%; border-collapse: collapse; min-width: 720px; }
+th, td { padding: 13px 14px; text-align: center; border-bottom: 1px solid var(--line); font-size: 14.5px; }
+thead th { font: 700 11.5px/1.2 var(--font-mono); letter-spacing: .07em; text-transform: uppercase; color: var(--fg-2); background: var(--surface-2); }
+tbody th { text-align: left; font-weight: 700; }
+tbody th .cell { display: flex; align-items: center; gap: 10px; }
+tbody th .ico { color: var(--hue, var(--accent)); width: 20px; height: 20px; }
+tbody tr:last-child th, tbody tr:last-child td { border-bottom: 0; }
+.m { display: inline-grid; place-items: center; width: 22px; height: 22px; }
+.m.full::before { content: ""; width: 14px; height: 14px; border-radius: 50%; background: var(--accent); }
+.m.part::before { content: ""; width: 14px; height: 14px; border-radius: 50%; background: linear-gradient(90deg, var(--accent) 50%, transparent 50%); box-shadow: inset 0 0 0 2px var(--accent); }
+.m.none::before { content: ""; width: 12px; height: 2px; background: var(--line-strong); border-radius: 2px; }
+.legend { display: flex; gap: 18px; flex-wrap: wrap; margin-top: 12px; font-size: 13.5px; color: var(--fg-2); }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+
+footer { border-top: 1px solid var(--line); padding-block: 28px 40px; }
+footer .wrap { display: flex; flex-wrap: wrap; gap: 10px 24px; align-items: center; justify-content: space-between; }
+.ports { display: flex; flex-wrap: wrap; gap: 6px; }
+.ports span { font: 600 12.5px/1 var(--font-mono); padding: 8px 10px; border-radius: var(--radius); border: 1px solid var(--line); background: var(--surface); }
+.ports b { color: var(--accent); }
+
+@media (max-width: 1020px) {
+  .card.wide { grid-template-columns: 1fr; }
+  .card.wide .visual { border-right: 0; border-bottom: 1px solid var(--line); min-height: 260px; }
+  .numbers { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 860px) {
+  .hero .wrap { grid-template-columns: 1fr; gap: 32px; }
+  .top nav { display: none; }
+}
+@media (max-width: 720px) {
+  .index { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .pins { grid-template-columns: 1fr; }
+  .arrow { display: none; }
+  .estop-band .ways { margin-left: 0; }
+  .hero { padding-block: 36px 28px; }
+  section.block { padding-block: 44px; }
+}
+@media (max-width: 420px) {
+  .numbers { grid-template-columns: 1fr; }
+  .hud .chip:not(.stop):nth-child(n+3) { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .link, .link.block, .pill { transition: none; animation: none; }
+  .gaze-cursor .ring { animation: none; stroke-dashoffset: 30; }
+  .index a { transition: none; }
+}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-arm" viewBox="0 0 24 24"><path d="M4 21h16M7 21v-3h10v3M12 18v-5M12 13l5-5M17 8l3 1.5M17 8l1.2-3.2"/><circle cx="12" cy="13" r="2"/><circle cx="17" cy="8" r="1.6"/></symbol>
+    <symbol id="i-pad" viewBox="0 0 24 24"><path d="M7.5 6h9a5.5 5.5 0 0 1 5.3 7l-1 3.6a2.6 2.6 0 0 1-4.4 1L14.6 16H9.4l-1.8 1.6a2.6 2.6 0 0 1-4.4-1l-1-3.6A5.5 5.5 0 0 1 7.5 6z"/><path d="M7 10v3M5.5 11.5h3M15.5 10.5h.01M17.5 12.5h.01"/></symbol>
+    <symbol id="i-vr" viewBox="0 0 24 24"><path d="M3.5 7.5h17a1.5 1.5 0 0 1 1.5 1.5v6a2.5 2.5 0 0 1-2.5 2.5h-4l-2-3h-3l-2 3h-4A2.5 2.5 0 0 1 2 15V9a1.5 1.5 0 0 1 1.5-1.5z"/><path d="M6.5 11h2M15.5 11h2"/></symbol>
+    <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></symbol>
+    <symbol id="i-mic" viewBox="0 0 24 24"><rect x="9" y="2.5" width="6" height="12" rx="3"/><path d="M5 10.5a7 7 0 0 0 14 0M12 17.5V21M8.5 21h7"/></symbol>
+    <symbol id="i-key" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2.5"/><path d="M6 9h.01M10 9h.01M14 9h.01M18 9h.01M6 12.5h.01M18 12.5h.01M10 12.5h4M7 15.5h10"/></symbol>
+    <symbol id="i-tab" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="15" rx="2.5"/><path d="M7 8.5h4v3H7zM13 8.5h4M13 11.5h4M7 15h10"/></symbol>
+    <symbol id="i-mon" viewBox="0 0 24 24"><rect x="2" y="3.5" width="20" height="13" rx="2"/><path d="M8.5 21h7M12 16.5V21"/><path d="M12.5 7.5l4.5 1.8-1.9.7-.7 1.9z"/></symbol>
+    <symbol id="i-gizmo" viewBox="0 0 24 24"><path d="M12 12V3M12 3l-2.2 2.2M12 3l2.2 2.2M12 12l7.5 4.3M19.5 16.3l-3 .4M19.5 16.3l-1.1-2.9M12 12l-7.5 4.3M4.5 16.3l3 .4M4.5 16.3l1.1-2.9"/><circle cx="12" cy="12" r="1.6"/></symbol>
+    <symbol id="i-chat" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H8l-5 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><path d="M8 8.5h8M8 12h5"/></symbol>
+    <symbol id="i-net" viewBox="0 0 24 24"><rect x="8.5" y="2.5" width="7" height="6" rx="1.2"/><rect x="2" y="15.5" width="6" height="6" rx="1.2"/><rect x="16" y="15.5" width="6" height="6" rx="1.2"/><rect x="9" y="15.5" width="6" height="6" rx="1.2"/><path d="M12 8.5v7M5 15.5V12h14v3.5"/></symbol>
+    <symbol id="i-lock" viewBox="0 0 24 24"><rect x="4.5" y="10.5" width="15" height="10.5" rx="2"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3M12 14.5v2.5"/></symbol>
+    <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 2.5l8 3v6c0 5-3.4 8.7-8 10.5-4.6-1.8-8-5.5-8-10.5v-6z"/><path d="M8.5 12l2.5 2.5 4.5-5"/></symbol>
+    <symbol id="i-cube" viewBox="0 0 24 24"><path d="M12 2.5l8.5 4.8v9.4L12 21.5l-8.5-4.8V7.3z"/><path d="M3.5 7.3L12 12l8.5-4.7M12 12v9.5"/></symbol>
+    <symbol id="i-toggle" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="10" rx="5"/><circle cx="16" cy="12" r="3"/></symbol>
+    <symbol id="i-octo" viewBox="0 0 24 24"><path d="M7.9 2h8.2L22 7.9v8.2L16.1 22H7.9L2 16.1V7.9z"/><path d="M8 12h8"/></symbol>
+    <symbol id="i-spark" viewBox="0 0 24 24"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8zM19 16l.8 2.2L22 19l-2.2.8L19 22l-.8-2.2L16 19l2.2-.8z"/></symbol>
+    <symbol id="i-shapes" viewBox="0 0 24 24"><rect x="3" y="12" width="8" height="8" rx="1" stroke-dasharray="2.5 2"/><circle cx="17" cy="16" r="4" stroke-dasharray="2.5 2"/><path d="M12 3l4.5 7h-9z"/></symbol>
+    <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c2.6 2.8 3.8 6 3.8 9.5s-1.2 6.7-3.8 9.5c-2.6-2.8-3.8-6-3.8-9.5S9.4 5.3 12 2.5z"/></symbol>
+    <symbol id="i-code" viewBox="0 0 24 24"><path d="M8 7l-5 5 5 5M16 7l5 5-5 5M13.5 4l-3 16"/></symbol>
+    <symbol id="i-blocks" viewBox="0 0 24 24"><rect x="3" y="3" width="7.5" height="7.5" rx="1.5"/><rect x="13.5" y="3" width="7.5" height="7.5" rx="1.5"/><rect x="3" y="13.5" width="7.5" height="7.5" rx="1.5"/><path d="M17.25 13.5v7.5M13.5 17.25H21"/></symbol>
+    <symbol id="i-right" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+  </defs>
+</svg>
+
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="#start">
+      <span class="brand-mark"><svg class="ico"><use href="#i-arm"/></svg></span>
+      <span>Interakt Control Robot<small>xArm Lite 6 · ROS 2 Humble</small></span>
+    </a>
+    <nav aria-label="Abschnitte">
+      <a href="#merkmale">Merkmale</a>
+      <a href="#geraete">Eingabegeräte</a>
+      <a href="#wege">Steuerwege</a>
+      <a href="#sicherheit">Sicherheit</a>
+      <a href="#uebersicht">Übersicht</a>
+    </nav>
+  </div>
+</header>
+
+<main id="start">
+  <section class="hero">
+    <div class="wrap">
+      <div>
+        <div class="eyebrow">Multimodale Robotersteuerung</div>
+        <h1>Ein Roboter.<br><em>Zehn Wege,</em> ihn zu bedienen.</h1>
+        <p class="lede">Hand, Blick, Stimme, Brille oder Chat: Jede Eingabe läuft durch dieselbe Sicherheitskette zum Arm.</p>
+        <ul class="hero-facts">
+          <li><svg class="ico"><use href="#i-cube"/></svg><span><b>Erst virtuell, dann real:</b> zuerst im Digital Twin simuliert und geprüft</span></li>
+          <li><svg class="ico"><use href="#i-globe"/></svg><span><b>Öffnen statt installieren:</b> Bedienung komplett im Browser</span></li>
+          <li><svg class="ico"><use href="#i-blocks"/></svg><span><b>Lehre und Forschung:</b> Beispielszenarien wie Auto-Palettieren</span></li>
+        </ul>
+        <nav class="index" aria-label="Alle Steuerwege">
+          <a href="#gamepad" style="--hue: var(--accent)"><svg class="ico"><use href="#i-pad"/></svg>Gamepad</a>
+          <a href="#vr" style="--hue: var(--indigo)"><svg class="ico"><use href="#i-vr"/></svg>VR Quest 3</a>
+          <a href="#blick" style="--hue: var(--teal)"><svg class="ico"><use href="#i-eye"/></svg>Blick</a>
+          <a href="#sprache" style="--hue: var(--gold)"><svg class="ico"><use href="#i-mic"/></svg>Sprache</a>
+          <a href="#tastatur" style="--hue: var(--violet)"><svg class="ico"><use href="#i-key"/></svg>Tastatur</a>
+          <a href="#touch" style="--hue: var(--green)"><svg class="ico"><use href="#i-tab"/></svg>Touch Panel</a>
+          <a href="#rcu" style="--hue: var(--accent)"><svg class="ico"><use href="#i-mon"/></svg>Control UI</a>
+          <a href="#gizmo" style="--hue: var(--indigo)"><svg class="ico"><use href="#i-gizmo"/></svg>3D-Gizmo</a>
+          <a href="#vla" style="--hue: var(--violet)"><svg class="ico"><use href="#i-chat"/></svg>VLA-Chat</a>
+          <a href="#remote" style="--hue: var(--teal)"><svg class="ico"><use href="#i-net"/></svg>Remote</a>
+        </nav>
+      </div>
+      <figure class="hero-shot" style="margin:0">
+        <img src="img/presentation/hero.jpg" alt="xArm Lite 6 über dem Arbeitstisch mit ArUco-Markern und farbigen Greifobjekten" width="1400" height="934">
+        <div class="hud" aria-hidden="true">
+          <span class="chip"><span class="dot"></span>Mode FAKE ARM</span>
+          <span class="chip">IDLE</span>
+          <span class="chip">Tempo 60 %</span>
+          <span class="chip"><svg class="ico" style="width:13px;height:13px"><use href="#i-lock"/></svg>this PC</span>
+          <span class="chip stop">E-STOP <kbd>Space</kbd></span>
+        </div>
+        <div class="hud-bottom" aria-hidden="true">
+          <span class="chip">TCP&nbsp; X 200 · Y 0 · Z 89 mm</span>
+        </div>
+      </figure>
+    </div>
+  </section>
+
+  <!-- ═════════ Kernmerkmale ═════════ -->
+  <section class="block" id="merkmale">
+    <div class="wrap">
+      <div class="block-head">
+        <div>
+          <div class="eyebrow">Kernmerkmale</div>
+          <h2>Der Mensch führt. Die KI assistiert.</h2>
+        </div>
+        <p>Acht Merkmale machen aus einer Fernsteuerung eine assistive Plattform.</p>
+      </div>
+      <div class="feats">
+        <div class="feat" style="--hue: var(--accent)"><span class="badge-ico"><svg class="ico"><use href="#i-cube"/></svg></span><span class="k-t">Digital Twin · Physik</span><b>Erst virtuell, dann real.</b><p>Live-3D-Zwilling im Browser; die Physik-Sandbox simuliert Schwerkraft, Kontakt und Greifen vor der echten Fahrt.</p></div>
+        <div class="feat" style="--hue: var(--indigo)"><span class="badge-ico"><svg class="ico"><use href="#i-shapes"/></svg></span><span class="k-t">Virtuelle Objekte</span><b>Testen ohne Aufbau.</b><p>Würfel, Flasche, Bälle, Schale, Korb: greifen, verschieben, stapeln; kollisionsgeprüft in MoveIt, ohne Kamera.</p></div>
+        <div class="feat" style="--hue: var(--teal)"><span class="badge-ico"><svg class="ico"><use href="#i-eye"/></svg></span><span class="k-t">Kontrolle · Überwachung</span><b>Alles im Blick. Jederzeit eingreifen.</b><p>Roboterzustand, Umgebung (ZED, OctoMap) und Bewegungsausführung live; Monitoring Dashboard und Blackbox zeichnen mit.</p></div>
+        <div class="feat" style="--hue: var(--violet)"><span class="badge-ico"><svg class="ico"><use href="#i-spark"/></svg></span><span class="k-t">Assistive Autonomie</span><b>Die KI plant. Der Mensch gibt frei.</b><p>Der Agent macht aus Sprache Bewegungsabläufe; Entscheidung und Feedback des Menschen steuern jeden Schritt.</p></div>
+        <div class="feat" style="--hue: var(--green)"><span class="badge-ico"><svg class="ico"><use href="#i-globe"/></svg></span><span class="k-t">Web · Remote</span><b>Öffnen statt installieren.</b><p>Bedienung komplett im Browser: am Roboter-PC, aus dem Heimnetz oder in der Quest 3 per WebXR.</p></div>
+        <div class="feat" style="--hue: var(--gold)"><span class="badge-ico"><svg class="ico"><use href="#i-shield"/></svg></span><span class="k-t">Sicherheit</span><b>Eine Kette für jede Eingabe.</b><p>Control-Lock, Kollisionsvorprüfung, MoveIt und E-STOP gelten für alle zehn Steuerwege gleich.</p></div>
+        <div class="feat" style="--hue: var(--teal)"><span class="badge-ico"><svg class="ico"><use href="#i-code"/></svg></span><span class="k-t">Open Source</span><b>Offen, nachbaubar, erweiterbar.</b><p>Eigene Pakete unter Apache 2.0, aufgebaut auf ROS 2 Humble und MoveIt 2.</p></div>
+        <div class="feat" style="--hue: var(--indigo)"><span class="badge-ico"><svg class="ico"><use href="#i-blocks"/></svg></span><span class="k-t">Multimodal · Modular</span><b>Austauschbar statt festgelegt.</b><p>Bessere Eingabegeräte, Kameras, KI-Modelle oder Software-Module ersetzen die alten einzeln; feste ROS-2-Schnittstellen halten den Rest unverändert. Als Nächstes wird auch der Roboterarm austauschbar (geplant).</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═════════ Eingabegeräte ═════════ -->
+  <section class="block" id="geraete">
+    <div class="wrap">
+      <div class="block-head">
+        <div>
+          <div class="eyebrow">Hardware in der Hand</div>
+          <h2>Eingabegeräte</h2>
+        </div>
+        <p>Sechs Geräte, ein Ziel: der Werkzeugpunkt (TCP) des Arms. Jedes Gerät ist austauschbar.</p>
+      </div>
+
+      <div class="grid">
+        <!-- Gamepad -->
+        <article class="card wide span-12" id="gamepad" style="--hue: var(--accent)">
+          <div class="visual">
+            <svg viewBox="0 0 520 310" role="img" aria-label="Xbox-Controller mit markierten Tasten">
+              <rect class="s-hue" x="114" y="16" width="64" height="32" rx="11" transform="rotate(-8 146 32)"/>
+              <rect class="s-hue" x="342" y="16" width="64" height="32" rx="11" transform="rotate(8 374 32)"/>
+              <text class="s-txt" x="146" y="30" transform="rotate(-8 146 32)">LT</text>
+              <text class="s-txt" x="374" y="30" transform="rotate(8 374 32)">RT</text>
+              <rect class="s-hue" x="98" y="48" width="96" height="20" rx="10" transform="rotate(-8 146 58)"/>
+              <rect class="s-hue" x="326" y="48" width="96" height="20" rx="10" transform="rotate(8 374 58)"/>
+              <text class="s-txt" x="146" y="58" transform="rotate(-8 146 58)" style="font-size:11px">LB</text>
+              <text class="s-txt" x="374" y="58" transform="rotate(8 374 58)" style="font-size:11px">RB</text>
+              <path class="s-body" d="M150 72 C190 58 330 58 370 72 C420 78 452 110 470 172 C488 234 492 274 460 288 C430 300 404 276 386 248 C374 230 360 222 340 222 L180 222 C160 222 146 230 134 248 C116 276 90 300 60 288 C28 274 32 234 50 172 C68 110 100 78 150 72 Z"/>
+              <!-- Rumble -->
+              <path class="s-wave" d="M30 250 q-10 14 0 28 M18 244 q-14 20 0 40" opacity=".9"/>
+              <path class="s-wave" d="M490 250 q10 14 0 28 M502 244 q14 20 0 40" opacity=".9"/>
+              <!-- Linker Stick -->
+              <circle class="s-part" cx="160" cy="124" r="32"/>
+              <circle class="s-hue" cx="160" cy="124" r="20"/>
+              <path class="s-hint" d="M160 84 l-6 7 h12 z M160 164 l-6 -7 h12 z M120 124 l7 -6 v12 z M200 124 l-7 -6 v12 z" style="fill: var(--hue)"/>
+              <!-- D-Pad -->
+              <g>
+                <rect class="s-gold" x="200" y="154" width="22" height="56" rx="5"/>
+                <rect class="s-gold" x="183" y="171" width="56" height="22" rx="5"/>
+                <rect x="201" y="172" width="20" height="20" style="fill: color-mix(in srgb, var(--gold) 20%, var(--surface))"/>
+              </g>
+              <!-- Rechter Stick -->
+              <circle class="s-part" cx="318" cy="182" r="30"/>
+              <circle class="s-part" cx="318" cy="182" r="19"/>
+              <!-- Guide + View/Menu -->
+              <circle class="s-part" cx="260" cy="96" r="15"/>
+              <circle class="s-part" cx="232" cy="128" r="6"/>
+              <circle class="s-part" cx="288" cy="128" r="6"/>
+              <!-- ABXY -->
+              <circle class="s-yellow" cx="364" cy="96" r="14"/><text class="s-txt" x="364" y="96">Y</text>
+              <circle class="s-blue" cx="338" cy="122" r="14"/><text class="s-txt" x="338" y="122">X</text>
+              <circle class="s-red" cx="390" cy="122" r="14"/><text class="s-txt" x="390" y="122">B</text>
+              <circle class="s-green" cx="364" cy="148" r="14"/><text class="s-txt" x="364" y="148">A</text>
+              <text class="s-txt-sm" x="260" y="300">VIBRATION BEI KOLLISIONSGEFAHR</text>
+            </svg>
+          </div>
+          <div class="body">
+            <div class="title-row">
+              <span class="badge-ico"><svg class="ico"><use href="#i-pad"/></svg></span>
+              <div><h3>Gamepad</h3><div class="kind">Xbox Elite Series 2 · MoveIt Servo</div></div>
+            </div>
+            <p class="tagline">Feinfühliges Verfahren in Echtzeit, mit Rückmeldung in der Hand.</p>
+            <div class="blocks">
+              <div class="blk"><h4>Funktionen</h4><ul class="list"><li><b>MoveIt Servo:</b> Verfahren in Echtzeit</li><li><b>Tasten:</b> Greifer, Vakuum, Home-Pose</li><li><b>Tempo:</b> 5 Stufen, dazu die Linearachse</li></ul></div>
+              <div class="blk"><h4>Bedienung</h4>
+            <ul class="map">
+              <li><span class="key">L-Stick</span><span><b>X / Y</b> verfahren</span></li>
+              <li><span class="key">LT · RT</span><span><b>Z</b> heben / senken</span></li>
+              <li><span class="key">LB · RB</span><span><b>Yaw</b> drehen</span></li>
+              <li><span class="key" style="color:var(--gold)">D-Pad ↕</span><span>Tempo, 5 Stufen</span></li>
+              <li><span class="key" style="color:var(--gold)">D-Pad ↔</span><span>Linearachse</span></li>
+              <li><span class="key a">A</span><span>Greifer auf/zu · Vakuum an/aus</span></li>
+              <li><span class="key b">B</span><span>Greifer aus</span></li>
+              <li><span class="key x">X</span><span>Mikrofon starten</span></li>
+              <li><span class="key y">Y</span><span>Home-Pose</span></li>
+            </ul>
+              </div>
+              <div class="blk safe"><h4>Sicherheit</h4><ul class="list"><li><b>Vibration:</b> bei Kollisionsgefahr, Vorausschau 0,1 s</li><li><b>Tisch-Stopp:</b> bremst ab Z 110 mm, stoppt bei Z 91 mm</li></ul></div>
+            </div>
+          </div>
+        </article>
+
+        <!-- VR -->
+        <article class="card wide span-12" id="vr" style="--hue: var(--indigo)">
+          <div class="visual">
+            <svg viewBox="0 0 520 300" role="img" aria-label="Meta Quest 3 Brille und Controller mit Grip und Trigger">
+              <!-- Brille -->
+              <rect class="s-body" x="188" y="22" width="144" height="66" rx="26"/>
+              <rect class="s-part" x="206" y="38" width="22" height="34" rx="11"/>
+              <rect class="s-part" x="249" y="38" width="22" height="34" rx="11"/>
+              <rect class="s-part" x="292" y="38" width="22" height="34" rx="11"/>
+              <path class="s-dash" d="M206 96 C170 120 150 130 140 150 M314 96 C350 120 370 130 380 150"/>
+              <!-- Linker Controller -->
+              <g>
+                <path class="s-body" d="M100 168 C96 214 112 262 134 272 C152 278 160 262 158 228 L162 172 Z"/>
+                <rect class="s-hue" x="104" y="196" width="16" height="50" rx="8"/>
+                <ellipse class="s-body" cx="128" cy="164" rx="58" ry="36"/>
+                <circle class="s-part" cx="114" cy="158" r="13"/>
+                <circle class="s-part" cx="146" cy="150" r="8"/><text class="s-txt" x="146" y="150" style="font-size:9px">Y</text>
+                <circle class="s-part" cx="152" cy="172" r="8"/><text class="s-txt" x="152" y="172" style="font-size:9px">X</text>
+              </g>
+              <!-- Rechter Controller -->
+              <g>
+                <path class="s-body" d="M362 172 L366 228 C364 262 372 278 390 272 C412 262 428 214 424 168 Z"/>
+                <rect class="s-hue" x="404" y="196" width="16" height="50" rx="8"/>
+                <path class="s-green" d="M352 176 c-14 6 -18 22 -10 34 c8 -4 12 -14 12 -24 z"/>
+                <ellipse class="s-body" cx="392" cy="164" rx="58" ry="36"/>
+                <circle class="s-part" cx="406" cy="158" r="13"/>
+                <circle class="s-hue" cx="374" cy="150" r="8"/><text class="s-txt" x="374" y="150" style="font-size:9px">B</text>
+                <circle class="s-part" cx="368" cy="172" r="8"/><text class="s-txt" x="368" y="172" style="font-size:9px">A</text>
+              </g>
+              <!-- 6-DoF Achsen -->
+              <g stroke-width="3" stroke-linecap="round">
+                <line class="s-ax-z" x1="470" y1="150" x2="470" y2="100"/><path class="s-ax-z" d="M470 92 l-6 10 h12 z"/>
+                <line class="s-ax-x" x1="470" y1="150" x2="508" y2="168"/><path class="s-ax-x" d="M515 171 l-11 2 5 -10 z"/>
+                <line class="s-ax-y" x1="470" y1="150" x2="434" y2="122"/><path class="s-ax-y" d="M428 117 l11 1 -6 9 z"/>
+              </g>
+              <text class="s-txt-sm" x="470" y="196">6-DoF</text>
+              <text class="s-txt-sm" x="260" y="290">GRIP = KUPPLUNG · TRIGGER = GREIFER</text>
+            </svg>
+          </div>
+          <div class="body">
+            <div class="title-row">
+              <span class="badge-ico"><svg class="ico"><use href="#i-vr"/></svg></span>
+              <div><h3>VR · Meta Quest 3</h3><div class="kind">WebXR · https :8443</div></div>
+            </div>
+            <p class="tagline">Die Hand wird zum Werkzeug: Der TCP folgt dem Controller 1 : 1.</p>
+            <div class="blocks">
+              <div class="blk"><h4>Funktionen</h4><ul class="list"><li><b>6-DoF:</b> der TCP folgt dem Controller 1 : 1</li><li><b>Modi:</b> SERVO (live) oder PLAN (erst planen)</li><li><b>Szene:</b> um den Roboter gehen und fliegen</li></ul></div>
+              <div class="blk"><h4>Bedienung</h4><ul class="map"><li><span class="key" style="color:var(--indigo)">Grip</span><span><b>Kupplung</b>, Hand führt den TCP</span></li><li><span class="key a">Trigger</span><span>Greifer schalten · Objekt wählen</span></li><li><span class="key" style="color:var(--indigo)">B</span><span>Modus SERVO ↔ PLAN</span></li><li><span class="key">Sticks</span><span>Gehen · um den Roboter fliegen</span></li><li><span class="key b">2× Grip+2× Trig.</span><span>Not-Aus</span></li></ul></div>
+              <div class="blk safe"><h4>Sicherheit</h4><ul class="list"><li><b>Kupplung:</b> ohne Grip keine Bewegung</li><li><b>Tracking weg:</b> Stopp nach 0,3 s</li><li><b>Not-Aus:</b> 2× Grip + 2× Trigger</li></ul></div>
+            </div>
+          </div>
+        </article>
+
+        <!-- Blick -->
+        <article class="card wide span-12" id="blick" style="--hue: var(--teal)">
+          <div class="visual">
+            <div class="gaze">
+              <img src="img/presentation/gaze.jpg" alt="Gaze Control UI: Kamerabild mit Blick-Schaltflächen am Rand" width="960" height="540" loading="lazy">
+              <svg class="gaze-cursor" viewBox="0 0 64 64" aria-hidden="true">
+                <circle class="ring-bg" cx="32" cy="32" r="24"/>
+                <circle class="ring" cx="32" cy="32" r="24"/>
+                <circle class="pupil" cx="32" cy="32" r="6"/>
+              </svg>
+              <span class="chip gaze-tag">Fixation ≈ 1 s = Klick</span>
+            </div>
+          </div>
+          <div class="body">
+            <div class="title-row">
+              <span class="badge-ico"><svg class="ico"><use href="#i-eye"/></svg></span>
+              <div><h3>Blicksteuerung</h3><div class="kind">Tobii Pro Glasses · Eye-Tracking</div></div>
+            </div>
+            <p class="tagline">Hinschauen und halten. Schaltflächen am Bildrand lösen die Bewegung aus.</p>
+            <div class="blocks">
+              <div class="blk"><h4>Funktionen</h4><ul class="list"><li><b>Fixation ≈ 1 s:</b> der Blick ersetzt den Klick</li><li><b>7 Richtungen:</b> vor, zurück, seitlich, hoch, runter, drehen</li><li><b>Greifer + Home:</b> per Blick schalten</li></ul></div>
+              <div class="blk"><h4>Bedienung</h4><ul class="map">
+              <li><span class="key" style="color:var(--teal)">Ränder</span><span>Vor · Zurück · Links · Rechts</span></li>
+              <li><span class="key" style="color:var(--teal)">Ecken</span><span>Hoch · Runter · Drehen</span></li>
+              <li><span class="key a">Unten</span><span>Greifer · Blicksteuerung an/aus</span></li>
+            </ul></div>
+              <div class="blk safe"><h4>Sicherheit</h4><ul class="list"><li><b>Tempo begrenzt:</b> 0,10 m/s · 0,5 rad/s</li><li><b>Bremszone:</b> ab Z 40 mm sanft abbremsen</li><li><b>Hard-Stop:</b> bei Z 33 mm</li></ul></div>
+            </div>
+          </div>
+        </article>
+
+        <!-- Sprache -->
+        <article class="card wide span-12" id="sprache" style="--hue: var(--gold)">
+          <div class="visual">
+            <div class="voice">
+              <div class="wave" id="wave" aria-hidden="true"></div>
+              <div class="said">
+                <span>„Home“</span><span>„schneller“</span><span>„langsamer“</span><span>„Scan objects“</span><span>„Gehe zur Zielpose“</span>
+              </div>
+            </div>
+          </div>
+          <div class="body">
+            <div class="title-row">
+              <span class="badge-ico"><svg class="ico"><use href="#i-mic"/></svg></span>
+              <div><h3>Sprache</h3><div class="kind">Whisper · Deutsch + Englisch</div></div>
+            </div>
+            <p class="tagline">Sagen statt klicken. Kurze Befehle lösen fertige Abläufe aus.</p>
+            <div class="blocks">
+              <div class="blk"><h4>Funktionen</h4><ul class="list"><li><b>Zweisprachig:</b> Befehle auf Deutsch und Englisch</li><li><b>Befehle:</b> Home, Tempo, Scan, Zielpose</li><li><b>Erkennung:</b> 50–120 ms auf der GPU</li></ul></div>
+              <div class="blk"><h4>Bedienung</h4><ul class="map">
+              <li><span class="key x">X</span><span>oder Mikrofon-Knopf in der UI</span></li>
+              <li><span class="key" style="color:var(--gold)">5 s</span><span>Hörfenster, dann Befehl</span></li>
+            </ul></div>
+              <div class="blk safe"><h4>Sicherheit</h4><ul class="list"><li><b>Hörfenster:</b> erkennt nur 5 s nach dem Auslöser</li><li><b>Kein Dauerbetrieb:</b> ohne Taste oder Knopf hört niemand mit</li></ul></div>
+            </div>
+          </div>
+        </article>
+
+        <!-- Tastatur -->
+        <article class="card wide span-12" id="tastatur" style="--hue: var(--violet)">
+          <div class="visual">
+            <div class="keys" aria-hidden="true">
+              <div class="cap hot">T<small>Schieben</small></div>
+              <div class="cap hot">R<small>Drehen</small></div>
+              <div class="cap hot">G<small>Gizmo</small></div>
+              <div class="cap">Esc<small>Reset</small></div>
+              <div class="cap">M<small>Ton</small></div>
+              <div class="cap">Pos1<small>Ansicht</small></div>
+              <div class="cap">↵<small>Senden</small></div>
+              <div class="cap">Tab<small>Fokus</small></div>
+              <div class="cap space">SPACE · E-STOP</div>
+            </div>
+          </div>
+          <div class="body">
+            <div class="title-row">
+              <span class="badge-ico"><svg class="ico"><use href="#i-key"/></svg></span>
+              <div><h3>Tastatur</h3><div class="kind">Kürzel in der Robot Control UI</div></div>
+            </div>
+            <p class="tagline">Schnell ohne Maus. Die Leertaste stoppt überall.</p>
+            <div class="blocks">
+              <div class="blk"><h4>Funktionen</h4><ul class="list"><li><b>Kürzel:</b> Gizmo, Ansicht, Ton, Reset</li><li><b>Chat:</b> Enter sendet die Aufgabe</li><li><b>Tab:</b> Fokus von Bedienelement zu Bedienelement</li></ul></div>
+              <div class="blk"><h4>Bedienung</h4><ul class="map">
+              <li><span class="key b">Space</span><span><b>Not-Aus</b>, überall</span></li>
+              <li><span class="key" style="color:var(--violet)">T · R · G</span><span>Gizmo: Schieben, Drehen, ein/aus</span></li>
+              <li><span class="key">Pos1</span><span>3D-Ansicht einpassen</span></li>
+              <li><span class="key">M</span><span>Ton an/aus</span></li>
+            </ul></div>
+              <div class="blk safe"><h4>Sicherheit</h4><ul class="list"><li><b>Leertaste = Not-Aus:</b> in der ganzen Robot Control UI</li><li><b>Not-Aus im Viewport:</b> erscheint, sobald der Arm fährt</li></ul></div>
+            </div>
+          </div>
+        </article>
+
+        <!-- Touch -->
+        <article class="card wide span-12" id="touch" style="--hue: var(--green)">
+          <div class="visual">
+            <div class="tablet" aria-hidden="true">
+              <div class="screen">
+                <div class="scr-head"><span class="m">FAKE</span><span class="m">IDLE</span><span class="e">E-STOP</span></div>
+                <div class="scr-grid">
+                  <span class="on">Jogging</span><span>Joints</span><span>Gripper</span>
+                  <span>Home</span><span>Sequences</span><span>Control lock</span>
+                </div>
+                <div class="scr-slide">HOLD TO UNLOCK</div>
+              </div>
+            </div>
+          </div>
+          <div class="body">
+            <div class="title-row">
+              <span class="badge-ico"><svg class="ico"><use href="#i-tab"/></svg></span>
+              <div><h3>Touch Panel</h3><div class="kind">Am Roboter · /touch</div></div>
+            </div>
+            <p class="tagline">Bedienung direkt am Roboter, mit dem Finger statt mit der Maus.</p>
+            <div class="blocks">
+              <div class="blk"><h4>Funktionen</h4><ul class="list"><li><b>Am Roboter:</b> eigenes Touch-Display (USB + HDMI)</li><li><b>Bereiche:</b> Jogging, Gelenke, Greifer, Home, Sequenzen</li><li><b>Ohne Installation:</b> im Browser unter <code>/touch</code> (Port 8080)</li></ul></div>
+              <div class="blk"><h4>Bedienung</h4><ul class="map">
+              <li><span class="key a">Tippen</span><span>Jogging, Gelenke, Greifer, Home</span></li>
+              <li><span class="key">Halten</span><span>Entsperren gegen Fehlgriffe</span></li>
+            </ul></div>
+              <div class="blk safe"><h4>Sicherheit</h4><ul class="list"><li><b>Freigabe:</b> Roboter-PC bestätigt die Steuerung (Allow / Deny)</li><li><b>Jogging:</b> halten = fahren, loslassen = Stopp</li><li><b>Halten statt Tippen:</b> für folgenreiche Aktionen</li></ul></div>
+            </div>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═════════ Steuerwege ═════════ -->
+  <section class="block" id="wege">
+    <div class="wrap">
+      <div class="block-head">
+        <div>
+          <div class="eyebrow">Software im Browser</div>
+          <h2>Steuerwege</h2>
+        </div>
+        <p>Vom präzisen Jogging bis zur Anweisung in Alltagssprache.</p>
+      </div>
+
+      <div class="grid">
+        <!-- Robot Control UI -->
+        <article class="card wide rcu span-12" id="rcu" style="--hue: var(--accent)">
+          <div class="visual">
+            <div class="shot">
+              <img src="img/presentation/rcu.jpg" alt="Robot Control UI im FAKE-Modus mit Digital Twin, Jogging und Greifer" width="1600" height="900" loading="lazy">
+              <span class="pin" style="left:78%; top:2.6%">1</span>
+              <span class="pin" style="left:2.1%; top:26%">2</span>
+              <span class="pin" style="left:30%; top:58%">3</span>
+              <span class="pin" style="left:71.6%; top:35%">4</span>
+              <span class="pin" style="left:32.1%; top:10%">5</span>
+              <span class="pin" style="left:81.4%; top:63.5%">6</span>
+            </div>
+          </div>
+          <div class="body">
+            <div class="title-row">
+              <span class="badge-ico"><svg class="ico"><use href="#i-mon"/></svg></span>
+              <div><h3>Robot Control UI</h3><div class="kind">Maus oder Touch · Port 8081</div></div>
+            </div>
+            <p class="tagline">Die Zentrale: Alles, was der Roboter kann, an einem Ort.</p>
+            <div class="blocks">
+              <div class="blk"><h4>Funktionen</h4>
+            <ol class="pins">
+              <li><span class="n">1</span><div><b>Sicherheitszone</b><span>Modus, Tempo, Lock, E-STOP</span></div></li>
+              <li><span class="n">2</span><div><b>Bereiche</b><span>Move, Teach, Assistent (VLA), Vision</span></div></li>
+              <li><span class="n">3</span><div><b>Digital Twin</b><span>Live-3D mit Objekten</span></div></li>
+              <li><span class="n">4</span><div><b>Jogging</b><span>Halten = fahren, 1/5/10 mm</span></div></li>
+              <li><span class="n">5</span><div><b>Posen</b><span>Home, Align TCP, Scan</span></div></li>
+              <li><span class="n">6</span><div><b>Greifer</b><span>Release, Suction, Off</span></div></li>
+            </ol>
+              </div>
+              <div class="blk"><h4>Bedienung</h4><ul class="list"><li><b>Maus oder Touch:</b> am Roboter-PC, Laptop oder Tablet</li><li><b>Jogging:</b> halten = fahren, Schritte 1 / 5 / 10 mm</li><li><b>Strg+K:</b> Befehlspalette für jede Funktion</li></ul></div>
+              <div class="blk safe"><h4>Sicherheit</h4><ul class="list"><li><b>Sicherheitszone:</b> E-STOP, Modus, Tempo, Lock immer sichtbar</li><li><b>REAL:</b> Wechsel nur mit Bestätigung</li><li><b>BUSY:</b> eine laufende Fahrt sperrt alle anderen</li></ul></div>
+            </div>
+          </div>
+        </article>
+
+        <!-- Gizmo -->
+        <article class="card wide span-12" id="gizmo" style="--hue: var(--indigo)">
+          <div class="visual">
+            <svg viewBox="0 0 320 240" role="img" aria-label="3D-Gizmo mit Achspfeilen und Drehringen, Ziel als gestrichelte Pose">
+              <ellipse class="s-dash" cx="160" cy="132" rx="96" ry="34"/>
+              <ellipse cx="160" cy="132" rx="70" ry="70" fill="none" stroke="var(--axis-y)" stroke-width="2" opacity=".55" transform="rotate(0)" style="transform-box: fill-box"/>
+              <ellipse cx="160" cy="132" rx="70" ry="24" fill="none" stroke="var(--axis-z)" stroke-width="2.5" opacity=".75"/>
+              <g stroke-width="5" stroke-linecap="round">
+                <line class="s-ax-z" x1="160" y1="132" x2="160" y2="52"/><path class="s-ax-z" d="M160 38 l-10 18 h20 z"/>
+                <line class="s-ax-x" x1="160" y1="132" x2="236" y2="168"/><path class="s-ax-x" d="M250 175 l-20 1 9 -17 z"/>
+                <line class="s-ax-y" x1="160" y1="132" x2="88" y2="166"/><path class="s-ax-y" d="M74 173 l11 -17 9 17 z"/>
+              </g>
+              <circle cx="160" cy="132" r="9" style="fill: var(--surface); stroke: var(--fg); stroke-width: 3"/>
+              <!-- Ziehende Hand / Cursor -->
+              <path d="M226 60 l0 34 9 -9 7 15 7 -3 -7 -15 13 0 z" style="fill: var(--fg); stroke: var(--surface); stroke-width: 2; stroke-linejoin: round"/>
+              <text class="s-txt-sm" x="160" y="226">ZIEHEN → LOSLASSEN → FAHRT</text>
+            </svg>
+          </div>
+          <div class="body">
+            <div class="title-row">
+              <span class="badge-ico"><svg class="ico"><use href="#i-gizmo"/></svg></span>
+              <div><h3>3D-Gizmo</h3><div class="kind">Im Digital Twin</div></div>
+            </div>
+            <p class="tagline">Zielpose direkt im 3D-Modell ziehen. Beim Loslassen plant MoveIt die Bahn.</p>
+            <div class="blocks">
+              <div class="blk"><h4>Funktionen</h4><ul class="list"><li><b>Zielpose:</b> im Digital Twin schieben oder drehen</li><li><b>MoveIt:</b> plant die Bahn beim Loslassen</li><li><b>IK + Kollision:</b> geprüft wie jede MoveTo-Fahrt</li></ul></div>
+              <div class="blk"><h4>Bedienung</h4><ul class="map"><li><span class="key" style="color:var(--indigo)">G</span><span>Gizmo ein/aus</span></li><li><span class="key" style="color:var(--indigo)">T · R</span><span>Schieben · Drehen</span></li><li><span class="key">Esc</span><span>zurück zum Roboter-TCP</span></li></ul></div>
+              <div class="blk safe"><h4>Sicherheit</h4><ul class="list"><li><b>Freigabe:</b> bei Auto-Move aus wartet die Bahn auf Bestätigung</li><li><b>Pfad-Vorschau:</b> Geisterroboter zeigt die Bahn vorher (optional)</li></ul></div>
+            </div>
+          </div>
+        </article>
+
+        <!-- VLA -->
+        <article class="card wide span-12" id="vla" style="--hue: var(--violet)">
+          <div class="visual">
+            <div class="chat" aria-hidden="true">
+              <div class="bubble me">Stapel den blauen Würfel auf den Zylinder</div>
+              <div class="plan">
+                <span class="plan-h">Planned actions</span>
+                <ol><li>Pick up the Cube</li><li>Place the Cube onto the Cylinder</li></ol>
+                <div class="btns"><span class="go">▶ Execute</span><span>■ Abort</span></div>
+              </div>
+            </div>
+          </div>
+          <div class="body">
+            <div class="title-row">
+              <span class="badge-ico"><svg class="ico"><use href="#i-chat"/></svg></span>
+              <div><h3>VLA-M-Chat</h3><div class="kind">LLM-Agent · lokal, offline</div></div>
+            </div>
+            <p class="tagline">Aufgabe eintippen, Plan prüfen, ausführen. Ein Klick: <b>Grasp</b> oder <b>Place here</b>.</p>
+            <div class="blocks">
+              <div class="blk"><h4>Funktionen</h4><ul class="list"><li><b>LLM-Agent:</b> macht aus Alltagssprache einen Plan aus Skills</li><li><b>Planprüfung:</b> simulierte Szene, Selbstkorrektur in ≤ 2 Runden</li><li><b>Ein Klick:</b> Grasp oder Place here am Objekt</li></ul></div>
+              <div class="blk"><h4>Bedienung</h4><ul class="map"><li><span class="key" style="color:var(--violet)">Eintippen</span><span>Aufgabe in Alltagssprache</span></li><li><span class="key a">Execute</span><span>Plan freigeben</span></li><li><span class="key b">Abort</span><span>nach dem laufenden Schritt stoppen</span></li></ul></div>
+              <div class="blk safe"><h4>Sicherheit</h4><ul class="list"><li><b>Freigabe:</b> jeder Plan wartet auf Execute</li><li><b>Posen aus dem Code:</b> das Modell wählt nur Skill + Objekt</li><li><b>REAL:</b> ohne <code>allow_real_motion</code> nur Plan, keine Fahrt</li></ul></div>
+            </div>
+          </div>
+        </article>
+
+        <!-- Remote -->
+        <article class="card wide span-12" id="remote" style="--hue: var(--teal)">
+          <div class="visual">
+            <svg viewBox="0 0 320 240" role="img" aria-label="Roboter-PC vergibt die Steuerung an genau einen Client">
+              <path d="M160 92 L70 168" fill="none" stroke="var(--hue)" stroke-width="3"/>
+              <path class="s-dash" d="M160 92 L160 168 M160 92 L250 168"/>
+              <rect class="s-hue" x="104" y="28" width="112" height="64" rx="12"/>
+              <text class="s-txt" x="160" y="52">Roboter-PC</text>
+              <text class="s-txt-sm" x="160" y="74">WATCHDOG</text>
+              <g>
+                <rect class="s-body" x="34" y="168" width="72" height="46" rx="8"/>
+                <text class="s-txt" x="70" y="186" style="font-size:11px">Laptop</text>
+                <text class="s-txt-sm" x="70" y="202" style="fill: var(--hue)">STEUERT</text>
+              </g>
+              <g>
+                <rect class="s-body" x="124" y="168" width="72" height="46" rx="8"/>
+                <text class="s-txt" x="160" y="186" style="font-size:11px">Tablet</text>
+                <text class="s-txt-sm" x="160" y="202">SIEHT ZU</text>
+              </g>
+              <g>
+                <rect class="s-body" x="214" y="168" width="72" height="46" rx="8"/>
+                <text class="s-txt" x="250" y="186" style="font-size:11px">Touch</text>
+                <text class="s-txt-sm" x="250" y="202">SIEHT ZU</text>
+              </g>
+              <circle cx="112" cy="130" r="15" style="fill: var(--surface); stroke: var(--hue); stroke-width: 2"/>
+              <use href="#i-lock" x="102" y="120" width="20" height="20" style="fill:none; stroke: var(--hue); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round"/>
+            </svg>
+          </div>
+          <div class="body">
+            <div class="title-row">
+              <span class="badge-ico"><svg class="ico"><use href="#i-net"/></svg></span>
+              <div><h3>Remote Control</h3><div class="kind">Laptop · Tablet · Browser-Gamepad</div></div>
+            </div>
+            <p class="tagline">Immer nur einer steuert. <b>Request control</b> → Roboter-PC sagt <b>Allow</b> oder <b>Deny</b>.</p>
+            <div class="blocks">
+              <div class="blk"><h4>Funktionen</h4><ul class="list"><li><b>Ein Besitzer:</b> genau ein Client steuert, alle anderen sehen zu</li><li><b>Heimnetz:</b> Laptop, Tablet, Quest 3 im Browser</li><li><b>Remote-Gamepad:</b> am eigenen Gerät angeschlossen</li></ul></div>
+              <div class="blk"><h4>Bedienung</h4><ul class="map"><li><span class="key" style="color:var(--teal)">Request</span><span>Steuerung anfragen</span></li><li><span class="key">Allow · Deny</span><span>am Roboter-PC entscheiden</span></li><li><span class="key">Release</span><span>Steuerung abgeben</span></li></ul></div>
+              <div class="blk safe"><h4>Sicherheit</h4><ul class="list"><li><b>Heartbeat:</b> Tab zu oder WLAN weg = Stopp (REAL 0,4 s)</li><li><b>REAL:</b> höchstens 50 % Tempo</li><li><b>Not-Aus:</b> geht von jedem Client</li></ul></div>
+            </div>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═════════ Sicherheit ═════════ -->
+  <section class="block" id="sicherheit">
+    <div class="wrap">
+      <div class="block-head">
+        <div>
+          <div class="eyebrow">Gilt für jeden Weg</div>
+          <h2>Jede Eingabe durchläuft dieselbe Kette</h2>
+        </div>
+        <p>Kein Gerät spricht direkt mit dem Arm.</p>
+      </div>
+
+      <div class="ch-bar">
+        <div class="ch-row" id="ch-ways" role="group" aria-label="Steuerweg wählen"><span class="lbl">Steuerweg</span></div>
+        <div class="ch-row" id="ch-cases" role="group" aria-label="Fall wählen"><span class="lbl">Fall</span></div>
+        <div class="ch-row"><span class="lbl">Ausprobieren</span><button type="button" class="pill go" id="ch-send">▶ Befehl senden</button></div>
+      </div>
+      <div class="chain" id="chain">
+        <div class="link" id="ch-in"><svg class="ico"><use href="#i-pad"/></svg><b>Eingabe</b><span>Gerät oder Browser</span></div>
+        <div class="arrow" aria-hidden="true"><svg class="ico"><use href="#i-right"/></svg></div>
+        <div class="link"><svg class="ico"><use href="#i-lock"/></svg><b>Control-Lock</b><span>Nur ein Bediener</span></div>
+        <div class="arrow" aria-hidden="true"><svg class="ico"><use href="#i-right"/></svg></div>
+        <div class="link"><svg class="ico"><use href="#i-shield"/></svg><b>Vorprüfung</b><span>Tisch-Kollision voraus</span></div>
+        <div class="arrow" aria-hidden="true"><svg class="ico"><use href="#i-right"/></svg></div>
+        <div class="link"><svg class="ico"><use href="#i-cube"/></svg><b>MoveIt</b><span>IK, Kollision, Boden</span></div>
+        <div class="arrow" aria-hidden="true"><svg class="ico"><use href="#i-right"/></svg></div>
+        <div class="link"><svg class="ico"><use href="#i-arm"/></svg><b>xArm Lite 6</b><span>FAKE oder REAL</span></div>
+      </div>
+
+      <p class="ch-msg" id="ch-msg" aria-live="polite"></p>
+      <div class="estop-band">
+        <svg class="ico octo"><use href="#i-octo"/></svg>
+        <b>E-STOP wirkt immer</b>
+        <button type="button" class="estop" id="ch-estop" aria-pressed="false">E-STOP testen</button>
+        <div class="ways"><span>Space</span><span>roter Knopf</span><span>Touch Panel</span><span>VR: 2× Grip + 2× Trigger</span></div>
+      </div>
+
+      <div class="numbers">
+        <div class="num"><strong class="mono">91 mm</strong><span>Gamepad-Stopp über dem Tisch (TCP)</span></div>
+        <div class="num"><strong class="mono">0,1 s</strong><span>Vorausschau der Kollisionsprüfung</span></div>
+        <div class="num"><strong class="mono">0,3 s</strong><span>bis Stopp bei VR-Signalverlust</span></div>
+        <div class="num"><strong class="mono" style="color:var(--gold)">REAL</strong><span>nur nach Bestätigung</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═════════ Übersicht ═════════ -->
+  <section class="block" id="uebersicht">
+    <div class="wrap">
+      <div class="block-head">
+        <div>
+          <div class="eyebrow">Auf einen Blick</div>
+          <h2>Was kann welcher Weg?</h2>
+        </div>
+      </div>
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr><th scope="col" style="text-align:left">Steuerweg</th><th scope="col">Verfahren</th><th scope="col">Drehen</th><th scope="col">Greifer</th><th scope="col">Home</th><th scope="col">Objekt greifen</th><th scope="col">Not-Aus</th></tr>
+          </thead>
+          <tbody>
+            <tr style="--hue: var(--accent)"><th scope="row"><span class="cell"><svg class="ico"><use href="#i-mon"/></svg>Robot Control UI</span></th><td><i class="m full" title="ja"></i></td><td><i class="m full"></i></td><td><i class="m full"></i></td><td><i class="m full"></i></td><td><i class="m full"></i></td><td><i class="m full"></i></td></tr>
+            <tr style="--hue: var(--accent)"><th scope="row"><span class="cell"><svg class="ico"><use href="#i-pad"/></svg>Gamepad</span></th><td><i class="m full"></i></td><td><i class="m part"></i></td><td><i class="m full"></i></td><td><i class="m full"></i></td><td><i class="m none"></i></td><td><i class="m none"></i></td></tr>
+            <tr style="--hue: var(--indigo)"><th scope="row"><span class="cell"><svg class="ico"><use href="#i-vr"/></svg>VR Quest 3</span></th><td><i class="m full"></i></td><td><i class="m full"></i></td><td><i class="m full"></i></td><td><i class="m full"></i></td><td><i class="m part"></i></td><td><i class="m full"></i></td></tr>
+            <tr style="--hue: var(--teal)"><th scope="row"><span class="cell"><svg class="ico"><use href="#i-eye"/></svg>Blick</span></th><td><i class="m full"></i></td><td><i class="m part"></i></td><td><i class="m full"></i></td><td><i class="m full"></i></td><td><i class="m full"></i></td><td><i class="m none"></i></td></tr>
+            <tr style="--hue: var(--gold)"><th scope="row"><span class="cell"><svg class="ico"><use href="#i-mic"/></svg>Sprache</span></th><td><i class="m none"></i></td><td><i class="m none"></i></td><td><i class="m none"></i></td><td><i class="m full"></i></td><td><i class="m part"></i></td><td><i class="m none"></i></td></tr>
+            <tr style="--hue: var(--violet)"><th scope="row"><span class="cell"><svg class="ico"><use href="#i-chat"/></svg>VLA-M-Chat</span></th><td><i class="m none"></i></td><td><i class="m none"></i></td><td><i class="m full"></i></td><td><i class="m none"></i></td><td><i class="m full"></i></td><td><i class="m none"></i></td></tr>
+            <tr style="--hue: var(--violet)"><th scope="row"><span class="cell"><svg class="ico"><use href="#i-key"/></svg>Tastatur</span></th><td><i class="m none"></i></td><td><i class="m none"></i></td><td><i class="m none"></i></td><td><i class="m none"></i></td><td><i class="m none"></i></td><td><i class="m full"></i></td></tr>
+            <tr style="--hue: var(--green)"><th scope="row"><span class="cell"><svg class="ico"><use href="#i-tab"/></svg>Touch Panel</span></th><td><i class="m full"></i></td><td><i class="m full"></i></td><td><i class="m full"></i></td><td><i class="m full"></i></td><td><i class="m none"></i></td><td><i class="m full"></i></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="mx-sum" id="mx-sum" aria-live="polite">Fähigkeit im Tabellenkopf anklicken: Welche Wege können das?</p>
+      <div class="legend">
+        <span><i class="m full"></i>direkt</span>
+        <span><i class="m part"></i>teilweise (z. B. nur Yaw, nur Auswahl)</span>
+        <span><i class="m none"></i>nicht über diesen Weg</span>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <a class="brand" href="#start"><span class="brand-mark"><svg class="ico"><use href="#i-arm"/></svg></span><span>Interakt Control Robot</span></a>
+    <div class="ports">
+      <span>Robot Control UI <b>:8081</b></span>
+      <span>Nexus Webapp <b>:8080</b></span>
+      <span>VR <b>:8443</b></span>
+      <span>rosbridge <b>:9090</b></span>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // Wellenform der Sprach-Karte: feste Höhen, damit sie ohne Zufall gleich aussieht.
+  (function () {
+    var w = document.getElementById('wave');
+    if (!w) return;
+    var h = [10,18,30,22,40,56,34,62,70,48,30,54,66,44,24,38,58,72,50,32,20,36,52,40,26,16,28,20,12,8];
+    w.innerHTML = h.map(function (v) { return '<i style="height:' + v + 'px"></i>'; }).join('');
+  })();
+
+  // Über die Nexus Webapp (/ws/docs/): lokale Schriften, damit es auch ohne Internet gleich aussieht
+  if (location.protocol.indexOf('http') === 0 && /\/ws\/docs\//.test(location.pathname)) {
+    var l = document.createElement('link'); l.rel = 'stylesheet'; l.href = '/vendor/fonts/fonts_modern.css'; document.head.appendChild(l);
+  }
+
+  // ── Kette zum Ausprobieren: Steuerweg + Fall wählen, Befehl läuft Glied für Glied ──
+  (() => {
+    const $ = (s, el = document) => el.querySelector(s), $$ = (s, el = document) => [...el.querySelectorAll(s)];
+    const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const WAYS = [['Gamepad', 'i-pad', 'accent'], ['VR Quest 3', 'i-vr', 'indigo'], ['Blick', 'i-eye', 'teal'], ['Sprache', 'i-mic', 'gold'], ['Tastatur', 'i-key', 'violet'],
+      ['Touch Panel', 'i-tab', 'green'], ['Control UI', 'i-mon', 'accent'], ['3D-Gizmo', 'i-gizmo', 'indigo'], ['VLA-Chat', 'i-chat', 'violet'], ['Remote', 'i-net', 'teal']];
+    const CASES = [['ok', 'Normaler Befehl'], ['lock', 'Zweiter Bediener'], ['table', 'Bahn in den Tisch'], ['reach', 'Ziel außer Reichweite']];
+    const BLOCK = { lock: [1, 'GESPERRT', 'Ein anderer Client hat die Steuerung. Erst „Request control“, dann Freigabe am Roboter-PC.'],
+      table: [2, 'GEBREMST', 'Die Vorprüfung schaut 0,1 s voraus und stoppt die Abwärtsfahrt 91 mm über dem Tisch (TCP).'],
+      reach: [3, 'KEINE LÖSUNG', 'MoveIt findet keine Bahn: Das Ziel liegt außerhalb der 440 mm Reichweite. Der Arm bleibt stehen.'] };
+    const links = $$('#chain .link'), arrows = $$('#chain .arrow');
+    links.forEach(l => { const st = document.createElement('span'); st.className = 'st'; st.textContent = '—'; l.appendChild(st); });
+    let way = 0, kase = 'ok', run = 0, stopped = false;
+    const pill = (txt, ic, c, data, on) => `<button type="button" class="pill" ${data} aria-pressed="${on}" style="--c: var(--${c})">${ic ? `<svg class="ico"><use href="#${ic}"/></svg>` : ''}${txt}</button>`;
+    $('#ch-ways').insertAdjacentHTML('beforeend', WAYS.map(([n, ic, c], i) => pill(n, ic, c, `data-w="${i}"`, i === way)).join(''));
+    $('#ch-cases').insertAdjacentHTML('beforeend', CASES.map(([k, n]) => pill(n, '', k === 'ok' ? 'green' : 'red', `data-c="${k}"`, k === kase)).join(''));
+    const msg = (tag, color, text) => { $('#ch-msg').innerHTML = tag ? `<span class="tag" style="color: var(--${color})">${tag}</span><span>${text}</span>` : ''; };
+    const clear = () => { links.forEach(l => { l.classList.remove('run', 'ok', 'block'); $('.st', l).textContent = '—'; }); arrows.forEach(a => a.classList.remove('flow')); };
+    const setWay = i => {
+      way = i; const [n, ic, c] = WAYS[i], inp = links[0];
+      $('use', inp).setAttribute('href', `#${ic}`); $('b', inp).textContent = n; $('.ico', inp).style.color = `var(--${c})`;
+      $$('#ch-ways [data-w]').forEach(b => b.setAttribute('aria-pressed', String(+b.dataset.w === i)));
+    };
+    const wait = (ms, r) => new Promise(res => setTimeout(() => res(r === run), reduce ? 0 : ms));
+    const send = async () => {
+      if (stopped) return;
+      const r = ++run; clear(); msg('', '', '');
+      const blockAt = BLOCK[kase] ? BLOCK[kase][0] : -1;
+      for (let i = 0; i < links.length; i++) {
+        links[i].classList.add('run');
+        if (!await wait(420, r)) return;
+        links[i].classList.remove('run');
+        if (i === blockAt) {
+          links[i].classList.add('block'); $('.st', links[i]).textContent = BLOCK[kase][1];
+          msg(BLOCK[kase][1], 'red', BLOCK[kase][2]); return;
+        }
+        links[i].classList.add('ok'); $('.st', links[i]).textContent = i === links.length - 1 ? 'FÄHRT' : 'OK';
+        if (arrows[i]) arrows[i].classList.add('flow');
+      }
+      msg('FREIGABE', 'green', `${WAYS[way][0]}: Jedes Glied hat geprüft, der Arm fährt. Dieselbe Kette gilt für alle zehn Wege.`);
+    };
+    $$('#ch-ways [data-w]').forEach(b => b.addEventListener('click', () => { setWay(+b.dataset.w); send(); }));
+    $$('#ch-cases [data-c]').forEach(b => b.addEventListener('click', () => { kase = b.dataset.c; $$('#ch-cases [data-c]').forEach(x => x.setAttribute('aria-pressed', String(x === b))); send(); }));
+    $('#ch-send').addEventListener('click', send);
+    $('#ch-estop').addEventListener('click', e => {
+      const b = e.currentTarget; stopped = !stopped; run++;
+      b.setAttribute('aria-pressed', String(stopped)); b.textContent = stopped ? 'Quittieren' : 'E-STOP testen';
+      $('#ch-send').disabled = stopped; clear();
+      if (stopped) { links.forEach(l => { l.classList.add('block'); $('.st', l).textContent = 'STOPP'; }); msg('E-STOP', 'red', 'Alle Wege gesperrt, Gelenke auf Geschwindigkeit 0. Weiter erst nach Quittieren.'); }
+      else msg('BEREIT', 'green', 'Quittiert. Steuerweg wählen und Befehl senden.');
+    });
+    setWay(0);
+    new IntersectionObserver((es, o) => { if (es[0].isIntersecting) { o.disconnect(); send(); } }, { threshold: .5 }).observe($('#chain'));
+
+    // ── Matrix: Fähigkeit anklicken → Spalte hervorheben, Wege zählen ──
+    const heads = $$('thead th').slice(1), rows = $$('tbody tr');
+    heads.forEach((th, ci) => {
+      th.innerHTML = `<button type="button" aria-pressed="false">${th.textContent}</button>`;
+      $('button', th).addEventListener('click', e => {
+        const on = e.currentTarget.getAttribute('aria-pressed') !== 'true';
+        heads.forEach(h => { $('button', h).setAttribute('aria-pressed', 'false'); h.classList.remove('hl'); });
+        rows.forEach(tr => [...tr.children].forEach(td => td.classList.remove('hl')));
+        if (!on) { $('#mx-sum').textContent = 'Fähigkeit im Tabellenkopf anklicken: Welche Wege können das?'; return; }
+        e.currentTarget.setAttribute('aria-pressed', 'true'); th.classList.add('hl');
+        let full = [], part = [];
+        rows.forEach(tr => { const td = tr.children[ci + 1]; td.classList.add('hl'); const name = tr.querySelector('th').textContent.trim();
+          if (td.querySelector('.full')) full.push(name); else if (td.querySelector('.part')) part.push(name); });
+        $('#mx-sum').textContent = `${th.textContent}: ${full.length} Wege direkt${part.length ? `, ${part.length} teilweise (${part.join(', ')})` : ''}.`;
+      });
+    });
+  })();
+</script>
+</body>
+</html>

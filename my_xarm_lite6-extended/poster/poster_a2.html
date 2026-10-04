@@ -1,0 +1,454 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Poster Interakt Control Robot</title>
+<link rel="stylesheet" href="../fonts/fonts.css">
+<style>
+/* =========================================================
+   A2-Pitch-Poster (420 × 594 mm, Hochformat)
+   Bildschirm: skaliert auf Fensterbreite · Druck: 1:1 auf A2
+   Lesefluss: Claim → Kernmerkmale → Mensch im Zentrum
+              → Highlight → UX · Sicherheit · Evaluation → Stack + Ausblick
+   Texte: Skill project-copy (Leitclaim + Merkmal-Slogans wortgleich)
+   ========================================================= */
+:root {
+  --ink: #0E1A2B;
+  --ink-2: #2B3850;
+  --paper: #F6F3EC;
+  --card: #FFFFFF;
+  --line: #E2DCCF;
+
+  --teal: #0C9C9A;      /* Mensch · UX */
+  --teal-lt: #5FE0D6;
+  --teal-bg: #E3F4F2;
+  --violet: #6A55CF;    /* KI · Evaluation */
+  --violet-lt: #B3A6FF;
+  --violet-bg: #EEEAFB;
+  --blue: #2159D6;      /* Vision · Info */
+  --blue-bg: #E6EDFC;
+  --amber: #C98600;     /* Sicherheit */
+  --amber-bg: #FCF1D8;
+  --coral: #E4572E;     /* Roboter · Aktion */
+  --coral-bg: #FCE8E1;
+
+  --f-head: "Space Grotesk", "Inter", system-ui, sans-serif;
+  --f-body: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono: "JetBrains Mono", ui-monospace, monospace;
+
+  --pad: 14mm;
+  --gap: 5mm;
+  --r: 4mm;
+}
+
+@page { size: 420mm 594mm; margin: 0; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { background: #2A2F38; }
+body { font-family: var(--f-body); color: var(--ink); -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+.stage { display: flex; justify-content: center; padding: 16px; }
+.scaler { transform-origin: top left; }
+.poster {
+  width: 420mm; height: 594mm; overflow: hidden;
+  background: var(--paper);
+  display: flex; flex-direction: column;
+  font-size: 11.5pt; line-height: 1.38;
+  box-shadow: 0 20px 60px rgba(0,0,0,.45);
+}
+@media print {
+  html, body { background: none; }
+  .stage { padding: 0; display: block; }
+  .scaler { transform: none !important; width: auto !important; height: auto !important; }
+  .poster { box-shadow: none; }
+}
+
+svg.i { display: block; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.kick { font-family: var(--f-mono); font-weight: 700; font-size: 9pt; letter-spacing: .09em; text-transform: uppercase; }
+
+/* ---------- Hero ---------- */
+.hero {
+  background: radial-gradient(120% 90% at 0% 0%, #123A45 0%, var(--ink) 55%) , var(--ink);
+  color: #fff; display: grid; grid-template-columns: 1fr 168mm; min-height: 0;
+}
+.hero-text { padding: 8mm 10mm 6mm var(--pad); display: flex; flex-direction: column; gap: 2.6mm; min-width: 0; }
+.hero .kick { color: var(--teal-lt); }
+.hero h1 { font-family: var(--f-head); font-weight: 700; font-size: 50pt; line-height: .95; letter-spacing: -.025em; }
+.hero h1 em { font-style: normal; color: var(--teal-lt); display: block; }
+.claim { font-family: var(--f-head); font-size: 17pt; line-height: 1.2; font-weight: 500; color: #fff; }
+.claim b { color: var(--teal-lt); font-weight: 600; }
+.sub { font-size: 12.5pt; line-height: 1.4; color: #D5DEEA; max-width: 200mm; }
+.author { margin-top: auto; font-size: 10.5pt; color: #C7D2E0; }
+.author b { color: #fff; font-weight: 600; }
+/* Label vor einem Doppelpunkt: eigene Zeile, Farbe des Blocks */
+.lbl { display: block; font-weight: 700; color: var(--c, var(--teal)); }
+.hero .lbl { --c: var(--teal-lt); }
+.author .lbl { display: inline; }
+.hero-photo { width: 100%; height: 100%; object-fit: cover; object-position: 45% 55%; display: block; min-height: 0; }
+
+.kpis { background: #0A1422; color: #fff; display: grid; grid-template-columns: repeat(4, 1fr); padding: 3.5mm var(--pad); gap: 6mm; }
+.kpi + .kpi { padding-left: 6mm; box-shadow: -.3mm 0 0 rgba(255,255,255,.14); }
+.band { display: grid; grid-template-columns: 30fr 25fr 20fr 13fr 12fr; height: 1.6mm; }
+.band i { display: block; }
+.kpi { display: flex; align-items: center; gap: 4mm; min-width: 0; }
+.kpi b { font-family: var(--f-head); font-weight: 700; font-size: 32pt; line-height: 1; color: var(--c); white-space: nowrap; }
+.kpi span { font-size: 11pt; line-height: 1.3; color: #E3EAF3; }
+.kpi span strong { display: block; color: #fff; font-size: 12.5pt; }
+
+/* ---------- Body ---------- */
+.body { flex: 1; min-height: 0; padding: 4mm var(--pad) 3.5mm; display: flex; flex-direction: column; justify-content: space-between; gap: 4mm; }
+.sec-title { display: flex; align-items: center; gap: 4mm; }
+.sec-title .tags { margin-left: auto; display: flex; gap: 2.5mm; }
+.sec-title h2 { font-family: var(--f-head); font-size: 21pt; line-height: 1.05; letter-spacing: -.015em; }
+.sec-title .no { font-family: var(--f-mono); font-weight: 700; font-size: 10pt; color: #fff; background: var(--ink); border-radius: 1.6mm; padding: 1mm 2.2mm; }
+.sec-title .kick { color: var(--c, var(--teal)); }
+
+/* Kernmerkmale: 8 Kacheln (Stichwort, Slogan, ein Faktensatz) */
+.feats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 2.5mm; }
+.ft { border-radius: 3mm; padding: 1.8mm 4mm; background: var(--bg); min-width: 0; }
+.ft .kick { color: var(--c); display: block; }
+.ft b { display: block; font-family: var(--f-head); font-size: 13.5pt; line-height: 1.15; margin-top: .5mm; }
+.ft p { font-size: 10pt; line-height: 1.25; color: var(--ink-2); margin-top: .5mm; }
+
+/* Funktionsprinzip: Ablauf in 6 Stationen + Rückmeldeschleife, Matrix, Geräte */
+.prin { background: var(--card); border: .3mm solid var(--line); border-radius: var(--r); padding: 4mm 6mm 4.5mm; display: flex; flex-direction: column; gap: 2.8mm; }
+.estop-bar { display: flex; align-items: center; gap: 3mm; background: #FDECEA; border: .4mm solid #D93A2B; border-radius: 2.4mm; padding: 1.1mm 4mm; font-size: 10pt; color: #8E1F14; }
+.estop-bar svg { width: 6mm; height: 6mm; color: #D93A2B; flex: none; }
+.estop-bar b { color: #B3261E; }
+.flowc { position: relative; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 7mm; padding-bottom: 10mm; }
+.st { position: relative; background: var(--bg); border: .35mm solid var(--c); border-radius: 3mm; padding: 2.4mm 3mm; display: flex; flex-direction: column; gap: 1.1mm; min-width: 0; }
+.st + .st::before { content: ""; position: absolute; left: -6.2mm; top: 50%; width: 5.2mm; height: .5mm; background: var(--ink-2); }
+.st + .st::after { content: ""; position: absolute; left: -1.7mm; top: calc(50% - 1.1mm); width: 1.6mm; height: 2.2mm; background: var(--ink-2); clip-path: polygon(0 0, 100% 50%, 0 100%); }
+.st .top { display: flex; align-items: center; gap: 2mm; }
+.st .n { font-family: var(--f-mono); font-weight: 700; font-size: 9pt; width: 6mm; height: 6mm; border-radius: 50%; background: var(--c); color: #fff; display: grid; place-items: center; flex: none; }
+.st .ic { width: 6mm; height: 6mm; color: var(--c); margin-left: auto; }
+.st h3 { font-family: var(--f-head); font-size: 14pt; line-height: 1.05; }
+.st p { font-size: 9.8pt; line-height: 1.26; color: var(--ink-2); }
+.st .who { align-self: flex-start; font-family: var(--f-mono); font-weight: 700; font-size: 7.8pt; letter-spacing: .06em; padding: .6mm 2mm; border-radius: 99px; border: .3mm solid var(--c); color: var(--c); background: #fff; }
+.st .icons { display: flex; gap: 1.3mm; color: var(--c); }
+.st .icons svg { width: 4.6mm; height: 4.6mm; }
+.loop { position: absolute; left: 0; right: 0; bottom: 0; height: 10mm; width: 100%; overflow: visible; }
+.loop-lbl { position: absolute; left: 50%; bottom: 0; transform: translate(-50%, 35%); background: var(--card); padding: 0 3mm; font-size: 10pt; font-weight: 600; color: var(--ink); white-space: nowrap; }
+.loop-lbl b { color: var(--teal); }
+.prin-low { display: grid; grid-template-columns: 1.15fr 1fr; gap: 7mm; align-items: start; }
+.sub-h { display: flex; align-items: baseline; gap: 3mm; margin-bottom: 2mm; }
+.sub-h h3 { font-family: var(--f-head); font-size: 14pt; }
+.sub-h .kick { color: var(--ink-2); font-size: 8.4pt; }
+.mx { width: 100%; border-collapse: separate; border-spacing: 1mm; font-size: 9.4pt; }
+.mx th { font-weight: 700; text-align: left; line-height: 1.15; }
+.mx thead th { font-family: var(--f-mono); font-size: 7.8pt; letter-spacing: .03em; text-transform: uppercase; color: var(--ink-2); text-align: center; vertical-align: bottom; }
+.mx tbody th { font-family: var(--f-head); font-size: 11pt; white-space: nowrap; padding-right: 1.5mm; }
+.mx tbody th small { display: block; font-family: var(--f-body); font-weight: 500; font-size: 8.6pt; color: var(--ink-2); }
+.mx td { text-align: center; border-radius: 1.6mm; height: 7mm; font-family: var(--f-mono); font-weight: 700; font-size: 9pt; }
+.mx td.m { background: var(--teal-bg); color: #08605E; }
+.mx td.s { background: var(--violet-bg); color: #4B39A8; }
+.mx td.fix { box-shadow: inset 0 0 0 .4mm currentColor; }
+.mx-leg { display: flex; gap: 4mm; flex-wrap: wrap; font-size: 9pt; color: var(--ink-2); margin-top: 1.4mm; }
+.mx-leg span { display: inline-flex; align-items: center; gap: 1.4mm; }
+.mx-leg i { font-style: normal; font-family: var(--f-mono); font-weight: 700; font-size: 8pt; border-radius: 1.2mm; padding: .3mm 1.6mm; }
+.devs { display: grid; grid-template-columns: 1fr 1fr; gap: 2mm; }
+.dev { display: grid; grid-template-columns: 9mm 1fr; gap: 2.4mm; align-items: center; background: var(--bg); border-radius: 2.4mm; padding: 1.5mm 2.4mm; }
+.dev .dot { width: 9mm; height: 9mm; border-radius: 50%; background: var(--c); color: #fff; display: grid; place-items: center; }
+.dev .dot svg { width: 5.6mm; height: 5.6mm; }
+.dev b { display: block; font-family: var(--f-head); font-size: 11.5pt; line-height: 1.1; }
+.dev b small { font-family: var(--f-mono); font-size: 7.6pt; color: var(--c); margin-left: 1.5mm; font-weight: 700; }
+.dev span { font-size: 9.2pt; line-height: 1.22; color: var(--ink-2); }
+.dev-h { display: flex; justify-content: space-between; font-family: var(--f-mono); font-weight: 700; font-size: 8pt; letter-spacing: .08em; text-transform: uppercase; margin-bottom: 1.4mm; }
+
+/* Highlight */
+.hl { background: radial-gradient(90% 140% at 100% 0%, #3A2D7A 0%, #1A1640 45%, #0E1A2B 100%); color: #fff; border-radius: var(--r); padding: 5mm 6mm; display: grid; grid-template-columns: 1fr 80mm; gap: 6mm; }
+.hl-main { display: flex; flex-direction: column; gap: 2.6mm; min-width: 0; }
+.hl-badge { align-self: flex-start; display: inline-flex; align-items: center; gap: 2mm; background: #FFC845; color: #2A1C00; border-radius: 99px; padding: 1.2mm 4mm; }
+.hl-badge svg { width: 4.5mm; height: 4.5mm; fill: currentColor; stroke: none; }
+.hl h2 { font-family: var(--f-head); font-size: 26pt; line-height: 1; letter-spacing: -.02em; }
+.hl h2 em { font-style: normal; color: var(--violet-lt); }
+.hl .lead { font-size: 12.5pt; color: #E4E0FA; }
+.flow { display: grid; grid-template-columns: 1.25fr 7mm 1.15fr 7mm .8fr 7mm 1fr; align-items: stretch; }
+.fs { background: rgba(255,255,255,.07); border: .35mm solid rgba(179,166,255,.35); border-radius: 3mm; padding: 2.6mm 3.4mm; display: flex; flex-direction: column; gap: 2mm; min-width: 0; }
+.fs .kick { color: var(--violet-lt); font-size: 8.4pt; }
+.bubble { background: #F4F1FF; color: var(--ink); border-radius: 3mm 3mm 3mm .8mm; padding: 2.4mm 3mm; font-family: var(--f-head); font-size: 12pt; line-height: 1.25; font-weight: 500; }
+.fs ol { list-style: none; counter-reset: s; display: flex; flex-direction: column; gap: 1.2mm; font-size: 10.6pt; line-height: 1.25; }
+.fs ol li { counter-increment: s; display: grid; grid-template-columns: 5.2mm 1fr; gap: 1.6mm; }
+.fs ol li::before { content: counter(s); font-family: var(--f-mono); font-weight: 700; font-size: 8.4pt; width: 5.2mm; height: 5.2mm; border-radius: 50%; background: var(--violet); display: grid; place-items: center; }
+.btn-ok { display: inline-flex; align-items: center; gap: 2mm; align-self: flex-start; background: #2F6BFF; color: #fff; font-weight: 700; font-size: 11pt; border-radius: 2mm; padding: 1.8mm 4mm; }
+.btn-ok svg { width: 4mm; height: 4mm; fill: currentColor; stroke: none; }
+.fs p { font-size: 10.6pt; line-height: 1.3; color: #E4E0FA; }
+.flow .arr { display: grid; place-items: center; color: var(--violet-lt); }
+.flow .arr svg { width: 5mm; height: 5mm; }
+.hl-chips { display: flex; flex-wrap: wrap; gap: 2.5mm; }
+.hl-chips span { font-size: 10pt; font-weight: 600; border: .35mm solid rgba(179,166,255,.45); border-radius: 99px; padding: 1mm 3.5mm; color: #EDEAFF; }
+.hl-side { display: flex; flex-direction: column; gap: 3mm; min-width: 0; }
+.hl-shot { margin: 0; border-radius: 3mm; overflow: hidden; background: #0B1220; border: .35mm solid rgba(179,166,255,.35); display: flex; flex-direction: column; flex: 1; min-height: 0; }
+.hl-shot img { width: 100%; flex: 1; min-height: 0; object-fit: cover; display: block; }
+.hl-shot figcaption { padding: 2.5mm 3.5mm; font-size: 10.4pt; line-height: 1.3; color: #E4E0FA; }
+.hl-shot figcaption b { color: #fff; font-family: var(--f-head); font-size: 12pt; display: block; }
+
+/* Drei Karten */
+.trio { display: grid; grid-template-columns: 1.3fr 1fr 1fr; gap: var(--gap); }
+.card { background: var(--card); border-radius: var(--r); border: .3mm solid var(--line); padding: 4mm 5mm; display: flex; flex-direction: column; gap: 2.8mm; min-width: 0; }
+.card h2 { font-family: var(--f-head); font-size: 19pt; line-height: 1.08; letter-spacing: -.01em; }
+.card > .kick { color: var(--c); display: flex; align-items: center; gap: 2.4mm; }
+.card > .kick .bi { width: 8mm; height: 8mm; border-radius: 2.2mm; background: var(--bg); display: grid; place-items: center; }
+.card > .kick .bi svg { width: 5mm; height: 5mm; }
+.shot { width: 100%; display: block; border-radius: 2mm; border: .3mm solid #C9D3E0; }
+.shot.rcu { aspect-ratio: 16 / 6; object-fit: cover; object-position: top; }
+.shot.mon { aspect-ratio: 16 / 7; object-fit: cover; object-position: top left; }
+.rules { display: grid; grid-template-columns: 1fr 1fr; gap: 2.5mm 4mm; }
+.rule { display: grid; grid-template-columns: 9mm 1fr; gap: 2.5mm; align-items: start; }
+.rule .ic, .safe .ic { width: 9mm; height: 9mm; border-radius: 2.4mm; background: var(--bg); color: var(--c); display: grid; place-items: center; }
+.rule .ic svg, .safe .ic svg { width: 5.5mm; height: 5.5mm; }
+.rule b, .safe b { display: block; font-size: 11pt; line-height: 1.2; }
+.rule span, .safe span { font-size: 10pt; line-height: 1.28; color: var(--ink-2); }
+.norms { display: flex; flex-wrap: wrap; gap: 2mm; align-items: center; margin-top: auto; }
+.norms em { font-style: normal; font-size: 9.6pt; font-weight: 600; color: var(--ink-2); margin-right: 1mm; }
+.norms span { font-family: var(--f-mono); font-size: 8.6pt; font-weight: 700; color: var(--teal); background: var(--teal-bg); border-radius: 99px; padding: .8mm 2.8mm; }
+.safe-list { display: flex; flex-direction: column; gap: 3.5mm; }
+.safe { display: grid; grid-template-columns: 9mm 1fr; gap: 3mm; align-items: start; }
+.safe.stop .ic { background: #D93A2B; color: #fff; }
+.real { margin-top: auto; display: grid; grid-template-columns: 1fr 7mm 1fr; align-items: center; gap: 1.5mm; font-size: 10pt; font-weight: 700; text-align: center; }
+.real div { border-radius: 2mm; padding: 2mm; }
+.real .f { background: #E9ECF1; color: var(--ink); }
+.real .r { background: var(--coral-bg); color: #A8321A; border: .45mm solid var(--coral); }
+.real svg { width: 5mm; height: 5mm; color: #8C96A6; justify-self: center; }
+.study { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.6mm; }
+.step { background: var(--violet-bg); border-radius: 2mm; padding: 1.8mm 2mm; font-size: 10pt; line-height: 1.2; font-weight: 600; text-align: center; }
+.step i { display: block; font-style: normal; font-family: var(--f-mono); font-size: 8.2pt; color: var(--violet); }
+.metrics { display: flex; flex-wrap: wrap; gap: 1.8mm; }
+.metrics span { font-size: 9.8pt; font-weight: 600; border: .35mm solid #CFC6F4; border-radius: 99px; padding: .8mm 2.8mm; }
+.card p.note { font-size: 10.4pt; line-height: 1.32; color: var(--ink-2); }
+
+/* ---------- Footer ---------- */
+.foot { background: var(--ink); color: #fff; padding: 4mm var(--pad); display: grid; grid-template-columns: 1fr 88mm; gap: 9mm; align-items: center; }
+.road-head { display: flex; align-items: baseline; justify-content: space-between; gap: 4mm; margin-bottom: 2.5mm; }
+.road-head .kick { color: var(--teal-lt); }
+.stack { font-size: 9.6pt; color: #C7D2E0; text-align: right; }
+.stack b { color: #fff; font-weight: 600; }
+.road { display: grid; grid-template-columns: repeat(5, 1fr); gap: 3mm; }
+.road { position: relative; }
+.road::before { content: ""; position: absolute; left: 1.6mm; right: 0; top: 1.6mm; height: .4mm; background: #4A5A74; }
+.rs { position: relative; padding-top: 5.2mm; font-size: 10pt; line-height: 1.25; color: #D2DBE7; }
+.rs::before { content: ""; position: absolute; left: 0; top: 0; width: 3.2mm; height: 3.2mm; border-radius: 50%; background: var(--ink); box-shadow: 0 0 0 .5mm #8193AE; }
+.rs b { display: block; color: #fff; font-family: var(--f-head); font-size: 12pt; margin-bottom: .6mm; }
+.rs.done::before { background: var(--teal-lt); box-shadow: 0 0 0 .5mm var(--teal-lt); }
+.rs.done b::before { content: "✓ "; color: var(--teal-lt); }
+.rs.next::before { box-shadow: 0 0 0 .5mm #FFC845; }
+.contact { display: grid; grid-template-columns: 1fr 28mm; gap: 4mm; align-items: center; }
+.contact p { font-size: 10pt; color: #D2DBE7; line-height: 1.4; }
+.contact p b { color: #fff; font-family: var(--f-head); font-size: 15pt; display: block; margin-bottom: .6mm; }
+.qr { width: 28mm; display: grid; gap: 1.2mm; justify-items: center; font-family: var(--f-mono); font-size: 7.6pt; color: #C7D2E0; text-align: center; }
+.qr svg { width: 28mm; height: 28mm; border-radius: 1.8mm; display: block; }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3.2"/></symbol>
+    <symbol id="i-mic" viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7"/></symbol>
+    <symbol id="i-chat" viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/><path d="M12 7.6l.8 1.8 1.8.8-1.8.8-.8 1.8-.8-1.8-1.8-.8 1.8-.8z"/></symbol>
+    <symbol id="i-pad" viewBox="0 0 24 24"><path d="M7 7h10a5 5 0 0 1 4.8 6.4l-1 3.6a2.6 2.6 0 0 1-4.4 1.1L14 16h-4l-2.4 2.1a2.6 2.6 0 0 1-4.4-1.1l-1-3.6A5 5 0 0 1 7 7z"/><path d="M7.5 10.5v3M6 12h3M16 11h.01M17.5 13h.01"/></symbol>
+    <symbol id="i-vr" viewBox="0 0 24 24"><path d="M3 8.5A1.5 1.5 0 0 1 4.5 7h15A1.5 1.5 0 0 1 21 8.5v6a1.5 1.5 0 0 1-1.5 1.5h-3.8l-2-2.5h-3.4l-2 2.5H4.5A1.5 1.5 0 0 1 3 14.5z"/><circle cx="8" cy="11.3" r="1.4"/><circle cx="16" cy="11.3" r="1.4"/></symbol>
+    <symbol id="i-touch" viewBox="0 0 24 24"><rect x="2.5" y="4" width="19" height="13" rx="1.5"/><path d="M8 21h8M12 17v4"/><path d="M11 8.5l5 1.8-2.2.8-.8 2.2z"/></symbol>
+    <symbol id="i-vision" viewBox="0 0 24 24"><path d="M3 8V5.5A2.5 2.5 0 0 1 5.5 3H8M16 3h2.5A2.5 2.5 0 0 1 21 5.5V8M21 16v2.5a2.5 2.5 0 0 1-2.5 2.5H16M8 21H5.5A2.5 2.5 0 0 1 3 18.5V16"/><circle cx="12" cy="12" r="3.6"/></symbol>
+    <symbol id="i-lock" viewBox="0 0 24 24"><rect x="4.5" y="10.5" width="15" height="10" rx="2"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/></symbol>
+    <symbol id="i-hand" viewBox="0 0 24 24"><path d="M8 13V5.5a1.5 1.5 0 0 1 3 0V11M11 11V4a1.5 1.5 0 0 1 3 0v7M14 11V5.5a1.5 1.5 0 0 1 3 0V13M17 9.5a1.5 1.5 0 0 1 3 0V14a7 7 0 0 1-7 7h-1a7 7 0 0 1-5.5-2.7L4 15.5a1.6 1.6 0 0 1 2.5-2L8 15"/></symbol>
+    <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3l8 3v6c0 4.5-3.4 8.2-8 9-4.6-.8-8-4.5-8-9V6z"/><path d="M8.5 12l2.5 2.5 4.5-5"/></symbol>
+    <symbol id="i-cube" viewBox="0 0 24 24"><path d="M12 2.8l8 4.4v9.6l-8 4.4-8-4.4V7.2z"/><path d="M4 7.2l8 4.4 8-4.4M12 11.6v9.6"/></symbol>
+    <symbol id="i-palette" viewBox="0 0 24 24"><circle cx="7" cy="12" r="3"/><circle cx="17" cy="12" r="3"/><path d="M10 12h4"/></symbol>
+    <symbol id="i-grid" viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.5"/></symbol>
+    <symbol id="i-access" viewBox="0 0 24 24"><circle cx="12" cy="4.5" r="1.8"/><path d="M5 8.5l7 1.5 7-1.5M12 10v5l-3.5 6M12 15l3.5 6"/></symbol>
+    <symbol id="i-stop" viewBox="0 0 24 24"><path d="M8.2 3h7.6L21 8.2v7.6L15.8 21H8.2L3 15.8V8.2z"/><path d="M8.5 12h7"/></symbol>
+    <symbol id="i-person" viewBox="0 0 24 24"><circle cx="12" cy="7" r="4"/><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"/></symbol>
+    <symbol id="i-block" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/></symbol>
+    <symbol id="i-bulb" viewBox="0 0 24 24"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0 0 12 3z"/></symbol>
+    <symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.2"/></symbol>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M4 12h15M13 6l6 6-6 6"/></symbol>
+    <symbol id="i-play" viewBox="0 0 24 24"><path d="M7 4.5v15l12-7.5z"/></symbol>
+    <symbol id="i-star" viewBox="0 0 24 24"><path d="M12 2.5l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.4l-5.9 3.1 1.2-6.5L2.5 9.4l6.6-.9z"/></symbol>
+  </defs>
+</svg>
+
+<div class="stage">
+<div class="scaler" id="scaler">
+<main class="poster" id="poster">
+
+  <!-- ===================== HERO ===================== -->
+  <header class="hero">
+    <div class="hero-text">
+      <div class="kick">Interakt Control Robot · Hochschule Rhein-Waal · Open Source</div>
+      <h1>Der Mensch führt.<em>Die KI assistiert.</em></h1>
+      <p class="claim">Schauen. Sprechen. Zeigen.<br><b>Der Arm fährt erst nach Freigabe.</b></p>
+      <p class="sub"><span class="lbl">Assistive Robotik-Plattform für den xArm Lite 6 auf Basis von ROS 2 Humble:</span>Das System schlägt vor, der Mensch entscheidet. Jede Person steuert über den Weg, der zu ihr passt, ohne Programmierkenntnisse.</p>
+      <div class="author"><b>Marius Kaul</b><br><span class="lbl">Betreuung:</span> Prof. Dr. Kai Essig · Hochschule Rhein-Waal · 2026</div>
+    </div>
+    <img class="hero-photo" src="img/hero_robot.jpg" alt="Roboterarm xArm Lite 6 mit Kamera über einem Arbeitstisch mit farbigen Bauteilen">
+  </header>
+
+  <section class="kpis" aria-label="Kennzahlen">
+    <div class="kpi" style="--c: var(--teal-lt)"><b>10</b><span><strong>Steuerwege</strong>eine Sicherheitskette</span></div>
+    <div class="kpi" style="--c: var(--violet-lt)"><b>1 Satz</b><span><strong>genügt</strong>die KI plant die Schritte</span></div>
+    <div class="kpi" style="--c: #FFC845"><b>0</b><span><strong>Installation</strong>Bedienung im Browser</span></div>
+    <div class="kpi" style="--c: #FF8A66"><b>100&nbsp;%</b><span><strong>Open Source</strong>auf Standard-Hardware</span></div>
+  </section>
+  <div class="band" aria-hidden="true"><i style="background: var(--teal)"></i><i style="background: var(--violet)"></i><i style="background: var(--blue)"></i><i style="background: var(--amber)"></i><i style="background: var(--coral)"></i></div>
+
+  <div class="body">
+
+    <!-- ===================== Kernmerkmale ===================== -->
+    <div class="sec-title"><span class="no">01</span><h2>Kernmerkmale</h2><span class="kick" style="--c: var(--ink-2)">Acht Merkmale, ein Prinzip: Das System schlägt vor, der Mensch entscheidet.</span></div>
+    <section class="feats" aria-label="Kernmerkmale">
+      <div class="ft" style="--c: var(--teal); --bg: var(--teal-bg)"><span class="kick">Digital Twin · Physik</span><b>Erst virtuell, dann real.</b><p>Live-3D-Zwilling mit Rapier-Physik-Sandbox.</p></div>
+      <div class="ft" style="--c: var(--blue); --bg: var(--blue-bg)"><span class="kick">Virtuelle Objekte</span><b>Testen ohne Aufbau.</b><p>Würfel, Flasche, Korb: in MoveIt geprüft.</p></div>
+      <div class="ft" style="--c: var(--amber); --bg: var(--amber-bg)"><span class="kick">Kontrolle · Überwachung</span><b>Alles im Blick. Jederzeit eingreifen.</b><p>Roboterzustand, ZED, OctoMap, Blackbox live.</p></div>
+      <div class="ft" style="--c: var(--violet); --bg: var(--violet-bg)"><span class="kick">Assistive Autonomie</span><b>Die KI plant. Der Mensch gibt frei.</b><p>Der KI-Agent macht aus Sprache Abläufe.</p></div>
+      <div class="ft" style="--c: var(--teal); --bg: var(--teal-bg)"><span class="kick">Web · Remote</span><b>Öffnen statt installieren.</b><p>Browser, Heimnetz, Quest 3 per WebXR.</p></div>
+      <div class="ft" style="--c: var(--amber); --bg: var(--amber-bg)"><span class="kick">Sicherheit</span><b>Eine Kette für jede Eingabe.</b><p>Control-Lock, Vorprüfung, MoveIt, E-STOP.</p></div>
+      <div class="ft" style="--c: var(--blue); --bg: var(--blue-bg)"><span class="kick">Open Source</span><b>Offen, nachbaubar, erweiterbar.</b><p>Apache 2.0, ROS 2 Humble, MoveIt 2.</p></div>
+      <div class="ft" style="--c: var(--coral); --bg: var(--coral-bg)"><span class="kick">Multimodal · Modular</span><b>Austauschbar statt festgelegt.</b><p>Geräte, Kameras, KI-Modelle einzeln ersetzbar.</p></div>
+    </section>
+
+    <!-- ===================== Funktionsprinzip ===================== -->
+    <section class="prin">
+      <div class="sec-title"><span class="no">02</span><h2>Funktionsprinzip: ein Kreislauf, der Mensch entscheidet</h2><span class="kick" style="--c: var(--teal)">Human-in-the-Loop</span></div>
+      <div class="estop-bar"><svg class="i"><use href="#i-stop"/></svg><span><b>E-STOP wirkt auf jeder Stufe:</b> ein Tastendruck stoppt Plan, Vorschau und Fahrt, auch mitten in einer KI-Aufgabe.</span></div>
+      <div class="flowc">
+        <div class="st" style="--c: var(--teal); --bg: var(--teal-bg)"><div class="top"><span class="n">1</span><span class="who">MENSCH</span></div><h3>Eingeben</h3><div class="icons"><svg class="i"><use href="#i-eye"/></svg><svg class="i"><use href="#i-mic"/></svg><svg class="i"><use href="#i-chat"/></svg><svg class="i"><use href="#i-pad"/></svg><svg class="i"><use href="#i-vr"/></svg><svg class="i"><use href="#i-touch"/></svg></div><p>Sechs Geräte, zehn Steuerwege. Jeder wählt den Weg, der zu ihm passt.</p></div>
+        <div class="st" style="--c: var(--violet); --bg: var(--violet-bg)"><div class="top"><span class="n">2</span><span class="who">SYSTEM</span><svg class="i ic"><use href="#i-bulb"/></svg></div><h3>Planen</h3><p>MoveIt plant kollisionsfrei, der KI-Agent zerlegt Aufgaben in Skills.</p></div>
+        <div class="st" style="--c: var(--blue); --bg: var(--blue-bg)"><div class="top"><span class="n">3</span><span class="who">SYSTEM</span><svg class="i ic"><use href="#i-cube"/></svg></div><h3>Vorschau</h3><p>Der Ghost im Digital Twin zeigt die Bahn vor der Fahrt.</p></div>
+        <div class="st" style="--c: var(--teal); --bg: var(--teal-bg)"><div class="top"><span class="n">4</span><span class="who">MENSCH</span><svg class="i ic"><use href="#i-hand"/></svg></div><h3>Freigeben</h3><p>Ohne Freigabe fährt nichts. Ohne Antwort verfällt der Plan nach 15&nbsp;s.</p></div>
+        <div class="st" style="--c: var(--amber); --bg: var(--amber-bg)"><div class="top"><span class="n">5</span><span class="who">SYSTEM</span><svg class="i ic"><use href="#i-shield"/></svg></div><h3>Prüfen</h3><p>Control-Lock, Vorprüfung, MoveIt: dieselbe Kette für jeden Weg.</p></div>
+        <div class="st" style="--c: var(--coral); --bg: var(--coral-bg)"><div class="top"><span class="n">6</span><span class="who">ROBOTER</span><svg class="i ic"><use href="#i-target"/></svg></div><h3>Ausführen</h3><p>xArm Lite 6 fährt, FAKE simuliert oder REAL nach Bestätigung.</p></div>
+        <svg class="loop" viewBox="0 0 1000 40" preserveAspectRatio="none" aria-hidden="true"><path d="M915 0 V22 Q915 34 903 34 H97 Q85 34 85 22 V6" fill="none" stroke="#0C9C9A" stroke-width="2.2" stroke-dasharray="7 6" vector-effect="non-scaling-stroke"/><path d="M79 10 L85 0 L91 10 Z" fill="#0C9C9A"/></svg>
+        <span class="loop-lbl"><b>Rückmeldung:</b> Digital Twin live · Monitoring Dashboard · Blackbox. Der Mensch greift jederzeit ein.</span>
+      </div>
+      <div class="prin-low">
+        <div>
+          <div class="sub-h"><h3>Wer macht was?</h3><span class="kick">Drei Autonomiestufen, jederzeit wechselbar</span></div>
+          <table class="mx">
+            <thead><tr><th></th><th>Aufgabe vorgeben</th><th>Objekt wählen</th><th>Bahn planen</th><th>Fein&shy;bewegung</th><th>Kollision prüfen</th><th>Freigeben &amp; stoppen</th></tr></thead>
+            <tbody><tr><th>Manuell<small>Gamepad · VR · Jogging</small></th><td class="m fix">M</td><td class="m">M</td><td class="m">M</td><td class="m">M</td><td class="s fix">S</td><td class="m fix">M</td></tr><tr><th>Assistiert<small>Blick · Klick · 3D-Gizmo</small></th><td class="m fix">M</td><td class="m">M</td><td class="s">S</td><td class="s">S</td><td class="s fix">S</td><td class="m fix">M</td></tr><tr><th>Delegiert<small>KI-Chat · Sprache</small></th><td class="m fix">M</td><td class="s">S</td><td class="s">S</td><td class="s">S</td><td class="s fix">S</td><td class="m fix">M</td></tr></tbody>
+          </table>
+          <div class="mx-leg"><span><i style="background: var(--teal-bg); color: #08605E">M</i>Mensch</span><span><i style="background: var(--violet-bg); color: #4B39A8">S</i>System</span><span><i style="box-shadow: inset 0 0 0 .4mm var(--ink-2)">&nbsp;&nbsp;</i>fest auf jeder Stufe: erstes und letztes Wort beim Menschen</span></div>
+        </div>
+        <div>
+          <div class="dev-h"><span style="color: var(--teal)">Sagen, was</span><span style="color: var(--coral)">Zeigen, wie</span></div>
+          <div class="devs">
+            <div class="dev" style="--c: var(--teal); --bg: var(--teal-bg)"><div class="dot"><svg class="i"><use href="#i-eye"/></svg></div><div><b>Blick<small>Tobii Glasses 3</small></b><span>Objekt ansehen, der Arm greift.</span></div></div>
+            <div class="dev" style="--c: var(--coral); --bg: var(--coral-bg)"><div class="dot"><svg class="i"><use href="#i-pad"/></svg></div><div><b>Gamepad<small>Xbox Elite 2</small></b><span>Fein steuern, Vibration warnt.</span></div></div>
+            <div class="dev" style="--c: var(--teal); --bg: var(--teal-bg)"><div class="dot"><svg class="i"><use href="#i-mic"/></svg></div><div><b>Sprache<small>Whisper DE/EN</small></b><span>Lokal erkannt, ohne Cloud.</span></div></div>
+            <div class="dev" style="--c: var(--coral); --bg: var(--coral-bg)"><div class="dot"><svg class="i"><use href="#i-vr"/></svg></div><div><b>VR<small>Meta Quest 3</small></b><span>Mit Kopf und Händen führen.</span></div></div>
+            <div class="dev" style="--c: var(--violet); --bg: var(--violet-bg)"><div class="dot"><svg class="i"><use href="#i-chat"/></svg></div><div><b>KI-Chat<small>VLA-M</small></b><span>Aufgabe in Alltagssprache.</span></div></div>
+            <div class="dev" style="--c: var(--coral); --bg: var(--coral-bg)"><div class="dot"><svg class="i"><use href="#i-touch"/></svg></div><div><b>Web &amp; Touch<small>Browser</small></b><span>Klick, Gizmo, Touch Panel.</span></div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== HIGHLIGHT ===================== -->
+    <section class="hl">
+      <div class="hl-main">
+        <span class="hl-badge kick"><svg><use href="#i-star"/></svg>03 · Highlight</span>
+        <h2>Ein Satz genügt. <em>Die KI plant. Der Mensch gibt frei.</em></h2>
+        <p class="lead">Aufgabe tippen oder sprechen: Der KI-Agent kennt die Szene aus der Kamera und zerlegt den Auftrag in Schritte.</p>
+                <div class="flow">
+          <div class="fs"><span class="kick">1 · Sagen</span><div class="bubble">„Stapel den blauen Würfel auf den Zylinder und leg die Stahlkugel in den Korb.“</div></div>
+          <div class="arr"><svg class="i"><use href="#i-arrow"/></svg></div>
+          <div class="fs"><span class="kick">2 · KI plant</span><ol><li>Würfel greifen</li><li>Auf den Zylinder setzen</li><li>Stahlkugel greifen</li><li>In den Korb legen</li></ol></div>
+          <div class="arr"><svg class="i"><use href="#i-arrow"/></svg></div>
+          <div class="fs"><span class="kick">3 · Freigeben</span><span class="btn-ok"><svg><use href="#i-play"/></svg>Ausführen</span><p>Nichts bewegt sich ohne Freigabe.</p></div>
+          <div class="arr"><svg class="i"><use href="#i-arrow"/></svg></div>
+          <div class="fs"><span class="kick">4 · Arm führt aus</span><p>Greift, prüft den Griff und plant bei Bedarf neu.</p></div>
+        </div>
+        <div class="hl-chips"><span>Ollama lokal oder Claude</span><span>kennt Objekte aus der Kamera</span><span>E-STOP stoppt auch die KI</span><span>Ein-Klick-Greifen ohne Chat</span></div>
+      </div>
+      <div class="hl-side">
+        <figure class="hl-shot">
+          <img src="img/twin.jpg" alt="Digital Twin des Roboters mit Schutzzone und Objekten auf dem Tisch">
+          <figcaption><b>Erst virtuell, dann real.</b>Der Digital Twin zeigt jede Bewegung vorab: im Browser und in VR.</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <!-- ===================== UX · Sicherheit · Evaluation ===================== -->
+    <section class="trio">
+      <article class="card" style="--c: var(--teal); --bg: var(--teal-bg)">
+        <span class="kick"><span class="bi"><svg class="i"><use href="#i-access"/></svg></span>04 · UI / UX · Usability</span>
+        <h2>Bedienung, die man nicht erklären muss</h2>
+        <img class="shot rcu" src="img/ui_robot_control.jpg" alt="Robot Control UI mit Digital Twin, Bewegungssteuerung und Not-Halt oben rechts">
+        <div class="rules">
+          <div class="rule"><div class="ic"><svg class="i"><use href="#i-shield"/></svg></div><div><b>Sicherheit immer im Blick</b><span>Not-Halt, Modus und Tempo stets an derselben Stelle.</span></div></div>
+          <div class="rule"><div class="ic"><svg class="i"><use href="#i-palette"/></svg></div><div><b>Farbe nur bei Abweichung</b><span>Ruhig im Normalfall, Gelb warnt, Rot stoppt.</span></div></div>
+          <div class="rule"><div class="ic"><svg class="i"><use href="#i-grid"/></svg></div><div><b>Nach Aufgaben geordnet</b><span>Bewegen, Programme, Szene, Assistenz statt Technik.</span></div></div>
+          <div class="rule"><div class="ic"><svg class="i"><use href="#i-access"/></svg></div><div><b>Barrierearm</b><span>Große Ziele, hoher Kontrast, per Tastatur bedienbar.</span></div></div>
+        </div>
+        <div class="norms"><em>Gestaltet nach</em><span>ISO 9241-110</span><span>ISA-101</span><span>IEC 60073</span><span>WCAG 2.2</span></div>
+      </article>
+
+      <article class="card" style="--c: var(--amber); --bg: var(--amber-bg)">
+        <span class="kick"><span class="bi"><svg class="i"><use href="#i-shield"/></svg></span>04 · Sicherheit · Safety by Design</span>
+        <h2>Eine Kette für jede Eingabe.</h2>
+        <div class="safe-list">
+          <div class="safe stop"><div class="ic"><svg class="i"><use href="#i-stop"/></svg></div><div><b>E-STOP stoppt alles</b><span>Ein Tastendruck, auch mitten in einer KI-Aufgabe.</span></div></div>
+          <div class="safe"><div class="ic"><svg class="i"><use href="#i-shield"/></svg></div><div><b>Kollisionen vorher erkannt</b><span>Vorprüfung und MoveIt testen jede Bahn vor dem Start.</span></div></div>
+          <div class="safe"><div class="ic"><svg class="i"><use href="#i-lock"/></svg></div><div><b>Eine Person steuert</b><span>Der Control-Lock vergibt die Steuerung, nie an zwei zugleich.</span></div></div>
+          <div class="safe"><div class="ic"><svg class="i"><use href="#i-cube"/></svg></div><div><b>Simulation zuerst</b><span>Neues wird gefahrlos im Digital Twin getestet.</span></div></div>
+        </div>
+        <div class="real"><div class="f">Simulation</div><svg class="i"><use href="#i-arrow"/></svg><div class="r">Realer Roboter<br>nach Freigabe</div></div>
+      </article>
+
+      <article class="card" style="--c: var(--violet); --bg: var(--violet-bg)">
+        <span class="kick"><span class="bi"><svg class="i"><use href="#i-target"/></svg></span>04 · Evaluation</span>
+        <h2>Gemessen statt geschätzt.</h2>
+        <div class="study">
+          <div class="step"><i>01</i>Aufgabe</div>
+          <div class="step"><i>02</i>Steuerweg</div>
+          <div class="step"><i>03</i>Testperson</div>
+          <div class="step"><i>04</i>Fragebogen</div>
+        </div>
+        <div class="metrics"><span>Usability (SUS)</span><span>Beanspruchung (NASA-TLX)</span><span>Erlebnis (UEQ-S)</span><span>Aufwand (SEQ)</span><span>Zeit</span><span>Fehler</span></div>
+        <img class="shot mon" src="img/ui_monitoring.jpg" alt="Monitoring Dashboard mit Systemübersicht und Roboterstatus">
+        <p class="note">Das <b>Monitoring Dashboard</b> erfasst Nutzung und Studien automatisch. Alle Steuerwege werden direkt vergleichbar.</p>
+      </article>
+    </section>
+  </div>
+
+  <!-- ===================== FOOTER ===================== -->
+  <footer class="foot">
+    <div>
+      <div class="road-head"><span class="kick">05 · Stand &amp; Ausblick</span><span class="stack"><b>Software</b> ROS&nbsp;2 Humble · MoveIt&nbsp;2 · YOLOv8 · Whisper · Ollama/Claude · three.js + Rapier · WebXR<br><b>Hardware</b> xArm Lite 6 · ZED Mini · Xbox Elite 2 · Meta Quest 3 · Tobii Pro Glasses 3</span></div>
+      <div class="road">
+        <div class="rs done"><b>Zehn Steuerwege</b>Blick bis VR, eine Sicherheitskette</div>
+        <div class="rs done"><b>KI-Assistent</b>Chat, Plan, Freigabe</div>
+        <div class="rs next"><b>Vorführen lernen</b>Demos in VR aufnehmen, KI trainieren</div>
+        <div class="rs"><b>Nutzerstudien</b>Steuerwege im Vergleich</div>
+        <div class="rs"><b>Leitfäden</b>für Robotik in Unternehmen</div>
+      </div>
+    </div>
+    <div class="contact">
+      <p><b>Ausprobieren &amp; mitmachen</b>Live-Vorführung am Stand · Zugang zum Code auf Anfrage<br>marius.kaul@hochschule-rhein-waal.de</p>
+      <div class="qr"><svg viewBox="0 0 41 41" class="segno"><path fill="#fff" d="M0 0h41v41h-41z"/><path class="qrline" stroke="#0e1a2b" d="M2 2.5h7m1 0h1m2 0h1m3 0h1m1 0h2m3 0h2m1 0h4m1 0h7m-37 1h1m5 0h1m3 0h1m1 0h1m1 0h3m1 0h4m2 0h3m1 0h1m1 0h1m5 0h1m-37 1h1m1 0h3m1 0h1m2 0h2m1 0h1m1 0h6m1 0h1m1 0h2m1 0h3m1 0h1m1 0h3m1 0h1m-37 1h1m1 0h3m1 0h1m1 0h1m1 0h2m1 0h1m2 0h1m1 0h1m4 0h1m1 0h4m1 0h1m1 0h3m1 0h1m-37 1h1m1 0h3m1 0h1m1 0h2m4 0h1m2 0h2m4 0h1m3 0h2m1 0h1m1 0h3m1 0h1m-37 1h1m5 0h1m1 0h2m2 0h3m1 0h2m1 0h1m1 0h1m4 0h1m1 0h1m1 0h1m5 0h1m-37 1h7m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h7m-29 1h1m4 0h2m1 0h3m1 0h3m3 0h1m1 0h1m-29 1h1m3 0h1m1 0h6m1 0h1m3 0h1m1 0h4m4 0h1m1 0h5m2 0h1m-37 1h2m3 0h1m2 0h1m1 0h4m2 0h2m3 0h1m1 0h1m1 0h1m1 0h3m1 0h2m-33 1h2m3 0h2m3 0h1m1 0h3m1 0h1m1 0h1m1 0h4m2 0h4m-30 1h1m2 0h2m2 0h1m1 0h1m2 0h1m4 0h1m1 0h4m1 0h1m1 0h1m1 0h1m2 0h1m2 0h1m-35 1h1m1 0h1m3 0h1m1 0h1m3 0h1m2 0h1m1 0h2m1 0h4m5 0h3m1 0h2m1 0h1m-37 1h2m2 0h2m5 0h1m3 0h2m1 0h1m2 0h3m1 0h5m2 0h1m1 0h2m-35 1h2m2 0h2m1 0h1m1 0h1m4 0h4m4 0h1m2 0h3m1 0h2m2 0h1m-35 1h1m1 0h1m4 0h4m1 0h3m2 0h1m3 0h1m1 0h1m7 0h2m1 0h1m1 0h1m-37 1h3m1 0h1m1 0h1m2 0h1m1 0h3m1 0h2m1 0h1m1 0h5m1 0h5m3 0h2m-36 1h2m1 0h1m3 0h1m1 0h1m2 0h2m3 0h2m4 0h1m2 0h3m1 0h1m1 0h2m-32 1h2m1 0h2m1 0h4m1 0h3m1 0h2m2 0h1m1 0h2m1 0h2m1 0h1m1 0h2m1 0h1m-33 1h1m1 0h1m6 0h2m1 0h6m1 0h1m2 0h1m2 0h1m1 0h2m3 0h1m-35 1h1m1 0h1m1 0h4m1 0h1m3 0h2m2 0h1m1 0h7m3 0h3m2 0h2m-36 1h2m1 0h1m1 0h1m1 0h5m2 0h2m5 0h1m1 0h1m1 0h3m4 0h4m-35 1h1m1 0h2m1 0h1m1 0h1m6 0h3m3 0h1m1 0h2m1 0h2m1 0h2m1 0h4m-33 1h2m4 0h1m1 0h1m2 0h2m1 0h1m1 0h1m1 0h2m3 0h1m1 0h1m3 0h1m1 0h1m-35 1h4m2 0h4m2 0h4m2 0h2m1 0h1m2 0h1m1 0h1m2 0h3m1 0h4m-37 1h1m4 0h1m6 0h3m1 0h1m1 0h2m1 0h1m1 0h1m1 0h1m1 0h2m3 0h1m-31 1h3m1 0h1m4 0h1m1 0h2m1 0h1m1 0h1m2 0h1m1 0h2m2 0h5m1 0h1m-32 1h4m2 0h1m2 0h3m3 0h2m2 0h2m4 0h1m3 0h1m2 0h3m-37 1h2m3 0h6m1 0h2m1 0h1m1 0h1m1 0h1m1 0h2m1 0h1m3 0h5m1 0h2m-28 1h1m1 0h4m1 0h4m4 0h1m1 0h4m3 0h2m-34 1h7m1 0h3m2 0h1m1 0h1m2 0h1m1 0h2m1 0h3m2 0h1m1 0h1m1 0h3m-35 1h1m5 0h1m2 0h1m5 0h2m3 0h2m2 0h1m3 0h1m3 0h1m1 0h2m-36 1h1m1 0h3m1 0h1m1 0h1m1 0h1m1 0h1m3 0h1m4 0h1m1 0h2m1 0h1m1 0h5m1 0h3m-37 1h1m1 0h3m1 0h1m2 0h1m2 0h1m1 0h1m3 0h1m1 0h1m1 0h1m4 0h1m1 0h2m3 0h1m1 0h1m-37 1h1m1 0h3m1 0h1m2 0h1m1 0h1m2 0h2m1 0h1m3 0h1m1 0h1m4 0h1m1 0h1m2 0h1m-34 1h1m5 0h1m4 0h1m1 0h7m1 0h1m1 0h1m6 0h3m1 0h2m-36 1h7m1 0h2m2 0h3m2 0h1m1 0h3m2 0h1m2 0h1m6 0h3"/></svg><span>Kontakt per Mail</span></div>
+    </div>
+  </footer>
+</main>
+</div>
+</div>
+
+<script>
+// Bildschirm: Poster auf Fensterbreite skalieren (Druck bleibt 1:1)
+(function () {
+  const poster = document.getElementById('poster');
+  const scaler = document.getElementById('scaler');
+  function fit() {
+    if (window.matchMedia('print').matches) return;
+    const w = poster.offsetWidth, h = poster.offsetHeight;
+    const s = Math.min(1, (window.innerWidth - 32) / w);
+    scaler.style.transform = 'scale(' + s + ')';
+    scaler.style.width = (w * s) + 'px';
+    scaler.style.height = (h * s) + 'px';
+  }
+  window.addEventListener('resize', fit);
+  window.addEventListener('load', fit);
+  fit();
+})();
+</script>
+</body>
+</html>

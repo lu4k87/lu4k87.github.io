@@ -1,0 +1,1046 @@
+<!doctype html>
+<!-- Projekt-Doku: zentraler Einstieg zu allen Unterlagen (Handbuch, Setup-Karte, Poster, Projektseiten, docs).
+     Design „Interakt Control Robot“ (.claude/skills/preview/showcase_template.html), schlicht + kompakt.
+     Öffnen: direkt als Datei oder über die Nexus Webapp unter /ws/docs/project_docs.html
+     (dann öffnet „Setup-Karte“ den Dialog aus ui_shared/net_info.js). Neue Unterlage → hier eine Zeile ergänzen. -->
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Projekt-Doku · Interakt Control Robot</title>
+<link rel="stylesheet" href="fonts/fonts.css">
+<style>
+:root {
+  --radius: 2px; /* Ecken: kantig, höchstens 2 px (Wunsch User 04.10.2026, Hook prüft) */
+  color-scheme: dark;
+  --bg: #0a0f19; --surface: #0f1727; --surface-2: #131d31; --line: #1f2c44; --line-strong: #2f4163;
+  --fg: #e8eef8; --fg-2: #c3cfe0; --accent: #32a8ae; --accent-ink: #04121c;
+  --indigo: #818cf8; --teal: #2dd4bf; --violet: #a78bfa; --gold: #f0b429; --green: #10b981; --red: #f87171;
+  --shadow: 0 1px 0 rgba(255,255,255,.04) inset, 0 20px 40px -24px rgba(0,0,0,.7);
+  --font: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+  --ease-out: cubic-bezier(.2, .7, .2, 1); --ease-io: cubic-bezier(.65, 0, .35, 1);
+  --t-fast: 150ms; --t-base: 250ms; --t-story: 700ms;
+}
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    color-scheme: light;
+    --bg: #f2f5fa; --surface: #ffffff; --surface-2: #eef3f9; --line: #d7e0ec; --line-strong: #b7c5d9;
+    --fg: #0b1424; --fg-2: #2c3b52; --accent: #1d777c; --accent-ink: #ffffff;
+    --indigo: #4f46e5; --teal: #0f766e; --violet: #7c3aed; --gold: #a15c00; --green: #047857; --red: #b91c1c;
+    --shadow: 0 1px 2px rgba(15,30,60,.06), 0 16px 32px -24px rgba(15,30,60,.35);
+  }
+}
+:root[data-theme="light"] {
+  color-scheme: light;
+  --bg: #f2f5fa; --surface: #ffffff; --surface-2: #eef3f9; --line: #d7e0ec; --line-strong: #b7c5d9;
+  --fg: #0b1424; --fg-2: #2c3b52; --accent: #1d777c; --accent-ink: #ffffff;
+  --indigo: #4f46e5; --teal: #0f766e; --violet: #7c3aed; --gold: #a15c00; --green: #047857; --red: #b91c1c;
+  --shadow: 0 1px 2px rgba(15,30,60,.06), 0 16px 32px -24px rgba(15,30,60,.35);
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: 76px; }
+body { margin: 0; background: var(--bg); color: var(--fg); font: 500 15px/1.5 var(--font); -webkit-font-smoothing: antialiased; }
+h1, h2, p { margin: 0; }
+a { color: inherit; text-decoration: none; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: var(--radius); }
+.ico { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+.wrap { max-width: 1240px; margin-inline: auto; padding-inline: 24px; }
+
+/* Kopfzeile */
+.top { position: sticky; top: 0; z-index: 10; border-bottom: 1px solid var(--line); background: color-mix(in srgb, var(--bg) 90%, transparent); backdrop-filter: blur(8px); }
+.top .wrap { display: flex; align-items: center; gap: 16px; padding-block: 12px; flex-wrap: wrap; }
+.brand { display: flex; align-items: center; gap: 10px; font-weight: 800; }
+.brand-mark { width: 34px; height: 34px; border-radius: var(--radius); display: grid; place-items: center; background: var(--accent); color: var(--accent-ink); }
+.brand small { display: block; font: 600 11px/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--fg-2); margin-top: 3px; }
+.top nav { margin-left: auto; display: flex; gap: 4px; flex-wrap: wrap; }
+.top nav a { font-size: 14px; font-weight: 600; padding: 7px 12px; border-radius: var(--radius); color: var(--fg-2); }
+.top nav a:hover { background: var(--surface-2); color: var(--fg); }
+.top nav .sep { width: 1px; margin: 6px 6px; background: var(--line-strong); }
+.tools { display: flex; gap: 8px; }
+.seg { display: flex; border: 1px solid var(--line-strong); border-radius: var(--radius); overflow: hidden; }
+.seg button { font: 700 12px/1 var(--mono); padding: 0 10px; min-height: 32px; min-width: 36px; border: 0; background: transparent; color: var(--fg-2); cursor: pointer; }
+.seg button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); }
+
+/* Gerüst: Abstract als Kopf über volle Breite (Text links, Kennzahlen + Übersicht rechts), darunter Teil 1 Unterlagen, Teil 2 Projekt verstehen */
+.lay { display: grid; gap: 8px; padding-block: 28px 12px; }
+aside { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(280px, 1fr); gap: 24px 40px; align-items: start; padding-bottom: 8px; }
+.hero-main, .hero-side { display: grid; gap: 16px; min-width: 0; }
+.eyebrow { font: 700 12px/1 var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--accent); display: flex; align-items: center; gap: 10px; }
+.eyebrow::before { content: ""; width: 22px; height: 2px; background: currentColor; border-radius: 2px; }
+aside h1 { font-size: 44px; line-height: 1.1; font-weight: 800; letter-spacing: -.03em; }
+.claim { font-size: 24px; line-height: 1.25; font-weight: 800; letter-spacing: -.01em; }
+.claim em { font-style: normal; color: var(--accent); }
+.abstract { color: var(--fg-2); font-size: 16px; max-width: 72ch; }
+.abstract b { color: var(--fg); }
+/* Abstract-Fakten: 6 Karten (Slogan fett + ein Faktensatz), 2 Spalten, schmal 1 Spalte */
+.facts { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); gap: 8px; }
+.facts li { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 10px; align-items: start; padding: 10px 12px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); font-size: 14px; line-height: 1.45; color: var(--fg-2); }
+.facts .ico { color: var(--hue, var(--accent)); width: 18px; height: 18px; margin-top: 2px; }
+.facts b { display: block; color: var(--fg); font-size: 15px; line-height: 1.3; margin-bottom: 2px; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { font: 600 12px/1 var(--mono); padding: 7px 9px; border-radius: var(--radius); border: 1px solid var(--line-strong); color: var(--fg-2); background: var(--surface); }
+.chip b { color: var(--fg); }
+.box { border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); padding: 14px; display: grid; gap: 4px; box-shadow: var(--shadow); }
+.box .eyebrow { margin-bottom: 6px; }
+.box a { display: flex; gap: 10px; align-items: center; font-weight: 700; font-size: 14px; padding: 8px; border-radius: var(--radius); }
+.box a:hover { background: var(--surface-2); }
+.box .grp { font: 700 11px/1 var(--mono); letter-spacing: .1em; text-transform: uppercase; padding: 10px 8px 2px; }
+.box a em { font-style: normal; }
+.box a span { margin-left: auto; font: 600 12px var(--mono); color: var(--fg-2); font-variant-numeric: tabular-nums; }
+/* QR „Seite öffnen“: immer dunkel auf Weiß (sicher scanbar, auch im dunklen Theme) */
+.qr-card, .qr-foot { display: flex; gap: 14px; align-items: center; text-decoration: none; color: inherit; }
+.qr-code { flex: none; line-height: 0; padding: 6px; background: #fff; border: 1px solid var(--line); border-radius: var(--radius); }
+.qr-code svg { display: block; width: var(--qr, 118px); height: var(--qr, 118px); }
+.qr-foot .qr-code { --qr: 88px; }
+.qr-txt { display: grid; gap: 4px; min-width: 0; }
+.qr-txt b { font: 700 12px/1.2 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--accent); }
+.qr-txt span { font-size: 14px; font-weight: 700; line-height: 1.35; }
+.qr-txt small { font: 600 12px/1.35 var(--mono); color: var(--fg-2); overflow-wrap: anywhere; }
+.qr-card:hover small, .qr-foot:hover small { text-decoration: underline; }
+@media (max-width: 700px) { .qr-card { display: none; } }  /* am Handy nur der Code im Fuß */
+
+/* Teile: Kopf je Teil mit Trennlinie rundum oben (1 px) */
+.part { display: grid; gap: 6px; padding-top: 26px; margin: 18px 0 18px; border-top: 1px solid var(--line-strong); }
+.part h2 { font-size: 32px; font-weight: 800; letter-spacing: -.02em; line-height: 1.15; }
+.part .sub { margin: 0; }
+
+/* Abschnitte */
+section { margin-bottom: 30px; container-type: inline-size; }
+.h2 { font-size: 24px; font-weight: 800; letter-spacing: -.02em; display: flex; align-items: center; gap: 10px; }
+.h2 .n { font: 700 12px/1 var(--mono); color: var(--accent); border: 1px solid var(--line-strong); border-radius: var(--radius); padding: 5px 7px; }
+.sub { color: var(--fg-2); font-size: 14px; margin: 4px 0 12px; }
+/* Karten: 4 pro Zeile, Bild oben, Titel + Text darunter, Typ + Pfeil als Fußzeile */
+.list { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
+.item { display: grid; grid-template-rows: auto 1fr auto; min-width: 0; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); overflow: hidden; box-shadow: var(--shadow); transition: border-color .15s; }
+a.item:hover { border-color: color-mix(in srgb, var(--hue, var(--accent)) 60%, var(--line-strong)); background: var(--surface-2); }
+.thumb { display: block; aspect-ratio: 16 / 9; overflow: hidden; border-bottom: 1px solid var(--line); background: var(--surface-2); }
+.thumb img { width: 100%; height: 100%; object-fit: cover; object-position: top; display: block; transition: transform .25s; }
+a.item:hover .thumb img { transform: scale(1.03); }
+.txt { display: grid; align-content: start; gap: 4px; min-width: 0; padding: 14px 16px 0; }
+.txt b { font-size: 17px; font-weight: 800; display: flex; align-items: center; gap: 8px; }
+.txt b .ico { color: var(--hue, var(--accent)); width: 20px; height: 20px; }
+.txt p { color: var(--fg-2); font-size: 14px; }
+.end { display: flex; align-items: center; gap: 8px; padding: 12px 10px 10px 16px; }
+.end .go { margin-left: auto; }
+.item.is-planned .end { min-height: 54px; }
+.tag { font: 700 11px/1 var(--mono); letter-spacing: .04em; padding: 5px 7px; border-radius: var(--radius); background: var(--surface-2); border: 1px solid var(--line); color: var(--fg-2); }
+.tag.plan { border-style: dashed; color: var(--gold); border-color: color-mix(in srgb, var(--gold) 55%, transparent); }
+.go { color: var(--accent); display: grid; place-items: center; width: 32px; height: 32px; }
+.item.is-planned .thumb img { filter: grayscale(.6); }
+a.pdf { font: 700 11px/1 var(--mono); padding: 5px 7px; border-radius: var(--radius); border: 1px solid var(--accent); color: var(--accent); }
+
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); overflow: hidden; gap: 1px; box-shadow: var(--shadow); }
+.grid a { display: flex; gap: 8px; align-items: center; padding: 11px 12px; font-weight: 700; font-size: 14px; outline: 1px solid var(--line); }
+.grid a:hover { background: var(--surface-2); }
+.grid .ico { color: var(--accent); width: 18px; height: 18px; }
+
+/* Kernmerkmale: Kreislauf Mensch → Assistenz → Digital Twin → Roboter mit Rückweg, darunter Merkmal-Kacheln */
+.panel { border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); box-shadow: var(--shadow); padding: 14px; display: grid; gap: 12px; }
+.web { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; padding: 10px 12px; border-radius: var(--radius); background: var(--surface-2); border: 1px solid var(--line); font-size: 14px; }
+.web > b { display: flex; align-items: center; gap: 8px; }
+.web > b .ico { color: var(--green); }
+.web .chips { margin-left: auto; }
+.flow { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) auto minmax(0, 1fr) auto minmax(0, 1fr); gap: 8px; align-items: stretch; }
+.step { display: grid; align-content: start; gap: 4px; min-width: 0; padding: 12px; border-radius: var(--radius); border: 1px solid color-mix(in srgb, var(--hue) 45%, var(--line)); background: color-mix(in srgb, var(--hue) 8%, var(--surface)); }
+.step .k { display: flex; align-items: center; gap: 7px; font: 700 11.5px/1.2 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--hue); }
+.step .k .ico { width: 18px; height: 18px; }
+.step b { font-size: 15px; font-weight: 800; line-height: 1.25; }
+.step p { font-size: 13.5px; line-height: 1.5; color: var(--fg-2); }
+.flow > .arr { align-self: center; color: var(--fg-2); width: 18px; height: 18px; }
+.back { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: var(--radius); border: 1px dashed color-mix(in srgb, var(--gold) 60%, var(--line-strong)); font-size: 14px; }
+.back .ico { color: var(--gold); }
+.back { flex-wrap: wrap; }
+.back b { white-space: nowrap; }
+.back > span { flex: 1 1 240px; }
+.feats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-top: 16px; }
+.feat { display: grid; align-content: start; gap: 6px; min-width: 0; padding: 14px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); box-shadow: var(--shadow); }
+.feat .bi { width: 38px; height: 38px; border-radius: var(--radius); display: grid; place-items: center; color: var(--hue); background: color-mix(in srgb, var(--hue) 14%, transparent); border: 1px solid color-mix(in srgb, var(--hue) 35%, transparent); }
+.feat .k-t { font: 700 11.5px/1.2 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--hue); margin-top: 4px; }
+.feat b { font-size: 15px; font-weight: 800; line-height: 1.25; }
+.feat p { font-size: 13.5px; line-height: 1.5; color: var(--fg-2); }
+.feat .norms { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 2px; }
+.norm-note { margin-top: 10px; }
+/* Konzept & Zielsetzung: Einleitung, Stichpunkte in Karten, Leitfrage, Unterabschnitt */
+.lead { font-size: 15px; line-height: 1.55; max-width: 78ch; }
+.feat ul { display: grid; gap: 5px; padding-left: 16px; font-size: 13.5px; line-height: 1.5; color: var(--fg-2); }
+.feat li b { font-size: inherit; font-weight: 700; color: var(--fg); }
+.rq { margin-top: 12px; gap: 6px; }
+.rq q { font-size: 17px; font-weight: 700; line-height: 1.5; }
+.rq + .h3 { margin-top: 30px; }
+.h3 + .lead { margin-top: 8px; }
+
+/* System-Stack: Software-Schichten oben → unten, Hardware als Fundament */
+.stack { display: grid; gap: 6px; }
+.layer { display: grid; grid-template-columns: 190px minmax(0, 1fr); gap: 12px; align-items: center; padding: 10px 12px; border-radius: var(--radius); border: 1px solid var(--line); background: color-mix(in srgb, var(--hue) 6%, var(--surface)); }
+.layer .lk { display: flex; align-items: center; gap: 8px; font: 700 12px/1.25 var(--mono); letter-spacing: .06em; text-transform: uppercase; }
+.layer .lk .ico { color: var(--hue); width: 18px; height: 18px; }
+.parts { display: flex; flex-wrap: wrap; gap: 6px; }
+.parts > span { font-size: 13px; line-height: 1.2; padding: 6px 9px; border-radius: var(--radius); background: var(--surface); border: 1px solid var(--line-strong); color: var(--fg-2); }
+.parts > span b { color: var(--fg); font-weight: 700; }
+.h3 { font: 700 12px/1 var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--accent); display: flex; align-items: center; gap: 10px; margin: 18px 0 0; }
+.h3::before { content: ""; width: 22px; height: 2px; background: currentColor; border-radius: 2px; }
+.hw { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+.hw-item { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 4px 10px; align-content: start; padding: 12px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); box-shadow: var(--shadow); }
+.hw-item .ico { grid-row: span 2; color: var(--hue, var(--accent)); width: 24px; height: 24px; margin-top: 2px; }
+.hw-item b { font-size: 14.5px; font-weight: 800; line-height: 1.25; }
+.hw-item p { font-size: 13px; line-height: 1.5; color: var(--fg-2); }
+.hw-item .tags { grid-column: 2; display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
+.tag.opt { border-style: dashed; }
+
+/* Funktionsabläufe: Ablauf wählen (Tabs) → Schritt-Schiene links, Datenpaket wandert; rechts Detail + aktive Ebene des Stacks */
+.pf-tabs { display: flex; flex-wrap: wrap; gap: 6px; }
+.pf-tab { display: inline-flex; align-items: center; gap: 8px; min-height: 40px; padding: 8px 12px; border-radius: var(--radius); border: 1px solid var(--line-strong); background: var(--surface-2); color: var(--fg); font: 700 13.5px/1.2 var(--font); cursor: pointer; transition: background var(--t-fast), border-color var(--t-fast); }
+.pf-tab .ico { width: 18px; height: 18px; color: var(--accent); }
+.pf-tab:hover { border-color: var(--accent); }
+.pf-tab[aria-selected="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.pf-tab[aria-selected="true"] .ico { color: inherit; }
+/* Verweis auf den Funktionsatlas (docs/project_functions.html) unter den 6 Kernabläufen */
+.atlas-link { display: flex; align-items: center; gap: 12px; margin-top: 12px; padding: 12px 14px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); box-shadow: var(--shadow); font-size: 14px; line-height: 1.45; }
+.atlas-link:hover { border-color: var(--accent); background: var(--surface-2); }
+.atlas-link > .ico { color: var(--accent); }
+.atlas-link b { font-weight: 800; }
+.atlas-link .go { margin-left: auto; }
+.pf-head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
+.pf-head p { flex: 1 1 280px; font-size: 14px; color: var(--fg-2); }
+.pf-ctrl { display: flex; flex-wrap: wrap; gap: 6px; }
+.pf-btn { display: inline-flex; align-items: center; gap: 6px; min-height: 36px; padding: 0 12px; border-radius: var(--radius); border: 1px solid var(--line-strong); background: var(--surface); color: var(--fg); font: 700 13px/1 var(--font); cursor: pointer; transition: transform var(--t-fast) var(--ease-out), border-color var(--t-fast); }
+.pf-btn:hover { border-color: var(--accent); }
+.pf-btn:active { transform: scale(.97); }
+.pf-btn .ico { width: 16px; height: 16px; }
+.pf-btn.warn .ico { color: var(--gold); }
+.pf-btn.stop .ico { color: var(--red); }
+.pf-body { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); gap: 16px; align-items: start; }
+.pf-railw { position: relative; min-width: 0; }
+.pf-rail { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.pf-line, .pf-fill { position: absolute; left: 21px; width: 2px; border-radius: 2px; pointer-events: none; }
+.pf-line { background: var(--line-strong); }
+.pf-fill { background: var(--accent); transform-origin: top; transform: scaleY(var(--p, 0)); transition: transform var(--t-story) var(--ease-io); }
+.pf-dot { position: absolute; left: 16px; top: 0; width: 12px; height: 12px; border-radius: 50%; background: var(--accent); pointer-events: none; transform: translateY(var(--y, 0px)); transition: transform var(--t-story) var(--ease-io); }
+.pf-step { position: relative; z-index: 1; display: grid; grid-template-columns: 44px minmax(0, 1fr); align-items: center; gap: 6px; width: 100%; min-height: 48px; padding: 6px 10px 6px 0; border-radius: var(--radius); border: 1px solid transparent; background: transparent; color: var(--fg); font: inherit; text-align: left; cursor: pointer; transition: background var(--t-base), border-color var(--t-base); }
+.pf-step:hover { background: var(--surface-2); }
+.pf-num { justify-self: center; width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; font: 700 12px/1 var(--mono); background: var(--surface); border: 1px solid var(--line-strong); color: var(--fg-2); transition: background var(--t-base), color var(--t-base); }
+.pf-st { display: grid; gap: 2px; min-width: 0; }
+.pf-st b { font-size: 14px; font-weight: 800; line-height: 1.25; display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.pf-st small { display: flex; align-items: center; gap: 5px; font: 700 11px/1.2 var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--hue); }
+.pf-st small .ico { width: 14px; height: 14px; }
+.pf-gate { display: inline-flex; align-items: center; gap: 4px; font: 700 11px/1 var(--mono); padding: 3px 6px; border-radius: var(--radius); border: 1px solid color-mix(in srgb, var(--green) 50%, var(--line)); color: var(--green); }
+.pf-gate .ico { width: 13px; height: 13px; }
+.pf-step.is-done .pf-num { background: color-mix(in srgb, var(--accent) 16%, var(--surface)); border-color: var(--accent); color: var(--fg); }
+.pf-step.is-active { border-color: color-mix(in srgb, var(--hue) 55%, var(--line)); background: color-mix(in srgb, var(--hue) 9%, var(--surface)); }
+.pf-step.is-active .pf-num { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.pf-step.is-blocked { border-color: var(--red); background: color-mix(in srgb, var(--red) 10%, var(--surface)); animation: pf-shake .4s var(--ease-io); }
+.pf-step.is-blocked .pf-num { background: var(--red); border-color: var(--red); color: var(--bg); }
+.pf-step.is-skipped .pf-num { border-style: dashed; }
+.pf-step.is-skipped b { text-decoration: line-through; text-decoration-thickness: 1px; }
+@keyframes pf-shake { 25% { transform: translateX(-4px); } 50% { transform: translateX(4px); } 75% { transform: translateX(-2px); } }
+.pf-detail { display: grid; gap: 10px; padding: 14px; border-radius: var(--radius); border: 1px solid var(--line); background: var(--surface-2); min-width: 0; }
+.pf-count { font: 700 12px/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--accent); }
+.pf-dt { margin: 0; font-size: 19px; font-weight: 800; line-height: 1.2; letter-spacing: -.01em; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.pf-dd { font-size: 14.5px; color: var(--fg-2); }
+.pf-layers { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 4px; }
+.pf-ly { display: grid; justify-items: center; gap: 4px; padding: 8px 2px; border-radius: var(--radius); border: 1px solid var(--line); background: var(--surface); font: 700 11px/1.1 var(--mono); text-align: center; color: var(--fg-2); transition: background var(--t-base), border-color var(--t-base); }
+.pf-ly .ico { width: 18px; height: 18px; color: var(--hue); }
+.pf-ly.on { border-color: var(--hue); background: color-mix(in srgb, var(--hue) 16%, var(--surface)); color: var(--fg); }
+.pf-res { display: flex; gap: 10px; align-items: flex-start; padding: 10px 12px; border-radius: var(--radius); border: 1px solid var(--red); background: color-mix(in srgb, var(--red) 10%, var(--surface)); font-size: 14px; }
+.pf-res .ico { color: var(--red); width: 22px; height: 22px; }
+.pf-res[hidden], .pf-code:empty { display: none; }
+.pf-note { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; padding: 10px 12px; border-radius: var(--radius); border: 1px solid var(--line); background: var(--surface-2); font-size: 14px; }
+.pf-note .ico { color: var(--green); }
+.pf-note > span { flex: 1 1 260px; color: var(--fg-2); }
+@container (max-width: 700px) {
+  .pf-body { grid-template-columns: minmax(0, 1fr); }
+  .pf-layers { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pf-fill, .pf-dot, .pf-step, .pf-num, .pf-ly, .pf-btn, .pf-tab { transition: none; }
+  .pf-step.is-blocked { animation: none; }
+  .pf-dot { display: none; }
+}
+
+footer { border-top: 1px solid var(--line); padding-block: 16px 28px; font: 600 12px/1.4 var(--mono); color: var(--fg-2); }
+footer .wrap { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px 16px; }
+
+@media (max-width: 900px) {
+  aside { grid-template-columns: minmax(0, 1fr); }
+  aside h1 { font-size: 34px; }
+  .claim { font-size: 20px; }
+}
+@media (max-width: 560px) {
+  .wrap { padding-inline: 16px; }
+  .top nav { display: none; }
+}
+@container (max-width: 960px) {
+  .list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@container (max-width: 760px) {
+  .feats, .hw { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .flow { grid-template-columns: minmax(0, 1fr); }
+  .flow > .arr { justify-self: center; transform: rotate(90deg); }
+  .web .chips { margin-left: 0; }
+}
+@container (max-width: 560px) {
+  .list { grid-template-columns: minmax(0, 1fr); }
+  .layer { grid-template-columns: minmax(0, 1fr); gap: 8px; }
+}
+@container (max-width: 420px) {
+  .feats, .hw { grid-template-columns: minmax(0, 1fr); }
+}
+/* Karten steigen nacheinander auf (Reihenfolge per JS in --i) */
+.item, .grid, .feat, .panel, .stack, .hw-item { animation: rise .5s cubic-bezier(.2,.7,.2,1) backwards; animation-delay: calc(var(--i, 0) * 50ms); }
+@keyframes rise { from { opacity: 0; transform: translateY(14px); } }
+@media (prefers-reduced-motion: reduce) { .item, .grid, .feat, .panel, .stack, .hw-item { animation: none; } .item, .thumb img { transition: none; } a.item:hover .thumb img { transform: none; } }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <symbol id="i-arm" viewBox="0 0 24 24"><path d="M4 21h16M7 21v-3h10v3M12 18v-5M12 13l5-5M17 8l3 1.5M17 8l1.2-3.2"/><circle cx="12" cy="13" r="2"/><circle cx="17" cy="8" r="1.6"/></symbol>
+  <symbol id="i-book" viewBox="0 0 24 24"><path d="M4 4.5A1.5 1.5 0 0 1 5.5 3H11v17H5.5A1.5 1.5 0 0 1 4 18.5zM20 4.5A1.5 1.5 0 0 0 18.5 3H13v17h5.5a1.5 1.5 0 0 0 1.5-1.5z"/></symbol>
+  <symbol id="i-net" viewBox="0 0 24 24"><rect x="8.5" y="2.5" width="7" height="6" rx="1.2"/><rect x="2" y="15.5" width="6" height="6" rx="1.2"/><rect x="16" y="15.5" width="6" height="6" rx="1.2"/><path d="M12 8.5v4M5 15.5V12.5h14v3"/></symbol>
+  <symbol id="i-poster" viewBox="0 0 24 24"><rect x="5" y="2.5" width="14" height="19" rx="1.5"/><path d="M8 7h8M8 10.5h8M8 14h5"/></symbol>
+  <symbol id="i-star" viewBox="0 0 24 24"><path d="M12 3l2.6 5.6 6 .7-4.5 4.1 1.2 6L12 16.4 6.7 19.4l1.2-6L3.4 9.3l6-.7z"/></symbol>
+  <symbol id="i-play" viewBox="0 0 24 24"><rect x="2.5" y="4.5" width="19" height="15" rx="2.5"/><path d="M10 9v6l5-3z"/></symbol>
+  <symbol id="i-rocket" viewBox="0 0 24 24"><path d="M5 15c-1.5 1.5-2 5-2 5s3.5-.5 5-2M9 15l-3-3c1-4 5-9 12-9 0 7-5 11-9 12z"/><circle cx="14.5" cy="9.5" r="1.5"/></symbol>
+  <symbol id="i-tool" viewBox="0 0 24 24"><path d="M14.7 6.3a4 4 0 0 0 5 5L21 13l-8 8-3-3 8-8M9.3 17.7l-5-5L13 4l1.7 2.3"/></symbol>
+  <symbol id="i-file" viewBox="0 0 24 24"><path d="M6 2.5h8l4 4V21a.5.5 0 0 1-.5.5h-11A.5.5 0 0 1 6 21z"/><path d="M14 2.5v4h4M9 12h6M9 15.5h6"/></symbol>
+  <symbol id="i-go" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+  <symbol id="i-ext" viewBox="0 0 24 24"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></symbol>
+  <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></symbol>
+  <symbol id="i-spark" viewBox="0 0 24 24"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8zM19 16l.8 2.2L22 19l-2.2.8L19 22l-.8-2.2L16 19l2.2-.8z"/></symbol>
+  <symbol id="i-cube" viewBox="0 0 24 24"><path d="M12 2.5l8.5 4.8v9.4L12 21.5l-8.5-4.8V7.3z"/><path d="M3.5 7.3L12 12l8.5-4.7M12 12v9.5"/></symbol>
+  <symbol id="i-shapes" viewBox="0 0 24 24"><rect x="3" y="12" width="8" height="8" rx="1" stroke-dasharray="2.5 2"/><circle cx="17" cy="16" r="4" stroke-dasharray="2.5 2"/><path d="M12 3l4.5 7h-9z"/></symbol>
+  <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></symbol>
+  <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c2.6 2.8 3.8 6 3.8 9.5s-1.2 6.7-3.8 9.5c-2.6-2.8-3.8-6-3.8-9.5S9.4 5.3 12 2.5z"/></symbol>
+  <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 2.5l8 3v6c0 5-3.4 8.7-8 10.5-4.6-1.8-8-5.5-8-10.5v-6z"/><path d="M8.5 12l2.5 2.5 4.5-5"/></symbol>
+  <symbol id="i-code" viewBox="0 0 24 24"><path d="M8 7l-5 5 5 5M16 7l5 5-5 5M13.5 4l-3 16"/></symbol>
+  <symbol id="i-blocks" viewBox="0 0 24 24"><rect x="3" y="3" width="7.5" height="7.5" rx="1.5"/><rect x="13.5" y="3" width="7.5" height="7.5" rx="1.5"/><rect x="3" y="13.5" width="7.5" height="7.5" rx="1.5"/><path d="M17.25 13.5v7.5M13.5 17.25H21"/></symbol>
+  <symbol id="i-loop" viewBox="0 0 24 24"><path d="M3 12a9 9 0 0 1 15.4-6.4L21 8M21 3v5h-5M21 12a9 9 0 0 1-15.4 6.4L3 16M3 21v-5h5"/></symbol>
+  <symbol id="i-touch" viewBox="0 0 24 24"><path d="M9 11V5a2 2 0 0 1 4 0v5l4.4.9a2 2 0 0 1 1.6 2.2l-.6 4.6a3 3 0 0 1-3 2.3H11a3 3 0 0 1-2.3-1.1L5.5 15a1.8 1.8 0 0 1 2.7-2.3L9 13.5"/></symbol>
+  <symbol id="i-win" viewBox="0 0 24 24"><rect x="2.5" y="4" width="19" height="16" rx="2"/><path d="M2.5 8.5h19M6 6.3h.01M8.5 6.3h.01"/></symbol>
+  <symbol id="i-link" viewBox="0 0 24 24"><path d="M10 14a4.5 4.5 0 0 0 6.4 0l3.2-3.2a4.5 4.5 0 0 0-6.4-6.4L12 5.6M14 10a4.5 4.5 0 0 0-6.4 0l-3.2 3.2a4.5 4.5 0 0 0 6.4 6.4l1.2-1.2"/></symbol>
+  <symbol id="i-chip" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2"/><path d="M9.5 9.5h5v5h-5zM9 2.5V6M15 2.5V6M9 18v3.5M15 18v3.5M2.5 9H6M2.5 15H6M18 9h3.5M18 15h3.5"/></symbol>
+  <symbol id="i-layers" viewBox="0 0 24 24"><path d="M12 3l9.5 5L12 13 2.5 8z"/><path d="M2.5 12.5L12 17.5l9.5-5M2.5 16.5L12 21.5l9.5-5"/></symbol>
+  <symbol id="i-pad" viewBox="0 0 24 24"><path d="M7.5 6h9a5.5 5.5 0 0 1 5.3 7l-1 3.6a2.6 2.6 0 0 1-4.4 1L14.6 16H9.4l-1.8 1.6a2.6 2.6 0 0 1-4.4-1l-1-3.6A5.5 5.5 0 0 1 7.5 6z"/><path d="M7 10v3M5.5 11.5h3M15.5 10.5h.01M17.5 12.5h.01"/></symbol>
+  <symbol id="i-vr" viewBox="0 0 24 24"><path d="M3.5 7.5h17a1.5 1.5 0 0 1 1.5 1.5v6a2.5 2.5 0 0 1-2.5 2.5h-4l-2-3h-3l-2 3h-4A2.5 2.5 0 0 1 2 15V9a1.5 1.5 0 0 1 1.5-1.5z"/><path d="M6.5 11h2M15.5 11h2"/></symbol>
+  <symbol id="i-cam" viewBox="0 0 24 24"><rect x="2" y="8" width="20" height="9" rx="4.5"/><circle cx="7" cy="12.5" r="2"/><circle cx="17" cy="12.5" r="2"/></symbol>
+  <symbol id="i-grip" viewBox="0 0 24 24"><path d="M9 3h6v5H9zM12 8v4M6 15a6 3 0 0 1 12 0zM12 18v3"/></symbol>
+  <symbol id="i-pc" viewBox="0 0 24 24"><rect x="5" y="2.5" width="14" height="19" rx="2"/><path d="M8.5 6.5h7M8.5 9.5h7M12 17.5h.01"/></symbol>
+  <symbol id="i-mic" viewBox="0 0 24 24"><rect x="9" y="2.5" width="6" height="12" rx="3"/><path d="M5 10.5a7 7 0 0 0 14 0M12 17.5V21M8.5 21h7"/></symbol>
+  <symbol id="i-prev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></symbol>
+  <symbol id="i-next" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></symbol>
+  <symbol id="i-run" viewBox="0 0 24 24"><path d="M7 5v14l11-7z"/></symbol>
+  <symbol id="i-pause" viewBox="0 0 24 24"><path d="M8 5v14M16 5v14"/></symbol>
+  <symbol id="i-warn" viewBox="0 0 24 24"><path d="M12 3.5l9.5 17h-19z"/><path d="M12 10v4.5M12 17.5h.01"/></symbol>
+  <symbol id="i-stop" viewBox="0 0 24 24"><path d="M8 2.5h8l5.5 5.5v8L16 21.5H8L2.5 16V8z"/><path d="M8.5 12h7"/></symbol>
+  <!-- QR „Seite öffnen“ → https://lu4k87.github.io/my_xarm_lite6-extended/project_docs.html · neu erzeugen: segno.make(URL, error="m").svg_inline(scale=1, border=1, omitsize=True) -->
+  <symbol id="qr-docs" viewBox="0 0 39 39"><path stroke="#0b1424" stroke-width="1" shape-rendering="crispEdges" d="M1 1.5h7m2 0h1m1 0h3m1 0h2m2 0h2m1 0h2m1 0h2m3 0h7m-37 1h1m5 0h1m1 0h1m3 0h1m2 0h2m3 0h7m1 0h1m1 0h1m5 0h1m-37 1h1m1 0h3m1 0h1m1 0h1m1 0h1m3 0h3m1 0h1m2 0h3m2 0h1m1 0h1m1 0h1m1 0h3m1 0h1m-37 1h1m1 0h3m1 0h1m1 0h3m3 0h1m2 0h1m2 0h2m1 0h3m1 0h2m1 0h1m1 0h3m1 0h1m-37 1h1m1 0h3m1 0h1m2 0h2m3 0h2m1 0h5m1 0h2m3 0h1m1 0h1m1 0h3m1 0h1m-37 1h1m5 0h1m4 0h2m1 0h1m2 0h1m2 0h1m4 0h1m4 0h1m5 0h1m-37 1h7m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h7m-29 1h5m4 0h4m1 0h2m2 0h3m-29 1h1m5 0h1m1 0h1m2 0h2m2 0h2m2 0h1m1 0h1m1 0h4m2 0h2m2 0h3m-35 1h2m2 0h1m1 0h4m2 0h2m1 0h3m2 0h1m2 0h2m1 0h1m3 0h5m-36 1h1m1 0h3m1 0h3m1 0h1m3 0h3m1 0h2m1 0h2m1 0h1m2 0h1m1 0h1m1 0h3m1 0h2m-35 1h1m1 0h1m2 0h1m4 0h2m5 0h2m1 0h1m1 0h1m1 0h1m1 0h1m1 0h4m2 0h1m-36 1h1m2 0h1m1 0h4m1 0h5m7 0h2m2 0h2m1 0h2m1 0h1m2 0h1m-35 1h4m2 0h1m2 0h6m3 0h4m2 0h2m1 0h1m1 0h1m1 0h1m-34 1h2m2 0h1m1 0h2m3 0h1m1 0h3m2 0h1m1 0h1m1 0h1m2 0h1m1 0h2m2 0h3m1 0h2m-35 1h1m1 0h1m4 0h4m3 0h1m4 0h2m1 0h1m2 0h1m3 0h1m1 0h2m-35 1h3m3 0h1m1 0h2m1 0h1m1 0h2m3 0h8m1 0h1m1 0h2m1 0h1m1 0h2m-34 1h4m1 0h3m1 0h1m1 0h2m1 0h1m4 0h1m2 0h1m2 0h2m2 0h1m1 0h1m1 0h1m-36 1h1m1 0h1m3 0h1m2 0h3m2 0h1m1 0h2m1 0h1m1 0h5m1 0h1m2 0h2m2 0h1m1 0h1m-35 1h2m3 0h2m1 0h1m3 0h3m1 0h1m3 0h1m4 0h4m2 0h1m2 0h1m-34 1h1m1 0h3m3 0h1m1 0h2m1 0h2m3 0h6m1 0h1m1 0h1m1 0h3m-35 1h1m1 0h1m2 0h1m1 0h1m1 0h4m2 0h1m1 0h3m3 0h1m1 0h5m2 0h1m1 0h1m-35 1h1m2 0h2m1 0h2m3 0h1m1 0h5m3 0h1m2 0h4m1 0h5m1 0h2m-35 1h3m2 0h1m2 0h2m4 0h4m2 0h2m5 0h5m1 0h2m-37 1h2m4 0h3m2 0h1m1 0h3m1 0h1m1 0h4m1 0h1m5 0h1m5 0h1m-37 1h1m1 0h2m3 0h1m1 0h4m5 0h1m1 0h4m1 0h1m2 0h1m2 0h1m1 0h1m-34 1h1m1 0h1m2 0h4m1 0h1m1 0h1m1 0h3m2 0h1m2 0h1m4 0h1m1 0h2m2 0h1m1 0h2m-37 1h1m1 0h1m5 0h2m2 0h3m1 0h1m2 0h1m6 0h1m3 0h1m1 0h1m1 0h3m-37 1h1m1 0h1m2 0h3m1 0h3m2 0h2m1 0h4m1 0h13m1 0h1m-29 1h1m3 0h1m1 0h3m2 0h10m3 0h1m-33 1h7m2 0h2m1 0h4m1 0h3m3 0h4m1 0h1m1 0h1m1 0h1m3 0h1m-37 1h1m5 0h1m3 0h2m1 0h1m2 0h1m4 0h1m1 0h2m3 0h1m3 0h1m3 0h1m-37 1h1m1 0h3m1 0h1m6 0h1m4 0h1m1 0h3m1 0h9m1 0h3m-37 1h1m1 0h3m1 0h1m4 0h1m1 0h1m6 0h4m3 0h1m1 0h2m2 0h1m2 0h1m-37 1h1m1 0h3m1 0h1m3 0h3m4 0h1m2 0h2m2 0h1m1 0h3m5 0h3m-37 1h1m5 0h1m2 0h1m3 0h4m1 0h1m7 0h3m1 0h1m1 0h2m2 0h1m-37 1h7m1 0h2m1 0h1m2 0h1m1 0h1m1 0h3m2 0h2m3 0h1m2 0h1m4 0h1"/></symbol>
+</defs></svg>
+
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="#start"><span class="brand-mark"><svg class="ico"><use href="#i-arm"/></svg></span><span>Interakt Control Robot<small data-en="Project docs">Projekt-Doku</small></span></a>
+    <nav aria-label="Abschnitte" data-en-aria="Sections">
+      <a href="#vorstellen" data-en="Present">Vorstellen</a>
+      <a href="#bedienen" data-en="Operate">Bedienen</a>
+      <a href="#technik" data-en="Technical">Technik</a>
+      <span class="sep" aria-hidden="true"></span>
+      <a href="#merkmale" data-en="Features">Merkmale</a>
+      <a href="#stack">Stack</a>
+      <a href="#ablaeufe" data-en="Flows">Abläufe</a>
+    </nav>
+    <div class="tools">
+      <div class="seg" role="group" aria-label="Sprache / Language">
+        <button type="button" data-lang="de" aria-pressed="true">DE</button>
+        <button type="button" data-lang="en" aria-pressed="false">EN</button>
+      </div>
+      <div class="seg" role="group" aria-label="Theme">
+        <button type="button" data-theme-btn="dark" aria-pressed="false" data-en="Dark" title="Dunkles Theme">Dunkel</button>
+        <button type="button" data-theme-btn="light" aria-pressed="false" data-en="Light" title="Helles Theme">Hell</button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main id="start" class="wrap lay">
+  <aside>
+    <div class="hero-main">
+    <div class="eyebrow" data-en="Abstract">Abstract</div>
+    <h1>Interakt Control Robot</h1>
+    <p class="claim" data-en="The human leads. &lt;em&gt;The AI assists.&lt;/em&gt;">Der Mensch führt. <em>Die KI assistiert.</em></p>
+    <p class="abstract" data-en="Assistive robotics platform for the &lt;b&gt;xArm&amp;nbsp;Lite&amp;nbsp;6&lt;/b&gt;, built on ROS 2 Humble for &lt;b&gt;teaching and research&lt;/b&gt;. Example scenarios such as the logistics cell with auto palletizing show its range.">Assistive Robotik-Plattform für den <b>xArm&nbsp;Lite&nbsp;6</b> auf Basis von ROS 2 Humble, gebaut für <b>Lehre und Forschung</b>. Beispielszenarien wie die Logistik-Zelle mit Auto-Palettieren zeigen die Bandbreite.</p>
+    <ul class="facts">
+      <li style="--hue: var(--indigo)"><svg class="ico"><use href="#i-cube"/></svg><span><b data-en="First virtual, then real.">Erst virtuell, dann real.</b><span data-en="Every motion runs in the physics-based Digital Twin first, then the same flow on the xArm&amp;nbsp;Lite&amp;nbsp;6.">Jede Bewegung läuft zuerst im physikbasierten Digital Twin, danach derselbe Ablauf am xArm&nbsp;Lite&nbsp;6.</span></span></li>
+      <li style="--hue: var(--gold)"><svg class="ico"><use href="#i-shield"/></svg><span><b data-en="One chain for every input.">Eine Kette für jede Eingabe.</b><span data-en="Ten control modes, from gamepad and VR to gaze, voice and AI chat.">Zehn Steuerwege, von Gamepad und VR bis Blick, Sprache und KI-Chat.</span></span></li>
+      <li style="--hue: var(--violet)"><svg class="ico"><use href="#i-user"/></svg><span><b data-en="The AI plans. The human approves.">Die KI plant. Der Mensch gibt frei.</b><span data-en="The arm moves only after approval; step in any time.">Der Arm fährt erst nach Freigabe; Eingreifen geht jederzeit.</span></span></li>
+      <li style="--hue: var(--accent)"><svg class="ico"><use href="#i-globe"/></svg><span><b data-en="Open, don't install.">Öffnen statt installieren.</b><span data-en="Operated entirely in the browser: locally, on the home network or on Quest&amp;nbsp;3.">Bedienung komplett im Browser: lokal, im Heimnetz oder auf der Quest&nbsp;3.</span></span></li>
+      <li style="--hue: var(--green)"><svg class="ico"><use href="#i-eye"/></svg><span><b data-en="Measured, not guessed.">Gemessen statt geschätzt.</b><span data-en="The Monitoring Dashboard records system and usage; usability tests with SUS and NASA-TLX.">Monitoring Dashboard erfasst System und Nutzung; Usability-Tests mit SUS und NASA-TLX.</span></span></li>
+      <li style="--hue: var(--teal)"><svg class="ico"><use href="#i-layers"/></svg><span><b data-en="Replaceable, not fixed.">Austauschbar statt festgelegt.</b><span data-en="Input device, camera, AI model and software module swap individually; robot arm planned.">Eingabegerät, Kamera, KI-Modell und Software-Baustein einzeln ersetzbar; Roboterarm geplant.</span></span></li>
+    </ul>
+    </div>
+    <div class="hero-side">
+    <a class="box qr-card" href="https://lu4k87.github.io/my_xarm_lite6-extended/project_docs.html" target="_blank" rel="noopener">
+      <span class="qr-code"><svg role="img" aria-label="QR-Code: Projekt-Doku öffnen" data-en-aria="QR code: open the project docs"><use href="#qr-docs"/></svg></span>
+      <span class="qr-txt"><b data-en="Open page">Seite öffnen</b><span data-en="On your phone: point the camera at the code">Am Handy: Kamera auf den Code</span><small>lu4k87.github.io/my_xarm_lite6-extended/project_docs.html</small></span>
+    </a>
+    <div class="chips">
+      <span class="chip" data-en="&lt;b&gt;10&lt;/b&gt; control modes"><b>10</b> Steuerwege</span>
+      <span class="chip"><b>4</b> Web-Apps</span>
+      <span class="chip"><b>ROS 2</b> Humble</span>
+      <span class="chip"><b>FAKE</b> + REAL</span>
+      <span class="chip" data-en="&lt;b&gt;0&lt;/b&gt; installs on the client"><b>0</b> Installation am Client</span>
+      <span class="chip"><b>Open Source</b> · Apache 2.0</span>
+    </div>
+    <nav class="box" aria-label="Übersicht" data-en-aria="Overview">
+      <div class="eyebrow" data-en="Overview">Übersicht</div>
+      <b class="grp" data-en="Part 1 · Documents">Teil 1 · Unterlagen</b>
+      <a href="#vorstellen"><em data-en="01 · Present">01 · Vorstellen</em><span data-count="vorstellen"></span></a>
+      <a href="#bedienen"><em data-en="02 · Operate &amp; set up">02 · Bedienen &amp; Einrichten</em><span data-count="bedienen"></span></a>
+      <a href="#technik"><em data-en="03 · Technical docs">03 · Technik-Doku</em><span data-count="technik"></span></a>
+      <b class="grp" data-en="Part 2 · Understand the project">Teil 2 · Projekt verstehen</b>
+      <a href="#konzept"><em data-en="04 · Concept &amp; objectives">04 · Konzept &amp; Zielsetzung</em><span data-count="konzept"></span></a>
+      <a href="#merkmale"><em data-en="05 · Key features">05 · Kernmerkmale</em><span data-count="merkmale"></span></a>
+      <a href="#stack"><em data-en="06 · System stack">06 · System-Stack</em><span data-count="stack"></span></a>
+      <a href="#ablaeufe"><em data-en="07 · Function flows">07 · Funktionsabläufe</em><span data-count="ablaeufe"></span></a>
+      <a href="project_functions.html"><em data-en="Function atlas: all functions">Funktionsatlas: alle Funktionen</em><span><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg></span></a>
+    </nav>
+    </div>
+  </aside>
+
+  <div>
+    <div class="part" id="unterlagen">
+      <span class="eyebrow" data-en="Part 1">Teil 1</span>
+      <h2 data-en="Documents">Unterlagen</h2>
+      <p class="sub" data-en="Everything to present, operate and develop: one click to the document">Alles zum Vorstellen, Bedienen und Entwickeln: ein Klick zum Dokument</p>
+    </div>
+
+    <section id="vorstellen">
+      <h2 class="h2"><span class="n">01</span><span data-en="Present">Vorstellen</span></h2>
+      <p class="sub" data-en="For visitors, poster session and presentation: the project understood in minutes">Für Besucher, Poster-Session und Präsentation: das Projekt in wenigen Minuten verstanden</p>
+      <div class="list">
+        <a class="item" href="project_showcase.html" target="_blank" rel="noopener" style="--hue: var(--accent)">
+          <span class="thumb"><img src="img/project_docs/interakt.jpg" alt="" loading="lazy"></span>
+          <span class="txt"><b><svg class="ico"><use href="#i-arm"/></svg>Interakt Control Robot</b><p data-en="Ten control modes, one safety chain: devices, chain to try out with E-STOP, capability matrix">Zehn Steuerwege, eine Sicherheitskette: Eingabegeräte, Kette zum Ausprobieren mit E-STOP, Fähigkeits-Matrix</p></span>
+          <span class="end"><span class="tag">HTML</span><span class="go"><svg class="ico"><use href="#i-go"/></svg></span></span>
+        </a>
+        <a class="item" href="project_presentation.html" target="_blank" rel="noopener" style="--hue: var(--violet)">
+          <span class="thumb"><img src="img/project_docs/vorstellung.jpg" alt="" loading="lazy"></span>
+          <span class="txt"><b><svg class="ico"><use href="#i-star"/></svg><span data-en="Project presentation">Projektvorstellung</span></b><p data-en="Interactive: 3D Digital Twin with pick &amp; place, grasp flow in 7 steps, data flow through the ROS 2 packages, shared control, AI agent, palletizing, evaluation">Interaktiv: 3D-Digital-Twin mit Pick &amp; Place, Greif-Ablauf in 7 Schritten, Datenfluss durch die ROS-2-Pakete, Shared Control, KI-Agent, Palettieren, Evaluierung</p></span>
+          <span class="end"><span class="tag">HTML</span><span class="go"><svg class="ico"><use href="#i-go"/></svg></span></span>
+        </a>
+        <a class="item" href="poster/poster_a2.html" target="_blank" rel="noopener" style="--hue: var(--gold)">
+          <span class="thumb"><img src="img/project_docs/poster.jpg" alt="" loading="lazy"></span>
+          <span class="txt"><b><svg class="ico"><use href="#i-poster"/></svg>Poster A2</b><p data-en="The project on one page, for poster session and print">Das Projekt auf einer Seite, für Poster-Session und Druck</p></span>
+          <span class="end"><span class="tag">HTML</span><span class="go"><svg class="ico"><use href="#i-go"/></svg></span></span>
+        </a>
+        <a class="item" href="../video/index.html" data-local target="_blank" rel="noopener" style="--hue: var(--teal)">
+          <span class="thumb"><img src="img/project_docs/video.jpg" alt="" loading="lazy"></span>
+          <span class="txt"><b><svg class="ico"><use href="#i-play"/></svg><span data-en="Project video">Projektvideo</span></b><p data-en="Script with animatic, recording plan and editing">Drehbuch mit Animatic, Aufnahmeplan und Schnitt</p></span>
+          <span class="end"><span class="tag">HTML</span><span class="go"><svg class="ico"><use href="#i-go"/></svg></span></span>
+        </a>
+      </div>
+      <p class="sub" style="margin-top:8px"><span data-en="Poster as PDF:">Poster als PDF:</span> <a class="pdf" href="poster/poster_a2.pdf" target="_blank" rel="noopener">poster_a2.pdf</a></p>
+    </section>
+
+    <section id="bedienen">
+      <h2 class="h2"><span class="n">02</span><span data-en="Operate &amp; set up">Bedienen &amp; Einrichten</span></h2>
+      <p class="sub" data-en="For operators in the lab and remote: from power-on to the first safe motion">Für Bediener im Labor und remote: vom Einschalten bis zur ersten sicheren Bewegung</p>
+      <div class="list">
+        <a class="item" href="project_manual.html" data-nexus-href="project_manual.html" target="_blank" rel="noopener" style="--hue: var(--accent)">
+          <span class="thumb"><img src="img/project_docs/handbuch.jpg" alt="" loading="lazy"></span>
+          <span class="txt"><b><svg class="ico"><use href="#i-book"/></svg><span data-en="Manual xArm Lite 6">Handbuch xArm Lite 6</span></b><p data-en="System map, control loop, safety, ports, remote guide, VLA-M at a glance (skills, entry points, safety) incl. motion profile, logistics cell with infeed, outfeed &amp; pusher">System Map, Regelkreis, Sicherheit, Ports, Remote Guide, VLA-M auf einen Blick (Skills, Einstiegswege, Sicherheit) inkl. Bewegungsprofil, Logistik-Zelle mit Band-Nachrücken, Rollenauslauf &amp; Pusher</p></span>
+          <span class="end"><span class="tag">HTML</span><span class="go"><svg class="ico"><use href="#i-go"/></svg></span></span>
+        </a>
+        <a class="item" href="http://127.0.0.1:8080/" data-setup data-local target="_blank" rel="noopener" style="--hue: var(--teal)" title="Öffnet die Setup-Karte (über die Nexus Webapp)" data-en-title="Opens the setup card (via the Nexus Webapp)">
+          <span class="thumb"><img src="img/project_docs/setup.jpg" alt="" loading="lazy"></span>
+          <span class="txt"><b><svg class="ico"><use href="#i-net"/></svg><span data-en="Setup card">Setup-Karte</span></b><p data-en="Networks, addresses, ports, HTTPS/VR, server/client">Netze, Adressen, Ports, HTTPS/VR, Server/Client</p></span>
+          <span class="end"><span class="tag">Nexus</span><span class="go"><svg class="ico"><use href="#i-go"/></svg></span></span>
+        </a>
+        <a class="item" href="de/running.html" data-href-en="en/running.html" target="_blank" rel="noopener" style="--hue: var(--green)">
+          <span class="thumb"><img src="img/project_docs/schnellstart.jpg" alt="" loading="lazy"></span>
+          <span class="txt"><b><svg class="ico"><use href="#i-rocket"/></svg><span data-en="Quick start">Schnellstart</span></b><p data-en="Start the system, choose FAKE (simulation) or REAL (robot)">System starten, FAKE (Simulation) oder REAL (Roboter) wählen</p></span>
+          <span class="end"><span class="tag">MD</span><span class="go"><svg class="ico"><use href="#i-go"/></svg></span></span>
+        </a>
+        <a class="item" href="project_setup_guide.html" data-nexus-href="project_setup_guide.html" target="_blank" rel="noopener" style="--hue: var(--indigo)">
+          <span class="thumb"><img src="img/project_docs/setup_guide.jpg" alt="" loading="lazy"></span>
+          <span class="txt"><b><svg class="ico"><use href="#i-tool"/></svg><span data-en="Setup guide">Setup-Guide</span></b><p data-en="Commissioning step by step: pre-installed PC or from bare Ubuntu">Inbetriebnahme Schritt für Schritt: PC vorinstalliert oder ab nacktem Ubuntu</p></span>
+          <span class="end"><span class="tag">HTML</span><span class="go"><svg class="ico"><use href="#i-go"/></svg></span></span>
+        </a>
+      </div>
+    </section>
+
+    <section id="technik">
+      <h2 class="h2"><span class="n">03</span><span data-en="Technical docs">Technik-Doku</span></h2>
+      <p class="sub" data-en="For developers: architecture, interfaces, packages · docs/en">Für Entwickler: Architektur, Schnittstellen, Pakete · docs/de</p>
+      <div class="grid">
+        <a href="de/installation.html" data-href-en="en/installation.html" target="_blank" rel="noopener"><svg class="ico"><use href="#i-file"/></svg>Installation</a>
+        <a href="de/concept.html" data-href-en="en/concept.html" target="_blank" rel="noopener"><svg class="ico"><use href="#i-file"/></svg><span data-en="Concept">Konzept</span></a>
+        <a href="de/robot_control_ui.html" data-href-en="en/robot_control_ui.html" target="_blank" rel="noopener"><svg class="ico"><use href="#i-file"/></svg>Robot Control UI</a>
+        <a href="de/teleoperation.html" data-href-en="en/teleoperation.html" target="_blank" rel="noopener"><svg class="ico"><use href="#i-file"/></svg>Teleoperation</a>
+        <a href="de/vr_quest3.html" data-href-en="en/vr_quest3.html" target="_blank" rel="noopener"><svg class="ico"><use href="#i-file"/></svg>VR Quest 3</a>
+        <a href="de/voice_gaze.html" data-href-en="en/voice_gaze.html" target="_blank" rel="noopener"><svg class="ico"><use href="#i-file"/></svg><span data-en="Gaze + voice">Blick + Sprache</span></a>
+        <a href="de/vision_grasping.html" data-href-en="en/vision_grasping.html" target="_blank" rel="noopener"><svg class="ico"><use href="#i-file"/></svg><span data-en="Vision + grasping">Vision + Greifen</span></a>
+        <a href="de/vla.html" data-href-en="en/vla.html" target="_blank" rel="noopener"><svg class="ico"><use href="#i-file"/></svg>VLA</a>
+        <a href="de/monitoring.html" data-href-en="en/monitoring.html" target="_blank" rel="noopener"><svg class="ico"><use href="#i-file"/></svg>Monitoring</a>
+        <a href="de/isaac_sim.html" data-href-en="en/isaac_sim.html" target="_blank" rel="noopener"><svg class="ico"><use href="#i-file"/></svg>Isaac Sim</a>
+        <a href="de/repository_structure.html" data-href-en="en/repository_structure.html" target="_blank" rel="noopener"><svg class="ico"><use href="#i-file"/></svg><span data-en="Repository structure">Repo-Struktur</span></a>
+        <a href="readme-de.html" data-href-en="README.html" target="_blank" rel="noopener"><svg class="ico"><use href="#i-file"/></svg>README</a>
+        <a href="claude_workflow.html" target="_blank" rel="noopener"><svg class="ico"><use href="#i-loop"/></svg><span data-en="Workflow with Claude Code">Arbeitsweise mit Claude Code</span></a>
+      </div>
+    </section>
+
+    <div class="part" id="verstehen">
+      <span class="eyebrow" data-en="Part 2">Teil 2</span>
+      <h2 data-en="Understand the project">Projekt verstehen</h2>
+      <p class="sub" data-en="Objectives, features, structure and flows at a glance">Zielsetzung, Merkmale, Aufbau und Abläufe auf einen Blick</p>
+    </div>
+
+    <section id="konzept">
+      <h2 class="h2"><span class="n">04</span><span data-en="Concept &amp; objectives">Konzept &amp; Zielsetzung</span></h2>
+      <p class="sub" data-en="For research and teaching: problem statement, approach and guiding research question">Für Forschung und Lehre: Problemstellung, Lösungsansatz und Leitfrage des Projekts</p>
+      <p class="lead" data-en="Conventional teleoperation of industrial robots requires fine motor skills and expert knowledge, which excludes many potential user groups. The project investigates how &lt;b&gt;multimodal input&lt;/b&gt;, &lt;b&gt;assistive autonomy&lt;/b&gt; and a &lt;b&gt;Digital Twin&lt;/b&gt; lower these barriers without restricting human control.">Konventionelle Teleoperation von Industrierobotern setzt Feinmotorik und Expertenwissen voraus und schließt damit viele potenzielle Nutzergruppen aus. Das Projekt untersucht, wie <b>multimodale Eingaben</b>, <b>assistive Autonomie</b> und ein <b>Digital Twin</b> diese Barrieren senken, ohne die Kontrolle des Menschen einzuschränken.</p>
+      <div class="feats">
+        <div class="feat" style="--hue: var(--gold)">
+          <span class="bi"><svg class="ico"><use href="#i-user"/></svg></span>
+          <span class="k-t" data-en="Motivation · Industry 5.0">Motivation · Industrie 5.0</span>
+          <b data-en="Lower barriers, enable participation.">Barrieren senken, Teilhabe ermöglichen.</b>
+          <ul>
+            <li data-en="&lt;b&gt;Abstraction:&lt;/b&gt; task-level commands instead of joint coordination"><b>Abstraktion:</b> aufgabenbezogene Befehle statt Gelenkkoordination</li>
+            <li data-en="&lt;b&gt;Inclusion:&lt;/b&gt; participation regardless of physical or cognitive abilities"><b>Inklusion:</b> Teilhabe unabhängig von physischen oder kognitiven Voraussetzungen</li>
+            <li data-en="&lt;b&gt;Synergy:&lt;/b&gt; the robot as an assistive tool that relieves, not replaces"><b>Synergie:</b> Roboter als Assistenzwerkzeug, das entlastet statt ersetzt</li>
+          </ul>
+        </div>
+        <div class="feat" style="--hue: var(--violet)">
+          <span class="bi"><svg class="ico"><use href="#i-loop"/></svg></span>
+          <span class="k-t" data-en="Principle · Shared control">Prinzip · Shared Control</span>
+          <b data-en="Three control levels, one supervisor.">Drei Steuerebenen, ein Supervisor.</b>
+          <ul>
+            <li data-en="&lt;b&gt;High level:&lt;/b&gt; set goals by gaze, voice or AI chat"><b>High-Level:</b> Ziele per Blick, Sprache oder KI-Chat vorgeben</li>
+            <li data-en="&lt;b&gt;Low level:&lt;/b&gt; fine correction by gamepad via MoveIt Servo"><b>Low-Level:</b> Feinkorrektur per Gamepad über MoveIt Servo</li>
+            <li data-en="&lt;b&gt;Assistance:&lt;/b&gt; collision-free path planning secures every execution"><b>Assistenz:</b> kollisionsfreie Bahnplanung sichert jede Ausführung ab</li>
+          </ul>
+        </div>
+        <div class="feat" style="--hue: var(--accent)">
+          <span class="bi"><svg class="ico"><use href="#i-rocket"/></svg></span>
+          <span class="k-t" data-en="Objective · Proof of concept">Ziel · Proof of Concept</span>
+          <b data-en="Reproducible and cost-effective.">Reproduzierbar und kosteneffizient.</b>
+          <ul>
+            <li data-en="&lt;b&gt;Demonstrator:&lt;/b&gt; fully functional on the xArm Lite 6"><b>Demonstrator:</b> voll funktionsfähig am xArm Lite 6</li>
+            <li data-en="&lt;b&gt;Test bed:&lt;/b&gt; develop and test assistive systems under realistic conditions"><b>Testumgebung:</b> assistive Systeme unter realitätsnahen Bedingungen entwickeln und erproben</li>
+            <li data-en="&lt;b&gt;Open:&lt;/b&gt; own packages under Apache 2.0, reproducible for other labs"><b>Offen:</b> eigene Pakete unter Apache 2.0, nachbaubar für andere Labore</li>
+          </ul>
+        </div>
+        <div class="feat" style="--hue: var(--green)">
+          <span class="bi"><svg class="ico"><use href="#i-eye"/></svg></span>
+          <span class="k-t" data-en="Evaluation logic">Evaluationslogik</span>
+          <b data-en="Measured, not guessed.">Gemessen statt geschätzt.</b>
+          <ul>
+            <li data-en="&lt;b&gt;Variables:&lt;/b&gt; usability, cognitive workload, system performance"><b>Messgrößen:</b> Usability, kognitive Beanspruchung, Systemleistung</li>
+            <li data-en="&lt;b&gt;Instruments:&lt;/b&gt; SUS, NASA-TLX, UEQ-S, SEQ in the Monitoring Dashboard"><b>Instrumente:</b> SUS, NASA-TLX, UEQ-S, SEQ im Monitoring Dashboard</li>
+            <li data-en="&lt;b&gt;Transfer:&lt;/b&gt; design guidelines for introducing robots in companies"><b>Transfer:</b> Gestaltungsempfehlungen für die Einführung in Unternehmen</li>
+          </ul>
+        </div>
+      </div>
+      <div class="panel rq">
+        <span class="eyebrow" data-en="Guiding research question">Leitfrage</span>
+        <q data-en="How can processes and workplaces be designed so that they measurably meet the human-centred requirements of Industry 5.0?">Wie lassen sich Prozesse und Arbeitsplätze so gestalten, dass sie die menschzentrierten Anforderungen der Industrie 5.0 messbar erfüllen?</q>
+      </div>
+
+      <h3 class="h3" data-en="System concept: development, evaluation and validation platform">Systemidee: Entwicklungs-, Evaluierungs- und Validierungsplattform</h3>
+      <p class="lead" data-en="As an integration layer on middleware level (ROS 2), the platform combines heterogeneous subsystems in one runtime environment. A distributed server/client setup and the Digital Twin (WebGL, optionally NVIDIA Isaac Sim) close the loop between development and empirical validation.">Als Integrationsschicht auf Middleware-Ebene (ROS 2) führt die Plattform heterogene Teilsysteme in einer Laufzeitumgebung zusammen. Verteilter Server/Client-Aufbau und Digital Twin (WebGL, optional NVIDIA Isaac Sim) schließen den Kreislauf aus Entwicklung und empirischer Validierung.</p>
+      <div class="feats">
+        <div class="feat" style="--hue: var(--teal)">
+          <span class="bi"><svg class="ico"><use href="#i-cam"/></svg></span>
+          <span class="k-t" data-en="Sensing · Perception">Sensorik · Perzeption</span>
+          <b data-en="Capture the workcell.">Die Umgebung erfassen.</b>
+          <p data-en="ZED depth camera with YOLO object detection and ArUco marker tracking; tactile and physiological sensors (planned).">ZED-Tiefenkamera mit YOLO-Objekterkennung und ArUco-Marker-Tracking; taktile und physiologische Sensoren (geplant).</p>
+        </div>
+        <div class="feat" style="--hue: var(--gold)">
+          <span class="bi"><svg class="ico"><use href="#i-mic"/></svg></span>
+          <span class="k-t" data-en="Multimodal control">Multimodale Steuerung</span>
+          <b data-en="Ten control modes. One system.">Zehn Steuerwege. Ein System.</b>
+          <p data-en="Gaze (Tobii), voice (OpenAI Whisper), gamepad, VR and touch side by side; the control lock activates one at a time.">Blick (Tobii), Sprache (OpenAI Whisper), Gamepad, VR und Touch nebeneinander; der Control-Lock aktiviert jeweils einen.</p>
+        </div>
+        <div class="feat" style="--hue: var(--violet)">
+          <span class="bi"><svg class="ico"><use href="#i-spark"/></svg></span>
+          <span class="k-t" data-en="Cognitive robotics · VLA">Kognitive Robotik · VLA</span>
+          <b data-en="From language to action.">Von der Sprache zur Handlung.</b>
+          <p data-en="An LLM agent (Ollama or Claude) turns spoken and visual commands into action sequences: grasp, place, palletize.">Ein LLM-Agent (Ollama oder Claude) übersetzt sprachliche und visuelle Befehle in Handlungssequenzen: Greifen, Platzieren, Palettieren.</p>
+        </div>
+        <div class="feat" style="--hue: var(--indigo)">
+          <span class="bi"><svg class="ico"><use href="#i-layers"/></svg></span>
+          <span class="k-t" data-en="Data acquisition">Datenakquisition</span>
+          <b data-en="Machine and human, in sync.">Technik und Mensch synchron.</b>
+          <p data-en="Time-synchronous recording of performance data (rosbag2 blackbox) and interaction data (UI clicks, questionnaires).">Zeitsynchrone Aufzeichnung von Leistungsdaten (rosbag2-Blackbox) und Interaktionsdaten (UI-Klicks, Fragebögen).</p>
+        </div>
+      </div>
+      <p class="sub norm-note"><span data-en="In depth:">Ausführlich:</span> <a class="pdf" href="de/concept.html" data-href-en="en/concept.html" target="_blank" rel="noopener"><span data-en="Concept &amp; architecture">Konzept &amp; Architektur</span></a></p>
+    </section>
+
+    <section id="merkmale">
+      <h2 class="h2"><span class="n">05</span><span data-en="Key features">Kernmerkmale</span></h2>
+      <p class="sub" data-en="Eight features, one principle: the system proposes, the human decides.">Acht Merkmale, ein Prinzip: Das System schlägt vor, der Mensch entscheidet.</p>
+      <div class="panel" role="group" aria-label="Assistiver Ablauf mit dem Menschen im Loop" data-en-aria="Assistive workflow with the human in the loop">
+        <div class="web">
+          <b><svg class="ico"><use href="#i-globe"/></svg><span data-en="Runs in the browser">Läuft im Browser</span></b>
+          <span class="chips">
+            <span class="chip" data-en="nothing to install">ohne Installation</span>
+            <span class="chip" data-en="local or remote">lokal oder remote</span>
+            <span class="chip">Desktop · Tablet · Quest 3</span>
+          </span>
+        </div>
+        <div class="flow">
+          <div class="step" style="--hue: var(--gold)">
+            <span class="k"><svg class="ico"><use href="#i-user"/></svg><span data-en="Human">Mensch</span></span>
+            <b data-en="Gives the task">Gibt den Auftrag</b>
+            <p data-en="By chat, voice, gaze, gamepad, VR or touch.">Per Chat, Sprache, Blick, Gamepad, VR oder Touch.</p>
+          </div>
+          <svg class="ico arr" aria-hidden="true"><use href="#i-go"/></svg>
+          <div class="step" style="--hue: var(--violet)">
+            <span class="k"><svg class="ico"><use href="#i-spark"/></svg><span data-en="AI assistant">KI-Assistenz</span></span>
+            <b data-en="Proposes a plan">Schlägt einen Plan vor</b>
+            <p data-en="The agent breaks the task into grasp, carry and place.">Der Agent zerlegt den Auftrag in Greifen, Tragen, Ablegen.</p>
+          </div>
+          <svg class="ico arr" aria-hidden="true"><use href="#i-go"/></svg>
+          <div class="step" style="--hue: var(--accent)">
+            <span class="k"><svg class="ico"><use href="#i-cube"/></svg>Digital Twin</span>
+            <b data-en="Simulates in advance">Simuliert vorab</b>
+            <p data-en="Physics, virtual objects and collision checks show the outcome first.">Physik, virtuelle Objekte und Kollisionsprüfung zeigen das Ergebnis vorher.</p>
+          </div>
+          <svg class="ico arr" aria-hidden="true"><use href="#i-go"/></svg>
+          <div class="step" style="--hue: var(--green)">
+            <span class="k"><svg class="ico"><use href="#i-arm"/></svg><span data-en="Robot">Roboter</span></span>
+            <b data-en="Executes after approval">Führt nach Freigabe aus</b>
+            <p data-en="Every motion monitored live, E-STOP always within reach.">Jede Bewegung live überwacht, E-STOP jederzeit erreichbar.</p>
+          </div>
+        </div>
+        <div class="back">
+          <svg class="ico" aria-hidden="true"><use href="#i-loop"/></svg>
+          <b data-en="Human in the loop">Mensch im Loop</b>
+          <span data-en="Camera, Digital Twin and status flow back to the human: approve, correct or stop.">Kamerabild, Digital Twin und Status gehen zurück an den Menschen: freigeben, korrigieren oder stoppen.</span>
+        </div>
+      </div>
+      <div class="feats">
+        <div class="feat" style="--hue: var(--accent)">
+          <span class="bi"><svg class="ico"><use href="#i-cube"/></svg></span>
+          <span class="k-t">Digital Twin · <span data-en="Physics">Physik</span></span>
+          <b data-en="First virtual, then real.">Erst virtuell, dann real.</b>
+          <p data-en="Live 3D twin in the browser; the physics sandbox simulates gravity, contact and grasping before the real run.">Live-3D-Zwilling im Browser; die Physik-Sandbox simuliert Schwerkraft, Kontakt und Greifen vor der echten Fahrt.</p>
+        </div>
+        <div class="feat" style="--hue: var(--indigo)">
+          <span class="bi"><svg class="ico"><use href="#i-shapes"/></svg></span>
+          <span class="k-t" data-en="Virtual objects">Virtuelle Objekte</span>
+          <b data-en="Test without a setup.">Testen ohne Aufbau.</b>
+          <p data-en="Cubes, bottle, balls, bowl, basket: grasp, move and stack, collision-checked in MoveIt, no camera needed.">Würfel, Flasche, Bälle, Schale, Korb: greifen, verschieben, stapeln; kollisionsgeprüft in MoveIt, ohne Kamera.</p>
+        </div>
+        <div class="feat" style="--hue: var(--teal)">
+          <span class="bi"><svg class="ico"><use href="#i-eye"/></svg></span>
+          <span class="k-t" data-en="Control · Monitoring">Kontrolle · Überwachung</span>
+          <b data-en="Everything in view. Step in any time.">Alles im Blick. Jederzeit eingreifen.</b>
+          <p data-en="Robot state, workcell (ZED, OctoMap) and motion execution live; Monitoring Dashboard and blackbox record along.">Roboterzustand, Umgebung (ZED, OctoMap) und Bewegungsausführung live; Monitoring Dashboard und Blackbox zeichnen mit.</p>
+          <span class="norms" aria-label="Normbezug" data-en-aria="Standards"><span class="tag" title="HMI-Gestaltung: Überblick vor Detail, nur Abweichungen hervorheben" data-en-title="HMI design: overview before detail, highlight deviations only">ISA-101</span><span class="tag" title="Farbcodierung: Farbe nur für Abweichung, Rot nur für Fehler und Stopp, nie Farbe allein" data-en-title="Colour coding: colour only for deviations, red only for errors and stop, never colour alone">IEC 60073</span></span>
+        </div>
+        <div class="feat" style="--hue: var(--violet)">
+          <span class="bi"><svg class="ico"><use href="#i-spark"/></svg></span>
+          <span class="k-t" data-en="Assistive autonomy">Assistive Autonomie</span>
+          <b data-en="The AI plans. The human approves.">Die KI plant. Der Mensch gibt frei.</b>
+          <p data-en="The agent turns plain language into motion sequences; the human's decisions and feedback steer every step.">Der Agent macht aus Sprache Bewegungsabläufe; Entscheidung und Feedback des Menschen steuern jeden Schritt.</p>
+          <span class="norms" aria-label="Normbezug" data-en-aria="Standards"><span class="tag" title="Interaktionsprinzipien: Steuerbarkeit, Erwartungskonformität, Fehlertoleranz" data-en-title="Interaction principles: controllability, conformity with expectations, error tolerance">ISO 9241-110</span></span>
+        </div>
+        <div class="feat" style="--hue: var(--green)">
+          <span class="bi"><svg class="ico"><use href="#i-globe"/></svg></span>
+          <span class="k-t" data-en="Web · Remote">Web · Remote</span>
+          <b data-en="Open, don't install.">Öffnen statt installieren.</b>
+          <p data-en="Operated entirely in the browser: at the robot PC, from the home network or in the Quest 3 via WebXR.">Bedienung komplett im Browser: am Roboter-PC, aus dem Heimnetz oder in der Quest 3 per WebXR.</p>
+          <span class="norms" aria-label="Normbezug" data-en-aria="Standards"><span class="tag" title="Barrierearm: Kontrast, Tastaturbedienung, sichtbarer Fokus, Zoom bis 400 %" data-en-title="Accessible: contrast, keyboard operation, visible focus, zoom up to 400 %">WCAG 2.2</span></span>
+        </div>
+        <div class="feat" style="--hue: var(--gold)">
+          <span class="bi"><svg class="ico"><use href="#i-shield"/></svg></span>
+          <span class="k-t" data-en="Safety">Sicherheit</span>
+          <b data-en="One chain for every input.">Eine Kette für jede Eingabe.</b>
+          <p data-en="Control lock, pre-collision check, MoveIt and E-STOP apply equally to all ten control modes.">Control-Lock, Kollisionsvorprüfung, MoveIt und E-STOP gelten für alle zehn Steuerwege gleich.</p>
+          <span class="norms" aria-label="Normbezug" data-en-aria="Standards"><span class="tag" title="Sicherheit von Industrierobotern: Schutzschichten, Freigabe vor REAL-Bewegung" data-en-title="Safety of industrial robots: protective layers, approval before REAL motion">ISO 10218</span><span class="tag" title="Not-Halt: E-STOP immer sichtbar, an fester Stelle, in jedem Steuerweg" data-en-title="Emergency stop: E-STOP always visible, fixed position, in every control mode">ISO 13850</span></span>
+        </div>
+        <div class="feat" style="--hue: var(--teal)">
+          <span class="bi"><svg class="ico"><use href="#i-code"/></svg></span>
+          <span class="k-t">Open Source</span>
+          <b data-en="Open, reproducible, extensible.">Offen, nachbaubar, erweiterbar.</b>
+          <p data-en="Own packages under Apache 2.0, built on ROS 2 Humble and MoveIt 2.">Eigene Pakete unter Apache 2.0, aufgebaut auf ROS 2 Humble und MoveIt 2.</p>
+        </div>
+        <div class="feat" style="--hue: var(--indigo)">
+          <span class="bi"><svg class="ico"><use href="#i-blocks"/></svg></span>
+          <span class="k-t" data-en="Multimodal · Modular">Multimodal · Modular</span>
+          <b data-en="Replaceable, not fixed.">Austauschbar statt festgelegt.</b>
+          <p data-en="Better input devices, cameras, AI models or software modules replace the old ones one by one; fixed ROS 2 interfaces keep the rest of the system unchanged. Next, the robot arm itself becomes replaceable (planned).">Bessere Eingabegeräte, Kameras, KI-Modelle oder Software-Module ersetzen die alten einzeln; feste ROS-2-Schnittstellen halten den Rest des Systems unverändert. Als Nächstes wird auch der Roboterarm austauschbar (geplant).</p>
+        </div>
+      </div>
+      <p class="sub norm-note" data-en="Standards: design and safety concept follow the standards named on the cards; this is not a certification.">Normbezüge: Gestaltung und Sicherheitskonzept orientieren sich an den auf den Karten genannten Normen; keine Zertifizierung.</p>
+    </section>
+
+    <section id="stack">
+      <h2 class="h2"><span class="n">06</span><span data-en="System stack">System-Stack</span></h2>
+      <p class="sub" data-en="From the operator to the hardware: seven clearly separated layers, each component replaceable">Vom Bediener bis zur Hardware: sieben klar getrennte Schichten, jede Komponente austauschbar</p>
+      <div class="stack" role="list">
+        <div class="layer" role="listitem" style="--hue: var(--gold)">
+          <span class="lk"><svg class="ico"><use href="#i-touch"/></svg><span data-en="Input">Eingabe</span></span>
+          <span class="parts"><span><b>Browser</b> · Desktop, Tablet, Laptop</span><span><b>WebXR</b> · Quest 3</span><span><b>Gamepad</b></span><span><b data-en="Gaze">Blick</b> · Tobii</span><span><b data-en="Voice">Sprache</b> · DE/EN</span><span><b>Touch Panel</b></span></span>
+        </div>
+        <div class="layer" role="listitem" style="--hue: var(--accent)">
+          <span class="lk"><svg class="ico"><use href="#i-win"/></svg>Web-Apps</span>
+          <span class="parts"><span><b>Robot Control UI</b> · 8081 · three.js, Rapier</span><span><b>Nexus Webapp</b> · 8080 · Flask</span><span><b>Monitoring Dashboard</b> · 8083 · SQLite</span><span><b>Touch Panel</b> · /touch</span><span><b>UX</b> · ISO 9241-110, ISA-101, IEC 60073, WCAG 2.2</span></span>
+        </div>
+        <div class="layer" role="listitem" style="--hue: var(--teal)">
+          <span class="lk"><svg class="ico"><use href="#i-link"/></svg><span data-en="Browser ↔ ROS">Browser ↔ ROS</span></span>
+          <span class="parts"><span><b>rosbridge</b> · 9090 · Whitelist</span><span><b>web_video_server</b> · <span data-en="camera streams">Kamerabilder</span></span><span><b>Control-Lock</b> · Heartbeat, Watchdog</span></span>
+        </div>
+        <div class="layer" role="listitem" style="--hue: var(--violet)">
+          <span class="lk"><svg class="ico"><use href="#i-spark"/></svg><span data-en="Assistance · Perception">Assistenz · Wahrnehmung</span></span>
+          <span class="parts"><span><b><span data-en="AI agent">KI-Agent</span></b> · Ollama qwen2.5 / Claude</span><span><b>YOLOv8</b> · 3D-Boxen</span><span><b>OctoMap</b></span><span><b>Whisper</b> · <span data-en="speech">Sprache</span></span><span><b>Gaze</b> · Tobii-Pipeline</span></span>
+        </div>
+        <div class="layer" role="listitem" style="--hue: var(--green)">
+          <span class="lk"><svg class="ico"><use href="#i-shield"/></svg><span data-en="Motion · Safety">Bewegung · Sicherheit</span></span>
+          <span class="parts"><span><b>MoveIt 2</b> · MoveGroup, Servo</span><span><b data-en="Pre-collision check">Kollisionsvorprüfung</b></span><span><b>Sandbox</b></span><span><b>E-STOP</b> · ISO 13850</span><span><b>Blackbox</b> · rosbag2</span></span>
+        </div>
+        <div class="layer" role="listitem" style="--hue: var(--indigo)">
+          <span class="lk"><svg class="ico"><use href="#i-chip"/></svg><span data-en="Drivers">Treiber</span></span>
+          <span class="parts"><span><b>xarm_ros2</b></span><span><b>zed-ros2-wrapper</b> · ZED SDK 4.1, CUDA</span><span><b>ros2_whisper</b> · whisper.cpp</span></span>
+        </div>
+        <div class="layer" role="listitem" style="--hue: var(--accent)">
+          <span class="lk"><svg class="ico"><use href="#i-layers"/></svg><span data-en="Foundation">Basis</span></span>
+          <span class="parts"><span><b>ROS 2 Humble</b></span><span><b>Ubuntu 22.04</b></span><span><b>Python · C++ · JavaScript</b></span><span><b>Apache 2.0</b></span></span>
+        </div>
+      </div>
+      <h3 class="h3" data-en="Hardware · reference setup">Hardware · Referenz-Aufbau</h3>
+      <p class="sub" data-en="Lab reference setup. Every device can be swapped behind its ROS 2 interface, e.g. another camera, gamepad or speech model.">Referenz-Aufbau im Labor. Jedes Gerät lässt sich hinter seiner ROS-2-Schnittstelle tauschen, z. B. gegen eine andere Kamera, ein anderes Gamepad oder Sprachmodell.</p>
+      <div class="hw">
+        <div class="hw-item" style="--hue: var(--accent)"><svg class="ico"><use href="#i-arm"/></svg><b>UFactory xArm Lite 6</b><p data-en="6-axis robot arm">Roboterarm, 6 Achsen</p><span class="tags"><span class="tag">Ethernet</span></span></div>
+        <div class="hw-item" style="--hue: var(--accent)"><svg class="ico"><use href="#i-grip"/></svg><b data-en="Vacuum gripper">Vakuumgreifer</b><p data-en="Pick and place, laser aiming aid">Pick and Place, Laser-Zielhilfe</p><span class="tags"><span class="tag">Tool-I/O</span></span></div>
+        <div class="hw-item" style="--hue: var(--teal)"><svg class="ico"><use href="#i-cam"/></svg><b>Stereolabs ZED Mini</b><p data-en="Stereo depth, 3D point cloud">Stereo-Tiefe, 3D-Punktwolke</p><span class="tags"><span class="tag">USB 3</span></span></div>
+        <div class="hw-item" style="--hue: var(--green)"><svg class="ico"><use href="#i-pc"/></svg><b>Workstation</b><p>i9-12900K · RTX A5000</p><span class="tags"><span class="tag">Ubuntu 22.04</span><span class="tag">CUDA</span></span></div>
+        <div class="hw-item" style="--hue: var(--gold)"><svg class="ico"><use href="#i-pad"/></svg><b>Xbox Elite 2</b><p data-en="Cartesian jogging, speed">Kartesisches Joggen, Tempo</p><span class="tags"><span class="tag">USB / BT</span></span></div>
+        <div class="hw-item" style="--hue: var(--indigo)"><svg class="ico"><use href="#i-vr"/></svg><b>Meta Quest 3</b><p data-en="6-DoF VR teleoperation">6-DoF-VR-Teleoperation</p><span class="tags"><span class="tag">WebXR</span><span class="tag opt" data-en="optional">optional</span></span></div>
+        <div class="hw-item" style="--hue: var(--teal)"><svg class="ico"><use href="#i-eye"/></svg><b>Tobii Pro Glasses 3</b><p data-en="Gaze control, dwell-time grasping">Blicksteuerung, Greifen per Verweilzeit</p><span class="tags"><span class="tag">RTSP</span><span class="tag opt" data-en="optional">optional</span></span></div>
+        <div class="hw-item" style="--hue: var(--violet)"><svg class="ico"><use href="#i-mic"/></svg><b data-en="Mic · touch display">Mikrofon · Touch-Display</b><p data-en="Voice commands, extra touch panel">Sprachbefehle, zusätzliches Touch Panel</p><span class="tags"><span class="tag">USB / HDMI</span><span class="tag opt" data-en="optional">optional</span></span></div>
+      </div>
+    </section>
+
+    <section id="ablaeufe">
+      <h2 class="h2"><span class="n">07</span><span data-en="Function flows">Funktionsabläufe</span></h2>
+      <p class="sub" data-en="How a motion comes about: six core flows step by step, with every safety check along the way. Click a step, play the flow or trigger a fault.">Wie eine Bewegung entsteht: sechs Kernabläufe Schritt für Schritt, mit jeder Sicherheitsprüfung auf dem Weg. Schritt anklicken, Ablauf abspielen oder Störfall auslösen.</p>
+      <div class="panel pf" id="pf">
+        <div class="pf-tabs" role="tablist" aria-label="Ablauf wählen" data-en-aria="Choose a flow">
+          <button type="button" class="pf-tab" role="tab" data-flow="start" aria-selected="true"><svg class="ico"><use href="#i-rocket"/></svg><span data-en="System start">Systemstart</span></button>
+          <button type="button" class="pf-tab" role="tab" data-flow="twin" aria-selected="false" tabindex="-1"><svg class="ico"><use href="#i-cube"/></svg><span data-en="Plan in the twin">Planen im Twin</span></button>
+          <button type="button" class="pf-tab" role="tab" data-flow="pad" aria-selected="false" tabindex="-1"><svg class="ico"><use href="#i-pad"/></svg><span data-en="Gamepad teleop">Gamepad-Teleop</span></button>
+          <button type="button" class="pf-tab" role="tab" data-flow="grasp" aria-selected="false" tabindex="-1"><svg class="ico"><use href="#i-grip"/></svg><span data-en="One-click grasp">Greifen per Klick</span></button>
+          <button type="button" class="pf-tab" role="tab" data-flow="vla" aria-selected="false" tabindex="-1"><svg class="ico"><use href="#i-spark"/></svg><span data-en="AI chat (VLA-M)">KI-Chat (VLA-M)</span></button>
+          <button type="button" class="pf-tab" role="tab" data-flow="remote" aria-selected="false" tabindex="-1"><svg class="ico"><use href="#i-globe"/></svg><span data-en="Remote control">Remote-Steuerung</span></button>
+        </div>
+        <div class="pf-panel" role="tabpanel" id="pf-panel">
+          <noscript><p class="sub" data-en="The interactive flows need JavaScript. Details: Technical docs (concept, teleoperation, VLA, running).">Die interaktiven Abläufe brauchen JavaScript. Details: Technik-Doku (Konzept, Teleoperation, VLA, Systemstart).</p></noscript>
+        </div>
+        <div class="pf-note"><svg class="ico"><use href="#i-shield"/></svg><b>E-STOP · ISO 13850</b><span data-en="Stops every flow in every phase. Only the owner of control or the server PC can reset it (via the watchdog).">Bricht jeden Ablauf in jeder Phase ab. Quittieren nur durch den Besitzer der Steuerung oder den Server-PC (über den Watchdog).</span></div>
+      </div>
+      <a class="atlas-link" href="project_functions.html"><svg class="ico" aria-hidden="true"><use href="#i-layers"/></svg><span data-en="&lt;b&gt;Function atlas&lt;/b&gt; · all 83 functions in 9 areas, each with its data flow and verified topics; 10 loops as rings"><b>Funktionsatlas</b> · alle 83 Funktionen in 9 Bereichen, je mit Datenfluss und belegten Topics; 10 Kreisläufe als Ring</span><svg class="ico go" aria-hidden="true"><use href="#i-go"/></svg></a>
+    </section>
+  </div>
+</main>
+
+<footer><div class="wrap"><a class="qr-foot" href="https://lu4k87.github.io/my_xarm_lite6-extended/project_docs.html" target="_blank" rel="noopener"><span class="qr-code"><svg role="img" aria-label="QR-Code: Projekt-Doku öffnen" data-en-aria="QR code: open the project docs"><use href="#qr-docs"/></svg></span><span class="qr-txt"><b data-en="Open page">Seite öffnen</b><small>lu4k87.github.io/my_xarm_lite6-extended/project_docs.html</small></span></a><span data-en="Last updated 04.10.2026">Stand 04.10.2026</span><span>dev_ws · docs/project_docs.html</span></div></footer>
+
+<script>
+(() => {
+  const root = document.documentElement;
+  const pub = location.hostname.endsWith('.github.io');   // öffentliche Kopie (tools/publish_pages.py)
+  const viaNexus = location.protocol.startsWith('http') && !pub;
+
+  // Über die Nexus Webapp: Handbuch über /manuals/ (lokale Schriften), Setup-Karte als Dialog
+  if (viaNexus) {
+    document.querySelectorAll('[data-nexus-href]').forEach(a => { a.href = a.dataset.nexusHref; });
+    for (const href of ['/vendor/fonts/fonts_modern.css', '/vendor/fontawesome/css/all.min.css', '/ui_shared/net_info.css']) {
+      const l = document.createElement('link'); l.rel = 'stylesheet'; l.href = href; document.head.appendChild(l);
+    }
+    const s = document.createElement('script'); s.src = '/ui_shared/net_info.js'; document.body.appendChild(s);
+  }
+  document.querySelector('[data-setup]').addEventListener('click', e => {
+    if (!window.NetInfo) return;  // als Datei geöffnet: Link zur Nexus Webapp
+    e.preventDefault();
+    window.NetInfo.open({ theme: root.dataset.theme || (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark') });  // ohne docsUrl: kein Link auf diese Seite selbst
+  });
+  // Öffentliche Kopie: nur lokal Nutzbares entfernen (Setup-Karte über die Nexus Webapp, interner Videoplan), vor dem Zählen unten
+  if (pub) document.querySelectorAll('[data-local]').forEach(el => el.remove());
+
+  // Gestaffeltes Einblenden je Abschnitt, höchstens 8 Stufen
+  document.querySelectorAll('main section').forEach(sec => {
+    sec.querySelectorAll('.item, .grid, .feat, .panel, .stack, .hw-item').forEach((el, i) => el.style.setProperty('--i', Math.min(i, 8)));
+  });
+
+  // Anzahl je Abschnitt in der Übersicht (Dokumente, Merkmale, Schichten + Geräte)
+  document.querySelectorAll('[data-count]').forEach(el => {
+    el.textContent = document.getElementById(el.dataset.count).querySelectorAll('.item, .grid a, .feat, .layer, .hw-item, .pf-tab').length;
+  });
+
+  // Theme: ?theme=, gespeicherte Wahl, sonst System
+  const store = (k, v) => { try { if (v === undefined) return localStorage.getItem(k); localStorage.setItem(k, v); } catch (e) { return null; } };
+  const setTheme = t => {
+    if (t) root.dataset.theme = t;
+    const cur = root.dataset.theme || (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+    document.querySelectorAll('[data-theme-btn]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.themeBtn === cur)));
+  };
+  const qTheme = new URLSearchParams(location.search).get('theme');
+  setTheme(['dark', 'light'].includes(qTheme) ? qTheme : store('project_docs_theme'));
+  document.querySelectorAll('[data-theme-btn]').forEach(b => b.addEventListener('click', () => { setTheme(b.dataset.themeBtn); store('project_docs_theme', b.dataset.themeBtn); }));
+
+  // Sprache: Texte mit data-en, Links mit data-href-en
+  const keep = (el, key, val) => { if (el.dataset[key] === undefined) el.dataset[key] = val; return el.dataset[key]; };
+  const setLang = lang => {
+    root.lang = lang;
+    const en = lang === 'en';
+    document.querySelectorAll('[data-en]').forEach(el => { const de = keep(el, 'de', el.innerHTML); el.innerHTML = en ? el.dataset.en : de; });
+    document.querySelectorAll('[data-en-title]').forEach(el => { const de = keep(el, 'deTitle', el.title); el.title = en ? el.dataset.enTitle : de; });
+    document.querySelectorAll('[data-en-aria]').forEach(el => { const de = keep(el, 'deAria', el.getAttribute('aria-label')); el.setAttribute('aria-label', en ? el.dataset.enAria : de); });
+    document.querySelectorAll('[data-href-en]').forEach(el => { const de = keep(el, 'hrefDe', el.getAttribute('href')); el.setAttribute('href', en ? el.dataset.hrefEn : de); });
+    document.querySelectorAll('[data-lang]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.lang === lang)));
+  };
+  document.querySelectorAll('[data-lang]').forEach(b => b.addEventListener('click', () => { setLang(b.dataset.lang); store('project_docs_lang', b.dataset.lang); }));
+  if (store('project_docs_lang') === 'en') setLang('en');
+})();
+
+// Funktionsabläufe: Daten je Ablauf (Ebene, Prüfung ja/nein, Titel, Text, Schnittstellen), Abspielen, Störfall, Not-Aus
+(() => {
+  const box = document.getElementById('pf');
+  if (!box) return;
+  const root = document.documentElement;
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const LAYERS = {
+    in: { ico: 'i-touch', hue: '--gold', de: 'Eingabe', en: 'Input' },
+    app: { ico: 'i-win', hue: '--accent', de: 'Web-App', en: 'Web app' },
+    bridge: { ico: 'i-link', hue: '--teal', de: 'rosbridge', en: 'rosbridge' },
+    ai: { ico: 'i-spark', hue: '--violet', de: 'Assistenz', en: 'Assist' },
+    motion: { ico: 'i-shield', hue: '--green', de: 'Bewegung', en: 'Motion' },
+    hw: { ico: 'i-arm', hue: '--indigo', de: 'Roboter', en: 'Robot' },
+  };
+  const S = (l, g, t, d, c = []) => ({ l, g, t, d, c });
+  const FLOWS = {
+    start: {
+      d: ['Ein Klick statt vieler Terminals: die Nexus Webapp startet den ganzen Stack in fester Reihenfolge.', 'One click instead of many terminals: the Nexus Webapp starts the whole stack in a fixed order.'],
+      fail: { at: 1, de: 'REAL gesperrt: Ein FAKE-Stack läuft noch. Erst Kill Daemon oder die Karte stoppen; ein gemischter Stack startet nie.', en: 'REAL blocked: a FAKE stack is still running. Use Kill Daemon or stop the card first; a mixed stack never starts.' },
+      steps: [
+        S('in', 0, ['Nexus Webapp öffnen', 'Open the Nexus Webapp'], ['App-Menü „ROS 2 Nexus“ oder Startskript; es öffnet das Start-Popup RUN DEV SETUP.', 'App menu “ROS 2 Nexus” or the start script; it opens the RUN DEV SETUP popup.'], [':8080', 'ros2_nexus_web_start.sh']),
+        S('app', 1, ['FAKE oder REAL wählen', 'Choose FAKE or REAL'], ['Umschalter im Popup, der Wechsel nach REAL wird bestätigt. Solange ein FAKE-Stack läuft, ist ein REAL-Start gesperrt.', 'Switch in the popup; changing to REAL needs a confirmation. While a FAKE stack runs, a REAL start is blocked.'], ['FAKE | REAL']),
+        S('app', 0, ['Module anhaken', 'Tick the modules'], ['Karten der Sequenz wählen: Vision, VR, Sprache, VLA-M … Parameter je Karte lassen sich vor dem Start ändern.', 'Pick the cards of the sequence: vision, VR, voice, VLA-M … Parameters per card can be changed before the start.'], ['launcher_config.json']),
+        S('app', 0, ['EXECUTE', 'EXECUTE'], ['Das Backend startet erst die Infrastruktur, dann die übrigen Karten; jede Karte zeigt läuft / bereit / Exit-Code mit Log.', 'The backend starts the infrastructure first, then the remaining cards; each card shows running / ready / exit code with its log.'], ['~/.ros/nexus_logs']),
+        S('motion', 0, ['Motion-Stack bereit', 'Motion stack ready'], ['MoveIt MoveGroup und Servo; im REAL-Modus mit dem Treiber des xArm Lite 6.', 'MoveIt MoveGroup and Servo; in REAL mode with the xArm Lite 6 driver.'], ['MoveIt 2', 'xarm_ros2']),
+        S('bridge', 0, ['rosbridge + Watchdog', 'rosbridge + watchdog'], ['Browser-Zugang über die Whitelist, Control-Lock und Heartbeats sind aktiv.', 'Browser access through the whitelist; control lock and heartbeats are active.'], [':9090', 'remote_control_watchdog']),
+        S('app', 0, ['Robot Control UI öffnet', 'Robot Control UI opens'], ['Das App-Fenster am Roboter-PC hält die Steuerung; weitere Geräte verbinden sich über das Heimnetz.', 'The app window on the robot PC holds control; further devices connect over the home network.'], [':8081']),
+      ],
+    },
+    twin: {
+      d: ['Erst virtuell, dann real: jede geplante Bahn erscheint als Vorschau im Digital Twin, der Arm fährt erst nach Freigabe.', 'Virtual first, then real: every planned path appears as a preview in the Digital Twin; the arm moves only after approval.'],
+      fail: { at: 4, de: 'Bediener verwirft die Vorschau: Es wird nichts ausgeführt, der Arm bleibt stehen.', en: 'The operator discards the preview: nothing is executed, the arm stays put.' },
+      steps: [
+        S('in', 0, ['Ziel ziehen', 'Drag the target'], ['TCP-Gizmo im Digital Twin der Robot Control UI auf die Zielpose ziehen.', 'Drag the TCP gizmo in the Digital Twin of the Robot Control UI to the target pose.'], ['three.js']),
+        S('bridge', 0, ['Anfrage an ROS', 'Request to ROS'], ['Die Zielpose geht über rosbridge an den Motion Handler.', 'The target pose goes to the motion handler via rosbridge.'], [':9090']),
+        S('motion', 0, ['MoveIt plant', 'MoveIt plans'], ['Inverse Kinematik und kollisionsfreie Bahn mit Szene, OctoMap und erkannten Objekten.', 'Inverse kinematics and a collision-free path with scene, OctoMap and detected objects.'], ['MoveGroup']),
+        S('app', 0, ['Ghost-Vorschau', 'Ghost preview'], ['Die Bahn läuft als halbtransparenter Arm im Twin; der echte Arm bewegt sich nicht.', 'The path plays as a translucent arm in the twin; the real arm does not move.'], ['/ui/moveto_preview_path']),
+        S('in', 1, ['Mensch bestätigt', 'Human approves'], ['Erst die Freigabe des Bedieners startet die Fahrt (Human-in-the-Loop).', 'Only the operator’s approval starts the motion (human in the loop).']),
+        S('motion', 1, ['Sicherheitskette', 'Safety chain'], ['Control-Lock, Bodenschutz und Not-Aus-Zustand werden vor jeder Fahrt geprüft.', 'Control lock, floor guard and E-STOP state are checked before every motion.'], ['/ui/emergency_stop_active']),
+        S('hw', 0, ['Arm fährt', 'Arm moves'], ['FAKE: simulierte Controller, REAL: xArm Lite 6. Der Zustand läuft zurück in die UI.', 'FAKE: simulated controllers, REAL: xArm Lite 6. The state flows back to the UI.'], ['/ui/moveit_motion_state']),
+      ],
+    },
+    pad: {
+      d: ['Fein und latenzarm: das Gamepad-Signal passiert zwei Sicherheitsstufen, bevor MoveIt Servo den Arm bewegt.', 'Fine and low-latency: the gamepad signal passes two safety stages before MoveIt Servo moves the arm.'],
+      fail: { at: 2, de: 'Der TCP würde unter 91 mm sinken: Die Abwärtsachse wird genullt, das Gamepad vibriert. Seitlich und nach oben geht es weiter.', en: 'The TCP would drop below 91 mm: the downward axis is zeroed and the gamepad rumbles. Sideways and upward still work.' },
+      steps: [
+        S('in', 0, ['Stick + Trigger', 'Stick + trigger'], ['Xbox Elite 2 am Roboter-PC oder als Remote-Gamepad im Browser (HTTPS).', 'Xbox Elite 2 on the robot PC or as a remote gamepad in the browser (HTTPS).'], ['/joy', '/remote/joy']),
+        S('bridge', 1, ['Watchdog', 'Watchdog'], ['Remote nur für den Besitzer der Steuerung: Heartbeat, Freigabe „Arm gamepad“, im REAL-Modus höchstens 50 % Tempo.', 'Remote only for the owner of control: heartbeat, “Arm gamepad” release, at most 50 % speed in REAL mode.'], ['remote_control_watchdog']),
+        S('motion', 1, ['Kollisionsvorprüfung', 'Pre-collision check'], ['Sagt die TCP-Höhe 0,1 s voraus: unter 110 mm höchstens 25 % abwärts, bei 91 mm Stopp mit Vibration.', 'Predicts the TCP height 0.1 s ahead: below 110 mm at most 25 % downward, at 91 mm a stop with rumble.'], ['teleop_pre_collision_checker', '/ui/eef_position']),
+        S('motion', 0, ['Joystick → Twist', 'Joystick → twist'], ['C++-Node glättet das Signal und rechnet Achsen in kartesische Geschwindigkeiten um.', 'C++ node smooths the signal and turns axes into Cartesian velocities.'], ['xarm_joystick_input']),
+        S('motion', 0, ['MoveIt Servo', 'MoveIt Servo'], ['Echtzeitregelung mit Prüfung auf Singularitäten und Kollisionen.', 'Real-time control with singularity and collision checks.'], ['servo_server']),
+        S('hw', 0, ['Arm folgt', 'Arm follows'], ['FAKE oder REAL: dieselbe Kette, dieselben Grenzen.', 'FAKE or REAL: the same chain, the same limits.']),
+      ],
+    },
+    grasp: {
+      d: ['Objekt anklicken, „Grasp“ wählen: ohne Sprachmodell, aber mit denselben Prüfungen wie der KI-Agent.', 'Click an object, choose “Grasp”: no language model, but the same checks as the AI agent.'],
+      fail: { at: 2, de: 'Objekt außer Reichweite: Meldung „unreachable“, der Arm fährt nicht los.', en: 'Object out of reach: “unreachable” is reported, the arm does not start.' },
+      steps: [
+        S('ai', 0, ['Objekte erkennen', 'Detect objects'], ['ZED Mini + YOLOv8 liefern 3D-Boxen; im FAKE-Modus virtuelle Objekte mit Physik.', 'ZED Mini + YOLOv8 deliver 3D boxes; in FAKE mode virtual objects with physics.'], ['/zed/bboxes_3d']),
+        S('in', 0, ['Anklicken → Grasp', 'Click → Grasp'], ['Objektmenü im Digital Twin oder in VR.', 'Object menu in the Digital Twin or in VR.'], ['/vla/skill']),
+        S('ai', 1, ['Planprüfung', 'Plan check'], ['Objekt vorhanden, Greifer frei, Reichweite, Platz für den Greiferkörper neben hohen Objekten.', 'Object present, gripper free, reach, room for the gripper body next to tall objects.'], ['vla_bridge']),
+        S('in', 1, ['Freigabe (REAL)', 'Approval (REAL)'], ['Im REAL-Modus fährt der Arm nur mit Bestätigung.', 'In REAL mode the arm moves only after confirmation.'], ['confirmed']),
+        S('motion', 0, ['Approach from above', 'Approach from above'], ['Kollisionsfrei auf 70 mm über die Greifkugel, Yaw-Suche, dann gerade nach unten.', 'Collision-free to 70 mm above the grasp sphere, yaw search, then straight down.'], ['/ui/approach_from_above']),
+        S('hw', 0, ['Ansaugen + Anheben', 'Suck + lift'], ['Saugnapf 2 mm über der Greifkugel, Greifer zu, Objekt anheben.', 'Suction cup 2 mm above the grasp sphere, gripper on, lift the object.'], ['/ui/gripper_cmd']),
+        S('ai', 1, ['Greifprüfung', 'Grasp check'], ['Kommt das Objekt mit hoch? Sandbox: gehaltenes Objekt, real: die Greifkugel folgt.', 'Does the object come up? Sandbox: held object, real: the grasp sphere follows.'], ['/ui/physics_sandbox_state']),
+      ],
+    },
+    vla: {
+      d: ['Alltagssprache statt Koordinaten: das Modell wählt nur Skills und Objekte, alle Posen rechnet der Code.', 'Everyday language instead of coordinates: the model only picks skills and objects; the code computes every pose.'],
+      fail: { at: 2, de: 'Plan verletzt eine Regel (z. B. Greifer belegt): Fehler zurück ans Modell, korrigierter Plan. Nach 2 Runden Begründung statt Fahrt.', en: 'The plan breaks a rule (e.g. gripper occupied): error back to the model, corrected plan. After 2 rounds an explanation instead of motion.' },
+      steps: [
+        S('in', 0, ['Anweisung', 'Instruction'], ['Tippen oder per Mikrofon diktieren (Whisper), z. B. „Leg die Kugel in den Korb“.', 'Type or dictate via microphone (Whisper), e.g. “Put the ball into the basket”.'], ['/vla/instruction']),
+        S('ai', 0, ['Modell plant', 'Model plans'], ['Lokal über Ollama (qwen2.5:14b) oder Claude: Skills + Objekt-IDs als JSON, bei Mehrdeutigkeit eine Rückfrage.', 'Locally via Ollama (qwen2.5:14b) or Claude: skills + object IDs as JSON, a follow-up question when ambiguous.'], ['pick', 'place', 'home']),
+        S('ai', 1, ['Planprüfung', 'Plan check'], ['Code prüft Objekte, Greifer, Reichweite, freien Platz; Fehler gehen zurück ans Modell (höchstens 2 Runden).', 'Code checks objects, gripper, reach and free space; errors go back to the model (at most 2 rounds).'], ['vla_bridge']),
+        S('app', 0, ['Plan in der UI', 'Plan in the UI'], ['Liste „Planned actions“ in der Section VLA-M mit Schrittfortschritt.', '“Planned actions” list in the VLA-M section with step progress.'], ['/vla/response']),
+        S('in', 1, ['Execute', 'Execute'], ['Jeder Plan wartet auf Freigabe; REAL nur mit allow_real_motion.', 'Every plan waits for approval; REAL only with allow_real_motion.'], ['/vla/execute']),
+        S('motion', 0, ['Schritt für Schritt', 'Step by step'], ['Jede Fahrt über den Motion Handler: IK, Kollisionsprüfung, Bodenschutz, Not-Aus.', 'Every move through the motion handler: IK, collision check, floor guard, E-STOP.'], ['/ui/moveit_motion_state']),
+        S('ai', 1, ['Prüfen + Rettungsplan', 'Check + recovery'], ['Schlägt ein Schritt fehl (unreachable, collision, slipped), plant der Agent mit der neuen Szene neu.', 'If a step fails (unreachable, collision, slipped), the agent replans with the new scene.'], ['replan']),
+      ],
+    },
+    remote: {
+      d: ['Bedienen vom Laptop, Tablet oder der Quest 3: genau ein Gerät steuert, der Roboter-PC gibt frei.', 'Operate from a laptop, tablet or Quest 3: exactly one device controls; the robot PC grants access.'],
+      fail: { at: 2, de: 'Server lehnt ab (oder antwortet 60 s nicht): Der Client bleibt Zuschauer, Bewegen ist gesperrt.', en: 'The server denies (or does not answer within 60 s): the client stays a spectator, motion is locked.' },
+      steps: [
+        S('in', 0, ['Client öffnet die UI', 'Client opens the UI'], ['Laptop/Tablet über HTTP, Gamepad und VR über HTTPS.', 'Laptop/tablet via HTTP, gamepad and VR via HTTPS.'], [':8081', ':8443']),
+        S('in', 0, ['Request control', 'Request control'], ['Anfrage per Knopf oder beim ersten Bewegungsversuch.', 'Request by button or on the first motion attempt.'], ['/remote/control_request']),
+        S('app', 1, ['Allow / Deny am Server', 'Allow / Deny on the server'], ['Popup in der Robot Control UI am Roboter-PC; unbeantwortete Anfragen verfallen nach 60 s.', 'Popup in the Robot Control UI on the robot PC; unanswered requests expire after 60 s.']),
+        S('bridge', 0, ['Ein Besitzer', 'One owner'], ['Genau ein Client steuert, alle anderen sehen zu; der Not-Aus geht immer.', 'Exactly one client controls, all others watch; the E-STOP always works.']),
+        S('bridge', 1, ['Heartbeat', 'Heartbeat'], ['Tab zu oder WLAN weg: Remote-Gamepad stoppt nach 1,0 s (FAKE) bzw. 0,4 s (REAL).', 'Tab closed or Wi-Fi lost: the remote gamepad stops after 1.0 s (FAKE) or 0.4 s (REAL).']),
+        S('motion', 0, ['Befehle über den Watchdog', 'Commands via the watchdog'], ['Joy, Twist und Gelenk-Jog gehen nur für den Besitzer weiter an Servo; dann dieselbe Kette wie lokal.', 'Joy, twist and joint jog pass on to Servo only for the owner; then the same chain as locally.'], ['/remote/twist', '/joy']),
+      ],
+    },
+  };
+  const UI = {
+    de: { prev: 'Zurück', next: 'Weiter', play: 'Abspielen', pause: 'Pause', fail: 'Störfall', estop: 'Not-Aus', step: 'Schritt', check: 'Prüfung', stopped: 'Gestoppt', layers: 'Aktive Ebene im System-Stack',
+      estopMsg: 'Not-Aus gedrückt: Der laufende Schritt bricht sofort ab, alle weiteren entfallen. Weiter erst nach Quittieren.' },
+    en: { prev: 'Back', next: 'Next', play: 'Play', pause: 'Pause', fail: 'Fault', estop: 'E-STOP', step: 'Step', check: 'Check', stopped: 'Stopped', layers: 'Active layer in the system stack',
+      estopMsg: 'E-STOP pressed: the current step aborts at once, all further steps are dropped. Continue only after reset.' },
+  };
+
+  const panel = document.getElementById('pf-panel');
+  const tabs = [...box.querySelectorAll('.pf-tab')];
+  let flow = 'start', cur = 0, mode = null, timer = 0;
+  const lang = () => (root.lang === 'en' ? 'en' : 'de');
+  const L = (v) => (Array.isArray(v) ? v[lang() === 'en' ? 1 : 0] : v[lang()]);
+  const ico = (id) => `<svg class="ico" aria-hidden="true"><use href="#${id}"/></svg>`;
+
+  const render = () => {
+    const t = UI[lang()], f = FLOWS[flow];
+    panel.setAttribute('aria-labelledby', 'pf-tab-' + flow);
+    panel.innerHTML = `
+      <div class="pf-head"><p>${L(f.d)}</p>
+        <div class="pf-ctrl">
+          <button type="button" class="pf-btn" data-act="prev">${ico('i-prev')}${t.prev}</button>
+          <button type="button" class="pf-btn" data-act="play">${ico('i-run')}<span>${t.play}</span></button>
+          <button type="button" class="pf-btn" data-act="next">${t.next}${ico('i-next')}</button>
+          <button type="button" class="pf-btn warn" data-act="fail">${ico('i-warn')}${t.fail}</button>
+          <button type="button" class="pf-btn stop" data-act="estop">${ico('i-stop')}${t.estop}</button>
+        </div>
+      </div>
+      <div class="pf-body">
+        <div class="pf-railw"><span class="pf-line"></span><span class="pf-fill"></span><span class="pf-dot"></span><ol class="pf-rail">
+          ${f.steps.map((s, i) => `<li><button type="button" class="pf-step" data-i="${i}" style="--hue: var(${LAYERS[s.l].hue})">
+            <span class="pf-num">${i + 1}</span>
+            <span class="pf-st"><small>${ico(LAYERS[s.l].ico)}${LAYERS[s.l][lang()]}</small>
+              <b>${L(s.t)}${s.g ? `<span class="pf-gate">${ico('i-shield')}${t.check}</span>` : ''}</b></span>
+          </button></li>`).join('')}
+        </ol></div>
+        <div class="pf-detail" aria-live="polite">
+          <span class="pf-count"></span>
+          <h3 class="pf-dt"></h3>
+          <p class="pf-dd"></p>
+          <div class="chips pf-code"></div>
+          <div class="pf-res" hidden>${ico('i-stop')}<span><b>${t.stopped}:</b> <span class="pf-rt"></span></span></div>
+          <div class="pf-layers" role="img" aria-label="${t.layers}">
+            ${Object.entries(LAYERS).map(([k, l]) => `<span class="pf-ly" data-l="${k}" style="--hue: var(${l.hue})">${ico(l.ico)}${l[lang()]}</span>`).join('')}
+          </div>
+        </div>
+      </div>`;
+    layout();
+    update();
+  };
+
+  // Linie, Fortschritt und Datenpaket an den Mittelpunkten der Schritt-Nummern ausrichten
+  const centers = () => {
+    const top = panel.querySelector('.pf-railw').getBoundingClientRect().top;
+    return [...panel.querySelectorAll('.pf-num')].map(n => { const r = n.getBoundingClientRect(); return r.top - top + r.height / 2; });
+  };
+  const layout = () => {
+    const c = centers();
+    if (c.length < 2) return;
+    for (const el of panel.querySelectorAll('.pf-line, .pf-fill')) { el.style.top = c[0] + 'px'; el.style.height = (c.at(-1) - c[0]) + 'px'; }
+    const dot = panel.querySelector('.pf-dot');
+    dot.style.top = (c[0] - 6) + 'px';
+    dot.style.setProperty('--y', (c[cur] - c[0]) + 'px');
+  };
+
+  const update = () => {
+    const t = UI[lang()], f = FLOWS[flow], s = f.steps[cur];
+    const stopAt = mode === 'fail' && cur >= f.fail.at ? f.fail.at : mode === 'estop' ? cur : -1;
+    panel.querySelectorAll('.pf-step').forEach((b, i) => {
+      b.classList.toggle('is-done', i < cur);
+      b.classList.toggle('is-active', i === cur && stopAt < 0);
+      b.classList.toggle('is-blocked', i === stopAt);
+      b.classList.toggle('is-skipped', stopAt >= 0 && i > stopAt);
+      b.setAttribute('aria-current', i === cur ? 'step' : 'false');
+    });
+    const c = centers();
+    panel.querySelector('.pf-fill').style.setProperty('--p', c.length > 1 ? (c[cur] - c[0]) / (c.at(-1) - c[0]) : 0);
+    panel.querySelector('.pf-dot').style.setProperty('--y', (c[cur] - c[0]) + 'px');
+    panel.querySelector('.pf-count').textContent = `${t.step} ${cur + 1} / ${f.steps.length}`;
+    panel.querySelector('.pf-dt').innerHTML = L(s.t) + (s.g ? `<span class="pf-gate">${ico('i-shield')}${t.check}</span>` : '');
+    panel.querySelector('.pf-dd').textContent = L(s.d);
+    panel.querySelector('.pf-code').innerHTML = s.c.map(x => `<span class="chip">${x}</span>`).join('');
+    panel.querySelectorAll('.pf-ly').forEach(el => el.classList.toggle('on', el.dataset.l === s.l));
+    const res = panel.querySelector('.pf-res');
+    res.hidden = stopAt < 0 || cur !== stopAt;
+    if (!res.hidden) panel.querySelector('.pf-rt').textContent = mode === 'fail' ? f.fail[lang()] : t.estopMsg;
+    const play = panel.querySelector('[data-act="play"]');
+    play.querySelector('use').setAttribute('href', timer ? '#i-pause' : '#i-run');
+    play.querySelector('span').textContent = timer ? t.pause : t.play;
+    play.setAttribute('aria-pressed', String(!!timer));
+  };
+
+  const stop = () => { clearInterval(timer); timer = 0; };
+  const go = (i, keepMode) => { if (!keepMode) mode = null; cur = Math.max(0, Math.min(i, FLOWS[flow].steps.length - 1)); update(); };
+  const tick = () => {
+    const f = FLOWS[flow];
+    if (mode === 'fail' && cur >= f.fail.at) { stop(); update(); return; }
+    if (cur >= f.steps.length - 1) { stop(); update(); return; }
+    go(cur + 1, true);
+    if ((mode === 'fail' && cur >= f.fail.at) || cur >= f.steps.length - 1) { stop(); update(); }
+  };
+  const play = () => {
+    if (timer) { stop(); update(); return; }
+    if (reduce) { go(mode === 'fail' ? FLOWS[flow].fail.at : FLOWS[flow].steps.length - 1, true); return; }
+    if (cur >= FLOWS[flow].steps.length - 1 || mode) { if (mode !== 'fail') mode = null; cur = 0; }
+    timer = setInterval(tick, 1600);
+    update();
+  };
+
+  panel.addEventListener('click', e => {
+    const step = e.target.closest('.pf-step');
+    if (step) { stop(); go(+step.dataset.i); return; }
+    const act = e.target.closest('[data-act]')?.dataset.act;
+    if (act === 'prev') { stop(); go(cur - 1); }
+    else if (act === 'next') { stop(); go(cur + 1); }
+    else if (act === 'play') { mode = null; play(); }
+    else if (act === 'fail') { stop(); mode = 'fail'; cur = 0; update(); play(); }
+    else if (act === 'estop') { stop(); mode = 'estop'; update(); }
+  });
+
+  const select = (id, focus) => {
+    stop(); flow = id; cur = 0; mode = null;
+    tabs.forEach(b => { const on = b.dataset.flow === id; b.setAttribute('aria-selected', String(on)); b.tabIndex = on ? 0 : -1; if (on && focus) b.focus(); });
+    render();
+  };
+  tabs.forEach((b, i) => {
+    b.id = 'pf-tab-' + b.dataset.flow;
+    b.setAttribute('aria-controls', 'pf-panel');
+    b.addEventListener('click', () => select(b.dataset.flow));
+    b.addEventListener('keydown', e => {
+      const d = { ArrowRight: 1, ArrowLeft: -1 }[e.key];
+      if (!d) return;
+      e.preventDefault();
+      select(tabs[(i + d + tabs.length) % tabs.length].dataset.flow, true);
+    });
+  });
+
+  new ResizeObserver(() => { layout(); update(); }).observe(panel);
+  new MutationObserver(() => render()).observe(root, { attributes: true, attributeFilter: ['lang'] });
+  document.addEventListener('visibilitychange', () => { if (document.hidden && timer) { stop(); update(); } });
+  render();
+})();
+</script>
+</body>
+</html>

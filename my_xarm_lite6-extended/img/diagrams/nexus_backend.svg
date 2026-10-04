@@ -1,0 +1,66 @@
+<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1240 570' width='1240' height='570' role='img' aria-label='Nexus Webapp backend'>
+<title>Nexus Webapp backend</title>
+<defs><marker id='a' viewBox='0 0 10 10' refX='9' refY='5' markerWidth='7' markerHeight='7' orient='auto-start-reverse'><path d='M0,0 L10,5 L0,10 z' fill='#475569'/></marker></defs>
+<rect x='1' y='1' width='1238' height='568' rx='14' fill='#ffffff' stroke='#cbd5e1'/>
+<text x='24' y='36' font-family='Inter, Segoe UI, Helvetica, Arial, sans-serif' font-size='19' font-weight='700' fill='#0f172a'>Nexus Webapp backend</text>
+<rect x='340' y='60' width='500' height='470' rx='12' fill='#f1f5f9' fill-opacity='0.35' stroke='#475569' stroke-dasharray='5 4'/>
+<text x='352' y='80' font-family='Inter, Segoe UI, Helvetica, Arial, sans-serif' font-size='13' font-weight='700' fill='#0f172a'>Flask backend  ros2_nexus_web.py  :8080</text>
+<path d='M250.0,130.0 L305.0,130.0 L305.0,115.0 L360.0,115.0' fill='none' stroke='#475569' stroke-width='1.6' stroke-linejoin='round' marker-end='url(#a)' marker-start='url(#a)'/>
+<path d='M250.0,250.0 L300.0,250.0 L300.0,145.0 L360.0,145.0' fill='none' stroke='#475569' stroke-width='1.6' stroke-linejoin='round' marker-end='url(#a)' marker-start='url(#a)'/>
+<path d='M470.0,165.0 L470.0,190.0 L465.0,190.0 L465.0,215.0' fill='none' stroke='#475569' stroke-width='1.6' stroke-linejoin='round' marker-end='url(#a)'/>
+<path d='M710.0,165.0 L710.0,190.0 L715.0,190.0 L715.0,215.0' fill='none' stroke='#475569' stroke-width='1.6' stroke-linejoin='round' marker-end='url(#a)'/>
+<path d='M570.0,250.0 L590.0,250.0 L610.0,250.0' fill='none' stroke='#475569' stroke-width='1.6' stroke-linejoin='round' marker-end='url(#a)'/>
+<path d='M360.0,250.0 L350.0,250.0 L350.0,470.0 L360.0,470.0' fill='none' stroke='#475569' stroke-width='1.6' stroke-linejoin='round' marker-end='url(#a)'/>
+<path d='M715.0,325.0 L715.0,305.0 L715.0,285.0' fill='none' stroke='#475569' stroke-width='1.6' stroke-linejoin='round' marker-end='url(#a)'/>
+<path d='M820.0,120.0 L880.0,120.0 L880.0,135.0 L940.0,135.0' fill='none' stroke='#475569' stroke-width='1.6' stroke-linejoin='round' marker-end='url(#a)'/>
+<path d='M820.0,145.0 L880.0,145.0 L880.0,255.0 L940.0,255.0' fill='none' stroke='#475569' stroke-width='1.6' stroke-linejoin='round' marker-end='url(#a)'/>
+<path d='M1200.0,135.0 L1215.0,135.0 L1215.0,385.0 L1200.0,385.0' fill='none' stroke='#475569' stroke-width='1.6' stroke-linejoin='round' marker-end='url(#a)'/>
+<path d='M1070.0,285.0 L1070.0,320.0 L1070.0,350.0' fill='none' stroke='#475569' stroke-width='1.6' stroke-linejoin='round' marker-end='url(#a)'/>
+<rect x='20' y='100' width='230' height='60' rx='9' fill='#e0f2fe' stroke='#0284c7' stroke-width='1.6'/>
+<text x='135.0' y='126.0' font-family='Inter, Segoe UI, Helvetica, Arial, sans-serif' font-size='13.5' font-weight='700' text-anchor='middle' fill='#0f172a'>Start popup (browser / app)</text>
+<text x='135.0' y='142.0' font-family='Inter, Segoe UI, Helvetica, Arial, sans-serif' font-size='11.5' text-anchor='middle' fill='#334155'>cards, parameters, EXECUTE</text>
+<rect x='20' y='220' width='230' height='60' rx='9' fill='#e0f2fe' stroke='#0284c7' stroke-width='1.6'/>
+<text x='135.0' y='246.0' font-family='Inter, Segoe UI, Helvetica, Arial, sans-serif' font-size='13.5' font-weight='700' text-anchor='middle' fill='#0f172a'>Touch Panel /touch</text>
+<text x='135.0' y='262.0' font-family='Inter, Segoe UI, Helvetica, Arial, sans-serif' font-size='11.5' text-anchor='middle' fill='#334155'>status, runs, STOP</text>
+<rect x='360' y='95' width='460' height='70' rx='9' fill='#f1f5f9' stroke='#475569' stroke-width='1.6'/>
+<text x='590.0' y='118.0' font-family='Inter, Segoe UI, Helvetica, Arial, sans-serif' font-size='13.5' font-weight='700' text-anchor='middle' fill='#0f172a'>REST API</text>
+<text x='590.0' y='134.0' font-family='Inter, Segoe UI, Helvetica, Arial, sans-serif' font-size='11.5' text-anchor='middle' fill='#334155'>/api/run · run_sequence · runs · run_log · run/&lt;id&gt;/restart</text>
+<text x='590.0' y='150.0' font-family='Inter, Segoe UI, Helvetica, Arial, sans-serif' font-size='11.5' text-anchor='middle' fill='#334155'>/api/config (+ backups, prune) · /api/events (SSE)</text>
+<rect x='360' y='215' width='210' height='70' rx='9' fill='#ede9fe' stroke='#7c3aed' stroke-width='1.6'/>
+<text x='465.0' y='238.0' font-family='Inter, Segoe UI, Helvetica, Arial, sans-serif' font-size='13.5' font-weight='700' text-anchor='middle' fill='#0f172a'>SequenceRunner</text>
+<text x='465.0' y='254.0' font-family='Inter, Segoe UI, Helvetica, Arial, sans-serif' font-size='11.5' text-anchor='middle' fill='#334155'>readiness gates:</text>
+<text x='465.0' y='270.0' font-family='Inter, Segoe UI, Helvetica, Arial, sans-serif' font-size='11.5' text-anchor='middle' fill='#334155'>nodes · HTTP · process</text>
+<rect x='610' y='215' width='210' height='70' rx='9' fill='#ede9fe' stroke='#7c3aed' stroke-width='1.6'/>
+<text x='715.0' y='238.0' font-family='Inter, Segoe UI, Helvetica, Arial, sans-serif' font-size='13.5' font-weight='700' text-anchor='middle' fill='#0f172a'>RunRegistry</text>
+<text x='715.0' y='254.0' font-family='Inter, Segoe UI, Helvetica, Arial, sans-serif' font-size='11.5' text-anchor='middle' fill='#334155'>state, exit code,</text>
+<text x='715.0' y='270.0' font-family='Inter, Segoe UI, Helvetica, Arial, sans-serif' font-size='11.5' text-anchor='middle' fill='#334155'>ERROR count</text>
+<rect x='610' y='325' width='210' height='70' rx='9' fill='#ede9fe' stroke='#7c3aed' stroke-width='1.6'/>
+<text x='715.0' y='348.0' font-family='Inter, Segoe UI, Helvetica, Arial, sans-serif' font-size='13.5' font-weight='700' text-anchor='middle' fill='#0f172a'>LogWatch (15 s)</text>
+<text x='715.0' y='364.0' font-family='Inter, Segoe UI, Helvetica, Arial, sans-serif' font-size='11.5' text-anchor='middle' fill='#334155'>trim &gt; 50 MB, folder ≤ 2 GB</text>
+<text x='715.0' y='380.0' font-family='Inter, Segoe UI, Helvetica, Arial, sans-serif' font-size='11.5' text-anchor='middle' fill='#334155'>count ERROR lines</text>
+<rect x='360' y='325' width='210' height='70' rx='9' fill='#f1f5f9' stroke='#475569' stroke-width='1.6'/>
+<text x='465.0' y='348.0' font-family='Inter, Segoe UI, Helvetica, Arial, sans-serif' font-size='13.5' font-weight='700' text-anchor='middle' fill='#0f172a'>launcher_config.json</text>
+<text x='465.0' y='364.0' font-family='Inter, Segoe UI, Helvetica, Arial, sans-serif' font-size='11.5' text-anchor='middle' fill='#334155'>backups (last 20)</text>
+<text x='465.0' y='380.0' font-family='Inter, Segoe UI, Helvetica, Arial, sans-serif' font-size='11.5' text-anchor='middle' fill='#334155'>prune dead commands</text>
+<rect x='360' y='440' width='460' height='60' rx='9' fill='#ede9fe' stroke='#7c3aed' stroke-width='1.6'/>
+<text x='590.0' y='466.0' font-family='Inter, Segoe UI, Helvetica, Arial, sans-serif' font-size='13.5' font-weight='700' text-anchor='middle' fill='#0f172a'>ROS graph poll</text>
+<text x='590.0' y='482.0' font-family='Inter, Segoe UI, Helvetica, Arial, sans-serif' font-size='11.5' text-anchor='middle' fill='#334155'>ros2 node list (readiness, duplicates, mode conflicts)</text>
+<rect x='940' y='100' width='260' height='70' rx='9' fill='#dcfce7' stroke='#16a34a' stroke-width='1.6'/>
+<text x='1070.0' y='123.0' font-family='Inter, Segoe UI, Helvetica, Arial, sans-serif' font-size='13.5' font-weight='700' text-anchor='middle' fill='#0f172a'>Terminal per start</text>
+<text x='1070.0' y='139.0' font-family='Inter, Segoe UI, Helvetica, Arial, sans-serif' font-size='11.5' text-anchor='middle' fill='#334155'>gnome-terminal + script</text>
+<text x='1070.0' y='155.0' font-family='Inter, Segoe UI, Helvetica, Arial, sans-serif' font-size='11.5' text-anchor='middle' fill='#334155'>→ ~/.ros/nexus_logs</text>
+<rect x='940' y='225' width='260' height='60' rx='9' fill='#dcfce7' stroke='#16a34a' stroke-width='1.6'/>
+<text x='1070.0' y='251.0' font-family='Inter, Segoe UI, Helvetica, Arial, sans-serif' font-size='13.5' font-weight='700' text-anchor='middle' fill='#0f172a'>Background processes</text>
+<text x='1070.0' y='267.0' font-family='Inter, Segoe UI, Helvetica, Arial, sans-serif' font-size='11.5' text-anchor='middle' fill='#334155'>mode bg (own process group)</text>
+<rect x='940' y='350' width='260' height='70' rx='9' fill='#dcfce7' stroke='#16a34a' stroke-width='1.6'/>
+<text x='1070.0' y='381.0' font-family='Inter, Segoe UI, Helvetica, Arial, sans-serif' font-size='13.5' font-weight='700' text-anchor='middle' fill='#0f172a'>ROS 2 launches</text>
+<text x='1070.0' y='397.0' font-family='Inter, Segoe UI, Helvetica, Arial, sans-serif' font-size='11.5' text-anchor='middle' fill='#334155'>MoveIt, UIs, cameras, VLA …</text>
+<rect x='258.7' y='108.0' width='37.6' height='19' rx='4' fill='#ffffff' stroke='#e2e8f0'/>
+<text x='277.5' y='121.0' font-family='JetBrains Mono, Consolas, monospace' font-size='11.5' text-anchor='middle' fill='#334155'>HTTP</text>
+<rect x='235.5' y='228.0' width='79.0' height='19' rx='4' fill='#ffffff' stroke='#e2e8f0'/>
+<text x='275.0' y='241.0' font-family='JetBrains Mono, Consolas, monospace' font-size='11.5' text-anchor='middle' fill='#334155'>HTTP + SSE</text>
+<rect x='355.0' y='350.5' width='44.5' height='19' rx='4' fill='#ffffff' stroke='#e2e8f0'/>
+<text x='377.2' y='363.5' font-family='JetBrains Mono, Consolas, monospace' font-size='11.5' text-anchor='middle' fill='#334155'>waits</text>
+<rect x='887.8' y='113.0' width='44.5' height='19' rx='4' fill='#ffffff' stroke='#e2e8f0'/>
+<text x='910.0' y='126.0' font-family='JetBrains Mono, Consolas, monospace' font-size='11.5' text-anchor='middle' fill='#334155'>start</text>
+</svg>
