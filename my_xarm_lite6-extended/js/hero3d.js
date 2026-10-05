@@ -1,7 +1,8 @@
 /* Hero-Bühne der Projektseiten (Skill motion-viz §3): xArm Lite 6 (js/lite6_twin.js) auf Sockel mit Lichtringen,
    Laser-Zielhilfe senkrecht auf den Tisch; Ziehen dreht die Kamera. Szene je Seite (opts.scene):
      dome   Arbeitsraum als Punktkuppel (Reichweite 440 mm um Gelenk 2); Zeiger bewegt den TCP, sonst langsame Acht;
-            Pick & Place: drei Ablagefelder + Würfel, Feld anklicken/antippen → Arm setzt den Würfel um
+            Pick & Place: drei Ablagefelder + Würfel (Rastergitter), Feld anklicken/antippen → Arm setzt den Würfel um,
+            Status-Popups oben links (.h3d-steps) blenden die Schritte nacheinander ein; Licht etwas gedämpft
      modes  Steuerwege als Lichtpunkte im Ring (opts.items); aktiver Punkt schickt einen Impuls zum Arm, der Arm zeigt hin
      ghost  Ghost-Arm plant voraus → Freigabe → Arm fährt nach („Erst virtuell, dann real“); Zeiger setzt das Ziel
      atlas  Funktionen als Punktring nach Bereichen (opts.areas: n je Bereich); Bereich unter dem Zeiger leuchtet
@@ -41,15 +42,17 @@ function build(L, wrap, host, o) {
   const st = L.stage(THREE, host, { OrbitControls, target: cam.target, camPos: cam.camPos, fov: 32, minDist: 1.1, maxDist: 3.6, onFrame: (dt, t) => tick(dt, t) });
   st.controls.autoRotateSpeed = 0;
   // Licht: Gegenlicht im Akzent; Studio-Umgebung (RoomEnvironment) für weiche Reflexe; Hauptlicht wirft weiche Schatten
+  // dome: Licht gedämpft (LIT), damit Kuppel und Würfel tragen (Wunsch User 05.10.2026)
+  const LIT = scene === 'dome' ? 0.78 : 1;
   let key = null;
   st.scene.traverse(x => {
     if (x.isDirectionalLight && x.color.getHex() === 0x9cc8ff) x.color.copy(ACC2);
-    else if (x.isDirectionalLight) key = x;
-    if (x.isHemisphereLight && RoomEnvironment) x.intensity = 0.75;
+    else if (x.isDirectionalLight) { key = x; x.intensity *= LIT; }
+    if (x.isHemisphereLight && RoomEnvironment) x.intensity = 0.75 * LIT;
   });
   if (RoomEnvironment) {
     const pm = new THREE.PMREMGenerator(st.renderer);
-    st.scene.environment = pm.fromScene(new RoomEnvironment(), 0.04).texture; st.scene.environmentIntensity = 0.5;
+    st.scene.environment = pm.fromScene(new RoomEnvironment(), 0.04).texture; st.scene.environmentIntensity = 0.5 * LIT;
     pm.dispose();
   }
   if (key) {
@@ -91,7 +94,7 @@ function build(L, wrap, host, o) {
     dash = new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(circle(0.47, -0.02, 240)),
       new THREE.LineDashedMaterial({ color: ACC, dashSize: 0.018, gapSize: 0.014, transparent: true, opacity: 0.55 }));
     dash.computeLineDistances();
-    const halo = new THREE.Mesh(new THREE.PlaneGeometry(1.15, 1.15), glowMat(0.34));
+    const halo = new THREE.Mesh(new THREE.PlaneGeometry(1.15, 1.15), glowMat(0.34 * LIT));
     halo.position.z = -0.032;
     ped.add(disc, shadowCatcher(0.398), ring(0.401, 0.0012, 0.85), ring(0.29, 0.0012, 0.22), ring(0.18, 0.0012, 0.16), dash, halo);
     st.scene.add(ped);
@@ -361,10 +364,22 @@ function build(L, wrap, host, o) {
       g.add(outer, inner, glow); st.scene.add(g);
       return { a, g, outer, inner, glow };
     });
-    const box = new THREE.BoxGeometry(CUBE, CUBE, CUBE), cube = new THREE.Group();
-    const cubeBody = new THREE.Mesh(box, new THREE.MeshPhysicalMaterial({ color: ACC, roughness: 0.35, metalness: 0.05, clearcoat: 0.6, emissive: ACC, emissiveIntensity: 0.12 }));
-    cubeBody.castShadow = true;
-    cube.add(cubeBody, new THREE.LineSegments(new THREE.EdgesGeometry(box), lineMat(0.6, new THREE.Color(0xffffff))));
+    // Würfel als 3D-Rastergitter: Hauch Füllung, Raster n × n auf allen Flächen (Rückseiten scheinen durch), helle Kanten, Eckpunkte
+    const gridCube = (s, n) => {
+      const h = s / 2, v = [];
+      for (let ax = 0; ax < 3; ax++) for (const f of [-h, h]) for (let k = 1; k < n; k++) {
+        const c = -h + s * k / n, b = (ax + 1) % 3, d = (ax + 2) % 3;
+        for (const [u, w] of [[b, d], [d, b]]) { const p0 = [0, 0, 0], p1 = [0, 0, 0]; p0[ax] = p1[ax] = f; p0[u] = p1[u] = c; p0[w] = -h; p1[w] = h; v.push(...p0, ...p1); }
+      }
+      return new THREE.BufferGeometry().setAttribute('position', new THREE.Float32BufferAttribute(v, 3));
+    };
+    const box = new THREE.BoxGeometry(CUBE, CUBE, CUBE), cube = new THREE.Group(), ch = CUBE / 2;
+    const corners = new THREE.BufferGeometry().setAttribute('position', new THREE.Float32BufferAttribute(
+      [0, 1, 2, 3, 4, 5, 6, 7].flatMap(k => [k & 1 ? ch : -ch, k & 2 ? ch : -ch, k & 4 ? ch : -ch]), 3));
+    cube.add(new THREE.Mesh(box, new THREE.MeshBasicMaterial({ color: ACC, transparent: true, opacity: 0.1, depthWrite: false })),
+      new THREE.LineSegments(gridCube(CUBE, 4), lineMat(0.42)),
+      new THREE.LineSegments(new THREE.EdgesGeometry(box), lineMat(0.95, ACC2)),
+      new THREE.Points(corners, new THREE.PointsMaterial({ map: dot, color: ACC2, size: 0.016, transparent: true, opacity: 0.9, depthWrite: false, blending: THREE.AdditiveBlending })));
     const flash = ringMesh(0.016, 0.03, 0);
     st.scene.add(cube, flash);
     let at = 0, held = false, hover = -1, pending = -1, flashT = 1;
@@ -385,25 +400,60 @@ function build(L, wrap, host, o) {
       pads.forEach((p, i) => { const d = Math.hypot(hit.x - p.g.position.x, hit.y - p.g.position.y); if (d < bd) { bd = d; best = i; } });
       return best;
     };
+    // Status-Popups: Schritte blenden nacheinander ein (≥ 340 ms Abstand), laufender Schritt mit Puls, erledigte mit ✓;
+    // „Fertig“ bleibt kurz stehen, dann blenden alle gestaffelt aus. Ergänzt die Bewegung → für Screenreader verborgen.
+    const feed = (() => {
+      const box = document.createElement('ol'); box.className = 'h3d-steps'; box.setAttribute('aria-hidden', 'true');
+      host.appendChild(box);
+      const timers = new Set(), later = (fn, ms) => { const id = setTimeout(() => { timers.delete(id); fn(); }, ms); timers.add(id); };
+      let due = 0;
+      const out = stagger => [...box.querySelectorAll('.h3d-step:not(.out)')].forEach((li, k) => {
+        li.style.transitionDelay = stagger ? `${k * 60}ms` : '0ms'; li.classList.add('out');
+        setTimeout(() => li.remove(), 420 + k * 60);
+      });
+      return {
+        say(text, meta, fin) {
+          const now = performance.now(), wait = Math.max(0, due - now); due = Math.max(now, due) + 340;
+          later(() => {
+            box.querySelectorAll('.h3d-step.on').forEach(li => li.classList.replace('on', 'done'));
+            const li = document.createElement('li'), t = document.createElement('span'), m = document.createElement('b');
+            li.className = `h3d-step ${fin ? 'done fin' : 'on'}`; t.textContent = text; m.textContent = meta;
+            li.append(document.createElement('i'), t, m); box.append(li);
+            void li.offsetWidth; li.classList.add('in');
+            if (fin) later(() => out(true), 2600);
+          }, wait);
+        },
+        reset() { timers.forEach(clearTimeout); timers.clear(); due = performance.now() + 180; out(false); },
+      };
+    })();
+    const T = (de, en) => (document.documentElement.lang === 'en' ? en : de), mm = v => String(Math.round(v * 1000)).replace('-', '−');
+    const xy = p => `x ${mm(p.x)} · y ${mm(p.y)} mm`;
     const blink = () => { flashT = 0; flash.position.set(cube.position.x, cube.position.y, cube.position.z + CUBE / 2 + 0.002); };
     const start = to => {
       if (to === at) return;
-      if (reduce) { at = to; onPad(at); show(); return; }
+      if (reduce) { at = to; onPad(at); show(); feed.reset(); feed.say(T('Abgelegt', 'Placed'), xy(cube.position), true); return; }
       if (job) { pending = to; return; }
-      const A = padAng[at], B = padAng[to], UP = Z, steps = [
+      const A = padAng[at], B = padAng[to], UP = Z, t0 = performance.now(), steps = [
         [A, UP, 0.02], [A, CUBE, 0.002, 'grip'], [A, UP, 0.025], [B, UP, 0.02], [B, CUBE, 0.002, 'drop'], [B, UP, 0.012]];
       let i = 0, wait = 0;
+      feed.reset();
+      feed.say(T('Anfahren', 'Approach'), xy(pads[at].g.position));
       job = { to, tick: dt => {
         const [th, z, tol, act] = steps[i];
         pol.gth = th; pol.gr = PR; pol.gz = z;   // Winkelgrenze W_MAX gilt weiter (followTick)
         if (wait > 0) { wait -= dt; if (wait <= 0) i++; }
         else if (Math.abs(pol.th - th) * pol.r < tol && Math.abs(pol.r - PR) < tol && Math.abs(pol.z - z) < tol && (!act || Math.abs(pol.vz) < 0.02)) {
-          if (act === 'grip') { held = true; blink(); wait = 0.22; }
-          else if (act === 'drop') { held = false; at = to; onPad(at); blink(); wait = 0.22; }
+          if (act === 'grip') {
+            held = true; blink(); wait = 0.22;
+            feed.say(T('Greifen', 'Grip'), T('Sauger an', 'suction on'));
+            feed.say(T('Transport', 'Transfer'), `${T('Schwenk', 'swing')} ${Math.round(Math.abs(B - A) * 180 / Math.PI)}°`);
+          } else if (act === 'drop') { held = false; at = to; onPad(at); blink(); wait = 0.22; feed.say(T('Ablegen', 'Place'), T('Sauger aus', 'suction off')); }
           else i++;
         }
         if (i < steps.length) return;
         job = null; pol.gz = Z;
+        const sec = ((performance.now() - t0) / 1000).toFixed(1);
+        feed.say(T('Fertig', 'Done'), `${T(sec.replace('.', ','), sec)} s`, true);
         if (follow) setGoalXY(ptr.x, ptr.y); else { ph = nearestPhase(); idleRamp = 0; }
         show();
         if (pending >= 0) { const n = pending; pending = -1; start(n); }
