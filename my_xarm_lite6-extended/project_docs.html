@@ -236,7 +236,7 @@ html.sf-on .at-ring:not(.in) .seg { stroke-dasharray: 0 83; }
 .ch-head { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.6fr); gap: 22px 44px; align-items: end; margin-bottom: 64px; }
 .ch-head h2 { font-size: clamp(32px, 4vw, 48px); line-height: 1.04; letter-spacing: -.035em; font-weight: 800; margin-top: 14px; }
 .ch-head .lede { margin-top: 12px; color: var(--fg-2); font-size: 16px; max-width: 42ch; }
-.path { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; }
+.path { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(124px, 1fr)); gap: 8px; }
 .path a { display: grid; align-content: start; gap: 5px; height: 100%; padding: 12px 14px 13px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); box-shadow: var(--shadow);
   transition: border-color var(--t-fast), transform var(--t-base) var(--ease-out); }
 .path a:hover { border-color: var(--hue, var(--accent)); transform: translateY(-2px); }
@@ -413,6 +413,14 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
   .list, .dg-grid { grid-template-columns: minmax(0, 1fr); }
   .layer { grid-template-columns: minmax(0, 1fr); gap: 8px; }
 }
+/* Unterlagen: fünf Rollen-Kacheln über die volle Breite unter der Überschrift */
+#unterlagen .ch-head { grid-template-columns: minmax(0, 1fr); align-items: start; }
+#unterlagen .ch-head .lede { max-width: 60ch; }
+/* Hero: 3D-Bühne breiter und höher als in landing.css (Roboter groß, Wunsch User 05.10.2026) */
+@media (min-width: 961px) {
+  .hero-inner { grid-template-columns: minmax(0, .84fr) minmax(0, 1.26fr); column-gap: 32px; }
+  .hero-stage { aspect-ratio: 1 / 1.02; max-height: 900px; }
+}
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   *:not(.progress), *::before, *::after { transition-duration: 0ms !important; transition-delay: 0ms !important; animation-duration: 0ms !important; animation-iteration-count: 1 !important; }
@@ -486,11 +494,12 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
     <a class="brand" href="#start"><span class="brand-mark"><svg class="ico"><use href="#i-arm"/></svg></span><span>Assistive Arm Platform<small data-en="Project docs">Projekt-Doku</small></span></a>
     <nav aria-label="Abschnitte" data-en-aria="Sections">
       <a href="#vorstellen" data-en="Present">Vorstellen</a>
-      <a href="#bedienen" data-en="Set up &amp; operate">Einrichten &amp; Bedienen</a>
+      <a href="#verstehen" data-en="Understand">Verstehen</a>
       <a href="#technik" data-en="Develop">Entwickeln</a>
+      <a href="#einrichten" data-en="Set up">Einrichten</a>
+      <a href="#bedienen" data-en="Operate">Bedienen</a>
       <span class="sep" aria-hidden="true"></span>
-      <a href="#webapps">Web-Apps</a>
-      <a href="#verstehen" data-en="Understand the project">Projekt verstehen</a>
+      <a href="#webapps">WebApps – User Interfaces</a>
     </nav>
     <div class="tools">
       <div class="seg" role="group" aria-label="Sprache / Language">
@@ -543,7 +552,6 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
       <div class="hero-stage" id="hero-stage">
         <figure class="stage-3d">
           <div class="stage-canvas" id="hero3d" role="img" aria-label="3D: xArm Lite 6 im Digital Twin, Punktkuppel zeigt den Arbeitsraum mit 440 mm Reichweite" data-en-aria="3D: xArm Lite 6 in the Digital Twin, the dotted dome shows the workspace with 440 mm reach"></div>
-          <figcaption class="stage-badge"><span class="hchip fake">FAKE</span><span class="hchip" data-en="Digital Twin · reach 440&amp;nbsp;mm">Digital Twin · Reichweite 440&nbsp;mm</span></figcaption>
         </figure>
         <a class="hero-card hc-1" href="present_control_modes.html#uebersicht" target="_blank" rel="noopener">
           <small><svg class="ico" aria-hidden="true"><use href="#i-pad"/></svg><span data-en="Control modes">Steuerwege</span></small>
@@ -611,14 +619,16 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
     <div class="wrap">
       <header class="ch-head">
         <div>
-          <span class="eyebrow" data-en="Part 1">Teil 1</span>
+          <span class="eyebrow" data-en="Five roles">Fünf Rollen</span>
           <h2 data-en="Documents">Unterlagen</h2>
-          <p class="lede" data-en="Here you find every document, sorted by role: present, set up and operate, develop.">Hier finden Sie alle Unterlagen nach Rolle: vorstellen, einrichten und bedienen, weiterentwickeln.</p>
+          <p class="lede" data-en="Every document, sorted by role: present, understand, develop, set up, operate.">Alle Unterlagen nach Rolle: vorstellen, verstehen, entwickeln, einrichten, bedienen.</p>
         </div>
         <ol class="path" aria-label="Unterlagen nach Zielgruppe" data-en-aria="Documents by audience">
           <li><a href="#vorstellen" style="--hue: var(--violet)"><span class="pn"><svg class="ico"><use href="#i-star"/></svg><span data-en="01 · Visitors">01 · Besucher</span><span class="cnt" data-count="vorstellen"></span></span><b data-en="Present">Vorstellen</b><small data-en="Project page, presentation, poster">Projektseite, Präsentation, Poster</small></a></li>
-          <li><a href="#bedienen" style="--hue: var(--teal)"><span class="pn"><svg class="ico"><use href="#i-user"/></svg><span data-en="02 · Operators">02 · Bediener</span><span class="cnt" data-count="bedienen"></span></span><b data-en="Set up &amp; operate">Einrichten &amp; Bedienen</b><small data-en="Manual, quick start, setup guide">Handbuch, Schnellstart, Setup-Guide</small></a></li>
+          <li><a href="#verstehen" style="--hue: var(--gold)"><span class="pn"><svg class="ico"><use href="#i-spark"/></svg><span data-en="02 · Newcomers">02 · Einsteiger</span><span class="cnt" data-count="verstehen"></span></span><b data-en="Understand">Verstehen</b><small data-en="Why, what, with what, how">Warum, Was, Womit, Wie</small></a></li>
           <li><a href="#technik" style="--hue: var(--indigo)"><span class="pn"><svg class="ico"><use href="#i-code"/></svg><span data-en="03 · Developers">03 · Entwickler</span><span class="cnt" data-count="technik"></span></span><b data-en="Develop">Entwickeln</b><small data-en="Concept, packages, interfaces">Konzept, Pakete, Schnittstellen</small></a></li>
+          <li><a href="#einrichten" style="--hue: var(--blue)"><span class="pn"><svg class="ico"><use href="#i-tool"/></svg><span data-en="04 · Commissioning">04 · Inbetriebnahme</span><span class="cnt" data-count="einrichten"></span></span><b data-en="Set up">Einrichten</b><small data-en="Setup guide, setup card">Setup-Guide, Setup-Karte</small></a></li>
+          <li><a href="#bedienen" style="--hue: var(--teal)"><span class="pn"><svg class="ico"><use href="#i-user"/></svg><span data-en="05 · Operators">05 · Bediener</span><span class="cnt" data-count="bedienen"></span></span><b data-en="Operate">Bedienen</b><small data-en="Quick start, manual">Schnellstart, Handbuch</small></a></li>
         </ol>
       </header>
 
@@ -657,33 +667,17 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
         <p class="sub list-note"><span data-en="Poster as PDF:">Poster als PDF:</span> <a class="pdf" href="poster/poster_a2.pdf" target="_blank" rel="noopener">poster_a2.pdf</a></p>
       </section>
 
-      <section class="sec" id="bedienen">
+      <section class="sec" id="verstehen">
         <header class="sec-head">
-          <div><span class="eyebrow" style="--hue: var(--teal)"><span class="n">02</span><span data-en="For operators">Für Bediener</span></span><h2 data-en="Set up &amp; operate">Einrichten &amp; Bedienen</h2></div>
-          <div class="brief"><p class="slogan" data-en="First virtual, then real.">Erst virtuell, dann real.</p><dl><dt data-en="What you find">Hier finden Sie</dt><dd data-en="Setup guide, quick start, manual and setup card in working order">Setup-Guide, Schnellstart, Handbuch und Setup-Karte in Arbeitsreihenfolge</dd><dt data-en="What we offer">Wir bieten</dt><dd data-en="Commissioning in 8&amp;nbsp;phases and 41&amp;nbsp;steps: from the box to acceptance">Inbetriebnahme in 8&nbsp;Phasen und 41&nbsp;Schritten: vom Karton bis zur Abnahme</dd><dt data-en="What comes with it">Wir bringen mit</dt><dd data-en="Start as robot simulation or on real robot hardware, in the lab or remote">Start als Roboter-Simulation oder auf echter Roboter-Hardware, im Labor oder remote</dd></dl></div>
+          <div><span class="eyebrow" style="--hue: var(--gold)"><span class="n">02</span><span data-en="In brief">Kurzfassung</span></span><h2 data-en="Understand">Verstehen</h2></div>
+          <div class="brief"><p class="slogan" data-en="Four questions. One project.">Vier Fragen. Ein Projekt.</p><dl><dt data-en="What you find">Hier finden Sie</dt><dd data-en="Why, what, with what and how, one tile each">Warum, Was, Womit und Wie in je einer Kachel</dd><dt data-en="What we offer">Wir bieten</dt><dd data-en="Concept, key features, system stack and function flows at a glance">Konzept, Kernmerkmale, System-Stack und Funktionsabläufe auf einen Blick</dd><dt data-en="What comes with it">Wir bringen mit</dt><dd data-en="Each tile opens its section in the project presentation">Jede Kachel öffnet ihren Abschnitt in der Projektvorstellung</dd></dl></div>
         </header>
-        <div class="list">
-          <a class="item" href="operate_setup_guide.html" data-nexus-href="operate_setup_guide.html" target="_blank" rel="noopener" style="--hue: var(--indigo)">
-            <span class="thumb"><img src="img/project_docs/setup_guide.jpg" alt="" loading="lazy"></span>
-            <span class="txt"><b><svg class="ico"><use href="#i-tool"/></svg><span data-en="Setup guide">Setup-Guide</span></b><p data-en="From the box to acceptance: 8 phases, 41 steps; pre-installed PC or from Ubuntu 22.04">Vom Karton zur Abnahme: 8 Phasen, 41 Schritte; PC vorinstalliert oder ab Ubuntu 22.04</p></span>
-            <span class="end"><span class="tag">HTML</span><span class="go"><svg class="ico"><use href="#i-go"/></svg></span></span>
-          </a>
-          <a class="item" href="de/running.html" data-href-en="en/running.html" target="_blank" rel="noopener" style="--hue: var(--green)">
-            <span class="thumb"><img src="img/project_docs/schnellstart.jpg" alt="" loading="lazy"></span>
-            <span class="txt"><b><svg class="ico"><use href="#i-rocket"/></svg><span data-en="Quick start">Schnellstart</span></b><p data-en="Start the system and choose the mode: robot simulation (Digital Twin) or real robot hardware">System starten, Betriebsart wählen: Roboter-Simulation (Digital Twin) oder echte Roboter-Hardware</p></span>
-            <span class="end"><span class="tag">MD</span><span class="go"><svg class="ico"><use href="#i-go"/></svg></span></span>
-          </a>
-          <a class="item" href="operate_manual.html" data-nexus-href="operate_manual.html" target="_blank" rel="noopener" style="--hue: var(--accent)">
-            <span class="thumb"><img src="img/project_docs/handbuch.jpg" alt="" loading="lazy"></span>
-            <span class="txt"><b><svg class="ico"><use href="#i-book"/></svg><span data-en="Manual xArm Lite 6">Handbuch xArm Lite 6</span></b><p data-en="Look things up during operation: system map, control loop, safety, ports, remote guide, VLA-M, logistics cell">Nachschlagen im Betrieb: System Map, Regelkreis, Sicherheit, Ports, Remote Guide, VLA-M, Logistik-Zelle</p></span>
-            <span class="end"><span class="tag">HTML</span><span class="go"><svg class="ico"><use href="#i-go"/></svg></span></span>
-          </a>
-          <a class="item" href="http://127.0.0.1:8080/" data-setup data-local target="_blank" rel="noopener" style="--hue: var(--teal)" title="Öffnet die Setup-Karte (über die Nexus Webapp)" data-en-title="Opens the setup card (via the Nexus Webapp)">
-            <span class="thumb"><img src="img/project_docs/setup.jpg" alt="" loading="lazy"></span>
-            <span class="txt"><b><svg class="ico"><use href="#i-net"/></svg><span data-en="Setup card">Setup-Karte</span></b><p data-en="Networks, addresses and ports at a glance; HTTPS/VR, server/client">Netze, Adressen und Ports auf einen Blick; HTTPS/VR, Server/Client</p></span>
-            <span class="end"><span class="tag">Nexus</span><span class="go"><svg class="ico"><use href="#i-go"/></svg></span></span>
-          </a>
-        </div>
+        <ol class="path" aria-label="Lesepfad" data-en-aria="Reading path">
+          <li><a href="present_presentation.html#forschung" style="--hue: var(--gold)"><span class="pn"><span data-en="Why">Warum</span><svg class="ico to"><use href="#i-go"/></svg></span><b data-en="Concept &amp; objectives">Konzept &amp; Zielsetzung</b><small data-en="Problem, research question, approach, evaluation">Problem, Leitfrage, Lösungsansatz, Evaluation</small></a></li>
+          <li><a href="present_presentation.html#merkmale" style="--hue: var(--violet)"><span class="pn"><span data-en="What">Was</span><svg class="ico to"><use href="#i-go"/></svg></span><b data-en="Key features">Kernmerkmale</b><small data-en="Human in the loop, eight features, standards">Human-in-the-Loop, acht Merkmale, Normbezüge</small></a></li>
+          <li><a href="present_presentation.html#stack" style="--hue: var(--indigo)"><span class="pn"><span data-en="With what">Womit</span><svg class="ico to"><use href="#i-go"/></svg></span><b data-en="System stack">System-Stack</b><small data-en="Seven layers, reference hardware">Sieben Schichten, Referenz-Hardware</small></a></li>
+          <li><a href="present_presentation.html#ablaeufe" style="--hue: var(--green)"><span class="pn"><span data-en="How">Wie</span><svg class="ico to"><use href="#i-go"/></svg></span><b data-en="Function flows">Funktionsabläufe</b><small data-en="Six flows, safety checks, faults">Sechs Abläufe, Sicherheitsprüfungen, Störfälle</small></a></li>
+        </ol>
       </section>
 
       <section class="sec" id="technik">
@@ -717,6 +711,44 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
             <a href="de/monitoring.html" data-href-en="en/monitoring.html" target="_blank" rel="noopener"><svg class="ico"><use href="#i-file"/></svg><b data-en="Monitoring">Überwachung</b><svg class="ico go-s"><use href="#i-go"/></svg><small data-en="Shows how the system is doing, how it is used and how user tests turned out">Zeigt, wie es dem System geht, wie es genutzt wird und wie Nutzertests ausfallen</small></a>
             <a href="develop_workflow.html" target="_blank" rel="noopener"><svg class="ico"><use href="#i-loop"/></svg><b data-en="Workflow with Claude Code">Arbeitsweise mit Claude Code</b><svg class="ico go-s"><use href="#i-go"/></svg><small data-en="How the project is built together with a coding AI">Wie das Projekt gemeinsam mit einer Programmier-KI entsteht</small></a>
           </div>
+        </div>
+      </section>
+
+      <section class="sec" id="einrichten">
+        <header class="sec-head">
+          <div><span class="eyebrow" style="--hue: var(--blue)"><span class="n">04</span><span data-en="For commissioning">Für die Inbetriebnahme</span></span><h2 data-en="Set up">Einrichten</h2></div>
+          <div class="brief"><p class="slogan" data-en="From the box to acceptance.">Vom Karton bis zur Abnahme.</p><dl><dt data-en="What you find">Hier finden Sie</dt><dd data-en="Setup guide and setup card">Setup-Guide und Setup-Karte</dd><dt data-en="What we offer">Wir bieten</dt><dd data-en="Commissioning in 8&amp;nbsp;phases and 41&amp;nbsp;steps">Inbetriebnahme in 8&nbsp;Phasen und 41&nbsp;Schritten</dd><dt data-en="What comes with it">Wir bringen mit</dt><dd data-en="Pre-installed PC or from Ubuntu 22.04; networks, addresses and ports at a glance">PC vorinstalliert oder ab Ubuntu 22.04; Netze, Adressen und Ports auf einen Blick</dd></dl></div>
+        </header>
+        <div class="list">
+          <a class="item" href="operate_setup_guide.html" data-nexus-href="operate_setup_guide.html" target="_blank" rel="noopener" style="--hue: var(--indigo)">
+            <span class="thumb"><img src="img/project_docs/setup_guide.jpg" alt="" loading="lazy"></span>
+            <span class="txt"><b><svg class="ico"><use href="#i-tool"/></svg><span data-en="Setup guide">Setup-Guide</span></b><p data-en="From the box to acceptance: 8 phases, 41 steps; pre-installed PC or from Ubuntu 22.04">Vom Karton zur Abnahme: 8 Phasen, 41 Schritte; PC vorinstalliert oder ab Ubuntu 22.04</p></span>
+            <span class="end"><span class="tag">HTML</span><span class="go"><svg class="ico"><use href="#i-go"/></svg></span></span>
+          </a>
+          <a class="item" href="http://127.0.0.1:8080/" data-setup data-local target="_blank" rel="noopener" style="--hue: var(--teal)" title="Öffnet die Setup-Karte (über die Nexus Webapp)" data-en-title="Opens the setup card (via the Nexus Webapp)">
+            <span class="thumb"><img src="img/project_docs/setup.jpg" alt="" loading="lazy"></span>
+            <span class="txt"><b><svg class="ico"><use href="#i-net"/></svg><span data-en="Setup card">Setup-Karte</span></b><p data-en="Networks, addresses and ports at a glance; HTTPS/VR, server/client">Netze, Adressen und Ports auf einen Blick; HTTPS/VR, Server/Client</p></span>
+            <span class="end"><span class="tag">Nexus</span><span class="go"><svg class="ico"><use href="#i-go"/></svg></span></span>
+          </a>
+        </div>
+      </section>
+
+      <section class="sec" id="bedienen">
+        <header class="sec-head">
+          <div><span class="eyebrow" style="--hue: var(--teal)"><span class="n">05</span><span data-en="For operators">Für Bediener</span></span><h2 data-en="Operate">Bedienen</h2></div>
+          <div class="brief"><p class="slogan" data-en="First virtual, then real.">Erst virtuell, dann real.</p><dl><dt data-en="What you find">Hier finden Sie</dt><dd data-en="Quick start and manual xArm Lite 6">Schnellstart und Handbuch xArm Lite 6</dd><dt data-en="What we offer">Wir bieten</dt><dd data-en="Choose the mode, look things up during operation: safety, ports, remote guide, VLA-M">Betriebsart wählen, im Betrieb nachschlagen: Sicherheit, Ports, Remote Guide, VLA-M</dd><dt data-en="What comes with it">Wir bringen mit</dt><dd data-en="Start as robot simulation or on real robot hardware, in the lab or remote">Start als Roboter-Simulation oder auf echter Roboter-Hardware, im Labor oder remote</dd></dl></div>
+        </header>
+        <div class="list">
+          <a class="item" href="de/running.html" data-href-en="en/running.html" target="_blank" rel="noopener" style="--hue: var(--green)">
+            <span class="thumb"><img src="img/project_docs/schnellstart.jpg" alt="" loading="lazy"></span>
+            <span class="txt"><b><svg class="ico"><use href="#i-rocket"/></svg><span data-en="Quick start">Schnellstart</span></b><p data-en="Start the system and choose the mode: robot simulation (Digital Twin) or real robot hardware">System starten, Betriebsart wählen: Roboter-Simulation (Digital Twin) oder echte Roboter-Hardware</p></span>
+            <span class="end"><span class="tag">MD</span><span class="go"><svg class="ico"><use href="#i-go"/></svg></span></span>
+          </a>
+          <a class="item" href="operate_manual.html" data-nexus-href="operate_manual.html" target="_blank" rel="noopener" style="--hue: var(--accent)">
+            <span class="thumb"><img src="img/project_docs/handbuch.jpg" alt="" loading="lazy"></span>
+            <span class="txt"><b><svg class="ico"><use href="#i-book"/></svg><span data-en="Manual xArm Lite 6">Handbuch xArm Lite 6</span></b><p data-en="Look things up during operation: system map, control loop, safety, ports, remote guide, VLA-M, logistics cell">Nachschlagen im Betrieb: System Map, Regelkreis, Sicherheit, Ports, Remote Guide, VLA-M, Logistik-Zelle</p></span>
+            <span class="end"><span class="tag">HTML</span><span class="go"><svg class="ico"><use href="#i-go"/></svg></span></span>
+          </a>
         </div>
       </section>
     </div>
@@ -866,25 +898,6 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
     </div>
   </section>
 
-  <!-- ═════════ Teil 2 · Projekt verstehen (Warum → Was → Womit → Wie) ═════════ -->
-  <div class="chapter alt" id="verstehen">
-    <div class="wrap">
-      <header class="ch-head">
-        <div>
-          <span class="eyebrow" data-en="Part 2 · In brief">Teil 2 · Kurzfassung</span>
-          <h2 data-en="Understand the project">Projekt verstehen</h2>
-          <p class="lede" data-en="The project in four questions: why, what, with what, how. Each tile opens the section in the project presentation.">Das Projekt in vier Fragen: Warum, Was, Womit, Wie. Jede Kachel öffnet den Abschnitt in der Projektvorstellung.</p>
-        </div>
-        <ol class="path" aria-label="Lesepfad" data-en-aria="Reading path">
-          <li><a href="present_presentation.html#forschung" style="--hue: var(--gold)"><span class="pn"><span data-en="04 · Why">04 · Warum</span><svg class="ico to"><use href="#i-go"/></svg></span><b data-en="Concept &amp; objectives">Konzept &amp; Zielsetzung</b><small data-en="Problem, research question, approach, evaluation">Problem, Leitfrage, Lösungsansatz, Evaluation</small></a></li>
-          <li><a href="present_presentation.html#merkmale" style="--hue: var(--violet)"><span class="pn"><span data-en="05 · What">05 · Was</span><svg class="ico to"><use href="#i-go"/></svg></span><b data-en="Key features">Kernmerkmale</b><small data-en="Human in the loop, eight features, standards">Human-in-the-Loop, acht Merkmale, Normbezüge</small></a></li>
-          <li><a href="present_presentation.html#stack" style="--hue: var(--indigo)"><span class="pn"><span data-en="06 · With what">06 · Womit</span><svg class="ico to"><use href="#i-go"/></svg></span><b data-en="System stack">System-Stack</b><small data-en="Seven layers, reference hardware">Sieben Schichten, Referenz-Hardware</small></a></li>
-          <li><a href="present_presentation.html#ablaeufe" style="--hue: var(--green)"><span class="pn"><span data-en="07 · How">07 · Wie</span><svg class="ico to"><use href="#i-go"/></svg></span><b data-en="Function flows">Funktionsabläufe</b><small data-en="Six flows, safety checks, faults">Sechs Abläufe, Sicherheitsprüfungen, Störfälle</small></a></li>
-        </ol>
-      </header>
-    </div>
-  </div>
-
   <!-- ═════════ Kontakt: Abschluss, Visitenkarte mit QR ═════════ -->
   <section class="contact dark-zone" id="kontakt" aria-labelledby="kontakt-h">
     <div class="wrap">
@@ -943,7 +956,7 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
 
   // Anzahl je Abschnitt in der Übersicht (Dokumente, Merkmale, Module, Schichten + Geräte, Abläufe)
   document.querySelectorAll('[data-count]').forEach(el => {
-    el.textContent = document.getElementById(el.dataset.count).querySelectorAll('a.item, .dg a, .feat, .slide, .layer, .hw-item, .pf-tab').length;
+    el.textContent = document.getElementById(el.dataset.count).querySelectorAll('a.item, .dg a, .path a, .feat, .slide, .layer, .hw-item, .pf-tab').length;
   });
 
   // Theme: ?theme=, gespeicherte Wahl, sonst System
@@ -984,7 +997,7 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
   // Lesefluss (js/scroll_flow.js): Einstieg gestaffelt, Köpfe bauen sich auf, Karten aus der Tiefe,
   // Leitlinie mit den Abschnittsnummern, aktiver Abschnitt in der Navigation
   window.ScrollFlow?.init({
-    hero: '.hero-copy > .badge, .h1-name, .hero-copy > .abstract, .hero-copy > .cta-row, .trust > li, .hero-copy > .vcard, .stage-badge, .hero-card, .stage-hint',
+    hero: '.hero-copy > .badge, .h1-name, .hero-copy > .abstract, .hero-copy > .cta-row, .trust > li, .hero-copy > .vcard, .hero-card, .stage-hint',
     heroExit: '.hero-inner',
     heads: '.land-head, .ch-head, .sec-head, .ct-copy',
     depth: ['.app-frame'],
@@ -1029,7 +1042,8 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { toCreasedNormals } from 'three/addons/utils/BufferGeometryUtils.js';
-window.Hero3D?.init(THREE, { OrbitControls, toCreasedNormals }, { scene: 'dome' });
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+window.Hero3D?.init(THREE, { OrbitControls, toCreasedNormals, RoomEnvironment }, { scene: 'dome' });
 </script>
 </body>
 </html>

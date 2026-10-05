@@ -2298,7 +2298,8 @@ const FLOWS = (() => {
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { toCreasedNormals } from 'three/addons/utils/BufferGeometryUtils.js';
-window.Hero3D?.init(THREE, { OrbitControls, toCreasedNormals }, window.atlasHero);
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+window.Hero3D?.init(THREE, { OrbitControls, toCreasedNormals, RoomEnvironment }, window.atlasHero);
 </script>
 </body>
 </html>

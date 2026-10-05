@@ -257,7 +257,7 @@ footer .wrap { display: flex; justify-content: space-between; flex-wrap: wrap; g
 <link rel="stylesheet" href="css/doc_path.css">
 </head>
 <body>
-<nav class="doc-path" aria-label="Pfad in der Projekt-Doku" data-en-aria="Path in the project docs"><a href="project_docs.html" data-en="← Project docs">← Projekt-Doku</a><span aria-hidden="true">›</span><a href="project_docs.html#bedienen" data-en="Set up &amp; operate">Einrichten &amp; Bedienen</a><span aria-hidden="true">›</span><span aria-current="page" data-en="Setup guide">Setup-Guide</span><span class="doc-path-pager"><a href="operate_manual.html" rel="next" aria-label="Nächste Seite: Handbuch" data-en-aria="Next page: Manual"><span data-en="Manual">Handbuch</span> <span aria-hidden="true">›</span></a></span></nav>
+<nav class="doc-path" aria-label="Pfad in der Projekt-Doku" data-en-aria="Path in the project docs"><a href="project_docs.html" data-en="← Project docs">← Projekt-Doku</a><span aria-hidden="true">›</span><a href="project_docs.html#einrichten" data-en="Set up">Einrichten</a><span aria-hidden="true">›</span><span aria-current="page" data-en="Setup guide">Setup-Guide</span><span class="doc-path-pager"><a href="operate_manual.html" rel="next" aria-label="Nächste Seite: Handbuch" data-en-aria="Next page: Manual"><span data-en="Manual">Handbuch</span> <span aria-hidden="true">›</span></a></span></nav>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
   <symbol id="i-arm" viewBox="0 0 24 24"><path d="M4 21h16M7 21v-3h10v3M12 18v-5M12 13l5-5M17 8l3 1.5M17 8l1.2-3.2"/><circle cx="12" cy="13" r="2"/><circle cx="17" cy="8" r="1.6"/></symbol>
   <symbol id="i-pc" viewBox="0 0 24 24"><rect x="2.5" y="4" width="19" height="12" rx="1.5"/><path d="M8 20h8M12 16v4"/><path d="M7 10l2.5 2.5L15 7"/></symbol>
@@ -869,7 +869,8 @@ python3 ~/dev_ws/tools/check_ports.py</pre></div></div></li>
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { toCreasedNormals } from 'three/addons/utils/BufferGeometryUtils.js';
-window.Hero3D?.init(THREE, { OrbitControls, toCreasedNormals }, { scene: 'cell' });
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+window.Hero3D?.init(THREE, { OrbitControls, toCreasedNormals, RoomEnvironment }, { scene: 'cell' });
 </script>
 </body>
 </html>

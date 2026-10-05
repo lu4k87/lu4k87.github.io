@@ -13,11 +13,11 @@
    three.js + Addons übergibt das Modul der Seite (Import-Map auf jsDelivr, Version wie src/http_robot_control_ui_p8081/lib/three). */
 (function () {
 'use strict';
-let THREE, OrbitControls, toCreasedNormals;
+let THREE, OrbitControls, toCreasedNormals, RoomEnvironment;
 
 const webgl = () => { try { const c = document.createElement('canvas'); return !!(c.getContext('webgl2') || c.getContext('webgl')); } catch (e) { return false; } };
 const CAM = {
-  dome: { target: [0, 0, 0.21], camPos: [1.47, -1.13, 1.08] },
+  dome: { target: [0, 0, 0.16], camPos: [1.17, -0.9, 0.72] },
   modes: { target: [0, 0, 0.12], camPos: [1.86, -1.46, 1.42] },
   ghost: { target: [0.06, 0, 0.2], camPos: [1.32, -1.05, 0.86] },
   atlas: { target: [0, 0, 0.1], camPos: [1.84, -1.44, 1.5] },
@@ -25,7 +25,7 @@ const CAM = {
 };
 
 function init(three, addons, opts = {}) {
-  THREE = three; ({ OrbitControls, toCreasedNormals } = addons);
+  THREE = three; ({ OrbitControls, toCreasedNormals, RoomEnvironment } = addons);
   const L = window.Lite6, wrap = document.querySelector(opts.wrap || '#hero-stage'), host = document.querySelector(opts.host || '#hero3d');
   if (!L || !window.LITE6_MESH || !host || !wrap || !webgl()) return null;
   try { return build(L, wrap, host, opts); } catch (e) { console.warn('Hero-3D:', e); return null; }
@@ -38,8 +38,25 @@ function build(L, wrap, host, o) {
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
   let tick = () => {};
   const st = L.stage(THREE, host, { OrbitControls, target: cam.target, camPos: cam.camPos, fov: 32, minDist: 1.1, maxDist: 3.6, onFrame: (dt, t) => tick(dt, t) });
-  st.controls.autoRotateSpeed = 0.3;
-  st.scene.traverse(x => { if (x.isDirectionalLight && x.color.getHex() === 0x9cc8ff) x.color.copy(ACC2); });   // Gegenlicht im Akzent
+  st.controls.autoRotateSpeed = 0;
+  // Licht: Gegenlicht im Akzent; Studio-Umgebung (RoomEnvironment) für weiche Reflexe; Hauptlicht wirft weiche Schatten
+  let key = null;
+  st.scene.traverse(x => {
+    if (x.isDirectionalLight && x.color.getHex() === 0x9cc8ff) x.color.copy(ACC2);
+    else if (x.isDirectionalLight) key = x;
+    if (x.isHemisphereLight && RoomEnvironment) x.intensity = 0.75;
+  });
+  if (RoomEnvironment) {
+    const pm = new THREE.PMREMGenerator(st.renderer);
+    st.scene.environment = pm.fromScene(new RoomEnvironment(), 0.04).texture; st.scene.environmentIntensity = 0.5;
+    pm.dispose();
+  }
+  if (key) {
+    st.renderer.shadowMap.enabled = true; st.renderer.shadowMap.type = THREE.PCFShadowMap;
+    key.castShadow = true; key.shadow.mapSize.set(1024, 1024); key.shadow.radius = 5; key.shadow.bias = -0.0004; key.shadow.normalBias = 0.003;
+    Object.assign(key.shadow.camera, { left: -0.6, right: 0.6, top: 0.6, bottom: -0.6, near: 0.6, far: 3.4 });
+  }
+  const shadowCatcher = r => { const m = new THREE.Mesh(new THREE.CircleGeometry(r, 96), new THREE.ShadowMaterial({ opacity: 0.42, depthWrite: false })); m.position.z = 0.0008; m.receiveShadow = true; return m; };
 
   // ── Bausteine: weicher Lichtpunkt, Kreise, Linien, Schein ──
   const dot = (() => {
@@ -63,21 +80,27 @@ function build(L, wrap, host, o) {
     st.scene.add(L.table(THREE, c, [0.9, 0.8], [0.2, 0]), zed.group, basket, ...objs.map(x => x.mesh));
   } else {
     const ped = new THREE.Group();
-    const disc = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.42, 0.03, 96).rotateX(Math.PI / 2), new THREE.MeshStandardMaterial({ color: 0x15191c, roughness: 0.5, metalness: 0.45 }));
-    disc.position.z = -0.0155;
+    // Sockel als Drehkörper mit gerundeter Oberkante (Lichtkante statt harter Kante)
+    const prof = [new THREE.Vector2(0.0001, -0.03), new THREE.Vector2(0.42, -0.03)];
+    for (let i = 0; i <= 10; i++) { const a = i / 10 * Math.PI / 2; prof.push(new THREE.Vector2(0.397 + 0.008 * Math.cos(a), -0.008 + 0.008 * Math.sin(a))); }
+    prof.push(new THREE.Vector2(0.0001, 0));
+    const disc = new THREE.Mesh(new THREE.LatheGeometry(prof, 160).rotateX(Math.PI / 2),
+      new THREE.MeshPhysicalMaterial({ color: 0x14181b, roughness: 0.5, metalness: 0.3, clearcoat: 0.5, clearcoatRoughness: 0.4, envMapIntensity: 0.3 }));
+    disc.receiveShadow = true;
     dash = new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(circle(0.47, -0.02, 240)),
       new THREE.LineDashedMaterial({ color: ACC, dashSize: 0.018, gapSize: 0.014, transparent: true, opacity: 0.55 }));
     dash.computeLineDistances();
     const halo = new THREE.Mesh(new THREE.PlaneGeometry(1.15, 1.15), glowMat(0.34));
     halo.position.z = -0.032;
-    ped.add(disc, ring(0.405, 0.0005, 0.85), ring(0.29, 0.0005, 0.22), ring(0.18, 0.0005, 0.16), dash, halo);
+    ped.add(disc, shadowCatcher(0.398), ring(0.401, 0.0012, 0.85), ring(0.29, 0.0012, 0.22), ring(0.18, 0.0012, 0.16), dash, halo);
     st.scene.add(ped);
   }
 
   // ── Roboter + Laser-Zielhilfe (Strahl vom TCP senkrecht auf den Tisch, Ring am Auftreffpunkt) ──
   const robot = L.buildRobot(THREE, { creased: toCreasedNormals,
-    material: new THREE.MeshStandardMaterial({ color: 0xdfe5e7, roughness: 0.34, metalness: 0.2 }),
-    toolMaterial: new THREE.MeshStandardMaterial({ color: 0x1b2023, roughness: 0.5 }) });
+    material: new THREE.MeshPhysicalMaterial({ color: 0xe4e8ea, roughness: 0.32, metalness: 0.05, clearcoat: 0.55, clearcoatRoughness: 0.28 }),
+    toolMaterial: new THREE.MeshPhysicalMaterial({ color: 0x1b2023, roughness: 0.38, metalness: 0.6, clearcoat: 0.3 }) });
+  robot.group.traverse(m => { if (m.isMesh) m.castShadow = true; });
   const beam = new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(), new THREE.Vector3()]), lineMat(0.9));
   const spot = new THREE.Mesh(new THREE.RingGeometry(0.012, 0.019, 40), new THREE.MeshBasicMaterial({ color: ACC, transparent: true, opacity: 0.95, side: THREE.DoubleSide, depthWrite: false }));
   const spotGlow = new THREE.Mesh(new THREE.PlaneGeometry(0.09, 0.09), glowMat(0.7));
@@ -96,7 +119,6 @@ function build(L, wrap, host, o) {
   const plane = new THREE.Plane(new THREE.Vector3(0, 0, 1), -Z);
   const solve = (x, y, seed) => { const r = Math.hypot(x, y); if (r < 1e-3) return null; const rc = Math.min(0.32, Math.max(0.17, r)); return L.ikDown(x / r * rc, y / r * rc, Z, 0, seed); };
   const toward = (a, r = 0.28) => [r * Math.cos(a), r * Math.sin(a)];
-  const idle = t => { const a = t / 16000 * Math.PI * 2; return [0.25 + 0.05 * Math.sin(2 * a), 0.16 * Math.sin(a)]; };
   let q = L.HOME.slice(), goal = q.slice(), follow = false;
   const aim = (x, y) => { const s = solve(x, y, goal); if (s) goal = s; };
   const pointerPlane = e => {
@@ -105,7 +127,10 @@ function build(L, wrap, host, o) {
     ray.setFromCamera(ndc, st.camera);
     return ray.ray.intersectPlane(plane, hit) ? hit : null;
   };
-  const damp = (dt, rate) => { const k = 1 - Math.exp(-dt * rate); q = q.map((v, i) => v + (goal[i] - v) * k); robot.setJoints(q); };
+  // Kritisch gedämpfte Feder (exakte Lösung je Schritt, stabil bei jedem dt): Geschwindigkeit bleibt stetig → kein Ruck bei neuem Ziel
+  const spring = (x, v, g, w, dt) => { const e = x - g, k = v + w * e, ex = Math.exp(-w * dt); return [g + (e + k * dt) * ex, (v - w * k * dt) * ex]; };
+  const qv = q.map(() => 0);
+  const damp = (dt, rate) => { const w = rate * 1.5; q = q.map((v, i) => { const [x, nv] = spring(v, qv[i], goal[i], w, dt); qv[i] = nv; return x; }); robot.setJoints(q); };
 
   // ── Beschriftung im Overlay: Link folgt einem 3D-Punkt ──
   const lblBox = document.createElement('div'); lblBox.className = 'h3d-lbls';
@@ -277,23 +302,59 @@ function build(L, wrap, host, o) {
   }
 
   // ── Zeiger folgt (dome, cell): TCP fährt zum Punkt unter dem Zeiger ──
+  // Ziel in Polarkoordinaten (Winkel um Gelenk 1, Radius 170–320 mm), der TCP-Punkt folgt als Feder, Gelenke per IK daraus.
+  // Übergabe ohne Sprung: Zeiger raus → Leerlauf-Acht setzt am nächsten Punkt zur aktuellen TCP-Lage an und läuft sanft an;
+  // Zeiger rein → Feder übernimmt mit der laufenden Geschwindigkeit, Steifigkeit steigt weich an.
+  // Gelenk 1 endet bei ±178° → Zeiger hinter dem Arm: Seite halten; Seitenwechsel = Schwenk nach vorn, Ziel wandert höchstens W_MAX rad/s.
+  const TH = 3.0, R0 = 0.17, R1 = 0.32, IDLE_T = 16, W_MAX = 2.2;
+  const pol = { th: 0, r: 0.25, vth: 0, vr: 0, gth: 0, gr: 0.25, cth: 0, w: 2.6 };
+  const eight = ph => { const x = 0.25 + 0.05 * Math.sin(2 * ph), y = 0.16 * Math.sin(ph); return [Math.atan2(y, x), Math.hypot(x, y)]; };
+  let ph = 0, idleRamp = 1;
+  const setGoalXY = (x, y) => {
+    const r = Math.hypot(x, y); if (r < 0.02) return;
+    let th = Math.atan2(y, x);
+    if (Math.abs(th) > TH - 0.5 && Math.sign(th) !== Math.sign(pol.gth || 1)) th = -th;   // hinter dem Arm: Seite halten statt umschlagen
+    pol.gth = Math.max(-TH, Math.min(TH, th)); pol.gr = Math.max(R0, Math.min(R1, r));
+  };
+  const nearestPhase = () => {
+    let best = 0, bd = Infinity;
+    for (let i = 0; i < 128; i++) { const p = i / 128 * Math.PI * 2, [t, r] = eight(p), d = ((t - pol.th) * pol.r) ** 2 + (r - pol.r) ** 2; if (d < bd) { bd = d; best = p; } }
+    return best;
+  };
+  const followTick = dt => {
+    if (!follow) {
+      idleRamp = Math.min(1, idleRamp + dt / 1.6);
+      ph += dt * Math.PI * 2 / IDLE_T * idleRamp * idleRamp * (3 - 2 * idleRamp);
+      [pol.gth, pol.gr] = eight(ph);
+    }
+    pol.w += ((follow ? 7 : 2.6) - pol.w) * (1 - Math.exp(-dt * 3));
+    pol.cth += Math.max(-W_MAX * dt, Math.min(W_MAX * dt, pol.gth - pol.cth));
+    [pol.th, pol.vth] = spring(pol.th, pol.vth, pol.cth, pol.w, dt);
+    [pol.r, pol.vr] = spring(pol.r, pol.vr, pol.gr, pol.w, dt);
+    const s = L.ikDown(pol.r * Math.cos(pol.th), pol.r * Math.sin(pol.th), Z, 0, q);
+    if (s) { q = s; robot.setJoints(q); }
+  };
   if (scene === 'dome' || scene === 'cell') {
     if (reduce) { aim(0.26, 0.1); q = goal; robot.setJoints(q); }
     else {
       host.addEventListener('pointermove', e => {
         if (e.pointerType !== 'mouse' || e.buttons) return;
-        const p = pointerPlane(e); if (p) { follow = true; aim(p.x, p.y); }
+        const p = pointerPlane(e); if (p) { follow = true; setGoalXY(p.x, p.y); }
       });
-      host.addEventListener('pointerleave', () => { follow = false; });
+      host.addEventListener('pointerleave', () => { if (!follow) return; follow = false; ph = nearestPhase(); idleRamp = 0; });
     }
   }
   if (!reduce) st.isBusy = () => true;
   if (reduce && (scene === 'modes' || scene === 'atlas')) { q = goal; robot.setJoints(q); }
 
+  // Auto-Orbit läuft nach Ruhe weich an statt mit voller Geschwindigkeit zu starten
+  let orbitRamp = 0;
   tick = (dt, t) => {
     if (!reduce) {
-      if ((scene === 'dome' || scene === 'cell') && !follow) aim(...idle(t));
-      if (scene !== 'ghost') damp(dt, follow ? 6 : 2.5);
+      if (scene === 'dome' || scene === 'cell') followTick(dt);
+      else if (scene !== 'ghost') damp(dt, 2.5);
+      orbitRamp = st.controls.autoRotate ? Math.min(1, orbitRamp + dt / 2.5) : 0;
+      st.controls.autoRotateSpeed = 0.3 * orbitRamp * orbitRamp * (3 - 2 * orbitRamp);
       if (dash && scene !== 'modes' && scene !== 'atlas') dash.rotation.z -= dt * Math.PI * 2 / 60;
     }
     extra(dt, t);
