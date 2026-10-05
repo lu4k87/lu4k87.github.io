@@ -73,6 +73,20 @@ html.sf-on .hero:not(.is-in) .h1-claim .ln > span { opacity: 0; transform: trans
 .trust b { display: block; color: var(--fg); font-weight: 700; }
 .trust .bi-s { width: 34px; height: 34px; }
 .trust .bi-s .ico { width: 17px; height: 17px; }
+/* Hero-Kopf (Hub, Funktionsatlas): Claim in einer Zeile mittig über Text-Spalte und Bühne, Abstract + Kernmerkmale über die volle Breite */
+.hero-head { grid-column: 1 / -1; display: grid; justify-items: center; gap: 22px; padding-bottom: 12px; text-align: center; }
+.hero-head h1 { justify-items: center; }
+.hero-head .h1-claim { font-size: clamp(34px, 4.5vw, 80px); }
+.hero-head .h1-claim .ln { display: inline-block; }
+.hero-head .abstract { max-width: 88ch; }
+.hero-keys { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 20px 28px; width: 100%; max-width: 1240px; margin: 4px 0 0; padding: 0; list-style: none; }
+.hero-keys li { display: grid; justify-items: center; align-content: start; gap: 6px; }
+.hero-keys .ico { width: 26px; height: 26px; color: var(--hue); }
+.hero-keys b { font-size: 16px; line-height: 1.3; }
+.hero-keys span { font-size: 14px; line-height: 1.45; color: var(--fg-2); text-wrap: balance; }
+@media (min-width: 961px) { .hero-head .h1-claim { white-space: nowrap; } }
+@media (max-width: 960px) { .hero-keys { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 480px) { .hero-keys { grid-template-columns: minmax(0, 1fr); } .hero-head .abstract { text-align: left; } }
 
 /* Bühne: Leinwand oben über die ganze Breite, darunter mittig der Bedienhinweis */
 .hero-stage { display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr) auto; gap: 10px;
