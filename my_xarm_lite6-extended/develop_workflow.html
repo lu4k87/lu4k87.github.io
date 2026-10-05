@@ -106,9 +106,9 @@ main.wrap { max-width: calc(1320px + 2 * var(--gut)); margin-inline: auto; } /* 
 .hero .abstract { color: var(--fg-2); max-width: 68ch; font-size: 17px; line-height: 1.6; }
 .hero .abstract b { color: var(--fg); }
 .kpis { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: var(--radius-lg); overflow: hidden; }
-.kpi { background: var(--surface); padding: 16px 16px 14px; display: grid; gap: 4px; align-content: start; }
+.kpi { background: var(--surface); padding: 16px 16px 14px; display: grid; gap: 4px; align-content: start; justify-items: center; text-align: center; }  /* Kennzahl-Kachel mittig */
 .kpi b { font: 700 30px/1.1 var(--mono); font-variant-numeric: tabular-nums; letter-spacing: -.02em; color: var(--hue, var(--fg)); }
-.kpi span { font-size: 14px; line-height: 1.35; color: var(--fg-2); }
+.kpi span { font-size: 14px; line-height: 1.35; color: var(--fg-2); text-wrap: balance; }
 .kpi span code { color: var(--fg); }
 .hero-side { display: grid; gap: 12px; }
 .brief { padding: 14px 16px; display: grid; gap: 10px; }
@@ -472,11 +472,11 @@ main.wrap { max-width: calc(1320px + 2 * var(--gut)); margin-inline: auto; } /* 
 .learn h3 { font-size: 19px; font-weight: 800; }
 .lflow { display: grid; grid-template-columns: minmax(0, 1fr) 28px minmax(0, 1fr) 28px minmax(0, 1fr) 28px minmax(0, 1fr); align-items: stretch; }
 .lflow > svg { align-self: center; justify-self: center; width: 20px; height: 20px; color: var(--fg-2); }
-.lstep { --hue: var(--accent); padding: 12px 14px; border: 1px solid color-mix(in srgb, var(--hue) 45%, var(--line)); background: color-mix(in srgb, var(--hue) 7%, var(--surface)); border-radius: var(--radius); display: grid; gap: 4px; align-content: start; }
-.lstep .k { display: flex; align-items: center; gap: 8px; font: 700 13px/1.2 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--hue); }
-.lstep .k .ico { width: 17px; height: 17px; }
-.lstep b { font-size: 15.5px; font-weight: 800; }
-.lstep p { font-size: 14px; line-height: 1.45; color: var(--fg-2); }
+.lstep { --hue: var(--accent); padding: 12px 14px; border: 1px solid color-mix(in srgb, var(--hue) 45%, var(--line)); background: color-mix(in srgb, var(--hue) 7%, var(--surface)); border-radius: var(--radius); display: grid; gap: 4px; align-content: start; justify-items: center; text-align: center; }
+.lstep .k { display: flex; flex-direction: column; align-items: center; gap: 6px; font: 700 13px/1.2 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--hue); }
+.lstep .k .ico { width: 34px; height: 34px; }  /* kleine Kachel: Icon groß über der Nummer */
+.lstep b { font-size: 15.5px; font-weight: 800; text-wrap: balance; }
+.lstep p { font-size: 14px; line-height: 1.45; color: var(--fg-2); text-wrap: balance; }
 .lex { display: grid; gap: 6px; }
 .lex-r { display: grid; grid-template-columns: minmax(0, 1fr) 28px minmax(0, 1fr) 28px minmax(0, 1fr) 28px minmax(0, 1fr); font-size: 14px; line-height: 1.4; }
 .lex-r > span { padding: 7px 10px; border: 1px dashed var(--line-strong); border-radius: var(--radius); }

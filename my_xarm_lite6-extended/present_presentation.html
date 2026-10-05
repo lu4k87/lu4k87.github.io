@@ -392,9 +392,9 @@ section.block { padding-block: 80px; border-top: 1px solid var(--line); }
 .estop:active, .estop[aria-pressed="true"] { transform: translateY(4px); box-shadow: 0 2px 0 #7f1d1d; }
 .estop-row .ways { display: flex; flex-wrap: wrap; gap: 6px; }
 .numbers { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; }
-.num { border: 1px solid var(--line); border-radius: var(--radius); padding: 12px; background: var(--surface-2); }
+.num { border: 1px solid var(--line); border-radius: var(--radius); padding: 12px; background: var(--surface-2); text-align: center; }  /* Kennzahl-Kachel mittig */
 .num strong { display: block; font: 800 24px/1 var(--mono); letter-spacing: -.03em; }
-.num span { display: block; margin-top: 6px; font-size: 13px; color: var(--fg-2); }
+.num span { display: block; margin-top: 6px; font-size: 13px; color: var(--fg-2); text-wrap: balance; }
 
 /* Kanäle / Wege */
 .tog > .ico { color: var(--hue); }
@@ -532,15 +532,20 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: cent
 .feats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
 .feat { display: grid; align-content: start; gap: 8px; min-width: 0; padding: 18px; border: 1px solid var(--line); border-radius: var(--r-md); background: var(--surface); box-shadow: var(--shadow); }
 .feat .badge-ico { margin-bottom: 4px; }
+/* kleine Kachel (text-format §4): Icon-Box groß mittig, Text mittig; Kacheln mit Liste bleiben links */
+.feat:not(:has(ul)) { justify-items: center; text-align: center; }
+.feat:not(:has(ul)) :is(.k-t, b, p) { text-wrap: balance; }
+.feat:not(:has(ul)) .badge-ico { width: 64px; height: 64px; }
+.feat:not(:has(ul)) .badge-ico .ico { width: 34px; height: 34px; }
 .feat .k-t { font: 700 11.5px/1.2 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--hue); }
 .feat b { font-size: 17px; font-weight: 800; line-height: 1.25; letter-spacing: -.01em; }
 .feat p { font-size: 14px; line-height: 1.5; color: var(--fg-2); }
-/* Nummer 01–08 rechts neben dem Icon-Badge (wie die Dokument-Karten im Doku-Hub) */
+/* Nummer 01–08 links in der Ecke, Icon-Box mittig in derselben Zeile (wie Poster) */
 .feats-num { counter-reset: feat; }
-.feats-num > .feat { counter-increment: feat; grid-template-columns: minmax(0, 1fr) auto; }
+.feats-num > .feat { counter-increment: feat; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); }
 .feats-num > .feat > * { grid-column: 1 / -1; }
-.feats-num > .feat > .badge-ico { grid-column: 1; grid-row: 1; }
-.feats-num > .feat::before { content: counter(feat, decimal-leading-zero); grid-column: 2; grid-row: 1; align-self: start; padding: 4px 6px;
+.feats-num > .feat > .badge-ico { grid-column: 2; grid-row: 1; }
+.feats-num > .feat::before { content: counter(feat, decimal-leading-zero); grid-column: 1; grid-row: 1; justify-self: start; align-self: start; padding: 4px 6px;
   font: 800 13px/1 var(--mono); color: var(--hue); background: var(--surface); border: 1px solid var(--hue); border-radius: var(--radius-sm); }
 /* Forschung: Leitfrage über den vier Säulen der Systemidee */
 .rq { display: grid; gap: 8px; padding: 18px; margin-bottom: 16px; }
@@ -558,12 +563,12 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: cent
 .hw-head h3 { font-size: 20px; font-weight: 800; letter-spacing: -.01em; }
 .hw-head p { color: var(--fg-2); max-width: 60ch; font-size: 14.5px; }
 .hw { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
-.hw-item { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 4px 10px; align-content: start; padding: 12px; border: 1px solid var(--line); border-radius: var(--r-md); background: var(--surface); box-shadow: var(--shadow); }
-.hw-item .ico { grid-row: span 2; box-sizing: border-box; width: 36px; height: 36px; padding: 7px; border-radius: var(--radius); color: var(--hue, var(--accent));
+.hw-item { display: grid; justify-items: center; gap: 4px; align-content: start; text-align: center; padding: 12px; border: 1px solid var(--line); border-radius: var(--r-md); background: var(--surface); box-shadow: var(--shadow); }
+.hw-item .ico { box-sizing: border-box; width: 56px; height: 56px; padding: 11px; margin-bottom: 4px; border-radius: var(--radius); color: var(--hue, var(--accent));
   background: color-mix(in srgb, var(--hue, var(--accent)) 14%, transparent); border: 1px solid color-mix(in srgb, var(--hue, var(--accent)) 35%, transparent); }  /* Icon-Badge in Bereichsfarbe */
-.hw-item b { font-size: 14.5px; font-weight: 800; line-height: 1.25; }
-.hw-item p { font-size: 13px; line-height: 1.5; color: var(--fg-2); }
-.hw-item .tags { grid-column: 2; display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
+.hw-item b { font-size: 14.5px; font-weight: 800; line-height: 1.25; text-wrap: balance; }
+.hw-item p { font-size: 13px; line-height: 1.5; color: var(--fg-2); text-wrap: balance; }
+.hw-item .tags { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; margin-top: 4px; }
 .hw-tag { font: 700 11px/1 var(--mono); letter-spacing: .04em; padding: 5px 7px; border-radius: var(--radius-sm); background: var(--surface-2); border: 1px solid var(--line); color: var(--fg-2); }
 .hw-tag.opt { border-style: dashed; }
 
@@ -573,11 +578,11 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: cent
 /* Kennzahlen unter dem Hero: zählen beim Einblenden hoch */
 .kpis { border-top: 1px solid var(--line); background: var(--surface); }
 .kpis .wrap { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); }
-.kpi { padding: 20px 16px; display: grid; gap: 6px; align-content: start; border-left: 1px solid var(--line); }
-.kpi:first-child { border-left: 0; padding-left: 0; }
+.kpi { padding: 20px 16px; display: grid; gap: 6px; align-content: start; justify-items: center; text-align: center; border-left: 1px solid var(--line); }  /* Kennzahl-Kachel mittig */
+.kpi:first-child { border-left: 0; }
 .kpi strong { font: 800 clamp(28px, 3vw, 38px)/1 var(--mono); letter-spacing: -.04em; color: var(--hue, var(--accent)); font-variant-numeric: tabular-nums; }
 .kpi strong small { font-size: .45em; letter-spacing: 0; margin-left: 4px; }
-.kpi span { font-size: 13.5px; font-weight: 600; line-height: 1.3; color: var(--fg-2); }
+.kpi span { font-size: 13.5px; font-weight: 600; line-height: 1.3; color: var(--fg-2); text-wrap: balance; }
 .kpi span b { color: var(--fg); }
 
 /* three.js-Bühnen (3D-Zwilling, Ablauf) */
@@ -1092,13 +1097,13 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: cent
           <span class="badge-ico"><svg class="ico"><use href="#i-code"/></svg></span>
           <span class="k-t">Open Source</span>
           <b data-en="Open, reproducible, extensible.">Offen, nachbaubar, erweiterbar.</b>
-          <p data-en="Own packages under Apache 2.0, built on ROS 2 Humble and MoveIt 2.">Eigene Pakete unter Apache 2.0, aufgebaut auf ROS 2 Humble und MoveIt 2.</p>
+          <p data-en="Own packages under Apache 2.0, built on ROS&amp;nbsp;2 Humble and MoveIt&amp;nbsp;2.">Eigene Pakete unter Apache 2.0, aufgebaut auf ROS&nbsp;2 Humble und MoveIt&nbsp;2.</p>
         </div>
         <div class="feat" style="--hue: var(--indigo)">
           <span class="badge-ico"><svg class="ico"><use href="#i-blocks"/></svg></span>
           <span class="k-t" data-en="Multimodal · Modular">Multimodal · Modular</span>
           <b data-en="Replaceable, not fixed.">Austauschbar statt festgelegt.</b>
-          <p data-en="Better input devices, cameras, AI models or software modules replace the old ones one by one; fixed ROS 2 interfaces keep the rest of the system unchanged. Next, the robot arm itself becomes replaceable (planned).">Bessere Eingabegeräte, Kameras, KI-Modelle oder Software-Module ersetzen die alten einzeln; feste ROS-2-Schnittstellen halten den Rest des Systems unverändert. Als Nächstes wird auch der Roboterarm austauschbar (geplant).</p>
+          <p data-en="Better input devices, cameras, AI models or software modules replace the old ones one by one; fixed ROS&amp;nbsp;2 interfaces keep the rest of the system unchanged. Next, the robot arm itself becomes replaceable (planned).">Bessere Eingabegeräte, Kameras, KI-Modelle oder Software-Module ersetzen die alten einzeln; feste ROS&#8209;2-Schnittstellen halten den Rest des Systems unverändert. Als Nächstes wird auch der Roboterarm austauschbar (geplant).</p>
         </div>
       </div>
     </div>

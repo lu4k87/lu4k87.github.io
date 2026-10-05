@@ -134,15 +134,20 @@ svg { display: block; }
 .feats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
 .feat { display: grid; align-content: start; gap: 8px; min-width: 0; padding: 18px; border: 1px solid var(--line); border-radius: var(--r-md); background: var(--surface); box-shadow: var(--shadow); }
 .feat .badge-ico { margin-bottom: 4px; }
+/* kleine Kachel (text-format §4): Icon-Box groß mittig, Text mittig; Kacheln mit Liste bleiben links */
+.feat:not(:has(ul)) { justify-items: center; text-align: center; }
+.feat:not(:has(ul)) :is(.k-t, b, p) { text-wrap: balance; }
+.feat:not(:has(ul)) .badge-ico { width: 64px; height: 64px; }
+.feat:not(:has(ul)) .badge-ico .ico { width: 34px; height: 34px; }
 .feat .k-t { font: 700 11.5px/1.2 var(--font-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--hue); }
 .feat b { font-size: 17px; font-weight: 800; line-height: 1.25; letter-spacing: -.01em; }
 .feat p { font-size: 14px; line-height: 1.5; color: var(--fg-2); }
-/* Nummer 01–08 rechts neben dem Icon-Badge (wie die Dokument-Karten im Doku-Hub) */
+/* Nummer 01–08 links in der Ecke, Icon-Box mittig in derselben Zeile (wie Poster) */
 .feats-num { counter-reset: feat; }
-.feats-num > .feat { counter-increment: feat; grid-template-columns: minmax(0, 1fr) auto; }
+.feats-num > .feat { counter-increment: feat; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); }
 .feats-num > .feat > * { grid-column: 1 / -1; }
-.feats-num > .feat > .badge-ico { grid-column: 1; grid-row: 1; }
-.feats-num > .feat::before { content: counter(feat, decimal-leading-zero); grid-column: 2; grid-row: 1; align-self: start; padding: 4px 6px;
+.feats-num > .feat > .badge-ico { grid-column: 2; grid-row: 1; }
+.feats-num > .feat::before { content: counter(feat, decimal-leading-zero); grid-column: 1; grid-row: 1; justify-self: start; align-self: start; padding: 4px 6px;
   font: 800 13px/1 var(--font-mono); color: var(--hue); background: var(--surface); border: 1px solid var(--hue); border-radius: var(--radius-sm); }
 @media (max-width: 1020px) { .feats { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 520px) { .feats { grid-template-columns: minmax(0, 1fr); } }
@@ -311,9 +316,9 @@ section.block { padding-block: 88px; border-top: 1px solid var(--line); }
 .estop-band .ways { display: flex; flex-wrap: wrap; gap: 6px; margin-left: auto; }
 .estop-band .ways span { font: 700 12px/1 var(--font-mono); padding: 7px 10px; border-radius: var(--radius-sm); background: var(--surface); border: 1px solid var(--line-strong); }
 .numbers { margin-top: 18px; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
-.num { border: 1px solid var(--line); border-radius: var(--radius); padding: 16px; background: var(--surface); }
+.num { border: 1px solid var(--line); border-radius: var(--radius); padding: 16px; background: var(--surface); text-align: center; }  /* Kennzahl-Kachel mittig */
 .num strong { display: block; font: 800 30px/1 var(--font-mono); letter-spacing: -.03em; }
-.num span { display: block; margin-top: 8px; font-size: 13.5px; color: var(--fg-2); }
+.num span { display: block; margin-top: 8px; font-size: 13.5px; color: var(--fg-2); text-wrap: balance; }
 
 /* Kette zum Ausprobieren: Befehl läuft Glied für Glied */
 .ch-bar { display: grid; gap: 10px; margin-bottom: 14px; }
@@ -526,8 +531,8 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 10px 24px; align-items: cent
         <div class="feat" style="--hue: var(--violet)"><span class="badge-ico"><svg class="ico"><use href="#i-spark"/></svg></span><span class="k-t">Assistive Autonomie</span><b>Die KI plant. Der Mensch gibt frei.</b><p>Der Agent macht aus Sprache Bewegungsabläufe; Entscheidung und Feedback des Menschen steuern jeden Schritt.</p></div>
         <div class="feat" style="--hue: var(--green)"><span class="badge-ico"><svg class="ico"><use href="#i-globe"/></svg></span><span class="k-t">Web · Remote</span><b>Öffnen statt installieren.</b><p>Bedienung komplett im Browser: am Roboter-PC, aus dem Heimnetz oder in der Quest 3 per WebXR.</p></div>
         <div class="feat" style="--hue: var(--gold)"><span class="badge-ico"><svg class="ico"><use href="#i-shield"/></svg></span><span class="k-t">Sicherheit</span><b>Eine Kette für jede Eingabe.</b><p>E-STOP, Bodenschutz und MoveIt für alle zehn Steuerwege; der Control-Lock gibt immer nur einem Client die Steuerung.</p></div>
-        <div class="feat" style="--hue: var(--teal)"><span class="badge-ico"><svg class="ico"><use href="#i-code"/></svg></span><span class="k-t">Open Source</span><b>Offen, nachbaubar, erweiterbar.</b><p>Eigene Pakete unter Apache 2.0, aufgebaut auf ROS 2 Humble und MoveIt 2.</p></div>
-        <div class="feat" style="--hue: var(--indigo)"><span class="badge-ico"><svg class="ico"><use href="#i-blocks"/></svg></span><span class="k-t">Multimodal · Modular</span><b>Austauschbar statt festgelegt.</b><p>Bessere Eingabegeräte, Kameras, KI-Modelle oder Software-Module ersetzen die alten einzeln; feste ROS-2-Schnittstellen halten den Rest unverändert. Als Nächstes wird auch der Roboterarm austauschbar (geplant).</p></div>
+        <div class="feat" style="--hue: var(--teal)"><span class="badge-ico"><svg class="ico"><use href="#i-code"/></svg></span><span class="k-t">Open Source</span><b>Offen, nachbaubar, erweiterbar.</b><p>Eigene Pakete unter Apache 2.0, aufgebaut auf ROS&nbsp;2 Humble und MoveIt&nbsp;2.</p></div>
+        <div class="feat" style="--hue: var(--indigo)"><span class="badge-ico"><svg class="ico"><use href="#i-blocks"/></svg></span><span class="k-t">Multimodal · Modular</span><b>Austauschbar statt festgelegt.</b><p>Bessere Eingabegeräte, Kameras, KI-Modelle oder Software-Module ersetzen die alten einzeln; feste ROS&#8209;2-Schnittstellen halten den Rest unverändert. Als Nächstes wird auch der Roboterarm austauschbar (geplant).</p></div>
       </div>
     </div>
   </section>
