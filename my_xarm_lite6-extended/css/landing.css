@@ -74,8 +74,8 @@ html.sf-on .hero:not(.is-in) .h1-claim .ln > span { opacity: 0; transform: trans
 .trust .bi-s { width: 34px; height: 34px; }
 .trust .bi-s .ico { width: 17px; height: 17px; }
 
-/* Bühne: Leinwand oben über die ganze Breite, darunter mittig der Bedienhinweis, dann Kennzahl-Leiste aus 3 gleich breiten Karten (Raster, kein Überdecken der Szene) */
-.hero-stage { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); grid-template-rows: minmax(0, 1fr) auto auto; gap: 10px;
+/* Bühne: Leinwand oben über die ganze Breite, darunter mittig der Bedienhinweis */
+.hero-stage { display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr) auto; gap: 10px;
   min-width: 0; aspect-ratio: 1 / 1.12; max-height: 820px; }
 .stage-3d { grid-area: 1 / 1 / 2 / -1; margin: 0; display: grid; min-width: 0; min-height: 0; }
 .stage-3d > *, .stage-3d::before { grid-area: 1 / 1; min-width: 0; min-height: 0; }
@@ -88,7 +88,9 @@ html.sf-on .hero:not(.is-in) .h1-claim .ln > span { opacity: 0; transform: trans
 .hero-stage.is-3d .stage-canvas { opacity: 1; }
 .hero-stage.is-3d .stage-fallback { opacity: 0; visibility: hidden; transition: opacity .6s, visibility 0s .6s; }
 .stage-badge { align-self: start; justify-self: start; z-index: 1; display: flex; flex-wrap: wrap; gap: 6px; pointer-events: none; }
-.hero-card { z-index: 1; grid-row: 3; display: grid; gap: 6px; grid-template-rows: auto auto 1fr auto; justify-items: center; min-width: 0; text-align: center; padding: 14px 16px; border: 1px solid var(--glass-bd); border-radius: var(--radius);
+/* Kennzahl-Leiste: 3 gleich breite Karten als eigene Hero-Zeile, mittig über der Technik-Leiste (Wunsch User 05.10.2026) */
+.hero-kpis { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(3, minmax(0, 240px)); justify-content: center; gap: 10px; }
+.hero-card { z-index: 1; display: grid; gap: 6px; grid-template-rows: auto auto 1fr auto; justify-items: center; min-width: 0; text-align: center; padding: 14px 16px; border: 1px solid var(--glass-bd); border-radius: var(--radius);
   background: var(--glass-bg); box-shadow: inset 0 1px 0 var(--glass-hi), 0 24px 48px -24px rgba(0, 0, 0, .9); transition: border-color var(--t-fast); }
 a.hero-card:hover { border-color: color-mix(in srgb, var(--accent) 65%, var(--glass-bd)); }
 .hero-card small { display: flex; align-items: center; justify-content: center; gap: 7px; font: 700 12px/1.2 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--fg-2); }
@@ -267,7 +269,8 @@ a.hero-card:hover { border-color: color-mix(in srgb, var(--accent) 65%, var(--gl
 }
 @media (max-width: 560px) {
   /* Bühne: Leinwand quadratisch, Karten darunter als kompakte Zeilen */
-  .hero-stage { aspect-ratio: auto; grid-template-columns: minmax(0, 1fr); grid-template-rows: none; }
+  .hero-stage { aspect-ratio: auto; grid-template-rows: none; }
+  .hero-kpis { grid-template-columns: minmax(0, 1fr); }
   .stage-3d { grid-area: auto; aspect-ratio: 1 / 1; }
   .hero-card { grid-area: auto; grid-template-columns: auto minmax(0, 1fr); grid-template-rows: none; column-gap: 14px; align-items: center; padding: 10px 14px; }
   .hero-card strong { grid-column: 1; grid-row: 1 / span 2; min-width: 2ch; font-size: 28px; }

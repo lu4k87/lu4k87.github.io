@@ -609,6 +609,8 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
           <div class="stage-canvas" id="hero3d" role="img" aria-label="3D: xArm Lite 6 im Digital Twin, Punktkuppel zeigt den Arbeitsraum mit 440 mm Reichweite, der Arm setzt einen Würfel zwischen drei Ablagefeldern um oder dreht ihn" data-en-aria="3D: xArm Lite 6 in the Digital Twin, the dotted dome shows the workspace with 440 mm reach, the arm moves a cube between three pads or rotates it"></div>
         </figure>
         <p class="stage-hint"><svg class="ico" aria-hidden="true"><use href="#i-pointer"/></svg><span class="hint-fine" data-en="Click a pad: move the cube · click the cube: turn it · drag: rotate the view">Feld anklicken: Würfel umsetzen · Würfel anklicken: drehen · ziehen: Ansicht drehen</span><span class="hint-touch" data-en="Tap a pad: move the cube · tap the cube: turn it · drag: rotate the view">Feld antippen: Würfel umsetzen · Würfel antippen: drehen · ziehen: Ansicht drehen</span></p>
+      </div>
+      <div class="hero-kpis">
         <a class="hero-card hc-1" href="present_control_modes.html#uebersicht" target="_blank" rel="noopener">
           <small><svg class="ico" aria-hidden="true"><use href="#i-pad"/></svg><span data-en="Control modes">Steuerwege</span></small>
           <strong data-num="10">10</strong>
@@ -1055,7 +1057,7 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
     rail: { sections: 'section.sec[id]', label: '.eyebrow .n' },
     progress: '.progress',
     nav: { links: '.top nav a', reset: '.hero', hue: '.eyebrow' },
-    relay: [{ box: '.hero-stage', items: '.hero-card' }, { box: '.path', items: 'a' }, '.fx-grid', '.kpis'],
+    relay: [{ box: '.hero-kpis', items: '.hero-card' }, { box: '.path', items: 'a' }, '.fx-grid', '.kpis'],
     spot: [{ box: '.path', items: 'a' }, '.fx-grid', '.kpis', { box: '.list', items: 'a.item' }],
     fill: '.pips, .hc-seg',
     lines: ['.strip', 'section.land', '.atlas', '.contact'],
