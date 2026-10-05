@@ -404,9 +404,9 @@ function build(L, wrap, host, o) {
     cube.add(cubeFill, cubeGrid,
       new THREE.LineSegments(new THREE.EdgesGeometry(box), lineMat(0.95, ACC2)),
       new THREE.Points(corners, new THREE.PointsMaterial({ map: dot, color: ACC2, size: 0.016, transparent: true, opacity: 0.9, depthWrite: false, blending: THREE.AdditiveBlending })));
-    // Puls-Schein (Wunsch User 06.10.2026): Lichthof + Bodenschein atmen langsam (2,6 s), Eckpunkte, Füllung und Größe
-    // gehen dezent mit; Lichthof nur so groß/hoch, dass ihn die Tischebene nicht hart abschneidet
-    const aura = sprite(0.1, 0.12), pool = new THREE.Mesh(new THREE.PlaneGeometry(0.2, 0.2), glowMat(0)), PULSE = 2.6;
+    // Puls-Schein (Wunsch User 06.10.2026): Lichthof + Bodenschein atmen langsam (4 s, kleine Amplitude, nur Sinus –
+    // nicht an die zufälligen Feld-Blitze gekoppelt, sonst springt er); Lichthof nur so groß/hoch, dass ihn die Tischebene nicht abschneidet
+    const aura = sprite(0.1, 0.16), pool = new THREE.Mesh(new THREE.PlaneGeometry(0.2, 0.2), glowMat(0)), PULSE = 4;
     const cornerMat = cube.children[3].material;
     const flash = ringMesh(0.016, 0.03, 0);
     st.scene.add(cube, flash, aura, pool);
@@ -653,13 +653,13 @@ function build(L, wrap, host, o) {
         if (i === at && !held) cubeB = b;
       });
       if (!hoverCube) cubeGrid.material.opacity = 0.42 + 0.25 * cubeB;
-      const pu = Math.sin(Math.PI * t / PULSE) ** 2, lift = Math.max(pu, cubeB), r = 0.045 + 0.02 * lift;
-      aura.material.opacity = 0.12 + 0.3 * lift; aura.scale.setScalar(2 * r);
+      const pu = Math.sin(Math.PI * t / PULSE) ** 2, r = 0.05 + 0.006 * pu;
+      aura.material.opacity = 0.16 + 0.08 * pu; aura.scale.setScalar(2 * r);
       aura.position.copy(cube.position); if (!held) aura.position.z = Math.max(aura.position.z, r + 0.003);
       pool.visible = !held; pool.position.set(cube.position.x, cube.position.y, 0.0028);
-      pool.material.opacity = 0.15 + 0.4 * lift; pool.scale.setScalar(0.85 + 0.3 * lift);
-      cornerMat.size = 0.016 + 0.01 * lift; cube.scale.setScalar(1 + 0.025 * pu);
-      if (!hoverCube) cubeFill.material.opacity = 0.08 + 0.08 * lift;
+      pool.material.opacity = 0.2 + 0.1 * pu; pool.scale.setScalar(0.95 + 0.06 * pu);
+      cornerMat.size = 0.016 + 0.003 * pu; cube.scale.setScalar(1 + 0.008 * pu);
+      if (!hoverCube) cubeFill.material.opacity = 0.09 + 0.03 * pu;
     };
     show();
   }
