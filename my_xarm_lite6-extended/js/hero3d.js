@@ -1,6 +1,7 @@
 /* Hero-Bühne der Projektseiten (Skill motion-viz §3): xArm Lite 6 (js/lite6_twin.js) auf Sockel mit Lichtringen,
    Laser-Zielhilfe senkrecht auf den Tisch; Ziehen dreht die Kamera. Szene je Seite (opts.scene):
-     dome   Arbeitsraum als Punktkuppel (Reichweite 440 mm um Gelenk 2); Zeiger bewegt den TCP, sonst langsame Acht
+     dome   Arbeitsraum als Punktkuppel (Reichweite 440 mm um Gelenk 2); Zeiger bewegt den TCP, sonst langsame Acht;
+            Pick & Place: drei Ablagefelder + Würfel, Feld anklicken/antippen → Arm setzt den Würfel um
      modes  Steuerwege als Lichtpunkte im Ring (opts.items); aktiver Punkt schickt einen Impuls zum Arm, der Arm zeigt hin
      ghost  Ghost-Arm plant voraus → Freigabe → Arm fährt nach („Erst virtuell, dann real“); Zeiger setzt das Ziel
      atlas  Funktionen als Punktring nach Bereichen (opts.areas: n je Bereich); Bereich unter dem Zeiger leuchtet
@@ -120,6 +121,7 @@ function build(L, wrap, host, o) {
   const solve = (x, y, seed) => { const r = Math.hypot(x, y); if (r < 1e-3) return null; const rc = Math.min(0.32, Math.max(0.17, r)); return L.ikDown(x / r * rc, y / r * rc, Z, 0, seed); };
   const toward = (a, r = 0.28) => [r * Math.cos(a), r * Math.sin(a)];
   let q = L.HOME.slice(), goal = q.slice(), follow = false;
+  const ptr = new THREE.Vector2();
   const aim = (x, y) => { const s = solve(x, y, goal); if (s) goal = s; };
   const pointerPlane = e => {
     const r = host.getBoundingClientRect();
@@ -307,7 +309,8 @@ function build(L, wrap, host, o) {
   // Zeiger rein → Feder übernimmt mit der laufenden Geschwindigkeit, Steifigkeit steigt weich an.
   // Gelenk 1 endet bei ±178° → Zeiger hinter dem Arm: Seite halten; Seitenwechsel = Schwenk nach vorn, Ziel wandert höchstens W_MAX rad/s.
   const TH = 3.0, R0 = 0.17, R1 = 0.32, IDLE_T = 16, W_MAX = 2.2;
-  const pol = { th: 0, r: 0.25, vth: 0, vr: 0, gth: 0, gr: 0.25, cth: 0, w: 2.6 };
+  const pol = { th: 0, r: 0.25, vth: 0, vr: 0, gth: 0, gr: 0.25, cth: 0, w: 2.6, z: Z, vz: 0, gz: Z };
+  let job = null;   // Pick & Place (dome): setzt die Ziele statt Zeiger/Acht
   const eight = ph => { const x = 0.25 + 0.05 * Math.sin(2 * ph), y = 0.16 * Math.sin(ph); return [Math.atan2(y, x), Math.hypot(x, y)]; };
   let ph = 0, idleRamp = 1;
   const setGoalXY = (x, y) => {
@@ -322,16 +325,18 @@ function build(L, wrap, host, o) {
     return best;
   };
   const followTick = dt => {
-    if (!follow) {
+    if (job) job.tick(dt);
+    else if (!follow) {
       idleRamp = Math.min(1, idleRamp + dt / 1.6);
       ph += dt * Math.PI * 2 / IDLE_T * idleRamp * idleRamp * (3 - 2 * idleRamp);
       [pol.gth, pol.gr] = eight(ph);
     }
-    pol.w += ((follow ? 7 : 2.6) - pol.w) * (1 - Math.exp(-dt * 3));
+    pol.w += ((job ? 4.5 : follow ? 7 : 2.6) - pol.w) * (1 - Math.exp(-dt * 3));
     pol.cth += Math.max(-W_MAX * dt, Math.min(W_MAX * dt, pol.gth - pol.cth));
     [pol.th, pol.vth] = spring(pol.th, pol.vth, pol.cth, pol.w, dt);
     [pol.r, pol.vr] = spring(pol.r, pol.vr, pol.gr, pol.w, dt);
-    const s = L.ikDown(pol.r * Math.cos(pol.th), pol.r * Math.sin(pol.th), Z, 0, q);
+    [pol.z, pol.vz] = spring(pol.z, pol.vz, pol.gz, 7, dt);
+    const s = L.ikDown(pol.r * Math.cos(pol.th), pol.r * Math.sin(pol.th), pol.z, 0, q);
     if (s) { q = s; robot.setJoints(q); }
   };
   if (scene === 'dome' || scene === 'cell') {
@@ -339,10 +344,88 @@ function build(L, wrap, host, o) {
     else {
       host.addEventListener('pointermove', e => {
         if (e.pointerType !== 'mouse' || e.buttons) return;
-        const p = pointerPlane(e); if (p) { follow = true; setGoalXY(p.x, p.y); }
+        const p = pointerPlane(e); if (p) { follow = true; ptr.set(p.x, p.y); if (!job) setGoalXY(p.x, p.y); }
       });
       host.addEventListener('pointerleave', () => { if (!follow) return; follow = false; ph = nearestPhase(); idleRamp = 0; });
     }
+  }
+  // ── Pick & Place (dome): drei Ablagefelder, Würfel 50 mm; Feld anklicken/antippen → anfahren, senken, Sauger blitzt,
+  // heben, Bogen, senken, lösen, heben. Ziele laufen über dieselben Federn (Winkel, Radius, Höhe) → kein Ruck; Zwischenpunkte
+  // mit grober Toleranz (Bahn rundet ab), Kontaktpunkte genau. Danach übernimmt Zeiger bzw. Acht wie beim Verlassen der Bühne.
+  if (scene === 'dome') {
+    const CUBE = 0.05, PR = 0.27, padAng = [-2.05, -0.6, 0.85], table = new THREE.Plane(new THREE.Vector3(0, 0, 1), 0);
+    const ringMesh = (r0, r1, op) => new THREE.Mesh(new THREE.RingGeometry(r0, r1, 48), new THREE.MeshBasicMaterial({ color: ACC, transparent: true, opacity: op, side: THREE.DoubleSide, depthWrite: false }));
+    const pads = padAng.map(a => {
+      const g = new THREE.Group(), outer = ringMesh(0.031, 0.038, 0.4), inner = ringMesh(0.018, 0.022, 0.15), glow = new THREE.Mesh(new THREE.PlaneGeometry(0.16, 0.16), glowMat(0));
+      g.position.set(PR * Math.cos(a), PR * Math.sin(a), 0.0025); glow.position.z = -0.0007;
+      g.add(outer, inner, glow); st.scene.add(g);
+      return { a, g, outer, inner, glow };
+    });
+    const box = new THREE.BoxGeometry(CUBE, CUBE, CUBE), cube = new THREE.Group();
+    const cubeBody = new THREE.Mesh(box, new THREE.MeshPhysicalMaterial({ color: ACC, roughness: 0.35, metalness: 0.05, clearcoat: 0.6, emissive: ACC, emissiveIntensity: 0.12 }));
+    cubeBody.castShadow = true;
+    cube.add(cubeBody, new THREE.LineSegments(new THREE.EdgesGeometry(box), lineMat(0.6, new THREE.Color(0xffffff))));
+    const flash = ringMesh(0.016, 0.03, 0);
+    st.scene.add(cube, flash);
+    let at = 0, held = false, hover = -1, pending = -1, flashT = 1;
+    const onPad = i => { cube.position.set(pads[i].g.position.x, pads[i].g.position.y, CUBE / 2); };
+    onPad(at);
+    const show = () => {
+      const hi = job ? job.to : hover;
+      pads.forEach((p, i) => { const on = i === hi && i !== at; p.outer.material.opacity = on ? 1 : 0.4; p.inner.material.opacity = on ? 0.7 : 0.15; p.glow.material.opacity = on ? 0.75 : 0; });
+      host.style.cursor = hover >= 0 && hover !== at ? 'pointer' : '';
+      st.kick();
+    };
+    const padAt = (e, tol) => {
+      const r = host.getBoundingClientRect();
+      ndc.set((e.clientX - r.left) / r.width * 2 - 1, 1 - (e.clientY - r.top) / r.height * 2);
+      ray.setFromCamera(ndc, st.camera);
+      if (!ray.ray.intersectPlane(table, hit)) return -1;
+      let best = -1, bd = tol;
+      pads.forEach((p, i) => { const d = Math.hypot(hit.x - p.g.position.x, hit.y - p.g.position.y); if (d < bd) { bd = d; best = i; } });
+      return best;
+    };
+    const blink = () => { flashT = 0; flash.position.set(cube.position.x, cube.position.y, cube.position.z + CUBE / 2 + 0.002); };
+    const start = to => {
+      if (to === at) return;
+      if (reduce) { at = to; onPad(at); show(); return; }
+      if (job) { pending = to; return; }
+      const A = padAng[at], B = padAng[to], UP = Z, steps = [
+        [A, UP, 0.02], [A, CUBE, 0.002, 'grip'], [A, UP, 0.025], [B, UP, 0.02], [B, CUBE, 0.002, 'drop'], [B, UP, 0.012]];
+      let i = 0, wait = 0;
+      job = { to, tick: dt => {
+        const [th, z, tol, act] = steps[i];
+        pol.gth = th; pol.gr = PR; pol.gz = z;   // Winkelgrenze W_MAX gilt weiter (followTick)
+        if (wait > 0) { wait -= dt; if (wait <= 0) i++; }
+        else if (Math.abs(pol.th - th) * pol.r < tol && Math.abs(pol.r - PR) < tol && Math.abs(pol.z - z) < tol && (!act || Math.abs(pol.vz) < 0.02)) {
+          if (act === 'grip') { held = true; blink(); wait = 0.22; }
+          else if (act === 'drop') { held = false; at = to; onPad(at); blink(); wait = 0.22; }
+          else i++;
+        }
+        if (i < steps.length) return;
+        job = null; pol.gz = Z;
+        if (follow) setGoalXY(ptr.x, ptr.y); else { ph = nearestPhase(); idleRamp = 0; }
+        show();
+        if (pending >= 0) { const n = pending; pending = -1; start(n); }
+      } };
+      show();
+    };
+    let down = null;
+    host.addEventListener('pointermove', e => { if (e.pointerType !== 'mouse' || e.buttons) return; const i = padAt(e, 0.07); if (i !== hover) { hover = i; show(); } });
+    host.addEventListener('pointerleave', () => { if (hover >= 0) { hover = -1; show(); } });
+    host.addEventListener('pointerdown', e => { down = { x: e.clientX, y: e.clientY, t: performance.now() }; });
+    // Tippen/Klick = kurz und ohne Ziehen (Ziehen dreht weiter die Kamera)
+    host.addEventListener('pointerup', e => {
+      if (!down || Math.hypot(e.clientX - down.x, e.clientY - down.y) > 6 || performance.now() - down.t > 600) return;
+      const i = padAt(e, e.pointerType === 'mouse' ? 0.07 : 0.09); if (i >= 0) start(i);
+    });
+    const ex = extra, tcpW = new THREE.Vector3();
+    extra = (dt, t) => {
+      ex(dt, t);
+      if (held) { robot.tcp.getWorldPosition(tcpW); cube.position.set(tcpW.x, tcpW.y, tcpW.z - CUBE / 2); }
+      if (flashT < 1) { flashT = Math.min(1, flashT + dt / 0.45); flash.material.opacity = 0.95 * (1 - flashT); flash.scale.setScalar(1 + flashT * 1.6); }
+    };
+    show();
   }
   if (!reduce) st.isBusy = () => true;
   if (reduce && (scene === 'modes' || scene === 'atlas')) { q = goal; robot.setJoints(q); }
