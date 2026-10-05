@@ -133,10 +133,10 @@ a.kpi:hover { background: var(--surface-2); }
 /* Hero: Steckbrief 3×2, Linkzeile ins Projekt, Autorzeile mit kleinem QR (Wunsch User 05.10.2026, Vorschau B); Icons in Bereichsfarbe (--hue) */
 .facts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); width: 100%; max-width: 620px; margin: 0; overflow: hidden;
   border: 1px solid var(--glass-bd); border-radius: var(--radius); background: var(--glass-bg); box-shadow: inset 0 1px 0 var(--glass-hi); }
-.facts > div { min-width: 0; padding: 11px 14px; box-shadow: 1px 0 0 var(--line), 0 1px 0 var(--line); }
-.facts dt { display: flex; align-items: center; gap: 7px; font: 700 12px/1.2 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--fg-2); }
+.facts > div { min-width: 0; padding: 11px 14px; text-align: center; box-shadow: 1px 0 0 var(--line), 0 1px 0 var(--line); }
+.facts dt { display: flex; align-items: center; justify-content: center; gap: 7px; font: 700 12px/1.2 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--fg-2); }
 .facts dt .ico { width: 15px; height: 15px; color: var(--hue); }
-.facts dd { margin: 5px 0 0; font-size: 15px; font-weight: 700; line-height: 1.3; }
+.facts dd { margin: 5px 0 0; font-size: 15px; font-weight: 700; line-height: 1.3; text-wrap: balance; }
 .hero-copy { justify-items: center; }  /* Steckbrief, Links, Autor mittig (Wunsch User 06.10.2026) */
 .hero-links { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 26px; }
 .hero-links a { display: inline-flex; align-items: center; gap: 9px; min-height: 44px; font-size: 15px; font-weight: 700; border-bottom: 1px solid var(--line-strong);
@@ -584,11 +584,11 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
       <div class="hero-copy">
         <dl class="facts" aria-label="Steckbrief" data-en-aria="Fact sheet">
           <div style="--hue: var(--accent)"><dt><svg class="ico" aria-hidden="true"><use href="#i-arm"/></svg><span data-en="Robot">Roboter</span></dt><dd>xArm Lite 6</dd></div>
-          <div style="--hue: var(--indigo)"><dt><svg class="ico" aria-hidden="true"><use href="#i-layers"/></svg><span data-en="Base">Basis</span></dt><dd>ROS 2 Humble · MoveIt 2</dd></div>
+          <div style="--hue: var(--indigo)"><dt><svg class="ico" aria-hidden="true"><use href="#i-layers"/></svg><span data-en="Base">Basis</span></dt><dd>ROS 2 Humble&nbsp;· MoveIt 2</dd></div>
           <div style="--hue: var(--violet)"><dt><svg class="ico" aria-hidden="true"><use href="#i-user"/></svg><span data-en="Purpose">Zweck</span></dt><dd data-en="Teaching and research">Lehre und Forschung</dd></div>
           <div style="--hue: var(--blue)"><dt><svg class="ico" aria-hidden="true"><use href="#i-cube"/></svg><span data-en="Principle">Prinzip</span></dt><dd data-en="First virtual, then real">Erst virtuell, dann real</dd></div>
           <div style="--hue: var(--green)"><dt><svg class="ico" aria-hidden="true"><use href="#i-globe"/></svg><span>Client</span></dt><dd data-en="Browser, nothing to install">Browser, ohne Installation</dd></div>
-          <div style="--hue: var(--gold)"><dt><svg class="ico" aria-hidden="true"><use href="#i-code"/></svg><span data-en="License">Lizenz</span></dt><dd>Open Source · Apache 2.0</dd></div>
+          <div style="--hue: var(--gold)"><dt><svg class="ico" aria-hidden="true"><use href="#i-code"/></svg><span data-en="License">Lizenz</span></dt><dd>Open Source&nbsp;· Apache 2.0</dd></div>
         </dl>
         <nav class="hero-links" aria-label="Direkt ins Projekt" data-en-aria="Straight into the project">
           <a href="present_presentation.html" target="_blank" rel="noopener" style="--hue: var(--violet)"><svg class="ico" aria-hidden="true"><use href="#i-star"/></svg><span data-en="Project presentation">Projektvorstellung</span><svg class="ico go" aria-hidden="true"><use href="#i-go"/></svg></a>
