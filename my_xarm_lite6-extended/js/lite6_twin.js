@@ -49,9 +49,10 @@
   // Ebene Kinematik bei q1 = q4 = q6 = 0 und q5 = q3 − q2 (Werkzeug senkrecht nach unten): Handgelenk (r, z)
   const wristRZ = (q2, q3) => { const f = fk([0, q2, q3, 0, q3 - q2, 0]).frames[4]; return [f[3], f[11]]; };
 
-  /** Inverse Kinematik für Greifen von oben: TCP auf (x, y, z), Werkzeug senkrecht. null = keine Lösung. */
-  function ikDown(x, y, z, yaw = 0, seed = HOME) {
-    const r = Math.hypot(x, y), wz = z + WRIST;
+  /** Inverse Kinematik für Greifen von oben: TCP auf (x, y, z), Werkzeug senkrecht. null = keine Lösung.
+      tilt (rad) neigt das Werkzeug per Gelenk 5 in der Armebene nach außen (Spitze vom Sockel weg). */
+  function ikDown(x, y, z, yaw = 0, seed = HOME, tilt = 0) {
+    const r = Math.hypot(x, y) - WRIST * Math.sin(tilt), wz = z + WRIST * Math.cos(tilt);
     if (Math.hypot(r, wz - JOINTS[0][2]) > REACH + 0.02) return null;
     let q2 = seed[1], q3 = seed[2];
     for (let it = 0; it < 40; it++) {
@@ -67,7 +68,7 @@
     }
     const [fr, fz] = wristRZ(q2, q3);
     if (Math.hypot(r - fr, wz - fz) > 3e-3) return null;
-    const q1 = Math.atan2(y, x), q = [q1, q2, q3, 0, q3 - q2, q1 - yaw];
+    const q1 = Math.atan2(y, x), q = [q1, q2, q3, 0, q3 - q2 - tilt, q1 - yaw];
     return q.every((v, i) => v >= LIMITS[i][0] - 1e-6 && v <= LIMITS[i][1] + 1e-6) ? q : null;
   }
 

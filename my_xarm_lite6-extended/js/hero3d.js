@@ -313,7 +313,10 @@ function build(L, wrap, host, o) {
   // Zeiger rein → Feder übernimmt mit der laufenden Geschwindigkeit, Steifigkeit steigt weich an.
   // Gelenk 1 endet bei ±178° → Zeiger hinter dem Arm: Seite halten; Seitenwechsel = Schwenk nach vorn, Ziel wandert höchstens W_MAX rad/s.
   const TH = 3.0, R0 = 0.17, R1 = 0.32, IDLE_T = 16, W_MAX = 2.2;
-  const pol = { th: 0, r: 0.25, vth: 0, vr: 0, gth: 0, gr: 0.25, cth: 0, w: 2.6, z: Z, vz: 0, gz: Z, yaw: 0, vyaw: 0, gyaw: 0 };
+  // Arm arbeitet mit: Werkzeug neigt sich nach außen, je weiter der TCP vom Sockel weg ist (Gelenk 5, bis TILT rad);
+  // die Leerlauf-Acht hebt und senkt den TCP dazu in eigenem Takt (Gelenke 2, 3, 5 statt nur Gelenk 1; Wunsch User 05.10.2026)
+  const TILT = 0.45;
+  const pol = { th: 0, r: 0.25, vth: 0, vr: 0, gth: 0, gr: 0.25, cth: 0, w: 2.6, z: Z, vz: 0, gz: Z, yaw: 0, vyaw: 0, gyaw: 0, tilt: 0, vtilt: 0, gtilt: 0 };
   let job = null;   // Pick & Place (dome): setzt die Ziele statt Zeiger/Acht
   const eight = ph => { const x = 0.25 + 0.05 * Math.sin(2 * ph), y = 0.16 * Math.sin(ph); return [Math.atan2(y, x), Math.hypot(x, y)]; };
   let ph = 0, idleRamp = 1;
@@ -330,10 +333,14 @@ function build(L, wrap, host, o) {
   };
   const followTick = dt => {
     if (job) job.tick(dt);
-    else if (!follow) {
-      idleRamp = Math.min(1, idleRamp + dt / 1.6);
-      ph += dt * Math.PI * 2 / IDLE_T * idleRamp * idleRamp * (3 - 2 * idleRamp);
-      [pol.gth, pol.gr] = eight(ph);
+    else {
+      if (!follow) {
+        idleRamp = Math.min(1, idleRamp + dt / 1.6);
+        ph += dt * Math.PI * 2 / IDLE_T * idleRamp * idleRamp * (3 - 2 * idleRamp);
+        [pol.gth, pol.gr] = eight(ph);
+      }
+      pol.gtilt = TILT * Math.max(0, Math.min(1, (pol.gr - R0) / (R1 - R0)));
+      pol.gz = follow ? Z : Z + 0.03 + 0.03 * Math.sin(3 * ph);
     }
     pol.w += ((job ? 4.5 : follow ? 7 : 2.6) - pol.w) * (1 - Math.exp(-dt * 3));
     pol.cth += Math.max(-W_MAX * dt, Math.min(W_MAX * dt, pol.gth - pol.cth));
@@ -341,7 +348,8 @@ function build(L, wrap, host, o) {
     [pol.r, pol.vr] = spring(pol.r, pol.vr, pol.gr, pol.w, dt);
     [pol.z, pol.vz] = spring(pol.z, pol.vz, pol.gz, 7, dt);
     [pol.yaw, pol.vyaw] = spring(pol.yaw, pol.vyaw, pol.gyaw, 5, dt);   // Werkzeugdrehung (Gelenk 6), nur beim Würfel-Drehen ≠ 0
-    const s = L.ikDown(pol.r * Math.cos(pol.th), pol.r * Math.sin(pol.th), pol.z, pol.yaw, q);
+    [pol.tilt, pol.vtilt] = spring(pol.tilt, pol.vtilt, pol.gtilt, 5, dt);   // Werkzeugneigung (Gelenk 5)
+    const s = L.ikDown(pol.r * Math.cos(pol.th), pol.r * Math.sin(pol.th), pol.z, pol.yaw, q, pol.tilt);
     if (s) { q = s; robot.setJoints(q); }
   };
   if (scene === 'dome' || scene === 'cell') {
@@ -355,7 +363,7 @@ function build(L, wrap, host, o) {
     }
   }
   // ── Pick & Place (dome): drei Ablagefelder, Würfel 50 mm; Feld anklicken/antippen → anfahren, senken, Sauger blitzt,
-  // heben, Bogen, senken, lösen, heben. Würfel anklicken/antippen → greifen, anheben, per Gelenk 6 um 90° drehen, zurücksetzen.
+  // heben, schräg nach oben-außen strecken (Werkzeug geneigt), im hohen Bogen zum Ziel, aufrichten, senken, lösen, heben. Würfel anklicken/antippen → greifen, anheben, per Gelenk 6 um 90° drehen, zurücksetzen.
   // Ziele laufen über dieselben Federn (Winkel, Radius, Höhe, Werkzeugdrehung) → kein Ruck; Zwischenpunkte mit grober
   // Toleranz (Bahn rundet ab), Kontaktpunkte genau. Danach übernimmt Zeiger bzw. Acht wie beim Verlassen der Bühne.
   // Klick-Hinweis: Felder leuchten unregelmäßig kurz auf (Welle läuft nach außen, Würfel-Raster hellt mit), nur in Ruhe;
@@ -448,21 +456,24 @@ function build(L, wrap, host, o) {
     const T = (de, en) => (document.documentElement.lang === 'en' ? en : de), mm = v => String(Math.round(v * 1000)).replace('-', '−');
     const xy = p => `x ${mm(p.x)} · y ${mm(p.y)} mm`;
     const blink = () => { flashT = 0; flash.position.set(cube.position.x, cube.position.y, cube.position.z + CUBE / 2 + 0.002); };
-    const tcpQ = new THREE.Quaternion(), rel = new THREE.Quaternion();
-    // Ablauf als Schrittliste [Winkel, Höhe, Toleranz, Aktion, Werkzeugdrehung]; carry = Meldung nach dem Greifen
+    const tcpQ = new THREE.Quaternion(), rel = new THREE.Quaternion(), relP = new THREE.Vector3(), tcpW = new THREE.Vector3();
+    // Ablauf als Schrittliste [Winkel, Höhe, Toleranz, Aktion, Werkzeugdrehung, Radius, Neigung]; carry = Meldung nach dem Greifen
     const run = (to, steps, carry) => {
       const t0 = performance.now();
       let i = 0, wait = 0;
       feed.reset();
       feed.say(T('Anfahren', 'Approach'), xy(pads[at].g.position));
       job = { to, tick: dt => {
-        const [th, z, tol, act, yaw = 0] = steps[i];
-        pol.gth = th; pol.gr = PR; pol.gz = z; pol.gyaw = yaw;   // Winkelgrenze W_MAX gilt weiter (followTick)
+        const [th, z, tol, act, yaw = 0, r = PR, tilt = 0] = steps[i];
+        pol.gth = th; pol.gr = r; pol.gz = z; pol.gyaw = yaw; pol.gtilt = tilt;   // Winkelgrenze W_MAX gilt weiter (followTick)
         if (wait > 0) { wait -= dt; if (wait <= 0) i++; }
-        else if (Math.abs(pol.th - th) * pol.r < tol && Math.abs(pol.r - PR) < tol && Math.abs(pol.z - z) < tol && Math.abs(pol.yaw - yaw) < 0.03 && (!act || Math.abs(pol.vz) < 0.02)) {
+        else if (Math.abs(pol.th - th) * pol.r < tol && Math.abs(pol.r - r) < tol && Math.abs(pol.z - z) < tol && Math.abs(pol.tilt - tilt) < tol * 4
+          && Math.abs(pol.yaw - yaw) < 0.03 && (!act || Math.abs(pol.vz) < 0.02)) {
           if (act === 'grip') {
             held = true; blink(); wait = 0.22;
+            // Würfel hängt fest am Sauger: Lage + Versatz im Werkzeugrahmen merken (bleibt bei geneigtem Werkzeug dran)
             robot.tcp.getWorldQuaternion(tcpQ); rel.copy(tcpQ).invert().multiply(cube.quaternion);
+            robot.tcp.getWorldPosition(tcpW); relP.subVectors(cube.position, tcpW).applyQuaternion(tcpQ.clone().invert());
             feed.say(T('Greifen', 'Grip'), T('Sauger an', 'suction on'));
             feed.say(...carry);
           } else if (act === 'drop') {
@@ -485,8 +496,12 @@ function build(L, wrap, host, o) {
       if (to === at) return;
       if (reduce) { at = to; onPad(at); show(); feed.reset(); feed.say(T('Abgelegt', 'Placed'), xy(cube.position), true); return; }
       if (job) { pending = () => start(to); return; }
-      const A = padAng[at], B = padAng[to];
-      run(to, [[A, Z, 0.02], [A, CUBE, 0.002, 'grip'], [A, Z, 0.025], [B, Z, 0.02], [B, CUBE, 0.002, 'drop'], [B, Z, 0.012]],
+      // Bogen: anheben, schräg nach oben-außen gestreckt (Radius 400 mm, Höhe 310 mm, Werkzeug 49° geneigt), hoch
+      // hinüberschwenken, über dem Ziel aufrichten; Zwischenpunkte grob → Federn runden die Bahn ab
+      const A = padAng[at], B = padAng[to], via = k => A + (B - A) * k;
+      run(to, [[A, Z, 0.02], [A, CUBE, 0.002, 'grip'], [A, 0.13, 0.03],
+        [via(0.3), 0.31, 0.05, null, 0, 0.4, 0.85], [via(0.75), 0.26, 0.05, null, 0, 0.36, 0.55],
+        [B, 0.13, 0.02], [B, CUBE, 0.002, 'drop'], [B, Z, 0.012]],
         [T('Transport', 'Transfer'), `${T('Schwenk', 'swing')} ${Math.round(Math.abs(B - A) * 180 / Math.PI)}°`]);
     };
     // Würfel: anheben, um 90° drehen, zurücksetzen; Drehsinn so, dass Gelenk 6 (q1 − Drehung) in ±178° bleibt
@@ -512,12 +527,12 @@ function build(L, wrap, host, o) {
       if (cubeAt(e, tol)) { clicked = true; turn(); return; }
       const i = padAt(e, tol); if (i >= 0) { clicked = true; start(i); }
     });
-    const ex = extra, tcpW = new THREE.Vector3();
+    const ex = extra;
     extra = (dt, t) => {
       ex(dt, t);
       if (held) {
-        robot.tcp.getWorldPosition(tcpW); cube.position.set(tcpW.x, tcpW.y, tcpW.z - CUBE / 2);
-        robot.tcp.getWorldQuaternion(tcpQ); cube.quaternion.multiplyQuaternions(tcpQ, rel);
+        robot.tcp.getWorldPosition(tcpW); robot.tcp.getWorldQuaternion(tcpQ);
+        cube.position.copy(relP).applyQuaternion(tcpQ).add(tcpW); cube.quaternion.multiplyQuaternions(tcpQ, rel);
       }
       if (flashT < 1) { flashT = Math.min(1, flashT + dt / 0.45); flash.material.opacity = 0.95 * (1 - flashT); flash.scale.setScalar(1 + flashT * 1.6); }
       if (reduce) return;
