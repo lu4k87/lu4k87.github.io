@@ -179,12 +179,16 @@
 
     const api = { scene, camera, renderer, controls, reduce, render: () => renderer.render(scene, camera) };
     const frame = t => {
-      raf = 0;
+      // ≤ ~75 fps auch auf 120/144-Hz-Bildschirmen
+      if (last && t - last < 12) { raf = requestAnimationFrame(frame); return; }
+      // -1 = Frame läuft: kick() aus onFrame/controls 'change' plant sonst eine zweite Schleife (wuchs je Frame um eine)
+      raf = -1;
       const dt = last ? Math.min(0.05, (t - last) / 1000) : 0; last = t;
       opts.onFrame && opts.onFrame(dt, t);
       if (controls) controls.update(dt);
       renderer.render(scene, camera);
       const moving = (controls && controls.autoRotate) || t < busyUntil || (api.isBusy && api.isBusy());
+      raf = 0;
       if (visible && !document.hidden && !reduce && moving) raf = requestAnimationFrame(frame);
       else if (visible && !document.hidden && controls && controls.enableDamping && t < busyUntil + 600) raf = requestAnimationFrame(frame);
       else last = 0;

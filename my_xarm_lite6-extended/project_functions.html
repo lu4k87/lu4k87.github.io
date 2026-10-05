@@ -77,19 +77,20 @@ button, select, input { font: inherit; color: inherit; }
 
 /* Kopf = Landing-Hero (css/landing.css, Szene „atlas“ aus js/hero3d.js); darunter die Stufen-Legende der Karten */
 .hero a { text-decoration: none; }
-.hero .legend { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; max-width: 60ch; font-size: 14px; line-height: 1.45; color: var(--fg-2); }
+.hero .legend { display: grid; justify-items: start; gap: 8px; max-width: 60ch; font-size: 14px; line-height: 1.45; color: var(--fg-2); }
 .hero .legend b { color: var(--fg); font-weight: 800; }
 .atlas-body { padding-top: 36px; }
 
-/* Stufen-Badge S1: Simulieren | Prüfen | REAL; nicht zutreffende Stufe durchgestrichen */
-.stage { display: inline-flex; align-items: stretch; border: 1px solid var(--line-strong); border-radius: var(--radius-sm); overflow: hidden; font: 700 11.5px/1 var(--mono); letter-spacing: .06em; text-transform: uppercase; }
-.stage > span { display: inline-flex; align-items: center; gap: 6px; padding: 6px 9px; background: var(--surface); color: var(--fg); }
-.stage > span + span { border-left: 1px solid var(--line-strong); }
-.stage .on { background: color-mix(in srgb, var(--c) 15%, var(--surface)); }
-.stage .on .ico { color: var(--c); }
-.stage .off { background: transparent; text-decoration: line-through; text-decoration-thickness: 1.5px; color: var(--fg-2); font-weight: 600; }
-.stage .ico { width: 14px; height: 14px; }
-.stage .off .ico { display: none; }
+/* Stufen-Badge = Weg Simulieren → Prüfen → REAL; Stufe gilt = voller Kreis mit Haken, entfällt = leerer gestrichelter Kreis */
+.stage { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 4px; font: 700 11.5px/1.2 var(--mono); letter-spacing: .05em; text-transform: uppercase; }
+.stage .st { display: inline-flex; align-items: center; gap: 5px; color: var(--fg); }
+.stage .st i { display: inline-grid; place-items: center; flex: none; width: 18px; height: 18px; border-radius: 50%; }
+.stage .on i { background: var(--c); color: var(--bg); }
+.stage .off { color: var(--fg-2); font-weight: 600; }
+.stage .off i { border: 1.5px dashed var(--fg-2); }
+.stage .st-ok { width: 12px; height: 12px; }
+.stage .st-to { width: 14px; height: 14px; margin: 0 2px; color: var(--fg-2); }
+.hero .legend .stage { padding: 8px 10px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); }
 
 /* Filterleiste: Bereiche, nur Kreisläufe, Suche */
 .filter { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; justify-content: space-between; padding: 12px; margin-bottom: 16px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); box-shadow: var(--shadow); }
@@ -133,8 +134,7 @@ button, select, input { font: inherit; color: inherit; }
 .tag .ico { width: 13px; height: 13px; color: var(--c); }
 .tag.area { background: color-mix(in srgb, var(--c) 16%, var(--surface)); border-color: color-mix(in srgb, var(--c) 45%, var(--line-strong)); }
 .tag.plan { border-style: dashed; border-color: color-mix(in srgb, var(--gold) 70%, var(--line-strong)); }
-.fn .stage { font-size: 10.5px; }
-.fn .stage > span { padding: 5px 7px; }
+.fn .stage { font-size: 11px; }
 .empty { padding: 18px; border: 1px dashed var(--line-strong); border-radius: var(--radius); font-size: 14px; }
 
 .panel { position: sticky; top: 70px; max-height: calc(100vh - 82px); overflow: auto; display: grid; gap: 14px; min-width: 0; padding: 16px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); box-shadow: var(--shadow); overscroll-behavior: contain; }
@@ -387,7 +387,11 @@ footer a { text-decoration: underline; text-underline-offset: 3px; }
           <li><span class="bi-s"><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg></span><span><b data-en="Check">Prüfen</b><span data-en="collision, sandbox, lock">Kollision, Sandbox, Lock</span></span></li>
           <li><span class="bi-s"><svg class="ico" aria-hidden="true"><use href="#i-arm"/></svg></span><span><b>REAL</b><span data-en="only after approval">erst nach Freigabe</span></span></li>
         </ul>
-        <p class="legend" data-en="&lt;b&gt;First virtual, then real.&lt;/b&gt; Every card shows its stages; struck-through stages do not apply."><b>Erst virtuell, dann real.</b> Jede Karte zeigt ihre Stufen; durchgestrichene Stufen entfallen.</p>
+        <div class="legend">
+          <p data-en="&lt;b&gt;First virtual, then real.&lt;/b&gt; Every card shows the path of its function to the real robot, for example:"><b>Erst virtuell, dann real.</b> Jede Karte zeigt den Weg ihrer Funktion zum echten Roboter, zum Beispiel:</p>
+          <span data-stage-ex="sr"></span>
+          <p data-en="Full circle with tick = stage applies · empty circle = stage is skipped.">Voller Kreis mit Haken = Stufe gilt · leerer Kreis = Stufe entfällt.</p>
+        </div>
       </div>
       <div class="hero-stage" id="hero-stage">
         <figure class="stage-3d">
@@ -2030,10 +2034,13 @@ const FLOWS = (() => {
     data: { de: 'Daten', en: 'Data', icon: 'i-db', hue: 'indigo' },
     infra: { de: 'Infrastruktur', en: 'Infrastructure', icon: 'i-layers', hue: 'lime' },
   };
-  const STAGES = [['s', 'teal', 'i-cube', ['Simulieren', 'Simulate']], ['p', 'gold', 'i-check', ['Prüfen', 'Check']], ['r', 'indigo', 'i-arm', ['REAL', 'REAL']]];
+  const STAGES = [['s', 'teal', ['Simulieren', 'Simulate']], ['p', 'gold', ['Prüfen', 'Check']], ['r', 'indigo', ['REAL', 'REAL']]];
   const PLAN = { plan: ['geplant', 'planned'], prep: ['vorbereitet', 'prepared'], doc: ['nur Doku', 'docs only'] };
-  const stage = s => `<span class="stage" role="img" aria-label="${STAGES.map(([k, , , t]) => `${L(t)}: ${s.includes(k) ? L(['ja', 'yes']) : L(['entfällt', 'n/a'])}`).join(', ')}">`
-    + STAGES.map(([k, hue, ic, t]) => `<span class="${s.includes(k) ? 'on' : 'off'}" style="--c: var(--${hue})">${ico(ic)}${L(t)}</span>`).join('') + '</span>';
+  const ST_OK = '<svg class="st-ok" viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  const ST_TO = '<svg class="st-to" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 8h11M9 4l4 4-4 4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  const stage = s => `<span class="stage" role="img" aria-label="${STAGES.map(([k, , t]) => `${L(t)}: ${s.includes(k) ? L(['ja', 'yes']) : L(['entfällt', 'n/a'])}`).join(', ')}">`
+    + STAGES.map(([k, hue, t], i) => (i ? ST_TO : '') + (s.includes(k)
+      ? `<span class="st on" style="--c: var(--${hue})"><i>${ST_OK}</i>${L(t)}</span>` : `<span class="st off"><i></i>${L(t)}</span>`)).join('') + '</span>';
 
   const cardsBox = document.getElementById('cards'), panel = document.getElementById('panel'), fig = document.getElementById('fg-atlas');
   const cards = [...document.querySelectorAll('.fn')];
@@ -2048,7 +2055,11 @@ const FLOWS = (() => {
   const isLoop = c => !!FLOWS[c.dataset.f]?.loop;
 
   // Karten anreichern: Bereich, Kreislauf, geplant, Stufen-Badge, Link
-  const decorate = () => cards.forEach(c => {
+  const decorate = () => {
+    document.querySelectorAll('[data-stage-ex]').forEach(x => { x.innerHTML = stage(x.dataset.stageEx); });
+    cards.forEach(decorateCard);
+  };
+  const decorateCard = c => {
     const a = AREAS[c.dataset.a], f = FLOWS[c.dataset.f];
     c.style.setProperty('--c', `var(--${a.hue})`);
     let meta = c.querySelector('.fn-meta');
@@ -2064,7 +2075,7 @@ const FLOWS = (() => {
     const sel = h.querySelector('.fn-sel');
     sel.setAttribute('aria-pressed', String(c.classList.contains('sel')));
     sel.setAttribute('aria-controls', 'panel');
-  });
+  };
 
   // Bereichs-Chips mit Anzahl; Zwischenüberschrift je Bereich in der Kartenliste
   const areaBox = document.getElementById('areas');
