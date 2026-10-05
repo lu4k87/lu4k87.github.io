@@ -287,7 +287,7 @@ a.pdf { font: 700 11px/1 var(--mono); padding: 5px 7px; border-radius: var(--rad
 /* Technische Dokumentation: 4 Gruppen (Kicker + Links mit Kurzinhalt) */
 .dg-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
 .dg { display: grid; align-content: start; gap: 8px; padding: 14px 14px 12px; border: 1px solid color-mix(in srgb, var(--hue) 24%, var(--line)); border-radius: var(--radius); background: var(--surface); box-shadow: var(--shadow); min-width: 0; }
-.dg .k-t { display: flex; align-items: center; gap: 8px; margin-bottom: 2px; }
+.dg .k-t { display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 2px; }
 .dg .k-t .ico { box-sizing: border-box; width: 34px; height: 34px; padding: 7px; border-radius: var(--radius); background: color-mix(in srgb, var(--hue) 14%, transparent); border: 1px solid color-mix(in srgb, var(--hue) 35%, transparent); }
 .dg a { display: grid; grid-template-columns: 18px minmax(0, 1fr) 16px; gap: 2px 10px; align-items: start; align-content: start; padding: 10px; border: 1px solid color-mix(in srgb, var(--hue) 18%, var(--line)); border-radius: var(--radius);
   transition: background var(--t-fast), border-color var(--t-base), box-shadow var(--t-base); }
