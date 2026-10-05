@@ -2,6 +2,7 @@
    Laser-Zielhilfe senkrecht auf den Tisch; Ziehen dreht die Kamera. Szene je Seite (opts.scene):
      dome   Arbeitsraum als Punktkuppel (Reichweite 440 mm um Gelenk 2); Zeiger bewegt den TCP, sonst langsame Acht;
             Pick & Place: drei Ablagefelder + Würfel (Rastergitter), Feld anklicken/antippen → Arm setzt den Würfel um,
+            Würfel anklicken/antippen → Arm dreht ihn um 90°; Felder leuchten als Klick-Hinweis unregelmäßig kurz auf,
             Status-Popups oben links (.h3d-steps) blenden die Schritte nacheinander ein; Licht etwas gedämpft
      modes  Steuerwege als Lichtpunkte im Ring (opts.items); aktiver Punkt schickt einen Impuls zum Arm, der Arm zeigt hin
      ghost  Ghost-Arm plant voraus → Freigabe → Arm fährt nach („Erst virtuell, dann real“); Zeiger setzt das Ziel
@@ -312,7 +313,7 @@ function build(L, wrap, host, o) {
   // Zeiger rein → Feder übernimmt mit der laufenden Geschwindigkeit, Steifigkeit steigt weich an.
   // Gelenk 1 endet bei ±178° → Zeiger hinter dem Arm: Seite halten; Seitenwechsel = Schwenk nach vorn, Ziel wandert höchstens W_MAX rad/s.
   const TH = 3.0, R0 = 0.17, R1 = 0.32, IDLE_T = 16, W_MAX = 2.2;
-  const pol = { th: 0, r: 0.25, vth: 0, vr: 0, gth: 0, gr: 0.25, cth: 0, w: 2.6, z: Z, vz: 0, gz: Z };
+  const pol = { th: 0, r: 0.25, vth: 0, vr: 0, gth: 0, gr: 0.25, cth: 0, w: 2.6, z: Z, vz: 0, gz: Z, yaw: 0, vyaw: 0, gyaw: 0 };
   let job = null;   // Pick & Place (dome): setzt die Ziele statt Zeiger/Acht
   const eight = ph => { const x = 0.25 + 0.05 * Math.sin(2 * ph), y = 0.16 * Math.sin(ph); return [Math.atan2(y, x), Math.hypot(x, y)]; };
   let ph = 0, idleRamp = 1;
@@ -339,7 +340,8 @@ function build(L, wrap, host, o) {
     [pol.th, pol.vth] = spring(pol.th, pol.vth, pol.cth, pol.w, dt);
     [pol.r, pol.vr] = spring(pol.r, pol.vr, pol.gr, pol.w, dt);
     [pol.z, pol.vz] = spring(pol.z, pol.vz, pol.gz, 7, dt);
-    const s = L.ikDown(pol.r * Math.cos(pol.th), pol.r * Math.sin(pol.th), pol.z, 0, q);
+    [pol.yaw, pol.vyaw] = spring(pol.yaw, pol.vyaw, pol.gyaw, 5, dt);   // Werkzeugdrehung (Gelenk 6), nur beim Würfel-Drehen ≠ 0
+    const s = L.ikDown(pol.r * Math.cos(pol.th), pol.r * Math.sin(pol.th), pol.z, pol.yaw, q);
     if (s) { q = s; robot.setJoints(q); }
   };
   if (scene === 'dome' || scene === 'cell') {
@@ -353,16 +355,21 @@ function build(L, wrap, host, o) {
     }
   }
   // ── Pick & Place (dome): drei Ablagefelder, Würfel 50 mm; Feld anklicken/antippen → anfahren, senken, Sauger blitzt,
-  // heben, Bogen, senken, lösen, heben. Ziele laufen über dieselben Federn (Winkel, Radius, Höhe) → kein Ruck; Zwischenpunkte
-  // mit grober Toleranz (Bahn rundet ab), Kontaktpunkte genau. Danach übernimmt Zeiger bzw. Acht wie beim Verlassen der Bühne.
+  // heben, Bogen, senken, lösen, heben. Würfel anklicken/antippen → greifen, anheben, per Gelenk 6 um 90° drehen, zurücksetzen.
+  // Ziele laufen über dieselben Federn (Winkel, Radius, Höhe, Werkzeugdrehung) → kein Ruck; Zwischenpunkte mit grober
+  // Toleranz (Bahn rundet ab), Kontaktpunkte genau. Danach übernimmt Zeiger bzw. Acht wie beim Verlassen der Bühne.
+  // Klick-Hinweis: Felder leuchten unregelmäßig kurz auf (Welle läuft nach außen, Würfel-Raster hellt mit), nur in Ruhe;
+  // nach dem ersten eigenen Klick seltener (Wunsch User 05.10.2026).
   if (scene === 'dome') {
-    const CUBE = 0.05, PR = 0.27, padAng = [-2.05, -0.6, 0.85], table = new THREE.Plane(new THREE.Vector3(0, 0, 1), 0);
+    const CUBE = 0.05, PR = 0.27, LIFT = 0.17, padAng = [-2.05, -0.6, 0.85], table = new THREE.Plane(new THREE.Vector3(0, 0, 1), 0);
     const ringMesh = (r0, r1, op) => new THREE.Mesh(new THREE.RingGeometry(r0, r1, 48), new THREE.MeshBasicMaterial({ color: ACC, transparent: true, opacity: op, side: THREE.DoubleSide, depthWrite: false }));
-    const pads = padAng.map(a => {
+    const rnd = (a, b) => a + Math.random() * (b - a);
+    const pads = padAng.map((a, k) => {
       const g = new THREE.Group(), outer = ringMesh(0.031, 0.038, 0.4), inner = ringMesh(0.018, 0.022, 0.15), glow = new THREE.Mesh(new THREE.PlaneGeometry(0.16, 0.16), glowMat(0));
+      const wave = ringMesh(0.036, 0.039, 0);
       g.position.set(PR * Math.cos(a), PR * Math.sin(a), 0.0025); glow.position.z = -0.0007;
-      g.add(outer, inner, glow); st.scene.add(g);
-      return { a, g, outer, inner, glow };
+      g.add(outer, inner, glow, wave); st.scene.add(g);
+      return { a, g, outer, inner, glow, wave, on: false, t0: -9, next: 1.5 + k * 1.3 + rnd(0, 1.5) };
     });
     // Würfel als 3D-Rastergitter: Hauch Füllung, Raster n × n auf allen Flächen (Rückseiten scheinen durch), helle Kanten, Eckpunkte
     const gridCube = (s, n) => {
@@ -376,30 +383,42 @@ function build(L, wrap, host, o) {
     const box = new THREE.BoxGeometry(CUBE, CUBE, CUBE), cube = new THREE.Group(), ch = CUBE / 2;
     const corners = new THREE.BufferGeometry().setAttribute('position', new THREE.Float32BufferAttribute(
       [0, 1, 2, 3, 4, 5, 6, 7].flatMap(k => [k & 1 ? ch : -ch, k & 2 ? ch : -ch, k & 4 ? ch : -ch]), 3));
-    cube.add(new THREE.Mesh(box, new THREE.MeshBasicMaterial({ color: ACC, transparent: true, opacity: 0.1, depthWrite: false })),
-      new THREE.LineSegments(gridCube(CUBE, 4), lineMat(0.42)),
+    const cubeFill = new THREE.Mesh(box, new THREE.MeshBasicMaterial({ color: ACC, transparent: true, opacity: 0.1, depthWrite: false }));
+    const cubeGrid = new THREE.LineSegments(gridCube(CUBE, 4), lineMat(0.42));
+    cube.add(cubeFill, cubeGrid,
       new THREE.LineSegments(new THREE.EdgesGeometry(box), lineMat(0.95, ACC2)),
       new THREE.Points(corners, new THREE.PointsMaterial({ map: dot, color: ACC2, size: 0.016, transparent: true, opacity: 0.9, depthWrite: false, blending: THREE.AdditiveBlending })));
     const flash = ringMesh(0.016, 0.03, 0);
     st.scene.add(cube, flash);
-    let at = 0, held = false, hover = -1, pending = -1, flashT = 1;
+    let at = 0, held = false, hover = -1, hoverCube = false, pending = null, flashT = 1, clicked = false, clk = 0;
     const onPad = i => { cube.position.set(pads[i].g.position.x, pads[i].g.position.y, CUBE / 2); };
     onPad(at);
+    // Feld-Zustand + Klick-Hinweis (b = 0…1, Höhe des Aufleuchtens)
+    const paint = (p, b = 0) => {
+      p.outer.material.opacity = p.on ? 1 : 0.4 + 0.3 * b; p.inner.material.opacity = p.on ? 0.7 : 0.15 + 0.25 * b;
+      p.glow.material.opacity = p.on ? 0.75 : 0.22 * b;
+    };
     const show = () => {
       const hi = job ? job.to : hover;
-      pads.forEach((p, i) => { const on = i === hi && i !== at; p.outer.material.opacity = on ? 1 : 0.4; p.inner.material.opacity = on ? 0.7 : 0.15; p.glow.material.opacity = on ? 0.75 : 0; });
-      host.style.cursor = hover >= 0 && hover !== at ? 'pointer' : '';
+      pads.forEach((p, i) => { p.on = i === hi && i !== at; paint(p); });
+      cubeGrid.material.opacity = hoverCube && !held ? 0.75 : 0.42; cubeFill.material.opacity = hoverCube && !held ? 0.18 : 0.1;
+      host.style.cursor = hoverCube || (hover >= 0 && hover !== at) ? 'pointer' : '';
       st.kick();
     };
-    const padAt = (e, tol) => {
+    const pickRay = e => {
       const r = host.getBoundingClientRect();
       ndc.set((e.clientX - r.left) / r.width * 2 - 1, 1 - (e.clientY - r.top) / r.height * 2);
       ray.setFromCamera(ndc, st.camera);
+    };
+    const padAt = (e, tol) => {
+      pickRay(e);
       if (!ray.ray.intersectPlane(table, hit)) return -1;
       let best = -1, bd = tol;
       pads.forEach((p, i) => { const d = Math.hypot(hit.x - p.g.position.x, hit.y - p.g.position.y); if (d < bd) { bd = d; best = i; } });
       return best;
     };
+    // Würfel getroffen: Strahl trifft den Würfel oder sein Feld (großes Ziel auch für Finger); im Arm nicht wählbar
+    const cubeAt = (e, tol) => !held && (padAt(e, tol) === at || ray.intersectObject(cubeFill).length > 0);
     // Status-Popups: Schritte blenden nacheinander ein (≥ 340 ms Abstand), laufender Schritt mit Puls, erledigte mit ✓;
     // „Fertig“ bleibt kurz stehen, dann blenden alle gestaffelt aus. Ergänzt die Bewegung → für Screenreader verborgen.
     const feed = (() => {
@@ -429,51 +448,95 @@ function build(L, wrap, host, o) {
     const T = (de, en) => (document.documentElement.lang === 'en' ? en : de), mm = v => String(Math.round(v * 1000)).replace('-', '−');
     const xy = p => `x ${mm(p.x)} · y ${mm(p.y)} mm`;
     const blink = () => { flashT = 0; flash.position.set(cube.position.x, cube.position.y, cube.position.z + CUBE / 2 + 0.002); };
-    const start = to => {
-      if (to === at) return;
-      if (reduce) { at = to; onPad(at); show(); feed.reset(); feed.say(T('Abgelegt', 'Placed'), xy(cube.position), true); return; }
-      if (job) { pending = to; return; }
-      const A = padAng[at], B = padAng[to], UP = Z, t0 = performance.now(), steps = [
-        [A, UP, 0.02], [A, CUBE, 0.002, 'grip'], [A, UP, 0.025], [B, UP, 0.02], [B, CUBE, 0.002, 'drop'], [B, UP, 0.012]];
+    const tcpQ = new THREE.Quaternion(), rel = new THREE.Quaternion();
+    // Ablauf als Schrittliste [Winkel, Höhe, Toleranz, Aktion, Werkzeugdrehung]; carry = Meldung nach dem Greifen
+    const run = (to, steps, carry) => {
+      const t0 = performance.now();
       let i = 0, wait = 0;
       feed.reset();
       feed.say(T('Anfahren', 'Approach'), xy(pads[at].g.position));
       job = { to, tick: dt => {
-        const [th, z, tol, act] = steps[i];
-        pol.gth = th; pol.gr = PR; pol.gz = z;   // Winkelgrenze W_MAX gilt weiter (followTick)
+        const [th, z, tol, act, yaw = 0] = steps[i];
+        pol.gth = th; pol.gr = PR; pol.gz = z; pol.gyaw = yaw;   // Winkelgrenze W_MAX gilt weiter (followTick)
         if (wait > 0) { wait -= dt; if (wait <= 0) i++; }
-        else if (Math.abs(pol.th - th) * pol.r < tol && Math.abs(pol.r - PR) < tol && Math.abs(pol.z - z) < tol && (!act || Math.abs(pol.vz) < 0.02)) {
+        else if (Math.abs(pol.th - th) * pol.r < tol && Math.abs(pol.r - PR) < tol && Math.abs(pol.z - z) < tol && Math.abs(pol.yaw - yaw) < 0.03 && (!act || Math.abs(pol.vz) < 0.02)) {
           if (act === 'grip') {
             held = true; blink(); wait = 0.22;
+            robot.tcp.getWorldQuaternion(tcpQ); rel.copy(tcpQ).invert().multiply(cube.quaternion);
             feed.say(T('Greifen', 'Grip'), T('Sauger an', 'suction on'));
-            feed.say(T('Transport', 'Transfer'), `${T('Schwenk', 'swing')} ${Math.round(Math.abs(B - A) * 180 / Math.PI)}°`);
-          } else if (act === 'drop') { held = false; at = to; onPad(at); blink(); wait = 0.22; feed.say(T('Ablegen', 'Place'), T('Sauger aus', 'suction off')); }
-          else i++;
+            feed.say(...carry);
+          } else if (act === 'drop') {
+            held = false; at = to; onPad(at); cube.rotation.set(0, 0, cube.rotation.z); blink(); wait = 0.22;
+            feed.say(T('Ablegen', 'Place'), T('Sauger aus', 'suction off'));
+          } else i++;
         }
         if (i < steps.length) return;
-        job = null; pol.gz = Z;
+        job = null; pol.gz = Z; pol.gyaw = 0;
         const sec = ((performance.now() - t0) / 1000).toFixed(1);
         feed.say(T('Fertig', 'Done'), `${T(sec.replace('.', ','), sec)} s`, true);
         if (follow) setGoalXY(ptr.x, ptr.y); else { ph = nearestPhase(); idleRamp = 0; }
         show();
-        if (pending >= 0) { const n = pending; pending = -1; start(n); }
+        if (pending) { const n = pending; pending = null; n(); }
       } };
       show();
     };
+    // Feld: Würfel umsetzen
+    const start = to => {
+      if (to === at) return;
+      if (reduce) { at = to; onPad(at); show(); feed.reset(); feed.say(T('Abgelegt', 'Placed'), xy(cube.position), true); return; }
+      if (job) { pending = () => start(to); return; }
+      const A = padAng[at], B = padAng[to];
+      run(to, [[A, Z, 0.02], [A, CUBE, 0.002, 'grip'], [A, Z, 0.025], [B, Z, 0.02], [B, CUBE, 0.002, 'drop'], [B, Z, 0.012]],
+        [T('Transport', 'Transfer'), `${T('Schwenk', 'swing')} ${Math.round(Math.abs(B - A) * 180 / Math.PI)}°`]);
+    };
+    // Würfel: anheben, um 90° drehen, zurücksetzen; Drehsinn so, dass Gelenk 6 (q1 − Drehung) in ±178° bleibt
+    const turn = () => {
+      const A = padAng[at], d = A > 0 ? Math.PI / 2 : -Math.PI / 2;
+      if (reduce) { cube.rotation.z += d; show(); feed.reset(); feed.say(T('Gedreht', 'Rotated'), '90°', true); return; }
+      if (job) { pending = turn; return; }
+      run(at, [[A, Z, 0.02], [A, CUBE, 0.002, 'grip'], [A, LIFT, 0.02], [A, LIFT, 0.01, null, d], [A, CUBE, 0.002, 'drop', d], [A, Z, 0.012, null, d]],
+        [T('Drehen', 'Rotate'), `${T('Gelenk', 'joint')} 6 · ${d > 0 ? '+' : '−'}90°`]);
+    };
     let down = null;
-    host.addEventListener('pointermove', e => { if (e.pointerType !== 'mouse' || e.buttons) return; const i = padAt(e, 0.07); if (i !== hover) { hover = i; show(); } });
-    host.addEventListener('pointerleave', () => { if (hover >= 0) { hover = -1; show(); } });
+    host.addEventListener('pointermove', e => {
+      if (e.pointerType !== 'mouse' || e.buttons) return;
+      const c = cubeAt(e, 0.07), i = c ? -1 : padAt(e, 0.07);
+      if (i !== hover || c !== hoverCube) { hover = i; hoverCube = c; show(); }
+    });
+    host.addEventListener('pointerleave', () => { if (hover >= 0 || hoverCube) { hover = -1; hoverCube = false; show(); } });
     host.addEventListener('pointerdown', e => { down = { x: e.clientX, y: e.clientY, t: performance.now() }; });
     // Tippen/Klick = kurz und ohne Ziehen (Ziehen dreht weiter die Kamera)
     host.addEventListener('pointerup', e => {
       if (!down || Math.hypot(e.clientX - down.x, e.clientY - down.y) > 6 || performance.now() - down.t > 600) return;
-      const i = padAt(e, e.pointerType === 'mouse' ? 0.07 : 0.09); if (i >= 0) start(i);
+      const tol = e.pointerType === 'mouse' ? 0.07 : 0.09;
+      if (cubeAt(e, tol)) { clicked = true; turn(); return; }
+      const i = padAt(e, tol); if (i >= 0) { clicked = true; start(i); }
     });
     const ex = extra, tcpW = new THREE.Vector3();
     extra = (dt, t) => {
       ex(dt, t);
-      if (held) { robot.tcp.getWorldPosition(tcpW); cube.position.set(tcpW.x, tcpW.y, tcpW.z - CUBE / 2); }
+      if (held) {
+        robot.tcp.getWorldPosition(tcpW); cube.position.set(tcpW.x, tcpW.y, tcpW.z - CUBE / 2);
+        robot.tcp.getWorldQuaternion(tcpQ); cube.quaternion.multiplyQuaternions(tcpQ, rel);
+      }
       if (flashT < 1) { flashT = Math.min(1, flashT + dt / 0.45); flash.material.opacity = 0.95 * (1 - flashT); flash.scale.setScalar(1 + flashT * 1.6); }
+      if (reduce) return;
+      // Klick-Hinweis: je Feld eigener, zufälliger Takt; während Ablauf, Hover oder im Arm verschoben statt gezeigt
+      clk += dt;
+      let cubeB = 0;
+      pads.forEach((p, i) => {
+        if (clk >= p.next) {
+          if (job || held || hover >= 0 || hoverCube || p.on) p.next = clk + rnd(1, 3);
+          else { p.t0 = clk; p.next = clk + rnd(4, 9) * (clicked ? 2.5 : 1); }
+        }
+        const u = (clk - p.t0) / 1.6;
+        if (u > 1.05) return;
+        const k = Math.min(1, u), b = Math.sin(Math.PI * k) ** 2;
+        if (!p.on) paint(p, b);
+        p.wave.material.opacity = 0.32 * (1 - k) * Math.min(1, k * 6); p.wave.scale.setScalar(1 + k * 0.9);
+        if (i === at && !held) cubeB = b;
+      });
+      if (!hoverCube) cubeGrid.material.opacity = 0.42 + 0.25 * cubeB;
     };
     show();
   }
