@@ -197,7 +197,7 @@ dev_ws/
 │   ├── vla_eval.py                                                        # Evaluation set for the VLA agent (vla_eval_cases.json, --check without LLM)
 │   ├── pre-commit · install_hooks.sh                                      # Git pre-commit check of the staged files (flake8, JSON/YAML, tokens, check_ws, check_ports, pytest suites, check_showcase; --changed = all uncommitted)
 │   ├── check_showcase.py                                                  # README, docs/, project pages, poster against docs/brand/brand.yaml (names, dead links, en/de files)
-│   ├── publish_pages.py                                                   # Collects the project pages for GitHub Pages (masks IPs, local fonts)
+│   ├── publish_pages.py                                                   # Collects the project pages for GitHub Pages (masks IPs, local fonts); pages_hook.sh publishes on every git push, pulls along on git pull
 │   ├── make_diagrams.py                                                   # Generates the architecture diagrams docs/img/diagrams/*.svg
 │   ├── check_ports.py                                                     # Ports in config/network.yaml valid/unique, no fixed ws ports in JS
 │   ├── demos_to_lerobot.py                                                # Recorded demos (demo_recorder) -> LeRobotDataset (LeRobot venv); --check
