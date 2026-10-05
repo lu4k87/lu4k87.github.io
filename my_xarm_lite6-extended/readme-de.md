@@ -1,6 +1,6 @@
 <a name="top"></a>
 
-# Interakt Control Robot
+# Assistive Arm Platform
 
 <p align="center"><b>Der Mensch führt. Die KI assistiert.</b><br>Assistive Robotik-Plattform für den xArm Lite 6 auf Basis von ROS 2 Humble.</p>
 

@@ -1,14 +1,14 @@
 <!doctype html>
 <!-- Arbeitsweise: Software entwickeln mit VS Code + Claude Code im dev_ws – Arbeitsplatz, Einrichtung, Kreislauf einer Anfrage, Datenfluss
      zwischen Chat, Hooks, Skills, Agenten und Repo, Werkzeugkasten, Leitplanken, Git + Doku, Gedächtnis.
-     Design „Interakt Control Robot“ (docs/brand/brand.yaml), volle Fensterbreite mit schmalem Rand.
+     Design „Assistive Arm Platform“ (docs/brand/brand.yaml), volle Fensterbreite mit schmalem Rand.
      Flow-Graph: Engine unverändert aus .claude/skills/flow-graph/flow_graph_template.html, nur SPEC eigen.
      Zahlen: git log + .claude/ (Stand 04.10.2026) → bei größeren Änderungen am Workflow nachziehen. -->
 <html lang="de">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Arbeitsweise mit Claude Code · Interakt Control Robot</title>
+<title>Arbeitsweise mit Claude Code · Assistive Arm Platform</title>
 <link rel="stylesheet" href="fonts/fonts.css">
 <style>
 :root {
@@ -538,7 +538,7 @@ footer a { font-weight: 700; color: var(--fg); }
 
 <header class="top">
   <div class="wrap">
-    <a class="brand" href="#"><span class="brand-mark"><svg class="ico"><use href="#i-loop"/></svg></span><span>Interakt Control Robot<small data-en="Working with Claude Code">Arbeitsweise mit Claude Code</small></span></a>
+    <a class="brand" href="#"><span class="brand-mark"><svg class="ico"><use href="#i-loop"/></svg></span><span>Assistive Arm Platform<small data-en="Working with Claude Code">Arbeitsweise mit Claude Code</small></span></a>
     <nav aria-label="Abschnitte" data-en-aria="Sections">
       <a href="#arbeitsplatz" data-en="Workplace">Arbeitsplatz</a><a href="#einrichtung" data-en="Setup">Einrichtung</a><a href="#kreislauf" data-en="Cycle">Kreislauf</a><a href="#datenfluss" data-en="Data flow">Datenfluss</a><a href="#werkzeug" data-en="Toolkit">Werkzeugkasten</a><a href="#leitplanken" data-en="Guardrails">Leitplanken</a>
       <a href="#zusammenarbeit" data-en="Collaboration">Zusammenarbeit</a><a href="#sicherheit" data-en="Safety">Sicherheit</a><a href="#git" data-en="Git &amp;amp; docs">Git &amp; Doku</a><a href="#gedaechtnis" data-en="Memory">Gedächtnis</a>
@@ -1180,7 +1180,7 @@ footer a { font-weight: 700; color: var(--fg); }
   </section>
 
   <footer>
-    <span data-en="Claude Workflow · Interakt Control Robot · as of 4&amp;nbsp;Oct&amp;nbsp;2026 · sources: &lt;code&gt;AGENTS.md&lt;/code&gt;, &lt;code&gt;.claude/README.md&lt;/code&gt;, &lt;code&gt;git log&lt;/code&gt;">Claude Workflow · Interakt Control Robot · Stand 04.10.2026 · Quellen: <code>AGENTS.md</code>, <code>.claude/README.md</code>, <code>git log</code></span>
+    <span data-en="Claude Workflow · Assistive Arm Platform · as of 4&amp;nbsp;Oct&amp;nbsp;2026 · sources: &lt;code&gt;AGENTS.md&lt;/code&gt;, &lt;code&gt;.claude/README.md&lt;/code&gt;, &lt;code&gt;git log&lt;/code&gt;">Claude Workflow · Assistive Arm Platform · Stand 04.10.2026 · Quellen: <code>AGENTS.md</code>, <code>.claude/README.md</code>, <code>git log</code></span>
     <a href="project_docs.html" data-en="To the project docs">Zur Projekt-Doku</a>
   </footer>
 </main>
@@ -1727,7 +1727,7 @@ function initTheme() {
 function initLang() {
   const keep = (el, key, val) => { if (el.dataset[key] === undefined) el.dataset[key] = val; return el.dataset[key]; };
   const swap = (sel, key, get, set) => document.querySelectorAll(sel).forEach(el => { const de = keep(el, key, get(el)); set(el, lang === 'en' ? el.dataset[key.replace(/^de/, 'en')] : de); });
-  const title = [document.title, 'Working with Claude Code · Interakt Control Robot'];
+  const title = [document.title, 'Working with Claude Code · Assistive Arm Platform'];
   const setLang = l => {
     lang = l; root.lang = l;
     swap('[data-en]', 'de', el => el.innerHTML, (el, v) => { el.innerHTML = v; });
