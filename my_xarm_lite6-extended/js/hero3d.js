@@ -24,7 +24,7 @@ const CAM = {
   dome: { target: [0, 0, 0.16], camPos: [1.47, -1.13, 0.87] },  // 1,26 × Abstand: ganze Kuppel im Bild (Wunsch User 06.10.2026)
   modes: { target: [0, 0, 0.12], camPos: [1.86, -1.46, 1.42] },
   ghost: { target: [0.06, 0, 0.2], camPos: [1.32, -1.05, 0.86] },
-  atlas: { target: [0, 0, 0.16], camPos: [1.17, -0.9, 0.72] },
+  atlas: { target: [0, 0, 0.16], camPos: [1.47, -1.13, 0.87] },  // wie dome (Wunsch User 06.10.2026)
   cell: { target: [0.18, 0, 0.1], camPos: [1.38, -1.12, 0.92] },
 };
 
