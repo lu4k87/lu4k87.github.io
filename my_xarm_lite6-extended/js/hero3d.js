@@ -1,7 +1,7 @@
 /* Hero-Bühne der Projektseiten (Skill motion-viz §3): xArm Lite 6 (js/lite6_twin.js) auf Sockel mit Lichtringen,
    Laser-Zielhilfe senkrecht auf den Tisch; Ziehen dreht die Kamera. Szene je Seite (opts.scene):
      dome   Arbeitsraum als Punktkuppel (Reichweite 440 mm um Gelenk 2); Zeiger bewegt den TCP, sonst langsame Acht;
-            Pick & Place: drei Ablagefelder + Würfel (Rastergitter), Feld anklicken/antippen → Arm setzt den Würfel um,
+            Pick & Place: drei Ablagefelder + Würfel (Rastergitter, pulsierender Lichthof), Feld anklicken/antippen → Arm setzt den Würfel um,
             Würfel anklicken/antippen → Arm dreht ihn um 90°; Felder leuchten als Klick-Hinweis unregelmäßig kurz auf,
             Status-Popups oben links (.h3d-steps) blenden die Schritte nacheinander ein; Licht etwas gedämpft
      modes  Steuerwege als Lichtpunkte im Ring (opts.items); aktiver Punkt schickt einen Impuls zum Arm, der Arm zeigt hin
@@ -404,8 +404,12 @@ function build(L, wrap, host, o) {
     cube.add(cubeFill, cubeGrid,
       new THREE.LineSegments(new THREE.EdgesGeometry(box), lineMat(0.95, ACC2)),
       new THREE.Points(corners, new THREE.PointsMaterial({ map: dot, color: ACC2, size: 0.016, transparent: true, opacity: 0.9, depthWrite: false, blending: THREE.AdditiveBlending })));
+    // Puls-Schein (Wunsch User 06.10.2026): Lichthof + Bodenschein atmen langsam (2,6 s), Eckpunkte, Füllung und Größe
+    // gehen dezent mit; Lichthof nur so groß/hoch, dass ihn die Tischebene nicht hart abschneidet
+    const aura = sprite(0.1, 0.12), pool = new THREE.Mesh(new THREE.PlaneGeometry(0.2, 0.2), glowMat(0)), PULSE = 2.6;
+    const cornerMat = cube.children[3].material;
     const flash = ringMesh(0.016, 0.03, 0);
-    st.scene.add(cube, flash);
+    st.scene.add(cube, flash, aura, pool);
     let at = 0, held = false, hover = -1, hoverCube = false, pending = -1, flashT = 1, clicked = false, clk = 0, touch = false;
     const onPad = i => { cube.position.set(pads[i].g.position.x, pads[i].g.position.y, CUBE / 2); };
     onPad(at);
@@ -649,6 +653,13 @@ function build(L, wrap, host, o) {
         if (i === at && !held) cubeB = b;
       });
       if (!hoverCube) cubeGrid.material.opacity = 0.42 + 0.25 * cubeB;
+      const pu = Math.sin(Math.PI * t / PULSE) ** 2, lift = Math.max(pu, cubeB), r = 0.045 + 0.02 * lift;
+      aura.material.opacity = 0.12 + 0.3 * lift; aura.scale.setScalar(2 * r);
+      aura.position.copy(cube.position); if (!held) aura.position.z = Math.max(aura.position.z, r + 0.003);
+      pool.visible = !held; pool.position.set(cube.position.x, cube.position.y, 0.0028);
+      pool.material.opacity = 0.15 + 0.4 * lift; pool.scale.setScalar(0.85 + 0.3 * lift);
+      cornerMat.size = 0.016 + 0.01 * lift; cube.scale.setScalar(1 + 0.025 * pu);
+      if (!hoverCube) cubeFill.material.opacity = 0.08 + 0.08 * lift;
     };
     show();
   }
