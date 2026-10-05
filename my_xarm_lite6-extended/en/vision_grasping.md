@@ -133,7 +133,7 @@
 > - **Dynamic Object Height Estimation:** Rather than relying on rigid, pre-defined box heights, the node computes the real physical height ($z_{\text{top}} - z_{\text{bottom}}$) directly from the segmented 3D points of each detected object.
 > - **Dynamic Top Grasp Point (`top_z`):** Places a small red grasp sphere marker precisely at the center top of each object ($x_{\text{center}}, y_{\text{center}}, z_{\text{top}}$), automatically scaling with the object's height for safe, collision-free top-down vacuum grasps.
 > - **Robust Surface Projection & Centering:** Filters out ground/table edge artifacts to center bounding boxes squarely on the physical volume of the item.
-> - **EMA Tracking & Multi-Object Disambiguation:** Maintains stable, persistent global IDs using Exponential Moving Average smoothing with a 10 cm proximity threshold, preventing ID swapping or box jitter. Objects of the same class are sequentially numbered (e.g., `apple_1`, `apple_2`).
+> - **EMA Tracking & Multi-Object Disambiguation:** Maintains stable, persistent global IDs using Exponential Moving Average smoothing with a 30 cm proximity threshold (a detection farther than 0.3 m from every known object gets a new ID), preventing ID swapping or box jitter. Objects of the same class are sequentially numbered (e.g., `apple_1`, `apple_2`).
 >
 >
 > ![Subscribes](https://img.shields.io/badge/Subscribes-orange?style=flat-square)
@@ -281,8 +281,8 @@
 >> |---|---|---|
 >> | **`/zed/bboxes_3d`** | `visualization_msgs/MarkerArray` | *The virtual detections in the YOLO marker format (namespaces `yolo_bboxes`, `yolo_object_grasp_center_point`, `yolo_labels_class`, `yolo_labels_coords`).* |
 >> | **`/ui/virtual_bboxes_3d`** | `visualization_msgs/MarkerArray` | *The same markers exclusively for the Robot Control UI (desktop, VR, VR mirror), since the throttled `/zed/bboxes_3d` subscription (queue 1) would mostly drop them next to YOLO at camera rate.* |
->> | **`/ui/virtual_detections_enabled`** | `std_msgs/Bool` (latched) | *Current switch state for the Virtual Obj. button.* |
->> | **`/ui/virtual_objects`** | `std_msgs/String` (latched, JSON) | *State of the single objects for the **OBJECTS** tab in the viewport: list of `{frame, name, color, on, scene}`, objects of the palletizing scene also with `meta`.* |
+>> | **`/ui/virtual_detections_enabled`** | `std_msgs/Bool` (latched) | *Current switch state of the **Object detection** switch (tag GLOBAL) in Detected Objects.* |
+>> | **`/ui/virtual_objects`** | `std_msgs/String` (latched, JSON) | *State of the single objects for the **Virtual Objects** flyout in the viewport: list of `{frame, name, color, on, scene}`, objects of the palletizing scene also with `meta`.* |
 >> | **`/ui/virtual_scene`** | `std_msgs/String` (latched) | *Active scene: `standard` or `palletizing` (area bar › Scene).* |
 >
 >
@@ -568,7 +568,7 @@
 
 ### ![Node](https://img.shields.io/badge/Node-blue?style=flat-square) ![Python UI](https://img.shields.io/badge/Python_UI-8A2BE2?style=flat-square&logo=qt&logoColor=white) `tf_control_tuner.py` (`tf_control_tuner`) &nbsp;&nbsp; <sub><i>`/src/tf_control_tuner/tf_control_tuner/tf_control_tuner.py`</i></sub>
 
-**Purpose & Task:** A dedicated ROS 2 package providing a live PyQt5 GUI tuner to interactively calibrate camera TF offsets (Pointcloud) and position 3D scene elements (Cube, Rectangle, Cylinder, Table Plane) alongside an adjustable cylindrical **Safety Zone** (tunable radius and XY center) in RViz without restarting nodes. A **Size** slider (25–300 %, 100 % = original dimensions) scales the scene and grasp objects uniformly around their bottom.
+**Purpose & Task:** A dedicated ROS 2 package providing a live PyQt5 GUI tuner to interactively calibrate camera TF offsets (Pointcloud) and position 3D scene elements (Cube, Rectangle, Cylinder, grasp items Bottle/Steel Ball/Rubber Ball/Bowl/Basket, Pallet and Cartons of the palletizing scene) alongside an adjustable cylindrical **Safety Zone** (tunable radius and XY center) in RViz without restarting nodes. A **Size** slider (25–300 %, 100 % = original dimensions) scales the scene and grasp objects uniformly around their bottom.
 
 <details>
 <summary><b>🔽 Show details</b> · Run Command · Publishes · Defaults</summary>
@@ -594,9 +594,9 @@
 >> | Element | Frame ID | X [m] | Y [m] | Z [m] | Roll | Pitch | Yaw |
 >> |---|---|---|---|---|---|---|---|
 >> | **Zed M Camera** | `zed_camera_link` | `0.473` | `0.000` | `0.368` | `0.0°` | `57.5°` | `180.0°` |
->> | **Blue Cube** | `target_blue_cube` | `0.300` | `0.085` | `0.000` | `0.0°` | `0.0°` | `0.0°` |
->> | **Red Rectangle** | `target_red_rectangle` | `0.305` | `-0.080` | `0.000` | `0.0°` | `0.0°` | `45.0°` |
->> | **Green Cylinder** | `target_green_cylinder` | `0.350` | `0.025` | `0.000` | `0.0°` | `0.0°` | `0.0°` |
+>> | **Blue Cube** | `target_blue_cube` | `0.300` | `0.085` | `0.002` | `0.0°` | `0.0°` | `0.0°` |
+>> | **Red Rectangle** | `target_red_rectangle` | `0.305` | `-0.080` | `0.002` | `0.0°` | `0.0°` | `45.0°` |
+>> | **Green Cylinder** | `target_green_cylinder` | `0.350` | `0.025` | `0.002` | `0.0°` | `0.0°` | `0.0°` |
 >> | **Safety Zone** | `target_safety_zone` | `0.000` | `0.000` | `0.000` | `0.0°` | `0.0°` | `0.0°` |
 >
 > *Safety Zone radius default: 200 mm (sent together with X/Y on `/ui/safety_zone_params`).*

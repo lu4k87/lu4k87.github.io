@@ -120,7 +120,7 @@ Die folgende Übersicht zeigt auf einen Blick, welche Projektmodule in reiner So
 >> | **`/ui/joy_button_presses`** | `std_msgs/String` | *Publiziert Controller-Tastendrücke für das UI.* |
 >> | **`/ui/gripper_state`** | `std_msgs/String` (latched) | *Greiferzustand (`open` / `closed` / `off`) - hält Gamepad-Toggle und UI-Buttons synchron.* |
 >> | **`/ui/gripper_type`** | `std_msgs/String` (latched) | *Konfigurierter Greifer (`vacuum` / `gripper` / `none`) aus dem Launch-Argument.* |
->> | **`/ui/robot_control/current_frame`** | `std_msgs/String` | *Publiziert den aktuellen Referenzrahmen (z. B. World, TCP).* |
+>> | **`/ui/robot_control/current_frame`** | `std_msgs/String` | *Publiziert den aktuellen Referenzrahmen (`link_base` oder `link_tcp`).* |
 >> | **`/linear_axis_cmd`** | `std_msgs/Float64` | *Publiziert Befehle zur Steuerung der Linearachse.* |
 >
 >
@@ -208,6 +208,7 @@ Die folgende Übersicht zeigt auf einen Blick, welche Projektmodule in reiner So
 >> | `MAX_LINEAR_VELOCITY_MM_S` | `75.0` | *Angenommene Lineargeschwindigkeit (mm/s) als Basis der Vorausschau.* |
 >> | `ACCELERATION_FACTOR` | `0.9` | *Dämpfungsfaktor für die vorausberechnete Geschwindigkeit.* |
 >> | `DOWN_TRIGGER_AXIS` | `5` | *Joy-Achsen-Index des rechten Triggers (RT, abwärts).* |
+>> | `UP_TRIGGER_AXIS` | `2` | *Joy-Achsen-Index des linken Triggers (LT, aufwärts); Z-Tempo = LT − RT, der Wächter begrenzt also den Netto-Abwärtsanteil.* |
 >> | `EEF_TIMEOUT` | `1.0` | *Sekunden ohne neue `/ui/eef_position`, nach denen die Position als unbekannt gilt und abwärts gesperrt wird.* |
 
 </details>
@@ -241,7 +242,7 @@ Die folgende Übersicht zeigt auf einen Blick, welche Projektmodule in reiner So
 >
 >> | Topic / Interface | Msg Type | Beschreibung |
 >> |---|---|---|
->> | **`/xarm/set_tgpio_digital`** | `xarm_msgs/srv/SetDigitalIO` (Client) | *Schaltet Tool Digital Output 0 (TGPIO) am Greifer EIN (1) bzw. AUS (0).* |
+>> | **`/ufactory/set_tgpio_digital`** | `xarm_msgs/srv/SetDigitalIO` (Client) | *Schaltet Tool Digital Output 0 (TGPIO) am Greifer EIN (1) bzw. AUS (0); Namespace aus Parameter `hw_ns` (Standard `ufactory`).* |
 
 </details>
 
@@ -334,7 +335,7 @@ if predicted_z < Z_LIMIT:
 ```
 
 <details>
-<summary><b>🔽 Tabelle anzeigen</b> · 8 Parameter · Z-Limit · Vorsichtszone · Lookahead</summary>
+<summary><b>🔽 Tabelle anzeigen</b> · 9 Parameter · Z-Limit · Vorsichtszone · Lookahead</summary>
 
 | Parameter | Wert | Beschreibung |
 |---|---|---|
@@ -345,6 +346,7 @@ if predicted_z < Z_LIMIT:
 | `LOOKAHEAD_TIME` | `0.1 s` | *Vorhersagehorizont* |
 | `ACCELERATION_FACTOR` (α) | `0.9` | *Dämpfungsfaktor* |
 | `DOWN_TRIGGER_AXIS` | `5` (RT) | *Joy-Achsen-Index für Abwärts-Trigger* |
+| `UP_TRIGGER_AXIS` | `2` (LT) | *Joy-Achsen-Index für Aufwärts-Trigger (Netto-Z = LT − RT)* |
 | `EEF_TIMEOUT` | `1.0 s` | *Ohne neue `/ui/eef_position` gilt die Position danach als unbekannt — abwärts gesperrt* |
 
 </details>

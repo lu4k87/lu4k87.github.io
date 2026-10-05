@@ -1,6 +1,7 @@
 <!doctype html>
 <!-- Funktionsatlas: alle Funktionen des Interakt Control Robot als Karten, je Ablauf ein animierter Flow-Graph,
-     Kreisläufe zusätzlich als Ring. Design wie docs/project_docs.html (kantig, hell + dunkel, DE + EN).
+     Kreisläufe zusätzlich als Ring. Design wie docs/project_docs.html (Palette Monochrom, Ecken dezent gerundet, hell + dunkel, DE + EN);
+     Kopf = Landing-Hero aus css/landing.css + js/landing.js, 3D-Bühne js/hero3d.js (Szene „atlas“, ohne WebGL/Netz bleibt das Bild).
      Flow-Engine = Kopie aus .claude/skills/flow-graph/flow_graph_template.html, erweitert um `via` (Rückweg über eigene Zeile).
      Neue Funktion: <article class="fn"> im Bereich ergänzen (data-a Bereich, data-f Ablauf, data-s Stufen s/p/r).
      Neuer Ablauf: Eintrag in FLOWS (SPEC wie Skill flow-graph, Topics per grep belegt; loop = Ring-Stationen).
@@ -11,37 +12,42 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Funktionsatlas · Interakt Control Robot</title>
 <link rel="stylesheet" href="fonts/fonts.css">
+<link rel="stylesheet" href="css/landing.css">
 <style>
 :root {
-  --radius: 2px; /* kantig, höchstens 2 px */
+  --radius-sm: 4px; --radius: 6px; --radius-lg: 8px; /* Ecken dezent: klein (Chips, Buttons, Code) · Karten · große Rahmen; Balken/Linien kantig, höchstens 8 px (Wunsch User 04.10.2026, Hook prüft) */
   color-scheme: dark;
-  --bg: #0a0f19; --surface: #0f1727; --surface-2: #131d31; --line: #1f2c44; --line-strong: #2f4163;
-  --fg: #e8eef8; --fg-2: #c3cfe0; --accent: #38bdf8; --accent-ink: #04121c;
-  --indigo: #818cf8; --teal: #2dd4bf; --violet: #a78bfa; --gold: #f0b429; --green: #10b981; --red: #f87171;
-  --grid: rgba(56, 189, 248, .07);
+  /* Graphit + Türkis-Akzent wie project_docs.html; je Bereich eine eigene Farbe (Wunsch User 05.10.2026, Rot nur Fehler/Stopp); Kopf bleibt dunkel (.dark-zone) */
+  --bg: #111315; --surface: #181b1e; --surface-2: #1f2327; --line: #2a2f34; --line-strong: #3b4248;
+  --fg: #eef2f3; --fg-2: #b9c2c6; --accent: #2ee6c8; --accent-ink: #04201c;
+  --indigo: #818cf8; --teal: #2dd4bf; --violet: #a78bfa; --gold: #f5b942; --green: #4ade80; --red: #f87171; --warn: #fbbf24;
+  --blue: #60a5fa; --pink: #f472b6; --orange: #fb923c; --lime: #a3e635;
+  --band: #15181a; --grid: rgba(46, 230, 200, .055); --glow: rgba(46, 230, 200, .45);
   --shadow: 0 1px 0 rgba(255,255,255,.04) inset, 0 20px 40px -24px rgba(0,0,0,.7);
   --font: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   --mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
   --ease-out: cubic-bezier(.2, .7, .2, 1); --ease-io: cubic-bezier(.65, 0, .35, 1);
-  --t-fast: 150ms; --t-base: 250ms; --t-slow: 450ms; --rise: 12px;
+  --t-fast: 150ms; --t-base: 250ms; --t-slow: 450ms; --t-story: 700ms; --stagger: 50ms; --rise: 12px;
 }
 @media (prefers-color-scheme: light) {
   :root:not([data-theme="dark"]) {
     color-scheme: light;
-    --bg: #f2f5fa; --surface: #ffffff; --surface-2: #eef3f9; --line: #d7e0ec; --line-strong: #b7c5d9;
-    --fg: #0b1424; --fg-2: #2c3b52; --accent: #0277b6; --accent-ink: #ffffff;
-    --indigo: #4f46e5; --teal: #0f766e; --violet: #7c3aed; --gold: #a15c00; --green: #047857; --red: #b91c1c;
-    --grid: rgba(2, 119, 182, .07);
-    --shadow: 0 1px 2px rgba(15,30,60,.06), 0 16px 32px -24px rgba(15,30,60,.35);
+    --bg: #f3f5f5; --surface: #ffffff; --surface-2: #eef2f2; --line: #d9e0e0; --line-strong: #b9c4c4;
+    --fg: #14181a; --fg-2: #3a4448; --accent: #0a7a6d; --accent-ink: #ffffff;
+    --indigo: #4338ca; --teal: #0f766e; --violet: #6d28d9; --gold: #9a5b00; --green: #15803d; --red: #b91c1c; --warn: #a15c00;
+    --blue: #1d4ed8; --pink: #be185d; --orange: #c2410c; --lime: #4d7c0f;
+    --band: #e9eeee; --grid: rgba(10, 122, 109, .06); --glow: transparent;
+    --shadow: 0 1px 2px rgba(20,30,30,.06), 0 16px 32px -24px rgba(20,40,40,.35);
   }
 }
 :root[data-theme="light"] {
   color-scheme: light;
-  --bg: #f2f5fa; --surface: #ffffff; --surface-2: #eef3f9; --line: #d7e0ec; --line-strong: #b7c5d9;
-  --fg: #0b1424; --fg-2: #2c3b52; --accent: #0277b6; --accent-ink: #ffffff;
-  --indigo: #4f46e5; --teal: #0f766e; --violet: #7c3aed; --gold: #a15c00; --green: #047857; --red: #b91c1c;
-  --grid: rgba(2, 119, 182, .07);
-  --shadow: 0 1px 2px rgba(15,30,60,.06), 0 16px 32px -24px rgba(15,30,60,.35);
+  --bg: #f3f5f5; --surface: #ffffff; --surface-2: #eef2f2; --line: #d9e0e0; --line-strong: #b9c4c4;
+  --fg: #14181a; --fg-2: #3a4448; --accent: #0a7a6d; --accent-ink: #ffffff;
+  --indigo: #4338ca; --teal: #0f766e; --violet: #6d28d9; --gold: #9a5b00; --green: #15803d; --red: #b91c1c; --warn: #a15c00;
+  --blue: #1d4ed8; --pink: #be185d; --orange: #c2410c; --lime: #4d7c0f;
+  --band: #e9eeee; --grid: rgba(10, 122, 109, .06); --glow: transparent;
+  --shadow: 0 1px 2px rgba(20,30,30,.06), 0 16px 32px -24px rgba(20,40,40,.35);
 }
 
 * { box-sizing: border-box; }
@@ -52,7 +58,7 @@ body { margin: 0; background: var(--bg); color: var(--fg); font: 500 15px/1.5 va
 h1, h2, h3, p { margin: 0; }
 a { color: inherit; }
 button, select, input { font: inherit; color: inherit; }
-:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: var(--radius); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: var(--radius-sm); }
 .ico { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex: none; }
 .wrap { max-width: 1440px; margin-inline: auto; padding-inline: 24px; }
 
@@ -62,31 +68,21 @@ button, select, input { font: inherit; color: inherit; }
 .brand { display: flex; align-items: center; gap: 10px; font-weight: 800; text-decoration: none; }
 .brand-mark { width: 34px; height: 34px; border-radius: var(--radius); display: grid; place-items: center; background: var(--accent); color: var(--accent-ink); }
 .brand small { display: block; font: 600 11px/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--fg-2); margin-top: 3px; }
-.back { margin-left: auto; display: inline-flex; align-items: center; gap: 8px; min-height: 36px; padding: 0 12px; border-radius: var(--radius); font-size: 14px; font-weight: 700; text-decoration: none; color: var(--fg-2); }
-.back:hover { background: var(--surface-2); color: var(--fg); }
-.back .ico { width: 18px; height: 18px; transform: scaleX(-1); }
-.tools { display: flex; gap: 8px; }
-.seg { display: flex; border: 1px solid var(--line-strong); border-radius: var(--radius); overflow: hidden; }
-.seg button { font: 700 12px/1 var(--mono); padding: 0 10px; min-height: 32px; min-width: 36px; border: 0; background: transparent; color: var(--fg-2); cursor: pointer; }
-.seg button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); }
+.tools { display: flex; gap: 8px; margin-left: auto; }
+/* Steuerknöpfe „Leiste“: Auswahl = Gruppe mit Rahmen, gewählt = heller Daumen */
+.seg { display: inline-flex; gap: 2px; padding: 3px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface-2); }
+.seg button { font: 700 12px/1 var(--mono); padding: 0 10px; min-height: 28px; min-width: 34px; border: 0; border-radius: var(--radius-sm); background: transparent; color: var(--fg-2); cursor: pointer; transition: background-color var(--t-fast), color var(--t-fast); }
+.seg button:hover { color: var(--fg); background: color-mix(in srgb, var(--fg) 7%, transparent); }
+.seg button[aria-pressed="true"] { background: var(--surface); color: var(--fg); box-shadow: 0 0 0 1px var(--line-strong); }
 
-/* Kopf: Satz + Stufen-Legende links, Faktenkarten rechts */
-.hero { display: flex; flex-wrap: wrap; gap: 18px 32px; align-items: end; justify-content: space-between; padding-block: 28px 18px; }
-.hero-txt { display: grid; gap: 10px; min-width: 0; flex: 1 1 520px; }
-.eyebrow { font: 700 12px/1 var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--accent); display: flex; align-items: center; gap: 10px; }
-.eyebrow::before { content: ""; width: 22px; height: 2px; background: currentColor; }
-.hero h1 { font-size: clamp(28px, 4vw, 40px); line-height: 1.12; font-weight: 800; letter-spacing: -.025em; text-wrap: balance; }
-.lede { font-size: 16px; line-height: 1.5; color: var(--fg-2); max-width: 68ch; text-wrap: pretty; }
-.lede b { color: var(--fg); }
-.legend { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; font-size: 14px; line-height: 1.45; }
-.legend b { font-weight: 800; }
-.facts { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
-.facts li { display: grid; gap: 2px; flex: 1 1 96px; min-width: 96px; padding: 10px 14px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); box-shadow: var(--shadow); }
-.facts b { font-size: 26px; line-height: 1.1; font-weight: 800; font-variant-numeric: tabular-nums; }
-.facts span { font: 600 12px/1.3 var(--mono); color: var(--fg-2); }
+/* Kopf = Landing-Hero (css/landing.css, Szene „atlas“ aus js/hero3d.js); darunter die Stufen-Legende der Karten */
+.hero a { text-decoration: none; }
+.hero .legend { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; max-width: 60ch; font-size: 14px; line-height: 1.45; color: var(--fg-2); }
+.hero .legend b { color: var(--fg); font-weight: 800; }
+.atlas-body { padding-top: 36px; }
 
 /* Stufen-Badge S1: Simulieren | Prüfen | REAL; nicht zutreffende Stufe durchgestrichen */
-.stage { display: inline-flex; align-items: stretch; border: 1px solid var(--line-strong); border-radius: var(--radius); overflow: hidden; font: 700 11.5px/1 var(--mono); letter-spacing: .06em; text-transform: uppercase; }
+.stage { display: inline-flex; align-items: stretch; border: 1px solid var(--line-strong); border-radius: var(--radius-sm); overflow: hidden; font: 700 11.5px/1 var(--mono); letter-spacing: .06em; text-transform: uppercase; }
 .stage > span { display: inline-flex; align-items: center; gap: 6px; padding: 6px 9px; background: var(--surface); color: var(--fg); }
 .stage > span + span { border-left: 1px solid var(--line-strong); }
 .stage .on { background: color-mix(in srgb, var(--c) 15%, var(--surface)); }
@@ -97,16 +93,16 @@ button, select, input { font: inherit; color: inherit; }
 
 /* Filterleiste: Bereiche, nur Kreisläufe, Suche */
 .filter { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; justify-content: space-between; padding: 12px; margin-bottom: 16px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); box-shadow: var(--shadow); }
-.chips { display: flex; flex-wrap: wrap; gap: 6px; }
-.chip { --c: var(--accent); display: inline-flex; align-items: center; gap: 8px; min-height: 40px; padding: 0 12px; border: 1px solid var(--line-strong); border-radius: var(--radius); background: var(--surface); font-size: 13.5px; font-weight: 700; cursor: pointer; transition: border-color var(--t-fast), background var(--t-fast); }
-.chip:hover { border-color: var(--c); }
+.chips { display: flex; flex-wrap: wrap; gap: 2px; padding: 3px; width: fit-content; max-width: 100%; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface-2); }
+.chip { --c: var(--accent); display: inline-flex; align-items: center; gap: 8px; min-height: 36px; padding: 0 12px; border: 1px solid transparent; border-radius: var(--radius-sm); background: transparent; font-size: 13.5px; font-weight: 700; cursor: pointer; transition: border-color var(--t-fast), background-color var(--t-fast); }
+.chip:hover { background: color-mix(in srgb, var(--fg) 7%, transparent); }
 .chip .ico { width: 18px; height: 18px; color: var(--c); }
-.chip b { font: 700 12px/1 var(--mono); padding: 3px 6px; border-radius: var(--radius); background: var(--surface-2); font-variant-numeric: tabular-nums; }
-.chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
-.chip[aria-pressed="true"] .ico { color: inherit; }
-.chip[aria-pressed="true"] b { background: color-mix(in srgb, var(--accent-ink) 16%, transparent); }
+.chip b { font: 700 12px/1 var(--mono); padding: 3px 6px; border-radius: var(--radius-sm); background: var(--surface-2); font-variant-numeric: tabular-nums; }
+.chip[aria-pressed="true"] { background: var(--surface); border-color: var(--line-strong); }
+#areas .chip b { background: color-mix(in srgb, var(--c) 22%, var(--surface-2)); }
+#areas .chip[aria-pressed="true"] { background: color-mix(in srgb, var(--c) 16%, var(--surface)); border-color: var(--c); }
 .f-right { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
-.search { display: inline-flex; align-items: center; gap: 8px; min-height: 40px; padding: 0 10px; border: 1px solid var(--line-strong); border-radius: var(--radius); background: var(--surface); }
+.search { display: inline-flex; align-items: center; gap: 8px; min-height: 40px; padding: 0 10px; border: 1px solid var(--line-strong); border-radius: var(--radius-sm); background: var(--surface); }
 .search:focus-within { border-color: var(--accent); }
 .search .ico { width: 18px; height: 18px; color: var(--fg-2); }
 .search input { width: 15em; max-width: 52vw; min-height: 38px; border: 0; background: transparent; outline: none; font-size: 14px; }
@@ -114,27 +110,28 @@ button, select, input { font: inherit; color: inherit; }
 .count { font: 600 12.5px/1.3 var(--mono); color: var(--fg); padding-inline: 4px; font-variant-numeric: tabular-nums; }
 
 /* Atlas: Karten links, Ablauf rechts (mitlaufend) */
-.atlas { display: grid; grid-template-columns: minmax(300px, .78fr) minmax(0, 1.65fr); gap: 16px; align-items: start; padding-bottom: 40px; }
+.atlas { display: grid; grid-template-columns: minmax(300px, .78fr) minmax(0, 1.65fr); gap: 24px; align-items: start; padding-bottom: 64px; }
 .cards { display: grid; gap: 8px; min-width: 0; }
-.grp-h { display: flex; align-items: center; gap: 8px; margin: 10px 0 2px; font: 700 12px/1.2 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--fg); }
+.grp-h { display: flex; align-items: center; gap: 8px; margin: 10px 0 2px; font: 700 12px/1.2 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--c, var(--fg)); }
 .grp-h:first-child { margin-top: 0; }
 .grp-h .ico { width: 18px; height: 18px; color: var(--c); }
 .grp-h b { margin-left: auto; font-variant-numeric: tabular-nums; }
-.fn { --c: var(--accent); display: grid; gap: 8px; align-content: start; padding: 12px 14px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); transition: border-color var(--t-fast), background var(--t-fast); }
+.fn { --c: var(--accent); display: grid; gap: 8px; align-content: start; padding: 12px 14px; border: 1px solid var(--line); border-radius: var(--radius); background: color-mix(in srgb, var(--c) 5%, var(--surface)); transition: border-color var(--t-fast), background var(--t-fast); }
 .fn:hover { border-color: color-mix(in srgb, var(--c) 55%, var(--line-strong)); }
-.fn.sel { border-color: var(--c); background: color-mix(in srgb, var(--c) 7%, var(--surface)); box-shadow: 0 0 0 1px var(--c); }
+.fn.sel { border-color: var(--c); background: color-mix(in srgb, var(--c) 12%, var(--surface)); box-shadow: 0 0 0 1px var(--c); }
 .fn h3 { display: flex; align-items: start; gap: 6px; font-size: 15px; line-height: 1.3; font-weight: 800; }
 .fn-sel { display: flex; align-items: start; gap: 8px; flex: 1; min-width: 0; min-height: 28px; padding: 0; border: 0; background: none; text-align: left; font: inherit; cursor: pointer; }
 .fn-sel .ico { width: 18px; height: 18px; margin-top: 1px; color: var(--c); }
 .fn-sel::after { content: ""; position: absolute; inset: 0; }
 .fn { position: relative; }
-.fn-link { position: relative; z-index: 1; display: grid; place-items: center; width: 28px; height: 28px; flex: none; border-radius: var(--radius); font: 700 14px/1 var(--mono); color: var(--fg-2); text-decoration: none; }
+.fn-link { position: relative; z-index: 1; display: grid; place-items: center; width: 28px; height: 28px; flex: none; border-radius: var(--radius-sm); font: 700 14px/1 var(--mono); color: var(--fg-2); text-decoration: none; }
 .fn-link:hover, .fn-link:focus-visible { background: var(--surface-2); color: var(--fg); }
 .fn p { font-size: 13.5px; line-height: 1.45; color: var(--fg-2); }
 .fn p code, .pn-text code, .loop-txt code { font: 600 12px/1.35 var(--mono); color: var(--fg); overflow-wrap: anywhere; }
 .fn-meta { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
-.tag { --c: var(--accent); display: inline-flex; align-items: center; gap: 5px; padding: 4px 7px; border: 1px solid var(--line-strong); border-radius: var(--radius); font: 700 11.5px/1.1 var(--mono); color: var(--fg); background: var(--surface); }
+.tag { --c: var(--accent); display: inline-flex; align-items: center; gap: 5px; padding: 4px 7px; border: 1px solid var(--line-strong); border-radius: var(--radius-sm); font: 700 11.5px/1.1 var(--mono); color: var(--fg); background: var(--surface); }
 .tag .ico { width: 13px; height: 13px; color: var(--c); }
+.tag.area { background: color-mix(in srgb, var(--c) 16%, var(--surface)); border-color: color-mix(in srgb, var(--c) 45%, var(--line-strong)); }
 .tag.plan { border-style: dashed; border-color: color-mix(in srgb, var(--gold) 70%, var(--line-strong)); }
 .fn .stage { font-size: 10.5px; }
 .fn .stage > span { padding: 5px 7px; }
@@ -151,7 +148,7 @@ button, select, input { font: inherit; color: inherit; }
 .hint .ico { color: var(--gold); width: 18px; height: 18px; margin-top: 1px; }
 .pn-fns { display: grid; gap: 8px; padding-top: 12px; border-top: 1px solid var(--line); }
 .pn-fns h3 { font: 700 12px/1.2 var(--mono); letter-spacing: .1em; text-transform: uppercase; }
-.pn-fns .chip { min-height: 36px; font-size: 13px; }
+.pn-fns .chip { min-height: 34px; font-size: 13px; }
 
 /* Kreislauf K1: Ring links, Stationen als Liste rechts */
 .loop { display: grid; grid-template-columns: minmax(0, 400px) minmax(0, 1fr); gap: 12px 20px; align-items: center; padding: 12px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface-2); }
@@ -182,23 +179,24 @@ button, select, input { font: inherit; color: inherit; }
 .loop-back .ico { width: 18px; height: 18px; color: var(--gold); margin-top: 1px; }
 
 /* ═════════ flow-graph (in Zielseite übernehmen) ═════════ */
-.fg { --pc: var(--accent); margin: 0; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
+.fg { --pc: var(--accent); margin: 0; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg); overflow: hidden; }
 .fg-bar { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; justify-content: space-between; padding: 14px 18px; border-bottom: 1px solid var(--line); }
-.fg-scn { display: flex; flex-wrap: wrap; gap: 6px; }
-.fg-scn button, .fg-ctl button, .fg-ctl select {
-  --c: var(--accent); display: inline-flex; align-items: center; gap: 8px; min-height: 40px; padding: 0 14px;
-  font-size: 13.5px; font-weight: 700; background: var(--surface); border: 1px solid var(--line-strong); border-radius: var(--radius);
-  cursor: pointer; transition: border-color var(--t-fast), background var(--t-fast), transform var(--t-fast);
+/* Leisten: Szenarien bzw. Abspielen + Tempo je in einem Rahmen, gewählt = heller Daumen */
+.fg-scn, .fg-ctl { display: flex; flex-wrap: wrap; align-items: center; gap: 2px; padding: 3px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface-2); }
+.fg-scn button, .fg-ctl button {
+  --c: var(--accent); display: inline-flex; align-items: center; gap: 8px; min-height: 34px; padding: 0 12px;
+  font-size: 13.5px; font-weight: 700; color: var(--fg); background: transparent; border: 0; border-radius: var(--radius-sm);
+  cursor: pointer; transition: background-color var(--t-fast), box-shadow var(--t-fast), transform var(--t-fast);
 }
 .fg-scn button svg, .fg-ctl button svg { width: 17px; height: 17px; flex: none; color: var(--c); fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
-.fg-scn button[aria-pressed="true"] { border-color: var(--c); background: color-mix(in srgb, var(--c) 16%, var(--surface)); }
-.fg-scn button:hover, .fg-ctl button:hover { border-color: var(--c); }
+.fg-scn button:hover:not([aria-pressed="true"]), .fg-ctl button:hover:not([disabled], [aria-pressed="true"]) { background: color-mix(in srgb, var(--fg) 7%, transparent); }
+.fg-scn button[aria-pressed="true"], .fg-speed button[aria-pressed="true"] { background: var(--surface); box-shadow: 0 0 0 1px var(--line-strong); }
 .fg-scn button:active, .fg-ctl button:active { transform: scale(.97); }
-.fg-ctl { display: flex; gap: 6px; align-items: center; }
-.fg-ctl button { padding: 0; width: 40px; justify-content: center; }
+.fg-ctl > button { padding: 0; width: 36px; justify-content: center; }
 .fg-ctl button svg { color: var(--fg); }
 .fg-ctl button[disabled] { opacity: .45; cursor: default; }
-.fg-ctl select { padding: 0 10px; font: 600 13px var(--mono); }
+.fg-speed { display: inline-flex; gap: 2px; margin-left: 3px; padding-left: 5px; box-shadow: inset 1px 0 0 var(--line); }
+.fg-speed button { padding: 0 9px; font: 600 12px var(--mono); }
 .fg-stage { padding: 12px 10px 6px; background: linear-gradient(var(--grid) 1px, transparent 1px) 0 0 / 24px 24px, linear-gradient(90deg, var(--grid) 1px, transparent 1px) 0 0 / 24px 24px, var(--surface-2); }
 .fg-svg { display: block; width: 100%; height: auto; overflow: visible; font-family: var(--font); }
 .fg-svg .lane { fill: var(--fg-2); font: 700 11px var(--mono); letter-spacing: .12em; text-transform: uppercase; }
@@ -216,7 +214,7 @@ button, select, input { font: inherit; color: inherit; }
 .fg-svg marker path { fill: var(--line-strong); }
 .fg-svg marker.on path { fill: var(--pc); }
 .fg-svg .node { cursor: pointer; transition: opacity var(--t-base); outline: none; }
-.fg-svg .node rect { fill: var(--surface); stroke: var(--line-strong); stroke-width: 1.5; transition: stroke var(--t-base), fill var(--t-base), stroke-width var(--t-base); }
+.fg-svg .node rect { fill: color-mix(in srgb, var(--c) 9%, var(--surface)); stroke: var(--line-strong); stroke-width: 1.5; transition: stroke var(--t-base), fill var(--t-base), stroke-width var(--t-base); }
 .fg-svg .node.on rect { stroke: var(--c); }
 .fg-svg .node.now rect { fill: color-mix(in srgb, var(--pc) 20%, var(--surface)); stroke: var(--pc); stroke-width: 2.5; }
 .fg-svg .node.pin rect, .fg-svg .node:focus-visible rect { stroke: var(--fg); stroke-width: 2.5; }
@@ -283,11 +281,11 @@ footer a { text-decoration: underline; text-underline-offset: 3px; }
   .filter { padding: 10px; }
   .search { flex: 1 1 100%; }
   .search input { width: 100%; max-width: none; }
-  .back span { display: none; }
+ 
 }
 @media (max-width: 420px) { .brand small { display: none; } .tools { margin-left: auto; } }
 
-/* Seiten-Motion wie project_docs.html: Fortschrittslinie, aktiver Bereich in der Kopfzeile, Einblenden (nach .fn, damit .rv gilt) */
+/* Seiten-Motion wie project_docs.html: Fortschrittslinie, aktiver Bereich in der Kopfzeile (Einblenden: css/scroll_flow.css) */
 .progress { position: absolute; left: 0; right: 0; bottom: -1px; height: 2px; background: var(--accent); transform-origin: 0 50%; transform: scaleX(var(--p, 0)); pointer-events: none; }
 @supports (animation-timeline: scroll()) {
   .progress { animation: progress linear both; animation-timeline: scroll(root); }
@@ -298,13 +296,19 @@ footer a { text-decoration: underline; text-underline-offset: 3px; }
 .here:empty { display: none; }
 .here .ico { width: 16px; height: 16px; color: var(--c); }
 @media (max-width: 760px) { .here { display: none; } }
-.rv { opacity: 0; transform: translateY(var(--rise)); transition: opacity var(--t-slow) var(--ease-out), transform var(--t-slow) var(--ease-out); transition-delay: var(--d, 0ms); }
-.rv.in { opacity: 1; transform: none; }
-@media print { .rv { opacity: 1 !important; transform: none !important; transition: none !important; } }
-@media (prefers-reduced-motion: reduce) { .fn, .chip, .ring .st rect { transition: none; } .rv { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .fn, .chip, .ring .st rect { transition: none; } }
 </style>
+<link rel="stylesheet" href="css/scroll_flow.css">
+<script type="importmap">{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.186.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.186.0/examples/jsm/" } }</script>
+<script src="js/lite6_mesh.js" defer></script>
+<script src="js/lite6_twin.js" defer></script>
+<script src="js/hero3d.js" defer></script>
+<link rel="stylesheet" href="css/doc_path.css">
 </head>
 <body>
+<nav class="doc-path" aria-label="Pfad in der Projekt-Doku" data-en-aria="Path in the project docs"><a href="project_docs.html" data-en="← Project docs">← Projekt-Doku</a><span aria-hidden="true">›</span><a href="project_docs.html#vorstellen" data-en="Present">Vorstellen</a><span aria-hidden="true">›</span><span aria-current="page" data-en="Function atlas">Funktionsatlas</span></nav>
 <svg width="0" height="0" style="position: absolute" aria-hidden="true">
   <symbol id="i-arm" viewBox="0 0 24 24"><path d="M4 21h16M7 21v-3h10v3M12 18v-5M12 13l5-5M17 8l3 1.5M17 8l1.2-3.2"/><circle cx="12" cy="13" r="2"/><circle cx="17" cy="8" r="1.6"/></symbol>
   <symbol id="i-go" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
@@ -341,13 +345,14 @@ footer a { text-decoration: underline; text-underline-offset: 3px; }
   <symbol id="i-next" viewBox="0 0 24 24"><path d="M18 5v14M6 5l9 7-9 7z"/></symbol>
   <symbol id="i-play" viewBox="0 0 24 24"><path d="M7 4.5l12 7.5-12 7.5z"/></symbol>
   <symbol id="i-pause" viewBox="0 0 24 24"><path d="M8 5v14M16 5v14"/></symbol>
+  <symbol id="i-pointer" viewBox="0 0 24 24"><path d="M5 3.5l13 6.2-5.6 1.9-1.9 5.6z"/><path d="M12.6 12.6l5.4 5.4"/></symbol>
+  <symbol id="i-blocks" viewBox="0 0 24 24"><rect x="3" y="3" width="7.5" height="7.5" rx="1.5"/><rect x="13.5" y="3" width="7.5" height="7.5" rx="1.5"/><rect x="3" y="13.5" width="7.5" height="7.5" rx="1.5"/><path d="M17.25 13.5v7.5M13.5 17.25H21"/></symbol>
 </svg>
 
 <header class="top">
   <div class="wrap">
     <a class="brand" href="project_docs.html"><span class="brand-mark"><svg class="ico"><use href="#i-arm"/></svg></span><span>Interakt Control Robot<small data-en="Function atlas">Funktionsatlas</small></span></a>
     <span class="here" id="here" aria-hidden="true"></span>
-    <a class="back" href="project_docs.html#ablaeufe" aria-label="Projekt-Doku" data-en-aria="Project docs"><svg class="ico"><use href="#i-go"/></svg><span data-en="Project docs">Projekt-Doku</span></a>
     <div class="tools">
       <div class="seg" role="group" aria-label="Sprache / Language">
         <button type="button" data-lang="de" aria-pressed="true">DE</button>
@@ -362,28 +367,60 @@ footer a { text-decoration: underline; text-underline-offset: 3px; }
   <span class="progress" aria-hidden="true"></span>
 </header>
 
-<main id="start" class="wrap">
-  <section class="hero" aria-labelledby="atlas-h1">
-    <div class="hero-txt">
-      <div class="eyebrow" data-en="Function atlas">Funktionsatlas</div>
-      <h1 id="atlas-h1" data-en="Every function, its path, its check">Jede Funktion, ihr Weg, ihre Prüfung</h1>
-      <p class="lede" data-en="All functions of the &lt;b&gt;Interakt Control Robot&lt;/b&gt;, sorted by area. Pick a card: its flow runs topic by topic.">Alle Funktionen des <b>Interakt Control Robot</b>, sortiert nach Bereich. Karte wählen: Ihr Ablauf läuft Topic für Topic.</p>
-      <div class="legend">
-        <span class="stage" role="img" aria-label="Simulieren, Prüfen, REAL" data-en-aria="Simulate, check, REAL"><span class="on" style="--c: var(--teal)"><svg class="ico"><use href="#i-cube"/></svg><span data-en="Simulate">Simulieren</span></span><span class="on" style="--c: var(--gold)"><svg class="ico"><use href="#i-check"/></svg><span data-en="Check">Prüfen</span></span><span class="on" style="--c: var(--indigo)"><svg class="ico"><use href="#i-arm"/></svg>REAL</span></span>
-        <span data-en="&lt;b&gt;First virtual, then real.&lt;/b&gt; The Digital Twin simulates and checks before the xArm&amp;nbsp;Lite&amp;nbsp;6 moves; struck-through stages do not apply."><b>Erst virtuell, dann real.</b> Der Digital Twin simuliert und prüft, bevor der xArm&nbsp;Lite&nbsp;6 fährt; durchgestrichene Stufen entfallen.</span>
+<main id="start">
+  <!-- ═════════ Hero: Claim + Stufen-Legende links, rechts 3D-Bühne „atlas“ (Punktring: ein Bogen je Bereich, ein Punkt je Funktion) ═════════ -->
+  <section class="hero dark-zone" aria-labelledby="atlas-h1">
+    <div class="wrap hero-inner">
+      <div class="hero-copy">
+        <span class="badge"><span class="bi-s"><svg class="ico" aria-hidden="true"><use href="#i-spark"/></svg></span><span data-en="Function atlas">Funktionsatlas</span></span>
+        <h1 id="atlas-h1">
+          <span class="h1-name">Interakt Control Robot</span>
+          <span class="h1-claim" data-en="&lt;span class=&quot;ln&quot;&gt;&lt;span&gt;Every function,&lt;/span&gt;&lt;/span&gt; &lt;span class=&quot;ln&quot;&gt;&lt;span&gt;&lt;em&gt;its path, its check.&lt;/em&gt;&lt;/span&gt;&lt;/span&gt;"><span class="ln"><span>Jede Funktion,</span></span> <span class="ln"><span><em>ihr Weg, ihre Prüfung.</em></span></span></span>
+        </h1>
+        <p class="abstract" data-en="All functions of the &lt;b&gt;Interakt Control Robot&lt;/b&gt;, sorted by area. &lt;b&gt;Pick a card:&lt;/b&gt; its flow runs topic by topic.">Alle Funktionen des <b>Interakt Control Robot</b>, sortiert nach Bereich. <b>Karte wählen:</b> Ihr Ablauf läuft Topic für Topic.</p>
+        <div class="cta-row">
+          <a class="b-pri" href="#atlas-list"><span data-en="Browse the functions">Funktionen ansehen</span><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg></a>
+          <a class="b-sec" href="#atlas-list" data-loops><svg class="ico" aria-hidden="true"><use href="#i-loop"/></svg><span data-en="Loops only">Nur Kreisläufe</span><em data-count="loop">10</em></a>
+        </div>
+        <ul class="trust" aria-label="Stufen je Funktion" data-en-aria="Stages per function">
+          <li><span class="bi-s"><svg class="ico" aria-hidden="true"><use href="#i-cube"/></svg></span><span><b data-en="Simulate">Simulieren</b><span data-en="in the Digital Twin">im Digital Twin</span></span></li>
+          <li><span class="bi-s"><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg></span><span><b data-en="Check">Prüfen</b><span data-en="collision, sandbox, lock">Kollision, Sandbox, Lock</span></span></li>
+          <li><span class="bi-s"><svg class="ico" aria-hidden="true"><use href="#i-arm"/></svg></span><span><b>REAL</b><span data-en="only after approval">erst nach Freigabe</span></span></li>
+        </ul>
+        <p class="legend" data-en="&lt;b&gt;First virtual, then real.&lt;/b&gt; Every card shows its stages; struck-through stages do not apply."><b>Erst virtuell, dann real.</b> Jede Karte zeigt ihre Stufen; durchgestrichene Stufen entfallen.</p>
       </div>
+      <div class="hero-stage" id="hero-stage">
+        <figure class="stage-3d">
+          <img class="stage-fallback" src="img/presentation/twin.jpg" width="690" height="480" alt="Digital Twin: virtueller xArm Lite 6 mit Objekten und Kollisionsboxen" data-en-alt="Digital Twin: virtual xArm Lite 6 with objects and collision boxes">
+          <div class="stage-canvas" id="hero3d" role="img" aria-label="3D: xArm Lite 6 in einem Punktring; jeder Bogen ist ein Bereich, jeder Punkt eine Funktion" data-en-aria="3D: xArm Lite 6 inside a ring of dots; each arc is an area, each dot a function"></div>
+          <figcaption class="stage-badge"><span class="hchip"><span><b data-count="fn">83</b> <span data-en="functions">Funktionen</span> · <b data-count="area">9</b> <span data-en="areas">Bereiche</span></span></span></figcaption>
+        </figure>
+        <a class="hero-card hc-1 hc-live" id="hc-area" href="#bereich-ctl">
+          <small><svg class="ico" aria-hidden="true"><use href="#i-layers"/></svg><span data-en="Area">Bereich</span></small>
+          <strong id="hc-area-n">14</strong>
+          <span id="hc-area-name">Steuerwege</span>
+        </a>
+        <a class="hero-card hc-2" href="#atlas-list">
+          <small><svg class="ico" aria-hidden="true"><use href="#i-blocks"/></svg><span data-en="Functions">Funktionen</span></small>
+          <strong data-count="fn">83</strong>
+          <span data-en="each with its flow graph">je mit Flow-Graph</span>
+        </a>
+        <a class="hero-card hc-3" href="#atlas-list" data-loops>
+          <small><svg class="ico" aria-hidden="true"><use href="#i-loop"/></svg><span data-en="Loops">Kreisläufe</span></small>
+          <strong data-count="loop">10</strong>
+          <span data-en="return paths shown as a ring">Rückwege als Ring</span>
+        </a>
+        <p class="stage-hint"><svg class="ico" aria-hidden="true"><use href="#i-pointer"/></svg><span class="hint-fine" data-en="Point at an area: its functions light up · drag to rotate">Zeiger auf einen Bereich: Funktionen leuchten · ziehen zum Drehen</span><span class="hint-touch" data-en="Drag to rotate">Ziehen zum Drehen</span></p>
+      </div>
+      <a class="scroll-cue" href="#atlas-list"><span data-en="Scroll">Scrollen</span><i aria-hidden="true"></i></a>
     </div>
-    <ul class="facts">
-      <li><b data-count="fn">83</b><span data-en="functions">Funktionen</span></li>
-      <li><b data-count="area">9</b><span data-en="areas">Bereiche</span></li>
-      <li><b data-count="loop">10</b><span data-en="loops">Kreisläufe</span></li>
-    </ul>
   </section>
 
+  <div class="wrap atlas-body" id="atlas-list">
   <div class="filter" role="search" aria-label="Funktionen filtern" data-en-aria="Filter functions">
     <div class="chips" id="areas" role="group" aria-label="Bereich" data-en-aria="Area"></div>
     <div class="f-right">
-      <button type="button" class="chip" id="only-loops" aria-pressed="false"><svg class="ico"><use href="#i-loop"/></svg><span data-en="Loops only">nur Kreisläufe</span></button>
+      <span class="chips"><button type="button" class="chip" id="only-loops" aria-pressed="false"><svg class="ico"><use href="#i-loop"/></svg><span data-en="Loops only">nur Kreisläufe</span></button></span>
       <label class="search"><svg class="ico" aria-hidden="true"><use href="#i-search"/></svg><input type="search" id="q" placeholder="Funktion oder Topic suchen …" data-en-ph="Search function or topic …" aria-label="Funktion oder Topic suchen" data-en-aria="Search function or topic"></label>
       <span class="count" id="count" aria-live="polite"></span>
     </div>
@@ -513,7 +550,7 @@ footer a { text-decoration: underline; text-underline-offset: 3px; }
         <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg><span data-en="Nexus preflight">Nexus-Preflight</span></button></h3>
         <p data-en="Checks robot, cameras, ports, duplicate stacks, GPU and disk; automatic in REAL.">Prüft Roboter, Kameras, Ports, Doppelstacks, GPU und Platte; in REAL automatisch.</p>
       </article>
-      <h2 class="grp-h" data-a="twin" style="--c: var(--teal)">Digital Twin</h2>
+      <h2 class="grp-h" data-a="twin" style="--c: var(--blue)">Digital Twin</h2>
       <article class="fn" id="twin-urdf" data-a="twin" data-f="feedback" data-s="sr">
         <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-cube"/></svg><span data-en="Digital Twin: three.js and URDF">Digital Twin: three.js und URDF</span></button></h3>
         <p data-en="The Lite 6 model mirrors &lt;code&gt;/joint_states&lt;/code&gt; at about 30&amp;nbsp;Hz in the browser.">Das Lite-6-Modell spiegelt <code>/joint_states</code> mit etwa 30&nbsp;Hz im Browser.</p>
@@ -620,7 +657,7 @@ footer a { text-decoration: underline; text-underline-offset: 3px; }
         <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-chart"/></svg><span data-en="Session log and vla_eval">Session-Log und vla_eval</span></button></h3>
         <p data-en="Every model round is logged; 57 fixed test cases measure the agent without a robot.">Jede Modell-Runde wird geloggt; 57 feste Testfälle messen den Agenten ohne Roboter.</p>
       </article>
-      <h2 class="grp-h" data-a="mon" style="--c: var(--indigo)">Monitoring Dashboard</h2>
+      <h2 class="grp-h" data-a="mon" style="--c: var(--pink)">Monitoring Dashboard</h2>
       <article class="fn" id="mon-overview" data-a="mon" data-f="mon">
         <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-chart"/></svg><span data-en="Overview">Übersicht</span></button></h3>
         <p data-en="System, ROS&amp;nbsp;2, robot and users at a glance.">System, ROS&nbsp;2, Roboter und Nutzer auf einen Blick.</p>
@@ -638,7 +675,7 @@ footer a { text-decoration: underline; text-underline-offset: 3px; }
         <p data-en="Status, latency and availability of all web UIs and servers.">Status, Antwortzeit und Verfügbarkeit aller Web-UIs und Server.</p>
       </article>
       <article class="fn" id="mon-comms" data-a="mon" data-f="mon">
-        <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-link"/></svg><span data-en="Node communication">Node-Kommunikation</span></button></h3>
+        <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-link"/></svg><span data-en="ROS graph">ROS-Graph</span></button></h3>
         <p data-en="Graph, data flow and live rates of all ROS&amp;nbsp;2 nodes.">Graph, Datenfluss und Live-Raten aller ROS-2-Nodes.</p>
       </article>
       <article class="fn" id="mon-topics" data-a="mon" data-f="mon">
@@ -665,7 +702,7 @@ footer a { text-decoration: underline; text-underline-offset: 3px; }
         <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-db"/></svg><span data-en="Export">Export</span></button></h3>
         <p data-en="&lt;code&gt;/api/export&lt;/code&gt; delivers 7 tables as CSV or JSON, 30 days by default."><code>/api/export</code> liefert 7 Tabellen als CSV oder JSON, Standard 30 Tage.</p>
       </article>
-      <h2 class="grp-h" data-a="eval" style="--c: var(--indigo)">Evaluierung</h2>
+      <h2 class="grp-h" data-a="eval" style="--c: var(--orange)">Evaluierung</h2>
       <article class="fn" id="eval-hierarchy" data-a="eval" data-f="study">
         <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-flask"/></svg><span data-en="Test, task, participant, questionnaire">Test, Aufgabe, Person, Fragebogen</span></button></h3>
         <p data-en="Four levels; one run per participant, task and input method.">Vier Ebenen; je Person, Aufgabe und Eingabemethode ein Durchlauf.</p>
@@ -698,7 +735,7 @@ footer a { text-decoration: underline; text-underline-offset: 3px; }
         <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-db"/></svg><span data-en="Export CSV and JSON">Export CSV und JSON</span></button></h3>
         <p data-en="Participants, runs with metrics and questionnaire answers.">Testpersonen, Durchläufe mit Kennzahlen und Fragebogen-Antworten.</p>
       </article>
-      <h2 class="grp-h" data-a="data" style="--c: var(--teal)">Daten</h2>
+      <h2 class="grp-h" data-a="data" style="--c: var(--indigo)">Daten</h2>
       <article class="fn" id="data-blackbox" data-a="data" data-f="blackbox">
         <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-db"/></svg><span data-en="Blackbox">Blackbox</span></button></h3>
         <p data-en="The last 60&amp;nbsp;s as rosbag2 on E-STOP, servo halt, collision or button.">Die letzten 60&nbsp;s als rosbag2 bei E-STOP, Servo-Halt, Kollision oder Knopf.</p>
@@ -711,7 +748,7 @@ footer a { text-decoration: underline; text-underline-offset: 3px; }
         <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-touch"/></svg><span data-en="Click statistics">Klick-Statistik</span></button></h3>
         <p data-en="Clicks go via &lt;code&gt;/ui/interaction_events&lt;/code&gt; into SQLite every 3&amp;nbsp;s, without content.">Klicks gehen alle 3&nbsp;s über <code>/ui/interaction_events</code> in SQLite, ohne Inhalte.</p>
       </article>
-      <h2 class="grp-h" data-a="infra" style="--c: var(--accent)">Infrastruktur</h2>
+      <h2 class="grp-h" data-a="infra" style="--c: var(--lime)">Infrastruktur</h2>
       <article class="fn" id="infra-nexus" data-a="infra" data-f="start" data-s="spr">
         <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-rocket"/></svg><span data-en="Nexus Webapp">Nexus Webapp</span></button></h3>
         <p data-en="Port 8080: FAKE and REAL setups, preflight, EXECUTE, backups, Kill Daemon.">Port 8080: Setups FAKE und REAL, Preflight, EXECUTE, Backups, Kill Daemon.</p>
@@ -752,10 +789,13 @@ footer a { text-decoration: underline; text-underline-offset: 3px; }
       <div class="pn-fns" id="pn-fns" hidden><h3 data-en="Functions in this flow">Funktionen in diesem Ablauf</h3><div class="chips" id="pn-chips"></div></div>
     </section>
   </div>
+  </div>
 </main>
 
 <footer><div class="wrap"><a href="project_docs.html" data-en="← Project docs">← Projekt-Doku</a><span data-en="Last updated 04.10.2026 · topics checked against the code">Stand 04.10.2026 · Topics am Code geprüft</span><span>dev_ws · docs/project_functions.html</span></div></footer>
 
+<script src="js/scroll_flow.js"></script>
+<script src="js/landing.js"></script>
 <script>
 /* ═════════ FlowGraph-Engine (aus .claude/skills/flow-graph/flow_graph_template.html, + via) ═════════
    create(figure, SPEC, { lang }) → { setLang, setRates, select, destroy }
@@ -1114,9 +1154,11 @@ const FlowGraph = (() => {
     $('[data-act="play"]').addEventListener('click', () => { st.play = !st.play; if (st.play) { if (st.step >= scns[st.scn].steps.length - 1) st.step = -1; loop(); } else st.run++; paint(); });
     $('[data-act="prev"]').addEventListener('click', () => { st.play = false; stepTo(st.step - 1); });
     $('[data-act="next"]').addEventListener('click', () => { st.play = false; stepTo(st.step + 1); });
-    $('[data-act="speed"]').addEventListener('change', ev => { st.speed = +ev.target.value; });
+    $('[data-act="speed"]').addEventListener('click', ev => {
+      const b = ev.target.closest('button'); if (!b) return;
+      st.speed = +b.dataset.v; b.parentElement.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+    });
     fig.addEventListener('keydown', ev => {
-      if (ev.target.closest('select')) return;
       if (ev.key === 'ArrowRight') { st.play = false; stepTo(st.step + 1); ev.preventDefault(); }
       else if (ev.key === 'ArrowLeft') { st.play = false; stepTo(st.step - 1); ev.preventDefault(); }
       else if (ev.key === 'Escape') { st.pin = null; paint(); }
@@ -1297,7 +1339,7 @@ const FLOWS = (() => {
     // ─────────── Steuerwege ───────────
     pad: {
       t: ['Gamepad: vom Stick bis zum Arm', 'Gamepad: from stick to arm'], hue: 'accent', icon: 'i-pad', s: 'spr',
-      d: ['Lokal oder aus der Ferne: Jede Stick-Bewegung passiert Watchdog und Kollisionsvorprüfung, bevor MoveIt Servo den Arm bewegt.', 'Local or remote: every stick motion passes the watchdog and the pre-collision check before MoveIt Servo moves the arm.'],
+      d: ['Lokal per USB oder aus der Ferne im Browser: Beide Gamepads landen als /joy in derselben Kette aus Kollisionsvorprüfung, joy_to_servo_node und MoveIt Servo. Das Remote-Pad passiert vorher den Watchdog, der nur den Besitzer des Control-Locks mit frischem Heartbeat durchlässt.', 'Local via USB or remote in the browser: both gamepads end up as /joy in the same chain of pre-collision check, joy_to_servo_node and MoveIt Servo. The remote pad first passes the watchdog, which lets through only the control lock owner with a fresh heartbeat.'],
       spec: {
         lanes: lanes('in', 'br', 'chk', 'mo', 'hw'),
         nodes: [N('padr', 'in', 0, { label: ['Remote-Gamepad', 'Remote gamepad'], short: 'Pad', sub: 'Browser · :8443', icon: 'i-pad', hue: 'accent', info: ['Gamepad-API im Browser; sendet /remote/joy mit Client-id alle 50 ms.', 'Gamepad API in the browser; sends /remote/joy with client id every 50 ms.'] }),
@@ -1307,47 +1349,47 @@ const FLOWS = (() => {
           E('jts', 'srv', '/servo_server/delta_twist_cmds'), E('srv', 'arm', '/lite6_traj_controller/joint_trajectory'),
           E('srv', 'pcc', '/servo_server/status', { ports: 'bt', route: 'ortho' }), E('pcc', 'padl', ['Vibration (pygame)', 'Rumble (pygame)'])],
         scenarios: [
-          SC('remote', ['Remote', 'Remote'], 'i-globe', 'accent', ['Das Gamepad am Browser fährt über dieselbe Kette wie das lokale, nur mit Freigabe.', 'The gamepad at the browser runs through the same chain as the local one, only with approval.'], [
-            S('padr>rb', ['Browser sendet /remote/joy alle 50 ms', 'Browser sends /remote/joy every 50 ms']),
-            S('rb>wd', ['Nur Besitzer, Heartbeat frisch, REAL ≤ 50 %', 'Owner only, fresh heartbeat, REAL ≤ 50 %']),
-            S('wd>pcc', ['Weiter als /joy, sonst neutral', 'Passed on as /joy, otherwise neutral']),
-            S('pcc>jts', ['Abwärts gebremst, Stopp bei 91 mm', 'Downward slowed, stop at 91 mm']),
-            S('jts>srv', ['Twist × Tempostufe 0,1–0,5, geglättet', 'Twist × speed level 0.1–0.5, smoothed']),
-            S('srv>arm', ['Servo rechnet den Gelenkbefehl', 'Servo computes the joint command']),
-            S('srv>pcc', ['Warnung zurück: das Pad vibriert', 'Warning back: the pad rumbles'], { also: ['pcc>padl'] })]),
-          SC('local', ['Lokal', 'Local'], 'i-pad', 'teal', ['Das USB-Pad am Roboter-PC geht ohne Watchdog direkt in die Vorprüfung.', 'The USB pad on the robot PC goes straight into the pre-check, without the watchdog.'], [
-            S('padl>pcc', ['Stick und Trigger als /joy', 'Stick and trigger as /joy']),
-            S('pcc>jts', ['Abwärts gebremst, Stopp bei 91 mm', 'Downward slowed, stop at 91 mm']),
-            S('jts>srv', ['Twist × Tempostufe, geglättet', 'Twist × speed level, smoothed']),
-            S('srv>arm', ['Servo rechnet den Gelenkbefehl', 'Servo computes the joint command'])])],
+          SC('remote', ['Remote', 'Remote'], 'i-globe', 'accent', ['Ein Xbox-Pad am Laptop oder Tablet steuert über rosbridge und Watchdog. Ab dort läuft es wie das lokale Pad, im REAL-Modus mit höchstens 50 % Tempo und eigener Freigabe („Arm“).', 'An Xbox pad on a laptop or tablet controls via rosbridge and the watchdog. From there it runs like the local pad; in REAL mode at 50 % speed at most and with its own approval (“Arm”).'], [
+            S('padr>rb', ['Die Gamepad-API im Browser liest Sticks und Tasten und sendet sie alle 50 ms mit Client-id.', 'The browser Gamepad API reads sticks and buttons and sends them with the client id every 50 ms.']),
+            S('rb>wd', ['Der Watchdog lässt nur den Besitzer mit frischem Heartbeat durch und skaliert Sticks und Trigger in REAL auf höchstens 50 %.', 'The watchdog passes only the owner with a fresh heartbeat and scales sticks and triggers to 50 % at most in REAL.']),
+            S('wd>pcc', ['Erlaubte Befehle gehen als /joy weiter; sonst sendet der Watchdog ein neutrales Pad ohne Ausschlag.', 'Permitted commands continue as /joy; otherwise the watchdog sends a neutral pad with no deflection.']),
+            S('pcc>jts', ['Die Vorprüfung sagt die TCP-Höhe 0,1 s voraus, bremst abwärts ab 110 mm und stoppt bei 91 mm.', 'The pre-check predicts the TCP height 0.1 s ahead, slows downward motion from 110 mm and stops at 91 mm.']),
+            S('jts>srv', ['joy_to_servo_node macht aus den Achsen eine geglättete TCP-Geschwindigkeit, skaliert mit der Tempostufe 0,1–0,5.', 'joy_to_servo_node turns the axes into a smoothed TCP velocity, scaled by the speed level 0.1–0.5.']),
+            S('srv>arm', ['MoveIt Servo rechnet den Twist in Gelenkbefehle und hält vor Singularität, Kollision und Gelenkgrenze.', 'MoveIt Servo converts the twist into joint commands and halts before singularity, collision and joint limit.']),
+            S('srv>pcc', ['Meldet Servo eine Warnung (Status 3, 4 oder 5), lässt die Vorprüfung das lokale Pad vibrieren.', 'When Servo reports a warning (status 3, 4 or 5), the pre-check makes the local pad rumble.'], { also: ['pcc>padl'] })]),
+          SC('local', ['Lokal', 'Local'], 'i-pad', 'teal', ['Das USB-Pad am Roboter-PC geht ohne Watchdog direkt in die Vorprüfung. Vor Ort braucht es keine Freigabe; Vorprüfung und Servo-Grenzen gelten trotzdem.', 'The USB pad on the robot PC goes straight into the pre-check, without the watchdog. On site no approval is needed; pre-check and Servo limits still apply.'], [
+            S('padl>pcc', ['joy_node liest Sticks, Trigger und Tasten des Xbox-Pads und publiziert sie als /joy.', 'joy_node reads sticks, triggers and buttons of the Xbox pad and publishes them as /joy.']),
+            S('pcc>jts', ['Die Vorprüfung sagt die TCP-Höhe 0,1 s voraus, bremst abwärts ab 110 mm und stoppt bei 91 mm.', 'The pre-check predicts the TCP height 0.1 s ahead, slows downward motion from 110 mm and stops at 91 mm.']),
+            S('jts>srv', ['joy_to_servo_node macht aus den Achsen eine geglättete TCP-Geschwindigkeit, skaliert mit der Tempostufe.', 'joy_to_servo_node turns the axes into a smoothed TCP velocity, scaled by the speed level.']),
+            S('srv>arm', ['MoveIt Servo rechnet den Twist in Gelenkbefehle und hält vor Singularität, Kollision und Gelenkgrenze.', 'MoveIt Servo converts the twist into joint commands and halts before singularity, collision and joint limit.'])])],
       },
     },
     jog: {
       t: ['Jog: halten, fahren, loslassen', 'Jog: hold, move, release'], hue: 'accent', icon: 'i-gizmo', s: 'sr',
-      d: ['Kartesisch oder je Gelenk: Der Befehlsstrom ist der Totmann. Ohne neuen Befehl sendet der Watchdog einen Null-Twist.', 'Cartesian or per joint: the command stream is the dead man. Without a new command the watchdog sends a zero twist.'],
+      d: ['Kartesisch oder je Gelenk: Der Befehlsstrom selbst ist der Totmann, die UI sendet nur, solange der Knopf gehalten wird. Bleibt der nächste Befehl länger als 1,0 s (FAKE) bzw. 0,4 s (REAL) aus, schickt der Watchdog einen Null-Befehl an MoveIt Servo.', 'Cartesian or per joint: the command stream itself is the dead man; the UI sends only while the button is held. If the next command is missing for more than 1.0 s (FAKE) or 0.4 s (REAL), the watchdog sends a zero command to MoveIt Servo.'],
       spec: {
         lanes: lanes('in', 'br', 'chk', 'mo', 'hw'),
         nodes: [N('ui', 'in', 0, { sub: 'Jog · :8081' }), N('rb', 'br', 0), N('wd', 'chk', 0, { label: 'Twist-Gate', short: 'Gate' }), N('srv', 'mo', 0), N('arm', 'hw', 0)],
         edges: [E('ui', 'rb', '/remote/twist'), E('rb', 'wd', '/remote/twist'), E('wd', 'srv', '/servo_server/delta_twist_cmds'), E('srv', 'arm', '/lite6_traj_controller/joint_trajectory'),
           R('arm', 'srv', '/joint_states'), R('srv', 'ui', '/servo_server/status')],
         scenarios: [
-          SC('cart', ['Kartesisch', 'Cartesian'], 'i-gizmo', 'accent', ['Knopf halten bewegt den TCP; Loslassen sendet null.', 'Holding a button moves the TCP; releasing sends zero.'], [
-            S('ui>rb', ['Halten = Twist alle 20 ms, Loslassen = 0', 'Hold = twist every 20 ms, release = 0']),
-            S('rb>wd', ['Nur mit Control-Lock und ohne E-STOP', 'Only with control lock and without E-STOP']),
-            S('wd>srv', ['Bodensperre bremst, Remote ≤ max_speed', 'Floor guard brakes, remote ≤ max_speed']),
-            S('srv>arm', ['Prüft Singularität, Kollision, Grenzen', 'Checks singularity, collision, limits']),
-            S('arm>srv', ['Ist-Stellung zurück an Servo', 'Actual joint state back to Servo']),
-            S('srv>ui', ['Status-Badge in der UI', 'Status badge in the UI'])]),
-          SC('joint', ['Gelenk', 'Joint'], 'i-arm', 'teal', ['Gelenk-Regler ziehen: Die Geschwindigkeit folgt dem Mausweg.', 'Drag a joint slider: the velocity follows the mouse travel.'], [
-            S('ui>rb', ['Mausweg × Tempo, alle 50 ms', 'Mouse travel × speed, every 50 ms'], { topic: '/remote/joint_jog' }),
-            S('rb>wd', ['Nahe dem Boden: Richtung nach unten gesperrt', 'Near the floor: downward direction blocked'], { topic: '/remote/joint_jog' }),
-            S('wd>srv', ['Gelenkgeschwindigkeit an Servo', 'Joint velocity to Servo'], { topic: '/servo_server/delta_joint_cmds' }),
-            S('srv>arm', ['Servo fährt das Gelenk', 'Servo moves the joint'])])],
+          SC('cart', ['Kartesisch', 'Cartesian'], 'i-gizmo', 'accent', ['Einen Jog-Knopf halten bewegt den TCP im Basis- oder Werkzeug-Koordinatensystem (link_base, link_tcp). Loslassen sendet sofort null; bleibt der Strom aus, stoppt der Watchdog.', 'Holding a jog button moves the TCP in the base or tool frame (link_base, link_tcp). Releasing sends zero at once; if the stream stops, the watchdog stops.'], [
+            S('ui>rb', ['Solange der Knopf gedrückt ist, sendet die UI alle 20 ms einen Twist; Loslassen sendet null.', 'While the button is pressed, the UI sends a twist every 20 ms; releasing sends zero.']),
+            S('rb>wd', ['Das Twist-Gate lässt nur den Besitzer des Control-Locks mit frischem Heartbeat und ohne verriegelten E-STOP durch.', 'The twist gate passes only the control lock owner with a fresh heartbeat and no latched E-STOP.']),
+            S('wd>srv', ['Die Bodensperre begrenzt die Abwärtsfahrt so, dass der TCP in 0,25 s über dem Z-Level (10 mm) halten kann; entfernte Clients fahren höchstens mit max_speed.', 'The floor guard limits downward speed so the TCP can stop within 0.25 s above the Z level (10 mm); remote clients move at max_speed at most.']),
+            S('srv>arm', ['MoveIt Servo rechnet den Twist in Gelenkbefehle und bremst vor Singularität, Kollision und Gelenkgrenze.', 'MoveIt Servo converts the twist into joint commands and slows down before singularity, collision and joint limit.']),
+            S('arm>srv', ['Die gemessene Gelenkstellung geht zurück an Servo und ist Ausgangspunkt für den nächsten Takt.', 'The measured joint state returns to Servo and is the starting point for the next cycle.']),
+            S('srv>ui', ['Der Servo-Status erscheint als Badge in der UI, z. B. Bremsen wegen Singularität oder Kollision.', 'The Servo status appears as a badge in the UI, e.g. slowing for singularity or collision.'])]),
+          SC('joint', ['Gelenk', 'Joint'], 'i-arm', 'teal', ['Einen Gelenk-Regler ziehen: Die Geschwindigkeit folgt dem Mausweg, Loslassen stoppt das Gelenk. Das Twist-Gate prüft dieselben Bedingungen wie beim kartesischen Jog.', 'Drag a joint slider: the velocity follows the mouse travel, releasing stops the joint. The twist gate checks the same conditions as for Cartesian jog.'], [
+            S('ui>rb', ['Die UI rechnet Mausweg × Tempo in eine Gelenkgeschwindigkeit und sendet sie alle 50 ms.', 'The UI turns mouse travel × speed into a joint velocity and sends it every 50 ms.'], { topic: '/remote/joint_jog' }),
+            S('rb>wd', ['Gleiche Prüfung wie beim Twist; nahe dem Boden sperrt das Gate die Gelenkrichtung, die nach unten führt.', 'Same check as for the twist; near the floor the gate blocks the joint direction that leads downward.'], { topic: '/remote/joint_jog' }),
+            S('wd>srv', ['Erlaubte Werte gehen als Gelenkgeschwindigkeit an MoveIt Servo.', 'Permitted values go to MoveIt Servo as joint velocity.'], { topic: '/servo_server/delta_joint_cmds' }),
+            S('srv>arm', ['Servo fährt die gewählten Gelenke und hält an der Gelenkgrenze.', 'Servo moves the selected joints and halts at the joint limit.'])])],
       },
     },
     moveto: {
       t: ['MoveTo: Ziel ziehen, Ghost prüfen, fahren', 'MoveTo: drag the target, check the ghost, move'], hue: 'accent', icon: 'i-gizmo', s: 'spr',
-      d: ['Erst virtuell, dann real: Mit Ghost-Vorschau läuft die geplante Bahn zuerst im Digital Twin. Der Arm fährt erst nach Execute.', 'First virtual, then real: with ghost preview the planned path runs in the Digital Twin first. The arm moves only after Execute.'],
+      d: ['Erst virtuell, dann real: Der Motion Handler rechnet die IK nahe der aktuellen Stellung und lässt MoveIt nur planen. Mit Ghost-Vorschau läuft die Bahn zuerst im Digital Twin; der Arm fährt erst nach Execute, ohne Freigabe verfällt der Plan nach 15 s.', 'First virtual, then real: the motion handler solves the IK near the current pose and lets MoveIt only plan. With ghost preview the path runs in the Digital Twin first; the arm moves only after Execute, and without approval the plan expires after 15 s.'],
       note: ['Ghost-Vorschau ist zuschaltbar (Standard aus). Ohne sie fährt Go direkt, geprüft von IK, Boden-Box und MoveIt.', 'Ghost preview can be switched on (default off). Without it, Go moves directly, checked by IK, floor box and MoveIt.'],
       loop: { t: ['Plan → Prüfen → Freigabe', 'Plan → check → approve'], s: ['Motion Handler · MoveIt', 'Motion handler · MoveIt'],
         st: [[['Ziel setzen', 'Set target'], ['Gizmo · Go · Scan', 'Gizmo · Go · Scan']], [['Planen', 'Plan'], ['IK + plan_only', 'IK + plan_only']], [['Prüfen', 'Check'], ['Ghost · Boden-Box', 'Ghost · floor box']],
@@ -1360,20 +1402,20 @@ const FLOWS = (() => {
           N('mg', 'mv', 0), N('arm', 'hw', 0)],
         edges: [E('ui', 'rb', '/ui/plan_move_to_pose_confirm', { kind: 'service' }), E('rb', 'mh', '/ui/plan_move_to_pose_confirm', { kind: 'service' }), E('mh', 'mg', '/move_action', { kind: 'action' }),
           E('fl', 'mg', '/planning_scene'), R('mh', 'ui', '/ui/moveto_preview_path'), E('mg', 'arm', '/lite6_traj_controller/follow_joint_trajectory', { kind: 'action' })],
-        scenarios: [SC('mt', 'MoveTo', 'i-gizmo', 'accent', ['Ziel ziehen, Ghost prüfen, freigeben: Plan → Prüfen → Freigabe → Ausführen.', 'Drag the target, check the ghost, approve: plan → check → approve → execute.'], [
-          S('ui>rb', ['Gizmo loslassen: Zielpose geht los', 'Release the gizmo: the target pose is sent']),
-          S('rb>mh', ['IK nahe der Stellung, Servo pausiert', 'IK near the current pose, Servo pauses']),
-          S('mh>mg', ['MoveIt plant ohne Fahrt (plan_only)', 'MoveIt plans without moving (plan_only)'], { also: ['fl>mg'] }),
-          S('mh>ui', ['Ghost-Bahn im Twin: simulieren, prüfen', 'Ghost path in the twin: simulate, check']),
-          S('ui>rb', ['Execute fährt, Verwerfen löscht den Pfad', 'Execute moves, Discard deletes the path'], { topic: '/ui/confirm_moveto_preview', also: ['rb>mh'] }),
-          S('mh>mg', ['Bestätigten Pfad ausführen', 'Execute the confirmed path'], { topic: '/execute_trajectory' }),
-          S('mg>arm', ['FAKE simuliert, REAL fährt den Arm', 'FAKE simulates, REAL moves the arm']),
-          S('mh>ui', ['Ergebnis: succeeded, failed, aborted', 'Result: succeeded, failed, aborted'], { topic: '/ui/moveit_motion_state' })])],
+        scenarios: [SC('mt', 'MoveTo', 'i-gizmo', 'accent', ['Gizmo ziehen, Ghost-Bahn ansehen, freigeben: Plan → Prüfen → Freigabe → Ausführen. Boden-Box und Planungsszene halten die Bahn über dem Tisch und weg von Hindernissen.', 'Drag the gizmo, watch the ghost path, approve: plan → check → approve → execute. Floor box and planning scene keep the path above the table and clear of obstacles.'], [
+          S('ui>rb', ['Beim Loslassen des Gizmos schickt die UI die Zielpose als Service-Anfrage mit Bestätigung.', 'On releasing the gizmo the UI sends the target pose as a service request with confirmation.']),
+          S('rb>mh', ['Der Motion Handler sucht eine IK-Lösung nahe der aktuellen Stellung und pausiert Servo für die Fahrt.', 'The motion handler looks for an IK solution near the current pose and pauses Servo for the motion.']),
+          S('mh>mg', ['MoveIt plant mit plan_only eine Bahn um alle Hindernisse der Planungsszene, die Boden-Box eingeschlossen.', 'MoveIt plans a path with plan_only around every obstacle in the planning scene, floor box included.'], { also: ['fl>mg'] }),
+          S('mh>ui', ['Die geplante Bahn läuft als Ghost im Digital Twin; der Mensch prüft sie, bevor etwas fährt.', 'The planned path runs as a ghost in the Digital Twin; the human checks it before anything moves.']),
+          S('ui>rb', ['Execute gibt genau diesen Pfad frei, Verwerfen löscht ihn; ohne Antwort verfällt er nach 15 s.', 'Execute approves exactly this path, Discard deletes it; without an answer it expires after 15 s.'], { topic: '/ui/confirm_moveto_preview', also: ['rb>mh'] }),
+          S('mh>mg', ['Der Motion Handler führt den bestätigten Pfad unverändert aus, ohne neu zu planen.', 'The motion handler executes the confirmed path unchanged, without replanning.'], { topic: '/execute_trajectory' }),
+          S('mg>arm', ['Der Trajektorien-Controller fährt die Bahn: in FAKE simuliert, in REAL am xArm Lite 6.', 'The trajectory controller runs the path: simulated in FAKE, on the xArm Lite 6 in REAL.']),
+          S('mh>ui', ['Der Motion Handler meldet succeeded, failed oder aborted; UI, Sequenzen und KI-Agent warten auf diese Meldung.', 'The motion handler reports succeeded, failed or aborted; UI, sequences and AI agent wait for this report.'], { topic: '/ui/moveit_motion_state' })])],
       },
     },
     servo: {
       t: ['Servo-Regelkreis', 'Servo control loop'], hue: 'indigo', icon: 'i-pulse', s: 'sr',
-      d: ['Ein geschlossener Regelkreis: Servo verrechnet jeden Befehl mit der Ist-Stellung. Vor Singularität, Kollision und Gelenkgrenze hält er an.', 'A closed loop: Servo combines every command with the actual joint state. It halts before singularity, collision and joint limit.'],
+      d: ['Ein geschlossener Regelkreis im Takt von 0,034 s: Servo verrechnet jeden Twist mit der gemessenen Gelenkstellung und schickt eine Gelenk-Trajektorie an den Controller. Nähert sich der Arm einer Singularität, Kollision oder Gelenkgrenze, bremst Servo und hält an; ohne neuen Befehl stoppt er nach 0,2 s.', 'A closed loop with a 0.034 s cycle: Servo combines every twist with the measured joint state and sends a joint trajectory to the controller. As the arm nears a singularity, collision or joint limit, Servo slows down and halts; without a new command it stops after 0.2 s.'],
       loop: { t: ['Servo-Regelkreis', 'Servo control loop'], s: ['MoveIt Servo · 0,034 s', 'MoveIt Servo · 0.034 s'],
         st: [[['Twist', 'Twist'], ['Befehl −1 … 1', 'command −1 … 1']], [['Servo rechnet', 'Servo computes'], ['Singularität · Kollision', 'singularity · collision']], [['Gelenkbefehl', 'Joint command'], ['JointTrajectory', 'JointTrajectory']],
           [['Controller', 'Controller'], ['lite6_traj_controller', 'lite6_traj_controller']], [['Ist-Stellung', 'Actual state'], ['/joint_states', '/joint_states']]],
@@ -1386,17 +1428,17 @@ const FLOWS = (() => {
           N('ctl', 'mo', 0, { label: ['Trajektorien-Controller', 'Trajectory controller'], short: 'Ctrl', sub: 'lite6_traj_controller', icon: 'i-chip', hue: 'indigo', info: ['ros2_control: FAKE mit simulierten, REAL mit echten Controllern.', 'ros2_control: FAKE with simulated, REAL with real controllers.'] }), N('arm', 'hw', 0)],
         edges: [E('cmd', 'srv', '/servo_server/delta_twist_cmds'), E('srv', 'ctl', '/lite6_traj_controller/joint_trajectory'), E('ctl', 'arm', 'ros2_control'), R('arm', 'srv', '/joint_states'),
           E('srv', 'ui', '/servo_server/status', { ports: 'bt' }), E('srv', 'pcc', '/servo_server/status')],
-        scenarios: [SC('loop', ['Regelkreis', 'Control loop'], 'i-pulse', 'indigo', ['Befehl, Gelenkbefehl, Ist-Stellung, Status: ein Takt des Servo-Regelkreises.', 'Command, joint command, actual state, status: one cycle of the servo loop.'], [
-          S('cmd>srv', ['Twist normiert auf −1 … 1', 'Twist normalised to −1 … 1']),
-          S('srv>ctl', ['Singularität, Kollision (10 Hz), Grenzen', 'Singularity, collision (10 Hz), limits']),
-          S('ctl>arm', ['Controller führt den Gelenkbefehl aus', 'Controller executes the joint command']),
-          S('arm>srv', ['Ist-Stellung zurück an Servo', 'Actual joint state back to Servo']),
-          S('srv>ui', ['Status 0–6 als Badge, bei 3/4/5 Vibration', 'Status 0–6 as badge, rumble at 3/4/5'], { also: ['srv>pcc'] })])],
+        scenarios: [SC('loop', ['Regelkreis', 'Control loop'], 'i-pulse', 'indigo', ['Ein Takt des Servo-Regelkreises: Befehl, Gelenkbefehl, Ist-Stellung, Status. Die Kollisionsprüfung läuft dabei mit 10 Hz gegen die Planungsszene.', 'One cycle of the servo loop: command, joint command, actual state, status. The collision check runs at 10 Hz against the planning scene.'], [
+          S('cmd>srv', ['Watchdog oder joy_to_servo_node liefern einen Twist, normiert auf −1 … 1 je Achse.', 'Watchdog or joy_to_servo_node deliver a twist normalised to −1 … 1 per axis.']),
+          S('srv>ctl', ['Servo prüft Singularität, Kollision (10 Hz) und Gelenkgrenzen und publiziert den Gelenkbefehl.', 'Servo checks singularity, collision (10 Hz) and joint limits and publishes the joint command.']),
+          S('ctl>arm', ['Der Trajektorien-Controller führt den Befehl über ros2_control aus, simuliert oder am echten Arm.', 'The trajectory controller executes the command via ros2_control, simulated or on the real arm.']),
+          S('arm>srv', ['Die gemessene Gelenkstellung geht zurück an Servo und ist Ausgangspunkt für den nächsten Takt.', 'The measured joint state returns to Servo and is the starting point for the next cycle.']),
+          S('srv>ui', ['Servo meldet Status 0–6; die UI zeigt ihn als Badge, bei 3, 4 und 5 vibriert das Gamepad.', 'Servo reports status 0–6; the UI shows it as a badge, at 3, 4 and 5 the gamepad rumbles.'], { also: ['srv>pcc'] })])],
       },
     },
     gripper: {
       t: ['Greifer und Vakuum', 'Gripper and vacuum'], hue: 'indigo', icon: 'i-grip', s: 'sr',
-      d: ['Ein Befehl, zwei Greifer: Der Greifer-Node schaltet Sauger oder Finger über den Treiber. Im FAKE-Modus führt er nur den Zustand.', 'One command, two grippers: the gripper node switches suction or fingers via the driver. In FAKE mode it only keeps the state.'],
+      d: ['Ein Befehl, zwei Greifer: joy_to_servo_node ist einziger Besitzer des Greiferzustands und schaltet Sauger oder Finger über den xArm-Treiber. Die UI zeigt den neuen Zustand erst, wenn der Treiber Erfolg meldet; im FAKE-Modus wechselt nur der Zustand.', 'One command, two grippers: joy_to_servo_node is the sole owner of the gripper state and switches suction or fingers via the xArm driver. The UI shows the new state only once the driver reports success; in FAKE mode only the state changes.'],
       spec: {
         lanes: lanes('in', 'br', ['mo', ['Greifer-Node', 'Gripper node']], ['hw', ['Treiber', 'Driver']]),
         nodes: [N('ui', 'in', 0), N('pad', 'in', 1.5, { label: ['Gamepad A/B', 'Gamepad A/B'], short: 'Pad', sub: '/joy_check', icon: 'i-pad', hue: 'accent', info: ['A schaltet um, B schaltet aus.', 'A toggles, B switches off.'] }), N('rb', 'br', 0), N('gj', 'mo', 0),
@@ -1405,20 +1447,20 @@ const FLOWS = (() => {
         edges: [E('ui', 'rb', '/ui/gripper_cmd'), E('rb', 'gj', '/ui/gripper_cmd'), E('pad', 'gj', '/joy_check', { ports: 'rb' }), E('gj', 'drv', '/ufactory/set_vacuum_gripper', { kind: 'service' }),
           E('gj', 'sim', ['nur Zustand', 'state only'], { ports: 'bl' }), R('gj', 'ui', '/ui/gripper_state')],
         scenarios: [
-          SC('ui', ['Knopf', 'Button'], 'i-win', 'indigo', ['Open, Close oder Off in der Robot Control UI.', 'Open, close or off in the Robot Control UI.'], [
-            S('ui>rb', ['Knopf sendet open, close oder off', 'Button sends open, close or off']),
-            S('rb>gj', ['Greifer-Node nimmt den Befehl an', 'Gripper node takes the command']),
-            S('gj>drv', ['REAL: Treiber schaltet Vakuum bzw. Finger', 'REAL: driver switches vacuum or fingers'], { also: ['gj>sim'] }),
-            S('gj>ui', ['Zustand erst nach Erfolg des Treibers', 'State only after the driver succeeds'])]),
-          SC('pad', ['Gamepad', 'Gamepad'], 'i-pad', 'accent', ['Taste A schaltet um, B schaltet aus.', 'Button A toggles, B switches off.'], [
-            S('pad>gj', ['A schaltet um, B schaltet aus', 'A toggles, B switches off']),
-            S('gj>drv', ['REAL: Treiber-Service', 'REAL: driver service'], { also: ['gj>sim'] }),
-            S('gj>ui', ['Chip und Vakuum-Balken in der UI', 'Chip and vacuum bar in the UI'])])],
+          SC('ui', ['Knopf', 'Button'], 'i-win', 'indigo', ['Open, Close oder Off in der Robot Control UI. Der Knopf zeigt den Zustand erst nach der Rückmeldung, nie vorab.', 'Open, Close or Off in the Robot Control UI. The button shows the state only after the feedback, never in advance.'], [
+            S('ui>rb', ['Der Knopf sendet open, close oder off; dasselbe Topic nutzen Sequenzen und KI-Agent.', 'The button sends open, close or off; sequences and the AI agent use the same topic.']),
+            S('rb>gj', ['Der Greifer-Node nimmt den Befehl an und wählt je nach Greifertyp Sauger oder Finger.', 'The gripper node accepts the command and picks suction or fingers depending on the gripper type.']),
+            S('gj>drv', ['In REAL ruft er den Service des xArm-Treibers auf; in FAKE gibt es keinen Treiber, nur der Zustand wechselt.', 'In REAL it calls the xArm driver service; in FAKE there is no driver and only the state changes.'], { also: ['gj>sim'] }),
+            S('gj>ui', ['Erst nach Erfolg des Treibers publiziert der Node den neuen Zustand, latched für alle Clients.', 'Only after the driver succeeds does the node publish the new state, latched for all clients.'])]),
+          SC('pad', ['Gamepad', 'Gamepad'], 'i-pad', 'accent', ['Am Gamepad schaltet Taste A zwischen offen und zu um, B schaltet den Greifer aus. Der Befehl kommt über /joy_check aus der Vorprüfung.', 'On the gamepad, button A toggles between open and closed, B switches the gripper off. The command arrives via /joy_check from the pre-check.'], [
+            S('pad>gj', ['Der Greifer-Node liest die Tasten aus /joy_check: A schaltet um, B schaltet aus.', 'The gripper node reads the buttons from /joy_check: A toggles, B switches off.']),
+            S('gj>drv', ['In REAL schaltet der Treiber-Service Vakuum oder Finger am Arm.', 'In REAL the driver service switches vacuum or fingers on the arm.'], { also: ['gj>sim'] }),
+            S('gj>ui', ['Die UI zeigt den Zustand als Chip und Vakuum-Balken, auch wenn das Gamepad geschaltet hat.', 'The UI shows the state as a chip and vacuum bar, even when the gamepad switched it.'])])],
       },
     },
     seq: {
       t: ['Sequenzen: aufnehmen und abspielen', 'Sequences: record and play'], hue: 'accent', icon: 'i-layers', s: 'spr',
-      d: ['Fünf Schritttypen laufen nacheinander: move, home, gripper, wait, approach. Jeder Schritt wartet auf die Rückmeldung des vorigen.', 'Five step types run one after another: move, home, gripper, wait, approach. Each step waits for the feedback of the previous one.'],
+      d: ['Fünf Schritttypen laufen nacheinander: move, home, gripper, wait und approach; der UI-Server speichert die Sequenzen für alle Clients. Jeder Schritt startet erst, wenn der vorige succeeded meldet; failed, aborted, Not-Aus oder Zeitüberschreitung beenden die Sequenz.', 'Five step types run one after another: move, home, gripper, wait and approach; the UI server stores the sequences for all clients. Each step starts only when the previous one reports succeeded; failed, aborted, E-stop or a timeout end the sequence.'],
       spec: {
         lanes: lanes('in', ['br', ['Server · Brücke', 'Server · bridge']], 'mo', 'hw'),
         nodes: [N('ui', 'in', 0, { label: ['Sequenzen', 'Sequences'], short: 'Seq.', sub: 'Robot Control UI', icon: 'i-layers' }),
@@ -1426,18 +1468,18 @@ const FLOWS = (() => {
           N('rb', 'br', 0), N('mh', 'mo', 0), N('gj', 'mo', 1.5), N('arm', 'hw', 0)],
         edges: [E('ui', 'api', 'HTTP /api/sequences', { kind: 'service', ports: 'bl' }), E('ui', 'rb', '/ui/execute_move_to_pose_silent', { kind: 'service' }), E('rb', 'mh', '/ui/execute_move_to_pose_silent', { kind: 'service' }),
           E('rb', 'gj', '/ui/gripper_cmd', { ports: 'bl' }), E('mh', 'arm', ['MoveGroup → Controller', 'MoveGroup → controller']), R('mh', 'ui', '/ui/moveit_motion_state')],
-        scenarios: [SC('play', ['Abspielen', 'Play'], 'i-play', 'accent', ['Waypoints speichern, Play bestätigen, Schritt für Schritt fahren.', 'Save waypoints, confirm Play, move step by step.'], [
-          S('ui>api', ['Waypoints speichern, für alle Clients', 'Save waypoints, shared by all clients']),
-          S('ui>rb', ['Play nach Bestätigung im Popup', 'Play after confirming the popup']),
-          S('rb>mh', ['MoveTo je Waypoint, durch motionAllowed', 'MoveTo per waypoint, through motionAllowed']),
-          S('mh>arm', ['FAKE oder REAL, dieselben Grenzen', 'FAKE or REAL, the same limits']),
-          S('mh>ui', ['Nächster Schritt erst nach succeeded', 'Next step only after succeeded']),
-          S('rb>gj', ['Greifer-Schritt wartet auf den Zustand (4 s)', 'Gripper step waits for the state (4 s)'])])],
+        scenarios: [SC('play', ['Abspielen', 'Play'], 'i-play', 'accent', ['Waypoints speichern, Play im Popup bestätigen, Schritt für Schritt fahren. Jede Fahrt läuft durch dieselbe Prüfung motionAllowed wie ein einzelner Knopf.', 'Save waypoints, confirm Play in the popup, move step by step. Every motion passes the same motionAllowed check as a single button.'], [
+          S('ui>api', ['Gespeicherte Waypoints liegen auf dem Roboter-PC und sind für alle Clients gleich.', 'Saved waypoints live on the robot PC and are the same for all clients.']),
+          S('ui>rb', ['Play startet erst nach Bestätigung im Popup; die einzelnen Fahrten laufen danach ohne weiteren Dialog.', 'Play starts only after confirming the popup; the individual motions then run without another dialog.']),
+          S('rb>mh', ['Je Waypoint ein MoveTo; motionAllowed prüft vorher E-STOP, rosbridge-Verbindung, Control-Lock und laufende Fahrt.', 'One MoveTo per waypoint; motionAllowed first checks E-STOP, rosbridge connection, control lock and running motion.']),
+          S('mh>arm', ['Der Motion Handler plant und fährt mit denselben Grenzen wie im Einzelbetrieb, in FAKE oder REAL.', 'The motion handler plans and moves with the same limits as in single use, in FAKE or REAL.']),
+          S('mh>ui', ['Erst succeeded für genau diesen Lauf gibt den nächsten Schritt frei; failed oder aborted beenden die Sequenz.', 'Only succeeded for exactly this run releases the next step; failed or aborted end the sequence.']),
+          S('rb>gj', ['Ein Greifer-Schritt wartet bis zu 4 s, bis der neue Greiferzustand zurückkommt.', 'A gripper step waits up to 4 s for the new gripper state to come back.'])])],
       },
     },
     linear: {
       t: ['Linearachse (nur FAKE)', 'Linear axis (FAKE only)'], hue: 'teal', icon: 'i-go', s: 's',
-      d: ['Die Achse verschiebt den Roboter auf einer 1,2-m-Schiene. MoveIt und Digital Twin kennen die neue Position über TF.', 'The axis moves the robot along a 1.2 m rail. MoveIt and the Digital Twin know the new position via TF.'],
+      d: ['Die simulierte Achse verschiebt den Roboter auf einer 1,2-m-Schiene um bis zu ±0,5 m. fake_linear_axis setzt die Position als TF world → linear_axis_link, damit MoveIt, Digital Twin und RViz den Arm an derselben Stelle sehen.', 'The simulated axis moves the robot along a 1.2 m rail by up to ±0.5 m. fake_linear_axis sets the position as TF world → linear_axis_link, so MoveIt, Digital Twin and RViz see the arm at the same place.'],
       note: ['Nur FAKE: Ein Treiber für eine echte Achse fehlt; die Nexus Webapp verhindert REAL mit Achse.', 'FAKE only: there is no driver for a real axis; the Nexus Webapp blocks REAL with the axis.'],
       spec: {
         lanes: lanes('in', 'br', ['mo', ['Achse', 'Axis']], ['hw', ['Szene', 'Scene']]),
@@ -1447,36 +1489,36 @@ const FLOWS = (() => {
           N('tf', 'hw', 0, { label: 'TF · MoveIt · Twin', short: 'TF', sub: 'world → linear_axis_link', icon: 'i-layers', hue: 'indigo', info: ['Alle Abnehmer sehen den Roboter an der neuen Stelle.', 'All consumers see the robot at its new place.'] })],
         edges: [E('ui', 'rb', '/linear_axis_cmd'), E('rb', 'fla', '/linear_axis_cmd'), E('dev', 'fla', '/linear_axis_cmd', { ports: 'rb' }), E('fla', 'tf', ['TF + Schienen-Marker', 'TF + rail markers'])],
         scenarios: [
-          SC('ui', ['Regler', 'Slider'], 'i-win', 'teal', ['Regler loslassen: Die Achse fährt auf das Ziel.', 'Release the slider: the axis moves to the target.'], [
-            S('ui>rb', ['Loslassen sendet das Ziel in m (±0,5)', 'Release sends the target in m (±0.5)']),
-            S('rb>fla', ['Float64; die UI sperrt ohne Control-Lock', 'Float64; the UI blocks without control lock']),
-            S('fla>tf', ['TF + Marker mit 20 Hz', 'TF + markers at 20 Hz'])]),
-          SC('dev', ['Gamepad · VR', 'Gamepad · VR'], 'i-pad', 'accent', ['Kreuz links/rechts bzw. Daumenstick schieben die Achse.', 'D-pad left/right or the thumbstick push the axis.'], [
-            S('dev>fla', ['5-mm-Schritte, begrenzt auf ±0,5 m', '5 mm steps, limited to ±0.5 m']),
-            S('fla>tf', ['TF + Marker mit 20 Hz', 'TF + markers at 20 Hz'])])],
+          SC('ui', ['Regler', 'Slider'], 'i-win', 'teal', ['Den Achs-Regler in der Robot Control UI ziehen und loslassen: Die Achse fährt auf das Ziel. Ohne Control-Lock ist der Regler gesperrt.', 'Drag and release the axis slider in the Robot Control UI: the axis moves to the target. Without the control lock the slider is locked.'], [
+            S('ui>rb', ['Erst beim Loslassen sendet die UI die Zielposition in Metern, begrenzt auf ±0,5 m.', 'Only on release does the UI send the target position in metres, limited to ±0.5 m.']),
+            S('rb>fla', ['Das Ziel geht als Float64 an fake_linear_axis; ohne Control-Lock sendet die UI gar nicht erst.', 'The target goes to fake_linear_axis as Float64; without the control lock the UI does not send at all.']),
+            S('fla>tf', ['Die Achse publiziert ihre Position mit 20 Hz als TF und zeichnet die Schiene als Marker.', 'The axis publishes its position at 20 Hz as TF and draws the rail as markers.'])]),
+          SC('dev', ['Gamepad · VR', 'Gamepad · VR'], 'i-pad', 'accent', ['Am Gamepad schiebt das Steuerkreuz links/rechts die Achse, an der Quest 3 der Daumenstick. Beide senden direkt in 5-mm-Schritten.', 'On the gamepad the D-pad left/right pushes the axis, on the Quest 3 the thumbstick. Both send directly in 5 mm steps.'], [
+            S('dev>fla', ['Jeder Schritt verschiebt das Ziel um 5 mm, höchstens bis ±0,5 m.', 'Each step shifts the target by 5 mm, up to ±0.5 m at most.']),
+            S('fla>tf', ['Die Achse publiziert ihre Position mit 20 Hz als TF und zeichnet die Schiene als Marker.', 'The axis publishes its position at 20 Hz as TF and draws the rail as markers.'])])],
       },
     },
     vr: {
       t: ['VR Quest 3: die Hand führt den Arm', 'VR Quest 3: the hand guides the arm'], hue: 'accent', icon: 'i-vr', s: 'spr',
-      d: ['Grip halten, Hand bewegen: Der Arm folgt über dieselbe Kette wie das Gamepad. Im PLAN-Modus zieht der Laser einen Ghost, EXECUTE fährt.', 'Hold the grip, move the hand: the arm follows through the same chain as the gamepad. In PLAN mode the laser drags a ghost, EXECUTE moves.'],
+      d: ['Grip halten, Hand bewegen: vr_quest3_teleop macht aus dem Handweg einen Twist, der wie der Browser-Jog durch das Twist-Gate des Watchdogs läuft. Im PLAN-Modus zieht der Laser stattdessen einen Ghost, erst EXECUTE fährt.', 'Hold the grip, move the hand: vr_quest3_teleop turns the hand travel into a twist that passes the watchdog twist gate like the browser jog. In PLAN mode the laser drags a ghost instead; only EXECUTE moves.'],
       spec: {
         lanes: lanes(['q', ['Quest 3', 'Quest 3']], ['br', ['Brücke (WSS)', 'Bridge (WSS)']], ['vr', ['VR-Node', 'VR node']], 'wd', 'mo'),
         nodes: [N('xr', 'q', 0, { label: 'Quest 3 · WebXR', short: 'Quest', sub: ':8443 · VR-Cockpit', icon: 'i-vr', hue: 'accent', info: ['Digital Twin in der Brille mit HUD: Modus, FAKE/REAL, Control, E-STOP, Bestätigungskarte.', 'Digital Twin in the headset with HUD: mode, FAKE/REAL, control, E-STOP, confirm card.'] }),
           N('rb', 'br', 0, { sub: ':9091 · Whitelist' }), N('vrn', 'vr', 0, { label: 'VR-Teleop', short: 'VR', sub: 'vr_quest3_teleop', icon: 'i-vr', hue: 'indigo', info: ['Hand-Delta × 3,2 wird Twist; eigener Watchdog: 0,3 s ohne Daten → Null-Twist.', 'Hand delta × 3.2 becomes a twist; own watchdog: 0.3 s without data → zero twist.'] }),
           N('wd', 'wd', 0, { label: 'Twist-Gate', short: 'Gate' }), N('srv', 'mo', 0)],
         edges: [E('xr', 'rb', '/vr_teleop/controller_data'), E('rb', 'vrn', '/vr_teleop/controller_data'), E('vrn', 'wd', '/remote/twist'), E('wd', 'srv', '/servo_server/delta_twist_cmds'), R('wd', 'vrn', '/remote/control_state')],
-        scenarios: [SC('servo', ['SERVO-Modus', 'SERVO mode'], 'i-vr', 'accent', ['Grip gedrückt: Der Arm folgt der Hand in Echtzeit.', 'Grip pressed: the arm follows the hand in real time.'], [
-          S('xr>rb', ['Grip gedrückt: Hand-Pose als JSON', 'Grip pressed: hand pose as JSON']),
-          S('rb>vrn', ['Erstes Frame verankert den Startpunkt', 'First frame anchors the origin']),
-          S('vrn>wd', ['Delta × 3,2 → Twist, Totband 8 mm', 'Delta × 3.2 → twist, dead band 8 mm']),
-          S('wd>srv', ['Nur mit Steuerung; Tempo und Boden begrenzt', 'Only with control; speed and floor limited']),
-          S('wd>vrn', ['Steuerung weg oder E-STOP: VR-Node hält', 'Control lost or E-STOP: the VR node halts']),
-          S('vrn>wd', ['Daten > 0,3 s aus: Null-Twist', 'Data missing > 0.3 s: zero twist'])])],
+        scenarios: [SC('servo', ['SERVO-Modus', 'SERVO mode'], 'i-vr', 'accent', ['Solange der Grip gedrückt ist, folgt der Arm der Hand in Echtzeit: Je weiter die Hand vom Startpunkt weg ist, desto schneller fährt der TCP. Datenausfall, E-STOP oder eine laufende MoveIt-Fahrt halten ihn an.', 'While the grip is pressed, the arm follows the hand in real time: the farther the hand is from the origin, the faster the TCP moves. Data loss, E-STOP or a running MoveIt motion halt it.'], [
+          S('xr>rb', ['Bei gedrücktem Grip sendet die Quest 3 die Hand-Pose als JSON über die verschlüsselte rosbridge (WSS).', 'With the grip pressed, the Quest 3 sends the hand pose as JSON over the encrypted rosbridge (WSS).']),
+          S('rb>vrn', ['Das erste gültige Frame verankert den Startpunkt; danach zählt nur der Abstand der Hand zu diesem Punkt.', 'The first valid frame anchors the origin; after that only the hand offset from this point counts.']),
+          S('vrn>wd', ['Der VR-Node rechnet Abstand × 3,2 in einen Twist; Abstände unter 8 mm (Totband) ignoriert er.', 'The VR node turns offset × 3.2 into a twist; it ignores offsets below 8 mm (dead band).']),
+          S('wd>srv', ['Das Twist-Gate lässt nur den Besitzer der Steuerung durch und begrenzt Tempo und Abwärtsfahrt.', 'The twist gate passes only the owner of control and limits speed and downward motion.']),
+          S('wd>vrn', ['Meldet der Control-Zustand Verlust der Steuerung oder E-STOP, hält der VR-Node selbst an.', 'If the control state reports lost control or E-STOP, the VR node halts by itself.']),
+          S('vrn>wd', ['Kommen länger als 0,3 s keine Controller-Daten, sendet der VR-Node einen Null-Twist.', 'If no controller data arrive for more than 0.3 s, the VR node sends a zero twist.'])])],
       },
     },
     voice: {
       t: ['Sprachbefehl: hören, erkennen, bestätigen', 'Voice command: listen, detect, confirm'], hue: 'teal', icon: 'i-mic', s: 'spr',
-      d: ['Whisper transkribiert lokal, der Listener erkennt Befehle auf Deutsch und Englisch. Fahrten laufen durch dieselbe Bestätigung wie die Knöpfe.', 'Whisper transcribes locally, the listener detects commands in German and English. Motions pass the same confirmation as the buttons.'],
+      d: ['Whisper transkribiert ein Hörfenster von 5 s lokal auf dem Roboter-PC, voice_command_listener erkennt darin Befehle auf Deutsch und Englisch per Regex. Fahrten laufen durch dieselbe Bestätigung wie die Knöpfe, „Not-Aus“ und „Stopp“ wirken sofort.', 'Whisper transcribes a 5 s listening window locally on the robot PC; voice_command_listener detects commands in German and English by regex. Motions pass the same confirmation as the buttons; “E-stop” and “stop” act at once.'],
       note: ['Mit Auto-Move an fährt ein Befehl ohne Popup. Not-Aus und Stop wirken immer sofort.', 'With auto-move on, a command moves without the popup. E-stop and stop always act at once.'],
       loop: { t: ['Sprachbefehl', 'Voice command'], s: ['Whisper · voice_command_listener', 'Whisper · voice_command_listener'],
         st: [[['Hören', 'Listen'], ['Knopf · 5 s', 'button · 5 s']], [['Transkribieren', 'Transcribe'], ['Whisper', 'Whisper']], [['Erkennen', 'Detect'], ['Regex · 3 s Cooldown', 'regex · 3 s cooldown']],
@@ -1491,22 +1533,22 @@ const FLOWS = (() => {
         edges: [E('mic', 'wh', '/audio_listener/audio'), E('vcl', 'wh', '/whisper/inference', { kind: 'action' }), E('ui', 'vcl', '/ui/voice_listen_trigger'), E('vcl', 'ui', '/ui/voice_feedback'),
           E('ui', 'mh', '/ui/execute_move_to_pose', { kind: 'service' }), R('vcl', 'mh', '/ui/emergency_stop_topic')],
         scenarios: [
-          SC('cmd', ['Sprachbefehl', 'Voice command'], 'i-mic', 'teal', ['„Fahre zur Startposition“: hören, erkennen, bestätigen, fahren.', '“Go to the start position”: listen, detect, confirm, move.'], [
-            S('ui>vcl', ['Start Listening öffnet ein 5-s-Hörfenster', 'Start Listening opens a 5 s window']),
-            S('mic>wh', ['Mikrofon-Audio an Whisper', 'Microphone audio to Whisper']),
-            S('vcl>wh', ['Listener startet die Transkription', 'Listener starts the transcription']),
-            S('wh>vcl', ['Text zurück, Regex erkennt den Befehl', 'Text back, regex detects the command']),
-            S('vcl>ui', ['Befehl an die UI, 3 s Cooldown', 'Command to the UI, 3 s cooldown']),
-            S('ui>mh', ['Fährt nach „Bestätigen“ (Auto-Move aus)', 'Moves after “Confirm” (auto-move off)'])]),
-          SC('stop', ['Not-Aus per Stimme', 'Voice E-STOP'], 'i-stop', 'red', ['„Not-Aus“ wirkt direkt aus dem Listener, auch ohne offene UI.', '“E-stop” acts directly from the listener, even without an open UI.'], [
-            S('mic>wh', ['Mikrofon-Audio an Whisper', 'Microphone audio to Whisper']),
-            S('wh>vcl', ['„Not-Aus“ erkannt, ohne Cooldown', '“E-stop” detected, no cooldown']),
-            S('vcl>mh', ['Listener sendet den E-STOP selbst', 'The listener sends the E-STOP itself'])])],
+          SC('cmd', ['Sprachbefehl', 'Voice command'], 'i-mic', 'teal', ['„Fahre zur Startposition“: hören, erkennen, bestätigen, fahren. Nach einem erkannten Befehl wartet der Listener 3 s, damit ein Satz nicht doppelt auslöst.', '“Go to the start position”: listen, detect, confirm, move. After a detected command the listener waits 3 s so one sentence does not fire twice.'], [
+            S('ui>vcl', ['Start Listening in der UI öffnet ein Hörfenster von 5 s (Diktat bis 8 s).', 'Start Listening in the UI opens a 5 s listening window (dictation up to 8 s).']),
+            S('mic>wh', ['audio_listener liest das Mikrofon und streamt das Audio an Whisper.', 'audio_listener reads the microphone and streams the audio to Whisper.']),
+            S('vcl>wh', ['Der Listener startet die Transkription als Action und wartet auf den Text.', 'The listener starts the transcription as an action and waits for the text.']),
+            S('wh>vcl', ['Whisper liefert den Text; Regex-Muster für Deutsch und Englisch ordnen ihn einem Befehl zu.', 'Whisper returns the text; regex patterns for German and English map it to a command.']),
+            S('vcl>ui', ['Der erkannte Befehl geht an die UI; danach gilt 3 s Cooldown gegen Doppelauslösung.', 'The detected command goes to the UI; then a 3 s cooldown prevents double triggering.']),
+            S('ui>mh', ['Die UI zeigt das Bestätigungs-Popup; erst „Bestätigen“ startet die Fahrt (Auto-Move aus).', 'The UI shows the confirm popup; only “Confirm” starts the motion (auto-move off).'])]),
+          SC('stop', ['Not-Aus per Stimme', 'Voice E-STOP'], 'i-stop', 'red', ['„Not-Aus“ wirkt direkt aus dem Listener, auch ohne offene UI. Der Befehl umgeht Cooldown und Popup und geht als E-STOP-Topic an den Motion Handler.', '“E-stop” acts directly from the listener, even without an open UI. The command skips cooldown and popup and goes to the motion handler as the E-STOP topic.'], [
+            S('mic>wh', ['audio_listener liest das Mikrofon und streamt das Audio an Whisper.', 'audio_listener reads the microphone and streams the audio to Whisper.']),
+            S('wh>vcl', ['Whisper liefert den Text, die Regex erkennt „Not-Aus“; dafür gilt kein Cooldown.', 'Whisper returns the text, the regex detects “E-stop”; no cooldown applies.']),
+            S('vcl>mh', ['Der Listener publiziert den E-STOP selbst; der Motion Handler verriegelt wie beim roten Knopf.', 'The listener publishes the E-STOP itself; the motion handler latches as with the red button.'])])],
       },
     },
     gaze: {
       t: ['Blicksteuerung (Tobii)', 'Gaze control (Tobii)'], hue: 'green', icon: 'i-eye', s: 'spr',
-      d: ['Die Tobii Glasses 3 liefern den Blickpunkt, Verweilen löst Knöpfe aus. Ohne frischen Blick stoppt die Fahrt nach 0,3 s.', 'The Tobii Glasses 3 deliver the gaze point; dwelling triggers buttons. Without a fresh gaze the motion stops after 0.3 s.'],
+      d: ['Die Tobii Glasses 3 liefern Szenenvideo und Blickpunkt; vier ArUco-Marker rechnen ihn in Pixel der Oberfläche um, 1 s Verweilen löst einen Knopf aus. Die Blick-UI steuert wie jeder Client über Control-Lock und Twist-Gate; ohne frischen Blick stoppt die Fahrt nach 0,3 s.', 'The Tobii Glasses 3 deliver scene video and gaze point; four ArUco markers map it to interface pixels, and 1 s of dwell triggers a button. The gaze UI steers like any client via control lock and twist gate; without a fresh gaze the motion stops after 0.3 s.'],
       note: ['Blick-Greifen endet über dem Objekt (Hover); Greifen per Blick ist noch nicht umgesetzt.', 'Gaze grasp ends above the object (hover); grasping by gaze is not implemented yet.'],
       spec: {
         lanes: lanes(['eye', ['Brille', 'Glasses']], ['gz', ['Gaze-Nodes', 'Gaze nodes']], 'wd', ['mo', ['Roboter', 'Robot']]),
@@ -1517,21 +1559,21 @@ const FLOWS = (() => {
         edges: [E('g3', 'gui', ['Video + Blickpunkt', 'Video + gaze point'], { kind: 'stream' }), E('g3', 'gg', ['Video (RTSP)', 'Video (RTSP)'], { kind: 'stream', ports: 'bl' }), E('gui', 'wd', '/remote/twist'),
           R('wd', 'gui', '/remote/control_state'), E('wd', 'mo', '/servo_server/delta_twist_cmds'), E('gg', 'mo', '/ui/execute_move_to_pose', { kind: 'service', ports: 'rb' })],
         scenarios: [
-          SC('btn', ['Blick-Knöpfe', 'Gaze buttons'], 'i-eye', 'green', ['Knopf 1 s ansehen: Der Arm fährt in diese Richtung.', 'Look at a button for 1 s: the arm moves that way.'], [
-            S('g3>gui', ['Blickpunkt → Pixel per Marker-Homographie', 'Gaze point → pixels via marker homography']),
-            S('gui>wd', ['GAZE ON fragt die Steuerung an', 'GAZE ON requests control'], { topic: '/remote/control_request' }),
-            S('wd>gui', ['Freigabe am Roboter-PC nötig', 'Approval on the robot PC required']),
-            S('gui>wd', ['Knopf 1,0 s fixieren → Twist', 'Fixate a button for 1.0 s → twist']),
-            S('wd>mo', ['Twist-Gate wie bei jedem Client', 'Twist gate as for every client'])]),
-          SC('grasp', ['Blick-Greifen', 'Gaze grasp'], 'i-grip', 'teal', ['Objekt 2 s ansehen: Der Arm fährt über das Objekt.', 'Look at an object for 2 s: the arm moves above it.'], [
-            S('g3>gg', ['YOLO-Objekt 2 s fixieren', 'Fixate a YOLO object for 2 s']),
-            S('gg>mo', ['Scan-Pose, 12 ArUco-Marker, 3 s Pause', 'Scan pose, 12 ArUco markers, 3 s pause']),
-            S('gg>mo', ['Anfahrt über das Objekt (Hover)', 'Approach above the object (hover)'])])],
+          SC('btn', ['Blick-Knöpfe', 'Gaze buttons'], 'i-eye', 'green', ['Einen Richtungsknopf 1 s ansehen: Der Arm fährt in diese Richtung, solange der Blick dort bleibt. Vorher fragt GAZE ON die Steuerung am Roboter-PC an.', 'Look at a direction button for 1 s: the arm moves that way as long as the gaze stays there. Before that, GAZE ON requests control on the robot PC.'], [
+            S('g3>gui', ['Die Blick-UI rechnet den Blickpunkt über eine Homographie aus 4 ArUco-Markern in Pixel der Oberfläche.', 'The gaze UI maps the gaze point to interface pixels via a homography from 4 ArUco markers.']),
+            S('gui>wd', ['GAZE ON stellt eine Anfrage an den Watchdog, wie jeder andere Client.', 'GAZE ON sends a request to the watchdog, like any other client.'], { topic: '/remote/control_request' }),
+            S('wd>gui', ['Erst nach Allow am Roboter-PC wird die Blick-UI Besitzer der Steuerung.', 'Only after Allow on the robot PC does the gaze UI own control.']),
+            S('gui>wd', ['Nach 1,0 s Fixieren sendet der Knopf einen Twist; nahe der Tischplatte bremst die Blick-UI ab 40 mm.', 'After 1.0 s of fixation the button sends a twist; near the table the gaze UI brakes from 40 mm.']),
+            S('wd>mo', ['Das Twist-Gate prüft Besitz, Heartbeat und E-STOP wie bei jedem Client, dann fährt Servo.', 'The twist gate checks ownership, heartbeat and E-STOP as for any client, then Servo moves.'])]),
+          SC('grasp', ['Blick-Greifen', 'Gaze grasp'], 'i-grip', 'teal', ['Ein von YOLO erkanntes Objekt 2 s ansehen: Der Arm fährt über das Objekt und bleibt dort (Hover). Das Greifen selbst per Blick ist noch nicht umgesetzt.', 'Look at an object detected by YOLO for 2 s: the arm moves above it and stays there (hover). Grasping itself by gaze is not implemented yet.'], [
+            S('g3>gg', ['Die Routine erkennt im Szenenvideo YOLO-Objekte; 2 s Fixieren wählt eines aus.', 'The routine detects YOLO objects in the scene video; 2 s of fixation selects one.']),
+            S('gg>mo', ['Der Arm fährt in die Scan-Pose, wartet 3 s und verortet das Objekt über die 12 ArUco-Marker auf dem Tisch.', 'The arm moves to the scan pose, waits 3 s and locates the object via the 12 ArUco markers on the table.']),
+            S('gg>mo', ['Danach fährt der Arm per MoveTo direkt über das Objekt und hält dort (Hover).', 'Then the arm moves via MoveTo directly above the object and holds there (hover).'])])],
       },
     },
     touch: {
       t: ['Touch Panel: Bedienen am Roboter', 'Touch panel: operate at the robot'], hue: 'accent', icon: 'i-touch', s: 'spr',
-      d: ['Ein Kiosk-Browser unter /touch der Nexus Webapp: Jog, Posen, Greifer, Programme und Start. Bewegen nur nach Freigabe am Roboter-PC.', 'A kiosk browser at /touch of the Nexus Webapp: jog, poses, gripper, programs and start. Motion only after approval on the robot PC.'],
+      d: ['Ein Chrome-Kiosk unter /touch der Nexus Webapp bündelt Jog, Posen, Greifer, Programme und den Start der Launches. Der E-STOP ist immer sichtbar; bewegen darf das Panel erst, wenn der Roboter-PC die Steuerung per Allow freigibt.', 'A Chrome kiosk at /touch of the Nexus Webapp combines jog, poses, gripper, programs and starting the launches. The E-STOP is always visible; the panel may move the arm only after the robot PC grants control via Allow.'],
       spec: {
         lanes: lanes(['tp', ['Touch Panel', 'Touch panel']], ['nx', ['Nexus Webapp', 'Nexus Webapp']], 'br', 'wd', ['mo', ['Roboter', 'Robot']]),
         nodes: [N('tp', 'tp', 0, { label: 'Touch Panel', short: 'Touch', sub: '/touch · Kiosk', icon: 'i-touch', hue: 'accent', info: ['Chrome-Kiosk: Tabs Move, Programs, Robot, Launch, System; E-STOP immer sichtbar.', 'Chrome kiosk: tabs Move, Programs, Robot, Launch, System; E-STOP always visible.'] }),
@@ -1539,20 +1581,20 @@ const FLOWS = (() => {
           N('rb', 'br', 0), N('wd', 'wd', 0), N('mo', 'mo', 0, { label: ['Motion Handler · Servo', 'Motion handler · Servo'], short: 'Motion', sub: '/ui/* · /servo_server', icon: 'i-gizmo', hue: 'indigo' })],
         edges: [E('tp', 'rb', '/ui/emergency_stop_topic'), E('rb', 'wd', '/remote/twist'), E('wd', 'mo', '/servo_server/delta_twist_cmds'), R('rb', 'mo', '/ui/emergency_stop_topic'),
           E('tp', 'nx', 'HTTP /api/run', { kind: 'service' }), R('rb', 'tp', '/ui/emergency_stop_active')],
-        scenarios: [SC('touch', ['Touch Panel', 'Touch panel'], 'i-touch', 'accent', ['E-STOP, Steuerung anfragen, Jog und Start über die Nexus Webapp.', 'E-STOP, request control, jog and start via the Nexus Webapp.'], [
-          S('tp>rb', ['E-STOP immer sichtbar, löst bei Berührung aus', 'E-STOP always visible, fires on touch'], { also: ['rb>mo'] }),
-          S('tp>rb', ['Steuerung anfragen, Freigabe am Roboter-PC', 'Request control, approval on the robot PC'], { topic: '/remote/control_request' }),
-          S('rb>wd', ['Jog mit Client-id, Heartbeat 250 ms', 'Jog with client id, heartbeat 250 ms']),
-          S('wd>mo', ['Twist-Gate prüft Besitz und Grenzen', 'Twist gate checks ownership and limits']),
-          S('rb>tp', ['Status zurück; Reset: 1 s halten', 'State back; reset: hold 1 s']),
-          S('tp>nx', ['Launch-Tab startet Karten der Nexus Webapp', 'Launch tab starts Nexus Webapp cards'])])],
+        scenarios: [SC('touch', ['Touch Panel', 'Touch panel'], 'i-touch', 'accent', ['E-STOP, Steuerung anfragen, joggen und Launches starten: alles direkt am Roboter, mit denselben Regeln wie ein entfernter Client.', 'E-STOP, request control, jog and start launches: all right at the robot, with the same rules as a remote client.'], [
+          S('tp>rb', ['Der E-STOP ist auf jedem Tab sichtbar und löst bei der ersten Berührung aus.', 'The E-STOP is visible on every tab and fires on the first touch.'], { also: ['rb>mo'] }),
+          S('tp>rb', ['Das Panel fragt die Steuerung an; es gilt nie als Server, der Roboter-PC muss per Allow freigeben.', 'The panel requests control; it never counts as the server, so the robot PC must grant it via Allow.'], { topic: '/remote/control_request' }),
+          S('rb>wd', ['Jog-Befehle tragen die Client-id, der Heartbeat kommt alle 250 ms.', 'Jog commands carry the client id; the heartbeat comes every 250 ms.']),
+          S('wd>mo', ['Das Twist-Gate prüft Besitz, Heartbeat, Tempo und Bodensperre, bevor Servo fährt.', 'The twist gate checks ownership, heartbeat, speed and floor guard before Servo moves.']),
+          S('rb>tp', ['Der E-STOP-Zustand kommt zurück ans Panel; Quittieren verlangt 1 s Halten gegen Fehlberührung.', 'The E-STOP state returns to the panel; resetting requires a 1 s hold against accidental touches.']),
+          S('tp>nx', ['Der Launch-Tab startet Karten der Nexus Webapp; POST nimmt der Server nur von Loopback und eigener Origin an.', 'The Launch tab starts Nexus Webapp cards; the server accepts POST only from loopback and its own origin.'])])],
       },
     },
 
     // ─────────── Sicherheit ───────────
     remote: {
       t: ['Remote-Steuerung: genau ein Besitzer', 'Remote control: exactly one owner'], hue: 'gold', icon: 'i-lock', s: 'spr',
-      d: ['Laptop, Tablet oder Quest 3 fragen an, der Roboter-PC gibt frei. Genau ein Gerät steuert, der Not-Aus geht immer.', 'Laptop, tablet or Quest 3 request control, the robot PC grants it. Exactly one device controls; the E-STOP always works.'],
+      d: ['Laptop, Tablet, Touch Panel oder Quest 3 fragen an, die Robot Control UI auf dem Roboter-PC gibt per Allow frei. Genau ein Gerät steuert, ein WLAN-Aussetzer stoppt nur die Bewegung (der Besitz hält 10 s), und der Not-Aus geht immer.', 'Laptop, tablet, touch panel or Quest 3 request control; the Robot Control UI on the robot PC grants it via Allow. Exactly one device controls, a Wi-Fi dropout only stops the motion (ownership holds for 10 s), and the E-STOP always works.'],
       spec: {
         lanes: lanes('cl', 'br', 'wd', ['pc', ['Roboter-PC', 'Robot PC']], 'mo'),
         nodes: [N('ui', 'cl', 0, { label: ['Robot Control UI (Client)', 'Robot Control UI (client)'], short: 'Client', sub: 'Laptop · Tablet' }), N('rb', 'br', 0), N('wd', 'wd', 0),
@@ -1560,19 +1602,19 @@ const FLOWS = (() => {
           N('srv', 'mo', 0)],
         edges: [E('ui', 'rb', '/remote/control_request'), E('rb', 'wd', '/remote/control_request'), E('wd', 'srvui', '/remote/control_state'), E('srvui', 'wd', ['/remote/control_request (signiert)', '/remote/control_request (signed)']),
           R('wd', 'ui', '/remote/control_state'), E('wd', 'srv', '/servo_server/delta_twist_cmds')],
-        scenarios: [SC('req', ['Steuerung anfragen', 'Request control'], 'i-lock', 'gold', ['Anfrage, Freigabe am Roboter-PC, dann Jog nur vom Besitzer.', 'Request, approval on the robot PC, then jog only from the owner.'], [
-          S('ui>rb', ['Request control per Knopf oder Bedienversuch', 'Request control by button or first attempt']),
-          S('rb>wd', ['Anfrage offen, verfällt nach 60 s', 'Request pending, expires after 60 s']),
-          S('wd>srvui', ['Allow/Deny-Popup am Roboter-PC', 'Allow/Deny popup on the robot PC']),
-          S('srvui>wd', ['Antwort mit HMAC-SHA256 signiert', 'Answer signed with HMAC-SHA256']),
-          S('wd>ui', ['Genau ein Besitzer, alle anderen sehen zu', 'Exactly one owner, everyone else watches']),
-          S('ui>rb', ['Jog mit Client-id, nur vom Besitzer', 'Jog with client id, only from the owner'], { topic: '/remote/twist', also: ['rb>wd'] }),
-          S('wd>srv', ['Twist-Gate: Tempo, Boden, E-STOP', 'Twist gate: speed, floor, E-STOP'])])],
+        scenarios: [SC('req', ['Steuerung anfragen', 'Request control'], 'i-lock', 'gold', ['Anfrage, Freigabe am Roboter-PC, dann Jog nur vom Besitzer. Ihre Server-Rolle beweist die UI mit einem Token, das nie über rosbridge geht.', 'Request, approval on the robot PC, then jog only from the owner. The UI proves its server role with a token that never travels over rosbridge.'], [
+          S('ui>rb', ['Der Client fragt per Knopf „Request control“ an oder automatisch beim ersten Bedienversuch.', 'The client asks via the “Request control” button or automatically on the first attempt to operate.']),
+          S('rb>wd', ['Der Watchdog legt eine offene Anfrage an; ohne Antwort verfällt sie nach 60 s.', 'The watchdog creates a pending request; without an answer it expires after 60 s.']),
+          S('wd>srvui', ['Die Robot Control UI am Roboter-PC zeigt ein Popup mit Allow und Deny.', 'The Robot Control UI on the robot PC shows a popup with Allow and Deny.']),
+          S('srvui>wd', ['Die Antwort ist mit HMAC-SHA256 signiert und höchstens 5 s alt; das Token gibt der UI-Server nur an 127.x heraus.', 'The answer is signed with HMAC-SHA256 and at most 5 s old; the UI server hands out the token only to 127.x.']),
+          S('wd>ui', ['Der Zustand nennt genau einen Besitzer; alle anderen Clients sehen zu und können selbst anfragen.', 'The state names exactly one owner; all other clients watch and may request themselves.']),
+          S('ui>rb', ['Jog-Befehle tragen die Client-id; der Watchdog verwirft alles, was nicht vom Besitzer kommt.', 'Jog commands carry the client id; the watchdog drops everything that does not come from the owner.'], { topic: '/remote/twist', also: ['rb>wd'] }),
+          S('wd>srv', ['Das Twist-Gate begrenzt Tempo (REAL 50 %) und Abwärtsfahrt und sperrt bei E-STOP, dann fährt Servo.', 'The twist gate limits speed (REAL 50 %) and downward motion and blocks on E-STOP, then Servo moves.'])])],
       },
     },
     heartbeat: {
       t: ['Heartbeat: Totmann für Gamepad und Jog', 'Heartbeat: dead man for gamepad and jog'], hue: 'gold', icon: 'i-pulse', s: 'sr',
-      d: ['Tab zu oder WLAN weg: Ohne Heartbeat setzt der Watchdog Gamepad und Jog auf null. Im REAL-Modus schon nach 0,4 s.', 'Tab closed or Wi-Fi lost: without a heartbeat the watchdog sets gamepad and jog to zero. In REAL mode after just 0.4 s.'],
+      d: ['Tab zu, Laptop zugeklappt oder WLAN weg: Ohne Heartbeat setzt der Watchdog Gamepad und Jog auf null, im REAL-Modus schon nach 0,4 s, in FAKE nach 1,0 s. Ein verdeckter Tab meldet sich nur noch als anwesend und zählt nicht als Heartbeat für Bewegung.', 'Tab closed, laptop shut or Wi-Fi lost: without a heartbeat the watchdog sets gamepad and jog to zero, after just 0.4 s in REAL mode and 1.0 s in FAKE. A hidden tab only reports presence and does not count as a heartbeat for motion.'],
       note: ['Stoppt Gamepad und Jog. Eine geplante MoveIt-Fahrt läuft weiter; dafür gibt es den E-STOP.', 'Stops gamepad and jog. A planned MoveIt motion continues; that is what the E-STOP is for.'],
       loop: { t: ['Heartbeat → Watchdog', 'Heartbeat → watchdog'], s: 'remote_control_watchdog',
         st: [[['Senden', 'Send'], ['Browser · 250 ms', 'browser · 250 ms']], [['Empfangen', 'Receive'], ['Watchdog merkt Zeit', 'watchdog stores time']], [['Prüfen', 'Check'], ['alle 50 ms', 'every 50 ms']],
@@ -1583,17 +1625,17 @@ const FLOWS = (() => {
         nodes: [N('ui', 'cl', 0), N('rb', 'br', 0), N('wd', 'wd', 0),
           N('out', 'mo', 0, { label: ['Gamepad-Kette · Servo', 'Gamepad chain · Servo'], short: ['Stopp', 'Stop'], sub: '/joy · /servo_server', icon: 'i-pad', hue: 'indigo', info: ['Bekommt neutrales /joy bzw. einen Null-Twist, sobald der Heartbeat zu alt ist.', 'Receives a neutral /joy or a zero twist as soon as the heartbeat is too old.'] })],
         edges: [E('ui', 'rb', '/remote/heartbeat'), E('rb', 'wd', '/remote/heartbeat'), E('wd', 'out', ['/joy neutral · Null-Twist', '/joy neutral · zero twist']), R('wd', 'ui', '/remote/control_state')],
-        scenarios: [SC('hb', ['Heartbeat', 'Heartbeat'], 'i-pulse', 'gold', ['Der Browser meldet sich laufend; bleibt er stumm, stoppt der Watchdog.', 'The browser keeps reporting; if it goes silent, the watchdog stops.'], [
-          S('ui>rb', ['Heartbeat alle 250 ms (100 ms mit Gamepad)', 'Heartbeat every 250 ms (100 ms with gamepad)']),
-          S('rb>wd', ['Watchdog merkt sich den Zeitpunkt', 'The watchdog records the time']),
-          S('wd>out', ['Zu alt (FAKE 1,0 s, REAL 0,4 s): Stopp', 'Too old (FAKE 1.0 s, REAL 0.4 s): stop']),
-          S('wd>ui', ['Zustand zeigt „heartbeat timeout“', 'State shows “heartbeat timeout”']),
-          S('ui>rb', ['Heartbeat wieder da: Steuerung frei', 'Heartbeat back: control released'])])],
+        scenarios: [SC('hb', ['Heartbeat', 'Heartbeat'], 'i-pulse', 'gold', ['Der Browser meldet sich laufend beim Watchdog; bleibt er stumm, stoppt der Watchdog selbst. Die Sicherheit liegt damit auf dem Roboter-PC, nicht im Browser.', 'The browser keeps reporting to the watchdog; if it goes silent, the watchdog stops on its own. Safety thus sits on the robot PC, not in the browser.'], [
+          S('ui>rb', ['Die UI sendet alle 250 ms einen Heartbeat, mit aktivem Gamepad alle 100 ms.', 'The UI sends a heartbeat every 250 ms, every 100 ms with an active gamepad.']),
+          S('rb>wd', ['Der Watchdog speichert je Client den Zeitpunkt und prüft alle 50 ms, wie alt er ist.', 'The watchdog stores the time per client and checks its age every 50 ms.']),
+          S('wd>out', ['Ist der Heartbeat zu alt (FAKE 1,0 s, REAL 0,4 s), gehen neutrales /joy und ein Null-Twist raus.', 'If the heartbeat is too old (FAKE 1.0 s, REAL 0.4 s), a neutral /joy and a zero twist go out.']),
+          S('wd>ui', ['Der Control-Zustand nennt den Grund „heartbeat timeout“, die UI zeigt ihn an.', 'The control state names the reason “heartbeat timeout” and the UI displays it.']),
+          S('ui>rb', ['Kommt der Heartbeat innerhalb von 10 s zurück, behält der Client die Steuerung und kann wieder fahren.', 'If the heartbeat returns within 10 s, the client keeps control and can move again.'])])],
       },
     },
     estop: {
       t: ['E-STOP: stoppen und quittieren', 'E-STOP: stop and reset'], hue: 'red', icon: 'i-stop', s: 'sr',
-      d: ['Der Not-Halt wirkt immer, auch ohne Steuerung. Quittieren darf nur, wer steuert, oder der Roboter-PC.', 'The emergency stop always works, even without control. Only the owner of control or the robot PC may reset it.'],
+      d: ['Der Not-Halt wirkt immer, von jedem Gerät und auch ohne Steuerung: Der Motion Handler verriegelt, stoppt Servo und bricht laufende Fahrten und KI-Aufgaben ab. Quittieren darf nur der Besitzer der Steuerung oder der Roboter-PC, über den Watchdog.', 'The emergency stop always works, from every device and even without control: the motion handler latches, stops Servo and aborts running motions and AI tasks. Only the owner of control or the robot PC may reset it, via the watchdog.'],
       note: ['Der Software-Not-Halt ergänzt den Hardware-Not-Aus am Roboter, er ersetzt ihn nicht.', 'The software emergency stop complements the hardware E-stop on the robot; it does not replace it.'],
       spec: {
         lanes: lanes(['in', ['Auslöser', 'Triggers']], 'br', ['mo', ['Motion Handler', 'Motion handler']], 'hw', ['ai', ['Abnehmer', 'Consumers']]),
@@ -1603,22 +1645,22 @@ const FLOWS = (() => {
           E('mh', 'vb', '/ui/emergency_stop_active', { ports: 'bt' }), E('mh', 'wd', '/ui/emergency_stop_active'),
           E('trig', 'wd', ['/remote/control_request (reset_estop)', '/remote/control_request (reset_estop)'], { ports: 'bl' }), E('wd', 'mh', '/ui/reset_emergency_stop', { kind: 'service' })],
         scenarios: [
-          SC('stop', 'E-STOP', 'i-stop', 'red', ['Ein Druck stoppt alles: verriegelt, Servo aus, laufende KI-Aufgabe abgebrochen.', 'One press stops everything: latched, Servo off, running AI task aborted.'], [
-            S('trig>rb', ['Knopf, Leertaste, Touch Panel, VR, Sprache', 'Button, space, touch panel, VR, voice']),
-            S('rb>mh', ['Topic statt Service: keine Warteschlange', 'Topic instead of service: no queue']),
-            S('mh>arm', ['Verriegelt, Servo aus, der Arm hält', 'Latched, Servo off, the arm holds']),
-            S('mh>vb', ['Laufende KI-Aufgabe bricht ab', 'Running AI task aborts'], { also: ['mh>wd'] })]),
-          SC('reset', ['Quittieren', 'Reset'], 'i-lock', 'gold', ['Nur der Besitzer der Steuerung oder der Roboter-PC quittiert, über den Watchdog.', 'Only the owner of control or the robot PC resets, via the watchdog.'], [
-            S('trig>wd', ['Quittieren: Knopf, am Touch Panel 1 s halten', 'Reset: button, or hold 1 s on the touch panel']),
-            S('wd>mh', ['Nur Besitzer oder Roboter-PC; Browser direkt gesperrt', 'Owner or robot PC only; browsers cannot call it']),
-            S('mh>wd', ['Verriegelung aufgehoben, Servo läuft wieder', 'Latch released, Servo runs again'])])],
+          SC('stop', 'E-STOP', 'i-stop', 'red', ['Ein Druck stoppt alles: verriegelt, Servo aus, laufende KI-Aufgabe abgebrochen. Der Zustand geht latched an alle Abnehmer, auch spät verbundene Clients sehen ihn.', 'One press stops everything: latched, Servo off, running AI task aborted. The state goes latched to all consumers; late-joining clients see it too.'], [
+            S('trig>rb', ['Header-Knopf, Leertaste, Touch Panel, VR-Geste und Sprache senden dasselbe Stopp-Topic.', 'Header button, space bar, touch panel, VR gesture and voice send the same stop topic.']),
+            S('rb>mh', ['Ein Topic statt Service: Der Stopp wartet nie hinter anderen Anfragen in einer Warteschlange.', 'A topic instead of a service: the stop never waits behind other requests in a queue.']),
+            S('mh>arm', ['Der Motion Handler verriegelt, bricht die laufende Bahn ab und schaltet Servo aus; der Arm hält.', 'The motion handler latches, aborts the running path and switches Servo off; the arm holds.']),
+            S('mh>vb', ['Der KI-Agent bricht die laufende Aufgabe ab, der Watchdog sperrt jeden weiteren Jog.', 'The AI agent aborts the running task; the watchdog blocks any further jog.'], { also: ['mh>wd'] })]),
+          SC('reset', ['Quittieren', 'Reset'], 'i-lock', 'gold', ['Nur der Besitzer der Steuerung oder der Roboter-PC quittiert, immer über den Watchdog. Den Reset-Service direkt aufrufen kann kein Browser, die rosbridge-Whitelist sperrt ihn.', 'Only the owner of control or the robot PC resets, always via the watchdog. No browser can call the reset service directly; the rosbridge whitelist blocks it.'], [
+            S('trig>wd', ['Quittieren per Knopf in der UI oder am Touch Panel durch 1 s Halten; gesendet wird reset_estop.', 'Reset via the button in the UI or by a 1 s hold on the touch panel; reset_estop is sent.']),
+            S('wd>mh', ['Der Watchdog lässt nur Besitzer oder verifizierten Server zu und ruft dann den Reset-Service auf.', 'The watchdog admits only the owner or the verified server and then calls the reset service.']),
+            S('mh>wd', ['Der Motion Handler hebt die Verriegelung auf und startet Servo; das Ergebnis steht im Control-Zustand.', 'The motion handler releases the latch and restarts Servo; the result shows in the control state.'])])],
       },
     },
 
     // ─────────── Digital Twin ───────────
     feedback: {
       t: ['Rückmeldung: der Twin spiegelt den Arm', 'Feedback: the twin mirrors the arm'], hue: 'teal', icon: 'i-cube', s: 'sr',
-      d: ['Der echte Zustand fließt zurück: Digital Twin, Monitoring Dashboard und Blackbox sehen dieselben /joint_states.', 'The real state flows back: Digital Twin, Monitoring Dashboard and blackbox see the same /joint_states.'],
+      d: ['Der echte Zustand fließt zurück: ros2_control liest die sechs Gelenkwinkel mit 250 Hz und publiziert sie als /joint_states. Digital Twin, Monitoring Dashboard und Blackbox lesen dasselbe Topic, damit alle Ansichten denselben Arm zeigen.', 'The real state flows back: ros2_control reads the six joint angles at 250 Hz and publishes them as /joint_states. Digital Twin, Monitoring Dashboard and blackbox read the same topic, so every view shows the same arm.'],
       spec: {
         lanes: lanes('hw', ['drv', ['Treiber', 'Driver']], 'br', ['ui', ['Browser', 'Browser']]),
         nodes: [N('arm', 'hw', 0), N('drv', 'drv', 0, { label: ['Treiber · Controller', 'Driver · controller'], short: ['Treiber', 'Driver'], sub: 'xarm_ros2 · 250 Hz', icon: 'i-chip', hue: 'indigo', info: ['ros2_control mit 250 Hz; REAL über den Treiber, FAKE über simulierte Controller.', 'ros2_control at 250 Hz; REAL via the driver, FAKE via simulated controllers.'] }),
@@ -1626,17 +1668,17 @@ const FLOWS = (() => {
           N('mon', 'drv', 1.5, { label: 'Monitoring Dashboard', short: 'Mon.', sub: ':8083', icon: 'i-chart', hue: 'indigo', info: ['Zählt Gelenkwege und Fahrzeiten.', 'Counts joint paths and motion times.'] }),
           N('bb', 'br', 1.5, { label: ['Blackbox · Demo', 'Blackbox · demo'], short: 'BB', sub: 'robot_blackbox_recorder', icon: 'i-db', hue: 'teal', info: ['Ringpuffer der letzten 60 s und Demo-Aufnahme.', 'Ring buffer of the last 60 s and demo recording.'] })],
         edges: [E('arm', 'drv', ['Gelenkwinkel', 'Joint angles']), E('drv', 'rb', '/joint_states'), E('rb', 'tw', '/joint_states'), E('drv', 'mon', '/joint_states'), E('drv', 'bb', '/joint_states', { ports: 'bt' })],
-        scenarios: [SC('fb', ['Rückmeldung', 'Feedback'], 'i-loop', 'teal', ['Gelenkwinkel aus dem Arm erreichen Twin, Dashboard und Blackbox.', 'Joint angles from the arm reach twin, dashboard and blackbox.'], [
-          S('arm>drv', ['Gelenkwinkel aus dem Arm bzw. der Simulation', 'Joint angles from the arm or the simulation']),
-          S('drv>rb', ['Ein Topic für den ganzen Graphen', 'One topic for the whole graph']),
-          S('rb>tw', ['Gedrosselt auf 33 ms, Twin setzt 6 Gelenke', 'Throttled to 33 ms, the twin sets 6 joints']),
-          S('drv>mon', ['Nebenast: Gelenkwege im Dashboard', 'Side branch: joint paths in the dashboard']),
-          S('drv>bb', ['Nebenast: Blackbox und Demo-Aufnahme', 'Side branch: blackbox and demo recording'])])],
+        scenarios: [SC('fb', ['Rückmeldung', 'Feedback'], 'i-loop', 'teal', ['Gelenkwinkel aus dem Arm erreichen Twin, Dashboard und Blackbox. In FAKE kommen sie aus den simulierten Controllern, der Weg bleibt derselbe.', 'Joint angles from the arm reach twin, dashboard and blackbox. In FAKE they come from the simulated controllers; the path stays the same.'], [
+          S('arm>drv', ['Der Treiber liest die Gelenkwinkel aus dem Arm, in FAKE liefern sie die simulierten Controller.', 'The driver reads the joint angles from the arm; in FAKE the simulated controllers deliver them.']),
+          S('drv>rb', ['Ein einziges Topic für den ganzen Graphen; MoveIt, Servo und alle Oberflächen lesen dieselben Werte.', 'A single topic for the whole graph; MoveIt, Servo and all interfaces read the same values.']),
+          S('rb>tw', ['Für den Browser gedrosselt auf 33 ms; der Twin setzt damit die 6 Gelenke des Lite-6-URDF.', 'Throttled to 33 ms for the browser; the twin uses it to set the 6 joints of the Lite 6 URDF.']),
+          S('drv>mon', ['Nebenast: Das Monitoring Dashboard summiert Gelenkwege und Fahrzeiten.', 'Side branch: the Monitoring Dashboard sums up joint paths and motion times.']),
+          S('drv>bb', ['Nebenast: Die Blackbox puffert die letzten 60 s, der Demo-Recorder zeichnet Vorführungen auf.', 'Side branch: the blackbox buffers the last 60 s, the demo recorder captures demonstrations.'])])],
       },
     },
     sandbox: {
       t: ['Physik-Sandbox und virtuelle Objekte', 'Physics sandbox and virtual objects'], hue: 'teal', icon: 'i-cube', s: 'sp',
-      d: ['Rapier rechnet Schwerkraft und Kontakt im Browser. Virtuelle Objekte erscheinen für MoveIt und den KI-Agenten wie echte Detektionen.', 'Rapier computes gravity and contact in the browser. Virtual objects look like real detections to MoveIt and the AI agent.'],
+      d: ['Die Physik-Engine Rapier rechnet Schwerkraft, Reibung und Vakuum-Greifen direkt im Browser. Liegende Objekte gehen als statisches TF an virtual_object_detections und erscheinen für MoveIt und den KI-Agenten wie echte YOLO-Detektionen.', 'The Rapier physics engine computes gravity, friction and vacuum grasping right in the browser. Settled objects go as static TF to virtual_object_detections and look like real YOLO detections to MoveIt and the AI agent.'],
       note: ['Sandbox nur im FAKE-Modus; virtuelle Detektionen sind standardmäßig aus und werden bewusst eingeschaltet.', 'Sandbox in FAKE mode only; virtual detections are off by default and switched on deliberately.'],
       spec: {
         lanes: lanes('ui', 'br', ['vis', ['Erkennung', 'Detection']], 'mv'),
@@ -1647,35 +1689,35 @@ const FLOWS = (() => {
           N('mg', 'mv', 0)],
         edges: [E('sbx', 'tun', ['Pose zurück (z = Unterkante)', 'Pose back (z = bottom)']), E('tun', 'rb', '/tf_static', { ports: 'rb' }), E('rb', 'vod', '/tf_static'), E('vod', 'ycol', '/zed/bboxes_3d'),
           E('ycol', 'mg', '/collision_object', { ports: 'rb' }), E('sbx', 'rb', '/planning_scene'), R('rb', 'mg', '/planning_scene')],
-        scenarios: [SC('sb', ['Sandbox', 'Sandbox'], 'i-cube', 'teal', ['Objekte fallen, liegen, werden erkannt und Hindernis für MoveIt.', 'Objects fall, settle, get detected and become obstacles for MoveIt.'], [
-          S('sbx>tun', ['Körper fallen, die Pose geht in den Tuner', 'Bodies fall, the pose goes to the tuner']),
-          S('tun>rb', ['Pose als statisches TF (latched)', 'Pose as static TF (latched)']),
-          S('rb>vod', ['Node liest die TF-Frames', 'Node reads the TF frames']),
-          S('vod>ycol', ['„Erkannt“ wie YOLO auf /zed/bboxes_3d', '“Detected” like YOLO on /zed/bboxes_3d']),
-          S('ycol>mg', ['Offene Kiste als Kollisionsobjekt', 'Open box as collision object']),
-          S('sbx>rb', ['Gehaltenes Objekt als Szenen-Diff', 'Held object as scene diff'], { also: ['rb>mg'] })])],
+        scenarios: [SC('sb', ['Sandbox', 'Sandbox'], 'i-cube', 'teal', ['Objekte fallen, kommen zur Ruhe, werden „erkannt“ und zum Hindernis für MoveIt. Auch das gehaltene Objekt kennt MoveIt, als Diff der Planungsszene.', 'Objects fall, come to rest, get “detected” and become obstacles for MoveIt. MoveIt also knows the held object, as a planning scene diff.'], [
+          S('sbx>tun', ['Rapier lässt die Körper fallen; die Ruhepose geht mit z = Unterkante an den TF-Tuner.', 'Rapier lets the bodies fall; the resting pose goes to the TF tuner with z = bottom.']),
+          S('tun>rb', ['Der TF-Tuner publiziert jede Pose als statisches TF, latched für spät verbundene Nodes.', 'The TF tuner publishes each pose as static TF, latched for late-joining nodes.']),
+          S('rb>vod', ['virtual_object_detections liest die Frames mit 5 Hz, aber nur, wenn virtuelle Detektionen eingeschaltet sind.', 'virtual_object_detections reads the frames at 5 Hz, but only when virtual detections are switched on.']),
+          S('vod>ycol', ['Er publiziert sie wie YOLO als 3D-Boxen, mit IDs ab 901 zur Unterscheidung von echten Objekten.', 'It publishes them like YOLO as 3D boxes, with IDs from 901 to tell them apart from real objects.']),
+          S('ycol>mg', ['yolo_moveit_collision baut aus jeder Box eine oben offene Kiste aus Wänden, damit der Greifer hineinfahren darf.', 'yolo_moveit_collision builds an open-top box of walls from each box, so the gripper may reach in.']),
+          S('sbx>rb', ['Die Sandbox meldet das gehaltene Objekt als Diff der Planungsszene, damit MoveIt es bei der Planung berücksichtigt.', 'The sandbox reports the held object as a planning scene diff, so MoveIt accounts for it when planning.'], { also: ['rb>mg'] })])],
       },
     },
     scene: {
       t: ['Szenen und Logistik-Zelle', 'Scenes and logistics cell'], hue: 'teal', icon: 'i-layers', s: 'sr',
-      d: ['Zwei feste Szenen: Standard und Logistik-Zelle mit Europalette, Bändern und Zaun. Zaun und Bänder sind auch für MoveIt Hindernisse.', 'Two fixed scenes: standard and the logistics cell with euro pallet, belts and fence. Fence and belts are obstacles for MoveIt as well.'],
+      d: ['Zwei feste Szenen: Standard und die Logistik-Zelle mit Europalette, Förderbändern und Zaun. virtual_object_detections hält den Zustand latched für alle Clients und meldet Zaun und Bänder alle 5 s als Hindernis an MoveIt.', 'Two fixed scenes: standard and the logistics cell with euro pallet, conveyor belts and fence. virtual_object_detections keeps the state latched for all clients and reports fence and belts to MoveIt as obstacles every 5 s.'],
       spec: {
         lanes: lanes('ui', 'br', ['vis', ['Szenen-Node', 'Scene node']], 'mv'),
         nodes: [N('scn', 'ui', 0, { label: ['Szenen-Wahl', 'Scene picker'], short: ['Szene', 'Scene'], sub: 'scenes.js', icon: 'i-layers', hue: 'teal', info: ['Wählt Standard oder Palettieren; Kollision je Teil (Bänder, Zaun) schaltbar.', 'Picks standard or palletizing; collision per part (belts, fence) switchable.'] }),
           N('api', 'ui', 1.5, { label: ['UI-Server', 'UI server'], short: 'Server', sub: ':8081 · tf_tuner.json', icon: 'i-db', hue: 'teal', info: ['Speichert die Tuner-Werte in ~/.config/robot_control_ui/tf_tuner.json.', 'Stores tuner values in ~/.config/robot_control_ui/tf_tuner.json.'] }),
           N('rb', 'br', 0), N('vod', 'vis', 0, { label: ['Szenen-Node', 'Scene node'], short: ['Szene', 'Scene'], sub: 'virtual_object_detections', icon: 'i-eye', hue: 'green', info: ['Hält Szene und Objektzustand, latched für alle Clients.', 'Owns scene and object state, latched for all clients.'] }), N('mg', 'mv', 0)],
         edges: [E('scn', 'rb', '/ui/set_virtual_objects'), E('rb', 'vod', '/ui/set_virtual_objects'), R('vod', 'rb', '/ui/virtual_scene'), E('vod', 'mg', '/planning_scene'), E('scn', 'api', 'HTTP /api/tf_tuner', { kind: 'service' })],
-        scenarios: [SC('sc', ['Szene wechseln', 'Switch scene'], 'i-layers', 'teal', ['Szene wählen; alle Clients und MoveIt sehen dieselbe Zelle.', 'Pick a scene; all clients and MoveIt see the same cell.'], [
-          S('scn>rb', ['Szene wählen: Standard oder Palettieren', 'Pick a scene: standard or palletizing']),
-          S('rb>vod', ['Node schaltet die Objekte um', 'Node switches the objects']),
-          S('vod>rb', ['Zustand latched für alle Clients', 'State latched for all clients']),
-          S('vod>mg', ['Zaun und Bänder als Hindernis (alle 5 s)', 'Fence and belts as obstacles (every 5 s)']),
-          S('scn>api', ['TF-Tuner: Save speichert auf dem PC', 'TF tuner: Save stores on the PC'])])],
+        scenarios: [SC('sc', ['Szene wechseln', 'Switch scene'], 'i-layers', 'teal', ['Szene wählen; alle Clients und MoveIt sehen dieselbe Zelle. Die Kollision lässt sich je Teil schalten, z. B. nur der Zaun.', 'Pick a scene; all clients and MoveIt see the same cell. Collision can be switched per part, e.g. the fence only.'], [
+          S('scn>rb', ['In der Szenen-Wahl Standard oder Palettieren wählen; die Kollision je Teil ist schaltbar.', 'Pick standard or palletizing in the scene picker; collision per part is switchable.']),
+          S('rb>vod', ['Der Szenen-Node tauscht die Objekte und ist die einzige Quelle für den Szenenzustand.', 'The scene node swaps the objects and is the only source of the scene state.']),
+          S('vod>rb', ['Der Zustand geht latched zurück; auch ein später geöffneter Browser zeigt dieselbe Szene.', 'The state returns latched; even a browser opened later shows the same scene.']),
+          S('vod>mg', ['Zaun und Bänder kommen als Kollisionsobjekte in die Planungsszene, erneuert alle 5 s.', 'Fence and belts enter the planning scene as collision objects, renewed every 5 s.']),
+          S('scn>api', ['Save im TF-Tuner speichert feinjustierte Posen auf dem Roboter-PC, sie gelten nach einem Neustart weiter.', 'Save in the TF tuner stores fine-tuned poses on the robot PC; they persist after a restart.'])])],
       },
     },
     reach: {
       t: ['Reichweite und Abstand-Heatmap', 'Reach and proximity heatmap'], hue: 'teal', icon: 'i-globe', s: 'sr',
-      d: ['Das Reachability-Volumen ist offline vorberechnet (Yoshikawa-Index). Die Heatmap färbt Glieder live nach Abstand zur Z-Grenze.', 'The reachability volume is precomputed offline (Yoshikawa index). The heatmap tints links live by distance to the Z limit.'],
+      d: ['Das Reachability-Volumen ist offline aus 2,5 Mio. Monte-Carlo-Proben vorberechnet und nach Manipulierbarkeit (Yoshikawa-Index) eingefärbt. Die Abstand-Heatmap färbt die Glieder live nach Abstand zur Z-Grenze, unter 15 mm rot.', 'The reachability volume is precomputed offline from 2.5 M Monte Carlo samples and tinted by manipulability (Yoshikawa index). The proximity heatmap tints the links live by distance to the Z limit, red below 15 mm.'],
       spec: {
         lanes: lanes(['off', ['Offline', 'Offline']], ['ui', ['Digital Twin', 'Digital Twin']], 'br', ['ros', ['ROS', 'ROS']]),
         nodes: [N('gen', 'off', 0, { label: ['Gitter-Generator', 'Grid generator'], short: 'Gen.', sub: 'generate_reachability_grid.py', icon: 'i-chip', hue: 'indigo', info: ['Monte-Carlo mit 2,5 Mio. Proben, schreibt reachability_data.js.', 'Monte Carlo with 2.5 M samples, writes reachability_data.js.'] }),
@@ -1683,17 +1725,17 @@ const FLOWS = (() => {
           N('heat', 'ui', 1.5, { label: ['Abstand-Heatmap', 'Proximity heatmap'], short: 'Heat', sub: 'proximity_heat.js', icon: 'i-eye', hue: 'teal', info: ['Glieder färben sich nach Abstand zur Z-Grenze, rot unter 15 mm.', 'Links tint by distance to the Z limit, red below 15 mm.'] }),
           N('rb', 'br', 1.5), N('jts', 'ros', 1.5, { label: ['TCP-Pose', 'TCP pose'], short: 'TCP', sub: 'joy_to_servo_node · 10 Hz', icon: 'i-gizmo', hue: 'indigo', info: ['Publiziert /ui/eef_position aus TF link_base → link_tcp.', 'Publishes /ui/eef_position from TF link_base → link_tcp.'] })],
         edges: [E('gen', 'rch', ['reachability_data.js', 'reachability_data.js']), E('jts', 'rb', '/ui/eef_position'), E('rb', 'heat', '/ui/eef_position')],
-        scenarios: [SC('r', ['Reichweite', 'Reach'], 'i-globe', 'teal', ['Volumen offline, Abstand live aus der TCP-Pose.', 'Volume offline, distance live from the TCP pose.'], [
-          S('gen>rch', ['Einmal offline: 2,5 Mio. Proben → 7888 Voxel', 'Once offline: 2.5 M samples → 7,888 voxels']),
-          S('jts>rb', ['TCP-Pose mit 10 Hz', 'TCP pose at 10 Hz']),
-          S('rb>heat', ['Glieder färben sich nach Abstand', 'Links tint by distance'])])],
+        scenarios: [SC('r', ['Reichweite', 'Reach'], 'i-globe', 'teal', ['Das Volumen kommt einmal offline aus dem Generator, der Abstand live aus der TCP-Pose. Das Volumen ist standardmäßig aus und im Twin zuschaltbar.', 'The volume comes once offline from the generator, the distance live from the TCP pose. The volume is off by default and can be switched on in the twin.'], [
+          S('gen>rch', ['Einmal offline: 2,5 Mio. Proben werden 7888 Voxel, gezeichnet in einem einzigen Draw-Call.', 'Once offline: 2.5 M samples become 7,888 voxels, drawn in a single draw call.']),
+          S('jts>rb', ['joy_to_servo_node publiziert die TCP-Pose aus TF link_base → link_tcp mit 10 Hz.', 'joy_to_servo_node publishes the TCP pose from TF link_base → link_tcp at 10 Hz.']),
+          S('rb>heat', ['Die Heatmap färbt jedes Glied nach seinem Abstand zur Z-Grenze, unter 15 mm rot.', 'The heatmap tints each link by its distance to the Z limit, red below 15 mm.'])])],
       },
     },
 
     // ─────────── Vision ───────────
     vision: {
       t: ['Kamera: aus Bild wird Hindernis', 'Camera: image becomes obstacle'], hue: 'green', icon: 'i-cam', s: 'pr',
-      d: ['YOLOv8 macht aus Bild und Tiefe 3D-Boxen. Sie werden Hindernisse für MoveIt und Ziele für den KI-Agenten.', 'YOLOv8 turns image and depth into 3D boxes. They become obstacles for MoveIt and targets for the AI agent.'],
+      d: ['Die ZED Mini liefert Farbbild und Tiefe, YOLOv8 macht daraus mit etwa 2,5 Hz 3D-Boxen mit Greifkugeln. Jede Box wird ein Hindernis für MoveIt und ein mögliches Ziel für KI-Agent und Objektmenü.', 'The ZED Mini delivers colour image and depth; YOLOv8 turns them into 3D boxes with grasp spheres at about 2.5 Hz. Each box becomes an obstacle for MoveIt and a possible target for the AI agent and the object menu.'],
       note: ['Der OctoMap-Eingang in MoveIt ist standardmäßig aus (publish_moveit_cloud:=false).', 'The OctoMap input to MoveIt is off by default (publish_moveit_cloud:=false).'],
       spec: {
         lanes: lanes(['cam', ['Kamera', 'Camera']], ['perc', ['Wahrnehmung', 'Perception']], ['col', ['Kollision', 'Collision']], 'mv', ['use', ['Abnehmer', 'Consumers']]),
@@ -1704,17 +1746,17 @@ const FLOWS = (() => {
           N('mg', 'mv', 0), N('use', 'use', 1.5, { label: ['UI · KI-Agent', 'UI · AI agent'], short: ['Nutzer', 'Users'], sub: 'grasp.js · vla_bridge', icon: 'i-spark', hue: 'violet', info: ['Objektliste und 3D-Overlay in der UI, Szene für den KI-Agenten.', 'Object list and 3D overlay in the UI, scene for the AI agent.'] })],
         edges: [E('zed', 'yolo', ['RGB + Tiefe', 'RGB + depth'], { kind: 'stream' }), E('zed', 'pco', '/zed/zed_node/point_cloud/cloud_registered', { kind: 'stream', ports: 'bl' }), E('yolo', 'ycol', '/zed/bboxes_3d'),
           E('ycol', 'mg', '/collision_object'), E('pco', 'mg', ['OctoMap (optional)', 'OctoMap (optional)'], { kind: 'stream', ports: 'rb' }), E('yolo', 'use', '/zed/bboxes_3d', { ports: 'bt' })],
-        scenarios: [SC('cam', ['Kamera', 'Camera'], 'i-cam', 'green', ['Bild → 3D-Box → Kollisionsobjekt → Planung um das Hindernis.', 'Image → 3D box → collision object → planning around the obstacle.'], [
-          S('zed>yolo', ['Farbbild und Tiefe', 'Colour image and depth']),
-          S('yolo>ycol', ['3D-Boxen mit Greifkugeln', '3D boxes with grasp spheres'], { also: ['yolo>use'] }),
-          S('ycol>mg', ['Offene Kiste als Kollisionsobjekt', 'Open box as collision object']),
-          S('zed>pco', ['Punktwolke aufbereiten', 'Prepare the point cloud']),
-          S('pco>mg', ['OctoMap nur, wenn eingeschaltet (3 cm)', 'OctoMap only when enabled (3 cm)'])])],
+        scenarios: [SC('cam', ['Kamera', 'Camera'], 'i-cam', 'green', ['Bild → 3D-Box → Kollisionsobjekt → Planung um das Hindernis. Die Punktwolke ist ein zweiter, optionaler Weg über die OctoMap.', 'Image → 3D box → collision object → planning around the obstacle. The point cloud is a second, optional path via the OctoMap.'], [
+          S('zed>yolo', ['Die ZED Mini liefert Farbbild und Tiefenbild in HD720 an die Erkennung.', 'The ZED Mini delivers colour and depth images in HD720 to the detection.']),
+          S('yolo>ycol', ['YOLOv8l erkennt Objekte ab Konfidenz 0,35 und publiziert 3D-Boxen mit Greifkugeln.', 'YOLOv8l detects objects from confidence 0.35 and publishes 3D boxes with grasp spheres.'], { also: ['yolo>use'] }),
+          S('ycol>mg', ['yolo_moveit_collision baut aus jeder Box eine oben offene Kiste aus Wänden, damit der Greifer hineinfahren darf.', 'yolo_moveit_collision builds an open-top box of walls from each box, so the gripper may reach in.']),
+          S('zed>pco', ['pointcloud_optimizer bereitet die registrierte Punktwolke für die OctoMap auf.', 'pointcloud_optimizer prepares the registered point cloud for the OctoMap.']),
+          S('pco>mg', ['MoveIt baut daraus eine OctoMap mit 3 cm Auflösung, aber nur mit publish_moveit_cloud:=true.', 'MoveIt builds an OctoMap with 3 cm resolution from it, but only with publish_moveit_cloud:=true.'])])],
       },
     },
     streams: {
       t: ['Kamera-Streams und Tisch-Kamera', 'Camera streams and table camera'], hue: 'green', icon: 'i-cam', s: 'sr',
-      d: ['web_video_server macht ROS-Bilder zu MJPEG auf Port 8082. Die Tisch-Kamera verortet Objekte über 12 ArUco-Marker auf dem Tisch.', 'web_video_server turns ROS images into MJPEG on port 8082. The table camera locates objects via 12 ArUco markers on the table.'],
+      d: ['web_video_server wandelt ROS-Bilder in MJPEG-Streams auf Port 8082; der Browser braucht dafür kein Plugin. Die Tisch-Kamera verortet Objekte über 12 ArUco-Marker auf dem Tisch, per Homographie ab 4 sichtbaren Markern.', 'web_video_server turns ROS images into MJPEG streams on port 8082; the browser needs no plugin for it. The table camera locates objects via 12 ArUco markers on the table, by homography once 4 markers are visible.'],
       note: ['IP-Kamera mit ArUco ist vorbereitet: nur mit ip_cams:=true aktiv, mit echter Kamera noch nicht getestet.', 'IP camera with ArUco is prepared: active only with ip_cams:=true, not yet tested with a real camera.'],
       spec: {
         lanes: lanes(['src', ['Quelle', 'Source']], ['node', ['ROS-Node', 'ROS node']], ['srv', ['Server', 'Server']], ['ui', ['Browser', 'Browser']]),
@@ -1725,20 +1767,20 @@ const FLOWS = (() => {
           N('ui', 'ui', 0, { sub: ['Streams · :8081', 'streams · :8081'] })],
         edges: [E('zed', 'wvs', '/zed/zed_node/rgb/image_rect_color'), E('wvs', 'ui', 'MJPEG :8082', { kind: 'stream' }), E('pi', 'ipy', ['Einzelbild per HTTP', 'Single frame via HTTP'], { kind: 'stream' }), E('ipy', 'wvs', '/ip_cam/table/annotated')],
         scenarios: [
-          SC('zed', ['ZED-Stream', 'ZED stream'], 'i-cam', 'green', ['ROS-Bild als MJPEG in die Robot Control UI.', 'ROS image as MJPEG into the Robot Control UI.'], [
-            S('zed>wvs', ['ROS-Bild an den Video-Server', 'ROS image to the video server']),
-            S('wvs>ui', ['MJPEG im Browser, pausiert bei zu', 'MJPEG in the browser, paused when closed'])]),
-          SC('aruco', ['Tisch-Kamera + ArUco', 'Table camera + ArUco'], 'i-eye', 'teal', ['Marker finden, Tischposition rechnen, Overlay streamen.', 'Find markers, compute the table position, stream the overlay.'], [
-            S('pi>ipy', ['Bild holen, ArUco-Marker suchen', 'Fetch a frame, find ArUco markers']),
-            S('ipy>wvs', ['≥ 4 Marker → Tischposition, Overlay', '≥ 4 markers → table position, overlay']),
-            S('wvs>ui', ['Live Stream 2 in der UI', 'Live Stream 2 in the UI'])])],
+          SC('zed', ['ZED-Stream', 'ZED stream'], 'i-cam', 'green', ['Das ROS-Bild der ZED Mini kommt als MJPEG in die Robot Control UI. Ein zugeklapptes Stream-Fenster pausiert und spart Bandbreite.', 'The ROS image of the ZED Mini reaches the Robot Control UI as MJPEG. A collapsed stream window pauses and saves bandwidth.'], [
+            S('zed>wvs', ['Der Video-Server abonniert das entzerrte Farbbild der ZED Mini.', 'The video server subscribes to the rectified colour image of the ZED Mini.']),
+            S('wvs>ui', ['Der Browser zeigt den MJPEG-Stream; ist das Fenster zugeklappt, pausiert er.', 'The browser shows the MJPEG stream; when the window is collapsed, it pauses.'])]),
+          SC('aruco', ['Tisch-Kamera + ArUco', 'Table camera + ArUco'], 'i-eye', 'teal', ['Marker finden, Tischposition rechnen, Overlay streamen. Aus den Fußpunkten der Objekte auf der Tischebene ergibt sich ihre Position.', 'Find markers, compute the table position, stream the overlay. The foot points of the objects on the table plane give their positions.'], [
+            S('pi>ipy', ['Der Node holt ein Einzelbild per HTTP und sucht die ArUco-Marker darin.', 'The node fetches a single frame via HTTP and finds the ArUco markers in it.']),
+            S('ipy>wvs', ['Ab 4 bekannten Markern rechnet eine Homographie die Fußpunkte der YOLO-Objekte in Tischkoordinaten.', 'From 4 known markers a homography maps the foot points of the YOLO objects to table coordinates.']),
+            S('wvs>ui', ['Das annotierte Bild erscheint als Live Stream 2 in der Robot Control UI.', 'The annotated image appears as Live Stream 2 in the Robot Control UI.'])])],
       },
     },
 
     // ─────────── KI / VLA-M ───────────
     vla: {
       t: ['KI-Chat: aus einem Satz ein geprüfter Plan', 'AI chat: from one sentence to a checked plan'], hue: 'violet', icon: 'i-spark', s: 'spr',
-      d: ['Das Modell wählt nur Skills und Objekte, alle Posen rechnet der Code. Jeder Plan wartet auf Execute; REAL nur mit allow_real_motion.', 'The model only picks skills and objects; the code computes every pose. Every plan waits for Execute; REAL only with allow_real_motion.'],
+      d: ['Das Sprachmodell wählt nur Skills (pick, place, home, palletize, gripper) und Objekt-IDs aus der Szene, alle Posen rechnet der Code. Jeder Plan wartet auf Execute; im REAL-Modus fährt der Agent nur mit allow_real_motion, Standard ist nur planen.', 'The language model only picks skills (pick, place, home, palletize, gripper) and object IDs from the scene; the code computes every pose. Every plan waits for Execute; in REAL mode the agent moves only with allow_real_motion, the default is plan only.'],
       note: ['dry_run:=true plant und zeigt, bewegt aber nie den Arm. Abort stoppt nach dem laufenden Schritt, der E-STOP sofort.', 'dry_run:=true plans and shows but never moves the arm. Abort stops after the current step, the E-STOP at once.'],
       loop: { t: ['Agentenschleife', 'Agent loop'], s: 'VLA-M · vla_bridge',
         st: [[['Anweisung', 'Instruction'], ['Chat · Diktat', 'chat · dictation']], [['Plan', 'Plan'], ['Sprachmodell', 'language model']], [['Prüfen', 'Check'], ['Code · ≤ 2 Runden', 'code · ≤ 2 rounds']],
@@ -1751,20 +1793,20 @@ const FLOWS = (() => {
         edges: [E('ui', 'rb', '/vla/instruction'), E('rb', 'vb', '/vla/instruction'), E('vb', 'llm', ['Prompt ⇄ Plan (JSON)', 'Prompt ⇄ plan (JSON)'], { kind: 'service' }),
           R('vb', 'rb', '/vla/response'), R('rb', 'ui', '/vla/response'), E('vb', 'mh', '/ui/approach_from_above', { kind: 'service' }), E('mh', 'arm', ['MoveGroup → Controller', 'MoveGroup → controller']),
           E('vb', 'gj', '/ui/gripper_cmd', { ports: 'rl' }), R('mh', 'vb', '/ui/moveit_motion_state')],
-        scenarios: [SC('ki', ['KI-Auftrag', 'AI task'], 'i-spark', 'violet', ['Ein Satz wird zum Plan. Der Plan geht zurück zum Menschen und fährt erst nach Execute.', 'One sentence becomes a plan. The plan returns to the human and only runs after Execute.'], [
-          S('ui>rb', ['Anweisung tippen oder diktieren', 'Type or dictate the instruction']),
-          S('rb>vb', ['Agent sieht Text, Szene und Zustand', 'Agent sees text, scene and state']),
-          S('vb>llm', ['Modell wählt Skills und Objekt-IDs', 'Model picks skills and object IDs']),
-          S('llm>vb', ['Code prüft den Plan, ≤ 2× zurück', 'Code checks the plan, ≤ 2× back']),
-          S('vb>rb', ['Plan geht zur UI, wartet auf Execute', 'Plan goes to the UI, waits for Execute'], { also: ['rb>ui'] }),
-          S('ui>rb', ['Mensch prüft den Plan und gibt frei', 'Human reviews the plan and approves'], { topic: '/vla/execute', also: ['rb>vb'] }),
-          S('vb>mh', ['Skill für Skill über den Motion Handler', 'Skill by skill via the motion handler'], { also: ['mh>arm', 'vb>gj'] }),
-          S('mh>vb', ['Rückmeldung; Fehler → neu planen ≤ 2×', 'Feedback; failure → replan ≤ 2×'])])],
+        scenarios: [SC('ki', ['KI-Auftrag', 'AI task'], 'i-spark', 'violet', ['Ein Satz wird zum Plan. Der Plan geht zurück zum Menschen und fährt erst nach Execute, Skill für Skill mit Greifprüfung.', 'One sentence becomes a plan. The plan returns to the human and only runs after Execute, skill by skill with a grasp check.'], [
+          S('ui>rb', ['Die Anweisung im KI-Chat tippen oder per Whisper diktieren, auf Deutsch oder Englisch.', 'Type the instruction in the AI chat or dictate it via Whisper, in German or English.']),
+          S('rb>vb', ['Der Agent bündelt Text, erkannte und virtuelle Objekte, gehaltenes Objekt, Greifer und FAKE/REAL.', 'The agent bundles text, detected and virtual objects, held object, gripper and FAKE/REAL.']),
+          S('vb>llm', ['Das Modell antwortet mit JSON aus Skills und Objekt-IDs; Objekte oder deren Koordinaten erfinden darf es nicht.', 'The model answers in JSON with skills and object IDs; it may not invent objects or their coordinates.']),
+          S('llm>vb', ['Der Code prüft jeden Schritt gegen die Szene; ein ungültiger Plan geht höchstens 2× zur Korrektur zurück.', 'The code checks every step against the scene; an invalid plan goes back for correction at most 2×.']),
+          S('vb>rb', ['Der geprüfte Plan erscheint im Chat und wartet auf Execute.', 'The checked plan appears in the chat and waits for Execute.'], { also: ['rb>ui'] }),
+          S('ui>rb', ['Der Mensch liest den Plan und gibt ihn frei; Abort stoppt später nach dem laufenden Schritt.', 'The human reads the plan and approves it; Abort later stops after the current step.'], { topic: '/vla/execute', also: ['rb>vb'] }),
+          S('vb>mh', ['Skill für Skill: Anfahrt von oben über den Motion Handler, Greifen über den Greifer-Node.', 'Skill by skill: approach from above via the motion handler, gripping via the gripper node.'], { also: ['mh>arm', 'vb>gj'] }),
+          S('mh>vb', ['Jede Fahrt meldet ihr Ergebnis; scheitert ein Schritt, plant der Agent mit der neuen Szene neu, höchstens 2×.', 'Each motion reports its result; if a step fails, the agent replans with the new scene, at most 2×.'])])],
       },
     },
     grasp: {
       t: ['Greifen per Klick (3 Phasen)', 'Grasp by click (3 phases)'], hue: 'violet', icon: 'i-grip', s: 'spr',
-      d: ['Objekt anklicken, Grasp wählen: ohne Sprachmodell, mit denselben Prüfungen wie der KI-Agent. Anfahren, Ansaugen, Anheben mit Greifprüfung.', 'Click an object, choose Grasp: no language model, the same checks as the AI agent. Approach, suction, lift with a grasp check.'],
+      d: ['Objekt im Twin oder in VR anklicken, Grasp wählen: Der Skill-Runner greift ohne Sprachmodell, mit derselben Prüfung wie ein KI-Plan. Drei Phasen folgen: 70 mm über dem Objekt anfahren, senkrecht absenken und ansaugen, anheben und prüfen, ob das Objekt mitkommt.', 'Click an object in the twin or in VR, choose Grasp: the skill runner grasps without a language model, with the same check as an AI plan. Three phases follow: approach 70 mm above the object, descend vertically and suck, lift and check that the object comes along.'],
       note: ['REAL: Der Klick fragt nach; virtuelle Objekte sind in REAL gesperrt. Ein Direktbefehl plant nach einem Fehler nicht neu.', 'REAL: the click asks for confirmation; virtual objects are blocked in REAL. A direct command does not replan after a failure.'],
       spec: {
         lanes: lanes('in', 'br', ['ai', ['Prüfung', 'Check']], 'mo', 'hw'),
@@ -1773,19 +1815,19 @@ const FLOWS = (() => {
           N('rb', 'br', 0), N('vb', 'ai', 0, { label: ['Skill-Runner', 'Skill runner'], short: 'Skill' }), N('mh', 'mo', 0), N('gj', 'mo', 1.5), N('arm', 'hw', 0)],
         edges: [E('menu', 'rb', '/vla/skill'), E('rb', 'vb', '/vla/skill'), E('vb', 'mh', '/ui/approach_from_above', { kind: 'service' }), E('mh', 'arm', ['MoveGroup → Controller', 'MoveGroup → controller']),
           E('vb', 'gj', '/ui/gripper_cmd', { ports: 'rl' }), E('sb', 'vb', '/ui/physics_sandbox_state', { ports: 'rb' })],
-        scenarios: [SC('g', ['Greifen', 'Grasp'], 'i-grip', 'violet', ['Anfahren, Absenken, Ansaugen, Anheben, prüfen.', 'Approach, descend, suck, lift, check.'], [
-          S('menu>rb', ['Klick auf Grasp im Objektmenü', 'Click Grasp in the object menu']),
-          S('rb>vb', ['Prüfung: Objekt da, Greifer frei, nicht gekippt', 'Check: object present, gripper free, not tilted']),
-          S('vb>mh', ['Anfahrt: 70 mm darüber, Yaw-Suche', 'Approach: 70 mm above, yaw search']),
-          S('mh>arm', ['Gerade nach unten, 2 mm über der Greifkugel', 'Straight down, 2 mm above the grasp sphere']),
-          S('vb>gj', ['Sauger ein, 0,4 s warten', 'Suction on, wait 0.4 s']),
-          S('vb>mh', ['Anheben, mindestens 80 mm', 'Lift at least 80 mm'], { topic: '/ui/execute_move_to_pose' }),
-          S('sb>vb', ['Greifprüfung: Kommt das Objekt mit?', 'Grasp check: does the object come up?'])])],
+        scenarios: [SC('g', ['Greifen', 'Grasp'], 'i-grip', 'violet', ['Anfahren, Absenken, Ansaugen, Anheben, prüfen. Jeder Schritt wartet auf die Rückmeldung des vorigen, ein Abbruch stoppt den ganzen Griff.', 'Approach, descend, suck, lift, check. Each step waits for the feedback of the previous one; one abort stops the whole grasp.'], [
+          S('menu>rb', ['Klick auf Grasp im Objektmenü; in REAL fragt die UI vorher nach.', 'Click Grasp in the object menu; in REAL the UI asks for confirmation first.']),
+          S('rb>vb', ['Die Prüfung verlangt: Objekt in der Szene, Greifer leer, Objekt weder gekippt noch gesperrt.', 'The check requires: object in the scene, gripper empty, object neither tilted nor locked.']),
+          S('vb>mh', ['Anfahrt auf 70 mm über das Objekt; eine Yaw-Suche findet eine erreichbare Drehung des Werkzeugs.', 'Approach to 70 mm above the object; a yaw search finds a reachable tool rotation.']),
+          S('mh>arm', ['Der Arm fährt gerade nach unten bis 2 mm über die Greifkugel.', 'The arm moves straight down to 2 mm above the grasp sphere.']),
+          S('vb>gj', ['Sauger ein, dann 0,4 s warten, bis das Vakuum hält.', 'Suction on, then wait 0.4 s for the vacuum to hold.']),
+          S('vb>mh', ['Anheben um mindestens 80 mm, damit das Objekt frei über der Szene hängt.', 'Lift by at least 80 mm so the object hangs clear of the scene.'], { topic: '/ui/execute_move_to_pose' }),
+          S('sb>vb', ['Greifprüfung: Kommt das Objekt mit? In FAKE meldet die Sandbox, welches Objekt am Sauger hängt.', 'Grasp check: does the object come along? In FAKE the sandbox reports which object hangs on the suction cup.'])])],
       },
     },
     pallet: {
       t: ['Auto-Palettieren', 'Auto palletizing'], hue: 'violet', icon: 'i-layers', s: 'sp',
-      d: ['Die Logistik-Zelle belädt eine Europalette Karton für Karton. Jede Lage wird geprüft, bevor der nächste Karton kommt.', 'The logistics cell loads a euro pallet carton by carton. Each pose is checked before the next carton comes.'],
+      d: ['PalletJob plant die Beladung einer Europalette: Gewichtsgrenze, schwer und groß nach unten, mindestens 80 % Auflage, nichts auf zerbrechliche Kartons. Danach greift und legt der Arm Karton für Karton ab und prüft jede Ablage auf 6 mm und 8°, bevor der nächste kommt.', 'PalletJob plans how to load a euro pallet: weight limit, heavy and large at the bottom, at least 80 % support, nothing on fragile cartons. Then the arm picks and places carton after carton and checks each placement to 6 mm and 8° before the next one.'],
       note: ['Nur FAKE mit Physik-Sandbox: REAL lehnt virtuelle Kartons ab. Ein Fehler legt den Karton zurück und hält an, ohne Neuplanung.', 'FAKE with physics sandbox only: REAL rejects virtual cartons. An error puts the carton back and stops, without replanning.'],
       loop: { t: ['Palettier-Zyklus', 'Palletizing cycle'], s: 'vla_bridge · PalletJob',
         st: [[['Plan', 'Plan'], ['Kartons · Lagen', 'cartons · layers']], [['Greifen', 'Pick'], ['pick', 'pick']], [['Ablegen', 'Place'], ['place_at', 'place_at']],
@@ -1799,22 +1841,22 @@ const FLOWS = (() => {
           N('mh', 'mo', 0), N('gj', 'mo', 1.5), N('arm', 'hw', 0, { sub: 'FAKE · Sandbox' })],
         edges: [E('pan', 'rb', '/vla/skill'), E('rb', 'pj', '/vla/skill'), E('vo', 'pj', '/ui/virtual_objects'), R('pj', 'rb', '/vla/pallet/plan'), R('rb', 'pan', '/vla/pallet/plan'),
           E('pj', 'mh', '/ui/approach_from_above', { kind: 'service' }), E('mh', 'arm', ['MoveGroup → Controller', 'MoveGroup → controller']), E('pj', 'gj', '/ui/gripper_cmd', { ports: 'rl' })],
-        scenarios: [SC('p', ['Palettieren', 'Palletizing'], 'i-layers', 'violet', ['Plan, Start, Karton für Karton, Palettenwechsel.', 'Plan, start, carton by carton, pallet change.'], [
-          S('pan>rb', ['Plan anfordern: Kartons wählen, Lagen packen', 'Request a plan: pick cartons, pack layers']),
-          S('rb>pj', ['PalletJob rechnet den Plan', 'PalletJob computes the plan'], { also: ['vo>pj'] }),
-          S('pj>rb', ['Plan und Ghost-Boxen in der UI', 'Plan and ghost boxes in the UI'], { also: ['rb>pan'] }),
-          S('pan>rb', ['Start; Dry run prüft nur die IK', 'Start; dry run checks IK only'], { also: ['rb>pj'] }),
-          S('pj>mh', ['Karton greifen, dann place_at', 'Pick the carton, then place_at'], { also: ['pj>gj'] }),
-          S('mh>arm', ['Ablegen 3 mm über dem Ziel', 'Release 3 mm above the target']),
-          S('pj>rb', ['Lage ≤ 6 mm / 8° geprüft, nächster Karton', 'Pose ≤ 6 mm / 8° checked, next carton']),
-          S('pj>rb', ['Palette voll → Wechsel, neuer Plan', 'Pallet full → swap, new plan'], { topic: '/vla/pallet/event', also: ['rb>pan'] })])],
+        scenarios: [SC('p', ['Palettieren', 'Palletizing'], 'i-layers', 'violet', ['Plan, Start, Karton für Karton, Palettenwechsel. Vor dem Start zeigt die UI jeden Karton als Ghost-Box an seinem Zielplatz.', 'Plan, start, carton by carton, pallet change. Before the start the UI shows every carton as a ghost box at its target spot.'], [
+          S('pan>rb', ['Plan anfordern: optional Pflicht-Kartons und eigene Grenzen für Last, Höhe und Auflage setzen.', 'Request a plan: optionally set required cartons and own limits for load, height and support.']),
+          S('rb>pj', ['PalletJob wählt Kartons und Reihenfolge und rechnet die genauen Ablageposen Lage für Lage.', 'PalletJob picks cartons and order and computes the exact placement poses layer by layer.'], { also: ['vo>pj'] }),
+          S('pj>rb', ['Plan und Fortschritt gehen latched an die UI, die Kartons erscheinen als Ghost-Boxen.', 'Plan and progress go latched to the UI; the cartons appear as ghost boxes.'], { also: ['rb>pan'] }),
+          S('pan>rb', ['Start fährt den Plan; Dry run prüft nur die IK jeder Pose und bewegt nichts.', 'Start runs the plan; dry run only checks the IK of each pose and moves nothing.'], { also: ['rb>pj'] }),
+          S('pj>mh', ['Je Karton: pick mit Anfahrt von oben, dann place_at auf die geplante Pose.', 'Per carton: pick with approach from above, then place_at onto the planned pose.'], { also: ['pj>gj'] }),
+          S('mh>arm', ['Der Arm setzt ab und löst den Sauger 3 mm über der Zielhöhe.', 'The arm sets down and releases the suction 3 mm above the target height.']),
+          S('pj>rb', ['Die Ist-Lage wird mit dem Plan verglichen; liegt sie innerhalb von 6 mm und 8°, folgt der nächste Karton.', 'The actual pose is compared with the plan; within 6 mm and 8°, the next carton follows.']),
+          S('pj>rb', ['Palette voll: Ereignis an die UI, Palettenwechsel in höchstens 90 s, dann ein neuer Plan für die leere Palette.', 'Pallet full: event to the UI, pallet change within 90 s at most, then a new plan for the empty pallet.'], { topic: '/vla/pallet/event', also: ['rb>pan'] })])],
       },
     },
 
     // ─────────── Monitoring Dashboard, Evaluierung, Daten ───────────
     mon: {
       t: ['Monitoring Dashboard: der Datenweg', 'Monitoring Dashboard: the data path'], hue: 'indigo', icon: 'i-chart',
-      d: ['Ein rclpy-Node und ein Systemsammler schreiben in SQLite; die HTTP-API auf Port 8083 liefert die 11 Ansichten. Zugriff nur aus lokalen und privaten Netzen.', 'An rclpy node and a system collector write to SQLite; the HTTP API on port 8083 serves the 11 views. Access only from local and private networks.'],
+      d: ['Der rclpy-Node ros_monitor zählt Topics und Ereignisse, der SystemCollector misst CPU, RAM, GPU und Ports jede Sekunde; beide schreiben in SQLite (30 Tage). Die HTTP-API auf Port 8083 liefert daraus die 11 Ansichten, nur an lokale und private Netze.', 'The rclpy node ros_monitor counts topics and events, the SystemCollector measures CPU, RAM, GPU and ports every second; both write to SQLite (30 days). The HTTP API on port 8083 serves the 11 views from it, to local and private networks only.'],
       spec: {
         lanes: lanes(['src', ['Quellen', 'Sources']], ['srv', ['Sammler', 'Collectors']], ['st', ['Speicher', 'Storage']], ['api', ['HTTP-API', 'HTTP API']], ['ui', ['Browser', 'Browser']]),
         nodes: [N('ros', 'src', 0, { label: ['ROS-2-Graph', 'ROS 2 graph'], short: 'ROS', sub: ['Topics · Graph alle 3 s', 'topics · graph every 3 s'], icon: 'i-link', hue: 'teal', info: ['Bewegungen, E-STOP, Greifer, Klicks, Heartbeats, Detektionen, VLA-Status.', 'Motions, E-STOP, gripper, clicks, heartbeats, detections, VLA status.'] }),
@@ -1826,18 +1868,18 @@ const FLOWS = (() => {
           N('br', 'ui', 0, { label: ['11 Ansichten', '11 views'], short: 'Views', sub: 'Monitoring Dashboard', icon: 'i-chart', hue: 'indigo', info: ['Übersicht bis Evaluierung, Export als CSV oder JSON.', 'Overview to evaluation, export as CSV or JSON.'] })],
         edges: [E('ros', 'rm', ['Topics + Graph', 'Topics + graph']), E('os', 'col', ['CPU, RAM, GPU, Ports', 'CPU, RAM, GPU, ports']), E('rm', 'db', ['Zähler je Minute, Ereignisse', 'Counters per minute, events']),
           E('col', 'db', ['Minutenmittel', 'Minute means'], { ports: 'rb' }), E('db', 'api', ['SQL + Ring', 'SQL + ring']), E('api', 'br', 'GET /api/*', { kind: 'service' })],
-        scenarios: [SC('m', ['Datenweg', 'Data path'], 'i-chart', 'indigo', ['Messen, speichern, ausliefern: vom ROS-Graphen bis in die Ansicht.', 'Measure, store, serve: from the ROS graph to the view.'], [
-          S('ros>rm', ['Topics abonnieren, Graph alle 3 s', 'Subscribe topics, graph every 3 s']),
-          S('os>col', ['System jede Sekunde messen', 'Measure the system every second']),
-          S('col>db', ['Ring 1 h im RAM, Minutenmittel in SQLite', '1 h ring in RAM, minute means in SQLite']),
-          S('rm>db', ['Ereignisse, Fahrten, Sessions speichern', 'Store events, motions, sessions']),
-          S('db>api', ['API liest Datenbank und Ring', 'API reads database and ring']),
-          S('api>br', ['Ansichten holen JSON; Export CSV/JSON', 'Views fetch JSON; export CSV/JSON'])])],
+        scenarios: [SC('m', ['Datenweg', 'Data path'], 'i-chart', 'indigo', ['Messen, speichern, ausliefern: vom ROS-Graphen bis in die Ansicht. Die letzte Stunde liegt sekundengenau im RAM, ältere Daten als Minutenmittel in SQLite.', 'Measure, store, serve: from the ROS graph to the view. The last hour sits in RAM to the second, older data as minute means in SQLite.'], [
+          S('ros>rm', ['ros_monitor abonniert Bewegungen, E-STOP, Greifer, Klicks und Heartbeats und liest den ROS-Graphen alle 3 s.', 'ros_monitor subscribes to motions, E-STOP, gripper, clicks and heartbeats and reads the ROS graph every 3 s.']),
+          S('os>col', ['Der SystemCollector misst jede Sekunde CPU, RAM, GPU, Platte, Netz und Dienst-Ports.', 'The SystemCollector measures CPU, RAM, GPU, disk, network and service ports every second.']),
+          S('col>db', ['Die Messwerte liegen 1 h als Ring im RAM; Minutenmittel gehen für 30 Tage in SQLite.', 'Readings stay in a 1 h ring in RAM; minute means go into SQLite for 30 days.']),
+          S('rm>db', ['Fahrten, Sessions, Klicks, Griffe und Ereignisse landen je in einer eigenen Tabelle.', 'Motions, sessions, clicks, grasps and events each land in their own table.']),
+          S('db>api', ['Die API beantwortet Anfragen aus Datenbank und Ring; POST nur von derselben Origin.', 'The API answers requests from database and ring; POST only from the same origin.']),
+          S('api>br', ['Die 11 Ansichten holen JSON per GET; die Daten lassen sich als CSV oder JSON exportieren.', 'The 11 views fetch JSON via GET; the data can be exported as CSV or JSON.'])])],
       },
     },
     clicks: {
       t: ['Klick-Statistik: Nutzung messen', 'Click statistics: measuring use'], hue: 'indigo', icon: 'i-touch',
-      d: ['Die Robot Control UI zählt Klicks nur mit Label und Bereich, ohne Inhalte. Alle 3 s geht ein Batch per ROS-Topic an das Monitoring Dashboard.', 'The Robot Control UI counts clicks with label and area only, no content. Every 3 s a batch goes to the Monitoring Dashboard via a ROS topic.'],
+      d: ['usage_stats.js in der Robot Control UI zählt Klicks und Änderungen nur mit Label (≤ 48 Zeichen) und Bereich, nie Eingaben; Passwortfelder zählen gar nicht. Alle 3 s geht ein Batch von höchstens 200 Einträgen per ROS-Topic an das Monitoring Dashboard.', 'usage_stats.js in the Robot Control UI counts clicks and changes with label (≤ 48 characters) and area only, never input values; password fields do not count at all. Every 3 s a batch of at most 200 entries goes to the Monitoring Dashboard via a ROS topic.'],
       loop: { t: ['Klick-Statistik', 'Click statistics'], s: 'usage_stats → SQLite',
         st: [[['Klick', 'Click'], ['Label + Bereich', 'label + area']], [['Puffern', 'Buffer'], ['≤ 200 Einträge', '≤ 200 entries']], [['Senden', 'Send'], ['alle 3 s', 'every 3 s']],
           [['Speichern', 'Store'], ['SQLite · 30 Tage', 'SQLite · 30 days']], [['Anzeigen', 'Show'], ['Nutzer & Sessions', 'users & sessions']]],
@@ -1850,16 +1892,16 @@ const FLOWS = (() => {
           N('db', 'mon', 1.5, { label: 'SQLite', short: 'DB', sub: 'interactions · 30 d', icon: 'i-db', hue: 'teal', info: ['Eine Zeile je Klick, 30 Tage, löschbar per „Statistik leeren“.', 'One row per click, 30 days, erasable via “clear statistics”.'] }),
           N('v', 'view', 0, { label: ['Nutzer & Sessions', 'Users & sessions'], short: 'View', sub: ':8083', icon: 'i-chart', hue: 'indigo', info: ['Top-Elemente, Bereiche, Wochentag × Stunde.', 'Top elements, areas, weekday × hour.'] })],
         edges: [E('us', 'rb', '/ui/interaction_events'), E('rb', 'rm', '/ui/interaction_events'), E('rm', 'db', ['Zeile je Klick', 'Row per click']), E('db', 'v', 'GET /api/interactions', { kind: 'service', ports: 'rb' })],
-        scenarios: [SC('c', ['Klick-Statistik', 'Click statistics'], 'i-touch', 'indigo', ['Klicks sammeln, bündeln, speichern, anzeigen.', 'Collect, batch, store and show clicks.'], [
-          S('us>rb', ['Klicks sammeln, alle 3 s ein Batch (≤ 200)', 'Collect clicks, one batch every 3 s (≤ 200)']),
-          S('rb>rm', ['Topic geht an den Monitoring-Node', 'The topic reaches the monitoring node']),
-          S('rm>db', ['Session zuordnen, Zeile speichern', 'Assign the session, store the row']),
-          S('db>v', ['Ansicht: Top-Elemente, Bereiche, Heatmap', 'View: top elements, areas, heatmap'])])],
+        scenarios: [SC('c', ['Klick-Statistik', 'Click statistics'], 'i-touch', 'indigo', ['Klicks sammeln, bündeln, speichern, anzeigen. Die Ansicht zeigt Top-Elemente, Bereiche und die Nutzung nach Wochentag und Stunde.', 'Collect, batch, store and show clicks. The view shows top elements, areas and use by weekday and hour.'], [
+          S('us>rb', ['Die UI puffert Klicks lokal und sendet alle 3 s einen Batch mit höchstens 200 Einträgen.', 'The UI buffers clicks locally and sends a batch of at most 200 entries every 3 s.']),
+          S('rb>rm', ['rosbridge reicht das Topic an ros_monitor weiter, wie jedes andere Browser-Topic.', 'rosbridge passes the topic to ros_monitor like any other browser topic.']),
+          S('rm>db', ['ros_monitor ordnet jeden Klick der Session zu, korrigiert Uhrzeit-Versatz über 30 s und speichert eine Zeile.', 'ros_monitor assigns each click to the session, corrects clock skew above 30 s and stores one row.']),
+          S('db>v', ['Die Ansicht Nutzer & Sessions zeigt Top-Elemente, Bereiche und eine Heatmap Wochentag × Stunde.', 'The Users & sessions view shows top elements, areas and a weekday × hour heatmap.'])])],
       },
     },
     study: {
       t: ['Usability-Studie: vom Test zum Bericht', 'Usability study: from test to report'], hue: 'indigo', icon: 'i-flask',
-      d: ['Die Testleitung arbeitet im Monitoring Dashboard, die Testperson in der Robot Control UI. Jeder Durchlauf speichert Kennzahlen und Fragebogen in SQLite.', 'The test lead works in the Monitoring Dashboard, the participant in the Robot Control UI. Every run stores metrics and questionnaires in SQLite.'],
+      d: ['Die Testleitung plant und startet Durchläufe in der Evaluierung des Monitoring Dashboards, die Testperson bedient die Robot Control UI. Jeder Durchlauf speichert 10 Kennzahlen und die Fragebögen SUS, NASA-TLX, UEQ-S und SEQ in SQLite; der Bericht folgt ISO 9241-11.', 'The test lead plans and starts runs in the evaluation of the Monitoring Dashboard; the participant operates the Robot Control UI. Every run stores 10 metrics and the SUS, NASA-TLX, UEQ-S and SEQ questionnaires in SQLite; the report follows ISO 9241-11.'],
       loop: { t: ['Studienschleife', 'Study loop'], s: ['Evaluierung · study.py', 'Evaluation · study.py'],
         st: [[['Test', 'Test'], ['Aufgaben × Methoden', 'tasks × methods']], [['Aufgabe', 'Task'], ['Ziel · Zielzeit', 'goal · target time']], [['Person', 'Participant'], ['Code · Latin Square', 'code · Latin square']],
           [['Durchlauf', 'Run'], ['▶ … ■ · KPI', '▶ … ■ · KPI']], [['Fragebogen', 'Questionnaire'], ['SUS · TLX · UEQ-S · SEQ', 'SUS · TLX · UEQ-S · SEQ']], [['Auswertung', 'Analysis'], ['ISO 9241-11', 'ISO 9241-11']]],
@@ -1876,20 +1918,20 @@ const FLOWS = (() => {
         edges: [E('ev', 'st', 'POST /api/study/run_start', { kind: 'service' }), E('st', 'mon', ['Durchlauf läuft', 'Run active']), E('mon', 'rcu', '/dashboard/eval_run'),
           R('rcu', 'mon', ['/remote/heartbeat (Login-Code)', '/remote/heartbeat (login code)']), E('fill', 'st', 'POST /api/study/response_submit', { kind: 'service', ports: 'lb' }),
           E('rep', 'st', 'GET /api/study/report', { kind: 'service', ports: 'rb' })],
-        scenarios: [SC('s', ['Studie', 'Study'], 'i-flask', 'indigo', ['Zuweisen, starten, anmelden, stoppen, befragen, auswerten.', 'Assign, start, log in, stop, survey, analyse.'], [
-          S('ev>st', ['Person zuweisen, Methoden per Latin Square', 'Assign a participant, methods by Latin square'], { topic: 'POST /api/study/test_assign_all' }),
-          S('ev>st', ['Durchlauf starten, Marker ▶', 'Start the run, marker ▶']),
-          S('st>mon', ['Laufenden Durchlauf veröffentlichen', 'Publish the running run']),
-          S('mon>rcu', ['Start-Popup auf allen Geräten', 'Start popup on all devices']),
-          S('rcu>mon', ['Testperson meldet sich per Code an', 'Participant logs in with a code']),
-          S('ev>st', ['Stopp: 10 Kennzahlen als KPI-Snapshot', 'Stop: 10 metrics as a KPI snapshot'], { topic: 'POST /api/study/run_stop' }),
-          S('fill>st', ['SUS, NASA-TLX, UEQ-S, SEQ absenden', 'Submit SUS, NASA-TLX, UEQ-S, SEQ']),
-          S('rep>st', ['Bericht nach ISO 9241-11, CSV/JSON', 'Report per ISO 9241-11, CSV/JSON'])])],
+        scenarios: [SC('s', ['Studie', 'Study'], 'i-flask', 'indigo', ['Zuweisen, starten, anmelden, stoppen, befragen, auswerten. Ein Latin Square verteilt die Reihenfolge der Methoden, damit sich Lerneffekte ausgleichen.', 'Assign, start, log in, stop, survey, analyse. A Latin square spreads the order of methods so learning effects balance out.'], [
+          S('ev>st', ['Testpersonen zuweisen; ein Latin Square legt die Reihenfolge der Methoden je Person fest.', 'Assign participants; a Latin square sets the order of methods per participant.'], { topic: 'POST /api/study/test_assign_all' }),
+          S('ev>st', ['Die Testleitung startet den Durchlauf; der Marker ▶ setzt den Beginn der Messung.', 'The test lead starts the run; the ▶ marker sets the start of the measurement.']),
+          S('st>mon', ['ros_monitor veröffentlicht den laufenden Durchlauf latched an alle Geräte.', 'ros_monitor publishes the running run, latched, to all devices.']),
+          S('mon>rcu', ['Die Robot Control UI zeigt auf jedem verbundenen Gerät ein Start-Popup.', 'The Robot Control UI shows a start popup on every connected device.']),
+          S('rcu>mon', ['Die Testperson meldet sich mit ihrem Code an; der Heartbeat ordnet ihr Gerät dem Durchlauf zu.', 'The participant logs in with their code; the heartbeat links their device to the run.']),
+          S('ev>st', ['Beim Stopp sichert der Server 10 Kennzahlen des Durchlaufs als KPI-Snapshot.', 'On stop the server saves 10 metrics of the run as a KPI snapshot.'], { topic: 'POST /api/study/run_stop' }),
+          S('fill>st', ['Die Testperson füllt SUS, NASA-TLX, UEQ-S und SEQ aus, auch am Tablet-Kiosk.', 'The participant fills in SUS, NASA-TLX, UEQ-S and SEQ, also on the tablet kiosk.']),
+          S('rep>st', ['Der Bericht nach ISO 9241-11 hat 6 Kapitel und ist als PDF druckbar; Rohdaten gehen als CSV oder JSON raus.', 'The report per ISO 9241-11 has 6 chapters and prints as PDF; raw data export as CSV or JSON.'])])],
       },
     },
     blackbox: {
       t: ['Blackbox: die letzten 60 s sichern', 'Blackbox: save the last 60 s'], hue: 'teal', icon: 'i-db',
-      d: ['Ein Ringpuffer hält die letzten 60 s von 14 Topics. Bei E-STOP, Servo-Halt, Kollision oder per Knopf wird daraus ein rosbag2.', 'A ring buffer keeps the last 60 s of 14 topics. On E-STOP, servo halt, collision or by button it becomes a rosbag2.'],
+      d: ['Ein Ringpuffer im RAM hält die letzten 60 s von 14 Topics, darunter Gelenke, TF, Servo, Gamepad und UI-Befehle. Bei E-STOP, Servo-Halt, Kollision oder per Knopf läuft er 5 s nach und schreibt das Fenster als rosbag2 nach ~/.ros/blackbox.', 'A ring buffer in RAM keeps the last 60 s of 14 topics, including joints, TF, servo, gamepad and UI commands. On E-STOP, servo halt, collision or by button it runs on for 5 s and writes the window as a rosbag2 to ~/.ros/blackbox.'],
       loop: { t: ['Blackbox', 'Blackbox'], s: 'robot_blackbox_recorder',
         st: [[['Puffern', 'Buffer'], ['60 s im RAM', '60 s in RAM']], [['Auslösen', 'Trigger'], ['E-STOP · Kollision · Knopf', 'E-STOP · collision · button']], [['Nachlaufen', 'Run on'], ['5 s', '5 s']],
           [['Sichern', 'Save'], ['rosbag2 + Info', 'rosbag2 + info']], [['Aufräumen', 'Clean up'], ['neueste 30 bleiben', 'newest 30 kept']]],
@@ -1904,16 +1946,16 @@ const FLOWS = (() => {
           N('ui', 'dash', 0, { label: ['Robot-Nutzung', 'Robot usage'], short: 'View', sub: ':8083 · /api/blackbox', icon: 'i-chart', hue: 'indigo', info: ['Listet die Vorfälle, nur lesend.', 'Lists the incidents, read only.'] })],
         edges: [E('tp', 'ring', ['alle 14 Topics, rollierend', 'all 14 topics, rolling']), E('trg', 'ring', '/ui/emergency_stop_active', { ports: 'rb' }), E('ring', 'bag', ['Fenster −60 s … +5 s', 'window −60 s … +5 s']),
           E('bag', 'ui', 'GET /api/blackbox', { kind: 'service' })],
-        scenarios: [SC('b', ['Vorfall', 'Incident'], 'i-warn', 'gold', ['Puffer läuft, Ereignis löst aus, Bag wird geschrieben.', 'Buffer runs, an event triggers, the bag is written.'], [
-          S('tp>ring', ['Puffer läuft ständig mit (60 s)', 'Buffer records all the time (60 s)']),
-          S('trg>ring', ['E-STOP, Servo-Halt, Kollision oder Knopf', 'E-STOP, servo halt, collision or button']),
-          S('ring>bag', ['5 s nachlaufen, dann Bag schreiben', 'Run on 5 s, then write the bag']),
-          S('bag>ui', ['Dashboard listet den Vorfall', 'The dashboard lists the incident'])])],
+        scenarios: [SC('b', ['Vorfall', 'Incident'], 'i-warn', 'gold', ['Puffer läuft, Ereignis löst aus, Bag wird geschrieben. So zeigt jeder Vorfall auch die Minute davor, abspielbar in RViz oder Foxglove.', 'Buffer runs, an event triggers, the bag is written. Every incident thus also shows the minute before it, replayable in RViz or Foxglove.'], [
+          S('tp>ring', ['Der Puffer zeichnet ständig mit und verwirft alles, was älter als 60 s ist.', 'The buffer records all the time and drops everything older than 60 s.']),
+          S('trg>ring', ['Auslöser: E-STOP-Flanke, Servo-Status 2 oder 4, Kollisionsmeldung oder der Service /blackbox/save; je Grund 30 s Cooldown.', 'Triggers: E-STOP edge, servo status 2 or 4, collision message or the /blackbox/save service; 30 s cooldown per reason.']),
+          S('ring>bag', ['Nach 5 s Nachlauf schreibt der Recorder Bag und blackbox_info.json; die neuesten 30 Vorfälle bleiben.', 'After 5 s of run-on the recorder writes the bag and blackbox_info.json; the newest 30 incidents are kept.']),
+          S('bag>ui', ['Die Ansicht Robot-Nutzung im Monitoring Dashboard listet den Vorfall mit Zeit und Grund.', 'The Robot usage view in the Monitoring Dashboard lists the incident with time and reason.'])])],
       },
     },
     demo: {
       t: ['Demo → Training', 'Demo → training'], hue: 'violet', icon: 'i-db', s: 'sr', plan: ['Training und Policy als Skill', 'training and policy as a skill'],
-      d: ['Der Demo-Recorder zeichnet Vorführungen als Episoden auf. demos_to_lerobot.py macht daraus einen LeRobot-Datensatz.', 'The demo recorder captures demonstrations as episodes. demos_to_lerobot.py turns them into a LeRobot dataset.'],
+      d: ['Der Demo-Recorder zeichnet Vorführungen per VR, Gamepad oder UI als Episoden auf: Zustand, Aktion und Bilder von bis zu 4 Twin-Kameras mit 15 fps, höchstens 300 s. demos_to_lerobot.py macht daraus einen LeRobot-Datensatz für späteres Training.', 'The demo recorder captures demonstrations via VR, gamepad or UI as episodes: state, action and images from up to 4 twin cameras at 15 fps, 300 s at most. demos_to_lerobot.py turns them into a LeRobot dataset for later training.'],
       note: ['Belegt sind Aufnahme und Konvertierung; Training und eine Policy als Skill des Agenten sind geplant.', 'Recording and conversion exist; training and a policy as an agent skill are planned.'],
       loop: { t: ['Demo → Training', 'Demo → training'], s: ['Training geplant', 'training planned'],
         st: [[['Vorführen', 'Demonstrate'], ['Record demo · Teleop', 'record demo · teleop']], [['Episode', 'Episode'], ['meta · npz · mp4', 'meta · npz · mp4']], [['Konvertieren', 'Convert'], ['demos_to_lerobot.py', 'demos_to_lerobot.py']],
@@ -1928,20 +1970,20 @@ const FLOWS = (() => {
           N('tr', 'plan', 0, { label: ['Fein-Tuning (geplant)', 'Fine-tuning (planned)'], short: 'Train', sub: ['SmolVLA · geplant', 'SmolVLA · planned'], icon: 'i-spark', hue: 'violet', info: ['Geplant: Policy aus den Demos trainieren und als Skill des Agenten nutzen.', 'Planned: train a policy from the demos and use it as an agent skill.'] })],
         edges: [E('vla', 'rec', '/vla/demo/cmd'), R('rec', 'vla', '/vla/demo/status'), E('vc', 'rec', '/twin/vcam/<id>/image/compressed', { ports: 'rb' }), E('rec', 'ep', ['Episode speichern', 'Save episode']),
           E('ep', 'cv', ['Ordner einlesen', 'Read folders']), E('cv', 'tr', ['Datensatz → Training (geplant)', 'Dataset → training (planned)'])],
-        scenarios: [SC('d', ['Aufnahme', 'Recording'], 'i-db', 'violet', ['Vorführen, speichern, konvertieren; Training folgt später.', 'Demonstrate, save, convert; training comes later.'], [
-          S('vla>rec', ['Aufgabentext + Start, Teleop per VR, Pad, UI', 'Task text + start, teleop via VR, pad, UI']),
-          S('vc>rec', ['Twin-Bilder mit 15 fps (FAKE)', 'Twin images at 15 fps (FAKE)']),
-          S('rec>ep', ['Stopp speichert die Episode', 'Stop saves the episode']),
-          S('rec>vla', ['Status zurück in die UI', 'Status back to the UI']),
-          S('ep>cv', ['Episoden → LeRobot-Datensatz', 'Episodes → LeRobot dataset']),
-          S('cv>tr', ['Training: geplant, nicht im Code', 'Training: planned, not in the code'])])],
+        scenarios: [SC('d', ['Aufnahme', 'Recording'], 'i-db', 'violet', ['Vorführen, speichern, konvertieren; Training folgt später. Der Recorder selbst bewegt den Roboter nie, er zeichnet nur auf.', 'Demonstrate, save, convert; training comes later. The recorder itself never moves the robot; it only records.'], [
+          S('vla>rec', ['Aufgabentext eingeben, Start drücken und die Aufgabe per VR, Gamepad oder UI vorführen.', 'Enter the task text, press Start and demonstrate the task via VR, gamepad or UI.']),
+          S('vc>rec', ['In FAKE liefern bis zu 4 virtuelle Twin-Kameras die Bilder mit 15 fps.', 'In FAKE up to 4 virtual twin cameras deliver the images at 15 fps.']),
+          S('rec>ep', ['Stopp speichert die Episode als meta, npz und mp4 in einem eigenen Ordner.', 'Stop saves the episode as meta, npz and mp4 in its own folder.']),
+          S('rec>vla', ['Der Recorder meldet seinen Status zurück an die VLA-M-Section.', 'The recorder reports its status back to the VLA-M section.']),
+          S('ep>cv', ['demos_to_lerobot.py liest die Episoden ein, überspringt misslungene und schreibt Parquet und Videos.', 'demos_to_lerobot.py reads the episodes, skips failed ones and writes Parquet and videos.']),
+          S('cv>tr', ['Das Training einer Policy (z. B. SmolVLA) ist geplant und noch nicht im Code.', 'Training a policy (e.g. SmolVLA) is planned and not yet in the code.'])])],
       },
     },
 
     // ─────────── Infrastruktur ───────────
     start: {
       t: ['Systemstart über die Nexus Webapp', 'System start via the Nexus Webapp'], hue: 'accent', icon: 'i-rocket', s: 'spr',
-      d: ['Ein Klick statt vieler Terminals: Preflight prüft Roboter, Kameras, Ports und Doppelstacks. Dann startet EXECUTE die Karten in fester Reihenfolge.', 'One click instead of many terminals: preflight checks robot, cameras, ports and duplicate stacks. Then EXECUTE starts the cards in a fixed order.'],
+      d: ['Ein Klick statt vieler Terminals: Der Preflight prüft Roboter, Kameras, Gamepad, Ports, Doppelstacks, DDS, GPU, Ollama und Platte, ohne etwas zu starten. Dann startet EXECUTE die Karten in fester Reihenfolge und wartet je Karte, bis Node, Port oder Prozess bereit ist.', 'One click instead of many terminals: the preflight checks robot, cameras, gamepad, ports, duplicate stacks, DDS, GPU, Ollama and disk without starting anything. Then EXECUTE starts the cards in a fixed order and waits per card until node, port or process is ready.'],
       spec: {
         lanes: lanes(['ui', ['Nexus Webapp', 'Nexus Webapp']], ['be', ['Backend', 'Backend']], ['ros', ['ROS-2-Stack', 'ROS 2 stack']]),
         nodes: [N('pop', 'ui', 0, { label: ['Setup-Popup', 'Setup popup'], short: 'Popup', sub: 'Nexus Webapp · :8080', icon: 'i-layers', hue: 'accent', info: ['Setup wählen (DEV, SERVER, CLIENT; FAKE oder REAL), Karten anhaken, Check, EXECUTE.', 'Pick a setup (DEV, SERVER, CLIENT; FAKE or REAL), tick cards, check, EXECUTE.'] }),
@@ -1953,15 +1995,15 @@ const FLOWS = (() => {
           R('stack', 'seq', ['Bereitschaft: Node, Port, Prozess', 'Readiness: node, port, process']), E('pop', 'kill', 'POST /api/kill_all_ros2', { kind: 'service' }),
           E('kill', 'stack', ['SIGINT → SIGTERM → SIGKILL', 'SIGINT → SIGTERM → SIGKILL'], { ports: 'rb' })],
         scenarios: [
-          SC('run', ['Start', 'Start'], 'i-rocket', 'accent', ['Prüfen, EXECUTE, Karte für Karte starten.', 'Check, EXECUTE, start card by card.'], [
-            S('pop>pre', ['Prüfen: REAL automatisch, FAKE per Knopf', 'Check: automatic in REAL, by button in FAKE']),
-            S('pre>pop', ['Fehler stoppen den Start, Warnungen nicht', 'Errors block the start, warnings do not']),
-            S('pop>seq', ['EXECUTE startet die Sequenz', 'EXECUTE starts the sequence']),
-            S('seq>stack', ['Karte starten, Log in ~/.ros/nexus_logs', 'Start a card, log in ~/.ros/nexus_logs']),
-            S('stack>seq', ['Warten, bis Node oder Port bereit ist', 'Wait until the node or port is ready'])]),
-          SC('kill', 'Kill Daemon', 'i-stop', 'gold', ['Alles stoppen, was in der eigenen Domain läuft.', 'Stop everything running in the own domain.'], [
-            S('pop>kill', ['Kill Daemon: nur die eigene Domain', 'Kill Daemon: own domain only']),
-            S('kill>stack', ['SIGINT, dann SIGTERM, dann SIGKILL', 'SIGINT, then SIGTERM, then SIGKILL'])])],
+          SC('run', ['Start', 'Start'], 'i-rocket', 'accent', ['Setup wählen, prüfen, EXECUTE: Karte für Karte starten. Jede Karte schreibt ihr Log nach ~/.ros/nexus_logs.', 'Pick a setup, check, EXECUTE: start card by card. Every card writes its log to ~/.ros/nexus_logs.'], [
+            S('pop>pre', ['Der Preflight läuft in REAL automatisch vor dem Start, in FAKE per Knopf Check.', 'The preflight runs automatically before the start in REAL, by the Check button in FAKE.']),
+            S('pre>pop', ['Fehler sperren EXECUTE, Warnungen zeigt das Popup nur an.', 'Errors block EXECUTE; the popup only shows warnings.']),
+            S('pop>seq', ['EXECUTE übergibt die angehakten Karten an den SequenceRunner.', 'EXECUTE hands the ticked cards to the SequenceRunner.']),
+            S('seq>stack', ['Der SequenceRunner startet die nächste Karte als eigenen Prozess, mit Log in ~/.ros/nexus_logs.', 'The SequenceRunner starts the next card as its own process, logging to ~/.ros/nexus_logs.']),
+            S('stack>seq', ['Erst wenn Node, Port oder Prozess der Karte bereit ist, folgt die nächste Karte.', 'Only when the node, port or process of the card is ready does the next card follow.'])]),
+          SC('kill', 'Kill Daemon', 'i-stop', 'gold', ['Alles stoppen, was in der eigenen ROS-Domain läuft; Stacks anderer Domains bleiben unberührt. Danach startet der ROS-Daemon neu.', 'Stop everything running in the own ROS domain; stacks of other domains stay untouched. Then the ROS daemon restarts.'], [
+            S('pop>kill', ['Kill Daemon erfasst nur ROS-Prozesse der eigenen ROS_DOMAIN_ID.', 'Kill Daemon only targets ROS processes of the own ROS_DOMAIN_ID.']),
+            S('kill>stack', ['Erst SIGINT für ein sauberes Ende, dann SIGTERM, zuletzt SIGKILL; danach startet der ROS-Daemon neu.', 'First SIGINT for a clean exit, then SIGTERM, finally SIGKILL; then the ROS daemon restarts.'])])],
       },
     },
   };
@@ -1980,13 +2022,13 @@ const FLOWS = (() => {
   const AREAS = {
     ctl: { de: 'Steuerwege', en: 'Control modes', icon: 'i-pad', hue: 'accent' },
     safe: { de: 'Sicherheit', en: 'Safety', icon: 'i-shield', hue: 'gold' },
-    twin: { de: 'Digital Twin', en: 'Digital Twin', icon: 'i-cube', hue: 'teal' },
+    twin: { de: 'Digital Twin', en: 'Digital Twin', icon: 'i-cube', hue: 'blue' },
     vis: { de: 'Vision', en: 'Vision', icon: 'i-cam', hue: 'green' },
     ai: { de: 'KI / VLA-M', en: 'AI / VLA-M', icon: 'i-spark', hue: 'violet' },
-    mon: { de: 'Monitoring Dashboard', en: 'Monitoring Dashboard', icon: 'i-chart', hue: 'indigo' },
-    eval: { de: 'Evaluierung', en: 'Evaluation', icon: 'i-flask', hue: 'indigo' },
-    data: { de: 'Daten', en: 'Data', icon: 'i-db', hue: 'teal' },
-    infra: { de: 'Infrastruktur', en: 'Infrastructure', icon: 'i-layers', hue: 'accent' },
+    mon: { de: 'Monitoring Dashboard', en: 'Monitoring Dashboard', icon: 'i-chart', hue: 'pink' },
+    eval: { de: 'Evaluierung', en: 'Evaluation', icon: 'i-flask', hue: 'orange' },
+    data: { de: 'Daten', en: 'Data', icon: 'i-db', hue: 'indigo' },
+    infra: { de: 'Infrastruktur', en: 'Infrastructure', icon: 'i-layers', hue: 'lime' },
   };
   const STAGES = [['s', 'teal', 'i-cube', ['Simulieren', 'Simulate']], ['p', 'gold', 'i-check', ['Prüfen', 'Check']], ['r', 'indigo', 'i-arm', ['REAL', 'REAL']]];
   const PLAN = { plan: ['geplant', 'planned'], prep: ['vorbereitet', 'prepared'], doc: ['nur Doku', 'docs only'] };
@@ -1998,7 +2040,7 @@ const FLOWS = (() => {
   const byId = new Map(cards.map(c => [c.id, c]));
   const FIG_HTML = `<div class="fg-bar"><div class="fg-scn" role="group" aria-label="Szenario wählen"></div><div class="fg-ctl">
     <button type="button" data-act="prev" aria-label="Schritt zurück"><svg><use href="#i-prev"/></svg></button><button type="button" data-act="play" aria-label="Abspielen"><svg><use href="#i-play"/></svg></button><button type="button" data-act="next" aria-label="Schritt vor"><svg><use href="#i-next"/></svg></button>
-    <select data-act="speed" aria-label="Tempo"><option value=".5">0,5×</option><option value="1" selected>1×</option><option value="2">2×</option></select></div></div>
+    <span class="fg-speed" data-act="speed" role="group" aria-label="Tempo"><button type="button" data-v=".5" aria-pressed="false">0,5×</button><button type="button" data-v="1" aria-pressed="true">1×</button><button type="button" data-v="2" aria-pressed="false">2×</button></span></div></div>
     <div class="fg-stage"><svg class="fg-svg" role="group" aria-roledescription="Datenflussdiagramm"></svg></div>
     <div class="fg-foot"><div class="fg-detail"><h3></h3><p></p><div class="io"></div><div class="fg-status" aria-live="polite"></div></div><ol class="fg-steps"></ol></div>
     <div class="fg-legend" aria-hidden="true"></div><figcaption id="fg-atlas-cap"></figcaption><ol class="fg-fallback"></ol>`;
@@ -2011,7 +2053,7 @@ const FLOWS = (() => {
     c.style.setProperty('--c', `var(--${a.hue})`);
     let meta = c.querySelector('.fn-meta');
     if (!meta) { meta = document.createElement('div'); meta.className = 'fn-meta'; c.append(meta); }
-    const tags = [`<span class="tag" style="--c: var(--${a.hue})">${ico(a.icon)}${a[lang()]}</span>`];
+    const tags = [`<span class="tag area" style="--c: var(--${a.hue})">${ico(a.icon)}${a[lang()]}</span>`];
     if (f?.loop) tags.push(`<span class="tag">${ico('i-loop')}${esc(L(f.loop.t))}</span>`);
     if (c.dataset.plan) tags.push(`<span class="tag plan">${L(PLAN[c.dataset.plan])}</span>`);
     meta.innerHTML = tags.join('') + (c.dataset.s ? stage(c.dataset.s) : '');
@@ -2162,8 +2204,9 @@ const FLOWS = (() => {
     document.querySelectorAll('[data-en]').forEach(el => { const de = keep(el, 'de', el.innerHTML); el.innerHTML = en ? el.dataset.en : de; });
     document.querySelectorAll('[data-en-aria]').forEach(el => { const de = keep(el, 'deAria', el.getAttribute('aria-label')); el.setAttribute('aria-label', en ? el.dataset.enAria : de); });
     document.querySelectorAll('[data-en-ph]').forEach(el => { const de = keep(el, 'dePh', el.placeholder); el.placeholder = en ? el.dataset.enPh : de; });
+    document.querySelectorAll('[data-en-alt]').forEach(el => { const de = keep(el, 'deAlt', el.alt); el.alt = en ? el.dataset.enAlt : de; });
     document.querySelectorAll('[data-lang]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.lang === l)));
-    decorate(); renderAreas(); filter(); renderHere();
+    decorate(); renderAreas(); filter(); renderHere(); renderHero();
     if (curCard) showFlow(curCard.dataset.f, curCard);
   };
   document.querySelectorAll('[data-lang]').forEach(b => b.addEventListener('click', () => { setLang(b.dataset.lang); store('project_docs_lang', b.dataset.lang); }));
@@ -2190,32 +2233,61 @@ const FLOWS = (() => {
   addEventListener('scroll', () => { if (!spyRaf) spyRaf = requestAnimationFrame(spy); }, { passive: true });
   addEventListener('resize', () => { if (!spyRaf) spyRaf = requestAnimationFrame(spy); }, { passive: true });
 
-  // Einblenden einmal; Kopf gestaffelt, Karten je Schub gestaffelt (max. 8), danach Klassen weg (eigene Übergänge der Karten gelten wieder)
-  if (!reduce && 'IntersectionObserver' in window) {
-    const done = e => { if (e.target !== e.currentTarget || e.propertyName !== 'opacity') return; const el = e.currentTarget; el.classList.remove('rv', 'in'); el.style.removeProperty('--d'); };
-    const rv = new IntersectionObserver(es => {
-      let k = 0;
-      es.forEach(en => {
-        if (!en.isIntersecting) return;
-        if (!en.target.style.getPropertyValue('--d')) en.target.style.setProperty('--d', `${Math.min(k++, 7) * 50}ms`);
-        en.target.classList.add('in'); rv.unobserve(en.target);
-      });
-    }, { threshold: .12, rootMargin: '0px 0px -6% 0px' });
-    const add = (el, d = 0) => { el.classList.add('rv'); if (d) el.style.setProperty('--d', `${d}ms`); el.addEventListener('transitionend', done); rv.observe(el); };
-    [...document.querySelectorAll('.hero-txt > *, .facts > li')].forEach((el, i) => add(el, Math.min(i, 7) * 60));
-    document.querySelectorAll('.filter, .panel, .cards > .grp-h, .cards > .fn').forEach(el => add(el));
+  // Lesefluss (js/scroll_flow.js): Kopf gestaffelt, Karten je Schub in Lesereihenfolge aus der Tiefe
+  window.ScrollFlow?.init({
+    hero: '.hero-copy > .badge, .h1-name, .hero-copy > .abstract, .hero-copy > .cta-row, .trust > li, .hero-copy > .legend, .stage-badge, .hero-card, .stage-hint',
+    heroExit: '.hero-inner',
+    items: ['.filter', '.panel', '.cards > .grp-h'], cards: '.cards > .fn',
+  });
+
+  // Hero-Bühne (js/hero3d.js, Szene „atlas“): ein Bogen je Bereich, ein Punkt je Funktion; Bogenfarben wie im Funktionsatlas
+  // = dunkle Werte der AREAS-Farben (Hex, weil THREE.Color kein color-mix kennt; Kopf ist immer dunkel). Optionen holt das Modul am Seitenende.
+  const AREA_HEX = { ctl: '#2ee6c8', safe: '#f5b942', twin: '#60a5fa', vis: '#4ade80', ai: '#a78bfa', mon: '#f472b6', eval: '#fb923c', data: '#818cf8', infra: '#a3e635' };
+  const heroAreas = Object.keys(AREAS).map(k => ({ k, n: cards.filter(c => c.dataset.a === k).length }));
+  let heroActive = 0;
+  function renderHero() {
+    const { k, n } = heroAreas[heroActive];
+    document.getElementById('hc-area').href = `#bereich-${k}`;
+    document.getElementById('hc-area-n').textContent = n;
+    document.getElementById('hc-area-name').textContent = AREAS[k][lang()];
+    document.querySelectorAll('#hero3d .h3d-lbl').forEach((el, i) => { el.innerHTML = `<b>${heroAreas[i].n}</b> ${esc(AREAS[heroAreas[i].k][lang()])}`; });
   }
+  window.atlasHero = {
+    scene: 'atlas',
+    areas: heroAreas.map(({ k, n }) => ({ label: esc(AREAS[k][lang()]), n, color: AREA_HEX[k], css: AREA_HEX[k], href: `#bereich-${k}` })),
+    onActive: i => { heroActive = i; renderHero(); },
+  };
+  // Beschriftung im 3D bzw. Karte „Bereich“ → nur dieser Bereich; Knopf bzw. Karte „Kreisläufe“ → nur Kreisläufe;
+  // übrige Filter zurück, damit die Liste die Zahl im Hero zeigt; danach zur Liste
+  document.querySelector('.hero').addEventListener('click', e => {
+    const a = e.target.closest('a[href^="#bereich-"], [data-loops]');
+    if (!a) return;
+    e.preventDefault();
+    onlyLoops = a.matches('[data-loops]');
+    area = onlyLoops ? '' : a.getAttribute('href').slice('#bereich-'.length);
+    q = ''; qIn.value = ''; loopBtn.setAttribute('aria-pressed', String(onlyLoops));
+    renderAreas(); filter();
+    document.getElementById('atlas-list').scrollIntoView();
+  });
 
   // Kennzahlen aus den Daten statt fest im Text
-  document.querySelector('[data-count="fn"]').textContent = cards.length;
-  document.querySelector('[data-count="area"]').textContent = new Set(cards.map(c => c.dataset.a)).size;
-  document.querySelector('[data-count="loop"]').textContent = flowIds.filter(id => FLOWS[id].loop).length;
+  const setCount = (key, n) => document.querySelectorAll(`[data-count="${key}"]`).forEach(el => { el.textContent = n; });
+  setCount('fn', cards.length);
+  setCount('area', new Set(cards.map(c => c.dataset.a)).size);
+  setCount('loop', flowIds.filter(id => FLOWS[id].loop).length);
   for (const c of cards) if (c.dataset.f && !FLOWS[c.dataset.f]) console.warn('[atlas] Karte mit unbekanntem Ablauf:', c.id, c.dataset.f);
 
   const qLang = new URLSearchParams(location.search).get('lang');
-  if ((qLang || store('project_docs_lang')) === 'en') setLang('en'); else { decorate(); renderAreas(); filter(); }
+  if ((qLang || store('project_docs_lang')) === 'en') setLang('en'); else { decorate(); renderAreas(); filter(); renderHero(); }
   select(byId.get(location.hash.slice(1)) || byId.get(document.querySelector('.fn[data-default]')?.id) || cards[0], { scroll: !!byId.get(location.hash.slice(1)) });
 })();
+</script>
+<script type="module">
+// Hero-Bühne (js/hero3d.js, Szene „atlas“); Optionen (Bereiche, Anzahl, Farben) aus dem Seiten-Skript
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { toCreasedNormals } from 'three/addons/utils/BufferGeometryUtils.js';
+window.Hero3D?.init(THREE, { OrbitControls, toCreasedNormals }, window.atlasHero);
 </script>
 </body>
 </html>

@@ -154,11 +154,13 @@ pip install "ultralytics>=8.0.0" # YOLO 3D Object detection
 
 *Physical wiring and network topology · source: `tools/make_diagrams.py`*
 
+**Firewall (robot PC):** rosbridge (9090/9091) has no access control of its own → `tools/firewall_setup.sh` lets in only the home network and the /24 networks from `config/network.yaml` (ufw). Without options it only shows the plan; `--apply` sets the rules (sudo), `--net <cidr> --apply` allows another network, `--status`, `--undo`.
+
 <br>
 
 ### Tobii Pro Glasses 3 Setup & Calibration
 
-**Network:** Depending on how the glasses are connected they have a different IP: **Ethernet (LAN) `192.168.100.xxx`**, **Wi-Fi `192.168.75.xxx`**. `gaze_grasp_routine_tobii_glasses` takes the IP from the parameter `tobii_ip` (default: Ethernet); the Gaze UI (`gaze_ui`, `gaze_ui_zedm`) uses the Wi-Fi IP fixed in the code (`self.g3_ip`).
+**Network:** Depending on how the glasses are connected they have a different IP: **Ethernet (LAN) `192.168.100.xxx`**, **Wi-Fi `192.168.75.xxx`**. Both are set in `config/network.yaml` (`tobii.wlan_ip`, `tobii.lan_ip`); `tobii.connection` selects which one is used: `auto` (default) takes the address whose /24 network is present on an interface of this PC, otherwise Wi-Fi; `wlan`/`lan` force one. The Gaze UI (`gaze_ui`, `gaze_ui_zedm`), `gaze_grasp_routine_tobii_glasses` (parameter `tobii_ip`, default from the same lookup), the Robot Control UI header, the Touch Panel and the Nexus Webapp all read it via `net_get('tobii.ip')`.
 
 To correctly calibrate the Tobii Pro Glasses 3 setup (using the glasses, the calibration card, and the 4 ArUco markers on the UI), two separate steps must be performed:
 
@@ -180,7 +182,7 @@ To correctly calibrate the Tobii Pro Glasses 3 setup (using the glasses, the cal
 
 The ZED Mini camera requires the official ZED SDK and a matching CUDA toolkit version. To ensure a clean installation on Ubuntu 22.04 with ROS 2 Humble without breaking existing NVIDIA drivers, follow this exact procedure:
 
-1. **Install CUDA 12.1 Toolkit**: The ZED SDK build used here (4.1.2) is built for CUDA 12.1. Install only the toolkit, not the full driver package. The helper script `tools/install_zed.sh` performs steps 1, 2 and 5 (CUDA 12.1 toolkit via `cuda-keyring` incl. PATH entries in `~/.bashrc`, ZED SDK 4.1.2 in silent mode, workspace build).
+1. **Install CUDA 12.1 Toolkit**: The ZED SDK build used here (4.1.2) is built for CUDA 12.1. Install only the toolkit, not the full driver package. The helper script `tools/install_zed.sh` performs steps 1, 2 and 5: CUDA 12.1 toolkit via `cuda-keyring`, ZED SDK 4.1.2 in silent mode, `rosdep install` and a build of the **whole** workspace (`colcon build --symlink-install --cmake-args=-DCMAKE_BUILD_TYPE=Release`); it clones `zed-ros2-wrapper`/`zed-ros2-interfaces` only if they are missing (they are already in the repo). It appends the PATH entries (`/usr/local/cuda-12.1/…`) to the **end** of `~/.bashrc` → move them to the top afterwards (see **⚠️ Critical System Configurations** above).
 2. **Install ZED SDK**: ZED SDK **4.1.2** for Ubuntu 22.04 / CUDA 12.1 (`ZED_SDK_Ubuntu22_cuda12.1_v4.1.2.zstd.run`), installer in silent mode. Newer SDK versions do not match the embedded ROS 2 wrapper (4.1.0).
  * *Important:* The installer sets up Python API packages as root. Fix the PIP permissions afterwards so `rosdep` can access them:
  ```bash
@@ -235,12 +237,14 @@ GitHub is the only source; each computer has its own clone in `~/dev_ws` (Ubuntu
 
 | When | Command / step | What happens |
 |---|---|---|
-| Once after `git clone` | `tools/ws_sync.sh --setup` | Claude memory from `.claude/memory/` (sets `autoMemoryDirectory` in `.claude/settings.local.json`, old path `~/.claude/projects/<ws>/memory` becomes a symlink), missing values in `~/.claude/settings.json` from `.claude/user-settings.json` (model, effort, mods `answer-cards` + `ros-safety-status` via `CLAUDE_CODE_PLUGIN_DIRS`; differences are only reported), pre-commit hook |
-| Every start on a computer | `tools/ws_sync.sh` | `git pull --rebase --autostash`, builds changed ROS packages (`colcon build --symlink-install --packages-select …`), lists uncommitted files and unpushed commits |
+| Once after `git clone` | `tools/ws_sync.sh --setup` | Claude memory from `.claude/memory/` (sets `autoMemoryDirectory` in `.claude/settings.local.json`, old path `~/.claude/projects/<ws>/memory` becomes a symlink), missing values in `~/.claude/settings.json` from `.claude/user-settings.json` (model, effort, mods `answer-cards` + `ros-safety-status` via `CLAUDE_CODE_PLUGIN_DIRS`; differences are only reported), pre-commit hook (`tools/install_hooks.sh`, remove with `--remove`), reports a missing/outdated Blender (→ `tools/install_blender.sh`) |
+| Every start on a computer | `tools/ws_sync.sh` | setup as above, `git pull --rebase --autostash`, builds changed ROS packages (`colcon build --symlink-install --packages-select …`), lists uncommitted files and unpushed commits |
+| Pull without building | `tools/ws_sync.sh --no-build` | as above, without `colcon build` |
 | Before switching computers | commit + `git push` | otherwise the work stays on this computer |
 
 - **Shared via Git:** `AGENTS.md`, `.claude/` (skills, agents, hooks, mods, memory, template `user-settings.json`), card definitions in `ros2_nexus/launcher_config.json`.
 - **Per computer, not in Git:** `build/`, `install/`, `log/`, `~/.config/ros2_nexus/` (Nexus selections `launcher_state.json`, backups, settings), `.claude/settings.local.json`, Claude chat history (`claude --resume`), Ollama models, ZED SDK, `isaacsim/`.
+- **Blender + MCP server:** `tools/install_blender.sh` installs/updates the pinned version without sudo (`--check` shows installed, pinned and newest version); details: skill `.claude/skills/blender`.
 - **Claude Code:** a new chat warns when `origin` is ahead (hook `session_overview.py`) → run `tools/ws_sync.sh` first.
 - **Away from the lab:** robot, cameras and Tobii (`config/network.yaml`) are unreachable → FAKE only; REAL only on site with someone at the E-stop.
 

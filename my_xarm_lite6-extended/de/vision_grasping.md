@@ -133,7 +133,7 @@
 > - **Dynamische Objekthöhenberechnung:** Statt starrer, fixer Box-Höhen berechnet die Node anhand der segmentierten 3D-Punkte der Punktwolke die reale Objekthöhe ($z_{\text{top}} - z_{\text{bottom}}$) direkt aus der realen Punktwolke jedes erkannten Objekts.
 > - **Dynamischer roter Greifpunkt (`top_z`):** Platziert einen kleinen roten Kugel-Marker zentriert exakt auf der Oberkante des Objekts ($x_{\text{center}}, y_{\text{center}}, z_{\text{top}}$), der sich automatisch an die echte Höhe jedes Objekts anpasst (essenziell für kollisionsfreies Vakuum-Greifen von oben).
 > - **Robuste Oberflächen-Projektion & Zentrierung:** Filtert Tisch- und Bodenrauschen heraus, um die Bounding-Boxen exakt auf das tatsächliche physikalische Volumen der Objekte zu zentrieren, unabhängig vom Blickwinkel der Kamera.
-> - **EMA-Tracking & Mehrfachobjekt-Nummerierung:** Nutzt ein Dictionary-basiertes EMA-Tracking-System mit persistenten globalen IDs und einem 10cm-Threshold, um ID-Swapping und Boxen-Jittering sicher zu verhindern. Mehrere Objekte derselben Klasse werden dauerhaft durchnummeriert (z.B. `cup_1`, `cup_2`).
+> - **EMA-Tracking & Mehrfachobjekt-Nummerierung:** Nutzt ein Dictionary-basiertes EMA-Tracking-System mit persistenten globalen IDs und einer 30-cm-Schwelle (eine Erkennung, die weiter als 0,3 m von jedem bekannten Objekt liegt, bekommt eine neue ID), um ID-Swapping und Boxen-Jittering sicher zu verhindern. Mehrere Objekte derselben Klasse werden dauerhaft durchnummeriert (z.B. `cup_1`, `cup_2`).
 >
 >
 > ![Subscribes](https://img.shields.io/badge/Subscribes-orange?style=flat-square)
@@ -281,8 +281,8 @@
 >> |---|---|---|
 >> | **`/zed/bboxes_3d`** | `visualization_msgs/MarkerArray` | *Die virtuellen Detektionen im YOLO-Marker-Format (Namespaces `yolo_bboxes`, `yolo_object_grasp_center_point`, `yolo_labels_class`, `yolo_labels_coords`).* |
 >> | **`/ui/virtual_bboxes_3d`** | `visualization_msgs/MarkerArray` | *Dieselben Marker exklusiv für die Robot Control UI (Desktop, VR, VR-Spiegel), da das gedrosselte Abo von `/zed/bboxes_3d` (Queue 1) sie neben YOLO mit Kamerarate meist verdrängen würde.* |
->> | **`/ui/virtual_detections_enabled`** | `std_msgs/Bool` (latched) | *Aktueller Schalterzustand für den Button Virtual Obj.* |
->> | **`/ui/virtual_objects`** | `std_msgs/String` (latched, JSON) | *Zustand der einzelnen Objekte für den Tab **OBJECTS** im Viewport: Liste aus `{frame, name, color, on, scene}`, Objekte der Palettier-Szene zusätzlich mit `meta`.* |
+>> | **`/ui/virtual_detections_enabled`** | `std_msgs/Bool` (latched) | *Aktueller Zustand des Schalters **Object detection** (Tag GLOBAL) in Detected Objects.* |
+>> | **`/ui/virtual_objects`** | `std_msgs/String` (latched, JSON) | *Zustand der einzelnen Objekte für das Flyout **Virtual Objects** im Viewport: Liste aus `{frame, name, color, on, scene}`, Objekte der Palettier-Szene zusätzlich mit `meta`.* |
 >> | **`/ui/virtual_scene`** | `std_msgs/String` (latched) | *Aktive Szene: `standard` oder `palletizing` (Bereichs-Leiste › Scene).* |
 >
 >
@@ -568,7 +568,7 @@
 
 ### ![Node](https://img.shields.io/badge/Node-blue?style=flat-square) ![Python UI](https://img.shields.io/badge/Python_UI-8A2BE2?style=flat-square&logo=qt&logoColor=white) `tf_control_tuner.py` (`tf_control_tuner`) &nbsp;&nbsp; <sub><i>`/src/tf_control_tuner/tf_control_tuner/tf_control_tuner.py`</i></sub>
 
-**Zweck & Aufgabe:** Ein dediziertes ROS 2 Paket, das ein Live-Tuner-Interface (PyQt5) bereitstellt, um dynamisch Kamera-Offsets (Punktwolke) sowie die Positionierung interaktiver 3D-Szenenelemente (Würfel, Rechteck, Zylinder, Weiße Plane) und einer anpassbaren zylindrischen **Safety Zone** (mit einstellbarem Radius und XY-Zentrum) in RViz ohne Neustart zu justieren. Ein **Size**-Regler (25–300 %, 100 % = Originalmaß) skaliert die Szenen- und Greif-Objekte gleichmäßig um ihre Unterkante.
+**Zweck & Aufgabe:** Ein dediziertes ROS 2 Paket, das ein Live-Tuner-Interface (PyQt5) bereitstellt, um dynamisch Kamera-Offsets (Punktwolke) sowie die Positionierung interaktiver 3D-Szenenelemente (Würfel, Rechteck, Zylinder, Greif-Objekte Bottle/Steel Ball/Rubber Ball/Bowl/Basket, Palette und Kartons der Palettier-Szene) und einer anpassbaren zylindrischen **Safety Zone** (mit einstellbarem Radius und XY-Zentrum) in RViz ohne Neustart zu justieren. Ein **Size**-Regler (25–300 %, 100 % = Originalmaß) skaliert die Szenen- und Greif-Objekte gleichmäßig um ihre Unterkante.
 
 <details>
 <summary><b>🔽 Details anzeigen</b> · Run Command · Publishes · Defaults</summary>
@@ -594,9 +594,9 @@
 >> | Element | Frame-ID | X [m] | Y [m] | Z [m] | Roll | Pitch | Yaw |
 >> |---|---|---|---|---|---|---|---|
 >> | **Zed M Camera** | `zed_camera_link` | `0.473` | `0.000` | `0.368` | `0.0°` | `57.5°` | `180.0°` |
->> | **Blue Cube** | `target_blue_cube` | `0.300` | `0.085` | `0.000` | `0.0°` | `0.0°` | `0.0°` |
->> | **Red Rectangle** | `target_red_rectangle` | `0.305` | `-0.080` | `0.000` | `0.0°` | `0.0°` | `45.0°` |
->> | **Green Cylinder** | `target_green_cylinder` | `0.350` | `0.025` | `0.000` | `0.0°` | `0.0°` | `0.0°` |
+>> | **Blue Cube** | `target_blue_cube` | `0.300` | `0.085` | `0.002` | `0.0°` | `0.0°` | `0.0°` |
+>> | **Red Rectangle** | `target_red_rectangle` | `0.305` | `-0.080` | `0.002` | `0.0°` | `0.0°` | `45.0°` |
+>> | **Green Cylinder** | `target_green_cylinder` | `0.350` | `0.025` | `0.002` | `0.0°` | `0.0°` | `0.0°` |
 >> | **Safety Zone** | `target_safety_zone` | `0.000` | `0.000` | `0.000` | `0.0°` | `0.0°` | `0.0°` |
 >
 > *Standardradius der Safety Zone: 200 mm (geht zusammen mit X/Y über `/ui/safety_zone_params`).*

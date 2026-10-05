@@ -143,8 +143,9 @@
    */
   function stage(THREE, host, opts = {}) {
     const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'low-power' });
-    renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+    // Füllrate begrenzt die Bildrate (gemessen: DPR 2 + MSAA → 20 fps) → Pixelratio ≤ 1.5, MSAA nur bei DPR < 1.5
+    const renderer = new THREE.WebGLRenderer({ antialias: devicePixelRatio < 1.5, alpha: true, powerPreference: 'low-power' });
+    renderer.setPixelRatio(Math.min(devicePixelRatio, 1.5));
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.05;
     renderer.domElement.style.cssText = 'display:block;width:100%;height:100%;touch-action:pan-y';

@@ -154,11 +154,13 @@ pip install "ultralytics>=8.0.0" # YOLO 3D Objekterkennung
 
 *Verkabelung und Netzwerktopologie · Quelle: `tools/make_diagrams.py`*
 
+**Firewall (Roboter-PC):** rosbridge (9090/9091) hat keine eigene Zugriffskontrolle → `tools/firewall_setup.sh` lässt nur das Heimnetz und die /24-Netze aus `config/network.yaml` herein (ufw). Ohne Option zeigt es nur den Plan; `--apply` setzt die Regeln (sudo), `--net <cidr> --apply` erlaubt ein weiteres Netz, `--status`, `--undo`.
+
 <br>
 
 ### Tobii Pro Glasses 3 Setup & Kalibrierung
 
-**Netzwerk:** Je nach Verbindungsart hat die Brille eine andere IP: **Ethernet (LAN) `192.168.100.xxx`**, **WLAN `192.168.75.xxx`**. `gaze_grasp_routine_tobii_glasses` nimmt die IP aus dem Parameter `tobii_ip` (Standard: Ethernet); die Gaze-UI (`gaze_ui`, `gaze_ui_zedm`) nutzt die im Code fest hinterlegte WLAN-IP (`self.g3_ip`).
+**Netzwerk:** Je nach Verbindungsart hat die Brille eine andere IP: **Ethernet (LAN) `192.168.100.xxx`**, **WLAN `192.168.75.xxx`**. Beide stehen in `config/network.yaml` (`tobii.wlan_ip`, `tobii.lan_ip`); `tobii.connection` wählt die genutzte: `auto` (Standard) nimmt die Adresse, deren /24-Netz an einem Interface dieses PCs anliegt, sonst WLAN; `wlan`/`lan` erzwingen eine. Gaze-UI (`gaze_ui`, `gaze_ui_zedm`), `gaze_grasp_routine_tobii_glasses` (Parameter `tobii_ip`, Standard aus derselben Abfrage), Header der Robot Control UI, Touch Panel und Nexus Webapp lesen sie über `net_get('tobii.ip')`.
 
 Um das Tobii Pro Glasses 3 Setup (mit der Brille, der Kalibrierungskarte und den 4 ArUco-Markern) korrekt zu kalibrieren, müssen zwei separate Schritte durchgeführt werden:
 
@@ -181,7 +183,7 @@ Um das Tobii Pro Glasses 3 Setup (mit der Brille, der Kalibrierungskarte und den
 
 Die ZED Mini Kamera erfordert das offizielle ZED SDK und eine passende CUDA-Version. Für eine saubere Installation unter Ubuntu 22.04 mit ROS 2 Humble (ohne bestehende NVIDIA-Treiber zu beschädigen), folge exakt diesem Ablauf:
 
-1. **CUDA 12.1 Toolkit installieren**: Das hier genutzte ZED SDK (4.1.2) ist für CUDA 12.1 gebaut. Nur das Toolkit installieren, nicht den gesamten Treiber. Das Hilfsskript `tools/install_zed.sh` erledigt die Schritte 1, 2 und 5 (CUDA-12.1-Toolkit über `cuda-keyring` inkl. PATH-Einträgen in `~/.bashrc`, ZED SDK 4.1.2 im Silent-Modus, Workspace-Build).
+1. **CUDA 12.1 Toolkit installieren**: Das hier genutzte ZED SDK (4.1.2) ist für CUDA 12.1 gebaut. Nur das Toolkit installieren, nicht den gesamten Treiber. Das Hilfsskript `tools/install_zed.sh` erledigt die Schritte 1, 2 und 5: CUDA-12.1-Toolkit über `cuda-keyring`, ZED SDK 4.1.2 im Silent-Modus, `rosdep install` und Build des **gesamten** Workspace (`colcon build --symlink-install --cmake-args=-DCMAKE_BUILD_TYPE=Release`); `zed-ros2-wrapper`/`zed-ros2-interfaces` klont es nur, wenn sie fehlen (liegen schon im Repo). Die PATH-Einträge (`/usr/local/cuda-12.1/…`) hängt es ans **Ende** von `~/.bashrc` → danach nach oben verschieben (siehe **⚠️ Kritische Systemkonfigurationen** oben).
 2. **ZED SDK installieren**: ZED SDK **4.1.2** für Ubuntu 22.04 / CUDA 12.1 (`ZED_SDK_Ubuntu22_cuda12.1_v4.1.2.zstd.run`), Installer im Silent-Modus. Neuere SDK-Versionen passen nicht zum eingebetteten ROS-2-Wrapper (4.1.0).
  * *Wichtig:* Der Installer richtet Python-API-Pakete als Root ein. Korrigiere anschließend die Berechtigungen, damit `rosdep` fehlerfrei durchläuft:
  ```bash
@@ -230,12 +232,14 @@ GitHub ist die einzige Quelle; jeder Rechner hat einen eigenen Klon in `~/dev_ws
 
 | Wann | Befehl / Schritt | Was passiert |
 |---|---|---|
-| Einmal nach `git clone` | `tools/ws_sync.sh --setup` | Claude-Memory aus `.claude/memory/` (setzt `autoMemoryDirectory` in `.claude/settings.local.json`, alter Pfad `~/.claude/projects/<ws>/memory` wird Symlink), fehlende Werte in `~/.claude/settings.json` aus `.claude/user-settings.json` (Modell, Effort, Mods `answer-cards` + `ros-safety-status` über `CLAUDE_CODE_PLUGIN_DIRS`; Abweichungen werden nur gemeldet), pre-commit-Hook |
-| Bei jedem Start an einem Rechner | `tools/ws_sync.sh` | `git pull --rebase --autostash`, baut geänderte ROS-Pakete (`colcon build --symlink-install --packages-select …`), nennt uncommittete Dateien und ungepushte Commits |
+| Einmal nach `git clone` | `tools/ws_sync.sh --setup` | Claude-Memory aus `.claude/memory/` (setzt `autoMemoryDirectory` in `.claude/settings.local.json`, alter Pfad `~/.claude/projects/<ws>/memory` wird Symlink), fehlende Werte in `~/.claude/settings.json` aus `.claude/user-settings.json` (Modell, Effort, Mods `answer-cards` + `ros-safety-status` über `CLAUDE_CODE_PLUGIN_DIRS`; Abweichungen werden nur gemeldet), pre-commit-Hook (`tools/install_hooks.sh`, entfernen mit `--remove`), meldet fehlendes/veraltetes Blender (→ `tools/install_blender.sh`) |
+| Bei jedem Start an einem Rechner | `tools/ws_sync.sh` | Einrichten wie oben, `git pull --rebase --autostash`, baut geänderte ROS-Pakete (`colcon build --symlink-install --packages-select …`), nennt uncommittete Dateien und ungepushte Commits |
+| Pull ohne Bauen | `tools/ws_sync.sh --no-build` | wie oben, ohne `colcon build` |
 | Vor dem Rechnerwechsel | committen + `git push` | sonst bleibt die Arbeit auf diesem Rechner |
 
 - **Über Git geteilt:** `AGENTS.md`, `.claude/` (Skills, Agents, Hooks, Mods, Memory, Vorlage `user-settings.json`), Karten-Definitionen in `ros2_nexus/launcher_config.json`.
 - **Je Rechner, nicht im Git:** `build/`, `install/`, `log/`, `~/.config/ros2_nexus/` (Nexus-Auswahlen `launcher_state.json`, Sicherungen, Einstellungen), `.claude/settings.local.json`, Claude-Chatverläufe (`claude --resume`), Ollama-Modelle, ZED SDK, `isaacsim/`.
+- **Blender + MCP-Server:** `tools/install_blender.sh` installiert/aktualisiert die gepinnte Version ohne sudo (`--check` zeigt installierte, gepinnte und neueste Version); Details: Skill `.claude/skills/blender`.
 - **Claude Code:** ein neuer Chat warnt, wenn `origin` voraus ist (Hook `session_overview.py`) → zuerst `tools/ws_sync.sh`.
 - **Außerhalb des Labors:** Roboter, Kameras und Tobii (`config/network.yaml`) sind nicht erreichbar → nur FAKE; REAL nur vor Ort mit jemandem am Not-Halt.
 

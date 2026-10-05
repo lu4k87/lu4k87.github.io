@@ -12,7 +12,7 @@
 <style>
 /* Layout: Leitstand-Blueprint – Hero mit Foto + HUD, danach zwei Kartenraster (Geräte / Steuerwege), Sicherheitskette, Matrix. Tokens folgen ui_shared/ui_tokens.css. */
 :root {
-  --radius: 2px; /* Ecken: kantig, höchstens 2 px (Wunsch User 04.10.2026, Hook prüft) */
+  --radius-sm: 4px; --radius: 6px; --radius-lg: 8px; /* Ecken dezent: klein (Chips, Buttons, Code) · Karten · große Rahmen; Balken/Linien kantig, höchstens 8 px (Wunsch User 04.10.2026, Hook prüft) */
   color-scheme: dark;
   --bg: #0a0f19;
   --surface: #0f1727;
@@ -37,7 +37,7 @@
   --font-display: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   --font-body: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
-  --r-lg: var(--radius);
+  --r-lg: var(--radius-lg);
   --r-md: var(--radius);
 }
 @media (prefers-color-scheme: light) {
@@ -70,7 +70,7 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 a { color: inherit; }
-:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: var(--radius); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: var(--radius-sm); }
 h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; margin: 0; }
 p { margin: 0; }
 .mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
@@ -90,11 +90,11 @@ svg { display: block; }
 .brand-mark { width: 34px; height: 34px; border-radius: var(--radius); display: grid; place-items: center; background: var(--accent); color: var(--accent-ink); }
 .brand small { display: block; font: 600 11px/1 var(--font-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--fg-2); margin-top: 3px; }
 .top nav { margin-left: auto; display: flex; gap: 4px; flex-wrap: wrap; }
-.top nav a { text-decoration: none; font-size: 14px; font-weight: 600; padding: 7px 12px; border-radius: var(--radius); color: var(--fg-2); }
+.top nav a { text-decoration: none; font-size: 14px; font-weight: 600; padding: 7px 12px; border-radius: var(--radius-sm); color: var(--fg-2); }
 .top nav a:hover { background: var(--surface-2); color: var(--fg); }
 
 /* ── Hero ── */
-.hero { padding-block: 56px 40px; }
+.hero { padding-block: 64px 56px; }
 .hero .wrap { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.08fr); gap: 48px; align-items: center; }
 .eyebrow { font: 700 12px/1 var(--font-mono); letter-spacing: .14em; text-transform: uppercase; color: var(--accent); display: flex; align-items: center; gap: 10px; }
 .eyebrow::before { content: ""; width: 22px; height: 2px; background: currentColor; border-radius: 2px; }
@@ -116,19 +116,19 @@ svg { display: block; }
 .index a:hover { border-color: var(--hue, var(--accent)); transform: translateY(-2px); }
 .index a .ico { color: var(--hue, var(--accent)); width: 24px; height: 24px; }
 
-.hero-shot { position: relative; border-radius: var(--radius); overflow: hidden; border: 1px solid var(--line-strong); box-shadow: var(--shadow); aspect-ratio: 3 / 2; max-width: 100%; background: var(--surface-2); }
+.hero-shot { position: relative; border-radius: var(--radius-lg); overflow: hidden; border: 1px solid var(--line-strong); box-shadow: var(--shadow); aspect-ratio: 3 / 2; max-width: 100%; background: var(--surface-2); }
 .hero-shot img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .hud { position: absolute; inset: 14px 14px auto 14px; display: flex; flex-wrap: wrap; gap: 6px; }
 .hud-bottom { position: absolute; left: 14px; bottom: 14px; display: flex; gap: 6px; flex-wrap: wrap; }
 .chip {
-  display: inline-flex; align-items: center; gap: 7px; padding: 6px 10px; border-radius: var(--radius);
+  display: inline-flex; align-items: center; gap: 7px; padding: 6px 10px; border-radius: var(--radius-sm);
   font: 700 12px/1 var(--font-mono); letter-spacing: .03em;
   background: rgba(8, 13, 24, .82); color: #e8eef8; border: 1px solid rgba(255,255,255,.14);
   backdrop-filter: blur(6px);
 }
 .chip .dot { width: 7px; height: 7px; border-radius: 50%; background: #38bdf8; }
 .chip.stop { background: #dc2626; border-color: #f87171; color: #fff; margin-left: auto; }
-.chip.stop kbd { font: inherit; font-size: 10.5px; padding: 2px 5px; border-radius: var(--radius); background: rgba(255,255,255,.2); }
+.chip.stop kbd { font: inherit; font-size: 10.5px; padding: 2px 5px; border-radius: var(--radius-sm); background: rgba(255,255,255,.2); }
 
 /* ── Kernmerkmale: 8 Kacheln (Stichwort, Leitsatz, ein Satz Fakten) ── */
 .feats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
@@ -137,12 +137,19 @@ svg { display: block; }
 .feat .k-t { font: 700 11.5px/1.2 var(--font-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--hue); }
 .feat b { font-size: 17px; font-weight: 800; line-height: 1.25; letter-spacing: -.01em; }
 .feat p { font-size: 14px; line-height: 1.5; color: var(--fg-2); }
+/* Nummer 01–08 rechts neben dem Icon-Badge (wie die Dokument-Karten im Doku-Hub) */
+.feats-num { counter-reset: feat; }
+.feats-num > .feat { counter-increment: feat; grid-template-columns: minmax(0, 1fr) auto; }
+.feats-num > .feat > * { grid-column: 1 / -1; }
+.feats-num > .feat > .badge-ico { grid-column: 1; grid-row: 1; }
+.feats-num > .feat::before { content: counter(feat, decimal-leading-zero); grid-column: 2; grid-row: 1; align-self: start; padding: 4px 6px;
+  font: 800 13px/1 var(--font-mono); color: var(--hue); background: var(--surface); border: 1px solid var(--hue); border-radius: var(--radius-sm); }
 @media (max-width: 1020px) { .feats { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 520px) { .feats { grid-template-columns: minmax(0, 1fr); } }
 
 /* ── Abschnitte ── */
-section.block { padding-block: 56px; border-top: 1px solid var(--line); }
-.block-head { display: flex; align-items: end; justify-content: space-between; gap: 24px; flex-wrap: wrap; margin-bottom: 28px; }
+section.block { padding-block: 88px; border-top: 1px solid var(--line); }
+.block-head { display: flex; align-items: end; justify-content: space-between; gap: 24px; flex-wrap: wrap; margin-bottom: 40px; }
 .block-head h2 { font-size: clamp(30px, 3.6vw, 44px); letter-spacing: -.03em; font-weight: 800; line-height: 1.05; margin-top: 12px; }
 .block-head p { color: var(--fg-2); max-width: 44ch; font-size: 16px; }
 
@@ -180,7 +187,7 @@ section.block { padding-block: 56px; border-top: 1px solid var(--line); }
 .map li { grid-column: 1 / -1; display: grid; grid-template-columns: subgrid; align-items: center; font-size: 14.5px; }
 .map li b { font-weight: 700; }
 .key {
-  justify-self: start; font: 700 12px/1 var(--font-mono); padding: 6px 8px; border-radius: var(--radius); white-space: nowrap;
+  justify-self: start; font: 700 12px/1 var(--font-mono); padding: 6px 8px; border-radius: var(--radius-sm); white-space: nowrap;
   background: var(--surface-2); border: 1px solid var(--line-strong);
 }
 .key.a { color: var(--green); } .key.b { color: var(--red); } .key.x { color: var(--axis-z); } .key.y { color: var(--gold); }
@@ -230,9 +237,9 @@ section.block { padding-block: 56px; border-top: 1px solid var(--line); }
 /* Sprache */
 .voice { width: 100%; display: grid; gap: 16px; justify-items: center; }
 .wave { display: flex; align-items: center; gap: 4px; height: 76px; }
-.wave i { width: 5px; border-radius: var(--radius); background: var(--hue); opacity: .9; }
+.wave i { width: 5px; border-radius: 2px; background: var(--hue); opacity: .9; }
 .said { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; }
-.said span { font-size: 13.5px; font-weight: 700; padding: 7px 11px; border-radius: var(--radius); background: var(--surface); border: 1px solid var(--line-strong); }
+.said span { font-size: 13.5px; font-weight: 700; padding: 7px 11px; border-radius: var(--radius-sm); background: var(--surface); border: 1px solid var(--line-strong); }
 
 /* Tastatur */
 .keys { display: grid; grid-template-columns: repeat(4, 54px); gap: 8px; justify-content: center; }
@@ -246,16 +253,16 @@ section.block { padding-block: 56px; border-top: 1px solid var(--line); }
 .cap.hot { border-color: var(--hue); color: var(--hue); }
 
 /* Tablet */
-.tablet { width: min(100%, 300px); aspect-ratio: 4 / 3; border-radius: var(--radius); padding: 10px; background: var(--fg); box-shadow: var(--shadow); }
-.screen { width: 100%; height: 100%; border-radius: var(--radius); background: var(--bg); display: grid; grid-template-rows: auto 1fr auto; gap: 7px; padding: 8px; }
+.tablet { width: min(100%, 300px); aspect-ratio: 4 / 3; border-radius: var(--radius-lg); padding: 10px; background: var(--fg); box-shadow: var(--shadow); }
+.screen { width: 100%; height: 100%; border-radius: var(--radius-sm); background: var(--bg); display: grid; grid-template-rows: auto 1fr auto; gap: 7px; padding: 8px; }
 .scr-head { display: flex; align-items: center; gap: 6px; }
-.scr-head .m { font: 700 9px/1 var(--font-mono); padding: 4px 6px; border-radius: var(--radius); border: 1px solid var(--line-strong); color: var(--fg); }
-.scr-head .e { margin-left: auto; font: 800 9.5px/1 var(--font-mono); padding: 5px 8px; border-radius: var(--radius); background: var(--red); color: #fff; }
+.scr-head .m { font: 700 9px/1 var(--font-mono); padding: 4px 6px; border-radius: var(--radius-sm); border: 1px solid var(--line-strong); color: var(--fg); }
+.scr-head .e { margin-left: auto; font: 800 9.5px/1 var(--font-mono); padding: 5px 8px; border-radius: var(--radius-sm); background: var(--red); color: #fff; }
 .scr-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
-.scr-grid span { border-radius: var(--radius); background: var(--surface); border: 1px solid var(--line-strong); display: grid; place-items: center; font: 700 10px/1.1 var(--font-body); color: var(--fg); text-align: center; padding: 4px; }
+.scr-grid span { border-radius: var(--radius-sm); background: var(--surface); border: 1px solid var(--line-strong); display: grid; place-items: center; font: 700 10px/1.1 var(--font-body); color: var(--fg); text-align: center; padding: 4px; }
 .scr-grid span.on { border-color: var(--hue); color: var(--hue); }
-.scr-slide { height: 20px; border-radius: var(--radius); background: var(--surface); border: 1px solid var(--line-strong); position: relative; font: 700 9px/18px var(--font-mono); text-align: center; color: var(--fg-2); }
-.scr-slide::before { content: ""; position: absolute; left: 2px; top: 2px; width: 34px; height: 14px; border-radius: var(--radius); background: var(--hue); }
+.scr-slide { height: 20px; border-radius: var(--radius-sm); background: var(--surface); border: 1px solid var(--line-strong); position: relative; font: 700 9px/18px var(--font-mono); text-align: center; color: var(--fg-2); }
+.scr-slide::before { content: ""; position: absolute; left: 2px; top: 2px; width: 34px; height: 14px; border-radius: var(--radius-sm); background: var(--hue); }
 
 /* Robot Control UI */
 .shot { position: relative; width: 100%; border-radius: var(--radius); overflow: hidden; border: 1px solid var(--line-strong); }
@@ -276,14 +283,16 @@ section.block { padding-block: 56px; border-top: 1px solid var(--line); }
 
 /* VLA-Chat */
 .chat { width: 100%; max-width: 340px; display: grid; gap: 10px; }
-.bubble { padding: 10px 13px; border-radius: var(--radius); font-size: 13.5px; line-height: 1.5; }
-.bubble.me { justify-self: end; max-width: 88%; background: color-mix(in srgb, var(--hue) 24%, var(--surface)); border: 1px solid color-mix(in srgb, var(--hue) 50%, transparent); border-bottom-right-radius: var(--radius); }
+.bubble { padding: 10px 13px; border-radius: var(--radius-lg); font-size: 13.5px; line-height: 1.5; }
+.bubble.me { justify-self: end; max-width: 88%; background: color-mix(in srgb, var(--hue) 24%, var(--surface)); border: 1px solid color-mix(in srgb, var(--hue) 50%, transparent); border-bottom-right-radius: 2px; }
 .plan { background: var(--surface); border: 1px solid var(--line-strong); border-radius: var(--radius); padding: 10px 12px; display: grid; gap: 6px; }
 .plan-h { font: 700 10.5px/1 var(--font-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--hue); }
 .plan ol { margin: 0; padding-left: 20px; font-size: 13px; display: grid; gap: 2px; }
 .plan .btns { display: flex; gap: 6px; margin-top: 4px; }
-.plan .btns span { font: 700 11px/1 var(--font-body); padding: 7px 10px; border-radius: var(--radius); border: 1px solid var(--line-strong); }
-.plan .btns .go { border-color: var(--accent); color: var(--accent); }
+.plan .btns span { display: inline-flex; align-items: center; gap: 5px; font: 700 11px/1 var(--font-body); padding: 7px 10px; border-radius: var(--radius-sm); border: 1px solid var(--line-strong); }
+.plan .btns .ico { width: 11px; height: 11px; }
+.plan .btns .go { border-color: var(--accent); background: var(--accent); color: var(--accent-ink); }
+.plan .btns .stop .ico { color: var(--red); }
 
 /* Sicherheitskette */
 .chain { display: flex; align-items: stretch; gap: 10px; flex-wrap: wrap; }
@@ -300,7 +309,7 @@ section.block { padding-block: 56px; border-top: 1px solid var(--line); }
 .estop-band .octo { width: 42px; height: 42px; color: var(--red); flex: none; }
 .estop-band b { font-size: 17px; font-weight: 800; color: var(--red); letter-spacing: .02em; }
 .estop-band .ways { display: flex; flex-wrap: wrap; gap: 6px; margin-left: auto; }
-.estop-band .ways span { font: 700 12px/1 var(--font-mono); padding: 7px 10px; border-radius: var(--radius); background: var(--surface); border: 1px solid var(--line-strong); }
+.estop-band .ways span { font: 700 12px/1 var(--font-mono); padding: 7px 10px; border-radius: var(--radius-sm); background: var(--surface); border: 1px solid var(--line-strong); }
 .numbers { margin-top: 18px; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
 .num { border: 1px solid var(--line); border-radius: var(--radius); padding: 16px; background: var(--surface); }
 .num strong { display: block; font: 800 30px/1 var(--font-mono); letter-spacing: -.03em; }
@@ -310,14 +319,21 @@ section.block { padding-block: 56px; border-top: 1px solid var(--line); }
 .ch-bar { display: grid; gap: 10px; margin-bottom: 14px; }
 .ch-row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
 .ch-row > .lbl { font: 700 11.5px/1 var(--font-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--fg-2); min-width: 92px; }
-.pill { --c: var(--accent); display: inline-flex; align-items: center; gap: 7px; font: 700 13px/1 var(--font-body); min-height: 38px; padding: 0 12px; border-radius: var(--radius); background: var(--surface); color: var(--fg); border: 1px solid var(--line-strong); cursor: pointer; transition: border-color .15s, background .15s, transform .15s; }
+.pill { --c: var(--accent); display: inline-flex; align-items: center; gap: 7px; font: 700 13px/1 var(--font-body); min-height: 38px; padding: 0 12px; border-radius: var(--radius-sm); background: var(--surface); color: var(--fg); border: 1px solid var(--line-strong); cursor: pointer; transition: border-color .15s, background .15s, transform .15s; }
 .pill .ico { width: 16px; height: 16px; color: var(--c); }
-.pill[aria-pressed="true"] { border-color: var(--c); background: color-mix(in srgb, var(--c) 16%, var(--surface)); }
+.pill:hover:not(:disabled) { border-color: var(--fg-2); }
+/* Steuerknöpfe „Leiste“: Auswahl als Gruppe mit Rahmen, gewählt = heller Daumen */
+.grp { display: inline-flex; flex-wrap: wrap; gap: 2px; padding: 3px; max-width: 100%; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface-2); }
+.grp .pill { min-height: 34px; border-color: transparent; background: transparent; }
+.grp .pill:hover:not(:disabled) { border-color: transparent; background: color-mix(in srgb, var(--fg) 7%, transparent); }
+.grp .pill[aria-pressed="true"] { border-color: var(--line-strong); background: var(--surface); }
 .pill:active { transform: scale(.97); }
 .pill.go { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.pill.go .ico { color: inherit; }
+.ico.f { fill: currentColor; stroke: none; }
 .pill:disabled { opacity: .5; cursor: default; }
 .link { transition: border-color .25s, background .25s, transform .25s; position: relative; }
-.link .st { font: 700 11px/1 var(--font-mono); letter-spacing: .06em; padding: 4px 7px; border-radius: var(--radius); border: 1px solid var(--line-strong); justify-self: start; min-height: 19px; }
+.link .st { font: 700 11px/1 var(--font-mono); letter-spacing: .06em; padding: 4px 7px; border-radius: var(--radius-sm); border: 1px solid var(--line-strong); justify-self: start; min-height: 19px; }
 .link.run { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, var(--surface)); transform: translateY(-3px); }
 .link.ok { border-color: var(--green); }
 .link.ok .st { border-color: var(--green); color: var(--green); }
@@ -326,7 +342,7 @@ section.block { padding-block: 56px; border-top: 1px solid var(--line); }
 .link.block { animation: shake .35s; }
 .arrow.flow { color: var(--accent); }
 .ch-msg { margin-top: 12px; min-height: 1.6em; font-weight: 700; font-size: 15px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-.ch-msg .tag { font: 700 11px/1 var(--font-mono); letter-spacing: .06em; padding: 5px 8px; border-radius: var(--radius); border: 1px solid currentColor; }
+.ch-msg .tag { font: 700 11px/1 var(--font-mono); letter-spacing: .06em; padding: 5px 8px; border-radius: var(--radius-sm); border: 1px solid currentColor; }
 .estop-band button.estop { font: 800 13px/1 var(--font-mono); letter-spacing: .06em; color: #fff; background: #dc2626; border: 1.5px solid #f87171; border-radius: var(--radius); min-height: 44px; padding: 0 16px; cursor: pointer; }
 .estop-band button.estop[aria-pressed="true"] { background: var(--surface); color: var(--red); }
 @keyframes shake { 25% { transform: translateX(-4px); } 75% { transform: translateX(4px); } }
@@ -335,7 +351,7 @@ section.block { padding-block: 56px; border-top: 1px solid var(--line); }
 .chip .dot.move { background: var(--gold); }
 
 /* Matrix: Fähigkeit anklicken hebt die Spalte hervor */
-thead th button { all: unset; cursor: pointer; padding: 4px 6px; border-radius: var(--radius); }
+thead th button { all: unset; cursor: pointer; padding: 4px 6px; border-radius: var(--radius-sm); }
 thead th button:focus-visible { outline: 2px solid var(--accent); }
 thead th button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); }
 td.hl, th.hl { background: color-mix(in srgb, var(--accent) 10%, transparent); }
@@ -377,8 +393,8 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 10px 24px; align-items: cent
   .pins { grid-template-columns: 1fr; }
   .arrow { display: none; }
   .estop-band .ways { margin-left: 0; }
-  .hero { padding-block: 36px 28px; }
-  section.block { padding-block: 44px; }
+  .hero { padding-block: 44px 40px; }
+  section.block { padding-block: 60px; }
 }
 @media (max-width: 420px) {
   .numbers { grid-template-columns: 1fr; }
@@ -399,12 +415,12 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 10px 24px; align-items: cent
 }
 .top nav a { transition: background .15s, color .15s; }
 .top nav a[aria-current="true"] { background: color-mix(in srgb, var(--accent) 16%, transparent); color: var(--fg); }
-.rv { opacity: 0; transform: translateY(12px); transition: opacity .45s cubic-bezier(.2,.7,.2,1), transform .45s cubic-bezier(.2,.7,.2,1); transition-delay: var(--d, 0ms); }
-.rv.in { opacity: 1; transform: none; }
-@media (prefers-reduced-motion: reduce) { .rv { opacity: 1; transform: none; transition: none; } }
 </style>
+<link rel="stylesheet" href="css/scroll_flow.css">
+<link rel="stylesheet" href="css/doc_path.css">
 </head>
 <body>
+<nav class="doc-path" aria-label="Pfad in der Projekt-Doku" data-en-aria="Path in the project docs"><a href="project_docs.html" data-en="← Project docs">← Projekt-Doku</a><span aria-hidden="true">›</span><a href="project_docs.html#vorstellen" data-en="Present">Vorstellen</a><span aria-hidden="true">›</span><span aria-current="page">Interakt Control Robot</span></nav>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
   <defs>
@@ -430,6 +446,8 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 10px 24px; align-items: cent
     <symbol id="i-code" viewBox="0 0 24 24"><path d="M8 7l-5 5 5 5M16 7l5 5-5 5M13.5 4l-3 16"/></symbol>
     <symbol id="i-blocks" viewBox="0 0 24 24"><rect x="3" y="3" width="7.5" height="7.5" rx="1.5"/><rect x="13.5" y="3" width="7.5" height="7.5" rx="1.5"/><rect x="3" y="13.5" width="7.5" height="7.5" rx="1.5"/><path d="M17.25 13.5v7.5M13.5 17.25H21"/></symbol>
     <symbol id="i-right" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+    <symbol id="i-play" viewBox="0 0 24 24"><path d="M7 4.5v15l12.5-7.5z"/></symbol>
+    <symbol id="i-stop" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="1"/></symbol>
   </defs>
 </svg>
 
@@ -443,8 +461,8 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 10px 24px; align-items: cent
       <a href="#merkmale">Merkmale</a>
       <a href="#geraete">Eingabegeräte</a>
       <a href="#wege">Steuerwege</a>
-      <a href="#sicherheit">Sicherheit</a>
       <a href="#uebersicht">Übersicht</a>
+      <a href="#sicherheit">Sicherheit</a>
     </nav>
   </div>
   <span class="progress" aria-hidden="true"></span>
@@ -478,7 +496,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 10px 24px; align-items: cent
       <figure class="hero-shot" style="margin:0">
         <img src="img/presentation/hero.jpg" alt="xArm Lite 6 über dem Arbeitstisch mit ArUco-Markern und farbigen Greifobjekten" width="1400" height="934">
         <div class="hud" aria-hidden="true">
-          <span class="chip"><span class="dot"></span>FAKE + REAL</span>
+          <span class="chip"><span class="dot"></span>Digital Twin + echte Roboter-Hardware</span>
           <span class="chip">IDLE</span>
           <span class="chip">Tempo 60 %</span>
           <span class="chip"><svg class="ico" style="width:13px;height:13px"><use href="#i-lock"/></svg>this PC</span>
@@ -501,7 +519,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 10px 24px; align-items: cent
         </div>
         <p>Acht Merkmale machen aus einer Fernsteuerung eine assistive Plattform.</p>
       </div>
-      <div class="feats">
+      <div class="feats feats-num">
         <div class="feat" style="--hue: var(--accent)"><span class="badge-ico"><svg class="ico"><use href="#i-cube"/></svg></span><span class="k-t">Digital Twin · Physik</span><b>Erst virtuell, dann real.</b><p>Live-3D-Zwilling im Browser; die Physik-Sandbox simuliert Schwerkraft, Kontakt und Greifen vor der echten Fahrt.</p></div>
         <div class="feat" style="--hue: var(--indigo)"><span class="badge-ico"><svg class="ico"><use href="#i-shapes"/></svg></span><span class="k-t">Virtuelle Objekte</span><b>Testen ohne Aufbau.</b><p>Würfel, Flasche, Bälle, Schale, Korb: greifen, verschieben, stapeln; kollisionsgeprüft in MoveIt, ohne Kamera.</p></div>
         <div class="feat" style="--hue: var(--teal)"><span class="badge-ico"><svg class="ico"><use href="#i-eye"/></svg></span><span class="k-t">Kontrolle · Überwachung</span><b>Alles im Blick. Jederzeit eingreifen.</b><p>Roboterzustand, Umgebung (ZED, OctoMap) und Bewegungsausführung live; Monitoring Dashboard und Blackbox zeichnen mit.</p></div>
@@ -650,7 +668,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 10px 24px; align-items: cent
         <article class="card wide span-12" id="blick" style="--hue: var(--teal)">
           <div class="visual">
             <div class="gaze">
-              <img src="img/presentation/gaze.jpg" alt="Gaze Control UI: Kamerabild mit Blick-Schaltflächen am Rand" width="960" height="540" loading="lazy">
+              <img src="img/project_docs/stage_gaze.jpg" alt="Gaze Control UI: Kamerabild mit Blick-Schaltflächen am Rand" width="960" height="540" loading="lazy">
               <svg class="gaze-cursor" viewBox="0 0 64 64" aria-hidden="true">
                 <circle class="ring-bg" cx="32" cy="32" r="24"/>
                 <circle class="ring" cx="32" cy="32" r="24"/>
@@ -788,7 +806,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 10px 24px; align-items: cent
         <article class="card wide rcu span-12" id="rcu" style="--hue: var(--accent)">
           <div class="visual">
             <div class="shot">
-              <img src="img/presentation/rcu.jpg" alt="Robot Control UI im FAKE-Modus mit Digital Twin, Jogging und Greifer" width="1600" height="900" loading="lazy">
+              <img src="img/presentation/rcu.jpg" alt="Robot Control UI in der Roboter-Simulation mit Digital Twin, Jogging und Greifer" width="1600" height="900" loading="lazy">
               <span class="pin" style="left:78%; top:2.6%">1</span>
               <span class="pin" style="left:2.1%; top:26%">2</span>
               <span class="pin" style="left:30%; top:58%">3</span>
@@ -815,7 +833,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 10px 24px; align-items: cent
             </ol>
               </div>
               <div class="blk"><h4>Bedienung</h4><ul class="list"><li><b>Maus oder Touch:</b> am Roboter-PC, Laptop oder Tablet</li><li><b>Jogging:</b> halten = fahren, Schritte 1 / 5 / 10 mm</li><li><b>Strg+K:</b> Befehlspalette für jede Funktion</li></ul></div>
-              <div class="blk safe"><h4>Sicherheit</h4><ul class="list"><li><b>Sicherheitszone:</b> E-STOP, Modus, Tempo, Lock immer sichtbar</li><li><b>REAL:</b> Wechsel nur mit Bestätigung</li><li><b>BUSY:</b> eine laufende Fahrt sperrt alle anderen</li></ul></div>
+              <div class="blk safe"><h4>Sicherheit</h4><ul class="list"><li><b>Sicherheitszone:</b> E-STOP, Modus, Tempo, Lock immer sichtbar</li><li><b>Echte Roboter-Hardware:</b> Wechsel nur mit Bestätigung</li><li><b>BUSY:</b> eine laufende Fahrt sperrt alle anderen</li></ul></div>
             </div>
           </div>
         </article>
@@ -860,7 +878,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 10px 24px; align-items: cent
               <div class="plan">
                 <span class="plan-h">Planned actions</span>
                 <ol><li>Pick up the Cube</li><li>Place the Cube onto the Cylinder</li></ol>
-                <div class="btns"><span class="go">▶ Execute</span><span>■ Abort</span></div>
+                <div class="btns"><span class="go"><svg class="ico f"><use href="#i-play"/></svg>Execute</span><span class="stop"><svg class="ico f"><use href="#i-stop"/></svg>Abort</span></div>
               </div>
             </div>
           </div>
@@ -915,55 +933,10 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 10px 24px; align-items: cent
             <div class="blocks">
               <div class="blk"><h4>Funktionen</h4><ul class="list"><li><b>Ein Besitzer:</b> genau ein Client steuert, alle anderen sehen zu</li><li><b>Heimnetz:</b> Laptop, Tablet, Quest 3 im Browser</li><li><b>Remote-Gamepad:</b> am eigenen Gerät angeschlossen</li></ul></div>
               <div class="blk"><h4>Bedienung</h4><ul class="map"><li><span class="key" style="color:var(--teal)">Request</span><span>Steuerung anfragen</span></li><li><span class="key">Allow · Deny</span><span>am Roboter-PC entscheiden</span></li><li><span class="key">Release</span><span>Steuerung abgeben</span></li></ul></div>
-              <div class="blk safe"><h4>Sicherheit</h4><ul class="list"><li><b>Heartbeat:</b> Tab zu oder WLAN weg = Stopp (REAL 0,4 s)</li><li><b>REAL:</b> höchstens 50 % Tempo</li><li><b>Not-Aus:</b> geht von jedem Client</li></ul></div>
+              <div class="blk safe"><h4>Sicherheit</h4><ul class="list"><li><b>Heartbeat:</b> Tab zu oder WLAN weg = Stopp (echte Roboter-Hardware: 0,4 s)</li><li><b>Echte Roboter-Hardware:</b> höchstens 50 % Tempo</li><li><b>Not-Aus:</b> geht von jedem Client</li></ul></div>
             </div>
           </div>
         </article>
-      </div>
-    </div>
-  </section>
-
-  <!-- ═════════ Sicherheit ═════════ -->
-  <section class="block" id="sicherheit">
-    <div class="wrap">
-      <div class="block-head">
-        <div>
-          <div class="eyebrow">Gilt für jeden Weg</div>
-          <h2>Jede Eingabe durchläuft dieselbe Kette</h2>
-        </div>
-        <p>Kein Gerät spricht direkt mit dem Arm.</p>
-      </div>
-
-      <div class="ch-bar">
-        <div class="ch-row" id="ch-ways" role="group" aria-label="Steuerweg wählen"><span class="lbl">Steuerweg</span></div>
-        <div class="ch-row" id="ch-cases" role="group" aria-label="Fall wählen"><span class="lbl">Fall</span></div>
-        <div class="ch-row"><span class="lbl">Ausprobieren</span><button type="button" class="pill go" id="ch-send">▶ Befehl senden</button></div>
-      </div>
-      <div class="chain" id="chain">
-        <div class="link" id="ch-in"><svg class="ico"><use href="#i-pad"/></svg><b>Eingabe</b><span>Gerät oder Browser</span></div>
-        <div class="arrow" aria-hidden="true"><svg class="ico"><use href="#i-right"/></svg></div>
-        <div class="link"><svg class="ico"><use href="#i-lock"/></svg><b>Control-Lock</b><span>Nur ein Bediener</span></div>
-        <div class="arrow" aria-hidden="true"><svg class="ico"><use href="#i-right"/></svg></div>
-        <div class="link"><svg class="ico"><use href="#i-shield"/></svg><b>Vorprüfung</b><span>Tisch-Kollision voraus</span></div>
-        <div class="arrow" aria-hidden="true"><svg class="ico"><use href="#i-right"/></svg></div>
-        <div class="link"><svg class="ico"><use href="#i-cube"/></svg><b>MoveIt</b><span>IK, Kollision, Boden</span></div>
-        <div class="arrow" aria-hidden="true"><svg class="ico"><use href="#i-right"/></svg></div>
-        <div class="link"><svg class="ico"><use href="#i-arm"/></svg><b>xArm Lite 6</b><span>FAKE oder REAL</span></div>
-      </div>
-
-      <p class="ch-msg" id="ch-msg" aria-live="polite"></p>
-      <div class="estop-band">
-        <svg class="ico octo"><use href="#i-octo"/></svg>
-        <b>E-STOP wirkt immer</b>
-        <button type="button" class="estop" id="ch-estop" aria-pressed="false">E-STOP testen</button>
-        <div class="ways"><span>Space</span><span>roter Knopf</span><span>Touch Panel</span><span>Sprache: „Not-Aus“</span><span>VR: 2× Grip + 2× Trigger</span></div>
-      </div>
-
-      <div class="numbers">
-        <div class="num"><strong class="mono">91 mm</strong><span>Gamepad-Stopp über dem Tisch (TCP)</span></div>
-        <div class="num"><strong class="mono">0,1 s</strong><span>Vorausschau der Kollisionsprüfung</span></div>
-        <div class="num"><strong class="mono">0,3 s</strong><span>bis Stopp bei VR-Signalverlust</span></div>
-        <div class="num"><strong class="mono" style="color:var(--gold)">REAL</strong><span>nur nach Bestätigung</span></div>
       </div>
     </div>
   </section>
@@ -1002,6 +975,51 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 10px 24px; align-items: cent
       </div>
     </div>
   </section>
+
+  <!-- ═════════ Sicherheit ═════════ -->
+  <section class="block" id="sicherheit">
+    <div class="wrap">
+      <div class="block-head">
+        <div>
+          <div class="eyebrow">Gilt für jeden Weg</div>
+          <h2>Jede Eingabe durchläuft dieselbe Kette</h2>
+        </div>
+        <p>Kein Gerät spricht direkt mit dem Arm.</p>
+      </div>
+
+      <div class="ch-bar">
+        <div class="ch-row"><span class="lbl">Steuerweg</span><span class="grp" id="ch-ways" role="group" aria-label="Steuerweg wählen"></span></div>
+        <div class="ch-row"><span class="lbl">Fall</span><span class="grp" id="ch-cases" role="group" aria-label="Fall wählen"></span></div>
+        <div class="ch-row"><span class="lbl">Ausprobieren</span><button type="button" class="pill go" id="ch-send"><svg class="ico f"><use href="#i-play"/></svg>Befehl senden</button></div>
+      </div>
+      <div class="chain" id="chain">
+        <div class="link" id="ch-in"><svg class="ico"><use href="#i-pad"/></svg><b>Eingabe</b><span>Gerät oder Browser</span></div>
+        <div class="arrow" aria-hidden="true"><svg class="ico"><use href="#i-right"/></svg></div>
+        <div class="link"><svg class="ico"><use href="#i-lock"/></svg><b>Control-Lock</b><span>Nur ein Bediener</span></div>
+        <div class="arrow" aria-hidden="true"><svg class="ico"><use href="#i-right"/></svg></div>
+        <div class="link"><svg class="ico"><use href="#i-shield"/></svg><b>Vorprüfung</b><span>Tisch-Kollision voraus</span></div>
+        <div class="arrow" aria-hidden="true"><svg class="ico"><use href="#i-right"/></svg></div>
+        <div class="link"><svg class="ico"><use href="#i-cube"/></svg><b>MoveIt</b><span>IK, Kollision, Boden</span></div>
+        <div class="arrow" aria-hidden="true"><svg class="ico"><use href="#i-right"/></svg></div>
+        <div class="link"><svg class="ico"><use href="#i-arm"/></svg><b>xArm Lite 6</b><span>Roboter-Simulation oder echte Roboter-Hardware</span></div>
+      </div>
+
+      <p class="ch-msg" id="ch-msg" aria-live="polite"></p>
+      <div class="estop-band">
+        <svg class="ico octo"><use href="#i-octo"/></svg>
+        <b>E-STOP wirkt immer</b>
+        <button type="button" class="estop" id="ch-estop" aria-pressed="false">E-STOP testen</button>
+        <div class="ways"><span>Space</span><span>roter Knopf</span><span>Touch Panel</span><span>Sprache: „Not-Aus“</span><span>VR: 2× Grip + 2× Trigger</span></div>
+      </div>
+
+      <div class="numbers">
+        <div class="num"><strong class="mono">91 mm</strong><span>Gamepad-Stopp über dem Tisch (TCP)</span></div>
+        <div class="num"><strong class="mono">0,1 s</strong><span>Vorausschau der Kollisionsprüfung</span></div>
+        <div class="num"><strong class="mono">0,3 s</strong><span>bis Stopp bei VR-Signalverlust</span></div>
+        <div class="num"><strong class="mono" style="color:var(--gold)">Freigabe</strong><span>vor dem Wechsel auf echte Roboter-Hardware</span></div>
+      </div>
+    </div>
+  </section>
 </main>
 
 <footer>
@@ -1016,6 +1034,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 10px 24px; align-items: cent
   </div>
 </footer>
 
+<script src="js/scroll_flow.js"></script>
 <script>
   // Wellenform der Sprach-Karte: feste Höhen, damit sie ohne Zufall gleich aussieht.
   (function () {
@@ -1113,32 +1132,21 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 10px 24px; align-items: cent
       });
     });
   })();
-  // ── Lesefortschritt, aktiver Abschnitt, Einblenden beim ersten Sichtbarwerden ──
-  (() => {
-    const root = document.documentElement, $$ = (q, el = document) => [...el.querySelectorAll(q)];
-    const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const bar = document.querySelector('.progress');
-    if (!CSS.supports('animation-timeline: scroll()')) {
-      let raf = 0;
-      const set = () => { raf = 0; const max = root.scrollHeight - innerHeight; bar.style.setProperty('--p', max > 0 ? Math.min(1, scrollY / max) : 0); };
-      addEventListener('scroll', () => { if (!raf) raf = requestAnimationFrame(set); }, { passive: true });
-      set();
-    }
-    const nav = new Map($$('.top nav a').map(a => [a.getAttribute('href').slice(1), a]));
-    const spy = new IntersectionObserver(es => es.forEach(e => {
-      if (e.isIntersecting) nav.forEach((a, id) => a.setAttribute('aria-current', String(id === e.target.id)));
-    }), { rootMargin: '-35% 0px -60% 0px' });
-    nav.forEach((a, id) => { const sec = document.getElementById(id); if (sec) spy.observe(sec); });
-    new IntersectionObserver(([e]) => { if (e.isIntersecting) nav.forEach(a => a.setAttribute('aria-current', 'false')); }, { rootMargin: '-35% 0px -60% 0px' })
-      .observe(document.querySelector('.hero'));
-    if (reduce || !('IntersectionObserver' in window)) return;
-    const done = e => { if (e.target !== e.currentTarget || e.propertyName !== 'opacity') return; e.target.classList.remove('rv', 'in'); e.target.style.removeProperty('--d'); };
-    const rv = new IntersectionObserver(es => es.forEach(en => { if (en.isIntersecting) { en.target.classList.add('in'); rv.unobserve(en.target); } }), { threshold: .1, rootMargin: '0px 0px -6% 0px' });
-    const add = (el, d = 0) => { el.classList.add('rv'); if (d) el.style.setProperty('--d', `${d}ms`); el.addEventListener('transitionend', done); rv.observe(el); };
-    $$('.hero .wrap > *').forEach((el, i) => add(el, i * 90));
-    $$('.block-head, .card, .ch-bar, .chain, .estop-band, .table-scroll').forEach(el => add(el));
-    $$('.feats, .numbers').forEach(g => [...g.children].forEach((el, i) => add(el, Math.min(i, 7) * 50)));
-  })();
+  // ── Lesefluss (js/scroll_flow.js): Fortschritt, aktiver Abschnitt, Einstieg, Köpfe, Karten aus der Tiefe, Kette + Tabelle bauen sich auf ──
+  window.ScrollFlow?.init({
+    hero: '.hero .wrap > div > *', heroFig: '.hero-shot', heroExit: '.hero .wrap',
+    heads: '.block-head',
+    depth: '.card',
+    groups: ['.feats', '.numbers'],
+    seq: [{ box: '.chain', items: ':scope > *', step: 80, x: true }, { box: '.table-scroll', items: 'tbody tr', step: 45 }],
+    items: ['.ch-bar', '.estop-band', '.table-scroll'],
+    tilt: [{ sel: '.feat, .num', lift: -2 }, { sel: '.hero-shot', max: 3, layers: '.hud, .hud-bottom' }],
+    shine: '.hero-shot',
+    count: '.numbers strong',
+    rail: { sections: 'main > section.block[id]' },
+    progress: '.progress',
+    nav: { links: '.top nav a', reset: '.hero' },
+  });
 </script>
 </body>
 </html>

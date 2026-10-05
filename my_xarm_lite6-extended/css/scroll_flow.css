@@ -1,0 +1,102 @@
+/* Lesefluss-Motion der Projektseiten (docs/project_*.html) – Skill motion-viz, Logik in js/scroll_flow.js.
+   Alles hängt an html.sf-on: Die Klasse setzt nur das Skript und nur bei erlaubter Bewegung → ohne JS und bei
+   prefers-reduced-motion ist jede Seite vollständig und statisch sichtbar. Nur opacity + transform; 3D über
+   perspective(); Endzustand = Layout der Seite (das Skript nimmt die Klassen danach wieder weg). */
+:root {
+  --sf-ease: cubic-bezier(.2, .7, .2, 1);
+  --sf-t: 640ms;
+  --sf-rise: 16px;                 /* Weg beim Einblenden, nie mehr als 16 px */
+  --sf-glow: var(--accent, #38bdf8);
+}
+
+/* ── Zeiger-Tilt mit Glanz (nur Maus; vor den Einblend-Regeln, damit diese während des Einblendens gewinnen);
+   Glanz unter dem Inhalt (eigener Stapelkontext), Text behält vollen Kontrast ── */
+html.sf-on .sf-tilt { isolation: isolate; transition: transform .5s var(--sf-ease), border-color .15s, background-color .15s, box-shadow .25s; }
+html.sf-on .sf-tilt.sf-hover { transition: transform .14s ease-out, border-color .15s, background-color .15s, box-shadow .25s; }
+.sf-glare { position: absolute; inset: 0; z-index: -1; pointer-events: none; border-radius: inherit; opacity: 0; transition: opacity .3s var(--sf-ease);
+  background: radial-gradient(380px circle at var(--sf-mx, 50%) var(--sf-my, 0%), color-mix(in srgb, var(--sf-glow) 15%, transparent), transparent 62%); }
+.sf-hover > .sf-glare { opacity: 1; }
+
+/* ── Einblenden in Lesereihenfolge: --sf-d staffelt, was im selben Moment sichtbar wird ── */
+html.sf-on .sf { opacity: 0; transform: translate3d(0, var(--sf-rise), 0);
+  transition: opacity var(--sf-t) var(--sf-ease), transform var(--sf-t) var(--sf-ease); transition-delay: var(--sf-d, 0ms); }
+/* aus der Tiefe: Karte liegt leicht zurück und richtet sich auf */
+html.sf-on .sf.sf-3d { transform: perspective(1200px) translate3d(0, var(--sf-rise), -60px) rotateX(10deg); transform-origin: 50% 100%; }
+/* von links (Aufzählungen, Kette) */
+html.sf-on .sf.sf-x { transform: translate3d(-14px, 0, 0); }
+/* Bild im Kopf dreht sich zum Leser */
+html.sf-on .sf.sf-turn { transform: perspective(1400px) translate3d(18px, 0, -40px) rotateY(-12deg); transform-origin: 100% 50%; transition-duration: 900ms; }
+html.sf-on .sf.sf-in { opacity: 1; transform: none; }
+
+/* ── Abschnittskopf baut sich auf: Eyebrow-Linie wächst → Nummer dreht ein → Titel kippt auf → Text folgt ── */
+html.sf-on .sf-h { position: relative; }
+html.sf-on .sf-h .sf-kick, html.sf-on .sf-h .sf-title, html.sf-on .sf-h .sf-text {
+  transition: opacity var(--sf-t) var(--sf-ease), transform 760ms var(--sf-ease); transition-delay: var(--sf-d, 0ms); }
+html.sf-on .sf-h .sf-title { transform-origin: 50% 100%; transition-delay: calc(var(--sf-d, 0ms) + 90ms); }
+html.sf-on .sf-h .sf-text { transition-delay: calc(var(--sf-d, 0ms) + 210ms); }
+html.sf-on .sf-h:not(.sf-in) .sf-kick { opacity: 0; transform: translate3d(-14px, 0, 0); }
+html.sf-on .sf-h:not(.sf-in) .sf-title { opacity: 0; transform: perspective(800px) translate3d(0, 10px, 0) rotateX(42deg); }
+html.sf-on .sf-h:not(.sf-in) .sf-text { opacity: 0; transform: translate3d(0, 10px, 0); }
+html.sf-on .sf-h .eyebrow::before { transform-origin: 0 50%; transition: transform .7s var(--sf-ease) calc(var(--sf-d, 0ms) + 120ms); }
+html.sf-on .sf-h:not(.sf-in) .eyebrow::before { transform: scaleX(0); }
+html.sf-on .sf-h .eyebrow .n { transition: transform .8s var(--sf-ease) calc(var(--sf-d, 0ms) + 160ms); }
+html.sf-on .sf-h:not(.sf-in) .eyebrow .n { transform: perspective(240px) rotateY(-100deg); }
+/* Lichtstreif läuft einmal unter dem Kopf entlang (Signal auf der Leitung) */
+.sf-sweep { position: absolute; left: 0; right: 0; bottom: -14px; height: 9px; overflow: hidden; pointer-events: none; }
+.sf-sweep::before, .sf-sweep::after { content: ""; position: absolute; left: 0; width: 32%; transform: translateX(-100%); }
+.sf-sweep::before { top: 4px; height: 1px; background: linear-gradient(90deg, transparent, var(--sf-glow), transparent); }
+.sf-sweep::after { top: 0; height: 9px; opacity: .22; background: radial-gradient(closest-side, var(--sf-glow), transparent); }
+.sf-in > .sf-sweep::before, .sf-in > .sf-sweep::after { animation: sf-sweep 1.5s var(--sf-ease) calc(var(--sf-d, 0ms) + 160ms) both; }
+@keyframes sf-sweep { to { transform: translateX(320%); } }
+
+/* ── Große Flächen: scroll-gebunden aus der Tiefe (CSS view(); ohne Unterstützung einmalig per .sf-3d) ── */
+@supports (animation-timeline: view()) {
+  html.sf-on .sf-depth { animation: sf-depth linear both; animation-timeline: view(); animation-range: entry 0% entry 360px; transform-origin: 50% 100%; }
+  /* Kopf der Seite legt sich beim Weiterlesen leicht zurück */
+  html.sf-on .sf-exit { animation: sf-exit linear both; animation-timeline: view(); animation-range: exit 0% exit 100%; transform-origin: 50% 100%; }
+}
+@keyframes sf-depth { from { opacity: .15; transform: perspective(1600px) translate3d(0, 16px, -90px) rotateX(13deg); } to { opacity: 1; transform: none; } }
+@keyframes sf-exit { to { opacity: .4; transform: perspective(1600px) translate3d(0, 0, -70px) rotateX(7deg); } }
+
+/* ── Lichtstreif über Bildern, einmal beim ersten Sichtbarwerden ── */
+.sf-shine { position: absolute; inset: 0; z-index: 1; overflow: hidden; pointer-events: none; border-radius: inherit; }
+.sf-shine::before { content: ""; position: absolute; top: -40%; bottom: -40%; left: 0; width: 26%; transform: translateX(-130%) rotate(14deg);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, .2), transparent); }
+.sf-shine.go::before { animation: sf-shine 1.4s var(--sf-ease) .35s both; }
+@keyframes sf-shine { to { transform: translateX(500%) rotate(14deg); } }
+
+/* ── Kennzahl: kurzes Aufleuchten nach dem Hochzählen ── */
+.sf-pop { animation: sf-pop 1s var(--sf-ease); }
+@keyframes sf-pop { 0% { text-shadow: 0 0 0 transparent; } 30% { text-shadow: 0 0 18px color-mix(in srgb, currentColor 55%, transparent); } 100% { text-shadow: 0 0 0 transparent; } }
+
+/* ── Leitlinie: roter Faden im linken Rand, Knoten je Abschnitt leuchten beim Erreichen ── */
+.sf-rail { position: absolute; top: 0; left: 0; width: 1px; z-index: 1; pointer-events: none; }
+.sf-rail[hidden] { display: none; }
+.sf-rail-line, .sf-rail-fill { position: absolute; inset: 0; }
+.sf-rail-line { background: var(--line-strong, var(--line)); opacity: .8; }
+.sf-rail-fill { background: linear-gradient(var(--sf-glow), color-mix(in srgb, var(--sf-glow) 55%, transparent)); transform-origin: 50% 0; transform: scaleY(var(--sf-p, 0)); }
+.sf-rail-head { position: absolute; top: -3px; left: -3px; width: 7px; height: 7px; border-radius: 50%; background: var(--sf-glow);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--sf-glow) 20%, transparent); transform: translateY(var(--sf-y, 0px)); }
+.sf-rail-node { position: absolute; left: -5px; width: 11px; height: 11px; margin-top: -5px; border-radius: 50%; border: 1px solid var(--line-strong, var(--line));
+  background: var(--bg); transition: border-color .4s var(--sf-ease), background-color .4s var(--sf-ease); }
+.sf-rail-node::after { content: ""; position: absolute; inset: -1px; border-radius: 50%; border: 1px solid var(--sf-glow); opacity: 0; }
+.sf-rail-node b { position: absolute; right: 18px; top: 50%; transform: translate3d(4px, -50%, 0); opacity: 0; white-space: nowrap;
+  font: 700 12px/1 var(--mono, var(--font-mono, ui-monospace, monospace)); letter-spacing: .06em; color: var(--fg-2, var(--fg));
+  transition: opacity .4s var(--sf-ease), transform .4s var(--sf-ease); }
+.sf-rail-node.on { border-color: var(--sf-glow); background: color-mix(in srgb, var(--sf-glow) 35%, var(--bg)); }
+.sf-rail-node.on::after { animation: sf-ping 1.2s var(--sf-ease); }
+.sf-rail-node.on b { opacity: 1; transform: translate3d(0, -50%, 0); }
+.sf-rail-node.cur b { color: var(--sf-glow); }
+@keyframes sf-ping { 0% { opacity: .8; transform: scale(1); } 100% { opacity: 0; transform: scale(2.6); } }
+
+/* ── Lesefortschritt für Seiten ohne eigene Linie (Element legt das Skript an) ── */
+.sf-progress { position: absolute; left: 0; right: 0; bottom: -1px; height: 2px; background: var(--sf-glow); transform-origin: 0 50%; transform: scaleX(var(--p, 0)); pointer-events: none; }
+@supports (animation-timeline: scroll()) {
+  .sf-progress { animation: sf-progress linear both; animation-timeline: scroll(root); }
+  @keyframes sf-progress { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+}
+
+@media print {
+  html.sf-on .sf, html.sf-on .sf-h *, html.sf-on .sf-depth, html.sf-on .sf-exit { opacity: 1 !important; transform: none !important; animation: none !important; transition: none !important; }
+  .sf-rail, .sf-glare, .sf-shine, .sf-sweep, .sf-progress { display: none !important; }
+}

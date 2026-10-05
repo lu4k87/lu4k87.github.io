@@ -13,7 +13,7 @@
 
 <br>
 
-### ![Bash Script](https://img.shields.io/badge/Bash_Script-4EAA25?style=flat-square&logo=gnu-bash&logoColor=white) `start_isaac_sim.sh` &nbsp;&nbsp; <sub><i>`/isaacsim/start_isaac_sim.sh`</i></sub>
+### ![Bash Script](https://img.shields.io/badge/Bash_Script-4EAA25?style=flat-square&logo=gnu-bash&logoColor=white) `start_isaac_sim.sh` &nbsp;&nbsp; <sub><i>`isaacsim/start_isaac_sim.sh` (local per PC, not in Git)</i></sub>
 
 **Purpose & Task:** Integrates a locally built NVIDIA Isaac Sim environment (start script `isaacsim/start_isaac_sim.sh`). Instead of actively computing physics or conflicting with hardware controllers, Isaac Sim runs in **Shadow Mode**. It subscribes to the `/joint_states` topic and maps the physical (or fake) robot movements onto an extremely high-fidelity USD asset in real-time.
 

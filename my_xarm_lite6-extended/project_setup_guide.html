@@ -2,7 +2,8 @@
 <!-- Setup-Guide: Arbeitsplatz xArm Lite 6 in Betrieb nehmen (Hardware → Ubuntu → ROS 2 → Workspace → Umgebung →
      Zusatzmodule → Abnahme). Zwei Einstiege: „PC vorinstalliert“ (nur Hardware, Netz, Abnahme) oder „selbst installieren“.
      Öffnen: direkt als Datei, über die Nexus Webapp unter /manuals/project_setup_guide.html (Footer-Knopf) oder aus der
-     Projekt-Doku (docs/project_docs.html). Design wie die Projekt-Doku. Häkchen bleiben im Browser gespeichert.
+     Projekt-Doku (docs/project_docs.html). Design wie die Projekt-Doku (Palette Monochrom); Kopf = Landing-Hero aus css/landing.css +
+     js/landing.js, 3D-Bühne js/hero3d.js (Szene „cell“, ohne WebGL/Netz bleibt das Foto). Häkchen bleiben im Browser gespeichert.
      Befehle aus docs/<de|en>/installation.md, running.md, vr_quest3.md und den Skripten in tools/ – bei Änderungen dort mitziehen. -->
 <html lang="de">
 <head>
@@ -10,34 +11,40 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Setup-Guide · Interakt Control Robot</title>
 <link rel="stylesheet" href="fonts/fonts.css">
+<link rel="stylesheet" href="css/landing.css">
 <style>
 :root {
-  --radius: 2px; /* Ecken: kantig, höchstens 2 px (Wunsch User 04.10.2026, Hook prüft) */
+  --radius-sm: 4px; --radius: 6px; --radius-lg: 8px; /* Ecken dezent: klein (Chips, Buttons, Code) · Karten · große Rahmen; Balken/Linien kantig, höchstens 8 px (Wunsch User 04.10.2026, Hook prüft) */
   color-scheme: dark;
-  --bg: #0a0f19; --surface: #0f1727; --surface-2: #131d31; --code: #070c15; --line: #1f2c44; --line-strong: #2f4163;
-  --fg: #e8eef8; --fg-2: #c3cfe0; --accent: #38bdf8; --accent-ink: #04121c; --accent-soft: #0f2a3d;
+  /* Palette „Monochrom“ wie project_docs.html (Wunsch User 04.10.2026): Türkis auf Graphit; --ok/--warn bleiben Status (erledigt, Hinweis) */
+  --bg: #111315; --surface: #181b1e; --surface-2: #1f2327; --code: #0d0f11; --line: #2a2f34; --line-strong: #3b4248;
+  --fg: #eef2f3; --fg-2: #b9c2c6; --accent: #2ee6c8; --accent-ink: #04201c; --accent-soft: #1b3736;
+  --indigo: #8ff3e1; --grid: rgba(46, 230, 200, .055); --glow: rgba(46, 230, 200, .45);
   --ok: #34d399; --ok-soft: #0d2c24; --warn: #fbbf24; --warn-soft: #2e2310;
   --shadow: 0 1px 0 rgba(255,255,255,.04) inset, 0 20px 40px -24px rgba(0,0,0,.7);
   --font: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   --mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
   /* Motion-Tokens (Skill motion-viz §2) */
-  --ease-out: cubic-bezier(.2, .7, .2, 1); --t-fast: 150ms; --t-slow: 450ms; --rise: 12px;
+  --ease-out: cubic-bezier(.2, .7, .2, 1); --ease-io: cubic-bezier(.65, 0, .35, 1);
+  --t-fast: 150ms; --t-base: 250ms; --t-slow: 450ms; --t-story: 700ms; --stagger: 50ms; --rise: 12px;
 }
 @media (prefers-color-scheme: light) {
   :root:not([data-theme="dark"]) {
     color-scheme: light;
-    --bg: #f2f5fa; --surface: #ffffff; --surface-2: #eef3f9; --code: #f4f7fb; --line: #d7e0ec; --line-strong: #b7c5d9;
-    --fg: #0b1424; --fg-2: #2c3b52; --accent: #0277b6; --accent-ink: #ffffff; --accent-soft: #e0f0fa;
+    --bg: #f3f5f5; --surface: #ffffff; --surface-2: #eef2f2; --code: #f6f8f8; --line: #d9e0e0; --line-strong: #b9c4c4;
+    --fg: #14181a; --fg-2: #3a4448; --accent: #0a7a6d; --accent-ink: #ffffff; --accent-soft: #e6f2f0;
+    --indigo: #0e7490; --grid: rgba(10, 122, 109, .06); --glow: transparent;
     --ok: #047857; --ok-soft: #d8f3e8; --warn: #92400e; --warn-soft: #fdf1dc;
-    --shadow: 0 1px 2px rgba(15,30,60,.06), 0 16px 32px -24px rgba(15,30,60,.35);
+    --shadow: 0 1px 2px rgba(20,30,30,.06), 0 16px 32px -24px rgba(20,40,40,.35);
   }
 }
 :root[data-theme="light"] {
   color-scheme: light;
-  --bg: #f2f5fa; --surface: #ffffff; --surface-2: #eef3f9; --code: #f4f7fb; --line: #d7e0ec; --line-strong: #b7c5d9;
-  --fg: #0b1424; --fg-2: #2c3b52; --accent: #0277b6; --accent-ink: #ffffff; --accent-soft: #e0f0fa;
+  --bg: #f3f5f5; --surface: #ffffff; --surface-2: #eef2f2; --code: #f6f8f8; --line: #d9e0e0; --line-strong: #b9c4c4;
+  --fg: #14181a; --fg-2: #3a4448; --accent: #0a7a6d; --accent-ink: #ffffff; --accent-soft: #e6f2f0;
+  --indigo: #0e7490; --grid: rgba(10, 122, 109, .06); --glow: transparent;
   --ok: #047857; --ok-soft: #d8f3e8; --warn: #92400e; --warn-soft: #fdf1dc;
-  --shadow: 0 1px 2px rgba(15,30,60,.06), 0 16px 32px -24px rgba(15,30,60,.35);
+  --shadow: 0 1px 2px rgba(20,30,30,.06), 0 16px 32px -24px rgba(20,40,40,.35);
 }
 
 * { box-sizing: border-box; }
@@ -45,8 +52,8 @@ html { scroll-behavior: smooth; scroll-padding-top: 76px; }
 body { margin: 0; background: var(--bg); color: var(--fg); font: 500 15px/1.55 var(--font); -webkit-font-smoothing: antialiased; }
 h1, h2, p { margin: 0; }
 a { color: var(--accent); }
-code { font: 600 .88em var(--mono); background: var(--surface-2); border: 1px solid var(--line); padding: 1px 5px; border-radius: var(--radius); overflow-wrap: anywhere; }
-:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: var(--radius); }
+code { font: 600 .88em var(--mono); background: var(--surface-2); border: 1px solid var(--line); padding: 1px 5px; border-radius: var(--radius-sm); overflow-wrap: anywhere; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: var(--radius-sm); }
 .ico { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex: none; }
 .wrap { max-width: 1240px; margin-inline: auto; padding-inline: 24px; }
 
@@ -58,22 +65,25 @@ code { font: 600 .88em var(--mono); background: var(--surface-2); border: 1px so
 .brand-mark { width: 34px; height: 34px; border-radius: var(--radius); display: grid; place-items: center; background: var(--accent); color: var(--accent-ink); }
 .brand small { display: block; font: 600 11px/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--fg-2); margin-top: 3px; }
 .tools { margin-left: auto; display: flex; gap: 8px; flex-wrap: wrap; }
-.seg { display: flex; border: 1px solid var(--line-strong); border-radius: var(--radius); overflow: hidden; }
-.seg button { font: 700 12px/1 var(--mono); padding: 0 10px; min-height: 32px; min-width: 36px; border: 0; background: transparent; color: var(--fg-2); cursor: pointer; }
-.seg button + button { border-left: 1px solid var(--line-strong); }
-.seg button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); }
-.btn { font: 700 13px/1 var(--font); min-height: 32px; padding: 0 12px; border-radius: var(--radius); border: 1px solid var(--line-strong); background: var(--surface); color: var(--fg); cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
-.btn:hover { background: var(--surface-2); }
+/* Steuerknöpfe „Leiste“: Auswahl = Gruppe mit Rahmen, gewählt = heller Daumen; Einzelaktionen = .btn */
+.seg { display: inline-flex; gap: 2px; padding: 3px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface-2); }
+.seg button { font: 700 12px/1 var(--mono); padding: 0 10px; min-height: 28px; min-width: 34px; border: 0; border-radius: var(--radius-sm); background: transparent; color: var(--fg-2); cursor: pointer; transition: background-color .15s, color .15s; }
+.seg button:hover { color: var(--fg); background: color-mix(in srgb, var(--fg) 7%, transparent); }
+.seg button[aria-pressed="true"] { background: var(--surface); color: var(--fg); box-shadow: 0 0 0 1px var(--line-strong); }
+.btn { font: 700 13px/1 var(--font); min-height: 36px; padding: 0 12px; border-radius: var(--radius); border: 1px solid var(--line-strong); background: var(--surface); color: var(--fg); cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+.btn:hover { border-color: var(--fg-2); }
 
 /* Gerüst: Navigation links, Phasen rechts */
-.lay { display: grid; grid-template-columns: 300px minmax(0, 1fr); gap: 32px; padding-block: 28px 12px; align-items: start; }
+.lay { display: grid; grid-template-columns: 300px minmax(0, 1fr); gap: 40px; padding-block: 40px 40px; align-items: start; }
 aside { position: sticky; top: 76px; display: grid; gap: 14px; }
 .eyebrow { font: 700 12px/1 var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--accent); display: flex; align-items: center; gap: 10px; }
 .eyebrow::before { content: ""; width: 22px; height: 2px; background: currentColor; border-radius: 2px; }
-aside h1 { font-size: 28px; line-height: 1.12; font-weight: 800; letter-spacing: -.03em; }
-.lead { color: var(--fg-2); font-size: 14.5px; }
+/* Kopf = Landing-Hero (css/landing.css, Szene „cell“ aus js/hero3d.js): Einstiege als Knöpfe, Karte „Fortschritt“ aus den Häkchen */
+.hero a { text-decoration: none; }
+.hero-card { color: inherit; }
+.pips i.off { opacity: .25; }
 .toc { border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); padding: 10px; display: grid; gap: 2px; box-shadow: var(--shadow); }
-.toc a { display: flex; align-items: center; gap: 10px; padding: 7px 8px; border-radius: var(--radius); color: var(--fg); text-decoration: none; font-weight: 600; font-size: 14px; }
+.toc a { display: flex; align-items: center; gap: 10px; padding: 7px 8px; border-radius: var(--radius-sm); color: var(--fg); text-decoration: none; font-weight: 600; font-size: 14px; }
 .toc a { transition: background var(--t-fast), color var(--t-fast); }
 .toc a:hover { background: var(--surface-2); }
 .toc a[aria-current="true"] { background: color-mix(in srgb, var(--accent) 16%, transparent); }
@@ -84,7 +94,7 @@ aside h1 { font-size: 28px; line-height: 1.12; font-weight: 800; letter-spacing:
 .toc a.skip .cnt::after { content: "–"; }
 
 /* Einstieg wählen */
-.start { display: grid; gap: 12px; margin-bottom: 28px; }
+.start { display: grid; gap: 16px; margin-bottom: 40px; }
 .paths { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); gap: 12px; }
 .path { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 4px 12px; text-align: left; padding: 14px 16px; border-radius: var(--radius); border: 2px solid var(--line); background: var(--surface); color: var(--fg); font: inherit; cursor: pointer; box-shadow: var(--shadow); }
 .path:hover { border-color: var(--line-strong); }
@@ -96,7 +106,7 @@ aside h1 { font-size: 28px; line-height: 1.12; font-weight: 800; letter-spacing:
 .note .ico { color: var(--warn); }
 
 /* Phasen */
-.phase { margin-bottom: 18px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); box-shadow: var(--shadow); container-type: inline-size; }
+.phase { margin-bottom: 24px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); box-shadow: var(--shadow); container-type: inline-size; }
 .phase > summary { list-style: none; display: flex; align-items: center; gap: 12px; padding: 14px 16px; cursor: pointer; }
 .phase > summary::-webkit-details-marker { display: none; }
 .phase > summary .n { flex: none; width: 34px; height: 34px; border-radius: var(--radius); display: grid; place-items: center; background: var(--accent); color: var(--accent-ink); font: 700 14px var(--mono); }
@@ -104,7 +114,7 @@ aside h1 { font-size: 28px; line-height: 1.12; font-weight: 800; letter-spacing:
 .phase > summary .meta { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
 .phase > summary .chev { transition: transform .15s; }
 .phase[open] > summary .chev { transform: rotate(90deg); }
-.tag { font: 700 11px/1 var(--mono); letter-spacing: .04em; padding: 5px 7px; border-radius: var(--radius); background: var(--surface-2); border: 1px solid var(--line); color: var(--fg-2); white-space: nowrap; }
+.tag { font: 700 11px/1 var(--mono); letter-spacing: .04em; padding: 5px 7px; border-radius: var(--radius-sm); background: var(--surface-2); border: 1px solid var(--line); color: var(--fg-2); white-space: nowrap; }
 .tag.ok { color: var(--ok); border-color: color-mix(in srgb, var(--ok) 50%, transparent); background: var(--ok-soft); }
 .tag.skip { border-style: dashed; }
 .phase.is-skip > summary .n { background: var(--surface-2); color: var(--fg-2); }
@@ -121,14 +131,14 @@ ol.steps .txt > label { cursor: pointer; }
 ol.steps .txt b { font-weight: 700; }
 ol.steps .hint { color: var(--fg-2); font-size: 14px; }
 [data-path="pre"] [data-only="install"] { display: none; }
-.both { font: 700 10.5px/1 var(--mono); letter-spacing: .04em; color: var(--accent); border: 1px solid color-mix(in srgb, var(--accent) 45%, transparent); border-radius: var(--radius); padding: 3px 5px; margin-left: 6px; vertical-align: 2px; white-space: nowrap; }
+.both { font: 700 10.5px/1 var(--mono); letter-spacing: .04em; color: var(--accent); border: 1px solid color-mix(in srgb, var(--accent) 45%, transparent); border-radius: var(--radius-sm); padding: 3px 5px; margin-left: 6px; vertical-align: 2px; white-space: nowrap; }
 [data-path="install"] .both { display: none; }
 
 /* Befehle mit Kopier-Knopf */
 .cmd { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: start; border: 1px solid var(--line); border-radius: var(--radius); background: var(--code); overflow: hidden; }
 .cmd pre { margin: 0; padding: 10px 12px; overflow-x: auto; font: 500 13px/1.55 var(--mono); color: var(--fg); white-space: pre; }
-.cmd button { margin: 6px; min-height: 30px; padding: 0 9px; border-radius: var(--radius); border: 1px solid var(--line-strong); background: var(--surface); color: var(--fg); font: 700 12px var(--mono); cursor: pointer; display: inline-flex; align-items: center; gap: 5px; }
-.cmd button:hover { background: var(--surface-2); }
+.cmd button { margin: 6px; min-height: 30px; padding: 0 9px; border-radius: var(--radius-sm); border: 1px solid var(--line-strong); background: var(--surface); color: var(--fg); font: 700 12px var(--mono); cursor: pointer; display: inline-flex; align-items: center; gap: 5px; }
+.cmd button:hover { border-color: var(--fg-2); }
 .cmd button.ok { color: var(--ok); border-color: var(--ok); }
 .cmd button .ico { width: 15px; height: 15px; }
 
@@ -219,26 +229,35 @@ footer .wrap { display: flex; justify-content: space-between; flex-wrap: wrap; g
   .phase > summary { flex-wrap: wrap; }
   .phase > summary .meta { width: 100%; justify-content: flex-start; padding-left: 46px; }
 }
-/* Einblenden beim ersten Sichtbarwerden (Klasse rv setzt erst das Skript) */
+/* Lesefortschritt (Einblenden: css/scroll_flow.css) */
 .progress { position: absolute; left: 0; right: 0; bottom: -1px; height: 2px; background: var(--accent); transform-origin: 0 50%; transform: scaleX(var(--p, 0)); pointer-events: none; }
 @supports (animation-timeline: scroll()) {
   .progress { animation: progress linear both; animation-timeline: scroll(root); }
   @keyframes progress { from { transform: scaleX(0); } to { transform: scaleX(1); } }
 }
-.rv { opacity: 0; transform: translateY(var(--rise)); transition: opacity var(--t-slow) var(--ease-out), transform var(--t-slow) var(--ease-out); transition-delay: var(--d, 0ms); }
-.rv.in { opacity: 1; transform: none; }
-@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } .phase > summary .chev { transition: none; } *:not(.progress), *::before { animation: none !important; transition: none !important; } .rv { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } .phase > summary .chev { transition: none; } *:not(.progress), *::before { animation: none !important; transition: none !important; } }
 @media print {
-  .rv { opacity: 1 !important; transform: none !important; transition: none !important; }
-  .top, .start .paths, .cmd button, .toc, .journey { display: none; }
+  .top, .start .paths, .cmd button, .toc, .journey, .hero-stage, .hero .cta-row, .hero .trust, .scroll-cue { display: none; }
+  .hero.dark-zone { --fg: #14181a; --fg-2: #3a4448; --accent: #0a7a6d; background: none; border: 0; }
+  .hero-inner { display: block; min-height: 0; padding: 0 0 12px; }
+  .h1-claim em { background: none; -webkit-text-fill-color: currentColor; }
   .lay { display: block; padding: 0; }
   aside { position: static; margin-bottom: 16px; }
   .phase { break-inside: avoid-page; box-shadow: none; }
   .phase:not([open]) > .body { display: grid; }
 }
 </style>
+<link rel="stylesheet" href="css/scroll_flow.css">
+<script type="importmap">{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.186.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.186.0/examples/jsm/" } }</script>
+<script src="js/lite6_mesh.js" defer></script>
+<script src="js/lite6_twin.js" defer></script>
+<script src="js/hero3d.js" defer></script>
+<link rel="stylesheet" href="css/doc_path.css">
 </head>
 <body>
+<nav class="doc-path" aria-label="Pfad in der Projekt-Doku" data-en-aria="Path in the project docs"><a href="project_docs.html" data-en="← Project docs">← Projekt-Doku</a><span aria-hidden="true">›</span><a href="project_docs.html#bedienen" data-en="Operate">Bedienen</a><span aria-hidden="true">›</span><span aria-current="page" data-en="Setup guide">Setup-Guide</span></nav>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
   <symbol id="i-arm" viewBox="0 0 24 24"><path d="M4 21h16M7 21v-3h10v3M12 18v-5M12 13l5-5M17 8l3 1.5M17 8l1.2-3.2"/><circle cx="12" cy="13" r="2"/><circle cx="17" cy="8" r="1.6"/></symbol>
   <symbol id="i-pc" viewBox="0 0 24 24"><rect x="2.5" y="4" width="19" height="12" rx="1.5"/><path d="M8 20h8M12 16v4"/><path d="M7 10l2.5 2.5L15 7"/></symbol>
@@ -249,6 +268,12 @@ footer .wrap { display: flex; justify-content: space-between; flex-wrap: wrap; g
   <symbol id="i-print" viewBox="0 0 24 24"><path d="M6 9V3h12v6M6 17H4a1 1 0 0 1-1-1v-6a1 1 0 0 1 1-1h16a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1h-2"/><rect x="6" y="14" width="12" height="7"/></symbol>
   <symbol id="i-reset" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7L3 8M3 3v5h5"/></symbol>
   <symbol id="i-right" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+  <symbol id="i-spark" viewBox="0 0 24 24"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8zM19 16l.8 2.2L22 19l-2.2.8L19 22l-.8-2.2L16 19l2.2-.8z"/></symbol>
+  <symbol id="i-rocket" viewBox="0 0 24 24"><path d="M5 15c-1.5 1.5-2 5-2 5s3.5-.5 5-2M9 15l-3-3c1-4 5-9 12-9 0 7-5 11-9 12z"/><circle cx="14.5" cy="9.5" r="1.5"/></symbol>
+  <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 2.5l8 3v6c0 5-3.4 8.7-8 10.5-4.6-1.8-8-5.5-8-10.5v-6z"/><path d="M8.5 12l2.5 2.5 4.5-5"/></symbol>
+  <symbol id="i-layers" viewBox="0 0 24 24"><path d="M12 3l9.5 5L12 13 2.5 8z"/><path d="M2.5 12.5L12 17.5l9.5-5M2.5 16.5L12 21.5l9.5-5"/></symbol>
+  <symbol id="i-cam" viewBox="0 0 24 24"><rect x="2" y="8" width="20" height="9" rx="4.5"/><circle cx="7" cy="12.5" r="2"/><circle cx="17" cy="12.5" r="2"/></symbol>
+  <symbol id="i-pointer" viewBox="0 0 24 24"><path d="M5 3.5l13 6.2-5.6 1.9-1.9 5.6z"/><path d="M12.6 12.6l5.4 5.4"/></symbol>
 </defs></svg>
 
 <header class="top">
@@ -270,11 +295,57 @@ footer .wrap { display: flex; justify-content: space-between; flex-wrap: wrap; g
   <span class="progress" aria-hidden="true"></span>
 </header>
 
-<main id="start" class="wrap lay">
+<main id="start">
+  <!-- ═════════ Hero: Titel, Einstiege als Knöpfe; rechts 3D-Bühne „cell“ (Tisch, ZED Mini, Objekte) mit Karte „Fortschritt“ aus den Häkchen ═════════ -->
+  <section class="hero dark-zone" aria-labelledby="setup-h1">
+    <div class="wrap hero-inner">
+      <div class="hero-copy">
+        <span class="badge"><span class="bi-s"><svg class="ico" aria-hidden="true"><use href="#i-spark"/></svg></span><span data-en="Setup guide · Commissioning">Setup-Guide · Inbetriebnahme</span></span>
+        <h1 id="setup-h1">
+          <span class="h1-name" data-en="Set up the xArm Lite 6 workstation">Arbeitsplatz xArm Lite 6 einrichten</span>
+          <span class="h1-claim" data-en="&lt;span class=&quot;ln&quot;&gt;&lt;span&gt;From the box&lt;/span&gt;&lt;/span&gt; &lt;span class=&quot;ln&quot;&gt;&lt;span&gt;&lt;em&gt;to acceptance.&lt;/em&gt;&lt;/span&gt;&lt;/span&gt;"><span class="ln"><span>Vom Karton</span></span> <span class="ln"><span><em>zur Abnahme.</em></span></span></span>
+        </h1>
+        <p class="abstract" data-en="From unpacking to the first safe motion: hardware, Ubuntu 22.04, ROS 2 Humble, workspace, network, add-on modules and acceptance test. &lt;b&gt;Tick each step;&lt;/b&gt; the check marks stay in this browser.">Vom Auspacken bis zur ersten sicheren Bewegung: Hardware, Ubuntu 22.04, ROS 2 Humble, Workspace, Netzwerk, Zusatzmodule und Abnahme. <b>Jeden Schritt abhaken;</b> die Häkchen bleiben in diesem Browser gespeichert.</p>
+        <div class="cta-row">
+          <button type="button" class="b-pri" data-path-go="pre"><span data-en="PC is pre-installed">PC ist vorinstalliert</span><svg class="ico" aria-hidden="true"><use href="#i-right"/></svg></button>
+          <button type="button" class="b-sec" data-path-go="install"><svg class="ico" aria-hidden="true"><use href="#i-tool"/></svg><span data-en="I install it myself">Ich installiere selbst</span><em>3–4&nbsp;h</em></button>
+        </div>
+        <ul class="trust">
+          <li><span class="bi-s"><svg class="ico" aria-hidden="true"><use href="#i-shield"/></svg></span><span><b data-en="FAKE first">FAKE zuerst</b><span data-en="no motion while checking">keine Bewegung beim Prüfen</span></span></li>
+          <li><span class="bi-s"><svg class="ico" aria-hidden="true"><use href="#i-print"/></svg></span><span><b data-en="Print / PDF">Drucken / PDF</b><span data-en="all phases expanded">alle Phasen ausgeklappt</span></span></li>
+          <li><span class="bi-s"><svg class="ico" aria-hidden="true"><use href="#i-pc"/></svg></span><span><b data-en="2 starting points">2 Einstiege</b><span data-en="pre-installed or self-installed">vorinstalliert oder selbst</span></span></li>
+        </ul>
+      </div>
+      <div class="hero-stage" id="hero-stage">
+        <figure class="stage-3d">
+          <img class="stage-fallback" src="img/project_docs/lab_setup.jpg" width="1600" height="609" alt="Referenz-Aufbau im UX-Labor: xArm Lite 6 mit Vakuumgreifer, Tisch mit Markern und Testobjekten" data-en-alt="Reference setup in the UX lab: xArm Lite 6 with vacuum gripper, table with markers and test objects">
+          <div class="stage-canvas" id="hero3d" role="img" aria-label="3D: Arbeitsplatz mit xArm Lite 6, Tisch, ZED Mini mit Sichtkegel, Greifobjekten und Korb" data-en-aria="3D: workstation with xArm Lite 6, table, ZED Mini with its field of view, objects to grasp and a basket"></div>
+          <figcaption class="stage-badge"><span class="hchip fake">FAKE</span><span class="hchip" data-en="Twin workstation">Twin-Arbeitsplatz</span></figcaption>
+        </figure>
+        <a class="hero-card hc-1 hc-live" href="#jr-h">
+          <small><svg class="ico" aria-hidden="true"><use href="#i-rocket"/></svg><span data-en="Progress">Fortschritt</span></small>
+          <strong id="hc-pct">0&nbsp;%</strong>
+          <span id="hc-sum">0 von 8 Phasen fertig</span>
+          <span class="pips" id="hc-pips" aria-hidden="true"><i class="off"></i><i class="off"></i><i class="off"></i><i class="off"></i><i class="off"></i><i class="off"></i><i class="off"></i><i class="off"></i></span>
+        </a>
+        <a class="hero-card hc-2" href="#phase-1">
+          <small><svg class="ico" aria-hidden="true"><use href="#i-layers"/></svg><span data-en="Phases">Phasen</span></small>
+          <strong>8</strong>
+          <span data-en="from delivery to acceptance">Lieferumfang bis Abnahme</span>
+        </a>
+        <a class="hero-card hc-3" href="#phase-5">
+          <small><svg class="ico" aria-hidden="true"><use href="#i-cam"/></svg><span data-en="Camera">Kamera</span></small>
+          <strong>57,5°</strong>
+          <span data-en="ZED Mini: calibrated tilt above the table">ZED Mini: kalibrierte Neigung über dem Tisch</span>
+        </a>
+        <p class="stage-hint"><svg class="ico" aria-hidden="true"><use href="#i-pointer"/></svg><span class="hint-fine" data-en="Move the pointer: the arm follows · drag to rotate">Zeiger bewegen: der Arm folgt · ziehen zum Drehen</span><span class="hint-touch" data-en="Drag to rotate">Ziehen zum Drehen</span></p>
+      </div>
+      <a class="scroll-cue" href="#start-h"><span data-en="Scroll">Scrollen</span><i aria-hidden="true"></i></a>
+    </div>
+  </section>
+
+  <div class="wrap lay">
   <aside>
-    <div class="eyebrow" data-en="Commissioning">Inbetriebnahme</div>
-    <h1 data-en="Set up the xArm Lite 6 workstation">Arbeitsplatz xArm Lite 6 einrichten</h1>
-    <p class="lead" data-en="From unpacking to the first safe motion: hardware, Ubuntu 22.04, ROS 2 Humble, workspace, network, add-on modules and acceptance test. Tick each step; the check marks stay in this browser.">Vom Auspacken bis zur ersten sicheren Bewegung: Hardware, Ubuntu 22.04, ROS 2 Humble, Workspace, Netzwerk, Zusatzmodule und Abnahme. Jeden Schritt abhaken; die Häkchen bleiben in diesem Browser gespeichert.</p>
     <nav class="toc" aria-label="Phasen" data-en-aria="Phases" id="toc"></nav>
   </aside>
 
@@ -534,10 +605,13 @@ python3 ~/dev_ws/tools/check_ports.py</pre></div></div></li>
       </div>
     </details>
   </div>
+  </div>
 </main>
 
 <footer><div class="wrap"><span data-en="Last updated 02.10.2026 · commands not yet run on a fresh system">Stand 02.10.2026 · Befehle noch nicht an einem frischen System durchgespielt</span><span>dev_ws · docs/project_setup_guide.html</span></div></footer>
 
+<script src="js/scroll_flow.js"></script>
+<script src="js/landing.js"></script>
 <script>
 (() => {
   const root = document.documentElement;
@@ -607,16 +681,17 @@ python3 ~/dev_ws/tools/check_ports.py</pre></div></div></li>
     <circle class="halo" cx="22" cy="22" r="19"/><circle class="bg" cx="22" cy="22" r="19"/>
     <circle class="arc" cx="22" cy="22" r="19" pathLength="100" transform="rotate(-90 22 22)"/>
     <text x="22" y="27">${i + 1}</text><path class="chk" d="M14.5 22.5l5 5 10-10.5"/></svg></a><span class="jr-seg"></span><span class="jr-lbl"></span></li>`).join('');
-  const pctEl = document.getElementById('jr-pct');
+  const pctEls = [document.getElementById('jr-pct'), document.getElementById('hc-pct')];
+  const showPct = v => pctEls.forEach(el => { el.textContent = `${v}\u00a0%`; });
   let shown = 0, countRun = 0, nextPhase = null;
   const countTo = target => {
     const from = shown, t0 = performance.now(), run = ++countRun;
-    if (reduce || from === target) { shown = target; pctEl.textContent = `${target} %`; return; }
+    if (reduce || from === target) { shown = target; showPct(target); return; }
     const step = now => {
       if (run !== countRun) return;
       const k = Math.min(1, (now - t0) / 600);
       shown = Math.round(from + (target - from) * (1 - (1 - k) ** 3));
-      pctEl.textContent = `${shown} %`;
+      showPct(shown);
       if (k < 1) requestAnimationFrame(step);
     };
     requestAnimationFrame(step);
@@ -648,6 +723,10 @@ python3 ~/dev_ws/tools/check_ports.py</pre></div></div></li>
     });
     countTo(all ? Math.round(100 * sum / all) : 0);
     const left = phases.length - stats.filter(s => s.skip).length - full;
+    // Hero-Karte „Fortschritt“: fertige Phasen (ohne vorinstallierte), ein Strich je Phase
+    const sum2 = document.getElementById('hc-sum'), todo = phases.length - stats.filter(s => s.skip).length;
+    sum2.textContent = T(`${full} von ${todo} Phasen fertig`, `${full} of ${todo} phases done`);
+    [...document.getElementById('hc-pips').children].forEach((el, i) => el.classList.toggle('off', !(stats[i].skip || stats[i].n === stats[i].t)));
     document.getElementById('jr-sum').textContent = nextPhase
       ? T(`${sum} von ${all} Schritten erledigt · noch ${left} ${left === 1 ? 'Phase' : 'Phasen'}`, `${sum} of ${all} steps done · ${left} ${left === 1 ? 'phase' : 'phases'} to go`)
       : T('Alle Schritte erledigt: der Arbeitsplatz ist abgenommen.', 'All steps done: the workstation has passed acceptance.');
@@ -722,6 +801,10 @@ python3 ~/dev_ws/tools/check_ports.py</pre></div></div></li>
     update();
   };
   document.querySelectorAll('[data-path-btn]').forEach(b => b.addEventListener('click', () => { setPath(b.dataset.pathBtn, true); store('setup_guide_path', b.dataset.pathBtn); }));
+  document.querySelectorAll('[data-path-go]').forEach(b => b.addEventListener('click', () => {
+    setPath(b.dataset.pathGo, true); store('setup_guide_path', b.dataset.pathGo);
+    document.querySelector('.start').scrollIntoView({ behavior: reduce ? 'auto' : 'smooth' });
+  }));
 
   document.getElementById('btn-print').addEventListener('click', () => {
     const was = phases.map(ph => ph.open);
@@ -768,22 +851,25 @@ python3 ~/dev_ws/tools/check_ports.py</pre></div></div></li>
   addEventListener('scroll', () => { if (!spyRaf) spyRaf = requestAnimationFrame(spy); }, { passive: true });
   addEventListener('resize', () => { if (!spyRaf) spyRaf = requestAnimationFrame(spy); }, { passive: true });
   phases.forEach(ph => ph.addEventListener('toggle', () => { if (!spyRaf) spyRaf = requestAnimationFrame(spy); }));
-  if (!reduce && 'IntersectionObserver' in window) {
-    const done = e => { if (e.target !== e.currentTarget || e.propertyName !== 'opacity') return; const el = e.currentTarget; el.classList.remove('rv', 'in'); el.style.removeProperty('--d'); };
-    const rv = new IntersectionObserver(es => es.forEach(en => {
-      if (!en.isIntersecting) return;
-      en.target.classList.add('in'); rv.unobserve(en.target);
-    }), { threshold: .05, rootMargin: '0px 0px -6% 0px' });
-    const add = (el, d = 0) => { el.classList.add('rv'); if (d) el.style.setProperty('--d', `${d}ms`); el.addEventListener('transitionend', done); rv.observe(el); };
-    [...document.querySelectorAll('aside > *, .start, .journey')].forEach((el, i) => add(el, Math.min(i, 7) * 60));
-    phases.forEach(el => add(el));
-  }
+  // Lesefluss (js/scroll_flow.js): Kopf gestaffelt, Phasen je Schub aus der Tiefe
+  window.ScrollFlow?.init({
+    hero: '.hero-copy > .badge, .h1-name, .hero-copy > .abstract, .hero-copy > .cta-row, .trust > li, .stage-badge, .hero-card, .stage-hint',
+    heroExit: '.hero-inner',
+    items: ['.toc', '.start', '.journey'], cards: '.phase',
+  });
 
   const qPath = new URLSearchParams(location.search).get('path');
   root.dataset.path = ['pre', 'install'].includes(qPath) ? qPath : (store('setup_guide_path') || 'install');
   setLang(store('setup_guide_lang') === 'en' ? 'en' : 'de');
   setPath(root.dataset.path, true);
 })();
+</script>
+<script type="module">
+// Hero-Bühne (js/hero3d.js, Szene „cell“): Tisch mit Raster, ZED Mini mit Sichtkegel, Greifobjekte, Korb; Zeiger bewegt den TCP
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { toCreasedNormals } from 'three/addons/utils/BufferGeometryUtils.js';
+window.Hero3D?.init(THREE, { OrbitControls, toCreasedNormals }, { scene: 'cell' });
 </script>
 </body>
 </html>

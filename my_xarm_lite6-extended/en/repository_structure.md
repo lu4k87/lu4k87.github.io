@@ -11,14 +11,15 @@
 ```
 dev_ws/
 ├── .claude/                                                               # Claude Code helpers only (not needed to run the robot)
+│   ├── agents/                                                            # Project agents: ws-explorer, test-runner, ui-verifier, safety-reviewer, robustness-reviewer, showcase-reviewer, docs-auditor
 │   ├── hooks/                                                             # Checks before a command and after each edit
-│   └── skills/                                                            # Skills with their scripts, e.g. preview/ (capture.py screenshots, build.py spec → page), answer-page/ (answer → summary page)
+│   ├── memory/                                                            # Shared Claude memory (in Git, linked by tools/ws_sync.sh)
+│   ├── mods/                                                              # Claude Code mods: answer-cards (answers as cards in VS Code), ros-safety-status (FAKE/REAL status line)
+│   ├── skills/                                                            # Skills with their scripts, e.g. preview/ (capture.py screenshots, build.py spec → page), answer-page/ (answer format)
+│   └── README.md                                                          # Overview of hooks, skills, agents, mods
 ├── _imgs/                                                                 # System screenshots, architecture diagrams & assets
 │   ├── icons/                                                             # SVG icons of the Nexus Webapp cards (e.g. icon_vla.svg, icon_touch_panel.svg)
 │   ├── robotsystem.jpg                                                    # Full system hardware setup overview
-│   ├── ros2_nexus_web.png                                                 # Nexus Webapp preview
-│   ├── ros2_nexus_web_popup.png                                           # Nexus script terminal output pop-up preview
-│   ├── robot_control_ui.png                                               # Robot Control UI (Port 8081) preview
 │   └── gaze_control_interface.png                                         # Tobii Gaze Eye-Tracking GUI preview
 ├── certs/                                                                 # SSL/TLS certificates for WebXR HTTPS servers
 │   ├── cert.pem                                                           # HTTPS public certificate
@@ -30,8 +31,13 @@ dev_ws/
 │   ├── project_manual.html                                                # Operator manual (German, self-contained HTML; Nexus: /manuals/project_manual.html)
 │   ├── project_setup_guide.html                                           # Setup guide DE/EN: commissioning checklist, pre-installed PC or bare Ubuntu (/manuals/project_setup_guide.html)
 │   ├── project_presentation.html                                          # Project presentation: interactive page on shared control, AI/VLA, vision, UI/UX, evaluation (images: img/presentation/)
+│   ├── project_showcase.html                                              # Showcase: product page of the project
+│   ├── project_functions.html                                             # Function atlas: all functions and their flows
+│   ├── claude_workflow.html                                               # How the project is developed with Claude Code (skills, hooks, parallel chats)
 │   ├── en/ · de/                                                          # 13 pages each: concept, installation, running, teleoperation, …
-│   └── img/                                                               # Screenshots for the documentation
+│   ├── brand/                                                             # Brand kit brand.yaml: name, claim, slogans, colours, fonts (checked by tools/check_showcase.py)
+│   ├── css/ · js/ · fonts/ · templates/                                   # Shared styles, scripts (e.g. lite6_mesh.js), local fonts and templates of the project pages
+│   └── img/                                                               # Screenshots; diagrams/ (generated), presentation/, project_docs/
 ├── isaacsim/                                                              # NVIDIA Isaac Sim checkout, local per PC, not in Git (COLCON_IGNORE) + Lite 6 assets
 │   ├── lite6_isaac_ros2.usd                                               # USD scene for xArm Lite 6 in Isaac Sim
 │   ├── lite6_with_gripper.urdf                                            # Standalone URDF model with Lite 6 gripper
@@ -55,6 +61,8 @@ dev_ws/
 │   ├── nexus_backups.py                                                   # Backups of launcher_config.json before each save (last 20)
 │   ├── nexus_settings.py                                                  # Global switches (Terminals on Execute), ~/.config/ros2_nexus/settings.json
 │   ├── nexus_preflight.py                                                 # Preflight check before EXECUTE: robot/cameras reachable, ports free, duplicate stacks, GPU, disk
+│   ├── nexus_config.py                                                    # Cleans launcher_config.json on save (argument states of deleted launches)
+│   ├── nexus_windows.py                                                   # Raises windows on the X11 desktop; Robot Control UI stays on top
 │   ├── test/                                                              # Unit tests (logs, config backups), no ROS needed
 │   ├── ros2_nexus_runs.js                                                 # Progress row, run state on the cards, log drawer, deep links
 │   ├── ros2_nexus_backups.{js,css}                                        # Button "Backups" in the start popup: list and restore config backups
@@ -78,14 +86,20 @@ dev_ws/
 │   ├── http_monitoring_dashboard_p8083/                                        # 📈 Python/JS: Monitoring Dashboard (port 8083) – system, usage & evaluation
 │   │   ├── http_monitoring_dashboard_p8083/monitoring_server.py                     # Web server + JSON API + ROS 2 monitor (graph, topic rates, usage, sessions)
 │   │   ├── http_monitoring_dashboard_p8083/store.py                            # SQLite store (minute averages, motions, sessions, events) + 1-h ring buffer
-│   │   ├── index.html · js/ · css/                                        # Web UI (views: overview, system, processes, ROS 2 graph, topics, usage, evaluation)
+│   │   ├── http_monitoring_dashboard_p8083/collectors.py                  # System metrics (psutil, nvidia-smi) and port checks of the web UIs
+│   │   ├── http_monitoring_dashboard_p8083/ros_monitor.py                 # ROS 2 side: graph, topic rates, robot usage, sessions
+│   │   ├── http_monitoring_dashboard_p8083/blackbox.py                    # Lists blackbox incidents (~/.ros/blackbox, read only)
+│   │   ├── http_monitoring_dashboard_p8083/study.py                       # Usability study: tests, tasks, participants, runs, questionnaires
+│   │   ├── index.html · js/ · css/                                        # Web UI (views: overview, system, processes, UIs & services, ROS graph, topics, robot usage, grasp & place, users & sessions, evaluation, event logs)
 │   │   └── launch/monitoring_dashboard.launch.py                               # ros2 launch … port:=8083 open_browser:=true db:=…
 │   ├── http_robot_control_ui_p8081/                                       # 🎮 HTML/JS: Standalone Robot Control & Jogging Web UI
 │   │   ├── index.html                                                     # Robot control interface (Port 8081)
 │   │   ├── vr_mirror.html                                                 # PC window mirroring the Quest 3 view
 │   │   ├── install_desktop_icon.sh                                        # Installs the Robot Control UI icon & .desktop entry
+│   │   ├── style.css · css/                                               # Stylesheet; css/theme_light.gen.css generated by tools/gen_theme_light.py
+│   │   ├── launch/                                                        # http_robot_control_ui.launch.py: web server, rosbridge 9090, watchdog
 │   │   ├── js/                                                            # ES modules (main.js, ros.js, jog.js, motion.js, sequence.js, sandbox.js, remote.js, hud_dock.js, config.js …)
-│   │   │   └── twin/                                                      # digital_twin.js (three.js twin), xr*.js (VR viewport, HUD, mirror)
+│   │   │   └── twin/                                                      # digital_twin.js (three.js twin), lab_room.js, logistics_cell.js, vcam_render.js, reachability*.js, xr*.js (VR viewport, HUD, mirror)
 │   │   ├── lib/                                                           # three.js r186, urdf-loader & Rapier physics (vendored, offline-capable)
 │   │   ├── http_robot_control_ui_p8081/server.py                          # Web server port 8081 (no-cache + automatic ?v=)
 │   │   ├── http_robot_control_ui_p8081/rosapi_health.py                   # Restarts a hanging /rosapi of the same launch (respawn)
@@ -164,6 +178,8 @@ dev_ws/
 │   │   ├── vla_bridge/world_model.py                                      # Relations (on / in / covered, reach, stackable) for the plan check
 │   │   ├── vla_bridge/examples.py                                         # Few-shot example dialogues for small local models
 │   │   ├── vla_bridge/placing.py                                          # Clearance for the gripper when placing next to tall objects
+│   │   ├── vla_bridge/palletizing.py                                      # Palletizing planner for the scene "Logistics - auto palletizing" (pure Python)
+│   │   ├── vla_bridge/pallet_job.py                                       # Auto palletizing: plan from the scene, executes carton by carton
 │   │   ├── vla_bridge/session_log.py                                      # Agent rounds as JSON Lines (~/.ros/vla_logs, size-capped)
 │   │   └── vla_bridge/scene.py                                            # Scene from /zed/bboxes_3d (label, colour, grasp sphere, box)
 │   ├── vr_quest3_teleop/                                                  # 🥽 Meta Quest 3 WebXR Teleoperation bridge
@@ -171,15 +187,17 @@ dev_ws/
 │   │   │   └── https_vr_webxr_p8443.py                                    # HTTPS server (port 8443) for the WebXR page
 │   │   ├── vr_quest3_teleop/rosapi_guard.py                               # Starts /rosapi only if none is running yet
 │   │   └── vr_quest3_teleop/vr_quest3_teleop_node.py                      # VR 6-DoF controller pose to MoveIt Servo bridge
-│   ├── xarm_ros2/                                                         # 🤖 Official xArm ROS 2 stack (submodule/extended)
+│   ├── xarm_ros2/                                                         # 🤖 Official xArm ROS 2 stack (copied into the repo, extended)
 │   │   └── xarm_moveit_servo/src/xarm_joystick_input.cpp                  # Gamepad input node with collision brake integration
 │   ├── zed-ros2-interfaces/                                               # 📷 Custom ROS 2 interfaces for Stereolabs ZED cameras
 │   └── zed-ros2-wrapper/                                                  # 📷 Stereolabs ZED ROS 2 camera driver
 ├── tools/                                                                 # Workspace tools
 │   ├── ui_new_code_checker.py                                             # Headless UI check of all web UIs incl. Monitoring Dashboard + HUD, isolated (1920/1366/1280 px)
-│   ├── grasp_e2e.py                                                       # FAKE end-to-end test: grasp/place via the UI, E-STOP, IK pre-check (own domain, --quick ~4 min)
+│   ├── grasp_e2e.py                                                       # FAKE end-to-end test: grasp/place via the UI, E-STOP, IK pre-check (own domain, --quick ~5 min)
 │   ├── vla_eval.py                                                        # Evaluation set for the VLA agent (vla_eval_cases.json, --check without LLM)
-│   ├── pre-commit · install_hooks.sh                                      # Git pre-commit check of the staged files (flake8, JSON/YAML, tokens, check_ws, unit tests; ~5 s)
+│   ├── pre-commit · install_hooks.sh                                      # Git pre-commit check of the staged files (flake8, JSON/YAML, tokens, check_ws, check_ports, pytest suites, check_showcase; --changed = all uncommitted)
+│   ├── check_showcase.py                                                  # README, docs/, project pages, poster against docs/brand/brand.yaml (names, dead links, en/de files)
+│   ├── publish_pages.py                                                   # Collects the project pages for GitHub Pages (masks IPs, local fonts)
 │   ├── make_diagrams.py                                                   # Generates the architecture diagrams docs/img/diagrams/*.svg
 │   ├── check_ports.py                                                     # Ports in config/network.yaml valid/unique, no fixed ws ports in JS
 │   ├── demos_to_lerobot.py                                                # Recorded demos (demo_recorder) -> LeRobotDataset (LeRobot venv); --check
@@ -188,6 +206,11 @@ dev_ws/
 │   ├── monitoring_sim.py                                                  # Test data simulator for the Monitoring Dashboard (isolated domain only, e.g. 97)
 │   ├── bench_nexus_webkit.py                                              # Measures CPU/FPS of the Nexus app window (WebKitGTK, offscreen)
 │   ├── firewall_setup.sh                                                  # Show ufw rules / --apply / --undo
+│   ├── ws_sync.sh                                                         # Sync laptop / lab PC / home PC: setup, git pull --rebase, build changed packages (--setup, --no-build)
+│   ├── install_blender.sh                                                 # Installs/updates Blender + Blender MCP server without sudo (--check)
+│   ├── reel_render.py                                                     # Renders a video page frame by frame (headless Chrome → ffmpeg)
+│   ├── make_docs_lite6.py                                                 # Generates docs/js/lite6_mesh.js (Lite 6 meshes for the project pages)
+│   ├── generate_reachability_grid.py                                      # Precomputes reachability grid + manipulability of the Lite 6
 │   └── install_zed.sh                                                     # ZED SDK & CUDA installation helper
 ├── touch_panel/                                                           # Touch Panel for an extra touch display (Nexus Webapp /touch)
 │   ├── touch_panel_server.py                                              # Flask blueprint: /touch page + /api/touch/* (state, stop, close, sequences)
@@ -195,7 +218,11 @@ dev_ws/
 │   └── web/                                                               # Page, CSS, JS modules, icon
 ├── ui_shared/                                                             # Shared by the web UIs
 │   ├── ui_tokens.css                                                      # Colours, axis colours, fonts, font-size scale (--ui-*, --fs-*)
+│   ├── ui_theme.{js,css}                                                  # Themes of all web UIs (THEMES, html[data-ui-theme], Alt+T); themes/<id>.css, fonts/
 │   └── net_info.{js,css}                                                  # Info card "Setup" (system overview, networks, IPs, ports, HTTPS, touch display, VLA-M; DE/EN) for Monitoring Dashboard + Nexus
+├── video/                                                                 # Presentation videos (not a ROS package)
+│   ├── reel/                                                              # reel.html (deterministic video page) + drehbuch.md (script), rendered by tools/reel_render.py
+│   └── vorlagen/ · vorlagen_src/                                          # Overlay images (badges, lower thirds); sources in vorlagen_src/ (templates.html, render.sh)
 ├── AGENTS.md                                                              # Naming & UI guidelines for AI agents
 ├── TODOS.md                                                               # Open optimizations & decisions (German)
 ├── README.md                                                              # Overview (English) – details in docs/en/

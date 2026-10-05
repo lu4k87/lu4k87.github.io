@@ -119,7 +119,7 @@ The table below illustrates which project modules can be evaluated in pure softw
 >> | **`/ui/joy_button_presses`** | `std_msgs/String` | *Publishes human-readable UI button events from gamepad.* |
 >> | **`/ui/gripper_state`** | `std_msgs/String` (latched) | *Gripper state (`open` / `closed` / `off`) - keeps the gamepad toggle and the UI buttons in sync.* |
 >> | **`/ui/gripper_type`** | `std_msgs/String` (latched) | *Configured gripper (`vacuum` / `gripper` / `none`) from the launch argument.* |
->> | **`/ui/robot_control/current_frame`** | `std_msgs/String` | *Publishes the current reference frame (e.g. World, TCP).* |
+>> | **`/ui/robot_control/current_frame`** | `std_msgs/String` | *Publishes the current reference frame (`link_base` or `link_tcp`).* |
 >> | **`/linear_axis_cmd`** | `std_msgs/Float64` | *Publishes the command to move the linear axis.* |
 >
 >
@@ -207,6 +207,7 @@ The table below illustrates which project modules can be evaluated in pure softw
 >> | `MAX_LINEAR_VELOCITY_MM_S` | `75.0` | *Baseline linear velocity (mm/s) for the lookahead.* |
 >> | `ACCELERATION_FACTOR` | `0.9` | *Damping factor applied during lookahead calculation.* |
 >> | `DOWN_TRIGGER_AXIS` | `5` | *Joy axis index of the right trigger (RT, downward).* |
+>> | `UP_TRIGGER_AXIS` | `2` | *Joy axis index of the left trigger (LT, upward); Z speed = LT − RT, so the guard limits the net downward share.* |
 >> | `EEF_TIMEOUT` | `1.0` | *Seconds without a new `/ui/eef_position` after which the position counts as unknown and downward motion is blocked.* |
 
 </details>
@@ -240,7 +241,7 @@ The table below illustrates which project modules can be evaluated in pure softw
 >
 >> | Topic / Interface | Msg Type | Description |
 >> |---|---|---|
->> | **`/xarm/set_tgpio_digital`** | `xarm_msgs/srv/SetDigitalIO` (Client) | *Controls Tool Digital Output 0 (TGPIO) on the gripper to switch the laser pointer ON (1) or OFF (0).* |
+>> | **`/ufactory/set_tgpio_digital`** | `xarm_msgs/srv/SetDigitalIO` (Client) | *Controls Tool Digital Output 0 (TGPIO) on the gripper to switch the laser pointer ON (1) or OFF (0); namespace from parameter `hw_ns` (default `ufactory`).* |
 
 </details>
 
@@ -331,7 +332,7 @@ if predicted_z < Z_LIMIT:
 ```
 
 <details>
-<summary><b>🔽 Show table</b> · 8 parameters · Z limit · caution zone · lookahead</summary>
+<summary><b>🔽 Show table</b> · 9 parameters · Z limit · caution zone · lookahead</summary>
 
 | Parameter | Value | Description |
 |---|---|---|
@@ -342,6 +343,7 @@ if predicted_z < Z_LIMIT:
 | `LOOKAHEAD_TIME` | `0.1 s` | *Prediction horizon* |
 | `ACCELERATION_FACTOR` (α) | `0.9` | *Velocity damping factor applied to prediction* |
 | `DOWN_TRIGGER_AXIS` | `5` (RT) | *Joy axis index for the downward trigger* |
+| `UP_TRIGGER_AXIS` | `2` (LT) | *Joy axis index for the upward trigger (net Z = LT − RT)* |
 | `EEF_TIMEOUT` | `1.0 s` | *Without a new `/ui/eef_position` the position counts as unknown afterwards — downward motion blocked* |
 
 </details>

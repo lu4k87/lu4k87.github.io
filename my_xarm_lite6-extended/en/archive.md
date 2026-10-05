@@ -26,7 +26,7 @@ In the past, starting the system required launching multiple `.sh` scripts (`lit
 - **Why it was replaced:** This was error-prone, hard to debug, and unintuitive for new users. It was entirely replaced by the **Nexus Webapp**, a web-based orchestrator that securely manages process lifecycles, aggregates logs, and allows one-click bringup from any device.
 
 ### 10.4 ArUco Marker System [DEPRECATED]
-> *[Deprecated]* Markers placed in the robot's workspace served as references for homography matrices to derive 3D world coordinates for objects on the workspace surface (Z = 90 mm). This is now mostly replaced by native 3D TF frames from the ZED camera, but remains partially in use for mapping the Tobii Eye-Tracker gaze coordinates to the 2D plane.
+> *[Deprecated]* Markers placed in the robot's workspace served as references for homography matrices to derive 3D world coordinates for objects on the workspace surface (Z = 90 mm). This is now mostly replaced by native 3D TF frames from the ZED camera, but remains in use for mapping the Tobii Eye-Tracker gaze coordinates to the 2D plane and on the 2D camera path (`zed_m:=false ip_cams:=true`, `yolo_3d_bbox_for_ip_cam.py`: ArUco 6D pose + homography, see 10.2).
 
 ---
 

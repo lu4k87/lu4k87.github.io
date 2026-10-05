@@ -1,6 +1,8 @@
 <a name="top"></a>
 
-# xArm Lite 6 · ROS 2 Extended Workspace (Humble)
+# Interakt Control Robot
+
+<p align="center"><b>Der Mensch führt. Die KI assistiert.</b><br>Assistive Robotik-Plattform für den xArm Lite 6 auf Basis von ROS 2 Humble.</p>
 
 <p align="center">
   <img src="https://img.shields.io/badge/ROS_2-Humble-34a853?style=for-the-badge&logo=ros" alt="ROS 2 Humble">
@@ -26,7 +28,7 @@
 > [Online gerendert ansehen](project_manual.html) · lokal über den Button **Manual** in der Nexus Webapp (`http://localhost:8080/manuals/project_manual.html`).
 > **🛠️ Setup-Guide (DE/EN):** [`docs/project_setup_guide.html`](project_setup_guide.html) – Inbetriebnahme Schritt für Schritt, für einen vorinstallierten PC oder ab nacktem Ubuntu 22.04 (verlinkt in der Projekt-Doku, Footer-Knopf **Projekt-Doku** der Nexus Webapp).
 
-Eine Forschungs- und Evaluationsplattform für die **multimodale Teleoperation** des UFactory xArm Lite 6. Blicksteuerung, Sprache, Gamepad, VR und Web-UIs – kombiniert mit assistiver Automatisierung – senken die Einstiegshürden der Robotersteuerung. Grundlage ist das *Shared-Control*-Prinzip (Industrie 5.0): Der Mensch bleibt im Regelkreis, das System plant kollisionsfreie Bewegungen im Hintergrund. Im Zentrum steht ein live mitlaufender **Digital Twin**: Jede Bewegung ist in 3D zu sehen, bevor der echte Arm fährt.
+Eine Forschungs- und Evaluationsplattform für die **multimodale Teleoperation** des UFactory xArm Lite 6. Blicksteuerung, Sprache, Gamepad, VR und Web-UIs – kombiniert mit assistiver Automatisierung – senken die Einstiegshürden der Robotersteuerung. Grundlage ist das *Shared-Control*-Prinzip (Industrie 5.0): Der Mensch bleibt im Regelkreis, das System plant kollisionsfreie Bewegungen im Hintergrund. Das System schlägt vor, der Mensch entscheidet (Human-in-the-Loop). Im Zentrum steht ein live mitlaufender **Digital Twin**: Jede Bewegung ist in 3D zu sehen, bevor der echte Arm fährt.
 
 <p align="center">
   <img src="imgs/robotsystem.jpg" width="90%" alt="xArm Lite 6 Arbeitsplatz im Einsatz">
@@ -44,8 +46,8 @@ Eine Forschungs- und Evaluationsplattform für die **multimodale Teleoperation**
 | 👁️ | **3D-Vision & Greifen** – ZED Mini + YOLOv8-3D-Boxen, MoveIt-Kollisionsobjekte, OctoMap, kollisionsfreier 3-Phasen-Griff, virtuelle Objekte für Tests ohne Kamera | [Vision & Greifen](de/vision_grasping.html) |
 | 🗣️ | **Sprache & Blick** – Whisper-Sprachbefehle (DE/EN), Tobii-Pro-Glasses-3-Blick-UI und Greifen per Verweildauer | [Sprache & Blick](de/voice_gaze.html) |
 | 🧊 | **Digital Twin** – live mitlaufendes 3D-Modell von Arm und Arbeitszelle im Browser (three.js + URDF, `/joint_states`); im Digital Twin planen mit TCP-Gizmo und Ghost-Vorschau, dann bestätigen; erkannte und virtuelle Objekte, Schutzzonen, Szenen; Neues gefahrlos im FAKE-Modus mit Physik-Sandbox testen; derselbe Digital Twin in VR und in bis zu 4 virtuellen Kameras; Isaac Sim als optionaler Schatten-Digital-Twin | [Konzept: Digital Twin](de/concept.html#-digital-twin-erst-virtuell-dann-real) · [Robot Control UI](de/robot_control_ui.html) |
-| 🖥️ | **Robot Control UI** (Port 8081) – WebGL-Digital-Twin, Jogging, MoveIt-Planung mit Ghost-Vorschau und TCP-Gizmo, Physik-Sandbox (FAKE), Bewegungsabfolgen, andockbares HUD, Bereichsleiste je Arbeitsschritt (Move, Teach, Vision, Assistant (VLA), Remote Teleop) mit Schritt-für-Schritt-Guides und Settings, Kamerakacheln und virtuelle Kameras (eigene Blickwinkel auf den Digital Twin) im Viewport, Befehlspalette (Strg+K), Diagnostics (Log) als Schublade | [Robot Control UI](de/robot_control_ui.html) |
-| 🚀 | **Nexus Webapp** (Port 8080) – Ein-Klick-Launcher mit FAKE/REAL-Setups, Launch-Baum- und Config-Einsicht, Vorabprüfung vor EXECUTE, Bereitschafts-Checks je Schritt, Log je Start, Neustart eines Laufs, Config-Sicherungen, Setup-Info-Karte (Netzwerk, IPs, Ports, PDF-Export), Touch Panel für ein Zusatz-Touch-Display | [System starten](de/running.html) |
+| 🖥️ | **Robot Control UI** (Port 8081) – WebGL-Digital-Twin, Jogging, MoveIt-Planung mit Ghost-Vorschau und TCP-Gizmo, Physik-Sandbox (Roboter-Simulation), Bewegungsabfolgen, andockbares HUD, Bereichsleiste je Arbeitsschritt (Move, Teach, Vision, Assistant (VLA), Remote Teleop) mit Schritt-für-Schritt-Guides und Settings, Kamerakacheln und virtuelle Kameras (eigene Blickwinkel auf den Digital Twin) im Viewport, Befehlspalette (Strg+K), Diagnostics (Log) als Schublade; alle vier Web-UIs auf Deutsch oder Englisch (Wechsel live unten in der Theme-Liste, Alt+T) | [Robot Control UI](de/robot_control_ui.html) |
+| 🚀 | **Nexus Webapp** (Port 8080) – Ein-Klick-Launcher mit Setups für Roboter-Simulation und echte Roboter-Hardware, Launch-Baum- und Config-Einsicht, Vorabprüfung vor EXECUTE, Bereitschafts-Checks je Schritt, Log je Start, Neustart eines Laufs, Config-Sicherungen, Setup-Info-Karte (Netzwerk, IPs, Ports, PDF-Export), Touch Panel für ein Zusatz-Touch-Display | [System starten](de/running.html) |
 | 🤖 | **VLA-M-Chat – Agentic ROS** *(in Arbeit)* – Anweisung in Alltagssprache → LLM-Agent (lokal Ollama oder Claude) plant Pick & Place mit der Szene → Ausführung, Greifprüfung, Neuplanung; Diktat per Mikrofon, Ein-Klick *Grasp* / *Place here* im Objektmenü, Auto-Palettieren (Skill `palletize`), *Record demo* fürs Training; geplant LeRobot (SmolVLA / π0.5) | [VLA-M](de/vla.html) |
 | 📊 | **Monitoring Dashboard** (Port 8083) – Systemlast, ROS-2-Graph mit Live-Raten, Roboter-Nutzung, Sessions und Auswertung von Nutzerstudien; **Isaac Sim** als Schatten-Digital-Twin | [Monitoring](de/monitoring.html) · [Isaac Sim](de/isaac_sim.html) |
 
@@ -110,12 +112,12 @@ Alle Ports: [7.4 Netzwerk & Ports](de/running.html#74-netzwerk---port-architektu
 | `docs/project_*.html` · `poster/` | Projektseiten: Doku-Hub, Bedienhandbuch, Setup-Guide, Präsentation, Showcase (HTML) · A2-Projektposter (HTML/PDF) |
 | `config/` · `tools/` · `ui_shared/` | Zentrale Netzwerk-Adressen (`network.yaml`) · Prüfungen und Hilfsskripte (`ui_new_code_checker.py`, `grasp_e2e.py`, `vla_eval.py`, `check_ws.py`, `check_ports.py`, `make_diagrams.py`, Git-Hook `pre-commit`, `firewall_setup.sh`) · gemeinsame UI-Tokens |
 | `_imgs/` · `sounds/` · `isaacsim/` | Bilder und Icons · UI-Sounds und Sprachansagen · NVIDIA-Isaac-Sim-Checkout mit `start_isaac_sim.sh` (lokal je PC, nicht in Git) |
-| `video/` · `references/` | Projektvideo (HTML, `video/index.html`) · externe Quellen: Datenblätter, Handbücher, Paper (Index `references/README.md`) |
+| `video/` · `references/` | Präsentationsvideos (Vorlagen, Quellen) · externe Quellen: Datenblätter, Handbücher, Paper (Index `references/README.md`) |
 
 ## 📈 Stand
 
 - **Einsatzbereit:** Teleoperation per Gamepad, VR und Web, MoveIt-Planung mit Vorschau, 3D-Vision und Greifen (ZED Mini), Sprach- und Blicksteuerung, Nexus Webapp, Fernsteuerung im Heimnetz, Blackbox-Recorder (letzte 60 s als rosbag2 bei E-Stop/Kollision).
-- **In Arbeit:** VLA-M-Chat (LLM-Agent, im FAKE-Modus mit der Physik-Sandbox getestet; Demos werden aufgenommen, Modelltraining geplant), Physik-Sandbox.
+- **In Arbeit:** VLA-M-Chat (LLM-Agent, in der Roboter-Simulation mit der Physik-Sandbox getestet; Demos werden aufgenommen, Modelltraining geplant), Physik-Sandbox.
 - **Offene Entscheidungen:** TODOS.md.
 
 ## ⚖️ Lizenz

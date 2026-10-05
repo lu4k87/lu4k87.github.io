@@ -111,15 +111,17 @@
 >
 >> | Topic / Interface | Msg Type | Description |
 >> |---|---|---|
->> | **`/ui/voice_listen_trigger`** | `std_msgs/String` | *Trigger from Web UI or Gamepad to begin voice listening.* |
+>> | **`/ui/voice_listen_trigger`** | `std_msgs/String` | *Starts one recording from the Web UI or Gamepad (X): `listen` = voice command, `dictate` = dictation for VLA-M (longer, executes no commands).* |
 >
 >
 > ![Publishes](https://img.shields.io/badge/Publishes-green?style=flat-square)
 >
 >> | Topic / Interface | Msg Type | Description |
 >> |---|---|---|
->> | **`/ui/voice_feedback`** | `std_msgs/String` | *Directly triggers UI actions based on voice commands.* |
->> | **`/ui/voice_status`** | `std_msgs/String` | *Publishes current listening / recognition status to the UI.* |
+>> | **`/ui/voice_feedback`** | `std_msgs/String` | *Recognised voice command (e.g. `Home`, `Stop`); the Robot Control UI executes it.* |
+>> | **`/ui/voice_status`** | `std_msgs/String` | *Status for the UI: `Listening...`, `Transcription: <text>`, `-- No speech detected --`, `Error: …`.* |
+>> | **`/ui/voice_dictation`** | `std_msgs/String` | *Dictation text and status for the VLA-M input field (trigger `dictate`).* |
+>> | **`/ui/emergency_stop_topic`** | `std_msgs/Empty` | *Voice command `E-Stop` triggers the emergency stop directly.* |
 >
 >
 > ![Action Client](https://img.shields.io/badge/Action_Client-00BCD4?style=flat-square)
@@ -137,6 +139,7 @@
 >> | Topic / Interface | Msg Type | Description |
 >> |---|---|---|
 >> | **`/voice_cmd/last`** | `std_srvs/srv/Trigger` (Server) | *Returns the last successfully recognized voice command.* |
+>> | **`/ui/halt_motion`** | `std_srvs/srv/Trigger` (Client) | *Voice command `Stop` halts the current motion.* |
 >
 > The `whisper_server` runs the multilingual `small` model with `language: "auto"` for English and German commands (see `whisper.yaml`; no `initial_prompt`, it causes hallucinations in silence).
 
@@ -167,7 +170,7 @@
 > - **`gaze_ui_node_tobii_glasses_zedm.py` (ZED M):** The modern variant for the 3D Vision setup. Drops the memory-intensive web browser for the main stream. Instead, the node directly subscribes to the ZED camera's ROS topic (`/zed/zed_node/rgb/image_rect_color`), thread-safely converts the ROS image messages (`bgra8`) into native `QImage`/`QPixmap` objects, and renders them as a resource-efficient background label (`bg_label`). The Picture-in-Picture (PiP) view still uses a small web browser for the Pi stream and hides disruptive RPi Cam Control UI elements via JavaScript injection (DOM manipulation).
 > 
 > **Shared core `gaze_ui_core.py`** (both scripts only provide the camera background; `gaze_ui_zedm --legacy-cam` = background from IP camera cam1; picture-in-picture cam2 top right below HOME/UP):
-> - **RTSP & Data Processing:** Connects to the Tobii glasses via the Real-Time Streaming Protocol (RTSP) at `rtsp://192.168.75.xxx:8554/live/all` (Wi-Fi IP of the glasses, fixed in the code as `self.g3_ip`; connected via Ethernet the glasses have `192.168.100.xxx`) to receive two streams simultaneously. The video stream is processed with OpenCV to detect the ArUco markers, while the data stream (JSON) provides the raw, normalized `gaze2d` coordinates in real-time. 
+> - **RTSP & Data Processing:** Connects to the Tobii glasses via the Real-Time Streaming Protocol (RTSP) at `rtsp://192.168.75.xxx:8554/live/all` (`self.g3_ip` = `net_get('tobii.ip')` from `config/network.yaml`: `tobii.connection: auto` picks the Wi-Fi IP `192.168.75.xxx` or, via Ethernet, `192.168.100.xxx`, whichever network is present on the PC) to receive two streams simultaneously. The video stream is processed with OpenCV to detect the ArUco markers, while the data stream (JSON) provides the raw, normalized `gaze2d` coordinates in real-time. 
 > - **Homography Mapping:** Detects 4 ArUco markers on the screen corners via the scene camera. Uses `cv2.findHomography` to precisely project the 3D gaze vector (`gaze2d`) from the RTSP stream onto the 2D UI screen absolute pixels.
 > - **Subpixel Accuracy:** Applies `cv2.cornerSubPix` during ArUco marker detection to dramatically reduce camera jitter and stabilize the Homography matrix calculation.
 > - **Soft-Landing Brake Zone (Z-Axis):** Implements a dedicated safety logic when moving down. A quadratic brake zone starts at `Z = 40.0 mm` to slow down the arm, and a hard stop is enforced at `Z = 33.0 mm` to prevent any table collisions.
@@ -215,7 +218,7 @@
 **Purpose & Task:** Enables "telepathic" hands-free object selection and grasping via Tobii Glasses 3.
 
 <details>
-<summary><b>🔽 Show details</b> · Run Command · Subscribes · Services · Parameters</summary>
+<summary><b>🔽 Show details</b> · Run Command · Services · Subscribes · Publishes · Parameters</summary>
 
 > [!NOTE]
 > 💻 **Run Command:**
@@ -254,12 +257,19 @@
 >> | Topic / Interface | Msg Type | Description |
 >> |---|---|---|
 >> | **`/ui/sound_enabled`** | `std_msgs/Bool` | *Mutes the acoustic feedback together with the Web UI sound toggle.* |
+>> | **`/remote/control_state`** | `std_msgs/String` (latched) | *Control lock of the watchdog (who has control).* |
+>
+> ![Publishes](https://img.shields.io/badge/Publishes-green?style=flat-square)
+>
+>> | Topic / Interface | Msg Type | Description |
+>> |---|---|---|
+>> | **`/remote/heartbeat`** · **`/remote/control_request`** | `std_msgs/String` | *Watchdog client `Gaze Grasp (Tobii)`: heartbeat and control request.* |
 >
 > ![Parameters](https://img.shields.io/badge/Parameters-yellow?style=flat-square)
 >
 >> | Parameter | Default | Description |
 >> |---|---|---|
->> | `tobii_ip` | `192.168.100.xxx` | *IP of the Tobii Glasses 3: `192.168.100.xxx` when connected via Ethernet (LAN), `192.168.75.xxx` via Wi-Fi.* |
+>> | `tobii_ip` | `net_get('tobii.ip')` | *IP of the Tobii Glasses 3 from `config/network.yaml` (`tobii.connection: auto`): `192.168.100.xxx` via Ethernet (LAN), `192.168.75.xxx` via Wi-Fi; fallback `192.168.100.xxx`.* |
 >> | `dwell_threshold` | `2.0` | *Fixation time [s] on an object before it is selected.* |
 >
 > *The gaze data does not arrive over a ROS topic — it is read straight from the Tobii Glasses 3 RTSP stream (`rtsp://<tobii-ip>:8554/live/all`, JSON field `gaze2d`). Object detection runs node-internally via YOLOv8 on that same stream.*
