@@ -293,13 +293,18 @@ function build(L, wrap, host, o) {
   // Übergabe ohne Sprung: Zeiger raus → Leerlauf-Acht setzt am nächsten Punkt zur aktuellen TCP-Lage an und läuft sanft an;
   // Zeiger rein → Feder übernimmt mit der laufenden Geschwindigkeit, Steifigkeit steigt weich an.
   // Gelenk 1 endet bei ±178° → Zeiger hinter dem Arm: Seite halten; Seitenwechsel = Schwenk nach vorn, Ziel wandert höchstens W_MAX rad/s.
-  const TH = 3.0, R0 = 0.17, R1 = 0.32, IDLE_T = 16, W_MAX = 2.2;
+  const TH = 3.0, R0 = 0.17, R1 = 0.32, IDLE_T = scene === 'dome' ? 24 : 16, W_MAX = 2.2;
   // Arm arbeitet mit: Werkzeug neigt sich nach außen, je weiter der TCP vom Sockel weg ist (Gelenk 5, bis TILT rad);
   // die Leerlauf-Acht hebt und senkt den TCP dazu in eigenem Takt (Gelenke 2, 3, 5 statt nur Gelenk 1; Wunsch User 05.10.2026)
   const TILT = 0.45;
   const pol = { th: 0, r: 0.25, vth: 0, vr: 0, gth: 0, gr: 0.25, cth: 0, w: 2.6, z: Z, vz: 0, gz: Z, yaw: 0, vyaw: 0, gyaw: 0, tilt: 0, vtilt: 0, gtilt: 0, soft: 1 };
   let job = null;   // Pick & Place (dome): führt die Lage statt Zeiger/Acht
   const eight = ph => { const x = 0.25 + 0.05 * Math.sin(2 * ph), y = 0.16 * Math.sin(ph); return [Math.atan2(y, x), Math.hypot(x, y)]; };
+  // dome (Hero mit Pick & Place): Schlangenlinie im Bogen um den Sockel (±143°, Radius 190–310 mm), TCP hebt und senkt
+  // sich dazu (100–190 mm, bleibt über dem Würfel); Wunsch User 06.10.2026
+  const snake = ph => [2.5 * Math.sin(ph), 0.25 + 0.06 * Math.sin(7 * ph)];
+  const loop = scene === 'dome' ? snake : eight;
+  const lift = scene === 'dome' ? ph => Z + 0.045 + 0.045 * Math.sin(5 * ph + 1) : ph => Z + 0.03 + 0.03 * Math.sin(3 * ph);
   let ph = 0, idleRamp = 1, idle = null;   // idle(dt): eigener Leerlauf statt Acht (atlas), setzt pol.gth/gr/gz
   const W_FOLLOW = scene === 'atlas' ? 4 : 7;   // atlas: Arm folgt dem Zeiger ruhiger (Ring statt Zielpunkt)
   const setGoalXY = (x, y) => {
@@ -310,7 +315,7 @@ function build(L, wrap, host, o) {
   };
   const nearestPhase = () => {
     let best = 0, bd = Infinity;
-    for (let i = 0; i < 128; i++) { const p = i / 128 * Math.PI * 2, [t, r] = eight(p), d = ((t - pol.th) * pol.r) ** 2 + (r - pol.r) ** 2; if (d < bd) { bd = d; best = p; } }
+    for (let i = 0; i < 256; i++) { const p = i / 256 * Math.PI * 2, [t, r] = loop(p), d = ((t - pol.th) * pol.r) ** 2 + (r - pol.r) ** 2; if (d < bd) { bd = d; best = p; } }
     return best;
   };
   // Pick & Place (job) führt die Lage direkt über seine Bahn; danach übernehmen die Federn aus der Ruhe: Schwenkrate und
@@ -322,7 +327,7 @@ function build(L, wrap, host, o) {
         idleRamp = Math.min(1, idleRamp + dt / 1.6);
         const ramp = idleRamp * idleRamp * (3 - 2 * idleRamp);
         if (idle) idle(dt * ramp);
-        else { ph += dt * Math.PI * 2 / IDLE_T * ramp; [pol.gth, pol.gr] = eight(ph); pol.gz = Z + 0.03 + 0.03 * Math.sin(3 * ph); }
+        else { ph += dt * Math.PI * 2 / IDLE_T * ramp; [pol.gth, pol.gr] = loop(ph); pol.gz = lift(ph); }
       } else pol.gz = Z;
       pol.gtilt = TILT * Math.max(0, Math.min(1, (pol.gr - R0) / (R1 - R0)));
       pol.soft = Math.min(1, pol.soft + dt / 1.2);
