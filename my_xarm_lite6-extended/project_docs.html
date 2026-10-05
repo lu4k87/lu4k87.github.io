@@ -242,9 +242,22 @@ html.sf-on .at-ring:not(.in) .seg { stroke-dasharray: 0 83; }
 .path a:hover { border-color: var(--hue, var(--accent)); transform: translateY(-2px); }
 .path .pn { display: flex; align-items: center; gap: 8px; font: 700 12px/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--hue, var(--accent)); }
 .path .pn .ico { width: 16px; height: 16px; }
-.path .pn .to { margin-left: auto; color: var(--fg-2); }
 .path b { font-size: 15.5px; font-weight: 800; line-height: 1.25; }
 .path small { font-size: 13px; line-height: 1.4; color: var(--fg-2); }
+/* Lesepfad „Verstehen“: große Pfeile zwischen den Kacheln in eigener Grid-Spalte, schmal untereinander mit Pfeil nach unten (Wunsch User 05.10.2026) */
+#verstehen .path { --arw: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12h14M13 6l6 6-6 6'/%3E%3C/svg%3E");
+  grid-template-columns: repeat(3, minmax(0, 1fr) 52px) minmax(0, 1fr); gap: 0; }
+#verstehen .path li:not(:last-child) { grid-column: span 2; display: grid; grid-template-columns: minmax(0, 1fr) 52px; }
+#verstehen .path li:not(:last-child)::after { content: ""; place-self: center; width: 30px; height: 30px; background: var(--fg-2); -webkit-mask: var(--arw) center / contain no-repeat; mask: var(--arw) center / contain no-repeat; }
+#verstehen .path a { gap: 8px; padding: 18px 20px; }
+#verstehen .path .pn > span { padding: 5px 8px; border-radius: var(--radius-sm); background: color-mix(in srgb, var(--hue) 12%, transparent); }
+#verstehen .path b { font-size: 18px; }
+#verstehen .path small { font-size: 14px; }
+@media (max-width: 760px) {
+  #verstehen .path { grid-template-columns: minmax(0, 1fr); }
+  #verstehen .path li:not(:last-child) { grid-column: auto; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto 44px; }
+  #verstehen .path li:not(:last-child)::after { rotate: 90deg; }
+}
 
 /* Abschnitte: Kicker (Nummer + Leitfrage) + Titel links, Nutzen rechts; Trennlinie zwischen Abschnitten, Weiter-Button mittig im Zwischenraum */
 .sec { padding-bottom: 64px; container-type: inline-size; }
@@ -364,7 +377,6 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
 
 /* Ergänzungen zu den Abschnitten: Anzahl im Lesepfad, Systemidee ohne Steckleitungen, Funktionsatlas-Brücke groß */
 .path .pn .cnt { margin-left: auto; min-width: 26px; padding: 3px 6px; border: 1px solid var(--line-strong); border-radius: var(--radius-sm); color: var(--fg); text-align: center; letter-spacing: 0; }
-.path .pn .cnt + .to { margin-left: 4px; }
 .path .pn .cnt:empty { display: none; }
 /* Zielgruppen 01–03 = kleine Kacheln (text-format §4): Icon groß mittig, Zähler in der Ecke rechts oben */
 .path a:has(.cnt) { justify-items: center; text-align: center; }
@@ -673,10 +685,10 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
           <div class="brief"><p class="slogan" data-en="Four questions. One project.">Vier Fragen. Ein Projekt.</p><dl><dt data-en="What you find">Hier finden Sie</dt><dd data-en="Why, what, with what and how, one tile each">Warum, Was, Womit und Wie in je einer Kachel</dd><dt data-en="What we offer">Wir bieten</dt><dd data-en="Concept, key features, system stack and function flows at a glance">Konzept, Kernmerkmale, System-Stack und Funktionsabläufe auf einen Blick</dd><dt data-en="What comes with it">Wir bringen mit</dt><dd data-en="Each tile opens its section in the project presentation">Jede Kachel öffnet ihren Abschnitt in der Projektvorstellung</dd></dl></div>
         </header>
         <ol class="path" aria-label="Lesepfad" data-en-aria="Reading path">
-          <li><a href="present_presentation.html#forschung" style="--hue: var(--gold)"><span class="pn"><span data-en="Why">Warum</span><svg class="ico to"><use href="#i-go"/></svg></span><b data-en="Concept &amp; objectives">Konzept &amp; Zielsetzung</b><small data-en="Problem, research question, approach, evaluation">Problem, Leitfrage, Lösungsansatz, Evaluation</small></a></li>
-          <li><a href="present_presentation.html#merkmale" style="--hue: var(--violet)"><span class="pn"><span data-en="What">Was</span><svg class="ico to"><use href="#i-go"/></svg></span><b data-en="Key features">Kernmerkmale</b><small data-en="Human in the loop, eight features, standards">Human-in-the-Loop, acht Merkmale, Normbezüge</small></a></li>
-          <li><a href="present_presentation.html#stack" style="--hue: var(--indigo)"><span class="pn"><span data-en="With what">Womit</span><svg class="ico to"><use href="#i-go"/></svg></span><b data-en="System stack">System-Stack</b><small data-en="Seven layers, reference hardware">Sieben Schichten, Referenz-Hardware</small></a></li>
-          <li><a href="present_presentation.html#ablaeufe" style="--hue: var(--green)"><span class="pn"><span data-en="How">Wie</span><svg class="ico to"><use href="#i-go"/></svg></span><b data-en="Function flows">Funktionsabläufe</b><small data-en="Six flows, safety checks, faults">Sechs Abläufe, Sicherheitsprüfungen, Störfälle</small></a></li>
+          <li><a href="present_presentation.html#forschung" style="--hue: var(--gold)"><span class="pn"><span data-en="Why">Warum</span></span><b data-en="Concept &amp; objectives">Konzept &amp; Zielsetzung</b><small data-en="Problem, research question, approach, evaluation">Problem, Leitfrage, Lösungsansatz, Evaluation</small></a></li>
+          <li><a href="present_presentation.html#merkmale" style="--hue: var(--violet)"><span class="pn"><span data-en="What">Was</span></span><b data-en="Key features">Kernmerkmale</b><small data-en="Human in the loop, eight features, standards">Human-in-the-Loop, acht Merkmale, Normbezüge</small></a></li>
+          <li><a href="present_presentation.html#stack" style="--hue: var(--indigo)"><span class="pn"><span data-en="With what">Womit</span></span><b data-en="System stack">System-Stack</b><small data-en="Seven layers, reference hardware">Sieben Schichten, Referenz-Hardware</small></a></li>
+          <li><a href="present_presentation.html#ablaeufe" style="--hue: var(--green)"><span class="pn"><span data-en="How">Wie</span></span><b data-en="Function flows">Funktionsabläufe</b><small data-en="Six flows, safety checks, faults">Sechs Abläufe, Sicherheitsprüfungen, Störfälle</small></a></li>
         </ol>
       </section>
 
