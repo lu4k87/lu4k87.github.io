@@ -63,7 +63,7 @@ ros2 launch vla_bridge vla_bridge.launch.py          # Agent; startet `ollama se
 # sie überschreiben src/vla_bridge/config/vla_bridge.yaml (Sprachmodell, Szenen-Topic, Sicherheit, Greifhöhen, Zeitgrenzen)
 ```
 
-*Nexus Webapp: **VLA-M Bridge** im RUN DEV SETUP und SERVER SETUP (eigene Kategorie *VLA-M (Vision-Language-Action)*, übersprungen bis angehakt; Parameter *LLM*, *Dry run*, *REAL: execute plans*, *REAL: always confirm*; *Recommended for FAKE/REAL* setzt sie je Sequenz, REAL = execute plans + always confirm an) sowie die Karte **VLA-M (Vision-Language-Action)** mit der Bridge, *Virtual objects ON* (`/ui/set_virtual_detections`) und *VLA-M status (live)*. Bedienung: [Handbuch](../project_manual.html), Kapitel *Den Roboter per Chat anweisen*.*
+*Nexus Webapp: **VLA-M Bridge** im RUN DEV SETUP und SERVER SETUP (eigene Kategorie *VLA-M (Vision-Language-Action)*, übersprungen bis angehakt; Parameter *LLM*, *Dry run*, *REAL: execute plans*, *REAL: always confirm*; *Recommended for FAKE/REAL* setzt sie je Sequenz, REAL = execute plans + always confirm an) sowie die Karte **VLA-M (Vision-Language-Action)** mit der Bridge, *Virtual objects ON* (`/ui/set_virtual_detections`) und *VLA-M status (live)*. Bedienung: [Handbuch](../operate_manual.html), Kapitel *Den Roboter per Chat anweisen*.*
 
 **Topics** (`/vla/*` als `std_msgs/String` mit JSON; Details in der Paket-README):
 

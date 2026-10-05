@@ -1,4 +1,4 @@
-/* Landing-Bausteine der Projektseiten (docs/project_*.html): Glas-Optik, dunkle Zonen, Hero mit 3D-Bühne (js/hero3d.js),
+/* Landing-Bausteine der Projektseiten (docs/{project,present,operate,develop}_*.html): Glas-Optik, dunkle Zonen, Hero mit 3D-Bühne (js/hero3d.js),
    Kennzahl-Karten, Technik-Leiste, Landing-Abschnitte, Folien [data-deck] (js/landing.js), Modus-Chips, 3D-Beschriftung.
    Setzt die Tokens der Seite voraus (--bg, --surface(-2), --line(-strong), --fg(-2), --accent(-ink), --indigo, --glow, --grid,
    --font, --mono, --radius-sm/--radius/--radius-lg, Motion-Tokens aus Skill motion-viz §2). Herkunft: project_docs.html (cab50a03). */

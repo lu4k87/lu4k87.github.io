@@ -3,7 +3,7 @@
      Design „Interakt Control Robot“ (.claude/skills/preview/showcase_template.html), Motion: Skill motion-viz, js/scroll_flow.js.
      Aufbau (Landingpage = Einstieg, Inhalte auf den Unterseiten): Hero (Abstract, 3D-Bühne) → Gebaut auf →
      Teil 1 Unterlagen (01 Vorstellen, 02 Bedienen, 03 Entwickeln) → Web-Apps (Folien) → Überblick → Funktionsatlas →
-     Teil 2 Kurzfassung (04–07 als Kacheln → project_presentation.html) → Kontakt. Unterseiten: Rückweg css/doc_path.css.
+     Teil 2 Kurzfassung (04–07 als Kacheln → present_presentation.html) → Kontakt. Unterseiten: Rückweg css/doc_path.css.
      Folien: [data-deck] mit .slide (Glas-Pfeile, Punkte, ←/→, Wischen; ohne JS untereinander).
      Öffnen: direkt als Datei oder über die Nexus Webapp unter /ws/docs/project_docs.html
      (dann öffnet „Setup-Karte“ den Dialog aus ui_shared/net_info.js). Neue Unterlage → hier eine Karte ergänzen. -->
@@ -357,7 +357,7 @@ a.pdf { font: 700 11px/1 var(--mono); padding: 5px 7px; border-radius: var(--rad
 .pf-tab .ico { width: 18px; height: 18px; color: var(--accent); }
 .pf-tab:hover { background: color-mix(in srgb, var(--fg) 7%, transparent); }
 .pf-tab[aria-selected="true"] { background: var(--surface); box-shadow: 0 0 0 1px var(--line-strong); }
-/* Verweis auf den Funktionsatlas (docs/project_functions.html) unter den 6 Kernabläufen */
+/* Verweis auf den Funktionsatlas (docs/present_function_atlas.html) unter den 6 Kernabläufen */
 
 footer { border-top: 1px solid var(--line); padding-block: 18px 28px; font: 600 12px/1.4 var(--mono); color: var(--fg-2); }
 footer .wrap { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px 16px; }
@@ -512,7 +512,7 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
         <p class="abstract" data-en="Assistive robotics platform for the &lt;b&gt;xArm&amp;nbsp;Lite&amp;nbsp;6&lt;/b&gt;, built on ROS 2 Humble for &lt;b&gt;teaching and research&lt;/b&gt;. Example scenarios such as the logistics cell with auto palletizing show its range.">Assistive Robotik-Plattform für den <b>xArm&nbsp;Lite&nbsp;6</b> auf Basis von ROS 2 Humble, gebaut für <b>Lehre und Forschung</b>. Beispielszenarien wie die Logistik-Zelle mit Auto-Palettieren zeigen die Bandbreite.</p>
         <div class="cta-row">
           <a class="b-pri" href="#unterlagen"><span data-en="Open the documents">Unterlagen öffnen</span><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg></a>
-          <a class="b-sec" href="project_functions.html"><svg class="ico" aria-hidden="true"><use href="#i-layers"/></svg><span data-en="Function atlas">Funktionsatlas</span><em>83</em></a>
+          <a class="b-sec" href="present_function_atlas.html"><svg class="ico" aria-hidden="true"><use href="#i-layers"/></svg><span data-en="Function atlas">Funktionsatlas</span><em>83</em></a>
         </div>
         <ul class="trust">
           <li><span class="bi-s"><svg class="ico" aria-hidden="true"><use href="#i-cube"/></svg></span><span><b data-en="Digital Twin + real robot hardware">Digital Twin + echte Roboter-Hardware</b><span data-en="first virtual, then real">erst virtuell, dann real</span></span></li>
@@ -538,7 +538,7 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
           <div class="stage-canvas" id="hero3d" role="img" aria-label="3D: xArm Lite 6 im Digital Twin, Punktkuppel zeigt den Arbeitsraum mit 440 mm Reichweite" data-en-aria="3D: xArm Lite 6 in the Digital Twin, the dotted dome shows the workspace with 440 mm reach"></div>
           <figcaption class="stage-badge"><span class="hchip fake">FAKE</span><span class="hchip" data-en="Digital Twin · reach 440&amp;nbsp;mm">Digital Twin · Reichweite 440&nbsp;mm</span></figcaption>
         </figure>
-        <a class="hero-card hc-1" href="project_showcase.html#uebersicht" target="_blank" rel="noopener">
+        <a class="hero-card hc-1" href="present_control_modes.html#uebersicht" target="_blank" rel="noopener">
           <small><svg class="ico" aria-hidden="true"><use href="#i-pad"/></svg><span data-en="Control modes">Steuerwege</span></small>
           <strong data-num="10">10</strong>
           <span data-en="one system, one safety chain">ein System, eine Sicherheitskette</span>
@@ -621,17 +621,17 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
           <div class="brief"><p class="slogan" data-en="One robot. Ten ways to operate it.">Ein Roboter. Zehn Wege, ihn zu bedienen.</p><dl><dt data-en="What you find">Hier finden Sie</dt><dd data-en="Project presentation, control modes, function atlas and A2 poster">Projektvorstellung, Steuerwege, Funktionsatlas und Poster A2</dd><dt data-en="What we offer">Wir bieten</dt><dd data-en="Objectives, control modes and safety chain, no technical background needed">Zielsetzung, Steuerwege und Sicherheitskette ohne technisches Vorwissen</dd><dt data-en="What comes with it">Wir bringen mit</dt><dd data-en="3D Digital Twin to try out, all 83 functions on one map">3D-Digital-Twin zum Ausprobieren, alle 83 Funktionen auf einer Karte</dd></dl></div>
         </header>
         <div class="list">
-          <a class="item" href="project_presentation.html" target="_blank" rel="noopener" style="--hue: var(--violet)">
+          <a class="item" href="present_presentation.html" target="_blank" rel="noopener" style="--hue: var(--violet)">
             <span class="thumb"><img src="img/project_docs/vorstellung.jpg" alt="" loading="lazy"></span>
             <span class="txt"><b><svg class="ico"><use href="#i-star"/></svg><span data-en="Project presentation">Projektvorstellung</span></b><p data-en="The project, interactive: 3D Digital Twin with pick &amp; place, grasp flow in 7 steps, AI agent, evaluation">Das Projekt interaktiv: 3D-Digital-Twin mit Pick &amp; Place, Greif-Ablauf in 7 Schritten, KI-Agent, Evaluierung</p></span>
             <span class="end"><span class="tag">HTML</span><span class="go"><svg class="ico"><use href="#i-go"/></svg></span></span>
           </a>
-          <a class="item" href="project_showcase.html" target="_blank" rel="noopener" style="--hue: var(--accent)">
+          <a class="item" href="present_control_modes.html" target="_blank" rel="noopener" style="--hue: var(--accent)">
             <span class="thumb"><img src="img/project_docs/interakt.jpg" alt="" loading="lazy"></span>
             <span class="txt"><b><svg class="ico"><use href="#i-arm"/></svg><span data-en="Control modes &amp; safety chain">Steuerwege &amp; Sicherheitskette</span></b><p data-en="Ten control modes, one safety chain: devices, chain to try out with E-STOP, capability matrix">Zehn Steuerwege, eine Sicherheitskette: Eingabegeräte, Kette zum Ausprobieren mit E-STOP, Fähigkeits-Matrix</p></span>
             <span class="end"><span class="tag">HTML</span><span class="go"><svg class="ico"><use href="#i-go"/></svg></span></span>
           </a>
-          <a class="item" href="project_functions.html" target="_blank" rel="noopener" style="--hue: var(--teal)">
+          <a class="item" href="present_function_atlas.html" target="_blank" rel="noopener" style="--hue: var(--teal)">
             <span class="thumb"><img src="img/project_docs/atlas.jpg" alt="" loading="lazy"></span>
             <span class="txt"><b><span data-en="Function atlas">Funktionsatlas</span></b><p data-en="All 83 functions in 9 areas, each with data flow and topics; 10 loops as a ring">Alle 83 Funktionen in 9 Bereichen, je mit Datenfluss und Topics; 10 Kreisläufe als Ring</p></span>
             <span class="end"><span class="tag">HTML</span><span class="go"></span></span>
@@ -656,7 +656,7 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
           <div class="brief"><p class="slogan" data-en="First virtual, then real.">Erst virtuell, dann real.</p><dl><dt data-en="What you find">Hier finden Sie</dt><dd data-en="Setup guide, quick start, manual and setup card in working order">Setup-Guide, Schnellstart, Handbuch und Setup-Karte in Arbeitsreihenfolge</dd><dt data-en="What we offer">Wir bieten</dt><dd data-en="Commissioning in 8&amp;nbsp;phases and 41&amp;nbsp;steps: from the box to acceptance">Inbetriebnahme in 8&nbsp;Phasen und 41&nbsp;Schritten: vom Karton bis zur Abnahme</dd><dt data-en="What comes with it">Wir bringen mit</dt><dd data-en="Start as robot simulation or on real robot hardware, in the lab or remote">Start als Roboter-Simulation oder auf echter Roboter-Hardware, im Labor oder remote</dd></dl></div>
         </header>
         <div class="list">
-          <a class="item" href="project_setup_guide.html" data-nexus-href="project_setup_guide.html" target="_blank" rel="noopener" style="--hue: var(--indigo)">
+          <a class="item" href="operate_setup_guide.html" data-nexus-href="operate_setup_guide.html" target="_blank" rel="noopener" style="--hue: var(--indigo)">
             <span class="thumb"><img src="img/project_docs/setup_guide.jpg" alt="" loading="lazy"></span>
             <span class="txt"><b><svg class="ico"><use href="#i-tool"/></svg><span data-en="Setup guide">Setup-Guide</span></b><p data-en="From the box to acceptance: 8 phases, 41 steps; pre-installed PC or from Ubuntu 22.04">Vom Karton zur Abnahme: 8 Phasen, 41 Schritte; PC vorinstalliert oder ab Ubuntu 22.04</p></span>
             <span class="end"><span class="tag">HTML</span><span class="go"><svg class="ico"><use href="#i-go"/></svg></span></span>
@@ -666,7 +666,7 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
             <span class="txt"><b><svg class="ico"><use href="#i-rocket"/></svg><span data-en="Quick start">Schnellstart</span></b><p data-en="Start the system and choose the mode: robot simulation (Digital Twin) or real robot hardware">System starten, Betriebsart wählen: Roboter-Simulation (Digital Twin) oder echte Roboter-Hardware</p></span>
             <span class="end"><span class="tag">MD</span><span class="go"><svg class="ico"><use href="#i-go"/></svg></span></span>
           </a>
-          <a class="item" href="project_manual.html" data-nexus-href="project_manual.html" target="_blank" rel="noopener" style="--hue: var(--accent)">
+          <a class="item" href="operate_manual.html" data-nexus-href="operate_manual.html" target="_blank" rel="noopener" style="--hue: var(--accent)">
             <span class="thumb"><img src="img/project_docs/handbuch.jpg" alt="" loading="lazy"></span>
             <span class="txt"><b><svg class="ico"><use href="#i-book"/></svg><span data-en="Manual xArm Lite 6">Handbuch xArm Lite 6</span></b><p data-en="Look things up during operation: system map, control loop, safety, ports, remote guide, VLA-M, logistics cell">Nachschlagen im Betrieb: System Map, Regelkreis, Sicherheit, Ports, Remote Guide, VLA-M, Logistik-Zelle</p></span>
             <span class="end"><span class="tag">HTML</span><span class="go"><svg class="ico"><use href="#i-go"/></svg></span></span>
@@ -708,7 +708,7 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
           <div class="dg" style="--hue: var(--green)">
             <span class="k-t"><svg class="ico"><use href="#i-chart"/></svg><span data-en="Monitor · develop">Überwachen · Entwickeln</span></span>
             <a href="de/monitoring.html" data-href-en="en/monitoring.html" target="_blank" rel="noopener"><svg class="ico"><use href="#i-file"/></svg><b data-en="Monitoring">Überwachung</b><svg class="ico go-s"><use href="#i-go"/></svg><small data-en="Shows how the system is doing, how it is used and how user tests turned out">Zeigt, wie es dem System geht, wie es genutzt wird und wie Nutzertests ausfallen</small></a>
-            <a href="claude_workflow.html" target="_blank" rel="noopener"><svg class="ico"><use href="#i-loop"/></svg><b data-en="Workflow with Claude Code">Arbeitsweise mit Claude Code</b><svg class="ico go-s"><use href="#i-go"/></svg><small data-en="How the project is built together with a coding AI">Wie das Projekt gemeinsam mit einer Programmier-KI entsteht</small></a>
+            <a href="develop_workflow.html" target="_blank" rel="noopener"><svg class="ico"><use href="#i-loop"/></svg><b data-en="Workflow with Claude Code">Arbeitsweise mit Claude Code</b><svg class="ico go-s"><use href="#i-go"/></svg><small data-en="How the project is built together with a coding AI">Wie das Projekt gemeinsam mit einer Programmier-KI entsteht</small></a>
           </div>
         </div>
       </section>
@@ -736,9 +736,9 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
           <div class="af-main">
             <div class="af-head"><b data-en="Key figures">Kennzahlen</b><span data-en="Click a tile: straight to the section">Kachel anklicken: direkt zum Abschnitt</span></div>
             <div class="kpis kpis-6" aria-label="Kennzahlen" data-en-aria="Key figures">
-              <a class="kpi" href="project_showcase.html#uebersicht" target="_blank" rel="noopener" style="--hue: var(--accent)"><strong data-num="10">10</strong><span data-en="&lt;b&gt;control modes&lt;/b&gt;, one system"><b>Steuerwege</b>, ein System</span></a>
-              <a class="kpi" href="project_presentation.html#merkmale" style="--hue: var(--violet)"><strong data-num="8">8</strong><span data-en="&lt;b&gt;key features&lt;/b&gt;, one principle"><b>Kernmerkmale</b>, ein Prinzip</span></a>
-              <a class="kpi" href="project_presentation.html#ablaeufe" style="--hue: var(--green)"><strong data-num="6">6</strong><span data-en="&lt;b&gt;core flows&lt;/b&gt; step by step"><b>Kernabläufe</b> Schritt für Schritt</span></a>
+              <a class="kpi" href="present_control_modes.html#uebersicht" target="_blank" rel="noopener" style="--hue: var(--accent)"><strong data-num="10">10</strong><span data-en="&lt;b&gt;control modes&lt;/b&gt;, one system"><b>Steuerwege</b>, ein System</span></a>
+              <a class="kpi" href="present_presentation.html#merkmale" style="--hue: var(--violet)"><strong data-num="8">8</strong><span data-en="&lt;b&gt;key features&lt;/b&gt;, one principle"><b>Kernmerkmale</b>, ein Prinzip</span></a>
+              <a class="kpi" href="present_presentation.html#ablaeufe" style="--hue: var(--green)"><strong data-num="6">6</strong><span data-en="&lt;b&gt;core flows&lt;/b&gt; step by step"><b>Kernabläufe</b> Schritt für Schritt</span></a>
               <a class="kpi" href="#atlas" style="--hue: var(--indigo)"><strong data-num="83">83</strong><span data-en="&lt;b&gt;functions&lt;/b&gt; in the atlas"><b>Funktionen</b> im Atlas</span></a>
               <a class="kpi" href="#webapps" style="--hue: var(--teal)"><strong data-num="4">4</strong><span data-en="&lt;b&gt;web apps&lt;/b&gt; in the browser"><b>Web-Apps</b> im Browser</span></a>
               <div class="kpi" style="--hue: var(--gold)"><strong data-num="0">0</strong><span data-en="&lt;b&gt;installs&lt;/b&gt; on the client"><b>Installation</b> am Client</span></div>
@@ -783,12 +783,12 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
         <p data-en="Six principles carry the platform, from the Digital Twin to the measured evaluation.">Sechs Prinzipien tragen die Plattform: vom Digital Twin bis zur gemessenen Evaluierung.</p>
       </header>
       <ul class="fx-grid">
-        <li class="fx"><span class="bi-l"><svg class="ico" aria-hidden="true"><use href="#i-cube"/></svg></span><b data-en="First virtual, then real.">Erst virtuell, dann real.</b><p data-en="Every motion runs in the physics-based Digital Twin first, then the same flow on the xArm&amp;nbsp;Lite&amp;nbsp;6.">Jede Bewegung läuft zuerst im physikbasierten Digital Twin, danach derselbe Ablauf am xArm&nbsp;Lite&nbsp;6.</p><a class="more" href="project_presentation.html#merkmale"><span data-en="Key features">Kernmerkmale</span><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg></a></li>
-        <li class="fx"><span class="bi-l"><svg class="ico" aria-hidden="true"><use href="#i-shield"/></svg></span><b data-en="One chain for every input.">Eine Kette für jede Eingabe.</b><p data-en="Ten control modes, from gamepad and VR to gaze, voice and AI chat.">Zehn Steuerwege, von Gamepad und VR bis Blick, Sprache und KI-Chat.</p><a class="more" href="project_presentation.html#ablaeufe"><span data-en="Function flows">Funktionsabläufe</span><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg></a></li>
+        <li class="fx"><span class="bi-l"><svg class="ico" aria-hidden="true"><use href="#i-cube"/></svg></span><b data-en="First virtual, then real.">Erst virtuell, dann real.</b><p data-en="Every motion runs in the physics-based Digital Twin first, then the same flow on the xArm&amp;nbsp;Lite&amp;nbsp;6.">Jede Bewegung läuft zuerst im physikbasierten Digital Twin, danach derselbe Ablauf am xArm&nbsp;Lite&nbsp;6.</p><a class="more" href="present_presentation.html#merkmale"><span data-en="Key features">Kernmerkmale</span><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg></a></li>
+        <li class="fx"><span class="bi-l"><svg class="ico" aria-hidden="true"><use href="#i-shield"/></svg></span><b data-en="One chain for every input.">Eine Kette für jede Eingabe.</b><p data-en="Ten control modes, from gamepad and VR to gaze, voice and AI chat.">Zehn Steuerwege, von Gamepad und VR bis Blick, Sprache und KI-Chat.</p><a class="more" href="present_presentation.html#ablaeufe"><span data-en="Function flows">Funktionsabläufe</span><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg></a></li>
         <li class="fx"><span class="bi-l"><svg class="ico" aria-hidden="true"><use href="#i-user"/></svg></span><b data-en="The AI plans. The human approves.">Die KI plant. Der Mensch gibt frei.</b><p data-en="The arm moves only after approval; step in any time.">Der Arm fährt erst nach Freigabe; Eingreifen geht jederzeit.</p><a class="more" href="#stage"><span data-en="The principle">Das Prinzip</span><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg></a></li>
         <li class="fx"><span class="bi-l"><svg class="ico" aria-hidden="true"><use href="#i-globe"/></svg></span><b data-en="Open, don't install.">Öffnen statt installieren.</b><p data-en="Operated entirely in the browser: locally, on the home network or on Quest&amp;nbsp;3.">Bedienung komplett im Browser: lokal, im Heimnetz oder auf der Quest&nbsp;3.</p><a class="more" href="#webapps"><span data-en="Four web apps">Vier Web-Apps</span><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg></a></li>
-        <li class="fx"><span class="bi-l"><svg class="ico" aria-hidden="true"><use href="#i-chart"/></svg></span><b data-en="Measured, not guessed.">Gemessen statt geschätzt.</b><p data-en="The Monitoring Dashboard records system and usage; usability tests with SUS and NASA-TLX.">Monitoring Dashboard erfasst System und Nutzung; Usability-Tests mit SUS und NASA-TLX.</p><a class="more" href="project_presentation.html#forschung"><span data-en="Evaluation logic">Evaluationslogik</span><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg></a></li>
-        <li class="fx"><span class="bi-l"><svg class="ico" aria-hidden="true"><use href="#i-layers"/></svg></span><b data-en="Replaceable, not fixed.">Austauschbar statt festgelegt.</b><p data-en="Input device, camera, AI model and software module swap individually; robot arm planned.">Eingabegerät, Kamera, KI-Modell und Software-Baustein einzeln ersetzbar; Roboterarm geplant.</p><a class="more" href="project_presentation.html#stack"><span data-en="System stack">System-Stack</span><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg></a></li>
+        <li class="fx"><span class="bi-l"><svg class="ico" aria-hidden="true"><use href="#i-chart"/></svg></span><b data-en="Measured, not guessed.">Gemessen statt geschätzt.</b><p data-en="The Monitoring Dashboard records system and usage; usability tests with SUS and NASA-TLX.">Monitoring Dashboard erfasst System und Nutzung; Usability-Tests mit SUS und NASA-TLX.</p><a class="more" href="present_presentation.html#forschung"><span data-en="Evaluation logic">Evaluationslogik</span><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg></a></li>
+        <li class="fx"><span class="bi-l"><svg class="ico" aria-hidden="true"><use href="#i-layers"/></svg></span><b data-en="Replaceable, not fixed.">Austauschbar statt festgelegt.</b><p data-en="Input device, camera, AI model and software module swap individually; robot arm planned.">Eingabegerät, Kamera, KI-Modell und Software-Baustein einzeln ersetzbar; Roboterarm geplant.</p><a class="more" href="present_presentation.html#stack"><span data-en="System stack">System-Stack</span><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg></a></li>
       </ul>
     </div>
   </section>
@@ -825,15 +825,15 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
         </figure>
         <div class="at-side">
           <ul class="at-areas">
-            <li class="at-area" data-a="ctl" style="--c: var(--accent)"><a href="project_functions.html#gamepad"><svg class="ico" aria-hidden="true"><use href="#i-pad"/></svg><b data-en="Control modes">Steuerwege</b><em>14</em><small data-en="Gamepad, jog, TCP gizmo&amp;nbsp;…">Gamepad, Joggen, TCP-Gizmo&nbsp;…</small></a></li>
-            <li class="at-area" data-a="safe" style="--c: var(--gold)"><a href="project_functions.html#estop"><svg class="ico" aria-hidden="true"><use href="#i-shield"/></svg><b data-en="Safety">Sicherheit</b><em>16</em><small data-en="E-STOP, control lock, heartbeat&amp;nbsp;…">E-STOP, Control-Lock, Heartbeat&nbsp;…</small></a></li>
-            <li class="at-area" data-a="twin" style="--c: var(--blue)"><a href="project_functions.html#twin-urdf"><svg class="ico" aria-hidden="true"><use href="#i-cube"/></svg><b>Digital Twin</b><em>13</em><small data-en="URDF, ghost plan, collision display&amp;nbsp;…">URDF, Ghost-Plan, Kollisionsanzeige&nbsp;…</small></a></li>
-            <li class="at-area" data-a="vis" style="--c: var(--green)"><a href="project_functions.html#zed-yolo"><svg class="ico" aria-hidden="true"><use href="#i-cam"/></svg><b>Vision</b><em>6</em><small data-en="ZED + YOLOv8, ArUco, collision objects">ZED + YOLOv8, ArUco, Kollisionsobjekte</small></a></li>
-            <li class="at-area" data-a="ai" style="--c: var(--violet)"><a href="project_functions.html#llm-agent"><svg class="ico" aria-hidden="true"><use href="#i-spark"/></svg><b data-en="AI / VLA-M">KI / VLA-M</b><em>7</em><small data-en="AI agent, plan check, skills&amp;nbsp;…">KI-Agent, Planprüfung, Skills&nbsp;…</small></a></li>
-            <li class="at-area" data-a="mon" style="--c: var(--pink)"><a href="project_functions.html#mon-overview"><svg class="ico" aria-hidden="true"><use href="#i-chart"/></svg><b>Monitoring Dashboard</b><em>11</em><small data-en="Overview, system, processes&amp;nbsp;…">Übersicht, System, Prozesse&nbsp;…</small></a></li>
-            <li class="at-area" data-a="eval" style="--c: var(--orange)"><a href="project_functions.html#eval-hierarchy"><svg class="ico" aria-hidden="true"><use href="#i-user"/></svg><b data-en="Evaluation">Evaluierung</b><em>8</em><small data-en="Tests, Latin square, participant login&amp;nbsp;…">Tests, Latin Square, Teilnehmer-Login&nbsp;…</small></a></li>
-            <li class="at-area" data-a="data" style="--c: var(--indigo)"><a href="project_functions.html#data-blackbox"><svg class="ico" aria-hidden="true"><use href="#i-file"/></svg><b data-en="Data">Daten</b><em>3</em><small data-en="Blackbox, demo recorder, click statistics">Blackbox, Demo-Recorder, Klick-Statistik</small></a></li>
-            <li class="at-area" data-a="infra" style="--c: var(--lime)"><a href="project_functions.html#infra-nexus"><svg class="ico" aria-hidden="true"><use href="#i-net"/></svg><b data-en="Infrastructure">Infrastruktur</b><em>5</em><small data-en="Nexus Webapp, touch panel, setup card&amp;nbsp;…">Nexus Webapp, Touch Panel, Setup-Karte&nbsp;…</small></a></li>
+            <li class="at-area" data-a="ctl" style="--c: var(--accent)"><a href="present_function_atlas.html#gamepad"><svg class="ico" aria-hidden="true"><use href="#i-pad"/></svg><b data-en="Control modes">Steuerwege</b><em>14</em><small data-en="Gamepad, jog, TCP gizmo&amp;nbsp;…">Gamepad, Joggen, TCP-Gizmo&nbsp;…</small></a></li>
+            <li class="at-area" data-a="safe" style="--c: var(--gold)"><a href="present_function_atlas.html#estop"><svg class="ico" aria-hidden="true"><use href="#i-shield"/></svg><b data-en="Safety">Sicherheit</b><em>16</em><small data-en="E-STOP, control lock, heartbeat&amp;nbsp;…">E-STOP, Control-Lock, Heartbeat&nbsp;…</small></a></li>
+            <li class="at-area" data-a="twin" style="--c: var(--blue)"><a href="present_function_atlas.html#twin-urdf"><svg class="ico" aria-hidden="true"><use href="#i-cube"/></svg><b>Digital Twin</b><em>13</em><small data-en="URDF, ghost plan, collision display&amp;nbsp;…">URDF, Ghost-Plan, Kollisionsanzeige&nbsp;…</small></a></li>
+            <li class="at-area" data-a="vis" style="--c: var(--green)"><a href="present_function_atlas.html#zed-yolo"><svg class="ico" aria-hidden="true"><use href="#i-cam"/></svg><b>Vision</b><em>6</em><small data-en="ZED + YOLOv8, ArUco, collision objects">ZED + YOLOv8, ArUco, Kollisionsobjekte</small></a></li>
+            <li class="at-area" data-a="ai" style="--c: var(--violet)"><a href="present_function_atlas.html#llm-agent"><svg class="ico" aria-hidden="true"><use href="#i-spark"/></svg><b data-en="AI / VLA-M">KI / VLA-M</b><em>7</em><small data-en="AI agent, plan check, skills&amp;nbsp;…">KI-Agent, Planprüfung, Skills&nbsp;…</small></a></li>
+            <li class="at-area" data-a="mon" style="--c: var(--pink)"><a href="present_function_atlas.html#mon-overview"><svg class="ico" aria-hidden="true"><use href="#i-chart"/></svg><b>Monitoring Dashboard</b><em>11</em><small data-en="Overview, system, processes&amp;nbsp;…">Übersicht, System, Prozesse&nbsp;…</small></a></li>
+            <li class="at-area" data-a="eval" style="--c: var(--orange)"><a href="present_function_atlas.html#eval-hierarchy"><svg class="ico" aria-hidden="true"><use href="#i-user"/></svg><b data-en="Evaluation">Evaluierung</b><em>8</em><small data-en="Tests, Latin square, participant login&amp;nbsp;…">Tests, Latin Square, Teilnehmer-Login&nbsp;…</small></a></li>
+            <li class="at-area" data-a="data" style="--c: var(--indigo)"><a href="present_function_atlas.html#data-blackbox"><svg class="ico" aria-hidden="true"><use href="#i-file"/></svg><b data-en="Data">Daten</b><em>3</em><small data-en="Blackbox, demo recorder, click statistics">Blackbox, Demo-Recorder, Klick-Statistik</small></a></li>
+            <li class="at-area" data-a="infra" style="--c: var(--lime)"><a href="present_function_atlas.html#infra-nexus"><svg class="ico" aria-hidden="true"><use href="#i-net"/></svg><b data-en="Infrastructure">Infrastruktur</b><em>5</em><small data-en="Nexus Webapp, touch panel, setup card&amp;nbsp;…">Nexus Webapp, Touch Panel, Setup-Karte&nbsp;…</small></a></li>
           </ul>
           <div class="at-loops">
             <b><svg class="ico" aria-hidden="true"><use href="#i-loop"/></svg><span data-en="10 loops as rings">10 Kreisläufe als Ring</span></b>
@@ -851,8 +851,8 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
             </span>
           </div>
           <div class="at-cta">
-            <a class="b-pri" href="project_functions.html"><span data-en="Open the function atlas">Funktionsatlas öffnen</span><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg></a>
-            <p data-en="Every function has its own link: &lt;code&gt;project_functions.html#&amp;lt;id&amp;gt;&lt;/code&gt;">Jede Funktion hat einen eigenen Link: <code>project_functions.html#&lt;id&gt;</code></p>
+            <a class="b-pri" href="present_function_atlas.html"><span data-en="Open the function atlas">Funktionsatlas öffnen</span><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg></a>
+            <p data-en="Every function has its own link: &lt;code&gt;present_function_atlas.html#&amp;lt;id&amp;gt;&lt;/code&gt;">Jede Funktion hat einen eigenen Link: <code>present_function_atlas.html#&lt;id&gt;</code></p>
           </div>
         </div>
       </div>
@@ -869,10 +869,10 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
           <p class="lede" data-en="The project in four questions: why, what, with what, how. Each tile opens the section in the project presentation.">Das Projekt in vier Fragen: Warum, Was, Womit, Wie. Jede Kachel öffnet den Abschnitt in der Projektvorstellung.</p>
         </div>
         <ol class="path" aria-label="Lesepfad" data-en-aria="Reading path">
-          <li><a href="project_presentation.html#forschung" style="--hue: var(--gold)"><span class="pn"><span data-en="04 · Why">04 · Warum</span><svg class="ico to"><use href="#i-go"/></svg></span><b data-en="Concept &amp; objectives">Konzept &amp; Zielsetzung</b><small data-en="Problem, research question, approach, evaluation">Problem, Leitfrage, Lösungsansatz, Evaluation</small></a></li>
-          <li><a href="project_presentation.html#merkmale" style="--hue: var(--violet)"><span class="pn"><span data-en="05 · What">05 · Was</span><svg class="ico to"><use href="#i-go"/></svg></span><b data-en="Key features">Kernmerkmale</b><small data-en="Human in the loop, eight features, standards">Human-in-the-Loop, acht Merkmale, Normbezüge</small></a></li>
-          <li><a href="project_presentation.html#stack" style="--hue: var(--indigo)"><span class="pn"><span data-en="06 · With what">06 · Womit</span><svg class="ico to"><use href="#i-go"/></svg></span><b data-en="System stack">System-Stack</b><small data-en="Seven layers, reference hardware">Sieben Schichten, Referenz-Hardware</small></a></li>
-          <li><a href="project_presentation.html#ablaeufe" style="--hue: var(--green)"><span class="pn"><span data-en="07 · How">07 · Wie</span><svg class="ico to"><use href="#i-go"/></svg></span><b data-en="Function flows">Funktionsabläufe</b><small data-en="Six flows, safety checks, faults">Sechs Abläufe, Sicherheitsprüfungen, Störfälle</small></a></li>
+          <li><a href="present_presentation.html#forschung" style="--hue: var(--gold)"><span class="pn"><span data-en="04 · Why">04 · Warum</span><svg class="ico to"><use href="#i-go"/></svg></span><b data-en="Concept &amp; objectives">Konzept &amp; Zielsetzung</b><small data-en="Problem, research question, approach, evaluation">Problem, Leitfrage, Lösungsansatz, Evaluation</small></a></li>
+          <li><a href="present_presentation.html#merkmale" style="--hue: var(--violet)"><span class="pn"><span data-en="05 · What">05 · Was</span><svg class="ico to"><use href="#i-go"/></svg></span><b data-en="Key features">Kernmerkmale</b><small data-en="Human in the loop, eight features, standards">Human-in-the-Loop, acht Merkmale, Normbezüge</small></a></li>
+          <li><a href="present_presentation.html#stack" style="--hue: var(--indigo)"><span class="pn"><span data-en="06 · With what">06 · Womit</span><svg class="ico to"><use href="#i-go"/></svg></span><b data-en="System stack">System-Stack</b><small data-en="Seven layers, reference hardware">Sieben Schichten, Referenz-Hardware</small></a></li>
+          <li><a href="present_presentation.html#ablaeufe" style="--hue: var(--green)"><span class="pn"><span data-en="07 · How">07 · Wie</span><svg class="ico to"><use href="#i-go"/></svg></span><b data-en="Function flows">Funktionsabläufe</b><small data-en="Six flows, safety checks, faults">Sechs Abläufe, Sicherheitsprüfungen, Störfälle</small></a></li>
         </ol>
       </header>
     </div>
@@ -887,7 +887,7 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
         <p data-en="Demo, questions or a rebuild for your own lab: every document is linked here, the code is under Apache&amp;nbsp;2.0.">Vorführung, Fragen oder Nachbau im eigenen Labor: alle Unterlagen sind hier verlinkt, der Code steht unter Apache&nbsp;2.0.</p>
         <div class="cta-row">
           <a class="b-pri" href="mailto:marius.kaul@hochschule-rhein-waal.de"><svg class="ico" aria-hidden="true"><use href="#i-mail"/></svg><span data-en="Write an email">E-Mail schreiben</span></a>
-          <a class="b-sec" href="project_showcase.html" target="_blank" rel="noopener"><svg class="ico" aria-hidden="true"><use href="#i-arm"/></svg><span data-en="Open the project page">Projektseite öffnen</span></a>
+          <a class="b-sec" href="present_control_modes.html" target="_blank" rel="noopener"><svg class="ico" aria-hidden="true"><use href="#i-arm"/></svg><span data-en="Open the project page">Projektseite öffnen</span></a>
         </div>
       </div>
           <div class="vcard" role="group" aria-label="Visitenkarte: Interakt Control Robot, Marius Kaul" data-en-aria="Business card: Interakt Control Robot, Marius Kaul">

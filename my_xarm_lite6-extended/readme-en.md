@@ -17,16 +17,16 @@
 <p align="center">
   <a href="readme-de.html">🇩🇪 <b>Auf Deutsch lesen</b></a> &nbsp;·&nbsp;
   <a href="project_docs.html">📚 <b>Project docs</b></a> &nbsp;·&nbsp;
-  <a href="project_manual.html">📘 <b>Manual</b></a> &nbsp;·&nbsp;
-  <a href="project_setup_guide.html">🛠️ <b>Setup guide</b></a> &nbsp;·&nbsp;
+  <a href="operate_manual.html">📘 <b>Manual</b></a> &nbsp;·&nbsp;
+  <a href="operate_setup_guide.html">🛠️ <b>Setup guide</b></a> &nbsp;·&nbsp;
   <a href="poster/poster_a2.pdf">🖼️ <b>Poster (A2)</b></a> &nbsp;·&nbsp;
   🗺️ <b>TODOs</b>
 </p>
 
 > [!TIP]
-> **📘 Manual (German):** [`docs/project_manual.html`](project_manual.html) – system map, safety chain, ports, server/client control, VLA chat.
-> [View rendered online](project_manual.html) · locally via the **Manual** button in the Nexus Webapp (`http://localhost:8080/manuals/project_manual.html`).
-> **🛠️ Setup guide (DE/EN):** [`docs/project_setup_guide.html`](project_setup_guide.html) – commissioning step by step, for a pre-installed PC or from bare Ubuntu 22.04 (linked from the project docs, Nexus Webapp footer button **Project docs**).
+> **📘 Manual (German):** [`docs/operate_manual.html`](operate_manual.html) – system map, safety chain, ports, server/client control, VLA chat.
+> [View rendered online](operate_manual.html) · locally via the **Manual** button in the Nexus Webapp (`http://localhost:8080/manuals/operate_manual.html`).
+> **🛠️ Setup guide (DE/EN):** [`docs/operate_setup_guide.html`](operate_setup_guide.html) – commissioning step by step, for a pre-installed PC or from bare Ubuntu 22.04 (linked from the project docs, Nexus Webapp footer button **Project docs**).
 
 A research and evaluation platform for **multimodal teleoperation** of the UFactory xArm Lite 6. Eye tracking, voice, gamepad, VR and web UIs – combined with assistive automation – lower the barrier to robot control. The platform follows the *shared control* paradigm (Industry 5.0): the human stays in the loop while the system plans collision-free motion in the background. The system proposes, the human decides (human-in-the-loop). At its centre is a live **Digital Twin**: every motion is shown in 3D before the real arm moves.
 
@@ -109,7 +109,7 @@ All ports: [7.4 Network & ports](en/running.html#74-network--port-architecture).
 | `ros2_nexus/` | Nexus Webapp (Flask, not a ROS package) and `launcher_config.json` |
 | `touch_panel/` | Touch Panel for an additional touch display (served by the Nexus Webapp at `/touch`) |
 | `docs/` | This documentation (EN / DE) and its screenshots |
-| `docs/project_*.html` · `poster/` | Project pages: docs hub, operator manual, setup guide, presentation, showcase (HTML) · A2 project poster (HTML/PDF) |
+| `docs/{project,present,operate,develop}_*.html` · `poster/` | Project pages with area prefix (present_ · operate_ · develop_): docs hub, presentation, control modes & safety chain, function atlas, setup guide, operator manual, workflow (HTML) · A2 project poster (HTML/PDF) |
 | `config/` · `tools/` · `ui_shared/` | Central network addresses (`network.yaml`) · checks and helpers (`ui_new_code_checker.py`, `grasp_e2e.py`, `vla_eval.py`, `check_ws.py`, `check_ports.py`, `make_diagrams.py`, `pre-commit` hook, `firewall_setup.sh`) · shared UI tokens |
 | `_imgs/` · `sounds/` · `isaacsim/` | Images and icons · UI sounds and voice prompts · NVIDIA Isaac Sim checkout with `start_isaac_sim.sh` (local per PC, not in Git) |
 | `video/` · `references/` | Presentation videos (templates, sources) · external sources: datasheets, manuals, papers (index `references/README.md`) |

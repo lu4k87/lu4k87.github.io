@@ -168,7 +168,7 @@ The Nexus Webapp (Port 8080) acts as the central command orchestrator. It is bui
 
 ### 7.5 Remote Control (Server-/Client Communication)
 
-The robot PC is the **server**: it runs ROS 2, the arm and the Nexus Webapp; the card *Robot Control UI, WebSocket & Video Server* also starts rosbridge, the web server and `remote_control_watchdog`. **Clients** are browsers on a laptop, tablet or Quest 3 – nothing to install. Setup, firewall rules, the Remote Control panel and error patterns are covered step by step in the [manual](../project_manual.html) (chapter *Server/Client-Steuerung*).
+The robot PC is the **server**: it runs ROS 2, the arm and the Nexus Webapp; the card *Robot Control UI, WebSocket & Video Server* also starts rosbridge, the web server and `remote_control_watchdog`. **Clients** are browsers on a laptop, tablet or Quest 3 – nothing to install. Setup, firewall rules, the Remote Control panel and error patterns are covered step by step in the [manual](../operate_manual.html) (chapter *Server/Client-Steuerung*).
 
 | Client | URL | Taking control |
 |---|---|---|

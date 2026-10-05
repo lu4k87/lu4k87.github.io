@@ -28,12 +28,12 @@ dev_ws/
 │   └── network.yaml                                                       # Robot IP, IP cameras, Tobii - read via dev_ws_network
 ├── docs/                                                                  # Documentation pages (overview: README.md / readme-de.md)
 │   ├── project_docs.html                                                  # Project docs: one entry page for manual, setup card, poster, project pages (Nexus: /ws/docs/project_docs.html)
-│   ├── project_manual.html                                                # Operator manual (German, self-contained HTML; Nexus: /manuals/project_manual.html)
-│   ├── project_setup_guide.html                                           # Setup guide DE/EN: commissioning checklist, pre-installed PC or bare Ubuntu (/manuals/project_setup_guide.html)
-│   ├── project_presentation.html                                          # Project presentation: interactive page on shared control, AI/VLA, vision, UI/UX, evaluation (images: img/presentation/)
-│   ├── project_showcase.html                                              # Showcase: product page of the project
-│   ├── project_functions.html                                             # Function atlas: all functions and their flows
-│   ├── claude_workflow.html                                               # How the project is developed with Claude Code (skills, hooks, parallel chats)
+│   ├── operate_manual.html                                                # Operator manual (German, self-contained HTML; Nexus: /manuals/operate_manual.html)
+│   ├── operate_setup_guide.html                                           # Setup guide DE/EN: commissioning checklist, pre-installed PC or bare Ubuntu (/manuals/operate_setup_guide.html)
+│   ├── present_presentation.html                                          # Project presentation: interactive page on shared control, AI/VLA, vision, UI/UX, evaluation (images: img/presentation/)
+│   ├── present_control_modes.html                                         # Control modes & safety chain: product page of the project
+│   ├── present_function_atlas.html                                        # Function atlas: all functions and their flows
+│   ├── develop_workflow.html                                              # How the project is developed with Claude Code (skills, hooks, parallel chats)
 │   ├── en/ · de/                                                          # 13 pages each: concept, installation, running, teleoperation, …
 │   ├── brand/                                                             # Brand kit brand.yaml: name, claim, slogans, colours, fonts (checked by tools/check_showcase.py)
 │   ├── css/ · js/ · fonts/ · templates/                                   # Shared styles, scripts (e.g. lite6_mesh.js), local fonts and templates of the project pages

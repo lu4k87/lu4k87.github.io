@@ -7,7 +7,7 @@
 **Inhalt:** [6. 📦 Abhängigkeiten & Voraussetzungen](#6--abhängigkeiten--voraussetzungen)
 
 > [!TIP]
-> **Neuer Arbeitsplatz?** Der [Setup-Guide](../project_setup_guide.html) (DE/EN, verlinkt in der Projekt-Doku – Footer-Knopf **Projekt-Doku** der Nexus Webapp) führt als Checkliste durch alle Schritte – Hardware, Ubuntu, ROS 2, Workspace, Netzwerk, Abnahme – wahlweise für einen vorinstallierten PC.
+> **Neuer Arbeitsplatz?** Der [Setup-Guide](../operate_setup_guide.html) (DE/EN, verlinkt in der Projekt-Doku – Footer-Knopf **Projekt-Doku** der Nexus Webapp) führt als Checkliste durch alle Schritte – Hardware, Ubuntu, ROS 2, Workspace, Netzwerk, Abnahme – wahlweise für einen vorinstallierten PC.
 
 ---
 

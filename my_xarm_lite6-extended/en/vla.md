@@ -63,7 +63,7 @@ ros2 launch vla_bridge vla_bridge.launch.py          # agent; starts `ollama ser
 # they override src/vla_bridge/config/vla_bridge.yaml (language model, scene topic, safety, grasp heights, timeouts)
 ```
 
-*Nexus Webapp: **VLA-M Bridge** in RUN DEV SETUP and SERVER SETUP (own category *VLA-M (Vision-Language-Action)*, skipped until ticked; parameters *LLM*, *Dry run*, *REAL: execute plans*, *REAL: always confirm*; *Recommended for FAKE/REAL* sets them per sequence, REAL = execute plans + always confirm on) and the card **VLA-M (Vision-Language-Action)** with the bridge, *Virtual objects ON* (`/ui/set_virtual_detections`) and *VLA-M status (live)*. User guide: [manual](../project_manual.html), chapter *Den Roboter per Chat anweisen*.*
+*Nexus Webapp: **VLA-M Bridge** in RUN DEV SETUP and SERVER SETUP (own category *VLA-M (Vision-Language-Action)*, skipped until ticked; parameters *LLM*, *Dry run*, *REAL: execute plans*, *REAL: always confirm*; *Recommended for FAKE/REAL* sets them per sequence, REAL = execute plans + always confirm on) and the card **VLA-M (Vision-Language-Action)** with the bridge, *Virtual objects ON* (`/ui/set_virtual_detections`) and *VLA-M status (live)*. User guide: [manual](../operate_manual.html), chapter *Den Roboter per Chat anweisen*.*
 
 **Topics** (`/vla/*` as `std_msgs/String` with JSON; details in the package README):
 

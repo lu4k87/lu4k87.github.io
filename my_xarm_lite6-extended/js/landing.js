@@ -1,4 +1,4 @@
-/* Landing-Verhalten der Projektseiten (docs/project_*.html), Styles in css/landing.css. Klassisches Skript am Ende von <body>:
+/* Landing-Verhalten der Projektseiten (docs/{project,present,operate,develop}_*.html), Styles in css/landing.css. Klassisches Skript am Ende von <body>:
      Hero      Claim-Zeilen steigen aus der Maske (.hero.is-in, nur mit html.sf-on aus js/scroll_flow.js),
                --hdr = Höhe der Kopfzeile .top
      Zahlen    [data-num] zählen einmal hoch, sobald sichtbar (≤ 900 ms)

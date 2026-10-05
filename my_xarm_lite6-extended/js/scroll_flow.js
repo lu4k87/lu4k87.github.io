@@ -1,4 +1,4 @@
-/* Lesefluss-Motion der Projektseiten (docs/project_*.html) – Skill motion-viz, Styles in css/scroll_flow.css.
+/* Lesefluss-Motion der Projektseiten (docs/{project,present,operate,develop}_*.html) – Skill motion-viz, Styles in css/scroll_flow.css.
    ScrollFlow.init(cfg) baut die Seite beim Scrollen in Lesereihenfolge auf; cfg nennt je Effekt die Selektoren:
      hero     Einstieg, gestaffelt beim Laden          heroFig  Bild im Kopf dreht sich zum Leser
      heroExit Kopf legt sich beim Weiterlesen zurück    heads    Abschnittsköpfe: Eyebrow → Titel kippt auf → Text, Lichtstreif

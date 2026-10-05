@@ -1,4 +1,4 @@
-/* Lesefluss-Motion der Projektseiten (docs/project_*.html) – Skill motion-viz, Logik in js/scroll_flow.js.
+/* Lesefluss-Motion der Projektseiten (docs/{project,present,operate,develop}_*.html) – Skill motion-viz, Logik in js/scroll_flow.js.
    Alles hängt an html.sf-on: Die Klasse setzt nur das Skript und nur bei erlaubter Bewegung → ohne JS und bei
    prefers-reduced-motion ist jede Seite vollständig und statisch sichtbar. Nur opacity + transform; 3D über
    perspective(); Endzustand = Layout der Seite (das Skript nimmt die Klassen danach wieder weg). */

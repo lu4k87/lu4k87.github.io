@@ -1,4 +1,4 @@
-/* xArm Lite 6 für die three.js-Szenen der Projektseiten (project_presentation.html, project_showcase.html).
+/* xArm Lite 6 für die three.js-Szenen der Projektseiten (present_presentation.html, present_control_modes.html).
    Klassisches Skript (läuft auch per file://): window.Lite6. three.js wird von der Seite übergeben
    (Import-Map auf jsDelivr, Version wie src/http_robot_control_ui_p8081/lib/three).
    Kinematik: xarm_description/config/kinematics/default/lite6_default_kinematics.yaml; Meshes: docs/js/lite6_mesh.js

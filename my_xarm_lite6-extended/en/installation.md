@@ -7,7 +7,7 @@
 **Contents:** [6. 📦 Dependencies & Requirements](#6--dependencies--requirements)
 
 > [!TIP]
-> **New workstation?** The [setup guide](../project_setup_guide.html) (DE/EN, linked from the project docs – footer button **Project docs** in the Nexus Webapp) walks through all steps as a checklist – hardware, Ubuntu, ROS 2, workspace, network, acceptance – optionally for a pre-installed PC.
+> **New workstation?** The [setup guide](../operate_setup_guide.html) (DE/EN, linked from the project docs – footer button **Project docs** in the Nexus Webapp) walks through all steps as a checklist – hardware, Ubuntu, ROS 2, workspace, network, acceptance – optionally for a pre-installed PC.
 
 ---
 
