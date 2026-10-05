@@ -316,8 +316,8 @@ function build(L, wrap, host, o) {
   // Arm arbeitet mit: Werkzeug neigt sich nach außen, je weiter der TCP vom Sockel weg ist (Gelenk 5, bis TILT rad);
   // die Leerlauf-Acht hebt und senkt den TCP dazu in eigenem Takt (Gelenke 2, 3, 5 statt nur Gelenk 1; Wunsch User 05.10.2026)
   const TILT = 0.45;
-  const pol = { th: 0, r: 0.25, vth: 0, vr: 0, gth: 0, gr: 0.25, cth: 0, w: 2.6, z: Z, vz: 0, gz: Z, yaw: 0, vyaw: 0, gyaw: 0, tilt: 0, vtilt: 0, gtilt: 0 };
-  let job = null;   // Pick & Place (dome): setzt die Ziele statt Zeiger/Acht
+  const pol = { th: 0, r: 0.25, vth: 0, vr: 0, gth: 0, gr: 0.25, cth: 0, w: 2.6, z: Z, vz: 0, gz: Z, yaw: 0, vyaw: 0, gyaw: 0, tilt: 0, vtilt: 0, gtilt: 0, soft: 1 };
+  let job = null;   // Pick & Place (dome): führt die Lage statt Zeiger/Acht
   const eight = ph => { const x = 0.25 + 0.05 * Math.sin(2 * ph), y = 0.16 * Math.sin(ph); return [Math.atan2(y, x), Math.hypot(x, y)]; };
   let ph = 0, idleRamp = 1;
   const setGoalXY = (x, y) => {
@@ -331,8 +331,10 @@ function build(L, wrap, host, o) {
     for (let i = 0; i < 128; i++) { const p = i / 128 * Math.PI * 2, [t, r] = eight(p), d = ((t - pol.th) * pol.r) ** 2 + (r - pol.r) ** 2; if (d < bd) { bd = d; best = p; } }
     return best;
   };
+  // Pick & Place (job) führt die Lage direkt über seine Bahn; danach übernehmen die Federn aus der Ruhe: Schwenkrate und
+  // Steifigkeit (Radius, Höhe, Werkzeug) steigen in ~1,2 s weich an (soft) → kein Ruck beim Übergang zu Zeiger bzw. Acht
   const followTick = dt => {
-    if (job) job.tick(dt);
+    if (job) { job.tick(dt); pol.cth = pol.th; pol.soft = 0; }
     else {
       if (!follow) {
         idleRamp = Math.min(1, idleRamp + dt / 1.6);
@@ -341,14 +343,17 @@ function build(L, wrap, host, o) {
       }
       pol.gtilt = TILT * Math.max(0, Math.min(1, (pol.gr - R0) / (R1 - R0)));
       pol.gz = follow ? Z : Z + 0.03 + 0.03 * Math.sin(3 * ph);
+      pol.soft = Math.min(1, pol.soft + dt / 1.2);
+      const k = 0.2 + 0.8 * pol.soft * pol.soft * (3 - 2 * pol.soft);
+      pol.w += ((follow ? 7 : 2.6) - pol.w) * (1 - Math.exp(-dt * 3));
+      const wl = Math.min(W_MAX, 0.5 / Math.max(R0, pol.r)) * k * dt;   // Schwenk ≤ 500 mm/s am TCP (Lite 6)
+      pol.cth += Math.max(-wl, Math.min(wl, pol.gth - pol.cth));
+      [pol.th, pol.vth] = spring(pol.th, pol.vth, pol.cth, pol.w, dt);
+      [pol.r, pol.vr] = spring(pol.r, pol.vr, pol.gr, pol.w * k, dt);
+      [pol.z, pol.vz] = spring(pol.z, pol.vz, pol.gz, 7 * k, dt);
+      [pol.yaw, pol.vyaw] = spring(pol.yaw, pol.vyaw, pol.gyaw, 5 * k, dt);   // Werkzeugdrehung (Gelenk 6), nach dem Ablegen zurück auf 0
+      [pol.tilt, pol.vtilt] = spring(pol.tilt, pol.vtilt, pol.gtilt, 5 * k, dt);   // Werkzeugneigung (Gelenk 5)
     }
-    pol.w += ((job ? 4.5 : follow ? 7 : 2.6) - pol.w) * (1 - Math.exp(-dt * 3));
-    pol.cth += Math.max(-W_MAX * dt, Math.min(W_MAX * dt, pol.gth - pol.cth));
-    [pol.th, pol.vth] = spring(pol.th, pol.vth, pol.cth, pol.w, dt);
-    [pol.r, pol.vr] = spring(pol.r, pol.vr, pol.gr, pol.w, dt);
-    [pol.z, pol.vz] = spring(pol.z, pol.vz, pol.gz, 7, dt);
-    [pol.yaw, pol.vyaw] = spring(pol.yaw, pol.vyaw, pol.gyaw, 5, dt);   // Werkzeugdrehung (Gelenk 6), nur beim Würfel-Drehen ≠ 0
-    [pol.tilt, pol.vtilt] = spring(pol.tilt, pol.vtilt, pol.gtilt, 5, dt);   // Werkzeugneigung (Gelenk 5)
     const s = L.ikDown(pol.r * Math.cos(pol.th), pol.r * Math.sin(pol.th), pol.z, pol.yaw, q, pol.tilt);
     if (s) { q = s; robot.setJoints(q); }
   };
@@ -362,14 +367,17 @@ function build(L, wrap, host, o) {
       host.addEventListener('pointerleave', () => { if (!follow) return; follow = false; ph = nearestPhase(); idleRamp = 0; });
     }
   }
-  // ── Pick & Place (dome): drei Ablagefelder, Würfel 50 mm; Feld anklicken/antippen → anfahren, senken, Sauger blitzt,
-  // heben, schräg nach oben-außen strecken (Werkzeug geneigt), im hohen Bogen zum Ziel, aufrichten, senken, lösen, heben. Würfel anklicken/antippen → greifen, anheben, per Gelenk 6 um 90° drehen, zurücksetzen.
-  // Ziele laufen über dieselben Federn (Winkel, Radius, Höhe, Werkzeugdrehung) → kein Ruck; Zwischenpunkte mit grober
-  // Toleranz (Bahn rundet ab), Kontaktpunkte genau. Danach übernimmt Zeiger bzw. Acht wie beim Verlassen der Bühne.
+  // ── Pick & Place (dome): drei Ablagefelder, Würfel 50 mm. Würfel anklicken/antippen → anfahren, senkrecht aufsetzen,
+  // Sauger an, senkrecht lösen, dabei hoch heben (300 mm) und per Gelenk 6 um 90° drehen; der Arm hält ihn schwebend
+  // und meldet „Ablageort wählen“, bis eines der drei Felder gewählt ist (auch das eigene: zurücklegen; nach 25 s von selbst).
+  // Feld direkt anklicken → greifen und ohne Halt umsetzen. Transport im hohen Bogen: erst nach vorn gestreckt, Werkzeug
+  // geneigt, über dem Ziel wieder eingezogen, senkrecht absetzen, lösen, abheben.
+  // Bahnen = Spline durch Stützpunkte mit Minimal-Ruck-Zeitprofil (Weg, Geschwindigkeit, Beschleunigung stetig; Start und
+  // Kontakt in Ruhe, Kontaktpunkte exakt); Gelenk 6 bleibt in ±178° (Würfel ist 90°-symmetrisch → Drehlage frei wählbar).
   // Klick-Hinweis: Felder leuchten unregelmäßig kurz auf (Welle läuft nach außen, Würfel-Raster hellt mit), nur in Ruhe;
-  // nach dem ersten eigenen Klick seltener (Wunsch User 05.10.2026).
+  // nach dem ersten eigenen Klick seltener; beim Halten pulsieren alle drei im Takt (Wunsch User 05./06.10.2026).
   if (scene === 'dome') {
-    const CUBE = 0.05, PR = 0.27, LIFT = 0.17, padAng = [-2.05, -0.6, 0.85], table = new THREE.Plane(new THREE.Vector3(0, 0, 1), 0);
+    const CUBE = 0.05, PR = 0.27, padAng = [-2.05, -0.6, 0.85], table = new THREE.Plane(new THREE.Vector3(0, 0, 1), 0);
     const ringMesh = (r0, r1, op) => new THREE.Mesh(new THREE.RingGeometry(r0, r1, 48), new THREE.MeshBasicMaterial({ color: ACC, transparent: true, opacity: op, side: THREE.DoubleSide, depthWrite: false }));
     const rnd = (a, b) => a + Math.random() * (b - a);
     const pads = padAng.map((a, k) => {
@@ -398,7 +406,7 @@ function build(L, wrap, host, o) {
       new THREE.Points(corners, new THREE.PointsMaterial({ map: dot, color: ACC2, size: 0.016, transparent: true, opacity: 0.9, depthWrite: false, blending: THREE.AdditiveBlending })));
     const flash = ringMesh(0.016, 0.03, 0);
     st.scene.add(cube, flash);
-    let at = 0, held = false, hover = -1, hoverCube = false, pending = null, flashT = 1, clicked = false, clk = 0;
+    let at = 0, held = false, hover = -1, hoverCube = false, pending = -1, flashT = 1, clicked = false, clk = 0, touch = false;
     const onPad = i => { cube.position.set(pads[i].g.position.x, pads[i].g.position.y, CUBE / 2); };
     onPad(at);
     // Feld-Zustand + Klick-Hinweis (b = 0…1, Höhe des Aufleuchtens)
@@ -407,10 +415,10 @@ function build(L, wrap, host, o) {
       p.glow.material.opacity = p.on ? 0.75 : 0.22 * b;
     };
     const show = () => {
-      const hi = job ? job.to : hover;
-      pads.forEach((p, i) => { p.on = i === hi && i !== at; paint(p); });
+      const hi = job && job.to >= 0 ? job.to : hover;   // im Arm ist auch das eigene Feld ein Ziel
+      pads.forEach((p, i) => { p.on = i === hi && (i !== at || held); paint(p); });
       cubeGrid.material.opacity = hoverCube && !held ? 0.75 : 0.42; cubeFill.material.opacity = hoverCube && !held ? 0.18 : 0.1;
-      host.style.cursor = hoverCube || (hover >= 0 && hover !== at) ? 'pointer' : '';
+      host.style.cursor = hoverCube || (hover >= 0 && (hover !== at || held)) ? 'pointer' : '';
       st.kick();
     };
     const pickRay = e => {
@@ -457,60 +465,147 @@ function build(L, wrap, host, o) {
     const xy = p => `x ${mm(p.x)} · y ${mm(p.y)} mm`;
     const blink = () => { flashT = 0; flash.position.set(cube.position.x, cube.position.y, cube.position.z + CUBE / 2 + 0.002); };
     const tcpQ = new THREE.Quaternion(), rel = new THREE.Quaternion(), relP = new THREE.Vector3(), tcpW = new THREE.Vector3();
-    // Ablauf als Schrittliste [Winkel, Höhe, Toleranz, Aktion, Werkzeugdrehung, Radius, Neigung]; carry = Meldung nach dem Greifen
-    const run = (to, steps, carry) => {
-      const t0 = performance.now();
-      let i = 0, wait = 0;
-      feed.reset();
-      feed.say(T('Anfahren', 'Approach'), xy(pads[at].g.position));
-      job = { to, tick: dt => {
-        const [th, z, tol, act, yaw = 0, r = PR, tilt = 0] = steps[i];
-        pol.gth = th; pol.gr = r; pol.gz = z; pol.gyaw = yaw; pol.gtilt = tilt;   // Winkelgrenze W_MAX gilt weiter (followTick)
-        if (wait > 0) { wait -= dt; if (wait <= 0) i++; }
-        else if (Math.abs(pol.th - th) * pol.r < tol && Math.abs(pol.r - r) < tol && Math.abs(pol.z - z) < tol && Math.abs(pol.tilt - tilt) < tol * 4
-          && Math.abs(pol.yaw - yaw) < 0.03 && (!act || Math.abs(pol.vz) < 0.02)) {
-          if (act === 'grip') {
-            held = true; blink(); wait = 0.22;
-            // Würfel hängt fest am Sauger: Lage + Versatz im Werkzeugrahmen merken (bleibt bei geneigtem Werkzeug dran)
-            robot.tcp.getWorldQuaternion(tcpQ); rel.copy(tcpQ).invert().multiply(cube.quaternion);
-            robot.tcp.getWorldPosition(tcpW); relP.subVectors(cube.position, tcpW).applyQuaternion(tcpQ.clone().invert());
-            feed.say(T('Greifen', 'Grip'), T('Sauger an', 'suction on'));
-            feed.say(...carry);
-          } else if (act === 'drop') {
-            held = false; at = to; onPad(at); cube.rotation.set(0, 0, cube.rotation.z); blink(); wait = 0.22;
-            feed.say(T('Ablegen', 'Place'), T('Sauger aus', 'suction off'));
-          } else i++;
+    // Lage = [Winkel Gelenk 1, Radius, Höhe TCP, Werkzeugdrehung, Neigung]; Gewichte machen daraus grob Meter (Bahnlänge)
+    const KEY = ['th', 'r', 'z', 'yaw', 'tilt'], VEL = ['vth', 'vr', 'vz', 'vyaw', 'vtilt'], W8 = [PR, 1, 1, 0.05, 0.12];   // W8[0] nur für Richtungen (Starttempo)
+    const P = (th, r, z, yaw = 0, tilt = 0) => [th, r, z, yaw, tilt];
+    const VCAP = 0.5;   // m/s, TCP-Höchstgeschwindigkeit xArm Lite 6 (Datenblatt)
+    const pose = () => KEY.map(k => pol[k]);
+    const setPose = (p, dt) => KEY.forEach((k, i) => { if (dt > 0) pol[VEL[i]] = (p[i] - pol[k]) / dt; pol[k] = p[i]; });
+    // Schwenk zählt mit dem tatsächlichen Radius (Bogenlänge am TCP)
+    const gap = (a, b) => Math.sqrt(a.reduce((s, v, i) => s + ((v - b[i]) * (i ? W8[i] : (a[1] + b[1]) / 2)) ** 2, 0));
+    const ease5 = u => u * u * u * (10 + u * (6 * u - 15));   // Minimal-Ruck: v und a an beiden Enden 0
+    // Bahn ab aktueller Lage: zentripetaler Catmull-Rom (Barry-Goldman, ohne Schleifen/Überschwinger), Dauer aus Länge und
+    // vmax (Spitze = 1,875 × Mittel). Laufende Geschwindigkeit wird übernommen: Anteil längs der Bahn als Starttempo im
+    // quintischen Zeitprofil (s' (0) = sig), Rest quer dazu klingt in ~0,3 s aus → kein Einbruch, kein Ruck beim Übergang
+    const wdot = (a, b) => a.reduce((s, v, i) => s + v * b[i] * W8[i] * W8[i], 0);
+    const bahn = (pts, vmax) => {
+      const v0 = VEL.map(k => pol[k]), Q = [pose(), ...pts], n = Q.length;
+      const E = [Q[0].map((v, i) => 2 * v - Q[1][i]), ...Q, Q[n - 1].map((v, i) => 2 * v - Q[n - 2][i])];
+      const tk = [0]; for (let i = 1; i < E.length; i++) tk.push(tk[i - 1] + Math.max(1e-3, Math.sqrt(gap(E[i - 1], E[i]))));
+      const lin = (a, b, ta, tb, u) => a.map((v, i) => v + (b[i] - v) * (u - ta) / (tb - ta));
+      const u0 = tk[1], U = tk[n] - u0;
+      const at = s => {
+        const u = u0 + U * s;
+        let k = 1; while (k < n - 1 && u > tk[k + 1]) k++;
+        const [t0, t1, t2, t3] = tk.slice(k - 1, k + 3), [p0, p1, p2, p3] = E.slice(k - 1, k + 3);
+        const a1 = lin(p0, p1, t0, t1, u), a2 = lin(p1, p2, t1, t2, u), a3 = lin(p2, p3, t2, t3, u);
+        return lin(lin(a1, a2, t0, t2, u), lin(a2, a3, t1, t3, u), t1, t2, u);
+      };
+      let len = 0, prev = Q[0];
+      for (let i = 1; i <= 48; i++) { const c = at(i / 48); len += gap(prev, c); prev = c; }
+      const tan = at(1e-3).map((v, i) => (v - Q[0][i]) / 1e-3), tt = wdot(tan, tan);
+      let D = Math.max(0.7, 1.875 * len / vmax), sig = 0, vq = v0;
+      const pos = t => {
+        const x = Math.min(1, t / D), e = ease5(x), c = at(e + sig * x * (1 - x) ** 3 * (1 + 3 * x)), f = t * Math.exp(-t / 0.3) * (1 - e);
+        return c.map((v, i) => v + vq[i] * f);
+      };
+      // Starttempo übernehmen, dann Dauer strecken, bis die Spitze ≤ VCAP bleibt (übernommenes Tempo bleibt dabei gleich)
+      for (let pass = 0; pass < 3; pass++) {
+        sig = tt > 1e-9 ? Math.max(0, Math.min(2, D * wdot(v0, tan) / tt)) : 0; vq = v0.map((v, i) => v - tan[i] * sig / D);
+        let top = 0, a = pos(0);
+        for (let i = 1; i <= 60; i++) { const b = pos(D * i / 60); top = Math.max(top, gap(a, b) * 60 / D); a = b; }
+        if (top <= VCAP) break;
+        D *= top / VCAP * 1.02;
+      }
+      return { D, at: pos };
+    };
+    // Werkzeugdrehung am Ziel: nächste 90°-Lage, bei der Gelenk 6 (= Winkel − Drehung) sicher in ±178° bleibt
+    const yawFor = (th, y) => {
+      let best = 0, bd = Infinity;
+      for (let k = -4; k <= 4; k++) { const c = Math.round(y / (Math.PI / 2)) * Math.PI / 2 + k * Math.PI / 2; if (Math.abs(th - c) < 2.7 && Math.abs(c - y) < bd) { bd = Math.abs(c - y); best = c; } }
+      return best;
+    };
+    const grip = () => {
+      held = true; blink();
+      // Würfel hängt fest am Sauger: Lage + Versatz im Werkzeugrahmen merken (bleibt bei geneigtem Werkzeug dran)
+      robot.tcp.getWorldQuaternion(tcpQ); rel.copy(tcpQ).invert().multiply(cube.quaternion);
+      robot.tcp.getWorldPosition(tcpW); relP.subVectors(cube.position, tcpW).applyQuaternion(tcpQ.clone().invert());
+    };
+    const drop = () => { held = false; at = job.to; onPad(at); cube.rotation.set(0, 0, cube.rotation.z); blink(); };
+    let busy = 0, lean = 0, vlean = 0;
+    // Ablauf = Liste: { pts, v } Bahn · { act, dwell } Greifen/Lösen mit Verweilzeit · { hold } schweben bis Ziel gewählt ·
+    // { lazy } wird erst beim Erreichen zu Schritten (Lage dann bekannt); say = Status-Popup beim Start des Schritts
+    const go = (ops, to) => {
+      let i = -1, op = null, t = 0, path = null;
+      const next = () => {
+        op = ops[++i]; t = 0; path = null;
+        if (op && op.lazy) { ops.splice(i, 1, ...op.lazy()); op = ops[i]; }
+        if (!op) return finish();
+        if (op.say) feed.say(...op.say);
+        if (op.pts) path = bahn(op.pts, op.v);
+        if (op.act) op.act();
+        if (op.hold && job.to < 0) {
+          job.hold = true; lean = vlean = 0;
+          feed.say(T('Ablageort wählen', 'Choose a drop spot'), touch ? T('einen der 3 Kreise antippen', 'tap one of the 3 circles') : T('einen der 3 Kreise anklicken', 'click one of the 3 circles'));
+          pads.forEach((p, k) => { p.next = clk + 0.3 + k * 0.25; });
+          show();
         }
-        if (i < steps.length) return;
-        job = null; pol.gz = Z; pol.gyaw = 0;
-        const sec = ((performance.now() - t0) / 1000).toFixed(1);
+      };
+      job = { to, hold: false, tick: dt => {
+        t += dt; if (!job.hold) busy += dt;
+        if (op.hold && job.to < 0 && t > 25) { job.to = at; show(); }   // niemand wählt → zurücklegen
+        if (op.hold && job.to >= 0) { job.hold = false; ops.push(...place(job.to, false)); next(); t = dt; }   // gleich im selben Frame los
+        if (path) { setPose(path.at(t), dt); if (t >= path.D) next(); return; }
+        if (op.hold) {
+          // Schweben: leichtes Wiegen + Würfel pendelt um die Hochachse; Arm neigt sich zum Feld unter dem Zeiger
+          const H = op.hold, e = Math.min(1, t / 1.5), env = e * e * (3 - 2 * e);
+          const g = hover >= 0 ? Math.max(-0.3, Math.min(0.3, 0.2 * (padAng[hover] - H[0]))) : 0;
+          [lean, vlean] = spring(lean, vlean, g, 3, dt);
+          setPose(P(H[0] + lean + env * 0.05 * Math.sin(0.9 * t), H[1] + env * 0.012 * Math.sin(0.7 * t + 1),
+            H[2] + env * 0.01 * Math.sin(1.3 * t), H[3] + env * 0.2 * Math.sin(0.6 * t)), dt);
+          return;
+        }
+        setPose(pose(), dt);
+        if (t >= (op.dwell || 0)) next();
+      } };
+      const finish = () => {
+        job = null; pol.gyaw = 0;
+        const sec = busy.toFixed(1);
         feed.say(T('Fertig', 'Done'), `${T(sec.replace('.', ','), sec)} s`, true);
         if (follow) setGoalXY(ptr.x, ptr.y); else { ph = nearestPhase(); idleRamp = 0; }
         show();
-        if (pending) { const n = pending; pending = null; n(); }
-      } };
-      show();
+        if (pending >= 0) { const n = pending; pending = -1; start(n); }
+      };
+      next(); show();
     };
-    // Feld: Würfel umsetzen
-    const start = to => {
-      if (to === at) return;
-      if (reduce) { at = to; onPad(at); show(); feed.reset(); feed.say(T('Abgelegt', 'Placed'), xy(cube.position), true); return; }
-      if (job) { pending = () => start(to); return; }
-      // Bogen: anheben, schräg nach oben-außen gestreckt (Radius 400 mm, Höhe 310 mm, Werkzeug 49° geneigt), hoch
-      // hinüberschwenken, über dem Ziel aufrichten; Zwischenpunkte grob → Federn runden die Bahn ab
-      const A = padAng[at], B = padAng[to], via = k => A + (B - A) * k;
-      run(to, [[A, Z, 0.02], [A, CUBE, 0.002, 'grip'], [A, 0.13, 0.03],
-        [via(0.3), 0.31, 0.05, null, 0, 0.4, 0.85], [via(0.75), 0.26, 0.05, null, 0, 0.36, 0.55],
-        [B, 0.13, 0.02], [B, CUBE, 0.002, 'drop'], [B, Z, 0.012]],
-        [T('Transport', 'Transfer'), `${T('Schwenk', 'swing')} ${Math.round(Math.abs(B - A) * 180 / Math.PI)}°`]);
+    // Ablegen auf Feld B, ab Halteposition oder (low) direkt vom Greifen: senkrecht lösen, Bogen nach vorn gestreckt,
+    // über dem Ziel eingezogen, senkrecht absetzen; danach senkrecht abheben, Werkzeug dreht zurück
+    const place = (to, low) => {
+      const A = padAng[at], B = padAng[to], y0 = pol.yaw, yB = yawFor(B, y0), m = k => A + (B - A) * k, y = k => y0 + (yB - y0) * k;
+      const pts = low ? [P(A, PR, CUBE + 0.035, y0)] : [];
+      if (to === at) pts.push(P(A, 0.25, 0.19, yB));
+      else pts.push(P(m(0.2), 0.3, 0.31, y(0.2), 0.35), P(m(0.55), 0.37, 0.29, y(0.55), 0.7), P(m(0.85), 0.29, 0.2, y(0.85), 0.25));
+      pts.push(P(B, PR, 0.11, yB), P(B, PR, 0.08, yB), P(B, PR, CUBE, yB));
+      const deg = Math.round(Math.abs(B - A) * 180 / Math.PI);
+      return [
+        { pts, v: 0.38, say: to === at ? [T('Zurücklegen', 'Put back'), xy(pads[to].g.position)] : [T('Transport', 'Transfer'), `${T('Schwenk', 'swing')} ${deg}°`] },
+        { act: drop, dwell: 0.25, say: [T('Ablegen', 'Place'), T('Sauger aus', 'suction off')] },
+        { pts: [P(B, PR, CUBE + 0.03, yB), P(B, 0.25, 0.14)], v: 0.22 },
+      ];
     };
-    // Würfel: anheben, um 90° drehen, zurücksetzen; Drehsinn so, dass Gelenk 6 (q1 − Drehung) in ±178° bleibt
-    const turn = () => {
+    // Greifen am eigenen Feld: anfahren, die letzten 30 mm senkrecht absetzen, Sauger an; Ziel schon bekannt → direkt
+    // ablegen, sonst drehend hoch heben und warten. Drehsinn so, dass Gelenk 6 in ±178° bleibt.
+    const pick = to => {
       const A = padAng[at], d = A > 0 ? Math.PI / 2 : -Math.PI / 2;
-      if (reduce) { cube.rotation.z += d; show(); feed.reset(); feed.say(T('Gedreht', 'Rotated'), '90°', true); return; }
-      if (job) { pending = turn; return; }
-      run(at, [[A, Z, 0.02], [A, CUBE, 0.002, 'grip'], [A, LIFT, 0.02], [A, LIFT, 0.01, null, d], [A, CUBE, 0.002, 'drop', d], [A, Z, 0.012, null, d]],
-        [T('Drehen', 'Rotate'), `${T('Gelenk', 'joint')} 6 · ${d > 0 ? '+' : '−'}90°`]);
+      feed.reset(); busy = 0;
+      go([
+        { pts: [P(A, PR, 0.11), P(A, PR, 0.08), P(A, PR, CUBE)], v: 0.36, say: [T('Anfahren', 'Approach'), xy(pads[at].g.position)] },
+        { act: grip, dwell: 0.25, say: [T('Greifen', 'Grip'), T('Sauger an', 'suction on')] },
+        { lazy: () => job.to >= 0 ? place(job.to, true) : [
+          { pts: [P(A, PR, CUBE + 0.035), P(A, 0.25, 0.18, d * 0.45), P(A, 0.23, 0.3, d)], v: 0.25,
+            say: [T('Anheben + drehen', 'Lift + rotate'), `z 300 mm · ${T('Gelenk', 'joint')} 6 ${d > 0 ? '+' : '−'}90°`] },
+          { hold: P(A, 0.23, 0.3, d) }] },
+      ], to);
+    };
+    // Feld gewählt: im Arm → dort ablegen; Würfel liegt → greifen und umsetzen; Arm beschäftigt → danach
+    const start = to => {
+      if (reduce) { if (to !== at) { at = to; onPad(at); show(); feed.reset(); feed.say(T('Abgelegt', 'Placed'), xy(cube.position), true); } return; }
+      if (job) { if (job.to < 0) { job.to = to; show(); } else if (to !== job.to) pending = to; return; }
+      if (to !== at) pick(to);
+    };
+    const grab = () => {
+      if (reduce) { feed.reset(); feed.say(T('Ablageort wählen', 'Choose a drop spot'), T('Kreis wählen', 'pick a circle'), true); return; }
+      if (!job) pick(-1);
     };
     let down = null;
     host.addEventListener('pointermove', e => {
@@ -524,7 +619,8 @@ function build(L, wrap, host, o) {
     host.addEventListener('pointerup', e => {
       if (!down || Math.hypot(e.clientX - down.x, e.clientY - down.y) > 6 || performance.now() - down.t > 600) return;
       const tol = e.pointerType === 'mouse' ? 0.07 : 0.09;
-      if (cubeAt(e, tol)) { clicked = true; turn(); return; }
+      touch = e.pointerType !== 'mouse';
+      if (cubeAt(e, tol)) { clicked = true; grab(); return; }
       const i = padAt(e, tol); if (i >= 0) { clicked = true; start(i); }
     });
     const ex = extra;
@@ -541,7 +637,8 @@ function build(L, wrap, host, o) {
       let cubeB = 0;
       pads.forEach((p, i) => {
         if (clk >= p.next) {
-          if (job || held || hover >= 0 || hoverCube || p.on) p.next = clk + rnd(1, 3);
+          if (job && job.hold) { p.t0 = clk; p.next = clk + 1.8; }   // Ablageort gesucht: alle im Takt
+          else if (job || held || hover >= 0 || hoverCube || p.on) p.next = clk + rnd(1, 3);
           else { p.t0 = clk; p.next = clk + rnd(4, 9) * (clicked ? 2.5 : 1); }
         }
         const u = (clk - p.t0) / 1.6;
