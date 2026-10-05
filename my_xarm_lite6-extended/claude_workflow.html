@@ -8,7 +8,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Claude Workflow · Interakt Control Robot</title>
+<title>Arbeitsweise mit Claude Code · Interakt Control Robot</title>
 <link rel="stylesheet" href="fonts/fonts.css">
 <style>
 :root {
@@ -538,7 +538,7 @@ footer a { font-weight: 700; color: var(--fg); }
 
 <header class="top">
   <div class="wrap">
-    <a class="brand" href="project_docs.html"><span class="brand-mark"><svg class="ico"><use href="#i-loop"/></svg></span><span><span data-en="Claude Workflow">Claude Workflow</span><small>Interakt Control Robot · dev_ws</small></span></a>
+    <a class="brand" href="#"><span class="brand-mark"><svg class="ico"><use href="#i-loop"/></svg></span><span>Interakt Control Robot<small data-en="Working with Claude Code">Arbeitsweise mit Claude Code</small></span></a>
     <nav aria-label="Abschnitte" data-en-aria="Sections">
       <a href="#arbeitsplatz" data-en="Workplace">Arbeitsplatz</a><a href="#einrichtung" data-en="Setup">Einrichtung</a><a href="#kreislauf" data-en="Cycle">Kreislauf</a><a href="#datenfluss" data-en="Data flow">Datenfluss</a><a href="#werkzeug" data-en="Toolkit">Werkzeugkasten</a><a href="#leitplanken" data-en="Guardrails">Leitplanken</a>
       <a href="#zusammenarbeit" data-en="Collaboration">Zusammenarbeit</a><a href="#sicherheit" data-en="Safety">Sicherheit</a><a href="#git" data-en="Git &amp;amp; docs">Git &amp; Doku</a><a href="#gedaechtnis" data-en="Memory">Gedächtnis</a>
@@ -1727,7 +1727,7 @@ function initTheme() {
 function initLang() {
   const keep = (el, key, val) => { if (el.dataset[key] === undefined) el.dataset[key] = val; return el.dataset[key]; };
   const swap = (sel, key, get, set) => document.querySelectorAll(sel).forEach(el => { const de = keep(el, key, get(el)); set(el, lang === 'en' ? el.dataset[key.replace(/^de/, 'en')] : de); });
-  const title = [document.title, 'How we work · Interakt Control Robot'];
+  const title = [document.title, 'Working with Claude Code · Interakt Control Robot'];
   const setLang = l => {
     lang = l; root.lang = l;
     swap('[data-en]', 'de', el => el.innerHTML, (el, v) => { el.innerHTML = v; });

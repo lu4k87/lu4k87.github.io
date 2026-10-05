@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>xArm Lite 6 Handbuch</title>
+<title>Handbuch xArm Lite 6 · Interakt Control Robot</title>
 <meta name="color-scheme" content="light dark">
 <script>
 /* Farbschema vor dem ersten Malen setzen: ?theme= (Nexus Webapp) > gespeicherte Wahl > System */
@@ -309,7 +309,7 @@
   @media (max-width: 700px) {
     .page { padding: 24px 16px 72px; gap: 24px; }
     .topbar-row { padding: 8px 16px; gap: 8px; }
-    .crumb-area span, .crumb-sep, .crumb-pos { display: none; }
+    .crumb-area span, .crumb-sep, .crumb-pos, .doc-path-area { display: none; }
     .hero-main { padding: 20px; }
     .panel-num { width: 42px; height: 42px; font-size: 16px; border-radius: var(--radius); }
   }
@@ -1199,7 +1199,7 @@
 
   <nav class="side-nav" aria-label="Inhalt">
     <div class="nav-group" style="--ak:var(--c-ws)">
-      <button type="button" class="nav-area" data-area-btn="sys" data-first="karte" data-title="Architektur · xArm Lite 6 Handbuch" aria-expanded="true" aria-controls="nl-sys" aria-current="true">
+      <button type="button" class="nav-area" data-area-btn="sys" data-first="karte" data-title="Architektur · Handbuch xArm Lite 6" aria-expanded="true" aria-controls="nl-sys" aria-current="true">
         <span class="ai"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="9" y="2" width="6" height="5" rx="1"/><rect x="2" y="17" width="6" height="5" rx="1"/><rect x="16" y="17" width="6" height="5" rx="1"/><path d="M12 7v5M5 17v-3h14v3"/></svg></span>
         <b>System Map</b><small>Architektur, Sicherheit, Ports</small>
         <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg>
@@ -1213,7 +1213,7 @@
       </ul>
     </div>
     <div class="nav-group" style="--ak:var(--c-https)">
-      <button type="button" class="nav-area" data-area-btn="remote" data-first="kombi" data-title="Remote-Steuerung · xArm Lite 6 Handbuch" aria-expanded="false" aria-controls="nl-remote">
+      <button type="button" class="nav-area" data-area-btn="remote" data-first="kombi" data-title="Remote-Steuerung · Handbuch xArm Lite 6" aria-expanded="false" aria-controls="nl-remote">
         <span class="ai"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="2" y="4" width="13" height="10" rx="1.5"/><path d="M5 18h7"/><rect x="17" y="8" width="5" height="12" rx="1"/></svg></span>
         <b>Remote Guide</b><small>Server/Client einrichten, starten</small>
         <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg>
@@ -1229,7 +1229,7 @@
       </ul>
     </div>
     <div class="nav-group" style="--ak:var(--c-vla)">
-      <button type="button" class="nav-area" data-area-btn="vla" data-first="vla-ueberblick" data-title="VLA-M · xArm Lite 6 Handbuch" aria-expanded="false" aria-controls="nl-vla">
+      <button type="button" class="nav-area" data-area-btn="vla" data-first="vla-ueberblick" data-title="VLA-M · Handbuch xArm Lite 6" aria-expanded="false" aria-controls="nl-vla">
         <span class="ai"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><path d="M8 9h8M8 13h5"/></svg></span>
         <b>VLA-M</b><small>Roboter per Chat anweisen</small>
         <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg>
@@ -1277,7 +1277,7 @@
   <header class="topbar" id="topbar">
     <div class="topbar-row">
       <button type="button" class="icon-btn menu-btn" id="menu-btn" aria-label="Navigation öffnen" aria-controls="side" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
-      <a class="doc-path-back" href="project_docs.html#bedienen">← Projekt-Doku</a><span class="crumb-sep" aria-hidden="true">›</span>
+      <a class="doc-path-back" href="project_docs.html">← Projekt-Doku</a><span class="crumb-sep" aria-hidden="true">›</span><a class="doc-path-back doc-path-area" href="project_docs.html#bedienen">Einrichten &amp; Bedienen</a><span class="crumb-sep" aria-hidden="true">›</span>
       <div class="crumb" aria-live="polite">
         <span class="crumb-area" id="crumb-area"></span>
         <span class="crumb-sep" aria-hidden="true">›</span>
