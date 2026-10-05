@@ -152,7 +152,7 @@ a.kpi:hover { background: var(--surface-2); }
 .au-links { display: grid; gap: 2px; margin-top: 3px; }
 .au-links a { display: inline-flex; align-items: center; gap: 6px; color: var(--fg); }
 .au-links a:hover { color: var(--accent); }
-.au-links .ico { width: 15px; height: 15px; color: var(--accent); }
+.au-links .ico { width: 16px; height: 16px; color: var(--accent); }
 .au-qr .qr-code { --qr: 81px; padding: 10px; border-radius: var(--radius-sm); display: block; }  /* 81 = 27 Module × 3 px (scharf); Kasten 103 px ≈ Textblock mit 4 Zeilen */
 @media (max-width: 700px) { .au-qr { display: none; } }
 @media (max-width: 560px) { .facts { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
@@ -265,7 +265,7 @@ html.sf-on .at-ring:not(.in) .seg { stroke-dasharray: 0 83; }
   grid-template-columns: repeat(3, minmax(0, 1fr) 52px) minmax(0, 1fr); gap: 0; }
 #verstehen .path li:not(:last-child) { grid-column: span 2; display: grid; grid-template-columns: minmax(0, 1fr) 52px; }
 #verstehen .path li:not(:last-child)::after { content: ""; place-self: center; width: 30px; height: 30px; background: var(--fg-2); -webkit-mask: var(--arw) center / contain no-repeat; mask: var(--arw) center / contain no-repeat; }
-#verstehen .path a { gap: 8px; padding: 18px 20px; }
+#verstehen .path a { gap: 8px; padding: 18px 20px; justify-items: center; text-align: center; }  /* kleine Kacheln zentriert (AGENTS.md §3) */
 #verstehen .path li::after { transition: background-color .5s var(--ease-out); }
 #verstehen .path li:has(> a.sf-lit)::after { background: var(--hue, var(--accent)); }
 #verstehen .path .pn > span { padding: 5px 8px; border-radius: var(--radius-sm); background: color-mix(in srgb, var(--hue) 12%, transparent); }
@@ -300,9 +300,9 @@ html.sf-on .at-ring:not(.in) .seg { stroke-dasharray: 0 83; }
 a.item:hover { border-color: color-mix(in srgb, var(--hue, var(--accent)) 60%, var(--line-strong)); transform: translateY(-3px); }
 .thumb { display: block; aspect-ratio: 16 / 10; overflow: hidden; border-bottom: 1px solid var(--line); background: var(--surface-2); }
 .thumb img { width: 100%; height: 100%; object-fit: cover; object-position: top; display: block; transition: transform var(--t-slow) var(--ease-out); }
-a.item:hover .thumb img { transform: scale(1.04); }
+a.item:hover .thumb img { transform: scale(1.03); }
 .thumb.empty { display: grid; place-items: center; }  /* Platzhalter ohne Bild (Inhalt folgt) */
-.thumb.empty .ico { width: 44px; height: 44px; color: var(--hue, var(--accent)); }
+.thumb.empty .ico { width: 34px; height: 34px; color: var(--hue, var(--accent)); }
 .soon .end { min-height: 54px; }  /* ohne Pfeil gleiche Fußhöhe wie die Nachbarkarten */
 .txt { display: grid; align-content: start; gap: 5px; min-width: 0; padding: 14px 16px 0; }
 .txt b { font-size: 17px; font-weight: 800; display: flex; align-items: center; gap: 8px; line-height: 1.25; }
