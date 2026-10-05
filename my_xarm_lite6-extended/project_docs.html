@@ -466,6 +466,119 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
   html { scroll-behavior: auto; }
   *:not(.progress), *::before, *::after { transition-duration: 0ms !important; transition-delay: 0ms !important; animation-duration: 0ms !important; animation-iteration-count: 1 !important; }
 }
+/* ═════ Teilhabe: Orbit der Steuerwege (High-Level violett, Low-Level Türkis), Sicherheitskette gold, Vision grün, Evaluierung orange
+   (Bereichsfarben wie Funktionsatlas). Ein Haupteffekt: gewählter Steuerweg → Eingabe zeichnet sich durch die Kette zum Arm (Skill motion-viz §4) ═════ */
+.tm-grid { display: grid; grid-template-columns: minmax(0, 1.12fr) minmax(320px, .88fr); gap: 40px 56px; align-items: center; }
+.tm-fig { margin: 0; display: grid; justify-items: center; gap: 12px; min-width: 0; }
+.tm-svg { width: min(100%, 640px); height: auto; overflow: visible; font-family: var(--font); }
+.tm-svg use { fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.tm-hint { display: flex; align-items: center; gap: 8px; font: 600 12px/1.35 var(--mono); color: var(--fg-2); text-align: center; }
+.tm-hint .ico { width: 16px; height: 16px; color: var(--accent); }
+/* Umlaufbahn: Hälfte je Ebene */
+.tm-orb { fill: none; stroke: color-mix(in srgb, var(--hue) 40%, var(--line)); stroke-width: 1; stroke-dasharray: 2 6; }
+.tm-k { font: 700 13px/1 var(--mono); letter-spacing: .12em; fill: var(--hue); }
+/* Speichen, Routen, Sicherheitsring, Mensch */
+.tm-spoke { stroke: var(--line-strong); stroke-width: 1; }
+.tm-route { fill: none; stroke: var(--hue); stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; opacity: 0; }
+.tm-ring { fill: color-mix(in srgb, var(--gold) 5%, transparent); stroke: color-mix(in srgb, var(--gold) 55%, transparent); stroke-width: 1.5; stroke-dasharray: 3 5; }
+.tm-ring-t { font: 700 12.5px/1 var(--mono); letter-spacing: .06em; fill: var(--gold); }
+.tm-core { fill: color-mix(in srgb, var(--accent) 14%, var(--surface)); stroke: color-mix(in srgb, var(--accent) 55%, var(--line)); stroke-width: 1.5; }
+.tm-core-ico { color: var(--accent); }
+.tm-core-t { font: 700 13px/1 var(--mono); letter-spacing: .16em; fill: var(--fg); }
+.tm-stem { stroke: color-mix(in srgb, var(--gold) 55%, transparent); stroke-width: 1.5; }
+.tm-st rect { fill: var(--surface); stroke: var(--gold); stroke-width: 1.5; transition: fill var(--t-base); }
+.tm-st text { font: 700 13px/1 var(--mono); letter-spacing: .06em; fill: var(--fg-2); transition: fill var(--t-base); }
+.tm-st.hit rect { fill: var(--gold); }
+.tm-st.hit text { fill: var(--fg); }
+/* Steuerwege: Kreis mit Icon, Titel, Gerät */
+.tm-node { cursor: pointer; color: var(--hue); }
+.tm-node .tm-dot, .tm-vis .tm-dot { fill: color-mix(in srgb, var(--hue) 13%, var(--surface)); stroke: color-mix(in srgb, var(--hue) 55%, var(--line)); stroke-width: 1.5; transition: fill var(--t-fast), stroke var(--t-fast); }
+.tm-vis { color: var(--hue); }
+.tm-halo { fill: none; stroke: var(--hue); stroke-width: 1; opacity: 0; transition: opacity var(--t-base) var(--ease-out); }
+.tm-t { font-size: 17px; font-weight: 800; letter-spacing: -.01em; fill: var(--fg); }
+.tm-d { font: 600 12.5px/1 var(--mono); letter-spacing: .06em; fill: var(--fg-2); }
+.tm-node:hover .tm-dot { fill: color-mix(in srgb, var(--hue) 22%, var(--surface)); stroke: var(--hue); }
+.tm-node.on .tm-dot { fill: var(--hue); stroke: var(--hue); }
+.tm-node.on use { color: var(--surface); }
+.tm-node.on .tm-halo { opacity: .5; }
+/* Shared Control, Arm, Vision */
+.tm-shared rect { fill: var(--surface); stroke: var(--line-strong); stroke-width: 1; transition: stroke var(--t-base); }
+.tm-shared text { font: 700 12.5px/1 var(--mono); letter-spacing: .1em; fill: var(--fg); }
+.tm-arm { --arm: color-mix(in srgb, var(--fg) 8%, var(--surface)); }
+.tm-arm-b, .tm-arm-p, .tm-arm-j, .tm-arm-c { fill: var(--arm); stroke: var(--line-strong); stroke-width: 1.5; }
+.tm-arm-l { fill: none; stroke: var(--line-strong); stroke-width: 22; stroke-linecap: round; }
+.tm-arm-l.s { stroke-width: 16; }
+.tm-arm-l.t { stroke-width: 8; }
+.tm-arm-j { stroke: color-mix(in srgb, var(--blue) 60%, var(--line-strong)); transition: stroke var(--t-base); }
+.tm-obj { fill: color-mix(in srgb, var(--fg) 14%, var(--surface)); stroke: var(--line-strong); stroke-width: 1; }
+.tm-bbox { fill: none; stroke: var(--hue); stroke-width: 2; }
+.tm-vline { stroke: var(--hue); stroke-width: 1.5; stroke-dasharray: 4 5; }
+.tm-pk { fill: var(--hue, var(--accent)); opacity: 0; }
+.tm-done .tm-shared rect { stroke: var(--accent); }
+.tm-done .tm-arm-j { stroke: var(--blue); }
+/* Auswahl: zwei Ebenen mit je drei Knöpfen */
+.tm-side { display: grid; gap: 16px; min-width: 0; }
+.tm-levels { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 4fr); gap: 10px; }  /* 2 + 4 Knöpfe, gleich breit */
+.tm-lv { display: grid; grid-template-columns: repeat(var(--n), minmax(0, 1fr)); gap: 6px; align-content: start; }
+.tm-lv-k { grid-column: 1 / -1; display: grid; gap: 4px; font: 700 12px/1.2 var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--hue); }
+.tm-lv-k b { font: 600 14px/1.3 var(--font); letter-spacing: 0; text-transform: none; color: var(--fg-2); }
+.tm-lv-k em { font-style: normal; font-weight: 800; color: var(--fg); }
+.tm-lv button { display: grid; justify-items: center; gap: 6px; min-height: 64px; padding: 10px 4px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface);
+  font-size: 13px; font-weight: 700; line-height: 1.2; cursor: pointer; transition: border-color var(--t-fast), background-color var(--t-fast), transform var(--t-fast) var(--ease-out); }
+.tm-lv button .ico { color: var(--hue); }
+.tm-lv button:hover { border-color: color-mix(in srgb, var(--hue) 50%, var(--line)); }
+.tm-lv button:active { transform: scale(.97); }
+.tm-lv button[aria-pressed="true"] { border-color: var(--hue); background: color-mix(in srgb, var(--hue) 12%, var(--surface)); }
+/* Karte des gewählten Steuerwegs; ohne JS stehen alle sechs untereinander */
+.tm-cards { display: grid; gap: 10px; }
+.tm-on .tm-cards { grid-template-areas: "c"; }
+.tm-on .tm-card { grid-area: c; }
+.tm-on .tm-card:not(.on) { visibility: hidden; opacity: 0; transform: translateY(6px); transition: opacity calc(var(--t-slow) * .7) var(--ease-out), transform calc(var(--t-slow) * .7) var(--ease-out), visibility 0s calc(var(--t-slow) * .7); }
+.tm-on .tm-card.on { transition: opacity var(--t-slow) var(--ease-out), transform var(--t-slow) var(--ease-out); }
+.tm-card { display: grid; gap: 10px; align-content: start; padding: 18px; border: 1px solid color-mix(in srgb, var(--hue) 40%, var(--line)); border-radius: var(--radius-lg); background: var(--surface); box-shadow: var(--shadow); }
+.tm-card-k { font: 700 12px/1.3 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--hue); }
+.tm-card h3 { display: flex; align-items: center; gap: 10px; font-size: 20px; font-weight: 800; letter-spacing: -.01em; line-height: 1.2; }
+.tm-card h3 .ico { color: var(--hue); }
+.tm-card h3 small { font-size: 15px; font-weight: 600; color: var(--fg-2); }
+.tm-card p { font-size: 15px; line-height: 1.5; color: var(--fg-2); }
+.tm-card ul { margin: 0; padding-left: 18px; display: grid; gap: 4px; font-size: 14px; line-height: 1.45; color: var(--fg-2); }
+.tm-card li b { color: var(--fg); }
+.tm-card .more { color: var(--hue); }
+/* Kette: Stationen leuchten nacheinander, sobald die Eingabe sie passiert */
+.tm-chain { display: grid; gap: 10px; padding: 14px 16px; border: 1px dashed color-mix(in srgb, var(--hue) 50%, var(--line-strong)); border-radius: var(--radius); }
+.tm-chain-k { display: flex; align-items: center; gap: 8px; font: 700 12px/1.2 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--hue); }
+.tm-chain-k .ico, .tm-chain p .ico { width: 16px; height: 16px; }
+.tm-chain ol { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; counter-reset: st; }
+.tm-chain li { counter-increment: st; display: grid; gap: 3px; padding: 8px 10px; border: 1px solid var(--line); border-radius: var(--radius-sm); background: var(--surface); transition: border-color var(--t-base), background-color var(--t-base); }
+.tm-chain li b { font-size: 13px; font-weight: 800; line-height: 1.2; }
+.tm-chain li b::before { content: counter(st) " "; font-family: var(--mono); color: var(--hue); }
+.tm-chain li small { font-size: 12px; line-height: 1.3; color: var(--fg-2); }
+.tm-chain li.hit { border-color: var(--hue); background: color-mix(in srgb, var(--hue) 10%, var(--surface)); }
+.tm-chain p { display: flex; align-items: flex-start; gap: 8px; font-size: 13.5px; line-height: 1.4; color: var(--fg-2); }
+.tm-chain p .ico { color: var(--red); margin-top: 1px; }
+.tm-chain p b { color: var(--fg); }
+/* Evaluationssystem: eine Leiste unter der Grafik */
+.tm-eval { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 16px 24px; margin-top: 48px; padding: 18px 24px; border: 1px solid var(--line); border-radius: var(--radius-lg); background: var(--surface); box-shadow: var(--shadow); }
+.tm-eval .bi-l { color: var(--hue); background: radial-gradient(circle at 30% 20%, color-mix(in srgb, var(--hue) 28%, transparent), color-mix(in srgb, var(--hue) 7%, transparent) 72%); border-color: color-mix(in srgb, var(--hue) 40%, transparent); }
+.tm-eval-t { display: grid; gap: 4px; min-width: 0; }
+.tm-eval-t b { font-size: 19px; font-weight: 800; line-height: 1.25; }
+.tm-eval-t p { font-size: 14px; line-height: 1.45; color: var(--fg-2); }
+.tm-eval .chips { list-style: none; margin: 0; padding: 0; grid-column: 2 / -1; }
+.tm-eval .more { grid-column: 3; grid-row: 1; color: var(--hue); }
+@media (max-width: 960px) {
+  .tm-grid { grid-template-columns: minmax(0, 1fr); }
+  .tm-svg { width: min(100%, 600px); }
+}
+@media (max-width: 560px) {
+  .tm-levels { grid-template-columns: minmax(0, 1fr); }
+  .tm-chain ol { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .tm-svg :is(.tm-t, .tm-d, .tm-k, .tm-st text, .tm-ring-t) { display: none; }  /* zu klein; Namen stehen in den Knöpfen und der Kette */
+  .tm-eval { grid-template-columns: minmax(0, 1fr); padding: 16px; }
+  .tm-eval .bi-l { display: none; }
+  .tm-eval :is(.chips, .more) { grid-column: auto; grid-row: auto; }
+}
+@media (prefers-reduced-motion: reduce) { .tm-on .tm-card, .tm-on .tm-card:not(.on) { transition: none; } }
+.tm-pk { transition: opacity var(--t-base) var(--ease-out); }
 </style>
 <link rel="stylesheet" href="css/scroll_flow.css">
 <script type="importmap">{ "imports": {
@@ -541,6 +654,7 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
       <a href="#bedienen" data-en="Operate">Bedienen</a>
       <span class="sep" aria-hidden="true"></span>
       <a href="#webapps">WebApps – User Interfaces</a>
+      <a href="#teilhabe" data-en="Participation">Teilhabe</a>
     </nav>
     <div class="tools">
       <div class="seg" role="group" aria-label="Sprache / Language">
@@ -938,6 +1052,161 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
   </section>
 
 
+  <!-- ═════════ Teilhabe (nach Web-Apps, vor Kontakt): Orbit der Steuerwege um den Menschen, eine Sicherheitskette zum Arm, Evaluationssystem ═════════ -->
+  <section class="land" id="teilhabe" aria-labelledby="tm-h">
+    <div class="wrap">
+      <header class="land-head">
+        <span class="eyebrow" style="--hue: var(--violet)" data-en="Human at the centre">Mensch im Mittelpunkt</span>
+        <h2 id="tm-h" data-en="Assistive robotics for real participation.">Assistive Robotik für echte Teilhabe.</h2>
+        <p data-en="Six of the ten control modes, one safety chain, every test run measured: from voice to gamepad.">Sechs der zehn Steuerwege, eine Sicherheitskette, jeder Testlauf gemessen: von der Sprache bis zum Gamepad.</p>
+      </header>
+      <div class="tm-grid" id="tm">
+        <figure class="tm-fig">
+          <svg class="tm-svg" viewBox="0 88 720 656" role="img" aria-labelledby="tm-svg-t">
+          <title id="tm-svg-t" data-en="Six control modes around the human; every input runs through the same safety chain to the xArm Lite 6">Sechs Steuerwege um den Menschen; jede Eingabe läuft durch dieselbe Sicherheitskette zum xArm Lite 6</title>
+          <path class="tm-orb" style="--hue: var(--violet)" d="M360 472 A172 172 0 0 1 211 214"/>
+          <path class="tm-orb" style="--hue: var(--accent)" d="M211 214 A172 172 0 1 1 360 472"/>
+          <line class="tm-spoke" data-m="blick" style="--hue: var(--accent)" x1="302" y1="199.5" x2="290" y2="178.8"/>
+          <line class="tm-spoke" data-m="sprache" style="--hue: var(--violet)" x1="244" y1="300" x2="220" y2="300"/>
+          <line class="tm-spoke" data-m="vla" style="--hue: var(--violet)" x1="285.4" y1="388.9" x2="270" y2="407.2"/>
+          <line class="tm-spoke" data-m="gamepad" style="--hue: var(--accent)" x1="418" y1="199.5" x2="430" y2="178.8"/>
+          <line class="tm-spoke" data-m="vr" style="--hue: var(--accent)" x1="476" y1="300" x2="500" y2="300"/>
+          <line class="tm-spoke" data-m="ui" style="--hue: var(--accent)" x1="434.6" y1="388.9" x2="450" y2="407.2"/>
+          <path class="tm-route" data-m="blick" style="--hue: var(--accent)" d="M289 177 L304 203 A112 112 0 0 0 360 412 L360 562"/>
+          <path class="tm-route" data-m="sprache" style="--hue: var(--violet)" d="M218 300 L248 300 A112 112 0 0 0 360 412 L360 562"/>
+          <path class="tm-route" data-m="vla" style="--hue: var(--violet)" d="M268.7 408.8 L288 385.8 A112 112 0 0 0 360 412 L360 562"/>
+          <path class="tm-route" data-m="gamepad" style="--hue: var(--accent)" d="M431 177 L416 203 A112 112 0 0 1 360 412 L360 562"/>
+          <path class="tm-route" data-m="vr" style="--hue: var(--accent)" d="M502 300 L472 300 A112 112 0 0 1 360 412 L360 562"/>
+          <path class="tm-route" data-m="ui" style="--hue: var(--accent)" d="M451.3 408.8 L432 385.8 A112 112 0 0 1 360 412 L360 562"/>
+          <circle class="tm-ring" cx="360" cy="300" r="112"/>
+          <path id="tm-txt-up" fill="none" d="M268 300 A92 92 0 0 1 452 300"/>
+          <path id="tm-txt-dn" fill="none" d="M256 300 A104 104 0 0 0 464 300"/>
+          <text class="tm-ring-t" aria-hidden="true"><textPath href="#tm-txt-up" startOffset="50%" text-anchor="middle" data-en="CONTROL LOCK · PRE-CHECK · MOVEIT">CONTROL-LOCK · VORPRÜFUNG · MOVEIT</textPath></text>
+          <text class="tm-ring-t" aria-hidden="true"><textPath href="#tm-txt-dn" startOffset="50%" text-anchor="middle" data-en="E-STOP ALWAYS WORKS">E-STOP WIRKT IMMER</textPath></text>
+          <circle class="tm-core" cx="360" cy="300" r="58"/>
+          <use class="tm-core-ico" href="#i-user" x="340" y="268" width="40" height="40"/>
+          <text class="tm-core-t" x="360" y="330" text-anchor="middle" data-en="HUMAN">MENSCH</text>
+          <line class="tm-stem" x1="360" y1="412" x2="360" y2="562"/>
+          <g class="tm-st" data-st="0"><rect x="355" y="487" width="10" height="10" transform="rotate(45 360 492)"/><text x="376" y="496" data-en="CONTROL LOCK">CONTROL-LOCK</text></g>
+          <g class="tm-st" data-st="1"><rect x="355" y="515" width="10" height="10" transform="rotate(45 360 520)"/><text x="376" y="524" data-en="PRE-CHECK">VORPRÜFUNG</text></g>
+          <g class="tm-st" data-st="2"><rect x="355" y="543" width="10" height="10" transform="rotate(45 360 548)"/><text x="376" y="552" data-en="MOVEIT">MOVEIT</text></g>
+          <g class="tm-node" data-m="blick" style="--hue: var(--accent)"><circle class="tm-halo" cx="274" cy="151" r="39"/><circle class="tm-dot" cx="274" cy="151" r="30"/><use href="#i-eye" x="261" y="138" width="26" height="26"/><text class="tm-t" x="274" y="89" text-anchor="middle" data-en="Gaze">Blick</text><text class="tm-d" x="274" y="108" text-anchor="middle">TOBII PRO GLASSES 3</text></g>
+          <g class="tm-node" data-m="sprache" style="--hue: var(--violet)"><circle class="tm-halo" cx="188" cy="300" r="39"/><circle class="tm-dot" cx="188" cy="300" r="30"/><use href="#i-mic" x="175" y="287" width="26" height="26"/><text class="tm-t" x="146" y="296" text-anchor="end" data-en="Voice">Sprache</text><text class="tm-d" x="146" y="315" text-anchor="end">WHISPER · DE / EN</text></g>
+          <g class="tm-node" data-m="vla" style="--hue: var(--violet)"><circle class="tm-halo" cx="249.4" cy="431.8" r="39"/><circle class="tm-dot" cx="249.4" cy="431.8" r="30"/><use href="#i-quote" x="236.4" y="418.8" width="26" height="26"/><text class="tm-t" x="207.4" y="427.8" text-anchor="end" data-en="VLA chat">VLA-Chat</text><text class="tm-d" x="207.4" y="446.8" text-anchor="end" data-en="LLM AGENT">LLM-AGENT</text></g>
+          <g class="tm-node" data-m="gamepad" style="--hue: var(--accent)"><circle class="tm-halo" cx="446" cy="151" r="39"/><circle class="tm-dot" cx="446" cy="151" r="30"/><use href="#i-pad" x="433" y="138" width="26" height="26"/><text class="tm-t" x="446" y="89" text-anchor="middle">Gamepad</text><text class="tm-d" x="446" y="108" text-anchor="middle">XBOX ELITE 2 · SERVO</text></g>
+          <g class="tm-node" data-m="vr" style="--hue: var(--accent)"><circle class="tm-halo" cx="532" cy="300" r="39"/><circle class="tm-dot" cx="532" cy="300" r="30"/><use href="#i-vr" x="519" y="287" width="26" height="26"/><text class="tm-t" x="574" y="296" text-anchor="start" data-en="Virtual reality">Virtual Reality</text><text class="tm-d" x="574" y="315" text-anchor="start">META QUEST 3 · WEBXR</text></g>
+          <g class="tm-node" data-m="ui" style="--hue: var(--accent)"><circle class="tm-halo" cx="470.6" cy="431.8" r="39"/><circle class="tm-dot" cx="470.6" cy="431.8" r="30"/><use href="#i-touch" x="457.6" y="418.8" width="26" height="26"/><text class="tm-t" x="512.6" y="427.8" text-anchor="start" data-en="User interface">User Interface</text><text class="tm-d" x="512.6" y="446.8" text-anchor="start">ROBOT CONTROL UI</text></g>
+          <g class="tm-shared"><rect x="286" y="562" width="148" height="28" rx="4"/><text x="360" y="580.5" text-anchor="middle">SHARED CONTROL</text></g>
+          <g class="tm-arm"><rect class="tm-arm-b" x="404" y="716" width="104" height="12" rx="2"/><rect class="tm-arm-p" x="430" y="668" width="52" height="50" rx="4"/><path class="tm-arm-l" d="M456 660 L388 626"/><path class="tm-arm-l s" d="M388 626 L326 652"/><path class="tm-arm-l t" d="M326 652 L326 676"/><circle class="tm-arm-j" cx="456" cy="660" r="17"/><circle class="tm-arm-j" cx="388" cy="626" r="13"/><circle class="tm-arm-j" cx="326" cy="652" r="9"/><rect class="tm-arm-c" x="318" y="676" width="16" height="6" rx="1"/><text class="tm-t" x="528" y="686">xArm Lite 6</text><text class="tm-d" x="528" y="705" data-en="TWIN · HARDWARE">TWIN · HARDWARE</text></g>
+          <g class="tm-vis" style="--hue: var(--green)"><rect class="tm-obj" x="308" y="694" width="36" height="28" rx="2"/><path class="tm-bbox" d="M300 698v-12h12 M340 686h12v12 M352 718v12h-12 M312 730h-12v-12"/><line class="tm-vline" x1="226" y1="708" x2="296" y2="708"/><circle class="tm-dot" cx="200" cy="708" r="26"/><use href="#i-scan" x="188" y="696" width="24" height="24"/><text class="tm-k" x="162" y="682" text-anchor="end" data-en="ASSISTANCE">ASSISTENZ</text><text class="tm-t" x="162" y="706" text-anchor="end">Vision</text><text class="tm-d" x="162" y="725" text-anchor="end">ZED MINI · YOLOV8</text></g>
+          <circle class="tm-pk" r="6" cx="0" cy="0"/>
+          </svg>
+          <figcaption class="tm-hint"><svg class="ico" aria-hidden="true"><use href="#i-pointer"/></svg><span data-en="Pick a control mode: the input runs through the safety chain to the arm">Steuerweg wählen: die Eingabe läuft durch die Sicherheitskette zum Arm</span></figcaption>
+        </figure>
+        <div class="tm-side">
+          <div class="tm-levels" role="group" aria-label="Steuerweg wählen" data-en-aria="Pick a control mode">
+            <div class="tm-lv" style="--hue: var(--violet); --n: 2">
+              <span class="tm-lv-k">High-Level <b data-en="The human says &lt;em&gt;what&lt;/em&gt;.">Der Mensch sagt, <em>was</em>.</b></span>
+              <button type="button" data-m="sprache" aria-pressed="true"><svg class="ico" aria-hidden="true"><use href="#i-mic"/></svg><span data-en="Voice">Sprache</span></button>
+              <button type="button" data-m="vla" aria-pressed="false"><svg class="ico" aria-hidden="true"><use href="#i-quote"/></svg><span data-en="VLA chat">VLA-Chat</span></button>
+            </div>
+            <div class="tm-lv" style="--hue: var(--accent); --n: 4">
+              <span class="tm-lv-k">Low-Level <b data-en="The human leads &lt;em&gt;how&lt;/em&gt;.">Der Mensch führt, <em>wie</em>.</b></span>
+              <button type="button" data-m="blick" aria-pressed="false"><svg class="ico" aria-hidden="true"><use href="#i-eye"/></svg><span data-en="Gaze">Blick</span></button>
+              <button type="button" data-m="gamepad" aria-pressed="false"><svg class="ico" aria-hidden="true"><use href="#i-pad"/></svg><span>Gamepad</span></button>
+              <button type="button" data-m="vr" aria-pressed="false"><svg class="ico" aria-hidden="true"><use href="#i-vr"/></svg><span>VR</span></button>
+              <button type="button" data-m="ui" aria-pressed="false"><svg class="ico" aria-hidden="true"><use href="#i-touch"/></svg><span>UI</span></button>
+            </div>
+          </div>
+          <div class="tm-cards" aria-live="polite">
+            <article class="tm-card" data-m="sprache" style="--hue: var(--violet)">
+              <span class="tm-card-k">Whisper · DE / EN</span>
+              <h3><svg class="ico" aria-hidden="true"><use href="#i-mic"/></svg><span data-en="Voice &lt;small&gt;with your voice&lt;/small&gt;">Sprache <small>mit der Stimme</small></span></h3>
+              <p data-en="Say it, don't click it: short commands start ready-made flows.">Sagen statt klicken: kurze Befehle lösen fertige Abläufe aus.</p>
+              <ul>
+                <li data-en="&lt;b&gt;Recognition&lt;/b&gt; in 50–120&amp;nbsp;ms on the GPU, German and English"><b>Erkennung</b> in 50–120&nbsp;ms auf der GPU, Deutsch und Englisch</li>
+                <li data-en="&lt;b&gt;Listening window&lt;/b&gt; of 5&amp;nbsp;s after the trigger, never always on"><b>Hörfenster</b> 5&nbsp;s nach dem Auslöser, kein Dauerbetrieb</li>
+              </ul>
+              <a class="more" href="present_control_modes.html#sprache"><span data-en="Voice commands">Sprachbefehle</span><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg></a>
+            </article>
+            <article class="tm-card" data-m="vla" style="--hue: var(--violet)">
+              <span class="tm-card-k" data-en="LLM agent · local or cloud">LLM-Agent · lokal oder Cloud</span>
+              <h3><svg class="ico" aria-hidden="true"><use href="#i-quote"/></svg><span data-en="VLA chat &lt;small&gt;in your own words&lt;/small&gt;">VLA-Chat <small>in eigenen Worten</small></span></h3>
+              <p data-en="Type a task, check the plan, execute. The AI plans. The human approves.">Aufgabe eintippen, Plan prüfen, ausführen. Die KI plant. Der Mensch gibt frei.</p>
+              <ul>
+                <li data-en="&lt;b&gt;Approval:&lt;/b&gt; every plan waits for Execute"><b>Freigabe:</b> jeder Plan wartet auf Execute</li>
+                <li data-en="&lt;b&gt;Poses from code:&lt;/b&gt; the model only picks skill and object"><b>Posen aus dem Code:</b> das Modell wählt nur Skill und Objekt</li>
+              </ul>
+              <a class="more" href="present_control_modes.html#vla"><span data-en="VLA-M chat">VLA-M-Chat</span><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg></a>
+            </article>
+            <article class="tm-card" data-m="blick" style="--hue: var(--accent)">
+              <span class="tm-card-k">Tobii Pro Glasses 3</span>
+              <h3><svg class="ico" aria-hidden="true"><use href="#i-eye"/></svg><span data-en="Gaze &lt;small&gt;with the eyes&lt;/small&gt;">Blick <small>mit den Augen</small></span></h3>
+              <p data-en="Look and hold: a fixation of about 1&amp;nbsp;s replaces the click.">Hinschauen und halten: eine Fixation von etwa 1&nbsp;s ersetzt den Klick.</p>
+              <ul>
+                <li data-en="&lt;b&gt;8 motion fields&lt;/b&gt; at the image edge: forward, up, rotate&amp;nbsp;…"><b>8 Bewegungsfelder</b> am Bildrand: vor, hoch, drehen&nbsp;…</li>
+                <li data-en="&lt;b&gt;Hard stop&lt;/b&gt; at Z&amp;nbsp;33&amp;nbsp;mm, braking zone from 40&amp;nbsp;mm"><b>Hard-Stop</b> bei Z&nbsp;33&nbsp;mm, Bremszone ab 40&nbsp;mm</li>
+              </ul>
+              <a class="more" href="present_control_modes.html#blick"><span data-en="Gaze control">Blicksteuerung</span><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg></a>
+            </article>
+            <article class="tm-card" data-m="gamepad" style="--hue: var(--accent)">
+              <span class="tm-card-k">Xbox Elite Series 2 · MoveIt Servo</span>
+              <h3><svg class="ico" aria-hidden="true"><use href="#i-pad"/></svg><span data-en="Gamepad &lt;small&gt;with your hands&lt;/small&gt;">Gamepad <small>mit den Händen</small></span></h3>
+              <p data-en="Fine-grained motion in real time, with feedback in your hand.">Feinfühliges Verfahren in Echtzeit, mit Rückmeldung in der Hand.</p>
+              <ul>
+                <li data-en="&lt;b&gt;Vibration&lt;/b&gt; on collision risk, 0.1&amp;nbsp;s look-ahead"><b>Vibration</b> bei Kollisionsgefahr, Vorausschau 0,1&nbsp;s</li>
+                <li data-en="&lt;b&gt;Table stop&lt;/b&gt; brakes from Z&amp;nbsp;110&amp;nbsp;mm, stops at 91&amp;nbsp;mm"><b>Tisch-Stopp</b> bremst ab Z&nbsp;110&nbsp;mm, stoppt bei 91&nbsp;mm</li>
+              </ul>
+              <a class="more" href="present_control_modes.html#gamepad"><span data-en="Gamepad">Gamepad</span><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg></a>
+            </article>
+            <article class="tm-card" data-m="vr" style="--hue: var(--accent)">
+              <span class="tm-card-k">Meta Quest 3 · WebXR</span>
+              <h3><svg class="ico" aria-hidden="true"><use href="#i-vr"/></svg><span data-en="Virtual reality &lt;small&gt;with head and hands&lt;/small&gt;">Virtual Reality <small>mit Kopf und Händen</small></span></h3>
+              <p data-en="The hand becomes the tool: the TCP follows the controller 1&amp;nbsp;:&amp;nbsp;1.">Die Hand wird zum Werkzeug: Der TCP folgt dem Controller 1&nbsp;:&nbsp;1.</p>
+              <ul>
+                <li data-en="&lt;b&gt;Clutch:&lt;/b&gt; no grip, no motion"><b>Kupplung:</b> ohne Grip keine Bewegung</li>
+                <li data-en="&lt;b&gt;Tracking lost:&lt;/b&gt; stop after 0.3&amp;nbsp;s"><b>Tracking weg:</b> Stopp nach 0,3&nbsp;s</li>
+              </ul>
+              <a class="more" href="present_control_modes.html#vr"><span data-en="VR with Quest&amp;nbsp;3">VR mit Quest&nbsp;3</span><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg></a>
+            </article>
+            <article class="tm-card" data-m="ui" style="--hue: var(--accent)">
+              <span class="tm-card-k">Robot Control UI · 8081</span>
+              <h3><svg class="ico" aria-hidden="true"><use href="#i-touch"/></svg><span data-en="User interface &lt;small&gt;by click and touch&lt;/small&gt;">User Interface <small>per Klick und Touch</small></span></h3>
+              <p data-en="The control centre: everything the robot can do, in one place.">Die Zentrale: Alles, was der Roboter kann, an einem Ort.</p>
+              <ul>
+                <li data-en="&lt;b&gt;Safety zone:&lt;/b&gt; E-STOP, mode, speed, lock always visible"><b>Sicherheitszone:</b> E-STOP, Modus, Tempo, Lock immer sichtbar</li>
+                <li data-en="&lt;b&gt;Jogging:&lt;/b&gt; hold to move, steps of 1/5/10&amp;nbsp;mm"><b>Jogging:</b> halten = fahren, Schritte 1/5/10&nbsp;mm</li>
+              </ul>
+              <a class="more" href="present_control_modes.html#rcu"><span>Robot Control UI</span><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg></a>
+            </article>
+          </div>
+          <div class="tm-chain" style="--hue: var(--gold)">
+            <b class="tm-chain-k"><svg class="ico" aria-hidden="true"><use href="#i-shield"/></svg><span data-en="One chain for every input.">Eine Kette für jede Eingabe.</span></b>
+            <ol>
+              <li data-st="0"><b>Control-Lock</b><small data-en="one operator">nur ein Bediener</small></li>
+              <li data-st="1"><b data-en="Pre-check">Vorprüfung</b><small data-en="table collision ahead">Tisch-Kollision voraus</small></li>
+              <li data-st="2"><b>MoveIt</b><small data-en="IK, collision, floor">IK, Kollision, Boden</small></li>
+              <li data-st="3"><b>xArm Lite 6</b><small data-en="twin or hardware">Twin oder Hardware</small></li>
+            </ol>
+            <p><svg class="ico" aria-hidden="true"><use href="#i-stop"/></svg><span data-en="&lt;b&gt;E-STOP always works:&lt;/b&gt; Space, red button, touch panel, voice, VR"><b>E-STOP wirkt immer:</b> Leertaste, roter Knopf, Touch Panel, Sprache, VR</span></p>
+          </div>
+        </div>
+      </div>
+      <div class="tm-eval" style="--hue: var(--orange)">
+        <span class="bi-l"><svg class="ico" aria-hidden="true"><use href="#i-chart"/></svg></span>
+        <div class="tm-eval-t">
+          <span class="tm-card-k" data-en="Evaluation system · Monitoring Dashboard">Evaluationssystem · Monitoring Dashboard</span>
+          <b data-en="Measured, not guessed.">Gemessen statt geschätzt.</b>
+          <p data-en="One task, several control modes compared: order by Latin square, per participant and run.">Eine Aufgabe, mehrere Steuerwege im Vergleich: Reihenfolge per Latin Square, je Testperson und Durchlauf.</p>
+        </div>
+        <ul class="chips" aria-label="Messgrößen" data-en-aria="Measures">
+          <li class="chip">SUS</li><li class="chip">NASA-TLX</li><li class="chip" data-en="Time">Zeit</li><li class="chip" data-en="Errors">Fehler</li><li class="chip" data-en="Success rate">Erfolgsquote</li>
+        </ul>
+        <a class="more" href="present_function_atlas.html#eval-hierarchy"><span data-en="Evaluation in the atlas">Evaluierung im Atlas</span><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg></a>
+      </div>
+    </div>
+  </section>
+
   <!-- ═════════ Kontakt: Abschluss, Visitenkarte mit QR ═════════ -->
   <section class="contact dark-zone" id="kontakt" aria-labelledby="kontakt-h">
     <div class="wrap">
@@ -1053,6 +1322,51 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
     fill: '.pips, .hc-seg',
     lines: ['.strip', 'section.land', '.contact'],
   });
+
+  // Teilhabe: Steuerweg wählen (Knopf oder Kreis) → Karte wechselt, Eingabe zeichnet sich vom Steuerweg durch den Sicherheitsring
+  // und die Kette zum Arm, Stationen leuchten nacheinander auf; einmal beim ersten Sichtbarwerden, danach je Auswahl
+  const tm = document.getElementById('tm');
+  if (tm) {
+    tm.classList.add('tm-on');
+    const svg = tm.querySelector('.tm-svg'), pk = svg.querySelector('.tm-pk');
+    const btns = $$('.tm-lv button', tm), cards = $$('.tm-card', tm), marks = $$('.tm-node', svg);
+    const routes = new Map($$('.tm-route', svg).map(r => [r.dataset.m, r]));
+    const stSvg = $$('.tm-st', svg), stLi = $$('.tm-chain li', tm);
+    const stY = stSvg.map(g => { const r = g.querySelector('rect'); return +r.getAttribute('y') + +r.getAttribute('height') / 2; });
+    const hit = n => [stSvg, stLi].forEach(list => list.forEach((el, i) => el.classList.toggle('hit', i < n)));
+    const ease = k => (k < .5 ? 4 * k ** 3 : 1 - (-2 * k + 2) ** 3 / 2);
+    let cur = btns[0].dataset.m, raf = 0, seen = false;
+    const run = m => {
+      cancelAnimationFrame(raf);
+      const r = routes.get(m), len = r.getTotalLength();
+      routes.forEach(x => { x.style.opacity = x === r ? 1 : 0; });
+      tm.classList.remove('tm-done');
+      if (reduce) { r.style.strokeDasharray = 'none'; hit(stLi.length); tm.classList.add('tm-done'); return; }
+      r.style.strokeDasharray = r.style.strokeDashoffset = len;
+      pk.style.setProperty('--hue', r.style.getPropertyValue('--hue'));
+      hit(0);
+      const t0 = performance.now(), dur = 1600;   // Weg ~ 520 px: langsam genug, um der Eingabe zu folgen (--t-story × 2,3)
+      const step = now => {
+        const k = Math.min(1, (now - t0) / dur), e = ease(k), p = r.getPointAtLength(len * e);
+        r.style.strokeDashoffset = len * (1 - e);
+        pk.setAttribute('cx', p.x); pk.setAttribute('cy', p.y); pk.style.opacity = k < 1 ? 1 : 0;
+        hit(stY.filter(y => p.y >= y).length + (k === 1 ? 1 : 0));
+        if (k < 1) raf = requestAnimationFrame(step); else tm.classList.add('tm-done');
+      };
+      raf = requestAnimationFrame(step);
+    };
+    const pick = m => {
+      cur = m;
+      btns.forEach(b => b.setAttribute('aria-pressed', String(b.dataset.m === m)));
+      cards.forEach(c => c.classList.toggle('on', c.dataset.m === m));
+      marks.forEach(el => el.classList.toggle('on', el.dataset.m === m));
+      if (seen) run(m);
+    };
+    btns.forEach(b => b.addEventListener('click', () => pick(b.dataset.m)));
+    $$('.tm-node', svg).forEach(n => n.addEventListener('click', () => pick(n.dataset.m)));
+    pick(cur);
+    new IntersectionObserver(([en], obs) => { if (!en.isIntersecting) return; obs.disconnect(); seen = true; run(cur); }, { threshold: .4 }).observe(svg);
+  }
 
   // Funktionsatlas: Ring zeichnet sich einmal auf; Bereich (Kachel oder Ringstück) hervorheben → Zahl + Name in der Mitte
   const ring = document.getElementById('at-ring');
