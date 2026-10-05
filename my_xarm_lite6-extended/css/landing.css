@@ -282,3 +282,12 @@ a.hero-card:hover { border-color: color-mix(in srgb, var(--accent) 65%, var(--gl
   .scroll-cue i::after { display: none; }
   .scroll-cue { animation: none; }
 }
+/* Gebaut auf: Software als Schichten-Stack (Oberflächen oben → Basis unten), Hardware als Fundament */
+.strip .st-bands { grid-template-columns: minmax(0, 1fr); gap: 6px; }
+.strip .st-band { display: grid; grid-template-columns: 9.5rem minmax(0, 1fr); align-items: start; gap: 8px 20px; padding: 10px 14px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface-2); }
+.strip .st-band.hw { background: transparent; border-style: dashed; }
+.strip .st-band ul { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 8px 20px; }
+.strip .st-band li { align-items: start; white-space: normal; line-height: 1.35; }
+.strip .st-band li .ico { flex: none; margin-top: 2px; }
+.st-band-k { font: 700 11px/22px var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--fg-2); }
+@media (max-width: 700px) { .strip .st-band { grid-template-columns: minmax(0, 1fr); } .strip .st-band ul { grid-template-columns: repeat(2, minmax(0, 1fr)); } }

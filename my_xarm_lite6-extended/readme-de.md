@@ -64,6 +64,24 @@ Eine Forschungs- und Evaluationsplattform für die **multimodale Teleoperation**
 
 *Oben: **Robot Control UI** (Bereich Move: Header mit E-STOP, Bereichs-Leiste, Digital-Twin-Viewport, kartesisches Jogging) und **Nexus Webapp** (Start-Popup RUN DEV SETUP, FAKE). Unten: **VLA-M** mit einem Plan aus vier Schritten, der auf *Execute* wartet, **Touch Panel** (Ansicht Move) und **Monitoring Dashboard** (Übersicht). Alles im FAKE-Modus – weitere Screenshots direkt bei jeder Funktion in `docs/de/`.*
 
+## 🧱 Gebaut auf
+
+| Schicht | Software |
+|---|---|
+| Oberflächen | three.js · Rapier · urdf-loader · WebXR · SortableJS · Flask · SQLite · GTK/WebKit · PyQt5 · pygame |
+| KI & Sprache | Ollama (Qwen 2.5) · Claude API · Gemini API · whisper.cpp · LeRobot |
+| Wahrnehmung | ZED SDK 4.1 · CUDA 12 · PyTorch · YOLOv8 · OpenCV · OctoMap · web_video_server |
+| Bewegung | MoveIt 2 · MoveIt Servo · OMPL · xarm_ros2 · ros2_control · joy · Nav2 · RViz 2 |
+| Basis | Ubuntu 22.04 · ROS 2 Humble · Cyclone DDS · rosbridge · roslibjs · rosbag2 · tf2 |
+| Werkzeuge | colcon · pytest · Headless Chrome · Blender · ffmpeg |
+
+| Rolle | Hardware |
+|---|---|
+| Bedienung | Xbox Elite 2 · Meta Quest 3 · Touch-Display |
+| Sensorik | ZED Mini · 2× Raspberry-Pi-Kamera · Tobii Pro Glasses 3 · Mikrofon |
+| Workstation | Dell Precision 3660 · CPU Intel Core i9-12900K · GPU NVIDIA RTX A5000 · RAM 32 GB · VRAM 24 GB |
+| Roboter | UFactory xArm Lite 6 · Vakuumgreifer |
+
 ## 🚀 Schnellstart (Simulation, ohne Hardware)
 
 ```bash

@@ -64,6 +64,24 @@ A research and evaluation platform for **multimodal teleoperation** of the UFact
 
 *Top: **Robot Control UI** (area Move: header with E-STOP, area bar, Digital Twin viewport, Cartesian jogging) and **Nexus Webapp** (start popup RUN DEV SETUP, FAKE). Bottom: **VLA-M** with a plan of four steps waiting for *Execute*, **Touch Panel** (view Move) and **Monitoring Dashboard** (overview). All in FAKE mode – more screenshots next to each function in `docs/en/`.*
 
+## 🧱 Built on
+
+| Layer | Software |
+|---|---|
+| Interfaces | three.js · Rapier · urdf-loader · WebXR · SortableJS · Flask · SQLite · GTK/WebKit · PyQt5 · pygame |
+| AI & voice | Ollama (Qwen 2.5) · Claude API · Gemini API · whisper.cpp · LeRobot |
+| Perception | ZED SDK 4.1 · CUDA 12 · PyTorch · YOLOv8 · OpenCV · OctoMap · web_video_server |
+| Motion | MoveIt 2 · MoveIt Servo · OMPL · xarm_ros2 · ros2_control · joy · Nav2 · RViz 2 |
+| Foundation | Ubuntu 22.04 · ROS 2 Humble · Cyclone DDS · rosbridge · roslibjs · rosbag2 · tf2 |
+| Tools | colcon · pytest · Headless Chrome · Blender · ffmpeg |
+
+| Role | Hardware |
+|---|---|
+| Input | Xbox Elite 2 · Meta Quest 3 · touch display |
+| Sensors | ZED Mini · 2× Raspberry Pi camera · Tobii Pro Glasses 3 · microphone |
+| Workstation | Dell Precision 3660 · CPU Intel Core i9-12900K · GPU NVIDIA RTX A5000 · RAM 32 GB · VRAM 24 GB |
+| Robot | UFactory xArm Lite 6 · vacuum gripper |
+
 ## 🚀 Quickstart (simulation, no hardware)
 
 ```bash
