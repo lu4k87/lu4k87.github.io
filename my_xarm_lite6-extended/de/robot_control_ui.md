@@ -470,9 +470,12 @@
 
 <br>
 
-### ![Node](https://img.shields.io/badge/Node-blue?style=flat-square) `rosbridge_websocket_launch.xml` (`rosbridge_server`) &nbsp;&nbsp; <sub><i>[`/opt/ros/humble/share/rosbridge_server/launch/rosbridge_websocket_launch.xml`](https://github.com/RobotWebTools/rosbridge_suite)</i></sub>
+### ![Node](https://img.shields.io/badge/Node-blue?style=flat-square) `rosbridge_remote` / `rosbridge_local` (`http_robot_control_ui_p8081`) &nbsp;&nbsp; <sub><i>`/src/http_robot_control_ui_p8081/http_robot_control_ui_p8081/rosbridge_guard.py`</i></sub>
 
-**Zweck & Aufgabe:** Standard-WebSocket-Brücke auf Port 9090, die den Web-UIs (Robot Control UI, Touch Panel) erlaubt, direkt auf das ROS-Netzwerk zuzugreifen. Der Launch der Robot Control UI startet sie mit `call_services_in_new_thread:=true` und `default_call_service_timeout:=10.0`: Sonst läuft jeder Service-Aufruf im Hauptthread der Bridge, und ein langsamer Aufruf (z. B. `/rosapi/nodes`) verzögerte den Start der MoveTo-Planung um 0,3-5 s (gemessen; mit Threads konstant ~0,3 s). `rosapi` läuft mit `respawn`; der Node `rosapi_health` ruft alle 5 s `/rosapi/nodes` auf und beendet nach drei unbeantworteten Aufrufen den hängenden `rosapi_node` desselben Launches, der dann neu startet (ein hängender rosapi ließ im Header Modus und Antwortzeit fehlen); einen doppelten `/rosapi` meldet er auf `/diagnostics`.
+**Zweck & Aufgabe:** WebSocket-Brücke (`rosbridge_websocket` aus `/opt` mit Whitelist und Namensprüfung, siehe [Betrieb › Control-Lock](running.html)) auf Port 9090 (Netz) und 9092 (`127.0.0.1`), die den Web-UIs (Robot Control UI, Touch Panel) erlaubt, direkt auf das ROS-Netzwerk zuzugreifen. Der Launch der Robot Control UI startet sie mit `call_services_in_new_thread:=true` und `default_call_service_timeout:=10.0`: Sonst läuft jeder Service-Aufruf im Hauptthread der Bridge, und ein langsamer Aufruf (z. B. `/rosapi/nodes`) verzögerte den Start der MoveTo-Planung um 0,3-5 s (gemessen; mit Threads konstant ~0,3 s). `rosapi` läuft mit `respawn`; der Node `rosapi_health` ruft alle 5 s `/rosapi/nodes` auf und beendet nach drei unbeantworteten Aufrufen den hängenden `rosapi_node` desselben Launches, der dann neu startet (ein hängender rosapi ließ im Header Modus und Antwortzeit fehlen); einen doppelten `/rosapi` meldet er auf `/diagnostics`.
+
+> [!WARNING]
+> `ros2 launch rosbridge_server rosbridge_websocket_launch.xml` am Roboter-PC nicht starten: öffnet 0.0.0.0:9090 ohne Whitelist und umgeht den Control-Lock.
 
 <details>
 <summary><b>🔽 Details anzeigen</b> · Run Command</summary>
@@ -480,7 +483,8 @@
 > [!NOTE]
 > 💻 **Run Command:**
 > ```bash
-> ros2 launch rosbridge_server rosbridge_websocket_launch.xml
+> # rosbridge 9090 + 9092 (+ rosapi, Webserver 8081, Watchdog) - nur über den Launch der Robot Control UI:
+> ros2 launch http_robot_control_ui_p8081 http_robot_control_ui.launch.py
 > ```
 
 </details>
