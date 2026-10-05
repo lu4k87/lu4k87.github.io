@@ -523,7 +523,43 @@ function build(L, wrap, host, o) {
     // Puls-Schein (Wunsch User 06.10.2026): Lichthof + Bodenschein atmen langsam (4 s, kleine Amplitude, nur Sinus –
     // nicht an die zufälligen Feld-Blitze gekoppelt, sonst springt er); Lichthof nur so groß/hoch, dass ihn die Tischebene nicht abschneidet
     const aura = sprite(0.1, 0.16), pool = new THREE.Mesh(new THREE.PlaneGeometry(0.2, 0.2), glowMat(0)), PULSE = 4;
-    const cornerMat = cube.children[3].material;
+    const cornerMat = cube.children[3].material, edgeMat = cube.children[2].material;
+    // Materialisieren (Wunsch User 06.10.2026): abgelegt bekommt der Würfel ein rotes Material, in Zeitlupe (2,6 s): Scan-Ebene
+    // steigt von unten nach oben (darunter fest, darüber noch Raster), Farbe gleitet vom Akzent zu Rot, frisch Materialisiertes
+    // glüht warm und kühlt aus. Beim Greifen läuft es schneller (0,9 s) zurück ins Raster. Schnitt = Clipping-Ebenen im Würfelrahmen.
+    st.renderer.localClippingEnabled = true;
+    const RED = new THREE.Color(0xd9262e), RED2 = new THREE.Color(0xff9a8a), HOT = new THREE.Color(0xffb36b);
+    const cutLo = new THREE.Plane(), cutHi = new THREE.Plane();
+    const solidMat = new THREE.MeshPhysicalMaterial({ color: RED, roughness: 0.36, metalness: 0.05, clearcoat: 0.6, clearcoatRoughness: 0.25,
+      emissive: HOT, emissiveIntensity: 0, clippingPlanes: [cutLo], clipShadows: true });
+    const solid = new THREE.Mesh(box, solidMat); solid.castShadow = true; solid.visible = false;
+    const scanLine = new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(
+      [[-1, -1], [1, -1], [1, 1], [-1, 1]].map(([x, y]) => new THREE.Vector3(x * ch * 1.04, y * ch * 1.04, 0))), lineMat(0));
+    const scanGlow = new THREE.Mesh(new THREE.PlaneGeometry(CUBE * 1.9, CUBE * 1.9), glowMat(0)); scanGlow.material.side = THREE.DoubleSide;
+    cube.add(solid, scanLine, scanGlow);
+    [cubeFill, cubeGrid, cube.children[3]].forEach(o => { o.material.clippingPlanes = [cutHi]; });
+    const mat = { v: 0, to: 0, D: 1 };   // v: 0 = Raster … 1 = rotes Material
+    const matTo = (to, D) => { mat.to = to; mat.D = D; if (reduce) mat.v = to; };
+    const up = new THREE.Vector3(), mid = new THREE.Vector3();
+    const applyMat = dt => {
+      const fwd = mat.to === 1;
+      if (mat.v !== mat.to) mat.v = fwd ? Math.min(1, mat.v + dt / mat.D) : Math.max(0, mat.v - dt / mat.D);
+      // Scan-Lage (Minimal-Ruck, im ersten ¾) und Farbanteil (ease-out) aus demselben Fortschritt → Rückweg spielt rückwärts
+      const v = mat.v, s = ease5(Math.min(1, v / 0.75)), k = 1 - (1 - v) ** 3, z = -ch * 1.02 + CUBE * 1.04 * s;
+      up.set(0, 0, 1).applyQuaternion(cube.quaternion); mid.copy(up).multiplyScalar(z * cube.scale.x).add(cube.position);
+      cutHi.setFromNormalAndCoplanarPoint(up, mid); cutLo.copy(cutHi).negate();
+      solid.visible = v > 0;
+      solidMat.color.copy(ACC).lerp(RED, k);
+      const heat = fwd ? 0.7 * (1 - v) ** 2 : 0;
+      solidMat.emissive.copy(RED).lerp(HOT, heat / 0.7);
+      solidMat.emissiveIntensity = heat + (hoverCube && !held ? 0.25 : 0);
+      const b = Math.sin(Math.PI * s);   // Scan-Licht nur unterwegs
+      scanLine.position.z = scanGlow.position.z = z;
+      scanLine.material.opacity = 0.95 * b; scanGlow.material.opacity = 0.35 * b;
+      scanLine.material.color.copy(ACC2).lerp(RED2, k); scanGlow.material.color.copy(ACC).lerp(RED, k);
+      edgeMat.color.copy(ACC2).lerp(RED2, k); edgeMat.opacity = 0.95 - 0.5 * k; cornerMat.color.copy(edgeMat.color);
+      aura.material.color.copy(ACC).lerp(RED, k); pool.material.color.copy(aura.material.color);
+    };
     const flash = ringMesh(0.016, 0.03, 0);
     st.scene.add(cube, flash, aura, pool);
     let at = 0, held = false, hover = -1, hoverCube = false, pending = -1, flashT = 1, clicked = false, clk = 0, touch = false;
@@ -539,7 +575,7 @@ function build(L, wrap, host, o) {
       pads.forEach((p, i) => { p.on = i === hi && (i !== at || held); paint(p); });
       cubeGrid.material.opacity = hoverCube && !held ? 0.75 : 0.42; cubeFill.material.opacity = hoverCube && !held ? 0.18 : 0.1;
       host.style.cursor = hoverCube || (hover >= 0 && (hover !== at || held)) ? 'pointer' : '';
-      st.kick();
+      applyMat(0); st.kick();
     };
     const pickRay = e => {
       const r = host.getBoundingClientRect();
@@ -636,12 +672,12 @@ function build(L, wrap, host, o) {
       return best;
     };
     const grip = () => {
-      held = true; blink();
+      held = true; blink(); matTo(0, 0.9);
       // Würfel hängt fest am Sauger: Lage + Versatz im Werkzeugrahmen merken (bleibt bei geneigtem Werkzeug dran)
       robot.tcp.getWorldQuaternion(tcpQ); rel.copy(tcpQ).invert().multiply(cube.quaternion);
       robot.tcp.getWorldPosition(tcpW); relP.subVectors(cube.position, tcpW).applyQuaternion(tcpQ.clone().invert());
     };
-    const drop = () => { held = false; at = job.to; onPad(at); cube.rotation.set(0, 0, cube.rotation.z); blink(); };
+    const drop = () => { held = false; at = job.to; onPad(at); cube.rotation.set(0, 0, cube.rotation.z); blink(); matTo(1, 2.6); };
     let busy = 0, lean = 0, vlean = 0;
     // Ablauf = Liste: { pts, v } Bahn · { act, dwell } Greifen/Lösen mit Verweilzeit · { hold } schweben bis Ziel gewählt ·
     // { lazy } wird erst beim Erreichen zu Schritten (Lage dann bekannt); say = Status-Popup beim Start des Schritts
@@ -719,7 +755,7 @@ function build(L, wrap, host, o) {
     };
     // Feld gewählt: im Arm → dort ablegen; Würfel liegt → greifen und umsetzen; Arm beschäftigt → danach
     const start = to => {
-      if (reduce) { if (to !== at) { at = to; onPad(at); show(); feed.reset(); feed.say(T('Abgelegt', 'Placed'), xy(cube.position), true); } return; }
+      if (reduce) { if (to !== at) { at = to; onPad(at); matTo(1); show(); feed.reset(); feed.say(T('Abgelegt', 'Placed'), xy(cube.position), true); } return; }
       if (job) { if (job.to < 0) { job.to = to; show(); } else if (to !== job.to) pending = to; return; }
       if (to !== at) pick(to);
     };
@@ -750,6 +786,7 @@ function build(L, wrap, host, o) {
         robot.tcp.getWorldPosition(tcpW); robot.tcp.getWorldQuaternion(tcpQ);
         cube.position.copy(relP).applyQuaternion(tcpQ).add(tcpW); cube.quaternion.multiplyQuaternions(tcpQ, rel);
       }
+      applyMat(dt);
       if (flashT < 1) { flashT = Math.min(1, flashT + dt / 0.45); flash.material.opacity = 0.95 * (1 - flashT); flash.scale.setScalar(1 + flashT * 1.6); }
       if (reduce) return;
       // Klick-Hinweis: je Feld eigener, zufälliger Takt; während Ablauf, Hover oder im Arm verschoben statt gezeigt
