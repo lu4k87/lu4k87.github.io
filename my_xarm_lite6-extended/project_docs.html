@@ -130,16 +130,31 @@ a.kpi:hover { background: var(--surface-2); }
 .vc-qr { display: grid; gap: 6px; justify-items: center; font: 700 11px/1 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--accent); }
 .vc-qr .qr-code { --qr: 96px; box-shadow: 0 0 22px -4px var(--glow); }
 @media (max-width: 700px) { .vc-qr { display: none; } }
-/* Kompakt im Hero unter den drei Merkmalen (Wunsch User 04.10.2026, Vorschau B, „kleiner“): ohne Kopfzeile, Name + Claim stehen im Titel */
-.vcard.vc-mini { width: min(100%, 420px); padding: 12px 14px; }
-.vc-mini .vc-body { gap: 14px; align-items: center; padding-top: 0; border-top: 0; }
-.vc-mini .vc-name { font-size: 19px; }
-.vc-mini .vc-role { font-size: 13px; margin-top: 2px; }
-.vc-mini .vc-links { gap: 4px; margin-top: 8px; }
-.vc-mini .vc-links a { font-size: 13px; }
-.vc-mini .vc-links .ico { width: 15px; height: 15px; }
-.vc-mini .vc-qr { gap: 5px; }
-.vc-mini .vc-qr .qr-code { --qr: 81px; padding: 4px; }  /* 81 = 27 Module × 3 px → scharf und scanbar (unter 2 px je Modul unlesbar) */
+/* Hero: Steckbrief 3×2, Linkzeile ins Projekt, Autorzeile mit kleinem QR (Wunsch User 05.10.2026, Vorschau B); Icons in Bereichsfarbe (--hue) */
+.facts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); width: 100%; max-width: 620px; margin: 0; overflow: hidden;
+  border: 1px solid var(--glass-bd); border-radius: var(--radius); background: var(--glass-bg); box-shadow: inset 0 1px 0 var(--glass-hi); }
+.facts > div { min-width: 0; padding: 11px 14px; box-shadow: 1px 0 0 var(--line), 0 1px 0 var(--line); }
+.facts dt { display: flex; align-items: center; gap: 7px; font: 700 12px/1.2 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--fg-2); }
+.facts dt .ico { width: 15px; height: 15px; color: var(--hue); }
+.facts dd { margin: 5px 0 0; font-size: 15px; font-weight: 700; line-height: 1.3; }
+.hero-links { display: flex; flex-wrap: wrap; gap: 4px 26px; }
+.hero-links a { display: inline-flex; align-items: center; gap: 9px; min-height: 44px; font-size: 15px; font-weight: 700; border-bottom: 1px solid var(--line-strong);
+  transition: border-color var(--t-fast), color var(--t-fast); }
+.hero-links a .ico { width: 18px; height: 18px; color: var(--hue); }
+.hero-links a .go { width: 15px; height: 15px; transition: transform var(--t-fast) var(--ease-out); }
+.hero-links small { font: 700 12px/1 var(--mono); color: var(--fg-2); }
+.hero-links a:hover, .hero-links a:focus-visible { border-color: var(--hue); }
+.hero-links a:hover .go { transform: translateX(3px); }
+.author { display: flex; align-items: center; gap: 14px; }
+.author > div { display: grid; gap: 3px; font-size: 14px; color: var(--fg-2); }
+.author b { font-size: 17px; color: var(--fg); }
+.au-links { display: flex; flex-wrap: wrap; gap: 2px 16px; margin-top: 3px; }
+.au-links a { display: inline-flex; align-items: center; gap: 6px; color: var(--fg); }
+.au-links a:hover { color: var(--accent); }
+.au-links .ico { width: 15px; height: 15px; color: var(--accent); }
+.au-qr .qr-code { --qr: 54px; padding: 4px; border-radius: var(--radius-sm); display: block; }  /* 54 = 27 Module × 2 px → kleinste scharfe Stufe */
+@media (max-width: 700px) { .au-qr { display: none; } }
+@media (max-width: 560px) { .facts { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 
 .ct-copy h2 { font-size: var(--fs-h2); line-height: 1.08; letter-spacing: -.035em; font-weight: 800; }
 /* Überblick: sechs Fakten-Karten (Icon, Slogan, Faktensatz, Sprung zum Abschnitt) */
@@ -250,6 +265,8 @@ html.sf-on .at-ring:not(.in) .seg { stroke-dasharray: 0 83; }
 #verstehen .path li:not(:last-child) { grid-column: span 2; display: grid; grid-template-columns: minmax(0, 1fr) 52px; }
 #verstehen .path li:not(:last-child)::after { content: ""; place-self: center; width: 30px; height: 30px; background: var(--fg-2); -webkit-mask: var(--arw) center / contain no-repeat; mask: var(--arw) center / contain no-repeat; }
 #verstehen .path a { gap: 8px; padding: 18px 20px; }
+#verstehen .path li::after { transition: background-color .5s var(--ease-out); }
+#verstehen .path li:has(> a.sf-lit)::after { background: var(--hue, var(--accent)); }
 #verstehen .path .pn > span { padding: 5px 8px; border-radius: var(--radius-sm); background: color-mix(in srgb, var(--hue) 12%, transparent); }
 #verstehen .path b { font-size: 18px; }
 #verstehen .path small { font-size: 14px; }
@@ -538,26 +555,26 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
           <span class="h1-claim" data-en="&lt;span class=&quot;ln&quot;&gt;&lt;span&gt;The human leads.&lt;/span&gt;&lt;/span&gt; &lt;span class=&quot;ln&quot;&gt;&lt;span&gt;&lt;em&gt;The AI assists.&lt;/em&gt;&lt;/span&gt;&lt;/span&gt;"><span class="ln"><span>Der Mensch führt.</span></span> <span class="ln"><span><em>Die KI assistiert.</em></span></span></span>
         </h1>
         <p class="abstract" data-en="Assistive robotics platform for the &lt;b&gt;xArm&amp;nbsp;Lite&amp;nbsp;6&lt;/b&gt;, built on ROS 2 Humble for &lt;b&gt;teaching and research&lt;/b&gt;. Example scenarios such as the logistics cell with auto palletizing show its range.">Assistive Robotik-Plattform für den <b>xArm&nbsp;Lite&nbsp;6</b> auf Basis von ROS 2 Humble, gebaut für <b>Lehre und Forschung</b>. Beispielszenarien wie die Logistik-Zelle mit Auto-Palettieren zeigen die Bandbreite.</p>
-        <div class="cta-row">
-          <a class="b-pri" href="#unterlagen"><span data-en="Open the documents">Unterlagen öffnen</span><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg></a>
-          <a class="b-sec" href="present_function_atlas.html"><svg class="ico" aria-hidden="true"><use href="#i-layers"/></svg><span data-en="Function atlas">Funktionsatlas</span><em>83</em></a>
-        </div>
-        <ul class="trust">
-          <li><span class="bi-s"><svg class="ico" aria-hidden="true"><use href="#i-cube"/></svg></span><span><b data-en="Digital Twin + real robot hardware">Digital Twin + echte Roboter-Hardware</b><span data-en="first virtual, then real">erst virtuell, dann real</span></span></li>
-          <li><span class="bi-s"><svg class="ico" aria-hidden="true"><use href="#i-globe"/></svg></span><span><b data-en="In the browser">Im Browser</b><span data-en="nothing to install">ohne Installation</span></span></li>
-          <li><span class="bi-s"><svg class="ico" aria-hidden="true"><use href="#i-code"/></svg></span><span><b>Open Source</b><span>Apache 2.0</span></span></li>
-        </ul>
-        <div class="vcard vc-mini" role="group" aria-label="Visitenkarte: Marius Kaul" data-en-aria="Business card: Marius Kaul">
-          <div class="vc-body">
-            <div>
-              <div class="vc-name">Marius Kaul</div>
-              <div class="vc-role" data-en="UX Lab · Rhine-Waal University of Applied Sciences">UX-Labor · Hochschule Rhein-Waal</div>
-              <div class="vc-links">
-                <a href="mailto:marius.kaul@hochschule-rhein-waal.de"><svg class="ico" aria-hidden="true"><use href="#i-mail"/></svg>marius.kaul@hochschule-rhein-waal.de</a>
-                <a href="https://lu4k87.github.io/" target="_blank" rel="noopener"><svg class="ico" aria-hidden="true"><use href="#i-globe"/></svg>lu4k87.github.io</a>
-              </div>
-            </div>
-            <a class="vc-qr" href="https://lu4k87.github.io/" target="_blank" rel="noopener"><span class="qr-code"><svg role="img" aria-label="QR-Code: Projekt-Doku öffnen" data-en-aria="QR code: open the project docs"><use href="#qr-docs"/></svg></span><span data-en="Open page">Seite öffnen</span></a>
+        <dl class="facts" aria-label="Steckbrief" data-en-aria="Fact sheet">
+          <div style="--hue: var(--accent)"><dt><svg class="ico" aria-hidden="true"><use href="#i-arm"/></svg><span data-en="Robot">Roboter</span></dt><dd>xArm Lite 6</dd></div>
+          <div style="--hue: var(--indigo)"><dt><svg class="ico" aria-hidden="true"><use href="#i-layers"/></svg><span data-en="Base">Basis</span></dt><dd>ROS 2 Humble · MoveIt 2</dd></div>
+          <div style="--hue: var(--violet)"><dt><svg class="ico" aria-hidden="true"><use href="#i-user"/></svg><span data-en="Purpose">Zweck</span></dt><dd data-en="Teaching and research">Lehre und Forschung</dd></div>
+          <div style="--hue: var(--blue)"><dt><svg class="ico" aria-hidden="true"><use href="#i-cube"/></svg><span data-en="Principle">Prinzip</span></dt><dd data-en="First virtual, then real">Erst virtuell, dann real</dd></div>
+          <div style="--hue: var(--green)"><dt><svg class="ico" aria-hidden="true"><use href="#i-globe"/></svg><span>Client</span></dt><dd data-en="Browser, nothing to install">Browser, ohne Installation</dd></div>
+          <div style="--hue: var(--gold)"><dt><svg class="ico" aria-hidden="true"><use href="#i-code"/></svg><span data-en="License">Lizenz</span></dt><dd>Open Source · Apache 2.0</dd></div>
+        </dl>
+        <nav class="hero-links" aria-label="Direkt ins Projekt" data-en-aria="Straight into the project">
+          <a href="present_presentation.html" target="_blank" rel="noopener" style="--hue: var(--violet)"><svg class="ico" aria-hidden="true"><use href="#i-star"/></svg><span data-en="Project presentation">Projektvorstellung</span><svg class="ico go" aria-hidden="true"><use href="#i-go"/></svg></a>
+          <a href="poster/poster_a2.pdf" target="_blank" rel="noopener" style="--hue: var(--gold)"><svg class="ico" aria-hidden="true"><use href="#i-poster"/></svg><span>Poster A2 <small>PDF</small></span><svg class="ico go" aria-hidden="true"><use href="#i-go"/></svg></a>
+          <a href="operate_manual.html" data-nexus-href="operate_manual.html" target="_blank" rel="noopener" style="--hue: var(--teal)"><svg class="ico" aria-hidden="true"><use href="#i-book"/></svg><span data-en="Operating manual">Bedienhandbuch</span><svg class="ico go" aria-hidden="true"><use href="#i-go"/></svg></a>
+          <a href="https://github.com/lu4k87/my_xarm_lite6-extended" target="_blank" rel="noopener" style="--hue: var(--indigo)"><svg class="ico" aria-hidden="true"><use href="#i-code"/></svg><span data-en="Source code">Quellcode</span><svg class="ico go" aria-hidden="true"><use href="#i-ext"/></svg></a>
+        </nav>
+        <div class="author" role="group" aria-label="Autor: Marius Kaul" data-en-aria="Author: Marius Kaul">
+          <a class="au-qr" href="https://lu4k87.github.io/" target="_blank" rel="noopener"><span class="qr-code"><svg role="img" aria-label="QR-Code: Projekt-Doku öffnen" data-en-aria="QR code: open the project docs"><use href="#qr-docs"/></svg></span></a>
+          <div>
+            <b>Marius Kaul</b>
+            <span data-en="UX Lab · Rhine-Waal University of Applied Sciences">UX-Labor · Hochschule Rhein-Waal</span>
+            <span class="au-links"><a href="mailto:marius.kaul@hochschule-rhein-waal.de"><svg class="ico" aria-hidden="true"><use href="#i-mail"/></svg>marius.kaul@hochschule-rhein-waal.de</a><a href="https://lu4k87.github.io/" target="_blank" rel="noopener"><svg class="ico" aria-hidden="true"><use href="#i-globe"/></svg>lu4k87.github.io</a></span>
           </div>
         </div>
       </div>
@@ -1009,7 +1026,7 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
   // Lesefluss (js/scroll_flow.js): Einstieg gestaffelt, Köpfe bauen sich auf, Karten aus der Tiefe,
   // Leitlinie mit den Abschnittsnummern, aktiver Abschnitt in der Navigation
   window.ScrollFlow?.init({
-    hero: '.hero-copy > .badge, .h1-name, .hero-copy > .abstract, .hero-copy > .cta-row, .trust > li, .hero-copy > .vcard, .hero-card, .stage-hint',
+    hero: '.hero-copy > .badge, .h1-name, .hero-copy > .abstract, .facts > div, .hero-links > a, .hero-copy > .author, .hero-card, .stage-hint',
     heroExit: '.hero-inner',
     heads: '.land-head, .ch-head, .sec-head, .ct-copy',
     depth: ['.app-frame'],
@@ -1019,7 +1036,11 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
     shine: '.thumb',
     rail: { sections: 'section.sec[id]', label: '.eyebrow .n' },
     progress: '.progress',
-    nav: { links: '.top nav a', reset: '.hero' },
+    nav: { links: '.top nav a', reset: '.hero', hue: '.eyebrow' },
+    relay: [{ box: '.hero-stage', items: '.hero-card' }, { box: '.path', items: 'a' }, '.fx-grid', '.kpis'],
+    spot: [{ box: '.path', items: 'a' }, '.fx-grid', '.kpis', { box: '.list', items: 'a.item' }],
+    fill: '.pips, .hc-seg',
+    lines: ['.strip', 'section.land', '.atlas', '.contact'],
   });
 
   // Funktionsatlas: Ring zeichnet sich einmal auf; Bereich (Kachel oder Ringstück) hervorheben → Zahl + Name in der Mitte

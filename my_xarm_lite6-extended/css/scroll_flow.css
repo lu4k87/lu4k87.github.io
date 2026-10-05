@@ -96,7 +96,42 @@ html.sf-on .sf-h:not(.sf-in) .eyebrow .n { transform: perspective(240px) rotateY
   @keyframes sf-progress { from { transform: scaleX(0); } to { transform: scaleX(1); } }
 }
 
+/* ── Abschnittsfarbe: --sf-glow gleitet weich in die Farbe des aktiven Abschnitts (Leitlinie, Fortschritt, Lichtstreifen) ── */
+@property --sf-glow { syntax: '<color>'; inherits: true; initial-value: #2ee6c8; }
+:root { transition: --sf-glow .9s var(--sf-ease); }
+html .progress { background: var(--sf-glow); }  /* eigene Fortschrittslinie der Seite folgt der Abschnittsfarbe */
+
+/* ── Lichtsaum läuft einmal über die Oberkanten einer Kartenreihe (Staffel von Karte zu Karte) ── */
+.sf-relay { position: absolute; top: 0; left: 0; right: 0; height: 1px; overflow: hidden; pointer-events: none; border-radius: inherit; }
+.sf-relay::before { content: ""; position: absolute; inset: 0 auto 0 0; width: 60%; transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, var(--hue, var(--sf-glow)) 70%, #fff 88%, transparent);
+  animation: sf-relay .8s cubic-bezier(.45, 0, .25, 1) var(--sf-d, 0ms) both; }
+@keyframes sf-relay { to { transform: translateX(170%); } }
+.sf-lit { border-color: color-mix(in srgb, var(--hue, var(--sf-glow)) 55%, var(--line, transparent)) !important; }
+
+/* ── Rahmenlicht unter dem Zeiger (Ring 1 px + Hauch Licht innen); Kegel ragt in die Nachbarkarten ── */
+.sf-spot { position: absolute; inset: 0; pointer-events: none; border-radius: inherit; opacity: 0; transition: opacity .35s var(--sf-ease);
+  background: radial-gradient(260px circle at var(--sf-sx, -999px) var(--sf-sy, -999px), color-mix(in srgb, var(--hue, var(--sf-glow)) 9%, transparent), transparent 70%); }
+.sf-spot::before { content: ""; position: absolute; inset: 0; padding: 1px; border-radius: inherit;
+  background: radial-gradient(200px circle at var(--sf-sx, -999px) var(--sf-sy, -999px), var(--hue, var(--sf-glow)), transparent 72%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask-composite: exclude; }
+.sf-spot-on .sf-spot { opacity: 1; }
+
+/* ── Mini-Balken füllen sich nacheinander ── */
+html.sf-on .sf-fill > * { transform-origin: 0 50%; }
+html.sf-on .sf-fill:not(.go) > * { transform: scaleX(0); }
+html.sf-on .sf-fill.go > * { animation: sf-fill .45s var(--sf-ease) calc(250ms + var(--sf-i, 0) * var(--sf-step, 70ms)) both; }
+@keyframes sf-fill { from { transform: scaleX(0); opacity: .2; } to { transform: none; } }
+
+/* ── Abschnittsgrenze zeichnet sich von der Mitte nach außen, verblasst dann ── */
+.sf-line { position: absolute; top: -1px; left: 0; right: 0; height: 1px; z-index: 1; pointer-events: none; transform: scaleX(0); opacity: 0;
+  background: linear-gradient(90deg, transparent 6%, var(--sf-glow) 35%, var(--sf-glow) 65%, transparent 94%); }
+.sf-line.go { animation: sf-line 1.8s var(--sf-ease) both; }
+@keyframes sf-line { 0% { transform: scaleX(0); opacity: 1; } 45% { transform: scaleX(1); opacity: 1; } 100% { transform: scaleX(1); opacity: 0; } }
+
+@media (prefers-reduced-motion: reduce) { :root { transition: none; } }
+
 @media print {
   html.sf-on .sf, html.sf-on .sf-h *, html.sf-on .sf-depth, html.sf-on .sf-exit { opacity: 1 !important; transform: none !important; animation: none !important; transition: none !important; }
-  .sf-rail, .sf-glare, .sf-shine, .sf-sweep, .sf-progress { display: none !important; }
+  .sf-rail, .sf-glare, .sf-shine, .sf-sweep, .sf-progress, .sf-relay, .sf-spot, .sf-line { display: none !important; }
 }

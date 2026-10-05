@@ -856,6 +856,9 @@ python3 ~/dev_ws/tools/check_ports.py</pre></div></div></li>
     hero: '.hero-copy > .badge, .h1-name, .hero-copy > .abstract, .hero-copy > .cta-row, .trust > li, .stage-badge, .hero-card, .stage-hint',
     heroExit: '.hero-inner',
     items: ['.toc', '.start', '.journey'], cards: '.phase',
+    relay: [{ box: '.hero-stage', items: '.hero-card' }, { box: '.path', items: 'a' }],
+    spot: [{ box: '.path', items: 'a' }],
+    fill: '.pips, .hc-seg',
   });
 
   const qPath = new URLSearchParams(location.search).get('path');

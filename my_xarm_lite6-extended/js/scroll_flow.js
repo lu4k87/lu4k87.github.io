@@ -10,7 +10,13 @@
      shine    Lichtstreif über Bildern                  count    Zahlen im Text zählen hoch
      rail     { sections, label } Leitlinie im linken Rand mit Knoten je Abschnitt
      progress Lesefortschritt: Selektor einer vorhandenen Linie oder { create: '<Kopfzeile>' }
-     nav      { links, reset } aktiver Abschnitt in der Navigation (aria-current)
+     nav      { links, reset, hue } aktiver Abschnitt in der Navigation (aria-current); hue = Element im Abschnitt mit --hue
+              → Leitlinie + Fortschritt gleiten in dessen Farbe (--sf-glow)
+     relay    [{ box, items }] Lichtsaum läuft einmal über die Oberkanten benachbarter Karten (Kette), Karte trägt dabei .sf-lit
+     spot     [{ box, items }] Rahmenlicht folgt dem Zeiger, Nachbarkarten im Umkreis leuchten anteilig mit (nur Maus)
+     fill     Mini-Balken (Pips, Segmente): Kinder füllen sich nacheinander, synchron zum Hochzählen
+     lines    Abschnittsgrenze: Linie zeichnet sich oben von der Mitte nach außen und verblasst
+     box ohne items (String) = alle Kinder von box.
    Elemente, die im selben Moment sichtbar werden, staffeln sich in DOM-Reihenfolge (Schub). Einblenden einmal,
    danach nimmt das Skript seine Klassen weg (eigene Übergänge der Seite gelten wieder).
    prefers-reduced-motion: nur Fortschritt + aktiver Abschnitt, keine Bewegung. Ohne JS: alles sichtbar. */
@@ -38,9 +44,14 @@
   }
 
   // ── aktiver Abschnitt in der Navigation (Lesefortschritt) ──
-  function navSpy({ links, reset }) {
+  function navSpy({ links, reset, hue }) {
     const map = new Map($$(links).map(a => [a.getAttribute('href').slice(1), a]).filter(([id]) => id && document.getElementById(id)));
-    const mark = id => map.forEach((a, k) => a.setAttribute('aria-current', String(k === id)));
+    const tint = id => {
+      const el = hue && id && document.getElementById(id).querySelector(hue);
+      const c = el && getComputedStyle(el).getPropertyValue('--hue').trim();
+      if (c) root.style.setProperty('--sf-glow', c); else root.style.removeProperty('--sf-glow');
+    };
+    const mark = id => { map.forEach((a, k) => a.setAttribute('aria-current', String(k === id))); tint(id); };
     const opt = { rootMargin: '-35% 0px -60% 0px' };
     const spy = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) mark(e.target.id); }), opt);
     map.forEach((a, id) => spy.observe(document.getElementById(id)));
@@ -210,6 +221,69 @@
     layout(); update();
   }
 
+  // ── Kartenreihen: [{ box, items }] oder box (alle Kinder) → [Kartenliste je box] ──
+  const rows = defs => list(defs).flatMap(d => {
+    const { box, items } = typeof d === 'string' ? { box: d } : d;
+    return $$(box).map(b => (items ? $$(items, b) : [...b.children])).filter(r => r.length > 1);
+  });
+  const once = (el, fn, opt) => { const o = new IntersectionObserver(([en]) => { if (en.isIntersecting) { o.disconnect(); fn(); } }, opt); o.observe(el); };
+
+  // ── Lichtsaum läuft einmal von Karte zu Karte über die Oberkanten (Signal entlang der Kette) ──
+  function relay(defs) {
+    if (reduce) return;
+    rows(defs).forEach(cards => {
+      once(cards[0], () => cards.forEach((c, i) => {
+        positioned(c);
+        const s = span('sf-relay', c);
+        s.style.setProperty('--sf-d', `${450 + i * 170}ms`);
+        setTimeout(() => c.classList.add('sf-lit'), 450 + i * 170 + 250);
+        setTimeout(() => c.classList.remove('sf-lit'), 450 + i * 170 + 900);
+        s.addEventListener('animationend', () => s.remove(), { once: true });
+      }), { threshold: .5 });
+    });
+  }
+
+  // ── Rahmenlicht folgt dem Zeiger über die ganze Reihe: jede Karte zeichnet den Kegel relativ zu sich (Nachbarn glühen mit) ──
+  function spot(defs) {
+    if (reduce || !fineHover) return;
+    rows(defs).forEach(cards => {
+      const box = cards[0].parentElement === cards[1].parentElement ? cards[0].parentElement : cards[0].parentElement.parentElement;
+      cards.forEach(c => { positioned(c); span('sf-spot', c); });
+      let rects = [], raf = 0, x = 0, y = 0;
+      const apply = () => { raf = 0; cards.forEach((c, i) => { c.style.setProperty('--sf-sx', `${(x - rects[i].left).toFixed(0)}px`); c.style.setProperty('--sf-sy', `${(y - rects[i].top).toFixed(0)}px`); }); };
+      box.addEventListener('pointerenter', () => { rects = cards.map(c => c.getBoundingClientRect()); box.classList.add('sf-spot-on'); });
+      box.addEventListener('pointermove', e => {
+        if (e.pointerType !== 'mouse') return;
+        if (!rects.length) rects = cards.map(c => c.getBoundingClientRect());
+        x = e.clientX; y = e.clientY; if (!raf) raf = requestAnimationFrame(apply);
+      });
+      box.addEventListener('pointerleave', () => { box.classList.remove('sf-spot-on'); rects = []; });
+      addEventListener('scroll', () => { rects = []; }, { passive: true });
+    });
+  }
+
+  // ── Mini-Balken füllen sich nacheinander (Gesamtdauer ~ Hochzählen, ≤ 900 ms) ──
+  function fill(sel) {
+    if (reduce) return;
+    list(sel).forEach(q => $$(q).forEach(bar => {
+      const n = bar.children.length; if (!n) return;
+      [...bar.children].forEach((c, i) => c.style.setProperty('--sf-i', i));
+      bar.style.setProperty('--sf-step', `${Math.round(700 / n)}ms`);
+      bar.classList.add('sf-fill');
+      once(bar, () => { bar.classList.add('go'); setTimeout(() => bar.classList.remove('sf-fill', 'go'), 2400); }, { threshold: .6 });
+    }));
+  }
+
+  // ── Abschnittsgrenze: Linie zeichnet sich von der Mitte nach außen und verblasst zur normalen Linie ──
+  function lines(sel) {
+    if (reduce) return;
+    list(sel).forEach(q => $$(q).forEach(el => {
+      positioned(el);
+      const s = span('sf-line', el);
+      once(el, () => { s.classList.add('go'); s.addEventListener('animationend', () => s.remove(), { once: true }); }, { rootMargin: '0px 0px -25% 0px' });
+    }));
+  }
+
   window.ScrollFlow = {
     init(cfg = {}) {
       if (cfg.progress) progress(cfg.progress);
@@ -232,6 +306,10 @@
       shine(cfg.shine);
       count(cfg.count);
       if (cfg.rail) rail(cfg.rail);
+      relay(cfg.relay);
+      spot(cfg.spot);
+      fill(cfg.fill);
+      lines(cfg.lines);
     },
   };
 })();

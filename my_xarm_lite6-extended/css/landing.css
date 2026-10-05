@@ -109,9 +109,17 @@ a.hero-card:hover { border-color: color-mix(in srgb, var(--accent) 65%, var(--gl
 @media (hover: none) { .hint-fine { display: none; } .hint-touch { display: inline; } }
 .scroll-cue { grid-column: 1 / -1; justify-self: center; display: grid; justify-items: center; gap: 10px; padding: 6px; font: 700 12px/1 var(--mono); letter-spacing: .22em; text-transform: uppercase; color: var(--fg-2); }
 .scroll-cue:hover { color: var(--fg); }
-.scroll-cue i { position: relative; display: block; width: 1px; height: 40px; overflow: hidden; background: var(--line-strong); }
-.scroll-cue i::after { content: ""; position: absolute; left: 0; top: 0; width: 1px; height: 14px; background: var(--accent); transform: translateY(-14px); animation: cue 2.4s var(--ease-io) 1.8s 3; }
-@keyframes cue { to { transform: translateY(40px); } }
+/* Lichtpunkt mit Schweif gleitet die Linie hinab (3 Läufe, danach alle 10 s einer); Pfeilspitze darunter; blendet beim ersten Scrollen aus */
+.scroll-cue i { position: relative; display: block; width: 1px; height: 46px; overflow: hidden; background: var(--line-strong); }
+.scroll-cue i::after { content: ""; position: absolute; left: 0; top: 0; width: 1px; height: 18px; transform: translateY(-18px);
+  background: linear-gradient(transparent, var(--accent)); animation: cue 2.4s var(--ease-io) 1.8s 3, cue-rest 10s var(--ease-io) 9s infinite; }
+.scroll-cue::after { content: ""; width: 8px; height: 8px; margin-top: -13px; border-right: 1.5px solid var(--accent); border-bottom: 1.5px solid var(--accent); transform: rotate(45deg); }
+@keyframes cue { to { transform: translateY(46px); } }
+@keyframes cue-rest { 24%, 100% { transform: translateY(46px); } }
+@supports (animation-timeline: scroll()) {
+  .scroll-cue { animation: cue-out linear both; animation-timeline: scroll(root); animation-range: 0 180px; }
+  @keyframes cue-out { to { opacity: 0; transform: translateY(10px); } }
+}
 
 /* ═════ Gebaut auf: Technik-Leiste, Zeile Software + Zeile Hardware; Spalten fluchten über beide Zeilen ═════ */
 .strip { border-bottom: 1px solid var(--line); background: var(--surface); }
@@ -239,4 +247,5 @@ a.hero-card:hover { border-color: color-mix(in srgb, var(--accent) 65%, var(--gl
 @media (prefers-reduced-motion: reduce) {
   .deck-on .slide .sl-media img { transform: none; }
   .scroll-cue i::after { display: none; }
+  .scroll-cue { animation: none; }
 }

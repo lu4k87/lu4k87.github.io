@@ -2249,6 +2249,9 @@ const FLOWS = (() => {
     hero: '.hero-copy > .badge, .h1-name, .hero-copy > .abstract, .hero-copy > .cta-row, .trust > li, .hero-copy > .legend, .stage-badge, .hero-card, .stage-hint',
     heroExit: '.hero-inner',
     items: ['.filter', '.panel', '.cards > .grp-h'], cards: '.cards > .fn',
+    relay: [{ box: '.hero-stage', items: '.hero-card' }],
+    spot: [{ box: '.cards', items: '.fn' }],
+    fill: '.pips, .hc-seg',
   });
 
   // Hero-Bühne (js/hero3d.js, Szene „atlas“): ein Bogen je Bereich, ein Punkt je Funktion; Bogenfarben wie im Funktionsatlas

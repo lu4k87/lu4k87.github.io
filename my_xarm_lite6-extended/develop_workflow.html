@@ -1876,7 +1876,11 @@ window.ScrollFlow?.init({
   tilt: { sel: '.fx', lift: -2 },
   rail: { sections: 'section.sec[id]', label: '.eyebrow .n' },
   progress: '.progress',
-  nav: { links: '.top nav a', reset: '.hero' },
+  nav: { links: '.top nav a', reset: '.hero', hue: '.eyebrow' },
+  relay: [{ box: '.hero-stage', items: '.hero-card' }, { box: '.path', items: 'a' }, '.fx-grid', '.steps5', '.ev .kpis'],
+  spot: [{ box: '.path', items: 'a' }, '.fx-grid', '.steps5', '.ev .kpis'],
+  fill: '.pips, .hc-seg',
+  lines: ['.strip', 'section.land', '.atlas', '.contact'],
 });
 
 // Werkzeugkarte: Ring zeichnet sich einmal auf; Gruppe (Kachel oder Ringstück) hervorheben → Zahl + Name in der Mitte
