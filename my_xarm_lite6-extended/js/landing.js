@@ -2,9 +2,11 @@
      Hero      Claim-Zeilen steigen aus der Maske (.hero.is-in, nur mit html.sf-on aus js/scroll_flow.js),
                --hdr = Höhe der Kopfzeile .top
      Zahlen    [data-num] zählen einmal hoch, sobald sichtbar (≤ 900 ms)
-     Folien    [data-deck] mit .deck-track > .slide: blenden mit Richtung über, Inhalt [data-k] gestaffelt; Glas-Pfeile
-               [data-deck-prev|next], Punkte [data-deck-dots], Zähler [data-deck-count], URL [data-deck-url] (data-url je Folie),
-               Sprungknöpfe [data-slide-to], Tasten ←/→, Wischen (Touch). Kein Autoplay. Ohne JS stehen die Folien untereinander.
+     Folien    [data-deck] mit .deck-track > .slide: neue Folie wischt per Maske aus der Laufrichtung herein (data-dir, --dir),
+               Inhalt [data-k] gestaffelt; Ziehen mit Maus/Touch führt die Maske mit (--p), Loslassen ab 22 % oder schnell = weiter;
+               Glas-Pfeile [data-deck-prev|next], Punkte [data-deck-dots], Zähler [data-deck-count], URL [data-deck-url] (data-url
+               je Folie), Sprungknöpfe [data-slide-to] mit gleitender Markierung .deck-ind, Tasten ←/→. Kein Autoplay.
+               Bilder laden vor, sobald das Deck in die Nähe kommt. Ohne JS stehen die Folien untereinander.
    Texte DE/EN folgen <html lang> (MutationObserver). prefers-reduced-motion: keine Bewegung. Herkunft: project_docs.html (cab50a03). */
 (() => {
   'use strict';
@@ -53,24 +55,39 @@
       slides.forEach((s, i) => { s.setAttribute('role', 'group'); s.setAttribute('aria-roledescription', T('Folie', 'slide')); s.setAttribute('aria-label', `${i + 1} / ${slides.length}`); });
       dots.forEach((b, i) => b.setAttribute('aria-label', `${T('Folie', 'Slide')} ${i + 1}: ${title(slides[i])}`));
     };
+    // gleitende Markierung hinter den Sprungknöpfen (nur wenn alle im selben Container stehen)
+    const box = jumps[0]?.parentElement, ind = box && jumps.every(b => b.parentElement === box) ? document.createElement('span') : null;
+    if (ind) { ind.className = 'deck-ind'; ind.setAttribute('aria-hidden', 'true'); box.classList.add('deck-ind-box'); box.prepend(ind); }
+    const place = () => {
+      const b = jumps.find(j => +j.dataset.slideTo === cur);
+      if (!ind || !b) return;
+      Object.assign(ind.style, { width: `${b.offsetWidth}px`, height: `${b.offsetHeight}px`, transform: `translate3d(${b.offsetLeft}px, ${b.offsetTop}px, 0)` });
+    };
+    const roll = el => { el.classList.remove('deck-roll'); void el.offsetWidth; el.classList.add('deck-roll'); };
+    let moved = false;
     const sync = () => {
       slides.forEach((s, i) => { const on = i === cur; s.classList.toggle('is-on', on); s.inert = !on; s.setAttribute('aria-hidden', String(!on)); });
       dots.forEach((b, i) => b.setAttribute('aria-current', String(i === cur)));
       jumps.forEach(b => b.setAttribute('aria-current', String(+b.dataset.slideTo === cur)));
-      if (countEl) countEl.innerHTML = `<b>${String(cur + 1).padStart(2, '0')}</b> / ${String(slides.length).padStart(2, '0')}`;
-      if (urlEl && slides[cur].dataset.url) urlEl.textContent = slides[cur].dataset.url;
+      place();
+      if (countEl) countEl.innerHTML = `<b${moved ? ' class="deck-roll"' : ''}>${String(cur + 1).padStart(2, '0')}</b> / ${String(slides.length).padStart(2, '0')}`;
+      if (urlEl && slides[cur].dataset.url) { urlEl.textContent = slides[cur].dataset.url; if (moved) roll(urlEl); }
       deck.dispatchEvent(new CustomEvent('deck:change', { detail: { index: cur } }));
     };
-    function go(i, dir) {
+    const setDir = d => { deck.dataset.dir = d > 0 ? 'next' : 'prev'; deck.style.setProperty('--dir', d); };
+    // peeked = Folie, die beim Ziehen schon offen liegt: startet ohne Zurücksetzen dort, wo die Maske steht
+    function go(i, dir, peeked) {
       const n = (i + slides.length) % slides.length;
       if (n === cur) return;
       const d = dir || (n > cur ? 1 : -1), prev = slides[cur], next = slides[n];
-      deck.style.setProperty('--dir', d);
-      slides.forEach(s => { if (s !== prev) s.classList.remove('is-out'); });
-      // neue Folie ohne Übergang auf ihre Startseite (aus Richtung d) setzen, dann einblenden
-      next.style.transition = 'none'; void next.offsetWidth; next.style.removeProperty('transition');
+      setDir(d);
+      // alle außer alter + gezogener Folie ohne Übergang auf die Startkante (aus Richtung d) setzen, dann einblenden
+      slides.forEach(s => { if (s !== prev && !(peeked && s === next)) { s.classList.add('is-prep'); s.classList.remove('is-out'); } });
+      void deck.offsetWidth;
+      slides.forEach(s => s.classList.remove('is-prep', 'is-peek'));
+      deck.classList.remove('deck-drag'); deck.style.removeProperty('--p');
       prev.classList.add('is-out');
-      cur = n; sync();
+      cur = n; moved = true; sync();
     }
     deck.querySelectorAll('[data-deck-prev]').forEach(b => b.addEventListener('click', () => go(cur - 1, -1)));
     deck.querySelectorAll('[data-deck-next]').forEach(b => b.addEventListener('click', () => go(cur + 1, 1)));
@@ -81,16 +98,56 @@
       if (!d || e.target.closest('input, textarea, select, [role="tablist"]')) return;
       e.preventDefault(); go(cur + d, d);
     });
-    let x0 = null, y0 = 0;
-    track.addEventListener('pointerdown', e => { if (e.pointerType !== 'mouse') { x0 = e.clientX; y0 = e.clientY; } });
-    track.addEventListener('pointercancel', () => { x0 = null; });
-    track.addEventListener('pointerup', e => {
-      if (x0 === null) return;
-      const dx = e.clientX - x0, dy = e.clientY - y0; x0 = null;
-      if (Math.abs(dx) > 48 && Math.abs(dx) > Math.abs(dy) * 1.4) go(cur + (dx < 0 ? 1 : -1), dx < 0 ? 1 : -1);
+    // Ziehen: waagrecht ab 8 px übernimmt das Deck (senkrecht bleibt Seiten-Scroll), Nachbarfolie folgt dem Zeiger
+    let drag = null;
+    const peek = d => {
+      const n = (cur + d + slides.length) % slides.length;
+      if (drag.d === d) return slides[n];
+      slides.forEach(s => s.classList.remove('is-peek'));
+      setDir(d);
+      slides[n].classList.add('is-prep'); void slides[n].offsetWidth; slides[n].classList.remove('is-prep');
+      slides[n].classList.add('is-peek'); drag.d = d;
+      return slides[n];
+    };
+    const endDrag = commit => {
+      const dr = drag; drag = null;
+      if (!dr?.on) return;
+      if (commit) { go(cur + dr.d, dr.d, true); return; }
+      slides.forEach(s => s.classList.remove('is-peek'));
+      deck.classList.remove('deck-drag'); deck.style.removeProperty('--p');
+    };
+    track.addEventListener('pointerdown', e => {
+      if (e.button !== 0) return;
+      drag = { x0: e.clientX, y0: e.clientY, t0: performance.now(), id: e.pointerId, on: false, d: 0, p: 0 };
     });
+    track.addEventListener('pointermove', e => {
+      if (!drag || e.pointerId !== drag.id) return;
+      const dx = e.clientX - drag.x0, dy = e.clientY - drag.y0;
+      if (!drag.on) {
+        if (Math.abs(dy) > 8 && Math.abs(dy) > Math.abs(dx)) { drag = null; return; }
+        if (Math.abs(dx) < 8) return;
+        drag.on = true; track.setPointerCapture(e.pointerId); deck.classList.add('deck-drag');
+      }
+      if (!dx) return;
+      peek(dx < 0 ? 1 : -1);
+      drag.p = Math.min(1, Math.abs(dx) / track.offsetWidth);
+      if (!reduce) deck.style.setProperty('--p', drag.p.toFixed(4));
+    });
+    track.addEventListener('pointerup', e => {
+      if (!drag || e.pointerId !== drag.id) return;
+      const v = Math.abs(e.clientX - drag.x0) / Math.max(1, performance.now() - drag.t0);
+      endDrag(drag.d && (drag.p > .22 || v > .5));
+    });
+    track.addEventListener('pointercancel', () => endDrag(false));
+    // Bilder vorladen, sobald das Deck in die Nähe kommt (sonst wischt die Maske über ein leeres Feld)
+    new IntersectionObserver(([en], obs) => {
+      if (!en.isIntersecting) return; obs.disconnect();
+      slides.forEach(s => s.querySelectorAll('img[loading="lazy"]').forEach(img => { img.loading = 'eager'; }));
+    }, { rootMargin: '600px 0px' }).observe(deck);
+    if (ind) new ResizeObserver(place).observe(box);
     deck.classList.add('deck-on');
     label(); sync();
+    if (ind) requestAnimationFrame(() => ind.classList.add('is-ready'));
     onLang(label);
   });
 })();

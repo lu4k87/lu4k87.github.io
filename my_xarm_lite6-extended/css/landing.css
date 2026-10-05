@@ -139,23 +139,56 @@ a.hero-card:hover { border-color: color-mix(in srgb, var(--accent) 65%, var(--gl
 .land-head h2 { font-size: var(--fs-h2); line-height: 1.08; letter-spacing: -.035em; font-weight: 800; }
 .land-head p { color: var(--fg-2); font-size: 17px; line-height: 1.55; max-width: 58ch; text-wrap: pretty; }
 
-/* ═════ Folien (data-deck): blenden mit Richtung über, Inhalt gestaffelt; Glas-Pfeile + Punkte; ohne JS untereinander ═════ */
-.deck { display: grid; gap: 14px; min-width: 0; }
+/* ═════ Folien (data-deck): neue Folie wischt per Maske aus der Laufrichtung herein, Bild läuft gegen (Parallaxe), alte Folie
+   gleitet zurück und dunkelt ab; Ziehen (Maus + Touch) führt die Maske mit (--p 0…1), Seitenleisten-Markierung gleitet,
+   Zähler + URL rollen; Glas-Pfeile erscheinen bei Hover; ohne JS untereinander ═════ */
+.deck { display: grid; gap: 14px; min-width: 0; --deck-t: 820ms; --deck-ease: cubic-bezier(.77, 0, .18, 1); }
 .deck-stage { display: grid; min-width: 0; overflow-x: clip; }
 .deck-stage > * { grid-area: 1 / 1; min-width: 0; }
 .deck-track { display: grid; gap: 16px; }
-.deck-on .deck-track { gap: 0; touch-action: pan-y; }
-.deck-on .slide { grid-area: 1 / 1; min-width: 0; opacity: 0; visibility: hidden; transform: translate3d(calc(var(--dir, 1) * 56px), 0, 0);
-  transition: opacity .5s var(--ease-out), transform .75s var(--ease-out), visibility 0s linear .75s; }
-.deck-on .slide.is-out { transform: translate3d(calc(var(--dir, 1) * -56px), 0, 0); }
-.deck-on .slide.is-on { opacity: 1; visibility: visible; transform: none; transition-delay: 0s; }
-.deck-on .slide [data-k] { opacity: 0; transform: translate3d(0, 16px, 0); transition: opacity .45s var(--ease-out), transform .7s var(--ease-out); }
-.deck-on .slide.is-on [data-k] { opacity: 1; transform: none; transition-delay: calc(160ms + var(--k, 0) * 80ms); }
-.deck-on .slide .sl-media img { transform: scale(1.07); transition: transform 2s var(--ease-out); }
-.deck-on .slide.is-on .sl-media img { transform: none; }
+.deck-on .deck-track { gap: 0; touch-action: pan-y; cursor: grab; }
+.deck-drag .deck-track { cursor: grabbing; user-select: none; }
+.deck-on .slide img { -webkit-user-drag: none; }
+.deck-on .slide { grid-area: 1 / 1; min-width: 0; z-index: 0; visibility: hidden; transition: visibility 0s linear var(--deck-t); }
+.deck-on .slide.is-on { z-index: 2; visibility: visible; transition-delay: 0s; }
+.deck-on .slide.is-out { z-index: 1; visibility: visible; }
+.deck-on .slide.is-peek { z-index: 3; visibility: visible; transition-delay: 0s; }
+/* Folie selbst durchsichtig: unter der Maske bleibt die alte Folie sichtbar; beim Ziehen bleibt die alte Bildunterschrift stehen */
+.deck-on .deck-track > .slide { background: transparent; }
+.deck-on .slide :is(.sl-media, .sl-mock) { background-color: var(--surface-2); }
+.deck-on .slide.is-peek figcaption { visibility: hidden; }
+/* Maske: Startkante je Laufrichtung (data-dir am Deck), --p = Ziehfortschritt */
+.deck-on .slide :is(.sl-media, .sl-mock) { clip-path: inset(0 0 0 calc((1 - var(--p, 0)) * 100%)); transition: clip-path var(--deck-t) var(--deck-ease); }
+.deck-on[data-dir="prev"] .slide :is(.sl-media, .sl-mock) { clip-path: inset(0 calc((1 - var(--p, 0)) * 100%) 0 0); }
+.deck-on .slide:is(.is-on, .is-out) :is(.sl-media, .sl-mock) { clip-path: inset(0); }
+.deck-on .slide :is(.sl-media img, .sl-mock > *) { transform: translate3d(calc(var(--dir, 1) * 14% * (1 - var(--p, 0))), 0, 0) scale(calc(1.08 - .08 * var(--p, 0)));
+  transition: transform var(--deck-t) var(--deck-ease), opacity var(--deck-t) var(--deck-ease); }
+.deck-on .slide.is-on :is(.sl-media img, .sl-mock > *) { transform: translate3d(calc(var(--dir, 1) * -10% * var(--p, 0)), 0, 0) scale(calc(1 + .02 * var(--p, 0))); opacity: calc(1 - .55 * var(--p, 0)); }
+.deck-on .slide.is-out :is(.sl-media img, .sl-mock > *) { transform: translate3d(calc(var(--dir, 1) * -10%), 0, 0) scale(1.02); opacity: .45; }
+.deck-on .slide.is-prep, .deck-on .slide.is-prep *, .deck-drag .slide:is(.is-on, .is-peek) * { transition: none !important; }
+/* Bildunterschrift: Zeilen steigen gestaffelt auf, sobald die Maske halb offen ist */
+.deck-on .slide [data-k] { opacity: 0; transform: translate3d(0, 14px, 0); transition: opacity .3s var(--ease-out), transform .3s var(--ease-out); }
+.deck-on .slide.is-on [data-k] { opacity: 1; transform: none; transition: opacity .5s var(--ease-out), transform .7s var(--ease-out); transition-delay: calc(300ms + var(--k, 0) * 70ms); }
+/* gleitende Markierung hinter den Sprungknöpfen [data-slide-to] (z. B. Seitenleiste .af-side) */
+.deck-ind-box { position: relative; }
+.deck-ind-box > :not(.deck-ind) { position: relative; z-index: 1; }
+.deck-ind { position: absolute; top: 0; left: 0; z-index: 0; border: 1px solid color-mix(in srgb, var(--accent) 45%, var(--line)); border-radius: var(--radius);
+  background: color-mix(in srgb, var(--accent) 12%, var(--surface)); pointer-events: none; }
+.deck-ind.is-ready { transition: transform 480ms var(--deck-ease); }
+.deck-ind-box > [data-slide-to][aria-current="true"] { border-color: transparent; background: transparent; }
+/* Zähler + URL rollen in Laufrichtung */
+.deck-roll { display: inline-block; animation: deck-roll 420ms var(--ease-out); }
+@keyframes deck-roll { from { opacity: 0; transform: translate3d(0, calc(var(--dir, 1) * .7em), 0); } }
 .deck-arrows { z-index: 2; align-self: start; display: flex; align-items: center; justify-content: space-between; padding-inline: 14px; pointer-events: none; }
 .deck-arrows.media { aspect-ratio: 16 / 9; }
 .deck-arrows .glass-btn { pointer-events: auto; }
+@media (hover: hover) and (pointer: fine) {
+  .deck-on .deck-arrows .glass-btn { opacity: 0; transition: opacity var(--t-base) var(--ease-out), transform var(--t-base) var(--ease-out), border-color var(--t-fast), color var(--t-fast); }
+  .deck-on .deck-arrows .g-prev { transform: translate3d(-8px, 0, 0); }
+  .deck-on .deck-arrows .g-next { transform: translate3d(8px, 0, 0); }
+  .deck-on .deck-stage:is(:hover, :focus-within) .glass-btn { opacity: 1; transform: none; }
+  .deck-on .deck-stage .glass-btn:active { transform: scale(.94); }
+}
 .glass-btn { width: 48px; height: 48px; flex: none; display: inline-grid; place-items: center; padding: 0; border: 1px solid var(--glass-bd); border-radius: var(--radius);
   background: var(--glass-bg); color: var(--glass-fg); cursor: pointer;
   box-shadow: inset 0 1px 0 var(--glass-hi), inset 0 -1px 0 rgba(255, 255, 255, .05), 0 12px 28px -14px rgba(0, 0, 0, .65);
@@ -245,7 +278,7 @@ a.hero-card:hover { border-color: color-mix(in srgb, var(--accent) 65%, var(--gl
   .deck-arrows .glass-btn { width: 44px; height: 44px; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .deck-on .slide .sl-media img { transform: none; }
+  .deck-on .slide, .deck-on .slide *, .deck-ind, .deck-roll { transition: none !important; animation: none !important; }
   .scroll-cue i::after { display: none; }
   .scroll-cue { animation: none; }
 }
