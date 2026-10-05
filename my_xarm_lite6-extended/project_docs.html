@@ -253,12 +253,6 @@ html.sf-on .at-ring:not(.in) .seg { stroke-dasharray: 0 83; }
 .sec-head h2 { font-size: clamp(25px, 2.7vw, 34px); letter-spacing: -.028em; font-weight: 800; line-height: 1.1; margin-top: 12px; }
 .sec-head p { color: var(--fg-2); max-width: 54ch; font-size: 15px; }
 .sub { color: var(--fg-2); font-size: 14px; }
-/* Überleitung am Abschnittsende: Leitfrage des nächsten Abschnitts */
-.next { display: flex; align-items: center; gap: 14px; width: fit-content; max-width: 100%; margin: 64px 0 0 auto; padding: 14px 20px; border: 1px solid var(--line-strong); border-radius: var(--radius); background: var(--surface); font-size: 14px; transition: border-color var(--t-fast), transform var(--t-base) var(--ease-out); }
-.next:hover { border-color: var(--accent); transform: translateX(3px); }
-.next small { font: 700 11.5px/1 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--accent); white-space: nowrap; }
-.next b { font-weight: 800; }
-.next .ico { color: var(--accent); }
 
 /* Unterlagen: 4 Bildkarten pro Zeile, Bild oben, Titel + Text, Typ + Pfeil als Fußzeile */
 .list { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 20px; }
@@ -390,7 +384,6 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
   .chapter { padding-top: 64px; }
   .sec { padding-bottom: 48px; }
   .sec + .sec { padding-top: 56px; }
-  .next { margin-top: 48px; }
   .fx-grid, .at-areas { grid-template-columns: minmax(0, 1fr); }
   .af-main { padding: 14px; }
   .af-main .kpis-6 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -712,7 +705,6 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
             <a href="claude_workflow.html" target="_blank" rel="noopener"><svg class="ico"><use href="#i-loop"/></svg><b data-en="Workflow with Claude Code">Arbeitsweise mit Claude Code</b><svg class="ico go-s"><use href="#i-go"/></svg><small data-en="How the project is built together with a coding AI">Wie das Projekt gemeinsam mit einer Programmier-KI entsteht</small></a>
           </div>
         </div>
-        <a class="next" href="#webapps"><small data-en="Next · Web apps">Weiter · Web-Apps</small><b data-en="Four apps in the browser, nothing to install">Vier Apps im Browser, ohne Installation</b><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg></a>
       </section>
     </div>
   </div>
@@ -984,7 +976,7 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
     heads: '.land-head, .ch-head, .sec-head, .ct-copy',
     depth: ['.app-frame'],
     groups: ['.strip ul', '.fx-grid', '.at-areas', '.path', '.list', '.dg-grid'],
-    items: ['.at-ring', '.at-loops', '.at-cta', '.next', '.list-note', '.contact .vcard'],
+    items: ['.at-ring', '.at-loops', '.at-cta', '.list-note', '.contact .vcard'],
     tilt: { sel: '.fx, .list > a.item', lift: -2 },
     shine: '.thumb',
     rail: { sections: 'section.sec[id]', label: '.eyebrow .n' },
