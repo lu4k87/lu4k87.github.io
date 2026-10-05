@@ -3,10 +3,11 @@
      dome   Arbeitsraum als Punktkuppel (Reichweite 440 mm um Gelenk 2); Zeiger bewegt den TCP, sonst langsame Acht;
             Pick & Place: drei Ablagefelder + Würfel (Rastergitter, pulsierender Lichthof), Feld anklicken/antippen → Arm setzt den Würfel um,
             Würfel anklicken/antippen → Arm dreht ihn um 90°; Felder leuchten als Klick-Hinweis unregelmäßig kurz auf,
-            Status-Popups oben links (.h3d-steps) blenden die Schritte nacheinander ein; Licht etwas gedämpft
+            Status-Leiste unten mittig (.h3d-steps) blendet die Schritte nacheinander ein; Licht etwas gedämpft
      modes  Steuerwege als Lichtpunkte im Ring (opts.items); aktiver Punkt schickt einen Impuls zum Arm, der Arm zeigt hin
      ghost  Ghost-Arm plant voraus → Freigabe → Arm fährt nach („Erst virtuell, dann real“); Zeiger setzt das Ziel
-     atlas  Funktionen als Punktring nach Bereichen (opts.areas: n je Bereich); Bereich unter dem Zeiger leuchtet
+     atlas  Look wie dome (Punktkuppel, Kamera, Licht); Funktionen als Punktbögen je Bereich auf dem Sockel (opts.areas: n je
+            Bereich); Laser fährt die Bögen langsam ab, Bereich unter dem Laser leuchtet; Zeiger lenkt den Arm, Ring anklicken = Link
      cell   Arbeitsplatz: Tisch mit Raster, ZED Mini mit Sichtkegel, Greifobjekte, Korb; Zeiger bewegt den TCP
    Beschriftungen (modes, atlas) im Overlay (.h3d-lbl, css/landing.css): nur die aktive ist sichtbar und klickbar (Wunsch User
    04.10.2026), für Screenreader verborgen (die Seite nennt alle Einträge selbst). opts.onActive(i) meldet den aktiven Eintrag,
@@ -23,7 +24,7 @@ const CAM = {
   dome: { target: [0, 0, 0.16], camPos: [1.17, -0.9, 0.72] },
   modes: { target: [0, 0, 0.12], camPos: [1.86, -1.46, 1.42] },
   ghost: { target: [0.06, 0, 0.2], camPos: [1.32, -1.05, 0.86] },
-  atlas: { target: [0, 0, 0.1], camPos: [1.84, -1.44, 1.5] },
+  atlas: { target: [0, 0, 0.16], camPos: [1.17, -0.9, 0.72] },
   cell: { target: [0.18, 0, 0.1], camPos: [1.38, -1.12, 0.92] },
 };
 
@@ -43,8 +44,8 @@ function build(L, wrap, host, o) {
   const st = L.stage(THREE, host, { OrbitControls, target: cam.target, camPos: cam.camPos, fov: 32, minDist: 1.1, maxDist: 3.6, onFrame: (dt, t) => tick(dt, t) });
   st.controls.autoRotateSpeed = 0;
   // Licht: Gegenlicht im Akzent; Studio-Umgebung (RoomEnvironment) für weiche Reflexe; Hauptlicht wirft weiche Schatten
-  // dome: Licht gedämpft (LIT), damit Kuppel und Würfel tragen (Wunsch User 05.10.2026)
-  const LIT = scene === 'dome' ? 0.78 : 1;
+  // dome, atlas: Licht gedämpft (LIT), damit Kuppel, Würfel und Punktbögen tragen (Wunsch User 05./06.10.2026)
+  const LIT = scene === 'dome' || scene === 'atlas' ? 0.78 : 1;
   let key = null;
   st.scene.traverse(x => {
     if (x.isDirectionalLight && x.color.getHex() === 0x9cc8ff) x.color.copy(ACC2);
@@ -97,7 +98,8 @@ function build(L, wrap, host, o) {
     dash.computeLineDistances();
     const halo = new THREE.Mesh(new THREE.PlaneGeometry(1.15, 1.15), glowMat(0.34 * LIT));
     halo.position.z = -0.032;
-    ped.add(disc, shadowCatcher(0.398), ring(0.401, 0.0012, 0.85), ring(0.29, 0.0012, 0.22), ring(0.18, 0.0012, 0.16), dash, halo);
+    ped.add(disc, shadowCatcher(0.398), ring(0.401, 0.0012, 0.85), ring(0.18, 0.0012, 0.16), dash, halo);
+    if (scene !== 'atlas') ped.add(ring(0.29, 0.0012, 0.22));   // atlas: dort liegen die Punktbögen
     st.scene.add(ped);
   }
 
@@ -149,11 +151,13 @@ function build(L, wrap, host, o) {
     if (hue) a.style.setProperty('--c', hue);
     lblBox.append(a); return a;
   };
-  const project = (p, el) => {
+  // half = halbe Breite der Beschriftung (px): bleibt dann ganz auf der Bühne statt am Rand abgeschnitten
+  const project = (p, el, half = 0) => {
     v3.copy(p).project(st.camera);
     const w = host.clientWidth, h = host.clientHeight;
-    el.style.transform = `translate(${((v3.x + 1) / 2 * w).toFixed(1)}px, ${((1 - v3.y) / 2 * h).toFixed(1)}px) translate(-50%, -135%)`;
-    return [(v3.x + 1) / 2 * w, (1 - v3.y) / 2 * h];
+    const x = half ? Math.max(half + 6, Math.min(w - half - 6, (v3.x + 1) / 2 * w)) : (v3.x + 1) / 2 * w;
+    el.style.transform = `translate(${x.toFixed(1)}px, ${((1 - v3.y) / 2 * h).toFixed(1)}px) translate(-50%, -135%)`;
+    return [x, (1 - v3.y) / 2 * h];
   };
   const nearest = (e, pts, maxPx = 70) => {
     const r = host.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top;
@@ -164,7 +168,7 @@ function build(L, wrap, host, o) {
 
   // ════ Szenen ════
   let extra = () => {};
-  if (scene === 'dome') {
+  if (scene === 'dome' || scene === 'atlas') {
     // Arbeitsraum: Punktkuppel (Fibonacci-Kugel r = 440 mm um Gelenk 2, nur über dem Tisch), Breiten- und Längenkreise
     const SH = L.JOINTS[0][2], R = L.REACH, dome = new THREE.Group(), pts = [];
     for (let i = 0, M = 640; i < M; i++) {
@@ -172,13 +176,14 @@ function build(L, wrap, host, o) {
       if (z > 0.01) pts.push(R * Math.sin(phi) * Math.cos(th), R * Math.sin(phi) * Math.sin(th), z);
     }
     const pg = new THREE.BufferGeometry(); pg.setAttribute('position', new THREE.Float32BufferAttribute(pts, 3));
-    dome.add(new THREE.Points(pg, new THREE.PointsMaterial({ map: dot, color: ACC, size: 0.014, transparent: true, opacity: 0.8, depthWrite: false, blending: THREE.AdditiveBlending })));
+    const DO = scene === 'atlas' ? 0.6 : 1;   // atlas: Kuppel leiser, die farbigen Bögen tragen
+    dome.add(new THREE.Points(pg, new THREE.PointsMaterial({ map: dot, color: ACC, size: 0.014, transparent: true, opacity: 0.8 * DO, depthWrite: false, blending: THREE.AdditiveBlending })));
     [0.0015, 0.16, 0.34, 0.52].forEach((z, i) => dome.add(ring(Math.sqrt(R * R - (z - SH) ** 2), z, i ? 0.12 : 0.6)));
     const rim = Math.acos(-SH / R);
     for (let m = 0; m < 8; m++) {
       const a = m / 8 * Math.PI * 2, arc = [];
       for (let j = 0; j <= 40; j++) { const p = j / 40 * rim; arc.push(new THREE.Vector3(R * Math.sin(p) * Math.cos(a), R * Math.sin(p) * Math.sin(a), SH + R * Math.cos(p))); }
-      dome.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(arc), lineMat(0.1)));
+      dome.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(arc), lineMat(0.1 * DO)));
     }
     st.scene.add(dome);
     extra = dt => { dome.rotation.z += dt * Math.PI * 2 / 90; };
@@ -186,48 +191,25 @@ function build(L, wrap, host, o) {
 
   // Steuerwege: N Lichtpunkte im Ring, Leitung zum Sockel; aktiver Punkt pulsiert zum Arm, Arm zeigt hin
   let active = 0, pick = null;
-  if (scene === 'modes' || scene === 'atlas') {
-    const items = scene === 'modes' ? (o.items || []) : (o.areas || []);
-    const RM = scene === 'modes' ? 0.6 : 0.58, nodes = [], lbls = [];
-    let segs = [];
-    if (scene === 'modes') {
-      items.forEach((it, i) => {
-        const a = Math.PI * 0.5 - i / items.length * Math.PI * 2, p = new THREE.Vector3(RM * Math.cos(a), RM * Math.sin(a), 0.004);
-        const g = new THREE.Group(), s = sprite(0.075, 0.9), r = new THREE.Mesh(new THREE.RingGeometry(0.018, 0.024, 40), new THREE.MeshBasicMaterial({ color: ACC, transparent: true, opacity: 0.8, side: THREE.DoubleSide, depthWrite: false }));
-        s.position.copy(p).setZ(0.03); r.position.copy(p);
-        const wire = new THREE.Line(new THREE.BufferGeometry().setFromPoints([p, new THREE.Vector3(0.47 * Math.cos(a), 0.47 * Math.sin(a), 0.004)]), lineMat(0.22));
-        g.add(s, r, wire); st.scene.add(g);
-        nodes.push({ a, p, s, r, wire, at: s.position });
-        lbls.push(label(it.label, it.href));
-      });
-    } else {
-      // Bereiche als Bögen: n Punkte je Bereich, Lücke zwischen den Bereichen, Farbe je Bereich
-      const total = items.reduce((s, a) => s + a.n, 0), gap = 1.6, slots = total + gap * items.length, step = Math.PI * 2 / slots;
-      let a = Math.PI * 0.5;
-      const grp = new THREE.Group(); st.scene.add(grp);
-      items.forEach(it => {
-        const col = new THREE.Color(it.color || ACC), pos = [];
-        const a0 = a;
-        for (let k = 0; k < it.n; k++, a -= step) for (let row = 0; row < 3; row++) pos.push((RM + row * 0.028) * Math.cos(a), (RM + row * 0.028) * Math.sin(a), 0.006 + row * 0.004);
-        const geo = new THREE.BufferGeometry(); geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
-        const pts = new THREE.Points(geo, new THREE.PointsMaterial({ map: dot, color: col, size: 0.026, transparent: true, opacity: 0.9, depthWrite: false, blending: THREE.AdditiveBlending }));
-        const arc = new THREE.Line(new THREE.BufferGeometry().setFromPoints(circle(RM - 0.05, 0.003, 40, a0 + step * 0.4, a + step * 0.6)), lineMat(0.5, col));
-        const mid = (a0 + a + step) / 2, at = new THREE.Vector3((RM + 0.03) * Math.cos(mid), (RM + 0.03) * Math.sin(mid), 0.05);
-        grp.add(pts, arc);
-        nodes.push({ a: mid, at, pts, arc });
-        lbls.push(label(`<b>${it.n}</b> ${it.label}`, it.href, it.css || null));
-        a -= step * gap;
-      });
-      segs = nodes;
-    }
+  if (scene === 'modes') {
+    const items = o.items || [];
+    const RM = 0.6, nodes = [], lbls = [];
+    items.forEach((it, i) => {
+      const a = Math.PI * 0.5 - i / items.length * Math.PI * 2, p = new THREE.Vector3(RM * Math.cos(a), RM * Math.sin(a), 0.004);
+      const g = new THREE.Group(), s = sprite(0.075, 0.9), r = new THREE.Mesh(new THREE.RingGeometry(0.018, 0.024, 40), new THREE.MeshBasicMaterial({ color: ACC, transparent: true, opacity: 0.8, side: THREE.DoubleSide, depthWrite: false }));
+      s.position.copy(p).setZ(0.03); r.position.copy(p);
+      const wire = new THREE.Line(new THREE.BufferGeometry().setFromPoints([p, new THREE.Vector3(0.47 * Math.cos(a), 0.47 * Math.sin(a), 0.004)]), lineMat(0.22));
+      g.add(s, r, wire); st.scene.add(g);
+      nodes.push({ a, p, s, r, wire, at: s.position });
+      lbls.push(label(it.label, it.href));
+    });
     const pulse = sprite(0.05, 0), pulseT = { t: 1, from: new THREE.Vector3() };
     st.scene.add(pulse);
     const setActive = i => {
       active = i;
       nodes.forEach((n, k) => {
         const on = k === i;
-        if (n.s) { n.s.scale.setScalar(on ? 0.13 : 0.075); n.s.material.opacity = on ? 1 : 0.7; n.wire.material.opacity = on ? 0.75 : 0.18; }
-        if (n.pts) { n.pts.material.size = on ? 0.04 : 0.024; n.pts.material.opacity = on ? 1 : 0.42; n.arc.material.opacity = on ? 0.95 : 0.25; }
+        n.s.scale.setScalar(on ? 0.13 : 0.075); n.s.material.opacity = on ? 1 : 0.7; n.wire.material.opacity = on ? 0.75 : 0.18;
         lbls[k].classList.toggle('on', on);
       });
       const [x, y] = toward(nodes[i].a); aim(x, y);
@@ -238,7 +220,7 @@ function build(L, wrap, host, o) {
     let hover = false, next = 0;
     host.addEventListener('pointermove', e => {
       if (e.pointerType !== 'mouse' || e.buttons) return;
-      const i = nearest(e, nodes.map(n => n.at), scene === 'atlas' ? 90 : 70);
+      const i = nearest(e, nodes.map(n => n.at), 70);
       hover = i >= 0;
       if (hover && i !== active) setActive(i);
     });
@@ -246,13 +228,12 @@ function build(L, wrap, host, o) {
     setActive(0);
     extra = (dt, t) => {
       if (!reduce && !hover && t > next) { if (next) setActive((active + 1) % nodes.length); next = t + 2800; }
-      nodes.forEach((n, k) => { n.r && n.r.scale.setScalar(k === active ? 1 + 0.25 * Math.sin(t / 260) : 1); });
+      nodes.forEach((n, k) => { n.r.scale.setScalar(k === active ? 1 + 0.25 * Math.sin(t / 260) : 1); });
       if (pulseT.t < 1) {
         pulseT.t = Math.min(1, pulseT.t + dt / 0.7);
         pulse.position.lerpVectors(pulseT.from, new THREE.Vector3(0, 0, 0.03), pulseT.t);
         pulse.material.opacity = Math.sin(pulseT.t * Math.PI);
       }
-      if (dash) dash.rotation.z -= dt * Math.PI * 2 / 60;
       nodes.forEach((n, k) => project(n.at, lbls[k]));
     };
   }
@@ -319,7 +300,8 @@ function build(L, wrap, host, o) {
   const pol = { th: 0, r: 0.25, vth: 0, vr: 0, gth: 0, gr: 0.25, cth: 0, w: 2.6, z: Z, vz: 0, gz: Z, yaw: 0, vyaw: 0, gyaw: 0, tilt: 0, vtilt: 0, gtilt: 0, soft: 1 };
   let job = null;   // Pick & Place (dome): führt die Lage statt Zeiger/Acht
   const eight = ph => { const x = 0.25 + 0.05 * Math.sin(2 * ph), y = 0.16 * Math.sin(ph); return [Math.atan2(y, x), Math.hypot(x, y)]; };
-  let ph = 0, idleRamp = 1;
+  let ph = 0, idleRamp = 1, idle = null;   // idle(dt): eigener Leerlauf statt Acht (atlas), setzt pol.gth/gr/gz
+  const W_FOLLOW = scene === 'atlas' ? 4 : 7;   // atlas: Arm folgt dem Zeiger ruhiger (Ring statt Zielpunkt)
   const setGoalXY = (x, y) => {
     const r = Math.hypot(x, y); if (r < 0.02) return;
     let th = Math.atan2(y, x);
@@ -338,14 +320,14 @@ function build(L, wrap, host, o) {
     else {
       if (!follow) {
         idleRamp = Math.min(1, idleRamp + dt / 1.6);
-        ph += dt * Math.PI * 2 / IDLE_T * idleRamp * idleRamp * (3 - 2 * idleRamp);
-        [pol.gth, pol.gr] = eight(ph);
-      }
+        const ramp = idleRamp * idleRamp * (3 - 2 * idleRamp);
+        if (idle) idle(dt * ramp);
+        else { ph += dt * Math.PI * 2 / IDLE_T * ramp; [pol.gth, pol.gr] = eight(ph); pol.gz = Z + 0.03 + 0.03 * Math.sin(3 * ph); }
+      } else pol.gz = Z;
       pol.gtilt = TILT * Math.max(0, Math.min(1, (pol.gr - R0) / (R1 - R0)));
-      pol.gz = follow ? Z : Z + 0.03 + 0.03 * Math.sin(3 * ph);
       pol.soft = Math.min(1, pol.soft + dt / 1.2);
       const k = 0.2 + 0.8 * pol.soft * pol.soft * (3 - 2 * pol.soft);
-      pol.w += ((follow ? 7 : 2.6) - pol.w) * (1 - Math.exp(-dt * 3));
+      pol.w += ((follow ? W_FOLLOW : 2.6) - pol.w) * (1 - Math.exp(-dt * 3));
       const wl = Math.min(W_MAX, 0.5 / Math.max(R0, pol.r)) * k * dt;   // Schwenk ≤ 500 mm/s am TCP (Lite 6)
       pol.cth += Math.max(-wl, Math.min(wl, pol.gth - pol.cth));
       [pol.th, pol.vth] = spring(pol.th, pol.vth, pol.cth, pol.w, dt);
@@ -366,6 +348,135 @@ function build(L, wrap, host, o) {
       });
       host.addEventListener('pointerleave', () => { if (!follow) return; follow = false; ph = nearestPhase(); idleRamp = 0; });
     }
+  }
+  // ── Funktionsatlas (atlas): Bereiche als Punktbögen auf dem Sockel (n Punkte je Bereich, 3 Reihen, Farbe je Bereich);
+  // die Lücke hinter dem Arm liegt auf ±180°, weil Gelenk 1 bei ±178° endet. Leerlauf: Laser fährt die Bögen langsam ab,
+  // an der Bogenmitte langsamer, am letzten Bereich kehrt er um (kein Umlauf über die Gelenkgrenze). Zeiger: Arm folgt dem
+  // Winkel unter dem Zeiger; Ring anklicken = Link der Beschriftung; Tippen: Arm fährt hin und hält 6 s, zweites Tippen
+  // auf denselben Bereich = Link. Aktiv = Bereich unter dem TCP: Beschriftung, Bogen zeichnet sich in Fahrtrichtung,
+  // Punkte nahe am Laser hellen auf, Laser nimmt die Bereichsfarbe an, beim Wechsel läuft ein Echo-Bogen nach außen
+  // (Wunsch User 06.10.2026).
+  if (scene === 'atlas' && (o.areas || []).length) {
+    const items = o.areas, RA = 0.29, DR = 0.02, RT = RA + DR, GAP = 1.6, HYS = 0.03, SEG = 64;
+    const total = items.reduce((s, a) => s + a.n, 0), step = Math.PI * 2 / (total + GAP * items.length);
+    const nodes = [], lbls = [], tint = ACC.clone(), cBuf = new THREE.Color();
+    let a = Math.PI - step * (1 + GAP) / 2;
+    items.forEach(it => {
+      const col = new THREE.Color(it.color || ACC), pos = [], ang = [], a0 = a;
+      for (let k = 0; k < it.n; k++, a -= step) for (let row = 0; row < 3; row++) { ang.push(a); pos.push((RA + row * DR) * Math.cos(a), (RA + row * DR) * Math.sin(a), 0.004); }
+      const a1 = a + step, mid = (a0 + a1) / 2, geo = new THREE.BufferGeometry();
+      geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+      geo.setAttribute('color', new THREE.Float32BufferAttribute(new Float32Array(pos.length), 3));
+      const pts = new THREE.Points(geo, new THREE.PointsMaterial({ map: dot, vertexColors: true, size: 0.022, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending }));
+      const arc = r => new THREE.BufferGeometry().setFromPoints(circle(r, 0.003, SEG, a0 + step * 0.3, a1 - step * 0.3));
+      const base = new THREE.Line(arc(RA - 0.022), lineMat(0.2, col)), hi = new THREE.Line(arc(RA - 0.022), lineMat(0.9, col)), echo = new THREE.Line(arc(RA + 3 * DR), lineMat(0, col));
+      hi.geometry.setDrawRange(0, 0);
+      st.scene.add(pts, base, hi, echo);
+      nodes.push({ a0, a1, mid, col, ang, pts, hi, echo, glow: 0, eT: 1, fromEnd: false, at: new THREE.Vector3(0.47 * Math.cos(mid), 0.47 * Math.sin(mid), 0.02) });
+      lbls.push(label(`<b>${it.n}</b> ${it.label}`, it.href, it.css || null));
+      a -= step * GAP;
+    });
+    const N = nodes.length, mids = nodes.map(n => n.mid);
+    let half = 0;
+    const off = (n, th) => Math.max(0, th - n.a0, n.a1 - th);   // 0 = TCP über dem Bogen
+    const areaAt = th => nodes.reduce((b, n, i) => (off(n, th) < off(nodes[b], th) ? i : b), 0);
+    const setActive = i => {
+      const n = nodes[i];
+      active = i; n.eT = 0; n.fromEnd = pol.th < n.mid;   // Bogen zeichnet sich von der Seite, über die der Laser kommt
+      lbls.forEach((l, k) => l.classList.toggle('on', k === i));
+      o.onActive && o.onActive(i);
+      half = lbls[i].offsetWidth / 2;   // nach onActive: die Seite schreibt die Beschriftung ggf. neu
+      st.kick();
+    };
+    // Lage direkt setzen (Start, reduzierte Bewegung): Laser über der Bogenmitte, Werkzeug geneigt wie im Lauf
+    const poseAt = th => {
+      Object.assign(pol, { th, cth: th, gth: th, r: RT, gr: RT, z: Z, gz: Z, vth: 0, vr: 0, vz: 0 });
+      pol.tilt = pol.gtilt = TILT * (RT - R0) / (R1 - R0);
+      followTick(0);
+    };
+    // Leerlauf: u = Lage in Bereichen (0 … N−1), Weg je Abschnitt mit weichem Profil (an den Mitten langsamer, nie Stillstand)
+    const ease = f => 0.35 * f + 0.65 * f * f * f * (10 + f * (6 * f - 15));
+    const angAt = u => { if (N < 2) return mids[0]; const i = Math.min(N - 2, Math.floor(u)); return mids[i] + (mids[i + 1] - mids[i]) * ease(u - i); };
+    const uFrom = th => { let best = 0, bd = Infinity; for (let u = 0; u <= N - 1; u += 0.02) { const d = Math.abs(angAt(u) - th); if (d < bd) { bd = d; best = u; } } return best; };
+    const camA = Math.atan2(cam.camPos[1], cam.camPos[0]);
+    let u = areaAt(camA), dir = 1, hold = null, bob = 0;
+    idle = dt => {
+      if (hold) { pol.gth = hold.th; if (performance.now() > hold.until) { hold = null; u = uFrom(pol.th); } }
+      else if (N > 1) {
+        const i = Math.min(N - 2, Math.floor(u));
+        u += dir * dt / (1.8 + 2.4 * Math.abs(mids[i + 1] - mids[i]));
+        if (u >= N - 1) { u = N - 1; dir = -1; } else if (u <= 0) { u = 0; dir = 1; }
+        pol.gth = angAt(u);
+      }
+      bob += dt; pol.gr = RT; pol.gz = Z + 0.012 + 0.01 * Math.sin(bob * 0.9);
+    };
+    const leave = () => { follow = false; u = uFrom(pol.th); idleRamp = 0; };
+    const disc = new THREE.Plane(new THREE.Vector3(0, 0, 1), -0.004);
+    // Zeiger auf der Sockelebene (nicht auf Z): Laserpunkt landet dort, wo der Zeiger auf dem Ring steht
+    const discAt = e => {
+      const r = host.getBoundingClientRect();
+      ndc.set((e.clientX - r.left) / r.width * 2 - 1, 1 - (e.clientY - r.top) / r.height * 2);
+      ray.setFromCamera(ndc, st.camera);
+      return ray.ray.intersectPlane(disc, hit);
+    };
+    const ringAt = e => {
+      if (!discAt(e)) return -1;
+      const d = Math.hypot(hit.x, hit.y); if (d < RA - 0.045 || d > RA + 2 * DR + 0.045) return -1;
+      const th = Math.atan2(hit.y, hit.x), i = areaAt(th);
+      if (off(nodes[active], th) < step * (1 + GAP)) return active;   // Lücke neben dem leuchtenden Bogen zählt zu ihm
+      return off(nodes[i], th) < step * 1.5 ? i : -1;
+    };
+    host.addEventListener('pointermove', e => {
+      if (e.pointerType !== 'mouse' || e.buttons) return;
+      if (!reduce) {
+        const p = discAt(e);
+        if (p && Math.hypot(p.x, p.y) > 0.08) {
+          // Winkel direkt (nicht gespiegelt wie bei dome); nur in der Lücke hinter dem Arm (|θ| > TH) Seite halten
+          const th = Math.atan2(p.y, p.x);
+          follow = true; hold = null; pol.gr = RT;
+          pol.gth = Math.abs(th) > TH && Math.sign(th) !== Math.sign(pol.gth || 1) ? Math.sign(pol.gth || 1) * TH : Math.max(-TH, Math.min(TH, th));
+        }
+        else if (follow) leave();
+      }
+      const i = ringAt(e);
+      host.style.cursor = i >= 0 ? 'pointer' : '';
+      if (reduce && i >= 0 && i !== active) { setActive(i); poseAt(mids[i]); }
+    });
+    host.addEventListener('pointerleave', () => { host.style.cursor = ''; if (follow) leave(); });
+    let down = null;
+    host.addEventListener('pointerdown', e => { down = { x: e.clientX, y: e.clientY, t: performance.now() }; });
+    host.addEventListener('pointerup', e => {
+      if (!down || Math.hypot(e.clientX - down.x, e.clientY - down.y) > 6 || performance.now() - down.t > 600) return;
+      const i = ringAt(e); if (i < 0) return;
+      if (e.pointerType === 'mouse' || (hold && hold.i === i) || (reduce && active === i)) { lbls[i].click(); return; }
+      if (reduce) { setActive(i); poseAt(mids[i]); return; }
+      hold = { i, th: mids[i], until: performance.now() + 6000 };
+    });
+    pick = i => { if (!nodes[i]) return; if (reduce) { setActive(i); poseAt(mids[i]); } else hold = { i, th: mids[i], until: performance.now() + 6000 }; };
+    poseAt(mids[Math.round(u)]); setActive(Math.round(u));
+    const ex = extra;
+    extra = (dt, t) => {
+      ex(dt, t);
+      const th = pol.th;
+      if (!reduce) { const i = areaAt(th); if (i !== active && off(nodes[i], th) + HYS < off(nodes[active], th)) setActive(i); }
+      const k = reduce ? 1 : 1 - Math.exp(-dt * 5);
+      tint.lerp(nodes[active].col, reduce ? 1 : 1 - Math.exp(-dt * 3));
+      beam.material.color.copy(tint); spot.material.color.copy(tint); spotGlow.material.color.copy(tint);
+      nodes.forEach((n, i) => {
+        n.glow += ((i === active ? 1 : 0) - n.glow) * k;
+        // Punkte: Grundhelle, aktiver Bereich heller, Lichtkegel des Lasers (Gauß ~35 mm) wandert mit
+        const c = n.pts.geometry.attributes.color;
+        for (let v = 0; v < n.ang.length; v++) {
+          const d = (n.ang[v] - th) * RT / 0.035, b = 0.3 + 0.45 * n.glow + 0.9 * Math.exp(-d * d);
+          cBuf.copy(n.col).multiplyScalar(b); c.setXYZ(v, cBuf.r, cBuf.g, cBuf.b);
+        }
+        c.needsUpdate = true;
+        const m = Math.round(SEG * Math.min(1, n.glow * 1.15));
+        n.hi.geometry.setDrawRange(n.fromEnd ? SEG - m : 0, m);
+        if (n.eT < 1 && !reduce) { n.eT = Math.min(1, n.eT + dt / 1.2); const e = 1 - (1 - n.eT) ** 3; n.echo.scale.setScalar(1 + 0.2 * e); n.echo.material.opacity = 0.5 * (1 - n.eT); }
+        project(n.at, lbls[i], i === active ? half : 0);
+      });
+    };
   }
   // ── Pick & Place (dome): drei Ablagefelder, Würfel 50 mm. Würfel anklicken/antippen → anfahren, senkrecht aufsetzen,
   // Sauger an, senkrecht lösen, dabei hoch heben (300 mm) und per Gelenk 6 um 90° drehen; der Arm hält ihn schwebend
@@ -664,17 +775,17 @@ function build(L, wrap, host, o) {
     show();
   }
   if (!reduce) st.isBusy = () => true;
-  if (reduce && (scene === 'modes' || scene === 'atlas')) { q = goal; robot.setJoints(q); }
+  if (reduce && scene === 'modes') { q = goal; robot.setJoints(q); }
 
   // Auto-Orbit läuft nach Ruhe weich an statt mit voller Geschwindigkeit zu starten
   let orbitRamp = 0;
   tick = (dt, t) => {
     if (!reduce) {
-      if (scene === 'dome' || scene === 'cell') followTick(dt);
+      if (scene === 'dome' || scene === 'cell' || scene === 'atlas') followTick(dt);
       else if (scene !== 'ghost') damp(dt, 2.5);
       orbitRamp = st.controls.autoRotate ? Math.min(1, orbitRamp + dt / 2.5) : 0;
       st.controls.autoRotateSpeed = 0.3 * orbitRamp * orbitRamp * (3 - 2 * orbitRamp);
-      if (dash && scene !== 'modes' && scene !== 'atlas') dash.rotation.z -= dt * Math.PI * 2 / 60;
+      if (dash) dash.rotation.z -= dt * Math.PI * 2 / 60;
     }
     extra(dt, t);
     place();

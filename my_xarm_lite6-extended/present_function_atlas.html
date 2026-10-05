@@ -75,7 +75,8 @@ button, select, input { font: inherit; color: inherit; }
 .seg button:hover { color: var(--fg); background: color-mix(in srgb, var(--fg) 7%, transparent); }
 .seg button[aria-pressed="true"] { background: var(--surface); color: var(--fg); box-shadow: 0 0 0 1px var(--line-strong); }
 
-/* Kopf = Landing-Hero (css/landing.css, Szene „atlas“ aus js/hero3d.js); darunter die Stufen-Legende der Karten */
+/* Kopf = Landing-Hero (css/landing.css, Szene „atlas“ aus js/hero3d.js); darunter die Stufen-Legende der Karten;
+   Kennzahl-Karten als eigene Zeile unter Text + Bühne wie im Hub (.hero-kpis) */
 .hero a { text-decoration: none; }
 .hero .legend { display: grid; justify-items: start; gap: 8px; max-width: 60ch; font-size: 14px; line-height: 1.45; color: var(--fg-2); }
 .hero .legend b { color: var(--fg); font-weight: 800; }
@@ -396,9 +397,12 @@ footer a { text-decoration: underline; text-underline-offset: 3px; }
       <div class="hero-stage" id="hero-stage">
         <figure class="stage-3d">
           <img class="stage-fallback" src="img/presentation/twin.jpg" width="690" height="480" alt="Digital Twin: virtueller xArm Lite 6 mit Objekten und Kollisionsboxen" data-en-alt="Digital Twin: virtual xArm Lite 6 with objects and collision boxes">
-          <div class="stage-canvas" id="hero3d" role="img" aria-label="3D: xArm Lite 6 in einem Punktring; jeder Bogen ist ein Bereich, jeder Punkt eine Funktion" data-en-aria="3D: xArm Lite 6 inside a ring of dots; each arc is an area, each dot a function"></div>
+          <div class="stage-canvas" id="hero3d" role="img" aria-label="3D: xArm Lite 6 auf einem Sockel unter der Punktkuppel; die Punktbögen auf dem Sockel sind die Bereiche, jeder Punkt eine Funktion; der Laser fährt die Bereiche nacheinander ab" data-en-aria="3D: xArm Lite 6 on a pedestal under the dotted dome; the arcs of dots on the pedestal are the areas, each dot a function; the laser visits the areas one by one"></div>
           <figcaption class="stage-badge"><span class="hchip"><span><b data-count="fn">83</b> <span data-en="functions">Funktionen</span> · <b data-count="area">9</b> <span data-en="areas">Bereiche</span></span></span></figcaption>
         </figure>
+        <p class="stage-hint"><svg class="ico" aria-hidden="true"><use href="#i-pointer"/></svg><span class="hint-fine" data-en="Move the pointer around the arm: the laser follows · click the ring: show the area · drag: rotate the view">Zeiger um den Arm führen: Laser folgt · Ring anklicken: Bereich zeigen · ziehen: Ansicht drehen</span><span class="hint-touch" data-en="Tap the ring: the laser moves there · tap again: show the area · drag: rotate the view">Ring antippen: Laser fährt hin · erneut antippen: Bereich zeigen · ziehen: Ansicht drehen</span></p>
+      </div>
+      <div class="hero-kpis">
         <a class="hero-card hc-1 hc-live" id="hc-area" href="#bereich-ctl">
           <small><svg class="ico" aria-hidden="true"><use href="#i-layers"/></svg><span data-en="Area">Bereich</span></small>
           <strong id="hc-area-n">14</strong>
@@ -414,7 +418,6 @@ footer a { text-decoration: underline; text-underline-offset: 3px; }
           <strong data-count="loop">10</strong>
           <span data-en="return paths shown as a ring">Rückwege als Ring</span>
         </a>
-        <p class="stage-hint"><svg class="ico" aria-hidden="true"><use href="#i-pointer"/></svg><span class="hint-fine" data-en="Point at an area: its functions light up · drag to rotate">Zeiger auf einen Bereich: Funktionen leuchten · ziehen zum Drehen</span><span class="hint-touch" data-en="Drag to rotate">Ziehen zum Drehen</span></p>
       </div>
       <a class="scroll-cue" href="#atlas-list"><span data-en="Scroll">Scrollen</span><i aria-hidden="true"></i></a>
     </div>
@@ -2249,7 +2252,7 @@ const FLOWS = (() => {
     hero: '.hero-copy > .badge, .h1-name, .hero-copy > .abstract, .hero-copy > .cta-row, .trust > li, .hero-copy > .legend, .stage-badge, .hero-card, .stage-hint',
     heroExit: '.hero-inner',
     items: ['.filter', '.panel', '.cards > .grp-h'], cards: '.cards > .fn',
-    relay: [{ box: '.hero-stage', items: '.hero-card' }],
+    relay: [{ box: '.hero-kpis', items: '.hero-card' }],
     spot: [{ box: '.cards', items: '.fn' }],
     fill: '.pips, .hc-seg',
   });
