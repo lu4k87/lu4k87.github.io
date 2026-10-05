@@ -148,11 +148,11 @@ a.kpi:hover { background: var(--surface-2); }
 .author { display: flex; align-items: center; gap: 14px; }
 .author > div { display: grid; gap: 3px; font-size: 14px; color: var(--fg-2); }
 .author b { font-size: 17px; color: var(--fg); }
-.au-links { display: flex; flex-wrap: wrap; gap: 2px 16px; margin-top: 3px; }
+.au-links { display: grid; gap: 2px; margin-top: 3px; }
 .au-links a { display: inline-flex; align-items: center; gap: 6px; color: var(--fg); }
 .au-links a:hover { color: var(--accent); }
 .au-links .ico { width: 15px; height: 15px; color: var(--accent); }
-.au-qr .qr-code { --qr: 54px; padding: 4px; border-radius: var(--radius-sm); display: block; }  /* 54 = 27 Module × 2 px → kleinste scharfe Stufe */
+.au-qr .qr-code { --qr: 81px; padding: 10px; border-radius: var(--radius-sm); display: block; }  /* 81 = 27 Module × 3 px (scharf); Kasten 103 px ≈ Textblock mit 4 Zeilen */
 @media (max-width: 700px) { .au-qr { display: none; } }
 @media (max-width: 560px) { .facts { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 
