@@ -131,7 +131,7 @@
 >> | **`/ui/voice_feedback`** | `std_msgs/String` | *Erkannter Sprachbefehl (z. B. `Home`, `Stop`); die UX \| Control Interface führt ihn aus.* |
 >> | **`/ui/voice_status`** | `std_msgs/String` | *Status für die UI: `Listening...`, `Transcription: <Text>`, `-- No speech detected --`, `Error: …`.* |
 >> | **`/ui/voice_dictation`** | `std_msgs/String` | *Diktat-Text und -Status für das Eingabefeld der VLA-M-Section (Trigger `dictate`).* |
->> | **`/ui/emergency_stop_topic`** | `std_msgs/Empty` | *Sprachbefehl `E-Stop` löst den Not-Halt direkt aus.* |
+>> | **`/ui/emergency_stop_topic`** | `std_msgs/Empty` | *Sprachbefehl `E-Stop` löst den E-STOP direkt aus.* |
 >
 >
 > ![Services](https://img.shields.io/badge/Services-FF1493?style=flat-square)

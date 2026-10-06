@@ -178,7 +178,7 @@ dev_ws/
 │   │   ├── vla_bridge/world_model.py                                      # Relations (on / in / covered, reach, stackable) for the plan check
 │   │   ├── vla_bridge/examples.py                                         # Few-shot example dialogues for small local models
 │   │   ├── vla_bridge/placing.py                                          # Clearance for the gripper when placing next to tall objects
-│   │   ├── vla_bridge/palletizing.py                                      # Palletizing planner for the scene "Logistics - auto palletizing" (pure Python)
+│   │   ├── vla_bridge/palletizing.py                                      # Palletizing planner for the scene "Logistics – auto palletizing" (pure Python)
 │   │   ├── vla_bridge/pallet_job.py                                       # Auto palletizing: plan from the scene, executes carton by carton
 │   │   ├── vla_bridge/session_log.py                                      # Agent rounds as JSON Lines (~/.ros/vla_logs, size-capped)
 │   │   └── vla_bridge/scene.py                                            # Scene from /zed/bboxes_3d (label, colour, grasp sphere, box)

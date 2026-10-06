@@ -178,7 +178,7 @@ dev_ws/
 │   │   ├── vla_bridge/world_model.py                                      # Beziehungen (liegt auf / in / bedeckt, Reichweite, stapelbar) für die Planprüfung
 │   │   ├── vla_bridge/examples.py                                         # Few-Shot-Musterdialoge für kleine lokale Modelle
 │   │   ├── vla_bridge/placing.py                                          # Freiraum für den Greifer beim Ablegen neben hohen Objekten
-│   │   ├── vla_bridge/palletizing.py                                      # Palettier-Planer für die Szene „Logistics - auto palletizing“ (reines Python)
+│   │   ├── vla_bridge/palletizing.py                                      # Palettier-Planer für die Szene „Logistik – automatisch palettieren“ (reines Python)
 │   │   ├── vla_bridge/pallet_job.py                                       # Auto-Palettieren: Plan aus der Szene, Ausführung Karton für Karton
 │   │   ├── vla_bridge/session_log.py                                      # Agenten-Runden als JSON Lines (~/.ros/vla_logs, größenbegrenzt)
 │   │   └── vla_bridge/scene.py                                            # Szene aus /zed/bboxes_3d (Label, Farbe, Greifkugel, Box)
@@ -193,7 +193,7 @@ dev_ws/
 │   └── zed-ros2-wrapper/                                                  # 📷 Stereolabs ZED ROS 2 Kameratreiber
 ├── tools/                                                                 # Werkzeuge
 │   ├── ui_new_code_checker.py                                             # Headless-Prüfung aller Web-UIs inkl. UX | Monitoring + HUD, isoliert (1920/1366/1280 px)
-│   ├── grasp_e2e.py                                                       # FAKE-Test Ende zu Ende: Greifen/Ablegen über die UI, Not-Halt, IK-Vorabprüfung (eigene Domain, --quick ~5 min)
+│   ├── grasp_e2e.py                                                       # FAKE-Test Ende zu Ende: Greifen/Ablegen über die UI, E-STOP, IK-Vorabprüfung (eigene Domain, --quick ~5 min)
 │   ├── vla_eval.py                                                        # Bewertungs-Set für den VLA-Agenten (vla_eval_cases.json, --check ohne LLM)
 │   ├── pre-commit · install_hooks.sh                                      # Git-Vor-Commit-Prüfung der gestageten Dateien (flake8, JSON/YAML, Tokens, check_ws, check_ports, pytest-Suiten, check_showcase; --changed = alles Uncommittete)
 │   ├── check_showcase.py                                                  # README, docs/, Projektseiten, Poster gegen docs/brand/brand.yaml (Namen, tote Links, en/de-Dateien)
