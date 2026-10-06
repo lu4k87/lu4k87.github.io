@@ -2,8 +2,8 @@
    Laser-Zielhilfe senkrecht auf den Tisch; Ziehen dreht die Kamera. Szene je Seite (opts.scene):
      dome   Arbeitsraum als Punktkuppel (Reichweite 440 mm um Gelenk 2); Zeiger bewegt den TCP, sonst langsame Acht;
             Mini-Spiel „Missionen“: Würfel, Quader, Zylinder (Rastergitter) in die passende Aussparung legen lassen, Sprechblasen,
-            Missionsstand in der Szene (Bögen am Bodenring, Lichtschrift davor, Klang-Knopf .h3d-snd), Klänge der Robot Control UI (docs/sounds/); freie Objekte wandern langsam über die
-            Kreisfläche; Formen leuchten als Klick-Hinweis kurz auf,
+            Missionsstand in der Szene (Bögen am Bodenring, Lichtschrift davor, Klang-Knopf .h3d-snd), Klänge der Robot Control UI (docs/sounds/); freie Objekte fahren Schlangenlinien über die
+            Kreisfläche, prallen weich ab, tanzen, suchen ihr Zuhause und plaudern (Story: sie wollen heim); Formen leuchten als Klick-Hinweis kurz auf,
             Arm spricht per Sprechblase am Werkzeug (Spruch + Fortschritt · Schritt · Messwert), Objekte antworten; Licht etwas gedämpft
      modes  Steuerwege als Lichtpunkte im Ring (opts.items); aktiver Punkt schickt einen Impuls zum Arm, der Arm zeigt hin
      ghost  Ghost-Arm plant voraus → Freigabe → Arm fährt nach („Erst virtuell, dann real“); Zeiger setzt das Ziel;
@@ -63,7 +63,7 @@ function build(L, wrap, host, o) {
   }
   if (key) {
     st.renderer.shadowMap.enabled = true; st.renderer.shadowMap.type = THREE.PCFShadowMap;
-    key.castShadow = true; key.shadow.mapSize.set(1024, 1024); key.shadow.radius = 5; key.shadow.bias = -0.0004; key.shadow.normalBias = 0.003;
+    key.castShadow = true; key.shadow.mapSize.set(2048, 2048); key.shadow.radius = 4; key.shadow.bias = -0.0003; key.shadow.normalBias = 0.002;   // 2048: feine Schatten am Arm
     Object.assign(key.shadow.camera, { left: -0.6, right: 0.6, top: 0.6, bottom: -0.6, near: 0.6, far: 3.4 });
   }
   const shadowCatcher = r => { const m = new THREE.Mesh(new THREE.CircleGeometry(r, 96), new THREE.ShadowMaterial({ opacity: 0.42, depthWrite: false })); m.position.z = 0.0008; m.receiveShadow = true; return m; };
@@ -108,10 +108,39 @@ function build(L, wrap, host, o) {
   }
 
   // ── Roboter + Laser-Zielhilfe (Strahl vom TCP senkrecht auf den Tisch, Ring am Auftreffpunkt) ──
+  // Dezente Kontur (Wunsch User 06.10.2026): Rand der Silhouette etwas dunkler (Form liest sich vor hellem Grund), dazu ein
+  // feiner Lichtsaum im Akzent (vor dunklem Grund); beides blickwinkelabhängig (Fresnel), keine Linien. Arm wirft und empfängt
+  // Schatten (Glieder schattieren einander).
+  const contour = (m, dark, rim) => {
+    m.onBeforeCompile = sh => {
+      sh.uniforms.uRim = { value: ACC2.clone().multiplyScalar(rim) };
+      sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\nuniform vec3 uRim;')
+        .replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>
+          float fres = 1.0 - saturate(abs(dot(normal, normalize(vViewPosition))));
+          diffuseColor.rgb *= 1.0 - ${dark.toFixed(2)} * pow(fres, 2.2);
+          totalEmissiveRadiance += uRim * pow(fres, 4.0);`);
+    };
+    return m;
+  };
   const robot = L.buildRobot(THREE, { creased: toCreasedNormals,
-    material: new THREE.MeshPhysicalMaterial({ color: 0xe4e8ea, roughness: 0.32, metalness: 0.05, clearcoat: 0.55, clearcoatRoughness: 0.28 }),
-    toolMaterial: new THREE.MeshPhysicalMaterial({ color: 0x1b2023, roughness: 0.38, metalness: 0.6, clearcoat: 0.3 }) });
-  robot.group.traverse(m => { if (m.isMesh) m.castShadow = true; });
+    material: contour(new THREE.MeshPhysicalMaterial({ color: 0xe4e8ea, roughness: 0.32, metalness: 0.05, clearcoat: 0.55, clearcoatRoughness: 0.28 }), 0.42, 0.22) });
+  // Greifer (Wunsch User 06.10.2026: dezenter, feiner): statt schwarzem Zylinder schlanker Vakuum-Sauger als Drehkörper –
+  // Flansch, hellgrauer Körper mit Fase, Hals, Faltenbalg-Saugnapf aus dunklem Gummi, feiner Lichtring im Akzent; Länge = TOOL
+  const flange = robot.tcp.parent;
+  flange.children.filter(m => m.isMesh && m.geometry.type === 'CylinderGeometry').forEach(m => flange.remove(m));
+  const lathe = (pts, mat) => { const m = new THREE.Mesh(new THREE.LatheGeometry(pts.map(([r, z]) => new THREE.Vector2(r, z)), 40).rotateX(Math.PI / 2), mat); m.castShadow = m.receiveShadow = true; return m; };
+  const TL = robot.tcp.position.z;
+  flange.add(
+    lathe([[1e-4, 0], [0.0215, 0], [0.0215, 0.0035], [0.0185, 0.0045], [1e-4, 0.0045]],
+      new THREE.MeshPhysicalMaterial({ color: 0x3a4146, roughness: 0.34, metalness: 0.75, clearcoat: 0.3 })),
+    lathe([[1e-4, 0.0045], [0.0168, 0.0045], [0.0172, 0.006], [0.0172, 0.031], [0.0158, 0.034], [0.0085, 0.039], [0.0075, 0.0415], [1e-4, 0.0415]],
+      contour(new THREE.MeshPhysicalMaterial({ color: 0xcdd3d6, roughness: 0.4, metalness: 0.15, clearcoat: 0.4, clearcoatRoughness: 0.3 }), 0.35, 0.16)),
+    lathe([[1e-4, 0.0415], [0.0042, 0.0415], [0.0042, TL - 0.0135], [0.0072, TL - 0.0115], [0.0058, TL - 0.0085], [0.0095, TL - 0.0055],
+      [0.0078, TL - 0.0035], [0.0122, TL - 0.0006], [0.0118, TL], [1e-4, TL - 0.001]],
+      new THREE.MeshPhysicalMaterial({ color: 0x1a1e21, roughness: 0.78, metalness: 0, sheen: 0.4, sheenRoughness: 0.6, sheenColor: 0x6a7378 })));
+  const led = new THREE.Mesh(new THREE.TorusGeometry(0.0174, 0.00055, 6, 48), new THREE.MeshBasicMaterial({ color: ACC, transparent: true, opacity: 0.85 }));
+  led.position.z = 0.0275; flange.add(led);
+  robot.group.traverse(m => { if (m.isMesh) m.castShadow = m.receiveShadow = true; });
   const beam = new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(), new THREE.Vector3()]), lineMat(0.9));
   const spot = new THREE.Mesh(new THREE.RingGeometry(0.012, 0.019, 40), new THREE.MeshBasicMaterial({ color: ACC, transparent: true, opacity: 0.95, side: THREE.DoubleSide, depthWrite: false }));
   const spotGlow = new THREE.Mesh(new THREE.PlaneGeometry(0.09, 0.09), glowMat(0.7));
@@ -316,6 +345,9 @@ function build(L, wrap, host, o) {
   // ZF = TCP-Höhe beim Folgen (dome tiefer: Türme ab zwei Objekten sind im Weg → umstoßen); clearZ = Leerlauf bleibt darüber
   const ZF = scene === 'dome' ? 0.07 : Z;
   let ph = 0, idleRamp = 1, idle = null, clearZ = 0, wave = 0;   // idle(dt): eigener Leerlauf statt Acht (atlas), setzt pol.gth/gr/gz
+  // Atmen (Wunsch User 06.10.2026: Arm nie lange starr): ruht der Zeiger auf der Bühne, wiegt sich der TCP leicht um das Ziel
+  // (±1,4° Schwenk, ±5 mm Radius, ±6 mm Höhe, Werkzeug dreht ±8° und nickt ±3°); Takte ohne gemeinsames Vielfaches → nie gleich
+  let bt = 0;
   const W_FOLLOW = scene === 'atlas' ? 4 : 7;   // atlas: Arm folgt dem Zeiger ruhiger (Ring statt Zielpunkt)
   const setGoalXY = (x, y) => {
     const r = Math.hypot(x, y); if (r < 0.02) return;
@@ -338,15 +370,20 @@ function build(L, wrap, host, o) {
         const ramp = idleRamp * idleRamp * (3 - 2 * idleRamp);
         if (idle) idle(dt * ramp);
         else { ph += dt * Math.PI * 2 / IDLE_T * ramp; [pol.gth, pol.gr] = loop(ph); pol.gz = Math.max(clearZ, lift(ph)); pol.gyaw = turn(ph); wave = nod(ph); }
-      } else { pol.gz = ZF; pol.gyaw = 0; wave = 0; }
+      } else {
+        bt += dt;
+        pol.gz = ZF + 0.006 * Math.sin(1.3 * bt) + 0.003 * Math.sin(2.9 * bt + 1);
+        pol.gyaw = 0.14 * Math.sin(0.7 * bt + 0.4); wave = 0.05 * Math.sin(0.9 * bt + 2);
+      }
       pol.gtilt = TILT * Math.max(0, Math.min(1, (pol.gr - R0) / (R1 - R0))) + wave;
       pol.soft = Math.min(1, pol.soft + dt / 1.2);
       const k = 0.2 + 0.8 * pol.soft * pol.soft * (3 - 2 * pol.soft);
       pol.w += ((follow ? W_FOLLOW : 2.6) - pol.w) * (1 - Math.exp(-dt * 3));
       const wl = Math.min(W_MAX, 0.5 / Math.max(R0, pol.r)) * k * dt;   // Schwenk ≤ 500 mm/s am TCP (Lite 6)
       pol.cth += Math.max(-wl, Math.min(wl, pol.gth - pol.cth));
-      [pol.th, pol.vth] = spring(pol.th, pol.vth, pol.cth, pol.w, dt);
-      [pol.r, pol.vr] = spring(pol.r, pol.vr, pol.gr, pol.w * k, dt);
+      const bth = follow ? 0.025 * Math.sin(0.55 * bt) : 0, br = follow ? 0.005 * Math.sin(0.8 * bt + 1) : 0;
+      [pol.th, pol.vth] = spring(pol.th, pol.vth, pol.cth + bth, pol.w, dt);
+      [pol.r, pol.vr] = spring(pol.r, pol.vr, pol.gr + br, pol.w * k, dt);
       [pol.z, pol.vz] = spring(pol.z, pol.vz, pol.gz, 7 * k, dt);
       [pol.yaw, pol.vyaw] = spring(pol.yaw, pol.vyaw, pol.gyaw, 5 * k, dt);   // Werkzeugdrehung (Gelenk 6), nach dem Ablegen zurück auf 0
       [pol.tilt, pol.vtilt] = spring(pol.tilt, pol.vtilt, pol.gtilt, 5 * k, dt);   // Werkzeugneigung (Gelenk 5)
@@ -507,8 +544,8 @@ function build(L, wrap, host, o) {
   // Zählt nur gezeichnete Bilder (Tab verdeckt, Bühne aus dem Bild → Uhr steht); drittes Objekt zu Hause → Endzeit, ggf. Bestzeit.
   // Missionsliste oben links; Lage, Stand, Runden, Zeit, Bestzeit und Klang an/aus in localStorage (F3). Klänge der Robot Control UI,
   // nur als Antwort auf eigene Klicks (Browser erlaubt Ton erst nach einer Geste), leise, abschaltbar.
-  // Wandern: freie Objekte gleiten langsam auf zufälligen Bahnen über die Kreisfläche, ohne sich oder die Formen zu berühren.
-  // Bahnen = Spline durch Stützpunkte mit Minimal-Ruck-Zeitprofil (Weg, Geschwindigkeit, Beschleunigung stetig; Start und
+  // Wandern + Tanzen: freie Objekte fahren lebhaft über die Kreisfläche, prallen weich voneinander und von den Formen ab (Abschnitt unten).
+  // Bahnen des Arms = Spline durch Stützpunkte mit Minimal-Ruck-Zeitprofil (Weg, Geschwindigkeit, Beschleunigung stetig; Start und
   // Kontakt in Ruhe, Kontaktpunkte exakt); Gelenk 6 bleibt in ±178°.
   if (scene === 'dome') {
     const T = (de, en) => (document.documentElement.lang === 'en' ? en : de), mm = v => String(Math.round(v * 1000)).replace('-', '−');
@@ -626,14 +663,32 @@ function build(L, wrap, host, o) {
     const slotXY = s => [s.r * Math.cos(s.a), s.r * Math.sin(s.a)];
     const xy = s => { const [x, y] = slotXY(s); return `x ${mm(x)} · y ${mm(y)} mm`; };
     const ring = (x, y, z) => { flashT = 0; flash.position.set(x, y, z); };
-    // Zufallslage: 6 Plätze im Greifbereich (Winkel −140° … +72°, vor und neben dem Arm; Radius 210–320 mm; ≥ 115 mm Abstand)
+    // Zufallslage: 6 Plätze im Greifbereich (Winkel −140° … +72°, vor und neben dem Arm; Radius 210–320 mm), Abstände fast
+    // maximal (Wunsch User 06.10.2026): 12 Zufallsstarts, je 90 Schritte gegenseitige Abstoßung im Bereich; gewählt wird zufällig
+    // eine Lage mit ≥ 96 % des größten Mindestabstands (kleine Zufallsspanne); welcher Platz Objekt oder Form wird, ist zufällig
     const layout = () => {
-      const s = [], dist = (p, q) => { const [a, b] = slotXY(p), [c, d] = slotXY(q); return Math.hypot(a - c, b - d); };
-      for (let n = 0; n < 3000 && s.length < 6; n++) { const c = { a: rnd(-2.45, 1.25), r: rnd(0.21, 0.32) }; if (s.every(o => dist(o, c) > 0.115)) s.push(c); }
-      if (s.length < 6) s.splice(0, 6, ...[[-2.2, 0.24], [-0.9, 0.24], [0.4, 0.24], [-1.55, 0.3], [-0.25, 0.3], [1.05, 0.3]].map(([a, r]) => ({ a, r })));
+      const A0 = -2.45, A1 = 1.25, R0 = 0.21, R1 = 0.32;
+      const relax = () => {
+        const p = [...Array(6)].map(() => { const a = rnd(A0, A1), r = rnd(R0, R1); return [r * Math.cos(a), r * Math.sin(a)]; });
+        for (let it = 0; it < 90; it++) {
+          const k = 0.004 * (1 - it / 90) + 0.0005;
+          p.forEach((u, i) => {
+            let fx = 0, fy = 0;
+            p.forEach((w, j) => { if (i === j) return; const dx = u[0] - w[0], dy = u[1] - w[1], d2 = dx * dx + dy * dy + 1e-6; fx += dx / d2 ** 1.5; fy += dy / d2 ** 1.5; });
+            const f = Math.hypot(fx, fy) || 1, x = u[0] + k * fx / f, y = u[1] + k * fy / f;
+            const r = Math.max(R0, Math.min(R1, Math.hypot(x, y))), a = Math.max(A0, Math.min(A1, Math.atan2(y, x)));
+            u[0] = r * Math.cos(a); u[1] = r * Math.sin(a);
+          });
+        }
+        let m = Infinity; p.forEach((u, i) => p.forEach((w, j) => { if (j > i) m = Math.min(m, Math.hypot(u[0] - w[0], u[1] - w[1])); }));
+        return { p, m };
+      };
+      const runs = [...Array(12)].map(relax), top = Math.max(...runs.map(x => x.m)), ok = runs.filter(x => x.m >= 0.96 * top);
+      const s = ok[Math.floor(Math.random() * ok.length)].p.map(([x, y]) => ({ a: Math.atan2(y, x), r: Math.hypot(x, y) }));
+      for (let i = s.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [s[i], s[j]] = [s[j], s[i]]; }
       return { objs: s.slice(0, 3), tpls: s.slice(3).map(c => ({ ...c, yaw: rnd(-0.6, 0.6) })), home: [false, false, false], on: [-1, -1, -1], mat: [0, 0, 0] };
     };
-    const putAt = (o, s) => { o.slot = s; const [x, y] = slotXY(s); o.g.position.set(x, y, (o.on ? topZ(o.on) : 0) + o.h / 2 - (o.home ? SINK : 0)); };
+    const putAt = (o, s) => { o.slot = s; o.dz = 0; const [x, y] = slotXY(s); o.g.position.set(x, y, (o.on ? topZ(o.on) : 0) + o.h / 2 - (o.home ? SINK : 0)); };
     // Speichern: Lage, Stand, Runden, Klang (privates Fenster/gesperrt → Spiel läuft ohne Merken)
     const STORE = 'hero3d.missions.v1';
     const save = () => { try { localStorage.setItem(STORE, JSON.stringify({ rounds, mute, t: tRun, best, objs: OBJ.map(o => ({ a: o.slot.a, r: o.slot.r })), tpls: TPL.map(t => t.slot), home: OBJ.map(o => o.home),
@@ -731,32 +786,81 @@ function build(L, wrap, host, o) {
         },
       };
     };
-    const say = bubble('');
-    // Sprüche je Anlass (Wunsch User 06.10.2026): zufällig, nie zweimal hintereinander derselbe; Eintrag [de, en] oder k => [de, en]
+    // say = Objekt spricht, say2 = zweites Objekt antwortet (wartet, bis say fertig ist → Dialog statt zwei Blasen zugleich)
+    const say = bubble(''), say2 = bubble('', () => say.busy);
+    // Sprüche je Anlass (Wunsch User 06.10.2026): Story „Die Objekte wollen nach Hause, der User hilft“; je Anlass viele Sprüche,
+    // gezogen aus einem gemischten Beutel (jeder einmal, bevor sich einer wiederholt; nie zweimal hintereinander derselbe).
+    // Eintrag [de, en] oder K => [de, en] (K = Objektart bzw. Form)
     const L = {
-      hi: [['Hallo! Gib mir was zu tun.', 'Hi! Give me something to do.'], ['Na, eine Runde?', 'Fancy a round?']],
-      go: [['Komme schon!', 'Coming!'], ['Bin unterwegs.', 'On my way.'], ['Moment …', 'One moment …']],
-      grip: [['Hab dich!', 'Got you!'], ['Erwischt!', 'Caught you!'], ['Gut festhalten!', 'Hold on tight!']],
-      lift: [['Und hoch!', 'Up we go!'], ['Hoch mit dir!', 'Up you come!']],
-      hold: [['Wohin damit?', 'Where to?'], ['Wohin soll’s gehen?', 'Where shall it go?']],
-      wait: [['Ich warte …', 'I’m waiting …'], ['Mein Arm wird schwer!', 'My arm is getting heavy!']],
-      home: [['Ab nach Hause!', 'Off home you go!'], ['Gleich da.', 'Almost there.'], ['Festhalten!', 'Hang on!']],
-      stack: [['Ein Turm? Mutig!', 'A tower? Bold!'], ['Schön gerade stapeln …', 'Nice and straight …']],
-      back: [['Na gut, zurück.', 'Fine, back it goes.'], ['Dann eben zurück.', 'Back it goes, then.']],
-      free: [['Neuer Platz!', 'New spot!'], ['Hier passt’s.', 'This works.']],
-      drop: [['Und ab!', 'And down!'], ['Vorsichtig …', 'Gently …'], ['Sauber.', 'Neat.']],
-      done: [['Erledigt!', 'Done!'], ['Fertig!', 'All set!']],
-      near: [['Noch einer!', 'One more!'], ['Fast geschafft!', 'Almost there!']],
-      thanks: [['Ahh…, endlich Zuhause!', 'Ahh…, home at last!'], ['Hier bin ich sicher.', 'I’m safe here.'], ['War ja ’n Kinderspiel!', 'That was child’s play!']],
-      nope: [['Da pass ich nicht rein!', 'I don’t fit in there!'], K => [`Ich bin doch kein ${K.de}!`, `I’m not a ${K.en}!`], ['Das ist nicht meine Form!', 'That’s not my shape!']],
-      full: [['Hier ist kein Platz!', 'No room here!']],
-      whoa: [['Huch!', 'Whoa!'], ['Hoppla!', 'Oops!'], ['Mir wird schwindelig!', 'I’m getting dizzy!']],
-      pick: [['Heb mich auf!', 'Pick me up!']],
+      hi: [['Hallo! Die drei wollen nach Hause – hilfst du mir?', 'Hi! These three want to go home – will you help?'],
+        ['Drei Ausreißer! Bringen wir sie heim?', 'Three runaways! Shall we bring them home?'],
+        ['Klick ein Objekt an, ich trag’s nach Hause.', 'Click an object, I’ll carry it home.'],
+        ['Na, wer will zuerst nach Hause?', 'So, who wants to go home first?']],
+      go: [['Komme schon!', 'Coming!'], ['Bin unterwegs.', 'On my way.'], ['Moment …', 'One moment …'], ['Halt still, ich komme!', 'Hold still, I’m coming!'],
+        ['Ziel erfasst.', 'Target locked.'], ['Bin gleich bei dir!', 'Be right with you!']],
+      grip: [['Hab dich!', 'Got you!'], ['Erwischt!', 'Caught you!'], ['Gut festhalten!', 'Hold on tight!'], ['Sauger an – sitzt!', 'Suction on – locked!'],
+        ['Ganz sanft …', 'Nice and gentle …']],
+      lift: [['Und hoch!', 'Up we go!'], ['Hoch mit dir!', 'Up you come!'], ['Ab in die Luft!', 'Into the air!'], ['Abflug!', 'Take-off!']],
+      hold: [['Wohin damit?', 'Where to?'], ['Wohin soll’s gehen?', 'Where shall it go?'], ['Zeig mir sein Zuhause!', 'Show me its home!'],
+        ['Welche Form passt?', 'Which shape fits?']],
+      wait: [['Ich warte …', 'I’m waiting …'], ['Mein Arm wird schwer!', 'My arm is getting heavy!'], ['Na? Wo wohnt es denn?', 'Well? Where does it live?'],
+        ['Tick, tack …', 'Tick, tock …']],
+      home: [['Ab nach Hause!', 'Off home you go!'], ['Gleich da.', 'Almost there.'], ['Festhalten!', 'Hang on!'], ['Heimflug läuft.', 'Flying you home.'],
+        ['Nächster Halt: Zuhause.', 'Next stop: home.']],
+      stack: [['Ein Turm? Mutig!', 'A tower? Bold!'], ['Schön gerade stapeln …', 'Nice and straight …'], ['Hoch hinaus!', 'Reaching high!']],
+      back: [['Na gut, zurück.', 'Fine, back it goes.'], ['Dann eben zurück.', 'Back it goes, then.'], ['Zurück an den Start.', 'Back to the start.']],
+      free: [['Neuer Platz!', 'New spot!'], ['Hier passt’s.', 'This works.'], ['Ein Plätzchen für dich.', 'A spot just for you.']],
+      drop: [['Und ab!', 'And down!'], ['Vorsichtig …', 'Gently …'], ['Sauber.', 'Neat.'], ['Sanft absetzen …', 'Setting down softly …']],
+      done: [['Erledigt!', 'Done!'], ['Fertig!', 'All set!'], ['Gern geschehen.', 'You’re welcome.'], ['Läuft!', 'Smooth!']],
+      near: [['Noch einer!', 'One more!'], ['Fast geschafft!', 'Almost there!'], ['Einer fehlt noch!', 'Just one left!']],
+      thanks: [['Ahh…, endlich Zuhause!', 'Ahh…, home at last!'], ['Hier bin ich sicher.', 'I’m safe here.'], ['War ja ’n Kinderspiel!', 'That was child’s play!'],
+        ['Danke! Hier gehör ich hin.', 'Thanks! This is where I belong.'], ['Perfekte Passform!', 'Perfect fit!'], ['Schön warm hier.', 'Nice and cosy here.'],
+        ['Endlich daheim!', 'Finally home!']],
+      nope: [['Da pass ich nicht rein!', 'I don’t fit in there!'], K => [`Ich bin doch kein ${K.de}!`, `I’m not a ${K.en}!`], ['Das ist nicht meine Form!', 'That’s not my shape!'],
+        ['Falsches Haus!', 'Wrong house!'], ['Da wohn ich nicht!', 'I don’t live there!']],
+      full: [['Hier ist kein Platz!', 'No room here!'], ['Zu eng hier!', 'Too tight here!'], ['Da steht schon was!', 'Something’s already there!']],
+      whoa: [['Huch!', 'Whoa!'], ['Hoppla!', 'Oops!'], ['Mir wird schwindelig!', 'I’m getting dizzy!'], ['Umgefallen!', 'Timber!']],
+      pick: [['Heb mich auf!', 'Pick me up!'], ['Ich zuerst!', 'Me first!'], ['Klick mich an!', 'Click me!']],
+      // Objekt im Arm
+      ride: [['Juhuu, ich fliege!', 'Wheee, I’m flying!'], ['Nicht so hoch!', 'Not so high!'], ['Schöne Aussicht hier oben!', 'Nice view up here!'],
+        ['Halt mich gut fest!', 'Hold me tight!'], ['Bringst du mich heim?', 'Taking me home?']],
+      // Plaudern in Ruhe: Objekt ruft den User, der Arm antwortet (oder umgekehrt)
+      call: [['Hey du! Bring mich heim!', 'Hey you! Take me home!'], ['Hallo? Hier unten!', 'Hello? Down here!'], ['Ich will nach Hause!', 'I want to go home!'],
+        ['Nimm mich zuerst!', 'Pick me first!'], ['Ich hab Heimweh …', 'I’m homesick …'], K => [`Wo ist nur meine ${K.de}-Form?`, `Where’s my ${K.en} shape?`],
+        ['Klick mich an, bitte!', 'Click me, please!']],
+      callArm: [['Klick drauf, dann fahr ich los.', 'Click it, and I’ll go.'], ['Gleich, gleich!', 'Just a sec!'], ['Einer nach dem anderen.', 'One at a time.'],
+        ['Du entscheidest – ich trage.', 'You choose – I carry.'], ['Ich bin bereit!', 'I’m ready!']],
+      ask: [['Na, wo willst du hin?', 'So, where do you want to go?'], ['Wer wohnt denn wo?', 'Who lives where?'], ['Alle bereit für die Heimreise?', 'Everyone ready to go home?']],
+      askRe: [K => [`In meine ${K.de}-Form!`, `Into my ${K.en} shape!`], ['Nach Hause natürlich!', 'Home, of course!'], ['Da drüben wohn ich!', 'I live over there!'],
+        ['Erst noch ein Tänzchen!', 'One more dance first!']],
+      // Objekt erreicht beim Herumfahren die eigene Form (kommt allein nicht rein)
+      peek: [['Da wohne ich!', 'That’s my home!'], ['Mein Zuhause! Hilf mir rein!', 'My home! Help me in!'], ['So nah … und doch so fern.', 'So close … yet so far.'],
+        K => [`Die ${K.de}-Form ist meine!`, `That ${K.en} shape is mine!`], ['Allein komm ich da nicht rein.', 'I can’t get in on my own.']],
+      peekArm: [['Ein Klick, und du bist drin.', 'One click and you’re in.'], ['Ich helf dir gleich!', 'I’ll help you in a moment!'], ['Schon gesehen!', 'Spotted!']],
+      // Objekte untereinander: Zusammenstoß, Tanz, Wettrennen, zu Hause ↔ draußen
+      bump: [['Autsch!', 'Ouch!'], ['Pass doch auf!', 'Watch it!'], ['Hoppla!', 'Oops!'], ['Vorfahrt!', 'Right of way!'], ['Huch, Verzeihung!', 'Oh, sorry!'],
+        ['Achtung, Kurve!', 'Mind the curve!']],
+      bumpRe: [['Selber!', 'You too!'], ['Tschuldigung!', 'Sorry!'], ['War keine Absicht!', 'Didn’t mean to!'], ['Platz da, ich will heim!', 'Make way, I’m going home!'],
+        ['Na, na, na!', 'Easy now!']],
+      dance: [['Tanzen wir?', 'Shall we dance?'], ['Eine Runde Walzer?', 'A little waltz?'], ['Darf ich bitten?', 'May I have this dance?'], ['Dreh dich mit mir!', 'Spin with me!']],
+      danceRe: [['Na klar!', 'Sure!'], ['Aber nur kurz!', 'Just a quick one!'], ['Ich führe!', 'I’ll lead!'], ['Juhuu!', 'Yay!']],
+      race: [['Wer zuerst zu Hause ist!', 'Race you home!'], ['Ich komm vor dir dran!', 'I’m next, not you!'], ['Wetten, ich bin zuerst daheim?', 'Bet I’ll be home first?']],
+      raceRe: [['Träum weiter!', 'Dream on!'], ['Das werden wir sehen!', 'We’ll see about that!'], ['Abwarten!', 'Wait and see!'], ['Niemals!', 'No way!']],
+      cheer: [['Komm auch rein!', 'Come on in!'], ['Hier ist es schön!', 'It’s lovely in here!'], ['Ich bin schon da!', 'I’m home already!']],
+      cheerRe: [['Ich will auch!', 'Me too!'], ['Gleich bin ich dran!', 'My turn soon!'], ['Angeber!', 'Show-off!']],
+      last: [['Und ich? Vergiss mich nicht!', 'And me? Don’t forget me!'], ['Ich bin der Letzte!', 'I’m the last one!'], ['Alle sind daheim, nur ich nicht …', 'Everyone’s home but me …']],
+      lastArm: [['Dich hol ich auch noch!', 'I’ll get you too!'], ['Du bist gleich dran.', 'You’re up next.'], ['Keine Sorge!', 'Don’t worry!']],
     };
-    const lastLine = new Map();
+    const bags = new Map();
     const line = (pool, arg) => {
-      const n = pool.length, k0 = lastLine.get(pool) ?? -1, k = k0 < 0 || n < 2 ? Math.floor(Math.random() * n) : (k0 + 1 + Math.floor(Math.random() * (n - 1))) % n;
-      lastLine.set(pool, k); const e = pool[k]; return T(...(typeof e === 'function' ? e(arg) : e));
+      let b = bags.get(pool);
+      if (!b) bags.set(pool, b = { q: [], last: -1 });
+      if (!b.q.length) {
+        b.q = pool.map((_, i) => i);
+        for (let i = b.q.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [b.q[i], b.q[j]] = [b.q[j], b.q[i]]; }
+        if (b.q.length > 1 && b.q[b.q.length - 1] === b.last) [b.q[0], b.q[b.q.length - 1]] = [b.q[b.q.length - 1], b.q[0]];
+      }
+      const k = b.last = b.q.pop(), e = pool[k]; return T(...(typeof e === 'function' ? e(arg) : e));
     };
     // Missionen in der Szene statt Card (Wunsch User 06.10.2026, Vorschau Variante A): je Objekt ein Bogen auf dem gestrichelten
     // Bodenring (gestrichelt + Umriss = offen; Band in Objektfarbe läuft 600 ms ein + gefülltes Symbol mit ✓ = zu Hause), Zeit ·
@@ -875,7 +979,7 @@ function build(L, wrap, host, o) {
     })();
     // Neue Runde: Formen + Objekte an ihre Plätze, Objekte ploppen gestaffelt auf (0,6 s, ease-out)
     const newRound = (Lx, t = 0) => {
-      newRoundAt = 0; say.hide(); arm.hide(); tRun = t; started = t > 0; finished = newBest = false;
+      newRoundAt = 0; say.hide(); say2.hide(); arm.hide(); dance = null; tRun = t; started = t > 0; finished = newBest = false;
       Lx.tpls.forEach((s, k) => { const t = TPL[k]; t.slot = s; const [x, y] = slotXY(s); t.g.position.set(x, y, 0.0025); t.g.rotation.z = s.yaw; t.full = false; });
       OBJ.forEach((o, k) => { o.on = Lx.on[k] >= 0 ? OBJ[Lx.on[k]] : null; o.from = o.fall = null; });
       // Türme von unten nach oben aufbauen (Höhe hängt am Objekt darunter); gestapelt = genau über dem Objekt darunter
@@ -894,7 +998,7 @@ function build(L, wrap, host, o) {
     // darunter Fortschritt ●●○○ (Phase 0 Greifen … 3 Ablegen, 4 fertig) · Schritt · Messwert. Schrittwechsel tauscht nur den Text;
     // prio: Ereignis (1) und Rundenende (2) überschreibt kein Schritt (0). Spricht ein Objekt, wartet der Arm
     const arm = (() => {
-      const b = bubble('arm', () => say.busy), at = { g: { position: tcpW }, h: 0.05 };
+      const b = bubble('arm', () => say.busy || say2.busy), at = { g: { position: tcpW }, h: 0.05 };
       let prio = 0;
       return {
         say(text, step = null, ms = 2600, p = 0) {
@@ -1184,6 +1288,7 @@ function build(L, wrap, host, o) {
         { act: grip, dwell: 0.25, say: [L.grip, T('Greifen', 'Grip'), T('Sauger an', 'suction on'), 0] },
         { lazy: () => job.to >= 0 ? place(job.to, true) : [
           { pts: [P(A, R, H + 0.035), P(A - s * 0.2, 0.28, H + 0.13, d * 0.45, 0.35), P(A, 0.22, 0.33, d)], v: 0.3,
+            act: () => { if (Math.random() < 0.6) say.show(o, line(L.ride), 2000, true); },   // Objekt freut sich (oder nicht)
             say: [L.lift, T('Anheben + drehen', 'Lift + rotate'), `z 330 mm · ${T('Gelenk', 'joint')} 6 ${d > 0 ? '+' : '−'}90°`, 1] },
           { hold: P(A, 0.22, 0.33, d) }] },
       ], to);
@@ -1191,7 +1296,7 @@ function build(L, wrap, host, o) {
     // Objekt gewählt → greifen (reduzierte Bewegung: nur markieren)
     const grab = o => {
       if (job) return;
-      cur = o; say.hide(); if (!finished) started = true;
+      cur = o; say.hide(); say2.hide(); if (!finished) started = true;
       if (reduce) { arm.step([L.hold, T('Ziel wählen', 'Choose a target'), T('Form, Stelle, Objekt', 'shape, spot, object'), 1], 1e6); show(); return; }
       fx = { o, t: 0, out: -1 }; o.jolt = o.hopT < 0 ? 0 : -1; sfx('lock', o); ring(o.g.position.x, o.g.position.y, floorZ(o) + 0.003);
       pick(-1);
@@ -1282,46 +1387,189 @@ function build(L, wrap, host, o) {
     // Raster weich auf 45 % und zurück (1,8 s, sin²), bei Hover, Ablauf oder im Arm klingt der Fade aus
     const PULSE = 4, FADE_EVERY = 8, FADE_D = 1.8, FADE_MIN = 0.45, ZAX = new THREE.Vector3(0, 0, 1);
     let pt = 0, fadeAmp = 1;
-    // Wandern (Wunsch User 06.10.2026): freie Objekte gleiten dauerhaft langsam (12 mm/s) auf unregelmäßigen Bahnen über die
-    // Kreisfläche. Kurs dreht mit der Summe zweier langsamer Sinus (eigene Phasen je Objekt) → nie dieselbe Bahn. Abstand zu den
-    // anderen Objekten, allen Formen, dem Startplatz des gewählten Objekts (Rückweg) und der gewählten freien Stelle: weiche
-    // Abstoßung lenkt den Kurs ab 60 mm vorher um (um 20° nach rechts gedreht → zwei Objekte weichen einander aus statt sich
-    // festzuschieben), harte Grenze hält sie nie näher als Grundfläche + 15 mm. Bleibt im Greifbereich (Radius 210–330 mm, Gelenk 1
-    // ±140°, sanft vom Rand weggelenkt). Steht: zu Hause, gewählt/im Arm, beim Aufploppen, unter dem Zeiger (leicht anklickbar),
-    // 3 s nach dem Ablegen; an- und auslaufen weich (0,8 s). Quader und Würfel drehen sich langsam in Fahrtrichtung.
-    const W_V = 0.012, W_R0 = 0.21, W_R1 = 0.33, W_A = 2.45, W_GAP = 0.015, W_SEE = 0.06, W_REST = 3;
-    const W_C = Math.cos(-0.35), W_S = Math.sin(-0.35), wrapA = a => Math.atan2(Math.sin(a), Math.cos(a));
-    OBJ.forEach(o => Object.assign(o, { wTh: rnd(-Math.PI, Math.PI), wP: [rnd(0, 7), rnd(0, 7)], wS: 0, wRest: 0, wFix: true }));
+    // Wandern + Tanzen (Wunsch User 06.10.2026: lebhafter, schneller, längere Bahnen, Schlangenlinien, mehr Drehen, weiches
+    // Abprallen, „tanzen und miteinander agieren“): freie Objekte fahren mit ~26 mm/s (Tempo schwankt ±30 %) auf Schlangenlinien
+    // (Kurs pendelt ±29° in 3,4 s um einen langsam driftenden Grundkurs → lange, nie gleiche Bahnen), drehen sich um die Hochachse
+    // (eigener Drall, wechselt Richtung) und wiegen sich beim Fahren seitlich. Kontakt mit Objekt, Form oder Rand des Greifbereichs:
+    // weiche Feder-Dämpfer-Kraft + Kurs gespiegelt → prallen sanft ab, mit kleinem Hüpfer und Drall. Abstand = Ausdehnung beider
+    // Grundflächen in Stoßrichtung (sieht nach Berührung aus, harte Grenze verhindert Überlappen).
+    // Heimweh (Story): je Objekt alle 14–26 s für 6–9 s Kurs zur eigenen Form, kreist um sie, kommt allein nicht hinein → ruft.
+    // Tanz: stoßen zwei freie Objekte zusammen und ist ringsum Platz, drehen sie sich 3,6–4,6 s umeinander (Pirouette, hüpfen im
+    // Takt), danach fahren sie auseinander. Steht: zu Hause, gewählt/im Arm, beim Aufploppen, unter dem Zeiger (leicht anklickbar),
+    // 3 s nach dem Ablegen; an- und auslaufen weich (0,8 s).
+    const W_V = 0.026, W_R0 = 0.2, W_R1 = 0.33, W_A = 2.45, W_GAP = 0.004, W_SOFT = 0.014, W_REST = 3, W_K = 9, W_C = 3;
+    const wrapA = a => Math.atan2(Math.sin(a), Math.cos(a));
+    // Ausdehnung der Grundfläche in Richtung (nx, ny) bei Drehung yaw (Zylinder: Radius)
+    const sup = (K, yaw, nx, ny) => {
+      if (K.id === 'cyl') return K.S[0] / 2;
+      const c = Math.cos(yaw), s = Math.sin(yaw);
+      return Math.abs(nx * c + ny * s) * K.S[0] / 2 + Math.abs(-nx * s + ny * c) * K.S[1] / 2;
+    };
+    OBJ.forEach(o => Object.assign(o, { wTh: rnd(-Math.PI, Math.PI), wP: [rnd(0, 7), rnd(0, 7), rnd(0, 7)], wS: 0, wRest: 0, wFix: true,
+      vx: 0, vy: 0, spin: 0, wob: rnd(0, 7), dz: 0, bump: 1, bumpCD: 0, evCD: 0, homeAt: rnd(8, 18), homeTill: 0, peeked: false, orb: Math.random() < 0.5 ? 1 : -1, danceCD: 0 }));
+    let dance = null, chatAt = 8, bumpTalkAt = 0, lastScene = '', reply = null;   // reply = Antwort eines Objekts auf den Arm (später)
+    // Plaudern nur in Ruhe (kein Ablauf, nichts gewählt, keine Blase offen); Klänge nie im Leerlauf (quiet)
+    const canTalk = () => !job && !cur && !newRoundAt && !say.busy && !say2.busy && arm.left <= 0;
+    const talk = (a, ta, b, tb, ms = 2400) => { say.show(a, ta, ms, true); if (b === 'arm') arm.say(tb, null, ms, 1); else if (b) say2.show(b, tb, ms, true); };
+    const freeObjs = () => OBJ.filter(o => !o.home && !o.fall && o.popT >= 1 && o !== cur);
+    const anyOf = a => a[Math.floor(Math.random() * a.length)];
+    // Szenen abwechselnd (nie zweimal dieselbe hintereinander): Objekt ruft den User, Arm fragt, Wettrennen, zu Hause ↔ draußen, der Letzte
+    const chat = () => {
+      const free = freeObjs(), home = OBJ.filter(o => o.home);
+      if (!free.length) return;
+      const sc = ['call', 'ask'];
+      if (!clicked) sc.push('call');
+      if (free.length >= 2) sc.push('race', 'race');
+      if (home.length && free.length) sc.push('cheer');
+      if (free.length === 1) sc.push('last', 'last');
+      const opts = sc.filter(x => x !== lastScene), s = lastScene = anyOf(opts.length ? opts : sc), a = anyOf(free);
+      if (s === 'call') talk(a, line(L.call, a.K), 'arm', line(L.callArm));
+      else if (s === 'ask') { arm.say(line(L.ask), null, 2400, 1); reply = { at: clk + 2.6, o: a, text: line(L.askRe, a.K) }; }   // Arm fragt zuerst
+      else if (s === 'race') { const b = anyOf(free.filter(x => x !== a)); talk(a, line(L.race), b, line(L.raceRe)); }
+      else if (s === 'cheer') talk(anyOf(home), line(L.cheer), a, line(L.cheerRe));
+      else talk(a, line(L.last), 'arm', line(L.lastArm));
+    };
+    // Tanz nur mit Platz: Kreis um die Mitte (Bahn + Grundfläche) frei von Formen und anderen Objekten, im Greifbereich
+    const startDance = (a, b) => {
+      const pa = a.g.position, pb = b.g.position, cx = (pa.x + pb.x) / 2, cy = (pa.y + pb.y) / 2;
+      const r1 = (foot(a.K) + foot(b.K)) / 2 + 0.004, R = r1 + Math.max(foot(a.K), foot(b.K)), rc = Math.hypot(cx, cy);
+      if (rc - R < 0.15 || rc + R > 0.37 || Math.abs(Math.atan2(cy, cx)) > 2.35) return false;
+      if (TPL.some(t => Math.hypot(t.g.position.x - cx, t.g.position.y - cy) < R + foot(t.K))) return false;
+      if (OBJ.some(q => q !== a && q !== b && !q.home && Math.hypot(q.g.position.x - cx, q.g.position.y - cy) < R + foot(q.K))) return false;
+      dance = { a, b, t: 0, D: rnd(3.6, 4.6), cx, cy, rr: Math.hypot(pa.x - cx, pa.y - cy), r1, phi: Math.atan2(pa.y - cy, pa.x - cx), dir: Math.random() < 0.5 ? 1 : -1 };
+      if (canTalk()) talk(a, line(L.dance), b, line(L.danceRe), 1900);
+      return true;
+    };
+    const endDance = () => {
+      if (!dance) return;
+      [dance.a, dance.b].forEach(o => { o.wTh = Math.atan2(o.g.position.y - dance.cy, o.g.position.x - dance.cx); o.danceCD = clk + rnd(10, 16); o.bump = 0; });
+      dance = null;
+    };
+    // Zusammenstoß zweier fahrender Objekte: Tanz (wenn Platz) oder kurzer Wortwechsel (selten, mit Pause)
+    const bumped = (a, b) => {
+      if (!dance && clk > a.danceCD && clk > b.danceCD && Math.random() < 0.35 && startDance(a, b)) return;
+      if (clk > bumpTalkAt && Math.random() < 0.45 && canTalk()) { talk(a, line(L.bump), b, line(L.bumpRe), 1800); bumpTalkAt = clk + 7; }
+    };
+    // Wand/Hindernis berührt (gap = Abstand der Grundflächen, n = Normale zum Objekt hin, ov = Geschwindigkeit des anderen)
+    // Weiter weg (≤ 110 mm) lenkt der Kurs nur sanft weg → Objekte verteilen sich über die Fläche, ohne einander zu meiden
+    const contact = (o, nx, ny, gap, ovx = 0, ovy = 0, other = null) => {
+      const dtc = contact.dt, hx = Math.cos(o.wTh), hy = Math.sin(o.wTh), hn = hx * nx + hy * ny;
+      if (hn < 0 && gap < 0.11) {   // Kurs zeigt auf das Hindernis → zur Spiegelung drehen (nah kräftig, fern sanft)
+        const w = gap < W_SOFT ? 3 : 0.5 * (1 - gap / 0.11);
+        o.wTh += wrapA(Math.atan2(hy - 2 * hn * ny, hx - 2 * hn * nx) - o.wTh) * Math.min(1, dtc * w);
+      }
+      if (gap >= W_SOFT) return;
+      const vn = (o.vx - ovx) * nx + (o.vy - ovy) * ny;
+      const acc = W_K * (W_SOFT - gap) - (vn < 0 ? W_C * vn : 0);
+      o.vx += nx * acc * dtc; o.vy += ny * acc * dtc;
+      if (vn < -0.004 && clk > o.bumpCD) {
+        // Kurs spiegeln (Schlangen-Anteil abziehen, damit der neue Kurs genau der gespiegelte ist), Drall + Hüpfer
+        const rx = o.vx - 2 * vn * nx, ry = o.vy - 2 * vn * ny;
+        o.wTh = Math.atan2(ry, rx) - 0.5 * Math.sin(o.wP[2]);
+        o.spin += Math.sign(nx * o.vy - ny * o.vx || 1) * rnd(1.2, 2.2); o.bump = 0; o.bumpCD = clk + 0.6;
+        // Ereignis einmal je Paar (der Partner spiegelt seinen Kurs in seinem eigenen Durchlauf)
+        if (other && other.wS > 0.5 && clk > o.evCD && clk > other.evCD) { o.evCD = other.evCD = clk + 1; bumped(o, other); }
+      }
+    };
+    const unbank = (o, dt) => { const k = Math.min(1, dt * 6); o.g.rotation.x -= o.g.rotation.x * k; o.g.rotation.y -= o.g.rotation.y * k; };
+    const danceTick = dt => {
+      const D = dance; D.t += dt;
+      const env = Math.max(0, Math.min(1, D.t / 0.6, (D.D - D.t) / 0.6)), w = 1.9 * env * env * (3 - 2 * env);
+      D.phi += D.dir * w * dt; D.rr += (D.r1 - D.rr) * Math.min(1, dt * 3);
+      [[D.a, 0], [D.b, Math.PI]].forEach(([o, s]) => {
+        const p = o.g.position, x = D.cx + D.rr * Math.cos(D.phi + s), y = D.cy + D.rr * Math.sin(D.phi + s);
+        if (dt > 0) { o.vx = (x - p.x) / dt; o.vy = (y - p.y) / dt; }
+        p.x = x; p.y = y; o.slot = { a: Math.atan2(y, x), r: Math.hypot(x, y) };
+        if (o.hopT >= 0) return;
+        o.g.rotation.z += D.dir * 3.2 * w * dt; unbank(o, dt);
+        const dz = 0.007 * Math.abs(Math.sin(Math.PI * 2.6 * D.t)) * env; p.z += dz - o.dz; o.dz = dz; o.swell = 0.6 * dz / 0.007;
+      });
+      if (D.t >= D.D) endDance();
+    };
     const wander = dt => {
-      const obs = TPL.map(t => ({ x: t.g.position.x, y: t.g.position.y, f: foot(t.K) + 0.005 }));
-      if (cur) { const [x, y] = slotXY(cur.slot); obs.push({ x, y, f: foot(cur.K) }); }
-      if (cur && freeS) obs.push({ x: freeS.r * Math.cos(freeS.a), y: freeS.r * Math.sin(freeS.a), f: foot(cur.K) });
+      contact.dt = dt;
+      // feste Hindernisse: Formen, Startplatz des gewählten Objekts (Rückweg), gewählte freie Stelle
+      const circ = [];
+      if (cur) { const [x, y] = slotXY(cur.slot); circ.push({ x, y, f: foot(cur.K) }); }
+      if (cur && freeS) circ.push({ x: freeS.r * Math.cos(freeS.a), y: freeS.r * Math.sin(freeS.a), f: foot(cur.K) });
+      const movers = [];
       OBJ.forEach(o => {
         const fix = o.home || o === cur || o.popT < 1 || o.on || o.fall || above(o) || (cur && cur.from === o);   // Türme stehen
-        if (fix) { o.wS = 0; o.wFix = true; return; }
+        const inDance = dance && (dance.a === o || dance.b === o);
+        if (fix) {
+          if (inDance) endDance();
+          o.wS = 0; o.wFix = true; o.vx = o.vy = 0; if (o.hopT < 0) o.swell = 0;
+          if (o.fall || o.on || o.home || (held && o === cur)) o.dz = 0;
+          else { if (o.dz) { o.g.position.z -= o.dz; o.dz = 0; } if (o.hopT < 0) unbank(o, dt); }
+          return;
+        }
         if (o.wFix) { o.wFix = false; o.wRest = clk + W_REST; }   // eben abgelegt/aufgeploppt: erst liegen bleiben
         const run = o !== hoverObj && clk >= o.wRest && !newRoundAt;
+        if (inDance && !run) endDance();
         o.wS += ((run ? 1 : 0) - o.wS) * Math.min(1, dt / 0.8);
-        if (o.wS < 1e-3) return;
-        const p = o.g.position, fo = foot(o.K), near = [...obs, ...OBJ.filter(q => q !== o && !q.home && q !== cur).map(q => ({ x: q.g.position.x, y: q.g.position.y, f: foot(q.K) }))];
-        let ax = 0, ay = 0;
-        near.forEach(n => {
-          const dx = p.x - n.x, dy = p.y - n.y, d = Math.hypot(dx, dy) || 1e-6, m = fo + n.f + W_GAP;
-          if (d < m + W_SEE) { const k = 2.5 * (1 - (d - m) / W_SEE) ** 2; ax += k * (dx * W_C - dy * W_S) / d; ay += k * (dx * W_S + dy * W_C) / d; }
+        if (o.wS > 1e-3 && !inDance) movers.push(o);
+        else if (!inDance) { o.vx = o.vy = 0; if (o.dz) { o.g.position.z -= o.dz; o.dz = 0; } if (o.hopT < 0) { unbank(o, dt); o.swell = 0; } }
+      });
+      if (dance) danceTick(dt);
+      movers.forEach(o => {
+        const p = o.g.position, yaw = o.g.rotation.z, k = OBJ.indexOf(o), home = TPL[k];
+        // Kurs: Grundkurs driftet langsam (lange Bahnen); Heimweh lenkt zur eigenen Form und lässt sie umkreisen
+        o.wTh += dt * (0.16 * Math.sin(0.09 * clk + o.wP[0]) + 0.1 * Math.sin(0.14 * clk + o.wP[1]));
+        if (!o.homeTill && clk >= o.homeAt && !home.full) { o.homeTill = clk + rnd(6, 9); o.peeked = false; }
+        if (o.homeTill) {
+          const hx = home.g.position.x - p.x, hy = home.g.position.y - p.y, d = Math.hypot(hx, hy);
+          if (clk > o.homeTill || home.full) { o.homeTill = 0; o.homeAt = clk + rnd(14, 26); }
+          else {
+            const want = Math.atan2(hy, hx) + (d < 0.12 ? o.orb * 1.35 : 0);
+            o.wTh += wrapA(want - o.wTh) * Math.min(1, dt * 1.4);
+            if (d < 0.12 && !o.peeked) { o.peeked = true; if (canTalk()) talk(o, line(L.peek, o.K), Math.random() < 0.5 ? 'arm' : null, line(L.peekArm)); }
+          }
+        }
+        o.wP[2] += dt * Math.PI * 2 / 3.4;
+        const h = o.wTh + 0.5 * Math.sin(o.wP[2]), V = W_V * (1 + 0.3 * Math.sin(0.31 * clk + o.wP[1])) * o.wS, kv = Math.min(1, dt * 2.2);
+        o.vx += (V * Math.cos(h) - o.vx) * kv; o.vy += (V * Math.sin(h) - o.vy) * kv;
+        // Kontakte: andere Objekte (nicht zu Hause, nicht im Arm), Formen, gesperrte Stellen, Rand des Greifbereichs
+        const hard = [];
+        OBJ.forEach(q => {
+          if (q === o || q.home || (held && q === cur)) return;
+          const dx = p.x - q.g.position.x, dy = p.y - q.g.position.y, d = Math.hypot(dx, dy) || 1e-6, nx = dx / d, ny = dy / d;
+          const m = sup(o.K, yaw, nx, ny) + sup(q.K, q.g.rotation.z, nx, ny) + W_GAP;
+          contact(o, nx, ny, d - m, q.vx || 0, q.vy || 0, q); hard.push([q.g.position.x, q.g.position.y, m]);
         });
-        const r = Math.hypot(p.x, p.y), a = Math.atan2(p.y, p.x), ux = p.x / r, uy = p.y / r, edge = (v, m) => 2.5 * Math.max(0, 1 - v / m) ** 2;
-        const kr = edge(r - W_R0, W_SEE) - edge(W_R1 - r, W_SEE), ka = edge(W_A - Math.abs(a), 0.25) * Math.sign(a);
-        ax += kr * ux + ka * uy; ay += kr * uy - ka * ux;
-        o.wTh += dt * (0.45 * Math.sin(0.23 * clk + o.wP[0]) + 0.3 * Math.sin(0.37 * clk + o.wP[1]));
-        if (ax || ay) o.wTh += wrapA(Math.atan2(Math.sin(o.wTh) + ay, Math.cos(o.wTh) + ax) - o.wTh) * Math.min(1, dt * 1.6);
-        const v = W_V * o.wS * dt;
-        p.x += v * Math.cos(o.wTh); p.y += v * Math.sin(o.wTh);
+        TPL.forEach(t => {
+          const dx = p.x - t.g.position.x, dy = p.y - t.g.position.y, d = Math.hypot(dx, dy) || 1e-6, nx = dx / d, ny = dy / d;
+          const m = sup(o.K, yaw, nx, ny) + sup(t.K, t.g.rotation.z, nx, ny) + 0.012;
+          contact(o, nx, ny, d - m); hard.push([t.g.position.x, t.g.position.y, m]);
+        });
+        circ.forEach(c => {
+          const dx = p.x - c.x, dy = p.y - c.y, d = Math.hypot(dx, dy) || 1e-6, m = foot(o.K) + c.f;
+          contact(o, dx / d, dy / d, d - m); hard.push([c.x, c.y, m]);
+        });
+        const r = Math.hypot(p.x, p.y) || 1e-6, a = Math.atan2(p.y, p.x), ux = p.x / r, uy = p.y / r;
+        contact(o, ux, uy, (r - W_R0) - 0.006); contact(o, -ux, -uy, (W_R1 - r) - 0.006);
+        contact(o, uy * Math.sign(a), -ux * Math.sign(a), r * (W_A - Math.abs(a)) - 0.006);
+        p.x += o.vx * dt; p.y += o.vy * dt;
         // harte Grenzen: nie in ein Hindernis, nie aus dem sicheren Greifbereich (wie freie Ablage: 170–340 mm, ±146°)
-        near.forEach(n => { const dx = p.x - n.x, dy = p.y - n.y, d = Math.hypot(dx, dy) || 1e-6, m = fo + n.f + W_GAP; if (d < m) { p.x = n.x + dx / d * m; p.y = n.y + dy / d * m; } });
+        hard.forEach(([x, y, m]) => { const dx = p.x - x, dy = p.y - y, d = Math.hypot(dx, dy) || 1e-6; if (d < m - W_GAP) { p.x = x + dx / d * (m - W_GAP); p.y = y + dy / d * (m - W_GAP); } });
         const rr = Math.max(0.17, Math.min(0.34, Math.hypot(p.x, p.y))), aa = Math.max(-2.55, Math.min(2.55, Math.atan2(p.y, p.x)));
         p.x = rr * Math.cos(aa); p.y = rr * Math.sin(aa); o.slot = { a: aa, r: rr };
-        if (o.hopT < 0 && o.K.sym) { const y = o.g.rotation.z; o.g.rotation.z += (alignYaw(y, o.wTh, o.K.sym) - y) * Math.min(1, dt * 0.8) * o.wS; }
+        if (o.hopT >= 0) { if (o.dz) { p.z -= o.dz; o.dz = 0; } o.g.rotation.y -= o.g.rotation.y * Math.min(1, dt * 6); return; }   // Ruhe-Hüpfer führt
+        // Drehen: Drall klingt zum eigenen, langsam wechselnden Grund-Drall ab (±0,55 rad/s); Wiegen um die Fahrtrichtung
+        o.spin += (0.55 * Math.sin(0.17 * clk + o.wP[0]) - o.spin) * Math.min(1, dt * 0.9);
+        o.g.rotation.z += o.spin * dt * o.wS;
+        const sp = Math.hypot(o.vx, o.vy), hv = Math.atan2(o.vy, o.vx), q = Math.min(1.4, sp / W_V);
+        o.wob += dt * (4 + 3 * q);
+        const bank = 0.05 * q * Math.sin(o.wob);
+        o.g.rotation.x = bank * Math.cos(hv); o.g.rotation.y = bank * Math.sin(hv);
+        // Hüpfer nach dem Abprallen (0,35 s), dazu Anheben, damit die gekippte Kante nicht in den Boden taucht
+        if (o.bump < 1) o.bump = Math.min(1, o.bump + dt / 0.35);
+        const hop = o.bump < 1 ? Math.sin(Math.PI * o.bump) : 0;
+        const dz = sup(o.K, o.g.rotation.z, -Math.sin(hv), Math.cos(hv)) * Math.abs(Math.sin(bank)) + 0.006 * hop;
+        p.z += dz - o.dz; o.dz = dz; o.swell = 0.5 * hop;
       });
+      // Plaudern (Wunsch User 06.10.2026: Dialoge abwechselnd, nicht immer dieselben Texte): alle 9–15 s eine kleine Szene
+      if (reply && clk >= reply.at) { if (!job && !cur && freeObjs().includes(reply.o)) say2.show(reply.o, reply.text, 2400, true); reply = null; }
+      if (clk >= chatAt) { chatAt = clk + rnd(9, 15); if (canTalk() && clk > 6) chat(); }
     };
     // Umkippen (Wunsch User 06.10.2026): fährt der Arm beim Folgen (TCP 70 mm hoch) gegen einen Turm, kippt alles über dem
     // untersten Objekt in Schubrichtung um die Unterkante (Winkel wächst mit t² wie unter Schwerkraft, dreht dabei leicht), fällt
@@ -1451,7 +1699,7 @@ function build(L, wrap, host, o) {
         applyMat(o, dt);
       });
       if (flashT < 1) { flashT = Math.min(1, flashT + dt / 0.45); flash.material.opacity = 0.95 * (1 - flashT); flash.scale.setScalar(1 + flashT * 1.6); }
-      say.tick(); arm.tick();
+      say.tick(); say2.tick(); arm.tick();
       // Klick-Hinweis der Formen: in Ruhe selten und zufällig, während ein Objekt eine Form sucht alle im Takt
       if (!reduce) TPL.forEach(p => {
         if (p.full) return;
