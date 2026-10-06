@@ -299,6 +299,8 @@
 >> |---|---|---|
 >> | **`/ui/set_virtual_detections`** | `std_srvs/srv/SetBool` (Server) | *Switches the virtual detections on/off. Switching off deletes the markers; `yolo_moveit_collision` removes the collision objects after 2 s.* |
 >> | **`/ui/set_virtual_objects`** | `std_msgs/String` (Subscriber, JSON) | *Switches single objects on/off, e.g. `{"target_bottle": false}` (only the changed frames). An object that is off is no longer published on `/zed/bboxes_3d` → no MoveIt obstacle, not in *Detected Objects*, not in the VLA agent's scene. Default: all objects of the scene `standard` on (not stored across a node restart). `{"scene": "palletizing"}` switches the scene: its objects on, all others off.* |
+>> | **`/ui/set_library_objects`** | `std_msgs/String` (Subscriber, JSON) | *Object library (Robot Control UI › Library): `{"add": {"type": "cube_30"}}` inserts at the next free spot in reach around `link_base`, `{"add": {"type": …, "pose": {"x", "y", "z", "yaw"}}}` at a given spot (m, degrees), `{"remove": [id]}` deletes, `{"on": {"id": bool}}` switches on/off. Types = `config/object_library.yaml`; instances `Cube 30 #1` … with frame `lib_<type>_<n>` and marker id 1000 + id, published like the fixed objects (only in the scene where they were inserted). Saved with their last pose in `~/.ros/object_library.json` (parameter `library_state_file`).* |
+>> | **`/ui/object_library`** | `std_msgs/String` (Publisher, latched JSON) | *Catalog + instances: `{categories, types, instances: [{id, type, name, frame, marker_id, scene, on, pose}], hint_count}`; re-sent after every change and at most every 2 s while poses change.* |
 >
 >
 > ![Parameters](https://img.shields.io/badge/Parameters-yellow?style=flat-square)
