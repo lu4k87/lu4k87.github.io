@@ -1232,7 +1232,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: cent
         </div>
         <div class="body">
           <div class="facts" style="margin-top:0">
-            <span class="fact" data-en="Local model &lt;b&gt;qwen2.5:14b&lt;/b&gt;, offline">Lokales Modell <b>qwen2.5:14b</b>, offline</span>
+            <span class="fact" data-en="Local model &lt;b&gt;qwen3.8:27b&lt;/b&gt;, offline">Lokales Modell <b>qwen3.8:27b</b>, offline</span>
             <span class="fact" data-en="Optional: &lt;b&gt;Claude&lt;/b&gt; · &lt;b&gt;Gemini&lt;/b&gt;">Optional: <b>Claude</b> · <b>Gemini</b></span>
             <span class="fact" data-en="Skills: &lt;b&gt;pick · place · home · gripper&lt;/b&gt;">Skills: <b>pick · place · home · gripper</b></span>
             <a class="fact" href="#palette" data-en="One click: &lt;b&gt;auto palletizing&lt;/b&gt; ↓">Ein Klick: <b>Auto-Palettieren</b> ↓</a>
@@ -1241,7 +1241,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: cent
             <span class="fact" data-en="German + English">Deutsch + Englisch</span>
             <span class="fact" data-en="Next: trained VLA model as a skill (&lt;b&gt;SmolVLA&lt;/b&gt;)">Nächster Schritt: trainiertes VLA-Modell als Skill (<b>SmolVLA</b>)</span>
           </div>
-          <div class="note info"><svg class="ico" aria-hidden="true"><use href="#i-chip"/></svg><span data-en="&lt;b&gt;Local language model: Qwen 2.5 with 14&amp;nbsp;B parameters.&lt;/b&gt; Open model by Alibaba Cloud under the Apache&amp;nbsp;2.0 license, runs offline via Ollama on your own GPU (~10&amp;nbsp;GB graphics memory)."><b>Lokales Sprachmodell: Qwen 2.5 mit 14&nbsp;Mrd. Parametern.</b> Offenes Modell von Alibaba Cloud unter der Lizenz Apache&nbsp;2.0, läuft über Ollama offline auf der eigenen GPU (~10&nbsp;GB Grafikspeicher).</span></div>
+          <div class="note info"><svg class="ico" aria-hidden="true"><use href="#i-chip"/></svg><span data-en="&lt;b&gt;Local language model: Qwen 3.8 with 27&amp;nbsp;B parameters.&lt;/b&gt; Open model by Alibaba Cloud under the Apache&amp;nbsp;2.0 license, runs offline via Ollama on your own GPU (~16&amp;nbsp;GB graphics memory)."><b>Lokales Sprachmodell: Qwen 3.8 mit 27&nbsp;Mrd. Parametern.</b> Offenes Modell von Alibaba Cloud unter der Lizenz Apache&nbsp;2.0, läuft über Ollama offline auf der eigenen GPU (~16&nbsp;GB Grafikspeicher).</span></div>
         </div>
       </article>
 
@@ -1721,7 +1721,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: cent
         </div>
             <div class="st-layer" role="listitem" style="--hue: var(--violet)">
           <span class="st-k"><svg class="ico"><use href="#i-spark"/></svg><span data-en="AI · Perception">KI · Wahrnehmung</span></span>
-          <span class="st-parts"><span><b>vla_bridge</b> · <span data-en="LLM agent, /vla/skill">LLM-Agent, /vla/skill</span></span><span><b>Ollama</b> · <span data-en="qwen2.5:14b, local, Apache 2.0">qwen2.5:14b, lokal, Apache 2.0</span></span><span><b>Anthropic SDK</b> · Claude Opus 5</span><span><b>Google Gemini</b> · Robotics-ER 2 Preview</span><span><b>Ultralytics</b> · 8.4 · YOLOv8l, PyTorch 2.12</span><span><b>OpenCV</b> · cv_bridge, NumPy, SciPy</span><span><b>octomap_server</b> · 2.3 · OctoMap</span><span><b>Whisper</b> · <span data-en="model medium, DE/EN">Modell medium, DE/EN</span></span><span><b>LeRobot</b> · <span data-en="demo datasets for VLA training">Demo-Datensätze fürs VLA-Training</span></span><span><b>Gaze-Pipeline</b> · <span data-en="Tobii RTSP, PyAV">Tobii-RTSP, PyAV</span></span></span>
+          <span class="st-parts"><span><b>vla_bridge</b> · <span data-en="LLM agent, /vla/skill">LLM-Agent, /vla/skill</span></span><span><b>Ollama</b> · <span data-en="qwen3.8:27b, local, Apache 2.0">qwen3.8:27b, lokal, Apache 2.0</span></span><span><b>Anthropic SDK</b> · Claude Opus 5</span><span><b>Google Gemini</b> · Robotics-ER 2 Preview</span><span><b>Ultralytics</b> · 8.4 · YOLOv8l, PyTorch 2.12</span><span><b>OpenCV</b> · cv_bridge, NumPy, SciPy</span><span><b>octomap_server</b> · 2.3 · OctoMap</span><span><b>Whisper</b> · <span data-en="model medium, DE/EN">Modell medium, DE/EN</span></span><span><b>LeRobot</b> · <span data-en="demo datasets for VLA training">Demo-Datensätze fürs VLA-Training</span></span><span><b>Gaze-Pipeline</b> · <span data-en="Tobii RTSP, PyAV">Tobii-RTSP, PyAV</span></span></span>
         </div>
             <div class="st-layer" role="listitem" style="--hue: var(--green)">
           <span class="st-k"><svg class="ico"><use href="#i-shield"/></svg><span data-en="Motion · Safety">Bewegung · Sicherheit</span></span>
@@ -2007,7 +2007,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: cent
       fail: { at: 2, de: 'Plan verletzt eine Regel (z. B. Greifer belegt): Fehler zurück ans Modell, korrigierter Plan. Nach 2 Runden Begründung statt Fahrt.', en: 'The plan breaks a rule (e.g. gripper occupied): error back to the model, corrected plan. After 2 rounds an explanation instead of motion.' },
       steps: [
         S('in', 0, ['Anweisung', 'Instruction'], ['Tippen oder per Mikrofon diktieren (Whisper), z. B. „Leg die Kugel in den Korb“.', 'Type or dictate via microphone (Whisper), e.g. “Put the ball into the basket”.'], ['/vla/instruction']),
-        S('ai', 0, ['Modell plant', 'Model plans'], ['Lokal über Ollama (qwen2.5:14b) oder Claude: Skills + Objekt-IDs als JSON, bei Mehrdeutigkeit eine Rückfrage.', 'Locally via Ollama (qwen2.5:14b) or Claude: skills + object IDs as JSON, a follow-up question when ambiguous.'], ['pick', 'place', 'home']),
+        S('ai', 0, ['Modell plant', 'Model plans'], ['Lokal über Ollama (qwen3.8:27b) oder Claude: Skills + Objekt-IDs als JSON, bei Mehrdeutigkeit eine Rückfrage.', 'Locally via Ollama (qwen3.8:27b) or Claude: skills + object IDs as JSON, a follow-up question when ambiguous.'], ['pick', 'place', 'home']),
         S('ai', 1, ['Planprüfung', 'Plan check'], ['Code prüft Objekte, Greifer, Reichweite, freien Platz; Fehler gehen zurück ans Modell (höchstens 2 Runden).', 'Code checks objects, gripper, reach and free space; errors go back to the model (at most 2 rounds).'], ['vla_bridge']),
         S('app', 0, ['Plan in der UI', 'Plan in the UI'], ['Liste „Planned actions“ in der Section VLA-M mit Schrittfortschritt.', '“Planned actions” list in the VLA-M section with step progress.'], ['/vla/response']),
         S('in', 1, ['Execute', 'Execute'], ['Jeder Plan wartet auf Freigabe; REAL nur mit allow_real_motion.', 'Every plan waits for approval; REAL only with allow_real_motion.'], ['/vla/execute']),

@@ -44,7 +44,7 @@ The table below illustrates which project modules can be evaluated in pure softw
 | **Gamepad Teleoperation (MoveIt Servo)** | ✅ Functional | ✅ Functional | Xbox One / Series Controller |
 | **Predictive Hard Collision Guard** | ✅ Functional | ✅ Functional | Host PC |
 | **Acoustic Speech Interaction (Whisper AI)** | ✅ Functional | ✅ Functional | Standard USB / Laptop Microphone |
-| **VLA-M Chat (Vision-Language-Action)** | 🧪 LLM agent plans and moves the arm (pick & place, also virtual objects with the physics sandbox) | 🧪 Plan only (execution with `allow_real_motion:=true`) | Host PC, NVIDIA GPU for the local language model (Ollama, ~10 GB VRAM) |
+| **VLA-M Chat (Vision-Language-Action)** | 🧪 LLM agent plans and moves the arm (pick & place, also virtual objects with the physics sandbox) | 🧪 Plan only (execution with `allow_real_motion:=true`) | Host PC, NVIDIA GPU for the local language model (Ollama, ~16 GB VRAM) |
 | **3D YOLO Object Detection & Clustering** | ❌ *(or via Rosbag replay)* | ✅ Functional | Stereolabs ZED Mini (USB 3.0) |
 | **Dynamic MoveIt Collision Objects** | ❌ *(or via Rosbag replay)* | ✅ Functional | Stereolabs ZED Mini (USB 3.0) |
 | **Autonomous 3D Grasp Routine** | ❌ *(Needs 3D Camera)* | ✅ Functional | xArm Lite 6 & ZED Mini |

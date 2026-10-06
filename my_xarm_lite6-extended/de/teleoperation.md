@@ -44,7 +44,7 @@ Die folgende Übersicht zeigt auf einen Blick, welche Projektmodule in reiner So
 | **Gamepad-Teleoperation (MoveIt Servo)** | ✅ Funktionsfähig | ✅ Funktionsfähig | Xbox One / Series Controller |
 | **Prädiktiver harter Kollisionsschutz** | ✅ Funktionsfähig | ✅ Funktionsfähig | Host-PC |
 | **Akustische Sprachinteraktion (Whisper AI)** | ✅ Funktionsfähig | ✅ Funktionsfähig | Standard USB- / Laptop-Mikrofon |
-| **VLA-M-Chat (Vision-Language-Action)** | 🧪 LLM-Agent plant und bewegt den Arm (Pick & Place, auch virtuelle Objekte mit der Physik-Sandbox) | 🧪 Nur Plan (Ausführung mit `allow_real_motion:=true`) | Host-PC, NVIDIA-GPU für das lokale Sprachmodell (Ollama, ~10 GB VRAM) |
+| **VLA-M-Chat (Vision-Language-Action)** | 🧪 LLM-Agent plant und bewegt den Arm (Pick & Place, auch virtuelle Objekte mit der Physik-Sandbox) | 🧪 Nur Plan (Ausführung mit `allow_real_motion:=true`) | Host-PC, NVIDIA-GPU für das lokale Sprachmodell (Ollama, ~16 GB VRAM) |
 | **3D YOLO Objekterkennung & Clustering** | ❌ *(oder per Rosbag-Replay)* | ✅ Funktionsfähig | Stereolabs ZED Mini (USB 3.0) |
 | **Dynamische MoveIt-Kollisionsobjekte** | ❌ *(oder per Rosbag-Replay)* | ✅ Funktionsfähig | Stereolabs ZED Mini (USB 3.0) |
 | **Autonome 3D-Greifroutine** | ❌ *(Benötigt 3D-Kamera)* | ✅ Funktionsfähig | xArm Lite 6 & ZED Mini |

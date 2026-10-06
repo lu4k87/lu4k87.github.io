@@ -1357,7 +1357,7 @@
     <h1>Den Roboter per Chat anweisen</h1>
     <ul class="bl" style="--k:var(--c-vla)">
       <li>Anweisung tippen oder per Mikrofon diktieren → das Modell macht daraus einen Plan → du bestätigst → der Arm führt aus</li>
-      <li>Heute: <code>vla_bridge</code> ist ein LLM-Agent (lokal Ollama <code>qwen2.5:14b</code>) · kennt die Szene (erkannte + virtuelle Objekte) · plant, prüft, fährt, plant bei Fehlern neu</li>
+      <li>Heute: <code>vla_bridge</code> ist ein LLM-Agent (lokal Ollama <code>qwen3.8:27b</code>) · kennt die Szene (erkannte + virtuelle Objekte) · plant, prüft, fährt, plant bei Fehlern neu</li>
       <li>Mit der Physik-Sandbox (FAKE) werden die virtuellen Objekte wirklich gegriffen, getragen, gestapelt</li>
       <li>Objektmenü im Viewport: <i>Grasp</i> / <i>Place here</i> mit einem Klick, ohne Sprachmodell (<code>/vla/skill</code>)</li>
       <li><i>Pick &amp; Place to …</i> im Objektmenü → Ziel auf Tisch oder Palette klicken → <i>Start</i>: Greifen und Ablegen als eine Aufgabe, ein <i>Abort</i> (Esc bricht die Zielwahl ab)</li>
@@ -1918,7 +1918,7 @@ source install/setup.bash</pre><button class="copy" type="button">Kopieren</butt
       <span class="side-tag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg>Server · Roboter-PC</span>
       <ol class="howto">
         <li><div><b>Nexus Webapp öffnen:</b> <span class="url">http://localhost:8080</span><ul class="bl sm"><li>Starten/Stoppen nur hier</li><li>Von Clients aus nur lesbar</li></ul></div></li>
-        <li><div><b>Roboter starten</b><ul class="bl sm"><li>Popup <b>SERVER SETUP</b>, Modus FAKE oder REAL wählen</li><li><span class="proto" style="--k:var(--c-fake)">FAKE</span> <span class="card-name">MoveIt Servo &amp; MoveGroup (Fake) + Linear Axis [Server]</span></li><li><span class="proto" style="--k:var(--c-real)">REAL</span> <span class="card-name">MoveIt Servo &amp; MoveGroup (Real) [Server]</span></li><li><b>Check</b> (links neben EXECUTE): Roboter, Kameras, Tobii, Gamepad, Ports, zweiter <code>move_group</code>, ROS-Umgebung, GPU, Platte, Ollama + <code>qwen2.5:14b</code></li><li>REAL: Check läuft bei EXECUTE automatisch, ein Fehler stoppt den Start</li><li>Pflicht-Karte fehlt (z. B. VLA-M ohne MoveIt) → gelbe Zeile: <i>Add … &amp; start</i> · <i>Start anyway</i> · <i>Back</i></li><li>Jede Karte = eigenes Terminal · schließen = Launch sauber beenden · <i>Restart</i> in der Log-Schublade</li><li>Schalter <b>Terminals</b> (Zeile <i>Components</i>) aus → Ausgabe nur in der Log-Schublade, ab nächstem Start</li></ul></div></li>
+        <li><div><b>Roboter starten</b><ul class="bl sm"><li>Popup <b>SERVER SETUP</b>, Modus FAKE oder REAL wählen</li><li><span class="proto" style="--k:var(--c-fake)">FAKE</span> <span class="card-name">MoveIt Servo &amp; MoveGroup (Fake) + Linear Axis [Server]</span></li><li><span class="proto" style="--k:var(--c-real)">REAL</span> <span class="card-name">MoveIt Servo &amp; MoveGroup (Real) [Server]</span></li><li><b>Check</b> (links neben EXECUTE): Roboter, Kameras, Tobii, Gamepad, Ports, zweiter <code>move_group</code>, ROS-Umgebung, GPU, Platte, Ollama + <code>qwen3.8:27b</code></li><li>REAL: Check läuft bei EXECUTE automatisch, ein Fehler stoppt den Start</li><li>Pflicht-Karte fehlt (z. B. VLA-M ohne MoveIt) → gelbe Zeile: <i>Add … &amp; start</i> · <i>Start anyway</i> · <i>Back</i></li><li>Jede Karte = eigenes Terminal · schließen = Launch sauber beenden · <i>Restart</i> in der Log-Schublade</li><li>Schalter <b>Terminals</b> (Zeile <i>Components</i>) aus → Ausgabe nur in der Log-Schublade, ab nächstem Start</li></ul></div></li>
         <li><div><b>UI starten:</b> <span class="card-name">Robot Control UI, WebSocket, Remote Watchdog &amp; Video Server (Port 8081 / 9090 / 8082)</span><ul class="bl sm"><li>Startet rosbridge, Webserver, Remote Control Watchdog</li><li>In RUN DEV SETUP heißt die Karte „Robot Control UI, WebSocket &amp; Video Server …“</li></ul></div></li>
         <li><div><b>Nur für C und D:</b> <span class="card-name">VR Quest 3 Teleop (Port 9091 / 8443)</span></div></li>
         <li><div><b>Remote-Panel prüfen</b><ul class="bl sm"><li>Chip zeigt FAKE oder REAL (<span class="co">1</span>), nicht „WATCHDOG OFF“</li><li>„Access from home network“: „On (subnet)“ (<span class="co">8</span>)</li><li>URL dort kopieren</li></ul></div></li>
@@ -2153,7 +2153,7 @@ source install/setup.bash</pre><button class="copy" type="button">Kopieren</butt
     <div class="card s-6">
       <div class="card-h"><h3>Drei Einstiegswege</h3></div>
       <dl class="kv">
-        <dt>Chat</dt><dd>Section <b>VLA-M</b> der Robot Control UI · <code>/vla/instruction</code> · mit LLM (lokal Ollama <code>qwen2.5:14b</code>, umschaltbar <i>Model: Local | Claude | Gemini</i>)</dd>
+        <dt>Chat</dt><dd>Section <b>VLA-M</b> der Robot Control UI · <code>/vla/instruction</code> · mit LLM (lokal Ollama <code>qwen3.8:27b</code>, umschaltbar <i>Model: Local | Claude | Gemini</i>)</dd>
         <dt>Ein-Klick</dt><dd><i>Grasp</i> / <i>Place here</i> im Objektmenü bzw. in VR · <code>/vla/skill</code> · <b>ohne LLM</b>, gleiche Planprüfung</dd>
         <dt>Palletizing</dt><dd>Aufgaben-Fenster <i>Plan</i> / <i>Start</i> · <code>/vla/skill</code> <code>palletize</code>; im Chat startet „belade die Palette“ denselben Planer und Ablauf</dd>
         <dt>Szene</dt><dd>YOLO- + virtuelle Objekte in <code>link_base</code>-mm, gehaltenes Objekt, Greifer, FAKE / REAL - das Modell wählt nur Skill + Objekt, die Posen rechnet der Code</dd>
@@ -2196,8 +2196,8 @@ source install/setup.bash</pre><button class="copy" type="button">Kopieren</butt
       <div class="scr" aria-label="Mockup der VLA-M-Section">
         <div class="scr-bar"><span class="dots"><i></i><i></i><i></i></span><span class="scr-url">http://192.168.0.xxx:8081/index.html</span></div>
         <div class="mp vm" id="vm" data-s="wait">
-          <div class="mp-h"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><path d="M8 9h8M8 13h5"/></svg>VLA-M <span class="vm-meta" id="vm-meta">qwen2.5:14b</span></div>
-          <div class="mrow vm-chips"><span class="co">1</span><span class="mchip vm-state" id="vm-state" data-v="idle">IDLE</span><span class="co">2</span><span class="mchip" id="vm-model">Model: qwen2.5:14b</span><span class="mchip vm-mode" id="vm-mode">FAKE</span><span class="mchip" id="vm-objs">8 objects · 8 virtual</span></div>
+          <div class="mp-h"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><path d="M8 9h8M8 13h5"/></svg>VLA-M <span class="vm-meta" id="vm-meta">qwen3.8:27b</span></div>
+          <div class="mrow vm-chips"><span class="co">1</span><span class="mchip vm-state" id="vm-state" data-v="idle">IDLE</span><span class="co">2</span><span class="mchip" id="vm-model">Model: qwen3.8:27b</span><span class="mchip vm-mode" id="vm-mode">FAKE</span><span class="mchip" id="vm-objs">8 objects · 8 virtual</span></div>
           <div class="vm-chat"><span class="co">3</span>
             <div class="vm-msg u"><small>You · 12:53</small><span>Stell den blauen Würfel auf den Zylinder</span></div>
             <div class="vm-msg s"><small>System · 12:53</small><span>VLA backend not connected yet - the instruction was not sent to the robot.</span></div>
@@ -2221,7 +2221,7 @@ source install/setup.bash</pre><button class="copy" type="button">Kopieren</butt
       <span class="label">Legende</span>
       <ol class="callouts">
         <li><span class="co">1</span><div><b>Zustand des Backends</b><ul class="bl sm"><li><span class="m">OFFLINE</span> - 3 s kein <span class="m">/vla/status</span> · <span class="m">IDLE</span> · <span class="m">THINKING</span> · <span class="m">RUNNING</span> · <span class="m">ERROR</span></li><li>Offline wird nichts gesendet</li><li>Die Chips sitzen in der Kopfzeile und brechen bei schmaler Spalte um</li></ul></div></li>
-        <li><span class="co">2</span><div><b>Modell, Modus, Szene</b><ul class="bl sm"><li><span class="m">Model</span>: Sprachmodell (Launch-Argument <span class="m">llm_model</span>, Standard <span class="m">qwen2.5:14b</span>) · Tooltip: lädt / bereit / Fehler</li><li><span class="m">FAKE</span> / <span class="m">REAL</span>: Modus, den <code>vla_bridge</code> erkennt (REAL orange)</li><li><span class="m">8 objects · 8 virtual</span>: Szene, Tooltip mit Liste und Sandbox-Status</li><li>Hz-Chip erst mit echtem VLA-Modell</li></ul></div></li>
+        <li><span class="co">2</span><div><b>Modell, Modus, Szene</b><ul class="bl sm"><li><span class="m">Model</span>: Sprachmodell (Launch-Argument <span class="m">llm_model</span>, Standard <span class="m">qwen3.8:27b</span>) · Tooltip: lädt / bereit / Fehler</li><li><span class="m">FAKE</span> / <span class="m">REAL</span>: Modus, den <code>vla_bridge</code> erkennt (REAL orange)</li><li><span class="m">8 objects · 8 virtual</span>: Szene, Tooltip mit Liste und Sandbox-Status</li><li>Hz-Chip erst mit echtem VLA-Modell</li></ul></div></li>
         <li><span class="co">3</span><div><b>Chat</b><ul class="bl sm"><li>Leer: Vorschläge aus den Objekten der Szene (z. B. „Pick up the blue cube“)</li><li>Gestrichelt = Systemhinweis der UI</li><li>Höchstens 200 Nachrichten, scrollt in der Section</li></ul></div></li>
         <li><span class="co">4</span><div><b>Planned actions</b><ul class="bl sm"><li>Erscheint nur mit Plan vom Backend</li><li>Erledigte Schritte durchgestrichen, aktueller hervorgehoben, rechts „step i / n“</li><li><span class="m">plan only - not executed</span>: REAL ohne Freigabe</li></ul></div></li>
         <li><span class="co">5</span><div><b>Execute</b><ul class="bl sm"><li>Gibt den wartenden Plan frei</li><li>Nur wenn Bewegen erlaubt ist (Not-Aus, Verbindung, Control-Lock)</li><li>Grau: offline, Plan läuft schon oder nur Plan</li></ul></div></li>
@@ -2402,7 +2402,7 @@ source install/setup.bash</pre><button class="copy" type="button">Kopieren</butt
 export ROS_LOCALHOST_ONLY=1
 export CYCLONEDDS_URI=file://$HOME/dev_ws/ros2_nexus/cyclonedds.xml
 ros2 launch vla_bridge vla_bridge.launch.py              # dry_run:=true = nur Plan</pre><button class="copy" type="button">Kopieren</button></div></div></li>
-        <li><div><b>Prüfen</b><ul class="bl sm"><li>Section zeigt nach ~1 s <span class="st" style="--k:var(--ok)">IDLE</span>, <code>Model: qwen2.5:14b</code>, <code>FAKE</code> und die Anzahl Objekte (Backend-Karte im Popup: <code>ollama · ready</code>)</li><li>Terminal: <code>ros2 topic echo --once /vla/status</code></li></ul></div></li>
+        <li><div><b>Prüfen</b><ul class="bl sm"><li>Section zeigt nach ~1 s <span class="st" style="--k:var(--ok)">IDLE</span>, <code>Model: qwen3.8:27b</code>, <code>FAKE</code> und die Anzahl Objekte (Backend-Karte im Popup: <code>ollama · ready</code>)</li><li>Terminal: <code>ros2 topic echo --once /vla/status</code></li></ul></div></li>
       </ol>
     </div>
     <div class="card s-5">
@@ -2411,7 +2411,7 @@ ros2 launch vla_bridge vla_bridge.launch.py              # dry_run:=true = nur P
         <thead><tr><th>Argument</th><th>Standard</th><th>Wirkung</th></tr></thead>
         <tbody>
           <tr><td><code>llm_backend</code></td><td><code>ollama</code></td><td><code>ollama</code> = lokal (offline) · <code>anthropic</code> = Claude (Internet + API-Key)</td></tr>
-          <tr><td><code>llm_model</code></td><td><code>qwen2.5:14b</code></td><td>Sprachmodell (<code>ollama list</code>) bzw. Claude-Modell · Standard = Qwen&nbsp;2.5 von Alibaba Cloud, 14&nbsp;Mrd. Parameter, Lizenz Apache&nbsp;2.0, offline</td></tr>
+          <tr><td><code>llm_model</code></td><td><code>qwen3.8:27b</code></td><td>Sprachmodell (<code>ollama list</code>) bzw. Claude-Modell · Standard = Qwen&nbsp;3.8 von Alibaba Cloud, 27&nbsp;Mrd. Parameter, Lizenz Apache&nbsp;2.0, offline</td></tr>
           <tr><td><code>dry_run</code></td><td><code>false</code></td><td><code>true</code> = nur Plan, der Arm bewegt sich nie</td></tr>
           <tr><td><code>allow_real_motion</code></td><td><code>false</code></td><td>Pläne auch am REAL-Roboter ausführen</td></tr>
           <tr><td><code>real_require_confirm</code></td><td><code>true</code></td><td>REAL: jeder Plan wartet auf Execute</td></tr>
@@ -2971,10 +2971,10 @@ function initShell(onShow) {
     off: { now: ['Backend läuft nicht, Status OFFLINE', 'Anweisung bleibt im Chat, nichts wird gesendet'],
            st: ['OFFLINE', 'off'], model: 'Model: —', meta: 'backend offline', mode: '—', objs: '0 objects' },
     wait: { now: ['Plan mit den Objekten der Szene wartet auf Freigabe', 'Execute startet ihn, Abort verwirft ihn'],
-            st: ['IDLE', 'idle'], model: 'Model: qwen2.5:14b', meta: 'qwen2.5:14b', mode: 'FAKE', objs: '8 objects · 8 virtual',
+            st: ['IDLE', 'idle'], model: 'Model: qwen3.8:27b', meta: 'qwen3.8:27b', mode: 'FAKE', objs: '8 objects · 8 virtual',
             pstate: 'waiting for confirmation', exec: true, step: 0 },
     run: { now: ['Agent fährt Schritt für Schritt: Würfel wird gegriffen und geprüft', 'Abort stoppt nach dem laufenden Schritt, Not-Aus sofort'],
-           st: ['RUNNING', 'run'], model: 'Model: qwen2.5:14b', meta: 'qwen2.5:14b', mode: 'FAKE', objs: '8 objects · 8 virtual',
+           st: ['RUNNING', 'run'], model: 'Model: qwen3.8:27b', meta: 'qwen3.8:27b', mode: 'FAKE', objs: '8 objects · 8 virtual',
            pstate: 'step 1 / 2', exec: false, step: 1 }
   };
   var vmBtns = document.querySelectorAll('#vm-states button');
@@ -4315,7 +4315,7 @@ function initShell(onShow) {
     ['pre', 'Kollisionsvorprüfung', 'Kollisionsvorprüfung', 'Logik · teleop_pre_collision_checker', ['Filtert Gamepad-Befehle anhand der aktuellen TCP-Position, bevor sie zu Servo gelangen'], 'pre', '#sicherheit'],
     ['xr', 'WebXR', 'WebXR', 'VR im Browser', ['Dieselbe Robot Control UI in der Quest 3', 'Verlangt einen sicheren Kontext → HTTPS :8443, Zertifikat certs/cert.pem'], 'vrui', '#combo-d'],
     ['arm', 'Arm gamepad', 'Arm gamepad', 'Freigabe am echten Arm', ['Remote-Gamepad fährt am REAL-Arm erst danach', 'Pflicht, wenn real_require_arm an ist (empfohlen)', 'Verfällt nach 60 s ohne Eingabe und bei jedem Moduswechsel'], null, '#nexus'],
-    ['ollama', 'Ollama', 'Ollama', 'Lokales Sprachmodell', ['Lokaler Server für das Sprachmodell von VLA-M (qwen2.5:14b)', 'Check in der Nexus Webapp prüft Ollama + qwen2.5:14b'], 'vla', '#vla-start']
+    ['ollama', 'Ollama', 'Ollama', 'Lokales Sprachmodell', ['Lokaler Server für das Sprachmodell von VLA-M (qwen3.8:27b)', 'Check in der Nexus Webapp prüft Ollama + qwen3.8:27b'], 'vla', '#vla-start']
   ];
   var byKey = {};
   GL.forEach(function (g) {

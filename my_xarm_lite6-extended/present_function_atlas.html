@@ -628,7 +628,7 @@ footer a { text-decoration: underline; text-underline-offset: 3px; }
       <h2 class="grp-h" data-a="ai" style="--c: var(--violet)">KI / VLA-M</h2>
       <article class="fn" id="llm-agent" data-a="ai" data-f="vla" data-s="spr">
         <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-spark"/></svg><span data-en="AI agent: Ollama, Claude, Gemini">KI-Agent: Ollama, Claude, Gemini</span></button></h3>
-        <p data-en="Local qwen2.5:14b, in the cloud Claude or Gemini; switchable at runtime.">Lokal qwen2.5:14b, in der Cloud Claude oder Gemini; zur Laufzeit umschaltbar.</p>
+        <p data-en="Local qwen3.8:27b, in the cloud Claude or Gemini; switchable at runtime.">Lokal qwen3.8:27b, in der Cloud Claude oder Gemini; zur Laufzeit umschaltbar.</p>
       </article>
       <article class="fn" id="plan-check" data-a="ai" data-f="vla" data-s="spr">
         <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg><span data-en="Plan, check, execute">Plan, Prüfen, Execute</span></button></h3>
@@ -1323,7 +1323,7 @@ const FLOWS = (() => {
     mg: { label: 'move_group', short: 'MoveIt', sub: 'MoveIt 2', icon: 'i-layers', hue: 'indigo', info: ['MoveIt plant kollisionsfreie Bahnen in der Planungsszene und führt sie aus.', 'MoveIt plans collision-free paths in the planning scene and executes them.'] },
     arm: { label: 'xArm Lite 6', short: 'Arm', sub: 'FAKE | REAL', icon: 'i-arm', hue: 'accent', info: ['FAKE: simulierte Controller; REAL: der Arm mit 6 Achsen.', 'FAKE: simulated controllers; REAL: the 6-axis arm.'] },
     vb: { label: ['KI-Agent', 'AI agent'], short: ['KI', 'AI'], sub: 'vla_bridge', icon: 'i-spark', hue: 'violet', info: ['Plant mit dem Sprachmodell, prüft im Code, führt Skills erst nach Freigabe aus.', 'Plans with the language model, checks in code, runs skills only after approval.'] },
-    llm: { label: ['Sprachmodell', 'Language model'], short: 'LLM', sub: 'Ollama · Claude · Gemini', icon: 'i-chip', hue: 'violet', info: ['Lokal qwen2.5:14b über Ollama, umschaltbar auf Claude oder Gemini; antwortet mit JSON.', 'Local qwen2.5:14b via Ollama, switchable to Claude or Gemini; answers in JSON.'] },
+    llm: { label: ['Sprachmodell', 'Language model'], short: 'LLM', sub: 'Ollama · Claude · Gemini', icon: 'i-chip', hue: 'violet', info: ['Lokal qwen3.8:27b über Ollama, umschaltbar auf Claude oder Gemini; antwortet mit JSON.', 'Local qwen3.8:27b via Ollama, switchable to Claude or Gemini; answers in JSON.'] },
     gj: { label: ['Greifer-Node', 'Gripper node'], short: ['Greif.', 'Grip'], sub: 'joy_to_servo_node', icon: 'i-grip', hue: 'indigo', info: ['Einziger Besitzer des Greiferzustands; schaltet Sauger oder Finger über den Treiber.', 'Sole owner of the gripper state; switches suction or fingers via the driver.'] },
   };
   const N = (id, lane, row, o = {}) => ({ id, lane, row, ...(NODE[o.of || id] || {}), ...o });

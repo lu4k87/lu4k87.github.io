@@ -69,7 +69,7 @@ A research and evaluation platform for **multimodal teleoperation** of the UFact
 | Layer | Software |
 |---|---|
 | Interfaces | three.js · Rapier · urdf-loader · WebXR · SortableJS · Flask · SQLite · GTK/WebKit · PyQt5 · pygame |
-| AI & voice | Ollama (Qwen 2.5) · Claude API · Gemini API · whisper.cpp · LeRobot |
+| AI & voice | Ollama (Qwen 3.8) · Claude API · Gemini API · whisper.cpp · LeRobot |
 | Perception | ZED SDK 4.1 · CUDA 12 · PyTorch · YOLOv8 · OpenCV · OctoMap · web_video_server |
 | Motion | MoveIt 2 · MoveIt Servo · OMPL · xarm_ros2 · ros2_control · joy · Nav2 · RViz 2 |
 | Foundation | Ubuntu 22.04 · ROS 2 Humble · Cyclone DDS · rosbridge · roslibjs · rosbag2 · tf2 |
