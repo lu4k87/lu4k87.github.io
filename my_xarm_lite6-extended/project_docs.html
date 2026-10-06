@@ -25,7 +25,7 @@
   --fg: #eef2f3; --fg-2: #b9c2c6; --accent: #2ee6c8; --accent-ink: #04201c;
   --indigo: #818cf8; --teal: #2dd4bf; --violet: #a78bfa; --gold: #f5b942; --green: #4ade80; --red: #f87171; --warn: #fbbf24;
   --blue: #60a5fa; --pink: #f472b6; --orange: #fb923c; --lime: #a3e635;
-  --band: #15181a; --grid: rgba(46, 230, 200, .055); --glow: rgba(46, 230, 200, .45);
+  --band: #15181a; --grid: rgba(46, 230, 200, .055); --glow: rgba(46, 230, 200, .45); --glow-mix: 45%;
   --shadow: 0 1px 0 rgba(255,255,255,.04) inset, 0 20px 40px -24px rgba(0,0,0,.7);
   --font: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   --mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
@@ -40,7 +40,7 @@
     --fg: #14181a; --fg-2: #3a4448; --accent: #0a7a6d; --accent-ink: #ffffff;
     --indigo: #4338ca; --teal: #0f766e; --violet: #6d28d9; --gold: #9a5b00; --green: #15803d; --red: #b91c1c; --warn: #a15c00;
     --blue: #1d4ed8; --pink: #be185d; --orange: #c2410c; --lime: #4d7c0f;
-    --band: #e9eeee; --grid: rgba(10, 122, 109, .06); --glow: transparent;
+    --band: #e9eeee; --grid: rgba(10, 122, 109, .06); --glow: transparent; --glow-mix: 0%;
     --shadow: 0 1px 2px rgba(20,30,30,.06), 0 16px 32px -24px rgba(20,40,40,.35);
   }
 }
@@ -50,7 +50,7 @@
   --fg: #14181a; --fg-2: #3a4448; --accent: #0a7a6d; --accent-ink: #ffffff;
   --indigo: #4338ca; --teal: #0f766e; --violet: #6d28d9; --gold: #9a5b00; --green: #15803d; --red: #b91c1c; --warn: #a15c00;
   --blue: #1d4ed8; --pink: #be185d; --orange: #c2410c; --lime: #4d7c0f;
-  --band: #e9eeee; --grid: rgba(10, 122, 109, .06); --glow: transparent;
+  --band: #e9eeee; --grid: rgba(10, 122, 109, .06); --glow: transparent; --glow-mix: 0%;
   --shadow: 0 1px 2px rgba(20,30,30,.06), 0 16px 32px -24px rgba(20,40,40,.35);
 }
 
@@ -176,10 +176,12 @@ a.kpi:hover { background: var(--surface-2); }
 /* Überblick: sechs Fakten-Karten (Icon, Slogan, Faktensatz, Sprung zum Abschnitt) */
 .fx-grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
 .fx { display: grid; grid-template-rows: auto auto 1fr auto; justify-items: center; gap: 12px; min-width: 0; text-align: center; padding: 24px; border: 1px solid var(--line); border-radius: var(--radius-lg); background: var(--surface); box-shadow: var(--shadow); transition: border-color var(--t-fast); }
-.fx:hover { border-color: color-mix(in srgb, var(--accent) 50%, var(--line)); }
-.bi-l { width: 64px; height: 64px; flex: none; justify-self: center; display: grid; place-items: center; border-radius: var(--radius); color: var(--accent);
-  background: radial-gradient(circle at 30% 20%, color-mix(in srgb, var(--accent) 28%, transparent), color-mix(in srgb, var(--accent) 7%, transparent) 72%);
-  border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent); box-shadow: 0 0 26px -8px var(--glow), inset 0 1px 0 rgba(255, 255, 255, .14); }
+/* Karten-Farbe je Karte über --hue (Prinzipien: Wunsch User 06.10.2026 „mehr Farben“), sonst --accent */
+.fx:hover { border-color: color-mix(in srgb, var(--hue, var(--accent)) 50%, var(--line)); }
+.fx .more { color: var(--hue, var(--accent)); }
+.bi-l { width: 64px; height: 64px; flex: none; justify-self: center; display: grid; place-items: center; border-radius: var(--radius); color: var(--hue, var(--accent));
+  background: radial-gradient(circle at 30% 20%, color-mix(in srgb, var(--hue, var(--accent)) 28%, transparent), color-mix(in srgb, var(--hue, var(--accent)) 7%, transparent) 72%);
+  border: 1px solid color-mix(in srgb, var(--hue, var(--accent)) 40%, transparent); box-shadow: 0 0 26px -8px color-mix(in srgb, var(--hue, var(--accent)) var(--glow-mix), transparent), inset 0 1px 0 rgba(255, 255, 255, .14); }
 .bi-l .ico { width: 34px; height: 34px; }
 .fx b { font-size: 19px; font-weight: 800; line-height: 1.25; letter-spacing: -.01em; text-wrap: balance; }
 .fx p { font-size: 15px; line-height: 1.5; color: var(--fg-2); text-wrap: balance; }
@@ -789,9 +791,9 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
       </div>
       <div class="hero-stage" id="hero-stage">
         <figure class="stage-3d">
-          <div class="stage-canvas" id="hero3d" role="img" aria-label="3D-Minispiel: xArm Lite 6 im Digital Twin, Punktkuppel zeigt den Arbeitsraum mit 440 mm Reichweite; Würfel, Quader und Zylinder anklicken, der Arm hebt sie an und legt sie in die passende Aussparung oder an eine freie Stelle" data-en-aria="3D mini game: xArm Lite 6 in the Digital Twin, the dotted dome shows the workspace with 440 mm reach; click the cube, cuboid and cylinder, the arm lifts them and places them in the matching cut-out or on any free spot"></div>
+          <div class="stage-canvas" id="hero3d" role="img" aria-label="3D-Minispiel: xArm Lite 6 im Digital Twin, Punktkuppel zeigt den Arbeitsraum mit 440 mm Reichweite; Würfel, Quader und Zylinder anklicken, der Arm hebt sie an und legt sie in die passende Aussparung, an eine freie Stelle oder stapelt sie zum Turm; fährt der Arm mit dem Zeiger gegen den Turm, kippt er um" data-en-aria="3D mini game: xArm Lite 6 in the Digital Twin, the dotted dome shows the workspace with 440 mm reach; click the cube, cuboid and cylinder, the arm lifts them and places them in the matching cut-out, on any free spot or stacks them into a tower; steer the arm into the tower with the pointer and it topples"></div>
         </figure>
-        <p class="stage-hint"><svg class="ico" aria-hidden="true"><use href="#i-pointer"/></svg><span class="hint-fine" data-en="Click an object: lift it · then click the matching shape or any free spot: place it · drag: rotate the view">Objekt anklicken: anheben · dann passende Form oder freie Stelle anklicken: ablegen · ziehen: Ansicht drehen</span><span class="hint-touch" data-en="Tap an object: lift it · then tap the matching shape or any free spot: place it · drag: rotate the view">Objekt antippen: anheben · dann passende Form oder freie Stelle antippen: ablegen · ziehen: Ansicht drehen</span></p>
+        <p class="stage-hint"><svg class="ico" aria-hidden="true"><use href="#i-pointer"/></svg><span class="hint-fine" data-en="Click an object: lift it · then click the matching shape, a free spot or another object (stack): place it · drag: rotate the view">Objekt anklicken: anheben · dann passende Form, freie Stelle oder anderes Objekt (Turm) anklicken: ablegen · ziehen: Ansicht drehen</span><span class="hint-touch" data-en="Tap an object: lift it · then tap the matching shape, a free spot or another object (stack): place it · drag: rotate the view">Objekt antippen: anheben · dann passende Form, freie Stelle oder anderes Objekt (Turm) antippen: ablegen · ziehen: Ansicht drehen</span></p>
       </div>
       <div class="hero-kpis">
         <a class="hero-card hc-1" href="#teilhabe">
@@ -870,12 +872,12 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
           <div class="brief" style="--hue: var(--accent)"><p class="slogan" data-en="Six principles carry the platform.">Sechs Prinzipien tragen die Plattform.</p><ul class="kpis"><li class="kpi"><strong>6</strong><span data-en="principles">Prinzipien</span></li><li class="kpi"><strong>0</strong><span data-en="installs">Installation</span></li><li class="kpi"><strong>1</strong><span data-en="safety chain">Sicherheits&shy;kette</span></li></ul></div>
         </header>
         <ul class="fx-grid">
-          <li class="fx"><span class="bi-l"><svg class="ico" aria-hidden="true"><use href="#i-cube"/></svg></span><b data-en="First virtual, then real.">Erst virtuell, dann real.</b><p data-en="Every motion runs in the physics-based Digital Twin first, then the same flow on the xArm&amp;nbsp;Lite&amp;nbsp;6.">Jede Bewegung läuft zuerst im physikbasierten Digital Twin, danach derselbe Ablauf am xArm&nbsp;Lite&nbsp;6.</p><a class="more" href="present_presentation.html#merkmale"><span data-en="Key features">Kernmerkmale</span><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg></a></li>
-          <li class="fx"><span class="bi-l"><svg class="ico" aria-hidden="true"><use href="#i-shield"/></svg></span><b data-en="One chain for every input.">Eine Kette für jede Eingabe.</b><p data-en="Ten control modes, from gamepad and VR to gaze, voice and AI chat.">Zehn Steuerwege, von Gamepad und VR bis Blick, Sprache und KI-Chat.</p><a class="more" href="present_presentation.html#ablaeufe"><span data-en="Function flows">Funktionsabläufe</span><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg></a></li>
-          <li class="fx"><span class="bi-l"><svg class="ico" aria-hidden="true"><use href="#i-user"/></svg></span><b data-en="The AI plans. The human approves.">Die KI plant. Der Mensch gibt frei.</b><p data-en="The arm moves only after approval; step in any time.">Der Arm fährt erst nach Freigabe; Eingreifen geht jederzeit.</p><a class="more" href="#stage"><span data-en="The principle">Das Prinzip</span><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg></a></li>
-          <li class="fx"><span class="bi-l"><svg class="ico" aria-hidden="true"><use href="#i-globe"/></svg></span><b data-en="Open, don't install.">Öffnen statt installieren.</b><p data-en="A web browser is all you need; nothing gets installed on the device. Operate, launch, monitor and tap: on PC, tablet, smartphone or Quest&amp;nbsp;3, locally or on the home network.">Ein Webbrowser genügt, auf dem Endgerät wird nichts installiert. Bedienen, starten, überwachen und tippen: am PC, Tablet, Smartphone oder auf der Quest&nbsp;3, lokal oder im Heimnetz.</p><a class="more" href="#webapps"><span data-en="Four web apps">Vier Web-Apps</span><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg></a></li>
-          <li class="fx"><span class="bi-l"><svg class="ico" aria-hidden="true"><use href="#i-chart"/></svg></span><b data-en="Measured, not guessed.">Gemessen statt geschätzt.</b><p data-en="The Monitoring Dashboard records system and usage; usability tests with SUS and NASA-TLX.">Monitoring Dashboard erfasst System und Nutzung; Usability-Tests mit SUS und NASA-TLX.</p><a class="more" href="present_presentation.html#forschung"><span data-en="Evaluation logic">Evaluationslogik</span><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg></a></li>
-          <li class="fx"><span class="bi-l"><svg class="ico" aria-hidden="true"><use href="#i-layers"/></svg></span><b data-en="Replaceable, not fixed.">Austauschbar statt festgelegt.</b><p data-en="Input device, camera, AI model and software module swap individually; robot arm planned.">Eingabegerät, Kamera, KI-Modell und Software-Baustein einzeln ersetzbar; Roboterarm geplant.</p><a class="more" href="present_presentation.html#stack"><span data-en="System stack">System-Stack</span><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg></a></li>
+          <li class="fx" style="--hue: var(--blue)"><span class="bi-l"><svg class="ico" aria-hidden="true"><use href="#i-cube"/></svg></span><b data-en="First virtual, then real.">Erst virtuell, dann real.</b><p data-en="Every motion runs in the physics-based Digital Twin first, then the same flow on the xArm&amp;nbsp;Lite&amp;nbsp;6.">Jede Bewegung läuft zuerst im physikbasierten Digital Twin, danach derselbe Ablauf am xArm&nbsp;Lite&nbsp;6.</p><a class="more" href="present_presentation.html#merkmale"><span data-en="Key features">Kernmerkmale</span><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg></a></li>
+          <li class="fx" style="--hue: var(--orange)"><span class="bi-l"><svg class="ico" aria-hidden="true"><use href="#i-shield"/></svg></span><b data-en="One chain for every input.">Eine Kette für jede Eingabe.</b><p data-en="Ten control modes, from gamepad and VR to gaze, voice and AI chat.">Zehn Steuerwege, von Gamepad und VR bis Blick, Sprache und KI-Chat.</p><a class="more" href="present_presentation.html#ablaeufe"><span data-en="Function flows">Funktionsabläufe</span><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg></a></li>
+          <li class="fx" style="--hue: var(--violet)"><span class="bi-l"><svg class="ico" aria-hidden="true"><use href="#i-user"/></svg></span><b data-en="The AI plans. The human approves.">Die KI plant. Der Mensch gibt frei.</b><p data-en="The arm moves only after approval; step in any time.">Der Arm fährt erst nach Freigabe; Eingreifen geht jederzeit.</p><a class="more" href="#stage"><span data-en="The principle">Das Prinzip</span><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg></a></li>
+          <li class="fx" style="--hue: var(--green)"><span class="bi-l"><svg class="ico" aria-hidden="true"><use href="#i-globe"/></svg></span><b data-en="Open, don't install.">Öffnen statt installieren.</b><p data-en="A web browser is all you need; nothing gets installed on the device. Operate, launch, monitor and tap: on PC, tablet, smartphone or Quest&amp;nbsp;3, locally or on the home network.">Ein Webbrowser genügt, auf dem Endgerät wird nichts installiert. Bedienen, starten, überwachen und tippen: am PC, Tablet, Smartphone oder auf der Quest&nbsp;3, lokal oder im Heimnetz.</p><a class="more" href="#webapps"><span data-en="Four web apps">Vier Web-Apps</span><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg></a></li>
+          <li class="fx" style="--hue: var(--gold)"><span class="bi-l"><svg class="ico" aria-hidden="true"><use href="#i-chart"/></svg></span><b data-en="Measured, not guessed.">Gemessen statt geschätzt.</b><p data-en="The Monitoring Dashboard records system and usage; usability tests with SUS and NASA-TLX.">Monitoring Dashboard erfasst System und Nutzung; Usability-Tests mit SUS und NASA-TLX.</p><a class="more" href="present_presentation.html#forschung"><span data-en="Evaluation logic">Evaluationslogik</span><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg></a></li>
+          <li class="fx" style="--hue: var(--indigo)"><span class="bi-l"><svg class="ico" aria-hidden="true"><use href="#i-layers"/></svg></span><b data-en="Replaceable, not fixed.">Austauschbar statt festgelegt.</b><p data-en="Input device, camera, AI model and software module swap individually; robot arm planned.">Eingabegerät, Kamera, KI-Modell und Software-Baustein einzeln ersetzbar; Roboterarm geplant.</p><a class="more" href="present_presentation.html#stack"><span data-en="System stack">System-Stack</span><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg></a></li>
         </ul>
       </section>
 
