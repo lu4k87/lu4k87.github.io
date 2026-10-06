@@ -96,6 +96,26 @@ html.sf-on .sf-h:not(.sf-in) .eyebrow .n { transform: perspective(240px) rotateY
   @keyframes sf-progress { from { transform: scaleX(0); } to { transform: scaleX(1); } }
 }
 
+/* ── Navigation: Marke gleitet zum aktiven Link (Abschnittsfarbe), Unterkante = Fortschritt im Abschnitt;
+   width/height mit animiert (kleines absolutes Element, kein Reflow der Seite) ── */
+.sf-ink { position: absolute; left: 0; top: 0; z-index: 0; pointer-events: none; border-radius: var(--radius-sm, 4px); opacity: 0;
+  transform: translate(var(--x, 0), var(--y, 0)); background: color-mix(in srgb, var(--sf-glow) 15%, transparent);
+  transition: transform .45s var(--sf-ease), width .45s var(--sf-ease), height .45s var(--sf-ease), opacity .25s var(--sf-ease); }
+.sf-ink::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 2px; background: var(--sf-glow);
+  transform-origin: 0 50%; transform: scaleX(var(--sf-np, 0)); }
+.sf-ink.on { opacity: 1; }
+.sf-ink.sf-snap { transition: opacity .25s var(--sf-ease); }
+.sf-inked > a { position: relative; z-index: 1; }
+
+/* ── Brotkrume „Kapitel › Abschnitt“: Punkt in Abschnittsfarbe, Text blendet beim Wechsel weich ein ── */
+.sf-crumb { display: flex; align-items: center; gap: 8px; min-width: 0; font-weight: 700; white-space: nowrap; }
+.sf-crumb i { width: 8px; height: 8px; border-radius: 50%; flex: none; background: var(--sf-glow); box-shadow: 0 0 0 4px color-mix(in srgb, var(--sf-glow) 20%, transparent); }
+.sf-crumb span { color: var(--fg-2, inherit); }
+.sf-crumb b:not(:empty)::before { content: "›"; margin-right: 8px; color: var(--sf-glow); }
+.sf-crumb b { overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.sf-crumb.sf-swap :is(span, b) { animation: sf-swap .35s var(--sf-ease); }
+@keyframes sf-swap { from { opacity: 0; transform: translateY(6px); } }
+
 /* ── Abschnittsfarbe: --sf-glow gleitet weich in die Farbe des aktiven Abschnitts (Leitlinie, Fortschritt, Lichtstreifen) ── */
 @property --sf-glow { syntax: '<color>'; inherits: true; initial-value: #2ee6c8; }
 :root { transition: --sf-glow .9s var(--sf-ease); }
@@ -129,9 +149,9 @@ html.sf-on .sf-fill.go > * { animation: sf-fill .45s var(--sf-ease) calc(250ms +
 .sf-line.go { animation: sf-line 1.8s var(--sf-ease) both; }
 @keyframes sf-line { 0% { transform: scaleX(0); opacity: 1; } 45% { transform: scaleX(1); opacity: 1; } 100% { transform: scaleX(1); opacity: 0; } }
 
-@media (prefers-reduced-motion: reduce) { :root { transition: none; } }
+@media (prefers-reduced-motion: reduce) { :root { transition: none; } .sf-ink { transition: none; } .sf-crumb.sf-swap :is(span, b) { animation: none; } }
 
 @media print {
   html.sf-on .sf, html.sf-on .sf-h *, html.sf-on .sf-depth, html.sf-on .sf-exit { opacity: 1 !important; transform: none !important; animation: none !important; transition: none !important; }
-  .sf-rail, .sf-glare, .sf-shine, .sf-sweep, .sf-progress, .sf-relay, .sf-spot, .sf-line { display: none !important; }
+  .sf-rail, .sf-glare, .sf-shine, .sf-sweep, .sf-progress, .sf-relay, .sf-spot, .sf-line, .sf-ink, .sf-crumb { display: none !important; }
 }

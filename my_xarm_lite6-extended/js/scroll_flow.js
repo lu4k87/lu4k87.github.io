@@ -10,8 +10,11 @@
      shine    Lichtstreif über Bildern                  count    Zahlen im Text zählen hoch
      rail     { sections, label } Leitlinie im linken Rand mit Knoten je Abschnitt
      progress Lesefortschritt: Selektor einer vorhandenen Linie oder { create: '<Kopfzeile>' }
-     nav      { links, reset, hue } aktiver Abschnitt in der Navigation (aria-current); hue = Element im Abschnitt mit --hue
-              → Leitlinie + Fortschritt gleiten in dessen Farbe (--sf-glow)
+     nav      { links, reset, hue, ink, crumb } aktiver Abschnitt in der Navigation (aria-current, Leselinie im oberen Drittel);
+              hue = Element im Abschnitt mit --hue → Leitlinie + Fortschritt gleiten in dessen Farbe (--sf-glow);
+              ink = gleitende Marke unter dem aktiven Link mit Fortschritt im Abschnitt; crumb = { into, sections, label }
+              Brotkrume „Kapitel › Abschnitt“ in into (Seite zeigt sie per CSS, z. B. nur eingeklappt)
+     collapse { el, after, back } Kopfzeile bekommt .sf-min beim Weiterlesen unterhalb von after, verliert sie beim Zurückscrollen
      relay    [{ box, items }] Lichtsaum läuft einmal über die Oberkanten benachbarter Karten (Kette), Karte trägt dabei .sf-lit
      spot     [{ box, items }] Rahmenlicht folgt dem Zeiger, Nachbarkarten im Umkreis leuchten anteilig mit (nur Maus)
      fill     Mini-Balken (Pips, Segmente): Kinder füllen sich nacheinander, synchron zum Hochzählen
@@ -43,20 +46,104 @@
     onScroll(() => { const max = root.scrollHeight - innerHeight; bar.style.setProperty('--p', max > 0 ? Math.min(1, scrollY / max) : 0); })();
   }
 
-  // ── aktiver Abschnitt in der Navigation (Lesefortschritt) ──
-  function navSpy({ links, reset, hue }) {
-    const map = new Map($$(links).map(a => [a.getAttribute('href').slice(1), a]).filter(([id]) => id && document.getElementById(id)));
-    const tint = id => {
-      const el = hue && id && document.getElementById(id).querySelector(hue);
+  // ── aktiver Abschnitt in der Navigation: Abschnitt unter der Leselinie (oberes Drittel unter der Kopfzeile) gewinnt,
+  //    Reihenfolge = Seitenreihenfolge, Seitenende = letzter sichtbarer; nach Klick gilt sofort das Ziel, bis das Scrollen endet ──
+  let navHold = false;
+  function navSpy({ links, reset, hue, ink, crumb }) {
+    const items = $$(links).map(a => ({ a, el: document.getElementById(a.getAttribute('href').slice(1)) }))
+      .filter(i => i.el).sort((x, y) => docOrder(x.el, y.el));
+    if (!items.length) return;
+    const nav = items[0].a.parentElement, head = nav.closest('header') || nav;
+    const r = reset && document.querySelector(reset);
+    const tint = it => {
+      const el = hue && it && it.el.querySelector(hue);
       const c = el && getComputedStyle(el).getPropertyValue('--hue').trim();
       if (c) root.style.setProperty('--sf-glow', c); else root.style.removeProperty('--sf-glow');
     };
-    const mark = id => { map.forEach((a, k) => a.setAttribute('aria-current', String(k === id))); tint(id); };
-    const opt = { rootMargin: '-35% 0px -60% 0px' };
-    const spy = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) mark(e.target.id); }), opt);
-    map.forEach((a, id) => spy.observe(document.getElementById(id)));
-    const r = reset && document.querySelector(reset);
-    if (r) new IntersectionObserver(([e]) => { if (e.isIntersecting) mark(''); }, opt).observe(r);
+    // Marke gleitet unter den aktiven Link, Unterkante füllt sich mit dem Fortschritt im Abschnitt (--sf-np)
+    const bar = ink ? span('sf-ink', nav) : null;
+    if (bar) { positioned(nav); nav.classList.add('sf-inked'); }
+    // Brotkrume „Kapitel › Abschnitt“ (Seite blendet sie in der eingeklappten Kopfzeile ein); Klick springt zum Abschnitt
+    const secs = crumb ? $$(crumb.sections) : [];
+    const box = crumb && document.querySelector(crumb.into);
+    let cb = null;
+    if (box && secs.length) {
+      positioned(box);
+      cb = document.createElement('a'); cb.className = 'sf-crumb';
+      cb.innerHTML = '<i aria-hidden="true"></i><span></span><b></b>';
+      cb.addEventListener('click', () => hold());
+      box.append(cb);
+    }
+    let cur = null, label = '';
+    const set = it => {
+      if (it === cur) return;
+      cur = it;
+      items.forEach(i => i.a.setAttribute('aria-current', String(i === it)));
+      tint(it);
+    };
+    const place = p => {
+      if (!bar) return;
+      if (!cur) { bar.classList.remove('on'); return; }
+      if (!bar.classList.contains('on')) { bar.classList.add('sf-snap', 'on'); requestAnimationFrame(() => requestAnimationFrame(() => bar.classList.remove('sf-snap'))); }
+      const a = cur.a;
+      bar.style.cssText = `--x:${a.offsetLeft}px;--y:${a.offsetTop}px;width:${a.offsetWidth}px;height:${a.offsetHeight}px;--sf-np:${p.toFixed(3)}`;
+    };
+    const crumbs = line => {
+      if (!cb) return;
+      const s = cur && secs.filter(el => el !== cur.el && cur.el.contains(el) && el.getBoundingClientRect().top <= line).pop();
+      const t = s && (s.querySelector(crumb.label || 'h2')?.textContent || '').replace(/\s+/g, ' ').trim();
+      const key = `${cur ? cur.a.textContent : ''}|${t || ''}`;
+      cb.classList.toggle('on', !!cur);
+      if (key === label) return;
+      label = key;
+      cb.href = `#${(s && s.id) || (cur && cur.el.id) || ''}`;
+      cb.querySelector('span').textContent = cur ? cur.a.textContent.trim() : '';
+      cb.querySelector('b').textContent = t || '';
+      cb.classList.remove('sf-swap'); void cb.offsetWidth; cb.classList.add('sf-swap');
+    };
+    const update = () => {
+      const h = Math.max(0, head.getBoundingClientRect().bottom);
+      const line = h + (innerHeight - h) * 0.3;
+      const end = scrollY + innerHeight >= root.scrollHeight - 2;
+      let next = null, p = 0;
+      if (!(r && r.getBoundingClientRect().bottom > line)) items.forEach(it => {
+        const b = it.el.getBoundingClientRect();
+        if ((b.top <= line && b.bottom > line) || (end && b.top < innerHeight && b.bottom > h)) { next = it; p = end ? 1 : (line - b.top) / b.height; }
+      });
+      if (!navHold) set(next);
+      place(cur === next ? Math.min(1, Math.max(0, p)) : 0);
+      crumbs(line);
+    };
+    const q = onScroll(update);
+    // Klick: Ziel sofort aktiv, Spy + Einklappen ruhen bis Scroll-Ende (Fallback 1.6 s ohne scrollend)
+    let tm = 0;
+    const hold = it => {
+      if (it) set(it);
+      navHold = true; clearTimeout(tm);
+      const done = () => { clearTimeout(tm); removeEventListener('scrollend', done); navHold = false; q(); };
+      addEventListener('scrollend', done); tm = setTimeout(done, 1600);
+      q();
+    };
+    items.forEach(it => it.a.addEventListener('click', () => hold(it)));
+    new MutationObserver(() => { label = ''; q(); }).observe(root, { attributes: true, attributeFilter: ['lang'] });
+    q();
+  }
+
+  // ── Kopfzeile klappt beim Weiterlesen ein (Seite blendet per .sf-min alles bis auf Navigation + Fortschritt aus);
+  //    klappt aus: oberhalb von after, beim Zurückscrollen ab back px am Stück; Tastaturfokus regelt die Seite per CSS ──
+  function collapse({ el, after, back = 48 }) {
+    const top = document.querySelector(el);
+    if (!top) return;
+    const a = after && document.querySelector(after);
+    let last = scrollY, up = 0, min = false;
+    const set = v => { if (v !== min) { min = v; top.classList.toggle('sf-min', v); } };
+    onScroll(() => {
+      const y = scrollY, d = y - last;
+      last = y;
+      if (y < (a ? a.offsetTop + a.offsetHeight * 0.5 : innerHeight * 0.5)) { up = 0; set(false); return; }
+      if (navHold) return;
+      if (d > 0) { up = 0; set(true); } else if (d < 0 && (up -= d) >= back) set(false);
+    })();
   }
 
   // ── Einblenden ──
@@ -287,7 +374,8 @@
   window.ScrollFlow = {
     init(cfg = {}) {
       if (cfg.progress) progress(cfg.progress);
-      if (cfg.nav && 'IntersectionObserver' in window) navSpy(cfg.nav);
+      if (cfg.nav) navSpy(cfg.nav);
+      if (cfg.collapse) collapse(cfg.collapse);
       if (!io) return;
       root.classList.add('sf-on');
       // Einstieg: sofort, gestaffelt; Bild dreht sich zum Leser

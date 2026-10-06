@@ -17,7 +17,8 @@
 
   // ── Hero ──
   const hdr = document.querySelector('.top');
-  if (hdr) new ResizeObserver(() => root.style.setProperty('--hdr', `${hdr.offsetHeight}px`)).observe(hdr);
+  // eingeklappt (.sf-min aus js/scroll_flow.js) nicht messen: --hdr hält den Platz der vollen Kopfzeile, Inhalt springt nicht
+  if (hdr) new ResizeObserver(() => { if (!hdr.classList.contains('sf-min')) root.style.setProperty('--hdr', `${hdr.offsetHeight}px`); }).observe(hdr);
   const hero = document.querySelector('.hero');
   if (hero) requestAnimationFrame(() => requestAnimationFrame(() => hero.classList.add('is-in')));
 

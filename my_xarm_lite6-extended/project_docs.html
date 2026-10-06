@@ -66,16 +66,29 @@ button { font: inherit; color: inherit; }
 .wrap { max-width: 1240px; margin-inline: auto; padding-inline: 24px; }
 .mono { font-family: var(--mono); font-variant-numeric: tabular-nums; }
 
-/* Kopfzeile: Navigation folgt dem Lesefortschritt (aktiver Abschnitt + Fortschrittslinie) */
-.top { position: sticky; top: 0; z-index: 10; border-bottom: 1px solid var(--line); background: color-mix(in srgb, var(--bg) 95%, transparent); }
-.top .wrap { display: flex; align-items: center; gap: 16px; padding-block: 12px; flex-wrap: wrap; }
+/* Kopfzeile: Navigation folgt dem Lesefortschritt (gleitende Marke + Fortschritt im Abschnitt, Fortschrittslinie);
+   fest oben, Platz hält body (--hdr aus landing.js) → Einklappen verschiebt nie den Inhalt.
+   Eingeklappt (.sf-min, js/scroll_flow.js): nur Navigation + Fortschrittslinie, links die Brotkrume „Kapitel › Abschnitt“;
+   Zurückscrollen, Seitenanfang oder Tastaturfokus klappt aus. Übergang 250 ms (--t-base), Ausblenden schneller */
+body { padding-top: var(--hdr, 61px); }
+.top { position: fixed; top: 0; left: 0; right: 0; z-index: 10; border-bottom: 1px solid var(--line); background: color-mix(in srgb, var(--bg) 95%, transparent); }
+.top .wrap { display: flex; align-items: center; gap: 16px; padding-block: 12px; flex-wrap: wrap; transition: padding var(--t-base) var(--ease-out), row-gap var(--t-base) var(--ease-out); }
+.top :is(.brand, .tools) { max-height: 48px; transition: opacity var(--t-base) var(--ease-out), visibility 0s, max-height var(--t-base) var(--ease-out), max-width var(--t-base) var(--ease-out), margin var(--t-base) var(--ease-out); }
+.top .tools { max-width: 320px; }
+.top .sf-crumb { position: absolute; left: 24px; top: 50%; max-width: calc(100% - 420px); font-size: 14px; opacity: 0; visibility: hidden; transform: translateY(-50%);
+  transition: opacity 180ms var(--ease-out), visibility 0s 180ms; }
+.top.sf-min:not(:has(:focus-visible:not(.sf-crumb))) .wrap { padding-block: 4px; }
+.top.sf-min:not(:has(:focus-visible:not(.sf-crumb))) :is(.brand, .tools) { opacity: 0; visibility: hidden; pointer-events: none; transition: opacity 180ms var(--ease-out), visibility 0s 180ms, max-height var(--t-base) var(--ease-out), max-width var(--t-base) var(--ease-out), margin var(--t-base) var(--ease-out); }
+.top.sf-min:not(:has(:focus-visible:not(.sf-crumb))) .tools { max-width: 0; margin-left: -16px; overflow: hidden; }  /* Navigation gleitet an den rechten Rand */
+.top.sf-min:not(:has(:focus-visible:not(.sf-crumb))) .sf-crumb.on { opacity: 1; visibility: visible; transition: opacity var(--t-base) var(--ease-out) 80ms, visibility 0s; }
 .brand { display: flex; align-items: center; gap: 10px; font-weight: 800; }
 .brand-mark { width: 34px; height: 34px; border-radius: var(--radius); display: grid; place-items: center; background: var(--accent); color: var(--accent-ink); box-shadow: 0 0 18px var(--glow); }
 .brand small { display: block; font: 600 11px/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--fg-2); margin-top: 3px; }
 .top nav { margin-left: auto; display: flex; gap: 2px; flex-wrap: wrap; }
 .top nav a { font-size: 14px; font-weight: 600; padding: 7px 11px; border-radius: var(--radius-sm); color: var(--fg-2); transition: background var(--t-fast), color var(--t-fast); }
 .top nav a:hover { background: var(--surface-2); color: var(--fg); }
-.top nav a[aria-current="true"] { background: color-mix(in srgb, var(--accent) 16%, transparent); color: var(--fg); }
+.top nav:not(.sf-inked) a[aria-current="true"] { background: color-mix(in srgb, var(--accent) 16%, transparent); color: var(--fg); }
+@media print { body { padding-top: 0; } .top { position: static; } }
 .top nav .sep { width: 1px; margin: 6px 6px; background: var(--line-strong); }
 .tools { display: flex; gap: 8px; }
 /* Steuerknöpfe „Leiste“: Auswahl = Gruppe mit Rahmen, gewählt = heller Daumen; Einzelaktionen = .btn/.pf-btn */
@@ -441,8 +454,7 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
 
 /* Umbruchpunkte: Viewport für Kopf und Landing, Container-Abfragen je Abschnitt */
 @media (max-width: 1200px) {
-  .top nav { display: none; }
-  .tools { margin-left: auto; }
+  .top .sf-crumb { max-width: calc(100% - 380px); }
   .af-main .kpis-6 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
 @media (max-width: 960px) {
@@ -453,6 +465,13 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
   .af-brand { display: none; }
 }
 @media (max-width: 760px) {
+  /* Kopfzeile zweizeilig: Marke + Schalter oben, Navigation volle Breite darunter; eingeklappt bleibt nur die Navigation */
+  .top .wrap { row-gap: 6px; }
+  .tools { margin-left: auto; }
+  .top nav { order: 3; flex-basis: 100%; margin-left: 0; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
+  .top .sf-crumb { display: none; }
+  .top.sf-min:not(:has(:focus-visible:not(.sf-crumb))) .wrap { row-gap: 0; }
+  .top.sf-min:not(:has(:focus-visible:not(.sf-crumb))) :is(.brand, .tools) { max-height: 0; overflow: hidden; }
   .at-areas, .af-side { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .land, .contact { padding-block: 72px; }
   .atlas { padding: 48px 16px; }
@@ -1426,7 +1445,9 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
     shine: '.thumb',
     rail: { sections: 'section.sec[id]', label: '.eyebrow .n' },
     progress: '.progress',
-    nav: { links: '.top nav a', reset: '.hero', hue: '.eyebrow' },
+    nav: { links: '.top nav a', reset: '.hero', hue: '.eyebrow', ink: true,
+           crumb: { into: '.top .wrap', sections: 'section.sec[id], .contact[id]', label: 'h2' } },
+    collapse: { el: '.top', after: '.hero' },
     relay: [{ box: '.hero-kpis', items: '.hero-card' }, { box: '.path', items: 'a' }, '.fx-grid', '.kpis'],
     spot: [{ box: '.path', items: 'a' }, '.fx-grid', '.kpis', { box: '.list', items: 'a.item' }],
     fill: '.pips, .hc-seg',
