@@ -647,8 +647,9 @@ function build(L, wrap, host, o) {
         list.replaceChildren(...OBJ.map(o => {
           const li = document.createElement('li'), i = document.createElement('i'), s = document.createElement('span');
           li.className = o.home ? 'ok' : ''; li.style.setProperty('--c', `#${o.K.color.toString(16).padStart(6, '0')}`);
-          i.textContent = o.home ? '✓' : ''; s.textContent = T(`${o.K.de} nach Hause bringen`, `Bring the ${o.K.en} home`);
-          li.append(i, s); return li;
+          s.textContent = T(`${o.K.de} nach Hause bringen`, `Bring the ${o.K.en} home`); li.append(i, s);
+          if (o.home) { const ck = document.createElement('b'); ck.className = 'ck'; ck.textContent = '✓'; li.append(ck); }   // erledigt: grüner Haken dahinter, Text bleibt lesbar
+          return li;
         }));
         bar.style.width = `${n / 3 * 100}%`;
         foot.textContent = T(`Runden geschafft: ${rounds}`, `Rounds completed: ${rounds}`); foot.hidden = !rounds;
@@ -837,8 +838,12 @@ function build(L, wrap, host, o) {
       o.mat.to = 1; o.mat.D = 2.6;
     };
     // Zu Hause angekommen (nach dem Einrutschen): Dank, Klang, Mission abhaken; alle drei → Abzeichen, neue Runde
+    // Dank-Sprüche (Wunsch User 06.10.2026), nie zweimal hintereinander derselbe
+    const THANKS = [['Ahh…, endlich Zuhause!', 'Ahh…, home at last!'], ['Hier bin ich sicher.', "I'm safe here."], ["War ja 'n Kinderspiel!", 'That was child’s play!']];
+    let thx = -1;
     const arrived = o => {
-      say.show(o, T('Ahh, endlich Zuhause, danke!', 'Ahh, home at last, thank you!'), 3000, true); sfx('home');
+      thx = (thx + 1 + Math.floor(Math.random() * (THANKS.length - 1))) % THANKS.length;
+      say.show(o, T(...THANKS[thx]), 3000, true); sfx('home');
       if (OBJ.every(x => x.home)) { rounds++; quest.badge(); sfx('win'); newRoundAt = clk + 6.5; }
       quest.render(); save(); show();
     };

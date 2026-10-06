@@ -300,8 +300,9 @@ a.hero-card:hover { border-color: color-mix(in srgb, var(--accent) 65%, var(--gl
 .h3d-quest li { display: flex; align-items: center; gap: 8px; }
 .h3d-quest li i { width: 16px; height: 16px; flex: none; display: grid; place-items: center; border-radius: 50%; border: 1px solid var(--c);
   font: 700 10px/1 var(--mono); font-style: normal; transition: background-color var(--t-base); }
-.h3d-quest li.ok i { background: var(--c); color: #fff; }
-.h3d-quest li.ok span { text-decoration: line-through; }
+.h3d-quest li.ok i { background: var(--c); }
+.h3d-quest li .ck { margin-left: auto; width: 18px; height: 18px; flex: none; display: grid; place-items: center; border-radius: 50%;
+  background: #1f9d55; color: #fff; font: 800 12px/1 var(--sans, sans-serif); animation: h3d-pop 520ms var(--ease-out); }
 .h3d-q-bar { height: 4px; border-radius: 2px; background: color-mix(in srgb, var(--glass-fg) 14%, transparent); overflow: hidden; }
 .h3d-q-bar i { display: block; width: 0; height: 100%; background: var(--accent); transition: width 600ms var(--ease-out); }
 .h3d-quest p { margin: 0; }
@@ -314,7 +315,7 @@ a.hero-card:hover { border-color: color-mix(in srgb, var(--accent) 65%, var(--gl
   .h3d-quest { left: 10px; top: 10px; min-width: 0; gap: 6px; }
   .h3d-quest ul, .h3d-quest p { display: none; }
 }
-@media (prefers-reduced-motion: reduce) { .h3d-say, .h3d-say.in, .h3d-badge.in, .h3d-q-bar i { transition: none; animation: none; } }
+@media (prefers-reduced-motion: reduce) { .h3d-say, .h3d-say.in, .h3d-badge.in, .h3d-q-bar i, .h3d-quest li .ck { transition: none; animation: none; } }
 /* Karten mit wechselndem Inhalt (aktiver Eintrag der Szene) und Phasen-Liste (Ghost: Plan → Freigabe → Fahrt) */
 .hc-live strong { font-size: 30px; }
 .hc-live .sub-k { font: 600 12px/1.3 var(--mono); color: var(--fg-2); }
