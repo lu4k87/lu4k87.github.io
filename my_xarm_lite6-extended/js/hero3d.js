@@ -2,7 +2,8 @@
    Laser-Zielhilfe senkrecht auf den Tisch; Ziehen dreht die Kamera. Szene je Seite (opts.scene):
      dome   Arbeitsraum als Punktkuppel (Reichweite 440 mm um Gelenk 2); Zeiger bewegt den TCP, sonst langsame Acht;
             Mini-Spiel „Missionen“: Würfel, Quader, Zylinder (Rastergitter) in die passende Aussparung legen lassen, Sprechblasen,
-            Missionsliste (.h3d-quest), Klänge per WebAudio; Formen leuchten als Klick-Hinweis kurz auf,
+            Missionsliste (.h3d-quest), Klänge der Robot Control UI (docs/sounds/); freie Objekte wandern langsam über die
+            Kreisfläche; Formen leuchten als Klick-Hinweis kurz auf,
             Status-Leiste unten mittig (.h3d-steps) blendet die Schritte nacheinander ein; Licht etwas gedämpft
      modes  Steuerwege als Lichtpunkte im Ring (opts.items); aktiver Punkt schickt einen Impuls zum Arm, der Arm zeigt hin
      ghost  Ghost-Arm plant voraus → Freigabe → Arm fährt nach („Erst virtuell, dann real“); Zeiger setzt das Ziel;
@@ -19,6 +20,8 @@
 (function () {
 'use strict';
 let THREE, OrbitControls, toCreasedNormals, RoomEnvironment;
+// Klänge (dome) liegen neben dem Skript in docs/sounds/; currentScript gibt es nur beim Laden
+const SND_DIR = document.currentScript ? new URL('../sounds/', document.currentScript.src).href : 'sounds/';
 
 const webgl = () => { try { const c = document.createElement('canvas'); return !!(c.getContext('webgl2') || c.getContext('webgl')); } catch (e) { return false; } };
 const CAM = {
@@ -497,8 +500,9 @@ function build(L, wrap, host, o) {
   // Stoppuhr (Wunsch User 06.10.2026, Vorschau „Missionen-Board mit Stoppuhr“, Variante C): startet beim ersten Objekt-Klick der
   // Runde; läuft, solange der Arm fährt oder der Zeiger auf der Bühne ist und es in den letzten 15 s eine Eingabe gab; sonst Pause.
   // Zählt nur gezeichnete Bilder (Tab verdeckt, Bühne aus dem Bild → Uhr steht); drittes Objekt zu Hause → Endzeit, ggf. Bestzeit.
-  // Missionsliste oben links; Lage, Stand, Runden, Zeit, Bestzeit und Klang an/aus in localStorage (F3). Klänge per WebAudio, nur als Antwort
-  // auf eigene Klicks (Browser erlaubt Ton erst nach einer Geste), leise, abschaltbar.
+  // Missionsliste oben links; Lage, Stand, Runden, Zeit, Bestzeit und Klang an/aus in localStorage (F3). Klänge der Robot Control UI,
+  // nur als Antwort auf eigene Klicks (Browser erlaubt Ton erst nach einer Geste), leise, abschaltbar.
+  // Wandern: freie Objekte gleiten langsam auf zufälligen Bahnen über die Kreisfläche, ohne sich oder die Formen zu berühren.
   // Bahnen = Spline durch Stützpunkte mit Minimal-Ruck-Zeitprofil (Weg, Geschwindigkeit, Beschleunigung stetig; Start und
   // Kontakt in Ruhe, Kontaktpunkte exakt); Gelenk 6 bleibt in ±178°.
   if (scene === 'dome') {
@@ -628,28 +632,51 @@ function build(L, wrap, host, o) {
     // m:ss,z (Zehntel; en mit Punkt)
     const fmt = v => { const z = Math.floor(v * 10), m = Math.floor(z / 600); return `${m}:${String(Math.floor(z / 10) % 60).padStart(2, '0')}${T(',', '.')}${z % 10}`; };
 
-    // Klänge (Wunsch User 06.10.2026: dezent, an sinnvoller Stelle): kurze Sinus-/Dreieckstöne mit weicher Hüllkurve, nur nach
-    // eigenem Klick (Greifen, Ablegen, zu Hause, falsche Form, Runde geschafft, Sprechblase); nie im Leerlauf
+    // Klänge (Wunsch User 06.10.2026: dezent, an sinnvoller Stelle, Klänge der Robot Control UI): Dateien aus ~/dev_ws/sounds,
+    // zugeschnitten (Stille weg, Ausblenden), mono, auf −3 dB Spitze angeglichen → docs/sounds/hero_*.mp3. Bedeutung wie in der
+    // Robot Control UI: Objekt wählen = Auswahl-Klick + Ansage („blue cube“, „red rectangle“, „green cylinder“ – passen zu den
+    // Objekten), Arm fährt los = Motor-Klang, falsche Form/kein Platz = Fehlerton, zu Hause = Chime, Runde geschafft = Chime eine
+    // Quinte höher über dem Dreiklang, Sprechblase/Klang an = UI-Klick. Sauger an/aus bleiben kurze WebAudio-Töne (kein passender
+    // Klang vorhanden). Jede Wiedergabe ±3 % verstimmt (Wiederholung klingt nicht mechanisch); fehlt eine Datei → WebAudio-Ersatzton.
+    // Nur nach eigenem Klick, nie im Leerlauf.
     const sfx = (() => {
-      let ac = null, out = null;
+      let ac = null, out = null, on = false, said = '', saidAt = 0;
       const tone = (f, t0, d, vol = 0.05, type = 'sine', f1 = f) => {
+        if (!ac || ac.state !== 'running') return;
         const o = ac.createOscillator(), g = ac.createGain(), t = ac.currentTime + t0;
         o.type = type; o.frequency.setValueAtTime(f, t); if (f1 !== f) o.frequency.exponentialRampToValueAtTime(f1, t + d);
         g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + 0.012); g.gain.exponentialRampToValueAtTime(0.0001, t + d);
         o.connect(g).connect(out); o.start(t); o.stop(t + d + 0.05);
       };
+      // Datei-Klang: vol 0…1, rate = Tonhöhe (1 = original), at = Verzögerung (s), alt = Ersatzton; Audio-Element statt WebAudio-Puffer,
+      // weil fetch() unter file:// gesperrt ist
+      const FILES = ['select', 'voice_cube', 'voice_box', 'voice_cyl', 'click', 'error', 'chime', 'motor'], el = {};
+      const smp = (id, vol, { rate = 1, at = 0, jit = 0.03, alt } = {}) => {
+        const go = () => {
+          if (mute) return;
+          const a = el[id].cloneNode(); a.volume = vol; a.preservesPitch = false; a.playbackRate = rate * (1 + (Math.random() * 2 - 1) * jit);
+          a.play().catch(() => alt && alt());
+        };
+        if (at) setTimeout(go, at * 1000); else go();
+      };
       const SND = {
-        lock: () => { tone(660, 0, 0.07, 0.03, 'sine', 990); tone(1320, 0.08, 0.1, 0.02); },      // Zielerfassung: kurzes Zirpen
+        // Objekt gewählt: Auswahl-Klick, dann Ansage des Objekts (gleiche Ansage nicht öfter als alle 6 s)
+        lock: o => {
+          smp('select', 0.32, { alt: () => { tone(660, 0, 0.07, 0.03, 'sine', 990); tone(1320, 0.08, 0.1, 0.02); } });
+          const v = `voice_${o.K.id}`; if (v !== said || clk - saidAt > 6) { said = v; saidAt = clk; smp(v, 0.42, { at: 0.38, jit: 0 }); }
+        },
+        move: () => smp('motor', 0.2, { jit: 0.05 }),                                             // Arm fährt los (Anfahren, Heben, Transport)
         grip: () => tone(330, 0, 0.11, 0.06, 'triangle', 170),                                   // Sauger an: weiches „Plopp“ abwärts
         release: () => tone(190, 0, 0.12, 0.045, 'triangle', 360),                               // Sauger aus: kurz aufwärts
-        pop: () => tone(900, 0, 0.07, 0.03, 'sine', 1350),                                       // Sprechblase
-        home: () => [523.25, 659.25, 783.99].forEach((f, k) => tone(f, k * 0.09, 0.55, 0.04)), // C-Dur aufwärts
-        nope: () => { tone(233, 0, 0.13, 0.05, 'triangle', 207); tone(196, 0.13, 0.2, 0.05, 'triangle', 175); },
-        win: () => [523.25, 659.25, 783.99, 1046.5].forEach((f, k) => tone(f, 0.55 + k * 0.12, 0.9, 0.035)),
+        pop: () => smp('click', 0.4, { alt: () => tone(900, 0, 0.07, 0.03, 'sine', 1350) }),      // Sprechblase
+        home: () => smp('chime', 0.42, { alt: () => [523.25, 659.25, 783.99].forEach((f, k) => tone(f, k * 0.09, 0.55, 0.04)) }),
+        nope: () => smp('error', 0.26, { alt: () => { tone(233, 0, 0.13, 0.05, 'triangle', 207); tone(196, 0.13, 0.2, 0.05, 'triangle', 175); } }),
+        win: () => { [523.25, 659.25, 783.99, 1046.5].forEach((f, k) => tone(f, 0.55 + k * 0.12, 0.9, 0.03)); smp('chime', 0.36, { rate: 1.5, at: 0.6, jit: 0 }); },
       };
-      const play = name => { if (mute || !ac || ac.state !== 'running') return; try { SND[name](); } catch (e) { /* ohne Ton weiter */ } };
-      // Erst in einer Nutzergeste anlegen/fortsetzen (Autoplay-Regel der Browser)
+      const play = (name, arg) => { if (mute || !on) return; try { SND[name](arg); } catch (e) { /* ohne Ton weiter */ } };
+      // Erst in einer Nutzergeste anlegen/fortsetzen (Autoplay-Regel der Browser); Dateien dann vorladen
       play.unlock = () => {
+        if (!on) { on = true; FILES.forEach(id => { el[id] = Object.assign(new Audio(`${SND_DIR}hero_${id}.mp3`), { preload: 'auto' }); }); }
         try {
           if (!ac) { const C = window.AudioContext || window.webkitAudioContext; if (!C) return; ac = new C(); out = ac.createGain(); out.gain.value = 0.8; out.connect(ac.destination); }
           if (ac.state === 'suspended') ac.resume();
@@ -941,7 +968,7 @@ function build(L, wrap, host, o) {
         if (op && op.lazy) { ops.splice(i, 1, ...op.lazy()); op = ops[i]; }
         if (!op) return finish();
         if (op.say) feed.say(...op.say);
-        if (op.pts) path = bahn(op.pts, op.v);
+        if (op.pts) { path = bahn(op.pts, op.v); if (op.say) sfx('move'); }
         if (op.act) op.act();
         if (op.hold && job.to < 0) {
           job.hold = true; lean = vlean = 0;
@@ -1012,7 +1039,7 @@ function build(L, wrap, host, o) {
       if (job) return;
       cur = o; say.hide(); if (!finished) started = true;
       if (reduce) { feed.reset(); feed.say(T('Ziel wählen', 'Choose a target'), T('Form oder freie Stelle wählen', 'pick a shape or free spot'), true); show(); return; }
-      fx = { o, t: 0, out: -1 }; o.jolt = o.hopT < 0 ? 0 : -1; sfx('lock'); ring(o.g.position.x, o.g.position.y, 0.003);
+      fx = { o, t: 0, out: -1 }; o.jolt = o.hopT < 0 ? 0 : -1; sfx('lock', o); ring(o.g.position.x, o.g.position.y, 0.003);
       pick(-1);
     };
     // Ziel gewählt: passende Form → ablegen; falsche → ablehnen; Startplatz → zurücklegen; ohne Objekt → Hinweis
@@ -1099,6 +1126,47 @@ function build(L, wrap, host, o) {
     // Raster weich auf 45 % und zurück (1,8 s, sin²), bei Hover, Ablauf oder im Arm klingt der Fade aus
     const PULSE = 4, FADE_EVERY = 8, FADE_D = 1.8, FADE_MIN = 0.45, ZAX = new THREE.Vector3(0, 0, 1);
     let pt = 0, fadeAmp = 1;
+    // Wandern (Wunsch User 06.10.2026): freie Objekte gleiten dauerhaft langsam (12 mm/s) auf unregelmäßigen Bahnen über die
+    // Kreisfläche. Kurs dreht mit der Summe zweier langsamer Sinus (eigene Phasen je Objekt) → nie dieselbe Bahn. Abstand zu den
+    // anderen Objekten, allen Formen, dem Startplatz des gewählten Objekts (Rückweg) und der gewählten freien Stelle: weiche
+    // Abstoßung lenkt den Kurs ab 60 mm vorher um (um 20° nach rechts gedreht → zwei Objekte weichen einander aus statt sich
+    // festzuschieben), harte Grenze hält sie nie näher als Grundfläche + 15 mm. Bleibt im Greifbereich (Radius 210–330 mm, Gelenk 1
+    // ±140°, sanft vom Rand weggelenkt). Steht: zu Hause, gewählt/im Arm, beim Aufploppen, unter dem Zeiger (leicht anklickbar),
+    // 3 s nach dem Ablegen; an- und auslaufen weich (0,8 s). Quader und Würfel drehen sich langsam in Fahrtrichtung.
+    const W_V = 0.012, W_R0 = 0.21, W_R1 = 0.33, W_A = 2.45, W_GAP = 0.015, W_SEE = 0.06, W_REST = 3;
+    const W_C = Math.cos(-0.35), W_S = Math.sin(-0.35), wrapA = a => Math.atan2(Math.sin(a), Math.cos(a));
+    OBJ.forEach(o => Object.assign(o, { wTh: rnd(-Math.PI, Math.PI), wP: [rnd(0, 7), rnd(0, 7)], wS: 0, wRest: 0, wFix: true }));
+    const wander = dt => {
+      const obs = TPL.map(t => ({ x: t.g.position.x, y: t.g.position.y, f: foot(t.K) + 0.005 }));
+      if (cur) { const [x, y] = slotXY(cur.slot); obs.push({ x, y, f: foot(cur.K) }); }
+      if (cur && freeS) obs.push({ x: freeS.r * Math.cos(freeS.a), y: freeS.r * Math.sin(freeS.a), f: foot(cur.K) });
+      OBJ.forEach(o => {
+        const fix = o.home || o === cur || o.popT < 1;
+        if (fix) { o.wS = 0; o.wFix = true; return; }
+        if (o.wFix) { o.wFix = false; o.wRest = clk + W_REST; }   // eben abgelegt/aufgeploppt: erst liegen bleiben
+        const run = o !== hoverObj && clk >= o.wRest && !newRoundAt;
+        o.wS += ((run ? 1 : 0) - o.wS) * Math.min(1, dt / 0.8);
+        if (o.wS < 1e-3) return;
+        const p = o.g.position, fo = foot(o.K), near = [...obs, ...OBJ.filter(q => q !== o && !q.home && q !== cur).map(q => ({ x: q.g.position.x, y: q.g.position.y, f: foot(q.K) }))];
+        let ax = 0, ay = 0;
+        near.forEach(n => {
+          const dx = p.x - n.x, dy = p.y - n.y, d = Math.hypot(dx, dy) || 1e-6, m = fo + n.f + W_GAP;
+          if (d < m + W_SEE) { const k = 2.5 * (1 - (d - m) / W_SEE) ** 2; ax += k * (dx * W_C - dy * W_S) / d; ay += k * (dx * W_S + dy * W_C) / d; }
+        });
+        const r = Math.hypot(p.x, p.y), a = Math.atan2(p.y, p.x), ux = p.x / r, uy = p.y / r, edge = (v, m) => 2.5 * Math.max(0, 1 - v / m) ** 2;
+        const kr = edge(r - W_R0, W_SEE) - edge(W_R1 - r, W_SEE), ka = edge(W_A - Math.abs(a), 0.25) * Math.sign(a);
+        ax += kr * ux + ka * uy; ay += kr * uy - ka * ux;
+        o.wTh += dt * (0.45 * Math.sin(0.23 * clk + o.wP[0]) + 0.3 * Math.sin(0.37 * clk + o.wP[1]));
+        if (ax || ay) o.wTh += wrapA(Math.atan2(Math.sin(o.wTh) + ay, Math.cos(o.wTh) + ax) - o.wTh) * Math.min(1, dt * 1.6);
+        const v = W_V * o.wS * dt;
+        p.x += v * Math.cos(o.wTh); p.y += v * Math.sin(o.wTh);
+        // harte Grenzen: nie in ein Hindernis, nie aus dem sicheren Greifbereich (wie freie Ablage: 170–340 mm, ±146°)
+        near.forEach(n => { const dx = p.x - n.x, dy = p.y - n.y, d = Math.hypot(dx, dy) || 1e-6, m = fo + n.f + W_GAP; if (d < m) { p.x = n.x + dx / d * m; p.y = n.y + dy / d * m; } });
+        const rr = Math.max(0.17, Math.min(0.34, Math.hypot(p.x, p.y))), aa = Math.max(-2.55, Math.min(2.55, Math.atan2(p.y, p.x)));
+        p.x = rr * Math.cos(aa); p.y = rr * Math.sin(aa); o.slot = { a: aa, r: rr };
+        if (o.hopT < 0 && o.K.sym) { const y = o.g.rotation.z; o.g.rotation.z += (alignYaw(y, o.wTh, o.K.sym) - y) * Math.min(1, dt * 0.8) * o.wS; }
+      });
+    };
     const ex = extra;
     extra = (dt, t) => {
       ex(dt, t);
@@ -1108,6 +1176,7 @@ function build(L, wrap, host, o) {
       const ticking = started && !finished && ((job && !job.hold) || (inside && clk - lastIn < IDLE));
       if (ticking) tRun += dt;
       quest.clock(started && !finished && !ticking);
+      if (!reduce) wander(dt);
       if (held) {
         robot.tcp.getWorldPosition(tcpW); robot.tcp.getWorldQuaternion(tcpQ);
         cur.g.position.copy(relP).applyQuaternion(tcpQ).add(tcpW); cur.g.quaternion.multiplyQuaternions(tcpQ, rel);
