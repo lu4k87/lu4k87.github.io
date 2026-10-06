@@ -1,7 +1,7 @@
 <!doctype html>
 <!-- Projektvorstellung: interaktive Präsentationsseite (Shared Control, Human-in-the-Loop, KI/VLA, Vision, UI/UX, Evaluierung).
      Design „UX Robot“ (.claude/skills/preview/showcase_template.html). Fakten aus docs/de/*.md.
-     Öffnen: direkt als Datei oder über die Nexus Webapp unter /ws/docs/present_presentation.html.
+     Öffnen: direkt als Datei oder über die UX | Nexus Launcher unter /ws/docs/present_presentation.html.
      Bilder: docs/img/presentation/*.jpg. Texte zweisprachig über data-en bzw. T(de, en) im Skript.
      Ziel der Kacheln 04–07 der Projekt-Doku: #forschung (Warum), #merkmale (Was, mit Regelkreis-Player rk-*), #stack (Womit), #ablaeufe (Wie). -->
 <html lang="de">
@@ -989,7 +989,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: cent
         <ul class="hero-facts">
           <li><svg class="ico"><use href="#i-user"/></svg><span data-en="&lt;b&gt;The system proposes,&lt;/b&gt; the human decides"><b>Das System schlägt vor,</b> der Mensch entscheidet</span></li>
           <li><svg class="ico"><use href="#i-cube"/></svg><span data-en="&lt;b&gt;Digital Twin:&lt;/b&gt; every motion simulated and checked first, then real"><b>Digital Twin:</b> jede Bewegung vorab simuliert und geprüft, dann real</span></li>
-          <li><svg class="ico"><use href="#i-chart"/></svg><span data-en="&lt;b&gt;Measured:&lt;/b&gt; Monitoring Dashboard and usability tests capture every interaction"><b>Gemessen:</b> Monitoring Dashboard und Usability-Tests erfassen jede Interaktion</span></li>
+          <li><svg class="ico"><use href="#i-chart"/></svg><span data-en="&lt;b&gt;Measured:&lt;/b&gt; UX | Monitoring and usability tests capture every interaction"><b>Gemessen:</b> UX | Monitoring und Usability-Tests erfassen jede Interaktion</span></li>
         </ul>
         <nav class="index" aria-label="Themen" data-en-aria="Topics">
           <a href="#shared" style="--hue: var(--accent)"><svg class="ico"><use href="#i-hands"/></svg>Shared Control</a>
@@ -1092,7 +1092,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: cent
           <span class="badge-ico"><svg class="ico"><use href="#i-eye"/></svg></span>
           <span class="k-t" data-en="Control · Monitoring">Kontrolle · Überwachung</span>
           <b data-en="Everything in view. Step in any time.">Alles im Blick. Jederzeit eingreifen.</b>
-          <p data-en="Robot state, workcell (ZED, OctoMap) and motion execution live; Monitoring Dashboard and blackbox record along.">Roboterzustand, Umgebung (ZED, OctoMap) und Bewegungsausführung live; Monitoring Dashboard und Blackbox zeichnen mit.</p>
+          <p data-en="Robot state, workcell (ZED, OctoMap) and motion execution live; UX | Monitoring and blackbox record along.">Roboterzustand, Umgebung (ZED, OctoMap) und Bewegungsausführung live; UX | Monitoring und Blackbox zeichnen mit.</p>
         </div>
         <div class="feat" style="--hue: var(--violet)">
           <span class="badge-ico"><svg class="ico"><use href="#i-spark"/></svg></span>
@@ -1350,7 +1350,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: cent
             <button type="button" class="estop" id="estop" aria-pressed="false">E-STOP</button>
             <div style="display:grid; gap:8px; min-width:0; flex: 1 1 220px">
               <b id="estop-text"></b>
-              <div class="ways"><span class="pill">Space</span><span class="pill" data-en="Red button">Roter Knopf</span><span class="pill">Touch Panel</span><span class="pill">VR: 2× Grip + 2× Trigger</span></div>
+              <div class="ways"><span class="pill">Space</span><span class="pill" data-en="Red button">Roter Knopf</span><span class="pill">UX | Compact Interface</span><span class="pill">VR: 2× Grip + 2× Trigger</span></div>
             </div>
           </div>
         </div>
@@ -1410,21 +1410,21 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: cent
         <div class="visual">
           <div class="try" data-en="Tap the numbers">Zahlen antippen</div>
           <div class="shot" id="pins">
-            <img src="img/presentation/rcu.jpg" alt="Robot Control UI im FAKE-Modus mit Digital Twin, Jogging, Greifer und Gelenken" width="1600" height="900" loading="lazy">
+            <img src="img/presentation/rcu.jpg" alt="UX | Control Interface im FAKE-Modus mit Digital Twin, Jogging, Greifer und Gelenken" width="1600" height="900" loading="lazy">
           </div>
           <div class="panel pin-info" id="pin-info" aria-live="polite"></div>
         </div>
         <div class="body">
           <div class="title-row">
             <span class="badge-ico"><svg class="ico"><use href="#i-layout"/></svg></span>
-            <div><h3>UI / UX</h3><div class="kind">Robot Control UI · Port 8081</div></div>
+            <div><h3>UI / UX</h3><div class="kind">UX | Control Interface · Port 8081</div></div>
           </div>
           <p class="tagline" data-en="One interface for everything the robot can do. Tasks instead of terminal commands.">Eine Oberfläche für alles, was der Roboter kann. Aufgaben statt Terminal-Befehle.</p>
           <ul class="pts">
             <li><svg class="ico"><use href="#i-check"/></svg><span data-en="Safety zone always in the same place">Sicherheitszone immer an derselben Stelle</span></li>
             <li><svg class="ico"><use href="#i-check"/></svg><span data-en="Colour only for deviations, red only for errors and stop">Farbe nur für Abweichung, Rot nur für Fehler und Stopp</span></li>
             <li><svg class="ico"><use href="#i-check"/></svg><span data-en="Digital Twin shows every motion before and while it happens">Digital Twin zeigt jede Bewegung vorab und live</span></li>
-            <li><svg class="ico"><use href="#i-check"/></svg><span data-en="Themes Dark, Light, Jarvis, Nord Blue (Alt+T) · PC, tablet, touch panel, VR">Themes Dark, Light, Jarvis, Nord Blue (Alt+T) · PC, Tablet, Touch Panel, VR</span></li>
+            <li><svg class="ico"><use href="#i-check"/></svg><span data-en="Themes Dark, Light, Jarvis, Nord Blue (Alt+T) · PC, tablet, UX | Compact Interface, VR">Themes Dark, Light, Jarvis, Nord Blue (Alt+T) · PC, Tablet, UX | Compact Interface, VR</span></li>
             <li><svg class="ico"><use href="#i-check"/></svg><span data-en="One motion at a time: while the arm is busy, other motion buttons are locked (BUSY)">Eine Fahrt zur Zeit: Solange der Arm belegt ist, sind andere Fahrbefehle gesperrt (BUSY)</span></li>
           </ul>
           <div class="facts">
@@ -1709,7 +1709,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: cent
       <div class="stack" role="list">
             <div class="st-layer" role="listitem" style="--hue: var(--accent)">
           <span class="st-k"><svg class="ico"><use href="#i-win"/></svg>Web-Apps</span>
-          <span class="st-parts"><span><b>Robot Control UI</b> · <span data-en=":8081 · HTML, CSS, ES modules">:8081 · HTML, CSS, ES-Module</span></span><span><b>Nexus Webapp</b> · :8080 · Flask 3.1, WebKit2GTK 4.0</span><span><b>Monitoring Dashboard</b> · :8083 · rclpy, http.server, SQLite 3</span><span><b>Touch Panel</b> · <span data-en="/touch · Flask blueprint">/touch · Flask-Blueprint</span></span><span><b>Gaze UI</b> · PyQt5</span><span><b>UX</b> · ISO 9241-110, ISA-101, IEC 60073, WCAG 2.2</span></span>
+          <span class="st-parts"><span><b>UX | Control Interface</b> · <span data-en=":8081 · HTML, CSS, ES modules">:8081 · HTML, CSS, ES-Module</span></span><span><b>UX | Nexus Launcher</b> · :8080 · Flask 3.1, WebKit2GTK 4.0</span><span><b>UX | Monitoring</b> · :8083 · rclpy, http.server, SQLite 3</span><span><b>UX | Compact Interface</b> · <span data-en="/touch · Flask blueprint">/touch · Flask-Blueprint</span></span><span><b>Gaze UI</b> · PyQt5</span><span><b>UX</b> · ISO 9241-110, ISA-101, IEC 60073, WCAG 2.2</span></span>
         </div>
             <div class="st-layer" role="listitem" style="--hue: var(--gold)">
           <span class="st-k"><svg class="ico"><use href="#i-code"/></svg><span data-en="Browser libraries">Browser-Bibliotheken</span></span>
@@ -1750,7 +1750,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: cent
         <div class="hw-item" style="--hue: var(--indigo)"><svg class="ico"><use href="#i-vr"/></svg><b>Meta Quest 3</b><p data-en="6-DoF VR teleoperation">6-DoF-VR-Teleoperation</p><span class="tags"><span class="hw-tag">WebXR</span><span class="hw-tag opt" data-en="optional">optional</span></span></div>
         <div class="hw-item" style="--hue: var(--teal)"><svg class="ico"><use href="#i-eye"/></svg><b>Tobii Pro Glasses 3</b><p data-en="Gaze control, dwell-time grasping">Blicksteuerung, Greifen per Verweilzeit</p><span class="tags"><span class="hw-tag">RTSP</span><span class="hw-tag opt" data-en="optional">optional</span></span></div>
         <div class="hw-item" style="--hue: var(--violet)"><svg class="ico"><use href="#i-mic"/></svg><b data-en="Microphone">Mikrofon</b><p data-en="Voice commands DE/EN">Sprachbefehle DE/EN</p><span class="tags"><span class="hw-tag">USB</span><span class="hw-tag opt" data-en="optional">optional</span></span></div>
-        <div class="hw-item" style="--hue: var(--violet)"><svg class="ico"><use href="#i-touch"/></svg><b data-en="Touch display">Touch-Display</b><p data-en="Extra touch panel at the robot">Zusätzliches Touch Panel am Roboter</p><span class="tags"><span class="hw-tag">HDMI · USB</span><span class="hw-tag opt" data-en="optional">optional</span></span></div>
+        <div class="hw-item" style="--hue: var(--violet)"><svg class="ico"><use href="#i-touch"/></svg><b data-en="Touch display">Touch-Display</b><p data-en="Extra touch panel at the robot">Zusätzliches Touch-Display am Roboter</p><span class="tags"><span class="hw-tag">HDMI · USB</span><span class="hw-tag opt" data-en="optional">optional</span></span></div>
       </div>
     </div>
   </section>
@@ -1805,7 +1805,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: cent
           <b data-en="Measured, not guessed.">Gemessen statt geschätzt.</b>
           <ul>
             <li data-en="&lt;b&gt;Variables:&lt;/b&gt; usability, cognitive workload, system performance"><b>Messgrößen:</b> Usability, kognitive Beanspruchung, Systemleistung</li>
-            <li data-en="&lt;b&gt;Instruments:&lt;/b&gt; SUS, NASA-TLX, UEQ-S, SEQ in the Monitoring Dashboard"><b>Instrumente:</b> SUS, NASA-TLX, UEQ-S, SEQ im Monitoring Dashboard</li>
+            <li data-en="&lt;b&gt;Instruments:&lt;/b&gt; SUS, NASA-TLX, UEQ-S, SEQ in the UX | Monitoring"><b>Instrumente:</b> SUS, NASA-TLX, UEQ-S, SEQ im UX | Monitoring</li>
             <li data-en="&lt;b&gt;Transfer:&lt;/b&gt; design guidelines for introducing robots in companies"><b>Transfer:</b> Gestaltungsempfehlungen für die Einführung in Unternehmen</li>
             </ul>
         </div>
@@ -1842,7 +1842,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: cent
             <li class="arr" aria-hidden="true"><svg class="ico"><use href="#i-go"/></svg></li>
             <li class="st" style="--hue: var(--accent)"><svg class="ico" aria-hidden="true"><use href="#i-arm"/></svg><b data-en="Test">Erproben</b><span data-en="reproducibly on the xArm Lite 6 (REAL), locally or remote">reproduzierbar am xArm Lite 6 (REAL), lokal oder remote</span></li>
             <li class="arr" aria-hidden="true"><svg class="ico"><use href="#i-go"/></svg></li>
-            <li class="st" style="--hue: var(--green)"><svg class="ico" aria-hidden="true"><use href="#i-chart"/></svg><b data-en="Validate">Validieren</b><span data-en="empirically with Monitoring Dashboard, blackbox and questionnaires">empirisch mit Monitoring Dashboard, Blackbox und Fragebögen</span></li>
+            <li class="st" style="--hue: var(--green)"><svg class="ico" aria-hidden="true"><use href="#i-chart"/></svg><b data-en="Validate">Validieren</b><span data-en="empirically with UX | Monitoring, blackbox and questionnaires">empirisch mit UX | Monitoring, Blackbox und Fragebögen</span></li>
           </ol>
           <p class="sys-back"><span class="sb-lbl"><svg class="ico" aria-hidden="true"><use href="#i-loop"/></svg><span data-en="&lt;b&gt;Closed loop:&lt;/b&gt; findings from validation flow back into development."><b>Geschlossener Kreislauf:</b> Erkenntnisse aus der Validierung fließen zurück in die Entwicklung.</span></span></p>
     </div>
@@ -1853,7 +1853,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: cent
     <div class="wrap">
       <div class="block-head">
         <div><div class="eyebrow" style="--hue: var(--gold)"><span class="n">13</span><span data-en="Evaluation platform">Evaluierungsplattform</span></div><h2 data-en="Measured, not guessed">Gemessen statt geschätzt</h2></div>
-        <p data-en="The Monitoring Dashboard plans usability tests, records every run and evaluates it.">Das Monitoring Dashboard plant Usability-Tests, zeichnet jeden Durchlauf auf und wertet ihn aus.</p>
+        <p data-en="The UX | Monitoring plans usability tests, records every run and evaluates it.">Das UX | Monitoring plant Usability-Tests, zeichnet jeden Durchlauf auf und wertet ihn aus.</p>
       </div>
       <article class="card" style="--hue: var(--gold)">
         <div class="visual">
@@ -1862,14 +1862,14 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: cent
             <button type="button" data-cmp="b" aria-pressed="false" data-en="Analysis">Auswertung</button>
           </div>
           <div class="shot compare" id="mon" style="aspect-ratio: 16 / 9">
-            <img src="img/presentation/eval_tests.jpg" alt="Monitoring Dashboard, Evaluierung: Usability-Test mit Aufgaben, Testpersonen, Durchläufen und Fragebögen" width="1600" height="900" loading="lazy">
-            <img src="img/presentation/eval_report.jpg" alt="Monitoring Dashboard, Auswertung: Erfolgsquote je Eingabemethode und Aufgabe" width="1600" height="900" loading="lazy">
+            <img src="img/presentation/eval_tests.jpg" alt="UX | Monitoring, Evaluierung: Usability-Test mit Aufgaben, Testpersonen, Durchläufen und Fragebögen" width="1600" height="900" loading="lazy">
+            <img src="img/presentation/eval_report.jpg" alt="UX | Monitoring, Auswertung: Erfolgsquote je Eingabemethode und Aufgabe" width="1600" height="900" loading="lazy">
           </div>
         </div>
         <div class="body">
           <div class="title-row">
             <span class="badge-ico"><svg class="ico"><use href="#i-chart"/></svg></span>
-            <div><h3 data-en="Usability tests">Usability-Tests</h3><div class="kind">Monitoring Dashboard · Port 8083</div></div>
+            <div><h3 data-en="Usability tests">Usability-Tests</h3><div class="kind">UX | Monitoring · Port 8083</div></div>
           </div>
           <p class="tagline" data-en="A test leads step by step from the tasks to the questionnaire. Every run is measured automatically.">Ein Test führt Schritt für Schritt von den Aufgaben bis zum Fragebogen. Jeder Durchlauf wird automatisch gemessen.</p>
           <div class="flowbar">
@@ -1909,7 +1909,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: cent
           <ul class="pts">
             <li><svg class="ico"><use href="#i-check"/></svg><span data-en="Every method sits equally often in every position">Jede Methode steht gleich oft an jeder Position</span></li>
             <li><svg class="ico"><use href="#i-check"/></svg><span data-en="Every method follows every other equally often">Jede Methode folgt jeder anderen gleich oft</span></li>
-            <li><svg class="ico"><use href="#i-check"/></svg><span data-en="The Monitoring Dashboard assigns the order per participant on its own">Das Monitoring Dashboard vergibt die Reihenfolge je Testperson selbst</span></li>
+            <li><svg class="ico"><use href="#i-check"/></svg><span data-en="The UX | Monitoring assigns the order per participant on its own">Das UX | Monitoring vergibt die Reihenfolge je Testperson selbst</span></li>
           </ul>
           <div class="facts">
             <span class="fact" data-en="&lt;b&gt;5&lt;/b&gt; input methods"><b>5</b> Eingabemethoden</span>
@@ -1927,9 +1927,9 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: cent
     <div class="ports">
       <a href="project_docs.html" data-local data-en="Project docs">Projekt-Doku</a>
       <a href="present_control_modes.html" data-local target="_blank" rel="noopener" data-en="10 control modes">10 Steuerwege</a>
-      <span>Nexus Webapp <b>:8080</b></span>
-      <span>Robot Control UI <b>:8081</b></span>
-      <span>Monitoring Dashboard <b>:8083</b></span>
+      <span>UX | Nexus Launcher <b>:8080</b></span>
+      <span>UX | Control Interface <b>:8081</b></span>
+      <span>UX | Monitoring <b>:8083</b></span>
     </div>
   </div>
 </footer>
@@ -1952,23 +1952,23 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: cent
   const S = (l, g, t, d, c = []) => ({ l, g, t, d, c });
   const FLOWS = {
     start: {
-      d: ['Ein Klick statt vieler Terminals: die Nexus Webapp startet den ganzen Stack in fester Reihenfolge.', 'One click instead of many terminals: the Nexus Webapp starts the whole stack in a fixed order.'],
+      d: ['Ein Klick statt vieler Terminals: die UX | Nexus Launcher startet den ganzen Stack in fester Reihenfolge.', 'One click instead of many terminals: the UX | Nexus Launcher starts the whole stack in a fixed order.'],
       fail: { at: 1, de: 'REAL gesperrt: Ein FAKE-Stack läuft noch. Erst Kill Daemon oder die Karte stoppen; ein gemischter Stack startet nie.', en: 'REAL blocked: a FAKE stack is still running. Use Kill Daemon or stop the card first; a mixed stack never starts.' },
       steps: [
-        S('in', 0, ['Nexus Webapp öffnen', 'Open the Nexus Webapp'], ['App-Menü „ROS 2 Nexus“ oder Startskript; es öffnet das Start-Popup RUN DEV SETUP.', 'App menu “ROS 2 Nexus” or the start script; it opens the RUN DEV SETUP popup.'], [':8080', 'ros2_nexus_web_start.sh']),
+        S('in', 0, ['UX | Nexus Launcher öffnen', 'Open the UX | Nexus Launcher'], ['App-Menü „ROS 2 Nexus“ oder Startskript; es öffnet das Start-Popup RUN DEV SETUP.', 'App menu “ROS 2 Nexus” or the start script; it opens the RUN DEV SETUP popup.'], [':8080', 'ros2_nexus_web_start.sh']),
         S('app', 1, ['FAKE oder REAL wählen', 'Choose FAKE or REAL'], ['Der Umschalter im Popup wählt die Sequenz. Solange ein FAKE-Stack läuft, ist ein REAL-Start gesperrt.', 'The switch in the popup picks the sequence. While a FAKE stack runs, a REAL start is blocked.'], ['FAKE | REAL']),
         S('app', 0, ['Module anhaken', 'Tick the modules'], ['Karten der Sequenz wählen: Vision, VR, Sprache, VLA-M … Parameter je Karte lassen sich vor dem Start ändern.', 'Pick the cards of the sequence: vision, VR, voice, VLA-M … Parameters per card can be changed before the start.'], ['launcher_config.json']),
         S('app', 0, ['EXECUTE', 'EXECUTE'], ['Das Backend startet erst die Infrastruktur, dann die übrigen Karten; jede Karte zeigt läuft / bereit / Exit-Code mit Log.', 'The backend starts the infrastructure first, then the remaining cards; each card shows running / ready / exit code with its log.'], ['~/.ros/nexus_logs']),
         S('motion', 0, ['Motion-Stack bereit', 'Motion stack ready'], ['MoveIt MoveGroup und Servo; auf echter Roboter-Hardware mit dem Treiber des xArm Lite 6.', 'MoveIt MoveGroup and Servo; on real robot hardware with the xArm Lite 6 driver.'], ['MoveIt 2', 'xarm_ros2']),
         S('bridge', 0, ['rosbridge + Watchdog', 'rosbridge + watchdog'], ['Browser-Zugang über die Whitelist, Control-Lock und Heartbeats sind aktiv.', 'Browser access through the whitelist; control lock and heartbeats are active.'], [':9090', 'remote_control_watchdog']),
-        S('app', 0, ['Robot Control UI öffnet', 'Robot Control UI opens'], ['Das App-Fenster am Roboter-PC hält die Steuerung; weitere Geräte verbinden sich über das Heimnetz.', 'The app window on the robot PC holds control; further devices connect over the home network.'], [':8081']),
+        S('app', 0, ['UX | Control Interface öffnet', 'UX | Control Interface opens'], ['Das App-Fenster am Roboter-PC hält die Steuerung; weitere Geräte verbinden sich über das Heimnetz.', 'The app window on the robot PC holds control; further devices connect over the home network.'], [':8081']),
       ],
     },
     twin: {
       d: ['Erst virtuell, dann real: jede geplante Bahn erscheint als Vorschau im Digital Twin, der Arm fährt erst nach Freigabe.', 'Virtual first, then real: every planned path appears as a preview in the Digital Twin; the arm moves only after approval.'],
       fail: { at: 4, de: 'Bediener verwirft die Vorschau: Es wird nichts ausgeführt, der Arm bleibt stehen.', en: 'The operator discards the preview: nothing is executed, the arm stays put.' },
       steps: [
-        S('in', 0, ['Ziel ziehen', 'Drag the target'], ['TCP-Gizmo im Digital Twin der Robot Control UI auf die Zielpose ziehen.', 'Drag the TCP gizmo in the Digital Twin of the Robot Control UI to the target pose.'], ['three.js']),
+        S('in', 0, ['Ziel ziehen', 'Drag the target'], ['TCP-Gizmo im Digital Twin der UX | Control Interface auf die Zielpose ziehen.', 'Drag the TCP gizmo in the Digital Twin of the UX | Control Interface to the target pose.'], ['three.js']),
         S('bridge', 0, ['Anfrage an ROS', 'Request to ROS'], ['Die Zielpose geht über rosbridge an den Motion Handler.', 'The target pose goes to the motion handler via rosbridge.'], [':9090']),
         S('motion', 0, ['MoveIt plant', 'MoveIt plans'], ['Inverse Kinematik und kollisionsfreie Bahn mit Szene, OctoMap und erkannten Objekten.', 'Inverse kinematics and a collision-free path with scene, OctoMap and detected objects.'], ['MoveGroup']),
         S('app', 0, ['Ghost-Vorschau', 'Ghost preview'], ['Die Bahn läuft als halbtransparenter Arm im Twin; der echte Arm bewegt sich nicht.', 'The path plays as a translucent arm in the twin; the real arm does not move.'], ['/ui/moveto_preview_path']),
@@ -2021,7 +2021,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: cent
       steps: [
         S('in', 0, ['Client öffnet die UI', 'Client opens the UI'], ['Laptop/Tablet über HTTP, Gamepad und VR über HTTPS.', 'Laptop/tablet via HTTP, gamepad and VR via HTTPS.'], [':8081', ':8443']),
         S('in', 0, ['Request control', 'Request control'], ['Anfrage per Knopf oder beim ersten Bewegungsversuch.', 'Request by button or on the first motion attempt.'], ['/remote/control_request']),
-        S('app', 1, ['Allow / Deny am Server', 'Allow / Deny on the server'], ['Popup in der Robot Control UI am Roboter-PC; unbeantwortete Anfragen verfallen nach 60 s.', 'Popup in the Robot Control UI on the robot PC; unanswered requests expire after 60 s.']),
+        S('app', 1, ['Allow / Deny am Server', 'Allow / Deny on the server'], ['Popup in der UX | Control Interface am Roboter-PC; unbeantwortete Anfragen verfallen nach 60 s.', 'Popup in the UX | Control Interface on the robot PC; unanswered requests expire after 60 s.']),
         S('bridge', 0, ['Ein Besitzer', 'One owner'], ['Genau ein Client steuert, alle anderen sehen zu; der Not-Aus geht immer.', 'Exactly one client controls, all others watch; the E-STOP always works.']),
         S('bridge', 1, ['Heartbeat', 'Heartbeat'], ['Tab zu oder WLAN weg: Remote-Gamepad stoppt nach 1,0 s (FAKE) bzw. 0,4 s (REAL).', 'Tab closed or Wi-Fi lost: the remote gamepad stops after 1.0 s (FAKE) or 0.4 s (REAL).']),
         S('motion', 0, ['Befehle über den Watchdog', 'Commands via the watchdog'], ['Joy, Twist und Gelenk-Jog gehen nur für den Besitzer weiter an Servo; dann dieselbe Kette wie lokal.', 'Joy, twist and joint jog pass on to Servo only for the owner; then the same chain as locally.'], ['/remote/twist', '/joy']),
@@ -2201,7 +2201,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: cent
       alt: ['VLA-M-Chat: Anweisung in Alltagssprache, rechts vier geplante Aktionen mit Execute und Abort', 'VLA-M chat: instruction in plain language, four planned actions with Execute and Abort on the right'],
       cap: ['<b>KI-Assistenz:</b> Aus „Stapel den blauen Würfel auf den Zylinder …“ werden vier Planned Actions; der Plan wartet auf Execute.', '<b>AI assistant:</b> “Stack the blue cube on the cylinder …” becomes four planned actions; the plan waits for Execute.'] },
     { tag: ['Digital Twin · MoveIt', 'Digital Twin · MoveIt'], mode: 'FAKE', ico: 'i-cube',
-      alt: ['Digital Twin der Robot Control UI: MoveIt-Karte mit Planung und Wegpunkten, Kollisionsobjekte auf dem Tisch, E-STOP-Knopf', 'Digital Twin of the Robot Control UI: MoveIt card with planning and waypoints, collision objects on the table, E-STOP button'],
+      alt: ['Digital Twin der UX | Control Interface: MoveIt-Karte mit Planung und Wegpunkten, Kollisionsobjekte auf dem Tisch, E-STOP-Knopf', 'Digital Twin of the UX | Control Interface: MoveIt card with planning and waypoints, collision objects on the table, E-STOP button'],
       cap: ['<b>Digital Twin:</b> MoveIt plant die Bahn um Tisch und Objekte, hier im FAKE-Modus mit 26 Wegpunkten in 2,5 s; der echte Arm steht still.', '<b>Digital Twin:</b> MoveIt plans the path around table and objects, here in FAKE mode with 26 waypoints in 2.5 s; the real arm stays still.'] },
     { tag: ['xArm Lite 6', 'xArm Lite 6'], mode: 'REAL', ico: 'i-arm',
       alt: ['xArm Lite 6 über dem Arbeitstisch mit ArUco-Markern und farbigen Greifobjekten', 'xArm Lite 6 above the work table with ArUco markers and coloured objects to grasp'],
@@ -2285,7 +2285,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: cent
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const ease = k => (k < .5 ? 4 * k * k * k : 1 - (-2 * k + 2) ** 3 / 2);
 
-  // Über die Nexus Webapp: lokale Schriften; als Artifact (kein project_docs.html daneben): Link ausblenden,
+  // Über die UX | Nexus Launcher: lokale Schriften; als Artifact (kein project_docs.html daneben): Link ausblenden,
   // GitHub Pages (tools/publish_pages.py) hat die Seiten daneben
   if (location.protocol.startsWith('http') && /\/ws\/docs\//.test(location.pathname)) {
     const l = document.createElement('link'); l.rel = 'stylesheet'; l.href = '/vendor/fonts/fonts_modern.css'; document.head.appendChild(l);
@@ -2930,7 +2930,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: cent
   });
 
   // ── Kanäle → Steuerwege ──
-  const WAYS = [['i-pad', 'Gamepad', ['hand']], ['i-vr', 'VR Quest 3', ['hand']], ['i-tab', 'Touch Panel', ['hand']], ['i-mon', 'Control UI', ['hand']],
+  const WAYS = [['i-pad', 'Gamepad', ['hand']], ['i-vr', 'VR Quest 3', ['hand']], ['i-tab', 'UX | Compact Interface', ['hand']], ['i-mon', 'Control UI', ['hand']],
     ['i-gizmo', ['3D-Gizmo', '3D gizmo'], ['hand']], ['i-kbd', ['Tastatur', 'Keyboard'], ['hand']], ['i-net', 'Remote Control', ['hand']],
     ['i-eye', ['Blicksteuerung', 'Gaze control'], ['gaze']], ['i-mic', ['Sprachbefehle', 'Voice commands'], ['voice']], ['i-chat', ['VLA-M-Chat', 'VLA-M chat'], ['voice', 'hand']]];
   const CH = { hand: ['HAND', 'HAND'], gaze: ['BLICK', 'GAZE'], voice: ['STIMME', 'VOICE'] };
@@ -2985,7 +2985,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: cent
     $('.sub', goal).textContent = T(`${n} VON ${WAYS.length} WEGEN`, `${n} OF ${WAYS.length} WAYS`);
   };
 
-  // ── Pins auf der Robot Control UI ──
+  // ── Pins auf der UX | Control Interface ──
   const PINS = [[78, 2.6, ['Sicherheitszone', 'Safety zone'], ['Modus FAKE/REAL, Zustand (BUSY bei laufender Fahrt), Tempo, Control-Lock und E-STOP. Immer sichtbar, immer oben rechts.', 'Mode FAKE/REAL, state (BUSY while a motion runs), speed, control lock and E-STOP. Always visible, always top right.']],
     [2.1, 26, ['Bereichsleiste', 'Area bar'], ['Gruppen Operate, World, Scene, Help, System: Move, Teach, Assistent (VLA), Vision, Szenen wie Auto-Palettieren.', 'Groups Operate, World, Scene, Help, System: Move, Teach, Assistant (VLA), Vision, scenes such as auto palletizing.']],
     [32.1, 10, ['Posen', 'Poses'], ['Home, Align TCP, Scan Pose: häufige Ziele mit einem Klick in der Viewport-Leiste.', 'Home, Align TCP, Scan pose: frequent targets with one click in the viewport bar.']],
@@ -3012,7 +3012,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: cent
   // ── Modular: Schichten → Pakete ──
   const LAYERS = [
     ['i-pad', 'accent', ['Eingabe', 'Input'], [['vr_quest3_teleop', ['VR-Teleoperation über WebXR', 'VR teleoperation via WebXR']], ['gaze_*_tobii_glasses', ['Blicksteuerung mit Tobii-Brille', 'Gaze control with Tobii glasses']], ['voice_command_listener', ['Sprachbefehle aus Whisper', 'Voice commands from Whisper']]]],
-    ['i-mon', 'teal', ['Web-Apps', 'Web apps'], [['Nexus Webapp :8080', ['System starten, FAKE/REAL wählen', 'Start the system, choose FAKE/REAL']], ['Robot Control UI :8081', ['Steuern, Digital Twin, VLA-M-Chat', 'Control, Digital Twin, VLA-M chat']], ['Monitoring Dashboard :8083', ['System, Nutzung, Evaluierung', 'System, usage, evaluation']], ['Touch Panel /touch', ['Bedienung direkt am Roboter', 'Operation right at the robot']]]],
+    ['i-mon', 'teal', ['Web-Apps', 'Web apps'], [['UX | Nexus Launcher :8080', ['System starten, FAKE/REAL wählen', 'Start the system, choose FAKE/REAL']], ['UX | Control Interface :8081', ['Steuern, Digital Twin, VLA-M-Chat', 'Control, Digital Twin, VLA-M chat']], ['UX | Monitoring :8083', ['System, Nutzung, Evaluierung', 'System, usage, evaluation']], ['UX | Compact Interface /touch', ['Bedienung direkt am Roboter', 'Operation right at the robot']]]],
     ['i-shield', 'gold', ['Sicherheit', 'Safety'], [['remote_control_watchdog', ['Control-Lock und Heartbeats: nur einer steuert', 'Control lock and heartbeats: only one in control']], ['teleop_pre_collision_checker', ['Kollisionsvorprüfung, 0,1 s voraus', 'Pre-collision check, 0.1 s ahead']], ['robot_blackbox_recorder', ['Sichert die letzten 60 s vor einem Vorfall', 'Saves the last 60 s before an incident']]]],
     ['i-arm', 'indigo', ['Bewegung', 'Motion'], [['robot_motion_handler_movegroup', ['MoveIt MoveGroup + Servo: IK, Bahn, Kollision', 'MoveIt MoveGroup + Servo: IK, path, collision']], ['xarm_ros2', ['Treiber des xArm Lite 6, FAKE und REAL', 'xArm Lite 6 driver, FAKE and REAL']]]],
     ['i-eye', 'green', ['Wahrnehmung', 'Perception'], [['robot_vision_cameras_bringup', ['ZED-Kamera, YOLO, Octomap', 'ZED camera, YOLO, Octomap']], ['ros2_whisper', ['Spracherkennung auf der GPU', 'Speech recognition on the GPU']]]],
@@ -3028,7 +3028,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: cent
   };
 
   // ── Evaluierung: Reihenfolge je Testperson (Williams-Design wie study.py balanced_latin_square) ──
-  const METHODS = [['i-pad', 'Gamepad'], ['i-vr', 'VR (Quest 3)'], ['i-mon', 'Robot Control UI'], ['i-eye', ['Blick + Sprache', 'Gaze + voice']], ['i-chat', 'VLA-M']];
+  const METHODS = [['i-pad', 'Gamepad'], ['i-vr', 'VR (Quest 3)'], ['i-mon', 'UX | Control Interface'], ['i-eye', ['Blick + Sprache', 'Gaze + voice']], ['i-chat', 'VLA-M']];
   const latin = (n, row) => {
     const out = []; let j = 0, h = 0;
     for (let i = 0; i < n; i++) { let v; if (i < 2 || i % 2) { v = j; j++; } else { v = n - h - 1; h++; } out.push((v + row) % n); }
@@ -3194,7 +3194,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: cent
 
   // ── Architektur: Datenfluss durch die ROS-2-Pakete, Nachricht wandert Kante für Kante ──
   const AN = {  // x, y = Mitte; Spalten: Client · Brücke · Freigabe/Assistenz · Bewegung/Sicherheit · Hardware
-    ui: [100, 56, 'i-win', 'accent', ['Robot Control UI', 'Robot Control UI'], 'Browser · :8081'],
+    ui: [100, 56, 'i-win', 'accent', ['UX | Control Interface', 'UX | Control Interface'], 'Browser · :8081'],
     vr: [100, 170, 'i-vr', 'accent', ['Meta Quest 3', 'Meta Quest 3'], 'WebXR'],
     zed: [100, 430, 'i-cam', 'green', ['ZED Mini', 'ZED Mini'], 'zed_wrapper'],
     rb: [300, 113, 'i-link', 'teal', ['rosbridge', 'rosbridge'], ':9090 · Whitelist', 166],
@@ -3274,7 +3274,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: cent
         ['mg', 'MoveGroup', ['Plant um jedes Hindernis herum', 'Plans around every obstacle']]],
       also: [['yolo', 'vla']] },
     { id: 'fb', ic: 'i-loop', c: 'teal', n: ['Rückmeldung', 'Feedback'],
-      d: ['Der echte Zustand fließt zurück: Digital Twin, Monitoring Dashboard und Blackbox sehen dasselbe.', 'The real state flows back: Digital Twin, Monitoring Dashboard and blackbox see the same.'],
+      d: ['Der echte Zustand fließt zurück: Digital Twin, UX | Monitoring und Blackbox sehen dasselbe.', 'The real state flows back: Digital Twin, UX | Monitoring and blackbox see the same.'],
       seq: [['arm', 'Encoder', ['Gelenkwinkel aus dem Arm', 'Joint angles from the arm']],
         ['drv', '/joint_states', ['Zustand für den ganzen ROS-Graphen', 'State for the whole ROS graph']],
         ['rb', ':9090', ['Brücke zum Browser', 'Bridge to the browser']],
@@ -3282,7 +3282,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: cent
       also: [['drv', 'mon']] },
     { id: 'stop', ic: 'i-hands', c: 'red', n: ['E-STOP', 'E-STOP'],
       d: ['Der Not-Halt geht immer, auch ohne Steuerung, und bricht jede KI-Aufgabe ab.', 'The emergency stop always works, even without control, and aborts every AI task.'],
-      seq: [['ui', '/ui/emergency_stop_topic', ['Knopf, Leertaste oder Touch Panel', 'Button, space bar or Touch Panel']],
+      seq: [['ui', '/ui/emergency_stop_topic', ['Knopf, Leertaste oder UX | Compact Interface', 'Button, space bar or UX | Compact Interface']],
         ['rb', ':9090', ['Not-Halt ist nie gesperrt', 'The emergency stop is never locked']],
         ['mg', 'Halt', ['Gelenke sofort auf Geschwindigkeit 0', 'Joints to zero velocity at once']],
         ['drv', 'Hold', ['Halte-Trajektorie an den Controller', 'Hold trajectory to the controller']],
@@ -3355,7 +3355,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: cent
     $('#ar-title').textContent = T(...p.n);
     $('#ar-text').textContent = T(...p.d);
     $('#ar-steps').innerHTML = p.seq.map(([id, topic, what, topicEn]) => `<li><b>${T(...AN[id][4])}</b><code>${topic ? T(topic, topicEn || topic) : '–'}</code><span>${T(...what)}</span></li>`).join('')
-      + (p.also || []).map(([, b]) => `<li><b>${T(...AN[b][4])}</b><code>${T('Nebenast', 'branch')}</code><span>${b === 'mon' ? T('Monitoring Dashboard und Blackbox zeichnen mit', 'Monitoring Dashboard and blackbox record along') : T('Der Agent kennt die Szene', 'The agent knows the scene')}</span></li>`).join('');
+      + (p.also || []).map(([, b]) => `<li><b>${T(...AN[b][4])}</b><code>${T('Nebenast', 'branch')}</code><span>${b === 'mon' ? T('UX | Monitoring und Blackbox zeichnen mit', 'UX | Monitoring and blackbox record along') : T('Der Agent kennt die Szene', 'The agent knows the scene')}</span></li>`).join('');
     $$('#ar-lanes text').forEach(t => { t.textContent = lang === 'en' ? t.dataset.en2 : t.dataset.de; });
     $('#ar-play').innerHTML = playLabel(arPlay);
   };

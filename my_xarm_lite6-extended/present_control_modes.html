@@ -1,7 +1,7 @@
 <!doctype html>
 <!-- Showcase „UX Robot“: 10 Steuerwege, Sicherheitskette, Übersicht.
      Aus .claude/skills/preview/showcase_template.html (dort Layout/Design pflegen), Bilder statt base64:
-     docs/img/presentation/{hero,rcu,gaze}.jpg. Öffnen: direkt als Datei oder über die Nexus Webapp
+     docs/img/presentation/{hero,rcu,gaze}.jpg. Öffnen: direkt als Datei oder über die UX | Nexus Launcher
      unter /ws/docs/present_control_modes.html. Verlinkt aus project_docs.html und present_presentation.html. -->
 <html lang="de">
 <head>
@@ -273,7 +273,7 @@ main > section.block:nth-of-type(even) { background: var(--band); }  /* Flächen
 .scr-slide { height: 20px; border-radius: var(--radius-sm); background: var(--surface); border: 1px solid var(--line-strong); position: relative; font: 700 9px/18px var(--font-mono); text-align: center; color: var(--fg-2); }
 .scr-slide::before { content: ""; position: absolute; left: 2px; top: 2px; width: 34px; height: 14px; border-radius: var(--radius-sm); background: var(--hue); }
 
-/* Robot Control UI */
+/* UX | Control Interface */
 .shot { position: relative; width: 100%; border-radius: var(--radius); overflow: hidden; border: 1px solid var(--line-strong); }
 .shot img { width: 100%; height: auto; display: block; }
 .pin {
@@ -494,7 +494,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 10px 24px; align-items: cent
           <a href="#blick" style="--hue: var(--teal)"><svg class="ico"><use href="#i-eye"/></svg>Blick</a>
           <a href="#sprache" style="--hue: var(--gold)"><svg class="ico"><use href="#i-mic"/></svg>Sprache</a>
           <a href="#tastatur" style="--hue: var(--violet)"><svg class="ico"><use href="#i-key"/></svg>Tastatur</a>
-          <a href="#touch" style="--hue: var(--green)"><svg class="ico"><use href="#i-tab"/></svg>Touch Panel</a>
+          <a href="#touch" style="--hue: var(--green)"><svg class="ico"><use href="#i-tab"/></svg>UX | Compact Interface</a>
           <a href="#rcu" style="--hue: var(--accent)"><svg class="ico"><use href="#i-mon"/></svg>Control UI</a>
           <a href="#gizmo" style="--hue: var(--indigo)"><svg class="ico"><use href="#i-gizmo"/></svg>3D-Gizmo</a>
           <a href="#vla" style="--hue: var(--violet)"><svg class="ico"><use href="#i-chat"/></svg>VLA-Chat</a>
@@ -530,7 +530,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 10px 24px; align-items: cent
       <div class="feats feats-num">
         <div class="feat" style="--hue: var(--accent)"><span class="badge-ico"><svg class="ico"><use href="#i-cube"/></svg></span><span class="k-t">Digital Twin · Physik</span><b>Erst virtuell, dann real.</b><p>Live-3D-Zwilling im Browser; die Physik-Sandbox simuliert Schwerkraft, Kontakt und Greifen vor der echten Fahrt.</p></div>
         <div class="feat" style="--hue: var(--indigo)"><span class="badge-ico"><svg class="ico"><use href="#i-shapes"/></svg></span><span class="k-t">Virtuelle Objekte</span><b>Testen ohne Aufbau.</b><p>Würfel, Flasche, Bälle, Schale, Korb: greifen, verschieben, stapeln; kollisionsgeprüft in MoveIt, ohne Kamera.</p></div>
-        <div class="feat" style="--hue: var(--teal)"><span class="badge-ico"><svg class="ico"><use href="#i-eye"/></svg></span><span class="k-t">Kontrolle · Überwachung</span><b>Alles im Blick. Jederzeit eingreifen.</b><p>Roboterzustand, Umgebung (ZED, OctoMap) und Bewegungsausführung live; Monitoring Dashboard und Blackbox zeichnen mit.</p></div>
+        <div class="feat" style="--hue: var(--teal)"><span class="badge-ico"><svg class="ico"><use href="#i-eye"/></svg></span><span class="k-t">Kontrolle · Überwachung</span><b>Alles im Blick. Jederzeit eingreifen.</b><p>Roboterzustand, Umgebung (ZED, OctoMap) und Bewegungsausführung live; UX | Monitoring und Blackbox zeichnen mit.</p></div>
         <div class="feat" style="--hue: var(--violet)"><span class="badge-ico"><svg class="ico"><use href="#i-spark"/></svg></span><span class="k-t">Assistive Autonomie</span><b>Die KI plant. Der Mensch gibt frei.</b><p>Der Agent macht aus Sprache Bewegungsabläufe; Entscheidung und Feedback des Menschen steuern jeden Schritt.</p></div>
         <div class="feat" style="--hue: var(--green)"><span class="badge-ico"><svg class="ico"><use href="#i-globe"/></svg></span><span class="k-t">Web · Remote</span><b>Öffnen statt installieren.</b><p>Bedienung komplett im Browser: am Roboter-PC, aus dem Heimnetz oder in der Quest 3 per WebXR.</p></div>
         <div class="feat" style="--hue: var(--gold)"><span class="badge-ico"><svg class="ico"><use href="#i-shield"/></svg></span><span class="k-t">Sicherheit</span><b>Eine Kette für jede Eingabe.</b><p>E-STOP, Bodenschutz und Kollisionsprüfung für alle zehn Steuerwege; der Control-Lock gibt immer nur einem Client die Steuerung.</p></div>
@@ -748,7 +748,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 10px 24px; align-items: cent
           <div class="body">
             <div class="title-row">
               <span class="badge-ico"><svg class="ico"><use href="#i-key"/></svg></span>
-              <div><h3>Tastatur</h3><div class="kind">Kürzel in der Robot Control UI</div></div>
+              <div><h3>Tastatur</h3><div class="kind">Kürzel in der UX | Control Interface</div></div>
             </div>
             <p class="tagline">Schnell ohne Maus. Die Leertaste stoppt überall außer in Textfeldern.</p>
             <div class="blocks">
@@ -759,7 +759,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 10px 24px; align-items: cent
               <li><span class="key">Pos1</span><span>3D-Ansicht einpassen</span></li>
               <li><span class="key">M</span><span>Ton an/aus</span></li>
             </ul></div>
-              <div class="blk safe"><h4>Sicherheit</h4><ul class="list"><li><b>Leertaste = Not-Aus:</b> in der ganzen Robot Control UI</li><li><b>Not-Aus im Viewport:</b> erscheint, sobald der Arm fährt</li></ul></div>
+              <div class="blk safe"><h4>Sicherheit</h4><ul class="list"><li><b>Leertaste = Not-Aus:</b> in der ganzen UX | Control Interface</li><li><b>Not-Aus im Viewport:</b> erscheint, sobald der Arm fährt</li></ul></div>
             </div>
           </div>
         </article>
@@ -781,7 +781,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 10px 24px; align-items: cent
           <div class="body">
             <div class="title-row">
               <span class="badge-ico"><svg class="ico"><use href="#i-tab"/></svg></span>
-              <div><h3>Touch Panel</h3><div class="kind">Am Roboter · /touch</div></div>
+              <div><h3>UX | Compact Interface</h3><div class="kind">Am Roboter · /touch</div></div>
             </div>
             <p class="tagline">Bedienung direkt am Roboter, mit dem Finger statt mit der Maus.</p>
             <div class="blocks">
@@ -810,11 +810,11 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 10px 24px; align-items: cent
       </div>
 
       <div class="grid">
-        <!-- Robot Control UI -->
+        <!-- UX | Control Interface -->
         <article class="card wide rcu span-12" id="rcu" style="--hue: var(--accent)">
           <div class="visual">
             <div class="shot">
-              <img src="img/presentation/rcu.jpg" alt="Robot Control UI in der Roboter-Simulation mit Digital Twin, Jogging und Greifer" width="1600" height="900" loading="lazy">
+              <img src="img/presentation/rcu.jpg" alt="UX | Control Interface in der Roboter-Simulation mit Digital Twin, Jogging und Greifer" width="1600" height="900" loading="lazy">
               <span class="pin" style="left:78%; top:2.6%">1</span>
               <span class="pin" style="left:2.1%; top:26%">2</span>
               <span class="pin" style="left:30%; top:58%">3</span>
@@ -826,7 +826,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 10px 24px; align-items: cent
           <div class="body">
             <div class="title-row">
               <span class="badge-ico"><svg class="ico"><use href="#i-mon"/></svg></span>
-              <div><h3>Robot Control UI</h3><div class="kind">Maus oder Touch · Port 8081</div></div>
+              <div><h3>UX | Control Interface</h3><div class="kind">Maus oder Touch · Port 8081</div></div>
             </div>
             <p class="tagline">Die Zentrale: Alles, was der Roboter kann, an einem Ort.</p>
             <div class="blocks">
@@ -964,14 +964,14 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 10px 24px; align-items: cent
             <tr><th scope="col" style="text-align:left">Steuerweg</th><th scope="col">Verfahren</th><th scope="col">Drehen</th><th scope="col">Greifer</th><th scope="col">Home</th><th scope="col">Objekt greifen</th><th scope="col">Not-Aus</th></tr>
           </thead>
           <tbody>
-            <tr style="--hue: var(--accent)"><th scope="row"><span class="cell"><svg class="ico"><use href="#i-mon"/></svg>Robot Control UI</span></th><td><i class="m full" title="ja"></i></td><td><i class="m full"></i></td><td><i class="m full"></i></td><td><i class="m full"></i></td><td><i class="m full"></i></td><td><i class="m full"></i></td></tr>
+            <tr style="--hue: var(--accent)"><th scope="row"><span class="cell"><svg class="ico"><use href="#i-mon"/></svg>UX | Control Interface</span></th><td><i class="m full" title="ja"></i></td><td><i class="m full"></i></td><td><i class="m full"></i></td><td><i class="m full"></i></td><td><i class="m full"></i></td><td><i class="m full"></i></td></tr>
             <tr style="--hue: var(--accent)"><th scope="row"><span class="cell"><svg class="ico"><use href="#i-pad"/></svg>Gamepad</span></th><td><i class="m full"></i></td><td><i class="m part"></i></td><td><i class="m full"></i></td><td><i class="m full"></i></td><td><i class="m none"></i></td><td><i class="m none"></i></td></tr>
             <tr style="--hue: var(--indigo)"><th scope="row"><span class="cell"><svg class="ico"><use href="#i-vr"/></svg>VR Quest 3</span></th><td><i class="m full"></i></td><td><i class="m full"></i></td><td><i class="m full"></i></td><td><i class="m full"></i></td><td><i class="m full"></i></td><td><i class="m full"></i></td></tr>
             <tr style="--hue: var(--teal)"><th scope="row"><span class="cell"><svg class="ico"><use href="#i-eye"/></svg>Blick</span></th><td><i class="m full"></i></td><td><i class="m part"></i></td><td><i class="m full"></i></td><td><i class="m full"></i></td><td><i class="m full"></i></td><td><i class="m none"></i></td></tr>
             <tr style="--hue: var(--gold)"><th scope="row"><span class="cell"><svg class="ico"><use href="#i-mic"/></svg>Sprache</span></th><td><i class="m part"></i></td><td><i class="m part"></i></td><td><i class="m full"></i></td><td><i class="m full"></i></td><td><i class="m part"></i></td><td><i class="m full"></i></td></tr>
             <tr style="--hue: var(--violet)"><th scope="row"><span class="cell"><svg class="ico"><use href="#i-chat"/></svg>VLA-M-Chat</span></th><td><i class="m none"></i></td><td><i class="m none"></i></td><td><i class="m full"></i></td><td><i class="m full"></i></td><td><i class="m full"></i></td><td><i class="m none"></i></td></tr>
             <tr style="--hue: var(--violet)"><th scope="row"><span class="cell"><svg class="ico"><use href="#i-key"/></svg>Tastatur</span></th><td><i class="m none"></i></td><td><i class="m none"></i></td><td><i class="m none"></i></td><td><i class="m none"></i></td><td><i class="m none"></i></td><td><i class="m full"></i></td></tr>
-            <tr style="--hue: var(--green)"><th scope="row"><span class="cell"><svg class="ico"><use href="#i-tab"/></svg>Touch Panel</span></th><td><i class="m full"></i></td><td><i class="m full"></i></td><td><i class="m full"></i></td><td><i class="m full"></i></td><td><i class="m none"></i></td><td><i class="m full"></i></td></tr>
+            <tr style="--hue: var(--green)"><th scope="row"><span class="cell"><svg class="ico"><use href="#i-tab"/></svg>UX | Compact Interface</span></th><td><i class="m full"></i></td><td><i class="m full"></i></td><td><i class="m full"></i></td><td><i class="m full"></i></td><td><i class="m none"></i></td><td><i class="m full"></i></td></tr>
           </tbody>
         </table>
       </div>
@@ -1017,7 +1017,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 10px 24px; align-items: cent
         <svg class="ico octo"><use href="#i-octo"/></svg>
         <b>E-STOP wirkt immer</b>
         <button type="button" class="estop" id="ch-estop" aria-pressed="false">E-STOP testen</button>
-        <div class="ways"><span>Space</span><span>roter Knopf</span><span>Touch Panel</span><span>Sprache: „Not-Aus“</span><span>VR: 2× Grip + 2× Trigger</span></div>
+        <div class="ways"><span>Space</span><span>roter Knopf</span><span>UX | Compact Interface</span><span>Sprache: „Not-Aus“</span><span>VR: 2× Grip + 2× Trigger</span></div>
       </div>
 
       <div class="numbers">
@@ -1034,8 +1034,8 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 10px 24px; align-items: cent
   <div class="wrap">
     <a class="brand" href="#start"><span class="brand-mark"><svg class="ico"><use href="#i-arm"/></svg></span><span>UX Robot</span></a>
     <div class="ports">
-      <span>Robot Control UI <b>:8081</b></span>
-      <span>Nexus Webapp <b>:8080</b></span>
+      <span>UX | Control Interface <b>:8081</b></span>
+      <span>UX | Nexus Launcher <b>:8080</b></span>
       <span>VR <b>:8443</b></span>
       <span>rosbridge <b>:9090</b></span>
     </div>
@@ -1052,7 +1052,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 10px 24px; align-items: cent
     w.innerHTML = h.map(function (v) { return '<i style="height:' + v + 'px"></i>'; }).join('');
   })();
 
-  // Über die Nexus Webapp (/ws/docs/): lokale Schriften, damit es auch ohne Internet gleich aussieht
+  // Über die UX | Nexus Launcher (/ws/docs/): lokale Schriften, damit es auch ohne Internet gleich aussieht
   if (location.protocol.indexOf('http') === 0 && /\/ws\/docs\//.test(location.pathname)) {
     var l = document.createElement('link'); l.rel = 'stylesheet'; l.href = '/vendor/fonts/fonts_modern.css'; document.head.appendChild(l);
   }
@@ -1062,7 +1062,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 10px 24px; align-items: cent
     const $ = (s, el = document) => el.querySelector(s), $$ = (s, el = document) => [...el.querySelectorAll(s)];
     const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
     const WAYS = [['Gamepad', 'i-pad', 'accent'], ['VR Quest 3', 'i-vr', 'indigo'], ['Blick', 'i-eye', 'teal'], ['Sprache', 'i-mic', 'gold'], ['Tastatur', 'i-key', 'violet'],
-      ['Touch Panel', 'i-tab', 'green'], ['Control UI', 'i-mon', 'accent'], ['3D-Gizmo', 'i-gizmo', 'indigo'], ['VLA-Chat', 'i-chat', 'violet'], ['Remote', 'i-net', 'teal']];
+      ['UX | Compact Interface', 'i-tab', 'green'], ['Control UI', 'i-mon', 'accent'], ['3D-Gizmo', 'i-gizmo', 'indigo'], ['VLA-Chat', 'i-chat', 'violet'], ['Remote', 'i-net', 'teal']];
     const CASES = [['ok', 'Normaler Befehl'], ['lock', 'Zweiter Bediener'], ['table', 'Bahn in den Tisch'], ['reach', 'Ziel außer Reichweite']];
     // Vorprüfung je Weg: Gamepad über teleop_pre_collision_checker, Jog-Wege über das Twist-Gate des Watchdogs,
     // Blick mit eigener Bremszone, geplante Bahnen über MoveIt mit Boden (docs/de/running.md, teleoperation.md, voice_gaze.md)

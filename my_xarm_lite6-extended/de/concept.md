@@ -46,7 +46,7 @@ Ein voll funktionsfähiger, reproduzierbarer und erschwinglicher Proof-of-Concep
 *Systemarchitektur und Datenfluss · Quelle: `tools/make_diagrams.py`*
 
 ### 2.1 Die Systemidee: Eine integrierte Entwicklungs-, Evaluierungs- und Validierungsplattform
-Eine modulare Softwarearchitektur für multimodale Teleoperation und KI-gestützte Assistenzrobotik. Als Integrationsschicht (Middleware-Ebene) führt sie heterogene Teilsysteme in einer Laufzeitumgebung zusammen. Mit verteiltem Server/Client-Aufbau und einem echtzeitfähigen **Digital Twin** (WebGL in der Robot Control UI, optional NVIDIA Isaac Sim) dient sie als Entwicklungs- und als reproduzierbare Testumgebung – ein geschlossener Kreislauf aus Entwicklung und empirischer Validierung:
+Eine modulare Softwarearchitektur für multimodale Teleoperation und KI-gestützte Assistenzrobotik. Als Integrationsschicht (Middleware-Ebene) führt sie heterogene Teilsysteme in einer Laufzeitumgebung zusammen. Mit verteiltem Server/Client-Aufbau und einem echtzeitfähigen **Digital Twin** (WebGL in der UX | Control Interface (früher „Robot Control UI“), optional NVIDIA Isaac Sim) dient sie als Entwicklungs- und als reproduzierbare Testumgebung – ein geschlossener Kreislauf aus Entwicklung und empirischer Validierung:
 
 - **Sensorik & Perzeption:** Tiefenkameras (YOLO-Objekterkennung, Marker-Tracking) sowie taktile oder physiologische Sensoren zur Zustandserfassung.
 - **Multimodale Steuerung:** Eye-Tracking zur Zielauswahl, Sprachsteuerung (OpenAI Whisper) und klassische Controller (Gamepads, 3D-Mäuse) parallel.
@@ -56,7 +56,7 @@ Eine modulare Softwarearchitektur für multimodale Teleoperation und KI-gestütz
 ### 🧊 Digital Twin: erst virtuell, dann real
 Der **Digital Twin** (digitaler Zwilling) ist das live mitlaufende 3D-Modell des xArm Lite 6 und seiner Arbeitszelle. Er ist das gemeinsame Bild für Mensch, Planer und KI: Jede Bewegung erscheint im Digital Twin vorab und während sie passiert.
 
-- **Was er ist:** WebGL-Modell (three.js + URDF des xArm Lite 6) in der Robot Control UI (Port 8081), läuft in jedem Browser, offline-fähig.
+- **Was er ist:** WebGL-Modell (three.js + URDF des xArm Lite 6) in der UX | Control Interface (Port 8081), läuft in jedem Browser, offline-fähig.
 - **Live-Spiegel:** folgt `/joint_states` und der Linearachse in Echtzeit – im FAKE-Modus dem simulierten, im REAL-Modus dem echten Arm.
 - **Arbeitszelle im Digital Twin:** Tisch, Laborraum, Schutzzonen, Kamerastativ, erkannte Objekte als 3D-Boxen mit Greifkugeln (`/zed/bboxes_3d`), virtuelle Objekte und Szenen (Standard, Auto palletizing).
 - **Planen im Digital Twin:** Ziel mit dem TCP-Gizmo ziehen → MoveIt plant → Ghost-Vorschau der Bahn (`/ui/moveto_preview_path`) → Mensch bestätigt → erst dann fährt der Arm.
@@ -117,7 +117,7 @@ Vollständig in ROS 2 Humble integriert; standardisierte Kommunikationsprimitive
 ### 4.1 Roboter-Steuerungsarten (Inputs)
 - **Gamepad:** latenzarme, kontinuierliche Feinsteuerung mit einem Xbox One Elite Series 2 Controller, inklusive haptischem Feedback (Vibration bei Kollisionsgefahr) → [Modi & Gamepad](teleoperation.html).
 - **VR (Meta Quest 3):** immersive kartesische 6-DoF-Steuerung mit den Quest-3-Controllern über WebXR und ADB-Tunneling → [VR-Teleoperation](vr_quest3.html).
-- **Web-UI:** Maus oder Touch in der Robot Control UI – am Roboter-PC, vom Laptop oder Tablet im Heimnetz oder am Touch Panel → [Robot Control UI](robot_control_ui.html).
+- **Web-UI:** Maus oder Touch in der UX | Control Interface – am Roboter-PC, vom Laptop oder Tablet im Heimnetz oder am UX | Compact Interface (früher „Touch Panel“) → [UX | Control Interface](robot_control_ui.html).
 - **Sprache & Blick:** Whisper-Sprachbefehle und Tobii-Eye-Tracking → [Sprache & Blick](voice_gaze.html).
 - **VLA-Chat:** Anweisungen in Alltagssprache → [VLA-M](vla.html).
 

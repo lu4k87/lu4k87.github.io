@@ -21,7 +21,7 @@
 <summary><b>🔽 Show details</b></summary>
 
 > [!NOTE]
-> - **Workflow:** 1. The user launches `RUN DEV SETUP (FAKE)` or `(REAL)` via the Nexus Webapp.
+> - **Workflow:** 1. The user launches `RUN DEV SETUP (FAKE)` or `(REAL)` via the UX | Nexus Launcher (formerly Nexus Webapp).
 >   2. The user starts Isaac Sim in a terminal: `bash ~/dev_ws/isaacsim/start_isaac_sim.sh` (the former Nexus section `NVIDIA Isaac Sim` belonged to the removed full page).
 >   3. The custom script spawns the local `isaac-sim.sh` binary with `--allow-root` and automatically opens the pre-configured Action Graph scene (`lite6_isaac_ros2.usd`).
 > - **OmniGraph Architecture:** The scene uses a minimal footprint Action Graph consisting of an `On Playback Tick` node firing into a `ROS2 Subscribe Joint State` node (listening to `/joint_states`), which pipes directly into the `Articulation Controller` driving the robot asset.
@@ -31,4 +31,4 @@
 
 ---
 
-[⬅ Previous: Robot Control UI & Motion Backend](robot_control_ui.html) · [🏠 Overview](../readme-en.html) · [⬆ Top](#top) · [Next: VLA-M: Vision-Language-Action Chat ➡](vla.html)
+[⬅ Previous: UX | Control Interface & Motion Backend](robot_control_ui.html) · [🏠 Overview](../readme-en.html) · [⬆ Top](#top) · [Next: VLA-M: Vision-Language-Action Chat ➡](vla.html)

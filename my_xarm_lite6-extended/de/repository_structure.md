@@ -18,7 +18,7 @@ dev_ws/
 │   ├── skills/                                                            # Skills mit ihren Skripten, z.B. preview/ (capture.py Screenshots, build.py Spec → Seite), answer-page/ (Antwortformat)
 │   └── README.md                                                          # Übersicht über Hooks, Skills, Agents, Mods
 ├── _imgs/                                                                 # System-Screenshots, Architekturgrafiken & Assets
-│   ├── icons/                                                             # SVG-Icons der Karten der Nexus Webapp (z. B. icon_vla.svg, icon_touch_panel.svg)
+│   ├── icons/                                                             # SVG-Icons der Karten der UX | Nexus Launcher (z. B. icon_vla.svg, icon_touch_panel.svg)
 │   ├── robotsystem.jpg                                                    # Gesamtsystem Hardware-Setup Übersicht
 │   └── gaze_control_interface.png                                         # Tobii Gaze Eye-Tracking GUI Vorschau
 ├── certs/                                                                 # SSL/TLS-Zertifikate für WebXR HTTPS-Server
@@ -62,11 +62,11 @@ dev_ws/
 │   ├── nexus_settings.py                                                  # Globale Schalter (Terminals bei Execute), ~/.config/ros2_nexus/settings.json
 │   ├── nexus_preflight.py                                                 # Vorabprüfung vor EXECUTE: Roboter/Kameras erreichbar, Ports frei, doppelte Stacks, GPU, Platte
 │   ├── nexus_config.py                                                    # Räumt launcher_config.json beim Speichern auf (Argument-Zustände gelöschter Launches)
-│   ├── nexus_windows.py                                                   # Holt Fenster auf dem X11-Desktop nach vorn; Robot Control UI bleibt oben
+│   ├── nexus_windows.py                                                   # Holt Fenster auf dem X11-Desktop nach vorn; UX | Control Interface bleibt oben
 │   ├── test/                                                              # Unit-Tests (Logs, Config-Sicherungen), ohne ROS
 │   ├── ros2_nexus_runs.js                                                 # Fortschrittszeile, Laufzustand auf den Karten, Log-Schublade, Deep-Links
 │   ├── ros2_nexus_backups.{js,css}                                        # Knopf „Backups“ im Start-Popup: Config-Sicherungen auflisten und wiederherstellen
-│   ├── ros2_nexus_web.html                                                # Startseite der Nexus Webapp (nur Start-Popup)
+│   ├── ros2_nexus_web.html                                                # Startseite der UX | Nexus Launcher (nur Start-Popup)
 │   ├── ros2_nexus_popup_window.py                                         # Rahmenloses WebKitGTK-Fenster für das Start-Popup
 │   ├── ros2_nexus_styles.css                                              # Nexus CSS-Stylesheets
 │   ├── ros2_nexus_script.js                                               # Zentraler Prozessmanager & Log-Viewer
@@ -83,7 +83,7 @@ dev_ws/
 │   ├── gaze_grasp_routine_tobii_glasses/                                  # 👁️ Python: Tobii Eye-Tracking Blick-zu-3D-Greif-Routine
 │   │   └── gaze_grasp_routine_tobii_glasses/gaze_grasp_routine_tobii_glasses.py # Dwell-Time-Auswahl, Homographie-Lokalisierung, Greifen
 │   ├── dev_ws_network/                                                    # Python: net_get() für config/network.yaml (Nodes, Web-UIs, Nexus)
-│   ├── http_monitoring_dashboard_p8083/                                        # 📈 Python/JS: Monitoring Dashboard (Port 8083) – System, Nutzung & Evaluierung
+│   ├── http_monitoring_dashboard_p8083/                                        # 📈 Python/JS: UX | Monitoring (Port 8083) – System, Nutzung & Evaluierung
 │   │   ├── http_monitoring_dashboard_p8083/monitoring_server.py                     # Webserver + JSON-API + ROS-2-Monitor (Graph, Topic-Raten, Nutzung, Sessions)
 │   │   ├── http_monitoring_dashboard_p8083/store.py                            # SQLite-Speicher (Minutenmittel, Motions, Sessions, Events) + 1-h-Ringpuffer
 │   │   ├── http_monitoring_dashboard_p8083/collectors.py                  # System-Kennzahlen (psutil, nvidia-smi) und Port-Checks der Web-UIs
@@ -95,7 +95,7 @@ dev_ws/
 │   ├── http_robot_control_ui_p8081/                                       # 🎮 HTML/JS: Eigenständiges Roboter-Steuerungs- & Jogging-Webpanel
 │   │   ├── index.html                                                     # Roboter-Steuerungsoberfläche (Port 8081)
 │   │   ├── vr_mirror.html                                                 # PC-Fenster, das die Sicht der Quest 3 spiegelt
-│   │   ├── install_desktop_icon.sh                                        # Installiert Icon & .desktop-Eintrag der Robot Control UI
+│   │   ├── install_desktop_icon.sh                                        # Installiert Icon & .desktop-Eintrag der UX | Control Interface
 │   │   ├── style.css · css/                                               # Stylesheet; css/theme_light.gen.css erzeugt von tools/gen_theme_light.py
 │   │   ├── launch/                                                        # http_robot_control_ui.launch.py: Webserver, rosbridge 9090, Watchdog
 │   │   ├── js/                                                            # ES-Module (main.js, ros.js, jog.js, motion.js, sequence.js, sandbox.js, remote.js, hud_dock.js, config.js …)
@@ -192,7 +192,7 @@ dev_ws/
 │   ├── zed-ros2-interfaces/                                               # 📷 Benutzerdefinierte ROS 2 Interfaces für Stereolabs ZED Kameras
 │   └── zed-ros2-wrapper/                                                  # 📷 Stereolabs ZED ROS 2 Kameratreiber
 ├── tools/                                                                 # Werkzeuge
-│   ├── ui_new_code_checker.py                                             # Headless-Prüfung aller Web-UIs inkl. Monitoring Dashboard + HUD, isoliert (1920/1366/1280 px)
+│   ├── ui_new_code_checker.py                                             # Headless-Prüfung aller Web-UIs inkl. UX | Monitoring + HUD, isoliert (1920/1366/1280 px)
 │   ├── grasp_e2e.py                                                       # FAKE-Test Ende zu Ende: Greifen/Ablegen über die UI, Not-Halt, IK-Vorabprüfung (eigene Domain, --quick ~5 min)
 │   ├── vla_eval.py                                                        # Bewertungs-Set für den VLA-Agenten (vla_eval_cases.json, --check ohne LLM)
 │   ├── pre-commit · install_hooks.sh                                      # Git-Vor-Commit-Prüfung der gestageten Dateien (flake8, JSON/YAML, Tokens, check_ws, check_ports, pytest-Suiten, check_showcase; --changed = alles Uncommittete)
@@ -203,7 +203,7 @@ dev_ws/
 │   ├── demos_to_lerobot.py                                                # Aufgenommene Demos (demo_recorder) -> LeRobotDataset (LeRobot-venv); --check
 │   ├── check_ui_tokens.py                                                 # Prüft ui_shared/ui_tokens.css gegen die UIs
 │   ├── check_ws.py                                                        # Konsistenz: setup.py/Entry-Points, Launch-Verweise, Nexus-Befehle
-│   ├── monitoring_sim.py                                                  # Testdaten-Simulator für das Monitoring Dashboard (nur isolierte Domain, z.B. 97)
+│   ├── monitoring_sim.py                                                  # Testdaten-Simulator für das UX | Monitoring (nur isolierte Domain, z.B. 97)
 │   ├── bench_nexus_webkit.py                                              # Misst CPU/FPS des Nexus-App-Fensters (WebKitGTK, unsichtbar)
 │   ├── firewall_setup.sh                                                  # ufw-Regeln anzeigen / --apply / --undo
 │   ├── ws_sync.sh                                                         # Abgleich Laptop / Labor-PC / Home-PC: Einrichten, git pull --rebase, geänderte Pakete bauen (--setup, --no-build)
@@ -212,14 +212,14 @@ dev_ws/
 │   ├── make_docs_lite6.py                                                 # Erzeugt docs/js/lite6_mesh.js (Lite-6-Meshes für die Projektseiten)
 │   ├── generate_reachability_grid.py                                      # Berechnet Erreichbarkeitsgitter + Manipulierbarkeit des Lite 6 vorab
 │   └── install_zed.sh                                                     # ZED SDK & CUDA Installations-Hilfsskript
-├── touch_panel/                                                           # Touch Panel für ein Zusatz-Touch-Display (Nexus Webapp /touch)
+├── touch_panel/                                                           # UX | Compact Interface für ein Zusatz-Touch-Display (UX | Nexus Launcher /touch)
 │   ├── touch_panel_server.py                                              # Flask-Blueprint: Seite /touch + /api/touch/* (state, stop, close, sequences)
 │   ├── touch_panel_start.sh                                               # Kiosk-Start: findet das HDMI-Touch-Display, mappt den USB-Touch, Chrome-Kiosk
 │   └── web/                                                               # Seite, CSS, JS-Module, Icon
 ├── ui_shared/                                                             # Gemeinsam für die Web-UIs
 │   ├── ui_tokens.css                                                      # Farben, Achsenfarben, Schriften, Schriftgrößen (--ui-*, --fs-*)
 │   ├── ui_theme.{js,css}                                                  # Themes aller Web-UIs (THEMES, html[data-ui-theme], Alt+T); themes/<id>.css, fonts/
-│   └── net_info.{js,css}                                                  # Info-Karte „Setup“ (Systemübersicht, Netze, IPs, Ports, HTTPS, Touch-Display, VLA-M; DE/EN) für Monitoring Dashboard + Nexus
+│   └── net_info.{js,css}                                                  # Info-Karte „Setup“ (Systemübersicht, Netze, IPs, Ports, HTTPS, Touch-Display, VLA-M; DE/EN) für UX | Monitoring + Nexus
 ├── video/                                                                 # Präsentationsvideos (kein ROS-Paket)
 │   ├── reel/                                                              # reel.html (deterministische Video-Seite) + drehbuch.md, gerendert von tools/reel_render.py
 │   └── vorlagen/ · vorlagen_src/                                          # Overlay-Bilder (Badges, Bauchbinden); Quellen in vorlagen_src/ (templates.html, render.sh)
@@ -231,4 +231,4 @@ dev_ws/
 
 ---
 
-[⬅ Zurück: Monitoring Dashboard](monitoring.html) · [🏠 Übersicht](../readme-de.html) · [⬆ Nach oben](#top) · [Weiter: Archiv & verworfene Konzepte ➡](archive.html)
+[⬅ Zurück: UX | Monitoring](monitoring.html) · [🏠 Übersicht](../readme-de.html) · [⬆ Nach oben](#top) · [Weiter: Archiv & verworfene Konzepte ➡](archive.html)

@@ -34,11 +34,11 @@ Die folgende Übersicht zeigt auf einen Blick, welche Projektmodule in reiner So
 
 | Feature / Subsystem | Reine Simulation (FAKE) | Echte Hardware (REAL) | Benötigte Hardware / Peripherie |
 |---|:---:|:---:|---|
-| **Robot Control UI (Port 8081)** | ✅ Funktionsfähig (RViz-Spiegelung) | ✅ Funktionsfähig (Hardware-Bewegung) | Host-PC & Webbrowser |
+| **UX \| Control Interface (Port 8081)** | ✅ Funktionsfähig (RViz-Spiegelung) | ✅ Funktionsfähig (Hardware-Bewegung) | Host-PC & Webbrowser |
 | **Physik-Sandbox (virtuelles Greifen)** | ✅ Funktionsfähig | ➖ Nur Simulation | Host-PC |
 | **Fernsteuerung (Client / Server)** | ✅ Funktionsfähig | ✅ Funktionsfähig (strengere Grenzen) | Laptop, Tablet oder Quest 3 im Heimnetz |
-| **Touch Panel (`/touch`)** | ✅ Funktionsfähig | ✅ Funktionsfähig | Zusätzliches Touch-Display (USB + HDMI) |
-| **Monitoring Dashboard (Port 8083)** | ✅ Funktionsfähig | ✅ Funktionsfähig | Host-PC & Webbrowser |
+| **UX \| Compact Interface (`/touch`)** | ✅ Funktionsfähig | ✅ Funktionsfähig | Zusätzliches Touch-Display (USB + HDMI) |
+| **UX \| Monitoring (Port 8083)** | ✅ Funktionsfähig | ✅ Funktionsfähig | Host-PC & Webbrowser |
 | **MoveIt 2 Kartesische Pfadplanung & IK** | ✅ Funktionsfähig | ✅ Funktionsfähig | Host-PC |
 | **Virtuelle Linearachse (Schiene)** | ✅ Funktionsfähig | ➖ Nur Simulation | Host-PC |
 | **Gamepad-Teleoperation (MoveIt Servo)** | ✅ Funktionsfähig | ✅ Funktionsfähig | Xbox One / Series Controller |
@@ -81,7 +81,7 @@ Die folgende Übersicht zeigt auf einen Blick, welche Projektmodule in reiner So
 > # Simulation (FAKE) (mit virtueller Linearachse & 3D-Szenenobjekten):
 > ros2 launch xarm_moveit_servo lite6_moveit_servo_fake.launch.py add_vacuum_gripper:=true attach_to:=linear_axis_link static_objects:=true
 > ```
-> *`rviz:=false` startet MoveIt Servo ohne RViz-Fenster (Standard `true`; in der Nexus Webapp als Checkbox `rviz:=true` in der Servo-Action-Card).*
+> *`rviz:=false` startet MoveIt Servo ohne RViz-Fenster (Standard `true`; in der UX | Nexus Launcher (früher „Nexus Webapp“) als Checkbox `rviz:=true` in der Servo-Action-Card).*
 > *Weitere Argumente beider Launch-Files: `joystick_and_checker:=false` startet weder `joy_node` noch `teleop_pre_collision_checker` (genutzt von den Server-Sequenzen, dort hängt das Gamepad am Client-PC); `floor_collision:=false` lässt `moveit_floor_collision` weg. Beide Launches binden außerdem `standalone_move_group.launch.py` ein.*
 > *(Nativ als Component im MoveIt Servo Bringup geladen)*
 >
@@ -107,7 +107,7 @@ Die folgende Übersicht zeigt auf einen Blick, welche Projektmodule in reiner So
 >> |---|---|---|
 >> | **`/joy_check`** | `sensor_msgs/Joy` | *Liest die vom Wächter-Node bereinigten Controller-Inputs.* |
 >> | **`/ui/robot_control/set_speed_index`** | `std_msgs/Int32` | *Empfängt Anpassungen der Geschwindigkeitsstufe.* |
->> | **`/ui/gripper_cmd`** | `std_msgs/String` | *Greiferbefehl der Robot Control UI (`open` / `close` / `off` / `toggle`) - läuft durch dieselbe Logik wie die A/B-Tasten.* |
+>> | **`/ui/gripper_cmd`** | `std_msgs/String` | *Greiferbefehl der UX \| Control Interface (`open` / `close` / `off` / `toggle`) - läuft durch dieselbe Logik wie die A/B-Tasten.* |
 >
 >
 > ![Publishes](https://img.shields.io/badge/Publishes-green?style=flat-square)
@@ -179,7 +179,7 @@ Die folgende Übersicht zeigt auf einen Blick, welche Projektmodule in reiner So
 >> | **`/servo_server/status`** | `std_msgs/Int8` | *Überwacht Status-Codes des Servo-Servers.* |
 >> | **`/ui/eef_position`** | `std_msgs/Float32MultiArray` | *Bezieht die aktuelle Z-Höhe für den prädiktiven Kollisions-Check.* |
 >> | **`/ui/robot_control/current_speed`** | `std_msgs/Float32` | *Liest den aktuellen Geschwindigkeitsfaktor zur dynamischen Dämpfungsberechnung.* |
->> | **`/ui/moveit_collision_ground_enabled`** | `std_msgs/Bool` (latched) | *Folgt dem Boden-Kollisionsschalter der Robot Control UI: Ist er AUS, wird die Abwärtsbewegung nicht mehr gesperrt. Ohne Nachricht (Node läuft nicht) bleibt die Sperre aktiv.* |
+>> | **`/ui/moveit_collision_ground_enabled`** | `std_msgs/Bool` (latched) | *Folgt dem Boden-Kollisionsschalter der UX \| Control Interface: Ist er AUS, wird die Abwärtsbewegung nicht mehr gesperrt. Ohne Nachricht (Node läuft nicht) bleibt die Sperre aktiv.* |
 >
 >
 > ![Publishes](https://img.shields.io/badge/Publishes-green?style=flat-square)
@@ -191,7 +191,7 @@ Die folgende Übersicht zeigt auf einen Blick, welche Projektmodule in reiner So
 >
 > *Das haptische Rumble-Feedback des Xbox-Controllers wird nicht über ROS verschickt, sondern direkt über `pygame` am Joystick-Gerät ausgelöst (`joystick.rumble(...)`).*
 >
-> *Rückmeldung im Browser der Robot Control UI (Port 8081), nur solange dieser Client den Steuerungs-Lock hat (`hasControlLock()` in `js/remote.js`):*
+> *Rückmeldung im Browser der UX | Control Interface (früher „Robot Control UI“) (Port 8081), nur solange dieser Client den Steuerungs-Lock hat (`hasControlLock()` in `js/remote.js`):*
 > - *`js/gamepad.js`: ein am Browser angeschlossenes Gamepad rüttelt (Gamepad API `vibrationActuator.playEffect('dual-rumble')`), solange der Roboter fährt und weniger als 20 mm über der Z Collision Level, 20 mm vor der unerreichbaren Zone um die Achse, 30 mm vor der Reichweite von 440 mm (ab Schulter, Z 243,5 mm) oder in den äußeren 10 % eines Gelenkbereichs ist bzw. Servo Singularität, Gelenkgrenze oder Kollision meldet; je näher an der Grenze, desto stärker.*
 > - *`js/twin/xr_feedback.js`: die Quest-3-Controller pulsieren bei Greifkontakt (Vakuum `closed` oder Objekt in der Physik-Sandbox gehalten) und wiederholt nahe denselben Grenzen.*
 > - *`js/sound.js`: synthetische Töne (Web Audio API, keine Audiodateien) für Vakuum AN/AUS, Grenzwarnung und E-STOP; stumm mit dem Ton-Schalter im Header.*
@@ -452,7 +452,7 @@ Status-Feedback an `/ui/joy_button_presses` nach jeder Zustandsänderung.
 | Typ | Name | Message-Typ | Beschreibung |
 |-----|------|------------|-------------|
 | **Subscriber** | `/joy_check` | `sensor_msgs/Joy` | *Bereinigtes Signal von `teleop_pre_collision_checker.py`* |
-| **Subscriber** | `/ui/robot_control/set_speed_index` | `std_msgs/Int32` | *Geschwindigkeitsstufe aus Robot Control UI / RViz-Panel* |
+| **Subscriber** | `/ui/robot_control/set_speed_index` | `std_msgs/Int32` | *Geschwindigkeitsstufe aus UX \| Control Interface / RViz-Panel* |
 | **Publisher** | `/ui/eef_position` | `std_msgs/Float32MultiArray` | *10 Hz Live-Pose (x, y, z in mm + Quaternion qx, qy, qz, qw) für Telemetrie* |
 | **Publisher** | `/servo_server/delta_twist_cmds` | `geometry_msgs/TwistStamped` | *Kartesischer Geschwindigkeitsbefehl* |
 | **Publisher** | `/servo_server/delta_joint_cmds` | `control_msgs/JointJog` | *Gelenkraum-Befehl (Initialisierung)* |
@@ -467,7 +467,7 @@ Status-Feedback an `/ui/joy_button_presses` nach jeder Zustandsänderung.
 | **Service Client** | `/ufactory/close_lite6_gripper` | `xarm_msgs/srv/Call` | *Schließt Greifer* |
 | **Service Client** | `/ufactory/stop_lite6_gripper` | `xarm_msgs/srv/Call` | *Stoppt Greifer* |
 | **Service Client** | `/ufactory/set_vacuum_gripper` | `xarm_msgs/srv/VacuumGripperCtrl` | *Vakuum an/aus* |
-| **Subscriber** | `/ui/gripper_cmd` | `std_msgs/String` | *Greiferbefehle der Robot Control UI* |
+| **Subscriber** | `/ui/gripper_cmd` | `std_msgs/String` | *Greiferbefehle der UX \| Control Interface* |
 | **Publisher** | `/ui/gripper_state` / `/ui/gripper_type` | `std_msgs/String` (latched) | *Greiferzustand und -typ für die UI* |
 | **Service Client** | `/ui/execute_initial_pose` | `std_srvs/srv/Trigger` | *Initialpositions-Sequenz* |
 | **Action Client** | `/whisper/inference` | `whisper_idl/action/Inference` | *Whisper-Sprachaufnahme* |

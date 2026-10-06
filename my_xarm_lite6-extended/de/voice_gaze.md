@@ -14,9 +14,9 @@
 
 *Whisper-Sprachsteuerungs-Pipeline · Quelle: `tools/make_diagrams.py`*
 
-<img src="../img/rcu_speech.png" width="420" alt="Sprachsteuerung in der Robot Control UI">
+<img src="../img/rcu_speech.png" width="420" alt="Sprachsteuerung in der UX | Control Interface">
 
-*Robot Control UI, Bereich **Assistant (VLA) › Speech**: **Start Listening** (Mikrofon anklicken oder X am Gamepad → `/ui/voice_listen_trigger`), der erkannte Befehl (`/ui/voice_status`) und die Liste der letzten Sprachbefehle.*
+*UX | Control Interface (früher „Robot Control UI“), Bereich **Assistant (VLA) › Speech**: **Start Listening** (Mikrofon anklicken oder X am Gamepad → `/ui/voice_listen_trigger`), der erkannte Befehl (`/ui/voice_status`) und die Liste der letzten Sprachbefehle.*
 
 ### Tobii Eye-Tracking Pipeline
 <p align="center"><img src="../img/diagrams/gaze_pipeline.svg" width="100%" alt="Tobii-Eye-Tracking-Pipeline"></p>
@@ -46,7 +46,7 @@
 >
 > - **Hörfenster statt Dauerbetrieb:** Die Inferenz läuft nur `listen_window_ms` (Standard 7000 ms) nach einem `listen`-Trigger auf `/ui/voice_listen_trigger` (die Aufnahme des Listeners dauert 5 s), bzw. `dictation_window_ms` (Standard 10000 ms) nach einem `dictate`-Trigger (Diktat aus der VLA-M-Section: Der Listener nimmt bis `dictation_max_s` = 8 s auf, führt keine Sprachbefehle aus und meldet `Listening...` / `Dictation: <Text>` / `-- No speech detected --` / `Error: …` auf `/ui/voice_dictation`). Vorher transkribierte Whisper alle 250 ms den kompletten Puffer, auch bei Stille (Dauer-GPU-Last, Log-Flut). `listen_window_ms: 0` schaltet zurück auf Dauerbetrieb.
 > - **Modell & Dekodierung (`whisper_server/config/whisper.yaml`):** Multilinguales Modell `small` (EN/DE, deutlich sauberer als `base`, ca. 50-120 ms pro Durchlauf auf der RTX A5000; wird beim ersten Start nach `~/.cache/whisper.cpp` geladen), `language: "auto"`, Greedy-Dekodierung (`beam_size: 1`), `temperature: 0.0`, `no_context: true`. `initial_prompt` bleibt bewusst leer: Mit Befehls-Prompt halluzinierte Whisper bei Stille Text und rechnete langsamer (getestet). Die eingebundene whisper.cpp-Version hat keinen VAD - das alte Argument `silero_vad_use_cuda` ist wirkungslos.
-> - **GPU / CPU:** `use_gpu:=true|false`. In der Nexus Webapp hat die Speech-Control-Karte im Launch-Popup einen Umschalter **Whisper CPU | GPU**. Bei `use_gpu:=false` lädt die Launch-Datei zusätzlich das **CPU-Profil** `whisper_cpu.yaml`: `small` braucht auf der CPU ~11 s pro Durchlauf - länger als die 5-s-Aufnahme des Listeners -, daher nutzt das CPU-Profil `base`, 12 Threads und `audio_ctx: 320` (Encoder über 6,4 s statt 30 s): ~0,35-0,75 s pro Durchlauf, Befehle nach ~3 s erkannt (gemessen auf dem i9-12900K). Die Zeilen `ggml_cuda_init … found 1 CUDA devices` erscheinen auch im CPU-Modus (die Bibliothek ist mit CUDA gebaut); entscheidend sind `use gpu = 0` und die Log-Zeile `Decoding: … CPU`.
+> - **GPU / CPU:** `use_gpu:=true|false`. In der UX | Nexus Launcher (früher „Nexus Webapp“) hat die Speech-Control-Karte im Launch-Popup einen Umschalter **Whisper CPU | GPU**. Bei `use_gpu:=false` lädt die Launch-Datei zusätzlich das **CPU-Profil** `whisper_cpu.yaml`: `small` braucht auf der CPU ~11 s pro Durchlauf - länger als die 5-s-Aufnahme des Listeners -, daher nutzt das CPU-Profil `base`, 12 Threads und `audio_ctx: 320` (Encoder über 6,4 s statt 30 s): ~0,35-0,75 s pro Durchlauf, Befehle nach ~3 s erkannt (gemessen auf dem i9-12900K). Die Zeilen `ggml_cuda_init … found 1 CUDA devices` erscheinen auch im CPU-Modus (die Bibliothek ist mit CUDA gebaut); entscheidend sind `use gpu = 0` und die Log-Zeile `Decoding: … CPU`.
 > - **Launch-Argumente (`bringup.launch.py`):** `use_gpu` (Standard `true`), `active` (Standard `true`, Whisper-Node startet aktiv), `device_index` (PyAudio-Gerät, `-1` = Standard), `model_name` und `language` (leer = Wert aus `whisper.yaml` bzw. dem CPU-Profil; wird nach dem CPU-Profil angewendet).
 > - **Performance & Thread-Sicherheit:** Der zugrundeliegende C++ Action Server (`TranscriptManager`) wurde mit einem strikten `std::mutex`-Locking Mechanismus abgesichert, um parallele Data-Race-Abstürze bei hochfrequenter Token-Generierung vollständig zu eliminieren. Zudem verfügt die `Inference`-Node über eine gehärtete Puffer-Löschstrategie (`audio_ring_->clear()`), die alte Audio-Reste exakt in der Millisekunde aus dem Ring-Puffer physisch entfernt, in der der Nutzer den UI-Button drückt. Dies garantiert mathematisch, dass keine "Geisterkommandos" aus vorherigen Sprachaufnahmen versehentlich ausgeführt werden.
 >
@@ -91,7 +91,7 @@
 
 ### ![Node](https://img.shields.io/badge/Node-blue?style=flat-square) `voice_command_listener.py` &nbsp;&nbsp; <sub><i>`/src/voice_command_listener/voice_command_listener/voice_command_listener.py`</i></sub>
 
-**Zweck & Aufgabe:** Analysiert den diskreten, einzeln getriggerten Rohtext über exakte Regex-Muster und extrahiert die vom Nutzer definierten Handlungs-Intents: Stopp („Stopp“, „Halt“, „Abbrechen“ – hält die Fahrt an, verwirft Offenes), Not-Aus („Not-Aus“, „Nothalt“), Startposition, absolute Zielpose, Scan-Position („Szene scannen“), Werkzeug ausrichten („TCP ausrichten“), Objekt anfahren (Objekt im Feld des manuellen Greifziels), Bestätigen / Verwerfen (Pfad im MoveIt-Popup, VLA-M-Plan; nur als kurzer Satz bis 3 Wörter und nur, wenn genau eins wartet; verneint – „Nicht ausführen“ – wird daraus Verwerfen; andere verneinte Befehle wie „Nicht die Szene scannen“ lösen nichts aus), Greifer öffnen / schließen („Sauger aus / an“; öffnen erst nach „Bestätigen“, außer der Greifer meldet *open*/*off*), Tempo-Stufe („Tempo drei“ → `Speed: 3`, „Ganz langsam“ → `Speed: 1`; erhöhen um höchstens eine Stufe), schneller, langsamer. Die Muster stehen in `COMMAND_PATTERNS` (`voice_command_listener.py`, laufen auf dem normalisierten Text: klein, ae/oe/ue/ss, ohne Satzzeichen), ausgeführt wird in der Robot Control UI über `VOICE_COMMANDS_DATA` (`js/voice.js`); Stopp und Not-Aus gehen jedem anderen Befehl im Satz vor („Stopp, nicht zur Scan-Position“ = Stopp), gelten auch während des Cooldowns (`cooldown_sec`, 3 s) und löst der Node zusätzlich selbst aus (`/ui/emergency_stop_topic`, `/ui/halt_motion`) – sie wirken also auch ohne offene Robot Control UI. Alle anderen Befehle führt nur ein sichtbarer Tab aus. Startposition, absolute Zielpose, Scan-Position und Werkzeug ausrichten laufen wie die Buttons über `requestMotion` (`js/motion.js`): Bei Auto-Move aus wartet die Fahrt im MoveIt-Popup, gefahren wird erst nach „Bestätigen“ (oder ▶), „Verwerfen“, „Stopp“, Not-Aus und ein Verbindungsabbruch verwerfen sie. Test: `src/voice_command_listener/test/test_commands.py`. Die Home-Fahrt braucht eine eindeutige Phrase („go home“, „home position“, „reset pose“, „initial pose“, „Fahre zur Startposition“); ein einzelnes „home“ oder „reset“ löst nichts aus. Enthält eine hohe Toleranz für ähnlich klingende Whisper-Erkennungen (z.B. "pause" oder "power" als "pose"). Implementiert eine robuste **3-Stufen-Deduplikations-Zustandsmaschine**, die eine exakt einmalige Befehlsausführung garantiert. Whisper-Geräuschmarkierungen wie `[BLANK_AUDIO]`, `(sighs)` oder `*music*` werden vor der Auswertung entfernt. Der Node spielt **keinen eigenen Sound**: Die Ansage „robot moves to ...“ kommt von `robot_motion_handler_movegroup`, und zwar erst, wenn die Fahrt wirklich startet (vorher lief sie doppelt - und fälschlich, wenn die Fahrt abgelehnt wurde).
+**Zweck & Aufgabe:** Analysiert den diskreten, einzeln getriggerten Rohtext über exakte Regex-Muster und extrahiert die vom Nutzer definierten Handlungs-Intents: Stopp („Stopp“, „Halt“, „Abbrechen“ – hält die Fahrt an, verwirft Offenes), Not-Aus („Not-Aus“, „Nothalt“), Startposition, absolute Zielpose, Scan-Position („Szene scannen“), Werkzeug ausrichten („TCP ausrichten“), Objekt anfahren (Objekt im Feld des manuellen Greifziels), Bestätigen / Verwerfen (Pfad im MoveIt-Popup, VLA-M-Plan; nur als kurzer Satz bis 3 Wörter und nur, wenn genau eins wartet; verneint – „Nicht ausführen“ – wird daraus Verwerfen; andere verneinte Befehle wie „Nicht die Szene scannen“ lösen nichts aus), Greifer öffnen / schließen („Sauger aus / an“; öffnen erst nach „Bestätigen“, außer der Greifer meldet *open*/*off*), Tempo-Stufe („Tempo drei“ → `Speed: 3`, „Ganz langsam“ → `Speed: 1`; erhöhen um höchstens eine Stufe), schneller, langsamer. Die Muster stehen in `COMMAND_PATTERNS` (`voice_command_listener.py`, laufen auf dem normalisierten Text: klein, ae/oe/ue/ss, ohne Satzzeichen), ausgeführt wird in der UX | Control Interface über `VOICE_COMMANDS_DATA` (`js/voice.js`); Stopp und Not-Aus gehen jedem anderen Befehl im Satz vor („Stopp, nicht zur Scan-Position“ = Stopp), gelten auch während des Cooldowns (`cooldown_sec`, 3 s) und löst der Node zusätzlich selbst aus (`/ui/emergency_stop_topic`, `/ui/halt_motion`) – sie wirken also auch ohne offene UX | Control Interface. Alle anderen Befehle führt nur ein sichtbarer Tab aus. Startposition, absolute Zielpose, Scan-Position und Werkzeug ausrichten laufen wie die Buttons über `requestMotion` (`js/motion.js`): Bei Auto-Move aus wartet die Fahrt im MoveIt-Popup, gefahren wird erst nach „Bestätigen“ (oder ▶), „Verwerfen“, „Stopp“, Not-Aus und ein Verbindungsabbruch verwerfen sie. Test: `src/voice_command_listener/test/test_commands.py`. Die Home-Fahrt braucht eine eindeutige Phrase („go home“, „home position“, „reset pose“, „initial pose“, „Fahre zur Startposition“); ein einzelnes „home“ oder „reset“ löst nichts aus. Enthält eine hohe Toleranz für ähnlich klingende Whisper-Erkennungen (z.B. "pause" oder "power" als "pose"). Implementiert eine robuste **3-Stufen-Deduplikations-Zustandsmaschine**, die eine exakt einmalige Befehlsausführung garantiert. Whisper-Geräuschmarkierungen wie `[BLANK_AUDIO]`, `(sighs)` oder `*music*` werden vor der Auswertung entfernt. Der Node spielt **keinen eigenen Sound**: Die Ansage „robot moves to ...“ kommt von `robot_motion_handler_movegroup`, und zwar erst, wenn die Fahrt wirklich startet (vorher lief sie doppelt - und fälschlich, wenn die Fahrt abgelehnt wurde).
 
 <details>
 <summary><b>🔽 Details anzeigen</b> · Run Command · Subscribes · Publishes · Services · Action Client</summary>
@@ -99,7 +99,7 @@
 > [!NOTE]
 > 💻 **Run Command:**
 > ```bash
-> # Whisper + Listener zusammen (Karte "Speech Control" in der Nexus Webapp):
+> # Whisper + Listener zusammen (Karte "Speech Control" in der UX | Nexus Launcher):
 > ros2 launch voice_command_listener voice_listener.launch.py use_gpu:=true
 >
 > # Nur der Listener (Whisper läuft bereits):
@@ -128,7 +128,7 @@
 >
 >> | Topic / Interface | Msg Type | Beschreibung |
 >> |---|---|---|
->> | **`/ui/voice_feedback`** | `std_msgs/String` | *Erkannter Sprachbefehl (z. B. `Home`, `Stop`); die Robot Control UI führt ihn aus.* |
+>> | **`/ui/voice_feedback`** | `std_msgs/String` | *Erkannter Sprachbefehl (z. B. `Home`, `Stop`); die UX \| Control Interface führt ihn aus.* |
 >> | **`/ui/voice_status`** | `std_msgs/String` | *Status für die UI: `Listening...`, `Transcription: <Text>`, `-- No speech detected --`, `Error: …`.* |
 >> | **`/ui/voice_dictation`** | `std_msgs/String` | *Diktat-Text und -Status für das Eingabefeld der VLA-M-Section (Trigger `dictate`).* |
 >> | **`/ui/emergency_stop_topic`** | `std_msgs/Empty` | *Sprachbefehl `E-Stop` löst den Not-Halt direkt aus.* |
@@ -151,7 +151,7 @@
 
 ### ![Node](https://img.shields.io/badge/Node-blue?style=flat-square) ![Python UI](https://img.shields.io/badge/Python_UI-8A2BE2?style=flat-square&logo=qt&logoColor=white) `gaze_ui_node_tobii_glasses.py` / `gaze_ui_node_tobii_glasses_zedm.py` (`gaze_control_ui_tobii_glasses`) &nbsp;&nbsp; <sub><i>`/src/gaze_control_ui_tobii_glasses/gaze_control_ui_tobii_glasses`</i></sub>
 
-**Zweck & Aufgabe:** Eine übergeordnete Master-Control-UI (PyQt5). Setzt Eye-Tracking-Blickpunkte (über RTSP Gaze-Daten) in Button-Klicks um (z.B. bei 1 Sek. Fixationsdauer) und sendet Bewegungs- und Greiferbefehle über die Sicherheitskette: eigener Client von `remote_control_watchdog` (Art `gaze`). **GAZE ON** fragt die Steuerung an (Freigabe in der Robot Control UI am Roboter-PC), **GAZE OFF** gibt sie ab; ohne Steuerung kein Fahren, kein HOME, kein Greifer. Es existieren zwei Varianten des Skripts für unterschiedliche Kamera-Setups:
+**Zweck & Aufgabe:** Eine übergeordnete Master-Control-UI (PyQt5). Setzt Eye-Tracking-Blickpunkte (über RTSP Gaze-Daten) in Button-Klicks um (z.B. bei 1 Sek. Fixationsdauer) und sendet Bewegungs- und Greiferbefehle über die Sicherheitskette: eigener Client von `remote_control_watchdog` (Art `gaze`). **GAZE ON** fragt die Steuerung an (Freigabe in der UX | Control Interface am Roboter-PC), **GAZE OFF** gibt sie ab; ohne Steuerung kein Fahren, kein HOME, kein Greifer. Es existieren zwei Varianten des Skripts für unterschiedliche Kamera-Setups:
 
 <details>
 <summary><b>🔽 Details anzeigen</b> · Run Command · Subscribes · Publishes · Services</summary>
@@ -223,7 +223,7 @@
 > [!NOTE]
 > 💻 **Run Command:**
 > ```bash
-> # Teil von RUN DEV SETUP (FAKE und REAL) in der Nexus Webapp:
+> # Teil von RUN DEV SETUP (FAKE und REAL) in der UX | Nexus Launcher:
 > # Karte "Eyetracker - Gaze Control", Modus Real World (Modus UI Gaze startet stattdessen gaze_ui)
 > ros2 run gaze_grasp_routine_tobii_glasses gaze_grasp_routine_tobii_glasses --ros-args -p tobii_ip:=192.168.100.xxx -p dwell_threshold:=2.0
 > ```
@@ -263,7 +263,7 @@
 >
 >> | Topic / Interface | Msg Type | Beschreibung |
 >> |---|---|---|
->> | **`/ui/execute_move_to_pose`** | `xarm_msgs/srv/MoveCartesian` (Client) | *Fährt Scan-Posen an und schwebt über den erkannten Zielen. Jede Fahrt nur mit Steuerung: eigener Watchdog-Client `Gaze Grasp (Tobii)`; ein Dwell ohne Steuerung schickt eine Anfrage (Freigabe in der Robot Control UI), das Fenster zeigt `NO CONTROL: …`. Eine laufende Fahrt bricht bei Verlust der Steuerung nicht ab (E-Stop stoppt sie).* |
+>> | **`/ui/execute_move_to_pose`** | `xarm_msgs/srv/MoveCartesian` (Client) | *Fährt Scan-Posen an und schwebt über den erkannten Zielen. Jede Fahrt nur mit Steuerung: eigener Watchdog-Client `Gaze Grasp (Tobii)`; ein Dwell ohne Steuerung schickt eine Anfrage (Freigabe in der UX \| Control Interface), das Fenster zeigt `NO CONTROL: …`. Eine laufende Fahrt bricht bei Verlust der Steuerung nicht ab (E-Stop stoppt sie).* |
 >
 > ![Parameters](https://img.shields.io/badge/Parameters-yellow?style=flat-square)
 >

@@ -14,9 +14,9 @@
 
 *Whisper voice control pipeline · source: `tools/make_diagrams.py`*
 
-<img src="../img/rcu_speech.png" width="420" alt="Speech control in the Robot Control UI">
+<img src="../img/rcu_speech.png" width="420" alt="Speech control in the UX | Control Interface">
 
-*Robot Control UI, area **Assistant (VLA) › Speech**: **Start Listening** (click the microphone or press X on the gamepad → `/ui/voice_listen_trigger`), the recognized command (`/ui/voice_status`) and the list of the last voice commands.*
+*UX | Control Interface (formerly Robot Control UI), area **Assistant (VLA) › Speech**: **Start Listening** (click the microphone or press X on the gamepad → `/ui/voice_listen_trigger`), the recognized command (`/ui/voice_status`) and the list of the last voice commands.*
 
 ### Tobii Eye-Tracking Pipeline
 <p align="center"><img src="../img/diagrams/gaze_pipeline.svg" width="100%" alt="Tobii eye-tracking pipeline"></p>
@@ -46,7 +46,7 @@
 >
 > - **Listen Window Instead of Continuous Operation:** Inference only runs for `listen_window_ms` (default 7000 ms) after a `listen` trigger on `/ui/voice_listen_trigger` (the listener's recording lasts 5 s), or `dictation_window_ms` (default 10000 ms) after a `dictate` trigger (dictation from the VLA-M section: the listener records up to `dictation_max_s` = 8 s, executes no voice commands and publishes `Listening...` / `Dictation: <text>` / `-- No speech detected --` / `Error: …` on `/ui/voice_dictation`). Before, Whisper transcribed the full buffer every 250 ms even in silence (constant GPU load, log flood). `listen_window_ms: 0` restores continuous mode.
 > - **Model & Decoding (`whisper_server/config/whisper.yaml`):** Multilingual `small` model (EN/DE, noticeably cleaner than `base`, ~50-120 ms per pass on the RTX A5000; downloaded to `~/.cache/whisper.cpp` on first start), `language: "auto"`, greedy decoding (`beam_size: 1`), `temperature: 0.0`, `no_context: true`. `initial_prompt` stays empty on purpose: with a command prompt Whisper hallucinated text in silence and ran slower (tested). The bundled whisper.cpp version has no VAD - the old `silero_vad_use_cuda` argument has no effect.
-> - **GPU / CPU:** `use_gpu:=true|false`. In the Nexus Webapp the Speech Control card has a **Whisper CPU | GPU** toggle in the launch popup. With `use_gpu:=false` the launch file additionally loads the **CPU profile** `whisper_cpu.yaml`: `small` needs ~11 s per pass on the CPU - longer than the listener's 5 s recording - so the CPU profile uses `base`, 12 threads and `audio_ctx: 320` (encoder over 6.4 s instead of 30 s): ~0.35-0.75 s per pass, commands recognized after ~3 s (measured on the i9-12900K). The `ggml_cuda_init … found 1 CUDA devices` lines also appear in CPU mode (the library is built with CUDA); what matters is `use gpu = 0` and the `Decoding: … CPU` log line.
+> - **GPU / CPU:** `use_gpu:=true|false`. In the UX | Nexus Launcher (formerly Nexus Webapp) the Speech Control card has a **Whisper CPU | GPU** toggle in the launch popup. With `use_gpu:=false` the launch file additionally loads the **CPU profile** `whisper_cpu.yaml`: `small` needs ~11 s per pass on the CPU - longer than the listener's 5 s recording - so the CPU profile uses `base`, 12 threads and `audio_ctx: 320` (encoder over 6.4 s instead of 30 s): ~0.35-0.75 s per pass, commands recognized after ~3 s (measured on the i9-12900K). The `ggml_cuda_init … found 1 CUDA devices` lines also appear in CPU mode (the library is built with CUDA); what matters is `use gpu = 0` and the `Decoding: … CPU` log line.
 > - **Launch arguments (`bringup.launch.py`):** `use_gpu` (default `true`), `active` (default `true`, start with the whisper node active), `device_index` (PyAudio device, `-1` = default), `model_name` and `language` (empty = value from `whisper.yaml` or the CPU profile; applied after the CPU profile).
 > - **Performance & Thread-Safety:** The underlying C++ Action Server (`TranscriptManager`) has been heavily fortified with a strict `std::mutex` locking mechanism to entirely eliminate parallel data-race crashes during high-frequency token generation. Additionally, the `Inference` node features a hardened buffer clearing strategy (`audio_ring_->clear()`) which physicaly purges stale audio residuals from the microphone Ring Buffer the exact millisecond the user activates the UI button, mathematically guaranteeing zero "ghost commands" from previous speech.
 >
@@ -91,7 +91,7 @@
 
 ### ![Node](https://img.shields.io/badge/Node-blue?style=flat-square) `voice_command_listener.py` &nbsp;&nbsp; <sub><i>`/src/voice_command_listener/voice_command_listener/voice_command_listener.py`</i></sub>
 
-**Purpose & Task:** Analyzes discrete single-shot raw text using regex patterns to extract defined action intents: stop ("Stop", "Halt", "Cancel" – halts the motion, discards anything pending), emergency stop ("Emergency stop", "E-stop"), initial pose, absolute target pose, scan pose ("Scan the scene"), align tool ("Align TCP"), approach object (object in the manual grasp target field), confirm / discard (path in the MoveIt popup, VLA-M plan; only as a short phrase of up to 3 words and only if exactly one waits; negated – "Don't execute" – it becomes discard; other negated commands such as "Don't go home" trigger nothing), open / close gripper ("Suction off / on"; opening only after "Confirm" unless the gripper reports *open*/*off*), speed level ("Speed three" → `Speed: 3`, "Minimum speed" → `Speed: 1`; raises by one level at most), faster, slower. The patterns live in `COMMAND_PATTERNS` (`voice_command_listener.py`, matched on the normalized text: lower case, ae/oe/ue/ss, no punctuation); the Robot Control UI executes them via `VOICE_COMMANDS_DATA` (`js/voice.js`); stop and emergency stop win over any other command in the sentence ("Stop, do not approach the object" = stop), also pass during the cooldown (`cooldown_sec`, 3 s) and the node triggers them itself as well (`/ui/emergency_stop_topic`, `/ui/halt_motion`), so they work without an open Robot Control UI. All other commands run only in a visible tab. Initial pose, absolute target pose, scan pose and align tool go through `requestMotion` (`js/motion.js`) like the buttons: with Auto-Move off the motion waits in the MoveIt popup and starts only after "Confirm" (or ▶); "Discard", "Stop", an emergency stop and a lost connection discard it. Test: `src/voice_command_listener/test/test_commands.py`. Home needs a clear phrase ("go home", "home position", "reset pose", "initial pose"); a lone "home" or "reset" triggers nothing. Features high tolerance for similar-sounding Whisper outputs (e.g. recognizing "pause" or "power" as "pose"). Implements a robust **3-layer deduplication state machine** to guarantee exactly-once command execution. Whisper noise tags such as `[BLANK_AUDIO]`, `(sighs)` or `*music*` are stripped before matching. The node plays **no sound of its own**: the "robot moves to ..." announcement comes from `robot_motion_handler_movegroup` only once the motion really starts.
+**Purpose & Task:** Analyzes discrete single-shot raw text using regex patterns to extract defined action intents: stop ("Stop", "Halt", "Cancel" – halts the motion, discards anything pending), emergency stop ("Emergency stop", "E-stop"), initial pose, absolute target pose, scan pose ("Scan the scene"), align tool ("Align TCP"), approach object (object in the manual grasp target field), confirm / discard (path in the MoveIt popup, VLA-M plan; only as a short phrase of up to 3 words and only if exactly one waits; negated – "Don't execute" – it becomes discard; other negated commands such as "Don't go home" trigger nothing), open / close gripper ("Suction off / on"; opening only after "Confirm" unless the gripper reports *open*/*off*), speed level ("Speed three" → `Speed: 3`, "Minimum speed" → `Speed: 1`; raises by one level at most), faster, slower. The patterns live in `COMMAND_PATTERNS` (`voice_command_listener.py`, matched on the normalized text: lower case, ae/oe/ue/ss, no punctuation); the UX | Control Interface executes them via `VOICE_COMMANDS_DATA` (`js/voice.js`); stop and emergency stop win over any other command in the sentence ("Stop, do not approach the object" = stop), also pass during the cooldown (`cooldown_sec`, 3 s) and the node triggers them itself as well (`/ui/emergency_stop_topic`, `/ui/halt_motion`), so they work without an open UX | Control Interface. All other commands run only in a visible tab. Initial pose, absolute target pose, scan pose and align tool go through `requestMotion` (`js/motion.js`) like the buttons: with Auto-Move off the motion waits in the MoveIt popup and starts only after "Confirm" (or ▶); "Discard", "Stop", an emergency stop and a lost connection discard it. Test: `src/voice_command_listener/test/test_commands.py`. Home needs a clear phrase ("go home", "home position", "reset pose", "initial pose"); a lone "home" or "reset" triggers nothing. Features high tolerance for similar-sounding Whisper outputs (e.g. recognizing "pause" or "power" as "pose"). Implements a robust **3-layer deduplication state machine** to guarantee exactly-once command execution. Whisper noise tags such as `[BLANK_AUDIO]`, `(sighs)` or `*music*` are stripped before matching. The node plays **no sound of its own**: the "robot moves to ..." announcement comes from `robot_motion_handler_movegroup` only once the motion really starts.
 
 <details>
 <summary><b>🔽 Show details</b> · Run Command · Subscribes · Publishes · Services · Action Client</summary>
@@ -99,7 +99,7 @@
 > [!NOTE]
 > 💻 **Run Command:**
 > ```bash
-> # Whisper + listener together (Nexus Webapp card "Speech Control"):
+> # Whisper + listener together (UX | Nexus Launcher card "Speech Control"):
 > ros2 launch voice_command_listener voice_listener.launch.py use_gpu:=true
 >
 > # Listener only (Whisper already running):
@@ -118,7 +118,7 @@
 >
 >> | Topic / Interface | Msg Type | Description |
 >> |---|---|---|
->> | **`/ui/voice_feedback`** | `std_msgs/String` | *Recognised voice command (e.g. `Home`, `Stop`); the Robot Control UI executes it.* |
+>> | **`/ui/voice_feedback`** | `std_msgs/String` | *Recognised voice command (e.g. `Home`, `Stop`); the UX \| Control Interface executes it.* |
 >> | **`/ui/voice_status`** | `std_msgs/String` | *Status for the UI: `Listening...`, `Transcription: <text>`, `-- No speech detected --`, `Error: …`.* |
 >> | **`/ui/voice_dictation`** | `std_msgs/String` | *Dictation text and status for the VLA-M input field (trigger `dictate`).* |
 >> | **`/ui/emergency_stop_topic`** | `std_msgs/Empty` | *Voice command `E-Stop` triggers the emergency stop directly.* |
@@ -151,7 +151,7 @@
 
 ### ![Node](https://img.shields.io/badge/Node-blue?style=flat-square) ![Python UI](https://img.shields.io/badge/Python_UI-8A2BE2?style=flat-square&logo=qt&logoColor=white) `gaze_ui_node_tobii_glasses.py` / `gaze_ui_node_tobii_glasses_zedm.py` (`gaze_control_ui_tobii_glasses`) &nbsp;&nbsp; <sub><i>`/src/gaze_control_ui_tobii_glasses/gaze_control_ui_tobii_glasses`</i></sub>
 
-**Purpose & Task:** A master control user interface (PyQt5). Maps eye-tracking gaze points (via RTSP gaze data) to button clicks (e.g., at 1 sec fixation time) and sends movement and gripper commands through the safety chain: own client of `remote_control_watchdog` (kind `gaze`). **GAZE ON** requests control (approve in the Robot Control UI on the robot PC), **GAZE OFF** releases it; without control no driving, HOME or gripper. Two variants of the script exist for different camera setups:
+**Purpose & Task:** A master control user interface (PyQt5). Maps eye-tracking gaze points (via RTSP gaze data) to button clicks (e.g., at 1 sec fixation time) and sends movement and gripper commands through the safety chain: own client of `remote_control_watchdog` (kind `gaze`). **GAZE ON** requests control (approve in the UX | Control Interface on the robot PC), **GAZE OFF** releases it; without control no driving, HOME or gripper. Two variants of the script exist for different camera setups:
 
 <details>
 <summary><b>🔽 Show details</b> · Features · Run Command · Subscribes · Publishes · Services</summary>
@@ -223,7 +223,7 @@
 > [!NOTE]
 > 💻 **Run Command:**
 > ```bash
-> # Part of RUN DEV SETUP (FAKE and REAL) in the Nexus Webapp:
+> # Part of RUN DEV SETUP (FAKE and REAL) in the UX | Nexus Launcher:
 > # card "Eyetracker - Gaze Control", mode Real World (mode UI Gaze starts gaze_ui instead)
 > ros2 run gaze_grasp_routine_tobii_glasses gaze_grasp_routine_tobii_glasses --ros-args -p tobii_ip:=192.168.100.xxx -p dwell_threshold:=2.0
 > ```
@@ -249,7 +249,7 @@
 >
 >> | Topic / Interface | Msg Type | Description |
 >> |---|---|---|
->> | **`/ui/execute_move_to_pose`** | `xarm_msgs/srv/MoveCartesian` (Client) | *Commands the robot to execute scan poses and hover over detected targets. Every move only with control: own watchdog client `Gaze Grasp (Tobii)`; a dwell without control sends a request (approve in the Robot Control UI), the window shows `NO CONTROL: …`. A running move is not aborted on losing control (E-stop stops it).* |
+>> | **`/ui/execute_move_to_pose`** | `xarm_msgs/srv/MoveCartesian` (Client) | *Commands the robot to execute scan poses and hover over detected targets. Every move only with control: own watchdog client `Gaze Grasp (Tobii)`; a dwell without control sends a request (approve in the UX \| Control Interface), the window shows `NO CONTROL: …`. A running move is not aborted on losing control (E-stop stops it).* |
 >
 >
 > ![Subscribes](https://img.shields.io/badge/Subscribes-orange?style=flat-square)

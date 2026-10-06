@@ -523,7 +523,7 @@ const FLOWS = (() => {
   };
   const lanes = (...l) => l.map(x => (typeof x === 'string' ? { id: x, label: LANE[x] } : { id: x[0], label: x[1] }));
   const NODE = {
-    ui: { label: 'Robot Control UI', short: 'UI', sub: 'Browser · :8081', icon: 'i-win', hue: 'accent', info: ['Weboberfläche mit Digital Twin, Jog, Greifer, KI-Chat und E-STOP.', 'Web interface with Digital Twin, jog, gripper, AI chat and E-STOP.'] },
+    ui: { label: 'UX | Control Interface', short: 'UI', sub: 'Browser · :8081', icon: 'i-win', hue: 'accent', info: ['Weboberfläche mit Digital Twin, Jog, Greifer, KI-Chat und E-STOP.', 'Web interface with Digital Twin, jog, gripper, AI chat and E-STOP.'] },
     rb: { label: 'rosbridge', short: 'Bridge', sub: ':9090 · Whitelist', icon: 'i-link', hue: 'teal', info: ['WebSocket-Brücke: lässt nur Topics und Services der Whitelist in config/network.yaml durch.', 'WebSocket bridge: passes only topics and services on the whitelist in config/network.yaml.'] },
     wd: { label: 'Watchdog', short: 'Lock', sub: 'remote_control_watchdog', icon: 'i-lock', hue: 'gold', info: ['Control-Lock: prüft Besitz, Heartbeat, E-STOP und Tempo, bevor ein Befehl weitergeht.', 'Control lock: checks ownership, heartbeat, E-STOP and speed before a command passes.'] },
     pcc: { label: ['Vorprüfung', 'Pre-check'], short: ['Prüf.', 'Check'], sub: 'pre_collision_checker', icon: 'i-shield', hue: 'gold', info: ['Sagt die TCP-Höhe 0,1 s voraus: ab 110 mm gebremst, Stopp bei 91 mm, Pad vibriert.', 'Predicts the TCP height 0.1 s ahead: braked from 110 mm, stop at 91 mm, pad rumbles.'] },
@@ -654,7 +654,7 @@ const FLOWS = (() => {
         edges: [E('ui', 'rb', '/ui/gripper_cmd'), E('rb', 'gj', '/ui/gripper_cmd'), E('pad', 'gj', '/joy_check', { ports: 'rb' }), E('gj', 'drv', '/ufactory/set_vacuum_gripper', { kind: 'service' }),
           E('gj', 'sim', ['nur Zustand', 'state only'], { ports: 'bl' }), R('gj', 'ui', '/ui/gripper_state')],
         scenarios: [
-          SC('ui', ['Knopf', 'Button'], 'i-win', 'indigo', ['Open, Close oder Off in der Robot Control UI. Der Knopf zeigt den Zustand erst nach der Rückmeldung, nie vorab.', 'Open, Close or Off in the Robot Control UI. The button shows the state only after the feedback, never in advance.'], [
+          SC('ui', ['Knopf', 'Button'], 'i-win', 'indigo', ['Open, Close oder Off in der UX | Control Interface. Der Knopf zeigt den Zustand erst nach der Rückmeldung, nie vorab.', 'Open, Close or Off in the UX | Control Interface. The button shows the state only after the feedback, never in advance.'], [
             S('ui>rb', ['Der Knopf sendet open, close oder off; dasselbe Topic nutzen Sequenzen und KI-Agent.', 'The button sends open, close or off; sequences and the AI agent use the same topic.']),
             S('rb>gj', ['Der Greifer-Node nimmt den Befehl an und wählt je nach Greifertyp Sauger oder Finger.', 'The gripper node accepts the command and picks suction or fingers depending on the gripper type.']),
             S('gj>drv', ['In REAL ruft er den Service des xArm-Treibers auf; in FAKE gibt es keinen Treiber, nur der Zustand wechselt.', 'In REAL it calls the xArm driver service; in FAKE there is no driver and only the state changes.'], { also: ['gj>sim'] }),
@@ -670,7 +670,7 @@ const FLOWS = (() => {
       d: ['Fünf Schritttypen laufen nacheinander: move, home, gripper, wait und approach; der UI-Server speichert die Sequenzen für alle Clients. Jeder Schritt startet erst, wenn der vorige succeeded meldet; failed, aborted, Not-Aus oder Zeitüberschreitung beenden die Sequenz.', 'Five step types run one after another: move, home, gripper, wait and approach; the UI server stores the sequences for all clients. Each step starts only when the previous one reports succeeded; failed, aborted, E-stop or a timeout end the sequence.'],
       spec: {
         lanes: lanes('in', ['br', ['Server · Brücke', 'Server · bridge']], 'mo', 'hw'),
-        nodes: [N('ui', 'in', 0, { label: ['Sequenzen', 'Sequences'], short: 'Seq.', sub: 'Robot Control UI', icon: 'i-layers' }),
+        nodes: [N('ui', 'in', 0, { label: ['Sequenzen', 'Sequences'], short: 'Seq.', sub: 'UX | Control Interface', icon: 'i-layers' }),
           N('api', 'br', 1.5, { label: ['UI-Server', 'UI server'], short: 'Server', sub: ':8081 · sequences.json', icon: 'i-db', hue: 'teal', info: ['Speichert Sequenzen für alle Clients in ~/.config/robot_control_ui/sequences.json.', 'Stores sequences for all clients in ~/.config/robot_control_ui/sequences.json.'] }),
           N('rb', 'br', 0), N('mh', 'mo', 0), N('gj', 'mo', 1.5), N('arm', 'hw', 0)],
         edges: [E('ui', 'api', 'HTTP /api/sequences', { kind: 'service', ports: 'bl' }), E('ui', 'rb', '/ui/execute_move_to_pose_silent', { kind: 'service' }), E('rb', 'mh', '/ui/execute_move_to_pose_silent', { kind: 'service' }),
@@ -687,16 +687,16 @@ const FLOWS = (() => {
     linear: {
       t: ['Linearachse (nur FAKE)', 'Linear axis (FAKE only)'], hue: 'teal', icon: 'i-go', s: 's',
       d: ['Die simulierte Achse verschiebt den Roboter auf einer 1,2-m-Schiene um bis zu ±0,5 m. fake_linear_axis setzt die Position als TF world → linear_axis_link, damit MoveIt, Digital Twin und RViz den Arm an derselben Stelle sehen.', 'The simulated axis moves the robot along a 1.2 m rail by up to ±0.5 m. fake_linear_axis sets the position as TF world → linear_axis_link, so MoveIt, Digital Twin and RViz see the arm at the same place.'],
-      note: ['Nur FAKE: Ein Treiber für eine echte Achse fehlt; die Nexus Webapp verhindert REAL mit Achse.', 'FAKE only: there is no driver for a real axis; the Nexus Webapp blocks REAL with the axis.'],
+      note: ['Nur FAKE: Ein Treiber für eine echte Achse fehlt; die UX | Nexus Launcher verhindert REAL mit Achse.', 'FAKE only: there is no driver for a real axis; the UX | Nexus Launcher blocks REAL with the axis.'],
       spec: {
         lanes: lanes('in', 'br', ['mo', ['Achse', 'Axis']], ['hw', ['Szene', 'Scene']]),
-        nodes: [N('ui', 'in', 0, { label: ['Achs-Regler', 'Axis slider'], short: ['Regler', 'Slider'], sub: 'Robot Control UI' }),
+        nodes: [N('ui', 'in', 0, { label: ['Achs-Regler', 'Axis slider'], short: ['Regler', 'Slider'], sub: 'UX | Control Interface' }),
           N('dev', 'in', 1.5, { label: 'Gamepad · Quest 3', short: 'Pad/VR', sub: ['Kreuz · Daumenstick', 'D-pad · thumbstick'], icon: 'i-pad', hue: 'accent', info: ['joy_to_servo_node und VR-Node senden direkt in 5-mm-Schritten.', 'joy_to_servo_node and the VR node send directly in 5 mm steps.'] }),
           N('rb', 'br', 0), N('fla', 'mo', 0, { label: ['Linearachse', 'Linear axis'], short: ['Achse', 'Axis'], sub: 'fake_linear_axis', icon: 'i-go', hue: 'teal', info: ['Setzt die Position als TF und zeichnet die Schiene, 20 Hz.', 'Sets the position as TF and draws the rail, 20 Hz.'] }),
           N('tf', 'hw', 0, { label: 'TF · MoveIt · Twin', short: 'TF', sub: 'world → linear_axis_link', icon: 'i-layers', hue: 'indigo', info: ['Alle Abnehmer sehen den Roboter an der neuen Stelle.', 'All consumers see the robot at its new place.'] })],
         edges: [E('ui', 'rb', '/linear_axis_cmd'), E('rb', 'fla', '/linear_axis_cmd'), E('dev', 'fla', '/linear_axis_cmd', { ports: 'rb' }), E('fla', 'tf', ['TF + Schienen-Marker', 'TF + rail markers'])],
         scenarios: [
-          SC('ui', ['Regler', 'Slider'], 'i-win', 'teal', ['Den Achs-Regler in der Robot Control UI ziehen und loslassen: Die Achse fährt auf das Ziel. Ohne Control-Lock ist der Regler gesperrt.', 'Drag and release the axis slider in the Robot Control UI: the axis moves to the target. Without the control lock the slider is locked.'], [
+          SC('ui', ['Regler', 'Slider'], 'i-win', 'teal', ['Den Achs-Regler in der UX | Control Interface ziehen und loslassen: Die Achse fährt auf das Ziel. Ohne Control-Lock ist der Regler gesperrt.', 'Drag and release the axis slider in the UX | Control Interface: the axis moves to the target. Without the control lock the slider is locked.'], [
             S('ui>rb', ['Erst beim Loslassen sendet die UI die Zielposition in Metern, begrenzt auf ±0,5 m.', 'Only on release does the UI send the target position in metres, limited to ±0.5 m.']),
             S('rb>fla', ['Das Ziel geht als Float64 an fake_linear_axis; ohne Control-Lock sendet die UI gar nicht erst.', 'The target goes to fake_linear_axis as Float64; without the control lock the UI does not send at all.']),
             S('fla>tf', ['Die Achse publiziert ihre Position mit 20 Hz als TF und zeichnet die Schiene als Marker.', 'The axis publishes its position at 20 Hz as TF and draws the rail as markers.'])]),
@@ -732,7 +732,7 @@ const FLOWS = (() => {
           [['Bestätigen', 'Confirm'], ['Popup', 'popup']], [['Ausführen', 'Execute'], ['motionAllowed', 'motionAllowed']], [['Rückmeldung', 'Feedback'], ['/ui/voice_status', '/ui/voice_status']]],
         back: { from: 2, to: 0, t: ['kein Befehl erkannt → neu hören', 'no command detected → listen again'] } },
       spec: {
-        lanes: lanes(['mic', ['Mikrofon', 'Microphone']], ['asr', ['Whisper', 'Whisper']], ['ros', ['Listener', 'Listener']], ['ui', ['Robot Control UI', 'Robot Control UI']], 'mo'),
+        lanes: lanes(['mic', ['Mikrofon', 'Microphone']], ['asr', ['Whisper', 'Whisper']], ['ros', ['Listener', 'Listener']], ['ui', ['UX | Control Interface', 'UX | Control Interface']], 'mo'),
         nodes: [N('mic', 'mic', 0, { label: 'audio_listener', short: 'Mic', sub: ['Mikrofon', 'Microphone'], icon: 'i-mic', hue: 'accent', info: ['Liest das Mikrofon und publiziert /audio_listener/audio.', 'Reads the microphone and publishes /audio_listener/audio.'] }),
           N('wh', 'asr', 0, { label: 'Whisper', short: 'ASR', sub: 'whisper_server', icon: 'i-spark', hue: 'violet', info: ['Transkribiert ein Hörfenster von 5 s (Diktat bis 8 s).', 'Transcribes a 5 s listening window (dictation up to 8 s).'] }),
           N('vcl', 'ros', 0, { label: 'voice_command_listener', short: 'Voice', sub: 'Regex DE/EN', icon: 'i-mic', hue: 'teal', info: ['Erkennt Befehle per Regex, 3 s Cooldown; E-STOP und Stop ohne Cooldown.', 'Detects commands by regex, 3 s cooldown; E-STOP and stop without cooldown.'] }),
@@ -779,40 +779,40 @@ const FLOWS = (() => {
       },
     },
     touch: {
-      t: ['Touch Panel: Bedienen am Roboter', 'Touch panel: operate at the robot'], hue: 'accent', icon: 'i-touch', s: 'spr',
-      d: ['Ein Chrome-Kiosk unter /touch der Nexus Webapp bündelt Jog, Posen, Greifer, Programme und den Start der Launches. Der E-STOP ist immer sichtbar; bewegen darf das Panel erst, wenn der Roboter-PC die Steuerung per Allow freigibt.', 'A Chrome kiosk at /touch of the Nexus Webapp combines jog, poses, gripper, programs and starting the launches. The E-STOP is always visible; the panel may move the arm only after the robot PC grants control via Allow.'],
+      t: ['UX | Compact Interface: Bedienen am Roboter', 'UX | Compact Interface: operate at the robot'], hue: 'accent', icon: 'i-touch', s: 'spr',
+      d: ['Ein Chrome-Kiosk unter /touch der UX | Nexus Launcher bündelt Jog, Posen, Greifer, Programme und den Start der Launches. Der E-STOP ist immer sichtbar; bewegen darf das Panel erst, wenn der Roboter-PC die Steuerung per Allow freigibt.', 'A Chrome kiosk at /touch of the UX | Nexus Launcher combines jog, poses, gripper, programs and starting the launches. The E-STOP is always visible; the panel may move the arm only after the robot PC grants control via Allow.'],
       spec: {
-        lanes: lanes(['tp', ['Touch Panel', 'Touch panel']], ['nx', ['Nexus Webapp', 'Nexus Webapp']], 'br', 'wd', ['mo', ['Roboter', 'Robot']]),
-        nodes: [N('tp', 'tp', 0, { label: 'Touch Panel', short: 'Touch', sub: '/touch · Kiosk', icon: 'i-touch', hue: 'accent', info: ['Chrome-Kiosk: Tabs Move, Programs, Robot, Launch, System; E-STOP immer sichtbar.', 'Chrome kiosk: tabs Move, Programs, Robot, Launch, System; E-STOP always visible.'] }),
-          N('nx', 'nx', 1.5, { label: 'Nexus Webapp', short: 'Nexus', sub: ':8080 · Blueprint', icon: 'i-layers', hue: 'accent', info: ['Startet und stoppt Karten; POST nur von Loopback und eigener Origin.', 'Starts and stops cards; POST only from loopback and the own origin.'] }),
+        lanes: lanes(['tp', ['UX | Compact Interface', 'UX | Compact Interface']], ['nx', ['UX | Nexus Launcher', 'UX | Nexus Launcher']], 'br', 'wd', ['mo', ['Roboter', 'Robot']]),
+        nodes: [N('tp', 'tp', 0, { label: 'UX | Compact Interface', short: 'Touch', sub: '/touch · Kiosk', icon: 'i-touch', hue: 'accent', info: ['Chrome-Kiosk: Tabs Move, Programs, Robot, Launch, System; E-STOP immer sichtbar.', 'Chrome kiosk: tabs Move, Programs, Robot, Launch, System; E-STOP always visible.'] }),
+          N('nx', 'nx', 1.5, { label: 'UX | Nexus Launcher', short: 'Nexus', sub: ':8080 · Blueprint', icon: 'i-layers', hue: 'accent', info: ['Startet und stoppt Karten; POST nur von Loopback und eigener Origin.', 'Starts and stops cards; POST only from loopback and the own origin.'] }),
           N('rb', 'br', 0), N('wd', 'wd', 0), N('mo', 'mo', 0, { label: ['Motion Handler · Servo', 'Motion handler · Servo'], short: 'Motion', sub: '/ui/* · /servo_server', icon: 'i-gizmo', hue: 'indigo' })],
         edges: [E('tp', 'rb', '/ui/emergency_stop_topic'), E('rb', 'wd', '/remote/twist'), E('wd', 'mo', '/servo_server/delta_twist_cmds'), R('rb', 'mo', '/ui/emergency_stop_topic'),
           E('tp', 'nx', 'HTTP /api/run', { kind: 'service' }), R('rb', 'tp', '/ui/emergency_stop_active')],
-        scenarios: [SC('touch', ['Touch Panel', 'Touch panel'], 'i-touch', 'accent', ['E-STOP, Steuerung anfragen, joggen und Launches starten: alles direkt am Roboter, mit denselben Regeln wie ein entfernter Client.', 'E-STOP, request control, jog and start launches: all right at the robot, with the same rules as a remote client.'], [
+        scenarios: [SC('touch', ['UX | Compact Interface', 'UX | Compact Interface'], 'i-touch', 'accent', ['E-STOP, Steuerung anfragen, joggen und Launches starten: alles direkt am Roboter, mit denselben Regeln wie ein entfernter Client.', 'E-STOP, request control, jog and start launches: all right at the robot, with the same rules as a remote client.'], [
           S('tp>rb', ['Der E-STOP ist auf jedem Tab sichtbar und löst bei der ersten Berührung aus.', 'The E-STOP is visible on every tab and fires on the first touch.'], { also: ['rb>mo'] }),
           S('tp>rb', ['Das Panel fragt die Steuerung an; es gilt nie als Server, der Roboter-PC muss per Allow freigeben.', 'The panel requests control; it never counts as the server, so the robot PC must grant it via Allow.'], { topic: '/remote/control_request' }),
           S('rb>wd', ['Jog-Befehle tragen die Client-id, der Heartbeat kommt alle 250 ms.', 'Jog commands carry the client id; the heartbeat comes every 250 ms.']),
           S('wd>mo', ['Das Twist-Gate prüft Besitz, Heartbeat, Tempo und Bodensperre, bevor Servo fährt.', 'The twist gate checks ownership, heartbeat, speed and floor guard before Servo moves.']),
           S('rb>tp', ['Der E-STOP-Zustand kommt zurück ans Panel; Quittieren verlangt 1 s Halten gegen Fehlberührung.', 'The E-STOP state returns to the panel; resetting requires a 1 s hold against accidental touches.']),
-          S('tp>nx', ['Der Launch-Tab startet Karten der Nexus Webapp; POST nimmt der Server nur von Loopback und eigener Origin an.', 'The Launch tab starts Nexus Webapp cards; the server accepts POST only from loopback and its own origin.'])])],
+          S('tp>nx', ['Der Launch-Tab startet Karten der UX | Nexus Launcher; POST nimmt der Server nur von Loopback und eigener Origin an.', 'The Launch tab starts UX | Nexus Launcher cards; the server accepts POST only from loopback and its own origin.'])])],
       },
     },
 
     // ─────────── Sicherheit ───────────
     remote: {
       t: ['Remote-Steuerung: genau ein Besitzer', 'Remote control: exactly one owner'], hue: 'gold', icon: 'i-lock', s: 'spr',
-      d: ['Laptop, Tablet, Touch Panel oder Quest 3 fragen an, die Robot Control UI auf dem Roboter-PC gibt per Allow frei. Genau ein Gerät steuert, ein WLAN-Aussetzer stoppt nur die Bewegung (der Besitz hält 10 s), und der Not-Aus geht immer.', 'Laptop, tablet, touch panel or Quest 3 request control; the Robot Control UI on the robot PC grants it via Allow. Exactly one device controls, a Wi-Fi dropout only stops the motion (ownership holds for 10 s), and the E-STOP always works.'],
+      d: ['Laptop, Tablet, UX | Compact Interface oder Quest 3 fragen an, die UX | Control Interface auf dem Roboter-PC gibt per Allow frei. Genau ein Gerät steuert, ein WLAN-Aussetzer stoppt nur die Bewegung (der Besitz hält 10 s), und der Not-Aus geht immer.', 'Laptop, tablet, UX | Compact Interface or Quest 3 request control; the UX | Control Interface on the robot PC grants it via Allow. Exactly one device controls, a Wi-Fi dropout only stops the motion (ownership holds for 10 s), and the E-STOP always works.'],
       spec: {
         lanes: lanes('cl', 'br', 'wd', ['pc', ['Roboter-PC', 'Robot PC']], 'mo'),
-        nodes: [N('ui', 'cl', 0, { label: ['Robot Control UI (Client)', 'Robot Control UI (client)'], short: 'Client', sub: 'Laptop · Tablet' }), N('rb', 'br', 0), N('wd', 'wd', 0),
-          N('srvui', 'pc', 1.5, { of: 'ui', label: ['Robot Control UI (Server)', 'Robot Control UI (server)'], short: 'Server', sub: ['Roboter-PC · Token', 'robot PC · token'], hue: 'gold', info: ['Zeigt Allow/Deny und signiert die Antwort mit dem Server-Token (HMAC-SHA256, nur über Loopback).', 'Shows Allow/Deny and signs the answer with the server token (HMAC-SHA256, loopback only).'] }),
+        nodes: [N('ui', 'cl', 0, { label: ['UX | Control Interface (Client)', 'UX | Control Interface (client)'], short: 'Client', sub: 'Laptop · Tablet' }), N('rb', 'br', 0), N('wd', 'wd', 0),
+          N('srvui', 'pc', 1.5, { of: 'ui', label: ['UX | Control Interface (Server)', 'UX | Control Interface (server)'], short: 'Server', sub: ['Roboter-PC · Token', 'robot PC · token'], hue: 'gold', info: ['Zeigt Allow/Deny und signiert die Antwort mit dem Server-Token (HMAC-SHA256, nur über Loopback).', 'Shows Allow/Deny and signs the answer with the server token (HMAC-SHA256, loopback only).'] }),
           N('srv', 'mo', 0)],
         edges: [E('ui', 'rb', '/remote/control_request'), E('rb', 'wd', '/remote/control_request'), E('wd', 'srvui', '/remote/control_state'), E('srvui', 'wd', ['/remote/control_request (signiert)', '/remote/control_request (signed)']),
           R('wd', 'ui', '/remote/control_state'), E('wd', 'srv', '/servo_server/delta_twist_cmds')],
         scenarios: [SC('req', ['Steuerung anfragen', 'Request control'], 'i-lock', 'gold', ['Anfrage, Freigabe am Roboter-PC, dann Jog nur vom Besitzer. Ihre Server-Rolle beweist die UI mit einem Token, das nie über rosbridge geht.', 'Request, approval on the robot PC, then jog only from the owner. The UI proves its server role with a token that never travels over rosbridge.'], [
           S('ui>rb', ['Der Client fragt per Knopf „Request control“ an oder automatisch beim ersten Bedienversuch.', 'The client asks via the “Request control” button or automatically on the first attempt to operate.']),
           S('rb>wd', ['Der Watchdog legt eine offene Anfrage an; ohne Antwort verfällt sie nach 60 s.', 'The watchdog creates a pending request; without an answer it expires after 60 s.']),
-          S('wd>srvui', ['Die Robot Control UI am Roboter-PC zeigt ein Popup mit Allow und Deny.', 'The Robot Control UI on the robot PC shows a popup with Allow and Deny.']),
+          S('wd>srvui', ['Die UX | Control Interface am Roboter-PC zeigt ein Popup mit Allow und Deny.', 'The UX | Control Interface on the robot PC shows a popup with Allow and Deny.']),
           S('srvui>wd', ['Die Antwort ist mit HMAC-SHA256 signiert und höchstens 5 s alt; das Token gibt der UI-Server nur an 127.x heraus.', 'The answer is signed with HMAC-SHA256 and at most 5 s old; the UI server hands out the token only to 127.x.']),
           S('wd>ui', ['Der Zustand nennt genau einen Besitzer; alle anderen Clients sehen zu und können selbst anfragen.', 'The state names exactly one owner; all other clients watch and may request themselves.']),
           S('ui>rb', ['Jog-Befehle tragen die Client-id; der Watchdog verwirft alles, was nicht vom Besitzer kommt.', 'Jog commands carry the client id; the watchdog drops everything that does not come from the owner.'], { topic: '/remote/twist', also: ['rb>wd'] }),
@@ -846,19 +846,19 @@ const FLOWS = (() => {
       note: ['Der Software-Not-Halt ergänzt den Hardware-Not-Aus am Roboter, er ersetzt ihn nicht.', 'The software emergency stop complements the hardware E-stop on the robot; it does not replace it.'],
       spec: {
         lanes: lanes(['in', ['Auslöser', 'Triggers']], 'br', ['mo', ['Motion Handler', 'Motion handler']], 'hw', ['ai', ['Abnehmer', 'Consumers']]),
-        nodes: [N('trig', 'in', 0, { label: ['E-STOP-Quellen', 'E-STOP sources'], short: 'E-STOP', sub: ['Knopf · Touch · VR · Sprache', 'button · touch · VR · voice'], icon: 'i-stop', hue: 'red', info: ['Header-Knopf, Leertaste, Touch Panel, VR-Geste und Sprache senden denselben Stopp.', 'Header button, space bar, touch panel, VR gesture and voice send the same stop.'] }),
+        nodes: [N('trig', 'in', 0, { label: ['E-STOP-Quellen', 'E-STOP sources'], short: 'E-STOP', sub: ['Knopf · Touch · VR · Sprache', 'button · touch · VR · voice'], icon: 'i-stop', hue: 'red', info: ['Header-Knopf, Leertaste, UX | Compact Interface, VR-Geste und Sprache senden denselben Stopp.', 'Header button, space bar, UX | Compact Interface, VR gesture and voice send the same stop.'] }),
           N('rb', 'br', 0), N('mh', 'mo', 0), N('wd', 'mo', 1.5), N('arm', 'hw', 0), N('vb', 'ai', 1.5)],
         edges: [E('trig', 'rb', '/ui/emergency_stop_topic'), E('rb', 'mh', '/ui/emergency_stop_topic'), E('mh', 'arm', ['Halt · Halte-Trajektorie', 'Halt · hold trajectory']),
           E('mh', 'vb', '/ui/emergency_stop_active', { ports: 'bt' }), E('mh', 'wd', '/ui/emergency_stop_active'),
           E('trig', 'wd', ['/remote/control_request (reset_estop)', '/remote/control_request (reset_estop)'], { ports: 'bl' }), E('wd', 'mh', '/ui/reset_emergency_stop', { kind: 'service' })],
         scenarios: [
           SC('stop', 'E-STOP', 'i-stop', 'red', ['Ein Druck stoppt alles: verriegelt, Servo aus, laufende KI-Aufgabe abgebrochen. Der Zustand geht latched an alle Abnehmer, auch spät verbundene Clients sehen ihn.', 'One press stops everything: latched, Servo off, running AI task aborted. The state goes latched to all consumers; late-joining clients see it too.'], [
-            S('trig>rb', ['Header-Knopf, Leertaste, Touch Panel, VR-Geste und Sprache senden dasselbe Stopp-Topic.', 'Header button, space bar, touch panel, VR gesture and voice send the same stop topic.']),
+            S('trig>rb', ['Header-Knopf, Leertaste, UX | Compact Interface, VR-Geste und Sprache senden dasselbe Stopp-Topic.', 'Header button, space bar, UX | Compact Interface, VR gesture and voice send the same stop topic.']),
             S('rb>mh', ['Ein Topic statt Service: Der Stopp wartet nie hinter anderen Anfragen in einer Warteschlange.', 'A topic instead of a service: the stop never waits behind other requests in a queue.']),
             S('mh>arm', ['Der Motion Handler verriegelt, bricht die laufende Bahn ab und schaltet Servo aus; der Arm hält.', 'The motion handler latches, aborts the running path and switches Servo off; the arm holds.']),
             S('mh>vb', ['Der KI-Agent bricht die laufende Aufgabe ab, der Watchdog sperrt jeden weiteren Jog.', 'The AI agent aborts the running task; the watchdog blocks any further jog.'], { also: ['mh>wd'] })]),
           SC('reset', ['Quittieren', 'Reset'], 'i-lock', 'gold', ['Nur der Besitzer der Steuerung oder der Roboter-PC quittiert, immer über den Watchdog. Den Reset-Service direkt aufrufen kann kein Browser, die rosbridge-Whitelist sperrt ihn.', 'Only the owner of control or the robot PC resets, always via the watchdog. No browser can call the reset service directly; the rosbridge whitelist blocks it.'], [
-            S('trig>wd', ['Quittieren per Knopf in der UI oder am Touch Panel durch 1 s Halten; gesendet wird reset_estop.', 'Reset via the button in the UI or by a 1 s hold on the touch panel; reset_estop is sent.']),
+            S('trig>wd', ['Quittieren per Knopf in der UI oder am UX | Compact Interface durch 1 s Halten; gesendet wird reset_estop.', 'Reset via the button in the UI or by a 1 s hold on the UX | Compact Interface; reset_estop is sent.']),
             S('wd>mh', ['Der Watchdog lässt nur Besitzer oder verifizierten Server zu und ruft dann den Reset-Service auf.', 'The watchdog admits only the owner or the verified server and then calls the reset service.']),
             S('mh>wd', ['Der Motion Handler hebt die Verriegelung auf und startet Servo; das Ergebnis steht im Control-Zustand.', 'The motion handler releases the latch and restarts Servo; the result shows in the control state.'])])],
       },
@@ -867,19 +867,19 @@ const FLOWS = (() => {
     // ─────────── Digital Twin ───────────
     feedback: {
       t: ['Rückmeldung: der Twin spiegelt den Arm', 'Feedback: the twin mirrors the arm'], hue: 'teal', icon: 'i-cube', s: 'sr',
-      d: ['Der echte Zustand fließt zurück: ros2_control liest die sechs Gelenkwinkel mit 250 Hz und publiziert sie als /joint_states. Digital Twin, Monitoring Dashboard und Blackbox lesen dasselbe Topic, damit alle Ansichten denselben Arm zeigen.', 'The real state flows back: ros2_control reads the six joint angles at 250 Hz and publishes them as /joint_states. Digital Twin, Monitoring Dashboard and blackbox read the same topic, so every view shows the same arm.'],
+      d: ['Der echte Zustand fließt zurück: ros2_control liest die sechs Gelenkwinkel mit 250 Hz und publiziert sie als /joint_states. Digital Twin, UX | Monitoring und Blackbox lesen dasselbe Topic, damit alle Ansichten denselben Arm zeigen.', 'The real state flows back: ros2_control reads the six joint angles at 250 Hz and publishes them as /joint_states. Digital Twin, UX | Monitoring and blackbox read the same topic, so every view shows the same arm.'],
       spec: {
         lanes: lanes('hw', ['drv', ['Treiber', 'Driver']], 'br', ['ui', ['Browser', 'Browser']]),
         nodes: [N('arm', 'hw', 0), N('drv', 'drv', 0, { label: ['Treiber · Controller', 'Driver · controller'], short: ['Treiber', 'Driver'], sub: 'xarm_ros2 · 250 Hz', icon: 'i-chip', hue: 'indigo', info: ['ros2_control mit 250 Hz; REAL über den Treiber, FAKE über simulierte Controller.', 'ros2_control at 250 Hz; REAL via the driver, FAKE via simulated controllers.'] }),
           N('rb', 'br', 0), N('tw', 'ui', 0, { label: 'Digital Twin', short: 'Twin', sub: 'three.js · URDF', icon: 'i-cube', hue: 'teal', info: ['Lite-6-URDF im Browser; setzt 6 Gelenke aus /joint_states.', 'Lite 6 URDF in the browser; sets 6 joints from /joint_states.'] }),
-          N('mon', 'drv', 1.5, { label: 'Monitoring Dashboard', short: 'Mon.', sub: ':8083', icon: 'i-chart', hue: 'indigo', info: ['Zählt Gelenkwege und Fahrzeiten.', 'Counts joint paths and motion times.'] }),
+          N('mon', 'drv', 1.5, { label: 'UX | Monitoring', short: 'Mon.', sub: ':8083', icon: 'i-chart', hue: 'indigo', info: ['Zählt Gelenkwege und Fahrzeiten.', 'Counts joint paths and motion times.'] }),
           N('bb', 'br', 1.5, { label: ['Blackbox · Demo', 'Blackbox · demo'], short: 'BB', sub: 'robot_blackbox_recorder', icon: 'i-db', hue: 'teal', info: ['Ringpuffer der letzten 60 s und Demo-Aufnahme.', 'Ring buffer of the last 60 s and demo recording.'] })],
         edges: [E('arm', 'drv', ['Gelenkwinkel', 'Joint angles']), E('drv', 'rb', '/joint_states'), E('rb', 'tw', '/joint_states'), E('drv', 'mon', '/joint_states'), E('drv', 'bb', '/joint_states', { ports: 'bt' })],
         scenarios: [SC('fb', ['Rückmeldung', 'Feedback'], 'i-loop', 'teal', ['Gelenkwinkel aus dem Arm erreichen Twin, Dashboard und Blackbox. In FAKE kommen sie aus den simulierten Controllern, der Weg bleibt derselbe.', 'Joint angles from the arm reach twin, dashboard and blackbox. In FAKE they come from the simulated controllers; the path stays the same.'], [
           S('arm>drv', ['Der Treiber liest die Gelenkwinkel aus dem Arm, in FAKE liefern sie die simulierten Controller.', 'The driver reads the joint angles from the arm; in FAKE the simulated controllers deliver them.']),
           S('drv>rb', ['Ein einziges Topic für den ganzen Graphen; MoveIt, Servo und alle Oberflächen lesen dieselben Werte.', 'A single topic for the whole graph; MoveIt, Servo and all interfaces read the same values.']),
           S('rb>tw', ['Für den Browser gedrosselt auf 33 ms; der Twin setzt damit die 6 Gelenke des Lite-6-URDF.', 'Throttled to 33 ms for the browser; the twin uses it to set the 6 joints of the Lite 6 URDF.']),
-          S('drv>mon', ['Nebenast: Das Monitoring Dashboard summiert Gelenkwege und Fahrzeiten.', 'Side branch: the Monitoring Dashboard sums up joint paths and motion times.']),
+          S('drv>mon', ['Nebenast: Das UX | Monitoring summiert Gelenkwege und Fahrzeiten.', 'Side branch: the UX | Monitoring sums up joint paths and motion times.']),
           S('drv>bb', ['Nebenast: Die Blackbox puffert die letzten 60 s, der Demo-Recorder zeichnet Vorführungen auf.', 'Side branch: the blackbox buffers the last 60 s, the demo recorder captures demonstrations.'])])],
       },
     },
@@ -974,13 +974,13 @@ const FLOWS = (() => {
           N('ui', 'ui', 0, { sub: ['Streams · :8081', 'streams · :8081'] })],
         edges: [E('zed', 'wvs', '/zed/zed_node/rgb/image_rect_color'), E('wvs', 'ui', 'MJPEG :8082', { kind: 'stream' }), E('pi', 'ipy', ['Einzelbild per HTTP', 'Single frame via HTTP'], { kind: 'stream' }), E('ipy', 'wvs', '/ip_cam/table/annotated')],
         scenarios: [
-          SC('zed', ['ZED-Stream', 'ZED stream'], 'i-cam', 'green', ['Das ROS-Bild der ZED Mini kommt als MJPEG in die Robot Control UI. Ein zugeklapptes Stream-Fenster pausiert und spart Bandbreite.', 'The ROS image of the ZED Mini reaches the Robot Control UI as MJPEG. A collapsed stream window pauses and saves bandwidth.'], [
+          SC('zed', ['ZED-Stream', 'ZED stream'], 'i-cam', 'green', ['Das ROS-Bild der ZED Mini kommt als MJPEG in die UX | Control Interface. Ein zugeklapptes Stream-Fenster pausiert und spart Bandbreite.', 'The ROS image of the ZED Mini reaches the UX | Control Interface as MJPEG. A collapsed stream window pauses and saves bandwidth.'], [
             S('zed>wvs', ['Der Video-Server abonniert das entzerrte Farbbild der ZED Mini.', 'The video server subscribes to the rectified colour image of the ZED Mini.']),
             S('wvs>ui', ['Der Browser zeigt den MJPEG-Stream; ist das Fenster zugeklappt, pausiert er.', 'The browser shows the MJPEG stream; when the window is collapsed, it pauses.'])]),
           SC('aruco', ['Tisch-Kamera + ArUco', 'Table camera + ArUco'], 'i-eye', 'teal', ['Marker finden, Tischposition rechnen, Overlay streamen. Aus den Fußpunkten der Objekte auf der Tischebene ergibt sich ihre Position.', 'Find markers, compute the table position, stream the overlay. The foot points of the objects on the table plane give their positions.'], [
             S('pi>ipy', ['Der Node holt ein Einzelbild per HTTP und sucht die ArUco-Marker darin.', 'The node fetches a single frame via HTTP and finds the ArUco markers in it.']),
             S('ipy>wvs', ['Ab 4 bekannten Markern rechnet eine Homographie die Fußpunkte der YOLO-Objekte in Tischkoordinaten.', 'From 4 known markers a homography maps the foot points of the YOLO objects to table coordinates.']),
-            S('wvs>ui', ['Das annotierte Bild erscheint als Live Stream 2 in der Robot Control UI.', 'The annotated image appears as Live Stream 2 in the Robot Control UI.'])])],
+            S('wvs>ui', ['Das annotierte Bild erscheint als Live Stream 2 in der UX | Control Interface.', 'The annotated image appears as Live Stream 2 in the UX | Control Interface.'])])],
       },
     },
 
@@ -1060,9 +1060,9 @@ const FLOWS = (() => {
       },
     },
 
-    // ─────────── Monitoring Dashboard, Evaluierung, Daten ───────────
+    // ─────────── UX | Monitoring, Evaluierung, Daten ───────────
     mon: {
-      t: ['Monitoring Dashboard: der Datenweg', 'Monitoring Dashboard: the data path'], hue: 'indigo', icon: 'i-chart',
+      t: ['UX | Monitoring: der Datenweg', 'UX | Monitoring: the data path'], hue: 'indigo', icon: 'i-chart',
       d: ['Der rclpy-Node ros_monitor zählt Topics und Ereignisse, der SystemCollector misst CPU, RAM, GPU und Ports jede Sekunde; beide schreiben in SQLite (30 Tage). Die HTTP-API auf Port 8083 liefert daraus die 11 Ansichten, nur an lokale und private Netze.', 'The rclpy node ros_monitor counts topics and events, the SystemCollector measures CPU, RAM, GPU and ports every second; both write to SQLite (30 days). The HTTP API on port 8083 serves the 11 views from it, to local and private networks only.'],
       spec: {
         lanes: lanes(['src', ['Quellen', 'Sources']], ['srv', ['Sammler', 'Collectors']], ['st', ['Speicher', 'Storage']], ['api', ['HTTP-API', 'HTTP API']], ['ui', ['Browser', 'Browser']]),
@@ -1072,7 +1072,7 @@ const FLOWS = (() => {
           N('col', 'srv', 1.5, { label: 'SystemCollector', short: 'Coll.', sub: ['Takt 1 s', '1 s cycle'], icon: 'i-chart', hue: 'indigo', info: ['Misst das System jede Sekunde.', 'Measures the system every second.'] }),
           N('db', 'st', 0, { label: 'SQLite', short: 'DB', sub: 'monitoring.db · 30 d', icon: 'i-db', hue: 'teal', info: ['Ring 1 h im RAM, Minutenmittel 30 Tage; Tabellen für Fahrten, Sessions, Klicks, Griffe, Events.', '1 h ring in RAM, minute means for 30 days; tables for motions, sessions, clicks, grasps, events.'] }),
           N('api', 'api', 0, { label: 'HTTP-API', short: 'API', sub: ':8083 · /api/*', icon: 'i-link', hue: 'accent', info: ['JSON-API und statische Oberfläche; POST nur von derselben Origin.', 'JSON API and static interface; POST only from the same origin.'] }),
-          N('br', 'ui', 0, { label: ['11 Ansichten', '11 views'], short: 'Views', sub: 'Monitoring Dashboard', icon: 'i-chart', hue: 'indigo', info: ['Übersicht bis Evaluierung, Export als CSV oder JSON.', 'Overview to evaluation, export as CSV or JSON.'] })],
+          N('br', 'ui', 0, { label: ['11 Ansichten', '11 views'], short: 'Views', sub: 'UX | Monitoring', icon: 'i-chart', hue: 'indigo', info: ['Übersicht bis Evaluierung, Export als CSV oder JSON.', 'Overview to evaluation, export as CSV or JSON.'] })],
         edges: [E('ros', 'rm', ['Topics + Graph', 'Topics + graph']), E('os', 'col', ['CPU, RAM, GPU, Ports', 'CPU, RAM, GPU, ports']), E('rm', 'db', ['Zähler je Minute, Ereignisse', 'Counters per minute, events']),
           E('col', 'db', ['Minutenmittel', 'Minute means'], { ports: 'rb' }), E('db', 'api', ['SQL + Ring', 'SQL + ring']), E('api', 'br', 'GET /api/*', { kind: 'service' })],
         scenarios: [SC('m', ['Datenweg', 'Data path'], 'i-chart', 'indigo', ['Messen, speichern, ausliefern: vom ROS-Graphen bis in die Ansicht. Die letzte Stunde liegt sekundengenau im RAM, ältere Daten als Minutenmittel in SQLite.', 'Measure, store, serve: from the ROS graph to the view. The last hour sits in RAM to the second, older data as minute means in SQLite.'], [
@@ -1086,15 +1086,15 @@ const FLOWS = (() => {
     },
     clicks: {
       t: ['Klick-Statistik: Nutzung messen', 'Click statistics: measuring use'], hue: 'indigo', icon: 'i-touch',
-      d: ['usage_stats.js in der Robot Control UI zählt Klicks und Änderungen nur mit Label (≤ 48 Zeichen) und Bereich, nie Eingaben; Passwortfelder zählen gar nicht. Alle 3 s geht ein Batch von höchstens 200 Einträgen per ROS-Topic an das Monitoring Dashboard.', 'usage_stats.js in the Robot Control UI counts clicks and changes with label (≤ 48 characters) and area only, never input values; password fields do not count at all. Every 3 s a batch of at most 200 entries goes to the Monitoring Dashboard via a ROS topic.'],
+      d: ['usage_stats.js in der UX | Control Interface zählt Klicks und Änderungen nur mit Label (≤ 48 Zeichen) und Bereich, nie Eingaben; Passwortfelder zählen gar nicht. Alle 3 s geht ein Batch von höchstens 200 Einträgen per ROS-Topic an das UX | Monitoring.', 'usage_stats.js in the UX | Control Interface counts clicks and changes with label (≤ 48 characters) and area only, never input values; password fields do not count at all. Every 3 s a batch of at most 200 entries goes to the UX | Monitoring via a ROS topic.'],
       loop: { t: ['Klick-Statistik', 'Click statistics'], s: 'usage_stats → SQLite',
         st: [[['Klick', 'Click'], ['Label + Bereich', 'label + area']], [['Puffern', 'Buffer'], ['≤ 200 Einträge', '≤ 200 entries']], [['Senden', 'Send'], ['alle 3 s', 'every 3 s']],
           [['Speichern', 'Store'], ['SQLite · 30 Tage', 'SQLite · 30 days']], [['Anzeigen', 'Show'], ['Nutzer & Sessions', 'users & sessions']]],
         back: { from: 2, to: 1, t: ['Puffer leer, nächster Batch in 3 s', 'buffer empty, next batch in 3 s'] },
         x: ['Passwortfelder zählen nie. Auswerten und die UI verbessern macht der Mensch, nicht der Code.', 'Password fields never count. Analysing and improving the UI is done by people, not by code.'] },
       spec: {
-        lanes: lanes(['rcu', ['Robot Control UI', 'Robot Control UI']], 'br', ['mon', ['Monitoring Dashboard', 'Monitoring Dashboard']], ['view', ['Ansicht', 'View']]),
-        nodes: [N('us', 'rcu', 0, { label: 'usage_stats.js', short: ['Klicks', 'Clicks'], sub: 'Robot Control UI', icon: 'i-touch', hue: 'accent', info: ['Zählt Klicks und Änderungen: nur Label (≤ 48 Zeichen) und Bereich.', 'Counts clicks and changes: label (≤ 48 characters) and area only.'] }),
+        lanes: lanes(['rcu', ['UX | Control Interface', 'UX | Control Interface']], 'br', ['mon', ['UX | Monitoring', 'UX | Monitoring']], ['view', ['Ansicht', 'View']]),
+        nodes: [N('us', 'rcu', 0, { label: 'usage_stats.js', short: ['Klicks', 'Clicks'], sub: 'UX | Control Interface', icon: 'i-touch', hue: 'accent', info: ['Zählt Klicks und Änderungen: nur Label (≤ 48 Zeichen) und Bereich.', 'Counts clicks and changes: label (≤ 48 characters) and area only.'] }),
           N('rb', 'br', 0), N('rm', 'mon', 0, { label: 'ros_monitor', short: 'Node', sub: 'rclpy', icon: 'i-pulse', hue: 'indigo', info: ['Ordnet Klicks der Session zu, korrigiert Uhrzeit-Versatz über 30 s.', 'Assigns clicks to the session, corrects clock skew above 30 s.'] }),
           N('db', 'mon', 1.5, { label: 'SQLite', short: 'DB', sub: 'interactions · 30 d', icon: 'i-db', hue: 'teal', info: ['Eine Zeile je Klick, 30 Tage, löschbar per „Statistik leeren“.', 'One row per click, 30 days, erasable via “clear statistics”.'] }),
           N('v', 'view', 0, { label: ['Nutzer & Sessions', 'Users & sessions'], short: 'View', sub: ':8083', icon: 'i-chart', hue: 'indigo', info: ['Top-Elemente, Bereiche, Wochentag × Stunde.', 'Top elements, areas, weekday × hour.'] })],
@@ -1108,7 +1108,7 @@ const FLOWS = (() => {
     },
     study: {
       t: ['Usability-Studie: vom Test zum Bericht', 'Usability study: from test to report'], hue: 'indigo', icon: 'i-flask',
-      d: ['Die Testleitung plant und startet Durchläufe in der Evaluierung des Monitoring Dashboards, die Testperson bedient die Robot Control UI. Jeder Durchlauf speichert 10 Kennzahlen und die Fragebögen SUS, NASA-TLX, UEQ-S und SEQ in SQLite; der Bericht folgt ISO 9241-11.', 'The test lead plans and starts runs in the evaluation of the Monitoring Dashboard; the participant operates the Robot Control UI. Every run stores 10 metrics and the SUS, NASA-TLX, UEQ-S and SEQ questionnaires in SQLite; the report follows ISO 9241-11.'],
+      d: ['Die Testleitung plant und startet Durchläufe in der Evaluierung des UX | Monitoring, die Testperson bedient die UX | Control Interface. Jeder Durchlauf speichert 10 Kennzahlen und die Fragebögen SUS, NASA-TLX, UEQ-S und SEQ in SQLite; der Bericht folgt ISO 9241-11.', 'The test lead plans and starts runs in the evaluation of the UX | Monitoring; the participant operates the UX | Control Interface. Every run stores 10 metrics and the SUS, NASA-TLX, UEQ-S and SEQ questionnaires in SQLite; the report follows ISO 9241-11.'],
       loop: { t: ['Studienschleife', 'Study loop'], s: ['Evaluierung · study.py', 'Evaluation · study.py'],
         st: [[['Test', 'Test'], ['Aufgaben × Methoden', 'tasks × methods']], [['Aufgabe', 'Task'], ['Ziel · Zielzeit', 'goal · target time']], [['Person', 'Participant'], ['Code · Latin Square', 'code · Latin square']],
           [['Durchlauf', 'Run'], ['▶ … ■ · KPI', '▶ … ■ · KPI']], [['Fragebogen', 'Questionnaire'], ['SUS · TLX · UEQ-S · SEQ', 'SUS · TLX · UEQ-S · SEQ']], [['Auswertung', 'Analysis'], ['ISO 9241-11', 'ISO 9241-11']]],
@@ -1116,12 +1116,12 @@ const FLOWS = (() => {
         x: ['Ob die UI danach verbessert wird, entscheidet der Mensch; das ist kein Code-Regelkreis.', 'Whether the UI is improved afterwards is decided by people; that is not a code loop.'] },
       spec: {
         lanes: lanes(['lead', ['Testleitung', 'Test lead']], ['srv', ['Server · DB', 'Server · DB']], ['ros', ['ROS', 'ROS']], ['rcu', ['Testperson', 'Participant']]),
-        nodes: [N('ev', 'lead', 0, { label: ['Evaluierung', 'Evaluation'], short: 'Eval', sub: 'Monitoring Dashboard', icon: 'i-flask', hue: 'indigo', info: ['5 Tabs: Usability-Tests, Testpersonen, Fragebögen, Auswertung, Marker-Abschnitte.', '5 tabs: usability tests, participants, questionnaires, analysis, marker segments.'] }),
+        nodes: [N('ev', 'lead', 0, { label: ['Evaluierung', 'Evaluation'], short: 'Eval', sub: 'UX | Monitoring', icon: 'i-flask', hue: 'indigo', info: ['5 Tabs: Usability-Tests, Testpersonen, Fragebögen, Auswertung, Marker-Abschnitte.', '5 tabs: usability tests, participants, questionnaires, analysis, marker segments.'] }),
           N('rep', 'lead', 1.5, { label: ['Bericht + Export', 'Report + export'], short: ['Bericht', 'Report'], sub: 'ISO 9241-11 · CSV/JSON', icon: 'i-chart', hue: 'indigo', info: ['6 Kapitel, druckbar als PDF; Export der Personen, Durchläufe und Antworten.', '6 chapters, printable as PDF; export of participants, runs and answers.'] }),
           N('st', 'srv', 0, { label: 'study.py', short: ['Studie', 'Study'], sub: 'SQLite', icon: 'i-db', hue: 'teal', info: ['Tabellen für Studien, Aufgaben, Personen, Durchläufe, Fragebögen und Antworten.', 'Tables for studies, tasks, participants, runs, questionnaires and answers.'] }),
           N('mon', 'ros', 0, { label: 'ros_monitor', short: 'Node', sub: '/dashboard/eval_run', icon: 'i-pulse', hue: 'indigo', info: ['Veröffentlicht den laufenden Durchlauf latched an alle Geräte.', 'Publishes the running run, latched, to all devices.'] }),
           N('rcu', 'rcu', 0, { of: 'ui', sub: ['Start-Popup · Login', 'start popup · login'] }),
-          N('fill', 'rcu', 1.5, { label: ['Fragebogen', 'Questionnaire'], short: ['Bogen', 'Form'], sub: ['#fill · Tablet', '#fill · tablet'], icon: 'i-touch', hue: 'accent', info: ['Fragebogen im Monitoring Dashboard, auch als Tablet-Kiosk.', 'Questionnaire in the Monitoring Dashboard, also as a tablet kiosk.'] })],
+          N('fill', 'rcu', 1.5, { label: ['Fragebogen', 'Questionnaire'], short: ['Bogen', 'Form'], sub: ['#fill · Tablet', '#fill · tablet'], icon: 'i-touch', hue: 'accent', info: ['Fragebogen im UX | Monitoring, auch als Tablet-Kiosk.', 'Questionnaire in the UX | Monitoring, also as a tablet kiosk.'] })],
         edges: [E('ev', 'st', 'POST /api/study/run_start', { kind: 'service' }), E('st', 'mon', ['Durchlauf läuft', 'Run active']), E('mon', 'rcu', '/dashboard/eval_run'),
           R('rcu', 'mon', ['/remote/heartbeat (Login-Code)', '/remote/heartbeat (login code)']), E('fill', 'st', 'POST /api/study/response_submit', { kind: 'service', ports: 'lb' }),
           E('rep', 'st', 'GET /api/study/report', { kind: 'service', ports: 'rb' })],
@@ -1129,7 +1129,7 @@ const FLOWS = (() => {
           S('ev>st', ['Testpersonen zuweisen; ein Latin Square legt die Reihenfolge der Methoden je Person fest.', 'Assign participants; a Latin square sets the order of methods per participant.'], { topic: 'POST /api/study/test_assign_all' }),
           S('ev>st', ['Die Testleitung startet den Durchlauf; der Marker ▶ setzt den Beginn der Messung.', 'The test lead starts the run; the ▶ marker sets the start of the measurement.']),
           S('st>mon', ['ros_monitor veröffentlicht den laufenden Durchlauf latched an alle Geräte.', 'ros_monitor publishes the running run, latched, to all devices.']),
-          S('mon>rcu', ['Die Robot Control UI zeigt auf jedem verbundenen Gerät ein Start-Popup.', 'The Robot Control UI shows a start popup on every connected device.']),
+          S('mon>rcu', ['Die UX | Control Interface zeigt auf jedem verbundenen Gerät ein Start-Popup.', 'The UX | Control Interface shows a start popup on every connected device.']),
           S('rcu>mon', ['Die Testperson meldet sich mit ihrem Code an; der Heartbeat ordnet ihr Gerät dem Durchlauf zu.', 'The participant logs in with their code; the heartbeat links their device to the run.']),
           S('ev>st', ['Beim Stopp sichert der Server 10 Kennzahlen des Durchlaufs als KPI-Snapshot.', 'On stop the server saves 10 metrics of the run as a KPI snapshot.'], { topic: 'POST /api/study/run_stop' }),
           S('fill>st', ['Die Testperson füllt SUS, NASA-TLX, UEQ-S und SEQ aus, auch am Tablet-Kiosk.', 'The participant fills in SUS, NASA-TLX, UEQ-S and SEQ, also on the tablet kiosk.']),
@@ -1145,7 +1145,7 @@ const FLOWS = (() => {
         back: { from: 1, to: 0, t: ['kein Ereignis: der Puffer rollt weiter', 'no event: the buffer keeps rolling'] },
         x: ['Cooldown 30 s je Grund; abspielen mit RViz oder Foxglove.', 'Cooldown 30 s per reason; replay with RViz or Foxglove.'] },
       spec: {
-        lanes: lanes(['ros', ['Topics', 'Topics']], ['bb', ['Blackbox', 'Blackbox']], ['disk', ['Platte', 'Disk']], ['dash', ['Monitoring Dashboard', 'Monitoring Dashboard']]),
+        lanes: lanes(['ros', ['Topics', 'Topics']], ['bb', ['Blackbox', 'Blackbox']], ['disk', ['Platte', 'Disk']], ['dash', ['UX | Monitoring', 'UX | Monitoring']]),
         nodes: [N('tp', 'ros', 0, { label: ['14 Topics', '14 topics'], short: 'Topics', sub: '/joint_states · /tf · /ui/*', icon: 'i-link', hue: 'teal', info: ['Gelenke, TF, Servo, Gamepad, UI-Befehle, Control-Zustand, VLA-Status.', 'Joints, TF, servo, gamepad, UI commands, control state, VLA status.'] }),
           N('trg', 'ros', 1.5, { label: ['Auslöser', 'Triggers'], short: 'Trigger', sub: ['E-STOP · Kollision · Knopf', 'E-STOP · collision · button'], icon: 'i-warn', hue: 'gold', info: ['E-STOP-Flanke, Servo-Status 2/4, /ui/collision_msg, Service /blackbox/save.', 'E-STOP edge, servo status 2/4, /ui/collision_msg, service /blackbox/save.'] }),
           N('ring', 'bb', 0, { label: ['Ringpuffer', 'Ring buffer'], short: ['Puffer', 'Buffer'], sub: ['60 s + 5 s · RAM', '60 s + 5 s · RAM'], icon: 'i-loop', hue: 'teal', info: ['Hält serialisierte Nachrichten der letzten 60 s.', 'Holds serialised messages of the last 60 s.'] }),
@@ -1157,7 +1157,7 @@ const FLOWS = (() => {
           S('tp>ring', ['Der Puffer zeichnet ständig mit und verwirft alles, was älter als 60 s ist.', 'The buffer records all the time and drops everything older than 60 s.']),
           S('trg>ring', ['Auslöser: E-STOP-Flanke, Servo-Status 2 oder 4, Kollisionsmeldung oder der Service /blackbox/save; je Grund 30 s Cooldown.', 'Triggers: E-STOP edge, servo status 2 or 4, collision message or the /blackbox/save service; 30 s cooldown per reason.']),
           S('ring>bag', ['Nach 5 s Nachlauf schreibt der Recorder Bag und blackbox_info.json; die neuesten 30 Vorfälle bleiben.', 'After 5 s of run-on the recorder writes the bag and blackbox_info.json; the newest 30 incidents are kept.']),
-          S('bag>ui', ['Die Ansicht Robot-Nutzung im Monitoring Dashboard listet den Vorfall mit Zeit und Grund.', 'The Robot usage view in the Monitoring Dashboard lists the incident with time and reason.'])])],
+          S('bag>ui', ['Die Ansicht Robot-Nutzung im UX | Monitoring listet den Vorfall mit Zeit und Grund.', 'The Robot usage view in the UX | Monitoring lists the incident with time and reason.'])])],
       },
     },
     demo: {
@@ -1168,7 +1168,7 @@ const FLOWS = (() => {
         st: [[['Vorführen', 'Demonstrate'], ['Record demo · Teleop', 'record demo · teleop']], [['Episode', 'Episode'], ['meta · npz · mp4', 'meta · npz · mp4']], [['Konvertieren', 'Convert'], ['demos_to_lerobot.py', 'demos_to_lerobot.py']],
           [['Datensatz', 'Dataset'], ['LeRobotDataset', 'LeRobotDataset']], [['Training', 'Training'], ['SmolVLA · geplant', 'SmolVLA · planned'], 1], [['Skill', 'Skill'], ['Policy · geplant', 'policy · planned'], 1]] },
       spec: {
-        lanes: lanes(['ui', ['Robot Control UI', 'Robot Control UI']], ['rec', ['Recorder', 'Recorder']], ['disk', ['Platte', 'Disk']], ['tool', ['Konvertierung', 'Conversion']], ['plan', ['Training (geplant)', 'Training (planned)']]),
+        lanes: lanes(['ui', ['UX | Control Interface', 'UX | Control Interface']], ['rec', ['Recorder', 'Recorder']], ['disk', ['Platte', 'Disk']], ['tool', ['Konvertierung', 'Conversion']], ['plan', ['Training (geplant)', 'Training (planned)']]),
         nodes: [N('vla', 'ui', 0, { label: 'Record demo', short: 'Demo', sub: 'VLA-M-Section', icon: 'i-spark', hue: 'violet', info: ['Aufgabentext eingeben, Start, Vorführen per VR, Gamepad oder UI, Speichern.', 'Enter the task text, start, demonstrate via VR, gamepad or UI, save.'] }),
           N('vc', 'ui', 1.5, { label: ['Twin-Kameras', 'Twin cameras'], short: 'vCam', sub: ['vCams · 15 fps · FAKE', 'vCams · 15 fps · FAKE'], icon: 'i-cam', hue: 'teal', info: ['Bis zu 4 virtuelle Kameras rendern den Twin als Bildquelle.', 'Up to 4 virtual cameras render the twin as an image source.'] }),
           N('rec', 'rec', 0, { label: 'demo_recorder', short: 'Rec.', sub: ['15 fps · ≤ 300 s', '15 fps · ≤ 300 s'], icon: 'i-db', hue: 'teal', info: ['Zeichnet Zustand, Aktion und Bilder auf; bewegt nie den Roboter.', 'Records state, action and images; never moves the robot.'] }),
@@ -1189,11 +1189,11 @@ const FLOWS = (() => {
 
     // ─────────── Infrastruktur ───────────
     start: {
-      t: ['Systemstart über die Nexus Webapp', 'System start via the Nexus Webapp'], hue: 'accent', icon: 'i-rocket', s: 'spr',
+      t: ['Systemstart über die UX | Nexus Launcher', 'System start via the UX | Nexus Launcher'], hue: 'accent', icon: 'i-rocket', s: 'spr',
       d: ['Ein Klick statt vieler Terminals: Der Preflight prüft Roboter, Kameras, Gamepad, Ports, Doppelstacks, DDS, GPU, Ollama und Platte, ohne etwas zu starten. Dann startet EXECUTE die Karten in fester Reihenfolge und wartet je Karte, bis Node, Port oder Prozess bereit ist.', 'One click instead of many terminals: the preflight checks robot, cameras, gamepad, ports, duplicate stacks, DDS, GPU, Ollama and disk without starting anything. Then EXECUTE starts the cards in a fixed order and waits per card until node, port or process is ready.'],
       spec: {
-        lanes: lanes(['ui', ['Nexus Webapp', 'Nexus Webapp']], ['be', ['Backend', 'Backend']], ['ros', ['ROS-2-Stack', 'ROS 2 stack']]),
-        nodes: [N('pop', 'ui', 0, { label: ['Setup-Popup', 'Setup popup'], short: 'Popup', sub: 'Nexus Webapp · :8080', icon: 'i-layers', hue: 'accent', info: ['Setup wählen (DEV, SERVER, CLIENT; FAKE oder REAL), Karten anhaken, Check, EXECUTE.', 'Pick a setup (DEV, SERVER, CLIENT; FAKE or REAL), tick cards, check, EXECUTE.'] }),
+        lanes: lanes(['ui', ['UX | Nexus Launcher', 'UX | Nexus Launcher']], ['be', ['Backend', 'Backend']], ['ros', ['ROS-2-Stack', 'ROS 2 stack']]),
+        nodes: [N('pop', 'ui', 0, { label: ['Setup-Popup', 'Setup popup'], short: 'Popup', sub: 'UX | Nexus Launcher · :8080', icon: 'i-layers', hue: 'accent', info: ['Setup wählen (DEV, SERVER, CLIENT; FAKE oder REAL), Karten anhaken, Check, EXECUTE.', 'Pick a setup (DEV, SERVER, CLIENT; FAKE or REAL), tick cards, check, EXECUTE.'] }),
           N('pre', 'ui', 1.5, { label: 'Preflight', short: 'Check', sub: 'nexus_preflight.py', icon: 'i-shield', hue: 'gold', info: ['Roboter, Kameras, Gamepad, Ports, Doppelstack, DDS, GPU, Ollama, Platte; startet nichts.', 'Robot, cameras, gamepad, ports, duplicate stack, DDS, GPU, Ollama, disk; starts nothing.'] }),
           N('seq', 'be', 0, { label: 'SequenceRunner', short: 'Seq.', sub: 'nexus_runs.py', icon: 'i-rocket', hue: 'accent', info: ['Startet Karten nacheinander und wartet, bis Node, Port oder Prozess bereit ist.', 'Starts cards one by one and waits until node, port or process is ready.'] }),
           N('kill', 'be', 1.5, { label: 'Kill Daemon', short: 'Kill', sub: 'kill_ros2.sh', icon: 'i-stop', hue: 'gold', info: ['Beendet ROS-Prozesse der eigenen Domain, startet den ROS-Daemon neu.', 'Stops ROS processes of the own domain, restarts the ROS daemon.'] }),
@@ -1234,7 +1234,7 @@ const FLOWS = (() => {
     twin: { de: 'Digital Twin', en: 'Digital Twin', icon: 'i-cube', hue: 'blue' },
     vis: { de: 'Vision', en: 'Vision', icon: 'i-cam', hue: 'green' },
     ai: { de: 'KI / VLA-M', en: 'AI / VLA-M', icon: 'i-spark', hue: 'violet' },
-    mon: { de: 'Monitoring Dashboard', en: 'Monitoring Dashboard', icon: 'i-chart', hue: 'pink' },
+    mon: { de: 'UX | Monitoring', en: 'UX | Monitoring', icon: 'i-chart', hue: 'pink' },
     eval: { de: 'Evaluierung', en: 'Evaluation', icon: 'i-flask', hue: 'orange' },
     data: { de: 'Daten', en: 'Data', icon: 'i-db', hue: 'indigo' },
     infra: { de: 'Infrastruktur', en: 'Infrastructure', icon: 'i-layers', hue: 'lime' },

@@ -28,7 +28,7 @@
 >
 > - Nutzt ein webbasiertes lokales UI, das per **HTTPS** auf Port `8443` bereitgestellt wird (aus `https_vr_webxr_p8443/` im Paket `vr_quest3_teleop`).
 > - Das Launch-File **startet automatisch eine gesicherte ROSbridge-Instanz (WSS)** auf Port `9091` unter Verwendung von SSL-Zertifikaten (`~/dev_ws/certs/cert.pem`). Dies ist zwingend erforderlich, da WebXR (für 6DoF-Tracking) strikt einen Secure Context (HTTPS/WSS) vorschreibt.
-> - Die WSS-Bridge läuft als eigener Node `rosbridge_websocket_ssl_9091` mit Service-Threads und 10 s Timeout (wie die Bridge auf 9090). Sie startet **keinen eigenen** `/rosapi`: Zwei `/rosapi`-Nodes (Robot Control UI + VR) ließen `/rosapi/nodes` hängen, und das blockierte die ganze Bridge (keine Gelenkwinkel im Twin, Buttons ohne Wirkung). `rosapi_guard` startet nur dann einen, wenn keiner läuft, und beendet ihn wieder, sobald ein zweiter auftaucht.
+> - Die WSS-Bridge läuft als eigener Node `rosbridge_websocket_ssl_9091` mit Service-Threads und 10 s Timeout (wie die Bridge auf 9090). Sie startet **keinen eigenen** `/rosapi`: Zwei `/rosapi`-Nodes (UX | Control Interface (früher „Robot Control UI“) + VR) ließen `/rosapi/nodes` hängen, und das blockierte die ganze Bridge (keine Gelenkwinkel im Twin, Buttons ohne Wirkung). `rosapi_guard` startet nur dann einen, wenn keiner läuft, und beendet ihn wieder, sobald ein zweiter auftaucht.
 > - `vr_quest3_teleop_node` ruft bei jedem neuen Griff `start_servo` auf (Servo kann inzwischen durch eine MoveIt-Bahn, einen Scan oder den Not-Aus gestoppt worden sein) und ignoriert Grip, Trigger und Linearachse, solange `/ui/emergency_stop_active` verriegelt ist; Grip und Linearachse auch, solange `/ui/motion_busy` gesetzt ist (geplante MoveIt-Fahrt, Scan, Gelenkziel), und alles, solange die Brille keine Steuerung hat (`/remote/control_state`).
 > - Über HTTPS zeigt das ROS-Offline-Fenster der UI einen Link **„Accept the certificate for port 9091“** – jedes neu erzeugte Zertifikat muss die Quest für 8443 **und** 9091 einmal akzeptieren. Wechselt die IP des PCs (z. B. anderes Netz), ergänzt der Launch die neue IP im Zertifikat; bekannte IPs bleiben drin, also muss die Quest jede Adresse nur einmal freigeben. `localhost` ist immer enthalten (USB mit `adb reverse`).
 > - Enthält eine integrierte WebGL-Rendering-Engine (`XRWebGLLayer`), um den nativen "Ladebildschirm" (die fliegenden Sterne) der Quest 3 zu beenden und die Controller-Datenströme freizuschalten.
@@ -36,7 +36,7 @@
 > - **Index Trigger (Zeigefinger):** Schaltet den Greifer. Der Node bedient beide Endeffektoren gleichzeitig — den Vakuumgreifer über `/ufactory/set_vacuum_gripper` und den Lite 6 Greifer über `open`/`close_lite6_gripper` — damit derselbe Trigger unabhängig vom montierten Greifer funktioniert.
 > - **Watchdog:** Bleiben die Controller-Daten bei gedrücktem Grip länger als 0,3 s aus (Tracking weg, Browser hängt, WLAN weg), sendet der Node sofort einen Null-Twist.
 >
-> 🥽 **VR-Viewport (Robot Control UI in der Brille):** Der Server auf `8443` liefert zusätzlich die komplette **Robot Control UI** über HTTPS aus (`https://<PC-IP>:8443/`). Die UI verbindet sich dort automatisch mit der WSS-rosbridge auf `9091`. Einstiege: der VR-Button 🥽 **Enter VR** in der Viewport-Leiste mit seinem Menü ⌄ (👓 **Passthrough AR**, vorbereitet · 🖥️ **VR mirror window**) und dieselben drei Buttons im Bereich **Remote Teleop › VR headset** (Gruppen *Headset* und *On this PC*).
+> 🥽 **VR-Viewport (UX | Control Interface in der Brille):** Der Server auf `8443` liefert zusätzlich die komplette **UX | Control Interface** über HTTPS aus (`https://<PC-IP>:8443/`). Die UI verbindet sich dort automatisch mit der WSS-rosbridge auf `9091`. Einstiege: der VR-Button 🥽 **Enter VR** in der Viewport-Leiste mit seinem Menü ⌄ (👓 **Passthrough AR**, vorbereitet · 🖥️ **VR mirror window**) und dieselben drei Buttons im Bereich **Remote Teleop › VR headset** (Gruppen *Headset* und *On this PC*).
 >
 > <img src="../img/rcu_vr.png" width="340" alt="Bereich Remote Teleop, Tab VR headset: Enter VR, Passthrough AR (vorbereitet), VR mirror window">
 >
@@ -59,7 +59,7 @@
 > - **Not-Aus:** roter Button im Panel **oder** beide Grips und beide Trigger gleichzeitig. Das Ende der Session, eine verdeckte Session (Quest-Menü) oder Tracking-Verlust stoppen Servo sofort.
 > - **Standort:** linker Stick = gehen (nur VR). Rechter Stick **ohne Grip** = um den Roboter fliegen (nur VR): X kreist um die Roboterbasis, der Blick dreht mit, Y hebt und senkt. Im Tab VIEW lassen sich Robot X/Y/Z/Yaw verschieben, „Basis = Controller“ setzt die Roboterbasis auf den rechten Controller, und alles wird pro Brille gespeichert (`localStorage`). Die Passthrough-Kalibrierung auf den echten Roboter ist vorbereitet, aber noch nicht am echten Roboter getestet.
 > - Nicht in der Brille: Kamera- und RViz-Streams (MJPEG über HTTP werden auf einer HTTPS-Seite als Mixed Content blockiert).
-> - **VR-Spiegel am PC (`vr_mirror.html`, `js/vr_mirror.js`):** Der VR-Mirror-Button (`fa-display`) in der Viewport-Werkzeugleiste der Robot Control UI öffnet ein Fenster, das zeigt, was die Quest 3 gerade sieht. Die Brille schickt nur Kopf-Pose, Controller, UI-Flächen und Twin-Zustand (`js/twin/xr_mirror_send.js`, Topics `/vr_teleop/mirror_pose`, `/vr_teleop/mirror_state`, `/vr_teleop/mirror_ui`); der PC rendert denselben Digital Twin aus dieser Position selbst. Erkennungen, Punktwolke und Pfad-Vorschau kommen direkt aus ROS. Das Fenster ist passiv: Es bewegt nichts und publiziert nur Heartbeat bzw. Nachsende-Bitte auf `/vr_teleop/mirror_request`; die Brille sendet nur, solange ein Spiegelfenster offen ist. Mausrad = Zoom, Doppelklick oder `0` = Zoom zurücksetzen, `F` = Vollbild.
+> - **VR-Spiegel am PC (`vr_mirror.html`, `js/vr_mirror.js`):** Der VR-Mirror-Button (`fa-display`) in der Viewport-Werkzeugleiste der UX | Control Interface öffnet ein Fenster, das zeigt, was die Quest 3 gerade sieht. Die Brille schickt nur Kopf-Pose, Controller, UI-Flächen und Twin-Zustand (`js/twin/xr_mirror_send.js`, Topics `/vr_teleop/mirror_pose`, `/vr_teleop/mirror_state`, `/vr_teleop/mirror_ui`); der PC rendert denselben Digital Twin aus dieser Position selbst. Erkennungen, Punktwolke und Pfad-Vorschau kommen direkt aus ROS. Das Fenster ist passiv: Es bewegt nichts und publiziert nur Heartbeat bzw. Nachsende-Bitte auf `/vr_teleop/mirror_request`; die Brille sendet nur, solange ein Spiegelfenster offen ist. Mausrad = Zoom, Doppelklick oder `0` = Zoom zurücksetzen, `F` = Vollbild.
 >
 > 🛠️ **System Setup & Nutzung:**
 > 1. **Netzwerk & Firewall:** PC und Quest 3 müssen sich im selben WLAN/Netzwerk befinden. Wenn dein Ubuntu eine Firewall (UFW) nutzt, musst du zwingend die Ports für die Brille öffnen, da das Web-Interface und die WebSocket-Verbindung sonst blockiert werden:
@@ -69,7 +69,7 @@
 >    ```
 >    *(Alternativ kann die Brille auch per USB-C verbunden werden; die ADB Port-Weiterleitung umgeht die Firewall automatisch).*
 > 2. **Zertifikate generieren:** Stelle sicher, dass `cert.pem` und `key.pem` im Ordner `~/dev_ws/certs/` liegen, sonst scheitert der Start der gesicherten rosbridge.
-> 3. **Node Starten:** Über den Button **"VR Quest 3 Teleop"** in der Nexus Web-App oder den obigen Launch-Befehl.
+> 3. **Node Starten:** Über den Button **"VR Quest 3 Teleop"** in der UX | Nexus Launcher (früher „Nexus Webapp“) oder den obigen Launch-Befehl.
 > 4. **SSL-Zertifikate in der Brille akzeptieren (Kritisch!):** Da selbstsignierte Zertifikate genutzt werden, blockiert der Meta Quest Browser die Verbindung standardmäßig. Du musst **zwei Adressen** nacheinander im Browser der Brille öffnen und freigeben:
 >    - Gehe zu `https://<PC-IP>:9091` -> Klicke auf "Erweitert" -> "Weiter zur Webseite (unsicher)". (Du siehst danach eine leere Seite oder Fehlermeldung, das ist normal! Das Zertifikat ist nun für WebSockets akzeptiert).
 >    - Gehe zu `https://<PC-IP>:8443/controller_reader.html` -> Klicke auf "Erweitert" -> "Weiter zur Webseite (unsicher)".
@@ -99,7 +99,7 @@
 >> |---|---|---|
 >> | **`/remote/twist`** | `std_msgs/String` (JSON) | *Kartesische Geschwindigkeit mit der Client-id der Brille (`client` in `controller_data`) → Twist-Gate des `remote_control_watchdog` → MoveIt Servo; Greifer und Linearachse nur, solange die Brille die Steuerung hat (`/remote/control_state`).* |
 >> | **`/linear_axis_cmd`** | `std_msgs/Float64` | *Verfährt die Linearachse über die Daumensticks der VR-Controller.* |
->> | **`/vr_teleop/controller_active`** | `std_msgs/Bool` | *1 Hz, `true`, solange `controller_data` in den letzten 2 s ankam – ohne Client-id, damit die Quest-Anzeige von Robot Control UI und Touch Panel auch über LAN geht (`controller_data` ist auf 9090/9091 nicht abonnierbar).* |
+>> | **`/vr_teleop/controller_active`** | `std_msgs/Bool` | *1 Hz, `true`, solange `controller_data` in den letzten 2 s ankam – ohne Client-id, damit die Quest-Anzeige von UX \| Control Interface und UX \| Compact Interface auch über LAN geht (`controller_data` ist auf 9090/9091 nicht abonnierbar).* |
 >
 >
 > ![Services](https://img.shields.io/badge/Services-FF1493?style=flat-square)
@@ -115,4 +115,4 @@
 
 ---
 
-[⬅ Zurück: Sprach- & Blicksteuerung](voice_gaze.html) · [🏠 Übersicht](../readme-de.html) · [⬆ Nach oben](#top) · [Weiter: Robot Control UI & Motion-Backend ➡](robot_control_ui.html)
+[⬅ Zurück: Sprach- & Blicksteuerung](voice_gaze.html) · [🏠 Übersicht](../readme-de.html) · [⬆ Nach oben](#top) · [Weiter: UX | Control Interface & Motion-Backend ➡](robot_control_ui.html)

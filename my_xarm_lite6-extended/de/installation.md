@@ -7,7 +7,7 @@
 **Inhalt:** [6. 📦 Abhängigkeiten & Voraussetzungen](#6--abhängigkeiten--voraussetzungen)
 
 > [!TIP]
-> **Neuer Arbeitsplatz?** Der [Setup-Guide](../operate_setup_guide.html) (DE/EN, verlinkt in der Projekt-Doku – Footer-Knopf **Projekt-Doku** der Nexus Webapp) führt als Checkliste durch alle Schritte – Hardware, Ubuntu, ROS 2, Workspace, Netzwerk, Abnahme – wahlweise für einen vorinstallierten PC.
+> **Neuer Arbeitsplatz?** Der [Setup-Guide](../operate_setup_guide.html) (DE/EN, verlinkt in der Projekt-Doku – Footer-Knopf **Projekt-Doku** der UX | Nexus Launcher, früher „Nexus Webapp“) führt als Checkliste durch alle Schritte – Hardware, Ubuntu, ROS 2, Workspace, Netzwerk, Abnahme – wahlweise für einen vorinstallierten PC.
 
 ---
 
@@ -41,8 +41,8 @@
 ### ⚠️ Kritische Systemkonfigurationen (Troubleshooting)
 
 > [!WARNING]
-> **1. `.bashrc` Konfiguration (CUDA & Nexus-Webapp-Kompatibilität)**
-> Wenn du die ZED Kamera (CUDA) über die ROS 2 Nexus Webapp startest, öffnet das Backend die Terminals als *non-interactive shell*. Das bedeutet, Ubuntu bricht das Laden der `~/.bashrc` extrem früh ab. Um zu verhindern, dass die ZED auf die CPU zurückfällt (massives Ruckeln!), **müssen** alle CUDA- und ROS-Pfade **ganz oben** in der `~/.bashrc` stehen (noch vor dem `case $- in *i*) ;; *) return;; esac` Block!). Beispiel für den korrekten Header der `.bashrc`:
+> **1. `.bashrc` Konfiguration (CUDA & Kompatibilität mit der UX | Nexus Launcher)**
+> Wenn du die ZED Kamera (CUDA) über die UX | Nexus Launcher startest, öffnet das Backend die Terminals als *non-interactive shell*. Das bedeutet, Ubuntu bricht das Laden der `~/.bashrc` extrem früh ab. Um zu verhindern, dass die ZED auf die CPU zurückfällt (massives Ruckeln!), **müssen** alle CUDA- und ROS-Pfade **ganz oben** in der `~/.bashrc` stehen (noch vor dem `case $- in *i*) ;; *) return;; esac` Block!). Beispiel für den korrekten Header der `.bashrc`:
 > ```bash
 > source /opt/ros/humble/setup.bash
 > source ~/dev_ws/install/setup.bash
@@ -116,7 +116,7 @@ pip install pygame==2.6.1 # Haptisches Feedback (Controller-Vibration)
 pip install PyAudio==0.2.14 # Mikrofon-Stream für Whisper
 
 # Web Backend & UI
-pip install "Flask>=2.2.0" # Backend der Nexus Webapp
+pip install "Flask>=2.2.0" # Backend der UX | Nexus Launcher
 pip install "PyQt5>=5.15.6" # Python UI (Gaze-Control & Pointcloud Tuner)
 pip install mss==10.2.0 # Screen Recording für Window Capture
 
@@ -160,7 +160,7 @@ pip install "ultralytics>=8.0.0" # YOLO 3D Objekterkennung
 
 ### Tobii Pro Glasses 3 Setup & Kalibrierung
 
-**Netzwerk:** Je nach Verbindungsart hat die Brille eine andere IP: **Ethernet (LAN) `192.168.100.xxx`**, **WLAN `192.168.75.xxx`**. Beide stehen in `config/network.yaml` (`tobii.wlan_ip`, `tobii.lan_ip`); `tobii.connection` wählt die genutzte: `auto` (Standard) nimmt die Adresse, deren /24-Netz an einem Interface dieses PCs anliegt, sonst WLAN; `wlan`/`lan` erzwingen eine. Gaze-UI (`gaze_ui`, `gaze_ui_zedm`), `gaze_grasp_routine_tobii_glasses` (Parameter `tobii_ip`, Standard aus derselben Abfrage), Header der Robot Control UI, Touch Panel und Nexus Webapp lesen sie über `net_get('tobii.ip')`.
+**Netzwerk:** Je nach Verbindungsart hat die Brille eine andere IP: **Ethernet (LAN) `192.168.100.xxx`**, **WLAN `192.168.75.xxx`**. Beide stehen in `config/network.yaml` (`tobii.wlan_ip`, `tobii.lan_ip`); `tobii.connection` wählt die genutzte: `auto` (Standard) nimmt die Adresse, deren /24-Netz an einem Interface dieses PCs anliegt, sonst WLAN; `wlan`/`lan` erzwingen eine. Gaze-UI (`gaze_ui`, `gaze_ui_zedm`), `gaze_grasp_routine_tobii_glasses` (Parameter `tobii_ip`, Standard aus derselben Abfrage), Header der UX | Control Interface (früher „Robot Control UI“), UX | Compact Interface (früher „Touch Panel“) und UX | Nexus Launcher lesen sie über `net_get('tobii.ip')`.
 
 Um das Tobii Pro Glasses 3 Setup (mit der Brille, der Kalibrierungskarte und den 4 ArUco-Markern) korrekt zu kalibrieren, müssen zwei separate Schritte durchgeführt werden:
 
@@ -203,7 +203,7 @@ Die ZED Mini Kamera erfordert das offizielle ZED SDK und eine passende CUDA-Vers
  colcon build --packages-select zed_interfaces zed_components zed_wrapper robot_vision_cameras_bringup --symlink-install
  ```
 6. **Ausführungs-Workflow & RViz Integration**:
- * Starte zunächst die Roboter-Basis (z. B. **Fake Arm** oder **Real Arm**) über die ROS 2 Nexus Webapp. Dies öffnet automatisch **RViz** mit dem vorkonfigurierten Layout (`servo.rviz`).
+ * Starte zunächst die Roboter-Basis (z. B. **Fake Arm** oder **Real Arm**) über die UX | Nexus Launcher. Dies öffnet automatisch **RViz** mit dem vorkonfigurierten Layout (`servo.rviz`).
  * Starte im Anschluss **Robot Vision Cameras Bringup (cam, tf, yolo3d, pc_opt, grasp, status/warn)** (Karte im DEV-SETUP-Popup) (oder im Terminal: `ros2 launch robot_vision_cameras_bringup robot_vision_cameras_bringup.launch.py`, mit IP-Kameras zusätzlich `ip_cams:=true`). Dies führt das `robot_vision_cameras_bringup` Paket aus, welches simultan den ZED-Treiber initialisiert, die statische TF-Transformation sendet (um die Kamera relativ zum `link_base` des Roboters auszurichten) und das dynamisch generierte 3D-Stativ publiziert.
  * Die Live-Punktwolke (`PointCloud2`) sowie die Kamera-Achsen erscheinen daraufhin sofort und vollautomatisch in der bereits laufenden RViz-Instanz, ohne dass weitere manuelle Einstellungen nötig sind.
 

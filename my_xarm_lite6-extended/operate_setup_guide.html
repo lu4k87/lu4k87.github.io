@@ -1,7 +1,7 @@
 <!doctype html>
 <!-- Setup-Guide: Arbeitsplatz xArm Lite 6 in Betrieb nehmen (Hardware → Ubuntu → ROS 2 → Workspace → Umgebung →
      Zusatzmodule → Abnahme). Zwei Einstiege: „PC vorinstalliert“ (nur Hardware, Netz, Abnahme) oder „selbst installieren“.
-     Öffnen: direkt als Datei, über die Nexus Webapp unter /manuals/operate_setup_guide.html (Footer-Knopf) oder aus der
+     Öffnen: direkt als Datei, über die UX | Nexus Launcher unter /manuals/operate_setup_guide.html (Footer-Knopf) oder aus der
      Projekt-Doku (docs/project_docs.html). Design wie die Projekt-Doku (Palette Monochrom); Kopf = Landing-Hero aus css/landing.css +
      js/landing.js, 3D-Bühne js/hero3d.js (Szene „cell“, ohne WebGL/Netz bleibt das Foto). Häkchen bleiben im Browser gespeichert.
      Befehle aus docs/<de|en>/installation.md, running.md, vr_quest3.md und den Skripten in tools/ – bei Änderungen dort mitziehen. -->
@@ -527,7 +527,7 @@ colcon build --symlink-install 2&gt;&amp;1 | tail -20</pre></div></div></li>
       <summary><span class="n">6</span><h2 data-en="Environment &amp; network">Umgebung &amp; Netzwerk</h2><span class="meta"><span class="tag" data-en="critical">kritisch</span><span class="tag cnt"></span><svg class="ico chev"><use href="#i-chev"/></svg></span></summary>
       <div class="body">
         <ol class="steps">
-          <li data-only="install"><input type="checkbox" id="s6-1"><div class="txt"><label for="s6-1" data-en="&lt;b&gt;At the very top of &lt;code&gt;~/.bashrc&lt;/code&gt;&lt;/b&gt; (before the &lt;code&gt;case $- in&lt;/code&gt; block – the Nexus Webapp starts non-interactive shells that stop there). Move the CUDA lines that &lt;code&gt;install_zed.sh&lt;/code&gt; appended at the end up here."><b>Ganz oben in <code>~/.bashrc</code></b> (vor dem <code>case $- in</code>-Block – die Nexus Webapp startet nicht-interaktive Shells, die dort abbrechen). Die CUDA-Zeilen, die <code>install_zed.sh</code> unten angehängt hat, hierher verschieben.</label>
+          <li data-only="install"><input type="checkbox" id="s6-1"><div class="txt"><label for="s6-1" data-en="&lt;b&gt;At the very top of &lt;code&gt;~/.bashrc&lt;/code&gt;&lt;/b&gt; (before the &lt;code&gt;case $- in&lt;/code&gt; block – the UX | Nexus Launcher (formerly Nexus Webapp) starts non-interactive shells that stop there). Move the CUDA lines that &lt;code&gt;install_zed.sh&lt;/code&gt; appended at the end up here."><b>Ganz oben in <code>~/.bashrc</code></b> (vor dem <code>case $- in</code>-Block – die UX | Nexus Launcher (früher „Nexus Webapp“) startet nicht-interaktive Shells, die dort abbrechen). Die CUDA-Zeilen, die <code>install_zed.sh</code> unten angehängt hat, hierher verschieben.</label>
             <div class="cmd"><pre>source /opt/ros/humble/setup.bash
 source ~/dev_ws/install/setup.bash
 export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
@@ -553,7 +553,7 @@ sudo systemctl daemon-reload &amp;&amp; sudo systemctl enable --now lo-multicast
           <li data-only="install"><input type="checkbox" id="s6-3"><div class="txt"><label for="s6-3" data-en="&lt;b&gt;Larger UDP buffers&lt;/b&gt; – otherwise the point cloud stutters in RViz"><b>Größere UDP-Puffer</b> – sonst ruckelt die Punktwolke in RViz</label>
             <div class="cmd"><pre>echo -e "net.core.rmem_max=2147483647\nnet.core.rmem_default=2147483647\nnet.core.wmem_max=2147483647\nnet.core.wmem_default=2147483647" | sudo tee /etc/sysctl.d/60-cyclonedds.conf
 sudo sysctl -p /etc/sysctl.d/60-cyclonedds.conf</pre></div></div></li>
-          <li><input type="checkbox" id="s6-4"><div class="txt"><label for="s6-4" data-en="Enter &lt;b&gt;addresses&lt;/b&gt; in &lt;code&gt;~/dev_ws/config/network.yaml&lt;/code&gt;: robot, IP cameras, Tobii, ports. Then restart the Nexus Webapp; the check reports duplicate ports">In <code>~/dev_ws/config/network.yaml</code> die <b>Adressen</b> eintragen: Roboter, IP-Kameras, Tobii, Ports. Danach die Nexus Webapp neu starten; die Prüfung meldet doppelte Ports<span class="both" data-en="ALSO PRE-INSTALLED">AUCH VORINSTALLIERT</span></label>
+          <li><input type="checkbox" id="s6-4"><div class="txt"><label for="s6-4" data-en="Enter &lt;b&gt;addresses&lt;/b&gt; in &lt;code&gt;~/dev_ws/config/network.yaml&lt;/code&gt;: robot, IP cameras, Tobii, ports. Then restart the UX | Nexus Launcher; the check reports duplicate ports">In <code>~/dev_ws/config/network.yaml</code> die <b>Adressen</b> eintragen: Roboter, IP-Kameras, Tobii, Ports. Danach die UX | Nexus Launcher neu starten; die Prüfung meldet doppelte Ports<span class="both" data-en="ALSO PRE-INSTALLED">AUCH VORINSTALLIERT</span></label>
             <div class="cmd"><pre>nano ~/dev_ws/config/network.yaml
 python3 ~/dev_ws/tools/check_ports.py</pre></div></div></li>
           <li><input type="checkbox" id="s6-5"><div class="txt"><label for="s6-5" data-en="&lt;b&gt;Robot settings&lt;/b&gt; (change the robot address, collision sensitivity, firmware): UFactory Studio in the browser"><b>Roboter-Einstellungen</b> (Roboter-Adresse ändern, Kollisionsempfindlichkeit, Firmware): UFactory Studio im Browser<span class="both" data-en="ALSO PRE-INSTALLED">AUCH VORINSTALLIERT</span></label>
@@ -572,9 +572,9 @@ python3 ~/dev_ws/tools/check_ports.py</pre></div></div></li>
       <summary><span class="n">7</span><h2 data-en="Apps &amp; add-on modules">Apps &amp; Zusatzmodule</h2><span class="meta"><span class="tag" data-en="optional per module">optional je Modul</span><span class="tag cnt"></span><svg class="ico chev"><use href="#i-chev"/></svg></span></summary>
       <div class="body">
         <ol class="steps">
-          <li data-only="install"><input type="checkbox" id="s7-1"><div class="txt"><label for="s7-1" data-en="&lt;b&gt;Nexus Webapp&lt;/b&gt; in the app menu (start window for all modules)"><b>Nexus Webapp</b> ins App-Menü (Startfenster für alle Module)</label>
+          <li data-only="install"><input type="checkbox" id="s7-1"><div class="txt"><label for="s7-1" data-en="&lt;b&gt;UX | Nexus Launcher&lt;/b&gt; in the app menu (start window for all modules)"><b>UX | Nexus Launcher</b> ins App-Menü (Startfenster für alle Module)</label>
             <div class="cmd"><pre>cd ~/dev_ws/ros2_nexus &amp;&amp; bash install_app.sh</pre></div></div></li>
-          <li data-only="install"><input type="checkbox" id="s7-2"><div class="txt"><label for="s7-2" data-en="&lt;b&gt;Touch Panel&lt;/b&gt; on the extra touch display: menu entry + autostart"><b>Touch Panel</b> auf dem Zusatz-Touch-Display: Menüeintrag + Autostart</label>
+          <li data-only="install"><input type="checkbox" id="s7-2"><div class="txt"><label for="s7-2" data-en="&lt;b&gt;UX | Compact Interface (formerly Touch Panel)&lt;/b&gt; on the extra touch display: menu entry + autostart"><b>UX | Compact Interface (früher „Touch Panel“)</b> auf dem Zusatz-Touch-Display: Menüeintrag + Autostart</label>
             <div class="cmd"><pre>bash ~/dev_ws/touch_panel/touch_panel_start.sh --install</pre></div></div></li>
           <li data-only="install"><input type="checkbox" id="s7-3"><div class="txt"><label for="s7-3" data-en="&lt;b&gt;VLA-M chat&lt;/b&gt; with a local language model (Ollama, ~20 GB download, ~16 GB GPU memory); optional cloud key in &lt;code&gt;~/.config/vla_bridge/&lt;/code&gt;"><b>VLA-M-Chat</b> mit lokalem Sprachmodell (Ollama, ~20 GB Download, ~16 GB Grafikspeicher); optional Cloud-Schlüssel in <code>~/.config/vla_bridge/</code></label>
             <div class="cmd"><pre>bash ~/dev_ws/src/vla_bridge/scripts/install_ollama.sh</pre></div></div></li>
@@ -592,9 +592,9 @@ python3 ~/dev_ws/tools/check_ports.py</pre></div></div></li>
       <summary><span class="n">8</span><h2 data-en="First start &amp; acceptance">Erster Start &amp; Abnahme</h2><span class="meta"><span class="tag ok" data-en="Check">Prüfen</span><span class="tag cnt"></span><svg class="ico chev"><use href="#i-chev"/></svg></span></summary>
       <div class="body">
         <ol class="steps">
-          <li><input type="checkbox" id="s8-1"><div class="txt"><label for="s8-1" data-en="Start the &lt;b&gt;Nexus Webapp&lt;/b&gt; (app menu &lt;i&gt;ROS 2 Nexus&lt;/i&gt; or terminal); the start popup opens">Die <b>Nexus Webapp</b> starten (App-Menü <i>ROS 2 Nexus</i> oder Terminal); das Start-Popup öffnet sich</label>
+          <li><input type="checkbox" id="s8-1"><div class="txt"><label for="s8-1" data-en="Start the &lt;b&gt;UX | Nexus Launcher&lt;/b&gt; (app menu &lt;i&gt;ROS 2 Nexus&lt;/i&gt; or terminal); the start popup opens">Die <b>UX | Nexus Launcher</b> starten (App-Menü <i>ROS 2 Nexus</i> oder Terminal); das Start-Popup öffnet sich</label>
             <div class="cmd"><pre>~/dev_ws/ros2_nexus/ros2_nexus_web_start.sh</pre></div></div></li>
-          <li><input type="checkbox" id="s8-2"><div class="txt"><label for="s8-2" data-en="&lt;b&gt;FAKE&lt;/b&gt; → &lt;b&gt;Check&lt;/b&gt; (all lines without error) → &lt;b&gt;EXECUTE&lt;/b&gt;. Robot Control UI &lt;code&gt;http://localhost:8081&lt;/code&gt;: jog moves the simulated arm; Monitoring Dashboard &lt;code&gt;http://localhost:8083&lt;/code&gt; shows the nodes"><b>FAKE</b> → <b>Check</b> (alle Zeilen ohne Fehler) → <b>EXECUTE</b>. Robot Control UI <code>http://localhost:8081</code>: Jog bewegt den simulierten Arm; Monitoring Dashboard <code>http://localhost:8083</code> zeigt die Nodes</label></div></li>
+          <li><input type="checkbox" id="s8-2"><div class="txt"><label for="s8-2" data-en="&lt;b&gt;FAKE&lt;/b&gt; → &lt;b&gt;Check&lt;/b&gt; (all lines without error) → &lt;b&gt;EXECUTE&lt;/b&gt;. UX | Control Interface (formerly Robot Control UI) &lt;code&gt;http://localhost:8081&lt;/code&gt;: jog moves the simulated arm; UX | Monitoring (formerly Monitoring Dashboard) &lt;code&gt;http://localhost:8083&lt;/code&gt; shows the nodes"><b>FAKE</b> → <b>Check</b> (alle Zeilen ohne Fehler) → <b>EXECUTE</b>. UX | Control Interface (früher „Robot Control UI“) <code>http://localhost:8081</code>: Jog bewegt den simulierten Arm; UX | Monitoring (früher „Monitoring Dashboard“) <code>http://localhost:8083</code> zeigt die Nodes</label></div></li>
           <li><input type="checkbox" id="s8-3"><div class="txt"><label for="s8-3" data-en="Switch on the robot, release the emergency stop → &lt;b&gt;REAL&lt;/b&gt; → &lt;b&gt;Check&lt;/b&gt;: robot reachable, ZED on USB, GPU memory, ports free">Roboter einschalten, Not-Aus entriegeln → <b>REAL</b> → <b>Check</b>: Roboter erreichbar, ZED am USB, Grafikspeicher, Ports frei</label></div></li>
           <li><input type="checkbox" id="s8-4"><div class="txt"><label for="s8-4" data-en="REAL at &lt;b&gt;low speed&lt;/b&gt;: jog, gripper on/off, then &lt;b&gt;test E-STOP&lt;/b&gt; – once in the UI and once with the hardware button; the arm must stop immediately">REAL mit <b>niedrigem Tempo</b>: Jog, Greifer an/aus, dann <b>E-STOP testen</b> – einmal in der UI, einmal am Hardware-Taster; der Arm muss sofort stehen</label></div></li>
           <li><input type="checkbox" id="s8-5"><div class="txt"><label for="s8-5" data-en="Optional: automatic gripping test in the simulation (~4 min, own ROS domain, no robot motion)">Optional: automatischer Greiftest in der Simulation (~4 min, eigene ROS-Domain, keine Roboterbewegung)</label>
@@ -617,7 +617,7 @@ python3 ~/dev_ws/tools/check_ports.py</pre></div></div></li>
   const root = document.documentElement;
   const store = (k, v) => { try { if (v === undefined) return localStorage.getItem(k); localStorage.setItem(k, v); } catch (e) { return null; } };
 
-  // Links ins Repo: als Datei relativ (../), über die Nexus Webapp (/manuals/) über /ws/
+  // Links ins Repo: als Datei relativ (../), über die UX | Nexus Launcher (/manuals/) über /ws/
   const wsBase = location.pathname.startsWith('/manuals/') ? '/ws/' : '../';
   const wsLinks = () => {
     const en = root.lang === 'en';
