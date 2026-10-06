@@ -490,7 +490,10 @@ function build(L, wrap, host, o) {
   // Objekt rutscht in die Form (sinkt 8 mm, richtet sich aus), materialisiert in seiner Farbe (Würfel blau, Quader rot, Zylinder
   // grün) und bedankt sich per Sprechblase. Falsche Form → „Da pass ich nicht rein!“, Arm hält weiter. Startplatz anklicken oder
   // 25 s nichts wählen → zurücklegen. Alle drei zu Hause → Abzeichen, nach 6,5 s neue Runde mit neuer Lage.
-  // Missionsliste oben links; Lage, Stand, Runden und Klang an/aus in localStorage (F3). Klänge per WebAudio, nur als Antwort
+  // Stoppuhr (Wunsch User 06.10.2026, Vorschau „Missionen-Board mit Stoppuhr“, Variante C): startet beim ersten Objekt-Klick der
+  // Runde; läuft, solange der Arm fährt oder der Zeiger auf der Bühne ist und es in den letzten 15 s eine Eingabe gab; sonst Pause.
+  // Zählt nur gezeichnete Bilder (Tab verdeckt, Bühne aus dem Bild → Uhr steht); drittes Objekt zu Hause → Endzeit, ggf. Bestzeit.
+  // Missionsliste oben links; Lage, Stand, Runden, Zeit, Bestzeit und Klang an/aus in localStorage (F3). Klänge per WebAudio, nur als Antwort
   // auf eigene Klicks (Browser erlaubt Ton erst nach einer Geste), leise, abschaltbar.
   // Bahnen = Spline durch Stützpunkte mit Minimal-Ruck-Zeitprofil (Weg, Geschwindigkeit, Beschleunigung stetig; Start und
   // Kontakt in Ruhe, Kontaktpunkte exakt); Gelenk 6 bleibt in ±178°.
@@ -568,6 +571,9 @@ function build(L, wrap, host, o) {
     const flash = new THREE.Mesh(new THREE.RingGeometry(0.016, 0.03, 48), new THREE.MeshBasicMaterial({ color: ACC, transparent: true, opacity: 0, side: THREE.DoubleSide, depthWrite: false }));
     st.scene.add(flash);
     let cur = null, held = false, hover = -1, hoverObj = null, flashT = 1, clicked = false, clk = 0, touch = false, rounds = 0, mute = false, newRoundAt = 0;
+    // Stoppuhr: tRun = Laufzeit der Runde (s), best = Bestzeit (s, 0 = keine), inside = Maus auf der Bühne, lastIn = letzte Eingabe (clk)
+    let tRun = 0, started = false, finished = false, best = 0, newBest = false, inside = false, lastIn = -1e9;
+    const IDLE = 15;
     const slotXY = s => [s.r * Math.cos(s.a), s.r * Math.sin(s.a)];
     const xy = s => { const [x, y] = slotXY(s); return `x ${mm(x)} · y ${mm(y)} mm`; };
     const ring = (x, y, z) => { flashT = 0; flash.position.set(x, y, z); };
@@ -581,9 +587,13 @@ function build(L, wrap, host, o) {
     const putAt = (o, s) => { o.slot = s; const [x, y] = slotXY(s); o.g.position.set(x, y, o.h / 2 - (o.home ? SINK : 0)); };
     // Speichern: Lage, Stand, Runden, Klang (privates Fenster/gesperrt → Spiel läuft ohne Merken)
     const STORE = 'hero3d.missions.v1';
-    const save = () => { try { localStorage.setItem(STORE, JSON.stringify({ rounds, mute, objs: OBJ.map(o => ({ a: o.slot.a, r: o.slot.r })), tpls: TPL.map(t => t.slot), home: OBJ.map(o => o.home) })); } catch (e) { /* ohne Merken */ } };
+    const save = () => { try { localStorage.setItem(STORE, JSON.stringify({ rounds, mute, t: tRun, best, objs: OBJ.map(o => ({ a: o.slot.a, r: o.slot.r })), tpls: TPL.map(t => t.slot), home: OBJ.map(o => o.home) })); } catch (e) { /* ohne Merken */ } };
     const saved = (() => { try { return JSON.parse(localStorage.getItem(STORE)) || {}; } catch (e) { return {}; } })();
     rounds = Number.isInteger(saved.rounds) && saved.rounds > 0 ? saved.rounds : 0; mute = saved.mute === true;
+    const secs = v => (Number.isFinite(v) && v > 0 && v < 36000 ? v : 0);
+    best = secs(saved.best);
+    // m:ss,z (Zehntel; en mit Punkt)
+    const fmt = v => { const z = Math.floor(v * 10), m = Math.floor(z / 600); return `${m}:${String(Math.floor(z / 10) % 60).padStart(2, '0')}${T(',', '.')}${z % 10}`; };
 
     // Klänge (Wunsch User 06.10.2026: dezent, an sinnvoller Stelle): kurze Sinus-/Dreieckstöne mit weicher Hüllkurve, nur nach
     // eigenem Klick (Greifen, Ablegen, zu Hause, falsche Form, Runde geschafft, Sprechblase); nie im Leerlauf
@@ -636,23 +646,36 @@ function build(L, wrap, host, o) {
       const box = document.createElement('div'); box.className = 'h3d-quest';
       box.innerHTML = '<div class="h3d-q-head"><b></b><span></span><button type="button" class="h3d-q-snd"><svg viewBox="0 0 24 24" aria-hidden="true">' +
         '<path d="M4 9.5h3.5L12 6v12l-4.5-3.5H4z"/><path class="w" d="M15.5 9.5a3.5 3.5 0 0 1 0 5M18 7a7 7 0 0 1 0 10"/><path class="x" d="M16 9.5l5 5M21 9.5l-5 5"/></svg></button></div>' +
-        '<ul></ul><div class="h3d-q-bar"><i></i></div><p></p>';
+        '<p class="h3d-q-task"></p><ul></ul><div class="h3d-q-bar"><i></i></div>' +
+        '<div class="h3d-q-stats"><div class="tm"><small></small><strong></strong></div><div class="bt"><small></small><strong></strong></div><div><small></small><strong></strong></div></div>';
       const badge = document.createElement('div'); badge.className = 'h3d-badge'; badge.setAttribute('role', 'status');
       box.append(badge); host.append(box);   // Abzeichen als Zeile in der Liste: überdeckt nie die Bühne
-      const [title, count, btn] = box.querySelector('.h3d-q-head').children, list = box.querySelector('ul'), bar = box.querySelector('.h3d-q-bar i'), foot = box.querySelector('p');
-      let badgeT = 0;
+      const [title, count, btn] = box.querySelector('.h3d-q-head').children, list = box.querySelector('ul'), bar = box.querySelector('.h3d-q-bar i'), task = box.querySelector('.h3d-q-task');
+      const [tm, bt, rd] = [...box.querySelector('.h3d-q-stats').children].map(d => ({ d, k: d.firstChild, v: d.lastChild }));
+      const PAUSE = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M10 9v6M14 9v6"/></svg>';
+      const STAR = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l2.6 5.6 6 .7-4.5 4.1 1.2 6L12 16.4 6.7 19.4l1.2-6L3.4 9.3l6-.7z"/></svg>';
+      let badgeT = 0, shown = '';
+      // Zeit-Kachel (je Bild aufgerufen, schreibt nur bei Änderung): Pause = Icon + Wort statt nur Farbe
+      const clock = paused => {
+        const key = `${fmt(tRun)}|${paused}|${document.documentElement.lang}`;
+        if (key === shown) return; shown = key;
+        tm.v.textContent = fmt(tRun); tm.d.classList.toggle('pause', paused);
+        if (paused) tm.k.innerHTML = PAUSE + T('Pause', 'Paused'); else tm.k.textContent = T('Zeit', 'Time');
+      };
       const render = () => {
         const n = OBJ.filter(o => o.home).length;
         title.textContent = T('Missionen', 'Missions'); count.textContent = `${n} / 3`;
         list.replaceChildren(...OBJ.map(o => {
           const li = document.createElement('li'), i = document.createElement('i'), s = document.createElement('span');
           li.className = o.home ? 'ok' : ''; li.style.setProperty('--c', `#${o.K.color.toString(16).padStart(6, '0')}`);
-          s.textContent = T(`${o.K.de} nach Hause bringen`, `Bring the ${o.K.en} home`); li.append(i, s);
+          s.textContent = T(o.K.de, o.K.en[0].toUpperCase() + o.K.en.slice(1)); li.dataset.k = o.K.id; li.append(i, s);
           if (o.home) { const ck = document.createElement('b'); ck.className = 'ck'; ck.textContent = '✓'; li.append(ck); }   // erledigt: grüner Haken dahinter, Text bleibt lesbar
           return li;
         }));
         bar.style.width = `${n / 3 * 100}%`;
-        foot.textContent = T(`Runden geschafft: ${rounds}`, `Rounds completed: ${rounds}`); foot.hidden = !rounds;
+        task.textContent = T('Nach Hause bringen:', 'Bring them home:');
+        if (newBest) bt.k.innerHTML = STAR + T('Rekord', 'Record'); else bt.k.textContent = T('Bestzeit', 'Best'); bt.v.textContent = best ? fmt(best) : '–'; bt.d.classList.toggle('new', newBest);
+        rd.k.textContent = T('Runden', 'Rounds'); rd.v.textContent = rounds; shown = '';
         box.classList.toggle('muted', mute);
         btn.setAttribute('aria-pressed', String(!mute)); btn.setAttribute('aria-label', T('Klänge', 'Sounds'));
         btn.title = mute ? T('Klänge einschalten', 'Turn sounds on') : T('Klänge ausschalten', 'Turn sounds off');
@@ -660,17 +683,17 @@ function build(L, wrap, host, o) {
       btn.addEventListener('click', () => { mute = !mute; render(); save(); if (!mute) { sfx.unlock(); sfx('pop'); } });
       new MutationObserver(render).observe(document.documentElement, { attributes: true, attributeFilter: ['lang'] });
       return {
-        render,
+        render, clock,
         badge() {
           badge.innerHTML = '<svg class="ico" aria-hidden="true"><use href="#i-star"/></svg><span></span>';
-          badge.lastChild.textContent = T(`Pick-&-Place-Profi · Runde ${rounds} geschafft!`, `Pick & place pro · round ${rounds} done!`);
+          badge.lastChild.textContent = T(`Pick-&-Place-Profi · Runde ${rounds} in ${fmt(tRun)} geschafft!`, `Pick & place pro · round ${rounds} done in ${fmt(tRun)}!`);
           badge.classList.add('in'); clearTimeout(badgeT); badgeT = setTimeout(() => badge.classList.remove('in'), 5200);
         },
       };
     })();
     // Neue Runde: Formen + Objekte an ihre Plätze, Objekte ploppen gestaffelt auf (0,6 s, ease-out)
-    const newRound = Lx => {
-      newRoundAt = 0; say.hide();
+    const newRound = (Lx, t = 0) => {
+      newRoundAt = 0; say.hide(); tRun = t; started = t > 0; finished = newBest = false;
       Lx.tpls.forEach((s, k) => { const t = TPL[k]; t.slot = s; const [x, y] = slotXY(s); t.g.position.set(x, y, 0.0025); t.g.rotation.z = s.yaw; t.full = false; });
       OBJ.forEach((o, k) => {
         o.home = !!Lx.home[k]; TPL[k].full = o.home; o.hopT = -1; o.swell = 0; o.sinkT = 1;
@@ -844,7 +867,10 @@ function build(L, wrap, host, o) {
     const arrived = o => {
       thx = (thx + 1 + Math.floor(Math.random() * (THANKS.length - 1))) % THANKS.length;
       say.show(o, T(...THANKS[thx]), 3000, true); sfx('home');
-      if (OBJ.every(x => x.home)) { rounds++; quest.badge(); sfx('win'); newRoundAt = clk + 6.5; }
+      if (OBJ.every(x => x.home)) {
+        finished = true; rounds++; newBest = !best || tRun < best; if (newBest) best = tRun;
+        quest.badge(); sfx('win'); newRoundAt = clk + 6.5;
+      }
       quest.render(); save(); show();
     };
     const nope = () => {
@@ -929,7 +955,7 @@ function build(L, wrap, host, o) {
     // Objekt gewählt → greifen (reduzierte Bewegung: nur markieren)
     const grab = o => {
       if (job) return;
-      cur = o; say.hide();
+      cur = o; say.hide(); if (!finished) started = true;
       if (reduce) { feed.reset(); feed.say(T('Form wählen', 'Choose a shape'), T('passende Form wählen', 'pick the matching shape'), true); show(); return; }
       pick(-1);
     };
@@ -946,13 +972,20 @@ function build(L, wrap, host, o) {
       if (job && job.to < 0) { job.to = k; show(); }
     };
     let down = null;
+    // Eingabe auf der Bühne hält die Uhr wach; Maus raus → Pause (Touch meldet beim Loslassen „leave“ → dort zählt nur der Leerlauf)
+    const awake = () => { lastIn = clk; inside = true; };
+    host.addEventListener('pointerenter', awake);
+    host.addEventListener('wheel', awake, { passive: true });
     host.addEventListener('pointermove', e => {
+      awake();
       if (e.pointerType !== 'mouse' || e.buttons) return;
       const o = objAt(e, 0.06), k = o || !cur ? -1 : tplAt(e, 0.07);
       if (o !== hoverObj || k !== hover) { hoverObj = o; hover = k; show(); }
     });
-    host.addEventListener('pointerleave', () => { if (hover >= 0 || hoverObj) { hover = -1; hoverObj = null; show(); } });
-    host.addEventListener('pointerdown', e => { down = { x: e.clientX, y: e.clientY, t: performance.now() }; });
+    host.addEventListener('pointerleave', e => { if (e.pointerType === 'mouse') inside = false; if (hover >= 0 || hoverObj) { hover = -1; hoverObj = null; show(); } });
+    host.addEventListener('pointerdown', e => { awake(); down = { x: e.clientX, y: e.clientY, t: performance.now() }; });
+    addEventListener('pagehide', save);
+    document.addEventListener('visibilitychange', () => { if (document.hidden) save(); });
     // Tippen/Klick = kurz und ohne Ziehen (Ziehen dreht weiter die Kamera); Klang-Knopf hat eigenen Klick
     host.addEventListener('pointerup', e => {
       if (e.target.closest('button') || !down || Math.hypot(e.clientX - down.x, e.clientY - down.y) > 6 || performance.now() - down.t > 600) return;
@@ -975,6 +1008,10 @@ function build(L, wrap, host, o) {
       ex(dt, t);
       clk += dt; pt += dt;
       if (newRoundAt && clk >= newRoundAt && !job) newRound(layout());
+      // Stoppuhr: Arm fährt → zählt immer; sonst nur mit Zeiger auf der Bühne und Eingabe in den letzten 15 s
+      const ticking = started && !finished && ((job && !job.hold) || (inside && clk - lastIn < IDLE));
+      if (ticking) tRun += dt;
+      quest.clock(started && !finished && !ticking);
       if (held) {
         robot.tcp.getWorldPosition(tcpW); robot.tcp.getWorldQuaternion(tcpQ);
         cur.g.position.copy(relP).applyQuaternion(tcpQ).add(tcpW); cur.g.quaternion.multiplyQuaternions(tcpQ, rel);
@@ -1045,7 +1082,7 @@ function build(L, wrap, host, o) {
     const okSlot = s => s && Number.isFinite(s.a) && Number.isFinite(s.r) && s.r > 0.15 && s.r < 0.35 && Math.abs(s.a) < 2.6;
     const arr3 = a => Array.isArray(a) && a.length === 3;
     newRound(arr3(saved.objs) && saved.objs.every(okSlot) && arr3(saved.tpls) && saved.tpls.every(s => okSlot(s) && Number.isFinite(s.yaw))
-      && arr3(saved.home) && !saved.home.every(Boolean) ? { objs: saved.objs, tpls: saved.tpls, home: saved.home.map(Boolean) } : layout());
+      && arr3(saved.home) && !saved.home.every(Boolean) ? { objs: saved.objs, tpls: saved.tpls, home: saved.home.map(Boolean) } : layout(), secs(saved.t));
   }
   if (!reduce) st.isBusy = () => true;
   if (reduce && scene === 'modes') { q = goal; robot.setJoints(q); }
