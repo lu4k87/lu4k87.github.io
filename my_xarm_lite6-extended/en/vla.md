@@ -49,6 +49,7 @@ instruction ─► plan (LLM: skills + object ids) ─► check (code: objects, 
 - **Tools = ROS interfaces:** scene from `/zed/bboxes_3d`, motion via `/ui/approach_from_above` and the motion handler, gripper via `/ui/gripper_cmd`, grasp check via the physics sandbox or the grasp sphere.
 - **Memory & dialogue:** the conversation is kept (*"and now onto the cylinder"*), ambiguous instructions trigger a question back, *Clear* (`/vla/reset`) forgets it.
 - **Offline first:** local model through Ollama on the GPU; Claude through the Anthropic API is optional.
+  - **Local model:** `qwen2.5:14b` = Qwen 2.5 by Alibaba Cloud, 14 B parameters, open weights under the Apache 2.0 license (commercial use allowed); ~9 GB download, ~10 GB GPU memory.
 
 <img src="../img/vla_agent.png" width="85%" alt="VLA-M popup: German instruction, agent answer, four planned steps awaiting confirmation, scene objects and backend state">
 

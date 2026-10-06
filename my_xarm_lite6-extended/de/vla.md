@@ -49,6 +49,7 @@ Anweisung ─► Plan (LLM: Skills + Objekt-IDs) ─► Prüfung (Code: Objekte,
 - **Werkzeuge = ROS-Schnittstellen:** Szene aus `/zed/bboxes_3d`, Bewegung über `/ui/approach_from_above` und den Motion Handler, Greifer über `/ui/gripper_cmd`, Greifprüfung über die Physik-Sandbox oder die Greifkugel.
 - **Gedächtnis & Dialog:** Der Gesprächsverlauf bleibt erhalten (*„und jetzt auf den Zylinder“*), mehrdeutige Anweisungen führen zu einer Rückfrage, *Clear* (`/vla/reset`) setzt ihn zurück.
 - **Offline zuerst:** lokales Modell über Ollama auf der GPU; Claude über die Anthropic-API optional.
+  - **Lokales Modell:** `qwen2.5:14b` = Qwen 2.5 von Alibaba Cloud, 14 Mrd. Parameter, offene Gewichte unter der Lizenz Apache 2.0 (kommerziell nutzbar); ~9 GB Download, ~10 GB Grafikspeicher.
 
 <img src="../img/vla_agent.png" width="85%" alt="VLA-M-Popup: deutsche Anweisung, Antwort des Agenten, vier geplante Schritte warten auf Bestätigung, Szenen-Objekte und Backend-Status">
 
