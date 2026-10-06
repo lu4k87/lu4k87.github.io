@@ -521,8 +521,13 @@ function build(L, wrap, host, o) {
       new THREE.LineSegments(new THREE.EdgesGeometry(box), lineMat(0.95, ACC2)),
       new THREE.Points(corners, new THREE.PointsMaterial({ map: dot, color: ACC2, size: 0.016, transparent: true, opacity: 0.9, depthWrite: false, blending: THREE.AdditiveBlending })));
     // Puls-Schein (Wunsch User 06.10.2026): Lichthof + Bodenschein atmen langsam (4 s, kleine Amplitude, nur Sinus –
-    // nicht an die zufälligen Feld-Blitze gekoppelt, sonst springt er); Lichthof nur so groß/hoch, dass ihn die Tischebene nicht abschneidet
+    // nicht an die zufälligen Feld-Blitze gekoppelt, sonst springt er); Lichthof nur so groß/hoch, dass ihn die Tischebene nicht abschneidet.
+    // Eigene Uhr in s (pt): onFrame liefert t in ms → mit t lief der Puls mit 4 ms Periode und flackerte.
+    // Mesh-Fade (Wunsch User 06.10.2026): alle 8 s blendet das Raster weich auf 45 % und zurück (1,8 s, sin², nie ganz weg);
+    // bei Hover, Ablauf oder im Arm klingt der Fade sanft aus statt zu springen.
     const aura = sprite(0.1, 0.16), pool = new THREE.Mesh(new THREE.PlaneGeometry(0.2, 0.2), glowMat(0)), PULSE = 4;
+    const FADE_EVERY = 8, FADE_D = 1.8, FADE_MIN = 0.45;
+    let pt = 0, fadeAmp = 1;
     const cornerMat = cube.children[3].material, edgeMat = cube.children[2].material;
     // Materialisieren (Wunsch User 06.10.2026): abgelegt bekommt der Würfel ein rotes Material, in Zeitlupe (2,6 s): Scan-Ebene
     // steigt von unten nach oben (darunter fest, darüber noch Raster), Farbe gleitet vom Akzent zu Rot, frisch Materialisiertes
@@ -821,15 +826,20 @@ function build(L, wrap, host, o) {
         p.wave.material.opacity = 0.32 * (1 - k) * Math.min(1, k * 6); p.wave.scale.setScalar(1 + k * 0.9);
         if (i === at && !held) cubeB = b;
       });
-      if (!hoverCube) cubeGrid.material.opacity = 0.42 + 0.25 * cubeB;
-      const pu = Math.sin(Math.PI * t / PULSE) ** 2, r = 0.05 + 0.006 * pu;
+      pt += dt;
+      const fu = ((pt + 3) % FADE_EVERY) / FADE_D, quiet = !(job || held || hoverCube);
+      fadeAmp += ((quiet ? 1 : 0) - fadeAmp) * Math.min(1, dt * 3);
+      const fade = 1 - (1 - FADE_MIN) * fadeAmp * (fu < 1 ? Math.sin(Math.PI * fu) ** 2 : 0);
+      if (!hoverCube) cubeGrid.material.opacity = (0.42 + 0.25 * cubeB) * fade;
+      edgeMat.opacity *= fade; cornerMat.opacity = 0.9 * fade;
+      const pu = Math.sin(Math.PI * pt / PULSE) ** 2, r = 0.05 + 0.006 * pu;
       aura.material.opacity = 0.16 + 0.08 * pu; aura.scale.setScalar(2 * r);
       aura.position.copy(cube.position); if (!held) aura.position.z = Math.max(aura.position.z, r + 0.003);
       pool.visible = !held; pool.position.set(cube.position.x, cube.position.y, 0.0028);
       const air = held ? 0 : Math.max(0, cube.position.z - ch) / HOP_H;   // Bodenschein wird beim Abheben etwas kleiner + schwächer
       pool.material.opacity = (0.2 + 0.1 * pu) * (1 - 0.3 * air); pool.scale.setScalar((0.95 + 0.06 * pu) * (1 - 0.12 * air));
       cornerMat.size = 0.016 + 0.003 * pu; cube.scale.setScalar(1 + 0.008 * pu);
-      if (!hoverCube) cubeFill.material.opacity = 0.09 + 0.03 * pu;
+      if (!hoverCube) cubeFill.material.opacity = (0.09 + 0.03 * pu) * fade;
     };
     show();
   }
