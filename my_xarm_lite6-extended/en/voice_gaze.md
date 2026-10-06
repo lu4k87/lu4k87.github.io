@@ -178,7 +178,7 @@
 > - **Hit test & dwell:** 40 px tolerance margin around every button (on overlap the nearest wins), gaze point up to 40 px outside the window clamped to the edge, further out = no button (stop); alpha smoothing 0.20. Dwell time 1.0 s with yellow border + fill bar, triggering plays a click (`ui_mouse_click.mp3`, Pygame). Moving = green button, looking away = stop.
 > - **Gaze-loss stop:** no `gaze2d` data for > 300 ms (blink, tracker dropout) or a marker homography older than 1 s hides the cursor and stops any motion. Without glasses (no gaze data ever received) the mouse steers (test mode).
 > - **Speed levels (SPEED):** 1 / 2 / 3 = 0.05 / 0.10 / 0.15 servo scale, rotation = 5 × translation (level 2 = 0.5 rad/s); starts at level 2; DOWN moves at level 2 at most.
-> - **Status card:** control (`yours`, `waiting for approval in Robot Control UI`, `request denied`, `held by …`, `watchdog offline`), tracking (markers 4/4, gaze lost, mouse mode), Z height from `/ui/eef_position`, speed, gripper. DOWN shows the height as a badge from 40 mm `STOP` from 33 mm and `NO Z` without a Z pose younger than 0.5 s (neither can be triggered).
+> - **Status card:** control (`yours`, `waiting for approval in UX | Control Interface`, `request denied`, `held by …`, `watchdog offline`), tracking (markers 4/4, gaze lost, mouse mode), Z height from `/ui/eef_position`, speed, gripper. DOWN shows the height as a badge from 40 mm `STOP` from 33 mm and `NO Z` without a Z pose younger than 0.5 s (neither can be triggered).
 > - **Buttons:** GAZE (gaze control ON/OFF, starts OFF; while OFF all other buttons are dashed and locked), SPEED, HOME ⌂ (initial pose), GRIPPER (one toggle, vacuum ON/OFF); 1 s lock after switch buttons.
 >
 >

@@ -48,7 +48,7 @@ Web-Dashboard für Systemlast, ROS-2-Kommunikation, Roboter-Nutzung und Nutzer-S
 
 ```bash
 ros2 launch http_monitoring_dashboard_p8083 monitoring_dashboard.launch.py   # port:=8083 open_browser:=true db:=<SQLite-Datei>
-# → http://localhost:8083/ · UX | Nexus Launcher: Karte „Monitoring Dashboard“ im RUN DEV SETUP und SERVER SETUP
+# → http://localhost:8083/ · UX | Nexus Launcher: Karte „UX | Monitoring“ im RUN DEV SETUP und SERVER SETUP
 ```
 
 ---

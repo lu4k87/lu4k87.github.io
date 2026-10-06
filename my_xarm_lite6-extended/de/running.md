@@ -46,7 +46,7 @@ Dieser Abschnitt beschreibt Schritt für Schritt den Start der Hardware und Soft
 
 | Use-Case / Szenario | Benötigte Hardware | Empfohlene Start-Sequenz in Nexus | Erreichbare Web-Tools |
 | :--- | :--- | :--- | :--- |
-| **Reine Simulation / GUI-Test** | Nur PC (Keine Roboter-HW) | 1. `RUN DEV SETUP (FAKE)` (Vision, Eyetracking, VR abwählen, falls nicht gebraucht)<br>2. optional: Karte `Monitoring Dashboard` | UX \| Control Interface (8081), UX \| Monitoring (8083) |
+| **Reine Simulation / GUI-Test** | Nur PC (Keine Roboter-HW) | 1. `RUN DEV SETUP (FAKE)` (Vision, Eyetracking, VR abwählen, falls nicht gebraucht)<br>2. optional: Karte `UX \| Monitoring` | UX \| Control Interface (8081), UX \| Monitoring (8083) |
 | **Gamepad Teleoperation** | xArm Lite 6 + Xbox Controller | 1. Roboter einschalten<br>2. `RUN DEV SETUP (REAL)` | RViz2, UX \| Control Interface (8081) |
 | **3D-Objekterkennung & Greifen** | xArm Lite 6 + ZED Mini | 1. `RUN DEV SETUP (REAL)` mit angehakter Karte `Robot Vision Cameras Bringup` | RViz2, UX \| Control Interface (8081), Web-Video (8082) |
 | **Eye-Tracking Teleoperation** | Tobii Glasses 3 + ArUco-Setup | 1. `RUN DEV SETUP (REAL)` mit der Karte `Eyetracker - Gaze Control` (Real World oder UI Gaze)<br>oder `EXTRAS EXECS` → `RUN DEV + Gaze UI (ZED M) - Exocentric` / `(Rpi Cam) - Egocentric` | Gaze-Fenster, Live-Feedback |
@@ -94,7 +94,7 @@ python3 ros2_nexus/ros2_nexus_web.py
 ```bash
 cd ~/dev_ws/ros2_nexus && bash install_app.sh
 ```
-Dies konfiguriert automatisch die Pfade, kopiert die `.desktop`-Dateien nach `~/.local/share/applications/` und aktualisiert die Desktop-Datenbank. Anschließend können die UX | Nexus Launcher (Menüeintrag **„ROS 2 Nexus"**) und die UX | Control Interface (Menüeintrag **„Robot Control UI"**) direkt über das Aktivitäten-Menü von Ubuntu gestartet oder an das Ubuntu-Dock angeheftet werden.
+Dies konfiguriert automatisch die Pfade, kopiert die `.desktop`-Dateien nach `~/.local/share/applications/` und aktualisiert die Desktop-Datenbank. Anschließend können die UX | Nexus Launcher (Menüeintrag **„UX | Nexus Launcher"**) und die UX | Control Interface (Menüeintrag **„UX | Control Interface"**) direkt über das Aktivitäten-Menü von Ubuntu gestartet oder an das Ubuntu-Dock angeheftet werden.
 
 ---
 <br>
@@ -170,7 +170,7 @@ Die UX | Nexus Launcher (Port 8080) fungiert als zentraler Befehls-Orchestrator.
 
 ### 7.5 Remote Control (Server-/Client Kommunikation)
 
-Der Roboter-PC ist der **Server**: Dort laufen ROS 2, der Arm und die UX | Nexus Launcher; die Karte *Robot Control UI, WebSocket & Video Server* startet zusätzlich rosbridge, den Webserver und den `remote_control_watchdog`. **Clients** sind Browser auf Laptop, Tablet oder Quest 3 – ohne Installation. Einrichtung, Firewall-Regeln, das Remote-Control-Panel und Fehlerbilder erklärt das [Handbuch](../operate_manual.html) (Kapitel *Server/Client-Steuerung*) Schritt für Schritt.
+Der Roboter-PC ist der **Server**: Dort laufen ROS 2, der Arm und die UX | Nexus Launcher; die Karte *UX | Control Interface, WebSocket & Video Server* startet zusätzlich rosbridge, den Webserver und den `remote_control_watchdog`. **Clients** sind Browser auf Laptop, Tablet oder Quest 3 – ohne Installation. Einrichtung, Firewall-Regeln, das Remote-Control-Panel und Fehlerbilder erklärt das [Handbuch](../operate_manual.html) (Kapitel *Server/Client-Steuerung*) Schritt für Schritt.
 
 | Client | URL | Steuerung übernehmen |
 |---|---|---|
@@ -280,7 +280,7 @@ Die Buttons, Kategorien und Befehle in der UX | Nexus Launcher sind vollständig
 - **Parameter je Modus:** Werte, die nur im anderen Modus wirken, sind ausgegraut und werden nie angehängt (FAKE: *REAL max speed / heartbeat / arm*, *REAL: execute plans / always confirm*; REAL: *FAKE max speed / heartbeat*); der Tooltip nennt den Grund. Karten mit Empfehlung zeigen oben **Recommended for FAKE/REAL**: *✓ … settings set* oder *Apply … settings* mit den abweichenden Werten. Die Empfehlung wird beim ersten Öffnen einer FAKE/REAL-Sequenz einmal gesetzt (Merker `__mode_presets` in `launcher_config.json`), danach bleiben eigene Änderungen. Empfohlen: Servo-Stack *Gamepad + collision checker* und *Table plane* an; REAL zusätzlich *arm before remote gamepad* an; VLA-M FAKE *Dry run* aus, REAL zusätzlich *execute plans* + *always confirm* an. Das **(i)** der Karte nennt kurze FAKE/REAL-Hinweise (`MODE_PRESETS` / `MODE_HINTS` in `ros2_nexus/js/mode_presets.js`).
 - **Eyetracker-Karte:** Modus `Real World` (`gaze_grasp_routine_tobii_glasses`) oder `UI Gaze` (`gaze_control_ui_tobii_glasses gaze_ui`) – eine Karte, genau ein Modus.
 - **VLA-M-Karte:** eigene Kategorie *VLA-M (Vision-Language-Action)* in RUN DEV SETUP und SERVER SETUP, übersprungen bis angehakt. Parameter: *LLM* (`ollama` / `anthropic`), *Dry run*, *REAL: execute plans*, *REAL: always confirm* (Modell im Bereich „Config Files“); REAL braucht *execute plans* an (Empfehlung), sonst zeigt *Execute* nur den Plan; der Node startet `ollama serve` selbst (einmalig installieren: `bash src/vla_bridge/scripts/install_ollama.sh`); Details unter [VLA-M](vla.html).
-- **Karte UX | Compact Interface:** *Touch Panel (Touch-Display)* startet angehakt mit EXECUTE den Kiosk auf einem Zusatz-Touch-Display (siehe [UX | Compact Interface](robot_control_ui.html#touch-panel-nexus-webapp-touch)).
+- **Karte UX | Compact Interface:** *UX | Compact Interface (Touch-Display)* startet angehakt mit EXECUTE den Kiosk auf einem Zusatz-Touch-Display (siehe [UX | Compact Interface](robot_control_ui.html#touch-panel-nexus-webapp-touch)).
 - **Wert-Parameter:** Launch-Argumente und Node-Parameter mit Werten (IPs, Zahlen, Auswahllisten) erscheinen als Eingabezeilen mit Quell-Badge `CONFIG` (YAML), `ARG` (Launch-Argument) oder `PARAM` (Node-Parameter). An den Befehl gehängt werden nur Werte, die vom Standard abweichen, Node-Parameter als `--ros-args -p`. Die Launch-Argumente inkl. eingebundener Launches liest das Backend aus (`/api/launch_details`).
 - **Bereich „Config Files“:** pro Karte die YAML-Dateien, die der Launch lädt, mit den wichtigen Werten und Einheiten, geladen / nicht geladen für die aktuellen Argumente, überschriebene Werte durchgestrichen, Status `Live` / `Copy` / `Build needed` / `Not built` (`install/` verlinkt oder kopiert), alle Schlüssel und ein Button zum Kopieren des Pfads.
 - **Suche & Filter** über Titel, Datei, Kategorie oder Port, **Theme** (Knopf *Dark / Light / Jarvis / Nord Blue ▾* im Footer links neben dem Zoom oder **Alt+T**: Liste mit Live-Vorschau, Enter übernehmen, Esc abbrechen; schaltet auch den Seitenhintergrund um das Popup; gleiche Liste wie UX | Control Interface und UX | Monitoring, nur dieser Browser; die Zeile *Language DE | EN* unten stellt die Texte des Popups live um, siehe [UX | Control Interface](robot_control_ui.html)) und ein **Localhost only**-Schalter in der DDS-Leiste (`ROS_LOCALHOST_ONLY=1` für diese Sequenz).

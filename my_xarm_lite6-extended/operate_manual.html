@@ -1919,7 +1919,7 @@ source install/setup.bash</pre><button class="copy" type="button">Kopieren</butt
       <ol class="howto">
         <li><div><b>UX | Nexus Launcher öffnen:</b> <span class="url">http://localhost:8080</span><ul class="bl sm"><li>Starten/Stoppen nur hier</li><li>Von Clients aus nur lesbar</li></ul></div></li>
         <li><div><b>Roboter starten</b><ul class="bl sm"><li>Popup <b>SERVER SETUP</b>, Modus FAKE oder REAL wählen</li><li><span class="proto" style="--k:var(--c-fake)">FAKE</span> <span class="card-name">MoveIt Servo &amp; MoveGroup (Fake) + Linear Axis [Server]</span></li><li><span class="proto" style="--k:var(--c-real)">REAL</span> <span class="card-name">MoveIt Servo &amp; MoveGroup (Real) [Server]</span></li><li><b>Check</b> (links neben EXECUTE): Roboter, Kameras, Tobii, Gamepad, Ports, zweiter <code>move_group</code>, ROS-Umgebung, GPU, Platte, Ollama + <code>qwen3.8:27b</code></li><li>REAL: Check läuft bei EXECUTE automatisch, ein Fehler stoppt den Start</li><li>Pflicht-Karte fehlt (z. B. VLA-M ohne MoveIt) → gelbe Zeile: <i>Add … &amp; start</i> · <i>Start anyway</i> · <i>Back</i></li><li>Jede Karte = eigenes Terminal · schließen = Launch sauber beenden · <i>Restart</i> in der Log-Schublade</li><li>Schalter <b>Terminals</b> (Zeile <i>Components</i>) aus → Ausgabe nur in der Log-Schublade, ab nächstem Start</li></ul></div></li>
-        <li><div><b>UI starten:</b> <span class="card-name">Robot Control UI, WebSocket, Remote Watchdog &amp; Video Server (Port 8081 / 9090 / 8082)</span><ul class="bl sm"><li>Startet rosbridge, Webserver, Remote Control Watchdog</li><li>In RUN DEV SETUP heißt die Karte „Robot Control UI, WebSocket &amp; Video Server …“</li></ul></div></li>
+        <li><div><b>UI starten:</b> <span class="card-name">UX | Control Interface, WebSocket, Remote Watchdog &amp; Video Server (Port 8081 / 9090 / 8082)</span><ul class="bl sm"><li>Startet rosbridge, Webserver, Remote Control Watchdog</li><li>In RUN DEV SETUP heißt die Karte „UX | Control Interface, WebSocket &amp; Video Server …“</li></ul></div></li>
         <li><div><b>Nur für C und D:</b> <span class="card-name">VR Quest 3 Teleop (Port 9091 / 8443)</span></div></li>
         <li><div><b>Remote-Panel prüfen</b><ul class="bl sm"><li>Chip zeigt FAKE oder REAL (<span class="co">1</span>), nicht „WATCHDOG OFF“</li><li>„Access from home network“: „On (subnet)“ (<span class="co">8</span>)</li><li>URL dort kopieren</li></ul></div></li>
       </ol>
@@ -2000,12 +2000,12 @@ source install/setup.bash</pre><button class="copy" type="button">Kopieren</butt
 <section class="panel" id="nexus" data-area="remote" role="region" aria-labelledby="t-nexus" style="--k:var(--c-srv)">
   <header class="panel-head">
     <div class="ph"><span class="eyebrow"><span class="n">05</span><span class="kicker">Konfiguration · Server-PC</span></span><h2>Nexus-Werte</h2></div>
-    <div class="crumbs" aria-label="Pfad in der UX | Nexus Launcher"><span>UX | Nexus Launcher</span><i>→</i><span>Robot Control UI, WebSocket &amp; Video Server</span><i>→</i><span>PARAMETERS &amp; ARGS</span></div>
+    <div class="crumbs" aria-label="Pfad in der UX | Nexus Launcher"><span>UX | Nexus Launcher</span><i>→</i><span>UX | Control Interface, WebSocket &amp; Video Server</span><i>→</i><span>PARAMETERS &amp; ARGS</span></div>
   </header>
   <div class="bento">
     <div class="s-5">
       <div class="nx" aria-label="Mockup der Nexus-Karte">
-        <div class="nx-title">Robot Control UI, WebSocket &amp; Video Server (Port 8081 / 9090 / 8082)</div>
+        <div class="nx-title">UX | Control Interface, WebSocket &amp; Video Server (Port 8081 / 9090 / 8082)</div>
         <div class="nx-cmd">ros2 launch http_robot_control_ui_p8081 http_robot_control_ui.launch.py</div>
         <div class="nx-ph">≡ PARAMETERS &amp; ARGS</div>
         <div class="nx-g">
@@ -2396,7 +2396,7 @@ source install/setup.bash</pre><button class="copy" type="button">Kopieren</butt
         <li><div><b>Einmal bauen</b><ul class="bl sm"><li>Nach Änderungen an Node oder Launch erneut</li><li>UI-Dateien brauchen keinen Build</li></ul>
           <div class="cmd"><pre>cd ~/dev_ws &amp;&amp; colcon build --packages-select vla_bridge
 source install/setup.bash</pre><button class="copy" type="button">Kopieren</button></div></div></li>
-        <li><div><b>UX | Control Interface starten</b><ul class="bl sm"><li><span class="card-name">Robot Control UI, WebSocket &amp; Video Server (Port 8081 / 9090 / 8082)</span></li></ul></div></li>
+        <li><div><b>UX | Control Interface starten</b><ul class="bl sm"><li><span class="card-name">UX | Control Interface, WebSocket &amp; Video Server (Port 8081 / 9090 / 8082)</span></li></ul></div></li>
         <li><div><b>VLA-M Bridge starten</b><ul class="bl sm"><li>UX | Nexus Launcher: RUN DEV SETUP / SERVER SETUP → Karte <span class="card-name">VLA-M Bridge</span> (Kategorie VLA-M, startet als „Skipped“, bis angehakt)</li><li>In der Karte: Sprachmodell (<code>ollama</code> | <code>anthropic</code>), Modell, Dry run, REAL-Schalter, Launch-Struktur, Config-Datei</li><li>Einmalig vorher: <code>bash src/vla_bridge/scripts/install_ollama.sh</code> (Ollama ohne sudo ~2 GB + Modell ~9 GB) - danach startet der Node das Sprachmodell selbst</li><li>Oder im Terminal - mit derselben DDS-Umgebung wie die UX | Nexus Launcher (Schalter <b>Localhost only</b> im Popup):</li></ul>
           <div class="cmd"><pre># Localhost only AN (sonst: export ROS_LOCALHOST_ONLY=0; unset CYCLONEDDS_URI)
 export ROS_LOCALHOST_ONLY=1
@@ -4557,7 +4557,7 @@ function initShell(onShow) {
       'UX | Nexus Launcher öffnen: http://localhost:8080',
       'UI-Karte → PARAMETERS & ARGS: Remote access an, Clients: subnet (gilt nach Neustart der Karte)',
       'Popup SERVER SETUP, Modus ' + (real ? 'REAL' : 'FAKE') + ': ' + (real ? 'MoveIt Servo & MoveGroup (Real) [Server]' : 'MoveIt Servo & MoveGroup (Fake) + Linear Axis [Server]'),
-      'UI starten: Robot Control UI, WebSocket, Remote Watchdog & Video Server (Port 8081 / 9090 / 8082)'
+      'UI starten: UX | Control Interface, WebSocket, Remote Watchdog & Video Server (Port 8081 / 9090 / 8082)'
     ];
     if (https) srv.push('VR Quest 3 Teleop (Port 9091 / 8443) starten' + (usb ? ' · Quest vorher per USB anstecken' : ''));
     srv.push('Remote-Panel prüfen: Chip zeigt ' + (real ? 'REAL' : 'FAKE') + ', nicht „WATCHDOG OFF“ · „Access from home network“: „On (subnet)“');

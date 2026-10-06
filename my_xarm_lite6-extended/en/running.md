@@ -46,7 +46,7 @@ This section describes the step-by-step process to launch both the hardware and 
 
 | Use-Case / Scenario | Required Hardware | Recommended Launch Sequence in Nexus | Reachable Web Tools |
 | :--- | :--- | :--- | :--- |
-| **Pure Simulation / GUI Test** | Only PC (No Robot HW) | 1. `RUN DEV SETUP (FAKE)` (untick vision, eye tracking, VR if not needed)<br>2. optional: card `Monitoring Dashboard` | UX \| Control Interface (8081), UX \| Monitoring (8083) |
+| **Pure Simulation / GUI Test** | Only PC (No Robot HW) | 1. `RUN DEV SETUP (FAKE)` (untick vision, eye tracking, VR if not needed)<br>2. optional: card `UX \| Monitoring` | UX \| Control Interface (8081), UX \| Monitoring (8083) |
 | **Gamepad Teleoperation** | xArm Lite 6 + Xbox Controller | 1. Power on Robot<br>2. `RUN DEV SETUP (REAL)` | RViz2, UX \| Control Interface (8081) |
 | **3D Object Detection & Grasping** | xArm Lite 6 + ZED Mini | 1. `RUN DEV SETUP (REAL)` with the card `Robot Vision Cameras Bringup` ticked | RViz2, UX \| Control Interface (8081), Web-Video (8082) |
 | **Eye-Tracking Teleoperation** | Tobii Glasses 3 + ArUco Setup | 1. `RUN DEV SETUP (REAL)` with the card `Eyetracker - Gaze Control` (Real World or UI Gaze)<br>or `EXTRAS EXECS` → `RUN DEV + Gaze UI (ZED M) - Exocentric` / `(Rpi Cam) - Egocentric` | Gaze Window, Live Feedback |
@@ -93,7 +93,7 @@ python3 ros2_nexus/ros2_nexus_web.py
 ```bash
 cd ~/dev_ws/ros2_nexus && bash install_app.sh
 ```
-This automatically configures the paths, copies desktop shortcuts to `~/.local/share/applications/`, and updates the desktop database. Afterwards, you can launch the UX | Nexus Launcher (menu entry **"ROS 2 Nexus"**) and the UX | Control Interface (menu entry **"Robot Control UI"**) directly from the Ubuntu Activities application menu or pin them to the Ubuntu dock.
+This automatically configures the paths, copies desktop shortcuts to `~/.local/share/applications/`, and updates the desktop database. Afterwards, you can launch the UX | Nexus Launcher (menu entry **"UX | Nexus Launcher"**) and the UX | Control Interface (menu entry **"UX | Control Interface"**) directly from the Ubuntu Activities application menu or pin them to the Ubuntu dock.
 
 ---
 <br>
@@ -168,7 +168,7 @@ The UX | Nexus Launcher (Port 8080) acts as the central command orchestrator. It
 
 ### 7.5 Remote Control (Server-/Client Communication)
 
-The robot PC is the **server**: it runs ROS 2, the arm and the UX | Nexus Launcher; the card *Robot Control UI, WebSocket & Video Server* also starts rosbridge, the web server and `remote_control_watchdog`. **Clients** are browsers on a laptop, tablet or Quest 3 – nothing to install. Setup, firewall rules, the Remote Control panel and error patterns are covered step by step in the [manual](../operate_manual.html) (chapter *Server/Client-Steuerung*).
+The robot PC is the **server**: it runs ROS 2, the arm and the UX | Nexus Launcher; the card *UX | Control Interface, WebSocket & Video Server* also starts rosbridge, the web server and `remote_control_watchdog`. **Clients** are browsers on a laptop, tablet or Quest 3 – nothing to install. Setup, firewall rules, the Remote Control panel and error patterns are covered step by step in the [manual](../operate_manual.html) (chapter *Server/Client-Steuerung*).
 
 | Client | URL | Taking control |
 |---|---|---|
@@ -278,7 +278,7 @@ The buttons, categories, and commands in the UX | Nexus Launcher are fully custo
 - **Parameters per mode:** values that only act in the other mode are greyed out and never appended (FAKE: *REAL max speed / heartbeat / arm*, *REAL: execute plans / always confirm*; REAL: *FAKE max speed / heartbeat*); the tooltip says why. Cards with a recommendation show **Recommended for FAKE/REAL** at the top: *✓ … settings set* or *Apply … settings* with the differing values. The recommendation is set once when a FAKE/REAL sequence is opened for the first time (marker `__mode_presets` in `launcher_config.json`), afterwards own changes stay. Recommended: Servo stack *Gamepad + collision checker* and *Table plane* on; REAL additionally *arm before remote gamepad* on; VLA-M FAKE *Dry run* off, REAL additionally *execute plans* + *always confirm* on. The card **(i)** lists short FAKE/REAL hints (`MODE_PRESETS` / `MODE_HINTS` in `ros2_nexus/js/mode_presets.js`).
 - **Eyetracker card:** mode `Real World` (`gaze_grasp_routine_tobii_glasses`) or `UI Gaze` (`gaze_control_ui_tobii_glasses gaze_ui`) - one card, exactly one mode.
 - **VLA-M card:** own category *VLA-M (Vision-Language-Action)* in RUN DEV SETUP and SERVER SETUP, skipped until ticked. Parameters: *LLM* (`ollama` / `anthropic`), *Dry run*, *REAL: execute plans*, *REAL: always confirm* (model in the Config Files pane); REAL needs *execute plans* on (recommendation), otherwise *Execute* only shows the plan; the node starts `ollama serve` itself (install once: `bash src/vla_bridge/scripts/install_ollama.sh`); details in [VLA-M](vla.html).
-- **UX | Compact Interface card:** *Touch Panel (Touch-Display)* starts the kiosk on an extra touch display with EXECUTE when ticked (see [UX | Compact Interface](robot_control_ui.html#touch-panel-nexus-webapp-touch)).
+- **UX | Compact Interface card:** *UX | Compact Interface (Touch-Display)* starts the kiosk on an extra touch display with EXECUTE when ticked (see [UX | Compact Interface](robot_control_ui.html#touch-panel-nexus-webapp-touch)).
 - **Value parameters:** launch arguments and node parameters with values (IPs, numbers, choices) appear as input rows with a source badge `CONFIG` (YAML), `ARG` (launch argument) or `PARAM` (node parameter). Only values that differ from the default are appended to the command, node parameters as `--ros-args -p`. The backend parses the launch arguments incl. included launches (`/api/launch_details`).
 - **Config Files pane:** per card the YAML files the launch loads, with the important values and units, loaded / not loaded for the current arguments, overridden values struck through, status `Live` / `Copy` / `Build needed` / `Not built` (`install/` symlink vs. copy), all keys and a copy-path button.
 - **Search & filter** over title, file, category or port, **Theme** (button *Dark / Light / Jarvis / Nord Blue ▾* in the footer left of the zoom or **Alt+T**: list with live preview, Enter apply, Esc cancel; also switches the page background around the popup; same list as UX | Control Interface and UX | Monitoring, this browser only; its bottom row *Language DE | EN* switches the popup texts live, see [UX | Control Interface](robot_control_ui.html)), and a **Localhost only** switch in the DDS bar (`ROS_LOCALHOST_ONLY=1` for this sequence).
