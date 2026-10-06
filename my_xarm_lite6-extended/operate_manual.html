@@ -28,25 +28,27 @@
   --radius-sm: 4px; --radius: 6px; --radius-lg: 8px; /* Ecken dezent: klein (Chips, Buttons, Code) · Karten · große Rahmen; Balken/Linien kantig, höchstens 8 px (Wunsch User 04.10.2026, Hook prüft) */
     color-scheme: light;
     --bar-h: 60px; --side-w: 292px; --r: var(--radius); --r-lg: var(--radius-lg);
-    --bg: #f2f5fa; --surface: #ffffff; --band: #edf1f7; --ink: #0c1525; --mut: #475569;
-    --line: #d6dee9; --line-2: #c3cedc; --focus: #0a66c2; --co: #0a66c2; --co-ink: #ffffff;
-    --shadow: 0 1px 2px rgba(12, 21, 37, .05), 0 8px 24px -14px rgba(12, 21, 37, .22);
-    --shadow-lg: 0 30px 80px -24px rgba(12, 21, 37, .42), 0 2px 6px rgba(12, 21, 37, .08);
+    /* Graphit + Türkis wie die Hauptseite project_docs.html (Werte aus present_presentation.html, Skill docs-layout §6) */
+    --bg: #f3f5f5; --surface: #ffffff; --surface-2: #eef2f2; --band: #e9eeee; --ink: #14181a; --mut: #3a4448;
+    --line: #d9e0e0; --line-2: #b9c4c4; --accent: #0a7a6d; --accent-ink: #ffffff; --glow: transparent;
+    --focus: var(--accent); --co: var(--accent); --co-ink: var(--accent-ink);
+    --shadow: 0 1px 2px rgba(20,30,30,.06), 0 16px 32px -24px rgba(20,40,40,.35);
+    --shadow-lg: 0 30px 80px -24px rgba(20, 30, 30, .42), 0 2px 6px rgba(20, 30, 30, .08);
     --glass-hi: rgba(255, 255, 255, .8);
     --glass: color-mix(in srgb, var(--surface) 80%, transparent);
     --glass-line: color-mix(in srgb, var(--line) 85%, transparent);
-    --ok: #08704f; --warn: #a34a06; --crit: #c21f1f;
-    --code-bg: #0d1626; --code-ink: #e6edf7; --code-ok: #34d399;
-    --glow-1: #0a66c2; --glow-2: #6d5cf0; --glow-3: #10b48c;
+    --ok: #15803d; --warn: #a15c00; --crit: #b91c1c;
+    --code-bg: #181b1e; --code-ink: #eef2f3; --code-ok: #34d399;
+    --glow-1: #0a7a6d; --glow-2: #0f766e; --glow-3: #4338ca;
     /* Architektur: Verbindungsarten */
-    --c-hci: #556070; --c-http: #08704f; --c-ws: #066c8e; --c-topic: #5b45d6; --c-hw: #b8325c; --c-proc: #5d687d;
-    --c-act: #0a66c2; --c-fb: #08704f; --c-see: #0a66c2; --c-hear: #5b45d6; --c-feel: #b8325c;
+    --c-hci: #4f595d; --c-http: #15803d; --c-ws: #1d4ed8; --c-topic: #6d28d9; --c-hw: #c2410c; --c-proc: #4f595d;
+    --c-act: #1d4ed8; --c-fb: #15803d; --c-see: #1d4ed8; --c-hear: #6d28d9; --c-feel: #c2410c;
     /* Remote: Rollen und Protokolle */
-    --c-srv: #08707a; --c-cli: #5b45d6; --c-https: #0a66c2; --c-fake: #08704f; --c-real: #c21f1f;
+    --c-srv: #0f766e; --c-cli: #6d28d9; --c-https: #1d4ed8; --c-fake: #15803d; --c-real: #b91c1c;
     /* Service/Action (orange), getrennt von der Server-Rolle */
-    --c-svc: #9a5800;
+    --c-svc: #9a5b00;
     /* VLA-M: Chat mit dem Vision-Language-Action-Modell */
-    --c-vla: #b0175a;
+    --c-vla: #be185d;
     /* Mockups der Robot Control UI: bewusst immer dunkel wie die App selbst */
     --m-bg: #0b111c; --m-panel: #131d2e; --m-line: #26354d; --m-ink: #e6edf7; --m-mut: #8a9bb3;
     --m-acc: #38bdf8; --m-ok: #34d399; --m-warn: #f5a524; --m-crit: #ff6b6b; --m-field: #0e1624;
@@ -56,38 +58,38 @@
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
       color-scheme: dark;
-      --bg: #0a0f19; --surface: #0e1624; --band: #0b121e; --ink: #edf2f8; --mut: #9eabbf;
-      --line: #213049; --line-2: #2c3d5a; --focus: #38bdf8; --co: #38bdf8; --co-ink: #06121f;
-      --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 10px 26px -14px rgba(0, 0, 0, .7);
+      --bg: #111315; --surface: #181b1e; --surface-2: #1f2327; --band: #15181a; --ink: #eef2f3; --mut: #b9c2c6;
+      --line: #2a2f34; --line-2: #3b4248; --accent: #2ee6c8; --accent-ink: #04201c; --glow: rgba(46, 230, 200, .45);
+      --shadow: 0 1px 0 rgba(255,255,255,.04) inset, 0 20px 40px -24px rgba(0,0,0,.7);
       --shadow-lg: 0 30px 80px -20px rgba(0, 0, 0, .8), 0 0 0 1px rgba(255, 255, 255, .04);
       --glass-hi: rgba(255, 255, 255, .06);
       --glass: color-mix(in srgb, var(--surface) 76%, transparent);
-      --ok: #34d399; --warn: #f5a524; --crit: #ff6b6b;
-      --code-bg: #050910; --code-ink: #e6edf7;
-      --glow-1: #38bdf8; --glow-2: #8b7bff; --glow-3: #22c9a0;
-      --c-hci: #a3afc2; --c-http: #34d399; --c-ws: #38bdf8; --c-topic: #a596ff; --c-hw: #ff7a9f; --c-proc: #8291a8;
-      --c-act: #38bdf8; --c-fb: #34d399; --c-see: #38bdf8; --c-hear: #a596ff; --c-feel: #ff7a9f;
-      --c-srv: #2dd4bf; --c-cli: #a596ff; --c-https: #38bdf8; --c-fake: #34d399; --c-real: #ff6b6b;
-      --c-svc: #f5a524;
+      --ok: #4ade80; --warn: #fbbf24; --crit: #f87171;
+      --code-bg: #0b0d0e; --code-ink: #eef2f3;
+      --glow-1: #2ee6c8; --glow-2: #2dd4bf; --glow-3: #818cf8;
+      --c-hci: #9aa4a8; --c-http: #4ade80; --c-ws: #60a5fa; --c-topic: #a78bfa; --c-hw: #fb923c; --c-proc: #7d878b;
+      --c-act: #60a5fa; --c-fb: #4ade80; --c-see: #60a5fa; --c-hear: #a78bfa; --c-feel: #fb923c;
+      --c-srv: #2dd4bf; --c-cli: #a78bfa; --c-https: #60a5fa; --c-fake: #4ade80; --c-real: #f87171;
+      --c-svc: #f5b942;
       --c-vla: #f472b6;
       --m-bg: #060a12; --m-panel: #0f1828; --m-line: #2a3a55;
     }
   }
   :root[data-theme="dark"] {
     color-scheme: dark;
-    --bg: #0a0f19; --surface: #0e1624; --band: #0b121e; --ink: #edf2f8; --mut: #9eabbf;
-    --line: #213049; --line-2: #2c3d5a; --focus: #38bdf8; --co: #38bdf8; --co-ink: #06121f;
-    --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 10px 26px -14px rgba(0, 0, 0, .7);
+    --bg: #111315; --surface: #181b1e; --surface-2: #1f2327; --band: #15181a; --ink: #eef2f3; --mut: #b9c2c6;
+    --line: #2a2f34; --line-2: #3b4248; --accent: #2ee6c8; --accent-ink: #04201c; --glow: rgba(46, 230, 200, .45);
+    --shadow: 0 1px 0 rgba(255,255,255,.04) inset, 0 20px 40px -24px rgba(0,0,0,.7);
     --shadow-lg: 0 30px 80px -20px rgba(0, 0, 0, .8), 0 0 0 1px rgba(255, 255, 255, .04);
     --glass-hi: rgba(255, 255, 255, .06);
     --glass: color-mix(in srgb, var(--surface) 76%, transparent);
-    --ok: #34d399; --warn: #f5a524; --crit: #ff6b6b;
-    --code-bg: #050910; --code-ink: #e6edf7;
-    --glow-1: #38bdf8; --glow-2: #8b7bff; --glow-3: #22c9a0;
-    --c-hci: #a3afc2; --c-http: #34d399; --c-ws: #38bdf8; --c-topic: #a596ff; --c-hw: #ff7a9f; --c-proc: #8291a8;
-    --c-act: #38bdf8; --c-fb: #34d399; --c-see: #38bdf8; --c-hear: #a596ff; --c-feel: #ff7a9f;
-    --c-srv: #2dd4bf; --c-cli: #a596ff; --c-https: #38bdf8; --c-fake: #34d399; --c-real: #ff6b6b;
-    --c-svc: #f5a524;
+    --ok: #4ade80; --warn: #fbbf24; --crit: #f87171;
+    --code-bg: #0b0d0e; --code-ink: #eef2f3;
+    --glow-1: #2ee6c8; --glow-2: #2dd4bf; --glow-3: #818cf8;
+    --c-hci: #9aa4a8; --c-http: #4ade80; --c-ws: #60a5fa; --c-topic: #a78bfa; --c-hw: #fb923c; --c-proc: #7d878b;
+    --c-act: #60a5fa; --c-fb: #4ade80; --c-see: #60a5fa; --c-hear: #a78bfa; --c-feel: #fb923c;
+    --c-srv: #2dd4bf; --c-cli: #a78bfa; --c-https: #60a5fa; --c-fake: #4ade80; --c-real: #f87171;
+    --c-svc: #f5b942;
     --c-vla: #f472b6;
     --m-bg: #060a12; --m-panel: #0f1828; --m-line: #2a3a55;
   }
@@ -115,7 +117,11 @@
   kbd { font-family: var(--mono); font-size: 11.5px; font-weight: 600; color: var(--ink); background: var(--band); border: 1px solid var(--line); border-radius: var(--radius-sm); padding: 0 6px; line-height: 1.6; white-space: nowrap; }
   svg { flex: 0 0 auto; }
 
-  .eyebrow, .label { font-family: var(--mono); font-size: 11.5px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--mut); }
+  .label { font-family: var(--mono); font-size: 11.5px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--mut); }
+  /* Kicker wie die Hauptseite: Strich, Nummer im Kästchen, Bereichsfarbe */
+  .eyebrow { font: 700 12px/1 var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--k, var(--accent)); display: flex; align-items: center; gap: 10px; }
+  .eyebrow::before { content: ""; width: 22px; height: 2px; background: currentColor; border-radius: 2px; flex: none; }
+  .eyebrow .n { padding: 4px 6px; border: 1px solid color-mix(in srgb, currentColor 55%, transparent); border-radius: var(--radius-sm); letter-spacing: .04em; }
   .lede { max-width: 68ch; color: var(--mut); font-size: 15.5px; }
 
   /* ================= App-Rahmen: Seitenleiste + Inhalt ================= */
@@ -127,14 +133,14 @@
     border-right: 1px solid var(--glass-line);
   }
   .side-top { display: flex; align-items: center; gap: 12px; padding: 0 4px; }
-  .brand-ic { width: 40px; height: 40px; border-radius: var(--radius); display: flex; align-items: center; justify-content: center; color: #fff; background: linear-gradient(135deg, var(--c-act), var(--c-topic)); box-shadow: 0 8px 18px -8px var(--c-act); flex: 0 0 auto; }
-  .brand-ic svg { width: 21px; height: 21px; }
+  .brand-ic { width: 34px; height: 34px; border-radius: var(--radius); display: grid; place-items: center; color: var(--accent-ink); background: var(--accent); box-shadow: 0 0 18px var(--glow); flex: 0 0 auto; }  /* wie .brand-mark der Hauptseite */
+  .brand-ic svg { width: 20px; height: 20px; }
   .brand { display: flex; flex-direction: column; min-width: 0; flex: 1 1 auto; }
   .brand b { font-size: 15.5px; letter-spacing: -0.01em; line-height: 1.25; }
   .brand span { font-family: var(--mono); font-size: 11.5px; color: var(--mut); }
 
-  .icon-btn { flex: 0 0 auto; width: 40px; height: 40px; display: inline-flex; align-items: center; justify-content: center; font: inherit; color: var(--ink); background: var(--glass); border: 1px solid var(--glass-line); border-radius: var(--radius); cursor: pointer; box-shadow: inset 0 1px 0 var(--glass-hi); }
-  .icon-btn svg { width: 19px; height: 19px; }
+  .icon-btn { flex: 0 0 auto; box-sizing: border-box; width: 40px; height: 40px; display: inline-flex; align-items: center; justify-content: center; font: inherit; color: var(--ink); background: var(--glass); border: 1px solid var(--glass-line); border-radius: var(--radius); cursor: pointer; box-shadow: inset 0 1px 0 var(--glass-hi); }
+  .icon-btn svg { width: 18px; height: 18px; }
   .icon-btn:hover { border-color: var(--focus); color: var(--focus); }
   .icon-btn:disabled { opacity: .4; cursor: default; border-color: var(--glass-line); color: var(--ink); }
   .side-close, .menu-btn { display: none; }
@@ -150,7 +156,7 @@
   .nav-area { width: 100%; display: grid; grid-template-columns: 36px minmax(0, 1fr) auto; align-items: center; gap: 2px 11px; padding: 7px 10px 7px 7px; font: inherit; color: var(--ink); text-align: left; background: transparent; border: 0; border-radius: var(--radius); cursor: pointer; }
   .nav-area:hover { background: color-mix(in srgb, var(--ak) 8%, transparent); }
   .nav-area .ai { grid-row: span 2; width: 36px; height: 36px; border-radius: var(--radius); display: flex; align-items: center; justify-content: center; color: var(--ak); background: color-mix(in srgb, var(--ak) 13%, transparent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ak) 28%, transparent); }
-  .nav-area .ai svg { width: 19px; height: 19px; }
+  .nav-area .ai svg { width: 18px; height: 18px; }
   .nav-area b { font-size: 14.5px; font-weight: 750; line-height: 1.2; }
   .nav-area small { grid-column: 2; font-size: 12.5px; color: var(--mut); line-height: 1.25; }
   .nav-area .chev { grid-column: 3; grid-row: 1 / span 2; width: 16px; height: 16px; color: var(--mut); transition: transform .2s; }
@@ -178,7 +184,7 @@
   .side-foot .label { font-size: 11px; }
   .seg { display: inline-flex; gap: 2px; padding: 3px; background: var(--band); border: 1px solid var(--line); border-radius: var(--radius); }
   .seg button { display: inline-flex; align-items: center; gap: 6px; min-height: 32px; font: inherit; font-size: 13px; font-weight: 650; color: var(--mut); background: transparent; border: 0; border-radius: var(--radius-sm); padding: 0 10px; cursor: pointer; }
-  .seg button svg { width: 15px; height: 15px; }
+  .seg button svg { width: 16px; height: 16px; }
   .seg button:hover { color: var(--ink); }
   .seg button[aria-pressed="true"] { color: var(--ink); background: var(--surface); box-shadow: 0 1px 2px rgba(0, 0, 0, .12), inset 0 0 0 1px var(--line); }
   .keys { display: flex; flex-wrap: wrap; gap: 6px 12px; font-size: 12.5px; color: var(--mut); }
@@ -188,7 +194,7 @@
   .main { min-width: 0; display: flex; flex-direction: column; }
 
   /* Kopfzeile: Ort, Weiter/Zurück, Lesefortschritt */
-  .topbar { position: sticky; top: 0; z-index: 30; display: flex; flex-direction: column; background: color-mix(in srgb, var(--bg) 80%, transparent); backdrop-filter: blur(12px) saturate(1.3); -webkit-backdrop-filter: blur(12px) saturate(1.3); border-bottom: 1px solid var(--glass-line); }
+  .topbar { position: sticky; top: 0; z-index: 30; display: flex; flex-direction: column; background: color-mix(in srgb, var(--bg) 95%, transparent); border-bottom: 1px solid var(--line); }  /* wie .top der Hauptseite: kein Blur im Scrollbereich */
   .topbar-row { display: flex; align-items: center; gap: 12px; min-height: 60px; padding: 9px 28px; }
   .crumb { display: flex; align-items: center; gap: 10px; min-width: 0; flex: 1 1 auto; font-size: 14.5px; }
   .crumb-area { display: inline-flex; align-items: center; gap: 7px; flex: 0 0 auto; font-weight: 700; color: var(--ak); background: color-mix(in srgb, var(--ak) 11%, transparent); border: 1px solid color-mix(in srgb, var(--ak) 30%, transparent); border-radius: var(--radius-sm); padding: 3px 11px 3px 8px; }
@@ -198,8 +204,8 @@
   .crumb-pos { font-family: var(--mono); font-size: 12px; color: var(--mut); flex: 0 0 auto; }
   .top-actions { display: flex; align-items: center; gap: 8px; flex: 0 0 auto; }
   .top-search { display: none; }
-  .progress { height: 3px; background: transparent; }
-  .progress i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, var(--ak, var(--focus)), color-mix(in srgb, var(--ak, var(--focus)) 50%, var(--c-topic))); border-radius: 0 var(--radius) var(--radius) 0; transition: width .12s linear; }
+  .progress { height: 2px; background: transparent; }
+  .progress i { display: block; height: 100%; width: 0; background: var(--ak, var(--accent)); box-shadow: 0 0 10px var(--glow); transition: width .12s linear; }
 
   .page { width: 100%; max-width: 1340px; margin: 0 auto; padding: 36px 28px 96px; display: flex; flex-direction: column; gap: 32px; }
 
@@ -228,11 +234,10 @@
   .page[data-view="tabs"] .panel:not(.active) { display: none; }
   .page[data-view="tabs"] .panel.active { animation: panel-in .28s ease-out; }
   @keyframes panel-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
-  .panel-head { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 8px 16px; align-items: center; padding-bottom: 4px; }
-  .panel-num { grid-row: span 2; align-self: start; width: 52px; height: 52px; border-radius: var(--radius); display: flex; align-items: center; justify-content: center; font-family: var(--mono); font-size: 19px; font-weight: 700; color: var(--k); background: color-mix(in srgb, var(--k) 12%, var(--surface)); border: 1px solid color-mix(in srgb, var(--k) 40%, transparent); box-shadow: 0 8px 20px -12px var(--k); }
-  .panel-head .ph { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+  .panel-head { display: flex; flex-direction: column; gap: 14px; padding-bottom: 4px; }
+  .panel-head .ph { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
   .panel-head p { max-width: 80ch; color: var(--mut); }
-  .kicker { align-self: flex-start; display: inline-flex; align-items: center; gap: 6px; font-family: var(--mono); font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--k); background: color-mix(in srgb, var(--k) 12%, transparent); border-radius: var(--radius-sm); padding: 2px 8px; }
+  .kicker { min-width: 0; }  /* Text im .eyebrow; Klasse bleibt für die Suche */
 
   /* Bento-Raster: Karten in unterschiedlichen Breiten */
   .bento { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 20px; align-items: start; }
@@ -310,9 +315,8 @@
   @media (max-width: 700px) {
     .page { padding: 24px 16px 72px; gap: 24px; }
     .topbar-row { padding: 8px 16px; gap: 8px; }
-    .crumb-area span, .crumb-sep, .crumb-pos, .doc-path-area { display: none; }
+    .crumb-area span, .crumb-sep, .crumb-pos, .topbar .doc-path-area { display: none; }  /* .topbar: schlägt doc_path.css (lädt später) */
     .hero-main { padding: 20px; }
-    .panel-num { width: 42px; height: 42px; font-size: 16px; border-radius: var(--radius); }
   }
   @container page (max-width: 640px) {
     .bento > .s-3, .bento > .s-4, .bento > .s-6 { grid-column: span 12; }
@@ -322,7 +326,7 @@
   @media print {
     .side, .topbar, .pager, .scrim { display: none !important; }
     .app { display: block; }
-    .page .panel { display: flex !important; }
+    .page .panel { display: flex !important; animation: none !important; }  /* Druck sofort im Endzustand */
     body::before { display: none; }
   }
   @media (prefers-reduced-motion: reduce) {
@@ -447,7 +451,7 @@
   .lp-node:hover { transform: translateY(-2px); border-color: var(--k); }
   .lp-node.sel, .lp-node.cur { border-color: var(--k); box-shadow: inset 0 1px 0 var(--glass-hi), 0 0 0 2px color-mix(in srgb, var(--k) 55%, transparent), 0 10px 30px -10px color-mix(in srgb, var(--k) 80%, transparent); }
   .lp-ic { width: 42px; height: 42px; border-radius: var(--radius); display: flex; align-items: center; justify-content: center; color: var(--k); background: color-mix(in srgb, var(--k) 16%, transparent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--k) 35%, transparent); flex: 0 0 auto; }
-  .lp-ic svg { width: 22px; height: 22px; }
+  .lp-ic svg { width: 20px; height: 20px; }
   .lp-node.cur .lp-ic { background: var(--k); color: var(--surface); }
   .lp-tx { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
   .lp-tx b { font-size: 13.5px; line-height: 1.25; overflow-wrap: break-word; hyphens: auto; }
@@ -653,7 +657,7 @@
 
   /* Schritte */
   .side-tag { align-self: flex-start; display: inline-flex; align-items: center; gap: 8px; font-family: var(--mono); font-size: 11.5px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--k); background: color-mix(in srgb, var(--k) 12%, transparent); border-radius: var(--radius-sm); padding: 4px 10px; }
-  .side-tag svg { width: 15px; height: 15px; flex: 0 0 auto; }
+  .side-tag svg { width: 16px; height: 16px; flex: 0 0 auto; }
   ol.howto { list-style: none; padding: 0; display: flex; flex-direction: column; gap: 0; counter-reset: s var(--start, 0); }
   ol.howto > li { counter-increment: s; display: grid; grid-template-columns: 28px minmax(0, 1fr); gap: 12px; font-size: 14px; padding-bottom: 16px; }
   ol.howto > li:last-child { padding-bottom: 0; }
@@ -667,7 +671,7 @@
   /* Reihenfolge */
   .timeline { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); gap: 12px; align-items: center; }
   .tl-step { display: flex; align-items: center; gap: 12px; border-radius: var(--radius); padding: 12px 14px; background: color-mix(in srgb, var(--k) 8%, var(--surface)); border: 1px solid color-mix(in srgb, var(--k) 35%, var(--line)); min-width: 0; }
-  .tl-step svg { width: 28px; height: 28px; flex: 0 0 auto; color: var(--k); }
+  .tl-step svg { width: 26px; height: 26px; flex: 0 0 auto; color: var(--k); }
   .tl-step div { display: flex; flex-direction: column; min-width: 0; }
   .tl-step b { color: var(--k); font-size: 14px; }
   .tl-step span { font-size: 12.5px; color: var(--mut); }
@@ -884,7 +888,7 @@
   .sx-group { font-family: var(--mono); font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--mut); padding: 10px 10px 4px; }
   .sx-item { display: grid; grid-template-columns: 34px minmax(0, 1fr) auto; gap: 2px 12px; align-items: center; padding: 8px 10px; border-radius: var(--radius); cursor: pointer; }
   .sx-item .si { grid-row: span 2; width: 34px; height: 34px; border-radius: var(--radius); display: flex; align-items: center; justify-content: center; font-family: var(--mono); font-size: 11.5px; font-weight: 700; color: var(--k); background: color-mix(in srgb, var(--k) 13%, transparent); }
-  .sx-item .si svg { width: 17px; height: 17px; }
+  .sx-item .si svg { width: 18px; height: 18px; }
   .sx-item b { font-size: 14.5px; font-weight: 650; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .sx-item small { grid-column: 2; font-size: 12.5px; color: var(--mut); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .sx-item .where { grid-column: 3; grid-row: 1 / span 2; font-family: var(--mono); font-size: 11px; color: var(--k); border: 1px solid color-mix(in srgb, var(--k) 40%, transparent); border-radius: var(--radius-sm); padding: 1px 8px; white-space: nowrap; }
@@ -907,11 +911,11 @@
   .check-tx small { font-size: 13px; color: var(--mut); }
   .check-card[data-done="true"] .check-tx h3 { color: var(--ok); }
   .btn { font: inherit; font-size: 13px; font-weight: 650; display: inline-flex; align-items: center; gap: 7px; color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-sm); padding: 7px 13px; cursor: pointer; }
-  .btn svg { width: 15px; height: 15px; }
+  .btn svg { width: 16px; height: 16px; }
   .btn:hover { border-color: var(--k, var(--focus)); }
   ol.howto.check > li::before { display: none; }
   .chk { width: 28px; height: 28px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font: inherit; font-family: var(--mono); font-size: 12px; font-weight: 700; color: var(--surface); background: var(--k, var(--ink)); border: 2px solid var(--k, var(--ink)); cursor: pointer; padding: 0; transition: background .15s, transform .15s; }
-  .chk svg { width: 15px; height: 15px; display: none; }
+  .chk svg { width: 16px; height: 16px; display: none; }
   .chk:hover { transform: scale(1.08); }
   .chk[aria-pressed="true"] { background: var(--ok); border-color: var(--ok); }
   .chk[aria-pressed="true"] span { display: none; }
@@ -928,7 +932,7 @@
   :is(.loop-bar .ctl, .walk) .icon-btn:hover:not(:disabled) { color: var(--ink); background: color-mix(in srgb, var(--ink) 7%, transparent); }
   .loop-bar .ctl { margin-left: auto; }
   .loop-bar .loop-step { text-align: right; margin-right: 4px; }
-  .loop-bar .icon-btn { width: 36px; height: 36px; border-radius: var(--radius); }
+  .loop-bar .icon-btn { box-sizing: border-box; width: 36px; height: 36px; border-radius: var(--radius); }
   .loop-prog { height: 4px; border-radius: 2px; background: color-mix(in srgb, var(--c-act) 12%, var(--band)); overflow: hidden; }
   .loop-prog i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, var(--c-act), var(--c-fb)); border-radius: 2px; transition: width .35s ease; }
   .lp-below { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 16px; align-items: start; }
@@ -1052,7 +1056,7 @@
   }
 
   /* B · Kopieren: Häkchen springt herein */
-  .copy svg { width: 13px; height: 13px; color: var(--code-ok); }
+  .copy svg { width: 16px; height: 16px; color: var(--code-ok); }
   .copy.ok { border-color: color-mix(in srgb, var(--code-ok) 60%, transparent); }
   .copy.ok svg, .btn.ok svg { animation: tick-in .4s cubic-bezier(.3, 1.6, .5, 1); }
   .btn.ok svg { color: var(--ok); }
@@ -1146,12 +1150,13 @@
     29% { transform: translate(238px, 56px); } 59% { transform: translate(425px, 48px); } 70% { transform: translate(500px, 118px); }
     76% { transform: translate(538px, 118px); } 88%, 100% { transform: translate(612px, 38px); } }
   .pls { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; container-type: inline-size; }
-  .pls li { display: grid; grid-template-columns: 30px minmax(0, 1fr) 210px; gap: 12px; align-items: center; padding: 10px 12px; border: 1px solid var(--line); border-radius: var(--r); background: var(--surface); }
+  .pls > li { display: grid; grid-template-columns: 30px minmax(0, 1fr) 210px; gap: 12px; align-items: center; padding: 10px 12px; border: 1px solid var(--line); border-radius: var(--r); background: var(--surface); }
   .pls .n { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; font: 700 13px/1 var(--mono); color: var(--surface); background: var(--k); }
   .pls b { display: block; font: 700 12.5px/1.3 var(--mono); letter-spacing: .08em; text-transform: uppercase; }
   .pls p { margin: 2px 0 0; font-size: 13.5px; }
+  .pls ul.bl { margin-top: 4px; }
   .pls svg { width: 100%; height: auto; display: block; border: 1px solid var(--line); border-radius: var(--radius); background: var(--band); overflow: hidden; }
-  @container (max-width: 560px) { .pls li { grid-template-columns: 30px minmax(0, 1fr); } .pls svg { grid-column: 2; max-width: 280px; } }
+  @container (max-width: 560px) { .pls > li { grid-template-columns: 30px minmax(0, 1fr); } .pls svg { grid-column: 2; max-width: 280px; } }
   .pls .belt { fill: var(--surface); stroke: var(--line-2); stroke-width: 1.2; }
   .pls .pal { fill: color-mix(in srgb, #c8a26a 45%, var(--surface)); stroke: #8a6a43; stroke-width: 1.2; }
   .pls .box { fill: #b88757; stroke: #7a5530; stroke-width: 1.2; }
@@ -1382,8 +1387,7 @@
 <!-- S1 · Architektur -->
 <section class="panel" id="karte" data-area="sys" role="region" aria-labelledby="t-karte" style="--k:var(--c-ws)">
   <header class="panel-head">
-    <span class="panel-num">01</span>
-    <div class="ph"><span class="kicker">Interaktiv</span><h2>Architektur</h2></div>
+    <div class="ph"><span class="eyebrow"><span class="n">01</span><span class="kicker">Interaktiv</span></span><h2>Architektur</h2></div>
     <ul class="bl cols">
       <li>Zeilen von oben: Geräte · Oberflächen · Brücken · eigene Nodes · Wahrnehmung · MoveIt · Hardware</li>
       <li>Linienfarbe = Art der Verbindung (HTTP, WebSocket, Topic, Service, Hardware)</li>
@@ -1419,8 +1423,7 @@
 <!-- S2 · Regelkreis -->
 <section class="panel" id="kreis" data-area="sys" role="region" aria-labelledby="t-kreis" style="--k:var(--c-fb)">
   <header class="panel-head">
-    <span class="panel-num">02</span>
-    <div class="ph"><span class="kicker">Prinzip</span><h2>Mensch-Maschine-Regelkreis</h2></div>
+    <div class="ph"><span class="eyebrow"><span class="n">02</span><span class="kicker">Prinzip</span></span><h2>Mensch-Maschine-Regelkreis</h2></div>
     <ul class="bl cols">
       <li>Hinweg: Eingabe → rosbridge → Watchdog / Kollisionsprüfung → Servo oder <code>move_group</code> → Arm</li>
       <li>Rückweg: <code>/joint_states</code>, <code>/servo_server/status</code>, <code>/ui/collision_msg</code> → Digital Twin, HUD, Ton, Vibration</li>
@@ -1521,8 +1524,7 @@
 <!-- S3 · Robot Control UI -->
 <section class="panel" id="ui" data-area="sys" role="region" aria-labelledby="t-ui" style="--k:var(--c-topic)">
   <header class="panel-head">
-    <span class="panel-num">03</span>
-    <div class="ph"><span class="kicker">Port 8081</span><h2>Aufbau der Robot Control UI</h2></div>
+    <div class="ph"><span class="eyebrow"><span class="n">03</span><span class="kicker">Port 8081</span></span><h2>Aufbau der Robot Control UI</h2></div>
     <ul class="bl cols">
       <li>Header und Statusleiste fest, dazwischen Bereichsleiste, Aufgaben-Fenster, Viewport und Move-Spalte</li>
       <li>Jede Sektion = ein ES-Modul</li>
@@ -1606,8 +1608,7 @@
 <!-- S4 · Sicherheitskette -->
 <section class="panel" id="sicherheit" data-area="sys" role="region" aria-labelledby="t-sicherheit" style="--k:var(--crit)">
   <header class="panel-head">
-    <span class="panel-num">04</span>
-    <div class="ph"><span class="kicker">Sicherheit</span><h2>Sicherheitskette</h2></div>
+    <div class="ph"><span class="eyebrow"><span class="n">04</span><span class="kicker">Sicherheit</span></span><h2>Sicherheitskette</h2></div>
     <ul class="bl cols">
       <li>Stufen greifen in dieser Reihenfolge</li>
       <li>Welche greifen, hängt vom Befehlsweg ab (Matrix)</li>
@@ -1656,8 +1657,7 @@
 <!-- S5 · Ports -->
 <section class="panel" id="ports" data-area="sys" role="region" aria-labelledby="t-ports" style="--k:var(--c-svc)">
   <header class="panel-head">
-    <span class="panel-num">05</span>
-    <div class="ph"><span class="kicker">Referenz</span><h2>Ports</h2></div>
+    <div class="ph"><span class="eyebrow"><span class="n">05</span><span class="kicker">Referenz</span></span><h2>Ports</h2></div>
     <ul class="bl cols"><li>Web-Oberflächen kommen direkt aus dem Quellverzeichnis</li></ul>
   </header>
   <div class="bento">
@@ -1705,8 +1705,7 @@
 <!-- R1 · Kombinationen -->
 <section class="panel" id="kombi" data-area="remote" role="region" aria-labelledby="t-kombi" style="--k:var(--c-https)">
   <header class="panel-head">
-    <span class="panel-num">01</span>
-    <div class="ph"><span class="kicker">Überblick</span><h2>Kombinationen</h2></div>
+    <div class="ph"><span class="eyebrow"><span class="n">01</span><span class="kicker">Überblick</span></span><h2>Kombinationen</h2></div>
     <ul class="bl cols">
       <li>A – F gleichzeitig möglich, nur ein Client steuert</li>
       <li>Jeder Browser-Tab = eigener Client</li>
@@ -1843,8 +1842,7 @@
 <!-- R2 · Einrichten -->
 <section class="panel" id="setup" data-area="remote" role="region" aria-labelledby="t-setup" style="--k:var(--c-srv)">
   <header class="panel-head">
-    <span class="panel-num">02</span>
-    <div class="ph"><span class="kicker">Einmalig · Server-PC</span><h2>Einrichten</h2></div>
+    <div class="ph"><span class="eyebrow"><span class="n">02</span><span class="kicker">Einmalig · Server-PC</span></span><h2>Einrichten</h2></div>
     <ul class="bl cols">
       <li>Alles am Server-PC</li>
       <li>Schritt 2 nur nach Änderungen an Watchdog oder Launch</li>
@@ -1905,8 +1903,7 @@ source install/setup.bash</pre><button class="copy" type="button">Kopieren</butt
 <!-- R3 · Starten -->
 <section class="panel" id="start" data-area="remote" role="region" aria-labelledby="t-start" style="--k:var(--c-cli)">
   <header class="panel-head">
-    <span class="panel-num">03</span>
-    <div class="ph"><span class="kicker">Jedes Mal</span><h2>Starten</h2></div>
+    <div class="ph"><span class="eyebrow"><span class="n">03</span><span class="kicker">Jedes Mal</span></span><h2>Starten</h2></div>
     <ul class="bl cols"><li>Erst Server, dann Clients</li></ul>
   </header>
   <div class="bento">
@@ -1943,8 +1940,7 @@ source install/setup.bash</pre><button class="copy" type="button">Kopieren</butt
 <!-- R4 · Remote-Panel -->
 <section class="panel" id="panel" data-area="remote" role="region" aria-labelledby="t-panel" style="--k:var(--c-https)">
   <header class="panel-head">
-    <span class="panel-num">04</span>
-    <div class="ph"><span class="kicker">Bedienung · Client</span><h2>Remote-Panel</h2></div>
+    <div class="ph"><span class="eyebrow"><span class="n">04</span><span class="kicker">Bedienung · Client</span></span><h2>Remote-Panel</h2></div>
     <div class="crumbs" aria-label="Ort in der Robot Control UI"><span>Robot Control UI</span><i>→</i><span>rechte Spalte</span><i>→</i><span>Remote Control</span></div>
   </header>
   <div class="bento">
@@ -2003,8 +1999,7 @@ source install/setup.bash</pre><button class="copy" type="button">Kopieren</butt
 <!-- R5 · Nexus-Werte -->
 <section class="panel" id="nexus" data-area="remote" role="region" aria-labelledby="t-nexus" style="--k:var(--c-srv)">
   <header class="panel-head">
-    <span class="panel-num">05</span>
-    <div class="ph"><span class="kicker">Konfiguration · Server-PC</span><h2>Nexus-Werte</h2></div>
+    <div class="ph"><span class="eyebrow"><span class="n">05</span><span class="kicker">Konfiguration · Server-PC</span></span><h2>Nexus-Werte</h2></div>
     <div class="crumbs" aria-label="Pfad in der Nexus Webapp"><span>Nexus Webapp</span><i>→</i><span>Robot Control UI, WebSocket &amp; Video Server</span><i>→</i><span>PARAMETERS &amp; ARGS</span></div>
   </header>
   <div class="bento">
@@ -2047,8 +2042,7 @@ source install/setup.bash</pre><button class="copy" type="button">Kopieren</butt
 <!-- R6 · Fehlerbilder -->
 <section class="panel" id="fehler" data-area="remote" role="region" aria-labelledby="t-fehler" style="--k:var(--warn)">
   <header class="panel-head">
-    <span class="panel-num">06</span>
-    <div class="ph"><span class="kicker">Hilfe</span><h2>Fehlerbilder</h2></div>
+    <div class="ph"><span class="eyebrow"><span class="n">06</span><span class="kicker">Hilfe</span></span><h2>Fehlerbilder</h2></div>
     <ul class="bl cols"><li>Reihenfolge: Verbindung → Gamepad → Steuerung</li></ul>
   </header>
   <div class="bento">
@@ -2095,8 +2089,7 @@ source install/setup.bash</pre><button class="copy" type="button">Kopieren</butt
 <!-- R7 · Regeln -->
 <section class="panel" id="regeln" data-area="remote" role="region" aria-labelledby="t-regeln" style="--k:var(--crit)">
   <header class="panel-head">
-    <span class="panel-num">07</span>
-    <div class="ph"><span class="kicker">Sicherheit</span><h2>Regeln</h2></div>
+    <div class="ph"><span class="eyebrow"><span class="n">07</span><span class="kicker">Sicherheit</span></span><h2>Regeln</h2></div>
     <ul class="bl cols"><li>Rot = gilt ohne Ausnahme am echten Arm</li></ul>
   </header>
   <div class="bento">
@@ -2129,8 +2122,7 @@ source install/setup.bash</pre><button class="copy" type="button">Kopieren</butt
 <!-- V1 · Überblick -->
 <section class="panel" id="vla-ueberblick" data-area="vla" role="region" aria-labelledby="t-vla-ueberblick" style="--k:var(--c-vla)">
   <header class="panel-head">
-    <span class="panel-num">01</span>
-    <div class="ph"><span class="kicker">Konzept</span><h2>Überblick</h2></div>
+    <div class="ph"><span class="eyebrow"><span class="n">01</span><span class="kicker">Konzept</span></span><h2>Überblick</h2></div>
     <ul class="bl cols">
       <li>Human-in-the-Loop: nichts bewegt sich ohne Bestätigung (Standard)</li>
       <li>UI und Backend sind über 9 Topics <code>/vla/*</code> verbunden - das Sprachmodell ist austauschbar (Ollama lokal · Claude · später LeRobot als Skill)</li>
@@ -2186,8 +2178,7 @@ source install/setup.bash</pre><button class="copy" type="button">Kopieren</butt
 <!-- V2 · Bedienung -->
 <section class="panel" id="vla-bedienung" data-area="vla" role="region" aria-labelledby="t-vla-bedienung" style="--k:var(--c-topic)">
   <header class="panel-head">
-    <span class="panel-num">02</span>
-    <div class="ph"><span class="kicker">Bedienung · Robot Control UI</span><h2>VLA-M-Section</h2></div>
+    <div class="ph"><span class="eyebrow"><span class="n">02</span><span class="kicker">Bedienung · Robot Control UI</span></span><h2>VLA-M-Section</h2></div>
     <div class="crumbs" aria-label="Ort in der Robot Control UI"><span>Robot Control UI</span><i>→</i><span>rechte Spalte</span><i>→</i><span>VLA-M</span></div>
   </header>
   <div class="bento">
@@ -2249,8 +2240,7 @@ source install/setup.bash</pre><button class="copy" type="button">Kopieren</butt
 <!-- V3 · Befehle & Szene -->
 <section class="panel" id="vla-befehle" data-area="vla" role="region" aria-labelledby="t-vla-befehle" style="--k:var(--c-see)">
   <header class="panel-head">
-    <span class="panel-num">03</span>
-    <div class="ph"><span class="kicker">Chat · Szene · Skills</span><h2>Befehle &amp; Szene</h2></div>
+    <div class="ph"><span class="eyebrow"><span class="n">03</span><span class="kicker">Chat · Szene · Skills</span></span><h2>Befehle &amp; Szene</h2></div>
     <ul class="bl cols"><li>Deutsch und Englisch in Alltagssprache, Objekte nach Name, Farbe, Lage</li><li>Plan nur mit Objekten, die gerade in der Szene sind - der Code prüft ihn vor jeder Bewegung</li></ul>
   </header>
   <div class="bento">
@@ -2348,7 +2338,7 @@ source install/setup.bash</pre><button class="copy" type="button">Kopieren</butt
             <g class="a-settle"><rect class="box" x="40" y="16" width="64" height="48" rx="2" opacity=".85"/></g>
             <text class="note" x="120" y="34">≤ 6 mm</text><text class="note" x="120" y="52">≤ 8° ✓</text>
           </svg></li>
-        <li><span class="n">5</span><div><b>Band schiebt nach</b><p>Sobald der gegriffene Karton angehoben ist (<code>picked</code>), fördert das Band die nachfolgenden Kartons bis zur Lichtschranke am Endanschlag nach (<code>wait_still</code> vor dem nächsten Griff) · ist die Palette voll (<code>pallet_full</code>), fährt sie über den Rollenauslauf ab, das Magazin vereinzelt eine Leerpalette und der pneumatische Pusher schiebt sie ein (Endlos-Zyklus)</p></div>
+        <li><span class="n">5</span><div><b>Band schiebt nach</b><ul class="bl sm"><li><strong>Nachschub:</strong> Karton angehoben (<code>picked</code>) → Band fördert die nächsten Kartons bis zur Lichtschranke am Endanschlag</li><li><strong>Vor dem Griff:</strong> <code>wait_still</code> wartet, bis das Band steht</li><li><strong>Palette voll</strong> (<code>pallet_full</code>): Abfahrt über den Rollenauslauf, Magazin vereinzelt eine Leerpalette, pneumatischer Pusher schiebt sie ein (Endlos-Zyklus)</li></ul></div>
           <svg viewBox="0 0 200 84" role="img" aria-label="Band schiebt Kartons nach zur Lichtschranke, Rollenauslauf und pneumatischer Paletten-Pusher">
             <rect class="belt" x="6" y="58" width="108" height="8" rx="4"/>
             <line class="stem" x1="18" y1="34" x2="18" y2="58" stroke-width="2"/>
@@ -2396,8 +2386,7 @@ source install/setup.bash</pre><button class="copy" type="button">Kopieren</butt
 <!-- V4 · Starten & Topics -->
 <section class="panel" id="vla-start" data-area="vla" role="region" aria-labelledby="t-vla-start" style="--k:var(--c-srv)">
   <header class="panel-head">
-    <span class="panel-num">04</span>
-    <div class="ph"><span class="kicker">Server-PC</span><h2>Starten &amp; Topics</h2></div>
+    <div class="ph"><span class="eyebrow"><span class="n">04</span><span class="kicker">Server-PC</span></span><h2>Starten &amp; Topics</h2></div>
     <ul class="bl cols"><li>Braucht rosbridge (startet mit der Robot Control UI)</li><li>Paket: <code>src/vla_bridge</code></li></ul>
   </header>
   <div class="bento">
@@ -2466,8 +2455,7 @@ ros2 launch vla_bridge vla_bridge.launch.py              # dry_run:=true = nur P
 <!-- V5 · Modell & Roadmap -->
 <section class="panel" id="vla-modell" data-area="vla" role="region" aria-labelledby="t-vla-modell" style="--k:var(--c-svc)">
   <header class="panel-head">
-    <span class="panel-num">05</span>
-    <div class="ph"><span class="kicker">Planung</span><h2>Modell &amp; Roadmap</h2></div>
+    <div class="ph"><span class="eyebrow"><span class="n">05</span><span class="kicker">Planung</span></span><h2>Modell &amp; Roadmap</h2></div>
     <ul class="bl cols"><li>Rahmen: LeRobot - ein Datensatzformat, austauschbare Policies, Policy-Server</li><li>Modell in eigener venv/Docker, nie im colcon-Python</li></ul>
   </header>
   <div class="bento">
@@ -2516,8 +2504,7 @@ ros2 launch vla_bridge vla_bridge.launch.py              # dry_run:=true = nur P
 <!-- V6 · Fehlerbilder -->
 <section class="panel" id="vla-fehler" data-area="vla" role="region" aria-labelledby="t-vla-fehler" style="--k:var(--warn)">
   <header class="panel-head">
-    <span class="panel-num">06</span>
-    <div class="ph"><span class="kicker">Hilfe</span><h2>Fehlerbilder</h2></div>
+    <div class="ph"><span class="eyebrow"><span class="n">06</span><span class="kicker">Hilfe</span></span><h2>Fehlerbilder</h2></div>
     <ul class="bl cols"><li>Erst Zustand in der Section, dann <code>ros2 topic echo /vla/status</code></li></ul>
   </header>
   <div class="bento">
