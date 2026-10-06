@@ -641,6 +641,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: cent
 .sstep code { font: 600 12.5px/1.2 var(--mono); padding: 4px 7px; border-radius: var(--radius-sm); border: 1px dashed var(--line-strong); justify-self: start; }
 .note { display: grid; grid-template-columns: 22px minmax(0, 1fr); gap: 10px; align-items: start; padding: 12px 14px; border-radius: var(--radius); border: 1px solid var(--line-strong); background: var(--surface); font-size: 14.5px; }
 .note .ico { color: var(--red); width: 20px; height: 20px; margin-top: 1px; }
+.note.info .ico { color: var(--hue, var(--accent)); }
 
 /* Architektur: Datenfluss durch die ROS-2-Pakete */
 .arch-card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); box-shadow: var(--shadow); overflow: hidden; }
@@ -1240,6 +1241,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: cent
             <span class="fact" data-en="German + English">Deutsch + Englisch</span>
             <span class="fact" data-en="Next: trained VLA model as a skill (&lt;b&gt;SmolVLA&lt;/b&gt;)">Nächster Schritt: trainiertes VLA-Modell als Skill (<b>SmolVLA</b>)</span>
           </div>
+          <div class="note info"><svg class="ico" aria-hidden="true"><use href="#i-chip"/></svg><span data-en="&lt;b&gt;Local language model: Qwen 2.5 with 14&amp;nbsp;B parameters.&lt;/b&gt; Open model by Alibaba Cloud under the Apache&amp;nbsp;2.0 license, runs offline via Ollama on your own GPU (~10&amp;nbsp;GB graphics memory)."><b>Lokales Sprachmodell: Qwen 2.5 mit 14&nbsp;Mrd. Parametern.</b> Offenes Modell von Alibaba Cloud unter der Lizenz Apache&nbsp;2.0, läuft über Ollama offline auf der eigenen GPU (~10&nbsp;GB Grafikspeicher).</span></div>
         </div>
       </article>
 
@@ -1719,7 +1721,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: cent
         </div>
             <div class="st-layer" role="listitem" style="--hue: var(--violet)">
           <span class="st-k"><svg class="ico"><use href="#i-spark"/></svg><span data-en="AI · Perception">KI · Wahrnehmung</span></span>
-          <span class="st-parts"><span><b>vla_bridge</b> · <span data-en="LLM agent, /vla/skill">LLM-Agent, /vla/skill</span></span><span><b>Ollama</b> · <span data-en="qwen2.5:14b, local">qwen2.5:14b, lokal</span></span><span><b>Anthropic SDK</b> · Claude Opus 5</span><span><b>Google Gemini</b> · Robotics-ER 2 Preview</span><span><b>Ultralytics</b> · 8.4 · YOLOv8l, PyTorch 2.12</span><span><b>OpenCV</b> · cv_bridge, NumPy, SciPy</span><span><b>octomap_server</b> · 2.3 · OctoMap</span><span><b>Whisper</b> · <span data-en="model medium, DE/EN">Modell medium, DE/EN</span></span><span><b>LeRobot</b> · <span data-en="demo datasets for VLA training">Demo-Datensätze fürs VLA-Training</span></span><span><b>Gaze-Pipeline</b> · <span data-en="Tobii RTSP, PyAV">Tobii-RTSP, PyAV</span></span></span>
+          <span class="st-parts"><span><b>vla_bridge</b> · <span data-en="LLM agent, /vla/skill">LLM-Agent, /vla/skill</span></span><span><b>Ollama</b> · <span data-en="qwen2.5:14b, local, Apache 2.0">qwen2.5:14b, lokal, Apache 2.0</span></span><span><b>Anthropic SDK</b> · Claude Opus 5</span><span><b>Google Gemini</b> · Robotics-ER 2 Preview</span><span><b>Ultralytics</b> · 8.4 · YOLOv8l, PyTorch 2.12</span><span><b>OpenCV</b> · cv_bridge, NumPy, SciPy</span><span><b>octomap_server</b> · 2.3 · OctoMap</span><span><b>Whisper</b> · <span data-en="model medium, DE/EN">Modell medium, DE/EN</span></span><span><b>LeRobot</b> · <span data-en="demo datasets for VLA training">Demo-Datensätze fürs VLA-Training</span></span><span><b>Gaze-Pipeline</b> · <span data-en="Tobii RTSP, PyAV">Tobii-RTSP, PyAV</span></span></span>
         </div>
             <div class="st-layer" role="listitem" style="--hue: var(--green)">
           <span class="st-k"><svg class="ico"><use href="#i-shield"/></svg><span data-en="Motion · Safety">Bewegung · Sicherheit</span></span>
