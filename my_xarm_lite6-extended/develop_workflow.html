@@ -363,7 +363,22 @@ html.sf-on .hero:not(.is-in) .msg { opacity: 0; transform: translate3d(0, 10px, 
   background: color-mix(in srgb, var(--accent) 7%, var(--surface)); font-size: 15px; line-height: 1.5; }
 .note .ico { color: var(--accent); margin-top: 2px; }
 
-/* 02 Sicherheit: drei Stufen (frei · mit Rückfrage · nie ohne Freigabe), darunter die Prüfkette zum Durchklicken */
+/* 02 Rollen: Ablauf-Band Organizer → Fachrolle (7, Paar Marketing + Designer) → Prüfer → Synchronizer */
+.rflow { display: grid; grid-template-columns: minmax(0, 1fr) 20px minmax(0, 2.6fr) 20px minmax(0, 1fr) 20px minmax(0, 1fr); gap: 12px; align-items: center; }
+.rflow > .ico { width: 20px; height: 20px; color: var(--fg-2); }
+.rfix { display: grid; justify-items: center; gap: 10px; min-width: 0; padding: 18px 12px; text-align: center; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); box-shadow: var(--shadow); }
+.rfix .bi-l { width: 48px; height: 48px; } .rfix .bi-l .ico { width: 26px; height: 26px; }
+.rfix b { font-size: 16px; font-weight: 800; }
+.rmid { display: grid; gap: 12px; min-width: 0; padding: 16px; border: 1px solid color-mix(in srgb, var(--accent) 45%, var(--line)); border-radius: var(--radius); background: var(--surface); box-shadow: var(--shadow); }
+.rroles { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; }
+.rroles li { display: flex; align-items: center; gap: 8px; min-width: 0; padding: 8px 10px; border: 1px solid color-mix(in srgb, var(--h) 45%, var(--line)); border-radius: var(--radius-sm); font-size: 14.5px; font-weight: 700; }
+.rroles li.pair { border-width: 2px; }
+.rroles .ico { flex: none; width: 18px; height: 18px; color: var(--h); }
+.rmid .rnote { display: flex; align-items: flex-start; gap: 8px; margin: 0; font-size: 14px; line-height: 1.45; color: var(--fg-2); }
+.rmid .rnote .ico { flex: none; width: 18px; height: 18px; color: var(--gold); }
+@media (max-width: 900px) { .rflow { grid-template-columns: minmax(0, 1fr); } .rflow > .ico { transform: rotate(90deg); justify-self: center; } }
+
+/* 03 Sicherheit: drei Stufen (frei · mit Rückfrage · nie ohne Freigabe), darunter die Prüfkette zum Durchklicken */
 .perm { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin-bottom: 16px; }
 .pm { display: grid; align-content: start; gap: 12px; min-width: 0; padding: 18px; border: 1px solid color-mix(in srgb, var(--hue) 35%, var(--line)); border-radius: var(--radius); background: var(--surface); box-shadow: var(--shadow); }
 .pm-h { display: flex; align-items: center; gap: 12px; }
@@ -916,8 +931,9 @@ html.sf-on .hero:not(.is-in) .msg { opacity: 0; transform: translate3d(0, 10px, 
         </div>
         <ol class="path" aria-label="Lesepfad Teil 1" data-en-aria="Reading path part 1">
           <li><a href="#schritte" style="--hue: var(--accent)"><span class="pn"><svg class="ico"><use href="#i-loop"/></svg><span data-en="01 · Flow">01 · Ablauf</span><span class="cnt">5</span></span><b data-en="Five steps per task">Fünf Schritte je Aufgabe</b><small data-en="From request to commit">Vom Wunsch bis zum Commit</small></a></li>
-          <li><a href="#sicherheit" style="--hue: var(--gold)"><span class="pn"><svg class="ico"><use href="#i-shield"/></svg><span data-en="02 · Safety">02 · Sicherheit</span><span class="cnt">3</span></span><b data-en="What Claude may do">Was Claude darf</b><small data-en="Freely, after asking, never">Frei, mit Rückfrage, nie</small></a></li>
-          <li><a href="#lernen" style="--hue: var(--violet)"><span class="pn"><svg class="ico"><use href="#i-brain"/></svg><span data-en="03 · Learning">03 · Lernen</span><span class="cnt">4</span></span><b data-en="Corrections become rules">Aus Korrektur wird Regel</b><small data-en="Four stages up to the check">Vier Stufen bis zur Prüfung</small></a></li>
+          <li><a href="#rollen" style="--hue: var(--blue)"><span class="pn"><svg class="ico"><use href="#i-user"/></svg><span data-en="02 · Roles">02 · Rollen</span><span class="cnt">7</span></span><b data-en="One role per task">Eine Rolle je Aufgabe</b><small data-en="Specialist roles + fixed steps">Fachrollen + feste Schritte</small></a></li>
+          <li><a href="#sicherheit" style="--hue: var(--gold)"><span class="pn"><svg class="ico"><use href="#i-shield"/></svg><span data-en="03 · Safety">03 · Sicherheit</span><span class="cnt">3</span></span><b data-en="What Claude may do">Was Claude darf</b><small data-en="Freely, after asking, never">Frei, mit Rückfrage, nie</small></a></li>
+          <li><a href="#lernen" style="--hue: var(--violet)"><span class="pn"><svg class="ico"><use href="#i-brain"/></svg><span data-en="04 · Learning">04 · Lernen</span><span class="cnt">4</span></span><b data-en="Corrections become rules">Aus Korrektur wird Regel</b><small data-en="Four stages up to the check">Vier Stufen bis zur Prüfung</small></a></li>
         </ol>
       </header>
 
@@ -934,12 +950,27 @@ html.sf-on .hero:not(.is-in) .msg { opacity: 0; transform: translate3d(0, 10px, 
           <li class="step" style="--hue: var(--indigo)"><span class="no">05</span><span class="bi-l"><svg class="ico" aria-hidden="true"><use href="#i-git"/></svg></span><b data-en="Deliver">Abliefern</b><p data-en="Update the docs, commit, push, report the status.">Doku nachziehen, committen, pushen, Status melden.</p><span class="act-row"><span class="act c">Claude</span></span><span class="tech" data-en="git push · status chips">git push · Status-Chips</span></li>
         </ol>
         <p class="note"><svg class="ico" aria-hidden="true"><use href="#i-info"/></svg><span data-en="&lt;b&gt;Only as far as needed:&lt;/b&gt; a plain question ends after step&amp;nbsp;2. A new UI feature runs through all five, with a preview before building."><b>Nur so weit wie nötig:</b> Eine reine Frage endet nach Schritt&nbsp;2. Eine neue UI-Funktion durchläuft alle fünf, mit Vorschau vor dem Bauen.</span></p>
-        <p class="note"><svg class="ico" aria-hidden="true"><use href="#i-user"/></svg><span data-en="&lt;b&gt;Roles:&lt;/b&gt; Claude works on each task in one role: designer, developer, debugger, editor, project manager, researcher or marketing. Marketing shapes the outside view together with the designer; the designer has the final say."><b>Rollen:</b> Claude arbeitet je Aufgabe in einer Rolle: Designer, Entwickler, Debugger, Redakteur, Projektmanager, Forscher oder Marketing. Marketing plant die Außenwirkung mit dem Designer; der Designer entscheidet am Ende.</span></p>
+      </section>
+
+      <section class="sec" id="rollen">
+        <header class="sec-head">
+          <div><span class="eyebrow" style="--hue: var(--blue)"><span class="n">02</span><span data-en="Roles">Rollen</span></span><h2 data-en="One role per task">Eine Rolle je Aufgabe</h2></div>
+          <div class="brief"><p class="slogan" data-en="Like a team: every role with its own tools.">Wie im Team: jede Rolle mit eigenem Werkzeug.</p><dl><dt data-en="Specialist role">Fachrolle</dt><dd data-en="sets skills, agents and checks; switch at any time">legt Skills, Agenten und Prüfung fest; Wechsel jederzeit</dd><dt data-en="Fixed steps">Feste Schritte</dt><dd data-en="organizer, reviewer and synchronizer run in every chat">Organizer, Prüfer und Synchronizer laufen in jedem Chat</dd></dl></div>
+        </header>
+        <div class="rflow">
+          <div class="rfix"><span class="bi-l"><svg class="ico" aria-hidden="true"><use href="#i-chat"/></svg></span><b>Organizer</b><span class="k-t" data-en="Plans the chat">Plant den Chat</span></div>
+          <svg class="ico" aria-hidden="true"><use href="#i-go"/></svg>
+          <div class="rmid"><span class="k-t" data-en="Specialist role · one per task">Fachrolle · eine je Aufgabe</span><ul class="rroles"><li class="pair" style="--h: var(--accent)"><svg class="ico" aria-hidden="true"><use href="#i-spark"/></svg><span>Designer</span></li><li class="pair" style="--h: var(--gold)"><svg class="ico" aria-hidden="true"><use href="#i-globe"/></svg><span>Marketing</span></li><li style="--h: var(--violet)"><svg class="ico" aria-hidden="true"><use href="#i-code"/></svg><span data-en="Developer">Entwickler</span></li><li style="--h: var(--red)"><svg class="ico" aria-hidden="true"><use href="#i-pulse"/></svg><span>Debugger</span></li><li style="--h: var(--teal)"><svg class="ico" aria-hidden="true"><use href="#i-file"/></svg><span data-en="Editor">Redakteur</span></li><li style="--h: var(--indigo)"><svg class="ico" aria-hidden="true"><use href="#i-flag"/></svg><span data-en="Project manager">Projektmanager</span></li><li style="--h: var(--green)"><svg class="ico" aria-hidden="true"><use href="#i-brain"/></svg><span data-en="Researcher">Forscher</span></li></ul><p class="rnote"><svg class="ico" aria-hidden="true"><use href="#i-loop"/></svg><span data-en="&lt;b&gt;Outside view:&lt;/b&gt; marketing proposes, the designer decides."><b>Außenwirkung:</b> Marketing schlägt vor, der Designer entscheidet.</span></p></div>
+          <svg class="ico" aria-hidden="true"><use href="#i-go"/></svg>
+          <div class="rfix"><span class="bi-l"><svg class="ico" aria-hidden="true"><use href="#i-test"/></svg></span><b data-en="Reviewer">Prüfer</b><span class="k-t">Definition of Done</span></div>
+          <svg class="ico" aria-hidden="true"><use href="#i-go"/></svg>
+          <div class="rfix"><span class="bi-l"><svg class="ico" aria-hidden="true"><use href="#i-git"/></svg></span><b>Synchronizer</b><span class="k-t" data-en="Commit + push">Commit + Push</span></div>
+        </div>
       </section>
 
       <section class="sec" id="sicherheit">
         <header class="sec-head">
-          <div><span class="eyebrow" style="--hue: var(--gold)"><span class="n">02</span><span data-en="Safety">Sicherheit</span></span><h2 data-en="What Claude may do">Was Claude darf</h2></div>
+          <div><span class="eyebrow" style="--hue: var(--gold)"><span class="n">03</span><span data-en="Safety">Sicherheit</span></span><h2 data-en="What Claude may do">Was Claude darf</h2></div>
           <div class="brief"><p class="slogan" data-en="Free on routine, a question on risk.">Frei bei Routine, Rückfrage bei Risiko.</p><dl><dt data-en="Why">Warum</dt><dd data-en="Claude runs commands directly in the workspace, and this code moves a real robot.">Claude führt Befehle direkt im Workspace aus, und dieser Code bewegt einen echten Roboter.</dd><dt data-en="How">Wie</dt><dd data-en="Permissions, AGENTS.md §&amp;nbsp;0 and hooks set the limits.">Berechtigungen, AGENTS.md §&nbsp;0 und Hooks setzen die Grenzen.</dd></dl></div>
         </header>
         <div class="perm">
@@ -972,7 +1003,7 @@ html.sf-on .hero:not(.is-in) .msg { opacity: 0; transform: translate3d(0, 10px, 
 
       <section class="sec" id="lernen">
         <header class="sec-head">
-          <div><span class="eyebrow" style="--hue: var(--violet)"><span class="n">03</span><span data-en="Learning">Lernen</span></span><h2 data-en="Corrections become rules">Aus Korrektur wird Regel</h2></div>
+          <div><span class="eyebrow" style="--hue: var(--violet)"><span class="n">04</span><span data-en="Learning">Lernen</span></span><h2 data-en="Corrections become rules">Aus Korrektur wird Regel</h2></div>
           <div class="brief"><p class="slogan" data-en="A chat forgets. The repo doesn’t.">Ein Chat vergisst. Das Repo nicht.</p><dl><dt data-en="Record">Festhalten</dt><dd data-en="in Memory, AGENTS.md or a skill, depending on scope">in Memory, AGENTS.md oder einem Skill, je nach Reichweite</dd><dt data-en="Enforce">Durchsetzen</dt><dd data-en="where possible, a hook checks it automatically from then on">wo möglich prüft danach ein Hook automatisch</dd></dl></div>
         </header>
     <div class="panel learn">
@@ -1201,16 +1232,16 @@ html.sf-on .hero:not(.is-in) .msg { opacity: 0; transform: translate3d(0, 10px, 
           <p class="lede" data-en="Setup, checkpoints, data flow and Definition of Done: how the workflow is built technically.">Einrichtung, Prüfstellen, Datenfluss und Definition of Done: so ist der Workflow technisch gebaut.</p>
         </div>
         <ol class="path" aria-label="Lesepfad Teil 2" data-en-aria="Reading path part 2">
-          <li><a href="#einrichtung" style="--hue: var(--teal)"><span class="pn"><span data-en="04 · Setup">04 · Einrichtung</span><svg class="ico to"><use href="#i-go"/></svg></span><b data-en="What lives where">Was wo liegt</b><small data-en="Files, settings.json, computers">Dateien, settings.json, Rechner</small></a></li>
-          <li><a href="#pruefstellen" style="--hue: var(--gold)"><span class="pn"><span data-en="05 · Checkpoints">05 · Prüfstellen</span><svg class="ico to"><use href="#i-go"/></svg></span><b data-en="Hooks in rhythm">Hooks im Takt</b><small data-en="From chat start to commit">Vom Chat-Start bis zum Commit</small></a></li>
-          <li><a href="#datenfluss" style="--hue: var(--indigo)"><span class="pn"><span data-en="06 · Data flow">06 · Datenfluss</span><svg class="ico to"><use href="#i-go"/></svg></span><b data-en="Who talks to whom">Wer spricht mit wem</b><small data-en="Five scenarios to play">Fünf Szenarien zum Abspielen</small></a></li>
-          <li><a href="#dod" style="--hue: var(--green)"><span class="pn"><span data-en="07 · Done">07 · Fertig</span><svg class="ico to"><use href="#i-go"/></svg></span><b>Definition of Done</b><small data-en="Check per area, path of a commit">Prüfung je Bereich, Weg eines Commits</small></a></li>
+          <li><a href="#einrichtung" style="--hue: var(--teal)"><span class="pn"><span data-en="05 · Setup">05 · Einrichtung</span><svg class="ico to"><use href="#i-go"/></svg></span><b data-en="What lives where">Was wo liegt</b><small data-en="Files, settings.json, computers">Dateien, settings.json, Rechner</small></a></li>
+          <li><a href="#pruefstellen" style="--hue: var(--gold)"><span class="pn"><span data-en="06 · Checkpoints">06 · Prüfstellen</span><svg class="ico to"><use href="#i-go"/></svg></span><b data-en="Hooks in rhythm">Hooks im Takt</b><small data-en="From chat start to commit">Vom Chat-Start bis zum Commit</small></a></li>
+          <li><a href="#datenfluss" style="--hue: var(--indigo)"><span class="pn"><span data-en="07 · Data flow">07 · Datenfluss</span><svg class="ico to"><use href="#i-go"/></svg></span><b data-en="Who talks to whom">Wer spricht mit wem</b><small data-en="Five scenarios to play">Fünf Szenarien zum Abspielen</small></a></li>
+          <li><a href="#dod" style="--hue: var(--green)"><span class="pn"><span data-en="08 · Done">08 · Fertig</span><svg class="ico to"><use href="#i-go"/></svg></span><b>Definition of Done</b><small data-en="Check per area, path of a commit">Prüfung je Bereich, Weg eines Commits</small></a></li>
         </ol>
       </header>
 
       <section class="sec" id="einrichtung">
         <header class="sec-head">
-          <div><span class="eyebrow" style="--hue: var(--teal)"><span class="n">04</span><span data-en="Setup">Einrichtung</span></span><h2 data-en="What lives where">Was wo liegt</h2></div>
+          <div><span class="eyebrow" style="--hue: var(--teal)"><span class="n">05</span><span data-en="Setup">Einrichtung</span></span><h2 data-en="What lives where">Was wo liegt</h2></div>
           <div class="brief"><p class="slogan" data-en="Everything is a file in the repo.">Alles als Datei im Repo.</p><dl><dt data-en="In the repo">Im Repo</dt><dd data-en="Rules, skills, hooks, agents, mods, memory">Regeln, Skills, Hooks, Agenten, Mods, Memory</dd><dt data-en="Per computer">Je Rechner</dt><dd data-en="User settings, synced with &lt;code&gt;tools/ws_sync.sh&lt;/code&gt;">Benutzer-Settings, abgeglichen mit <code>tools/ws_sync.sh</code></dd><dt data-en="Local only">Nur lokal</dt><dd data-en="Chat histories">Chat-Verläufe</dd></dl></div>
         </header>
     <div class="setup">
@@ -1255,7 +1286,7 @@ html.sf-on .hero:not(.is-in) .msg { opacity: 0; transform: translate3d(0, 10px, 
 
       <section class="sec" id="pruefstellen">
         <header class="sec-head">
-          <div><span class="eyebrow" style="--hue: var(--gold)"><span class="n">05</span><span data-en="Checkpoints">Prüfstellen</span></span><h2 data-en="Hooks in the rhythm of a chat">Hooks im Takt eines Chats</h2></div>
+          <div><span class="eyebrow" style="--hue: var(--gold)"><span class="n">06</span><span data-en="Checkpoints">Prüfstellen</span></span><h2 data-en="Hooks in the rhythm of a chat">Hooks im Takt eines Chats</h2></div>
           <div class="brief"><p class="slogan" data-en="Rules that check themselves.">Regeln, die sich selbst prüfen.</p><dl><dt data-en="Context">Kontext</dt><dd data-en="Situation report at the start, hint on long chats">Lagebild beim Start, Hinweis bei langen Chats</dd><dt data-en="Warning">Warnung</dt><dd data-en="before risky commands and protected files">vor riskanten Befehlen und geschützten Dateien</dd><dt>Block</dt><dd data-en="when the ending of the answer is missing">wenn der Schluss der Antwort fehlt</dd></dl></div>
         </header>
     <div class="panel life">
@@ -1276,7 +1307,7 @@ html.sf-on .hero:not(.is-in) .msg { opacity: 0; transform: translate3d(0, 10px, 
 
       <section class="sec" id="datenfluss">
         <header class="sec-head">
-          <div><span class="eyebrow" style="--hue: var(--indigo)"><span class="n">06</span><span data-en="Data flow">Datenfluss</span></span><h2 data-en="Who talks to whom?">Wer spricht mit wem?</h2></div>
+          <div><span class="eyebrow" style="--hue: var(--indigo)"><span class="n">07</span><span data-en="Data flow">Datenfluss</span></span><h2 data-en="Who talks to whom?">Wer spricht mit wem?</h2></div>
           <div class="brief"><p class="slogan" data-en="Five lanes: developer, chat, helpers, guard rails, repo.">Fünf Bahnen: Entwickler, Chat, Helfer, Leitplanken, Repo.</p><dl><dt data-en="Use">Bedienen</dt><dd data-en="Choose a scenario, touch a node for its inputs and outputs, ←/→ for steps, &lt;code&gt;K&lt;/code&gt; pauses">Szenario wählen, Knoten berühren zeigt Ein- und Ausgänge, ←/→ für Schritte, <code>K</code> pausiert</dd></dl></div>
         </header>
     <figure class="fg" id="fg-work" aria-labelledby="fg-work-cap">
@@ -1313,7 +1344,7 @@ html.sf-on .hero:not(.is-in) .msg { opacity: 0; transform: translate3d(0, 10px, 
 
       <section class="sec" id="dod">
         <header class="sec-head">
-          <div><span class="eyebrow" style="--hue: var(--green)"><span class="n">07</span><span data-en="Done">Fertig</span></span><h2>Definition of Done</h2></div>
+          <div><span class="eyebrow" style="--hue: var(--green)"><span class="n">08</span><span data-en="Done">Fertig</span></span><h2>Definition of Done</h2></div>
           <div class="brief"><p class="slogan" data-en="What changed decides the check.">Was geändert wurde, bestimmt die Prüfung.</p><dl><dt data-en="Evidence">Beleg</dt><dd data-en="Check output from this chat, after the last change">Prüf-Ausgabe aus diesem Chat, nach der letzten Änderung</dd><dt data-en="One topic">Ein Thema</dt><dd data-en="per chat; a new chat only after your choice">je Chat; neuer Chat erst nach Auswahl</dd></dl></div>
         </header>
     <div class="dod">
