@@ -83,6 +83,9 @@ button { font: inherit; color: inherit; }
 .seg button { font: 700 12px/1 var(--mono); padding: 0 10px; min-height: 28px; min-width: 34px; border: 0; border-radius: var(--radius-sm); background: transparent; color: var(--fg-2); cursor: pointer; transition: background-color var(--t-fast), color var(--t-fast); }
 .seg button:hover { color: var(--fg); background: color-mix(in srgb, var(--fg) 7%, transparent); }
 .seg button[aria-pressed="true"] { background: var(--surface); color: var(--fg); box-shadow: 0 0 0 1px var(--line-strong); }
+/* Ältere Fassungen dieser Seite (V1, V2): kleine Links in Leisten-Optik wie .seg button */
+.seg a { display: inline-flex; align-items: center; justify-content: center; font: 700 12px/1 var(--mono); padding: 0 10px; min-height: 28px; min-width: 34px; border-radius: var(--radius-sm); color: var(--fg-2); text-decoration: none; transition: background-color var(--t-fast), color var(--t-fast); }
+.seg a:hover { color: var(--fg); background: color-mix(in srgb, var(--fg) 7%, transparent); }
 /* Link zur älteren Fassung (V2): klein, Leisten-Optik wie .seg */
 .progress { position: absolute; left: 0; right: 0; bottom: -1px; height: 2px; background: var(--accent); box-shadow: 0 0 10px var(--glow); transform-origin: 0 50%; transform: scaleX(var(--p, 0)); pointer-events: none; }
 @supports (animation-timeline: scroll()) {
@@ -615,7 +618,7 @@ html.sf-on .hero:not(.is-in) .msg { opacity: 0; transform: translate3d(0, 10px, 
 .vb-grid { display: grid; grid-template-rows: repeat(3, 1fr); }
 .vb-grid i { border-top: 1px solid var(--line); }
 .vb-cols { display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 2px; align-items: end; border-bottom: 1px solid var(--line-strong); }
-.vb { position: relative; height: calc(var(--v) / 750 * 100%); min-height: 2px; background: var(--accent); border-radius: 2px 2px 0 0; transform-origin: bottom; transition: transform 900ms var(--ease-out); outline-offset: 2px; }
+.vb { position: relative; height: calc(var(--v) / 900 * 100%); min-height: 2px; background: var(--accent); border-radius: 2px 2px 0 0; transform-origin: bottom; transition: transform 900ms var(--ease-out); outline-offset: 2px; }
 .charts-anim .vb { transform: scaleY(0); }
 .charts-anim .in .vb { transform: none; }
 .vb .lbl { position: absolute; bottom: calc(100% + 4px); left: 50%; translate: -50% 0; font: 700 13px/1 var(--mono); white-space: nowrap; }
@@ -779,6 +782,7 @@ html.sf-on .hero:not(.is-in) .msg { opacity: 0; transform: translate3d(0, 10px, 
       <a href="#technik" data-en="Under the hood">Unter der Haube</a>
     </nav>
     <div class="tools">
+      <div class="seg" role="group" aria-label="Ältere Fassungen dieser Seite" data-en-aria="Earlier versions of this page"><a href="develop_workflow_v1.html" aria-label="Fassung V1 (Erstfassung)" data-en-aria="Version V1 (first version)">V1</a><a href="develop_workflow_v2.html" aria-label="Fassung V2 (VS-Code-Fassung)" data-en-aria="Version V2 (VS Code version)">V2</a></div>
       <div class="seg" role="group" aria-label="Sprache / Language">
         <button type="button" data-lang="de" aria-pressed="true">DE</button>
         <button type="button" data-lang="en" aria-pressed="false">EN</button>
@@ -805,7 +809,7 @@ html.sf-on .hero:not(.is-in) .msg { opacity: 0; transform: translate3d(0, 10px, 
         <p class="abstract" data-en="How code is written in this repo: the developer sets the goal and approves, &lt;b&gt;Claude&amp;nbsp;Code&lt;/b&gt; plans, writes, tests and documents. Rules, checks and knowledge live as files in the repo and make every step traceable.">So entsteht der Code in diesem Repo: Der Entwickler gibt Ziel und Freigabe, <b>Claude&nbsp;Code</b> plant, schreibt, prüft und dokumentiert. Regeln, Prüfungen und Wissen liegen als Dateien im Repo und machen jeden Schritt nachvollziehbar.</p>
         <div class="cta-row">
           <a class="b-pri" href="#ablauf"><span data-en="How a task runs">So läuft eine Aufgabe</span><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg></a>
-          <a class="b-sec" href="#werkzeuge"><svg class="ico" aria-hidden="true"><use href="#i-layers"/></svg><span data-en="Building blocks">Bausteine</span><em>50</em></a>
+          <a class="b-sec" href="#werkzeuge"><svg class="ico" aria-hidden="true"><use href="#i-layers"/></svg><span data-en="Building blocks">Bausteine</span><em>61</em></a>
         </div>
         <ul class="trust">
           <li><span class="bi-s"><svg class="ico" aria-hidden="true"><use href="#i-user"/></svg></span><span><b data-en="Approval required">Freigabe nötig</b><span data-en="before every risky step">vor jedem riskanten Schritt</span></span></li>
@@ -827,13 +831,13 @@ html.sf-on .hero:not(.is-in) .msg { opacity: 0; transform: translate3d(0, 10px, 
         </figure>
         <a class="hero-card hc-1" href="#belege">
           <small><svg class="ico" aria-hidden="true"><use href="#i-git"/></svg><span>Commits</span></small>
-          <strong data-num="2120">2120</strong>
+          <strong data-num="2303">2303</strong>
           <span data-en="since March 2026, all on main">seit März 2026, alle auf main</span>
           <span class="hc-seg" aria-hidden="true"><i style="--n: 509; --c: var(--teal)"></i><i style="--n: 497; --c: var(--accent)"></i><i style="--n: 301; --c: var(--gold)"></i><i style="--n: 150; --c: var(--violet)"></i><i style="--n: 108; --c: var(--indigo)"></i><i style="--n: 83; --c: var(--blue)"></i></span>
         </a>
         <a class="hero-card hc-2" href="#werkzeuge">
           <small><svg class="ico" aria-hidden="true"><use href="#i-layers"/></svg><span>Skills</span></small>
-          <strong data-num="22">22</strong>
+          <strong data-num="27">27</strong>
           <span data-en="expert guides, loaded only when needed">Fachanleitungen, geladen bei Bedarf</span>
           <span class="hc-seg" aria-hidden="true"><i style="--n: 5; --c: var(--accent)"></i><i style="--n: 4; --c: var(--blue)"></i><i style="--n: 8; --c: var(--violet)"></i><i style="--n: 5; --c: var(--green)"></i></span>
         </a>
@@ -911,12 +915,12 @@ html.sf-on .hero:not(.is-in) .msg { opacity: 0; transform: translate3d(0, 10px, 
         <figcaption id="ov-cap" data-en="Simplified: the developer sets the goal, Claude works with knowledge and helpers, hooks check every step, the result lands in the repo, tested.">Vereinfacht: Der Entwickler gibt das Ziel vor, Claude arbeitet mit Wissen und Helfern, Hooks prüfen jeden Schritt, das Ergebnis landet geprüft im Repo.</figcaption>
       </figure>
       <ul class="fx-grid">
-        <li class="fx"><span class="bi-l"><svg class="ico" aria-hidden="true"><use href="#i-book"/></svg></span><span class="k-t">AGENTS.md</span><b data-en="Rules for every chat.">Regeln für jeden Chat.</b><p data-en="House rules in 122 lines: safety, names, answer format and when a task counts as done.">Hausordnung mit 122 Zeilen: Sicherheit, Namen, Antwortformat und wann eine Aufgabe fertig ist.</p><a class="more" href="#sicherheit"><span data-en="Safety">Sicherheit</span><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg></a></li>
-        <li class="fx"><span class="bi-l"><svg class="ico" aria-hidden="true"><use href="#i-layers"/></svg></span><span class="k-t">Skills</span><b data-en="Manuals on demand.">Handbücher auf Abruf.</b><p data-en="22 expert guides, for example for UI changes or tests; Claude loads only what the task needs.">22 Fachanleitungen, etwa für UI-Änderungen oder Tests; Claude lädt nur, was die Aufgabe braucht.</p><a class="more" href="#werkzeuge"><span data-en="Tool map">Werkzeugkarte</span><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg></a></li>
-        <li class="fx"><span class="bi-l"><svg class="ico" aria-hidden="true"><use href="#i-bot"/></svg></span><span class="k-t" data-en="Agents">Agenten</span><b data-en="Specialists with their own brief.">Spezialisten mit eigenem Auftrag.</b><p data-en="7 helpers search, test and review apart from the chat; only the result comes back. Opus judges, Sonnet runs tests.">7 Helfer suchen, testen und prüfen getrennt vom Chat; zurück kommt nur das Ergebnis. Opus urteilt, Sonnet fährt Testläufe.</p><a class="more" href="#datenfluss"><span data-en="Data flow">Datenfluss</span><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg></a></li>
+        <li class="fx"><span class="bi-l"><svg class="ico" aria-hidden="true"><use href="#i-book"/></svg></span><span class="k-t">AGENTS.md</span><b data-en="Rules for every chat.">Regeln für jeden Chat.</b><p data-en="House rules in 127 lines: safety, names, answer format and when a task counts as done.">Hausordnung mit 127 Zeilen: Sicherheit, Namen, Antwortformat und wann eine Aufgabe fertig ist.</p><a class="more" href="#sicherheit"><span data-en="Safety">Sicherheit</span><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg></a></li>
+        <li class="fx"><span class="bi-l"><svg class="ico" aria-hidden="true"><use href="#i-layers"/></svg></span><span class="k-t">Skills</span><b data-en="Manuals on demand.">Handbücher auf Abruf.</b><p data-en="27 expert guides, for example for UI changes or tests; Claude loads only what the task needs.">27 Fachanleitungen, etwa für UI-Änderungen oder Tests; Claude lädt nur, was die Aufgabe braucht.</p><a class="more" href="#werkzeuge"><span data-en="Tool map">Werkzeugkarte</span><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg></a></li>
+        <li class="fx"><span class="bi-l"><svg class="ico" aria-hidden="true"><use href="#i-bot"/></svg></span><span class="k-t" data-en="Agents">Agenten</span><b data-en="Specialists with their own brief.">Spezialisten mit eigenem Auftrag.</b><p data-en="10 helpers search, test and review apart from the chat; only the result comes back. Opus judges, Sonnet runs tests.">10 Helfer suchen, testen und prüfen getrennt vom Chat; zurück kommt nur das Ergebnis. Opus urteilt, Sonnet fährt Testläufe.</p><a class="more" href="#datenfluss"><span data-en="Data flow">Datenfluss</span><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg></a></li>
         <li class="fx"><span class="bi-l"><svg class="ico" aria-hidden="true"><use href="#i-shield"/></svg></span><span class="k-t">Hooks</span><b data-en="A check at every step.">Kontrolle bei jedem Schritt.</b><p data-en="6 checkpoints run automatically before and after each action; they warn, ask or stop.">6 Prüfstellen laufen automatisch vor und nach jeder Aktion; sie warnen, fragen oder stoppen.</p><a class="more" href="#pruefstellen"><span data-en="Checkpoints">Prüfstellen</span><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg></a></li>
-        <li class="fx"><span class="bi-l"><svg class="ico" aria-hidden="true"><use href="#i-brain"/></svg></span><span class="k-t">Memory</span><b data-en="Learns from every correction.">Lernt aus jeder Korrektur.</b><p data-en="13 saved preferences apply from the next chat on, on every computer.">13 gespeicherte Vorgaben gelten ab dem nächsten Chat, auf jedem Rechner.</p><a class="more" href="#lernen"><span data-en="Learning">Lernen</span><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg></a></li>
-        <li class="fx"><span class="bi-l"><svg class="ico" aria-hidden="true"><use href="#i-git"/></svg></span><span class="k-t">Git</span><b data-en="Every state is saved.">Jeder Stand gesichert.</b><p data-en="Every finished task is tested, committed and pushed: 2,120 commits since March&amp;nbsp;2026.">Jede fertige Aufgabe wird geprüft, committet und gepusht: 2.120 Commits seit März&nbsp;2026.</p><a class="more" href="#belege"><span data-en="Evidence">Belege</span><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg></a></li>
+        <li class="fx"><span class="bi-l"><svg class="ico" aria-hidden="true"><use href="#i-brain"/></svg></span><span class="k-t">Memory</span><b data-en="Learns from every correction.">Lernt aus jeder Korrektur.</b><p data-en="16 saved preferences apply from the next chat on, on every computer.">16 gespeicherte Vorgaben gelten ab dem nächsten Chat, auf jedem Rechner.</p><a class="more" href="#lernen"><span data-en="Learning">Lernen</span><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg></a></li>
+        <li class="fx"><span class="bi-l"><svg class="ico" aria-hidden="true"><use href="#i-git"/></svg></span><span class="k-t">Git</span><b data-en="Every state is saved.">Jeder Stand gesichert.</b><p data-en="Every finished task is tested, committed and pushed: 2,303 commits since March&amp;nbsp;2026.">Jede fertige Aufgabe wird geprüft, committet und gepusht: 2.303 Commits seit März&nbsp;2026.</p><a class="more" href="#belege"><span data-en="Evidence">Belege</span><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg></a></li>
       </ul>
     </div>
   </section>
@@ -932,7 +936,7 @@ html.sf-on .hero:not(.is-in) .msg { opacity: 0; transform: translate3d(0, 10px, 
         </div>
         <ol class="path" aria-label="Lesepfad Teil 1" data-en-aria="Reading path part 1">
           <li><a href="#schritte" style="--hue: var(--accent)"><span class="pn"><svg class="ico"><use href="#i-loop"/></svg><span data-en="01 · Flow">01 · Ablauf</span><span class="cnt">5</span></span><b data-en="Five steps per task">Fünf Schritte je Aufgabe</b><small data-en="From request to commit">Vom Wunsch bis zum Commit</small></a></li>
-          <li><a href="#rollen" style="--hue: var(--blue)"><span class="pn"><svg class="ico"><use href="#i-user"/></svg><span data-en="02 · Roles">02 · Rollen</span><span class="cnt">7</span></span><b data-en="One role per task">Eine Rolle je Aufgabe</b><small data-en="Specialist roles + fixed steps">Fachrollen + feste Schritte</small></a></li>
+          <li><a href="#rollen" style="--hue: var(--blue)"><span class="pn"><svg class="ico"><use href="#i-user"/></svg><span data-en="02 · Roles">02 · Rollen</span><span class="cnt">8</span></span><b data-en="One role per task">Eine Rolle je Aufgabe</b><small data-en="Specialist roles + fixed steps">Fachrollen + feste Schritte</small></a></li>
           <li><a href="#sicherheit" style="--hue: var(--gold)"><span class="pn"><svg class="ico"><use href="#i-shield"/></svg><span data-en="03 · Safety">03 · Sicherheit</span><span class="cnt">3</span></span><b data-en="What Claude may do">Was Claude darf</b><small data-en="Freely, after asking, never">Frei, mit Rückfrage, nie</small></a></li>
           <li><a href="#lernen" style="--hue: var(--violet)"><span class="pn"><svg class="ico"><use href="#i-brain"/></svg><span data-en="04 · Learning">04 · Lernen</span><span class="cnt">4</span></span><b data-en="Corrections become rules">Aus Korrektur wird Regel</b><small data-en="Four stages up to the check">Vier Stufen bis zur Prüfung</small></a></li>
         </ol>
@@ -1020,7 +1024,7 @@ html.sf-on .hero:not(.is-in) .msg { opacity: 0; transform: translate3d(0, 10px, 
       <div class="lex">
         <span class="lex-h" data-en="Examples from this repo">Beispiele aus diesem Repo</span>
         <div class="lex-r"><span data-en="“Subtly rounded corners” (4&amp;nbsp;Oct&amp;nbsp;2026)">„Ecken dezent gerundet“ (04.10.2026)</span><i></i><span>Memory <code>project-docs-radius</code></span><i></i><span data-en="Edit hook checks &lt;code&gt;border-radius&lt;/code&gt; in &lt;code&gt;docs/{project,present,operate,develop}_*.html&lt;/code&gt;">Edit-Hook prüft <code>border-radius</code> in <code>docs/{project,present,operate,develop}_*.html</code></span><i></i><span data-en="This page: &lt;code&gt;--radius: 6px&lt;/code&gt;">Diese Seite: <code>--radius: 6px</code></span></div>
-        <div class="lex-r"><span data-en="“Nexus Webapp, never the old name”">„Nexus Webapp, nie der alte Name“</span><i></i><span><code>AGENTS.md</code> §&nbsp;1 + <code>brand.yaml</code></span><i></i><span><code>check_showcase.py</code>: <code>forbidden_names</code></span><i></i><span data-en="README, project pages, poster">README, Projektseiten, Poster</span></div>
+        <div class="lex-r"><span data-en="“UX | Nexus Launcher, never the old name”">„UX | Nexus Launcher, nie der alte Name“</span><i></i><span><code>AGENTS.md</code> §&nbsp;1 + <code>brand.yaml</code></span><i></i><span><code>check_showcase.py</code>: <code>forbidden_names</code></span><i></i><span data-en="README, project pages, poster">README, Projektseiten, Poster</span></div>
         <div class="lex-r"><span data-en="“No grey text, no accent border”">„Kein grauer Text, kein Akzent-Rand“</span><i></i><span><code>AGENTS.md</code> §&nbsp;3</span><i></i><span data-en="&lt;code&gt;post_edit_check.py&lt;/code&gt; checks new lines"><code>post_edit_check.py</code> prüft neue Zeilen</span><i></i><span data-en="all web UIs + project pages">alle Web-UIs + Projektseiten</span></div>
       </div>
     </div>
@@ -1097,10 +1101,10 @@ html.sf-on .hero:not(.is-in) .msg { opacity: 0; transform: translate3d(0, 10px, 
           <div class="ans-b"><b data-en="🛠️ CHANGES">🛠️ ÄNDERUNGEN</b><span data-en="&lt;code&gt;jog.js:42&lt;/code&gt; &lt;b&gt;limits&lt;/b&gt; step size"><code>jog.js:42</code> <b>begrenzt</b> Schrittweite</span></div>
           <div class="ans-b open"><b data-en="⏭️ Open">⏭️ Offen</b><span data-en="❓ &lt;b&gt;F1&lt;/b&gt; Update the twin HUD as well?">❓ <b>F1</b> Twin-HUD gleich mit anpassen?</span><span class="btns"><span data-en="yes">ja</span><span data-en="no">nein</span><span data-en="later">später</span></span></div>
           <span class="ans-st" data-en="⏳ TASK OPEN">⏳ AUFGABE OFFEN</span>
-          <span class="ans-chips"><span data-en="⏳ open">⏳ offen</span><span>2</span><span>✅ pytest 42/42</span><span>📦 a1b2c3d</span></span>
+          <span class="ans-chips"><span data-en="⏳ open">⏳ offen</span><span data-en="⚙️ Developer">⚙️ Entwickler</span><span>2</span><span>✅ pytest 42/42</span><span>📦 a1b2c3d</span><span>🧠 Opus</span></span>
         </div>
                   </div>
-                  <figcaption><span class="k-t" data-k data-en="Answer">Antwort</span><b data-k data-slide-title data-en="Status at a glance.">Status auf einen Blick.</b><span data-k data-en="Every answer ends the same way: status, files, tests, push. Open questions come with answer buttons.">Jede Antwort endet gleich: Status, Dateien, Tests, Push. Offene Fragen haben Antwort-Knöpfe.</span></figcaption>
+                  <figcaption><span class="k-t" data-k data-en="Answer">Antwort</span><b data-k data-slide-title data-en="Status at a glance.">Status auf einen Blick.</b><span data-k data-en="Every answer ends the same way: status, role, files, tests, push, model. Open questions come with answer buttons.">Jede Antwort endet gleich: Status, Rolle, Dateien, Tests, Push, Modell. Offene Fragen haben Antwort-Knöpfe.</span></figcaption>
                 </figure>
               </div>
             </div>
@@ -1111,30 +1115,30 @@ html.sf-on .hero:not(.is-in) .msg { opacity: 0; transform: translate3d(0, 10px, 
     </div>
   </section>
 
-  <!-- ═════════ Werkzeugkarte: Ring (Anteil je Gruppe an 50 Bausteinen) + 8 Kacheln ═════════ -->
+  <!-- ═════════ Werkzeugkarte: Ring (Anteil je Gruppe an 61 Bausteinen) + 8 Kacheln ═════════ -->
   <section class="atlas dark-zone" id="werkzeuge" aria-labelledby="wz-h">
     <div class="wrap">
       <header class="land-head">
         <span class="eyebrow" data-en="Tool map">Werkzeugkarte</span>
-        <h2 id="wz-h" data-en="50 building blocks on one map.">50 Bausteine auf einer Karte.</h2>
+        <h2 id="wz-h" data-en="61 building blocks on one map.">61 Bausteine auf einer Karte.</h2>
         <p data-en="Skills carry the knowledge, agents do separate jobs, checkpoints enforce the rules, memory keeps the preferences.">Skills tragen das Wissen, Agenten erledigen Einzelaufträge, Prüfstellen setzen Regeln durch, Memory hält Vorgaben fest.</p>
       </header>
       <div class="at-grid">
         <figure class="at-ring" id="at-ring">
-          <svg viewBox="0 0 240 240" role="img" aria-label="Ring: 50 Bausteine, Anteil je Gruppe" data-en-aria="Ring: 50 building blocks, share per group">
+          <svg viewBox="0 0 240 240" role="img" aria-label="Ring: 61 Bausteine, Anteil je Gruppe" data-en-aria="Ring: 61 building blocks, share per group">
             <g transform="rotate(-90 120 120)">
-              <circle class="trk" cx="120" cy="120" r="96" pathLength="50"/>
-              <circle class="seg" data-a="wf" style="--c: var(--accent); --i: 0" cx="120" cy="120" r="96" pathLength="50" stroke-dasharray="4.6 50" stroke-dashoffset="0"/>
-              <circle class="seg" data-a="ui" style="--c: var(--blue); --i: 1" cx="120" cy="120" r="96" pathLength="50" stroke-dasharray="3.6 50" stroke-dashoffset="-5"/>
-              <circle class="seg" data-a="pg" style="--c: var(--violet); --i: 2" cx="120" cy="120" r="96" pathLength="50" stroke-dasharray="7.6 50" stroke-dashoffset="-9"/>
-              <circle class="seg" data-a="rb" style="--c: var(--green); --i: 3" cx="120" cy="120" r="96" pathLength="50" stroke-dasharray="4.6 50" stroke-dashoffset="-17"/>
-              <circle class="seg" data-a="ag" style="--c: var(--indigo); --i: 4" cx="120" cy="120" r="96" pathLength="50" stroke-dasharray="6.6 50" stroke-dashoffset="-22"/>
-              <circle class="seg" data-a="hk" style="--c: var(--gold); --i: 5" cx="120" cy="120" r="96" pathLength="50" stroke-dasharray="5.6 50" stroke-dashoffset="-29"/>
-              <circle class="seg" data-a="md" style="--c: var(--pink); --i: 6" cx="120" cy="120" r="96" pathLength="50" stroke-dasharray="1.6 50" stroke-dashoffset="-35"/>
-              <circle class="seg" data-a="mem" style="--c: var(--orange); --i: 7" cx="120" cy="120" r="96" pathLength="50" stroke-dasharray="12.6 50" stroke-dashoffset="-37"/>
+              <circle class="trk" cx="120" cy="120" r="96" pathLength="61"/>
+              <circle class="seg" data-a="wf" style="--c: var(--accent); --i: 0" cx="120" cy="120" r="96" pathLength="61" stroke-dasharray="4.6 61" stroke-dashoffset="0"/>
+              <circle class="seg" data-a="ui" style="--c: var(--blue); --i: 1" cx="120" cy="120" r="96" pathLength="61" stroke-dasharray="3.6 61" stroke-dashoffset="-5"/>
+              <circle class="seg" data-a="pg" style="--c: var(--violet); --i: 2" cx="120" cy="120" r="96" pathLength="61" stroke-dasharray="11.6 61" stroke-dashoffset="-9"/>
+              <circle class="seg" data-a="rb" style="--c: var(--green); --i: 3" cx="120" cy="120" r="96" pathLength="61" stroke-dasharray="5.6 61" stroke-dashoffset="-21"/>
+              <circle class="seg" data-a="ag" style="--c: var(--indigo); --i: 4" cx="120" cy="120" r="96" pathLength="61" stroke-dasharray="9.6 61" stroke-dashoffset="-27"/>
+              <circle class="seg" data-a="hk" style="--c: var(--gold); --i: 5" cx="120" cy="120" r="96" pathLength="61" stroke-dasharray="5.6 61" stroke-dashoffset="-37"/>
+              <circle class="seg" data-a="md" style="--c: var(--pink); --i: 6" cx="120" cy="120" r="96" pathLength="61" stroke-dasharray="1.6 61" stroke-dashoffset="-43"/>
+              <circle class="seg" data-a="mem" style="--c: var(--orange); --i: 7" cx="120" cy="120" r="96" pathLength="61" stroke-dasharray="15.6 61" stroke-dashoffset="-45"/>
             </g>
             <circle class="core" cx="120" cy="120" r="72"/>
-            <text class="at-num" x="120" y="122" text-anchor="middle" data-num="50">50</text>
+            <text class="at-num" x="120" y="122" text-anchor="middle" data-num="61">61</text>
             <text class="at-lbl" x="120" y="143" text-anchor="middle" data-en="building blocks">Bausteine</text>
             <text class="at-sub" x="120" y="161" text-anchor="middle" data-en="8 GROUPS">8 GRUPPEN</text>
           </svg>
@@ -1144,12 +1148,12 @@ html.sf-on .hero:not(.is-in) .msg { opacity: 0; transform: translate3d(0, 10px, 
           <ul class="at-areas two">
             <li class="at-area" data-a="wf" style="--c: var(--accent)"><div tabindex="0"><svg class="ico" aria-hidden="true"><use href="#i-loop"/></svg><b data-en="Skills · workflow">Skills · Arbeitsweise</b><em>5</em><small data-en="Answer format, commit, preview, root cause">Antwortformat, Commit, Vorschau, Ursachensuche</small></div></li>
             <li class="at-area" data-a="ui" style="--c: var(--blue)"><div tabindex="0"><svg class="ico" aria-hidden="true"><use href="#i-win"/></svg><b data-en="Skills · operating UIs">Skills · Bedien-UIs</b><em>4</em><small data-en="UI rules, motion, typography, VR twin">UI-Regeln, Bewegung, Typografie, VR-Twin</small></div></li>
-            <li class="at-area" data-a="pg" style="--c: var(--violet)"><div tabindex="0"><svg class="ico" aria-hidden="true"><use href="#i-file"/></svg><b data-en="Skills · project pages">Skills · Projektseiten</b><em>8</em><small data-en="Copy, animation, data flow, images, video, 3D">Texte, Animation, Datenfluss, Bilder, Video, 3D</small></div></li>
-            <li class="at-area" data-a="rb" style="--c: var(--green)"><div tabindex="0"><svg class="ico" aria-hidden="true"><use href="#i-arm"/></svg><b data-en="Skills · robotics + tests">Skills · Robotik + Tests</b><em>5</em><small data-en="Grasping, diagnosis, robustness, build, testing">Greifen, Diagnose, Robustheit, Build, Testen</small></div></li>
-            <li class="at-area" data-a="ag" style="--c: var(--indigo)"><div tabindex="0"><svg class="ico" aria-hidden="true"><use href="#i-bot"/></svg><b data-en="Agents">Agenten</b><em>7</em><small data-en="Search, test runs (Sonnet), UI check, safety review">Suche, Testläufe (Sonnet), UI-Prüfung, Sicherheits-Review</small></div></li>
+            <li class="at-area" data-a="pg" style="--c: var(--violet)"><div tabindex="0"><svg class="ico" aria-hidden="true"><use href="#i-file"/></svg><b data-en="Skills · project pages">Skills · Projektseiten</b><em>12</em><small data-en="Copy, layout, animation, images, video, 3D, paper">Texte, Layout, Animation, Bilder, Video, 3D, Paper</small></div></li>
+            <li class="at-area" data-a="rb" style="--c: var(--green)"><div tabindex="0"><svg class="ico" aria-hidden="true"><use href="#i-arm"/></svg><b data-en="Skills · robotics + tests">Skills · Robotik + Tests</b><em>6</em><small data-en="Grasping, diagnosis, robustness, build, testing, 3D prints">Greifen, Diagnose, Robustheit, Build, Testen, Druckteile</small></div></li>
+            <li class="at-area" data-a="ag" style="--c: var(--indigo)"><div tabindex="0"><svg class="ico" aria-hidden="true"><use href="#i-bot"/></svg><b data-en="Agents">Agenten</b><em>10</em><small data-en="Search, test runs (Sonnet), UI check, safety, docs and print reviews">Suche, Testläufe (Sonnet), UI-Prüfung, Reviews für Sicherheit, Doku, Druck</small></div></li>
             <li class="at-area" data-a="hk" style="--c: var(--gold)"><div tabindex="0"><svg class="ico" aria-hidden="true"><use href="#i-shield"/></svg><b data-en="Checkpoints">Prüfstellen</b><em>6</em><small data-en="5 hooks in the chat, 1 Git hook on commit">5 Hooks im Chat, 1 Git-Hook beim Commit</small></div></li>
             <li class="at-area" data-a="md" style="--c: var(--pink)"><div tabindex="0"><svg class="ico" aria-hidden="true"><use href="#i-pulse"/></svg><b>Mods</b><em>2</em><small data-en="Answer cards, FAKE/REAL status line">Antwort-Karten, Statuszeile FAKE/REAL</small></div></li>
-            <li class="at-area" data-a="mem" style="--c: var(--orange)"><div tabindex="0"><svg class="ico" aria-hidden="true"><use href="#i-brain"/></svg><b>Memory</b><em>13</em><small data-en="Preferences from corrections, e.g. corner radius">Vorgaben aus Korrekturen, z.&nbsp;B. Ecken-Radius</small></div></li>
+            <li class="at-area" data-a="mem" style="--c: var(--orange)"><div tabindex="0"><svg class="ico" aria-hidden="true"><use href="#i-brain"/></svg><b>Memory</b><em>16</em><small data-en="Preferences from corrections, e.g. corner radius">Vorgaben aus Korrekturen, z.&nbsp;B. Ecken-Radius</small></div></li>
           </ul>
           <div class="at-cta">
             <a class="b-pri" href="#technik"><span data-en="Under the hood">Unter der Haube</span><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg></a>
@@ -1169,19 +1173,19 @@ html.sf-on .hero:not(.is-in) .msg { opacity: 0; transform: translate3d(0, 10px, 
         <p data-en="Tested, documented, committed, pushed. The numbers come straight from the Git history.">Geprüft, dokumentiert, committet, gepusht. Die Zahlen stammen direkt aus dem Git-Verlauf.</p>
       </header>
       <div class="kpis kpis-6" aria-label="Kennzahlen" data-en-aria="Key figures">
-        <div class="kpi" style="--hue: var(--accent)"><strong data-num="2120">2120</strong><span data-en="&lt;b&gt;commits&lt;/b&gt; since March"><b>Commits</b> seit März</span></div>
-        <div class="kpi" style="--hue: var(--accent)"><strong data-num="1182">1182</strong><span data-en="&lt;b&gt;commits&lt;/b&gt; in 30 days"><b>Commits</b> in 30 Tagen</span></div>
-        <div class="kpi" style="--hue: var(--teal)"><strong data-num="509">509</strong><span data-en="&lt;b&gt;docs commits&lt;/b&gt; (24&amp;nbsp;%)"><b>Doku-Commits</b> (24&nbsp;%)</span></div>
-        <div class="kpi" style="--hue: var(--violet)"><strong data-num="22">22</strong><span data-en="&lt;b&gt;skills&lt;/b&gt; in the repo"><b>Skills</b> im Repo</span></div>
-        <div class="kpi" style="--hue: var(--indigo)"><strong data-num="7">7</strong><span data-en="&lt;b&gt;agents&lt;/b&gt; for separate jobs"><b>Agenten</b> für Einzelaufträge</span></div>
-        <div class="kpi" style="--hue: var(--orange)"><strong data-num="13">13</strong><span data-en="&lt;b&gt;memory&lt;/b&gt; preferences"><b>Memory</b>-Vorgaben</span></div>
+        <div class="kpi" style="--hue: var(--accent)"><strong data-num="2303">2303</strong><span data-en="&lt;b&gt;commits&lt;/b&gt; since March"><b>Commits</b> seit März</span></div>
+        <div class="kpi" style="--hue: var(--accent)"><strong data-num="1362">1362</strong><span data-en="&lt;b&gt;commits&lt;/b&gt; in 30 days"><b>Commits</b> in 30 Tagen</span></div>
+        <div class="kpi" style="--hue: var(--teal)"><strong data-num="575">575</strong><span data-en="&lt;b&gt;docs commits&lt;/b&gt; (25&amp;nbsp;%)"><b>Doku-Commits</b> (25&nbsp;%)</span></div>
+        <div class="kpi" style="--hue: var(--violet)"><strong data-num="27">27</strong><span data-en="&lt;b&gt;skills&lt;/b&gt; in the repo"><b>Skills</b> im Repo</span></div>
+        <div class="kpi" style="--hue: var(--indigo)"><strong data-num="10">10</strong><span data-en="&lt;b&gt;agents&lt;/b&gt; for separate jobs"><b>Agenten</b> für Einzelaufträge</span></div>
+        <div class="kpi" style="--hue: var(--orange)"><strong data-num="16">16</strong><span data-en="&lt;b&gt;memory&lt;/b&gt; preferences"><b>Memory</b>-Vorgaben</span></div>
       </div>
       <div class="gitg charts">
         <div class="panel chart" data-chart>
           <h3 data-en="Commits per month">Commits je Monat</h3>
           <p class="sub" data-en="2026, all commits on &lt;code&gt;main&lt;/code&gt;; October up to the 6th.">2026, alle Commits auf <code>main</code>; Oktober bis 06.10.</p>
           <div class="vbars">
-            <div class="vb-axis" aria-hidden="true"><span>750</span><span>500</span><span>250</span></div>
+            <div class="vb-axis" aria-hidden="true"><span>900</span><span>600</span><span>300</span></div>
             <div class="vb-plot">
               <div class="vb-grid" aria-hidden="true"><i></i><i></i><i></i></div>
               <div class="vb-cols">
@@ -1192,30 +1196,30 @@ html.sf-on .hero:not(.is-in) .msg { opacity: 0; transform: translate3d(0, 10px, 
                 <div class="vb" style="--v:13" tabindex="0" aria-label="Juli: 13 Commits" data-en-aria="July: 13 commits"><span class="tt" data-en="July · 13">Juli · 13</span></div>
                 <div class="vb" style="--v:242" tabindex="0" aria-label="August: 242 Commits" data-en-aria="August: 242 commits"><span class="tt">August · 242</span></div>
                 <div class="vb" style="--v:708" tabindex="0" aria-label="September: 708 Commits" data-en-aria="September: 708 commits"><span class="lbl">708</span><span class="tt">September · 708</span></div>
-                <div class="vb" style="--v:579" tabindex="0" aria-label="Oktober bis 6.: 579 Commits" data-en-aria="October up to the 6th: 579 commits"><span class="lbl">579</span><span class="tt" data-en="1–6 October · 579">1.–6. Oktober · 579</span></div>
+                <div class="vb" style="--v:762" tabindex="0" aria-label="Oktober bis 6.: 762 Commits" data-en-aria="October up to the 6th: 762 commits"><span class="lbl">762</span><span class="tt" data-en="1–6 October · 762">1.–6. Oktober · 762</span></div>
               </div>
             </div>
             <div class="vb-x" aria-hidden="true"><span data-en="Mar">Mär</span><span>Apr</span><span data-en="May">Mai</span><span>Jun</span><span>Jul</span><span>Aug</span><span>Sep</span><span data-en="Oct*">Okt*</span></div>
           </div>
-          <p class="callout" data-en="&lt;b&gt;Since September&lt;/b&gt; with skills, hooks and agents: 1,182 commits in 30&amp;nbsp;days. *October: six days only."><b>Seit September</b> mit Skills, Hooks und Agenten: 1.182 Commits in 30&nbsp;Tagen. *Oktober: nur sechs Tage.</p>
+          <p class="callout" data-en="&lt;b&gt;Since September&lt;/b&gt; with skills, hooks and agents: 1,362 commits in 30&amp;nbsp;days. *October: six days only."><b>Seit September</b> mit Skills, Hooks und Agenten: 1.362 Commits in 30&nbsp;Tagen. *Oktober: nur sechs Tage.</p>
           <details><summary data-en="As a table">Als Tabelle</summary>
             <table><thead><tr><th data-en="Month">Monat</th><th class="r">Commits</th></tr></thead><tbody>
               <tr><td data-en="March">März</td><td class="r">105</td></tr><tr><td>April</td><td class="r">0</td></tr><tr><td data-en="May">Mai</td><td class="r">123</td></tr><tr><td data-en="June">Juni</td><td class="r">350</td></tr>
-              <tr><td data-en="July">Juli</td><td class="r">13</td></tr><tr><td>August</td><td class="r">242</td></tr><tr><td>September</td><td class="r">708</td></tr><tr><td data-en="October (1–6)">Oktober (1.–6.)</td><td class="r">579</td></tr>
+              <tr><td data-en="July">Juli</td><td class="r">13</td></tr><tr><td>August</td><td class="r">242</td></tr><tr><td>September</td><td class="r">708</td></tr><tr><td data-en="October (1–6)">Oktober (1.–6.)</td><td class="r">762</td></tr>
             </tbody></table>
           </details>
         </div>
         <div class="panel chart" data-chart>
           <h3 data-en="Type of change">Art der Änderung</h3>
-          <p class="sub" data-en="Conventional commit type, all 2,120 commits">Conventional-Commit-Typ, alle 2.120 Commits</p>
-          <div class="hbars" style="--max:509">
-            <div class="hrow"><span>docs</span><span class="htrack"><span class="hb" style="--v:509" tabindex="0" aria-label="docs: 509"><span class="tt" data-en="documentation · 509">Doku · 509</span></span></span><span class="v">509</span></div>
-            <div class="hrow"><span>feat</span><span class="htrack"><span class="hb" style="--v:497" tabindex="0" aria-label="feat: 497"><span class="tt" data-en="new feature · 497">neue Funktion · 497</span></span></span><span class="v">497</span></div>
-            <div class="hrow"><span>fix</span><span class="htrack"><span class="hb" style="--v:301" tabindex="0" aria-label="fix: 301"><span class="tt" data-en="bug fix · 301">Fehlerbehebung · 301</span></span></span><span class="v">301</span></div>
-            <div class="hrow"><span>style</span><span class="htrack"><span class="hb" style="--v:150" tabindex="0" aria-label="style: 150"><span class="tt" data-en="look · 150">Optik · 150</span></span></span><span class="v">150</span></div>
-            <div class="hrow"><span>chore</span><span class="htrack"><span class="hb" style="--v:108" tabindex="0" aria-label="chore: 108"><span class="tt" data-en="upkeep · 108">Pflege · 108</span></span></span><span class="v">108</span></div>
-            <div class="hrow"><span>refactor</span><span class="htrack"><span class="hb" style="--v:44" tabindex="0" aria-label="refactor: 44"><span class="tt" data-en="restructuring · 44">Umbau · 44</span></span></span><span class="v">44</span></div>
-            <div class="hrow"><span>ui</span><span class="htrack"><span class="hb" style="--v:39" tabindex="0" aria-label="ui: 39"><span class="tt" data-en="UI (older type) · 39">UI (älterer Typ) · 39</span></span></span><span class="v">39</span></div>
+          <p class="sub" data-en="Conventional commit type, all 2,303 commits">Conventional-Commit-Typ, alle 2.303 Commits</p>
+          <div class="hbars" style="--max:575">
+          <div class="hrow"><span>docs</span><span class="htrack"><span class="hb" style="--v:575" tabindex="0" aria-label="docs: 575"><span class="tt" data-en="docs · 575">Doku · 575</span></span></span><span class="v">575</span></div>
+          <div class="hrow"><span>feat</span><span class="htrack"><span class="hb" style="--v:572" tabindex="0" aria-label="feat: 572"><span class="tt" data-en="new feature · 572">neue Funktion · 572</span></span></span><span class="v">572</span></div>
+          <div class="hrow"><span>fix</span><span class="htrack"><span class="hb" style="--v:310" tabindex="0" aria-label="fix: 310"><span class="tt" data-en="bug fix · 310">Fehlerbehebung · 310</span></span></span><span class="v">310</span></div>
+          <div class="hrow"><span>style</span><span class="htrack"><span class="hb" style="--v:166" tabindex="0" aria-label="style: 166"><span class="tt" data-en="styling · 166">Optik · 166</span></span></span><span class="v">166</span></div>
+          <div class="hrow"><span>chore</span><span class="htrack"><span class="hb" style="--v:120" tabindex="0" aria-label="chore: 120"><span class="tt" data-en="maintenance · 120">Pflege · 120</span></span></span><span class="v">120</span></div>
+          <div class="hrow"><span>refactor</span><span class="htrack"><span class="hb" style="--v:48" tabindex="0" aria-label="refactor: 48"><span class="tt" data-en="refactoring · 48">Umbau · 48</span></span></span><span class="v">48</span></div>
+          <div class="hrow"><span>ui</span><span class="htrack"><span class="hb" style="--v:39" tabindex="0" aria-label="ui: 39"><span class="tt" data-en="UI (older type) · 39">UI (älterer Typ) · 39</span></span></span><span class="v">39</span></div>
           </div>
           <p class="callout" data-en="&lt;b&gt;docs before feat:&lt;/b&gt; documentation is written in the same go as the code."><b>docs vor feat:</b> Doku entsteht im selben Zug wie der Code.</p>
         </div>
@@ -1243,23 +1247,25 @@ html.sf-on .hero:not(.is-in) .msg { opacity: 0; transform: translate3d(0, 10px, 
       <section class="sec" id="einrichtung">
         <header class="sec-head">
           <div><span class="eyebrow" style="--hue: var(--teal)"><span class="n">05</span><span data-en="Setup">Einrichtung</span></span><h2 data-en="What lives where">Was wo liegt</h2></div>
-          <div class="brief"><p class="slogan" data-en="Everything is a file in the repo.">Alles als Datei im Repo.</p><dl><dt data-en="In the repo">Im Repo</dt><dd data-en="Rules, skills, hooks, agents, mods, memory">Regeln, Skills, Hooks, Agenten, Mods, Memory</dd><dt data-en="Per computer">Je Rechner</dt><dd data-en="User settings, synced with &lt;code&gt;tools/ws_sync.sh&lt;/code&gt;">Benutzer-Settings, abgeglichen mit <code>tools/ws_sync.sh</code></dd><dt data-en="Local only">Nur lokal</dt><dd data-en="Chat histories">Chat-Verläufe</dd></dl></div>
+          <div class="brief"><p class="slogan" data-en="Everything is a file in the repo.">Alles als Datei im Repo.</p><dl><dt data-en="In the repo">Im Repo</dt><dd data-en="Rules, skills, hooks, agents, mods, memory">Regeln, Skills, Hooks, Agenten, Mods, Memory</dd><dt data-en="Per computer">Je Rechner</dt><dd data-en="User settings, synced with &lt;code&gt;tools/ws_sync.sh&lt;/code&gt;">Benutzer-Settings, abgeglichen mit <code>tools/ws_sync.sh</code></dd><dt data-en="Chat histories">Chat-Verläufe</dt><dd data-en="Synced by &lt;code&gt;tools/chat_sync.py&lt;/code&gt;">Abgleich mit <code>tools/chat_sync.py</code></dd></dl></div>
         </header>
     <div class="setup">
       <div class="panel tree">
         <h3 data-en="What lives where">Was wo liegt</h3>
         <div class="tr"><span class="p"><svg class="ico"><use href="#i-repo"/></svg>dev_ws/</span><span class="w" data-en="ROS&amp;nbsp;2 Humble workspace, branch &lt;code&gt;main&lt;/code&gt;">ROS-2-Humble-Workspace, Branch <code>main</code></span></div>
-        <div class="tr" style="--d:1"><span class="p"><svg class="ico"><use href="#i-book"/></svg>AGENTS.md</span><span class="w" data-en="Rules for every chat: safety, names, answer format, UI rules, map, Definition of Done&lt;span class=&quot;chip&quot;&gt;122 lines&lt;/span&gt;">Regeln für jeden Chat: Sicherheit, Namen, Antwortformat, UI-Regeln, Karte, Definition of Done<span class="chip">122 Zeilen</span></span></div>
-        <div class="tr" style="--d:1"><span class="p"><svg class="ico"><use href="#i-book"/></svg>src/&lt;pkg&gt;/CLAUDE.md</span><span class="w" data-en="Module maps of the large packages (Robot Control UI, Monitoring, vla_bridge, Nexus)">Modul-Karten der großen Pakete (Robot Control UI, Monitoring, vla_bridge, Nexus)</span></div>
+        <div class="tr" style="--d:1"><span class="p"><svg class="ico"><use href="#i-book"/></svg>AGENTS.md</span><span class="w" data-en="Rules for every chat: safety, names, answer format, UI rules, map, Definition of Done&lt;span class=&quot;chip&quot;&gt;127 lines&lt;/span&gt;">Regeln für jeden Chat: Sicherheit, Namen, Antwortformat, UI-Regeln, Karte, Definition of Done<span class="chip">127 Zeilen</span></span></div>
+        <div class="tr" style="--d:1"><span class="p"><svg class="ico"><use href="#i-book"/></svg>src/&lt;pkg&gt;/CLAUDE.md</span><span class="w" data-en="Module maps of the large packages (UX | Control Interface, UX | Monitoring, vla_bridge, UX | Nexus Launcher)">Modul-Karten der großen Pakete (UX | Control Interface, UX | Monitoring, vla_bridge, UX | Nexus Launcher)</span></div>
+        <div class="tr" style="--d:1"><span class="p" style="--hue: var(--gold)"><svg class="ico"><use href="#i-user"/></svg>.claude/ROLES.md</span><span class="w" data-en="Role map: 8 specialist roles + 3 fixed steps → lead skills, agents, checks">Rollenkarte: 8 Fachrollen + 3 feste Schritte → Leit-Skills, Agenten, Prüfungen</span></div>
         <div class="tr" style="--d:1"><span class="p" style="--hue: var(--gold)"><svg class="ico"><use href="#i-key"/></svg>.claude/settings.json</span><span class="w" data-en="Hooks on five events, allowed check commands, blocked folders, plugins">Hooks an fünf Ereignissen, erlaubte Prüfbefehle, gesperrte Ordner, Plugins</span></div>
         <div class="tr" style="--d:1"><span class="p" style="--hue: var(--gold)"><svg class="ico"><use href="#i-key"/></svg>.claude/user-settings.json</span><span class="w" data-en="Template for &lt;code&gt;~/.claude/settings.json&lt;/code&gt; on every computer: model, effort per model, mods, Remote Control">Vorlage für <code>~/.claude/settings.json</code> auf allen Rechnern: Modell, Effort je Modell, Mods, Remote Control</span></div>
-        <div class="tr" style="--d:1"><span class="p" style="--hue: var(--gold)"><svg class="ico"><use href="#i-shield"/></svg>.claude/hooks/</span><span class="w" data-en="7 Python hooks + test suites &lt;code&gt;test_hooks.py&lt;/code&gt;, &lt;code&gt;test_skills.py&lt;/code&gt;">7 Python-Hooks + Testsuites <code>test_hooks.py</code>, <code>test_skills.py</code></span></div>
-        <div class="tr" style="--d:1"><span class="p" style="--hue: var(--teal)"><svg class="ico"><use href="#i-layers"/></svg>.claude/skills/</span><span class="w" data-en="20 skills, scripts and templates in the skill&#x27;s folder">22 Skills, Skripte und Vorlagen im Ordner des Skills</span></div>
-        <div class="tr" style="--d:1"><span class="p" style="--hue: var(--indigo)"><svg class="ico"><use href="#i-bot"/></svg>.claude/agents/</span><span class="w" data-en="7 project agents (role, model, tools, loaded skills); Opus, only &lt;code&gt;test-runner&lt;/code&gt; Sonnet">7 Projekt-Agenten (Rolle, Modell, Tools, geladene Skills); Opus, nur <code>test-runner</code> Sonnet</span></div>
+        <div class="tr" style="--d:1"><span class="p" style="--hue: var(--gold)"><svg class="ico"><use href="#i-shield"/></svg>.claude/hooks/</span><span class="w" data-en="9 Python hooks + test suites &lt;code&gt;test_hooks.py&lt;/code&gt;, &lt;code&gt;test_skills.py&lt;/code&gt;">9 Python-Hooks + Testsuites <code>test_hooks.py</code>, <code>test_skills.py</code></span></div>
+        <div class="tr" style="--d:1"><span class="p" style="--hue: var(--teal)"><svg class="ico"><use href="#i-layers"/></svg>.claude/skills/</span><span class="w" data-en="27 skills, scripts and templates in the skill&#x27;s folder">27 Skills, Skripte und Vorlagen im Ordner des Skills</span></div>
+        <div class="tr" style="--d:1"><span class="p" style="--hue: var(--indigo)"><svg class="ico"><use href="#i-bot"/></svg>.claude/agents/</span><span class="w" data-en="10 project agents (role, model, tools, loaded skills); Opus, only &lt;code&gt;test-runner&lt;/code&gt; Sonnet">10 Projekt-Agenten (Rolle, Modell, Tools, geladene Skills); Opus, nur <code>test-runner</code> Sonnet</span></div>
         <div class="tr" style="--d:1"><span class="p" style="--hue: var(--violet)"><svg class="ico"><use href="#i-win"/></svg>.claude/mods/</span><span class="w" data-en="&lt;code&gt;answer-cards&lt;/code&gt; (answer cards), &lt;code&gt;ros-safety-status&lt;/code&gt; (FAKE/REAL status line)"><code>answer-cards</code> (Antwort-Karten), <code>ros-safety-status</code> (FAKE/REAL-Statuszeile)</span></div>
         <div class="tr" style="--d:1"><span class="p" style="--hue: var(--violet)"><svg class="ico"><use href="#i-brain"/></svg>.claude/memory/</span><span class="w" data-en="Memory: one file per fact, index &lt;code&gt;MEMORY.md&lt;/code&gt; (via &lt;code&gt;autoMemoryDirectory&lt;/code&gt;)">Memory: eine Datei je Fakt, Index <code>MEMORY.md</code> (über <code>autoMemoryDirectory</code>)</span></div>
+        <div class="tr" style="--d:1"><span class="p" style="--hue: var(--violet)"><svg class="ico"><use href="#i-chat"/></svg>.claude/handoff/</span><span class="w" data-en="Handoffs to a new chat; typing “chat weiter” picks them up">Übergaben an einen neuen Chat; „chat weiter“ übernimmt sie</span></div>
         <div class="tr" style="--d:1"><span class="p" style="--hue: var(--teal)"><svg class="ico"><use href="#i-loop"/></svg>.agents/ · GEMINI.md</span><span class="w" data-en="Symlinks so Antigravity/Gemini uses the same rules, skills and memory">Symlinks, damit Antigravity/Gemini dieselben Regeln, Skills und Memory nutzt</span></div>
-        <div class="tr" style="--d:1"><span class="p" style="--hue: var(--green)"><svg class="ico"><use href="#i-term"/></svg>tools/</span><span class="w" data-en="Check and helper scripts, Git hook &lt;code&gt;pre-commit&lt;/code&gt;, sync &lt;code&gt;ws_sync.sh&lt;/code&gt;">Prüf- und Hilfsskripte, Git-Hook <code>pre-commit</code>, Abgleich <code>ws_sync.sh</code></span></div>
+        <div class="tr" style="--d:1"><span class="p" style="--hue: var(--green)"><svg class="ico"><use href="#i-term"/></svg>tools/</span><span class="w" data-en="Check and helper scripts, Git hook &lt;code&gt;pre-commit&lt;/code&gt;, sync &lt;code&gt;ws_sync.sh&lt;/code&gt; + &lt;code&gt;chat_sync.py&lt;/code&gt;, backup &lt;code&gt;ws_backup.sh&lt;/code&gt;">Prüf- und Hilfsskripte, Git-Hook <code>pre-commit</code>, Abgleich <code>ws_sync.sh</code> + <code>chat_sync.py</code>, Backup <code>ws_backup.sh</code></span></div>
         <div class="tr" style="--d:1"><span class="p"><svg class="ico"><use href="#i-check"/></svg>TODOS.md</span><span class="w" data-en="Open items and decisions">Offene Punkte und Entscheidungen</span></div>
       </div>
       <div class="panel wire">
@@ -1295,12 +1301,12 @@ html.sf-on .hero:not(.is-in) .msg { opacity: 0; transform: translate3d(0, 10px, 
         <span class="life-line" aria-hidden="true"></span>
         <span class="life-dot" aria-hidden="true"></span>
         <span class="lf-pin" style="grid-column:1" aria-hidden="true">1</span><span class="lf-pin" style="grid-column:2" aria-hidden="true">2</span><span class="lf-pin" style="grid-column:3" aria-hidden="true">3</span><span class="lf-pin" style="grid-column:4" aria-hidden="true">4</span><span class="lf-pin" style="grid-column:5" aria-hidden="true">5</span><span class="lf-pin" style="grid-column:6" aria-hidden="true">6</span><span class="lf-pin" style="grid-column:7" aria-hidden="true">7</span>
-        <div class="lf"><span class="ev"><span class="lf-mob">1 · </span>SessionStart</span><h3>session_overview.py</h3><p data-en="Situation report: uncommitted files → title of the chat editing them.">Lagebild: uncommittete Dateien → Titel des Chats, der sie bearbeitet.</p><span class="hbadge" style="--hue: var(--accent)"><svg class="ico"><use href="#i-info"/></svg><span data-en="Context">Kontext</span></span></div>
-        <div class="lf"><span class="ev"><span class="lf-mob">2 · </span>UserPromptSubmit</span><h3>chat_length_hint.py</h3><p data-en="From ~150k tokens: suggest a new chat; from ~250k also notify you.">Ab ~150k Token: neuen Chat vorschlagen; ab ~250k auch Meldung an dich.</p><span class="hbadge" style="--hue: var(--accent)"><svg class="ico"><use href="#i-info"/></svg><span data-en="Hint">Hinweis</span></span></div>
+        <div class="lf"><span class="ev"><span class="lf-mob">1 · </span>SessionStart</span><h3>session_overview.py</h3><p data-en="Situation report: uncommitted files → title of the chat editing them.">Lagebild: uncommittete Dateien → Titel des Chats, der sie bearbeitet; offene Übergaben, Backup-Erinnerung, alle 3 Tage Workflow-Check.</p><span class="hbadge" style="--hue: var(--accent)"><svg class="ico"><use href="#i-info"/></svg><span data-en="Context">Kontext</span></span></div>
+        <div class="lf"><span class="ev"><span class="lf-mob">2 · </span>UserPromptSubmit</span><h3>chat_length_hint.py</h3><p data-en="From ~150k tokens: suggest a new chat; from ~250k also notify you.">Ab ~150k Token: neuen Chat vorschlagen; ab ~250k auch Meldung an dich. „chat weiter“ übernimmt eine Übergabe.</p><span class="hbadge" style="--hue: var(--accent)"><svg class="ico"><use href="#i-info"/></svg><span data-en="Hint">Hinweis</span></span></div>
         <div class="lf"><span class="ev"><span class="lf-mob">3 · </span>PreToolUse</span><h3>pre_tool_guard.py</h3><p data-en="Broad &lt;code&gt;pkill&lt;/code&gt;, real &lt;code&gt;robot_ip&lt;/code&gt; → question. Missing &lt;code&gt;ROS_DOMAIN_ID&lt;/code&gt;, protected files, other chats&#x27; changes, missing skill, generic subagent → warning.">Breites <code>pkill</code>, echte <code>robot_ip</code> → Rückfrage. Fehlende <code>ROS_DOMAIN_ID</code>, geschützte Dateien, fremde Änderungen, fehlender Skill, generischer Subagent → Warnung.</p><span class="hbadge" style="--hue: var(--gold)"><svg class="ico"><use href="#i-q"/></svg><span data-en="Question · warning">Rückfrage · Warnung</span></span></div>
         <div class="lf"><span class="ev"><span class="lf-mob">4 · </span><span data-en="Tool">Werkzeug</span></span><h3>Edit · Write · Bash</h3><p data-en="The actual work: change a file, start a test, run a script.">Die eigentliche Arbeit – Datei ändern, Test starten, Skript ausführen.</p><span class="hbadge" style="--hue: var(--violet)"><svg class="ico"><use href="#i-code"/></svg><span data-en="Work">Arbeit</span></span></div>
         <div class="lf"><span class="ev"><span class="lf-mob">5 · </span>PostToolUse</span><h3>post_edit_check.py</h3><p data-en="flake8, JSON/YAML, &lt;code&gt;cursor: help&lt;/code&gt;, accent border, corner radius, &lt;code&gt;tools/check_*&lt;/code&gt;; adds the file to the register.">flake8, JSON/YAML, <code>cursor: help</code>, Akzent-Rand, Ecken-Radius, <code>tools/check_*</code>; trägt die Datei ins Register ein.</p><span class="hbadge" style="--hue: var(--gold)"><svg class="ico"><use href="#i-warn"/></svg><span data-en="Finding → fix at once">Befund → sofort beheben</span></span></div>
-        <div class="lf"><span class="ev"><span class="lf-mob">6 · </span>Stop</span><h3>format_check.py</h3><p data-en="Checks the ending of the answer: status line, status chips, chat status as the last line.">Prüft den Schluss der Antwort: Status-Zeile, Status-Chips, Chat-Status als letzte Zeile.</p><span class="hbadge" style="--hue: var(--red)"><svg class="ico"><use href="#i-stop"/></svg><span data-en="Block → redo the ending">Block → Schluss neu</span></span></div>
+        <div class="lf"><span class="ev"><span class="lf-mob">6 · </span>Stop</span><h3>format_check.py</h3><p data-en="Checks the ending of the answer: status line, status chips, chat status as the last line.">Prüft den Schluss der Antwort: Status-Zeile, sechs Status-Chips, nach dem Commit Git-Status und Rollen, Chat-Status als letzte Zeile.</p><span class="hbadge" style="--hue: var(--red)"><svg class="ico"><use href="#i-stop"/></svg><span data-en="Block → redo the ending">Block → Schluss neu</span></span></div>
         <div class="lf"><span class="ev"><span class="lf-mob">7 · </span>git commit</span><h3>tools/pre-commit</h3><p data-en="Checks only staged files, mostly under 10&amp;nbsp;s; reminds of the &lt;code&gt;safety-reviewer&lt;/code&gt; on safety-critical paths.">Prüft nur Gestagtes, meist unter 10&nbsp;s; erinnert bei sicherheitskritischen Pfaden an den <code>safety-reviewer</code>.</p><span class="hbadge" style="--hue: var(--green)"><svg class="ico"><use href="#i-check"/></svg><span data-en="Check">Prüfung</span></span></div>
       </div>
     </div>
@@ -1355,13 +1361,14 @@ html.sf-on .hero:not(.is-in) .msg { opacity: 0; transform: translate3d(0, 10px, 
           <thead><tr><th data-en="Changed">Geändert</th><th data-en="Check and update">Prüfen und mitziehen</th></tr></thead>
           <tbody>
             <tr><td>Web-UI</td><td data-en="Skill &lt;code&gt;ui-change&lt;/code&gt;, &lt;code&gt;ui_new_code_checker.py&lt;/code&gt;, light + dark">Skill <code>ui-change</code>, <code>ui_new_code_checker.py</code>, hell + dunkel</td></tr>
-            <tr><td>Nexus Webapp</td><td data-en="&lt;code&gt;pytest ros2_nexus/test&lt;/code&gt; + checker &lt;code&gt;--pages nexus&lt;/code&gt;"><code>pytest ros2_nexus/test</code> + Checker <code>--pages nexus</code></td></tr>
-            <tr><td>Monitoring Dashboard</td><td data-en="pytest of the suite + &lt;code&gt;--pages mon,mon-light&lt;/code&gt;">pytest der Suite + <code>--pages mon,mon-light</code></td></tr>
+            <tr><td>UX | Nexus Launcher</td><td data-en="&lt;code&gt;pytest ros2_nexus/test&lt;/code&gt; + checker &lt;code&gt;--pages nexus&lt;/code&gt;"><code>pytest ros2_nexus/test</code> + Checker <code>--pages nexus</code></td></tr>
+            <tr><td>UX | Monitoring</td><td data-en="pytest of the suite + &lt;code&gt;--pages mon,mon-light&lt;/code&gt;">pytest der Suite + <code>--pages mon,mon-light</code></td></tr>
             <tr><td>Motion, Sandbox, VLA</td><td data-en="&lt;code&gt;vla_bridge&lt;/code&gt; pytest + &lt;code&gt;grasp_e2e.py --quick&lt;/code&gt;; prompts: &lt;code&gt;vla_eval.py --check&lt;/code&gt;"><code>vla_bridge</code>-pytest + <code>grasp_e2e.py --quick</code>; Prompts: <code>vla_eval.py --check</code></td></tr>
             <tr><td data-en="ROS package">ROS-Paket</td><td>Skill <code>build-pkg</code>, <code>check_ws.py</code></td></tr>
             <tr><td data-en="Ports, whitelist">Ports, Whitelist</td><td><code>check_ports.py</code></td></tr>
             <tr><td>.claude/, AGENTS.md</td><td><code>test_hooks.py</code> + <code>test_skills.py</code></td></tr>
             <tr><td data-en="Public presentation">Außendarstellung</td><td><code>check_showcase.py</code>, Agent <code>showcase-reviewer</code></td></tr>
+            <tr><td data-en="Docs">Doku</td><td data-en="Skill &lt;code&gt;docs&lt;/code&gt; (en + de), Agent &lt;code&gt;docs-auditor&lt;/code&gt;">Skill <code>docs</code> (en + de), Agent <code>docs-auditor</code></td></tr>
             <tr><td data-en="New feature, name, port">Neue Funktion, Name, Port</td><td data-en="docs/en + de, README + readme-de, manual, setup card">docs/en + de, README + readme-de, Handbuch, Setup-Karte</td></tr>
           </tbody>
         </table>
@@ -1380,13 +1387,13 @@ html.sf-on .hero:not(.is-in) .msg { opacity: 0; transform: translate3d(0, 10px, 
       <div><h3 data-en="One topic per chat">Ein Thema je Chat</h3><p data-en="New task with a different prefix, large rebuild or long context → Claude suggests a new chat but never switches on its own. The start text comes only after your choice.">Neue Aufgabe mit anderem Präfix, großer Umbau oder langer Kontext → Claude schlägt einen neuen Chat vor, wechselt aber nie selbst. Den Starttext gibt es erst nach deiner Auswahl.</p></div>
       <div class="pfx">
         <span data-en="&lt;b&gt;[Agent]&lt;/b&gt;Workflow, AGENTS.md, skills, hooks, settings, memory"><b>[Agent]</b>Workflow, AGENTS.md, Skills, Hooks, Settings, Memory</span>
-        <span data-en="&lt;b&gt;[RCU]&lt;/b&gt;Robot Control UI, twin, VR"><b>[RCU]</b>Robot Control UI, Twin, VR</span>
-        <span><b>[Nexus]</b>Nexus Webapp + Touch Panel</span>
-        <span data-en="&lt;b&gt;[Mon]&lt;/b&gt;Monitoring Dashboard, evaluation"><b>[Mon]</b>Monitoring Dashboard, Evaluierung</span>
+        <span data-en="&lt;b&gt;[RCU]&lt;/b&gt;UX | Control Interface, twin, VR"><b>[RCU]</b>UX | Control Interface, Twin, VR</span>
+        <span><b>[Nexus]</b>UX | Nexus Launcher + UX | Compact Interface</span>
+        <span data-en="&lt;b&gt;[Mon]&lt;/b&gt;UX | Monitoring, evaluation"><b>[Mon]</b>UX | Monitoring, Evaluierung</span>
         <span data-en="&lt;b&gt;[VLA]&lt;/b&gt;vla_bridge, Motion Handler, grasping, sandbox"><b>[VLA]</b>vla_bridge, Motion Handler, Greifen, Sandbox</span>
         <span data-en="&lt;b&gt;[Vision]&lt;/b&gt;ZED, YOLO, Octomap, gaze, voice"><b>[Vision]</b>ZED, YOLO, Octomap, Gaze, Sprache</span>
         <span data-en="&lt;b&gt;[Infra]&lt;/b&gt;network.yaml, ports, build, tools/, system"><b>[Infra]</b>network.yaml, Ports, Build, tools/, System</span>
-        <span data-en="&lt;b&gt;[Doku]&lt;/b&gt;docs, README, manual, poster"><b>[Doku]</b>docs, README, Handbuch, Poster</span>
+        <span data-en="&lt;b&gt;[Doku]&lt;/b&gt;docs, README, manual, setup card, poster"><b>[Doku]</b>docs, README, Handbuch, Setup-Karte, Poster</span>
       </div>
     </div>
       </section>
@@ -1840,7 +1847,7 @@ const SPEC = {
     { id: 'user', lane: 'human', row: 1, label: ['Du', 'You'], short: ['Du', 'You'], sub: ['Richtung · Freigabe', 'direction · approval'], icon: 'i-user', hue: 'accent',
       info: ['Gibt Ziel, Entscheidungen und Freigaben – REAL-Bewegung nur mit ausdrücklichem OK in diesem Chat.', 'Sets goals, decisions and approvals; REAL motion only with an explicit OK in this chat.'] },
     { id: 'preview', lane: 'human', row: 3, label: ['Vorschau-Seite', 'Preview page'], short: ['Vorsch.', 'Preview'], sub: ['Artifact · Varianten', 'artifact · variants'], icon: 'i-win', hue: 'gold',
-      info: ['Varianten als Spalten mit Screenshot; Fragen F1, F2 direkt beantworten, „An Chat senden“ ist endgültig.', 'Variants as columns with screenshots; answer F1, F2 right there, “Send to chat” is final.'] },
+      info: ['Varianten untereinander, je mit Screenshot; Fragen F1, F2 direkt beantworten, „An Chat senden“ ist endgültig.', 'Variants one below the other, each with a screenshot; answer F1, F2 right there, “Send to chat” is final.'] },
     { id: 'ctx', lane: 'chat', row: 0, label: ['Regeln + Memory', 'Rules + memory'], short: ['Regeln', 'Rules'], sub: 'AGENTS.md · .claude/memory', icon: 'i-book', hue: 'teal',
       info: ['Liegt jedem Chat bei: Sicherheit, Namen, Antwortformat, Definition of Done und gelernte Vorlieben.', 'Comes with every chat: safety, names, answer format, Definition of Done and learned preferences.'] },
     { id: 'claude', lane: 'chat', row: 1, label: 'Claude', short: 'Claude', sub: ['Hauptchat · VS Code', 'main chat · VS Code'], icon: 'i-spark', hue: 'violet',
@@ -1860,7 +1867,7 @@ const SPEC = {
     { id: 'claims', lane: 'guard', row: 4, label: ['Datei-Register', 'File register'], short: 'Register', sub: 'chat_claims.py', icon: 'i-lock', hue: 'gold',
       info: ['Merkt sich, welcher Chat welche Datei uncommittet geändert hat – Grundlage für Warnungen und das Lagebild beim Start.', 'Tracks which chat changed which file uncommitted; the basis for warnings and the situation report at start.'] },
     { id: 'code', lane: 'repo', row: 1, label: 'Code', short: 'Code', sub: 'src/ · ros2_nexus/', icon: 'i-code', hue: 'accent',
-      info: ['Eigene ROS-2-Pakete, Web-UIs ohne Build, Nexus Webapp; Fremdcode nur bei Bedarf.', 'Own ROS 2 packages, web UIs without a build, Nexus Webapp; third-party code only when needed.'] },
+      info: ['Eigene ROS-2-Pakete, Web-UIs ohne Build, UX | Nexus Launcher; Fremdcode nur bei Bedarf.', 'Own ROS 2 packages, web UIs without a build, UX | Nexus Launcher; third-party code only when needed.'] },
     { id: 'tests', lane: 'repo', row: 3, label: ['Prüfungen', 'Checks'], short: 'Tests', sub: 'pytest · UI · E2E', icon: 'i-test', hue: 'green',
       info: ['Definition of Done: pytest-Suites, ui_new_code_checker, grasp_e2e in Domain 94, tools/pre-commit.', 'Definition of Done: pytest suites, ui_new_code_checker, grasp_e2e in domain 94, tools/pre-commit.'] },
     { id: 'git', lane: 'repo', row: 4, label: 'Git', short: 'Git', sub: 'main → origin', icon: 'i-git', hue: 'green',
@@ -1894,7 +1901,7 @@ const SPEC = {
       steps: [
         { edge: 'user>claude', topic: ['[RCU] Neue Karte für …', '[RCU] New card for …'], note: ['Anfrage mit Präfix, Ziel statt Anleitung', 'Request with prefix, goal not instructions'] },
         { edge: 'claude>skills', topic: 'ui-change · preview', note: ['UI-Regeln und Vorschau-Vorlage laden', 'Load UI rules and preview template'] },
-        { edge: 'claude>preview', topic: 'spec.json → build.py', note: ['Varianten A/B/C als Spalten, je mit Bild', 'Variants A/B/C as columns, each with image'] },
+        { edge: 'claude>preview', topic: 'spec.json → build.py', note: ['Varianten A/B/C untereinander, je mit Bild', 'Variants A/B/C one below the other, each with image'] },
         { edge: 'user>preview', topic: ['Variante B · F1: ja', 'variant B · F1: yes'], note: ['Du entscheidest auf der Seite', 'You decide on the page'] },
         { edge: 'preview>claude', topic: ['An Chat senden', 'Send to chat'], note: ['Entscheidung ist endgültig, Claude baut', 'Decision is final, Claude builds'] },
         { edge: 'claude>pre', topic: 'Edit style.css', note: ['Guard prüft Skill, Datei-Register, Schutz', 'Guard checks skill, file register, protection'] },
