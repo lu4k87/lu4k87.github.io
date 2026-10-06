@@ -671,7 +671,7 @@ function build(L, wrap, host, o) {
           const li = document.createElement('li'), i = document.createElement('i'), s = document.createElement('span');
           li.className = o.home ? 'ok' : ''; li.style.setProperty('--c', `#${o.K.color.toString(16).padStart(6, '0')}`);
           s.textContent = T(o.K.de, o.K.en[0].toUpperCase() + o.K.en.slice(1)); li.dataset.k = o.K.id; li.append(i, s);
-          if (o.home) { const ck = document.createElement('b'); ck.className = 'ck'; ck.textContent = '✓'; li.append(ck); }   // erledigt: grüner Haken dahinter, Text bleibt lesbar
+          if (o.home) i.textContent = '✓';   // erledigt: Formsymbol gefüllt + Haken darin (nicht nur Farbe), Text bleibt lesbar
           return li;
         }));
         bar.style.width = `${n / 3 * 100}%`;
