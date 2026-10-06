@@ -14,51 +14,43 @@
 :root {
   --radius-sm: 4px; --radius: 6px; --radius-lg: 8px; /* Ecken dezent: klein (Chips, Buttons, Code) · Karten · große Rahmen; Balken/Linien kantig, höchstens 8 px (Wunsch User 04.10.2026, Hook prüft) */
   color-scheme: dark;
-  --bg: #0a0f19;
-  --surface: #0f1727;
-  --surface-2: #131d31;
-  --line: #1f2c44;
-  --line-strong: #2f4163;
-  --fg: #e8eef8;
-  --fg-2: #c3cfe0;
-  --accent: #38bdf8;
-  --accent-ink: #04121c;
-  --indigo: #818cf8;
-  --teal: #2dd4bf;
-  --violet: #a78bfa;
-  --gold: #f0b429;
-  --green: #10b981;
-  --red: #ef4444;
-  --axis-x: #ef4444;
-  --axis-y: #10b981;
-  --axis-z: #38bdf8;
-  --grid: rgba(56, 189, 248, .07);
+  /* Graphit + Türkis wie die Hauptseite project_docs.html (Brand-Kit, Skill docs-layout §6); Achsenfarben bleiben (Rot/Grün/Blau = X/Y/Z) */
+  --bg: #111315; --surface: #181b1e; --surface-2: #1f2327; --line: #2a2f34; --line-strong: #3b4248;
+  --fg: #eef2f3; --fg-2: #b9c2c6; --accent: #2ee6c8; --accent-ink: #04201c;
+  --indigo: #818cf8; --teal: #2dd4bf; --violet: #a78bfa; --gold: #f5b942; --green: #4ade80; --red: #f87171; --warn: #fbbf24;
+  --blue: #60a5fa; --pink: #f472b6; --orange: #fb923c; --lime: #a3e635;
+  --band: #15181a; --grid: rgba(46, 230, 200, .055); --glow: rgba(46, 230, 200, .45);
   --shadow: 0 1px 0 rgba(255,255,255,.04) inset, 0 20px 40px -24px rgba(0,0,0,.7);
+  --axis-x: #ef4444; --axis-y: #10b981; --axis-z: #38bdf8;
   --font-display: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   --font-body: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
-  --r-lg: var(--radius-lg);
-  --r-md: var(--radius);
+  --r-lg: var(--radius-lg); --r-md: var(--radius);
+  --fs-h2: clamp(30px, 3.6vw, 46px);
+  /* Motion-Tokens (Skill motion-viz §2, soft-motion §2) */
+  --ease-out: cubic-bezier(.2, .7, .2, 1); --ease-io: cubic-bezier(.65, 0, .35, 1); --t-fast: 150ms; --t-base: 250ms;
 }
 @media (prefers-color-scheme: light) {
   :root:not([data-theme="dark"]) {
     color-scheme: light;
-    --bg: #f2f5fa; --surface: #ffffff; --surface-2: #eef3f9; --line: #d7e0ec; --line-strong: #b7c5d9;
-    --fg: #0b1424; --fg-2: #2c3b52; --accent: #0277b6; --accent-ink: #ffffff;
-    --indigo: #4f46e5; --teal: #0f766e; --violet: #7c3aed; --gold: #a15c00; --green: #047857; --red: #dc2626;
+    --bg: #f3f5f5; --surface: #ffffff; --surface-2: #eef2f2; --line: #d9e0e0; --line-strong: #b9c4c4;
+    --fg: #14181a; --fg-2: #3a4448; --accent: #0a7a6d; --accent-ink: #ffffff;
+    --indigo: #4338ca; --teal: #0f766e; --violet: #6d28d9; --gold: #9a5b00; --green: #15803d; --red: #b91c1c; --warn: #a15c00;
+    --blue: #1d4ed8; --pink: #be185d; --orange: #c2410c; --lime: #4d7c0f;
     --axis-x: #dc2626; --axis-y: #059669; --axis-z: #0284c7;
-    --grid: rgba(2, 119, 182, .07);
-    --shadow: 0 1px 2px rgba(15,30,60,.06), 0 16px 32px -24px rgba(15,30,60,.35);
+    --band: #e9eeee; --grid: rgba(10, 122, 109, .06); --glow: transparent;
+    --shadow: 0 1px 2px rgba(20,30,30,.06), 0 16px 32px -24px rgba(20,40,40,.35);
   }
 }
 :root[data-theme="light"] {
   color-scheme: light;
-  --bg: #f2f5fa; --surface: #ffffff; --surface-2: #eef3f9; --line: #d7e0ec; --line-strong: #b7c5d9;
-  --fg: #0b1424; --fg-2: #2c3b52; --accent: #0277b6; --accent-ink: #ffffff;
-  --indigo: #4f46e5; --teal: #0f766e; --violet: #7c3aed; --gold: #a15c00; --green: #047857; --red: #dc2626;
+  --bg: #f3f5f5; --surface: #ffffff; --surface-2: #eef2f2; --line: #d9e0e0; --line-strong: #b9c4c4;
+  --fg: #14181a; --fg-2: #3a4448; --accent: #0a7a6d; --accent-ink: #ffffff;
+  --indigo: #4338ca; --teal: #0f766e; --violet: #6d28d9; --gold: #9a5b00; --green: #15803d; --red: #b91c1c; --warn: #a15c00;
+  --blue: #1d4ed8; --pink: #be185d; --orange: #c2410c; --lime: #4d7c0f;
   --axis-x: #dc2626; --axis-y: #059669; --axis-z: #0284c7;
-  --grid: rgba(2, 119, 182, .07);
-  --shadow: 0 1px 2px rgba(15,30,60,.06), 0 16px 32px -24px rgba(15,30,60,.35);
+  --band: #e9eeee; --grid: rgba(10, 122, 109, .06); --glow: transparent;
+  --shadow: 0 1px 2px rgba(20,30,30,.06), 0 16px 32px -24px rgba(20,40,40,.35);
 }
 
 * { box-sizing: border-box; }
@@ -76,7 +68,7 @@ p { margin: 0; }
 .mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
 .wrap { max-width: 1240px; margin-inline: auto; padding-inline: 20px; }
 svg { display: block; }
-.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+.ico { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex: none; }
 
 /* ── Kopfzeile ── */
 .top {
@@ -94,10 +86,21 @@ svg { display: block; }
 .top nav a:hover { background: var(--surface-2); color: var(--fg); }
 
 /* ── Hero ── */
-.hero { padding-block: 64px 56px; }
+.hero { padding-block: 56px 56px; border-bottom: 1px solid var(--line);
+  background: radial-gradient(46% 58% at 76% 46%, color-mix(in srgb, var(--accent) 15%, transparent), transparent 72%),
+    linear-gradient(var(--grid) 1px, transparent 1px) 0 0 / 32px 32px, linear-gradient(90deg, var(--grid) 1px, transparent 1px) 0 0 / 32px 32px, var(--bg); }
+/* Dunkle Zone: Werte wie .dark-zone in css/landing.css (Hero bleibt in beiden Themes dunkel, wie Hauptseite) */
+.dark-zone { color-scheme: dark; color: var(--fg);
+  --bg: #111315; --surface: #181b1e; --surface-2: #1f2327; --line: #2a2f34; --line-strong: #3b4248;
+  --fg: #eef2f3; --fg-2: #b9c2c6; --accent: #2ee6c8; --accent-ink: #04201c;
+  --indigo: #818cf8; --teal: #2dd4bf; --violet: #a78bfa; --gold: #f5b942; --green: #4ade80; --red: #f87171; --warn: #fbbf24;
+  --blue: #60a5fa; --pink: #f472b6; --orange: #fb923c; --lime: #a3e635;
+  --band: #15181a; --grid: rgba(46, 230, 200, .055); --glow: rgba(46, 230, 200, .45);
+  --shadow: 0 1px 0 rgba(255,255,255,.04) inset, 0 20px 40px -24px rgba(0,0,0,.7); }
 .hero .wrap { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.08fr); gap: 48px; align-items: center; }
 .eyebrow { font: 700 12px/1 var(--font-mono); letter-spacing: .14em; text-transform: uppercase; color: var(--accent); display: flex; align-items: center; gap: 10px; }
 .eyebrow::before { content: ""; width: 22px; height: 2px; background: currentColor; border-radius: 2px; }
+.eyebrow .n { padding: 4px 6px; border: 1px solid color-mix(in srgb, currentColor 55%, transparent); border-radius: var(--radius-sm); letter-spacing: .04em; }
 .hero h1 { font-size: clamp(38px, 5.4vw, 66px); line-height: 1.02; letter-spacing: -.035em; font-weight: 800; margin-top: 18px; }
 .hero h1 em { font-style: normal; color: var(--accent); }
 .lede { margin-top: 18px; font-size: 18px; color: var(--fg-2); max-width: 46ch; }
@@ -111,10 +114,10 @@ svg { display: block; }
   text-decoration: none; display: grid; justify-items: center; gap: 8px; padding: 14px 6px 12px;
   border: 1px solid var(--line); border-radius: var(--r-md); background: var(--surface);
   font-size: 12.5px; font-weight: 700; text-align: center; line-height: 1.2;
-  transition: border-color .15s, transform .15s;
+  transition: border-color var(--t-fast), transform var(--t-base) var(--ease-out);
 }
 .index a:hover { border-color: var(--hue, var(--accent)); transform: translateY(-2px); }
-.index a .ico { color: var(--hue, var(--accent)); width: 24px; height: 24px; }
+.index a .ico { color: var(--hue, var(--accent)); width: 20px; height: 20px; }
 
 .hero-shot { position: relative; border-radius: var(--radius-lg); overflow: hidden; border: 1px solid var(--line-strong); box-shadow: var(--shadow); aspect-ratio: 3 / 2; max-width: 100%; background: var(--surface-2); }
 .hero-shot img { width: 100%; height: 100%; object-fit: cover; display: block; }
@@ -123,10 +126,9 @@ svg { display: block; }
 .chip {
   display: inline-flex; align-items: center; gap: 7px; padding: 6px 10px; border-radius: var(--radius-sm);
   font: 700 12px/1 var(--font-mono); letter-spacing: .03em;
-  background: rgba(8, 13, 24, .82); color: #e8eef8; border: 1px solid rgba(255,255,255,.14);
-  backdrop-filter: blur(6px);
+  background: rgba(17, 19, 21, .82); color: #eef2f3; border: 1px solid rgba(255,255,255,.14);
 }
-.chip .dot { width: 7px; height: 7px; border-radius: 50%; background: #38bdf8; }
+.chip .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); }
 .chip.stop { background: #dc2626; border-color: #f87171; color: #fff; margin-left: auto; }
 .chip.stop kbd { font: inherit; font-size: 10.5px; padding: 2px 5px; border-radius: var(--radius-sm); background: rgba(255,255,255,.2); }
 
@@ -153,9 +155,11 @@ svg { display: block; }
 @media (max-width: 520px) { .feats { grid-template-columns: minmax(0, 1fr); } }
 
 /* ── Abschnitte ── */
-section.block { padding-block: 88px; border-top: 1px solid var(--line); }
+section.block { padding-block: 96px; border-top: 1px solid var(--line); }
+main > section.block:nth-of-type(even) { background: var(--band); }  /* Flächen im Wechsel bg / band (Skill docs-layout §1) */
+@media (max-width: 760px) { section.block { padding-block: 64px; } }
 .block-head { display: flex; align-items: end; justify-content: space-between; gap: 24px; flex-wrap: wrap; margin-bottom: 40px; }
-.block-head h2 { font-size: clamp(30px, 3.6vw, 44px); letter-spacing: -.03em; font-weight: 800; line-height: 1.05; margin-top: 12px; }
+.block-head h2 { font-size: var(--fs-h2); letter-spacing: -.03em; font-weight: 800; line-height: 1.05; margin-top: 12px; }
 .block-head p { color: var(--fg-2); max-width: 44ch; font-size: 16px; }
 
 .grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 18px; }
@@ -295,7 +299,7 @@ section.block { padding-block: 88px; border-top: 1px solid var(--line); }
 .plan ol { margin: 0; padding-left: 20px; font-size: 13px; display: grid; gap: 2px; }
 .plan .btns { display: flex; gap: 6px; margin-top: 4px; }
 .plan .btns span { display: inline-flex; align-items: center; gap: 5px; font: 700 11px/1 var(--font-body); padding: 7px 10px; border-radius: var(--radius-sm); border: 1px solid var(--line-strong); }
-.plan .btns .ico { width: 11px; height: 11px; }
+.plan .btns .ico { width: 16px; height: 16px; }
 .plan .btns .go { border-color: var(--accent); background: var(--accent); color: var(--accent-ink); }
 .plan .btns .stop .ico { color: var(--red); }
 
@@ -398,8 +402,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 10px 24px; align-items: cent
   .pins { grid-template-columns: 1fr; }
   .arrow { display: none; }
   .estop-band .ways { margin-left: 0; }
-  .hero { padding-block: 44px 40px; }
-  section.block { padding-block: 60px; }
+  .hero { padding-block: 40px 40px; }
 }
 @media (max-width: 420px) {
   .numbers { grid-template-columns: 1fr; }
@@ -474,7 +477,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 10px 24px; align-items: cent
 </header>
 
 <main id="start">
-  <section class="hero">
+  <section class="hero dark-zone">
     <div class="wrap">
       <div>
         <div class="eyebrow">Multimodale Robotersteuerung</div>
@@ -519,7 +522,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 10px 24px; align-items: cent
     <div class="wrap">
       <div class="block-head">
         <div>
-          <div class="eyebrow">Kernmerkmale</div>
+          <div class="eyebrow"><span class="n">01</span><span>Kernmerkmale</span></div>
           <h2>Der Mensch führt. Die KI assistiert.</h2>
         </div>
         <p>Acht Merkmale machen aus einer Fernsteuerung eine assistive Plattform.</p>
@@ -542,7 +545,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 10px 24px; align-items: cent
     <div class="wrap">
       <div class="block-head">
         <div>
-          <div class="eyebrow">Hardware in der Hand</div>
+          <div class="eyebrow"><span class="n">02</span><span>Hardware in der Hand</span></div>
           <h2>Eingabegeräte</h2>
         </div>
         <p>Sechs Geräte, ein Ziel: der Werkzeugpunkt (TCP) des Arms. Jedes Gerät ist austauschbar.</p>
@@ -800,7 +803,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 10px 24px; align-items: cent
     <div class="wrap">
       <div class="block-head">
         <div>
-          <div class="eyebrow">Software im Browser</div>
+          <div class="eyebrow"><span class="n">03</span><span>Software im Browser</span></div>
           <h2>Steuerwege</h2>
         </div>
         <p>Vom präzisen Jogging bis zur Anweisung in Alltagssprache.</p>
@@ -951,7 +954,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 10px 24px; align-items: cent
     <div class="wrap">
       <div class="block-head">
         <div>
-          <div class="eyebrow">Auf einen Blick</div>
+          <div class="eyebrow"><span class="n">04</span><span>Auf einen Blick</span></div>
           <h2>Was kann welcher Weg?</h2>
         </div>
       </div>
@@ -986,7 +989,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 10px 24px; align-items: cent
     <div class="wrap">
       <div class="block-head">
         <div>
-          <div class="eyebrow">Gilt für jeden Weg</div>
+          <div class="eyebrow"><span class="n">05</span><span>Gilt für jeden Weg</span></div>
           <h2>Jede Eingabe durchläuft dieselbe Kette</h2>
         </div>
         <p>Kein Gerät spricht direkt mit dem Arm.</p>
