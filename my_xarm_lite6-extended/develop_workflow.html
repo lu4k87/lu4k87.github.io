@@ -296,6 +296,57 @@ html.sf-on .hero:not(.is-in) .msg { opacity: 0; transform: translate3d(0, 10px, 
 .fx { grid-template-rows: auto auto auto 1fr auto; }
 .fx .k-t { margin-top: 2px; }
 
+/* Übersichtsgrafik „Auf einen Blick“: Raster mit Knoten + Pfeilen (Flow-Layout, Pfeile per Flexbox, Spitze per clip-path); ≤ 960 px senkrecht */
+.ov { display: grid; gap: 16px; margin: 0 0 48px; padding: 24px; border: 1px solid var(--line); border-radius: var(--radius-lg); background: var(--surface); box-shadow: var(--shadow); }
+.ov-grid { display: grid; align-items: center; gap: 10px;
+  grid-template-columns: minmax(0, 1fr) 120px minmax(0, 1.3fr) 120px minmax(0, 1fr);
+  grid-template-areas: ". . know . ." ". . a1 . ." "human a2 core a3 repo" ". . a4 . ." ". . help . ."; }
+.ov-node { --hue: var(--accent); display: grid; justify-items: center; align-content: start; gap: 8px; min-width: 0; padding: 16px; text-align: center;
+  border: 1px solid color-mix(in srgb, var(--hue) 40%, var(--line)); border-radius: var(--radius); background: color-mix(in srgb, var(--hue) 9%, var(--surface)); }
+.ov-node > .ico { width: 26px; height: 26px; color: var(--hue); }
+.ov-node b { font-size: 15px; line-height: 1.35; font-weight: 700; }
+.ov-chips { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; }
+.ov-chips li { font: 600 12px/1.2 var(--mono); padding: 4px 8px; border: 1px solid var(--line-strong); border-radius: var(--radius-sm); }
+.ov-core { grid-area: core; display: grid; gap: 10px; padding: 10px; border: 1.5px dashed color-mix(in srgb, var(--gold) 55%, transparent); border-radius: var(--radius-lg); }
+.ov-guard { display: flex; justify-content: center; align-items: center; gap: 8px; font: 700 12px/1.2 var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--gold); }
+.ov-guard .ico { width: 16px; height: 16px; }
+.ov-arr { display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 12px; min-width: 0; }
+.ov-arr.v { flex-direction: row; gap: 24px; }
+.ov-step { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.ov-arr.v .ov-step { flex-direction: row; gap: 8px; }
+.ov-l { font: 600 12px/1.25 var(--mono); color: var(--fg-2); text-align: center; }
+.ov-p { --fd: row; --cp: polygon(0 0, 100% 50%, 0 100%); display: flex; flex-direction: var(--fd); align-items: center; width: 72px; height: 12px; color: var(--line-strong); }
+.ov-p::before { content: ""; flex: 1 1 auto; align-self: center; width: auto; height: 2px; background: currentColor; }
+.ov-p::after { content: ""; flex: none; width: 10px; height: 12px; background: currentColor; clip-path: var(--cp); }
+.ov-p.l { --fd: row-reverse; --cp: polygon(100% 0, 0 50%, 100% 100%); }
+.ov-p.d, .ov-p.u { width: 12px; height: 32px; }
+.ov-p.d::before, .ov-p.u::before { width: 2px; height: auto; align-self: stretch; margin-inline: 5px; }
+.ov-p.d::after, .ov-p.u::after { width: 12px; height: 10px; }
+.ov-p.d { --fd: column; --cp: polygon(0 0, 100% 0, 50% 100%); }
+.ov-p.u { --fd: column-reverse; --cp: polygon(0 100%, 100% 100%, 50% 0); }
+.ov-loop { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 8px 10px; padding-top: 16px; border-top: 1px solid var(--line); font-size: 15px; line-height: 1.5; text-align: center; }
+.ov-loop .ico { width: 18px; height: 18px; color: var(--violet); }
+.ov figcaption { font-size: 15px; line-height: 1.5; color: var(--fg-2); text-align: center; max-width: 72ch; justify-self: center; text-wrap: pretty; }
+@media (max-width: 960px) {
+  .ov-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-areas: "human human" "a2 a2" "know help" "a1 a4" "core core" "a3 a3" "repo repo"; }
+  .ov-arr.h { flex-direction: row; gap: 24px; }
+  .ov-arr.h .ov-step { flex-direction: row; gap: 8px; }
+  .ov-arr.h .ov-p { width: 12px; height: 32px; }
+  .ov-arr.h .ov-p::before { width: 2px; height: auto; align-self: stretch; margin-inline: 5px; }
+  .ov-arr.h .ov-p::after { width: 12px; height: 10px; }
+  .ov-arr.h .ov-p:not(.l) { --fd: column; --cp: polygon(0 0, 100% 0, 50% 100%); }
+  .ov-arr.h .ov-p.l { --fd: column-reverse; --cp: polygon(0 100%, 100% 100%, 50% 0); }
+  .ov-arr.a4 .ov-p.d { --fd: column-reverse; --cp: polygon(0 100%, 100% 100%, 50% 0); }
+  .ov-arr.a4 .ov-p.u { --fd: column; --cp: polygon(0 0, 100% 0, 50% 100%); }
+}
+@media (max-width: 560px) {
+  .ov { padding: 16px; }
+  .ov-node { padding: 12px; }
+  .ov-arr.v { gap: 16px; }
+  .ov-arr.v .ov-step { flex-direction: column; gap: 4px; }
+  .ov-arr.v .ov-l { order: 1; }
+}
+
 /* 01 Ablauf: fünf kleine Kacheln (Icon groß mittig, Nummer in der Ecke), darunter wer handelt + Fachbegriff */
 .steps5 { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; }
 .step { position: relative; display: grid; grid-template-rows: auto auto 1fr auto auto; justify-items: center; gap: 10px; min-width: 0; padding: 22px 14px 14px; text-align: center;
@@ -820,6 +871,30 @@ html.sf-on .hero:not(.is-in) .msg { opacity: 0; transform: translate3d(0, 10px, 
         <h2 data-en="One team: human and AI.">Ein Team aus Mensch und KI.</h2>
         <p data-en="As in a development team, every role has a fixed job. Rules, knowledge and checks live as files in the repo.">Wie in einem Entwicklerteam hat jede Rolle eine feste Aufgabe. Regeln, Wissen und Kontrollen liegen als Dateien im Repo.</p>
       </header>
+      <figure class="ov" aria-labelledby="ov-cap">
+        <div class="ov-grid">
+          <div class="ov-node" style="grid-area: human"><svg class="ico" aria-hidden="true"><use href="#i-user"/></svg><span class="k-t" data-en="Human">Mensch</span><b data-en="Sets goals, decides, approves.">Setzt Ziele, entscheidet, gibt frei.</b></div>
+          <div class="ov-arr h" style="grid-area: a2">
+            <span class="ov-step"><span class="ov-l" data-en="Request">Wunsch</span><span class="ov-p" aria-hidden="true"></span></span>
+            <span class="ov-step"><span class="ov-p l" aria-hidden="true"></span><span class="ov-l" data-en="Answer + status">Antwort + Status</span></span>
+          </div>
+          <div class="ov-node" style="grid-area: know; --hue: var(--violet)"><svg class="ico" aria-hidden="true"><use href="#i-book"/></svg><span class="k-t" data-en="Knowledge">Wissen</span><b data-en="Rules and manuals.">Regeln und Handbücher.</b><ul class="ov-chips"><li>AGENTS.md</li><li>Skills</li><li>Memory</li></ul></div>
+          <div class="ov-arr v" style="grid-area: a1"><span class="ov-step"><span class="ov-p d" aria-hidden="true"></span><span class="ov-l" data-en="loads on demand">lädt bei Bedarf</span></span></div>
+          <div class="ov-core">
+            <span class="ov-guard"><svg class="ico" aria-hidden="true"><use href="#i-shield"/></svg><span data-en="Hooks check every step">Hooks prüfen jeden Schritt</span></span>
+            <div class="ov-node" style="--hue: var(--indigo)"><svg class="ico" aria-hidden="true"><use href="#i-chat"/></svg><span class="k-t">Claude Code</span><b data-en="Plans, builds, verifies.">Plant, baut, prüft.</b><ul class="ov-chips"><li data-en="Main chat">Hauptchat</li><li>Opus</li></ul></div>
+          </div>
+          <div class="ov-arr v a4" style="grid-area: a4">
+            <span class="ov-step"><span class="ov-l" data-en="Task">Auftrag</span><span class="ov-p d" aria-hidden="true"></span></span>
+            <span class="ov-step"><span class="ov-p u" aria-hidden="true"></span><span class="ov-l" data-en="Findings">Befund</span></span>
+          </div>
+          <div class="ov-node" style="grid-area: help; --hue: var(--teal)"><svg class="ico" aria-hidden="true"><use href="#i-bot"/></svg><span class="k-t" data-en="Agents">Agenten</span><b data-en="Search, test, review.">Suchen, testen, prüfen.</b><ul class="ov-chips"><li>ws-explorer</li><li>test-runner</li><li>ui-verifier</li></ul></div>
+          <div class="ov-arr h" style="grid-area: a3"><span class="ov-step"><span class="ov-l" data-en="verified change">geprüfte Änderung</span><span class="ov-p" aria-hidden="true"></span></span></div>
+          <div class="ov-node" style="grid-area: repo; --hue: var(--green)"><svg class="ico" aria-hidden="true"><use href="#i-git"/></svg><span class="k-t">Repo</span><b data-en="Every state saved.">Jeder Stand gesichert.</b><ul class="ov-chips"><li>Code</li><li>Tests</li><li data-en="Docs">Doku</li><li>Git</li></ul></div>
+        </div>
+        <p class="ov-loop"><svg class="ico" aria-hidden="true"><use href="#i-loop"/></svg><span data-en="&lt;b&gt;Learning loop:&lt;/b&gt; correction by the human → Memory → applies from the next chat on"><b>Lernschleife:</b> Korrektur vom Menschen → Memory → gilt ab dem nächsten Chat</span></p>
+        <figcaption id="ov-cap" data-en="Simplified: the human sets the goal, Claude works with knowledge and helpers, hooks check every step, the result lands in the repo, tested.">Vereinfacht: Der Mensch gibt das Ziel vor, Claude arbeitet mit Wissen und Helfern, Hooks prüfen jeden Schritt, das Ergebnis landet geprüft im Repo.</figcaption>
+      </figure>
       <ul class="fx-grid">
         <li class="fx"><span class="bi-l"><svg class="ico" aria-hidden="true"><use href="#i-book"/></svg></span><span class="k-t">AGENTS.md</span><b data-en="Rules for every chat.">Regeln für jeden Chat.</b><p data-en="House rules in 122 lines: safety, names, answer format and when a task counts as done.">Hausordnung mit 122 Zeilen: Sicherheit, Namen, Antwortformat und wann eine Aufgabe fertig ist.</p><a class="more" href="#sicherheit"><span data-en="Safety">Sicherheit</span><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg></a></li>
         <li class="fx"><span class="bi-l"><svg class="ico" aria-hidden="true"><use href="#i-layers"/></svg></span><span class="k-t">Skills</span><b data-en="Manuals on demand.">Handbücher auf Abruf.</b><p data-en="22 expert guides, for example for UI changes or tests; Claude loads only what the task needs.">22 Fachanleitungen, etwa für UI-Änderungen oder Tests; Claude lädt nur, was die Aufgabe braucht.</p><a class="more" href="#werkzeuge"><span data-en="Tool map">Werkzeugkarte</span><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg></a></li>
