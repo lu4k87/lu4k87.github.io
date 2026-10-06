@@ -15,32 +15,37 @@
 :root {
   --radius-sm: 4px; --radius: 6px; --radius-lg: 8px; /* Ecken dezent: klein (Chips, Buttons, Code) · Karten · große Rahmen; Balken/Linien kantig, höchstens 8 px (Wunsch User 04.10.2026, Hook prüft) */
   color-scheme: dark;
-  --bg: #0a0f19; --surface: #0f1727; --surface-2: #131d31; --line: #1f2c44; --line-strong: #2f4163;
-  --fg: #e8eef8; --fg-2: #c3cfe0; --accent: #38bdf8; --accent-ink: #04121c;
-  --indigo: #818cf8; --teal: #2dd4bf; --violet: #a78bfa; --gold: #f0b429; --green: #10b981; --red: #ef4444;
-  --grid: rgba(56, 189, 248, .07);
+  /* Graphit + Türkis wie die Hauptseite project_docs.html (Brand-Kit, Skill docs-layout §6); --warn nur Hinweise, --red nur Fehler */
+  --bg: #111315; --surface: #181b1e; --surface-2: #1f2327; --line: #2a2f34; --line-strong: #3b4248;
+  --fg: #eef2f3; --fg-2: #b9c2c6; --accent: #2ee6c8; --accent-ink: #04201c;
+  --indigo: #818cf8; --teal: #2dd4bf; --violet: #a78bfa; --gold: #f5b942; --green: #4ade80; --red: #f87171; --warn: #fbbf24;
+  --blue: #60a5fa; --pink: #f472b6; --orange: #fb923c; --lime: #a3e635;
+  --band: #15181a; --grid: rgba(46, 230, 200, .055); --glow: rgba(46, 230, 200, .45);
   --shadow: 0 1px 0 rgba(255,255,255,.04) inset, 0 20px 40px -24px rgba(0,0,0,.7);
   --font: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   --mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
   --r-lg: var(--radius-lg); --r-md: var(--radius);
+  --fs-h2: clamp(30px, 3.6vw, 46px);
 }
 @media (prefers-color-scheme: light) {
   :root:not([data-theme="dark"]) {
     color-scheme: light;
-    --bg: #f2f5fa; --surface: #ffffff; --surface-2: #eef3f9; --line: #d7e0ec; --line-strong: #b7c5d9;
-    --fg: #0b1424; --fg-2: #2c3b52; --accent: #0277b6; --accent-ink: #ffffff;
-    --indigo: #4f46e5; --teal: #0f766e; --violet: #7c3aed; --gold: #a15c00; --green: #047857; --red: #dc2626;
-    --grid: rgba(2, 119, 182, .07);
-    --shadow: 0 1px 2px rgba(15,30,60,.06), 0 16px 32px -24px rgba(15,30,60,.35);
+    --bg: #f3f5f5; --surface: #ffffff; --surface-2: #eef2f2; --line: #d9e0e0; --line-strong: #b9c4c4;
+    --fg: #14181a; --fg-2: #3a4448; --accent: #0a7a6d; --accent-ink: #ffffff;
+    --indigo: #4338ca; --teal: #0f766e; --violet: #6d28d9; --gold: #9a5b00; --green: #15803d; --red: #b91c1c; --warn: #a15c00;
+    --blue: #1d4ed8; --pink: #be185d; --orange: #c2410c; --lime: #4d7c0f;
+    --band: #e9eeee; --grid: rgba(10, 122, 109, .06); --glow: transparent;
+    --shadow: 0 1px 2px rgba(20,30,30,.06), 0 16px 32px -24px rgba(20,40,40,.35);
   }
 }
 :root[data-theme="light"] {
   color-scheme: light;
-  --bg: #f2f5fa; --surface: #ffffff; --surface-2: #eef3f9; --line: #d7e0ec; --line-strong: #b7c5d9;
-  --fg: #0b1424; --fg-2: #2c3b52; --accent: #0277b6; --accent-ink: #ffffff;
-  --indigo: #4f46e5; --teal: #0f766e; --violet: #7c3aed; --gold: #a15c00; --green: #047857; --red: #dc2626;
-  --grid: rgba(2, 119, 182, .07);
-  --shadow: 0 1px 2px rgba(15,30,60,.06), 0 16px 32px -24px rgba(15,30,60,.35);
+  --bg: #f3f5f5; --surface: #ffffff; --surface-2: #eef2f2; --line: #d9e0e0; --line-strong: #b9c4c4;
+  --fg: #14181a; --fg-2: #3a4448; --accent: #0a7a6d; --accent-ink: #ffffff;
+  --indigo: #4338ca; --teal: #0f766e; --violet: #6d28d9; --gold: #9a5b00; --green: #15803d; --red: #b91c1c; --warn: #a15c00;
+  --blue: #1d4ed8; --pink: #be185d; --orange: #c2410c; --lime: #4d7c0f;
+  --band: #e9eeee; --grid: rgba(10, 122, 109, .06); --glow: transparent;
+  --shadow: 0 1px 2px rgba(20,30,30,.06), 0 16px 32px -24px rgba(20,40,40,.35);
 }
 
 * { box-sizing: border-box; }
@@ -53,7 +58,7 @@ button { font: inherit; color: inherit; cursor: pointer; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: var(--radius-sm); }
 svg { display: block; }
 img { max-width: 100%; }
-.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+.ico { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex: none; }
 .wrap { max-width: 1240px; margin-inline: auto; padding-inline: 20px; }
 .mono { font-family: var(--mono); font-variant-numeric: tabular-nums; }
 
@@ -101,10 +106,21 @@ img { max-width: 100%; }
 .ico.f { fill: currentColor; stroke: none; }
 
 /* Hero */
-.hero { padding-block: 56px 56px; }
+.hero { padding-block: 56px 56px; border-bottom: 1px solid var(--line);
+  background: radial-gradient(46% 58% at 76% 46%, color-mix(in srgb, var(--accent) 15%, transparent), transparent 72%),
+    linear-gradient(var(--grid) 1px, transparent 1px) 0 0 / 32px 32px, linear-gradient(90deg, var(--grid) 1px, transparent 1px) 0 0 / 32px 32px, var(--bg); }
+/* Dunkle Zone: Werte wie .dark-zone in css/landing.css (Seite bindet landing.css nicht ein: .badge/.hero/.deck hier anders belegt) */
+.dark-zone { color-scheme: dark; color: var(--fg);
+  --bg: #111315; --surface: #181b1e; --surface-2: #1f2327; --line: #2a2f34; --line-strong: #3b4248;
+  --fg: #eef2f3; --fg-2: #b9c2c6; --accent: #2ee6c8; --accent-ink: #04201c;
+  --indigo: #818cf8; --teal: #2dd4bf; --violet: #a78bfa; --gold: #f5b942; --green: #4ade80; --red: #f87171; --warn: #fbbf24;
+  --blue: #60a5fa; --pink: #f472b6; --orange: #fb923c; --lime: #a3e635;
+  --band: #15181a; --grid: rgba(46, 230, 200, .055); --glow: rgba(46, 230, 200, .45);
+  --shadow: 0 1px 0 rgba(255,255,255,.04) inset, 0 20px 40px -24px rgba(0,0,0,.7); }
 .hero .wrap { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); gap: 44px; align-items: center; }
 .eyebrow { font: 700 12px/1 var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--hue, var(--accent)); display: flex; align-items: center; gap: 10px; }
 .eyebrow::before { content: ""; width: 22px; height: 2px; background: currentColor; border-radius: 2px; }
+.eyebrow .n { padding: 4px 6px; border: 1px solid color-mix(in srgb, currentColor 55%, transparent); border-radius: var(--radius-sm); letter-spacing: .04em; }
 .hero h1 { font-size: clamp(38px, 5.2vw, 64px); line-height: 1.03; letter-spacing: -.035em; font-weight: 800; margin-top: 18px; }
 .hero h1 em { font-style: normal; color: var(--accent); }
 .lede { margin-top: 18px; font-size: 18px; color: var(--fg-2); max-width: 44ch; }
@@ -113,22 +129,25 @@ img { max-width: 100%; }
 .hero-facts .ico { width: 18px; height: 18px; margin-top: 1px; color: var(--accent); }
 .hero-facts b { color: var(--fg); }
 .index { margin-top: 28px; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 8px; }
-.index a { display: grid; justify-items: center; gap: 8px; padding: 14px 6px 12px; border: 1px solid var(--line); border-radius: var(--r-md); background: var(--surface); font-size: 12.5px; font-weight: 700; text-align: center; line-height: 1.2; transition: border-color .15s, transform .15s; }
+.index a { display: grid; justify-items: center; gap: 8px; padding: 14px 6px 12px; border: 1px solid var(--line); border-radius: var(--r-md); background: var(--surface); font-size: 12.5px; font-weight: 700; text-align: center; line-height: 1.2; transition: border-color var(--t-fast), transform var(--t-base) var(--ease-out); }
 .index a:hover { border-color: var(--hue, var(--accent)); transform: translateY(-2px); }
-.index a .ico { color: var(--hue, var(--accent)); width: 24px; height: 24px; }
+.index a .ico { color: var(--hue, var(--accent)); width: 20px; height: 20px; }
 .hero-shot { position: relative; margin: 0; border-radius: var(--radius-lg); overflow: hidden; border: 1px solid var(--line-strong); box-shadow: var(--shadow); aspect-ratio: 3 / 2; max-width: 100%; background: var(--surface-2); }
 .hero-shot img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .hud { position: absolute; inset: 14px 14px auto 14px; display: flex; flex-wrap: wrap; gap: 6px; }
 .hud-bottom { position: absolute; left: 14px; right: 14px; bottom: 14px; display: flex; gap: 6px; flex-wrap: wrap; }
-.chip { display: inline-flex; align-items: center; gap: 7px; padding: 6px 10px; border-radius: var(--radius-sm); font: 700 12px/1 var(--mono); letter-spacing: .03em; background: rgba(8, 13, 24, .82); color: #e8eef8; border: 1px solid rgba(255,255,255,.14); }
-.chip .dot { width: 7px; height: 7px; border-radius: 50%; background: #38bdf8; animation: pulse 2s ease-in-out infinite; }
+.chip { display: inline-flex; align-items: center; gap: 7px; padding: 6px 10px; border-radius: var(--radius-sm); font: 700 12px/1 var(--mono); letter-spacing: .03em; background: rgba(17, 19, 21, .82); color: #eef2f3; border: 1px solid rgba(255,255,255,.14); }
+.chip .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); animation: breathe var(--t-pulse) var(--ease-io) 6 alternate; }  /* Hinweis-Puls mit Ende: 3 Atemzüge (Skill soft-motion §4) */
 .chip.stop { background: #dc2626; border-color: #f87171; color: #fff; margin-left: auto; }
 @keyframes pulse { 50% { opacity: .35; } }
+@keyframes breathe { from { opacity: 1; } to { opacity: .7; } }
 
 /* Abschnitte + Karten */
-section.block { padding-block: 80px; border-top: 1px solid var(--line); }
+section.block { padding-block: 96px; border-top: 1px solid var(--line); }
+main > section.block:nth-of-type(even) { background: var(--band); }  /* Flächen im Wechsel bg / band (Skill docs-layout §1) */
+@media (max-width: 760px) { section.block { padding-block: 64px; } }
 .block-head { display: flex; align-items: end; justify-content: space-between; gap: 24px; flex-wrap: wrap; margin-bottom: 40px; }
-.block-head h2 { font-size: clamp(28px, 3.4vw, 42px); letter-spacing: -.03em; font-weight: 800; line-height: 1.06; margin-top: 12px; }
+.block-head h2 { font-size: var(--fs-h2); letter-spacing: -.03em; font-weight: 800; line-height: 1.06; margin-top: 12px; }
 .block-head p { color: var(--fg-2); max-width: 44ch; }
 .card { --hue: var(--accent); background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); overflow: hidden; box-shadow: var(--shadow); display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); }
 .card + .card { margin-top: 18px; }
@@ -153,7 +172,7 @@ section.block { padding-block: 80px; border-top: 1px solid var(--line); }
 .pts li { display: grid; grid-template-columns: 20px minmax(0, 1fr); gap: 10px; align-items: start; }
 .pts .ico { width: 18px; height: 18px; color: var(--hue); margin-top: 3px; }
 .try { font: 700 11.5px/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--hue); display: flex; align-items: center; gap: 8px; }
-.try::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: currentColor; animation: pulse 2s ease-in-out infinite; }
+.try::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: currentColor; animation: breathe var(--t-pulse) var(--ease-io) 6 alternate; }
 .shot { position: relative; border-radius: var(--radius); overflow: hidden; border: 1px solid var(--line-strong); background: var(--surface); }
 .shot img { width: 100%; height: auto; display: block; }
 .panel { background: var(--surface); border: 1px solid var(--line-strong); border-radius: var(--radius); padding: 14px; }
@@ -209,7 +228,7 @@ section.block { padding-block: 80px; border-top: 1px solid var(--line); }
 .sc-legend .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--accent); }
 .sc-legend .dot.s { background: var(--violet); }
 .sc-legend .hand { font-style: normal; font-weight: 800; color: var(--gold); }
-.sc-legend .ico { width: 15px; height: 15px; }
+.sc-legend .ico { width: 16px; height: 16px; }
 .sc-info { display: grid; grid-template-columns: 40px minmax(0, 1fr); gap: 12px; align-items: start; min-height: 98px; }
 .sc-info .ic { --c: var(--accent); width: 40px; height: 40px; border-radius: var(--radius); display: grid; place-items: center; color: var(--c); background: color-mix(in srgb, var(--c) 16%, transparent); border: 1px solid color-mix(in srgb, var(--c) 45%, transparent); }
 .sc-info .ic.s { --c: var(--violet); }
@@ -380,7 +399,7 @@ section.block { padding-block: 80px; border-top: 1px solid var(--line); }
 .link.err .st, .link.err .ico { color: var(--red); }
 .link.arm.go .ico { animation: nudge .5s ease-in-out 2; }
 @keyframes shake { 25% { transform: translateX(-4px); } 75% { transform: translateX(4px); } }
-@keyframes nudge { 50% { transform: rotate(-12deg); } }
+@keyframes nudge { 50% { transform: translateX(3px); } }  /* Pfeil-Weg statt Drehen (Skill soft-motion §5) */
 .gate-msg { min-height: 2.9em; font-size: 14.5px; display: flex; gap: 8px; align-items: flex-start; }
 .gate-msg b { font: 700 11px/1.6 var(--mono); letter-spacing: .06em; padding: 1px 7px; border-radius: var(--radius-sm); border: 1px solid var(--line-strong); white-space: nowrap; }
 .gate-msg b.err { border-color: var(--red); color: var(--red); }
@@ -398,8 +417,8 @@ section.block { padding-block: 80px; border-top: 1px solid var(--line); }
 
 /* Kanäle / Wege */
 .tog > .ico { color: var(--hue); }
-.tog .box { width: 16px; height: 16px; border-radius: var(--radius-sm); box-shadow: inset 0 0 0 1.5px var(--fg-2); display: grid; place-items: center; color: transparent; }
-.tog .box .ico { width: 12px; height: 12px; stroke-width: 3; }
+.tog .box { width: 20px; height: 20px; border-radius: var(--radius-sm); box-shadow: inset 0 0 0 1.5px var(--fg-2); display: grid; place-items: center; color: transparent; }
+.tog .box .ico { width: 16px; height: 16px; stroke-width: 2.6; }
 .tog[aria-pressed="true"] .box { box-shadow: none; background: var(--hue); color: var(--bg); }
 .ways-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
 .way { display: grid; justify-items: center; gap: 6px; padding: 12px 6px; border-radius: var(--radius); background: var(--surface); border: 1px solid var(--hue); font-size: 12.5px; font-weight: 700; text-align: center; line-height: 1.2; transition: opacity .3s, transform .3s; }
@@ -573,7 +592,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: cent
 .hw-tag.opt { border-style: dashed; }
 
 /* Motion-Tokens (Skill motion-viz) */
-:root { --ease-out: cubic-bezier(.2, .7, .2, 1); --ease-io: cubic-bezier(.65, 0, .35, 1); --t-fast: 150ms; --t-base: 250ms; --t-slow: 450ms; --t-story: 700ms; }
+:root { --ease-out: cubic-bezier(.2, .7, .2, 1); --ease-io: cubic-bezier(.65, 0, .35, 1); --t-fast: 150ms; --t-base: 250ms; --t-slow: 450ms; --t-story: 700ms; --t-pulse: 2.6s; }
 
 /* Kennzahlen unter dem Hero: zählen beim Einblenden hoch */
 .kpis { border-top: 1px solid var(--line); background: var(--surface); }
@@ -706,7 +725,6 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: cent
   .lsq .c span { display: none; }
   .arrow { display: none; }
   .hero { padding-block: 40px 40px; }
-  section.block { padding-block: 56px; }
   .hud .chip:not(.stop):nth-child(n+3) { display: none; }
   .brand small { display: none; }
 }
@@ -726,7 +744,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: cent
   background: var(--glass-bg); color: var(--glass-fg); cursor: pointer;
   box-shadow: inset 0 1px 0 var(--glass-hi), inset 0 -1px 0 rgba(255, 255, 255, .05), 0 12px 28px -14px rgba(0, 0, 0, .65);
   transition: transform var(--t-fast) var(--ease-out), border-color var(--t-fast), color var(--t-fast); }
-.glass-btn .ico { width: 22px; height: 22px; stroke-width: 2; transition: transform var(--t-base) var(--ease-out); }
+.glass-btn .ico { width: 20px; height: 20px; stroke-width: 2; transition: transform var(--t-base) var(--ease-out); }
 .glass-btn:hover { border-color: color-mix(in srgb, var(--accent) 70%, var(--glass-bd)); color: var(--accent); }
 .glass-btn.g-prev:hover .ico { transform: translateX(-2px); }
 .glass-btn.g-next:hover .ico { transform: translateX(2px); }
@@ -823,9 +841,9 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: cent
 .pf-st { display: grid; gap: 2px; min-width: 0; }
 .pf-st b { font-size: 14px; font-weight: 800; line-height: 1.25; display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
 .pf-st small { display: flex; align-items: center; gap: 5px; font: 700 11px/1.2 var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--hue); }
-.pf-st small .ico { width: 14px; height: 14px; }
+.pf-st small .ico { width: 16px; height: 16px; }
 .pf-gate { display: inline-flex; align-items: center; gap: 4px; font: 700 11px/1 var(--mono); padding: 3px 6px; border-radius: var(--radius-sm); border: 1px solid color-mix(in srgb, var(--green) 50%, var(--line)); color: var(--green); }
-.pf-gate .ico { width: 13px; height: 13px; }
+.pf-gate .ico { width: 16px; height: 16px; }
 .pf-step.is-done .pf-num { background: color-mix(in srgb, var(--accent) 16%, var(--surface)); border-color: var(--accent); color: var(--fg); }
 .pf-step.is-active { border-color: color-mix(in srgb, var(--hue) 55%, var(--line)); background: color-mix(in srgb, var(--hue) 9%, var(--surface)); }
 .pf-step.is-active .pf-num { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
@@ -833,7 +851,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: cent
 .pf-step.is-blocked .pf-num { background: var(--red); border-color: var(--red); color: var(--bg); }
 .pf-step.is-skipped .pf-num { border-style: dashed; }
 .pf-step.is-skipped b { text-decoration: line-through; text-decoration-thickness: 1px; }
-@keyframes pf-shake { 25% { transform: translateX(-4px); } 50% { transform: translateX(4px); } 75% { transform: translateX(-2px); } }
+@keyframes pf-shake { 25% { transform: translateX(-4px); } 75% { transform: translateX(4px); } }  /* höchstens 2 Wechsel (Skill soft-motion §5) */
 .pf-detail { display: grid; gap: 10px; padding: 14px; border-radius: var(--radius); border: 1px solid var(--line); background: var(--surface-2); min-width: 0; }
 .pf-count { font: 700 12px/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--accent); }
 .pf-dt { margin: 0; font-size: 19px; font-weight: 800; line-height: 1.2; letter-spacing: -.01em; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
@@ -843,7 +861,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: cent
 .pf-ly .ico { width: 18px; height: 18px; color: var(--hue); }
 .pf-ly.on { border-color: var(--hue); background: color-mix(in srgb, var(--hue) 16%, var(--surface)); color: var(--fg); }
 .pf-res { display: flex; gap: 10px; align-items: flex-start; padding: 10px 12px; border-radius: var(--radius); border: 1px solid var(--red); background: color-mix(in srgb, var(--red) 10%, var(--surface)); font-size: 14px; }
-.pf-res .ico { color: var(--red); width: 22px; height: 22px; }
+.pf-res .ico { color: var(--red); width: 20px; height: 20px; }
 .pf-res[hidden], .pf-code:empty { display: none; }
 .pf-note { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; padding: 10px 12px; border-radius: var(--radius); border: 1px solid var(--line); background: var(--surface-2); font-size: 14px; }
 .pf-note .ico { color: var(--green); }
@@ -961,7 +979,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: cent
 </header>
 
 <main id="start">
-  <section class="hero">
+  <section class="hero dark-zone">
     <div class="wrap">
       <div>
         <div class="eyebrow" data-en="Human-computer interaction · Shared control">Mensch-Computer-Interaktion · Shared Control</div>
@@ -1018,7 +1036,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: cent
   <section class="block" id="merkmale">
     <div class="wrap">
       <div class="block-head">
-        <div><div class="eyebrow" data-en="Key features">Kernmerkmale</div><h2 data-en="Eight features, one principle">Acht Merkmale, ein Prinzip</h2></div>
+        <div><div class="eyebrow"><span class="n">01</span><span data-en="Key features">Kernmerkmale</span></div><h2 data-en="Eight features, one principle">Acht Merkmale, ein Prinzip</h2></div>
         <p data-en="The system proposes, the human decides. That turns a remote control into an assistive platform.">Das System schlägt vor, der Mensch entscheidet. So wird aus einer Fernsteuerung eine assistive Plattform.</p>
       </div>
         <div class="panel rk-stage" id="rk-stage" role="group" aria-label="Prinzip: Mensch im Loop, vier Stationen" data-en-aria="Principle: human in the loop, four stations">
@@ -1113,7 +1131,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: cent
   <section class="block" id="shared">
     <div class="wrap">
       <div class="block-head">
-        <div><div class="eyebrow" data-en="Operating principle">Funktionsprinzip</div><h2 data-en="Who does what?">Wer macht was?</h2></div>
+        <div><div class="eyebrow"><span class="n">02</span><span data-en="Operating principle">Funktionsprinzip</span></div><h2 data-en="Who does what?">Wer macht was?</h2></div>
         <p data-en="Control moves between human and system. The first and the last word stay with the human.">Die Kontrolle wandert zwischen Mensch und System. Das erste und das letzte Wort bleiben beim Menschen.</p>
       </div>
       <article class="card" style="--hue: var(--accent)">
@@ -1182,7 +1200,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: cent
   <section class="block" id="ki">
     <div class="wrap">
       <div class="block-head">
-        <div><div class="eyebrow" style="--hue: var(--violet)" data-en="AI · VLA · Human-in-the-loop">KI · VLA · Human-in-the-Loop</div><h2 data-en="The AI plans. The human approves.">Die KI plant. Der Mensch gibt frei.</h2></div>
+        <div><div class="eyebrow" style="--hue: var(--violet)"><span class="n">03</span><span data-en="AI · VLA · Human-in-the-loop">KI · VLA · Human-in-the-Loop</span></div><h2 data-en="The AI plans. The human approves.">Die KI plant. Der Mensch gibt frei.</h2></div>
         <p data-en="The language model only picks skills and objects. Code verifies every plan before anything moves.">Das Sprachmodell wählt nur Skills und Objekte. Code prüft jeden Plan, bevor sich etwas bewegt.</p>
       </div>
       <article class="card" style="--hue: var(--violet); grid-template-columns: minmax(0, 1fr)">
@@ -1307,7 +1325,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: cent
   <section class="block" id="kontrolle">
     <div class="wrap">
       <div class="block-head">
-        <div><div class="eyebrow" style="--hue: var(--gold)" data-en="Full control">Volle Kontrolle</div><h2 data-en="No input talks to the arm directly">Keine Eingabe spricht direkt mit dem Arm</h2></div>
+        <div><div class="eyebrow" style="--hue: var(--gold)"><span class="n">04</span><span data-en="Full control">Volle Kontrolle</span></div><h2 data-en="No input talks to the arm directly">Keine Eingabe spricht direkt mit dem Arm</h2></div>
         <p data-en="Every path runs through the same protective layers.">Jeder Weg läuft durch dieselben Schutzschichten.</p>
       </div>
       <article class="card" style="--hue: var(--gold)">
@@ -1357,7 +1375,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: cent
   <section class="block" id="mensch">
     <div class="wrap">
       <div class="block-head">
-        <div><div class="eyebrow" style="--hue: var(--teal)" data-en="Assistive · multimodal">Assistiv · multimodal</div><h2 data-en="The interface adapts to the person">Die Bedienung passt sich dem Menschen an</h2></div>
+        <div><div class="eyebrow" style="--hue: var(--teal)"><span class="n">05</span><span data-en="Assistive · multimodal">Assistiv · multimodal</span></div><h2 data-en="The interface adapts to the person">Die Bedienung passt sich dem Menschen an</h2></div>
         <p data-en="Hand, eyes or voice: several channels lead to the same goal.">Hand, Blick oder Stimme: Mehrere Kanäle führen zum selben Ziel.</p>
       </div>
       <article class="card" style="--hue: var(--teal)">
@@ -1419,7 +1437,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: cent
   <section class="block" id="twin">
     <div class="wrap">
       <div class="block-head">
-        <div><div class="eyebrow" style="--hue: var(--indigo)">Digital Twin</div><h2 data-en="First virtual, then real">Erst virtuell, dann real</h2></div>
+        <div><div class="eyebrow" style="--hue: var(--indigo)"><span class="n">06</span><span>Digital Twin</span></div><h2 data-en="First virtual, then real">Erst virtuell, dann real</h2></div>
         <p data-en="The Digital Twin is the live 3D model of the arm and its workcell. Human, planner and AI share the same picture.">Der Digital Twin ist das live mitlaufende 3D-Modell von Arm und Arbeitszelle. Mensch, Planer und KI sehen dasselbe Bild.</p>
       </div>
       <article class="card" style="--hue: var(--indigo)">
@@ -1502,7 +1520,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: cent
   <section class="block" id="ablauf">
     <div class="wrap">
       <div class="block-head">
-        <div><div class="eyebrow" style="--hue: var(--green)" data-en="Process · Grasping">Prozessablauf · Greifen</div><h2 data-en="From camera image to grasp">Vom Kamerabild zum Griff</h2></div>
+        <div><div class="eyebrow" style="--hue: var(--green)"><span class="n">07</span><span data-en="Process · Grasping">Prozessablauf · Greifen</span></div><h2 data-en="From camera image to grasp">Vom Kamerabild zum Griff</h2></div>
         <p data-en="Seven steps, one rule: the system prepares, the human approves. Scroll through the steps, the scene follows.">Sieben Schritte, eine Regel: Das System bereitet vor, der Mensch gibt frei. Durch die Schritte scrollen, die Szene folgt.</p>
       </div>
       <div class="story">
@@ -1567,7 +1585,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: cent
   <section class="block" id="technik">
     <div class="wrap">
       <div class="block-head">
-        <div><div class="eyebrow" style="--hue: var(--green)" data-en="Under the hood">Unter der Haube</div><h2 data-en="Seeing, understanding, building blocks">Sehen, verstehen, Bausteine</h2></div>
+        <div><div class="eyebrow" style="--hue: var(--green)"><span class="n">08</span><span data-en="Under the hood">Unter der Haube</span></div><h2 data-en="Seeing, understanding, building blocks">Sehen, verstehen, Bausteine</h2></div>
         <p data-en="The camera delivers objects in 3D. Every module can be replaced individually.">Die Kamera liefert Objekte in 3D. Jedes Modul lässt sich einzeln austauschen.</p>
       </div>
       <article class="card" id="vision" style="--hue: var(--green); scroll-margin-top: 80px">
@@ -1625,7 +1643,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: cent
   <section class="block" id="architektur">
     <div class="wrap">
       <div class="block-head">
-        <div><div class="eyebrow" style="--hue: var(--teal)" data-en="Architecture · Data flow">Architektur · Datenfluss</div><h2 data-en="Every command takes a fixed path">Jeder Befehl nimmt einen festen Weg</h2></div>
+        <div><div class="eyebrow" style="--hue: var(--teal)"><span class="n">09</span><span data-en="Architecture · Data flow">Architektur · Datenfluss</span></div><h2 data-en="Every command takes a fixed path">Jeder Befehl nimmt einen festen Weg</h2></div>
         <p data-en="Six typical paths through the ROS 2 packages. Pick a path and follow the message, topic by topic.">Sechs typische Wege durch die ROS-2-Pakete. Weg wählen und der Nachricht folgen, Topic für Topic.</p>
       </div>
       <div class="arch-card">
@@ -1654,7 +1672,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: cent
   <section class="block" id="ablaeufe">
     <div class="wrap">
       <div class="block-head">
-        <div><div class="eyebrow" style="--hue: var(--green)" data-en="Function flows">Funktionsabläufe</div><h2 data-en="From input to motion, step by step">Von der Eingabe zur Bewegung, Schritt für Schritt</h2></div>
+        <div><div class="eyebrow" style="--hue: var(--green)"><span class="n">10</span><span data-en="Function flows">Funktionsabläufe</span></div><h2 data-en="From input to motion, step by step">Von der Eingabe zur Bewegung, Schritt für Schritt</h2></div>
         <p data-en="Six flows from input to robot: active layer and interfaces per step, safety checks marked, one fault case per flow.">Sechs Abläufe von der Eingabe bis zum Roboter: je Schritt aktive Schicht und Schnittstellen, Sicherheitsprüfungen markiert, je Ablauf ein Störfall.</p>
       </div>
         <div class="panel pf" id="pf">
@@ -1679,7 +1697,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: cent
   <section class="block" id="stack">
     <div class="wrap">
       <div class="block-head">
-        <div><div class="eyebrow" style="--hue: var(--indigo)" data-en="System stack · Software · Hardware">System-Stack · Software · Hardware</div><h2 data-en="Replaceable, not fixed">Austauschbar statt festgelegt</h2></div>
+        <div><div class="eyebrow" style="--hue: var(--indigo)"><span class="n">11</span><span data-en="System stack · Software · Hardware">System-Stack · Software · Hardware</span></div><h2 data-en="Replaceable, not fixed">Austauschbar statt festgelegt</h2></div>
         <p data-en="Split into software and hardware: seven software layers from the user interface down to the operating system, then the reference setup. Every device and module can be swapped behind its ROS 2 interface.">Getrennt nach Software und Hardware: sieben Software-Schichten von der Oberfläche bis zum Betriebssystem, darunter der Referenz-Aufbau. Jedes Gerät und jedes Modul lässt sich hinter seiner ROS-2-Schnittstelle tauschen.</p>
       </div>
       <div class="hw-head">
@@ -1739,7 +1757,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: cent
   <section class="block" id="forschung">
     <div class="wrap">
       <div class="block-head">
-        <div><div class="eyebrow" style="--hue: var(--teal)" data-en="Research · System concept">Forschung · Systemidee</div><h2 data-en="Develop, test, validate">Entwickeln, erproben, validieren</h2></div>
+        <div><div class="eyebrow" style="--hue: var(--teal)"><span class="n">12</span><span data-en="Research · System concept">Forschung · Systemidee</span></div><h2 data-en="Develop, test, validate">Entwickeln, erproben, validieren</h2></div>
         <p data-en="As an integration layer on ROS 2, the platform combines heterogeneous subsystems in one runtime. Development and empirical validation form a closed loop.">Als Integrationsschicht auf ROS 2 führt die Plattform heterogene Teilsysteme in einer Laufzeitumgebung zusammen. Entwicklung und empirische Validierung bilden einen geschlossenen Kreislauf.</p>
       </div>
       <p class="lead" data-en="Conventional teleoperation of industrial robots requires fine motor skills and expert knowledge, which excludes many potential user groups. The project investigates how &lt;b&gt;multimodal input&lt;/b&gt;, &lt;b&gt;assistive autonomy&lt;/b&gt; and a &lt;b&gt;Digital Twin&lt;/b&gt; lower these barriers without restricting human control.">Konventionelle Teleoperation von Industrierobotern setzt Feinmotorik und Expertenwissen voraus und schließt damit viele potenzielle Nutzergruppen aus. Das Projekt untersucht, wie <b>multimodale Eingaben</b>, <b>assistive Autonomie</b> und ein <b>Digital Twin</b> diese Barrieren senken, ohne die Kontrolle des Menschen einzuschränken.</p>
@@ -1832,7 +1850,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: cent
   <section class="block" id="evaluierung">
     <div class="wrap">
       <div class="block-head">
-        <div><div class="eyebrow" style="--hue: var(--gold)" data-en="Evaluation platform">Evaluierungsplattform</div><h2 data-en="Measured, not guessed">Gemessen statt geschätzt</h2></div>
+        <div><div class="eyebrow" style="--hue: var(--gold)"><span class="n">13</span><span data-en="Evaluation platform">Evaluierungsplattform</span></div><h2 data-en="Measured, not guessed">Gemessen statt geschätzt</h2></div>
         <p data-en="The Monitoring Dashboard plans usability tests, records every run and evaluates it.">Das Monitoring Dashboard plant Usability-Tests, zeichnet jeden Durchlauf auf und wertet ihn aus.</p>
       </div>
       <article class="card" style="--hue: var(--gold)">
