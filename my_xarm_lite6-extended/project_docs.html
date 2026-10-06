@@ -524,7 +524,8 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
 }
 /* ═════ Teilhabe: Orbit der Steuerwege (High-Level violett, Low-Level Türkis), Sicherheitskette gold, Vision grün, Evaluierung orange
    (Bereichsfarben wie Funktionsatlas). Ein Haupteffekt: gewählter Steuerweg → Eingabe zeichnet sich durch die Kette zum Arm (Skill motion-viz §4) ═════ */
-.tm-grid { display: grid; grid-template-columns: minmax(0, 1.12fr) minmax(320px, .88fr); gap: 40px 56px; align-items: center; }
+/* Ablauf von oben nach unten, ohne Rahmen (Wunsch User 06.10.2026): Orbit → Linie fließt in die Bühne bis in den Sockel → Auswahl + Karte */
+.tm-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 32px; }
 .tm-fig { margin: 0; display: grid; justify-items: center; gap: 12px; min-width: 0; }
 .tm-svg { width: min(100%, 640px); height: auto; overflow: visible; font-family: var(--font); }
 .tm-svg use { fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
@@ -575,52 +576,84 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
 /* Auswahl: zwei Ebenen mit je drei Knöpfen */
 .tm-node:focus { outline: none; }  /* Fokus = Halo kräftig (Knoten per Tab + Enter/Leertaste bedienbar) */
 .tm-node:focus-visible .tm-halo { opacity: 1; stroke-width: 3; }
-.tm-main { display: grid; gap: 12px; min-width: 0; align-content: start; container-type: inline-size; }
-.tm-estop { display: flex; align-items: flex-start; gap: 8px; margin: 0; font-size: 14px; line-height: 1.45; color: var(--fg-2); }
+.tm-main { display: grid; gap: 24px; min-width: 0; align-content: start; container-type: inline-size; }
+.tm-estop { display: flex; align-items: flex-start; justify-content: center; gap: 8px; margin: 0; font-size: 14px; line-height: 1.45; color: var(--fg-2); text-align: center; }
 .tm-estop .ico { flex: none; width: 18px; height: 18px; margin-top: 1px; color: var(--red); }
 .tm-estop b { color: var(--fg); }
 /* Ghost-Bühne (js/hero3d.js, Szene „ghost“): nur mit WebGL und ohne reduced-motion (Klasse .tm-3d am Raster), sonst bleibt das SVG
-   vollständig; Orbit links nur bis zum Ring-Ausgang, Kette als Leiste auf der Bühne, Steuerweg-Name als Badge (Wunsch User 06.10.2026) */
+   vollständig. Orbit oben bis zur Unterkante, die Linie läuft ohne Absatz in die Bühne und bis in den Sockel (.tm-flow, Projektion
+   der Kamera); Bühne ohne Rahmen, Ränder weich ausgeblendet; Kette als Leiste auf der Bühne (Wunsch User 06.10.2026) */
 .tm-stage { display: none; }
-.tm-grid.tm-3d { grid-template-columns: minmax(0, .92fr) minmax(0, 1.08fr); gap: 32px 48px; align-items: start; }
-.tm-3d .tm-fig { padding-top: 32px; }  /* Orbit auf Höhe der Bühne */
-.tm-3d .tm-stage { display: grid; grid-template: auto minmax(0, 1fr) auto / minmax(0, 1fr); aspect-ratio: 4 / 3; overflow: hidden;
-  border: 1px solid var(--line-strong); border-radius: var(--radius-lg); box-shadow: var(--shadow); }
+.tm-3d { row-gap: 0; }
+.tm-3d .tm-svg { width: min(100%, 880px); }
+.tm-3d .tm-hint { display: none; }  /* Hinweis steht an der Auswahl unten */
+.tm-3d .tm-stage { position: relative; display: grid; grid-template: auto minmax(0, 1fr) auto / minmax(0, 1fr); aspect-ratio: 2 / 1; background: none; }
+.tm-3d .tm-stage::before { content: ""; grid-area: 1 / 1 / -1 / -1; pointer-events: none;
+  background: linear-gradient(var(--grid) 1px, transparent 1px) 0 0 / 32px 32px, linear-gradient(90deg, var(--grid) 1px, transparent 1px) 0 0 / 32px 32px, var(--bg);
+  -webkit-mask: linear-gradient(90deg, transparent, #000 12% 88%, transparent), linear-gradient(transparent, #000 16% 84%, transparent);
+  -webkit-mask-composite: source-in; mask: linear-gradient(90deg, transparent, #000 12% 88%, transparent), linear-gradient(transparent, #000 16% 84%, transparent);
+  mask-composite: intersect; }
+:root[data-theme="light"] .tm-3d .tm-stage::before { display: none; }  /* hell: Arm steht direkt auf der Seite, Linie bleibt in Orbit-Farbe */
+@media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) .tm-3d .tm-stage::before { display: none; } }
 .tm-3d :is(.tm-stem, .tm-st, .tm-shared, .tm-arm, .tm-vis, .tm-pk, .tm-d) { display: none; }
 .tm-3d .tm-t { font-size: 19px; }
 .tm-canvas { grid-area: 1 / 1 / -1 / -1; position: relative; min-width: 0; min-height: 0; opacity: 0; transition: opacity 1.4s var(--ease-out); cursor: grab; }
 .tm-canvas:active { cursor: grabbing; }
 .tm-stage.is-3d .tm-canvas { opacity: 1; }
-.tm-top { grid-area: 1 / 1; z-index: 1; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start; gap: 6px; padding: 12px; pointer-events: none; }
-.tm-badge { display: inline-flex; align-items: center; gap: 8px; padding: 6px 10px; border: 1px solid var(--glass-bd); border-radius: var(--radius-sm);
+/* Linie vom Orbit in den Sockel: gestrichelt = Weg, Farbe zeichnet sich mit Puls, Welle am Sockel = angekommen */
+.tm-flow { grid-area: 1 / 1 / -1 / -1; z-index: 1; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
+.tm-flow-l { fill: none; stroke: color-mix(in srgb, var(--hue) 40%, var(--line)); stroke-width: 1.5; stroke-dasharray: 2 6; }
+.tm-flow-run { fill: none; stroke: var(--hue); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+.tm-flow-pk { fill: var(--hue); }
+.tm-flow-rip { fill: none; stroke: var(--hue); stroke-width: 2; }
+.tm-top { grid-area: 1 / 1; z-index: 2; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start; gap: 6px; padding: 12px 0; pointer-events: none; }
+.tm-badge { display: inline-flex; align-items: center; gap: 8px; padding: 6px 10px; border-radius: var(--radius-sm);
   background: rgba(17, 19, 21, .82); font: 700 12px/1.2 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--fg); }
 .tm-badge .ico { width: 16px; height: 16px; color: var(--hue, var(--accent)); }
 .tm-badge.fake { color: var(--accent); }
-.tm-steps { grid-area: 3 / 1; z-index: 1; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; margin: 0; padding: 12px; list-style: none; pointer-events: none; }
-.tm-steps li { display: grid; align-content: start; gap: 3px; padding: 8px 9px; border: 1px solid var(--glass-bd); border-radius: var(--radius); background: rgba(17, 19, 21, .84); color: var(--fg-2);
-  transition: border-color var(--t-base), background-color var(--t-base), color var(--t-base); }
+.tm-steps { grid-area: 3 / 1; z-index: 2; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; margin: 0; padding: 12px 0; list-style: none; pointer-events: none; }
+.tm-steps li { display: grid; align-content: start; gap: 3px; padding: 8px 10px; border-radius: var(--radius); background: rgba(17, 19, 21, .84); color: var(--fg-2);
+  transition: background-color var(--t-base), color var(--t-base); }
 .tm-steps li::before { content: "○"; font: 700 12px/1 var(--mono); }  /* Zustand als Zeichen, nie nur Farbe: ○ offen · ● aktiv · ✓ erledigt */
 .tm-steps b { font: 700 11px/1.2 var(--mono); letter-spacing: .04em; text-transform: uppercase; }
 .tm-steps small { font-size: 12px; line-height: 1.25; hyphens: auto; }
-.tm-steps li.done { color: var(--fg); border-color: color-mix(in srgb, var(--gold) 50%, var(--glass-bd)); }
+.tm-steps li.done { color: var(--fg); }
 .tm-steps li.done::before { content: "✓"; color: var(--gold); }
-.tm-steps li.now { color: var(--fg); border-color: var(--accent); background: color-mix(in srgb, var(--accent) 16%, rgba(17, 19, 21, .9)); }
+.tm-steps li.now { color: var(--fg); background: color-mix(in srgb, var(--accent) 22%, rgba(17, 19, 21, .9)); }
 .tm-steps li.now::before { content: "●"; color: var(--accent); }
 @container (max-width: 600px) { .tm-steps small { display: none; } }
 @container (max-width: 560px) {
-  /* schmal: Badges über, Kette unter der quadratischen Leinwand (nichts verdeckt den Arm) */
+  /* schmal: Leinwand quadratisch oben (Linie trifft direkt auf sie), Badges + Kette darunter (nichts verdeckt Arm oder Linie) */
   .tm-3d .tm-stage { aspect-ratio: auto; grid-template-rows: auto auto auto; }
-  .tm-top { padding-bottom: 0; }
-  .tm-canvas { grid-area: 2 / 1; aspect-ratio: 1 / 1; }
+  .tm-top { grid-area: 2 / 1; padding-bottom: 0; }
+  .tm-canvas { grid-area: 1 / 1; aspect-ratio: 1 / 1; }
   .tm-steps { grid-template-columns: repeat(auto-fit, minmax(118px, 1fr)); padding-top: 0; }
 }
-/* Karte des gewählten Steuerwegs; ohne JS stehen alle sechs untereinander */
-.tm-cards { display: grid; gap: 10px; }
+/* Auswahl unten: dieselben sechs Steuerwege wie im Orbit (nur mit JS; ohne JS stehen alle Karten untereinander) */
+.tm-pick { display: none; }
+.tm-on .tm-pick { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 8px; }
+.tm-pick-l { flex-basis: 100%; display: flex; justify-content: center; align-items: center; gap: 8px; margin-bottom: 4px; font: 600 12px/1.35 var(--mono); color: var(--fg-2); text-align: center; }
+.tm-pick-l .ico { width: 16px; height: 16px; color: var(--accent); }
+.tm-tab { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 8px 14px; border: 0; border-radius: var(--radius);
+  background: color-mix(in srgb, var(--hue) 10%, var(--surface)); font-size: 15px; font-weight: 700; cursor: pointer;
+  transition: background-color var(--t-fast) var(--ease-out), color var(--t-fast) var(--ease-out), transform var(--t-fast) var(--ease-out); }
+.tm-tab .ico { width: 18px; height: 18px; color: var(--hue); transition: color var(--t-fast) var(--ease-out); }
+.tm-tab:hover { background: color-mix(in srgb, var(--hue) 20%, var(--surface)); }
+.tm-tab:active { transform: scale(.97); }
+.tm-tab[aria-pressed="true"] { background: var(--hue); color: var(--surface); }
+.tm-tab[aria-pressed="true"] .ico { color: var(--surface); }
+/* Karte des gewählten Steuerwegs, ohne Rahmen; breit: Text links, Merkmale rechts. Ohne JS stehen alle sechs untereinander */
+.tm-cards { display: grid; gap: 32px; }
 .tm-on .tm-cards { grid-template-areas: "c"; }
 .tm-on .tm-card { grid-area: c; }
 .tm-on .tm-card:not(.on) { visibility: hidden; opacity: 0; transform: translateY(6px); transition: opacity calc(var(--t-slow) * .7) var(--ease-out), transform calc(var(--t-slow) * .7) var(--ease-out), visibility 0s calc(var(--t-slow) * .7); }
 .tm-on .tm-card.on { transition: opacity var(--t-slow) var(--ease-out), transform var(--t-slow) var(--ease-out); }
-.tm-card { display: grid; gap: 10px; align-content: start; padding: 18px; border: 1px solid color-mix(in srgb, var(--hue) 40%, var(--line)); border-radius: var(--radius-lg); background: var(--surface); box-shadow: var(--shadow); }
+.tm-card { display: grid; gap: 10px; align-content: start; }
+@container (min-width: 760px) {
+  .tm-card { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); column-gap: 48px; }
+  .tm-card > :not(ul) { grid-column: 1; }
+  .tm-card > ul { grid-column: 2; grid-row: 1 / span 4; align-self: center; }
+}
 .tm-card-k { font: 700 12px/1.3 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--hue); }
 .tm-card h3 { display: flex; align-items: center; gap: 10px; font-size: 20px; font-weight: 800; letter-spacing: -.01em; line-height: 1.2; }
 .tm-card h3 .ico { color: var(--hue); }
@@ -638,11 +671,6 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
 .tm-eval-t p { font-size: 14px; line-height: 1.45; color: var(--fg-2); }
 .tm-eval .chips { list-style: none; margin: 0; padding: 0; grid-column: 2 / -1; }
 .tm-eval .more { grid-column: 3; grid-row: 1; color: var(--hue); }
-@media (max-width: 960px) {
-  .tm-grid, .tm-grid.tm-3d { grid-template-columns: minmax(0, 1fr); }
-  .tm-3d .tm-fig { padding-top: 0; }
-  .tm-svg { width: min(100%, 600px); }
-}
 @media (max-width: 560px) {
   .tm-svg :is(.tm-t, .tm-d, .tm-k, .tm-st text, .tm-ring-t) { display: none; }  /* zu klein; Name steht in der Karte und auf der Bühne */
   .tm-eval { grid-template-columns: minmax(0, 1fr); padding: 16px; }
@@ -933,6 +961,7 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
           <div class="tm-main">
             <div class="tm-stage dark-zone" id="tm-stage">
               <div class="tm-top"><span class="tm-badge mode"><svg class="ico" aria-hidden="true"><use href="#i-user"/></svg><span><span data-en="Human leads">Mensch führt</span> · <b></b></span></span><span class="tm-badge fake">● FAKE · Digital Twin</span></div>
+              <svg class="tm-flow" aria-hidden="true"><path class="tm-flow-l"/><path class="tm-flow-run"/><path class="tm-flow-rip"/><circle class="tm-flow-pk" r="5"/></svg>
               <div class="tm-canvas" id="tm3d" role="img" aria-label="Digital Twin im FAKE-Modus: der Ghost-Arm plant den Weg voraus, nach der Freigabe fährt der xArm Lite 6 nach" data-en-aria="Digital Twin in FAKE mode: the ghost arm plans the path ahead, after approval the xArm Lite 6 follows"></div>
               <ol class="tm-steps">
                 <li><b data-en="Input">Eingabe</b><small data-en="from the human">vom Menschen</small></li>
@@ -943,6 +972,15 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
               </ol>
             </div>
             <p class="tm-estop"><svg class="ico" aria-hidden="true"><use href="#i-stop"/></svg><span data-en="&lt;b&gt;E-STOP always works&lt;/b&gt; – in every phase, through every control mode"><b>E-STOP wirkt immer</b> – in jeder Phase, über jeden Steuerweg</span></p>
+            <div class="tm-pick" role="group" aria-labelledby="tm-pick-l">
+              <span class="tm-pick-l" id="tm-pick-l"><svg class="ico" aria-hidden="true"><use href="#i-pointer"/></svg><span data-en="Pick a control mode: the input runs through the safety chain to the arm">Steuerweg wählen: die Eingabe läuft durch die Sicherheitskette zum Arm</span></span>
+              <button type="button" class="tm-tab" data-m="gamepad" aria-pressed="false" style="--hue: var(--accent)"><svg class="ico" aria-hidden="true"><use href="#i-pad"/></svg><span>Gamepad</span></button>
+              <button type="button" class="tm-tab" data-m="vr" aria-pressed="false" style="--hue: var(--accent)"><svg class="ico" aria-hidden="true"><use href="#i-vr"/></svg><span data-en="Virtual reality">Virtual Reality</span></button>
+              <button type="button" class="tm-tab" data-m="ui" aria-pressed="false" style="--hue: var(--accent)"><svg class="ico" aria-hidden="true"><use href="#i-touch"/></svg><span data-en="User interface">User Interface</span></button>
+              <button type="button" class="tm-tab" data-m="vla" aria-pressed="false" style="--hue: var(--violet)"><svg class="ico" aria-hidden="true"><use href="#i-quote"/></svg><span data-en="VLA chat">VLA-Chat</span></button>
+              <button type="button" class="tm-tab" data-m="sprache" aria-pressed="false" style="--hue: var(--violet)"><svg class="ico" aria-hidden="true"><use href="#i-mic"/></svg><span data-en="Voice">Sprache</span></button>
+              <button type="button" class="tm-tab" data-m="blick" aria-pressed="false" style="--hue: var(--accent)"><svg class="ico" aria-hidden="true"><use href="#i-eye"/></svg><span data-en="Gaze">Blick</span></button>
+            </div>
             <div class="tm-cards" aria-live="polite">
               <article class="tm-card" data-m="sprache" style="--hue: var(--violet)">
                 <span class="tm-card-k">Whisper · DE / EN · <a href="#nui" title="Natural User Interface">NUI</a></span>
@@ -1851,12 +1889,13 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
 
   // Teilhabe: Steuerweg wählen (Knoten im Orbit: Klick, Tab + Enter/Leertaste) → Karte wechselt, Eingabe zeichnet sich vom Steuerweg
   // durch den Sicherheitsring (SVG-Fassung: weiter durch die Kette zum Arm, Stationen leuchten nacheinander auf); einmal beim ersten
-  // Sichtbarwerden, danach je Auswahl. Ereignis tm-pick → Ghost-Bühne (Modul am Ende); tm.tmPick wählt von dort (Auto-Wechsel)
+  // Sichtbarwerden, danach je Auswahl; Auswahl auch über die Leiste unten (.tm-tab). Ereignis tm-pick → Ghost-Bühne (Modul am Ende),
+  // tm-routed = Eingabe hat den Orbit unten verlassen (Bühne übernimmt die Linie); tm.tmPick wählt von dort (Auto-Wechsel)
   const tm = document.getElementById('tm');
   if (tm) {
     tm.classList.add('tm-on');
     const svg = tm.querySelector('.tm-svg'), pk = svg.querySelector('.tm-pk');
-    const cards = $$('.tm-card', tm), marks = $$('.tm-node', svg);
+    const cards = $$('.tm-card', tm), marks = $$('.tm-node', svg), tabs = $$('.tm-tab', tm);
     const routes = new Map($$('.tm-route', svg).map(r => [r.dataset.m, r]));
     const stSvg = $$('.tm-st', svg);
     const stY = stSvg.map(g => { const r = g.querySelector('rect'); return +r.getAttribute('y') + +r.getAttribute('height') / 2; });
@@ -1868,7 +1907,8 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
       const r = routes.get(m), len = r.getTotalLength();
       routes.forEach(x => { x.style.opacity = x === r ? 1 : 0; });
       tm.classList.remove('tm-done');
-      if (reduce) { r.style.strokeDasharray = 'none'; hit(stSvg.length); tm.classList.add('tm-done'); return; }
+      const done = () => { r.style.strokeDasharray = 'none'; tm.classList.add('tm-done'); tm.dispatchEvent(new CustomEvent('tm-routed', { detail: { m } })); };
+      if (reduce) { hit(stSvg.length); done(); return; }
       r.style.strokeDasharray = r.style.strokeDashoffset = len;
       pk.style.setProperty('--hue', r.style.getPropertyValue('--hue'));
       hit(0);
@@ -1878,7 +1918,7 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
         r.style.strokeDashoffset = len * (1 - e);
         pk.setAttribute('cx', p.x); pk.setAttribute('cy', p.y); pk.style.opacity = k < 1 ? 1 : 0;
         hit(stY.filter(y => p.y >= y).length);
-        if (k < 1) raf = requestAnimationFrame(step); else tm.classList.add('tm-done');
+        if (k < 1) raf = requestAnimationFrame(step); else done();
       };
       raf = requestAnimationFrame(step);
     };
@@ -1886,6 +1926,7 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
       cur = m;
       marks.forEach(el => { const on = el.dataset.m === m; el.classList.toggle('on', on); el.setAttribute('aria-pressed', String(on)); });
       cards.forEach(c => c.classList.toggle('on', c.dataset.m === m));
+      tabs.forEach(b => b.setAttribute('aria-pressed', String(b.dataset.m === m)));
       if (seen) run(m);
       tm.dispatchEvent(new CustomEvent('tm-pick', { detail: { m, user } }));
     };
@@ -1894,6 +1935,7 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
       n.addEventListener('click', () => pick(n.dataset.m));
       n.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pick(n.dataset.m); } });
     });
+    tabs.forEach(b => b.addEventListener('click', () => pick(b.dataset.m)));
     pick(cur, false);
     new IntersectionObserver(([en], obs) => { if (!en.isIntersecting) return; obs.disconnect(); seen = true; run(cur); }, { threshold: .4 }).observe(svg);
   }
@@ -1946,9 +1988,9 @@ import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 const addons = { OrbitControls, toCreasedNormals, RoomEnvironment };
 window.Hero3D?.init(THREE, addons, { scene: 'dome' });
 
-// Teilhabe-Bühne (Szene „ghost“): Ghost plant → Freigabe → Arm fährt; die Kette auf der Bühne folgt den Phasen. Neuer Steuerweg =
-// neue Eingabe (Eingabe → Control-Lock → Ghost plant neu). Auto-Wechsel alle 6 s, pausiert bei Zeiger/Fokus im Abschnitt, endet bei
-// eigener Auswahl. Ohne WebGL/Netz und bei reduced-motion bleibt das SVG vollständig (Orbit + Kette + Arm-Skizze).
+// Teilhabe-Bühne (Szene „ghost“): Steuerweg gewählt → Eingabe läuft durch den Orbit nach unten (tm-routed) → Linie fließt in die Bühne
+// bis in den Sockel (Welle = angekommen) → Ghost plant → Freigabe → Arm fährt; die Kette auf der Bühne folgt. Auto-Wechsel alle 8,5 s,
+// pausiert bei Zeiger/Fokus im Abschnitt, endet bei eigener Auswahl. Ohne WebGL/Netz und bei reduced-motion bleibt das SVG vollständig.
 const tm = document.getElementById('tm');
 if (tm && tm.tmPick && window.Hero3D && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
   const svg = tm.querySelector('.tm-svg'), steps = [...tm.querySelectorAll('.tm-steps li')], badge = tm.querySelector('.tm-badge.mode');
@@ -1962,29 +2004,74 @@ if (tm && tm.tmPick && window.Hero3D && !matchMedia('(prefers-reduced-motion: re
   const h3d = window.Hero3D.init(THREE, addons, { scene: 'ghost', wrap: '#tm-stage', host: '#tm3d', onPhase: p => { if (!hold) step(AT[p] ?? 2); } });
   if (!h3d) tm.classList.remove('tm-3d');
   else {
-    // Orbit nur bis zum Ring-Ausgang; Ausschnitt = sichtbare Knoten + Beschriftungen (nichts abgeschnitten, auch nach Sprachwechsel)
-    svg.querySelectorAll('.tm-route').forEach(r => r.setAttribute('d', r.getAttribute('d').replace(/ L360 562$/, ' L360 462')));
+    // Orbit bis zur Unterkante: Ausschnitt = Knoten + Beschriftungen, waagerecht symmetrisch um den Ring (x 360), damit die Linie
+    // genau mittig auf die Bühne trifft; Wege enden an der Unterkante (nichts abgeschnitten, auch nach Sprachwechsel)
+    const routes = [...svg.querySelectorAll('.tm-route')];
     const fit = () => {
-      const b = [...svg.querySelectorAll('.tm-orb, .tm-node, .tm-route')].map(el => el.getBBox()).filter(r => r.width || r.height);
-      const x0 = Math.min(...b.map(r => r.x)), y0 = Math.min(...b.map(r => r.y));
-      const x1 = Math.max(...b.map(r => r.x + r.width)), y1 = Math.max(...b.map(r => r.y + r.height)), m = 10;
-      svg.setAttribute('viewBox', [x0 - m, y0 - m, x1 - x0 + 2 * m, y1 - y0 + 2 * m].map(v => v.toFixed(1)).join(' '));
+      const b = [...svg.querySelectorAll('.tm-orb, .tm-node')].map(el => el.getBBox()).filter(r => r.width || r.height);
+      const y0 = Math.min(...b.map(r => r.y)), y1 = Math.max(...b.map(r => r.y + r.height)), m = 10;
+      const half = Math.max(...b.map(r => Math.max(360 - r.x, r.x + r.width - 360))) + m;
+      svg.setAttribute('viewBox', [360 - half, y0 - m, 2 * half, y1 - y0 + 2 * m].map(v => v.toFixed(1)).join(' '));
+      routes.forEach(r => r.setAttribute('d', r.getAttribute('d').replace(/ L360 [\d.]+$/, ` L360 ${(y1 + m).toFixed(1)}`)));
+    };
+
+    // Linie in der Bühne: oben mittig (Fortsetzung des Orbits) → Bogen zum linken Sockelrand → über den Sockel zum Arm.
+    // Punkte per Kamera-Projektion, neu bei jeder Kamerabewegung (Auto-Orbit, Ziehen) und Größenänderung
+    const stage = tm.querySelector('.tm-stage'), flow = tm.querySelector('.tm-flow'), cam = h3d.stage.camera, cv = h3d.stage.renderer.domElement;
+    const [fl, fr, frip] = ['.tm-flow-l', '.tm-flow-run', '.tm-flow-rip'].map(s => flow.querySelector(s)), fpk = flow.querySelector('.tm-flow-pk');
+    const V = new THREE.Vector3(), RT = new THREE.Vector3(), ease = k => (k < .5 ? 4 * k ** 3 : 1 - (-2 * k + 2) ** 3 / 2);
+    let fk = 0, rk = -1, fRaf = 0;   // fk: Anteil der gezeichneten Linie 0…1; rk: Welle am Sockel 0…1 (−1 = keine)
+    const draw = () => {
+      const s = stage.getBoundingClientRect(), c = cv.getBoundingClientRect(); if (!c.width || !s.width) return;
+      const ox = c.left - s.left, oy = c.top - s.top;
+      RT.setFromMatrixColumn(cam.matrixWorld, 0).setZ(0).normalize();   // „links“ aus Sicht der Kamera, waagerecht
+      const P = (r, a = Math.PI) => {   // Punkt auf dem Sockel (z 0) im Abstand r vom Arm, a = Winkel zu „rechts“ der Kamera
+        const ca = Math.cos(a), sa = Math.sin(a);
+        V.set(RT.x * ca - RT.y * sa, RT.x * sa + RT.y * ca, 0).multiplyScalar(r).project(cam);
+        return [ox + (V.x + 1) / 2 * c.width, oy + (1 - V.y) / 2 * c.height];
+      };
+      const A = [s.width / 2, 0], R = P(0.4), B = P(0.075), dy = R[1] - A[1], f = v => v.toFixed(1);
+      const d = `M${f(A[0])} ${f(A[1])} C${f(A[0])} ${f(A[1] + dy * .55)} ${f(R[0])} ${f(R[1] - dy * .45)} ${f(R[0])} ${f(R[1])} L${f(B[0])} ${f(B[1])}`;
+      flow.setAttribute('viewBox', `0 0 ${f(s.width)} ${f(s.height)}`);
+      fl.setAttribute('d', d); fr.setAttribute('d', d);
+      const len = fr.getTotalLength(), p = fr.getPointAtLength(len * fk);
+      fr.style.strokeDasharray = len; fr.style.strokeDashoffset = len * (1 - fk); fr.style.opacity = fk > 0 ? 1 : 0;
+      fpk.setAttribute('cx', f(p.x)); fpk.setAttribute('cy', f(p.y)); fpk.style.opacity = fk > 0 && fk < 1 ? 1 : 0;
+      if (rk < 0) { frip.style.opacity = 0; return; }
+      const rr = 0.07 + rk * 0.14, pts = Array.from({ length: 33 }, (_, i) => P(rr, i / 32 * Math.PI * 2));
+      frip.setAttribute('d', 'M' + pts.map(q => q.map(f).join(' ')).join(' L') + 'Z'); frip.style.opacity = 1 - rk;
+    };
+    h3d.stage.controls?.addEventListener('change', draw);
+    new ResizeObserver(draw).observe(stage);
+    const arrive = () => { hold = false; step(2); h3d.next(); };
+    const flowIn = () => {   // Puls fließt 900 ms vom Orbit in den Sockel, danach Welle 700 ms; Ankunft = Vorprüfung startet
+      cancelAnimationFrame(fRaf);
+      const t0 = performance.now(); let arrived = false;
+      const tick = now => {
+        const u = now - t0; fk = ease(Math.min(1, u / 900)); rk = u < 900 ? -1 : Math.min(1, (u - 900) / 700);
+        if (u >= 900 && !arrived) { arrived = true; arrive(); }
+        draw(); if (u < 1600) fRaf = requestAnimationFrame(tick); else { rk = -1; draw(); }
+      };
+      fRaf = requestAnimationFrame(tick);
     };
     const label = () => {
       const n = svg.querySelector(`.tm-node[data-m="${cur}"]`);
       badge.querySelector('b').textContent = n.querySelector('.tm-t').textContent;
       badge.style.setProperty('--hue', n.style.getPropertyValue('--hue'));
+      flow.style.setProperty('--hue', getComputedStyle(n).getPropertyValue('--hue'));   // Farbe wie im Orbit (Seiten-Theme), nicht die der dunklen Bühne
     };
-    const input = () => {
-      timers.forEach(clearTimeout); hold = true; step(0);
-      timers = [setTimeout(() => step(1), 500), setTimeout(() => { hold = false; step(2); h3d.next(); }, 1000)];
+    const input = () => {   // neue Eingabe: Linie leer, Kette zurück; Control-Lock, sobald die Eingabe den Ring passiert
+      timers.forEach(clearTimeout); cancelAnimationFrame(fRaf); hold = true; fk = 0; rk = -1; draw(); step(0);
+      timers = [setTimeout(() => step(1), 800)];
     };
     fit(); document.fonts?.ready.then(fit);
     matchMedia('(max-width: 560px)').addEventListener('change', fit);
     document.querySelectorAll('[data-lang]').forEach(b => b.addEventListener('click', () => { label(); fit(); }));
+    document.querySelectorAll('[data-theme-btn]').forEach(b => b.addEventListener('click', () => requestAnimationFrame(label)));
     let paused = false, seen = false;
-    const iv = setInterval(() => { if (!paused && seen && !document.hidden) tm.tmPick(ORDER[(ORDER.indexOf(cur) + 1) % ORDER.length], false); }, 6000);
+    const iv = setInterval(() => { if (!paused && seen && !document.hidden) tm.tmPick(ORDER[(ORDER.indexOf(cur) + 1) % ORDER.length], false); }, 8500);
     tm.addEventListener('tm-pick', e => { cur = e.detail.m; label(); input(); if (e.detail.user) clearInterval(iv); });
+    tm.addEventListener('tm-routed', e => { if (e.detail.m === cur) flowIn(); });
     tm.addEventListener('pointerenter', () => { paused = true; }); tm.addEventListener('pointerleave', () => { paused = false; });
     tm.addEventListener('focusin', () => { paused = true; }); tm.addEventListener('focusout', () => { paused = false; });
     new IntersectionObserver(([e]) => { seen = e.isIntersecting; }, { threshold: .3 }).observe(tm);
