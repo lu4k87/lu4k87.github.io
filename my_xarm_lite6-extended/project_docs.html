@@ -612,14 +612,14 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
 .tm-badge .ico { width: 16px; height: 16px; color: var(--hue, var(--accent)); }
 .tm-badge.fake { color: var(--accent); }
 .tm-steps { grid-area: 3 / 1; z-index: 2; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; margin: 0; padding: 12px 0; list-style: none; pointer-events: none; }
-.tm-steps li { display: grid; align-content: start; gap: 3px; padding: 8px 10px; border-radius: var(--radius); background: rgba(17, 19, 21, .84); color: var(--fg-2);
+.tm-steps li { display: grid; align-content: start; gap: 3px; padding: 8px 10px; border-radius: var(--radius); background: rgba(31, 35, 39, .9); color: var(--fg-2);
   transition: background-color var(--t-base), color var(--t-base); }
 .tm-steps li::before { content: "○"; font: 700 12px/1 var(--mono); }  /* Zustand als Zeichen, nie nur Farbe: ○ offen · ● aktiv · ✓ erledigt */
 .tm-steps b { font: 700 11px/1.2 var(--mono); letter-spacing: .04em; text-transform: uppercase; }
 .tm-steps small { font-size: 12px; line-height: 1.25; hyphens: auto; }
 .tm-steps li.done { color: var(--fg); }
 .tm-steps li.done::before { content: "✓"; color: var(--gold); }
-.tm-steps li.now { color: var(--fg); background: color-mix(in srgb, var(--accent) 22%, rgba(17, 19, 21, .9)); }
+.tm-steps li.now { color: var(--fg); background: color-mix(in srgb, var(--accent) 22%, rgba(31, 35, 39, .92)); }
 .tm-steps li.now::before { content: "●"; color: var(--accent); }
 @container (max-width: 600px) { .tm-steps small { display: none; } }
 @container (max-width: 560px) {
@@ -2015,7 +2015,8 @@ if (tm && tm.tmPick && window.Hero3D && !matchMedia('(prefers-reduced-motion: re
       routes.forEach(r => r.setAttribute('d', r.getAttribute('d').replace(/ L360 [\d.]+$/, ` L360 ${(y1 + m).toFixed(1)}`)));
     };
 
-    // Linie in der Bühne: oben mittig (Fortsetzung des Orbits) → Bogen zum linken Sockelrand → über den Sockel zum Arm.
+    // Linie in der Bühne: oben mittig (Fortsetzung des Orbits) → Bogen zum linken Sockelrand → über den Sockel bis vor den Fuß des Arms
+    // (Ebene liegt vor dem 3D: Ende außerhalb des Fußes, sonst läge die Linie auf ihm; Welle startet dort).
     // Punkte per Kamera-Projektion, neu bei jeder Kamerabewegung (Auto-Orbit, Ziehen) und Größenänderung
     const stage = tm.querySelector('.tm-stage'), flow = tm.querySelector('.tm-flow'), cam = h3d.stage.camera, cv = h3d.stage.renderer.domElement;
     const [fl, fr, frip] = ['.tm-flow-l', '.tm-flow-run', '.tm-flow-rip'].map(s => flow.querySelector(s)), fpk = flow.querySelector('.tm-flow-pk');
@@ -2030,7 +2031,7 @@ if (tm && tm.tmPick && window.Hero3D && !matchMedia('(prefers-reduced-motion: re
         V.set(RT.x * ca - RT.y * sa, RT.x * sa + RT.y * ca, 0).multiplyScalar(r).project(cam);
         return [ox + (V.x + 1) / 2 * c.width, oy + (1 - V.y) / 2 * c.height];
       };
-      const A = [s.width / 2, 0], R = P(0.4), B = P(0.075), dy = R[1] - A[1], f = v => v.toFixed(1);
+      const A = [s.width / 2, 0], R = P(0.4), B = P(0.13), dy = R[1] - A[1], f = v => v.toFixed(1);
       const d = `M${f(A[0])} ${f(A[1])} C${f(A[0])} ${f(A[1] + dy * .55)} ${f(R[0])} ${f(R[1] - dy * .45)} ${f(R[0])} ${f(R[1])} L${f(B[0])} ${f(B[1])}`;
       flow.setAttribute('viewBox', `0 0 ${f(s.width)} ${f(s.height)}`);
       fl.setAttribute('d', d); fr.setAttribute('d', d);
@@ -2038,7 +2039,7 @@ if (tm && tm.tmPick && window.Hero3D && !matchMedia('(prefers-reduced-motion: re
       fr.style.strokeDasharray = len; fr.style.strokeDashoffset = len * (1 - fk); fr.style.opacity = fk > 0 ? 1 : 0;
       fpk.setAttribute('cx', f(p.x)); fpk.setAttribute('cy', f(p.y)); fpk.style.opacity = fk > 0 && fk < 1 ? 1 : 0;
       if (rk < 0) { frip.style.opacity = 0; return; }
-      const rr = 0.07 + rk * 0.14, pts = Array.from({ length: 33 }, (_, i) => P(rr, i / 32 * Math.PI * 2));
+      const rr = 0.13 + rk * 0.14, pts = Array.from({ length: 33 }, (_, i) => P(rr, i / 32 * Math.PI * 2));
       frip.setAttribute('d', 'M' + pts.map(q => q.map(f).join(' ')).join(' L') + 'Z'); frip.style.opacity = 1 - rk;
     };
     h3d.stage.controls?.addEventListener('change', draw);
