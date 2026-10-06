@@ -1,4 +1,4 @@
-# Interakt Control Robot
+# UX Robot
 
 The human leads. The AI assists.
 
