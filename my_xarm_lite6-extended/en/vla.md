@@ -70,10 +70,11 @@ ros2 launch vla_bridge vla_bridge.launch.py          # agent; starts `ollama ser
 
 | Topic | Direction | Content |
 |---|---|---|
-| `/vla/instruction` | UI → `vla_bridge` | `{id, text, camera, confirm}` |
+| `/vla/instruction` | UI → `vla_bridge` | `{id, text, camera, confirm, source}` - `source` = `voice` after dictation, otherwise `chat` (only for the Monitoring Dashboard) |
 | `/vla/response` | `vla_bridge` → UI | `{id, text?, plan?, awaiting?, step?, total?, state?}` - `state` also `clarify` (question back) and `replan` (step failed, agent re-plans) |
 | `/vla/status` | `vla_bridge` → UI (1 Hz) | `{state, model, llm, executes, pending, mode, sandbox, gripper, held, objects}` - UI shows `OFFLINE` after 3 s without status |
 | `/vla/execute` | UI → `vla_bridge` | `{id}` - releases the waiting plan |
+| `/vla/metrics` | `vla_bridge` → Monitoring Dashboard | per LLM round (`event: round` - task, attempt, backend, model, latency_s, errors, usage) and per outcome (`event: outcome` - state, text, note) with the task `id`; same as the session log `~/.ros/vla_logs`, without request/answer text. Page *VLA-M* of the Monitoring Dashboard ([monitoring](monitoring.html)) |
 | `/vla/abort` | UI → `vla_bridge` | `{id}` - stops the running task |
 | `/vla/reset` | UI → `vla_bridge` | `{}` - forget the conversation (*Clear*) |
 | `/vla/skill` | UI (object menu) → `vla_bridge` | `{id, skill: pick\|place, object?, target?, relation?, side?, x_mm?, y_mm?, confirmed, source}` - one-click *Grasp* / *Place here* without the language model, same checks and skills, no re-planning; REAL only with `confirmed` |
