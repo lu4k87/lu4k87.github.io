@@ -195,7 +195,9 @@ a.kpi:hover { background: var(--surface-2); }
 .atlas { padding: 64px 40px; border: 1px solid var(--line); border-radius: var(--radius-lg);
   background: radial-gradient(40% 58% at 22% 52%, color-mix(in srgb, var(--hue, var(--accent)) 13%, transparent), transparent 72%),
     linear-gradient(var(--grid) 1px, transparent 1px) 0 0 / 32px 32px, linear-gradient(90deg, var(--grid) 1px, transparent 1px) 0 0 / 32px 32px, var(--bg); }
-.at-grid { display: grid; grid-template-columns: minmax(300px, .85fr) minmax(0, 1.4fr); gap: 40px 56px; align-items: center; }
+.at-grid { display: grid; grid-template-columns: var(--at-cols, minmax(300px, .85fr) minmax(0, 1.4fr)); gap: 40px 56px; align-items: center; }
+#atlas { --at-cols: minmax(320px, 1fr) minmax(0, 1.08fr); }   /* 3D-Ring braucht Breite (Bereichsnamen ≥ 12 px), Kacheln behalten Name + Zahl in einer Zeile */
+#atlas .at-grid { column-gap: 48px; }
 .at-ring { margin: 0; display: grid; justify-items: center; gap: 16px; min-width: 0; }
 .at-ring svg { width: min(100%, 440px); height: auto; overflow: visible; }
 .at-ring .trk { fill: none; stroke: var(--line); stroke-width: 26; }
@@ -204,11 +206,37 @@ a.kpi:hover { background: var(--surface-2); }
   transition: stroke-width var(--t-base) var(--ease-out), opacity var(--t-base), stroke-dasharray 1.1s var(--ease-out) calc(250ms + var(--i, 0) * 90ms); }
 html.sf-on .at-ring:not(.in) .seg { stroke-dasharray: 0 83; }
 .at-ring .seg.hl { stroke-width: 36; }
-.at-focus .at-ring .seg:not(.hl) { opacity: .3; }
 .at-num { font: 800 50px/1 var(--mono); fill: var(--accent); letter-spacing: -.04em; }
 .at-lbl { font: 700 11px/1 var(--font); fill: var(--fg); }
 .at-sub { font: 600 9.5px/1 var(--mono); fill: var(--fg-2); letter-spacing: .08em; }
-.at-ring figcaption { font-size: 14px; line-height: 1.4; color: var(--fg-2); text-align: center; }
+/* 3D-Segment-Ring (js/atlas_ring3d.js): ersetzt den SVG-Ring erst mit WebGL (.at-3d); Ziehen waagerecht dreht, senkrecht scrollt die Seite */
+.at-stage { display: none; width: 100%; max-width: 600px; aspect-ratio: 5 / 4; touch-action: pan-y; cursor: grab; border-radius: var(--radius); }
+.at-stage:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
+.at-stage canvas { display: block; width: 100% !important; height: 100% !important; }
+.at-3d .at-stage { display: block; }
+.at-3d > svg { display: none; }
+/* Detail-Panel des gewählten Bereichs (Autoscan, Zeiger, Fokus, Klick): Name, Zahl, Satz, Beispiele; Autoscan-Schalter */
+.at-detail { width: 100%; max-width: 600px; display: grid; gap: 12px; padding: 18px; border: 1px solid color-mix(in srgb, var(--c) 40%, var(--line)); border-radius: var(--radius);
+  background: color-mix(in srgb, var(--c) 7%, var(--surface)); transition: border-color var(--t-base), background-color var(--t-base); }
+.atd-k { display: flex; align-items: center; gap: 10px; font: 700 12px/1 var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--fg-2); }
+.atd-k::before { content: ""; flex: none; width: 10px; height: 10px; border-radius: 50%; background: var(--c); box-shadow: 0 0 10px var(--c); }
+.atd-h { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 6px 16px; }
+.atd-t { font-size: 22px; font-weight: 800; line-height: 1.2; }
+.atd-big { display: flex; align-items: baseline; gap: 6px; font-size: 14px; }
+.atd-n { font: 800 34px/1 var(--mono); color: var(--c); font-variant-numeric: tabular-nums; }
+.atd-d { font-size: 15px; line-height: 1.5; text-wrap: pretty; }
+.atd-d[hidden] { display: none; }
+.atd-chips { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+.atd-chips li { padding: 4px 10px; border: 1px solid color-mix(in srgb, var(--c) 45%, var(--line)); border-radius: var(--radius-sm); font-size: 13px; line-height: 1.4; }
+.atd-scan { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; padding-top: 12px; border-top: 1px solid var(--line); }
+.atd-scan button { min-height: 36px; padding: 8px 12px; font: 700 12px/1 var(--mono); color: var(--fg); background: var(--surface-2); border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm); cursor: pointer; transition: border-color var(--t-fast); }
+.atd-scan button:hover { border-color: var(--c); }
+.atd-scan button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.atd-bar { flex: 1 1 60px; height: 2px; background: var(--line); overflow: hidden; }
+.atd-bar i { display: block; height: 100%; background: var(--c); transform: scaleX(0); transform-origin: left; }
+.atd-scan small { flex-basis: 100%; font-size: 13px; line-height: 1.4; color: var(--fg-2); }
+.atd-scan[hidden], .at-ring:not(.at-3d) .atd-drag { display: none; }
 .at-side { display: grid; gap: 18px; min-width: 0; }
 .at-areas { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
 .at-area a { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 6px 10px; align-items: center; height: 100%; padding: 13px 14px; border: 1px solid var(--line); border-radius: var(--radius);
@@ -688,6 +716,7 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
 <script src="js/lite6_mesh.js" defer></script>
 <script src="js/lite6_twin.js" defer></script>
 <script src="js/hero3d.js" defer></script>
+<script src="js/atlas_ring3d.js" defer></script>
 </head>
 <body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
@@ -1149,7 +1178,22 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
                 <text class="at-lbl" x="120" y="143" text-anchor="middle" data-en="functions">Funktionen</text>
                 <text class="at-sub" x="120" y="161" text-anchor="middle" data-en="9 AREAS">9 BEREICHE</text>
               </svg>
-              <figcaption data-en="Share per area: point at an area to see its count, click to filter the list below">Anteil je Bereich: Zeiger zeigt die Zahl, Klick filtert die Liste darunter</figcaption>
+              <div class="at-stage" tabindex="0" role="group" aria-label="3D-Ring der 9 Bereiche: Pfeiltasten wählen einen Bereich, Enter filtert die Liste darunter" data-en-aria="3D ring of the 9 areas: arrow keys pick an area, Enter filters the list below"></div>
+              <figcaption class="at-detail" id="at-detail" aria-live="polite" style="--c: var(--accent)">
+                <span class="atd-k">Bereich 1 / 9</span>
+                <span class="atd-h"><b class="atd-t">Steuerwege</b><span class="atd-big"><strong class="atd-n">14</strong><span data-en="functions">Funktionen</span></span></span>
+                <span class="atd-d" data-a="ctl" data-en="How people move the arm – from gamepad to TCP gizmo.">Wie Menschen den Arm bewegen – vom Gamepad bis zum TCP-Gizmo.</span>
+                <span class="atd-d" data-a="safe" data-en="What checks and stops every motion before the arm moves." hidden>Was jede Bewegung prüft und stoppt, bevor der Arm fährt.</span>
+                <span class="atd-d" data-a="twin" data-en="The arm as a 3D model, with the plan shown before it runs." hidden>Der Arm als 3D-Modell, mit Plan vor der Ausführung.</span>
+                <span class="atd-d" data-a="vis" data-en="Camera, object detection and obstacles in the room." hidden>Kamera, Objekterkennung und Hindernisse im Raum.</span>
+                <span class="atd-d" data-a="ai" data-en="Language in, checked motion plan out." hidden>Sprache rein, geprüfter Bewegungsplan raus.</span>
+                <span class="atd-d" data-a="mon" data-en="System, ROS graph and usage, live at a glance." hidden>System, ROS-Graph und Nutzung live im Blick.</span>
+                <span class="atd-d" data-a="eval" data-en="Usability tests with participants, cleanly evaluated." hidden>Usability-Tests mit Teilnehmern, sauber ausgewertet.</span>
+                <span class="atd-d" data-a="data" data-en="What gets recorded – for fault analysis and training." hidden>Was aufgezeichnet wird – für Fehleranalyse und Training.</span>
+                <span class="atd-d" data-a="infra" data-en="Startup, network and devices – all in one place." hidden>Start, Netz und Geräte – alles aus einer Hand.</span>
+                <ul class="atd-chips"><li>Gamepad</li><li>Joggen</li><li>TCP-Gizmo</li></ul>
+                <span class="atd-scan" hidden><button type="button" aria-pressed="false">Autoscan</button><span class="atd-bar"><i></i></span><small><span class="atd-drag" data-en="Drag turns the ring · ">Ziehen dreht den Ring · </span><span data-en="click filters the list below">Klick filtert die Liste darunter</span></small></span>
+              </figcaption>
             </figure>
             <div class="at-side">
               <ul class="at-areas">
@@ -1940,28 +1984,58 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
     new IntersectionObserver(([en], obs) => { if (!en.isIntersecting) return; obs.disconnect(); seen = true; run(cur); }, { threshold: .4 }).observe(svg);
   }
 
-  // Funktionsatlas: Ring zeichnet sich einmal auf; Bereich (Kachel oder Ringstück) hervorheben → Zahl + Name in der Mitte
+  // Funktionsatlas: Ring zeichnet sich einmal auf; gewählter Bereich (Autoscan, Zeiger, Fokus, Klick) → Kachel + Ringstück hervorgehoben,
+  // Detail-Panel darunter; der 3D-Ring (js/atlas_ring3d.js) folgt über „at-pick“ (#at-ring: atKeys, atCur, atPick, atGo).
+  // Autoscan alle 4 s, nur solange sichtbar; Pause bei Zeiger/Fokus im Atlas, aus nach Klick/Pfeiltaste und bei reduced-motion
   const ring = document.getElementById('at-ring');
   if (ring) {
-    const box = document.getElementById('atlas'), num = ring.querySelector('.at-num'), lbl = ring.querySelector('.at-lbl');
-    const areas = $$('.at-area'), segs = new Map($$('.seg', ring).map(s => [s.dataset.a, s]));
-    const hl = a => {
-      const li = a && areas.find(x => x.dataset.a === a);
-      box.classList.toggle('at-focus', !!li);
-      areas.forEach(x => x.classList.toggle('hl', x === li));
-      segs.forEach((s, k) => s.classList.toggle('hl', !!li && k === a));
-      num.textContent = li ? li.querySelector('em').textContent : '83';
-      lbl.textContent = li ? li.querySelector('b').textContent : T('Funktionen', 'functions');
+    const box = document.getElementById('atlas'), det = document.getElementById('at-detail'), q = sel => det.querySelector(sel);
+    const areas = $$('.at-area'), keys = areas.map(li => li.dataset.a), segs = new Map($$('.seg', ring).map(s => [s.dataset.a, s]));
+    const btn = q('.atd-scan button'), bar = q('.atd-bar i');
+    let cur = keys[0], scanOn = !reduce, hold = false, seen = false, timer = 0;
+    const fill = () => {
+      const i = keys.indexOf(cur), li = areas[i];
+      det.style.setProperty('--c', li.style.getPropertyValue('--c'));
+      q('.atd-k').textContent = `${T('Bereich', 'Area')} ${i + 1} / ${keys.length}`;
+      q('.atd-t').textContent = li.querySelector('b').textContent;
+      q('.atd-n').textContent = li.querySelector('em').textContent;
+      $$('.atd-d', det).forEach(p => { p.hidden = p.dataset.a !== cur; });
+      q('.atd-chips').replaceChildren(...li.querySelector('small').textContent.split(',').map(t => t.replace(/[\s\u00a0]*…$/, '').trim())
+        .filter(Boolean).map(t => Object.assign(document.createElement('li'), { textContent: t })));
+      btn.textContent = scanOn ? T('Autoscan pausieren', 'Pause autoscan') : T('Autoscan starten', 'Start autoscan');
+      btn.setAttribute('aria-pressed', String(scanOn));
     };
+    const arm = () => {
+      clearTimeout(timer); bar.style.transition = 'none'; bar.style.transform = 'scaleX(0)'; fill();
+      if (!scanOn || hold || !seen || document.hidden) return;
+      void bar.offsetWidth; bar.style.transition = 'transform 4s linear'; bar.style.transform = 'scaleX(1)';
+      timer = setTimeout(() => { pick(keys[(keys.indexOf(cur) + 1) % keys.length]); arm(); }, 4000);
+    };
+    const pick = (a, user) => {
+      cur = a;
+      det.setAttribute('aria-live', user ? 'polite' : 'off');   // Autoscan + Zeiger nicht ansagen, eigene Wahl schon
+      areas.forEach(x => x.classList.toggle('hl', x.dataset.a === a));
+      segs.forEach((s, k) => s.classList.toggle('hl', k === a));
+      if (user && scanOn) { scanOn = false; arm(); } else fill();
+      ring.dispatchEvent(new CustomEvent('at-pick', { detail: { a, i: keys.indexOf(a), user: !!user } }));
+    };
+    const go = a => areas.find(x => x.dataset.a === a)?.querySelector('a').click();
+    Object.assign(ring, { atKeys: keys, atCur: () => cur, atPick: pick, atGo: go });
     areas.forEach(li => {
       const a = li.dataset.a, link = li.querySelector('a');
-      li.addEventListener('pointerenter', () => hl(a)); li.addEventListener('pointerleave', () => hl(null));
-      link.addEventListener('focus', () => hl(a)); link.addEventListener('blur', () => hl(null));
+      li.addEventListener('pointerenter', () => pick(a)); link.addEventListener('focus', () => pick(a));
+      link.addEventListener('click', () => pick(a, true));
     });
-    segs.forEach((s, a) => {
-      s.addEventListener('pointerenter', () => hl(a)); s.addEventListener('pointerleave', () => hl(null));
-      s.addEventListener('click', () => areas.find(x => x.dataset.a === a)?.querySelector('a').click());
-    });
+    segs.forEach((s, a) => { s.addEventListener('pointerenter', () => pick(a)); s.addEventListener('click', () => go(a)); });
+    btn.addEventListener('click', () => { scanOn = !scanOn; arm(); });
+    box.addEventListener('pointerenter', () => { hold = true; arm(); }); box.addEventListener('pointerleave', () => { hold = false; arm(); });
+    box.addEventListener('focusin', e => { if (e.target !== btn) { hold = true; arm(); } });
+    box.addEventListener('focusout', () => { hold = false; arm(); });
+    document.addEventListener('visibilitychange', arm);
+    new IntersectionObserver(([en]) => { seen = en.isIntersecting; arm(); }, { threshold: .3 }).observe(box);
+    new MutationObserver(fill).observe(root, { attributes: true, attributeFilter: ['lang'] });
+    q('.atd-scan').hidden = false;
+    pick(cur);
     if (reduce) ring.classList.add('in');
     else new IntersectionObserver(([en], obs) => { if (!en.isIntersecting) return; obs.disconnect(); ring.classList.add('in'); }, { threshold: .35 }).observe(ring);
   }
@@ -1987,6 +2061,9 @@ import { toCreasedNormals } from 'three/addons/utils/BufferGeometryUtils.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 const addons = { OrbitControls, toCreasedNormals, RoomEnvironment };
 window.Hero3D?.init(THREE, addons, { scene: 'dome' });
+
+// Funktionsatlas: 3D-Segment-Ring (js/atlas_ring3d.js) ersetzt den SVG-Ring, sobald WebGL läuft
+window.AtlasRing3D?.init(THREE, { ring: '#at-ring' });
 
 // Teilhabe-Bühne (Szene „ghost“): Steuerweg gewählt → Eingabe läuft durch den Orbit nach unten (tm-routed) → Linie fließt in die Bühne
 // bis in den Sockel (Welle = angekommen) → Ghost plant → Freigabe → Arm fährt; die Kette auf der Bühne folgt. Auto-Wechsel alle 8,5 s,
