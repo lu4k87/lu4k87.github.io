@@ -79,7 +79,7 @@ main.wrap { max-width: calc(1320px + 2 * var(--gut)); margin-inline: auto; } /* 
 .seg button { min-height: 36px; padding: 0 12px; background: var(--surface); border: 0; font-size: 13px; font-weight: 700; cursor: pointer; }
 .seg button + button { border-left: 1px solid var(--line-strong); }
 .seg button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); }
-/* Fassungen der Seite (V1 · V2 · Aktuell): Links in Leisten-Optik wie .seg */
+/* Fassungen der Seite (V2 · Aktuell): Links in Leisten-Optik wie .seg */
 .vers a { display: inline-flex; align-items: center; min-height: 36px; padding: 0 12px; background: var(--surface); color: var(--fg); font-size: 13px; font-weight: 700; text-decoration: none; transition: background var(--t-fast); }
 .vers a + a { border-left: 1px solid var(--line-strong); }
 .vers a:hover { background: var(--surface-2); }
@@ -89,14 +89,15 @@ main.wrap { max-width: calc(1320px + 2 * var(--gut)); margin-inline: auto; } /* 
 @media (max-width: 480px) { .top .wrap { gap: 10px; flex-wrap: wrap; padding-block: 8px; } .tools { flex-wrap: wrap; } .vers a { padding: 0 8px; } .brand small { display: none; } .brand-mark { width: 30px; height: 30px; } .tools { gap: 6px; } .seg button { padding: 0 8px; } }
 
 /* ── Abschnitte ── */
-.blk { padding-block: 96px 8px; }
-.chap { margin-bottom: 26px; } /* Kapitel-Kopf: Nummer + Linie über die ganze Breite */
+.blk { padding-block: 104px 56px; } /* Haupt-Abschnitte mit viel Luft dazwischen (104 + 56) */
+.chap { margin-bottom: 32px; } /* Kapitel-Kopf: Nummer + Linie über die ganze Breite */
 .chap::after { content: ""; flex: 1; height: 1px; background: var(--line-strong); }
-.blk-head { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px 48px; align-items: end; margin-bottom: 24px; }
+.blk-head { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 14px 56px; align-items: end; margin-bottom: 48px; }
 .blk-head h2 { font-size: 30px; line-height: 1.2; font-weight: 800; letter-spacing: -.02em; }
 .blk-head .lead { color: var(--fg-2); max-width: 72ch; }
 .blk-head .lead b { color: var(--fg); }
 @media (max-width: 900px) { .blk-head { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 760px) { .blk { padding-block: 72px 40px; } .blk-head { margin-bottom: 32px; } }
 
 /* ── Reveal (Klasse rv erst per JS → ohne JS alles sichtbar) ── */
 .rv { opacity: 0; transform: translateY(var(--rise)); transition: opacity var(--t-slow) var(--ease-out), transform var(--t-slow) var(--ease-out); transition-delay: calc(var(--i, 0) * var(--stagger)); }
@@ -138,7 +139,7 @@ main.wrap { max-width: calc(1320px + 2 * var(--gut)); margin-inline: auto; } /* 
 
 
 /* ── 00 Einrichtung: Ordnerbaum + Verdrahtung ── */
-.setup { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 16px; align-items: start; }
+.setup { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 24px; align-items: start; }
 @media (max-width: 1100px) { .setup { grid-template-columns: minmax(0, 1fr); } }
 .tree { padding: 16px 18px; display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 2px 18px; align-content: start; }
 .tree h3 { grid-column: 1 / -1; }
@@ -183,7 +184,7 @@ main.wrap { max-width: calc(1320px + 2 * var(--gut)); margin-inline: auto; } /* 
 .ring-center .n { font: 700 14px/1 var(--mono); letter-spacing: .12em; color: var(--accent); }
 .ring-center .t { font-size: 24px; font-weight: 800; line-height: 1.2; letter-spacing: -.01em; }
 .ring-center .d { font: 500 13px/1.4 var(--mono); color: var(--fg-2); }
-.steps { display: grid; gap: 16px; padding-bottom: 18vh; }
+.steps { display: grid; gap: 24px; padding-bottom: 18vh; }
 .st { --hue: var(--accent); border: 1px solid var(--line); border-radius: var(--radius-sm); background: var(--surface); padding: 20px 22px; display: grid; gap: 10px; transition: border-color var(--t-base), background var(--t-base); }
 .js .st { min-height: 34vh; align-content: center; }
 .st.on { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 7%, var(--surface)); }
@@ -284,7 +285,7 @@ main.wrap { max-width: calc(1320px + 2 * var(--gut)); margin-inline: auto; } /* 
 .kit-detail { font-size: 15px; line-height: 1.5; }
 .kit-detail b { font-weight: 800; }
 .kit-detail code { padding: 1px 5px; border: 1px solid var(--line-strong); border-radius: var(--radius-sm); margin: 0 2px; }
-.kit { display: grid; grid-template-columns: minmax(0, 2fr) repeat(3, minmax(0, 1fr)); gap: 16px; align-items: start; }
+.kit { display: grid; grid-template-columns: minmax(0, 2fr) repeat(3, minmax(0, 1fr)); gap: 24px; align-items: start; }
 .sk-groups { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 12px; align-items: start; }
 .sk-groups > div { display: grid; gap: 10px; align-content: start; }
 @media (max-width: 1400px) { .kit { grid-template-columns: repeat(2, minmax(0, 1fr)); } .kit-col.wide { grid-column: 1 / -1; } }
@@ -331,7 +332,7 @@ main.wrap { max-width: calc(1320px + 2 * var(--gut)); margin-inline: auto; } /* 
 }
 
 /* ── 05 Zusammenarbeit: drei Mockups ── */
-.collab { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.collab { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; }
 @media (max-width: 1200px) { .collab { grid-template-columns: minmax(0, 1fr); } }
 .cb { display: grid; grid-template-rows: auto 1fr auto; overflow: hidden; }
 .cb-head { padding: 16px 18px 12px; display: grid; gap: 6px; }
@@ -376,7 +377,7 @@ main.wrap { max-width: calc(1320px + 2 * var(--gut)); margin-inline: auto; } /* 
 .ans-chips { display: flex; flex-wrap: wrap; gap: 5px; }
 .ans-chips span { font: 500 13px/1 var(--mono); padding: 5px 7px; border: 1px solid var(--line-strong); border-radius: var(--radius-sm); background: var(--surface); }
 /* Präfixe + Aufteilen */
-.prefix { margin-top: 16px; padding: 16px 18px; display: grid; grid-template-columns: minmax(220px, .5fr) minmax(0, 2fr); gap: 12px 28px; align-items: start; }
+.prefix { margin-top: 24px; padding: 16px 18px; display: grid; grid-template-columns: minmax(220px, .5fr) minmax(0, 2fr); gap: 12px 28px; align-items: start; }
 .prefix h3 { font-size: 19px; font-weight: 800; }
 .prefix p { color: var(--fg-2); font-size: 15px; line-height: 1.5; margin-top: 6px; }
 .pfx { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 8px; }
@@ -385,7 +386,7 @@ main.wrap { max-width: calc(1320px + 2 * var(--gut)); margin-inline: auto; } /* 
 @media (max-width: 800px) { .prefix { grid-template-columns: minmax(0, 1fr); } }
 
 /* ── 06 Sicherheit: Regeln + Klick-Stepper ── */
-.safe { display: grid; grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr); gap: 16px; align-items: start; }
+.safe { display: grid; grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr); gap: 24px; align-items: start; }
 @media (max-width: 1100px) { .safe { grid-template-columns: minmax(0, 1fr); } }
 .rules { padding: 16px 18px; display: grid; gap: 12px; }
 .rule { display: grid; grid-template-columns: 36px minmax(0, 1fr); gap: 2px 12px; align-items: start; }
@@ -413,7 +414,7 @@ main.wrap { max-width: calc(1320px + 2 * var(--gut)); margin-inline: auto; } /* 
 @media (prefers-reduced-motion: reduce) { .gs.shake { animation: none; } }
 
 /* ── 07 Git + Doku: Diagramme ── */
-.gitg { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr) minmax(0, 1fr); gap: 16px; align-items: stretch; }
+.gitg { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr) minmax(0, 1fr); gap: 24px; align-items: stretch; }
 @media (max-width: 1300px) { .gitg { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } .gitg > :first-child { grid-column: 1 / -1; } }
 @media (max-width: 760px) { .gitg { grid-template-columns: minmax(0, 1fr); } }
 .chart { overflow: clip; padding: 16px 18px; display: grid; gap: 12px; align-content: start; }
@@ -453,7 +454,7 @@ main.wrap { max-width: calc(1320px + 2 * var(--gut)); margin-inline: auto; } /* 
 .callout { font-size: 14px; line-height: 1.45; padding: 10px 12px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface-2); }
 .callout b { font-weight: 800; }
 /* DoD + Commit-Weg */
-.dod { margin-top: 16px; display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 16px; }
+.dod { margin-top: 24px; display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 24px; }
 @media (max-width: 1100px) { .dod { grid-template-columns: minmax(0, 1fr); } }
 .dod-t { padding: 16px 18px; display: grid; gap: 10px; align-content: start; }
 .dod-t h3, .commit-path h3 { font-size: 19px; font-weight: 800; }
@@ -492,7 +493,7 @@ main.wrap { max-width: calc(1320px + 2 * var(--gut)); margin-inline: auto; } /* 
   .lflow > svg { transform: rotate(90deg); }
   .lex-r > i { display: none; }
 }
-.mem { margin-top: 16px; display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+.mem { margin-top: 24px; display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 24px; }
 .mc { padding: 16px; display: grid; gap: 8px; align-content: start; }
 .mc h3 { font-size: 17px; font-weight: 800; display: flex; align-items: center; gap: 10px; }
 .mc h3 .ico { color: var(--hue, var(--accent)); width: 20px; height: 20px; }
@@ -549,7 +550,7 @@ footer a { font-weight: 700; color: var(--fg); }
       <a href="#zusammenarbeit" data-en="Collaboration">Zusammenarbeit</a><a href="#sicherheit" data-en="Safety">Sicherheit</a><a href="#git" data-en="Git &amp;amp; docs">Git &amp; Doku</a><a href="#gedaechtnis" data-en="Memory">Gedächtnis</a>
     </nav>
     <div class="tools">
-      <div class="seg vers" role="group" aria-label="Fassungen dieser Seite" data-en-aria="Versions of this page"><a href="develop_workflow_v1.html" aria-label="Fassung V1 (Erstfassung)" data-en-aria="Version V1 (first version)">V1</a><a href="develop_workflow_v2.html" aria-current="page" aria-label="Fassung V2 (VS-Code-Fassung)" data-en-aria="Version V2 (VS Code version)">V2</a><a href="develop_workflow.html" aria-label="Aktuelle Fassung" data-en-aria="Current version" data-en="Current">Aktuell</a></div>
+      <div class="seg vers" role="group" aria-label="Fassungen dieser Seite" data-en-aria="Versions of this page"><a href="develop_workflow_v2.html" aria-current="page" aria-label="Fassung V2 (VS-Code-Fassung)" data-en-aria="Version V2 (VS Code version)">V2</a><a href="develop_workflow.html" aria-label="Aktuelle Fassung" data-en-aria="Current version" data-en="Current">Aktuell</a></div>
       <div class="seg" role="group" aria-label="Sprache / Language"><button type="button" data-lang="de" aria-pressed="true">DE</button><button type="button" data-lang="en" aria-pressed="false">EN</button></div>
       <div class="seg" role="group" aria-label="Darstellung" data-en-aria="Appearance"><button type="button" data-theme-btn="dark" data-en="Dark">Dunkel</button><button type="button" data-theme-btn="light" data-en="Light">Hell</button></div>
     </div>
