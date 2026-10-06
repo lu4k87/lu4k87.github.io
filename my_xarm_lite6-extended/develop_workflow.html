@@ -22,10 +22,10 @@
   /* Graphit + Türkis-Akzent (Wunsch User 04.10.2026), je Bereich eine eigene Farbe wie im Funktionsatlas (Wunsch User 05.10.2026); --warn nur Hinweise, --red nur Fehler.
      Gleiche Werte in .hero (Kopf bleibt in beiden Themes dunkel) */
   --bg: #111315; --surface: #181b1e; --surface-2: #1f2327; --line: #2a2f34; --line-strong: #3b4248;
-  --fg: #eef2f3; --fg-2: #b9c2c6; --accent: #2ee6c8; --accent-ink: #04201c;
+  --fg: #eef2f3; --fg-2: #b9c2c6; --accent: var(--indigo); --accent-ink: #0d0f2e; /* eigener Akzent: Bereichsfarbe Entwickeln (brand.yaml), unabhängig vom Projekt-Türkis */
   --indigo: #818cf8; --teal: #2dd4bf; --violet: #a78bfa; --gold: #f5b942; --green: #4ade80; --red: #f87171; --warn: #fbbf24;
   --blue: #60a5fa; --pink: #f472b6; --orange: #fb923c; --lime: #a3e635;
-  --band: #15181a; --grid: rgba(46, 230, 200, .055); --glow: rgba(46, 230, 200, .45);
+  --band: #15181a; --grid: rgba(129, 140, 248, .045); --glow: rgba(129, 140, 248, .28);
   --shadow: 0 1px 0 rgba(255,255,255,.04) inset, 0 20px 40px -24px rgba(0,0,0,.7);
   --font: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   --mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
@@ -37,20 +37,20 @@
   :root:not([data-theme="dark"]) {
     color-scheme: light;
     --bg: #f3f5f5; --surface: #ffffff; --surface-2: #eef2f2; --line: #d9e0e0; --line-strong: #b9c4c4;
-    --fg: #14181a; --fg-2: #3a4448; --accent: #0a7a6d; --accent-ink: #ffffff;
+    --fg: #14181a; --fg-2: #3a4448; --accent: var(--indigo); --accent-ink: #ffffff;
     --indigo: #4338ca; --teal: #0f766e; --violet: #6d28d9; --gold: #9a5b00; --green: #15803d; --red: #b91c1c; --warn: #a15c00;
     --blue: #1d4ed8; --pink: #be185d; --orange: #c2410c; --lime: #4d7c0f;
-    --band: #e9eeee; --grid: rgba(10, 122, 109, .06); --glow: transparent;
+    --band: #e9eeee; --grid: rgba(67, 56, 202, .05); --glow: transparent;
     --shadow: 0 1px 2px rgba(20,30,30,.06), 0 16px 32px -24px rgba(20,40,40,.35);
   }
 }
 :root[data-theme="light"] {
   color-scheme: light;
   --bg: #f3f5f5; --surface: #ffffff; --surface-2: #eef2f2; --line: #d9e0e0; --line-strong: #b9c4c4;
-  --fg: #14181a; --fg-2: #3a4448; --accent: #0a7a6d; --accent-ink: #ffffff;
+  --fg: #14181a; --fg-2: #3a4448; --accent: var(--indigo); --accent-ink: #ffffff;
   --indigo: #4338ca; --teal: #0f766e; --violet: #6d28d9; --gold: #9a5b00; --green: #15803d; --red: #b91c1c; --warn: #a15c00;
   --blue: #1d4ed8; --pink: #be185d; --orange: #c2410c; --lime: #4d7c0f;
-  --band: #e9eeee; --grid: rgba(10, 122, 109, .06); --glow: transparent;
+  --band: #e9eeee; --grid: rgba(67, 56, 202, .05); --glow: transparent;
   --shadow: 0 1px 2px rgba(20,30,30,.06), 0 16px 32px -24px rgba(20,40,40,.35);
 }
 
@@ -84,8 +84,6 @@ button { font: inherit; color: inherit; }
 .seg button:hover { color: var(--fg); background: color-mix(in srgb, var(--fg) 7%, transparent); }
 .seg button[aria-pressed="true"] { background: var(--surface); color: var(--fg); box-shadow: 0 0 0 1px var(--line-strong); }
 /* Link zur älteren Fassung (V2): klein, Leisten-Optik wie .seg */
-.ver { display: inline-flex; align-items: center; font: 700 12px/1 var(--mono); padding: 0 10px; min-height: 34px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface-2); color: var(--fg-2); transition: background-color var(--t-fast), color var(--t-fast); }
-.ver:hover { color: var(--fg); background: color-mix(in srgb, var(--fg) 7%, var(--surface-2)); }
 .progress { position: absolute; left: 0; right: 0; bottom: -1px; height: 2px; background: var(--accent); box-shadow: 0 0 10px var(--glow); transform-origin: 0 50%; transform: scaleX(var(--p, 0)); pointer-events: none; }
 @supports (animation-timeline: scroll()) {
   .progress { animation: progress linear both; animation-timeline: scroll(root); }
@@ -102,7 +100,7 @@ button { font: inherit; color: inherit; }
 .kpis { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow); }
 .kpi { display: grid; gap: 6px; align-content: center; justify-items: center; text-align: center; padding: 14px 14px 12px; background: var(--surface); transition: background var(--t-fast); }
 a.kpi:hover { background: var(--surface-2); }
-.kpi strong { font: 800 30px/1 var(--mono); letter-spacing: -.04em; color: var(--hue, var(--accent)); font-variant-numeric: tabular-nums; text-shadow: 0 0 20px color-mix(in srgb, var(--hue, var(--accent)) 45%, transparent); }
+.kpi strong { font: 800 30px/1 var(--mono); letter-spacing: -.04em; color: var(--hue, var(--accent)); font-variant-numeric: tabular-nums; }
 .kpi span { font-size: 13px; font-weight: 600; line-height: 1.3; color: var(--fg-2); }
 .kpi span b { color: var(--fg); }
 /* QR „Seite öffnen“: immer dunkel auf Weiß (sicher scanbar, auch im dunklen Theme) */
@@ -365,7 +363,7 @@ html.sf-on .hero:not(.is-in) .msg { opacity: 0; transform: translate3d(0, 10px, 
   background: color-mix(in srgb, var(--accent) 7%, var(--surface)); font-size: 15px; line-height: 1.5; }
 .note .ico { color: var(--accent); margin-top: 2px; }
 
-/* 02 Sicherheit: drei Stufen (frei · mit Rückfrage · nie ohne Mensch), darunter die Prüfkette zum Durchklicken */
+/* 02 Sicherheit: drei Stufen (frei · mit Rückfrage · nie ohne Freigabe), darunter die Prüfkette zum Durchklicken */
 .perm { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin-bottom: 16px; }
 .pm { display: grid; align-content: start; gap: 12px; min-width: 0; padding: 18px; border: 1px solid color-mix(in srgb, var(--hue) 35%, var(--line)); border-radius: var(--radius); background: var(--surface); box-shadow: var(--shadow); }
 .pm-h { display: flex; align-items: center; gap: 12px; }
@@ -705,6 +703,8 @@ html.sf-on .hero:not(.is-in) .msg { opacity: 0; transform: translate3d(0, 10px, 
   html { scroll-behavior: auto; }
   *:not(.progress), *::before, *::after { transition-duration: 0ms !important; transition-delay: 0ms !important; animation-duration: 0ms !important; animation-iteration-count: 1 !important; }
 }
+.dark-zone { --accent: var(--indigo); --accent-ink: #0d0f2e; --grid: rgba(129, 140, 248, .045); --glow: rgba(129, 140, 248, .28); } /* landing.css setzt sonst Türkis */
+.strip ul { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); } /* „Claude Opus + Sonnet“ passt nicht in 150 px (nowrap) → überlappte */
 </style>
 <link rel="stylesheet" href="css/scroll_flow.css">
 </head>
@@ -751,7 +751,7 @@ html.sf-on .hero:not(.is-in) .msg { opacity: 0; transform: translate3d(0, 10px, 
 <nav class="doc-path" aria-label="Pfad in der Projekt-Doku" data-en-aria="Path in the project docs"><a href="project_docs.html" data-en="← Project docs">← Projekt-Doku</a><span aria-hidden="true">›</span><a href="project_docs.html#technik" data-en="Develop">Entwickeln</a><span aria-hidden="true">›</span><span aria-current="page" data-en="Working with Claude Code">Arbeitsweise mit Claude Code</span></nav>
 <header class="top">
   <div class="wrap">
-    <a class="brand" href="#start"><span class="brand-mark"><svg class="ico"><use href="#i-arm"/></svg></span><span>UX Robot<small data-en="How we work">Arbeitsweise</small></span></a>
+    <a class="brand" href="#start"><span class="brand-mark"><svg class="ico"><use href="#i-term"/></svg></span><span>Claude Code<small data-en="How we work · dev_ws">Arbeitsweise · dev_ws</small></span></a>
     <nav aria-label="Abschnitte" data-en-aria="Sections">
       <a href="#prinzip" data-en="Principle">Prinzip</a>
       <a href="#ablauf" data-en="Flow">Ablauf</a>
@@ -763,7 +763,6 @@ html.sf-on .hero:not(.is-in) .msg { opacity: 0; transform: translate3d(0, 10px, 
       <a href="#technik" data-en="Under the hood">Unter der Haube</a>
     </nav>
     <div class="tools">
-      <a class="ver" href="develop_workflow_v2.html" aria-label="V2 – ältere Fassung dieser Seite" data-en-aria="V2 – earlier version of this page">V2</a>
       <div class="seg" role="group" aria-label="Sprache / Language">
         <button type="button" data-lang="de" aria-pressed="true">DE</button>
         <button type="button" data-lang="en" aria-pressed="false">EN</button>
@@ -785,15 +784,15 @@ html.sf-on .hero:not(.is-in) .msg { opacity: 0; transform: translate3d(0, 10px, 
         <span class="badge"><span class="bi-s"><svg class="ico" aria-hidden="true"><use href="#i-spark"/></svg></span><span data-en="Develop · How we work">Entwickeln · Arbeitsweise</span></span>
         <h1>
           <span class="h1-name" data-en="Building software with Claude&amp;nbsp;Code">Software entwickeln mit Claude&nbsp;Code</span>
-          <span class="h1-claim" data-en="&lt;span class=&quot;ln&quot;&gt;&lt;span&gt;The human leads.&lt;/span&gt;&lt;/span&gt; &lt;span class=&quot;ln&quot;&gt;&lt;span&gt;&lt;em&gt;The AI assists.&lt;/em&gt;&lt;/span&gt;&lt;/span&gt;"><span class="ln"><span>Der Mensch führt.</span></span> <span class="ln"><span><em>Die KI assistiert.</em></span></span></span>
+          <span class="h1-claim" data-en="&lt;span class=&quot;ln&quot;&gt;&lt;span&gt;Rules in the repo.&lt;/span&gt;&lt;/span&gt; &lt;span class=&quot;ln&quot;&gt;&lt;span&gt;&lt;em&gt;Evidence for every step.&lt;/em&gt;&lt;/span&gt;&lt;/span&gt;"><span class="ln"><span>Regeln im Repo.</span></span> <span class="ln"><span><em>Belege für jeden Schritt.</em></span></span></span>
         </h1>
-        <p class="abstract" data-en="This is how &lt;b&gt;UX Robot&lt;/b&gt; is built: the human sets the goal and approves, the AI &lt;b&gt;Claude&amp;nbsp;Code&lt;/b&gt; writes, tests and documents the code. Fixed rules in the repo keep every step visible and verifiable.">So entsteht <b>UX Robot</b>: Der Mensch gibt Ziel und Freigabe, die KI <b>Claude&nbsp;Code</b> schreibt, prüft und dokumentiert den Code. Feste Regeln im Repo machen jeden Schritt sichtbar und überprüfbar.</p>
+        <p class="abstract" data-en="How code is written in this repo: the developer sets the goal and approves, &lt;b&gt;Claude&amp;nbsp;Code&lt;/b&gt; plans, writes, tests and documents. Rules, checks and knowledge live as files in the repo and make every step traceable.">So entsteht der Code in diesem Repo: Der Entwickler gibt Ziel und Freigabe, <b>Claude&nbsp;Code</b> plant, schreibt, prüft und dokumentiert. Regeln, Prüfungen und Wissen liegen als Dateien im Repo und machen jeden Schritt nachvollziehbar.</p>
         <div class="cta-row">
           <a class="b-pri" href="#ablauf"><span data-en="How a task runs">So läuft eine Aufgabe</span><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg></a>
           <a class="b-sec" href="#werkzeuge"><svg class="ico" aria-hidden="true"><use href="#i-layers"/></svg><span data-en="Building blocks">Bausteine</span><em>50</em></a>
         </div>
         <ul class="trust">
-          <li><span class="bi-s"><svg class="ico" aria-hidden="true"><use href="#i-user"/></svg></span><span><b data-en="The human decides">Mensch entscheidet</b><span data-en="approval before every risk">Freigabe vor jedem Risiko</span></span></li>
+          <li><span class="bi-s"><svg class="ico" aria-hidden="true"><use href="#i-user"/></svg></span><span><b data-en="Approval required">Freigabe nötig</b><span data-en="before every risky step">vor jedem riskanten Schritt</span></span></li>
           <li><span class="bi-s"><svg class="ico" aria-hidden="true"><use href="#i-code"/></svg></span><span><b data-en="Everything visible">Alles sichtbar</b><span data-en="every change as a diff">jede Änderung als Diff</span></span></li>
           <li><span class="bi-s"><svg class="ico" aria-hidden="true"><use href="#i-git"/></svg></span><span><b data-en="Everything versioned">Alles versioniert</b><span data-en="rules live in the repo">Regeln liegen im Repo</span></span></li>
         </ul>
@@ -802,7 +801,7 @@ html.sf-on .hero:not(.is-in) .msg { opacity: 0; transform: translate3d(0, 10px, 
         <figure class="chat" aria-label="Beispiel: eine Aufgabe im Chat, von der Bitte bis zum Push" data-en-aria="Example: one task in the chat, from request to push">
           <div class="chat-bar"><span class="af-dots" aria-hidden="true"><i></i><i></i><i></i></span><b>Claude Code · VS Code</b><span class="hchip" data-en="[RCU] Limit jog">[RCU] Joggen begrenzen</span></div>
           <ol class="chat-log">
-            <li class="msg me" style="--i: 0"><span class="who" data-en="Human">Mensch</span><span class="bub" data-en="Jogging should move 10&amp;nbsp;mm per step at most.">Joggen soll höchstens 10&nbsp;mm pro Schritt fahren.</span></li>
+            <li class="msg me" style="--i: 0"><span class="who" data-en="You">Du</span><span class="bub" data-en="Jogging should move 10&amp;nbsp;mm per step at most.">Joggen soll höchstens 10&nbsp;mm pro Schritt fahren.</span></li>
             <li class="msg" style="--i: 1"><span class="who">Claude</span><span class="bub" data-en="&lt;span&gt;&lt;b&gt;Plan:&lt;/b&gt; limit in &lt;code&gt;jog.js&lt;/code&gt;, add a test.&lt;/span&gt;"><span><b>Plan:</b> Grenze in <code>jog.js</code>, Test ergänzen.</span></span></li>
             <li class="msg" style="--i: 2"><span class="who">Claude</span><span class="bub"><span data-en="&lt;b&gt;F1&lt;/b&gt; Update the twin display as well?"><b>F1</b> Anzeige im Twin gleich mit anpassen?</span><span class="btns"><span class="on" data-en="yes">ja</span><span data-en="later">später</span></span></span></li>
             <li class="msg sys hook" style="--i: 3"><span class="who">Hook</span><span class="bub"><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg><span data-en="Check after the edit: no findings">Prüfung nach dem Edit: ohne Befund</span></span></li>
@@ -868,12 +867,12 @@ html.sf-on .hero:not(.is-in) .msg { opacity: 0; transform: translate3d(0, 10px, 
     <div class="wrap">
       <header class="land-head">
         <span class="eyebrow" data-en="The principle">Das Prinzip</span>
-        <h2 data-en="One team: human and AI.">Ein Team aus Mensch und KI.</h2>
+        <h2 data-en="Clear responsibilities.">Klare Zuständigkeiten.</h2>
         <p data-en="As in a development team, every role has a fixed job. Rules, knowledge and checks live as files in the repo.">Wie in einem Entwicklerteam hat jede Rolle eine feste Aufgabe. Regeln, Wissen und Kontrollen liegen als Dateien im Repo.</p>
       </header>
       <figure class="ov" aria-labelledby="ov-cap">
         <div class="ov-grid">
-          <div class="ov-node" style="grid-area: human"><svg class="ico" aria-hidden="true"><use href="#i-user"/></svg><span class="k-t" data-en="Human">Mensch</span><b data-en="Sets goals, decides, approves.">Setzt Ziele, entscheidet, gibt frei.</b></div>
+          <div class="ov-node" style="grid-area: human"><svg class="ico" aria-hidden="true"><use href="#i-user"/></svg><span class="k-t" data-en="Developer">Entwickler</span><b data-en="Sets goals, decides, approves.">Setzt Ziele, entscheidet, gibt frei.</b></div>
           <div class="ov-arr h" style="grid-area: a2">
             <span class="ov-step"><span class="ov-l" data-en="Request">Wunsch</span><span class="ov-p" aria-hidden="true"></span></span>
             <span class="ov-step"><span class="ov-p l" aria-hidden="true"></span><span class="ov-l" data-en="Answer + status">Antwort + Status</span></span>
@@ -892,8 +891,8 @@ html.sf-on .hero:not(.is-in) .msg { opacity: 0; transform: translate3d(0, 10px, 
           <div class="ov-arr h" style="grid-area: a3"><span class="ov-step"><span class="ov-l" data-en="verified change">geprüfte Änderung</span><span class="ov-p" aria-hidden="true"></span></span></div>
           <div class="ov-node" style="grid-area: repo; --hue: var(--green)"><svg class="ico" aria-hidden="true"><use href="#i-git"/></svg><span class="k-t">Repo</span><b data-en="Every state saved.">Jeder Stand gesichert.</b><ul class="ov-chips"><li>Code</li><li>Tests</li><li data-en="Docs">Doku</li><li>Git</li></ul></div>
         </div>
-        <p class="ov-loop"><svg class="ico" aria-hidden="true"><use href="#i-loop"/></svg><span data-en="&lt;b&gt;Learning loop:&lt;/b&gt; correction by the human → Memory → applies from the next chat on"><b>Lernschleife:</b> Korrektur vom Menschen → Memory → gilt ab dem nächsten Chat</span></p>
-        <figcaption id="ov-cap" data-en="Simplified: the human sets the goal, Claude works with knowledge and helpers, hooks check every step, the result lands in the repo, tested.">Vereinfacht: Der Mensch gibt das Ziel vor, Claude arbeitet mit Wissen und Helfern, Hooks prüfen jeden Schritt, das Ergebnis landet geprüft im Repo.</figcaption>
+        <p class="ov-loop"><svg class="ico" aria-hidden="true"><use href="#i-loop"/></svg><span data-en="&lt;b&gt;Learning loop:&lt;/b&gt; correction in the chat → Memory → applies from the next chat on"><b>Lernschleife:</b> Korrektur im Chat → Memory → gilt ab dem nächsten Chat</span></p>
+        <figcaption id="ov-cap" data-en="Simplified: the developer sets the goal, Claude works with knowledge and helpers, hooks check every step, the result lands in the repo, tested.">Vereinfacht: Der Entwickler gibt das Ziel vor, Claude arbeitet mit Wissen und Helfern, Hooks prüfen jeden Schritt, das Ergebnis landet geprüft im Repo.</figcaption>
       </figure>
       <ul class="fx-grid">
         <li class="fx"><span class="bi-l"><svg class="ico" aria-hidden="true"><use href="#i-book"/></svg></span><span class="k-t">AGENTS.md</span><b data-en="Rules for every chat.">Regeln für jeden Chat.</b><p data-en="House rules in 122 lines: safety, names, answer format and when a task counts as done.">Hausordnung mit 122 Zeilen: Sicherheit, Namen, Antwortformat und wann eine Aufgabe fertig ist.</p><a class="more" href="#sicherheit"><span data-en="Safety">Sicherheit</span><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg></a></li>
@@ -913,7 +912,7 @@ html.sf-on .hero:not(.is-in) .msg { opacity: 0; transform: translate3d(0, 10px, 
         <div>
           <span class="eyebrow" data-en="Part 1 · For everyone">Teil 1 · Für alle</span>
           <h2 data-en="How we work">So arbeiten wir</h2>
-          <p class="lede" data-en="How human and AI build software together here: in what order, within which limits, and how the system keeps learning.">Wie Mensch und KI hier zusammen Software bauen: in welcher Reihenfolge, mit welchen Grenzen und wie das System dazulernt.</p>
+          <p class="lede" data-en="How a task runs here: in what order, within which limits, and how the rules get sharper.">Wie eine Aufgabe hier abläuft: in welcher Reihenfolge, mit welchen Grenzen und wie Regeln nachgeschärft werden.</p>
         </div>
         <ol class="path" aria-label="Lesepfad Teil 1" data-en-aria="Reading path part 1">
           <li><a href="#schritte" style="--hue: var(--accent)"><span class="pn"><svg class="ico"><use href="#i-loop"/></svg><span data-en="01 · Flow">01 · Ablauf</span><span class="cnt">5</span></span><b data-en="Five steps per task">Fünf Schritte je Aufgabe</b><small data-en="From request to commit">Vom Wunsch bis zum Commit</small></a></li>
@@ -925,12 +924,12 @@ html.sf-on .hero:not(.is-in) .msg { opacity: 0; transform: translate3d(0, 10px, 
       <section class="sec" id="schritte">
         <header class="sec-head">
           <div><span class="eyebrow" style="--hue: var(--accent)"><span class="n">01</span><span data-en="Flow">Ablauf</span></span><h2 data-en="Five steps per task">Fünf Schritte je Aufgabe</h2></div>
-          <div class="brief"><p class="slogan" data-en="From request to verified result.">Vom Wunsch zum geprüften Stand.</p><dl><dt data-en="Human">Mensch</dt><dd data-en="describes the goal, decides on questions, accepts the result">beschreibt das Ziel, entscheidet bei Fragen, nimmt ab</dd><dt>Claude</dt><dd data-en="plans, builds, tests, documents, commits">plant, baut, prüft, dokumentiert, committet</dd><dt data-en="Automatic">Automatisch</dt><dd data-en="hooks check every step, tests provide the evidence">Hooks prüfen jeden Schritt, Tests liefern den Beleg</dd></dl></div>
+          <div class="brief"><p class="slogan" data-en="From request to verified result.">Vom Wunsch zum geprüften Stand.</p><dl><dt data-en="Developer">Entwickler</dt><dd data-en="describes the goal, decides on questions, accepts the result">beschreibt das Ziel, entscheidet bei Fragen, nimmt ab</dd><dt>Claude</dt><dd data-en="plans, builds, tests, documents, commits">plant, baut, prüft, dokumentiert, committet</dd><dt data-en="Automatic">Automatisch</dt><dd data-en="hooks check every step, tests provide the evidence">Hooks prüfen jeden Schritt, Tests liefern den Beleg</dd></dl></div>
         </header>
         <ol class="steps5">
-          <li class="step" style="--hue: var(--accent)"><span class="no">01</span><span class="bi-l"><svg class="ico" aria-hidden="true"><use href="#i-chat"/></svg></span><b data-en="Ask">Wünschen</b><p data-en="The human writes the goal, not the instructions.">Der Mensch schreibt das Ziel, nicht die Anleitung.</p><span class="act-row"><span class="act" data-en="Human">Mensch</span></span><span class="tech" data-en="Chat tab with a prefix, e.g. [RCU]">Chat-Tab mit Präfix, z.&nbsp;B. [RCU]</span></li>
-          <li class="step" style="--hue: var(--gold)"><span class="no">02</span><span class="bi-l"><svg class="ico" aria-hidden="true"><use href="#i-q"/></svg></span><b data-en="Plan">Planen</b><p data-en="Claude plans and asks when a real decision is due.">Claude plant und fragt bei echten Entscheidungen nach.</p><span class="act-row"><span class="act c">Claude</span><span class="act" data-en="Human">Mensch</span></span><span class="tech" data-en="Skills · question F1 · preview">Skills · Rückfrage F1 · Vorschau</span></li>
-          <li class="step" style="--hue: var(--violet)"><span class="no">03</span><span class="bi-l"><svg class="ico" aria-hidden="true"><use href="#i-code"/></svg></span><b data-en="Build">Bauen</b><p data-en="The smallest change in the right place, visible as a diff.">Kleinste Änderung am richtigen Ort, sichtbar als Diff.</p><span class="act-row"><span class="act c">Claude</span><span class="act a" data-en="Automatic">Automatisch</span></span><span class="tech">pre_tool_guard · post_edit_check</span></li>
+          <li class="step" style="--hue: var(--accent)"><span class="no">01</span><span class="bi-l"><svg class="ico" aria-hidden="true"><use href="#i-chat"/></svg></span><b data-en="Ask">Wünschen</b><p data-en="The developer describes the goal, not the instructions.">Der Entwickler beschreibt das Ziel, nicht die Anleitung.</p><span class="act-row"><span class="act" data-en="Developer">Entwickler</span></span><span class="tech" data-en="Chat tab with a prefix, e.g. [RCU]">Chat-Tab mit Präfix, z.&nbsp;B. [RCU]</span></li>
+          <li class="step" style="--hue: var(--gold)"><span class="no">02</span><span class="bi-l"><svg class="ico" aria-hidden="true"><use href="#i-q"/></svg></span><b data-en="Plan">Planen</b><p data-en="Claude plans and asks when a real decision is due.">Claude plant und fragt bei echten Entscheidungen nach.</p><span class="act-row"><span class="act c">Claude</span><span class="act" data-en="Developer">Entwickler</span></span><span class="tech" data-en="Skills · question F1 · preview">Skills · Rückfrage F1 · Vorschau</span></li>
+          <li class="step" style="--hue: var(--violet)"><span class="no">03</span><span class="bi-l"><svg class="ico" aria-hidden="true"><use href="#i-code"/></svg></span><b data-en="Build">Bauen</b><p data-en="Ponytail ladder: does it already exist? Then the smallest change in the right place, visible as a diff.">Ponytail-Leiter: Gibt es das schon? Dann kleinste Änderung am richtigen Ort, sichtbar als Diff.</p><span class="act-row"><span class="act c">Claude</span><span class="act a" data-en="Automatic">Automatisch</span></span><span class="tech">pre_tool_guard · post_edit_check</span></li>
           <li class="step" style="--hue: var(--green)"><span class="no">04</span><span class="bi-l"><svg class="ico" aria-hidden="true"><use href="#i-test"/></svg></span><b data-en="Verify">Prüfen</b><p data-en="Done only with a test result, never with “should work”.">Fertig erst mit Testergebnis, nie mit „sollte gehen“.</p><span class="act-row"><span class="act c">Claude</span><span class="act a" data-en="Automatic">Automatisch</span></span><span class="tech">pytest · Headless Chrome</span></li>
           <li class="step" style="--hue: var(--indigo)"><span class="no">05</span><span class="bi-l"><svg class="ico" aria-hidden="true"><use href="#i-git"/></svg></span><b data-en="Deliver">Abliefern</b><p data-en="Update the docs, commit, push, report the status.">Doku nachziehen, committen, pushen, Status melden.</p><span class="act-row"><span class="act c">Claude</span></span><span class="tech" data-en="git push · status chips">git push · Status-Chips</span></li>
         </ol>
@@ -945,7 +944,7 @@ html.sf-on .hero:not(.is-in) .msg { opacity: 0; transform: translate3d(0, 10px, 
         <div class="perm">
           <div class="pm" style="--hue: var(--green)"><div class="pm-h"><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg><div><span class="k-t" data-en="Free">Frei</span><b data-en="Works without asking.">Arbeitet ohne Nachfrage.</b></div></div><ul><li data-en="Read and search files">Dateien lesen und durchsuchen</li><li data-en="Run 16 fixed check commands">16 feste Prüfbefehle ausführen</li><li data-en="Test in isolation: own port, own domain">Isoliert testen: eigener Port, eigene Domain</li><li data-en="Stop its own processes">Eigene Prozesse beenden</li></ul></div>
           <div class="pm" style="--hue: var(--gold)"><div class="pm-h"><svg class="ico" aria-hidden="true"><use href="#i-q"/></svg><div><span class="k-t" data-en="After asking">Mit Rückfrage</span><b data-en="Asks first.">Fragt vorher nach.</b></div></div><ul><li data-en="Commands outside the allow list">Befehle außerhalb der Erlaubt-Liste</li><li data-en="Files another chat is working on">Dateien, die ein anderer Chat bearbeitet</li><li data-en="Larger rebuilds: preview first">Größere Umbauten: erst Vorschau</li><li data-en="Stopping processes broadly (pkill)">Prozesse breit beenden (pkill)</li></ul></div>
-          <div class="pm" style="--hue: var(--red)"><div class="pm-h"><svg class="ico" aria-hidden="true"><use href="#i-stop"/></svg><div><span class="k-t" data-en="Never without the human">Nie ohne Mensch</span><b data-en="Stays locked.">Bleibt gesperrt.</b></div></div><ul><li data-en="Move the real robot (REAL)">Den echten Roboter bewegen (REAL)</li><li data-en="Weaken E-STOP, sandbox or collision check">E-STOP, Sandbox oder Kollisionsprüfung abschwächen</li><li data-en="Commit other chats’ changes">Änderungen anderer Chats committen</li><li data-en="Overwrite the Git history (--force)">Git-Verlauf überschreiben (--force)</li></ul></div>
+          <div class="pm" style="--hue: var(--red)"><div class="pm-h"><svg class="ico" aria-hidden="true"><use href="#i-stop"/></svg><div><span class="k-t" data-en="Never without approval">Nie ohne Freigabe</span><b data-en="Stays locked.">Bleibt gesperrt.</b></div></div><ul><li data-en="Move the real robot (REAL)">Den echten Roboter bewegen (REAL)</li><li data-en="Weaken E-STOP, sandbox or collision check">E-STOP, Sandbox oder Kollisionsprüfung abschwächen</li><li data-en="Commit other chats’ changes">Änderungen anderer Chats committen</li><li data-en="Overwrite the Git history (--force)">Git-Verlauf überschreiben (--force)</li></ul></div>
         </div>
       <div class="panel guard">
         <h3 data-en="What happens when Claude …">Was passiert, wenn Claude …</h3>
@@ -977,7 +976,7 @@ html.sf-on .hero:not(.is-in) .msg { opacity: 0; transform: translate3d(0, 10px, 
         </header>
     <div class="panel learn">
       <div class="lflow">
-        <div class="lstep" style="--hue: var(--accent)"><span class="k"><svg class="ico"><use href="#i-user"/></svg><span data-en="1 · Human">1 · Mensch</span></span><b data-en="Correction in the chat">Korrektur im Chat</b><p data-en="“Corners rounded again – but subtly.”">„Ecken wieder runden – aber dezent.“</p></div>
+        <div class="lstep" style="--hue: var(--accent)"><span class="k"><svg class="ico"><use href="#i-user"/></svg><span data-en="1 · Developer">1 · Entwickler</span></span><b data-en="Correction in the chat">Korrektur im Chat</b><p data-en="“Corners rounded again – but subtly.”">„Ecken wieder runden – aber dezent.“</p></div>
         <svg class="ico" aria-hidden="true"><use href="#i-go"/></svg>
         <div class="lstep" style="--hue: var(--violet)"><span class="k"><svg class="ico"><use href="#i-brain"/></svg><span data-en="2 · Record">2 · Festhalten</span></span><b>Memory · AGENTS.md · Skill</b><p data-en="One file per fact, with reason and how to apply it.">Eine Datei je Fakt, mit Grund und Anwendung.</p></div>
         <svg class="ico" aria-hidden="true"><use href="#i-go"/></svg>
@@ -1002,7 +1001,7 @@ html.sf-on .hero:not(.is-in) .msg { opacity: 0; transform: translate3d(0, 10px, 
       <header class="land-head">
         <span class="eyebrow" data-en="VS Code · Claude Code">VS Code · Claude Code</span>
         <h2 data-en="One window, everything visible.">Ein Fenster, alles sichtbar.</h2>
-        <p data-en="Code, chat and decisions sit side by side. The human sees every change and steps in at any time.">Code, Chat und Entscheidungen liegen nebeneinander. Der Mensch sieht jede Änderung und greift jederzeit ein.</p>
+        <p data-en="Code, chat and decisions sit side by side. The developer sees every change and steps in at any time.">Code, Chat und Entscheidungen liegen nebeneinander. Der Entwickler sieht jede Änderung und greift jederzeit ein.</p>
       </header>
       <div class="app-frame deck" data-deck role="region" aria-label="Arbeitsplatz als Folien" data-en-aria="Workplace as slides">
         <div class="af-bar" aria-hidden="true"><span class="af-dots"><i></i><i></i><i></i></span><span class="af-url"><svg class="ico"><use href="#i-win"/></svg><span data-deck-url>VS Code · dev_ws</span></span></div>
@@ -1022,7 +1021,7 @@ html.sf-on .hero:not(.is-in) .msg { opacity: 0; transform: translate3d(0, 10px, 
                     <div class="vsc">
                       <div class="vsc-code"><span class="vsc-tab"><svg class="ico"><use href="#i-code"/></svg>jog.js</span><pre><span>const step = readStep();</span><span class="del">- move(step);</span><span class="add">+ move(Math.min(step, MAX_STEP_MM));</span><span>  // MAX_STEP_MM = 10</span></pre></div>
                       <div class="vsc-chat">
-                        <div class="msg me"><span class="who" data-en="Human">Mensch</span><span class="bub" data-en="Jog at most 10&amp;nbsp;mm per step.">Joggen höchstens 10&nbsp;mm pro Schritt.</span></div>
+                        <div class="msg me"><span class="who" data-en="You">Du</span><span class="bub" data-en="Jog at most 10&amp;nbsp;mm per step.">Joggen höchstens 10&nbsp;mm pro Schritt.</span></div>
                         <div class="msg"><span class="who">Claude</span><span class="bub"><span data-en="Limit set in &lt;code&gt;jog.js&lt;/code&gt;, test added.">Grenze in <code>jog.js</code> gesetzt, Test ergänzt.</span></span></div>
                         <div class="msg sys hook"><span class="who">Hook</span><span class="bub"><svg class="ico"><use href="#i-check"/></svg><span data-en="no findings">ohne Befund</span></span></div>
                       </div>
@@ -1277,7 +1276,7 @@ html.sf-on .hero:not(.is-in) .msg { opacity: 0; transform: translate3d(0, 10px, 
       <section class="sec" id="datenfluss">
         <header class="sec-head">
           <div><span class="eyebrow" style="--hue: var(--indigo)"><span class="n">06</span><span data-en="Data flow">Datenfluss</span></span><h2 data-en="Who talks to whom?">Wer spricht mit wem?</h2></div>
-          <div class="brief"><p class="slogan" data-en="Five lanes: human, chat, helpers, guard rails, repo.">Fünf Bahnen: Mensch, Chat, Helfer, Leitplanken, Repo.</p><dl><dt data-en="Use">Bedienen</dt><dd data-en="Choose a scenario, touch a node for its inputs and outputs, ←/→ for steps, &lt;code&gt;K&lt;/code&gt; pauses">Szenario wählen, Knoten berühren zeigt Ein- und Ausgänge, ←/→ für Schritte, <code>K</code> pausiert</dd></dl></div>
+          <div class="brief"><p class="slogan" data-en="Five lanes: developer, chat, helpers, guard rails, repo.">Fünf Bahnen: Entwickler, Chat, Helfer, Leitplanken, Repo.</p><dl><dt data-en="Use">Bedienen</dt><dd data-en="Choose a scenario, touch a node for its inputs and outputs, ←/→ for steps, &lt;code&gt;K&lt;/code&gt; pauses">Szenario wählen, Knoten berühren zeigt Ein- und Ausgänge, ←/→ für Schritte, <code>K</code> pausiert</dd></dl></div>
         </header>
     <figure class="fg" id="fg-work" aria-labelledby="fg-work-cap">
       <div class="fg-bar">
@@ -1300,7 +1299,7 @@ html.sf-on .hero:not(.is-in) .msg { opacity: 0; transform: translate3d(0, 10px, 
         <span><svg viewBox="0 0 34 10"><line x1="0" y1="5" x2="34" y2="5" stroke-dasharray="6 4"/></svg><span data-en="Request ⇄ response (question, hook check)">Anfrage ⇄ Antwort (Rückfrage, Hook-Prüfung)</span></span>
         <span><svg viewBox="0 0 34 10"><line x1="0" y1="5" x2="34" y2="5" stroke-dasharray="14 4 2 4"/></svg><span data-en="Task to subagent ⇄ findings">Auftrag an Subagent ⇄ Befund</span></span>
       </div>
-      <figcaption id="fg-work-cap" data-en="Data flow of the collaboration: human, main chat, skills and agents, hooks as guardrails, repo with code, checks, docs and Git.">Datenfluss der Zusammenarbeit: Mensch, Hauptchat, Skills und Agenten, Hooks als Leitplanken, Repo mit Code, Prüfungen, Doku und Git.</figcaption>
+      <figcaption id="fg-work-cap" data-en="Data flow of the collaboration: developer, main chat, skills and agents, hooks as guardrails, repo with code, checks, docs and Git.">Datenfluss der Zusammenarbeit: Entwickler, Hauptchat, Skills und Agenten, Hooks als Leitplanken, Repo mit Code, Prüfungen, Doku und Git.</figcaption>
       <ol class="fg-fallback">
         <li data-en="UI feature: you → Claude → skills (ui-change, preview) → preview page → decision back → pre_tool_guard → code → ui-verifier → checks">UI-Funktion: Du → Claude → Skills (ui-change, preview) → Vorschau-Seite → Entscheidung zurück → pre_tool_guard → Code → ui-verifier → Prüfungen</li>
         <li data-en="Safety fix: you → Claude → skills (root-cause, vla-motion) → pre_tool_guard → code → post_edit_check → safety-reviewer → grasp_e2e (domain 94) → Git">Sicherheits-Fix: Du → Claude → Skills (root-cause, vla-motion) → pre_tool_guard → Code → post_edit_check → safety-reviewer → grasp_e2e (Domain 94) → Git</li>
@@ -1374,7 +1373,7 @@ html.sf-on .hero:not(.is-in) .msg { opacity: 0; transform: translate3d(0, 10px, 
         </div>
       </div>
           <div class="vcard" role="group" aria-label="Visitenkarte: UX Robot, Marius Kaul" data-en-aria="Business card: UX Robot, Marius Kaul">
-            <div class="vc-head"><span class="brand-mark"><svg class="ico" aria-hidden="true"><use href="#i-arm"/></svg></span><span><b>UX Robot</b><small data-en="The human leads. The AI assists.">Der Mensch führt. Die KI assistiert.</small></span></div>
+            <div class="vc-head"><span class="brand-mark"><svg class="ico" aria-hidden="true"><use href="#i-arm"/></svg></span><span><b>UX Robot</b><small data-en="How we work with Claude Code">Arbeitsweise mit Claude Code</small></span></div>
             <div class="vc-body">
               <div>
                 <div class="vc-name">Marius Kaul</div>
@@ -1798,7 +1797,7 @@ const FlowGraph = (() => {
 /* ═════════ SPEC: Zusammenarbeit (Knoten = Rollen, Dateien, Hooks aus .claude/ – siehe .claude/README.md) ═════════ */
 const SPEC = {
   lanes: [
-    { id: 'human', label: ['Mensch', 'Human'] },
+    { id: 'human', label: ['Entwickler', 'Developer'] },
     { id: 'chat', label: ['Chat · Kontext', 'Chat · context'] },
     { id: 'know', label: ['Helfer', 'Helpers'] },
     { id: 'guard', label: ['Leitplanken', 'Guardrails'] },
