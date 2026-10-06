@@ -1,7 +1,7 @@
 <!doctype html>
 <!-- Funktionsatlas: alle Funktionen der Assistive Arm Platform als Karten, je Ablauf ein animierter Flow-Graph,
      Kreisläufe zusätzlich als Ring. Design wie docs/project_docs.html (Palette Monochrom, Ecken dezent gerundet, hell + dunkel, DE + EN);
-     Kopf = Landing-Hero aus css/landing.css + js/landing.js, 3D-Bühne js/hero3d.js (Szene „atlas“, ohne WebGL/Netz bleibt das Bild).
+     Kopf = Landing-Hero aus css/landing.css + js/landing.js, mittig ohne Bühne (Wunsch User 06.10.2026).
      Flow-Engine = Kopie aus .claude/skills/flow-graph/flow_graph_template.html, erweitert um `via` (Rückweg über eigene Zeile).
      Neue Funktion: <article class="fn"> im Bereich ergänzen (data-a Bereich, data-f Ablauf, data-s Stufen s/p/r).
      Neuer Ablauf: Eintrag in FLOWS (SPEC wie Skill flow-graph, Topics per grep belegt; loop = Ring-Stationen).
@@ -75,10 +75,17 @@ button, select, input { font: inherit; color: inherit; }
 .seg button:hover { color: var(--fg); background: color-mix(in srgb, var(--fg) 7%, transparent); }
 .seg button[aria-pressed="true"] { background: var(--surface); color: var(--fg); box-shadow: 0 0 0 1px var(--line-strong); }
 
-/* Kopf = Landing-Hero (css/landing.css, Szene „atlas“ aus js/hero3d.js); darunter die Stufen-Legende der Karten;
-   Kennzahl-Karten als eigene Zeile unter Text + Bühne wie im Hub (.hero-kpis) */
+/* Kopf = Landing-Hero mittig (css/landing.css .hero-head): Claim, Abstract, drei Stufen als Kernmerkmale, Stufen-Legende der Karten;
+   darunter Kennzahl-Karten wie im Hub (.hero-kpis) und der Scroll-Hinweis */
 .hero a { text-decoration: none; }
-.hero .legend { display: grid; justify-items: start; gap: 8px; max-width: 60ch; font-size: 14px; line-height: 1.45; color: var(--fg-2); }
+/* Hero füllt den ersten Bildschirm unter Kopfzeile + Rückweg-Zeile (css/doc_path.css, 45 px), Scroll-Hinweis bleibt sichtbar */
+.hero .hero-inner { min-height: min(calc(100svh - var(--hdr, 64px) - 45px), 920px); padding-block: 32px 16px; }
+.hero .hero-head { gap: 16px; }
+.hero .hero-keys { grid-template-columns: repeat(3, minmax(0, 1fr)); max-width: 820px; }
+/* Legende in einer Zeile: Satz + Beispiel-Badge, Erklärung darunter */
+.hero .legend { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 8px 12px; max-width: 100ch; font-size: 14px; line-height: 1.45; color: var(--fg-2); }
+.hero .legend p:last-child { flex-basis: 100%; }
+@media (max-width: 760px) { .hero .hero-keys { grid-template-columns: minmax(0, 1fr); } }
 .hero .legend b { color: var(--fg); font-weight: 800; }
 .atlas-body { padding-top: 36px; }
 
@@ -300,12 +307,6 @@ footer a { text-decoration: underline; text-underline-offset: 3px; }
 @media (prefers-reduced-motion: reduce) { .fn, .chip, .ring .st rect { transition: none; } }
 </style>
 <link rel="stylesheet" href="css/scroll_flow.css">
-<script type="importmap">{ "imports": {
-  "three": "https://cdn.jsdelivr.net/npm/three@0.186.0/build/three.module.js",
-  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.186.0/examples/jsm/" } }</script>
-<script src="js/lite6_mesh.js" defer></script>
-<script src="js/lite6_twin.js" defer></script>
-<script src="js/hero3d.js" defer></script>
 <link rel="stylesheet" href="css/doc_path.css">
 </head>
 <body>
@@ -369,24 +370,20 @@ footer a { text-decoration: underline; text-underline-offset: 3px; }
 </header>
 
 <main id="start">
-  <!-- ═════════ Hero: Claim + Stufen-Legende links, rechts 3D-Bühne „atlas“ (Punktring: ein Bogen je Bereich, ein Punkt je Funktion) ═════════ -->
+  <!-- ═════════ Hero: mittig Claim, Abstract, drei Stufen, Stufen-Legende; darunter Kennzahlen + Scroll-Hinweis ═════════ -->
   <section class="hero dark-zone" aria-labelledby="atlas-h1">
     <div class="wrap hero-inner">
-      <div class="hero-copy">
+      <div class="hero-head">
         <span class="badge"><span class="bi-s"><svg class="ico" aria-hidden="true"><use href="#i-spark"/></svg></span><span data-en="Function atlas">Funktionsatlas</span></span>
         <h1 id="atlas-h1">
           <span class="h1-name">Assistive Arm Platform</span>
           <span class="h1-claim" data-en="&lt;span class=&quot;ln&quot;&gt;&lt;span&gt;Every function,&lt;/span&gt;&lt;/span&gt; &lt;span class=&quot;ln&quot;&gt;&lt;span&gt;&lt;em&gt;its path, its check.&lt;/em&gt;&lt;/span&gt;&lt;/span&gt;"><span class="ln"><span>Jede Funktion,</span></span> <span class="ln"><span><em>ihr Weg, ihre Prüfung.</em></span></span></span>
         </h1>
         <p class="abstract" data-en="All functions of the &lt;b&gt;Assistive Arm Platform&lt;/b&gt;, sorted by area. &lt;b&gt;Pick a card:&lt;/b&gt; its flow runs topic by topic.">Alle Funktionen der <b>Assistive Arm Platform</b>, sortiert nach Bereich. <b>Karte wählen:</b> Ihr Ablauf läuft Topic für Topic.</p>
-        <div class="cta-row">
-          <a class="b-pri" href="#atlas-list"><span data-en="Browse the functions">Funktionen ansehen</span><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg></a>
-          <a class="b-sec" href="#atlas-list" data-loops><svg class="ico" aria-hidden="true"><use href="#i-loop"/></svg><span data-en="Loops only">Nur Kreisläufe</span><em data-count="loop">10</em></a>
-        </div>
-        <ul class="trust" aria-label="Stufen je Funktion" data-en-aria="Stages per function">
-          <li><span class="bi-s"><svg class="ico" aria-hidden="true"><use href="#i-cube"/></svg></span><span><b data-en="Simulate">Simulieren</b><span data-en="in the Digital Twin">im Digital Twin</span></span></li>
-          <li><span class="bi-s"><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg></span><span><b data-en="Check">Prüfen</b><span data-en="collision, sandbox, lock">Kollision, Sandbox, Lock</span></span></li>
-          <li><span class="bi-s"><svg class="ico" aria-hidden="true"><use href="#i-arm"/></svg></span><span><b>REAL</b><span data-en="only after approval">erst nach Freigabe</span></span></li>
+        <ul class="hero-keys" aria-label="Stufen je Funktion" data-en-aria="Stages per function">
+          <li style="--hue: var(--teal)"><svg class="ico" aria-hidden="true"><use href="#i-cube"/></svg><b data-en="Simulate">Simulieren</b><span data-en="in the Digital Twin">im Digital Twin</span></li>
+          <li style="--hue: var(--gold)"><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg><b data-en="Check">Prüfen</b><span data-en="collision, sandbox, lock">Kollision, Sandbox, Lock</span></li>
+          <li style="--hue: var(--indigo)"><svg class="ico" aria-hidden="true"><use href="#i-arm"/></svg><b>REAL</b><span data-en="only after approval">erst nach Freigabe</span></li>
         </ul>
         <div class="legend">
           <p data-en="&lt;b&gt;First virtual, then real.&lt;/b&gt; Every card shows the path of its function to the real robot, for example:"><b>Erst virtuell, dann real.</b> Jede Karte zeigt den Weg ihrer Funktion zum echten Roboter, zum Beispiel:</p>
@@ -394,19 +391,12 @@ footer a { text-decoration: underline; text-underline-offset: 3px; }
           <p data-en="Full circle with tick = stage applies · empty circle = stage is skipped.">Voller Kreis mit Haken = Stufe gilt · leerer Kreis = Stufe entfällt.</p>
         </div>
       </div>
-      <div class="hero-stage" id="hero-stage">
-        <figure class="stage-3d">
-          <img class="stage-fallback" src="img/presentation/twin.jpg" width="690" height="480" alt="Digital Twin: virtueller xArm Lite 6 mit Objekten und Kollisionsboxen" data-en-alt="Digital Twin: virtual xArm Lite 6 with objects and collision boxes">
-          <div class="stage-canvas" id="hero3d" role="img" aria-label="3D: xArm Lite 6 auf einem Sockel unter der Punktkuppel; die Punktbögen auf dem Sockel sind die Bereiche, jeder Punkt eine Funktion; der Laser fährt die Bereiche nacheinander ab" data-en-aria="3D: xArm Lite 6 on a pedestal under the dotted dome; the arcs of dots on the pedestal are the areas, each dot a function; the laser visits the areas one by one"></div>
-          <figcaption class="stage-badge"><span class="hchip"><span><b data-count="fn">83</b> <span data-en="functions">Funktionen</span> · <b data-count="area">9</b> <span data-en="areas">Bereiche</span></span></span></figcaption>
-        </figure>
-        <p class="stage-hint"><svg class="ico" aria-hidden="true"><use href="#i-pointer"/></svg><span class="hint-fine" data-en="Move the pointer around the arm: the laser follows · click the ring: show the area · drag: rotate the view">Zeiger um den Arm führen: Laser folgt · Ring anklicken: Bereich zeigen · ziehen: Ansicht drehen</span><span class="hint-touch" data-en="Tap the ring: the laser moves there · tap again: show the area · drag: rotate the view">Ring antippen: Laser fährt hin · erneut antippen: Bereich zeigen · ziehen: Ansicht drehen</span></p>
-      </div>
       <div class="hero-kpis">
-        <a class="hero-card hc-1 hc-live" id="hc-area" href="#bereich-ctl">
-          <small><svg class="ico" aria-hidden="true"><use href="#i-layers"/></svg><span data-en="Area">Bereich</span></small>
-          <strong id="hc-area-n">14</strong>
-          <span id="hc-area-name">Steuerwege</span>
+        <a class="hero-card hc-1" href="#atlas-list">
+          <small><svg class="ico" aria-hidden="true"><use href="#i-layers"/></svg><span data-en="Areas">Bereiche</span></small>
+          <strong data-count="area">9</strong>
+          <span data-en="from control modes to infrastructure">von Steuerwegen bis Infrastruktur</span>
+          <span class="hc-seg" id="hc-seg" aria-hidden="true"></span>
         </a>
         <a class="hero-card hc-2" href="#atlas-list">
           <small><svg class="ico" aria-hidden="true"><use href="#i-blocks"/></svg><span data-en="Functions">Funktionen</span></small>
@@ -2220,7 +2210,7 @@ const FLOWS = (() => {
     document.querySelectorAll('[data-en-ph]').forEach(el => { const de = keep(el, 'dePh', el.placeholder); el.placeholder = en ? el.dataset.enPh : de; });
     document.querySelectorAll('[data-en-alt]').forEach(el => { const de = keep(el, 'deAlt', el.alt); el.alt = en ? el.dataset.enAlt : de; });
     document.querySelectorAll('[data-lang]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.lang === l)));
-    decorate(); renderAreas(); filter(); renderHere(); renderHero();
+    decorate(); renderAreas(); filter(); renderHere();
     if (curCard) showFlow(curCard.dataset.f, curCard);
   };
   document.querySelectorAll('[data-lang]').forEach(b => b.addEventListener('click', () => { setLang(b.dataset.lang); store('project_docs_lang', b.dataset.lang); }));
@@ -2249,7 +2239,7 @@ const FLOWS = (() => {
 
   // Lesefluss (js/scroll_flow.js): Kopf gestaffelt, Karten je Schub in Lesereihenfolge aus der Tiefe
   window.ScrollFlow?.init({
-    hero: '.hero-copy > .badge, .h1-name, .hero-copy > .abstract, .hero-copy > .cta-row, .trust > li, .hero-copy > .legend, .stage-badge, .hero-card, .stage-hint',
+    hero: '.hero-head > .badge, .h1-name, .hero-head > .abstract, .hero-keys > li, .hero-head > .legend, .hero-card',
     heroExit: '.hero-inner',
     items: ['.filter', '.panel', '.cards > .grp-h'], cards: '.cards > .fn',
     relay: [{ box: '.hero-kpis', items: '.hero-card' }],
@@ -2257,31 +2247,16 @@ const FLOWS = (() => {
     fill: '.pips, .hc-seg',
   });
 
-  // Hero-Bühne (js/hero3d.js, Szene „atlas“): ein Bogen je Bereich, ein Punkt je Funktion; Bogenfarben wie im Funktionsatlas
-  // = dunkle Werte der AREAS-Farben (Hex, weil THREE.Color kein color-mix kennt; Kopf ist immer dunkel). Optionen holt das Modul am Seitenende.
-  const AREA_HEX = { ctl: '#2ee6c8', safe: '#f5b942', twin: '#60a5fa', vis: '#4ade80', ai: '#a78bfa', mon: '#f472b6', eval: '#fb923c', data: '#818cf8', infra: '#a3e635' };
-  const heroAreas = Object.keys(AREAS).map(k => ({ k, n: cards.filter(c => c.dataset.a === k).length }));
-  let heroActive = 0;
-  function renderHero() {
-    const { k, n } = heroAreas[heroActive];
-    document.getElementById('hc-area').href = `#bereich-${k}`;
-    document.getElementById('hc-area-n').textContent = n;
-    document.getElementById('hc-area-name').textContent = AREAS[k][lang()];
-    document.querySelectorAll('#hero3d .h3d-lbl').forEach((el, i) => { el.innerHTML = `<b>${heroAreas[i].n}</b> ${esc(AREAS[heroAreas[i].k][lang()])}`; });
-  }
-  window.atlasHero = {
-    scene: 'atlas',
-    areas: heroAreas.map(({ k, n }) => ({ label: esc(AREAS[k][lang()]), n, color: AREA_HEX[k], css: AREA_HEX[k], href: `#bereich-${k}` })),
-    onActive: i => { heroActive = i; renderHero(); },
-  };
-  // Beschriftung im 3D bzw. Karte „Bereich“ → nur dieser Bereich; Knopf bzw. Karte „Kreisläufe“ → nur Kreisläufe;
-  // übrige Filter zurück, damit die Liste die Zahl im Hero zeigt; danach zur Liste
+  // Karte „Bereiche“: ein Segment je Bereich, Breite = Anzahl Funktionen, Farbe = Bereichsfarbe
+  document.getElementById('hc-seg').innerHTML = Object.entries(AREAS)
+    .map(([k, a]) => `<i style="--n: ${cards.filter(c => c.dataset.a === k).length}; --c: var(--${a.hue})"></i>`).join('');
+  // Kennzahl-Karte → Filter zurück, damit die Liste die Zahl im Hero zeigt (Karte „Kreisläufe“ → nur Kreisläufe); danach zur Liste
   document.querySelector('.hero').addEventListener('click', e => {
-    const a = e.target.closest('a[href^="#bereich-"], [data-loops]');
+    const a = e.target.closest('.hero-card');
     if (!a) return;
     e.preventDefault();
     onlyLoops = a.matches('[data-loops]');
-    area = onlyLoops ? '' : a.getAttribute('href').slice('#bereich-'.length);
+    area = '';
     q = ''; qIn.value = ''; loopBtn.setAttribute('aria-pressed', String(onlyLoops));
     renderAreas(); filter();
     document.getElementById('atlas-list').scrollIntoView();
@@ -2295,17 +2270,9 @@ const FLOWS = (() => {
   for (const c of cards) if (c.dataset.f && !FLOWS[c.dataset.f]) console.warn('[atlas] Karte mit unbekanntem Ablauf:', c.id, c.dataset.f);
 
   const qLang = new URLSearchParams(location.search).get('lang');
-  if ((qLang || store('project_docs_lang')) === 'en') setLang('en'); else { decorate(); renderAreas(); filter(); renderHero(); }
+  if ((qLang || store('project_docs_lang')) === 'en') setLang('en'); else { decorate(); renderAreas(); filter(); }
   select(byId.get(location.hash.slice(1)) || byId.get(document.querySelector('.fn[data-default]')?.id) || cards[0], { scroll: !!byId.get(location.hash.slice(1)) });
 })();
-</script>
-<script type="module">
-// Hero-Bühne (js/hero3d.js, Szene „atlas“); Optionen (Bereiche, Anzahl, Farben) aus dem Seiten-Skript
-import * as THREE from 'three';
-import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import { toCreasedNormals } from 'three/addons/utils/BufferGeometryUtils.js';
-import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
-window.Hero3D?.init(THREE, { OrbitControls, toCreasedNormals, RoomEnvironment }, window.atlasHero);
 </script>
 </body>
 </html>
