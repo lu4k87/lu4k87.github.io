@@ -274,6 +274,47 @@ a.hero-card:hover { border-color: color-mix(in srgb, var(--accent) 65%, var(--gl
   .h3d-step.in.done:not(.fin) { opacity: 0; transform: translate3d(0, -8px, 0); transition: opacity 180ms var(--ease-io), transform 220ms var(--ease-io); }
 }
 @media (prefers-reduced-motion: reduce) { .h3d-step, .h3d-step.out { transition: none; } .h3d-step.on i::after { animation: none; } }
+/* Mini-Spiel der Hero-Bühne (js/hero3d.js, Wunsch User 06.10.2026): Sprechblase am Objekt ploppt auf (kleiner Überschwinger
+   bewusst: Wunsch „Popup-Sprechblasen-Effekt“), Missionsliste oben links mit Abzeichen-Zeile; nur der Klang-Knopf nimmt Zeiger an */
+.h3d-say { position: absolute; left: 0; top: 0; z-index: 2; translate: -50% calc(-100% - 12px); pointer-events: none; white-space: nowrap;
+  padding: 8px 12px; border: 1px solid color-mix(in srgb, var(--accent) 70%, var(--glass-bd)); border-radius: var(--radius-sm);
+  background: var(--glass-bg); color: var(--glass-fg); font: 700 13px/1.25 var(--mono); box-shadow: inset 0 1px 0 var(--glass-hi), 0 0 22px -6px var(--glow);
+  opacity: 0; scale: .5; transform-origin: 50% 100%; transition: opacity 280ms var(--ease-io), scale 300ms var(--ease-io); }
+.h3d-say::after { content: ""; position: absolute; left: 50%; bottom: -6px; width: 10px; height: 10px; translate: -50% 0; rotate: 45deg;
+  background: inherit; border: 1px solid color-mix(in srgb, var(--accent) 70%, var(--glass-bd)); border-width: 0 1px 1px 0; }
+.h3d-say.in { opacity: 1; scale: 1; animation: h3d-pop 520ms var(--ease-out); }
+@keyframes h3d-pop { 0% { opacity: 0; scale: .5; } 55% { opacity: 1; scale: 1.08; } 100% { scale: 1; } }
+.h3d-quest { position: absolute; left: 14px; top: 14px; z-index: 2; display: grid; gap: 8px; min-width: 220px; padding: 10px 12px; pointer-events: none;
+  border: 1px solid var(--glass-bd); border-radius: var(--radius-sm); background: var(--glass-bg); color: var(--glass-fg);
+  font: 600 12px/1.3 var(--mono); box-shadow: inset 0 1px 0 var(--glass-hi); }
+.h3d-q-head { display: flex; align-items: center; gap: 10px; }
+.h3d-q-head b { font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--accent); }
+.h3d-q-head span { margin-left: auto; font-weight: 700; }
+.h3d-q-snd { pointer-events: auto; display: grid; place-items: center; width: 32px; height: 32px; margin: -6px -6px -6px 0; padding: 0; cursor: pointer;
+  border: 1px solid transparent; border-radius: var(--radius-sm); background: none; color: var(--glass-fg); transition: border-color var(--t-fast); }
+.h3d-q-snd:hover, .h3d-q-snd:focus-visible { border-color: var(--glass-bd); }
+.h3d-q-snd svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.h3d-q-snd .x, .h3d-quest.muted .h3d-q-snd .w { display: none; }
+.h3d-quest.muted .h3d-q-snd .x { display: inline; }
+.h3d-quest ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; }
+.h3d-quest li { display: flex; align-items: center; gap: 8px; }
+.h3d-quest li i { width: 16px; height: 16px; flex: none; display: grid; place-items: center; border-radius: 50%; border: 1px solid var(--c);
+  font: 700 10px/1 var(--mono); font-style: normal; transition: background-color var(--t-base); }
+.h3d-quest li.ok i { background: var(--c); color: #fff; }
+.h3d-quest li.ok span { text-decoration: line-through; }
+.h3d-q-bar { height: 4px; border-radius: 2px; background: color-mix(in srgb, var(--glass-fg) 14%, transparent); overflow: hidden; }
+.h3d-q-bar i { display: block; width: 0; height: 100%; background: var(--accent); transition: width 600ms var(--ease-out); }
+.h3d-quest p { margin: 0; }
+.h3d-badge { display: none; align-items: center; gap: 8px; padding: 6px 8px; border: 1px solid #f2c14e; border-radius: var(--radius-sm);
+  font-weight: 700; box-shadow: 0 0 22px -8px #f2c14e; }
+.h3d-badge.in { display: flex; animation: h3d-pop 520ms var(--ease-out); }
+.h3d-badge .ico { width: 18px; height: 18px; flex: none; color: #f2c14e; }
+/* schmal: Missionen nur als Kopf, Balken und Abzeichen */
+@media (max-width: 520px) {
+  .h3d-quest { left: 10px; top: 10px; min-width: 0; gap: 6px; }
+  .h3d-quest ul, .h3d-quest p { display: none; }
+}
+@media (prefers-reduced-motion: reduce) { .h3d-say, .h3d-say.in, .h3d-badge.in, .h3d-q-bar i { transition: none; animation: none; } }
 /* Karten mit wechselndem Inhalt (aktiver Eintrag der Szene) und Phasen-Liste (Ghost: Plan → Freigabe → Fahrt) */
 .hc-live strong { font-size: 30px; }
 .hc-live .sub-k { font: 600 12px/1.3 var(--mono); color: var(--fg-2); }

@@ -1,8 +1,8 @@
 /* Hero-Bühne der Projektseiten (Skill motion-viz §3): xArm Lite 6 (js/lite6_twin.js) auf Sockel mit Lichtringen,
    Laser-Zielhilfe senkrecht auf den Tisch; Ziehen dreht die Kamera. Szene je Seite (opts.scene):
      dome   Arbeitsraum als Punktkuppel (Reichweite 440 mm um Gelenk 2); Zeiger bewegt den TCP, sonst langsame Acht;
-            Pick & Place: drei Ablagefelder + Würfel (Rastergitter, pulsierender Lichthof), Feld anklicken/antippen → Arm setzt den Würfel um,
-            Würfel anklicken/antippen → Arm dreht ihn um 90°; Felder leuchten als Klick-Hinweis unregelmäßig kurz auf,
+            Mini-Spiel „Missionen“: Würfel, Quader, Zylinder (Rastergitter) in die passende Aussparung legen lassen, Sprechblasen,
+            Missionsliste (.h3d-quest), Klänge per WebAudio; Formen leuchten als Klick-Hinweis kurz auf,
             Status-Leiste unten mittig (.h3d-steps) blendet die Schritte nacheinander ein; Licht etwas gedämpft
      modes  Steuerwege als Lichtpunkte im Ring (opts.items); aktiver Punkt schickt einen Impuls zum Arm, der Arm zeigt hin
      ghost  Ghost-Arm plant voraus → Freigabe → Arm fährt nach („Erst virtuell, dann real“); Zeiger setzt das Ziel
@@ -483,125 +483,201 @@ function build(L, wrap, host, o) {
       });
     };
   }
-  // ── Pick & Place (dome): drei Ablagefelder, Würfel 50 mm. Würfel anklicken/antippen → anfahren, senkrecht aufsetzen,
-  // Sauger an, senkrecht lösen, dabei hoch heben (300 mm) und per Gelenk 6 um 90° drehen; der Arm hält ihn schwebend
-  // und meldet „Ablageort wählen“, bis eines der drei Felder gewählt ist (auch das eigene: zurücklegen; nach 25 s von selbst).
-  // Feld direkt anklicken → greifen und ohne Halt umsetzen. Transport im hohen Bogen: erst nach vorn gestreckt, Werkzeug
-  // geneigt, über dem Ziel wieder eingezogen, senkrecht absetzen, lösen, abheben.
+  // ── Pick & Place (dome) als Mini-Spiel „Missionen“ (Wunsch User 06.10.2026, Vorschau „Pick & Place als Mini-Spiel“, Variante C):
+  // drei Objekte als Raster (Würfel 50 mm, Quader 80 × 40 × 30 mm, Zylinder Ø 48 × 50 mm) liegen zufällig im Greifbereich,
+  // dazu drei passende Aussparungen (Schablonen). Objekt anklicken/antippen → anfahren, senkrecht aufsetzen, Sauger an, drehend
+  // auf 300 mm heben und schwebend halten, bis eine Form gewählt ist. Passende Form → Transport im hohen Bogen, senkrecht absetzen,
+  // Objekt rutscht in die Form (sinkt 8 mm, richtet sich aus), materialisiert in seiner Farbe (Würfel blau, Quader rot, Zylinder
+  // grün) und bedankt sich per Sprechblase. Falsche Form → „Da pass ich nicht rein!“, Arm hält weiter. Startplatz anklicken oder
+  // 25 s nichts wählen → zurücklegen. Alle drei zu Hause → Abzeichen, nach 6,5 s neue Runde mit neuer Lage.
+  // Missionsliste oben links; Lage, Stand, Runden und Klang an/aus in localStorage (F3). Klänge per WebAudio, nur als Antwort
+  // auf eigene Klicks (Browser erlaubt Ton erst nach einer Geste), leise, abschaltbar.
   // Bahnen = Spline durch Stützpunkte mit Minimal-Ruck-Zeitprofil (Weg, Geschwindigkeit, Beschleunigung stetig; Start und
-  // Kontakt in Ruhe, Kontaktpunkte exakt); Gelenk 6 bleibt in ±178° (Würfel ist 90°-symmetrisch → Drehlage frei wählbar).
-  // Klick-Hinweis: Felder leuchten unregelmäßig kurz auf (Welle läuft nach außen, Würfel-Raster hellt mit), nur in Ruhe;
-  // nach dem ersten eigenen Klick seltener; beim Halten pulsieren alle drei im Takt (Wunsch User 05./06.10.2026).
+  // Kontakt in Ruhe, Kontaktpunkte exakt); Gelenk 6 bleibt in ±178°.
   if (scene === 'dome') {
-    const CUBE = 0.05, PR = 0.27, padAng = [-2.05, -0.6, 0.85], table = new THREE.Plane(new THREE.Vector3(0, 0, 1), 0);
-    const ringMesh = (r0, r1, op) => new THREE.Mesh(new THREE.RingGeometry(r0, r1, 48), new THREE.MeshBasicMaterial({ color: ACC, transparent: true, opacity: op, side: THREE.DoubleSide, depthWrite: false }));
+    const T = (de, en) => (document.documentElement.lang === 'en' ? en : de), mm = v => String(Math.round(v * 1000)).replace('-', '−');
+    const PR = 0.27, SINK = 0.008, BACK = 3, table = new THREE.Plane(new THREE.Vector3(0, 0, 1), 0);
     const rnd = (a, b) => a + Math.random() * (b - a);
-    const pads = padAng.map((a, k) => {
-      const g = new THREE.Group(), outer = ringMesh(0.031, 0.038, 0.4), inner = ringMesh(0.018, 0.022, 0.15), glow = new THREE.Mesh(new THREE.PlaneGeometry(0.16, 0.16), glowMat(0));
-      const wave = ringMesh(0.036, 0.039, 0);
-      g.position.set(PR * Math.cos(a), PR * Math.sin(a), 0.0025); glow.position.z = -0.0007;
-      g.add(outer, inner, glow, wave); st.scene.add(g);
-      return { a, g, outer, inner, glow, wave, on: false, t0: -9, next: 1.5 + k * 1.3 + rnd(0, 1.5) };
-    });
-    // Würfel als 3D-Rastergitter: Hauch Füllung, Raster n × n auf allen Flächen (Rückseiten scheinen durch), helle Kanten, Eckpunkte
-    const gridCube = (s, n) => {
-      const h = s / 2, v = [];
-      for (let ax = 0; ax < 3; ax++) for (const f of [-h, h]) for (let k = 1; k < n; k++) {
-        const c = -h + s * k / n, b = (ax + 1) % 3, d = (ax + 2) % 3;
-        for (const [u, w] of [[b, d], [d, b]]) { const p0 = [0, 0, 0], p1 = [0, 0, 0]; p0[ax] = p1[ax] = f; p0[u] = p1[u] = c; p0[w] = -h; p1[w] = h; v.push(...p0, ...p1); }
+    const KINDS = [
+      { id: 'cube', de: 'Würfel', en: 'cube', S: [0.05, 0.05, 0.05], sym: Math.PI / 2, color: 0x2f6fe8, glow: 0x9cc0ff },
+      { id: 'box', de: 'Quader', en: 'cuboid', S: [0.08, 0.04, 0.03], sym: Math.PI, color: 0xd9262e, glow: 0xff9a8a },
+      { id: 'cyl', de: 'Zylinder', en: 'cylinder', S: [0.048, 0.048, 0.05], sym: 0, color: 0x23a55a, glow: 0x9ef0b8 },
+    ];
+    const HOT = new THREE.Color(0xffb36b);
+    const segs = v => new THREE.BufferGeometry().setAttribute('position', new THREE.Float32BufferAttribute(v, 3));
+    // Umriss der Grundfläche (m = Rand nach außen), für Aussparung, Scan-Linie, Welle
+    const outline = (K, m, z = 0) => K.id === 'cyl'
+      ? [...Array(48)].map((_, i) => new THREE.Vector3((K.S[0] / 2 + m) * Math.cos(i / 48 * 2 * Math.PI), (K.S[0] / 2 + m) * Math.sin(i / 48 * 2 * Math.PI), z))
+      : [[-1, -1], [1, -1], [1, 1], [-1, 1]].map(([x, y]) => new THREE.Vector3(x * (K.S[0] / 2 + m), y * (K.S[1] / 2 + m), z));
+    const lineLoop = (pts, op) => new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(pts), lineMat(op));
+    // Raster auf allen Flächen (Rückseiten scheinen durch), Linienabstand ~12,5 mm
+    const gridBox = S => {
+      const v = [];
+      for (let ax = 0; ax < 3; ax++) for (const f of [-S[ax] / 2, S[ax] / 2]) {
+        const b = (ax + 1) % 3, d = (ax + 2) % 3;
+        for (const [u, w] of [[b, d], [d, b]]) {
+          const n = Math.max(2, Math.round(S[u] / 0.0125));
+          for (let k = 1; k < n; k++) { const p0 = [0, 0, 0], p1 = [0, 0, 0]; p0[ax] = p1[ax] = f; p0[u] = p1[u] = -S[u] / 2 + S[u] * k / n; p0[w] = -S[w] / 2; p1[w] = S[w] / 2; v.push(...p0, ...p1); }
+        }
       }
-      return new THREE.BufferGeometry().setAttribute('position', new THREE.Float32BufferAttribute(v, 3));
+      return segs(v);
     };
-    const box = new THREE.BoxGeometry(CUBE, CUBE, CUBE), cube = new THREE.Group(), ch = CUBE / 2;
-    const corners = new THREE.BufferGeometry().setAttribute('position', new THREE.Float32BufferAttribute(
-      [0, 1, 2, 3, 4, 5, 6, 7].flatMap(k => [k & 1 ? ch : -ch, k & 2 ? ch : -ch, k & 4 ? ch : -ch]), 3));
-    const cubeFill = new THREE.Mesh(box, new THREE.MeshBasicMaterial({ color: ACC, transparent: true, opacity: 0.1, depthWrite: false }));
-    const cubeGrid = new THREE.LineSegments(gridCube(CUBE, 4), lineMat(0.42));
-    cube.add(cubeFill, cubeGrid,
-      new THREE.LineSegments(new THREE.EdgesGeometry(box), lineMat(0.95, ACC2)),
-      new THREE.Points(corners, new THREE.PointsMaterial({ map: dot, color: ACC2, size: 0.016, transparent: true, opacity: 0.9, depthWrite: false, blending: THREE.AdditiveBlending })));
-    // Puls-Schein (Wunsch User 06.10.2026): Lichthof + Bodenschein atmen langsam (4 s, kleine Amplitude, nur Sinus –
-    // nicht an die zufälligen Feld-Blitze gekoppelt, sonst springt er); Lichthof nur so groß/hoch, dass ihn die Tischebene nicht abschneidet.
-    // Eigene Uhr in s (pt): onFrame liefert t in ms → mit t lief der Puls mit 4 ms Periode und flackerte.
-    // Mesh-Fade (Wunsch User 06.10.2026): alle 8 s blendet das Raster weich auf 45 % und zurück (1,8 s, sin², nie ganz weg);
-    // bei Hover, Ablauf oder im Arm klingt der Fade sanft aus statt zu springen.
-    const aura = sprite(0.1, 0.16), pool = new THREE.Mesh(new THREE.PlaneGeometry(0.2, 0.2), glowMat(0)), PULSE = 4;
-    const FADE_EVERY = 8, FADE_D = 1.8, FADE_MIN = 0.45;
-    let pt = 0, fadeAmp = 1;
-    const cornerMat = cube.children[3].material, edgeMat = cube.children[2].material;
-    // Materialisieren (Wunsch User 06.10.2026): abgelegt bekommt der Würfel ein rotes Material, in Zeitlupe (2,6 s): Scan-Ebene
-    // steigt von unten nach oben (darunter fest, darüber noch Raster), Farbe gleitet vom Akzent zu Rot, frisch Materialisiertes
-    // glüht warm und kühlt aus. Beim Greifen läuft es schneller (0,9 s) zurück ins Raster. Schnitt = Clipping-Ebenen im Würfelrahmen.
+    const gridCyl = (r, h) => {
+      const v = [], ring = (z, rr) => { for (let i = 0; i < 48; i++) { const a = i / 48 * 2 * Math.PI, b = (i + 1) / 48 * 2 * Math.PI; v.push(rr * Math.cos(a), rr * Math.sin(a), z, rr * Math.cos(b), rr * Math.sin(b), z); } };
+      for (let k = 1; k < 4; k++) ring(-h / 2 + h * k / 4, r);
+      for (const z of [-h / 2, h / 2]) ring(z, r / 2);
+      for (let i = 0; i < 12; i++) { const a = i / 12 * 2 * Math.PI, x = r * Math.cos(a), y = r * Math.sin(a); v.push(x, y, -h / 2, x, y, h / 2); }
+      return segs(v);
+    };
+    // Objekt: Hauch Füllung, Raster, helle Kanten, Eckpunkte; dazu festes Material (Materialisieren per Scan-Ebene, Clipping im Objektrahmen)
     st.renderer.localClippingEnabled = true;
-    const RED = new THREE.Color(0xd9262e), RED2 = new THREE.Color(0xff9a8a), HOT = new THREE.Color(0xffb36b);
-    const cutLo = new THREE.Plane(), cutHi = new THREE.Plane();
-    const solidMat = new THREE.MeshPhysicalMaterial({ color: RED, roughness: 0.36, metalness: 0.05, clearcoat: 0.6, clearcoatRoughness: 0.25,
-      emissive: HOT, emissiveIntensity: 0, clippingPlanes: [cutLo], clipShadows: true });
-    const solid = new THREE.Mesh(box, solidMat); solid.castShadow = true; solid.visible = false;
-    const scanLine = new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(
-      [[-1, -1], [1, -1], [1, 1], [-1, 1]].map(([x, y]) => new THREE.Vector3(x * ch * 1.04, y * ch * 1.04, 0))), lineMat(0));
-    const scanGlow = new THREE.Mesh(new THREE.PlaneGeometry(CUBE * 1.9, CUBE * 1.9), glowMat(0)); scanGlow.material.side = THREE.DoubleSide;
-    cube.add(solid, scanLine, scanGlow);
-    [cubeFill, cubeGrid, cube.children[3]].forEach(o => { o.material.clippingPlanes = [cutHi]; });
-    const mat = { v: 0, to: 0, D: 1 };   // v: 0 = Raster … 1 = rotes Material
-    const matTo = (to, D) => { mat.to = to; mat.D = D; if (reduce) mat.v = to; };
-    const up = new THREE.Vector3(), mid = new THREE.Vector3();
-    const applyMat = dt => {
-      const fwd = mat.to === 1;
-      if (mat.v !== mat.to) mat.v = fwd ? Math.min(1, mat.v + dt / mat.D) : Math.max(0, mat.v - dt / mat.D);
-      // Scan-Lage (Minimal-Ruck, im ersten ¾) und Farbanteil (ease-out) aus demselben Fortschritt → Rückweg spielt rückwärts
-      const v = mat.v, s = ease5(Math.min(1, v / 0.75)), k = 1 - (1 - v) ** 3, z = -ch * 1.02 + CUBE * 1.04 * s;
-      up.set(0, 0, 1).applyQuaternion(cube.quaternion); mid.copy(up).multiplyScalar(z * cube.scale.x).add(cube.position);
-      cutHi.setFromNormalAndCoplanarPoint(up, mid); cutLo.copy(cutHi).negate();
-      solid.visible = v > 0;
-      solidMat.color.copy(ACC).lerp(RED, k);
-      const heat = fwd ? 0.7 * (1 - v) ** 2 : 0;
-      solidMat.emissive.copy(RED).lerp(HOT, heat / 0.7);
-      solidMat.emissiveIntensity = heat + (hoverCube && !held ? 0.25 : 0);
-      const b = Math.sin(Math.PI * s);   // Scan-Licht nur unterwegs
-      scanLine.position.z = scanGlow.position.z = z;
-      scanLine.material.opacity = 0.95 * b; scanGlow.material.opacity = 0.35 * b;
-      scanLine.material.color.copy(ACC2).lerp(RED2, k); scanGlow.material.color.copy(ACC).lerp(RED, k);
-      edgeMat.color.copy(ACC2).lerp(RED2, k); edgeMat.opacity = 0.95 - 0.5 * k; cornerMat.color.copy(edgeMat.color);
-      aura.material.color.copy(ACC).lerp(RED, k); pool.material.color.copy(aura.material.color);
+    const makeObj = K => {
+      const [sx, sy, sz] = K.S, cyl = K.id === 'cyl';
+      const body = cyl ? new THREE.CylinderGeometry(sx / 2, sx / 2, sz, 40).rotateX(Math.PI / 2) : new THREE.BoxGeometry(sx, sy, sz);
+      const g = new THREE.Group(), col = new THREE.Color(K.color);
+      const fill = new THREE.Mesh(body, new THREE.MeshBasicMaterial({ color: ACC, transparent: true, opacity: 0.1, depthWrite: false }));
+      const grid = new THREE.LineSegments(cyl ? gridCyl(sx / 2, sz) : gridBox(K.S), lineMat(0.42));
+      const edge = new THREE.LineSegments(new THREE.EdgesGeometry(body, 30), lineMat(0.95, ACC2));
+      const cp = cyl ? [...Array(16)].flatMap((_, k) => { const a = (k % 8) / 8 * 2 * Math.PI; return [sx / 2 * Math.cos(a), sx / 2 * Math.sin(a), k < 8 ? -sz / 2 : sz / 2]; })
+        : [0, 1, 2, 3, 4, 5, 6, 7].flatMap(k => [(k & 1 ? 1 : -1) * sx / 2, (k & 2 ? 1 : -1) * sy / 2, (k & 4 ? 1 : -1) * sz / 2]);
+      const pts = new THREE.Points(segs(cp), new THREE.PointsMaterial({ map: dot, color: ACC2, size: 0.016, transparent: true, opacity: 0.9, depthWrite: false, blending: THREE.AdditiveBlending }));
+      const cutLo = new THREE.Plane(), cutHi = new THREE.Plane();
+      const solidMat = new THREE.MeshPhysicalMaterial({ color: col, roughness: 0.36, metalness: 0.05, clearcoat: 0.6, clearcoatRoughness: 0.25,
+        emissive: HOT, emissiveIntensity: 0, clippingPlanes: [cutLo], clipShadows: true });
+      const solid = new THREE.Mesh(body, solidMat); solid.castShadow = true; solid.visible = false;
+      const scanLine = lineLoop(outline(K, 0.001), 0);
+      const scanGlow = new THREE.Mesh(new THREE.PlaneGeometry(sx * 1.9, sy * 1.9), glowMat(0)); scanGlow.material.side = THREE.DoubleSide;
+      [fill, grid, pts].forEach(o => { o.material.clippingPlanes = [cutHi]; });
+      g.add(fill, grid, edge, pts, solid, scanLine, scanGlow);
+      const aura = sprite(0.1, 0.16), pool = new THREE.Mesh(new THREE.PlaneGeometry(0.2, 0.2), glowMat(0));
+      st.scene.add(g, aura, pool);
+      return { K, h: sz, g, fill, grid, edge, pts, solid, solidMat, scanLine, scanGlow, cutLo, cutHi, col, glow: new THREE.Color(K.glow), aura, pool,
+        slot: null, home: false, mat: { v: 0, to: 0, D: 1 }, hopT: -1, hopDir: 1, hopYaw: 0, swell: 0, popT: 1, sinkT: 1, yaw0: 0, yaw1: 0, shake: 0 };
     };
-    const flash = ringMesh(0.016, 0.03, 0);
-    st.scene.add(cube, flash, aura, pool);
-    let at = 0, held = false, hover = -1, hoverCube = false, pending = -1, flashT = 1, clicked = false, clk = 0, touch = false;
-    // Ruhe-Hüpfer (Wunsch User 06.10.2026, bewusst gegen soft-motion §5: Klick-Einladung): liegt der Würfel 5 s still, hebt er ab
-    // (24 mm, 1,3 s), dreht sich um 30° und kippt leicht (abwechselnd hin und zurück → bleibt am Feld ausgerichtet), schwillt dabei
-    // um 8 % an, Lichthof hellt auf; landet weich (sin^1.5: ohne Ruck, kein Überschwinger) mit Ring am Boden; danach alle 3 s wieder.
-    // Ablauf, Würfel im Arm oder Zeiger auf dem Würfel setzen die 5 s neu.
-    const HOP_H = 0.024, HOP_D = 1.3, HOP_ROT = Math.PI / 6, HOP_TILT = 0.12, HOP_SWELL = 0.08, HOP_FIRST = 5, HOP_EVERY = 3;
-    let rest = 0, hopWait = HOP_FIRST, hopT = -1, hopDir = 1, hopYaw = 0, swell = 0;
-    const onPad = i => { cube.position.set(pads[i].g.position.x, pads[i].g.position.y, CUBE / 2); };
-    onPad(at);
-    // Feld-Zustand + Klick-Hinweis (b = 0…1, Höhe des Aufleuchtens)
-    const paint = (p, b = 0) => {
-      p.outer.material.opacity = p.on ? 1 : 0.4 + 0.3 * b; p.inner.material.opacity = p.on ? 0.7 : 0.15 + 0.25 * b;
-      p.glow.material.opacity = p.on ? 0.75 : 0.22 * b;
+    // Aussparung: dunkle Grundfläche + Rand (innen schwächere Kante = Tiefe), Schein und Welle als Klick-Hinweis
+    const makeTpl = K => {
+      const g = new THREE.Group(), M = 0.006;
+      const hole = new THREE.Mesh(new THREE.ShapeGeometry(new THREE.Shape(outline(K, M).map(p => new THREE.Vector2(p.x, p.y))), 24),
+        new THREE.MeshBasicMaterial({ color: 0x05080a, transparent: true, opacity: 0.55, depthWrite: false }));
+      const rim = lineLoop(outline(K, M), 0.55), lip = lineLoop(outline(K, M - 0.004), 0.18), wave = lineLoop(outline(K, M + 0.002), 0);
+      const glow = new THREE.Mesh(new THREE.PlaneGeometry(0.17, 0.17), glowMat(0)); glow.position.z = -0.0007;
+      g.add(hole, glow, rim, lip, wave); st.scene.add(g);
+      return { K, g, rim, lip, glow, wave, col: new THREE.Color(K.color), slot: null, on: false, full: false, t0: -9, next: 2 + rnd(0, 3) };
     };
-    const show = () => {
-      const hi = job && job.to >= 0 ? job.to : hover;   // im Arm ist auch das eigene Feld ein Ziel
-      pads.forEach((p, i) => { p.on = i === hi && (i !== at || held); paint(p); });
-      cubeGrid.material.opacity = hoverCube && !held ? 0.75 : 0.42; cubeFill.material.opacity = hoverCube && !held ? 0.18 : 0.1;
-      host.style.cursor = hoverCube || (hover >= 0 && (hover !== at || held)) ? 'pointer' : '';
-      applyMat(0); st.kick();
+    const OBJ = KINDS.map(makeObj), TPL = KINDS.map(makeTpl);
+    const flash = new THREE.Mesh(new THREE.RingGeometry(0.016, 0.03, 48), new THREE.MeshBasicMaterial({ color: ACC, transparent: true, opacity: 0, side: THREE.DoubleSide, depthWrite: false }));
+    st.scene.add(flash);
+    let cur = null, held = false, hover = -1, hoverObj = null, flashT = 1, clicked = false, clk = 0, touch = false, rounds = 0, mute = false, newRoundAt = 0;
+    const slotXY = s => [s.r * Math.cos(s.a), s.r * Math.sin(s.a)];
+    const xy = s => { const [x, y] = slotXY(s); return `x ${mm(x)} · y ${mm(y)} mm`; };
+    const ring = (x, y, z) => { flashT = 0; flash.position.set(x, y, z); };
+    // Zufallslage: 6 Plätze im Greifbereich (Winkel −140° … +72°, vor und neben dem Arm; Radius 210–320 mm; ≥ 115 mm Abstand)
+    const layout = () => {
+      const s = [], dist = (p, q) => { const [a, b] = slotXY(p), [c, d] = slotXY(q); return Math.hypot(a - c, b - d); };
+      for (let n = 0; n < 3000 && s.length < 6; n++) { const c = { a: rnd(-2.45, 1.25), r: rnd(0.21, 0.32) }; if (s.every(o => dist(o, c) > 0.115)) s.push(c); }
+      if (s.length < 6) s.splice(0, 6, ...[[-2.2, 0.24], [-0.9, 0.24], [0.4, 0.24], [-1.55, 0.3], [-0.25, 0.3], [1.05, 0.3]].map(([a, r]) => ({ a, r })));
+      return { objs: s.slice(0, 3), tpls: s.slice(3).map(c => ({ ...c, yaw: rnd(-0.6, 0.6) })), home: [false, false, false] };
     };
-    const pickRay = e => {
-      const r = host.getBoundingClientRect();
-      ndc.set((e.clientX - r.left) / r.width * 2 - 1, 1 - (e.clientY - r.top) / r.height * 2);
-      ray.setFromCamera(ndc, st.camera);
+    const putAt = (o, s) => { o.slot = s; const [x, y] = slotXY(s); o.g.position.set(x, y, o.h / 2 - (o.home ? SINK : 0)); };
+    // Speichern: Lage, Stand, Runden, Klang (privates Fenster/gesperrt → Spiel läuft ohne Merken)
+    const STORE = 'hero3d.missions.v1';
+    const save = () => { try { localStorage.setItem(STORE, JSON.stringify({ rounds, mute, objs: OBJ.map(o => ({ a: o.slot.a, r: o.slot.r })), tpls: TPL.map(t => t.slot), home: OBJ.map(o => o.home) })); } catch (e) { /* ohne Merken */ } };
+    const saved = (() => { try { return JSON.parse(localStorage.getItem(STORE)) || {}; } catch (e) { return {}; } })();
+    rounds = Number.isInteger(saved.rounds) && saved.rounds > 0 ? saved.rounds : 0; mute = saved.mute === true;
+
+    // Klänge (Wunsch User 06.10.2026: dezent, an sinnvoller Stelle): kurze Sinus-/Dreieckstöne mit weicher Hüllkurve, nur nach
+    // eigenem Klick (Greifen, Ablegen, zu Hause, falsche Form, Runde geschafft, Sprechblase); nie im Leerlauf
+    const sfx = (() => {
+      let ac = null, out = null;
+      const tone = (f, t0, d, vol = 0.05, type = 'sine', f1 = f) => {
+        const o = ac.createOscillator(), g = ac.createGain(), t = ac.currentTime + t0;
+        o.type = type; o.frequency.setValueAtTime(f, t); if (f1 !== f) o.frequency.exponentialRampToValueAtTime(f1, t + d);
+        g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + 0.012); g.gain.exponentialRampToValueAtTime(0.0001, t + d);
+        o.connect(g).connect(out); o.start(t); o.stop(t + d + 0.05);
+      };
+      const SND = {
+        grip: () => tone(330, 0, 0.11, 0.06, 'triangle', 170),                                   // Sauger an: weiches „Plopp“ abwärts
+        release: () => tone(190, 0, 0.12, 0.045, 'triangle', 360),                               // Sauger aus: kurz aufwärts
+        pop: () => tone(900, 0, 0.07, 0.03, 'sine', 1350),                                       // Sprechblase
+        home: () => [523.25, 659.25, 783.99].forEach((f, k) => tone(f, k * 0.09, 0.55, 0.04)), // C-Dur aufwärts
+        nope: () => { tone(233, 0, 0.13, 0.05, 'triangle', 207); tone(196, 0.13, 0.2, 0.05, 'triangle', 175); },
+        win: () => [523.25, 659.25, 783.99, 1046.5].forEach((f, k) => tone(f, 0.55 + k * 0.12, 0.9, 0.035)),
+      };
+      const play = name => { if (mute || !ac || ac.state !== 'running') return; try { SND[name](); } catch (e) { /* ohne Ton weiter */ } };
+      // Erst in einer Nutzergeste anlegen/fortsetzen (Autoplay-Regel der Browser)
+      play.unlock = () => {
+        try {
+          if (!ac) { const C = window.AudioContext || window.webkitAudioContext; if (!C) return; ac = new C(); out = ac.createGain(); out.gain.value = 0.8; out.connect(ac.destination); }
+          if (ac.state === 'suspended') ac.resume();
+        } catch (e) { ac = null; }
+      };
+      return play;
+    })();
+    // Sprechblase am Objekt (HTML über der Bühne, folgt der Lage auf dem Bildschirm); eine zur Zeit
+    const say = (() => {
+      const el = document.createElement('div'); el.className = 'h3d-say'; el.setAttribute('aria-hidden', 'true'); host.appendChild(el);
+      const v = new THREE.Vector3();
+      let o = null, until = 0;
+      const place = () => {
+        v.copy(o.g.position); v.z += o.h * 0.6 + 0.02; v.project(st.camera);
+        el.style.left = `${(v.x + 1) / 2 * host.clientWidth}px`; el.style.top = `${(1 - v.y) / 2 * host.clientHeight}px`;
+      };
+      return {
+        show(obj, text, ms = 2600, quiet = false) {
+          o = obj; el.textContent = text; place(); el.classList.remove('in'); void el.offsetWidth; el.classList.add('in');
+          until = performance.now() + ms; if (!quiet) sfx('pop');
+        },
+        hide() { el.classList.remove('in'); until = 0; },
+        tick() { if (!o) return; place(); if (until && performance.now() > until) { el.classList.remove('in'); until = 0; } },
+      };
+    })();
+    // Missionsliste oben links mit Abzeichen-Zeile; Klang-Knopf (einziges Bedienelement, 32 px)
+    const quest = (() => {
+      const box = document.createElement('div'); box.className = 'h3d-quest';
+      box.innerHTML = '<div class="h3d-q-head"><b></b><span></span><button type="button" class="h3d-q-snd"><svg viewBox="0 0 24 24" aria-hidden="true">' +
+        '<path d="M4 9.5h3.5L12 6v12l-4.5-3.5H4z"/><path class="w" d="M15.5 9.5a3.5 3.5 0 0 1 0 5M18 7a7 7 0 0 1 0 10"/><path class="x" d="M16 9.5l5 5M21 9.5l-5 5"/></svg></button></div>' +
+        '<ul></ul><div class="h3d-q-bar"><i></i></div><p></p>';
+      const badge = document.createElement('div'); badge.className = 'h3d-badge'; badge.setAttribute('role', 'status');
+      box.append(badge); host.append(box);   // Abzeichen als Zeile in der Liste: überdeckt nie die Bühne
+      const [title, count, btn] = box.querySelector('.h3d-q-head').children, list = box.querySelector('ul'), bar = box.querySelector('.h3d-q-bar i'), foot = box.querySelector('p');
+      let badgeT = 0;
+      const render = () => {
+        const n = OBJ.filter(o => o.home).length;
+        title.textContent = T('Missionen', 'Missions'); count.textContent = `${n} / 3`;
+        list.replaceChildren(...OBJ.map(o => {
+          const li = document.createElement('li'), i = document.createElement('i'), s = document.createElement('span');
+          li.className = o.home ? 'ok' : ''; li.style.setProperty('--c', `#${o.K.color.toString(16).padStart(6, '0')}`);
+          i.textContent = o.home ? '✓' : ''; s.textContent = T(`${o.K.de} nach Hause bringen`, `Bring the ${o.K.en} home`);
+          li.append(i, s); return li;
+        }));
+        bar.style.width = `${n / 3 * 100}%`;
+        foot.textContent = T(`Runden geschafft: ${rounds}`, `Rounds completed: ${rounds}`); foot.hidden = !rounds;
+        box.classList.toggle('muted', mute);
+        btn.setAttribute('aria-pressed', String(!mute)); btn.setAttribute('aria-label', T('Klänge', 'Sounds'));
+        btn.title = mute ? T('Klänge einschalten', 'Turn sounds on') : T('Klänge ausschalten', 'Turn sounds off');
+      };
+      btn.addEventListener('click', () => { mute = !mute; render(); save(); if (!mute) { sfx.unlock(); sfx('pop'); } });
+      new MutationObserver(render).observe(document.documentElement, { attributes: true, attributeFilter: ['lang'] });
+      return {
+        render,
+        badge() {
+          badge.innerHTML = '<svg class="ico" aria-hidden="true"><use href="#i-star"/></svg><span></span>';
+          badge.lastChild.textContent = T(`Pick-&-Place-Profi · Runde ${rounds} geschafft!`, `Pick & place pro · round ${rounds} done!`);
+          badge.classList.add('in'); clearTimeout(badgeT); badgeT = setTimeout(() => badge.classList.remove('in'), 5200);
+        },
+      };
+    })();
+    // Neue Runde: Formen + Objekte an ihre Plätze, Objekte ploppen gestaffelt auf (0,6 s, ease-out)
+    const newRound = Lx => {
+      newRoundAt = 0; say.hide();
+      Lx.tpls.forEach((s, k) => { const t = TPL[k]; t.slot = s; const [x, y] = slotXY(s); t.g.position.set(x, y, 0.0025); t.g.rotation.z = s.yaw; t.full = false; });
+      OBJ.forEach((o, k) => {
+        o.home = !!Lx.home[k]; TPL[k].full = o.home; o.hopT = -1; o.swell = 0; o.sinkT = 1;
+        o.g.rotation.set(0, 0, o.home ? TPL[k].slot.yaw : rnd(-0.5, 0.5)); putAt(o, o.home ? TPL[k].slot : Lx.objs[k]);
+        o.mat.v = o.mat.to = o.home ? 1 : 0; o.popT = reduce ? 1 : -0.15 * k;
+      });
+      quest.render(); save(); show();
     };
-    const padAt = (e, tol) => {
-      pickRay(e);
-      if (!ray.ray.intersectPlane(table, hit)) return -1;
-      let best = -1, bd = tol;
-      pads.forEach((p, i) => { const d = Math.hypot(hit.x - p.g.position.x, hit.y - p.g.position.y); if (d < bd) { bd = d; best = i; } });
-      return best;
-    };
-    // Würfel getroffen: Strahl trifft den Würfel oder sein Feld (großes Ziel auch für Finger); im Arm nicht wählbar
-    const cubeAt = (e, tol) => !held && (padAt(e, tol) === at || ray.intersectObject(cubeFill).length > 0);
     // Status-Popups: Schritte blenden nacheinander ein (≥ 340 ms Abstand), laufender Schritt mit Puls, erledigte mit ✓;
     // „Fertig“ bleibt kurz stehen, dann blenden alle gestaffelt aus. Ergänzt die Bewegung → für Screenreader verborgen.
     const feed = (() => {
@@ -628,9 +704,6 @@ function build(L, wrap, host, o) {
         reset() { timers.forEach(clearTimeout); timers.clear(); due = performance.now() + 180; out(false); },
       };
     })();
-    const T = (de, en) => (document.documentElement.lang === 'en' ? en : de), mm = v => String(Math.round(v * 1000)).replace('-', '−');
-    const xy = p => `x ${mm(p.x)} · y ${mm(p.y)} mm`;
-    const blink = () => { flashT = 0; flash.position.set(cube.position.x, cube.position.y, cube.position.z + CUBE / 2 + 0.002); };
     const tcpQ = new THREE.Quaternion(), rel = new THREE.Quaternion(), relP = new THREE.Vector3(), tcpW = new THREE.Vector3();
     // Lage = [Winkel Gelenk 1, Radius, Höhe TCP, Werkzeugdrehung, Neigung]; Gewichte machen daraus grob Meter (Bahnlänge)
     const KEY = ['th', 'r', 'z', 'yaw', 'tilt'], VEL = ['vth', 'vr', 'vz', 'vyaw', 'vtilt'], W8 = [PR, 1, 1, 0.05, 0.12];   // W8[0] nur für Richtungen (Starttempo)
@@ -682,14 +755,96 @@ function build(L, wrap, host, o) {
       for (let k = -4; k <= 4; k++) { const c = Math.round(y / (Math.PI / 2)) * Math.PI / 2 + k * Math.PI / 2; if (Math.abs(th - c) < 2.7 && Math.abs(c - y) < bd) { bd = Math.abs(c - y); best = c; } }
       return best;
     };
-    const grip = () => {
-      if (hopT >= 0) { hopT = -1; swell = 0; cube.position.z = ch; cube.rotation.x = 0; }   // greift mitten im Ruhe-Hüpfer: erst landen
-      held = true; blink(); matTo(0, 0.9);
-      // Würfel hängt fest am Sauger: Lage + Versatz im Werkzeugrahmen merken (bleibt bei geneigtem Werkzeug dran)
-      robot.tcp.getWorldQuaternion(tcpQ); rel.copy(tcpQ).invert().multiply(cube.quaternion);
-      robot.tcp.getWorldPosition(tcpW); relP.subVectors(cube.position, tcpW).applyQuaternion(tcpQ.clone().invert());
+    // Materialisieren (Wunsch User 06.10.2026): zu Hause bekommt das Objekt sein Material in Zeitlupe (2,6 s): Scan-Ebene steigt
+    // von unten nach oben (darunter fest, darüber noch Raster), Farbe gleitet vom Akzent zur Objektfarbe, frisch Materialisiertes
+    // glüht warm und kühlt aus. Schnitt = Clipping-Ebenen im Objektrahmen.
+    const up = new THREE.Vector3(), mid = new THREE.Vector3();
+    const applyMat = (o, dt) => {
+      const m = o.mat, fwd = m.to === 1;
+      if (m.v !== m.to) m.v = fwd ? Math.min(1, m.v + dt / m.D) : Math.max(0, m.v - dt / m.D);
+      // Scan-Lage (Minimal-Ruck, im ersten ¾) und Farbanteil (ease-out) aus demselben Fortschritt → Rückweg spielt rückwärts
+      const v = m.v, s = ease5(Math.min(1, v / 0.75)), k = 1 - (1 - v) ** 3, z = -o.h / 2 * 1.02 + o.h * 1.04 * s;
+      up.set(0, 0, 1).applyQuaternion(o.g.quaternion); mid.copy(up).multiplyScalar(z * o.g.scale.x).add(o.g.position);
+      o.cutHi.setFromNormalAndCoplanarPoint(up, mid); o.cutLo.copy(o.cutHi).negate();
+      o.solid.visible = v > 0;
+      o.solidMat.color.copy(ACC).lerp(o.col, k);
+      const heat = fwd ? 0.7 * (1 - v) ** 2 : 0;
+      o.solidMat.emissive.copy(o.col).lerp(HOT, heat / 0.7);
+      o.solidMat.emissiveIntensity = heat;
+      const b = Math.sin(Math.PI * s);   // Scan-Licht nur unterwegs
+      o.scanLine.position.z = o.scanGlow.position.z = z;
+      o.scanLine.material.opacity = 0.95 * b; o.scanGlow.material.opacity = 0.35 * b;
+      o.scanLine.material.color.copy(ACC2).lerp(o.glow, k); o.scanGlow.material.color.copy(ACC).lerp(o.col, k);
+      o.edge.material.color.copy(ACC2).lerp(o.glow, k); o.edge.material.opacity = 0.95 - 0.5 * k; o.pts.material.color.copy(o.edge.material.color);
+      o.aura.material.color.copy(ACC).lerp(o.col, k); o.pool.material.color.copy(o.aura.material.color);
     };
-    const drop = () => { held = false; at = job.to; onPad(at); cube.rotation.set(0, 0, cube.rotation.z); blink(); matTo(1, 2.6); };
+    // Form-Zustand + Klick-Hinweis (b = 0…1, Höhe des Aufleuchtens); belegte Form: Rand in Objektfarbe
+    const paintT = (t, b = 0) => {
+      t.rim.material.color.copy(t.full ? t.col : ACC);
+      t.rim.material.opacity = t.full ? 0.5 : t.on ? 1 : 0.55 + 0.35 * b; t.lip.material.opacity = t.full ? 0.1 : t.on ? 0.5 : 0.18 + 0.2 * b;
+      t.glow.material.opacity = t.full ? 0 : t.on ? 0.75 : 0.22 * b;
+    };
+    const show = () => {
+      const hi = job && job.to >= 0 && job.to !== BACK ? job.to : hover;
+      TPL.forEach((t, k) => { t.on = !t.full && k === hi; paintT(t); });
+      OBJ.forEach(o => { if (o === hoverObj) { o.grid.material.opacity = 0.75; o.fill.material.opacity = 0.18; } applyMat(o, 0); });
+      host.style.cursor = hoverObj || hover >= 0 ? 'pointer' : '';
+      st.kick();
+    };
+    const pickRay = e => {
+      const r = host.getBoundingClientRect();
+      ndc.set((e.clientX - r.left) / r.width * 2 - 1, 1 - (e.clientY - r.top) / r.height * 2);
+      ray.setFromCamera(ndc, st.camera);
+    };
+    // Objekt unter dem Zeiger: Strahl trifft den Körper oder den Boden nahe am Objekt (großes Ziel auch für Finger);
+    // zu Hause, im Arm oder während eines Ablaufs nicht wählbar
+    const objAt = (e, tol) => {
+      if (job) return null;
+      const free = OBJ.filter(o => !o.home && o.popT >= 0.6);
+      pickRay(e);
+      const h = ray.intersectObjects(free.map(o => o.fill))[0];
+      if (h) return free.find(o => o.fill === h.object);
+      if (!ray.ray.intersectPlane(table, hit)) return null;
+      let best = null, bd = tol;
+      free.forEach(o => { const d = Math.hypot(hit.x - o.g.position.x, hit.y - o.g.position.y); if (d < bd) { bd = d; best = o; } });
+      return best;
+    };
+    // Ziel unter dem Zeiger: freie Form (Index) oder Startplatz des gewählten Objekts (BACK)
+    const tplAt = (e, tol) => {
+      pickRay(e);
+      if (!ray.ray.intersectPlane(table, hit)) return -1;
+      let best = -1, bd = tol;
+      TPL.forEach((t, k) => { if (t.full) return; const d = Math.hypot(hit.x - t.g.position.x, hit.y - t.g.position.y); if (d < bd) { bd = d; best = k; } });
+      if (cur) { const [x, y] = slotXY(cur.slot); if (Math.hypot(hit.x - x, hit.y - y) < bd) best = BACK; }
+      return best;
+    };
+    const grip = () => {
+      const o = cur;
+      if (o.hopT >= 0) { o.hopT = -1; o.swell = 0; o.g.position.z = o.h / 2; o.g.rotation.x = 0; }   // greift mitten im Hüpfer: erst landen
+      held = true; ring(o.g.position.x, o.g.position.y, o.g.position.z + o.h / 2 + 0.002); sfx('grip');
+      // Objekt hängt fest am Sauger: Lage + Versatz im Werkzeugrahmen merken (bleibt bei geneigtem Werkzeug dran)
+      robot.tcp.getWorldQuaternion(tcpQ); rel.copy(tcpQ).invert().multiply(o.g.quaternion);
+      robot.tcp.getWorldPosition(tcpW); relP.subVectors(o.g.position, tcpW).applyQuaternion(tcpQ.clone().invert());
+    };
+    // Drehlage in der Form: nächste Lage, die zur Form passt (Würfel 90°, Quader 180°, Zylinder beliebig)
+    const alignYaw = (y, target, sym) => sym ? target + Math.round((y - target) / sym) * sym : y;
+    const drop = () => {
+      const o = cur, to = job.to; held = false;
+      o.g.rotation.set(0, 0, o.g.rotation.z); sfx('release');
+      if (to === BACK) { putAt(o, o.slot); return; }
+      const t = TPL[to]; t.full = true; putAt(o, t.slot); o.home = true; o.g.position.z = o.h / 2;   // sinkt erst beim Einrutschen
+      o.yaw0 = o.g.rotation.z; o.yaw1 = alignYaw(o.yaw0, t.slot.yaw, o.K.sym); o.sinkT = 0;
+      o.mat.to = 1; o.mat.D = 2.6;
+    };
+    // Zu Hause angekommen (nach dem Einrutschen): Dank, Klang, Mission abhaken; alle drei → Abzeichen, neue Runde
+    const arrived = o => {
+      say.show(o, T('Ahh, endlich Zuhause, danke!', 'Ahh, home at last, thank you!'), 3000, true); sfx('home');
+      if (OBJ.every(x => x.home)) { rounds++; quest.badge(); sfx('win'); newRoundAt = clk + 6.5; }
+      quest.render(); save(); show();
+    };
+    const nope = () => {
+      say.show(cur, T('Da pass ich nicht rein!', "I don't fit in there!"), 2200, true); sfx('nope'); cur.shake = 1;
+    };
     let busy = 0, lean = 0, vlean = 0;
     // Ablauf = Liste: { pts, v } Bahn · { act, dwell } Greifen/Lösen mit Verweilzeit · { hold } schweben bis Ziel gewählt ·
     // { lazy } wird erst beim Erreichen zu Schritten (Lage dann bekannt); say = Status-Popup beim Start des Schritts
@@ -704,21 +859,21 @@ function build(L, wrap, host, o) {
         if (op.act) op.act();
         if (op.hold && job.to < 0) {
           job.hold = true; lean = vlean = 0;
-          feed.say(T('Ablageort wählen', 'Choose a drop spot'), touch ? T('einen der 3 Kreise antippen', 'tap one of the 3 circles') : T('einen der 3 Kreise anklicken', 'click one of the 3 circles'));
-          pads.forEach((p, k) => { p.next = clk + 0.3 + k * 0.25; });
+          feed.say(T('Form wählen', 'Choose a shape'), touch ? T('passende Form antippen', 'tap the matching shape') : T('passende Form anklicken', 'click the matching shape'));
+          TPL.forEach((p, k) => { p.next = clk + 0.3 + k * 0.25; });
           show();
         }
       };
       job = { to, hold: false, tick: dt => {
         t += dt; if (!job.hold) busy += dt;
-        if (op.hold && job.to < 0 && t > 25) { job.to = at; show(); }   // niemand wählt → zurücklegen
+        if (op.hold && job.to < 0 && t > 25) { job.to = BACK; show(); }   // niemand wählt → zurücklegen
         if (op.hold && job.to >= 0) { job.hold = false; ops.push(...place(job.to, false)); next(); t = dt; }   // gleich im selben Frame los
         if (path) { setPose(path.at(t), dt); if (t >= path.D) next(); return; }
         if (op.hold) {
-          // Schweben: leichtes Wiegen + Würfel pendelt um die Hochachse; Arm neigt sich zum Feld unter dem Zeiger
+          // Schweben: leichtes Wiegen + Objekt pendelt um die Hochachse; Arm neigt sich zum Ziel unter dem Zeiger
           const H = op.hold, e = Math.min(1, t / 1.5), env = e * e * (3 - 2 * e);
-          const g = hover >= 0 ? Math.max(-0.3, Math.min(0.3, 0.2 * (padAng[hover] - H[0]))) : 0;
-          [lean, vlean] = spring(lean, vlean, g, 3, dt);
+          const ha = hover === BACK ? cur.slot.a : hover >= 0 ? TPL[hover].slot.a : H[0];
+          [lean, vlean] = spring(lean, vlean, Math.max(-0.3, Math.min(0.3, 0.2 * (ha - H[0]))), 3, dt);
           setPose(P(H[0] + lean + env * 0.05 * Math.sin(0.9 * t), H[1] + env * 0.012 * Math.sin(0.7 * t + 1),
             H[2] + env * 0.01 * Math.sin(1.3 * t), H[3] + env * 0.2 * Math.sin(0.6 * t)), dt);
           return;
@@ -727,127 +882,165 @@ function build(L, wrap, host, o) {
         if (t >= (op.dwell || 0)) next();
       } };
       const finish = () => {
-        job = null; pol.gyaw = 0;
+        job = null; cur = null; pol.gyaw = 0;
         const sec = busy.toFixed(1);
         feed.say(T('Fertig', 'Done'), `${T(sec.replace('.', ','), sec)} s`, true);
         if (follow) setGoalXY(ptr.x, ptr.y); else { ph = nearestPhase(); idleRamp = 0; }
         show();
-        if (pending >= 0) { const n = pending; pending = -1; start(n); }
       };
       next(); show();
     };
-    // Ablegen auf Feld B, ab Halteposition oder (low) direkt vom Greifen: senkrecht lösen, Bogen nach vorn gestreckt,
-    // über dem Ziel eingezogen, senkrecht absetzen; danach senkrecht abheben, Werkzeug dreht zurück
+    // Ablegen in Form B (oder zurück auf den Startplatz), ab Halteposition oder (low) direkt vom Greifen: senkrecht lösen,
+    // Bogen nach vorn gestreckt (≤ 370 mm), über dem Ziel eingezogen, senkrecht absetzen; danach senkrecht abheben, Werkzeug dreht zurück
     const place = (to, low) => {
-      const A = padAng[at], B = padAng[to], y0 = pol.yaw, yB = yawFor(B, y0), m = k => A + (B - A) * k, y = k => y0 + (yB - y0) * k;
-      const pts = low ? [P(A, PR, CUBE + 0.035, y0)] : [];
-      if (to === at) pts.push(P(A, 0.25, 0.19, yB));
-      else pts.push(P(m(0.2), 0.3, 0.31, y(0.2), 0.35), P(m(0.55), 0.37, 0.29, y(0.55), 0.7), P(m(0.85), 0.29, 0.2, y(0.85), 0.25));
-      pts.push(P(B, PR, 0.11, yB), P(B, PR, 0.08, yB), P(B, PR, CUBE, yB));
+      const o = cur, A = o.slot.a, R = o.slot.r, H = o.h, S = to === BACK ? o.slot : TPL[to].slot, B = S.a, RB = S.r;
+      const y0 = pol.yaw, yB = yawFor(B, y0), m = k => A + (B - A) * k, y = k => y0 + (yB - y0) * k;
+      const rr = (k, b) => Math.min(0.37, R + (RB - R) * k + b);
+      const pts = low ? [P(A, R, H + 0.035, y0)] : [];
+      if (to === BACK) pts.push(P(A, 0.25, 0.19, yB));
+      else pts.push(P(m(0.2), rr(0.2, 0.03), 0.31, y(0.2), 0.35), P(m(0.55), rr(0.55, 0.1), 0.29, y(0.55), 0.7), P(m(0.85), rr(0.85, 0.02), 0.2, y(0.85), 0.25));
+      pts.push(P(B, RB, H + 0.06, yB), P(B, RB, H + 0.03, yB), P(B, RB, H, yB));
       const deg = Math.round(Math.abs(B - A) * 180 / Math.PI);
       return [
-        { pts, v: 0.38, say: to === at ? [T('Zurücklegen', 'Put back'), xy(pads[to].g.position)] : [T('Transport', 'Transfer'), `${T('Schwenk', 'swing')} ${deg}°`] },
+        { pts, v: 0.38, say: to === BACK ? [T('Zurücklegen', 'Put back'), xy(S)] : [T('Transport', 'Transfer'), `${T('Schwenk', 'swing')} ${deg}°`] },
         { act: drop, dwell: 0.25, say: [T('Ablegen', 'Place'), T('Sauger aus', 'suction off')] },
-        { pts: [P(B, PR, CUBE + 0.03, yB), P(B, 0.25, 0.14)], v: 0.22 },
+        { pts: [P(B, RB, H + 0.03, yB), P(B, 0.25, 0.14)], v: 0.22 },
       ];
     };
-    // Greifen am eigenen Feld: anfahren, die letzten 30 mm senkrecht absetzen, Sauger an; Ziel schon bekannt → direkt
+    // Greifen am Startplatz: anfahren, die letzten 30 mm senkrecht absetzen, Sauger an; Ziel schon bekannt → direkt
     // ablegen, sonst drehend hoch heben und warten. Drehsinn so, dass Gelenk 6 in ±178° bleibt.
     const pick = to => {
-      const A = padAng[at], d = A > 0 ? Math.PI / 2 : -Math.PI / 2;
+      const o = cur, A = o.slot.a, R = o.slot.r, H = o.h, d = A > 0 ? Math.PI / 2 : -Math.PI / 2;
       feed.reset(); busy = 0;
       go([
-        { pts: [P(A, PR, 0.11), P(A, PR, 0.08), P(A, PR, CUBE)], v: 0.36, say: [T('Anfahren', 'Approach'), xy(pads[at].g.position)] },
+        { pts: [P(A, R, H + 0.06), P(A, R, H + 0.03), P(A, R, H)], v: 0.36, say: [T('Anfahren', 'Approach'), xy(o.slot)] },
         { act: grip, dwell: 0.25, say: [T('Greifen', 'Grip'), T('Sauger an', 'suction on')] },
         { lazy: () => job.to >= 0 ? place(job.to, true) : [
-          { pts: [P(A, PR, CUBE + 0.035), P(A, 0.25, 0.18, d * 0.45), P(A, 0.23, 0.3, d)], v: 0.25,
+          { pts: [P(A, R, H + 0.035), P(A, 0.25, 0.18, d * 0.45), P(A, 0.23, 0.3, d)], v: 0.25,
             say: [T('Anheben + drehen', 'Lift + rotate'), `z 300 mm · ${T('Gelenk', 'joint')} 6 ${d > 0 ? '+' : '−'}90°`] },
           { hold: P(A, 0.23, 0.3, d) }] },
       ], to);
     };
-    // Feld gewählt: im Arm → dort ablegen; Würfel liegt → greifen und umsetzen; Arm beschäftigt → danach
-    const start = to => {
-      if (reduce) { if (to !== at) { at = to; onPad(at); matTo(1); show(); feed.reset(); feed.say(T('Abgelegt', 'Placed'), xy(cube.position), true); } return; }
-      if (job) { if (job.to < 0) { job.to = to; show(); } else if (to !== job.to) pending = to; return; }
-      if (to !== at) pick(to);
+    // Objekt gewählt → greifen (reduzierte Bewegung: nur markieren)
+    const grab = o => {
+      if (job) return;
+      cur = o; say.hide();
+      if (reduce) { feed.reset(); feed.say(T('Form wählen', 'Choose a shape'), T('passende Form wählen', 'pick the matching shape'), true); show(); return; }
+      pick(-1);
     };
-    const grab = () => {
-      if (reduce) { feed.reset(); feed.say(T('Ablageort wählen', 'Choose a drop spot'), T('Kreis wählen', 'pick a circle'), true); return; }
-      if (!job) pick(-1);
+    // Ziel gewählt: passende Form → ablegen; falsche → ablehnen; Startplatz → zurücklegen; ohne Objekt → Hinweis
+    const target = k => {
+      if (!cur) { feed.reset(); feed.say(T('Erst ein Objekt anheben', 'Lift an object first'), touch ? T('Objekt antippen', 'tap an object') : T('Objekt anklicken', 'click an object'), true); return; }
+      if (job && job.to >= 0) return;   // Ziel steht schon fest
+      if (k !== BACK && TPL[k].K !== cur.K) { nope(); return; }
+      if (reduce) {
+        const o = cur; cur = null;
+        if (k !== BACK) { o.home = true; TPL[k].full = true; o.g.rotation.set(0, 0, TPL[k].slot.yaw); putAt(o, TPL[k].slot); o.mat.v = o.mat.to = 1; arrived(o); }
+        show(); return;
+      }
+      if (job && job.to < 0) { job.to = k; show(); }
     };
     let down = null;
     host.addEventListener('pointermove', e => {
       if (e.pointerType !== 'mouse' || e.buttons) return;
-      const c = cubeAt(e, 0.07), i = c ? -1 : padAt(e, 0.07);
-      if (i !== hover || c !== hoverCube) { hover = i; hoverCube = c; show(); }
+      const o = objAt(e, 0.06), k = o || !cur ? -1 : tplAt(e, 0.07);
+      if (o !== hoverObj || k !== hover) { hoverObj = o; hover = k; show(); }
     });
-    host.addEventListener('pointerleave', () => { if (hover >= 0 || hoverCube) { hover = -1; hoverCube = false; show(); } });
+    host.addEventListener('pointerleave', () => { if (hover >= 0 || hoverObj) { hover = -1; hoverObj = null; show(); } });
     host.addEventListener('pointerdown', e => { down = { x: e.clientX, y: e.clientY, t: performance.now() }; });
-    // Tippen/Klick = kurz und ohne Ziehen (Ziehen dreht weiter die Kamera)
+    // Tippen/Klick = kurz und ohne Ziehen (Ziehen dreht weiter die Kamera); Klang-Knopf hat eigenen Klick
     host.addEventListener('pointerup', e => {
-      if (!down || Math.hypot(e.clientX - down.x, e.clientY - down.y) > 6 || performance.now() - down.t > 600) return;
-      const tol = e.pointerType === 'mouse' ? 0.07 : 0.09;
-      touch = e.pointerType !== 'mouse';
-      if (cubeAt(e, tol)) { clicked = true; grab(); return; }
-      const i = padAt(e, tol); if (i >= 0) { clicked = true; start(i); }
+      if (e.target.closest('button') || !down || Math.hypot(e.clientX - down.x, e.clientY - down.y) > 6 || performance.now() - down.t > 600) return;
+      const tol = e.pointerType === 'mouse' ? 0.06 : 0.08;
+      touch = e.pointerType !== 'mouse'; sfx.unlock();
+      const o = objAt(e, tol); if (o) { clicked = true; grab(o); return; }
+      const k = tplAt(e, tol + 0.01); if (k >= 0) { clicked = true; target(k); }
     });
+    // Ruhe-Hüpfer (Wunsch User 06.10.2026, bewusst gegen soft-motion §5: Klick-Einladung): liegt alles 5 s still, hebt ein freies
+    // Objekt ab (24 mm, 1,3 s), dreht sich um 30° und kippt leicht (abwechselnd hin und zurück), schwillt um 8 % an, Lichthof hellt
+    // auf; landet weich (sin^1.5) mit Ring am Boden; danach alle 3 s das nächste. Vor dem ersten Klick sagt jedes dritte „Heb mich auf!“.
+    const HOP_H = 0.024, HOP_D = 1.3, HOP_ROT = Math.PI / 6, HOP_TILT = 0.12, HOP_SWELL = 0.08, HOP_FIRST = 5, HOP_EVERY = 3;
+    let rest = 0, hopWait = HOP_FIRST, hopIdx = 0, hops = 0;
+    // Puls-Schein: Lichthof + Bodenschein atmen langsam (4 s, nur Sinus); eigene Uhr in s (pt). Mesh-Fade: alle 8 s blendet das
+    // Raster weich auf 45 % und zurück (1,8 s, sin²), bei Hover, Ablauf oder im Arm klingt der Fade aus
+    const PULSE = 4, FADE_EVERY = 8, FADE_D = 1.8, FADE_MIN = 0.45, ZAX = new THREE.Vector3(0, 0, 1);
+    let pt = 0, fadeAmp = 1;
     const ex = extra;
     extra = (dt, t) => {
       ex(dt, t);
+      clk += dt; pt += dt;
+      if (newRoundAt && clk >= newRoundAt && !job) newRound(layout());
       if (held) {
         robot.tcp.getWorldPosition(tcpW); robot.tcp.getWorldQuaternion(tcpQ);
-        cube.position.copy(relP).applyQuaternion(tcpQ).add(tcpW); cube.quaternion.multiplyQuaternions(tcpQ, rel);
+        cur.g.position.copy(relP).applyQuaternion(tcpQ).add(tcpW); cur.g.quaternion.multiplyQuaternions(tcpQ, rel);
+        if (cur.shake > 0) { cur.shake = Math.max(0, cur.shake - dt / 0.6); cur.g.rotateOnWorldAxis(ZAX, 0.14 * Math.sin(cur.shake * Math.PI * 4) * cur.shake); }   // „nein“: kurz schütteln
       }
-      // Ruhe-Hüpfer vor applyMat: Schnittebenen des Materials folgen der Lage im selben Frame
+      // Ruhe-Hüpfer + Einrutschen vor applyMat: Schnittebenen des Materials folgen der Lage im selben Frame
       if (!reduce) {
-        if (hopT >= 0) {
-          hopT = Math.min(1, hopT + dt / HOP_D);
-          const arc = Math.sin(Math.PI * hopT);
-          cube.position.z = ch + HOP_H * arc ** 1.5;
-          cube.rotation.z = hopYaw + hopDir * HOP_ROT * ease5(hopT);
-          cube.rotation.x = hopDir * HOP_TILT * arc ** 2; swell = arc ** 2;
-          if (hopT === 1) {
-            hopT = -1; hopDir = -hopDir; rest = 0; hopWait = HOP_EVERY; swell = 0; cube.rotation.x = 0;
-            flashT = 0; flash.position.set(cube.position.x, cube.position.y, 0.003);   // Landering am Boden
+        const hopping = OBJ.find(o => o.hopT >= 0);
+        if (hopping) {
+          const o = hopping, arc = Math.sin(Math.PI * (o.hopT = Math.min(1, o.hopT + dt / HOP_D)));
+          o.g.position.z = o.h / 2 + HOP_H * arc ** 1.5;
+          o.g.rotation.z = o.hopYaw + o.hopDir * HOP_ROT * ease5(o.hopT);
+          o.g.rotation.x = o.hopDir * HOP_TILT * arc ** 2; o.swell = arc ** 2;
+          if (o.hopT === 1) { o.hopT = -1; o.hopDir = -o.hopDir; o.swell = 0; o.g.rotation.x = 0; rest = 0; hopWait = HOP_EVERY; ring(o.g.position.x, o.g.position.y, 0.003); }
+        } else if (job || cur || hoverObj || newRoundAt) { rest = 0; hopWait = HOP_FIRST; }
+        else if ((rest += dt) >= hopWait) {
+          const free = OBJ.filter(o => !o.home && o.popT >= 1);
+          if (free.length) {
+            const o = free[hopIdx++ % free.length]; o.hopT = 0; o.hopYaw = o.g.rotation.z;
+            if (!clicked && hops++ % 3 === 0) say.show(o, T('Heb mich auf!', 'Pick me up!'), 2200, true);
           }
-        } else if (job || held || hoverCube) { rest = 0; hopWait = HOP_FIRST; }
-        else if ((rest += dt) >= hopWait) { hopT = 0; hopYaw = cube.rotation.z; }
+          rest = 0;
+        }
       }
-      applyMat(dt);
+      OBJ.forEach(o => {
+        if (o.sinkT < 1) {
+          o.sinkT = reduce ? 1 : Math.min(1, o.sinkT + dt / 0.55);
+          const e = ease5(o.sinkT);
+          o.g.position.z = o.h / 2 - SINK * e; o.g.rotation.z = o.yaw0 + (o.yaw1 - o.yaw0) * e;
+          if (o.sinkT === 1) arrived(o);
+        }
+        if (o.popT < 1) o.popT = Math.min(1, o.popT + dt / 0.6);
+        applyMat(o, dt);
+      });
       if (flashT < 1) { flashT = Math.min(1, flashT + dt / 0.45); flash.material.opacity = 0.95 * (1 - flashT); flash.scale.setScalar(1 + flashT * 1.6); }
-      if (reduce) return;
-      // Klick-Hinweis: je Feld eigener, zufälliger Takt; während Ablauf, Hover oder im Arm verschoben statt gezeigt
-      clk += dt;
-      let cubeB = 0;
-      pads.forEach((p, i) => {
+      say.tick();
+      // Klick-Hinweis der Formen: in Ruhe selten und zufällig, während ein Objekt eine Form sucht alle im Takt
+      if (!reduce) TPL.forEach(p => {
+        if (p.full) return;
         if (clk >= p.next) {
-          if (job && job.hold) { p.t0 = clk; p.next = clk + 1.8; }   // Ablageort gesucht: alle im Takt
-          else if (job || held || hover >= 0 || hoverCube || p.on) p.next = clk + rnd(1, 3);
-          else { p.t0 = clk; p.next = clk + rnd(4, 9) * (clicked ? 2.5 : 1); }
+          if (cur && (!job || job.hold)) { p.t0 = clk; p.next = clk + 1.8; }
+          else if (job || hover >= 0 || hoverObj || p.on) p.next = clk + rnd(1, 3);
+          else { p.t0 = clk; p.next = clk + rnd(5, 10) * (clicked ? 2 : 1); }
         }
         const u = (clk - p.t0) / 1.6;
         if (u > 1.05) return;
         const k = Math.min(1, u), b = Math.sin(Math.PI * k) ** 2;
-        if (!p.on) paint(p, b);
-        p.wave.material.opacity = 0.32 * (1 - k) * Math.min(1, k * 6); p.wave.scale.setScalar(1 + k * 0.9);
-        if (i === at && !held) cubeB = b;
+        if (!p.on) paintT(p, b);
+        p.wave.material.opacity = 0.32 * (1 - k) * Math.min(1, k * 6); p.wave.scale.setScalar(1 + k * 0.5);
       });
-      pt += dt;
-      const fu = ((pt + 3) % FADE_EVERY) / FADE_D, quiet = !(job || held || hoverCube);
+      const fu = ((pt + 3) % FADE_EVERY) / FADE_D, quiet = !(job || held || hoverObj);
       fadeAmp += ((quiet ? 1 : 0) - fadeAmp) * Math.min(1, dt * 3);
-      const fade = 1 - (1 - FADE_MIN) * fadeAmp * (fu < 1 ? Math.sin(Math.PI * fu) ** 2 : 0);
-      if (!hoverCube) cubeGrid.material.opacity = (0.42 + 0.25 * cubeB) * fade;
-      edgeMat.opacity *= fade; cornerMat.opacity = 0.9 * fade;
-      const pu = Math.sin(Math.PI * pt / PULSE) ** 2, r = 0.05 + 0.006 * pu;
-      aura.material.opacity = 0.16 + 0.08 * pu + 0.14 * swell; aura.scale.setScalar(2 * r * (1 + 0.25 * swell));
-      aura.position.copy(cube.position); if (!held) aura.position.z = Math.max(aura.position.z, r + 0.003);
-      pool.visible = !held; pool.position.set(cube.position.x, cube.position.y, 0.0028);
-      const air = held ? 0 : Math.max(0, cube.position.z - ch) / HOP_H;   // Bodenschein wird beim Abheben etwas kleiner + schwächer
-      pool.material.opacity = (0.2 + 0.1 * pu) * (1 - 0.3 * air); pool.scale.setScalar((0.95 + 0.06 * pu) * (1 - 0.12 * air));
-      cornerMat.size = 0.016 + 0.003 * pu; cube.scale.setScalar(1 + 0.008 * pu + HOP_SWELL * swell);
-      if (!hoverCube) cubeFill.material.opacity = (0.09 + 0.03 * pu) * fade;
+      const fade = reduce ? 1 : 1 - (1 - FADE_MIN) * fadeAmp * (fu < 1 ? Math.sin(Math.PI * fu) ** 2 : 0);
+      const pu = reduce ? 0.5 : Math.sin(Math.PI * pt / PULSE) ** 2, r = 0.05 + 0.006 * pu;
+      OBJ.forEach(o => {
+        const inArm = held && o === cur, f = o.home ? 1 : fade, pop = o.popT <= 0 ? 0.001 : 1 - (1 - o.popT) ** 3;
+        if (o !== hoverObj) { o.grid.material.opacity = 0.42 * f; o.fill.material.opacity = (0.09 + 0.03 * pu) * f; }
+        o.edge.material.opacity *= f; o.pts.material.opacity = 0.9 * f; o.pts.material.size = 0.016 + 0.003 * pu;
+        o.aura.material.opacity = ((o.home ? 0.07 : 0.16 + 0.08 * pu) + 0.14 * o.swell) * pop; o.aura.scale.setScalar(2 * r * (1 + 0.25 * o.swell));
+        o.aura.position.copy(o.g.position); if (!inArm) o.aura.position.z = Math.max(o.aura.position.z, r + 0.003);
+        o.pool.visible = !inArm; o.pool.position.set(o.g.position.x, o.g.position.y, 0.0028);
+        const air = inArm ? 0 : Math.max(0, o.g.position.z - o.h / 2) / HOP_H;   // Bodenschein wird beim Abheben etwas kleiner + schwächer
+        o.pool.material.opacity = (0.2 + 0.1 * pu) * (1 - 0.3 * air) * (o.home ? 0.5 : 1) * pop; o.pool.scale.setScalar((0.95 + 0.06 * pu) * (1 - 0.12 * air));
+        o.g.scale.setScalar(pop * (1 + 0.008 * pu + HOP_SWELL * o.swell));
+      });
     };
-    show();
+    // Start: gemerkte Runde (gültig und nicht schon fertig) oder neue Zufallslage
+    const okSlot = s => s && Number.isFinite(s.a) && Number.isFinite(s.r) && s.r > 0.15 && s.r < 0.35 && Math.abs(s.a) < 2.6;
+    const arr3 = a => Array.isArray(a) && a.length === 3;
+    newRound(arr3(saved.objs) && saved.objs.every(okSlot) && arr3(saved.tpls) && saved.tpls.every(s => okSlot(s) && Number.isFinite(s.yaw))
+      && arr3(saved.home) && !saved.home.every(Boolean) ? { objs: saved.objs, tpls: saved.tpls, home: saved.home.map(Boolean) } : layout());
   }
   if (!reduce) st.isBusy = () => true;
   if (reduce && scene === 'modes') { q = goal; robot.setJoints(q); }
