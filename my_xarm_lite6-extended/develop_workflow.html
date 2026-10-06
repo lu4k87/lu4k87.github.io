@@ -253,6 +253,8 @@ html.sf-on .at-ring:not(.in) .seg { stroke-dasharray: 0 83; }
 .feat p { font-size: 13.5px; line-height: 1.5; color: var(--fg-2); }
 footer { border-top: 1px solid var(--line); padding-block: 18px 28px; font: 600 12px/1.4 var(--mono); color: var(--fg-2); }
 footer .wrap { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px 16px; }
+footer .foot-link { text-decoration: underline 1px var(--line); text-underline-offset: 3px; }
+footer .foot-link:hover { text-decoration-color: currentColor; }
 
 /* Ergänzungen zu den Abschnitten: Anzahl im Lesepfad, Systemidee ohne Steckleitungen, Funktionsatlas-Brücke groß */
 .path .pn .cnt { margin-left: auto; min-width: 26px; padding: 3px 6px; border: 1px solid var(--line-strong); border-radius: var(--radius-sm); color: var(--fg); text-align: center; letter-spacing: 0; }
@@ -1310,7 +1312,7 @@ html.sf-on .hero:not(.is-in) .msg { opacity: 0; transform: translate3d(0, 10px, 
   </section>
 </main>
 
-<footer><div class="wrap"><a class="qr-foot" href="https://lu4k87.github.io/" target="_blank" rel="noopener"><span class="qr-code"><svg role="img" aria-label="QR-Code: Projekt-Doku öffnen" data-en-aria="QR code: open the project docs"><use href="#qr-docs"/></svg></span><span class="qr-txt"><b data-en="Open page">Seite öffnen</b><small>lu4k87.github.io</small></span></a><span data-en="Last updated 06.10.2026 · sources: git log, .claude/, AGENTS.md">Stand 06.10.2026 · Quellen: git log, .claude/, AGENTS.md</span><span>dev_ws · docs/develop_workflow.html</span></div></footer>
+<footer><div class="wrap"><a class="qr-foot" href="https://lu4k87.github.io/" target="_blank" rel="noopener"><span class="qr-code"><svg role="img" aria-label="QR-Code: Projekt-Doku öffnen" data-en-aria="QR code: open the project docs"><use href="#qr-docs"/></svg></span><span class="qr-txt"><b data-en="Open page">Seite öffnen</b><small>lu4k87.github.io</small></span></a><span data-en="Last updated 06.10.2026 · sources: git log, .claude/, AGENTS.md">Stand 06.10.2026 · Quellen: git log, .claude/, AGENTS.md</span><span><a class="foot-link" href="project_docs.html" data-en="Project docs">Projekt-Doku</a> · dev_ws · docs/develop_workflow.html</span></div></footer>
 
 <script src="js/scroll_flow.js"></script>
 <script src="js/landing.js"></script>
