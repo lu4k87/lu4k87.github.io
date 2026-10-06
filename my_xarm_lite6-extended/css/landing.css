@@ -241,49 +241,21 @@ a.hero-card:hover { border-color: color-mix(in srgb, var(--accent) 65%, var(--gl
 .h3d-lbl b { color: var(--c, var(--accent)); }
 .h3d-lbl.on { opacity: 1; pointer-events: auto; }
 .h3d-lbl:focus-visible { opacity: 1; }
-/* Status-Leiste der Hero-Bühne (Pick & Place, js/hero3d.js): mittig unten unter der Tischkante, wohin der Arm nie schwenkt
-   (Wunsch User 06.10.2026); Schritte nebeneinander mit Verbindungslinie, erledigte schrumpfen zum ✓-Punkt, nur der laufende
-   Schritt zeigt Text + Wert; Fade + 10 px Weg ein, schneller aus; laufend = Puls-Punkt + Akzent-Rahmen, erledigt = ✓ */
-.h3d-steps { position: absolute; left: 50%; bottom: 14px; transform: translateX(-50%); margin: 0; padding: 0; list-style: none;
-  display: grid; grid-auto-flow: column; align-items: center; pointer-events: none; }
-.h3d-step { display: inline-flex; align-items: center; gap: 8px; padding: 6px 10px 6px 7px; white-space: nowrap;
-  border: 1px solid var(--glass-bd); border-radius: var(--radius-sm); background: var(--glass-bg); color: var(--glass-fg);
-  font: 700 12px/1.2 var(--mono); letter-spacing: .02em; box-shadow: inset 0 1px 0 var(--glass-hi);
-  position: relative; opacity: 0; transform: translate3d(0, 10px, 0) scale(.97);
-  transition: opacity 450ms var(--ease-out), transform 600ms var(--ease-out), border-color var(--t-base), box-shadow var(--t-base); }
-.h3d-step.in { opacity: 1; transform: none; }
-.h3d-step + .h3d-step { margin-left: 18px; }
-.h3d-step + .h3d-step::before { content: ""; position: absolute; left: -19px; top: 50%; width: 18px; height: 1px; background: color-mix(in srgb, var(--accent) 60%, transparent); }
-.h3d-step.done:not(.fin) { padding: 5px; }
-.h3d-step.done:not(.fin) :is(span, b) { display: none; }
-.h3d-step.out { opacity: 0; transform: translate3d(0, -8px, 0); transition: opacity 300ms var(--ease-io), transform 320ms var(--ease-io); }
-.h3d-step b { font-weight: 500; padding-left: 8px; border-left: 1px solid var(--glass-bd); }
-.h3d-step.on { border-color: color-mix(in srgb, var(--accent) 70%, var(--glass-bd)); box-shadow: inset 0 1px 0 var(--glass-hi), 0 0 18px -6px var(--glow); }
-.h3d-step i { width: 16px; height: 16px; flex: none; display: grid; place-items: center; border-radius: 50%; border: 1px solid var(--accent); font: 700 10px/1 var(--mono); font-style: normal; }
-.h3d-step.on i::after { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); animation: h3d-pulse 1s var(--ease-io) infinite alternate; }
-.h3d-step.done i::after { content: "✓"; }
-.h3d-step.fin i { background: var(--accent); color: var(--accent-ink); }
-@keyframes h3d-pulse { from { transform: scale(.55); opacity: .55; } to { transform: scale(1); opacity: 1; } }
-/* schmal: nur der aktuelle Schritt, alle in einer Zelle → Überblenden statt Springen */
-@media (max-width: 520px) {
-  .h3d-steps { bottom: 10px; grid-template-areas: "s"; }
-  .h3d-step { grid-area: s; }
-  .h3d-step + .h3d-step { margin-left: 0; }
-  .h3d-step + .h3d-step::before { content: none; }
-  .h3d-step.in { transition-delay: 160ms; }
-  .h3d-step.in.done:not(.fin) { opacity: 0; transform: translate3d(0, -8px, 0); transition: opacity 180ms var(--ease-io), transform 220ms var(--ease-io); }
-}
-@media (prefers-reduced-motion: reduce) { .h3d-step, .h3d-step.out { transition: none; } .h3d-step.on i::after { animation: none; } }
 /* Mini-Spiel der Hero-Bühne (js/hero3d.js, Wunsch User 06.10.2026): Sprechblase am Objekt ploppt auf (kleiner Überschwinger
    bewusst: Wunsch „Popup-Sprechblasen-Effekt“) */
 .h3d-say { position: absolute; left: 0; top: 0; z-index: 2; translate: -50% calc(-100% - 12px); pointer-events: none; white-space: nowrap;
   padding: 8px 12px; border: 1px solid color-mix(in srgb, var(--accent) 70%, var(--glass-bd)); border-radius: var(--radius-sm);
   background: var(--glass-bg); color: var(--glass-fg); font: 700 13px/1.25 var(--mono); box-shadow: inset 0 1px 0 var(--glass-hi), 0 0 22px -6px var(--glow);
   opacity: 0; scale: .5; transform-origin: 50% 100%; transition: opacity 280ms var(--ease-io), scale 300ms var(--ease-io); }
-.h3d-say::after { content: ""; position: absolute; left: 50%; bottom: -6px; width: 10px; height: 10px; translate: -50% 0; rotate: 45deg;
+.h3d-say::after { content: ""; position: absolute; left: calc(50% + var(--dx, 0px)); bottom: -6px; width: 10px; height: 10px; translate: -50% 0; rotate: 45deg;
   background: inherit; border: 1px solid color-mix(in srgb, var(--accent) 70%, var(--glass-bd)); border-width: 0 1px 1px 0; }
 .h3d-say.in { opacity: 1; scale: 1; animation: h3d-pop 520ms var(--ease-out); }
 @keyframes h3d-pop { 0% { opacity: 0; scale: .5; } 55% { opacity: 1; scale: 1.08; } 100% { scale: 1; } }
+/* Arm spricht am Werkzeug (Wunsch User 06.10.2026, Vorschau Variante C; ersetzt die Schritt-Leiste unten mittig): Spruch oben,
+   darunter Mono-Zeile Fortschritt ●●○○ · Schritt · Messwert; Schrittwechsel tauscht nur den Text (kein neuer Pop) */
+.h3d-say.arm { display: grid; gap: 5px; text-align: left; }
+.h3d-say.arm small { display: flex; align-items: center; gap: 8px; font: 500 12px/1.2 var(--mono); font-variant-numeric: tabular-nums; }
+.h3d-say.arm u { text-decoration: none; letter-spacing: 2px; color: var(--accent); }
 /* Klang-Knopf frei unten rechts in der Bühne (gleiche Rasterzelle wie der Canvas, kein position: absolute); Missionsstand
    selbst liegt in der 3D-Szene (js/hero3d.js), für Screenreader als unsichtbare Statuszeile .h3d-sr */
 .h3d-snd { align-self: end; justify-self: end; z-index: 2; display: grid; place-items: center; width: 36px; height: 36px; margin: 14px; padding: 0;

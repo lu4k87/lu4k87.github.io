@@ -4,7 +4,7 @@
             Mini-Spiel „Missionen“: Würfel, Quader, Zylinder (Rastergitter) in die passende Aussparung legen lassen, Sprechblasen,
             Missionsstand in der Szene (Bögen am Bodenring, Lichtschrift davor, Klang-Knopf .h3d-snd), Klänge der Robot Control UI (docs/sounds/); freie Objekte wandern langsam über die
             Kreisfläche; Formen leuchten als Klick-Hinweis kurz auf,
-            Status-Leiste unten mittig (.h3d-steps) blendet die Schritte nacheinander ein; Licht etwas gedämpft
+            Arm spricht per Sprechblase am Werkzeug (Spruch + Fortschritt · Schritt · Messwert), Objekte antworten; Licht etwas gedämpft
      modes  Steuerwege als Lichtpunkte im Ring (opts.items); aktiver Punkt schickt einen Impuls zum Arm, der Arm zeigt hin
      ghost  Ghost-Arm plant voraus → Freigabe → Arm fährt nach („Erst virtuell, dann real“); Zeiger setzt das Ziel;
             next() plant sofort das nächste Ziel (Teilhabe: neuer Steuerweg = neue Eingabe)
@@ -619,7 +619,7 @@ function build(L, wrap, host, o) {
     const topOf = o => { while (above(o)) o = above(o); return o; };
     let spot = null, freeS = null, fx = null;   // fx = laufende Zielerfassung { o, t, out }
     let stackObj = null;   // Turm-Ziel unter dem Zeiger bzw. gewählt (Raster hell, Umriss oben drauf)
-    let cur = null, held = false, hover = -1, hoverObj = null, flashT = 1, clicked = false, clk = 0, touch = false, rounds = 0, mute = false, newRoundAt = 0;
+    let cur = null, held = false, hover = -1, hoverObj = null, flashT = 1, clicked = false, greeted = false, clk = 0, touch = false, rounds = 0, mute = false, newRoundAt = 0;
     // Stoppuhr: tRun = Laufzeit der Runde (s), best = Bestzeit (s, 0 = keine), inside = Maus auf der Bühne, lastIn = letzte Eingabe (clk)
     let tRun = 0, started = false, finished = false, best = 0, newBest = false, inside = false, lastIn = -1e9;
     const IDLE = 15;
@@ -698,24 +698,66 @@ function build(L, wrap, host, o) {
       };
       return play;
     })();
-    // Sprechblase am Objekt (HTML über der Bühne, folgt der Lage auf dem Bildschirm); eine zur Zeit
-    const say = (() => {
-      const el = document.createElement('div'); el.className = 'h3d-say'; el.setAttribute('aria-hidden', 'true'); host.appendChild(el);
+    // Sprechblase (HTML über der Bühne, folgt der Lage auf dem Bildschirm); eine je Sprecher. still() = anderer spricht gerade:
+    // Blase aus, Restzeit steht, danach wieder ein → Dialog, nie zwei Blasen übereinander. swap = nur Inhalt tauschen (kein Pop)
+    const bubble = (cls, still = () => false) => {
+      const el = document.createElement('div'); el.className = `h3d-say ${cls}`.trim(); el.setAttribute('aria-hidden', 'true'); host.appendChild(el);
       const v = new THREE.Vector3();
-      let o = null, until = 0;
+      let o = null, until = 0, rest = 0, wait = false;   // Uhr = echte Zeit (läuft auch bei reduzierter Bewegung ohne dt)
+      // bleibt 8 px innerhalb der Bühne (schmale Bildschirme); Spitze (--dx) zeigt weiter auf den Sprecher
       const place = () => {
         v.copy(o.g.position); v.z += o.h * 0.6 + 0.02; v.project(st.camera);
-        el.style.left = `${(v.x + 1) / 2 * host.clientWidth}px`; el.style.top = `${(1 - v.y) / 2 * host.clientHeight}px`;
+        const W = host.clientWidth, x = (v.x + 1) / 2 * W, h = el.offsetWidth / 2, cx = Math.max(h + 8, Math.min(W - h - 8, x));
+        el.style.left = `${cx}px`; el.style.top = `${(1 - v.y) / 2 * host.clientHeight}px`;
+        el.style.setProperty('--dx', `${Math.max(12 - h, Math.min(h - 12, x - cx))}px`);
       };
+      const pop = () => { place(); el.classList.remove('in'); void el.offsetWidth; el.classList.add('in'); };
       return {
-        show(obj, text, ms = 2600, quiet = false) {
-          o = obj; el.textContent = text; place(); el.classList.remove('in'); void el.offsetWidth; el.classList.add('in');
-          until = performance.now() + ms; if (!quiet) sfx('pop');
+        get left() { return (wait ? rest : until ? until - performance.now() : 0) / 1000; },
+        get busy() { return this.left > 0; },
+        show(obj, content, ms = 2600, quiet = false, swap = false) {
+          const live = this.busy && !wait && o === obj;
+          o = obj; el.replaceChildren(...[].concat(content)); until = performance.now() + ms;
+          wait = still(); if (wait) { rest = ms; el.classList.remove('in'); } else if (!(swap && live)) pop();
+          if (!quiet) sfx('pop');
         },
-        hide() { el.classList.remove('in'); until = 0; },
-        tick() { if (!o) return; place(); if (until && performance.now() > until) { el.classList.remove('in'); until = 0; } },
+        hide() { el.classList.remove('in'); until = rest = 0; wait = false; },
+        tick() {
+          if (!o) return;
+          const now = performance.now();
+          if (this.busy && still()) { if (!wait) { wait = true; rest = until - now; el.classList.remove('in'); } return; }
+          if (wait) { wait = false; until = now + rest; rest = 0; pop(); }
+          place(); if (until && now > until) { until = 0; el.classList.remove('in'); }
+        },
       };
-    })();
+    };
+    const say = bubble('');
+    // Sprüche je Anlass (Wunsch User 06.10.2026): zufällig, nie zweimal hintereinander derselbe; Eintrag [de, en] oder k => [de, en]
+    const L = {
+      hi: [['Hallo! Gib mir was zu tun.', 'Hi! Give me something to do.'], ['Na, eine Runde?', 'Fancy a round?']],
+      go: [['Komme schon!', 'Coming!'], ['Bin unterwegs.', 'On my way.'], ['Moment …', 'One moment …']],
+      grip: [['Hab dich!', 'Got you!'], ['Erwischt!', 'Caught you!'], ['Gut festhalten!', 'Hold on tight!']],
+      lift: [['Und hoch!', 'Up we go!'], ['Hoch mit dir!', 'Up you come!']],
+      hold: [['Wohin damit?', 'Where to?'], ['Wohin soll’s gehen?', 'Where shall it go?']],
+      wait: [['Ich warte …', 'I’m waiting …'], ['Mein Arm wird schwer!', 'My arm is getting heavy!']],
+      home: [['Ab nach Hause!', 'Off home you go!'], ['Gleich da.', 'Almost there.'], ['Festhalten!', 'Hang on!']],
+      stack: [['Ein Turm? Mutig!', 'A tower? Bold!'], ['Schön gerade stapeln …', 'Nice and straight …']],
+      back: [['Na gut, zurück.', 'Fine, back it goes.'], ['Dann eben zurück.', 'Back it goes, then.']],
+      free: [['Neuer Platz!', 'New spot!'], ['Hier passt’s.', 'This works.']],
+      drop: [['Und ab!', 'And down!'], ['Vorsichtig …', 'Gently …'], ['Sauber.', 'Neat.']],
+      done: [['Erledigt!', 'Done!'], ['Fertig!', 'All set!']],
+      near: [['Noch einer!', 'One more!'], ['Fast geschafft!', 'Almost there!']],
+      thanks: [['Ahh…, endlich Zuhause!', 'Ahh…, home at last!'], ['Hier bin ich sicher.', 'I’m safe here.'], ['War ja ’n Kinderspiel!', 'That was child’s play!']],
+      nope: [['Da pass ich nicht rein!', 'I don’t fit in there!'], K => [`Ich bin doch kein ${K.de}!`, `I’m not a ${K.en}!`], ['Das ist nicht meine Form!', 'That’s not my shape!']],
+      full: [['Hier ist kein Platz!', 'No room here!']],
+      whoa: [['Huch!', 'Whoa!'], ['Hoppla!', 'Oops!'], ['Mir wird schwindelig!', 'I’m getting dizzy!']],
+      pick: [['Heb mich auf!', 'Pick me up!']],
+    };
+    const lastLine = new Map();
+    const line = (pool, arg) => {
+      const n = pool.length, k0 = lastLine.get(pool) ?? -1, k = k0 < 0 || n < 2 ? Math.floor(Math.random() * n) : (k0 + 1 + Math.floor(Math.random() * (n - 1))) % n;
+      lastLine.set(pool, k); const e = pool[k]; return T(...(typeof e === 'function' ? e(arg) : e));
+    };
     // Missionen in der Szene statt Card (Wunsch User 06.10.2026, Vorschau Variante A): je Objekt ein Bogen auf dem gestrichelten
     // Bodenring (gestrichelt + Umriss = offen; Band in Objektfarbe läuft 600 ms ein + gefülltes Symbol mit ✓ = zu Hause), Zeit ·
     // Runde · Bestzeit als Lichtschrift auf einer schrägen Bodenplatte davor (35° zur Kamera geneigt: flach am Boden wäre sie bei
@@ -788,7 +830,7 @@ function build(L, wrap, host, o) {
       // Lichtwelle: Ring läuft einmal vom Arm bis an die Sockelkante (Ping: 1,2 s ease-out, Deckkraft .8 → 0)
       const wave = new THREE.Mesh(new THREE.RingGeometry(0.96, 1, 128), new THREE.MeshBasicMaterial({ color: ACC, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false }));
       wave.position.z = 0.0015; wave.visible = false; st.scene.add(wave);
-      let waveT = -1, plateOp = 1;
+      let waveT = -1;
       // Klang-Knopf + Screenreader-Zeile neben dem Canvas (gleiche Rasterzelle der Bühne, kein position: absolute)
       const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'h3d-snd';
       btn.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.5h3.5L12 6v12l-4.5-3.5H4z"/><path class="w" d="M15.5 9.5a3.5 3.5 0 0 1 0 5M18 7a7 7 0 0 1 0 10"/><path class="x" d="M16 9.5l5 5M21 9.5l-5 5"/></svg>';
@@ -817,26 +859,23 @@ function build(L, wrap, host, o) {
             a.band.geometry.setDrawRange(0, n); a.glow.geometry.setDrawRange(0, n);
             a.band.visible = a.glow.visible = n > 0; a.dashed.visible = !a.on;
           });
-          // Schritt-Leiste (.h3d-steps) liegt unten mittig über der Lichtschrift → Schrift weicht aus, solange ein Schritt steht
-          // (Wunsch User 06.10.2026): aus 320 ms, ein 450 ms (soft-motion: raus ≈ 70 %)
-          const away = !!host.querySelector('.h3d-step:not(.out)');
-          plateOp = reduce ? +!away : away ? Math.max(0, plateOp - dt / 0.32) : Math.min(1, plateOp + dt / 0.45);
-          plate.material.opacity = plateOp * plateOp * (3 - 2 * plateOp); plate.visible = plateOp > 0;
           if (waveT < 0) return;
           waveT += dt; const u = Math.min(1, waveT / 1.2), s = 0.06 + 0.34 * eo(u);
           wave.scale.set(s, s, 1); wave.material.opacity = 0.8 * (1 - u); wave.visible = u < 1; if (u === 1) waveT = -1;
         },
         // Runde geschafft: Sprechblase am Arm (folgt dem TCP) + Lichtwelle; Screenreader-Zeile setzt render()
         badge() {
-          const msg = T(`Runde ${rounds} in ${fmt(tRun)} geschafft!`, `Round ${rounds} done in ${fmt(tRun)}!`) + (newBest ? T(' Rekord!', ' Record!') : '');
-          say.show({ g: { position: tcpW }, h: 0.05 }, msg, 4500, true);
+          arm.say(newBest ? T(`Neue Bestzeit! ${fmt(tRun)} ★`, `New best time! ${fmt(tRun)} ★`)
+            : T(`Runde ${rounds} in ${fmt(tRun)} geschafft!`, `Round ${rounds} done in ${fmt(tRun)}!`), null, 3400, 2);
           if (!reduce) waveT = 0;
         },
+        // wichtige Hinweise (falsche Form, kein Platz, erst ein Objekt) auch für Screenreader; render() setzt danach wieder den Stand
+        tell(text) { sr.textContent = text; },
       };
     })();
     // Neue Runde: Formen + Objekte an ihre Plätze, Objekte ploppen gestaffelt auf (0,6 s, ease-out)
     const newRound = (Lx, t = 0) => {
-      newRoundAt = 0; say.hide(); tRun = t; started = t > 0; finished = newBest = false;
+      newRoundAt = 0; say.hide(); arm.hide(); tRun = t; started = t > 0; finished = newBest = false;
       Lx.tpls.forEach((s, k) => { const t = TPL[k]; t.slot = s; const [x, y] = slotXY(s); t.g.position.set(x, y, 0.0025); t.g.rotation.z = s.yaw; t.full = false; });
       OBJ.forEach((o, k) => { o.on = Lx.on[k] >= 0 ? OBJ[Lx.on[k]] : null; o.from = o.fall = null; });
       // Türme von unten nach oben aufbauen (Höhe hängt am Objekt darunter); gestapelt = genau über dem Objekt darunter
@@ -850,33 +889,35 @@ function build(L, wrap, host, o) {
       });
       quest.render(); save(); show();
     };
-    // Status-Popups: Schritte blenden nacheinander ein (≥ 340 ms Abstand), laufender Schritt mit Puls, erledigte mit ✓;
-    // „Fertig“ bleibt kurz stehen, dann blenden alle gestaffelt aus. Ergänzt die Bewegung → für Screenreader verborgen.
-    const feed = (() => {
-      const box = document.createElement('ol'); box.className = 'h3d-steps'; box.setAttribute('aria-hidden', 'true');
-      host.appendChild(box);
-      const timers = new Set(), later = (fn, ms) => { const id = setTimeout(() => { timers.delete(id); fn(); }, ms); timers.add(id); };
-      let due = 0;
-      const out = stagger => [...box.querySelectorAll('.h3d-step:not(.out)')].forEach((li, k) => {
-        li.style.transitionDelay = stagger ? `${k * 60}ms` : '0ms'; li.classList.add('out');
-        setTimeout(() => li.remove(), 420 + k * 60);
-      });
+    const tcpQ = new THREE.Quaternion(), rel = new THREE.Quaternion(), relP = new THREE.Vector3(), tcpW = new THREE.Vector3();
+    // Arm spricht am Werkzeug (Wunsch User 06.10.2026, Vorschau Variante C; ersetzt die Schritt-Leiste unten mittig): Spruch oben,
+    // darunter Fortschritt ●●○○ (Phase 0 Greifen … 3 Ablegen, 4 fertig) · Schritt · Messwert. Schrittwechsel tauscht nur den Text;
+    // prio: Ereignis (1) und Rundenende (2) überschreibt kein Schritt (0). Spricht ein Objekt, wartet der Arm
+    const arm = (() => {
+      const b = bubble('arm', () => say.busy), at = { g: { position: tcpW }, h: 0.05 };
+      let prio = 0;
       return {
-        say(text, meta, fin) {
-          const now = performance.now(), wait = Math.max(0, due - now); due = Math.max(now, due) + 340;
-          later(() => {
-            box.querySelectorAll('.h3d-step.on').forEach(li => li.classList.replace('on', 'done'));
-            const li = document.createElement('li'), t = document.createElement('span'), m = document.createElement('b');
-            li.className = `h3d-step ${fin ? 'done fin' : 'on'}`; t.textContent = text; m.textContent = meta;
-            li.append(document.createElement('i'), t, m); box.append(li);
-            void li.offsetWidth; li.classList.add('in');
-            if (fin) later(() => out(true), 2600);
-          }, wait);
+        say(text, step = null, ms = 2600, p = 0) {
+          if (b.busy && p < prio) return;
+          prio = p;
+          const kids = [Object.assign(document.createElement('span'), { textContent: text })];
+          if (step) {
+            const [name, val, ph] = step, s = document.createElement('small'), u = document.createElement('u');
+            u.textContent = '●'.repeat(ph + 1).slice(0, 4).padEnd(4, '○');
+            s.append(u, [name, val].filter(Boolean).join(' · ')); kids.push(s);
+          }
+          b.show(at, kids, ms, true, p === 0);
         },
-        reset() { timers.forEach(clearTimeout); timers.clear(); due = performance.now() + 180; out(false); },
+        // Schritt eines Ablaufs: [Sprüche, Schritt, Wert, Phase]; steht bis zum nächsten Schritt
+        step([pool, name, val, ph], ms = 60000) { this.say(line(pool), [name, val, ph], ms); },
+        get left() { return b.left; },
+        hide() { b.hide(); prio = 0; },
+        tick: () => b.tick(),
       };
     })();
-    const tcpQ = new THREE.Quaternion(), rel = new THREE.Quaternion(), relP = new THREE.Vector3(), tcpW = new THREE.Vector3();
+    // reduzierte Bewegung = Standbild, rendert nur nach Eingaben → solange eine Blase mit Ablaufzeit steht, je 250 ms ein Frame
+    // (sonst bliebe der Dank stehen und der Arm käme nie zu Wort); Halte-Blase (1e6 ms) braucht keinen Takt
+    if (reduce) setInterval(() => { if (say.busy || (arm.left > 0 && arm.left < 30)) st.kick(); }, 250);
     // Lage = [Winkel Gelenk 1, Radius, Höhe TCP, Werkzeugdrehung, Neigung]; Gewichte machen daraus grob Meter (Bahnlänge)
     const KEY = ['th', 'r', 'z', 'yaw', 'tilt'], VEL = ['vth', 'vr', 'vz', 'vyaw', 'vtilt'], W8 = [PR, 1, 1, 0.05, 0.12];   // W8[0] nur für Richtungen (Starttempo)
     const P = (th, r, z, yaw = 0, tilt = 0) => [th, r, z, yaw, tilt];
@@ -1049,43 +1090,42 @@ function build(L, wrap, host, o) {
       const t = TPL[to]; t.full = true; putAt(o, t.slot); o.home = true; o.g.position.z = o.h / 2;   // sinkt erst beim Einrutschen
       o.yaw0 = o.g.rotation.z; o.yaw1 = alignYaw(o.yaw0, t.slot.yaw, o.K.sym); o.sinkT = 0;
     };
-    // Zu Hause angekommen (nach dem Einrutschen): Dank, Klang, Mission abhaken; alle drei → Abzeichen, neue Runde
-    // Dank-Sprüche (Wunsch User 06.10.2026), nie zweimal hintereinander derselbe
-    const THANKS = [['Ahh…, endlich Zuhause!', 'Ahh…, home at last!'], ['Hier bin ich sicher.', "I'm safe here."], ["War ja 'n Kinderspiel!", 'That was child’s play!']];
-    let thx = -1;
+    // Zu Hause angekommen (nach dem Einrutschen): Dank (Objekt), Klang, Mission abhaken; danach antwortet der Arm: 2 von 3 →
+    // „fast geschafft“, alle drei → Rundenende/Bestzeit + Abzeichen, neue Runde
     const arrived = o => {
-      thx = (thx + 1 + Math.floor(Math.random() * (THANKS.length - 1))) % THANKS.length;
-      say.show(o, T(...THANKS[thx]), 3000, true); sfx('home');
+      say.show(o, line(L.thanks), 3000, true); sfx('home');
       if (OBJ.every(x => x.home)) {
         finished = true; rounds++; newBest = !best || tRun < best; if (newBest) best = tRun;
         quest.badge(); sfx('win'); newRoundAt = clk + 6.5;
-      }
+      } else if (OBJ.filter(x => x.home).length === 2) arm.say(line(L.near), null, 2600, 1);
       quest.render(); save(); show();
     };
-    const nope = (de = 'Da pass ich nicht rein!', en = "I don't fit in there!") => {
-      say.show(cur, T(de, en), 2200, true); sfx('nope'); cur.shake = 1;
+    // Objekt lehnt ab (falsche Form → K = Form des Ziels, kein Platz); Hinweis auch für Screenreader
+    const nope = (pool = L.nope, K) => {
+      const text = line(pool, K); say.show(cur, text, 2200, true); quest.tell(text); sfx('nope'); cur.shake = 1;
     };
     let busy = 0, lean = 0, vlean = 0;
     // Ablauf = Liste: { pts, v } Bahn · { act, dwell } Greifen/Lösen mit Verweilzeit · { hold } schweben bis Ziel gewählt ·
-    // { lazy } wird erst beim Erreichen zu Schritten (Lage dann bekannt); say = Status-Popup beim Start des Schritts
+    // { lazy } wird erst beim Erreichen zu Schritten (Lage dann bekannt); say = Sprechblase des Arms beim Start des Schritts
     const go = (ops, to) => {
       let i = -1, op = null, t = 0, path = null;
       const next = () => {
         op = ops[++i]; t = 0; path = null;
         if (op && op.lazy) { ops.splice(i, 1, ...op.lazy()); op = ops[i]; }
         if (!op) return finish();
-        if (op.say) feed.say(...op.say);
+        if (op.say) arm.step(op.say);
         if (op.pts) { path = bahn(op.pts, op.v); if (op.say) sfx('move'); }
         if (op.act) op.act();
         if (op.hold && job.to < 0) {
           job.hold = true; lean = vlean = 0;
-          feed.say(T('Ziel wählen', 'Choose a target'), touch ? T('Form, Stelle oder Objekt antippen', 'tap a shape, spot or object') : T('Form, Stelle oder Objekt anklicken', 'click a shape, spot or object'));
+          arm.step([L.hold, T('Ziel wählen', 'Choose a target'), T('Form, Stelle, Objekt', 'shape, spot, object'), 1], 1e6);
           TPL.forEach((p, k) => { p.next = clk + 0.3 + k * 0.25; });
           show();
         }
       };
       job = { to, hold: false, tick: dt => {
         t += dt; if (!job.hold) busy += dt;
+        if (op.hold && job.to < 0 && t > 8 && !op.bored) { op.bored = true; arm.step([L.wait, T('Ziel wählen', 'Choose a target'), T('Form, Stelle, Objekt', 'shape, spot, object'), 1], 1e6); }
         if (op.hold && job.to < 0 && t > 25) { job.to = BACK; show(); }   // niemand wählt → zurücklegen
         if (op.hold && job.to >= 0) { job.hold = false; ops.push(...place(job.to, false)); next(); t = dt; }   // gleich im selben Frame los
         if (path) { setPose(path.at(t), dt); if (t >= path.D) next(); return; }
@@ -1104,7 +1144,7 @@ function build(L, wrap, host, o) {
       const finish = () => {
         job = null; cur = null; pol.gyaw = 0;
         const sec = busy.toFixed(1);
-        feed.say(T('Fertig', 'Done'), `${T(sec.replace('.', ','), sec)} s`, true);
+        arm.step([L.done, T('Fertig', 'Done'), `${T(sec.replace('.', ','), sec)} s`, 4], 2600);
         if (follow) setGoalXY(ptr.x, ptr.y); else { ph = nearestPhase(); idleRamp = 0; }
         show();
       };
@@ -1126,8 +1166,9 @@ function build(L, wrap, host, o) {
       pts.push(P(B, RB, Hs + 0.06, yB), P(B, RB, Hs + 0.03, yB), P(B, RB, Hs, yB));
       const deg = Math.round(Math.abs(B - A) * 180 / Math.PI);
       return [
-        { pts, v: 0.42, say: to === BACK ? [T('Zurücklegen', 'Put back'), xy(S)] : base ? [T('Stapeln', 'Stack'), `z ${mm(Hs)} mm`] : [T('Transport', 'Transfer'), `${T('Schwenk', 'swing')} ${deg}°`] },
-        { act: drop, dwell: 0.25, say: [T('Ablegen', 'Place'), T('Sauger aus', 'suction off')] },
+        { pts, v: 0.42, say: to === BACK ? [L.back, T('Zurücklegen', 'Put back'), xy(S), 2] : base ? [L.stack, T('Stapeln', 'Stack'), `z ${mm(Hs)} mm`, 2]
+          : [to === FREE ? L.free : L.home, T('Transport', 'Transfer'), `${T('Schwenk', 'swing')} ${deg}°`, 2] },
+        { act: drop, dwell: 0.25, say: [L.drop, T('Ablegen', 'Place'), T('Sauger aus', 'suction off'), 3] },
         { pts: [P(B, RB, Hs + 0.03, yB), P(B, 0.24, Math.max(0.2, Hs + 0.08))], v: 0.26 },
       ];
     };
@@ -1136,14 +1177,14 @@ function build(L, wrap, host, o) {
     // Anheben mit Schwung: erst zur Mitte ausholen, dann im Bogen zurück auf 330 mm (Wunsch User 06.10.2026)
     const pick = to => {
       const o = cur, A = o.slot.a, R = o.slot.r, H = o.pickTop = (o.on ? topZ(o.on) : 0) + o.h, d = A > 0 ? Math.PI / 2 : -Math.PI / 2, s = A > 0 ? 1 : -1;
-      feed.reset(); busy = 0;
+      busy = 0;
       const up = clearZ > pol.z ? [P(pol.th, pol.r, clearZ, pol.yaw, pol.tilt)] : [];   // erst über die Türme
       go([
-        { pts: [...up, P(A, R, Math.max(H + 0.06, clearZ)), P(A, R, H + 0.03), P(A, R, H)], v: 0.36, say: [T('Anfahren', 'Approach'), xy(o.slot)] },
-        { act: grip, dwell: 0.25, say: [T('Greifen', 'Grip'), T('Sauger an', 'suction on')] },
+        { pts: [...up, P(A, R, Math.max(H + 0.06, clearZ)), P(A, R, H + 0.03), P(A, R, H)], v: 0.36, say: [L.go, T('Anfahren', 'Approach'), xy(o.slot), 0] },
+        { act: grip, dwell: 0.25, say: [L.grip, T('Greifen', 'Grip'), T('Sauger an', 'suction on'), 0] },
         { lazy: () => job.to >= 0 ? place(job.to, true) : [
           { pts: [P(A, R, H + 0.035), P(A - s * 0.2, 0.28, H + 0.13, d * 0.45, 0.35), P(A, 0.22, 0.33, d)], v: 0.3,
-            say: [T('Anheben + drehen', 'Lift + rotate'), `z 330 mm · ${T('Gelenk', 'joint')} 6 ${d > 0 ? '+' : '−'}90°`] },
+            say: [L.lift, T('Anheben + drehen', 'Lift + rotate'), `z 330 mm · ${T('Gelenk', 'joint')} 6 ${d > 0 ? '+' : '−'}90°`, 1] },
           { hold: P(A, 0.22, 0.33, d) }] },
       ], to);
     };
@@ -1151,18 +1192,18 @@ function build(L, wrap, host, o) {
     const grab = o => {
       if (job) return;
       cur = o; say.hide(); if (!finished) started = true;
-      if (reduce) { feed.reset(); feed.say(T('Ziel wählen', 'Choose a target'), T('Form, Stelle oder Objekt wählen', 'pick a shape, spot or object'), true); show(); return; }
+      if (reduce) { arm.step([L.hold, T('Ziel wählen', 'Choose a target'), T('Form, Stelle, Objekt', 'shape, spot, object'), 1], 1e6); show(); return; }
       fx = { o, t: 0, out: -1 }; o.jolt = o.hopT < 0 ? 0 : -1; sfx('lock', o); ring(o.g.position.x, o.g.position.y, floorZ(o) + 0.003);
       pick(-1);
     };
     // Ziel gewählt: passende Form → ablegen; falsche → ablehnen; Startplatz → zurücklegen; ohne Objekt → Hinweis
     const target = k => {
-      if (!cur) { feed.reset(); feed.say(T('Erst ein Objekt anheben', 'Lift an object first'), touch ? T('Objekt antippen', 'tap an object') : T('Objekt anklicken', 'click an object'), true); return; }
+      if (!cur) { const text = touch ? T('Erst ein Objekt antippen!', 'Tap an object first!') : T('Erst ein Objekt anklicken!', 'Click an object first!'); arm.say(text, null, 2200, 1); quest.tell(text); return; }
       if (job && job.to >= 0) return;   // Ziel steht schon fest
-      if (k === FREE) { if (!spot.ok) { nope('Hier ist kein Platz!', 'No room here!'); return; } freeS = { a: spot.a, r: spot.r }; }
-      else if (k < BACK && TPL[k].K !== cur.K) { nope(); return; }
+      if (k === FREE) { if (!spot.ok) { nope(L.full); return; } freeS = { a: spot.a, r: spot.r }; }
+      else if (k < BACK && TPL[k].K !== cur.K) { nope(L.nope, TPL[k].K); return; }
       if (reduce) {
-        const o = cur; cur = null;
+        const o = cur; cur = null; arm.hide();
         if (k !== BACK) o.on = null;
         if (k >= STACK) { const b = OBJ[k - STACK]; o.on = b; putAt(o, { a: b.slot.a, r: b.slot.r }); o.mat.v = o.mat.to = 1; save(); show(); return; }
         if (k === FREE) { putAt(o, freeS); freeS = null; o.mat.v = o.mat.to = 1; save(); show(); return; }
@@ -1311,7 +1352,7 @@ function build(L, wrap, host, o) {
     };
     const topple = (b, dx, dy) => {
       let o = above(b), k = 0;
-      say.show(topOf(b), T('Huch!', 'Whoa!'), 1600, true);
+      say.show(topOf(b), line(L.whoa), 1600, true);
       while (o) {
         const nx = above(o); o.on = null;
         const [lx, ly] = landAt(o, b.g.position.x, b.g.position.y, Math.atan2(dy, dx), k);
@@ -1347,6 +1388,8 @@ function build(L, wrap, host, o) {
     extra = (dt, t) => {
       ex(dt, t);
       clk += dt; pt += dt;
+      // Begrüßung einmal je Seitenaufruf, sobald die Bühne läuft (rendert nur sichtbar) und noch niemand gespielt hat
+      if (!greeted && clk > 1.5) { greeted = true; if (!clicked && !job) arm.say(line(L.hi), null, 3600, 1); }
       if (newRoundAt && clk >= newRoundAt && !job) newRound(layout());
       // Stoppuhr: Arm fährt → zählt immer; sonst nur mit Zeiger auf der Bühne und Eingabe in den letzten 15 s
       const ticking = started && !finished && ((job && !job.hold) || (inside && clk - lastIn < IDLE));
@@ -1385,7 +1428,7 @@ function build(L, wrap, host, o) {
           const free = OBJ.filter(o => !o.home && o.popT >= 1 && !o.on && !o.fall && !above(o));
           if (free.length) {
             const o = free[hopIdx++ % free.length]; o.hopT = 0; o.hopYaw = o.g.rotation.z;
-            if (!clicked && hops++ % 3 === 0) say.show(o, T('Heb mich auf!', 'Pick me up!'), 2200, true);
+            if (!clicked && hops++ % 3 === 0) say.show(o, line(L.pick), 2200, true);
           }
           rest = 0;
         }
@@ -1408,7 +1451,7 @@ function build(L, wrap, host, o) {
         applyMat(o, dt);
       });
       if (flashT < 1) { flashT = Math.min(1, flashT + dt / 0.45); flash.material.opacity = 0.95 * (1 - flashT); flash.scale.setScalar(1 + flashT * 1.6); }
-      say.tick();
+      say.tick(); arm.tick();
       // Klick-Hinweis der Formen: in Ruhe selten und zufällig, während ein Objekt eine Form sucht alle im Takt
       if (!reduce) TPL.forEach(p => {
         if (p.full) return;
