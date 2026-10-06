@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Handbuch xArm Lite 6 · Assistive Arm Platform</title>
+<title>Handbuch xArm Lite 6 · UX Robot</title>
 <meta name="color-scheme" content="light dark">
 <script>
 /* Farbschema vor dem ersten Malen setzen: ?theme= (Nexus Webapp) > gespeicherte Wahl > System */
@@ -2153,7 +2153,7 @@ source install/setup.bash</pre><button class="copy" type="button">Kopieren</butt
     <div class="card s-6">
       <div class="card-h"><h3>Drei Einstiegswege</h3></div>
       <dl class="kv">
-        <dt>Chat</dt><dd>Section <b>VLA-M</b> der Robot Control UI · <code>/vla/instruction</code> · mit LLM (lokal Ollama <code>qwen3.8:27b</code>, umschaltbar <i>Model: Local | Claude | Gemini</i>)</dd>
+        <dt>Chat</dt><dd>Section <b>VLA-M</b> der Robot Control UI · <code>/vla/instruction</code> · mit LLM (lokal Ollama <code>qwen3.8:27b</code>, umschaltbar <i>Model: Local strong | Local fast | Claude | Gemini</i>, schnell = <code>qwen2.5:14b</code>)</dd>
         <dt>Ein-Klick</dt><dd><i>Grasp</i> / <i>Place here</i> im Objektmenü bzw. in VR · <code>/vla/skill</code> · <b>ohne LLM</b>, gleiche Planprüfung</dd>
         <dt>Palletizing</dt><dd>Aufgaben-Fenster <i>Plan</i> / <i>Start</i> · <code>/vla/skill</code> <code>palletize</code>; im Chat startet „belade die Palette“ denselben Planer und Ablauf</dd>
         <dt>Szene</dt><dd>YOLO- + virtuelle Objekte in <code>link_base</code>-mm, gehaltenes Objekt, Greifer, FAKE / REAL - das Modell wählt nur Skill + Objekt, die Posen rechnet der Code</dd>
