@@ -176,7 +176,7 @@ a.kpi:hover { background: var(--surface-2); }
 /* ═════ Funktionsatlas: Ring (Anteil je Bereich an 83 Funktionen) + 9 Bereichs-Kacheln + 10 Kreisläufe ═════ */
 /* Funktionsatlas als dunkles Panel im Abschnitt 05 Bedienen (Wunsch User 06.10.2026) */
 .atlas { padding: 64px 40px; border: 1px solid var(--line); border-radius: var(--radius-lg);
-  background: radial-gradient(40% 58% at 22% 52%, color-mix(in srgb, var(--accent) 13%, transparent), transparent 72%),
+  background: radial-gradient(40% 58% at 22% 52%, color-mix(in srgb, var(--hue, var(--accent)) 13%, transparent), transparent 72%),
     linear-gradient(var(--grid) 1px, transparent 1px) 0 0 / 32px 32px, linear-gradient(90deg, var(--grid) 1px, transparent 1px) 0 0 / 32px 32px, var(--bg); }
 .at-grid { display: grid; grid-template-columns: minmax(300px, .85fr) minmax(0, 1.4fr); gap: 40px 56px; align-items: center; }
 .at-ring { margin: 0; display: grid; justify-items: center; gap: 16px; min-width: 0; }
@@ -207,6 +207,33 @@ html.sf-on .at-ring:not(.in) .seg { stroke-dasharray: 0 83; }
 .at-cta { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px; }
 .at-cta p { flex: 1 1 240px; font-size: 14px; line-height: 1.45; color: var(--fg-2); }
 .at-cta code { font: 600 13px/1.3 var(--mono); color: var(--fg); overflow-wrap: anywhere; }
+
+/* ═════ Architektur: 7 Schichten + Befehlswege, Teaser der Karte im Handbuch (operate_manual.html#karte), Look wie Funktionsatlas ═════ */
+.arch { --hue: var(--indigo); }
+.ar-stack { margin: 0; display: grid; gap: 16px; min-width: 0; }
+.ar-stack ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.ar-row { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 2px 12px; align-items: center; padding: 12px 14px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface);
+  transition: opacity var(--t-base) var(--ease-out), border-color var(--t-base) var(--ease-out), background-color var(--t-base) var(--ease-out); }
+.ar-row .ico, .ar-row em { grid-row: span 2; }
+.ar-row .ico { width: 18px; height: 18px; color: var(--hue); }
+.ar-row b { font-size: 15px; font-weight: 800; line-height: 1.25; }
+.ar-row em { font: 800 17px/1 var(--mono); font-style: normal; color: var(--hue); font-variant-numeric: tabular-nums; }
+.ar-row small { font-size: 14px; line-height: 1.4; color: var(--fg-2); }
+.ar-stack.focus .ar-row:not(.hl) { opacity: .3; }
+.ar-row.hl { border-color: var(--hue); background: color-mix(in srgb, var(--hue) 12%, var(--surface)); }
+.ar-stack figcaption { font-size: 14px; line-height: 1.4; color: var(--fg-2); text-align: center; }
+.ar-grp { display: grid; gap: 10px; }
+.ar-ways { display: flex; flex-wrap: wrap; gap: 6px; }
+.ar-ways a { display: inline-flex; align-items: center; min-height: 36px; padding: 0 12px; font-size: 14px; font-weight: 700; color: var(--fg); text-decoration: none;
+  border: 1px solid var(--line-strong); border-radius: var(--radius-sm); background: var(--surface); transition: border-color var(--t-base) var(--ease-out), background-color var(--t-base) var(--ease-out); }
+.ar-ways a:hover, .ar-ways a:focus-visible { border-color: var(--hue); background: color-mix(in srgb, var(--hue) 14%, var(--surface)); }
+.ar-ways a.crit { color: var(--red); }
+.ar-ways a.crit:hover, .ar-ways a.crit:focus-visible { border-color: var(--red); background: color-mix(in srgb, var(--red) 12%, var(--surface)); }
+.ar-legend { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 240px)); gap: 8px 32px; }
+.ar-legend li { display: flex; align-items: center; gap: 10px; font-size: 14px; color: var(--fg-2); }
+.ar-legend i { flex: 0 0 26px; height: 3px; background: var(--c); }
+.ar-legend i.dash { background: repeating-linear-gradient(90deg, var(--c) 0 6px, transparent 6px 10px); }
+.ar-legend b { margin-left: auto; font: 700 14px/1 var(--mono); color: var(--fg); font-variant-numeric: tabular-nums; }
 
 /* ═════ Web-Apps: App-Fenster, Seitenleiste = Folien, Kennzahlen, Folien mit Glas-Pfeilen ═════ */
 .app-frame { border: 1px solid var(--line-strong); border-radius: var(--radius-lg); background: var(--surface); box-shadow: 0 50px 90px -50px rgba(0, 0, 0, .55), var(--shadow); overflow: hidden; }
@@ -435,7 +462,7 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
   .chapter { padding-top: 64px; }
   .sec { padding-bottom: 48px; }
   .sec + .sec { padding-top: 56px; }
-  .fx-grid, .at-areas { grid-template-columns: minmax(0, 1fr); }
+  .fx-grid, .at-areas, .ar-legend { grid-template-columns: minmax(0, 1fr); }
   .af-main { padding: 14px; }
   .af-main .kpis-6 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .af-url { display: none; }
@@ -653,6 +680,7 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
       <a href="#einrichten" data-en="Set up">Einrichten</a>
       <a href="#bedienen" data-en="Operate">Bedienen</a>
       <span class="sep" aria-hidden="true"></span>
+      <a href="#architektur" data-en="Architecture">Architektur</a>
       <a href="#webapps">WebApps – User Interfaces</a>
       <a href="#teilhabe" data-en="Participation">Teilhabe</a>
     </nav>
@@ -783,7 +811,7 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
         <ol class="path" aria-label="Unterlagen nach Zielgruppe" data-en-aria="Documents by audience">
           <li><a href="#vorstellen" style="--hue: var(--violet)"><span class="pn"><svg class="ico"><use href="#i-star"/></svg><span data-en="01 · Visitors">01 · Besucher</span><span class="cnt" data-count="vorstellen"></span></span><b data-en="Present">Vorstellen</b><small data-en="Project page, presentation, poster">Projektseite, Präsentation, Poster</small></a></li>
           <li><a href="#verstehen" style="--hue: var(--gold)"><span class="pn"><svg class="ico"><use href="#i-spark"/></svg><span data-en="02 · Newcomers">02 · Einsteiger</span><span class="cnt" data-count="verstehen"></span></span><b data-en="Understand">Verstehen</b><small data-en="Why, what, with what, how">Warum, Was, Womit, Wie</small></a></li>
-          <li><a href="#technik" style="--hue: var(--indigo)"><span class="pn"><svg class="ico"><use href="#i-code"/></svg><span data-en="03 · Developers">03 · Entwickler</span><span class="cnt" data-count="technik"></span></span><b data-en="Develop">Entwickeln</b><small data-en="Concept, packages, interfaces">Konzept, Pakete, Schnittstellen</small></a></li>
+          <li><a href="#technik" style="--hue: var(--indigo)"><span class="pn"><svg class="ico"><use href="#i-code"/></svg><span data-en="03 · Developers">03 · Entwickler</span><span class="cnt" data-count="technik"></span></span><b data-en="Develop">Entwickeln</b><small data-en="Architecture, concept, packages">Architektur, Konzept, Pakete</small></a></li>
           <li><a href="#einrichten" style="--hue: var(--blue)"><span class="pn"><svg class="ico"><use href="#i-tool"/></svg><span data-en="04 · Commissioning">04 · Inbetriebnahme</span><span class="cnt" data-count="einrichten"></span></span><b data-en="Set up">Einrichten</b><small data-en="Setup guide, setup card">Setup-Guide, Setup-Karte</small></a></li>
           <li><a href="#bedienen" style="--hue: var(--teal)"><span class="pn"><svg class="ico"><use href="#i-user"/></svg><span data-en="05 · Operators">05 · Bediener</span><span class="cnt" data-count="bedienen"></span></span><b data-en="Operate">Bedienen</b><small data-en="Overview, function atlas, quick start, manual">Überblick, Funktionsatlas, Schnellstart, Handbuch</small></a></li>
         </ol>
@@ -842,6 +870,7 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
           <div><span class="eyebrow" style="--hue: var(--indigo)"><span class="n">03</span><span data-en="For developers">Für Entwickler</span></span><h2 data-en="Develop">Entwickeln</h2></div>
           <div class="brief" style="--hue: var(--indigo)"><p class="slogan" data-en="Open, reproducible, extensible.">Offen, nachbaubar, erweiterbar.</p><ul class="kpis"><li class="kpi"><strong>13</strong><span data-en="documents">Dokumente</span></li><li class="kpi"><strong>4</strong><span data-en="topics">Themen</span></li><li class="kpi"><strong>21</strong><span data-en="ROS&amp;nbsp;2 packages">ROS-2-Pakete</span></li></ul></div>
         </header>
+        <div class="sec-stack">
         <div class="dg-grid">
           <div class="dg" style="--hue: var(--accent)">
             <span class="k-t"><svg class="ico"><use href="#i-layers"/></svg><span data-en="Foundations">Grundlagen</span></span>
@@ -868,6 +897,68 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
             <a href="de/monitoring.html" data-href-en="en/monitoring.html" target="_blank" rel="noopener"><svg class="ico"><use href="#i-file"/></svg><b data-en="Monitoring">Überwachung</b><svg class="ico go-s"><use href="#i-go"/></svg><small data-en="Shows how the system is doing, how it is used and how user tests turned out">Zeigt, wie es dem System geht, wie es genutzt wird und wie Nutzertests ausfallen</small></a>
             <a href="develop_workflow.html" target="_blank" rel="noopener"><svg class="ico"><use href="#i-loop"/></svg><b data-en="Workflow with Claude Code">Arbeitsweise mit Claude Code</b><svg class="ico go-s"><use href="#i-go"/></svg><small data-en="How the project is built together with a coding AI">Wie das Projekt gemeinsam mit einer Programmier-KI entsteht</small></a>
           </div>
+        </div>
+        <!-- Architektur: Teaser der interaktiven Karte im Handbuch (#karte): 7 Schichten, 11 Befehlswege mit Deep-Link #p-<weg> -->
+        <div class="atlas arch dark-zone" id="architektur" role="region" aria-labelledby="arch-h">
+          <header class="land-head">
+            <span class="eyebrow" style="--hue: var(--indigo)" data-en="Architecture">Architektur</span>
+            <h3 id="arch-h" data-en="Every command, layer by layer.">Jeder Befehl, Schicht für Schicht.</h3>
+            <p data-en="47 components in seven layers, 85 connections with verified topics and services; eleven command paths to play step by step.">47 Komponenten in sieben Schichten, 85 Verbindungen mit belegten Topics und Services; elf Befehlswege zum Abspielen, Schritt für Schritt.</p>
+          </header>
+          <div class="at-grid">
+            <figure class="ar-stack" id="ar-stack">
+              <ol aria-label="Sieben Schichten von oben nach unten" data-en-aria="Seven layers from top to bottom">
+                <li class="ar-row" data-l="human"><svg class="ico" aria-hidden="true"><use href="#i-user"/></svg><b data-en="Humans and devices">Mensch und Geräte</b><em>6</em><small data-en="Mouse, touch, gamepad, Quest&amp;nbsp;3, microphone, Tobii">Maus, Touch, Gamepad, Quest&nbsp;3, Mikrofon, Tobii</small></li>
+                <li class="ar-row" data-l="ui"><svg class="ico" aria-hidden="true"><use href="#i-win"/></svg><b data-en="Interfaces">Oberflächen</b><em>7</em><small>:8080 · :8081 · :8083 · :8443 · RViz</small></li>
+                <li class="ar-row" data-l="bridge"><svg class="ico" aria-hidden="true"><use href="#i-link"/></svg><b data-en="Servers and bridges">Server und Brücken</b><em>8</em><small data-en="rosbridge :9090/:9091, HTTP servers, joy_node">rosbridge :9090/:9091, HTTP-Server, joy_node</small></li>
+                <li class="ar-row" data-l="logic"><svg class="ico" aria-hidden="true"><use href="#i-shield"/></svg><b data-en="Coordination and safety">Koordination und Sicherheit</b><em>12</em><small data-en="Watchdog, collision check, motion handler, VLA, blackbox">Watchdog, Kollisionsprüfung, Motion Handler, VLA, Blackbox</small></li>
+                <li class="ar-row" data-l="vision"><svg class="ico" aria-hidden="true"><use href="#i-cam"/></svg><b data-en="Perception">Wahrnehmung</b><em>6</em><small data-en="ZED, YOLO, point cloud, OctoMap">ZED, YOLO, Punktwolke, OctoMap</small></li>
+                <li class="ar-row" data-l="plan"><svg class="ico" aria-hidden="true"><use href="#i-route"/></svg><b data-en="Motion">Bewegung</b><em>3</em><small data-en="MoveIt and ros2_control">MoveIt und ros2_control</small></li>
+                <li class="ar-row" data-l="hw"><svg class="ico" aria-hidden="true"><use href="#i-arm"/></svg><b>Hardware</b><em>5</em><small data-en="xArm Lite&amp;nbsp;6 (REAL or FAKE), gripper, cameras">xArm Lite&nbsp;6 (REAL oder FAKE), Greifer, Kameras</small></li>
+              </ol>
+              <figcaption data-en="Commands run from top to bottom: point at a path to see its layers">Befehle laufen von oben nach unten: Zeiger auf einen Weg zeigt seine Schichten</figcaption>
+            </figure>
+            <div class="at-side">
+              <div class="ar-grp">
+                <span class="k-t" data-en="Control modes">Bedienarten</span>
+                <div class="ar-ways">
+                  <a href="operate_manual.html#p-pad" data-nexus-href="operate_manual.html#p-pad" data-l="human ui bridge logic plan hw" data-en="Gamepad local">Gamepad lokal</a>
+                  <a href="operate_manual.html#p-remote" data-nexus-href="operate_manual.html#p-remote" data-l="human ui bridge logic plan hw" data-en="Gamepad remote">Gamepad remote</a>
+                  <a href="operate_manual.html#p-jog" data-nexus-href="operate_manual.html#p-jog" data-l="human ui bridge logic plan hw" data-en="Jog buttons">Jog-Tasten</a>
+                  <a href="operate_manual.html#p-plan" data-nexus-href="operate_manual.html#p-plan" data-l="human ui bridge logic plan hw" data-en="Plan a target">Ziel planen</a>
+                  <a href="operate_manual.html#p-vr" data-nexus-href="operate_manual.html#p-vr" data-l="human ui bridge logic plan hw">VR Quest&nbsp;3</a>
+                  <a href="operate_manual.html#p-voice" data-nexus-href="operate_manual.html#p-voice" data-l="human ui bridge logic plan hw" data-en="Voice">Sprache</a>
+                  <a href="operate_manual.html#p-gaze" data-nexus-href="operate_manual.html#p-gaze" data-l="human logic plan hw" data-en="Gaze">Blick</a>
+                  <a href="operate_manual.html#p-vla" data-nexus-href="operate_manual.html#p-vla" data-l="human ui bridge vision logic plan" data-en="VLA-M chat">VLA-M Chat</a>
+                </div>
+              </div>
+              <div class="ar-grp">
+                <span class="k-t" data-en="Sequences">Abläufe</span>
+                <div class="ar-ways">
+                  <a href="operate_manual.html#p-start" data-nexus-href="operate_manual.html#p-start" data-l="human ui bridge plan vision logic" data-en="Start the system">System starten</a>
+                  <a href="operate_manual.html#p-grasp" data-nexus-href="operate_manual.html#p-grasp" data-l="hw vision bridge ui human logic plan" data-en="Grasp an object">Objekt greifen</a>
+                  <a class="crit" href="operate_manual.html#p-estop" data-nexus-href="operate_manual.html#p-estop" data-l="human ui bridge logic plan hw" data-en="Emergency stop">Not-Aus</a>
+                </div>
+              </div>
+              <div class="ar-grp">
+                <span class="k-t" data-en="Connection types">Verbindungsarten</span>
+                <ul class="ar-legend">
+                  <li style="--c: var(--violet)"><i></i><span data-en="ROS topic">ROS-Topic</span><b>37</b></li>
+                  <li style="--c: var(--orange)"><i></i><span data-en="Service / action">Service / Action</span><b>14</b></li>
+                  <li style="--c: var(--fg-2)"><i class="dash"></i><span data-en="Starts process">Startet Prozess</span><b>9</b></li>
+                  <li style="--c: var(--pink)"><i></i><span>Hardware</span><b>8</b></li>
+                  <li style="--c: var(--green)"><i></i><span>HTTP / REST</span><b>7</b></li>
+                  <li style="--c: var(--blue)"><i></i><span data-en="Human ↔ device">Mensch ↔ Gerät</span><b>7</b></li>
+                  <li style="--c: var(--teal)"><i></i><span>WebSocket</span><b>3</b></li>
+                </ul>
+              </div>
+              <div class="at-cta">
+                <a class="b-pri" href="operate_manual.html#karte" data-nexus-href="operate_manual.html#karte"><span data-en="Open the architecture map">Architektur-Karte öffnen</span><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg></a>
+                <p data-en="Every command path has its own link: &lt;code&gt;operate_manual.html#p-&amp;lt;path&amp;gt;&lt;/code&gt;">Jeder Befehlsweg hat einen eigenen Link: <code>operate_manual.html#p-&lt;weg&gt;</code></p>
+              </div>
+            </div>
+          </div>
+        </div>
         </div>
       </section>
 
@@ -1310,8 +1401,8 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
     heroExit: '.hero-inner',
     heads: '.land-head, .ch-head, .sec-head, .ct-copy',
     depth: ['.app-frame'],
-    groups: ['.strip ul', '.fx-grid', '.at-areas', '.path', '.list', '.dg-grid'],
-    items: ['.at-ring', '.at-loops', '.at-cta', '.list-note', '.contact .vcard'],
+    groups: ['.strip ul', '.fx-grid', '.at-areas', '.ar-stack ol', '.path', '.list', '.dg-grid'],
+    items: ['.at-ring', '.at-loops', '.ar-grp', '.at-cta', '.list-note', '.contact .vcard'],
     tilt: { sel: '.fx, .list > a.item', lift: -2 },
     shine: '.thumb',
     rail: { sections: 'section.sec[id]', label: '.eyebrow .n' },
@@ -1392,6 +1483,18 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
     });
     if (reduce) ring.classList.add('in');
     else new IntersectionObserver(([en], obs) => { if (!en.isIntersecting) return; obs.disconnect(); ring.classList.add('in'); }, { threshold: .35 }).observe(ring);
+  }
+
+  // Architektur: Befehlsweg (Zeiger oder Fokus) hebt seine Schichten hervor
+  const stack = document.getElementById('ar-stack');
+  if (stack) {
+    const rows = $$('.ar-row', stack);
+    const hl = ls => { stack.classList.toggle('focus', !!ls); rows.forEach(r => r.classList.toggle('hl', !!ls && ls.includes(r.dataset.l))); };
+    $$('#architektur .ar-ways a').forEach(a => {
+      const ls = a.dataset.l.split(' ');
+      a.addEventListener('pointerenter', () => hl(ls)); a.addEventListener('pointerleave', () => hl(null));
+      a.addEventListener('focus', () => hl(ls)); a.addEventListener('blur', () => hl(null));
+    });
   }
 })();
 </script>

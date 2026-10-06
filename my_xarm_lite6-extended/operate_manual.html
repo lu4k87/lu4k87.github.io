@@ -3624,6 +3624,13 @@ function initShell(onShow) {
   if (window.ResizeObserver) new ResizeObserver(draw).observe(map);
   window.addEventListener('resize', draw);
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(draw);
+  // Deep-Link #p-<weg> (z. B. aus der Projekt-Doku): Befehlsweg vorwählen
+  function pathFromHash() {
+    var m = /^#p-([\w-]+)$/.exec(location.hash);
+    if (m && m[1] !== state.path && PATHS.some(function (P) { return P.id === m[1]; })) selectPath(m[1]);
+  }
+  window.addEventListener('hashchange', pathFromHash);
+  pathFromHash();
   // ---------- Regelkreis (interaktiv) ----------
   var shell = null;
   var IC = {
