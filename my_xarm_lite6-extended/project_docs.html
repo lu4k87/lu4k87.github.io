@@ -188,7 +188,7 @@ a.kpi:hover { background: var(--surface-2); }
 .more:hover .ico { transform: translateX(3px); }
 .more:hover span { text-decoration: underline; text-underline-offset: 3px; }
 
-/* ═════ Funktionsatlas: Ring (Anteil je Bereich an 83 Funktionen) + 9 Bereichs-Kacheln + 10 Kreisläufe ═════ */
+/* ═════ Funktionsatlas: Ring (Anteil je Bereich an 83 Funktionen) + 9 Bereichs-Kacheln + 10 Kreisläufe; darunter alle Funktionen (css/function_atlas.css) ═════ */
 /* Funktionsatlas als dunkles Panel im Abschnitt 05 Features (Wunsch User 06.10.2026) */
 .atlas { padding: 64px 40px; border: 1px solid var(--line); border-radius: var(--radius-lg);
   background: radial-gradient(40% 58% at 22% 52%, color-mix(in srgb, var(--hue, var(--accent)) 13%, transparent), transparent 72%),
@@ -222,6 +222,9 @@ html.sf-on .at-ring:not(.in) .seg { stroke-dasharray: 0 83; }
 .at-cta { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px; }
 .at-cta p { flex: 1 1 240px; font-size: 14px; line-height: 1.45; color: var(--fg-2); }
 .at-cta code { font: 600 13px/1.3 var(--mono); color: var(--fg); overflow-wrap: anywhere; }
+/* Kreislauf-Chips = Knöpfe: zeigen ihren Ablauf in der Funktionsliste darunter (#atlas-list, js/function_atlas.js) */
+.at-loops .chip { cursor: pointer; transition: border-color var(--t-fast), background-color var(--t-fast); }
+.at-loops .chip:hover { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 9%, var(--surface)); color: var(--fg); }
 
 /* ═════ Architektur: 7 Schichten + Befehlswege, Teaser der Karte im Handbuch (operate_manual.html#karte), Look wie Funktionsatlas ═════ */
 .arch { --hue: var(--indigo); }
@@ -436,7 +439,6 @@ a.pdf { font: 700 11px/1 var(--mono); padding: 5px 7px; border-radius: var(--rad
 .pf-tab .ico { width: 18px; height: 18px; color: var(--accent); }
 .pf-tab:hover { background: color-mix(in srgb, var(--fg) 7%, transparent); }
 .pf-tab[aria-selected="true"] { background: var(--surface); box-shadow: 0 0 0 1px var(--line-strong); }
-/* Verweis auf den Funktionsatlas (docs/present_function_atlas.html) unter den 6 Kernabläufen */
 
 footer { border-top: 1px solid var(--line); padding-block: 18px 28px; font: 600 12px/1.4 var(--mono); color: var(--fg-2); }
 footer .wrap { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px 16px; }
@@ -649,6 +651,7 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
 .tm-pk { transition: opacity var(--t-base) var(--ease-out); }
 </style>
 <link rel="stylesheet" href="css/scroll_flow.css">
+<link rel="stylesheet" href="css/function_atlas.css">
 <script type="importmap">{ "imports": {
   "three": "https://cdn.jsdelivr.net/npm/three@0.186.0/build/three.module.js",
   "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.186.0/examples/jsm/" } }</script>
@@ -708,6 +711,15 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
   <symbol id="i-scan" viewBox="0 0 24 24"><path d="M3 7.5V5a2 2 0 0 1 2-2h2.5M16.5 3H19a2 2 0 0 1 2 2v2.5M21 16.5V19a2 2 0 0 1-2 2h-2.5M7.5 21H5a2 2 0 0 1-2-2v-2.5"/><rect x="8" y="8" width="8" height="8" rx="1"/></symbol>
   <symbol id="i-wave" viewBox="0 0 24 24"><path d="M3 10v4M7 6.5v11M11 3.5v17M15 8v8M19 5.5v13"/></symbol>
   <symbol id="i-db" viewBox="0 0 24 24"><ellipse cx="12" cy="5.5" rx="8" ry="3"/><path d="M4 5.5v13c0 1.7 3.6 3 8 3s8-1.3 8-3v-13M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
+  <symbol id="i-flask" viewBox="0 0 24 24"><path d="M9 3h6M10 3v6L4.5 19a1.5 1.5 0 0 0 1.3 2.2h12.4a1.5 1.5 0 0 0 1.3-2.2L14 9V3M7 15h10"/></symbol>
+  <symbol id="i-gizmo" viewBox="0 0 24 24"><path d="M12 12V3M12 3l-2.2 2.2M12 3l2.2 2.2M12 12l7.5 4.3M19.5 16.3l-3 .4M19.5 16.3l-1.1-2.9M12 12l-7.5 4.3M4.5 16.3l3 .4M4.5 16.3l1.1-2.9"/><circle cx="12" cy="12" r="1.6"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24"><rect x="4.5" y="10.5" width="15" height="10.5" rx="2"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3M12 14.5v2.5"/></symbol>
+  <symbol id="i-pulse" viewBox="0 0 24 24"><path d="M2.5 12h4l2.5-6 4 12 2.5-6h6"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></symbol>
+  <symbol id="i-fg-play" viewBox="0 0 24 24"><path d="M7 4.5l12 7.5-12 7.5z"/></symbol>
+  <symbol id="i-fg-prev" viewBox="0 0 24 24"><path d="M6 5v14M18 5l-9 7 9 7z"/></symbol>
+  <symbol id="i-fg-next" viewBox="0 0 24 24"><path d="M18 5v14M6 5l9 7-9 7z"/></symbol>
   <symbol id="i-atom" viewBox="0 0 24 24"><circle cx="12" cy="12" r="1.3"/><ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(45 12 12)"/><ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(-45 12 12)"/></symbol>
 </defs></svg>
 
@@ -1003,7 +1015,7 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
           <ul class="chips" aria-label="Messgrößen" data-en-aria="Measures">
             <li class="chip">SUS</li><li class="chip">NASA-TLX</li><li class="chip" data-en="Time">Zeit</li><li class="chip" data-en="Errors">Fehler</li><li class="chip" data-en="Success rate">Erfolgsquote</li>
           </ul>
-          <a class="more" href="present_function_atlas.html#eval-hierarchy"><span data-en="Evaluation in the atlas">Evaluierung im Atlas</span><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg></a>
+          <a class="more" href="#eval-hierarchy"><span data-en="Evaluation in the atlas">Evaluierung im Atlas</span><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg></a>
         </div>
       </section>
 
@@ -1070,7 +1082,7 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
         </div>
       </section>
 
-      <!-- Funktionsatlas: Ring (Anteil je Bereich), 9 Bereiche mit Direktlinks, 10 Kreisläufe -->
+      <!-- Funktionsatlas: Ring (Anteil je Bereich), 9 Bereiche + 10 Kreisläufe filtern die Liste darunter; Liste = Filter, 83 Karten, Ablauf-Panel (js/function_atlas.js) -->
       <section class="sec" id="atlas-sec">
         <header class="sec-head">
           <div><span class="eyebrow" style="--hue: var(--pink)"><span class="n">05</span><span data-en="Every function">Alle Funktionen</span></span><h2 data-en="Function atlas">Funktionsatlas</h2></div>
@@ -1097,40 +1109,415 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
                 <text class="at-lbl" x="120" y="143" text-anchor="middle" data-en="functions">Funktionen</text>
                 <text class="at-sub" x="120" y="161" text-anchor="middle" data-en="9 AREAS">9 BEREICHE</text>
               </svg>
-              <figcaption data-en="Share per area: point at an area to see its count">Anteil je Bereich: Zeiger auf einen Bereich zeigt seine Zahl</figcaption>
+              <figcaption data-en="Share per area: point at an area to see its count, click to filter the list below">Anteil je Bereich: Zeiger zeigt die Zahl, Klick filtert die Liste darunter</figcaption>
             </figure>
             <div class="at-side">
               <ul class="at-areas">
-                <li class="at-area" data-a="ctl" style="--c: var(--accent)"><a href="present_function_atlas.html#gamepad"><svg class="ico" aria-hidden="true"><use href="#i-pad"/></svg><b data-en="Control modes">Steuerwege</b><em>14</em><small data-en="Gamepad, jog, TCP gizmo&amp;nbsp;…">Gamepad, Joggen, TCP-Gizmo&nbsp;…</small></a></li>
-                <li class="at-area" data-a="safe" style="--c: var(--gold)"><a href="present_function_atlas.html#estop"><svg class="ico" aria-hidden="true"><use href="#i-shield"/></svg><b data-en="Safety">Sicherheit</b><em>16</em><small data-en="E-STOP, control lock, heartbeat&amp;nbsp;…">E-STOP, Control-Lock, Heartbeat&nbsp;…</small></a></li>
-                <li class="at-area" data-a="twin" style="--c: var(--blue)"><a href="present_function_atlas.html#twin-urdf"><svg class="ico" aria-hidden="true"><use href="#i-cube"/></svg><b>Digital Twin</b><em>13</em><small data-en="URDF, ghost plan, collision display&amp;nbsp;…">URDF, Ghost-Plan, Kollisionsanzeige&nbsp;…</small></a></li>
-                <li class="at-area" data-a="vis" style="--c: var(--green)"><a href="present_function_atlas.html#zed-yolo"><svg class="ico" aria-hidden="true"><use href="#i-cam"/></svg><b>Vision</b><em>6</em><small data-en="ZED + YOLOv8, ArUco, collision objects">ZED + YOLOv8, ArUco, Kollisionsobjekte</small></a></li>
-                <li class="at-area" data-a="ai" style="--c: var(--violet)"><a href="present_function_atlas.html#llm-agent"><svg class="ico" aria-hidden="true"><use href="#i-spark"/></svg><b data-en="AI / VLA-M">KI / VLA-M</b><em>7</em><small data-en="AI agent, plan check, skills&amp;nbsp;…">KI-Agent, Planprüfung, Skills&nbsp;…</small></a></li>
-                <li class="at-area" data-a="mon" style="--c: var(--pink)"><a href="present_function_atlas.html#mon-overview"><svg class="ico" aria-hidden="true"><use href="#i-chart"/></svg><b>Monitoring Dashboard</b><em>11</em><small data-en="Overview, system, processes&amp;nbsp;…">Übersicht, System, Prozesse&nbsp;…</small></a></li>
-                <li class="at-area" data-a="eval" style="--c: var(--orange)"><a href="present_function_atlas.html#eval-hierarchy"><svg class="ico" aria-hidden="true"><use href="#i-user"/></svg><b data-en="Evaluation">Evaluierung</b><em>8</em><small data-en="Tests, Latin square, participant login&amp;nbsp;…">Tests, Latin Square, Teilnehmer-Login&nbsp;…</small></a></li>
-                <li class="at-area" data-a="data" style="--c: var(--indigo)"><a href="present_function_atlas.html#data-blackbox"><svg class="ico" aria-hidden="true"><use href="#i-file"/></svg><b data-en="Data">Daten</b><em>3</em><small data-en="Blackbox, demo recorder, click statistics">Blackbox, Demo-Recorder, Klick-Statistik</small></a></li>
-                <li class="at-area" data-a="infra" style="--c: var(--lime)"><a href="present_function_atlas.html#infra-nexus"><svg class="ico" aria-hidden="true"><use href="#i-net"/></svg><b data-en="Infrastructure">Infrastruktur</b><em>5</em><small data-en="Nexus Webapp, touch panel, setup card&amp;nbsp;…">Nexus Webapp, Touch Panel, Setup-Karte&nbsp;…</small></a></li>
+                <li class="at-area" data-a="ctl" style="--c: var(--accent)"><a href="#atlas-list" data-fa-area="ctl"><svg class="ico" aria-hidden="true"><use href="#i-pad"/></svg><b data-en="Control modes">Steuerwege</b><em>14</em><small data-en="Gamepad, jog, TCP gizmo&amp;nbsp;…">Gamepad, Joggen, TCP-Gizmo&nbsp;…</small></a></li>
+                <li class="at-area" data-a="safe" style="--c: var(--gold)"><a href="#atlas-list" data-fa-area="safe"><svg class="ico" aria-hidden="true"><use href="#i-shield"/></svg><b data-en="Safety">Sicherheit</b><em>16</em><small data-en="E-STOP, control lock, heartbeat&amp;nbsp;…">E-STOP, Control-Lock, Heartbeat&nbsp;…</small></a></li>
+                <li class="at-area" data-a="twin" style="--c: var(--blue)"><a href="#atlas-list" data-fa-area="twin"><svg class="ico" aria-hidden="true"><use href="#i-cube"/></svg><b>Digital Twin</b><em>13</em><small data-en="URDF, ghost plan, collision display&amp;nbsp;…">URDF, Ghost-Plan, Kollisionsanzeige&nbsp;…</small></a></li>
+                <li class="at-area" data-a="vis" style="--c: var(--green)"><a href="#atlas-list" data-fa-area="vis"><svg class="ico" aria-hidden="true"><use href="#i-cam"/></svg><b>Vision</b><em>6</em><small data-en="ZED + YOLOv8, ArUco, collision objects">ZED + YOLOv8, ArUco, Kollisionsobjekte</small></a></li>
+                <li class="at-area" data-a="ai" style="--c: var(--violet)"><a href="#atlas-list" data-fa-area="ai"><svg class="ico" aria-hidden="true"><use href="#i-spark"/></svg><b data-en="AI / VLA-M">KI / VLA-M</b><em>7</em><small data-en="AI agent, plan check, skills&amp;nbsp;…">KI-Agent, Planprüfung, Skills&nbsp;…</small></a></li>
+                <li class="at-area" data-a="mon" style="--c: var(--pink)"><a href="#atlas-list" data-fa-area="mon"><svg class="ico" aria-hidden="true"><use href="#i-chart"/></svg><b>Monitoring Dashboard</b><em>11</em><small data-en="Overview, system, processes&amp;nbsp;…">Übersicht, System, Prozesse&nbsp;…</small></a></li>
+                <li class="at-area" data-a="eval" style="--c: var(--orange)"><a href="#atlas-list" data-fa-area="eval"><svg class="ico" aria-hidden="true"><use href="#i-user"/></svg><b data-en="Evaluation">Evaluierung</b><em>8</em><small data-en="Tests, Latin square, participant login&amp;nbsp;…">Tests, Latin Square, Teilnehmer-Login&nbsp;…</small></a></li>
+                <li class="at-area" data-a="data" style="--c: var(--indigo)"><a href="#atlas-list" data-fa-area="data"><svg class="ico" aria-hidden="true"><use href="#i-file"/></svg><b data-en="Data">Daten</b><em>3</em><small data-en="Blackbox, demo recorder, click statistics">Blackbox, Demo-Recorder, Klick-Statistik</small></a></li>
+                <li class="at-area" data-a="infra" style="--c: var(--lime)"><a href="#atlas-list" data-fa-area="infra"><svg class="ico" aria-hidden="true"><use href="#i-net"/></svg><b data-en="Infrastructure">Infrastruktur</b><em>5</em><small data-en="Nexus Webapp, touch panel, setup card&amp;nbsp;…">Nexus Webapp, Touch Panel, Setup-Karte&nbsp;…</small></a></li>
               </ul>
               <div class="at-loops">
                 <b><svg class="ico" aria-hidden="true"><use href="#i-loop"/></svg><span data-en="10 loops as rings">10 Kreisläufe als Ring</span></b>
                 <span class="chips">
-                  <span class="chip" data-en="Plan → check → approve">Plan → Prüfen → Freigabe</span>
-                  <span class="chip" data-en="Servo control loop">Servo-Regelkreis</span>
-                  <span class="chip" data-en="Voice command">Sprachbefehl</span>
-                  <span class="chip" data-en="Heartbeat → watchdog">Heartbeat → Watchdog</span>
-                  <span class="chip" data-en="Agent loop">Agentenschleife</span>
-                  <span class="chip" data-en="Palletizing cycle">Palettier-Zyklus</span>
-                  <span class="chip" data-en="Click statistics">Klick-Statistik</span>
-                  <span class="chip" data-en="Study loop">Studienschleife</span>
-                  <span class="chip">Blackbox</span>
-                  <span class="chip" data-en="Demo → training (planned)">Demo → Training (geplant)</span>
+                  <button type="button" class="chip" data-fa-flow="moveto" data-en="Plan → check → approve">Plan → Prüfen → Freigabe</button>
+                  <button type="button" class="chip" data-fa-flow="servo" data-en="Servo control loop">Servo-Regelkreis</button>
+                  <button type="button" class="chip" data-fa-flow="voice" data-en="Voice command">Sprachbefehl</button>
+                  <button type="button" class="chip" data-fa-flow="heartbeat" data-en="Heartbeat → watchdog">Heartbeat → Watchdog</button>
+                  <button type="button" class="chip" data-fa-flow="vla" data-en="Agent loop">Agentenschleife</button>
+                  <button type="button" class="chip" data-fa-flow="pallet" data-en="Palletizing cycle">Palettier-Zyklus</button>
+                  <button type="button" class="chip" data-fa-flow="clicks" data-en="Click statistics">Klick-Statistik</button>
+                  <button type="button" class="chip" data-fa-flow="study" data-en="Study loop">Studienschleife</button>
+                  <button type="button" class="chip" data-fa-flow="blackbox">Blackbox</button>
+                  <button type="button" class="chip" data-fa-flow="demo" data-en="Demo → training (planned)">Demo → Training (geplant)</button>
                 </span>
               </div>
-              <div class="at-cta">
-                <a class="b-pri" href="present_function_atlas.html"><span data-en="Open the function atlas">Funktionsatlas öffnen</span><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg></a>
-                <p data-en="Every function has its own link: &lt;code&gt;present_function_atlas.html#&amp;lt;id&amp;gt;&lt;/code&gt;">Jede Funktion hat einen eigenen Link: <code>present_function_atlas.html#&lt;id&gt;</code></p>
-              </div>
             </div>
+          </div>
+        </div>
+        <div class="fa" id="atlas-list">
+          <div class="fa-legend">
+            <p data-en="&lt;b&gt;First virtual, then real.&lt;/b&gt; Pick a card: its flow runs topic by topic. Every card shows the path of its function to the real robot, for example:"><b>Erst virtuell, dann real.</b> Karte wählen: Ihr Ablauf läuft Topic für Topic. Jede Karte zeigt den Weg ihrer Funktion zum echten Roboter, zum Beispiel:</p>
+            <span data-stage-ex="sr"></span>
+            <p data-en="Full circle with tick = stage applies · empty circle = stage is skipped · # = link to the function.">Voller Kreis mit Haken = Stufe gilt · leerer Kreis = Stufe entfällt · # = Link zur Funktion.</p>
+          </div>
+          <div class="filter" role="search" aria-label="Funktionen filtern" data-en-aria="Filter functions">
+            <div class="chips" id="areas" role="group" aria-label="Bereich" data-en-aria="Area"></div>
+            <div class="f-right">
+              <span class="chips"><button type="button" class="chip" id="only-loops" aria-pressed="false"><svg class="ico"><use href="#i-loop"/></svg><span data-en="Loops only">nur Kreisläufe</span></button></span>
+              <label class="search"><svg class="ico" aria-hidden="true"><use href="#i-search"/></svg><input type="search" id="q" placeholder="Funktion oder Topic suchen …" data-en-ph="Search function or topic …" aria-label="Funktion oder Topic suchen" data-en-aria="Search function or topic"></label>
+              <span class="count" id="count" aria-live="polite"></span>
+            </div>
+          </div>
+
+          <div class="fa-grid">
+            <div class="cards" id="cards">
+              <h2 class="grp-h" data-a="ctl" style="--c: var(--accent)">Steuerwege</h2>
+              <article class="fn" id="gamepad" data-a="ctl" data-f="pad" data-s="spr">
+                <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-pad"/></svg><span data-en="Gamepad, local and remote">Gamepad lokal und remote</span></button></h3>
+                <p data-en="Xbox pad on the robot PC (&lt;code&gt;/joy&lt;/code&gt;) or in the browser (&lt;code&gt;/remote/joy&lt;/code&gt;, 20 Hz).">Xbox-Pad am Roboter-PC (<code>/joy</code>) oder im Browser (<code>/remote/joy</code>, 20 Hz).</p>
+              </article>
+              <article class="fn" id="jog" data-a="ctl" data-f="jog" data-s="sr">
+                <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-gizmo"/></svg><span data-en="Cartesian and joint jog">Kartesisch und je Gelenk joggen</span></button></h3>
+                <p data-en="Holding sends &lt;code&gt;/remote/twist&lt;/code&gt; every 20 ms, releasing zero; watchdog, then Servo.">Halten sendet <code>/remote/twist</code> alle 20 ms, Loslassen null; Watchdog, dann Servo.</p>
+              </article>
+              <article class="fn" id="tcp-gizmo" data-a="ctl" data-f="moveto" data-s="spr" data-default>
+                <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-gizmo"/></svg><span data-en="TCP gizmo in the Digital Twin">TCP-Gizmo im Digital Twin</span></button></h3>
+                <p data-en="Drag the target in the twin, MoveIt plans, it moves after Execute.">Ziel im Twin ziehen, MoveIt plant, gefahren wird nach Execute.</p>
+              </article>
+              <article class="fn" id="moveto-scan" data-a="ctl" data-f="moveto" data-s="spr">
+                <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg><span data-en="MoveTo, home and scan pose">MoveTo, Home und Scan-Pose</span></button></h3>
+                <p data-en="Fixed poses by button, e.g. scan pose 300 / 0 / 400&amp;nbsp;mm via MoveGroup.">Feste Posen per Knopf, z.&nbsp;B. Scan-Pose 300 / 0 / 400&nbsp;mm über MoveGroup.</p>
+              </article>
+              <article class="fn" id="gripper-vacuum" data-a="ctl" data-f="gripper" data-s="sr">
+                <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-grip"/></svg><span data-en="Gripper and vacuum">Greifer und Vakuum</span></button></h3>
+                <p data-en="&lt;code&gt;/ui/gripper_cmd&lt;/code&gt; switches suction or fingers; the state follows only on success."><code>/ui/gripper_cmd</code> schaltet Sauger oder Finger; der Zustand folgt erst nach Erfolg.</p>
+              </article>
+              <article class="fn" id="object-menu" data-a="ctl" data-f="grasp" data-s="spr">
+                <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-grip"/></svg><span data-en="Object menu: grasp by click">Objektmenü: Greifen per Klick</span></button></h3>
+                <p data-en="Click an object in the twin or in VR, Grasp: &lt;code&gt;/vla/skill&lt;/code&gt; without a language model.">Objekt im Twin oder in VR anklicken, Grasp: <code>/vla/skill</code> ohne Sprachmodell.</p>
+              </article>
+              <article class="fn" id="sequences" data-a="ctl" data-f="seq" data-s="spr">
+                <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-layers"/></svg><span data-en="Sequences">Sequenzen</span></button></h3>
+                <p data-en="Five step types, stored for all clients; Play starts after confirmation.">Fünf Schritttypen, gespeichert für alle Clients; Play startet nach Bestätigung.</p>
+              </article>
+              <article class="fn" id="linear-axis" data-a="ctl" data-f="linear" data-s="s">
+                <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg><span data-en="Linear axis">Linearachse</span></button></h3>
+                <p data-en="&lt;code&gt;/linear_axis_cmd&lt;/code&gt; shifts the robot by ±0.5&amp;nbsp;m, in simulation only."><code>/linear_axis_cmd</code> verschiebt den Roboter um ±0,5&nbsp;m, nur in der Simulation.</p>
+              </article>
+              <article class="fn" id="voice" data-a="ctl" data-f="voice" data-s="spr">
+                <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-mic"/></svg><span data-en="Voice (Whisper)">Sprache (Whisper)</span></button></h3>
+                <p data-en="Commands in German and English; motions wait for “Confirm”.">Befehle auf Deutsch und Englisch; Fahrten warten auf „Bestätigen“.</p>
+              </article>
+              <article class="fn" id="gaze" data-a="ctl" data-f="gaze" data-s="spr">
+                <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-eye"/></svg><span data-en="Gaze UI and gaze grasp (Tobii)">Blick-UI und Blick-Greifen (Tobii)</span></button></h3>
+                <p data-en="Buttons fire after 1&amp;nbsp;s of gaze; gaze grasp moves above the object.">Knöpfe lösen nach 1&nbsp;s Blick aus; Blick-Greifen fährt über das Objekt.</p>
+              </article>
+              <article class="fn" id="vr-quest3" data-a="ctl" data-f="vr" data-s="spr">
+                <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-vr"/></svg><span data-en="VR Quest 3 and VR cockpit">VR Quest 3 und VR-Cockpit</span></button></h3>
+                <p data-en="The grip follows the hand; the HUD shows mode, FAKE/REAL, control and E-STOP.">Grip folgt der Hand; das HUD zeigt Modus, FAKE/REAL, Control und E-STOP.</p>
+              </article>
+              <article class="fn" id="touch-panel" data-a="ctl" data-f="touch" data-s="spr">
+                <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-touch"/></svg><span data-en="Touch panel">Touch Panel</span></button></h3>
+                <p data-en="Jog, poses, gripper and programs at the robot, only after server approval.">Jog, Posen, Greifer und Programme am Roboter, nur nach Freigabe am Server.</p>
+              </article>
+              <article class="fn" id="command-palette" data-a="ctl" data-f="">
+                <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-search"/></svg><span data-en="Command palette Ctrl+K">Befehlspalette Strg+K</span></button></h3>
+                <p data-en="Finds functions and clicks the real button; does not open while the robot moves.">Sucht Funktionen und klickt den echten Knopf; öffnet nicht während einer Fahrt.</p>
+              </article>
+              <article class="fn" id="guides" data-a="ctl" data-f="">
+                <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-user"/></svg><span data-en="Guides: step-by-step">Guides: geführte Abläufe</span></button></h3>
+                <p data-en="15 guides in 5 groups; “Show me” rings the real element.">15 Abläufe in 5 Gruppen; „Show me“ markiert das echte Element.</p>
+              </article>
+              <h2 class="grp-h" data-a="safe" style="--c: var(--gold)">Sicherheit</h2>
+              <article class="fn" id="estop" data-a="safe" data-f="estop" data-s="sr">
+                <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-stop"/></svg><span data-en="E-STOP latched, reset by owner only">E-STOP verriegelt, Quittieren nur Besitzer</span></button></h3>
+                <p data-en="&lt;code&gt;/ui/emergency_stop_topic&lt;/code&gt; stops everything; only the owner or robot PC resets."><code>/ui/emergency_stop_topic</code> stoppt alles; quittieren nur Besitzer oder Roboter-PC.</p>
+              </article>
+              <article class="fn" id="control-lock" data-a="safe" data-f="remote" data-s="spr">
+                <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-lock"/></svg><span data-en="Control lock">Control-Lock</span></button></h3>
+                <p data-en="Exactly one client controls; the robot PC grants via Allow/Deny, requests expire after 60&amp;nbsp;s.">Genau ein Client steuert; der Roboter-PC gibt per Allow/Deny frei, Anfrage verfällt nach 60&nbsp;s.</p>
+              </article>
+              <article class="fn" id="heartbeat-timeout" data-a="safe" data-f="heartbeat" data-s="sr">
+                <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-pulse"/></svg><span data-en="Heartbeat timeout">Heartbeat-Timeout</span></button></h3>
+                <p data-en="Without a heartbeat gamepad and jog stop: FAKE after 1.0&amp;nbsp;s, REAL after 0.4&amp;nbsp;s.">Ohne Heartbeat stoppen Gamepad und Jog: FAKE nach 1,0&nbsp;s, REAL nach 0,4&nbsp;s.</p>
+              </article>
+              <article class="fn" id="twist-gate" data-a="safe" data-f="remote" data-s="spr">
+                <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-shield"/></svg><span data-en="Twist gate">Twist-Gate</span></button></h3>
+                <p data-en="Jog reaches Servo only from the owner, with speed and floor limit; REAL ≤&amp;nbsp;50&amp;nbsp;%.">Jog erreicht Servo nur vom Besitzer, mit Tempo- und Bodengrenze; REAL ≤&nbsp;50&nbsp;%.</p>
+              </article>
+              <article class="fn" id="server-token" data-a="safe" data-f="remote" data-s="spr">
+                <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-lock"/></svg><span data-en="Server token (HMAC)">Server-Token (HMAC)</span></button></h3>
+                <p data-en="Only the local UI signs with HMAC-SHA256; messages older than 5&amp;nbsp;s are rejected.">Nur die lokale UI signiert mit HMAC-SHA256; Nachrichten älter als 5&nbsp;s gelten nicht.</p>
+              </article>
+              <article class="fn" id="rosbridge-whitelist" data-a="safe" data-f="remote" data-s="spr">
+                <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-link"/></svg><span data-en="rosbridge whitelist">rosbridge-Whitelist</span></button></h3>
+                <p data-en="Browsers use listed topics and services only; &lt;code&gt;/joy&lt;/code&gt; is left out on purpose.">Browser nutzen nur eingetragene Topics und Services; <code>/joy</code> fehlt bewusst.</p>
+              </article>
+              <article class="fn" id="pad-precheck" data-a="safe" data-f="pad" data-s="spr">
+                <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-shield"/></svg><span data-en="Gamepad pre-collision check">Kollisionsvorprüfung Gamepad</span></button></h3>
+                <p data-en="&lt;code&gt;/joy&lt;/code&gt; → &lt;code&gt;/joy_check&lt;/code&gt;: 0.1&amp;nbsp;s lookahead, stop at 91&amp;nbsp;mm, pad rumbles."><code>/joy</code> → <code>/joy_check</code>: 0,1&nbsp;s Vorausschau, Stopp bei 91&nbsp;mm, Pad vibriert.</p>
+              </article>
+              <article class="fn" id="floor-guard" data-a="safe" data-f="jog" data-s="spr">
+                <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-shield"/></svg><span data-en="Floor guard">Bodensperre</span></button></h3>
+                <p data-en="Z collision level 10&amp;nbsp;mm in UI, watchdog, Servo and as a floor box in MoveIt.">Z-Kollisionslevel 10&nbsp;mm in UI, Watchdog, Servo und als Boden-Box in MoveIt.</p>
+              </article>
+              <article class="fn" id="servo-status" data-a="safe" data-f="servo" data-s="sr">
+                <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-pulse"/></svg><span data-en="Servo status">Servo-Status</span></button></h3>
+                <p data-en="&lt;code&gt;/servo_server/status&lt;/code&gt; becomes a UI badge, pad rumble and an RViz overlay."><code>/servo_server/status</code> wird Badge in der UI, Vibration am Pad, Overlay in RViz.</p>
+              </article>
+              <article class="fn" id="motion-busy" data-a="safe" data-f="moveto" data-s="sr">
+                <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-lock"/></svg><span data-en="Motion busy">Motion-Busy</span></button></h3>
+                <p data-en="&lt;code&gt;/ui/motion_busy&lt;/code&gt; locks motion buttons; Stop next to it halts without an E-stop."><code>/ui/motion_busy</code> sperrt Bewegungsknöpfe; Stop daneben hält an, ohne Not-Aus.</p>
+              </article>
+              <article class="fn" id="speed" data-a="safe" data-f="pad" data-s="sr">
+                <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-pulse"/></svg><span data-en="Speed">Tempo</span></button></h3>
+                <p data-en="5 levels; MoveIt scales to 0.15 / 0.3 / 0.6; remote in REAL at most 50&amp;nbsp;%.">5 Stufen; MoveIt skaliert auf 0,15 / 0,3 / 0,6; remote in REAL höchstens 50&nbsp;%.</p>
+              </article>
+              <article class="fn" id="path-confirm" data-a="safe" data-f="moveto" data-s="spr">
+                <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg><span data-en="Path confirmation">Pfad-Bestätigung</span></button></h3>
+                <p data-en="The planned path waits for Execute; after 15&amp;nbsp;s without approval it is discarded.">Geplanter Pfad wartet auf Execute; nach 15&nbsp;s ohne Freigabe wird er verworfen.</p>
+              </article>
+              <article class="fn" id="proximity-heat" data-a="safe" data-f="reach" data-s="sr">
+                <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-eye"/></svg><span data-en="Reach and proximity heatmap">Reichweite und Abstand-Heatmap</span></button></h3>
+                <p data-en="Links tint by distance to the Z limit, red below 15&amp;nbsp;mm; reach 440&amp;nbsp;mm.">Glieder färben sich nach Abstand zur Z-Grenze, rot unter 15&nbsp;mm; Reichweite 440&nbsp;mm.</p>
+              </article>
+              <article class="fn" id="vr-watchdog" data-a="safe" data-f="vr" data-s="sr">
+                <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-vr"/></svg><span data-en="VR watchdog">VR-Watchdog</span></button></h3>
+                <p data-en="If controller data stops for 0.3&amp;nbsp;s, a zero twist goes out.">Bleiben Controller-Daten 0,3&nbsp;s aus, geht ein Null-Twist raus.</p>
+              </article>
+              <article class="fn" id="vla-safety" data-a="safe" data-f="vla" data-s="spr">
+                <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-spark"/></svg><span data-en="AI: dry_run and allow_real_motion">KI: dry_run und allow_real_motion</span></button></h3>
+                <p data-en="&lt;code&gt;dry_run&lt;/code&gt; never moves; REAL runs only with &lt;code&gt;allow_real_motion&lt;/code&gt; and Execute."><code>dry_run</code> bewegt nie; REAL fährt nur mit <code>allow_real_motion</code> und Execute.</p>
+              </article>
+              <article class="fn" id="nexus-preflight" data-a="safe" data-f="start" data-s="spr">
+                <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg><span data-en="Nexus preflight">Nexus-Preflight</span></button></h3>
+                <p data-en="Checks robot, cameras, ports, duplicate stacks, GPU and disk; automatic in REAL.">Prüft Roboter, Kameras, Ports, Doppelstacks, GPU und Platte; in REAL automatisch.</p>
+              </article>
+              <h2 class="grp-h" data-a="twin" style="--c: var(--blue)">Digital Twin</h2>
+              <article class="fn" id="twin-urdf" data-a="twin" data-f="feedback" data-s="sr">
+                <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-cube"/></svg><span data-en="Digital Twin: three.js and URDF">Digital Twin: three.js und URDF</span></button></h3>
+                <p data-en="The Lite 6 model mirrors &lt;code&gt;/joint_states&lt;/code&gt; at about 30&amp;nbsp;Hz in the browser.">Das Lite-6-Modell spiegelt <code>/joint_states</code> mit etwa 30&nbsp;Hz im Browser.</p>
+              </article>
+              <article class="fn" id="ghost-plan" data-a="twin" data-f="moveto" data-s="spr">
+                <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-cube"/></svg><span data-en="Ghost plan">Ghost-Plan</span></button></h3>
+                <p data-en="A translucent arm plays the plan first (&lt;code&gt;/ui/moveto_preview_path&lt;/code&gt;); switchable.">Ein halbtransparenter Arm fährt den Plan vor (<code>/ui/moveto_preview_path</code>); zuschaltbar.</p>
+              </article>
+              <article class="fn" id="collision-display" data-a="twin" data-f="servo" data-s="sr">
+                <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-warn"/></svg><span data-en="Collision and singularity display">Kollisions- und Singularitätsanzeige</span></button></h3>
+                <p data-en="Servo status 3/4 and &lt;code&gt;/ui/collision_msg&lt;/code&gt; tint links and the banner.">Servo-Status 3/4 und <code>/ui/collision_msg</code> färben Glieder und Banner.</p>
+              </article>
+              <article class="fn" id="rapier-sandbox" data-a="twin" data-f="sandbox" data-s="s">
+                <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-cube"/></svg><span data-en="Rapier physics sandbox">Rapier-Physik-Sandbox</span></button></h3>
+                <p data-en="Rapier in the browser: objects fall, the suction cup grips; runs in FAKE mode only.">Rapier im Browser: Objekte fallen, der Sauger greift; startet nur im FAKE-Modus.</p>
+              </article>
+              <article class="fn" id="virtual-objects" data-a="twin" data-f="sandbox" data-s="sp">
+                <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-cube"/></svg><span data-en="Virtual objects">Virtuelle Objekte</span></button></h3>
+                <p data-en="Cube, bottle, balls, bowl, basket appear like YOLO detections on &lt;code&gt;/zed/bboxes_3d&lt;/code&gt;.">Würfel, Flasche, Bälle, Schale, Korb erscheinen wie YOLO-Detektionen auf <code>/zed/bboxes_3d</code>.</p>
+              </article>
+              <article class="fn" id="scenes" data-a="twin" data-f="scene" data-s="sr">
+                <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-layers"/></svg><span data-en="Scenes">Szenen</span></button></h3>
+                <p data-en="Two fixed scenes, switched via &lt;code&gt;/ui/set_virtual_objects&lt;/code&gt;, the same for all clients.">Zwei feste Szenen, Wechsel über <code>/ui/set_virtual_objects</code>, gleich für alle Clients.</p>
+              </article>
+              <article class="fn" id="logistics-cell" data-a="twin" data-f="pallet" data-s="sp">
+                <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-layers"/></svg><span data-en="Logistics cell">Logistik-Zelle</span></button></h3>
+                <p data-en="Euro pallet, 8 cartons at scale 1:6, belts and fence; fence and belts are obstacles.">Europalette, 8 Kartons im Maßstab 1:6, Bänder und Zaun; Zaun und Bänder sind Hindernis.</p>
+              </article>
+              <article class="fn" id="reachability" data-a="twin" data-f="reach" data-s="sr">
+                <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-globe"/></svg><span data-en="Reachability volume">Reachability-Volumen</span></button></h3>
+                <p data-en="7,888 precomputed voxels by Yoshikawa index, drawn in one draw call.">7888 vorberechnete Voxel nach Yoshikawa-Index, gezeichnet in einem Draw-Call.</p>
+              </article>
+              <article class="fn" id="vcams" data-a="twin" data-f="demo" data-s="sr">
+                <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-cam"/></svg><span data-en="Virtual twin cameras (vCams)">Virtuelle Twin-Kameras (vCams)</span></button></h3>
+                <p data-en="Up to 4 cameras render the twin; as a ROS image at 15&amp;nbsp;fps in FAKE mode only.">Bis zu 4 Kameras rendern den Twin; als ROS-Bild mit 15&nbsp;fps nur im FAKE-Modus.</p>
+              </article>
+              <article class="fn" id="tf-tuner" data-a="twin" data-f="sandbox" data-s="sr">
+                <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-gizmo"/></svg><span data-en="TF tuner">TF-Tuner</span></button></h3>
+                <p data-en="Frames go out latched as &lt;code&gt;/tf_static&lt;/code&gt;; Save stores on the robot PC.">Frames gehen latched als <code>/tf_static</code>; Save speichert auf dem Roboter-PC.</p>
+              </article>
+              <article class="fn" id="vr-mirror" data-a="twin" data-f="vr" data-s="sr">
+                <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-vr"/></svg><span data-en="VR mirror">VR-Spiegel</span></button></h3>
+                <p data-en="A PC window shows what the Quest&amp;nbsp;3 sees; purely passive.">Ein PC-Fenster zeigt, was die Quest&nbsp;3 sieht; rein passiv.</p>
+              </article>
+              <article class="fn" id="passthrough-ar" data-a="twin" data-f="vr" data-s="s" data-plan="prep">
+                <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-vr"/></svg><span data-en="Passthrough AR">Passthrough-AR</span></button></h3>
+                <p data-en="Switchable in the VR session; not yet tested on the real robot.">In der VR-Session umschaltbar; am echten Roboter noch nicht getestet.</p>
+              </article>
+              <article class="fn" id="isaac-shadow" data-a="twin" data-f="feedback" data-plan="doc">
+                <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-cube"/></svg><span data-en="Isaac Sim shadow">Isaac Sim Shadow</span></button></h3>
+                <p data-en="Isaac Sim subscribes to &lt;code&gt;/joint_states&lt;/code&gt; as a shadow; guide in the docs, local per PC.">Isaac Sim abonniert <code>/joint_states</code> als Schatten; Anleitung in der Doku, lokal je PC.</p>
+              </article>
+              <h2 class="grp-h" data-a="vis" style="--c: var(--green)">Vision</h2>
+              <article class="fn" id="zed-yolo" data-a="vis" data-f="vision" data-s="pr">
+                <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-cam"/></svg><span data-en="ZED and YOLOv8 in 3D">ZED und YOLOv8 in 3D</span></button></h3>
+                <p data-en="YOLOv8 on colour image and depth delivers 3D boxes at about 2.5&amp;nbsp;Hz.">YOLOv8 auf Farbbild und Tiefe liefert 3D-Boxen mit etwa 2,5&nbsp;Hz.</p>
+              </article>
+              <article class="fn" id="ip-cam-aruco" data-a="vis" data-f="streams" data-s="r" data-plan="prep">
+                <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-eye"/></svg><span data-en="IP camera and ArUco">IP-Kamera und ArUco</span></button></h3>
+                <p data-en="12 ArUco markers place detected objects on the table plane via homography.">12 ArUco-Marker legen erkannte Objekte per Homographie auf die Tischebene.</p>
+              </article>
+              <article class="fn" id="collision-objects" data-a="vis" data-f="vision" data-s="spr">
+                <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-cube"/></svg><span data-en="MoveIt collision objects">MoveIt-Kollisionsobjekte</span></button></h3>
+                <p data-en="Detected objects become open boxes in the planning scene; switchable via service.">Erkannte Objekte werden offene Kisten in der Planungsszene; per Service schaltbar.</p>
+              </article>
+              <article class="fn" id="octomap" data-a="vis" data-f="vision" data-s="r">
+                <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-layers"/></svg><span data-en="OctoMap">OctoMap</span></button></h3>
+                <p data-en="MoveIt OctoMap from the ZED point cloud at 3&amp;nbsp;cm; off by default.">MoveIt-OctoMap aus der ZED-Punktwolke mit 3&nbsp;cm; standardmäßig aus.</p>
+              </article>
+              <article class="fn" id="grasp-3phase" data-a="vis" data-f="grasp" data-s="spr">
+                <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-grip"/></svg><span data-en="3-phase grasp">3-Phasen-Greifen</span></button></h3>
+                <p data-en="70&amp;nbsp;mm above, straight down, suction on, lift at least 80&amp;nbsp;mm.">70&nbsp;mm darüber, gerade absenken, Sauger ein, mindestens 80&nbsp;mm anheben.</p>
+              </article>
+              <article class="fn" id="streams" data-a="vis" data-f="streams" data-s="sr">
+                <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-cam"/></svg><span data-en="Camera streams">Kamera-Streams</span></button></h3>
+                <p data-en="web_video_server on port 8082 serves ROS images as MJPEG to the UI.">web_video_server auf Port 8082 liefert ROS-Bilder als MJPEG an die UI.</p>
+              </article>
+              <h2 class="grp-h" data-a="ai" style="--c: var(--violet)">KI / VLA-M</h2>
+              <article class="fn" id="llm-agent" data-a="ai" data-f="vla" data-s="spr">
+                <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-spark"/></svg><span data-en="AI agent: Ollama, Claude, Gemini">KI-Agent: Ollama, Claude, Gemini</span></button></h3>
+                <p data-en="Local qwen3.8:27b, in the cloud Claude or Gemini; switchable at runtime.">Lokal qwen3.8:27b, in der Cloud Claude oder Gemini; zur Laufzeit umschaltbar.</p>
+              </article>
+              <article class="fn" id="plan-check" data-a="ai" data-f="vla" data-s="spr">
+                <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg><span data-en="Plan, check, execute">Plan, Prüfen, Execute</span></button></h3>
+                <p data-en="Code checks every plan, up to 2 correction rounds; then it waits for Execute.">Der Code prüft jeden Plan, bis zu 2 Korrekturrunden; dann wartet er auf Execute.</p>
+              </article>
+              <article class="fn" id="skills" data-a="ai" data-f="vla" data-s="spr">
+                <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-grip"/></svg><span data-en="Skills: pick, place, home, gripper, palletize">Skills: pick, place, home, gripper, palletize</span></button></h3>
+                <p data-en="The model only picks skill and object; the code computes every pose.">Das Modell wählt nur Skill und Objekt; alle Posen rechnet der Code.</p>
+              </article>
+              <article class="fn" id="recovery" data-a="ai" data-f="vla" data-s="spr">
+                <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-loop"/></svg><span data-en="Recovery: replan">Recovery: neu planen</span></button></h3>
+                <p data-en="If a step fails, the agent replans with the new scene at most 2 times.">Scheitert ein Schritt, plant der Agent mit der neuen Szene höchstens 2× neu.</p>
+              </article>
+              <article class="fn" id="abort" data-a="ai" data-f="vla" data-s="sr">
+                <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-stop"/></svg><span data-en="Abort and E-STOP">Abbruch: Abort und E-STOP</span></button></h3>
+                <p data-en="Abort stops after the current step, the E-STOP at once.">Abort stoppt nach dem laufenden Schritt, der E-STOP sofort.</p>
+              </article>
+              <article class="fn" id="world-model" data-a="ai" data-f="vla" data-s="spr">
+                <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-globe"/></svg><span data-en="World model">Weltmodell</span></button></h3>
+                <p data-en="Scene from &lt;code&gt;/zed/bboxes_3d&lt;/code&gt;; the plan is first played through on a copy.">Szene aus <code>/zed/bboxes_3d</code>; der Plan wird vorab auf einer Kopie durchgespielt.</p>
+              </article>
+              <article class="fn" id="session-log-eval" data-a="ai" data-f="vla" data-s="s">
+                <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-chart"/></svg><span data-en="Session log and vla_eval">Session-Log und vla_eval</span></button></h3>
+                <p data-en="Every model round is logged; 57 fixed test cases measure the agent without a robot.">Jede Modell-Runde wird geloggt; 57 feste Testfälle messen den Agenten ohne Roboter.</p>
+              </article>
+              <h2 class="grp-h" data-a="mon" style="--c: var(--pink)">Monitoring Dashboard</h2>
+              <article class="fn" id="mon-overview" data-a="mon" data-f="mon">
+                <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-chart"/></svg><span data-en="Overview">Übersicht</span></button></h3>
+                <p data-en="System, ROS&amp;nbsp;2, robot and users at a glance.">System, ROS&nbsp;2, Roboter und Nutzer auf einen Blick.</p>
+              </article>
+              <article class="fn" id="mon-system" data-a="mon" data-f="mon">
+                <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-chip"/></svg><span data-en="System">System</span></button></h3>
+                <p data-en="CPU, memory, GPU, network and disks live, 1&amp;nbsp;h ring, 30 days history.">CPU, Speicher, GPU, Netzwerk und Datenträger live, Ring 1&nbsp;h, 30 Tage Verlauf.</p>
+              </article>
+              <article class="fn" id="mon-processes" data-a="mon" data-f="mon">
+                <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-layers"/></svg><span data-en="Processes">Prozesse</span></button></h3>
+                <p data-en="Top processes, ROS nodes as processes and load per user.">Top-Prozesse, ROS-Nodes als Prozesse und Last je Benutzer.</p>
+              </article>
+              <article class="fn" id="mon-services" data-a="mon" data-f="mon">
+                <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-win"/></svg><span data-en="UIs and services">UIs und Dienste</span></button></h3>
+                <p data-en="Status, latency and availability of all web UIs and servers.">Status, Antwortzeit und Verfügbarkeit aller Web-UIs und Server.</p>
+              </article>
+              <article class="fn" id="mon-comms" data-a="mon" data-f="mon">
+                <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-link"/></svg><span data-en="ROS graph">ROS-Graph</span></button></h3>
+                <p data-en="Graph, data flow and live rates of all ROS&amp;nbsp;2 nodes.">Graph, Datenfluss und Live-Raten aller ROS-2-Nodes.</p>
+              </article>
+              <article class="fn" id="mon-topics" data-a="mon" data-f="mon">
+                <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-link"/></svg><span data-en="Topics">Topics</span></button></h3>
+                <p data-en="All topics with publishers, subscribers, rate and bandwidth.">Alle Topics mit Publishern, Subscribern, Rate und Bandbreite.</p>
+              </article>
+              <article class="fn" id="mon-robot" data-a="mon" data-f="mon">
+                <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-arm"/></svg><span data-en="Robot usage">Robot-Nutzung</span></button></h3>
+                <p data-en="MoveIt runs, success rate, times, jog, joint paths and blackbox list.">MoveIt-Läufe, Erfolgsquote, Zeiten, Jog, Gelenkwege und Blackbox-Liste.</p>
+              </article>
+              <article class="fn" id="mon-grasps" data-a="mon" data-f="mon">
+                <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-grip"/></svg><span data-en="Grasp and place">Greifen und Ablegen</span></button></h3>
+                <p data-en="Which object was grasped where and placed where.">Welches Objekt wo gegriffen und wohin gebracht wurde.</p>
+              </article>
+              <article class="fn" id="mon-users" data-a="mon" data-f="clicks">
+                <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-user"/></svg><span data-en="Users and sessions">Nutzer und Sessions</span></button></h3>
+                <p data-en="Who was connected, for how long, what was clicked and pressed.">Wer verbunden war, wie lange, was geklickt und gedrückt wurde.</p>
+              </article>
+              <article class="fn" id="mon-events" data-a="mon" data-f="mon">
+                <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-warn"/></svg><span data-en="Event logs">Event Logs</span></button></h3>
+                <p data-en="Log of nodes, sessions, grasps, errors and markers.">Protokoll von Nodes, Sessions, Griffen, Fehlern und Markern.</p>
+              </article>
+              <article class="fn" id="mon-export" data-a="mon" data-f="mon">
+                <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-db"/></svg><span data-en="Export">Export</span></button></h3>
+                <p data-en="&lt;code&gt;/api/export&lt;/code&gt; delivers 7 tables as CSV or JSON, 30 days by default."><code>/api/export</code> liefert 7 Tabellen als CSV oder JSON, Standard 30 Tage.</p>
+              </article>
+              <h2 class="grp-h" data-a="eval" style="--c: var(--orange)">Evaluierung</h2>
+              <article class="fn" id="eval-hierarchy" data-a="eval" data-f="study">
+                <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-flask"/></svg><span data-en="Test, task, participant, questionnaire">Test, Aufgabe, Person, Fragebogen</span></button></h3>
+                <p data-en="Four levels; one run per participant, task and input method.">Vier Ebenen; je Person, Aufgabe und Eingabemethode ein Durchlauf.</p>
+              </article>
+              <article class="fn" id="eval-latin-square" data-a="eval" data-f="study">
+                <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-layers"/></svg><span data-en="Latin square">Latin Square</span></button></h3>
+                <p data-en="The order of input methods is balanced per participant (Williams).">Die Reihenfolge der Eingabemethoden wird je Person ausbalanciert (Williams).</p>
+              </article>
+              <article class="fn" id="eval-popup-login" data-a="eval" data-f="study">
+                <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-user"/></svg><span data-en="Start popup and participant login">Start-Popup und Teilnehmer-Login</span></button></h3>
+                <p data-en="&lt;code&gt;/dashboard/eval_run&lt;/code&gt; opens the popup on all devices; login by code."><code>/dashboard/eval_run</code> öffnet das Popup auf allen Geräten; Login per Code.</p>
+              </article>
+              <article class="fn" id="eval-questionnaires" data-a="eval" data-f="study">
+                <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg><span data-en="SUS, NASA-TLX, UEQ-S, SEQ">SUS, NASA-TLX, UEQ-S, SEQ</span></button></h3>
+                <p data-en="10 + 6 + 8 + 1 items, scored automatically.">10 + 6 + 8 + 1 Fragen, automatisch ausgewertet.</p>
+              </article>
+              <article class="fn" id="eval-kpi" data-a="eval" data-f="study">
+                <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-chart"/></svg><span data-en="KPI snapshot">KPI-Snapshot</span></button></h3>
+                <p data-en="On stop, 10 metrics of the time window are stored.">Beim Stopp werden 10 Kennzahlen des Zeitfensters gespeichert.</p>
+              </article>
+              <article class="fn" id="eval-report" data-a="eval" data-f="study">
+                <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-chart"/></svg><span data-en="Report per ISO 9241-11">Bericht nach ISO 9241-11</span></button></h3>
+                <p data-en="6 chapters from effectiveness to usage data, printable as PDF.">6 Kapitel von Effektivität bis Nutzungsdaten, druckbar als PDF.</p>
+              </article>
+              <article class="fn" id="eval-segments" data-a="eval" data-f="study">
+                <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-pulse"/></svg><span data-en="Marker segments">Marker-Abschnitte</span></button></h3>
+                <p data-en="Compare time windows between markers; markers also by button.">Zeitfenster zwischen Markern vergleichen, Marker auch per Knopf.</p>
+              </article>
+              <article class="fn" id="eval-export" data-a="eval" data-f="study">
+                <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-db"/></svg><span data-en="Export CSV and JSON">Export CSV und JSON</span></button></h3>
+                <p data-en="Participants, runs with metrics and questionnaire answers.">Testpersonen, Durchläufe mit Kennzahlen und Fragebogen-Antworten.</p>
+              </article>
+              <h2 class="grp-h" data-a="data" style="--c: var(--indigo)">Daten</h2>
+              <article class="fn" id="data-blackbox" data-a="data" data-f="blackbox">
+                <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-db"/></svg><span data-en="Blackbox">Blackbox</span></button></h3>
+                <p data-en="The last 60&amp;nbsp;s as rosbag2 on E-STOP, servo halt, collision or button.">Die letzten 60&nbsp;s als rosbag2 bei E-STOP, Servo-Halt, Kollision oder Knopf.</p>
+              </article>
+              <article class="fn" id="data-demo" data-a="data" data-f="demo" data-s="sr">
+                <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-db"/></svg><span data-en="Demo recorder and LeRobot">Demo-Recorder und LeRobot</span></button></h3>
+                <p data-en="Episodes at 15&amp;nbsp;fps; &lt;code&gt;demos_to_lerobot.py&lt;/code&gt; builds a dataset, training planned.">Episoden mit 15&nbsp;fps; <code>demos_to_lerobot.py</code> macht einen Datensatz, Training geplant.</p>
+              </article>
+              <article class="fn" id="data-clicks" data-a="data" data-f="clicks">
+                <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-touch"/></svg><span data-en="Click statistics">Klick-Statistik</span></button></h3>
+                <p data-en="Clicks go via &lt;code&gt;/ui/interaction_events&lt;/code&gt; into SQLite every 3&amp;nbsp;s, without content.">Klicks gehen alle 3&nbsp;s über <code>/ui/interaction_events</code> in SQLite, ohne Inhalte.</p>
+              </article>
+              <h2 class="grp-h" data-a="infra" style="--c: var(--lime)">Infrastruktur</h2>
+              <article class="fn" id="infra-nexus" data-a="infra" data-f="start" data-s="spr">
+                <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-rocket"/></svg><span data-en="Nexus Webapp">Nexus Webapp</span></button></h3>
+                <p data-en="Port 8080: FAKE and REAL setups, preflight, EXECUTE, backups, Kill Daemon.">Port 8080: Setups FAKE und REAL, Preflight, EXECUTE, Backups, Kill Daemon.</p>
+              </article>
+              <article class="fn" id="infra-touch" data-a="infra" data-f="touch">
+                <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-touch"/></svg><span data-en="Touch panel setup">Touch Panel einrichten</span></button></h3>
+                <p data-en="Flask blueprint of the Nexus Webapp; kiosk start with &lt;code&gt;touch_panel_start.sh&lt;/code&gt;.">Flask-Blueprint der Nexus Webapp; Kiosk-Start mit <code>touch_panel_start.sh</code>.</p>
+              </article>
+              <article class="fn" id="infra-setup-card" data-a="infra" data-f="">
+                <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-globe"/></svg><span data-en="Setup card">Setup-Karte</span></button></h3>
+                <p data-en="Network, ports, touch and AI live from &lt;code&gt;/api/network&lt;/code&gt;, DE and EN, as PDF.">Netz, Ports, Touch und KI live aus <code>/api/network</code>, DE und EN, als PDF.</p>
+              </article>
+              <article class="fn" id="infra-network" data-a="infra" data-f="">
+                <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-link"/></svg><span data-en="network.yaml">network.yaml</span></button></h3>
+                <p data-en="One source for IPs, 7 ports and the rosbridge whitelist.">Eine Quelle für IPs, 7 Ports und die rosbridge-Whitelist.</p>
+              </article>
+              <article class="fn" id="infra-themes" data-a="infra" data-f="">
+                <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-eye"/></svg><span data-en="Themes">Themes</span></button></h3>
+                <p data-en="4 themes for all web UIs: Dark, Light, Jarvis, Nord Blue; switch with Alt+T.">4 Themes für alle Web-UIs: Dark, Light, Jarvis, Nord Blue; Wechsel mit Alt+T.</p>
+              </article>
+              <p class="empty" id="empty" hidden data-en="No function matches. Reset the filter or search for a topic such as &lt;code&gt;/joy&lt;/code&gt;.">Keine Funktion passt. Filter zurücksetzen oder nach einem Topic wie <code>/joy</code> suchen.</p>
+            </div>
+
+            <section class="panel" id="panel" aria-labelledby="pn-title" aria-live="off">
+              <div class="pn-head">
+                <div class="pn-kick" id="pn-kick"></div>
+                <h2 id="pn-title" data-en="Drag the target, check the ghost, move">Ziel ziehen, Ghost prüfen, fahren</h2>
+                <p class="pn-text" id="pn-text"></p>
+                <div class="pn-meta" id="pn-meta"></div>
+              </div>
+              <div class="loop" id="loop" hidden></div>
+              <figure class="fg" id="fg-atlas" aria-labelledby="fg-atlas-cap">
+                <ol class="fg-fallback">
+                  <li data-en="MoveTo: drag the TCP gizmo in the Digital Twin → rosbridge → motion handler plans → ghost path in the twin → human approves → driver → xArm Lite 6">MoveTo: TCP-Gizmo im Digital Twin ziehen → rosbridge → Motion Handler plant → Ghost-Bahn im Twin → Mensch gibt frei → Treiber → xArm Lite 6</li>
+                </ol>
+                <noscript><p data-en="The interactive flows need JavaScript; every card names its path in text.">Die interaktiven Abläufe brauchen JavaScript; jede Karte nennt ihren Weg als Text.</p></noscript>
+              </figure>
+              <div class="pn-fns" id="pn-fns" hidden><h3 data-en="Functions in this flow">Funktionen in diesem Ablauf</h3><div class="chips" id="pn-chips"></div></div>
+            </section>
           </div>
         </div>
       </section>
@@ -1171,7 +1558,7 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
             <span class="txt"><b><svg class="ico"><use href="#i-arm"/></svg><span data-en="Control modes &amp; safety chain">Steuerwege &amp; Sicherheitskette</span></b><p data-en="Ten control modes, one safety chain: devices, chain to try out with E-STOP, capability matrix">Zehn Steuerwege, eine Sicherheitskette: Eingabegeräte, Kette zum Ausprobieren mit E-STOP, Fähigkeits-Matrix</p></span>
             <span class="end"><span class="tag">HTML</span><span class="go"><svg class="ico"><use href="#i-go"/></svg></span></span>
           </a>
-          <a class="item" href="present_function_atlas.html" target="_blank" rel="noopener" style="--hue: var(--teal)">
+          <a class="item" href="#atlas-sec" style="--hue: var(--teal)">
             <span class="thumb"><img src="img/project_docs/atlas.jpg" alt="" loading="lazy"></span>
             <span class="txt"><b><span data-en="Function atlas">Funktionsatlas</span></b><p data-en="All 83 functions in 9 areas, each with data flow and topics; 10 loops as a ring">Alle 83 Funktionen in 9 Bereichen, je mit Datenfluss und Topics; 10 Kreisläufe als Ring</p></span>
             <span class="end"><span class="tag">HTML</span><span class="go"></span></span>
@@ -1374,6 +1761,7 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
 
 <script src="js/scroll_flow.js"></script>
 <script src="js/landing.js"></script>
+<script src="js/function_atlas.js"></script>
 <script>
 (() => {
   const root = document.documentElement;
@@ -1444,7 +1832,8 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
     heads: '.land-head, .ch-head, .sec-head, .ct-copy',
     depth: ['.app-frame'],
     groups: ['.strip ul', '.fx-grid', '.at-areas', '.ar-stack ol', '.path', '.list', '.dg-grid'],
-    items: ['.at-ring', '.at-loops', '.ar-grp', '.at-cta', '.list-note', '.contact .vcard'],
+    items: ['.at-ring', '.at-loops', '.ar-grp', '.fa-legend', '.fa .filter', '.fa .panel', '.fa .grp-h', '.list-note', '.contact .vcard'],
+    cards: '.fa .cards > .fn',
     tilt: { sel: '.fx, .list > a.item', lift: -2 },
     shine: '.thumb',
     rail: { sections: 'section.sec[id]', label: '.eyebrow .n' },
@@ -1453,7 +1842,7 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
            crumb: { into: '.top .wrap', sections: 'section.sec[id], .contact[id]', label: 'h2' } },
     collapse: { el: '.top', after: '.hero' },
     relay: [{ box: '.hero-kpis', items: '.hero-card' }, { box: '.path', items: 'a' }, '.fx-grid', '.kpis'],
-    spot: [{ box: '.path', items: 'a' }, '.fx-grid', '.kpis', { box: '.list', items: 'a.item' }],
+    spot: [{ box: '.path', items: 'a' }, '.fx-grid', '.kpis', { box: '.list', items: 'a.item' }, { box: '.fa .cards', items: '.fn' }],
     fill: '.pips, .hc-seg',
     lines: ['.strip', 'section.land', '.contact'],
   });

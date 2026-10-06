@@ -1,799 +1,9 @@
-<!doctype html>
-<!-- Funktionsatlas: alle Funktionen der Assistive Arm Platform als Karten, je Ablauf ein animierter Flow-Graph,
-     Kreisläufe zusätzlich als Ring. Design wie docs/project_docs.html (Palette Monochrom, Ecken dezent gerundet, hell + dunkel, DE + EN);
-     Kopf = Landing-Hero aus css/landing.css + js/landing.js, mittig ohne Bühne (Wunsch User 06.10.2026).
-     Flow-Engine = Kopie aus .claude/skills/flow-graph/flow_graph_template.html, erweitert um `via` (Rückweg über eigene Zeile).
-     Neue Funktion: <article class="fn"> im Bereich ergänzen (data-a Bereich, data-f Ablauf, data-s Stufen s/p/r).
-     Neuer Ablauf: Eintrag in FLOWS (SPEC wie Skill flow-graph, Topics per grep belegt; loop = Ring-Stationen).
-     Öffnen: direkt als Datei oder über die Nexus Webapp unter /ws/docs/present_function_atlas.html; Link je Funktion: #<id>. -->
-<html lang="de">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Funktionsatlas · Assistive Arm Platform</title>
-<link rel="stylesheet" href="fonts/fonts.css">
-<link rel="stylesheet" href="css/landing.css">
-<style>
-:root {
-  --radius-sm: 4px; --radius: 6px; --radius-lg: 8px; /* Ecken dezent: klein (Chips, Buttons, Code) · Karten · große Rahmen; Balken/Linien kantig, höchstens 8 px (Wunsch User 04.10.2026, Hook prüft) */
-  color-scheme: dark;
-  /* Graphit + Türkis-Akzent wie project_docs.html; je Bereich eine eigene Farbe (Wunsch User 05.10.2026, Rot nur Fehler/Stopp); Kopf bleibt dunkel (.dark-zone) */
-  --bg: #111315; --surface: #181b1e; --surface-2: #1f2327; --line: #2a2f34; --line-strong: #3b4248;
-  --fg: #eef2f3; --fg-2: #b9c2c6; --accent: #2ee6c8; --accent-ink: #04201c;
-  --indigo: #818cf8; --teal: #2dd4bf; --violet: #a78bfa; --gold: #f5b942; --green: #4ade80; --red: #f87171; --warn: #fbbf24;
-  --blue: #60a5fa; --pink: #f472b6; --orange: #fb923c; --lime: #a3e635;
-  --band: #15181a; --grid: rgba(46, 230, 200, .055); --glow: rgba(46, 230, 200, .45);
-  --shadow: 0 1px 0 rgba(255,255,255,.04) inset, 0 20px 40px -24px rgba(0,0,0,.7);
-  --font: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-  --mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
-  --ease-out: cubic-bezier(.2, .7, .2, 1); --ease-io: cubic-bezier(.65, 0, .35, 1);
-  --t-fast: 150ms; --t-base: 250ms; --t-slow: 450ms; --t-story: 700ms; --stagger: 50ms; --rise: 12px;
-}
-@media (prefers-color-scheme: light) {
-  :root:not([data-theme="dark"]) {
-    color-scheme: light;
-    --bg: #f3f5f5; --surface: #ffffff; --surface-2: #eef2f2; --line: #d9e0e0; --line-strong: #b9c4c4;
-    --fg: #14181a; --fg-2: #3a4448; --accent: #0a7a6d; --accent-ink: #ffffff;
-    --indigo: #4338ca; --teal: #0f766e; --violet: #6d28d9; --gold: #9a5b00; --green: #15803d; --red: #b91c1c; --warn: #a15c00;
-    --blue: #1d4ed8; --pink: #be185d; --orange: #c2410c; --lime: #4d7c0f;
-    --band: #e9eeee; --grid: rgba(10, 122, 109, .06); --glow: transparent;
-    --shadow: 0 1px 2px rgba(20,30,30,.06), 0 16px 32px -24px rgba(20,40,40,.35);
-  }
-}
-:root[data-theme="light"] {
-  color-scheme: light;
-  --bg: #f3f5f5; --surface: #ffffff; --surface-2: #eef2f2; --line: #d9e0e0; --line-strong: #b9c4c4;
-  --fg: #14181a; --fg-2: #3a4448; --accent: #0a7a6d; --accent-ink: #ffffff;
-  --indigo: #4338ca; --teal: #0f766e; --violet: #6d28d9; --gold: #9a5b00; --green: #15803d; --red: #b91c1c; --warn: #a15c00;
-  --blue: #1d4ed8; --pink: #be185d; --orange: #c2410c; --lime: #4d7c0f;
-  --band: #e9eeee; --grid: rgba(10, 122, 109, .06); --glow: transparent;
-  --shadow: 0 1px 2px rgba(20,30,30,.06), 0 16px 32px -24px rgba(20,40,40,.35);
-}
-
-* { box-sizing: border-box; }
-[hidden] { display: none !important; }  /* Filter blendet Karten, Gruppen, Panelteile per hidden aus */
-html { scroll-behavior: smooth; scroll-padding-top: 76px; }
-@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
-body { margin: 0; background: var(--bg); color: var(--fg); font: 500 15px/1.5 var(--font); -webkit-font-smoothing: antialiased; }
-h1, h2, h3, p { margin: 0; }
-a { color: inherit; }
-button, select, input { font: inherit; color: inherit; }
-:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: var(--radius-sm); }
-.ico { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex: none; }
-.wrap { max-width: 1440px; margin-inline: auto; padding-inline: 24px; }
-
-/* Kopfzeile wie project_docs.html */
-.top { position: sticky; top: 0; z-index: 10; border-bottom: 1px solid var(--line); background: var(--bg); }
-.top .wrap { display: flex; align-items: center; gap: 12px 16px; padding-block: 12px; flex-wrap: wrap; }
-.brand { display: flex; align-items: center; gap: 10px; font-weight: 800; text-decoration: none; }
-.brand-mark { width: 34px; height: 34px; border-radius: var(--radius); display: grid; place-items: center; background: var(--accent); color: var(--accent-ink); }
-.brand small { display: block; font: 600 11px/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--fg-2); margin-top: 3px; }
-.tools { display: flex; gap: 8px; margin-left: auto; }
-/* Steuerknöpfe „Leiste“: Auswahl = Gruppe mit Rahmen, gewählt = heller Daumen */
-.seg { display: inline-flex; gap: 2px; padding: 3px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface-2); }
-.seg button { font: 700 12px/1 var(--mono); padding: 0 10px; min-height: 28px; min-width: 34px; border: 0; border-radius: var(--radius-sm); background: transparent; color: var(--fg-2); cursor: pointer; transition: background-color var(--t-fast), color var(--t-fast); }
-.seg button:hover { color: var(--fg); background: color-mix(in srgb, var(--fg) 7%, transparent); }
-.seg button[aria-pressed="true"] { background: var(--surface); color: var(--fg); box-shadow: 0 0 0 1px var(--line-strong); }
-
-/* Kopf = Landing-Hero mittig (css/landing.css .hero-head): Claim, Abstract, drei Stufen als Kernmerkmale, Stufen-Legende der Karten;
-   darunter Kennzahl-Karten wie im Hub (.hero-kpis) und der Scroll-Hinweis */
-.hero a { text-decoration: none; }
-/* Hero füllt den ersten Bildschirm unter Kopfzeile + Rückweg-Zeile (css/doc_path.css, 45 px), Scroll-Hinweis bleibt sichtbar */
-.hero .hero-inner { min-height: min(calc(100svh - var(--hdr, 64px) - 45px), 920px); padding-block: 32px 16px; }
-.hero .hero-head { gap: 16px; }
-.hero .hero-keys { grid-template-columns: repeat(3, minmax(0, 1fr)); max-width: 820px; }
-/* Legende in einer Zeile: Satz + Beispiel-Badge, Erklärung darunter */
-.hero .legend { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 8px 12px; max-width: 100ch; font-size: 14px; line-height: 1.45; color: var(--fg-2); }
-.hero .legend p:last-child { flex-basis: 100%; }
-@media (max-width: 760px) { .hero .hero-keys { grid-template-columns: minmax(0, 1fr); } }
-.hero .legend b { color: var(--fg); font-weight: 800; }
-.atlas-body { padding-top: 36px; }
-
-/* Stufen-Badge = Weg Simulieren → Prüfen → REAL; Stufe gilt = voller Kreis mit Haken, entfällt = leerer gestrichelter Kreis */
-.stage { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 4px; font: 700 11.5px/1.2 var(--mono); letter-spacing: .05em; text-transform: uppercase; }
-.stage .st { display: inline-flex; align-items: center; gap: 5px; color: var(--fg); }
-.stage .st i { display: inline-grid; place-items: center; flex: none; width: 18px; height: 18px; border-radius: 50%; }
-.stage .on i { background: var(--c); color: var(--bg); }
-.stage .off { color: var(--fg-2); font-weight: 600; }
-.stage .off i { border: 1.5px dashed var(--fg-2); }
-.stage .st-ok { width: 12px; height: 12px; }
-.stage .st-to { width: 14px; height: 14px; margin: 0 2px; color: var(--fg-2); }
-.hero .legend .stage { padding: 8px 10px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); }
-
-/* Filterleiste: Bereiche, nur Kreisläufe, Suche */
-.filter { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; justify-content: space-between; padding: 12px; margin-bottom: 16px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); box-shadow: var(--shadow); }
-.chips { display: flex; flex-wrap: wrap; gap: 2px; padding: 3px; width: fit-content; max-width: 100%; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface-2); }
-.chip { --c: var(--accent); display: inline-flex; align-items: center; gap: 8px; min-height: 36px; padding: 0 12px; border: 1px solid transparent; border-radius: var(--radius-sm); background: transparent; font-size: 13.5px; font-weight: 700; cursor: pointer; transition: border-color var(--t-fast), background-color var(--t-fast); }
-.chip:hover { background: color-mix(in srgb, var(--fg) 7%, transparent); }
-.chip .ico { width: 18px; height: 18px; color: var(--c); }
-.chip b { font: 700 12px/1 var(--mono); padding: 3px 6px; border-radius: var(--radius-sm); background: var(--surface-2); font-variant-numeric: tabular-nums; }
-.chip[aria-pressed="true"] { background: var(--surface); border-color: var(--line-strong); }
-#areas .chip b { background: color-mix(in srgb, var(--c) 22%, var(--surface-2)); }
-#areas .chip[aria-pressed="true"] { background: color-mix(in srgb, var(--c) 16%, var(--surface)); border-color: var(--c); }
-.f-right { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
-.search { display: inline-flex; align-items: center; gap: 8px; min-height: 40px; padding: 0 10px; border: 1px solid var(--line-strong); border-radius: var(--radius-sm); background: var(--surface); }
-.search:focus-within { border-color: var(--accent); }
-.search .ico { width: 18px; height: 18px; color: var(--fg-2); }
-.search input { width: 15em; max-width: 52vw; min-height: 38px; border: 0; background: transparent; outline: none; font-size: 14px; }
-.search input::placeholder { color: var(--fg-2); opacity: 1; }
-.count { font: 600 12.5px/1.3 var(--mono); color: var(--fg); padding-inline: 4px; font-variant-numeric: tabular-nums; }
-
-/* Atlas: Karten links, Ablauf rechts (mitlaufend) */
-.atlas { display: grid; grid-template-columns: minmax(300px, .78fr) minmax(0, 1.65fr); gap: 24px; align-items: start; padding-bottom: 64px; }
-.cards { display: grid; gap: 8px; min-width: 0; }
-.grp-h { display: flex; align-items: center; gap: 8px; margin: 10px 0 2px; font: 700 12px/1.2 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--c, var(--fg)); }
-.grp-h:first-child { margin-top: 0; }
-.grp-h .ico { width: 18px; height: 18px; color: var(--c); }
-.grp-h b { margin-left: auto; font-variant-numeric: tabular-nums; }
-.fn { --c: var(--accent); display: grid; gap: 8px; align-content: start; padding: 12px 14px; border: 1px solid var(--line); border-radius: var(--radius); background: color-mix(in srgb, var(--c) 5%, var(--surface)); transition: border-color var(--t-fast), background var(--t-fast); }
-.fn:hover { border-color: color-mix(in srgb, var(--c) 55%, var(--line-strong)); }
-.fn.sel { border-color: var(--c); background: color-mix(in srgb, var(--c) 12%, var(--surface)); box-shadow: 0 0 0 1px var(--c); }
-.fn h3 { display: flex; align-items: start; gap: 6px; font-size: 15px; line-height: 1.3; font-weight: 800; }
-.fn-sel { display: flex; align-items: start; gap: 8px; flex: 1; min-width: 0; min-height: 28px; padding: 0; border: 0; background: none; text-align: left; font: inherit; cursor: pointer; }
-.fn-sel .ico { width: 18px; height: 18px; margin-top: 1px; color: var(--c); }
-.fn-sel::after { content: ""; position: absolute; inset: 0; }
-.fn { position: relative; }
-.fn-link { position: relative; z-index: 1; display: grid; place-items: center; width: 28px; height: 28px; flex: none; border-radius: var(--radius-sm); font: 700 14px/1 var(--mono); color: var(--fg-2); text-decoration: none; }
-.fn-link:hover, .fn-link:focus-visible { background: var(--surface-2); color: var(--fg); }
-.fn p { font-size: 13.5px; line-height: 1.45; color: var(--fg-2); }
-.fn p code, .pn-text code, .loop-txt code { font: 600 12px/1.35 var(--mono); color: var(--fg); overflow-wrap: anywhere; }
-.fn-meta { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
-.tag { --c: var(--accent); display: inline-flex; align-items: center; gap: 5px; padding: 4px 7px; border: 1px solid var(--line-strong); border-radius: var(--radius-sm); font: 700 11.5px/1.1 var(--mono); color: var(--fg); background: var(--surface); }
-.tag .ico { width: 16px; height: 16px; color: var(--c); }
-.tag.area { background: color-mix(in srgb, var(--c) 16%, var(--surface)); border-color: color-mix(in srgb, var(--c) 45%, var(--line-strong)); }
-.tag.plan { border-style: dashed; border-color: color-mix(in srgb, var(--gold) 70%, var(--line-strong)); }
-.fn .stage { font-size: 11px; }
-.empty { padding: 18px; border: 1px dashed var(--line-strong); border-radius: var(--radius); font-size: 14px; }
-
-.panel { position: sticky; top: 70px; max-height: calc(100vh - 82px); overflow: auto; display: grid; gap: 14px; min-width: 0; padding: 16px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); box-shadow: var(--shadow); overscroll-behavior: contain; }
-.pn-head { display: grid; gap: 8px; }
-.pn-kick { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; font: 700 12px/1.2 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--c, var(--accent)); }
-.pn-kick .ico { width: 18px; height: 18px; }
-.pn-head h2 { font-size: 22px; line-height: 1.2; font-weight: 800; letter-spacing: -.015em; text-wrap: balance; }
-.pn-text { font-size: 15px; line-height: 1.5; color: var(--fg-2); max-width: 72ch; text-wrap: pretty; }
-.pn-meta { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
-.hint { display: flex; gap: 10px; align-items: start; padding: 10px 12px; border: 1px dashed color-mix(in srgb, var(--gold) 60%, var(--line-strong)); border-radius: var(--radius); font-size: 14px; line-height: 1.45; }
-.hint .ico { color: var(--gold); width: 18px; height: 18px; margin-top: 1px; }
-.pn-fns { display: grid; gap: 8px; padding-top: 12px; border-top: 1px solid var(--line); }
-.pn-fns h3 { font: 700 12px/1.2 var(--mono); letter-spacing: .1em; text-transform: uppercase; }
-.pn-fns .chip { min-height: 34px; font-size: 13px; }
-
-/* Kreislauf K1: Ring links, Stationen als Liste rechts */
-.loop { display: grid; grid-template-columns: minmax(0, 400px) minmax(0, 1fr); gap: 12px 20px; align-items: center; padding: 12px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface-2); }
-.loop[hidden] { display: none; }
-.ring { display: block; width: 100%; height: auto; overflow: visible; font-family: var(--font); }
-.ring .arc { fill: none; stroke: var(--c); stroke-width: 2.2; }
-.ring .back { fill: none; stroke: var(--gold); stroke-width: 1.8; stroke-dasharray: 6 4; }
-.ring .mk-a path { fill: var(--c); }
-.ring .mk-b path { fill: var(--gold); }
-.ring .st rect { fill: var(--surface); stroke: var(--line-strong); stroke-width: 1.5; transition: stroke var(--t-base), fill var(--t-base); }
-.ring .st.now rect { stroke: var(--c); stroke-width: 2.5; fill: color-mix(in srgb, var(--c) 16%, var(--surface)); }
-.ring .st.plan rect { stroke-dasharray: 5 4; }
-.ring .st .t { fill: var(--fg); font-weight: 800; font-size: 13.5px; }
-.ring .st .s, .ring .lbl { fill: var(--fg); font: 600 11px var(--mono); }
-.ring .ctr { fill: var(--fg); font-weight: 800; font-size: 14px; }
-.ring .ctr-s { fill: var(--fg-2); font: 600 11px var(--mono); }
-.ring .pk { fill: var(--c); }
-.ring .pk-h { fill: var(--c); opacity: .25; }
-.loop-txt { display: grid; gap: 8px; align-content: start; min-width: 0; font-size: 14px; line-height: 1.45; }
-.loop-txt h3 { display: flex; align-items: center; gap: 8px; font: 700 12px/1.2 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--c); }
-.loop-txt h3 .ico { width: 18px; height: 18px; }
-.loop-txt ol { margin: 0; padding-left: 1.4em; display: grid; gap: 3px; }
-.loop-txt li::marker { font: 700 12px var(--mono); color: var(--c); }
-.loop-txt li b { font-weight: 800; }
-.loop-txt li.now { color: var(--fg); }
-.loop-txt li.now b { text-decoration: underline; text-decoration-color: var(--c); text-decoration-thickness: 2px; text-underline-offset: 3px; }
-.loop-back { display: flex; gap: 8px; align-items: start; }
-.loop-back .ico { width: 18px; height: 18px; color: var(--gold); margin-top: 1px; }
-
-/* ═════════ flow-graph (in Zielseite übernehmen) ═════════ */
-.fg { --pc: var(--accent); margin: 0; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg); overflow: hidden; }
-.fg-bar { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; justify-content: space-between; padding: 14px 18px; border-bottom: 1px solid var(--line); }
-/* Leisten: Szenarien bzw. Abspielen + Tempo je in einem Rahmen, gewählt = heller Daumen */
-.fg-scn, .fg-ctl { display: flex; flex-wrap: wrap; align-items: center; gap: 2px; padding: 3px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface-2); }
-.fg-scn button, .fg-ctl button {
-  --c: var(--accent); display: inline-flex; align-items: center; gap: 8px; min-height: 34px; padding: 0 12px;
-  font-size: 13.5px; font-weight: 700; color: var(--fg); background: transparent; border: 0; border-radius: var(--radius-sm);
-  cursor: pointer; transition: background-color var(--t-fast), box-shadow var(--t-fast), transform var(--t-fast);
-}
-.fg-scn button svg, .fg-ctl button svg { width: 17px; height: 17px; flex: none; color: var(--c); fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
-.fg-scn button:hover:not([aria-pressed="true"]), .fg-ctl button:hover:not([disabled], [aria-pressed="true"]) { background: color-mix(in srgb, var(--fg) 7%, transparent); }
-.fg-scn button[aria-pressed="true"], .fg-speed button[aria-pressed="true"] { background: var(--surface); box-shadow: 0 0 0 1px var(--line-strong); }
-.fg-scn button:active, .fg-ctl button:active { transform: scale(.97); }
-.fg-ctl > button { padding: 0; width: 36px; justify-content: center; }
-.fg-ctl button svg { color: var(--fg); }
-.fg-ctl button[disabled] { opacity: .45; cursor: default; }
-.fg-speed { display: inline-flex; gap: 2px; margin-left: 3px; padding-left: 5px; box-shadow: inset 1px 0 0 var(--line); }
-.fg-speed button { padding: 0 9px; font: 600 12px var(--mono); }
-.fg-stage { padding: 12px 10px 6px; background: linear-gradient(var(--grid) 1px, transparent 1px) 0 0 / 24px 24px, linear-gradient(90deg, var(--grid) 1px, transparent 1px) 0 0 / 24px 24px, var(--surface-2); }
-.fg-svg { display: block; width: 100%; height: auto; overflow: visible; font-family: var(--font); }
-.fg-svg .lane { fill: var(--fg-2); font: 700 11px var(--mono); letter-spacing: .12em; text-transform: uppercase; }
-.fg-svg .lane-line { stroke: var(--line); stroke-width: 1; stroke-dasharray: 2 6; }
-/* Kanten: Art = Linienstil (nie nur Farbe) → topic durchgezogen, service gestrichelt + Pfeil beidseitig, action Strich-Punkt, stream breit */
-.fg-svg .edge { fill: none; stroke: var(--line-strong); stroke-width: 1.6; transition: opacity var(--t-base), stroke var(--t-base), stroke-width var(--t-base); }
-.fg-svg .edge.k-service { stroke-dasharray: 6 4; }
-.fg-svg .edge.k-action { stroke-dasharray: 14 4 2 4; }
-.fg-svg .edge.k-stream { stroke-width: 3.4; }
-.fg-svg .edge.stale { stroke-dasharray: 2 5; }
-.fg-svg .edge-hit { fill: none; stroke: transparent; stroke-width: 14; pointer-events: stroke; }
-.fg-svg .edge.on { stroke: var(--pc); }
-.fg-svg .edge.now { stroke-width: 3; }
-.fg-svg .edge.k-stream.now { stroke-width: 4.4; }
-.fg-svg marker path { fill: var(--line-strong); }
-.fg-svg marker.on path { fill: var(--pc); }
-.fg-svg .node { cursor: pointer; transition: opacity var(--t-base); outline: none; }
-.fg-svg .node rect { fill: color-mix(in srgb, var(--c) 9%, var(--surface)); stroke: var(--line-strong); stroke-width: 1.5; transition: stroke var(--t-base), fill var(--t-base), stroke-width var(--t-base); }
-.fg-svg .node.on rect { stroke: var(--c); }
-.fg-svg .node.now rect { fill: color-mix(in srgb, var(--pc) 20%, var(--surface)); stroke: var(--pc); stroke-width: 2.5; }
-.fg-svg .node.pin rect, .fg-svg .node:focus-visible rect { stroke: var(--fg); stroke-width: 2.5; }
-.fg-svg .node .t { fill: var(--fg); font-weight: 800; font-size: 14px; }
-.fg-svg .node .s { fill: var(--fg-2); font: 600 11px var(--mono); }
-.fg-svg .node use { color: var(--c); fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
-.fg-svg.dim .edge:not(.hl), .fg-svg.dim .node:not(.hl), .fg-svg.dim .badge:not(.hl) { opacity: .3; }
-.fg-svg .badge rect { fill: var(--surface); stroke: var(--pc); stroke-width: 1.5; }
-.fg-svg .badge text { fill: var(--fg); font: 700 11px var(--mono); text-anchor: middle; dominant-baseline: central; }
-.fg-svg .chip rect { fill: var(--surface); stroke: var(--line-strong); stroke-width: 1; }
-.fg-svg .chip.now rect { stroke: var(--pc); stroke-width: 1.5; }
-.fg-svg .chip text { fill: var(--fg); font: 600 11.5px var(--mono); dominant-baseline: central; }
-.fg-svg .pkt circle { fill: var(--pc); }
-.fg-svg .pkt .halo { opacity: .28; }
-.fg-foot { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr); gap: 16px 28px; padding: 16px 18px 18px; border-top: 1px solid var(--line); }
-.fg-detail h3 { margin: 0; font-size: 19px; font-weight: 800; letter-spacing: -.01em; }
-.fg-detail p { margin: 6px 0 0; color: var(--fg-2); font-size: 15px; max-width: 60ch; }
-.fg-detail .io { display: grid; gap: 4px; margin-top: 10px; font-size: 14px; }
-.fg-detail .io b { font-weight: 800; }
-.fg-detail code, .fg-steps code { font: 600 12px/1.35 var(--mono); color: var(--fg); overflow-wrap: anywhere; }
-.fg-status { margin-top: 10px; font: 600 13px/1.4 var(--mono); color: var(--fg); }
-.fg-steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
-.fg-steps li { display: grid; grid-template-columns: 24px minmax(0, 1fr); gap: 2px 10px; align-items: baseline; padding: 7px 10px; border: 1px solid transparent; border-radius: var(--radius); font-size: 14px; cursor: pointer; transition: border-color var(--t-fast), background var(--t-fast); }
-.fg-steps li:hover { border-color: var(--line-strong); }
-.fg-steps li .n { font: 700 12px/1 var(--mono); color: var(--pc); }
-.fg-steps li .w { display: flex; flex-wrap: wrap; gap: 2px 12px; align-items: baseline; }
-.fg-steps li b { font-weight: 800; }
-.fg-steps li .note { grid-column: 2; color: var(--fg-2); }
-.fg-steps li.now { border-color: var(--pc); background: color-mix(in srgb, var(--pc) 10%, var(--surface)); }
-.fg-legend { display: flex; flex-wrap: wrap; gap: 8px 20px; padding: 10px 18px 14px; border-top: 1px solid var(--line); font-size: 13px; color: var(--fg-2); }
-.fg-legend span { display: inline-flex; align-items: center; gap: 8px; }
-.fg-legend svg { width: 34px; height: 10px; overflow: visible; }
-.fg-legend line { stroke: var(--fg-2); stroke-width: 1.6; }
-.fg figcaption { padding: 0 18px 14px; font-size: 14px; color: var(--fg-2); }
-.fg .fg-fallback { margin: 0; padding: 14px 18px 14px 40px; }
-.fg.fg-ready .fg-fallback, .fg:not(.fg-ready) .fg-bar, .fg:not(.fg-ready) .fg-stage, .fg:not(.fg-ready) .fg-foot, .fg:not(.fg-ready) .fg-legend { display: none; }
-@media (max-width: 760px) { .fg-foot { grid-template-columns: minmax(0, 1fr); } .fg-bar { padding: 12px; } }
-@media (prefers-reduced-motion: reduce) { .fg *, .fg-svg * { transition: none !important; } }
-
-/* Atlas-Anpassung: Titel statt Szenario-Knöpfe, wenn der Ablauf nur ein Szenario hat */
-.fg-scn:not(:has(button + button)) { display: none; }
-.fg-bar { justify-content: flex-end; }
-.fg-bar .fg-scn { margin-right: auto; }
-.fg-bar::before { content: attr(data-title); margin-right: auto; font: 700 12px/1.3 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--fg); }
-.fg-bar:has(.fg-scn button + button)::before { display: none; }
-.panel .fg-foot { grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr); }
-.panel .fg-svg .node .t { font-size: 13px; }
-
-footer { border-top: 1px solid var(--line); padding-block: 16px 28px; font: 600 12px/1.4 var(--mono); color: var(--fg-2); }
-footer .wrap { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px 16px; }
-footer a { text-decoration: underline; text-underline-offset: 3px; }
-
-/* Schmal: eine Spalte, Ablauf öffnet direkt unter der gewählten Karte */
-@media (max-width: 1100px) {
-  .atlas { grid-template-columns: minmax(0, 1fr); }
-  .panel { position: static; max-height: none; overflow: visible; }
-  .cards .panel { margin-block: 2px 10px; }
-}
-@media (max-width: 760px) {
-  .wrap { padding-inline: 16px; }
-  .loop { grid-template-columns: minmax(0, 1fr); }
-  .panel { padding: 12px; }
-  .panel .fg-foot { grid-template-columns: minmax(0, 1fr); }
-  .filter { padding: 10px; }
-  .search { flex: 1 1 100%; }
-  .search input { width: 100%; max-width: none; }
- 
-}
-@media (max-width: 420px) { .brand small { display: none; } .tools { margin-left: auto; } }
-
-/* Seiten-Motion wie project_docs.html: Fortschrittslinie, aktiver Bereich in der Kopfzeile (Einblenden: css/scroll_flow.css) */
-.progress { position: absolute; left: 0; right: 0; bottom: -1px; height: 2px; background: var(--accent); transform-origin: 0 50%; transform: scaleX(var(--p, 0)); pointer-events: none; }
-@supports (animation-timeline: scroll()) {
-  .progress { animation: progress linear both; animation-timeline: scroll(root); }
-  @keyframes progress { from { transform: scaleX(0); } to { transform: scaleX(1); } }
-}
-.here { display: inline-flex; align-items: center; gap: 8px; min-width: 0; font: 700 12px/1.2 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--fg); }
-.here::before { content: ""; width: 1px; height: 22px; background: var(--line-strong); }
-.here:empty { display: none; }
-.here .ico { width: 16px; height: 16px; color: var(--c); }
-@media (max-width: 760px) { .here { display: none; } }
-@media (prefers-reduced-motion: reduce) { .fn, .chip, .ring .st rect { transition: none; } }
-</style>
-<link rel="stylesheet" href="css/scroll_flow.css">
-<link rel="stylesheet" href="css/doc_path.css">
-</head>
-<body>
-<nav class="doc-path" aria-label="Pfad in der Projekt-Doku" data-en-aria="Path in the project docs"><a href="project_docs.html" data-en="← Project docs">← Projekt-Doku</a><span aria-hidden="true">›</span><a href="project_docs.html#vorstellen" data-en="Present">Vorstellen</a><span aria-hidden="true">›</span><span aria-current="page" data-en="Function atlas">Funktionsatlas</span><span class="doc-path-pager"><a href="present_control_modes.html" rel="prev" aria-label="Vorige Seite: Steuerwege &amp; Sicherheitskette" data-en-aria="Previous page: Control modes &amp; safety chain"><span aria-hidden="true">‹</span> <span data-en="Control modes &amp; safety chain">Steuerwege &amp; Sicherheitskette</span></a><a href="poster/poster_a2.html" rel="next" aria-label="Nächste Seite: Poster A2" data-en-aria="Next page: Poster A2"><span data-en="Poster A2">Poster A2</span> <span aria-hidden="true">›</span></a></span></nav>
-<svg width="0" height="0" style="position: absolute" aria-hidden="true">
-  <symbol id="i-arm" viewBox="0 0 24 24"><path d="M4 21h16M7 21v-3h10v3M12 18v-5M12 13l5-5M17 8l3 1.5M17 8l1.2-3.2"/><circle cx="12" cy="13" r="2"/><circle cx="17" cy="8" r="1.6"/></symbol>
-  <symbol id="i-go" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
-  <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></symbol>
-  <symbol id="i-spark" viewBox="0 0 24 24"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8zM19 16l.8 2.2L22 19l-2.2.8L19 22l-.8-2.2L16 19l2.2-.8z"/></symbol>
-  <symbol id="i-cube" viewBox="0 0 24 24"><path d="M12 2.5l8.5 4.8v9.4L12 21.5l-8.5-4.8V7.3z"/><path d="M3.5 7.3L12 12l8.5-4.7M12 12v9.5"/></symbol>
-  <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></symbol>
-  <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c2.6 2.8 3.8 6 3.8 9.5s-1.2 6.7-3.8 9.5c-2.6-2.8-3.8-6-3.8-9.5S9.4 5.3 12 2.5z"/></symbol>
-  <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 2.5l8 3v6c0 5-3.4 8.7-8 10.5-4.6-1.8-8-5.5-8-10.5v-6z"/><path d="M8.5 12l2.5 2.5 4.5-5"/></symbol>
-  <symbol id="i-loop" viewBox="0 0 24 24"><path d="M3 12a9 9 0 0 1 15.4-6.4L21 8M21 3v5h-5M21 12a9 9 0 0 1-15.4 6.4L3 16M3 21v-5h5"/></symbol>
-  <symbol id="i-touch" viewBox="0 0 24 24"><path d="M9 11V5a2 2 0 0 1 4 0v5l4.4.9a2 2 0 0 1 1.6 2.2l-.6 4.6a3 3 0 0 1-3 2.3H11a3 3 0 0 1-2.3-1.1L5.5 15a1.8 1.8 0 0 1 2.7-2.3L9 13.5"/></symbol>
-  <symbol id="i-win" viewBox="0 0 24 24"><rect x="2.5" y="4" width="19" height="16" rx="2"/><path d="M2.5 8.5h19M6 6.3h.01M8.5 6.3h.01"/></symbol>
-  <symbol id="i-link" viewBox="0 0 24 24"><path d="M10 14a4.5 4.5 0 0 0 6.4 0l3.2-3.2a4.5 4.5 0 0 0-6.4-6.4L12 5.6M14 10a4.5 4.5 0 0 0-6.4 0l-3.2 3.2a4.5 4.5 0 0 0 6.4 6.4l1.2-1.2"/></symbol>
-  <symbol id="i-chip" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2"/><path d="M9.5 9.5h5v5h-5zM9 2.5V6M15 2.5V6M9 18v3.5M15 18v3.5M2.5 9H6M2.5 15H6M18 9h3.5M18 15h3.5"/></symbol>
-  <symbol id="i-layers" viewBox="0 0 24 24"><path d="M12 3l9.5 5L12 13 2.5 8z"/><path d="M2.5 12.5L12 17.5l9.5-5M2.5 16.5L12 21.5l9.5-5"/></symbol>
-  <symbol id="i-pad" viewBox="0 0 24 24"><path d="M7.5 6h9a5.5 5.5 0 0 1 5.3 7l-1 3.6a2.6 2.6 0 0 1-4.4 1L14.6 16H9.4l-1.8 1.6a2.6 2.6 0 0 1-4.4-1l-1-3.6A5.5 5.5 0 0 1 7.5 6z"/><path d="M7 10v3M5.5 11.5h3M15.5 10.5h.01M17.5 12.5h.01"/></symbol>
-  <symbol id="i-vr" viewBox="0 0 24 24"><path d="M3.5 7.5h17a1.5 1.5 0 0 1 1.5 1.5v6a2.5 2.5 0 0 1-2.5 2.5h-4l-2-3h-3l-2 3h-4A2.5 2.5 0 0 1 2 15V9a1.5 1.5 0 0 1 1.5-1.5z"/><path d="M6.5 11h2M15.5 11h2"/></symbol>
-  <symbol id="i-cam" viewBox="0 0 24 24"><rect x="2" y="8" width="20" height="9" rx="4.5"/><circle cx="7" cy="12.5" r="2"/><circle cx="17" cy="12.5" r="2"/></symbol>
-  <symbol id="i-grip" viewBox="0 0 24 24"><path d="M9 3h6v5H9zM12 8v4M6 15a6 3 0 0 1 12 0zM12 18v3"/></symbol>
-  <symbol id="i-pc" viewBox="0 0 24 24"><rect x="5" y="2.5" width="14" height="19" rx="2"/><path d="M8.5 6.5h7M8.5 9.5h7M12 17.5h.01"/></symbol>
-  <symbol id="i-mic" viewBox="0 0 24 24"><rect x="9" y="2.5" width="6" height="12" rx="3"/><path d="M5 10.5a7 7 0 0 0 14 0M12 17.5V21M8.5 21h7"/></symbol>
-  <symbol id="i-gizmo" viewBox="0 0 24 24"><path d="M12 12V3M12 3l-2.2 2.2M12 3l2.2 2.2M12 12l7.5 4.3M19.5 16.3l-3 .4M19.5 16.3l-1.1-2.9M12 12l-7.5 4.3M4.5 16.3l3 .4M4.5 16.3l1.1-2.9"/><circle cx="12" cy="12" r="1.6"/></symbol>
-  <symbol id="i-lock" viewBox="0 0 24 24"><rect x="4.5" y="10.5" width="15" height="10.5" rx="2"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3M12 14.5v2.5"/></symbol>
-  <symbol id="i-chart" viewBox="0 0 24 24"><path d="M3.5 3.5v17h17"/><path d="M7.5 15l4-5 3 3 5-7"/></symbol>
-  <symbol id="i-pulse" viewBox="0 0 24 24"><path d="M2.5 12h4l2.5-6 4 12 2.5-6h6"/></symbol>
-  <symbol id="i-db" viewBox="0 0 24 24"><ellipse cx="12" cy="5.5" rx="7.5" ry="3"/><path d="M4.5 5.5v13c0 1.7 3.4 3 7.5 3s7.5-1.3 7.5-3v-13M4.5 12c0 1.7 3.4 3 7.5 3s7.5-1.3 7.5-3"/></symbol>
-  <symbol id="i-flask" viewBox="0 0 24 24"><path d="M9 3h6M10 3v6L4.5 19a1.5 1.5 0 0 0 1.3 2.2h12.4a1.5 1.5 0 0 0 1.3-2.2L14 9V3M7 15h10"/></symbol>
-  <symbol id="i-rocket" viewBox="0 0 24 24"><path d="M5 15c-1.5 1.5-2 5-2 5s3.5-.5 5-2M9 15l-3-3c1-4 5-9 12-9 0 7-5 11-9 12z"/><circle cx="14.5" cy="9.5" r="1.5"/></symbol>
-  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></symbol>
-  <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
-  <symbol id="i-stop" viewBox="0 0 24 24"><path d="M8 2.5h8L21.5 8v8L16 21.5H8L2.5 16V8z"/><path d="M8.5 12h7"/></symbol>
-  <symbol id="i-warn" viewBox="0 0 24 24"><path d="M12 3.5l9.5 17h-19z"/><path d="M12 10v4.5M12 17.5h.01"/></symbol>
-  <symbol id="i-prev" viewBox="0 0 24 24"><path d="M6 5v14M18 5l-9 7 9 7z"/></symbol>
-  <symbol id="i-next" viewBox="0 0 24 24"><path d="M18 5v14M6 5l9 7-9 7z"/></symbol>
-  <symbol id="i-play" viewBox="0 0 24 24"><path d="M7 4.5l12 7.5-12 7.5z"/></symbol>
-  <symbol id="i-pause" viewBox="0 0 24 24"><path d="M8 5v14M16 5v14"/></symbol>
-  <symbol id="i-pointer" viewBox="0 0 24 24"><path d="M5 3.5l13 6.2-5.6 1.9-1.9 5.6z"/><path d="M12.6 12.6l5.4 5.4"/></symbol>
-  <symbol id="i-blocks" viewBox="0 0 24 24"><rect x="3" y="3" width="7.5" height="7.5" rx="1.5"/><rect x="13.5" y="3" width="7.5" height="7.5" rx="1.5"/><rect x="3" y="13.5" width="7.5" height="7.5" rx="1.5"/><path d="M17.25 13.5v7.5M13.5 17.25H21"/></symbol>
-</svg>
-
-<header class="top">
-  <div class="wrap">
-    <a class="brand" href="project_docs.html"><span class="brand-mark"><svg class="ico"><use href="#i-arm"/></svg></span><span>Assistive Arm Platform<small data-en="Function atlas">Funktionsatlas</small></span></a>
-    <span class="here" id="here" aria-hidden="true"></span>
-    <div class="tools">
-      <div class="seg" role="group" aria-label="Sprache / Language">
-        <button type="button" data-lang="de" aria-pressed="true">DE</button>
-        <button type="button" data-lang="en" aria-pressed="false">EN</button>
-      </div>
-      <div class="seg" role="group" aria-label="Theme">
-        <button type="button" data-theme-btn="dark" aria-pressed="false" data-en="Dark">Dunkel</button>
-        <button type="button" data-theme-btn="light" aria-pressed="false" data-en="Light">Hell</button>
-      </div>
-    </div>
-  </div>
-  <span class="progress" aria-hidden="true"></span>
-</header>
-
-<main id="start">
-  <!-- ═════════ Hero: mittig Claim, Abstract, drei Stufen, Stufen-Legende; darunter Kennzahlen + Scroll-Hinweis ═════════ -->
-  <section class="hero dark-zone" aria-labelledby="atlas-h1">
-    <div class="wrap hero-inner">
-      <div class="hero-head">
-        <span class="badge"><span class="bi-s"><svg class="ico" aria-hidden="true"><use href="#i-spark"/></svg></span><span data-en="Function atlas">Funktionsatlas</span></span>
-        <h1 id="atlas-h1">
-          <span class="h1-name">Assistive Arm Platform</span>
-          <span class="h1-claim" data-en="&lt;span class=&quot;ln&quot;&gt;&lt;span&gt;Every function,&lt;/span&gt;&lt;/span&gt; &lt;span class=&quot;ln&quot;&gt;&lt;span&gt;&lt;em&gt;its path, its check.&lt;/em&gt;&lt;/span&gt;&lt;/span&gt;"><span class="ln"><span>Jede Funktion,</span></span> <span class="ln"><span><em>ihr Weg, ihre Prüfung.</em></span></span></span>
-        </h1>
-        <p class="abstract" data-en="All functions of the &lt;b&gt;Assistive Arm Platform&lt;/b&gt;, sorted by area. &lt;b&gt;Pick a card:&lt;/b&gt; its flow runs topic by topic.">Alle Funktionen der <b>Assistive Arm Platform</b>, sortiert nach Bereich. <b>Karte wählen:</b> Ihr Ablauf läuft Topic für Topic.</p>
-        <ul class="hero-keys" aria-label="Stufen je Funktion" data-en-aria="Stages per function">
-          <li style="--hue: var(--teal)"><svg class="ico" aria-hidden="true"><use href="#i-cube"/></svg><b data-en="Simulate">Simulieren</b><span data-en="in the Digital Twin">im Digital Twin</span></li>
-          <li style="--hue: var(--gold)"><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg><b data-en="Check">Prüfen</b><span data-en="collision, sandbox, lock">Kollision, Sandbox, Lock</span></li>
-          <li style="--hue: var(--indigo)"><svg class="ico" aria-hidden="true"><use href="#i-arm"/></svg><b>REAL</b><span data-en="only after approval">erst nach Freigabe</span></li>
-        </ul>
-        <div class="legend">
-          <p data-en="&lt;b&gt;First virtual, then real.&lt;/b&gt; Every card shows the path of its function to the real robot, for example:"><b>Erst virtuell, dann real.</b> Jede Karte zeigt den Weg ihrer Funktion zum echten Roboter, zum Beispiel:</p>
-          <span data-stage-ex="sr"></span>
-          <p data-en="Full circle with tick = stage applies · empty circle = stage is skipped.">Voller Kreis mit Haken = Stufe gilt · leerer Kreis = Stufe entfällt.</p>
-        </div>
-      </div>
-      <div class="hero-kpis">
-        <a class="hero-card hc-1" href="#atlas-list">
-          <small><svg class="ico" aria-hidden="true"><use href="#i-layers"/></svg><span data-en="Areas">Bereiche</span></small>
-          <strong data-count="area">9</strong>
-          <span data-en="from control modes to infrastructure">von Steuerwegen bis Infrastruktur</span>
-          <span class="hc-seg" id="hc-seg" aria-hidden="true"></span>
-        </a>
-        <a class="hero-card hc-2" href="#atlas-list">
-          <small><svg class="ico" aria-hidden="true"><use href="#i-blocks"/></svg><span data-en="Functions">Funktionen</span></small>
-          <strong data-count="fn">83</strong>
-          <span data-en="each with its flow graph">je mit Flow-Graph</span>
-        </a>
-        <a class="hero-card hc-3" href="#atlas-list" data-loops>
-          <small><svg class="ico" aria-hidden="true"><use href="#i-loop"/></svg><span data-en="Loops">Kreisläufe</span></small>
-          <strong data-count="loop">10</strong>
-          <span data-en="return paths shown as a ring">Rückwege als Ring</span>
-        </a>
-      </div>
-      <a class="scroll-cue" href="#atlas-list"><span data-en="Scroll">Scrollen</span><i aria-hidden="true"></i></a>
-    </div>
-  </section>
-
-  <div class="wrap atlas-body" id="atlas-list">
-  <div class="filter" role="search" aria-label="Funktionen filtern" data-en-aria="Filter functions">
-    <div class="chips" id="areas" role="group" aria-label="Bereich" data-en-aria="Area"></div>
-    <div class="f-right">
-      <span class="chips"><button type="button" class="chip" id="only-loops" aria-pressed="false"><svg class="ico"><use href="#i-loop"/></svg><span data-en="Loops only">nur Kreisläufe</span></button></span>
-      <label class="search"><svg class="ico" aria-hidden="true"><use href="#i-search"/></svg><input type="search" id="q" placeholder="Funktion oder Topic suchen …" data-en-ph="Search function or topic …" aria-label="Funktion oder Topic suchen" data-en-aria="Search function or topic"></label>
-      <span class="count" id="count" aria-live="polite"></span>
-    </div>
-  </div>
-
-  <div class="atlas">
-    <div class="cards" id="cards">
-      <h2 class="grp-h" data-a="ctl" style="--c: var(--accent)">Steuerwege</h2>
-      <article class="fn" id="gamepad" data-a="ctl" data-f="pad" data-s="spr">
-        <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-pad"/></svg><span data-en="Gamepad, local and remote">Gamepad lokal und remote</span></button></h3>
-        <p data-en="Xbox pad on the robot PC (&lt;code&gt;/joy&lt;/code&gt;) or in the browser (&lt;code&gt;/remote/joy&lt;/code&gt;, 20 Hz).">Xbox-Pad am Roboter-PC (<code>/joy</code>) oder im Browser (<code>/remote/joy</code>, 20 Hz).</p>
-      </article>
-      <article class="fn" id="jog" data-a="ctl" data-f="jog" data-s="sr">
-        <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-gizmo"/></svg><span data-en="Cartesian and joint jog">Kartesisch und je Gelenk joggen</span></button></h3>
-        <p data-en="Holding sends &lt;code&gt;/remote/twist&lt;/code&gt; every 20 ms, releasing zero; watchdog, then Servo.">Halten sendet <code>/remote/twist</code> alle 20 ms, Loslassen null; Watchdog, dann Servo.</p>
-      </article>
-      <article class="fn" id="tcp-gizmo" data-a="ctl" data-f="moveto" data-s="spr" data-default>
-        <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-gizmo"/></svg><span data-en="TCP gizmo in the Digital Twin">TCP-Gizmo im Digital Twin</span></button></h3>
-        <p data-en="Drag the target in the twin, MoveIt plans, it moves after Execute.">Ziel im Twin ziehen, MoveIt plant, gefahren wird nach Execute.</p>
-      </article>
-      <article class="fn" id="moveto-scan" data-a="ctl" data-f="moveto" data-s="spr">
-        <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg><span data-en="MoveTo, home and scan pose">MoveTo, Home und Scan-Pose</span></button></h3>
-        <p data-en="Fixed poses by button, e.g. scan pose 300 / 0 / 400&amp;nbsp;mm via MoveGroup.">Feste Posen per Knopf, z.&nbsp;B. Scan-Pose 300 / 0 / 400&nbsp;mm über MoveGroup.</p>
-      </article>
-      <article class="fn" id="gripper-vacuum" data-a="ctl" data-f="gripper" data-s="sr">
-        <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-grip"/></svg><span data-en="Gripper and vacuum">Greifer und Vakuum</span></button></h3>
-        <p data-en="&lt;code&gt;/ui/gripper_cmd&lt;/code&gt; switches suction or fingers; the state follows only on success."><code>/ui/gripper_cmd</code> schaltet Sauger oder Finger; der Zustand folgt erst nach Erfolg.</p>
-      </article>
-      <article class="fn" id="object-menu" data-a="ctl" data-f="grasp" data-s="spr">
-        <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-grip"/></svg><span data-en="Object menu: grasp by click">Objektmenü: Greifen per Klick</span></button></h3>
-        <p data-en="Click an object in the twin or in VR, Grasp: &lt;code&gt;/vla/skill&lt;/code&gt; without a language model.">Objekt im Twin oder in VR anklicken, Grasp: <code>/vla/skill</code> ohne Sprachmodell.</p>
-      </article>
-      <article class="fn" id="sequences" data-a="ctl" data-f="seq" data-s="spr">
-        <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-layers"/></svg><span data-en="Sequences">Sequenzen</span></button></h3>
-        <p data-en="Five step types, stored for all clients; Play starts after confirmation.">Fünf Schritttypen, gespeichert für alle Clients; Play startet nach Bestätigung.</p>
-      </article>
-      <article class="fn" id="linear-axis" data-a="ctl" data-f="linear" data-s="s">
-        <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg><span data-en="Linear axis">Linearachse</span></button></h3>
-        <p data-en="&lt;code&gt;/linear_axis_cmd&lt;/code&gt; shifts the robot by ±0.5&amp;nbsp;m, in simulation only."><code>/linear_axis_cmd</code> verschiebt den Roboter um ±0,5&nbsp;m, nur in der Simulation.</p>
-      </article>
-      <article class="fn" id="voice" data-a="ctl" data-f="voice" data-s="spr">
-        <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-mic"/></svg><span data-en="Voice (Whisper)">Sprache (Whisper)</span></button></h3>
-        <p data-en="Commands in German and English; motions wait for “Confirm”.">Befehle auf Deutsch und Englisch; Fahrten warten auf „Bestätigen“.</p>
-      </article>
-      <article class="fn" id="gaze" data-a="ctl" data-f="gaze" data-s="spr">
-        <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-eye"/></svg><span data-en="Gaze UI and gaze grasp (Tobii)">Blick-UI und Blick-Greifen (Tobii)</span></button></h3>
-        <p data-en="Buttons fire after 1&amp;nbsp;s of gaze; gaze grasp moves above the object.">Knöpfe lösen nach 1&nbsp;s Blick aus; Blick-Greifen fährt über das Objekt.</p>
-      </article>
-      <article class="fn" id="vr-quest3" data-a="ctl" data-f="vr" data-s="spr">
-        <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-vr"/></svg><span data-en="VR Quest 3 and VR cockpit">VR Quest 3 und VR-Cockpit</span></button></h3>
-        <p data-en="The grip follows the hand; the HUD shows mode, FAKE/REAL, control and E-STOP.">Grip folgt der Hand; das HUD zeigt Modus, FAKE/REAL, Control und E-STOP.</p>
-      </article>
-      <article class="fn" id="touch-panel" data-a="ctl" data-f="touch" data-s="spr">
-        <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-touch"/></svg><span data-en="Touch panel">Touch Panel</span></button></h3>
-        <p data-en="Jog, poses, gripper and programs at the robot, only after server approval.">Jog, Posen, Greifer und Programme am Roboter, nur nach Freigabe am Server.</p>
-      </article>
-      <article class="fn" id="command-palette" data-a="ctl" data-f="">
-        <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-search"/></svg><span data-en="Command palette Ctrl+K">Befehlspalette Strg+K</span></button></h3>
-        <p data-en="Finds functions and clicks the real button; does not open while the robot moves.">Sucht Funktionen und klickt den echten Knopf; öffnet nicht während einer Fahrt.</p>
-      </article>
-      <article class="fn" id="guides" data-a="ctl" data-f="">
-        <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-user"/></svg><span data-en="Guides: step-by-step">Guides: geführte Abläufe</span></button></h3>
-        <p data-en="15 guides in 5 groups; “Show me” rings the real element.">15 Abläufe in 5 Gruppen; „Show me“ markiert das echte Element.</p>
-      </article>
-      <h2 class="grp-h" data-a="safe" style="--c: var(--gold)">Sicherheit</h2>
-      <article class="fn" id="estop" data-a="safe" data-f="estop" data-s="sr">
-        <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-stop"/></svg><span data-en="E-STOP latched, reset by owner only">E-STOP verriegelt, Quittieren nur Besitzer</span></button></h3>
-        <p data-en="&lt;code&gt;/ui/emergency_stop_topic&lt;/code&gt; stops everything; only the owner or robot PC resets."><code>/ui/emergency_stop_topic</code> stoppt alles; quittieren nur Besitzer oder Roboter-PC.</p>
-      </article>
-      <article class="fn" id="control-lock" data-a="safe" data-f="remote" data-s="spr">
-        <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-lock"/></svg><span data-en="Control lock">Control-Lock</span></button></h3>
-        <p data-en="Exactly one client controls; the robot PC grants via Allow/Deny, requests expire after 60&amp;nbsp;s.">Genau ein Client steuert; der Roboter-PC gibt per Allow/Deny frei, Anfrage verfällt nach 60&nbsp;s.</p>
-      </article>
-      <article class="fn" id="heartbeat-timeout" data-a="safe" data-f="heartbeat" data-s="sr">
-        <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-pulse"/></svg><span data-en="Heartbeat timeout">Heartbeat-Timeout</span></button></h3>
-        <p data-en="Without a heartbeat gamepad and jog stop: FAKE after 1.0&amp;nbsp;s, REAL after 0.4&amp;nbsp;s.">Ohne Heartbeat stoppen Gamepad und Jog: FAKE nach 1,0&nbsp;s, REAL nach 0,4&nbsp;s.</p>
-      </article>
-      <article class="fn" id="twist-gate" data-a="safe" data-f="remote" data-s="spr">
-        <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-shield"/></svg><span data-en="Twist gate">Twist-Gate</span></button></h3>
-        <p data-en="Jog reaches Servo only from the owner, with speed and floor limit; REAL ≤&amp;nbsp;50&amp;nbsp;%.">Jog erreicht Servo nur vom Besitzer, mit Tempo- und Bodengrenze; REAL ≤&nbsp;50&nbsp;%.</p>
-      </article>
-      <article class="fn" id="server-token" data-a="safe" data-f="remote" data-s="spr">
-        <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-lock"/></svg><span data-en="Server token (HMAC)">Server-Token (HMAC)</span></button></h3>
-        <p data-en="Only the local UI signs with HMAC-SHA256; messages older than 5&amp;nbsp;s are rejected.">Nur die lokale UI signiert mit HMAC-SHA256; Nachrichten älter als 5&nbsp;s gelten nicht.</p>
-      </article>
-      <article class="fn" id="rosbridge-whitelist" data-a="safe" data-f="remote" data-s="spr">
-        <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-link"/></svg><span data-en="rosbridge whitelist">rosbridge-Whitelist</span></button></h3>
-        <p data-en="Browsers use listed topics and services only; &lt;code&gt;/joy&lt;/code&gt; is left out on purpose.">Browser nutzen nur eingetragene Topics und Services; <code>/joy</code> fehlt bewusst.</p>
-      </article>
-      <article class="fn" id="pad-precheck" data-a="safe" data-f="pad" data-s="spr">
-        <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-shield"/></svg><span data-en="Gamepad pre-collision check">Kollisionsvorprüfung Gamepad</span></button></h3>
-        <p data-en="&lt;code&gt;/joy&lt;/code&gt; → &lt;code&gt;/joy_check&lt;/code&gt;: 0.1&amp;nbsp;s lookahead, stop at 91&amp;nbsp;mm, pad rumbles."><code>/joy</code> → <code>/joy_check</code>: 0,1&nbsp;s Vorausschau, Stopp bei 91&nbsp;mm, Pad vibriert.</p>
-      </article>
-      <article class="fn" id="floor-guard" data-a="safe" data-f="jog" data-s="spr">
-        <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-shield"/></svg><span data-en="Floor guard">Bodensperre</span></button></h3>
-        <p data-en="Z collision level 10&amp;nbsp;mm in UI, watchdog, Servo and as a floor box in MoveIt.">Z-Kollisionslevel 10&nbsp;mm in UI, Watchdog, Servo und als Boden-Box in MoveIt.</p>
-      </article>
-      <article class="fn" id="servo-status" data-a="safe" data-f="servo" data-s="sr">
-        <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-pulse"/></svg><span data-en="Servo status">Servo-Status</span></button></h3>
-        <p data-en="&lt;code&gt;/servo_server/status&lt;/code&gt; becomes a UI badge, pad rumble and an RViz overlay."><code>/servo_server/status</code> wird Badge in der UI, Vibration am Pad, Overlay in RViz.</p>
-      </article>
-      <article class="fn" id="motion-busy" data-a="safe" data-f="moveto" data-s="sr">
-        <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-lock"/></svg><span data-en="Motion busy">Motion-Busy</span></button></h3>
-        <p data-en="&lt;code&gt;/ui/motion_busy&lt;/code&gt; locks motion buttons; Stop next to it halts without an E-stop."><code>/ui/motion_busy</code> sperrt Bewegungsknöpfe; Stop daneben hält an, ohne Not-Aus.</p>
-      </article>
-      <article class="fn" id="speed" data-a="safe" data-f="pad" data-s="sr">
-        <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-pulse"/></svg><span data-en="Speed">Tempo</span></button></h3>
-        <p data-en="5 levels; MoveIt scales to 0.15 / 0.3 / 0.6; remote in REAL at most 50&amp;nbsp;%.">5 Stufen; MoveIt skaliert auf 0,15 / 0,3 / 0,6; remote in REAL höchstens 50&nbsp;%.</p>
-      </article>
-      <article class="fn" id="path-confirm" data-a="safe" data-f="moveto" data-s="spr">
-        <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg><span data-en="Path confirmation">Pfad-Bestätigung</span></button></h3>
-        <p data-en="The planned path waits for Execute; after 15&amp;nbsp;s without approval it is discarded.">Geplanter Pfad wartet auf Execute; nach 15&nbsp;s ohne Freigabe wird er verworfen.</p>
-      </article>
-      <article class="fn" id="proximity-heat" data-a="safe" data-f="reach" data-s="sr">
-        <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-eye"/></svg><span data-en="Reach and proximity heatmap">Reichweite und Abstand-Heatmap</span></button></h3>
-        <p data-en="Links tint by distance to the Z limit, red below 15&amp;nbsp;mm; reach 440&amp;nbsp;mm.">Glieder färben sich nach Abstand zur Z-Grenze, rot unter 15&nbsp;mm; Reichweite 440&nbsp;mm.</p>
-      </article>
-      <article class="fn" id="vr-watchdog" data-a="safe" data-f="vr" data-s="sr">
-        <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-vr"/></svg><span data-en="VR watchdog">VR-Watchdog</span></button></h3>
-        <p data-en="If controller data stops for 0.3&amp;nbsp;s, a zero twist goes out.">Bleiben Controller-Daten 0,3&nbsp;s aus, geht ein Null-Twist raus.</p>
-      </article>
-      <article class="fn" id="vla-safety" data-a="safe" data-f="vla" data-s="spr">
-        <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-spark"/></svg><span data-en="AI: dry_run and allow_real_motion">KI: dry_run und allow_real_motion</span></button></h3>
-        <p data-en="&lt;code&gt;dry_run&lt;/code&gt; never moves; REAL runs only with &lt;code&gt;allow_real_motion&lt;/code&gt; and Execute."><code>dry_run</code> bewegt nie; REAL fährt nur mit <code>allow_real_motion</code> und Execute.</p>
-      </article>
-      <article class="fn" id="nexus-preflight" data-a="safe" data-f="start" data-s="spr">
-        <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg><span data-en="Nexus preflight">Nexus-Preflight</span></button></h3>
-        <p data-en="Checks robot, cameras, ports, duplicate stacks, GPU and disk; automatic in REAL.">Prüft Roboter, Kameras, Ports, Doppelstacks, GPU und Platte; in REAL automatisch.</p>
-      </article>
-      <h2 class="grp-h" data-a="twin" style="--c: var(--blue)">Digital Twin</h2>
-      <article class="fn" id="twin-urdf" data-a="twin" data-f="feedback" data-s="sr">
-        <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-cube"/></svg><span data-en="Digital Twin: three.js and URDF">Digital Twin: three.js und URDF</span></button></h3>
-        <p data-en="The Lite 6 model mirrors &lt;code&gt;/joint_states&lt;/code&gt; at about 30&amp;nbsp;Hz in the browser.">Das Lite-6-Modell spiegelt <code>/joint_states</code> mit etwa 30&nbsp;Hz im Browser.</p>
-      </article>
-      <article class="fn" id="ghost-plan" data-a="twin" data-f="moveto" data-s="spr">
-        <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-cube"/></svg><span data-en="Ghost plan">Ghost-Plan</span></button></h3>
-        <p data-en="A translucent arm plays the plan first (&lt;code&gt;/ui/moveto_preview_path&lt;/code&gt;); switchable.">Ein halbtransparenter Arm fährt den Plan vor (<code>/ui/moveto_preview_path</code>); zuschaltbar.</p>
-      </article>
-      <article class="fn" id="collision-display" data-a="twin" data-f="servo" data-s="sr">
-        <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-warn"/></svg><span data-en="Collision and singularity display">Kollisions- und Singularitätsanzeige</span></button></h3>
-        <p data-en="Servo status 3/4 and &lt;code&gt;/ui/collision_msg&lt;/code&gt; tint links and the banner.">Servo-Status 3/4 und <code>/ui/collision_msg</code> färben Glieder und Banner.</p>
-      </article>
-      <article class="fn" id="rapier-sandbox" data-a="twin" data-f="sandbox" data-s="s">
-        <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-cube"/></svg><span data-en="Rapier physics sandbox">Rapier-Physik-Sandbox</span></button></h3>
-        <p data-en="Rapier in the browser: objects fall, the suction cup grips; runs in FAKE mode only.">Rapier im Browser: Objekte fallen, der Sauger greift; startet nur im FAKE-Modus.</p>
-      </article>
-      <article class="fn" id="virtual-objects" data-a="twin" data-f="sandbox" data-s="sp">
-        <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-cube"/></svg><span data-en="Virtual objects">Virtuelle Objekte</span></button></h3>
-        <p data-en="Cube, bottle, balls, bowl, basket appear like YOLO detections on &lt;code&gt;/zed/bboxes_3d&lt;/code&gt;.">Würfel, Flasche, Bälle, Schale, Korb erscheinen wie YOLO-Detektionen auf <code>/zed/bboxes_3d</code>.</p>
-      </article>
-      <article class="fn" id="scenes" data-a="twin" data-f="scene" data-s="sr">
-        <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-layers"/></svg><span data-en="Scenes">Szenen</span></button></h3>
-        <p data-en="Two fixed scenes, switched via &lt;code&gt;/ui/set_virtual_objects&lt;/code&gt;, the same for all clients.">Zwei feste Szenen, Wechsel über <code>/ui/set_virtual_objects</code>, gleich für alle Clients.</p>
-      </article>
-      <article class="fn" id="logistics-cell" data-a="twin" data-f="pallet" data-s="sp">
-        <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-layers"/></svg><span data-en="Logistics cell">Logistik-Zelle</span></button></h3>
-        <p data-en="Euro pallet, 8 cartons at scale 1:6, belts and fence; fence and belts are obstacles.">Europalette, 8 Kartons im Maßstab 1:6, Bänder und Zaun; Zaun und Bänder sind Hindernis.</p>
-      </article>
-      <article class="fn" id="reachability" data-a="twin" data-f="reach" data-s="sr">
-        <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-globe"/></svg><span data-en="Reachability volume">Reachability-Volumen</span></button></h3>
-        <p data-en="7,888 precomputed voxels by Yoshikawa index, drawn in one draw call.">7888 vorberechnete Voxel nach Yoshikawa-Index, gezeichnet in einem Draw-Call.</p>
-      </article>
-      <article class="fn" id="vcams" data-a="twin" data-f="demo" data-s="sr">
-        <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-cam"/></svg><span data-en="Virtual twin cameras (vCams)">Virtuelle Twin-Kameras (vCams)</span></button></h3>
-        <p data-en="Up to 4 cameras render the twin; as a ROS image at 15&amp;nbsp;fps in FAKE mode only.">Bis zu 4 Kameras rendern den Twin; als ROS-Bild mit 15&nbsp;fps nur im FAKE-Modus.</p>
-      </article>
-      <article class="fn" id="tf-tuner" data-a="twin" data-f="sandbox" data-s="sr">
-        <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-gizmo"/></svg><span data-en="TF tuner">TF-Tuner</span></button></h3>
-        <p data-en="Frames go out latched as &lt;code&gt;/tf_static&lt;/code&gt;; Save stores on the robot PC.">Frames gehen latched als <code>/tf_static</code>; Save speichert auf dem Roboter-PC.</p>
-      </article>
-      <article class="fn" id="vr-mirror" data-a="twin" data-f="vr" data-s="sr">
-        <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-vr"/></svg><span data-en="VR mirror">VR-Spiegel</span></button></h3>
-        <p data-en="A PC window shows what the Quest&amp;nbsp;3 sees; purely passive.">Ein PC-Fenster zeigt, was die Quest&nbsp;3 sieht; rein passiv.</p>
-      </article>
-      <article class="fn" id="passthrough-ar" data-a="twin" data-f="vr" data-s="s" data-plan="prep">
-        <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-vr"/></svg><span data-en="Passthrough AR">Passthrough-AR</span></button></h3>
-        <p data-en="Switchable in the VR session; not yet tested on the real robot.">In der VR-Session umschaltbar; am echten Roboter noch nicht getestet.</p>
-      </article>
-      <article class="fn" id="isaac-shadow" data-a="twin" data-f="feedback" data-plan="doc">
-        <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-cube"/></svg><span data-en="Isaac Sim shadow">Isaac Sim Shadow</span></button></h3>
-        <p data-en="Isaac Sim subscribes to &lt;code&gt;/joint_states&lt;/code&gt; as a shadow; guide in the docs, local per PC.">Isaac Sim abonniert <code>/joint_states</code> als Schatten; Anleitung in der Doku, lokal je PC.</p>
-      </article>
-      <h2 class="grp-h" data-a="vis" style="--c: var(--green)">Vision</h2>
-      <article class="fn" id="zed-yolo" data-a="vis" data-f="vision" data-s="pr">
-        <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-cam"/></svg><span data-en="ZED and YOLOv8 in 3D">ZED und YOLOv8 in 3D</span></button></h3>
-        <p data-en="YOLOv8 on colour image and depth delivers 3D boxes at about 2.5&amp;nbsp;Hz.">YOLOv8 auf Farbbild und Tiefe liefert 3D-Boxen mit etwa 2,5&nbsp;Hz.</p>
-      </article>
-      <article class="fn" id="ip-cam-aruco" data-a="vis" data-f="streams" data-s="r" data-plan="prep">
-        <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-eye"/></svg><span data-en="IP camera and ArUco">IP-Kamera und ArUco</span></button></h3>
-        <p data-en="12 ArUco markers place detected objects on the table plane via homography.">12 ArUco-Marker legen erkannte Objekte per Homographie auf die Tischebene.</p>
-      </article>
-      <article class="fn" id="collision-objects" data-a="vis" data-f="vision" data-s="spr">
-        <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-cube"/></svg><span data-en="MoveIt collision objects">MoveIt-Kollisionsobjekte</span></button></h3>
-        <p data-en="Detected objects become open boxes in the planning scene; switchable via service.">Erkannte Objekte werden offene Kisten in der Planungsszene; per Service schaltbar.</p>
-      </article>
-      <article class="fn" id="octomap" data-a="vis" data-f="vision" data-s="r">
-        <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-layers"/></svg><span data-en="OctoMap">OctoMap</span></button></h3>
-        <p data-en="MoveIt OctoMap from the ZED point cloud at 3&amp;nbsp;cm; off by default.">MoveIt-OctoMap aus der ZED-Punktwolke mit 3&nbsp;cm; standardmäßig aus.</p>
-      </article>
-      <article class="fn" id="grasp-3phase" data-a="vis" data-f="grasp" data-s="spr">
-        <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-grip"/></svg><span data-en="3-phase grasp">3-Phasen-Greifen</span></button></h3>
-        <p data-en="70&amp;nbsp;mm above, straight down, suction on, lift at least 80&amp;nbsp;mm.">70&nbsp;mm darüber, gerade absenken, Sauger ein, mindestens 80&nbsp;mm anheben.</p>
-      </article>
-      <article class="fn" id="streams" data-a="vis" data-f="streams" data-s="sr">
-        <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-cam"/></svg><span data-en="Camera streams">Kamera-Streams</span></button></h3>
-        <p data-en="web_video_server on port 8082 serves ROS images as MJPEG to the UI.">web_video_server auf Port 8082 liefert ROS-Bilder als MJPEG an die UI.</p>
-      </article>
-      <h2 class="grp-h" data-a="ai" style="--c: var(--violet)">KI / VLA-M</h2>
-      <article class="fn" id="llm-agent" data-a="ai" data-f="vla" data-s="spr">
-        <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-spark"/></svg><span data-en="AI agent: Ollama, Claude, Gemini">KI-Agent: Ollama, Claude, Gemini</span></button></h3>
-        <p data-en="Local qwen3.8:27b, in the cloud Claude or Gemini; switchable at runtime.">Lokal qwen3.8:27b, in der Cloud Claude oder Gemini; zur Laufzeit umschaltbar.</p>
-      </article>
-      <article class="fn" id="plan-check" data-a="ai" data-f="vla" data-s="spr">
-        <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg><span data-en="Plan, check, execute">Plan, Prüfen, Execute</span></button></h3>
-        <p data-en="Code checks every plan, up to 2 correction rounds; then it waits for Execute.">Der Code prüft jeden Plan, bis zu 2 Korrekturrunden; dann wartet er auf Execute.</p>
-      </article>
-      <article class="fn" id="skills" data-a="ai" data-f="vla" data-s="spr">
-        <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-grip"/></svg><span data-en="Skills: pick, place, home, gripper, palletize">Skills: pick, place, home, gripper, palletize</span></button></h3>
-        <p data-en="The model only picks skill and object; the code computes every pose.">Das Modell wählt nur Skill und Objekt; alle Posen rechnet der Code.</p>
-      </article>
-      <article class="fn" id="recovery" data-a="ai" data-f="vla" data-s="spr">
-        <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-loop"/></svg><span data-en="Recovery: replan">Recovery: neu planen</span></button></h3>
-        <p data-en="If a step fails, the agent replans with the new scene at most 2 times.">Scheitert ein Schritt, plant der Agent mit der neuen Szene höchstens 2× neu.</p>
-      </article>
-      <article class="fn" id="abort" data-a="ai" data-f="vla" data-s="sr">
-        <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-stop"/></svg><span data-en="Abort and E-STOP">Abbruch: Abort und E-STOP</span></button></h3>
-        <p data-en="Abort stops after the current step, the E-STOP at once.">Abort stoppt nach dem laufenden Schritt, der E-STOP sofort.</p>
-      </article>
-      <article class="fn" id="world-model" data-a="ai" data-f="vla" data-s="spr">
-        <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-globe"/></svg><span data-en="World model">Weltmodell</span></button></h3>
-        <p data-en="Scene from &lt;code&gt;/zed/bboxes_3d&lt;/code&gt;; the plan is first played through on a copy.">Szene aus <code>/zed/bboxes_3d</code>; der Plan wird vorab auf einer Kopie durchgespielt.</p>
-      </article>
-      <article class="fn" id="session-log-eval" data-a="ai" data-f="vla" data-s="s">
-        <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-chart"/></svg><span data-en="Session log and vla_eval">Session-Log und vla_eval</span></button></h3>
-        <p data-en="Every model round is logged; 57 fixed test cases measure the agent without a robot.">Jede Modell-Runde wird geloggt; 57 feste Testfälle messen den Agenten ohne Roboter.</p>
-      </article>
-      <h2 class="grp-h" data-a="mon" style="--c: var(--pink)">Monitoring Dashboard</h2>
-      <article class="fn" id="mon-overview" data-a="mon" data-f="mon">
-        <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-chart"/></svg><span data-en="Overview">Übersicht</span></button></h3>
-        <p data-en="System, ROS&amp;nbsp;2, robot and users at a glance.">System, ROS&nbsp;2, Roboter und Nutzer auf einen Blick.</p>
-      </article>
-      <article class="fn" id="mon-system" data-a="mon" data-f="mon">
-        <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-chip"/></svg><span data-en="System">System</span></button></h3>
-        <p data-en="CPU, memory, GPU, network and disks live, 1&amp;nbsp;h ring, 30 days history.">CPU, Speicher, GPU, Netzwerk und Datenträger live, Ring 1&nbsp;h, 30 Tage Verlauf.</p>
-      </article>
-      <article class="fn" id="mon-processes" data-a="mon" data-f="mon">
-        <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-layers"/></svg><span data-en="Processes">Prozesse</span></button></h3>
-        <p data-en="Top processes, ROS nodes as processes and load per user.">Top-Prozesse, ROS-Nodes als Prozesse und Last je Benutzer.</p>
-      </article>
-      <article class="fn" id="mon-services" data-a="mon" data-f="mon">
-        <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-win"/></svg><span data-en="UIs and services">UIs und Dienste</span></button></h3>
-        <p data-en="Status, latency and availability of all web UIs and servers.">Status, Antwortzeit und Verfügbarkeit aller Web-UIs und Server.</p>
-      </article>
-      <article class="fn" id="mon-comms" data-a="mon" data-f="mon">
-        <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-link"/></svg><span data-en="ROS graph">ROS-Graph</span></button></h3>
-        <p data-en="Graph, data flow and live rates of all ROS&amp;nbsp;2 nodes.">Graph, Datenfluss und Live-Raten aller ROS-2-Nodes.</p>
-      </article>
-      <article class="fn" id="mon-topics" data-a="mon" data-f="mon">
-        <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-link"/></svg><span data-en="Topics">Topics</span></button></h3>
-        <p data-en="All topics with publishers, subscribers, rate and bandwidth.">Alle Topics mit Publishern, Subscribern, Rate und Bandbreite.</p>
-      </article>
-      <article class="fn" id="mon-robot" data-a="mon" data-f="mon">
-        <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-arm"/></svg><span data-en="Robot usage">Robot-Nutzung</span></button></h3>
-        <p data-en="MoveIt runs, success rate, times, jog, joint paths and blackbox list.">MoveIt-Läufe, Erfolgsquote, Zeiten, Jog, Gelenkwege und Blackbox-Liste.</p>
-      </article>
-      <article class="fn" id="mon-grasps" data-a="mon" data-f="mon">
-        <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-grip"/></svg><span data-en="Grasp and place">Greifen und Ablegen</span></button></h3>
-        <p data-en="Which object was grasped where and placed where.">Welches Objekt wo gegriffen und wohin gebracht wurde.</p>
-      </article>
-      <article class="fn" id="mon-users" data-a="mon" data-f="clicks">
-        <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-user"/></svg><span data-en="Users and sessions">Nutzer und Sessions</span></button></h3>
-        <p data-en="Who was connected, for how long, what was clicked and pressed.">Wer verbunden war, wie lange, was geklickt und gedrückt wurde.</p>
-      </article>
-      <article class="fn" id="mon-events" data-a="mon" data-f="mon">
-        <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-warn"/></svg><span data-en="Event logs">Event Logs</span></button></h3>
-        <p data-en="Log of nodes, sessions, grasps, errors and markers.">Protokoll von Nodes, Sessions, Griffen, Fehlern und Markern.</p>
-      </article>
-      <article class="fn" id="mon-export" data-a="mon" data-f="mon">
-        <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-db"/></svg><span data-en="Export">Export</span></button></h3>
-        <p data-en="&lt;code&gt;/api/export&lt;/code&gt; delivers 7 tables as CSV or JSON, 30 days by default."><code>/api/export</code> liefert 7 Tabellen als CSV oder JSON, Standard 30 Tage.</p>
-      </article>
-      <h2 class="grp-h" data-a="eval" style="--c: var(--orange)">Evaluierung</h2>
-      <article class="fn" id="eval-hierarchy" data-a="eval" data-f="study">
-        <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-flask"/></svg><span data-en="Test, task, participant, questionnaire">Test, Aufgabe, Person, Fragebogen</span></button></h3>
-        <p data-en="Four levels; one run per participant, task and input method.">Vier Ebenen; je Person, Aufgabe und Eingabemethode ein Durchlauf.</p>
-      </article>
-      <article class="fn" id="eval-latin-square" data-a="eval" data-f="study">
-        <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-layers"/></svg><span data-en="Latin square">Latin Square</span></button></h3>
-        <p data-en="The order of input methods is balanced per participant (Williams).">Die Reihenfolge der Eingabemethoden wird je Person ausbalanciert (Williams).</p>
-      </article>
-      <article class="fn" id="eval-popup-login" data-a="eval" data-f="study">
-        <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-user"/></svg><span data-en="Start popup and participant login">Start-Popup und Teilnehmer-Login</span></button></h3>
-        <p data-en="&lt;code&gt;/dashboard/eval_run&lt;/code&gt; opens the popup on all devices; login by code."><code>/dashboard/eval_run</code> öffnet das Popup auf allen Geräten; Login per Code.</p>
-      </article>
-      <article class="fn" id="eval-questionnaires" data-a="eval" data-f="study">
-        <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg><span data-en="SUS, NASA-TLX, UEQ-S, SEQ">SUS, NASA-TLX, UEQ-S, SEQ</span></button></h3>
-        <p data-en="10 + 6 + 8 + 1 items, scored automatically.">10 + 6 + 8 + 1 Fragen, automatisch ausgewertet.</p>
-      </article>
-      <article class="fn" id="eval-kpi" data-a="eval" data-f="study">
-        <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-chart"/></svg><span data-en="KPI snapshot">KPI-Snapshot</span></button></h3>
-        <p data-en="On stop, 10 metrics of the time window are stored.">Beim Stopp werden 10 Kennzahlen des Zeitfensters gespeichert.</p>
-      </article>
-      <article class="fn" id="eval-report" data-a="eval" data-f="study">
-        <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-chart"/></svg><span data-en="Report per ISO 9241-11">Bericht nach ISO 9241-11</span></button></h3>
-        <p data-en="6 chapters from effectiveness to usage data, printable as PDF.">6 Kapitel von Effektivität bis Nutzungsdaten, druckbar als PDF.</p>
-      </article>
-      <article class="fn" id="eval-segments" data-a="eval" data-f="study">
-        <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-pulse"/></svg><span data-en="Marker segments">Marker-Abschnitte</span></button></h3>
-        <p data-en="Compare time windows between markers; markers also by button.">Zeitfenster zwischen Markern vergleichen, Marker auch per Knopf.</p>
-      </article>
-      <article class="fn" id="eval-export" data-a="eval" data-f="study">
-        <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-db"/></svg><span data-en="Export CSV and JSON">Export CSV und JSON</span></button></h3>
-        <p data-en="Participants, runs with metrics and questionnaire answers.">Testpersonen, Durchläufe mit Kennzahlen und Fragebogen-Antworten.</p>
-      </article>
-      <h2 class="grp-h" data-a="data" style="--c: var(--indigo)">Daten</h2>
-      <article class="fn" id="data-blackbox" data-a="data" data-f="blackbox">
-        <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-db"/></svg><span data-en="Blackbox">Blackbox</span></button></h3>
-        <p data-en="The last 60&amp;nbsp;s as rosbag2 on E-STOP, servo halt, collision or button.">Die letzten 60&nbsp;s als rosbag2 bei E-STOP, Servo-Halt, Kollision oder Knopf.</p>
-      </article>
-      <article class="fn" id="data-demo" data-a="data" data-f="demo" data-s="sr">
-        <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-db"/></svg><span data-en="Demo recorder and LeRobot">Demo-Recorder und LeRobot</span></button></h3>
-        <p data-en="Episodes at 15&amp;nbsp;fps; &lt;code&gt;demos_to_lerobot.py&lt;/code&gt; builds a dataset, training planned.">Episoden mit 15&nbsp;fps; <code>demos_to_lerobot.py</code> macht einen Datensatz, Training geplant.</p>
-      </article>
-      <article class="fn" id="data-clicks" data-a="data" data-f="clicks">
-        <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-touch"/></svg><span data-en="Click statistics">Klick-Statistik</span></button></h3>
-        <p data-en="Clicks go via &lt;code&gt;/ui/interaction_events&lt;/code&gt; into SQLite every 3&amp;nbsp;s, without content.">Klicks gehen alle 3&nbsp;s über <code>/ui/interaction_events</code> in SQLite, ohne Inhalte.</p>
-      </article>
-      <h2 class="grp-h" data-a="infra" style="--c: var(--lime)">Infrastruktur</h2>
-      <article class="fn" id="infra-nexus" data-a="infra" data-f="start" data-s="spr">
-        <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-rocket"/></svg><span data-en="Nexus Webapp">Nexus Webapp</span></button></h3>
-        <p data-en="Port 8080: FAKE and REAL setups, preflight, EXECUTE, backups, Kill Daemon.">Port 8080: Setups FAKE und REAL, Preflight, EXECUTE, Backups, Kill Daemon.</p>
-      </article>
-      <article class="fn" id="infra-touch" data-a="infra" data-f="touch">
-        <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-touch"/></svg><span data-en="Touch panel setup">Touch Panel einrichten</span></button></h3>
-        <p data-en="Flask blueprint of the Nexus Webapp; kiosk start with &lt;code&gt;touch_panel_start.sh&lt;/code&gt;.">Flask-Blueprint der Nexus Webapp; Kiosk-Start mit <code>touch_panel_start.sh</code>.</p>
-      </article>
-      <article class="fn" id="infra-setup-card" data-a="infra" data-f="">
-        <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-globe"/></svg><span data-en="Setup card">Setup-Karte</span></button></h3>
-        <p data-en="Network, ports, touch and AI live from &lt;code&gt;/api/network&lt;/code&gt;, DE and EN, as PDF.">Netz, Ports, Touch und KI live aus <code>/api/network</code>, DE und EN, als PDF.</p>
-      </article>
-      <article class="fn" id="infra-network" data-a="infra" data-f="">
-        <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-link"/></svg><span data-en="network.yaml">network.yaml</span></button></h3>
-        <p data-en="One source for IPs, 7 ports and the rosbridge whitelist.">Eine Quelle für IPs, 7 Ports und die rosbridge-Whitelist.</p>
-      </article>
-      <article class="fn" id="infra-themes" data-a="infra" data-f="">
-        <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-eye"/></svg><span data-en="Themes">Themes</span></button></h3>
-        <p data-en="4 themes for all web UIs: Dark, Light, Jarvis, Nord Blue; switch with Alt+T.">4 Themes für alle Web-UIs: Dark, Light, Jarvis, Nord Blue; Wechsel mit Alt+T.</p>
-      </article>
-      <p class="empty" id="empty" hidden data-en="No function matches. Reset the filter or search for a topic such as &lt;code&gt;/joy&lt;/code&gt;.">Keine Funktion passt. Filter zurücksetzen oder nach einem Topic wie <code>/joy</code> suchen.</p>
-    </div>
-
-    <section class="panel" id="panel" aria-labelledby="pn-title" aria-live="off">
-      <div class="pn-head">
-        <div class="pn-kick" id="pn-kick"></div>
-        <h2 id="pn-title" data-en="Drag the target, check the ghost, move">Ziel ziehen, Ghost prüfen, fahren</h2>
-        <p class="pn-text" id="pn-text"></p>
-        <div class="pn-meta" id="pn-meta"></div>
-      </div>
-      <div class="loop" id="loop" hidden></div>
-      <figure class="fg" id="fg-atlas" aria-labelledby="fg-atlas-cap">
-        <ol class="fg-fallback">
-          <li data-en="MoveTo: drag the TCP gizmo in the Digital Twin → rosbridge → motion handler plans → ghost path in the twin → human approves → driver → xArm Lite 6">MoveTo: TCP-Gizmo im Digital Twin ziehen → rosbridge → Motion Handler plant → Ghost-Bahn im Twin → Mensch gibt frei → Treiber → xArm Lite 6</li>
-        </ol>
-        <noscript><p data-en="The interactive flows need JavaScript; every card names its path in text.">Die interaktiven Abläufe brauchen JavaScript; jede Karte nennt ihren Weg als Text.</p></noscript>
-      </figure>
-      <div class="pn-fns" id="pn-fns" hidden><h3 data-en="Functions in this flow">Funktionen in diesem Ablauf</h3><div class="chips" id="pn-chips"></div></div>
-    </section>
-  </div>
-  </div>
-</main>
-
-<footer><div class="wrap"><a href="project_docs.html" data-en="← Project docs">← Projekt-Doku</a><span data-en="Last updated 04.10.2026 · topics checked against the code">Stand 04.10.2026 · Topics am Code geprüft</span><span>dev_ws · docs/present_function_atlas.html</span></div></footer>
-
-<script src="js/scroll_flow.js"></script>
-<script src="js/landing.js"></script>
-<script>
+/* Funktionsatlas in docs/project_docs.html (Abschnitt 05, #atlas-list): alle Funktionen als Karten, je Ablauf ein animierter
+   Flow-Graph, Kreisläufe zusätzlich als Ring. Früher eigene Seite present_function_atlas.html (jetzt Weiterleitung, #<id> bleibt gültig).
+   Flow-Engine = Kopie aus .claude/skills/flow-graph/flow_graph_template.html, erweitert um `via` (Rückweg über eigene Zeile).
+   Neue Funktion: <article class="fn"> im Bereich in project_docs.html ergänzen (data-a Bereich, data-f Ablauf, data-s Stufen s/p/r).
+   Neuer Ablauf: Eintrag in FLOWS (SPEC wie Skill flow-graph, Topics per grep belegt; loop = Ring-Stationen).
+   Styles: css/function_atlas.css (alles unter .fa). */
 /* ═════════ FlowGraph-Engine (aus .claude/skills/flow-graph/flow_graph_template.html, + via) ═════════
    create(figure, SPEC, { lang }) → { setLang, setRates, select, destroy }
    SPEC: lanes[] (Spalten), nodes[] (lane, row, label, sub, icon, hue, info),
@@ -1030,7 +240,7 @@ const FlowGraph = (() => {
       $$('.fg-steps li').forEach((li, i) => li.classList.toggle('now', i === st.step));
       $$('.fg-scn button').forEach((b, i) => b.setAttribute('aria-pressed', String(st.live ? b.dataset.live === '1' : i === st.scn && !b.dataset.live)));
       const pb = $('[data-act="play"]');
-      pb.querySelector('use').setAttribute('href', st.play ? '#i-pause' : '#i-play');
+      pb.querySelector('use').setAttribute('href', st.play ? '#i-pause' : '#i-fg-play');
       pb.setAttribute('aria-label', st.play ? L(['Pause', 'Pause']) : L(['Abspielen', 'Play']));
       for (const a of ['prev', 'next', 'play']) $(`[data-act="${a}"]`).disabled = st.live || !s;
     }
@@ -1465,7 +675,7 @@ const FLOWS = (() => {
           N('rb', 'br', 0), N('mh', 'mo', 0), N('gj', 'mo', 1.5), N('arm', 'hw', 0)],
         edges: [E('ui', 'api', 'HTTP /api/sequences', { kind: 'service', ports: 'bl' }), E('ui', 'rb', '/ui/execute_move_to_pose_silent', { kind: 'service' }), E('rb', 'mh', '/ui/execute_move_to_pose_silent', { kind: 'service' }),
           E('rb', 'gj', '/ui/gripper_cmd', { ports: 'bl' }), E('mh', 'arm', ['MoveGroup → Controller', 'MoveGroup → controller']), R('mh', 'ui', '/ui/moveit_motion_state')],
-        scenarios: [SC('play', ['Abspielen', 'Play'], 'i-play', 'accent', ['Waypoints speichern, Play im Popup bestätigen, Schritt für Schritt fahren. Jede Fahrt läuft durch dieselbe Prüfung motionAllowed wie ein einzelner Knopf.', 'Save waypoints, confirm Play in the popup, move step by step. Every motion passes the same motionAllowed check as a single button.'], [
+        scenarios: [SC('play', ['Abspielen', 'Play'], 'i-fg-play', 'accent', ['Waypoints speichern, Play im Popup bestätigen, Schritt für Schritt fahren. Jede Fahrt läuft durch dieselbe Prüfung motionAllowed wie ein einzelner Knopf.', 'Save waypoints, confirm Play in the popup, move step by step. Every motion passes the same motionAllowed check as a single button.'], [
           S('ui>api', ['Gespeicherte Waypoints liegen auf dem Roboter-PC und sind für alle Clients gleich.', 'Saved waypoints live on the robot PC and are the same for all clients.']),
           S('ui>rb', ['Play startet erst nach Bestätigung im Popup; die einzelnen Fahrten laufen danach ohne weiteren Dialog.', 'Play starts only after confirming the popup; the individual motions then run without another dialog.']),
           S('rb>mh', ['Je Waypoint ein MoveTo; motionAllowed prüft vorher E-STOP, rosbridge-Verbindung, Control-Lock und laufende Fahrt.', 'One MoveTo per waypoint; motionAllowed first checks E-STOP, rosbridge connection, control lock and running motion.']),
@@ -2007,10 +1217,12 @@ const FLOWS = (() => {
 })();
 
 
-/* ═════════ Seite: Theme, Sprache, Filter, Auswahl ═════════ */
+
+/* ═════════ Atlas in der Hauptseite: Filter, Auswahl, Ablauf-Panel; Theme + Sprache steuert project_docs.html ═════════ */
 (() => {
   const root = document.documentElement;
-  const store = (k, v) => { try { if (v === undefined) return localStorage.getItem(k); localStorage.setItem(k, v); } catch (e) { return null; } };
+  const box = document.getElementById('atlas-list');
+  if (!box) return;
   const lang = () => (root.lang === 'en' ? 'en' : 'de');
   const L = v => (Array.isArray(v) ? v[lang() === 'en' ? 1 : 0] : v ?? '');
   const ico = id => `<svg class="ico" aria-hidden="true"><use href="#${id}"/></svg>`;
@@ -2035,11 +1247,12 @@ const FLOWS = (() => {
     + STAGES.map(([k, hue, t], i) => (i ? ST_TO : '') + (s.includes(k)
       ? `<span class="st on" style="--c: var(--${hue})"><i>${ST_OK}</i>${L(t)}</span>` : `<span class="st off"><i></i>${L(t)}</span>`)).join('') + '</span>';
 
+  const grid = box.querySelector('.fa-grid');
   const cardsBox = document.getElementById('cards'), panel = document.getElementById('panel'), fig = document.getElementById('fg-atlas');
-  const cards = [...document.querySelectorAll('.fn')];
+  const cards = [...cardsBox.querySelectorAll('.fn')];
   const byId = new Map(cards.map(c => [c.id, c]));
   const FIG_HTML = `<div class="fg-bar"><div class="fg-scn" role="group" aria-label="Szenario wählen"></div><div class="fg-ctl">
-    <button type="button" data-act="prev" aria-label="Schritt zurück"><svg><use href="#i-prev"/></svg></button><button type="button" data-act="play" aria-label="Abspielen"><svg><use href="#i-play"/></svg></button><button type="button" data-act="next" aria-label="Schritt vor"><svg><use href="#i-next"/></svg></button>
+    <button type="button" data-act="prev" aria-label="Schritt zurück"><svg><use href="#i-fg-prev"/></svg></button><button type="button" data-act="play" aria-label="Abspielen"><svg><use href="#i-fg-play"/></svg></button><button type="button" data-act="next" aria-label="Schritt vor"><svg><use href="#i-fg-next"/></svg></button>
     <span class="fg-speed" data-act="speed" role="group" aria-label="Tempo"><button type="button" data-v=".5" aria-pressed="false">0,5×</button><button type="button" data-v="1" aria-pressed="true">1×</button><button type="button" data-v="2" aria-pressed="false">2×</button></span></div></div>
     <div class="fg-stage"><svg class="fg-svg" role="group" aria-roledescription="Datenflussdiagramm"></svg></div>
     <div class="fg-foot"><div class="fg-detail"><h3></h3><p></p><div class="io"></div><div class="fg-status" aria-live="polite"></div></div><ol class="fg-steps"></ol></div>
@@ -2049,7 +1262,7 @@ const FLOWS = (() => {
 
   // Karten anreichern: Bereich, Kreislauf, geplant, Stufen-Badge, Link
   const decorate = () => {
-    document.querySelectorAll('[data-stage-ex]').forEach(x => { x.innerHTML = stage(x.dataset.stageEx); });
+    box.querySelectorAll('[data-stage-ex]').forEach(x => { x.innerHTML = stage(x.dataset.stageEx); });
     cards.forEach(decorateCard);
   };
   const decorateCard = c => {
@@ -2076,7 +1289,7 @@ const FLOWS = (() => {
   const renderAreas = () => {
     areaBox.innerHTML = `<button type="button" class="chip" data-area="" aria-pressed="${!area}">${L(['Alle', 'All'])} <b>${cards.length}</b></button>`
       + Object.entries(AREAS).map(([k, a]) => `<button type="button" class="chip" data-area="${k}" style="--c: var(--${a.hue})" aria-pressed="${area === k}">${ico(a.icon)}${a[lang()]} <b>${cards.filter(c => c.dataset.a === k).length}</b></button>`).join('');
-    document.querySelectorAll('.grp-h').forEach(h => { const a = AREAS[h.dataset.a]; h.innerHTML = `${ico(a.icon)}${a[lang()]}<b>${cards.filter(c => c.dataset.a === h.dataset.a).length}</b>`; });
+    cardsBox.querySelectorAll('.grp-h').forEach(h => { const a = AREAS[h.dataset.a]; h.innerHTML = `${ico(a.icon)}${a[lang()]}<b>${cards.filter(c => c.dataset.a === h.dataset.a).length}</b>`; });
   };
   areaBox.addEventListener('click', e => { const b = e.target.closest('[data-area]'); if (!b) return; area = b.dataset.area; renderAreas(); filter(); });
   const loopBtn = document.getElementById('only-loops');
@@ -2097,15 +1310,18 @@ const FLOWS = (() => {
       const ok = (!area || c.dataset.a === area) && (!onlyLoops || isLoop(c)) && (!q || hay.get(c.id).includes(q));
       c.hidden = !ok; n += ok;
     }
-    document.querySelectorAll('.grp-h').forEach(h => { h.hidden = !cards.some(c => !c.hidden && c.dataset.a === h.dataset.a); });
+    cardsBox.querySelectorAll('.grp-h').forEach(h => { h.hidden = !cards.some(c => !c.hidden && c.dataset.a === h.dataset.a); });
     empty.hidden = n > 0;
     count.textContent = `${n} / ${cards.length}`;
     count.setAttribute('aria-label', L([`${n} von ${cards.length} Funktionen`, `${n} of ${cards.length} functions`]));
-    spy();
   }
+  const resetFilter = (a = '', loops = false) => {
+    area = a; onlyLoops = loops; q = ''; qIn.value = ''; loopBtn.setAttribute('aria-pressed', String(loops));
+    renderAreas(); filter();
+  };
 
   // Ablauf anzeigen: Kopf, Ring (Kreislauf), Flow-Graph, Funktionen dieses Ablaufs
-  let graph = null, ring = null, curCard = null, curFlow = null;
+  let graph = null, ring = null, curCard = null;
   const narrow = matchMedia('(max-width: 1100px)');
   function showFlow(fid, card) {
     const f = FLOWS[fid];
@@ -2121,7 +1337,6 @@ const FLOWS = (() => {
       const lb = document.getElementById('loop'); lb.hidden = true; lb.innerHTML = '';
       graph?.destroy(); graph = null; fig.hidden = true;
       document.getElementById('pn-fns').hidden = true;
-      curFlow = null;
       return;
     }
     fig.hidden = false;
@@ -2159,10 +1374,10 @@ const FLOWS = (() => {
     const same = cards.filter(c => c.dataset.f === fid);
     document.getElementById('pn-fns').hidden = same.length < 2;
     document.getElementById('pn-chips').innerHTML = same.map(c => `<button type="button" class="chip" data-go="${c.id}" aria-pressed="${c === card}">${esc(c.querySelector('.fn-sel').textContent.trim())}</button>`).join('');
-    curFlow = fid;
   }
   function select(card, opts = {}) {
     if (!card) return;
+    if (card.hidden) resetFilter();
     cards.forEach(c => { c.classList.toggle('sel', c === card); c.querySelector('.fn-sel')?.setAttribute('aria-pressed', String(c === card)); });
     curCard = card;
     placePanel();
@@ -2173,7 +1388,7 @@ const FLOWS = (() => {
   // Schmal: Ablauf direkt unter der gewählten Karte; breit: rechte Spalte
   function placePanel() {
     if (narrow.matches && curCard) curCard.after(panel);
-    else if (!narrow.matches && panel.parentElement !== document.querySelector('.atlas')) document.querySelector('.atlas').append(panel);
+    else if (!narrow.matches && panel.parentElement !== grid) grid.append(panel);
   }
   narrow.addEventListener('change', placePanel);
 
@@ -2183,96 +1398,31 @@ const FLOWS = (() => {
   });
   panel.addEventListener('click', e => {
     const b = e.target.closest('[data-go]'); if (!b) return;
-    const c = byId.get(b.dataset.go);
-    if (c.hidden) { area = ''; onlyLoops = false; q = ''; qIn.value = ''; loopBtn.setAttribute('aria-pressed', 'false'); renderAreas(); filter(); }
-    select(c, { hash: true, scroll: true });
+    select(byId.get(b.dataset.go), { hash: true, scroll: true });
   });
   window.addEventListener('hashchange', () => { const c = byId.get(location.hash.slice(1)); if (c) select(c, { scroll: true }); });
 
-  // Theme: ?theme=, gespeicherte Wahl (gemeinsam mit project_docs.html), sonst System
-  const setTheme = t => {
-    if (t) root.dataset.theme = t;
-    const cur = root.dataset.theme || (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
-    document.querySelectorAll('[data-theme-btn]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.themeBtn === cur)));
-  };
-  const qTheme = new URLSearchParams(location.search).get('theme');
-  setTheme(['dark', 'light'].includes(qTheme) ? qTheme : store('project_docs_theme'));
-  document.querySelectorAll('[data-theme-btn]').forEach(b => b.addEventListener('click', () => { setTheme(b.dataset.themeBtn); store('project_docs_theme', b.dataset.themeBtn); }));
-  matchMedia('(prefers-color-scheme: light)').addEventListener('change', () => setTheme());
-
-  // Sprache: Texte mit data-en (wie project_docs.html), danach Karten, Chips und Ablauf neu
-  const keep = (el, key, val) => { if (el.dataset[key] === undefined) el.dataset[key] = val; return el.dataset[key]; };
-  const setLang = l => {
-    root.lang = l;
-    const en = l === 'en';
-    document.querySelectorAll('[data-en]').forEach(el => { const de = keep(el, 'de', el.innerHTML); el.innerHTML = en ? el.dataset.en : de; });
-    document.querySelectorAll('[data-en-aria]').forEach(el => { const de = keep(el, 'deAria', el.getAttribute('aria-label')); el.setAttribute('aria-label', en ? el.dataset.enAria : de); });
-    document.querySelectorAll('[data-en-ph]').forEach(el => { const de = keep(el, 'dePh', el.placeholder); el.placeholder = en ? el.dataset.enPh : de; });
-    document.querySelectorAll('[data-en-alt]').forEach(el => { const de = keep(el, 'deAlt', el.alt); el.alt = en ? el.dataset.enAlt : de; });
-    document.querySelectorAll('[data-lang]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.lang === l)));
-    decorate(); renderAreas(); filter(); renderHere();
-    if (curCard) showFlow(curCard.dataset.f, curCard);
-  };
-  document.querySelectorAll('[data-lang]').forEach(b => b.addEventListener('click', () => { setLang(b.dataset.lang); store('project_docs_lang', b.dataset.lang); }));
-
-  // Seiten-Motion (Skill motion-viz): Fortschrittslinie, aktiver Bereich in der Kopfzeile, Einblenden beim ersten Sichtbarwerden
-  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const bar = document.querySelector('.progress'), here = document.getElementById('here');
-  let hereKey = '', spyRaf = 0;
-  function renderHere() {
-    const a = AREAS[hereKey];
-    here.innerHTML = a ? `${ico(a.icon)}<span>${a[lang()]}</span>` : '';
-    if (!a) return;
-    here.style.setProperty('--c', `var(--${a.hue})`);
-    if (!reduce) here.animate({ opacity: [0, 1] }, { duration: 250, easing: 'cubic-bezier(.2, .7, .2, 1)' });
-  }
-  // aktiver Bereich = letzte sichtbare Zwischenüberschrift oberhalb von 40 % der Fensterhöhe
-  function spy() {
-    spyRaf = 0;
-    if (!CSS.supports('animation-timeline: scroll()')) { const max = root.scrollHeight - innerHeight; bar.style.setProperty('--p', max > 0 ? Math.min(1, scrollY / max) : 0); }
-    let k = '';
-    for (const h of document.querySelectorAll('.grp-h:not([hidden])')) { if (h.getBoundingClientRect().top < innerHeight * .4) k = h.dataset.a; else break; }
-    if (k !== hereKey) { hereKey = k; renderHere(); }
-  }
-  addEventListener('scroll', () => { if (!spyRaf) spyRaf = requestAnimationFrame(spy); }, { passive: true });
-  addEventListener('resize', () => { if (!spyRaf) spyRaf = requestAnimationFrame(spy); }, { passive: true });
-
-  // Lesefluss (js/scroll_flow.js): Kopf gestaffelt, Karten je Schub in Lesereihenfolge aus der Tiefe
-  window.ScrollFlow?.init({
-    hero: '.hero-head > .badge, .h1-name, .hero-head > .abstract, .hero-keys > li, .hero-head > .legend, .hero-card',
-    heroExit: '.hero-inner',
-    items: ['.filter', '.panel', '.cards > .grp-h'], cards: '.cards > .fn',
-    relay: [{ box: '.hero-kpis', items: '.hero-card' }],
-    spot: [{ box: '.cards', items: '.fn' }],
-    fill: '.pips, .hc-seg',
-  });
-
-  // Karte „Bereiche“: ein Segment je Bereich, Breite = Anzahl Funktionen, Farbe = Bereichsfarbe
-  document.getElementById('hc-seg').innerHTML = Object.entries(AREAS)
-    .map(([k, a]) => `<i style="--n: ${cards.filter(c => c.dataset.a === k).length}; --c: var(--${a.hue})"></i>`).join('');
-  // Kennzahl-Karte → Filter zurück, damit die Liste die Zahl im Hero zeigt (Karte „Kreisläufe“ → nur Kreisläufe); danach zur Liste
-  document.querySelector('.hero').addEventListener('click', e => {
-    const a = e.target.closest('.hero-card');
-    if (!a) return;
+  // Übersicht darüber: Bereichs-Kachel/Ringstück → Liste auf den Bereich gefiltert; Kreislauf-Chip → seinen Ablauf zeigen
+  document.addEventListener('click', e => {
+    const a = e.target.closest('[data-fa-area]'), lp = e.target.closest('[data-fa-flow]');
+    if (!a && !lp) return;
     e.preventDefault();
-    onlyLoops = a.matches('[data-loops]');
-    area = '';
-    q = ''; qIn.value = ''; loopBtn.setAttribute('aria-pressed', String(onlyLoops));
-    renderAreas(); filter();
-    document.getElementById('atlas-list').scrollIntoView();
+    if (a) { resetFilter(a.dataset.faArea); select(cards.find(c => !c.hidden)); box.scrollIntoView(); return; }
+    resetFilter('', true);
+    select(cards.find(c => c.dataset.f === lp.dataset.faFlow), { hash: true });
+    box.scrollIntoView();
   });
 
-  // Kennzahlen aus den Daten statt fest im Text
-  const setCount = (key, n) => document.querySelectorAll(`[data-count="${key}"]`).forEach(el => { el.textContent = n; });
-  setCount('fn', cards.length);
-  setCount('area', new Set(cards.map(c => c.dataset.a)).size);
-  setCount('loop', flowIds.filter(id => FLOWS[id].loop).length);
-  for (const c of cards) if (c.dataset.f && !FLOWS[c.dataset.f]) console.warn('[atlas] Karte mit unbekanntem Ablauf:', c.id, c.dataset.f);
+  // Sprache schaltet project_docs.html (data-en); danach Karten, Chips und Ablauf neu
+  const setPh = () => box.querySelectorAll('[data-en-ph]').forEach(el => {
+    if (el.dataset.dePh === undefined) el.dataset.dePh = el.placeholder;
+    el.placeholder = lang() === 'en' ? el.dataset.enPh : el.dataset.dePh;
+  });
+  new MutationObserver(() => { setPh(); decorate(); renderAreas(); filter(); if (curCard) showFlow(curCard.dataset.f, curCard); })
+    .observe(root, { attributes: true, attributeFilter: ['lang'] });
 
-  const qLang = new URLSearchParams(location.search).get('lang');
-  if ((qLang || store('project_docs_lang')) === 'en') setLang('en'); else { decorate(); renderAreas(); filter(); }
-  select(byId.get(location.hash.slice(1)) || byId.get(document.querySelector('.fn[data-default]')?.id) || cards[0], { scroll: !!byId.get(location.hash.slice(1)) });
+  for (const c of cards) if (c.dataset.f && !FLOWS[c.dataset.f]) console.warn('[atlas] Karte mit unbekanntem Ablauf:', c.id, c.dataset.f);
+  setPh(); decorate(); renderAreas(); filter();
+  const hashCard = byId.get(location.hash.slice(1));
+  select(hashCard || cardsBox.querySelector('.fn[data-default]') || cards[0], { scroll: !!hashCard });
 })();
-</script>
-</body>
-</html>

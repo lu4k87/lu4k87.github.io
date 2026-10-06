@@ -32,7 +32,7 @@ dev_ws/
 │   ├── operate_setup_guide.html                                           # Setup guide DE/EN: commissioning checklist, pre-installed PC or bare Ubuntu (/manuals/operate_setup_guide.html)
 │   ├── present_presentation.html                                          # Project presentation: interactive page on shared control, AI/VLA, vision, UI/UX, evaluation (images: img/presentation/)
 │   ├── present_control_modes.html                                         # Control modes & safety chain: product page of the project
-│   ├── present_function_atlas.html                                        # Function atlas: all functions and their flows
+│   ├── present_function_atlas.html                                        # Redirect to the function atlas in project_docs.html
 │   ├── develop_workflow.html                                              # How the project is developed with Claude Code (skills, hooks, parallel chats)
 │   ├── en/ · de/                                                          # 13 pages each: concept, installation, running, teleoperation, …
 │   ├── brand/                                                             # Brand kit brand.yaml: name, claim, slogans, colours, fonts (checked by tools/check_showcase.py)
