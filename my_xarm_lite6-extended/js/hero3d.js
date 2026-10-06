@@ -2,7 +2,7 @@
    Laser-Zielhilfe senkrecht auf den Tisch; Ziehen dreht die Kamera. Szene je Seite (opts.scene):
      dome   Arbeitsraum als Punktkuppel (Reichweite 440 mm um Gelenk 2); Zeiger bewegt den TCP, sonst langsame Acht;
             Mini-Spiel „Missionen“: Würfel, Quader, Zylinder (Rastergitter) in die passende Aussparung legen lassen, Sprechblasen,
-            Missionsliste (.h3d-quest), Klänge der Robot Control UI (docs/sounds/); freie Objekte wandern langsam über die
+            Missionsstand in der Szene (Bögen am Bodenring, Lichtschrift davor, Klang-Knopf .h3d-snd), Klänge der Robot Control UI (docs/sounds/); freie Objekte wandern langsam über die
             Kreisfläche; Formen leuchten als Klick-Hinweis kurz auf,
             Status-Leiste unten mittig (.h3d-steps) blendet die Schritte nacheinander ein; Licht etwas gedämpft
      modes  Steuerwege als Lichtpunkte im Ring (opts.items); aktiver Punkt schickt einen Impuls zum Arm, der Arm zeigt hin
@@ -716,53 +716,121 @@ function build(L, wrap, host, o) {
         tick() { if (!o) return; place(); if (until && performance.now() > until) { el.classList.remove('in'); until = 0; } },
       };
     })();
-    // Missionsliste oben links mit Abzeichen-Zeile; Klang-Knopf (einziges Bedienelement, 32 px)
+    // Missionen in der Szene statt Card (Wunsch User 06.10.2026, Vorschau Variante A): je Objekt ein Bogen auf dem gestrichelten
+    // Bodenring (gestrichelt + Umriss = offen; Band in Objektfarbe läuft 600 ms ein + gefülltes Symbol mit ✓ = zu Hause), Zeit ·
+    // Runde · Bestzeit als Lichtschrift auf einer schrägen Bodenplatte davor (35° zur Kamera geneigt: flach am Boden wäre sie bei
+    // ~20° Blickhöhe auf ein Drittel gestaucht). Gruppe dreht mit der Kamera (bleibt vorn, nie hinter dem Sockel). Runde geschafft
+    // = Lichtwelle über den Sockel (Ping 1,2 s) + Sprechblase am Arm. Klang-Knopf frei unten rechts, Stand für Screenreader als
+    // unsichtbare Zeile (nur bei Missionswechsel, nie je Zehntel); beide neben dem Canvas, nicht im role=img
     const quest = (() => {
-      const box = document.createElement('div'); box.className = 'h3d-quest';
-      box.innerHTML = '<div class="h3d-q-head"><b></b><span></span><button type="button" class="h3d-q-snd"><svg viewBox="0 0 24 24" aria-hidden="true">' +
-        '<path d="M4 9.5h3.5L12 6v12l-4.5-3.5H4z"/><path class="w" d="M15.5 9.5a3.5 3.5 0 0 1 0 5M18 7a7 7 0 0 1 0 10"/><path class="x" d="M16 9.5l5 5M21 9.5l-5 5"/></svg></button></div>' +
-        '<p class="h3d-q-task"></p><ul></ul><div class="h3d-q-bar"><i></i></div>' +
-        '<div class="h3d-q-stats"><div class="tm"><small></small><strong></strong></div><div class="bt"><small></small><strong></strong></div><div><small></small><strong></strong></div></div>';
-      const badge = document.createElement('div'); badge.className = 'h3d-badge'; badge.setAttribute('role', 'status');
-      box.append(badge); host.append(box);   // Abzeichen als Zeile in der Liste: überdeckt nie die Bühne
-      const [title, count, btn] = box.querySelector('.h3d-q-head').children, list = box.querySelector('ul'), bar = box.querySelector('.h3d-q-bar i'), task = box.querySelector('.h3d-q-task');
-      const [tm, bt, rd] = [...box.querySelector('.h3d-q-stats').children].map(d => ({ d, k: d.firstChild, v: d.lastChild }));
-      const PAUSE = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M10 9v6M14 9v6"/></svg>';
-      const STAR = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l2.6 5.6 6 .7-4.5 4.1 1.2 6L12 16.4 6.7 19.4l1.2-6L3.4 9.3l6-.7z"/></svg>';
-      let badgeT = 0, shown = '';
-      // Zeit-Kachel (je Bild aufgerufen, schreibt nur bei Änderung): Pause = Icon + Wort statt nur Farbe
-      const clock = paused => {
-        const key = `${fmt(tRun)}|${paused}|${document.documentElement.lang}`;
-        if (key === shown) return; shown = key;
-        tm.v.textContent = fmt(tRun); tm.d.classList.toggle('pause', paused);
-        if (paused) tm.k.innerHTML = PAUSE + T('Pause', 'Paused'); else tm.k.textContent = T('Zeit', 'Time');
+      const g = new THREE.Group(); st.scene.add(g);
+      const R = 0.47, Z = -0.02, W = 0.66, GAP = 0.09, FILL = 0.6, TILT = 35 * Math.PI / 180, CT = Math.cos(TILT), ST = Math.sin(TILT);
+      const fg = tok('--glass-fg') || '#e8f4f2', warn = tok('--warn') || '#ffb36b', gold = '#f2c14e', acc = `#${ACC.getHexString()}`;
+      const mono = tok('--mono') || 'monospace', aniso = st.renderer.capabilities.getMaxAnisotropy();
+      const canvasTex = (w, h) => {
+        const c = document.createElement('canvas'); c.width = w; c.height = h;
+        const tx = new THREE.CanvasTexture(c); tx.colorSpace = THREE.SRGBColorSpace; tx.anisotropy = aniso; return [c.getContext('2d'), tx];
       };
+      // schräge Platte am Boden: Unterkante auf Radius r im Winkel a, Bildseite zeigt nach außen-oben
+      const slab = (tx, w, h, a, r) => {
+        const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({ map: tx, transparent: true, depthWrite: false }));
+        const c = Math.cos(a), s = Math.sin(a), x = new THREE.Vector3(-s, c, 0), y = new THREE.Vector3(-CT * c, -CT * s, ST);
+        m.matrixAutoUpdate = false; m.matrix.makeBasis(x, y, new THREE.Vector3().crossVectors(x, y)).setPosition((r - h / 2 * CT) * c, (r - h / 2 * CT) * s, -0.03 + h / 2 * ST);
+        g.add(m); return m;
+      };
+      const SEG = 48;
+      const arcs = OBJ.map((o, k) => {
+        const mid = (k - 1) * (W + GAP), a0 = mid - W / 2, col = `#${o.K.color.toString(16).padStart(6, '0')}`;
+        const dashed = new THREE.Line(new THREE.BufferGeometry().setFromPoints(circle(R, Z, 64, a0, a0 + W)),
+          new THREE.LineDashedMaterial({ color: o.K.color, dashSize: 0.006, gapSize: 0.012, transparent: true, opacity: 0.7 }));
+        dashed.computeLineDistances();
+        const band = new THREE.Mesh(new THREE.RingGeometry(R - 0.007, R + 0.007, SEG, 1, a0, W), new THREE.MeshBasicMaterial({ color: o.K.color, transparent: true, depthWrite: false }));
+        const glow = new THREE.Mesh(new THREE.RingGeometry(R - 0.022, R + 0.022, SEG, 1, a0, W), new THREE.MeshBasicMaterial({ color: o.K.color, transparent: true, opacity: 0.28, blending: THREE.AdditiveBlending, depthWrite: false }));
+        band.position.z = glow.position.z = Z;
+        g.add(dashed, band, glow);
+        const [ctx, tx] = canvasTex(128, 128);
+        slab(tx, 0.044, 0.044, mid, R + 0.075);
+        return { o, col, dashed, band, glow, ctx, tx, f: 0, on: null };
+      });
+      // Formsymbol unter dem Bogen: offen = Umriss, zu Hause = gefüllt + ✓ (nicht nur Farbe)
+      const symbol = a => {
+        const { ctx: c, col } = a, id = a.o.K.id; c.clearRect(0, 0, 128, 128); c.lineWidth = 8; c.strokeStyle = c.fillStyle = col;
+        c.beginPath();
+        if (id === 'cube') c.rect(30, 30, 68, 68); else if (id === 'box') c.rect(14, 41, 100, 46); else c.arc(64, 64, 36, 0, Math.PI * 2);
+        if (a.on) { c.fill(); c.strokeStyle = '#fff'; c.lineWidth = 11; c.lineCap = c.lineJoin = 'round'; c.beginPath(); c.moveTo(44, 65); c.lineTo(58, 79); c.lineTo(85, 50); }
+        c.stroke(); a.tx.needsUpdate = true;
+      };
+      // Lichtschrift: Zeit groß, darunter Pause (Symbol + Wort) · Runde · Bestzeit bzw. Rekord (Stern)
+      const [tc, ttx] = canvasTex(1152, 256);   // 4,5 : 1 wie die Platte
+      const plate = slab(ttx, 0.36, 0.08, 0, 0.67);
+      const PAUSE_D = (c, x, y, s) => { c.beginPath(); c.arc(x + s / 2, y, s / 2 - 2, 0, Math.PI * 2); c.moveTo(x + s * 0.4, y - s * 0.17); c.lineTo(x + s * 0.4, y + s * 0.17); c.moveTo(x + s * 0.6, y - s * 0.17); c.lineTo(x + s * 0.6, y + s * 0.17); c.stroke(); };
+      let shown = '';
+      const clock = paused => {
+        const key = `${fmt(tRun)}|${paused}|${rounds}|${best}|${newBest}|${document.documentElement.lang}`;
+        if (key === shown) return; shown = key;
+        const c = tc; c.clearRect(0, 0, 1152, 256); c.textAlign = 'center'; c.textBaseline = 'middle';
+        c.shadowColor = acc; c.shadowBlur = 22; c.fillStyle = acc; c.font = `800 112px ${mono}`; c.fillText(fmt(tRun), 576, 86);
+        c.shadowBlur = 0; c.font = `700 48px ${mono}`;
+        const parts = [];
+        if (paused) parts.push({ t: T('PAUSE', 'PAUSED'), col: warn, icon: PAUSE_D });
+        parts.push({ t: `${T('RUNDE', 'ROUND')} ${rounds + (finished ? 0 : 1)}`, col: fg });
+        if (best) parts.push(newBest ? { t: `★ ${T('REKORD', 'RECORD')} ${fmt(best)}`, col: gold } : { t: `${T('BESTZEIT', 'BEST')} ${fmt(best)}`, col: fg });
+        const sep = '  ·  ', IS = 44, w = parts.reduce((s, p, i) => s + c.measureText(p.t).width + (p.icon ? IS + 10 : 0) + (i ? c.measureText(sep).width : 0), 0);
+        let x = 576 - w / 2; c.textAlign = 'left'; c.lineWidth = 5; c.lineCap = 'round';
+        parts.forEach((p, i) => {
+          if (i) { c.fillStyle = fg; c.fillText(sep, x, 200); x += c.measureText(sep).width; }
+          c.fillStyle = c.strokeStyle = p.col;
+          if (p.icon) { p.icon(c, x, 200, IS); x += IS + 10; }
+          c.fillText(p.t, x, 200); x += c.measureText(p.t).width;
+        });
+        ttx.needsUpdate = true;
+      };
+      // Lichtwelle: Ring läuft einmal vom Arm bis an die Sockelkante (Ping: 1,2 s ease-out, Deckkraft .8 → 0)
+      const wave = new THREE.Mesh(new THREE.RingGeometry(0.96, 1, 128), new THREE.MeshBasicMaterial({ color: ACC, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false }));
+      wave.position.z = 0.0015; wave.visible = false; st.scene.add(wave);
+      let waveT = -1, plateOp = 1;
+      // Klang-Knopf + Screenreader-Zeile neben dem Canvas (gleiche Rasterzelle der Bühne, kein position: absolute)
+      const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'h3d-snd';
+      btn.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.5h3.5L12 6v12l-4.5-3.5H4z"/><path class="w" d="M15.5 9.5a3.5 3.5 0 0 1 0 5M18 7a7 7 0 0 1 0 10"/><path class="x" d="M16 9.5l5 5M21 9.5l-5 5"/></svg>';
+      const sr = document.createElement('p'); sr.className = 'h3d-sr'; sr.setAttribute('role', 'status');
+      host.after(btn, sr);
       const render = () => {
         const n = OBJ.filter(o => o.home).length;
-        title.textContent = T('Missionen', 'Missions'); count.textContent = `${n} / 3`;
-        list.replaceChildren(...OBJ.map(o => {
-          const li = document.createElement('li'), i = document.createElement('i'), s = document.createElement('span');
-          li.className = o.home ? 'ok' : ''; li.style.setProperty('--c', `#${o.K.color.toString(16).padStart(6, '0')}`);
-          s.textContent = T(o.K.de, o.K.en[0].toUpperCase() + o.K.en.slice(1)); li.dataset.k = o.K.id; li.append(i, s);
-          if (o.home) i.textContent = '✓';   // erledigt: Formsymbol gefüllt + Haken darin (nicht nur Farbe), Text bleibt lesbar
-          return li;
-        }));
-        bar.style.width = `${n / 3 * 100}%`;
-        task.textContent = T('Nach Hause bringen:', 'Bring them home:');
-        if (newBest) bt.k.innerHTML = STAR + T('Rekord', 'Record'); else bt.k.textContent = T('Bestzeit', 'Best'); bt.v.textContent = best ? fmt(best) : '–'; bt.d.classList.toggle('new', newBest);
-        rd.k.textContent = T('Runden', 'Rounds'); rd.v.textContent = rounds; shown = '';
-        box.classList.toggle('muted', mute);
+        arcs.forEach(a => { if (a.on === a.o.home) return; a.on = a.o.home; if (!a.on || reduce) a.f = a.on ? 1 : 0; symbol(a); });
+        sr.textContent = finished ? T(`Pick-&-Place-Profi: Runde ${rounds} in ${fmt(tRun)} geschafft`, `Pick & place pro: round ${rounds} done in ${fmt(tRun)}`)
+          : T(`Missionen: ${n} von 3 zu Hause · Runde ${rounds + 1}`, `Missions: ${n} of 3 home · round ${rounds + 1}`);
         btn.setAttribute('aria-pressed', String(!mute)); btn.setAttribute('aria-label', T('Klänge', 'Sounds'));
         btn.title = mute ? T('Klänge einschalten', 'Turn sounds on') : T('Klänge ausschalten', 'Turn sounds off');
+        shown = '';
       };
       btn.addEventListener('click', () => { mute = !mute; render(); save(); if (!mute) { sfx.unlock(); sfx('pop'); } });
-      new MutationObserver(render).observe(document.documentElement, { attributes: true, attributeFilter: ['lang'] });
+      new MutationObserver(() => { arcs.forEach(a => { a.on = null; }); render(); show(); }).observe(document.documentElement, { attributes: true, attributeFilter: ['lang'] });
+      document.fonts?.ready.then(() => { shown = ''; show(); });
+      const tgt = st.controls.target, eo = u => 1 - (1 - u) ** 3;
       return {
         render, clock,
+        tick(dt) {
+          g.rotation.z = Math.atan2(st.camera.position.y - tgt.y, st.camera.position.x - tgt.x);
+          arcs.forEach(a => {
+            if (a.on && a.f < 1) a.f = Math.min(1, a.f + dt / FILL);
+            const e = eo(a.f), n = Math.round(SEG * e) * 6;
+            a.band.geometry.setDrawRange(0, n); a.glow.geometry.setDrawRange(0, n);
+            a.band.visible = a.glow.visible = n > 0; a.dashed.visible = !a.on;
+          });
+          // Schritt-Leiste (.h3d-steps) liegt unten mittig über der Lichtschrift → Schrift weicht aus, solange ein Schritt steht
+          // (Wunsch User 06.10.2026): aus 320 ms, ein 450 ms (soft-motion: raus ≈ 70 %)
+          const away = !!host.querySelector('.h3d-step:not(.out)');
+          plateOp = reduce ? +!away : away ? Math.max(0, plateOp - dt / 0.32) : Math.min(1, plateOp + dt / 0.45);
+          plate.material.opacity = plateOp * plateOp * (3 - 2 * plateOp); plate.visible = plateOp > 0;
+          if (waveT < 0) return;
+          waveT += dt; const u = Math.min(1, waveT / 1.2), s = 0.06 + 0.34 * eo(u);
+          wave.scale.set(s, s, 1); wave.material.opacity = 0.8 * (1 - u); wave.visible = u < 1; if (u === 1) waveT = -1;
+        },
+        // Runde geschafft: Sprechblase am Arm (folgt dem TCP) + Lichtwelle; Screenreader-Zeile setzt render()
         badge() {
-          badge.innerHTML = '<svg class="ico" aria-hidden="true"><use href="#i-star"/></svg><span></span>';
-          badge.lastChild.textContent = T(`Pick-&-Place-Profi · Runde ${rounds} in ${fmt(tRun)} geschafft!`, `Pick & place pro · round ${rounds} done in ${fmt(tRun)}!`);
-          badge.classList.add('in'); clearTimeout(badgeT); badgeT = setTimeout(() => badge.classList.remove('in'), 5200);
+          const msg = T(`Runde ${rounds} in ${fmt(tRun)} geschafft!`, `Round ${rounds} done in ${fmt(tRun)}!`) + (newBest ? T(' Rekord!', ' Record!') : '');
+          say.show({ g: { position: tcpW }, h: 0.05 }, msg, 4500, true);
+          if (!reduce) waveT = 0;
         },
       };
     })();
@@ -1283,7 +1351,7 @@ function build(L, wrap, host, o) {
       // Stoppuhr: Arm fährt → zählt immer; sonst nur mit Zeiger auf der Bühne und Eingabe in den letzten 15 s
       const ticking = started && !finished && ((job && !job.hold) || (inside && clk - lastIn < IDLE));
       if (ticking) tRun += dt;
-      quest.clock(started && !finished && !ticking);
+      quest.clock(started && !finished && !ticking); quest.tick(dt);
       if (!reduce) wander(dt);
       // Arm fährt beim Folgen gegen einen Turm → umkippen, Schubrichtung = Fahrtrichtung des TCP; Leerlauf bleibt über den Türmen
       robot.tcp.getWorldPosition(tcpW);

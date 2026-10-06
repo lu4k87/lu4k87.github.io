@@ -275,7 +275,7 @@ a.hero-card:hover { border-color: color-mix(in srgb, var(--accent) 65%, var(--gl
 }
 @media (prefers-reduced-motion: reduce) { .h3d-step, .h3d-step.out { transition: none; } .h3d-step.on i::after { animation: none; } }
 /* Mini-Spiel der Hero-Bühne (js/hero3d.js, Wunsch User 06.10.2026): Sprechblase am Objekt ploppt auf (kleiner Überschwinger
-   bewusst: Wunsch „Popup-Sprechblasen-Effekt“), Missionsliste oben links mit Abzeichen-Zeile; nur der Klang-Knopf nimmt Zeiger an */
+   bewusst: Wunsch „Popup-Sprechblasen-Effekt“) */
 .h3d-say { position: absolute; left: 0; top: 0; z-index: 2; translate: -50% calc(-100% - 12px); pointer-events: none; white-space: nowrap;
   padding: 8px 12px; border: 1px solid color-mix(in srgb, var(--accent) 70%, var(--glass-bd)); border-radius: var(--radius-sm);
   background: var(--glass-bg); color: var(--glass-fg); font: 700 13px/1.25 var(--mono); box-shadow: inset 0 1px 0 var(--glass-hi), 0 0 22px -6px var(--glow);
@@ -284,52 +284,18 @@ a.hero-card:hover { border-color: color-mix(in srgb, var(--accent) 65%, var(--gl
   background: inherit; border: 1px solid color-mix(in srgb, var(--accent) 70%, var(--glass-bd)); border-width: 0 1px 1px 0; }
 .h3d-say.in { opacity: 1; scale: 1; animation: h3d-pop 520ms var(--ease-out); }
 @keyframes h3d-pop { 0% { opacity: 0; scale: .5; } 55% { opacity: 1; scale: 1.08; } 100% { scale: 1; } }
-.h3d-quest { position: absolute; left: 14px; top: 14px; z-index: 2; display: grid; gap: 8px; width: max-content; padding: 10px; pointer-events: none;
-  border: 1px solid var(--glass-bd); border-radius: var(--radius-sm); background: var(--glass-bg); color: var(--glass-fg);
-  font: 600 12px/1.3 var(--mono); box-shadow: inset 0 1px 0 var(--glass-hi); }
-.h3d-q-head { display: flex; align-items: center; gap: 10px; }
-.h3d-q-head b { font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--accent); }
-.h3d-q-head span { margin-left: auto; font-weight: 700; }
-.h3d-q-snd { pointer-events: auto; display: grid; place-items: center; width: 32px; height: 32px; margin: -6px -6px -6px 0; padding: 0; cursor: pointer;
-  border: 1px solid transparent; border-radius: var(--radius-sm); background: none; color: var(--glass-fg); transition: border-color var(--t-fast); }
-.h3d-q-snd:hover, .h3d-q-snd:focus-visible { border-color: var(--glass-bd); }
-.h3d-q-snd svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
-.h3d-q-snd .x, .h3d-quest.muted .h3d-q-snd .w { display: none; }
-.h3d-quest.muted .h3d-q-snd .x { display: inline; }
-/* Objekte nebeneinander (Wunsch User 06.10.2026: schmaler), Spalten wie die Kacheln darunter: Formsymbol über dem Namen */
-.h3d-quest ul { margin: 0; padding: 0; list-style: none; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; }
-.h3d-quest li { display: grid; justify-items: center; align-content: start; gap: 4px; }
-.h3d-quest li i { display: grid; place-items: center; width: 16px; height: 16px; box-sizing: border-box; border-radius: 2px; border: 1.5px solid var(--c);
-  color: #fff; font: 800 11px/1 var(--sans, sans-serif); font-style: normal; transition: background-color var(--t-base); }
-/* Formsymbol je Objekt: Würfel Quadrat, Quader Rechteck, Zylinder Kreis */
-.h3d-quest li[data-k="box"] i { width: 22px; height: 13px; margin-block: 1.5px; }
-.h3d-quest li[data-k="cyl"] i { border-radius: 50%; }
-.h3d-q-task { margin: 0; }
-.h3d-quest li.ok i { background: var(--c); animation: h3d-pop 520ms var(--ease-out); }
-.h3d-q-bar { height: 4px; border-radius: 2px; background: color-mix(in srgb, var(--glass-fg) 14%, transparent); overflow: hidden; }
-.h3d-q-bar i { display: block; width: 0; height: 100%; background: var(--accent); transition: width 600ms var(--ease-out); }
-/* Kacheln Zeit · Bestzeit · Runden (zentriert); Pause = Icon + Wort + Tönung, neue Bestzeit = Gold-Rand */
-.h3d-q-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; }
-.h3d-q-stats > div { display: grid; justify-items: center; gap: 4px; padding: 6px 3px; text-align: center;
-  border: 1px solid var(--glass-bd); border-radius: var(--radius-sm); transition: background-color var(--t-base), border-color var(--t-base); }
-.h3d-q-stats small { display: inline-flex; align-items: center; gap: 4px; font: 700 10px/1.2 var(--mono); letter-spacing: .04em; text-transform: uppercase; color: var(--accent); white-space: nowrap; }
-.h3d-q-stats strong { font: 700 15px/1 var(--mono); font-variant-numeric: tabular-nums; }
-.h3d-q-stats svg { width: 12px; height: 12px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
-.h3d-q-stats .pause { border-color: var(--warn); background: color-mix(in srgb, var(--warn) 18%, transparent); }
-.h3d-q-stats .pause small { color: var(--glass-fg); }
-.h3d-q-stats .new { border-color: #f2c14e; box-shadow: 0 0 18px -8px #f2c14e; animation: h3d-pop 520ms var(--ease-out); }
-.h3d-q-stats .new small { color: #f2c14e; }
-.h3d-badge { display: none; align-items: center; gap: 8px; padding: 6px 8px; border: 1px solid #f2c14e; border-radius: var(--radius-sm);
-  font-weight: 700; box-shadow: 0 0 22px -8px #f2c14e; contain: inline-size; }   /* bricht um, macht die Liste nicht breiter */
-.h3d-badge.in { display: flex; animation: h3d-pop 520ms var(--ease-out); }
-.h3d-badge .ico { width: 18px; height: 18px; flex: none; color: #f2c14e; }
-/* schmal: Missionen nur als Kopf, Balken, Zeit + Bestzeit und Abzeichen */
-@media (max-width: 520px) {
-  .h3d-quest { left: 10px; top: 10px; min-width: 0; gap: 6px; }
-  .h3d-quest ul, .h3d-q-task, .h3d-q-stats > div:last-child { display: none; }
-  .h3d-q-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-}
-@media (prefers-reduced-motion: reduce) { .h3d-say, .h3d-say.in, .h3d-badge.in, .h3d-q-bar i, .h3d-quest li.ok i, .h3d-q-stats > div { transition: none; animation: none; } }
+/* Klang-Knopf frei unten rechts in der Bühne (gleiche Rasterzelle wie der Canvas, kein position: absolute); Missionsstand
+   selbst liegt in der 3D-Szene (js/hero3d.js), für Screenreader als unsichtbare Statuszeile .h3d-sr */
+.h3d-snd { align-self: end; justify-self: end; z-index: 2; display: grid; place-items: center; width: 36px; height: 36px; margin: 14px; padding: 0;
+  border: 1px solid var(--glass-bd); border-radius: 50%; background: transparent; color: var(--glass-fg); cursor: pointer;
+  transition: border-color var(--t-fast), background var(--t-fast); }
+.h3d-snd:hover, .h3d-snd:focus-visible { border-color: color-mix(in srgb, var(--accent) 55%, var(--glass-bd)); background: color-mix(in srgb, var(--accent) 9%, transparent); }
+.h3d-snd svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.h3d-snd .x, .h3d-snd[aria-pressed="false"] .w { display: none; }
+.h3d-snd[aria-pressed="false"] .x { display: inline; }
+.h3d-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; margin: 0; }
+@media (max-width: 520px) { .h3d-snd { margin: 10px; } }
+@media (prefers-reduced-motion: reduce) { .h3d-say, .h3d-say.in, .h3d-snd { transition: none; animation: none; } }
 /* Karten mit wechselndem Inhalt (aktiver Eintrag der Szene) und Phasen-Liste (Ghost: Plan → Freigabe → Fahrt) */
 .hc-live strong { font-size: 30px; }
 .hc-live .sub-k { font: 600 12px/1.3 var(--mono); color: var(--fg-2); }
