@@ -710,6 +710,7 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
 </style>
 <link rel="stylesheet" href="css/scroll_flow.css">
 <link rel="stylesheet" href="css/function_atlas.css">
+<link rel="stylesheet" href="css/arch_console.css">
 <script type="importmap">{ "imports": {
   "three": "https://cdn.jsdelivr.net/npm/three@0.186.0/build/three.module.js",
   "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.186.0/examples/jsm/" } }</script>
@@ -1714,6 +1715,47 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
             <h3 id="arch-h" data-en="Every command, layer by layer.">Jeder Befehl, Schicht für Schicht.</h3>
             <p data-en="47 components in seven layers, 85 connections with verified topics and services; eleven command paths to play step by step.">47 Komponenten in sieben Schichten, 85 Verbindungen mit belegten Topics und Services; elf Befehlswege zum Abspielen, Schritt für Schritt.</p>
           </header>
+          <figure class="ac" id="ar-console" aria-labelledby="ac-h">
+            <canvas class="ac-rays" aria-hidden="true"></canvas>
+            <svg class="ac-wires" aria-hidden="true"></svg>
+            <div class="ac-board">
+              <div class="ac-glass ac-ins" role="group" aria-label="Bedienart wählen" data-en-aria="Choose a control mode">
+                <span class="k-t" data-en="Control modes">Bedienarten</span>
+                <button class="ac-way" type="button" data-w="pad" aria-pressed="true"><svg class="ico" aria-hidden="true"><use href="#i-pad"/></svg><span data-en="Gamepad local">Gamepad lokal</span></button>
+                <button class="ac-way" type="button" data-w="remote" aria-pressed="false"><svg class="ico" aria-hidden="true"><use href="#i-globe"/></svg><span data-en="Gamepad remote">Gamepad remote</span></button>
+                <button class="ac-way" type="button" data-w="jog" aria-pressed="false"><svg class="ico" aria-hidden="true"><use href="#i-pointer"/></svg><span data-en="Jog buttons">Jog-Tasten</span></button>
+                <button class="ac-way" type="button" data-w="plan" aria-pressed="false"><svg class="ico" aria-hidden="true"><use href="#i-cube"/></svg><span data-en="Plan a target">Ziel planen</span></button>
+                <button class="ac-way" type="button" data-w="vr" aria-pressed="false"><svg class="ico" aria-hidden="true"><use href="#i-vr"/></svg><span>VR Quest&nbsp;3</span></button>
+                <button class="ac-way" type="button" data-w="voice" aria-pressed="false"><svg class="ico" aria-hidden="true"><use href="#i-mic"/></svg><span data-en="Voice">Sprache</span></button>
+                <button class="ac-way" type="button" data-w="gaze" aria-pressed="false"><svg class="ico" aria-hidden="true"><use href="#i-eye"/></svg><span data-en="Gaze">Blick</span></button>
+                <button class="ac-way" type="button" data-w="vla" aria-pressed="false"><svg class="ico" aria-hidden="true"><use href="#i-spark"/></svg><span data-en="VLA-M chat">VLA-M Chat</span></button>
+              </div>
+              <div class="ac-glass ac-core">
+                <div class="ac-bar" aria-hidden="true"><i></i><i></i><i></i><span class="k-t" data-en="Coordination and safety">Koordination und Sicherheit</span></div>
+                <div class="ac-body">
+                  <h4 id="ac-h" data-en="Every path has its checks.">Jeder Weg hat seine Prüfungen.</h4>
+                  <p class="ac-sel"><span data-en="Path">Weg</span>: <b class="ac-wname">Gamepad lokal</b> · <code class="ac-topic">/joy</code></p>
+                  <ol class="ac-checks">
+                    <li data-s="wd"><svg class="ico" aria-hidden="true"><use href="#i-shield"/></svg><span><b>Watchdog</b><small data-en="Ownership, heartbeat, speed limit">Besitz, Heartbeat, Tempo-Limit</small></span><em>–</em></li>
+                    <li data-s="pre"><svg class="ico" aria-hidden="true"><use href="#i-scan"/></svg><span><b data-en="Collision pre-check">Kollisionsvorprüfung</b><small data-en="/joy_check, slows down near the table">/joy_check, bremst nahe am Tisch</small></span><em>–</em></li>
+                    <li data-s="ok"><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg><span><b data-en="Your confirmation">Deine Bestätigung</b><small data-en="Preview or plan first, then execute">Erst Vorschau oder Plan, dann ausführen</small></span><em>–</em></li>
+                    <li data-s="mh"><svg class="ico" aria-hidden="true"><use href="#i-route"/></svg><span><b>Motion Handler</b><small data-en="Plans the path, checks the scene">Pfad planen, Szene prüfen</small></span><em>–</em></li>
+                  </ol>
+                  <button class="ac-send" type="button"><svg class="ico" aria-hidden="true"><use href="#i-run"/></svg><span data-en="Send command">Befehl senden</span></button>
+                  <div class="ac-row">
+                    <p class="ac-live" aria-live="polite"></p>
+                    <button class="ac-estop" type="button" aria-pressed="false"><svg class="ico" aria-hidden="true"><use href="#i-stop"/></svg><span class="t-off" data-en="Test E-stop">Not-Aus testen</span><span class="t-on" data-en="Release E-stop">Not-Aus lösen</span></button>
+                  </div>
+                </div>
+              </div>
+              <div class="ac-outs">
+                <section class="ac-glass ac-out" aria-label="xArm Lite 6"><header><svg class="ico" aria-hidden="true"><use href="#i-arm"/></svg><b>xArm Lite&nbsp;6</b><span class="ac-fake">FAKE</span></header><p class="ac-num ac-arm">–</p><div class="ac-meter"><i></i></div></section>
+                <section class="ac-glass ac-out" aria-label="Digital Twin"><header><svg class="ico" aria-hidden="true"><use href="#i-layers"/></svg><b>Digital Twin</b></header><p class="ac-num" data-en="follows /joint_states">folgt /joint_states</p></section>
+                <section class="ac-glass ac-out" aria-label="UX | Monitoring"><header><svg class="ico" aria-hidden="true"><use href="#i-chart"/></svg><b>UX | Monitoring</b></header><p class="ac-num"><b class="ac-cnt">0</b> <span data-en="commands in this demo">Befehle in dieser Demo</span></p><div class="ac-spark" aria-hidden="true"></div></section>
+              </div>
+            </div>
+            <figcaption class="ac-cap" data-en="Simulation in the browser, no live data: pick a control mode, send a command, test the E-stop">Simulation im Browser, keine Live-Daten: Bedienart wählen, Befehl senden, Not-Aus testen</figcaption>
+          </figure>
           <div class="at-grid">
             <figure class="ar-stack" id="ar-stack">
               <ol aria-label="Sieben Schichten von oben nach unten" data-en-aria="Seven layers from top to bottom">
@@ -1846,6 +1888,7 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
 <script src="js/scroll_flow.js"></script>
 <script src="js/landing.js"></script>
 <script src="js/function_atlas.js"></script>
+<script src="js/arch_console.js"></script>
 <script>
 (() => {
   const root = document.documentElement;
