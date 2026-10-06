@@ -563,6 +563,11 @@ function build(L, wrap, host, o) {
     const flash = ringMesh(0.016, 0.03, 0);
     st.scene.add(cube, flash, aura, pool);
     let at = 0, held = false, hover = -1, hoverCube = false, pending = -1, flashT = 1, clicked = false, clk = 0, touch = false;
+    // Ruhe-Hüpfer (Wunsch User 06.10.2026): liegt der Würfel 5 s still, hebt er kurz ab (12 mm, 1,1 s) und dreht sich dabei um
+    // 15° (abwechselnd hin und zurück → bleibt am Feld ausgerichtet), landet weich (sin^1.5: Abheben/Aufsetzen ohne Ruck, kein
+    // Überschwinger); danach alle 3 s wieder. Ablauf, Würfel im Arm oder Zeiger auf dem Würfel setzen die 5 s neu.
+    const HOP_H = 0.012, HOP_D = 1.1, HOP_ROT = Math.PI / 12, HOP_FIRST = 5, HOP_EVERY = 3;
+    let rest = 0, hopWait = HOP_FIRST, hopT = -1, hopDir = 1, hopYaw = 0;
     const onPad = i => { cube.position.set(pads[i].g.position.x, pads[i].g.position.y, CUBE / 2); };
     onPad(at);
     // Feld-Zustand + Klick-Hinweis (b = 0…1, Höhe des Aufleuchtens)
@@ -672,6 +677,7 @@ function build(L, wrap, host, o) {
       return best;
     };
     const grip = () => {
+      if (hopT >= 0) { hopT = -1; cube.position.z = ch; }   // greift mitten im Ruhe-Hüpfer: erst landen
       held = true; blink(); matTo(0, 0.9);
       // Würfel hängt fest am Sauger: Lage + Versatz im Werkzeugrahmen merken (bleibt bei geneigtem Werkzeug dran)
       robot.tcp.getWorldQuaternion(tcpQ); rel.copy(tcpQ).invert().multiply(cube.quaternion);
@@ -786,6 +792,16 @@ function build(L, wrap, host, o) {
         robot.tcp.getWorldPosition(tcpW); robot.tcp.getWorldQuaternion(tcpQ);
         cube.position.copy(relP).applyQuaternion(tcpQ).add(tcpW); cube.quaternion.multiplyQuaternions(tcpQ, rel);
       }
+      // Ruhe-Hüpfer vor applyMat: Schnittebenen des Materials folgen der Lage im selben Frame
+      if (!reduce) {
+        if (hopT >= 0) {
+          hopT = Math.min(1, hopT + dt / HOP_D);
+          cube.position.z = ch + HOP_H * Math.sin(Math.PI * hopT) ** 1.5;
+          cube.rotation.z = hopYaw + hopDir * HOP_ROT * ease5(hopT);
+          if (hopT === 1) { hopT = -1; hopDir = -hopDir; rest = 0; hopWait = HOP_EVERY; }
+        } else if (job || held || hoverCube) { rest = 0; hopWait = HOP_FIRST; }
+        else if ((rest += dt) >= hopWait) { hopT = 0; hopYaw = cube.rotation.z; }
+      }
       applyMat(dt);
       if (flashT < 1) { flashT = Math.min(1, flashT + dt / 0.45); flash.material.opacity = 0.95 * (1 - flashT); flash.scale.setScalar(1 + flashT * 1.6); }
       if (reduce) return;
@@ -810,7 +826,8 @@ function build(L, wrap, host, o) {
       aura.material.opacity = 0.16 + 0.08 * pu; aura.scale.setScalar(2 * r);
       aura.position.copy(cube.position); if (!held) aura.position.z = Math.max(aura.position.z, r + 0.003);
       pool.visible = !held; pool.position.set(cube.position.x, cube.position.y, 0.0028);
-      pool.material.opacity = 0.2 + 0.1 * pu; pool.scale.setScalar(0.95 + 0.06 * pu);
+      const air = held ? 0 : Math.max(0, cube.position.z - ch) / HOP_H;   // Bodenschein wird beim Abheben etwas kleiner + schwächer
+      pool.material.opacity = (0.2 + 0.1 * pu) * (1 - 0.3 * air); pool.scale.setScalar((0.95 + 0.06 * pu) * (1 - 0.12 * air));
       cornerMat.size = 0.016 + 0.003 * pu; cube.scale.setScalar(1 + 0.008 * pu);
       if (!hoverCube) cubeFill.material.opacity = 0.09 + 0.03 * pu;
     };
