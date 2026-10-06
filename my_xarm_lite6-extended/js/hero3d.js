@@ -5,7 +5,8 @@
             Missionsliste (.h3d-quest), Klänge per WebAudio; Formen leuchten als Klick-Hinweis kurz auf,
             Status-Leiste unten mittig (.h3d-steps) blendet die Schritte nacheinander ein; Licht etwas gedämpft
      modes  Steuerwege als Lichtpunkte im Ring (opts.items); aktiver Punkt schickt einen Impuls zum Arm, der Arm zeigt hin
-     ghost  Ghost-Arm plant voraus → Freigabe → Arm fährt nach („Erst virtuell, dann real“); Zeiger setzt das Ziel
+     ghost  Ghost-Arm plant voraus → Freigabe → Arm fährt nach („Erst virtuell, dann real“); Zeiger setzt das Ziel;
+            next() plant sofort das nächste Ziel (Teilhabe: neuer Steuerweg = neue Eingabe)
      atlas  Look wie dome (Punktkuppel, Kamera, Licht); Funktionen als Punktbögen je Bereich auf dem Sockel (opts.areas: n je
             Bereich); Laser fährt die Bögen langsam ab, Bereich unter dem Laser leuchtet; Zeiger lenkt den Arm, Ring anklicken = Link
      cell   Arbeitsplatz: Tisch mit Raster, ZED Mini mit Sichtkegel, Greifobjekte, Korb; Zeiger bewegt den TCP
@@ -23,7 +24,7 @@ const webgl = () => { try { const c = document.createElement('canvas'); return !
 const CAM = {
   dome: { target: [0, 0, 0.16], camPos: [1.47, -1.13, 0.87] },  // 1,26 × Abstand: ganze Kuppel im Bild (Wunsch User 06.10.2026)
   modes: { target: [0, 0, 0.12], camPos: [1.86, -1.46, 1.42] },
-  ghost: { target: [0.06, 0, 0.2], camPos: [1.32, -1.05, 0.86] },
+  ghost: { target: [0.06, 0, 0.16], camPos: [1.22, -0.97, 0.77] },  // näher: Arm füllt die breite Bühne (Teilhabe, Wunsch User 06.10.2026)
   atlas: { target: [0, 0, 0.16], camPos: [1.47, -1.13, 0.87] },  // wie dome (Wunsch User 06.10.2026)
   cell: { target: [0.18, 0, 0.1], camPos: [1.38, -1.12, 0.92] },
 };
@@ -190,7 +191,7 @@ function build(L, wrap, host, o) {
   }
 
   // Steuerwege: N Lichtpunkte im Ring, Leitung zum Sockel; aktiver Punkt pulsiert zum Arm, Arm zeigt hin
-  let active = 0, pick = null;
+  let active = 0, pick = null, next = null;
   if (scene === 'modes') {
     const items = o.items || [];
     const RM = 0.6, nodes = [], lbls = [];
@@ -254,7 +255,7 @@ function build(L, wrap, host, o) {
     const setPhase = (p, t) => { phase = p; tPhase = t; o.onPhase && o.onPhase(p); };
     const plan = (x, y, t) => {
       const s = solve(x, y, gGoal); if (!s) return;
-      gGoal = s; robot.tcp.getWorldPosition(start); tn = 0; tg.setDrawRange(0, 0); setPhase('plan', t);
+      gGoal = s; robot.tcp.getWorldPosition(start); tn = 0; tg.setDrawRange(0, 0); flash.material.opacity = 0; setPhase('plan', t);
     };
     host.addEventListener('pointermove', e => {
       if (e.pointerType !== 'mouse' || e.buttons) return;
@@ -263,6 +264,7 @@ function build(L, wrap, host, o) {
       const s = solve(p.x, p.y, gGoal); if (s) { gGoal = s; if (phase !== 'plan') { robot.tcp.getWorldPosition(start); tn = 0; tg.setDrawRange(0, 0); setPhase('plan', rest); } }
     });
     host.addEventListener('pointerleave', () => { follow = false; });
+    next = () => { if (reduce) return; wp = (wp + 1) % WAY.length; plan(...WAY[wp], performance.now()); };
     if (reduce) { const s = solve(0.27, -0.15, q); if (s) { gq = gGoal = s; ghost.setJoints(gq); } }
     else setTimeout(() => plan(...WAY[0], performance.now()), 200);
     extra = (dt, t) => {
@@ -1102,7 +1104,7 @@ function build(L, wrap, host, o) {
   };
   tick(0, 0); st.kick(100);
   wrap.classList.add('is-3d');
-  return { stage: st, pick: i => pick && pick(i), get active() { return active; } };
+  return { stage: st, pick: i => pick && pick(i), next: () => next && next(), get active() { return active; } };
 }
 
 window.Hero3D = { init };
