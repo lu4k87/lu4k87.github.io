@@ -83,6 +83,9 @@ button { font: inherit; color: inherit; }
 .seg button { font: 700 12px/1 var(--mono); padding: 0 10px; min-height: 28px; min-width: 34px; border: 0; border-radius: var(--radius-sm); background: transparent; color: var(--fg-2); cursor: pointer; transition: background-color var(--t-fast), color var(--t-fast); }
 .seg button:hover { color: var(--fg); background: color-mix(in srgb, var(--fg) 7%, transparent); }
 .seg button[aria-pressed="true"] { background: var(--surface); color: var(--fg); box-shadow: 0 0 0 1px var(--line-strong); }
+/* Link zur älteren Fassung (V2): klein, Leisten-Optik wie .seg */
+.ver { display: inline-flex; align-items: center; font: 700 12px/1 var(--mono); padding: 0 10px; min-height: 34px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface-2); color: var(--fg-2); transition: background-color var(--t-fast), color var(--t-fast); }
+.ver:hover { color: var(--fg); background: color-mix(in srgb, var(--fg) 7%, var(--surface-2)); }
 .progress { position: absolute; left: 0; right: 0; bottom: -1px; height: 2px; background: var(--accent); box-shadow: 0 0 10px var(--glow); transform-origin: 0 50%; transform: scaleX(var(--p, 0)); pointer-events: none; }
 @supports (animation-timeline: scroll()) {
   .progress { animation: progress linear both; animation-timeline: scroll(root); }
@@ -709,6 +712,7 @@ html.sf-on .hero:not(.is-in) .msg { opacity: 0; transform: translate3d(0, 10px, 
       <a href="#technik" data-en="Under the hood">Unter der Haube</a>
     </nav>
     <div class="tools">
+      <a class="ver" href="develop_workflow_v2.html" aria-label="V2 – ältere Fassung dieser Seite" data-en-aria="V2 – earlier version of this page">V2</a>
       <div class="seg" role="group" aria-label="Sprache / Language">
         <button type="button" data-lang="de" aria-pressed="true">DE</button>
         <button type="button" data-lang="en" aria-pressed="false">EN</button>
