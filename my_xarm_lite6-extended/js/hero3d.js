@@ -305,12 +305,17 @@ function build(L, wrap, host, o) {
   const pol = { th: 0, r: 0.25, vth: 0, vr: 0, gth: 0, gr: 0.25, cth: 0, w: 2.6, z: Z, vz: 0, gz: Z, yaw: 0, vyaw: 0, gyaw: 0, tilt: 0, vtilt: 0, gtilt: 0, soft: 1 };
   let job = null;   // Pick & Place (dome): führt die Lage statt Zeiger/Acht
   const eight = ph => { const x = 0.25 + 0.05 * Math.sin(2 * ph), y = 0.16 * Math.sin(ph); return [Math.atan2(y, x), Math.hypot(x, y)]; };
-  // dome (Hero mit Pick & Place): Schlangenlinie im Bogen um den Sockel (±143°, Radius 190–310 mm), TCP hebt und senkt
-  // sich dazu (100–190 mm, bleibt über dem Würfel); Wunsch User 06.10.2026
-  const snake = ph => [2.5 * Math.sin(ph), 0.25 + 0.06 * Math.sin(7 * ph)];
+  // dome (Hero mit Pick & Place): Schlangenlinie im Bogen um den Sockel (±146°, Radius 170–340 mm aus zwei Wellen), TCP hebt
+  // und senkt sich dazu in zwei eigenen Takten (100–250 mm, bleibt über dem Würfel), Werkzeug dreht (±23°) und nickt (±7°) mit;
+  // alle Frequenzen ganzzahlig → Bahn schließt sich nach IDLE_T. Mehr Raum, gleiche Ruhe (Wunsch User 06.10.2026)
+  const snake = ph => [2.55 * Math.sin(ph), 0.255 + 0.055 * Math.sin(7 * ph) + 0.03 * Math.sin(2 * ph + 0.8)];
   const loop = scene === 'dome' ? snake : eight;
-  const lift = scene === 'dome' ? ph => Z + 0.045 + 0.045 * Math.sin(5 * ph + 1) : ph => Z + 0.03 + 0.03 * Math.sin(3 * ph);
-  let ph = 0, idleRamp = 1, idle = null;   // idle(dt): eigener Leerlauf statt Acht (atlas), setzt pol.gth/gr/gz
+  const lift = scene === 'dome' ? ph => Z + 0.075 + 0.05 * Math.sin(5 * ph + 1) + 0.025 * Math.sin(3 * ph) : ph => Z + 0.03 + 0.03 * Math.sin(3 * ph);
+  const turn = scene === 'dome' ? ph => 0.4 * Math.sin(3 * ph + 0.5) : () => 0;
+  const nod = scene === 'dome' ? ph => 0.12 * Math.sin(4 * ph + 2) : () => 0;
+  // ZF = TCP-Höhe beim Folgen (dome tiefer: Türme ab zwei Objekten sind im Weg → umstoßen); clearZ = Leerlauf bleibt darüber
+  const ZF = scene === 'dome' ? 0.07 : Z;
+  let ph = 0, idleRamp = 1, idle = null, clearZ = 0, wave = 0;   // idle(dt): eigener Leerlauf statt Acht (atlas), setzt pol.gth/gr/gz
   const W_FOLLOW = scene === 'atlas' ? 4 : 7;   // atlas: Arm folgt dem Zeiger ruhiger (Ring statt Zielpunkt)
   const setGoalXY = (x, y) => {
     const r = Math.hypot(x, y); if (r < 0.02) return;
@@ -332,9 +337,9 @@ function build(L, wrap, host, o) {
         idleRamp = Math.min(1, idleRamp + dt / 1.6);
         const ramp = idleRamp * idleRamp * (3 - 2 * idleRamp);
         if (idle) idle(dt * ramp);
-        else { ph += dt * Math.PI * 2 / IDLE_T * ramp; [pol.gth, pol.gr] = loop(ph); pol.gz = lift(ph); }
-      } else pol.gz = Z;
-      pol.gtilt = TILT * Math.max(0, Math.min(1, (pol.gr - R0) / (R1 - R0)));
+        else { ph += dt * Math.PI * 2 / IDLE_T * ramp; [pol.gth, pol.gr] = loop(ph); pol.gz = Math.max(clearZ, lift(ph)); pol.gyaw = turn(ph); wave = nod(ph); }
+      } else { pol.gz = ZF; pol.gyaw = 0; wave = 0; }
+      pol.gtilt = TILT * Math.max(0, Math.min(1, (pol.gr - R0) / (R1 - R0))) + wave;
       pol.soft = Math.min(1, pol.soft + dt / 1.2);
       const k = 0.2 + 0.8 * pol.soft * pol.soft * (3 - 2 * pol.soft);
       pol.w += ((follow ? W_FOLLOW : 2.6) - pol.w) * (1 - Math.exp(-dt * 3));
@@ -552,14 +557,16 @@ function build(L, wrap, host, o) {
       const cp = cyl ? [...Array(16)].flatMap((_, k) => { const a = (k % 8) / 8 * 2 * Math.PI; return [sx / 2 * Math.cos(a), sx / 2 * Math.sin(a), k < 8 ? -sz / 2 : sz / 2]; })
         : [0, 1, 2, 3, 4, 5, 6, 7].flatMap(k => [(k & 1 ? 1 : -1) * sx / 2, (k & 2 ? 1 : -1) * sy / 2, (k & 4 ? 1 : -1) * sz / 2]);
       const pts = new THREE.Points(segs(cp), new THREE.PointsMaterial({ map: dot, color: ACC2, size: 0.016, transparent: true, opacity: 0.9, depthWrite: false, blending: THREE.AdditiveBlending }));
-      const cutLo = new THREE.Plane(), cutHi = new THREE.Plane();
+      // Schnitt: Material behält, was nicht über cutLo UND unter cutX liegt (Schnittmenge), Raster nur zwischen cutHi und cutY;
+      // ohne Schimmer-Band schneidet cutX alles und cutY nichts → eine Scan-Ebene wie beim Materialisieren
+      const cutLo = new THREE.Plane(), cutHi = new THREE.Plane(), cutX = new THREE.Plane(), cutY = new THREE.Plane();
       const solidMat = new THREE.MeshPhysicalMaterial({ color: col, roughness: 0.36, metalness: 0.05, clearcoat: 0.6, clearcoatRoughness: 0.25,
-        emissive: HOT, emissiveIntensity: 0, clippingPlanes: [cutLo], clipShadows: true });
+        emissive: HOT, emissiveIntensity: 0, clippingPlanes: [cutLo, cutX], clipIntersection: true, clipShadows: true });
       const solid = new THREE.Mesh(body, solidMat); solid.castShadow = true; solid.visible = false;
-      const scanLine = lineLoop(outline(K, 0.001), 0);
+      const scanLine = lineLoop(outline(K, 0.001), 0), scanLine2 = lineLoop(outline(K, 0.001), 0);
       const scanGlow = new THREE.Mesh(new THREE.PlaneGeometry(sx * 1.9, sy * 1.9), glowMat(0)); scanGlow.material.side = THREE.DoubleSide;
-      [fill, grid, pts].forEach(o => { o.material.clippingPlanes = [cutHi]; });
-      g.add(fill, grid, edge, pts, solid, scanLine, scanGlow);
+      [fill, grid, pts].forEach(o => { o.material.clippingPlanes = [cutHi, cutY]; });
+      g.add(fill, grid, edge, pts, solid, scanLine, scanLine2, scanGlow);
       const aura = sprite(0.1, 0.16), pool = new THREE.Mesh(new THREE.PlaneGeometry(0.2, 0.2), glowMat(0));
       st.scene.add(g, aura, pool);
       // Zielerfassung: vier Eckwinkel um die Grundfläche, zwei Wellen im Umriss; Ablage-Umriss (Vorschau der freien Stelle)
@@ -580,9 +587,10 @@ function build(L, wrap, host, o) {
       const gRim = lineLoop(outline(K, 0.002), 0.9);
       ghost.add(gFill, gRim); ghost.visible = false;
       st.scene.add(lock, ...waves, ghost);
-      return { K, h: sz, g, fill, grid, edge, pts, solid, solidMat, scanLine, scanGlow, cutLo, cutHi, col, glow: new THREE.Color(K.glow), aura, pool,
+      return { K, h: sz, g, fill, grid, edge, pts, solid, solidMat, scanLine, scanLine2, scanGlow, cutLo, cutHi, cutX, cutY, col, sw: -1, swUp: true, swNext: rnd(3, 7), glow: new THREE.Color(K.glow), aura, pool,
         lock, brk, tips, waves, ghost, gFill, gRim, yawG: 0,
-        slot: null, home: false, mat: { v: 0, to: 0, D: 1 }, hopT: -1, hopDir: 1, hopYaw: 0, swell: 0, popT: 1, sinkT: 1, yaw0: 0, yaw1: 0, shake: 0 };
+        slot: null, home: false, mat: { v: 0, to: 0, D: 1 }, hopT: -1, hopDir: 1, hopYaw: 0, swell: 0, popT: 1, sinkT: 1, yaw0: 0, yaw1: 0, shake: 0,
+        on: null, from: null, fall: null, pickTop: sz };
     };
     // Aussparung: dunkle Grundfläche + Rand (innen schwächere Kante = Tiefe), Schein und Welle als Klick-Hinweis
     const makeTpl = K => {
@@ -605,8 +613,12 @@ function build(L, wrap, host, o) {
     beamLine.frustumCulled = beamDots.frustumCulled = false; beamLine.visible = beamDots.visible = false;
     st.scene.add(beamLine, beamDots);
     // Freie Ablage: Ziel FREE = Stelle spot (unter dem Zeiger) bzw. freeS (gewählt)
-    const FREE = 4, foot = K => Math.hypot(K.S[0], K.S[1]) / 2 + 0.006;
+    // Stapeln (Wunsch User 06.10.2026): Ziel STACK + i = oben auf Objekt i (freies, oberstes Objekt eines Turms); o.on = Objekt darunter
+    const FREE = 4, STACK = 5, foot = K => Math.hypot(K.S[0], K.S[1]) / 2 + 0.006;
+    const topZ = o => o.g.position.z + o.h / 2, above = o => OBJ.find(q => q.on === o) || null, floorZ = o => (o.on ? topZ(o.on) : 0);
+    const topOf = o => { while (above(o)) o = above(o); return o; };
     let spot = null, freeS = null, fx = null;   // fx = laufende Zielerfassung { o, t, out }
+    let stackObj = null;   // Turm-Ziel unter dem Zeiger bzw. gewählt (Raster hell, Umriss oben drauf)
     let cur = null, held = false, hover = -1, hoverObj = null, flashT = 1, clicked = false, clk = 0, touch = false, rounds = 0, mute = false, newRoundAt = 0;
     // Stoppuhr: tRun = Laufzeit der Runde (s), best = Bestzeit (s, 0 = keine), inside = Maus auf der Bühne, lastIn = letzte Eingabe (clk)
     let tRun = 0, started = false, finished = false, best = 0, newBest = false, inside = false, lastIn = -1e9;
@@ -619,12 +631,13 @@ function build(L, wrap, host, o) {
       const s = [], dist = (p, q) => { const [a, b] = slotXY(p), [c, d] = slotXY(q); return Math.hypot(a - c, b - d); };
       for (let n = 0; n < 3000 && s.length < 6; n++) { const c = { a: rnd(-2.45, 1.25), r: rnd(0.21, 0.32) }; if (s.every(o => dist(o, c) > 0.115)) s.push(c); }
       if (s.length < 6) s.splice(0, 6, ...[[-2.2, 0.24], [-0.9, 0.24], [0.4, 0.24], [-1.55, 0.3], [-0.25, 0.3], [1.05, 0.3]].map(([a, r]) => ({ a, r })));
-      return { objs: s.slice(0, 3), tpls: s.slice(3).map(c => ({ ...c, yaw: rnd(-0.6, 0.6) })), home: [false, false, false] };
+      return { objs: s.slice(0, 3), tpls: s.slice(3).map(c => ({ ...c, yaw: rnd(-0.6, 0.6) })), home: [false, false, false], on: [-1, -1, -1], mat: [0, 0, 0] };
     };
-    const putAt = (o, s) => { o.slot = s; const [x, y] = slotXY(s); o.g.position.set(x, y, o.h / 2 - (o.home ? SINK : 0)); };
+    const putAt = (o, s) => { o.slot = s; const [x, y] = slotXY(s); o.g.position.set(x, y, (o.on ? topZ(o.on) : 0) + o.h / 2 - (o.home ? SINK : 0)); };
     // Speichern: Lage, Stand, Runden, Klang (privates Fenster/gesperrt → Spiel läuft ohne Merken)
     const STORE = 'hero3d.missions.v1';
-    const save = () => { try { localStorage.setItem(STORE, JSON.stringify({ rounds, mute, t: tRun, best, objs: OBJ.map(o => ({ a: o.slot.a, r: o.slot.r })), tpls: TPL.map(t => t.slot), home: OBJ.map(o => o.home) })); } catch (e) { /* ohne Merken */ } };
+    const save = () => { try { localStorage.setItem(STORE, JSON.stringify({ rounds, mute, t: tRun, best, objs: OBJ.map(o => ({ a: o.slot.a, r: o.slot.r })), tpls: TPL.map(t => t.slot), home: OBJ.map(o => o.home),
+      on: OBJ.map(o => OBJ.indexOf(o === cur && held ? o.from : o.on)), mat: OBJ.map(o => o.mat.to) })); } catch (e) { /* ohne Merken */ } };
     const saved = (() => { try { return JSON.parse(localStorage.getItem(STORE)) || {}; } catch (e) { return {}; } })();
     rounds = Number.isInteger(saved.rounds) && saved.rounds > 0 ? saved.rounds : 0; mute = saved.mute === true;
     const secs = v => (Number.isFinite(v) && v > 0 && v < 36000 ? v : 0);
@@ -668,6 +681,7 @@ function build(L, wrap, host, o) {
         move: () => smp('motor', 0.2, { jit: 0.05 }),                                             // Arm fährt los (Anfahren, Heben, Transport)
         grip: () => tone(330, 0, 0.11, 0.06, 'triangle', 170),                                   // Sauger an: weiches „Plopp“ abwärts
         release: () => tone(190, 0, 0.12, 0.045, 'triangle', 360),                               // Sauger aus: kurz aufwärts
+        thud: () => tone(130, 0, 0.16, 0.06, 'triangle', 70),                                    // umgekipptes Objekt schlägt auf
         pop: () => smp('click', 0.4, { alt: () => tone(900, 0, 0.07, 0.03, 'sine', 1350) }),      // Sprechblase
         home: () => smp('chime', 0.42, { alt: () => [523.25, 659.25, 783.99].forEach((f, k) => tone(f, k * 0.09, 0.55, 0.04)) }),
         nope: () => smp('error', 0.26, { alt: () => { tone(233, 0, 0.13, 0.05, 'triangle', 207); tone(196, 0.13, 0.2, 0.05, 'triangle', 175); } }),
@@ -756,10 +770,15 @@ function build(L, wrap, host, o) {
     const newRound = (Lx, t = 0) => {
       newRoundAt = 0; say.hide(); tRun = t; started = t > 0; finished = newBest = false;
       Lx.tpls.forEach((s, k) => { const t = TPL[k]; t.slot = s; const [x, y] = slotXY(s); t.g.position.set(x, y, 0.0025); t.g.rotation.z = s.yaw; t.full = false; });
-      OBJ.forEach((o, k) => {
+      OBJ.forEach((o, k) => { o.on = Lx.on[k] >= 0 ? OBJ[Lx.on[k]] : null; o.from = o.fall = null; });
+      // Türme von unten nach oben aufbauen (Höhe hängt am Objekt darunter); gestapelt = genau über dem Objekt darunter
+      const depth = o => (o.on ? 1 + depth(o.on) : 0);
+      [...OBJ].sort((a, b) => depth(a) - depth(b)).forEach(o => {
+        const k = OBJ.indexOf(o);
         o.home = !!Lx.home[k]; TPL[k].full = o.home; o.hopT = -1; o.swell = 0; o.sinkT = 1;
-        o.g.rotation.set(0, 0, o.home ? TPL[k].slot.yaw : rnd(-0.5, 0.5)); putAt(o, o.home ? TPL[k].slot : Lx.objs[k]);
-        o.mat.v = o.mat.to = o.home ? 1 : 0; o.popT = reduce ? 1 : -0.15 * k;
+        o.g.rotation.set(0, 0, o.home ? TPL[k].slot.yaw : rnd(-0.5, 0.5));
+        putAt(o, o.home ? TPL[k].slot : o.on ? { a: o.on.slot.a, r: o.on.slot.r } : Lx.objs[k]);
+        o.mat.v = o.mat.to = o.home || Lx.mat[k] ? 1 : 0; o.popT = reduce ? 1 : -0.15 * k;
       });
       quest.render(); save(); show();
     };
@@ -840,26 +859,34 @@ function build(L, wrap, host, o) {
       for (let k = -4; k <= 4; k++) { const c = Math.round(y / (Math.PI / 2)) * Math.PI / 2 + k * Math.PI / 2; if (Math.abs(th - c) < 2.7 && Math.abs(c - y) < bd) { bd = Math.abs(c - y); best = c; } }
       return best;
     };
-    // Materialisieren (Wunsch User 06.10.2026): zu Hause bekommt das Objekt sein Material in Zeitlupe (2,6 s): Scan-Ebene steigt
-    // von unten nach oben (darunter fest, darüber noch Raster), Farbe gleitet vom Akzent zur Objektfarbe, frisch Materialisiertes
-    // glüht warm und kühlt aus. Schnitt = Clipping-Ebenen im Objektrahmen.
+    // Materialisieren (Wunsch User 06.10.2026): bei jedem Absetzen (Form, freie Stelle, Turm) bekommt das Objekt sein Material in
+    // Zeitlupe (2,6 s): Scan-Ebene steigt von unten nach oben (darunter fest, darüber noch Raster), Farbe gleitet vom Akzent zur
+    // Objektfarbe, frisch Materialisiertes glüht warm und kühlt aus; beim Anheben läuft es rückwärts (1,2 s). Danach wandert ab und
+    // zu ein Schimmer-Band (42 % der Höhe, 1,8 s, Minimal-Ruck) über das Objekt: darin Raster statt Material, beide Kanten leuchten,
+    // abwechselnd auf- und abwärts. Schnitt = Clipping-Ebenen im Objektrahmen.
     const up = new THREE.Vector3(), mid = new THREE.Vector3();
     const applyMat = (o, dt) => {
       const m = o.mat, fwd = m.to === 1;
       if (m.v !== m.to) m.v = fwd ? Math.min(1, m.v + dt / m.D) : Math.max(0, m.v - dt / m.D);
       // Scan-Lage (Minimal-Ruck, im ersten ¾) und Farbanteil (ease-out) aus demselben Fortschritt → Rückweg spielt rückwärts
       const v = m.v, s = ease5(Math.min(1, v / 0.75)), k = 1 - (1 - v) ** 3, z = -o.h / 2 * 1.02 + o.h * 1.04 * s;
-      up.set(0, 0, 1).applyQuaternion(o.g.quaternion); mid.copy(up).multiplyScalar(z * o.g.scale.x).add(o.g.position);
+      // Schimmer-Band (nur fertig materialisiert): Band aus Raster wandert über das Objekt, abwechselnd auf- und abwärts
+      const sw = o.sw >= 0 && v === 1, BW = o.h * 0.42, u = sw ? ease5(o.sw) : 0;
+      const c = (o.swUp ? 1 : -1) * (-(o.h + BW) / 2 + (o.h + BW) * u), lo = sw ? c - BW / 2 : z, hi = c + BW / 2;
+      up.set(0, 0, 1).applyQuaternion(o.g.quaternion); mid.copy(up).multiplyScalar(lo * o.g.scale.x).add(o.g.position);
       o.cutHi.setFromNormalAndCoplanarPoint(up, mid); o.cutLo.copy(o.cutHi).negate();
+      if (sw) { mid.copy(up).multiplyScalar(hi * o.g.scale.x).add(o.g.position); o.cutX.setFromNormalAndCoplanarPoint(up, mid); o.cutY.copy(o.cutX).negate(); }
+      else { o.cutX.set(up, -1e6); o.cutY.set(up, 1e6); }
       o.solid.visible = v > 0;
       o.solidMat.color.copy(ACC).lerp(o.col, k);
       const heat = fwd ? 0.7 * (1 - v) ** 2 : 0;
       o.solidMat.emissive.copy(o.col).lerp(HOT, heat / 0.7);
       o.solidMat.emissiveIntensity = heat;
-      const b = Math.sin(Math.PI * s);   // Scan-Licht nur unterwegs
-      o.scanLine.position.z = o.scanGlow.position.z = z;
-      o.scanLine.material.opacity = 0.95 * b; o.scanGlow.material.opacity = 0.35 * b;
-      o.scanLine.material.color.copy(ACC2).lerp(o.glow, k); o.scanGlow.material.color.copy(ACC).lerp(o.col, k);
+      const b = sw ? 0.85 * Math.sin(Math.PI * o.sw) : Math.sin(Math.PI * s);   // Scan-Licht nur unterwegs
+      const lead = sw ? (o.swUp ? hi : lo) : z;
+      o.scanLine.position.z = o.scanGlow.position.z = lead; o.scanLine2.position.z = o.swUp ? lo : hi;
+      o.scanLine.material.opacity = 0.95 * b; o.scanGlow.material.opacity = 0.35 * b; o.scanLine2.material.opacity = sw ? 0.6 * b : 0;
+      o.scanLine.material.color.copy(ACC2).lerp(o.glow, k); o.scanLine2.material.color.copy(o.scanLine.material.color); o.scanGlow.material.color.copy(ACC).lerp(o.col, k);
       o.edge.material.color.copy(ACC2).lerp(o.glow, k); o.edge.material.opacity = 0.95 - 0.5 * k; o.pts.material.color.copy(o.edge.material.color);
       o.aura.material.color.copy(ACC).lerp(o.col, k); o.pool.material.color.copy(o.aura.material.color);
     };
@@ -872,13 +899,18 @@ function build(L, wrap, host, o) {
     const show = () => {
       const hi = job && job.to >= 0 && job.to < BACK ? job.to : hover;
       TPL.forEach((t, k) => { t.on = !t.full && k === hi; paintT(t); });
-      OBJ.forEach(o => { if (o === hoverObj) { o.grid.material.opacity = 0.75; o.fill.material.opacity = 0.18; } applyMat(o, 0); });
+      const sk = job && job.to >= STACK ? job.to : !job || job.to < 0 ? hover : -1;
+      stackObj = cur && sk >= STACK ? OBJ[sk - STACK] : null;
+      OBJ.forEach(o => { if (o === hoverObj || o === stackObj) { o.grid.material.opacity = 0.75; o.fill.material.opacity = 0.18; } applyMat(o, 0); });
       // Ablage-Umriss: gewählte freie Stelle oder Stelle unter dem Zeiger (belegt → blass)
       const gs = job && job.to === FREE && freeS ? { ...freeS, ok: true } : cur && (!job || job.to < 0) && hover === FREE ? spot : null;
-      OBJ.forEach(o => { o.ghost.visible = !!gs && o === cur; });
+      OBJ.forEach(o => { o.ghost.visible = !!(gs || stackObj) && o === cur; });
       if (gs && cur) {
         const g = cur.ghost; g.position.set(gs.r * Math.cos(gs.a), gs.r * Math.sin(gs.a), 0.003); g.rotation.z = landYaw(gs.a);
         cur.gFill.material.opacity = gs.ok ? 0.14 : 0.04; cur.gRim.material.opacity = gs.ok ? 0.9 : 0.3;
+      } else if (stackObj && cur) {   // Turm: Umriss liegt oben auf dem Ziel-Objekt
+        const g = cur.ghost, b = stackObj.g.position; g.position.set(b.x, b.y, topZ(stackObj) + 0.002); g.rotation.z = landYaw(stackObj.slot.a);
+        cur.gFill.material.opacity = 0.14; cur.gRim.material.opacity = 0.9;
       }
       host.style.cursor = hoverObj || (hover >= 0 && hover !== FREE) ? 'pointer' : hover === FREE ? (spot && spot.ok ? 'pointer' : 'not-allowed') : '';
       st.kick();
@@ -903,22 +935,27 @@ function build(L, wrap, host, o) {
     // zu Hause, im Arm oder während eines Ablaufs nicht wählbar
     const objAt = (e, tol) => {
       if (job) return null;
-      const free = OBJ.filter(o => !o.home && o.popT >= 0.6);
+      const free = OBJ.filter(o => !o.home && !o.fall && o.popT >= 0.6);
       pickRay(e);
       const h = ray.intersectObjects(free.map(o => o.fill))[0];
-      if (h) return free.find(o => o.fill === h.object);
+      if (h) return topOf(free.find(o => o.fill === h.object));   // Turm: immer das oberste Objekt
       if (!ray.ray.intersectPlane(table, hit)) return null;
       let best = null, bd = tol;
       free.forEach(o => { const d = Math.hypot(hit.x - o.g.position.x, hit.y - o.g.position.y); if (d < bd) { bd = d; best = o; } });
-      return best;
+      return best && topOf(best);
     };
     // Ziel unter dem Zeiger: freie Form (Index), Startplatz des gewählten Objekts (BACK) oder freie Stelle (FREE, Lage in spot)
     const tplAt = (e, tol) => {
       pickRay(e); spot = null;
+      // Turm: oberstes freies Objekt unter dem Zeiger (Startobjekt darunter = zurücklegen)
+      const tops = cur ? OBJ.filter(o => o !== cur && !o.home && !o.fall && o.popT >= 1 && !above(o)) : [];
+      const th = ray.intersectObjects(tops.map(o => o.fill))[0], so = th && tops.find(o => o.fill === th.object);
+      if (so) return so === cur.from ? BACK : STACK + OBJ.indexOf(so);
       if (!ray.ray.intersectPlane(table, hit)) return -1;
       let best = -1, bd = tol;
       TPL.forEach((t, k) => { if (t.full) return; const d = Math.hypot(hit.x - t.g.position.x, hit.y - t.g.position.y); if (d < bd) { bd = d; best = k; } });
       if (cur) { const [x, y] = slotXY(cur.slot); if (Math.hypot(hit.x - x, hit.y - y) < bd) best = BACK; }
+      tops.forEach(o => { const d = Math.hypot(hit.x - o.g.position.x, hit.y - o.g.position.y); if (d < bd * 0.8) { bd = d / 0.8; best = o === cur.from ? BACK : STACK + OBJ.indexOf(o); } });
       if (best < 0 && cur && (spot = freeAt())) best = FREE;
       return best;
     };
@@ -926,6 +963,7 @@ function build(L, wrap, host, o) {
       const o = cur;
       if (o.hopT >= 0) { o.hopT = -1; o.swell = 0; o.g.position.z = o.h / 2; o.g.rotation.x = 0; }   // greift mitten im Hüpfer: erst landen
       held = true; ring(o.g.position.x, o.g.position.y, o.g.position.z + o.h / 2 + 0.002); sfx('grip');
+      o.from = o.on; o.on = null; o.mat.to = 0; o.mat.D = 1.2;   // vom Turm genommen; Material löst sich beim Anheben (Scan rückwärts)
       o.yawG = o.g.rotation.z; if (fx) fx.out = 0;   // Zielerfassung zieht sich zusammen und verlischt
       // Objekt hängt fest am Sauger: Lage + Versatz im Werkzeugrahmen merken (bleibt bei geneigtem Werkzeug dran)
       robot.tcp.getWorldQuaternion(tcpQ); rel.copy(tcpQ).invert().multiply(o.g.quaternion);
@@ -936,11 +974,12 @@ function build(L, wrap, host, o) {
     const drop = () => {
       const o = cur, to = job.to; held = false;
       o.g.rotation.set(0, 0, o.g.rotation.z); sfx('release');
-      if (to === BACK) { putAt(o, o.slot); return; }
+      o.mat.to = 1; o.mat.D = 2.6;   // jedes Absetzen materialisiert (Wunsch User 06.10.2026)
+      if (to === BACK) { o.on = o.from; putAt(o, o.slot); return; }
       if (to === FREE) { putAt(o, freeS); freeS = null; ring(o.g.position.x, o.g.position.y, 0.003); save(); return; }   // neuer Startplatz
+      if (to >= STACK) { const b = OBJ[to - STACK]; o.on = b; putAt(o, { a: b.slot.a, r: b.slot.r }); ring(o.g.position.x, o.g.position.y, topZ(b) + 0.002); save(); return; }
       const t = TPL[to]; t.full = true; putAt(o, t.slot); o.home = true; o.g.position.z = o.h / 2;   // sinkt erst beim Einrutschen
       o.yaw0 = o.g.rotation.z; o.yaw1 = alignYaw(o.yaw0, t.slot.yaw, o.K.sym); o.sinkT = 0;
-      o.mat.to = 1; o.mat.D = 2.6;
     };
     // Zu Hause angekommen (nach dem Einrutschen): Dank, Klang, Mission abhaken; alle drei → Abzeichen, neue Runde
     // Dank-Sprüche (Wunsch User 06.10.2026), nie zweimal hintereinander derselbe
@@ -972,7 +1011,7 @@ function build(L, wrap, host, o) {
         if (op.act) op.act();
         if (op.hold && job.to < 0) {
           job.hold = true; lean = vlean = 0;
-          feed.say(T('Ziel wählen', 'Choose a target'), touch ? T('Form oder freie Stelle antippen', 'tap a shape or free spot') : T('Form oder freie Stelle anklicken', 'click a shape or free spot'));
+          feed.say(T('Ziel wählen', 'Choose a target'), touch ? T('Form, Stelle oder Objekt antippen', 'tap a shape, spot or object') : T('Form, Stelle oder Objekt anklicken', 'click a shape, spot or object'));
           TPL.forEach((p, k) => { p.next = clk + 0.3 + k * 0.25; });
           show();
         }
@@ -985,10 +1024,10 @@ function build(L, wrap, host, o) {
         if (op.hold) {
           // Schweben: leichtes Wiegen + Objekt pendelt um die Hochachse; Arm neigt sich zum Ziel unter dem Zeiger
           const H = op.hold, e = Math.min(1, t / 1.5), env = e * e * (3 - 2 * e);
-          const ha = hover === BACK ? cur.slot.a : hover === FREE && spot ? spot.a : hover >= 0 ? TPL[hover].slot.a : H[0];
+          const ha = hover === BACK ? cur.slot.a : hover === FREE && spot ? spot.a : hover >= STACK ? OBJ[hover - STACK].slot.a : hover >= 0 ? TPL[hover].slot.a : H[0];
           [lean, vlean] = spring(lean, vlean, Math.max(-0.3, Math.min(0.3, 0.2 * (ha - H[0]))), 3, dt);
-          setPose(P(H[0] + lean + env * 0.05 * Math.sin(0.9 * t), H[1] + env * 0.012 * Math.sin(0.7 * t + 1),
-            H[2] + env * 0.01 * Math.sin(1.3 * t), H[3] + env * 0.2 * Math.sin(0.6 * t)), dt);
+          setPose(P(H[0] + lean + env * 0.08 * Math.sin(0.9 * t), H[1] + env * 0.022 * Math.sin(0.7 * t + 1),
+            H[2] + env * 0.02 * Math.sin(1.3 * t), H[3] + env * 0.28 * Math.sin(0.6 * t), H[4] + env * 0.1 * Math.sin(0.5 * t + 1)), dt);
           return;
         }
         setPose(pose(), dt);
@@ -1003,43 +1042,49 @@ function build(L, wrap, host, o) {
       };
       next(); show();
     };
-    // Ablegen in Form B (oder zurück auf den Startplatz), ab Halteposition oder (low) direkt vom Greifen: senkrecht lösen,
-    // Bogen nach vorn gestreckt (≤ 370 mm), über dem Ziel eingezogen, senkrecht absetzen; danach senkrecht abheben, Werkzeug dreht zurück
+    // Ablegen in Form B, auf einen Turm (STACK) oder zurück auf den Startplatz, ab Halteposition oder (low) direkt vom Greifen:
+    // senkrecht lösen, hoher Bogen weit nach außen geschwungen (≤ 390 mm, 360 mm hoch, Werkzeug neigt sich in die Kurve), über dem
+    // Ziel eingezogen, senkrecht absetzen (Hs = Oberkante am Ziel); danach senkrecht abheben, Werkzeug dreht zurück (Wunsch User 06.10.2026)
     const place = (to, low) => {
-      const o = cur, A = o.slot.a, R = o.slot.r, H = o.h, S = to === BACK ? o.slot : to === FREE ? freeS : TPL[to].slot, B = S.a, RB = S.r;
+      const o = cur, A = o.slot.a, R = o.slot.r, H = o.h, Hp = o.pickTop, base = to >= STACK ? OBJ[to - STACK] : null;
+      const S = to === BACK ? o.slot : to === FREE ? freeS : base ? base.slot : TPL[to].slot, B = S.a, RB = S.r;
+      const Hs = base ? topZ(base) + H : to === BACK ? Hp : H;
       const y0 = pol.yaw, yB = yawFor(B, y0), m = k => A + (B - A) * k, y = k => y0 + (yB - y0) * k;
-      const rr = (k, b) => Math.min(0.37, R + (RB - R) * k + b);
-      const pts = low ? [P(A, R, H + 0.035, y0)] : [];
-      if (to === BACK) pts.push(P(A, 0.25, 0.19, yB));
-      else pts.push(P(m(0.2), rr(0.2, 0.03), 0.31, y(0.2), 0.35), P(m(0.55), rr(0.55, 0.1), 0.29, y(0.55), 0.7), P(m(0.85), rr(0.85, 0.02), 0.2, y(0.85), 0.25));
-      pts.push(P(B, RB, H + 0.06, yB), P(B, RB, H + 0.03, yB), P(B, RB, H, yB));
+      const rr = (k, b) => Math.min(0.39, R + (RB - R) * k + b);
+      const pts = low ? [P(A, R, Hp + 0.035, y0)] : [];
+      if (to === BACK) pts.push(P(A, 0.25, Math.max(0.24, Hp + 0.08), yB));
+      else pts.push(P(m(0.15), rr(0.15, 0.04), 0.33, y(0.15), 0.4), P(m(0.5), rr(0.5, 0.13), 0.36, y(0.5), 0.85),
+        P(m(0.85), rr(0.85, 0.03), Math.max(0.22, Hs + 0.1), y(0.85), 0.3));
+      pts.push(P(B, RB, Hs + 0.06, yB), P(B, RB, Hs + 0.03, yB), P(B, RB, Hs, yB));
       const deg = Math.round(Math.abs(B - A) * 180 / Math.PI);
       return [
-        { pts, v: 0.38, say: to === BACK ? [T('Zurücklegen', 'Put back'), xy(S)] : [T('Transport', 'Transfer'), `${T('Schwenk', 'swing')} ${deg}°`] },
+        { pts, v: 0.42, say: to === BACK ? [T('Zurücklegen', 'Put back'), xy(S)] : base ? [T('Stapeln', 'Stack'), `z ${mm(Hs)} mm`] : [T('Transport', 'Transfer'), `${T('Schwenk', 'swing')} ${deg}°`] },
         { act: drop, dwell: 0.25, say: [T('Ablegen', 'Place'), T('Sauger aus', 'suction off')] },
-        { pts: [P(B, RB, H + 0.03, yB), P(B, 0.25, 0.14)], v: 0.22 },
+        { pts: [P(B, RB, Hs + 0.03, yB), P(B, 0.24, Math.max(0.2, Hs + 0.08))], v: 0.26 },
       ];
     };
     // Greifen am Startplatz: anfahren, die letzten 30 mm senkrecht absetzen, Sauger an; Ziel schon bekannt → direkt
     // ablegen, sonst drehend hoch heben und warten. Drehsinn so, dass Gelenk 6 in ±178° bleibt.
+    // Anheben mit Schwung: erst zur Mitte ausholen, dann im Bogen zurück auf 330 mm (Wunsch User 06.10.2026)
     const pick = to => {
-      const o = cur, A = o.slot.a, R = o.slot.r, H = o.h, d = A > 0 ? Math.PI / 2 : -Math.PI / 2;
+      const o = cur, A = o.slot.a, R = o.slot.r, H = o.pickTop = (o.on ? topZ(o.on) : 0) + o.h, d = A > 0 ? Math.PI / 2 : -Math.PI / 2, s = A > 0 ? 1 : -1;
       feed.reset(); busy = 0;
+      const up = clearZ > pol.z ? [P(pol.th, pol.r, clearZ, pol.yaw, pol.tilt)] : [];   // erst über die Türme
       go([
-        { pts: [P(A, R, H + 0.06), P(A, R, H + 0.03), P(A, R, H)], v: 0.36, say: [T('Anfahren', 'Approach'), xy(o.slot)] },
+        { pts: [...up, P(A, R, Math.max(H + 0.06, clearZ)), P(A, R, H + 0.03), P(A, R, H)], v: 0.36, say: [T('Anfahren', 'Approach'), xy(o.slot)] },
         { act: grip, dwell: 0.25, say: [T('Greifen', 'Grip'), T('Sauger an', 'suction on')] },
         { lazy: () => job.to >= 0 ? place(job.to, true) : [
-          { pts: [P(A, R, H + 0.035), P(A, 0.25, 0.18, d * 0.45), P(A, 0.23, 0.3, d)], v: 0.25,
-            say: [T('Anheben + drehen', 'Lift + rotate'), `z 300 mm · ${T('Gelenk', 'joint')} 6 ${d > 0 ? '+' : '−'}90°`] },
-          { hold: P(A, 0.23, 0.3, d) }] },
+          { pts: [P(A, R, H + 0.035), P(A - s * 0.2, 0.28, H + 0.13, d * 0.45, 0.35), P(A, 0.22, 0.33, d)], v: 0.3,
+            say: [T('Anheben + drehen', 'Lift + rotate'), `z 330 mm · ${T('Gelenk', 'joint')} 6 ${d > 0 ? '+' : '−'}90°`] },
+          { hold: P(A, 0.22, 0.33, d) }] },
       ], to);
     };
     // Objekt gewählt → greifen (reduzierte Bewegung: nur markieren)
     const grab = o => {
       if (job) return;
       cur = o; say.hide(); if (!finished) started = true;
-      if (reduce) { feed.reset(); feed.say(T('Ziel wählen', 'Choose a target'), T('Form oder freie Stelle wählen', 'pick a shape or free spot'), true); show(); return; }
-      fx = { o, t: 0, out: -1 }; o.jolt = o.hopT < 0 ? 0 : -1; sfx('lock', o); ring(o.g.position.x, o.g.position.y, 0.003);
+      if (reduce) { feed.reset(); feed.say(T('Ziel wählen', 'Choose a target'), T('Form, Stelle oder Objekt wählen', 'pick a shape, spot or object'), true); show(); return; }
+      fx = { o, t: 0, out: -1 }; o.jolt = o.hopT < 0 ? 0 : -1; sfx('lock', o); ring(o.g.position.x, o.g.position.y, floorZ(o) + 0.003);
       pick(-1);
     };
     // Ziel gewählt: passende Form → ablegen; falsche → ablehnen; Startplatz → zurücklegen; ohne Objekt → Hinweis
@@ -1047,10 +1092,12 @@ function build(L, wrap, host, o) {
       if (!cur) { feed.reset(); feed.say(T('Erst ein Objekt anheben', 'Lift an object first'), touch ? T('Objekt antippen', 'tap an object') : T('Objekt anklicken', 'click an object'), true); return; }
       if (job && job.to >= 0) return;   // Ziel steht schon fest
       if (k === FREE) { if (!spot.ok) { nope('Hier ist kein Platz!', 'No room here!'); return; } freeS = { a: spot.a, r: spot.r }; }
-      else if (k !== BACK && TPL[k].K !== cur.K) { nope(); return; }
+      else if (k < BACK && TPL[k].K !== cur.K) { nope(); return; }
       if (reduce) {
         const o = cur; cur = null;
-        if (k === FREE) { putAt(o, freeS); freeS = null; save(); show(); return; }
+        if (k !== BACK) o.on = null;
+        if (k >= STACK) { const b = OBJ[k - STACK]; o.on = b; putAt(o, { a: b.slot.a, r: b.slot.r }); o.mat.v = o.mat.to = 1; save(); show(); return; }
+        if (k === FREE) { putAt(o, freeS); freeS = null; o.mat.v = o.mat.to = 1; save(); show(); return; }
         if (k !== BACK) { o.home = true; TPL[k].full = true; o.g.rotation.set(0, 0, TPL[k].slot.yaw); putAt(o, TPL[k].slot); o.mat.v = o.mat.to = 1; arrived(o); }
         show(); return;
       }
@@ -1089,21 +1136,21 @@ function build(L, wrap, host, o) {
       const o = fx.o, t = fx.t += dt, L = o.lock, m = L.children[0].material, d = L.children[1].material;
       if (fx.out >= 0) fx.out = Math.min(1, fx.out + dt / 0.3);
       const u = Math.min(1, t / 0.45), e = backOut(u), fin = fx.out < 0 ? 1 : 1 - fx.out;
-      L.visible = true; L.position.set(o.g.position.x, o.g.position.y, 0.003);
+      L.visible = true; L.position.set(o.g.position.x, o.g.position.y, floorZ(o) + 0.003);
       L.rotation.z = o.g.rotation.z + (1 - u) ** 3 * Math.PI / 4;
       L.scale.setScalar(fx.out >= 0 ? 1 - 0.4 * fx.out : 2.4 - 1.4 * e + (u === 1 ? 0.05 * Math.sin(Math.PI * 2 * (t - 0.45) / 0.9) : 0));
       m.opacity = 0.95 * Math.min(1, u * 3) * fin; d.opacity = m.opacity; d.size = 0.022 + (u < 1 ? 0.03 * (1 - u) : 0);
       o.waves.forEach((w, k) => {
         const v = (t - 0.08 - 0.14 * k) / 0.8; w.visible = v > 0 && v < 1;
         if (!w.visible) return;
-        w.position.set(o.g.position.x, o.g.position.y, 0.003); w.rotation.z = o.g.rotation.z;
+        w.position.set(o.g.position.x, o.g.position.y, floorZ(o) + 0.003); w.rotation.z = o.g.rotation.z;
         w.scale.setScalar(1 + 2.4 * (1 - (1 - v) ** 3)); w.material.opacity = 0.7 * (1 - v) ** 1.5;
       });
       // Freudenhüpfer (nicht, wenn das Objekt gerade von selbst hüpft)
       if (o.jolt >= 0 && !held) {
         o.jolt = Math.min(1, o.jolt + dt / JOLT_D); const a = Math.sin(Math.PI * o.jolt);
-        o.g.position.z = o.h / 2 + JOLT_H * a; o.swell = a * a;
-        if (o.jolt === 1) { o.jolt = -1; o.g.position.z = o.h / 2; o.swell = 0; }
+        o.g.position.z = floorZ(o) + o.h / 2 + JOLT_H * a; o.swell = a * a;
+        if (o.jolt === 1) { o.jolt = -1; o.g.position.z = floorZ(o) + o.h / 2; o.swell = 0; }
       }
       // Leitstrahl: blendet nach dem Einrasten ein, beim Greifen aus
       const bOp = Math.min(1, Math.max(0, (t - 0.25) / 0.3)) * fin;
@@ -1141,7 +1188,7 @@ function build(L, wrap, host, o) {
       if (cur) { const [x, y] = slotXY(cur.slot); obs.push({ x, y, f: foot(cur.K) }); }
       if (cur && freeS) obs.push({ x: freeS.r * Math.cos(freeS.a), y: freeS.r * Math.sin(freeS.a), f: foot(cur.K) });
       OBJ.forEach(o => {
-        const fix = o.home || o === cur || o.popT < 1;
+        const fix = o.home || o === cur || o.popT < 1 || o.on || o.fall || above(o) || (cur && cur.from === o);   // Türme stehen
         if (fix) { o.wS = 0; o.wFix = true; return; }
         if (o.wFix) { o.wFix = false; o.wRest = clk + W_REST; }   // eben abgelegt/aufgeploppt: erst liegen bleiben
         const run = o !== hoverObj && clk >= o.wRest && !newRoundAt;
@@ -1167,6 +1214,67 @@ function build(L, wrap, host, o) {
         if (o.hopT < 0 && o.K.sym) { const y = o.g.rotation.z; o.g.rotation.z += (alignYaw(y, o.wTh, o.K.sym) - y) * Math.min(1, dt * 0.8) * o.wS; }
       });
     };
+    // Umkippen (Wunsch User 06.10.2026): fährt der Arm beim Folgen (TCP 70 mm hoch) gegen einen Turm, kippt alles über dem
+    // untersten Objekt in Schubrichtung um die Unterkante (Winkel wächst mit t² wie unter Schwerkraft, dreht dabei leicht), fällt
+    // auf die Seite, federt zweimal nach und rutscht aus (0,4 s), liegt 1,4 s und hüpft dann von selbst wieder aufrecht (0,75 s,
+    // Ring am Boden) → wieder greifbar. Landestelle im Greifbereich, frei von Objekten und Formen; höhere Objekte fallen weiter.
+    // Material bleibt (Objekt war schon abgesetzt).
+    const FALL_D = 0.55, BOUNCE_D = 0.4, LIE_D = 1.4, RISE_D = 0.75, SW_D = 1.8;
+    const qa = new THREE.Quaternion(), qz = new THREE.Quaternion(), qL = new THREE.Quaternion(), qU = new THREE.Quaternion(), fAx = new THREE.Vector3();
+    const mtx = new THREE.Matrix4(), tcpPrev = new THREE.Vector3();
+    // halbe Höhe in Lage q (Mitte → Tisch): Spalten der Drehmatrix = Objektachsen, deren z-Anteil zählt
+    const halfH = (o, q) => {
+      const e = mtx.makeRotationFromQuaternion(q).elements, [sx, sy, sz] = o.K.S;
+      return o.K.id === 'cyl' ? sz / 2 * Math.abs(e[10]) + sx / 2 * Math.sqrt(Math.max(0, 1 - e[10] * e[10]))
+        : (Math.abs(e[2]) * sx + Math.abs(e[6]) * sy + Math.abs(e[10]) * sz) / 2;
+    };
+    // Landestelle: in Schubrichtung, sonst seitlich gefächert und weiter weg; im Greifbereich (190–320 mm + 12 mm Rutschen, ±143°)
+    const landAt = (o, x0, y0, dir, k) => {
+      const obs = OBJ.filter(q => q !== o && !q.home).map(q => (q.fall ? { x: q.fall.lx, y: q.fall.ly, f: foot(q.K) } : { x: q.g.position.x, y: q.g.position.y, f: foot(q.K) }))
+        .concat(TPL.map(t => ({ x: t.g.position.x, y: t.g.position.y, f: foot(t.K) })));
+      let first = null;
+      for (let j = 0; j < 5; j++) for (const da of [0, 0.35, -0.35, 0.7, -0.7, 1.1, -1.1]) {
+        const dd = 0.07 + 0.045 * k + 0.03 * j, x = x0 + dd * Math.cos(dir + da), y = y0 + dd * Math.sin(dir + da);
+        const r = Math.max(0.19, Math.min(0.32, Math.hypot(x, y))), a = Math.max(-2.5, Math.min(2.5, Math.atan2(y, x))), c = [r * Math.cos(a), r * Math.sin(a)];
+        if (!first) first = c;
+        if (obs.every(b => Math.hypot(c[0] - b.x, c[1] - b.y) > foot(o.K) + b.f + 0.01)) return c;
+      }
+      return first;
+    };
+    const topple = (b, dx, dy) => {
+      let o = above(b), k = 0;
+      say.show(topOf(b), T('Huch!', 'Whoa!'), 1600, true);
+      while (o) {
+        const nx = above(o); o.on = null;
+        const [lx, ly] = landAt(o, b.g.position.x, b.g.position.y, Math.atan2(dy, dx), k);
+        o.fall = { t: -0.07 * k, k, lx, ly, dx, dy, x0: o.g.position.x, y0: o.g.position.y, c0: o.g.position.z - o.h / 2,
+          q0: o.g.quaternion.clone(), yaw: o.g.rotation.z, spin: rnd(-0.7, 0.7), hit: false };
+        o.hopT = -1; o.jolt = -1; o.swell = 0;
+        o = nx; k++;
+      }
+    };
+    // Lage beim Kippen: Drehung um die waagerechte Achse quer zur Schubrichtung (oben kippt in Schubrichtung), dazu Drall um z
+    const tipQ = (F, th, sp) => { fAx.set(-F.dy, F.dx, 0); qa.setFromAxisAngle(fAx, th); qz.setFromAxisAngle(ZAX, sp); return qL.copy(qz).multiply(qa).multiply(F.q0); };
+    const fallTick = (o, dt) => {
+      const F = o.fall, t = F.t += dt; if (t < 0) return;
+      const T1 = FALL_D + 0.06 * F.k, T2 = T1 + BOUNCE_D, T3 = T2 + LIE_D, SL = 0.012, p = o.g.position;
+      if (t < T1) {   // kippen + fallen
+        const u = t / T1, g = u * u, q = tipQ(F, Math.PI / 2 * g, F.spin * g);
+        o.g.quaternion.copy(q); p.set(F.x0 + (F.lx - F.x0) * u, F.y0 + (F.ly - F.y0) * u, F.c0 * (1 - g) + halfH(o, q));
+      } else if (t < T3) {   // aufschlagen, nachfedern, ausrutschen, liegen
+        if (!F.hit) { F.hit = true; sfx('thud'); ring(F.lx, F.ly, 0.003); }
+        const v = Math.min(1, (t - T1) / BOUNCE_D), fade = (1 - v) ** 2, q = tipQ(F, Math.PI / 2 + 0.07 * Math.sin(3 * Math.PI * v) * fade, F.spin), s = SL * (1 - fade);
+        o.g.quaternion.copy(q); p.set(F.lx + F.dx * s, F.ly + F.dy * s, halfH(o, q) + 0.01 * Math.abs(Math.sin(2 * Math.PI * v)) * fade);
+      } else {   // aufrichten: kleiner Hüpfer zurück auf die Grundfläche
+        const w = Math.min(1, (t - T3) / RISE_D), e = ease5(w), lie = tipQ(F, Math.PI / 2, F.spin), zl = halfH(o, lie);
+        qU.setFromAxisAngle(ZAX, F.yaw + F.spin); o.g.quaternion.copy(lie).slerp(qU, e);
+        p.z = zl + (o.h / 2 - zl) * e + 0.03 * Math.sin(Math.PI * w);
+        if (w === 1) {
+          o.fall = null; o.g.rotation.set(0, 0, F.yaw + F.spin); p.z = o.h / 2;
+          o.slot = { a: Math.atan2(p.y, p.x), r: Math.hypot(p.x, p.y) }; ring(p.x, p.y, 0.003); save();
+        }
+      }
+    };
     const ex = extra;
     extra = (dt, t) => {
       ex(dt, t);
@@ -1177,6 +1285,19 @@ function build(L, wrap, host, o) {
       if (ticking) tRun += dt;
       quest.clock(started && !finished && !ticking);
       if (!reduce) wander(dt);
+      // Arm fährt beim Folgen gegen einen Turm → umkippen, Schubrichtung = Fahrtrichtung des TCP; Leerlauf bleibt über den Türmen
+      robot.tcp.getWorldPosition(tcpW);
+      if (follow && !job && !reduce) OBJ.forEach(b => {
+        if (b.on || b.fall || b.home || !above(b)) return;
+        const p = b.g.position, dx = p.x - tcpW.x, dy = p.y - tcpW.y, d = Math.hypot(dx, dy);
+        let w = foot(b.K); for (let q = above(b); q; q = above(q)) w = Math.max(w, foot(q.K));
+        if (tcpW.z > topZ(topOf(b)) - 0.004 || d > w + 0.01) return;
+        let vx = tcpW.x - tcpPrev.x, vy = tcpW.y - tcpPrev.y; const v = Math.hypot(vx, vy);
+        if (v > 1e-4) { vx /= v; vy /= v; } else { vx = dx / (d || 1); vy = dy / (d || 1); }
+        topple(b, vx, vy);
+      });
+      tcpPrev.copy(tcpW);
+      clearZ = OBJ.reduce((m, o) => (o.on ? Math.max(m, topZ(o) + 0.045) : m), 0);
       if (held) {
         robot.tcp.getWorldPosition(tcpW); robot.tcp.getWorldQuaternion(tcpQ);
         cur.g.position.copy(relP).applyQuaternion(tcpQ).add(tcpW); cur.g.quaternion.multiplyQuaternions(tcpQ, rel);
@@ -1193,7 +1314,7 @@ function build(L, wrap, host, o) {
           if (o.hopT === 1) { o.hopT = -1; o.hopDir = -o.hopDir; o.swell = 0; o.g.rotation.x = 0; rest = 0; hopWait = HOP_EVERY; ring(o.g.position.x, o.g.position.y, 0.003); }
         } else if (job || cur || hoverObj || newRoundAt) { rest = 0; hopWait = HOP_FIRST; }
         else if ((rest += dt) >= hopWait) {
-          const free = OBJ.filter(o => !o.home && o.popT >= 1);
+          const free = OBJ.filter(o => !o.home && o.popT >= 1 && !o.on && !o.fall && !above(o));
           if (free.length) {
             const o = free[hopIdx++ % free.length]; o.hopT = 0; o.hopYaw = o.g.rotation.z;
             if (!clicked && hops++ % 3 === 0) say.show(o, T('Heb mich auf!', 'Pick me up!'), 2200, true);
@@ -1203,6 +1324,12 @@ function build(L, wrap, host, o) {
       }
       if (fx) lockTick(dt);
       OBJ.forEach(o => {
+        if (o.fall) fallTick(o, dt);
+        // Schimmer: materialisierte Objekte, je 5–9 s versetzt, 1,8 s je Durchlauf; im Arm oder beim Lösen keiner
+        if (!reduce && o.mat.v === 1 && o.mat.to === 1 && !(held && o === cur)) {
+          if (o.sw >= 0) { o.sw = Math.min(1, o.sw + dt / SW_D); if (o.sw === 1) { o.sw = -1; o.swUp = !o.swUp; o.swNext = clk + rnd(5, 9); } }
+          else if (clk >= o.swNext) o.sw = 0;
+        } else { o.sw = -1; o.swNext = Math.max(o.swNext, clk + rnd(1.5, 3)); }
         if (o.sinkT < 1) {
           o.sinkT = reduce ? 1 : Math.min(1, o.sinkT + dt / 0.55);
           const e = ease5(o.sinkT);
@@ -1234,11 +1361,11 @@ function build(L, wrap, host, o) {
       const pu = reduce ? 0.5 : Math.sin(Math.PI * pt / PULSE) ** 2, r = 0.05 + 0.006 * pu;
       OBJ.forEach(o => {
         const inArm = held && o === cur, f = o.home ? 1 : fade, pop = o.popT <= 0 ? 0.001 : 1 - (1 - o.popT) ** 3;
-        if (o !== hoverObj) { o.grid.material.opacity = 0.42 * f; o.fill.material.opacity = (0.09 + 0.03 * pu) * f; }
+        if (o !== hoverObj && o !== stackObj) { o.grid.material.opacity = 0.42 * f; o.fill.material.opacity = (0.09 + 0.03 * pu) * f; }
         o.edge.material.opacity *= f; o.pts.material.opacity = 0.9 * f; o.pts.material.size = 0.016 + 0.003 * pu;
         o.aura.material.opacity = ((o.home ? 0.07 : 0.16 + 0.08 * pu) + 0.14 * o.swell) * pop; o.aura.scale.setScalar(2 * r * (1 + 0.25 * o.swell));
         o.aura.position.copy(o.g.position); if (!inArm) o.aura.position.z = Math.max(o.aura.position.z, r + 0.003);
-        o.pool.visible = !inArm; o.pool.position.set(o.g.position.x, o.g.position.y, 0.0028);
+        o.pool.visible = !inArm && !o.on; o.pool.position.set(o.g.position.x, o.g.position.y, 0.0028);
         const air = inArm ? 0 : Math.max(0, o.g.position.z - o.h / 2) / HOP_H;   // Bodenschein wird beim Abheben etwas kleiner + schwächer
         o.pool.material.opacity = (0.2 + 0.1 * pu) * (1 - 0.3 * air) * (o.home ? 0.5 : 1) * pop; o.pool.scale.setScalar((0.95 + 0.06 * pu) * (1 - 0.12 * air));
         o.g.scale.setScalar(pop * (1 + 0.008 * pu + HOP_SWELL * o.swell));
@@ -1247,8 +1374,12 @@ function build(L, wrap, host, o) {
     // Start: gemerkte Runde (gültig und nicht schon fertig) oder neue Zufallslage
     const okSlot = s => s && Number.isFinite(s.a) && Number.isFinite(s.r) && s.r > 0.15 && s.r < 0.35 && Math.abs(s.a) < 2.6;
     const arr3 = a => Array.isArray(a) && a.length === 3;
+    // gemerkte Türme: Index −1…2, nie auf sich selbst, nicht zu Hause, je Objekt höchstens eins oben drauf, ohne Kreis
+    const okOn = (on, home) => arr3(on) && on.every((b, k) => Number.isInteger(b) && b >= -1 && b <= 2 && b !== k && !home[k] && (b < 0 || !home[b]))
+      && on.every((b, k) => b < 0 || on.indexOf(b) === k) && on.every((b, k) => { let n = 0; for (let i = k; on[i] >= 0 && n < 4; i = on[i]) n++; return n < 3; });
     newRound(arr3(saved.objs) && saved.objs.every(okSlot) && arr3(saved.tpls) && saved.tpls.every(s => okSlot(s) && Number.isFinite(s.yaw))
-      && arr3(saved.home) && !saved.home.every(Boolean) ? { objs: saved.objs, tpls: saved.tpls, home: saved.home.map(Boolean) } : layout(), secs(saved.t));
+      && arr3(saved.home) && !saved.home.every(Boolean) ? { objs: saved.objs, tpls: saved.tpls, home: saved.home.map(Boolean),
+        on: okOn(saved.on, saved.home) ? saved.on : [-1, -1, -1], mat: arr3(saved.mat) ? saved.mat.map(Boolean) : [0, 0, 0] } : layout(), secs(saved.t));
   }
   if (!reduce) st.isBusy = () => true;
   if (reduce && scene === 'modes') { q = goal; robot.setJoints(q); }
