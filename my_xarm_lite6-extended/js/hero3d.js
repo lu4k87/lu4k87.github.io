@@ -568,11 +568,12 @@ function build(L, wrap, host, o) {
     const flash = ringMesh(0.016, 0.03, 0);
     st.scene.add(cube, flash, aura, pool);
     let at = 0, held = false, hover = -1, hoverCube = false, pending = -1, flashT = 1, clicked = false, clk = 0, touch = false;
-    // Ruhe-Hüpfer (Wunsch User 06.10.2026): liegt der Würfel 5 s still, hebt er kurz ab (12 mm, 1,1 s) und dreht sich dabei um
-    // 15° (abwechselnd hin und zurück → bleibt am Feld ausgerichtet), landet weich (sin^1.5: Abheben/Aufsetzen ohne Ruck, kein
-    // Überschwinger); danach alle 3 s wieder. Ablauf, Würfel im Arm oder Zeiger auf dem Würfel setzen die 5 s neu.
-    const HOP_H = 0.012, HOP_D = 1.1, HOP_ROT = Math.PI / 12, HOP_FIRST = 5, HOP_EVERY = 3;
-    let rest = 0, hopWait = HOP_FIRST, hopT = -1, hopDir = 1, hopYaw = 0;
+    // Ruhe-Hüpfer (Wunsch User 06.10.2026, bewusst gegen soft-motion §5: Klick-Einladung): liegt der Würfel 5 s still, hebt er ab
+    // (24 mm, 1,3 s), dreht sich um 30° und kippt leicht (abwechselnd hin und zurück → bleibt am Feld ausgerichtet), schwillt dabei
+    // um 8 % an, Lichthof hellt auf; landet weich (sin^1.5: ohne Ruck, kein Überschwinger) mit Ring am Boden; danach alle 3 s wieder.
+    // Ablauf, Würfel im Arm oder Zeiger auf dem Würfel setzen die 5 s neu.
+    const HOP_H = 0.024, HOP_D = 1.3, HOP_ROT = Math.PI / 6, HOP_TILT = 0.12, HOP_SWELL = 0.08, HOP_FIRST = 5, HOP_EVERY = 3;
+    let rest = 0, hopWait = HOP_FIRST, hopT = -1, hopDir = 1, hopYaw = 0, swell = 0;
     const onPad = i => { cube.position.set(pads[i].g.position.x, pads[i].g.position.y, CUBE / 2); };
     onPad(at);
     // Feld-Zustand + Klick-Hinweis (b = 0…1, Höhe des Aufleuchtens)
@@ -682,7 +683,7 @@ function build(L, wrap, host, o) {
       return best;
     };
     const grip = () => {
-      if (hopT >= 0) { hopT = -1; cube.position.z = ch; }   // greift mitten im Ruhe-Hüpfer: erst landen
+      if (hopT >= 0) { hopT = -1; swell = 0; cube.position.z = ch; cube.rotation.x = 0; }   // greift mitten im Ruhe-Hüpfer: erst landen
       held = true; blink(); matTo(0, 0.9);
       // Würfel hängt fest am Sauger: Lage + Versatz im Werkzeugrahmen merken (bleibt bei geneigtem Werkzeug dran)
       robot.tcp.getWorldQuaternion(tcpQ); rel.copy(tcpQ).invert().multiply(cube.quaternion);
@@ -801,9 +802,14 @@ function build(L, wrap, host, o) {
       if (!reduce) {
         if (hopT >= 0) {
           hopT = Math.min(1, hopT + dt / HOP_D);
-          cube.position.z = ch + HOP_H * Math.sin(Math.PI * hopT) ** 1.5;
+          const arc = Math.sin(Math.PI * hopT);
+          cube.position.z = ch + HOP_H * arc ** 1.5;
           cube.rotation.z = hopYaw + hopDir * HOP_ROT * ease5(hopT);
-          if (hopT === 1) { hopT = -1; hopDir = -hopDir; rest = 0; hopWait = HOP_EVERY; }
+          cube.rotation.x = hopDir * HOP_TILT * arc ** 2; swell = arc ** 2;
+          if (hopT === 1) {
+            hopT = -1; hopDir = -hopDir; rest = 0; hopWait = HOP_EVERY; swell = 0; cube.rotation.x = 0;
+            flashT = 0; flash.position.set(cube.position.x, cube.position.y, 0.003);   // Landering am Boden
+          }
         } else if (job || held || hoverCube) { rest = 0; hopWait = HOP_FIRST; }
         else if ((rest += dt) >= hopWait) { hopT = 0; hopYaw = cube.rotation.z; }
       }
@@ -833,12 +839,12 @@ function build(L, wrap, host, o) {
       if (!hoverCube) cubeGrid.material.opacity = (0.42 + 0.25 * cubeB) * fade;
       edgeMat.opacity *= fade; cornerMat.opacity = 0.9 * fade;
       const pu = Math.sin(Math.PI * pt / PULSE) ** 2, r = 0.05 + 0.006 * pu;
-      aura.material.opacity = 0.16 + 0.08 * pu; aura.scale.setScalar(2 * r);
+      aura.material.opacity = 0.16 + 0.08 * pu + 0.14 * swell; aura.scale.setScalar(2 * r * (1 + 0.25 * swell));
       aura.position.copy(cube.position); if (!held) aura.position.z = Math.max(aura.position.z, r + 0.003);
       pool.visible = !held; pool.position.set(cube.position.x, cube.position.y, 0.0028);
       const air = held ? 0 : Math.max(0, cube.position.z - ch) / HOP_H;   // Bodenschein wird beim Abheben etwas kleiner + schwächer
       pool.material.opacity = (0.2 + 0.1 * pu) * (1 - 0.3 * air); pool.scale.setScalar((0.95 + 0.06 * pu) * (1 - 0.12 * air));
-      cornerMat.size = 0.016 + 0.003 * pu; cube.scale.setScalar(1 + 0.008 * pu);
+      cornerMat.size = 0.016 + 0.003 * pu; cube.scale.setScalar(1 + 0.008 * pu + HOP_SWELL * swell);
       if (!hoverCube) cubeFill.material.opacity = (0.09 + 0.03 * pu) * fade;
     };
     show();
