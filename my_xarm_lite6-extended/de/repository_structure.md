@@ -140,6 +140,10 @@ dev_ws/
 │   ├── ros2_whisper/                                                      # 🎙️ Whisper AI Sprache-zu-Text Inferenzknoten
 │   ├── fake_linear_axis/                                                  # 🎚️ Python: Headless TF-Publisher & interaktiver Marker
 │   │   └── fake_linear_axis/fake_linear_axis_node.py
+│   ├── fake_mobile_base/                                                  # 🚚 Python: simulierte mobile Basis (AMR) mit Nav2 + UI-Brücke (Szenen AMR, Fliesenlegen)
+│   ├── robot_profiles/                                                    # 🦾 Python: Roboter-Profile (ein YAML je Arm), aktives Profil, robot_bringup.launch.py, validate_profile
+│   │   └── profiles/                                                      # xarm_lite6 · xarm5 · xarm7 · abb_irb1100 · ur5e · franka_fr3 · kinova_gen3
+│   ├── abb_irb1100_support/                                               # 🏭 URDF, SRDF, MoveIt + Start (Robot | Digital Twin) des ABB IRB 1100
 │   ├── scene_objects/                                                     # 📍 Python: RViz2-Marker für Schutzzonen & Arbeitsbereichsgrenzen
 │   │   ├── launch/scene_objects.launch.py
 │   │   └── scene_objects/
