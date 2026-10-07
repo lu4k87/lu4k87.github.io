@@ -341,7 +341,7 @@ html.sf-on .at-ring:not(.in) .seg { stroke-dasharray: 0 83; }
   grid-template-columns: repeat(3, minmax(0, 1fr) 52px) minmax(0, 1fr); gap: 0; }
 #verstehen .path li:not(:last-child) { grid-column: span 2; display: grid; grid-template-columns: minmax(0, 1fr) 52px; }
 #verstehen .path li:not(:last-child)::after { content: ""; place-self: center; width: 30px; height: 30px; background: var(--fg-2); -webkit-mask: var(--arw) center / contain no-repeat; mask: var(--arw) center / contain no-repeat; }
-#verstehen .path a { gap: 8px; padding: 18px 20px; justify-items: center; text-align: center; }  /* kleine Kacheln zentriert (AGENTS.md §3) */
+#verstehen .path a { gap: 8px; padding: 18px clamp(14px, 2vw, 20px); justify-items: center; text-align: center; }  /* kleine Kacheln zentriert (AGENTS.md §3); Rand schmaler 761–1000 px, sonst ragen Wörter heraus */
 #verstehen .path li::after { transition: background-color .5s var(--ease-out); }
 #verstehen .path li:has(> a.sf-lit)::after { background: var(--hue, var(--accent)); }
 #verstehen .path .pn > span { padding: 5px 8px; border-radius: var(--radius-sm); background: color-mix(in srgb, var(--hue) 12%, transparent); }
@@ -1048,7 +1048,7 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
                 <h3><svg class="ico" aria-hidden="true"><use href="#i-pad"/></svg><span data-en="Gamepad &lt;small&gt;with your hands&lt;/small&gt;">Gamepad <small>mit den Händen</small></span></h3>
                 <p data-en="Fine-grained motion in real time, with feedback in your hand.">Feinfühliges Verfahren in Echtzeit, mit Rückmeldung in der Hand.</p>
                 <ul>
-                  <li data-en="&lt;b&gt;Vibration&lt;/b&gt; on collision risk, 0.1&amp;nbsp;s look-ahead"><b>Vibration</b> bei Kollisionsgefahr, Vorausschau 0,1&nbsp;s</li>
+                  <li data-en="&lt;b&gt;Vibration&lt;/b&gt; on collision risk, 0.25&amp;nbsp;s look-ahead"><b>Vibration</b> bei Kollisionsgefahr, Vorausschau 0,25&nbsp;s</li>
                   <li data-en="&lt;b&gt;Table stop&lt;/b&gt; brakes from Z&amp;nbsp;110&amp;nbsp;mm, stops at 91&amp;nbsp;mm"><b>Tisch-Stopp</b> bremst ab Z&nbsp;110&nbsp;mm, stoppt bei 91&nbsp;mm</li>
                 </ul>
                 <a class="more" href="present_control_modes.html#gamepad"><span data-en="Gamepad">Gamepad</span><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg></a>
@@ -1328,7 +1328,7 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
               </article>
               <article class="fn" id="pad-precheck" data-a="safe" data-f="pad" data-s="spr">
                 <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-shield"/></svg><span data-en="Gamepad pre-collision check">Kollisionsvorprüfung Gamepad</span></button></h3>
-                <p data-en="&lt;code&gt;/joy&lt;/code&gt; → &lt;code&gt;/joy_check&lt;/code&gt;: 0.1&amp;nbsp;s lookahead, stop at 91&amp;nbsp;mm, pad rumbles."><code>/joy</code> → <code>/joy_check</code>: 0,1&nbsp;s Vorausschau, Stopp bei 91&nbsp;mm, Pad vibriert.</p>
+                <p data-en="&lt;code&gt;/joy&lt;/code&gt; → &lt;code&gt;/joy_check&lt;/code&gt;: 0.25&amp;nbsp;s lookahead, stop at 91&amp;nbsp;mm, pad rumbles."><code>/joy</code> → <code>/joy_check</code>: 0,25&nbsp;s Vorausschau, Stopp bei 91&nbsp;mm, Pad vibriert.</p>
               </article>
               <article class="fn" id="floor-guard" data-a="safe" data-f="jog" data-s="spr">
                 <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-shield"/></svg><span data-en="Floor guard">Bodensperre</span></button></h3>
@@ -1669,17 +1669,17 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
           <div class="brief" style="--hue: var(--gold)"><p class="slogan" data-en="Four questions. One project.">Vier Fragen. Ein Projekt.</p><ul class="kpis"><li class="kpi"><strong>8</strong><span data-en="key features">Merkmale</span></li><li class="kpi"><strong>7</strong><span data-en="layers">Schichten</span></li><li class="kpi"><strong>6</strong><span data-en="flows">Abläufe</span></li></ul></div>
         </header>
         <ol class="path" aria-label="Lesepfad" data-en-aria="Reading path">
-          <li><a href="present_presentation.html#forschung" style="--hue: var(--gold)"><span class="pn"><span data-en="Why">Warum</span></span><b data-en="Concept &amp; objectives">Konzept &amp; Zielsetzung</b><small data-en="Problem, research question, approach, evaluation">Problem, Leitfrage, Lösungsansatz, Evaluation</small></a></li>
-          <li><a href="present_presentation.html#merkmale" style="--hue: var(--violet)"><span class="pn"><span data-en="What">Was</span></span><b data-en="Key features">Kernmerkmale</b><small data-en="Human in the loop, eight features, standards">Human-in-the-Loop, acht Merkmale, Normbezüge</small></a></li>
+          <li><a href="present_presentation.html#forschung" style="--hue: var(--gold)"><span class="pn"><span data-en="Why">Warum</span></span><b data-en="Concept &amp; objectives">Konzept &amp; Ziel&shy;setzung</b><small data-en="Problem, research question, approach, evaluation">Problem, Leitfrage, Lösungs&shy;ansatz, Evaluation</small></a></li>
+          <li><a href="present_presentation.html#merkmale" style="--hue: var(--violet)"><span class="pn"><span data-en="What">Was</span></span><b data-en="Key features">Kern&shy;merkmale</b><small data-en="Human in the loop, eight features, standards">Human-in-the-Loop, acht Merkmale, Normbezüge</small></a></li>
           <li><a href="present_presentation.html#stack" style="--hue: var(--indigo)"><span class="pn"><span data-en="With what">Womit</span></span><b data-en="System stack">System-Stack</b><small data-en="Seven layers, reference hardware">Sieben Schichten, Referenz-Hardware</small></a></li>
-          <li><a href="present_presentation.html#ablaeufe" style="--hue: var(--green)"><span class="pn"><span data-en="How">Wie</span></span><b data-en="Function flows">Funktionsabläufe</b><small data-en="Six flows, safety checks, faults">Sechs Abläufe, Sicherheitsprüfungen, Störfälle</small></a></li>
+          <li><a href="present_presentation.html#ablaeufe" style="--hue: var(--green)"><span class="pn"><span data-en="How">Wie</span></span><b data-en="Function flows">Funktions&shy;abläufe</b><small data-en="Six flows, safety checks, faults">Sechs Abläufe, Sicherheits&shy;prüfungen, Störfälle</small></a></li>
         </ol>
       </section>
 
       <section class="sec" id="technik">
         <header class="sec-head">
           <div><span class="eyebrow" style="--hue: var(--indigo)"><span class="n">08</span><span data-en="For developers">Für Entwickler</span></span><h2 data-en="Develop">Entwickeln</h2></div>
-          <div class="brief" style="--hue: var(--indigo)"><p class="slogan" data-en="Open, reproducible, extensible.">Offen, nachbaubar, erweiterbar.</p><ul class="kpis"><li class="kpi"><strong>13</strong><span data-en="documents">Dokumente</span></li><li class="kpi"><strong>4</strong><span data-en="topics">Themen</span></li><li class="kpi"><strong>21</strong><span data-en="ROS&amp;nbsp;2 packages">ROS-2-Pakete</span></li></ul></div>
+          <div class="brief" style="--hue: var(--indigo)"><p class="slogan" data-en="Open, reproducible, extensible.">Offen, nachbaubar, erweiterbar.</p><ul class="kpis"><li class="kpi"><strong>13</strong><span data-en="documents">Dokumente</span></li><li class="kpi"><strong>4</strong><span data-en="topics">Themen</span></li><li class="kpi"><strong>22</strong><span data-en="ROS&amp;nbsp;2 packages">ROS-2-Pakete</span></li></ul></div>
         </header>
         <div class="sec-stack">
         <div class="dg-grid">
@@ -1884,7 +1884,7 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
   </section>
 </main>
 
-<footer><div class="wrap"><a class="qr-foot" href="https://lu4k87.github.io/" target="_blank" rel="noopener"><span class="qr-code"><svg role="img" aria-label="QR-Code: Projekt-Doku öffnen" data-en-aria="QR code: open the project docs"><use href="#qr-docs"/></svg></span><span class="qr-txt"><b data-en="Open page">Seite öffnen</b><small>lu4k87.github.io</small></span></a><span data-en="Last updated 04.10.2026">Stand 04.10.2026</span><span>dev_ws · docs/project_docs.html</span></div></footer>
+<footer><div class="wrap"><a class="qr-foot" href="https://lu4k87.github.io/" target="_blank" rel="noopener"><span class="qr-code"><svg role="img" aria-label="QR-Code: Projekt-Doku öffnen" data-en-aria="QR code: open the project docs"><use href="#qr-docs"/></svg></span><span class="qr-txt"><b data-en="Open page">Seite öffnen</b><small>lu4k87.github.io</small></span></a><span data-en="Last updated 07.10.2026">Stand 07.10.2026</span><span>dev_ws · docs/project_docs.html</span></div></footer>
 
 <script src="js/scroll_flow.js"></script>
 <script src="js/landing.js"></script>

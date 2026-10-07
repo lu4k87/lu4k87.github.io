@@ -158,7 +158,7 @@ The table below illustrates which project modules can be evaluated in pure softw
 
 ### ![Node](https://img.shields.io/badge/Node-blue?style=flat-square) `teleop_pre_collision_checker.py` (`teleop_pre_collision_checker`) &nbsp;&nbsp; <sub><i>`/src/teleop_pre_collision_checker/teleop_pre_collision_checker/teleop_pre_collision_checker.py`</i></sub>
 
-**Purpose & Task:** Acts as a transparent guardian *before* movement execution. Predictively computes the future Z-coordinate (0.1 sec lookahead). If the robot would violate the safety barrier ($Z \le 91.0\text{ mm}$), the downward command is hard-overridden and zeroed out. Triggers gamepad rumble feedback (vibration via `pygame`) on collision risk.
+**Purpose & Task:** Acts as a transparent guardian *before* movement execution. Limits the downward speed so that the travel within 0.25 s does not reach below the table barrier (`Z_LIMIT` 91 mm); faster downward commands are throttled (right trigger reduced). At $Z \le 91.0\text{ mm}$ or when less than 10 mm/s would be allowed (z < 93.5 mm), it blocks downward motion entirely, reports it on `/ui/collision_msg` and triggers gamepad rumble feedback (vibration via `pygame`).
 
 <details>
 <summary><b>🔽 Show details</b> · Run Command · Subscribes · Publishes · Parameters</summary>
@@ -200,11 +200,12 @@ The table below illustrates which project modules can be evaluated in pure softw
 >
 >> | Parameter | Default | Description |
 >> |---|---|---|
->> | `LOOKAHEAD_TIME` | `0.1` | *Prediction horizon (seconds) for velocity lookahead.* |
+>> | `LOOKAHEAD_TIME` | `0.25` | *Prediction horizon (seconds) for velocity lookahead.* |
 >> | `Z_LIMIT` | `91.0` | *Hard table barrier on the Z-axis (World-Frame) in millimeters.* |
 >> | `CAUTION_ZONE_START` | `110.0` | *Z-height (mm) where downward velocity starts being restricted.* |
 >> | `CAUTION_ZONE_SPEED` | `0.25` | *Maximum allowed downward speed factor within the caution zone.* |
->> | `MAX_LINEAR_VELOCITY_MM_S` | `75.0` | *Baseline linear velocity (mm/s) for the lookahead.* |
+>> | `MAX_LINEAR_VELOCITY_MM_S` | `400.0` | *Baseline linear velocity (mm/s) for the lookahead.* |
+>> | `MIN_DOWN_SPEED_MM_S` | `10.0` | *Minimum downward speed (mm/s); if the look-ahead allows less, downward motion is blocked entirely (collision message).* |
 >> | `ACCELERATION_FACTOR` | `0.9` | *Damping factor applied during lookahead calculation.* |
 >> | `DOWN_TRIGGER_AXIS` | `5` | *Joy axis index of the right trigger (RT, downward).* |
 >> | `UP_TRIGGER_AXIS` | `2` | *Joy axis index of the left trigger (LT, upward); Z speed = LT − RT, so the guard limits the net downward share.* |
@@ -316,31 +317,33 @@ This node acts as a transparent **safety proxy** between the raw joystick driver
 
 #### 5.2.1 Predictive Collision Algorithm
 
-The node does not simply check the current Z position — it **predicts where the end-effector will be** within the next `LOOKAHEAD_TIME` seconds and blocks movement if that predicted position violates the safety limit:
+The node does not simply check the current Z position — it **limits the downward speed** so that the travel within the next `LOOKAHEAD_TIME` seconds does not reach below `Z_LIMIT`. Only at z ≤ `Z_LIMIT` or when less than `MIN_DOWN_SPEED_MM_S` would be allowed does it block downward motion entirely:
 
 ```
 trigger_intensity = clamp(axes[LT] - axes[RT], 0, 1) # as in xarm_joystick_input: half press = full speed
-if current_z < CAUTION_ZONE_START: # caution zone: really slower
+if ground_enabled and current_z < CAUTION_ZONE_START: # caution zone: really slower
  trigger_intensity = min(trigger_intensity, CAUTION_ZONE_SPEED / speed_factor)
  axes[RT] = axes[LT] - trigger_intensity # reduced trigger is forwarded
-target_z_velocity = V_max × speed_factor × trigger_intensity
-effective_velocity = target_z_velocity × α # α = ACCELERATION_FACTOR = 0.9
-predicted_z = current_z − (effective_velocity × Δt)
-
-if predicted_z < Z_LIMIT:
- axes[RT] = 1.0 # set downward command to 0.0
+if ground_enabled and moving_down:
+ allowed = (current_z − Z_LIMIT) / LOOKAHEAD_TIME # mm/s that do not reach below Z_LIMIT within Δt
+ effective_velocity = V_max × speed_factor × trigger_intensity × α # α = ACCELERATION_FACTOR = 0.9
+ if current_z <= Z_LIMIT or allowed < MIN_DOWN_SPEED_MM_S:
+  axes[RT] = 1.0 # downward blocked + /ui/collision_msg + rumble
+ elif effective_velocity > allowed:
+  axes[RT] = axes[LT] − allowed / (V_max × speed_factor × α) # trigger reduced
 ```
 
 <details>
-<summary><b>🔽 Show table</b> · 9 parameters · Z limit · caution zone · lookahead</summary>
+<summary><b>🔽 Show table</b> · 10 parameters · Z limit · caution zone · lookahead</summary>
 
 | Parameter | Value | Description |
 |---|---|---|
 | `Z_LIMIT` | `91.0 mm` | *Absolute Z-limit — downward motion is blocked at this height* |
 | `CAUTION_ZONE_START` | `110.0 mm` | *Caution zone entry — the right trigger is reduced so that speed level × down share ≤ `CAUTION_ZONE_SPEED`* |
 | `CAUTION_ZONE_SPEED` | `0.25` | *Max downward speed factor inside the caution zone* |
-| `MAX_LINEAR_VELOCITY_MM_S` | `75.0 mm/s` | *Assumed max linear velocity for prediction* |
-| `LOOKAHEAD_TIME` | `0.1 s` | *Prediction horizon* |
+| `MAX_LINEAR_VELOCITY_MM_S` | `400.0 mm/s` | *Assumed max linear velocity for prediction* |
+| `LOOKAHEAD_TIME` | `0.25 s` | *Prediction horizon* |
+| `MIN_DOWN_SPEED_MM_S` | `10.0 mm/s` | *Slower allowed → downward motion blocked entirely (collision message)* |
 | `ACCELERATION_FACTOR` (α) | `0.9` | *Velocity damping factor applied to prediction* |
 | `DOWN_TRIGGER_AXIS` | `5` (RT) | *Joy axis index for the downward trigger* |
 | `UP_TRIGGER_AXIS` | `2` (LT) | *Joy axis index for the upward trigger (net Z = LT − RT)* |

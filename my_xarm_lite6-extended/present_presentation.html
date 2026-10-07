@@ -1362,7 +1362,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: cent
           <p class="tagline" data-en="The state stays visible, the next action predictable. The human can step in at any time.">Der Zustand bleibt sichtbar, die nächste Aktion vorhersehbar. Der Mensch kann jederzeit eingreifen.</p>
           <div class="numbers">
             <div class="num"><strong data-num="91" data-unit=" mm">91 mm</strong><span data-en="Gamepad stop above the table (TCP)">Gamepad-Stopp über dem Tisch (TCP)</span></div>
-            <div class="num"><strong data-num="0.1" data-unit=" s">0,1 s</strong><span data-en="Look-ahead of the collision check">Vorausschau der Kollisionsprüfung</span></div>
+            <div class="num"><strong data-num="0.25" data-unit=" s">0,25 s</strong><span data-en="Look-ahead of the collision check">Vorausschau der Kollisionsprüfung</span></div>
             <div class="num"><strong data-num="0.3" data-unit=" s">0,3 s</strong><span data-en="Until stop on VR signal loss">bis Stopp bei VR-Signalverlust</span></div>
             <div class="num"><strong data-num="60" data-unit=" s">60 s</strong><span data-en="Blackbox before an incident">Blackbox vor einem Vorfall</span></div>
             <div class="num"><strong data-num="1">1</strong><span data-en="Operator in control (control lock)">Bediener steuert (Control-Lock)</span></div>
@@ -1721,7 +1721,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: cent
         </div>
             <div class="st-layer" role="listitem" style="--hue: var(--violet)">
           <span class="st-k"><svg class="ico"><use href="#i-spark"/></svg><span data-en="AI · Perception">KI · Wahrnehmung</span></span>
-          <span class="st-parts"><span><b>vla_bridge</b> · <span data-en="LLM agent, /vla/skill">LLM-Agent, /vla/skill</span></span><span><b>Ollama</b> · <span data-en="qwen3.8:27b, local, Apache 2.0">qwen3.8:27b, lokal, Apache 2.0</span></span><span><b>Anthropic SDK</b> · Claude Opus 5</span><span><b>Google Gemini</b> · Robotics-ER 2 Preview</span><span><b>Ultralytics</b> · 8.4 · YOLOv8l, PyTorch 2.12</span><span><b>OpenCV</b> · cv_bridge, NumPy, SciPy</span><span><b>octomap_server</b> · 2.3 · OctoMap</span><span><b>Whisper</b> · <span data-en="model medium, DE/EN">Modell medium, DE/EN</span></span><span><b>LeRobot</b> · <span data-en="demo datasets for VLA training">Demo-Datensätze fürs VLA-Training</span></span><span><b>Gaze-Pipeline</b> · <span data-en="Tobii RTSP, PyAV">Tobii-RTSP, PyAV</span></span></span>
+          <span class="st-parts"><span><b>vla_bridge</b> · <span data-en="LLM agent, /vla/skill">LLM-Agent, /vla/skill</span></span><span><b>Ollama</b> · <span data-en="qwen3.8:27b, local, Apache 2.0">qwen3.8:27b, lokal, Apache 2.0</span></span><span><b>Anthropic SDK</b> · Claude Opus 5</span><span><b>Google Gemini</b> · Robotics-ER 2 Preview</span><span><b>Ultralytics</b> · 8.4 · YOLOv8l, PyTorch 2.12</span><span><b>OpenCV</b> · cv_bridge, NumPy, SciPy</span><span><b>octomap_server</b> · 2.3 · OctoMap</span><span><b>Whisper</b> · <span data-en="model small, DE/EN">Modell small, DE/EN</span></span><span><b>LeRobot</b> · <span data-en="demo datasets for VLA training">Demo-Datensätze fürs VLA-Training</span></span><span><b>Gaze-Pipeline</b> · <span data-en="Tobii RTSP, PyAV">Tobii-RTSP, PyAV</span></span></span>
         </div>
             <div class="st-layer" role="listitem" style="--hue: var(--green)">
           <span class="st-k"><svg class="ico"><use href="#i-shield"/></svg><span data-en="Motion · Safety">Bewegung · Sicherheit</span></span>
@@ -1955,7 +1955,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: cent
       d: ['Ein Klick statt vieler Terminals: die UX | Nexus Launcher startet den ganzen Stack in fester Reihenfolge.', 'One click instead of many terminals: the UX | Nexus Launcher starts the whole stack in a fixed order.'],
       fail: { at: 1, de: 'REAL gesperrt: Ein FAKE-Stack läuft noch. Erst Kill Daemon oder die Karte stoppen; ein gemischter Stack startet nie.', en: 'REAL blocked: a FAKE stack is still running. Use Kill Daemon or stop the card first; a mixed stack never starts.' },
       steps: [
-        S('in', 0, ['UX | Nexus Launcher öffnen', 'Open the UX | Nexus Launcher'], ['App-Menü „ROS 2 Nexus“ oder Startskript; es öffnet das Start-Popup RUN DEV SETUP.', 'App menu “ROS 2 Nexus” or the start script; it opens the RUN DEV SETUP popup.'], [':8080', 'ros2_nexus_web_start.sh']),
+        S('in', 0, ['UX | Nexus Launcher öffnen', 'Open the UX | Nexus Launcher'], ['App-Menü „UX | Nexus Launcher“ oder Startskript; es öffnet das Start-Popup RUN DEV SETUP.', 'App menu “UX | Nexus Launcher” or the start script; it opens the RUN DEV SETUP popup.'], [':8080', 'ros2_nexus_web_start.sh']),
         S('app', 1, ['FAKE oder REAL wählen', 'Choose FAKE or REAL'], ['Der Umschalter im Popup wählt die Sequenz. Solange ein FAKE-Stack läuft, ist ein REAL-Start gesperrt.', 'The switch in the popup picks the sequence. While a FAKE stack runs, a REAL start is blocked.'], ['FAKE | REAL']),
         S('app', 0, ['Module anhaken', 'Tick the modules'], ['Karten der Sequenz wählen: Vision, VR, Sprache, VLA-M … Parameter je Karte lassen sich vor dem Start ändern.', 'Pick the cards of the sequence: vision, VR, voice, VLA-M … Parameters per card can be changed before the start.'], ['launcher_config.json']),
         S('app', 0, ['EXECUTE', 'EXECUTE'], ['Das Backend startet erst die Infrastruktur, dann die übrigen Karten; jede Karte zeigt läuft / bereit / Exit-Code mit Log.', 'The backend starts the infrastructure first, then the remaining cards; each card shows running / ready / exit code with its log.'], ['~/.ros/nexus_logs']),
@@ -1983,7 +1983,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: cent
       steps: [
         S('in', 0, ['Stick + Trigger', 'Stick + trigger'], ['Xbox Elite 2 am Roboter-PC oder als Remote-Gamepad im Browser (HTTPS).', 'Xbox Elite 2 on the robot PC or as a remote gamepad in the browser (HTTPS).'], ['/joy', '/remote/joy']),
         S('bridge', 1, ['Watchdog', 'Watchdog'], ['Remote nur für den Besitzer der Steuerung: Heartbeat, Freigabe „Arm gamepad“, auf echter Roboter-Hardware höchstens 50 % Tempo.', 'Remote only for the owner of control: heartbeat, “Arm gamepad” release, at most 50 % speed on real robot hardware.'], ['remote_control_watchdog']),
-        S('motion', 1, ['Kollisionsvorprüfung', 'Pre-collision check'], ['Sagt die TCP-Höhe 0,1 s voraus: unter 110 mm höchstens 25 % abwärts, bei 91 mm Stopp mit Vibration.', 'Predicts the TCP height 0.1 s ahead: below 110 mm at most 25 % downward, at 91 mm a stop with rumble.'], ['teleop_pre_collision_checker', '/ui/eef_position']),
+        S('motion', 1, ['Kollisionsvorprüfung', 'Pre-collision check'], ['Sagt die TCP-Höhe 0,25 s voraus: unter 110 mm höchstens 25 % abwärts, bei 91 mm Stopp mit Vibration.', 'Predicts the TCP height 0.25 s ahead: below 110 mm at most 25 % downward, at 91 mm a stop with rumble.'], ['teleop_pre_collision_checker', '/ui/eef_position']),
         S('motion', 0, ['Joystick → Twist', 'Joystick → twist'], ['C++-Node glättet das Signal und rechnet Achsen in kartesische Geschwindigkeiten um.', 'C++ node smooths the signal and turns axes into Cartesian velocities.'], ['xarm_joystick_input']),
         S('motion', 0, ['MoveIt Servo', 'MoveIt Servo'], ['Echtzeitregelung mit Prüfung auf Singularitäten und Kollisionen.', 'Real-time control with singularity and collision checks.'], ['servo_server']),
         S('hw', 0, ['Arm folgt', 'Arm follows'], ['Roboter-Simulation oder echte Roboter-Hardware: dieselbe Kette, dieselben Grenzen.', 'Robot simulation or real robot hardware: the same chain, the same limits.']),
@@ -2351,7 +2351,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: cent
       s: ['MoveIt plant eine kollisionsfreie Bahn, der Digital Twin zeigt sie vorab.', 'MoveIt plans a collision-free path, the Digital Twin previews it.'] },
     { ic: 'i-pad', n: ['Feinbewegung', 'Fine motion'], h: ['Der Werkzeugpunkt folgt der Hand in Echtzeit (MoveIt Servo).', 'The tool point follows the hand in real time (MoveIt Servo).'],
       s: ['Anfahrt von oben, Greifen und Greifprüfung laufen automatisch.', 'Approach from above, grasp and grasp check run automatically.'] },
-    { ic: 'i-shield', fix: 1, n: ['Kollision prüfen', 'Check collisions'], s: ['Immer das System: Die Vorprüfung schaut 0,1 s voraus, MoveIt prüft Tisch und Objekte.', 'Always the system: the pre-check looks 0.1 s ahead, MoveIt checks table and objects.'] },
+    { ic: 'i-shield', fix: 1, n: ['Kollision prüfen', 'Check collisions'], s: ['Immer das System: Die Vorprüfung schaut 0,25 s voraus, MoveIt prüft Tisch und Objekte.', 'Always the system: the pre-check looks 0.25 s ahead, MoveIt checks table and objects.'] },
     { ic: 'i-hands', fix: 0, n: ['Freigeben & stoppen', 'Approve & stop'], h: ['Immer der Mensch: Execute gibt den Plan frei, E-STOP hält alles an.', 'Always the human: Execute approves the plan, E-STOP halts everything.'] }];
   const LEVELS = [
     { who: [0, 0, 0, 0, 1, 0], n: ['MANUELL', 'MANUAL'], t: ['Die Hand führt', 'The hand leads'], k: ['Gamepad · VR Quest 3 · Jogging', 'Gamepad · VR Quest 3 · Jogging'],
@@ -2863,7 +2863,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: cent
   const GATES = [
     { n: ['Normaler Befehl', 'Normal command'], stop: -1 },
     { n: ['Zweiter Bediener', 'Second operator'], stop: 1, msg: ['Ein anderer Client steuert schon: Das Control-Lock lässt nur einen Bediener zu.', 'Another client is in control: the control lock admits only one operator.'] },
-    { n: ['Bahn in den Tisch', 'Path into the table'], stop: 2, msg: ['Die Vorprüfung sieht die Tischkollision 0,1 s voraus und stoppt die Bewegung.', 'The pre-check sees the table collision 0.1 s ahead and stops the motion.'] },
+    { n: ['Bahn in den Tisch', 'Path into the table'], stop: 2, msg: ['Die Vorprüfung sieht die Tischkollision 0,25 s voraus und stoppt die Bewegung.', 'The pre-check sees the table collision 0.25 s ahead and stops the motion.'] },
     { n: ['Arm belegt (BUSY)', 'Arm busy (BUSY)'], stop: 3, msg: ['Eine Fahrt läuft schon: Die zweite wird abgelehnt, bis der Arm frei ist.', 'A motion is already running: the second is refused until the arm is free.'] }];
   const ST = { idle: ['● FREI', '● CLEAR'], on: ['◌ PRÜFT …', '◌ CHECKING …'], ok: ['✓ OK', '✓ OK'], err: ['✕ GESPERRT', '✕ BLOCKED'], go: ['▶ FÄHRT', '▶ MOVING'] };
   let stopped = false, gateRun = 0, gateCase = -1, gateSt = [], gateMsg = null;
@@ -3013,7 +3013,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: cent
   const LAYERS = [
     ['i-pad', 'accent', ['Eingabe', 'Input'], [['vr_quest3_teleop', ['VR-Teleoperation über WebXR', 'VR teleoperation via WebXR']], ['gaze_*_tobii_glasses', ['Blicksteuerung mit Tobii-Brille', 'Gaze control with Tobii glasses']], ['voice_command_listener', ['Sprachbefehle aus Whisper', 'Voice commands from Whisper']]]],
     ['i-mon', 'teal', ['Web-Apps', 'Web apps'], [['UX | Nexus Launcher :8080', ['System starten, FAKE/REAL wählen', 'Start the system, choose FAKE/REAL']], ['UX | Control Interface :8081', ['Steuern, Digital Twin, VLA-M-Chat', 'Control, Digital Twin, VLA-M chat']], ['UX | Monitoring :8083', ['System, Nutzung, Evaluierung', 'System, usage, evaluation']], ['UX | Compact Interface /touch', ['Bedienung direkt am Roboter', 'Operation right at the robot']]]],
-    ['i-shield', 'gold', ['Sicherheit', 'Safety'], [['remote_control_watchdog', ['Control-Lock und Heartbeats: nur einer steuert', 'Control lock and heartbeats: only one in control']], ['teleop_pre_collision_checker', ['Kollisionsvorprüfung, 0,1 s voraus', 'Pre-collision check, 0.1 s ahead']], ['robot_blackbox_recorder', ['Sichert die letzten 60 s vor einem Vorfall', 'Saves the last 60 s before an incident']]]],
+    ['i-shield', 'gold', ['Sicherheit', 'Safety'], [['remote_control_watchdog', ['Control-Lock und Heartbeats: nur einer steuert', 'Control lock and heartbeats: only one in control']], ['teleop_pre_collision_checker', ['Kollisionsvorprüfung, 0,25 s voraus', 'Pre-collision check, 0.25 s ahead']], ['robot_blackbox_recorder', ['Sichert die letzten 60 s vor einem Vorfall', 'Saves the last 60 s before an incident']]]],
     ['i-arm', 'indigo', ['Bewegung', 'Motion'], [['robot_motion_handler_movegroup', ['MoveIt MoveGroup + Servo: IK, Bahn, Kollision', 'MoveIt MoveGroup + Servo: IK, path, collision']], ['xarm_ros2', ['Treiber des xArm Lite 6, FAKE und REAL', 'xArm Lite 6 driver, FAKE and REAL']]]],
     ['i-eye', 'green', ['Wahrnehmung', 'Perception'], [['robot_vision_cameras_bringup', ['ZED-Kamera, YOLO, Octomap', 'ZED camera, YOLO, Octomap']], ['ros2_whisper', ['Spracherkennung auf der GPU', 'Speech recognition on the GPU']]]],
     ['i-brain', 'violet', ['KI', 'AI'], [['vla_bridge', ['LLM-Agent: Plan, Prüfung, Skills, Rettungsplan, Auto-Palettieren', 'LLM agent: plan, verification, skills, recovery, auto palletizing']], ['demo_recorder', ['Vorführungen aufnehmen fürs VLA-Training', 'Record demonstrations for VLA training']]]],
@@ -3240,7 +3240,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: cent
       seq: [['ui', '/remote/joy', ['Browser liest das Gamepad, sendet mit Client-id', 'Browser reads the gamepad, sends with client id']],
         ['rb', ':9090', ['Whitelist lässt nur freigegebene Topics durch', 'Whitelist passes approved topics only']],
         ['wd', '/joy', ['Besitz, Heartbeat und Tempo-Limit geprüft', 'Ownership, heartbeat and speed limit checked']],
-        ['pc', '/joy_check', ['Schaut 0,1 s voraus, bremst vor dem Tisch', 'Looks 0.1 s ahead, brakes before the table']],
+        ['pc', '/joy_check', ['Schaut 0,25 s voraus, bremst vor dem Tisch', 'Looks 0.25 s ahead, brakes before the table']],
         ['servo', '/servo_server/delta_twist_cmds', ['Rechnet Gelenkgeschwindigkeiten in Echtzeit', 'Computes joint velocities in real time']],
         ['drv', 'ros2_control', ['FAKE simuliert, REAL fährt die Motoren', 'FAKE simulates, REAL drives the motors']],
         ['arm', '', ['Der Arm folgt der Hand', 'The arm follows the hand']]] },
