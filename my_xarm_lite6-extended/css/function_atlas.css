@@ -1,0 +1,214 @@
+/* Funktionsatlas in docs/project_docs.html (Abschnitt 05, #atlas-list): Filter, 83 Funktionskarten, Ablauf-Panel mit Flow-Graph + Ring.
+   Früher eigene Seite present_function_atlas.html (jetzt Weiterleitung), eingebaut auf Wunsch User 06.10.2026.
+   Alles unter .fa, weil die Hauptseite eigene .chip/.tag/.panel/.stage hat; Tokens (Farben, --t-*, --shadow) kommen von der Hauptseite.
+   Logik + Daten: js/function_atlas.js. */
+.fa { display: grid; gap: 16px; padding-top: 40px; }  /* Abstand zum dunklen Übersichts-Panel darüber (Kopf → Inhalt 40) */
+.fa [hidden] { display: none !important; }  /* Filter blendet Karten, Gruppen, Panelteile per hidden aus */
+/* Bausteine der Hauptseite gleichen Namens zurücksetzen (Schrift, Farbe, Abstand) */
+.fa :is(.chip, .tag) { letter-spacing: normal; color: var(--fg); }
+.fa .stage { padding: 0; overflow: visible; }
+.fa h2, .fa h3, .fa p { margin: 0; }
+.fa button, .fa input { font: inherit; color: inherit; }
+
+/* Legende über der Filterleiste: Weg je Funktion Simulieren → Prüfen → REAL, Beispiel-Badge in der Zeile */
+.fa-legend { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; font-size: 14px; line-height: 1.45; color: var(--fg-2); }
+.fa-legend b { color: var(--fg); font-weight: 800; }
+.fa-legend p:last-child { flex-basis: 100%; }
+.fa-legend .stage { padding: 8px 10px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); }
+
+/* Stufen-Badge = Weg Simulieren → Prüfen → REAL; Stufe gilt = voller Kreis mit Haken, entfällt = leerer gestrichelter Kreis */
+.fa .stage { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 4px; font: 700 11.5px/1.2 var(--mono); letter-spacing: .05em; text-transform: uppercase; }
+.fa .stage .st { display: inline-flex; align-items: center; gap: 5px; color: var(--fg); }
+.fa .stage .st i { display: inline-grid; place-items: center; flex: none; width: 18px; height: 18px; border-radius: 50%; }
+.fa .stage .on i { background: var(--c); color: var(--bg); }
+.fa .stage .off { color: var(--fg-2); font-weight: 600; }
+.fa .stage .off i { border: 1.5px dashed var(--fg-2); }
+.fa .stage .st-ok { width: 12px; height: 12px; }
+.fa .stage .st-to { width: 14px; height: 14px; margin: 0 2px; color: var(--fg-2); }
+/* Filterleiste: Bereiche, nur Kreisläufe, Suche */
+.fa .filter { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; justify-content: space-between; padding: 12px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); box-shadow: var(--shadow); }
+.fa .chips { display: flex; flex-wrap: wrap; gap: 2px; padding: 3px; width: fit-content; max-width: 100%; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface-2); }
+.fa .chip { --c: var(--accent); display: inline-flex; align-items: center; gap: 8px; min-height: 36px; padding: 0 12px; border: 1px solid transparent; border-radius: var(--radius-sm); background: transparent; font-size: 13.5px; font-weight: 700; cursor: pointer; transition: border-color var(--t-fast), background-color var(--t-fast); }
+.fa .chip:hover { background: color-mix(in srgb, var(--fg) 7%, transparent); }
+.fa .chip .ico { width: 18px; height: 18px; color: var(--c); }
+.fa .chip b { font: 700 12px/1 var(--mono); padding: 3px 6px; border-radius: var(--radius-sm); background: var(--surface-2); font-variant-numeric: tabular-nums; }
+.fa .chip[aria-pressed="true"] { background: var(--surface); border-color: var(--line-strong); }
+.fa #areas .chip b { background: color-mix(in srgb, var(--c) 22%, var(--surface-2)); }
+.fa #areas .chip[aria-pressed="true"] { background: color-mix(in srgb, var(--c) 16%, var(--surface)); border-color: var(--c); }
+.fa .f-right { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.fa .search { display: inline-flex; align-items: center; gap: 8px; min-height: 40px; padding: 0 10px; border: 1px solid var(--line-strong); border-radius: var(--radius-sm); background: var(--surface); }
+.fa .search:focus-within { border-color: var(--accent); }
+.fa .search .ico { width: 18px; height: 18px; color: var(--fg-2); }
+.fa .search input { width: 17em; max-width: 52vw; min-height: 38px; border: 0; background: transparent; outline: none; font-size: 14px; }
+.fa .search input::placeholder { color: var(--fg-2); opacity: 1; }
+.fa .count { font: 600 12.5px/1.3 var(--mono); color: var(--fg); padding-inline: 4px; font-variant-numeric: tabular-nums; }
+
+/* Atlas: Karten links, Ablauf rechts (mitlaufend) */
+.fa .fa-grid { display: grid; grid-template-columns: minmax(300px, .78fr) minmax(0, 1.65fr); gap: 24px; align-items: start; }
+.fa .cards { display: grid; gap: 8px; min-width: 0; }
+.fa .grp-h { display: flex; align-items: center; gap: 8px; margin: 10px 0 2px; font: 700 12px/1.2 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--c, var(--fg)); }
+.fa .grp-h:first-child { margin-top: 0; }
+.fa .grp-h .ico { width: 18px; height: 18px; color: var(--c); }
+.fa .grp-h b { margin-left: auto; font-variant-numeric: tabular-nums; }
+.fa .fn { --c: var(--accent); display: grid; gap: 8px; align-content: start; padding: 12px 14px; border: 1px solid var(--line); border-radius: var(--radius); background: color-mix(in srgb, var(--c) 5%, var(--surface)); transition: border-color var(--t-fast), background var(--t-fast); }
+.fa .fn:hover { border-color: color-mix(in srgb, var(--c) 55%, var(--line-strong)); }
+.fa .fn.sel { border-color: var(--c); background: color-mix(in srgb, var(--c) 12%, var(--surface)); box-shadow: 0 0 0 1px var(--c); }
+.fa .fn h3 { display: flex; align-items: start; gap: 6px; font-size: 15px; line-height: 1.3; font-weight: 800; }
+.fa .fn-sel { display: flex; align-items: start; gap: 8px; flex: 1; min-width: 0; min-height: 28px; padding: 0; border: 0; background: none; text-align: left; font: inherit; cursor: pointer; }
+.fa .fn-sel .ico { width: 18px; height: 18px; margin-top: 1px; color: var(--c); }
+.fa .fn-sel::after { content: ""; position: absolute; inset: 0; }
+.fa .fn { position: relative; }
+.fa .fn-link { position: relative; z-index: 1; display: grid; place-items: center; width: 28px; height: 28px; flex: none; border-radius: var(--radius-sm); font: 700 14px/1 var(--mono); color: var(--fg-2); text-decoration: none; }
+.fa .fn-link:hover, .fa .fn-link:focus-visible { background: var(--surface-2); color: var(--fg); }
+.fa .fn p { font-size: 13.5px; line-height: 1.45; color: var(--fg-2); }
+.fa .fn p code, .fa .pn-text code, .fa .loop-txt code { font: 600 12px/1.35 var(--mono); color: var(--fg); overflow-wrap: anywhere; }
+.fa .fn-meta { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.fa .tag { --c: var(--accent); display: inline-flex; align-items: center; gap: 5px; padding: 4px 7px; border: 1px solid var(--line-strong); border-radius: var(--radius-sm); font: 700 11.5px/1.1 var(--mono); color: var(--fg); background: var(--surface); }
+.fa .tag .ico { width: 16px; height: 16px; color: var(--c); }
+.fa .tag.area { background: color-mix(in srgb, var(--c) 16%, var(--surface)); border-color: color-mix(in srgb, var(--c) 45%, var(--line-strong)); }
+.fa .tag.plan { border-style: dashed; border-color: color-mix(in srgb, var(--gold) 70%, var(--line-strong)); }
+.fa .fn .stage { font-size: 11px; }
+.fa .empty { padding: 18px; border: 1px dashed var(--line-strong); border-radius: var(--radius); font-size: 14px; }
+
+.fa .panel { position: sticky; top: calc(var(--hdr, 61px) + 12px); max-height: calc(100vh - var(--hdr, 61px) - 24px); overflow: auto; display: grid; gap: 14px; min-width: 0; padding: 16px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); box-shadow: var(--shadow); overscroll-behavior: contain; }
+.fa .pn-head { display: grid; gap: 8px; }
+.fa .pn-kick { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; font: 700 12px/1.2 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--c, var(--accent)); }
+.fa .pn-kick .ico { width: 18px; height: 18px; }
+.fa .pn-head h2 { font-size: 22px; line-height: 1.2; font-weight: 800; letter-spacing: -.015em; text-wrap: balance; }
+.fa .pn-text { font-size: 15px; line-height: 1.5; color: var(--fg-2); max-width: 72ch; text-wrap: pretty; }
+.fa .pn-meta { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.fa .hint { display: flex; gap: 10px; align-items: start; padding: 10px 12px; border: 1px dashed color-mix(in srgb, var(--gold) 60%, var(--line-strong)); border-radius: var(--radius); font-size: 14px; line-height: 1.45; }
+.fa .hint .ico { color: var(--gold); width: 18px; height: 18px; margin-top: 1px; }
+.fa .pn-fns { display: grid; gap: 8px; padding-top: 12px; border-top: 1px solid var(--line); }
+.fa .pn-fns h3 { font: 700 12px/1.2 var(--mono); letter-spacing: .1em; text-transform: uppercase; }
+.fa .pn-fns .chip { min-height: 34px; font-size: 13px; }
+
+/* Kreislauf K1: Ring links, Stationen als Liste rechts */
+.fa .loop { display: grid; grid-template-columns: minmax(0, 400px) minmax(0, 1fr); gap: 12px 20px; align-items: center; padding: 12px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface-2); }
+.fa .loop[hidden] { display: none; }
+.fa .ring { display: block; width: 100%; height: auto; overflow: visible; font-family: var(--font); }
+.fa .ring .arc { fill: none; stroke: var(--c); stroke-width: 2.2; }
+.fa .ring .back { fill: none; stroke: var(--gold); stroke-width: 1.8; stroke-dasharray: 6 4; }
+.fa .ring .mk-a path { fill: var(--c); }
+.fa .ring .mk-b path { fill: var(--gold); }
+.fa .ring .st rect { fill: var(--surface); stroke: var(--line-strong); stroke-width: 1.5; transition: stroke var(--t-base), fill var(--t-base); }
+.fa .ring .st.now rect { stroke: var(--c); stroke-width: 2.5; fill: color-mix(in srgb, var(--c) 16%, var(--surface)); }
+.fa .ring .st.plan rect { stroke-dasharray: 5 4; }
+.fa .ring .st .t { fill: var(--fg); font-weight: 800; font-size: 13.5px; }
+.fa .ring .st .s, .fa .ring .lbl { fill: var(--fg); font: 600 11px var(--mono); }
+.fa .ring .ctr { fill: var(--fg); font-weight: 800; font-size: 14px; }
+.fa .ring .ctr-s { fill: var(--fg-2); font: 600 11px var(--mono); }
+.fa .ring .pk { fill: var(--c); }
+.fa .ring .pk-h { fill: var(--c); opacity: .25; }
+.fa .loop-txt { display: grid; gap: 8px; align-content: start; min-width: 0; font-size: 14px; line-height: 1.45; }
+.fa .loop-txt h3 { display: flex; align-items: center; gap: 8px; font: 700 12px/1.2 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--c); }
+.fa .loop-txt h3 .ico { width: 18px; height: 18px; }
+.fa .loop-txt ol { margin: 0; padding-left: 1.4em; display: grid; gap: 3px; }
+.fa .loop-txt li::marker { font: 700 12px var(--mono); color: var(--c); }
+.fa .loop-txt li b { font-weight: 800; }
+.fa .loop-txt li.now { color: var(--fg); }
+.fa .loop-txt li.now b { text-decoration: underline; text-decoration-color: var(--c); text-decoration-thickness: 2px; text-underline-offset: 3px; }
+.fa .loop-back { display: flex; gap: 8px; align-items: start; }
+.fa .loop-back .ico { width: 18px; height: 18px; color: var(--gold); margin-top: 1px; }
+
+/* ═════════ flow-graph (aus .claude/skills/flow-graph/flow_graph_template.html) ═════════ */
+.fa .fg { --pc: var(--accent); margin: 0; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg); overflow: hidden; }
+.fa .fg-bar { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; justify-content: space-between; padding: 14px 18px; border-bottom: 1px solid var(--line); }
+/* Leisten: Szenarien bzw. Abspielen + Tempo je in einem Rahmen, gewählt = heller Daumen */
+.fa .fg-scn, .fa .fg-ctl { display: flex; flex-wrap: wrap; align-items: center; gap: 2px; padding: 3px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface-2); }
+.fa .fg-scn button, .fa .fg-ctl button {
+  --c: var(--accent); display: inline-flex; align-items: center; gap: 8px; min-height: 34px; padding: 0 12px;
+  font-size: 13.5px; font-weight: 700; color: var(--fg); background: transparent; border: 0; border-radius: var(--radius-sm);
+  cursor: pointer; transition: background-color var(--t-fast), box-shadow var(--t-fast), transform var(--t-fast);
+}
+.fa .fg-scn button svg, .fa .fg-ctl button svg { width: 17px; height: 17px; flex: none; color: var(--c); fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
+.fa .fg-scn button:hover:not([aria-pressed="true"]), .fa .fg-ctl button:hover:not([disabled], [aria-pressed="true"]) { background: color-mix(in srgb, var(--fg) 7%, transparent); }
+.fa .fg-scn button[aria-pressed="true"], .fa .fg-speed button[aria-pressed="true"] { background: var(--surface); box-shadow: 0 0 0 1px var(--line-strong); }
+.fa .fg-scn button:active, .fa .fg-ctl button:active { transform: scale(.97); }
+.fa .fg-ctl > button { padding: 0; width: 36px; justify-content: center; }
+.fa .fg-ctl button svg { color: var(--fg); }
+.fa .fg-ctl button[disabled] { opacity: .45; cursor: default; }
+.fa .fg-speed { display: inline-flex; gap: 2px; margin-left: 3px; padding-left: 5px; box-shadow: inset 1px 0 0 var(--line); }
+.fa .fg-speed button { padding: 0 9px; font: 600 12px var(--mono); }
+.fa .fg-stage { padding: 12px 10px 6px; background: linear-gradient(var(--grid) 1px, transparent 1px) 0 0 / 24px 24px, linear-gradient(90deg, var(--grid) 1px, transparent 1px) 0 0 / 24px 24px, var(--surface-2); }
+.fa .fg-svg { display: block; width: 100%; height: auto; overflow: visible; font-family: var(--font); }
+.fa .fg-svg .lane { fill: var(--fg-2); font: 700 11px var(--mono); letter-spacing: .12em; text-transform: uppercase; }
+.fa .fg-svg .lane-line { stroke: var(--line); stroke-width: 1; stroke-dasharray: 2 6; }
+/* Kanten: Art = Linienstil (nie nur Farbe) → topic durchgezogen, service gestrichelt + Pfeil beidseitig, action Strich-Punkt, stream breit */
+.fa .fg-svg .edge { fill: none; stroke: var(--line-strong); stroke-width: 1.6; transition: opacity var(--t-base), stroke var(--t-base), stroke-width var(--t-base); }
+.fa .fg-svg .edge.k-service { stroke-dasharray: 6 4; }
+.fa .fg-svg .edge.k-action { stroke-dasharray: 14 4 2 4; }
+.fa .fg-svg .edge.k-stream { stroke-width: 3.4; }
+.fa .fg-svg .edge.stale { stroke-dasharray: 2 5; }
+.fa .fg-svg .edge-hit { fill: none; stroke: transparent; stroke-width: 14; pointer-events: stroke; }
+.fa .fg-svg .edge.on { stroke: var(--pc); }
+.fa .fg-svg .edge.now { stroke-width: 3; }
+.fa .fg-svg .edge.k-stream.now { stroke-width: 4.4; }
+.fa .fg-svg marker path { fill: var(--line-strong); }
+.fa .fg-svg marker.on path { fill: var(--pc); }
+.fa .fg-svg .node { cursor: pointer; transition: opacity var(--t-base); outline: none; }
+.fa .fg-svg .node rect { fill: color-mix(in srgb, var(--c) 9%, var(--surface)); stroke: var(--line-strong); stroke-width: 1.5; transition: stroke var(--t-base), fill var(--t-base), stroke-width var(--t-base); }
+.fa .fg-svg .node.on rect { stroke: var(--c); }
+.fa .fg-svg .node.now rect { fill: color-mix(in srgb, var(--pc) 20%, var(--surface)); stroke: var(--pc); stroke-width: 2.5; }
+.fa .fg-svg .node.pin rect, .fa .fg-svg .node:focus-visible rect { stroke: var(--fg); stroke-width: 2.5; }
+.fa .fg-svg .node .t { fill: var(--fg); font-weight: 800; font-size: 14px; }
+.fa .fg-svg .node .s { fill: var(--fg-2); font: 600 11px var(--mono); }
+.fa .fg-svg .node use { color: var(--c); fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.fa .fg-svg.dim .edge:not(.hl), .fa .fg-svg.dim .node:not(.hl), .fa .fg-svg.dim .badge:not(.hl) { opacity: .3; }
+.fa .fg-svg .badge rect { fill: var(--surface); stroke: var(--pc); stroke-width: 1.5; }
+.fa .fg-svg .badge text { fill: var(--fg); font: 700 11px var(--mono); text-anchor: middle; dominant-baseline: central; }
+.fa .fg-svg .chip rect { fill: var(--surface); stroke: var(--line-strong); stroke-width: 1; }
+.fa .fg-svg .chip.now rect { stroke: var(--pc); stroke-width: 1.5; }
+.fa .fg-svg .chip text { fill: var(--fg); font: 600 11.5px var(--mono); dominant-baseline: central; }
+.fa .fg-svg .pkt circle { fill: var(--pc); }
+.fa .fg-svg .pkt .halo { opacity: .28; }
+.fa .fg-foot { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr); gap: 16px 28px; padding: 16px 18px 18px; border-top: 1px solid var(--line); }
+.fa .fg-detail h3 { margin: 0; font-size: 19px; font-weight: 800; letter-spacing: -.01em; }
+.fa .fg-detail p { margin: 6px 0 0; color: var(--fg-2); font-size: 15px; max-width: 60ch; }
+.fa .fg-detail .io { display: grid; gap: 4px; margin-top: 10px; font-size: 14px; }
+.fa .fg-detail .io b { font-weight: 800; }
+.fa .fg-detail code, .fa .fg-steps code { font: 600 12px/1.35 var(--mono); color: var(--fg); overflow-wrap: anywhere; }
+.fa .fg-status { margin-top: 10px; font: 600 13px/1.4 var(--mono); color: var(--fg); }
+.fa .fg-steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.fa .fg-steps li { display: grid; grid-template-columns: 24px minmax(0, 1fr); gap: 2px 10px; align-items: baseline; padding: 7px 10px; border: 1px solid transparent; border-radius: var(--radius); font-size: 14px; cursor: pointer; transition: border-color var(--t-fast), background var(--t-fast); }
+.fa .fg-steps li:hover { border-color: var(--line-strong); }
+.fa .fg-steps li .n { font: 700 12px/1 var(--mono); color: var(--pc); }
+.fa .fg-steps li .w { display: flex; flex-wrap: wrap; gap: 2px 12px; align-items: baseline; }
+.fa .fg-steps li b { font-weight: 800; }
+.fa .fg-steps li .note { grid-column: 2; color: var(--fg-2); }
+.fa .fg-steps li.now { border-color: var(--pc); background: color-mix(in srgb, var(--pc) 10%, var(--surface)); }
+.fa .fg-legend { display: flex; flex-wrap: wrap; gap: 8px 20px; padding: 10px 18px 14px; border-top: 1px solid var(--line); font-size: 13px; color: var(--fg-2); }
+.fa .fg-legend span { display: inline-flex; align-items: center; gap: 8px; }
+.fa .fg-legend svg { width: 34px; height: 10px; overflow: visible; }
+.fa .fg-legend line { stroke: var(--fg-2); stroke-width: 1.6; }
+.fa .fg figcaption { padding: 0 18px 14px; font-size: 14px; color: var(--fg-2); }
+.fa .fg .fg-fallback { margin: 0; padding: 14px 18px 14px 40px; }
+.fa .fg.fg-ready .fg-fallback, .fa .fg:not(.fg-ready) .fg-bar, .fa .fg:not(.fg-ready) .fg-stage, .fa .fg:not(.fg-ready) .fg-foot, .fa .fg:not(.fg-ready) .fg-legend { display: none; }
+@media (max-width: 760px) { .fa .fg-foot { grid-template-columns: minmax(0, 1fr); } .fa .fg-bar { padding: 12px; } }
+@media (prefers-reduced-motion: reduce) { .fa .fg *, .fa .fg-svg * { transition: none !important; } }
+
+/* Atlas-Anpassung: Titel statt Szenario-Knöpfe, wenn der Ablauf nur ein Szenario hat */
+.fa .fg-scn:not(:has(button + button)) { display: none; }
+.fa .fg-bar { justify-content: flex-end; }
+.fa .fg-bar .fg-scn { margin-right: auto; }
+.fa .fg-bar::before { content: attr(data-title); margin-right: auto; font: 700 12px/1.3 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--fg); }
+.fa .fg-bar:has(.fg-scn button + button)::before { display: none; }
+.fa .panel .fg-foot { grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr); }
+.fa .panel .fg-svg .node .t { font-size: 13px; }
+
+/* Schmal: eine Spalte, Ablauf öffnet direkt unter der gewählten Karte */
+@media (max-width: 1100px) {
+  .fa .fa-grid { grid-template-columns: minmax(0, 1fr); }
+  .fa .panel { position: static; max-height: none; overflow: visible; }
+  .fa .cards .panel { margin-block: 2px 10px; }
+}
+@media (max-width: 760px) {
+  .fa .loop { grid-template-columns: minmax(0, 1fr); }
+  .fa .panel { padding: 12px; }
+  .fa .panel .fg-foot { grid-template-columns: minmax(0, 1fr); }
+  .fa .filter { padding: 10px; }
+  .fa .search { flex: 1 1 100%; }
+  .fa .search input { width: 100%; max-width: none; }
+ 
+}
+@media (prefers-reduced-motion: reduce) { .fa :is(.fn, .chip, .ring .st rect) { transition: none; } }

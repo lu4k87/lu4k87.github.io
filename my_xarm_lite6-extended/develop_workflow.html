@@ -1,0 +1,1772 @@
+<!doctype html>
+<!-- Arbeitsweise: Software entwickeln mit Claude Code im dev_ws, für Fachfremde lesbar, Details für Entwickler in Teil 2.
+     Gerüst wie die Projekt-Doku (docs/project_docs.html): Hero mit Bühne (Beispiel-Chat) → Gebaut auf → Prinzip (6 Bausteine) →
+     Teil 1 So arbeiten wir (01 Ablauf, 02 Sicherheit, 03 Lernen) → Im Editor (Folien) → Werkzeugkarte (Ring) → Belege (git log) →
+     Teil 2 Unter der Haube (04 Einrichtung, 05 Prüfstellen, 06 Datenfluss, 07 Definition of Done) → Weiter.
+     Bausteine: css/landing.css + js/landing.js (Hero, Folien, Zahlen), css/scroll_flow.css + js/scroll_flow.js (Lesefluss).
+     Flow-Graph: Engine unverändert aus .claude/skills/flow-graph/flow_graph_template.html, nur SPEC eigen.
+     Zahlen: git log + .claude/ (Stand 06.10.2026) → bei größeren Änderungen am Workflow nachziehen. -->
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Docs Claude Workflow · UX Robot</title>
+<link rel="stylesheet" href="fonts/fonts.css">
+<link rel="stylesheet" href="css/landing.css">
+<link rel="stylesheet" href="css/doc_path.css">
+<style>
+/* ═════ Bausteine aus docs/project_docs.html (Tokens, Kopf, Kicker, Kennzahlen, Visitenkarte, Fakten, Atlas-Ring, App-Fenster, Kontakt, Teile, Abschnitte) ═════ */
+:root {
+  --radius-sm: 4px; --radius: 6px; --radius-lg: 8px; /* Ecken dezent: klein (Chips, Buttons, Code) · Karten · große Rahmen; Balken/Linien kantig, höchstens 8 px (Wunsch User 04.10.2026, Hook prüft) */
+  color-scheme: dark;
+  /* Graphit + Türkis-Akzent (Wunsch User 04.10.2026), je Bereich eine eigene Farbe wie im Funktionsatlas (Wunsch User 05.10.2026); --warn nur Hinweise, --red nur Fehler.
+     Gleiche Werte in .hero (Kopf bleibt in beiden Themes dunkel) */
+  --bg: #111315; --surface: #181b1e; --surface-2: #1f2327; --line: #2a2f34; --line-strong: #3b4248;
+  --fg: #eef2f3; --fg-2: #b9c2c6; --accent: var(--indigo); --accent-ink: #0d0f2e; /* eigener Akzent: Bereichsfarbe Entwickeln (brand.yaml), unabhängig vom Projekt-Türkis */
+  --indigo: #818cf8; --teal: #2dd4bf; --violet: #a78bfa; --gold: #f5b942; --green: #4ade80; --red: #f87171; --warn: #fbbf24;
+  --blue: #60a5fa; --pink: #f472b6; --orange: #fb923c; --lime: #a3e635;
+  --band: #15181a; --grid: rgba(129, 140, 248, .045); --glow: rgba(129, 140, 248, .28);
+  --shadow: 0 1px 0 rgba(255,255,255,.04) inset, 0 20px 40px -24px rgba(0,0,0,.7);
+  --font: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+  /* Motion-Tokens (Skill motion-viz §2) */
+  --ease-out: cubic-bezier(.2, .7, .2, 1); --ease-io: cubic-bezier(.65, 0, .35, 1);
+  --t-fast: 150ms; --t-base: 250ms; --t-slow: 450ms; --t-story: 700ms; --stagger: 50ms; --rise: 12px;
+}
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    color-scheme: light;
+    --bg: #f3f5f5; --surface: #ffffff; --surface-2: #eef2f2; --line: #d9e0e0; --line-strong: #b9c4c4;
+    --fg: #14181a; --fg-2: #3a4448; --accent: var(--indigo); --accent-ink: #ffffff;
+    --indigo: #4338ca; --teal: #0f766e; --violet: #6d28d9; --gold: #9a5b00; --green: #15803d; --red: #b91c1c; --warn: #a15c00;
+    --blue: #1d4ed8; --pink: #be185d; --orange: #c2410c; --lime: #4d7c0f;
+    --band: #e9eeee; --grid: rgba(67, 56, 202, .05); --glow: transparent;
+    --shadow: 0 1px 2px rgba(20,30,30,.06), 0 16px 32px -24px rgba(20,40,40,.35);
+  }
+}
+:root[data-theme="light"] {
+  color-scheme: light;
+  --bg: #f3f5f5; --surface: #ffffff; --surface-2: #eef2f2; --line: #d9e0e0; --line-strong: #b9c4c4;
+  --fg: #14181a; --fg-2: #3a4448; --accent: var(--indigo); --accent-ink: #ffffff;
+  --indigo: #4338ca; --teal: #0f766e; --violet: #6d28d9; --gold: #9a5b00; --green: #15803d; --red: #b91c1c; --warn: #a15c00;
+  --blue: #1d4ed8; --pink: #be185d; --orange: #c2410c; --lime: #4d7c0f;
+  --band: #e9eeee; --grid: rgba(67, 56, 202, .05); --glow: transparent;
+  --shadow: 0 1px 2px rgba(20,30,30,.06), 0 16px 32px -24px rgba(20,40,40,.35);
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: calc(var(--hdr, 60px) + 16px); }
+body { margin: 0; background: var(--bg); color: var(--fg); font: 500 15px/1.55 var(--font); -webkit-font-smoothing: antialiased; }
+h1, h2, h3, p { margin: 0; }
+h1, h2, h3 { text-wrap: balance; }
+a { color: inherit; text-decoration: none; }
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: var(--radius-sm); }
+.ico { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+.wrap { max-width: 1240px; margin-inline: auto; padding-inline: 24px; }
+.mono { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+
+/* Kopfzeile: Navigation folgt dem Lesefortschritt (aktiver Abschnitt + Fortschrittslinie) */
+.top { position: sticky; top: 0; z-index: 10; border-bottom: 1px solid var(--line); background: color-mix(in srgb, var(--bg) 95%, transparent); }
+.top .wrap { display: flex; align-items: center; gap: 16px; padding-block: 12px; flex-wrap: wrap; }
+.brand { display: flex; align-items: center; gap: 10px; font-weight: 800; }
+.brand-mark { width: 34px; height: 34px; border-radius: var(--radius); display: grid; place-items: center; background: var(--accent); color: var(--accent-ink); box-shadow: 0 0 18px var(--glow); }
+.brand small { display: block; font: 600 11px/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--fg-2); margin-top: 3px; }
+.tools { display: flex; gap: 8px; margin-left: auto; }
+/* Steuerknöpfe „Leiste“: Auswahl = Gruppe mit Rahmen, gewählt = heller Daumen; Einzelaktionen = .btn/.pf-btn */
+.seg { display: inline-flex; gap: 2px; padding: 3px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface-2); }
+.seg button { font: 700 12px/1 var(--mono); padding: 0 10px; min-height: 28px; min-width: 34px; border: 0; border-radius: var(--radius-sm); background: transparent; color: var(--fg-2); cursor: pointer; transition: background-color var(--t-fast), color var(--t-fast); }
+.seg button:hover { color: var(--fg); background: color-mix(in srgb, var(--fg) 7%, transparent); }
+.seg button[aria-pressed="true"] { background: var(--surface); color: var(--fg); box-shadow: 0 0 0 1px var(--line-strong); }
+/* Ältere Fassung dieser Seite (V2): kleiner Link in Leisten-Optik wie .seg button */
+.seg a { display: inline-flex; align-items: center; justify-content: center; font: 700 12px/1 var(--mono); padding: 0 10px; min-height: 28px; min-width: 34px; border-radius: var(--radius-sm); color: var(--fg-2); text-decoration: none; transition: background-color var(--t-fast), color var(--t-fast); }
+.seg a:hover { color: var(--fg); background: color-mix(in srgb, var(--fg) 7%, transparent); }
+/* Link zur älteren Fassung (V2): klein, Leisten-Optik wie .seg */
+.progress { position: absolute; left: 0; right: 0; bottom: -1px; height: 2px; background: var(--accent); box-shadow: 0 0 10px var(--glow); transform-origin: 0 50%; transform: scaleX(var(--p, 0)); pointer-events: none; }
+@supports (animation-timeline: scroll()) {
+  .progress { animation: progress linear both; animation-timeline: scroll(root); }
+  @keyframes progress { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+}
+
+.eyebrow { font: 700 12px/1 var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--hue, var(--accent)); display: flex; align-items: center; gap: 10px; }
+.eyebrow::before { content: ""; width: 22px; height: 2px; background: currentColor; border-radius: 2px; }
+.eyebrow .n { padding: 4px 6px; border: 1px solid color-mix(in srgb, currentColor 55%, transparent); border-radius: var(--radius-sm); letter-spacing: .04em; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { font: 600 12px/1 var(--mono); padding: 7px 9px; border-radius: var(--radius-sm); border: 1px solid var(--line-strong); color: var(--fg-2); background: var(--surface); }
+.chip b { color: var(--fg); }
+/* Kennzahlen: 3 × 2 Kacheln, Zahl zählt beim ersten Sichtbarwerden hoch, Kachel springt zum Abschnitt */
+.kpis { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow); }
+.kpi { display: grid; gap: 6px; align-content: center; justify-items: center; text-align: center; padding: 14px 14px 12px; background: var(--surface); transition: background var(--t-fast); }
+a.kpi:hover { background: var(--surface-2); }
+.kpi strong { font: 800 30px/1 var(--mono); letter-spacing: -.04em; color: var(--hue, var(--accent)); font-variant-numeric: tabular-nums; }
+.kpi span { font-size: 13px; font-weight: 600; line-height: 1.3; color: var(--fg-2); }
+.kpi span b { color: var(--fg); }
+/* QR „Seite öffnen“: immer dunkel auf Weiß (sicher scanbar, auch im dunklen Theme) */
+.qr-foot { display: flex; gap: 14px; align-items: center; text-decoration: none; color: inherit; }
+.qr-code { flex: none; line-height: 0; padding: 6px; background: #fff; border: 1px solid var(--line); border-radius: var(--radius); }
+.qr-code svg { display: block; width: var(--qr, 104px); height: var(--qr, 104px); }
+.qr-foot .qr-code { --qr: 88px; }
+.qr-txt { display: grid; gap: 4px; min-width: 0; }
+.qr-txt b { font: 700 12px/1.2 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--accent); }
+.qr-txt span { font-size: 14px; font-weight: 700; line-height: 1.35; }
+.qr-txt small { font: 600 12px/1.35 var(--mono); color: var(--fg-2); overflow-wrap: anywhere; }
+.qr-foot:hover small { text-decoration: underline; }
+/* Visitenkarte (Kontakt-Abschnitt): Projekt, Person, Kontakt, QR zur Seite; liegt in einer dunklen Zone → immer Graphit mit Türkis-Schein */
+.vcard { display: grid; gap: 14px; padding: 18px; border: 1px solid color-mix(in srgb, var(--accent) 45%, var(--line)); border-radius: var(--radius-lg);
+  background: radial-gradient(70% 90% at 100% 0%, color-mix(in srgb, var(--accent) 16%, transparent), transparent 65%), var(--surface); box-shadow: 0 0 34px -10px var(--glow), var(--shadow); }
+.vc-head { display: flex; align-items: center; gap: 10px; }
+.vc-head .brand-mark { width: 30px; height: 30px; }
+.vc-head b { display: block; font: 700 12px/1.2 var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--accent); }
+.vc-head small { display: block; font-size: 13px; font-weight: 600; color: var(--fg-2); margin-top: 2px; }
+.vc-body { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 16px; align-items: end; padding-top: 14px; border-top: 1px solid var(--line); }
+.vc-name { font-size: 26px; font-weight: 800; letter-spacing: -.02em; line-height: 1.1; transform: translate(-2px, -3px); }
+.vc-role { font-size: 14px; font-weight: 600; line-height: 1.35; color: var(--fg-2); margin-top: 4px; }
+.vc-links { display: grid; gap: 6px; margin-top: 12px; }
+.vc-links a { display: flex; align-items: center; gap: 8px; font-size: 13.5px; font-weight: 600; line-height: 1.3; overflow-wrap: anywhere; }
+.vc-links a:hover { text-decoration: underline; }
+.vc-links .ico { width: 16px; height: 16px; color: var(--accent); }
+.vc-qr { display: grid; gap: 6px; justify-items: center; font: 700 11px/1 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--accent); }
+.vc-qr .qr-code { --qr: 96px; box-shadow: 0 0 22px -4px var(--glow); }
+@media (max-width: 700px) { .vc-qr { display: none; } }
+
+.ct-copy h2 { font-size: var(--fs-h2); line-height: 1.08; letter-spacing: -.035em; font-weight: 800; }
+/* Überblick: sechs Fakten-Karten (Icon, Slogan, Faktensatz, Sprung zum Abschnitt) */
+.bi-l { width: 64px; height: 64px; flex: none; justify-self: center; display: grid; place-items: center; border-radius: var(--radius); color: var(--accent);
+  background: radial-gradient(circle at 30% 20%, color-mix(in srgb, var(--accent) 28%, transparent), color-mix(in srgb, var(--accent) 7%, transparent) 72%);
+  border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent); box-shadow: 0 0 26px -8px var(--glow), inset 0 1px 0 rgba(255, 255, 255, .14); }
+.bi-l .ico { width: 34px; height: 34px; }
+.af-dots { display: flex; gap: 6px; flex: none; }
+.af-dots i { width: 10px; height: 10px; border-radius: 50%; background: var(--line-strong); }
+.kpis-6 { grid-template-columns: repeat(6, minmax(0, 1fr)); box-shadow: none; }
+.contact { padding-block: 104px; border-top: 1px solid var(--line);
+  background: radial-gradient(44% 70% at 80% 50%, color-mix(in srgb, var(--accent) 12%, transparent), transparent 72%),
+    linear-gradient(var(--grid) 1px, transparent 1px) 0 0 / 32px 32px, linear-gradient(90deg, var(--grid) 1px, transparent 1px) 0 0 / 32px 32px, var(--bg); }
+.contact .wrap { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(300px, .9fr); gap: 40px 64px; align-items: center; }
+.ct-copy { display: grid; gap: 18px; justify-items: start; }
+.ct-copy p { color: var(--fg-2); font-size: 17px; line-height: 1.55; max-width: 52ch; }
+
+/* Abschnitte: Kicker (Nummer + Leitfrage) + Titel links, Nutzen rechts; Trennlinie zwischen Abschnitten, Weiter-Button mittig im Zwischenraum */
+.sec { padding-bottom: 64px; container-type: inline-size; }
+.sec + .sec { padding-top: 72px; border-top: 1px solid var(--line); }
+.sec-head { display: flex; align-items: end; justify-content: space-between; gap: 12px 40px; flex-wrap: wrap; margin-bottom: 40px; }
+.sec-head h2 { font-size: clamp(25px, 2.7vw, 34px); letter-spacing: -.028em; font-weight: 800; line-height: 1.1; margin-top: 12px; }
+.sec-head p { color: var(--fg-2); max-width: 54ch; font-size: 15px; }
+.brief { display: grid; gap: 10px; flex: 1 1 420px; max-width: 62ch; }
+.brief dl { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 6px 16px; margin: 0; }
+.brief dt { font: 700 12px/1.6 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--hue, var(--accent)); }
+.brief dd { margin: 0; color: var(--fg-2); font-size: 15px; line-height: 1.45; text-wrap: pretty; }
+@container (max-width: 520px) { .brief dl { grid-template-columns: minmax(0, 1fr); gap: 2px; } .brief dd + dt { margin-top: 8px; } }
+.sub { color: var(--fg-2); font-size: 14px; }
+.panel { border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); box-shadow: var(--shadow); padding: 16px; display: grid; gap: 14px; }
+.feat { display: grid; align-content: start; gap: 6px; min-width: 0; padding: 16px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); box-shadow: var(--shadow);
+  transition: border-color var(--t-fast), transform var(--t-base) var(--ease-out); }
+.feat:hover { border-color: color-mix(in srgb, var(--hue) 50%, var(--line)); transform: translateY(-2px); }
+.k-t { font: 700 11.5px/1.2 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--hue, var(--accent)); }
+.feat .k-t { margin-top: 4px; }
+.feat b { font-size: 15.5px; font-weight: 800; line-height: 1.25; }
+.feat p { font-size: 13.5px; line-height: 1.5; color: var(--fg-2); }
+footer { border-top: 1px solid var(--line); padding-block: 18px 28px; font: 600 12px/1.4 var(--mono); color: var(--fg-2); }
+footer .wrap { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px 16px; }
+footer .foot-link { text-decoration: underline 1px var(--line); text-underline-offset: 3px; }
+footer .foot-link:hover { text-decoration-color: currentColor; }
+
+
+/* ═════ Hero-Bühne: Beispiel-Chat statt 3D, eine Aufgabe von der Bitte bis zum Push (Nachrichten erscheinen nacheinander) ═════ */
+.chat { grid-area: 1 / 1 / 2 / -1; margin: 0; display: grid; grid-template-rows: auto minmax(0, 1fr); min-width: 0; min-height: 0; overflow: hidden;
+  border: 1px solid var(--glass-bd); border-radius: var(--radius-lg); background: var(--glass-bg); box-shadow: inset 0 1px 0 var(--glass-hi), 0 40px 80px -40px rgba(0, 0, 0, .9); }
+.chat-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; padding: 10px 14px; border-bottom: 1px solid var(--glass-bd); }
+.chat-bar b { font: 700 12px/1.2 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--fg-2); }
+.chat-bar .hchip { margin-left: auto; }
+.chat-log { list-style: none; margin: 0; padding: 16px; display: grid; gap: 10px; align-content: start; }
+.msg { --c: var(--violet); display: grid; grid-template-columns: 74px minmax(0, 1fr); gap: 4px 12px; align-items: start; }
+.msg.me { --c: var(--accent); } .msg.hook { --c: var(--gold); } .msg.test { --c: var(--green); }
+.msg .who { display: inline-flex; justify-content: center; padding: 5px 6px; border: 1px solid color-mix(in srgb, var(--c) 55%, var(--line)); border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--c) 14%, transparent); font: 700 11.5px/1.2 var(--mono); color: var(--fg); }
+.msg .bub { display: grid; gap: 8px; justify-items: start; padding: 8px 12px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); font-size: 14.5px; line-height: 1.45; }
+.msg .bub code { font: 600 13px/1.3 var(--mono); }
+.msg.sys .bub { display: flex; align-items: center; gap: 8px; border-style: dashed; background: transparent; font: 600 13px/1.4 var(--mono); }
+.msg.sys .bub .ico { width: 16px; height: 16px; color: var(--c); }
+.msg .btns, .msg .st { display: flex; flex-wrap: wrap; gap: 5px; }
+.msg .btns span, .msg .st span { font: 700 12px/1.2 var(--mono); padding: 5px 8px; border: 1px solid var(--line-strong); border-radius: var(--radius-sm); }
+.msg .btns .on { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 18%, transparent); }
+
+/* Übersichtsgrafik „Auf einen Blick“: Raster mit Knoten + Pfeilen (Flow-Layout, Pfeile per Flexbox, Spitze per clip-path); ≤ 960 px senkrecht */
+.ov { display: grid; gap: 16px; margin: 0 0 48px; padding: 24px; border: 1px solid var(--line); border-radius: var(--radius-lg); background: var(--surface); box-shadow: var(--shadow); }
+.ov-grid { display: grid; align-items: center; gap: 10px;
+  grid-template-columns: minmax(0, 1fr) 120px minmax(0, 1.3fr) 120px minmax(0, 1fr);
+  grid-template-areas: ". . know . ." ". . a1 . ." "human a2 core a3 repo" ". . a4 . ." ". . help . ."; }
+.ov-node { --hue: var(--accent); display: grid; justify-items: center; align-content: start; gap: 8px; min-width: 0; padding: 16px; text-align: center;
+  border: 1px solid color-mix(in srgb, var(--hue) 40%, var(--line)); border-radius: var(--radius); background: color-mix(in srgb, var(--hue) 9%, var(--surface)); }
+.ov-node > .ico { width: 26px; height: 26px; color: var(--hue); }
+.ov-node b { font-size: 15px; line-height: 1.35; font-weight: 700; }
+.ov-chips { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; }
+.ov-chips li { font: 600 12px/1.2 var(--mono); padding: 4px 8px; border: 1px solid var(--line-strong); border-radius: var(--radius-sm); }
+.ov-core { grid-area: core; display: grid; gap: 10px; padding: 10px; border: 1.5px dashed color-mix(in srgb, var(--gold) 55%, transparent); border-radius: var(--radius-lg); }
+.ov-guard { display: flex; justify-content: center; align-items: center; gap: 8px; font: 700 12px/1.2 var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--gold); }
+.ov-guard .ico { width: 16px; height: 16px; }
+.ov-arr { display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 12px; min-width: 0; }
+.ov-arr.v { flex-direction: row; gap: 24px; }
+.ov-step { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.ov-arr.v .ov-step { flex-direction: row; gap: 8px; }
+.ov-l { font: 600 12px/1.25 var(--mono); color: var(--fg-2); text-align: center; }
+.ov-p { --fd: row; --cp: polygon(0 0, 100% 50%, 0 100%); display: flex; flex-direction: var(--fd); align-items: center; width: 72px; height: 12px; color: var(--line-strong); }
+.ov-p::before { content: ""; flex: 1 1 auto; align-self: center; width: auto; height: 2px; background: currentColor; }
+.ov-p::after { content: ""; flex: none; width: 10px; height: 12px; background: currentColor; clip-path: var(--cp); }
+.ov-p.l { --fd: row-reverse; --cp: polygon(100% 0, 0 50%, 100% 100%); }
+.ov-p.d, .ov-p.u { width: 12px; height: 32px; }
+.ov-p.d::before, .ov-p.u::before { width: 2px; height: auto; align-self: stretch; margin-inline: 5px; }
+.ov-p.d::after, .ov-p.u::after { width: 12px; height: 10px; }
+.ov-p.d { --fd: column; --cp: polygon(0 0, 100% 0, 50% 100%); }
+.ov-p.u { --fd: column-reverse; --cp: polygon(0 100%, 100% 100%, 50% 0); }
+.ov-loop { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 8px 10px; padding-top: 16px; border-top: 1px solid var(--line); font-size: 15px; line-height: 1.5; text-align: center; }
+.ov-loop .ico { width: 18px; height: 18px; color: var(--violet); }
+.ov figcaption { font-size: 15px; line-height: 1.5; color: var(--fg-2); text-align: center; max-width: 72ch; justify-self: center; text-wrap: pretty; }
+@media (max-width: 960px) {
+  .ov-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-areas: "human human" "a2 a2" "know help" "a1 a4" "core core" "a3 a3" "repo repo"; }
+  .ov-arr.h { flex-direction: row; gap: 24px; }
+  .ov-arr.h .ov-step { flex-direction: row; gap: 8px; }
+  .ov-arr.h .ov-p { width: 12px; height: 32px; }
+  .ov-arr.h .ov-p::before { width: 2px; height: auto; align-self: stretch; margin-inline: 5px; }
+  .ov-arr.h .ov-p::after { width: 12px; height: 10px; }
+  .ov-arr.h .ov-p:not(.l) { --fd: column; --cp: polygon(0 0, 100% 0, 50% 100%); }
+  .ov-arr.h .ov-p.l { --fd: column-reverse; --cp: polygon(0 100%, 100% 100%, 50% 0); }
+  .ov-arr.a4 .ov-p.d { --fd: column-reverse; --cp: polygon(0 100%, 100% 100%, 50% 0); }
+  .ov-arr.a4 .ov-p.u { --fd: column; --cp: polygon(0 0, 100% 0, 50% 100%); }
+}
+@media (max-width: 560px) {
+  .ov { padding: 16px; }
+  .ov-node { padding: 12px; }
+  .ov-arr.v { gap: 16px; }
+  .ov-arr.v .ov-step { flex-direction: column; gap: 4px; }
+  .ov-arr.v .ov-l { order: 1; }
+}
+
+/* 01 Ablauf: fünf kleine Kacheln (Icon groß mittig, Nummer in der Ecke), darunter wer handelt + Fachbegriff */
+.steps5 { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; }
+.step { position: relative; display: grid; grid-template-rows: auto auto 1fr auto auto; justify-items: center; gap: 10px; min-width: 0; padding: 22px 14px 14px; text-align: center;
+  border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); box-shadow: var(--shadow); transition: border-color var(--t-fast); }
+.step:hover { border-color: color-mix(in srgb, var(--hue) 55%, var(--line)); }
+.step .no { position: absolute; top: 10px; left: 10px; padding: 4px 6px; border: 1px solid var(--hue); border-radius: var(--radius-sm); font: 800 13px/1 var(--mono); color: var(--hue); }
+.step .bi-l { color: var(--hue); border-color: color-mix(in srgb, var(--hue) 40%, transparent); box-shadow: none;
+  background: radial-gradient(circle at 30% 20%, color-mix(in srgb, var(--hue) 28%, transparent), color-mix(in srgb, var(--hue) 7%, transparent) 72%); }
+.step b { font-size: 17px; font-weight: 800; line-height: 1.25; }
+.step p { font-size: 14.5px; line-height: 1.45; color: var(--fg-2); text-wrap: balance; }
+.act-row { display: flex; flex-wrap: wrap; justify-content: center; align-items: start; gap: 4px; }
+.act { --c: var(--accent); font: 700 11.5px/1.2 var(--mono); padding: 5px 7px; border: 1px solid color-mix(in srgb, var(--c) 55%, var(--line)); border-radius: var(--radius-sm); background: color-mix(in srgb, var(--c) 12%, transparent); }
+.act.c { --c: var(--violet); } .act.a { --c: var(--gold); }
+.step .tech { align-self: end; width: 100%; padding-top: 10px; border-top: 1px solid var(--line); font: 600 12px/1.35 var(--mono); color: var(--fg-2); overflow-wrap: anywhere; }
+.note { display: flex; align-items: flex-start; gap: 12px; margin-top: 16px; max-width: 92ch; padding: 12px 16px; border: 1px solid color-mix(in srgb, var(--accent) 40%, var(--line)); border-radius: var(--radius);
+  background: color-mix(in srgb, var(--accent) 7%, var(--surface)); font-size: 15px; line-height: 1.5; }
+.note .ico { color: var(--accent); margin-top: 2px; }
+
+/* 02 Rollen: Ablauf-Band Organizer → Fachrolle (8, Paar Marketing + Designer) → Prüfer → Synchronizer */
+.rflow { display: grid; grid-template-columns: minmax(0, 1fr) 20px minmax(0, 2.6fr) 20px minmax(0, 1fr) 20px minmax(0, 1fr); gap: 12px; align-items: center; }
+.rflow > .ico { width: 20px; height: 20px; color: var(--fg-2); }
+.rfix { display: grid; justify-items: center; gap: 10px; min-width: 0; padding: 18px 12px; text-align: center; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); box-shadow: var(--shadow); }
+.rfix .bi-l { width: 48px; height: 48px; } .rfix .bi-l .ico { width: 26px; height: 26px; }
+.rfix b { font-size: 16px; font-weight: 800; }
+.rmid { display: grid; gap: 12px; min-width: 0; padding: 16px; border: 1px solid color-mix(in srgb, var(--accent) 45%, var(--line)); border-radius: var(--radius); background: var(--surface); box-shadow: var(--shadow); }
+.rroles { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; }
+.rroles li { display: flex; align-items: center; gap: 8px; min-width: 0; padding: 8px 10px; border: 1px solid color-mix(in srgb, var(--h) 45%, var(--line)); border-radius: var(--radius-sm); font-size: 14.5px; font-weight: 700; }
+.rroles li.pair { border-width: 2px; }
+.rroles .ico { flex: none; width: 18px; height: 18px; color: var(--h); }
+.rmid .rnote { display: flex; align-items: flex-start; gap: 8px; margin: 0; font-size: 14px; line-height: 1.45; color: var(--fg-2); }
+.rmid .rnote .ico { flex: none; width: 18px; height: 18px; color: var(--gold); }
+@media (max-width: 900px) { .rflow { grid-template-columns: minmax(0, 1fr); } .rflow > .ico { transform: rotate(90deg); justify-self: center; } }
+
+/* 03 Sicherheit: drei Stufen (frei · mit Rückfrage · nie ohne Freigabe), darunter die Prüfkette zum Durchklicken */
+.perm { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin-bottom: 16px; }
+.pm { display: grid; align-content: start; gap: 12px; min-width: 0; padding: 18px; border: 1px solid color-mix(in srgb, var(--hue) 35%, var(--line)); border-radius: var(--radius); background: var(--surface); box-shadow: var(--shadow); }
+.pm-h { display: flex; align-items: center; gap: 12px; }
+.pm-h .ico { box-sizing: border-box; width: 42px; height: 42px; padding: 8px; border-radius: var(--radius); color: var(--hue);
+  background: color-mix(in srgb, var(--hue) 14%, transparent); border: 1px solid color-mix(in srgb, var(--hue) 35%, transparent); }
+.pm-h b { display: block; margin-top: 4px; font-size: 17px; font-weight: 800; line-height: 1.25; }
+.pm ul { margin: 0; padding-left: 18px; display: grid; gap: 6px; font-size: 14.5px; line-height: 1.45; }
+.pm li::marker { color: var(--hue); }
+
+/* Belege: Kennzahlen in einer Zeile, darunter Diagramme */
+.ev .kpis { margin-bottom: 16px; }
+.kpis-6 { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+.gitg { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 16px; align-items: stretch; }
+.chart .callout { align-self: end; }
+
+/* ═════ Bausteine aus der vorigen Fassung dieser Seite (Ordnerbaum, Datenfluss, Hook-Takt, Ansichten, Prüfkette, Diagramme, DoD, Lernkreis) ═════ */
+/* ── 00 Einrichtung: Ordnerbaum + Verdrahtung ── */
+.setup { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 16px; align-items: start; }
+@media (max-width: 1100px) { .setup { grid-template-columns: minmax(0, 1fr); } }
+.tree { padding: 16px 18px; display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 2px 18px; align-content: start; }
+.tree h3 { grid-column: 1 / -1; }
+.tree h3, .wire h3 { font-size: 19px; font-weight: 800; margin-bottom: 8px; }
+.tr { grid-column: 1 / -1; display: grid; grid-template-columns: subgrid; gap: 2px 18px; align-items: baseline; padding: 6px 8px; border-radius: var(--radius-sm); }
+.tr:hover { background: var(--surface-2); }
+.tr .p { font: 700 13.5px/1.4 var(--mono); padding-left: calc(var(--d, 0) * 22px); display: flex; gap: 8px; align-items: center; white-space: nowrap; }
+.tr .p .ico { width: 16px; height: 16px; color: var(--hue, var(--accent)); }
+.tr .w { font-size: 14.5px; line-height: 1.45; }
+.tr .w code { font-size: 12.5px; white-space: nowrap; }
+.tr .w .chip { padding: 2px 6px; font-size: 12.5px; margin-left: 6px; }
+@media (max-width: 640px) { .tree { grid-template-columns: minmax(0, 1fr); } .tr .p { white-space: normal; overflow-wrap: anywhere; } }
+.wire { padding: 16px 18px; display: grid; gap: 12px; align-content: start; }
+.code { margin: 0; padding: 12px 14px; border: 1px solid var(--line-strong); border-radius: var(--radius); background: var(--surface-2); font: 500 13px/1.6 var(--mono); white-space: pre; overflow-x: auto; tab-size: 2; }
+.code .k { color: var(--accent); font-weight: 700; }
+.code .s { color: var(--green); }
+.code .c { color: var(--fg-2); font-style: italic; }
+.env { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr)); gap: 8px; }
+.env > div { display: grid; gap: 2px; padding: 9px 11px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface-2); font-size: 14px; line-height: 1.4; }
+.env b { font-weight: 800; display: flex; gap: 8px; align-items: center; }
+.env b .ico { width: 18px; height: 18px; color: var(--hue, var(--accent)); }
+
+/* ═════════ flow-graph (in Zielseite übernehmen) ═════════ */
+.fg { --pc: var(--accent); margin: 0; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg); overflow: hidden; }
+.fg-bar { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; justify-content: space-between; padding: 14px 18px; border-bottom: 1px solid var(--line); }
+.fg-scn { display: flex; flex-wrap: wrap; gap: 6px; }
+.fg-scn button, .fg-ctl button, .fg-ctl select {
+  --c: var(--accent); display: inline-flex; align-items: center; gap: 8px; min-height: 40px; padding: 0 14px;
+  font-size: 13.5px; font-weight: 700; background: var(--surface); border: 1px solid var(--line-strong); border-radius: var(--radius-sm);
+  cursor: pointer; transition: border-color var(--t-fast), background var(--t-fast), transform var(--t-fast);
+}
+.fg-scn button svg, .fg-ctl button svg { width: 17px; height: 17px; flex: none; color: var(--c); fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
+.fg-scn button[aria-pressed="true"] { border-color: var(--c); background: color-mix(in srgb, var(--c) 16%, var(--surface)); }
+.fg-scn button:hover, .fg-ctl button:hover { border-color: var(--c); }
+.fg-scn button:active, .fg-ctl button:active { transform: scale(.97); }
+.fg-ctl { display: flex; gap: 6px; align-items: center; }
+.fg-ctl button { padding: 0; width: 40px; justify-content: center; }
+.fg-ctl button svg { color: var(--fg); }
+.fg-ctl button[disabled] { opacity: .45; cursor: default; }
+.fg-ctl select { padding: 0 10px; font: 600 13px var(--mono); }
+.fg-stage { padding: 12px 10px 6px; background: linear-gradient(var(--grid) 1px, transparent 1px) 0 0 / 24px 24px, linear-gradient(90deg, var(--grid) 1px, transparent 1px) 0 0 / 24px 24px, var(--surface-2); }
+.fg-svg { display: block; width: 100%; height: auto; overflow: visible; font-family: var(--font); }
+.fg-svg .lane { fill: var(--fg-2); font: 700 11px var(--mono); letter-spacing: .12em; text-transform: uppercase; }
+.fg-svg .lane-line { stroke: var(--line); stroke-width: 1; stroke-dasharray: 2 6; }
+/* Kanten: Art = Linienstil (nie nur Farbe) → topic durchgezogen, service gestrichelt + Pfeil beidseitig, action Strich-Punkt, stream breit */
+.fg-svg .edge { fill: none; stroke: var(--line-strong); stroke-width: 1.6; transition: opacity var(--t-base), stroke var(--t-base), stroke-width var(--t-base); }
+.fg-svg .edge.k-service { stroke-dasharray: 6 4; }
+.fg-svg .edge.k-action { stroke-dasharray: 14 4 2 4; }
+.fg-svg .edge.k-stream { stroke-width: 3.4; }
+.fg-svg .edge.stale { stroke-dasharray: 2 5; }
+.fg-svg .edge-hit { fill: none; stroke: transparent; stroke-width: 14; pointer-events: stroke; }
+.fg-svg .edge.on { stroke: var(--pc); }
+.fg-svg .edge.now { stroke-width: 3; }
+.fg-svg .edge.k-stream.now { stroke-width: 4.4; }
+.fg-svg marker path { fill: var(--line-strong); }
+.fg-svg marker.on path { fill: var(--pc); }
+.fg-svg .node { cursor: pointer; transition: opacity var(--t-base); outline: none; }
+.fg-svg .node rect { fill: var(--surface); stroke: var(--line-strong); stroke-width: 1.5; transition: stroke var(--t-base), fill var(--t-base), stroke-width var(--t-base); }
+.fg-svg .node.on rect { stroke: var(--c); }
+.fg-svg .node.now rect { fill: color-mix(in srgb, var(--pc) 20%, var(--surface)); stroke: var(--pc); stroke-width: 2.5; }
+.fg-svg .node.pin rect, .fg-svg .node:focus-visible rect { stroke: var(--fg); stroke-width: 2.5; }
+.fg-svg .node .t { fill: var(--fg); font-weight: 800; font-size: 14px; }
+.fg-svg .node .s { fill: var(--fg-2); font: 600 11px var(--mono); }
+.fg-svg .node use { color: var(--c); fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.fg-svg.dim .edge:not(.hl), .fg-svg.dim .node:not(.hl), .fg-svg.dim .badge:not(.hl) { opacity: .3; }
+.fg-svg .badge rect { fill: var(--surface); stroke: var(--pc); stroke-width: 1.5; }
+.fg-svg .badge text { fill: var(--fg); font: 700 11px var(--mono); text-anchor: middle; dominant-baseline: central; }
+.fg-svg .chip rect { fill: var(--surface); stroke: var(--line-strong); stroke-width: 1; }
+.fg-svg .chip.now rect { stroke: var(--pc); stroke-width: 1.5; }
+.fg-svg .chip text { fill: var(--fg); font: 600 11.5px var(--mono); dominant-baseline: central; }
+.fg-svg .pkt circle { fill: var(--pc); }
+.fg-svg .pkt .halo { opacity: .28; }
+.fg-foot { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr); gap: 16px 28px; padding: 16px 18px 18px; border-top: 1px solid var(--line); }
+.fg-detail h3 { margin: 0; font-size: 19px; font-weight: 800; letter-spacing: -.01em; }
+.fg-detail p { margin: 6px 0 0; color: var(--fg-2); font-size: 15px; max-width: 60ch; }
+.fg-detail .io { display: grid; gap: 4px; margin-top: 10px; font-size: 14px; }
+.fg-detail .io b { font-weight: 800; }
+.fg-detail code, .fg-steps code { font: 600 12px/1.35 var(--mono); color: var(--fg); overflow-wrap: anywhere; }
+.fg-status { margin-top: 10px; font: 600 13px/1.4 var(--mono); color: var(--fg); }
+.fg-steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.fg-steps li { display: grid; grid-template-columns: 24px minmax(0, 1fr); gap: 2px 10px; align-items: baseline; padding: 7px 10px; border: 1px solid transparent; border-radius: var(--radius); font-size: 14px; cursor: pointer; transition: border-color var(--t-fast), background var(--t-fast); }
+.fg-steps li:hover { border-color: var(--line-strong); }
+.fg-steps li .n { font: 700 12px/1 var(--mono); color: var(--pc); }
+.fg-steps li .w { display: flex; flex-wrap: wrap; gap: 2px 12px; align-items: baseline; }
+.fg-steps li b { font-weight: 800; }
+.fg-steps li .note { grid-column: 2; color: var(--fg-2); }
+.fg-steps li.now { border-color: var(--pc); background: color-mix(in srgb, var(--pc) 10%, var(--surface)); }
+.fg-legend { display: flex; flex-wrap: wrap; gap: 8px 20px; padding: 10px 18px 14px; border-top: 1px solid var(--line); font-size: 13px; color: var(--fg-2); }
+.fg-legend span { display: inline-flex; align-items: center; gap: 8px; }
+.fg-legend svg { width: 34px; height: 10px; overflow: visible; }
+.fg-legend line { stroke: var(--fg-2); stroke-width: 1.6; }
+.fg figcaption { padding: 0 18px 14px; font-size: 14px; color: var(--fg-2); }
+.fg .fg-fallback { margin: 0; padding: 14px 18px 14px 40px; }
+.fg.fg-ready .fg-fallback, .fg:not(.fg-ready) .fg-bar, .fg:not(.fg-ready) .fg-stage, .fg:not(.fg-ready) .fg-foot, .fg:not(.fg-ready) .fg-legend { display: none; }
+@media (max-width: 760px) { .fg-foot { grid-template-columns: minmax(0, 1fr); } .fg-bar { padding: 12px; } }
+@media (prefers-reduced-motion: reduce) { .fg *, .fg-svg * { transition: none !important; } }
+#fg-work .fg-legend { display: none; }
+.fg-key { display: flex; flex-wrap: wrap; gap: 8px 22px; padding: 12px 18px 14px; border-top: 1px solid var(--line); font-size: 14px; color: var(--fg-2); }
+.fg-key span { display: inline-flex; align-items: center; gap: 8px; }
+.fg-key svg { width: 34px; height: 10px; overflow: visible; }
+.fg-key line { stroke: var(--fg-2); stroke-width: 1.6; }
+/* ── 04 Leitplanken: Hook-Takt ── */
+.life { padding: 20px 18px; }
+.life-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 0 12px; }
+.life-line { grid-row: 1; grid-column: 1 / -1; align-self: center; height: 2px; background: var(--line-strong); margin-inline: calc(100% / 14 - 6px); }
+.life-dot { grid-row: 1; grid-column: 1 / -1; align-self: center; justify-self: start; width: 14px; height: 14px; margin-left: -7px; border-radius: 50%; background: var(--accent); transition: transform 900ms var(--ease-io); }
+.lf-pin { grid-row: 1; justify-self: center; width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; background: var(--surface); border: 2px solid var(--line-strong); font: 700 13px var(--mono); transition: border-color var(--t-base), background var(--t-base); z-index: 1; }
+.lf-pin.on { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 22%, var(--surface)); }
+.lf { grid-row: 2; margin-top: 14px; display: grid; gap: 6px; align-content: start; padding: 12px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface-2); transition: border-color var(--t-base); }
+.lf.on { border-color: var(--accent); }
+.lf .ev { font: 700 13px/1.2 var(--mono); color: var(--accent); }
+.lf h3 { font-size: 16px; font-weight: 800; overflow-wrap: anywhere; }
+.lf p { font-size: 14px; line-height: 1.45; color: var(--fg-2); }
+.lf p code { color: var(--fg); font-size: 12.5px; }
+.hbadge { justify-self: start; display: inline-flex; align-items: center; gap: 6px; font: 700 13px/1 var(--mono); padding: 5px 8px; border-radius: var(--radius-sm); border: 1px solid color-mix(in srgb, var(--hue, var(--fg-2)) 60%, var(--line)); color: var(--fg); background: color-mix(in srgb, var(--hue, var(--fg-2)) 12%, var(--surface)); }
+.hbadge .ico { width: 16px; height: 16px; color: var(--hue, var(--fg-2)); }
+.life-grid .lf-mob { display: none; }
+@container (max-width: 1100px) { /* Kapitelbreite statt Fensterbreite: neben dem Inhaltsverzeichnis passen 7 Spalten nicht */
+  .life-grid { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; }
+  .life-line, .life-dot, .lf-pin { display: none; }
+  .lf { grid-row: auto; margin-top: 0; }
+  .life-grid .lf-mob { display: inline; }
+}
+.prefix { margin-top: 16px; padding: 16px 18px; display: grid; grid-template-columns: minmax(220px, .5fr) minmax(0, 2fr); gap: 12px 28px; align-items: start; }
+.prefix h3 { font-size: 19px; font-weight: 800; }
+.prefix p { color: var(--fg-2); font-size: 15px; line-height: 1.5; margin-top: 6px; }
+.pfx { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 8px; }
+.pfx span { display: grid; gap: 2px; padding: 9px 11px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface-2); font-size: 14px; line-height: 1.35; }
+.pfx span b { font: 700 13.5px/1.2 var(--mono); color: var(--accent); }
+@media (max-width: 800px) { .prefix { grid-template-columns: minmax(0, 1fr); } }
+.guard { padding: 16px 18px 18px; display: grid; gap: 14px; }
+.guard h3 { font-size: 19px; font-weight: 800; }
+.g-btns { display: flex; flex-wrap: wrap; gap: 6px; }
+.g-btns button { min-height: 42px; padding: 0 12px; display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--line-strong); border-radius: var(--radius-sm); background: var(--surface); font: 700 13.5px/1.2 var(--mono); cursor: pointer; transition: border-color var(--t-fast), background var(--t-fast), transform var(--t-fast); }
+.g-btns button:hover { border-color: var(--accent); }
+.g-btns button:active { transform: scale(.97); }
+.g-btns button[aria-pressed="true"] { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 14%, var(--surface)); }
+.g-chain { display: grid; grid-template-columns: minmax(0, 1fr) 28px minmax(0, 1fr) 28px minmax(0, 1fr) 28px minmax(0, 1.2fr); align-items: stretch; }
+.g-chain > svg { align-self: center; justify-self: center; width: 20px; height: 20px; color: var(--fg-2); }
+.gs { display: grid; gap: 6px; align-content: start; padding: 12px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface-2); transition: border-color var(--t-base), background var(--t-base); min-width: 0; }
+.gs .k { font: 700 13px/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--fg-2); }
+.gs .v { font-size: 14.5px; line-height: 1.45; font-weight: 700; }
+.gs .v code { font-size: 13px; }
+.gs.lit { border-color: var(--hue, var(--accent)); background: color-mix(in srgb, var(--hue, var(--accent)) 10%, var(--surface)); }
+.gs.shake { animation: shake 320ms var(--ease-io); }
+@keyframes shake { 20% { transform: translateX(-5px); } 45% { transform: translateX(4px); } 70% { transform: translateX(-3px); } 100% { transform: none; } }
+.g-out { font-size: 15px; line-height: 1.5; padding: 10px 12px; border: 1px solid var(--line); border-radius: var(--radius); min-height: 48px; }
+@media (max-width: 760px) { .g-chain { grid-template-columns: minmax(0, 1fr); } .g-chain > svg { transform: rotate(90deg); margin: 4px 0; } }
+@media (prefers-reduced-motion: reduce) { .gs.shake { animation: none; } }
+.chart { overflow: clip; padding: 16px 18px; display: grid; gap: 12px; align-content: start; }
+.chart h3 { font-size: 17px; font-weight: 800; }
+.chart .sub { font-size: 14px; color: var(--fg-2); margin-top: -8px; }
+.vbars { display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 0 8px; }
+.vb-axis { display: grid; grid-template-rows: repeat(3, 1fr); height: 220px; font: 500 13px/1 var(--mono); color: var(--fg-2); text-align: right; font-variant-numeric: tabular-nums; }
+.vb-axis span { transform: translateY(-6px); }
+.vb-plot { display: grid; height: 220px; }
+.vb-plot > * { grid-area: 1 / 1; }
+.vb-grid { display: grid; grid-template-rows: repeat(3, 1fr); }
+.vb-grid i { border-top: 1px solid var(--line); }
+.vb-cols { display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 2px; align-items: end; border-bottom: 1px solid var(--line-strong); }
+.vb { position: relative; height: calc(var(--v) / 900 * 100%); min-height: 2px; background: var(--accent); border-radius: 2px 2px 0 0; transform-origin: bottom; transition: transform 900ms var(--ease-out); outline-offset: 2px; }
+.charts-anim .vb { transform: scaleY(0); }
+.charts-anim .in .vb { transform: none; }
+.vb .lbl { position: absolute; bottom: calc(100% + 4px); left: 50%; translate: -50% 0; font: 700 13px/1 var(--mono); white-space: nowrap; }
+.vb-x { grid-column: 2; display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 2px; font: 500 13px/1.3 var(--mono); text-align: center; padding-top: 6px; }
+.tt { position: absolute; bottom: calc(100% + 8px); left: 50%; translate: -50% 0; z-index: 3; padding: 6px 8px; border: 1px solid var(--line-strong); border-radius: var(--radius-sm); background: var(--surface); font: 500 13px/1.35 var(--mono); white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity var(--t-fast); }
+.vb:hover .tt, .vb:focus-visible .tt, .hb:hover .tt, .hb:focus-visible .tt { opacity: 1; }
+.vb:nth-last-child(-n+2) .tt { left: auto; right: 0; translate: 0 0; }
+.vb:nth-child(-n+2) .tt { left: 0; translate: 0 0; }
+.vb:hover .lbl, .vb:focus-visible .lbl { opacity: 0; }
+.hbars { display: grid; gap: 7px; }
+.hrow { display: grid; grid-template-columns: 88px minmax(0, 1fr) 48px; gap: 10px; align-items: center; font: 500 13.5px/1.2 var(--mono); }
+.hrow .v { text-align: right; font-variant-numeric: tabular-nums; font-weight: 700; }
+.htrack { height: 14px; display: flex; }
+.hb { position: relative; width: calc(var(--v) / var(--max) * 100%); min-width: 2px; height: 100%; background: var(--accent); border-radius: 0 2px 2px 0; transform-origin: left; transition: transform 900ms var(--ease-out); }
+.charts-anim .hb { transform: scaleX(0); }
+.charts-anim .in .hb { transform: none; }
+.hb .tt { left: 0; translate: 0 0; }
+.chart details { font-size: 14px; }
+.chart summary { cursor: pointer; font-weight: 700; min-height: 32px; display: flex; align-items: center; }
+.chart table { border-collapse: collapse; width: 100%; font: 500 13px/1.35 var(--mono); margin-top: 6px; }
+.chart th, .chart td { padding: 5px 8px; border-bottom: 1px solid var(--line); text-align: left; }
+.chart td.r, .chart th.r { text-align: right; font-variant-numeric: tabular-nums; }
+.callout { font-size: 14px; line-height: 1.45; padding: 10px 12px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface-2); }
+.dod-t { padding: 16px 18px; display: grid; gap: 10px; align-content: start; }
+.dod-t h3, .commit-path h3 { font-size: 19px; font-weight: 800; }
+.dod-t table { border-collapse: collapse; width: 100%; font-size: 14.5px; line-height: 1.4; }
+.dod-t th { text-align: left; font: 700 13px/1.2 var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--fg-2); padding: 6px 10px; border-bottom: 1px solid var(--line-strong); }
+.dod-t td { padding: 8px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.dod-t td:first-child { font-weight: 700; white-space: nowrap; }
+.commit-path { padding: 16px 18px; display: grid; gap: 12px; align-content: start; }
+.cp { display: grid; gap: 0; }
+.cp-s { display: grid; grid-template-columns: 36px minmax(0, 1fr); gap: 2px 12px; }
+.cp-s .dot { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; border: 2px solid var(--hue, var(--accent)); grid-row: span 2; background: var(--surface); }
+.cp-s .dot .ico { width: 16px; height: 16px; color: var(--hue, var(--accent)); }
+.cp-s b { font-weight: 800; font-size: 15.5px; padding-top: 4px; }
+.cp-s p { font-size: 14.5px; line-height: 1.45; color: var(--fg-2); padding-bottom: 14px; }
+.cp-s p code { color: var(--fg); }
+.cp-s:not(:last-child) .dot { position: relative; }
+.cp-s:not(:last-child) { background: linear-gradient(var(--line-strong), var(--line-strong)) 14px 32px / 2px calc(100% - 32px) no-repeat; }
+.learn { padding: 18px; display: grid; gap: 14px; }
+.learn h3 { font-size: 19px; font-weight: 800; }
+.lflow { display: grid; grid-template-columns: minmax(0, 1fr) 28px minmax(0, 1fr) 28px minmax(0, 1fr) 28px minmax(0, 1fr); align-items: stretch; }
+.lflow > svg { align-self: center; justify-self: center; width: 20px; height: 20px; color: var(--fg-2); }
+.lstep { --hue: var(--accent); padding: 12px 14px; border: 1px solid color-mix(in srgb, var(--hue) 45%, var(--line)); background: color-mix(in srgb, var(--hue) 7%, var(--surface)); border-radius: var(--radius); display: grid; gap: 4px; align-content: start; justify-items: center; text-align: center; }
+.lstep .k { display: flex; flex-direction: column; align-items: center; gap: 6px; font: 700 13px/1.2 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--hue); }
+.lstep .k .ico { width: 34px; height: 34px; }  /* kleine Kachel: Icon groß über der Nummer */
+.lstep b { font-size: 15.5px; font-weight: 800; text-wrap: balance; }
+.lstep p { font-size: 14px; line-height: 1.45; color: var(--fg-2); text-wrap: balance; }
+.lex { display: grid; gap: 6px; }
+.lex-r { display: grid; grid-template-columns: minmax(0, 1fr) 28px minmax(0, 1fr) 28px minmax(0, 1fr) 28px minmax(0, 1fr); font-size: 14px; line-height: 1.4; }
+.lex-r > span { padding: 7px 10px; border: 1px dashed var(--line-strong); border-radius: var(--radius); }
+.lex-r > i { display: block; }
+.lex-h { font: 700 13px/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--fg-2); }
+@media (max-width: 1000px) {
+  .lflow, .lex-r { grid-template-columns: minmax(0, 1fr); gap: 6px; }
+  .lflow > svg { transform: rotate(90deg); }
+  .lex-r > i { display: none; }
+}
+.learn, .life, .tree, .wire, .guard, .dod-t, .commit-path, .prefix, .chart { box-shadow: var(--shadow); }
+.wire, .dod-t, .learn, .lex { grid-template-columns: minmax(0, 1fr); }  /* breite Code-Zeilen scrollen im Block, nicht die Seite */
+.lex code, .dod-t code, .gs code, .tr .w code { overflow-wrap: anywhere; white-space: normal; }
+
+/* Nachschlagewerk (Variante KA, Wunsch User 07.10.2026): Kopf nur Titel + Sachsatz + Kennzahlen; Inhaltsverzeichnis links (sticky), zehn Kapitel rechts;
+   ≤ 1100 px Inhaltsverzeichnis als Raster über den Kapiteln */
+.hero-inner { grid-template-columns: minmax(0, 1fr); min-height: 0; padding-block: 72px 64px; }
+.hero-kv { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+.hero-kv li { display: flex; align-items: baseline; gap: 8px; padding: 8px 14px; border: 1px solid var(--glass-bd); border-radius: var(--radius); background: var(--glass-bg); font-size: 14px; font-weight: 600; }
+.hero-kv b { font: 800 20px/1 var(--mono); color: var(--accent); font-variant-numeric: tabular-nums; }
+.ka { display: grid; grid-template-columns: 210px minmax(0, 1fr); gap: 48px; padding-block: 72px 32px; }
+.ka-main { min-width: 0; }
+.toc { position: sticky; top: calc(var(--hdr, 60px) + 24px); align-self: start; display: grid; gap: 10px; }
+.toc-k { font: 700 12px/1.2 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--fg-2); padding-inline: 10px; }
+.toc ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+.toc a { display: grid; grid-template-columns: 24px minmax(0, 1fr); gap: 8px; align-items: baseline; padding: 7px 10px; border: 1px solid transparent; border-radius: var(--radius-sm);
+  font-size: 14.5px; font-weight: 600; line-height: 1.3; transition: background-color var(--t-fast), border-color var(--t-fast); }
+.toc a .n { font: 700 12px/1 var(--mono); color: var(--accent); }
+.toc a:hover { background: var(--surface-2); }
+.toc a[aria-current="true"] { border-color: color-mix(in srgb, var(--accent) 45%, var(--line)); background: color-mix(in srgb, var(--accent) 10%, var(--surface)); font-weight: 800; }
+.sub-head { display: grid; gap: 6px; margin: 48px 0 16px; }
+.sub-head h3 { font-size: 19px; font-weight: 800; }
+.sub-head p { color: var(--fg-2); font-size: 15px; max-width: 72ch; }
+.ex { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; margin-top: 16px; align-items: start; }
+.ex-chat { grid-area: auto; border-color: var(--line); background: var(--surface); box-shadow: var(--shadow); }
+.ex-chat .chat-bar { border-bottom-color: var(--line); }
+.bt :is(th, td).r { text-align: right; font-family: var(--mono); }
+.bt td:nth-child(4) code { white-space: nowrap; }
+@media (max-width: 760px) { /* Tabelle als Liste: Name + Anzahl in einer Zeile, Zweck/Ort/Beispiel darunter */
+  .bt thead { display: none; }
+  .bt tr { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 10px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+  .bt td { padding: 0 10px; border: 0; }
+  .bt td:nth-child(n + 3) { grid-column: 1 / -1; }
+}
+
+/* Umbruchpunkte */
+@media (max-width: 1100px) {
+  .ka { grid-template-columns: minmax(0, 1fr); gap: 24px; padding-top: 48px; }
+  .toc { position: static; }
+  .toc ol { grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); }
+}
+@media (max-width: 1200px) {
+  .steps5 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .kpis-6 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@media (max-width: 960px) {
+  .contact .wrap, .gitg, .ex { grid-template-columns: minmax(0, 1fr); }
+  .perm { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 760px) {
+  .steps5 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .contact { padding-block: 72px; }
+  .hero-inner { padding-block: 56px 48px; }
+}
+@media (max-width: 560px) {
+  .wrap { padding-inline: 16px; }
+  .kpi strong { font-size: 26px; }
+  .sec { padding-bottom: 48px; }
+  .sec + .sec { padding-top: 56px; }
+  .perm, .steps5 { grid-template-columns: minmax(0, 1fr); }
+  .kpis-6 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .bt td:nth-child(4) code { white-space: normal; overflow-wrap: anywhere; }
+  .msg { grid-template-columns: minmax(0, 1fr); }
+  .msg .who { justify-self: start; }
+  .dod-t table { table-layout: fixed; }
+  .dod-t td:first-child { white-space: normal; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *:not(.progress), *::before, *::after { transition-duration: 0ms !important; transition-delay: 0ms !important; animation-duration: 0ms !important; animation-iteration-count: 1 !important; }
+}
+.dark-zone { --accent: var(--indigo); --accent-ink: #0d0f2e; --grid: rgba(129, 140, 248, .045); --glow: rgba(129, 140, 248, .28); } /* landing.css setzt sonst Türkis */
+.strip ul { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); } /* „Claude Opus + Sonnet“ passt nicht in 150 px (nowrap) → überlappte */
+</style>
+<link rel="stylesheet" href="css/scroll_flow.css">
+</head>
+<body>
+<svg width="0" height="0" style="position: absolute" aria-hidden="true">
+  <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></symbol>
+  <symbol id="i-spark" viewBox="0 0 24 24"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8zM19 16l.8 2.2L22 19l-2.2.8L19 22l-.8-2.2L16 19l2.2-.8z"/></symbol>
+  <symbol id="i-repo" viewBox="0 0 24 24"><path d="M5 4.5A1.5 1.5 0 0 1 6.5 3H19v15H6.5A1.5 1.5 0 0 0 5 19.5zM5 19.5A1.5 1.5 0 0 0 6.5 21H19v-3"/><path d="M9 7h6"/></symbol>
+  <symbol id="i-win" viewBox="0 0 24 24"><rect x="2.5" y="4" width="19" height="16" rx="2"/><path d="M2.5 8.5h19M6 6.3h.01M8.5 6.3h.01"/></symbol>
+  <symbol id="i-book" viewBox="0 0 24 24"><path d="M4 4.5A1.5 1.5 0 0 1 5.5 3H11v17H5.5A1.5 1.5 0 0 1 4 18.5zM20 4.5A1.5 1.5 0 0 0 18.5 3H13v17h5.5a1.5 1.5 0 0 0 1.5-1.5z"/></symbol>
+  <symbol id="i-chat" viewBox="0 0 24 24"><path d="M4 5.5h16v10H10l-4 3.5v-3.5H4z"/><path d="M8 9.5h8M8 12.5h5"/></symbol>
+  <symbol id="i-layers" viewBox="0 0 24 24"><path d="M12 3l9.5 5L12 13 2.5 8z"/><path d="M2.5 12.5L12 17.5l9.5-5M2.5 16.5L12 21.5l9.5-5"/></symbol>
+  <symbol id="i-bot" viewBox="0 0 24 24"><rect x="4" y="8" width="16" height="12" rx="2"/><path d="M12 8V4.5M9 13h.01M15 13h.01M9.5 16.5h5M2 13v3M22 13v3"/><circle cx="12" cy="3.5" r="1"/></symbol>
+  <symbol id="i-flag" viewBox="0 0 24 24"><path d="M5 21V4M5 4h11l-2 4 2 4H5"/></symbol>
+  <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 2.5l8 3v6c0 5-3.4 8.7-8 10.5-4.6-1.8-8-5.5-8-10.5v-6z"/><path d="M8.5 12l2.5 2.5 4.5-5"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="17" height="17" rx="2"/><path d="M8 12.5l3 3 5-6.5"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24"><rect x="4.5" y="10.5" width="15" height="10.5" rx="2"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3M12 14.5v2.5"/></symbol>
+  <symbol id="i-code" viewBox="0 0 24 24"><path d="M8 7l-5 5 5 5M16 7l5 5-5 5M13.5 4l-3 16"/></symbol>
+  <symbol id="i-test" viewBox="0 0 24 24"><path d="M9 3h6M10 3v6l-5.5 9.5A1.7 1.7 0 0 0 6 21h12a1.7 1.7 0 0 0 1.5-2.5L14 9V3"/><path d="M7.5 15h9"/></symbol>
+  <symbol id="i-git" viewBox="0 0 24 24"><circle cx="6" cy="5.5" r="2.5"/><circle cx="6" cy="18.5" r="2.5"/><circle cx="18" cy="9" r="2.5"/><path d="M6 8v8M18 11.5c0 4-5 3.5-10.5 6"/></symbol>
+  <symbol id="i-q" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.5"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.7.3-1 .9-1 1.6v.6M12 17h.01"/></symbol>
+  <symbol id="i-warn" viewBox="0 0 24 24"><path d="M12 3.5l9.5 17h-19z"/><path d="M12 10v4.5M12 17.5h.01"/></symbol>
+  <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.5"/><path d="M12 11v6M12 7.5h.01"/></symbol>
+  <symbol id="i-stop" viewBox="0 0 24 24"><path d="M8 2.5h8l5.5 5.5v8L16 21.5H8L2.5 16V8z"/><path d="M8.5 12h7"/></symbol>
+  <symbol id="i-go" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+  <symbol id="i-loop" viewBox="0 0 24 24"><path d="M3 12a9 9 0 0 1 15.4-6.4L21 8M21 3v5h-5M21 12a9 9 0 0 1-15.4 6.4L3 16M3 21v-5h5"/></symbol>
+  <symbol id="i-brain" viewBox="0 0 24 24"><path d="M9 4a3 3 0 0 0-3 3 3 3 0 0 0-2 5 3 3 0 0 0 2 5 3 3 0 0 0 3 3h1V4zM15 4a3 3 0 0 1 3 3 3 3 0 0 1 2 5 3 3 0 0 1-2 5 3 3 0 0 1-3 3h-1V4z"/></symbol>
+  <symbol id="i-term" viewBox="0 0 24 24"><rect x="2.5" y="4" width="19" height="16" rx="2"/><path d="M6.5 9l3 3-3 3M12 15h5"/></symbol>
+  <symbol id="i-key" viewBox="0 0 24 24"><circle cx="8" cy="15" r="4"/><path d="M11 12l9-9M17 6l2 2M15 8l2 2"/></symbol>
+  <symbol id="i-arm" viewBox="0 0 24 24"><path d="M4 21h16M7 21v-3h10v3M12 18v-5M12 13l5-5M17 8l3 1.5M17 8l1.2-3.2"/><circle cx="12" cy="13" r="2"/><circle cx="17" cy="8" r="1.6"/></symbol>
+  <symbol id="i-pulse" viewBox="0 0 24 24"><path d="M2.5 12h4l2.5-6 4 12 2.5-6h6"/></symbol>
+  <symbol id="i-prev" viewBox="0 0 24 24"><path d="M6 5v14M18 5l-9 7 9 7z"/></symbol>
+  <symbol id="i-next" viewBox="0 0 24 24"><path d="M18 5v14M6 5l9 7-9 7z"/></symbol>
+  <symbol id="i-play" viewBox="0 0 24 24"><path d="M7 4.5l12 7.5-12 7.5z"/></symbol>
+  <symbol id="i-pause" viewBox="0 0 24 24"><path d="M8 5v14M16 5v14"/></symbol>
+  <symbol id="i-file" viewBox="0 0 24 24"><path d="M6 2.5h8l4 4V21a.5.5 0 0 1-.5.5h-11A.5.5 0 0 1 6 21z"/><path d="M14 2.5v4h4M9 12h6M9 15.5h6"/></symbol>
+  <symbol id="i-mail" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="1.5"/><path d="m3.5 7 8.5 6 8.5-6"/></symbol>
+  <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c2.6 2.8 3.8 6 3.8 9.5s-1.2 6.7-3.8 9.5c-2.6-2.8-3.8-6-3.8-9.5S9.4 5.3 12 2.5z"/></symbol>
+  <symbol id="i-cube" viewBox="0 0 24 24"><path d="M12 2.5l8.5 4.75v9.5L12 21.5l-8.5-4.75v-9.5z"/><path d="M3.5 7.25L12 12l8.5-4.75M12 12v9.5"/></symbol>
+  <symbol id="i-chev-l" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></symbol>
+  <symbol id="i-chev-r" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></symbol>
+  <symbol id="qr-docs" viewBox="0 0 27 27"><path stroke="#0b1424" stroke-width="1" shape-rendering="crispEdges" d="M1 1.5h7m4 0h1m3 0h1m2 0h7m-25 1h1m5 0h1m1 0h1m2 0h6m1 0h1m5 0h1m-25 1h1m1 0h3m1 0h1m2 0h1m4 0h1m1 0h1m1 0h1m1 0h3m1 0h1m-25 1h1m1 0h3m1 0h1m4 0h1m2 0h1m3 0h1m1 0h3m1 0h1m-25 1h1m1 0h3m1 0h1m1 0h3m2 0h3m2 0h1m1 0h3m1 0h1m-25 1h1m5 0h1m2 0h1m1 0h3m1 0h2m1 0h1m5 0h1m-25 1h7m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h7m-15 1h2m1 0h1m2 0h1m-17 1h1m1 0h1m1 0h1m1 0h1m2 0h3m1 0h1m2 0h1m3 0h1m2 0h1m-21 1h1m1 0h1m2 0h4m1 0h2m1 0h1m1 0h1m5 0h1m-24 1h1m2 0h3m1 0h2m1 0h2m3 0h3m1 0h1m1 0h3m-24 1h2m8 0h1m1 0h2m1 0h1m3 0h1m2 0h1m-22 1h1m2 0h2m2 0h5m1 0h2m1 0h1m2 0h1m1 0h2m-24 1h3m1 0h1m1 0h2m1 0h2m1 0h1m4 0h1m2 0h1m2 0h1m-25 1h1m5 0h4m2 0h3m2 0h3m2 0h3m-24 1h1m1 0h3m2 0h1m2 0h1m1 0h1m2 0h2m2 0h1m2 0h1m-24 1h1m1 0h1m1 0h3m1 0h2m2 0h3m1 0h6m-14 1h4m4 0h1m3 0h2m1 0h2m-25 1h7m2 0h1m3 0h1m1 0h2m1 0h1m1 0h2m1 0h2m-25 1h1m5 0h1m5 0h2m1 0h2m3 0h2m-22 1h1m1 0h3m1 0h1m1 0h6m2 0h6m-22 1h1m1 0h3m1 0h1m3 0h1m4 0h1m3 0h4m-23 1h1m1 0h3m1 0h1m1 0h3m3 0h1m5 0h1m3 0h1m-25 1h1m5 0h1m2 0h1m2 0h3m1 0h3m1 0h2m1 0h1m-24 1h7m1 0h2m1 0h3m2 0h2m1 0h1m3 0h2"/></symbol>
+</defs></svg>
+
+<nav class="doc-path" aria-label="Pfad in der Projekt-Doku" data-en-aria="Path in the project docs"><a href="project_docs.html" data-en="← Project docs">← Projekt-Doku</a><span aria-hidden="true">›</span><a href="project_docs.html#technik" data-en="Develop">Entwickeln</a><span aria-hidden="true">›</span><span aria-current="page">Docs Claude Workflow</span></nav>
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="#start"><span class="brand-mark"><svg class="ico"><use href="#i-term"/></svg></span><span>Claude Code<small data-en="How we work · dev_ws">Arbeitsweise · dev_ws</small></span></a>
+    <div class="tools">
+      <div class="seg" role="group" aria-label="Ältere Fassung dieser Seite" data-en-aria="Earlier version of this page"><a href="develop_workflow_v2.html" aria-label="Fassung V2 (VS-Code-Fassung)" data-en-aria="Version V2 (VS Code version)">V2</a></div>
+      <div class="seg" role="group" aria-label="Sprache / Language">
+        <button type="button" data-lang="de" aria-pressed="true">DE</button>
+        <button type="button" data-lang="en" aria-pressed="false">EN</button>
+      </div>
+      <div class="seg" role="group" aria-label="Theme">
+        <button type="button" data-theme-btn="dark" aria-pressed="false" data-en="Dark" title="Dunkles Theme">Dunkel</button>
+        <button type="button" data-theme-btn="light" aria-pressed="false" data-en="Light" title="Helles Theme">Hell</button>
+      </div>
+    </div>
+  </div>
+  <span class="progress" aria-hidden="true"></span>
+</header>
+
+<main id="start">
+  <!-- ═════════ Kopf: Titel, ein Sachsatz, Kennzahlen als Zeile ═════════ -->
+  <section class="hero dark-zone" aria-label="Abstract">
+    <div class="wrap hero-inner">
+      <div class="hero-head">
+        <span class="badge"><span class="bi-s"><svg class="ico" aria-hidden="true"><use href="#i-term"/></svg></span><span data-en="Develop · Docs Claude Workflow">Entwickeln · Docs Claude Workflow</span></span>
+        <h1>
+          <span class="h1-name" data-en="Working with Claude&amp;nbsp;Code in the dev_ws">Arbeiten mit Claude&nbsp;Code im dev_ws</span>
+          <span class="h1-claim" data-en="&lt;span class=&quot;ln&quot;&gt;&lt;span&gt;Claude Workflow&lt;/span&gt;&lt;/span&gt;"><span class="ln"><span>Claude Workflow</span></span></span>
+        </h1>
+        <p class="abstract" data-en="How code is written in this repo with &lt;b&gt;Claude&amp;nbsp;Code&lt;/b&gt;: who does what, which files hold the rules and which checks every step passes.">Wie Code in diesem Repo mit <b>Claude&nbsp;Code</b> entsteht: wer was macht, welche Dateien die Regeln enthalten und welche Prüfung jeder Schritt durchläuft.</p>
+        <ul class="hero-kv" aria-label="Kennzahlen" data-en-aria="Key figures">
+          <li><b>2.303</b><span data-en="commits since 03/2026">Commits seit 03/2026</span></li>
+          <li><b>27</b><span>Skills</span></li>
+          <li><b>10</b><span data-en="agents">Agenten</span></li>
+          <li><b>6</b><span data-en="checkpoints">Prüfstellen</span></li>
+          <li><b>16</b><span data-en="memory entries">Memory-Einträge</span></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═════════ Gebaut auf ═════════ -->
+  <section class="strip" aria-label="Gebaut auf" data-en-aria="Built on">
+    <div class="wrap">
+      <div class="strip-row">
+        <span class="strip-k" id="strip-tools" data-en="Tools">Werkzeuge</span>
+        <ul aria-labelledby="strip-tools">
+          <li><svg class="ico" aria-hidden="true"><use href="#i-win"/></svg>VS Code</li>
+          <li><svg class="ico" aria-hidden="true"><use href="#i-chat"/></svg>Claude Code</li>
+          <li><svg class="ico" aria-hidden="true"><use href="#i-spark"/></svg>Claude Opus + Sonnet</li>
+          <li><svg class="ico" aria-hidden="true"><use href="#i-git"/></svg>Git + GitHub</li>
+          <li><svg class="ico" aria-hidden="true"><use href="#i-code"/></svg>Python</li>
+          <li><svg class="ico" aria-hidden="true"><use href="#i-test"/></svg>pytest</li>
+          <li><svg class="ico" aria-hidden="true"><use href="#i-globe"/></svg>Headless Chrome</li>
+          <li><svg class="ico" aria-hidden="true"><use href="#i-file"/></svg>claude.ai Artifacts</li>
+        </ul>
+      </div>
+      <div class="strip-row">
+        <span class="strip-k" id="strip-repo" data-en="In the repo">Im Repo</span>
+        <ul aria-labelledby="strip-repo">
+          <li><svg class="ico" aria-hidden="true"><use href="#i-book"/></svg>AGENTS.md</li>
+          <li><svg class="ico" aria-hidden="true"><use href="#i-layers"/></svg>Skills</li>
+          <li><svg class="ico" aria-hidden="true"><use href="#i-bot"/></svg><span data-en="Agents">Agenten</span></li>
+          <li><svg class="ico" aria-hidden="true"><use href="#i-shield"/></svg>Hooks</li>
+          <li><svg class="ico" aria-hidden="true"><use href="#i-brain"/></svg>Memory</li>
+          <li><svg class="ico" aria-hidden="true"><use href="#i-term"/></svg>tools/</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═════════ Nachschlagewerk: Inhaltsverzeichnis links, zehn Kapitel mit je einem Diagramm oder einer Tabelle ═════════ -->
+  <div class="wrap ka">
+    <nav class="toc" aria-label="Inhalt" data-en-aria="Contents">
+      <span class="toc-k" data-en="Contents">Inhalt</span>
+      <ol>
+          <li><a href="#ueberblick"><span class="n">01</span><span data-en="Who does what">Wer macht was</span></a></li>
+          <li><a href="#ablauf"><span class="n">02</span><span data-en="How a task runs">Ablauf einer Aufgabe</span></a></li>
+          <li><a href="#rollen"><span class="n">03</span><span data-en="Roles in the chat">Rollen im Chat</span></a></li>
+          <li><a href="#bausteine"><span class="n">04</span><span data-en="Building blocks">Bausteine</span></a></li>
+          <li><a href="#rechte"><span class="n">05</span><span data-en="Permissions and limits">Rechte und Grenzen</span></a></li>
+          <li><a href="#pruefstellen"><span class="n">06</span><span data-en="Checkpoints along the way">Prüfstellen im Ablauf</span></a></li>
+          <li><a href="#dod"><span class="n">07</span><span data-en="Definition of Done">Definition of Done</span></a></li>
+          <li><a href="#lernen"><span class="n">08</span><span data-en="Learning from corrections">Lernen aus Korrekturen</span></a></li>
+          <li><a href="#dateien"><span class="n">09</span><span data-en="Files in the repo">Dateien im Repo</span></a></li>
+          <li><a href="#zahlen"><span class="n">10</span><span data-en="Figures from git log">Zahlen aus git log</span></a></li>
+      </ol>
+    </nav>
+    <div class="ka-main">
+      <section class="sec" id="ueberblick">
+        <header class="sec-head">
+          <div><span class="eyebrow" style="--hue: var(--accent)"><span class="n">01</span><span data-en="Overview">Überblick</span></span><h2 data-en="Who does what">Wer macht was</h2></div>
+          <div class="brief"><p data-en="The developer sets the goal and approves. Claude Code works in the workspace, hooks check every action, the result is a commit.">Der Entwickler gibt Ziel und Freigabe. Claude Code arbeitet im Workspace, Hooks prüfen jede Aktion, das Ergebnis ist ein Commit.</p></div>
+        </header>
+      <figure class="ov" aria-labelledby="ov-cap">
+        <div class="ov-grid">
+          <div class="ov-node" style="grid-area: human"><svg class="ico" aria-hidden="true"><use href="#i-user"/></svg><span class="k-t" data-en="Developer">Entwickler</span><b data-en="Sets goals, decides, approves.">Setzt Ziele, entscheidet, gibt frei.</b></div>
+          <div class="ov-arr h" style="grid-area: a2">
+            <span class="ov-step"><span class="ov-l" data-en="Request">Wunsch</span><span class="ov-p" aria-hidden="true"></span></span>
+            <span class="ov-step"><span class="ov-p l" aria-hidden="true"></span><span class="ov-l" data-en="Answer + status">Antwort + Status</span></span>
+          </div>
+          <div class="ov-node" style="grid-area: know; --hue: var(--violet)"><svg class="ico" aria-hidden="true"><use href="#i-book"/></svg><span class="k-t" data-en="Knowledge">Wissen</span><b data-en="Rules and manuals.">Regeln und Handbücher.</b><ul class="ov-chips"><li>AGENTS.md</li><li>Skills</li><li>Memory</li></ul></div>
+          <div class="ov-arr v" style="grid-area: a1"><span class="ov-step"><span class="ov-p d" aria-hidden="true"></span><span class="ov-l" data-en="loads on demand">lädt bei Bedarf</span></span></div>
+          <div class="ov-core">
+            <span class="ov-guard"><svg class="ico" aria-hidden="true"><use href="#i-shield"/></svg><span data-en="Hooks check every step">Hooks prüfen jeden Schritt</span></span>
+            <div class="ov-node" style="--hue: var(--indigo)"><svg class="ico" aria-hidden="true"><use href="#i-chat"/></svg><span class="k-t">Claude Code</span><b data-en="Plans, builds, verifies.">Plant, baut, prüft.</b><ul class="ov-chips"><li data-en="Main chat">Hauptchat</li><li>Opus</li></ul></div>
+          </div>
+          <div class="ov-arr v a4" style="grid-area: a4">
+            <span class="ov-step"><span class="ov-l" data-en="Task">Auftrag</span><span class="ov-p d" aria-hidden="true"></span></span>
+            <span class="ov-step"><span class="ov-p u" aria-hidden="true"></span><span class="ov-l" data-en="Findings">Befund</span></span>
+          </div>
+          <div class="ov-node" style="grid-area: help; --hue: var(--teal)"><svg class="ico" aria-hidden="true"><use href="#i-bot"/></svg><span class="k-t" data-en="Agents">Agenten</span><b data-en="Search, test, review.">Suchen, testen, prüfen.</b><ul class="ov-chips"><li>ws-explorer</li><li>test-runner</li><li>ui-verifier</li></ul></div>
+          <div class="ov-arr h" style="grid-area: a3"><span class="ov-step"><span class="ov-l" data-en="verified change">geprüfte Änderung</span><span class="ov-p" aria-hidden="true"></span></span></div>
+          <div class="ov-node" style="grid-area: repo; --hue: var(--green)"><svg class="ico" aria-hidden="true"><use href="#i-git"/></svg><span class="k-t">Repo</span><b data-en="Every state saved.">Jeder Stand gesichert.</b><ul class="ov-chips"><li>Code</li><li>Tests</li><li data-en="Docs">Doku</li><li>Git</li></ul></div>
+        </div>
+        <p class="ov-loop"><svg class="ico" aria-hidden="true"><use href="#i-loop"/></svg><span data-en="&lt;b&gt;Learning loop:&lt;/b&gt; correction in the chat → Memory → applies from the next chat on"><b>Lernschleife:</b> Korrektur im Chat → Memory → gilt ab dem nächsten Chat</span></p>
+        <figcaption id="ov-cap" data-en="Simplified: the developer sets the goal, Claude works with knowledge and helpers, hooks check every step, the result lands in the repo, tested.">Vereinfacht: Der Entwickler gibt das Ziel vor, Claude arbeitet mit Wissen und Helfern, Hooks prüfen jeden Schritt, das Ergebnis landet geprüft im Repo.</figcaption>
+      </figure>
+      </section>
+      <section class="sec" id="ablauf">
+        <header class="sec-head">
+          <div><span class="eyebrow" style="--hue: var(--blue)"><span class="n">02</span><span data-en="Flow">Ablauf</span></span><h2 data-en="How a task runs">Ablauf einer Aufgabe</h2></div>
+          <div class="brief"><p data-en="Example: limit jogging to 10&amp;nbsp;mm per step. A plain question ends after step&amp;nbsp;2.">Beispiel: Jogging auf 10&nbsp;mm je Schritt begrenzen. Eine reine Frage endet nach Schritt&nbsp;2.</p><dl><dt data-en="Developer">Entwickler</dt><dd data-en="describes the goal, decides on questions, accepts the result">beschreibt das Ziel, entscheidet bei Fragen, nimmt ab</dd><dt>Claude</dt><dd data-en="plans, builds, tests, documents, commits">plant, baut, prüft, dokumentiert, committet</dd><dt data-en="Automatic">Automatisch</dt><dd data-en="hooks check every step, tests provide the evidence">Hooks prüfen jeden Schritt, Tests liefern den Beleg</dd></dl></div>
+        </header>
+        <ol class="steps5">
+          <li class="step" style="--hue: var(--accent)"><span class="no">01</span><span class="bi-l"><svg class="ico" aria-hidden="true"><use href="#i-chat"/></svg></span><b data-en="Ask">Wünschen</b><p data-en="The developer describes the goal, not the instructions.">Der Entwickler beschreibt das Ziel, nicht die Anleitung.</p><span class="act-row"><span class="act" data-en="Developer">Entwickler</span></span><span class="tech" data-en="Chat tab with a prefix, e.g. [RCU]">Chat-Tab mit Präfix, z.&nbsp;B. [RCU]</span></li>
+          <li class="step" style="--hue: var(--gold)"><span class="no">02</span><span class="bi-l"><svg class="ico" aria-hidden="true"><use href="#i-q"/></svg></span><b data-en="Plan">Planen</b><p data-en="Claude plans and asks when a real decision is due.">Claude plant und fragt bei echten Entscheidungen nach.</p><span class="act-row"><span class="act c">Claude</span><span class="act" data-en="Developer">Entwickler</span></span><span class="tech" data-en="Skills · question F1 · preview">Skills · Rückfrage F1 · Vorschau</span></li>
+          <li class="step" style="--hue: var(--violet)"><span class="no">03</span><span class="bi-l"><svg class="ico" aria-hidden="true"><use href="#i-code"/></svg></span><b data-en="Build">Bauen</b><p data-en="Ponytail ladder: does it already exist? Then the smallest change in the right place, visible as a diff.">Ponytail-Leiter: Gibt es das schon? Dann kleinste Änderung am richtigen Ort, sichtbar als Diff.</p><span class="act-row"><span class="act c">Claude</span><span class="act a" data-en="Automatic">Automatisch</span></span><span class="tech">pre_tool_guard · post_edit_check</span></li>
+          <li class="step" style="--hue: var(--green)"><span class="no">04</span><span class="bi-l"><svg class="ico" aria-hidden="true"><use href="#i-test"/></svg></span><b data-en="Verify">Prüfen</b><p data-en="Done only with a test result, never with “should work”.">Fertig erst mit Testergebnis, nie mit „sollte gehen“.</p><span class="act-row"><span class="act c">Claude</span><span class="act a" data-en="Automatic">Automatisch</span></span><span class="tech">pytest · Headless Chrome</span></li>
+          <li class="step" style="--hue: var(--indigo)"><span class="no">05</span><span class="bi-l"><svg class="ico" aria-hidden="true"><use href="#i-git"/></svg></span><b data-en="Deliver">Abliefern</b><p data-en="Update the docs, commit, push, report the status.">Doku nachziehen, committen, pushen, Status melden.</p><span class="act-row"><span class="act c">Claude</span></span><span class="tech" data-en="git push · status chips">git push · Status-Chips</span></li>
+        </ol>
+        <p class="note"><svg class="ico" aria-hidden="true"><use href="#i-info"/></svg><span data-en="&lt;b&gt;Only as far as needed:&lt;/b&gt; a plain question ends after step&amp;nbsp;2. A new UI feature runs through all five, with a preview before building."><b>Nur so weit wie nötig:</b> Eine reine Frage endet nach Schritt&nbsp;2. Eine neue UI-Funktion durchläuft alle fünf, mit Vorschau vor dem Bauen.</span></p>
+        <div class="ex">
+        <figure class="chat ex-chat" aria-label="Beispiel: eine Aufgabe im Chat, von der Bitte bis zum Push" data-en-aria="Example: one task in the chat, from request to push">
+          <div class="chat-bar"><span class="af-dots" aria-hidden="true"><i></i><i></i><i></i></span><b>Claude Code · VS Code</b><span class="hchip" data-en="[RCU] Limit jogging">[RCU] Jogging begrenzen</span></div>
+          <ol class="chat-log">
+            <li class="msg me" style="--i: 0"><span class="who" data-en="You">Du</span><span class="bub" data-en="Jogging (moving the arm by hand in small steps) should move 10&amp;nbsp;mm per step at most.">Jogging (Arm von Hand in kleinen Schritten fahren) soll höchstens 10&nbsp;mm pro Schritt fahren.</span></li>
+            <li class="msg" style="--i: 1"><span class="who">Claude</span><span class="bub" data-en="&lt;span&gt;&lt;b&gt;Plan:&lt;/b&gt; limit in &lt;code&gt;jog.js&lt;/code&gt;, add a test.&lt;/span&gt;"><span><b>Plan:</b> Grenze in <code>jog.js</code>, Test ergänzen.</span></span></li>
+            <li class="msg" style="--i: 2"><span class="who">Claude</span><span class="bub"><span data-en="&lt;b&gt;F1&lt;/b&gt; Update the twin display as well?"><b>F1</b> Anzeige im Twin gleich mit anpassen?</span><span class="btns"><span class="on" data-en="yes">ja</span><span data-en="later">später</span></span></span></li>
+            <li class="msg sys hook" style="--i: 3"><span class="who">Hook</span><span class="bub"><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg><span data-en="Check after the edit: no findings">Prüfung nach dem Edit: ohne Befund</span></span></li>
+            <li class="msg sys test" style="--i: 4"><span class="who">Test</span><span class="bub"><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg><span>pytest 42/42</span></span></li>
+            <li class="msg" style="--i: 5"><span class="who">Claude</span><span class="bub"><span data-en="&lt;b&gt;Done.&lt;/b&gt; Docs updated, commit pushed."><b>Fertig.</b> Doku nachgezogen, Commit gepusht.</span><span class="st"><span data-en="done">fertig</span><span data-en="2 files">2 Dateien</span><span>pytest 42/42</span><span>a1b2c3d</span></span></span></li>
+          </ol>
+        </figure>
+        <div class="panel dod-t ex-ui">
+          <h3 data-en="What appears in the editor">Was im Editor erscheint</h3>
+          <table>
+            <thead><tr><th data-en="Element">Element</th><th data-en="Content">Inhalt</th><th data-en="Your action">Deine Aktion</th></tr></thead>
+            <tbody>
+              <tr><td data-en="Question">Rückfrage</td><td data-en="Dialog &lt;code&gt;AskUserQuestion&lt;/code&gt;, recommendation first">Dialog <code>AskUserQuestion</code>, Empfehlung oben</td><td data-en="click an option">Option anklicken</td></tr>
+              <tr><td data-en="Preview">Vorschau</td><td data-en="claude.ai artifact with variants and screenshots">claude.ai-Artifact mit Varianten und Screenshots</td><td data-en="choose, “Send to chat”">wählen, „An Chat senden“</td></tr>
+              <tr><td data-en="Diff">Diff</td><td data-en="every file change in VS Code">jede Dateiänderung in VS Code</td><td data-en="read, step in if needed">lesen, bei Bedarf eingreifen</td></tr>
+              <tr><td data-en="Answer">Antwort</td><td data-en="fixed status chips: status · role · files · tests · push · model">feste Status-Chips: Status · Rolle · Dateien · Tests · Push · Modell</td><td data-en="check the status">Stand ablesen</td></tr>
+            </tbody>
+          </table>
+        </div>
+        </div>
+        <div class="sub-head">
+          <h3 data-en="Data flow per scenario">Datenfluss je Szenario</h3>
+          <p data-en="Five lanes: developer, chat, helpers, guard rails, repo. Choose a scenario, touch a node for its inputs and outputs, ←/→ for steps, &lt;code&gt;K&lt;/code&gt; pauses.">Fünf Bahnen: Entwickler, Chat, Helfer, Leitplanken, Repo. Szenario wählen, Knoten berühren zeigt Ein- und Ausgänge, ←/→ für Schritte, <code>K</code> pausiert.</p>
+        </div>
+    <figure class="fg" id="fg-work" aria-labelledby="fg-work-cap">
+      <div class="fg-bar">
+        <div class="fg-scn" role="group" aria-label="Szenario wählen" data-en-aria="Choose a scenario"></div>
+        <div class="fg-ctl">
+          <button type="button" data-act="prev" aria-label="Schritt zurück" data-en-aria="Previous step"><svg><use href="#i-prev"/></svg></button>
+          <button type="button" data-act="play" aria-label="Abspielen"><svg><use href="#i-play"/></svg></button>
+          <button type="button" data-act="next" aria-label="Schritt vor" data-en-aria="Next step"><svg><use href="#i-next"/></svg></button>
+          <select data-act="speed" aria-label="Tempo" data-en-aria="Speed"><option value=".5" data-en="0.5×">0,5×</option><option value="1" selected>1×</option><option value="2">2×</option></select>
+        </div>
+      </div>
+      <div class="fg-stage"><svg class="fg-svg" role="group" aria-roledescription="Datenflussdiagramm" data-en-roledesc="data flow diagram"></svg></div>
+      <div class="fg-foot">
+        <div class="fg-detail"><h3></h3><p></p><div class="io"></div><div class="fg-status" aria-live="polite"></div></div>
+        <ol class="fg-steps"></ol>
+      </div>
+      <div class="fg-legend" aria-hidden="true"></div>
+      <div class="fg-key" aria-hidden="true">
+        <span><svg viewBox="0 0 34 10"><line x1="0" y1="5" x2="34" y2="5"/></svg><span data-en="Handover (file, text, entry)">Übergabe (Datei, Text, Eintrag)</span></span>
+        <span><svg viewBox="0 0 34 10"><line x1="0" y1="5" x2="34" y2="5" stroke-dasharray="6 4"/></svg><span data-en="Request ⇄ response (question, hook check)">Anfrage ⇄ Antwort (Rückfrage, Hook-Prüfung)</span></span>
+        <span><svg viewBox="0 0 34 10"><line x1="0" y1="5" x2="34" y2="5" stroke-dasharray="14 4 2 4"/></svg><span data-en="Task to subagent ⇄ findings">Auftrag an Subagent ⇄ Befund</span></span>
+      </div>
+      <figcaption id="fg-work-cap" data-en="Data flow of the collaboration: developer, main chat, skills and agents, hooks as guardrails, repo with code, checks, docs and Git.">Datenfluss der Zusammenarbeit: Entwickler, Hauptchat, Skills und Agenten, Hooks als Leitplanken, Repo mit Code, Prüfungen, Doku und Git.</figcaption>
+      <ol class="fg-fallback">
+        <li data-en="UI feature: you → Claude → skills (ui-change, preview) → preview page → decision back → pre_tool_guard → code → ui-verifier → checks">UI-Funktion: Du → Claude → Skills (ui-change, preview) → Vorschau-Seite → Entscheidung zurück → pre_tool_guard → Code → ui-verifier → Prüfungen</li>
+        <li data-en="Safety fix: you → Claude → skills (root-cause, vla-motion) → pre_tool_guard → code → post_edit_check → safety-reviewer → grasp_e2e (domain 94) → Git">Sicherheits-Fix: Du → Claude → Skills (root-cause, vla-motion) → pre_tool_guard → Code → post_edit_check → safety-reviewer → grasp_e2e (Domain 94) → Git</li>
+        <li data-en="Docs: rules (DoD) → Claude → skill docs → pre_tool_guard → docs en + de → check_showcase.py → Git">Doku: Regeln (DoD) → Claude → Skill docs → pre_tool_guard → Doku en + de → check_showcase.py → Git</li>
+        <li data-en="Parallel chats: parallel chat → file register → pre_tool_guard warns Claude → SendMessage → agreement → edit">Parallele Chats: Paralleler Chat → Datei-Register → pre_tool_guard warnt Claude → SendMessage → Abstimmung → Edit</li>
+        <li data-en="Answer: Claude → format_check (stop hook) → ending redone if needed → answer with status chips → you reply via button">Antwort: Claude → format_check (Stop-Hook) → ggf. Schluss neu → Antwort mit Status-Chips → Du antwortest per Button</li>
+      </ol>
+    </figure>
+      </section>
+      <section class="sec" id="rollen">
+        <header class="sec-head">
+          <div><span class="eyebrow" style="--hue: var(--teal)"><span class="n">03</span><span data-en="Roles">Rollen</span></span><h2 data-en="Roles in the chat">Rollen im Chat</h2></div>
+          <div class="brief"><p data-en="Every chat runs organizer → specialist role → reviewer → synchronizer. The specialist role sets skills, agents and checks.">Jeder Chat durchläuft Organizer → Fachrolle → Prüfer → Synchronizer. Die Fachrolle legt Skills, Agenten und Prüfungen fest.</p></div>
+        </header>
+        <div class="rflow">
+          <div class="rfix"><span class="bi-l"><svg class="ico" aria-hidden="true"><use href="#i-chat"/></svg></span><b>Organizer</b><span class="k-t" data-en="Plans the chat">Plant den Chat</span></div>
+          <svg class="ico" aria-hidden="true"><use href="#i-go"/></svg>
+          <div class="rmid"><span class="k-t" data-en="Specialist role · one per task">Fachrolle · eine je Aufgabe</span><ul class="rroles"><li class="pair" style="--h: var(--accent)"><svg class="ico" aria-hidden="true"><use href="#i-spark"/></svg><span>Designer</span></li><li class="pair" style="--h: var(--gold)"><svg class="ico" aria-hidden="true"><use href="#i-globe"/></svg><span>Marketing</span></li><li style="--h: var(--violet)"><svg class="ico" aria-hidden="true"><use href="#i-code"/></svg><span data-en="Developer">Entwickler</span></li><li style="--h: var(--red)"><svg class="ico" aria-hidden="true"><use href="#i-pulse"/></svg><span>Debugger</span></li><li style="--h: var(--teal)"><svg class="ico" aria-hidden="true"><use href="#i-file"/></svg><span data-en="Editor">Redakteur</span></li><li style="--h: var(--indigo)"><svg class="ico" aria-hidden="true"><use href="#i-flag"/></svg><span data-en="Project manager">Projektmanager</span></li><li style="--h: var(--green)"><svg class="ico" aria-hidden="true"><use href="#i-brain"/></svg><span data-en="Researcher">Forscher</span></li><li style="--h: var(--orange)"><svg class="ico" aria-hidden="true"><use href="#i-cube"/></svg><span data-en="3D designer">3D-Designer</span></li></ul><p class="rnote"><svg class="ico" aria-hidden="true"><use href="#i-loop"/></svg><span data-en="&lt;b&gt;Outside view:&lt;/b&gt; marketing proposes, the designer decides."><b>Außenwirkung:</b> Marketing schlägt vor, der Designer entscheidet.</span></p></div>
+          <svg class="ico" aria-hidden="true"><use href="#i-go"/></svg>
+          <div class="rfix"><span class="bi-l"><svg class="ico" aria-hidden="true"><use href="#i-test"/></svg></span><b data-en="Reviewer">Prüfer</b><span class="k-t">Definition of Done</span></div>
+          <svg class="ico" aria-hidden="true"><use href="#i-go"/></svg>
+          <div class="rfix"><span class="bi-l"><svg class="ico" aria-hidden="true"><use href="#i-git"/></svg></span><b>Synchronizer</b><span class="k-t" data-en="Commit + push">Commit + Push</span></div>
+        </div>
+      </section>
+      <section class="sec" id="bausteine">
+        <header class="sec-head">
+          <div><span class="eyebrow" style="--hue: var(--violet)"><span class="n">04</span><span data-en="Building blocks">Bausteine</span></span><h2 data-en="Building blocks">Bausteine</h2></div>
+          <div class="brief"><p data-en="Every building block is a text file in the repo; Claude loads only what the task needs.">Jeder Baustein ist eine Textdatei im Repo; Claude lädt nur, was die Aufgabe braucht.</p></div>
+        </header>
+        <div class="panel dod-t bt">
+          <table>
+            <thead><tr><th data-en="Building block">Baustein</th><th class="r" data-en="Count">Anzahl</th><th data-en="Purpose">Zweck</th><th data-en="Location">Ort</th><th data-en="Example">Beispiel</th></tr></thead>
+            <tbody>
+              <tr><td>AGENTS.md</td><td class="r">1</td><td data-en="rules for every chat (127 lines): safety, names, answer format, Definition of Done">Regeln für jeden Chat (127 Zeilen): Sicherheit, Namen, Antwortformat, Definition of Done</td><td><code>AGENTS.md</code></td><td data-en="no REAL motion without approval">keine REAL-Bewegung ohne Freigabe</td></tr>
+              <tr><td data-en="Role map">Rollenkarte</td><td class="r">11</td><td data-en="8 specialist roles + 3 fixed steps → lead skills, agents, checks">8 Fachrollen + 3 feste Schritte → Leit-Skills, Agenten, Prüfungen</td><td><code>.claude/ROLES.md</code></td><td data-en="designer → &lt;code&gt;ui-change&lt;/code&gt;, &lt;code&gt;preview&lt;/code&gt;">Designer → <code>ui-change</code>, <code>preview</code></td></tr>
+              <tr><td>Skills</td><td class="r">27</td><td data-en="expert guides, loaded only when needed: workflow 5 · operating UIs 4 · project pages 12 · robotics + tests 6">Fachanleitungen, nur bei Bedarf geladen: Arbeitsweise 5 · Bedien-UIs 4 · Projektseiten 12 · Robotik + Tests 6</td><td><code>.claude/skills/</code></td><td><code>ui-change</code>, <code>test-isolated</code></td></tr>
+              <tr><td data-en="Agents">Agenten</td><td class="r">10</td><td data-en="separate job in their own context, only the result comes back; Opus, test runs Sonnet">Einzelauftrag im eigenen Kontext, zurück kommt nur das Ergebnis; Opus, Testläufe Sonnet</td><td><code>.claude/agents/</code></td><td><code>ws-explorer</code>, <code>safety-reviewer</code></td></tr>
+              <tr><td data-en="Checkpoints">Prüfstellen</td><td class="r">6</td><td data-en="5 hooks in the chat + 1 Git hook: warn, ask or block">5 Hooks im Chat + 1 Git-Hook: warnen, fragen oder blockieren</td><td><code>.claude/hooks/</code>, <code>tools/pre-commit</code></td><td><code>pre_tool_guard.py</code></td></tr>
+              <tr><td>Memory</td><td class="r">16</td><td data-en="preferences from corrections, one file per fact, valid from the next chat">Vorgaben aus Korrekturen, eine Datei je Fakt, gilt ab dem nächsten Chat</td><td><code>.claude/memory/</code></td><td data-en="corners max. 8&amp;nbsp;px">Ecken max. 8&nbsp;px</td></tr>
+              <tr><td>Mods</td><td class="r">2</td><td data-en="displays in the editor">Anzeigen im Editor</td><td><code>.claude/mods/</code></td><td data-en="answer cards, FAKE/REAL status line">Antwort-Karten, Statuszeile FAKE/REAL</td></tr>
+              <tr><td data-en="Module maps">Modul-Karten</td><td class="r">4</td><td data-en="entry point per large package">Einstieg je großem Paket</td><td><code>src/&lt;pkg&gt;/CLAUDE.md</code></td><td>vla_bridge, UX | Monitoring</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+      <section class="sec" id="rechte">
+        <header class="sec-head">
+          <div><span class="eyebrow" style="--hue: var(--gold)"><span class="n">05</span><span data-en="Permissions">Rechte</span></span><h2 data-en="Permissions and limits">Rechte und Grenzen</h2></div>
+          <div class="brief"><dl><dt data-en="Why">Warum</dt><dd data-en="Claude runs commands directly in the workspace, and this code moves real robot hardware.">Claude führt Befehle direkt im Workspace aus, und dieser Code bewegt echte Roboter-Hardware.</dd><dt data-en="How">Wie</dt><dd data-en="Permissions, AGENTS.md §&amp;nbsp;0 and hooks set the limits.">Berechtigungen, AGENTS.md §&nbsp;0 und Hooks setzen die Grenzen.</dd></dl></div>
+        </header>
+        <div class="perm">
+          <div class="pm" style="--hue: var(--green)"><div class="pm-h"><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg><div><span class="k-t" data-en="Free">Frei</span><b data-en="Works without asking.">Arbeitet ohne Nachfrage.</b></div></div><ul><li data-en="Read and search files">Dateien lesen und durchsuchen</li><li data-en="Run 16 fixed check commands">16 feste Prüfbefehle ausführen</li><li data-en="Test in isolation: own port, own domain">Isoliert testen: eigener Port, eigene Domain</li><li data-en="Stop its own processes">Eigene Prozesse beenden</li></ul></div>
+          <div class="pm" style="--hue: var(--gold)"><div class="pm-h"><svg class="ico" aria-hidden="true"><use href="#i-q"/></svg><div><span class="k-t" data-en="After asking">Mit Rückfrage</span><b data-en="Asks first.">Fragt vorher nach.</b></div></div><ul><li data-en="Commands outside the allow list">Befehle außerhalb der Erlaubt-Liste</li><li data-en="Files another chat is working on">Dateien, die ein anderer Chat bearbeitet</li><li data-en="Larger rebuilds: preview first">Größere Umbauten: erst Vorschau</li><li data-en="Stopping processes broadly (pkill)">Prozesse breit beenden (pkill)</li></ul></div>
+          <div class="pm" style="--hue: var(--red)"><div class="pm-h"><svg class="ico" aria-hidden="true"><use href="#i-stop"/></svg><div><span class="k-t" data-en="Never without approval">Nie ohne Freigabe</span><b data-en="Stays locked.">Bleibt gesperrt.</b></div></div><ul><li data-en="Move real robot hardware (REAL)">Echte Roboter-Hardware bewegen (REAL)</li><li data-en="Weaken E-STOP, sandbox or collision pre-check">E-STOP, Sandbox oder Kollisionsvorprüfung abschwächen</li><li data-en="Commit other chats’ changes">Änderungen anderer Chats committen</li><li data-en="Overwrite the Git history (--force)">Git-Verlauf überschreiben (--force)</li></ul></div>
+        </div>
+      <div class="panel guard">
+        <h3 data-en="What happens when Claude …">Was passiert, wenn Claude …</h3>
+        <div class="g-btns" role="group" aria-label="Fall wählen" data-en-aria="Choose a case">
+          <button type="button" data-case="peer" aria-pressed="false" data-en="… edits a file of another chat">… eine Datei eines anderen Chats ändert</button>
+          <button type="button" data-case="gen" aria-pressed="false" data-en="… edits *.gen.css by hand">… *.gen.css von Hand ändert</button>
+          <button type="button" data-case="pkill" aria-pressed="false" data-en="… runs pkill -f ros2">… pkill -f ros2 ausführt</button>
+          <button type="button" data-case="domain" aria-pressed="false" data-en="… starts ROS without ROS_DOMAIN_ID">… ROS ohne ROS_DOMAIN_ID startet</button>
+          <button type="button" data-case="motion" aria-pressed="false" data-en="… commits the Motion Handler">… den Motion Handler committet</button>
+          <button type="button" data-case="ip" aria-pressed="false" data-en="… uses the real robot_ip">… die echte robot_ip nutzt</button>
+        </div>
+        <div class="g-chain">
+          <div class="gs" data-k="act"><span class="k" data-en="Action">Aktion</span><span class="v">Fall wählen</span></div>
+          <svg class="ico" aria-hidden="true"><use href="#i-go"/></svg>
+          <div class="gs" data-k="hook"><span class="k" data-en="Checkpoint">Prüfstelle</span><span class="v">–</span></div>
+          <svg class="ico" aria-hidden="true"><use href="#i-go"/></svg>
+          <div class="gs" data-k="dec"><span class="k" data-en="Decision">Entscheidung</span><span class="v">–</span></div>
+          <svg class="ico" aria-hidden="true"><use href="#i-go"/></svg>
+          <div class="gs" data-k="res"><span class="k" data-en="Result">Ergebnis</span><span class="v">–</span></div>
+        </div>
+        <p class="g-out" aria-live="polite">Einen Fall oben wählen – die Kette läuft Stufe für Stufe durch.</p>
+      </div>
+      </section>
+      <section class="sec" id="pruefstellen">
+        <header class="sec-head">
+          <div><span class="eyebrow" style="--hue: var(--orange)"><span class="n">06</span><span data-en="Checkpoints">Prüfstellen</span></span><h2 data-en="Checkpoints along the way">Prüfstellen im Ablauf</h2></div>
+          <div class="brief"><dl><dt data-en="Context">Kontext</dt><dd data-en="Situation report at the start, hint on long chats">Lagebild beim Start, Hinweis bei langen Chats</dd><dt data-en="Warning">Warnung</dt><dd data-en="before risky commands and protected files">vor riskanten Befehlen und geschützten Dateien</dd><dt>Block</dt><dd data-en="when the ending of the answer is missing">wenn der Schluss der Antwort fehlt</dd></dl></div>
+        </header>
+    <div class="panel life">
+      <div class="life-grid">
+        <span class="life-line" aria-hidden="true"></span>
+        <span class="life-dot" aria-hidden="true"></span>
+        <span class="lf-pin" style="grid-column:1" aria-hidden="true">1</span><span class="lf-pin" style="grid-column:2" aria-hidden="true">2</span><span class="lf-pin" style="grid-column:3" aria-hidden="true">3</span><span class="lf-pin" style="grid-column:4" aria-hidden="true">4</span><span class="lf-pin" style="grid-column:5" aria-hidden="true">5</span><span class="lf-pin" style="grid-column:6" aria-hidden="true">6</span><span class="lf-pin" style="grid-column:7" aria-hidden="true">7</span>
+        <div class="lf"><span class="ev"><span class="lf-mob">1 · </span>SessionStart</span><h3>session_overview.py</h3><p data-en="Situation report: uncommitted files → title of the chat editing them.">Lagebild: uncommittete Dateien → Titel des Chats, der sie bearbeitet; offene Übergaben, Backup-Erinnerung, alle 3 Tage Workflow-Check.</p><span class="hbadge" style="--hue: var(--accent)"><svg class="ico"><use href="#i-info"/></svg><span data-en="Context">Kontext</span></span></div>
+        <div class="lf"><span class="ev"><span class="lf-mob">2 · </span>UserPromptSubmit</span><h3>chat_length_hint.py</h3><p data-en="From ~150k tokens: suggest a new chat; from ~250k also notify you.">Ab ~150k Token: neuen Chat vorschlagen; ab ~250k auch Meldung an dich. „chat weiter“ übernimmt eine Übergabe.</p><span class="hbadge" style="--hue: var(--accent)"><svg class="ico"><use href="#i-info"/></svg><span data-en="Hint">Hinweis</span></span></div>
+        <div class="lf"><span class="ev"><span class="lf-mob">3 · </span>PreToolUse</span><h3>pre_tool_guard.py</h3><p data-en="Broad &lt;code&gt;pkill&lt;/code&gt;, real &lt;code&gt;robot_ip&lt;/code&gt; → question. Missing &lt;code&gt;ROS_DOMAIN_ID&lt;/code&gt;, protected files, other chats&#x27; changes, missing skill, generic subagent → warning.">Breites <code>pkill</code>, echte <code>robot_ip</code> → Rückfrage. Fehlende <code>ROS_DOMAIN_ID</code>, geschützte Dateien, fremde Änderungen, fehlender Skill, generischer Subagent → Warnung.</p><span class="hbadge" style="--hue: var(--gold)"><svg class="ico"><use href="#i-q"/></svg><span data-en="Question · warning">Rückfrage · Warnung</span></span></div>
+        <div class="lf"><span class="ev"><span class="lf-mob">4 · </span><span data-en="Tool">Werkzeug</span></span><h3>Edit · Write · Bash</h3><p data-en="The actual work: change a file, start a test, run a script.">Die eigentliche Arbeit – Datei ändern, Test starten, Skript ausführen.</p><span class="hbadge" style="--hue: var(--violet)"><svg class="ico"><use href="#i-code"/></svg><span data-en="Work">Arbeit</span></span></div>
+        <div class="lf"><span class="ev"><span class="lf-mob">5 · </span>PostToolUse</span><h3>post_edit_check.py</h3><p data-en="flake8, JSON/YAML, &lt;code&gt;cursor: help&lt;/code&gt;, accent border, corner radius, &lt;code&gt;tools/check_*&lt;/code&gt;; adds the file to the register.">flake8, JSON/YAML, <code>cursor: help</code>, Akzent-Rand, Ecken-Radius, <code>tools/check_*</code>; trägt die Datei ins Register ein.</p><span class="hbadge" style="--hue: var(--gold)"><svg class="ico"><use href="#i-warn"/></svg><span data-en="Finding → fix at once">Befund → sofort beheben</span></span></div>
+        <div class="lf"><span class="ev"><span class="lf-mob">6 · </span>Stop</span><h3>format_check.py</h3><p data-en="Checks the ending of the answer: status line, status chips, chat status as the last line.">Prüft den Schluss der Antwort: Status-Zeile, sechs Status-Chips, nach dem Commit Git-Status und Rollen, Chat-Status als letzte Zeile.</p><span class="hbadge" style="--hue: var(--red)"><svg class="ico"><use href="#i-stop"/></svg><span data-en="Block → redo the ending">Block → Schluss neu</span></span></div>
+        <div class="lf"><span class="ev"><span class="lf-mob">7 · </span>git commit</span><h3>tools/pre-commit</h3><p data-en="Checks only staged files, mostly under 10&amp;nbsp;s; reminds of the &lt;code&gt;safety-reviewer&lt;/code&gt; on safety-critical paths.">Prüft nur Gestagtes, meist unter 10&nbsp;s; erinnert bei sicherheitskritischen Pfaden an den <code>safety-reviewer</code>.</p><span class="hbadge" style="--hue: var(--green)"><svg class="ico"><use href="#i-check"/></svg><span data-en="Check">Prüfung</span></span></div>
+      </div>
+    </div>
+      </section>
+      <section class="sec" id="dod">
+        <header class="sec-head">
+          <div><span class="eyebrow" style="--hue: var(--green)"><span class="n">07</span><span data-en="Done">Fertig</span></span><h2 data-en="Definition of Done">Definition of Done</h2></div>
+          <div class="brief"><dl><dt data-en="Evidence">Beleg</dt><dd data-en="Check output from this chat, after the last change">Prüf-Ausgabe aus diesem Chat, nach der letzten Änderung</dd><dt data-en="One topic">Ein Thema</dt><dd data-en="per chat; a new chat only after your choice">je Chat; neuer Chat erst nach Auswahl</dd></dl></div>
+        </header>
+    <div class="dod">
+      <div class="panel dod-t">
+        <h3 data-en="Definition of Done: what changed decides the check">Definition of Done – was geändert wurde, bestimmt die Prüfung</h3>
+        <table>
+          <thead><tr><th data-en="Changed">Geändert</th><th data-en="Check and update">Prüfen und mitziehen</th></tr></thead>
+          <tbody>
+            <tr><td>Web-UI</td><td data-en="Skill &lt;code&gt;ui-change&lt;/code&gt;, &lt;code&gt;ui_new_code_checker.py&lt;/code&gt;, light + dark">Skill <code>ui-change</code>, <code>ui_new_code_checker.py</code>, hell + dunkel</td></tr>
+            <tr><td>UX | Nexus Launcher</td><td data-en="&lt;code&gt;pytest ros2_nexus/test&lt;/code&gt; + checker &lt;code&gt;--pages nexus&lt;/code&gt;"><code>pytest ros2_nexus/test</code> + Checker <code>--pages nexus</code></td></tr>
+            <tr><td>UX | Monitoring</td><td data-en="pytest of the suite + &lt;code&gt;--pages mon,mon-light&lt;/code&gt;">pytest der Suite + <code>--pages mon,mon-light</code></td></tr>
+            <tr><td>Motion, Sandbox, VLA</td><td data-en="&lt;code&gt;vla_bridge&lt;/code&gt; pytest + &lt;code&gt;grasp_e2e.py --quick&lt;/code&gt;; prompts: &lt;code&gt;vla_eval.py --check&lt;/code&gt;"><code>vla_bridge</code>-pytest + <code>grasp_e2e.py --quick</code>; Prompts: <code>vla_eval.py --check</code></td></tr>
+            <tr><td data-en="ROS package">ROS-Paket</td><td>Skill <code>build-pkg</code>, <code>check_ws.py</code></td></tr>
+            <tr><td data-en="Ports, whitelist">Ports, Whitelist</td><td><code>check_ports.py</code></td></tr>
+            <tr><td>.claude/, AGENTS.md</td><td><code>test_hooks.py</code> + <code>test_skills.py</code></td></tr>
+            <tr><td data-en="Public presentation">Außendarstellung</td><td><code>check_showcase.py</code>, Agent <code>showcase-reviewer</code></td></tr>
+            <tr><td data-en="Docs">Doku</td><td data-en="Skill &lt;code&gt;docs&lt;/code&gt; (en + de), Agent &lt;code&gt;docs-auditor&lt;/code&gt;">Skill <code>docs</code> (en + de), Agent <code>docs-auditor</code></td></tr>
+            <tr><td data-en="New feature, name, port">Neue Funktion, Name, Port</td><td data-en="docs/en + de, README + readme-de, manual, setup card">docs/en + de, README + readme-de, Handbuch, Setup-Karte</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="panel commit-path">
+        <h3 data-en="Path of a commit">Weg eines Commits</h3>
+        <div class="cp">
+          <div class="cp-s" style="--hue: var(--accent)"><span class="dot"><svg class="ico"><use href="#i-code"/></svg></span><b data-en="Collect own files">Eigene Dateien sammeln</b><p data-en="&lt;code&gt;git status&lt;/code&gt; + file register: only what this chat changed."><code>git status</code> + Datei-Register: nur, was dieser Chat geändert hat.</p></div>
+          <div class="cp-s" style="--hue: var(--gold)"><span class="dot"><svg class="ico"><use href="#i-check"/></svg></span><b>tools/pre-commit</b><p data-en="flake8, JSON/YAML, tokens, ports, showcase, hook tests, depending on staged paths.">flake8, JSON/YAML, Tokens, Ports, Showcase, Hook-Tests – je nach gestagten Pfaden.</p></div>
+          <div class="cp-s" style="--hue: var(--violet)"><span class="dot"><svg class="ico"><use href="#i-git"/></svg></span><b data-en="Commit in repo style">Commit im Repo-Stil</b><p data-en="&lt;code&gt;feat(ui): …&lt;/code&gt; · &lt;code&gt;docs(vla): …&lt;/code&gt; · &lt;code&gt;fix(motion): …&lt;/code&gt;, with co-author line."><code>feat(ui): …</code> · <code>docs(vla): …</code> · <code>fix(motion): …</code>, mit Co-Author-Zeile.</p></div>
+          <div class="cp-s" style="--hue: var(--green)"><span class="dot"><svg class="ico"><use href="#i-go"/></svg></span><b data-en="Push to main">Push auf main</b><p data-en="Never &lt;code&gt;--force&lt;/code&gt;. Result in the answer&#x27;s chip &lt;code&gt;📦 a1b2c3d&lt;/code&gt;.">Nie <code>--force</code>. Ergebnis im Chip <code>📦 a1b2c3d</code> der Antwort.</p></div>
+        </div>
+      </div>
+    </div>
+    <div class="panel prefix">
+      <div><h3 data-en="One topic per chat">Ein Thema je Chat</h3><p data-en="New task with a different prefix, large rebuild or long context → Claude suggests a new chat but never switches on its own. The start text comes only after your choice.">Neue Aufgabe mit anderem Präfix, großer Umbau oder langer Kontext → Claude schlägt einen neuen Chat vor, wechselt aber nie selbst. Den Starttext gibt es erst nach deiner Auswahl.</p></div>
+      <div class="pfx">
+        <span data-en="&lt;b&gt;[Agent]&lt;/b&gt;Workflow, AGENTS.md, skills, hooks, settings, memory"><b>[Agent]</b>Workflow, AGENTS.md, Skills, Hooks, Settings, Memory</span>
+        <span data-en="&lt;b&gt;[RCU]&lt;/b&gt;UX | Control Interface, twin, VR"><b>[RCU]</b>UX | Control Interface, Twin, VR</span>
+        <span><b>[Nexus]</b>UX | Nexus Launcher + UX | Compact Interface</span>
+        <span data-en="&lt;b&gt;[Mon]&lt;/b&gt;UX | Monitoring, evaluation"><b>[Mon]</b>UX | Monitoring, Evaluierung</span>
+        <span data-en="&lt;b&gt;[VLA]&lt;/b&gt;vla_bridge, Motion Handler, grasping, sandbox"><b>[VLA]</b>vla_bridge, Motion Handler, Greifen, Sandbox</span>
+        <span data-en="&lt;b&gt;[Vision]&lt;/b&gt;ZED, YOLO, Octomap, gaze control, voice commands"><b>[Vision]</b>ZED, YOLO, Octomap, Blicksteuerung, Sprachbefehle</span>
+        <span data-en="&lt;b&gt;[Infra]&lt;/b&gt;network.yaml, ports, build, tools/, system"><b>[Infra]</b>network.yaml, Ports, Build, tools/, System</span>
+        <span data-en="&lt;b&gt;[Doku]&lt;/b&gt;docs, README, manual, setup card, poster"><b>[Doku]</b>docs, README, Handbuch, Setup-Karte, Poster</span>
+      </div>
+    </div>
+      </section>
+      <section class="sec" id="lernen">
+        <header class="sec-head">
+          <div><span class="eyebrow" style="--hue: var(--pink)"><span class="n">08</span><span data-en="Learning">Lernen</span></span><h2 data-en="Learning from corrections">Lernen aus Korrekturen</h2></div>
+          <div class="brief"><dl><dt data-en="Record">Festhalten</dt><dd data-en="in Memory, AGENTS.md or a skill, depending on scope">in Memory, AGENTS.md oder einem Skill, je nach Reichweite</dd><dt data-en="Enforce">Durchsetzen</dt><dd data-en="where possible, a hook checks it automatically from then on">wo möglich prüft danach ein Hook automatisch</dd></dl></div>
+        </header>
+    <div class="panel learn">
+      <div class="lflow">
+        <div class="lstep" style="--hue: var(--accent)"><span class="k"><svg class="ico"><use href="#i-user"/></svg><span data-en="1 · Developer">1 · Entwickler</span></span><b data-en="Correction in the chat">Korrektur im Chat</b><p data-en="“Corners rounded again – but subtly.”">„Ecken wieder runden – aber dezent.“</p></div>
+        <svg class="ico" aria-hidden="true"><use href="#i-go"/></svg>
+        <div class="lstep" style="--hue: var(--violet)"><span class="k"><svg class="ico"><use href="#i-brain"/></svg><span data-en="2 · Record">2 · Festhalten</span></span><b>Memory · AGENTS.md · Skill</b><p data-en="One file per fact, with reason and how to apply it.">Eine Datei je Fakt, mit Grund und Anwendung.</p></div>
+        <svg class="ico" aria-hidden="true"><use href="#i-go"/></svg>
+        <div class="lstep" style="--hue: var(--gold)"><span class="k"><svg class="ico"><use href="#i-shield"/></svg><span data-en="3 · Enforce">3 · Durchsetzen</span></span><b data-en="Hook or check script">Hook oder Prüfskript</b><p data-en="New lines are checked automatically.">Neue Zeilen werden automatisch geprüft.</p></div>
+        <svg class="ico" aria-hidden="true"><use href="#i-go"/></svg>
+        <div class="lstep" style="--hue: var(--green)"><span class="k"><svg class="ico"><use href="#i-loop"/></svg><span data-en="4 · Every chat">4 · Jeder Chat</span></span><b data-en="Follows it">Hält sich daran</b><p data-en="Also after an account switch, on another computer or in Antigravity/Gemini.">Auch nach Kontowechsel, auf einem anderen Rechner oder in Antigravity/Gemini.</p></div>
+      </div>
+      <div class="lex">
+        <span class="lex-h" data-en="Examples from this repo">Beispiele aus diesem Repo</span>
+        <div class="lex-r"><span data-en="“Subtly rounded corners” (4&amp;nbsp;Oct&amp;nbsp;2026)">„Ecken dezent gerundet“ (04.10.2026)</span><i></i><span>Memory <code>project-docs-radius</code></span><i></i><span data-en="Edit hook checks &lt;code&gt;border-radius&lt;/code&gt; in &lt;code&gt;docs/{project,present,operate,develop}_*.html&lt;/code&gt;">Edit-Hook prüft <code>border-radius</code> in <code>docs/{project,present,operate,develop}_*.html</code></span><i></i><span data-en="This page: &lt;code&gt;--radius: 6px&lt;/code&gt;">Diese Seite: <code>--radius: 6px</code></span></div>
+        <div class="lex-r"><span data-en="“UX | Nexus Launcher, never the old name”">„UX | Nexus Launcher, nie der alte Name“</span><i></i><span><code>AGENTS.md</code> §&nbsp;1 + <code>brand.yaml</code></span><i></i><span><code>check_showcase.py</code>: <code>forbidden_names</code></span><i></i><span data-en="README, project pages, poster">README, Projektseiten, Poster</span></div>
+        <div class="lex-r"><span data-en="“No grey text, no accent border”">„Kein grauer Text, kein Akzent-Rand“</span><i></i><span><code>AGENTS.md</code> §&nbsp;3</span><i></i><span data-en="&lt;code&gt;post_edit_check.py&lt;/code&gt; checks new lines"><code>post_edit_check.py</code> prüft neue Zeilen</span><i></i><span data-en="all web UIs + project pages">alle Web-UIs + Projektseiten</span></div>
+      </div>
+    </div>
+      </section>
+      <section class="sec" id="dateien">
+        <header class="sec-head">
+          <div><span class="eyebrow" style="--hue: var(--indigo)"><span class="n">09</span><span data-en="Files">Dateien</span></span><h2 data-en="Files in the repo">Dateien im Repo</h2></div>
+          <div class="brief"><dl><dt data-en="In the repo">Im Repo</dt><dd data-en="Rules, skills, hooks, agents, mods, memory">Regeln, Skills, Hooks, Agenten, Mods, Memory</dd><dt data-en="Per computer">Je Rechner</dt><dd data-en="User settings, synced with &lt;code&gt;tools/ws_sync.sh&lt;/code&gt;">Benutzer-Settings, abgeglichen mit <code>tools/ws_sync.sh</code></dd><dt data-en="Chat histories">Chat-Verläufe</dt><dd data-en="Synced by &lt;code&gt;tools/chat_sync.py&lt;/code&gt;">Abgleich mit <code>tools/chat_sync.py</code></dd></dl></div>
+        </header>
+    <div class="setup">
+      <div class="panel tree">
+        <h3 data-en="What lives where">Was wo liegt</h3>
+        <div class="tr"><span class="p"><svg class="ico"><use href="#i-repo"/></svg>dev_ws/</span><span class="w" data-en="ROS&amp;nbsp;2 Humble workspace, branch &lt;code&gt;main&lt;/code&gt;">ROS-2-Humble-Workspace, Branch <code>main</code></span></div>
+        <div class="tr" style="--d:1"><span class="p"><svg class="ico"><use href="#i-book"/></svg>AGENTS.md</span><span class="w" data-en="Rules for every chat: safety, names, answer format, UI rules, map, Definition of Done&lt;span class=&quot;chip&quot;&gt;127 lines&lt;/span&gt;">Regeln für jeden Chat: Sicherheit, Namen, Antwortformat, UI-Regeln, Karte, Definition of Done<span class="chip">127 Zeilen</span></span></div>
+        <div class="tr" style="--d:1"><span class="p"><svg class="ico"><use href="#i-book"/></svg>src/&lt;pkg&gt;/CLAUDE.md</span><span class="w" data-en="Module maps of the large packages (UX | Control Interface, UX | Monitoring, vla_bridge, UX | Nexus Launcher)">Modul-Karten der großen Pakete (UX | Control Interface, UX | Monitoring, vla_bridge, UX | Nexus Launcher)</span></div>
+        <div class="tr" style="--d:1"><span class="p" style="--hue: var(--gold)"><svg class="ico"><use href="#i-user"/></svg>.claude/ROLES.md</span><span class="w" data-en="Role map: 8 specialist roles + 3 fixed steps → lead skills, agents, checks">Rollenkarte: 8 Fachrollen + 3 feste Schritte → Leit-Skills, Agenten, Prüfungen</span></div>
+        <div class="tr" style="--d:1"><span class="p" style="--hue: var(--gold)"><svg class="ico"><use href="#i-key"/></svg>.claude/settings.json</span><span class="w" data-en="Hooks on five events, allowed check commands, blocked folders, plugins">Hooks an fünf Ereignissen, erlaubte Prüfbefehle, gesperrte Ordner, Plugins</span></div>
+        <div class="tr" style="--d:1"><span class="p" style="--hue: var(--gold)"><svg class="ico"><use href="#i-key"/></svg>.claude/user-settings.json</span><span class="w" data-en="Template for &lt;code&gt;~/.claude/settings.json&lt;/code&gt; on every computer: model, effort per model, mods, Remote Control">Vorlage für <code>~/.claude/settings.json</code> auf allen Rechnern: Modell, Effort je Modell, Mods, Remote Control</span></div>
+        <div class="tr" style="--d:1"><span class="p" style="--hue: var(--gold)"><svg class="ico"><use href="#i-shield"/></svg>.claude/hooks/</span><span class="w" data-en="9 Python hooks + test suites &lt;code&gt;test_hooks.py&lt;/code&gt;, &lt;code&gt;test_skills.py&lt;/code&gt;">9 Python-Hooks + Testsuites <code>test_hooks.py</code>, <code>test_skills.py</code></span></div>
+        <div class="tr" style="--d:1"><span class="p" style="--hue: var(--teal)"><svg class="ico"><use href="#i-layers"/></svg>.claude/skills/</span><span class="w" data-en="27 skills, scripts and templates in the skill&#x27;s folder">27 Skills, Skripte und Vorlagen im Ordner des Skills</span></div>
+        <div class="tr" style="--d:1"><span class="p" style="--hue: var(--indigo)"><svg class="ico"><use href="#i-bot"/></svg>.claude/agents/</span><span class="w" data-en="10 project agents (role, model, tools, loaded skills); Opus, only &lt;code&gt;test-runner&lt;/code&gt; Sonnet">10 Projekt-Agenten (Rolle, Modell, Tools, geladene Skills); Opus, nur <code>test-runner</code> Sonnet</span></div>
+        <div class="tr" style="--d:1"><span class="p" style="--hue: var(--violet)"><svg class="ico"><use href="#i-win"/></svg>.claude/mods/</span><span class="w" data-en="&lt;code&gt;answer-cards&lt;/code&gt; (answer cards), &lt;code&gt;ros-safety-status&lt;/code&gt; (FAKE/REAL status line)"><code>answer-cards</code> (Antwort-Karten), <code>ros-safety-status</code> (FAKE/REAL-Statuszeile)</span></div>
+        <div class="tr" style="--d:1"><span class="p" style="--hue: var(--violet)"><svg class="ico"><use href="#i-brain"/></svg>.claude/memory/</span><span class="w" data-en="Memory: one file per fact, index &lt;code&gt;MEMORY.md&lt;/code&gt; (via &lt;code&gt;autoMemoryDirectory&lt;/code&gt;)">Memory: eine Datei je Fakt, Index <code>MEMORY.md</code> (über <code>autoMemoryDirectory</code>)</span></div>
+        <div class="tr" style="--d:1"><span class="p" style="--hue: var(--violet)"><svg class="ico"><use href="#i-chat"/></svg>.claude/handoff/</span><span class="w" data-en="Handoffs to a new chat; typing “chat weiter” picks them up">Übergaben an einen neuen Chat; „chat weiter“ übernimmt sie</span></div>
+        <div class="tr" style="--d:1"><span class="p" style="--hue: var(--teal)"><svg class="ico"><use href="#i-loop"/></svg>.agents/ · GEMINI.md</span><span class="w" data-en="Symlinks so Antigravity/Gemini uses the same rules, skills and memory">Symlinks, damit Antigravity/Gemini dieselben Regeln, Skills und Memory nutzt</span></div>
+        <div class="tr" style="--d:1"><span class="p" style="--hue: var(--green)"><svg class="ico"><use href="#i-term"/></svg>tools/</span><span class="w" data-en="Check and helper scripts, Git hook &lt;code&gt;pre-commit&lt;/code&gt;, sync &lt;code&gt;ws_sync.sh&lt;/code&gt; + &lt;code&gt;chat_sync.py&lt;/code&gt;, backup &lt;code&gt;ws_backup.sh&lt;/code&gt;">Prüf- und Hilfsskripte, Git-Hook <code>pre-commit</code>, Abgleich <code>ws_sync.sh</code> + <code>chat_sync.py</code>, Backup <code>ws_backup.sh</code></span></div>
+        <div class="tr" style="--d:1"><span class="p"><svg class="ico"><use href="#i-check"/></svg>TODOS.md</span><span class="w" data-en="Open items and decisions">Offene Punkte und Entscheidungen</span></div>
+      </div>
+      <div class="panel wire">
+        <h3 data-en="Wiring in &lt;code&gt;settings.json&lt;/code&gt;">Verdrahtung in <code>settings.json</code></h3>
+<pre class="code"><span class="k">"hooks"</span>: {
+  <span class="k">"SessionStart"</span>:     <span class="s">session_overview.py</span>   <span class="c" data-en="// situation">// Lagebild</span>
+  <span class="k">"UserPromptSubmit"</span>: <span class="s">chat_length_hint.py</span>  <span class="c" data-en="// chat length">// Chat-Länge</span>
+  <span class="k">"PreToolUse"</span>:       <span class="s">pre_tool_guard.py</span>    <span class="c">// Bash|Edit|Write|Agent</span>
+  <span class="k">"PostToolUse"</span>:      <span class="s">post_edit_check.py</span>   <span class="c">// Edit|Write|Bash</span>
+  <span class="k">"Stop"</span>:             <span class="s">format_check.py</span>      <span class="c" data-en="// answer ending">// Antwort-Schluss</span>
+},
+<span class="k">"permissions"</span>: {
+  <span class="k">"allow"</span>: <span class="c" data-en="16 fixed check commands (pytest, flake8, tools/check_*)">16 feste Prüfbefehle (pytest, flake8, tools/check_*)</span>
+  <span class="k">"deny"</span>:  <span class="c">12 × Read(build/, install/, log/, *.min.js, …)</span>
+}</pre>
+        <div class="env">
+          <div style="--hue: var(--accent)"><b><svg class="ico"><use href="#i-code"/></svg><span data-en="User settings">Benutzer-Settings</span></b><p data-en="&lt;code&gt;user-settings.json&lt;/code&gt; → &lt;code&gt;~/.claude/settings.json&lt;/code&gt;: model, effort, mods, Remote Control"><code>user-settings.json</code> → <code>~/.claude/settings.json</code>: Modell, Effort, Mods, Remote Control</p></div>
+          <div style="--hue: var(--violet)"><b><svg class="ico"><use href="#i-win"/></svg>claude.ai Artifacts</b><p data-en="Preview pages with comments and “Send to chat”">Vorschau-Seiten mit Kommentaren und „An Chat senden“</p></div>
+          <div style="--hue: var(--gold)"><b><svg class="ico"><use href="#i-key"/></svg><span data-en="Permissions">Berechtigungen</span></b><p data-en="Check commands allowed, risky ones ask, build folders blocked">Prüfbefehle frei, Riskantes fragt nach, Build-Ordner gesperrt</p></div>
+          <div style="--hue: var(--green)"><b><svg class="ico"><use href="#i-git"/></svg><span data-en="Git hook">Git-Hook</span></b><p data-en="&lt;code&gt;tools/install_hooks.sh&lt;/code&gt; sets up &lt;code&gt;pre-commit&lt;/code&gt;"><code>tools/install_hooks.sh</code> richtet <code>pre-commit</code> ein</p></div>
+        </div>
+      </div>
+    </div>
+      </section>
+      <section class="sec" id="zahlen">
+        <header class="sec-head">
+          <div><span class="eyebrow" style="--hue: var(--lime)"><span class="n">10</span><span data-en="Figures">Zahlen</span></span><h2 data-en="Figures from git log">Zahlen aus git log</h2></div>
+          <div class="brief"><p data-en="All values straight from &lt;code&gt;git log&lt;/code&gt; on &lt;code&gt;main&lt;/code&gt;, as of 6 Oct 2026.">Alle Werte direkt aus <code>git log</code> auf <code>main</code>, Stand 06.10.2026.</p></div>
+        </header>
+    <div class="ev">
+      <div class="kpis kpis-6" aria-label="Kennzahlen" data-en-aria="Key figures">
+        <div class="kpi" style="--hue: var(--accent)"><strong data-num="2303">2303</strong><span data-en="&lt;b&gt;commits&lt;/b&gt; since March"><b>Commits</b> seit März</span></div>
+        <div class="kpi" style="--hue: var(--accent)"><strong data-num="1362">1362</strong><span data-en="&lt;b&gt;commits&lt;/b&gt; in 30 days"><b>Commits</b> in 30 Tagen</span></div>
+        <div class="kpi" style="--hue: var(--teal)"><strong data-num="575">575</strong><span data-en="&lt;b&gt;docs commits&lt;/b&gt; (25&amp;nbsp;%)"><b>Doku-Commits</b> (25&nbsp;%)</span></div>
+        <div class="kpi" style="--hue: var(--violet)"><strong data-num="27">27</strong><span data-en="&lt;b&gt;skills&lt;/b&gt; in the repo"><b>Skills</b> im Repo</span></div>
+        <div class="kpi" style="--hue: var(--indigo)"><strong data-num="10">10</strong><span data-en="&lt;b&gt;agents&lt;/b&gt; for separate jobs"><b>Agenten</b> für Einzelaufträge</span></div>
+        <div class="kpi" style="--hue: var(--orange)"><strong data-num="16">16</strong><span data-en="&lt;b&gt;memory&lt;/b&gt; preferences"><b>Memory</b>-Vorgaben</span></div>
+      </div>
+      <div class="gitg charts">
+        <div class="panel chart" data-chart>
+          <h3 data-en="Commits per month">Commits je Monat</h3>
+          <p class="sub" data-en="2026, all commits on &lt;code&gt;main&lt;/code&gt;; October up to the 6th.">2026, alle Commits auf <code>main</code>; Oktober bis 06.10.</p>
+          <div class="vbars">
+            <div class="vb-axis" aria-hidden="true"><span>900</span><span>600</span><span>300</span></div>
+            <div class="vb-plot">
+              <div class="vb-grid" aria-hidden="true"><i></i><i></i><i></i></div>
+              <div class="vb-cols">
+                <div class="vb" style="--v:105" tabindex="0" aria-label="März: 105 Commits" data-en-aria="March: 105 commits"><span class="tt" data-en="March · 105">März · 105</span></div>
+                <div class="vb" style="--v:0" tabindex="0" aria-label="April: 0 Commits" data-en-aria="April: 0 commits"><span class="tt">April · 0</span></div>
+                <div class="vb" style="--v:123" tabindex="0" aria-label="Mai: 123 Commits" data-en-aria="May: 123 commits"><span class="tt" data-en="May · 123">Mai · 123</span></div>
+                <div class="vb" style="--v:350" tabindex="0" aria-label="Juni: 350 Commits" data-en-aria="June: 350 commits"><span class="tt" data-en="June · 350">Juni · 350</span></div>
+                <div class="vb" style="--v:13" tabindex="0" aria-label="Juli: 13 Commits" data-en-aria="July: 13 commits"><span class="tt" data-en="July · 13">Juli · 13</span></div>
+                <div class="vb" style="--v:242" tabindex="0" aria-label="August: 242 Commits" data-en-aria="August: 242 commits"><span class="tt">August · 242</span></div>
+                <div class="vb" style="--v:708" tabindex="0" aria-label="September: 708 Commits" data-en-aria="September: 708 commits"><span class="lbl">708</span><span class="tt">September · 708</span></div>
+                <div class="vb" style="--v:762" tabindex="0" aria-label="Oktober bis 6.: 762 Commits" data-en-aria="October up to the 6th: 762 commits"><span class="lbl">762</span><span class="tt" data-en="1–6 October · 762">1.–6. Oktober · 762</span></div>
+              </div>
+            </div>
+            <div class="vb-x" aria-hidden="true"><span data-en="Mar">Mär</span><span>Apr</span><span data-en="May">Mai</span><span>Jun</span><span>Jul</span><span>Aug</span><span>Sep</span><span data-en="Oct*">Okt*</span></div>
+          </div>
+          <p class="callout" data-en="&lt;b&gt;Since September&lt;/b&gt; with skills, hooks and agents: 1,362 commits in 30&amp;nbsp;days. *October: six days only."><b>Seit September</b> mit Skills, Hooks und Agenten: 1.362 Commits in 30&nbsp;Tagen. *Oktober: nur sechs Tage.</p>
+          <details><summary data-en="As a table">Als Tabelle</summary>
+            <table><thead><tr><th data-en="Month">Monat</th><th class="r">Commits</th></tr></thead><tbody>
+              <tr><td data-en="March">März</td><td class="r">105</td></tr><tr><td>April</td><td class="r">0</td></tr><tr><td data-en="May">Mai</td><td class="r">123</td></tr><tr><td data-en="June">Juni</td><td class="r">350</td></tr>
+              <tr><td data-en="July">Juli</td><td class="r">13</td></tr><tr><td>August</td><td class="r">242</td></tr><tr><td>September</td><td class="r">708</td></tr><tr><td data-en="October (1–6)">Oktober (1.–6.)</td><td class="r">762</td></tr>
+            </tbody></table>
+          </details>
+        </div>
+        <div class="panel chart" data-chart>
+          <h3 data-en="Type of change">Art der Änderung</h3>
+          <p class="sub" data-en="Conventional commit type, all 2,303 commits">Conventional-Commit-Typ, alle 2.303 Commits</p>
+          <div class="hbars" style="--max:575">
+          <div class="hrow"><span>docs</span><span class="htrack"><span class="hb" style="--v:575" tabindex="0" aria-label="docs: 575"><span class="tt" data-en="docs · 575">Doku · 575</span></span></span><span class="v">575</span></div>
+          <div class="hrow"><span>feat</span><span class="htrack"><span class="hb" style="--v:572" tabindex="0" aria-label="feat: 572"><span class="tt" data-en="new feature · 572">neue Funktion · 572</span></span></span><span class="v">572</span></div>
+          <div class="hrow"><span>fix</span><span class="htrack"><span class="hb" style="--v:310" tabindex="0" aria-label="fix: 310"><span class="tt" data-en="bug fix · 310">Fehlerbehebung · 310</span></span></span><span class="v">310</span></div>
+          <div class="hrow"><span>style</span><span class="htrack"><span class="hb" style="--v:166" tabindex="0" aria-label="style: 166"><span class="tt" data-en="styling · 166">Optik · 166</span></span></span><span class="v">166</span></div>
+          <div class="hrow"><span>chore</span><span class="htrack"><span class="hb" style="--v:120" tabindex="0" aria-label="chore: 120"><span class="tt" data-en="maintenance · 120">Pflege · 120</span></span></span><span class="v">120</span></div>
+          <div class="hrow"><span>refactor</span><span class="htrack"><span class="hb" style="--v:48" tabindex="0" aria-label="refactor: 48"><span class="tt" data-en="refactoring · 48">Umbau · 48</span></span></span><span class="v">48</span></div>
+          <div class="hrow"><span>ui</span><span class="htrack"><span class="hb" style="--v:39" tabindex="0" aria-label="ui: 39"><span class="tt" data-en="UI (older type) · 39">UI (älterer Typ) · 39</span></span></span><span class="v">39</span></div>
+          </div>
+          <p class="callout" data-en="&lt;b&gt;docs before feat:&lt;/b&gt; documentation is written in the same go as the code."><b>docs vor feat:</b> Doku entsteht im selben Zug wie der Code.</p>
+        </div>
+      </div>
+    </div>
+      </section>
+    </div>
+  </div>
+
+  <!-- ═════════ Weiter: Links + Kontakt ═════════ -->
+  <section class="contact dark-zone" id="weiter" aria-labelledby="weiter-h">
+    <div class="wrap">
+      <div class="ct-copy">
+        <span class="eyebrow" data-en="Next">Weiter</span>
+        <h2 id="weiter-h" data-en="Reuse in your own project">Im eigenen Projekt nutzen</h2>
+        <p data-en="Rules, skills, hooks and agents are text files in &lt;code&gt;AGENTS.md&lt;/code&gt;, &lt;code&gt;.claude/&lt;/code&gt; and &lt;code&gt;tools/&lt;/code&gt;; they can be copied and adapted.">Regeln, Skills, Hooks und Agenten sind Textdateien in <code>AGENTS.md</code>, <code>.claude/</code> und <code>tools/</code>; sie lassen sich kopieren und anpassen.</p>
+        <div class="cta-row">
+          <a class="b-pri" href="project_docs.html"><span data-en="To the project docs">Zur Projekt-Doku</span><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg></a>
+          <a class="b-sec" href="present_presentation.html"><svg class="ico" aria-hidden="true"><use href="#i-arm"/></svg><span data-en="Project presentation">Projektvorstellung</span></a>
+        </div>
+      </div>
+          <div class="vcard" role="group" aria-label="Visitenkarte: UX Robot, Marius Kaul" data-en-aria="Business card: UX Robot, Marius Kaul">
+            <div class="vc-head"><span class="brand-mark"><svg class="ico" aria-hidden="true"><use href="#i-arm"/></svg></span><span><b>UX Robot</b><small>Docs Claude Workflow</small></span></div>
+            <div class="vc-body">
+              <div>
+                <div class="vc-name">Marius Kaul</div>
+                <div class="vc-role" data-en="UX Lab · Rhine-Waal University of Applied Sciences">UX-Labor · Hochschule Rhein-Waal</div>
+                <div class="vc-links">
+                  <a href="mailto:marius.kaul@hochschule-rhein-waal.de"><svg class="ico" aria-hidden="true"><use href="#i-mail"/></svg>marius.kaul@hochschule-rhein-waal.de</a>
+                  <a href="https://lu4k87.github.io/" target="_blank" rel="noopener"><svg class="ico" aria-hidden="true"><use href="#i-globe"/></svg>lu4k87.github.io</a>
+                </div>
+              </div>
+              <a class="vc-qr" href="https://lu4k87.github.io/" target="_blank" rel="noopener"><span class="qr-code"><svg role="img" aria-label="QR-Code: Projekt-Doku öffnen" data-en-aria="QR code: open the project docs"><use href="#qr-docs"/></svg></span><span data-en="Open page">Seite öffnen</span></a>
+            </div>
+          </div>
+    </div>
+  </section>
+</main>
+
+<footer><div class="wrap"><a class="qr-foot" href="https://lu4k87.github.io/" target="_blank" rel="noopener"><span class="qr-code"><svg role="img" aria-label="QR-Code: Projekt-Doku öffnen" data-en-aria="QR code: open the project docs"><use href="#qr-docs"/></svg></span><span class="qr-txt"><b data-en="Open page">Seite öffnen</b><small>lu4k87.github.io</small></span></a><span data-en="Last updated 07.10.2026 · sources: git log, .claude/, AGENTS.md">Stand 07.10.2026 · Quellen: git log, .claude/, AGENTS.md</span><span><a class="foot-link" href="project_docs.html" data-en="Project docs">Projekt-Doku</a> · dev_ws · docs/develop_workflow.html</span></div></footer>
+
+<script src="js/scroll_flow.js"></script>
+<script src="js/landing.js"></script>
+<script>
+/* ═════════ FlowGraph-Engine (unverändert übernehmen) ═════════
+   create(figure, SPEC, { lang }) → { setLang, setRates, select, destroy }
+   SPEC: lanes[] (Spalten), nodes[] (lane, row, label, sub, icon, hue, info),
+         edges[] (from, to, kind topic|service|action|stream, label, hz, ports 'rl'…, route 'ortho'),
+         scenarios[] (id, label, icon, hue, text, steps[{ edge 'a>b' | 'b>a' bei service/action, note, also[] }]) */
+const FlowGraph = (() => {
+  const NS = 'http://www.w3.org/2000/svg';
+  const el = (tag, attrs, parent) => {
+    const e = document.createElementNS(NS, tag);
+    for (const [k, v] of Object.entries(attrs || {})) if (v != null) e.setAttribute(k, v);
+    if (parent) parent.append(e);
+    return e;
+  };
+  const ease = k => (k < .5 ? 4 * k * k * k : 1 - (-2 * k + 2) ** 3 / 2);
+  const NRM = { l: [-1, 0], r: [1, 0], t: [0, -1], b: [0, 1] };
+  const TRANS = { l: 't', r: 'b', t: 'l', b: 'r' };  // Ports im schmalen Layout (Lanes untereinander) drehen
+  const ortho = (p, sa, q, sb) => {  // rechtwinklige Führung durch die Lücke zwischen Zeilen/Spalten, Ecken r ≤ 10
+    const v = s => s === 't' || s === 'b';
+    let pts = [p];
+    if (v(sa) && v(sb)) { const m = (p[1] + q[1]) / 2; pts.push([p[0], m], [q[0], m]); }
+    else if (!v(sa) && !v(sb)) { const m = (p[0] + q[0]) / 2; pts.push([m, p[1]], [m, q[1]]); }
+    else pts.push(v(sa) ? [p[0], q[1]] : [q[0], p[1]]);
+    pts.push(q);
+    pts = pts.filter((a, i) => !i || Math.hypot(a[0] - pts[i - 1][0], a[1] - pts[i - 1][1]) > .5);
+    let d = `M${pts[0]}`;
+    for (let i = 1; i < pts.length - 1; i++) {
+      const a = pts[i - 1], b = pts[i], c = pts[i + 1];
+      const la = Math.hypot(b[0] - a[0], b[1] - a[1]), lc = Math.hypot(c[0] - b[0], c[1] - b[1]), r = Math.min(10, la / 2, lc / 2);
+      d += ` L${b[0] + (a[0] - b[0]) * r / la},${b[1] + (a[1] - b[1]) * r / la} Q${b} ${b[0] + (c[0] - b[0]) * r / lc},${b[1] + (c[1] - b[1]) * r / lc}`;
+    }
+    return `${d} L${pts.at(-1)}`;
+  };
+  const fit = (t, max) => { while (t.getComputedTextLength() > max && t.textContent.length > 4) t.textContent = `${t.textContent.slice(0, -2)}…`; };
+  const reduceMQ = matchMedia('(prefers-reduced-motion: reduce)');
+
+  function create(fig, spec, opt = {}) {
+    const o = { lang: 'de', nodeW: 176, nodeH: 56, rowGap: 34, hopMs: 750, dwellMs: 420, loopMs: 1400, pxPerSec: 170, ...opt };
+    const L = v => (Array.isArray(v) ? v[o.lang === 'en' ? 1 : 0] : v ?? '');
+    const $ = s => fig.querySelector(s);
+    const svg = $('.fg-svg'), status = $('.fg-status');
+    const nodes = new Map(spec.nodes.map(n => [n.id, { ...n }]));
+    const edges = new Map(spec.edges.map(e => [`${e.from}>${e.to}`, { kind: 'topic', ...e, key: `${e.from}>${e.to}` }]));
+    const scns = spec.scenarios || [];
+    const laneIx = new Map(spec.lanes.map((l, i) => [l.id, i]));
+    const st = { scn: scns.length ? 0 : -1, step: -1, play: !reduceMQ.matches, speed: 1, pin: null, hover: null, visible: false, run: 0, live: false };
+    const flights = new Set();
+    let geo = null, raf = 0, liveT = 0;
+
+    // Spec prüfen: Tippfehler fallen sofort in der Konsole auf statt als stumm fehlende Kante
+    for (const e of edges.values()) if (!nodes.has(e.from) || !nodes.has(e.to)) console.warn('[flow-graph] Kante mit unbekanntem Knoten:', e.key);
+    for (const n of nodes.values()) if (!laneIx.has(n.lane)) console.warn('[flow-graph] Knoten ohne Lane:', n.id);
+    const hop = key => {  // 'a>b' oder Rückweg 'b>a' einer service/action-Kante
+      if (edges.has(key)) return { e: edges.get(key), rev: false };
+      const [a, b] = key.split('>'), e = edges.get(`${b}>${a}`);
+      if (e && e.kind !== 'topic' && e.kind !== 'stream') return { e, rev: true };
+      console.warn('[flow-graph] Schritt ohne Kante:', key); return null;
+    };
+    scns.forEach(s => s.steps.forEach(x => hop(x.edge)));
+
+    // ── Layout: Lanes = Spalten (breit) bzw. Bänder untereinander (schmal), Koordinaten = echte Pixel ──
+    function layout(W) {
+      const nL = spec.lanes.length, rows = Math.max(...spec.nodes.map(n => n.row)) + 1;
+      const vert = W < Math.max(640, nL * 150);
+      const g = { W, vert, pos: new Map() };
+      if (!vert) {
+        const laneW = W / nL, nw = Math.min(o.nodeW, laneW - 24), nh = o.nodeH, top = 34, rowH = nh + o.rowGap;
+        Object.assign(g, { nw, nh, H: top + rows * rowH - o.rowGap + 46, laneW, top });
+        for (const n of nodes.values()) g.pos.set(n.id, [laneW * (laneIx.get(n.lane) + .5), top + n.row * rowH + nh / 2]);
+      } else {
+        const colW = (W - 8) / rows, nw = Math.min(o.nodeW, colW - 10), nh = 44, bandH = nh + 66;
+        Object.assign(g, { nw, nh, H: nL * bandH + 4, colW, bandH });
+        for (const n of nodes.values()) g.pos.set(n.id, [4 + colW * (n.row + .5), laneIx.get(n.lane) * bandH + 30 + nh / 2]);
+      }
+      // Ports: Seite je Kante wählen, Enden je Seite nach Lage der Gegenseite sortiert verteilen → keine übereinanderliegenden Pfeile
+      const ends = new Map();
+      for (const e of edges.values()) {
+        const [ax, ay] = g.pos.get(e.from), [bx, by] = g.pos.get(e.to);
+        let sa, sb;
+        if (e.ports) [sa, sb] = vert ? [...e.ports].map(c => TRANS[c]) : [...e.ports];
+        else if (!vert) [sa, sb] = Math.abs(ax - bx) > 1 ? (bx > ax ? 'rl' : 'lr') : (by > ay ? 'bt' : 'tb');
+        else [sa, sb] = Math.abs(ay - by) > 1 ? (by > ay ? 'bt' : 'tb') : (bx > ax ? 'rl' : 'lr');
+        e.sides = [sa, sb];
+        for (const [id, side, other] of [[e.from, sa, e.to], [e.to, sb, e.from]]) {
+          const k = `${id}:${side}`; if (!ends.has(k)) ends.set(k, []);
+          ends.get(k).push({ e, other, self: id === e.from && side === sa ? 0 : 1 });
+        }
+      }
+      for (const [k, list] of ends) {
+        const horiz = /[lr]$/.test(k), span = (horiz ? g.nh : g.nw) - 16;
+        list.sort((p, q) => { const a = g.pos.get(p.other), b = g.pos.get(q.other); return horiz ? a[1] - b[1] : a[0] - b[0]; });
+        const gap = Math.min(12, span / Math.max(1, list.length));
+        list.forEach((x, i) => { (x.e.off ||= [0, 0])[x.self] = (i - (list.length - 1) / 2) * gap; });
+      }
+      const anchor = (id, side, off) => {
+        const [x, y] = g.pos.get(id), hw = g.nw / 2, hh = g.nh / 2;
+        return { l: [x - hw, y + off], r: [x + hw, y + off], t: [x + off, y - hh], b: [x + off, y + hh] }[side];
+      };
+      for (const e of edges.values()) {
+        const [sa, sb] = e.sides, p = anchor(e.from, sa, e.off[0]), q = anchor(e.to, sb, e.off[1]);
+        if (e.route === 'ortho') { e.d = ortho(p, sa, q, sb); continue; }
+        const same = sa === sb, dist = Math.hypot(q[0] - p[0], q[1] - p[1]);
+        const d = same ? Math.min(70, 28 + dist / 6) : Math.max(28, dist / 2.4);
+        const c1 = [p[0] + NRM[sa][0] * d, p[1] + NRM[sa][1] * d], c2 = [q[0] + NRM[sb][0] * d, q[1] + NRM[sb][1] * d];
+        e.d = `M${p} C${c1} ${c2} ${q}`;
+      }
+      return g;
+    }
+
+    // ── Zeichnen (einmal je Layout; Zustände nur per Klasse) ──
+    const svgNode = new Map(), svgEdge = new Map();
+    let gBadges, gChips, gPkts;
+    function draw() {
+      const W = Math.round(svg.parentElement.clientWidth - 20);
+      if (W < 200 || (geo && geo.W === W)) return;
+      geo = layout(W);
+      svg.replaceChildren(); svgNode.clear(); svgEdge.clear();
+      svg.setAttribute('viewBox', `0 0 ${geo.W} ${geo.H}`);
+      const defs = el('defs', {}, svg);
+      for (const [id, cls] of [['fg-arr', ''], ['fg-arr-on', 'on']]) {
+        el('path', { d: 'M0 0L10 5L0 10z' }, el('marker', { id: `${fig.id}-${id}`, class: cls, viewBox: '0 0 10 10', refX: 8, refY: 5, markerWidth: 7, markerHeight: 7, orient: 'auto-start-reverse' }, defs));
+      }
+      const gl = el('g', {}, svg);
+      spec.lanes.forEach((ln, i) => {
+        if (!geo.vert) {
+          if (i) el('line', { class: 'lane-line', x1: geo.laneW * i, x2: geo.laneW * i, y1: 4, y2: geo.H - 30 }, gl);
+          el('text', { class: 'lane', x: geo.laneW * (i + .5), y: geo.H - 10, 'text-anchor': 'middle', 'data-lane': i }, gl);
+        } else {
+          if (i) el('line', { class: 'lane-line', x1: 0, x2: geo.W, y1: geo.bandH * i, y2: geo.bandH * i }, gl);
+          el('text', { class: 'lane', x: 6, y: geo.bandH * i + 16, 'data-lane': i }, gl);
+        }
+      });
+      const ge = el('g', {}, svg);
+      for (const e of edges.values()) {
+        const p = el('path', { class: `edge k-${e.kind}`, d: e.d }, ge);
+        const hit = el('path', { class: 'edge-hit', d: e.d }, ge);
+        hit.addEventListener('pointerenter', () => { st.hover = { edge: e.key }; paint(); });
+        hit.addEventListener('pointerleave', () => { st.hover = null; paint(); });
+        const len = p.getTotalLength(), n = Math.max(8, Math.ceil(len / 6)), lut = [];
+        for (let i = 0; i <= n; i++) { const pt = p.getPointAtLength((i / n) * len); lut.push([pt.x, pt.y]); }
+        svgEdge.set(e.key, { p, len, lut });
+      }
+      const gn = el('g', {}, svg);
+      for (const n of nodes.values()) {
+        const [x, y] = geo.pos.get(n.id), { nw, nh } = geo, small = nw < 120;
+        const g = el('g', { class: 'node', transform: `translate(${x - nw / 2} ${y - nh / 2})`, style: `--c: var(--${n.hue || 'accent'})`, tabindex: 0, role: 'button' }, gn);
+        el('rect', { width: nw, height: nh, rx: 2 }, g);
+        if (!small) el('use', { href: `#${n.icon}`, x: 10, y: nh / 2 - 11, width: 22, height: 22 }, g);
+        const tx = small ? nw / 2 : 40, anchor = small ? 'middle' : 'start';
+        el('text', { class: 't', x: tx, y: geo.vert ? nh / 2 + 5 : nh / 2 - 3, 'text-anchor': anchor }, g);
+        if (!geo.vert) el('text', { class: 's', x: tx, y: nh / 2 + 13, 'text-anchor': anchor }, g);
+        g.addEventListener('pointerenter', () => { st.hover = { node: n.id }; paint(); });
+        g.addEventListener('pointerleave', () => { st.hover = null; paint(); });
+        g.addEventListener('focus', () => { st.hover = { node: n.id }; paint(); });
+        g.addEventListener('blur', () => { st.hover = null; paint(); });
+        g.addEventListener('click', () => { st.pin = st.pin === n.id ? null : n.id; paint(); });
+        g.addEventListener('keydown', ev => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); g.dispatchEvent(new Event('click')); } });
+        svgNode.set(n.id, g);
+      }
+      gBadges = el('g', {}, svg); gChips = el('g', {}, svg); gPkts = el('g', {}, svg);
+      texts(); paint();
+    }
+
+    const at = (key, k, rev) => {  // Punkt auf Kante bei Anteil k (0…1), über vorab abgetastete Tabelle statt getPointAtLength je Frame
+      const { lut } = svgEdge.get(key), f = Math.max(0, Math.min(1, rev ? 1 - k : k)) * (lut.length - 1), i = Math.min(lut.length - 2, Math.floor(f)), r = f - i;
+      return [lut[i][0] + (lut[i + 1][0] - lut[i][0]) * r, lut[i][1] + (lut[i + 1][1] - lut[i][1]) * r];
+    };
+    const chip = (key, text, cls) => {  // Etikett an die erste Stelle der Kante, an der es keinen Knoten verdeckt
+      const g = el('g', { class: `chip ${cls || ''}` }, gChips), r = el('rect', { height: 22, rx: 2 }, g), t = el('text', {}, g);
+      t.textContent = text;
+      const w = t.getComputedTextLength() + 16, { nw, nh } = geo;
+      const free = (x0, y0) => [...geo.pos.values()].every(([cx, cy]) => x0 > cx + nw / 2 + 2 || x0 + w < cx - nw / 2 - 2 || y0 > cy + nh / 2 + 2 || y0 + 22 < cy - nh / 2 - 2);
+      let best = null;
+      for (const k of [.5, .4, .6, .3, .7, .2, .8]) {
+        const [x, y] = at(key, k), x0 = Math.max(2, Math.min(geo.W - w - 2, x - w / 2));
+        for (const y0 of [y - 11, y - 38, y + 16, y - 55, y + 33]) if (free(x0, y0)) { best = [x0, y0]; break; }
+        if (best) break;
+      }
+      if (!best) { const [x, y] = at(key, .5); best = [Math.max(2, Math.min(geo.W - w - 2, x - w / 2)), y - 11]; }
+      r.setAttribute('x', best[0]); r.setAttribute('y', best[1]); r.setAttribute('width', w);
+      t.setAttribute('x', best[0] + 8); t.setAttribute('y', best[1] + 11);
+    };
+    const edgeText = e => `${L(e.label)}${e.hz === 0 ? ` · ⚠ 0 Hz` : e.hz != null ? ` · ${e.hz} Hz` : ''}`;
+
+    // ── Zustand → Klassen, Badges, Chips, Detailtext (ein Ort für alle Zustandswechsel) ──
+    function paint() {
+      if (!geo) return;
+      const s = scns[st.scn], focus = st.hover?.node || st.pin;
+      const hl = new Set(), on = new Set(), nowE = new Set(), nowN = new Set();
+      svg.style.setProperty('--pc', s && !st.live ? `var(--${s.hue || 'accent'})` : 'var(--accent)');
+      if (s && !st.live) s.steps.forEach((x, i) => {
+        const h = hop(x.edge); if (!h) return;
+        on.add(h.e.key); hl.add(h.e.key); hl.add(h.e.from); hl.add(h.e.to);
+        (x.also || []).forEach(k => { on.add(k); hl.add(k); hl.add(k.split('>')[1]); });
+        if (i === st.step) { nowE.add(h.e.key); nowN.add(h.rev ? h.e.from : h.e.to); }
+      });
+      if (s && !st.live && st.step < 0 && s.steps[0]) { const h = hop(s.steps[0].edge); if (h) nowN.add(h.rev ? h.e.to : h.e.from); }
+      let dim = !!(s && !st.live);
+      if (focus) {  // Nachbarschaft des Knotens überschreibt Szenario-Hervorhebung
+        hl.clear(); hl.add(focus); dim = true;
+        for (const e of edges.values()) if (e.from === focus || e.to === focus) { hl.add(e.key); hl.add(e.from); hl.add(e.to); }
+      } else if (st.hover?.edge) { const e = edges.get(st.hover.edge); hl.clear(); [e.key, e.from, e.to].forEach(x => hl.add(x)); dim = true; }
+      svg.classList.toggle('dim', dim);
+      for (const [id, g] of svgNode) {
+        g.classList.toggle('hl', hl.has(id)); g.classList.toggle('on', hl.has(id) && dim);
+        g.classList.toggle('now', nowN.has(id)); g.classList.toggle('pin', st.pin === id);
+      }
+      for (const [k, { p }] of svgEdge) {
+        const lit = on.has(k) || (focus && hl.has(k)) || st.hover?.edge === k;
+        p.classList.toggle('hl', hl.has(k)); p.classList.toggle('on', lit); p.classList.toggle('now', nowE.has(k));
+        p.classList.toggle('stale', edges.get(k).hz === 0);
+        const both = edges.get(k).kind === 'service' || edges.get(k).kind === 'action';
+        const m = `url(#${fig.id}-${lit ? 'fg-arr-on' : 'fg-arr'})`;
+        p.setAttribute('marker-end', m); if (both) p.setAttribute('marker-start', m); else p.removeAttribute('marker-start');
+      }
+      // Schritt-Nummern auf den Kanten (auch Standbild bei reduced motion); aktuelle Kante bekommt den Chip mit Topic
+      gBadges.replaceChildren(); gChips.replaceChildren();
+      const quiet = focus || st.hover?.edge;  // beim Erkunden nur das, worauf der Zeiger steht
+      if (s && !st.live && !quiet) {  // eine Marke je Kante, mehrfach genutzte Kante zeigt alle Nummern („2,3,5“)
+        const nums = new Map(), cur = st.step >= 0 && hop(s.steps[st.step].edge)?.e.key;
+        s.steps.forEach((x, i) => { const h = hop(x.edge); if (h) nums.set(h.e.key, [...(nums.get(h.e.key) || []), i + 1]); });
+        for (const [k, list] of nums) {
+          if (k === cur) continue;
+          const [bx, by] = at(k, .5), b = el('g', { class: 'badge hl' }, gBadges), t = el('text', { x: bx, y: by }, b);
+          t.textContent = list.join(',');
+          const w = Math.max(20, t.getComputedTextLength() + 10);
+          b.prepend(el('rect', { x: bx - w / 2, y: by - 10, width: w, height: 20, rx: 2 }));
+        }
+      }
+      if (s && !st.live && !quiet && st.step >= 0) { const h = hop(s.steps[st.step].edge); if (h) chip(h.e.key, `${st.step + 1} · ${L(s.steps[st.step].topic) || edgeText(h.e)}`, 'now'); }
+      // Knoten-Fokus: Topics stehen im Detailfeld (Ein-/Ausgänge), nicht als Etiketten-Wolke im Bild
+      if (st.hover?.edge) chip(st.hover.edge, edgeText(edges.get(st.hover.edge)));
+      else if (st.live && !focus) for (const e of edges.values()) if (e.hz === 0) chip(e.key, edgeText(e));  // nur Abweichung beschriften
+      detail(focus);
+      $$('.fg-steps li').forEach((li, i) => li.classList.toggle('now', i === st.step));
+      $$('.fg-scn button').forEach((b, i) => b.setAttribute('aria-pressed', String(st.live ? b.dataset.live === '1' : i === st.scn && !b.dataset.live)));
+      const pb = $('[data-act="play"]');
+      pb.querySelector('use').setAttribute('href', st.play ? '#i-pause' : '#i-play');
+      pb.setAttribute('aria-label', st.play ? L(['Pause', 'Pause']) : L(['Abspielen', 'Play']));
+      for (const a of ['prev', 'next', 'play']) $(`[data-act="${a}"]`).disabled = st.live || !s;
+    }
+    const $$ = s => [...fig.querySelectorAll(s)];
+
+    function detail(focus) {
+      const h3 = $('.fg-detail h3'), p = $('.fg-detail p'), io = $('.fg-detail .io');
+      if (focus) {
+        const n = nodes.get(focus), ins = [], outs = [];
+        for (const e of edges.values()) {
+          if (e.to === focus) ins.push(`<code>${L(e.label)}</code> ← ${L(nodes.get(e.from).label)}`);
+          if (e.from === focus) outs.push(`<code>${L(e.label)}</code> → ${L(nodes.get(e.to).label)}`);
+        }
+        h3.textContent = L(n.label); p.textContent = L(n.info) || L(n.sub);
+        io.innerHTML = (ins.length ? `<div><b>${L(['Eingänge', 'Inputs'])}</b><br>${ins.join('<br>')}</div>` : '')
+          + (outs.length ? `<div><b>${L(['Ausgänge', 'Outputs'])}</b><br>${outs.join('<br>')}</div>` : '');
+        return;
+      }
+      io.innerHTML = '';
+      if (st.live) { h3.textContent = L(['Alle Ströme', 'All streams']); p.textContent = L(['Jede Kante zeigt ihre Rate. Pakete laufen umso dichter, je höher die Frequenz.', 'Each edge shows its rate. Packets run denser the higher the frequency.']); return; }
+      const s = scns[st.scn]; if (!s) return;
+      h3.textContent = L(s.label); p.textContent = L(s.text);
+    }
+
+    function texts() {
+      svg.querySelectorAll('[data-lane]').forEach(t => { t.textContent = L(spec.lanes[+t.dataset.lane].label); });
+      for (const [id, g] of svgNode) {
+        const n = nodes.get(id), t = g.querySelector('.t'), sub = g.querySelector('.s');
+        const avail = geo.nw - (geo.vert || geo.nw < 120 ? 10 : 48);
+        t.textContent = L(geo.vert || geo.nw < 120 ? n.short || n.label : n.label); fit(t, avail);
+        if (sub) { sub.textContent = L(n.sub); fit(sub, avail); }
+        const ins = [...edges.values()].filter(e => e.to === id).length, outs = [...edges.values()].filter(e => e.from === id).length;
+        g.setAttribute('aria-label', `${L(n.label)}, ${L(n.sub)} – ${ins} ${L(['Eingänge', 'inputs'])}, ${outs} ${L(['Ausgänge', 'outputs'])}`);
+      }
+      $('.fg-scn').innerHTML = scns.map((s, i) => `<button type="button" data-i="${i}" style="--c: var(--${s.hue || 'accent'})"><svg><use href="#${s.icon}"/></svg>${L(s.label)}</button>`).join('')
+        + (spec.edges.some(e => e.hz != null) ? `<button type="button" data-live="1"><svg><use href="#i-pulse"/></svg>${L(['Alle Ströme', 'All streams'])}</button>` : '');
+      $$('.fg-scn button').forEach(b => b.addEventListener('click', () => b.dataset.live ? setLive() : select(+b.dataset.i)));
+      const s = scns[st.scn];
+      $('.fg-steps').innerHTML = !s || st.live ? '' : s.steps.map((x, i) => {
+        const h = hop(x.edge), n = h ? nodes.get(h.rev ? h.e.from : h.e.to) : null;
+        return `<li data-i="${i}"><span class="n">${i + 1}</span><span class="w"><b>${n ? L(n.label) : '?'}</b><code>${L(x.topic) || (h ? L(h.e.label) : '')}</code></span><span class="note">${L(x.note)}</span></li>`;
+      }).join('');
+      $$('.fg-steps li').forEach(li => li.addEventListener('click', () => { st.play = false; stepTo(+li.dataset.i); }));
+      const lg = [['topic', [0, 0], ['Topic', 'Topic']], ['service', [6, 4], ['Service (Anfrage ⇄ Antwort)', 'Service (request ⇄ response)']],
+        ['action', [14, 4, 2, 4], ['Action (Ziel, Feedback, Ergebnis)', 'Action (goal, feedback, result)']], ['stream', [0, 0], ['Datenstrom (Bild, Punktwolke)', 'Stream (image, point cloud)']]]
+        .filter(([k]) => spec.edges.some(e => (e.kind || 'topic') === k));
+      $('.fg-legend').innerHTML = lg.map(([k, dash, t]) => `<span><svg viewBox="0 0 34 10"><line x1="0" y1="5" x2="34" y2="5" stroke-dasharray="${dash.join(' ')}" style="${k === 'stream' ? 'stroke-width:3.4' : ''}"/></svg>${L(t)}</span>`).join('');
+    }
+
+    // ── Animation: eine rAF-Schleife für alle Pakete, läuft nur bei sichtbarer Figur ──
+    const fly = (key, rev, ms, run, hue) => new Promise(res => {
+      const [x, y] = at(key, 0, rev), g = el('g', { class: 'pkt', style: hue ? `--pc: var(--${hue})` : null, transform: `translate(${x} ${y})` }, gPkts);
+      el('circle', { class: 'halo', r: 10 }, g); el('circle', { r: 5 }, g);
+      flights.add({ key, rev, ms, t0: performance.now(), g, run, res }); kick();
+    });
+    const tick = now => {
+      raf = 0;
+      for (const f of flights) {
+        if (f.run !== st.run) { f.g.remove(); flights.delete(f); f.res(false); continue; }
+        const k = Math.max(0, Math.min(1, (now - f.t0) / f.ms)), [x, y] = at(f.key, f.live ? k : ease(k), f.rev);
+        f.g.setAttribute('transform', `translate(${x.toFixed(1)} ${y.toFixed(1)})`);
+        if (k >= 1) { f.g.remove(); flights.delete(f); f.res(true); }
+      }
+      if (st.live && st.visible && now - liveT > 50) { liveT = now; spawnLive(now); }
+      if (flights.size || (st.live && st.visible)) kick();
+    };
+    const kick = () => { if (!raf && st.visible && !document.hidden) raf = requestAnimationFrame(tick); };
+    const wait = (ms, run) => new Promise(r => setTimeout(() => r(run === st.run), ms / st.speed));
+
+    async function loop() {
+      const run = ++st.run, s = scns[st.scn];
+      if (!st.play || st.live || !s || !st.visible) return;
+      while (run === st.run) {
+        for (let i = st.step + 1; i < s.steps.length; i++) {
+          const h = hop(s.steps[i].edge); if (!h) continue;
+          (s.steps[i].also || []).forEach(k => { if (svgEdge.has(k) && !reduceMQ.matches) fly(k, false, o.hopMs / st.speed, run); });
+          if (!reduceMQ.matches && !await fly(h.e.key, h.rev, o.hopMs / st.speed, run)) return;
+          if (reduceMQ.matches && !await wait(1200, run)) return;
+          st.step = i; paint(); announce();
+          if (!await wait(o.dwellMs, run)) return;
+        }
+        if (!await wait(o.loopMs, run)) return;
+        st.step = -1; paint();
+        if (!await wait(500, run)) return;
+      }
+    }
+    // Live: Pakete je Kante mit Abstand nach Rate (log-skaliert, 0,4…3 Pakete/s), gleiche Geschwindigkeit überall
+    const nextAt = new Map();
+    function spawnLive(now) {
+      if (reduceMQ.matches) return;
+      for (const e of edges.values()) {
+        if (!e.hz) continue;
+        const per = 1000 / Math.max(.4, Math.min(3, Math.log2(e.hz + 1) * .6));
+        if ((nextAt.get(e.key) || 0) > now) continue;
+        nextAt.set(e.key, now + per);
+        const f = { key: e.key, rev: false, ms: (svgEdge.get(e.key).len / o.pxPerSec) * 1000, t0: now, run: st.run, live: true, res() {} };
+        const [x, y] = at(e.key, 0);
+        f.g = el('g', { class: 'pkt', style: `--pc: var(--${nodes.get(e.from).hue || 'accent'})`, transform: `translate(${x} ${y})` }, gPkts);
+        el('circle', { r: e.kind === 'stream' ? 4.5 : 3.5 }, f.g);
+        flights.add(f);
+      }
+    }
+
+    const announce = () => {
+      const s = scns[st.scn], x = s?.steps[st.step]; if (!x) { status.textContent = ''; return; }
+      const h = hop(x.edge), n = h && nodes.get(h.rev ? h.e.from : h.e.to);
+      status.textContent = `${L(['Schritt', 'Step'])} ${st.step + 1}/${s.steps.length}: ${n ? L(n.label) : ''} – ${L(x.note)}`;
+    };
+    function stepTo(i) {
+      const s = scns[st.scn]; if (!s) return;
+      st.run++; st.step = Math.max(-1, Math.min(s.steps.length - 1, i)); paint(); announce();
+      if (st.play) loop();
+    }
+    function select(i) { st.live = false; st.scn = i; st.step = -1; st.pin = null; texts(); paint(); status.textContent = ''; loop(); }
+    function setLive() { st.live = true; st.run++; st.pin = null; status.textContent = ''; texts(); paint(); kick(); }
+
+    // ── Bedienung: Knöpfe, Tastatur (←/→ Schritt, Leertaste Play, Esc Auswahl lösen) ──
+    $('[data-act="play"]').addEventListener('click', () => { st.play = !st.play; if (st.play) { if (st.step >= scns[st.scn].steps.length - 1) st.step = -1; loop(); } else st.run++; paint(); });
+    $('[data-act="prev"]').addEventListener('click', () => { st.play = false; stepTo(st.step - 1); });
+    $('[data-act="next"]').addEventListener('click', () => { st.play = false; stepTo(st.step + 1); });
+    $('[data-act="speed"]').addEventListener('change', ev => { st.speed = +ev.target.value; });
+    fig.addEventListener('keydown', ev => {
+      if (ev.target.closest('select')) return;
+      if (ev.key === 'ArrowRight') { st.play = false; stepTo(st.step + 1); ev.preventDefault(); }
+      else if (ev.key === 'ArrowLeft') { st.play = false; stepTo(st.step - 1); ev.preventDefault(); }
+      else if (ev.key === 'Escape') { st.pin = null; paint(); }
+      else if ((ev.key === 'k' || ev.key === 'K')) $('[data-act="play"]').click();
+    });
+    if (reduceMQ.matches) $('[data-act="speed"]').hidden = true;
+
+    // ── Sichtbarkeit + Größe: außerhalb des Viewports / im Hintergrund-Tab läuft nichts ──
+    const io = new IntersectionObserver(([en]) => {
+      st.visible = en.isIntersecting;
+      if (st.visible) { st.live ? kick() : loop(); } else st.run++;
+    }, { threshold: .2 });
+    io.observe(svg);
+    const onVis = () => { if (document.hidden) st.run++; else if (st.visible) { st.live ? kick() : loop(); } };
+    document.addEventListener('visibilitychange', onVis);
+    let rz = 0;
+    const ro = new ResizeObserver(() => {
+      cancelAnimationFrame(rz);
+      rz = requestAnimationFrame(() => {
+        if (geo && geo.W === Math.round(svg.parentElement.clientWidth - 20)) return;
+        st.run++; flights.forEach(f => { f.g.remove(); f.res(false); }); flights.clear();
+        draw(); if (st.visible) { st.live ? kick() : loop(); }
+      });
+    });
+    ro.observe(svg.parentElement);
+    fig.classList.add('fg-ready');
+    draw();
+    document.fonts?.ready.then(() => { if (geo) { texts(); paint(); } });  // Textbreiten erst mit geladener Schrift kürzen
+
+    return {
+      setLang(l) { o.lang = l; if (geo) { texts(); paint(); announce(); } },
+      setRates(rates) { for (const [k, hz] of Object.entries(rates)) if (edges.has(k)) edges.get(k).hz = hz; paint(); },
+      select,
+      destroy() { st.run++; io.disconnect(); ro.disconnect(); document.removeEventListener('visibilitychange', onVis); cancelAnimationFrame(raf); },
+    };
+  }
+  return { create };
+})();
+
+/* ═════════ SPEC: Zusammenarbeit (Knoten = Rollen, Dateien, Hooks aus .claude/ – siehe .claude/README.md) ═════════ */
+const SPEC = {
+  lanes: [
+    { id: 'human', label: ['Entwickler', 'Developer'] },
+    { id: 'chat', label: ['Chat · Kontext', 'Chat · context'] },
+    { id: 'know', label: ['Helfer', 'Helpers'] },
+    { id: 'guard', label: ['Leitplanken', 'Guardrails'] },
+    { id: 'repo', label: 'Repo' },
+  ],
+  nodes: [
+    { id: 'user', lane: 'human', row: 1, label: ['Du', 'You'], short: ['Du', 'You'], sub: ['Richtung · Freigabe', 'direction · approval'], icon: 'i-user', hue: 'accent',
+      info: ['Gibt Ziel, Entscheidungen und Freigaben – REAL-Bewegung nur mit ausdrücklichem OK in diesem Chat.', 'Sets goals, decisions and approvals; REAL motion only with an explicit OK in this chat.'] },
+    { id: 'preview', lane: 'human', row: 3, label: ['Vorschau-Seite', 'Preview page'], short: ['Vorsch.', 'Preview'], sub: ['Artifact · Varianten', 'artifact · variants'], icon: 'i-win', hue: 'gold',
+      info: ['Varianten untereinander, je mit Screenshot; Fragen F1, F2 direkt beantworten, „An Chat senden“ ist endgültig.', 'Variants one below the other, each with a screenshot; answer F1, F2 right there, “Send to chat” is final.'] },
+    { id: 'ctx', lane: 'chat', row: 0, label: ['Regeln + Memory', 'Rules + memory'], short: ['Regeln', 'Rules'], sub: 'AGENTS.md · .claude/memory', icon: 'i-book', hue: 'teal',
+      info: ['Liegt jedem Chat bei: Sicherheit, Namen, Antwortformat, Definition of Done und gelernte Vorlieben.', 'Comes with every chat: safety, names, answer format, Definition of Done and learned preferences.'] },
+    { id: 'claude', lane: 'chat', row: 1, label: 'Claude', short: 'Claude', sub: ['Hauptchat · VS Code', 'main chat · VS Code'], icon: 'i-spark', hue: 'violet',
+      info: ['Plant, baut, prüft, dokumentiert, committet. Holt Skills und Agenten nur bei Bedarf.', 'Plans, builds, tests, documents, commits. Brings in skills and agents only when needed.'] },
+    { id: 'peer', lane: 'know', row: 4, label: ['Paralleler Chat', 'Parallel chat'], short: 'Peer', sub: ['anderes Thema', 'other topic'], icon: 'i-chat', hue: 'violet',
+      info: ['Arbeitet gleichzeitig an einem anderen Präfix; Abstimmung per SendMessage, nie Dateien überschreiben.', 'Works on another prefix at the same time; agrees via SendMessage, never overwrites files.'] },
+    { id: 'skills', lane: 'chat', row: 2, label: 'Skills', short: 'Skills', sub: '20 × SKILL.md', icon: 'i-layers', hue: 'teal',
+      info: ['Wissen je Thema mit Skripten und Vorlagen; einmal je Chat geladen, bleibt im Kontext.', 'Knowledge per topic with scripts and templates; loaded once per chat, stays in context.'] },
+    { id: 'agents', lane: 'know', row: 3, label: ['Projekt-Agenten', 'Project agents'], short: ['Agenten', 'Agents'], sub: '6 × .claude/agents', icon: 'i-bot', hue: 'indigo',
+      info: ['Subagenten mit eigenem Kontext: Suche, Prüfläufe, UI-Prüfung, Sicherheits-, Robustheits- und Showcase-Review.', 'Subagents with their own context: search, check runs, UI checks, safety, robustness and showcase reviews.'] },
+    { id: 'stop', lane: 'guard', row: 0, label: 'format_check', short: 'Stop', sub: ['Stop-Hook', 'stop hook'], icon: 'i-flag', hue: 'gold',
+      info: ['Prüft den Schluss jeder Antwort; Fehler → Block mit Grund, Claude gibt nur den Schluss neu aus.', 'Checks the ending of every answer; error → block with reason, Claude rewrites only the ending.'] },
+    { id: 'pre', lane: 'guard', row: 1, label: 'pre_tool_guard', short: 'Guard', sub: 'PreToolUse', icon: 'i-shield', hue: 'gold',
+      info: ['Vor jedem Bash/Edit: Rückfrage bei pkill und echter robot_ip, Warnung bei fehlender Domain, geschützten und fremden Dateien, fehlendem Skill.', 'Before every Bash/Edit: question on pkill and the real robot_ip, warning on missing domain, protected or foreign files, missing skill.'] },
+    { id: 'post', lane: 'guard', row: 2, label: 'post_edit_check', short: 'Check', sub: 'PostToolUse', icon: 'i-check', hue: 'gold',
+      info: ['Nach jedem Edit: flake8, JSON/YAML, UI-Regeln, tools/check_*; Meldungen sofort beheben.', 'After every edit: flake8, JSON/YAML, UI rules, tools/check_*; findings are fixed at once.'] },
+    { id: 'claims', lane: 'guard', row: 4, label: ['Datei-Register', 'File register'], short: 'Register', sub: 'chat_claims.py', icon: 'i-lock', hue: 'gold',
+      info: ['Merkt sich, welcher Chat welche Datei uncommittet geändert hat – Grundlage für Warnungen und das Lagebild beim Start.', 'Tracks which chat changed which file uncommitted; the basis for warnings and the situation report at start.'] },
+    { id: 'code', lane: 'repo', row: 1, label: 'Code', short: 'Code', sub: 'src/ · ros2_nexus/', icon: 'i-code', hue: 'accent',
+      info: ['Eigene ROS-2-Pakete, Web-UIs ohne Build, UX | Nexus Launcher; Fremdcode nur bei Bedarf.', 'Own ROS 2 packages, web UIs without a build, UX | Nexus Launcher; third-party code only when needed.'] },
+    { id: 'tests', lane: 'repo', row: 3, label: ['Prüfungen', 'Checks'], short: 'Tests', sub: 'pytest · UI · E2E', icon: 'i-test', hue: 'green',
+      info: ['Definition of Done: pytest-Suites, ui_new_code_checker, grasp_e2e in Domain 94, tools/pre-commit.', 'Definition of Done: pytest suites, ui_new_code_checker, grasp_e2e in domain 94, tools/pre-commit.'] },
+    { id: 'git', lane: 'repo', row: 4, label: 'Git', short: 'Git', sub: 'main → origin', icon: 'i-git', hue: 'green',
+      info: ['Commit + Push nach jeder fertigen Aufgabe, Conventional Commits mit Scope, nie --force.', 'Commit + push after every finished task, Conventional Commits with scope, never --force.'] },
+    { id: 'docs', lane: 'repo', row: 2, label: ['Doku', 'Docs'], short: ['Doku', 'Docs'], sub: 'docs/en + de · README', icon: 'i-book', hue: 'teal',
+      info: ['Wird mitgeschrieben: docs/en + docs/de, README + readme-de, Handbuch, Setup-Karte, Projektseiten.', 'Written along the way: docs/en + docs/de, README + readme-de, manual, setup card, project pages.'] },
+  ],
+  edges: [
+    { from: 'user', to: 'claude', kind: 'service', label: ['Anfrage ⇄ Antwort', 'request ⇄ answer'] },
+    { from: 'user', to: 'preview', label: ['wählt Variante', 'picks a variant'] },
+    { from: 'claude', to: 'preview', kind: 'service', label: ['Vorschau ⇄ Entscheidung', 'preview ⇄ decision'] },
+    { from: 'ctx', to: 'claude', label: ['Regeln · Memory', 'rules · memory'] },
+    { from: 'claude', to: 'skills', kind: 'service', label: ['Skill laden', 'load skill'] },
+    { from: 'claude', to: 'agents', kind: 'action', label: ['Auftrag ⇄ Befund', 'task ⇄ findings'] },
+    { from: 'claude', to: 'peer', kind: 'service', label: 'SendMessage' },
+    { from: 'claude', to: 'pre', kind: 'service', label: ['Edit · Bash ⇄ Warnung', 'Edit · Bash ⇄ warning'] },
+    { from: 'pre', to: 'code', label: 'Edit' },
+    { from: 'pre', to: 'docs', label: ['Edit Doku', 'edit docs'] },
+    { from: 'code', to: 'post', label: ['geänderte Datei', 'changed file'] },
+    { from: 'post', to: 'claude', label: ['Befund', 'finding'] },
+    { from: 'post', to: 'claims', label: ['eigene Datei eintragen', 'register own file'] },
+    { from: 'peer', to: 'claims', label: ['Dateien anderer Chats', 'files of other chats'] },
+    { from: 'agents', to: 'tests', label: ['isolierter Prüflauf', 'isolated check run'] },
+    { from: 'tests', to: 'git', label: ['grün → Commit', 'green → commit'] },
+    { from: 'docs', to: 'tests', label: 'check_showcase.py' },
+    { from: 'claude', to: 'stop', kind: 'service', label: ['Schluss prüfen', 'check ending'] },
+  ],
+  scenarios: [
+    { id: 'ui', label: ['Neue UI-Funktion', 'New UI feature'], icon: 'i-win', hue: 'accent',
+      text: ['Erst sehen, dann bauen: Varianten auf der Vorschau-Seite, deine Wahl, dann ein kleiner Diff mit Prüfung hell + dunkel.', 'See first, then build: variants on the preview page, your choice, then a small diff checked in light + dark.'],
+      steps: [
+        { edge: 'user>claude', topic: ['[RCU] Neue Karte für …', '[RCU] New card for …'], note: ['Anfrage mit Präfix, Ziel statt Anleitung', 'Request with prefix, goal not instructions'] },
+        { edge: 'claude>skills', topic: 'ui-change · preview', note: ['UI-Regeln und Vorschau-Vorlage laden', 'Load UI rules and preview template'] },
+        { edge: 'claude>preview', topic: 'spec.json → build.py', note: ['Varianten A/B/C untereinander, je mit Bild', 'Variants A/B/C one below the other, each with image'] },
+        { edge: 'user>preview', topic: ['Variante B · F1: ja', 'variant B · F1: yes'], note: ['Du entscheidest auf der Seite', 'You decide on the page'] },
+        { edge: 'preview>claude', topic: ['An Chat senden', 'Send to chat'], note: ['Entscheidung ist endgültig, Claude baut', 'Decision is final, Claude builds'] },
+        { edge: 'claude>pre', topic: 'Edit style.css', note: ['Guard prüft Skill, Datei-Register, Schutz', 'Guard checks skill, file register, protection'] },
+        { edge: 'pre>code', topic: 'Edit', note: ['Kleinster Diff am richtigen Ort', 'Smallest diff in the right place'] },
+        { edge: 'claude>agents', topic: 'ui-verifier', note: ['Hell + dunkel, Umbruchpunkte, Screenshots', 'Light + dark, breakpoints, screenshots'], also: ['agents>tests'] },
+      ] },
+    { id: 'safe', label: ['Sicherheits-Fix', 'Safety fix'], icon: 'i-shield', hue: 'gold',
+      text: ['Ursache vor Fix, unabhängige Prüfung gegen §0 und ein Ende-zu-Ende-Test im FAKE-Stack, bevor committet wird.', 'Root cause before fix, an independent review against §0 and an end-to-end test in the FAKE stack before the commit.'],
+      steps: [
+        { edge: 'user>claude', topic: ['[VLA] Abstieg stoppt nicht', '[VLA] descent does not stop'], note: ['Bug-Meldung', 'Bug report'] },
+        { edge: 'claude>skills', topic: 'root-cause · vla-motion', note: ['Erst Ursache: alle Aufrufer greppen', 'Root cause first: grep all callers'] },
+        { edge: 'claude>pre', topic: 'Edit robot_motion_handler…', note: ['Guard: Domain, Schutz, fremde Änderungen', 'Guard: domain, protection, foreign changes'] },
+        { edge: 'pre>code', topic: 'Edit', note: ['Gemeinsame Funktion einmal fixen', 'Fix the shared function once'] },
+        { edge: 'code>post', topic: 'flake8 · check_ws', note: ['Datei sofort geprüft', 'File checked at once'] },
+        { edge: 'claude>agents', topic: 'safety-reviewer', note: ['Diff unabhängig gegen §0 prüfen', 'Independent diff review against §0'] },
+        { edge: 'agents>tests', topic: ['grasp_e2e --quick · Domain 94', 'grasp_e2e --quick · domain 94'], note: ['FAKE-Stack, nie REAL', 'FAKE stack, never REAL'] },
+        { edge: 'tests>git', topic: 'fix(motion): …', note: ['pre-commit grün → Commit + Push', 'pre-commit green → commit + push'] },
+      ] },
+    { id: 'doc', label: ['Doku mitschreiben', 'Write docs along'], icon: 'i-book', hue: 'teal',
+      text: ['Die Definition of Done sagt, was mitzuziehen ist – en und de im selben Zug, eigener Commit.', 'The Definition of Done says what to update: en and de in the same step, own commit.'],
+      steps: [
+        { edge: 'ctx>claude', topic: 'AGENTS.md §5 · DoD', note: ['Neue Funktion → Doku mitziehen', 'New feature → update docs'] },
+        { edge: 'claude>skills', topic: 'docs', note: ['en + de, README, Handbuch, Setup-Karte', 'en + de, README, manual, setup card'] },
+        { edge: 'claude>pre', topic: 'Edit docs/de/vla.md', note: ['Guard prüft fremde Änderungen', 'Guard checks foreign changes'] },
+        { edge: 'pre>docs', topic: 'docs/en + docs/de', note: ['Beide Sprachen gleichwertig', 'Both languages equivalent'] },
+        { edge: 'docs>tests', topic: 'check_showcase.py', note: ['Brand-Kit, Namen, Links, en/de', 'Brand kit, names, links, en/de'] },
+        { edge: 'tests>git', topic: 'docs(vla): …', note: ['Eigener Commit im Repo-Stil', 'Own commit in repo style'] },
+      ] },
+    { id: 'peer', label: ['Parallele Chats', 'Parallel chats'], icon: 'i-chat', hue: 'violet',
+      text: ['Zwei Chats, eine Datei: das Register warnt, die Chats stimmen sich ab, statt sich zu überschreiben.', 'Two chats, one file: the register warns, the chats agree instead of overwriting each other.'],
+      steps: [
+        { edge: 'peer>claims', topic: ['README.md uncommittet', 'README.md uncommitted'], note: ['Anderer Chat arbeitet an derselben Datei', 'Another chat works on the same file'] },
+        { edge: 'user>claude', topic: ['[Doku] README ergänzen', '[Doku] extend README'], note: ['Deine Anfrage im zweiten Chat', 'Your request in the second chat'] },
+        { edge: 'claude>pre', topic: 'Edit README.md', note: ['Guard liest das Datei-Register', 'Guard reads the file register'] },
+        { edge: 'pre>claude', topic: ['⚠ gehört Chat „[Doku] …“', '⚠ owned by chat “[Doku] …”'], note: ['Hinweis: nie ignorieren', 'Notice: never ignore'] },
+        { edge: 'claude>peer', topic: 'SendMessage', note: ['Abstimmen: wer ändert was, wann', 'Agree: who changes what, when'] },
+        { edge: 'peer>claude', topic: ['fertig, committet', 'done, committed'], note: ['Peer meldet sich zurück', 'Peer reports back'] },
+        { edge: 'claude>pre', topic: ['3-Wege-Merge', '3-way merge'], note: ['Im Scratchpad vorbereitet, dann Edit', 'Prepared in the scratchpad, then edit'] },
+        { edge: 'pre>code', topic: 'Edit', note: ['Nur eigene Änderungen werden committet', 'Only own changes are committed'] },
+      ] },
+    { id: 'ans', label: ['Antwort + Rückfrage', 'Answer + question'], icon: 'i-q', hue: 'indigo',
+      text: ['Der Schluss jeder Antwort wird maschinell geprüft; deine Antwort kommt per Knopf zurück.', 'The ending of every answer is checked automatically; your reply comes back via a button.'],
+      steps: [
+        { edge: 'claude>stop', topic: ['Status-Zeile · Chips', 'status line · chips'], note: ['Stop-Hook prüft den Schluss', 'Stop hook checks the ending'] },
+        { edge: 'stop>claude', topic: ['Block: Chat-Status fehlt', 'block: chat status missing'], note: ['Einmal, keine Schleife', 'Once, no loop'] },
+        { edge: 'claude>user', topic: ['### Blöcke · ❓ F1', '### blocks · ❓ F1'], note: ['answer-cards zeichnet Karten mit Buttons', 'answer-cards draws cards with buttons'] },
+        { edge: 'user>claude', topic: ['F1: ja', 'F1: yes'], note: ['Klick = Antwort, Claude arbeitet weiter', 'Click = answer, Claude carries on'] },
+      ] },
+  ],
+};
+
+/* ═════════ Seite: Theme + Sprache (wie project_docs.html, gleiche Speicher-Schlüssel), Lesefluss, Werkzeug-Ring, Prüfkette, Hook-Takt, Diagramme, Datenfluss ═════════ */
+const root = document.documentElement;
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const io1 = (el, fn, opt) => { const o = new IntersectionObserver(es => es.forEach(e => e.isIntersecting && (fn(e.target), o.unobserve(e.target))), opt); o.observe(el); };
+const store = (k, v) => { try { if (v === undefined) return localStorage.getItem(k); localStorage.setItem(k, v); } catch { return null; } };
+let lang = 'de';
+const L = v => (Array.isArray(v) ? v[lang === 'en' ? 1 : 0] : v);
+const onLang = [];  // Teile, die ihre Texte per JS setzen, zeichnen sich bei Sprachwechsel neu
+
+const setTheme = t => {
+  if (t) root.dataset.theme = t;
+  const cur = root.dataset.theme || (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+  document.querySelectorAll('[data-theme-btn]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.themeBtn === cur)));
+};
+const qTheme = new URLSearchParams(location.search).get('theme');
+setTheme(['dark', 'light'].includes(qTheme) ? qTheme : store('project_docs_theme'));
+document.querySelectorAll('[data-theme-btn]').forEach(b => b.addEventListener('click', () => { setTheme(b.dataset.themeBtn); store('project_docs_theme', b.dataset.themeBtn); }));
+
+const keep = (el, key, val) => { if (el.dataset[key] === undefined) el.dataset[key] = val; return el.dataset[key]; };
+const title = [document.title, 'Working with Claude Code · UX Robot'];
+const setLang = l => {
+  lang = l; root.lang = l;
+  const en = l === 'en';
+  document.querySelectorAll('[data-en]').forEach(el => { const de = keep(el, 'de', el.innerHTML); el.innerHTML = en ? el.dataset.en : de; });
+  document.querySelectorAll('[data-en-aria]').forEach(el => { const de = keep(el, 'deAria', el.getAttribute('aria-label')); el.setAttribute('aria-label', en ? el.dataset.enAria : de); });
+  document.querySelectorAll('[data-en-roledesc]').forEach(el => { const de = keep(el, 'deRoledesc', el.getAttribute('aria-roledescription')); el.setAttribute('aria-roledescription', en ? el.dataset.enRoledesc : de); });
+  document.title = L(title);
+  document.querySelectorAll('[data-lang]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.lang === l)));
+  onLang.forEach(f => f());
+};
+document.querySelectorAll('[data-lang]').forEach(b => b.addEventListener('click', () => { setLang(b.dataset.lang); store('project_docs_lang', b.dataset.lang); }));
+
+// Lesefluss (js/scroll_flow.js): Einstieg gestaffelt, Köpfe bauen sich auf, Inhaltsverzeichnis folgt dem aktiven Kapitel
+window.ScrollFlow?.init({
+  hero: '.hero-head > .badge, .h1-name, .hero-head > .abstract, .hero-kv > li',
+  heroExit: '.hero-inner',
+  heads: '.sec-head, .ct-copy',
+  depth: ['.fg'],
+  groups: ['.strip ul', '.steps5', '.perm', '.ev .kpis'],
+  items: ['.note', '.ex > *', '.bt', '.guard', '.learn', '.chart', '.setup > *', '.life', '.dod > *', '.prefix', '.contact .vcard'],
+  progress: '.progress',
+  nav: { links: '.toc a', reset: '.hero', hue: '.eyebrow' },
+  relay: ['.steps5', '.ev .kpis'],
+  spot: ['.steps5', '.ev .kpis'],
+  lines: ['.strip', '.contact'],
+});
+
+function initLife() {
+  const grid = document.querySelector('.life-grid'), dot = grid.querySelector('.life-dot');
+  const pins = [...grid.querySelectorAll('.lf-pin')], cards = [...grid.querySelectorAll('.lf')];
+  let i = 0, timer = 0, vis = false;
+  const place = () => {
+    const g = grid.getBoundingClientRect(), p = pins[i].getBoundingClientRect();
+    dot.style.transform = `translateX(${p.left + p.width / 2 - g.left}px)`;
+    pins.forEach((x, j) => x.classList.toggle('on', j === i)); cards.forEach((x, j) => x.classList.toggle('on', j === i));
+  };
+  const tick = () => { i = (i + 1) % pins.length; place(); timer = setTimeout(tick, 1700); };
+  const run = () => { clearTimeout(timer); if (vis && !document.hidden && !reduce) timer = setTimeout(tick, 1700); };
+  new IntersectionObserver(([e]) => { vis = e.isIntersecting; run(); }).observe(grid);
+  document.addEventListener('visibilitychange', run);
+  new ResizeObserver(place).observe(grid);
+  place();
+}
+
+function initGuard() {
+  const CASES = {
+    pkill: { act: '<code>pkill -f ros2</code>', hook: ['<code>pre_tool_guard.py</code> erkennt breites pkill', '<code>pre_tool_guard.py</code> detects a broad pkill'],
+      dec: ['gold', 'i-q', ['Rückfrage an dich', 'Question to you']], res: ['Läuft nur mit deinem OK', 'Runs only with your OK'], stop: true,
+      out: ['Ein breites pkill träfe auch deinen Stack und andere Chats. Claude beendet stattdessen nur eigene Prozesse per PID – nach Prüfung der <code>ROS_DOMAIN_ID</code>.',
+        'A broad pkill would also hit your stack and other chats. Instead, Claude stops only its own processes by PID, after checking the <code>ROS_DOMAIN_ID</code>.'] },
+    ip: { act: ['Launch mit echter <code>robot_ip</code>', 'Launch with the real <code>robot_ip</code>'], hook: ['<code>pre_tool_guard.py</code> erkennt REAL', '<code>pre_tool_guard.py</code> detects REAL'],
+      dec: ['red', 'i-stop', ['Rückfrage · REAL', 'Question · REAL']], res: ['Keine Bewegung ohne Freigabe', 'No motion without approval'], stop: true,
+      out: ['REAL-Bewegung braucht deine ausdrückliche Freigabe in diesem Chat. Ohne sie bleibt alles im FAKE-Stack.', 'REAL motion needs your explicit approval in this chat. Without it, everything stays in the FAKE stack.'] },
+    domain: { act: ['<code>ros2 launch …</code> ohne Domain', '<code>ros2 launch …</code> without domain'], hook: ['<code>pre_tool_guard.py</code> vermisst <code>ROS_DOMAIN_ID</code>', '<code>pre_tool_guard.py</code> misses <code>ROS_DOMAIN_ID</code>'],
+      dec: ['gold', 'i-warn', ['Warnung an Claude', 'Warning to Claude']], res: ['Test in eigener Domain', 'Test in its own domain'],
+      out: ['Ohne eigene Domain würde der Test Topics des laufenden Stacks sehen und stören. Claude startet neu mit <code>ROS_DOMAIN_ID=94</code> und <code>ROS_LOCALHOST_ONLY=1</code>.',
+        'Without its own domain the test would see and disturb topics of the running stack. Claude restarts with <code>ROS_DOMAIN_ID=94</code> and <code>ROS_LOCALHOST_ONLY=1</code>.'] },
+    gen: { act: 'Edit <code>theme_light.gen.css</code>', hook: ['<code>pre_tool_guard.py</code>: geschützte Datei', '<code>pre_tool_guard.py</code>: protected file'],
+      dec: ['gold', 'i-warn', ['Warnung an Claude', 'Warning to Claude']], res: ['Generator statt Handarbeit', 'Generator, not handwork'],
+      out: ['Die Datei wird erzeugt – Handänderungen gingen beim nächsten Lauf verloren. Richtig: Quelle ändern und <code>gen_theme_light.py</code> ausführen.',
+        'The file is generated; manual edits would be lost on the next run. Right way: change the source and run <code>gen_theme_light.py</code>.'] },
+    motion: { act: ['<code>git commit</code> Motion Handler', '<code>git commit</code> Motion Handler'], hook: ['<code>tools/pre-commit</code>: sicherheitskritischer Pfad', '<code>tools/pre-commit</code>: safety-critical path'],
+      dec: ['accent', 'i-info', ['Erinnerung', 'Reminder']], res: ['Review vor dem Commit', 'Review before the commit'],
+      out: ['Der Agent <code>safety-reviewer</code> prüft den Diff unabhängig gegen §&nbsp;0; dazu <code>grasp_e2e.py --quick</code> im FAKE-Stack.',
+        'The agent <code>safety-reviewer</code> reviews the diff independently against §&nbsp;0, plus <code>grasp_e2e.py --quick</code> in the FAKE stack.'] },
+    peer: { act: 'Edit <code>README.md</code>', hook: ['<code>pre_tool_guard.py</code> + Datei-Register', '<code>pre_tool_guard.py</code> + file register'],
+      dec: ['gold', 'i-warn', ['Hinweis mit Chat-Titel', 'Notice with chat title']], res: ['Erst abstimmen', 'Agree first'],
+      out: ['Ein anderer Chat hat die Datei uncommittet geändert. Claude meldet sich per <code>SendMessage</code>, bereitet im Scratchpad vor und führt per 3-Wege-Merge zusammen.',
+        'Another chat changed the file uncommitted. Claude gets in touch via <code>SendMessage</code>, prepares in the scratchpad and merges with a 3-way merge.'] },
+  };
+  const IDLE = { act: ['Fall wählen', 'Choose a case'], out: ['Einen Fall oben wählen – die Kette läuft Stufe für Stufe durch.', 'Choose a case above; the chain runs stage by stage.'] };
+  const box = document.querySelector('.guard'), stages = [...box.querySelectorAll('.gs')], out = box.querySelector('.g-out'), btns = [...box.querySelectorAll('[data-case]')];
+  let run = 0, cur = null;
+  const fill = () => {
+    const c = cur, vals = c ? [L(c.act), L(c.hook), `<span class="hbadge" style="--hue: var(--${c.dec[0]})"><svg class="ico"><use href="#${c.dec[1]}"/></svg>${L(c.dec[2])}</span>`, L(c.res)] : [L(IDLE.act), '–', '–', '–'];
+    stages.forEach((s, i) => { s.querySelector('.v').innerHTML = vals[i]; });
+  };
+  onLang.push(() => { fill(); out.innerHTML = L(cur ? cur.out : IDLE.out); });
+  btns.forEach(b => b.addEventListener('click', async () => {
+    const c = CASES[b.dataset.case], my = ++run;
+    cur = c;
+    btns.forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+    stages.forEach(s => { s.classList.remove('lit', 'shake'); s.style.removeProperty('--hue'); });
+    fill();
+    for (let i = 0; i < stages.length; i++) {
+      if (!reduce) await new Promise(r => setTimeout(r, i ? 280 : 60));
+      if (my !== run) return;
+      const s = stages[i]; s.classList.add('lit');
+      if (i === 2) { s.style.setProperty('--hue', `var(--${c.dec[0]})`); if (c.stop && !reduce) s.classList.add('shake'); }
+    }
+    out.innerHTML = L(c.out);
+  }));
+}
+
+function initCharts() {
+  if (reduce) return;
+  document.querySelector('.charts').classList.add('charts-anim');
+  document.querySelectorAll('[data-chart]').forEach(el => io1(el, t => t.classList.add('in'), { threshold: .3 }));
+}
+
+initLife(); initGuard(); initCharts();
+const graph = FlowGraph.create(document.getElementById('fg-work'), SPEC, { lang: 'de', nodeW: 196 });
+onLang.push(() => graph.setLang(lang));
+// ?lang=en (Links, Screenshots) vor gespeicherter Wahl
+if ((new URLSearchParams(location.search).get('lang') || store('project_docs_lang')) === 'en') setLang('en');
+</script>
+</body>
+</html>

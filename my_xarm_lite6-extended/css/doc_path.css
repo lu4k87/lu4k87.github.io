@@ -1,0 +1,16 @@
+/* Rückweg zur Projekt-Doku (docs/project_docs.html) auf allen Unterseiten: „← Projekt-Doku › Bereich › Seite“,
+   rechts Vor/Zurück zu den Nachbarseiten im selben Bereich (.doc-path-pager, Reihenfolge wie die Hub-Karten).
+   Eigene Zeile über dem Seitenkopf; im Handbuch vorn in der vorhandenen Leiste (.doc-path-back). Farben aus den Tokens
+   der jeweiligen Seite (--fg/--accent bzw. --ink/--co im Handbuch), nur am Bildschirm. */
+.doc-path { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 8px; margin: 0; padding: 6px 24px;
+  border-bottom: 1px solid var(--line, color-mix(in srgb, currentColor 20%, transparent));
+  background: var(--surface, Canvas); color: var(--fg, var(--ink, CanvasText)); font-family: inherit; font-size: .875rem; font-weight: 600; line-height: 1.4; }
+.doc-path a, .doc-path-back { display: inline-flex; align-items: center; min-height: 32px; color: var(--accent, var(--co, LinkText)); text-decoration: none; white-space: nowrap; }
+.doc-path a:hover, .doc-path-back:hover { text-decoration: underline; text-underline-offset: 3px; }
+.doc-path a:focus-visible, .doc-path-back:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; border-radius: 4px; }
+.doc-path [aria-current="page"] { font-weight: 700; }
+.doc-path-pager { display: inline-flex; flex-wrap: wrap; gap: 2px 16px; margin-inline-start: auto; }
+.doc-path-pager a { gap: .3em; }
+.doc-path-back { font-weight: 600; }
+@media (max-width: 560px) { .doc-path { padding-inline: 16px; } }
+@media print { .doc-path, .doc-path-back, .doc-path-back + [aria-hidden="true"] { display: none !important; } }
