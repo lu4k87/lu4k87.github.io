@@ -531,9 +531,9 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 10px 24px; align-items: cent
         <div class="feat" style="--hue: var(--accent)"><span class="badge-ico"><svg class="ico"><use href="#i-cube"/></svg></span><span class="k-t">Digital Twin · Physik</span><b>Erst virtuell, dann real.</b><p>Live-3D-Zwilling im Browser; die Physik-Sandbox simuliert Schwerkraft, Kontakt und Greifen vor der echten Fahrt.</p></div>
         <div class="feat" style="--hue: var(--indigo)"><span class="badge-ico"><svg class="ico"><use href="#i-shapes"/></svg></span><span class="k-t">Virtuelle Objekte</span><b>Testen ohne Aufbau.</b><p>Würfel, Flasche, Bälle, Schale, Korb: greifen, verschieben, stapeln; kollisionsgeprüft in MoveIt, ohne Kamera.</p></div>
         <div class="feat" style="--hue: var(--teal)"><span class="badge-ico"><svg class="ico"><use href="#i-eye"/></svg></span><span class="k-t">Kontrolle · Überwachung</span><b>Alles im Blick. Jederzeit eingreifen.</b><p>Roboterzustand, Umgebung (ZED, OctoMap) und Bewegungsausführung live; UX | Monitoring und Blackbox zeichnen mit.</p></div>
-        <div class="feat" style="--hue: var(--violet)"><span class="badge-ico"><svg class="ico"><use href="#i-spark"/></svg></span><span class="k-t">Assistive Autonomie</span><b>Die KI plant. Der Mensch gibt frei.</b><p>Der Agent macht aus Sprache Bewegungsabläufe; Entscheidung und Feedback des Menschen steuern jeden Schritt.</p></div>
+        <div class="feat" style="--hue: var(--violet)"><span class="badge-ico"><svg class="ico"><use href="#i-spark"/></svg></span><span class="k-t">Assistive Autonomie</span><b>Die KI plant. Der Mensch bestätigt.</b><p>Der Agent macht aus Sprache Bewegungsabläufe; Entscheidung und Feedback des Menschen steuern jeden Schritt.</p></div>
         <div class="feat" style="--hue: var(--green)"><span class="badge-ico"><svg class="ico"><use href="#i-globe"/></svg></span><span class="k-t">Web · Remote</span><b>Öffnen statt installieren.</b><p>Bedienung komplett im Browser: am Roboter-PC, aus dem Heimnetz oder in der Quest 3 per WebXR.</p></div>
-        <div class="feat" style="--hue: var(--gold)"><span class="badge-ico"><svg class="ico"><use href="#i-shield"/></svg></span><span class="k-t">Sicherheit</span><b>Eine Kette für jede Eingabe.</b><p>E-STOP, Bodenschutz und Kollisionsvorprüfung für alle zehn Steuerwege; der Control-Lock gibt immer nur einem Client die Steuerung.</p></div>
+        <div class="feat" style="--hue: var(--gold)"><span class="badge-ico"><svg class="ico"><use href="#i-shield"/></svg></span><span class="k-t">Sicherheit</span><b>Eine Kette für jede Eingabe.</b><p>E-STOP, Bodenschutz und Kollisionsschutz für alle zehn Steuerwege; der Control-Lock gibt immer nur einem Client die Steuerung.</p></div>
         <div class="feat" style="--hue: var(--teal)"><span class="badge-ico"><svg class="ico"><use href="#i-code"/></svg></span><span class="k-t">Open Source</span><b>Offen, nachbaubar, erweiterbar.</b><p>Eigene Pakete unter Apache 2.0, aufgebaut auf ROS&nbsp;2 Humble und MoveIt&nbsp;2.</p></div>
         <div class="feat" style="--hue: var(--indigo)"><span class="badge-ico"><svg class="ico"><use href="#i-blocks"/></svg></span><span class="k-t">Multimodal · Modular</span><b>Austauschbar statt festgelegt.</b><p>Bessere Eingabegeräte, Kameras, KI-Modelle oder Software-Module ersetzen die alten einzeln; feste ROS&#8209;2-Schnittstellen halten den Rest unverändert. Als Nächstes wird auch der Roboterarm austauschbar (geplant).</p></div>
       </div>
@@ -790,7 +790,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 10px 24px; align-items: cent
               <li><span class="key a">Tippen</span><span>Jogging, Gelenke, Greifer, Home-Pose</span></li>
               <li><span class="key">Halten</span><span>Entsperren gegen Fehlgriffe</span></li>
             </ul></div>
-              <div class="blk safe"><h4>Sicherheit</h4><ul class="list"><li><b>Freigabe:</b> Roboter-PC bestätigt die Steuerung (Allow / Deny)</li><li><b>Jogging:</b> halten = fahren, loslassen = Stopp</li><li><b>Halten statt Tippen:</b> für folgenreiche Aktionen</li></ul></div>
+              <div class="blk safe"><h4>Sicherheit</h4><ul class="list"><li><b>Freigabe:</b> Roboter-PC erlaubt die Steuerung (Allow / Deny)</li><li><b>Jogging:</b> halten = fahren, loslassen = Stopp</li><li><b>Halten statt Tippen:</b> für folgenreiche Aktionen</li></ul></div>
             </div>
           </div>
         </article>
@@ -835,12 +835,12 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 10px 24px; align-items: cent
               <li><span class="n">1</span><div><b>Sicherheitszone</b><span>Modus, Tempo, Control-Lock, E-STOP</span></div></li>
               <li><span class="n">2</span><div><b>Bereiche</b><span>Move, Teach, Assistent (VLA), Vision</span></div></li>
               <li><span class="n">3</span><div><b>Digital Twin</b><span>Live-3D mit Objekten</span></div></li>
-              <li><span class="n">4</span><div><b>Jogging</b><span>Hold: halten = fahren · Step: 1/5/10 mm</span></div></li>
+              <li><span class="n">4</span><div><b>Jogging</b><span>Halten = fahren · Schritt 1/5/10 mm</span></div></li>
               <li><span class="n">5</span><div><b>Zielposen</b><span>Home, Align TCP, Scan</span></div></li>
               <li><span class="n">6</span><div><b>Greifer</b><span>Release, Suction, Off</span></div></li>
             </ol>
               </div>
-              <div class="blk"><h4>Bedienung</h4><ul class="list"><li><b>Maus oder Touch:</b> am Roboter-PC, Laptop oder Tablet</li><li><b>Jogging:</b> Hold: halten = fahren · Step: 1 / 5 / 10 mm</li><li><b>Strg+K:</b> Befehlspalette für jede Funktion</li></ul></div>
+              <div class="blk"><h4>Bedienung</h4><ul class="list"><li><b>Maus oder Touch:</b> am Roboter-PC, Laptop oder Tablet</li><li><b>Jogging:</b> Halten = fahren · Schritt 1 / 5 / 10 mm</li><li><b>Strg+K:</b> Befehlspalette für jede Funktion</li></ul></div>
               <div class="blk safe"><h4>Sicherheit</h4><ul class="list"><li><b>Sicherheitszone:</b> E-STOP, Modus, Tempo, Control-Lock immer sichtbar</li><li><b>Echte Roboter-Hardware:</b> Wechsel nur mit Bestätigung</li><li><b>BUSY:</b> eine laufende Fahrt sperrt alle anderen</li></ul></div>
             </div>
           </div>
@@ -898,7 +898,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 10px 24px; align-items: cent
             <p class="tagline">Aufgabe eintippen, Plan prüfen, ausführen. Ein Klick: <b>Grasp</b> oder <b>Place here</b>.</p>
             <div class="blocks">
               <div class="blk"><h4>Funktionen</h4><ul class="list"><li><b>KI-Agent:</b> macht aus Alltagssprache einen Plan aus Skills</li><li><b>Planprüfung:</b> simulierte Szene, Selbstkorrektur in ≤ 2 Runden</li><li><b>Ein Klick:</b> Grasp oder Place here am Objekt</li></ul></div>
-              <div class="blk"><h4>Bedienung</h4><ul class="map"><li><span class="key" style="color:var(--violet)">Eintippen</span><span>Aufgabe in Alltagssprache</span></li><li><span class="key a">Execute</span><span>Plan freigeben</span></li><li><span class="key b">Abort</span><span>nach dem laufenden Schritt stoppen</span></li></ul></div>
+              <div class="blk"><h4>Bedienung</h4><ul class="map"><li><span class="key" style="color:var(--violet)">Eintippen</span><span>Aufgabe in Alltagssprache</span></li><li><span class="key a">Execute</span><span>Plan bestätigen</span></li><li><span class="key b">Abort</span><span>nach dem laufenden Schritt stoppen</span></li></ul></div>
               <div class="blk safe"><h4>Sicherheit</h4><ul class="list"><li><b>Bestätigung:</b> jeder Plan wartet auf Execute</li><li><b>Zielposen aus dem Code:</b> das Modell wählt nur Skill + Objekt</li><li><b>REAL:</b> ohne <code>allow_real_motion</code> nur Plan, keine Fahrt</li></ul></div>
             </div>
           </div>
