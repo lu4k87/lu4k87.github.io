@@ -523,7 +523,7 @@ const FLOWS = (() => {
   };
   const lanes = (...l) => l.map(x => (typeof x === 'string' ? { id: x, label: LANE[x] } : { id: x[0], label: x[1] }));
   const NODE = {
-    ui: { label: 'UX | Control Interface', short: 'UI', sub: 'Browser · :8081', icon: 'i-win', hue: 'accent', info: ['Weboberfläche mit Digital Twin, Jog, Greifer, KI-Chat und E-STOP.', 'Web interface with Digital Twin, jog, gripper, AI chat and E-STOP.'] },
+    ui: { label: 'UX | Control Interface', short: 'UI', sub: 'Browser · :8081', icon: 'i-win', hue: 'accent', info: ['Weboberfläche mit Digital Twin, Jogging, Greifer, KI-Chat und E-STOP.', 'Web interface with Digital Twin, jogging, gripper, AI chat and E-STOP.'] },
     rb: { label: 'rosbridge', short: 'Bridge', sub: ':9090 · Whitelist', icon: 'i-link', hue: 'teal', info: ['WebSocket-Brücke: lässt nur Topics und Services der Whitelist in config/network.yaml durch.', 'WebSocket bridge: passes only topics and services on the whitelist in config/network.yaml.'] },
     wd: { label: 'Watchdog', short: 'Lock', sub: 'remote_control_watchdog', icon: 'i-lock', hue: 'gold', info: ['Control-Lock: prüft Besitz, Heartbeat, E-STOP und Tempo, bevor ein Befehl weitergeht.', 'Control lock: checks ownership, heartbeat, E-STOP and speed before a command passes.'] },
     pcc: { label: ['Vorprüfung', 'Pre-check'], short: ['Prüf.', 'Check'], sub: 'pre_collision_checker', icon: 'i-shield', hue: 'gold', info: ['Sagt die TCP-Höhe 0,25 s voraus: ab 110 mm gebremst, Stopp bei 91 mm, Pad vibriert.', 'Predicts the TCP height 0.25 s ahead: braked from 110 mm, stop at 91 mm, pad rumbles.'] },
@@ -572,22 +572,22 @@ const FLOWS = (() => {
       },
     },
     jog: {
-      t: ['Jog: halten, fahren, loslassen', 'Jog: hold, move, release'], hue: 'accent', icon: 'i-gizmo', s: 'sr',
+      t: ['Jogging: halten, fahren, loslassen', 'Jogging: hold, move, release'], hue: 'accent', icon: 'i-gizmo', s: 'sr',
       d: ['Kartesisch oder je Gelenk: Der Befehlsstrom selbst ist der Totmann, die UI sendet nur, solange der Knopf gehalten wird. Bleibt der nächste Befehl länger als 1,0 s (FAKE) bzw. 0,4 s (REAL) aus, schickt der Watchdog einen Null-Befehl an MoveIt Servo.', 'Cartesian or per joint: the command stream itself is the dead man; the UI sends only while the button is held. If the next command is missing for more than 1.0 s (FAKE) or 0.4 s (REAL), the watchdog sends a zero command to MoveIt Servo.'],
       spec: {
         lanes: lanes('in', 'br', 'chk', 'mo', 'hw'),
-        nodes: [N('ui', 'in', 0, { sub: 'Jog · :8081' }), N('rb', 'br', 0), N('wd', 'chk', 0, { label: 'Twist-Gate', short: 'Gate' }), N('srv', 'mo', 0), N('arm', 'hw', 0)],
+        nodes: [N('ui', 'in', 0, { sub: 'Jogging · :8081' }), N('rb', 'br', 0), N('wd', 'chk', 0, { label: 'Twist-Gate', short: 'Gate' }), N('srv', 'mo', 0), N('arm', 'hw', 0)],
         edges: [E('ui', 'rb', '/remote/twist'), E('rb', 'wd', '/remote/twist'), E('wd', 'srv', '/servo_server/delta_twist_cmds'), E('srv', 'arm', '/lite6_traj_controller/joint_trajectory'),
           R('arm', 'srv', '/joint_states'), R('srv', 'ui', '/servo_server/status')],
         scenarios: [
-          SC('cart', ['Kartesisch', 'Cartesian'], 'i-gizmo', 'accent', ['Einen Jog-Knopf halten bewegt den TCP im Basis- oder Werkzeug-Koordinatensystem (link_base, link_tcp). Loslassen sendet sofort null; bleibt der Strom aus, stoppt der Watchdog.', 'Holding a jog button moves the TCP in the base or tool frame (link_base, link_tcp). Releasing sends zero at once; if the stream stops, the watchdog stops.'], [
+          SC('cart', ['Kartesisch', 'Cartesian'], 'i-gizmo', 'accent', ['Eine Jogging-Taste halten bewegt den TCP im Basis- oder Werkzeug-Koordinatensystem (link_base, link_tcp). Loslassen sendet sofort null; bleibt der Strom aus, stoppt der Watchdog.', 'Holding a jogging button moves the TCP in the base or tool frame (link_base, link_tcp). Releasing sends zero at once; if the stream stops, the watchdog stops.'], [
             S('ui>rb', ['Solange der Knopf gedrückt ist, sendet die UI alle 20 ms einen Twist; Loslassen sendet null.', 'While the button is pressed, the UI sends a twist every 20 ms; releasing sends zero.']),
             S('rb>wd', ['Das Twist-Gate lässt nur den Besitzer des Control-Locks mit frischem Heartbeat und ohne verriegelten E-STOP durch.', 'The twist gate passes only the control lock owner with a fresh heartbeat and no latched E-STOP.']),
             S('wd>srv', ['Die Bodensperre begrenzt die Abwärtsfahrt so, dass der TCP in 0,25 s über dem Z-Level (10 mm) halten kann; entfernte Clients fahren höchstens mit max_speed.', 'The floor guard limits downward speed so the TCP can stop within 0.25 s above the Z level (10 mm); remote clients move at max_speed at most.']),
             S('srv>arm', ['MoveIt Servo rechnet den Twist in Gelenkbefehle und bremst vor Singularität, Kollision und Gelenkgrenze.', 'MoveIt Servo converts the twist into joint commands and slows down before singularity, collision and joint limit.']),
             S('arm>srv', ['Die gemessene Gelenkstellung geht zurück an Servo und ist Ausgangspunkt für den nächsten Takt.', 'The measured joint state returns to Servo and is the starting point for the next cycle.']),
             S('srv>ui', ['Der Servo-Status erscheint als Badge in der UI, z. B. Bremsen wegen Singularität oder Kollision.', 'The Servo status appears as a badge in the UI, e.g. slowing for singularity or collision.'])]),
-          SC('joint', ['Gelenk', 'Joint'], 'i-arm', 'teal', ['Einen Gelenk-Regler ziehen: Die Geschwindigkeit folgt dem Mausweg, Loslassen stoppt das Gelenk. Das Twist-Gate prüft dieselben Bedingungen wie beim kartesischen Jog.', 'Drag a joint slider: the velocity follows the mouse travel, releasing stops the joint. The twist gate checks the same conditions as for Cartesian jog.'], [
+          SC('joint', ['Gelenk', 'Joint'], 'i-arm', 'teal', ['Einen Gelenk-Regler ziehen: Die Geschwindigkeit folgt dem Mausweg, Loslassen stoppt das Gelenk. Das Twist-Gate prüft dieselben Bedingungen wie beim kartesischen Jogging.', 'Drag a joint slider: the velocity follows the mouse travel, releasing stops the joint. The twist gate checks the same conditions as for Cartesian jogging.'], [
             S('ui>rb', ['Die UI rechnet Mausweg × Tempo in eine Gelenkgeschwindigkeit und sendet sie alle 50 ms.', 'The UI turns mouse travel × speed into a joint velocity and sends it every 50 ms.'], { topic: '/remote/joint_jog' }),
             S('rb>wd', ['Gleiche Prüfung wie beim Twist; nahe dem Boden sperrt das Gate die Gelenkrichtung, die nach unten führt.', 'Same check as for the twist; near the floor the gate blocks the joint direction that leads downward.'], { topic: '/remote/joint_jog' }),
             S('wd>srv', ['Erlaubte Werte gehen als Gelenkgeschwindigkeit an MoveIt Servo.', 'Permitted values go to MoveIt Servo as joint velocity.'], { topic: '/servo_server/delta_joint_cmds' }),
@@ -599,24 +599,24 @@ const FLOWS = (() => {
       d: ['Erst virtuell, dann real: Der Motion Handler rechnet die IK nahe der aktuellen Stellung und lässt MoveIt nur planen. Mit Ghost-Vorschau läuft die Bahn zuerst im Digital Twin; der Arm fährt erst nach Execute, ohne Freigabe verfällt der Plan nach 15 s.', 'First virtual, then real: the motion handler solves the IK near the current pose and lets MoveIt only plan. With ghost preview the path runs in the Digital Twin first; the arm moves only after Execute, and without approval the plan expires after 15 s.'],
       note: ['Ghost-Vorschau ist zuschaltbar (Standard aus). Ohne sie fährt Go direkt, geprüft von IK, Boden-Box und MoveIt.', 'Ghost preview can be switched on (default off). Without it, Go moves directly, checked by IK, floor box and MoveIt.'],
       loop: { t: ['Plan → Prüfen → Freigabe', 'Plan → check → approve'], s: ['Motion Handler · MoveIt', 'Motion handler · MoveIt'],
-        st: [[['Ziel setzen', 'Set target'], ['Gizmo · Go · Scan', 'Gizmo · Go · Scan']], [['Planen', 'Plan'], ['IK + plan_only', 'IK + plan_only']], [['Prüfen', 'Check'], ['Ghost · Boden-Box', 'Ghost · floor box']],
-          [['Freigabe', 'Approve'], ['Execute · Verwerfen', 'Execute · discard']], [['Ausführen', 'Execute'], ['/execute_trajectory', '/execute_trajectory']], [['Melden', 'Report'], ['motion_state', 'motion_state']]],
+        st: [[['Ziel setzen', 'Set target'], ['TCP-Gizmo · Go · Scan', 'TCP gizmo · Go · Scan']], [['Planen', 'Plan'], ['IK + plan_only', 'IK + plan_only']], [['Prüfen', 'Check'], ['Ghost · Boden-Box', 'Ghost · floor box']],
+          [['Bestätigung', 'Confirm'], ['Execute · Verwerfen', 'Execute · discard']], [['Ausführen', 'Execute'], ['/execute_trajectory', '/execute_trajectory']], [['Melden', 'Report'], ['motion_state', 'motion_state']]],
         back: { from: 3, to: 0, t: ['Verwerfen oder 15 s ohne Freigabe → neu ziehen', 'Discard or 15 s without approval → drag again'] } },
       spec: {
         lanes: lanes(['in', ['Bediener · UI', 'Operator · UI']], 'br', ['chk', ['Planen', 'Plan']], 'mv', 'hw'),
-        nodes: [N('ui', 'in', 0, { sub: 'Gizmo · Ghost · :8081' }), N('rb', 'br', 0), N('mh', 'chk', 0),
+        nodes: [N('ui', 'in', 0, { sub: 'TCP-Gizmo · Ghost · :8081' }), N('rb', 'br', 0), N('mh', 'chk', 0),
           N('fl', 'chk', 1.5, { label: ['Boden-Box', 'Floor box'], short: ['Boden', 'Floor'], sub: 'moveit_floor_collision', icon: 'i-shield', hue: 'gold', info: ['Boden-Box in der Planungsszene: Bahnen unter den Tisch sind blockiert (Level 10 mm).', 'Floor box in the planning scene: paths below the table are blocked (level 10 mm).'] }),
           N('mg', 'mv', 0), N('arm', 'hw', 0)],
         edges: [E('ui', 'rb', '/ui/plan_move_to_pose_confirm', { kind: 'service' }), E('rb', 'mh', '/ui/plan_move_to_pose_confirm', { kind: 'service' }), E('mh', 'mg', '/move_action', { kind: 'action' }),
           E('fl', 'mg', '/planning_scene'), R('mh', 'ui', '/ui/moveto_preview_path'), E('mg', 'arm', '/lite6_traj_controller/follow_joint_trajectory', { kind: 'action' })],
-        scenarios: [SC('mt', 'MoveTo', 'i-gizmo', 'accent', ['Gizmo ziehen, Ghost-Bahn ansehen, freigeben: Plan → Prüfen → Freigabe → Ausführen. Boden-Box und Planungsszene halten die Bahn über dem Tisch und weg von Hindernissen.', 'Drag the gizmo, watch the ghost path, approve: plan → check → approve → execute. Floor box and planning scene keep the path above the table and clear of obstacles.'], [
-          S('ui>rb', ['Beim Loslassen des Gizmos schickt die UI die Zielpose als Service-Anfrage mit Bestätigung.', 'On releasing the gizmo the UI sends the target pose as a service request with confirmation.']),
+        scenarios: [SC('mt', 'MoveTo', 'i-gizmo', 'accent', ['TCP-Gizmo ziehen, Ghost-Bahn ansehen, bestätigen: Plan → Prüfen → Bestätigung → Ausführen. Boden-Box und Planungsszene halten die Bahn über dem Tisch und weg von Hindernissen.', 'Drag the TCP gizmo, watch the ghost path, confirm: plan → check → confirm → execute. Floor box and planning scene keep the path above the table and clear of obstacles.'], [
+          S('ui>rb', ['Beim Loslassen des TCP-Gizmos schickt die UI die Zielpose als Service-Anfrage mit Bestätigung.', 'On releasing the TCP gizmo the UI sends the target pose as a service request with confirmation.']),
           S('rb>mh', ['Der Motion Handler sucht eine IK-Lösung nahe der aktuellen Stellung und pausiert Servo für die Fahrt.', 'The motion handler looks for an IK solution near the current pose and pauses Servo for the motion.']),
           S('mh>mg', ['MoveIt plant mit plan_only eine Bahn um alle Hindernisse der Planungsszene, die Boden-Box eingeschlossen.', 'MoveIt plans a path with plan_only around every obstacle in the planning scene, floor box included.'], { also: ['fl>mg'] }),
           S('mh>ui', ['Die geplante Bahn läuft als Ghost im Digital Twin; der Mensch prüft sie, bevor etwas fährt.', 'The planned path runs as a ghost in the Digital Twin; the human checks it before anything moves.']),
-          S('ui>rb', ['Execute gibt genau diesen Pfad frei, Verwerfen löscht ihn; ohne Antwort verfällt er nach 15 s.', 'Execute approves exactly this path, Discard deletes it; without an answer it expires after 15 s.'], { topic: '/ui/confirm_moveto_preview', also: ['rb>mh'] }),
-          S('mh>mg', ['Der Motion Handler führt den bestätigten Pfad unverändert aus, ohne neu zu planen.', 'The motion handler executes the confirmed path unchanged, without replanning.'], { topic: '/execute_trajectory' }),
-          S('mg>arm', ['Der Trajektorien-Controller fährt die Bahn: in FAKE simuliert, in REAL am xArm Lite 6.', 'The trajectory controller runs the path: simulated in FAKE, on the xArm Lite 6 in REAL.']),
+          S('ui>rb', ['Execute bestätigt genau diese Bahn, Verwerfen löscht sie; ohne Antwort verfällt sie nach 15 s.', 'Execute confirms exactly this path, Discard deletes it; without an answer it expires after 15 s.'], { topic: '/ui/confirm_moveto_preview', also: ['rb>mh'] }),
+          S('mh>mg', ['Der Motion Handler führt die bestätigte Bahn unverändert aus, ohne neu zu planen.', 'The motion handler executes the confirmed path unchanged, without replanning.'], { topic: '/execute_trajectory' }),
+          S('mg>arm', ['Der Trajektorien-Controller fährt die Bahn: in der Roboter-Simulation (FAKE) oder auf echter Roboter-Hardware (REAL).', 'The trajectory controller runs the path: in robot simulation (FAKE) or on real robot hardware (REAL).']),
           S('mh>ui', ['Der Motion Handler meldet succeeded, failed oder aborted; UI, Sequenzen und KI-Agent warten auf diese Meldung.', 'The motion handler reports succeeded, failed or aborted; UI, sequences and AI agent wait for this report.'], { topic: '/ui/moveit_motion_state' })])],
       },
     },
@@ -630,15 +630,15 @@ const FLOWS = (() => {
         x: ['Takt 0,034 s; ohne neuen Befehl stoppt Servo nach 0,2 s.', 'Cycle 0.034 s; without a new command Servo stops after 0.2 s.'] },
       spec: {
         lanes: lanes(['in', ['Befehl · Anzeige', 'Command · display']], ['chk', ['Servo', 'Servo']], ['mo', ['Controller', 'Controller']], 'hw'),
-        nodes: [N('cmd', 'in', 0, { label: ['Twist-Quelle', 'Twist source'], short: 'Twist', sub: 'Watchdog · joy_to_servo', icon: 'i-pad', hue: 'accent', info: ['Browser-Jog über den Watchdog oder das Gamepad über joy_to_servo_node.', 'Browser jog via the watchdog or the gamepad via joy_to_servo_node.'] }),
+        nodes: [N('cmd', 'in', 0, { label: ['Twist-Quelle', 'Twist source'], short: 'Twist', sub: 'Watchdog · joy_to_servo', icon: 'i-pad', hue: 'accent', info: ['Browser-Jogging über den Watchdog oder das Gamepad über joy_to_servo_node.', 'Browser jogging via the watchdog or the gamepad via joy_to_servo_node.'] }),
           N('ui', 'in', 1.5, { sub: ['Status-Badge', 'Status badge'] }), N('srv', 'chk', 0), N('pcc', 'chk', 1.5, { info: ['Lässt das Gamepad bei Status 3, 4 und 5 vibrieren.', 'Rumbles the gamepad on status 3, 4 and 5.'] }),
           N('ctl', 'mo', 0, { label: ['Trajektorien-Controller', 'Trajectory controller'], short: 'Ctrl', sub: 'lite6_traj_controller', icon: 'i-chip', hue: 'indigo', info: ['ros2_control: FAKE mit simulierten, REAL mit echten Controllern.', 'ros2_control: FAKE with simulated, REAL with real controllers.'] }), N('arm', 'hw', 0)],
         edges: [E('cmd', 'srv', '/servo_server/delta_twist_cmds'), E('srv', 'ctl', '/lite6_traj_controller/joint_trajectory'), E('ctl', 'arm', 'ros2_control'), R('arm', 'srv', '/joint_states'),
           E('srv', 'ui', '/servo_server/status', { ports: 'bt' }), E('srv', 'pcc', '/servo_server/status')],
-        scenarios: [SC('loop', ['Regelkreis', 'Control loop'], 'i-pulse', 'indigo', ['Ein Takt des Servo-Regelkreises: Befehl, Gelenkbefehl, Ist-Stellung, Status. Die Kollisionsprüfung läuft dabei mit 10 Hz gegen die Planungsszene.', 'One cycle of the servo loop: command, joint command, actual state, status. The collision check runs at 10 Hz against the planning scene.'], [
+        scenarios: [SC('loop', ['Regelkreis', 'Control loop'], 'i-pulse', 'indigo', ['Ein Takt des Servo-Regelkreises: Befehl, Gelenkbefehl, Ist-Stellung, Status. Servo prüft dabei mit 10 Hz auf Kollisionen gegen die Planungsszene.', 'One cycle of the servo loop: command, joint command, actual state, status. Servo checks for collisions at 10 Hz against the planning scene.'], [
           S('cmd>srv', ['Watchdog oder joy_to_servo_node liefern einen Twist, normiert auf −1 … 1 je Achse.', 'Watchdog or joy_to_servo_node deliver a twist normalised to −1 … 1 per axis.']),
           S('srv>ctl', ['Servo prüft Singularität, Kollision (10 Hz) und Gelenkgrenzen und publiziert den Gelenkbefehl.', 'Servo checks singularity, collision (10 Hz) and joint limits and publishes the joint command.']),
-          S('ctl>arm', ['Der Trajektorien-Controller führt den Befehl über ros2_control aus, simuliert oder am echten Arm.', 'The trajectory controller executes the command via ros2_control, simulated or on the real arm.']),
+          S('ctl>arm', ['Der Trajektorien-Controller führt den Befehl über ros2_control aus, in der Roboter-Simulation oder auf echter Roboter-Hardware.', 'The trajectory controller executes the command via ros2_control, in robot simulation or on real robot hardware.']),
           S('arm>srv', ['Die gemessene Gelenkstellung geht zurück an Servo und ist Ausgangspunkt für den nächsten Takt.', 'The measured joint state returns to Servo and is the starting point for the next cycle.']),
           S('srv>ui', ['Servo meldet Status 0–6; die UI zeigt ihn als Badge, bei 3, 4 und 5 vibriert das Gamepad.', 'Servo reports status 0–6; the UI shows it as a badge, at 3, 4 and 5 the gamepad rumbles.'], { also: ['srv>pcc'] })])],
       },
@@ -649,8 +649,8 @@ const FLOWS = (() => {
       spec: {
         lanes: lanes('in', 'br', ['mo', ['Greifer-Node', 'Gripper node']], ['hw', ['Treiber', 'Driver']]),
         nodes: [N('ui', 'in', 0), N('pad', 'in', 1.5, { label: ['Gamepad A/B', 'Gamepad A/B'], short: 'Pad', sub: '/joy_check', icon: 'i-pad', hue: 'accent', info: ['A schaltet um, B schaltet aus.', 'A toggles, B switches off.'] }), N('rb', 'br', 0), N('gj', 'mo', 0),
-          N('drv', 'hw', 0, { label: ['xArm-Treiber', 'xArm driver'], short: ['Treiber', 'Driver'], sub: 'ufactory_driver · REAL', icon: 'i-chip', hue: 'indigo', info: ['Schaltet Vakuum oder Finger-Greifer am echten Arm.', 'Switches the vacuum or finger gripper on the real arm.'] }),
-          N('sim', 'hw', 1.5, { label: ['Simulation', 'Simulation'], short: 'Sim', sub: 'simulate_gripper · FAKE', icon: 'i-cube', hue: 'teal', info: ['Im FAKE-Modus gibt es keinen Treiber-Service; nur der Zustand wechselt.', 'In FAKE mode there is no driver service; only the state changes.'] })],
+          N('drv', 'hw', 0, { label: ['xArm-Treiber', 'xArm driver'], short: ['Treiber', 'Driver'], sub: 'ufactory_driver · REAL', icon: 'i-chip', hue: 'indigo', info: ['Schaltet Vakuum oder Finger-Greifer an echter Roboter-Hardware.', 'Switches the vacuum or finger gripper on real robot hardware.'] }),
+          N('sim', 'hw', 1.5, { label: ['Roboter-Simulation', 'Robot simulation'], short: 'Sim', sub: 'simulate_gripper · FAKE', icon: 'i-cube', hue: 'teal', info: ['Im FAKE-Modus gibt es keinen Treiber-Service; nur der Zustand wechselt.', 'In FAKE mode there is no driver service; only the state changes.'] })],
         edges: [E('ui', 'rb', '/ui/gripper_cmd'), E('rb', 'gj', '/ui/gripper_cmd'), E('pad', 'gj', '/joy_check', { ports: 'rb' }), E('gj', 'drv', '/ufactory/set_vacuum_gripper', { kind: 'service' }),
           E('gj', 'sim', ['nur Zustand', 'state only'], { ports: 'bl' }), R('gj', 'ui', '/ui/gripper_state')],
         scenarios: [
@@ -667,7 +667,7 @@ const FLOWS = (() => {
     },
     seq: {
       t: ['Sequenzen: aufnehmen und abspielen', 'Sequences: record and play'], hue: 'accent', icon: 'i-layers', s: 'spr',
-      d: ['Fünf Schritttypen laufen nacheinander: move, home, gripper, wait und approach; der UI-Server speichert die Sequenzen für alle Clients. Jeder Schritt startet erst, wenn der vorige succeeded meldet; failed, aborted, Not-Aus oder Zeitüberschreitung beenden die Sequenz.', 'Five step types run one after another: move, home, gripper, wait and approach; the UI server stores the sequences for all clients. Each step starts only when the previous one reports succeeded; failed, aborted, E-stop or a timeout end the sequence.'],
+      d: ['Fünf Schritttypen laufen nacheinander: move, home, gripper, wait und approach; der UI-Server speichert die Sequenzen für alle Clients. Jeder Schritt startet erst, wenn der vorige succeeded meldet; failed, aborted, E-STOP oder Zeitüberschreitung beenden die Sequenz.', 'Five step types run one after another: move, home, gripper, wait and approach; the UI server stores the sequences for all clients. Each step starts only when the previous one reports succeeded; failed, aborted, E-STOP or a timeout end the sequence.'],
       spec: {
         lanes: lanes('in', ['br', ['Server · Brücke', 'Server · bridge']], 'mo', 'hw'),
         nodes: [N('ui', 'in', 0, { label: ['Sequenzen', 'Sequences'], short: 'Seq.', sub: 'UX | Control Interface', icon: 'i-layers' }),
@@ -707,7 +707,7 @@ const FLOWS = (() => {
     },
     vr: {
       t: ['VR Quest 3: die Hand führt den Arm', 'VR Quest 3: the hand guides the arm'], hue: 'accent', icon: 'i-vr', s: 'spr',
-      d: ['Grip halten, Hand bewegen: vr_quest3_teleop macht aus dem Handweg einen Twist, der wie der Browser-Jog durch das Twist-Gate des Watchdogs läuft. Im PLAN-Modus zieht der Laser stattdessen einen Ghost, erst EXECUTE fährt.', 'Hold the grip, move the hand: vr_quest3_teleop turns the hand travel into a twist that passes the watchdog twist gate like the browser jog. In PLAN mode the laser drags a ghost instead; only EXECUTE moves.'],
+      d: ['Grip halten, Hand bewegen: vr_quest3_teleop macht aus dem Handweg einen Twist, der wie das Browser-Jogging durch das Twist-Gate des Watchdogs läuft. Im PLAN-Modus zieht der Laser stattdessen einen Ghost, erst EXECUTE fährt.', 'Hold the grip, move the hand: vr_quest3_teleop turns the hand travel into a twist that passes the watchdog twist gate like browser jogging. In PLAN mode the laser drags a ghost instead; only EXECUTE moves.'],
       spec: {
         lanes: lanes(['q', ['Quest 3', 'Quest 3']], ['br', ['Brücke (WSS)', 'Bridge (WSS)']], ['vr', ['VR-Node', 'VR node']], 'wd', 'mo'),
         nodes: [N('xr', 'q', 0, { label: 'Quest 3 · WebXR', short: 'Quest', sub: ':8443 · VR-Cockpit', icon: 'i-vr', hue: 'accent', info: ['Digital Twin in der Brille mit HUD: Modus, FAKE/REAL, Control, E-STOP, Bestätigungskarte.', 'Digital Twin in the headset with HUD: mode, FAKE/REAL, control, E-STOP, confirm card.'] }),
@@ -725,8 +725,8 @@ const FLOWS = (() => {
     },
     voice: {
       t: ['Sprachbefehl: hören, erkennen, bestätigen', 'Voice command: listen, detect, confirm'], hue: 'teal', icon: 'i-mic', s: 'spr',
-      d: ['Whisper transkribiert ein Hörfenster von 5 s lokal auf dem Roboter-PC, voice_command_listener erkennt darin Befehle auf Deutsch und Englisch per Regex. Fahrten laufen durch dieselbe Bestätigung wie die Knöpfe, „Not-Aus“ und „Stopp“ wirken sofort.', 'Whisper transcribes a 5 s listening window locally on the robot PC; voice_command_listener detects commands in German and English by regex. Motions pass the same confirmation as the buttons; “E-stop” and “stop” act at once.'],
-      note: ['Mit Auto-Move an fährt ein Befehl ohne Popup. Not-Aus und Stop wirken immer sofort.', 'With auto-move on, a command moves without the popup. E-stop and stop always act at once.'],
+      d: ['Whisper transkribiert ein Hörfenster von 5 s lokal auf dem Roboter-PC, voice_command_listener erkennt darin Befehle auf Deutsch und Englisch per Regex. Fahrten laufen durch dieselbe Bestätigung wie die Knöpfe, „E-STOP“ und „Stopp“ wirken sofort.', 'Whisper transcribes a 5 s listening window locally on the robot PC; voice_command_listener detects commands in German and English by regex. Motions pass the same confirmation as the buttons; “E-STOP” and “stop” act at once.'],
+      note: ['Mit Auto-Move an fährt ein Befehl ohne Popup. E-STOP und Stop wirken immer sofort.', 'With auto-move on, a command moves without the popup. E-STOP and stop always act at once.'],
       loop: { t: ['Sprachbefehl', 'Voice command'], s: ['Whisper · voice_command_listener', 'Whisper · voice_command_listener'],
         st: [[['Hören', 'Listen'], ['Knopf · 5 s', 'button · 5 s']], [['Transkribieren', 'Transcribe'], ['Whisper', 'Whisper']], [['Erkennen', 'Detect'], ['Regex · 3 s Cooldown', 'regex · 3 s cooldown']],
           [['Bestätigen', 'Confirm'], ['Popup', 'popup']], [['Ausführen', 'Execute'], ['motionAllowed', 'motionAllowed']], [['Rückmeldung', 'Feedback'], ['/ui/voice_status', '/ui/voice_status']]],
@@ -747,9 +747,9 @@ const FLOWS = (() => {
             S('wh>vcl', ['Whisper liefert den Text; Regex-Muster für Deutsch und Englisch ordnen ihn einem Befehl zu.', 'Whisper returns the text; regex patterns for German and English map it to a command.']),
             S('vcl>ui', ['Der erkannte Befehl geht an die UI; danach gilt 3 s Cooldown gegen Doppelauslösung.', 'The detected command goes to the UI; then a 3 s cooldown prevents double triggering.']),
             S('ui>mh', ['Die UI zeigt das Bestätigungs-Popup; erst „Bestätigen“ startet die Fahrt (Auto-Move aus).', 'The UI shows the confirm popup; only “Confirm” starts the motion (auto-move off).'])]),
-          SC('stop', ['Not-Aus per Stimme', 'Voice E-STOP'], 'i-stop', 'red', ['„Not-Aus“ wirkt direkt aus dem Listener, auch ohne offene UI. Der Befehl umgeht Cooldown und Popup und geht als E-STOP-Topic an den Motion Handler.', '“E-stop” acts directly from the listener, even without an open UI. The command skips cooldown and popup and goes to the motion handler as the E-STOP topic.'], [
+          SC('stop', ['E-STOP per Stimme', 'Voice E-STOP'], 'i-stop', 'red', ['„E-STOP“ wirkt direkt aus dem Listener, auch ohne offene UI. Der Befehl umgeht Cooldown und Popup und geht als E-STOP-Topic an den Motion Handler.', '“E-STOP” acts directly from the listener, even without an open UI. The command skips cooldown and popup and goes to the motion handler as the E-STOP topic.'], [
             S('mic>wh', ['audio_listener liest das Mikrofon und streamt das Audio an Whisper.', 'audio_listener reads the microphone and streams the audio to Whisper.']),
-            S('wh>vcl', ['Whisper liefert den Text, die Regex erkennt „Not-Aus“; dafür gilt kein Cooldown.', 'Whisper returns the text, the regex detects “E-stop”; no cooldown applies.']),
+            S('wh>vcl', ['Whisper liefert den Text, die Regex erkennt „E-STOP“; dafür gilt kein Cooldown.', 'Whisper returns the text, the regex detects “E-STOP”; no cooldown applies.']),
             S('vcl>mh', ['Der Listener publiziert den E-STOP selbst; der Motion Handler verriegelt wie beim roten Knopf.', 'The listener publishes the E-STOP itself; the motion handler latches as with the red button.'])])],
       },
     },
@@ -780,7 +780,7 @@ const FLOWS = (() => {
     },
     touch: {
       t: ['UX | Compact Interface: Bedienen am Roboter', 'UX | Compact Interface: operate at the robot'], hue: 'accent', icon: 'i-touch', s: 'spr',
-      d: ['Ein Chrome-Kiosk unter /touch der UX | Nexus Launcher bündelt Jog, Posen, Greifer, Programme und den Start der Launches. Der E-STOP ist immer sichtbar; bewegen darf das Panel erst, wenn der Roboter-PC die Steuerung per Allow freigibt.', 'A Chrome kiosk at /touch of the UX | Nexus Launcher combines jog, poses, gripper, programs and starting the launches. The E-STOP is always visible; the panel may move the arm only after the robot PC grants control via Allow.'],
+      d: ['Ein Chrome-Kiosk unter /touch der UX | Nexus Launcher bündelt Jogging, Zielposen, Greifer, Sequenzen und den Start der Launches. Der E-STOP ist immer sichtbar; bewegen darf das Panel erst, wenn der Roboter-PC die Steuerung per Allow freigibt.', 'A Chrome kiosk at /touch of the UX | Nexus Launcher combines jogging, target poses, gripper, sequences and starting the launches. The E-STOP is always visible; the panel may move the arm only after the robot PC grants control via Allow.'],
       spec: {
         lanes: lanes(['tp', ['UX | Compact Interface', 'UX | Compact Interface']], ['nx', ['UX | Nexus Launcher', 'UX | Nexus Launcher']], 'br', 'wd', ['mo', ['Roboter', 'Robot']]),
         nodes: [N('tp', 'tp', 0, { label: 'UX | Compact Interface', short: 'Touch', sub: '/touch · Kiosk', icon: 'i-touch', hue: 'accent', info: ['Chrome-Kiosk: Tabs Move, Programs, Robot, Launch, System; E-STOP immer sichtbar.', 'Chrome kiosk: tabs Move, Programs, Robot, Launch, System; E-STOP always visible.'] }),
@@ -788,10 +788,10 @@ const FLOWS = (() => {
           N('rb', 'br', 0), N('wd', 'wd', 0), N('mo', 'mo', 0, { label: ['Motion Handler · Servo', 'Motion handler · Servo'], short: 'Motion', sub: '/ui/* · /servo_server', icon: 'i-gizmo', hue: 'indigo' })],
         edges: [E('tp', 'rb', '/ui/emergency_stop_topic'), E('rb', 'wd', '/remote/twist'), E('wd', 'mo', '/servo_server/delta_twist_cmds'), R('rb', 'mo', '/ui/emergency_stop_topic'),
           E('tp', 'nx', 'HTTP /api/run', { kind: 'service' }), R('rb', 'tp', '/ui/emergency_stop_active')],
-        scenarios: [SC('touch', ['UX | Compact Interface', 'UX | Compact Interface'], 'i-touch', 'accent', ['E-STOP, Steuerung anfragen, joggen und Launches starten: alles direkt am Roboter, mit denselben Regeln wie ein entfernter Client.', 'E-STOP, request control, jog and start launches: all right at the robot, with the same rules as a remote client.'], [
+        scenarios: [SC('touch', ['UX | Compact Interface', 'UX | Compact Interface'], 'i-touch', 'accent', ['E-STOP, Steuerung anfragen, Jogging, Launches starten: alles direkt am Roboter, mit denselben Regeln wie ein entfernter Client.', 'E-STOP, request control, jogging, starting launches: all right at the robot, with the same rules as a remote client.'], [
           S('tp>rb', ['Der E-STOP ist auf jedem Tab sichtbar und löst bei der ersten Berührung aus.', 'The E-STOP is visible on every tab and fires on the first touch.'], { also: ['rb>mo'] }),
           S('tp>rb', ['Das Panel fragt die Steuerung an; es gilt nie als Server, der Roboter-PC muss per Allow freigeben.', 'The panel requests control; it never counts as the server, so the robot PC must grant it via Allow.'], { topic: '/remote/control_request' }),
-          S('rb>wd', ['Jog-Befehle tragen die Client-id, der Heartbeat kommt alle 250 ms.', 'Jog commands carry the client id; the heartbeat comes every 250 ms.']),
+          S('rb>wd', ['Jogging-Befehle tragen die Client-id, der Heartbeat kommt alle 250 ms.', 'Jogging commands carry the client id; the heartbeat comes every 250 ms.']),
           S('wd>mo', ['Das Twist-Gate prüft Besitz, Heartbeat, Tempo und Bodensperre, bevor Servo fährt.', 'The twist gate checks ownership, heartbeat, speed and floor guard before Servo moves.']),
           S('rb>tp', ['Der E-STOP-Zustand kommt zurück ans Panel; Quittieren verlangt 1 s Halten gegen Fehlberührung.', 'The E-STOP state returns to the panel; resetting requires a 1 s hold against accidental touches.']),
           S('tp>nx', ['Der Launch-Tab startet Karten der UX | Nexus Launcher; POST nimmt der Server nur von Loopback und eigener Origin an.', 'The Launch tab starts UX | Nexus Launcher cards; the server accepts POST only from loopback and its own origin.'])])],
@@ -800,8 +800,8 @@ const FLOWS = (() => {
 
     // ─────────── Sicherheit ───────────
     remote: {
-      t: ['Remote-Steuerung: genau ein Besitzer', 'Remote control: exactly one owner'], hue: 'gold', icon: 'i-lock', s: 'spr',
-      d: ['Laptop, Tablet, UX | Compact Interface oder Quest 3 fragen an, die UX | Control Interface auf dem Roboter-PC gibt per Allow frei. Genau ein Gerät steuert, ein WLAN-Aussetzer stoppt nur die Bewegung (der Besitz hält 10 s), und der Not-Aus geht immer.', 'Laptop, tablet, UX | Compact Interface or Quest 3 request control; the UX | Control Interface on the robot PC grants it via Allow. Exactly one device controls, a Wi-Fi dropout only stops the motion (ownership holds for 10 s), and the E-STOP always works.'],
+      t: ['Remote Control: genau ein Besitzer', 'Remote control: exactly one owner'], hue: 'gold', icon: 'i-lock', s: 'spr',
+      d: ['Laptop, Tablet, UX | Compact Interface oder Quest 3 fragen an, die UX | Control Interface auf dem Roboter-PC gibt per Allow frei. Genau ein Gerät steuert, ein WLAN-Aussetzer stoppt nur die Bewegung (der Besitz hält 10 s), und der E-STOP geht immer.', 'Laptop, tablet, UX | Compact Interface or Quest 3 request control; the UX | Control Interface on the robot PC grants it via Allow. Exactly one device controls, a Wi-Fi dropout only stops the motion (ownership holds for 10 s), and the E-STOP always works.'],
       spec: {
         lanes: lanes('cl', 'br', 'wd', ['pc', ['Roboter-PC', 'Robot PC']], 'mo'),
         nodes: [N('ui', 'cl', 0, { label: ['UX | Control Interface (Client)', 'UX | Control Interface (client)'], short: 'Client', sub: 'Laptop · Tablet' }), N('rb', 'br', 0), N('wd', 'wd', 0),
@@ -809,20 +809,20 @@ const FLOWS = (() => {
           N('srv', 'mo', 0)],
         edges: [E('ui', 'rb', '/remote/control_request'), E('rb', 'wd', '/remote/control_request'), E('wd', 'srvui', '/remote/control_state'), E('srvui', 'wd', ['/remote/control_request (signiert)', '/remote/control_request (signed)']),
           R('wd', 'ui', '/remote/control_state'), E('wd', 'srv', '/servo_server/delta_twist_cmds')],
-        scenarios: [SC('req', ['Steuerung anfragen', 'Request control'], 'i-lock', 'gold', ['Anfrage, Freigabe am Roboter-PC, dann Jog nur vom Besitzer. Ihre Server-Rolle beweist die UI mit einem Token, das nie über rosbridge geht.', 'Request, approval on the robot PC, then jog only from the owner. The UI proves its server role with a token that never travels over rosbridge.'], [
+        scenarios: [SC('req', ['Steuerung anfragen', 'Request control'], 'i-lock', 'gold', ['Anfrage, Freigabe am Roboter-PC, dann Jogging nur vom Besitzer. Ihre Server-Rolle beweist die UI mit einem Token, das nie über rosbridge geht.', 'Request, approval on the robot PC, then jogging only from the owner. The UI proves its server role with a token that never travels over rosbridge.'], [
           S('ui>rb', ['Der Client fragt per Knopf „Request control“ an oder automatisch beim ersten Bedienversuch.', 'The client asks via the “Request control” button or automatically on the first attempt to operate.']),
           S('rb>wd', ['Der Watchdog legt eine offene Anfrage an; ohne Antwort verfällt sie nach 60 s.', 'The watchdog creates a pending request; without an answer it expires after 60 s.']),
           S('wd>srvui', ['Die UX | Control Interface am Roboter-PC zeigt ein Popup mit Allow und Deny.', 'The UX | Control Interface on the robot PC shows a popup with Allow and Deny.']),
           S('srvui>wd', ['Die Antwort ist mit HMAC-SHA256 signiert und höchstens 5 s alt; das Token gibt der UI-Server nur an 127.x heraus.', 'The answer is signed with HMAC-SHA256 and at most 5 s old; the UI server hands out the token only to 127.x.']),
           S('wd>ui', ['Der Zustand nennt genau einen Besitzer; alle anderen Clients sehen zu und können selbst anfragen.', 'The state names exactly one owner; all other clients watch and may request themselves.']),
-          S('ui>rb', ['Jog-Befehle tragen die Client-id; der Watchdog verwirft alles, was nicht vom Besitzer kommt.', 'Jog commands carry the client id; the watchdog drops everything that does not come from the owner.'], { topic: '/remote/twist', also: ['rb>wd'] }),
+          S('ui>rb', ['Jogging-Befehle tragen die Client-id; der Watchdog verwirft alles, was nicht vom Besitzer kommt.', 'Jogging commands carry the client id; the watchdog drops everything that does not come from the owner.'], { topic: '/remote/twist', also: ['rb>wd'] }),
           S('wd>srv', ['Das Twist-Gate begrenzt Tempo (REAL 50 %) und Abwärtsfahrt und sperrt bei E-STOP, dann fährt Servo.', 'The twist gate limits speed (REAL 50 %) and downward motion and blocks on E-STOP, then Servo moves.'])])],
       },
     },
     heartbeat: {
-      t: ['Heartbeat: Totmann für Gamepad und Jog', 'Heartbeat: dead man for gamepad and jog'], hue: 'gold', icon: 'i-pulse', s: 'sr',
-      d: ['Tab zu, Laptop zugeklappt oder WLAN weg: Ohne Heartbeat setzt der Watchdog Gamepad und Jog auf null, im REAL-Modus schon nach 0,4 s, in FAKE nach 1,0 s. Ein verdeckter Tab meldet sich nur noch als anwesend und zählt nicht als Heartbeat für Bewegung.', 'Tab closed, laptop shut or Wi-Fi lost: without a heartbeat the watchdog sets gamepad and jog to zero, after just 0.4 s in REAL mode and 1.0 s in FAKE. A hidden tab only reports presence and does not count as a heartbeat for motion.'],
-      note: ['Stoppt Gamepad und Jog. Eine geplante MoveIt-Fahrt läuft weiter; dafür gibt es den E-STOP.', 'Stops gamepad and jog. A planned MoveIt motion continues; that is what the E-STOP is for.'],
+      t: ['Heartbeat: Totmann für Gamepad und Jogging', 'Heartbeat: dead man for gamepad and jogging'], hue: 'gold', icon: 'i-pulse', s: 'sr',
+      d: ['Tab zu, Laptop zugeklappt oder WLAN weg: Ohne Heartbeat setzt der Watchdog Gamepad und Jogging auf null, im REAL-Modus schon nach 0,4 s, in FAKE nach 1,0 s. Ein verdeckter Tab meldet sich nur noch als anwesend und zählt nicht als Heartbeat für Bewegung.', 'Tab closed, laptop shut or Wi-Fi lost: without a heartbeat the watchdog sets gamepad and jogging to zero, after just 0.4 s in REAL mode and 1.0 s in FAKE. A hidden tab only reports presence and does not count as a heartbeat for motion.'],
+      note: ['Stoppt Gamepad und Jogging. Eine geplante MoveIt-Fahrt läuft weiter; dafür gibt es den E-STOP.', 'Stops gamepad and jogging. A planned MoveIt motion continues; that is what the E-STOP is for.'],
       loop: { t: ['Heartbeat → Watchdog', 'Heartbeat → watchdog'], s: 'remote_control_watchdog',
         st: [[['Senden', 'Send'], ['Browser · 250 ms', 'browser · 250 ms']], [['Empfangen', 'Receive'], ['Watchdog merkt Zeit', 'watchdog stores time']], [['Prüfen', 'Check'], ['alle 50 ms', 'every 50 ms']],
           [['Stoppen', 'Stop'], ['/joy neutral · Null-Twist', '/joy neutral · zero twist']], [['Melden', 'Report'], ['/remote/control_state', '/remote/control_state']]],
@@ -842,8 +842,8 @@ const FLOWS = (() => {
     },
     estop: {
       t: ['E-STOP: stoppen und quittieren', 'E-STOP: stop and reset'], hue: 'red', icon: 'i-stop', s: 'sr',
-      d: ['Der Not-Halt wirkt immer, von jedem Gerät und auch ohne Steuerung: Der Motion Handler verriegelt, stoppt Servo und bricht laufende Fahrten und KI-Aufgaben ab. Quittieren darf nur der Besitzer der Steuerung oder der Roboter-PC, über den Watchdog.', 'The emergency stop always works, from every device and even without control: the motion handler latches, stops Servo and aborts running motions and AI tasks. Only the owner of control or the robot PC may reset it, via the watchdog.'],
-      note: ['Der Software-Not-Halt ergänzt den Hardware-Not-Aus am Roboter, er ersetzt ihn nicht.', 'The software emergency stop complements the hardware E-stop on the robot; it does not replace it.'],
+      d: ['Der E-STOP wirkt immer, von jedem Gerät und auch ohne Steuerung: Der Motion Handler verriegelt, stoppt Servo und bricht laufende Fahrten und KI-Aufgaben ab. Quittieren darf nur der Besitzer der Steuerung oder der Roboter-PC, über den Watchdog.', 'The E-STOP always works, from every device and even without control: the motion handler latches, stops Servo and aborts running motions and AI tasks. Only the owner of control or the robot PC may reset it, via the watchdog.'],
+      note: ['Der Software-E-STOP ergänzt den Hardware-E-STOP am Roboter, er ersetzt ihn nicht.', 'The software E-STOP complements the hardware E-STOP on the robot; it does not replace it.'],
       spec: {
         lanes: lanes(['in', ['Auslöser', 'Triggers']], 'br', ['mo', ['Motion Handler', 'Motion handler']], 'hw', ['ai', ['Abnehmer', 'Consumers']]),
         nodes: [N('trig', 'in', 0, { label: ['E-STOP-Quellen', 'E-STOP sources'], short: 'E-STOP', sub: ['Knopf · Touch · VR · Sprache', 'button · touch · VR · voice'], icon: 'i-stop', hue: 'red', info: ['Header-Knopf, Leertaste, UX | Compact Interface, VR-Geste und Sprache senden denselben Stopp.', 'Header button, space bar, UX | Compact Interface, VR gesture and voice send the same stop.'] }),
@@ -856,7 +856,7 @@ const FLOWS = (() => {
             S('trig>rb', ['Header-Knopf, Leertaste, UX | Compact Interface, VR-Geste und Sprache senden dasselbe Stopp-Topic.', 'Header button, space bar, UX | Compact Interface, VR gesture and voice send the same stop topic.']),
             S('rb>mh', ['Ein Topic statt Service: Der Stopp wartet nie hinter anderen Anfragen in einer Warteschlange.', 'A topic instead of a service: the stop never waits behind other requests in a queue.']),
             S('mh>arm', ['Der Motion Handler verriegelt, bricht die laufende Bahn ab und schaltet Servo aus; der Arm hält.', 'The motion handler latches, aborts the running path and switches Servo off; the arm holds.']),
-            S('mh>vb', ['Der KI-Agent bricht die laufende Aufgabe ab, der Watchdog sperrt jeden weiteren Jog.', 'The AI agent aborts the running task; the watchdog blocks any further jog.'], { also: ['mh>wd'] })]),
+            S('mh>vb', ['Der KI-Agent bricht die laufende Aufgabe ab, der Watchdog sperrt jedes weitere Jogging.', 'The AI agent aborts the running task; the watchdog blocks any further jogging.'], { also: ['mh>wd'] })]),
           SC('reset', ['Quittieren', 'Reset'], 'i-lock', 'gold', ['Nur der Besitzer der Steuerung oder der Roboter-PC quittiert, immer über den Watchdog. Den Reset-Service direkt aufrufen kann kein Browser, die rosbridge-Whitelist sperrt ihn.', 'Only the owner of control or the robot PC resets, always via the watchdog. No browser can call the reset service directly; the rosbridge whitelist blocks it.'], [
             S('trig>wd', ['Quittieren per Knopf in der UI oder am UX | Compact Interface durch 1 s Halten; gesendet wird reset_estop.', 'Reset via the button in the UI or by a 1 s hold on the UX | Compact Interface; reset_estop is sent.']),
             S('wd>mh', ['Der Watchdog lässt nur Besitzer oder verifizierten Server zu und ruft dann den Reset-Service auf.', 'The watchdog admits only the owner or the verified server and then calls the reset service.']),
@@ -987,7 +987,7 @@ const FLOWS = (() => {
     // ─────────── KI / VLA-M ───────────
     vla: {
       t: ['KI-Chat: aus einem Satz ein geprüfter Plan', 'AI chat: from one sentence to a checked plan'], hue: 'violet', icon: 'i-spark', s: 'spr',
-      d: ['Das Sprachmodell wählt nur Skills (pick, place, home, palletize, gripper) und Objekt-IDs aus der Szene, alle Posen rechnet der Code. Jeder Plan wartet auf Execute; im REAL-Modus fährt der Agent nur mit allow_real_motion, Standard ist nur planen.', 'The language model only picks skills (pick, place, home, palletize, gripper) and object IDs from the scene; the code computes every pose. Every plan waits for Execute; in REAL mode the agent moves only with allow_real_motion, the default is plan only.'],
+      d: ['Das Sprachmodell wählt nur Skills (pick, place, home, palletize, gripper) und Objekt-IDs aus der Szene, alle Zielposen rechnet der Code. Jeder Plan wartet auf Execute; im REAL-Modus fährt der Agent nur mit allow_real_motion, Standard ist nur planen.', 'The language model only picks skills (pick, place, home, palletize, gripper) and object IDs from the scene; the code computes every target pose. Every plan waits for Execute; in REAL mode the agent moves only with allow_real_motion, the default is plan only.'],
       note: ['dry_run:=true plant und zeigt, bewegt aber nie den Arm. Abort stoppt nach dem laufenden Schritt, der E-STOP sofort.', 'dry_run:=true plans and shows but never moves the arm. Abort stops after the current step, the E-STOP at once.'],
       loop: { t: ['Agentenschleife', 'Agent loop'], s: 'VLA-M · vla_bridge',
         st: [[['Anweisung', 'Instruction'], ['Chat · Diktat', 'chat · dictation']], [['Plan', 'Plan'], ['Sprachmodell', 'language model']], [['Prüfen', 'Check'], ['Code · ≤ 2 Runden', 'code · ≤ 2 rounds']],
@@ -1052,8 +1052,8 @@ const FLOWS = (() => {
           S('pan>rb', ['Plan anfordern: optional Pflicht-Kartons und eigene Grenzen für Last, Höhe und Auflage setzen.', 'Request a plan: optionally set required cartons and own limits for load, height and support.']),
           S('rb>pj', ['PalletJob wählt Kartons und Reihenfolge und rechnet die genauen Ablageposen Lage für Lage.', 'PalletJob picks cartons and order and computes the exact placement poses layer by layer.'], { also: ['vo>pj'] }),
           S('pj>rb', ['Plan und Fortschritt gehen latched an die UI, die Kartons erscheinen als Ghost-Boxen.', 'Plan and progress go latched to the UI; the cartons appear as ghost boxes.'], { also: ['rb>pan'] }),
-          S('pan>rb', ['Start fährt den Plan; Dry run prüft nur die IK jeder Pose und bewegt nichts.', 'Start runs the plan; dry run only checks the IK of each pose and moves nothing.'], { also: ['rb>pj'] }),
-          S('pj>mh', ['Je Karton: pick mit Anfahrt von oben, dann place_at auf die geplante Pose.', 'Per carton: pick with approach from above, then place_at onto the planned pose.'], { also: ['pj>gj'] }),
+          S('pan>rb', ['Start fährt den Plan; Dry run prüft nur die IK jeder Zielpose und bewegt nichts.', 'Start runs the plan; dry run only checks the IK of each target pose and moves nothing.'], { also: ['rb>pj'] }),
+          S('pj>mh', ['Je Karton: pick mit Anfahrt von oben, dann place_at auf die geplante Zielpose.', 'Per carton: pick with approach from above, then place_at onto the planned target pose.'], { also: ['pj>gj'] }),
           S('mh>arm', ['Der Arm setzt ab und löst den Sauger 3 mm über der Zielhöhe.', 'The arm sets down and releases the suction 3 mm above the target height.']),
           S('pj>rb', ['Die Ist-Lage wird mit dem Plan verglichen; liegt sie innerhalb von 6 mm und 8°, folgt der nächste Karton.', 'The actual pose is compared with the plan; within 6 mm and 8°, the next carton follows.']),
           S('pj>rb', ['Palette voll: Ereignis an die UI, Palettenwechsel in höchstens 90 s, dann ein neuer Plan für die leere Palette.', 'Pallet full: event to the UI, pallet change within 90 s at most, then a new plan for the empty pallet.'], { topic: '/vla/pallet/event', also: ['rb>pan'] })])],

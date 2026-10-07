@@ -819,9 +819,9 @@ html.sf-on .hero:not(.is-in) .msg { opacity: 0; transform: translate3d(0, 10px, 
       </div>
       <div class="hero-stage">
         <figure class="chat" aria-label="Beispiel: eine Aufgabe im Chat, von der Bitte bis zum Push" data-en-aria="Example: one task in the chat, from request to push">
-          <div class="chat-bar"><span class="af-dots" aria-hidden="true"><i></i><i></i><i></i></span><b>Claude Code · VS Code</b><span class="hchip" data-en="[RCU] Limit jog">[RCU] Joggen begrenzen</span></div>
+          <div class="chat-bar"><span class="af-dots" aria-hidden="true"><i></i><i></i><i></i></span><b>Claude Code · VS Code</b><span class="hchip" data-en="[RCU] Limit jogging">[RCU] Jogging begrenzen</span></div>
           <ol class="chat-log">
-            <li class="msg me" style="--i: 0"><span class="who" data-en="You">Du</span><span class="bub" data-en="Jogging should move 10&amp;nbsp;mm per step at most.">Joggen soll höchstens 10&nbsp;mm pro Schritt fahren.</span></li>
+            <li class="msg me" style="--i: 0"><span class="who" data-en="You">Du</span><span class="bub" data-en="Jogging (moving the arm by hand in small steps) should move 10&amp;nbsp;mm per step at most.">Jogging (Arm von Hand in kleinen Schritten fahren) soll höchstens 10&nbsp;mm pro Schritt fahren.</span></li>
             <li class="msg" style="--i: 1"><span class="who">Claude</span><span class="bub" data-en="&lt;span&gt;&lt;b&gt;Plan:&lt;/b&gt; limit in &lt;code&gt;jog.js&lt;/code&gt;, add a test.&lt;/span&gt;"><span><b>Plan:</b> Grenze in <code>jog.js</code>, Test ergänzen.</span></span></li>
             <li class="msg" style="--i: 2"><span class="who">Claude</span><span class="bub"><span data-en="&lt;b&gt;F1&lt;/b&gt; Update the twin display as well?"><b>F1</b> Anzeige im Twin gleich mit anpassen?</span><span class="btns"><span class="on" data-en="yes">ja</span><span data-en="later">später</span></span></span></li>
             <li class="msg sys hook" style="--i: 3"><span class="who">Hook</span><span class="bub"><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg><span data-en="Check after the edit: no findings">Prüfung nach dem Edit: ohne Befund</span></span></li>
@@ -976,12 +976,12 @@ html.sf-on .hero:not(.is-in) .msg { opacity: 0; transform: translate3d(0, 10px, 
       <section class="sec" id="sicherheit">
         <header class="sec-head">
           <div><span class="eyebrow" style="--hue: var(--gold)"><span class="n">03</span><span data-en="Safety">Sicherheit</span></span><h2 data-en="What Claude may do">Was Claude darf</h2></div>
-          <div class="brief"><p class="slogan" data-en="Free on routine, a question on risk.">Frei bei Routine, Rückfrage bei Risiko.</p><dl><dt data-en="Why">Warum</dt><dd data-en="Claude runs commands directly in the workspace, and this code moves a real robot.">Claude führt Befehle direkt im Workspace aus, und dieser Code bewegt einen echten Roboter.</dd><dt data-en="How">Wie</dt><dd data-en="Permissions, AGENTS.md §&amp;nbsp;0 and hooks set the limits.">Berechtigungen, AGENTS.md §&nbsp;0 und Hooks setzen die Grenzen.</dd></dl></div>
+          <div class="brief"><p class="slogan" data-en="Free on routine, a question on risk.">Frei bei Routine, Rückfrage bei Risiko.</p><dl><dt data-en="Why">Warum</dt><dd data-en="Claude runs commands directly in the workspace, and this code moves real robot hardware.">Claude führt Befehle direkt im Workspace aus, und dieser Code bewegt echte Roboter-Hardware.</dd><dt data-en="How">Wie</dt><dd data-en="Permissions, AGENTS.md §&amp;nbsp;0 and hooks set the limits.">Berechtigungen, AGENTS.md §&nbsp;0 und Hooks setzen die Grenzen.</dd></dl></div>
         </header>
         <div class="perm">
           <div class="pm" style="--hue: var(--green)"><div class="pm-h"><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg><div><span class="k-t" data-en="Free">Frei</span><b data-en="Works without asking.">Arbeitet ohne Nachfrage.</b></div></div><ul><li data-en="Read and search files">Dateien lesen und durchsuchen</li><li data-en="Run 16 fixed check commands">16 feste Prüfbefehle ausführen</li><li data-en="Test in isolation: own port, own domain">Isoliert testen: eigener Port, eigene Domain</li><li data-en="Stop its own processes">Eigene Prozesse beenden</li></ul></div>
           <div class="pm" style="--hue: var(--gold)"><div class="pm-h"><svg class="ico" aria-hidden="true"><use href="#i-q"/></svg><div><span class="k-t" data-en="After asking">Mit Rückfrage</span><b data-en="Asks first.">Fragt vorher nach.</b></div></div><ul><li data-en="Commands outside the allow list">Befehle außerhalb der Erlaubt-Liste</li><li data-en="Files another chat is working on">Dateien, die ein anderer Chat bearbeitet</li><li data-en="Larger rebuilds: preview first">Größere Umbauten: erst Vorschau</li><li data-en="Stopping processes broadly (pkill)">Prozesse breit beenden (pkill)</li></ul></div>
-          <div class="pm" style="--hue: var(--red)"><div class="pm-h"><svg class="ico" aria-hidden="true"><use href="#i-stop"/></svg><div><span class="k-t" data-en="Never without approval">Nie ohne Freigabe</span><b data-en="Stays locked.">Bleibt gesperrt.</b></div></div><ul><li data-en="Move the real robot (REAL)">Den echten Roboter bewegen (REAL)</li><li data-en="Weaken E-STOP, sandbox or collision check">E-STOP, Sandbox oder Kollisionsprüfung abschwächen</li><li data-en="Commit other chats’ changes">Änderungen anderer Chats committen</li><li data-en="Overwrite the Git history (--force)">Git-Verlauf überschreiben (--force)</li></ul></div>
+          <div class="pm" style="--hue: var(--red)"><div class="pm-h"><svg class="ico" aria-hidden="true"><use href="#i-stop"/></svg><div><span class="k-t" data-en="Never without approval">Nie ohne Freigabe</span><b data-en="Stays locked.">Bleibt gesperrt.</b></div></div><ul><li data-en="Move real robot hardware (REAL)">Echte Roboter-Hardware bewegen (REAL)</li><li data-en="Weaken E-STOP, sandbox or collision pre-check">E-STOP, Sandbox oder Kollisionsvorprüfung abschwächen</li><li data-en="Commit other chats’ changes">Änderungen anderer Chats committen</li><li data-en="Overwrite the Git history (--force)">Git-Verlauf überschreiben (--force)</li></ul></div>
         </div>
       <div class="panel guard">
         <h3 data-en="What happens when Claude …">Was passiert, wenn Claude …</h3>
@@ -1058,7 +1058,7 @@ html.sf-on .hero:not(.is-in) .msg { opacity: 0; transform: translate3d(0, 10px, 
                     <div class="vsc">
                       <div class="vsc-code"><span class="vsc-tab"><svg class="ico"><use href="#i-code"/></svg>jog.js</span><pre><span>const step = readStep();</span><span class="del">- move(step);</span><span class="add">+ move(Math.min(step, MAX_STEP_MM));</span><span>  // MAX_STEP_MM = 10</span></pre></div>
                       <div class="vsc-chat">
-                        <div class="msg me"><span class="who" data-en="You">Du</span><span class="bub" data-en="Jog at most 10&amp;nbsp;mm per step.">Joggen höchstens 10&nbsp;mm pro Schritt.</span></div>
+                        <div class="msg me"><span class="who" data-en="You">Du</span><span class="bub" data-en="Jogging: at most 10&amp;nbsp;mm per step.">Jogging: höchstens 10&nbsp;mm pro Schritt.</span></div>
                         <div class="msg"><span class="who">Claude</span><span class="bub"><span data-en="Limit set in &lt;code&gt;jog.js&lt;/code&gt;, test added.">Grenze in <code>jog.js</code> gesetzt, Test ergänzt.</span></span></div>
                         <div class="msg sys hook"><span class="who">Hook</span><span class="bub"><svg class="ico"><use href="#i-check"/></svg><span data-en="no findings">ohne Befund</span></span></div>
                       </div>
@@ -1391,7 +1391,7 @@ html.sf-on .hero:not(.is-in) .msg { opacity: 0; transform: translate3d(0, 10px, 
         <span><b>[Nexus]</b>UX | Nexus Launcher + UX | Compact Interface</span>
         <span data-en="&lt;b&gt;[Mon]&lt;/b&gt;UX | Monitoring, evaluation"><b>[Mon]</b>UX | Monitoring, Evaluierung</span>
         <span data-en="&lt;b&gt;[VLA]&lt;/b&gt;vla_bridge, Motion Handler, grasping, sandbox"><b>[VLA]</b>vla_bridge, Motion Handler, Greifen, Sandbox</span>
-        <span data-en="&lt;b&gt;[Vision]&lt;/b&gt;ZED, YOLO, Octomap, gaze, voice"><b>[Vision]</b>ZED, YOLO, Octomap, Gaze, Sprache</span>
+        <span data-en="&lt;b&gt;[Vision]&lt;/b&gt;ZED, YOLO, Octomap, gaze control, voice commands"><b>[Vision]</b>ZED, YOLO, Octomap, Blicksteuerung, Sprachbefehle</span>
         <span data-en="&lt;b&gt;[Infra]&lt;/b&gt;network.yaml, ports, build, tools/, system"><b>[Infra]</b>network.yaml, Ports, Build, tools/, System</span>
         <span data-en="&lt;b&gt;[Doku]&lt;/b&gt;docs, README, manual, setup card, poster"><b>[Doku]</b>docs, README, Handbuch, Setup-Karte, Poster</span>
       </div>

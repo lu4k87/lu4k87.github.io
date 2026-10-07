@@ -496,7 +496,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 10px 24px; align-items: cent
           <a href="#tastatur" style="--hue: var(--violet)"><svg class="ico"><use href="#i-key"/></svg>Tastatur</a>
           <a href="#touch" style="--hue: var(--green)"><svg class="ico"><use href="#i-tab"/></svg>UX | Compact Interface</a>
           <a href="#rcu" style="--hue: var(--accent)"><svg class="ico"><use href="#i-mon"/></svg>UX | Control Interface</a>
-          <a href="#gizmo" style="--hue: var(--indigo)"><svg class="ico"><use href="#i-gizmo"/></svg>3D-Gizmo</a>
+          <a href="#gizmo" style="--hue: var(--indigo)"><svg class="ico"><use href="#i-gizmo"/></svg>TCP-Gizmo</a>
           <a href="#vla" style="--hue: var(--violet)"><svg class="ico"><use href="#i-chat"/></svg>VLA-M-Chat</a>
           <a href="#remote" style="--hue: var(--teal)"><svg class="ico"><use href="#i-net"/></svg>Remote</a>
         </nav>
@@ -525,7 +525,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 10px 24px; align-items: cent
           <div class="eyebrow"><span class="n">01</span><span>Kernmerkmale</span></div>
           <h2>Der Mensch führt. Die KI assistiert.</h2>
         </div>
-        <p>Acht Merkmale machen aus einer Fernsteuerung eine assistive Plattform.</p>
+        <p>Acht Merkmale machen aus einem ferngesteuerten Arm eine assistive Plattform.</p>
       </div>
       <div class="feats feats-num">
         <div class="feat" style="--hue: var(--accent)"><span class="badge-ico"><svg class="ico"><use href="#i-cube"/></svg></span><span class="k-t">Digital Twin · Physik</span><b>Erst virtuell, dann real.</b><p>Live-3D-Zwilling im Browser; die Physik-Sandbox simuliert Schwerkraft, Kontakt und Greifen vor der echten Fahrt.</p></div>
@@ -533,7 +533,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 10px 24px; align-items: cent
         <div class="feat" style="--hue: var(--teal)"><span class="badge-ico"><svg class="ico"><use href="#i-eye"/></svg></span><span class="k-t">Kontrolle · Überwachung</span><b>Alles im Blick. Jederzeit eingreifen.</b><p>Roboterzustand, Umgebung (ZED, OctoMap) und Bewegungsausführung live; UX | Monitoring und Blackbox zeichnen mit.</p></div>
         <div class="feat" style="--hue: var(--violet)"><span class="badge-ico"><svg class="ico"><use href="#i-spark"/></svg></span><span class="k-t">Assistive Autonomie</span><b>Die KI plant. Der Mensch gibt frei.</b><p>Der Agent macht aus Sprache Bewegungsabläufe; Entscheidung und Feedback des Menschen steuern jeden Schritt.</p></div>
         <div class="feat" style="--hue: var(--green)"><span class="badge-ico"><svg class="ico"><use href="#i-globe"/></svg></span><span class="k-t">Web · Remote</span><b>Öffnen statt installieren.</b><p>Bedienung komplett im Browser: am Roboter-PC, aus dem Heimnetz oder in der Quest 3 per WebXR.</p></div>
-        <div class="feat" style="--hue: var(--gold)"><span class="badge-ico"><svg class="ico"><use href="#i-shield"/></svg></span><span class="k-t">Sicherheit</span><b>Eine Kette für jede Eingabe.</b><p>E-STOP, Bodenschutz und Kollisionsprüfung für alle zehn Steuerwege; der Control-Lock gibt immer nur einem Client die Steuerung.</p></div>
+        <div class="feat" style="--hue: var(--gold)"><span class="badge-ico"><svg class="ico"><use href="#i-shield"/></svg></span><span class="k-t">Sicherheit</span><b>Eine Kette für jede Eingabe.</b><p>E-STOP, Bodenschutz und Kollisionsvorprüfung für alle zehn Steuerwege; der Control-Lock gibt immer nur einem Client die Steuerung.</p></div>
         <div class="feat" style="--hue: var(--teal)"><span class="badge-ico"><svg class="ico"><use href="#i-code"/></svg></span><span class="k-t">Open Source</span><b>Offen, nachbaubar, erweiterbar.</b><p>Eigene Pakete unter Apache 2.0, aufgebaut auf ROS&nbsp;2 Humble und MoveIt&nbsp;2.</p></div>
         <div class="feat" style="--hue: var(--indigo)"><span class="badge-ico"><svg class="ico"><use href="#i-blocks"/></svg></span><span class="k-t">Multimodal · Modular</span><b>Austauschbar statt festgelegt.</b><p>Bessere Eingabegeräte, Kameras, KI-Modelle oder Software-Module ersetzen die alten einzeln; feste ROS&#8209;2-Schnittstellen halten den Rest unverändert. Als Nächstes wird auch der Roboterarm austauschbar (geplant).</p></div>
       </div>
@@ -666,8 +666,8 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 10px 24px; align-items: cent
             <p class="tagline">Die Hand wird zum Werkzeug: Der TCP folgt dem Controller 1 : 1.</p>
             <div class="blocks">
               <div class="blk"><h4>Funktionen</h4><ul class="list"><li><b>6-DoF:</b> der TCP folgt dem Controller 1 : 1</li><li><b>Modi:</b> SERVO (live) oder PLAN (erst planen)</li><li><b>Szene:</b> um den Roboter gehen und fliegen</li></ul></div>
-              <div class="blk"><h4>Bedienung</h4><ul class="map"><li><span class="key" style="color:var(--indigo)">Grip</span><span><b>Kupplung</b>, Hand führt den TCP</span></li><li><span class="key a">Trigger</span><span>Greifer schalten · Objekt wählen</span></li><li><span class="key" style="color:var(--indigo)">B</span><span>Modus SERVO ↔ PLAN</span></li><li><span class="key">Sticks</span><span>Gehen · um den Roboter fliegen</span></li><li><span class="key b">2× Grip+2× Trig.</span><span>Not-Aus</span></li></ul></div>
-              <div class="blk safe"><h4>Sicherheit</h4><ul class="list"><li><b>Kupplung:</b> ohne Grip keine Bewegung</li><li><b>Tracking weg:</b> Stopp nach 0,3 s</li><li><b>Not-Aus:</b> 2× Grip + 2× Trigger</li></ul></div>
+              <div class="blk"><h4>Bedienung</h4><ul class="map"><li><span class="key" style="color:var(--indigo)">Grip</span><span><b>Kupplung</b>, Hand führt den TCP</span></li><li><span class="key a">Trigger</span><span>Greifer schalten · Objekt wählen</span></li><li><span class="key" style="color:var(--indigo)">B</span><span>Modus SERVO ↔ PLAN</span></li><li><span class="key">Sticks</span><span>Gehen · um den Roboter fliegen</span></li><li><span class="key b">2× Grip+2× Trig.</span><span>E-STOP</span></li></ul></div>
+              <div class="blk safe"><h4>Sicherheit</h4><ul class="list"><li><b>Kupplung:</b> ohne Grip keine Bewegung</li><li><b>Tracking weg:</b> Stopp nach 0,3 s</li><li><b>E-STOP:</b> 2× Grip + 2× Trigger</li></ul></div>
             </div>
           </div>
         </article>
@@ -676,7 +676,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 10px 24px; align-items: cent
         <article class="card wide span-12" id="blick" style="--hue: var(--teal)">
           <div class="visual">
             <div class="gaze">
-              <img src="img/project_docs/stage_gaze.jpg" alt="Gaze Control UI: Kamerabild mit Blick-Schaltflächen am Rand" width="960" height="540" loading="lazy">
+              <img src="img/project_docs/stage_gaze.jpg" alt="Blick-UI: Kamerabild mit Blick-Schaltflächen am Rand" width="960" height="540" loading="lazy">
               <svg class="gaze-cursor" viewBox="0 0 64 64" aria-hidden="true">
                 <circle class="ring-bg" cx="32" cy="32" r="24"/>
                 <circle class="ring" cx="32" cy="32" r="24"/>
@@ -688,15 +688,15 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 10px 24px; align-items: cent
           <div class="body">
             <div class="title-row">
               <span class="badge-ico"><svg class="ico"><use href="#i-eye"/></svg></span>
-              <div><h3>Blicksteuerung</h3><div class="kind">Tobii Pro Glasses · Eye-Tracking</div></div>
+              <div><h3>Blicksteuerung</h3><div class="kind">Tobii Pro Glasses 3</div></div>
             </div>
             <p class="tagline">Hinschauen und halten. Schaltflächen am Bildrand lösen die Bewegung aus.</p>
             <div class="blocks">
-              <div class="blk"><h4>Funktionen</h4><ul class="list"><li><b>Fixation ≈ 1 s:</b> der Blick ersetzt den Klick</li><li><b>8 Bewegungsfelder:</b> vor, zurück, links, rechts, hoch, runter, drehen</li><li><b>Greifer + Home:</b> per Blick schalten</li></ul></div>
+              <div class="blk"><h4>Funktionen</h4><ul class="list"><li><b>Fixation ≈ 1 s:</b> der Blick ersetzt den Klick</li><li><b>8 Bewegungsfelder:</b> vor, zurück, links, rechts, hoch, runter, drehen</li><li><b>Greifer + Home-Pose:</b> per Blick schalten</li></ul></div>
               <div class="blk"><h4>Bedienung</h4><ul class="map">
               <li><span class="key" style="color:var(--teal)">Ränder</span><span>Vor · Zurück · Links · Rechts</span></li>
               <li><span class="key" style="color:var(--teal)">Ecken</span><span>Hoch, Runter rechts · Drehen links oben</span></li>
-              <li><span class="key a">Ecken</span><span>Home oben, Greifer unten rechts · Blick an/aus unten links</span></li>
+              <li><span class="key a">Ecken</span><span>Home-Pose oben, Greifer unten rechts · Blick an/aus unten links</span></li>
             </ul></div>
               <div class="blk safe"><h4>Sicherheit</h4><ul class="list"><li><b>Tempo in 3 Stufen:</b> abwärts höchstens Stufe 2</li><li><b>Bremszone:</b> ab Z 40 mm sanft abbremsen</li><li><b>Hard-Stop:</b> bei Z 33 mm</li></ul></div>
             </div>
@@ -709,7 +709,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 10px 24px; align-items: cent
             <div class="voice">
               <div class="wave" id="wave" aria-hidden="true"></div>
               <div class="said">
-                <span>„Fahre zur Startposition“</span><span>„Szene scannen“</span><span>„schneller“</span><span>„Greifer schließen“</span><span>„Not-Aus“</span>
+                <span>„Fahre zur Startposition“</span><span>„Szene scannen“</span><span>„schneller“</span><span>„Greifer schließen“</span><span>„E-STOP“</span>
               </div>
             </div>
           </div>
@@ -720,7 +720,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 10px 24px; align-items: cent
             </div>
             <p class="tagline">Sagen statt klicken. Kurze Befehle lösen fertige Abläufe aus.</p>
             <div class="blocks">
-              <div class="blk"><h4>Funktionen</h4><ul class="list"><li><b>Zweisprachig:</b> Befehle auf Deutsch und Englisch</li><li><b>Befehle:</b> Startposition, Scan, Zielpose, Tempo, Greifer, Not-Aus</li><li><b>Erkennung:</b> 50–120 ms auf der GPU</li></ul></div>
+              <div class="blk"><h4>Funktionen</h4><ul class="list"><li><b>Zweisprachig:</b> Befehle auf Deutsch und Englisch</li><li><b>Befehle:</b> Startposition, Scan, Zielpose, Tempo, Greifer, E-STOP</li><li><b>Erkennung:</b> 50–120 ms auf der GPU</li></ul></div>
               <div class="blk"><h4>Bedienung</h4><ul class="map">
               <li><span class="key x">X</span><span>oder Mikrofon-Knopf in der UI</span></li>
               <li><span class="key" style="color:var(--gold)">5 s</span><span>Hörfenster, dann Befehl</span></li>
@@ -752,14 +752,14 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 10px 24px; align-items: cent
             </div>
             <p class="tagline">Schnell ohne Maus. Die Leertaste stoppt überall außer in Textfeldern.</p>
             <div class="blocks">
-              <div class="blk"><h4>Funktionen</h4><ul class="list"><li><b>Kürzel:</b> Gizmo, Ansicht, Ton, Reset</li><li><b>Chat:</b> Enter sendet die Aufgabe</li><li><b>Tab:</b> Fokus von Bedienelement zu Bedienelement</li></ul></div>
+              <div class="blk"><h4>Funktionen</h4><ul class="list"><li><b>Kürzel:</b> TCP-Gizmo, Ansicht, Ton, Reset</li><li><b>Chat:</b> Enter sendet die Aufgabe</li><li><b>Tab:</b> Fokus von Bedienelement zu Bedienelement</li></ul></div>
               <div class="blk"><h4>Bedienung</h4><ul class="map">
-              <li><span class="key b">Space</span><span><b>Not-Aus</b>, außer beim Tippen</span></li>
-              <li><span class="key" style="color:var(--violet)">T · R · G</span><span>Gizmo: Schieben, Drehen, ein/aus</span></li>
-              <li><span class="key">Pos1</span><span>3D-Ansicht einpassen</span></li>
+              <li><span class="key b">Space</span><span><b>E-STOP</b>, außer beim Tippen</span></li>
+              <li><span class="key" style="color:var(--violet)">T · R · G</span><span>TCP-Gizmo: Schieben, Drehen, ein/aus</span></li>
+              <li><span class="key">Pos1</span><span>Digital Twin einpassen</span></li>
               <li><span class="key">M</span><span>Ton an/aus</span></li>
             </ul></div>
-              <div class="blk safe"><h4>Sicherheit</h4><ul class="list"><li><b>Leertaste = Not-Aus:</b> in der ganzen UX | Control Interface</li><li><b>Not-Aus im Viewport:</b> erscheint, sobald der Arm fährt</li></ul></div>
+              <div class="blk safe"><h4>Sicherheit</h4><ul class="list"><li><b>Leertaste = E-STOP:</b> in der ganzen UX | Control Interface</li><li><b>E-STOP im Viewport:</b> erscheint, sobald der Arm fährt</li></ul></div>
             </div>
           </div>
         </article>
@@ -785,9 +785,9 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 10px 24px; align-items: cent
             </div>
             <p class="tagline">Bedienung direkt am Roboter, mit dem Finger statt mit der Maus.</p>
             <div class="blocks">
-              <div class="blk"><h4>Funktionen</h4><ul class="list"><li><b>Am Roboter:</b> eigenes Touch-Display (USB + HDMI)</li><li><b>Bereiche:</b> Jogging, Gelenke, Greifer, Home, Sequenzen</li><li><b>Ohne Installation:</b> im Browser unter <code>/touch</code> (Port 8080)</li></ul></div>
+              <div class="blk"><h4>Funktionen</h4><ul class="list"><li><b>Am Roboter:</b> eigenes Touch-Display (USB + HDMI)</li><li><b>Bereiche:</b> Jogging (Arm von Hand in kleinen Schritten fahren), Gelenke, Greifer, Home-Pose, Sequenzen</li><li><b>Ohne Installation:</b> im Browser unter <code>/touch</code> (Port 8080)</li></ul></div>
               <div class="blk"><h4>Bedienung</h4><ul class="map">
-              <li><span class="key a">Tippen</span><span>Jogging, Gelenke, Greifer, Home</span></li>
+              <li><span class="key a">Tippen</span><span>Jogging, Gelenke, Greifer, Home-Pose</span></li>
               <li><span class="key">Halten</span><span>Entsperren gegen Fehlgriffe</span></li>
             </ul></div>
               <div class="blk safe"><h4>Sicherheit</h4><ul class="list"><li><b>Freigabe:</b> Roboter-PC bestätigt die Steuerung (Allow / Deny)</li><li><b>Jogging:</b> halten = fahren, loslassen = Stopp</li><li><b>Halten statt Tippen:</b> für folgenreiche Aktionen</li></ul></div>
@@ -832,16 +832,16 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 10px 24px; align-items: cent
             <div class="blocks">
               <div class="blk"><h4>Funktionen</h4>
             <ol class="pins">
-              <li><span class="n">1</span><div><b>Sicherheitszone</b><span>Modus, Tempo, Lock, E-STOP</span></div></li>
+              <li><span class="n">1</span><div><b>Sicherheitszone</b><span>Modus, Tempo, Control-Lock, E-STOP</span></div></li>
               <li><span class="n">2</span><div><b>Bereiche</b><span>Move, Teach, Assistent (VLA), Vision</span></div></li>
               <li><span class="n">3</span><div><b>Digital Twin</b><span>Live-3D mit Objekten</span></div></li>
-              <li><span class="n">4</span><div><b>Jogging</b><span>Halten = fahren, 1/5/10 mm</span></div></li>
-              <li><span class="n">5</span><div><b>Posen</b><span>Home, Align TCP, Scan</span></div></li>
+              <li><span class="n">4</span><div><b>Jogging</b><span>Hold: halten = fahren · Step: 1/5/10 mm</span></div></li>
+              <li><span class="n">5</span><div><b>Zielposen</b><span>Home, Align TCP, Scan</span></div></li>
               <li><span class="n">6</span><div><b>Greifer</b><span>Release, Suction, Off</span></div></li>
             </ol>
               </div>
-              <div class="blk"><h4>Bedienung</h4><ul class="list"><li><b>Maus oder Touch:</b> am Roboter-PC, Laptop oder Tablet</li><li><b>Jogging:</b> halten = fahren, Schritte 1 / 5 / 10 mm</li><li><b>Strg+K:</b> Befehlspalette für jede Funktion</li></ul></div>
-              <div class="blk safe"><h4>Sicherheit</h4><ul class="list"><li><b>Sicherheitszone:</b> E-STOP, Modus, Tempo, Lock immer sichtbar</li><li><b>Echte Roboter-Hardware:</b> Wechsel nur mit Bestätigung</li><li><b>BUSY:</b> eine laufende Fahrt sperrt alle anderen</li></ul></div>
+              <div class="blk"><h4>Bedienung</h4><ul class="list"><li><b>Maus oder Touch:</b> am Roboter-PC, Laptop oder Tablet</li><li><b>Jogging:</b> Hold: halten = fahren · Step: 1 / 5 / 10 mm</li><li><b>Strg+K:</b> Befehlspalette für jede Funktion</li></ul></div>
+              <div class="blk safe"><h4>Sicherheit</h4><ul class="list"><li><b>Sicherheitszone:</b> E-STOP, Modus, Tempo, Control-Lock immer sichtbar</li><li><b>Echte Roboter-Hardware:</b> Wechsel nur mit Bestätigung</li><li><b>BUSY:</b> eine laufende Fahrt sperrt alle anderen</li></ul></div>
             </div>
           </div>
         </article>
@@ -849,7 +849,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 10px 24px; align-items: cent
         <!-- Gizmo -->
         <article class="card wide span-12" id="gizmo" style="--hue: var(--indigo)">
           <div class="visual">
-            <svg viewBox="0 0 320 240" role="img" aria-label="3D-Gizmo mit Achspfeilen und Drehringen, Ziel als gestrichelte Pose">
+            <svg viewBox="0 0 320 240" role="img" aria-label="TCP-Gizmo mit Achspfeilen und Drehringen, Ziel als gestrichelte Zielpose">
               <ellipse class="s-dash" cx="160" cy="132" rx="96" ry="34"/>
               <ellipse cx="160" cy="132" rx="70" ry="70" fill="none" stroke="var(--axis-y)" stroke-width="2" opacity=".55" transform="rotate(0)" style="transform-box: fill-box"/>
               <ellipse cx="160" cy="132" rx="70" ry="24" fill="none" stroke="var(--axis-z)" stroke-width="2.5" opacity=".75"/>
@@ -867,13 +867,13 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 10px 24px; align-items: cent
           <div class="body">
             <div class="title-row">
               <span class="badge-ico"><svg class="ico"><use href="#i-gizmo"/></svg></span>
-              <div><h3>3D-Gizmo</h3><div class="kind">Im Digital Twin</div></div>
+              <div><h3>TCP-Gizmo</h3><div class="kind">Griff am Greiferpunkt im Digital Twin</div></div>
             </div>
             <p class="tagline">Zielpose direkt im 3D-Modell ziehen. Beim Loslassen plant MoveIt die Bahn.</p>
             <div class="blocks">
               <div class="blk"><h4>Funktionen</h4><ul class="list"><li><b>Zielpose:</b> im Digital Twin schieben oder drehen</li><li><b>MoveIt:</b> plant die Bahn beim Loslassen</li><li><b>IK + Kollision:</b> geprüft wie jede MoveTo-Fahrt</li></ul></div>
-              <div class="blk"><h4>Bedienung</h4><ul class="map"><li><span class="key" style="color:var(--indigo)">G</span><span>Gizmo ein/aus</span></li><li><span class="key" style="color:var(--indigo)">T · R</span><span>Schieben · Drehen</span></li><li><span class="key">Esc</span><span>zurück zum Roboter-TCP</span></li></ul></div>
-              <div class="blk safe"><h4>Sicherheit</h4><ul class="list"><li><b>Freigabe:</b> bei Auto-Move aus wartet die Bahn auf Bestätigung</li><li><b>Pfad-Vorschau:</b> Geisterroboter zeigt die Bahn vorher (optional)</li></ul></div>
+              <div class="blk"><h4>Bedienung</h4><ul class="map"><li><span class="key" style="color:var(--indigo)">G</span><span>TCP-Gizmo ein/aus</span></li><li><span class="key" style="color:var(--indigo)">T · R</span><span>Schieben · Drehen</span></li><li><span class="key">Esc</span><span>zurück zum Roboter-TCP</span></li></ul></div>
+              <div class="blk safe"><h4>Sicherheit</h4><ul class="list"><li><b>Bestätigung:</b> bei Auto-Move aus wartet die Bahn auf Execute</li><li><b>Bahnvorschau:</b> Geisterroboter zeigt die Bahn vorher (optional)</li></ul></div>
             </div>
           </div>
         </article>
@@ -893,13 +893,13 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 10px 24px; align-items: cent
           <div class="body">
             <div class="title-row">
               <span class="badge-ico"><svg class="ico"><use href="#i-chat"/></svg></span>
-              <div><h3>VLA-M-Chat</h3><div class="kind">LLM-Agent · lokal oder Cloud</div></div>
+              <div><h3>VLA-M-Chat</h3><div class="kind">KI-Agent · lokal oder Cloud</div></div>
             </div>
             <p class="tagline">Aufgabe eintippen, Plan prüfen, ausführen. Ein Klick: <b>Grasp</b> oder <b>Place here</b>.</p>
             <div class="blocks">
-              <div class="blk"><h4>Funktionen</h4><ul class="list"><li><b>LLM-Agent:</b> macht aus Alltagssprache einen Plan aus Skills</li><li><b>Planprüfung:</b> simulierte Szene, Selbstkorrektur in ≤ 2 Runden</li><li><b>Ein Klick:</b> Grasp oder Place here am Objekt</li></ul></div>
+              <div class="blk"><h4>Funktionen</h4><ul class="list"><li><b>KI-Agent:</b> macht aus Alltagssprache einen Plan aus Skills</li><li><b>Planprüfung:</b> simulierte Szene, Selbstkorrektur in ≤ 2 Runden</li><li><b>Ein Klick:</b> Grasp oder Place here am Objekt</li></ul></div>
               <div class="blk"><h4>Bedienung</h4><ul class="map"><li><span class="key" style="color:var(--violet)">Eintippen</span><span>Aufgabe in Alltagssprache</span></li><li><span class="key a">Execute</span><span>Plan freigeben</span></li><li><span class="key b">Abort</span><span>nach dem laufenden Schritt stoppen</span></li></ul></div>
-              <div class="blk safe"><h4>Sicherheit</h4><ul class="list"><li><b>Freigabe:</b> jeder Plan wartet auf Execute</li><li><b>Posen aus dem Code:</b> das Modell wählt nur Skill + Objekt</li><li><b>REAL:</b> ohne <code>allow_real_motion</code> nur Plan, keine Fahrt</li></ul></div>
+              <div class="blk safe"><h4>Sicherheit</h4><ul class="list"><li><b>Bestätigung:</b> jeder Plan wartet auf Execute</li><li><b>Zielposen aus dem Code:</b> das Modell wählt nur Skill + Objekt</li><li><b>REAL:</b> ohne <code>allow_real_motion</code> nur Plan, keine Fahrt</li></ul></div>
             </div>
           </div>
         </article>
@@ -941,7 +941,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 10px 24px; align-items: cent
             <div class="blocks">
               <div class="blk"><h4>Funktionen</h4><ul class="list"><li><b>Ein Besitzer:</b> genau ein Client steuert, alle anderen sehen zu</li><li><b>Heimnetz:</b> Laptop, Tablet, Quest 3 im Browser</li><li><b>Remote-Gamepad:</b> am eigenen Gerät angeschlossen</li></ul></div>
               <div class="blk"><h4>Bedienung</h4><ul class="map"><li><span class="key" style="color:var(--teal)">Request</span><span>Steuerung anfragen</span></li><li><span class="key">Allow · Deny</span><span>am Roboter-PC entscheiden</span></li><li><span class="key">Release</span><span>Steuerung abgeben</span></li></ul></div>
-              <div class="blk safe"><h4>Sicherheit</h4><ul class="list"><li><b>Heartbeat:</b> Tab zu oder WLAN weg = Stopp (echte Roboter-Hardware: 0,4 s)</li><li><b>Echte Roboter-Hardware:</b> höchstens 50 % Tempo</li><li><b>Not-Aus:</b> geht von jedem Client</li></ul></div>
+              <div class="blk safe"><h4>Sicherheit</h4><ul class="list"><li><b>Heartbeat:</b> Tab zu oder WLAN weg = Stopp (echte Roboter-Hardware: 0,4 s)</li><li><b>Echte Roboter-Hardware:</b> höchstens 50 % Tempo</li><li><b>E-STOP:</b> geht von jedem Client</li></ul></div>
             </div>
           </div>
         </article>
@@ -957,12 +957,12 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 10px 24px; align-items: cent
           <div class="eyebrow"><span class="n">04</span><span>Auf einen Blick</span></div>
           <h2>Was kann welcher Weg?</h2>
         </div>
-        <p>8 von 10 Steuerwegen im Vergleich. 3D-Gizmo und Remote stehen oben bei den Steuerwegen.</p>
+        <p>8 von 10 Steuerwegen im Vergleich. TCP-Gizmo und Remote Control stehen oben bei den Steuerwegen.</p>
       </div>
       <div class="table-scroll">
         <table>
           <thead>
-            <tr><th scope="col" style="text-align:left">Steuerweg</th><th scope="col">Verfahren</th><th scope="col">Drehen</th><th scope="col">Greifer</th><th scope="col">Home</th><th scope="col">Objekt greifen</th><th scope="col">Not-Aus</th></tr>
+            <tr><th scope="col" style="text-align:left">Steuerweg</th><th scope="col">Verfahren</th><th scope="col">Drehen</th><th scope="col">Greifer</th><th scope="col">Home-Pose</th><th scope="col">Objekt greifen</th><th scope="col">E-STOP</th></tr>
           </thead>
           <tbody>
             <tr style="--hue: var(--accent)"><th scope="row"><span class="cell"><svg class="ico"><use href="#i-mon"/></svg>UX | Control Interface</span></th><td><i class="m full" title="ja"></i></td><td><i class="m full"></i></td><td><i class="m full"></i></td><td><i class="m full"></i></td><td><i class="m full"></i></td><td><i class="m full"></i></td></tr>
@@ -979,7 +979,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 10px 24px; align-items: cent
       <p class="mx-sum" id="mx-sum" aria-live="polite">Fähigkeit im Tabellenkopf anklicken: Welche Wege können das?</p>
       <div class="legend">
         <span><i class="m full"></i>direkt</span>
-        <span><i class="m part"></i>teilweise (z. B. nur Yaw, nur feste Posen)</span>
+        <span><i class="m part"></i>teilweise (z. B. nur Yaw, nur feste Zielposen)</span>
         <span><i class="m none"></i>nicht über diesen Weg</span>
       </div>
     </div>
@@ -1018,14 +1018,14 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 10px 24px; align-items: cent
         <svg class="ico octo"><use href="#i-octo"/></svg>
         <b>E-STOP wirkt immer</b>
         <button type="button" class="estop" id="ch-estop" aria-pressed="false">E-STOP testen</button>
-        <div class="ways"><span>Space</span><span>roter Knopf</span><span>UX | Compact Interface</span><span>Sprache: „Not-Aus“</span><span>VR: 2× Grip + 2× Trigger</span></div>
+        <div class="ways"><span>Space</span><span>roter Knopf</span><span>UX | Compact Interface</span><span>Sprache: „E-STOP“</span><span>VR: 2× Grip + 2× Trigger</span></div>
       </div>
 
       <div class="numbers">
         <div class="num"><strong class="mono">91 mm</strong><span>Gamepad-Stopp über dem Tisch (TCP)</span></div>
-        <div class="num"><strong class="mono">0,25 s</strong><span>Vorausschau der Kollisionsprüfung</span></div>
+        <div class="num"><strong class="mono">0,25 s</strong><span>Vorausschau der Kollisionsvorprüfung</span></div>
         <div class="num"><strong class="mono">0,3 s</strong><span>bis Stopp bei VR-Signalverlust</span></div>
-        <div class="num"><strong class="mono" style="color:var(--gold)">Freigabe</strong><span>vor dem Wechsel auf echte Roboter-Hardware</span></div>
+        <div class="num"><strong class="mono" style="color:var(--gold)">Bestätigung</strong><span>vor dem Wechsel auf echte Roboter-Hardware</span></div>
       </div>
     </div>
   </section>
@@ -1063,7 +1063,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 10px 24px; align-items: cent
     const $ = (s, el = document) => el.querySelector(s), $$ = (s, el = document) => [...el.querySelectorAll(s)];
     const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
     const WAYS = [['Gamepad', 'i-pad', 'accent'], ['VR Quest 3', 'i-vr', 'indigo'], ['Blick', 'i-eye', 'teal'], ['Sprache', 'i-mic', 'gold'], ['Tastatur', 'i-key', 'violet'],
-      ['UX | Compact Interface', 'i-tab', 'green'], ['UX | Control Interface', 'i-mon', 'accent'], ['3D-Gizmo', 'i-gizmo', 'indigo'], ['VLA-M-Chat', 'i-chat', 'violet'], ['Remote', 'i-net', 'teal']];
+      ['UX | Compact Interface', 'i-tab', 'green'], ['UX | Control Interface', 'i-mon', 'accent'], ['TCP-Gizmo', 'i-gizmo', 'indigo'], ['VLA-M-Chat', 'i-chat', 'violet'], ['Remote Control', 'i-net', 'teal']];
     const CASES = [['ok', 'Normaler Befehl'], ['lock', 'Zweiter Bediener'], ['table', 'Bahn in den Tisch'], ['reach', 'Ziel außer Reichweite']];
     // Vorprüfung je Weg: Gamepad über teleop_pre_collision_checker, Jog-Wege über das Twist-Gate des Watchdogs,
     // Blick mit eigener Bremszone, geplante Bahnen über MoveIt mit Boden (docs/de/running.md, teleoperation.md, voice_gaze.md)
