@@ -1229,7 +1229,7 @@
         <li><a class="nav-item" href="#setup" id="t-setup" aria-controls="setup" style="--k:var(--c-srv)"><span class="n">2</span><span class="t">Einrichten</span><span class="nav-meta"></span></a></li>
         <li><a class="nav-item" href="#start" id="t-start" aria-controls="start" style="--k:var(--c-cli)"><span class="n">3</span><span class="t">Starten</span><span class="nav-meta"></span></a></li>
         <li><a class="nav-item" href="#panel" id="t-panel" aria-controls="panel" style="--k:var(--c-https)"><span class="n">4</span><span class="t">Remote-Panel</span><span class="nav-meta"></span></a></li>
-        <li><a class="nav-item" href="#nexus" id="t-nexus" aria-controls="nexus" style="--k:var(--c-srv)"><span class="n">5</span><span class="t">Nexus-Werte</span><span class="nav-meta"></span></a></li>
+        <li><a class="nav-item" href="#nexus" id="t-nexus" aria-controls="nexus" style="--k:var(--c-srv)"><span class="n">5</span><span class="t">UX | Nexus Launcher</span><span class="nav-meta"></span></a></li>
         <li><a class="nav-item" href="#fehler" id="t-fehler" aria-controls="fehler" style="--k:var(--warn)"><span class="n">6</span><span class="t">Fehlerbilder</span><span class="nav-meta"></span></a></li>
         <li><a class="nav-item" href="#regeln" id="t-regeln" aria-controls="regeln" style="--k:var(--crit)"><span class="n">7</span><span class="t">Regeln</span><span class="nav-meta"></span></a></li>
       </ul>
@@ -1308,10 +1308,10 @@
     <span class="eyebrow">Architektur</span>
     <h1>Welcher Befehl wo durchläuft</h1>
     <ul class="bl" style="--k:var(--c-ws)">
-      <li>Browser (:8081, :8443) → ROS nur über rosbridge <code>ws :9090</code> / <code>wss :9091</code></li>
+      <li>Browser (:8081, :8443) → ROS nur über rosbridge <code>ws :9090</code> / <code>wss :9091</code>, Seiten am Roboter-PC über <code>ws :9092</code> (nur <code>127.0.0.1</code>)</li>
       <li>Jog, Gamepad, VR → MoveIt Servo · Zielpose, Greifen, VLA-M → Motion Handler (<code>/ui/*</code>) → <code>move_group</code></li>
       <li>Zustand für alle Oberflächen: <code>/joint_states</code>, <code>/servo_server/status</code>, <code>/ui/emergency_stop_active</code></li>
-      <li>Gestartet wird alles aus der UX | Nexus Launcher (früher „Nexus Webapp“, Port 8080), jede Karte als eigener Prozess</li>
+      <li>Gestartet wird alles aus der UX | Nexus Launcher (Port 8080), jede Karte als eigener Prozess</li>
     </ul>
   </div>
   <aside class="hero-side" aria-label="Eckdaten">
@@ -1341,7 +1341,7 @@
     <span class="label">Eckdaten</span>
     <div class="tiles">
       <div class="tile" style="--k:var(--c-srv)"><span>Server-IP jetzt</span><b>192.168.0.xxx</b></div>
-      <div class="tile" style="--k:var(--c-srv)"><span>Nexus</span><b>:8080 nur am Server</b></div>
+      <div class="tile" style="--k:var(--c-srv)"><span>UX | Nexus Launcher</span><b>:8080 nur am Server</b></div>
       <div class="tile" style="--k:var(--c-http)"><span>UI http</span><b>:8081</b></div>
       <div class="tile" style="--k:var(--c-https)"><span>UI https</span><b>:8443</b></div>
       <div class="tile" style="--k:var(--c-https)"><span>rosbridge</span><b>ws :9090 · wss :9091</b></div>
@@ -1398,7 +1398,7 @@
   <div class="bento">
     <div class="card s-12">
       <div class="path-groups">
-        <div class="path-group"><span class="label">Bedienarten</span><div class="paths" id="paths" role="group" aria-label="Befehlsweg nach Bedienart auswählen"></div></div>
+        <div class="path-group"><span class="label">Befehlswege</span><div class="paths" id="paths" role="group" aria-label="Befehlsweg auswählen"></div></div>
         <div class="path-group"><span class="label">Abläufe</span><div class="paths" id="paths2" role="group" aria-label="Ablauf auswählen"></div></div>
       </div>
       <div class="path-group"><span class="label">Verbindungsarten</span>
@@ -1673,6 +1673,7 @@
             <tr style="--k:var(--c-ws)"><td class="num port">8443</td><td>UX | Control Interface für Quest 3 und Remote-Gamepad</td><td><span class="chip">HTTPS</span></td><td><code>vr_quest3_teleop</code></td></tr>
             <tr style="--k:var(--c-ws)"><td class="num port">9090</td><td>rosbridge für Browser im Netz</td><td><span class="chip">WebSocket</span></td><td><code>http_robot_control_ui.launch.py</code></td></tr>
             <tr style="--k:var(--c-ws)"><td class="num port">9091</td><td>rosbridge über TLS (Quest 3, HTTPS-Clients)</td><td><span class="chip">WebSocket über TLS</span></td><td><code>vr_quest3_teleop.launch.py</code></td></tr>
+            <tr style="--k:var(--c-ws)"><td class="num port">9092</td><td>rosbridge nur für Seiten am Roboter-PC (<code>127.0.0.1</code>, volle Whitelist)</td><td><span class="chip">WebSocket</span></td><td><code>http_robot_control_ui.launch.py</code></td></tr>
             <tr style="--k:var(--c-hw)"><td class="num port">8554</td><td>Szenevideo der Tobii Glasses</td><td><span class="chip">RTSP</span></td><td>Tobii Glasses</td></tr>
           </tbody>
         </table>
@@ -1690,7 +1691,7 @@
         <span class="label">Nach Art</span>
         <div class="tiles">
           <div class="tile" style="--k:var(--c-http)"><span>HTTP</span><b class="big">4</b></div>
-          <div class="tile" style="--k:var(--c-ws)"><span>HTTPS / WS</span><b class="big">3</b></div>
+          <div class="tile" style="--k:var(--c-ws)"><span>HTTPS / WS</span><b class="big">4</b></div>
           <div class="tile" style="--k:var(--c-hw)"><span>RTSP</span><b class="big">1</b></div>
         </div>
       </div>
@@ -1800,14 +1801,14 @@
     <article class="card flush combo s-5 fill" id="combo-f" style="--k:var(--c-topic)">
       <div class="card-h tint"><span class="key">F</span><h3>Zweiter PC mit ROS</h3><span class="proto">DDS · LAN</span></div>
       <dl class="kv">
-        <dt>Wann</dt><dd><ul class="bl"><li>Nexus-Sequenz <code>client</code> auf einem zweiten PC</li><li>Dort laufen eigene Nodes: RViz, <code>joy_node</code>, Sprachsteuerung</li></ul></dd>
+        <dt>Wann</dt><dd><ul class="bl"><li>Sequenz <code>client</code> der UX | Nexus Launcher auf einem zweiten PC</li><li>Dort laufen eigene Nodes: RViz, <code>joy_node</code>, Sprachsteuerung</li></ul></dd>
         <dt>Server</dt><dd><ul class="bl"><li>Sequenz <code>server_*</code>, UI-Karte ohne <code>connect_to</code></li><li><b>Localhost only: aus</b></li></ul></dd>
-        <dt>Client</dt><dd><ul class="bl"><li>UI-Karte mit <code>connect_to</code> = Server-IP (öffnet nur das UI-Fenster des Servers)</li><li><b>Localhost only: aus</b></li><li>Gleiche <code>ROS_DOMAIN_ID</code> wie der Server (Nexus: 66)</li></ul></dd>
-        <dt>Prüfen</dt><dd><ul class="bl"><li>Client: <code>ros2 node list</code> zeigt die Server-Nodes</li><li>Nexus-Chip „Scope“ zeigt „LAN“, nicht „blocks client/server“</li></ul></dd>
+        <dt>Client</dt><dd><ul class="bl"><li>UI-Karte mit <code>connect_to</code> = Server-IP (öffnet nur das UI-Fenster des Servers)</li><li><b>Localhost only: aus</b></li><li>Gleiche <code>ROS_DOMAIN_ID</code> wie der Server (UX | Nexus Launcher: 66)</li></ul></dd>
+        <dt>Prüfen</dt><dd><ul class="bl"><li>Client: <code>ros2 node list</code> zeigt die Server-Nodes</li><li>Chip „Scope“ der UX | Nexus Launcher zeigt „LAN“, nicht „blocks client/server“</li></ul></dd>
       </dl>
     </article>
     <div class="card flush s-7" id="dds-scope">
-      <div class="card-h"><h3>DDS: Localhost only</h3><span class="chip" style="--k:var(--c-topic)">Schalter im Nexus-Popup</span></div>
+      <div class="card-h"><h3>DDS: Localhost only</h3><span class="chip" style="--k:var(--c-topic)">Schalter im Popup der UX | Nexus Launcher</span></div>
       <div class="tablewrap">
         <table>
           <thead><tr><th>Setup</th><th>Localhost only</th><th>Warum</th></tr></thead>
@@ -1870,8 +1871,8 @@ sudo ufw status</pre><button class="copy" type="button">Kopieren</button></div>
 source install/setup.bash</pre><button class="copy" type="button">Kopieren</button></div>
         </div></li>
         <li><div>
-          <b>Nexus-Werte setzen</b>
-          <ul class="bl sm"><li>Remote access an</li><li>Allowed clients: <code>subnet</code></li><li>Details: <a href="#nexus">Nexus-Werte</a></li></ul>
+          <b>Werte in der UX | Nexus Launcher setzen</b>
+          <ul class="bl sm"><li>Remote access an</li><li>Allowed clients: <code>subnet</code></li><li>Details: <a href="#nexus">Werte in der UX | Nexus Launcher</a></li></ul>
         </div></li>
         <li><div>
           <b>Zertifikat für HTTPS</b>
@@ -1909,7 +1910,7 @@ source install/setup.bash</pre><button class="copy" type="button">Kopieren</butt
   <div class="bento">
     <div class="card s-12">
       <div class="timeline" aria-label="Reihenfolge">
-        <div class="tl-step" style="--k:var(--c-srv)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg><div><b>1 – 5 · Server</b><span>Nexus · Roboter · UI · VR-Karte · Panel prüfen</span></div></div>
+        <div class="tl-step" style="--k:var(--c-srv)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg><div><b>1 – 5 · Server</b><span>UX | Nexus Launcher · Roboter · UI · VR-Karte · Panel prüfen</span></div></div>
         <span class="tl-arrow" aria-hidden="true">→</span>
         <div class="tl-step" style="--k:var(--c-cli)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="4" y="5" width="16" height="11" rx="1.5"/><path d="M2 19h20"/></svg><div><b>6 – 10 · Client</b><span>URL · Zertifikat · prüfen · steuern · freigeben</span></div></div>
       </div>
@@ -1999,12 +2000,12 @@ source install/setup.bash</pre><button class="copy" type="button">Kopieren</butt
 <!-- R5 · Nexus-Werte -->
 <section class="panel" id="nexus" data-area="remote" role="region" aria-labelledby="t-nexus" style="--k:var(--c-srv)">
   <header class="panel-head">
-    <div class="ph"><span class="eyebrow"><span class="n">05</span><span class="kicker">Konfiguration · Server-PC</span></span><h2>Nexus-Werte</h2></div>
+    <div class="ph"><span class="eyebrow"><span class="n">05</span><span class="kicker">Konfiguration · Server-PC</span></span><h2>Werte in der UX | Nexus Launcher</h2></div>
     <div class="crumbs" aria-label="Pfad in der UX | Nexus Launcher"><span>UX | Nexus Launcher</span><i>→</i><span>UX | Control Interface, WebSocket &amp; Video Server</span><i>→</i><span>PARAMETERS &amp; ARGS</span></div>
   </header>
   <div class="bento">
     <div class="s-5">
-      <div class="nx" aria-label="Mockup der Nexus-Karte">
+      <div class="nx" aria-label="Mockup der Karte in der UX | Nexus Launcher">
         <div class="nx-title">UX | Control Interface, WebSocket &amp; Video Server (Port 8081 / 9090 / 8082)</div>
         <div class="nx-cmd">ros2 launch http_robot_control_ui_p8081 http_robot_control_ui.launch.py</div>
         <div class="nx-ph">≡ PARAMETERS &amp; ARGS</div>
@@ -2061,9 +2062,9 @@ source install/setup.bash</pre><button class="copy" type="button">Kopieren</butt
           <tbody>
             <tr class="grp" data-grp="verb" style="--k:var(--c-http)"><td colspan="3">Verbindung</td></tr>
             <tr data-g="verb" style="--k:var(--c-http)"><td>Seite lädt nicht (Timeout)</td><td>Firewall zu oder falsche IP</td><td class="fix">ufw-Regel setzen (<a href="#setup">Einrichten</a> 1), Heimnetz-IP aus Panel (<span class="co">8</span>) nehmen</td></tr>
-            <tr data-g="verb" style="--k:var(--c-http)"><td><span class="st">403 Remote access … disabled</span></td><td><code>remote_access</code> aus oder IP nicht erlaubt</td><td class="fix">Nexus: Remote access an, ggf. <code>lan</code>. Danach die Karte neu starten.</td></tr>
+            <tr data-g="verb" style="--k:var(--c-http)"><td><span class="st">403 Remote access … disabled</span></td><td><code>remote_access</code> aus oder IP nicht erlaubt</td><td class="fix">UX | Nexus Launcher: Remote access an, ggf. <code>lan</code>. Danach die Karte neu starten.</td></tr>
             <tr data-g="verb" style="--k:var(--c-http)"><td>rosbridge-Overlay bleibt</td><td>http: Port 9090 blockiert. https: Zertifikat für 9091 nicht akzeptiert.</td><td class="fix">Firewall prüfen. <span class="url">https://IP:9091</span> einmal öffnen und akzeptieren.</td></tr>
-            <tr data-g="verb" style="--k:var(--c-http)"><td>Button ohne Wirkung · rosbridge-Log: <span class="st">No match found for topic …</span></td><td>Topic oder Service steht nicht in der Whitelist</td><td class="fix">In <code>config/network.yaml</code> unter <code>rosbridge:</code> eintragen, UI-Karte (9090) bzw. VR-Karte (9091) neu starten</td></tr>
+            <tr data-g="verb" style="--k:var(--c-http)"><td>Button ohne Wirkung · rosbridge-Log: <span class="st">No match found for topic …</span></td><td>Topic oder Service steht nicht in der Whitelist</td><td class="fix">Seite am Roboter-PC (<code>localhost</code>, :9092): in <code>config/network.yaml</code> unter <code>rosbridge:</code> eintragen, UI-Karte neu starten. Seite per IP oder Quest (:9090/:9091): Liste <code>rosbridge.remote</code>, bewusst nur Jog, Gamepad, Stopp; Bewegungsbefehle am Roboter-PC auslösen</td></tr>
             <tr data-g="verb" style="--k:var(--c-http)"><td><span class="st">WATCHDOG OFF</span></td><td>Watchdog läuft nicht</td><td class="fix">UI-Karte neu starten. Nach einem Pull neu bauen.</td></tr>
 
             <tr class="grp" data-grp="pad" style="--k:var(--c-https)"><td colspan="3">Gamepad</td></tr>
@@ -2102,7 +2103,7 @@ source install/setup.bash</pre><button class="copy" type="button">Kopieren</butt
     <div class="card rule s-4 fill" style="--k:var(--warn)"><div class="rule-h"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 3 2 20h20L12 3z"/><path d="M12 10v4M12 17h.01"/></svg>Nur ein Gamepad</div>
       <ul class="bl"><li>Nie gleichzeitig Server-Gamepad und Remote-Gamepad</li><li>Beide schreiben auf <code>/joy</code></li></ul></div>
     <div class="card rule s-4 fill" style="--k:var(--c-srv)"><div class="rule-h"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="6" y="6" width="12" height="12" rx="1.5"/></svg>Stopp beim Beenden</div>
-      <ul class="bl"><li>Nexus beendet Karte (SIGKILL) → Servo stoppt über eigenes Command-Timeout</li><li>Ctrl+C → Watchdog sendet zusätzlich neutralen Joy</li></ul></div>
+      <ul class="bl"><li>UX | Nexus Launcher beendet Karte (SIGKILL) → Servo stoppt über eigenes Command-Timeout</li><li>Ctrl+C → Watchdog sendet zusätzlich neutralen Joy</li></ul></div>
     <div class="card s-12">
       <div class="card-h"><h3>Weg eines Remote-Gamepad-Befehls</h3></div>
       <div class="flow" aria-label="Weg eines Remote-Gamepad-Befehls">
@@ -2263,7 +2264,7 @@ source install/setup.bash</pre><button class="copy" type="button">Kopieren</butt
     </div>
     <div class="card s-6">
       <div class="card-h"><h3>Szene</h3><span class="chip" style="--k:var(--c-http)">/zed/bboxes_3d</span></div>
-      <ul class="bl"><li>YOLO-Erkennungen und virtuelle Objekte kommen im selben Format</li><li>Name: <code>yolo_labels_class</code> · Greifpunkt: <code>yolo_object_grasp_center_point</code> · Box und Farbe: <code>yolo_bboxes</code></li><li>Virtuell = Name endet auf „(virtual)“ oder ID ≥ 900</li><li>Ohne Update 3 s → Objekt gilt als weg</li><li>Einschalten: Planning → Simulation → <b>Object detection</b> (GLOBAL: alle greifbaren Objekte, Standard + Auto palletizing) oder Nexus-Card „Virtual objects ON“</li></ul>
+      <ul class="bl"><li>YOLO-Erkennungen und virtuelle Objekte kommen im selben Format</li><li>Name: <code>yolo_labels_class</code> · Greifpunkt: <code>yolo_object_grasp_center_point</code> · Box und Farbe: <code>yolo_bboxes</code></li><li>Virtuell = Name endet auf „(virtual)“ oder ID ≥ 900</li><li>Ohne Update 3 s → Objekt gilt als weg</li><li>Einschalten: Planning → Simulation → <b>Object detection</b> (GLOBAL: alle greifbaren Objekte, Standard + Auto palletizing) oder Karte „Virtual objects ON“ in der UX | Nexus Launcher</li></ul>
     </div>
     <div class="card s-6">
       <div class="card-h"><h3>Virtuelle Objekte greifen</h3><span class="chip" style="--k:var(--c-fake)">nur FAKE</span></div>
@@ -2447,7 +2448,7 @@ ros2 launch vla_bridge vla_bridge.launch.py              # dry_run:=true = nur P
     </div>
     <div class="card s-6">
       <div class="card-h"><h3>Dateien</h3></div>
-      <ul class="bl"><li><code>vla_bridge_node.py</code> - Topics, Zustände, Sicherheit, Ausführungs-Thread</li><li><code>agent.py</code> - Prompt, Planprüfung, Recovery · <code>examples.py</code> - Prompt-Beispiele · <code>llm.py</code> - Ollama / Claude</li><li>Ohne ROS: <code>scene.py</code> - Szene · <code>world_model.py</code> - Szene für die Planprüfung · <code>placing.py</code> - Freiraum beim Ablegen</li><li><code>skills.py</code> - pick / place / home / gripper, Yaw-Suche, Greifprüfung · <code>scripts/install_ollama.sh</code></li><li><code>session_log.py</code> - Agenten-Runden (<code>~/.ros/vla_logs</code>) · <code>config/vla_bridge.yaml</code></li><li>Tests: <code>python3 -m pytest -q test/</code> · Bewertung: <code>python3 tools/vla_eval.py</code> (<code>--check</code> ohne LLM)</li><li>UI: <code>js/vla.js</code>, <code>js/vla_modal.js</code>, <code>#panel-vla</code>, <code>.vla-*</code> · Nexus: <code>icon_vla.svg</code>, Kategorie VLA-M</li></ul>
+      <ul class="bl"><li><code>vla_bridge_node.py</code> - Topics, Zustände, Sicherheit, Ausführungs-Thread</li><li><code>agent.py</code> - Prompt, Planprüfung, Recovery · <code>examples.py</code> - Prompt-Beispiele · <code>llm.py</code> - Ollama / Claude</li><li>Ohne ROS: <code>scene.py</code> - Szene · <code>world_model.py</code> - Szene für die Planprüfung · <code>placing.py</code> - Freiraum beim Ablegen</li><li><code>skills.py</code> - pick / place / home / gripper, Yaw-Suche, Greifprüfung · <code>scripts/install_ollama.sh</code></li><li><code>session_log.py</code> - Agenten-Runden (<code>~/.ros/vla_logs</code>) · <code>config/vla_bridge.yaml</code></li><li>Tests: <code>python3 -m pytest -q test/</code> · Bewertung: <code>python3 tools/vla_eval.py</code> (<code>--check</code> ohne LLM)</li><li>UI: <code>js/vla.js</code>, <code>js/vla_modal.js</code>, <code>#panel-vla</code>, <code>.vla-*</code> · UX | Nexus Launcher: <code>icon_vla.svg</code>, Kategorie VLA-M</li></ul>
     </div>
   </div>
 </section>
@@ -2489,7 +2490,7 @@ ros2 launch vla_bridge vla_bridge.launch.py              # dry_run:=true = nur P
     <div class="card s-6">
       <div class="card-h"><h3>Roadmap</h3></div>
       <ol class="steps">
-        <li><div><b>✓ UI, Topic-Vertrag, Szene, Nexus</b><span>September 2026</span></div></li>
+        <li><div><b>✓ UI, Topic-Vertrag, Szene, UX | Nexus Launcher</b><span>September 2026</span></div></li>
         <li><div><b>✓ LLM-Agent</b> (Ollama / Claude): Planprüfung, sauberes Greifen, Greifprüfung, Neuplanung<span>September 2026 · mit virtuellen Objekten und Sandbox getestet</span></div></li>
         <li><div><b>✓ Demonstrationen aufnehmen</b> mit VR, Gamepad oder UI<span>Knopf „Record demo“ in VLA-M · <code>tools/demos_to_lerobot.py</code> → LeRobot-Datensatz</span></div></li>
         <li><div><b>SmolVLA nachtrainieren</b> auf eine Aufgabe (Becher in die Kiste)<span>eigene venv / Docker</span></div></li>
@@ -2513,13 +2514,13 @@ ros2 launch vla_bridge vla_bridge.launch.py              # dry_run:=true = nur P
         <table>
           <thead><tr><th>Anzeige</th><th>Ursache</th><th>Lösung</th></tr></thead>
           <tbody>
-            <tr><td><span class="st" style="--k:var(--crit)">OFFLINE</span>, obwohl <code>vla_bridge</code> läuft</td><td>Node mit anderer DDS-Umgebung gestartet als rosbridge · Nexus: <b>Localhost only</b> an = <code>ROS_LOCALHOST_ONLY=1</code> + <code>cyclonedds.xml</code>, aus = <code>0</code> ohne URI</td><td class="fix">Aus der UX | Nexus Launcher starten oder dieselben Variablen setzen (<a href="#vla-start">Starten</a> 3). Vergleich: <code>tr '\0' '\n' &lt; /proc/&lt;pid rosbridge&gt;/environ | grep -E 'ROS_|CYCLONE'</code></td></tr>
+            <tr><td><span class="st" style="--k:var(--crit)">OFFLINE</span>, obwohl <code>vla_bridge</code> läuft</td><td>Node mit anderer DDS-Umgebung gestartet als rosbridge · UX | Nexus Launcher: <b>Localhost only</b> an = <code>ROS_LOCALHOST_ONLY=1</code> + <code>cyclonedds.xml</code>, aus = <code>0</code> ohne URI</td><td class="fix">Aus der UX | Nexus Launcher starten oder dieselben Variablen setzen (<a href="#vla-start">Starten</a> 3). Vergleich: <code>tr '\0' '\n' &lt; /proc/&lt;pid rosbridge&gt;/environ | grep -E 'ROS_|CYCLONE'</code></td></tr>
             <tr><td><span class="st" style="--k:var(--crit)">OFFLINE</span>, Node läuft nicht</td><td>Nicht gestartet oder Paket nicht gebaut</td><td class="fix"><code>colcon build --packages-select vla_bridge</code>, dann Karte in der UX | Nexus Launcher starten</td></tr>
             <tr><td><span class="st">VLA backend not connected yet …</span></td><td>Anweisung gesendet, während die Section offline war</td><td class="fix">Backend starten, Anweisung erneut senden - es wurde nichts an den Roboter geschickt</td></tr>
             <tr><td><span class="st">Still busy with the last task …</span></td><td>Aufgabe läuft noch oder denkt noch</td><td class="fix">Abwarten oder <b>Abort</b></td></tr>
-            <tr><td>Agent findet das Objekt nicht · Chip <span class="m">0 objects</span></td><td>Objekt nicht in der Szene: Kamera/YOLO aus, <b>Object detection</b> aus oder anderer Name</td><td class="fix">Planning → Simulation → Object detection an (oder Nexus „Virtual objects ON“), „Was siehst du?“ fragen</td></tr>
+            <tr><td>Agent findet das Objekt nicht · Chip <span class="m">0 objects</span></td><td>Objekt nicht in der Szene: Kamera/YOLO aus, <b>Object detection</b> aus oder anderer Name</td><td class="fix">Planning → Simulation → Object detection an (oder „Virtual objects ON“ in der UX | Nexus Launcher), „Was siehst du?“ fragen</td></tr>
             <tr><td><span class="st">Physics sandbox is off …</span></td><td>Der Agent fährt zu virtuellen Objekten, die Sandbox simuliert sie aber nicht</td><td class="fix">Im Hinweis <b>Start SIM physics</b> (oder <b>Show setting</b> → Planning → Simulation → SIM physics an, nur FAKE), dann erneut senden</td></tr>
-            <tr><td><span class="st">REAL robot: execution is off …</span> · <span class="m">plan only - not executed</span></td><td>REAL erkannt, <code>allow_real_motion</code> aus (Standard)</td><td class="fix">Gewollt. Für echte Fahrten in der Nexus-Karte „REAL: execute plans“ an und neu starten</td></tr>
+            <tr><td><span class="st">REAL robot: execution is off …</span> · <span class="m">plan only - not executed</span></td><td>REAL erkannt, <code>allow_real_motion</code> aus (Standard)</td><td class="fix">Gewollt. Für echte Fahrten in der Karte der UX | Nexus Launcher „REAL: execute plans“ an und neu starten</td></tr>
             <tr><td><span class="st">Language model not available …</span> · Status <span class="st" style="--k:var(--crit)">ERROR</span></td><td>Ollama fehlt oder Modell nicht geladen (Meldung nennt den Grund)</td><td class="fix"><code>bash src/vla_bridge/scripts/install_ollama.sh</code>, Karte neu starten; erste Antwort nach dem Start dauert länger (Modell lädt)</td></tr>
             <tr><td><span class="st">… no collision-free grasp pose …</span></td><td>Objekt zu weit weg oder die Finger passen bei keinem Winkel (z. B. hohe Flasche)</td><td class="fix">Objekt näher an den Arm legen; der Agent versucht es nicht erneut</td></tr>
             <tr><td><span class="st">grasp failed: the suction cup did not hold …</span></td><td>Saugnapf nicht sauber auf der Oberseite (Sandbox)</td><td class="fix">Der Agent plant neu (neu greifen); Objekt steht schief → gerade hinlegen</td></tr>
@@ -2529,7 +2530,7 @@ ros2 launch vla_bridge vla_bridge.launch.py              # dry_run:=true = nur P
             <tr><td><span class="st">Not sent: motion is locked …</span></td><td>Not-Aus verriegelt, keine Verbindung oder anderer Client hat das Control-Lock</td><td class="fix">Not-Aus quittieren bzw. Steuerung übernehmen (Remote Control)</td></tr>
             <tr><td>Execute bleibt grau</td><td>Backend offline oder Plan läuft schon (Confirm before execute war aus)</td><td class="fix">Zustand (<span class="co">1</span>) prüfen</td></tr>
             <tr><td>Plan verschwindet mit <span class="st">Aborted by E-STOP.</span></td><td>Not-Aus aktiv</td><td class="fix">Gewollt. Not-Aus quittieren, Anweisung neu senden</td></tr>
-            <tr><td>Karte „VLA-M Bridge“ fehlt oder Config-Pane leer</td><td>Nexus-Seite bzw. -Server noch mit altem Stand</td><td class="fix">UX | Nexus Launcher neu starten (Server liest <code>_LAUNCH_CONFIGS</code> nur beim Start). Nicht vorher speichern - das überschreibt <code>launcher_config.json</code> mit dem alten Stand.</td></tr>
+            <tr><td>Karte „VLA-M Bridge“ fehlt oder Config-Pane leer</td><td>Seite bzw. Server der UX | Nexus Launcher noch mit altem Stand</td><td class="fix">UX | Nexus Launcher neu starten (Server liest <code>_LAUNCH_CONFIGS</code> nur beim Start). Nicht vorher speichern - das überschreibt <code>launcher_config.json</code> mit dem alten Stand.</td></tr>
           </tbody>
         </table>
       </div>
@@ -3016,7 +3017,7 @@ function initShell(onShow) {
   var LAYERS = [
     { id: 'human', name: 'Mensch und Geräte', hint: 'Maus, Touch, Gamepad, Quest 3, Mikrofon, Tobii' },
     { id: 'ui', name: 'Oberflächen', hint: ':8080 · :8081 · :8083 · :8443 · RViz' },
-    { id: 'bridge', name: 'Server und Brücken', hint: 'rosbridge :9090/:9091, HTTP-Server, joy_node' },
+    { id: 'bridge', name: 'Server und Brücken', hint: 'rosbridge :9090/:9091/:9092, HTTP-Server, joy_node' },
     { id: 'logic', name: 'Koordination und Sicherheit', hint: 'Watchdog, Kollisionsprüfung, Motion Handler, VLA, Blackbox' },
     { id: 'vision', name: 'Wahrnehmung', hint: 'ZED, YOLO, Punktwolke, OctoMap' },
     { id: 'plan', name: 'Bewegung', hint: 'MoveIt und ros2_control' },
@@ -3039,10 +3040,10 @@ function initShell(onShow) {
     ['gazeui', 'ui', 'Gaze Control UI', 'gaze_control_ui_tobii_glasses', 'Eigenständige Oberfläche, die per Blick bedient wird und direkt Servo-Befehle sendet.'],
     ['rviz', 'ui', 'RViz', 'scene_objects · servo_status · scene_objects_distance_to_tcp', 'Entwickleransicht mit Warn-Overlays, 3D-Markern und Abstandslinie zum TCP.'],
 
-    ['nexusbe', 'bridge', 'Nexus Backend', 'Flask · ros2_nexus_web.py · touch_panel_server.py', 'Führt ros2 launch/run als Prozesse aus, liest Launch-Argumente aus, speichert launcher_config.json. Lesen (GET) geht aus dem ganzen Netz, Starten und Stoppen (POST) nur vom Roboter-PC aus der UX | Nexus Launcher.'],
+    ['nexusbe', 'bridge', 'Backend der UX | Nexus Launcher', 'Flask · ros2_nexus_web.py · touch_panel_server.py', 'Führt ros2 launch/run als Prozesse aus, liest Launch-Argumente aus, speichert launcher_config.json. Lesen (GET) geht aus dem ganzen Netz, Starten und Stoppen (POST) nur vom Roboter-PC aus der UX | Nexus Launcher.'],
     ['monbe', 'bridge', 'Monitoring-Backend', 'monitoring_server.py · ros_monitor.py · SQLite', 'ROS-Node + HTTP-API des UX | Monitoring: sammelt Systemlast, ROS-Graph, Nutzungsereignisse und VLA-M-Aufträge (/vla/metrics) und speichert sie in ~/.local/share/monitoring_dashboard/monitoring.db.'],
     ['uisrv', 'bridge', 'UI-Server', 'server.py · /api/*', 'Liefert die UX | Control Interface aus und bietet kleine REST-Endpunkte: Einstellungen, TF-Tuner-Werte, Gerätestatus, CPU/GPU-Last, Remote-Info.'],
-    ['rb9090', 'bridge', 'rosbridge', 'ws :9090 · rosapi', 'Übersetzt JSON über WebSocket in ROS-Topics und -Services. Einziger Weg vom Browser in den ROS-Graphen. Senden nur laut Whitelist (config/network.yaml, rosbridge:), Lesen frei.'],
+    ['rb9090', 'bridge', 'rosbridge', 'ws :9090 · ws :9092 · rosapi', 'Übersetzt JSON über WebSocket in ROS-Topics und -Services. Einziger Weg vom Browser in den ROS-Graphen. Senden nur laut Whitelist in config/network.yaml: :9090 (Netz) die kleine Liste rosbridge.remote, :9092 (nur 127.0.0.1, Seiten am Roboter-PC) die volle Liste rosbridge:.'],
     ['rb9091', 'bridge', 'rosbridge SSL', 'wss :9091 · rosapi_guard', 'Zweite rosbridge mit TLS für die Quest, gleiche Whitelist wie :9090. rosapi_guard sorgt dafür, dass nie zwei /rosapi-Nodes laufen.'],
     ['https', 'bridge', 'HTTPS-Server', ':8443 · certs/cert.pem', 'Liefert die UI verschlüsselt aus, weil WebXR einen sicheren Kontext verlangt. Zertifikat wird beim Start erzeugt.'],
     ['wvs', 'bridge', 'web_video_server', ':8082', 'Wandelt Bild-Topics in MJPEG-Streams für den Browser.'],
@@ -3190,7 +3191,7 @@ function initShell(onShow) {
       steps: [['tobii', 'gazegrasp', 'Szenevideo + Blickpunkt'], ['gazegrasp', 'motion', '/ui/execute_move_to_pose'], ['motion', 'mg', 'planen'], ['mg', 'ctrl', 'ausführen'], ['ctrl', 'arm', 'Arm fährt zum Objekt']] },
     { id: 'grasp', name: 'Objekt greifen', intro: 'ZED → YOLO → /zed/bboxes_3d → Objekt in der UI wählen → /ui/grasp_object_cmd → Greif-Executor → Motion Handler → Greifer.',
       steps: [['zedcam', 'zed', 'Bild + Tiefe'], ['zed', 'yolo', 'Objekte erkennen'], ['yolo', 'rb9090', '/zed/bboxes_3d'], ['rb9090', 'rcui', 'Boxen im Twin und in der Liste'], ['mouse', 'rcui', 'Objekt wählen'], ['rb9090', 'grasp', '/ui/grasp_object_cmd'], ['grasp', 'motion', '/ui/execute_move_to_pose'], ['motion', 'mg', 'planen'], ['mg', 'ctrl', 'ausführen'], ['ctrl', 'arm', 'anfahren'], ['arm', 'grip', 'greifen']] },
-    { id: 'vla', name: 'VLA-M Chat', intro: 'Anweisung im Chat, der LLM-Agent plant, der Code prüft den Plan, du bestätigst. Der Arm fährt - auch zu virtuellen Objekten (mit Sandbox greifbar) - und der Agent plant bei Fehlern neu.',
+    { id: 'vla', name: 'VLA-M-Chat', intro: 'Anweisung im Chat, der LLM-Agent plant, der Code prüft den Plan, du bestätigst. Der Arm fährt - auch zu virtuellen Objekten (mit Sandbox greifbar) - und der Agent plant bei Fehlern neu.',
       steps: [['mouse', 'rcui', 'Anweisung tippen, Enter'], ['rcui', 'rb9090', '/vla/instruction'], ['yolo', 'vla', 'Objekte der Szene'], ['rb9090', 'vla', 'Agent (Sprachmodell) baut den Plan, Code prüft ihn'], ['vla', 'rb9090', '/vla/response mit Plan'], ['rcui', 'rb9090', 'Execute: /vla/execute'], ['vla', 'motion', 'Approach from above / MoveTo je Schritt'], ['motion', 'mg', 'planen'], ['mg', 'ctrl', 'ausführen'], ['vla', 'joyin', 'Greifer an / aus'], ['vla', 'rb9090', 'Fortschritt step i / n, dann done']] },
     { id: 'estop', name: 'Not-Aus', intro: 'Stoppt MoveIt Servo, setzt den Armzustand (/ufactory/set_state), sperrt die VR-Teleop. Bleibt verriegelt bis /ui/reset_emergency_stop.',
       steps: [['mouse', 'rcui', 'Not-Aus drücken'], ['rcui', 'rb9090', '/ui/emergency_stop_topic'], ['rb9090', 'motion', 'Not-Aus auslösen'], ['motion', 'servo', 'stop_servo'], ['motion', 'arm', '/ufactory/set_state'], ['motion', 'vrnode', '/ui/emergency_stop_active sperrt VR'], ['rb9090', 'rcui', 'Banner, Ton, Vibration']] },
@@ -3239,7 +3240,6 @@ function initShell(onShow) {
   document.getElementById('k-layers').textContent = LAYERS.length;
   document.getElementById('k-nodes').textContent = NODES.length;
   document.getElementById('k-edges').textContent = EDGES.length;
-  document.getElementById('k-paths').textContent = PATHS.length;
 
   var TYPE_NAME = { hci: 'Mensch ↔ Gerät', http: 'HTTP', ws: 'WebSocket', topic: 'Topic', svc: 'Service / Action', hw: 'Hardware', proc: 'startet' };
   var SVGNS = 'http://www.w3.org/2000/svg';
@@ -3312,6 +3312,7 @@ function initShell(onShow) {
 
   // Farbe = Art der ersten Verbindung auf dem Weg; Abläufe in eigener Gruppe
   var FLOWS = { grasp: 1, estop: 1, start: 1 };
+  document.getElementById('k-paths').textContent = PATHS.filter(function (p) { return !FLOWS[p.id]; }).length;
   var pathsEl2 = document.getElementById('paths2');
   PATHS.forEach(function (P) {
     var ei = findEdge(P.steps[1][0], P.steps[1][1]);
@@ -3655,7 +3656,7 @@ function initShell(onShow) {
     op: ['act', 'user', 'Bediener', 'Absicht', ['Wählt: Jog, Zielpose, Objekt greifen, VLA-Anweisung, Not-Aus', 'Prüft Twin, HUD und Kamerabild, korrigiert oder stoppt'], [], null],
     dev: ['act', 'pad', 'Eingabegerät', 'Gamepad, Eyetracker, VR, Spracheingabe', ['Gamepad lokal: joy_node → /joy', 'Gamepad remote: Gamepad-API im Browser → /remote/joy', 'Quest 3: Controller-Pose → /vr_teleop/controller_data', 'Mikrofon → Whisper · Tobii → Blickpunkt + RTSP :8554'], ['Maus · Touch', 'Gamepad', 'Meta Quest 3', 'Mikrofon', 'Tobii Glasses'], 'pad'],
     ui: ['act', 'screen', 'Oberfläche', 'Browser, VR, RViz', ['Jog-Taste halten → delta_twist_cmds, loslassen = Stopp', 'Gizmo ziehen → Planung mit Ghost-Vorschau', 'Buttons → /ui/*-Services des Motion Handlers'], ['UX | Control Interface :8081', 'VR-Ansicht :8443', 'RViz + Control-Panel', 'Gaze Control UI'], 'rcui'],
-    tr: ['act', 'swap', 'Transport', 'rosbridge, HTTP', ['rosbridge: JSON über WebSocket ↔ ROS-Topics und -Services', 'Einziger Weg vom Browser in den ROS-Graphen', 'UI-Server: /api/settings, /api/header_status, /api/sys_load, /api/cam_snapshot'], ['ws :9090', 'wss :9091', '/api/*'], 'rb9090'],
+    tr: ['act', 'swap', 'Transport', 'rosbridge, HTTP', ['rosbridge: JSON über WebSocket ↔ ROS-Topics und -Services', 'Einziger Weg vom Browser in den ROS-Graphen', 'UI-Server: /api/settings, /api/header_status, /api/sys_load, /api/cam_snapshot'], ['ws :9090', 'wss :9091', 'ws :9092', '/api/*'], 'rb9090'],
     lg: ['act', 'cpu', 'Logik + Planung', 'Nodes, MoveIt', ['Remote-Gamepad: remote_control_watchdog → /joy', 'Jog aus Browser/VR: remote_control_watchdog → Servo', 'Gamepad: teleop_pre_collision_checker → /joy_check → xarm_joystick_input → Servo', 'Zielpose, Greifen, VLA: Motion Handler (/ui/*) → move_group'], ['remote_control_watchdog', 'teleop_pre_collision_checker', 'Motion Handler', 'move_group', 'MoveIt Servo'], 'motion'],
     rb: ['act', 'arm', 'Roboter', 'xArm Lite 6', ['FAKE: simuliert', 'REAL: über ufactory_driver im Netz', 'Dazu Greifer, Vakuum, Linearachse'], ['ufactory_driver', 'lite6_traj_controller', 'Greifer · Vakuum', 'Linearachse'], 'arm'],
     sn: ['fb', 'scan', 'Sensorik', 'Gelenke, ZED, YOLO', ['Gelenkstellungen des Arms', 'Bild und Tiefe der ZED-Kamera', 'Erkannte Objekte als 3D-Boxen'], ['/joint_states', 'ZED Mini', 'YOLO 3D-Boxen', 'Punktwolke'], 'zed'],
@@ -3744,9 +3745,9 @@ function initShell(onShow) {
     [['op'], 'op', 'Absicht', ['Jog-Taste +Z halten → Greifer soll hoch']],
     [['c1', 'dev'], 'dev', 'Eingabe', ['Maus oder Touch nimmt den Befehl auf', 'Ebenso: Gamepad, Quest 3, Mikrofon, Tobii']],
     [['c2', 'ui'], 'ui', 'Oberfläche', ['jog.js prüft Control-Lock + Bodenabstand', 'Sendet Tempo, solange gehalten · loslassen = Stopp']],
-    [['c3', 'tr'], 'tr', 'Transport', ['roslib → rosbridge (ws :9090 · wss :9091)', '→ /servo_server/delta_twist_cmds, nur laut Whitelist']],
+    [['c3', 'tr'], 'tr', 'Transport', ['roslib → rosbridge (ws :9090 · wss :9091 · ws :9092 am Roboter-PC)', '→ /remote/twist → Twist-Gate im Watchdog → /servo_server/delta_twist_cmds']],
     [['c4', 'lg'], 'lg', 'Logik + Planung', ['MoveIt Servo → kleine Gelenkbewegungen', 'Zielpose, Greifen, VLA-M: Motion Handler → move_group']],
-    [['safe'], 'safe', 'Sicherheit greift ein', ['Jog: Servo prüft Singularität, Gelenkgrenzen, Kollision', 'Gamepad: + Kollisionsvorprüfung · remote: + Watchdog', 'Not-Aus wirkt immer, auch ohne Browser']],
+    [['safe'], 'safe', 'Sicherheit greift ein', ['Jog: Watchdog (Control-Lock, Not-Aus, Bodensperre) + Servo (Singularität, Gelenkgrenzen, Kollision)', 'Gamepad: + Kollisionsvorprüfung · remote: + Watchdog', 'Not-Aus wirkt immer, auch ohne Browser']],
     [['c5', 'rb'], 'rb', 'Roboter fährt', ['lite6_traj_controller → xArm Lite 6', 'FAKE simuliert · REAL über ufactory_driver']],
     [['down', 'sn'], 'sn', 'Messen', ['Gelenke → /joint_states, TF', 'ZED + YOLO → /zed/bboxes_3d']],
     [['c6', 'tp'], 'tp', 'Status verteilen', ['rosbridge → alle offenen Oberflächen', 'Not-Aus-Status latched: neuer Tab sieht ihn sofort']],
@@ -4297,7 +4298,7 @@ function initShell(onShow) {
   // ---------- D · Glossar: Fachbegriffe erklären (Fakten aus diesem Handbuch) ----------
   // [Schlüssel, Muster, Titel, Art, Stichpunkte, Komponente in der Architektur, Abschnitt]
   var GL = [
-    ['rosbridge', 'rosbridge', 'rosbridge', 'Brücke Browser → ROS 2', ['Übersetzt JSON über WebSocket in ROS-Topics und -Services', 'Einziger Weg vom Browser in den ROS-Graphen', 'ws :9090 · wss :9091 (TLS, Quest 3 und HTTPS-Clients)', 'Senden nur laut Whitelist, Lesen frei'], 'rb9090', '#ports'],
+    ['rosbridge', 'rosbridge', 'rosbridge', 'Brücke Browser → ROS 2', ['Übersetzt JSON über WebSocket in ROS-Topics und -Services', 'Einziger Weg vom Browser in den ROS-Graphen', 'ws :9090 · wss :9091 (TLS, Quest 3 und HTTPS-Clients) · ws :9092 (nur 127.0.0.1, Seiten am Roboter-PC)', 'Senden nur laut Whitelist (9090/9091: rosbridge.remote, 9092: rosbridge:), Lesen frei'], 'rb9090', '#ports'],
     ['servo', 'MoveIt Servo|Servo', 'MoveIt Servo', 'Bewegungsplanung', ['Echtzeit-Führung: setzt Geschwindigkeitsbefehle sofort in kleine Bewegungen um', 'Jog, Gamepad und VR fahren darüber (/servo_server/delta_twist_cmds)', 'Prüft Singularität, Gelenkgrenzen, Kollision'], 'servo', '#kreis'],
     ['mg', 'move_group', 'MoveIt move_group', 'Bewegungsplanung', ['Plant kollisionsfreie Pfade zu einer Zielpose', 'Wird über den Motion Handler (/ui/*) angesprochen', '/move_action · /compute_ik'], 'mg', null],
     ['motion', 'Motion Handler', 'Motion Handler', 'Logik', ['Zentrale Bewegungs-API unter /ui/*', 'Zielpose, Gelenkziel, Startpose, Scan, Vorschau, Stopp und Not-Aus', 'Paket robot_motion_handler_movegroup'], 'motion', null],
@@ -4307,8 +4308,8 @@ function initShell(onShow) {
     ['lock', 'Control-Lock|Steuerungs-Lock', 'Control-Lock', 'Remote-Steuerung', ['Genau ein Client hat „Control“, alle anderen schauen zu', 'Not-Aus geht von jedem Client', '„Request control“ → am Server „Allow“ / „Deny“ · ohne Antwort verfällt die Anfrage nach 60 s'], null, '#kombi'],
     ['wl', 'Whitelist', 'Whitelist', 'Sicherheit', ['Abschnitt rosbridge: in config/network.yaml', 'Browser senden nur /ui/*, /vla/*, /remote/*, /vr_teleop/*, Servo-Jog', 'Nur /ui/*-Services, kein /joy · Lesen frei'], null, '#regeln'],
     ['dds', 'DDS', 'DDS', 'ROS-2-Netz', ['Darüber finden sich ROS-2-Nodes im Netz (UDP, Ports 7400+)', 'Browser-Clients brauchen es nicht: sie sprechen über rosbridge', 'Zweiter PC mit ROS (F): „Localhost only“ auf beiden PCs aus, UDP in der Firewall frei'], null, '#dds-scope'],
-    ['lo', 'Localhost only', 'Localhost only', 'Schalter im Nexus-Popup', ['DDS bleibt auf diesem PC', 'A – E: an (empfohlen) · F: aus, auf beiden PCs', 'Gilt erst nach Neustart der Sequenz'], null, '#dds-scope'],
-    ['dom', 'Domain-IDs?', 'ROS_DOMAIN_ID', 'ROS-2-Netz', ['Trennt ROS-Graphen im selben Netz', 'Client braucht dieselbe ID wie der Server (Nexus: 66)'], null, '#combo-f'],
+    ['lo', 'Localhost only', 'Localhost only', 'Schalter im Popup der UX | Nexus Launcher', ['DDS bleibt auf diesem PC', 'A – E: an (empfohlen) · F: aus, auf beiden PCs', 'Gilt erst nach Neustart der Sequenz'], null, '#dds-scope'],
+    ['dom', 'Domain-IDs?', 'ROS_DOMAIN_ID', 'ROS-2-Netz', ['Trennt ROS-Graphen im selben Netz', 'Client braucht dieselbe ID wie der Server (UX | Nexus Launcher: 66)'], null, '#combo-f'],
     ['fake', 'FAKE', 'FAKE · Simulation', 'Modus', ['Erkannt daran, dass kein ufactory_driver läuft', 'Remote-Gamepad bis 100 % Tempo', 'Stopp nach 1,0 s ohne Heartbeat · kein „Arm gamepad“'], null, '#kombi'],
     ['real', 'REAL', 'REAL · echter Arm', 'Modus', ['ufactory_driver läuft · unklar („DETECTING“) gilt als REAL', 'Remote-Gamepad max. 50 % Tempo, Stopp nach 0,4 s ohne Heartbeat', '„Arm gamepad“ nötig, wenn real_require_arm an ist'], null, '#kombi'],
     ['latched', 'latched', 'latched', 'Topic-Eigenschaft', ['Topic behält den letzten Wert', 'Neuer Tab sieht den Not-Aus-Status sofort (/ui/emergency_stop_active)'], null, '#sicherheit'],

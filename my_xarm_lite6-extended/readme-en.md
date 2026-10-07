@@ -24,7 +24,7 @@
 </p>
 
 > [!TIP]
-> **📘 Manual (German):** [`docs/operate_manual.html`](operate_manual.html) – system map, safety chain, ports, server/client control, VLA chat.
+> **📘 Manual (German):** [`docs/operate_manual.html`](operate_manual.html) – system map, safety chain, ports, server/client control, VLA-M chat.
 > [View rendered online](operate_manual.html) · locally via the **Manual** button in the UX | Nexus Launcher (formerly Nexus Webapp) (`http://localhost:8080/manuals/operate_manual.html`).
 > **🛠️ Setup guide (DE/EN):** [`docs/operate_setup_guide.html`](operate_setup_guide.html) – commissioning step by step, for a pre-installed PC or from bare Ubuntu 22.04 (linked from the project docs, UX | Nexus Launcher footer button **Project docs**).
 

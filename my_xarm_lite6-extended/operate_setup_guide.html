@@ -411,7 +411,7 @@ footer .wrap { display: flex; justify-content: space-between; flex-wrap: wrap; g
 
               <g class="node pc"><rect x="260" y="70" width="240" height="120" rx="12"/>
                 <text class="t" x="380" y="124" text-anchor="middle">Workstation</text>
-                <text class="s" x="380" y="144" text-anchor="middle">ROS 2 · Nexus · UIs</text>
+                <text class="s" x="380" y="144" text-anchor="middle">ROS 2 · UX | Nexus Launcher · UIs</text>
                 <text class="port" x="270" y="104">LAN 2</text><text class="port" x="490" y="104" text-anchor="end">LAN 1</text>
                 <text class="port" x="380" y="180" text-anchor="middle">USB 3 · HDMI</text></g>
 
@@ -488,7 +488,7 @@ sudo dpkg -i /tmp/ros2-apt-source.deb</pre></div></div></li>
           <li><input type="checkbox" id="s4-2"><div class="txt"><label for="s4-2" data-en="ROS 2 Humble with CycloneDDS and build tools">ROS 2 Humble mit CycloneDDS und Build-Werkzeugen</label>
             <div class="cmd"><pre>sudo apt update
 sudo apt install -y ros-humble-desktop ros-humble-rmw-cyclonedds-cpp python3-colcon-common-extensions python3-rosdep</pre></div></div></li>
-          <li><input type="checkbox" id="s4-3"><div class="txt"><label for="s4-3" data-en="Packages of this project: MoveIt 2 + Servo, gamepad, rosbridge (web UIs), RViz overlays, point cloud, audio, Nexus window">Pakete dieses Projekts: MoveIt 2 + Servo, Gamepad, rosbridge (Web-UIs), RViz-Overlays, Punktwolke, Audio, Nexus-Fenster</label>
+          <li><input type="checkbox" id="s4-3"><div class="txt"><label for="s4-3" data-en="Packages of this project: MoveIt 2 + Servo, gamepad, rosbridge (web UIs), RViz overlays, point cloud, audio, UX | Nexus Launcher window">Pakete dieses Projekts: MoveIt 2 + Servo, Gamepad, rosbridge (Web-UIs), RViz-Overlays, Punktwolke, Audio, Fenster der UX | Nexus Launcher</label>
             <div class="cmd"><pre>sudo apt install -y ros-humble-moveit ros-humble-moveit-servo ros-humble-joy ros-humble-teleop-twist-joy \
   ros-humble-rosbridge-suite ros-humble-cv-bridge ros-humble-rviz-2d-overlay-plugins ros-humble-rviz-2d-overlay-msgs \
   ros-humble-point-cloud-transport ros-humble-octomap-server
@@ -599,7 +599,7 @@ python3 ~/dev_ws/tools/check_ports.py</pre></div></div></li>
           <li><input type="checkbox" id="s8-4"><div class="txt"><label for="s8-4" data-en="REAL at &lt;b&gt;low speed&lt;/b&gt;: jog, gripper on/off, then &lt;b&gt;test E-STOP&lt;/b&gt; – once in the UI and once with the hardware button; the arm must stop immediately">REAL mit <b>niedrigem Tempo</b>: Jog, Greifer an/aus, dann <b>E-STOP testen</b> – einmal in der UI, einmal am Hardware-Taster; der Arm muss sofort stehen</label></div></li>
           <li><input type="checkbox" id="s8-5"><div class="txt"><label for="s8-5" data-en="Optional: automatic gripping test in the simulation (~4 min, own ROS domain, no robot motion)">Optional: automatischer Greiftest in der Simulation (~4 min, eigene ROS-Domain, keine Roboterbewegung)</label>
             <div class="cmd"><pre>python3 ~/dev_ws/tools/grasp_e2e.py --quick</pre></div></div></li>
-          <li><input type="checkbox" id="s8-6"><div class="txt"><label for="s8-6" data-en="Save the &lt;b&gt;setup card&lt;/b&gt; (ⓘ in the Nexus footer) as PDF and keep it at the workstation: addresses, ports, web addresses">Die <b>Setup-Karte</b> (ⓘ im Nexus-Footer) als PDF speichern und am Arbeitsplatz ablegen: Adressen, Ports, Web-Adressen</label></div></li>
+          <li><input type="checkbox" id="s8-6"><div class="txt"><label for="s8-6" data-en="Save the &lt;b&gt;setup card&lt;/b&gt; (ⓘ in the footer of the UX | Nexus Launcher) as PDF and keep it at the workstation: addresses, ports, web addresses">Die <b>Setup-Karte</b> (ⓘ in der Fußzeile der UX | Nexus Launcher) als PDF speichern und am Arbeitsplatz ablegen: Adressen, Ports, Web-Adressen</label></div></li>
         </ol>
         <p data-en="Something fails? The &lt;b&gt;Check&lt;/b&gt; names cause and remedy per line; more in the &lt;a data-ws-href=&quot;my_xarm_lite6-extended/operate_manual.html&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;manual&lt;/a&gt; and in the FAQ of &lt;a data-ws-href=&quot;my_xarm_lite6-extended/en/running.html&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;running.md&lt;/a&gt;.">Etwas schlägt fehl? Der <b>Check</b> nennt je Zeile Ursache und Abhilfe; mehr im <a data-ws-href="my_xarm_lite6-extended/operate_manual.html" target="_blank" rel="noopener">Handbuch</a> und in den FAQ von <a data-ws-href="my_xarm_lite6-extended/de/running.html" target="_blank" rel="noopener">running.md</a>.</p>
       </div>
@@ -608,7 +608,7 @@ python3 ~/dev_ws/tools/check_ports.py</pre></div></div></li>
   </div>
 </main>
 
-<footer><div class="wrap"><span data-en="Last updated 02.10.2026 · commands not yet run on a fresh system">Stand 02.10.2026 · Befehle noch nicht an einem frischen System durchgespielt</span><span>dev_ws · docs/operate_setup_guide.html</span></div></footer>
+<footer><div class="wrap"><span data-en="Last updated 07.10.2026 · commands not yet run on a fresh system">Stand 07.10.2026 · Befehle noch nicht an einem frischen System durchgespielt</span><span>dev_ws · docs/operate_setup_guide.html</span></div></footer>
 
 <script src="js/scroll_flow.js"></script>
 <script src="js/landing.js"></script>

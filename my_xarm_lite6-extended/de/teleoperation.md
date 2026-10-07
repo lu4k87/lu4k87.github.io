@@ -199,10 +199,10 @@ Die folgende Übersicht zeigt auf einen Blick, welche Projektmodule in reiner So
 >
 > ![Parameters](https://img.shields.io/badge/Parameters-yellow?style=flat-square)
 >
->> | Parameter | Standardwert | Beschreibung |
+>> | Parameter | Wert | Beschreibung |
 >> |---|---|---|
 >> | `LOOKAHEAD_TIME` | `0.25` | *Prädiktionshorizont (Sekunden) für die Geschwindigkeits-Vorausschau.* |
->> | `Z_LIMIT` | `91.0` | *Die harte Tischbarriere auf der Z-Achse (World-Frame) in Millimetern.* |
+>> | `Z_LIMIT` | `91.0` | *Die harte Tischbarriere auf der Z-Achse (`link_base`) in Millimetern.* |
 >> | `CAUTION_ZONE_START` | `110.0` | *Z-Höhe (mm), ab der das Tempo nach unten zur Sicherheit begrenzt wird.* |
 >> | `CAUTION_ZONE_SPEED` | `0.25` | *Maximal erlaubter Geschwindigkeitsfaktor nach unten innerhalb der Caution Zone.* |
 >> | `MAX_LINEAR_VELOCITY_MM_S` | `400.0` | *Angenommene Lineargeschwindigkeit (mm/s) als Basis der Vorausschau.* |

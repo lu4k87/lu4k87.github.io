@@ -77,7 +77,7 @@ The operator is at the centre of the interaction design: the state of automation
 ### 🤝 Shared Control & Cognitive Relief
 Control authority moves with low latency between manual guidance, gaze interaction and AI-assisted, semi-automated functions:
 
-- **Seamless handover:** between manual input (MoveIt Servo / gamepad) and autonomous actions (e.g. gaze-based grasping).
+- **Control handover:** between manual input (MoveIt Servo / gamepad) and autonomous actions (e.g. gaze-based grasping).
 - **Less mental workload:** during complex or long manipulation tasks.
 - **Automatic error compensation:** the system takes over error-prone low-level corrections and frees attention for supervising the process.
 - **Empirical validation:** the actual relief is measured throughout the project with standardized psychometric methods.
@@ -119,7 +119,7 @@ Fully integrated into ROS 2 Humble; standard communication primitives keep the p
 - **VR (Meta Quest 3):** immersive 6-DoF Cartesian control with the Quest 3 controllers via WebXR and ADB tunnelling → [VR teleoperation](vr_quest3.html).
 - **Web UI:** mouse or touch in the UX | Control Interface – on the robot PC, from a laptop or tablet in the home network, or on the UX | Compact Interface (formerly Touch Panel) → [UX | Control Interface](robot_control_ui.html).
 - **Voice & gaze:** Whisper voice commands and Tobii eye tracking → [Voice & gaze](voice_gaze.html).
-- **VLA chat:** instructions in plain language → [VLA-M](vla.html).
+- **VLA-M chat:** instructions in plain language → [VLA-M](vla.html).
 
 ### 4.2 Perception & Assistance
 - **Computer vision:** 2D object detection with *YOLO* on the Raspberry Pi IP camera plus ArUco homography (`zed_m:=false ip_cams:=true`, `yolo_3d_bbox_for_ip_cam.py`) – the lightweight alternative without a ZED. The ZED Mini (default) detects natively in 3D.

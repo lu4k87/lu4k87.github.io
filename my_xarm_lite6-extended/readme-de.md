@@ -24,7 +24,7 @@
 </p>
 
 > [!TIP]
-> **📘 Handbuch:** [`docs/operate_manual.html`](operate_manual.html) – Architektur, Sicherheitskette, Ports, Server/Client-Steuerung, VLA-Chat.
+> **📘 Handbuch:** [`docs/operate_manual.html`](operate_manual.html) – Architektur, Sicherheitskette, Ports, Server/Client-Steuerung, VLA-M-Chat.
 > [Online gerendert ansehen](operate_manual.html) · lokal über den Button **Manual** in der UX | Nexus Launcher (früher „Nexus Webapp“) (`http://localhost:8080/manuals/operate_manual.html`).
 > **🛠️ Setup-Guide (DE/EN):** [`docs/operate_setup_guide.html`](operate_setup_guide.html) – Inbetriebnahme Schritt für Schritt, für einen vorinstallierten PC oder ab nacktem Ubuntu 22.04 (verlinkt in der Projekt-Doku, Footer-Knopf **Projekt-Doku** der UX | Nexus Launcher).
 

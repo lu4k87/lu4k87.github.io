@@ -44,7 +44,7 @@ The table below illustrates which project modules can be evaluated in pure softw
 | **Gamepad Teleoperation (MoveIt Servo)** | ✅ Functional | ✅ Functional | Xbox One / Series Controller |
 | **Predictive Hard Collision Guard** | ✅ Functional | ✅ Functional | Host PC |
 | **Acoustic Speech Interaction (Whisper AI)** | ✅ Functional | ✅ Functional | Standard USB / Laptop Microphone |
-| **VLA-M Chat (Vision-Language-Action)** | 🧪 LLM agent plans and moves the arm (pick & place, also virtual objects with the physics sandbox) | 🧪 Plan only (execution with `allow_real_motion:=true`) | Host PC, NVIDIA GPU for the local language model (Ollama, ~16 GB VRAM) |
+| **VLA-M chat (Vision-Language-Action)** | 🧪 LLM agent plans and moves the arm (pick & place, also virtual objects with the physics sandbox) | 🧪 Plan only (execution with `allow_real_motion:=true`) | Host PC, NVIDIA GPU for the local language model (Ollama, ~16 GB VRAM) |
 | **3D YOLO Object Detection & Clustering** | ❌ *(or via Rosbag replay)* | ✅ Functional | Stereolabs ZED Mini (USB 3.0) |
 | **Dynamic MoveIt Collision Objects** | ❌ *(or via Rosbag replay)* | ✅ Functional | Stereolabs ZED Mini (USB 3.0) |
 | **Autonomous 3D Grasp Routine** | ❌ *(Needs 3D Camera)* | ✅ Functional | xArm Lite 6 & ZED Mini |
@@ -198,10 +198,10 @@ The table below illustrates which project modules can be evaluated in pure softw
 >
 > ![Parameters](https://img.shields.io/badge/Parameters-yellow?style=flat-square)
 >
->> | Parameter | Default | Description |
+>> | Parameter | Value | Description |
 >> |---|---|---|
 >> | `LOOKAHEAD_TIME` | `0.25` | *Prediction horizon (seconds) for velocity lookahead.* |
->> | `Z_LIMIT` | `91.0` | *Hard table barrier on the Z-axis (World-Frame) in millimeters.* |
+>> | `Z_LIMIT` | `91.0` | *Hard table barrier on the Z-axis (`link_base`) in millimeters.* |
 >> | `CAUTION_ZONE_START` | `110.0` | *Z-height (mm) where downward velocity starts being restricted.* |
 >> | `CAUTION_ZONE_SPEED` | `0.25` | *Maximum allowed downward speed factor within the caution zone.* |
 >> | `MAX_LINEAR_VELOCITY_MM_S` | `400.0` | *Baseline linear velocity (mm/s) for the lookahead.* |

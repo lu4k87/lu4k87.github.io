@@ -1007,7 +1007,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: cent
         </nav>
       </div>
       <figure class="hero-shot">
-        <img src="img/presentation/hero.jpg" alt="xArm Lite 6 über dem Arbeitstisch mit ArUco-Markern und farbigen Greifobjekten" width="1400" height="934">
+        <img src="img/presentation/hero.jpg" alt="xArm Lite 6 über dem Arbeitstisch mit ArUco-Markern und farbigen Greifobjekten" data-en-alt="xArm Lite 6 above the work table with ArUco markers and coloured grasp objects" width="1400" height="934">
         <div class="hud" aria-hidden="true">
           <span class="chip"><span class="dot"></span>xArm Lite 6</span>
           <span class="chip">ROS 2 Humble</span>
@@ -1410,7 +1410,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: cent
         <div class="visual">
           <div class="try" data-en="Tap the numbers">Zahlen antippen</div>
           <div class="shot" id="pins">
-            <img src="img/presentation/rcu.jpg" alt="UX | Control Interface im FAKE-Modus mit Digital Twin, Jogging, Greifer und Gelenken" width="1600" height="900" loading="lazy">
+            <img src="img/presentation/rcu.jpg" alt="UX | Control Interface im FAKE-Modus mit Digital Twin, Jogging, Greifer und Gelenken" data-en-alt="UX | Control Interface in FAKE mode with Digital Twin, jogging, gripper and joints" width="1600" height="900" loading="lazy">
           </div>
           <div class="panel pin-info" id="pin-info" aria-live="polite"></div>
         </div>
@@ -1489,7 +1489,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: cent
             <p class="gd-state" id="gd-state" aria-live="polite"></p>
           </div>
           <div class="twin-pane shot" data-pane="shot" hidden>
-            <img src="img/presentation/twin.jpg" alt="Digital Twin des xArm Lite 6 mit Schutzzonen, TCP-Gizmo und erkannten Objekten auf dem Tisch" width="690" height="480" loading="lazy">
+            <img src="img/presentation/twin.jpg" alt="Digital Twin des xArm Lite 6 mit Schutzzonen, TCP-Gizmo und erkannten Objekten auf dem Tisch" data-en-alt="Digital Twin of the xArm Lite 6 with safety zones, TCP gizmo and detected objects on the table" width="690" height="480" loading="lazy">
           </div>
         </div>
         <div class="body">
@@ -1598,8 +1598,8 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: cent
             <button type="button" data-cmp="b" aria-pressed="false" data-en="Released for grasping">Zum Greifen freigegeben</button>
           </div>
           <div class="shot compare" id="cmp">
-            <img src="img/presentation/coll_on.jpg" alt="Digital Twin: erkannte Objekte mit roten Kollisionskörpern für MoveIt" width="1400" height="684" loading="lazy">
-            <img src="img/presentation/coll_off.jpg" alt="Digital Twin: erkannte Objekte ohne Kollisionskörper, zum Greifen freigegeben" width="1400" height="684" loading="lazy">
+            <img src="img/presentation/coll_on.jpg" alt="Digital Twin: erkannte Objekte mit roten Kollisionskörpern für MoveIt" data-en-alt="Digital Twin: detected objects with red collision bodies for MoveIt" width="1400" height="684" loading="lazy">
+            <img src="img/presentation/coll_off.jpg" alt="Digital Twin: erkannte Objekte ohne Kollisionskörper, zum Greifen freigegeben" data-en-alt="Digital Twin: detected objects without collision bodies, released for grasping" width="1400" height="684" loading="lazy">
           </div>
         </div>
         <div class="body">
@@ -1862,8 +1862,8 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: cent
             <button type="button" data-cmp="b" aria-pressed="false" data-en="Analysis">Auswertung</button>
           </div>
           <div class="shot compare" id="mon" style="aspect-ratio: 16 / 9">
-            <img src="img/presentation/eval_tests.jpg" alt="UX | Monitoring, Evaluierung: Usability-Test mit Aufgaben, Testpersonen, Durchläufen und Fragebögen" width="1600" height="900" loading="lazy">
-            <img src="img/presentation/eval_report.jpg" alt="UX | Monitoring, Auswertung: Erfolgsquote je Eingabemethode und Aufgabe" width="1600" height="900" loading="lazy">
+            <img src="img/presentation/eval_tests.jpg" alt="UX | Monitoring, Evaluierung: Usability-Test mit Aufgaben, Testpersonen, Durchläufen und Fragebögen" data-en-alt="UX | Monitoring, evaluation: usability test with tasks, participants, runs and questionnaires" width="1600" height="900" loading="lazy">
+            <img src="img/presentation/eval_report.jpg" alt="UX | Monitoring, Auswertung: Erfolgsquote je Eingabemethode und Aufgabe" data-en-alt="UX | Monitoring, analysis: success rate per input method and task" width="1600" height="900" loading="lazy">
           </div>
         </div>
         <div class="body">
@@ -3383,6 +3383,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: cent
   const setLang = l => {
     lang = l; root.lang = l;
     $$('[data-en]').forEach(el => { const de = keep(el, 'de', el.innerHTML); el.innerHTML = l === 'en' ? el.dataset.en : de; });
+    $$('[data-en-alt]').forEach(el => { const de = keep(el, 'deAlt', el.alt); el.alt = l === 'en' ? el.dataset.enAlt : de; });
     $$('[data-en-aria]').forEach(el => { const de = keep(el, 'deAria', el.getAttribute('aria-label')); el.setAttribute('aria-label', l === 'en' ? el.dataset.enAria : de); });
     $$('[data-lang]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.lang === l)));
     renderAll();

@@ -480,9 +480,9 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 10px 24px; align-items: cent
   <section class="hero dark-zone">
     <div class="wrap">
       <div>
-        <div class="eyebrow">Multimodale Robotersteuerung</div>
+        <div class="eyebrow">Der Mensch führt. Die KI assistiert.</div>
         <h1>Ein Roboter.<br><em>Zehn Wege,</em> ihn zu bedienen.</h1>
-        <p class="lede">Hand, Blick, Stimme, Brille oder Chat: Jede Eingabe läuft durch dieselbe Sicherheitskette zum Arm.</p>
+        <p class="lede">Assistive Robotik-Plattform für den xArm&nbsp;Lite&nbsp;6 auf Basis von ROS&nbsp;2 Humble. Hand, Blick, Stimme, Brille oder Chat: Jede Eingabe läuft durch dieselbe Sicherheitskette zum Arm.</p>
         <ul class="hero-facts">
           <li><svg class="ico"><use href="#i-cube"/></svg><span><b>Erst virtuell, dann real:</b> zuerst im Digital Twin simuliert und geprüft</span></li>
           <li><svg class="ico"><use href="#i-globe"/></svg><span><b>Öffnen statt installieren:</b> Bedienung komplett im Browser</span></li>
@@ -497,7 +497,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 10px 24px; align-items: cent
           <a href="#touch" style="--hue: var(--green)"><svg class="ico"><use href="#i-tab"/></svg>UX | Compact Interface</a>
           <a href="#rcu" style="--hue: var(--accent)"><svg class="ico"><use href="#i-mon"/></svg>UX | Control Interface</a>
           <a href="#gizmo" style="--hue: var(--indigo)"><svg class="ico"><use href="#i-gizmo"/></svg>3D-Gizmo</a>
-          <a href="#vla" style="--hue: var(--violet)"><svg class="ico"><use href="#i-chat"/></svg>VLA-Chat</a>
+          <a href="#vla" style="--hue: var(--violet)"><svg class="ico"><use href="#i-chat"/></svg>VLA-M-Chat</a>
           <a href="#remote" style="--hue: var(--teal)"><svg class="ico"><use href="#i-net"/></svg>Remote</a>
         </nav>
       </div>
@@ -957,6 +957,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 10px 24px; align-items: cent
           <div class="eyebrow"><span class="n">04</span><span>Auf einen Blick</span></div>
           <h2>Was kann welcher Weg?</h2>
         </div>
+        <p>8 von 10 Steuerwegen im Vergleich. 3D-Gizmo und Remote stehen oben bei den Steuerwegen.</p>
       </div>
       <div class="table-scroll">
         <table>
@@ -1062,7 +1063,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 10px 24px; align-items: cent
     const $ = (s, el = document) => el.querySelector(s), $$ = (s, el = document) => [...el.querySelectorAll(s)];
     const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
     const WAYS = [['Gamepad', 'i-pad', 'accent'], ['VR Quest 3', 'i-vr', 'indigo'], ['Blick', 'i-eye', 'teal'], ['Sprache', 'i-mic', 'gold'], ['Tastatur', 'i-key', 'violet'],
-      ['UX | Compact Interface', 'i-tab', 'green'], ['UX | Control Interface', 'i-mon', 'accent'], ['3D-Gizmo', 'i-gizmo', 'indigo'], ['VLA-Chat', 'i-chat', 'violet'], ['Remote', 'i-net', 'teal']];
+      ['UX | Compact Interface', 'i-tab', 'green'], ['UX | Control Interface', 'i-mon', 'accent'], ['3D-Gizmo', 'i-gizmo', 'indigo'], ['VLA-M-Chat', 'i-chat', 'violet'], ['Remote', 'i-net', 'teal']];
     const CASES = [['ok', 'Normaler Befehl'], ['lock', 'Zweiter Bediener'], ['table', 'Bahn in den Tisch'], ['reach', 'Ziel außer Reichweite']];
     // Vorprüfung je Weg: Gamepad über teleop_pre_collision_checker, Jog-Wege über das Twist-Gate des Watchdogs,
     // Blick mit eigener Bremszone, geplante Bahnen über MoveIt mit Boden (docs/de/running.md, teleoperation.md, voice_gaze.md)

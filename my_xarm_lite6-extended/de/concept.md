@@ -77,7 +77,7 @@ Der Operator steht im Zentrum des Interaktionsdesigns: Der Automatisierungszusta
 ### 🤝 Shared Control & Kognitive Entlastung
 Die Kontrollhoheit wechselt latenzarm zwischen manueller Führung, Blickinteraktion und KI-gestützten, teilautomatisierten Funktionen:
 
-- **Nahtlose Kontrollübergabe:** zwischen manueller Eingabe (MoveIt Servo / Gamepad) und autonomen Aktionen (z. B. blickbasiertes Greifen).
+- **Kontrollübergabe:** zwischen manueller Eingabe (MoveIt Servo / Gamepad) und autonomen Aktionen (z. B. blickbasiertes Greifen).
 - **Weniger Mental Workload:** bei komplexen oder langen Manipulationsaufgaben.
 - **Autonome Fehlerkompensation:** Das System fängt fehleranfällige Low-Level-Korrekturen ab und schafft Kapazität für die Prozessüberwachung.
 - **Empirische Validierung:** Die tatsächliche Entlastung wird im Projektverlauf mit standardisierten psychometrischen Verfahren gemessen.
@@ -119,7 +119,7 @@ Vollständig in ROS 2 Humble integriert; standardisierte Kommunikationsprimitive
 - **VR (Meta Quest 3):** immersive kartesische 6-DoF-Steuerung mit den Quest-3-Controllern über WebXR und ADB-Tunneling → [VR-Teleoperation](vr_quest3.html).
 - **Web-UI:** Maus oder Touch in der UX | Control Interface – am Roboter-PC, vom Laptop oder Tablet im Heimnetz oder am UX | Compact Interface (früher „Touch Panel“) → [UX | Control Interface](robot_control_ui.html).
 - **Sprache & Blick:** Whisper-Sprachbefehle und Tobii-Eye-Tracking → [Sprache & Blick](voice_gaze.html).
-- **VLA-Chat:** Anweisungen in Alltagssprache → [VLA-M](vla.html).
+- **VLA-M-Chat:** Anweisungen in Alltagssprache → [VLA-M](vla.html).
 
 ### 4.2 Sensorik & Assistenz (Perception)
 - **Computer Vision:** 2D-Objekterkennung mit *YOLO* auf der Raspberry-Pi-IP-Kamera plus ArUco-Homographie (`zed_m:=false ip_cams:=true`, `yolo_3d_bbox_for_ip_cam.py`) – die leichtgewichtige Alternative ohne ZED. Standard ist die ZED Mini, die direkt in 3D erkennt.
