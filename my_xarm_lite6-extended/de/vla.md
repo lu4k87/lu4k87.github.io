@@ -30,7 +30,7 @@ KI-gestützte Ausführung von Aufgaben durch *Vision-Language-Action*-Modelle (V
   - `dry_run:=true`: nur Plan und Fortschritt, **der Roboter bewegt sich nie**.
 - **Virtuelle Objekte:** Mit der Physik-Sandbox der UX | Control Interface (nur Robot | Digital Twin) greift, trägt und stapelt der Agent sie wirklich und legt sie in Schale und Korb (durchgängig in Robot | Digital Twin getestet).
 - **Sicherheit:** Das Modell wählt nur Skills und Objekt-IDs – Posen kommen aus der Szene, jede Fahrt läuft durch den Motion Handler (IK, Kollisionsprüfung, Bodenschutz, E-STOP). Im Modus (Robot | Hardware, `ufactory_driver` läuft) werden Pläne nur mit `allow_real_motion:=true` ausgeführt (Standard: nur Plan), jeder Plan und jeder Rettungsplan wartet auf *Execute* (`real_require_confirm:=true`), und virtuelle Objekte werden nie angefahren (`allow_virtual_in_real:=false`). Der E-STOP bricht die Aufgabe ab, *Abort* stoppt nach dem laufenden Schritt. *Execute* in der UI läuft zusätzlich durch `motionAllowed` (E-STOP, Verbindung, Control-Lock).
-- **Noch nicht:** ein trainiertes VLA-Modell (Demonstrationen lassen sich aufnehmen, siehe Roadmap Schritt 4).
+- **Noch nicht:** ein trainiertes VLA-Modell (Demonstrationen lassen sich aufnehmen, siehe Roadmap Schritt 4); Reinforcement Learning in der Simulation ist geplant (Schritt 8).
 
 ### 🧠 Agentic ROS: der Agenten-Regelkreis
 Das VLA-M-Backend ist ein **Agentic-ROS**-Node: Das Sprachmodell steuert den Roboter nicht direkt, sondern plant innerhalb eines geschlossenen Regelkreises aus ROS-Services und Prüfungen.
@@ -138,6 +138,7 @@ UX | Control Interface (VLA-M) --/vla/*--> vla_bridge: VLA-Agent (Plan, Prüfung
 5. SmolVLA auf eine Aufgabe nachtrainieren (z.B. Becher in die Kiste). Das Modell läuft in einer **eigenen venv oder einem Docker-Container**, nie im colcon-Python - so kommen torch / numpy nicht mit ZED, YOLO und ROS Humble in Konflikt.
 6. VLA als Skill des Agenten: `vla_bridge` wird Client des Policy-Servers. Aktionen laufen durch die vorhandene Sicherheitskette; liefert der Server länger als ~200 ms nichts, bleibt der Arm stehen. Modus (Robot | Hardware): reduzierte Geschwindigkeit und Steuerung nur mit dem Control-Lock des `remote_control_watchdog` ([7.5](running.html#75-remote-control-server-client-kommunikation)). Zuerst im Modus (Robot | Digital Twin) testen.
 7. π0.5, falls SmolVLA nicht gut genug verallgemeinert.
+8. **Reinforcement Learning (geplant):** die nachtrainierte Policy in der Simulation nachschärfen (Physik-Sandbox des Robot | Digital Twin oder paralleler Simulator wie MuJoCo / Isaac Lab). Belohnung: Objekt nach dem Anheben gehalten und am Ziel abgelegt; Abzug für Kollision, Abbruch im Motion Handler und Zeit. Ausprobieren nur in der Simulation, nie im Modus (Robot | Hardware); die verbesserte Policy läuft danach durch dieselbe Sicherheitskette.
 
 ---
 

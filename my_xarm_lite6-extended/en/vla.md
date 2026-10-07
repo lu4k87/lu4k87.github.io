@@ -30,7 +30,7 @@
   - `dry_run:=true`: plan and progress only, **the robot never moves**.
 - **Virtual objects:** with the physics sandbox of the UX | Control Interface (Robot | Digital Twin only) the agent really picks, carries, stacks and drops them into bowl and basket (tested end to end in Robot | Digital Twin).
 - **Safety:** the model only chooses skills and object ids – poses come from the scene, every move goes through the motion handler (IK, collision checking, floor guard, E-STOP). In Robot | Hardware mode (`ufactory_driver` running) plans only execute with `allow_real_motion:=true` (default: plan only), every plan and every recovery plan waits for *Execute* (`real_require_confirm:=true`) and virtual objects are never approached (`allow_virtual_in_real:=false`). The E-STOP aborts the task, *Abort* stops after the current step. *Execute* in the UI additionally passes `motionAllowed` (E-STOP, connection, control lock).
-- **Not yet:** a trained VLA model (demonstrations can be recorded, see roadmap step 4).
+- **Not yet:** a trained VLA model (demonstrations can be recorded, see roadmap step 4); reinforcement learning in simulation is planned (step 8).
 
 ### 🧠 Agentic ROS: the agent loop
 The VLA-M backend is an **agentic ROS** node: the language model does not steer the robot directly, it acts as a planner inside a closed loop of ROS services and checks.
@@ -138,6 +138,7 @@ UX | Control Interface (VLA-M) --/vla/*--> vla_bridge: VLA agent (plan, check, r
 5. Fine-tune SmolVLA on one task (e.g. cup into box). The model runs in a **separate venv or Docker container**, never in the colcon Python, so torch / numpy do not conflict with ZED, YOLO and ROS Humble.
 6. VLA as a skill of the agent: `vla_bridge` becomes the client of the policy server. Actions pass the existing safety chain; if the server stalls for more than ~200 ms the arm holds. Robot | Hardware mode: reduced speed and control only with the control lock of `remote_control_watchdog` ([7.5](running.html#75-remote-control-server-client-communication)). Test in Robot | Digital Twin first.
 7. π0.5 if SmolVLA does not generalise well enough.
+8. **Reinforcement learning (planned):** refine the fine-tuned policy in simulation (physics sandbox of the Robot | Digital Twin or a parallel simulator such as MuJoCo / Isaac Lab). Reward: object still held after the lift and placed at the target; penalties for collisions, motion handler aborts and time. Exploration only in simulation, never in Robot | Hardware mode; the refined policy then passes the same safety chain.
 
 ---
 
