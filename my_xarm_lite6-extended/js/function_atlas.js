@@ -907,7 +907,7 @@ const FLOWS = (() => {
     },
     scene: {
       t: ['Szenen und Logistik-Zelle', 'Scenes and logistics cell'], hue: 'teal', icon: 'i-layers', s: 'sr',
-      d: ['Zwei feste Szenen: Standard und die Logistik-Zelle mit Europalette, Förderbändern und Zaun. virtual_object_detections hält den Zustand latched für alle Clients und meldet Zaun und Bänder alle 5 s als Hindernis an MoveIt.', 'Two fixed scenes: standard and the logistics cell with euro pallet, conveyor belts and fence. virtual_object_detections keeps the state latched for all clients and reports fence and belts to MoveIt as obstacles every 5 s.'],
+      d: ['Drei Szenen: Standard, Logistik – automatisch palettieren (Europalette, Förderbänder, Zaun) und Intralogistik – AMR (nur FAKE). virtual_object_detections hält den Zustand latched für alle Clients und meldet Zaun und Bänder alle 5 s als Hindernis an MoveIt.', 'Three scenes: Standard, Logistics – auto palletizing (euro pallet, conveyor belts, fence) and Intralogistics – AMR (FAKE only). virtual_object_detections keeps the state latched for all clients and reports fence and belts to MoveIt as obstacles every 5 s.'],
       spec: {
         lanes: lanes('ui', 'br', ['vis', ['Szenen-Node', 'Scene node']], 'mv'),
         nodes: [N('scn', 'ui', 0, { label: ['Szenen-Wahl', 'Scene picker'], short: ['Szene', 'Scene'], sub: 'scenes.js', icon: 'i-layers', hue: 'teal', info: ['Wählt Standard oder Palettieren; Kollision je Teil (Bänder, Zaun) schaltbar.', 'Picks standard or palletizing; collision per part (belts, fence) switchable.'] }),
