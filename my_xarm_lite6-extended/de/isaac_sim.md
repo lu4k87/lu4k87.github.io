@@ -21,7 +21,7 @@
 <summary><b>🔽 Details anzeigen</b></summary>
 
 > [!NOTE]
-> - **Ablauf:** 1. Der Nutzer startet `RUN DEV SETUP (FAKE)` oder `(REAL)` über die UX | Nexus Launcher (früher „Nexus Webapp“).
+> - **Ablauf:** 1. Der Nutzer startet `RUN DEV SETUP (Robot | Digital Twin)` oder `(Robot | Hardware)` über die UX | Nexus Launcher (früher „Nexus Webapp“).
 >   2. Der Nutzer startet Isaac Sim im Terminal: `bash ~/dev_ws/isaacsim/start_isaac_sim.sh` (die frühere Nexus-Sektion `NVIDIA Isaac Sim` gehörte zur entfernten Vollseite).
 >   3. Das eigene Skript startet die lokale `isaac-sim.sh` Datei mit `--allow-root` und öffnet automatisch die vorkonfigurierte Action Graph Szene (`lite6_isaac_ros2.usd`).
 > - **OmniGraph Architektur:** Die Szene nutzt einen minimalistischen Action Graph, bestehend aus einem `On Playback Tick` Knoten, der in einen `ROS2 Subscribe Joint State` Knoten feuert (welcher `/joint_states` abonniert), der wiederum direkt in den `Articulation Controller` mündet, welcher das Roboter-Asset steuert.

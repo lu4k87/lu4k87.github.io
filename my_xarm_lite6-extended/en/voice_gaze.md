@@ -223,7 +223,7 @@
 > [!NOTE]
 > 💻 **Run Command:**
 > ```bash
-> # Part of RUN DEV SETUP (FAKE and REAL) in the UX | Nexus Launcher:
+> # Part of RUN DEV SETUP (Robot | Digital Twin and Robot | Hardware) in the UX | Nexus Launcher:
 > # card "Eyetracker - Gaze Control", mode Real World (mode UI Gaze starts gaze_ui instead)
 > ros2 run gaze_grasp_routine_tobii_glasses gaze_grasp_routine_tobii_glasses --ros-args -p tobii_ip:=192.168.100.xxx -p dwell_threshold:=2.0
 > ```

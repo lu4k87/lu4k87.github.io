@@ -246,7 +246,7 @@ GitHub is the only source; each computer has its own clone in `~/dev_ws` (Ubuntu
 - **Per computer, not in Git:** `build/`, `install/`, `log/`, `~/.config/ros2_nexus/` (Nexus selections `launcher_state.json`, backups, settings), `.claude/settings.local.json`, Claude chat history (`claude --resume`), Ollama models, ZED SDK, `isaacsim/`.
 - **Blender + MCP server:** `tools/install_blender.sh` installs/updates the pinned version without sudo (`--check` shows installed, pinned and newest version); details: skill `.claude/skills/blender`.
 - **Claude Code:** a new chat warns when `origin` is ahead (hook `session_overview.py`) → run `tools/ws_sync.sh` first.
-- **Away from the lab:** robot, cameras and Tobii (`config/network.yaml`) are unreachable → FAKE only; REAL only on site with someone at the E-STOP.
+- **Away from the lab:** robot, cameras and Tobii (`config/network.yaml`) are unreachable → Robot | Digital Twin only; Robot | Hardware only on site with someone at the E-STOP.
 
 ---
 

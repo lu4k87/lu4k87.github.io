@@ -45,7 +45,7 @@ A research and evaluation platform for **multimodal teleoperation** of the UFact
 | 🥽 | **VR (Meta Quest 3)** – 6-DoF WebXR teleoperation, UX \| Control Interface inside the headset, VR mirror on the PC | [VR teleoperation](en/vr_quest3.html) |
 | 👁️ | **3D vision & grasping** – ZED Mini + YOLOv8 3D boxes, MoveIt collision objects, OctoMap, collision-free 3-phase grasp, virtual objects for tests without a camera | [Vision & grasping](en/vision_grasping.html) |
 | 🗣️ | **Voice & gaze** – Whisper voice commands (EN/DE), Tobii Pro Glasses 3 gaze UI and dwell-time grasping | [Voice & gaze](en/voice_gaze.html) |
-| 🧊 | **Digital Twin** – live 3D model of the arm and workcell in the browser (three.js + URDF, `/joint_states`); plan in the Digital Twin with TCP gizmo and ghost preview, then confirm; detected and virtual objects, safety zones, scenes; test new functions risk-free in FAKE mode with the physics sandbox; same Digital Twin in VR and in up to 4 virtual cameras; Isaac Sim as optional shadow Digital Twin | [Concept: Digital Twin](en/concept.html#-digital-twin-first-virtual-then-real) · [UX \| Control Interface](en/robot_control_ui.html) |
+| 🧊 | **Digital Twin** – live 3D model of the arm and workcell in the browser (three.js + URDF, `/joint_states`); plan in the Digital Twin with TCP gizmo and ghost preview, then confirm; detected and virtual objects, safety zones, scenes; test new functions risk-free in Robot | Digital Twin mode with the physics sandbox; same Digital Twin in VR and in up to 4 virtual cameras; Isaac Sim as optional shadow Digital Twin | [Concept: Digital Twin](en/concept.html#-digital-twin-first-virtual-then-real) · [UX \| Control Interface](en/robot_control_ui.html) |
 | 🖥️ | **UX \| Control Interface** (port 8081) – WebGL Digital Twin, jogging, MoveIt planning with ghost preview and TCP gizmo, physics sandbox (robot simulation), motion sequences, dockable HUD, area bar per work step (Move, Teach, Vision, Assistant (VLA), Remote Teleop) with step-by-step guides and settings, camera tiles and virtual cameras (own views of the Digital Twin) in the viewport, command palette (Ctrl+K), Diagnostics drawer (log); all four web UIs in German or English (live switch at the bottom of the theme list, Alt+T) | [UX \| Control Interface](en/robot_control_ui.html) |
 | 🚀 | **UX \| Nexus Launcher** (port 8080) – one-click launcher with setups for robot simulation and real robot hardware, launch-tree and config inspection, preflight check before EXECUTE, readiness checks per step, log per start, run restart, config backups, setup info card (network, IPs, ports, PDF export), UX \| Compact Interface for an extra touch display | [Running the system](en/running.html) |
 | 🤖 | **VLA-M chat – agentic ROS** *(in progress)* – instructions in plain language → AI agent (local Ollama or Claude) plans pick & place with the scene → execute, grasp check, re-planning; dictation via microphone, one-click *Grasp* / *Place here* from the object menu, auto palletizing (skill `palletize`), *Record demo* for training; LeRobot (SmolVLA / π0.5) planned | [VLA-M](en/vla.html) |
@@ -62,7 +62,7 @@ A research and evaluation platform for **multimodal teleoperation** of the UFact
   <img src="img/monitoring_dashboard.png" width="32%" alt="UX | Monitoring – overview">
 </p>
 
-*Top: **UX | Control Interface** (formerly Robot Control UI) (area Move: header with E-STOP, area bar, Digital Twin viewport, Cartesian jogging) and **UX | Nexus Launcher** (start popup RUN DEV SETUP, FAKE). Bottom: **VLA-M** with a plan of four steps waiting for *Execute*, **UX | Compact Interface** (formerly Touch Panel) (view Move) and **UX | Monitoring** (formerly Monitoring Dashboard) (overview). All in FAKE mode – more screenshots next to each function in `docs/en/`.*
+*Top: **UX | Control Interface** (formerly Robot Control UI) (area Move: header with E-STOP, area bar, Digital Twin viewport, Cartesian jogging) and **UX | Nexus Launcher** (start popup RUN DEV SETUP, Robot | Digital Twin). Bottom: **VLA-M** with a plan of four steps waiting for *Execute*, **UX | Compact Interface** (formerly Touch Panel) (view Move) and **UX | Monitoring** (formerly Monitoring Dashboard) (overview). All in Robot | Digital Twin mode – more screenshots next to each function in `docs/en/`.*
 
 ## 🧱 Built on
 
@@ -91,7 +91,7 @@ source install/setup.bash
 ./ros2_nexus/ros2_nexus_web_start.sh     # UX | Nexus Launcher on http://localhost:8080
 ```
 
-In the **RUN DEV SETUP** popup choose **FAKE** and press **EXECUTE**: simulated arm, MoveIt Servo + MoveGroup, RViz2 and the UX | Control Interface (`http://localhost:8081`) start together. Step-by-step guide: [1.1 Quickstart](en/running.html#11--5-minute-quickstart-pure-simulation).
+In the **RUN DEV SETUP** popup choose **Robot | Digital Twin** and press **EXECUTE**: simulated arm, MoveIt Servo + MoveGroup, RViz2 and the UX | Control Interface (`http://localhost:8081`) start together. Step-by-step guide: [1.1 Quickstart](en/running.html#11--5-minute-quickstart-pure-simulation).
 
 | UI / service | Port | UI / service | Port |
 |---|---|---|---|
@@ -108,7 +108,7 @@ All ports: [7.4 Network & ports](en/running.html#74-network--port-architecture).
 | [🔬 Concept & architecture](en/concept.html) | 1, 2, 4 | Motivation, shared control, guiding principles, interaction concepts |
 | [📦 Installation](en/installation.html) | 6 | Requirements, hardware BOM, Tobii and ZED setup, build |
 | [🚀 Running the system](en/running.html) | 1.1, 7 | Quickstart, UX \| Nexus Launcher, ports, remote control, DDS tuning, FAQ |
-| [🎮 Modes & gamepad](en/teleoperation.html) | 3.1, 3.2, 5 | FAKE vs. REAL, collision guard, gamepad pipeline in depth |
+| [🎮 Modes & gamepad](en/teleoperation.html) | 3.1, 3.2, 5 | Robot | Digital Twin vs. Robot | Hardware, collision guard, gamepad pipeline in depth |
 | [👁️ Vision & grasping](en/vision_grasping.html) | 3.3 | ZED / IP camera, YOLO 3D, MoveIt collision, grasp executors |
 | [🗣️ Voice & gaze](en/voice_gaze.html) | 3.4 | Whisper pipeline, voice intents, Tobii gaze UI and grasp routine |
 | [🥽 VR Quest 3](en/vr_quest3.html) | 3.5 | WebXR teleoperation, VR HUD, setup and troubleshooting |

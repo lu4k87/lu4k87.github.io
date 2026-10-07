@@ -57,11 +57,11 @@ Eine modulare Softwarearchitektur für multimodale Teleoperation und KI-gestütz
 Der **Digital Twin** (digitaler Zwilling) ist das live mitlaufende 3D-Modell des xArm Lite 6 und seiner Arbeitszelle. Er ist das gemeinsame Bild für Mensch, Planer und KI: Jede Bewegung erscheint im Digital Twin vorab und während sie passiert.
 
 - **Was er ist:** WebGL-Modell (three.js + URDF des xArm Lite 6) in der UX | Control Interface (Port 8081), läuft in jedem Browser, offline-fähig.
-- **Live-Spiegel:** folgt `/joint_states` und der Linearachse in Echtzeit – im FAKE-Modus dem simulierten, im REAL-Modus dem echten Arm.
+- **Live-Spiegel:** folgt `/joint_states` und der Linearachse in Echtzeit – im Modus (Robot | Digital Twin) dem simulierten, im Modus (Robot | Hardware) dem echten Arm.
 - **Arbeitszelle im Digital Twin:** Tisch, Laborraum, Schutzzonen, Kamerastativ, erkannte Objekte als 3D-Boxen mit Greifkugeln (`/zed/bboxes_3d`), virtuelle Objekte und Szenen (Standard, Auto palletizing).
 - **Planen im Digital Twin:** Ziel mit dem TCP-Gizmo ziehen → MoveIt plant → Ghost-Vorschau der Bahn (`/ui/moveto_preview_path`) → Mensch bestätigt → erst dann fährt der Arm.
 - **Handeln im Digital Twin:** Objekt anklicken → *Grasp*; Tisch anklicken → *Place here*.
-- **Testen im Digital Twin:** FAKE-Modus + virtuelle Objekte + Physik-Sandbox → Neues gefahrlos ausprobieren, danach mit derselben UI am echten Arm.
+- **Testen im Digital Twin:** Modus (Robot | Digital Twin) + virtuelle Objekte + Physik-Sandbox → Neues gefahrlos ausprobieren, danach mit derselben UI am echten Arm.
 - **Jeder Blickwinkel:** bis zu 4 virtuelle Kameras = eigene Ansichten des Digital Twin, nutzbar wie echte Kamerakacheln.
 - **Immersiv:** derselbe Digital Twin in der Meta Quest 3 (WebXR) für die VR-Teleoperation.
 - **High-Fidelity:** NVIDIA Isaac Sim läuft optional als passiver Schatten-Digital-Twin mit ([Isaac Sim](isaac_sim.html)).

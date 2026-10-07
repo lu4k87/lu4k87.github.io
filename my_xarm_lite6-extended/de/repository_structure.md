@@ -14,7 +14,7 @@ dev_ws/
 │   ├── agents/                                                            # Projekt-Agenten: ws-explorer, test-runner, ui-verifier, safety-reviewer, robustness-reviewer, showcase-reviewer, docs-auditor
 │   ├── hooks/                                                             # Prüfungen vor einem Befehl und nach jedem Edit
 │   ├── memory/                                                            # Gemeinsames Claude-Memory (im Git, verknüpft von tools/ws_sync.sh)
-│   ├── mods/                                                              # Claude-Code-Mods: answer-cards (Antworten als Karten in VS Code), ros-safety-status (Statuszeile FAKE/REAL)
+│   ├── mods/                                                              # Claude-Code-Mods: answer-cards (Antworten als Karten in VS Code), ros-safety-status (Statuszeile Robot | Digital Twin / Robot | Hardware)
 │   ├── skills/                                                            # Skills mit ihren Skripten, z.B. preview/ (capture.py Screenshots, build.py Spec → Seite), answer-page/ (Antwortformat)
 │   └── README.md                                                          # Übersicht über Hooks, Skills, Agents, Mods
 ├── _imgs/                                                                 # System-Screenshots, Architekturgrafiken & Assets
@@ -48,7 +48,7 @@ dev_ws/
 │   ├── poster_a2.pdf                                                      # Druckfertiger Export (headless Chrome)
 │   ├── make_preview.py                                                    # Erzeugt das Key Visual poster_preview.svg / .png (braucht google-chrome)
 │   ├── poster_preview.svg / .png                                          # Key Visual
-│   └── img/                                                               # Screenshots (FAKE-Modus, 28.09.2026) & Laborfoto
+│   └── img/                                                               # Screenshots (Modus (Robot | Digital Twin), 28.09.2026) & Laborfoto
 ├── ros2_nexus/                                                            # Zentraler Web-Launcher & Desktop-App-Integration
 │   ├── ROS2_Nexus.desktop                                                 # Ubuntu Desktop-Verknüpfung (.desktop Eintrag)
 │   ├── install_app.sh                                                     # Einrichtungs-Skript für .desktop-Verknüpfung & Icon
@@ -130,7 +130,7 @@ dev_ws/
 │   │       └── virtual_object_detections.py                               # Virtuelle Szenenobjekte (Cube, Rectangle, Cylinder + 5 Greif-Objekte) als Detektionen
 │   ├── remote_control_watchdog/                                           # 🔒 Python: Server-Seite der Client/Server-Steuerung
 │   │   ├── launch/remote_control_watchdog.launch.py                       # Eingebunden von http_robot_control_ui.launch.py
-│   │   └── remote_control_watchdog/remote_control_watchdog.py             # Control-Lock, Freigabe, Heartbeats, REAL/FAKE-Grenzen, Remote-Gamepad → /joy
+│   │   └── remote_control_watchdog/remote_control_watchdog.py             # Control-Lock, Freigabe, Heartbeats, Grenzen (Robot | Hardware / Robot | Digital Twin), Remote-Gamepad → /joy
 │   ├── robot_blackbox_recorder/                                           # Python: letzte 60 s wichtiger Topics, als rosbag2 bei E-Stop / Servo-Halt / Kollision
 │   ├── robot_motion_handler_movegroup/                                    # 🤖 Python: Zentraler MoveGroup kartesischer & Gelenkplaner
 │   │   ├── launch/standalone_move_group.launch.py                         # MoveGroup, eingebunden von beiden MoveIt-Servo-Launches
@@ -193,7 +193,7 @@ dev_ws/
 │   └── zed-ros2-wrapper/                                                  # 📷 Stereolabs ZED ROS 2 Kameratreiber
 ├── tools/                                                                 # Werkzeuge
 │   ├── ui_new_code_checker.py                                             # Headless-Prüfung aller Web-UIs inkl. UX | Monitoring + HUD, isoliert (1920/1366/1280 px)
-│   ├── grasp_e2e.py                                                       # FAKE-Test Ende zu Ende: Greifen/Ablegen über die UI, E-STOP, IK-Vorabprüfung (eigene Domain, --quick ~5 min)
+│   ├── grasp_e2e.py                                                       # Test (Robot | Digital Twin) Ende zu Ende: Greifen/Ablegen über die UI, E-STOP, IK-Vorabprüfung (eigene Domain, --quick ~5 min)
 │   ├── vla_eval.py                                                        # Bewertungs-Set für den VLA-Agenten (vla_eval_cases.json, --check ohne LLM)
 │   ├── pre-commit · install_hooks.sh                                      # Git-Vor-Commit-Prüfung der gestageten Dateien (flake8, JSON/YAML, Tokens, check_ws, check_ports, pytest-Suiten, check_showcase; --changed = alles Uncommittete)
 │   ├── check_showcase.py                                                  # README, docs/, Projektseiten, Poster gegen docs/brand/brand.yaml (Namen, tote Links, en/de-Dateien)

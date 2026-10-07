@@ -1011,7 +1011,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: cent
         <div class="hud" aria-hidden="true">
           <span class="chip"><span class="dot"></span>xArm Lite 6</span>
           <span class="chip">ROS 2 Humble</span>
-          <span class="chip">FAKE + REAL</span>
+          <span class="chip">Robot | Digital Twin + Robot | Hardware</span>
           <span class="chip stop">E-STOP</span>
         </div>
         <div class="hud-bottom" aria-hidden="true">
@@ -1237,7 +1237,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: cent
             <span class="fact" data-en="Skills: &lt;b&gt;pick · place · home · gripper&lt;/b&gt;">Skills: <b>pick · place · home · gripper</b></span>
             <a class="fact" href="#palette" data-en="One click: &lt;b&gt;auto palletizing&lt;/b&gt; ↓">Ein Klick: <b>Auto-Palettieren</b> ↓</a>
             <span class="fact" data-en="Measured with &lt;b&gt;46&lt;/b&gt; fixed test instructions">Gemessen mit <b>46</b> festen Testanweisungen</span>
-            <span class="fact" data-en="REAL: every plan waits for &lt;b&gt;Execute&lt;/b&gt;">REAL: jeder Plan wartet auf <b>Execute</b></span>
+            <span class="fact" data-en="Robot | Hardware: every plan waits for &lt;b&gt;Execute&lt;/b&gt;">Robot | Hardware: jeder Plan wartet auf <b>Execute</b></span>
             <span class="fact" data-en="German + English">Deutsch + Englisch</span>
             <span class="fact" data-en="Next: trained VLA model as a skill (&lt;b&gt;SmolVLA&lt;/b&gt;)">Nächster Schritt: trainiertes VLA-Modell als Skill (<b>SmolVLA</b>)</span>
           </div>
@@ -1312,8 +1312,8 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: cent
               <span class="fact" data-en="Roll conveyor + &lt;b&gt;pneumatic pusher&lt;/b&gt;">Rollenauslauf + <b>Pneumatik-Pusher</b></span>
               <span class="fact" data-en="Light barriers at conveyor stops">Lichtschranken am Band-Stopp</span>
               <span class="fact" data-en="&lt;b&gt;Dry run&lt;/b&gt;: all arm poses (IK), no motion"><b>Dry run</b>: alle Armposen (IK), keine Bewegung</span>
-              <span class="fact" data-en="FAKE: cartons are &lt;b&gt;Rapier&lt;/b&gt; bodies">FAKE: Kartons sind <b>Rapier</b>-Körper</span>
-              <span class="fact" data-en="REAL refuses virtual cartons">REAL lehnt virtuelle Kartons ab</span>
+              <span class="fact" data-en="Robot | Digital Twin: cartons are &lt;b&gt;Rapier&lt;/b&gt; bodies">Robot | Digital Twin: Kartons sind <b>Rapier</b>-Körper</span>
+              <span class="fact" data-en="Robot | Hardware refuses virtual cartons">Robot | Hardware lehnt virtuelle Kartons ab</span>
               <span class="fact" data-en="Chat: “load the pallet”">Chat: „belade die Palette“</span>
               <span class="fact" data-en="Belts + fence = MoveIt obstacles">Bänder + Zaun = MoveIt-Hindernisse</span>
             </div>
@@ -1343,7 +1343,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: cent
             <div class="arrow" aria-hidden="true"><svg class="ico"><use href="#i-right"/></svg><i class="pk"></i></div>
             <div class="link"><svg class="ico"><use href="#i-cube"/></svg><b>MoveIt</b><span data-en="IK, collision, floor">IK, Kollision, Boden</span><span class="st"></span></div>
             <div class="arrow" aria-hidden="true"><svg class="ico"><use href="#i-right"/></svg><i class="pk"></i></div>
-            <div class="link arm"><svg class="ico"><use href="#i-arm"/></svg><b>xArm Lite 6</b><span data-en="FAKE or REAL">FAKE oder REAL</span><span class="st"></span></div>
+            <div class="link arm"><svg class="ico"><use href="#i-arm"/></svg><b>xArm Lite 6</b><span data-en="Robot | Digital Twin or Robot | Hardware">Robot | Digital Twin oder Robot | Hardware</span><span class="st"></span></div>
           </div>
           <p class="gate-msg" id="gate-msg" aria-live="polite"></p>
           <div class="estop-row">
@@ -1410,7 +1410,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: cent
         <div class="visual">
           <div class="try" data-en="Tap the numbers">Zahlen antippen</div>
           <div class="shot" id="pins">
-            <img src="img/presentation/rcu.jpg" alt="UX | Control Interface im FAKE-Modus mit Digital Twin, Jogging, Greifer und Gelenken" data-en-alt="UX | Control Interface in FAKE mode with Digital Twin, jogging, gripper and joints" width="1600" height="900" loading="lazy">
+            <img src="img/presentation/rcu.jpg" alt="UX | Control Interface im Modus (Robot | Digital Twin) mit Digital Twin, Jogging, Greifer und Gelenken" data-en-alt="UX | Control Interface in Robot | Digital Twin mode with Digital Twin, jogging, gripper and joints" width="1600" height="900" loading="lazy">
           </div>
           <div class="panel pin-info" id="pin-info" aria-live="polite"></div>
         </div>
@@ -1502,9 +1502,9 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: cent
             <span data-en="Choose target">Ziel wählen</span><i>→</i><span>MoveIt</span><i>→</i><span data-en="Ghost preview">Ghost-Vorschau</span><i>→</i><span data-en="Execute">Ausführen</span><i>→</i><span data-en="Real arm">Echter Arm</span>
           </div>
           <ul class="pts">
-            <li><svg class="ico"><use href="#i-check"/></svg><span data-en="Live mirror of the arm: FAKE simulated, REAL physical">Live-Spiegel des Arms: FAKE simuliert, REAL echt</span></li>
+            <li><svg class="ico"><use href="#i-check"/></svg><span data-en="Live mirror of the arm: Robot | Digital Twin simulated, Robot | Hardware physical">Live-Spiegel des Arms: Robot | Digital Twin simuliert, Robot | Hardware echt</span></li>
             <li><svg class="ico"><use href="#i-check"/></svg><span data-en="Detected and virtual objects, safety zones, grasp with one click">Erkannte und virtuelle Objekte, Schutzzonen, Greifen per Klick</span></li>
-            <li><svg class="ico"><use href="#i-check"/></svg><span data-en="Test new functions risk-free: FAKE mode with physics sandbox">Neues gefahrlos testen: FAKE-Modus mit Physik-Sandbox</span></li>
+            <li><svg class="ico"><use href="#i-check"/></svg><span data-en="Test new functions risk-free: Robot | Digital Twin mode with physics sandbox">Neues gefahrlos testen: Modus (Robot | Digital Twin) mit Physik-Sandbox</span></li>
             <li><svg class="ico"><use href="#i-check"/></svg><span data-en="The same Digital Twin in the browser, in VR and in virtual cameras">Derselbe Digital Twin im Browser, in VR und in virtuellen Kameras</span></li>
           </ul>
           <div class="facts">
@@ -1614,7 +1614,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: cent
           <div class="facts">
             <span class="fact" data-en="Camera fixed or &lt;b&gt;on the gripper&lt;/b&gt;">Kamera stationär oder <b>am Greifer</b></span>
             <span class="fact" data-en="Approach &lt;b&gt;70 mm&lt;/b&gt; above the object">Anfahrt <b>70 mm</b> über dem Objekt</span>
-            <span class="fact" data-en="Virtual objects for FAKE tests">Virtuelle Objekte für FAKE-Tests</span>
+            <span class="fact" data-en="Virtual objects for Robot | Digital Twin tests">Virtuelle Objekte für Tests (Robot | Digital Twin)</span>
           </div>
         </div>
       </article>
@@ -1634,7 +1634,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: cent
           <div class="facts">
             <span class="fact" data-en="Open source">Open Source</span>
             <span class="fact" data-en="Affordable hardware (COTS)">Erschwingliche Hardware (COTS)</span>
-            <span class="fact" data-en="Digital Twin: FAKE first">Digital Twin: erst FAKE</span>
+            <span class="fact" data-en="Digital Twin: Robot | Digital Twin first">Digital Twin: erst Robot | Digital Twin</span>
           </div>
         </div>
       </article>
@@ -1725,11 +1725,11 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: cent
         </div>
             <div class="st-layer" role="listitem" style="--hue: var(--green)">
           <span class="st-k"><svg class="ico"><use href="#i-shield"/></svg><span data-en="Motion · Safety">Bewegung · Sicherheit</span></span>
-          <span class="st-parts"><span><b>MoveIt 2</b> · 2.5 · move_group, moveit_servo</span><span><b>OMPL · KDL</b> · <span data-en="planning, IK">Planung, IK</span></span><span><b>Nav2</b> · <span data-en="mobile base, FAKE">mobile Basis, FAKE</span></span><span><b>robot_motion_handler_movegroup</b> · <span data-en="motion services">Motion-Services</span></span><span><b>teleop_pre_collision_checker</b> · <span data-en="pre-collision check">Kollisionsvorprüfung</span></span><span><b>Sandbox</b> · <span data-en="workspace limits">Arbeitsraumgrenzen</span></span><span><b>E-STOP</b> · ISO 13850</span><span><b>robot_blackbox_recorder</b> · <span data-en="rosbag2 0.15, blackbox, demos">rosbag2 0.15, Blackbox, Demos</span></span><span><b>diagnostic_updater</b> · <span data-en="diagnostics">Diagnose</span></span></span>
+          <span class="st-parts"><span><b>MoveIt 2</b> · 2.5 · move_group, moveit_servo</span><span><b>OMPL · KDL</b> · <span data-en="planning, IK">Planung, IK</span></span><span><b>Nav2</b> · <span data-en="mobile base, Robot | Digital Twin">mobile Basis, Robot | Digital Twin</span></span><span><b>robot_motion_handler_movegroup</b> · <span data-en="motion services">Motion-Services</span></span><span><b>teleop_pre_collision_checker</b> · <span data-en="pre-collision check">Kollisionsvorprüfung</span></span><span><b>Sandbox</b> · <span data-en="workspace limits">Arbeitsraumgrenzen</span></span><span><b>E-STOP</b> · ISO 13850</span><span><b>robot_blackbox_recorder</b> · <span data-en="rosbag2 0.15, blackbox, demos">rosbag2 0.15, Blackbox, Demos</span></span><span><b>diagnostic_updater</b> · <span data-en="diagnostics">Diagnose</span></span></span>
         </div>
             <div class="st-layer" role="listitem" style="--hue: var(--indigo)">
           <span class="st-k"><svg class="ico"><use href="#i-chip"/></svg><span data-en="Drivers">Treiber</span></span>
-          <span class="st-parts"><span><b>xarm_ros2</b> · xarm_api, xarm_moveit_config, xarm_planner</span><span><b>ros2_control</b> · controller_manager, FAKE</span><span><b>zed-ros2-wrapper</b> · ZED SDK 4.1, CUDA 12.1</span><span><b>ros2_whisper</b> · whisper.cpp, whisper_server</span><span><b>joy</b> · <span data-en="3.3 · gamepad → /joy">3.3 · Gamepad → /joy</span></span><span><b>robot_state_publisher</b> · tf2_ros, URDF</span></span>
+          <span class="st-parts"><span><b>xarm_ros2</b> · xarm_api, xarm_moveit_config, xarm_planner</span><span><b>ros2_control</b> · controller_manager, Robot | Digital Twin</span><span><b>zed-ros2-wrapper</b> · ZED SDK 4.1, CUDA 12.1</span><span><b>ros2_whisper</b> · whisper.cpp, whisper_server</span><span><b>joy</b> · <span data-en="3.3 · gamepad → /joy">3.3 · Gamepad → /joy</span></span><span><b>robot_state_publisher</b> · tf2_ros, URDF</span></span>
         </div>
             <div class="st-layer" role="listitem" style="--hue: var(--accent)">
           <span class="st-k"><svg class="ico"><use href="#i-layers"/></svg><span data-en="Foundation">Basis</span></span>
@@ -1838,9 +1838,9 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: cent
         </div>
       </div>
       <ol class="sys-loop" id="sys-loop" aria-label="Kreislauf" data-en-aria="Loop">
-            <li class="st" style="--hue: var(--indigo)"><svg class="ico" aria-hidden="true"><use href="#i-cube"/></svg><b data-en="Develop">Entwickeln</b><span data-en="in the Digital Twin (WebGL, optionally Isaac Sim) in FAKE mode">im Digital Twin (WebGL, optional Isaac Sim) im FAKE-Modus</span></li>
+            <li class="st" style="--hue: var(--indigo)"><svg class="ico" aria-hidden="true"><use href="#i-cube"/></svg><b data-en="Develop">Entwickeln</b><span data-en="in the Digital Twin (WebGL, optionally Isaac Sim) in Robot | Digital Twin mode">im Digital Twin (WebGL, optional Isaac Sim) im Modus (Robot | Digital Twin)</span></li>
             <li class="arr" aria-hidden="true"><svg class="ico"><use href="#i-go"/></svg></li>
-            <li class="st" style="--hue: var(--accent)"><svg class="ico" aria-hidden="true"><use href="#i-arm"/></svg><b data-en="Test">Erproben</b><span data-en="reproducibly on the xArm Lite 6 (REAL), locally or remote">reproduzierbar am xArm Lite 6 (REAL), lokal oder remote</span></li>
+            <li class="st" style="--hue: var(--accent)"><svg class="ico" aria-hidden="true"><use href="#i-arm"/></svg><b data-en="Test">Erproben</b><span data-en="reproducibly on the xArm Lite 6 (Robot | Hardware), locally or remote">reproduzierbar am xArm Lite 6 (Robot | Hardware), lokal oder remote</span></li>
             <li class="arr" aria-hidden="true"><svg class="ico"><use href="#i-go"/></svg></li>
             <li class="st" style="--hue: var(--green)"><svg class="ico" aria-hidden="true"><use href="#i-chart"/></svg><b data-en="Validate">Validieren</b><span data-en="empirically with UX | Monitoring, blackbox and questionnaires">empirisch mit UX | Monitoring, Blackbox und Fragebögen</span></li>
           </ol>
@@ -1953,10 +1953,10 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: cent
   const FLOWS = {
     start: {
       d: ['Ein Klick statt vieler Terminals: die UX | Nexus Launcher startet den ganzen Stack in fester Reihenfolge.', 'One click instead of many terminals: the UX | Nexus Launcher starts the whole stack in a fixed order.'],
-      fail: { at: 1, de: 'REAL gesperrt: Ein FAKE-Stack läuft noch. Erst Kill Daemon oder die Karte stoppen; ein gemischter Stack startet nie.', en: 'REAL blocked: a FAKE stack is still running. Use Kill Daemon or stop the card first; a mixed stack never starts.' },
+      fail: { at: 1, de: 'Robot | Hardware gesperrt: Ein Stack (Robot | Digital Twin) läuft noch. Erst Kill Daemon oder die Karte stoppen; ein gemischter Stack startet nie.', en: 'Robot | Hardware blocked: a Robot | Digital Twin stack is still running. Use Kill Daemon or stop the card first; a mixed stack never starts.' },
       steps: [
         S('in', 0, ['UX | Nexus Launcher öffnen', 'Open the UX | Nexus Launcher'], ['App-Menü „UX | Nexus Launcher“ oder Startskript; es öffnet das Start-Popup RUN DEV SETUP.', 'App menu “UX | Nexus Launcher” or the start script; it opens the RUN DEV SETUP popup.'], [':8080', 'ros2_nexus_web_start.sh']),
-        S('app', 1, ['FAKE oder REAL wählen', 'Choose FAKE or REAL'], ['Der Umschalter im Popup wählt die Sequenz. Solange ein FAKE-Stack läuft, ist ein REAL-Start gesperrt.', 'The switch in the popup picks the sequence. While a FAKE stack runs, a REAL start is blocked.'], ['FAKE | REAL']),
+        S('app', 1, ['Robot | Digital Twin oder Robot | Hardware wählen', 'Choose Robot | Digital Twin or Robot | Hardware'], ['Der Umschalter im Popup wählt die Sequenz. Solange ein Stack (Robot | Digital Twin) läuft, ist ein Start (Robot | Hardware) gesperrt.', 'The switch in the popup picks the sequence. While a Robot | Digital Twin stack runs, a Robot | Hardware start is blocked.'], ['Robot | Digital Twin / Robot | Hardware']),
         S('app', 0, ['Module anhaken', 'Tick the modules'], ['Karten der Sequenz wählen: Vision, VR, Sprache, VLA-M … Parameter je Karte lassen sich vor dem Start ändern.', 'Pick the cards of the sequence: vision, VR, voice, VLA-M … Parameters per card can be changed before the start.'], ['launcher_config.json']),
         S('app', 0, ['EXECUTE', 'EXECUTE'], ['Das Backend startet erst die Infrastruktur, dann die übrigen Karten; jede Karte zeigt läuft / bereit / Exit-Code mit Log.', 'The backend starts the infrastructure first, then the remaining cards; each card shows running / ready / exit code with its log.'], ['~/.ros/nexus_logs']),
         S('motion', 0, ['Motion-Stack bereit', 'Motion stack ready'], ['MoveIt MoveGroup und Servo; auf echter Roboter-Hardware mit dem Treiber des xArm Lite 6.', 'MoveIt MoveGroup and Servo; on real robot hardware with the xArm Lite 6 driver.'], ['MoveIt 2', 'xarm_ros2']),
@@ -1993,10 +1993,10 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: cent
       d: ['Objekt anklicken, „Grasp“ wählen: ohne Sprachmodell, aber mit denselben Prüfungen wie der KI-Agent.', 'Click an object, choose “Grasp”: no language model, but the same checks as the AI agent.'],
       fail: { at: 2, de: 'Objekt außer Reichweite: Meldung „unreachable“, der Arm fährt nicht los.', en: 'Object out of reach: “unreachable” is reported, the arm does not start.' },
       steps: [
-        S('ai', 0, ['Objekte erkennen', 'Detect objects'], ['ZED Mini + YOLOv8 liefern 3D-Boxen; im FAKE-Modus virtuelle Objekte mit Physik.', 'ZED Mini + YOLOv8 deliver 3D boxes; in FAKE mode virtual objects with physics.'], ['/zed/bboxes_3d']),
+        S('ai', 0, ['Objekte erkennen', 'Detect objects'], ['ZED Mini + YOLOv8 liefern 3D-Boxen; im Modus (Robot | Digital Twin) virtuelle Objekte mit Physik.', 'ZED Mini + YOLOv8 deliver 3D boxes; in Robot | Digital Twin mode virtual objects with physics.'], ['/zed/bboxes_3d']),
         S('in', 0, ['Anklicken → Grasp', 'Click → Grasp'], ['Objektmenü im Digital Twin oder in VR.', 'Object menu in the Digital Twin or in VR.'], ['/vla/skill']),
         S('ai', 1, ['Planprüfung', 'Plan check'], ['Objekt vorhanden, Greifer frei, Reichweite, Platz für den Greiferkörper neben hohen Objekten.', 'Object present, gripper free, reach, room for the gripper body next to tall objects.'], ['vla_bridge']),
-        S('in', 1, ['Freigabe (REAL)', 'Approval (REAL)'], ['Im REAL-Modus fährt der Arm nur mit Bestätigung.', 'In REAL mode the arm moves only after confirmation.'], ['confirmed']),
+        S('in', 1, ['Freigabe (Robot | Hardware)', 'Approval (Robot | Hardware)'], ['Im Modus (Robot | Hardware) fährt der Arm nur mit Bestätigung.', 'In Robot | Hardware mode the arm moves only after confirmation.'], ['confirmed']),
         S('motion', 0, ['Approach from above', 'Approach from above'], ['Kollisionsfrei auf 70 mm über die Greifkugel, Yaw-Suche, dann gerade nach unten.', 'Collision-free to 70 mm above the grasp sphere, yaw search, then straight down.'], ['/ui/approach_from_above']),
         S('hw', 0, ['Ansaugen + Anheben', 'Suck + lift'], ['Saugnapf 2 mm über der Greifkugel, Greifer zu, Objekt anheben.', 'Suction cup 2 mm above the grasp sphere, gripper on, lift the object.'], ['/ui/gripper_cmd']),
         S('ai', 1, ['Greifprüfung', 'Grasp check'], ['Kommt das Objekt mit hoch? Sandbox: gehaltenes Objekt, real: die Greifkugel folgt.', 'Does the object come up? Sandbox: held object, real: the grasp sphere follows.'], ['/ui/physics_sandbox_state']),
@@ -2010,7 +2010,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: cent
         S('ai', 0, ['Modell plant', 'Model plans'], ['Lokal über Ollama (qwen3.8:27b) oder Claude: Skills + Objekt-IDs als JSON, bei Mehrdeutigkeit eine Rückfrage.', 'Locally via Ollama (qwen3.8:27b) or Claude: skills + object IDs as JSON, a follow-up question when ambiguous.'], ['pick', 'place', 'home']),
         S('ai', 1, ['Planprüfung', 'Plan check'], ['Code prüft Objekte, Greifer, Reichweite, freien Platz; Fehler gehen zurück ans Modell (höchstens 2 Runden).', 'Code checks objects, gripper, reach and free space; errors go back to the model (at most 2 rounds).'], ['vla_bridge']),
         S('app', 0, ['Plan in der UI', 'Plan in the UI'], ['Liste „Planned actions“ in der Section VLA-M mit Schrittfortschritt.', '“Planned actions” list in the VLA-M section with step progress.'], ['/vla/response']),
-        S('in', 1, ['Execute', 'Execute'], ['Jeder Plan wartet auf Bestätigung; REAL nur mit allow_real_motion.', 'Every plan waits for confirmation; REAL only with allow_real_motion.'], ['/vla/execute']),
+        S('in', 1, ['Execute', 'Execute'], ['Jeder Plan wartet auf Bestätigung; Robot | Hardware nur mit allow_real_motion.', 'Every plan waits for confirmation; Robot | Hardware only with allow_real_motion.'], ['/vla/execute']),
         S('motion', 0, ['Schritt für Schritt', 'Step by step'], ['Jede Fahrt über den Motion Handler: IK, Kollisionsprüfung (MoveIt), Bodenschutz, E-STOP.', 'Every move through the motion handler: IK, MoveIt collision check, floor guard, E-STOP.'], ['/ui/moveit_motion_state']),
         S('ai', 1, ['Prüfen + Rettungsplan', 'Check + recovery'], ['Schlägt ein Schritt fehl (unreachable, collision, slipped), plant der Agent mit der neuen Szene neu.', 'If a step fails (unreachable, collision, slipped), the agent replans with the new scene.'], ['replan']),
       ],
@@ -2023,7 +2023,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: cent
         S('in', 0, ['Request control', 'Request control'], ['Anfrage per Knopf oder beim ersten Bewegungsversuch.', 'Request by button or on the first motion attempt.'], ['/remote/control_request']),
         S('app', 1, ['Allow / Deny am Server', 'Allow / Deny on the server'], ['Popup in der UX | Control Interface am Roboter-PC; unbeantwortete Anfragen verfallen nach 60 s.', 'Popup in the UX | Control Interface on the robot PC; unanswered requests expire after 60 s.']),
         S('bridge', 0, ['Ein Besitzer', 'One owner'], ['Genau ein Client steuert, alle anderen sehen zu; der E-STOP geht immer.', 'Exactly one client controls, all others watch; the E-STOP always works.']),
-        S('bridge', 1, ['Heartbeat', 'Heartbeat'], ['Tab zu oder WLAN weg: Remote-Gamepad stoppt nach 1,0 s (FAKE) bzw. 0,4 s (REAL).', 'Tab closed or Wi-Fi lost: the remote gamepad stops after 1.0 s (FAKE) or 0.4 s (REAL).']),
+        S('bridge', 1, ['Heartbeat', 'Heartbeat'], ['Tab zu oder WLAN weg: Remote-Gamepad stoppt nach 1,0 s (Robot | Digital Twin) bzw. 0,4 s (Robot | Hardware).', 'Tab closed or Wi-Fi lost: the remote gamepad stops after 1.0 s (Robot | Digital Twin) or 0.4 s (Robot | Hardware).']),
         S('motion', 0, ['Befehle über den Watchdog', 'Commands via the watchdog'], ['Joy, Twist und Gelenk-Jogging gehen nur für den Besitzer weiter an Servo; dann dieselbe Kette wie lokal.', 'Joy, twist and joint jogging pass on to Servo only for the owner; then the same chain as locally.'], ['/remote/twist', '/joy']),
       ],
     },
@@ -2202,7 +2202,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: cent
       cap: ['<b>KI-Assistenz:</b> Aus „Stapel den blauen Würfel auf den Zylinder …“ werden vier Planned Actions; der Plan wartet auf Execute.', '<b>AI assistant:</b> “Stack the blue cube on the cylinder …” becomes four planned actions; the plan waits for Execute.'] },
     { tag: ['Digital Twin · MoveIt', 'Digital Twin · MoveIt'], mode: 'FAKE', ico: 'i-cube',
       alt: ['Digital Twin der UX | Control Interface: MoveIt-Karte mit Planung und Wegpunkten, Kollisionsobjekte auf dem Tisch, E-STOP-Knopf', 'Digital Twin of the UX | Control Interface: MoveIt card with planning and waypoints, collision objects on the table, E-STOP button'],
-      cap: ['<b>Digital Twin:</b> MoveIt plant die Bahn um Tisch und Objekte, hier im FAKE-Modus mit 26 Wegpunkten in 2,5 s; der echte Arm steht still.', '<b>Digital Twin:</b> MoveIt plans the path around table and objects, here in FAKE mode with 26 waypoints in 2.5 s; the real arm stays still.'] },
+      cap: ['<b>Digital Twin:</b> MoveIt plant die Bahn um Tisch und Objekte, hier im Modus (Robot | Digital Twin) mit 26 Wegpunkten in 2,5 s; der echte Arm steht still.', '<b>Digital Twin:</b> MoveIt plans the path around table and objects, here in Robot | Digital Twin mode with 26 waypoints in 2.5 s; the real arm stays still.'] },
     { tag: ['xArm Lite 6', 'xArm Lite 6'], mode: 'REAL', ico: 'i-arm',
       alt: ['xArm Lite 6 über dem Arbeitstisch mit ArUco-Markern und farbigen Greifobjekten', 'xArm Lite 6 above the work table with ArUco markers and coloured objects to grasp'],
       cap: ['<b>Roboter:</b> Erst nach der Bestätigung fährt der xArm Lite 6 die geprüfte Bahn; der E-STOP bleibt in jedem Steuerweg erreichbar.', '<b>Robot:</b> only after confirmation does the xArm Lite 6 run the checked path; the E-STOP stays within reach in every control mode.'] },
@@ -2986,7 +2986,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: cent
   };
 
   // ── Pins auf der UX | Control Interface ──
-  const PINS = [[78, 2.6, ['Sicherheitszone', 'Safety zone'], ['Modus FAKE/REAL, Zustand (BUSY bei laufender Fahrt), Tempo, Control-Lock und E-STOP. Immer sichtbar, immer oben rechts.', 'Mode FAKE/REAL, state (BUSY while a motion runs), speed, control lock and E-STOP. Always visible, always top right.']],
+  const PINS = [[78, 2.6, ['Sicherheitszone', 'Safety zone'], ['Modus Robot | Digital Twin / Robot | Hardware, Zustand (BUSY bei laufender Fahrt), Tempo, Control-Lock und E-STOP. Immer sichtbar, immer oben rechts.', 'Mode Robot | Digital Twin / Robot | Hardware, state (BUSY while a motion runs), speed, control lock and E-STOP. Always visible, always top right.']],
     [2.1, 26, ['Bereichsleiste', 'Area bar'], ['Gruppen Operate, World, Scene, Help, System: Move, Teach, Assistent (VLA), Vision, Szenen wie Auto-Palettieren.', 'Groups Operate, World, Scene, Help, System: Move, Teach, Assistant (VLA), Vision, scenes such as auto palletizing.']],
     [32.1, 10, ['Zielposen', 'Target poses'], ['Home, Align TCP, Scan Pose: häufige Ziele mit einem Klick in der Viewport-Leiste.', 'Home, Align TCP, Scan pose: frequent targets with one click in the viewport bar.']],
     [44, 62, ['Digital Twin', 'Digital Twin'], ['Live-3D des Arms mit Objekten und Schutzzonen. Zielpose direkt im Modell ziehen.', 'Live 3D of the arm with objects and safety zones. Drag the target pose right in the model.']],
@@ -3012,9 +3012,9 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: cent
   // ── Modular: Schichten → Pakete ──
   const LAYERS = [
     ['i-pad', 'accent', ['Eingabe', 'Input'], [['vr_quest3_teleop', ['VR-Teleoperation über WebXR', 'VR teleoperation via WebXR']], ['gaze_*_tobii_glasses', ['Blicksteuerung mit Tobii-Brille', 'Gaze control with Tobii glasses']], ['voice_command_listener', ['Sprachbefehle aus Whisper', 'Voice commands from Whisper']]]],
-    ['i-mon', 'teal', ['Web-Apps', 'Web apps'], [['UX | Nexus Launcher :8080', ['System starten, FAKE/REAL wählen', 'Start the system, choose FAKE/REAL']], ['UX | Control Interface :8081', ['Steuern, Digital Twin, VLA-M-Chat', 'Control, Digital Twin, VLA-M chat']], ['UX | Monitoring :8083', ['System, Nutzung, Evaluierung', 'System, usage, evaluation']], ['UX | Compact Interface /touch', ['Bedienung direkt am Roboter', 'Operation right at the robot']]]],
+    ['i-mon', 'teal', ['Web-Apps', 'Web apps'], [['UX | Nexus Launcher :8080', ['System starten, Robot | Digital Twin / Robot | Hardware wählen', 'Start the system, choose Robot | Digital Twin / Robot | Hardware']], ['UX | Control Interface :8081', ['Steuern, Digital Twin, VLA-M-Chat', 'Control, Digital Twin, VLA-M chat']], ['UX | Monitoring :8083', ['System, Nutzung, Evaluierung', 'System, usage, evaluation']], ['UX | Compact Interface /touch', ['Bedienung direkt am Roboter', 'Operation right at the robot']]]],
     ['i-shield', 'gold', ['Sicherheit', 'Safety'], [['remote_control_watchdog', ['Control-Lock und Heartbeats: nur einer steuert', 'Control lock and heartbeats: only one in control']], ['teleop_pre_collision_checker', ['Kollisionsvorprüfung, 0,25 s voraus', 'Pre-collision check, 0.25 s ahead']], ['robot_blackbox_recorder', ['Sichert die letzten 60 s vor einem Vorfall', 'Saves the last 60 s before an incident']]]],
-    ['i-arm', 'indigo', ['Bewegung', 'Motion'], [['robot_motion_handler_movegroup', ['MoveIt MoveGroup + Servo: IK, Bahn, Kollision', 'MoveIt MoveGroup + Servo: IK, path, collision']], ['xarm_ros2', ['Treiber des xArm Lite 6, FAKE und REAL', 'xArm Lite 6 driver, FAKE and REAL']]]],
+    ['i-arm', 'indigo', ['Bewegung', 'Motion'], [['robot_motion_handler_movegroup', ['MoveIt MoveGroup + Servo: IK, Bahn, Kollision', 'MoveIt MoveGroup + Servo: IK, path, collision']], ['xarm_ros2', ['Treiber des xArm Lite 6, Robot | Digital Twin und Robot | Hardware', 'xArm Lite 6 driver, Robot | Digital Twin and Robot | Hardware']]]],
     ['i-eye', 'green', ['Wahrnehmung', 'Perception'], [['robot_vision_cameras_bringup', ['ZED-Kamera, YOLO, Octomap', 'ZED camera, YOLO, Octomap']], ['ros2_whisper', ['Spracherkennung auf der GPU', 'Speech recognition on the GPU']]]],
     ['i-brain', 'violet', ['KI', 'AI'], [['vla_bridge', ['KI-Agent: Plan, Prüfung, Skills, Rettungsplan, Auto-Palettieren', 'AI agent: plan, verification, skills, recovery, auto palletizing']], ['demo_recorder', ['Vorführungen aufnehmen fürs VLA-Training', 'Record demonstrations for VLA training']]]],
     ['i-chart', 'gold', ['Evaluierung', 'Evaluation'], [['http_monitoring_dashboard_p8083', ['Messwerte, Usability-Tests, Fragebögen (SQLite)', 'Metrics, usability tests, questionnaires (SQLite)']]]]];
@@ -3242,7 +3242,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: cent
         ['wd', '/joy', ['Besitz, Heartbeat und Tempo-Limit geprüft', 'Ownership, heartbeat and speed limit checked']],
         ['pc', '/joy_check', ['Schaut 0,25 s voraus, bremst vor dem Tisch', 'Looks 0.25 s ahead, brakes before the table']],
         ['servo', '/servo_server/delta_twist_cmds', ['Rechnet Gelenkgeschwindigkeiten in Echtzeit', 'Computes joint velocities in real time']],
-        ['drv', 'ros2_control', ['FAKE simuliert, REAL fährt die Motoren', 'FAKE simulates, REAL drives the motors']],
+        ['drv', 'ros2_control', ['Robot | Digital Twin simuliert, Robot | Hardware fährt die Motoren', 'Robot | Digital Twin simulates, Robot | Hardware drives the motors']],
         ['arm', '', ['Der Arm folgt der Hand', 'The arm follows the hand']]] },
     { id: 'vr', ic: 'i-vr', c: 'accent', n: ['VR-Brille', 'VR headset'],
       d: ['Die Quest 3 führt den Arm mit Kopf und Händen. Das Twist-Gate lässt nur den Besitzer der Steuerung durch.', 'The Quest 3 guides the arm with head and hands. The twist gate only passes the owner of control.'],
@@ -3251,7 +3251,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: cent
         ['vrt', '/remote/twist', ['Handbewegung wird TCP-Geschwindigkeit', 'Hand motion becomes TCP velocity']],
         ['wd', 'Twist-Gate', ['Nur der Besitzer der Steuerung, Heartbeat ≤ 1 s', 'Owner of control only, heartbeat ≤ 1 s']],
         ['servo', '/servo_server/delta_twist_cmds', ['Rechnet Gelenkgeschwindigkeiten in Echtzeit', 'Computes joint velocities in real time']],
-        ['drv', 'ros2_control', ['FAKE simuliert, REAL fährt die Motoren', 'FAKE simulates, REAL drives the motors']],
+        ['drv', 'ros2_control', ['Robot | Digital Twin simuliert, Robot | Hardware fährt die Motoren', 'Robot | Digital Twin simulates, Robot | Hardware drives the motors']],
         ['arm', '', ['Der Arm folgt dem Controller', 'The arm follows the controller']]] },
     { id: 'ki', ic: 'i-spark', c: 'violet', n: ['KI-Auftrag', 'AI task'],
       d: ['Ein Satz wird zum Plan. Der Plan geht zurück zum Menschen und fährt erst nach Execute.', 'One sentence becomes a plan. The plan returns to the human and only runs after Execute.'],
@@ -3263,7 +3263,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: cent
         ['rb', '/vla/execute', ['Freigabe mit Plan-id', 'Approval with plan id']],
         ['vla', '/ui/approach_from_above', ['Führt Skill für Skill aus', 'Runs skill by skill']],
         ['mg', 'MoveGroup', ['Plant kollisionsfrei, meldet succeeded', 'Plans collision-free, reports succeeded']],
-        ['drv', 'ros2_control', ['FAKE simuliert, REAL fährt die Motoren', 'FAKE simulates, REAL drives the motors']],
+        ['drv', 'ros2_control', ['Robot | Digital Twin simuliert, Robot | Hardware fährt die Motoren', 'Robot | Digital Twin simulates, Robot | Hardware drives the motors']],
         ['arm', '', ['Greifen, ablegen, prüfen', 'Grasp, place, verify']]] },
     { id: 'cam', ic: 'i-cam', c: 'green', n: ['Kamera', 'Camera'],
       d: ['Erkannte Objekte werden Hindernisse für die Planung und Ziele für den Agenten.', 'Detected objects become obstacles for planning and targets for the agent.'],

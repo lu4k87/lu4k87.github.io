@@ -4,35 +4,35 @@
 
 [🏠 Overview](../readme-en.html) · [🇩🇪 Deutsch](../de/teleoperation.html) · Chapter 3.1, 3.2, 5
 
-**Contents:** [3.1 Operating Modes: FAKE vs. REAL (Hardware Interfaces)](#31-operating-modes-fake-vs-real-hardware-interfaces) · [3.2 Feature: Gamepad Teleoperation & Hard Collision Protection](#32-feature-gamepad-teleoperation--hard-collision-protection) · [5. 🎮 Gamepad Control — Deep Dive](#5--gamepad-control--deep-dive)
+**Contents:** [3.1 Operating Modes: Robot | Digital Twin vs. Robot | Hardware (Hardware Interfaces)](#31-operating-modes-fake-vs-real-hardware-interfaces) · [3.2 Feature: Gamepad Teleoperation & Hard Collision Protection](#32-feature-gamepad-teleoperation--hard-collision-protection) · [5. 🎮 Gamepad Control — Deep Dive](#5--gamepad-control--deep-dive)
 
 ---
 
-## 3.1 Operating Modes: FAKE vs. REAL (Hardware Interfaces)
+## 3.1 Operating Modes: Robot | Digital Twin vs. Robot | Hardware (Hardware Interfaces)
 The platform strictly distinguishes between two operating modes for the robot arm. This distinction refers **exclusively to the `ros2_control` hardware interface** and is independent of sensors (like the camera or YOLO, which can run live in both modes):
 
-![Modus FAKE](https://img.shields.io/badge/Modus-FAKE_(Simulation)-blue?style=for-the-badge)<br>
+![Modus Robot | Digital Twin](https://img.shields.io/badge/Modus-FAKE_(Simulation)-blue?style=for-the-badge)<br>
 The robot runs via the `mock_components/GenericSystem` (or FakeSystem) hardware interface within `ros2_control`. There is no physical controller connection. Commands to the `/lite6_traj_controller` or `/servo_server` are purely virtually rendered in RViz2 by mirroring the joint states. Proprietary UFactory API calls (like Mode/State switches) intentionally lead nowhere in this mode or are bypassed in software.
 
-![Modus REAL](https://img.shields.io/badge/Modus-REAL_(Hardware)-red?style=for-the-badge)<br>
+![Modus Robot | Hardware](https://img.shields.io/badge/Modus-REAL_(Hardware)-red?style=for-the-badge)<br>
 The `ros2_control` framework integrates the real `xarm_api` hardware interface, which communicates directly via TCP/IP with the physical controller of the xArm Lite 6. In this mode, hardware limits, physical safety stops, and the exclusive switching of proprietary xArm hardware modes (e.g., Mode 0 for pose control vs. Mode 1 for Servo/jogging) take effect via the UFactory API.
 
 > [!NOTE]
-> **Virtual Linear Axis (Simulation Only):** In FAKE mode, it is possible to mount the robot on a virtual linear axis without affecting the MoveIt planning group (`lite6`).
-> - **Activation:** With `attach_to:=linear_axis_link` the FAKE launch (`lite6_moveit_servo_fake.launch.py`) starts the `fake_linear_axis` node by itself. **RUN DEV SETUP (FAKE)** passes this argument; when starting manually, append it to the launch command.
+> **Virtual Linear Axis (Simulation Only):** In Robot | Digital Twin mode, it is possible to mount the robot on a virtual linear axis without affecting the MoveIt planning group (`lite6`).
+> - **Activation:** With `attach_to:=linear_axis_link` the Robot | Digital Twin launch (`lite6_moveit_servo_fake.launch.py`) starts the `fake_linear_axis` node by itself. **RUN DEV SETUP (Robot | Digital Twin)** passes this argument; when starting manually, append it to the launch command.
 > - **Control:** The GUI slider in the Web UI (Port 8081) or gamepad D-Pad (Left/Right) controls the horizontal translation by publishing `/linear_axis_cmd`. The headless node `fake_linear_axis` (`ros2 run fake_linear_axis fake_linear_axis`) translates this into the dynamic TF and visual rail markers.
 > - **MoveIt Architecture:** The axis is shifted purely via dynamic TF (`world` -> `linear_axis_link`), completely decoupled from the URDF joints. This ensures MoveIt automatically recognizes the new base pose for planning/collision detection without needing a 7-DoF IK solver.
 > - **URDF Modification:** To prevent parsing errors with dynamic `attach_to` arguments, `xarm_description/urdf/xarm_device_macro.xacro` was modified. The `create_attach_link` condition now generates a root link for *any* custom `attach_to` string, rather than being hardcoded to only `"world"`.
 
 <br>
 
-### 3.1.1 📊 Simulation (FAKE) vs. Real Hardware (REAL) Matrix
+### 3.1.1 📊 Simulation (Robot | Digital Twin) vs. Real Hardware (Robot | Hardware) Matrix
 The table below illustrates which project modules can be evaluated in pure software simulation on a standard PC versus which features require physical hardware devices:
 
 <details>
-<summary><b>🔽 Show table</b> · 16 subsystems · FAKE vs. REAL · required hardware</summary>
+<summary><b>🔽 Show table</b> · 16 subsystems · Robot | Digital Twin vs. Robot | Hardware · required hardware</summary>
 
-| Feature / Subsystem | Pure Simulation (FAKE) | Real Hardware (REAL) | Required Hardware / Peripheral |
+| Feature / Subsystem | Pure Simulation (Robot | Digital Twin) | Real Hardware (Robot | Hardware) | Required Hardware / Peripheral |
 |---|:---:|:---:|---|
 | **UX \| Control Interface (Port 8081)** | ✅ Functional (RViz Mirror) | ✅ Functional (Hardware Motion) | Host PC & Web Browser |
 | **Physics Sandbox (virtual grasping)** | ✅ Functional | ➖ Simulation Only | Host PC |
@@ -312,7 +312,7 @@ The gamepad signal is processed in two sequential stages before reaching the Mov
 
 **File:** `src/teleop_pre_collision_checker/teleop_pre_collision_checker/teleop_pre_collision_checker.py`
 
-This node acts as a transparent **safety proxy** between the raw joystick driver and the motion controller. It is **100% hardware-agnostic** (works identically in REAL and FAKE modes). It continuously subscribes to the live Z height from `/ui/eef_position` and predictively checks with every incoming `/joy` message whether the robot approaches the table. If a limit is breached, the signal is blocked. It also actively provides **haptic feedback** (gamepad vibration) whenever the robot approaches the table or encounters a dynamic YOLO bounding box obstacle via MoveIt Servo.
+This node acts as a transparent **safety proxy** between the raw joystick driver and the motion controller. It is **100% hardware-agnostic** (works identically in Robot | Hardware and Robot | Digital Twin modes). It continuously subscribes to the live Z height from `/ui/eef_position` and predictively checks with every incoming `/joy` message whether the robot approaches the table. If a limit is breached, the signal is blocked. It also actively provides **haptic feedback** (gamepad vibration) whenever the robot approaches the table or encounters a dynamic YOLO bounding box obstacle via MoveIt Servo.
 
 
 #### 5.2.1 Predictive Collision Algorithm

@@ -45,7 +45,7 @@ Eine Forschungs- und Evaluationsplattform für die **multimodale Teleoperation**
 | 🥽 | **VR (Meta Quest 3)** – 6-DoF-Teleoperation per WebXR, UX \| Control Interface in der Brille, VR-Spiegel am PC | [VR-Teleoperation](de/vr_quest3.html) |
 | 👁️ | **3D-Vision & Greifen** – ZED Mini + YOLOv8-3D-Boxen, MoveIt-Kollisionsobjekte, OctoMap, kollisionsfreier 3-Phasen-Griff, virtuelle Objekte für Tests ohne Kamera | [Vision & Greifen](de/vision_grasping.html) |
 | 🗣️ | **Sprache & Blick** – Whisper-Sprachbefehle (DE/EN), Tobii-Pro-Glasses-3-Blick-UI und Greifen per Verweildauer | [Sprache & Blick](de/voice_gaze.html) |
-| 🧊 | **Digital Twin** – live mitlaufendes 3D-Modell von Arm und Arbeitszelle im Browser (three.js + URDF, `/joint_states`); im Digital Twin planen mit TCP-Gizmo und Ghost-Vorschau, dann bestätigen; erkannte und virtuelle Objekte, Schutzzonen, Szenen; Neues gefahrlos im FAKE-Modus mit Physik-Sandbox testen; derselbe Digital Twin in VR und in bis zu 4 virtuellen Kameras; Isaac Sim als optionaler Schatten-Digital-Twin | [Konzept: Digital Twin](de/concept.html#-digital-twin-erst-virtuell-dann-real) · [UX \| Control Interface](de/robot_control_ui.html) |
+| 🧊 | **Digital Twin** – live mitlaufendes 3D-Modell von Arm und Arbeitszelle im Browser (three.js + URDF, `/joint_states`); im Digital Twin planen mit TCP-Gizmo und Ghost-Vorschau, dann bestätigen; erkannte und virtuelle Objekte, Schutzzonen, Szenen; Neues gefahrlos im Modus (Robot | Digital Twin) mit Physik-Sandbox testen; derselbe Digital Twin in VR und in bis zu 4 virtuellen Kameras; Isaac Sim als optionaler Schatten-Digital-Twin | [Konzept: Digital Twin](de/concept.html#-digital-twin-erst-virtuell-dann-real) · [UX \| Control Interface](de/robot_control_ui.html) |
 | 🖥️ | **UX \| Control Interface** (Port 8081) – WebGL-Digital-Twin, Jogging, MoveIt-Planung mit Ghost-Vorschau und TCP-Gizmo, Physik-Sandbox (Roboter-Simulation), Bewegungsabfolgen, andockbares HUD, Bereichsleiste je Arbeitsschritt (Move, Teach, Vision, Assistant (VLA), Remote Teleop) mit Schritt-für-Schritt-Guides und Settings, Kamerakacheln und virtuelle Kameras (eigene Blickwinkel auf den Digital Twin) im Viewport, Befehlspalette (Strg+K), Diagnostics (Log) als Schublade; alle vier Web-UIs auf Deutsch oder Englisch (Wechsel live unten in der Theme-Liste, Alt+T) | [UX \| Control Interface](de/robot_control_ui.html) |
 | 🚀 | **UX \| Nexus Launcher** (Port 8080) – Ein-Klick-Launcher mit Setups für Roboter-Simulation und echte Roboter-Hardware, Launch-Baum- und Config-Einsicht, Vorabprüfung vor EXECUTE, Bereitschafts-Checks je Schritt, Log je Start, Neustart eines Laufs, Config-Sicherungen, Setup-Info-Karte (Netzwerk, IPs, Ports, PDF-Export), UX \| Compact Interface für ein Zusatz-Touch-Display | [System starten](de/running.html) |
 | 🤖 | **VLA-M-Chat – Agentic ROS** *(in Arbeit)* – Anweisung in Alltagssprache → KI-Agent (lokal Ollama oder Claude) plant Pick & Place mit der Szene → Ausführung, Greifprüfung, Neuplanung; Diktat per Mikrofon, Ein-Klick *Grasp* / *Place here* im Objektmenü, Auto-Palettieren (Skill `palletize`), *Record demo* fürs Training; geplant LeRobot (SmolVLA / π0.5) | [VLA-M](de/vla.html) |
@@ -62,7 +62,7 @@ Eine Forschungs- und Evaluationsplattform für die **multimodale Teleoperation**
   <img src="img/monitoring_dashboard.png" width="32%" alt="UX | Monitoring – Übersicht">
 </p>
 
-*Oben: **UX | Control Interface** (früher „Robot Control UI“) (Bereich Move: Header mit E-STOP, Bereichs-Leiste, Digital-Twin-Viewport, kartesisches Jogging) und **UX | Nexus Launcher** (Start-Popup RUN DEV SETUP, FAKE). Unten: **VLA-M** mit einem Plan aus vier Schritten, der auf *Execute* wartet, **UX | Compact Interface** (früher „Touch Panel“) (Ansicht Move) und **UX | Monitoring** (früher „Monitoring Dashboard“) (Übersicht). Alles im FAKE-Modus – weitere Screenshots direkt bei jeder Funktion in `docs/de/`.*
+*Oben: **UX | Control Interface** (früher „Robot Control UI“) (Bereich Move: Header mit E-STOP, Bereichs-Leiste, Digital-Twin-Viewport, kartesisches Jogging) und **UX | Nexus Launcher** (Start-Popup RUN DEV SETUP, Robot | Digital Twin). Unten: **VLA-M** mit einem Plan aus vier Schritten, der auf *Execute* wartet, **UX | Compact Interface** (früher „Touch Panel“) (Ansicht Move) und **UX | Monitoring** (früher „Monitoring Dashboard“) (Übersicht). Alles im Modus (Robot | Digital Twin) – weitere Screenshots direkt bei jeder Funktion in `docs/de/`.*
 
 ## 🧱 Gebaut auf
 
@@ -91,7 +91,7 @@ source install/setup.bash
 ./ros2_nexus/ros2_nexus_web_start.sh     # UX | Nexus Launcher auf http://localhost:8080
 ```
 
-Im Popup **RUN DEV SETUP** den Modus **FAKE** wählen und **EXECUTE** drücken: simulierter Arm, MoveIt Servo + MoveGroup, RViz2 und die UX | Control Interface (`http://localhost:8081`) starten gemeinsam. Schritt für Schritt: [1.1 Schnellstart](de/running.html#11--5-minuten-quickstart-reine-simulation).
+Im Popup **RUN DEV SETUP** den Modus **Robot | Digital Twin** wählen und **EXECUTE** drücken: simulierter Arm, MoveIt Servo + MoveGroup, RViz2 und die UX | Control Interface (`http://localhost:8081`) starten gemeinsam. Schritt für Schritt: [1.1 Schnellstart](de/running.html#11--5-minuten-quickstart-reine-simulation).
 
 | UI / Dienst | Port | UI / Dienst | Port |
 |---|---|---|---|
@@ -108,7 +108,7 @@ Alle Ports: [7.4 Netzwerk & Ports](de/running.html#74-netzwerk---port-architektu
 | [🔬 Konzept & Architektur](de/concept.html) | 1, 2, 4 | Motivation, Shared Control, Leitprinzipien, Interaktionskonzepte |
 | [📦 Installation](de/installation.html) | 6 | Voraussetzungen, Hardware-Stückliste, Tobii- und ZED-Setup, Build |
 | [🚀 System starten & betreiben](de/running.html) | 1.1, 7 | Schnellstart, UX \| Nexus Launcher, Ports, Remote Control, DDS-Tuning, FAQ |
-| [🎮 Modi & Gamepad](de/teleoperation.html) | 3.1, 3.2, 5 | FAKE vs. REAL, Kollisionsschutz, Gamepad-Pipeline im Detail |
+| [🎮 Modi & Gamepad](de/teleoperation.html) | 3.1, 3.2, 5 | Robot | Digital Twin vs. Robot | Hardware, Kollisionsschutz, Gamepad-Pipeline im Detail |
 | [👁️ Vision & Greifen](de/vision_grasping.html) | 3.3 | ZED / IP-Kamera, YOLO 3D, MoveIt-Kollision, Greif-Executoren |
 | [🗣️ Sprache & Blick](de/voice_gaze.html) | 3.4 | Whisper-Pipeline, Sprach-Intents, Tobii-Blick-UI und Greifroutine |
 | [🥽 VR Quest 3](de/vr_quest3.html) | 3.5 | WebXR-Teleoperation, VR-HUD, Einrichtung und Fehlersuche |

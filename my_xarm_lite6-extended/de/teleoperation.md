@@ -4,35 +4,35 @@
 
 [🏠 Übersicht](../readme-de.html) · [🇬🇧 English](../en/teleoperation.html) · Kapitel 3.1, 3.2, 5
 
-**Inhalt:** [3.1 Betriebsmodi: FAKE vs. REAL (Hardware Interfaces)](#31-betriebsmodi-fake-vs-real-hardware-interfaces) · [3.2 Funktion: Gamepad Teleoperation & Harter Kollisionsschutz](#32-funktion-gamepad-teleoperation--harter-kollisionsschutz) · [5. 🎮 Gamepad-Steuerung — Technische Tiefenanalyse](#5--gamepad-steuerung--technische-tiefenanalyse)
+**Inhalt:** [3.1 Betriebsmodi: Robot | Digital Twin vs. Robot | Hardware (Hardware Interfaces)](#31-betriebsmodi-fake-vs-real-hardware-interfaces) · [3.2 Funktion: Gamepad Teleoperation & Harter Kollisionsschutz](#32-funktion-gamepad-teleoperation--harter-kollisionsschutz) · [5. 🎮 Gamepad-Steuerung — Technische Tiefenanalyse](#5--gamepad-steuerung--technische-tiefenanalyse)
 
 ---
 
-## 3.1 Betriebsmodi: FAKE vs. REAL (Hardware Interfaces)
+## 3.1 Betriebsmodi: Robot | Digital Twin vs. Robot | Hardware (Hardware Interfaces)
 Die Plattform unterscheidet strikt zwischen zwei Betriebsmodi für den Roboterarm. Diese Unterscheidung bezieht sich **ausschließlich auf das `ros2_control` Hardware Interface** und ist unabhängig von der Sensorik (wie Kamera oder YOLO, welche in beiden Modi live laufen können):
 
-![Modus FAKE](https://img.shields.io/badge/Modus-FAKE_(Simulation)-blue?style=for-the-badge)<br>
+![Modus Robot | Digital Twin](https://img.shields.io/badge/Modus-FAKE_(Simulation)-blue?style=for-the-badge)<br>
 Der Roboter läuft über das `mock_components/GenericSystem` (bzw. FakeSystem) Hardware Interface innerhalb von `ros2_control`. Es gibt keine physische Controller-Verbindung. Befehle an den `/lite6_traj_controller` oder `/servo_server` werden rein virtuell in RViz2 gerendert, indem die Joint States gespiegelt werden. Proprietäre UFactory API-Calls (wie Mode/State-Switches) laufen in diesem Modus absichtlich ins Leere oder werden softwareseitig ge-bypassed.
 
-![Modus REAL](https://img.shields.io/badge/Modus-REAL_(Hardware)-red?style=for-the-badge)<br>
+![Modus Robot | Hardware](https://img.shields.io/badge/Modus-REAL_(Hardware)-red?style=for-the-badge)<br>
 Das `ros2_control` Framework bindet das echte `xarm_api` Hardware Interface ein, welches via TCP/IP direkt mit dem physischen Controller des xArm Lite 6 kommuniziert. In diesem Modus greifen Hardware-Limits, physische Sicherheits-Stopps und die exklusive Umschaltung der proprietären xArm Hardware-Modi (z. B. Mode 0 für Pose-Steuerung vs. Mode 1 für Servo/Jogging) über die UFactory API.
 
 > [!NOTE]
-> **Virtuelle Linearachse (Nur Simulation):** Im FAKE-Modus kann der Roboter auf einer simulierten Linearachse bewegt werden, ohne die MoveIt-Planungsgruppe (`lite6`) zu beeinflussen.
-> - **Aktivierung:** Mit `attach_to:=linear_axis_link` startet der FAKE-Launch (`lite6_moveit_servo_fake.launch.py`) den Node `fake_linear_axis` selbst. **RUN DEV SETUP (FAKE)** übergibt dieses Argument; bei manuellem Start muss es an den Launch-Befehl angehängt werden.
+> **Virtuelle Linearachse (Nur Simulation):** Im Modus (Robot | Digital Twin) kann der Roboter auf einer simulierten Linearachse bewegt werden, ohne die MoveIt-Planungsgruppe (`lite6`) zu beeinflussen.
+> - **Aktivierung:** Mit `attach_to:=linear_axis_link` startet der Launch (Robot | Digital Twin, `lite6_moveit_servo_fake.launch.py`) den Node `fake_linear_axis` selbst. **RUN DEV SETUP (Robot | Digital Twin)** übergibt dieses Argument; bei manuellem Start muss es an den Launch-Befehl angehängt werden.
 > - **Steuerung:** Der GUI-Schieberegler im Web UI (Port 8081) oder das Gamepad-D-Pad (Links/Rechts) steuert die horizontale Verschiebung durch Publizieren auf `/linear_axis_cmd`. Der Headless-Node `fake_linear_axis` (`ros2 run fake_linear_axis fake_linear_axis`) wandelt dies in dynamisches TF und visuelle Schienen-Marker um.
 > - **MoveIt-Architektur:** Die Achse wird rein über dynamisches TF (`world` -> `linear_axis_link`) verschoben und nicht als URDF-Joint in die Kinematik aufgenommen. Dadurch weiß MoveIt (dank TF) automatisch, wo der Roboter steht, ohne dass ein 7-DoF IK-Solver benötigt wird.
 > - **URDF Modifikation:** Um Fehler beim Parsen von dynamischen `attach_to`-Argumenten zu vermeiden, wurde `xarm_description/urdf/xarm_device_macro.xacro` angepasst. Die Bedingung für `create_attach_link` generiert nun einen Root-Link für *jeden* übergebenen String und nicht mehr exklusiv nur für `"world"`.
 
 <br>
 
-### 3.1.1 📊 Simulation (FAKE) vs. Real-Hardware (REAL) Matrix
+### 3.1.1 📊 Simulation (Robot | Digital Twin) vs. Real-Hardware (Robot | Hardware) Matrix
 Die folgende Übersicht zeigt auf einen Blick, welche Projektmodule in reiner Software-Simulation auf einem Standard-PC evaluiert werden können und welche Funktionen physische Hardware-Geräte voraussetzen:
 
 <details>
-<summary><b>🔽 Tabelle anzeigen</b> · 16 Subsysteme · FAKE vs. REAL · benötigte Hardware</summary>
+<summary><b>🔽 Tabelle anzeigen</b> · 16 Subsysteme · Robot | Digital Twin vs. Robot | Hardware · benötigte Hardware</summary>
 
-| Feature / Subsystem | Reine Simulation (FAKE) | Echte Hardware (REAL) | Benötigte Hardware / Peripherie |
+| Feature / Subsystem | Reine Simulation (Robot | Digital Twin) | Echte Hardware (Robot | Hardware) | Benötigte Hardware / Peripherie |
 |---|:---:|:---:|---|
 | **UX \| Control Interface (Port 8081)** | ✅ Funktionsfähig (RViz-Spiegelung) | ✅ Funktionsfähig (Hardware-Bewegung) | Host-PC & Webbrowser |
 | **Physik-Sandbox (virtuelles Greifen)** | ✅ Funktionsfähig | ➖ Nur Simulation | Host-PC |
@@ -75,10 +75,10 @@ Die folgende Übersicht zeigt auf einen Blick, welche Projektmodule in reiner So
 > [!NOTE]
 > 💻 **Run Command:**
 > ```bash
-> # Echte Hardware (REAL) MoveIt Servo (mit Vakuumgreifer & 3D-Szenenobjekten):
+> # Echte Hardware (Robot | Hardware) MoveIt Servo (mit Vakuumgreifer & 3D-Szenenobjekten):
 > ros2 launch xarm_moveit_servo lite6_moveit_servo_realmove.launch.py robot_ip:=192.168.1.xxx add_vacuum_gripper:=true report_type:=dev static_objects:=true
 >
-> # Simulation (FAKE) (mit virtueller Linearachse & 3D-Szenenobjekten):
+> # Simulation (Robot | Digital Twin, mit virtueller Linearachse & 3D-Szenenobjekten):
 > ros2 launch xarm_moveit_servo lite6_moveit_servo_fake.launch.py add_vacuum_gripper:=true attach_to:=linear_axis_link static_objects:=true
 > ```
 > *`rviz:=false` startet MoveIt Servo ohne RViz-Fenster (Standard `true`; in der UX | Nexus Launcher (früher „Nexus Webapp“) als Checkbox `rviz:=true` in der Servo-Action-Card).*
@@ -314,7 +314,7 @@ Das Gamepad-Signal durchläuft zwei Stufen, bevor es den MoveIt Servo Server err
 
 **Datei:** `src/teleop_pre_collision_checker/teleop_pre_collision_checker/teleop_pre_collision_checker.py`
 
-Dieser Node fungiert als transparenter **Sicherheits-Proxy** zwischen dem rohen Joystick-Treiber und dem Motion-Controller. Er ist **zu 100% Hardware-unabhängig** (funktioniert identisch im REAL- und FAKE-Modus). Er abonniert kontinuierlich die Live-Z-Höhe von `/ui/eef_position` und prüft bei jedem eingehenden `/joy`-Signal prädiktiv, ob sich der Roboter dem Tisch nähert. Würde ein Limit unterschritten, wird das Signal blockiert. Er liefert zudem **haptisches Feedback** (Gamepad-Vibration), wenn sich der Roboter dem Tisch nähert oder über MoveIt Servo ein dynamisches 3D-Hindernis (YOLO Bounding Box) erkannt wird.
+Dieser Node fungiert als transparenter **Sicherheits-Proxy** zwischen dem rohen Joystick-Treiber und dem Motion-Controller. Er ist **zu 100% Hardware-unabhängig** (funktioniert identisch im Modus (Robot | Hardware) und Modus (Robot | Digital Twin)). Er abonniert kontinuierlich die Live-Z-Höhe von `/ui/eef_position` und prüft bei jedem eingehenden `/joy`-Signal prädiktiv, ob sich der Roboter dem Tisch nähert. Würde ein Limit unterschritten, wird das Signal blockiert. Er liefert zudem **haptisches Feedback** (Gamepad-Vibration), wenn sich der Roboter dem Tisch nähert oder über MoveIt Servo ein dynamisches 3D-Hindernis (YOLO Bounding Box) erkannt wird.
 <br>
 
 

@@ -1358,10 +1358,10 @@
     <ul class="bl" style="--k:var(--c-vla)">
       <li>Anweisung tippen oder per Mikrofon diktieren → das Modell macht daraus einen Plan → du bestätigst → der Arm führt aus</li>
       <li>Heute: <code>vla_bridge</code> ist ein VLA-Agent (lokal Ollama <code>qwen3.8:27b</code>) · kennt die Szene (erkannte + virtuelle Objekte) · plant, prüft, fährt, plant bei Fehlern neu</li>
-      <li>Mit der Physik-Sandbox (FAKE) werden die virtuellen Objekte wirklich gegriffen, getragen, gestapelt</li>
+      <li>Mit der Physik-Sandbox (Robot | Digital Twin) werden die virtuellen Objekte wirklich gegriffen, getragen, gestapelt</li>
       <li>Objektmenü im Viewport: <i>Grasp</i> / <i>Place here</i> mit einem Klick, ohne Sprachmodell (<code>/vla/skill</code>)</li>
       <li><i>Pick &amp; Place to …</i> im Objektmenü → Ziel auf Tisch oder Palette klicken → <i>Start</i>: Greifen und Ablegen als eine Aufgabe, ein <i>Abort</i> (Esc bricht die Zielwahl ab)</li>
-      <li>Auto-Palettieren (Szene <i>Auto palletizing</i>, Fenster <i>Palletizing</i>): <i>Plan</i> → Lagen, <code>80 / 80 kg</code>, Ghost-Boxen · über der Palette live das abgelegte Gewicht · <i>Start</i> belädt Karton für Karton (FAKE mit Physik-Sandbox) · <i>Abort</i> hält sofort an · <i>Reset</i> legt alles zurück · im Chat: „belade die Palette“</li><li>Nächster Schritt: mit <i>Record demo</i> aufgenommene Demonstrationen → SmolVLA nachtrainieren</li>
+      <li>Auto-Palettieren (Szene <i>Auto palletizing</i>, Fenster <i>Palletizing</i>): <i>Plan</i> → Lagen, <code>80 / 80 kg</code>, Ghost-Boxen · über der Palette live das abgelegte Gewicht · <i>Start</i> belädt Karton für Karton (Robot | Digital Twin mit Physik-Sandbox) · <i>Abort</i> hält sofort an · <i>Reset</i> legt alles zurück · im Chat: „belade die Palette“</li><li>Nächster Schritt: mit <i>Record demo</i> aufgenommene Demonstrationen → SmolVLA nachtrainieren</li>
     </ul>
   </div>
   <aside class="hero-side" aria-label="Eckdaten">
@@ -1537,13 +1537,13 @@
       <div class="card-h"><h3>Schema</h3><span class="chip" style="--k:var(--c-topic)">3 Spalten · SortableJS</span></div>
       <div class="wire" aria-label="Schematischer Aufbau der UX | Control Interface">
         <div class="w-head">
-          <div class="w-box"><b>Header</b><small>header.js · Modus FAKE/REAL · Roboterzustand · Tempo · Control-Lock · E-STOP</small></div>
+          <div class="w-box"><b>Header</b><small>header.js · Modus Robot | Digital Twin / Robot | Hardware · Roboterzustand · Tempo · Control-Lock · E-STOP</small></div>
           <div class="w-box"><b>Befehlspalette</b><small>Strg+K · palette.js · alle Aktionen per Suche</small></div>
           <div class="w-box"><b>Settings-Popup</b><small>Zahnrad in der Viewport-Leiste · settings_modal.js · tf_tuner.js · settings.js · physics_settings.js · Virtual cameras (vcam.js) · angedockt: drei Gruppen-Kästen mit Seiten-Kacheln in einer Reihe · /api/settings</small></div>
           <div class="w-box estop"><b>E-STOP</b><small>Header + Viewport (Taste Leertaste) · safety.js · /ui/emergency_stop_topic</small></div>
         </div>
         <div class="w-head">
-          <div class="w-box"><b>Bereichsleiste links</b><small>areas.js · Knopf = Aufgabe auf/zu, Farbe je Aufgabe · Operate: Move · Teach · Assistant (VLA) · Remote Teleop mit VR headset (Alt+Shift+1…4) · World: Vision (Alt+Shift+5) · Viewport-Werkzeuge (Alt+Shift+6) · Physics objects (nur FAKE) · Scene: Standard, Auto palletizing · Help: Guides · System: Diagnostics, Settings: Layout &amp; profiles, My view (Alt+Shift+7) · Pin: ohne Pin 48 px · reicht bis zur Statusleiste, Konsole daneben</small></div>
+          <div class="w-box"><b>Bereichsleiste links</b><small>areas.js · Knopf = Aufgabe auf/zu, Farbe je Aufgabe · Operate: Move · Teach · Assistant (VLA) · Remote Teleop mit VR headset (Alt+Shift+1…4) · World: Vision (Alt+Shift+5) · Viewport-Werkzeuge (Alt+Shift+6) · Physics objects (nur Robot | Digital Twin) · Scene: Standard, Auto palletizing · Help: Guides · System: Diagnostics, Settings: Layout &amp; profiles, My view (Alt+Shift+7) · Pin: ohne Pin 48 px · reicht bis zur Statusleiste, Konsole daneben</small></div>
         </div>
         <div class="w-cols">
           <div class="w-col" style="--k:var(--c-ws)">
@@ -1593,7 +1593,7 @@
     <div class="card prin crit s-6 fill" style="--k:var(--crit)"><span class="chip">Sicherheit</span><h3>Sicherheit liegt nicht im Browser</h3>
       <ul class="bl"><li>Remote-Gamepad: WLAN weg oder Tab verdeckt → kein Heartbeat → Watchdog stoppt selbst</li><li>Kollisionsvorprüfung, Servo und E-STOP laufen auf dem Server</li></ul></div>
     <div class="card prin crit s-6 fill" style="--k:var(--crit)"><span class="chip">Sicherheit</span><h3>Wer steuert, ist eindeutig</h3>
-      <ul class="bl"><li>Zuschauen: beliebig viele Geräte · Bewegen: nur der Inhaber des Control-Locks</li><li>Prüfung Remote-Gamepad: Server · UI-Buttons, Jogging, VR: Browser (<code>motionAllowed</code>)</li><li>REAL: Remote-Gamepad braucht zusätzlich eine Freigabe</li></ul></div>
+      <ul class="bl"><li>Zuschauen: beliebig viele Geräte · Bewegen: nur der Inhaber des Control-Locks</li><li>Prüfung Remote-Gamepad: Server · UI-Buttons, Jogging, VR: Browser (<code>motionAllowed</code>)</li><li>Robot | Hardware: Remote-Gamepad braucht zusätzlich eine Freigabe</li></ul></div>
     <div class="card prin accent s-3 fill" style="--k:var(--c-topic)"><span class="chip">Bewegung</span><h3>Planen vor Ausführen</h3>
       <ul class="bl"><li>Zielpose wird erst geplant und als Bahn gezeigt</li><li>Fahren erst nach Bestätigung (<code>/ui/confirm_moveto_preview</code>)</li></ul></div>
     <div class="card prin accent s-3 fill" style="--k:var(--c-ws)"><span class="chip">Zustand</span><h3>Ein Zustand, viele Ansichten</h3>
@@ -1626,7 +1626,7 @@
       </div>
       <ol class="safety">
         <li style="--k:var(--c-cli)"><div><b>Control-Lock und Heartbeat</b><small>remote_control_watchdog</small></div><ul class="bl sm"><li>Nur Remote-Gamepad und Jogging (Browser, UX | Compact Interface, VR) des Control-Inhabers kommen durch</li><li>Kein Heartbeat → Node sendet neutrales Gamepad bzw. Null-Twist</li><li>Server-PC weist sich mit signiertem Server-Token aus (nur 127.x)</li></ul><span class="where srv">Server</span></li>
-        <li style="--k:var(--c-cli)"><div><b>Grenzen für REAL und FAKE</b><small>fake_max_speed · real_max_speed · real_require_arm</small></div><ul class="bl sm"><li>REAL: geringeres Tempo, kürzerer Timeout</li><li>REAL: Freigabe nötig, verfällt ohne Aktivität</li></ul><span class="where srv">Server</span></li>
+        <li style="--k:var(--c-cli)"><div><b>Grenzen für Robot | Hardware und Robot | Digital Twin</b><small>fake_max_speed · real_max_speed · real_require_arm</small></div><ul class="bl sm"><li>Robot | Hardware: geringeres Tempo, kürzerer Timeout</li><li>Robot | Hardware: Freigabe nötig, verfällt ohne Aktivität</li></ul><span class="where srv">Server</span></li>
         <li style="--k:var(--c-ws)"><div><b>Kollisionsvorprüfung</b><small>teleop_pre_collision_checker · /joy → /joy_check</small></div><ul class="bl sm"><li>Schaut 0,25 s voraus</li><li>Unter 110 mm Höhe: 25 % Tempo</li><li>Bei 91 mm: Stopp nach unten</li></ul><span class="where srv">Server</span></li>
         <li style="--k:var(--c-svc)"><div><b>MoveIt Servo</b><small>/servo_server/status</small></div><ul class="bl sm"><li>Bremst und stoppt bei Singularität, Gelenkgrenze, Kollision</li><li>Status im HUD und im RViz-Overlay</li></ul><span class="where srv">Server</span></li>
         <li style="--k:var(--c-topic)"><div><b>Planungsszene</b><small>moveit_floor_collision · yolo_moveit_collision · OctoMap in move_group</small></div><ul class="bl sm"><li>Boden und erkannte Objekte = Hindernisse für jede geplante Bahn</li><li>Kamerawolke nur mit <code>publish_moveit_cloud</code> (Standard: aus)</li></ul><span class="where srv">Server</span></li>
@@ -1747,8 +1747,8 @@
             </div></div>
           <div class="cfg-q"><span class="label" id="cfg-l-mode">Modus des Roboters</span>
             <div class="seg-switch" id="cfg-mode" role="group" aria-labelledby="cfg-l-mode">
-              <button type="button" data-v="fake" aria-pressed="true" style="--k:var(--c-fake)">FAKE · Roboter-Simulation</button>
-              <button type="button" data-v="real" aria-pressed="false" style="--k:var(--c-real)">REAL · echte Roboter-Hardware</button>
+              <button type="button" data-v="fake" aria-pressed="true" style="--k:var(--c-fake)">Robot | Digital Twin · Roboter-Simulation</button>
+              <button type="button" data-v="real" aria-pressed="false" style="--k:var(--c-real)">Robot | Hardware · echte Roboter-Hardware</button>
             </div></div>
           <div class="cfg-q"><label class="label" for="cfg-ip">IP des Server-PCs</label>
             <div class="cfg-ip"><input id="cfg-ip" type="text" inputmode="decimal" value="192.168.0.xxx" autocomplete="off" spellcheck="false" aria-describedby="cfg-ip-h"><small id="cfg-ip-h">Stand jetzt · neue IP: im Remote-Panel nachsehen</small></div></div>
@@ -1778,7 +1778,7 @@
       <dl class="kv">
         <dt>URL</dt><dd><span class="url">https://192.168.0.xxx:8443</span><ul class="bl"><li>HTTPS Pflicht: über http sperren Browser die Gamepad-API</li></ul></dd>
         <dt>Server</dt><dd><ul class="bl"><li>UI-Karte</li><li>„VR Quest 3 Teleop“ (stellt 8443 und 9091)</li></ul></dd>
-        <dt>Steuern</dt><dd><ul class="bl"><li>Request control → Server: Allow → (REAL: Arm gamepad) → Haken „Remote gamepad“ → Taste drücken</li><li>Gamepad mit Xbox-Layout („standard“-Mapping)</li></ul></dd>
+        <dt>Steuern</dt><dd><ul class="bl"><li>Request control → Server: Allow → (Robot | Hardware: Arm gamepad) → Haken „Remote gamepad“ → Taste drücken</li><li>Gamepad mit Xbox-Layout („standard“-Mapping)</li></ul></dd>
       </dl>
     </article>
     <article class="card flush combo s-6 fill" id="combo-d" style="--k:var(--c-https)">
@@ -1823,12 +1823,12 @@
     </div>
 
     <div class="card flush s-12">
-      <div class="card-h"><h3>FAKE vs. REAL</h3><span class="chip" style="--k:var(--c-srv)">Watchdog erkennt den Modus selbst</span></div>
+      <div class="card-h"><h3>Robot | Digital Twin vs. Robot | Hardware</h3><span class="chip" style="--k:var(--c-srv)">Watchdog erkennt den Modus selbst</span></div>
       <div class="tablewrap">
         <table>
-          <thead><tr><th>Was</th><th class="mode-h" style="--k:var(--c-fake)">FAKE (Roboter-Simulation)</th><th class="mode-h" style="--k:var(--c-real)">REAL (echte Roboter-Hardware)</th></tr></thead>
+          <thead><tr><th>Was</th><th class="mode-h" style="--k:var(--c-fake)">Robot | Digital Twin (Roboter-Simulation)</th><th class="mode-h" style="--k:var(--c-real)">Robot | Hardware (echte Roboter-Hardware)</th></tr></thead>
           <tbody>
-            <tr><td>Erkannt an</td><td class="col-fake">kein <code>ufactory_driver</code></td><td class="col-real"><code>ufactory_driver</code> läuft · unklar („DETECTING“) = REAL</td></tr>
+            <tr><td>Erkannt an</td><td class="col-fake">kein <code>ufactory_driver</code></td><td class="col-real"><code>ufactory_driver</code> läuft · unklar („DETECTING“) = Robot | Hardware</td></tr>
             <tr><td>Max. Tempo Remote-Gamepad</td><td class="num col-fake">100 %</td><td class="num col-real">50 %</td></tr>
             <tr><td>Stopp ohne Heartbeat</td><td class="num col-fake">1,0 s</td><td class="num col-real">0,4 s</td></tr>
             <tr><td>Freigabe „Arm gamepad“</td><td class="col-fake">nein</td><td class="col-real">ja, wenn <code>real_require_arm</code> an · verfällt nach 60 s ohne Eingabe und bei jedem Moduswechsel</td></tr>
@@ -1919,10 +1919,10 @@ source install/setup.bash</pre><button class="copy" type="button">Kopieren</butt
       <span class="side-tag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg>Server · Roboter-PC</span>
       <ol class="howto">
         <li><div><b>UX | Nexus Launcher öffnen:</b> <span class="url">http://localhost:8080</span><ul class="bl sm"><li>Starten/Stoppen nur hier</li><li>Von Clients aus nur lesbar</li></ul></div></li>
-        <li><div><b>Roboter starten</b><ul class="bl sm"><li>Popup <b>SERVER SETUP</b>, Modus FAKE oder REAL wählen</li><li><span class="proto" style="--k:var(--c-fake)">FAKE</span> <span class="card-name">MoveIt Servo &amp; MoveGroup (Fake) + Linear Axis [Server]</span></li><li><span class="proto" style="--k:var(--c-real)">REAL</span> <span class="card-name">MoveIt Servo &amp; MoveGroup (Real) [Server]</span></li><li><b>Check</b> (links neben EXECUTE): Roboter, Kameras, Tobii, Gamepad, Ports, zweiter <code>move_group</code>, ROS-Umgebung, GPU, Platte, Ollama + <code>qwen3.8:27b</code></li><li>REAL: Check läuft bei EXECUTE automatisch, ein Fehler stoppt den Start</li><li>Pflicht-Karte fehlt (z. B. VLA-M ohne MoveIt) → gelbe Zeile: <i>Add … &amp; start</i> · <i>Start anyway</i> · <i>Back</i></li><li>Jede Karte = eigenes Terminal · schließen = Launch sauber beenden · <i>Restart</i> in der Log-Schublade</li><li>Schalter <b>Terminals</b> (Zeile <i>Components</i>) aus → Ausgabe nur in der Log-Schublade, ab nächstem Start</li></ul></div></li>
+        <li><div><b>Roboter starten</b><ul class="bl sm"><li>Popup <b>SERVER SETUP</b>, Modus Robot | Digital Twin oder Robot | Hardware wählen</li><li><span class="proto" style="--k:var(--c-fake)">Robot | Digital Twin</span> <span class="card-name">MoveIt Servo &amp; MoveGroup (Fake) + Linear Axis [Server]</span></li><li><span class="proto" style="--k:var(--c-real)">Robot | Hardware</span> <span class="card-name">MoveIt Servo &amp; MoveGroup (Real) [Server]</span></li><li><b>Check</b> (links neben EXECUTE): Roboter, Kameras, Tobii, Gamepad, Ports, zweiter <code>move_group</code>, ROS-Umgebung, GPU, Platte, Ollama + <code>qwen3.8:27b</code></li><li>Robot | Hardware: Check läuft bei EXECUTE automatisch, ein Fehler stoppt den Start</li><li>Pflicht-Karte fehlt (z. B. VLA-M ohne MoveIt) → gelbe Zeile: <i>Add … &amp; start</i> · <i>Start anyway</i> · <i>Back</i></li><li>Jede Karte = eigenes Terminal · schließen = Launch sauber beenden · <i>Restart</i> in der Log-Schublade</li><li>Schalter <b>Terminals</b> (Zeile <i>Components</i>) aus → Ausgabe nur in der Log-Schublade, ab nächstem Start</li></ul></div></li>
         <li><div><b>UI starten:</b> <span class="card-name">UX | Control Interface, WebSocket, Remote Watchdog &amp; Video Server (Port 8081 / 9090 / 8082)</span><ul class="bl sm"><li>Startet rosbridge, Webserver, Remote Control Watchdog</li><li>In RUN DEV SETUP heißt die Karte „UX | Control Interface, WebSocket &amp; Video Server …“</li></ul></div></li>
         <li><div><b>Nur für C und D:</b> <span class="card-name">VR Quest 3 Teleop (Port 9091 / 8443)</span></div></li>
-        <li><div><b>Remote-Panel prüfen</b><ul class="bl sm"><li>Chip zeigt FAKE oder REAL (<span class="co">1</span>), nicht „WATCHDOG OFF“</li><li>„Access from home network“: „On (subnet)“ (<span class="co">8</span>)</li><li>URL dort kopieren</li></ul></div></li>
+        <li><div><b>Remote-Panel prüfen</b><ul class="bl sm"><li>Chip zeigt Robot | Digital Twin oder Robot | Hardware (<span class="co">1</span>), nicht „WATCHDOG OFF“</li><li>„Access from home network“: „On (subnet)“ (<span class="co">8</span>)</li><li>URL dort kopieren</li></ul></div></li>
       </ol>
     </div>
     <div class="card accent s-6 fill" style="--k:var(--c-cli)">
@@ -1931,7 +1931,7 @@ source install/setup.bash</pre><button class="copy" type="button">Kopieren</butt
         <li><div><b>URL öffnen</b><ul class="bl sm"><li><span class="proto" style="--k:var(--c-http)">http…:8081</span> Maus/Touch (B)</li><li><span class="proto" style="--k:var(--c-https)">https…:8443</span> Gamepad oder VR (C, D)</li></ul></div></li>
         <li><div><b>Nur HTTPS: Zertifikat akzeptieren</b><ul class="bl sm"><li>„Erweitert“ → „Weiter zu …“</li><li>Overlay bleibt → <span class="url">https://192.168.0.xxx:9091</span> öffnen, akzeptieren, UI neu laden</li></ul></div></li>
         <li><div><b>Verbindung prüfen</b><ul class="bl sm"><li>Kein Overlay</li><li>Chip zeigt „Remote · &lt;IP&gt;“ (<span class="co">2</span>)</li></ul></div></li>
-        <li><div><b>Steuern</b><ul class="bl sm"><li>Request control (<span class="co">3</span>) oder einfach bedienen → Anfrage · am Server-PC „Allow“ drücken</li><li>Gamepad: nach der Freigabe → REAL: Arm gamepad (<span class="co">4</span>) → Haken Remote gamepad (<span class="co">5</span>) → Tempo (<span class="co">6</span>)</li></ul></div></li>
+        <li><div><b>Steuern</b><ul class="bl sm"><li>Request control (<span class="co">3</span>) oder einfach bedienen → Anfrage · am Server-PC „Allow“ drücken</li><li>Gamepad: nach der Freigabe → Robot | Hardware: Arm gamepad (<span class="co">4</span>) → Haken Remote gamepad (<span class="co">5</span>) → Tempo (<span class="co">6</span>)</li></ul></div></li>
         <li><div><b>Beenden</b><ul class="bl sm"><li>„Release control“ drücken</li><li>Oder Tab schließen: Remote-Gamepad stoppt sofort, Steuerung nach 10 s frei</li></ul></div></li>
       </ol>
     </div>
@@ -1948,9 +1948,9 @@ source install/setup.bash</pre><button class="copy" type="button">Kopieren</butt
     <div class="card s-12">
       <div class="card-h"><span class="label">Zustand</span>
         <div class="seg-switch" id="m-states" role="group" aria-label="Zustand im Mockup">
-          <button type="button" data-s="other" aria-pressed="false" style="--k:var(--warn)">FAKE · Server steuert</button>
+          <button type="button" data-s="other" aria-pressed="false" style="--k:var(--warn)">Robot | Digital Twin · Server steuert</button>
           <button type="button" data-s="req" aria-pressed="false" style="--k:var(--c-fake)">Anfrage wartet</button>
-          <button type="button" data-s="mine" aria-pressed="true" style="--k:var(--c-https)">REAL · du steuerst</button>
+          <button type="button" data-s="mine" aria-pressed="true" style="--k:var(--c-https)">Robot | Hardware · du steuerst</button>
         </div>
       </div>
       <div class="now" id="now" aria-live="polite"></div>
@@ -1960,14 +1960,14 @@ source install/setup.bash</pre><button class="copy" type="button">Kopieren</butt
         <div class="scr-bar"><span class="dots"><i></i><i></i><i></i></span><span class="scr-url" id="m-url">https://192.168.0.xxx:8443/index.html</span></div>
         <div class="mp">
           <div class="mp-h"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 12v9M8 21h8"/><circle cx="12" cy="10" r="2" fill="currentColor"/><path d="M7.8 5.8a6 6 0 0 0 0 8.4M16.2 5.8a6 6 0 0 1 0 8.4"/></svg>Remote Control</div>
-          <div class="mrow"><span class="co">1</span><span class="mchip mode" id="m-mode" data-v="REAL">REAL</span><span class="co">2</span><span class="mchip">Remote · 192.168.0.xxx</span></div>
+          <div class="mrow"><span class="co">1</span><span class="mchip mode" id="m-mode" data-v="REAL">Robot | Hardware</span><span class="co">2</span><span class="mchip">Remote · 192.168.0.xxx</span></div>
           <div class="mrow"><span class="co">3</span><span class="mlbl">Control</span><span class="mowner" id="m-owner" data-v="mine">You</span>
             <span class="mbtns"><button class="mpill acc" id="m-take" type="button" tabindex="-1">Request control</button><button class="mpill acc" id="m-rel" type="button" tabindex="-1">Release control</button><button class="mpill" id="m-cancel" type="button" tabindex="-1">Cancel request</button></span></div>
           <div class="mrow" id="m-reqrow"><span class="mhint" id="m-reqhint">Operating the robot from here needs approval on the server PC.</span></div>
-          <div class="mrow" id="m-armrow"><span class="co">4</span><span class="mlbl">REAL</span><span class="mhint" id="m-armhint">Auto-off after 60 s without gamepad input</span><button class="mpill arm on" id="m-arm" type="button" tabindex="-1">Armed</button></div>
+          <div class="mrow" id="m-armrow"><span class="co">4</span><span class="mlbl">Robot | Hardware</span><span class="mhint" id="m-armhint">Auto-off after 60 s without gamepad input</span><button class="mpill arm on" id="m-arm" type="button" tabindex="-1">Armed</button></div>
           <div class="mrow"><span class="co">5</span><span class="mlbl">Remote gamepad</span><span class="mchk" aria-hidden="true"></span><span class="mgp">Xbox Wireless Controller</span><span class="mst" id="m-gp" data-v="on">Forwarding</span></div>
           <div class="mrow"><span class="co">6</span><span class="mlbl">Max speed</span><span class="mslider"><i style="width:50%"></i></span><span class="mnum">50 %</span></div>
-          <div class="meff" id="m-eff">Effective 50 % · REAL limit 50 % · stop after 400 ms without heartbeat</div>
+          <div class="meff" id="m-eff">Effective 50 % · Robot | Hardware limit 50 % · stop after 400 ms without heartbeat</div>
           <div class="mblock">
             <div class="mblock-h"><span class="co">7</span>Clients</div>
             <div class="mli"><span class="ic">PC</span><span class="nm">Chrome / Linux · server PC</span><span class="mbadge" id="m-b1" hidden>CONTROL</span></div>
@@ -1984,10 +1984,10 @@ source install/setup.bash</pre><button class="copy" type="button">Kopieren</butt
     <div class="card s-7">
       <span class="label">Legende</span>
       <ol class="callouts">
-        <li><span class="co">1</span><div><b>Modus</b><ul class="bl sm"><li><span class="m">REAL</span> · <span class="m">FAKE</span> · <span class="m">DETECTING</span> (= REAL)</li><li><span class="m">WATCHDOG OFF</span> → UI-Karte neu starten</li></ul></div></li>
+        <li><span class="co">1</span><div><b>Modus</b><ul class="bl sm"><li><span class="m">Robot | Hardware</span> · <span class="m">Robot | Digital Twin</span> · <span class="m">DETECTING</span> (= Robot | Hardware)</li><li><span class="m">WATCHDOG OFF</span> → UI-Karte neu starten</li></ul></div></li>
         <li><span class="co">2</span><div><b>Standort</b><ul class="bl sm"><li><span class="m">This PC (server)</span> oder <span class="m">Remote · IP</span></li></ul></div></li>
         <li><span class="co">3</span><div><b>Wer steuert</b><ul class="bl sm"><li><span class="m">Server</span> (nach dem Start) · <span class="m">Free</span> · <span class="m">You</span> · Name</li><li>Client: Request control · Cancel request (Anfrage läuft) · Release control (du)</li><li>Zeile darunter: Hinweis, z. B. „Waiting for approval on the server PC · expires in … s“</li><li>Am Server-PC: Popup Allow / Deny, dazu Take control · Take over (mit Bestätigung)</li><li>Dieselben Knöpfe im Header: Schloss-Knopf „Control“ neben E-STOP</li></ul></div></li>
-        <li><span class="co">4</span><div><b>Arm gamepad</b><ul class="bl sm"><li>Nur bei REAL und <span class="m">real_require_arm</span> an, nur als Besitzer</li><li>Danach „Armed“ · aus nach 60 s ohne Eingabe</li></ul></div></li>
+        <li><span class="co">4</span><div><b>Arm gamepad</b><ul class="bl sm"><li>Nur bei Robot | Hardware und <span class="m">real_require_arm</span> an, nur als Besitzer</li><li>Danach „Armed“ · aus nach 60 s ohne Eingabe</li></ul></div></li>
         <li><span class="co">5</span><div><b>Remote gamepad</b><ul class="bl sm"><li>Haken setzen, Taste am Gamepad drücken</li><li>Rechts: <span class="m">Forwarding</span> oder Pausengrund (<a href="#fehler">Fehlerbilder</a>)</li><li>Am Server-PC nicht nötig</li></ul></div></li>
         <li><span class="co">6</span><div><b>Max speed 10–100 %</b><ul class="bl sm"><li>Es gilt der kleinere Wert aus Slider und Server-Limit</li><li>Zeile darunter = wirksamer Wert</li></ul></div></li>
         <li><span class="co">7</span><div><b>Clients</b><ul class="bl sm"><li>Alle offenen Tabs · <span class="m">CONTROL</span> = Besitzer</li></ul></div></li>
@@ -2015,13 +2015,13 @@ source install/setup.bash</pre><button class="copy" type="button">Kopieren</butt
           <div class="nx-r"><span class="l">Clients from · this network only</span><span class="sw" aria-hidden="true"></span></div>
         </div>
         <div class="nx-g">
-          <div class="nx-gh"><span class="co">B</span>Remote Safety (REAL / FAKE)</div>
-          <div class="nx-r"><span class="l">FAKE max speed</span><span class="val">1.0</span></div>
-          <div class="nx-r"><span class="l">REAL max speed</span><span class="val">0.5</span></div>
-          <div class="nx-r"><span class="l">FAKE heartbeat timeout</span><span class="val">1.0 s</span></div>
-          <div class="nx-r"><span class="l">REAL heartbeat timeout</span><span class="val">0.4 s</span></div>
-          <div class="nx-r"><span class="co">C</span><span class="l">REAL: arm before remote gamepad</span><span class="sw on" aria-hidden="true"></span></div>
-          <div class="nx-r"><span class="l">REAL arm timeout</span><span class="val">60 s</span></div>
+          <div class="nx-gh"><span class="co">B</span>Remote Safety (Robot | Hardware / Robot | Digital Twin)</div>
+          <div class="nx-r"><span class="l">Robot | Digital Twin max speed</span><span class="val">1.0</span></div>
+          <div class="nx-r"><span class="l">Robot | Hardware max speed</span><span class="val">0.5</span></div>
+          <div class="nx-r"><span class="l">Robot | Digital Twin heartbeat timeout</span><span class="val">1.0 s</span></div>
+          <div class="nx-r"><span class="l">Robot | Hardware heartbeat timeout</span><span class="val">0.4 s</span></div>
+          <div class="nx-r"><span class="co">C</span><span class="l">Robot | Hardware: arm before remote gamepad</span><span class="sw on" aria-hidden="true"></span></div>
+          <div class="nx-r"><span class="l">Robot | Hardware timeout</span><span class="val">60 s</span></div>
         </div>
       </div>
     </div>
@@ -2031,10 +2031,10 @@ source install/setup.bash</pre><button class="copy" type="button">Kopieren</butt
         <ol class="callouts">
           <li><span class="co">A</span><div><b>Remote Access</b><ul class="bl sm"><li>Aus: nur Server-PC (Kombi A), andere → 403</li><li><span class="m">subnet</span>: nur 192.168.0.x (empfohlen)</li><li><span class="m">lan</span>: alle privaten Netze</li><li>Öffentliche IPs: immer gesperrt</li></ul></div></li>
           <li><span class="co">B</span><div><b>Remote Safety</b><ul class="bl sm"><li>Obergrenzen des Servers, Client-Slider nur darunter</li><li>Mockup zeigt Standardwerte</li></ul></div></li>
-          <li><span class="co">C</span><div><b>Arm-Pflicht an echter Roboter-Hardware</b><ul class="bl sm"><li>Für REAL empfohlen: an</li></ul></div></li>
+          <li><span class="co">C</span><div><b>Arm-Pflicht an echter Roboter-Hardware</b><ul class="bl sm"><li>Für Robot | Hardware empfohlen: an</li></ul></div></li>
         </ol>
       </div>
-      <div class="note ok"><b>Arm-Pflicht ist an</b><ul class="bl sm" style="--k:var(--ok)"><li>Gespeichert: <code>real_require_arm = true</code></li><li>Remote-Gamepad fährt am REAL-Arm erst nach „Arm gamepad“</li></ul></div>
+      <div class="note ok"><b>Arm-Pflicht ist an</b><ul class="bl sm" style="--k:var(--ok)"><li>Gespeichert: <code>real_require_arm = true</code></li><li>Remote-Gamepad fährt am Robot | Hardware erst nach „Arm gamepad“</li></ul></div>
       <div class="note info"><b>Übernahme</b><ul class="bl sm" style="--k:var(--c-https)"><li>Werte gelten erst nach Neustart der Karte</li></ul></div>
     </div>
   </div>
@@ -2078,7 +2078,7 @@ source install/setup.bash</pre><button class="copy" type="button">Kopieren</butt
             <tr data-g="ctl" style="--k:var(--c-cli)"><td><span class="st">request control first</span></td><td>Du hast die Steuerung nicht</td><td class="fix">Request control (<span class="co">3</span>), am Server-PC „Allow“</td></tr>
             <tr data-g="ctl" style="--k:var(--c-cli)"><td><span class="st">waiting for server approval</span></td><td>Anfrage offen, am Server hat noch niemand geantwortet</td><td class="fix">Am Server-PC „Allow“ drücken (UX | Control Interface muss dort offen sein) · verfällt nach 60 s</td></tr>
             <tr data-g="ctl" style="--k:var(--c-cli)"><td><span class="st">⏳ … not started – the robot is busy: …</span> · Knöpfe grau, Header <span class="st">BUSY · …</span></td><td>Eine andere Fahrt läuft (Home-Pose, TCP-Gizmo, Sequenz, VLA-M, Palettieren, anderes Gerät) – eine Fahrt zur Zeit</td><td class="fix">Warten, bis BUSY verschwindet, oder <span class="m">Stop</span> neben BUSY (hält an, kein E-STOP). Jogging-Taste danach neu drücken</td></tr>
-            <tr data-g="ctl" style="--k:var(--c-cli)"><td><span class="st">REAL: arm first</span></td><td>Freigabe fehlt oder ist abgelaufen</td><td class="fix">Arm gamepad (<span class="co">4</span>)</td></tr>
+            <tr data-g="ctl" style="--k:var(--c-cli)"><td><span class="st">Robot | Hardware: arm first</span></td><td>Freigabe fehlt oder ist abgelaufen</td><td class="fix">Arm gamepad (<span class="co">4</span>)</td></tr>
             <tr data-g="ctl" style="--k:var(--c-cli)"><td><span class="st">⛔ … blocked – control needs approval on the server PC</span> · am Server: <span class="st">… held by X</span></td><td>Client ohne Freigabe · am Server: ein Client steuert</td><td class="fix">Client: Anfrage geht automatisch raus, am Server „Allow“ · Server: Take over (<span class="co">3</span>)</td></tr>
           </tbody>
         </table>
@@ -2157,12 +2157,12 @@ source install/setup.bash</pre><button class="copy" type="button">Kopieren</butt
         <dt>Chat</dt><dd>Section <b>VLA-M</b> der UX | Control Interface · <code>/vla/instruction</code> · mit LLM (lokal Ollama <code>qwen3.8:27b</code>, umschaltbar <i>Model: Local strong | Local fast | Claude | Gemini</i>, schnell = <code>qwen2.5:14b</code>)</dd>
         <dt>Ein-Klick</dt><dd><i>Grasp</i> / <i>Place here</i> im Objektmenü bzw. in VR · <code>/vla/skill</code> · <b>ohne LLM</b>, gleiche Planprüfung</dd>
         <dt>Palletizing</dt><dd>Aufgaben-Fenster <i>Plan</i> / <i>Start</i> · <code>/vla/skill</code> <code>palletize</code>; im Chat startet „belade die Palette“ denselben Planer und Ablauf</dd>
-        <dt>Szene</dt><dd>YOLO- + virtuelle Objekte in <code>link_base</code>-mm, gehaltenes Objekt, Greifer, FAKE / REAL - das Modell wählt nur Skill + Objekt, die Zielposen rechnet der Code</dd>
+        <dt>Szene</dt><dd>YOLO- + virtuelle Objekte in <code>link_base</code>-mm, gehaltenes Objekt, Greifer, Robot | Digital Twin / Robot | Hardware - das Modell wählt nur Skill + Objekt, die Zielposen rechnet der Code</dd>
       </dl>
     </div>
     <div class="card vla-state-card accent s-4 fill" style="--k:var(--ok)">
       <span class="chip" style="--k:var(--ok)">Fertig</span>
-      <ul class="bl"><li>Section <b>VLA-M</b> in der UX | Control Interface</li><li>Szene: erkannte + virtuelle Objekte, Farben, Behälter</li><li>VLA-Agent (EN + DE): Plan, Planprüfung, Rückfragen, Greifprüfung, Neuplanung</li><li>Ein-Klick <i>Grasp</i> / <i>Place here</i> aus dem Objektmenü (<code>/vla/skill</code>, ohne LLM)</li><li>Diktat: Mikrofon-Knopf → Whisper am PC → Text ins Eingabefeld</li><li><i>Record demo</i>: Vorführungen für das VLA-Training (<code>demo_recorder</code>)</li><li>UX | Nexus Launcher: eigener Eintrag mit Parametern und Config, Check prüft Ollama + Modell</li><li>Sicherheit: REAL gesperrt, Abort, E-STOP</li></ul>
+      <ul class="bl"><li>Section <b>VLA-M</b> in der UX | Control Interface</li><li>Szene: erkannte + virtuelle Objekte, Farben, Behälter</li><li>VLA-Agent (EN + DE): Plan, Planprüfung, Rückfragen, Greifprüfung, Neuplanung</li><li>Ein-Klick <i>Grasp</i> / <i>Place here</i> aus dem Objektmenü (<code>/vla/skill</code>, ohne LLM)</li><li>Diktat: Mikrofon-Knopf → Whisper am PC → Text ins Eingabefeld</li><li><i>Record demo</i>: Vorführungen für das VLA-Training (<code>demo_recorder</code>)</li><li>UX | Nexus Launcher: eigener Eintrag mit Parametern und Config, Check prüft Ollama + Modell</li><li>Sicherheit: Robot | Hardware gesperrt, Abort, E-STOP</li></ul>
     </div>
     <div class="card vla-state-card accent s-4 fill" style="--k:var(--warn)">
       <span class="chip" style="--k:var(--warn)">Vorbereitet</span>
@@ -2172,7 +2172,7 @@ source install/setup.bash</pre><button class="copy" type="button">Kopieren</butt
       <span class="chip" style="--k:var(--mut)">Offen</span>
       <ul class="bl"><li>SmolVLA mit den aufgenommenen Demos nachtrainieren (<code>tools/demos_to_lerobot.py</code> → LeRobot)</li><li>Trainiertes VLA-Modell als Skill des Agenten</li></ul>
     </div>
-    <div class="note crit s-12"><b>Der Agent fährt wirklich - dry_run bewegt nie.</b><ul class="bl sm" style="--k:var(--crit)"><li>Fährt über den Motion Handler (MoveIt, Kollisionen, Bodenschutz, E-STOP)</li><li>Sprachmodell wählt nur Skills + Objekte, die Zielposen rechnet der Code</li><li>REAL nur mit <code>allow_real_motion:=true</code> (sonst nur Plan) · jeder Plan wartet auf Execute · virtuelle Objekte nie</li><li><i>Abort</i> stoppt nach dem laufenden Schritt, beim Palettieren sofort (<code>/ui/halt_motion</code>, E-STOP nicht verriegelt)</li><li><code>dry_run:=true</code>: nur Plan + Fortschritt, Chat meldet „Done (dry run - the robot did not move)“</li></ul></div>
+    <div class="note crit s-12"><b>Der Agent fährt wirklich - dry_run bewegt nie.</b><ul class="bl sm" style="--k:var(--crit)"><li>Fährt über den Motion Handler (MoveIt, Kollisionen, Bodenschutz, E-STOP)</li><li>Sprachmodell wählt nur Skills + Objekte, die Zielposen rechnet der Code</li><li>Robot | Hardware nur mit <code>allow_real_motion:=true</code> (sonst nur Plan) · jeder Plan wartet auf Execute · virtuelle Objekte nie</li><li><i>Abort</i> stoppt nach dem laufenden Schritt, beim Palettieren sofort (<code>/ui/halt_motion</code>, E-STOP nicht verriegelt)</li><li><code>dry_run:=true</code>: nur Plan + Fortschritt, Chat meldet „Done (dry run - the robot did not move)“</li></ul></div>
   </div>
 </section>
 
@@ -2198,7 +2198,7 @@ source install/setup.bash</pre><button class="copy" type="button">Kopieren</butt
         <div class="scr-bar"><span class="dots"><i></i><i></i><i></i></span><span class="scr-url">http://192.168.0.xxx:8081/index.html</span></div>
         <div class="mp vm" id="vm" data-s="wait">
           <div class="mp-h"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><path d="M8 9h8M8 13h5"/></svg>VLA-M <span class="vm-meta" id="vm-meta">qwen3.8:27b</span></div>
-          <div class="mrow vm-chips"><span class="co">1</span><span class="mchip vm-state" id="vm-state" data-v="idle">IDLE</span><span class="co">2</span><span class="mchip" id="vm-model">Model: qwen3.8:27b</span><span class="mchip vm-mode" id="vm-mode">FAKE</span><span class="mchip" id="vm-objs">8 objects · 8 virtual</span></div>
+          <div class="mrow vm-chips"><span class="co">1</span><span class="mchip vm-state" id="vm-state" data-v="idle">IDLE</span><span class="co">2</span><span class="mchip" id="vm-model">Model: qwen3.8:27b</span><span class="mchip vm-mode" id="vm-mode">Robot | Digital Twin</span><span class="mchip" id="vm-objs">8 objects · 8 virtual</span></div>
           <div class="vm-chat"><span class="co">3</span>
             <div class="vm-msg u"><small>You · 12:53</small><span>Stell den blauen Würfel auf den Zylinder</span></div>
             <div class="vm-msg s"><small>System · 12:53</small><span>VLA backend not connected yet - the instruction was not sent to the robot.</span></div>
@@ -2222,13 +2222,13 @@ source install/setup.bash</pre><button class="copy" type="button">Kopieren</butt
       <span class="label">Legende</span>
       <ol class="callouts">
         <li><span class="co">1</span><div><b>Zustand des Backends</b><ul class="bl sm"><li><span class="m">OFFLINE</span> - 3 s kein <span class="m">/vla/status</span> · <span class="m">IDLE</span> · <span class="m">THINKING</span> · <span class="m">RUNNING</span> · <span class="m">ERROR</span></li><li>Offline wird nichts gesendet</li><li>Die Chips sitzen in der Kopfzeile und brechen bei schmaler Spalte um</li></ul></div></li>
-        <li><span class="co">2</span><div><b>Modell, Modus, Szene</b><ul class="bl sm"><li><span class="m">Model</span>: Sprachmodell (Launch-Argument <span class="m">llm_model</span>, Standard <span class="m">qwen3.8:27b</span>) · Tooltip: lädt / bereit / Fehler</li><li><span class="m">FAKE</span> / <span class="m">REAL</span>: Modus, den <code>vla_bridge</code> erkennt (REAL orange)</li><li><span class="m">8 objects · 8 virtual</span>: Szene, Tooltip mit Liste und Sandbox-Status</li><li>Hz-Chip erst mit echtem VLA-Modell</li></ul></div></li>
+        <li><span class="co">2</span><div><b>Modell, Modus, Szene</b><ul class="bl sm"><li><span class="m">Model</span>: Sprachmodell (Launch-Argument <span class="m">llm_model</span>, Standard <span class="m">qwen3.8:27b</span>) · Tooltip: lädt / bereit / Fehler</li><li><span class="m">Robot | Digital Twin</span> / <span class="m">Robot | Hardware</span>: Modus, den <code>vla_bridge</code> erkennt (Robot | Hardware orange)</li><li><span class="m">8 objects · 8 virtual</span>: Szene, Tooltip mit Liste und Sandbox-Status</li><li>Hz-Chip erst mit echtem VLA-Modell</li></ul></div></li>
         <li><span class="co">3</span><div><b>Chat</b><ul class="bl sm"><li>Leer: Vorschläge aus den Objekten der Szene (z. B. „Pick up the blue cube“)</li><li>Gestrichelt = Systemhinweis der UI</li><li>Höchstens 200 Nachrichten, scrollt in der Section</li></ul></div></li>
-        <li><span class="co">4</span><div><b>Planned actions</b><ul class="bl sm"><li>Erscheint nur mit Plan vom Backend</li><li>Erledigte Schritte durchgestrichen, aktueller hervorgehoben, rechts „step i / n“</li><li><span class="m">plan only - not executed</span>: REAL ohne Freigabe</li></ul></div></li>
+        <li><span class="co">4</span><div><b>Planned actions</b><ul class="bl sm"><li>Erscheint nur mit Plan vom Backend</li><li>Erledigte Schritte durchgestrichen, aktueller hervorgehoben, rechts „step i / n“</li><li><span class="m">plan only - not executed</span>: Robot | Hardware ohne Freigabe</li></ul></div></li>
         <li><span class="co">5</span><div><b>Execute</b><ul class="bl sm"><li>Bestätigt den wartenden Plan</li><li>Nur wenn Bewegen erlaubt ist (E-STOP, Verbindung, Control-Lock)</li><li>Grau: offline, Plan läuft schon oder nur Plan</li></ul></div></li>
         <li><span class="co">6</span><div><b>Abort</b><ul class="bl sm"><li>Stoppt nach dem laufenden Schritt („stopping after the current step…“)</li><li>Sofort anhalten: E-STOP (Leertaste)</li></ul></div></li>
         <li><span class="co">7</span><div><b>Eingabe</b><ul class="bl sm"><li>Enter sendet, Shift+Enter neue Zeile, Feld wächst bis 120 px</li><li>Mikrofon: Diktat über Whisper (Mikrofon am PC), bis 8 s, Text landet im Feld, wird nicht gesendet</li><li>Braucht die Sprach-Karte (<code>voice_command_listener</code>)</li><li>Leertaste im Feld löst <b>keinen</b> E-STOP aus</li></ul></div></li>
-        <li><span class="co">8</span><div><b>Optionen</b><ul class="bl sm"><li><span class="m">Confirm before execute</span> aus → Plan startet sofort (REAL wartet trotzdem)</li><li>Kamera für die Policy · Clear leert nur die Anzeige</li></ul></div></li>
+        <li><span class="co">8</span><div><b>Optionen</b><ul class="bl sm"><li><span class="m">Confirm before execute</span> aus → Plan startet sofort (Robot | Hardware wartet trotzdem)</li><li>Kamera für die Policy · Clear leert nur die Anzeige</li></ul></div></li>
       </ol>
     </div>
     <div class="card s-12">
@@ -2267,8 +2267,8 @@ source install/setup.bash</pre><button class="copy" type="button">Kopieren</butt
       <ul class="bl"><li>YOLO-Erkennungen und virtuelle Objekte kommen im selben Format</li><li>Name: <code>yolo_labels_class</code> · Greifpunkt: <code>yolo_object_grasp_center_point</code> · Box und Farbe: <code>yolo_bboxes</code></li><li>Virtuell = Name endet auf „(virtual)“ oder ID ≥ 900</li><li>Ohne Update 3 s → Objekt gilt als weg</li><li>Einschalten: Planning → Simulation → <b>Object detection</b> (GLOBAL: alle greifbaren Objekte, Standard + Auto palletizing) oder Karte „Virtual objects ON“ in der UX | Nexus Launcher</li></ul>
     </div>
     <div class="card s-6">
-      <div class="card-h"><h3>Virtuelle Objekte greifen</h3><span class="chip" style="--k:var(--c-fake)">nur FAKE</span></div>
-      <ul class="bl"><li>Planning → Simulation → <b>SIM physics</b> an: Cube, Rectangle, Cylinder und die Grasp-Items werden echte Körper</li><li>Agent: Saugen an + Saugnapf auf der Oberseite → Objekt hängt am Greifer; die Sandbox meldet das gehaltene Objekt zurück (Greifprüfung)</li><li>Loslassen → Objekt fällt, Position geht zurück in die TF-Frames</li><li>Sandbox aus: der Arm fährt, die Objekte bleiben stehen (Hinweis im Chat, Ergebnis „Done - arm only“)</li><li>Umgekippte Objekte (Greiffläche &gt; 20° schräg) greift der Agent nicht - erst aufstellen (TF Tuner / Reset der Physik-Objekte)</li><li>REAL-Roboter: <b>Virtual</b> darf an bleiben - virtuelle Objekte sind dann nur Hindernisse für MoveIt; <b>Grasp</b> / <b>Place here</b> darauf gesperrt, <b>Move to</b> mit zweitem Klick</li><li>Detected Objects: Kacheln <b>Camera (real)</b> (Live + Rate / nicht gestartet) und <b>Virtual</b> (Schalter), Zeilen mit Badge <b>CAMERA</b> / <b>VIRTUAL</b></li></ul>
+      <div class="card-h"><h3>Virtuelle Objekte greifen</h3><span class="chip" style="--k:var(--c-fake)">nur Robot | Digital Twin</span></div>
+      <ul class="bl"><li>Planning → Simulation → <b>SIM physics</b> an: Cube, Rectangle, Cylinder und die Grasp-Items werden echte Körper</li><li>Agent: Saugen an + Saugnapf auf der Oberseite → Objekt hängt am Greifer; die Sandbox meldet das gehaltene Objekt zurück (Greifprüfung)</li><li>Loslassen → Objekt fällt, Position geht zurück in die TF-Frames</li><li>Sandbox aus: der Arm fährt, die Objekte bleiben stehen (Hinweis im Chat, Ergebnis „Done - arm only“)</li><li>Umgekippte Objekte (Greiffläche &gt; 20° schräg) greift der Agent nicht - erst aufstellen (TF Tuner / Reset der Physik-Objekte)</li><li>Robot | Hardware: <b>Virtual</b> darf an bleiben - virtuelle Objekte sind dann nur Hindernisse für MoveIt; <b>Grasp</b> / <b>Place here</b> darauf gesperrt, <b>Move to</b> mit zweitem Klick</li><li>Detected Objects: Kacheln <b>Camera (real)</b> (Live + Rate / nicht gestartet) und <b>Virtual</b> (Schalter), Zeilen mit Badge <b>CAMERA</b> / <b>VIRTUAL</b></li></ul>
     </div>
     <div class="card s-12">
       <div class="card-h"><h3>Greifen und Ablegen</h3><span class="chip" style="--k:var(--c-svc)">config/vla_bridge.yaml</span></div>
@@ -2307,7 +2307,7 @@ source install/setup.bash</pre><button class="copy" type="button">Kopieren</butt
       <ul class="bl sm mut"><li>Fahrt fertig erst bei <code>/ui/moveit_motion_state</code> = „succeeded“ für genau diesen Lauf (wie SEQUENCES)</li><li>Mit Bahnvorschau (Ghost): jede Fahrt wartet auf Execute im MoveIt-Popup</li><li>Einmalig: <code>bash src/vla_bridge/scripts/install_ollama.sh</code> → <code>vla_bridge</code> startet das Modell selbst</li></ul>
     </div>
     <div class="card s-12" id="vla-palettieren" style="--k:var(--c-vla)">
-      <div class="card-h"><h3>Auto-Palettieren</h3><span class="chip" style="--k:var(--c-fake)">FAKE · SIM physics</span><span class="chip" style="--k:var(--c-svc)">Skill palletize</span><span class="sub">Bereichs-Leiste › Scene › <b>Auto palletizing</b>: schaltet die Logistik-Zelle (Europalette PAL-01, zwei Zuführbänder mit Lichtschranken, Rollenauslauf, Palettenmagazin mit pneumatischem Pusher) und öffnet das Fenster <i>Palletizing</i></span></div>
+      <div class="card-h"><h3>Auto-Palettieren</h3><span class="chip" style="--k:var(--c-fake)">Robot | Digital Twin · SIM physics</span><span class="chip" style="--k:var(--c-svc)">Skill palletize</span><span class="sub">Bereichs-Leiste › Scene › <b>Auto palletizing</b>: schaltet die Logistik-Zelle (Europalette PAL-01, zwei Zuführbänder mit Lichtschranken, Rollenauslauf, Palettenmagazin mit pneumatischem Pusher) und öffnet das Fenster <i>Palletizing</i></span></div>
       <div class="pls-h">Ablauf je Karton &amp; Materialfluss</div>
       <ol class="pls">
         <li><span class="n">1</span><div><b>Plan</b><p><code>vla_bridge/palletizing.py</code>: Kartons bis 80 kg, schwer + groß unten, nie schwer auf leicht, nichts auf zerbrechlich, ≥ 80 % Auflage · Ghost-Boxen mit Schritt-Nr. im Viewport · Rest unter <i>Stays on the conveyor</i> mit Grund</p></div>
@@ -2376,9 +2376,9 @@ source install/setup.bash</pre><button class="copy" type="button">Kopieren</butt
       <ul class="bl sm">
         <li><b>Materialfluss &amp; Nachrücken:</b> Nach jedem Anheben (<code>picked</code>) rücken die Kartons auf dem Zuführband automatisch zur Lichtschranke nach; <code>wait_still</code> sichert die Ruheposition vor dem nächsten Greifen.</li>
         <li><b>Autonome Logistik-Zelle:</b> Ist eine Palette voll (<code>state: changing</code>, Event <code>pallet_full</code>), fährt sie über die Rollenbahn aus der Zelle; das Überkopf-Magazin vereinzelt eine Leerpalette, der pneumatische Pusher schiebt sie ein und neue Kartons laufen ein (Timeout 90 s).</li>
-        <li>FAKE nur mit <b>SIM physics</b> (Kartons = Rapier-Körper), sonst lehnt <code>vla_bridge</code> ab · REAL lehnt virtuelle Kartons ab (<code>allow_virtual_in_real</code>)</li>
+        <li>Robot | Digital Twin nur mit <b>SIM physics</b> (Kartons = Rapier-Körper), sonst lehnt <code>vla_bridge</code> ab · Robot | Hardware lehnt virtuelle Kartons ab (<code>allow_virtual_in_real</code>)</li>
         <li>Chat „belade die Palette“ / „load the pallet“ → Skill <code>palletize</code>, derselbe Planer und Ablauf</li>
-        <li>Bänder, Rollenauslauf und Zaun der Zelle sind MoveIt-Hindernisse, solange die Szene aktiv ist · Test: <code>tools/grasp_e2e.py --pallet</code> (FAKE, Domain 94)</li>
+        <li>Bänder, Rollenauslauf und Zaun der Zelle sind MoveIt-Hindernisse, solange die Szene aktiv ist · Test: <code>tools/grasp_e2e.py --pallet</code> (Robot | Digital Twin, Domain 94)</li>
       </ul>
     </div>
   </div>
@@ -2398,12 +2398,12 @@ source install/setup.bash</pre><button class="copy" type="button">Kopieren</butt
           <div class="cmd"><pre>cd ~/dev_ws &amp;&amp; colcon build --packages-select vla_bridge
 source install/setup.bash</pre><button class="copy" type="button">Kopieren</button></div></div></li>
         <li><div><b>UX | Control Interface starten</b><ul class="bl sm"><li><span class="card-name">UX | Control Interface, WebSocket &amp; Video Server (Port 8081 / 9090 / 8082)</span></li></ul></div></li>
-        <li><div><b>VLA-M Bridge starten</b><ul class="bl sm"><li>UX | Nexus Launcher: RUN DEV SETUP / SERVER SETUP → Karte <span class="card-name">VLA-M Bridge</span> (Kategorie VLA-M, startet als „Skipped“, bis angehakt)</li><li>In der Karte: Sprachmodell (<code>ollama</code> | <code>anthropic</code>), Modell, Dry run, REAL-Schalter, Launch-Struktur, Config-Datei</li><li>Einmalig vorher: <code>bash src/vla_bridge/scripts/install_ollama.sh</code> (Ollama ohne sudo ~2 GB + Modell ~9 GB) - danach startet der Node das Sprachmodell selbst</li><li>Oder im Terminal - mit derselben DDS-Umgebung wie die UX | Nexus Launcher (Schalter <b>Localhost only</b> im Popup):</li></ul>
+        <li><div><b>VLA-M Bridge starten</b><ul class="bl sm"><li>UX | Nexus Launcher: RUN DEV SETUP / SERVER SETUP → Karte <span class="card-name">VLA-M Bridge</span> (Kategorie VLA-M, startet als „Skipped“, bis angehakt)</li><li>In der Karte: Sprachmodell (<code>ollama</code> | <code>anthropic</code>), Modell, Dry run, Schalter (Robot | Hardware), Launch-Struktur, Config-Datei</li><li>Einmalig vorher: <code>bash src/vla_bridge/scripts/install_ollama.sh</code> (Ollama ohne sudo ~2 GB + Modell ~9 GB) - danach startet der Node das Sprachmodell selbst</li><li>Oder im Terminal - mit derselben DDS-Umgebung wie die UX | Nexus Launcher (Schalter <b>Localhost only</b> im Popup):</li></ul>
           <div class="cmd"><pre># Localhost only AN (sonst: export ROS_LOCALHOST_ONLY=0; unset CYCLONEDDS_URI)
 export ROS_LOCALHOST_ONLY=1
 export CYCLONEDDS_URI=file://$HOME/dev_ws/ros2_nexus/cyclonedds.xml
 ros2 launch vla_bridge vla_bridge.launch.py              # dry_run:=true = nur Plan</pre><button class="copy" type="button">Kopieren</button></div></div></li>
-        <li><div><b>Prüfen</b><ul class="bl sm"><li>Section zeigt nach ~1 s <span class="st" style="--k:var(--ok)">IDLE</span>, <code>Model: qwen3.8:27b</code>, <code>FAKE</code> und die Anzahl Objekte (Backend-Karte im Popup: <code>ollama · ready</code>)</li><li>Terminal: <code>ros2 topic echo --once /vla/status</code></li></ul></div></li>
+        <li><div><b>Prüfen</b><ul class="bl sm"><li>Section zeigt nach ~1 s <span class="st" style="--k:var(--ok)">IDLE</span>, <code>Model: qwen3.8:27b</code>, <code>Robot | Digital Twin</code> und die Anzahl Objekte (Backend-Karte im Popup: <code>ollama · ready</code>)</li><li>Terminal: <code>ros2 topic echo --once /vla/status</code></li></ul></div></li>
       </ol>
     </div>
     <div class="card s-5">
@@ -2414,8 +2414,8 @@ ros2 launch vla_bridge vla_bridge.launch.py              # dry_run:=true = nur P
           <tr><td><code>llm_backend</code></td><td><code>ollama</code></td><td><code>ollama</code> = lokal (offline) · <code>anthropic</code> = Claude (Internet + API-Key)</td></tr>
           <tr><td><code>llm_model</code></td><td><code>qwen3.8:27b</code></td><td>Sprachmodell (<code>ollama list</code>) bzw. Claude-Modell · Standard = Qwen&nbsp;3.8 von Alibaba Cloud, 27&nbsp;Mrd. Parameter, Lizenz Apache&nbsp;2.0, offline</td></tr>
           <tr><td><code>dry_run</code></td><td><code>false</code></td><td><code>true</code> = nur Plan, der Arm bewegt sich nie</td></tr>
-          <tr><td><code>allow_real_motion</code></td><td><code>false</code></td><td>Pläne auch am REAL-Roboter ausführen</td></tr>
-          <tr><td><code>real_require_confirm</code></td><td><code>true</code></td><td>REAL: jeder Plan wartet auf Execute</td></tr>
+          <tr><td><code>allow_real_motion</code></td><td><code>false</code></td><td>Pläne auch am Robot | Hardware ausführen</td></tr>
+          <tr><td><code>real_require_confirm</code></td><td><code>true</code></td><td>Robot | Hardware: jeder Plan wartet auf Execute</td></tr>
           <tr><td><code>config_file</code></td><td>share/…/vla_bridge.yaml</td><td>Parameterdatei</td></tr>
         </tbody>
       </table></div>
@@ -2444,7 +2444,7 @@ ros2 launch vla_bridge vla_bridge.launch.py              # dry_run:=true = nur P
     </div>
     <div class="card s-6">
       <div class="card-h"><h3>Regeln im Node</h3></div>
-      <ul class="bl"><li>Neue Anweisung während THINKING/RUNNING → <code>busy</code>, wird abgelehnt</li><li>Neue Anweisung, während ein Plan wartet → ersetzt den Plan</li><li>Execute zählt nur mit passender <code>id</code></li><li>Plan wird vor jeder Bewegung geprüft; Fehler gehen ans Modell zurück (max. 2 Korrekturen)</li><li>REAL ohne <code>allow_real_motion</code> → <code>preview</code> (nur Plan) · virtuelle Objekte nie · jeder Plan wartet auf Execute</li><li>E-STOP aktiv → nichts wird ausgeführt</li><li>Fehler eines Schritts → <code>replan</code>: der Agent sieht Fehler und neue Szene und plant neu (max. 2×), sonst <code>error</code> mit Schritt und Grund</li></ul>
+      <ul class="bl"><li>Neue Anweisung während THINKING/RUNNING → <code>busy</code>, wird abgelehnt</li><li>Neue Anweisung, während ein Plan wartet → ersetzt den Plan</li><li>Execute zählt nur mit passender <code>id</code></li><li>Plan wird vor jeder Bewegung geprüft; Fehler gehen ans Modell zurück (max. 2 Korrekturen)</li><li>Robot | Hardware ohne <code>allow_real_motion</code> → <code>preview</code> (nur Plan) · virtuelle Objekte nie · jeder Plan wartet auf Execute</li><li>E-STOP aktiv → nichts wird ausgeführt</li><li>Fehler eines Schritts → <code>replan</code>: der Agent sieht Fehler und neue Szene und plant neu (max. 2×), sonst <code>error</code> mit Schritt und Grund</li></ul>
     </div>
     <div class="card s-6">
       <div class="card-h"><h3>Dateien</h3></div>
@@ -2494,7 +2494,7 @@ ros2 launch vla_bridge vla_bridge.launch.py              # dry_run:=true = nur P
         <li><div><b>✓ VLA-Agent</b> (Ollama / Claude): Planprüfung, sauberes Greifen, Greifprüfung, Neuplanung<span>September 2026 · mit virtuellen Objekten und Sandbox getestet</span></div></li>
         <li><div><b>✓ Demonstrationen aufnehmen</b> mit VR, Gamepad oder UI<span>Knopf „Record demo“ in VLA-M · <code>tools/demos_to_lerobot.py</code> → LeRobot-Datensatz</span></div></li>
         <li><div><b>SmolVLA nachtrainieren</b> auf eine Aufgabe (Becher in die Kiste)<span>eigene venv / Docker</span></div></li>
-        <li><div><b>VLA als Skill des Agenten</b> - erst FAKE, dann REAL langsam<span>REAL: nur mit Control-Lock des remote_control_watchdog</span></div></li>
+        <li><div><b>VLA als Skill des Agenten</b> - erst Robot | Digital Twin, dann Robot | Hardware langsam<span>Robot | Hardware: nur mit Control-Lock des remote_control_watchdog</span></div></li>
         <li><div><b>✓ Spracheingabe</b><span>Mikrofon am PC → Whisper → Eingabefeld (Diktat)</span></div></li>
         <li><div><b>π0.5</b>, falls SmolVLA nicht reicht<span>openpi / LeRobot</span></div></li>
       </ol>
@@ -2519,8 +2519,8 @@ ros2 launch vla_bridge vla_bridge.launch.py              # dry_run:=true = nur P
             <tr><td><span class="st">VLA backend not connected yet …</span></td><td>Anweisung gesendet, während die Section offline war</td><td class="fix">Backend starten, Anweisung erneut senden - es wurde nichts an den Roboter geschickt</td></tr>
             <tr><td><span class="st">Still busy with the last task …</span></td><td>Aufgabe läuft noch oder denkt noch</td><td class="fix">Abwarten oder <b>Abort</b></td></tr>
             <tr><td>Agent findet das Objekt nicht · Chip <span class="m">0 objects</span></td><td>Objekt nicht in der Szene: Kamera/YOLO aus, <b>Object detection</b> aus oder anderer Name</td><td class="fix">Planning → Simulation → Object detection an (oder „Virtual objects ON“ in der UX | Nexus Launcher), „Was siehst du?“ fragen</td></tr>
-            <tr><td><span class="st">Physics sandbox is off …</span></td><td>Der Agent fährt zu virtuellen Objekten, die Sandbox simuliert sie aber nicht</td><td class="fix">Im Hinweis <b>Start SIM physics</b> (oder <b>Show setting</b> → Planning → Simulation → SIM physics an, nur FAKE), dann erneut senden</td></tr>
-            <tr><td><span class="st">REAL robot: execution is off …</span> · <span class="m">plan only - not executed</span></td><td>REAL erkannt, <code>allow_real_motion</code> aus (Standard)</td><td class="fix">Gewollt. Für echte Fahrten in der Karte der UX | Nexus Launcher „REAL: execute plans“ an und neu starten</td></tr>
+            <tr><td><span class="st">Physics sandbox is off …</span></td><td>Der Agent fährt zu virtuellen Objekten, die Sandbox simuliert sie aber nicht</td><td class="fix">Im Hinweis <b>Start SIM physics</b> (oder <b>Show setting</b> → Planning → Simulation → SIM physics an, nur Robot | Digital Twin), dann erneut senden</td></tr>
+            <tr><td><span class="st">Robot | Hardware: execution is off …</span> · <span class="m">plan only - not executed</span></td><td>Robot | Hardware erkannt, <code>allow_real_motion</code> aus (Standard)</td><td class="fix">Gewollt. Für echte Fahrten in der Karte der UX | Nexus Launcher „Robot | Hardware: execute plans“ an und neu starten</td></tr>
             <tr><td><span class="st">Language model not available …</span> · Status <span class="st" style="--k:var(--crit)">ERROR</span></td><td>Ollama fehlt oder Modell nicht geladen (Meldung nennt den Grund)</td><td class="fix"><code>bash src/vla_bridge/scripts/install_ollama.sh</code>, Karte neu starten; erste Antwort nach dem Start dauert länger (Modell lädt)</td></tr>
             <tr><td><span class="st">… no collision-free grasp pose …</span></td><td>Objekt zu weit weg oder die Finger passen bei keinem Winkel (z. B. hohe Flasche)</td><td class="fix">Objekt näher an den Arm legen; der Agent versucht es nicht erneut</td></tr>
             <tr><td><span class="st">grasp failed: the suction cup did not hold …</span></td><td>Saugnapf nicht sauber auf der Oberseite (Sandbox)</td><td class="fix">Der Agent plant neu (neu greifen); Objekt steht schief → gerade hinlegen</td></tr>
@@ -2916,7 +2916,7 @@ function initShell(onShow) {
       mode: 'FAKE', owner: ['Server', 'other'], take: true, rel: false, cancel: false,
       req: 'Operating the robot from here needs approval on the server PC.',
       arm: null, gp: ['request control first', 'wait'],
-      eff: 'Effective 50 % · FAKE limit 100 % · stop after 1000 ms without heartbeat', b1: true, b2: false
+      eff: 'Effective 50 % · Robot | Digital Twin limit 100 % · stop after 1000 ms without heartbeat', b1: true, b2: false
     },
     req: {
       now: ['Anfrage wartet: am Server-PC Popup „Allow“ / „Deny“', 'Ohne Antwort verfällt sie nach 60 s', '„Cancel request“ zieht sie zurück'],
@@ -2924,14 +2924,14 @@ function initShell(onShow) {
       mode: 'REAL', owner: ['Server', 'other'], take: false, rel: false, cancel: true,
       req: 'Waiting for approval on the server PC · expires in 52 s',
       arm: ['Arm gamepad', false, true, 'Take control first'], gp: ['waiting for server approval', 'wait'],
-      eff: 'Effective 50 % · REAL limit 50 % · stop after 400 ms without heartbeat', b1: true, b2: false
+      eff: 'Effective 50 % · Robot | Hardware limit 50 % · stop after 400 ms without heartbeat', b1: true, b2: false
     },
     mine: {
       now: ['Server hat freigegeben: du steuerst, das Gamepad fährt', 'Alle anderen Clients sind gesperrt', '„Release control“ gibt die Steuerung ab'],
       url: 'https://192.168.0.xxx:8443/index.html',
       mode: 'REAL', owner: ['You', 'mine'], take: false, rel: true, cancel: false, req: '',
       arm: ['Armed', true, false, 'Auto-off after 60 s without gamepad input'], gp: ['Forwarding', 'on'],
-      eff: 'Effective 50 % · REAL limit 50 % · stop after 400 ms without heartbeat', b1: false, b2: true
+      eff: 'Effective 50 % · Robot | Hardware limit 50 % · stop after 400 ms without heartbeat', b1: false, b2: true
     }
   };
   var $ = function (id) { return document.getElementById(id); };
@@ -3021,7 +3021,7 @@ function initShell(onShow) {
     { id: 'logic', name: 'Koordination und Sicherheit', hint: 'Watchdog, Kollisionsvorprüfung, Motion Handler, VLA, Blackbox' },
     { id: 'vision', name: 'Wahrnehmung', hint: 'ZED, YOLO, Punktwolke, OctoMap' },
     { id: 'plan', name: 'Bewegung', hint: 'MoveIt und ros2_control' },
-    { id: 'hw', name: 'Hardware', hint: 'xArm Lite 6 (REAL oder FAKE), Greifer, Kameras' }
+    { id: 'hw', name: 'Hardware', hint: 'xArm Lite 6 (Robot | Hardware oder Robot | Digital Twin), Greifer, Kameras' }
   ];
 
   var NODES = [
@@ -3033,7 +3033,7 @@ function initShell(onShow) {
     ['tobii', 'human', 'Tobii Glasses', 'Blickpunkt · RTSP :8554', 'Brille für die Blicksteuerung: liefert Szenevideo und Blickpunkt. Auswahl durch Hinsehen.'],
 
     ['nexus', 'ui', 'UX | Nexus Launcher', ':8080', 'Startzentrale. Wählt Launch-Profile (dev_fake, dev_real, server_fake, server_real, client), setzt Launch-Argumente, startet und beendet Prozesse, prüft vor dem Start (Check: Roboter, Kameras, Ports, GPU, Ollama), zeigt Logs je Start und sichert launcher_config.json (Backups).'],
-    ['touch', 'ui', 'UX | Compact Interface', ':8080/touch', 'Teil der UX | Nexus Launcher für das Touch-Display. Statusleiste in jeder Ansicht: FAKE/REAL, Zustand, Tempo, Control-Lock, STOP. Startansicht Move: Cartesian Jogging wie in der UX | Control Interface (Ring + Joystick, Z-Hebel, Orient-Ring, Gelenke), Greifer, Go to pose (Home, Align, Scan), Programm. Dazu Programs, Robot (Position, Gelenke, Kollision/Bahnvorschau, E-STOP-Reset, Eingabewege), Launch (Bringup-Kacheln FAKE/REAL, Abschnitte als Chips, Karten mit Laufstatus + Stop), System (Last, Netzwerk, Dienste, ROS-Graph, Log); Knopf Monitoring holt das UX | Monitoring nach vorn. Gefährliches per Halten statt Dialog (1 s, Stop all 2 s), REAL-Bewegungen mit Dialog.'],
+    ['touch', 'ui', 'UX | Compact Interface', ':8080/touch', 'Teil der UX | Nexus Launcher für das Touch-Display. Statusleiste in jeder Ansicht: Robot | Digital Twin / Robot | Hardware, Zustand, Tempo, Control-Lock, STOP. Startansicht Move: Cartesian Jogging wie in der UX | Control Interface (Ring + Joystick, Z-Hebel, Orient-Ring, Gelenke), Greifer, Go to pose (Home, Align, Scan), Programm. Dazu Programs, Robot (Position, Gelenke, Kollision/Bahnvorschau, E-STOP-Reset, Eingabewege), Launch (Bringup-Kacheln Robot | Digital Twin / Robot | Hardware, Abschnitte als Chips, Karten mit Laufstatus + Stop), System (Last, Netzwerk, Dienste, ROS-Graph, Log); Knopf Monitoring holt das UX | Monitoring nach vorn. Gefährliches per Halten statt Dialog (1 s, Stop all 2 s), Bewegungen (Robot | Hardware) mit Dialog.'],
     ['dash', 'ui', 'UX | Monitoring', ':8083 · js/main.js', 'Überblick über System, Prozesse, ROS-Graph mit Live-Raten, Topics, Robot-Nutzung, Greifen/Ablegen, VLA-M-Aufträge mit Modellvergleich, Sessions und Klicks sowie Evaluierung von Usability-Tests.'],
     ['rcui', 'ui', 'UX | Control Interface', ':8081 · js/main.js', 'Hauptoberfläche zur Steuerung: Digital Twin, Jogging, Zielposen, Greifen, Kameras, Sprache, VLA-M-Chat, Remote Control.'],
     ['vrui', 'ui', 'VR-Ansicht (WebXR)', 'https :8443 · js/twin/xr*.js', 'Dieselbe UX | Control Interface in der Brille. Gleiche Szene und gleicher Renderer wie der Digital Twin, mit HUD und Handgelenk-Panel.'],
@@ -3073,7 +3073,7 @@ function initShell(onShow) {
     ['servo', 'plan', 'MoveIt Servo', '/servo_server', 'Echtzeit-Führung: setzt Geschwindigkeitsbefehle sofort in kleine Bewegungen um.'],
     ['ctrl', 'plan', 'Trajektorien-Controller', 'lite6_traj_controller', 'ros2_control: nimmt Trajektorien an und gibt sie an den Treiber.'],
 
-    ['arm', 'hw', 'xArm Lite 6', 'ufactory_driver · 192.168.1.xxx oder Fake', 'Der Roboterarm. Im FAKE-Modus simuliert, im REAL-Modus über den Treiber im Netz.'],
+    ['arm', 'hw', 'xArm Lite 6', 'ufactory_driver · 192.168.1.xxx oder Fake', 'Der Roboterarm. Im Modus (Robot | Digital Twin) simuliert, im Modus (Robot | Hardware) über den Treiber im Netz.'],
     ['grip', 'hw', 'Greifer · Vakuum', '/ufactory/set_vacuum_gripper', 'Lite-6-Greifer und Vakuumgreifer am Flansch.'],
     ['axis', 'hw', 'Linearachse', 'fake_linear_axis · /linear_axis_cmd', 'Verfahrachse, auf der der Arm sitzt (simuliert).'],
     ['zedcam', 'hw', 'ZED Mini', 'Stereokamera auf Ständer mit Schwenk-Neige-Kopf (optional am Endeffektor)', 'Liefert Bild und Tiefe.'],
@@ -3206,7 +3206,7 @@ function initShell(onShow) {
    ['Jogging-Tasten', '+ Sperre, Bodenbremse im Browser', [4, 7]],
    ['VR Quest 3', '+ Sperre im Browser', [4, 7]],
    ['Zielpose planen', '', [5, 6, 7]],
-   ['VLA-M (Agent)', '+ Execute im Chat, REAL gesperrt · 6 nur im Ghost-Modus', [5, 7]]].forEach(function (r) {
+   ['VLA-M (Agent)', '+ Execute im Chat, Robot | Hardware gesperrt · 6 nur im Ghost-Modus', [5, 7]]].forEach(function (r) {
     var tr = document.createElement('tr');
     var td = document.createElement('td');
     td.innerHTML = '<b></b><small></small>';
@@ -3658,7 +3658,7 @@ function initShell(onShow) {
     ui: ['act', 'screen', 'Oberfläche', 'Browser, VR, RViz', ['Jogging-Taste halten → delta_twist_cmds, loslassen = Stopp', 'TCP-Gizmo ziehen → Planung mit Ghost-Vorschau', 'Buttons → /ui/*-Services des Motion Handlers'], ['UX | Control Interface :8081', 'VR-Ansicht :8443', 'RViz + Control-Panel', 'Blick-UI (Fenster Gaze Control UI)'], 'rcui'],
     tr: ['act', 'swap', 'Transport', 'rosbridge, HTTP', ['rosbridge: JSON über WebSocket ↔ ROS-Topics und -Services', 'Einziger Weg vom Browser in den ROS-Graphen', 'UI-Server: /api/settings, /api/header_status, /api/sys_load, /api/cam_snapshot'], ['ws :9090', 'wss :9091', 'ws :9092', '/api/*'], 'rb9090'],
     lg: ['act', 'cpu', 'Logik + Planung', 'Nodes, MoveIt', ['Remote-Gamepad: remote_control_watchdog → /joy', 'Jogging aus Browser/VR: remote_control_watchdog → Servo', 'Gamepad: teleop_pre_collision_checker → /joy_check → xarm_joystick_input → Servo', 'Zielpose, Greifen, VLA: Motion Handler (/ui/*) → move_group'], ['remote_control_watchdog', 'teleop_pre_collision_checker', 'Motion Handler', 'move_group', 'MoveIt Servo'], 'motion'],
-    rb: ['act', 'arm', 'Roboter', 'xArm Lite 6', ['FAKE: simuliert', 'REAL: über ufactory_driver im Netz', 'Dazu Greifer, Vakuum, Linearachse'], ['ufactory_driver', 'lite6_traj_controller', 'Greifer · Vakuum', 'Linearachse'], 'arm'],
+    rb: ['act', 'arm', 'Roboter', 'xArm Lite 6', ['Robot | Digital Twin: simuliert', 'Robot | Hardware: über ufactory_driver im Netz', 'Dazu Greifer, Vakuum, Linearachse'], ['ufactory_driver', 'lite6_traj_controller', 'Greifer · Vakuum', 'Linearachse'], 'arm'],
     sn: ['fb', 'scan', 'Sensorik', 'Gelenke, ZED, YOLO', ['Gelenkstellungen des Arms', 'Bild und Tiefe der ZED-Kamera', 'Erkannte Objekte als 3D-Boxen'], ['/joint_states', 'ZED Mini', 'YOLO 3D-Boxen', 'Punktwolke'], 'zed'],
     tp: ['fb', 'radio', 'Status-Topics', '/joint_states, /ui/*', ['UX | Control Interface, VR-Ansicht, UX | Compact Interface und UX | Monitoring abonnieren dieselben Topics', '/ui/emergency_stop_active ist latched: ein neu geöffneter Tab sieht den E-STOP sofort'], ['/joint_states', 'TF', '/servo_server/status', '/ui/motion_status', '/ui/collision_msg', '/ui/emergency_stop_active'], 'rb9090'],
     rd: ['fb', 'layers', 'Darstellung', 'Twin, HUD, Ton, Haptik', ['Digital Twin folgt dem Arm', 'Bahnvorschau vor dem Ausführen', 'Statuszeile Jogging, Banner, Töne', 'VR: Vibration, farbiger Sichtrand'], ['digital_twin.js', 'safety.js', 'audio.js', 'xr_feedback.js'], 'rcui'],
@@ -3748,7 +3748,7 @@ function initShell(onShow) {
     [['c3', 'tr'], 'tr', 'Transport', ['roslib → rosbridge (ws :9090 · wss :9091 · ws :9092 am Roboter-PC)', '→ /remote/twist → Twist-Gate im Watchdog → /servo_server/delta_twist_cmds']],
     [['c4', 'lg'], 'lg', 'Logik + Planung', ['MoveIt Servo → kleine Gelenkbewegungen', 'Zielpose, Greifen, VLA-M: Motion Handler → move_group']],
     [['safe'], 'safe', 'Sicherheit greift ein', ['Jogging: Watchdog (Control-Lock, E-STOP, Bodensperre) + Servo (Singularität, Gelenkgrenzen, Kollision)', 'Gamepad: + Kollisionsvorprüfung · remote: + Watchdog', 'E-STOP wirkt immer, auch ohne Browser']],
-    [['c5', 'rb'], 'rb', 'Roboter fährt', ['lite6_traj_controller → xArm Lite 6', 'FAKE simuliert · REAL über ufactory_driver']],
+    [['c5', 'rb'], 'rb', 'Roboter fährt', ['lite6_traj_controller → xArm Lite 6', 'Robot | Digital Twin simuliert · Robot | Hardware über ufactory_driver']],
     [['down', 'sn'], 'sn', 'Messen', ['Gelenke → /joint_states, TF', 'ZED + YOLO → /zed/bboxes_3d']],
     [['c6', 'tp'], 'tp', 'Status verteilen', ['rosbridge → alle offenen Oberflächen', 'E-STOP-Status latched: neuer Tab sieht ihn sofort']],
     [['c7', 'rd'], 'rd', 'Darstellen', ['Twin bewegt sich mit · Statuszeile: Servo, Reichweite, Tisch', 'Töne · VR: Sichtrand, Vibration']],
@@ -4303,19 +4303,19 @@ function initShell(onShow) {
     ['mg', 'move_group', 'MoveIt move_group', 'Bewegungsplanung', ['Plant kollisionsfreie Bahnen zu einer Zielpose', 'Wird über den Motion Handler (/ui/*) angesprochen', '/move_action · /compute_ik'], 'mg', null],
     ['motion', 'Motion Handler', 'Motion Handler', 'Logik', ['Zentrale Bewegungs-API unter /ui/*', 'Zielpose, Gelenkziel, Startpose, Scan, Vorschau, Stopp und E-STOP', 'Paket robot_motion_handler_movegroup'], 'motion', null],
     ['tcp', 'TCP(?![ \\u00a0]?\\d)', 'TCP · Tool Center Point', 'Roboter', ['Arbeitspunkt am Werkzeug, z. B. an der Greiferspitze', 'Im Digital Twin per TCP-Gizmo verschieben oder drehen (Off/Move/Rotate)', 'Kollisionsvorprüfung filtert Gamepad-Befehle anhand der TCP-Position'], null, '#ui'],
-    ['wd', 'Remote-Watchdog|Remote Control Watchdog|Watchdog', 'Remote-Watchdog', 'Logik · remote_control_watchdog', ['Entscheidet, wer steuern darf', 'Prüft Heartbeat, Besitz und Freigabe', 'Begrenzt das Tempo, leitet das Remote-Gamepad auf /joy und Jogging an MoveIt Servo weiter', 'Erkennt FAKE / REAL selbst'], 'wd', '#kombi'],
-    ['hb', 'Heartbeats?', 'Heartbeat', 'Remote Control', ['Lebenszeichen des Clients auf /remote/heartbeat', 'Fehlt es, stoppt das Remote-Gamepad: REAL nach 0,4 s, FAKE nach 1,0 s', 'Tab zu oder WLAN weg: Steuerung nach 10 s frei'], null, '#kombi'],
+    ['wd', 'Remote-Watchdog|Remote Control Watchdog|Watchdog', 'Remote-Watchdog', 'Logik · remote_control_watchdog', ['Entscheidet, wer steuern darf', 'Prüft Heartbeat, Besitz und Freigabe', 'Begrenzt das Tempo, leitet das Remote-Gamepad auf /joy und Jogging an MoveIt Servo weiter', 'Erkennt Robot | Digital Twin / Robot | Hardware selbst'], 'wd', '#kombi'],
+    ['hb', 'Heartbeats?', 'Heartbeat', 'Remote Control', ['Lebenszeichen des Clients auf /remote/heartbeat', 'Fehlt es, stoppt das Remote-Gamepad: Robot | Hardware nach 0,4 s, Robot | Digital Twin nach 1,0 s', 'Tab zu oder WLAN weg: Steuerung nach 10 s frei'], null, '#kombi'],
     ['lock', 'Control-Lock|Steuerungs-Lock', 'Control-Lock', 'Remote Control', ['Genau ein Client hat „Control“, alle anderen schauen zu', 'E-STOP geht von jedem Client', '„Request control“ → am Server „Allow“ / „Deny“ · ohne Antwort verfällt die Anfrage nach 60 s'], null, '#kombi'],
     ['wl', 'Whitelist', 'Whitelist', 'Sicherheit', ['Abschnitt rosbridge: in config/network.yaml', 'Browser senden nur /ui/*, /vla/*, /remote/*, /vr_teleop/*, Servo-Jogging', 'Nur /ui/*-Services, kein /joy · Lesen frei'], null, '#regeln'],
     ['dds', 'DDS', 'DDS', 'ROS-2-Netz', ['Darüber finden sich ROS-2-Nodes im Netz (UDP, Ports 7400+)', 'Browser-Clients brauchen es nicht: sie sprechen über rosbridge', 'Zweiter PC mit ROS (F): „Localhost only“ auf beiden PCs aus, UDP in der Firewall frei'], null, '#dds-scope'],
     ['lo', 'Localhost only', 'Localhost only', 'Schalter im Popup der UX | Nexus Launcher', ['DDS bleibt auf diesem PC', 'A – E: an (empfohlen) · F: aus, auf beiden PCs', 'Gilt erst nach Neustart der Sequenz'], null, '#dds-scope'],
     ['dom', 'Domain-IDs?', 'ROS_DOMAIN_ID', 'ROS-2-Netz', ['Trennt ROS-Graphen im selben Netz', 'Client braucht dieselbe ID wie der Server (UX | Nexus Launcher: 66)'], null, '#combo-f'],
-    ['fake', 'FAKE', 'FAKE · Roboter-Simulation', 'Modus', ['Erkannt daran, dass kein ufactory_driver läuft', 'Remote-Gamepad bis 100 % Tempo', 'Stopp nach 1,0 s ohne Heartbeat · kein „Arm gamepad“'], null, '#kombi'],
-    ['real', 'REAL', 'REAL · echte Roboter-Hardware', 'Modus', ['ufactory_driver läuft · unklar („DETECTING“) gilt als REAL', 'Remote-Gamepad max. 50 % Tempo, Stopp nach 0,4 s ohne Heartbeat', '„Arm gamepad“ nötig, wenn real_require_arm an ist'], null, '#kombi'],
+    ['fake', 'FAKE', 'Robot | Digital Twin · Roboter-Simulation', 'Modus', ['Erkannt daran, dass kein ufactory_driver läuft', 'Remote-Gamepad bis 100 % Tempo', 'Stopp nach 1,0 s ohne Heartbeat · kein „Arm gamepad“'], null, '#kombi'],
+    ['real', 'REAL', 'Robot | Hardware · echte Roboter-Hardware', 'Modus', ['ufactory_driver läuft · unklar („DETECTING“) gilt als Robot | Hardware', 'Remote-Gamepad max. 50 % Tempo, Stopp nach 0,4 s ohne Heartbeat', '„Arm gamepad“ nötig, wenn real_require_arm an ist'], null, '#kombi'],
     ['latched', 'latched', 'latched', 'Topic-Eigenschaft', ['Topic behält den letzten Wert', 'Neuer Tab sieht den E-STOP-Status sofort (/ui/emergency_stop_active)'], null, '#sicherheit'],
     ['pre', 'Kollisionsvorprüfung', 'Kollisionsvorprüfung', 'Logik · teleop_pre_collision_checker', ['Filtert Gamepad-Befehle anhand der aktuellen TCP-Position, bevor sie zu Servo gelangen'], 'pre', '#sicherheit'],
     ['xr', 'WebXR', 'WebXR', 'VR im Browser', ['Dieselbe UX | Control Interface in der Quest 3', 'Verlangt einen sicheren Kontext → HTTPS :8443, Zertifikat certs/cert.pem'], 'vrui', '#combo-d'],
-    ['arm', 'Arm gamepad', 'Arm gamepad', 'Freigabe an echter Roboter-Hardware', ['Remote-Gamepad fährt am REAL-Arm erst danach', 'Pflicht, wenn real_require_arm an ist (empfohlen)', 'Verfällt nach 60 s ohne Eingabe und bei jedem Moduswechsel'], null, '#nexus'],
+    ['arm', 'Arm gamepad', 'Arm gamepad', 'Freigabe an echter Roboter-Hardware', ['Remote-Gamepad fährt am Robot | Hardware erst danach', 'Pflicht, wenn real_require_arm an ist (empfohlen)', 'Verfällt nach 60 s ohne Eingabe und bei jedem Moduswechsel'], null, '#nexus'],
     ['ollama', 'Ollama', 'Ollama', 'Lokales Sprachmodell', ['Lokaler Server für das Sprachmodell von VLA-M (qwen3.8:27b)', 'Check in der UX | Nexus Launcher prüft Ollama + qwen3.8:27b'], 'vla', '#vla-start']
   ];
   var byKey = {};
