@@ -76,7 +76,7 @@ Die absolute Grundvoraussetzung für diesen Workspace ist das offizielle UFactor
 # Build Tools & Audio (Zwingend für PyAudio & Whisper-Mikrofon)
 sudo apt update && sudo apt install -y python3-pip python3-pyaudio portaudio19-dev
 
-# Whisper-Modell "small" Download (multilingual EN/DE, zwingend für Sprachsteuerung;
+# Whisper-Modell "small" Download (multilingual EN/DE, zwingend für Sprachbefehle;
 # sonst wird es beim ersten Start automatisch geladen)
 mkdir -p ~/.cache/whisper.cpp && wget --show-progress -O ~/.cache/whisper.cpp/ggml-small.bin https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-small.bin
 
@@ -141,7 +141,7 @@ pip install "ultralytics>=8.0.0" # YOLO 3D Objekterkennung
 | **Endeffektor** | xArm Lite 6 Vakuumgreifer | Tool Digital I/O (TGPIO) | Vakuum-Sauggreifer für Pick-and-Place-Aufgaben |
 | **Laser-Zielführung** | 5V Rote Linien-/Punkt-Laserdiode | TGPIO Pin 0 | Automatische optische Zielhilfe unter 50 mm Z-Höhe |
 | **Stereo-Tiefensensor** | Stereolabs ZED Mini | USB 3.0 (Type-C) | Hochauflösende stereoskopische Tiefe & 3D-Punktwolken |
-| **Eye-Tracking System** | Tobii Pro Glasses 3 | RTSP (WLAN / Ethernet) | 50/100 Hz binokulares Eye-Tracking zur Intentionserkennung |
+| **Blicksteuerung** | Tobii Pro Glasses 3 | RTSP (WLAN / Ethernet) | 50/100 Hz binokulare Blickerfassung zur Intentionserkennung |
 | **Gamepad-Controller** | Xbox One Elite Series 2 | USB / Bluetooth | Latenzarmes manuelles kartesisches Jogging & Speed-Scaling |
 | **VR-Headset** | Meta Quest 3 | HTTPS / WebXR (WLAN) | Immersive stereoskopische 6-DoF Fern-Teleoperation |
 | **Host-Workstation** | Intel i9-12900K, RTX A5000 | Ubuntu 22.04 / CUDA | Echtzeit-MoveIt-Servo, YOLO-Inferenz & ROS 2 Core |
@@ -241,7 +241,7 @@ GitHub ist die einzige Quelle; jeder Rechner hat einen eigenen Klon in `~/dev_ws
 - **Je Rechner, nicht im Git:** `build/`, `install/`, `log/`, `~/.config/ros2_nexus/` (Nexus-Auswahlen `launcher_state.json`, Sicherungen, Einstellungen), `.claude/settings.local.json`, Claude-Chatverläufe (`claude --resume`), Ollama-Modelle, ZED SDK, `isaacsim/`.
 - **Blender + MCP-Server:** `tools/install_blender.sh` installiert/aktualisiert die gepinnte Version ohne sudo (`--check` zeigt installierte, gepinnte und neueste Version); Details: Skill `.claude/skills/blender`.
 - **Claude Code:** ein neuer Chat warnt, wenn `origin` voraus ist (Hook `session_overview.py`) → zuerst `tools/ws_sync.sh`.
-- **Außerhalb des Labors:** Roboter, Kameras und Tobii (`config/network.yaml`) sind nicht erreichbar → nur FAKE; REAL nur vor Ort mit jemandem am Hardware-Not-Halt.
+- **Außerhalb des Labors:** Roboter, Kameras und Tobii (`config/network.yaml`) sind nicht erreichbar → nur FAKE; REAL nur vor Ort mit jemandem am Hardware-E-STOP.
 
 ---
 

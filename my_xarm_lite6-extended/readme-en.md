@@ -28,7 +28,7 @@
 > [View rendered online](operate_manual.html) · locally via the **Manual** button in the UX | Nexus Launcher (formerly Nexus Webapp) (`http://localhost:8080/manuals/operate_manual.html`).
 > **🛠️ Setup guide (DE/EN):** [`docs/operate_setup_guide.html`](operate_setup_guide.html) – commissioning step by step, for a pre-installed PC or from bare Ubuntu 22.04 (linked from the project docs, UX | Nexus Launcher footer button **Project docs**).
 
-A research and evaluation platform for **multimodal teleoperation** of the UFactory xArm Lite 6. Eye tracking, voice, gamepad, VR and web UIs – combined with assistive automation – lower the barrier to robot control. The platform follows the *shared control* paradigm (Industry 5.0): the human stays in the loop while the system plans collision-free motion in the background. The system proposes, the human decides (human-in-the-loop). At its centre is a live **Digital Twin**: every motion is shown in 3D before the real arm moves.
+A research and evaluation platform for **multimodal teleoperation** of the UFactory xArm Lite 6. Gaze control, voice commands, gamepad, VR and web UIs – combined with assistive automation – lower the barrier to robot control. The platform follows the *shared control* paradigm (Industry 5.0): the human stays in the loop while the system plans collision-free motion in the background. The system proposes, the human decides (human-in-the-loop). At its centre is a live **Digital Twin**: every motion is shown in 3D before the real arm moves.
 
 <p align="center">
   <img src="imgs/robotsystem.jpg" width="90%" alt="xArm Lite 6 workspace in action">
@@ -48,7 +48,7 @@ A research and evaluation platform for **multimodal teleoperation** of the UFact
 | 🧊 | **Digital Twin** – live 3D model of the arm and workcell in the browser (three.js + URDF, `/joint_states`); plan in the Digital Twin with TCP gizmo and ghost preview, then confirm; detected and virtual objects, safety zones, scenes; test new functions risk-free in FAKE mode with the physics sandbox; same Digital Twin in VR and in up to 4 virtual cameras; Isaac Sim as optional shadow Digital Twin | [Concept: Digital Twin](en/concept.html#-digital-twin-first-virtual-then-real) · [UX \| Control Interface](en/robot_control_ui.html) |
 | 🖥️ | **UX \| Control Interface** (port 8081) – WebGL Digital Twin, jogging, MoveIt planning with ghost preview and TCP gizmo, physics sandbox (robot simulation), motion sequences, dockable HUD, area bar per work step (Move, Teach, Vision, Assistant (VLA), Remote Teleop) with step-by-step guides and settings, camera tiles and virtual cameras (own views of the Digital Twin) in the viewport, command palette (Ctrl+K), Diagnostics drawer (log); all four web UIs in German or English (live switch at the bottom of the theme list, Alt+T) | [UX \| Control Interface](en/robot_control_ui.html) |
 | 🚀 | **UX \| Nexus Launcher** (port 8080) – one-click launcher with setups for robot simulation and real robot hardware, launch-tree and config inspection, preflight check before EXECUTE, readiness checks per step, log per start, run restart, config backups, setup info card (network, IPs, ports, PDF export), UX \| Compact Interface for an extra touch display | [Running the system](en/running.html) |
-| 🤖 | **VLA-M chat – agentic ROS** *(in progress)* – instructions in plain language → LLM agent (local Ollama or Claude) plans pick & place with the scene → execute, grasp check, re-planning; dictation via microphone, one-click *Grasp* / *Place here* from the object menu, auto palletizing (skill `palletize`), *Record demo* for training; LeRobot (SmolVLA / π0.5) planned | [VLA-M](en/vla.html) |
+| 🤖 | **VLA-M chat – agentic ROS** *(in progress)* – instructions in plain language → AI agent (local Ollama or Claude) plans pick & place with the scene → execute, grasp check, re-planning; dictation via microphone, one-click *Grasp* / *Place here* from the object menu, auto palletizing (skill `palletize`), *Record demo* for training; LeRobot (SmolVLA / π0.5) planned | [VLA-M](en/vla.html) |
 | 📊 | **UX \| Monitoring** (port 8083) – system load, ROS 2 graph with live rates, robot usage, VLA-M tasks with model comparison (success rate, time to plan, corrections), sessions and evaluation of user studies; **Isaac Sim** as shadow Digital Twin | [Monitoring](en/monitoring.html) · [Isaac Sim](en/isaac_sim.html) |
 
 <p align="center">
@@ -114,7 +114,7 @@ All ports: [7.4 Network & ports](en/running.html#74-network--port-architecture).
 | [🥽 VR Quest 3](en/vr_quest3.html) | 3.5 | WebXR teleoperation, VR HUD, setup and troubleshooting |
 | [🖥️ UX \| Control Interface & motion](en/robot_control_ui.html) | 3.6 | Web UI features, UX \| Compact Interface, motion handler, RViz overlays and markers |
 | [🧊 Isaac Sim](en/isaac_sim.html) | 3.7 | Shadow-mode Digital Twin |
-| [🤖 VLA-M chat](en/vla.html) | 4.3 | LLM agent (agentic ROS): plan → check → execute → recover, safety, roadmap |
+| [🤖 VLA-M chat](en/vla.html) | 4.3 | AI agent (agentic ROS): plan → check → execute → recover, safety, roadmap |
 | [📊 Monitoring](en/monitoring.html) | 8 | UX \| Monitoring: system, usage and evaluation |
 | [🗂️ Repository structure](en/repository_structure.html) | 9 | Annotated file tree |
 | [🗄️ Archive](en/archive.html) | 10 | Deprecated concepts and why |
@@ -135,7 +135,7 @@ All ports: [7.4 Network & ports](en/running.html#74-network--port-architecture).
 ## 📈 Status
 
 - **Ready:** gamepad, VR and web teleoperation, MoveIt planning with preview, 3D vision and grasping (ZED Mini), voice and gaze control, UX | Nexus Launcher, remote control in the home network, blackbox recorder (last 60 s as rosbag2 on E-STOP/collision).
-- **In progress:** VLA-M chat (LLM agent, tested in the robot simulation with the physics sandbox; demos are recorded, model training planned), physics sandbox.
+- **In progress:** VLA-M chat (AI agent, tested in the robot simulation with the physics sandbox; demos are recorded, model training planned), physics sandbox.
 - **Open decisions:** TODOS.md (German).
 
 ## ⚖️ License

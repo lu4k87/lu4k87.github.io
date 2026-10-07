@@ -1220,7 +1220,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: cent
                 <text class="lbl" x="380" y="22" data-en="ERRORS BACK (MAX. 2×)">FEHLER ZURÜCK (MAX. 2×)</text>
                 <text class="lbl" x="180" y="280" data-en="RECOVERY PLAN (MAX. 2)">RETTUNGSPLAN (MAX. 2)</text>
                 <g class="node human" data-n="0"><rect x="15" y="34" width="130" height="56" rx="12"/><text x="80" y="58" data-en="Instruction">Anweisung</text><text class="who" x="80" y="76" data-en="HUMAN">MENSCH</text></g>
-                <g class="node" data-n="1"><rect x="215" y="34" width="130" height="56" rx="12"/><text x="280" y="58">Plan</text><text class="who" x="280" y="76">LLM · SKILLS</text></g>
+                <g class="node" data-n="1"><rect x="215" y="34" width="130" height="56" rx="12"/><text x="280" y="58">Plan</text><text class="who" x="280" y="76">KI · SKILLS</text></g>
                 <g class="node" data-n="2"><rect x="415" y="34" width="130" height="56" rx="12"/><text x="480" y="58" data-en="Verification">Prüfung</text><text class="who" x="480" y="76">CODE</text></g>
                 <g class="node human" data-n="3"><rect x="415" y="198" width="130" height="56" rx="12"/><text x="480" y="222" data-en="Approval">Freigabe</text><text class="who" x="480" y="240" data-en="HUMAN · EXECUTE">MENSCH · EXECUTE</text></g>
                 <g class="node" data-n="4"><rect x="215" y="198" width="130" height="56" rx="12"/><text x="280" y="222" data-en="Execution">Ausführung</text><text class="who" x="280" y="240">MOTION HANDLER</text></g>
@@ -3257,7 +3257,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: cent
       d: ['Ein Satz wird zum Plan. Der Plan geht zurück zum Menschen und fährt erst nach Execute.', 'One sentence becomes a plan. The plan returns to the human and only runs after Execute.'],
       seq: [['ui', '/vla/instruction', ['Anweisung aus Chat oder Diktat', 'Instruction from chat or dictation']],
         ['rb', ':9090', ['Brücke zum ROS-Graphen', 'Bridge to the ROS graph']],
-        ['vla', 'LLM · Skills', ['Agent plant Skills, Code prüft den Plan', 'Agent plans skills, code checks the plan']],
+        ['vla', 'KI · Skills', ['Agent plant Skills, Code prüft den Plan', 'Agent plans skills, code checks the plan']],
         ['rb', '/vla/response', ['Plan geht zurück zur Oberfläche', 'Plan returns to the interface']],
         ['ui', 'Execute', ['Der Mensch prüft den Plan und gibt frei', 'The human reviews and approves the plan']],
         ['rb', '/vla/execute', ['Freigabe mit Plan-id', 'Approval with plan id']],

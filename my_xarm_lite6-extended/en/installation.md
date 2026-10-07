@@ -141,7 +141,7 @@ pip install "ultralytics>=8.0.0" # YOLO 3D Object detection
 | **End-Effector** | xArm Lite 6 Vacuum Gripper | Tool Digital I/O (TGPIO) | Vacuum suction gripper for object pick-and-place |
 | **Laser Guidance** | 5V Red Line/Dot Laser Diode | TGPIO Pin 0 | Automatic optical targeting aid under 50 mm Z-height |
 | **Stereo Depth Sensor** | Stereolabs ZED Mini | USB 3.0 (Type-C) | High-resolution stereoscopic depth & 3D point cloud capture |
-| **Eye-Tracking System** | Tobii Pro Glasses 3 | RTSP (Wi-Fi / Ethernet) | 50/100 Hz binocular eye tracking for intention detection |
+| **Gaze control** | Tobii Pro Glasses 3 | RTSP (Wi-Fi / Ethernet) | 50/100 Hz binocular gaze tracking for intention detection |
 | **Gamepad Controller** | Xbox One Elite Series 2 | USB / Bluetooth | Low-latency manual Cartesian jogging & velocity scaling |
 | **VR Headset** | Meta Quest 3 | HTTPS / WebXR (Wi-Fi) | Immersive 6-DoF stereoscopic remote teleoperation |
 | **Host Workstation** | Intel i9-12900K, RTX A5000 | Ubuntu 22.04 / CUDA | Real-time MoveIt Servo, YOLO inferencing, & ROS 2 Core |
@@ -246,7 +246,7 @@ GitHub is the only source; each computer has its own clone in `~/dev_ws` (Ubuntu
 - **Per computer, not in Git:** `build/`, `install/`, `log/`, `~/.config/ros2_nexus/` (Nexus selections `launcher_state.json`, backups, settings), `.claude/settings.local.json`, Claude chat history (`claude --resume`), Ollama models, ZED SDK, `isaacsim/`.
 - **Blender + MCP server:** `tools/install_blender.sh` installs/updates the pinned version without sudo (`--check` shows installed, pinned and newest version); details: skill `.claude/skills/blender`.
 - **Claude Code:** a new chat warns when `origin` is ahead (hook `session_overview.py`) → run `tools/ws_sync.sh` first.
-- **Away from the lab:** robot, cameras and Tobii (`config/network.yaml`) are unreachable → FAKE only; REAL only on site with someone at the E-stop.
+- **Away from the lab:** robot, cameras and Tobii (`config/network.yaml`) are unreachable → FAKE only; REAL only on site with someone at the E-STOP.
 
 ---
 

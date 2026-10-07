@@ -1562,7 +1562,7 @@
             <div class="w-box">
               <b>3D Digital Twin</b><small>panel-3d-centerpiece · HUD-Reiter an alle vier Ränder andockbar (hud_dock.js)</small>
               <div class="w-twin">
-                <div class="full"><div class="w-box"><b>Viewport-Leiste</b><small>toolbar.js · layer_bar.js · oben neben dem Nav-Gizmo (144 px), einklappbar · TCP-Gizmo Off/Move/Rotate, Move (Home, Align, Scan pose), Layers (Taste L), Planning, XR, Settings</small></div></div>
+                <div class="full"><div class="w-box"><b>Viewport-Leiste</b><small>toolbar.js · layer_bar.js · oben neben dem Nav-Gizmo (144 px), einklappbar · TCP-Gizmo (Griff am Greiferpunkt im Digital Twin) Off/Move/Rotate, Move (Home, Align, Scan pose), Layers (Taste L), Planning, XR, Settings</small></div></div>
                 <div class="w-box"><b>Dock links</b><small>frei · jeder Reiter andockbar</small></div>
                 <div class="w-view"><b>Viewport</b><small>three.js · gizmo.js · twin/xr.js · MOVEIT-Popup Plan → Confirm → Execute</small></div>
                 <div class="w-box"><b>CAMERAS</b><small>rechts angedockt · laufende Streams + virtuelle Kameras als Kacheln, „+“ = neue virtuelle Kamera · cam_pip.js</small></div>
@@ -3037,7 +3037,7 @@ function initShell(onShow) {
     ['dash', 'ui', 'UX | Monitoring', ':8083 · js/main.js', 'Überblick über System, Prozesse, ROS-Graph mit Live-Raten, Topics, Robot-Nutzung, Greifen/Ablegen, VLA-M-Aufträge mit Modellvergleich, Sessions und Klicks sowie Evaluierung von Usability-Tests.'],
     ['rcui', 'ui', 'UX | Control Interface', ':8081 · js/main.js', 'Hauptoberfläche zur Steuerung: Digital Twin, Jogging, Zielposen, Greifen, Kameras, Sprache, VLA-M-Chat, Remote Control.'],
     ['vrui', 'ui', 'VR-Ansicht (WebXR)', 'https :8443 · js/twin/xr*.js', 'Dieselbe UX | Control Interface in der Brille. Gleiche Szene und gleicher Renderer wie der Digital Twin, mit HUD und Handgelenk-Panel.'],
-    ['gazeui', 'ui', 'Blick-UI', 'gaze_control_ui_tobii_glasses', 'Eigenständige Oberfläche, die per Blick bedient wird und direkt Servo-Befehle sendet.'],
+    ['gazeui', 'ui', 'Blick-UI (Fenster Gaze Control UI)', 'gaze_control_ui_tobii_glasses', 'Eigenständige Oberfläche, die per Blick bedient wird und direkt Servo-Befehle sendet.'],
     ['rviz', 'ui', 'RViz', 'scene_objects · servo_status · scene_objects_distance_to_tcp', 'Entwickleransicht mit Warn-Overlays, 3D-Markern und Abstandslinie zum TCP.'],
 
     ['nexusbe', 'bridge', 'Backend der UX | Nexus Launcher', 'Flask · ros2_nexus_web.py · touch_panel_server.py', 'Führt ros2 launch/run als Prozesse aus, liest Launch-Argumente aus, speichert launcher_config.json. Lesen (GET) geht aus dem ganzen Netz, Starten und Stoppen (POST) nur vom Roboter-PC aus der UX | Nexus Launcher.'],
@@ -3655,7 +3655,7 @@ function initShell(onShow) {
   var ST = {
     op: ['act', 'user', 'Bediener', 'Absicht', ['Wählt: Jogging, Zielpose, Objekt greifen, VLA-Anweisung, E-STOP', 'Prüft Twin, HUD und Kamerabild, korrigiert oder stoppt'], [], null],
     dev: ['act', 'pad', 'Eingabegerät', 'Gamepad, Eyetracker, VR, Spracheingabe', ['Gamepad lokal: joy_node → /joy', 'Gamepad remote: Gamepad-API im Browser → /remote/joy', 'Quest 3: Controller-Pose → /vr_teleop/controller_data', 'Mikrofon → Whisper · Tobii → Blickpunkt + RTSP :8554'], ['Maus · Touch', 'Gamepad', 'Meta Quest 3', 'Mikrofon', 'Tobii Glasses'], 'pad'],
-    ui: ['act', 'screen', 'Oberfläche', 'Browser, VR, RViz', ['Jogging-Taste halten → delta_twist_cmds, loslassen = Stopp', 'TCP-Gizmo ziehen → Planung mit Ghost-Vorschau', 'Buttons → /ui/*-Services des Motion Handlers'], ['UX | Control Interface :8081', 'VR-Ansicht :8443', 'RViz + Control-Panel', 'Blick-UI'], 'rcui'],
+    ui: ['act', 'screen', 'Oberfläche', 'Browser, VR, RViz', ['Jogging-Taste halten → delta_twist_cmds, loslassen = Stopp', 'TCP-Gizmo ziehen → Planung mit Ghost-Vorschau', 'Buttons → /ui/*-Services des Motion Handlers'], ['UX | Control Interface :8081', 'VR-Ansicht :8443', 'RViz + Control-Panel', 'Blick-UI (Fenster Gaze Control UI)'], 'rcui'],
     tr: ['act', 'swap', 'Transport', 'rosbridge, HTTP', ['rosbridge: JSON über WebSocket ↔ ROS-Topics und -Services', 'Einziger Weg vom Browser in den ROS-Graphen', 'UI-Server: /api/settings, /api/header_status, /api/sys_load, /api/cam_snapshot'], ['ws :9090', 'wss :9091', 'ws :9092', '/api/*'], 'rb9090'],
     lg: ['act', 'cpu', 'Logik + Planung', 'Nodes, MoveIt', ['Remote-Gamepad: remote_control_watchdog → /joy', 'Jogging aus Browser/VR: remote_control_watchdog → Servo', 'Gamepad: teleop_pre_collision_checker → /joy_check → xarm_joystick_input → Servo', 'Zielpose, Greifen, VLA: Motion Handler (/ui/*) → move_group'], ['remote_control_watchdog', 'teleop_pre_collision_checker', 'Motion Handler', 'move_group', 'MoveIt Servo'], 'motion'],
     rb: ['act', 'arm', 'Roboter', 'xArm Lite 6', ['FAKE: simuliert', 'REAL: über ufactory_driver im Netz', 'Dazu Greifer, Vakuum, Linearachse'], ['ufactory_driver', 'lite6_traj_controller', 'Greifer · Vakuum', 'Linearachse'], 'arm'],

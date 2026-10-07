@@ -80,7 +80,7 @@ dev_ws/
 │   │   ├── gaze_control_ui_tobii_glasses/gaze_ui_core.py                 # Shared core: buttons, dwell, gaze mapping, servo
 │   │   ├── gaze_control_ui_tobii_glasses/gaze_ui_node_tobii_glasses.py    # Gaze UI (`gaze_ui`)
 │   │   └── gaze_control_ui_tobii_glasses/gaze_ui_node_tobii_glasses_zedm.py # Gaze UI with the ZED M image (`gaze_ui_zedm`)
-│   ├── gaze_grasp_routine_tobii_glasses/                                  # 👁️ Python: Tobii eye-tracking gaze-to-3D grasp routine
+│   ├── gaze_grasp_routine_tobii_glasses/                                  # 👁️ Python: Tobii gaze control: gaze-to-3D grasp routine
 │   │   └── gaze_grasp_routine_tobii_glasses/gaze_grasp_routine_tobii_glasses.py # Dwell-time selection, homography localization, grasp
 │   ├── dev_ws_network/                                                    # Python: net_get() for config/network.yaml (nodes, web UIs, Nexus)
 │   ├── http_monitoring_dashboard_p8083/                                        # 📈 Python/JS: UX | Monitoring (port 8083) – system, usage & evaluation

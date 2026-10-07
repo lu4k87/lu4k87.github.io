@@ -49,7 +49,7 @@ Beyond being a demonstrator, the system produces transferable knowledge about in
 A modular software architecture for multimodal teleoperation and AI-assisted robotics. As an integration layer (middleware level) it unifies heterogeneous subsystems in one runtime environment. With a distributed server/client setup and a real-time **Digital Twin** (WebGL in the UX | Control Interface (formerly Robot Control UI), optionally NVIDIA Isaac Sim) it serves as development environment and as reproducible test environment – a closed loop of development and empirical validation:
 
 - **Sensors & perception:** depth cameras (YOLO object detection, marker tracking) and tactile or physiological sensors for state estimation.
-- **Multimodal control:** eye tracking for target selection, voice control (OpenAI Whisper) and classic controllers (gamepads, 3D mice) in parallel.
+- **Multimodal control:** gaze control for target selection, voice commands (OpenAI Whisper) and classic controllers (gamepads, 3D mice) in parallel.
 - **Cognitive robotics:** Vision-Language-Action (VLA) models that turn abstract verbal and visual commands into robot action sequences.
 - **Integrated data acquisition:** time-synchronous logging of technical performance data and human interaction data.
 
@@ -109,7 +109,7 @@ Mostly affordable off-the-shelf components (COTS) – without sacrificing precis
 Fully integrated into ROS 2 Humble; standard communication primitives keep the platform interoperable with industrial ecosystems:
 
 - **Native ROS 2:** nodes, topics, services and actions – compatible with MoveIt 2 and current sensor SDKs.
-- **Encapsulated subsystems:** modules such as VLA pipelines or eye-tracking drivers can be replaced or extended on their own.
+- **Encapsulated subsystems:** modules such as VLA pipelines or gaze control drivers can be replaced or extended on their own.
 - **Portability:** easy migration to future ROS 2 LTS distributions.
 
 ## 4. 🕹️ Multimodal Technologies & Interaction Concepts
@@ -118,7 +118,7 @@ Fully integrated into ROS 2 Humble; standard communication primitives keep the p
 - **Gamepad:** low-latency, continuous fine control with an Xbox One Elite Series 2 controller, including haptic feedback (vibration on collision risk) → [Modes & gamepad](teleoperation.html).
 - **VR (Meta Quest 3):** immersive 6-DoF Cartesian control with the Quest 3 controllers via WebXR and ADB tunnelling → [VR teleoperation](vr_quest3.html).
 - **Web UI:** mouse or touch in the UX | Control Interface – on the robot PC, from a laptop or tablet in the home network, or on the UX | Compact Interface (formerly Touch Panel) → [UX | Control Interface](robot_control_ui.html).
-- **Voice & gaze:** Whisper voice commands and Tobii eye tracking → [Voice & gaze](voice_gaze.html).
+- **Voice & gaze:** Whisper voice commands and Tobii gaze control → [Voice & gaze](voice_gaze.html).
 - **VLA-M chat:** instructions in plain language → [VLA-M](vla.html).
 
 ### 4.2 Perception & Assistance

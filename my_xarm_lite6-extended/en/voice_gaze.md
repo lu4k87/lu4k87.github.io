@@ -9,19 +9,19 @@
 ## 3.4 Feature: Multimodal Interaction (Voice & Gaze Control)
 *These experimental modules allow for "hands-free" control of the system.*
 
-### Whisper AI Voice Control Pipeline
-<p align="center"><img src="../img/diagrams/voice_pipeline.svg" width="100%" alt="Whisper voice control pipeline"></p>
+### Whisper AI Voice Command Pipeline
+<p align="center"><img src="../img/diagrams/voice_pipeline.svg" width="100%" alt="Whisper voice command pipeline"></p>
 
-*Whisper voice control pipeline · source: `tools/make_diagrams.py`*
+*Whisper voice command pipeline · source: `tools/make_diagrams.py`*
 
-<img src="../img/rcu_speech.png" width="420" alt="Speech control in the UX | Control Interface">
+<img src="../img/rcu_speech.png" width="420" alt="Voice commands in the UX | Control Interface">
 
 *UX | Control Interface (formerly Robot Control UI), area **Assistant (VLA) › Speech**: **Start Listening** (click the microphone or press X on the gamepad → `/ui/voice_listen_trigger`), the recognized command (`/ui/voice_status`) and the list of the last voice commands.*
 
-### Tobii Eye-Tracking Pipeline
-<p align="center"><img src="../img/diagrams/gaze_pipeline.svg" width="100%" alt="Tobii eye-tracking pipeline"></p>
+### Tobii Gaze Control Pipeline
+<p align="center"><img src="../img/diagrams/gaze_pipeline.svg" width="100%" alt="Tobii gaze control pipeline"></p>
 
-*Tobii eye-tracking pipeline · source: `tools/make_diagrams.py`*
+*Tobii gaze control pipeline · source: `tools/make_diagrams.py`*
 
 ---
 
@@ -91,7 +91,7 @@
 
 ### ![Node](https://img.shields.io/badge/Node-blue?style=flat-square) `voice_command_listener.py` &nbsp;&nbsp; <sub><i>`/src/voice_command_listener/voice_command_listener/voice_command_listener.py`</i></sub>
 
-**Purpose & Task:** Analyzes discrete single-shot raw text using regex patterns to extract defined action intents: stop ("Stop", "Halt", "Cancel" – halts the motion, discards anything pending), emergency stop ("Emergency stop", "E-stop"), initial pose, absolute target pose, scan pose ("Scan the scene"), align tool ("Align TCP"), approach object (object in the manual grasp target field), confirm / discard (path in the MoveIt popup, VLA-M plan; only as a short phrase of up to 3 words and only if exactly one waits; negated – "Don't execute" – it becomes discard; other negated commands such as "Don't go home" trigger nothing), open / close gripper ("Suction off / on"; opening only after "Confirm" unless the gripper reports *open*/*off*), speed level ("Speed three" → `Speed: 3`, "Minimum speed" → `Speed: 1`; raises by one level at most), faster, slower. The patterns live in `COMMAND_PATTERNS` (`voice_command_listener.py`, matched on the normalized text: lower case, ae/oe/ue/ss, no punctuation); the UX | Control Interface executes them via `VOICE_COMMANDS_DATA` (`js/voice.js`); stop and emergency stop win over any other command in the sentence ("Stop, do not approach the object" = stop), also pass during the cooldown (`cooldown_sec`, 3 s) and the node triggers them itself as well (`/ui/emergency_stop_topic`, `/ui/halt_motion`), so they work without an open UX | Control Interface. All other commands run only in a visible tab. Initial pose, absolute target pose, scan pose and align tool go through `requestMotion` (`js/motion.js`) like the buttons: with Auto-Move off the motion waits in the MoveIt popup and starts only after "Confirm" (or ▶); "Discard", "Stop", an emergency stop and a lost connection discard it. Test: `src/voice_command_listener/test/test_commands.py`. Home needs a clear phrase ("go home", "home position", "reset pose", "initial pose"); a lone "home" or "reset" triggers nothing. Features high tolerance for similar-sounding Whisper outputs (e.g. recognizing "pause" or "power" as "pose"). Implements a robust **3-layer deduplication state machine** to guarantee exactly-once command execution. Whisper noise tags such as `[BLANK_AUDIO]`, `(sighs)` or `*music*` are stripped before matching. The node plays **no sound of its own**: the "robot moves to ..." announcement comes from `robot_motion_handler_movegroup` only once the motion really starts.
+**Purpose & Task:** Analyzes discrete single-shot raw text using regex patterns to extract defined action intents: stop ("Stop", "Halt", "Cancel" – halts the motion, discards anything pending), E-STOP ("Emergency stop", "E-stop"), initial pose, absolute target pose, scan pose ("Scan the scene"), align tool ("Align TCP"), approach object (object in the manual grasp target field), confirm / discard (path in the MoveIt popup, VLA-M plan; only as a short phrase of up to 3 words and only if exactly one waits; negated – "Don't execute" – it becomes discard; other negated commands such as "Don't go home" trigger nothing), open / close gripper ("Suction off / on"; opening only after "Confirm" unless the gripper reports *open*/*off*), speed level ("Speed three" → `Speed: 3`, "Minimum speed" → `Speed: 1`; raises by one level at most), faster, slower. The patterns live in `COMMAND_PATTERNS` (`voice_command_listener.py`, matched on the normalized text: lower case, ae/oe/ue/ss, no punctuation); the UX | Control Interface executes them via `VOICE_COMMANDS_DATA` (`js/voice.js`); stop and E-STOP win over any other command in the sentence ("Stop, do not approach the object" = stop), also pass during the cooldown (`cooldown_sec`, 3 s) and the node triggers them itself as well (`/ui/emergency_stop_topic`, `/ui/halt_motion`), so they work without an open UX | Control Interface. All other commands run only in a visible tab. Initial pose, absolute target pose, scan pose and align tool go through `requestMotion` (`js/motion.js`) like the buttons: with Auto-Move off the motion waits in the MoveIt popup and starts only after "Confirm" (or ▶); "Discard", "Stop", an E-STOP and a lost connection discard it. Test: `src/voice_command_listener/test/test_commands.py`. Home needs a clear phrase ("go home", "home position", "reset pose", "initial pose"); a lone "home" or "reset" triggers nothing. Features high tolerance for similar-sounding Whisper outputs (e.g. recognizing "pause" or "power" as "pose"). Implements a robust **3-layer deduplication state machine** to guarantee exactly-once command execution. Whisper noise tags such as `[BLANK_AUDIO]`, `(sighs)` or `*music*` are stripped before matching. The node plays **no sound of its own**: the "robot moves to ..." announcement comes from `robot_motion_handler_movegroup` only once the motion really starts.
 
 <details>
 <summary><b>🔽 Show details</b> · Run Command · Subscribes · Publishes · Services · Action Client</summary>
@@ -121,7 +121,7 @@
 >> | **`/ui/voice_feedback`** | `std_msgs/String` | *Recognised voice command (e.g. `Home`, `Stop`); the UX \| Control Interface executes it.* |
 >> | **`/ui/voice_status`** | `std_msgs/String` | *Status for the UI: `Listening...`, `Transcription: <text>`, `-- No speech detected --`, `Error: …`.* |
 >> | **`/ui/voice_dictation`** | `std_msgs/String` | *Dictation text and status for the VLA-M input field (trigger `dictate`).* |
->> | **`/ui/emergency_stop_topic`** | `std_msgs/Empty` | *Voice command `E-Stop` triggers the emergency stop directly.* |
+>> | **`/ui/emergency_stop_topic`** | `std_msgs/Empty` | *Voice command `E-Stop` triggers the E-STOP directly.* |
 >
 >
 > ![Action Client](https://img.shields.io/badge/Action_Client-00BCD4?style=flat-square)
@@ -151,7 +151,7 @@
 
 ### ![Node](https://img.shields.io/badge/Node-blue?style=flat-square) ![Python UI](https://img.shields.io/badge/Python_UI-8A2BE2?style=flat-square&logo=qt&logoColor=white) `gaze_ui_node_tobii_glasses.py` / `gaze_ui_node_tobii_glasses_zedm.py` (`gaze_control_ui_tobii_glasses`) &nbsp;&nbsp; <sub><i>`/src/gaze_control_ui_tobii_glasses/gaze_control_ui_tobii_glasses`</i></sub>
 
-**Purpose & Task:** A master control user interface (PyQt5). Maps eye-tracking gaze points (via RTSP gaze data) to button clicks (e.g., at 1 sec fixation time) and sends movement and gripper commands through the safety chain: own client of `remote_control_watchdog` (kind `gaze`). **GAZE ON** requests control (approve in the UX | Control Interface on the robot PC), **GAZE OFF** releases it; without control no driving, HOME or gripper. Two variants of the script exist for different camera setups:
+**Purpose & Task:** A master control user interface (PyQt5). Maps gaze points (via RTSP gaze data) to button clicks (e.g., at 1 sec fixation time) and sends movement and gripper commands through the safety chain: own client of `remote_control_watchdog` (kind `gaze`). **GAZE ON** requests control (approve in the UX | Control Interface on the robot PC), **GAZE OFF** releases it; without control no driving, HOME or gripper. Two variants of the script exist for different camera setups:
 
 <details>
 <summary><b>🔽 Show details</b> · Features · Run Command · Subscribes · Publishes · Services</summary>
@@ -195,7 +195,7 @@
 >
 >> | Topic / Interface | Msg Type | Description |
 >> |---|---|---|
->> | **`/remote/twist`** | `std_msgs/String` (JSON) | *Cartesian jog to the watchdog's twist gate (control lock, heartbeat, E-stop, floor guard, `max_speed`); no commands → zero twist.* |
+>> | **`/remote/twist`** | `std_msgs/String` (JSON) | *Cartesian jogging to the watchdog's twist gate (control lock, heartbeat, E-STOP, floor guard, `max_speed`); no commands → zero twist.* |
 >> | **`/remote/heartbeat`** | `std_msgs/String` (JSON) | *Heartbeat every 250 ms, kind `gaze`.* |
 >> | **`/remote/control_request`** | `std_msgs/String` (JSON) | *`request` on GAZE ON, `release`/`cancel` on GAZE OFF and on close.* |
 >
@@ -249,7 +249,7 @@
 >
 >> | Topic / Interface | Msg Type | Description |
 >> |---|---|---|
->> | **`/ui/execute_move_to_pose`** | `xarm_msgs/srv/MoveCartesian` (Client) | *Commands the robot to execute scan poses and hover over detected targets. Every move only with control: own watchdog client `Gaze Grasp (Tobii)`; a dwell without control sends a request (approve in the UX \| Control Interface), the window shows `NO CONTROL: …`. A running move is not aborted on losing control (E-stop stops it).* |
+>> | **`/ui/execute_move_to_pose`** | `xarm_msgs/srv/MoveCartesian` (Client) | *Commands the robot to execute scan poses and hover over detected targets. Every move only with control: own watchdog client `Gaze Grasp (Tobii)`; a dwell without control sends a request (approve in the UX \| Control Interface), the window shows `NO CONTROL: …`. A running move is not aborted on losing control (E-STOP stops it).* |
 >
 >
 > ![Subscribes](https://img.shields.io/badge/Subscribes-orange?style=flat-square)

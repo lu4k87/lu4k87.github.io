@@ -20,7 +20,7 @@ dev_ws/
 ├── _imgs/                                                                 # System-Screenshots, Architekturgrafiken & Assets
 │   ├── icons/                                                             # SVG-Icons der Karten der UX | Nexus Launcher (z. B. icon_vla.svg, icon_touch_panel.svg)
 │   ├── robotsystem.jpg                                                    # Gesamtsystem Hardware-Setup Übersicht
-│   └── gaze_control_interface.png                                         # Tobii Gaze Eye-Tracking GUI Vorschau
+│   └── gaze_control_interface.png                                         # Vorschau der Blick-UI (Tobii)
 ├── certs/                                                                 # SSL/TLS-Zertifikate für WebXR HTTPS-Server
 │   ├── cert.pem                                                           # HTTPS Öffentliches Zertifikat
 │   └── key.pem                                                            # HTTPS Privater Schlüssel
@@ -80,7 +80,7 @@ dev_ws/
 │   │   ├── gaze_control_ui_tobii_glasses/gaze_ui_core.py                 # Gemeinsamer Kern: Knöpfe, Verweilen, Blick-Mapping, Servo
 │   │   ├── gaze_control_ui_tobii_glasses/gaze_ui_node_tobii_glasses.py    # Gaze UI (`gaze_ui`)
 │   │   └── gaze_control_ui_tobii_glasses/gaze_ui_node_tobii_glasses_zedm.py # Gaze UI mit ZED-M-Bild (`gaze_ui_zedm`)
-│   ├── gaze_grasp_routine_tobii_glasses/                                  # 👁️ Python: Tobii Eye-Tracking Blick-zu-3D-Greif-Routine
+│   ├── gaze_grasp_routine_tobii_glasses/                                  # 👁️ Python: Tobii-Blicksteuerung: Blick-zu-3D-Greif-Routine
 │   │   └── gaze_grasp_routine_tobii_glasses/gaze_grasp_routine_tobii_glasses.py # Dwell-Time-Auswahl, Homographie-Lokalisierung, Greifen
 │   ├── dev_ws_network/                                                    # Python: net_get() für config/network.yaml (Nodes, Web-UIs, Nexus)
 │   ├── http_monitoring_dashboard_p8083/                                        # 📈 Python/JS: UX | Monitoring (Port 8083) – System, Nutzung & Evaluierung
@@ -167,11 +167,11 @@ dev_ws/
 │   ├── voice_command_listener/                                            # 🗣️ Python: Intent-Parser für Sprachbefehle & Aktionsauslöser
 │   │   ├── launch/voice_listener.launch.py
 │   │   └── voice_command_listener/voice_command_listener.py               # Zuordnung Sprachbefehl → Roboteraktion
-│   ├── vla_bridge/                                                        # 🧠 Python: Backend des VLA-M-Chats = LLM-Agent (Ollama / Claude, LeRobot geplant)
+│   ├── vla_bridge/                                                        # 🧠 Python: Backend des VLA-M-Chats = VLA-Agent (Ollama / Claude, LeRobot geplant)
 │   │   ├── launch/vla_bridge.launch.py
 │   │   ├── config/vla_bridge.yaml                                         # Sprachmodell, Szenen-Topic, Sicherheit, Greifhöhen, Zeitgrenzen
 │   │   ├── scripts/install_ollama.sh                                      # Ollama + Modell ohne sudo (~/.local/ollama)
-│   │   ├── vla_bridge/vla_bridge_node.py                                  # /vla/*-Topics, Bestätigen / Ausführen / Abbrechen / Not-Aus, Neuplanung
+│   │   ├── vla_bridge/vla_bridge_node.py                                  # /vla/*-Topics, Bestätigen / Ausführen / Abbrechen / E-STOP, Neuplanung
 │   │   ├── vla_bridge/agent.py                                            # Prompt, JSON-Schema, Planprüfung + Selbstkorrektur, Recovery (ohne ROS, pytest)
 │   │   ├── vla_bridge/llm.py                                              # Backends Ollama (lokal, startet ollama serve) und Anthropic
 │   │   ├── vla_bridge/skills.py                                           # pick / place / home / gripper über Approach from above, Yaw-Suche, Greifprüfung

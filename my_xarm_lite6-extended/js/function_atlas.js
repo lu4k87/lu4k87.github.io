@@ -725,7 +725,7 @@ const FLOWS = (() => {
     },
     voice: {
       t: ['Sprachbefehl: hören, erkennen, bestätigen', 'Voice command: listen, detect, confirm'], hue: 'teal', icon: 'i-mic', s: 'spr',
-      d: ['Whisper transkribiert ein Hörfenster von 5 s lokal auf dem Roboter-PC, voice_command_listener erkennt darin Befehle auf Deutsch und Englisch per Regex. Fahrten laufen durch dieselbe Bestätigung wie die Knöpfe, „E-STOP“ und „Stopp“ wirken sofort.', 'Whisper transcribes a 5 s listening window locally on the robot PC; voice_command_listener detects commands in German and English by regex. Motions pass the same confirmation as the buttons; “E-STOP” and “stop” act at once.'],
+      d: ['Whisper transkribiert ein Hörfenster von 5 s lokal auf dem Roboter-PC, voice_command_listener erkennt darin Befehle auf Deutsch und Englisch per Regex. Fahrten laufen durch dieselbe Bestätigung wie die Knöpfe, „Not-Aus“ und „Stopp“ wirken sofort.', 'Whisper transcribes a 5 s listening window locally on the robot PC; voice_command_listener detects commands in German and English by regex. Motions pass the same confirmation as the buttons; “E-stop” and “stop” act at once.'],
       note: ['Mit Auto-Move an fährt ein Befehl ohne Popup. E-STOP und Stop wirken immer sofort.', 'With auto-move on, a command moves without the popup. E-STOP and stop always act at once.'],
       loop: { t: ['Sprachbefehl', 'Voice command'], s: ['Whisper · voice_command_listener', 'Whisper · voice_command_listener'],
         st: [[['Hören', 'Listen'], ['Knopf · 5 s', 'button · 5 s']], [['Transkribieren', 'Transcribe'], ['Whisper', 'Whisper']], [['Erkennen', 'Detect'], ['Regex · 3 s Cooldown', 'regex · 3 s cooldown']],
@@ -747,9 +747,9 @@ const FLOWS = (() => {
             S('wh>vcl', ['Whisper liefert den Text; Regex-Muster für Deutsch und Englisch ordnen ihn einem Befehl zu.', 'Whisper returns the text; regex patterns for German and English map it to a command.']),
             S('vcl>ui', ['Der erkannte Befehl geht an die UI; danach gilt 3 s Cooldown gegen Doppelauslösung.', 'The detected command goes to the UI; then a 3 s cooldown prevents double triggering.']),
             S('ui>mh', ['Die UI zeigt das Bestätigungs-Popup; erst „Bestätigen“ startet die Fahrt (Auto-Move aus).', 'The UI shows the confirm popup; only “Confirm” starts the motion (auto-move off).'])]),
-          SC('stop', ['E-STOP per Stimme', 'Voice E-STOP'], 'i-stop', 'red', ['„E-STOP“ wirkt direkt aus dem Listener, auch ohne offene UI. Der Befehl umgeht Cooldown und Popup und geht als E-STOP-Topic an den Motion Handler.', '“E-STOP” acts directly from the listener, even without an open UI. The command skips cooldown and popup and goes to the motion handler as the E-STOP topic.'], [
+          SC('stop', ['E-STOP per Stimme', 'Voice E-STOP'], 'i-stop', 'red', ['„Not-Aus“ wirkt direkt aus dem Listener, auch ohne offene UI. Der Befehl umgeht Cooldown und Popup und geht als E-STOP-Topic an den Motion Handler.', '“E-stop” acts directly from the listener, even without an open UI. The command skips cooldown and popup and goes to the motion handler as the E-STOP topic.'], [
             S('mic>wh', ['audio_listener liest das Mikrofon und streamt das Audio an Whisper.', 'audio_listener reads the microphone and streams the audio to Whisper.']),
-            S('wh>vcl', ['Whisper liefert den Text, die Regex erkennt „E-STOP“; dafür gilt kein Cooldown.', 'Whisper returns the text, the regex detects “E-STOP”; no cooldown applies.']),
+            S('wh>vcl', ['Whisper liefert den Text, die Regex erkennt „Not-Aus“; dafür gilt kein Cooldown.', 'Whisper returns the text, the regex detects “E-stop”; no cooldown applies.']),
             S('vcl>mh', ['Der Listener publiziert den E-STOP selbst; der Motion Handler verriegelt wie beim roten Knopf.', 'The listener publishes the E-STOP itself; the motion handler latches as with the red button.'])])],
       },
     },

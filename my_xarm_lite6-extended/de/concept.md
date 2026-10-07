@@ -49,7 +49,7 @@ Ein voll funktionsfähiger, reproduzierbarer und erschwinglicher Proof-of-Concep
 Eine modulare Softwarearchitektur für multimodale Teleoperation und KI-gestützte Assistenzrobotik. Als Integrationsschicht (Middleware-Ebene) führt sie heterogene Teilsysteme in einer Laufzeitumgebung zusammen. Mit verteiltem Server/Client-Aufbau und einem echtzeitfähigen **Digital Twin** (WebGL in der UX | Control Interface (früher „Robot Control UI“), optional NVIDIA Isaac Sim) dient sie als Entwicklungs- und als reproduzierbare Testumgebung – ein geschlossener Kreislauf aus Entwicklung und empirischer Validierung:
 
 - **Sensorik & Perzeption:** Tiefenkameras (YOLO-Objekterkennung, Marker-Tracking) sowie taktile oder physiologische Sensoren zur Zustandserfassung.
-- **Multimodale Steuerung:** Eye-Tracking zur Zielauswahl, Sprachsteuerung (OpenAI Whisper) und klassische Controller (Gamepads, 3D-Mäuse) parallel.
+- **Multimodale Steuerung:** Blicksteuerung zur Zielauswahl, Sprachbefehle (OpenAI Whisper) und klassische Controller (Gamepads, 3D-Mäuse) parallel.
 - **Kognitive Robotik:** Vision-Language-Action-Modelle (VLA), die abstrakte sprachliche und visuelle Befehle in Handlungssequenzen des Roboters übersetzen.
 - **Integrierte Datenakquisition:** zeitsynchrone Aufzeichnung technischer Leistungsdaten und menschlicher Interaktionsdaten.
 
@@ -82,7 +82,7 @@ Die Kontrollhoheit wechselt latenzarm zwischen manueller Führung, Blickinterakt
 - **Autonome Fehlerkompensation:** Das System fängt fehleranfällige Low-Level-Korrekturen ab und schafft Kapazität für die Prozessüberwachung.
 - **Empirische Validierung:** Die tatsächliche Entlastung wird im Projektverlauf mit standardisierten psychometrischen Verfahren gemessen.
 
-### 📈 HCI, Usability & empirische Evaluation
+### 📈 HCI, Usability & empirische Evaluierung
 Die GUI folgt etablierten HCI-Prinzipien: Statt einzelne Freiheitsgrade zu koordinieren oder Terminal-Prozesse von Hand zu starten, erledigen Nutzer Aufgaben intentionsbasiert. Systematische Nutzerstudien bewerten die Schnittstellen:
 
 - **Intentionsbasierte Steuerung:** abstrakte Absichten (Sprache, Blickziel, High-Level-Controller) werden zu präzisen Trajektorien.
@@ -109,7 +109,7 @@ Die offene Codebasis macht alle Algorithmen, Konfigurationen und Datenflüsse me
 Vollständig in ROS 2 Humble integriert; standardisierte Kommunikationsprimitive halten die Plattform interoperabel mit industriellen Ökosystemen:
 
 - **Natives ROS 2:** Nodes, Topics, Services und Actions – kompatibel mit MoveIt 2 und aktuellen Sensor-SDKs.
-- **Gekapselte Teilsysteme:** Module wie VLA-Pipelines oder Eye-Tracking-Treiber lassen sich einzeln austauschen oder erweitern.
+- **Gekapselte Teilsysteme:** Module wie VLA-Pipelines oder Treiber der Blicksteuerung lassen sich einzeln austauschen oder erweitern.
 - **Portierbarkeit:** einfache Migration auf künftige ROS-2-LTS-Distributionen.
 
 ## 4. 🕹️ Multimodale Technologien & Interaktionskonzepte
@@ -118,7 +118,7 @@ Vollständig in ROS 2 Humble integriert; standardisierte Kommunikationsprimitive
 - **Gamepad:** latenzarme, kontinuierliche Feinsteuerung mit einem Xbox One Elite Series 2 Controller, inklusive haptischem Feedback (Vibration bei Kollisionsgefahr) → [Modi & Gamepad](teleoperation.html).
 - **VR (Meta Quest 3):** immersive kartesische 6-DoF-Steuerung mit den Quest-3-Controllern über WebXR und ADB-Tunneling → [VR-Teleoperation](vr_quest3.html).
 - **Web-UI:** Maus oder Touch in der UX | Control Interface – am Roboter-PC, vom Laptop oder Tablet im Heimnetz oder am UX | Compact Interface (früher „Touch Panel“) → [UX | Control Interface](robot_control_ui.html).
-- **Sprache & Blick:** Whisper-Sprachbefehle und Tobii-Eye-Tracking → [Sprache & Blick](voice_gaze.html).
+- **Sprache & Blick:** Whisper-Sprachbefehle und Tobii-Blicksteuerung → [Sprache & Blick](voice_gaze.html).
 - **VLA-M-Chat:** Anweisungen in Alltagssprache → [VLA-M](vla.html).
 
 ### 4.2 Sensorik & Assistenz (Perception)

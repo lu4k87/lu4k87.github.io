@@ -9,19 +9,19 @@
 ## 3.4 Funktion: Multimodale Interaktion (Sprache & Blicksteuerung)
 *Diese experimentellen Module erlauben die "Hands-Free"-Steuerung des Systems.*
 
-### Whisper AI Sprachsteuerungs-Pipeline
-<p align="center"><img src="../img/diagrams/voice_pipeline.svg" width="100%" alt="Whisper-Sprachsteuerungs-Pipeline"></p>
+### Whisper AI Sprachbefehl-Pipeline
+<p align="center"><img src="../img/diagrams/voice_pipeline.svg" width="100%" alt="Whisper-Sprachbefehl-Pipeline"></p>
 
-*Whisper-Sprachsteuerungs-Pipeline · Quelle: `tools/make_diagrams.py`*
+*Whisper-Sprachbefehl-Pipeline · Quelle: `tools/make_diagrams.py`*
 
-<img src="../img/rcu_speech.png" width="420" alt="Sprachsteuerung in der UX | Control Interface">
+<img src="../img/rcu_speech.png" width="420" alt="Sprachbefehle in der UX | Control Interface">
 
 *UX | Control Interface (früher „Robot Control UI“), Bereich **Assistant (VLA) › Speech**: **Start Listening** (Mikrofon anklicken oder X am Gamepad → `/ui/voice_listen_trigger`), der erkannte Befehl (`/ui/voice_status`) und die Liste der letzten Sprachbefehle.*
 
-### Tobii Eye-Tracking Pipeline
-<p align="center"><img src="../img/diagrams/gaze_pipeline.svg" width="100%" alt="Tobii-Eye-Tracking-Pipeline"></p>
+### Tobii-Blicksteuerungs-Pipeline
+<p align="center"><img src="../img/diagrams/gaze_pipeline.svg" width="100%" alt="Tobii-Blicksteuerungs-Pipeline"></p>
 
-*Tobii-Eye-Tracking-Pipeline · Quelle: `tools/make_diagrams.py`*
+*Tobii-Blicksteuerungs-Pipeline · Quelle: `tools/make_diagrams.py`*
 
 ---
 
@@ -65,7 +65,7 @@
 
 ### ![Node](https://img.shields.io/badge/Node-blue?style=flat-square) `audio_listener.py` &nbsp;&nbsp; <sub><i>`/src/ros2_whisper/audio_listener/audio_listener/audio_listener.py`</i></sub>
 
-**Zweck & Aufgabe:** Verarbeitet Mikrofoneingaben für das Sprachsteuerungssystem. Beinhaltet eine automatische, systembewusste Fallback-Logik, die explizit nach den System-Standard-Audiogeräten `pulse` oder `default` sucht und diese priorisiert, um eine zuverlässige Sprachaufzeichnung über verschiedene Hardware-Umgebungen hinweg zu garantieren.
+**Zweck & Aufgabe:** Verarbeitet Mikrofoneingaben für die Sprachbefehle. Beinhaltet eine automatische, systembewusste Fallback-Logik, die explizit nach den System-Standard-Audiogeräten `pulse` oder `default` sucht und diese priorisiert, um eine zuverlässige Sprachaufzeichnung über verschiedene Hardware-Umgebungen hinweg zu garantieren.
 
 <details>
 <summary><b>🔽 Details anzeigen</b> · Run Command · Publishes</summary>
@@ -91,7 +91,7 @@
 
 ### ![Node](https://img.shields.io/badge/Node-blue?style=flat-square) `voice_command_listener.py` &nbsp;&nbsp; <sub><i>`/src/voice_command_listener/voice_command_listener/voice_command_listener.py`</i></sub>
 
-**Zweck & Aufgabe:** Analysiert den diskreten, einzeln getriggerten Rohtext über exakte Regex-Muster und extrahiert die vom Nutzer definierten Handlungs-Intents: Stopp („Stopp“, „Halt“, „Abbrechen“ – hält die Fahrt an, verwirft Offenes), Not-Aus („Not-Aus“, „Nothalt“), Startposition, absolute Zielpose, Scan-Position („Szene scannen“), Werkzeug ausrichten („TCP ausrichten“), Objekt anfahren (Objekt im Feld des manuellen Greifziels), Bestätigen / Verwerfen (Pfad im MoveIt-Popup, VLA-M-Plan; nur als kurzer Satz bis 3 Wörter und nur, wenn genau eins wartet; verneint – „Nicht ausführen“ – wird daraus Verwerfen; andere verneinte Befehle wie „Nicht die Szene scannen“ lösen nichts aus), Greifer öffnen / schließen („Sauger aus / an“; öffnen erst nach „Bestätigen“, außer der Greifer meldet *open*/*off*), Tempo-Stufe („Tempo drei“ → `Speed: 3`, „Ganz langsam“ → `Speed: 1`; erhöhen um höchstens eine Stufe), schneller, langsamer. Die Muster stehen in `COMMAND_PATTERNS` (`voice_command_listener.py`, laufen auf dem normalisierten Text: klein, ae/oe/ue/ss, ohne Satzzeichen), ausgeführt wird in der UX | Control Interface über `VOICE_COMMANDS_DATA` (`js/voice.js`); Stopp und Not-Aus gehen jedem anderen Befehl im Satz vor („Stopp, nicht zur Scan-Position“ = Stopp), gelten auch während des Cooldowns (`cooldown_sec`, 3 s) und löst der Node zusätzlich selbst aus (`/ui/emergency_stop_topic`, `/ui/halt_motion`) – sie wirken also auch ohne offene UX | Control Interface. Alle anderen Befehle führt nur ein sichtbarer Tab aus. Startposition, absolute Zielpose, Scan-Position und Werkzeug ausrichten laufen wie die Buttons über `requestMotion` (`js/motion.js`): Bei Auto-Move aus wartet die Fahrt im MoveIt-Popup, gefahren wird erst nach „Bestätigen“ (oder ▶), „Verwerfen“, „Stopp“, Not-Aus und ein Verbindungsabbruch verwerfen sie. Test: `src/voice_command_listener/test/test_commands.py`. Die Home-Fahrt braucht eine eindeutige Phrase („go home“, „home position“, „reset pose“, „initial pose“, „Fahre zur Startposition“); ein einzelnes „home“ oder „reset“ löst nichts aus. Enthält eine hohe Toleranz für ähnlich klingende Whisper-Erkennungen (z.B. "pause" oder "power" als "pose"). Implementiert eine robuste **3-Stufen-Deduplikations-Zustandsmaschine**, die eine exakt einmalige Befehlsausführung garantiert. Whisper-Geräuschmarkierungen wie `[BLANK_AUDIO]`, `(sighs)` oder `*music*` werden vor der Auswertung entfernt. Der Node spielt **keinen eigenen Sound**: Die Ansage „robot moves to ...“ kommt von `robot_motion_handler_movegroup`, und zwar erst, wenn die Fahrt wirklich startet (vorher lief sie doppelt - und fälschlich, wenn die Fahrt abgelehnt wurde).
+**Zweck & Aufgabe:** Analysiert den diskreten, einzeln getriggerten Rohtext über exakte Regex-Muster und extrahiert die vom Nutzer definierten Handlungs-Intents: Stopp („Stopp“, „Halt“, „Abbrechen“ – hält die Fahrt an, verwirft Offenes), E-STOP („Not-Aus“, „Nothalt“), Startposition, absolute Zielpose, Scan-Position („Szene scannen“), Werkzeug ausrichten („TCP ausrichten“), Objekt anfahren (Objekt im Feld des manuellen Greifziels), Bestätigen / Verwerfen (Bahn im MoveIt-Popup, VLA-M-Plan; nur als kurzer Satz bis 3 Wörter und nur, wenn genau eins wartet; verneint – „Nicht ausführen“ – wird daraus Verwerfen; andere verneinte Befehle wie „Nicht die Szene scannen“ lösen nichts aus), Greifer öffnen / schließen („Sauger aus / an“; öffnen erst nach „Bestätigen“, außer der Greifer meldet *open*/*off*), Tempo-Stufe („Tempo drei“ → `Speed: 3`, „Ganz langsam“ → `Speed: 1`; erhöhen um höchstens eine Stufe), schneller, langsamer. Die Muster stehen in `COMMAND_PATTERNS` (`voice_command_listener.py`, laufen auf dem normalisierten Text: klein, ae/oe/ue/ss, ohne Satzzeichen), ausgeführt wird in der UX | Control Interface über `VOICE_COMMANDS_DATA` (`js/voice.js`); Stopp und E-STOP gehen jedem anderen Befehl im Satz vor („Stopp, nicht zur Scan-Position“ = Stopp), gelten auch während des Cooldowns (`cooldown_sec`, 3 s) und löst der Node zusätzlich selbst aus (`/ui/emergency_stop_topic`, `/ui/halt_motion`) – sie wirken also auch ohne offene UX | Control Interface. Alle anderen Befehle führt nur ein sichtbarer Tab aus. Startposition, absolute Zielpose, Scan-Position und Werkzeug ausrichten laufen wie die Buttons über `requestMotion` (`js/motion.js`): Bei Auto-Move aus wartet die Fahrt im MoveIt-Popup, gefahren wird erst nach „Bestätigen“ (oder ▶), „Verwerfen“, „Stopp“, E-STOP und ein Verbindungsabbruch verwerfen sie. Test: `src/voice_command_listener/test/test_commands.py`. Die Home-Fahrt braucht eine eindeutige Phrase („go home“, „home position“, „reset pose“, „initial pose“, „Fahre zur Startposition“); ein einzelnes „home“ oder „reset“ löst nichts aus. Enthält eine hohe Toleranz für ähnlich klingende Whisper-Erkennungen (z.B. "pause" oder "power" als "pose"). Implementiert eine robuste **3-Stufen-Deduplikations-Zustandsmaschine**, die eine exakt einmalige Befehlsausführung garantiert. Whisper-Geräuschmarkierungen wie `[BLANK_AUDIO]`, `(sighs)` oder `*music*` werden vor der Auswertung entfernt. Der Node spielt **keinen eigenen Sound**: Die Ansage „robot moves to ...“ kommt von `robot_motion_handler_movegroup`, und zwar erst, wenn die Fahrt wirklich startet (vorher lief sie doppelt - und fälschlich, wenn die Fahrt abgelehnt wurde).
 
 <details>
 <summary><b>🔽 Details anzeigen</b> · Run Command · Subscribes · Publishes · Services · Action Client</summary>
@@ -151,7 +151,7 @@
 
 ### ![Node](https://img.shields.io/badge/Node-blue?style=flat-square) ![Python UI](https://img.shields.io/badge/Python_UI-8A2BE2?style=flat-square&logo=qt&logoColor=white) `gaze_ui_node_tobii_glasses.py` / `gaze_ui_node_tobii_glasses_zedm.py` (`gaze_control_ui_tobii_glasses`) &nbsp;&nbsp; <sub><i>`/src/gaze_control_ui_tobii_glasses/gaze_control_ui_tobii_glasses`</i></sub>
 
-**Zweck & Aufgabe:** Eine übergeordnete Master-Control-UI (PyQt5). Setzt Eye-Tracking-Blickpunkte (über RTSP Gaze-Daten) in Button-Klicks um (z.B. bei 1 Sek. Fixationsdauer) und sendet Bewegungs- und Greiferbefehle über die Sicherheitskette: eigener Client von `remote_control_watchdog` (Art `gaze`). **GAZE ON** fragt die Steuerung an (Freigabe in der UX | Control Interface am Roboter-PC), **GAZE OFF** gibt sie ab; ohne Steuerung kein Fahren, kein HOME, kein Greifer. Es existieren zwei Varianten des Skripts für unterschiedliche Kamera-Setups:
+**Zweck & Aufgabe:** Eine übergeordnete Master-Control-UI (PyQt5). Setzt Blickpunkte (über RTSP Gaze-Daten) in Button-Klicks um (z.B. bei 1 Sek. Fixationsdauer) und sendet Bewegungs- und Greiferbefehle über die Sicherheitskette: eigener Client von `remote_control_watchdog` (Art `gaze`). **GAZE ON** fragt die Steuerung an (Freigabe in der UX | Control Interface am Roboter-PC), **GAZE OFF** gibt sie ab; ohne Steuerung kein Fahren, kein HOME, kein Greifer. Es existieren zwei Varianten des Skripts für unterschiedliche Kamera-Setups:
 
 <details>
 <summary><b>🔽 Details anzeigen</b> · Run Command · Subscribes · Publishes · Services</summary>
@@ -195,7 +195,7 @@
 >
 >> | Topic / Interface | Msg Type | Beschreibung |
 >> |---|---|---|
->> | **`/remote/twist`** | `std_msgs/String` (JSON) | *Kartesischer Jog an das Twist-Gate des Watchdogs (Control-Lock, Heartbeat, E-Stop, Bodensperre, `max_speed`); bleiben Befehle aus → Null-Twist.* |
+>> | **`/remote/twist`** | `std_msgs/String` (JSON) | *Kartesisches Jogging an das Twist-Gate des Watchdogs (Control-Lock, Heartbeat, E-STOP, Bodensperre, `max_speed`); bleiben Befehle aus → Null-Twist.* |
 >> | **`/remote/heartbeat`** | `std_msgs/String` (JSON) | *Heartbeat alle 250 ms, Art `gaze`.* |
 >> | **`/remote/control_request`** | `std_msgs/String` (JSON) | *`request` bei GAZE ON, `release`/`cancel` bei GAZE OFF und beim Schließen.* |
 >
@@ -263,7 +263,7 @@
 >
 >> | Topic / Interface | Msg Type | Beschreibung |
 >> |---|---|---|
->> | **`/ui/execute_move_to_pose`** | `xarm_msgs/srv/MoveCartesian` (Client) | *Fährt Scan-Posen an und schwebt über den erkannten Zielen. Jede Fahrt nur mit Steuerung: eigener Watchdog-Client `Gaze Grasp (Tobii)`; ein Dwell ohne Steuerung schickt eine Anfrage (Freigabe in der UX \| Control Interface), das Fenster zeigt `NO CONTROL: …`. Eine laufende Fahrt bricht bei Verlust der Steuerung nicht ab (E-Stop stoppt sie).* |
+>> | **`/ui/execute_move_to_pose`** | `xarm_msgs/srv/MoveCartesian` (Client) | *Fährt Scan-Posen an und schwebt über den erkannten Zielen. Jede Fahrt nur mit Steuerung: eigener Watchdog-Client `Gaze Grasp (Tobii)`; ein Dwell ohne Steuerung schickt eine Anfrage (Freigabe in der UX \| Control Interface), das Fenster zeigt `NO CONTROL: …`. Eine laufende Fahrt bricht bei Verlust der Steuerung nicht ab (E-STOP stoppt sie).* |
 >
 > ![Parameters](https://img.shields.io/badge/Parameters-yellow?style=flat-square)
 >
