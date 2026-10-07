@@ -663,28 +663,20 @@ function build(L, wrap, host, o) {
     const slotXY = s => [s.r * Math.cos(s.a), s.r * Math.sin(s.a)];
     const xy = s => { const [x, y] = slotXY(s); return `x ${mm(x)} · y ${mm(y)} mm`; };
     const ring = (x, y, z) => { flashT = 0; flash.position.set(x, y, z); };
-    // Zufallslage: 6 Plätze im Greifbereich (Winkel −140° … +72°, vor und neben dem Arm; Radius 210–320 mm), Abstände fast
-    // maximal (Wunsch User 06.10.2026): 12 Zufallsstarts, je 90 Schritte gegenseitige Abstoßung im Bereich; gewählt wird zufällig
-    // eine Lage mit ≥ 96 % des größten Mindestabstands (kleine Zufallsspanne); welcher Platz Objekt oder Form wird, ist zufällig
+    // Zufallslage: 6 Plätze gleichmäßig auf der ganzen Kreisfläche im Greifbereich (Wunsch User 07.10.2026; Winkel ±140° wie
+    // Wandern, hinter dem Arm bleibt frei, Gelenk 1 ±178°; Radius 200–330 mm): je Platz ein Winkelsektor, darin Winkel zufällig,
+    // Radius flächengleich zufällig (innen wie außen); bis zu 60 Würfe, bis alle ≥ 130 mm auseinander, sonst der beste Wurf;
+    // welcher Platz Objekt oder Form wird, ist zufällig
     const layout = () => {
-      const A0 = -2.45, A1 = 1.25, R0 = 0.21, R1 = 0.32;
-      const relax = () => {
-        const p = [...Array(6)].map(() => { const a = rnd(A0, A1), r = rnd(R0, R1); return [r * Math.cos(a), r * Math.sin(a)]; });
-        for (let it = 0; it < 90; it++) {
-          const k = 0.004 * (1 - it / 90) + 0.0005;
-          p.forEach((u, i) => {
-            let fx = 0, fy = 0;
-            p.forEach((w, j) => { if (i === j) return; const dx = u[0] - w[0], dy = u[1] - w[1], d2 = dx * dx + dy * dy + 1e-6; fx += dx / d2 ** 1.5; fy += dy / d2 ** 1.5; });
-            const f = Math.hypot(fx, fy) || 1, x = u[0] + k * fx / f, y = u[1] + k * fy / f;
-            const r = Math.max(R0, Math.min(R1, Math.hypot(x, y))), a = Math.max(A0, Math.min(A1, Math.atan2(y, x)));
-            u[0] = r * Math.cos(a); u[1] = r * Math.sin(a);
-          });
-        }
+      const A0 = -2.45, A1 = 2.45, R0 = 0.2, R1 = 0.33, W = (A1 - A0) / 6, D = 0.13;
+      const roll = () => {
+        const p = [...Array(6)].map((_, i) => { const a = A0 + W * (i + rnd(0.1, 0.9)), r = Math.sqrt(rnd(R0 * R0, R1 * R1)); return [r * Math.cos(a), r * Math.sin(a)]; });
         let m = Infinity; p.forEach((u, i) => p.forEach((w, j) => { if (j > i) m = Math.min(m, Math.hypot(u[0] - w[0], u[1] - w[1])); }));
         return { p, m };
       };
-      const runs = [...Array(12)].map(relax), top = Math.max(...runs.map(x => x.m)), ok = runs.filter(x => x.m >= 0.96 * top);
-      const s = ok[Math.floor(Math.random() * ok.length)].p.map(([x, y]) => ({ a: Math.atan2(y, x), r: Math.hypot(x, y) }));
+      let best = roll();
+      for (let n = 1; n < 60 && best.m < D; n++) { const x = roll(); if (x.m > best.m) best = x; }
+      const s = best.p.map(([x, y]) => ({ a: Math.atan2(y, x), r: Math.hypot(x, y) }));
       for (let i = s.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [s[i], s[j]] = [s[j], s[i]]; }
       return { objs: s.slice(0, 3), tpls: s.slice(3).map(c => ({ ...c, yaw: rnd(-0.6, 0.6) })), home: [false, false, false], on: [-1, -1, -1], mat: [0, 0, 0] };
     };
