@@ -96,7 +96,7 @@ function build(THREE, ring, host) {
     ico.position.copy(polar(am, 226, 58)); ico.renderOrder = 9;
     const icoGlow = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false }));
     icoGlow.scale.set(130, 130, 1); icoGlow.position.copy(ico.position);
-    const label = sprite(512, 96, 150); label.position.copy(polar(am, 172, 34));
+    const label = sprite(512, 192, 136); label.position.copy(polar(am, 226, 4));   // Name unter dem Icon, schmaler als das Segment (kein Überlappen)
     const glow = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false }));
     glow.scale.set(300, 300, 1); glow.position.copy(polar(am, 206, 8));
     const g = new THREE.Group(); g.add(mesh, edge, knob, icoGlow, ico, label, glow);
@@ -138,11 +138,13 @@ function build(THREE, ring, host) {
   }
   function relabel() {   // Namen + Hub-Texte in der aktuellen Sprache
     segs.forEach((g, i) => paint(g.userData.label, (c, w, h) => {
-      const t = tiles[i].querySelector('b').textContent.trim();
-      let px = 60; c.font = `700 ${px}px ${font}`;
-      while (c.measureText(t).width > w - 16 && px > 30) { px -= 2; c.font = `700 ${px}px ${font}`; }
-      c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillStyle = fg;
-      c.shadowColor = 'rgba(0,0,0,.8)'; c.shadowBlur = 8; c.fillText(t, w / 2, h / 2);
+      const t = tiles[i].querySelector('b').textContent.trim(), fit = s => c.measureText(s).width <= w - 24;
+      let px = 76, lines = [t]; c.font = `700 ${px}px ${font}`;
+      if (!fit(t) && t.includes(' ')) { const k = t.lastIndexOf(' '); lines = [t.slice(0, k), t.slice(k + 1)]; }   // lange Namen zweizeilig wie die Kachel
+      while (!lines.every(fit) && px > 44) { px -= 2; c.font = `700 ${px}px ${font}`; }
+      c.textAlign = 'center'; c.textBaseline = 'middle'; c.lineJoin = 'round';
+      c.lineWidth = 10; c.strokeStyle = 'rgba(8,10,12,.78)'; c.fillStyle = fg;   // dunkle Kontur: lesbar auch auf leuchtendem Segment
+      lines.forEach((l, k) => { const y = h / 2 + (k - (lines.length - 1) / 2) * px * 1.1; c.strokeText(l, w / 2, y); c.fillText(l, w / 2, y); });
     }));
     const num = ring.querySelector('.at-num'), big = num ? num.dataset.num || num.textContent : '', lbl = ring.querySelector('.at-lbl')?.textContent || '', sub = ring.querySelector('.at-sub')?.textContent || '';
     paint(hubLab, (c, w) => {
