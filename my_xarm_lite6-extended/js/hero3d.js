@@ -3,7 +3,8 @@
      dome   Arbeitsraum als Punktkuppel (Reichweite 440 mm um Gelenk 2); Zeiger bewegt den TCP, sonst langsame Acht;
             Mini-Spiel „Missionen“: Würfel, Quader, Zylinder (Rastergitter) in die passende Aussparung legen lassen, Sprechblasen,
             Missionsstand in der Szene (Bögen am Bodenring, Lichtschrift davor, Klang-Knopf .h3d-snd), Klänge der Robot Control UI (docs/sounds/); freie Objekte fahren Schlangenlinien über die
-            Kreisfläche, prallen weich ab, tanzen, suchen ihr Zuhause und plaudern (Story: sie wollen heim); Formen leuchten als Klick-Hinweis kurz auf,
+            Kreisfläche, prallen ab, tanzen (Pirouette, Polonaise, Ringelreihen, Schlittern), krachen zusammen, suchen ihr Zuhause und
+            plaudern mit Charakter (Story: sie wollen heim), haben Augen, schlafen im Leerlauf ein; Formen leuchten als Klick-Hinweis kurz auf,
             Arm spricht per Sprechblase am Werkzeug (Spruch + Fortschritt · Schritt · Messwert), Objekte antworten; Licht etwas gedämpft
      modes  Steuerwege als Lichtpunkte im Ring (opts.items); aktiver Punkt schickt einen Impuls zum Arm, der Arm zeigt hin
      ghost  Ghost-Arm plant voraus → Freigabe → Arm fährt nach („Erst virtuell, dann real“); Zeiger setzt das Ziel;
@@ -534,7 +535,7 @@ function build(L, wrap, host, o) {
   // drei Objekte als Raster (Würfel 50 mm, Quader 80 × 40 × 30 mm, Zylinder Ø 48 × 50 mm) liegen zufällig im Greifbereich,
   // dazu drei passende Aussparungen (Schablonen). Objekt anklicken/antippen → anfahren, senkrecht aufsetzen, Sauger an, drehend
   // auf 300 mm heben und schwebend halten, bis eine Form gewählt ist. Passende Form → Transport im hohen Bogen, senkrecht absetzen,
-  // Objekt rutscht in die Form (sinkt 8 mm, richtet sich aus), materialisiert in seiner Farbe (Würfel blau, Quader rot, Zylinder
+  // Objekt steht auf der Form (richtet sich aus, kein Einsinken), materialisiert in seiner Farbe (Würfel blau, Quader rot, Zylinder
   // grün) und bedankt sich per Sprechblase. Falsche Form → „Da pass ich nicht rein!“, Arm hält weiter. Startplatz anklicken oder
   // 25 s nichts wählen → zurücklegen. Alle drei zu Hause → Abzeichen, nach 6,5 s neue Runde mit neuer Lage.
   // Freie Ablage (Wunsch User 06.10.2026): statt einer Form jede freie Stelle der Kreisfläche anklicken → Objekt liegt dort
@@ -549,7 +550,7 @@ function build(L, wrap, host, o) {
   // Kontakt in Ruhe, Kontaktpunkte exakt); Gelenk 6 bleibt in ±178°.
   if (scene === 'dome') {
     const T = (de, en) => (document.documentElement.lang === 'en' ? en : de), mm = v => String(Math.round(v * 1000)).replace('-', '−');
-    const PR = 0.27, SINK = 0.008, BACK = 3, table = new THREE.Plane(new THREE.Vector3(0, 0, 1), 0);
+    const PR = 0.27, BACK = 3, table = new THREE.Plane(new THREE.Vector3(0, 0, 1), 0);
     const rnd = (a, b) => a + Math.random() * (b - a);
     const KINDS = [
       { id: 'cube', de: 'Würfel', en: 'cube', S: [0.05, 0.05, 0.05], sym: Math.PI / 2, color: 0x2f6fe8, glow: 0x9cc0ff },
@@ -584,6 +585,30 @@ function build(L, wrap, host, o) {
     };
     // Objekt: Hauch Füllung, Raster, helle Kanten, Eckpunkte; dazu festes Material (Materialisieren per Scan-Ebene, Clipping im Objektrahmen)
     st.renderer.localClippingEnabled = true;
+    // Augen (Wunsch User 08.10.2026, Vorschau F4): Bild je Gefühl und Seite [links, rechts] – offen, groß (Schreck), zu (Blinzeln),
+    // froh ^ ^, sauer (Braue schräg zur Mitte), zugekniffen > <, müde (halb zu); weiß mit Schein, damit sie auf Raster und Farbe tragen
+    const EYE = (() => {
+      // path = Umriss, fill = gefüllt (sonst Strich); dunkler Rand zuerst (Kontrast auf hellen/farbigen Flächen), darüber Weiß mit
+      // Schein (trägt auf dunklem Raster)
+      const mk = (path, fill) => [1, -1].map(m => {
+        const c = document.createElement('canvas'); c.width = c.height = 64;
+        const g = c.getContext('2d'); g.translate(32, 32); g.scale(m, 1); g.lineCap = g.lineJoin = 'round';
+        g.beginPath(); path(g); g.strokeStyle = g.fillStyle = 'rgba(8,14,18,.85)'; g.lineWidth = fill ? 7 : 15; g.stroke(); if (fill) g.fill();
+        g.beginPath(); path(g); g.strokeStyle = g.fillStyle = '#fff'; g.lineWidth = 8; g.shadowColor = '#fff'; g.shadowBlur = 6;
+        if (fill) g.fill(); else g.stroke();
+        const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t;
+      });
+      return {
+        open: mk(g => g.arc(0, 0, 15, 0, Math.PI * 2), true),
+        big: mk(g => g.arc(0, 0, 20, 0, Math.PI * 2), true),
+        shut: mk(g => { g.moveTo(-16, 2); g.lineTo(16, 2); }),
+        happy: mk(g => g.arc(0, 12, 16, Math.PI * 1.15, Math.PI * 1.85)),
+        angry: mk(g => { g.moveTo(-17, -10); g.lineTo(17, 1); g.lineTo(17, 5); g.arc(0, 5, 17, 0, Math.PI); g.closePath(); }, true),
+        squeeze: mk(g => { g.moveTo(-13, -13); g.lineTo(12, 0); g.lineTo(-13, 13); }),
+        sleepy: mk(g => { g.arc(0, 1, 15, 0, Math.PI); g.closePath(); }, true),
+      };
+    })();
+    const EYE_GEO = new THREE.PlaneGeometry(0.017, 0.017);   // Augapfel ~ 9 mm: aus der Hero-Kamera deutlich sichtbar
     const makeObj = K => {
       const [sx, sy, sz] = K.S, cyl = K.id === 'cyl';
       const body = cyl ? new THREE.CylinderGeometry(sx / 2, sx / 2, sz, 40).rotateX(Math.PI / 2) : new THREE.BoxGeometry(sx, sy, sz);
@@ -603,7 +628,11 @@ function build(L, wrap, host, o) {
       const scanLine = lineLoop(outline(K, 0.001), 0), scanLine2 = lineLoop(outline(K, 0.001), 0);
       const scanGlow = new THREE.Mesh(new THREE.PlaneGeometry(sx * 1.9, sy * 1.9), glowMat(0)); scanGlow.material.side = THREE.DoubleSide;
       [fill, grid, pts].forEach(o => { o.material.clippingPlanes = [cutHi, cutY]; });
-      g.add(fill, grid, edge, pts, solid, scanLine, scanLine2, scanGlow);
+      // Augen sitzen auf der Seite zur Kamera (eyesTick): Gruppe +z = Flächennormale, +y = Hochachse des Objekts
+      const eyes = new THREE.Group(), eye = [0, 1].map(i => new THREE.Mesh(EYE_GEO, new THREE.MeshBasicMaterial({ map: EYE.open[i], transparent: true, toneMapped: false,
+        depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2 })));
+      eyes.rotation.order = 'ZXY'; eyes.add(...eye);
+      g.add(fill, grid, edge, pts, solid, scanLine, scanLine2, scanGlow, eyes);
       const aura = sprite(0.1, 0.16), pool = new THREE.Mesh(new THREE.PlaneGeometry(0.2, 0.2), glowMat(0));
       st.scene.add(g, aura, pool);
       // Zielerfassung: vier Eckwinkel um die Grundfläche, zwei Wellen im Umriss; Ablage-Umriss (Vorschau der freien Stelle)
@@ -627,7 +656,8 @@ function build(L, wrap, host, o) {
       return { K, h: sz, g, fill, grid, edge, pts, solid, solidMat, scanLine, scanLine2, scanGlow, cutLo, cutHi, cutX, cutY, col, sw: -1, swUp: true, swNext: rnd(3, 7), glow: new THREE.Color(K.glow), aura, pool,
         lock, brk, tips, waves, ghost, gFill, gRim, yawG: 0,
         slot: null, home: false, mat: { v: 0, to: 0, D: 1 }, hopT: -1, hopDir: 1, hopYaw: 0, swell: 0, popT: 1, sinkT: 1, yaw0: 0, yaw1: 0, shake: 0,
-        on: null, from: null, fall: null, pickTop: sz };
+        on: null, from: null, fall: null, pickTop: sz,
+        eyes, eye, face: 0, phi: rnd(-3, 3), lx: 0, ly: 0, blink: 1, blinkT: rnd(1, 4), mood: 'open', moodTill: 0, sq: 1, crouch: 0 };
     };
     // Aussparung: dunkle Grundfläche + Rand (innen schwächere Kante = Tiefe), Schein und Welle als Klick-Hinweis
     const makeTpl = K => {
@@ -663,24 +693,27 @@ function build(L, wrap, host, o) {
     const slotXY = s => [s.r * Math.cos(s.a), s.r * Math.sin(s.a)];
     const xy = s => { const [x, y] = slotXY(s); return `x ${mm(x)} · y ${mm(y)} mm`; };
     const ring = (x, y, z) => { flashT = 0; flash.position.set(x, y, z); };
-    // Zufallslage: 6 Plätze gleichmäßig auf der ganzen Kreisfläche im Greifbereich (Wunsch User 07.10.2026; Winkel ±140° wie
-    // Wandern, hinter dem Arm bleibt frei, Gelenk 1 ±178°; Radius 200–330 mm): je Platz ein Winkelsektor, darin Winkel zufällig,
-    // Radius flächengleich zufällig (innen wie außen); bis zu 60 Würfe, bis alle ≥ 130 mm auseinander, sonst der beste Wurf;
-    // welcher Platz Objekt oder Form wird, ist zufällig
+    // Zufallslage (Wunsch User 08.10.2026, Vorschau „Robot-Hero-Minispiel: frechere Dialoge …“): jede Form in eigenem Drittel der
+    // Fläche (±149°, hinter dem Arm bleibt frei), Winkel + Radius (190–340 mm, flächengleich) zufällig; Objekte frei auf der Fläche
+    // (180–350 mm); bis zu 150 Würfe, bis Form ↔ Form ≥ 200 mm und Form ↔ Objekt, Objekt ↔ Objekt ≥ 130 mm, sonst der beste Wurf
+    // (Maß = kleinster Abstand / Soll); welches Drittel welche Form bekommt, ist zufällig
     const layout = () => {
-      const A0 = -2.45, A1 = 2.45, R0 = 0.2, R1 = 0.33, W = (A1 - A0) / 6, D = 0.13;
+      const A = 2.6, W = 2 * A / 3, at = (a, r) => [r * Math.cos(a), r * Math.sin(a)], rr = (r0, r1) => Math.sqrt(rnd(r0 * r0, r1 * r1));
+      const far = (u, w, D) => Math.hypot(u[0] - w[0], u[1] - w[1]) / D;
       const roll = () => {
-        const p = [...Array(6)].map((_, i) => { const a = A0 + W * (i + rnd(0.1, 0.9)), r = Math.sqrt(rnd(R0 * R0, R1 * R1)); return [r * Math.cos(a), r * Math.sin(a)]; });
-        let m = Infinity; p.forEach((u, i) => p.forEach((w, j) => { if (j > i) m = Math.min(m, Math.hypot(u[0] - w[0], u[1] - w[1])); }));
-        return { p, m };
+        const t = [0, 1, 2].map(i => at(-A + W * (i + rnd(0.12, 0.88)), rr(0.19, 0.34))), o = [0, 1, 2].map(() => at(rnd(-A, A), rr(0.18, 0.35)));
+        let m = Infinity;
+        t.forEach((u, i) => { t.forEach((w, j) => { if (j > i) m = Math.min(m, far(u, w, 0.2)); }); o.forEach(w => { m = Math.min(m, far(u, w, 0.13)); }); });
+        o.forEach((u, i) => o.forEach((w, j) => { if (j > i) m = Math.min(m, far(u, w, 0.13)); }));
+        return { t, o, m };
       };
       let best = roll();
-      for (let n = 1; n < 60 && best.m < D; n++) { const x = roll(); if (x.m > best.m) best = x; }
-      const s = best.p.map(([x, y]) => ({ a: Math.atan2(y, x), r: Math.hypot(x, y) }));
-      for (let i = s.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [s[i], s[j]] = [s[j], s[i]]; }
-      return { objs: s.slice(0, 3), tpls: s.slice(3).map(c => ({ ...c, yaw: rnd(-0.6, 0.6) })), home: [false, false, false], on: [-1, -1, -1], mat: [0, 0, 0] };
+      for (let n = 1; n < 150 && best.m < 1; n++) { const x = roll(); if (x.m > best.m) best = x; }
+      const pol = ([x, y]) => ({ a: Math.atan2(y, x), r: Math.hypot(x, y) }), t = best.t.map(pol);
+      for (let i = 2; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [t[i], t[j]] = [t[j], t[i]]; }
+      return { objs: best.o.map(pol), tpls: t.map(c => ({ ...c, yaw: rnd(-0.6, 0.6) })), home: [false, false, false], on: [-1, -1, -1], mat: [0, 0, 0] };
     };
-    const putAt = (o, s) => { o.slot = s; o.dz = 0; const [x, y] = slotXY(s); o.g.position.set(x, y, (o.on ? topZ(o.on) : 0) + o.h / 2 - (o.home ? SINK : 0)); };
+    const putAt = (o, s) => { o.slot = s; o.dz = 0; const [x, y] = slotXY(s); o.g.position.set(x, y, (o.on ? topZ(o.on) : 0) + o.h / 2); };
     // Speichern: Lage, Stand, Runden, Klang (privates Fenster/gesperrt → Spiel läuft ohne Merken)
     const STORE = 'hero3d.missions.v1';
     const save = () => { try { localStorage.setItem(STORE, JSON.stringify({ rounds, mute, t: tRun, best, objs: OBJ.map(o => ({ a: o.slot.a, r: o.slot.r })), tpls: TPL.map(t => t.slot), home: OBJ.map(o => o.home),
@@ -729,6 +762,9 @@ function build(L, wrap, host, o) {
         grip: () => tone(330, 0, 0.11, 0.06, 'triangle', 170),                                   // Sauger an: weiches „Plopp“ abwärts
         release: () => tone(190, 0, 0.12, 0.045, 'triangle', 360),                               // Sauger aus: kurz aufwärts
         thud: () => tone(130, 0, 0.16, 0.06, 'triangle', 70),                                    // umgekipptes Objekt schlägt auf
+        // E4 (Wunsch User 08.10.2026): dezentes „Bonk“ beim Zusammenstoß, kleiner Juchzer beim Heimkommen
+        bonk: () => { tone(185, 0, 0.13, 0.06, 'triangle', 92); tone(620, 0, 0.035, 0.012, 'square', 380); },
+        yay: () => { tone(560, 0.12, 0.16, 0.022, 'sine', 1120); tone(1120, 0.27, 0.12, 0.016, 'sine', 940); },
         pop: () => smp('click', 0.4, { alt: () => tone(900, 0, 0.07, 0.03, 'sine', 1350) }),      // Sprechblase
         home: () => smp('chime', 0.42, { alt: () => [523.25, 659.25, 783.99].forEach((f, k) => tone(f, k * 0.09, 0.55, 0.04)) }),
         nope: () => smp('error', 0.26, { alt: () => { tone(233, 0, 0.13, 0.05, 'triangle', 207); tone(196, 0.13, 0.2, 0.05, 'triangle', 175); } }),
@@ -780,71 +816,125 @@ function build(L, wrap, host, o) {
     };
     // say = Objekt spricht, say2 = zweites Objekt antwortet (wartet, bis say fertig ist → Dialog statt zwei Blasen zugleich)
     const say = bubble(''), say2 = bubble('', () => say.busy);
-    // Sprüche je Anlass (Wunsch User 06.10.2026): Story „Die Objekte wollen nach Hause, der User hilft“; je Anlass viele Sprüche,
-    // gezogen aus einem gemischten Beutel (jeder einmal, bevor sich einer wiederholt; nie zweimal hintereinander derselbe).
-    // Eintrag [de, en] oder K => [de, en] (K = Objektart bzw. Form)
+    // Sprüche (Wunsch User 08.10.2026: raffiniert, witzig, leicht frech; nie gegen den User): jede Figur hat einen Charakter –
+    // Würfel = Pedant (rechte Winkel), Quader = gemütlicher Klugscheißer, Zylinder = Draufgänger ohne Ecken, Lite 6 = trockener
+    // Ingenieur. Gezogen aus einem gemischten Beutel (jeder einmal, bevor sich einer wiederholt; nie zweimal hintereinander derselbe).
+    // Eintrag [de, en] oder K => [de, en]; Dialog-Paar [de A, en A, de B, en B] (B greift A auf: Pointe statt Echo).
+    // Pool als Liste (alle) oder je Objektart { cube, box, cyl } (kinds: gemeinsame + eigene Sprüche)
+    const kinds = (all, own) => ({ cube: [...all, ...own.cube], box: [...all, ...own.box], cyl: [...all, ...own.cyl] });
     const L = {
-      hi: [['Hallo! Die drei wollen nach Hause – hilfst du mir?', 'Hi! These three want to go home – will you help?'],
-        ['Drei Ausreißer! Bringen wir sie heim?', 'Three runaways! Shall we bring them home?'],
-        ['Klick ein Objekt an, ich trag’s nach Hause.', 'Click an object, I’ll carry it home.'],
-        ['Na, wer will zuerst nach Hause?', 'So, who wants to go home first?']],
-      go: [['Komme schon!', 'Coming!'], ['Bin unterwegs.', 'On my way.'], ['Moment …', 'One moment …'], ['Halt still, ich komme!', 'Hold still, I’m coming!'],
-        ['Ziel erfasst.', 'Target locked.'], ['Bin gleich bei dir!', 'Be right with you!']],
-      grip: [['Hab dich!', 'Got you!'], ['Erwischt!', 'Caught you!'], ['Gut festhalten!', 'Hold on tight!'], ['Sauger an – sitzt!', 'Suction on – locked!'],
-        ['Ganz sanft …', 'Nice and gentle …']],
-      lift: [['Und hoch!', 'Up we go!'], ['Hoch mit dir!', 'Up you come!'], ['Ab in die Luft!', 'Into the air!'], ['Abflug!', 'Take-off!']],
-      hold: [['Wohin damit?', 'Where to?'], ['Wohin soll’s gehen?', 'Where shall it go?'], ['Zeig mir sein Zuhause!', 'Show me its home!'],
-        ['Welche Form passt?', 'Which shape fits?']],
-      wait: [['Ich warte …', 'I’m waiting …'], ['Mein Arm wird schwer!', 'My arm is getting heavy!'], ['Na? Wo wohnt es denn?', 'Well? Where does it live?'],
-        ['Tick, tack …', 'Tick, tock …']],
-      home: [['Ab nach Hause!', 'Off home you go!'], ['Gleich da.', 'Almost there.'], ['Festhalten!', 'Hang on!'], ['Heimflug läuft.', 'Flying you home.'],
-        ['Nächster Halt: Zuhause.', 'Next stop: home.']],
-      stack: [['Ein Turm? Mutig!', 'A tower? Bold!'], ['Schön gerade stapeln …', 'Nice and straight …'], ['Hoch hinaus!', 'Reaching high!']],
-      back: [['Na gut, zurück.', 'Fine, back it goes.'], ['Dann eben zurück.', 'Back it goes, then.'], ['Zurück an den Start.', 'Back to the start.']],
-      free: [['Neuer Platz!', 'New spot!'], ['Hier passt’s.', 'This works.'], ['Ein Plätzchen für dich.', 'A spot just for you.']],
-      drop: [['Und ab!', 'And down!'], ['Vorsichtig …', 'Gently …'], ['Sauber.', 'Neat.'], ['Sanft absetzen …', 'Setting down softly …']],
-      done: [['Erledigt!', 'Done!'], ['Fertig!', 'All set!'], ['Gern geschehen.', 'You’re welcome.'], ['Läuft!', 'Smooth!']],
-      near: [['Noch einer!', 'One more!'], ['Fast geschafft!', 'Almost there!'], ['Einer fehlt noch!', 'Just one left!']],
-      thanks: [['Ahh…, endlich Zuhause!', 'Ahh…, home at last!'], ['Hier bin ich sicher.', 'I’m safe here.'], ['War ja ’n Kinderspiel!', 'That was child’s play!'],
-        ['Danke! Hier gehör ich hin.', 'Thanks! This is where I belong.'], ['Perfekte Passform!', 'Perfect fit!'], ['Schön warm hier.', 'Nice and cosy here.'],
-        ['Endlich daheim!', 'Finally home!']],
-      nope: [['Da pass ich nicht rein!', 'I don’t fit in there!'], K => [`Ich bin doch kein ${K.de}!`, `I’m not a ${K.en}!`], ['Das ist nicht meine Form!', 'That’s not my shape!'],
-        ['Falsches Haus!', 'Wrong house!'], ['Da wohn ich nicht!', 'I don’t live there!']],
-      full: [['Hier ist kein Platz!', 'No room here!'], ['Zu eng hier!', 'Too tight here!'], ['Da steht schon was!', 'Something’s already there!']],
-      whoa: [['Huch!', 'Whoa!'], ['Hoppla!', 'Oops!'], ['Mir wird schwindelig!', 'I’m getting dizzy!'], ['Umgefallen!', 'Timber!']],
-      pick: [['Heb mich auf!', 'Pick me up!'], ['Ich zuerst!', 'Me first!'], ['Klick mich an!', 'Click me!']],
+      hi: [['Drei Ausreißer, ein Arm, du. Los geht’s?', 'Three runaways, one arm, you. Ready?'],
+        ['Klick ein Objekt an – ich mach den Rest.', 'Click an object – I’ll do the rest.'],
+        ['Die drei wollen heim. Hilfst du mir?', 'Those three want to go home. Will you help?'],
+        ['Hallo! Ich trage, du zeigst.', 'Hi! I carry, you point.']],
+      go: [['Bin unterwegs.', 'On my way.'], ['Ziel erfasst.', 'Target locked.'], ['Halt still, ich rechne.', 'Hold still, I’m computing.'],
+        ['Kurs berechnet.', 'Course plotted.'], ['Komme mit 500 mm/s.', 'Coming in at 500 mm/s.']],
+      grip: [['Hab dich!', 'Got you!'], ['Sauger an – sitzt.', 'Suction on – locked.'], ['Unterdruck: perfekt.', 'Vacuum: perfect.'],
+        ['Erwischt!', 'Caught you!'], ['Ganz sanft …', 'Nice and gentle …']],
+      lift: [['Und hoch!', 'Up we go!'], ['Abflug!', 'Take-off!'], ['Festhalten, Fahrstuhl!', 'Hold on, elevator!'], ['Ab in die Luft!', 'Into the air!']],
+      hold: [['Wohin damit?', 'Where to?'], ['Zeig mir sein Zuhause.', 'Show me its home.'], ['Welche Form passt?', 'Which shape fits?'], ['Dein Zug.', 'Your move.']],
+      wait: [['Mein Sauger schläft gleich ein.', 'My suction cup is dozing off.'], ['Ich halte. Noch.', 'I’m holding. For now.'],
+        ['Tick, tack …', 'Tick, tock …'], ['Kein Stress. Ich bin nur ein Roboter.', 'No rush. I’m only a robot.']],
+      home: [['Nächster Halt: Zuhause.', 'Next stop: home.'], ['Heimflug läuft.', 'Flying you home.'], ['Festhalten, Kurve!', 'Hold on, curve ahead!'],
+        ['Lieferung unterwegs.', 'Delivery en route.']],
+      stack: [['Ein Turm? Mutig.', 'A tower? Bold.'], ['Schön gerade …', 'Nice and straight …'], ['Statik: wird schon.', 'Statics: we’ll see.']],
+      back: [['Na gut, zurück.', 'Fine, back it goes.'], ['Zurück auf Los.', 'Back to start.'], ['Rückwärtsgang.', 'Reverse gear.']],
+      free: [['Neuer Platz!', 'New spot!'], ['Hier passt’s.', 'This works.'], ['Freie Platzwahl.', 'Free seating.']],
+      drop: [['Und ab!', 'And down!'], ['Sanft absetzen …', 'Setting down softly …'], ['Sauber.', 'Neat.'], ['Präzision.', 'Precision.']],
+      done: [['Erledigt.', 'Done.'], ['Läuft.', 'Smooth.'], ['Gern geschehen.', 'You’re welcome.'], ['Wie berechnet.', 'As computed.']],
+      near: [['Noch einer!', 'One more!'], ['Fast geschafft!', 'Almost there!'], ['Einer fehlt. Zielgerade!', 'One left. Home stretch!']],
+      thanks: kinds([['Maßanfertigung. Wortwörtlich.', 'Made to measure. Literally.'], ['Kein Spalt, kein Wackeln – Ingenieurskunst!', 'No gap, no wobble – engineering!'],
+        ['Endlich daheim!', 'Home at last!']], {
+        cube: [['Sechs Seiten, null Spiel. Perfekt.', 'Six sides, zero play. Perfect.'], ['Rechter Winkel, rechter Ort.', 'Right angle, right place.']],
+        box: [['Ah. Liegen. Mein Spezialgebiet.', 'Ah. Lying down. My specialty.'], ['Passt. Wusste ich vorher.', 'Fits. Knew it all along.']],
+        cyl: [['Fünf Sterne, null Ecken frei.', 'Five stars, zero corners spare.'], ['Rund. Wie ich.', 'Round. Just like me.']] }),
+      // falsche Form: Pool je Objektart, K = Form des Ziels
+      nope: kinds([['Falsches Haus!', 'Wrong house!']], {
+        cube: [['Falscher Winkel. Völlig falsch.', 'Wrong angle. Totally wrong.'], K => [`${K.de}-Form? Ich bin quadratisch!`, `A ${K.en} shape? I’m square!`]],
+        box: [['Da lieg ich doch quer!', 'I’d be lying crosswise in there!'], K => [`Seh ich aus wie ein ${K.de}?`, `Do I look like a ${K.en}?`]],
+        cyl: [['Siehst du an mir irgendwo Ecken?', 'See any corners on me?'], ['Da roll ich nicht rein.', 'I won’t roll in there.']] }),
+      full: [['Hier ist kein Platz!', 'No room here!'], ['Besetzt!', 'Taken!'], ['Da steht schon wer.', 'Someone’s already there.']],
+      whoa: [['Huch!', 'Whoa!'], ['Wer hat da gewackelt?', 'Who shook that?'], ['Statik überschätzt!', 'Statics overrated!'], ['Umgefallen!', 'Timber!']],
+      pick: kinds([['Klick mich an!', 'Click me!']], {
+        cube: [['Ich zuerst – ich bin am ordentlichsten.', 'Me first – I’m the tidiest.']],
+        box: [['Heb mich auf. Oder auch nicht.', 'Pick me up. Or don’t.']],
+        cyl: [['Nimm mich! Ich roll eh gleich weg.', 'Pick me! I’ll roll off anyway.']] }),
       // Objekt im Arm
-      ride: [['Juhuu, ich fliege!', 'Wheee, I’m flying!'], ['Nicht so hoch!', 'Not so high!'], ['Schöne Aussicht hier oben!', 'Nice view up here!'],
-        ['Halt mich gut fest!', 'Hold me tight!'], ['Bringst du mich heim?', 'Taking me home?']],
-      // Plaudern in Ruhe: Objekt ruft den User, der Arm antwortet (oder umgekehrt)
-      call: [['Hey du! Bring mich heim!', 'Hey you! Take me home!'], ['Hallo? Hier unten!', 'Hello? Down here!'], ['Ich will nach Hause!', 'I want to go home!'],
-        ['Nimm mich zuerst!', 'Pick me first!'], ['Ich hab Heimweh …', 'I’m homesick …'], K => [`Wo ist nur meine ${K.de}-Form?`, `Where’s my ${K.en} shape?`],
-        ['Klick mich an, bitte!', 'Click me, please!']],
-      callArm: [['Klick drauf, dann fahr ich los.', 'Click it, and I’ll go.'], ['Gleich, gleich!', 'Just a sec!'], ['Einer nach dem anderen.', 'One at a time.'],
-        ['Du entscheidest – ich trage.', 'You choose – I carry.'], ['Ich bin bereit!', 'I’m ready!']],
-      ask: [['Na, wo willst du hin?', 'So, where do you want to go?'], ['Wer wohnt denn wo?', 'Who lives where?'], ['Alle bereit für die Heimreise?', 'Everyone ready to go home?']],
-      askRe: [K => [`In meine ${K.de}-Form!`, `Into my ${K.en} shape!`], ['Nach Hause natürlich!', 'Home, of course!'], ['Da drüben wohn ich!', 'I live over there!'],
-        ['Erst noch ein Tänzchen!', 'One more dance first!']],
-      // Objekt erreicht beim Herumfahren die eigene Form (kommt allein nicht rein)
-      peek: [['Da wohne ich!', 'That’s my home!'], ['Mein Zuhause! Hilf mir rein!', 'My home! Help me in!'], ['So nah … und doch so fern.', 'So close … yet so far.'],
-        K => [`Die ${K.de}-Form ist meine!`, `That ${K.en} shape is mine!`], ['Allein komm ich da nicht rein.', 'I can’t get in on my own.']],
-      peekArm: [['Ein Klick, und du bist drin.', 'One click and you’re in.'], ['Ich helf dir gleich!', 'I’ll help you in a moment!'], ['Schon gesehen!', 'Spotted!']],
-      // Objekte untereinander: Zusammenstoß, Tanz, Wettrennen, zu Hause ↔ draußen
-      bump: [['Autsch!', 'Ouch!'], ['Pass doch auf!', 'Watch it!'], ['Hoppla!', 'Oops!'], ['Vorfahrt!', 'Right of way!'], ['Huch, Verzeihung!', 'Oh, sorry!'],
-        ['Achtung, Kurve!', 'Mind the curve!']],
-      bumpRe: [['Selber!', 'You too!'], ['Tschuldigung!', 'Sorry!'], ['War keine Absicht!', 'Didn’t mean to!'], ['Platz da, ich will heim!', 'Make way, I’m going home!'],
-        ['Na, na, na!', 'Easy now!']],
-      dance: [['Tanzen wir?', 'Shall we dance?'], ['Eine Runde Walzer?', 'A little waltz?'], ['Darf ich bitten?', 'May I have this dance?'], ['Dreh dich mit mir!', 'Spin with me!']],
-      danceRe: [['Na klar!', 'Sure!'], ['Aber nur kurz!', 'Just a quick one!'], ['Ich führe!', 'I’ll lead!'], ['Juhuu!', 'Yay!']],
-      race: [['Wer zuerst zu Hause ist!', 'Race you home!'], ['Ich komm vor dir dran!', 'I’m next, not you!'], ['Wetten, ich bin zuerst daheim?', 'Bet I’ll be home first?']],
-      raceRe: [['Träum weiter!', 'Dream on!'], ['Das werden wir sehen!', 'We’ll see about that!'], ['Abwarten!', 'Wait and see!'], ['Niemals!', 'No way!']],
-      cheer: [['Komm auch rein!', 'Come on in!'], ['Hier ist es schön!', 'It’s lovely in here!'], ['Ich bin schon da!', 'I’m home already!']],
-      cheerRe: [['Ich will auch!', 'Me too!'], ['Gleich bin ich dran!', 'My turn soon!'], ['Angeber!', 'Show-off!']],
-      last: [['Und ich? Vergiss mich nicht!', 'And me? Don’t forget me!'], ['Ich bin der Letzte!', 'I’m the last one!'], ['Alle sind daheim, nur ich nicht …', 'Everyone’s home but me …']],
-      lastArm: [['Dich hol ich auch noch!', 'I’ll get you too!'], ['Du bist gleich dran.', 'You’re up next.'], ['Keine Sorge!', 'Don’t worry!']],
+      ride: kinds([['Schöne Aussicht hier oben!', 'Nice view up here!'], ['Nicht so hoch!', 'Not so high!']], {
+        cube: [['Bitte waagrecht halten!', 'Keep me level, please!']], box: [['Erste Klasse, endlich.', 'First class, finally.']],
+        cyl: [['Juhuu, schneller!', 'Wheee, faster!']] }),
+      // Plaudern in Ruhe: Objekt ruft, der Arm antwortet (Paar je Objektart)
+      call: kinds([K => [`Wo ist nur meine ${K.de}-Form?`, `Where’s my ${K.en} shape?`, 'Klick drauf, dann such ich mit.', 'Click it and I’ll help look.'],
+        ['Ich hab Heimweh …', 'I’m homesick …', 'Ein Klick, und das ist heilbar.', 'One click cures that.']], {
+        cube: [['Sechs gleiche Seiten. Perfektion ist kein Zufall.', 'Six equal sides. Perfection is no accident.', 'Bescheidenheit auch nicht.', 'Neither is modesty.'],
+          ['Hier liegt alles schief. Außer mir.', 'Everything’s crooked here. Except me.', 'Ich hab nachgemessen. Stimmt leider.', 'I measured. Sadly true.']],
+        box: [['Ich lieg hier nur rum. Professionell.', 'I’m just lying around. Professionally.', 'Merkt man.', 'It shows.'],
+          ['Wusstest du, dass ich sechs Flächen hab?', 'Did you know I have six faces?', 'Wie der Würfel. Nur länger.', 'Like the cube. Just longer.']],
+        cyl: [['Ecken sind was für Spießer.', 'Corners are for squares.', 'Sagt der, der ständig wegrollt.', 'Says the one who keeps rolling off.'],
+          ['Hey du! Nimm mich zuerst!', 'Hey you! Pick me first!', 'Das sagt er jede Runde.', 'Says that every round.']] }),
+      // Arm fragt, Objekt antwortet (Paar je Objektart)
+      ask: kinds([['Alle bereit für die Heimreise?', 'Everyone ready to head home?', 'Seit drei Runden!', 'For three rounds now!']], {
+        cube: [['Ruhe da unten, ich rechne Kinematik.', 'Quiet down there, I’m computing kinematics.', 'Rechne genau. Ich prüfe nach.', 'Compute precisely. I’ll check.'],
+          ['Alle bereit?', 'Everyone ready?', 'Erst wenn alle ordentlich anstehen.', 'Once everyone queues properly.']],
+        box: [['Ruhe da unten, ich rechne Kinematik.', 'Quiet down there, I’m computing kinematics.', 'Ich bin ruhig. Ich bin immer ruhig.', 'I am quiet. I’m always quiet.'],
+          ['Deine Form liegt rechts.', 'Your shape is on the right.', 'Rechts? Wir stehen auf einer Scheibe, Genie.', 'Right? We’re standing on a disc, genius.']],
+        cyl: [['Bitte nicht wegrollen.', 'Please don’t roll away.', 'Versprechen kann ich nix.', 'No promises.'],
+          ['Alle bereit?', 'Everyone ready?', 'Bin schon unterwegs! Wohin eigentlich?', 'Already rolling! Where to, actually?']] }),
+      // Objekt erreicht die eigene Form (kommt allein nicht rein), Arm antwortet manchmal
+      peek: [K => [`Die ${K.de}-Form ist meine!`, `That ${K.en} shape is mine!`, 'Ein Klick, und du bist drin.', 'One click and you’re in.'],
+        ['So nah … und doch so fern.', 'So close … yet so far.', 'Poetisch. Ein Klick genügt.', 'Poetic. One click will do.'],
+        ['Allein komm ich da nicht rein.', 'I can’t get in on my own.', 'Dafür gibt es mich.', 'That’s what I’m here for.']],
+      // Objekte untereinander (Paare): weicher Stoß, harter Zusammenstoß, umgekippt, Tanz, Wettrennen, zu Hause ↔ draußen, der Letzte
+      bump: [['Pass doch auf!', 'Watch it!', 'Selber!', 'You too!'], ['Vorfahrt!', 'Right of way!', 'Nicht auf Drehtellern.', 'Not on turntables.'],
+        ['Huch, Verzeihung!', 'Oh, sorry!', 'Schon gut. Kratzer zählen nicht.', 'Fine. Scratches don’t count.'],
+        ['Achtung, Kurve!', 'Mind the curve!', 'Kurven sind mein Ding.', 'Curves are my thing.']],
+      crash: [['Ey! Ich hatte Vorfahrt!', 'Hey! I had right of way!', 'Rechts vor links gilt nicht auf Drehtellern.', 'Right before left doesn’t apply on turntables.'],
+        ['Hast du keine Augen im Kopf?', 'Got no eyes in your head?', 'Doch. Vorne. Du kamst von der Seite.', 'I do. In front. You came from the side.'],
+        ['Absicht oder Physik?', 'On purpose or physics?', 'Beides.', 'Both.'],
+        K => (K.id === 'cyl' ? ['Autsch! Meine Rundung!', 'Ouch! My curve!', 'Wird schon wieder rund.', 'It’ll round out again.']
+          : ['Autsch! Meine Kante!', 'Ouch! My edge!', 'Du hast zwölf davon.', 'You’ve got twelve of them.'])],
+      tip: [['Strike!', 'Strike!', 'Sehr witzig. Hilf mir hoch.', 'Very funny. Help me up.'],
+        ['Oh. Das war … stärker als geplant.', 'Oops. That was … harder than planned.', 'Ich steh gleich wieder. Ich bin flexibel.', 'I’ll be right up. I’m flexible.'],
+        ['Umgefallen? Schwach.', 'Fell over? Weak.', 'Ich liege. Das ist was anderes.', 'I’m lying down. Totally different.']],
+      dance: [['Tanzen wir?', 'Shall we dance?', 'Ich führe. Ich hab die Kanten.', 'I’ll lead. I’ve got the edges.'],
+        ['Eine Runde Walzer?', 'A little waltz?', 'Aber nicht auf meine Ecken treten.', 'Just don’t step on my corners.'],
+        ['Darf ich bitten?', 'May I have this dance?', 'Nur, wenn du nicht rollst.', 'Only if you don’t roll.'],
+        ['Dreh dich mit mir!', 'Spin with me!', 'Mir wird jetzt schon schwindelig.', 'I’m dizzy already.']],
+      polo: [['Polonaise! Alle hinter mir!', 'Conga line! Everyone behind me!', 'Wohin geht’s?', 'Where are we going?'],
+        ['Hände an die Kanten!', 'Hands on the edges!', 'Wir haben keine Hände.', 'We don’t have hands.'],
+        ['Zug fährt ab!', 'All aboard!', 'Ohne Fahrplan, wie immer.', 'No timetable, as usual.']],
+      ring: [['Ringelreihen um den Arm!', 'Ring-a-round the robot!', 'Ich bin kein Maibaum.', 'I’m not a maypole.'],
+        ['Alle im Kreis!', 'Everyone in a circle!', 'Bitte nicht zu nah an meinen Sockel.', 'Not too close to my base, please.']],
+      slide: kinds([['Aus dem Weg!', 'Out of the way!']], {
+        cube: [['Das war so nicht geplant!', 'This was not the plan!']], box: [['Ich rutsche. Professionell.', 'Sliding. Professionally.']],
+        cyl: [['Ecken sind was für Spießer!', 'Corners are for squares!'], ['Juhuu, Glatteis!', 'Wheee, black ice!']] }),
+      race: [['Wer zuerst zu Hause ist!', 'Race you home!', 'Du hast ja nicht mal Räder.', 'You don’t even have wheels.'],
+        ['Wetten, ich bin zuerst daheim?', 'Bet I’m home first?', 'Wetten, der Arm entscheidet?', 'Bet the arm decides?'],
+        ['Ich komm vor dir dran!', 'I’m next, not you!', 'Träum weiter.', 'Dream on.']],
+      cheer: [['Komm rein, hier ist es herrlich!', 'Come in, it’s lovely!', 'Angeber!', 'Show-off!'],
+        ['Ich bin schon da!', 'I’m home already!', 'Herzlichen Glückwunsch. Wirklich.', 'Congratulations. Really.'],
+        ['Hier wackelt nichts!', 'Nothing wobbles in here!', 'Hier draußen dafür alles.', 'Out here, everything does.']],
+      last: [['Und ich? Vergiss mich nicht!', 'And me? Don’t forget me!', 'Ich vergesse nichts. Ich bin ein Roboter.', 'I forget nothing. I’m a robot.'],
+        ['Alle sind daheim, nur ich nicht …', 'Everyone’s home but me …', 'Das Beste kommt zum Schluss.', 'Saving the best for last.'],
+        ['Ich bin der Letzte!', 'I’m the last one!', 'Und damit der Wichtigste.', 'Which makes you the most important.']],
+      // E1 Schadenfreude: die anderen kichern über die falsche Form
+      gloat: [['Hihi, der passt da nie rein!', 'Hehe, that’ll never fit!'], ['Mal Maß genommen?', 'Ever heard of measuring?'],
+        ['Pfff! Falsches Haus!', 'Pfft! Wrong house!'], ['Ich sag nichts. Hihi.', 'I’m not saying anything. Hehe.']],
+      // E2 Einschlafen + Aufwachen
+      zzz: kinds([['Zzz …', 'Zzz …']], { cube: [['Zzz … rechte Winkel …', 'Zzz … right angles …']], box: [['Zzz … liegen …', 'Zzz … lying …']],
+        cyl: [['Zzz … roll … roll …', 'Zzz … roll … roll …']] }),
+      zzzArm: [['Mein Sauger schläft gleich ein.', 'My suction cup is dozing off.'], ['Energiesparmodus …', 'Power-saving mode …']],
+      wake: [['Hä? Bin wach!', 'Huh? I’m awake!'], ['Ich hab nicht geschlafen!', 'I wasn’t sleeping!'], ['Wer hat geklickt?', 'Who clicked?']],
+      // E3 Zeit-Kommentar des Arms zur Rundenzeit
+      tFast: [['Unter 30 s? Bist du auch ein Roboter?', 'Under 30 s? Are you a robot too?']],
+      tGood: [['Flott! Fast so schnell wie ich.', 'Quick! Almost as fast as me.'], ['Sauber gearbeitet.', 'Clean work.']],
+      tOk: [['Solide. Ich hab nebenbei Kinematik gerechnet.', 'Solid. I computed kinematics meanwhile.'], ['Gutes Team, wir zwei.', 'Good team, the two of us.']],
+      tSlow: [['Gemütlich. Wie der Quader.', 'Leisurely. Like the cuboid.'], ['Gut Ding will Weile haben.', 'Good things take time.']],
     };
+    // Ziehen: sel = Objektart (wählt den Pool je Art), arg = Argument der Spruch-Funktion (Standard: sel)
     const bags = new Map();
-    const line = (pool, arg) => {
+    const draw = (pool, sel, arg = sel) => {
+      if (!Array.isArray(pool)) pool = pool[sel.id];
       let b = bags.get(pool);
       if (!b) bags.set(pool, b = { q: [], last: -1 });
       if (!b.q.length) {
@@ -852,8 +942,10 @@ function build(L, wrap, host, o) {
         for (let i = b.q.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [b.q[i], b.q[j]] = [b.q[j], b.q[i]]; }
         if (b.q.length > 1 && b.q[b.q.length - 1] === b.last) [b.q[0], b.q[b.q.length - 1]] = [b.q[b.q.length - 1], b.q[0]];
       }
-      const k = b.last = b.q.pop(), e = pool[k]; return T(...(typeof e === 'function' ? e(arg) : e));
+      const k = b.last = b.q.pop(), e = pool[k]; return typeof e === 'function' ? e(arg) : e;
     };
+    const line = (pool, sel, arg) => { const e = draw(pool, sel, arg); return T(e[0], e[1]); };
+    const duo = (pool, sel, arg) => { const e = draw(pool, sel, arg); return [T(e[0], e[1]), T(e[2], e[3])]; };
     // Missionen in der Szene statt Card (Wunsch User 06.10.2026, Vorschau Variante A): je Objekt ein Bogen auf dem gestrichelten
     // Bodenring (gestrichelt + Umriss = offen; Band in Objektfarbe läuft 600 ms ein + gefülltes Symbol mit ✓ = zu Hause), Zeit ·
     // Runde · Bestzeit als Lichtschrift auf einer schrägen Bodenplatte davor (35° zur Kamera geneigt: flach am Boden wäre sie bei
@@ -971,14 +1063,14 @@ function build(L, wrap, host, o) {
     })();
     // Neue Runde: Formen + Objekte an ihre Plätze, Objekte ploppen gestaffelt auf (0,6 s, ease-out)
     const newRound = (Lx, t = 0) => {
-      newRoundAt = 0; say.hide(); say2.hide(); arm.hide(); dance = null; tRun = t; started = t > 0; finished = newBest = false;
+      newRoundAt = 0; say.hide(); say2.hide(); arm.hide(); dance = fig = charge = null; tRun = t; started = t > 0; finished = newBest = false;
       Lx.tpls.forEach((s, k) => { const t = TPL[k]; t.slot = s; const [x, y] = slotXY(s); t.g.position.set(x, y, 0.0025); t.g.rotation.z = s.yaw; t.full = false; });
       OBJ.forEach((o, k) => { o.on = Lx.on[k] >= 0 ? OBJ[Lx.on[k]] : null; o.from = o.fall = null; });
       // Türme von unten nach oben aufbauen (Höhe hängt am Objekt darunter); gestapelt = genau über dem Objekt darunter
       const depth = o => (o.on ? 1 + depth(o.on) : 0);
       [...OBJ].sort((a, b) => depth(a) - depth(b)).forEach(o => {
         const k = OBJ.indexOf(o);
-        o.home = !!Lx.home[k]; TPL[k].full = o.home; o.hopT = -1; o.swell = 0; o.sinkT = 1;
+        o.home = !!Lx.home[k]; TPL[k].full = o.home; o.hopT = -1; o.swell = 0; o.sinkT = 1; o.crouch = 0; o.sq = 1; o.slide = null;
         o.g.rotation.set(0, 0, o.home ? TPL[k].slot.yaw : rnd(-0.5, 0.5));
         putAt(o, o.home ? TPL[k].slot : o.on ? { a: o.on.slot.a, r: o.on.slot.r } : Lx.objs[k]);
         o.mat.v = o.mat.to = o.home || Lx.mat[k] ? 1 : 0; o.popT = reduce ? 1 : -0.15 * k;
@@ -1078,9 +1170,9 @@ function build(L, wrap, host, o) {
       // Schimmer-Band (nur fertig materialisiert): Band aus Raster wandert über das Objekt, abwechselnd auf- und abwärts
       const sw = o.sw >= 0 && v === 1, BW = o.h * 0.42, u = sw ? ease5(o.sw) : 0;
       const c = (o.swUp ? 1 : -1) * (-(o.h + BW) / 2 + (o.h + BW) * u), lo = sw ? c - BW / 2 : z, hi = c + BW / 2;
-      up.set(0, 0, 1).applyQuaternion(o.g.quaternion); mid.copy(up).multiplyScalar(lo * o.g.scale.x).add(o.g.position);
+      up.set(0, 0, 1).applyQuaternion(o.g.quaternion); mid.copy(up).multiplyScalar(lo * o.g.scale.z).add(o.g.position);
       o.cutHi.setFromNormalAndCoplanarPoint(up, mid); o.cutLo.copy(o.cutHi).negate();
-      if (sw) { mid.copy(up).multiplyScalar(hi * o.g.scale.x).add(o.g.position); o.cutX.setFromNormalAndCoplanarPoint(up, mid); o.cutY.copy(o.cutX).negate(); }
+      if (sw) { mid.copy(up).multiplyScalar(hi * o.g.scale.z).add(o.g.position); o.cutX.setFromNormalAndCoplanarPoint(up, mid); o.cutY.copy(o.cutX).negate(); }
       else { o.cutX.set(up, -1e6); o.cutY.set(up, 1e6); }
       o.solid.visible = v > 0;
       o.solidMat.color.copy(ACC).lerp(o.col, k);
@@ -1123,11 +1215,11 @@ function build(L, wrap, host, o) {
     // Lage des Objekts nach dem Absetzen an Winkel B: Werkzeug hält seine Drehung im Raum (ikDown), das Objekt dreht nur um
     // die Werkzeugdrehung am Ziel gegenüber dem Greifen (dort 0)
     const landYaw = B => (held ? cur.yawG + yawFor(B, pol.yaw) : cur.g.rotation.z + yawFor(B, 0));
-    // Freie Stelle am Treffpunkt hit (auf der Kreisfläche, r ≤ 400 mm): in den Greifbereich gezogen (Radius 170–340 mm,
-    // Gelenk 1 ±146°); frei, wenn die Grundfläche keine anderen Objekte und Formen berührt
+    // Freie Stelle am Treffpunkt hit (auf der Kreisfläche, r ≤ 400 mm): in den Greifbereich gezogen (wie Wandern: Radius
+    // 150–370 mm, Gelenk 1 ±165°); frei, wenn die Grundfläche keine anderen Objekte und Formen berührt
     const freeAt = () => {
       const r0 = Math.hypot(hit.x, hit.y); if (r0 > 0.4) return null;
-      const r = Math.max(0.17, Math.min(0.34, r0)), a = Math.max(-2.55, Math.min(2.55, Math.atan2(hit.y, hit.x)));
+      const r = Math.max(W_R0, Math.min(W_R1, r0)), a = Math.max(-W_A, Math.min(W_A, Math.atan2(hit.y, hit.x)));
       const x = r * Math.cos(a), y = r * Math.sin(a), f = foot(cur.K), clear = (p, K) => Math.hypot(x - p.x, y - p.y) > f + foot(K);
       return { a, r, ok: OBJ.every(o => o === cur || clear(o.g.position, o.K)) && TPL.every(t => clear(t.g.position, t.K)) };
     };
@@ -1183,22 +1275,30 @@ function build(L, wrap, host, o) {
       if (to === BACK) { o.on = o.from; putAt(o, o.slot); return; }
       if (to === FREE) { putAt(o, freeS); freeS = null; ring(o.g.position.x, o.g.position.y, 0.003); save(); return; }   // neuer Startplatz
       if (to >= STACK) { const b = OBJ[to - STACK]; o.on = b; putAt(o, { a: b.slot.a, r: b.slot.r }); ring(o.g.position.x, o.g.position.y, topZ(b) + 0.002); save(); return; }
-      const t = TPL[to]; t.full = true; putAt(o, t.slot); o.home = true; o.g.position.z = o.h / 2;   // sinkt erst beim Einrutschen
+      const t = TPL[to]; t.full = true; putAt(o, t.slot); o.home = true;   // bleibt oben (kein Einsinken), richtet sich nur aus
       o.yaw0 = o.g.rotation.z; o.yaw1 = alignYaw(o.yaw0, t.slot.yaw, o.K.sym); o.sinkT = 0;
     };
     // Zu Hause angekommen (nach dem Einrutschen): Dank (Objekt), Klang, Mission abhaken; danach antwortet der Arm: 2 von 3 →
     // „fast geschafft“, alle drei → Rundenende/Bestzeit + Abzeichen, neue Runde
     const arrived = o => {
-      say.show(o, line(L.thanks), 3000, true); sfx('home');
+      say.show(o, line(L.thanks, o.K), 3000, true); sfx('home'); sfx('yay'); feel(o, 'happy', 3);
       if (OBJ.every(x => x.home)) {
         finished = true; rounds++; newBest = !best || tRun < best; if (newBest) best = tRun;
         quest.badge(); sfx('win'); newRoundAt = clk + 6.5;
+        // E3 Zeit-Kommentar (Wunsch User 08.10.2026): Arm kommentiert die Rundenzeit, neue Bestzeit → Mini-Feuerwerk; alle freuen sich
+        const tl = tRun < 30 ? L.tFast : tRun < 60 ? L.tGood : tRun < 120 ? L.tOk : L.tSlow;
+        later(3.6, () => arm.say(line(tl), null, 2600, 2));
+        if (newBest) fireworks();
+        OBJ.forEach(x => feel(x, 'happy', 6));
       } else if (OBJ.filter(x => x.home).length === 2) arm.say(line(L.near), null, 2600, 1);
       quest.render(); save(); show();
     };
     // Objekt lehnt ab (falsche Form → K = Form des Ziels, kein Platz); Hinweis auch für Screenreader
     const nope = (pool = L.nope, K) => {
-      const text = line(pool, K); say.show(cur, text, 2200, true); quest.tell(text); sfx('nope'); cur.shake = 1;
+      const text = line(pool, cur.K, K); say.show(cur, text, 2200, true); quest.tell(text); sfx('nope'); cur.shake = 1; feel(cur, 'angry', 2.2);
+      // E1 Schadenfreude (Wunsch User 08.10.2026): bei falscher Form kichert ein anderes Objekt (antwortet nach der Absage)
+      const o2 = pool === L.nope && anyOf(OBJ.filter(q => q !== cur && !q.fall && q.popT >= 1));
+      if (o2) { say2.show(o2, line(L.gloat), 2000, true); feel(o2, 'happy', 2.6); }
     };
     let busy = 0, lean = 0, vlean = 0;
     // Ablauf = Liste: { pts, v } Bahn · { act, dwell } Greifen/Lösen mit Verweilzeit · { hold } schweben bis Ziel gewählt ·
@@ -1280,7 +1380,7 @@ function build(L, wrap, host, o) {
         { act: grip, dwell: 0.25, say: [L.grip, T('Greifen', 'Grip'), T('Sauger an', 'suction on'), 0] },
         { lazy: () => job.to >= 0 ? place(job.to, true) : [
           { pts: [P(A, R, H + 0.035), P(A - s * 0.2, 0.28, H + 0.13, d * 0.45, 0.35), P(A, 0.22, 0.33, d)], v: 0.3,
-            act: () => { if (Math.random() < 0.6) say.show(o, line(L.ride), 2000, true); },   // Objekt freut sich (oder nicht)
+            act: () => { if (Math.random() < 0.6) say.show(o, line(L.ride, o.K), 2000, true); },   // Objekt freut sich (oder nicht)
             say: [L.lift, T('Anheben + drehen', 'Lift + rotate'), `z 330 mm · ${T('Gelenk', 'joint')} 6 ${d > 0 ? '+' : '−'}90°`, 1] },
           { hold: P(A, 0.22, 0.33, d) }] },
       ], to);
@@ -1328,7 +1428,7 @@ function build(L, wrap, host, o) {
     host.addEventListener('pointerup', e => {
       if (e.target.closest('button') || !down || Math.hypot(e.clientX - down.x, e.clientY - down.y) > 6 || performance.now() - down.t > 600) return;
       const tol = e.pointerType === 'mouse' ? 0.06 : 0.08;
-      touch = e.pointerType !== 'mouse'; sfx.unlock();
+      touch = e.pointerType !== 'mouse'; sfx.unlock(); lastClick = clk; if (asleep) wake();
       const o = objAt(e, tol); if (o) { clicked = true; grab(o); return; }
       const k = tplAt(e, tol + 0.01); if (k >= 0) { clicked = true; target(k); }
     });
@@ -1389,7 +1489,7 @@ function build(L, wrap, host, o) {
     // Tanz: stoßen zwei freie Objekte zusammen und ist ringsum Platz, drehen sie sich 3,6–4,6 s umeinander (Pirouette, hüpfen im
     // Takt), danach fahren sie auseinander. Steht: zu Hause, gewählt/im Arm, beim Aufploppen, unter dem Zeiger (leicht anklickbar),
     // 3 s nach dem Ablegen; an- und auslaufen weich (0,8 s).
-    const W_V = 0.026, W_R0 = 0.2, W_R1 = 0.33, W_A = 2.45, W_GAP = 0.004, W_SOFT = 0.014, W_REST = 3, W_K = 9, W_C = 3;
+    const W_V = 0.026, W_R0 = 0.15, W_R1 = 0.37, W_A = 2.88, W_GAP = 0.004, W_SOFT = 0.014, W_REST = 3, W_K = 9, W_C = 3;
     const wrapA = a => Math.atan2(Math.sin(a), Math.cos(a));
     // Ausdehnung der Grundfläche in Richtung (nx, ny) bei Drehung yaw (Zylinder: Radius)
     const sup = (K, yaw, nx, ny) => {
@@ -1397,6 +1497,79 @@ function build(L, wrap, host, o) {
       const c = Math.cos(yaw), s = Math.sin(yaw);
       return Math.abs(nx * c + ny * s) * K.S[0] / 2 + Math.abs(-nx * s + ny * c) * K.S[1] / 2;
     };
+    // ── Augen, Gefühle, Funken, Nachlauf (Wunsch User 08.10.2026, Vorschau „Robot-Hero-Minispiel“ F4–F6) ──
+    // Augen: zwei Lichtpunkte auf der Seite zur Kamera (Quader/Würfel: Fläche mit Hysterese, Wechsel im Lidschlag; Zylinder: folgt
+    // stetig), schauen dem Werkzeug nach, blinzeln alle 2,2–5,5 s; Gefühl für s Sekunden (feel), sonst zu Hause froh, umgekippt
+    // erschrocken, im Schlaf müde
+    let asleep = false, lastClick = 0;
+    const camL = new THREE.Vector3(), lookL = new THREE.Vector3(), FACES = [[1, 0], [0, 1], [-1, 0], [0, -1]];
+    const feel = (o, m, s) => { o.mood = m; o.moodTill = clk + s; };
+    const lim = (v, m) => Math.max(-m, Math.min(m, v));
+    const eyesTick = (o, dt) => {
+      o.g.updateMatrixWorld();
+      camL.copy(st.camera.position); o.g.worldToLocal(camL);
+      const cl = Math.hypot(camL.x, camL.y) || 1, cx = camL.x / cl, cy = camL.y / cl, S = o.K.S, cyl = o.K.id === 'cyl';
+      if (cyl) o.phi += wrapA(Math.atan2(cy, cx) - o.phi) * (reduce ? 1 : Math.min(1, dt * 5));
+      else {
+        const sc = f => FACES[f][0] * cx + FACES[f][1] * cy;
+        let b = o.face; for (let f = 0; f < 4; f++) if (sc(f) > sc(b) + 0.3) b = f;
+        if (b !== o.face) { o.face = b; o.blink = 0; }
+        o.phi = Math.atan2(FACES[o.face][1], FACES[o.face][0]);
+      }
+      const nx = Math.cos(o.phi), ny = Math.sin(o.phi), side = Math.abs(nx) > 0.5;
+      const R = cyl || side ? S[0] / 2 : S[1] / 2, ex = Math.min(0.0105, 0.26 * (cyl ? S[0] : side ? S[1] : S[0]));
+      o.eyes.position.set(nx * (R + 0.0006), ny * (R + 0.0006), S[2] * 0.16); o.eyes.rotation.set(Math.PI / 2, 0, o.phi + Math.PI / 2);
+      robot.tcp.getWorldPosition(lookL); o.g.worldToLocal(lookL); lookL.sub(o.eyes.position);
+      const dn = Math.max(0.03, lookL.x * nx + lookL.y * ny + 0.04), k = reduce ? 1 : Math.min(1, dt * 6);
+      o.lx += (lim((-lookL.x * ny + lookL.y * nx) / dn * 0.0018, 0.0022) - o.lx) * k; o.ly += (lim(lookL.z / dn * 0.0015, 0.0016) - o.ly) * k;
+      if (!reduce) { o.blinkT -= dt; if (o.blinkT <= 0) { o.blink = 0; o.blinkT = rnd(2.2, 5.5); } if (o.blink < 1) o.blink = Math.min(1, o.blink + dt / 0.14); }
+      const m = clk < o.moodTill ? o.mood : o.fall ? 'big' : o.home ? 'happy' : asleep ? 'sleepy' : 'open';
+      const key = o.blink < 1 && m !== 'happy' && m !== 'squeeze' ? 'shut' : m, b = cyl ? Math.asin(Math.min(0.9, ex / R)) : 0;
+      o.eye.forEach((e, i) => {
+        const s = i ? 1 : -1;
+        e.material.map = EYE[key][i]; e.rotation.y = s * b;
+        e.position.set((cyl ? R * Math.sin(b) : ex) * s + o.lx, o.ly, cyl ? -R * (1 - Math.cos(b)) : 0);
+      });
+    };
+    // Funken (Zusammenstoß) + Mini-Feuerwerk (E3, neue Bestzeit): Lichtpunkte mit Schwerkraft und Luftwiderstand, verglühen
+    const FX_N = 180, fxPos = new Float32Array(FX_N * 3), fxCol = new Float32Array(FX_N * 3);
+    const fxP = [...Array(FX_N)].map(() => ({ v: new THREE.Vector3(), life: 0, D: 1, c: new THREE.Color(), g: 0 }));
+    const fxGeo = new THREE.BufferGeometry().setAttribute('position', new THREE.BufferAttribute(fxPos, 3)).setAttribute('color', new THREE.BufferAttribute(fxCol, 3));
+    const fxPts = new THREE.Points(fxGeo, new THREE.PointsMaterial({ map: dot, vertexColors: true, size: 0.011, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending }));
+    fxPts.frustumCulled = false; st.scene.add(fxPts);
+    let fxI = 0, fxLive = 0;
+    // up = Anteil nach oben (0 = Kugel), g = Schwerkraft (m/s²), D = Lebensdauer (s)
+    const burst = (x, y, z, n, speed, cols, up = 0.6, g = 1.2, D = 0.55) => {
+      if (reduce) return;
+      for (let k = 0; k < n; k++) {
+        const p = fxP[fxI]; fxPos.set([x, y, z], fxI * 3); fxI = (fxI + 1) % FX_N;
+        const a = rnd(0, Math.PI * 2), e = rnd(-1, 1) * (1 - up) + up * rnd(0.3, 1), h = Math.sqrt(Math.max(0, 1 - e * e)), s = speed * rnd(0.45, 1);
+        p.v.set(h * Math.cos(a) * s, h * Math.sin(a) * s, e * s); p.D = p.life = D * rnd(0.7, 1.3); p.g = g; p.c.set(anyOf(cols));
+      }
+      fxLive = 1;
+    };
+    const fxTick = dt => {
+      if (!fxLive) return;
+      let live = 0;
+      fxP.forEach((p, i) => {
+        if (p.life <= 0) return;
+        p.life -= dt; p.v.z -= p.g * dt; p.v.multiplyScalar(1 - Math.min(1, dt * 1.5));
+        const j = i * 3, f = Math.max(0, p.life / p.D) ** 1.5;
+        fxPos[j] += p.v.x * dt; fxPos[j + 1] += p.v.y * dt; fxPos[j + 2] = Math.max(0.002, fxPos[j + 2] + p.v.z * dt);
+        fxCol[j] = p.c.r * f; fxCol[j + 1] = p.c.g * f; fxCol[j + 2] = p.c.b * f;
+        if (p.life > 0) live++;
+      });
+      fxGeo.attributes.position.needsUpdate = fxGeo.attributes.color.needsUpdate = true; fxLive = live;
+    };
+    const camA = () => Math.atan2(st.camera.position.y, st.camera.position.x);
+    // Nachlauf: fn nach s Sekunden Spielzeit (clk)
+    const todo = [], later = (s, fn) => todo.push({ at: clk + s, fn });
+    const fireworks = () => [0, 0.35, 0.7, 1.05].forEach(d => later(d, () => {
+      const a = camA() + rnd(-0.9, 0.9), r = rnd(0.1, 0.26);
+      burst(r * Math.cos(a), r * Math.sin(a), rnd(0.3, 0.42), 26, 0.3, [...OBJ.map(o => o.glow), new THREE.Color(0xf2c14e)], 0, 0.35, 1.1);
+    }));
+    // Bildwackler beim harten Zusammenstoß (F5 „krachen“): Bühne ruckt 0,34 s
+    const shake = () => { if (!reduce && host.animate) host.animate([{ translate: '0 0' }, { translate: '3px -2px' }, { translate: '-3px 2px' }, { translate: '2px 1px' }, { translate: '0 0' }], { duration: 340, easing: 'ease-out' }); };
     OBJ.forEach(o => Object.assign(o, { wTh: rnd(-Math.PI, Math.PI), wP: [rnd(0, 7), rnd(0, 7), rnd(0, 7)], wS: 0, wRest: 0, wFix: true,
       vx: 0, vy: 0, spin: 0, wob: rnd(0, 7), dz: 0, bump: 1, bumpCD: 0, evCD: 0, homeAt: rnd(8, 18), homeTill: 0, peeked: false, orb: Math.random() < 0.5 ? 1 : -1, danceCD: 0 }));
     let dance = null, chatAt = 8, bumpTalkAt = 0, lastScene = '', reply = null;   // reply = Antwort eines Objekts auf den Arm (später)
@@ -1405,6 +1578,7 @@ function build(L, wrap, host, o) {
     const talk = (a, ta, b, tb, ms = 2400) => { say.show(a, ta, ms, true); if (b === 'arm') arm.say(tb, null, ms, 1); else if (b) say2.show(b, tb, ms, true); };
     const freeObjs = () => OBJ.filter(o => !o.home && !o.fall && o.popT >= 1 && o !== cur);
     const anyOf = a => a[Math.floor(Math.random() * a.length)];
+    const duoArm = (pool, K) => { const [p, re] = duo(pool, K); return [p, 'arm', re]; };   // Objekt sagt p, der Arm antwortet re
     // Szenen abwechselnd (nie zweimal dieselbe hintereinander): Objekt ruft den User, Arm fragt, Wettrennen, zu Hause ↔ draußen, der Letzte
     const chat = () => {
       const free = freeObjs(), home = OBJ.filter(o => o.home);
@@ -1415,21 +1589,21 @@ function build(L, wrap, host, o) {
       if (home.length && free.length) sc.push('cheer');
       if (free.length === 1) sc.push('last', 'last');
       const opts = sc.filter(x => x !== lastScene), s = lastScene = anyOf(opts.length ? opts : sc), a = anyOf(free);
-      if (s === 'call') talk(a, line(L.call, a.K), 'arm', line(L.callArm));
-      else if (s === 'ask') { arm.say(line(L.ask), null, 2400, 1); reply = { at: clk + 2.6, o: a, text: line(L.askRe, a.K) }; }   // Arm fragt zuerst
-      else if (s === 'race') { const b = anyOf(free.filter(x => x !== a)); talk(a, line(L.race), b, line(L.raceRe)); }
-      else if (s === 'cheer') talk(anyOf(home), line(L.cheer), a, line(L.cheerRe));
-      else talk(a, line(L.last), 'arm', line(L.lastArm));
+      if (s === 'call') talk(a, ...duoArm(L.call, a.K));
+      else if (s === 'ask') { const [q, re] = duo(L.ask, a.K); arm.say(q, null, 2400, 1); reply = { at: clk + 2.6, o: a, text: re }; }   // Arm fragt zuerst
+      else if (s === 'race') { const b = anyOf(free.filter(x => x !== a)), [p, re] = duo(L.race); talk(a, p, b, re); }
+      else if (s === 'cheer') { const [p, re] = duo(L.cheer); talk(anyOf(home), p, a, re); }
+      else talk(a, ...duoArm(L.last));
     };
     // Tanz nur mit Platz: Kreis um die Mitte (Bahn + Grundfläche) frei von Formen und anderen Objekten, im Greifbereich
     const startDance = (a, b) => {
       const pa = a.g.position, pb = b.g.position, cx = (pa.x + pb.x) / 2, cy = (pa.y + pb.y) / 2;
       const r1 = (foot(a.K) + foot(b.K)) / 2 + 0.004, R = r1 + Math.max(foot(a.K), foot(b.K)), rc = Math.hypot(cx, cy);
-      if (rc - R < 0.15 || rc + R > 0.37 || Math.abs(Math.atan2(cy, cx)) > 2.35) return false;
+      if (rc - R < W_R0 || rc + R > W_R1 || Math.abs(Math.atan2(cy, cx)) > W_A - 0.25) return false;
       if (TPL.some(t => Math.hypot(t.g.position.x - cx, t.g.position.y - cy) < R + foot(t.K))) return false;
       if (OBJ.some(q => q !== a && q !== b && !q.home && Math.hypot(q.g.position.x - cx, q.g.position.y - cy) < R + foot(q.K))) return false;
       dance = { a, b, t: 0, D: rnd(3.6, 4.6), cx, cy, rr: Math.hypot(pa.x - cx, pa.y - cy), r1, phi: Math.atan2(pa.y - cy, pa.x - cx), dir: Math.random() < 0.5 ? 1 : -1 };
-      if (canTalk()) talk(a, line(L.dance), b, line(L.danceRe), 1900);
+      if (canTalk()) { const [p, re] = duo(L.dance); talk(a, p, b, re, 1900); }
       return true;
     };
     const endDance = () => {
@@ -1440,7 +1614,7 @@ function build(L, wrap, host, o) {
     // Zusammenstoß zweier fahrender Objekte: Tanz (wenn Platz) oder kurzer Wortwechsel (selten, mit Pause)
     const bumped = (a, b) => {
       if (!dance && clk > a.danceCD && clk > b.danceCD && Math.random() < 0.35 && startDance(a, b)) return;
-      if (clk > bumpTalkAt && Math.random() < 0.45 && canTalk()) { talk(a, line(L.bump), b, line(L.bumpRe), 1800); bumpTalkAt = clk + 7; }
+      if (clk > bumpTalkAt && Math.random() < 0.45 && canTalk()) { const [p, re] = duo(L.bump); talk(a, p, b, re, 1800); bumpTalkAt = clk + 7; }
     };
     // Wand/Hindernis berührt (gap = Abstand der Grundflächen, n = Normale zum Objekt hin, ov = Geschwindigkeit des anderen)
     // Weiter weg (≤ 110 mm) lenkt der Kurs nur sanft weg → Objekte verteilen sich über die Fläche, ohne einander zu meiden
@@ -1478,6 +1652,146 @@ function build(L, wrap, host, o) {
       });
       if (D.t >= D.D) endDance();
     };
+    // Tanzfiguren + Zusammenstöße (Wunsch User 08.10.2026, Vorschau „Robot-Hero-Minispiel“, Änderung 2 + F5): alle 9–15 s eine Figur –
+    // Pirouette (Paar dreht sich umeinander), Polonaise (Anführer fährt Schlangenlinien, die anderen folgen seiner Spur), Ringelreihen
+    // (alle freien Objekte im Kreis um den Sockel auf einem Radius ohne Formen, schwingen hin und her, hüpfen im Takt), Schlittern
+    // (ein Objekt rutscht schnell und drehend los, bremst aus) oder Zusammenstoß (zwei nehmen Anlauf: weichen 0,7 s zurück und ducken
+    // sich, rasen aufeinander zu, prallen mit Stauchen, Funken und Rückprall ab). Zusammenstoß zufällig „frech“ (Wortwechsel) oder
+    // „krachen“ (eines kippt um, Bildwackler, steht von selbst wieder auf) – F5 „beide, random“. Hover oder Klick beendet jede Figur.
+    let fig = null, charge = null, figAt = 12;
+    const ctl = o => !!((dance && (dance.a === o || dance.b === o)) || (fig && fig.ctl.includes(o)) || (charge && (charge.a === o || charge.b === o)));
+    const endFig = () => {
+      if (!fig) return;
+      fig.ctl.forEach(o => { if (Math.hypot(o.vx, o.vy) > 0.003) o.wTh = Math.atan2(o.vy, o.vx); o.danceCD = clk + rnd(8, 12); o.bump = 0; });
+      fig = null;
+    };
+    const stopFig = o => {
+      if (dance && (dance.a === o || dance.b === o)) endDance();
+      if (fig && (fig.lead === o || fig.ctl.includes(o))) endFig();
+      if (charge && (charge.a === o || charge.b === o)) { charge.a.crouch = charge.b.crouch = 0; charge = null; }
+    };
+    const hopTo = (o, dz) => { o.g.position.z += dz - o.dz; o.dz = dz; o.swell = 0.6 * dz / 0.007; };
+    // gesteuertes Objekt zum Punkt (x, y) ziehen (k = Anteil je Frame); Tempo bleibt für Stöße mit anderen erhalten
+    const steer = (o, x, y, k, dt) => {
+      const p = o.g.position, nx = p.x + (x - p.x) * k, ny = p.y + (y - p.y) * k;
+      if (dt > 0) { o.vx = (nx - p.x) / dt; o.vy = (ny - p.y) / dt; }
+      p.x = nx; p.y = ny; o.slot = { a: Math.atan2(ny, nx), r: Math.hypot(nx, ny) };
+    };
+    // Punkt s Meter hinter dem Anfang der Spur (Polonaise)
+    const along = (tr, s) => {
+      for (let i = 1; i < tr.length; i++) {
+        const [x0, y0] = tr[i - 1], [x1, y1] = tr[i], d = Math.hypot(x1 - x0, y1 - y0);
+        if (s <= d) return [x0 + (x1 - x0) * s / d, y0 + (y1 - y0) * s / d];
+        s -= d;
+      }
+      return tr[tr.length - 1];
+    };
+    const segD = (p, a, b) => {   // Abstand Punkt ↔ Strecke a–b
+      const dx = b.x - a.x, dy = b.y - a.y, u = Math.max(0, Math.min(1, ((p.x - a.x) * dx + (p.y - a.y) * dy) / (dx * dx + dy * dy || 1)));
+      return Math.hypot(p.x - a.x - dx * u, p.y - a.y - dy * u);
+    };
+    const idleObjs = () => OBJ.filter(o => !o.wFix && o.wS > 0.9 && !ctl(o) && o.hopT < 0 && !o.slide && o !== hoverObj).sort(() => Math.random() - 0.5);
+    const startPair = () => {
+      const c = idleObjs();
+      return c.some(a => c.some(b => a !== b && Math.hypot(a.g.position.x - b.g.position.x, a.g.position.y - b.g.position.y) < 0.2 && startDance(a, b)));
+    };
+    const startPolo = () => {
+      const c = idleObjs(); if (c.length < 3) return false;
+      const [lead, ...rest] = c, p = lead.g.position, h = Math.hypot(lead.vx, lead.vy) > 0.003 ? Math.atan2(lead.vy, lead.vx) : lead.wTh;
+      fig = { kind: 'polo', lead, ctl: rest, t: 0, D: rnd(6, 8), trail: [...Array(80)].map((_, j) => [p.x - Math.cos(h) * j * 0.004, p.y - Math.sin(h) * j * 0.004]) };
+      if (canTalk()) { const [a, b] = duo(L.polo); talk(lead, a, rest[rest.length - 1], b, 2000); }
+      return true;
+    };
+    const startRing = () => {
+      const c = idleObjs(); if (c.length < 2) return false;
+      const F = Math.max(...c.map(o => foot(o.K))), obs = TPL.map(t => [t.g.position, foot(t.K)]).concat(OBJ.filter(o => !c.includes(o) && !(held && o === cur)).map(o => [o.g.position, foot(o.K)]));
+      const R = [...Array(13)].map((_, i) => 0.2 + i * 0.01).sort((u, w) => Math.abs(u - 0.26) - Math.abs(w - 0.26))
+        .find(r => obs.every(([p, f]) => Math.abs(Math.hypot(p.x, p.y) - r) > f + F + 0.008));
+      if (!R) return false;
+      const da = (2 * F + 0.03) / R, A = 0.55, half = da * (c.length - 1) / 2 + A + F / R;
+      if (half > W_A - 0.1) return false;
+      c.sort((u, w) => Math.atan2(u.g.position.y, u.g.position.x) - Math.atan2(w.g.position.y, w.g.position.x));   // nach Winkel: kein Kreuzen beim Einfädeln
+      fig = { kind: 'ring', ctl: c, t: 0, D: rnd(6, 7.5), R, da, A, c0: lim(camA(), W_A - 0.1 - half) };
+      if (canTalk()) talk(c[0], ...duoArm(L.ring));
+      return true;
+    };
+    const startSlide = () => {
+      const o = idleObjs()[0]; if (!o) return false;
+      o.slide = { t: 0, D: rnd(1.6, 2.2) }; o.orb = Math.random() < 0.5 ? 1 : -1;
+      if (canTalk()) say.show(o, line(L.slide, o.K), 1800, true);
+      return true;
+    };
+    const startCharge = () => {
+      const c = idleObjs();
+      for (const a of c) for (const b of c) {
+        if (a === b) continue;
+        const pa = a.g.position, pb = b.g.position, d = Math.hypot(pa.x - pb.x, pa.y - pb.y), F = Math.max(foot(a.K), foot(b.K));
+        if (d < 0.13 || d > 0.32) continue;
+        if (TPL.some(t => segD(t.g.position, pa, pb) < foot(t.K) + F) || OBJ.some(q => q !== a && q !== b && !(held && q === cur) && segD(q.g.position, pa, pb) < foot(q.K) + F)) continue;
+        charge = { a, b, t: 0 }; [a, b].forEach(o => { o.spin = 0; feel(o, 'angry', 2); });
+        return true;
+      }
+      return false;
+    };
+    const impact = (nx, ny) => {
+      const { a, b } = charge, pa = a.g.position, s = sup(a.K, a.g.rotation.z, nx, ny);
+      charge = null;
+      burst(pa.x + nx * s, pa.y + ny * s, Math.min(a.h, b.h) * 0.6, 18, 0.34, [HOT, a.glow, b.glow]);
+      if (clk - lastClick < 45) sfx('bonk');   // Ton nur, solange der User gerade spielt
+      [[a, -1], [b, 1]].forEach(([o, k]) => {
+        o.crouch = 0; o.sq = 0; o.bump = 0; o.bumpCD = clk + 0.6; o.evCD = clk + 1.5; o.danceCD = clk + 6;
+        o.vx = k * nx * 0.13; o.vy = k * ny * 0.13; o.wTh = Math.atan2(k * ny, k * nx); o.spin = rnd(1.5, 3) * (Math.random() < 0.5 ? 1 : -1);
+        feel(o, 'squeeze', 0.5); later(0.5, () => feel(o, 'angry', 2.4));
+      });
+      if (Math.random() < 0.5) {   // krachen: eines kippt in Stoßrichtung um
+        const [v, w, k] = Math.random() < 0.5 ? [a, b, -1] : [b, a, 1], dx = k * nx, dy = k * ny, p = v.g.position, [lx, ly] = landAt(v, p.x, p.y, Math.atan2(dy, dx), 0);
+        v.fall = { t: 0, k: 0, lx, ly, dx, dy, x0: p.x, y0: p.y, c0: 0, q0: v.g.quaternion.clone(), yaw: v.g.rotation.z, spin: rnd(-0.7, 0.7), hit: false, quiet: clk - lastClick >= 45 };
+        v.hopT = -1; v.jolt = -1; v.swell = 0; v.vx = v.vy = 0; shake();
+        later(0.9, () => { if (canTalk()) { const [x, y] = duo(L.tip); talk(w, x, v, y, 2200); } });
+      } else if (canTalk()) { const [x, y] = duo(L.crash, a.K); talk(a, x, b, y, 2200); }
+    };
+    const chargeTick = dt => {
+      const C = charge, { a, b } = C, pa = a.g.position, pb = b.g.position; C.t += dt;
+      const d = Math.hypot(pb.x - pa.x, pb.y - pa.y) || 1e-6, nx = (pb.x - pa.x) / d, ny = (pb.y - pa.y) / d;
+      const run = C.t > 0.7, u = C.t - 0.7, v = run ? Math.min(0.17, 0.04 + 0.6 * u * u) : -0.035 * Math.sin(Math.PI * C.t / 0.7);
+      [[a, 1], [b, -1]].forEach(([o, s]) => {
+        o.vx = s * nx * v; o.vy = s * ny * v; o.crouch = run ? Math.max(0, 1 - u / 0.15) : Math.min(1, C.t / 0.4);
+        steer(o, o.g.position.x + o.vx * dt, o.g.position.y + o.vy * dt, 1, 0); unbank(o, dt); hopTo(o, 0);
+      });
+      const m = sup(a.K, a.g.rotation.z, nx, ny) + sup(b.K, b.g.rotation.z, nx, ny) + W_GAP;
+      if (run && d - m <= 0.002) impact(nx, ny); else if (C.t > 4) stopFig(a);
+    };
+    const figTick = dt => {
+      const F = fig; F.t += dt;
+      const env = Math.min(1, F.t / 1.2), k = Math.min(1, dt * (2.5 + 6 * env));
+      if (F.kind === 'polo') {
+        const p = F.lead.g.position, tr = F.trail;
+        if (Math.hypot(p.x - tr[0][0], p.y - tr[0][1]) > 0.003) { tr.unshift([p.x, p.y]); if (tr.length > 260) tr.pop(); }
+        let s = 0, prev = F.lead;
+        F.ctl.forEach((o, i) => {
+          s += foot(prev.K) + foot(o.K) + 0.006; prev = o;
+          steer(o, ...along(tr, s), k, dt);
+          if (Math.hypot(o.vx, o.vy) > 0.005) o.g.rotation.z += wrapA(Math.atan2(o.vy, o.vx) - o.g.rotation.z) * Math.min(1, dt * 3);
+          unbank(o, dt); hopTo(o, 0.006 * Math.abs(Math.sin(Math.PI * 2.4 * F.t + i)) * env);
+          if (TPL.some(t => Math.hypot(t.g.position.x - o.g.position.x, t.g.position.y - o.g.position.y) < foot(o.K) + foot(t.K) - 0.012)) F.t = F.D;   // Form im Weg → auflösen
+        });
+      } else {
+        const c = F.c0 + F.A * Math.sin(2 * Math.PI * F.t / 5.2) * env;
+        F.ctl.forEach((o, i) => {
+          const a = c + (i - (F.ctl.length - 1) / 2) * F.da;
+          steer(o, F.R * Math.cos(a), F.R * Math.sin(a), k, dt);
+          o.g.rotation.z += 2.2 * dt * env; unbank(o, dt); hopTo(o, 0.008 * Math.abs(Math.sin(Math.PI * 2.6 * F.t + i * 1.3)) * env);
+        });
+      }
+      if (F.t >= F.D) { F.ctl.forEach(o => hopTo(o, 0)); endFig(); }
+    };
+    // E2 Einschlafen (Wunsch User 08.10.2026): 25 s kein Klick → langsamer, müde Augen, ab und zu „Zzz“; erster Klick weckt alle mit Hüpfer
+    const doze = () => { const a = anyOf(freeObjs()); if (!a || Math.random() < 0.3) arm.say(line(L.zzzArm), null, 2600, 1); else say.show(a, line(L.zzz, a.K), 2400, true); };
+    const wake = () => {
+      asleep = false;
+      const free = freeObjs(); free.forEach(o => { o.bump = 0; o.bumpH = 0.02; o.bumpD = 0.5; feel(o, 'big', 1.2); });
+      if (free.length) say2.show(anyOf(free), line(L.wake), 1800, true);
+    };
     const wander = dt => {
       contact.dt = dt;
       // feste Hindernisse: Formen, Startplatz des gewählten Objekts (Rückweg), gewählte freie Stelle
@@ -1487,9 +1801,9 @@ function build(L, wrap, host, o) {
       const movers = [];
       OBJ.forEach(o => {
         const fix = o.home || o === cur || o.popT < 1 || o.on || o.fall || above(o) || (cur && cur.from === o);   // Türme stehen
-        const inDance = dance && (dance.a === o || dance.b === o);
+        const inDance = ctl(o);
         if (fix) {
-          if (inDance) endDance();
+          stopFig(o);
           o.wS = 0; o.wFix = true; o.vx = o.vy = 0; if (o.hopT < 0) o.swell = 0;
           if (o.fall || o.on || o.home || (held && o === cur)) o.dz = 0;
           else { if (o.dz) { o.g.position.z -= o.dz; o.dz = 0; } if (o.hopT < 0) unbank(o, dt); }
@@ -1497,12 +1811,14 @@ function build(L, wrap, host, o) {
         }
         if (o.wFix) { o.wFix = false; o.wRest = clk + W_REST; }   // eben abgelegt/aufgeploppt: erst liegen bleiben
         const run = o !== hoverObj && clk >= o.wRest && !newRoundAt;
-        if (inDance && !run) endDance();
+        if (!run) stopFig(o);
         o.wS += ((run ? 1 : 0) - o.wS) * Math.min(1, dt / 0.8);
         if (o.wS > 1e-3 && !inDance) movers.push(o);
         else if (!inDance) { o.vx = o.vy = 0; if (o.dz) { o.g.position.z -= o.dz; o.dz = 0; } if (o.hopT < 0) { unbank(o, dt); o.swell = 0; } }
       });
       if (dance) danceTick(dt);
+      if (fig) figTick(dt);
+      if (charge) chargeTick(dt);
       movers.forEach(o => {
         const p = o.g.position, yaw = o.g.rotation.z, k = OBJ.indexOf(o), home = TPL[k];
         // Kurs: Grundkurs driftet langsam (lange Bahnen); Heimweh lenkt zur eigenen Form und lässt sie umkreisen
@@ -1514,11 +1830,15 @@ function build(L, wrap, host, o) {
           else {
             const want = Math.atan2(hy, hx) + (d < 0.12 ? o.orb * 1.35 : 0);
             o.wTh += wrapA(want - o.wTh) * Math.min(1, dt * 1.4);
-            if (d < 0.12 && !o.peeked) { o.peeked = true; if (canTalk()) talk(o, line(L.peek, o.K), Math.random() < 0.5 ? 'arm' : null, line(L.peekArm)); }
+            if (d < 0.12 && !o.peeked) { o.peeked = true; if (canTalk()) { const [p, re] = duo(L.peek, o.K); talk(o, p, Math.random() < 0.5 ? 'arm' : null, re); } }
           }
         }
         o.wP[2] += dt * Math.PI * 2 / 3.4;
-        const h = o.wTh + 0.5 * Math.sin(o.wP[2]), V = W_V * (1 + 0.3 * Math.sin(0.31 * clk + o.wP[1])) * o.wS, kv = Math.min(1, dt * 2.2);
+        // Schlittern: Tempo bis × 5,5, klingt quadratisch aus; Schlaf: Viertel-Tempo; Anführer der Polonaise etwas flotter
+        let boost = 0;
+        if (o.slide) { const u = (o.slide.t += dt) / o.slide.D; if (u >= 1) o.slide = null; else { boost = 4.5 * (1 - u) ** 2; o.spin = o.orb * (2 + boost); } }
+        const h = o.wTh + 0.5 * Math.sin(o.wP[2]), kv = Math.min(1, dt * (boost > 0.5 ? 5 : 2.2));
+        const V = W_V * (1 + 0.3 * Math.sin(0.31 * clk + o.wP[1])) * o.wS * (asleep ? 0.25 : 1) * (fig && fig.lead === o ? 1.6 : 1) * (1 + boost);
         o.vx += (V * Math.cos(h) - o.vx) * kv; o.vy += (V * Math.sin(h) - o.vy) * kv;
         // Kontakte: andere Objekte (nicht zu Hause, nicht im Arm), Formen, gesperrte Stellen, Rand des Greifbereichs
         const hard = [];
@@ -1541,27 +1861,34 @@ function build(L, wrap, host, o) {
         contact(o, ux, uy, (r - W_R0) - 0.006); contact(o, -ux, -uy, (W_R1 - r) - 0.006);
         contact(o, uy * Math.sign(a), -ux * Math.sign(a), r * (W_A - Math.abs(a)) - 0.006);
         p.x += o.vx * dt; p.y += o.vy * dt;
-        // harte Grenzen: nie in ein Hindernis, nie aus dem sicheren Greifbereich (wie freie Ablage: 170–340 mm, ±146°)
+        // harte Grenzen: nie in ein Hindernis, nie aus dem Greifbereich (wie freie Ablage: 150–370 mm, ±165°, IK geprüft)
         hard.forEach(([x, y, m]) => { const dx = p.x - x, dy = p.y - y, d = Math.hypot(dx, dy) || 1e-6; if (d < m - W_GAP) { p.x = x + dx / d * (m - W_GAP); p.y = y + dy / d * (m - W_GAP); } });
-        const rr = Math.max(0.17, Math.min(0.34, Math.hypot(p.x, p.y))), aa = Math.max(-2.55, Math.min(2.55, Math.atan2(p.y, p.x)));
+        const rr = Math.max(W_R0, Math.min(W_R1, Math.hypot(p.x, p.y))), aa = Math.max(-W_A, Math.min(W_A, Math.atan2(p.y, p.x)));
         p.x = rr * Math.cos(aa); p.y = rr * Math.sin(aa); o.slot = { a: aa, r: rr };
         if (o.hopT >= 0) { if (o.dz) { p.z -= o.dz; o.dz = 0; } o.g.rotation.y -= o.g.rotation.y * Math.min(1, dt * 6); return; }   // Ruhe-Hüpfer führt
         // Drehen: Drall klingt zum eigenen, langsam wechselnden Grund-Drall ab (±0,55 rad/s); Wiegen um die Fahrtrichtung
         o.spin += (0.55 * Math.sin(0.17 * clk + o.wP[0]) - o.spin) * Math.min(1, dt * 0.9);
-        o.g.rotation.z += o.spin * dt * o.wS;
+        o.g.rotation.z += o.spin * dt * o.wS * (asleep ? 0.3 : 1);
         const sp = Math.hypot(o.vx, o.vy), hv = Math.atan2(o.vy, o.vx), q = Math.min(1.4, sp / W_V);
         o.wob += dt * (4 + 3 * q);
         const bank = 0.05 * q * Math.sin(o.wob);
         o.g.rotation.x = bank * Math.cos(hv); o.g.rotation.y = bank * Math.sin(hv);
         // Hüpfer nach dem Abprallen (0,35 s), dazu Anheben, damit die gekippte Kante nicht in den Boden taucht
-        if (o.bump < 1) o.bump = Math.min(1, o.bump + dt / 0.35);
+        if (o.bump < 1) { o.bump = Math.min(1, o.bump + dt / (o.bumpD || 0.35)); if (o.bump === 1) o.bumpH = o.bumpD = 0; }   // Weck-Hüpfer: 20 mm, 0,5 s
         const hop = o.bump < 1 ? Math.sin(Math.PI * o.bump) : 0;
-        const dz = sup(o.K, o.g.rotation.z, -Math.sin(hv), Math.cos(hv)) * Math.abs(Math.sin(bank)) + 0.006 * hop;
+        const dz = sup(o.K, o.g.rotation.z, -Math.sin(hv), Math.cos(hv)) * Math.abs(Math.sin(bank)) + (o.bumpH || 0.006) * hop;
         p.z += dz - o.dz; o.dz = dz; o.swell = 0.5 * hop;
       });
       // Plaudern (Wunsch User 06.10.2026: Dialoge abwechselnd, nicht immer dieselben Texte): alle 9–15 s eine kleine Szene
       if (reply && clk >= reply.at) { if (!job && !cur && freeObjs().includes(reply.o)) say2.show(reply.o, reply.text, 2400, true); reply = null; }
-      if (clk >= chatAt) { chatAt = clk + rnd(9, 15); if (canTalk() && clk > 6) chat(); }
+      if (clk >= chatAt) { chatAt = clk + rnd(9, 15); if (canTalk() && clk > 6) (asleep ? doze : chat)(); }
+      if (clk >= figAt) {
+        figAt = clk + rnd(9, 15);
+        if (!dance && !fig && !charge && !job && !cur && !newRoundAt && !asleep) {
+          const start = { charge: startCharge, pair: startPair, polo: startPolo, ring: startRing, slide: startSlide };
+          ['charge', 'charge', 'pair', 'polo', 'ring', 'slide'].sort(() => Math.random() - 0.5).some(f => start[f]());
+        }
+      }
     };
     // Umkippen (Wunsch User 06.10.2026): fährt der Arm beim Folgen (TCP 70 mm hoch) gegen einen Turm, kippt alles über dem
     // untersten Objekt in Schubrichtung um die Unterkante (Winkel wächst mit t² wie unter Schwerkraft, dreht dabei leicht), fällt
@@ -1577,14 +1904,14 @@ function build(L, wrap, host, o) {
       return o.K.id === 'cyl' ? sz / 2 * Math.abs(e[10]) + sx / 2 * Math.sqrt(Math.max(0, 1 - e[10] * e[10]))
         : (Math.abs(e[2]) * sx + Math.abs(e[6]) * sy + Math.abs(e[10]) * sz) / 2;
     };
-    // Landestelle: in Schubrichtung, sonst seitlich gefächert und weiter weg; im Greifbereich (190–320 mm + 12 mm Rutschen, ±143°)
+    // Landestelle: in Schubrichtung, sonst seitlich gefächert und weiter weg; im Greifbereich (160–360 mm, ±162°)
     const landAt = (o, x0, y0, dir, k) => {
       const obs = OBJ.filter(q => q !== o && !q.home).map(q => (q.fall ? { x: q.fall.lx, y: q.fall.ly, f: foot(q.K) } : { x: q.g.position.x, y: q.g.position.y, f: foot(q.K) }))
         .concat(TPL.map(t => ({ x: t.g.position.x, y: t.g.position.y, f: foot(t.K) })));
       let first = null;
       for (let j = 0; j < 5; j++) for (const da of [0, 0.35, -0.35, 0.7, -0.7, 1.1, -1.1]) {
         const dd = 0.07 + 0.045 * k + 0.03 * j, x = x0 + dd * Math.cos(dir + da), y = y0 + dd * Math.sin(dir + da);
-        const r = Math.max(0.19, Math.min(0.32, Math.hypot(x, y))), a = Math.max(-2.5, Math.min(2.5, Math.atan2(y, x))), c = [r * Math.cos(a), r * Math.sin(a)];
+        const r = Math.max(W_R0 + 0.01, Math.min(W_R1 - 0.01, Math.hypot(x, y))), a = Math.max(-W_A + 0.05, Math.min(W_A - 0.05, Math.atan2(y, x))), c = [r * Math.cos(a), r * Math.sin(a)];
         if (!first) first = c;
         if (obs.every(b => Math.hypot(c[0] - b.x, c[1] - b.y) > foot(o.K) + b.f + 0.01)) return c;
       }
@@ -1611,7 +1938,7 @@ function build(L, wrap, host, o) {
         const u = t / T1, g = u * u, q = tipQ(F, Math.PI / 2 * g, F.spin * g);
         o.g.quaternion.copy(q); p.set(F.x0 + (F.lx - F.x0) * u, F.y0 + (F.ly - F.y0) * u, F.c0 * (1 - g) + halfH(o, q));
       } else if (t < T3) {   // aufschlagen, nachfedern, ausrutschen, liegen
-        if (!F.hit) { F.hit = true; sfx('thud'); ring(F.lx, F.ly, 0.003); }
+        if (!F.hit) { F.hit = true; if (!F.quiet) sfx('thud'); ring(F.lx, F.ly, 0.003); }
         const v = Math.min(1, (t - T1) / BOUNCE_D), fade = (1 - v) ** 2, q = tipQ(F, Math.PI / 2 + 0.07 * Math.sin(3 * Math.PI * v) * fade, F.spin), s = SL * (1 - fade);
         o.g.quaternion.copy(q); p.set(F.lx + F.dx * s, F.ly + F.dy * s, halfH(o, q) + 0.01 * Math.abs(Math.sin(2 * Math.PI * v)) * fade);
       } else {   // aufrichten: kleiner Hüpfer zurück auf die Grundfläche
@@ -1628,6 +1955,8 @@ function build(L, wrap, host, o) {
     extra = (dt, t) => {
       ex(dt, t);
       clk += dt; pt += dt;
+      for (let i = todo.length - 1; i >= 0; i--) if (clk >= todo[i].at) todo.splice(i, 1)[0].fn();
+      if (!asleep && !reduce && !job && !cur && !newRoundAt && clk - lastClick > 25) { asleep = true; endFig(); endDance(); if (charge) stopFig(charge.a); chatAt = clk + 2; }
       // Begrüßung einmal je Seitenaufruf, sobald die Bühne läuft (rendert nur sichtbar) und noch niemand gespielt hat
       if (!greeted && clk > 1.5) { greeted = true; if (!clicked && !job) arm.say(line(L.hi), null, 3600, 1); }
       if (newRoundAt && clk >= newRoundAt && !job) newRound(layout());
@@ -1663,12 +1992,12 @@ function build(L, wrap, host, o) {
           o.g.rotation.z = o.hopYaw + o.hopDir * HOP_ROT * ease5(o.hopT);
           o.g.rotation.x = o.hopDir * HOP_TILT * arc ** 2; o.swell = arc ** 2;
           if (o.hopT === 1) { o.hopT = -1; o.hopDir = -o.hopDir; o.swell = 0; o.g.rotation.x = 0; rest = 0; hopWait = HOP_EVERY; ring(o.g.position.x, o.g.position.y, 0.003); }
-        } else if (job || cur || hoverObj || newRoundAt) { rest = 0; hopWait = HOP_FIRST; }
+        } else if (job || cur || hoverObj || newRoundAt || asleep) { rest = 0; hopWait = HOP_FIRST; }
         else if ((rest += dt) >= hopWait) {
           const free = OBJ.filter(o => !o.home && o.popT >= 1 && !o.on && !o.fall && !above(o));
           if (free.length) {
             const o = free[hopIdx++ % free.length]; o.hopT = 0; o.hopYaw = o.g.rotation.z;
-            if (!clicked && hops++ % 3 === 0) say.show(o, line(L.pick), 2200, true);
+            if (!clicked && hops++ % 3 === 0) say.show(o, line(L.pick, o.K), 2200, true);
           }
           rest = 0;
         }
@@ -1684,12 +2013,13 @@ function build(L, wrap, host, o) {
         if (o.sinkT < 1) {
           o.sinkT = reduce ? 1 : Math.min(1, o.sinkT + dt / 0.55);
           const e = ease5(o.sinkT);
-          o.g.position.z = o.h / 2 - SINK * e; o.g.rotation.z = o.yaw0 + (o.yaw1 - o.yaw0) * e;
+          o.g.rotation.z = o.yaw0 + (o.yaw1 - o.yaw0) * e;
           if (o.sinkT === 1) arrived(o);
         }
         if (o.popT < 1) o.popT = Math.min(1, o.popT + dt / 0.6);
         applyMat(o, dt);
       });
+      fxTick(dt);
       if (flashT < 1) { flashT = Math.min(1, flashT + dt / 0.45); flash.material.opacity = 0.95 * (1 - flashT); flash.scale.setScalar(1 + flashT * 1.6); }
       say.tick(); say2.tick(); arm.tick();
       // Klick-Hinweis der Formen: in Ruhe selten und zufällig, während ein Objekt eine Form sucht alle im Takt
@@ -1719,11 +2049,15 @@ function build(L, wrap, host, o) {
         o.pool.visible = !inArm && !o.on; o.pool.position.set(o.g.position.x, o.g.position.y, 0.0028);
         const air = inArm ? 0 : Math.max(0, o.g.position.z - o.h / 2) / HOP_H;   // Bodenschein wird beim Abheben etwas kleiner + schwächer
         o.pool.material.opacity = (0.2 + 0.1 * pu) * (1 - 0.3 * air) * (o.home ? 0.5 : 1) * pop; o.pool.scale.setScalar((0.95 + 0.06 * pu) * (1 - 0.12 * air));
-        o.g.scale.setScalar(pop * (1 + 0.008 * pu + HOP_SWELL * o.swell));
+        // Stauchen: Ducken vor dem Anlauf (10 %) + Aufprall (24 %, 0,32 s); Breite wächst mit, Volumen bleibt grob gleich
+        if (o.sq < 1) o.sq = Math.min(1, o.sq + dt / 0.32);
+        const sc = pop * (1 + 0.008 * pu + HOP_SWELL * o.swell), sq = o.fall || inArm ? 0 : 0.1 * o.crouch + (o.sq < 1 ? 0.24 * Math.sin(Math.PI * o.sq) : 0);
+        o.g.scale.set(sc * (1 + 0.5 * sq), sc * (1 + 0.5 * sq), sc * (1 - sq));
+        eyesTick(o, dt);
       });
     };
     // Start: gemerkte Runde (gültig und nicht schon fertig) oder neue Zufallslage
-    const okSlot = s => s && Number.isFinite(s.a) && Number.isFinite(s.r) && s.r > 0.15 && s.r < 0.35 && Math.abs(s.a) < 2.6;
+    const okSlot = s => s && Number.isFinite(s.a) && Number.isFinite(s.r) && s.r > 0.14 && s.r < 0.38 && Math.abs(s.a) < 2.95;
     const arr3 = a => Array.isArray(a) && a.length === 3;
     // gemerkte Türme: Index −1…2, nie auf sich selbst, nicht zu Hause, je Objekt höchstens eins oben drauf, ohne Kreis
     const okOn = (on, home) => arr3(on) && on.every((b, k) => Number.isInteger(b) && b >= -1 && b <= 2 && b !== k && !home[k] && (b < 0 || !home[b]))
