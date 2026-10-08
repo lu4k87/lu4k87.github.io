@@ -1539,11 +1539,11 @@
         <div class="w-head">
           <div class="w-box"><b>Header</b><small>header.js · Modus Robot | Digital Twin / Robot | Hardware · Roboterzustand · Tempo · Control-Lock · E-STOP</small></div>
           <div class="w-box"><b>Befehlspalette</b><small>Strg+K · palette.js · alle Aktionen per Suche</small></div>
-          <div class="w-box"><b>Settings-Popup</b><small>Zahnrad in der Viewport-Leiste · settings_modal.js · tf_tuner.js · settings.js · physics_settings.js · Virtual cameras (vcam.js) · angedockt: drei Gruppen-Kästen mit Seiten-Kacheln in einer Reihe · /api/settings</small></div>
+          <div class="w-box"><b>Settings-Popup</b><small>Zahnrad in der Viewport-Leiste · settings_modal.js · settings.js · Virtual cameras (vcam.js) · nur Vorlieben (Interface, 3D viewport) · angedockt: zwei Gruppen-Kästen mit Seiten-Kacheln in einer Reihe · /api/settings</small></div>
           <div class="w-box estop"><b>E-STOP</b><small>Header + Viewport (Taste Leertaste) · safety.js · /ui/emergency_stop_topic</small></div>
         </div>
         <div class="w-head">
-          <div class="w-box"><b>Bereichsleiste links</b><small>areas.js · Knopf = Aufgabe auf/zu, Farbe je Aufgabe · Operate: Move · Teach · Assistant (VLA) · Remote Teleop mit VR headset (Alt+Shift+1…4) · World: Vision (Alt+Shift+5) · Viewport: Zeile mit Gizmo · Poses · Scene · Layers · Planning · Camera (Alt+Shift+6 = Fenster direkt) · Physics objects (nur Robot | Digital Twin) · Scene: Standard, Auto palletizing · Help: Guides · System: Diagnostics, Settings: Layout &amp; profiles, My view (Alt+Shift+7) · Pin: ohne Pin 48 px · reicht bis zur Statusleiste, Konsole daneben</small></div>
+          <div class="w-box"><b>Bereichsleiste links</b><small>areas.js · Knopf = Aufgabe auf/zu, Farbe je Aufgabe · Scene: Standard, Palletizing, AMR, Tiling · Operate: Move · Teach · Assistant (VLA) · Remote Teleop mit VR headset (Alt+Shift+1…4) · World: Vision (Auge, Alt+Shift+5) · Viewport: Zeile mit Gizmo · Poses · Scene · Layers · Planning · Camera (Alt+Shift+6 = Fenster direkt) · Objects (Fenster Transform + Physics) · System: Guides, Diagnostics, Settings: Layout &amp; profiles, My view (Alt+Shift+7) · Pin: ohne Pin 48 px · reicht bis zur Statusleiste, Konsole daneben</small></div>
         </div>
         <div class="w-cols">
           <div class="w-col" style="--k:var(--c-ws)">
@@ -1553,7 +1553,8 @@
             <div class="w-box"><b>Vision · Cameras: Kamera 1 · Kamera 2</b><small>panel-camera · panel-camera-2 · streams.js</small></div>
             <div class="w-box"><b>Vision · Cameras: ZED-Kamera</b><small>panel-zed-camera · web_video_server</small></div>
             <div class="w-box"><b>Virtuelle Kameras</b><small>panel-vcam-&lt;id&gt; · bis 4 Blickwinkel auf den Twin, Badge VIRTUAL, Brennweite + Tiefenschärfe, Einzelbild/Video nach ~/Pictures/robot_control_ui/vcam · vcam.js · twin/vcam_render.js · /api/vcams · /api/vcam_capture</small></div>
-            <div class="w-box"><b>Vision · Calibrate</b><small>öffnet die Seite Virtual Objects im Settings-Popup</small></div>
+            <div class="w-box"><b>Vision · Calibrate</b><small>öffnet Objects › Transform</small></div>
+            <div class="w-box"><b>Objects</b><small>Seiten Transform (Virtual Objects · TF Tuner · tf_tuner.js) · Physics (PhysiX Sandbox · physics_settings.js, nur Robot | Digital Twin) – früher im Settings-Popup</small></div>
             <div class="w-box"><b>Assistant (VLA)</b><small>Seiten VLA-M chat (panel-vla · vla.js · /vla/*) · Speech (panel-whisper · voice.js)</small></div>
             <div class="w-box"><b>Remote Teleop</b><small>panel-remote · remote.js · /remote/*</small></div>
           </div>
@@ -2268,7 +2269,7 @@ source install/setup.bash</pre><button class="copy" type="button">Kopieren</butt
     </div>
     <div class="card s-6">
       <div class="card-h"><h3>Virtuelle Objekte greifen</h3><span class="chip" style="--k:var(--c-fake)">nur Robot | Digital Twin</span></div>
-      <ul class="bl"><li>Planning → Simulation → <b>SIM physics</b> an: Cube, Rectangle, Cylinder und die Grasp-Items werden echte Körper</li><li>Agent: Saugen an + Saugnapf auf der Oberseite → Objekt hängt am Greifer; die Sandbox meldet das gehaltene Objekt zurück (Greifprüfung)</li><li>Loslassen → Objekt fällt, Position geht zurück in die TF-Frames</li><li>Sandbox aus: der Arm fährt, die Objekte bleiben stehen (Hinweis im Chat, Ergebnis „Done - arm only“)</li><li>Umgekippte Objekte (Greiffläche &gt; 20° schräg) greift der Agent nicht - erst aufstellen (TF Tuner / Reset der Physik-Objekte)</li><li>Robot | Hardware: <b>Virtual</b> darf an bleiben - virtuelle Objekte sind dann nur Hindernisse für MoveIt; <b>Grasp</b> / <b>Place here</b> darauf gesperrt, <b>Move to</b> mit zweitem Klick</li><li>Detected Objects: Kacheln <b>Camera (real)</b> (Live + Rate / nicht gestartet) und <b>Virtual</b> (Schalter), Zeilen mit Badge <b>CAMERA</b> / <b>VIRTUAL</b></li></ul>
+      <ul class="bl"><li>Planning → Simulation → <b>SIM physics</b> an: Cube, Rectangle, Cylinder und die Grasp-Items werden echte Körper</li><li>Agent: Saugen an + Saugnapf auf der Oberseite → Objekt hängt am Greifer; die Sandbox meldet das gehaltene Objekt zurück (Greifprüfung)</li><li>Loslassen → Objekt fällt, Position geht zurück in die TF-Frames</li><li>Sandbox aus: der Arm fährt, die Objekte bleiben stehen (Hinweis im Chat, Ergebnis „Done - arm only“)</li><li>Umgekippte Objekte (Greiffläche &gt; 20° schräg) greift der Agent nicht - erst aufstellen (Objects › Transform / Reset der Physik-Objekte)</li><li>Robot | Hardware: <b>Virtual</b> darf an bleiben - virtuelle Objekte sind dann nur Hindernisse für MoveIt; <b>Grasp</b> / <b>Place here</b> darauf gesperrt, <b>Move to</b> mit zweitem Klick</li><li>Detected Objects: Kacheln <b>Camera (real)</b> (Live + Rate / nicht gestartet) und <b>Virtual</b> (Schalter), Zeilen mit Badge <b>CAMERA</b> / <b>VIRTUAL</b></li></ul>
     </div>
     <div class="card s-12">
       <div class="card-h"><h3>Greifen und Ablegen</h3><span class="chip" style="--k:var(--c-svc)">config/vla_bridge.yaml</span></div>
@@ -2307,7 +2308,7 @@ source install/setup.bash</pre><button class="copy" type="button">Kopieren</butt
       <ul class="bl sm mut"><li>Fahrt fertig erst bei <code>/ui/moveit_motion_state</code> = „succeeded“ für genau diesen Lauf (wie SEQUENCES)</li><li>Mit Bahnvorschau (Ghost): jede Fahrt wartet auf Execute im MoveIt-Popup</li><li>Einmalig: <code>bash src/vla_bridge/scripts/install_ollama.sh</code> → <code>vla_bridge</code> startet das Modell selbst</li></ul>
     </div>
     <div class="card s-12" id="vla-palettieren" style="--k:var(--c-vla)">
-      <div class="card-h"><h3>Auto-Palettieren</h3><span class="chip" style="--k:var(--c-fake)">Robot | Digital Twin · SIM physics</span><span class="chip" style="--k:var(--c-svc)">Skill palletize</span><span class="sub">Bereichs-Leiste › Scene › <b>Auto palletizing</b>: schaltet die Logistik-Zelle (Europalette PAL-01, zwei Zuführbänder mit Lichtschranken, Rollenauslauf, Palettenmagazin mit pneumatischem Pusher) und öffnet das Fenster <i>Palletizing</i></span></div>
+      <div class="card-h"><h3>Auto-Palettieren</h3><span class="chip" style="--k:var(--c-fake)">Robot | Digital Twin · SIM physics</span><span class="chip" style="--k:var(--c-svc)">Skill palletize</span><span class="sub">Bereichs-Leiste › Scene › <b>Palletizing</b>: schaltet die Logistik-Zelle (Europalette PAL-01, zwei Zuführbänder mit Lichtschranken, Rollenauslauf, Palettenmagazin mit pneumatischem Pusher) und öffnet das Fenster <i>Palletizing</i></span></div>
       <div class="pls-h">Ablauf je Karton &amp; Materialfluss</div>
       <ol class="pls">
         <li><span class="n">1</span><div><b>Plan</b><p><code>vla_bridge/palletizing.py</code>: Kartons bis 80 kg, schwer + groß unten, nie schwer auf leicht, nichts auf zerbrechlich, ≥ 80 % Auflage · Ghost-Boxen mit Schritt-Nr. im Viewport · Rest unter <i>Stays on the conveyor</i> mit Grund</p></div>
