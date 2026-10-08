@@ -707,6 +707,49 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
 }
 @media (prefers-reduced-motion: reduce) { .tm-on .tm-card, .tm-on .tm-card:not(.on) { transition: none; } }
 .tm-pk { transition: opacity var(--t-base) var(--ease-out); }
+
+/* ═════ 11 Fragen & Antworten: Themen-Chips (JS) über einer Aufklappliste (<details>, geht ohne JS); Ansicht in #faq[data-view] ═════ */
+.faq-bar { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 24px; }
+.faq-bar[hidden], .faq-more[hidden], .faq-grp[hidden], .faq-item[hidden] { display: none; }
+.faq-bar .chip { cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: border-color var(--t-fast), background-color var(--t-fast), color var(--t-fast); }
+.faq-bar .chip .ico { width: 16px; height: 16px; color: var(--hue, var(--accent)); }
+.faq-bar .chip em { font-style: normal; font-weight: 500; }
+.faq-bar .chip:hover { border-color: color-mix(in srgb, var(--hue, var(--accent)) 55%, var(--line-strong)); color: var(--fg); }
+.faq-bar .chip[aria-pressed="true"] { color: var(--fg); border-color: color-mix(in srgb, var(--hue, var(--accent)) 55%, transparent); background: color-mix(in srgb, var(--hue, var(--accent)) 12%, var(--surface)); }
+.faq-list { display: grid; gap: 32px; }
+#faq[data-view]:not([data-view="all"]) .faq-list { gap: 10px; }
+#faq[data-view="top"] .faq-grp { display: contents; }
+#faq[data-view]:not([data-view="all"]) .faq-gh, #faq:not([data-view="top"]) .faq-q .k { display: none; }
+.faq-grp { display: grid; gap: 10px; }
+.faq-gh { display: flex; align-items: center; gap: 10px; font-size: 20px; font-weight: 800; letter-spacing: -.01em; line-height: 1.25; margin-bottom: 4px; }
+.faq-gh .n { font: 700 12px/1 var(--mono); color: var(--hue); padding: 4px 6px; border: 1px solid color-mix(in srgb, var(--hue) 55%, transparent); border-radius: var(--radius-sm); }
+.faq-item { border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); transition: border-color var(--t-fast); }
+.faq-item:hover, .faq-item[open] { border-color: color-mix(in srgb, var(--hue, var(--accent)) 45%, var(--line)); }
+.faq-item summary { list-style: none; cursor: pointer; display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 16px; padding: 16px 18px; border-radius: var(--radius); }
+.faq-item summary::-webkit-details-marker { display: none; }
+.faq-item summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.faq-q { display: grid; gap: 6px; font-size: 17px; font-weight: 700; line-height: 1.35; color: var(--fg); text-wrap: balance; }
+.faq-q .k { font: 700 12px/1 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--hue, var(--accent)); }
+.faq-item summary .ico { color: var(--hue, var(--accent)); rotate: 90deg; transition: rotate var(--t-fast); }
+.faq-item[open] summary .ico { rotate: -90deg; }
+.faq-body { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(260px, .9fr); align-items: start; gap: 24px; padding: 0 18px 18px; }
+.faq-body.noimg { grid-template-columns: minmax(0, 1fr); }
+.faq-txt { display: grid; gap: 10px; max-width: 64ch; font-size: 15px; line-height: 1.6; color: var(--fg-2); text-wrap: pretty; }
+.faq-txt :is(b, a) { color: var(--fg); }
+.faq-txt a { text-decoration: underline; text-decoration-color: color-mix(in srgb, var(--hue, var(--accent)) 60%, transparent); text-underline-offset: 3px; }
+.faq-txt ul { margin: 0; padding-left: 18px; display: grid; gap: 6px; }
+.faq-txt code { font: 500 13px var(--mono); overflow-wrap: anywhere; }
+.faq-fig { margin: 0; }
+.faq-fig img { display: block; width: 100%; height: auto; max-height: 340px; object-fit: contain; border: 1px solid var(--line); border-radius: var(--radius-sm); background: var(--surface-2); }
+.faq-more { margin-top: 24px; }
+.faq-btn { display: inline-flex; align-items: center; gap: 8px; padding: 12px 16px; border: 1px solid var(--line-strong); border-radius: var(--radius); background: var(--surface); color: var(--fg); font: 700 15px/1.2 var(--font); cursor: pointer; transition: border-color var(--t-fast); }
+.faq-btn:hover { border-color: var(--accent); }
+.faq-btn .ico { width: 16px; height: 16px; color: var(--accent); }
+@media (max-width: 760px) {
+  .faq-body { grid-template-columns: minmax(0, 1fr); gap: 16px; padding: 0 16px 16px; }
+  .faq-item summary { padding: 14px 16px; }
+  .faq-q { font-size: 16px; }
+}
 </style>
 <link rel="stylesheet" href="css/scroll_flow.css">
 <link rel="stylesheet" href="css/function_atlas.css">
@@ -790,6 +833,7 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
     <nav aria-label="Abschnitte" data-en-aria="Sections">
       <a href="#features">Features</a>
       <a href="#unterlagen" data-en="Documents">Unterlagen</a>
+      <a href="#faq">FAQ</a>
       <a href="#kontakt" data-en="Contact">Kontakt</a>
     </nav>
     <div class="tools">
@@ -1855,6 +1899,436 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
           </a>
         </div>
       </section>
+
+      <!-- 11 Fragen & Antworten: Text aus docs/brand/faq.md (de im Element, en in data-en), Anker #faq-<thema>-<nr> bleiben stabil;
+           ohne JS alle Fragen nach Themen, mit JS filtern die Themen-Chips (Start: „Häufig gefragt“) -->
+      <section class="sec" id="faq" aria-labelledby="faq-h">
+        <header class="sec-head">
+          <div><span class="eyebrow" style="--hue: var(--accent)"><span class="n">11</span><span data-en="For everyone">Für alle</span></span><h2 id="faq-h" data-en="Questions &amp;amp; answers">Fragen &amp; Antworten</h2></div>
+          <div class="brief" style="--hue: var(--accent)"><p class="slogan" data-en="Short questions. Clear answers.">Kurz gefragt. Klar beantwortet.</p><ul class="kpis"><li class="kpi"><strong>59</strong><span data-en="questions">Fragen</span></li><li class="kpi"><strong>10</strong><span data-en="topics">Themen</span></li><li class="kpi"><strong>10</strong><span data-en="most asked">häufig gefragt</span></li></ul></div>
+        </header>
+        <div class="faq-bar" role="group" aria-label="Fragen nach Thema filtern" data-en-aria="Filter questions by topic" hidden>
+          <button class="chip" type="button" data-faq="top" aria-pressed="true"><svg class="ico" aria-hidden="true"><use href="#i-star"/></svg><span data-en="Most asked">Häufig gefragt</span><em>10</em></button>
+          <button class="chip" type="button" data-faq="all" aria-pressed="false"><span data-en="All">Alle</span><em>59</em></button>
+          <button class="chip" type="button" data-faq="idee" aria-pressed="false" style="--hue: var(--accent)"><span data-en="Idea">Idee</span><em>6</em></button>
+          <button class="chip" type="button" data-faq="steuern" aria-pressed="false" style="--hue: var(--orange)"><span data-en="Operation">Bedienung</span><em>9</em></button>
+          <button class="chip" type="button" data-faq="sicher" aria-pressed="false" style="--hue: var(--gold)"><span data-en="Safety">Sicherheit</span><em>8</em></button>
+          <button class="chip" type="button" data-faq="ki" aria-pressed="false" style="--hue: var(--violet)"><span data-en="AI">KI</span><em>7</em></button>
+          <button class="chip" type="button" data-faq="twin" aria-pressed="false" style="--hue: var(--blue)"><span data-en="Digital Twin">Digital Twin</span><em>5</em></button>
+          <button class="chip" type="button" data-faq="sehen" aria-pressed="false" style="--hue: var(--green)"><span data-en="Perception">Wahrnehmung</span><em>3</em></button>
+          <button class="chip" type="button" data-faq="forschung" aria-pressed="false" style="--hue: var(--pink)"><span data-en="Research">Forschung</span><em>6</em></button>
+          <button class="chip" type="button" data-faq="prinzip" aria-pressed="false" style="--hue: var(--indigo)"><span data-en="Background">Hintergrund</span><em>5</em></button>
+          <button class="chip" type="button" data-faq="apps" aria-pressed="false" style="--hue: var(--lime)"><span data-en="Setup">Einrichtung</span><em>5</em></button>
+          <button class="chip" type="button" data-faq="offen" aria-pressed="false" style="--hue: var(--teal)"><span data-en="Outlook">Ausblick</span><em>5</em></button>
+        </div>
+        <div class="faq-list">
+          <div class="faq-grp" data-g="idee" style="--hue: var(--accent)">
+            <h3 class="faq-gh"><span class="n">01</span><span data-en="Idea and goal">Idee und Ziel</span></h3>
+            <details class="faq-item" id="faq-idee-01" data-top>
+              <summary><span class="faq-q"><span class="k" data-en="Idea and goal">Idee und Ziel</span><span data-en="What is UX Robot?">Was ist UX Robot?</span></span><svg class="ico" aria-hidden="true"><use href="#i-next"/></svg></summary>
+              <div class="faq-body">
+                <div class="faq-txt"><p data-en="UX Robot is an assistive robotics platform for the xArm Lite&amp;nbsp;6, built on ROS&amp;nbsp;2 Humble. It combines teleoperation, assistive AI and multimodal input with monitoring and evaluation.">UX Robot ist eine assistive Robotik-Plattform für den xArm Lite&nbsp;6 auf Basis von ROS&nbsp;2 Humble. Sie verbindet Teleoperation, assistive KI und multimodale Eingabe mit Monitoring und Evaluierung.</p></div>
+                <figure class="faq-fig"><img src="img/presentation/hero.jpg" width="1400" height="935" alt="xArm Lite 6 am Arbeitsplatz im UX-Labor, davor Würfel, Quader und Zylinder auf dem Tisch" data-en-alt="xArm Lite 6 at the workstation in the UX Lab, with cube, cuboid and cylinder on the table" loading="lazy" decoding="async"></figure>
+              </div>
+            </details>
+            <details class="faq-item" id="faq-idee-02" data-top>
+              <summary><span class="faq-q"><span class="k" data-en="Idea and goal">Idee und Ziel</span><span data-en="What does “The human leads. The AI assists.” mean?">Was bedeutet „Der Mensch führt. Die KI assistiert.“?</span></span><svg class="ico" aria-hidden="true"><use href="#i-next"/></svg></summary>
+              <div class="faq-body noimg">
+                <div class="faq-txt"><p data-en="The system proposes, the human decides (human-in-the-loop). The AI plans motions and sequences; the human sets the goal, checks the plan in the Digital Twin and confirms it.">Das System schlägt vor, der Mensch entscheidet (Human-in-the-Loop). Die KI plant Bewegungen und Abläufe; der Mensch gibt das Ziel vor, prüft den Plan im Digital Twin und bestätigt ihn.</p></div>
+              </div>
+            </details>
+            <details class="faq-item" id="faq-idee-03" data-top>
+              <summary><span class="faq-q"><span class="k" data-en="Idea and goal">Idee und Ziel</span><span data-en="Which problem does UX Robot solve?">Welches Problem löst UX Robot?</span></span><svg class="ico" aria-hidden="true"><use href="#i-next"/></svg></summary>
+              <div class="faq-body noimg">
+                <div class="faq-txt"><p data-en="Classic robot control demands fine motor skills and expert knowledge, which shuts many people out. UX Robot replaces joint coordination with task-level commands: show, say or select the goal, and the system plans the motion.">Klassische Robotersteuerung verlangt Feinmotorik und Fachwissen und schließt damit viele Menschen aus. UX Robot ersetzt Gelenkkoordination durch aufgabenbezogene Befehle: Ziel zeigen, sagen oder auswählen, das System plant die Bewegung.</p></div>
+              </div>
+            </details>
+            <details class="faq-item" id="faq-idee-04" data-top>
+              <summary><span class="faq-q"><span class="k" data-en="Idea and goal">Idee und Ziel</span><span data-en="Who is UX Robot for, and what for?">Für wen und wofür ist UX Robot?</span></span><svg class="ico" aria-hidden="true"><use href="#i-next"/></svg></summary>
+              <div class="faq-body noimg">
+                <div class="faq-txt"><p data-en="For teaching and research on human-robot interaction.">Für Lehre und Forschung zur Mensch-Roboter-Interaktion.</p><ul><li data-en="&lt;b&gt;Students and teachers:&lt;/b&gt; try out robotics, path planning and AI without a long learning curve."><b>Studierende und Lehrende:</b> Robotik, Bahnplanung und KI ohne lange Einarbeitung ausprobieren.</li><li data-en="&lt;b&gt;Researchers:&lt;/b&gt; build control concepts, test them with participants and measure them."><b>Forschende:</b> Bedienkonzepte bauen, mit Testpersonen prüfen und messen.</li><li data-en="&lt;b&gt;Operators without robotics expertise:&lt;/b&gt; trigger tasks by voice, gaze or touch."><b>Bediener ohne Robotik-Fachwissen:</b> Aufgaben per Sprache, Blick oder Touch auslösen.</li><li data-en="&lt;b&gt;Example scenarios:&lt;/b&gt; Logistics – auto palletizing, Intralogistics – AMR, Construction – tiling (in progress)."><b>Beispielszenarien:</b> Logistik – automatisch palettieren, Intralogistik – AMR, Bau – Fliesenlegen (in Arbeit).</li></ul></div>
+              </div>
+            </details>
+            <details class="faq-item" id="faq-idee-05">
+              <summary><span class="faq-q"><span class="k" data-en="Idea and goal">Idee und Ziel</span><span data-en="Why is the project called “UX Robot”?">Warum heißt das Projekt „UX Robot“?</span></span><svg class="ico" aria-hidden="true"><use href="#i-next"/></svg></summary>
+              <div class="faq-body noimg">
+                <div class="faq-txt"><p data-en="UX stands for user experience: the focus is on how people operate the robot, not on the robot itself. The project is developed in the UX Lab of Rhine-Waal University of Applied Sciences.">UX steht für User Experience: Im Mittelpunkt steht die Bedienung durch den Menschen, nicht der Roboter. Das Projekt entsteht im UX-Labor der Hochschule Rhein-Waal.</p></div>
+              </div>
+            </details>
+            <details class="faq-item" id="faq-idee-06">
+              <summary><span class="faq-q"><span class="k" data-en="Idea and goal">Idee und Ziel</span><span data-en="What does UX Robot add to the manufacturer’s software?">Was ergänzt UX Robot gegenüber der Software des Herstellers?</span></span><svg class="ico" aria-hidden="true"><use href="#i-next"/></svg></summary>
+              <div class="faq-body">
+                <div class="faq-txt"><p data-en="UX Robot builds on the official &lt;code&gt;xarm_ros2&lt;/code&gt; by UFactory and adds functions for operation, assistance and measurement.">UX Robot baut auf dem offiziellen <code>xarm_ros2</code> von UFactory auf und ergänzt Funktionen für Bedienung, Assistenz und Messung.</p><ul><li data-en="&lt;b&gt;Ten control modes&lt;/b&gt; in one system."><b>Zehn Steuerwege</b> in einem System.</li><li data-en="&lt;b&gt;AI assistance&lt;/b&gt; for sequences from everyday language."><b>KI-Assistenz</b> für Abläufe aus Alltagssprache.</li><li data-en="&lt;b&gt;Digital Twin&lt;/b&gt; with robot simulation."><b>Digital Twin</b> mit Roboter-Simulation.</li><li data-en="&lt;b&gt;Measurement&lt;/b&gt; of usability and workload in the UX | Monitoring."><b>Messung</b> von Usability und Beanspruchung im UX | Monitoring.</li></ul></div>
+                <figure class="faq-fig"><img src="img/presentation/rcu.jpg" width="1600" height="900" alt="UX | Control Interface: Digital Twin des xArm Lite 6 mit Bedienfeldern für Bewegung, Objekte und Abläufe" data-en-alt="UX | Control Interface: Digital Twin of the xArm Lite 6 with panels for motion, objects and sequences" loading="lazy" decoding="async"></figure>
+              </div>
+            </details>
+          </div>
+          <div class="faq-grp" data-g="steuern" style="--hue: var(--orange)">
+            <h3 class="faq-gh"><span class="n">02</span><span data-en="Operation and control modes">Bedienung und Steuerwege</span></h3>
+            <details class="faq-item" id="faq-steuern-01" data-top>
+              <summary><span class="faq-q"><span class="k" data-en="Operation and control modes">Bedienung und Steuerwege</span><span data-en="How can I operate the robot?">Wie kann ich den Roboter bedienen?</span></span><svg class="ico" aria-hidden="true"><use href="#i-next"/></svg></summary>
+              <div class="faq-body noimg">
+                <div class="faq-txt"><p data-en="Through ten control modes, all running through the same safety chain. The control lock gives control to only one device at a time.">Über zehn Steuerwege, alle durch dieselbe Sicherheitskette. Der Control-Lock gibt die Steuerung immer nur einem Gerät.</p><ul><li data-en="&lt;b&gt;Devices:&lt;/b&gt; gamepad, VR (Meta Quest&amp;nbsp;3), keyboard, remote control from another device."><b>Geräte:</b> Gamepad, VR (Meta Quest&nbsp;3), Tastatur, Remote Control von einem anderen Gerät.</li><li data-en="&lt;b&gt;Natural:&lt;/b&gt; gaze control, voice commands."><b>Natürlich:</b> Blicksteuerung, Sprachbefehle.</li><li data-en="&lt;b&gt;Interfaces:&lt;/b&gt; UX | Control Interface, UX | Compact Interface on the touch display, TCP gizmo (handle at the gripper point in the Digital Twin), VLA-M chat (chat with the AI agent)."><b>Oberflächen:</b> UX | Control Interface, UX | Compact Interface am Touch-Display, TCP-Gizmo (Griff am Greiferpunkt im Digital Twin), VLA-M-Chat (Chat mit dem KI-Agenten).</li></ul></div>
+              </div>
+            </details>
+            <details class="faq-item" id="faq-steuern-02">
+              <summary><span class="faq-q"><span class="k" data-en="Operation and control modes">Bedienung und Steuerwege</span><span data-en="How do I move the arm by hand?">Wie fahre ich den Arm von Hand?</span></span><svg class="ico" aria-hidden="true"><use href="#i-next"/></svg></summary>
+              <div class="faq-body">
+                <div class="faq-txt"><p data-en="With jogging: moving the arm by hand in small steps, with keys, gamepad or touch. In Hold the arm moves as long as the key is pressed; in Step it moves 1, 5 or 10&amp;nbsp;mm per press.">Per Jogging: den Arm von Hand in kleinen Schritten fahren, mit Tasten, Gamepad oder Touch. Bei Halten fährt der Arm, solange die Taste gedrückt ist; bei Schritt fährt er 1, 5 oder 10&nbsp;mm je Druck.</p></div>
+                <figure class="faq-fig"><img src="img/rcu_jogging.png" width="694" height="960" alt="Jogging-Panel der UX | Control Interface: Halten oder Schritt 1, 5, 10 mm, Felder zum Verschieben und Drehen, Gelenkregler" data-en-alt="Jogging panel of the UX | Control Interface: Hold or Step 1, 5, 10 mm, pads to translate and rotate, joint sliders" loading="lazy" decoding="async"></figure>
+              </div>
+            </details>
+            <details class="faq-item" id="faq-steuern-03">
+              <summary><span class="faq-q"><span class="k" data-en="Operation and control modes">Bedienung und Steuerwege</span><span data-en="How does gamepad control work?">Wie funktioniert die Steuerung per Gamepad?</span></span><svg class="ico" aria-hidden="true"><use href="#i-next"/></svg></summary>
+              <div class="faq-body noimg">
+                <div class="faq-txt"><p data-en="An Xbox Elite&amp;nbsp;2 steers the arm directly. The collision pre-check slows downward motion before the table surface, the MoveIt collision check stops the arm before obstacles.">Ein Xbox Elite&nbsp;2 steuert den Arm direkt. Die Kollisionsvorprüfung bremst Abwärtsbewegungen vor der Tischfläche, die Kollisionsprüfung (MoveIt) hält den Arm vor Hindernissen an.</p></div>
+              </div>
+            </details>
+            <details class="faq-item" id="faq-steuern-04">
+              <summary><span class="faq-q"><span class="k" data-en="Operation and control modes">Bedienung und Steuerwege</span><span data-en="How does VR with the Meta Quest&amp;nbsp;3 work?">Wie funktioniert VR mit der Meta Quest&nbsp;3?</span></span><svg class="ico" aria-hidden="true"><use href="#i-next"/></svg></summary>
+              <div class="faq-body">
+                <div class="faq-txt"><p data-en="The Quest&amp;nbsp;3 opens the UX | Control Interface right in the headset’s browser, without installing an app. The arm follows the hand in six degrees of freedom; on the PC a VR mirror shows what the headset sees.">Die Quest&nbsp;3 öffnet die UX | Control Interface direkt im Browser der Brille, ohne App-Installation. Der Arm folgt der Hand in sechs Freiheitsgraden; am PC zeigt ein VR-Spiegel, was die Brille sieht.</p></div>
+                <figure class="faq-fig"><img src="img/rcu_vr.png" width="484" height="322" alt="Bereich Remote Teleop, VR headset: Enter VR, Passthrough AR (vorbereitet) und VR-Spiegel am PC" data-en-alt="Remote Teleop, VR headset: Enter VR, Passthrough AR (prepared) and VR mirror window on the PC" loading="lazy" decoding="async"></figure>
+              </div>
+            </details>
+            <details class="faq-item" id="faq-steuern-05">
+              <summary><span class="faq-q"><span class="k" data-en="Operation and control modes">Bedienung und Steuerwege</span><span data-en="How does gaze control work?">Wie funktioniert die Blicksteuerung?</span></span><svg class="ico" aria-hidden="true"><use href="#i-next"/></svg></summary>
+              <div class="faq-body">
+                <div class="faq-txt"><p data-en="Tobii Pro Glasses&amp;nbsp;3 track the gaze and detect which object the person is looking at. If the gaze rests on a detected object for 2&amp;nbsp;s, the grasp sequence starts.">Die Brille Tobii Pro Glasses&nbsp;3 erfasst den Blick und erkennt, welches Objekt der Mensch ansieht. Bleibt der Blick 2&nbsp;s auf einem erkannten Objekt, startet der Greifablauf.</p></div>
+                <figure class="faq-fig"><img src="img/project_docs/stage_gaze.jpg" width="1400" height="788" alt="Blicksteuerung: Kamerabild der Tobii-Brille mit erkannten Objekten, Blickpunkt und Bedientasten" data-en-alt="Gaze control: camera view of the Tobii glasses with detected objects, gaze point and control buttons" loading="lazy" decoding="async"></figure>
+              </div>
+            </details>
+            <details class="faq-item" id="faq-steuern-06">
+              <summary><span class="faq-q"><span class="k" data-en="Operation and control modes">Bedienung und Steuerwege</span><span data-en="How do voice commands work?">Wie funktionieren Sprachbefehle?</span></span><svg class="ico" aria-hidden="true"><use href="#i-next"/></svg></summary>
+              <div class="faq-body">
+                <div class="faq-txt"><p data-en="Whisper turns speech into text locally, in German and English. Recognised commands steer the arm; in the VLA-M chat the microphone dictates tasks to the AI agent.">Whisper wandelt Sprache lokal in Text, auf Deutsch und Englisch. Erkannte Befehle steuern den Arm; im VLA-M-Chat diktiert das Mikrofon Aufträge an den KI-Agenten.</p></div>
+                <figure class="faq-fig"><img src="img/rcu_speech.png" width="484" height="330" alt="Speech Control im Bereich Assistant (VLA): Mikrofon-Knopf und zuletzt erkannter Befehl" data-en-alt="Speech control in the Assistant (VLA) area: microphone button and last recognised command" loading="lazy" decoding="async"></figure>
+              </div>
+            </details>
+            <details class="faq-item" id="faq-steuern-07">
+              <summary><span class="faq-q"><span class="k" data-en="Operation and control modes">Bedienung und Steuerwege</span><span data-en="What is the TCP gizmo?">Was ist der TCP-Gizmo?</span></span><svg class="ico" aria-hidden="true"><use href="#i-next"/></svg></summary>
+              <div class="faq-body">
+                <div class="faq-txt"><p data-en="A handle at the gripper point in the Digital Twin. You drag it to the target pose, see the path preview and confirm it; with Auto-Move switched on, the arm moves straight away.">Ein Griff am Greiferpunkt im Digital Twin. Der Mensch zieht ihn an die Zielpose, sieht die Bahnvorschau und bestätigt sie; mit eingeschaltetem Auto-Move fährt der Arm direkt.</p></div>
+                <figure class="faq-fig"><img src="img/rcu_tcp_gizmo.jpg" width="1200" height="744" alt="TCP-Gizmo im Digital Twin: Pfeile X, Y, Z am Greiferpunkt, Abstand zum Tisch und Zielpose im Pose-Feld" data-en-alt="TCP gizmo in the Digital Twin: X, Y, Z arrows at the gripper point, distance to the table and target pose in the pose field" loading="lazy" decoding="async"></figure>
+              </div>
+            </details>
+            <details class="faq-item" id="faq-steuern-08">
+              <summary><span class="faq-q"><span class="k" data-en="Operation and control modes">Bedienung und Steuerwege</span><span data-en="Can I control the robot from another device?">Kann ich den Roboter von einem anderen Gerät steuern?</span></span><svg class="ico" aria-hidden="true"><use href="#i-next"/></svg></summary>
+              <div class="faq-body noimg">
+                <div class="faq-txt"><p data-en="Yes, via remote control from a laptop or tablet on the home network. Not over the internet: the firewall only lets in the home network and lab networks.">Ja, per Remote Control vom Laptop oder Tablet im Heimnetz. Übers Internet geht das nicht: Die Firewall lässt nur Heimnetz und Labornetze herein.</p><ul><li data-en="&lt;b&gt;Approval:&lt;/b&gt; on the robot PC via &lt;i&gt;Allow&lt;/i&gt; / &lt;i&gt;Deny&lt;/i&gt;; open requests expire after 60&amp;nbsp;s."><b>Freigabe:</b> am Roboter-PC per <i>Allow</i> / <i>Deny</i>; offene Anfragen verfallen nach 60&nbsp;s.</li><li data-en="&lt;b&gt;Scope:&lt;/b&gt; remote devices may jog, use gamepad and VR, and stop."><b>Umfang:</b> entfernte Geräte dürfen joggen, Gamepad und VR nutzen und stoppen.</li><li data-en="&lt;b&gt;Limit:&lt;/b&gt; at most 50&amp;nbsp;% speed in Robot | Hardware."><b>Grenze:</b> im Robot | Hardware höchstens 50&nbsp;% Tempo.</li></ul></div>
+              </div>
+            </details>
+            <details class="faq-item" id="faq-steuern-09">
+              <summary><span class="faq-q"><span class="k" data-en="Operation and control modes">Bedienung und Steuerwege</span><span data-en="Are the interfaces accessible?">Sind die Oberflächen barrierearm?</span></span><svg class="ico" aria-hidden="true"><use href="#i-next"/></svg></summary>
+              <div class="faq-body">
+                <div class="faq-txt"><p data-en="Several paths lower barriers; a WCAG audit has not been done yet.">Mehrere Wege senken Hürden; eine Prüfung nach WCAG gibt es noch nicht.</p><ul><li data-en="&lt;b&gt;Hands-free control:&lt;/b&gt; by gaze or voice."><b>Steuern ohne Hände:</b> per Blick oder Sprache.</li><li data-en="&lt;b&gt;Large buttons:&lt;/b&gt; in the UX | Compact Interface, even with gloves."><b>Große Tasten:</b> im UX | Compact Interface, auch mit Handschuh.</li><li data-en="&lt;b&gt;Language and contrast:&lt;/b&gt; all four web apps in German and English, with light and dark theme."><b>Sprache und Kontrast:</b> alle vier Web-Apps auf Deutsch und Englisch, mit hellem und dunklem Theme.</li></ul></div>
+                <figure class="faq-fig"><img src="img/rcu_theme_list.png" width="624" height="676" alt="Schnellauswahl (Alt+T) der UX | Control Interface: Themes Dark, Light, Jarvis, Nord Blue und Sprache DE/EN" data-en-alt="Quick switch (Alt+T) of the UX | Control Interface: themes Dark, Light, Jarvis, Nord Blue and language DE/EN" loading="lazy" decoding="async"></figure>
+              </div>
+            </details>
+          </div>
+          <div class="faq-grp" data-g="sicher" style="--hue: var(--gold)">
+            <h3 class="faq-gh"><span class="n">03</span><span data-en="Safety">Sicherheit</span></h3>
+            <details class="faq-item" id="faq-sicher-01" data-top>
+              <summary><span class="faq-q"><span class="k" data-en="Safety">Sicherheit</span><span data-en="How does UX Robot ensure safety?">Wie sorgt UX Robot für Sicherheit?</span></span><svg class="ico" aria-hidden="true"><use href="#i-next"/></svg></summary>
+              <div class="faq-body noimg">
+                <div class="faq-txt"><p data-en="No input talks to the arm directly. Every control mode runs through a chain of checks:">Keine Eingabe spricht direkt mit dem Arm. Jeder Steuerweg läuft durch eine Kette aus Prüfungen:</p><ul><li data-en="&lt;b&gt;E-STOP:&lt;/b&gt; stops immediately, from every interface."><b>E-STOP:</b> stoppt sofort, aus jeder Bedienoberfläche.</li><li data-en="&lt;b&gt;Collision protection:&lt;/b&gt; paths and hand motions are checked for collisions; the arm does not move below the table surface."><b>Kollisionsschutz:</b> Bahnen und Handbewegungen werden auf Kollisionen geprüft; der Arm fährt nicht unter die Tischfläche.</li><li data-en="&lt;b&gt;Control lock:&lt;/b&gt; only one device controls at a time."><b>Control-Lock:</b> immer nur ein Gerät steuert.</li><li data-en="&lt;b&gt;Confirmation:&lt;/b&gt; in Robot | Hardware a planned sequence only runs after confirmation."><b>Bestätigung:</b> im Robot | Hardware fährt ein geplanter Ablauf erst nach Bestätigung.</li></ul></div>
+              </div>
+            </details>
+            <details class="faq-item" id="faq-sicher-02">
+              <summary><span class="faq-q"><span class="k" data-en="Safety">Sicherheit</span><span data-en="What is the difference between approval and confirmation?">Was ist der Unterschied zwischen Freigabe und Bestätigung?</span></span><svg class="ico" aria-hidden="true"><use href="#i-next"/></svg></summary>
+              <div class="faq-body noimg">
+                <div class="faq-txt"><ul><li data-en="&lt;b&gt;Approval:&lt;/b&gt; the robot PC allows a device to take control (&lt;i&gt;Allow&lt;/i&gt; / &lt;i&gt;Deny&lt;/i&gt;)."><b>Freigabe:</b> Der Roboter-PC erlaubt einem Gerät das Steuern (<i>Allow</i> / <i>Deny</i>).</li><li data-en="&lt;b&gt;Confirmation:&lt;/b&gt; the human confirms a planned path before the arm moves, and the switch to Robot | Hardware."><b>Bestätigung:</b> Der Mensch bestätigt eine geplante Bahn, bevor der Arm fährt, und den Wechsel nach Robot | Hardware.</li></ul></div>
+              </div>
+            </details>
+            <details class="faq-item" id="faq-sicher-03">
+              <summary><span class="faq-q"><span class="k" data-en="Safety">Sicherheit</span><span data-en="Where is the E-STOP, and what happens afterwards?">Wo ist der E-STOP, und was passiert danach?</span></span><svg class="ico" aria-hidden="true"><use href="#i-next"/></svg></summary>
+              <div class="faq-body">
+                <div class="faq-txt"><p data-en="Always in the same place in the UX | Control Interface, the UX | Compact Interface and the VR HUD, plus as a voice command and on the robot’s switch. Afterwards the arm stays still until the E-STOP is reset: by the device in control or on the robot PC.">Immer an derselben Stelle in UX | Control Interface, UX | Compact Interface und im VR-HUD, dazu per Sprachbefehl und am Schalter des Roboters. Danach steht der Arm, bis der E-STOP quittiert ist: durch das Gerät mit der Steuerung oder am Roboter-PC.</p></div>
+                <figure class="faq-fig"><img src="img/project_docs/stage_twin.jpg" width="1116" height="708" alt="Digital Twin mit E-STOP-Taste im Viewport, darüber eine laufende Bewegung (MoveIt)" data-en-alt="Digital Twin with the E-STOP button in the viewport, above it a running motion (MoveIt)" loading="lazy" decoding="async"></figure>
+              </div>
+            </details>
+            <details class="faq-item" id="faq-sicher-04">
+              <summary><span class="faq-q"><span class="k" data-en="Safety">Sicherheit</span><span data-en="How do I know whether the real robot is moving?">Woran erkenne ich, ob der echte Roboter fährt?</span></span><svg class="ico" aria-hidden="true"><use href="#i-next"/></svg></summary>
+              <div class="faq-body noimg">
+                <div class="faq-txt"><p data-en="From the mode in the header: Robot | Digital Twin for the robot simulation, Robot | Hardware for the real robot hardware. Switching to Robot | Hardware requires a confirmation.">Am Modus im Header: Robot | Digital Twin für die Roboter-Simulation, Robot | Hardware für die echte Roboter-Hardware. Der Wechsel nach Robot | Hardware verlangt eine Bestätigung.</p></div>
+              </div>
+            </details>
+            <details class="faq-item" id="faq-sicher-05">
+              <summary><span class="faq-q"><span class="k" data-en="Safety">Sicherheit</span><span data-en="How fast may the arm move?">Wie schnell darf der Arm fahren?</span></span><svg class="ico" aria-hidden="true"><use href="#i-next"/></svg></summary>
+              <div class="faq-body noimg">
+                <div class="faq-txt"><p data-en="A control in the header sets the speed in percent, visible on every interface. Via remote control, Robot | Hardware allows at most 50&amp;nbsp;%.">Das Tempo stellt ein Regler im Header in Prozent ein, sichtbar auf jeder Bedienoberfläche. Per Remote Control erlaubt Robot | Hardware höchstens 50&nbsp;%.</p></div>
+              </div>
+            </details>
+            <details class="faq-item" id="faq-sicher-06">
+              <summary><span class="faq-q"><span class="k" data-en="Safety">Sicherheit</span><span data-en="What happens if the connection drops?">Was passiert, wenn die Verbindung abbricht?</span></span><svg class="ico" aria-hidden="true"><use href="#i-next"/></svg></summary>
+              <div class="faq-body noimg">
+                <div class="faq-txt"><p data-en="A watchdog continuously checks whether every controlling device is still connected. If the connection drops, remote gamepad and jogging stop immediately.">Ein Watchdog prüft laufend, ob jedes steuernde Gerät noch verbunden ist. Reißt die Verbindung ab, stoppen Remote-Gamepad und Jogging sofort.</p></div>
+              </div>
+            </details>
+            <details class="faq-item" id="faq-sicher-07">
+              <summary><span class="faq-q"><span class="k" data-en="Safety">Sicherheit</span><span data-en="Are incidents recorded?">Wird ein Vorfall aufgezeichnet?</span></span><svg class="ico" aria-hidden="true"><use href="#i-next"/></svg></summary>
+              <div class="faq-body noimg">
+                <div class="faq-txt"><p data-en="Yes: the blackbox keeps the last 60&amp;nbsp;s of key data and saves them on E-STOP, servo halt or collision. An incident can then be replayed instead of re-enacted.">Ja: Die Blackbox hält die letzten 60&nbsp;s wichtiger Daten bereit und speichert sie bei E-STOP, Servo-Halt oder Kollision. So lässt sich ein Vorfall abspielen, statt ihn nachzustellen.</p></div>
+              </div>
+            </details>
+            <details class="faq-item" id="faq-sicher-08" data-top>
+              <summary><span class="faq-q"><span class="k" data-en="Safety">Sicherheit</span><span data-en="Is UX Robot a certified safety system?">Ist UX Robot ein zertifiziertes Sicherheitssystem?</span></span><svg class="ico" aria-hidden="true"><use href="#i-next"/></svg></summary>
+              <div class="faq-body noimg">
+                <div class="faq-txt"><p data-en="No. UX Robot is a platform for teaching and research and does not replace a risk assessment or safety equipment according to standards.">Nein. UX Robot ist eine Plattform für Lehre und Forschung und ersetzt keine Risikobeurteilung oder Sicherheitstechnik nach Norm.</p></div>
+              </div>
+            </details>
+          </div>
+          <div class="faq-grp" data-g="ki" style="--hue: var(--violet)">
+            <h3 class="faq-gh"><span class="n">04</span><span data-en="AI assistance">KI-Assistenz</span></h3>
+            <details class="faq-item" id="faq-ki-01">
+              <summary><span class="faq-q"><span class="k" data-en="AI assistance">KI-Assistenz</span><span data-en="What exactly does the AI do?">Was macht die KI genau?</span></span><svg class="ico" aria-hidden="true"><use href="#i-next"/></svg></summary>
+              <div class="faq-body">
+                <div class="faq-txt"><p data-en="An AI agent turns an instruction in everyday language into a sequence, for example “Put the cube in the bowl”. It understands German and English, including follow-up commands, and asks back when something is unclear.">Ein KI-Agent macht aus einer Anweisung in Alltagssprache einen Ablauf, zum Beispiel „Leg den Würfel in die Schale“. Er versteht Deutsch und Englisch, auch Folgebefehle, und fragt nach, wenn etwas unklar ist.</p></div>
+                <figure class="faq-fig"><img src="img/vla_agent.png" width="1240" height="860" alt="VLA-M-Chat: Anweisung in Alltagssprache, daneben ein Plan aus vier Schritten, der auf Execute wartet" data-en-alt="VLA-M chat: instruction in everyday language, next to it a four-step plan waiting for Execute" loading="lazy" decoding="async"></figure>
+              </div>
+            </details>
+            <details class="faq-item" id="faq-ki-02">
+              <summary><span class="faq-q"><span class="k" data-en="AI assistance">KI-Assistenz</span><span data-en="What is the VLA-M chat?">Was ist der VLA-M-Chat?</span></span><svg class="ico" aria-hidden="true"><use href="#i-next"/></svg></summary>
+              <div class="faq-body noimg">
+                <div class="faq-txt"><p data-en="The chat area of the AI agent in the UX | Control Interface (in progress). Today a language model plans with the detected objects; a model that acts directly on camera images (vision-language-action) is planned.">Der Chat-Bereich des KI-Agenten in der UX | Control Interface (in Arbeit). Heute plant ein Sprachmodell mit den erkannten Objekten; ein Modell, das direkt aus Kamerabildern handelt (Vision-Language-Action), ist geplant.</p></div>
+              </div>
+            </details>
+            <details class="faq-item" id="faq-ki-03" data-top>
+              <summary><span class="faq-q"><span class="k" data-en="AI assistance">KI-Assistenz</span><span data-en="Can the AI simply move the arm anywhere?">Kann die KI den Arm einfach irgendwohin fahren?</span></span><svg class="ico" aria-hidden="true"><use href="#i-next"/></svg></summary>
+              <div class="faq-body noimg">
+                <div class="faq-txt"><p data-en="No: the AI agent only chooses predefined actions (grasp, place, palletize) and objects; the target poses come from the scene. Every motion runs through the same safety chain as any other control mode.">Nein: Der KI-Agent wählt nur vorgegebene Handgriffe (greifen, ablegen, palettieren) und Objekte; die Zielposen kommen aus der Szene. Jede Fahrt läuft durch dieselbe Sicherheitskette wie jeder andere Steuerweg.</p></div>
+              </div>
+            </details>
+            <details class="faq-item" id="faq-ki-04">
+              <summary><span class="faq-q"><span class="k" data-en="AI assistance">KI-Assistenz</span><span data-en="What happens if the AI makes a mistake?">Was passiert, wenn die KI einen Fehler macht?</span></span><svg class="ico" aria-hidden="true"><use href="#i-next"/></svg></summary>
+              <div class="faq-body noimg">
+                <div class="faq-txt"><p data-en="The human sees every plan before it runs and can discard it. If a grasp fails, the system checks the result and replans; in Robot | Hardware the new plan also waits for confirmation.">Der Mensch sieht jeden Plan vor der Ausführung und kann ihn verwerfen. Schlägt ein Griff fehl, prüft das System das Ergebnis und plant neu; im Robot | Hardware wartet auch der neue Plan auf Bestätigung.</p></div>
+              </div>
+            </details>
+            <details class="faq-item" id="faq-ki-05">
+              <summary><span class="faq-q"><span class="k" data-en="AI assistance">KI-Assistenz</span><span data-en="Does the AI need a cloud or the internet?">Braucht die KI eine Cloud oder Internet?</span></span><svg class="ico" aria-hidden="true"><use href="#i-next"/></svg></summary>
+              <div class="faq-body">
+                <div class="faq-txt"><p data-en="No: the default is a local model via Ollama, without internet; speech recognition runs locally too. Optionally Claude or Gemini do the work; then the instruction and scene description go to the provider.">Nein: Standard ist ein lokales Modell über Ollama, ohne Internet; auch die Spracherkennung läuft lokal. Wahlweise arbeiten Claude oder Gemini, dann gehen Anweisung und Szenenbeschreibung an den Anbieter.</p></div>
+                <figure class="faq-fig"><img src="img/rcu_vla_model.png" width="806" height="218" alt="VLA-M-Chat: Wahl des Modells (Local strong, Local fast, Claude, Gemini) und „Confirm before execute“" data-en-alt="VLA-M chat: model choice (Local strong, Local fast, Claude, Gemini) and “Confirm before execute”" loading="lazy" decoding="async"></figure>
+              </div>
+            </details>
+            <details class="faq-item" id="faq-ki-06">
+              <summary><span class="faq-q"><span class="k" data-en="AI assistance">KI-Assistenz</span><span data-en="What is auto palletizing?">Was ist Auto-Palettieren?</span></span><svg class="ico" aria-hidden="true"><use href="#i-next"/></svg></summary>
+              <div class="faq-body">
+                <div class="faq-txt"><p data-en="An example sequence from logistics: the arm stacks cartons on a pallet following a pattern. Planner, Digital Twin and confirmation carry other use cases just the same.">Ein Beispielablauf aus der Logistik: Der Arm legt Kartons nach Muster auf eine Palette. Planer, Digital Twin und Bestätigung tragen andere Anwendungsfälle genauso.</p></div>
+                <figure class="faq-fig"><img src="img/rcu_palletizing.png" width="1300" height="960" alt="Palettier-Zelle im Digital Twin: Lagenplan der Palette, Auftragsliste und Arm über dem Förderband" data-en-alt="Palletizing cell in the Digital Twin: pallet layer plan, order list and arm above the conveyor" loading="lazy" decoding="async"></figure>
+              </div>
+            </details>
+            <details class="faq-item" id="faq-ki-07">
+              <summary><span class="faq-q"><span class="k" data-en="AI assistance">KI-Assistenz</span><span data-en="Does the AI learn?">Lernt die KI dazu?</span></span><svg class="ico" aria-hidden="true"><use href="#i-next"/></svg></summary>
+              <div class="faq-body noimg">
+                <div class="faq-txt"><p data-en="Demonstrations can already be recorded: the human performs a task via VR, gamepad or UI, and the system stores it as training data. Training custom models from it is planned.">Vorführungen lassen sich schon heute aufnehmen: Der Mensch führt eine Aufgabe per VR, Gamepad oder UI vor, das System speichert sie als Trainingsdaten. Eigene Modelle daraus zu trainieren ist geplant.</p></div>
+              </div>
+            </details>
+          </div>
+          <div class="faq-grp" data-g="twin" style="--hue: var(--blue)">
+            <h3 class="faq-gh"><span class="n">05</span><span data-en="Digital Twin and robot simulation">Digital Twin und Roboter-Simulation</span></h3>
+            <details class="faq-item" id="faq-twin-01">
+              <summary><span class="faq-q"><span class="k" data-en="Digital Twin and robot simulation">Digital Twin und Roboter-Simulation</span><span data-en="What is the Digital Twin?">Was ist der Digital Twin?</span></span><svg class="ico" aria-hidden="true"><use href="#i-next"/></svg></summary>
+              <div class="faq-body">
+                <div class="faq-txt"><p data-en="First virtual, then real. The Digital Twin is the live 3D model of arm and work cell in the browser; it shows planned paths beforehand as a path preview.">Erst virtuell, dann real. Der Digital Twin ist das live mitlaufende 3D-Modell von Arm und Arbeitszelle im Browser; geplante Bahnen zeigt er vorab als Bahnvorschau.</p></div>
+                <figure class="faq-fig"><img src="img/rcu_viewport.png" width="1102" height="677" alt="Digital Twin im Viewport: xArm Lite 6 am Tisch mit Objekten, Navigationswürfel und Kamera-Kacheln" data-en-alt="Digital Twin in the viewport: xArm Lite 6 at the table with objects, navigation cube and camera tiles" loading="lazy" decoding="async"></figure>
+              </div>
+            </details>
+            <details class="faq-item" id="faq-twin-02" data-top>
+              <summary><span class="faq-q"><span class="k" data-en="Digital Twin and robot simulation">Digital Twin und Roboter-Simulation</span><span data-en="Do I need a real robot?">Brauche ich einen echten Roboter?</span></span><svg class="ico" aria-hidden="true"><use href="#i-next"/></svg></summary>
+              <div class="faq-body">
+                <div class="faq-txt"><p data-en="No. In Robot | Digital Twin the Digital Twin, AI assistance, physics sandbox and virtual objects run without arm and camera; gaze control and VR need their devices.">Nein. Im Robot | Digital Twin laufen Digital Twin, KI-Assistenz, Physik-Sandbox und virtuelle Objekte ohne Arm und Kamera; Blicksteuerung und VR brauchen ihre Geräte.</p></div>
+                <figure class="faq-fig"><img src="img/presentation/twin.jpg" width="690" height="480" alt="Robot | Digital Twin: Arm mit roter Sicherheitszone, Schale und Objekten auf dem Tisch" data-en-alt="Robot | Digital Twin: arm with red safety zone, bowl and objects on the table" loading="lazy" decoding="async"></figure>
+              </div>
+            </details>
+            <details class="faq-item" id="faq-twin-03">
+              <summary><span class="faq-q"><span class="k" data-en="Digital Twin and robot simulation">Digital Twin und Roboter-Simulation</span><span data-en="What is the physics sandbox?">Was ist die Physik-Sandbox?</span></span><svg class="ico" aria-hidden="true"><use href="#i-next"/></svg></summary>
+              <div class="faq-body">
+                <div class="faq-txt"><p data-en="A physics simulation in the Digital Twin with gravity, contact and grasping: objects fall, roll and can be picked up by suction. It is in progress and only runs in Robot | Digital Twin.">Eine Physik-Simulation im Digital Twin mit Schwerkraft, Kontakt und Greifen: Objekte fallen, rollen und lassen sich ansaugen. Sie ist in Arbeit und läuft nur im Robot | Digital Twin.</p></div>
+                <figure class="faq-fig"><img src="img/rcu_physix.png" width="800" height="1399" alt="Physik-Sandbox (PhysiX): Schwerkraft Erde, Mars, Mond, Zero-G und Solver, nur im Robot | Digital Twin" data-en-alt="Physics sandbox (PhysiX): gravity Earth, Mars, Moon, Zero-G and solver, Robot | Digital Twin only" loading="lazy" decoding="async"></figure>
+              </div>
+            </details>
+            <details class="faq-item" id="faq-twin-04">
+              <summary><span class="faq-q"><span class="k" data-en="Digital Twin and robot simulation">Digital Twin und Roboter-Simulation</span><span data-en="What are virtual objects?">Was sind virtuelle Objekte?</span></span><svg class="ico" aria-hidden="true"><use href="#i-next"/></svg></summary>
+              <div class="faq-body noimg">
+                <div class="faq-txt"><p data-en="Test without a setup. Cube, bottle, balls, bowl and basket can be placed in the scene without a camera; path planning treats them like real obstacles.">Testen ohne Aufbau. Würfel, Flasche, Bälle, Schale und Korb lassen sich ohne Kamera in die Szene setzen; die Bahnplanung behandelt sie wie echte Hindernisse.</p></div>
+              </div>
+            </details>
+            <details class="faq-item" id="faq-twin-05">
+              <summary><span class="faq-q"><span class="k" data-en="Digital Twin and robot simulation">Digital Twin und Roboter-Simulation</span><span data-en="What does the Digital Twin show besides the arm?">Was zeigt der Digital Twin außer dem Arm?</span></span><svg class="ico" aria-hidden="true"><use href="#i-next"/></svg></summary>
+              <div class="faq-body">
+                <div class="faq-txt"><p data-en="Display aids, each switchable.">Anzeige-Hilfen, einzeln schaltbar.</p><ul><li data-en="&lt;b&gt;Safety:&lt;/b&gt; safety zone, proximity heatmap, reachability volume."><b>Sicherheit:</b> Sicherheitszone, Nähe-Heatmap, Erreichbarkeits-Volumen.</li><li data-en="&lt;b&gt;Vision:&lt;/b&gt; detected objects with box and grasp point."><b>Vision:</b> erkannte Objekte mit Box und Greifpunkt.</li><li data-en="&lt;b&gt;Cameras:&lt;/b&gt; up to four custom viewpoints as tiles in the viewport."><b>Kameras:</b> bis zu vier eigene Blickwinkel als Kacheln im Viewport.</li><li data-en="&lt;b&gt;Isaac Sim (optional):&lt;/b&gt; mirrors every motion in a detailed 3D scene, without its own physics."><b>Isaac Sim (optional):</b> spiegelt jede Bewegung in einer detailreichen 3D-Szene, ohne eigene Physik.</li></ul></div>
+                <figure class="faq-fig"><img src="img/rcu_layers.png" width="1052" height="495" alt="Panel Layers: Anzeige-Hilfen für Roboter, Vision, Greifer und Sicherheit, einzeln schaltbar" data-en-alt="Layers panel: display aids for robot, vision, gripper and safety, each switchable" loading="lazy" decoding="async"></figure>
+              </div>
+            </details>
+          </div>
+          <div class="faq-grp" data-g="sehen" style="--hue: var(--green)">
+            <h3 class="faq-gh"><span class="n">06</span><span data-en="Perception and grasping">Wahrnehmung und Greifen</span></h3>
+            <details class="faq-item" id="faq-sehen-01">
+              <summary><span class="faq-q"><span class="k" data-en="Perception and grasping">Wahrnehmung und Greifen</span><span data-en="How does the robot perceive its surroundings?">Wie erkennt der Roboter seine Umgebung?</span></span><svg class="ico" aria-hidden="true"><use href="#i-next"/></svg></summary>
+              <div class="faq-body noimg">
+                <div class="faq-txt"><p data-en="A depth camera (ZED Mini) detects objects and their position in space and builds a 3D map of the surroundings. Detected objects appear in the Digital Twin and can be grasped with one click via the object menu.">Eine Tiefenkamera (ZED Mini) erkennt Objekte und ihre Lage im Raum und baut eine 3D-Karte der Umgebung. Erkannte Objekte erscheinen im Digital Twin und lassen sich per Objektmenü mit einem Klick greifen.</p></div>
+              </div>
+            </details>
+            <details class="faq-item" id="faq-sehen-02">
+              <summary><span class="faq-q"><span class="k" data-en="Perception and grasping">Wahrnehmung und Greifen</span><span data-en="How does the robot grasp, and what can it pick up?">Wie greift der Roboter, und was kann er fassen?</span></span><svg class="ico" aria-hidden="true"><use href="#i-next"/></svg></summary>
+              <div class="faq-body noimg">
+                <div class="faq-txt"><p data-en="A vacuum gripper picks the object up by suction, in three collision-free phases: lift, move above the object, lower and apply suction. Suitable objects have a surface for the suction cup; if it is tilted by more than 20°, the AI agent does not grasp.">Ein Vakuumgreifer saugt das Objekt an, in drei kollisionsfreien Phasen: hochfahren, über das Objekt fahren, absenken und ansaugen. Geeignet sind Objekte mit einer Fläche für den Saugnapf; liegt sie schräger als 20°, greift der KI-Agent nicht.</p></div>
+              </div>
+            </details>
+            <details class="faq-item" id="faq-sehen-03">
+              <summary><span class="faq-q"><span class="k" data-en="Perception and grasping">Wahrnehmung und Greifen</span><span data-en="Does all this work without a camera?">Geht das alles auch ohne Kamera?</span></span><svg class="ico" aria-hidden="true"><use href="#i-next"/></svg></summary>
+              <div class="faq-body noimg">
+                <div class="faq-txt"><p data-en="Yes: virtual objects replace the camera in Robot | Digital Twin. On real robot hardware the AI agent never moves to virtual objects, by hand only after confirmation.">Ja: Virtuelle Objekte ersetzen die Kamera im Robot | Digital Twin. Auf echter Roboter-Hardware fährt der KI-Agent virtuelle Objekte nie an, von Hand nur nach Bestätigung.</p></div>
+              </div>
+            </details>
+          </div>
+          <div class="faq-grp" data-g="forschung" style="--hue: var(--pink)">
+            <h3 class="faq-gh"><span class="n">07</span><span data-en="Research and evaluation">Forschung und Evaluierung</span></h3>
+            <details class="faq-item" id="faq-forschung-01">
+              <summary><span class="faq-q"><span class="k" data-en="Research and evaluation">Forschung und Evaluierung</span><span data-en="Which question does the project investigate?">Welche Frage untersucht das Projekt?</span></span><svg class="ico" aria-hidden="true"><use href="#i-next"/></svg></summary>
+              <div class="faq-body noimg">
+                <div class="faq-txt"><p data-en="How can processes and workplaces be designed so that they measurably meet the human-centred requirements of Industry&amp;nbsp;5.0? The focus is on how multimodal input, assistive autonomy and a Digital Twin lower barriers without restricting human control.">Wie lassen sich Prozesse und Arbeitsplätze so gestalten, dass sie die menschzentrierten Anforderungen der Industrie&nbsp;5.0 messbar erfüllen? Im Fokus steht, wie multimodale Eingaben, assistive Autonomie und ein Digital Twin Barrieren senken, ohne die Kontrolle des Menschen einzuschränken.</p></div>
+              </div>
+            </details>
+            <details class="faq-item" id="faq-forschung-02">
+              <summary><span class="faq-q"><span class="k" data-en="Research and evaluation">Forschung und Evaluierung</span><span data-en="What is measured?">Was wird gemessen?</span></span><svg class="ico" aria-hidden="true"><use href="#i-next"/></svg></summary>
+              <div class="faq-body">
+                <div class="faq-txt"><p data-en="Measured, not guessed. The UX | Monitoring evaluates usability tests and live operation.">Gemessen statt geschätzt. Das UX | Monitoring wertet Usability-Tests und den laufenden Betrieb aus.</p><ul><li data-en="&lt;b&gt;Questionnaires:&lt;/b&gt; SUS, NASA-TLX, UEQ-S, SEQ."><b>Fragebögen:</b> SUS, NASA-TLX, UEQ-S, SEQ.</li><li data-en="&lt;b&gt;Performance:&lt;/b&gt; time, errors, success rate."><b>Leistung:</b> Zeit, Fehler, Erfolgsquote.</li><li data-en="&lt;b&gt;AI tasks:&lt;/b&gt; success rate, time to plan, corrections per model."><b>KI-Aufträge:</b> Erfolgsquote, Zeit bis Plan, Korrekturen je Modell.</li><li data-en="&lt;b&gt;Operation:&lt;/b&gt; system load, robot usage, errors that occur."><b>Betrieb:</b> Systemlast, Roboter-Nutzung, auftretende Fehler.</li></ul></div>
+                <figure class="faq-fig"><img src="img/monitoring_evaluation.png" width="1600" height="1000" alt="UX | Monitoring, Evaluierung: Usability-Test mit Aufgaben, Kennzahlen und Fragebögen" data-en-alt="UX | Monitoring, evaluation: usability test with tasks, metrics and questionnaires" loading="lazy" decoding="async"></figure>
+              </div>
+            </details>
+            <details class="faq-item" id="faq-forschung-03">
+              <summary><span class="faq-q"><span class="k" data-en="Research and evaluation">Forschung und Evaluierung</span><span data-en="How does a usability test work?">Wie läuft ein Usability-Test ab?</span></span><svg class="ico" aria-hidden="true"><use href="#i-next"/></svg></summary>
+              <div class="faq-body">
+                <div class="faq-txt"><p data-en="A usability test bundles tasks with a success criterion, target time and control mode. During a run the UX | Monitoring records motions, grasps, clicks and times; questionnaires follow afterwards.">Ein Usability-Test bündelt Aufgaben mit Erfolgskriterium, Zielzeit und Steuerweg. Während eines Durchlaufs zeichnet das UX | Monitoring Bewegungen, Griffe, Klicks und Zeiten auf; danach folgen Fragebögen.</p></div>
+                <figure class="faq-fig"><img src="img/presentation/eval_tests.jpg" width="1600" height="900" alt="UX | Monitoring: Usability-Tests mit Aufgaben, Zielzeit und Ergebnissen je Durchlauf" data-en-alt="UX | Monitoring: usability tests with tasks, target time and results per run" loading="lazy" decoding="async"></figure>
+              </div>
+            </details>
+            <details class="faq-item" id="faq-forschung-04">
+              <summary><span class="faq-q"><span class="k" data-en="Research and evaluation">Forschung und Evaluierung</span><span data-en="How are participants and data protected?">Wie werden Testpersonen und Daten geschützt?</span></span><svg class="ico" aria-hidden="true"><use href="#i-next"/></svg></summary>
+              <div class="faq-body noimg">
+                <div class="faq-txt"><p data-en="All data stays local on the robot PC, in a database of the UX | Monitoring.">Alle Daten bleiben lokal auf dem Roboter-PC, in einer Datenbank des UX | Monitoring.</p><ul><li data-en="&lt;b&gt;Participants:&lt;/b&gt; only as a pseudonym, personal details optional."><b>Testpersonen:</b> nur als Pseudonym, Angaben zur Person freiwillig.</li><li data-en="&lt;b&gt;UI clicks:&lt;/b&gt; only label and area, never input values."><b>UI-Klicks:</b> nur Bezeichnung und Bereich, nie Eingabewerte.</li></ul></div>
+              </div>
+            </details>
+            <details class="faq-item" id="faq-forschung-05">
+              <summary><span class="faq-q"><span class="k" data-en="Research and evaluation">Forschung und Evaluierung</span><span data-en="Are there results yet?">Gibt es schon Ergebnisse?</span></span><svg class="ico" aria-hidden="true"><use href="#i-next"/></svg></summary>
+              <div class="faq-body noimg">
+                <div class="faq-txt"><p data-en="The measurement tools are running; results from user studies are still pending. They will appear on this page once available.">Die Messwerkzeuge laufen; Ergebnisse von Nutzerstudien stehen noch aus. Sie erscheinen auf dieser Seite, sobald sie vorliegen.</p></div>
+              </div>
+            </details>
+            <details class="faq-item" id="faq-forschung-06">
+              <summary><span class="faq-q"><span class="k" data-en="Research and evaluation">Forschung und Evaluierung</span><span data-en="What do companies gain?">Was haben Unternehmen davon?</span></span><svg class="ico" aria-hidden="true"><use href="#i-next"/></svg></summary>
+              <div class="faq-body noimg">
+                <div class="faq-txt"><p data-en="The measurements are meant to yield design recommendations for introducing robots at the workplace. They should show which control mode suits which task and user group.">Aus den Messungen sollen Gestaltungsempfehlungen für die Einführung von Robotern am Arbeitsplatz entstehen. Sie sollen zeigen, welcher Steuerweg zu welcher Aufgabe und Nutzergruppe passt.</p></div>
+              </div>
+            </details>
+          </div>
+          <div class="faq-grp" data-g="prinzip" style="--hue: var(--indigo)">
+            <h3 class="faq-gh"><span class="n">08</span><span data-en="Background: why this way?">Hintergrund: Warum so?</span></h3>
+            <details class="faq-item" id="faq-prinzip-01">
+              <summary><span class="faq-q"><span class="k" data-en="Background: why this way?">Hintergrund: Warum so?</span><span data-en="Why assistive robotics?">Warum assistive Robotik?</span></span><svg class="ico" aria-hidden="true"><use href="#i-next"/></svg></summary>
+              <div class="faq-body noimg">
+                <div class="faq-txt"><p data-en="The robot should relieve people, not replace them. The human decides, the robot takes over the motion.">Der Roboter soll entlasten statt ersetzen. Der Mensch entscheidet, der Roboter übernimmt die Bewegung.</p></div>
+              </div>
+            </details>
+            <details class="faq-item" id="faq-prinzip-02">
+              <summary><span class="faq-q"><span class="k" data-en="Background: why this way?">Hintergrund: Warum so?</span><span data-en="What does this have to do with Industry&amp;nbsp;5.0?">Was hat das mit Industrie&nbsp;5.0 zu tun?</span></span><svg class="ico" aria-hidden="true"><use href="#i-next"/></svg></summary>
+              <div class="faq-body noimg">
+                <div class="faq-txt"><p data-en="Industry&amp;nbsp;5.0 puts people, sustainability and resilience at the centre of production. UX Robot investigates how workplaces with robots can be designed to meet these requirements measurably.">Industrie&nbsp;5.0 stellt den Menschen, Nachhaltigkeit und Resilienz in den Mittelpunkt der Produktion. UX Robot untersucht, wie sich Arbeitsplätze mit Robotern so gestalten lassen, dass sie diese Anforderungen messbar erfüllen.</p></div>
+              </div>
+            </details>
+            <details class="faq-item" id="faq-prinzip-03">
+              <summary><span class="faq-q"><span class="k" data-en="Background: why this way?">Hintergrund: Warum so?</span><span data-en="What does this have to do with participation and inclusion?">Was hat das mit Teilhabe und Inklusion zu tun?</span></span><svg class="ico" aria-hidden="true"><use href="#i-next"/></svg></summary>
+              <div class="faq-body noimg">
+                <div class="faq-txt"><p data-en="Anyone who cannot use a gamepad steers by gaze or voice. Ten control modes aim to let people with different physical or cognitive abilities use the same robot; the UX | Monitoring measures whether this succeeds.">Wer kein Gamepad bedienen kann, steuert per Blick oder Sprache. Zehn Steuerwege sollen ermöglichen, dass Menschen mit unterschiedlichen physischen oder kognitiven Voraussetzungen denselben Roboter nutzen; das UX | Monitoring misst, ob das gelingt.</p></div>
+              </div>
+            </details>
+            <details class="faq-item" id="faq-prinzip-04">
+              <summary><span class="faq-q"><span class="k" data-en="Background: why this way?">Hintergrund: Warum so?</span><span data-en="Who is in control: me or the system?">Wer steuert: ich oder das System?</span></span><svg class="ico" aria-hidden="true"><use href="#i-next"/></svg></summary>
+              <div class="faq-body noimg">
+                <div class="faq-txt"><p data-en="Both, on three levels (shared control).">Beide, auf drei Ebenen (Shared Control).</p><ul><li data-en="&lt;b&gt;Goal:&lt;/b&gt; the human sets it by gaze, voice or chat with the AI agent."><b>Ziel:</b> Der Mensch gibt es per Blick, Sprache oder Chat mit dem KI-Agenten vor.</li><li data-en="&lt;b&gt;Fine correction:&lt;/b&gt; the human adjusts via gamepad, VR or jogging."><b>Feinkorrektur:</b> Der Mensch fährt per Gamepad, VR oder Jogging nach.</li><li data-en="&lt;b&gt;Safeguarding:&lt;/b&gt; the system plans collision-free paths and checks every execution."><b>Absicherung:</b> Das System plant kollisionsfreie Bahnen und prüft jede Ausführung.</li></ul></div>
+              </div>
+            </details>
+            <details class="faq-item" id="faq-prinzip-05">
+              <summary><span class="faq-q"><span class="k" data-en="Background: why this way?">Hintergrund: Warum so?</span><span data-en="Why the xArm Lite&amp;nbsp;6?">Warum der xArm Lite&nbsp;6?</span></span><svg class="ico" aria-hidden="true"><use href="#i-next"/></svg></summary>
+              <div class="faq-body noimg">
+                <div class="faq-txt"><p data-en="A compact lightweight arm with 440&amp;nbsp;mm reach and an open ROS&amp;nbsp;2 interface through &lt;code&gt;xarm_ros2&lt;/code&gt;. This lowers the entry barrier for universities, educational institutions and smaller labs.">Ein kompakter Leichtbau-Arm mit 440&nbsp;mm Reichweite und offener ROS-2-Anbindung durch <code>xarm_ros2</code>. Das senkt die Einstiegshürde für Hochschulen, Bildungseinrichtungen und kleinere Labore.</p></div>
+              </div>
+            </details>
+          </div>
+          <div class="faq-grp" data-g="apps" style="--hue: var(--lime)">
+            <h3 class="faq-gh"><span class="n">09</span><span data-en="Setup and operation">Einrichtung und Betrieb</span></h3>
+            <details class="faq-item" id="faq-apps-01">
+              <summary><span class="faq-q"><span class="k" data-en="Setup and operation">Einrichtung und Betrieb</span><span data-en="Which web apps belong to UX Robot?">Welche Web-Apps gehören zu UX Robot?</span></span><svg class="ico" aria-hidden="true"><use href="#i-next"/></svg></summary>
+              <div class="faq-body noimg">
+                <div class="faq-txt"><ul><li data-en="&lt;b&gt;UX | Nexus Launcher:&lt;/b&gt; starts the system with one click."><b>UX | Nexus Launcher:</b> startet das System mit einem Klick.</li><li data-en="&lt;b&gt;UX | Control Interface:&lt;/b&gt; controls the robot, with Digital Twin."><b>UX | Control Interface:</b> steuert den Roboter, mit Digital Twin.</li><li data-en="&lt;b&gt;UX | Compact Interface:&lt;/b&gt; touch operation at the robot, large buttons."><b>UX | Compact Interface:</b> Touch-Bedienung am Roboter, große Tasten.</li><li data-en="&lt;b&gt;UX | Monitoring:&lt;/b&gt; system, usage and evaluation."><b>UX | Monitoring:</b> System, Nutzung und Evaluierung.</li></ul></div>
+              </div>
+            </details>
+            <details class="faq-item" id="faq-apps-02">
+              <summary><span class="faq-q"><span class="k" data-en="Setup and operation">Einrichtung und Betrieb</span><span data-en="How do I start the system?">Wie starte ich das System?</span></span><svg class="ico" aria-hidden="true"><use href="#i-next"/></svg></summary>
+              <div class="faq-body">
+                <div class="faq-txt"><p data-en="In the UX | Nexus Launcher with one click, as a setup for Robot | Digital Twin or Robot | Hardware. Before starting, it checks that everything is ready.">In der UX | Nexus Launcher mit einem Klick, als Setup für Robot | Digital Twin oder Robot | Hardware. Vor dem Start prüft sie, ob alles bereit ist.</p></div>
+                <figure class="faq-fig"><img src="img/nexus_start_check.png" width="1400" height="772" alt="UX | Nexus Launcher, Start: Wahl Robot | Digital Twin oder Robot | Hardware, darunter die Prüfung vor dem Start" data-en-alt="UX | Nexus Launcher, start: choice of Robot | Digital Twin or Robot | Hardware, below it the pre-start check" loading="lazy" decoding="async"></figure>
+              </div>
+            </details>
+            <details class="faq-item" id="faq-apps-03">
+              <summary><span class="faq-q"><span class="k" data-en="Setup and operation">Einrichtung und Betrieb</span><span data-en="What do I need to install?">Was muss ich installieren?</span></span><svg class="ico" aria-hidden="true"><use href="#i-next"/></svg></summary>
+              <div class="faq-body noimg">
+                <div class="faq-txt"><p data-en="Open, don’t install: laptop, tablet and Quest&amp;nbsp;3 only need a browser. The robot PC needs Ubuntu&amp;nbsp;22.04 with ROS&amp;nbsp;2 Humble and the UX Robot packages once; the setup guide leads you step by step.">Öffnen statt installieren: Laptop, Tablet und Quest&nbsp;3 brauchen nur einen Browser. Am Roboter-PC einmal Ubuntu&nbsp;22.04 mit ROS&nbsp;2 Humble und den Paketen von UX Robot; der Setup-Guide führt Schritt für Schritt.</p></div>
+              </div>
+            </details>
+            <details class="faq-item" id="faq-apps-04">
+              <summary><span class="faq-q"><span class="k" data-en="Setup and operation">Einrichtung und Betrieb</span><span data-en="Which hardware do I need?">Welche Hardware brauche ich?</span></span><svg class="ico" aria-hidden="true"><use href="#i-next"/></svg></summary>
+              <div class="faq-body noimg">
+                <div class="faq-txt"><p data-en="For the robot simulation a PC with Ubuntu&amp;nbsp;22.04 is enough. The full lab setup:">Für die Roboter-Simulation reicht ein PC mit Ubuntu&nbsp;22.04. Der vollständige Laboraufbau:</p><ul><li data-en="&lt;b&gt;Robot:&lt;/b&gt; UFactory xArm Lite&amp;nbsp;6 with vacuum gripper."><b>Roboter:</b> UFactory xArm Lite&nbsp;6 mit Vakuumgreifer.</li><li data-en="&lt;b&gt;Sensors:&lt;/b&gt; ZED Mini, Tobii Pro Glasses&amp;nbsp;3, microphone."><b>Sensorik:</b> ZED Mini, Tobii Pro Glasses&nbsp;3, Mikrofon.</li><li data-en="&lt;b&gt;Operation:&lt;/b&gt; Xbox Elite&amp;nbsp;2, Meta Quest&amp;nbsp;3, touch display."><b>Bedienung:</b> Xbox Elite&nbsp;2, Meta Quest&nbsp;3, Touch-Display.</li><li data-en="&lt;b&gt;Computer:&lt;/b&gt; workstation with NVIDIA GPU; the local AI model needs about 16&amp;nbsp;GB of video memory."><b>Rechner:</b> Workstation mit NVIDIA-GPU; das lokale KI-Modell braucht ca. 16&nbsp;GB Grafikspeicher.</li></ul></div>
+              </div>
+            </details>
+            <details class="faq-item" id="faq-apps-05">
+              <summary><span class="faq-q"><span class="k" data-en="Setup and operation">Einrichtung und Betrieb</span><span data-en="Where can I find guides?">Wo finde ich Anleitungen?</span></span><svg class="ico" aria-hidden="true"><use href="#i-next"/></svg></summary>
+              <div class="faq-body noimg">
+                <div class="faq-txt"><ul><li data-en="&lt;b&gt;&lt;a href=&quot;operate_setup_guide.html&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;Setup guide&lt;/a&gt;:&lt;/b&gt; commissioning step by step."><b><a href="operate_setup_guide.html" target="_blank" rel="noopener">Setup-Guide</a>:</b> Inbetriebnahme Schritt für Schritt.</li><li data-en="&lt;b&gt;&lt;a href=&quot;operate_manual.html&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;Operating manual&lt;/a&gt;:&lt;/b&gt; architecture, safety chain, operation."><b><a href="operate_manual.html" target="_blank" rel="noopener">Bedienhandbuch</a>:</b> Architektur, Sicherheitskette, Bedienung.</li><li data-en="&lt;b&gt;&lt;a href=&quot;#atlas-sec&quot;&gt;Function atlas&lt;/a&gt;:&lt;/b&gt; all functions on one map."><b><a href="#atlas-sec">Funktionsatlas</a>:</b> alle Funktionen auf einer Karte.</li></ul></div>
+              </div>
+            </details>
+          </div>
+          <div class="faq-grp" data-g="offen" style="--hue: var(--teal)">
+            <h3 class="faq-gh"><span class="n">10</span><span data-en="Openness and outlook">Offenheit und Ausblick</span></h3>
+            <details class="faq-item" id="faq-offen-01" data-top>
+              <summary><span class="faq-q"><span class="k" data-en="Openness and outlook">Offenheit und Ausblick</span><span data-en="Can I rebuild UX Robot, and what does the software cost?">Kann ich UX Robot nachbauen, und was kostet die Software?</span></span><svg class="ico" aria-hidden="true"><use href="#i-next"/></svg></summary>
+              <div class="faq-body noimg">
+                <div class="faq-txt"><p data-en="Open, reproducible, extensible. The project’s own packages are free under Apache&amp;nbsp;2.0, so other groups can repeat studies under the same conditions; third-party code such as &lt;code&gt;xarm_ros2&lt;/code&gt;, ZED drivers and Whisper keeps its own licence.">Offen, nachbaubar, erweiterbar. Die eigenen Pakete stehen kostenfrei unter Apache&nbsp;2.0, damit andere Gruppen Studien unter gleichen Bedingungen wiederholen können; Fremdcode wie <code>xarm_ros2</code>, ZED-Treiber und Whisper behält seine eigene Lizenz.</p></div>
+              </div>
+            </details>
+            <details class="faq-item" id="faq-offen-02">
+              <summary><span class="faq-q"><span class="k" data-en="Openness and outlook">Offenheit und Ausblick</span><span data-en="Can I swap parts or the robot?">Kann ich Teile oder den Roboter austauschen?</span></span><svg class="ico" aria-hidden="true"><use href="#i-next"/></svg></summary>
+              <div class="faq-body">
+                <div class="faq-txt"><p data-en="Replaceable, not fixed. Input devices, cameras, AI models and software modules can be replaced one by one because they connect via fixed ROS&amp;nbsp;2 interfaces.">Austauschbar statt festgelegt. Eingabegeräte, Kameras, KI-Modelle und Software-Module sind einzeln ersetzbar, weil sie über feste ROS-2-Schnittstellen verbunden sind.</p><ul><li data-en="&lt;b&gt;Robot profiles:&lt;/b&gt; 7 arms selectable in Robot | Digital Twin, including xArm 5, xArm 7 and ABB IRB 1100."><b>Roboter-Profile:</b> 7 Arme im Robot | Digital Twin wählbar, darunter xArm 5, xArm 7 und ABB IRB 1100.</li><li data-en="&lt;b&gt;Robot | Hardware:&lt;/b&gt; released only for the xArm Lite&amp;nbsp;6 so far."><b>Robot | Hardware:</b> bisher nur für den xArm Lite&nbsp;6 freigegeben.</li></ul></div>
+                <figure class="faq-fig"><img src="img/nexus_robot_profiles.png" width="1400" height="1046" alt="UX | Nexus Launcher: Roboter-Profile zur Auswahl, darunter xArm Lite 6, ABB IRB 1100, xArm 5 und xArm 7" data-en-alt="UX | Nexus Launcher: robot profiles to choose from, including xArm Lite 6, ABB IRB 1100, xArm 5 and xArm 7" loading="lazy" decoding="async"></figure>
+              </div>
+            </details>
+            <details class="faq-item" id="faq-offen-03">
+              <summary><span class="faq-q"><span class="k" data-en="Openness and outlook">Offenheit und Ausblick</span><span data-en="How far along is the project?">Wie weit ist das Projekt?</span></span><svg class="ico" aria-hidden="true"><use href="#i-next"/></svg></summary>
+              <div class="faq-body noimg">
+                <div class="faq-txt"><p data-en="UX Robot is a working research prototype on the xArm Lite&amp;nbsp;6. In progress: the VLA-M chat, the physics sandbox and the scenario Construction – tiling.">UX Robot ist ein funktionsfähiger Forschungsprototyp am xArm Lite&nbsp;6. In Arbeit sind der VLA-M-Chat, die Physik-Sandbox und das Szenario Bau – Fliesenlegen.</p></div>
+              </div>
+            </details>
+            <details class="faq-item" id="faq-offen-04">
+              <summary><span class="faq-q"><span class="k" data-en="Openness and outlook">Offenheit und Ausblick</span><span data-en="What is planned next?">Was ist als Nächstes geplant?</span></span><svg class="ico" aria-hidden="true"><use href="#i-next"/></svg></summary>
+              <div class="faq-body noimg">
+                <div class="faq-txt"><ul><li data-en="&lt;b&gt;Learning AI:&lt;/b&gt; train custom models from recorded demonstrations."><b>Lernende KI:</b> eigene Modelle aus aufgenommenen Vorführungen trainieren.</li><li data-en="&lt;b&gt;More robots:&lt;/b&gt; profiles for UR5e, Franka FR3 and Kinova Gen3 (draft)."><b>Weitere Roboter:</b> Profile für UR5e, Franka FR3 und Kinova Gen3 (Entwurf).</li><li data-en="&lt;b&gt;Studies:&lt;/b&gt; user studies on the control modes with the UX | Monitoring."><b>Studien:</b> Nutzerstudien zu den Steuerwegen mit dem UX | Monitoring.</li></ul></div>
+              </div>
+            </details>
+            <details class="faq-item" id="faq-offen-05">
+              <summary><span class="faq-q"><span class="k" data-en="Openness and outlook">Offenheit und Ausblick</span><span data-en="Who is behind UX Robot?">Wer steht hinter UX Robot?</span></span><svg class="ico" aria-hidden="true"><use href="#i-next"/></svg></summary>
+              <div class="faq-body noimg">
+                <div class="faq-txt"><p data-en="The UX Lab of Rhine-Waal University of Applied Sciences. &lt;a href=&quot;#kontakt&quot;&gt;Contact details are at the end of the project docs&lt;/a&gt;.">Das UX-Labor der Hochschule Rhein-Waal. <a href="#kontakt">Kontakt steht am Ende der Projekt-Doku</a>.</p></div>
+              </div>
+            </details>
+          </div>
+        </div>
+        <p class="faq-more" hidden><button class="faq-btn" type="button" data-faq-go="all"><svg class="ico" aria-hidden="true"><use href="#i-down"/></svg><span data-en="Show all 59 questions">Alle 59 Fragen zeigen</span></button></p>
+      </section>
     </div>
   </div>
 
@@ -1946,6 +2420,35 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
   };
   document.querySelectorAll('[data-lang]').forEach(b => b.addEventListener('click', () => { setLang(b.dataset.lang); store('project_docs_lang', b.dataset.lang); }));
   if (store('project_docs_lang') === 'en') setLang('en');
+})();
+
+// Fragen & Antworten (#faq): Themen-Chips filtern (Start „Häufig gefragt“); ohne JS stehen alle Fragen nach Themen da.
+// Link #faq-<thema>-<nr> wählt das Thema der Frage und klappt sie auf.
+(() => {
+  const faq = document.getElementById('faq');
+  if (!faq) return;
+  const chips = [...faq.querySelectorAll('.faq-bar [data-faq]')];
+  const more = faq.querySelector('.faq-more');
+  const show = v => {
+    faq.dataset.view = v;
+    chips.forEach(c => c.setAttribute('aria-pressed', String(c.dataset.faq === v)));
+    faq.querySelectorAll('.faq-grp').forEach(g => { g.hidden = !['top', 'all', g.dataset.g].includes(v); });
+    faq.querySelectorAll('.faq-item').forEach(i => { i.hidden = v === 'top' && !i.hasAttribute('data-top'); });
+    more.hidden = v !== 'top';
+  };
+  chips.forEach(c => c.addEventListener('click', () => show(c.dataset.faq)));
+  more.querySelector('button').addEventListener('click', () => show('all'));
+  faq.querySelector('.faq-bar').hidden = false;
+  const fromHash = () => {
+    const el = location.hash.startsWith('#faq-') && document.getElementById(location.hash.slice(1));
+    if (!el || !el.matches('.faq-item')) return false;
+    show(el.hasAttribute('data-top') ? 'top' : el.closest('.faq-grp').dataset.g);
+    el.open = true;
+    el.scrollIntoView();
+    return true;
+  };
+  addEventListener('hashchange', fromHash);
+  if (!fromHash()) show('top');
 })();
 
 // Seiten-Motion (Skill motion-viz): Lesefluss, Hero-Einstieg + Zeiger-Parallaxe, Kennzahlen, Funktionsatlas-Ring
