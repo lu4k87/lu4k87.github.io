@@ -158,7 +158,7 @@ The table below illustrates which project modules can be evaluated in pure softw
 
 ### ![Node](https://img.shields.io/badge/Node-blue?style=flat-square) `teleop_pre_collision_checker.py` (`teleop_pre_collision_checker`) &nbsp;&nbsp; <sub><i>`/src/teleop_pre_collision_checker/teleop_pre_collision_checker/teleop_pre_collision_checker.py`</i></sub>
 
-**Purpose & Task:** Acts as a transparent guardian *before* movement execution. Limits the downward speed so that the travel within 0.25 s does not reach below the table barrier (`Z_LIMIT` 91 mm); faster downward commands are throttled (right trigger reduced). At $Z \le 91.0\text{ mm}$ or when less than 10 mm/s would be allowed (z < 93.5 mm), it blocks downward motion entirely, reports it on `/ui/collision_msg` and triggers gamepad rumble feedback (vibration via `pygame`).
+**Purpose & Task:** Acts as a transparent guardian *before* movement execution. Limits the downward speed so that the travel within 0.25 s does not reach below the table barrier (`Z_LIMIT` = Z Collision Level, default 10 mm); faster downward commands are throttled (right trigger reduced). At z ≤ `Z_LIMIT` or when less than 10 mm/s would be allowed (z < `Z_LIMIT` + 2.5 mm), it blocks downward motion entirely, reports it on `/ui/collision_msg` and triggers gamepad rumble feedback (vibration via `pygame`).
 
 <details>
 <summary><b>🔽 Show details</b> · Run Command · Subscribes · Publishes · Parameters</summary>
@@ -179,6 +179,7 @@ The table below illustrates which project modules can be evaluated in pure softw
 >> | **`/ui/eef_position`** | `std_msgs/Float32MultiArray` | *Live end-effector pose for real-time Z-height checking.* |
 >> | **`/ui/robot_control/current_speed`** | `std_msgs/Float32` | *Current velocity scaling factor for accurate lookahead prediction.* |
 >> | **`/ui/moveit_collision_ground_enabled`** | `std_msgs/Bool` (latched) | *Follows the ground collision switch of the UX \| Control Interface: when it is OFF, downward motion is no longer blocked. Without a message (node not running) the block stays active.* |
+>> | **`/ui/ground_collision_level`** | `std_msgs/Float64` (latched) | *Z Collision Level in mm (TCP height) from `moveit_floor_collision`, set in the ground collision popup of the UX \| Control Interface → `Z_LIMIT`, caution zone starts 19 mm above. Clamped to 0–200 mm. Until the first message a strict fallback of 91 mm applies (without that node MoveIt Servo has no floor box either).* |
 >
 >
 > ![Publishes](https://img.shields.io/badge/Publishes-green?style=flat-square)
@@ -201,8 +202,8 @@ The table below illustrates which project modules can be evaluated in pure softw
 >> | Parameter | Value | Description |
 >> |---|---|---|
 >> | `LOOKAHEAD_TIME` | `0.25` | *Prediction horizon (seconds) for velocity lookahead.* |
->> | `Z_LIMIT` | `91.0` | *Hard table barrier on the Z-axis (`link_base`) in millimeters.* |
->> | `CAUTION_ZONE_START` | `110.0` | *Z-height (mm) where downward velocity starts being restricted.* |
+>> | `Z_LIMIT` | `91.0` → Level | *Hard table barrier on the Z-axis (`link_base`) in millimeters; follows `/ui/ground_collision_level`.* |
+>> | `CAUTION_ZONE_START` | `Z_LIMIT + 19` | *Z-height (mm) where downward velocity starts being restricted (`CAUTION_ZONE_MARGIN` 19 mm above `Z_LIMIT`).* |
 >> | `CAUTION_ZONE_SPEED` | `0.25` | *Maximum allowed downward speed factor within the caution zone.* |
 >> | `MAX_LINEAR_VELOCITY_MM_S` | `400.0` | *Baseline linear velocity (mm/s) for the lookahead.* |
 >> | `MIN_DOWN_SPEED_MM_S` | `10.0` | *Minimum downward speed (mm/s); if the look-ahead allows less, downward motion is blocked entirely (collision message).* |
@@ -338,8 +339,8 @@ if ground_enabled and moving_down:
 
 | Parameter | Value | Description |
 |---|---|---|
-| `Z_LIMIT` | `91.0 mm` | *Absolute Z-limit — downward motion is blocked at this height* |
-| `CAUTION_ZONE_START` | `110.0 mm` | *Caution zone entry — the right trigger is reduced so that speed level × down share ≤ `CAUTION_ZONE_SPEED`* |
+| `Z_LIMIT` | Z Collision Level (default `10.0 mm`) | *Absolute Z-limit — downward motion is blocked at this height* |
+| `CAUTION_ZONE_START` | `Z_LIMIT + 19 mm` | *Caution zone entry — the right trigger is reduced so that speed level × down share ≤ `CAUTION_ZONE_SPEED`* |
 | `CAUTION_ZONE_SPEED` | `0.25` | *Max downward speed factor inside the caution zone* |
 | `MAX_LINEAR_VELOCITY_MM_S` | `400.0 mm/s` | *Assumed max linear velocity for prediction* |
 | `LOOKAHEAD_TIME` | `0.25 s` | *Prediction horizon* |
@@ -359,9 +360,9 @@ if ground_enabled and moving_down:
 #### 5.2.2 Two-Tier Safety Model
 
 ```
-Z > 110 mm → Full speed, no restrictions
-110 mm ≥ Z > 91.0 mm → ⚠️ CAUTION ZONE: speed clamped to 25%
-Z ≤ 91.0 mm → 🛑 HARD STOP: downward axis zeroed, rumble triggered
+Z > Z_LIMIT + 19 mm → Full speed, no restrictions
+Z_LIMIT + 19 mm ≥ Z > Z_LIMIT → ⚠️ CAUTION ZONE: speed clamped to 25%
+Z ≤ Z_LIMIT → 🛑 HARD STOP: downward axis zeroed, rumble triggered
 ```
 
 

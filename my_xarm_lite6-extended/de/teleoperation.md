@@ -159,7 +159,7 @@ Die folgende Übersicht zeigt auf einen Blick, welche Projektmodule in reiner So
 
 ### ![Node](https://img.shields.io/badge/Node-blue?style=flat-square) `teleop_pre_collision_checker.py` (`teleop_pre_collision_checker`) &nbsp;&nbsp; <sub><i>`/src/teleop_pre_collision_checker/teleop_pre_collision_checker/teleop_pre_collision_checker.py`</i></sub>
 
-**Zweck & Aufgabe:** Sitzt als Wächter *vor* der Bewegungsübersetzung. Begrenzt das Abwärtstempo so, dass der Weg in 0,25 s nicht unter die Tischbarriere (`Z_LIMIT` 91 mm) reicht; schnellere Abwärtsbefehle werden gedrosselt (rechter Trigger zurückgenommen). Bei z ≤ 91 mm oder wenn weniger als 10 mm/s erlaubt wären (z < 93,5 mm), sperrt er abwärts ganz, meldet das auf `/ui/collision_msg` und löst das Rumble-Feedback (Vibration) des Gamepads aus.
+**Zweck & Aufgabe:** Sitzt als Wächter *vor* der Bewegungsübersetzung. Begrenzt das Abwärtstempo so, dass der Weg in 0,25 s nicht unter die Tischbarriere (`Z_LIMIT` = Z Collision Level, Standard 10 mm) reicht; schnellere Abwärtsbefehle werden gedrosselt (rechter Trigger zurückgenommen). Bei z ≤ `Z_LIMIT` oder wenn weniger als 10 mm/s erlaubt wären (z < `Z_LIMIT` + 2,5 mm), sperrt er abwärts ganz, meldet das auf `/ui/collision_msg` und löst das Rumble-Feedback (Vibration) des Gamepads aus.
 
 <details>
 <summary><b>🔽 Details anzeigen</b> · Run Command · Subscribes · Publishes · Parameters</summary>
@@ -180,6 +180,7 @@ Die folgende Übersicht zeigt auf einen Blick, welche Projektmodule in reiner So
 >> | **`/ui/eef_position`** | `std_msgs/Float32MultiArray` | *Bezieht die aktuelle Z-Höhe für den prädiktiven Kollisions-Check.* |
 >> | **`/ui/robot_control/current_speed`** | `std_msgs/Float32` | *Liest den aktuellen Geschwindigkeitsfaktor zur dynamischen Dämpfungsberechnung.* |
 >> | **`/ui/moveit_collision_ground_enabled`** | `std_msgs/Bool` (latched) | *Folgt dem Boden-Kollisionsschalter der UX \| Control Interface: Ist er AUS, wird die Abwärtsbewegung nicht mehr gesperrt. Ohne Nachricht (Node läuft nicht) bleibt die Sperre aktiv.* |
+>> | **`/ui/ground_collision_level`** | `std_msgs/Float64` (latched) | *Z Collision Level in mm (TCP-Höhe) von `moveit_floor_collision`, eingestellt im Boden-Kollisions-Popup der UX \| Control Interface → `Z_LIMIT`, Vorsichtszone beginnt 19 mm darüber. Auf 0–200 mm geklemmt. Bis zur ersten Nachricht gilt streng 91 mm (ohne diesen Node fehlt auch die Bodenbox in MoveIt Servo).* |
 >
 >
 > ![Publishes](https://img.shields.io/badge/Publishes-green?style=flat-square)
@@ -202,8 +203,8 @@ Die folgende Übersicht zeigt auf einen Blick, welche Projektmodule in reiner So
 >> | Parameter | Wert | Beschreibung |
 >> |---|---|---|
 >> | `LOOKAHEAD_TIME` | `0.25` | *Prädiktionshorizont (Sekunden) für die Geschwindigkeits-Vorausschau.* |
->> | `Z_LIMIT` | `91.0` | *Die harte Tischbarriere auf der Z-Achse (`link_base`) in Millimetern.* |
->> | `CAUTION_ZONE_START` | `110.0` | *Z-Höhe (mm), ab der das Tempo nach unten zur Sicherheit begrenzt wird.* |
+>> | `Z_LIMIT` | `91.0` → Level | *Die harte Tischbarriere auf der Z-Achse (`link_base`) in Millimetern; folgt `/ui/ground_collision_level`.* |
+>> | `CAUTION_ZONE_START` | `Z_LIMIT + 19` | *Z-Höhe (mm), ab der das Tempo nach unten zur Sicherheit begrenzt wird (`CAUTION_ZONE_MARGIN` 19 mm über `Z_LIMIT`).* |
 >> | `CAUTION_ZONE_SPEED` | `0.25` | *Maximal erlaubter Geschwindigkeitsfaktor nach unten innerhalb der Caution Zone.* |
 >> | `MAX_LINEAR_VELOCITY_MM_S` | `400.0` | *Angenommene Lineargeschwindigkeit (mm/s) als Basis der Vorausschau.* |
 >> | `MIN_DOWN_SPEED_MM_S` | `10.0` | *Mindesttempo abwärts (mm/s); erlaubt die Vorausschau weniger, wird abwärts ganz gesperrt (Kollisionsmeldung).* |
@@ -341,8 +342,8 @@ if ground_enabled and moving_down:
 
 | Parameter | Wert | Beschreibung |
 |---|---|---|
-| `Z_LIMIT` | `91.0 mm` | *Absolutes Z-Limit (Tischbarriere)* |
-| `CAUTION_ZONE_START` | `110.0 mm` | *Beginn der Vorsichtszone — rechter Trigger wird zurückgenommen, bis Tempostufe × Abwärtsanteil ≤ `CAUTION_ZONE_SPEED`* |
+| `Z_LIMIT` | Z Collision Level (Standard `10.0 mm`) | *Absolutes Z-Limit (Tischbarriere)* |
+| `CAUTION_ZONE_START` | `Z_LIMIT + 19 mm` | *Beginn der Vorsichtszone — rechter Trigger wird zurückgenommen, bis Tempostufe × Abwärtsanteil ≤ `CAUTION_ZONE_SPEED`* |
 | `CAUTION_ZONE_SPEED` | `0.25` | *Max. Faktor abwärts in der Vorsichtszone* |
 | `MAX_LINEAR_VELOCITY_MM_S` | `400.0 mm/s` | *Angenommene max. Lineargeschwindigkeit* |
 | `LOOKAHEAD_TIME` | `0.25 s` | *Vorhersagehorizont* |
@@ -361,9 +362,9 @@ if ground_enabled and moving_down:
 #### 5.2.2 Zwei-Stufen-Sicherheitsmodell
 
 ```
-Z > 110 mm → Volle Geschwindigkeit, keine Einschränkungen
-110 mm ≥ Z > 91,0 mm → ⚠️ VORSICHTSZONE: Geschwindigkeit auf 25% begrenzt
-Z ≤ 91,0 mm → 🛑 HARD STOP: Abwärtsachse genullt + Rumble
+Z > Z_LIMIT + 19 mm → Volle Geschwindigkeit, keine Einschränkungen
+Z_LIMIT + 19 mm ≥ Z > Z_LIMIT → ⚠️ VORSICHTSZONE: Geschwindigkeit auf 25% begrenzt
+Z ≤ Z_LIMIT → 🛑 HARD STOP: Abwärtsachse genullt + Rumble
 ```
 
 

@@ -1361,7 +1361,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: cent
           </div>
           <p class="tagline" data-en="The state stays visible, the next action predictable. The human can step in at any time.">Der Zustand bleibt sichtbar, die nächste Aktion vorhersehbar. Der Mensch kann jederzeit eingreifen.</p>
           <div class="numbers">
-            <div class="num"><strong data-num="91" data-unit=" mm">91 mm</strong><span data-en="Gamepad stop above the table (TCP)">Gamepad-Stopp über dem Tisch (TCP)</span></div>
+            <div class="num"><strong data-num="10" data-unit=" mm">10 mm</strong><span data-en="Gamepad stop above the table (TCP, Z Collision Level adjustable)">Gamepad-Stopp über dem Tisch (TCP, Z Collision Level einstellbar)</span></div>
             <div class="num"><strong data-num="0.25" data-unit=" s">0,25 s</strong><span data-en="Look-ahead of the collision pre-check">Vorausschau der Kollisionsvorprüfung</span></div>
             <div class="num"><strong data-num="0.3" data-unit=" s">0,3 s</strong><span data-en="Until stop on VR signal loss">bis Stopp bei VR-Signalverlust</span></div>
             <div class="num"><strong data-num="60" data-unit=" s">60 s</strong><span data-en="Blackbox before an incident">Blackbox vor einem Vorfall</span></div>
@@ -1979,11 +1979,11 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: cent
     },
     pad: {
       d: ['Fein und latenzarm: das Gamepad-Signal passiert zwei Sicherheitsstufen, bevor MoveIt Servo den Arm bewegt.', 'Fine and low-latency: the gamepad signal passes two safety stages before MoveIt Servo moves the arm.'],
-      fail: { at: 2, de: 'Der TCP würde unter 91 mm sinken: Die Abwärtsachse wird genullt, das Gamepad vibriert. Seitlich und nach oben geht es weiter.', en: 'The TCP would drop below 91 mm: the downward axis is zeroed and the gamepad rumbles. Sideways and upward still work.' },
+      fail: { at: 2, de: 'Der TCP würde unter das Z Collision Level sinken: Die Abwärtsachse wird genullt, das Gamepad vibriert. Seitlich und nach oben geht es weiter.', en: 'The TCP would drop below the Z Collision Level: the downward axis is zeroed and the gamepad rumbles. Sideways and upward still work.' },
       steps: [
         S('in', 0, ['Stick + Trigger', 'Stick + trigger'], ['Xbox Elite 2 am Roboter-PC oder als Remote-Gamepad im Browser (HTTPS).', 'Xbox Elite 2 on the robot PC or as a remote gamepad in the browser (HTTPS).'], ['/joy', '/remote/joy']),
         S('bridge', 1, ['Watchdog', 'Watchdog'], ['Remote nur für den Besitzer der Steuerung: Heartbeat, Freigabe „Arm gamepad“, auf echter Roboter-Hardware höchstens 50 % Tempo.', 'Remote only for the owner of control: heartbeat, “Arm gamepad” release, at most 50 % speed on real robot hardware.'], ['remote_control_watchdog']),
-        S('motion', 1, ['Kollisionsvorprüfung', 'Pre-collision check'], ['Sagt die TCP-Höhe 0,25 s voraus: unter 110 mm höchstens 25 % abwärts, bei 91 mm Stopp mit Vibration.', 'Predicts the TCP height 0.25 s ahead: below 110 mm at most 25 % downward, at 91 mm a stop with rumble.'], ['teleop_pre_collision_checker', '/ui/eef_position']),
+        S('motion', 1, ['Kollisionsvorprüfung', 'Pre-collision check'], ['Sagt die TCP-Höhe 0,25 s voraus: bis 19 mm über dem Z Collision Level höchstens 25 % abwärts, am Level Stopp mit Vibration.', 'Predicts the TCP height 0.25 s ahead: within 19 mm above the Z Collision Level at most 25 % downward, at the level a stop with rumble.'], ['teleop_pre_collision_checker', '/ui/eef_position']),
         S('motion', 0, ['Joystick → Twist', 'Joystick → twist'], ['C++-Node glättet das Signal und rechnet Achsen in kartesische Geschwindigkeiten um.', 'C++ node smooths the signal and turns axes into Cartesian velocities.'], ['xarm_joystick_input']),
         S('motion', 0, ['MoveIt Servo', 'MoveIt Servo'], ['Echtzeitregelung mit Prüfung auf Singularitäten und Kollisionen.', 'Real-time control with singularity and collision checks.'], ['servo_server']),
         S('hw', 0, ['Arm folgt', 'Arm follows'], ['Roboter-Simulation oder echte Roboter-Hardware: dieselbe Kette, dieselben Grenzen.', 'Robot simulation or real robot hardware: the same chain, the same limits.']),
