@@ -653,9 +653,10 @@ function build(L, wrap, host, o) {
       const gRim = lineLoop(outline(K, 0.002), 0.9);
       ghost.add(gFill, gRim); ghost.visible = false;
       st.scene.add(lock, ...waves, ghost);
-      return { K, h: sz, g, fill, grid, edge, pts, solid, solidMat, scanLine, scanLine2, scanGlow, cutLo, cutHi, cutX, cutY, col, sw: -1, swUp: true, swNext: rnd(3, 7), glow: new THREE.Color(K.glow), aura, pool,
+      return { K, h: sz, g, fill, grid, edge, pts, solid, solidMat, scanLine, scanLine2, scanGlow, cutLo, cutHi, cutX, cutY, col, sw: -1, swUp: true, swNext: rnd(3, 7),
+        swAxis: new THREE.Vector3(0, 0, 1), swR: Math.hypot(sx, sy, sz) / 2, glow: new THREE.Color(K.glow), aura, pool,
         lock, brk, tips, waves, ghost, gFill, gRim, yawG: 0,
-        slot: null, home: false, mat: { v: 0, to: 0, D: 1 }, hopT: -1, hopDir: 1, hopYaw: 0, swell: 0, popT: 1, sinkT: 1, yaw0: 0, yaw1: 0, shake: 0,
+        slot: null, home: false, mat: { v: 0, to: 0, D: 1 }, hopT: -1, hopDir: 1, hopYaw: 0, swell: 0, popT: 1, sinkT: 1, jumpT: -1, yaw0: 0, yaw1: 0, shake: 0,
         on: null, from: null, fall: null, pickTop: sz,
         eyes, eye, face: 0, phi: rnd(-3, 3), lx: 0, ly: 0, blink: 1, blinkT: rnd(1, 4), mood: 'open', moodTill: 0, sq: 1, crouch: 0 };
     };
@@ -781,36 +782,77 @@ function build(L, wrap, host, o) {
       };
       return play;
     })();
-    // Sprechblase (HTML über der Bühne, folgt der Lage auf dem Bildschirm); eine je Sprecher. still() = anderer spricht gerade:
-    // Blase aus, Restzeit steht, danach wieder ein → Dialog, nie zwei Blasen übereinander. swap = nur Inhalt tauschen (kein Pop)
+    // Sprechblase als Holo-Callout (HTML über der Bühne, folgt der Lage auf dem Bildschirm); eine je Sprecher. still() = anderer
+    // spricht gerade: Blase aus, Restzeit steht, danach wieder ein → Dialog, nie zwei Blasen übereinander. swap = nur Inhalt
+    // tauschen (kein Pop). Kopfzeile (Leuchtpunkt, Name, Messwert) kommt aus headerFor(obj); Rumpf tippt sich Zeichen für
+    // Zeichen; Führungslinie + Punkt (eigene Elemente neben der Blase) zeigen auf den Sprecher statt einer Blasen-Spitze.
+    const TYPE_MS = 26, LBL_DX = 54, LBL_DY = 58;
+    const hexOf = n => `#${n.toString(16).padStart(6, '0')}`;
+    const sizeFor = K => K.id === 'box' ? `${mm(K.S[0])}×${mm(K.S[1])}` : K.id === 'cyl' ? `⌀${mm(K.S[0])} MM` : `${mm(K.S[0])} MM`;
+    const headerFor = o => o.K
+      ? { c: hexOf(o.K.color), name: T(o.K.de, o.K.en).toUpperCase(), val: sizeFor(o.K) }
+      : { c: `#${ACC.getHexString()}`, name: 'LITE 6', val: `J1 ${Math.round(pol.th * 180 / Math.PI)}°` };
     const bubble = (cls, still = () => false) => {
-      const el = document.createElement('div'); el.className = `h3d-say ${cls}`.trim(); el.setAttribute('aria-hidden', 'true'); host.appendChild(el);
+      const el = document.createElement('div'); el.className = `h3d-say ${cls}`.trim(); el.setAttribute('aria-hidden', 'true');
+      const head = document.createElement('div'); head.className = 'h3d-head';
+      const dotEl = document.createElement('i'); dotEl.className = 'h3d-dot';
+      const nameEl = document.createElement('b'); nameEl.className = 'h3d-name';
+      const valEl = document.createElement('span'); valEl.className = 'h3d-val';
+      head.append(dotEl, nameEl, valEl);
+      const body = document.createElement('div'); body.className = 'h3d-body';
+      const bodyText = document.createElement('span'), cursor = document.createElement('span'); cursor.className = 'h3d-cursor';
+      body.append(bodyText, cursor);
+      const extra = document.createElement('div'); extra.className = 'h3d-extra';
+      el.append(head, body, extra); host.appendChild(el);
+      const lead = document.createElement('div'); lead.className = 'h3d-line'; host.appendChild(lead);
+      const tip = document.createElement('div'); tip.className = 'h3d-tip'; host.appendChild(tip);
       const v = new THREE.Vector3();
-      let o = null, until = 0, rest = 0, wait = false;   // Uhr = echte Zeit (läuft auch bei reduzierter Bewegung ohne dt)
-      // bleibt 8 px innerhalb der Bühne (schmale Bildschirme); Spitze (--dx) zeigt weiter auf den Sprecher
+      let o = null, until = 0, rest = 0, wait = false, typeText = '', typeFrom = 0;   // Uhr = echte Zeit (läuft auch bei reduzierter Bewegung ohne dt)
+      const vis = on => { el.classList.toggle('in', on); lead.classList.toggle('in', on); tip.classList.toggle('in', on); };
+      const paintHead = () => {
+        if (!o) return;
+        const h = headerFor(o);
+        dotEl.style.background = nameEl.style.color = valEl.style.color = lead.style.background = tip.style.background = h.c;
+        tip.style.boxShadow = `0 0 8px -1px ${h.c}`; nameEl.textContent = h.name; valEl.textContent = h.val;
+      };
+      const renderType = () => { const n = reduce ? typeText.length : Math.max(0, Math.min(typeText.length, Math.floor((performance.now() - typeFrom) / TYPE_MS))); bodyText.textContent = typeText.slice(0, n); };
+      // Label schräg neben dem Objekt (nie darüber → verdeckt es nie), zur Bühnenmitte hin gespiegelt; Führungslinie vom
+      // objektseitigen Eckpunkt der Blase (= Anker, CSS-Translate legt ihn auf diese Ecke) zum Punkt am Objekt
       const place = () => {
         v.copy(o.g.position); v.z += o.h * 0.6 + 0.02; v.project(st.camera);
-        const W = host.clientWidth, x = (v.x + 1) / 2 * W, h = el.offsetWidth / 2, cx = Math.max(h + 8, Math.min(W - h - 8, x));
-        el.style.left = `${cx}px`; el.style.top = `${(1 - v.y) / 2 * host.clientHeight}px`;
-        el.style.setProperty('--dx', `${Math.max(12 - h, Math.min(h - 12, x - cx))}px`);
+        const W = host.clientWidth, H = host.clientHeight, x = (v.x + 1) / 2 * W, y = (1 - v.y) / 2 * H, right = x < W / 2;
+        const bw = el.offsetWidth || 160, bh = el.offsetHeight || 54;
+        let ax = x + (right ? LBL_DX : -LBL_DX); ax = right ? Math.min(ax, W - 10) : Math.max(ax, bw + 10);
+        const ay = Math.max(bh + 10, Math.min(H - 10, y - LBL_DY));
+        el.style.left = `${ax}px`; el.style.top = `${ay}px`; el.classList.toggle('left', !right);
+        tip.style.left = `${x}px`; tip.style.top = `${y}px`;
+        const dx = ax - x, dy = ay - y;
+        lead.style.left = `${x}px`; lead.style.top = `${y}px`; lead.style.width = `${Math.hypot(dx, dy)}px`; lead.style.transform = `rotate(${Math.atan2(dy, dx)}rad)`;
       };
-      const pop = () => { place(); el.classList.remove('in'); void el.offsetWidth; el.classList.add('in'); };
+      const pop = () => { typeFrom = performance.now(); paintHead(); renderType(); place(); el.classList.remove('in'); void el.offsetWidth; el.classList.add('in'); lead.classList.add('in'); tip.classList.add('in'); };
       return {
         get left() { return (wait ? rest : until ? until - performance.now() : 0) / 1000; },
         get busy() { return this.left > 0; },
         show(obj, content, ms = 2600, quiet = false, swap = false) {
           const live = this.busy && !wait && o === obj;
-          o = obj; el.replaceChildren(...[].concat(content)); until = performance.now() + ms;
-          wait = still(); if (wait) { rest = ms; el.classList.remove('in'); } else if (!(swap && live)) pop();
+          const kids = [].concat(content), first = kids[0];
+          typeText = typeof first === 'string' ? first : first.textContent;
+          extra.replaceChildren(...kids.slice(1));
+          o = obj; until = performance.now() + ms;
+          wait = still();
+          if (wait) { rest = ms; vis(false); }
+          else if (!(swap && live)) pop();
+          else { typeFrom = performance.now(); paintHead(); renderType(); }
           if (!quiet) sfx('pop');
         },
-        hide() { el.classList.remove('in'); until = rest = 0; wait = false; },
+        hide() { vis(false); until = rest = 0; wait = false; },
         tick() {
           if (!o) return;
           const now = performance.now();
-          if (this.busy && still()) { if (!wait) { wait = true; rest = until - now; el.classList.remove('in'); } return; }
+          if (this.busy && still()) { if (!wait) { wait = true; rest = until - now; vis(false); } return; }
           if (wait) { wait = false; until = now + rest; rest = 0; pop(); }
-          place(); if (until && now > until) { until = 0; el.classList.remove('in'); }
+          place(); renderType(); paintHead();
+          if (until && now > until) { until = 0; vis(false); }
         },
       };
     };
@@ -1158,19 +1200,20 @@ function build(L, wrap, host, o) {
     };
     // Materialisieren (Wunsch User 06.10.2026): bei jedem Absetzen (Form, freie Stelle, Turm) bekommt das Objekt sein Material in
     // Zeitlupe (2,6 s): Scan-Ebene steigt von unten nach oben (darunter fest, darüber noch Raster), Farbe gleitet vom Akzent zur
-    // Objektfarbe, frisch Materialisiertes glüht warm und kühlt aus; beim Anheben läuft es rückwärts (1,2 s). Danach wandert ab und
-    // zu ein Schimmer-Band (42 % der Höhe, 1,8 s, Minimal-Ruck) über das Objekt: darin Raster statt Material, beide Kanten leuchten,
-    // abwechselnd auf- und abwärts. Schnitt = Clipping-Ebenen im Objektrahmen.
-    const up = new THREE.Vector3(), mid = new THREE.Vector3();
+    // Objektfarbe, frisch Materialisiertes glüht warm und kühlt aus; beim Anheben läuft es rückwärts (1,2 s). Danach läuft ab und
+    // zu eine Röntgen-Welle (Wunsch User 09.10.2026, Vorschau Wech:C) von einer zufälligen Ecke schräg durchs Objekt (1,2 s,
+    // Minimal-Ruck): in ihrer Schale (55 % des Bühnenradius) Raster statt Material, beide Ränder leuchten. Schnitt = dieselben
+    // Clipping-Ebenen wie der Materialisier-Scan, nur mit zufälliger statt fester (Welt-Z) Achse; außerhalb der Welle unverändert.
+    const up = new THREE.Vector3(), mid = new THREE.Vector3(), AX_Z = new THREE.Vector3(0, 0, 1);
     const applyMat = (o, dt) => {
       const m = o.mat, fwd = m.to === 1;
       if (m.v !== m.to) m.v = fwd ? Math.min(1, m.v + dt / m.D) : Math.max(0, m.v - dt / m.D);
       // Scan-Lage (Minimal-Ruck, im ersten ¾) und Farbanteil (ease-out) aus demselben Fortschritt → Rückweg spielt rückwärts
       const v = m.v, s = ease5(Math.min(1, v / 0.75)), k = 1 - (1 - v) ** 3, z = -o.h / 2 * 1.02 + o.h * 1.04 * s;
-      // Schimmer-Band (nur fertig materialisiert): Band aus Raster wandert über das Objekt, abwechselnd auf- und abwärts
-      const sw = o.sw >= 0 && v === 1, BW = o.h * 0.42, u = sw ? ease5(o.sw) : 0;
-      const c = (o.swUp ? 1 : -1) * (-(o.h + BW) / 2 + (o.h + BW) * u), lo = sw ? c - BW / 2 : z, hi = c + BW / 2;
-      up.set(0, 0, 1).applyQuaternion(o.g.quaternion); mid.copy(up).multiplyScalar(lo * o.g.scale.z).add(o.g.position);
+      // Röntgen-Welle (nur fertig materialisiert): Band aus Raster wandert entlang o.swAxis einmal durchs Objekt
+      const sw = o.sw >= 0 && v === 1, R = o.swR, BW = R * 0.55, u = sw ? ease5(o.sw) : 0;
+      const c = (o.swUp ? 1 : -1) * (-(R + BW) + 2 * (R + BW) * u), lo = sw ? c - BW / 2 : z, hi = c + BW / 2;
+      up.copy(sw ? o.swAxis : AX_Z).applyQuaternion(o.g.quaternion); mid.copy(up).multiplyScalar(lo * o.g.scale.z).add(o.g.position);
       o.cutHi.setFromNormalAndCoplanarPoint(up, mid); o.cutLo.copy(o.cutHi).negate();
       if (sw) { mid.copy(up).multiplyScalar(hi * o.g.scale.z).add(o.g.position); o.cutX.setFromNormalAndCoplanarPoint(up, mid); o.cutY.copy(o.cutX).negate(); }
       else { o.cutX.set(up, -1e6); o.cutY.set(up, 1e6); }
@@ -1181,7 +1224,14 @@ function build(L, wrap, host, o) {
       o.solidMat.emissiveIntensity = heat;
       const b = sw ? 0.85 * Math.sin(Math.PI * o.sw) : Math.sin(Math.PI * s);   // Scan-Licht nur unterwegs
       const lead = sw ? (o.swUp ? hi : lo) : z;
-      o.scanLine.position.z = o.scanGlow.position.z = lead; o.scanLine2.position.z = o.swUp ? lo : hi;
+      // Welle: beide Ränder liegen schräg im Objekt → Ring-Meshes auf die Welt-Achse drehen statt nur in Z zu verschieben
+      if (sw) {
+        o.scanLine.quaternion.setFromUnitVectors(AX_Z, o.swAxis); o.scanLine2.quaternion.copy(o.scanLine.quaternion); o.scanGlow.quaternion.copy(o.scanLine.quaternion);
+        o.scanLine.position.copy(o.swAxis).multiplyScalar(lead); o.scanLine2.position.copy(o.swAxis).multiplyScalar(o.swUp ? lo : hi); o.scanGlow.position.copy(o.swAxis).multiplyScalar(lead);
+      } else {
+        o.scanLine.quaternion.identity(); o.scanGlow.quaternion.identity();
+        o.scanLine.position.set(0, 0, lead); o.scanGlow.position.set(0, 0, lead);
+      }
       o.scanLine.material.opacity = 0.95 * b; o.scanGlow.material.opacity = 0.35 * b; o.scanLine2.material.opacity = sw ? 0.6 * b : 0;
       o.scanLine.material.color.copy(ACC2).lerp(o.glow, k); o.scanLine2.material.color.copy(o.scanLine.material.color); o.scanGlow.material.color.copy(ACC).lerp(o.col, k);
       o.edge.material.color.copy(ACC2).lerp(o.glow, k); o.edge.material.opacity = 0.95 - 0.5 * k; o.pts.material.color.copy(o.edge.material.color);
@@ -1271,17 +1321,38 @@ function build(L, wrap, host, o) {
     const drop = () => {
       const o = cur, to = job.to; held = false;
       o.g.rotation.set(0, 0, o.g.rotation.z); sfx('release');
-      o.mat.to = 1; o.mat.D = 2.6;   // jedes Absetzen materialisiert (Wunsch User 06.10.2026)
-      if (to === BACK) { o.on = o.from; putAt(o, o.slot); return; }
-      if (to === FREE) { putAt(o, freeS); freeS = null; ring(o.g.position.x, o.g.position.y, 0.003); save(); return; }   // neuer Startplatz
-      if (to >= STACK) { const b = OBJ[to - STACK]; o.on = b; putAt(o, { a: b.slot.a, r: b.slot.r }); ring(o.g.position.x, o.g.position.y, topZ(b) + 0.002); save(); return; }
-      const t = TPL[to]; t.full = true; putAt(o, t.slot); o.home = true;   // bleibt oben (kein Einsinken), richtet sich nur aus
+      o.mat.D = 2.6;   // jedes Absetzen materialisiert (Wunsch User 06.10.2026)
+      if (to === BACK) { o.mat.to = 1; o.on = o.from; putAt(o, o.slot); return; }
+      if (to === FREE) { o.mat.to = 1; putAt(o, freeS); freeS = null; ring(o.g.position.x, o.g.position.y, 0.003); save(); return; }   // neuer Startplatz
+      if (to >= STACK) { o.mat.to = 1; const b = OBJ[to - STACK]; o.on = b; putAt(o, { a: b.slot.a, r: b.slot.r }); ring(o.g.position.x, o.g.position.y, topZ(b) + 0.002); save(); return; }
+      // Heimkehr: bleibt oben (kein Einsinken), richtet sich aus; Freudensprung (joyTick) läuft vor dem Färben, siehe dort
+      const t = TPL[to]; t.full = true; putAt(o, t.slot); o.home = true;
       o.yaw0 = o.g.rotation.z; o.yaw1 = alignYaw(o.yaw0, t.slot.yaw, o.K.sym); o.sinkT = 0;
+      o.jumpT = 0; sfx('yay'); feel(o, 'happy', 3);   // Juchzer auf den Absprung statt auf arrived()
     };
-    // Zu Hause angekommen (nach dem Einrutschen): Dank (Objekt), Klang, Mission abhaken; danach antwortet der Arm: 2 von 3 →
-    // „fast geschafft“, alle drei → Rundenende/Bestzeit + Abzeichen, neue Runde
+    // Freudensprung (Wunsch User 09.10.2026, Vorschau Heim:A): nach dem Aufsetzen duckt sich das Objekt, springt mit Tilt
+    // ~30 mm hoch, landet mit Stauchen (o.sq, generische Formel im Haupt-Loop) + Lichtring in Objektfarbe + Funken; danach
+    // färbt es sich wie bisher (o.mat.to = 1) und arrived() läuft. ~1,1 s von drop() bis zum Start der Farbe.
+    const JOY_DUCK = 0.14, JOY_AIR = 0.46, JOY_TOTAL = 1.05, JOY_H = 0.03, JOY_TILT = 0.16;
+    const joyTick = (o, dt) => {
+      const prev = o.jumpT, t = o.jumpT = reduce ? JOY_TOTAL : Math.min(JOY_TOTAL, o.jumpT + dt), air = JOY_DUCK + JOY_AIR;
+      if (t < JOY_DUCK) { o.crouch = ease5(t / JOY_DUCK); return; }
+      if (t < air) {
+        const u = (t - JOY_DUCK) / JOY_AIR, arc = Math.sin(Math.PI * u);
+        o.crouch = Math.max(0, 1 - u / 0.25); o.g.position.z = o.h / 2 + JOY_H * arc ** 1.2; o.g.rotation.x = JOY_TILT * arc;
+        return;
+      }
+      if (prev < air) {   // soeben gelandet: Stauchen (generische Formel), Lichtring + Funken in Objektfarbe
+        o.g.position.z = o.h / 2; o.g.rotation.x = 0; o.crouch = 0; o.sq = 0;
+        flash.material.color.copy(o.col); ring(o.g.position.x, o.g.position.y, 0.003); later(0.5, () => flash.material.color.copy(ACC));
+        burst(o.g.position.x, o.g.position.y, o.h * 0.3, 16, 0.3, [o.glow, o.col]); sfx('thud');
+      }
+      if (t >= JOY_TOTAL) { o.jumpT = -1; o.mat.to = 1; arrived(o); }
+    };
+    // Zu Hause angekommen (nach Einrutschen + Freudensprung): Dank (Objekt), Klang, Mission abhaken; danach antwortet der Arm:
+    // 2 von 3 → „fast geschafft“, alle drei → Rundenende/Bestzeit + Abzeichen, neue Runde
     const arrived = o => {
-      say.show(o, line(L.thanks, o.K), 3000, true); sfx('home'); sfx('yay'); feel(o, 'happy', 3);
+      say.show(o, line(L.thanks, o.K), 3000, true); sfx('home');
       if (OBJ.every(x => x.home)) {
         finished = true; rounds++; newBest = !best || tRun < best; if (newBest) best = tRun;
         quest.badge(); sfx('win'); newRoundAt = clk + 6.5;
@@ -1404,7 +1475,7 @@ function build(L, wrap, host, o) {
         if (k !== BACK) o.on = null;
         if (k >= STACK) { const b = OBJ[k - STACK]; o.on = b; putAt(o, { a: b.slot.a, r: b.slot.r }); o.mat.v = o.mat.to = 1; save(); show(); return; }
         if (k === FREE) { putAt(o, freeS); freeS = null; o.mat.v = o.mat.to = 1; save(); show(); return; }
-        if (k !== BACK) { o.home = true; TPL[k].full = true; o.g.rotation.set(0, 0, TPL[k].slot.yaw); putAt(o, TPL[k].slot); o.mat.v = o.mat.to = 1; arrived(o); }
+        if (k !== BACK) { o.home = true; TPL[k].full = true; o.g.rotation.set(0, 0, TPL[k].slot.yaw); putAt(o, TPL[k].slot); o.mat.v = o.mat.to = 1; sfx('yay'); feel(o, 'happy', 3); arrived(o); }
         show(); return;
       }
       if (job && job.to < 0) { job.to = k; show(); }
@@ -1895,7 +1966,7 @@ function build(L, wrap, host, o) {
     // auf die Seite, federt zweimal nach und rutscht aus (0,4 s), liegt 1,4 s und hüpft dann von selbst wieder aufrecht (0,75 s,
     // Ring am Boden) → wieder greifbar. Landestelle im Greifbereich, frei von Objekten und Formen; höhere Objekte fallen weiter.
     // Material bleibt (Objekt war schon abgesetzt).
-    const FALL_D = 0.55, BOUNCE_D = 0.4, LIE_D = 1.4, RISE_D = 0.75, SW_D = 1.8;
+    const FALL_D = 0.55, BOUNCE_D = 0.4, LIE_D = 1.4, RISE_D = 0.75, SW_D = 1.2;
     const qa = new THREE.Quaternion(), qz = new THREE.Quaternion(), qL = new THREE.Quaternion(), qU = new THREE.Quaternion(), fAx = new THREE.Vector3();
     const mtx = new THREE.Matrix4(), tcpPrev = new THREE.Vector3();
     // halbe Höhe in Lage q (Mitte → Tisch): Spalten der Drehmatrix = Objektachsen, deren z-Anteil zählt
@@ -2005,17 +2076,18 @@ function build(L, wrap, host, o) {
       if (fx) lockTick(dt);
       OBJ.forEach(o => {
         if (o.fall) fallTick(o, dt);
-        // Schimmer: materialisierte Objekte, je 5–9 s versetzt, 1,8 s je Durchlauf; im Arm oder beim Lösen keiner
+        // Röntgen-Welle: materialisierte Objekte, je 5–9 s versetzt, 1,2 s je Durchlauf, neue zufällige Achse je Durchlauf;
+        // im Arm oder beim Lösen keine
         if (!reduce && o.mat.v === 1 && o.mat.to === 1 && !(held && o === cur)) {
           if (o.sw >= 0) { o.sw = Math.min(1, o.sw + dt / SW_D); if (o.sw === 1) { o.sw = -1; o.swUp = !o.swUp; o.swNext = clk + rnd(5, 9); } }
-          else if (clk >= o.swNext) o.sw = 0;
+          else if (clk >= o.swNext) { o.sw = 0; o.swAxis.set(rnd(-1, 1), rnd(-1, 1), rnd(-1, 1)).normalize(); }
         } else { o.sw = -1; o.swNext = Math.max(o.swNext, clk + rnd(1.5, 3)); }
         if (o.sinkT < 1) {
           o.sinkT = reduce ? 1 : Math.min(1, o.sinkT + dt / 0.55);
           const e = ease5(o.sinkT);
           o.g.rotation.z = o.yaw0 + (o.yaw1 - o.yaw0) * e;
-          if (o.sinkT === 1) arrived(o);
         }
+        if (o.jumpT >= 0) joyTick(o, dt);
         if (o.popT < 1) o.popT = Math.min(1, o.popT + dt / 0.6);
         applyMat(o, dt);
       });
