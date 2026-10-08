@@ -1,0 +1,650 @@
+<!doctype html>
+<!-- Gesten in Claude Ops: Bedienung des Live-Dashboards der Claude-Chats (__Project_Claude_Ops) per Webcam, für Nutzer und Entwickler.
+     Gerüst wie die übrigen develop_-Seiten (Skill docs-layout): Rückweg → Kopfzeile → Hero → Gebaut auf → 01 Einschalten → 02 Gesten (.alt) → 03 Technik → Weiter.
+     Gesten = Liste GEST im Modul HAND von __Project_Claude_Ops/index.html; Hand-Animation aus der Vorlage _studio/vorschauen/2026-10-08-Gesten-Aufnahmen-HAND
+     (Posen wie __Project_Claude_Ops/test_hand.py). Schwellenwerte (REC.T) bewusst nicht genannt: sie werden an echten Aufnahmen abgestimmt.
+     Bausteine: css/landing.css (Hero, Leiste, Kontakt-Buttons), css/scroll_flow.css + js/scroll_flow.js (Lesefluss). -->
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gesten in Claude Ops · UX Robot</title>
+<meta name="description" content="Claude Ops, das Live-Dashboard der Claude-Chats im dev_ws, per Webcam mit sieben Handgesten bedienen.">
+<link rel="stylesheet" href="fonts/fonts.css">
+<link rel="stylesheet" href="css/landing.css">
+<link rel="stylesheet" href="css/doc_path.css">
+<style>
+/* ═════ Tokens wie docs/develop_workflow.html (Bereichsfarbe Entwickeln = Indigo, brand.yaml) ═════ */
+:root {
+  --radius-sm: 4px; --radius: 6px; --radius-lg: 8px;
+  color-scheme: dark;
+  --bg: #111315; --surface: #181b1e; --surface-2: #1f2327; --line: #2a2f34; --line-strong: #3b4248;
+  --fg: #eef2f3; --fg-2: #b9c2c6; --accent: var(--indigo); --accent-ink: #0d0f2e;
+  --indigo: #818cf8; --teal: #2dd4bf; --violet: #a78bfa; --gold: #f5b942; --green: #4ade80; --red: #f87171; --warn: #fbbf24;
+  --blue: #60a5fa; --pink: #f472b6; --orange: #fb923c; --lime: #a3e635;
+  --band: #15181a; --grid: rgba(129, 140, 248, .045); --glow: rgba(129, 140, 248, .28);
+  --shadow: 0 1px 0 rgba(255,255,255,.04) inset, 0 20px 40px -24px rgba(0,0,0,.7);
+  --font: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+  --ease-out: cubic-bezier(.2, .7, .2, 1); --ease-io: cubic-bezier(.65, 0, .35, 1);
+  --t-fast: 150ms; --t-base: 250ms; --t-slow: 450ms; --t-story: 700ms; --stagger: 50ms; --rise: 12px;
+}
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    color-scheme: light;
+    --bg: #f3f5f5; --surface: #ffffff; --surface-2: #eef2f2; --line: #d9e0e0; --line-strong: #b9c4c4;
+    --fg: #14181a; --fg-2: #3a4448; --accent: var(--indigo); --accent-ink: #ffffff;
+    --indigo: #4338ca; --teal: #0f766e; --violet: #6d28d9; --gold: #9a5b00; --green: #15803d; --red: #b91c1c; --warn: #a15c00;
+    --blue: #1d4ed8; --pink: #be185d; --orange: #c2410c; --lime: #4d7c0f;
+    --band: #e9eeee; --grid: rgba(67, 56, 202, .05); --glow: transparent;
+    --shadow: 0 1px 2px rgba(20,30,30,.06), 0 16px 32px -24px rgba(20,40,40,.35);
+  }
+}
+:root[data-theme="light"] {
+  color-scheme: light;
+  --bg: #f3f5f5; --surface: #ffffff; --surface-2: #eef2f2; --line: #d9e0e0; --line-strong: #b9c4c4;
+  --fg: #14181a; --fg-2: #3a4448; --accent: var(--indigo); --accent-ink: #ffffff;
+  --indigo: #4338ca; --teal: #0f766e; --violet: #6d28d9; --gold: #9a5b00; --green: #15803d; --red: #b91c1c; --warn: #a15c00;
+  --blue: #1d4ed8; --pink: #be185d; --orange: #c2410c; --lime: #4d7c0f;
+  --band: #e9eeee; --grid: rgba(67, 56, 202, .05); --glow: transparent;
+  --shadow: 0 1px 2px rgba(20,30,30,.06), 0 16px 32px -24px rgba(20,40,40,.35);
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: calc(var(--hdr, 60px) + 16px); }
+body { margin: 0; background: var(--bg); color: var(--fg); font: 500 15px/1.55 var(--font); -webkit-font-smoothing: antialiased; }
+h1, h2, h3, p { margin: 0; }
+h1, h2, h3 { text-wrap: balance; }
+a { color: inherit; text-decoration: none; }
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: var(--radius-sm); }
+.ico { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+.ico.i16 { width: 16px; height: 16px; }
+.ico.i18 { width: 18px; height: 18px; }
+.wrap { max-width: 1240px; margin-inline: auto; padding-inline: 24px; }
+code { font: 600 .88em/1.3 var(--mono); padding: 1px 5px; border: 1px solid var(--line); border-radius: var(--radius-sm); background: var(--surface-2); overflow-wrap: anywhere; }
+
+/* Kopfzeile: Marke · Abschnitts-Nav (folgt dem Lesefortschritt) · DE/EN · Theme · Fortschrittslinie */
+.top { position: sticky; top: 0; z-index: 10; border-bottom: 1px solid var(--line); background: color-mix(in srgb, var(--bg) 95%, transparent); }
+.top .wrap { display: flex; align-items: center; gap: 16px; padding-block: 12px; flex-wrap: wrap; }
+.brand { display: flex; align-items: center; gap: 10px; font-weight: 800; }
+.brand-mark { width: 34px; height: 34px; border-radius: var(--radius); display: grid; place-items: center; background: var(--accent); color: var(--accent-ink); box-shadow: 0 0 18px var(--glow); }
+.brand small { display: block; font: 600 11px/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--fg-2); margin-top: 3px; }
+.secnav { display: flex; gap: 4px; margin-left: 16px; }
+.secnav a { display: inline-flex; align-items: center; gap: 8px; min-height: 32px; padding: 0 10px; border: 1px solid transparent; border-radius: var(--radius-sm); font-size: 14px; font-weight: 700; color: var(--fg-2); transition: background-color var(--t-fast), color var(--t-fast); }
+.secnav a .n { font: 700 12px/1 var(--mono); color: var(--accent); }
+.secnav a:hover { color: var(--fg); background: var(--surface-2); }
+.secnav a[aria-current="true"] { color: var(--fg); border-color: color-mix(in srgb, var(--accent) 45%, var(--line)); background: color-mix(in srgb, var(--accent) 10%, var(--surface)); }
+.tools { display: flex; gap: 8px; margin-left: auto; }
+.seg { display: inline-flex; gap: 2px; padding: 3px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface-2); }
+.seg button { font: 700 12px/1 var(--mono); padding: 0 10px; min-height: 28px; min-width: 34px; border: 0; border-radius: var(--radius-sm); background: transparent; color: var(--fg-2); cursor: pointer; transition: background-color var(--t-fast), color var(--t-fast); }
+.seg button:hover { color: var(--fg); background: color-mix(in srgb, var(--fg) 7%, transparent); }
+.seg button[aria-pressed="true"] { background: var(--surface); color: var(--fg); box-shadow: 0 0 0 1px var(--line-strong); }
+.progress { position: absolute; left: 0; right: 0; bottom: -1px; height: 2px; background: var(--accent); box-shadow: 0 0 10px var(--glow); transform-origin: 0 50%; transform: scaleX(var(--p, 0)); pointer-events: none; }
+@supports (animation-timeline: scroll()) {
+  .progress { animation: progress linear both; animation-timeline: scroll(root); }
+  @keyframes progress { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+}
+
+/* Hero: Titel + Sachsatz + Kennzahlen als Zeile (wie develop_workflow.html) */
+.dark-zone { --accent: var(--indigo); --accent-ink: #0d0f2e; --grid: rgba(129, 140, 248, .045); --glow: rgba(129, 140, 248, .28); } /* landing.css setzt sonst Türkis */
+.hero-inner { grid-template-columns: minmax(0, 1fr); min-height: 0; padding-block: 72px 64px; }
+.hero-kv { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+.hero-kv li { display: flex; align-items: baseline; gap: 8px; padding: 8px 14px; border: 1px solid var(--glass-bd); border-radius: var(--radius); background: var(--glass-bg); font-size: 14px; font-weight: 600; }
+.hero-kv b { font: 800 20px/1 var(--mono); color: var(--accent); font-variant-numeric: tabular-nums; }
+.strip ul { grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); }
+
+/* Abschnitte: Fläche im Wechsel bg / band, Kopf links Kicker + Titel, rechts Nutzen; Abstände nur per gap des Containers */
+.zone { padding-block: 96px; container-type: inline-size; }
+.zone.alt { background: var(--band); border-block: 1px solid var(--line); }
+.zone > .wrap { display: grid; gap: 40px; }
+.eyebrow { font: 700 12px/1 var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--hue, var(--accent)); display: flex; align-items: center; gap: 10px; }
+.eyebrow::before { content: ""; width: 22px; height: 2px; background: currentColor; border-radius: 2px; }
+.eyebrow .n { padding: 4px 6px; border: 1px solid color-mix(in srgb, currentColor 55%, transparent); border-radius: var(--radius-sm); letter-spacing: .04em; }
+.sec-head { display: flex; align-items: end; justify-content: space-between; gap: 12px 40px; flex-wrap: wrap; }
+.sec-head h2 { font-size: clamp(25px, 2.7vw, 34px); letter-spacing: -.028em; font-weight: 800; line-height: 1.1; margin-top: 12px; }
+.brief { display: grid; gap: 12px; justify-items: start; flex: 1 1 420px; max-width: 58ch; }
+.brief p { color: var(--fg-2); font-size: 15px; }
+.grp { display: grid; gap: 16px; }
+.grp h3 { font-size: 19px; font-weight: 800; letter-spacing: -.01em; }
+.k-t { font: 700 11.5px/1.2 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--hue, var(--accent)); }
+
+/* 01 Einschalten: drei Schritte (Reihenfolge → Nummern), Anzeige als Kacheln, Verhalten als Liste */
+.steps { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; counter-reset: s; }
+.steps li { counter-increment: s; display: grid; grid-template-columns: 32px minmax(0, 1fr); gap: 4px 12px; align-content: start; padding: 16px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); box-shadow: var(--shadow); min-width: 0; }
+.steps li::before { content: counter(s); grid-row: span 2; width: 32px; height: 32px; display: grid; place-items: center; border-radius: var(--radius-sm); font: 800 14px/1 var(--mono); color: var(--hue);
+  background: color-mix(in srgb, var(--hue) 14%, transparent); border: 1px solid color-mix(in srgb, var(--hue) 50%, transparent); }
+.steps b { font-size: 15.5px; font-weight: 800; line-height: 1.3; }
+.steps p { font-size: 14px; line-height: 1.5; color: var(--fg-2); }
+.feats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
+.feats.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.feat { display: grid; align-content: start; gap: 6px; min-width: 0; padding: 16px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); box-shadow: var(--shadow);
+  transition: border-color var(--t-fast), transform var(--t-base) var(--ease-out); }
+.feat:hover { border-color: color-mix(in srgb, var(--hue) 50%, var(--line)); transform: translateY(-2px); }
+.feat .ico { color: var(--hue); }
+.feat .k-t { margin-top: 4px; }
+.feat b { font-size: 15.5px; font-weight: 800; line-height: 1.25; }
+.feat p { font-size: 14px; line-height: 1.5; color: var(--fg-2); }
+/* Anzeige-Kacheln ohne Bedienelemente: zentriert, Icon-Kasten XL (Skill docs-layout §5, text-format §4) */
+.feats.tiles .feat { justify-items: center; text-align: center; gap: 8px; padding: 24px 16px; }
+.feats.tiles .feat p { text-wrap: balance; }
+.bi-l { width: 64px; height: 64px; flex: none; display: grid; place-items: center; margin-bottom: 4px; border-radius: var(--radius); color: var(--hue);
+  background: radial-gradient(circle at 30% 20%, color-mix(in srgb, var(--hue) 28%, transparent), color-mix(in srgb, var(--hue) 7%, transparent) 72%);
+  border: 1px solid color-mix(in srgb, var(--hue) 40%, transparent); box-shadow: 0 0 26px -8px var(--glow), inset 0 1px 0 rgba(255, 255, 255, .14); }
+.bi-l .ico { width: 34px; height: 34px; }
+.ticks { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px 16px; }
+.ticks li { display: flex; align-items: flex-start; gap: 10px; font-size: 14.5px; line-height: 1.45; color: var(--fg-2); min-width: 0; }
+.ticks li b { color: var(--fg); }
+.ticks .ico { color: var(--hue); margin-top: 1px; }
+
+/* 02 Gesten: je Karte Kamerasicht (Canvas, bleibt in beiden Themes dunkel) + Ereignis-Zeile + Geste, Wirkung, Tipps */
+.btn { display: inline-flex; align-items: center; gap: 8px; min-height: 36px; padding: 0 14px; border: 1px solid var(--line-strong); border-radius: var(--radius-sm); background: var(--surface);
+  font: 700 13px/1 var(--mono); color: var(--fg); cursor: pointer; transition: border-color var(--t-fast), background-color var(--t-fast); }
+.btn:hover { border-color: var(--hue, var(--accent)); background: var(--surface-2); }
+.btn .ico { color: var(--hue, var(--accent)); }
+.gs { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
+.gc { display: flex; flex-direction: column; min-width: 0; overflow: hidden; border: 1px solid var(--line); border-radius: var(--radius-lg); background: var(--surface); box-shadow: var(--shadow); transition: border-color var(--t-fast); }
+.gc:hover { border-color: color-mix(in srgb, var(--hue) 50%, var(--line)); }
+.cam { --stage: #111315; --stage-line: rgba(129, 140, 248, .14); --hand: #c7d2fe; --hot: #2dd4bf; --joint: #eef2f3; background: var(--stage); }
+.cam canvas { display: block; width: 100%; height: auto; aspect-ratio: 4 / 3; }
+.live { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 10px; min-height: 42px; padding: 8px 12px; border-top: 1px solid var(--stage-line); font: 600 13px/1.3 var(--mono); color: var(--hand); }
+.live .ph { min-width: 0; }
+.live .ev { flex: none; padding: 3px 8px; border: 1px solid var(--stage-line); border-radius: var(--radius-sm); letter-spacing: .06em; transition: background-color var(--t-fast), color var(--t-fast), border-color var(--t-fast); }
+.live .ev.on { background: var(--hot); border-color: var(--hot); color: var(--stage); }
+.gc-body { display: grid; gap: 8px; align-content: start; padding: 16px; }
+.gc-body h3 { font-size: 17px; font-weight: 800; line-height: 1.25; }
+.gc-fx { display: flex; align-items: center; gap: 8px; font-weight: 700; }
+.gc-fx .ico { color: var(--hue); }
+.gc-body ul { margin: 0; padding-left: 18px; display: grid; gap: 4px; font-size: 14px; line-height: 1.45; color: var(--fg-2); }
+
+/* 03 Technik: Kacheln 2 × 2, Befehle als Block (breite Zeilen scrollen im Block, nicht die Seite), Hinweis-Box */
+.cmd { margin: 0; padding: 14px 16px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); box-shadow: var(--shadow); font: 600 13.5px/1.7 var(--mono); overflow-x: auto; white-space: pre; }
+.cmd .c { color: var(--fg-2); }
+.note { display: flex; align-items: flex-start; gap: 12px; padding: 12px 16px; border: 1px solid color-mix(in srgb, var(--hue) 40%, var(--line)); border-radius: var(--radius);
+  background: color-mix(in srgb, var(--hue) 7%, var(--surface)); font-size: 15px; line-height: 1.5; }
+.note .ico { color: var(--hue); margin-top: 2px; }
+
+/* Weiter: Links + Visitenkarte (wie develop_workflow.html) */
+.contact { padding-block: 104px; border-top: 1px solid var(--line);
+  background: radial-gradient(44% 70% at 80% 50%, color-mix(in srgb, var(--accent) 12%, transparent), transparent 72%),
+    linear-gradient(var(--grid) 1px, transparent 1px) 0 0 / 32px 32px, linear-gradient(90deg, var(--grid) 1px, transparent 1px) 0 0 / 32px 32px, var(--bg); }
+.contact .wrap { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(300px, .9fr); gap: 40px 64px; align-items: center; }
+.ct-copy { display: grid; gap: 18px; justify-items: start; }
+.ct-copy h2 { font-size: var(--fs-h2); line-height: 1.08; letter-spacing: -.035em; font-weight: 800; }
+.ct-copy p { color: var(--fg-2); font-size: 17px; line-height: 1.55; max-width: 52ch; }
+.qr-foot { display: flex; gap: 14px; align-items: center; text-decoration: none; color: inherit; }
+.qr-code { flex: none; line-height: 0; padding: 6px; background: #fff; border: 1px solid var(--line); border-radius: var(--radius); }
+.qr-code svg { display: block; width: var(--qr, 104px); height: var(--qr, 104px); }
+.qr-foot .qr-code { --qr: 88px; }
+.qr-txt { display: grid; gap: 4px; min-width: 0; }
+.qr-txt b { font: 700 12px/1.2 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--accent); }
+.qr-txt small { font: 600 12px/1.35 var(--mono); color: var(--fg-2); overflow-wrap: anywhere; }
+.qr-foot:hover small { text-decoration: underline; }
+.vcard { display: grid; gap: 14px; padding: 18px; border: 1px solid color-mix(in srgb, var(--accent) 45%, var(--line)); border-radius: var(--radius-lg);
+  background: radial-gradient(70% 90% at 100% 0%, color-mix(in srgb, var(--accent) 16%, transparent), transparent 65%), var(--surface); box-shadow: 0 0 34px -10px var(--glow), var(--shadow); }
+.vc-head { display: flex; align-items: center; gap: 10px; }
+.vc-head .brand-mark { width: 30px; height: 30px; }
+.vc-head b { display: block; font: 700 12px/1.2 var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--accent); }
+.vc-head small { display: block; font-size: 13px; font-weight: 600; color: var(--fg-2); margin-top: 2px; }
+.vc-body { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 16px; align-items: end; padding-top: 14px; border-top: 1px solid var(--line); }
+.vc-name { font-size: 26px; font-weight: 800; letter-spacing: -.02em; line-height: 1.1; transform: translate(-2px, -3px); }
+.vc-role { font-size: 14px; font-weight: 600; line-height: 1.35; color: var(--fg-2); margin-top: 4px; }
+.vc-links { display: grid; gap: 6px; margin-top: 12px; }
+.vc-links a { display: flex; align-items: center; gap: 8px; font-size: 13.5px; font-weight: 600; line-height: 1.3; overflow-wrap: anywhere; }
+.vc-links a:hover { text-decoration: underline; }
+.vc-links .ico { width: 16px; height: 16px; color: var(--accent); }
+.vc-qr { display: grid; gap: 6px; justify-items: center; font: 700 11px/1 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--accent); }
+.vc-qr .qr-code { --qr: 96px; box-shadow: 0 0 22px -4px var(--glow); }
+footer { border-top: 1px solid var(--line); padding-block: 18px 28px; font: 600 12px/1.4 var(--mono); color: var(--fg-2); }
+footer .wrap { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px 16px; }
+footer .foot-link { text-decoration: underline 1px var(--line); text-underline-offset: 3px; }
+footer .foot-link:hover { text-decoration-color: currentColor; }
+
+/* Umbruchpunkte wie die Hauptseite: ≤ 1100 px 2 Spalten, ≤ 760 px Kopf/Schritte 1 Spalte, ≤ 560 px alles 1 Spalte */
+@media (max-width: 1100px) {
+  .gs, .feats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .secnav { display: none; }
+}
+@media (max-width: 760px) {
+  .zone { padding-block: 64px; }
+  .zone > .wrap { gap: 24px; }
+  .steps, .ticks { grid-template-columns: minmax(0, 1fr); }
+  .contact { padding-block: 72px; }
+  .contact .wrap { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 700px) { .vc-qr { display: none; } }
+@media (max-width: 560px) {
+  .wrap { padding-inline: 16px; }
+  .gs, .feats, .feats.two { grid-template-columns: minmax(0, 1fr); }
+  .tools { margin-left: 0; }
+}
+</style>
+<link rel="stylesheet" href="css/scroll_flow.css">
+</head>
+<body>
+<svg width="0" height="0" style="position: absolute" aria-hidden="true"><defs>
+  <symbol id="i-hand" viewBox="0 0 24 24"><path d="M8 13V5.5a1.5 1.5 0 0 1 3 0V12M11 5.5v-2a1.5 1.5 0 1 1 3 0V12M14 5.5a1.5 1.5 0 0 1 3 0V12M17 7.5a1.5 1.5 0 0 1 3 0V16a6 6 0 0 1-6 6h-2a6 6 0 0 1-5-2.7l-.2-.3c-.3-.5-1.4-2.4-3.3-5.7a1.5 1.5 0 0 1 .5-2 1.9 1.9 0 0 1 2.3.3L8 13"/></symbol>
+  <symbol id="i-cam" viewBox="0 0 24 24"><circle cx="12" cy="10" r="7"/><circle cx="12" cy="10" r="3"/><path d="M8 16.5L6 21h12l-2-4.5"/></symbol>
+  <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c2.6 2.8 3.8 6 3.8 9.5s-1.2 6.7-3.8 9.5c-2.6-2.8-3.8-6-3.8-9.5S9.4 5.3 12 2.5z"/></symbol>
+  <symbol id="i-spark" viewBox="0 0 24 24"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8zM19 16l.8 2.2L22 19l-2.2.8L19 22l-.8-2.2L16 19l2.2-.8z"/></symbol>
+  <symbol id="i-cube" viewBox="0 0 24 24"><path d="M12 2.5l8.5 4.75v9.5L12 21.5l-8.5-4.75v-9.5z"/><path d="M3.5 7.25L12 12l8.5-4.75M12 12v9.5"/></symbol>
+  <symbol id="i-code" viewBox="0 0 24 24"><path d="M8 7l-5 5 5 5M16 7l5 5-5 5M13.5 4l-3 16"/></symbol>
+  <symbol id="i-test" viewBox="0 0 24 24"><path d="M9 3h6M10 3v6l-5.5 9.5A1.7 1.7 0 0 0 6 21h12a1.7 1.7 0 0 0 1.5-2.5L14 9V3"/><path d="M7.5 15h9"/></symbol>
+  <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 2.5l8 3v6c0 5-3.4 8.7-8 10.5-4.6-1.8-8-5.5-8-10.5v-6z"/><path d="M8.5 12l2.5 2.5 4.5-5"/></symbol>
+  <symbol id="i-rec" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.5"/><circle cx="12" cy="12" r="4"/></symbol>
+  <symbol id="i-file" viewBox="0 0 24 24"><path d="M6 2.5h8l4 4V21a.5.5 0 0 1-.5.5h-11A.5.5 0 0 1 6 21z"/><path d="M14 2.5v4h4M9 12h6M9 15.5h6"/></symbol>
+  <symbol id="i-layers" viewBox="0 0 24 24"><path d="M12 3l9.5 5L12 13 2.5 8z"/><path d="M2.5 12.5L12 17.5l9.5-5M2.5 16.5L12 21.5l9.5-5"/></symbol>
+  <symbol id="i-pointer" viewBox="0 0 24 24"><path d="M5 3.5l13 6.5-5.5 1.8L10.7 17.5z"/><path d="M12.5 11.8L18 17.5"/></symbol>
+  <symbol id="i-list" viewBox="0 0 24 24"><path d="M9 6h11M9 12h11M9 18h11M4.5 6h.01M4.5 12h.01M4.5 18h.01"/></symbol>
+  <symbol id="i-loop" viewBox="0 0 24 24"><path d="M3 12a9 9 0 0 1 15.4-6.4L21 8M21 3v5h-5M21 12a9 9 0 0 1-15.4 6.4L3 16M3 21v-5h5"/></symbol>
+  <symbol id="i-eye-off" viewBox="0 0 24 24"><path d="M3 3l18 18M10.6 6.1A9.8 9.8 0 0 1 12 6c5 0 8.5 4.5 9.5 6-.5.8-1.6 2.2-3.1 3.5M6.3 7.6C4.4 8.9 3 10.8 2.5 12c1 1.5 4.5 6 9.5 6 1.5 0 2.9-.4 4.1-1"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/></symbol>
+  <symbol id="i-warn" viewBox="0 0 24 24"><path d="M12 3.5l9.5 17h-19z"/><path d="M12 10v4.5M12 17.5h.01"/></symbol>
+  <symbol id="i-go" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+  <symbol id="i-play" viewBox="0 0 24 24"><path d="M7 4.5l12 7.5-12 7.5z"/></symbol>
+  <symbol id="i-pause" viewBox="0 0 24 24"><path d="M8 5v14M16 5v14"/></symbol>
+  <symbol id="i-book" viewBox="0 0 24 24"><path d="M4 4.5A1.5 1.5 0 0 1 5.5 3H11v17H5.5A1.5 1.5 0 0 1 4 18.5zM20 4.5A1.5 1.5 0 0 0 18.5 3H13v17h5.5a1.5 1.5 0 0 0 1.5-1.5z"/></symbol>
+  <symbol id="i-arm" viewBox="0 0 24 24"><path d="M4 21h16M7 21v-3h10v3M12 18v-5M12 13l5-5M17 8l3 1.5M17 8l1.2-3.2"/><circle cx="12" cy="13" r="2"/><circle cx="17" cy="8" r="1.6"/></symbol>
+  <symbol id="i-mail" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="1.5"/><path d="m3.5 7 8.5 6 8.5-6"/></symbol>
+  <symbol id="qr-docs" viewBox="0 0 27 27"><path stroke="#0b1424" stroke-width="1" shape-rendering="crispEdges" d="M1 1.5h7m4 0h1m3 0h1m2 0h7m-25 1h1m5 0h1m1 0h1m2 0h6m1 0h1m5 0h1m-25 1h1m1 0h3m1 0h1m2 0h1m4 0h1m1 0h1m1 0h1m1 0h3m1 0h1m-25 1h1m1 0h3m1 0h1m4 0h1m2 0h1m3 0h1m1 0h3m1 0h1m-25 1h1m1 0h3m1 0h1m1 0h3m2 0h3m2 0h1m1 0h3m1 0h1m-25 1h1m5 0h1m2 0h1m1 0h3m1 0h2m1 0h1m5 0h1m-25 1h7m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h7m-15 1h2m1 0h1m2 0h1m-17 1h1m1 0h1m1 0h1m1 0h1m2 0h3m1 0h1m2 0h1m3 0h1m2 0h1m-21 1h1m1 0h1m2 0h4m1 0h2m1 0h1m1 0h1m5 0h1m-24 1h1m2 0h3m1 0h2m1 0h2m3 0h3m1 0h1m1 0h3m-24 1h2m8 0h1m1 0h2m1 0h1m3 0h1m2 0h1m-22 1h1m2 0h2m2 0h5m1 0h2m1 0h1m2 0h1m1 0h2m-24 1h3m1 0h1m1 0h2m1 0h2m1 0h1m4 0h1m2 0h1m2 0h1m-25 1h1m5 0h4m2 0h3m2 0h3m2 0h3m-24 1h1m1 0h3m2 0h1m2 0h1m1 0h1m2 0h2m2 0h1m2 0h1m-24 1h1m1 0h1m1 0h3m1 0h2m2 0h3m1 0h6m-14 1h4m4 0h1m3 0h2m1 0h2m-25 1h7m2 0h1m3 0h1m1 0h2m1 0h1m1 0h2m1 0h2m-25 1h1m5 0h1m5 0h2m1 0h2m3 0h2m-22 1h1m1 0h3m1 0h1m1 0h6m2 0h6m-22 1h1m1 0h3m1 0h1m3 0h1m4 0h1m3 0h4m-23 1h1m1 0h3m1 0h1m1 0h3m3 0h1m5 0h1m3 0h1m-25 1h1m5 0h1m2 0h1m2 0h3m1 0h3m1 0h2m1 0h1m-24 1h7m1 0h2m1 0h3m2 0h2m1 0h1m3 0h2"/></symbol>
+</defs></svg>
+
+<nav class="doc-path" aria-label="Pfad in der Projekt-Doku" data-en-aria="Path in the project docs"><a href="project_docs.html" data-en="← Project docs">← Projekt-Doku</a><span aria-hidden="true">›</span><a href="project_docs.html#technik" data-en="Develop">Entwickeln</a><span aria-hidden="true">›</span><a href="develop_workflow.html#bausteine">Docs Claude Workflow</a><span aria-hidden="true">›</span><span aria-current="page" data-en="Gestures in Claude Ops">Gesten in Claude Ops</span></nav>
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="#start"><span class="brand-mark"><svg class="ico" aria-hidden="true"><use href="#i-hand"/></svg></span><span>Claude Ops<small data-en="Gestures · webcam">Gesten · Webcam</small></span></a>
+    <nav class="secnav" aria-label="Abschnitte" data-en-aria="Sections">
+      <a href="#einschalten"><span class="n">01</span><span data-en="Switch on">Einschalten</span></a>
+      <a href="#gesten"><span class="n">02</span><span data-en="Gestures">Gesten</span></a>
+      <a href="#technik"><span class="n">03</span><span data-en="Under the hood">Technik</span></a>
+    </nav>
+    <div class="tools">
+      <div class="seg" role="group" aria-label="Sprache / Language">
+        <button type="button" data-lang="de" aria-pressed="true">DE</button>
+        <button type="button" data-lang="en" aria-pressed="false">EN</button>
+      </div>
+      <div class="seg" role="group" aria-label="Theme">
+        <button type="button" data-theme-btn="dark" aria-pressed="false" data-en="Dark" title="Dunkles Theme">Dunkel</button>
+        <button type="button" data-theme-btn="light" aria-pressed="false" data-en="Light" title="Helles Theme">Hell</button>
+      </div>
+    </div>
+  </div>
+  <span class="progress" aria-hidden="true"></span>
+</header>
+
+<main id="start">
+  <!-- ═════════ Kopf: Titel, Sachsatz, Kennzahlen ═════════ -->
+  <section class="hero dark-zone" aria-label="Abstract">
+    <div class="wrap hero-inner">
+      <div class="hero-head">
+        <span class="badge"><span class="bi-s"><svg class="ico" aria-hidden="true"><use href="#i-hand"/></svg></span><span data-en="Develop · Claude Ops">Entwickeln · Claude Ops</span></span>
+        <h1>
+          <span class="h1-name" data-en="Control Claude&amp;nbsp;Ops by hand">Claude&nbsp;Ops per Hand bedienen</span>
+          <span class="h1-claim" data-en="&lt;span class=&quot;ln&quot;&gt;&lt;span&gt;Gestures at the webcam&lt;/span&gt;&lt;/span&gt;"><span class="ln"><span>Gesten vor der Webcam</span></span></span>
+        </h1>
+        <p class="abstract" data-en="&lt;b&gt;Claude&amp;nbsp;Ops&lt;/b&gt; is the live dashboard of the Claude chats in the dev_ws. Seven hand gestures at the webcam switch views, zoom and click without a mouse.">
+          <b>Claude&nbsp;Ops</b> ist das Live-Dashboard der Claude-Chats im dev_ws. Sieben Handgesten vor der Webcam wechseln Ansichten, zoomen und klicken ohne Maus.</p>
+        <ul class="hero-kv" aria-label="Kennzahlen" data-en-aria="Key figures">
+          <li><b>7</b><span data-en="gestures">Gesten</span></li>
+          <li><b>21</b><span data-en="hand points per frame">Handpunkte je Bild</span></li>
+          <li><b>0</b><span data-en="images stored">gespeicherte Bilder</span></li>
+          <li><b>1</b><span data-en="button: HAND">Knopf: HAND</span></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═════════ Gebaut auf ═════════ -->
+  <section class="strip" aria-label="Gebaut auf" data-en-aria="Built on">
+    <div class="wrap">
+      <div class="strip-row">
+        <span class="strip-k" id="strip-tech" data-en="Built on">Gebaut auf</span>
+        <ul aria-labelledby="strip-tech">
+          <li><svg class="ico" aria-hidden="true"><use href="#i-cam"/></svg>Webcam</li>
+          <li><svg class="ico" aria-hidden="true"><use href="#i-globe"/></svg>Chrome</li>
+          <li><svg class="ico" aria-hidden="true"><use href="#i-spark"/></svg>MediaPipe tasks-vision</li>
+          <li><svg class="ico" aria-hidden="true"><use href="#i-cube"/></svg><span data-en="Hand model (Google)">Hand-Modell (Google)</span></li>
+          <li><svg class="ico" aria-hidden="true"><use href="#i-code"/></svg>Canvas + JavaScript</li>
+          <li><svg class="ico" aria-hidden="true"><use href="#i-test"/></svg>pytest + Headless Chrome</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═════════ 01 Einschalten: drei Schritte, Anzeige, Verhalten ═════════ -->
+  <section class="zone" id="einschalten" style="--hue: var(--blue)" aria-labelledby="einschalten-h">
+    <div class="wrap">
+      <header class="sec-head">
+        <div><span class="eyebrow"><span class="n">01</span><span data-en="Switch on">Einschalten</span></span><h2 id="einschalten-h" data-en="On in three steps">In drei Schritten an</h2></div>
+        <div class="brief"><p data-en="For everyone who wants to use Claude Ops without a mouse: camera on, show your hand, go.">Für alle, die Claude Ops ohne Maus bedienen wollen: Kamera an, Hand zeigen, loslegen.</p></div>
+      </header>
+      <ol class="steps">
+        <li><b data-en="Open Claude Ops in Chrome">Claude Ops in Chrome öffnen</b><p data-en="&lt;code&gt;http://127.0.0.1:18097&lt;/code&gt; or UX | Nexus Launcher → &lt;b&gt;Extras&lt;/b&gt; → &lt;b&gt;Claude Ops&lt;/b&gt;.">
+          <code>http://127.0.0.1:18097</code> oder UX | Nexus Launcher → <b>Extras</b> → <b>Claude Ops</b>.</p></li>
+        <li><b data-en="Click the HAND button">Knopf HAND klicken</b><p data-en="Top right next to TON; allow the camera → the button shows &lt;code&gt;PAUSE&lt;/code&gt;.">Oben rechts neben TON; Kamera erlauben → der Knopf zeigt <code>PAUSE</code>.</p></li>
+        <li><b data-en="Hold an open hand for 0.5&amp;nbsp;s">Offene Hand 0,5&nbsp;s halten</b><p data-en="Palm towards the camera → &lt;code&gt;KAMERA AN&lt;/code&gt;, gestures are active.">Handfläche zur Kamera → <code>KAMERA AN</code>, die Gesten sind aktiv.</p></li>
+      </ol>
+      <div class="grp">
+        <h3 data-en="What you see">Was du siehst</h3>
+        <div class="feats tiles">
+          <div class="feat"><span class="bi-l"><svg class="ico" aria-hidden="true"><use href="#i-hand"/></svg></span><span class="k-t" data-en="Button">Knopf</span><b data-en="HAND shows the state.">HAND zeigt den Zustand.</b>
+            <p data-en="&lt;code&gt;LÄDT&lt;/code&gt; while starting, &lt;code&gt;PAUSE&lt;/code&gt; with a ring, &lt;code&gt;KAMERA AN&lt;/code&gt; with a dot.">
+              <code>LÄDT</code> beim Start, <code>PAUSE</code> mit Ring, <code>KAMERA AN</code> mit Punkt.</p></div>
+          <div class="feat"><span class="bi-l"><svg class="ico" aria-hidden="true"><use href="#i-list"/></svg></span><span class="k-t" data-en="List">Liste</span><b data-en="All gestures at a glance.">Alle Gesten auf einen Blick.</b>
+            <p data-en="Opens at the button for 6&amp;nbsp;s when switched on; the mouse over HAND shows it again.">Klappt beim Einschalten 6&nbsp;s am Knopf auf; die Maus auf HAND zeigt sie wieder.</p></div>
+          <div class="feat"><span class="bi-l"><svg class="ico" aria-hidden="true"><use href="#i-layers"/></svg></span><span class="k-t" data-en="Tile">Kachel</span><b data-en="HAND replaces ANSICHTEN.">HAND ersetzt ANSICHTEN.</b>
+            <p data-en="Shows the hand skeleton and the recognised gesture while the camera is on.">Zeigt Hand-Skelett und erkannte Geste, solange die Kamera an ist.</p></div>
+          <div class="feat"><span class="bi-l"><svg class="ico" aria-hidden="true"><use href="#i-pointer"/></svg></span><span class="k-t" data-en="Cursor">Cursor</span><b data-en="A ring that fills up.">Ring, der sich füllt.</b>
+            <p data-en="The hand cursor follows the index fingertip; its ring fills up when pinching.">Der Hand-Cursor folgt der Zeigefingerspitze; sein Ring füllt sich beim Kneifen.</p></div>
+        </div>
+        <ul class="ticks">
+          <li><svg class="ico i18" aria-hidden="true"><use href="#i-loop"/></svg><span data-en="&lt;b&gt;Remembered:&lt;/b&gt; on again after a reload">
+            <b>Gespeichert:</b> nach Neuladen wieder an</span></li>
+          <li><svg class="ico i18" aria-hidden="true"><use href="#i-eye-off"/></svg><span data-en="&lt;b&gt;Tab hidden:&lt;/b&gt; camera off, back on when you return">
+            <b>Tab verdeckt:</b> Kamera aus, beim Zurückkehren wieder an</span></li>
+          <li><svg class="ico i18" aria-hidden="true"><use href="#i-warn"/></svg><span data-en="&lt;b&gt;KEINE KAMERA:&lt;/b&gt; no access or hand model offline, reason in the tooltip; click to retry">
+            <b>KEINE KAMERA:</b> kein Zugriff oder Hand-Modell offline, Grund im Tooltip; Klick = erneut</span></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═════════ 02 Gesten: Kamerasicht je Geste (Liste GEST in __Project_Claude_Ops/index.html) ═════════ -->
+  <section class="zone alt" id="gesten" style="--hue: var(--teal)" aria-labelledby="gesten-h">
+    <div class="wrap">
+      <header class="sec-head">
+        <div><span class="eyebrow"><span class="n">02</span><span data-en="Gestures">Gesten</span></span><h2 id="gesten-h" data-en="Seven gestures">Sieben Gesten</h2></div>
+        <div class="brief">
+          <p data-en="Each picture shows the hand the way you see it in front of you. The bottom line names the event in Claude Ops.">Jedes Bild zeigt die Hand so, wie du sie vor dir siehst. Die Zeile darunter nennt das Ereignis in Claude Ops.</p>
+          <button class="btn" type="button" id="g-play"><svg class="ico i16" aria-hidden="true"><use href="#i-pause"/></svg><span>Animation anhalten</span></button>
+        </div>
+      </header>
+      <div class="gs">
+        <article class="gc" data-g="an">
+          <div class="cam"><canvas width="480" height="360" role="img" aria-label="Animation: offene Hand 0,5 s halten schaltet die Gesten an" data-en-aria="Animation: holding an open hand for 0.5 s switches gestures on"></canvas>
+            <div class="live" aria-hidden="true"><span class="ph"></span><span class="ev">–</span></div></div>
+          <div class="gc-body"><span class="k-t" data-en="on">an</span><h3 data-en="Open hand 0.5&amp;nbsp;s">Offene Hand 0,5&nbsp;s</h3>
+            <p class="gc-fx"><svg class="ico i16" aria-hidden="true"><use href="#i-go"/></svg><span data-en="Gestures on">Gesten an</span></p>
+            <ul><li data-en="All fingers stretched, palm towards the camera">Alle Finger gestreckt, Handfläche zur Kamera</li><li data-en="Without this step no other gesture fires">Ohne diesen Schritt löst keine andere Geste aus</li></ul></div>
+        </article>
+        <article class="gc" data-g="pause">
+          <div class="cam"><canvas width="480" height="360" role="img" aria-label="Animation: Faust pausiert die Gesten" data-en-aria="Animation: a fist pauses the gestures"></canvas>
+            <div class="live" aria-hidden="true"><span class="ph"></span><span class="ev">–</span></div></div>
+          <div class="gc-body"><span class="k-t">Pause</span><h3 data-en="Fist">Faust</h3>
+            <p class="gc-fx"><svg class="ico i16" aria-hidden="true"><use href="#i-go"/></svg><span>Pause</span></p>
+            <ul><li data-en="Curl the fingers and hold briefly → &lt;code&gt;PAUSE&lt;/code&gt;">Finger einrollen, kurz halten → <code>PAUSE</code></li><li data-en="Open hand 0.5&amp;nbsp;s switches back on">Offene Hand 0,5&nbsp;s schaltet wieder an</li></ul></div>
+        </article>
+        <article class="gc" data-g="cursor">
+          <div class="cam"><canvas width="480" height="360" role="img" aria-label="Animation: der Zeigefinger führt den Cursor" data-en-aria="Animation: the index finger moves the cursor"></canvas>
+            <div class="live" aria-hidden="true"><span class="ph"></span><span class="ev">–</span></div></div>
+          <div class="gc-body"><span class="k-t">Cursor</span><h3 data-en="Index finger">Zeigefinger</h3>
+            <p class="gc-fx"><svg class="ico i16" aria-hidden="true"><use href="#i-go"/></svg><span>Cursor</span></p>
+            <ul><li data-en="The fingertip moves the hand cursor">Die Fingerspitze führt den Hand-Cursor</li><li data-en="The cursor holds still while pinching">Beim Kneifen bleibt der Cursor stehen</li></ul></div>
+        </article>
+        <article class="gc" data-g="klick">
+          <div class="cam"><canvas width="480" height="360" role="img" aria-label="Animation: Kneifen klickt, gekniffen ziehen dreht" data-en-aria="Animation: pinching clicks, pinch and drag rotates"></canvas>
+            <div class="live" aria-hidden="true"><span class="ph"></span><span class="ev">–</span></div></div>
+          <div class="gc-body"><span class="k-t" data-en="Click">Klick</span><h3 data-en="Pinch">Kneifen</h3>
+            <p class="gc-fx"><svg class="ico i16" aria-hidden="true"><use href="#i-go"/></svg><span data-en="Click · hold + drag = rotate">Klick · halten + ziehen = drehen</span></p>
+            <ul><li data-en="Thumb and index fingertip together briefly = click">Daumen- und Zeigefingerspitze kurz zusammen = Klick</li><li data-en="Keep closed and drag = rotate">Geschlossen halten und ziehen = drehen</li></ul></div>
+        </article>
+        <article class="gc" data-g="ansicht">
+          <div class="cam"><canvas width="480" height="360" role="img" aria-label="Animation: Wischen nach links oder rechts wechselt die Ansicht" data-en-aria="Animation: swiping left or right switches the view"></canvas>
+            <div class="live" aria-hidden="true"><span class="ph"></span><span class="ev">–</span></div></div>
+          <div class="gc-body"><span class="k-t" data-en="View">Ansicht</span><h3 data-en="Swipe ← →">Wischen ← →</h3>
+            <p class="gc-fx"><svg class="ico i16" aria-hidden="true"><use href="#i-go"/></svg><span data-en="Switch view">Ansicht wechseln</span></p>
+            <ul><li data-en="Swipe the open hand quickly: left = next, right = previous">Offene Hand zügig wischen: links = nächste, rechts = vorige</li><li data-en="Bring it back slowly">Langsam zurückführen</li></ul></div>
+        </article>
+        <article class="gc" data-g="zoom">
+          <div class="cam"><canvas width="480" height="360" role="img" aria-label="Animation: Hand zur Kamera hin zoomt hinein, weg zoomt hinaus" data-en-aria="Animation: hand towards the camera zooms in, away zooms out"></canvas>
+            <div class="live" aria-hidden="true"><span class="ph"></span><span class="ev">–</span></div></div>
+          <div class="gc-body"><span class="k-t">Zoom</span><h3 data-en="Hand forward / back">Hand vor / zurück</h3>
+            <p class="gc-fx"><svg class="ico i16" aria-hidden="true"><use href="#i-go"/></svg><span data-en="Zoom in / out">hinein / hinaus</span></p>
+            <ul><li data-en="Open hand towards the camera = in, away = out">Offene Hand zur Kamera = hinein, weg = hinaus</li><li data-en="Zooms on step by step while you hold">Zoomt schrittweise weiter, solange du hältst</li></ul></div>
+        </article>
+        <article class="gc" data-g="zurueck">
+          <div class="cam"><canvas width="480" height="360" role="img" aria-label="Animation: Daumen runter geht zurück wie Esc" data-en-aria="Animation: thumb down goes back like Esc"></canvas>
+            <div class="live" aria-hidden="true"><span class="ph"></span><span class="ev">–</span></div></div>
+          <div class="gc-body"><span class="k-t" data-en="Back">zurück</span><h3 data-en="Thumb down">Daumen runter</h3>
+            <p class="gc-fx"><svg class="ico i16" aria-hidden="true"><use href="#i-go"/></svg><span data-en="Back (Esc)">zurück (Esc)</span></p>
+            <ul><li data-en="Curl the fingers, thumb points down">Finger einrollen, Daumen zeigt nach unten</li><li data-en="Holding = one Esc; open the hand for the next">Halten = ein Esc; für das nächste Hand öffnen</li></ul></div>
+        </article>
+        <article class="gc" data-g="legende">
+          <div class="cam"><canvas width="480" height="360" role="img" aria-label="Bild: offene Hand mit den 21 nummerierten Handpunkten" data-en-aria="Picture: open hand with the 21 numbered hand points"></canvas>
+            <div class="live" aria-hidden="true"><span class="ph"></span><span class="ev">–</span></div></div>
+          <div class="gc-body"><span class="k-t" data-en="Legend">Legende</span><h3 data-en="Reading the pictures">Bilder lesen</h3>
+            <ul><li data-en="Right hand, palm towards the camera, at chest height">Rechte Hand, Handfläche zur Kamera, auf Brusthöhe</li><li data-en="Dots = the 21 hand points of the hand model">Punkte = die 21 Handpunkte des Hand-Modells</li><li data-en="Turquoise field = event fired in Claude Ops">Türkises Feld = Ereignis in Claude Ops ausgelöst</li></ul></div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═════════ 03 Technik: Erkenner, Aufnahme-Modus, Tests, Datenschutz ═════════ -->
+  <section class="zone" id="technik" style="--hue: var(--indigo)" aria-labelledby="technik-h">
+    <div class="wrap">
+      <header class="sec-head">
+        <div><span class="eyebrow"><span class="n">03</span><span data-en="For developers">Für Entwickler</span></span><h2 id="technik-h" data-en="Under the hood">Unter der Haube</h2></div>
+        <div class="brief"><p data-en="How the recogniser is built, how recordings are made and what stays on the computer.">Wie der Erkenner aufgebaut ist, wie Aufnahmen entstehen und was auf dem Rechner bleibt.</p></div>
+      </header>
+      <div class="feats two">
+        <div class="feat"><svg class="ico" aria-hidden="true"><use href="#i-layers"/></svg><span class="k-t" data-en="Recogniser">Erkenner</span><b data-en="21 points in, events out.">21 Punkte rein, Ereignisse raus.</b>
+          <p data-en="&lt;code&gt;HAND.REC.step&lt;/code&gt; is pure, without DOM or clock. A new source such as Quest hands only needs an adapter.">
+            <code>HAND.REC.step</code> ist rein, ohne DOM und Uhr. Eine neue Quelle wie Quest-Hände braucht nur einen Adapter.</p></div>
+        <div class="feat"><svg class="ico" aria-hidden="true"><use href="#i-rec"/></svg><span class="k-t" data-en="Recording mode">Aufnahme-Modus</span><b data-en="Hand points as JSON.">Handpunkte als JSON.</b>
+          <p data-en="&lt;code&gt;?handrec=&amp;lt;name&amp;gt;&lt;/code&gt; → button additionally shows &lt;code&gt;· REC&lt;/code&gt; (e.g. &lt;code&gt;PAUSE · REC&lt;/code&gt;). HAND off downloads &lt;code&gt;hand-&amp;lt;name&amp;gt;-&amp;lt;time&amp;gt;.json&lt;/code&gt;.">
+            <code>?handrec=&lt;name&gt;</code> → Knopf zeigt zusätzlich <code>· REC</code> (z.&nbsp;B. <code>PAUSE · REC</code>). HAND aus lädt <code>hand-&lt;name&gt;-&lt;Zeit&gt;.json</code> herunter.</p></div>
+        <div class="feat"><svg class="ico" aria-hidden="true"><use href="#i-test"/></svg><span class="k-t" data-en="Tests">Tests</span><b data-en="Synthetic hands, fake camera.">Künstliche Hände, Fake-Kamera.</b>
+          <p data-en="&lt;code&gt;test_hand.py&lt;/code&gt; checks gesture events, camera on/off and recording mode with a fake camera in headless Chrome. Recordings of normal work (&lt;code&gt;hand_rec/work*.json&lt;/code&gt;, in progress) must not fire any gesture.">
+            <code>test_hand.py</code> prüft Gesten-Ereignisse, Kamera an/aus und Aufnahme-Modus mit Fake-Kamera im Headless Chrome. Aufnahmen normalen Arbeitens (<code>hand_rec/work*.json</code>, in Arbeit) dürfen keine Geste auslösen.</p></div>
+        <div class="feat"><svg class="ico" aria-hidden="true"><use href="#i-eye-off"/></svg><span class="k-t" data-en="Privacy">Datenschutz</span><b data-en="No image leaves the browser.">Kein Bild verlässt den Browser.</b>
+          <p data-en="Recordings hold only time + 21 hand points per frame. MediaPipe (jsDelivr) and the hand model (~8&amp;nbsp;MB, Google) load once, then come from the browser cache.">
+            Aufnahmen enthalten nur Zeit + 21 Handpunkte je Bild. MediaPipe (jsDelivr) und das Hand-Modell (~8&nbsp;MB, Google) laden einmalig, danach aus dem Browser-Cache.</p></div>
+      </div>
+      <pre class="cmd"><span class="c" data-en="# Start Claude Ops (local only) · recording: http://127.0.0.1:18097/?handrec=work"># Claude Ops starten (nur lokal) · Aufnahme: http://127.0.0.1:18097/?handrec=work</span>
+python3 __Project_Claude_Ops/server.py --port 18097
+<span class="c" data-en="# Test the gestures (headless Chrome)"># Gesten testen (Headless Chrome)</span>
+python3 -m pytest -q __Project_Claude_Ops/test_hand.py</pre>
+      <p class="note"><svg class="ico" aria-hidden="true"><use href="#i-shield"/></svg><span data-en="&lt;b&gt;Display only:&lt;/b&gt; gestures control Claude Ops, never the robot. Claude Ops has no connection to the ROS&amp;nbsp;2 stack.">
+        <b>Nur Anzeige:</b> Gesten steuern Claude Ops, nie den Roboter. Claude Ops hat keine Verbindung zum ROS-2-Stack.</span></p>
+    </div>
+  </section>
+
+  <!-- ═════════ Weiter: Links + Kontakt ═════════ -->
+  <section class="contact dark-zone" id="weiter" aria-labelledby="weiter-h">
+    <div class="wrap">
+      <div class="ct-copy">
+        <span class="eyebrow" data-en="Next">Weiter</span>
+        <h2 id="weiter-h" data-en="How the chats work">Wie die Chats arbeiten</h2>
+        <p data-en="Claude Ops shows live what the Claude chats in the dev_ws are doing. Their workflow, roles and checkpoints are described in Docs Claude Workflow.">Claude Ops zeigt live, was die Claude-Chats im dev_ws tun. Ablauf, Rollen und Prüfstellen dieser Chats beschreibt Docs Claude Workflow.</p>
+        <div class="cta-row">
+          <a class="b-pri" href="develop_workflow.html"><span>Docs Claude Workflow</span><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg></a>
+          <a class="b-sec" href="project_docs.html"><svg class="ico" aria-hidden="true"><use href="#i-book"/></svg><span data-en="Project docs">Projekt-Doku</span></a>
+        </div>
+      </div>
+      <div class="vcard" role="group" aria-label="Visitenkarte: UX Robot, Marius Kaul" data-en-aria="Business card: UX Robot, Marius Kaul">
+        <div class="vc-head"><span class="brand-mark"><svg class="ico" aria-hidden="true"><use href="#i-arm"/></svg></span><span><b>UX Robot</b><small data-en="Gestures in Claude Ops">Gesten in Claude Ops</small></span></div>
+        <div class="vc-body">
+          <div>
+            <div class="vc-name">Marius Kaul</div>
+            <div class="vc-role" data-en="UX Lab · Rhine-Waal University of Applied Sciences">UX-Labor · Hochschule Rhein-Waal</div>
+            <div class="vc-links">
+              <a href="mailto:marius.kaul@hochschule-rhein-waal.de"><svg class="ico" aria-hidden="true"><use href="#i-mail"/></svg>marius.kaul@hochschule-rhein-waal.de</a>
+              <a href="https://lu4k87.github.io/" target="_blank" rel="noopener"><svg class="ico" aria-hidden="true"><use href="#i-globe"/></svg>lu4k87.github.io</a>
+            </div>
+          </div>
+          <a class="vc-qr" href="https://lu4k87.github.io/" target="_blank" rel="noopener"><span class="qr-code"><svg role="img" aria-label="QR-Code: Projekt-Doku öffnen" data-en-aria="QR code: open the project docs"><use href="#qr-docs"/></svg></span><span data-en="Open page">Seite öffnen</span></a>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer><div class="wrap"><a class="qr-foot" href="https://lu4k87.github.io/" target="_blank" rel="noopener"><span class="qr-code"><svg role="img" aria-label="QR-Code: Projekt-Doku öffnen" data-en-aria="QR code: open the project docs"><use href="#qr-docs"/></svg></span><span class="qr-txt"><b data-en="Open page">Seite öffnen</b><small>lu4k87.github.io</small></span></a><span data-en="Last updated 08.10.2026 · source: __Project_Claude_Ops (GEST list, README)">Stand 08.10.2026 · Quelle: __Project_Claude_Ops (Liste GEST, README)</span><span><a class="foot-link" href="project_docs.html" data-en="Project docs">Projekt-Doku</a> · dev_ws · docs/develop_claude_ops_gestures.html</span></div></footer>
+
+<script src="js/scroll_flow.js"></script>
+<script>
+/* ═════════ Seite: Theme + Sprache (wie project_docs.html, gleiche Speicher-Schlüssel), Lesefluss ═════════ */
+const root = document.documentElement;
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const store = (k, v) => { try { if (v === undefined) return localStorage.getItem(k); localStorage.setItem(k, v); } catch { return null; } };
+let lang = 'de';
+const L = v => (Array.isArray(v) ? v[lang === 'en' ? 1 : 0] : v);
+const onLang = [];
+
+const setTheme = t => {
+  if (t) root.dataset.theme = t;
+  const cur = root.dataset.theme || (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+  document.querySelectorAll('[data-theme-btn]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.themeBtn === cur)));
+};
+const qTheme = new URLSearchParams(location.search).get('theme');
+setTheme(['dark', 'light'].includes(qTheme) ? qTheme : store('project_docs_theme'));
+document.querySelectorAll('[data-theme-btn]').forEach(b => b.addEventListener('click', () => { setTheme(b.dataset.themeBtn); store('project_docs_theme', b.dataset.themeBtn); }));
+
+const keep = (el, key, val) => { if (el.dataset[key] === undefined) el.dataset[key] = val; return el.dataset[key]; };
+const title = [document.title, 'Gestures in Claude Ops · UX Robot'];
+const setLang = l => {
+  lang = l; root.lang = l;
+  const en = l === 'en';
+  document.querySelectorAll('[data-en]').forEach(el => { const de = keep(el, 'de', el.innerHTML); el.innerHTML = en ? el.dataset.en : de; });
+  document.querySelectorAll('[data-en-aria]').forEach(el => { const de = keep(el, 'deAria', el.getAttribute('aria-label')); el.setAttribute('aria-label', en ? el.dataset.enAria : de); });
+  document.title = L(title);
+  document.querySelectorAll('[data-lang]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.lang === l)));
+  onLang.forEach(f => f());
+};
+document.querySelectorAll('[data-lang]').forEach(b => b.addEventListener('click', () => { setLang(b.dataset.lang); store('project_docs_lang', b.dataset.lang); }));
+
+window.ScrollFlow?.init({
+  hero: '.hero-head > .badge, .h1-name, .hero-head > .abstract, .hero-kv > li',
+  heroExit: '.hero-inner',
+  heads: '.sec-head, .ct-copy',
+  groups: ['.strip ul', '.steps', '.feats', '.gs'],
+  items: ['.ticks', '.cmd', '.note', '.contact .vcard'],
+  progress: '.progress',
+  nav: { links: '.secnav a', reset: '.hero', hue: '.eyebrow' },
+  lines: ['.strip', '.contact'],
+});
+
+/* ═════════ Gesten-Animation: Hand-Skelett in Kamerasicht (Vorlage _studio/vorschauen/2026-10-08-Gesten-Aufnahmen-HAND) ═════════
+   Handpunkte wie MediaPipe (0 Handgelenk, 4 Daumenspitze, 8 Zeigefingerspitze …), Posen wie __Project_Claude_Ops/test_hand.py.
+   Wege und Zeiten sind Darstellung, keine Schwellen des Erkenners (REC.T). */
+const OPEN = [[.50,.70],[.44,.66],[.40,.60],[.37,.55],[.34,.50],[.45,.52],[.44,.45],[.435,.41],[.43,.37],[.50,.51],[.50,.43],[.50,.39],[.50,.35],[.545,.52],[.55,.45],[.555,.41],[.56,.38],[.585,.54],[.595,.49],[.60,.46],[.605,.43]];
+const CURL = {6:[.445,.47],7:[.45,.52],8:[.46,.55],10:[.50,.46],11:[.50,.51],12:[.50,.55],14:[.55,.47],15:[.55,.52],16:[.54,.56],18:[.59,.50],19:[.585,.54],20:[.575,.57]};
+const BONES = [[0,1],[1,2],[2,3],[3,4],[0,5],[5,6],[6,7],[7,8],[5,9],[9,10],[10,11],[11,12],[9,13],[13,14],[14,15],[15,16],[13,17],[0,17],[17,18],[18,19],[19,20]];
+const mix = (a, b, f) => a.map((p, i) => [p[0] + (b[i][0] - p[0]) * f, p[1] + (b[i][1] - p[1]) * f]);
+const ease = f => (f < .5 ? 2 * f * f : 1 - (-2 * f + 2) ** 2 / 2);
+function hand(k = 'open', dx = 0, s = 1, dy = 0) {
+  if (k === 'relaxed') return mix(hand('open', dx, s, dy), hand('fist', dx, s, dy), .55);
+  const p = OPEN.map(q => q.slice());
+  if (k === 'fist' || k === 'thumb' || k === 'point') {
+    for (const [i, q] of Object.entries(CURL)) if (k !== 'point' || i > 8) p[i] = q.slice();
+    Object.assign(p, { 2: [.42,.62], 3: [.44,.60], 4: [.47,.58] });
+  }
+  if (k === 'thumb') Object.assign(p, { 2: [.42,.66], 3: [.41,.74], 4: [.40,.82] });
+  if (k === 'pinch') Object.assign(p, { 6: [.42,.45], 7: [.38,.45], 8: [.35,.49] });
+  return p.map(([x, y]) => [.5 + (x - .5) * s + dx, .55 + (y - .55) * s + dy]);
+}
+
+/* Je Geste: Wiederholungen n → Schritte [Dauer s, Haltung, Text unter dem Bild de/en, Ereignis in Claude Ops de/en] */
+const K = (dur, kind, o = {}) => ({ dur, kind, p: hand(kind, o.dx || 0, o.s || 1, o.dy || 0), ph: o.ph || ['', ''], ev: o.ev || null, hot: !!o.hot, arrow: o.arrow || 0 });
+const T = {
+  open: ['offene Hand', 'open hand'], aim: ['zielen', 'aim'], rest: ['warten', 'wait'], back: ['langsam zurück', 'slowly back'],
+  on: ['AN', 'ON'], pause: ['PAUSE', 'PAUSE'], click: ['KLICK', 'CLICK'], rot: ['DREHEN', 'ROTATE'], cur: ['CURSOR', 'CURSOR'],
+};
+const SEQ = {
+  an: { n: 1, seq: () => [K(.9, 'relaxed', { ph: ['Hand locker', 'hand relaxed'] }), K(.35, 'open', { ph: ['Hand öffnen', 'open the hand'] }),
+    K(.5, 'open', { ph: ['0,5 s halten', 'hold 0.5 s'] }), K(1.4, 'open', { ph: ['Gesten an', 'gestures on'], ev: T.on, hot: true })] },
+  pause: { n: 1, seq: () => [K(.9, 'open', { ph: T.open, ev: T.on }), K(.3, 'fist', { ph: ['Faust', 'fist'] }), K(1.1, 'fist', { ph: ['halten', 'hold'], ev: T.pause, hot: true }),
+    K(.3, 'open', { ph: ['Hand öffnen', 'open the hand'], ev: T.pause }), K(.9, 'open', { ph: ['0,5 s offen = an', 'open 0.5 s = on'], ev: T.on })] },
+  cursor: { n: 1, seq: () => [K(.6, 'point', { ph: ['Zeigefinger', 'index finger'] }), K(.9, 'point', { dx: .12, dy: -.05, ph: ['Cursor folgt', 'cursor follows'], ev: T.cur, hot: true }),
+    K(.9, 'point', { dx: -.1, dy: .03, ph: ['Cursor folgt', 'cursor follows'], ev: T.cur, hot: true }), K(.8, 'point', { ph: ['Cursor folgt', 'cursor follows'], ev: T.cur, hot: true }), K(.5, 'point', { ph: T.rest })] },
+  klick: { n: 1, seq: () => [K(.5, 'open', { ph: T.aim }), K(.18, 'pinch', { ph: ['kneifen', 'pinch'] }), K(.14, 'pinch', { ph: ['kneifen', 'pinch'], ev: T.click, hot: true }),
+    K(.18, 'open', { ph: ['loslassen', 'release'], ev: T.click, hot: true }), K(.9, 'open', { ph: T.rest }),
+    K(.18, 'pinch', { ph: ['kneifen', 'pinch'] }), K(.3, 'pinch', { ph: ['halten', 'hold'], ev: T.rot, hot: true }), K(1, 'pinch', { dx: .18, ph: ['ziehen', 'drag'], ev: T.rot, hot: true, arrow: 1 }),
+    K(.18, 'open', { dx: .18, ph: ['loslassen', 'release'] }), K(1.2, 'open', { ph: T.back }), K(.4, 'open', { ph: T.rest })] },
+  ansicht: { n: 2, seq: r => { const d = r ? 1 : -1; return [K(.6, 'open', { ph: T.open }),
+    K(.25, 'open', { dx: .25 * d, ph: d < 0 ? ['zügig nach links', 'quickly left'] : ['zügig nach rechts', 'quickly right'], ev: d < 0 ? ['NÄCHSTE', 'NEXT'] : ['VORIGE', 'PREVIOUS'], hot: true, arrow: d }),
+    K(.35, 'open', { dx: .25 * d, ph: ['stehen lassen', 'stay'] }), K(1.4, 'open', { ph: T.back }), K(.3, 'open', { ph: T.rest })]; } },
+  zoom: { n: 2, seq: r => { const nah = !r; return [K(.6, 'open', { ph: T.open }),
+    K(.7, 'open', { s: nah ? 1.35 : .72, ph: nah ? ['zur Kamera hin', 'towards the camera'] : ['von der Kamera weg', 'away from the camera'] }),
+    K(.8, 'open', { s: nah ? 1.35 : .72, ph: ['halten', 'hold'], ev: nah ? ['HINEIN', 'ZOOM IN'] : ['HINAUS', 'ZOOM OUT'], hot: true }), K(.7, 'open', { ph: ['zurück', 'back'] }), K(.5, 'open', { ph: T.rest })]; } },
+  zurueck: { n: 1, seq: () => [K(.7, 'open', { ph: T.open }), K(.3, 'thumb', { ph: ['Daumen runter', 'thumb down'] }), K(1.1, 'thumb', { ph: ['halten', 'hold'], ev: ['ESC', 'ESC'], hot: true }),
+    K(.3, 'open', { ph: ['Hand öffnen', 'open the hand'] }), K(.8, 'open', { ph: T.rest })] },
+  legende: { n: 1, still: true, seq: () => [K(9, 'open', { ph: ['21 Handpunkte', '21 hand points'] })] },
+};
+
+const cams = [...document.querySelectorAll('.gc[data-g]')].map((el, i) => {
+  const g = SEQ[el.dataset.g], cv = el.querySelector('canvas'), reps = Array.from({ length: g.n }, (_, r) => g.seq(r));
+  return { g, cv, ctx: cv.getContext('2d'), reps, tot: reps.flat().reduce((a, k) => a + k.dur, 0), ph: el.querySelector('.ph'), ev: el.querySelector('.ev'),
+    t0: performance.now() / 1000 - i * .4, vis: false, need: true, last: '' };
+});
+const cs = getComputedStyle(document.querySelector('.cam'));
+const C = Object.fromEntries(['stage', 'stage-line', 'hand', 'hot', 'joint'].map(n => [n, cs.getPropertyValue(`--${n}`).trim()]));
+const V = (x, y, W, H) => [((x - .5) * 1.6 + .5) * W, ((y - .55) * 1.6 + .55) * H];   // Hand vergrößert, Bewegung maßstäblich
+
+function state(c, t) {   // Zeitpunkt → Wiederholung, Schritt, Haltung (weich überblendet)
+  let u = ((t - c.t0) % c.tot + c.tot) % c.tot;
+  for (let r = 0; r < c.reps.length; r++) {
+    const s = c.reps[r];
+    for (let j = 0; j < s.length; j++) {
+      if (u < s[j].dur) { const prev = j ? s[j - 1].p : (c.reps[r - 1] || c.reps.at(-1)).at(-1).p; return { r, k: s[j], p: mix(prev, s[j].p, ease(u / s[j].dur)) }; }
+      u -= s[j].dur;
+    }
+  }
+  return { r: 0, k: c.reps[0][0], p: c.reps[0][0].p };
+}
+function draw(c, t) {
+  const g = c.ctx, W = c.cv.width, H = c.cv.height, u = W / 640, st = state(c, t), k = st.k;
+  g.fillStyle = C.stage; g.fillRect(0, 0, W, H);
+  g.strokeStyle = C['stage-line']; g.lineWidth = 1;
+  for (let x = 1; x < 8; x++) { g.beginPath(); g.moveTo(x * W / 8, 0); g.lineTo(x * W / 8, H); g.stroke(); }
+  for (let y = 1; y < 6; y++) { g.beginPath(); g.moveTo(0, y * H / 6); g.lineTo(W, y * H / 6); g.stroke(); }
+  const P = st.p.map(([x, y]) => V(x, y, W, H));
+  if (k.arrow) {   // Wisch-/Zieh-Richtung
+    const y = H * .14, x0 = W * .5 - k.arrow * W * .18, x1 = W * .5 + k.arrow * W * .18;
+    g.strokeStyle = C.hot; g.fillStyle = C.hot; g.lineWidth = 4 * u;
+    g.beginPath(); g.moveTo(x0, y); g.lineTo(x1, y); g.stroke();
+    g.beginPath(); g.moveTo(x1, y); g.lineTo(x1 - k.arrow * 16 * u, y - 10 * u); g.lineTo(x1 - k.arrow * 16 * u, y + 10 * u); g.fill();
+  }
+  g.lineCap = 'round'; g.lineWidth = 6 * u; g.strokeStyle = C.hand;
+  g.beginPath(); for (const [a, b] of BONES) { g.moveTo(...P[a]); g.lineTo(...P[b]); } g.stroke();
+  const pinch = k.kind === 'pinch' && Math.hypot(P[4][0] - P[8][0], P[4][1] - P[8][1]) / W < .06;   // nur echtes Kneifen hervorheben, nicht die Faust
+  if (pinch) { g.strokeStyle = C.hot; g.lineWidth = 3 * u; g.setLineDash([6 * u, 6 * u]); g.beginPath(); g.moveTo(...P[4]); g.lineTo(...P[8]); g.stroke(); g.setLineDash([]); }
+  const cursor = k.kind === 'point' && k.hot;   // Cursor-Ring an der Zeigefingerspitze
+  if (cursor) { g.strokeStyle = C.hot; g.lineWidth = 3 * u; g.beginPath(); g.arc(...P[8], 20 * u, 0, 7); g.stroke(); }
+  P.forEach(([x, y], i) => { const tip = i === 4 || i === 8; g.fillStyle = (tip && pinch) || (i === 8 && cursor) ? C.hot : C.joint; g.beginPath(); g.arc(x, y, (tip ? 10 : 7) * u, 0, 7); g.fill(); });
+  if (c.g.still) {   // Legende: drei Bezugspunkte beschriftet (Nummer wie MediaPipe)
+    g.fillStyle = C.hand; g.font = `600 ${Math.round(28 * u)}px ${getComputedStyle(root).getPropertyValue('--mono')}`; g.textBaseline = 'middle';
+    for (const [i, ax, dx, dy, txt] of [[0, 'center', 0, 34, ['0 Handgelenk', '0 wrist']], [4, 'center', 0, -32, ['4 Daumen', '4 thumb']], [8, 'center', 0, -30, ['8 Zeigefinger', '8 index']]]) {
+      g.textAlign = ax; g.fillText(L(txt), P[i][0] + dx * u, P[i][1] + dy * u);
+    }
+  }
+  const ph = (c.reps.length > 1 ? `${st.r + 1} / ${c.reps.length} · ` : '') + L(k.ph), ev = k.ev ? L(k.ev) : '–', key = ph + ev + k.hot;
+  if (key !== c.last) { c.last = key; c.ph.textContent = ph; c.ev.textContent = ev; c.ev.classList.toggle('on', k.hot); }
+}
+
+let running = !reduce, pausedAt = performance.now() / 1000 + 1.2;   // ohne Bewegung: Standbild mitten in der Geste
+const play = document.getElementById('g-play');
+const setPlay = () => {
+  play.querySelector('span').textContent = running ? L(['Animation anhalten', 'Pause animation']) : L(['Animation abspielen', 'Play animation']);
+  play.querySelector('use').setAttribute('href', running ? '#i-pause' : '#i-play');
+};
+play.addEventListener('click', () => {
+  const now = performance.now() / 1000;
+  if (running) pausedAt = now; else for (const c of cams) c.t0 += now - pausedAt;
+  running = !running; setPlay(); cams.forEach(c => { c.need = true; });
+});
+onLang.push(setPlay, () => cams.forEach(c => { c.need = true; }));
+setPlay();
+const io = new IntersectionObserver(es => { for (const e of es) { const c = cams.find(x => x.cv === e.target); if (c) { c.vis = e.isIntersecting; c.need ||= c.vis; } } });
+cams.forEach(c => io.observe(c.cv));
+(function loop() {
+  const t = running ? performance.now() / 1000 : pausedAt;
+  for (const c of cams) if (c.vis && (c.need || (running && !c.g.still))) { draw(c, t); c.need = false; }
+  requestAnimationFrame(loop);
+})();
+
+const qLang = new URLSearchParams(location.search).get('lang');
+const startLang = ['de', 'en'].includes(qLang) ? qLang : store('project_docs_lang');
+if (startLang === 'en') setLang('en');
+</script>
+</body>
+</html>

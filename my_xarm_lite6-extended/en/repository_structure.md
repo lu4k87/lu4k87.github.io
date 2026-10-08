@@ -34,6 +34,7 @@ dev_ws/
 │   ├── present_control_modes.html                                         # Control modes & safety chain: product page of the project
 │   ├── present_function_atlas.html                                        # Redirect to the function atlas in project_docs.html
 │   ├── develop_workflow.html                                              # How the project is developed with Claude Code (skills, hooks, parallel chats)
+│   ├── develop_claude_ops_gestures.html                                   # Gestures in Claude Ops: control the chat dashboard by hand at the webcam (animated, DE/EN)
 │   ├── en/ · de/                                                          # 13 pages each: concept, installation, running, teleoperation, …
 │   ├── brand/                                                             # Brand kit brand.yaml: name, claim, slogans, colours, fonts (checked by tools/check_showcase.py)
 │   ├── css/ · js/ · fonts/ · templates/                                   # Shared styles, scripts (e.g. lite6_mesh.js), local fonts and templates of the project pages
