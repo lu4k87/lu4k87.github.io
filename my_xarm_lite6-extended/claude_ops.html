@@ -1,18 +1,17 @@
 <!doctype html>
-<!-- Gesten in Claude Ops: Bedienung des Live-Dashboards der Claude-Chats (__Project_Claude_Ops) per Webcam, für Nutzer und Entwickler.
-     Gerüst wie die übrigen develop_-Seiten (Skill docs-layout): Rückweg → Kopfzeile → Hero → Gebaut auf → 01 Einschalten → 02 Gesten (.alt) → 03 Technik → Weiter.
-     Gesten = Liste GEST im Modul HAND von __Project_Claude_Ops/index.html; Hand-Animation aus der Vorlage _studio/vorschauen/2026-10-08-Gesten-Aufnahmen-HAND
-     (Posen wie __Project_Claude_Ops/test_hand.py). Schwellenwerte (REC.T) bewusst nicht genannt: sie werden an echten Aufnahmen abgestimmt.
-     Bausteine: css/landing.css (Hero, Leiste, Kontakt-Buttons), css/scroll_flow.css + js/scroll_flow.js (Lesefluss). -->
+<!-- Claude Ops: Landingpage + Doku des Live-Dashboards der Claude-Chats (eigenes Projekt, kein Teil des Roboters).
+     Aufbau wie die develop_-Seiten (Skill docs-layout): Kopfzeile → Hero (Text + Beispiel-Lage) → Gebaut auf → 01 Lage → 02 Ansichten (.alt)
+     → 03 Jarvis-Ebene → 04 Gesten (.alt) → 05 Technik → Weiter. Inhalte aus README.md; Gesten = Liste GEST in hand.js (Posen wie test_hand.py),
+     Schwellenwerte (REC.T) bewusst nicht genannt. Bausteine aus docs/ (landing.css, scroll_flow.*) per ../docs/ → als Datei und über den Server nutzbar.
+     Öffentlich: tools/publish_pages.py → lu4k87.github.io/claude-ops ([data-local] = nur lokal Nutzbares, dort entfernt). -->
 <html lang="de">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Gesten in Claude Ops · UX Robot</title>
-<meta name="description" content="Claude Ops, das Live-Dashboard der Claude-Chats im dev_ws, per Webcam mit sieben Handgesten bedienen.">
+<title>Claude Ops · Live-Dashboard der Claude-Chats</title>
+<meta name="description" content="Claude Ops: Live-Dashboard der Claude-Chats im dev_ws – wer arbeitet, wer wartet, was gepusht ist; in 3D, mit Stimme, Ton und Handgesten.">
 <link rel="stylesheet" href="fonts/fonts.css">
 <link rel="stylesheet" href="css/landing.css">
-<link rel="stylesheet" href="css/doc_path.css">
 <style>
 /* ═════ Tokens wie docs/develop_workflow.html (Bereichsfarbe Entwickeln = Indigo, brand.yaml) ═════ */
 :root {
@@ -88,8 +87,41 @@ code { font: 600 .88em/1.3 var(--mono); padding: 1px 5px; border: 1px solid var(
 
 /* Hero: Titel + Sachsatz + Kennzahlen als Zeile (wie develop_workflow.html) */
 .dark-zone { --accent: var(--indigo); --accent-ink: #0d0f2e; --grid: rgba(129, 140, 248, .045); --glow: rgba(129, 140, 248, .28); } /* landing.css setzt sonst Türkis */
-.hero-inner { grid-template-columns: minmax(0, 1fr); min-height: 0; padding-block: 72px 64px; }
-.hero-kv { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+/* Hero als Landingpage: links Name, Claim, Sachsatz, Knöpfe, Kennzahlen · rechts Beispiel-Lage im HUD-Look */
+.hero-inner { grid-template-columns: minmax(0, 1.15fr) minmax(300px, .85fr); min-height: 0; padding-block: 72px 64px; }
+.hero-head { grid-column: auto; justify-items: start; text-align: left; }
+.hero-head h1 { justify-items: start; }
+.hero-head .h1-claim { font-size: clamp(34px, 4.6vw, 72px); }
+.hero-head .h1-claim .ln { display: block; }
+/* Beispiel-Lage: bleibt in beiden Themes dunkel (wie Claude Ops); Bernstein nur für „wartet“ */
+.hud { --c: #2dd4bf; --w: #f5b942; margin: 0; display: grid; gap: 14px; padding: 16px; min-width: 0; border: 1px solid rgba(45, 212, 191, .38); border-radius: var(--radius-lg);
+  background: radial-gradient(80% 60% at 50% 0%, rgba(45, 212, 191, .13), transparent 70%), #0b1014; color: #d7fbf5; font: 600 12px/1.3 var(--mono); letter-spacing: .06em;
+  box-shadow: 0 0 44px -12px rgba(45, 212, 191, .45), var(--shadow); }
+.hud-top, .hud-foot { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
+.hud-logo { display: flex; align-items: center; gap: 8px; font-weight: 800; letter-spacing: .16em; color: var(--c); }
+.hud-tag { padding: 3px 6px; border: 1px solid rgba(215, 251, 245, .3); border-radius: var(--radius-sm); }
+.hud-kv { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.hud-kv li { display: grid; gap: 6px; justify-items: center; align-content: start; text-align: center; padding: 10px 4px; border: 1px solid rgba(45, 212, 191, .22); border-radius: var(--radius-sm); }
+.hud-kv b { font: 800 24px/1 var(--mono); color: #eef2f3; }
+.hud-kv .wait, .hud-crew .wait { border-color: color-mix(in srgb, var(--w) 65%, transparent); color: var(--w); }
+.hud-kv .wait b { color: var(--w); }
+.hud-crew { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.hud-crew li { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px 10px; align-items: center; padding: 8px 10px; color: var(--c);
+  border: 1px solid rgba(45, 212, 191, .18); border-radius: var(--radius-sm); background: rgba(45, 212, 191, .04); }
+.hc-n { font-weight: 800; color: #eef2f3; }
+.hc-bar { grid-column: 1 / -1; height: 4px; border-radius: 2px; background: linear-gradient(90deg, currentColor calc(var(--p) * 100%), rgba(215, 251, 245, .12) 0); }
+.hud-foot { padding-top: 10px; border-top: 1px solid rgba(45, 212, 191, .2); }
+@media (max-width: 960px) { .hero-inner { grid-template-columns: minmax(0, 1fr); } }
+/* 02 Ansichten: BRAIN breit, übrige Ansichten daneben/darunter · 03 Stimmen-Kette in Reihenfolge */
+.feats.three, .views { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.views { display: grid; gap: 16px; }
+.views .wide { grid-column: span 2; }
+.chain { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; counter-reset: c; }
+.chain li { counter-increment: c; display: grid; gap: 4px; align-content: start; min-width: 0; padding: 12px 16px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); }
+.chain li::before { content: counter(c); font: 800 12px/1 var(--mono); color: var(--hue); }
+.chain b { font-size: 15px; font-weight: 800; }
+.chain span { font-size: 14px; line-height: 1.45; color: var(--fg-2); }
+.hero-kv { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
 .hero-kv li { display: flex; align-items: baseline; gap: 8px; padding: 8px 14px; border: 1px solid var(--glass-bd); border-radius: var(--radius); background: var(--glass-bg); font-size: 14px; font-weight: 600; }
 .hero-kv b { font: 800 20px/1 var(--mono); color: var(--accent); font-variant-numeric: tabular-nums; }
 .strip ul { grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); }
@@ -202,7 +234,7 @@ footer .foot-link:hover { text-decoration-color: currentColor; }
 
 /* Umbruchpunkte wie die Hauptseite: ≤ 1100 px 2 Spalten, ≤ 760 px Kopf/Schritte 1 Spalte, ≤ 560 px alles 1 Spalte */
 @media (max-width: 1100px) {
-  .gs, .feats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .gs, .feats, .feats.three, .views, .chain { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .secnav { display: none; }
 }
 @media (max-width: 760px) {
@@ -215,7 +247,9 @@ footer .foot-link:hover { text-decoration-color: currentColor; }
 @media (max-width: 700px) { .vc-qr { display: none; } }
 @media (max-width: 560px) {
   .wrap { padding-inline: 16px; }
-  .gs, .feats, .feats.two { grid-template-columns: minmax(0, 1fr); }
+  .gs, .feats, .feats.two, .feats.three, .views, .chain { grid-template-columns: minmax(0, 1fr); }
+  .views .wide { grid-column: auto; }
+  .hud-kv { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .tools { margin-left: 0; }
 }
 </style>
@@ -245,17 +279,30 @@ footer .foot-link:hover { text-decoration-color: currentColor; }
   <symbol id="i-book" viewBox="0 0 24 24"><path d="M4 4.5A1.5 1.5 0 0 1 5.5 3H11v17H5.5A1.5 1.5 0 0 1 4 18.5zM20 4.5A1.5 1.5 0 0 0 18.5 3H13v17h5.5a1.5 1.5 0 0 0 1.5-1.5z"/></symbol>
   <symbol id="i-arm" viewBox="0 0 24 24"><path d="M4 21h16M7 21v-3h10v3M12 18v-5M12 13l5-5M17 8l3 1.5M17 8l1.2-3.2"/><circle cx="12" cy="13" r="2"/><circle cx="17" cy="8" r="1.6"/></symbol>
   <symbol id="i-mail" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="1.5"/><path d="m3.5 7 8.5 6 8.5-6"/></symbol>
+  <symbol id="i-radar" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.5"/><circle cx="12" cy="12" r="5.5"/><path d="M12 12l6.5-6.5"/><circle cx="15.5" cy="14.5" r="1"/></symbol>
+  <symbol id="i-brain" viewBox="0 0 24 24"><path d="M9 4.5a3 3 0 0 0-3 3 3 3 0 0 0-2 5.2A3 3 0 0 0 6.5 18 3 3 0 0 0 12 19.5V5.5A3 3 0 0 0 9 4.5zM15 4.5a3 3 0 0 1 3 3 3 3 0 0 1 2 5.2 3 3 0 0 1-2.5 5.3A3 3 0 0 1 12 19.5"/><path d="M8.5 10.5h2M13.5 13.5h2"/></symbol>
+  <symbol id="i-reactor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="2.5"/><circle cx="12" cy="12" r="9.5"/><path d="M12 2.5v4M12 17.5v4M2.5 12h4M17.5 12h4"/></symbol>
+  <symbol id="i-gauge" viewBox="0 0 24 24"><path d="M3.5 17a9 9 0 1 1 17 0"/><path d="M12 15l4-6"/><circle cx="12" cy="15" r="1.5"/></symbol>
+  <symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.5"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></symbol>
+  <symbol id="i-users" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.8a3.5 3.5 0 0 1 0 6.4M18 14.2a6.5 6.5 0 0 1 3.5 5.8"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.5"/><path d="M12 7v5l3.5 2"/></symbol>
+  <symbol id="i-git" viewBox="0 0 24 24"><circle cx="6" cy="5.5" r="2"/><circle cx="6" cy="18.5" r="2"/><circle cx="18" cy="8.5" r="2"/><path d="M6 7.5v9M18 10.5c0 4-6 3-11 6.5"/></symbol>
+  <symbol id="i-wave" viewBox="0 0 24 24"><path d="M3 12h2M7 8v8M11 5v14M15 9v6M19 7v10M21 12h0"/></symbol>
+  <symbol id="i-bell" viewBox="0 0 24 24"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 20.5a2 2 0 0 0 4 0"/></symbol>
+  <symbol id="i-keys" viewBox="0 0 24 24"><rect x="2.5" y="6" width="19" height="12" rx="1.5"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M7 14h10"/></symbol>
+  <symbol id="i-server" viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="17" height="7" rx="1.5"/><rect x="3.5" y="13.5" width="17" height="7" rx="1.5"/><path d="M7 7h.01M7 17h.01M11 7h6M11 17h6"/></symbol>
   <symbol id="qr-docs" viewBox="0 0 27 27"><path stroke="#0b1424" stroke-width="1" shape-rendering="crispEdges" d="M1 1.5h7m4 0h1m3 0h1m2 0h7m-25 1h1m5 0h1m1 0h1m2 0h6m1 0h1m5 0h1m-25 1h1m1 0h3m1 0h1m2 0h1m4 0h1m1 0h1m1 0h1m1 0h3m1 0h1m-25 1h1m1 0h3m1 0h1m4 0h1m2 0h1m3 0h1m1 0h3m1 0h1m-25 1h1m1 0h3m1 0h1m1 0h3m2 0h3m2 0h1m1 0h3m1 0h1m-25 1h1m5 0h1m2 0h1m1 0h3m1 0h2m1 0h1m5 0h1m-25 1h7m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h7m-15 1h2m1 0h1m2 0h1m-17 1h1m1 0h1m1 0h1m1 0h1m2 0h3m1 0h1m2 0h1m3 0h1m2 0h1m-21 1h1m1 0h1m2 0h4m1 0h2m1 0h1m1 0h1m5 0h1m-24 1h1m2 0h3m1 0h2m1 0h2m3 0h3m1 0h1m1 0h3m-24 1h2m8 0h1m1 0h2m1 0h1m3 0h1m2 0h1m-22 1h1m2 0h2m2 0h5m1 0h2m1 0h1m2 0h1m1 0h2m-24 1h3m1 0h1m1 0h2m1 0h2m1 0h1m4 0h1m2 0h1m2 0h1m-25 1h1m5 0h4m2 0h3m2 0h3m2 0h3m-24 1h1m1 0h3m2 0h1m2 0h1m1 0h1m2 0h2m2 0h1m2 0h1m-24 1h1m1 0h1m1 0h3m1 0h2m2 0h3m1 0h6m-14 1h4m4 0h1m3 0h2m1 0h2m-25 1h7m2 0h1m3 0h1m1 0h2m1 0h1m1 0h2m1 0h2m-25 1h1m5 0h1m5 0h2m1 0h2m3 0h2m-22 1h1m1 0h3m1 0h1m1 0h6m2 0h6m-22 1h1m1 0h3m1 0h1m3 0h1m4 0h1m3 0h4m-23 1h1m1 0h3m1 0h1m1 0h3m3 0h1m5 0h1m3 0h1m-25 1h1m5 0h1m2 0h1m2 0h3m1 0h3m1 0h2m1 0h1m-24 1h7m1 0h2m1 0h3m2 0h2m1 0h1m3 0h2"/></symbol>
 </defs></svg>
 
-<nav class="doc-path" aria-label="Pfad in der Projekt-Doku" data-en-aria="Path in the project docs"><a href="project_docs.html" data-en="← Project docs">← Projekt-Doku</a><span aria-hidden="true">›</span><a href="project_docs.html#technik" data-en="Develop">Entwickeln</a><span aria-hidden="true">›</span><a href="develop_workflow.html#bausteine">Docs Claude Workflow</a><span aria-hidden="true">›</span><span aria-current="page" data-en="Gestures in Claude Ops">Gesten in Claude Ops</span></nav>
 <header class="top">
   <div class="wrap">
-    <a class="brand" href="#start"><span class="brand-mark"><svg class="ico" aria-hidden="true"><use href="#i-hand"/></svg></span><span>Claude Ops<small data-en="Gestures · webcam">Gesten · Webcam</small></span></a>
+    <a class="brand" href="#start"><span class="brand-mark"><svg class="ico" aria-hidden="true"><use href="#i-radar"/></svg></span><span>Claude Ops<small data-en="Live dashboard · chats">Live-Dashboard · Chats</small></span></a>
     <nav class="secnav" aria-label="Abschnitte" data-en-aria="Sections">
-      <a href="#einschalten"><span class="n">01</span><span data-en="Switch on">Einschalten</span></a>
-      <a href="#gesten"><span class="n">02</span><span data-en="Gestures">Gesten</span></a>
-      <a href="#technik"><span class="n">03</span><span data-en="Under the hood">Technik</span></a>
+      <a href="#lage"><span class="n">01</span><span data-en="Situation">Lage</span></a>
+      <a href="#ansichten"><span class="n">02</span><span data-en="Views">Ansichten</span></a>
+      <a href="#jarvis"><span class="n">03</span>Jarvis</a>
+      <a href="#gesten"><span class="n">04</span><span data-en="Gestures">Gesten</span></a>
+      <a href="#technik"><span class="n">05</span><span data-en="Under the hood">Technik</span></a>
     </nav>
     <div class="tools">
       <div class="seg" role="group" aria-label="Sprache / Language">
@@ -272,24 +319,45 @@ footer .foot-link:hover { text-decoration-color: currentColor; }
 </header>
 
 <main id="start">
-  <!-- ═════════ Kopf: Titel, Sachsatz, Kennzahlen ═════════ -->
+  <!-- ═════════ Kopf: Name, Claim, Sachsatz, Kennzahlen · rechts Beispiel-Lage im HUD-Look ═════════ -->
   <section class="hero dark-zone" aria-label="Abstract">
     <div class="wrap hero-inner">
       <div class="hero-head">
-        <span class="badge"><span class="bi-s"><svg class="ico" aria-hidden="true"><use href="#i-hand"/></svg></span><span data-en="Develop · Claude Ops">Entwickeln · Claude Ops</span></span>
+        <span class="badge"><span class="bi-s"><svg class="ico" aria-hidden="true"><use href="#i-radar"/></svg></span><span data-en="Project · dev_ws">Projekt · dev_ws</span></span>
         <h1>
-          <span class="h1-name" data-en="Control Claude&amp;nbsp;Ops by hand">Claude&nbsp;Ops per Hand bedienen</span>
-          <span class="h1-claim" data-en="&lt;span class=&quot;ln&quot;&gt;&lt;span&gt;Gestures at the webcam&lt;/span&gt;&lt;/span&gt;"><span class="ln"><span>Gesten vor der Webcam</span></span></span>
+          <span class="h1-name">Claude&nbsp;Ops</span>
+          <span class="h1-claim" data-en="&lt;span class=&quot;ln&quot;&gt;&lt;span&gt;All chats.&lt;/span&gt;&lt;/span&gt; &lt;span class=&quot;ln&quot;&gt;&lt;span&gt;One glance.&lt;/span&gt;&lt;/span&gt;"><span class="ln"><span>Alle Chats.</span></span> <span class="ln"><span>Ein Blick.</span></span></span>
         </h1>
-        <p class="abstract" data-en="&lt;b&gt;Claude&amp;nbsp;Ops&lt;/b&gt; is the live dashboard of the Claude chats in the dev_ws. Seven hand gestures at the webcam switch views, zoom and click without a mouse.">
-          <b>Claude&nbsp;Ops</b> ist das Live-Dashboard der Claude-Chats im dev_ws. Sieben Handgesten vor der Webcam wechseln Ansichten, zoomen und klicken ohne Maus.</p>
+        <p class="abstract" data-en="&lt;b&gt;Claude&amp;nbsp;Ops&lt;/b&gt; is the live dashboard of the Claude chats in the dev_ws: who is working, who is waiting for you, what was pushed. In 3D, with voice, sound and by hand at the webcam.">
+          <b>Claude&nbsp;Ops</b> ist das Live-Dashboard der Claude-Chats im dev_ws: wer arbeitet, wer auf dich wartet, was gepusht ist. In 3D, mit Stimme, Ton und per Hand vor der Webcam.</p>
+        <div class="cta-row">
+          <a class="b-pri" href="http://127.0.0.1:18097/" data-local><span data-en="Open Claude Ops">Claude Ops öffnen</span><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg></a>
+          <a class="b-sec" href="#ansichten"><svg class="ico" aria-hidden="true"><use href="#i-layers"/></svg><span data-en="See the views">Ansichten ansehen</span></a>
+        </div>
         <ul class="hero-kv" aria-label="Kennzahlen" data-en-aria="Key figures">
+          <li><b>5</b><span data-en="views">Ansichten</span></li>
+          <li><b>4</b><span data-en="depths in the BRAIN">Tiefen im BRAIN</span></li>
           <li><b>7</b><span data-en="gestures">Gesten</span></li>
-          <li><b>21</b><span data-en="hand points per frame">Handpunkte je Bild</span></li>
-          <li><b>0</b><span data-en="images stored">gespeicherte Bilder</span></li>
-          <li><b>1</b><span data-en="button: HAND">Knopf: HAND</span></li>
+          <li><b>1</b><span data-en="report by voice">Lagebericht per Stimme</span></li>
         </ul>
       </div>
+      <!-- Beispiel-Lage: zeigt den Aufbau der Kopfzeile von Claude Ops, keine echten Daten -->
+      <figure class="hud" aria-label="Beispiel: Kopfzeile und Crew von Claude Ops" data-en-aria="Example: header and crew of Claude Ops">
+        <div class="hud-top"><span class="hud-logo"><svg class="ico i16" aria-hidden="true"><use href="#i-radar"/></svg>CLAUDE OPS</span><span class="hud-tag" data-en="EXAMPLE">BEISPIEL</span></div>
+        <ul class="hud-kv">
+          <li><b>4</b><span data-en="ACTIVE">AKTIV</span></li>
+          <li><b>2</b><span data-en="WORKING">ARBEITEN</span></li>
+          <li class="wait"><b>1</b><span data-en="WAITING FOR YOU">WARTEN AUF DICH</span></li>
+          <li><b>3</b><span data-en="SUBAGENTS">SUBAGENTEN</span></li>
+        </ul>
+        <ol class="hud-crew">
+          <li><span class="hc-n">[RCU]</span><span class="hc-s" data-en="Change">Änderung</span><span class="hc-bar" style="--p: .62"></span></li>
+          <li><span class="hc-n">[Doku]</span><span class="hc-s" data-en="Check">Prüfung</span><span class="hc-bar" style="--p: .84"></span></li>
+          <li class="wait"><span class="hc-n">[VLA]</span><span class="hc-s" data-en="WAITING 6 MIN">WARTET 6 MIN</span><span class="hc-bar" style="--p: .4"></span></li>
+          <li><span class="hc-n">[Agent]</span><span class="hc-s">Push ✓</span><span class="hc-bar" style="--p: 1"></span></li>
+        </ol>
+        <div class="hud-foot"><span>SPRINT · TAG 2/7</span><span>5-H · 3:12</span></div>
+      </figure>
     </div>
   </section>
 
@@ -299,65 +367,119 @@ footer .foot-link:hover { text-decoration-color: currentColor; }
       <div class="strip-row">
         <span class="strip-k" id="strip-tech" data-en="Built on">Gebaut auf</span>
         <ul aria-labelledby="strip-tech">
-          <li><svg class="ico" aria-hidden="true"><use href="#i-cam"/></svg>Webcam</li>
-          <li><svg class="ico" aria-hidden="true"><use href="#i-globe"/></svg>Chrome</li>
+          <li><svg class="ico" aria-hidden="true"><use href="#i-code"/></svg><span data-en="Python standard library">Python-Standardbibliothek</span></li>
+          <li><svg class="ico" aria-hidden="true"><use href="#i-cube"/></svg>three.js 0.170</li>
           <li><svg class="ico" aria-hidden="true"><use href="#i-spark"/></svg>MediaPipe tasks-vision</li>
-          <li><svg class="ico" aria-hidden="true"><use href="#i-cube"/></svg><span data-en="Hand model (Google)">Hand-Modell (Google)</span></li>
-          <li><svg class="ico" aria-hidden="true"><use href="#i-code"/></svg>Canvas + JavaScript</li>
+          <li><svg class="ico" aria-hidden="true"><use href="#i-wave"/></svg>Web Audio · Piper</li>
+          <li><svg class="ico" aria-hidden="true"><use href="#i-globe"/></svg>Chrome</li>
           <li><svg class="ico" aria-hidden="true"><use href="#i-test"/></svg>pytest + Headless Chrome</li>
         </ul>
       </div>
     </div>
   </section>
 
-  <!-- ═════════ 01 Einschalten: drei Schritte, Anzeige, Verhalten ═════════ -->
-  <section class="zone" id="einschalten" style="--hue: var(--blue)" aria-labelledby="einschalten-h">
+  <!-- ═════════ 01 Lage: was Claude Ops zeigt (Kopfzeile, Spalten, Missionen) ═════════ -->
+  <section class="zone" id="lage" style="--hue: var(--blue)" aria-labelledby="lage-h">
     <div class="wrap">
       <header class="sec-head">
-        <div><span class="eyebrow"><span class="n">01</span><span data-en="Switch on">Einschalten</span></span><h2 id="einschalten-h" data-en="On in three steps">In drei Schritten an</h2></div>
-        <div class="brief"><p data-en="For everyone who wants to use Claude Ops without a mouse: camera on, show your hand, go.">Für alle, die Claude Ops ohne Maus bedienen wollen: Kamera an, Hand zeigen, loslegen.</p></div>
+        <div><span class="eyebrow"><span class="n">01</span><span data-en="Situation">Lage</span></span><h2 id="lage-h" data-en="What is going on, right now">Was gerade los ist</h2></div>
+        <div class="brief"><p data-en="Several Claude chats work in parallel in the dev_ws. Claude Ops reads their transcripts and shows on one screen who works on what, who needs you and where things collide.">Im dev_ws arbeiten mehrere Claude-Chats parallel. Claude Ops liest ihre Verläufe mit und zeigt auf einem Bildschirm, wer woran arbeitet, wer dich braucht und wo es hakt.</p></div>
       </header>
-      <ol class="steps">
-        <li><b data-en="Open Claude Ops in Chrome">Claude Ops in Chrome öffnen</b><p data-en="&lt;code&gt;http://127.0.0.1:18097&lt;/code&gt; or UX | Nexus Launcher → &lt;b&gt;Extras&lt;/b&gt; → &lt;b&gt;Claude Ops&lt;/b&gt;.">
-          <code>http://127.0.0.1:18097</code> oder UX | Nexus Launcher → <b>Extras</b> → <b>Claude Ops</b>.</p></li>
-        <li><b data-en="Click the HAND button">Knopf HAND klicken</b><p data-en="Top right next to TON; allow the camera → the button shows &lt;code&gt;PAUSE&lt;/code&gt;.">Oben rechts neben TON; Kamera erlauben → der Knopf zeigt <code>PAUSE</code>.</p></li>
-        <li><b data-en="Hold an open hand for 0.5&amp;nbsp;s">Offene Hand 0,5&nbsp;s halten</b><p data-en="Palm towards the camera → &lt;code&gt;KAMERA AN&lt;/code&gt;, gestures are active.">Handfläche zur Kamera → <code>KAMERA AN</code>, die Gesten sind aktiv.</p></li>
-      </ol>
-      <div class="grp">
-        <h3 data-en="What you see">Was du siehst</h3>
-        <div class="feats tiles">
-          <div class="feat"><span class="bi-l"><svg class="ico" aria-hidden="true"><use href="#i-hand"/></svg></span><span class="k-t" data-en="Button">Knopf</span><b data-en="HAND shows the state.">HAND zeigt den Zustand.</b>
-            <p data-en="&lt;code&gt;LÄDT&lt;/code&gt; while starting, &lt;code&gt;PAUSE&lt;/code&gt; with a ring, &lt;code&gt;KAMERA AN&lt;/code&gt; with a dot.">
-              <code>LÄDT</code> beim Start, <code>PAUSE</code> mit Ring, <code>KAMERA AN</code> mit Punkt.</p></div>
-          <div class="feat"><span class="bi-l"><svg class="ico" aria-hidden="true"><use href="#i-list"/></svg></span><span class="k-t" data-en="List">Liste</span><b data-en="All gestures at a glance.">Alle Gesten auf einen Blick.</b>
-            <p data-en="Opens at the button for 6&amp;nbsp;s when switched on; the mouse over HAND shows it again.">Klappt beim Einschalten 6&nbsp;s am Knopf auf; die Maus auf HAND zeigt sie wieder.</p></div>
-          <div class="feat"><span class="bi-l"><svg class="ico" aria-hidden="true"><use href="#i-layers"/></svg></span><span class="k-t" data-en="Tile">Kachel</span><b data-en="HAND replaces ANSICHTEN.">HAND ersetzt ANSICHTEN.</b>
-            <p data-en="Shows the hand skeleton and the recognised gesture while the camera is on.">Zeigt Hand-Skelett und erkannte Geste, solange die Kamera an ist.</p></div>
-          <div class="feat"><span class="bi-l"><svg class="ico" aria-hidden="true"><use href="#i-pointer"/></svg></span><span class="k-t" data-en="Cursor">Cursor</span><b data-en="A ring that fills up.">Ring, der sich füllt.</b>
-            <p data-en="The hand cursor follows the index fingertip; its ring fills up when pinching.">Der Hand-Cursor folgt der Zeigefingerspitze; sein Ring füllt sich beim Kneifen.</p></div>
-        </div>
-        <ul class="ticks">
-          <li><svg class="ico i18" aria-hidden="true"><use href="#i-loop"/></svg><span data-en="&lt;b&gt;Remembered:&lt;/b&gt; on again after a reload">
-            <b>Gespeichert:</b> nach Neuladen wieder an</span></li>
-          <li><svg class="ico i18" aria-hidden="true"><use href="#i-eye-off"/></svg><span data-en="&lt;b&gt;Tab hidden:&lt;/b&gt; camera off, back on when you return">
-            <b>Tab verdeckt:</b> Kamera aus, beim Zurückkehren wieder an</span></li>
-          <li><svg class="ico i18" aria-hidden="true"><use href="#i-warn"/></svg><span data-en="&lt;b&gt;KEINE KAMERA:&lt;/b&gt; no access or hand model offline, reason in the tooltip; click to retry">
-            <b>KEINE KAMERA:</b> kein Zugriff oder Hand-Modell offline, Grund im Tooltip; Klick = erneut</span></li>
-        </ul>
+      <div class="feats three">
+        <div class="feat"><svg class="ico" aria-hidden="true"><use href="#i-users"/></svg><span class="k-t">Crew</span><b data-en="Every chat with its stage.">Jeder Chat mit seiner Stufe.</b>
+          <p data-en="Workflow stage, tool mix, skills, subagents and an estimate of the remaining time.">Workflow-Stufe, Werkzeug-Mix, Skills, Subagenten und eine Schätzung der Restzeit.</p></div>
+        <div class="feat"><svg class="ico" aria-hidden="true"><use href="#i-clock"/></svg><span class="k-t" data-en="Waiting for you">Wartet auf dich</span><b data-en="Nobody waits unnoticed.">Keiner wartet unbemerkt.</b>
+          <p data-en="Open question, start text or approval: longest wait first. The amber frame grows at 2 · 5 · 15&amp;nbsp;min.">Offene Rückfrage, Starttext oder Freigabe: längste Wartezeit zuerst. Der Bernstein-Rahmen wächst bei 2 · 5 · 15&nbsp;min.</p></div>
+        <div class="feat"><svg class="ico" aria-hidden="true"><use href="#i-target"/></svg><span class="k-t" data-en="Missions">Missionen</span><b data-en="Sprint and backlog in view.">Sprint und Backlog im Blick.</b>
+          <p data-en="Sprint goal with countdown, items from &lt;code&gt;TODOS.md&lt;/code&gt; by status: running, waiting, ready, waiting for you.">Sprint-Ziel mit Countdown, Punkte aus <code>TODOS.md</code> nach Status: läuft, wartet, bereit, wartet auf dich.</p></div>
+        <div class="feat"><svg class="ico" aria-hidden="true"><use href="#i-gauge"/></svg><span class="k-t" data-en="5-h window">5-h-Fenster</span><b data-en="Usage at a glance.">Nutzung auf einen Blick.</b>
+          <p data-en="Reset clock and output tokens of the current usage window.">Reset-Uhr und Output-Token des laufenden Nutzungsfensters.</p></div>
+        <div class="feat"><svg class="ico" aria-hidden="true"><use href="#i-list"/></svg><span class="k-t" data-en="Logbook">Logbuch</span><b data-en="Conflicts before they hurt.">Konflikte, bevor sie wehtun.</b>
+          <p data-en="Tool calls live. A file left uncommitted in two chats, or left behind by a finished chat, shows up as a conflict.">Tool-Aufrufe live. Eine uncommittete Datei in zwei Chats oder ein liegen gebliebener Stand erscheint als Konflikt.</p></div>
+        <div class="feat"><svg class="ico" aria-hidden="true"><use href="#i-git"/></svg><span class="k-t">Git</span><b data-en="Commit, push, handover.">Commit, Push, Übergabe.</b>
+          <p data-en="Git satellite with the latest hash: commits fly from the chat, pushes as a wave to origin, handovers from chat to chat.">Git-Satellit mit dem letzten Hash: Commits fliegen vom Chat los, Push als Welle nach origin, Übergaben von Chat zu Chat.</p></div>
       </div>
     </div>
   </section>
 
-  <!-- ═════════ 02 Gesten: Kamerasicht je Geste (Liste GEST in __Project_Claude_Ops/index.html) ═════════ -->
+  <!-- ═════════ 02 Ansichten: Zentrum A–E (VIEWS in index.html), BRAIN = Standard ═════════ -->
+  <section class="zone alt" id="ansichten" style="--hue: var(--violet)" aria-labelledby="ansichten-h">
+    <div class="wrap">
+      <header class="sec-head">
+        <div><span class="eyebrow"><span class="n">02</span><span data-en="Views">Ansichten</span></span><h2 id="ansichten-h" data-en="Five views in the centre">Fünf Ansichten im Zentrum</h2></div>
+        <div class="brief"><p data-en="Switch with A–E in the header, drag sideways or swipe. The other views scroll by as slides under the feed; a click brings them to the centre.">Umschalten mit A–E im Kopf, seitlich ziehen oder wischen. Die übrigen Ansichten blättern als Folien unter dem Feed; ein Klick holt sie ins Zentrum.</p></div>
+      </header>
+      <div class="views">
+        <div class="feat wide"><span class="bi-l"><svg class="ico" aria-hidden="true"><use href="#i-brain"/></svg></span><span class="k-t" data-en="D · BRAIN · default">D · BRAIN · Standard</span><b data-en="The workspace as a brain.">Der Workspace als Gehirn.</b>
+          <p data-en="A holo volume of light points: areas = fields of work, neurons = chats, dendrites = tools, synapses = subagents. Fly through four depths CORTEX → AREA → NEURON → SYNAPSE. The MEMORY area holds one engram per memory file.">Holo-Volumen aus Lichtpunkten: Areale = Arbeitsbereiche, Neuronen = Chats, Dendriten = Werkzeuge, Synapsen = Subagenten. Flug durch vier Tiefen KORTEX → AREAL → NEURON → SYNAPSE. Das Areal GEDÄCHTNIS trägt ein Engramm je Memory-Datei.</p></div>
+        <div class="feat"><span class="bi-l"><svg class="ico" aria-hidden="true"><use href="#i-reactor"/></svg></span><span class="k-t">A · REAKTOR</span><b data-en="Stages as a ring.">Stufen als Ring.</b>
+          <p data-en="Energy cells per workflow stage. Zoom REACTOR → STAGE → CHAT: progress, context, tool ring.">Energiezellen je Workflow-Stufe. Zoom REAKTOR → STUFE → CHAT: Fortschritt, Kontext, Werkzeug-Ring.</p></div>
+        <div class="feat"><span class="bi-l"><svg class="ico" aria-hidden="true"><use href="#i-radar"/></svg></span><span class="k-t">B · RADAR</span><b data-en="Who has gone quiet?">Wer ist still geworden?</b>
+          <p data-en="Sector = stage, distance = time since the last tool call. Silent chats drift outwards.">Sektor = Stufe, Abstand = Zeit seit dem letzten Tool-Aufruf. Stille Chats wandern nach außen.</p></div>
+        <div class="feat"><span class="bi-l"><svg class="ico" aria-hidden="true"><use href="#i-gauge"/></svg></span><span class="k-t">C · COCKPIT</span><b data-en="One instrument per chat.">Ein Instrument je Chat.</b>
+          <p data-en="Arc = context tokens, needle = calls per minute, number = tool calls.">Bogen = Kontext-Token, Nadel = Aufrufe pro Minute, Zahl = Tool-Aufrufe.</p></div>
+        <div class="feat"><span class="bi-l"><svg class="ico" aria-hidden="true"><use href="#i-target"/></svg></span><span class="k-t">E · MISSIONEN</span><b data-en="The backlog as a board.">Das Backlog als Brett.</b>
+          <p data-en="Collapsible sections by status; WAITING FOR YOU split into action · decision · access. Arrange by dragging.">Einklappbare Sections nach Status; WARTET AUF DICH nach Aktion · Entscheidung · Zugang. Anordnen per Ziehen.</p></div>
+      </div>
+      <ul class="ticks">
+        <li><svg class="ico i18" aria-hidden="true"><use href="#i-pointer"/></svg><span data-en="&lt;b&gt;Click:&lt;/b&gt; one level deeper; Esc, right click or empty space = back">
+          <b>Klick:</b> eine Ebene tiefer; Esc, Rechtsklick oder Leerfläche = zurück</span></li>
+        <li><svg class="ico i18" aria-hidden="true"><use href="#i-loop"/></svg><span data-en="&lt;b&gt;Mouse wheel:&lt;/b&gt; flight in your hand, forward = into the target under the pointer">
+          <b>Mausrad:</b> Flug in der Hand, vor = in das Ziel unter dem Zeiger</span></li>
+        <li><svg class="ico i18" aria-hidden="true"><use href="#i-keys"/></svg><span data-en="&lt;b&gt;Keys in the BRAIN:&lt;/b&gt; W A S D hover, Q in, E out">
+          <b>Tasten im BRAIN:</b> W A S D schweben, Q hinein, E hinaus</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ═════════ 03 Jarvis-Ebene: Stimme, Ton, Hero-Effekte, Raum ═════════ -->
+  <section class="zone" id="jarvis" style="--hue: var(--teal)" aria-labelledby="jarvis-h">
+    <div class="wrap">
+      <header class="sec-head">
+        <div><span class="eyebrow"><span class="n">03</span><span data-en="Jarvis layer">Jarvis-Ebene</span></span><h2 id="jarvis-h" data-en="Tells you what is going on">Sagt dir, was los ist</h2></div>
+        <div class="brief"><p data-en="Voice, sound and motion make the situation audible and visible without having to look closely, calm instead of flashing.">Stimme, Ton und Bewegung machen die Lage hör- und sichtbar, ohne genau hinsehen zu müssen, ruhig statt blinkend.</p></div>
+      </header>
+      <div class="feats">
+        <div class="feat"><svg class="ico" aria-hidden="true"><use href="#i-wave"/></svg><span class="k-t" data-en="Report · key L">Lagebericht · Taste L</span><b data-en="Read out on request.">Auf Knopfdruck vorgelesen.</b>
+          <p data-en="Active chats, who waits how long, sprint day, backlog items waiting for you, 5-h window. The waveform shows the real level.">Aktive Chats, wer wie lange wartet, Sprint-Tag, Backlog-Punkte für dich, 5-h-Fenster. Die Wellenform zeigt den echten Pegel.</p></div>
+        <div class="feat"><svg class="ico" aria-hidden="true"><use href="#i-bell"/></svg><span class="k-t" data-en="Sound">Ton</span><b data-en="Quiet signals.">Leise Signale.</b>
+          <p data-en="Question (repeats every 10&amp;nbsp;s until the chat continues), push, handover, error; even quieter for done, new chat, commit. At most one per 2&amp;nbsp;s.">Rückfrage (alle 10&nbsp;s, bis der Chat weiterläuft), Push, Übergabe, Fehler; noch leiser bei erledigt, neuem Chat, Commit. Höchstens einer je 2&nbsp;s.</p></div>
+        <div class="feat"><svg class="ico" aria-hidden="true"><use href="#i-spark"/></svg><span class="k-t" data-en="Hero moments">Hero-Momente</span><b data-en="Events you notice.">Ereignisse, die man merkt.</b>
+          <p data-en="System start from a particle swirl, shock wave on push, done and handover, holo projector in the BRAIN.">Systemstart aus einem Partikel-Wirbel, Schockwelle bei Push, erledigt und Übergabe, Holo-Projektor im BRAIN.</p></div>
+        <div class="feat"><svg class="ico" aria-hidden="true"><use href="#i-cube"/></svg><span class="k-t" data-en="Space">Raum</span><b data-en="Depth without a headset.">Tiefe ohne Brille.</b>
+          <p data-en="Side columns turned 4° towards the centre with slight parallax. »Reduce motion« in the system makes everything flat.">Seitenspalten 4° zur Mitte gedreht, mit leichter Parallaxe. „Bewegung reduzieren“ im System macht alles flach.</p></div>
+      </div>
+      <div class="grp">
+        <h3 data-en="Voice: first available wins">Stimme: die erste verfügbare spricht</h3>
+        <ol class="chain">
+          <li><b>Google Chirp 3 HD</b><span data-en="cloud, only with your own key">Cloud, nur mit eigenem Key</span></li>
+          <li><b>Piper</b><span data-en="local, voice thorsten-high">lokal, Stimme thorsten-high</span></li>
+          <li><b data-en="Browser voice">Browser-Stimme</b><span data-en="local">lokal</span></li>
+          <li><b data-en="Subtitles">Untertitel</b><span data-en="always">immer</span></li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═════════ 04 Gesten: einschalten, sieben Gesten (Liste GEST, Modul HAND), Anzeige ═════════ -->
   <section class="zone alt" id="gesten" style="--hue: var(--teal)" aria-labelledby="gesten-h">
     <div class="wrap">
       <header class="sec-head">
-        <div><span class="eyebrow"><span class="n">02</span><span data-en="Gestures">Gesten</span></span><h2 id="gesten-h" data-en="Seven gestures">Sieben Gesten</h2></div>
+        <div><span class="eyebrow"><span class="n">04</span><span data-en="Gestures">Gesten</span></span><h2 id="gesten-h" data-en="By hand at the webcam">Per Hand vor der Webcam</h2></div>
         <div class="brief">
-          <p data-en="Each picture shows the hand the way you see it in front of you. The bottom line names the event in Claude Ops.">Jedes Bild zeigt die Hand so, wie du sie vor dir siehst. Die Zeile darunter nennt das Ereignis in Claude Ops.</p>
+          <p data-en="Seven gestures switch views, zoom and click without a mouse. Each picture shows the hand the way you see it in front of you; the bottom line names the event in Claude Ops.">Sieben Gesten wechseln Ansichten, zoomen und klicken ohne Maus. Jedes Bild zeigt die Hand so, wie du sie vor dir siehst; die Zeile darunter nennt das Ereignis in Claude Ops.</p>
           <button class="btn" type="button" id="g-play"><svg class="ico i16" aria-hidden="true"><use href="#i-pause"/></svg><span>Animation anhalten</span></button>
         </div>
       </header>
+      <div class="grp">
+        <h3 data-en="On in three steps">In drei Schritten an</h3>
+        <ol class="steps">
+          <li><b data-en="Open Claude Ops in Chrome">Claude Ops in Chrome öffnen</b><p data-en="&lt;code&gt;http://127.0.0.1:18097&lt;/code&gt; or UX | Nexus Launcher → &lt;b&gt;Extras&lt;/b&gt; → &lt;b&gt;Claude Ops&lt;/b&gt;.">
+            <code>http://127.0.0.1:18097</code> oder UX | Nexus Launcher → <b>Extras</b> → <b>Claude Ops</b>.</p></li>
+          <li><b data-en="Click the HAND button">Knopf HAND klicken</b><p data-en="Top right next to TON; allow the camera → the button shows &lt;code&gt;PAUSE&lt;/code&gt;.">Oben rechts neben TON; Kamera erlauben → der Knopf zeigt <code>PAUSE</code>.</p></li>
+          <li><b data-en="Hold an open hand for 0.5&amp;nbsp;s">Offene Hand 0,5&nbsp;s halten</b><p data-en="Palm towards the camera → &lt;code&gt;KAMERA AN&lt;/code&gt;, gestures are active.">Handfläche zur Kamera → <code>KAMERA AN</code>, die Gesten sind aktiv.</p></li>
+        </ol>
+      </div>
       <div class="gs">
         <article class="gc" data-g="an">
           <div class="cam"><canvas width="480" height="360" role="img" aria-label="Animation: offene Hand 0,5 s halten schaltet die Gesten an" data-en-aria="Animation: holding an open hand for 0.5 s switches gestures on"></canvas>
@@ -415,40 +537,66 @@ footer .foot-link:hover { text-decoration-color: currentColor; }
             <ul><li data-en="Right hand, palm towards the camera, at chest height">Rechte Hand, Handfläche zur Kamera, auf Brusthöhe</li><li data-en="Dots = the 21 hand points of the hand model">Punkte = die 21 Handpunkte des Hand-Modells</li><li data-en="Turquoise field = event fired in Claude Ops">Türkises Feld = Ereignis in Claude Ops ausgelöst</li></ul></div>
         </article>
       </div>
+      <div class="grp">
+        <h3 data-en="What you see">Was du siehst</h3>
+        <div class="feats tiles">
+          <div class="feat"><span class="bi-l"><svg class="ico" aria-hidden="true"><use href="#i-hand"/></svg></span><span class="k-t" data-en="Button">Knopf</span><b data-en="HAND shows the state.">HAND zeigt den Zustand.</b>
+            <p data-en="&lt;code&gt;LÄDT&lt;/code&gt; while starting, &lt;code&gt;PAUSE&lt;/code&gt; with a ring, &lt;code&gt;KAMERA AN&lt;/code&gt; with a dot.">
+              <code>LÄDT</code> beim Start, <code>PAUSE</code> mit Ring, <code>KAMERA AN</code> mit Punkt.</p></div>
+          <div class="feat"><span class="bi-l"><svg class="ico" aria-hidden="true"><use href="#i-list"/></svg></span><span class="k-t" data-en="List">Liste</span><b data-en="All gestures at a glance.">Alle Gesten auf einen Blick.</b>
+            <p data-en="Opens at the button for 6&amp;nbsp;s when switched on; the mouse over HAND shows it again.">Klappt beim Einschalten 6&nbsp;s am Knopf auf; die Maus auf HAND zeigt sie wieder.</p></div>
+          <div class="feat"><span class="bi-l"><svg class="ico" aria-hidden="true"><use href="#i-layers"/></svg></span><span class="k-t" data-en="Tile">Kachel</span><b data-en="HAND replaces ANSICHTEN.">HAND ersetzt ANSICHTEN.</b>
+            <p data-en="Shows the hand skeleton and the recognised gesture while the camera is on.">Zeigt Hand-Skelett und erkannte Geste, solange die Kamera an ist.</p></div>
+          <div class="feat"><span class="bi-l"><svg class="ico" aria-hidden="true"><use href="#i-pointer"/></svg></span><span class="k-t" data-en="Cursor">Cursor</span><b data-en="A ring that fills up.">Ring, der sich füllt.</b>
+            <p data-en="The hand cursor follows the index fingertip; its ring fills up when pinching.">Der Hand-Cursor folgt der Zeigefingerspitze; sein Ring füllt sich beim Kneifen.</p></div>
+        </div>
+        <ul class="ticks">
+          <li><svg class="ico i18" aria-hidden="true"><use href="#i-loop"/></svg><span data-en="&lt;b&gt;Remembered:&lt;/b&gt; on again after a reload">
+            <b>Gespeichert:</b> nach Neuladen wieder an</span></li>
+          <li><svg class="ico i18" aria-hidden="true"><use href="#i-eye-off"/></svg><span data-en="&lt;b&gt;Tab hidden:&lt;/b&gt; camera off, back on when you return">
+            <b>Tab verdeckt:</b> Kamera aus, beim Zurückkehren wieder an</span></li>
+          <li><svg class="ico i18" aria-hidden="true"><use href="#i-warn"/></svg><span data-en="&lt;b&gt;KEINE KAMERA:&lt;/b&gt; no access or hand model offline, reason in the tooltip; click to retry">
+            <b>KEINE KAMERA:</b> kein Zugriff oder Hand-Modell offline, Grund im Tooltip; Klick = erneut</span></li>
+        </ul>
+      </div>
     </div>
   </section>
 
-  <!-- ═════════ 03 Technik: Erkenner, Aufnahme-Modus, Tests, Datenschutz ═════════ -->
+  <!-- ═════════ 05 Technik: Server, Restzeit, Erkenner, Aufnahme, Tests, Datenschutz ═════════ -->
   <section class="zone" id="technik" style="--hue: var(--indigo)" aria-labelledby="technik-h">
     <div class="wrap">
       <header class="sec-head">
-        <div><span class="eyebrow"><span class="n">03</span><span data-en="For developers">Für Entwickler</span></span><h2 id="technik-h" data-en="Under the hood">Unter der Haube</h2></div>
-        <div class="brief"><p data-en="How the recogniser is built, how recordings are made and what stays on the computer.">Wie der Erkenner aufgebaut ist, wie Aufnahmen entstehen und was auf dem Rechner bleibt.</p></div>
+        <div><span class="eyebrow"><span class="n">05</span><span data-en="For developers">Für Entwickler</span></span><h2 id="technik-h" data-en="Under the hood">Unter der Haube</h2></div>
+        <div class="brief"><p data-en="One small Python server, one page, no build. What it reads, how it estimates and what stays on the computer.">Ein kleiner Python-Server, eine Seite, kein Build. Was er liest, wie er schätzt und was auf dem Rechner bleibt.</p></div>
       </header>
-      <div class="feats two">
+      <div class="feats three">
+        <div class="feat"><svg class="ico" aria-hidden="true"><use href="#i-server"/></svg><span class="k-t" data-en="Server">Server</span><b data-en="Reads along, writes nothing.">Liest mit, schreibt nichts.</b>
+          <p data-en="Transcripts, file register, handovers, memory, git and &lt;code&gt;TODOS.md&lt;/code&gt; → one JSON at &lt;code&gt;/api/state&lt;/code&gt;.">Verläufe, Datei-Register, Übergaben, Memory, git und <code>TODOS.md</code> → ein JSON unter <code>/api/state</code>.</p></div>
+        <div class="feat"><svg class="ico" aria-hidden="true"><use href="#i-clock"/></svg><span class="k-t" data-en="Remaining time">Restzeit</span><b data-en="Estimated from experience.">Aus Erfahrung geschätzt.</b>
+          <p data-en="Median and range of comparable tasks of the last 24&amp;nbsp;h that were just as long in the same workflow stage.">Median und Spanne vergleichbarer Aufträge der letzten 24&nbsp;h, die genauso lange in derselben Workflow-Stufe waren.</p></div>
         <div class="feat"><svg class="ico" aria-hidden="true"><use href="#i-layers"/></svg><span class="k-t" data-en="Recogniser">Erkenner</span><b data-en="21 points in, events out.">21 Punkte rein, Ereignisse raus.</b>
           <p data-en="&lt;code&gt;HAND.REC.step&lt;/code&gt; is pure, without DOM or clock. A new source such as Quest hands only needs an adapter.">
             <code>HAND.REC.step</code> ist rein, ohne DOM und Uhr. Eine neue Quelle wie Quest-Hände braucht nur einen Adapter.</p></div>
         <div class="feat"><svg class="ico" aria-hidden="true"><use href="#i-rec"/></svg><span class="k-t" data-en="Recording mode">Aufnahme-Modus</span><b data-en="Hand points as JSON.">Handpunkte als JSON.</b>
-          <p data-en="&lt;code&gt;?handrec=&amp;lt;name&amp;gt;&lt;/code&gt; → button additionally shows &lt;code&gt;· REC&lt;/code&gt; (e.g. &lt;code&gt;PAUSE · REC&lt;/code&gt;). HAND off downloads &lt;code&gt;hand-&amp;lt;name&amp;gt;-&amp;lt;time&amp;gt;.json&lt;/code&gt;.">
-            <code>?handrec=&lt;name&gt;</code> → Knopf zeigt zusätzlich <code>· REC</code> (z.&nbsp;B. <code>PAUSE · REC</code>). HAND aus lädt <code>hand-&lt;name&gt;-&lt;Zeit&gt;.json</code> herunter.</p></div>
+          <p data-en="&lt;code&gt;?handrec=&amp;lt;name&amp;gt;&lt;/code&gt; → button additionally shows &lt;code&gt;· REC&lt;/code&gt;. HAND off downloads &lt;code&gt;hand-&amp;lt;name&amp;gt;-&amp;lt;time&amp;gt;.json&lt;/code&gt;.">
+            <code>?handrec=&lt;name&gt;</code> → Knopf zeigt zusätzlich <code>· REC</code>. HAND aus lädt <code>hand-&lt;name&gt;-&lt;Zeit&gt;.json</code> herunter.</p></div>
         <div class="feat"><svg class="ico" aria-hidden="true"><use href="#i-test"/></svg><span class="k-t" data-en="Tests">Tests</span><b data-en="Synthetic hands, fake camera.">Künstliche Hände, Fake-Kamera.</b>
-          <p data-en="&lt;code&gt;test_hand.py&lt;/code&gt; checks gesture events, camera on/off and recording mode with a fake camera in headless Chrome. Recordings of normal work (&lt;code&gt;hand_rec/work*.json&lt;/code&gt;, in progress) must not fire any gesture.">
-            <code>test_hand.py</code> prüft Gesten-Ereignisse, Kamera an/aus und Aufnahme-Modus mit Fake-Kamera im Headless Chrome. Aufnahmen normalen Arbeitens (<code>hand_rec/work*.json</code>, in Arbeit) dürfen keine Geste auslösen.</p></div>
-        <div class="feat"><svg class="ico" aria-hidden="true"><use href="#i-eye-off"/></svg><span class="k-t" data-en="Privacy">Datenschutz</span><b data-en="No image leaves the browser.">Kein Bild verlässt den Browser.</b>
-          <p data-en="Recordings hold only time + 21 hand points per frame. MediaPipe (jsDelivr) and the hand model (~8&amp;nbsp;MB, Google) load once, then come from the browser cache.">
-            Aufnahmen enthalten nur Zeit + 21 Handpunkte je Bild. MediaPipe (jsDelivr) und das Hand-Modell (~8&nbsp;MB, Google) laden einmalig, danach aus dem Browser-Cache.</p></div>
+          <p data-en="&lt;code&gt;test_server.py&lt;/code&gt; checks the transcript analysis, &lt;code&gt;test_hand.py&lt;/code&gt; gestures, camera and recording mode in headless Chrome.">
+            <code>test_server.py</code> prüft die Auswertung der Verläufe, <code>test_hand.py</code> Gesten, Kamera und Aufnahme-Modus im Headless Chrome.</p></div>
+        <div class="feat"><svg class="ico" aria-hidden="true"><use href="#i-eye-off"/></svg><span class="k-t" data-en="Privacy">Datenschutz</span><b data-en="Stays on the computer.">Bleibt auf dem Rechner.</b>
+          <p data-en="Server only on &lt;code&gt;127.0.0.1&lt;/code&gt;; no camera image leaves the browser. The report goes to Google only with your own key, otherwise Piper speaks locally.">
+            Server nur auf <code>127.0.0.1</code>; kein Kamerabild verlässt den Browser. Der Lagebericht geht nur mit eigenem Key an Google, sonst spricht Piper lokal.</p></div>
       </div>
-      <pre class="cmd"><span class="c" data-en="# Start Claude Ops (local only) · recording: http://127.0.0.1:18097/?handrec=work"># Claude Ops starten (nur lokal) · Aufnahme: http://127.0.0.1:18097/?handrec=work</span>
+      <pre class="cmd"><span class="c" data-en="# Start Claude Ops (local only) → http://127.0.0.1:18097"># Claude Ops starten (nur lokal) → http://127.0.0.1:18097</span>
 python3 __Project_Claude_Ops/server.py --port 18097
-<span class="c" data-en="# Test the gestures (headless Chrome)"># Gesten testen (Headless Chrome)</span>
-python3 -m pytest -q __Project_Claude_Ops/test_hand.py</pre>
-      <p class="note"><svg class="ico" aria-hidden="true"><use href="#i-shield"/></svg><span data-en="&lt;b&gt;Display only:&lt;/b&gt; gestures control Claude Ops, never the robot. Claude Ops has no connection to the ROS&amp;nbsp;2 stack.">
-        <b>Nur Anzeige:</b> Gesten steuern Claude Ops, nie den Roboter. Claude Ops hat keine Verbindung zum ROS-2-Stack.</span></p>
+<span class="c" data-en="# Tests (server + gestures in headless Chrome)"># Tests (Server + Gesten im Headless Chrome)</span>
+python3 -m pytest -q __Project_Claude_Ops/test_server.py __Project_Claude_Ops/test_hand.py</pre>
+      <p class="note"><svg class="ico" aria-hidden="true"><use href="#i-shield"/></svg><span data-en="&lt;b&gt;Display only:&lt;/b&gt; Claude Ops shows the chats and never controls the robot. It has no connection to the ROS&amp;nbsp;2 stack.">
+        <b>Nur Anzeige:</b> Claude Ops zeigt die Chats und steuert nie den Roboter. Es hat keine Verbindung zum ROS-2-Stack.</span></p>
     </div>
   </section>
 
-  <!-- ═════════ Weiter: Links + Kontakt ═════════ -->
+  <!-- ═════════ Weiter: Claude Ops öffnen (nur lokal), Arbeitsweise der Chats, Kontakt ═════════ -->
   <section class="contact dark-zone" id="weiter" aria-labelledby="weiter-h">
     <div class="wrap">
       <div class="ct-copy">
@@ -457,28 +605,28 @@ python3 -m pytest -q __Project_Claude_Ops/test_hand.py</pre>
         <p data-en="Claude Ops shows live what the Claude chats in the dev_ws are doing. Their workflow, roles and checkpoints are described in Docs Claude Workflow.">Claude Ops zeigt live, was die Claude-Chats im dev_ws tun. Ablauf, Rollen und Prüfstellen dieser Chats beschreibt Docs Claude Workflow.</p>
         <div class="cta-row">
           <a class="b-pri" href="develop_workflow.html"><span>Docs Claude Workflow</span><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg></a>
-          <a class="b-sec" href="project_docs.html"><svg class="ico" aria-hidden="true"><use href="#i-book"/></svg><span data-en="Project docs">Projekt-Doku</span></a>
+          <a class="b-sec" href="project_docs.html"><svg class="ico" aria-hidden="true"><use href="#i-book"/></svg><span data-en="UX Robot project docs">Projekt-Doku UX Robot</span></a>
         </div>
       </div>
-      <div class="vcard" role="group" aria-label="Visitenkarte: UX Robot, Marius Kaul" data-en-aria="Business card: UX Robot, Marius Kaul">
-        <div class="vc-head"><span class="brand-mark"><svg class="ico" aria-hidden="true"><use href="#i-arm"/></svg></span><span><b>UX Robot</b><small data-en="Gestures in Claude Ops">Gesten in Claude Ops</small></span></div>
+      <div class="vcard" role="group" aria-label="Visitenkarte: Claude Ops, Marius Kaul" data-en-aria="Business card: Claude Ops, Marius Kaul">
+        <div class="vc-head"><span class="brand-mark"><svg class="ico" aria-hidden="true"><use href="#i-radar"/></svg></span><span><b>Claude Ops</b><small data-en="Live dashboard of the Claude chats">Live-Dashboard der Claude-Chats</small></span></div>
         <div class="vc-body">
           <div>
             <div class="vc-name">Marius Kaul</div>
             <div class="vc-role" data-en="UX Lab · Rhine-Waal University of Applied Sciences">UX-Labor · Hochschule Rhein-Waal</div>
             <div class="vc-links">
               <a href="mailto:marius.kaul@hochschule-rhein-waal.de"><svg class="ico" aria-hidden="true"><use href="#i-mail"/></svg>marius.kaul@hochschule-rhein-waal.de</a>
-              <a href="https://lu4k87.github.io/" target="_blank" rel="noopener"><svg class="ico" aria-hidden="true"><use href="#i-globe"/></svg>lu4k87.github.io</a>
+              <a href="https://lu4k87.github.io/claude-ops/" target="_blank" rel="noopener"><svg class="ico" aria-hidden="true"><use href="#i-globe"/></svg>lu4k87.github.io/claude-ops</a>
             </div>
           </div>
-          <a class="vc-qr" href="https://lu4k87.github.io/" target="_blank" rel="noopener"><span class="qr-code"><svg role="img" aria-label="QR-Code: Projekt-Doku öffnen" data-en-aria="QR code: open the project docs"><use href="#qr-docs"/></svg></span><span data-en="Open page">Seite öffnen</span></a>
+          <a class="vc-qr" href="https://lu4k87.github.io/" target="_blank" rel="noopener"><span class="qr-code"><svg role="img" aria-label="QR-Code: Projekt-Doku öffnen" data-en-aria="QR code: open the project docs"><use href="#qr-docs"/></svg></span><span data-en="Project docs">Projekt-Doku</span></a>
         </div>
       </div>
     </div>
   </section>
 </main>
 
-<footer><div class="wrap"><a class="qr-foot" href="https://lu4k87.github.io/" target="_blank" rel="noopener"><span class="qr-code"><svg role="img" aria-label="QR-Code: Projekt-Doku öffnen" data-en-aria="QR code: open the project docs"><use href="#qr-docs"/></svg></span><span class="qr-txt"><b data-en="Open page">Seite öffnen</b><small>lu4k87.github.io</small></span></a><span data-en="Last updated 08.10.2026 · source: __Project_Claude_Ops (GEST list, README)">Stand 08.10.2026 · Quelle: __Project_Claude_Ops (Liste GEST, README)</span><span><a class="foot-link" href="project_docs.html" data-en="Project docs">Projekt-Doku</a> · dev_ws · docs/develop_claude_ops_gestures.html</span></div></footer>
+<footer><div class="wrap"><span data-en="Last updated 08.10.2026 · source: __Project_Claude_Ops (README, hand.js)">Stand 08.10.2026 · Quelle: __Project_Claude_Ops (README, hand.js)</span><span><a class="foot-link" href="project_docs.html" data-en="UX Robot project docs">Projekt-Doku UX Robot</a> · dev_ws · __Project_Claude_Ops/landing.html</span></div></footer>
 
 <script src="js/scroll_flow.js"></script>
 <script>
@@ -500,7 +648,7 @@ setTheme(['dark', 'light'].includes(qTheme) ? qTheme : store('project_docs_theme
 document.querySelectorAll('[data-theme-btn]').forEach(b => b.addEventListener('click', () => { setTheme(b.dataset.themeBtn); store('project_docs_theme', b.dataset.themeBtn); }));
 
 const keep = (el, key, val) => { if (el.dataset[key] === undefined) el.dataset[key] = val; return el.dataset[key]; };
-const title = [document.title, 'Gestures in Claude Ops · UX Robot'];
+const title = [document.title, 'Claude Ops · Live dashboard of the Claude chats'];
 const setLang = l => {
   lang = l; root.lang = l;
   const en = l === 'en';
@@ -512,19 +660,22 @@ const setLang = l => {
 };
 document.querySelectorAll('[data-lang]').forEach(b => b.addEventListener('click', () => { setLang(b.dataset.lang); store('project_docs_lang', b.dataset.lang); }));
 
+// Öffentliche Kopie (lu4k87.github.io): nur lokal Nutzbares entfernen (Link auf den Server 127.0.0.1)
+if (location.hostname.endsWith('.github.io')) document.querySelectorAll('[data-local]').forEach(el => el.remove());
+
 window.ScrollFlow?.init({
-  hero: '.hero-head > .badge, .h1-name, .hero-head > .abstract, .hero-kv > li',
+  hero: '.hero-head > .badge, .h1-name, .hero-head > .abstract, .hero-head > .cta-row, .hero-kv > li, .hud',
   heroExit: '.hero-inner',
   heads: '.sec-head, .ct-copy',
-  groups: ['.strip ul', '.steps', '.feats', '.gs'],
+  groups: ['.strip ul', '.steps', '.feats', '.views', '.chain', '.gs'],
   items: ['.ticks', '.cmd', '.note', '.contact .vcard'],
   progress: '.progress',
   nav: { links: '.secnav a', reset: '.hero', hue: '.eyebrow' },
   lines: ['.strip', '.contact'],
 });
 
-/* ═════════ Gesten-Animation: Hand-Skelett in Kamerasicht (Vorlage _studio/vorschauen/2026-10-08-Gesten-Aufnahmen-HAND) ═════════
-   Handpunkte wie MediaPipe (0 Handgelenk, 4 Daumenspitze, 8 Zeigefingerspitze …), Posen wie __Project_Claude_Ops/test_hand.py.
+/* ═════════ Gesten-Animation: Hand-Skelett in Kamerasicht (Posen wie test_hand.py) ═════════
+   Handpunkte wie MediaPipe (0 Handgelenk, 4 Daumenspitze, 8 Zeigefingerspitze …), Liste der Gesten: GEST in hand.js.
    Wege und Zeiten sind Darstellung, keine Schwellen des Erkenners (REC.T). */
 const OPEN = [[.50,.70],[.44,.66],[.40,.60],[.37,.55],[.34,.50],[.45,.52],[.44,.45],[.435,.41],[.43,.37],[.50,.51],[.50,.43],[.50,.39],[.50,.35],[.545,.52],[.55,.45],[.555,.41],[.56,.38],[.585,.54],[.595,.49],[.60,.46],[.605,.43]];
 const CURL = {6:[.445,.47],7:[.45,.52],8:[.46,.55],10:[.50,.46],11:[.50,.51],12:[.50,.55],14:[.55,.47],15:[.55,.52],16:[.54,.56],18:[.59,.50],19:[.585,.54],20:[.575,.57]};
