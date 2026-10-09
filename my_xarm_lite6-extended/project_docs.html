@@ -338,7 +338,7 @@ html.sf-on .at-ring:not(.in) .seg { stroke-dasharray: 0 83; }
 .path small { font-size: 13px; line-height: 1.4; color: var(--fg-2); }
 /* Lesepfad „Verstehen“: große Pfeile zwischen den Kacheln in eigener Grid-Spalte, schmal untereinander mit Pfeil nach unten (Wunsch User 05.10.2026) */
 #verstehen .path { --arw: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12h14M13 6l6 6-6 6'/%3E%3C/svg%3E");
-  grid-template-columns: repeat(3, minmax(0, 1fr) 52px) minmax(0, 1fr); gap: 0; }
+  grid-template-columns: repeat(4, minmax(0, 1fr) 52px) minmax(0, 1fr); gap: 0; }
 #verstehen .path li:not(:last-child) { grid-column: span 2; display: grid; grid-template-columns: minmax(0, 1fr) 52px; }
 #verstehen .path li:not(:last-child)::after { content: ""; place-self: center; width: 30px; height: 30px; background: var(--fg-2); -webkit-mask: var(--arw) center / contain no-repeat; mask: var(--arw) center / contain no-repeat; }
 #verstehen .path a { gap: 8px; padding: 18px clamp(14px, 2vw, 20px); justify-items: center; text-align: center; }  /* kleine Kacheln zentriert (AGENTS.md §3); Rand schmaler 761–1000 px, sonst ragen Wörter heraus */
@@ -347,6 +347,11 @@ html.sf-on .at-ring:not(.in) .seg { stroke-dasharray: 0 83; }
 #verstehen .path .pn > span { padding: 5px 8px; border-radius: var(--radius-sm); background: color-mix(in srgb, var(--hue) 12%, transparent); }
 #verstehen .path b { font-size: 18px; }
 #verstehen .path small { font-size: 14px; }
+@media (max-width: 1100px) {  /* 5 Kacheln (inkl. Forschung) passen erst ab 1100 px nebeneinander, darunter senkrecht wie mobil */
+  #verstehen .path { grid-template-columns: minmax(0, 1fr); }
+  #verstehen .path li:not(:last-child) { grid-column: auto; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto 44px; }
+  #verstehen .path li:not(:last-child)::after { rotate: 90deg; }
+}
 @media (max-width: 760px) {
   #verstehen .path { grid-template-columns: minmax(0, 1fr); }
   #verstehen .path li:not(:last-child) { grid-column: auto; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto 44px; }
@@ -1819,6 +1824,7 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
           <li><a href="present_presentation.html#merkmale" style="--hue: var(--violet)"><span class="pn"><span data-en="What">Was</span></span><b data-en="Key features">Kern&shy;merkmale</b><small data-en="Human in the loop, eight features, standards">Human-in-the-Loop, acht Merkmale, Normbezüge</small></a></li>
           <li><a href="present_presentation.html#stack" style="--hue: var(--indigo)"><span class="pn"><span data-en="With what">Womit</span></span><b data-en="System stack">System-Stack</b><small data-en="Seven layers, reference hardware">Sieben Schichten, Referenz-Hardware</small></a></li>
           <li><a href="present_presentation.html#ablaeufe" style="--hue: var(--green)"><span class="pn"><span data-en="How">Wie</span></span><b data-en="Function flows">Funktions&shy;abläufe</b><small data-en="Six flows, safety checks, faults">Sechs Abläufe, Sicherheits&shy;prüfungen, Störfälle</small></a></li>
+          <li><a href="present_research.html" style="--hue: var(--pink)"><span class="pn"><span data-en="Research">Forschung</span></span><b data-en="Paper &amp; study">Paper &amp; Studie</b><small data-en="Look, Speak, Confirm: approach, hypotheses, study design">Look, Speak, Confirm: Ansatz, Hypothesen, Studien&shy;design</small></a></li>
         </ol>
       </section>
 
