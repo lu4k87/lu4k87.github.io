@@ -67,6 +67,14 @@ The **Digital Twin** is the live 3D model of the xArm Lite 6 and its workcell. I
 - **High-fidelity:** NVIDIA Isaac Sim runs optionally as a passive shadow Digital Twin ([Isaac Sim](isaac_sim.html)).
 - **Why it matters:** transparency (no black box), safety (preview before execution), lower barrier for novices, reproducible tests and studies.
 
+### 🎯 Custom Scenarios: Your Use Case in the Digital Twin
+Beyond the scenarios shipped with the platform, it adapts to individual use cases – developed in close exchange with you:
+
+- **Prepared to your needs:** based on your requirements, the matching scene takes shape in the Digital Twin, together with you.
+- **Test & learn:** you test and learn risk-free in simulation, before anything moves on the real robot.
+- **Evaluate & optimize:** evaluation drives need-based optimization – iterating until the scene fits.
+- **Transfer to hardware:** only then does it move to the real robot – optimized for your requirements, accompanied by monitoring, evaluation, analysis and ongoing optimization.
+
 ### 🧑‍💻 Human-Centred Automation
 The operator is at the centre of the interaction design: the state of automation stays understandable and the next system action predictable – no black box.
 

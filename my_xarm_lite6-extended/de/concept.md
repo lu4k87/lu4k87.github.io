@@ -67,6 +67,14 @@ Der **Digital Twin** (digitaler Zwilling) ist das live mitlaufende 3D-Modell des
 - **High-Fidelity:** NVIDIA Isaac Sim läuft optional als passiver Schatten-Digital-Twin mit ([Isaac Sim](isaac_sim.html)).
 - **Nutzen:** Transparenz (keine Black Box), Sicherheit (Vorschau vor Ausführung), niedrige Einstiegshürde für Laien, reproduzierbare Tests und Studien.
 
+### 🎯 Maßgeschneiderte Szenarien: Ihr Anwendungsfall im Digital Twin
+Über die mitgelieferten Szenarien hinaus passt sich die Plattform an individuelle Anwendungsfälle an – entwickelt in enger Abstimmung mit Ihnen:
+
+- **Bedürfnisgerecht vorbereitet:** Nach Ihren Anforderungen entsteht die passende Szene im Digital Twin, gemeinsam mit Ihnen.
+- **Testen & lernen:** Sie testen und lernen gefahrlos in der Simulation, bevor sich am echten Roboter etwas bewegt.
+- **Evaluieren & optimieren:** Aus der Evaluierung entsteht die bedürfnisgerechte Optimierung – iterativ, bis die Szene passt.
+- **Übertragung auf Hardware:** Erst danach geht es auf den echten Roboter – optimal auf die Anforderungen angepasst, begleitet von Monitoring, Evaluation, Analyse und laufender Optimierung.
+
 ### 🧑‍💻 Human-Centered Automation
 Der Operator steht im Zentrum des Interaktionsdesigns: Der Automatisierungszustand bleibt nachvollziehbar und die nächste Systemaktion vorhersehbar – keine Black Box.
 
