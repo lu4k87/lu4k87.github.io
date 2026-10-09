@@ -560,15 +560,17 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
 .tm-hint { font: 600 12px/1.35 var(--mono); color: var(--fg-2); text-align: center; text-wrap: balance; }  /* Icon im Textfluss: bleibt beim Umbruch am Text */
 .tm-hint .ico { display: inline-block; width: 16px; height: 16px; margin-right: 8px; vertical-align: -3px; color: var(--accent); }
 /* Umlaufbahn: Hälfte je Ebene */
-.tm-orb { fill: none; stroke: color-mix(in srgb, var(--hue) 40%, var(--line)); stroke-width: 1; stroke-dasharray: 2 6; }
+.tm-orb { fill: none; stroke: color-mix(in srgb, var(--hue) 45%, var(--line)); stroke-width: 1.2; stroke-dasharray: 2 6; }
 .tm-k { font: 700 13px/1 var(--mono); letter-spacing: .12em; fill: var(--hue); }
 /* Speichen, Routen, Sicherheitsring, Mensch */
 .tm-spoke { stroke: var(--line-strong); stroke-width: 1; }
-.tm-route { fill: none; stroke: var(--hue); stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; opacity: 0; }
-.tm-ring { fill: color-mix(in srgb, var(--gold) 5%, transparent); stroke: color-mix(in srgb, var(--gold) 55%, transparent); stroke-width: 1.5; stroke-dasharray: 3 5; }
-.tm-ring-t { font: 700 12.5px/1 var(--mono); letter-spacing: .06em; fill: var(--gold); }
-.tm-core { fill: color-mix(in srgb, var(--accent) 14%, var(--surface)); stroke: color-mix(in srgb, var(--accent) 55%, var(--line)); stroke-width: 1.5; }
-.tm-core-ico { color: var(--accent); }
+.tm-route { fill: none; stroke: var(--hue); stroke-width: 2.8; stroke-linecap: round; stroke-linejoin: round; opacity: 0; filter: drop-shadow(0 0 6px var(--hue)); }
+.tm-ring { fill: color-mix(in srgb, var(--gold) 5%, transparent); stroke: color-mix(in srgb, var(--gold) 60%, transparent); stroke-width: 1.5; stroke-dasharray: 4 5; }
+.tm-ring-outer { fill: none; stroke: color-mix(in srgb, var(--gold) 30%, transparent); stroke-width: 1; stroke-dasharray: 2 6; }
+.tm-ring-t { font: 700 12.5px/1 var(--mono); letter-spacing: .08em; fill: var(--gold); }
+.tm-core { fill: color-mix(in srgb, var(--accent) 15%, var(--surface)); stroke: color-mix(in srgb, var(--accent) 65%, var(--line)); stroke-width: 1.5; transition: stroke var(--t-base); }
+.tm-core-pulse { fill: none; stroke: var(--accent); stroke-width: 1; stroke-dasharray: 3 6; opacity: .35; }
+.tm-core-ico { color: var(--accent); filter: drop-shadow(0 0 8px color-mix(in srgb, var(--accent) 45%, transparent)); }
 .tm-core-t { font: 700 13px/1 var(--mono); letter-spacing: .16em; fill: var(--fg); }
 .tm-stem { stroke: color-mix(in srgb, var(--gold) 55%, transparent); stroke-width: 1.5; }
 .tm-st rect { fill: var(--surface); stroke: var(--gold); stroke-width: 1.5; transition: fill var(--t-base); }
@@ -577,15 +579,16 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
 .tm-st.hit text { fill: var(--fg); }
 /* Steuerwege: Kreis mit Icon, Titel, Gerät */
 .tm-node { cursor: pointer; color: var(--hue); }
-.tm-node .tm-dot, .tm-vis .tm-dot { fill: color-mix(in srgb, var(--hue) 13%, var(--surface)); stroke: color-mix(in srgb, var(--hue) 55%, var(--line)); stroke-width: 1.5; transition: fill var(--t-fast), stroke var(--t-fast); }
+.tm-node .tm-dot, .tm-vis .tm-dot { fill: color-mix(in srgb, var(--hue) 14%, var(--surface)); stroke: color-mix(in srgb, var(--hue) 60%, var(--line)); stroke-width: 1.5; transition: fill var(--t-fast), stroke var(--t-fast), filter var(--t-fast); }
 .tm-vis { color: var(--hue); }
-.tm-halo { fill: none; stroke: var(--hue); stroke-width: 1; opacity: 0; transition: opacity var(--t-base) var(--ease-out); }
+.tm-halo { fill: none; stroke: var(--hue); stroke-width: 1; opacity: 0; transition: opacity var(--t-base) var(--ease-out), stroke-width var(--t-base) var(--ease-out); }
 .tm-t { font-size: 17px; font-weight: 800; letter-spacing: -.01em; fill: var(--fg); }
 .tm-d { font: 600 12.5px/1 var(--mono); letter-spacing: .06em; fill: var(--fg-2); }
-.tm-node:hover .tm-dot { fill: color-mix(in srgb, var(--hue) 22%, var(--surface)); stroke: var(--hue); }
-.tm-node.on .tm-dot { fill: var(--hue); stroke: var(--hue); }
+.tm-node:hover .tm-dot { fill: color-mix(in srgb, var(--hue) 26%, var(--surface)); stroke: var(--hue); filter: drop-shadow(0 0 10px var(--hue)); }
+.tm-node:hover .tm-halo { opacity: .45; }
+.tm-node.on .tm-dot { fill: var(--hue); stroke: var(--hue); filter: drop-shadow(0 0 12px var(--hue)); }
 .tm-node.on use { color: var(--surface); }
-.tm-node.on .tm-halo { opacity: .5; }
+.tm-node.on .tm-halo { opacity: .65; stroke-width: 1.5; }
 /* Shared Control, Arm, Vision */
 .tm-shared rect { fill: var(--surface); stroke: var(--line-strong); stroke-width: 1; transition: stroke var(--t-base); }
 .tm-shared text { font: 700 12.5px/1 var(--mono); letter-spacing: .1em; fill: var(--fg); }
@@ -598,60 +601,66 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
 .tm-obj { fill: color-mix(in srgb, var(--fg) 14%, var(--surface)); stroke: var(--line-strong); stroke-width: 1; }
 .tm-bbox { fill: none; stroke: var(--hue); stroke-width: 2; }
 .tm-vline { stroke: var(--hue); stroke-width: 1.5; stroke-dasharray: 4 5; }
-.tm-pk { fill: var(--hue, var(--accent)); opacity: 0; }
+.tm-pk { fill: var(--hue, var(--accent)); opacity: 0; filter: drop-shadow(0 0 8px var(--hue, var(--accent))); }
 .tm-done .tm-shared rect { stroke: var(--accent); }
 .tm-done .tm-arm-j { stroke: var(--blue); }
 /* Auswahl: zwei Ebenen mit je drei Knöpfen */
-.tm-node:focus { outline: none; }  /* Fokus = Halo kräftig (Knoten per Tab + Enter/Leertaste bedienbar) */
-.tm-node:focus-visible .tm-halo { opacity: 1; stroke-width: 3; }
+.tm-node:focus { outline: none; }
+.tm-node:focus-visible .tm-halo { opacity: 1; stroke-width: 3; filter: drop-shadow(0 0 10px var(--hue)); }
 .tm-main { display: grid; gap: 24px; min-width: 0; align-content: start; container-type: inline-size; }
 .tm-estop { display: flex; align-items: flex-start; justify-content: center; gap: 8px; margin: 0; font-size: 14px; line-height: 1.45; color: var(--fg-2); text-align: center; }
 .tm-estop .ico { flex: none; width: 18px; height: 18px; margin-top: 1px; color: var(--red); }
 .tm-estop b { color: var(--fg); }
-/* Ghost-Bühne (js/hero3d.js, Szene „ghost“): nur mit WebGL und ohne reduced-motion (Klasse .tm-3d am Raster), sonst bleibt das SVG
-   vollständig. Orbit oben bis zur Unterkante, die Linie läuft ohne Absatz in die Bühne und bis in den Sockel (.tm-flow, Projektion
-   der Kamera); Bühne ohne Rahmen, Ränder weich ausgeblendet; Kette als Leiste auf der Bühne (Wunsch User 06.10.2026) */
+/* Ghost-Bühne (js/hero3d.js, Szene „ghost“): nur mit WebGL und ohne reduced-motion (Klasse .tm-3d am Raster) */
 .tm-stage { display: none; }
 .tm-3d { row-gap: 0; }
 .tm-3d .tm-svg { width: min(100%, 880px); }
-.tm-3d .tm-hint { display: none; }  /* Hinweis steht an der Auswahl unten */
+.tm-3d .tm-hint { display: none; }
 .tm-3d .tm-stage { position: relative; display: grid; grid-template: auto minmax(0, 1fr) auto / minmax(0, 1fr); aspect-ratio: 2 / 1; background: none; }
 .tm-3d .tm-stage::before { content: ""; grid-area: 1 / 1 / -1 / -1; pointer-events: none;
-  background: linear-gradient(var(--grid) 1px, transparent 1px) 0 0 / 32px 32px, linear-gradient(90deg, var(--grid) 1px, transparent 1px) 0 0 / 32px 32px, var(--bg);
+  background: radial-gradient(circle at 50% 55%, color-mix(in srgb, var(--accent) 7%, transparent) 0%, transparent 68%),
+              linear-gradient(var(--grid) 1px, transparent 1px) 0 0 / 32px 32px, linear-gradient(90deg, var(--grid) 1px, transparent 1px) 0 0 / 32px 32px, var(--bg);
   -webkit-mask: linear-gradient(90deg, transparent, #000 12% 88%, transparent), linear-gradient(transparent, #000 16% 84%, transparent);
   -webkit-mask-composite: source-in; mask: linear-gradient(90deg, transparent, #000 12% 88%, transparent), linear-gradient(transparent, #000 16% 84%, transparent);
   mask-composite: intersect; }
-:root[data-theme="light"] .tm-3d .tm-stage::before { display: none; }  /* hell: Arm steht direkt auf der Seite, Linie bleibt in Orbit-Farbe */
+:root[data-theme="light"] .tm-3d .tm-stage::before { display: none; }
 @media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) .tm-3d .tm-stage::before { display: none; } }
 .tm-3d :is(.tm-stem, .tm-st, .tm-shared, .tm-arm, .tm-vis, .tm-pk, .tm-d) { display: none; }
 .tm-3d .tm-t { font-size: 19px; }
 .tm-canvas { grid-area: 1 / 1 / -1 / -1; position: relative; min-width: 0; min-height: 0; opacity: 0; transition: opacity 1.4s var(--ease-out); cursor: grab; }
 .tm-canvas:active { cursor: grabbing; }
 .tm-stage.is-3d .tm-canvas { opacity: 1; }
-/* Linie vom Orbit in den Sockel: gestrichelt = Weg, Farbe zeichnet sich mit Puls, Welle am Sockel = angekommen */
+/* Linie vom Orbit in den Sockel: gestrichelt = Weg, Leuchtkern + Schein fließt mit Puls, Doppel-Welle am Sockel */
 .tm-flow { grid-area: 1 / 1 / -1 / -1; z-index: 1; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
-.tm-flow-l { fill: none; stroke: color-mix(in srgb, var(--hue) 40%, var(--line)); stroke-width: 1.5; stroke-dasharray: 2 6; }
-.tm-flow-run { fill: none; stroke: var(--hue); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
-.tm-flow-pk { fill: var(--hue); }
-.tm-flow-rip { fill: none; stroke: var(--hue); stroke-width: 2; }
-.tm-top { grid-area: 1 / 1; z-index: 2; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start; gap: 6px; padding: 12px 0; pointer-events: none; }
-.tm-badge { display: inline-flex; align-items: center; gap: 8px; padding: 6px 10px; border-radius: var(--radius-sm);
-  background: rgba(17, 19, 21, .82); font: 700 12px/1.2 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--fg); }
+.tm-flow-l { fill: none; stroke: color-mix(in srgb, var(--hue) 35%, var(--line)); stroke-width: 1.5; stroke-dasharray: 2 6; }
+.tm-flow-glow { fill: none; stroke: var(--hue); stroke-width: 8; stroke-linecap: round; opacity: 0; filter: blur(4px); }
+.tm-flow-run { fill: none; stroke: var(--hue); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; filter: drop-shadow(0 0 6px var(--hue)); }
+.tm-flow-pk { fill: #fff; filter: drop-shadow(0 0 7px var(--hue)); }
+.tm-flow-rip { fill: none; stroke: var(--hue); stroke-width: 2.2; filter: drop-shadow(0 0 5px var(--hue)); }
+.tm-flow-rip2 { fill: none; stroke: var(--hue); stroke-width: 1.2; opacity: 0; }
+.tm-top { grid-area: 1 / 1; z-index: 2; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start; gap: 8px; padding: 12px 10px; pointer-events: none; }
+.tm-badge { display: inline-flex; align-items: center; gap: 8px; padding: 7px 12px; border-radius: var(--radius-sm);
+  background: rgba(16, 20, 24, .75); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, .08); box-shadow: 0 4px 20px rgba(0,0,0,.35);
+  font: 700 12px/1.2 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--fg); }
 .tm-badge .ico { width: 16px; height: 16px; color: var(--hue, var(--accent)); }
 .tm-badge.fake { color: var(--accent); }
-.tm-steps { grid-area: 3 / 1; z-index: 2; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; margin: 0; padding: 12px 0; list-style: none; pointer-events: none; }
-.tm-steps li { display: grid; align-content: start; gap: 3px; padding: 8px 10px; border-radius: var(--radius); background: rgba(31, 35, 39, .9); color: var(--fg-2);
-  transition: background-color var(--t-base), color var(--t-base); }
-.tm-steps li::before { content: "○"; font: 700 12px/1 var(--mono); }  /* Zustand als Zeichen, nie nur Farbe: ○ offen · ● aktiv · ✓ erledigt */
+.tm-badge-act { display: inline-flex; align-items: center; gap: 6px; padding: 2px 8px; margin-left: 6px; border-radius: 4px;
+  background: color-mix(in srgb, var(--hue, var(--accent)) 16%, transparent); color: var(--hue, var(--accent)); font-size: 11px; letter-spacing: .04em; }
+.tm-steps { grid-area: 3 / 1; z-index: 2; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; margin: 0; padding: 14px 10px; list-style: none; pointer-events: none; }
+.tm-steps li { display: grid; align-content: start; gap: 3px; padding: 9px 12px; border-radius: var(--radius);
+  background: rgba(18, 22, 26, .75); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, .07); box-shadow: 0 4px 16px rgba(0,0,0,.25); color: var(--fg-2);
+  transition: background-color var(--t-base), border-color var(--t-base), color var(--t-base), box-shadow var(--t-base); }
+.tm-steps li::before { content: "○"; font: 700 12px/1 var(--mono); transition: color var(--t-base); }
 .tm-steps b { font: 700 11px/1.2 var(--mono); letter-spacing: .04em; text-transform: uppercase; }
 .tm-steps small { font-size: 12px; line-height: 1.25; hyphens: auto; }
-.tm-steps li.done { color: var(--fg); }
+.tm-steps li.done { color: var(--fg); border-color: color-mix(in srgb, var(--gold) 35%, rgba(255,255,255,.08)); }
 .tm-steps li.done::before { content: "✓"; color: var(--gold); }
-.tm-steps li.now { color: var(--fg); background: color-mix(in srgb, var(--accent) 22%, rgba(31, 35, 39, .92)); }
+.tm-steps li.now { color: var(--fg); background: color-mix(in srgb, var(--accent) 18%, rgba(18, 22, 26, .85));
+  border-color: color-mix(in srgb, var(--accent) 55%, transparent); box-shadow: 0 0 16px -2px color-mix(in srgb, var(--accent) 30%, transparent); }
 .tm-steps li.now::before { content: "●"; color: var(--accent); }
 @container (max-width: 600px) { .tm-steps small { display: none; } }
 @container (max-width: 560px) {
-  /* schmal: Leinwand quadratisch oben (Linie trifft direkt auf sie), Badges + Kette darunter (nichts verdeckt Arm oder Linie) */
   .tm-3d .tm-stage { aspect-ratio: auto; grid-template-rows: auto auto auto; }
   .tm-top { grid-area: 2 / 1; padding-bottom: 0; }
   .tm-canvas { grid-area: 1 / 1; aspect-ratio: 1 / 1; }
@@ -1072,6 +1081,9 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
           <figure class="tm-fig">
             <svg class="tm-svg" viewBox="0 88 720 656" role="group" aria-labelledby="tm-svg-t">
             <title id="tm-svg-t" data-en="Six of ten control modes around the human; every input runs through the same safety chain to the xArm Lite 6">Sechs von zehn Steuerwegen um den Menschen; jede Eingabe läuft durch dieselbe Sicherheitskette zum xArm Lite 6</title>
+            <defs>
+              <filter id="tm-glow" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="5" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+            </defs>
             <path class="tm-orb" style="--hue: var(--violet)" d="M360 472 A172 172 0 0 1 211 214"/>
             <path class="tm-orb" style="--hue: var(--accent)" d="M211 214 A172 172 0 1 1 360 472"/>
             <line class="tm-spoke" data-m="blick" style="--hue: var(--accent)" x1="302" y1="199.5" x2="290" y2="178.8"/>
@@ -1086,11 +1098,13 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
             <path class="tm-route" data-m="gamepad" style="--hue: var(--accent)" d="M431 177 L416 203 A112 112 0 0 1 360 412 L360 562"/>
             <path class="tm-route" data-m="vr" style="--hue: var(--accent)" d="M502 300 L472 300 A112 112 0 0 1 360 412 L360 562"/>
             <path class="tm-route" data-m="ui" style="--hue: var(--accent)" d="M451.3 408.8 L432 385.8 A112 112 0 0 1 360 412 L360 562"/>
+            <circle class="tm-ring-outer" cx="360" cy="300" r="118"/>
             <circle class="tm-ring" cx="360" cy="300" r="112"/>
             <path id="tm-txt-up" fill="none" d="M268 300 A92 92 0 0 1 452 300"/>
             <path id="tm-txt-dn" fill="none" d="M256 300 A104 104 0 0 0 464 300"/>
             <text class="tm-ring-t" aria-hidden="true"><textPath href="#tm-txt-up" startOffset="50%" text-anchor="middle" data-en="CONTROL LOCK · PRE-CHECK · MOVEIT">CONTROL-LOCK · VORPRÜFUNG · MOVEIT</textPath></text>
             <text class="tm-ring-t" aria-hidden="true"><textPath href="#tm-txt-dn" startOffset="50%" text-anchor="middle" data-en="E-STOP ALWAYS WORKS">E-STOP WIRKT IMMER</textPath></text>
+            <circle class="tm-core-pulse" cx="360" cy="300" r="68"/>
             <circle class="tm-core" cx="360" cy="300" r="58"/>
             <use class="tm-core-ico" href="#i-user" x="340" y="268" width="40" height="40"/>
             <text class="tm-core-t" x="360" y="330" text-anchor="middle" data-en="HUMAN">MENSCH</text>
@@ -1113,8 +1127,8 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
           </figure>
           <div class="tm-main">
             <div class="tm-stage dark-zone" id="tm-stage">
-              <div class="tm-top"><span class="tm-badge mode"><svg class="ico" aria-hidden="true"><use href="#i-user"/></svg><span><span data-en="Human leads">Mensch führt</span> · <b></b></span></span><span class="tm-badge fake">● Robot | Digital Twin · Digital Twin</span></div>
-              <svg class="tm-flow" aria-hidden="true"><path class="tm-flow-l"/><path class="tm-flow-run"/><path class="tm-flow-rip"/><circle class="tm-flow-pk" r="5"/></svg>
+              <div class="tm-top"><span class="tm-badge mode"><svg class="ico" aria-hidden="true"><use href="#i-user"/></svg><span><span data-en="Human leads">Mensch führt</span> · <b></b><span class="tm-badge-act" data-en="Stick Jogging (Servo)">Stick-Jogging (Servo)</span></span></span><span class="tm-badge fake">● Robot | Digital Twin · Digital Twin</span></div>
+              <svg class="tm-flow" aria-hidden="true"><path class="tm-flow-l"/><path class="tm-flow-glow"/><path class="tm-flow-run"/><path class="tm-flow-rip"/><path class="tm-flow-rip2"/><circle class="tm-flow-pk" r="5"/></svg>
               <div class="tm-canvas" id="tm3d" role="img" aria-label="Digital Twin im Modus (Robot | Digital Twin): der Ghost-Arm plant den Weg voraus, nach der Bestätigung fährt der xArm Lite 6 nach" data-en-aria="Digital Twin in Robot | Digital Twin mode: the ghost arm plans the path ahead, after confirmation the xArm Lite 6 follows"></div>
               <ol class="tm-steps">
                 <li><b data-en="Input">Eingabe</b><small data-en="from the human">vom Menschen</small></li>
@@ -1351,9 +1365,15 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
         </div>
         <div class="fa" id="atlas-list">
           <div class="fa-legend">
-            <p data-en="&lt;b&gt;First virtual, then real.&lt;/b&gt; Pick a card: its flow runs topic by topic. Every card shows the path of its function to real robot hardware, for example:"><b>Erst virtuell, dann real.</b> Karte wählen: Ihr Ablauf läuft Topic für Topic. Jede Karte zeigt den Weg ihrer Funktion zur echten Roboter-Hardware, zum Beispiel:</p>
-            <span data-stage-ex="sr"></span>
-            <p data-en="Full circle with tick = stage applies · empty circle = stage is skipped · # = link to the function.">Voller Kreis mit Haken = Stufe gilt · leerer Kreis = Stufe entfällt · # = Link zur Funktion.</p>
+            <div class="fa-leg-lead">
+              <svg class="ico" aria-hidden="true"><use href="#i-cube"/></svg>
+              <p data-en="&lt;b&gt;First virtual, then real.&lt;/b&gt; Pick any function to inspect its live topic flow to real hardware:"><b>Erst virtuell, dann real.</b> Funktion wählen, um ihren Topic-Ablauf zur echten Hardware interaktiv zu verfolgen:</p>
+            </div>
+            <div class="fa-leg-stages">
+              <span class="fa-leg-label" data-en="Stages:">Prüfstufen:</span>
+              <span data-stage-ex="sr"></span>
+              <small data-en="Circle with tick = active stage · dashed circle = omitted stage">Haken = aktive Stufe · gestrichelt = entfällt</small>
+            </div>
           </div>
           <div class="filter" role="search" aria-label="Funktionen filtern" data-en-aria="Filter functions">
             <div class="chips" id="areas" role="group" aria-label="Bereich" data-en-aria="Area"></div>
@@ -2731,9 +2751,9 @@ if (tm && tm.tmPick && window.Hero3D && !matchMedia('(prefers-reduced-motion: re
     // (Ebene liegt vor dem 3D: Ende außerhalb des Fußes, sonst läge die Linie auf ihm; Welle startet dort).
     // Punkte per Kamera-Projektion, neu bei jeder Kamerabewegung (Auto-Orbit, Ziehen) und Größenänderung
     const stage = tm.querySelector('.tm-stage'), flow = tm.querySelector('.tm-flow'), cam = h3d.stage.camera, cv = h3d.stage.renderer.domElement;
-    const [fl, fr, frip] = ['.tm-flow-l', '.tm-flow-run', '.tm-flow-rip'].map(s => flow.querySelector(s)), fpk = flow.querySelector('.tm-flow-pk');
+    const [fl, fglow, fr, frip, frip2] = ['.tm-flow-l', '.tm-flow-glow', '.tm-flow-run', '.tm-flow-rip', '.tm-flow-rip2'].map(s => flow.querySelector(s)), fpk = flow.querySelector('.tm-flow-pk');
     const V = new THREE.Vector3(), RT = new THREE.Vector3(), ease = k => (k < .5 ? 4 * k ** 3 : 1 - (-2 * k + 2) ** 3 / 2);
-    let fk = 0, rk = -1, fRaf = 0;   // fk: Anteil der gezeichneten Linie 0…1; rk: Welle am Sockel 0…1 (−1 = keine)
+    let fk = 0, rk = -1, rk2 = -1, fRaf = 0;   // fk: gezeichnet 0…1; rk, rk2: Doppel-Welle am Sockel 0…1 (−1 = keine)
     const draw = () => {
       const s = stage.getBoundingClientRect(), c = cv.getBoundingClientRect(); if (!c.width || !s.width) return;
       const ox = c.left - s.left, oy = c.top - s.top;
@@ -2747,34 +2767,65 @@ if (tm && tm.tmPick && window.Hero3D && !matchMedia('(prefers-reduced-motion: re
       const d = `M${f(A[0])} ${f(A[1])} C${f(A[0])} ${f(A[1] + dy * .55)} ${f(R[0])} ${f(R[1] - dy * .45)} ${f(R[0])} ${f(R[1])} L${f(B[0])} ${f(B[1])}`;
       flow.setAttribute('viewBox', `0 0 ${f(s.width)} ${f(s.height)}`);
       fl.setAttribute('d', d); fr.setAttribute('d', d);
+      if (fglow) fglow.setAttribute('d', d);
       const len = fr.getTotalLength(), p = fr.getPointAtLength(len * fk);
       fr.style.strokeDasharray = len; fr.style.strokeDashoffset = len * (1 - fk); fr.style.opacity = fk > 0 ? 1 : 0;
+      if (fglow) { fglow.style.strokeDasharray = len; fglow.style.strokeDashoffset = len * (1 - fk); fglow.style.opacity = fk > 0 ? 0.45 : 0; }
       fpk.setAttribute('cx', f(p.x)); fpk.setAttribute('cy', f(p.y)); fpk.style.opacity = fk > 0 && fk < 1 ? 1 : 0;
-      if (rk < 0) { frip.style.opacity = 0; return; }
-      const rr = 0.13 + rk * 0.14, pts = Array.from({ length: 33 }, (_, i) => P(rr, i / 32 * Math.PI * 2));
-      frip.setAttribute('d', 'M' + pts.map(q => q.map(f).join(' ')).join(' L') + 'Z'); frip.style.opacity = 1 - rk;
+      if (rk < 0) { frip.style.opacity = 0; }
+      else {
+        const rr = 0.13 + rk * 0.14, pts = Array.from({ length: 33 }, (_, i) => P(rr, i / 32 * Math.PI * 2));
+        frip.setAttribute('d', 'M' + pts.map(q => q.map(f).join(' ')).join(' L') + 'Z'); frip.style.opacity = Math.max(0, 1 - rk);
+      }
+      if (!frip2 || rk2 < 0) { if (frip2) frip2.style.opacity = 0; }
+      else {
+        const rr2 = 0.13 + rk2 * 0.19, pts2 = Array.from({ length: 33 }, (_, i) => P(rr2, i / 32 * Math.PI * 2));
+        frip2.setAttribute('d', 'M' + pts2.map(q => q.map(f).join(' ')).join(' L') + 'Z'); frip2.style.opacity = Math.max(0, (1 - rk2) * 0.65);
+      }
     };
     h3d.stage.controls?.addEventListener('change', draw);
     new ResizeObserver(draw).observe(stage);
-    const arrive = () => { hold = false; step(2); h3d.next(); };
-    const flowIn = () => {   // Puls fließt 900 ms vom Orbit in den Sockel, danach Welle 700 ms; Ankunft = Vorprüfung startet
+    const arrive = () => {
+      hold = false; step(2);
+      if (h3d) {
+        if (h3d.setMode) h3d.setMode(cur);
+        h3d.next(cur);
+      }
+    };
+    const flowIn = () => {   // Puls fließt 900 ms vom Orbit in den Sockel, danach Doppel-Welle 750 ms; Ankunft = Vorprüfung startet
       cancelAnimationFrame(fRaf);
       const t0 = performance.now(); let arrived = false;
       const tick = now => {
-        const u = now - t0; fk = ease(Math.min(1, u / 900)); rk = u < 900 ? -1 : Math.min(1, (u - 900) / 700);
+        const u = now - t0; fk = ease(Math.min(1, u / 900));
+        rk = u < 900 ? -1 : Math.min(1, (u - 900) / 700);
+        rk2 = u < 1050 ? -1 : Math.min(1, (u - 1050) / 750);
         if (u >= 900 && !arrived) { arrived = true; arrive(); }
-        draw(); if (u < 1600) fRaf = requestAnimationFrame(tick); else { rk = -1; draw(); }
+        draw(); if (u < 1850) fRaf = requestAnimationFrame(tick); else { rk = -1; rk2 = -1; draw(); }
       };
       fRaf = requestAnimationFrame(tick);
+    };
+    const ACT_MAP = {
+      gamepad: { de: 'Stick-Jogging (Servo)', en: 'Stick Jogging (Servo)' },
+      vr: { de: '6-DoF Raumführung', en: '6-DoF Spatial Teleop' },
+      ui: { de: 'Linearer Waypoint', en: 'Linear Waypoint' },
+      vla: { de: 'Scan & Greif-Ablauf', en: 'Scan & Pick-Place' },
+      sprache: { de: 'Pose-Befehl (Inspektion)', en: 'Pose Command (Inspect)' },
+      blick: { de: 'Blick-Fixierung (Dwell)', en: 'Gaze Fixation (Dwell)' }
     };
     const label = () => {
       const n = svg.querySelector(`.tm-node[data-m="${cur}"]`);
       badge.querySelector('b').textContent = n.querySelector('.tm-t').textContent;
+      const actEl = badge.querySelector('.tm-badge-act');
+      if (actEl) {
+        const isEn = document.documentElement.lang === 'en' || document.body.dataset.lang === 'en';
+        const a = ACT_MAP[cur] || ACT_MAP.gamepad;
+        actEl.textContent = isEn ? a.en : a.de;
+      }
       badge.style.setProperty('--hue', n.style.getPropertyValue('--hue'));
       flow.style.setProperty('--hue', getComputedStyle(n).getPropertyValue('--hue'));   // Farbe wie im Orbit (Seiten-Theme), nicht die der dunklen Bühne
     };
     const input = () => {   // neue Eingabe: Linie leer, Kette zurück; Control-Lock, sobald die Eingabe den Ring passiert
-      timers.forEach(clearTimeout); cancelAnimationFrame(fRaf); hold = true; fk = 0; rk = -1; draw(); step(0);
+      timers.forEach(clearTimeout); cancelAnimationFrame(fRaf); hold = true; fk = 0; rk = -1; rk2 = -1; draw(); step(0);
       timers = [setTimeout(() => step(1), 800)];
     };
     fit(); document.fonts?.ready.then(fit);
@@ -2783,7 +2834,13 @@ if (tm && tm.tmPick && window.Hero3D && !matchMedia('(prefers-reduced-motion: re
     document.querySelectorAll('[data-theme-btn]').forEach(b => b.addEventListener('click', () => requestAnimationFrame(label)));
     let paused = false, seen = false;
     const iv = setInterval(() => { if (!paused && seen && !document.hidden) tm.tmPick(ORDER[(ORDER.indexOf(cur) + 1) % ORDER.length], false); }, 8500);
-    tm.addEventListener('tm-pick', e => { cur = e.detail.m; label(); input(); if (e.detail.user) clearInterval(iv); });
+    tm.addEventListener('tm-pick', e => {
+      cur = e.detail.m;
+      label();
+      input();
+      if (h3d && h3d.setMode) h3d.setMode(cur);
+      if (e.detail.user) clearInterval(iv);
+    });
     tm.addEventListener('tm-routed', e => { if (e.detail.m === cur) flowIn(); });
     tm.addEventListener('pointerenter', () => { paused = true; }); tm.addEventListener('pointerleave', () => { paused = false; });
     tm.addEventListener('focusin', () => { paused = true; }); tm.addEventListener('focusout', () => { paused = false; });

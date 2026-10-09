@@ -40,7 +40,7 @@ const FlowGraph = (() => {
   const reduceMQ = matchMedia('(prefers-reduced-motion: reduce)');
 
   function create(fig, spec, opt = {}) {
-    const o = { lang: 'de', nodeW: 176, nodeH: 56, rowGap: 34, hopMs: 750, dwellMs: 420, loopMs: 1400, pxPerSec: 170, ...opt };
+    const o = { lang: 'de', nodeW: 196, nodeH: 56, rowGap: 34, hopMs: 750, dwellMs: 420, loopMs: 1400, pxPerSec: 170, ...opt };
     const L = v => (Array.isArray(v) ? v[o.lang === 'en' ? 1 : 0] : v ?? '');
     const $ = s => fig.querySelector(s);
     const svg = $('.fg-svg'), status = $('.fg-status');
@@ -48,7 +48,7 @@ const FlowGraph = (() => {
     const edges = new Map(spec.edges.map(e => [`${e.from}>${e.to}`, { kind: 'topic', ...e, key: `${e.from}>${e.to}` }]));
     const scns = spec.scenarios || [];
     const laneIx = new Map(spec.lanes.map((l, i) => [l.id, i]));
-    const st = { scn: scns.length ? 0 : -1, step: -1, play: !reduceMQ.matches, speed: 1, pin: null, hover: null, visible: false, run: 0, live: false };
+    const st = { scn: scns.length ? 0 : -1, step: -1, transEdge: null, play: !reduceMQ.matches, speed: 1, pin: null, hover: null, visible: false, run: 0, live: false };
     const flights = new Set();
     let geo = null, raf = 0, liveT = 0;
 
@@ -149,9 +149,9 @@ const FlowGraph = (() => {
       for (const n of nodes.values()) {
         const [x, y] = geo.pos.get(n.id), { nw, nh } = geo, small = nw < 120;
         const g = el('g', { class: 'node', transform: `translate(${x - nw / 2} ${y - nh / 2})`, style: `--c: var(--${n.hue || 'accent'})`, tabindex: 0, role: 'button' }, gn);
-        el('rect', { width: nw, height: nh, rx: 2 }, g);
-        if (!small) el('use', { href: `#${n.icon}`, x: 10, y: nh / 2 - 11, width: 22, height: 22 }, g);
-        const tx = small ? nw / 2 : 40, anchor = small ? 'middle' : 'start';
+        el('rect', { width: nw, height: nh, rx: 6 }, g);
+        if (!small) el('use', { href: `#${n.icon}`, x: 10, y: nh / 2 - 10, width: 20, height: 20 }, g);
+        const tx = small ? nw / 2 : 36, anchor = small ? 'middle' : 'start';
         el('text', { class: 't', x: tx, y: geo.vert ? nh / 2 + 5 : nh / 2 - 3, 'text-anchor': anchor }, g);
         if (!geo.vert) el('text', { class: 's', x: tx, y: nh / 2 + 13, 'text-anchor': anchor }, g);
         g.addEventListener('pointerenter', () => { st.hover = { node: n.id }; paint(); });
@@ -171,19 +171,19 @@ const FlowGraph = (() => {
       return [lut[i][0] + (lut[i + 1][0] - lut[i][0]) * r, lut[i][1] + (lut[i + 1][1] - lut[i][1]) * r];
     };
     const chip = (key, text, cls) => {  // Etikett an die erste Stelle der Kante, an der es keinen Knoten verdeckt
-      const g = el('g', { class: `chip ${cls || ''}` }, gChips), r = el('rect', { height: 22, rx: 2 }, g), t = el('text', {}, g);
+      const g = el('g', { class: `chip ${cls || ''}` }, gChips), r = el('rect', { height: 24, rx: 6 }, g), t = el('text', {}, g);
       t.textContent = text;
-      const w = t.getComputedTextLength() + 16, { nw, nh } = geo;
-      const free = (x0, y0) => [...geo.pos.values()].every(([cx, cy]) => x0 > cx + nw / 2 + 2 || x0 + w < cx - nw / 2 - 2 || y0 > cy + nh / 2 + 2 || y0 + 22 < cy - nh / 2 - 2);
+      const w = t.getComputedTextLength() + 18, { nw, nh } = geo;
+      const free = (x0, y0) => [...geo.pos.values()].every(([cx, cy]) => x0 > cx + nw / 2 + 2 || x0 + w < cx - nw / 2 - 2 || y0 > cy + nh / 2 + 2 || y0 + 24 < cy - nh / 2 - 2);
       let best = null;
       for (const k of [.5, .4, .6, .3, .7, .2, .8]) {
         const [x, y] = at(key, k), x0 = Math.max(2, Math.min(geo.W - w - 2, x - w / 2));
-        for (const y0 of [y - 11, y - 38, y + 16, y - 55, y + 33]) if (free(x0, y0)) { best = [x0, y0]; break; }
+        for (const y0 of [y - 12, y - 40, y + 16, y - 56, y + 34]) if (free(x0, y0)) { best = [x0, y0]; break; }
         if (best) break;
       }
-      if (!best) { const [x, y] = at(key, .5); best = [Math.max(2, Math.min(geo.W - w - 2, x - w / 2)), y - 11]; }
+      if (!best) { const [x, y] = at(key, .5); best = [Math.max(2, Math.min(geo.W - w - 2, x - w / 2)), y - 12]; }
       r.setAttribute('x', best[0]); r.setAttribute('y', best[1]); r.setAttribute('width', w);
-      t.setAttribute('x', best[0] + 8); t.setAttribute('y', best[1] + 11);
+      t.setAttribute('x', best[0] + 9); t.setAttribute('y', best[1] + 12);
     };
     const edgeText = e => `${L(e.label)}${e.hz === 0 ? ` · ⚠ 0 Hz` : e.hz != null ? ` · ${e.hz} Hz` : ''}`;
 
@@ -197,7 +197,14 @@ const FlowGraph = (() => {
         const h = hop(x.edge); if (!h) return;
         on.add(h.e.key); hl.add(h.e.key); hl.add(h.e.from); hl.add(h.e.to);
         (x.also || []).forEach(k => { on.add(k); hl.add(k); hl.add(k.split('>')[1]); });
-        if (i === st.step) { nowE.add(h.e.key); nowN.add(h.rev ? h.e.from : h.e.to); }
+        if (i === st.step) {
+          nowE.add(h.e.key);
+          if (st.transEdge) {
+            nowN.add(h.rev ? h.e.to : h.e.from);
+          } else {
+            nowN.add(h.rev ? h.e.from : h.e.to);
+          }
+        }
       });
       if (s && !st.live && st.step < 0 && s.steps[0]) { const h = hop(s.steps[0].edge); if (h) nowN.add(h.rev ? h.e.to : h.e.from); }
       let dim = !!(s && !st.live);
@@ -228,8 +235,8 @@ const FlowGraph = (() => {
           if (k === cur) continue;
           const [bx, by] = at(k, .5), b = el('g', { class: 'badge hl' }, gBadges), t = el('text', { x: bx, y: by }, b);
           t.textContent = list.join(',');
-          const w = Math.max(20, t.getComputedTextLength() + 10);
-          b.prepend(el('rect', { x: bx - w / 2, y: by - 10, width: w, height: 20, rx: 2 }));
+          const w = Math.max(22, t.getComputedTextLength() + 12);
+          b.prepend(el('rect', { x: bx - w / 2, y: by - 10, width: w, height: 20, rx: 10 }));
         }
       }
       if (s && !st.live && !quiet && st.step >= 0) { const h = hop(s.steps[st.step].edge); if (h) chip(h.e.key, `${st.step + 1} · ${L(s.steps[st.step].topic) || edgeText(h.e)}`, 'now'); }
@@ -293,7 +300,9 @@ const FlowGraph = (() => {
     // ── Animation: eine rAF-Schleife für alle Pakete, läuft nur bei sichtbarer Figur ──
     const fly = (key, rev, ms, run, hue) => new Promise(res => {
       const [x, y] = at(key, 0, rev), g = el('g', { class: 'pkt', style: hue ? `--pc: var(--${hue})` : null, transform: `translate(${x} ${y})` }, gPkts);
-      el('circle', { class: 'halo', r: 10 }, g); el('circle', { r: 5 }, g);
+      el('circle', { class: 'halo-2', r: 12 }, g);
+      el('circle', { class: 'halo', r: 7 }, g);
+      el('circle', { class: 'core', r: 3.5 }, g);
       flights.add({ key, rev, ms, t0: performance.now(), g, run, res }); kick();
     });
     const tick = now => {
@@ -316,14 +325,15 @@ const FlowGraph = (() => {
       while (run === st.run) {
         for (let i = st.step + 1; i < s.steps.length; i++) {
           const h = hop(s.steps[i].edge); if (!h) continue;
+          st.step = i; st.transEdge = h.e.key; paint();
           (s.steps[i].also || []).forEach(k => { if (svgEdge.has(k) && !reduceMQ.matches) fly(k, false, o.hopMs / st.speed, run); });
           if (!reduceMQ.matches && !await fly(h.e.key, h.rev, o.hopMs / st.speed, run)) return;
           if (reduceMQ.matches && !await wait(1200, run)) return;
-          st.step = i; paint(); announce();
+          st.transEdge = null; paint(); announce();
           if (!await wait(o.dwellMs, run)) return;
         }
         if (!await wait(o.loopMs, run)) return;
-        st.step = -1; paint();
+        st.step = -1; st.transEdge = null; paint();
         if (!await wait(500, run)) return;
       }
     }
@@ -339,7 +349,9 @@ const FlowGraph = (() => {
         const f = { key: e.key, rev: false, ms: (svgEdge.get(e.key).len / o.pxPerSec) * 1000, t0: now, run: st.run, live: true, res() {} };
         const [x, y] = at(e.key, 0);
         f.g = el('g', { class: 'pkt', style: `--pc: var(--${nodes.get(e.from).hue || 'accent'})`, transform: `translate(${x} ${y})` }, gPkts);
-        el('circle', { r: e.kind === 'stream' ? 4.5 : 3.5 }, f.g);
+        el('circle', { class: 'halo-2', r: 8 }, f.g);
+        el('circle', { class: 'halo', r: 5 }, f.g);
+        el('circle', { class: 'core', r: 2.5 }, f.g);
         flights.add(f);
       }
     }
@@ -351,7 +363,7 @@ const FlowGraph = (() => {
     };
     function stepTo(i) {
       const s = scns[st.scn]; if (!s) return;
-      st.run++; st.step = Math.max(-1, Math.min(s.steps.length - 1, i)); paint(); announce();
+      st.run++; st.transEdge = null; st.step = Math.max(-1, Math.min(s.steps.length - 1, i)); paint(); announce();
       if (st.play) loop();
     }
     function select(i) { st.live = false; st.scn = i; st.step = -1; st.pin = null; texts(); paint(); status.textContent = ''; loop(); }
@@ -1343,7 +1355,18 @@ const FLOWS = (() => {
     }
     fig.hidden = false;
     panel.style.setProperty('--c', `var(--${f.hue || 'accent'})`);
-    kick.innerHTML = `${ico(f.icon || 'i-link')}<span>${L(['Ablauf', 'Flow'])} ${flowIds.indexOf(fid) + 1} / ${flowIds.length}</span>${f.loop ? `<span>· ${L(['Kreislauf', 'Loop'])}</span>` : ''}`;
+    const fIdx = flowIds.indexOf(fid);
+    const a = card ? AREAS[card.dataset.a] : null;
+    kick.innerHTML = `
+      <div class="pn-nav" role="group" aria-label="${L(['Ablauf-Navigation', 'Flow navigation'])}">
+        <button type="button" class="pn-nav-btn prev" data-pn-flow="prev" title="${L(['Vorheriger Ablauf', 'Previous flow'])}" aria-label="${L(['Vorheriger Ablauf', 'Previous flow'])}">${ico('i-prev')}</button>
+        <span class="pn-nav-pos">${ico(f.icon || 'i-link')} <span>${L(['Ablauf', 'Flow'])} <b>${fIdx + 1}</b> / ${flowIds.length}</span></span>
+        <button type="button" class="pn-nav-btn next" data-pn-flow="next" title="${L(['Nächster Ablauf', 'Next flow'])}" aria-label="${L(['Nächster Ablauf', 'Next flow'])}">${ico('i-next')}</button>
+      </div>
+      <div class="pn-meta-tags">
+        ${f.loop ? `<span class="pn-tag loop">${ico('i-loop')}<span>${L(['Kreislauf', 'Loop'])}</span></span>` : ''}
+        ${a ? `<span class="pn-tag area" style="--c: var(--${a.hue})">${ico(a.icon)}<span>${a[lang()]}</span></span>` : ''}
+      </div>`;
     const title = document.getElementById('pn-title');
     title.innerHTML = esc(L(f.t)); title.removeAttribute('data-en'); delete title.dataset.de;
     document.getElementById('pn-text').innerHTML = L(f.d);
@@ -1380,12 +1403,19 @@ const FLOWS = (() => {
   function select(card, opts = {}) {
     if (!card) return;
     if (card.hidden) resetFilter();
-    cards.forEach(c => { c.classList.toggle('sel', c === card); c.querySelector('.fn-sel')?.setAttribute('aria-pressed', String(c === card)); });
+    cards.forEach(c => {
+      const isSel = c === card;
+      c.classList.toggle('sel', isSel);
+      c.querySelector('.fn-sel')?.setAttribute('aria-pressed', String(isSel));
+    });
     curCard = card;
     placePanel();
     showFlow(card.dataset.f, card);
     if (opts.hash) history.replaceState(null, '', `#${card.id}`);
-    if (opts.scroll) (narrow.matches ? panel : card).scrollIntoView({ block: narrow.matches ? 'start' : 'nearest' });
+    if (opts.scroll) {
+      if (narrow.matches) panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      else card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
   }
   // Schmal: Ablauf direkt unter der gewählten Karte; breit: rechte Spalte
   function placePanel() {
@@ -1399,6 +1429,24 @@ const FLOWS = (() => {
     const ln = e.target.closest('.fn-link'); if (ln) { e.preventDefault(); select(ln.closest('.fn'), { hash: true }); }
   });
   panel.addEventListener('click', e => {
+    const navBtn = e.target.closest('[data-pn-flow]');
+    if (navBtn) {
+      e.preventDefault();
+      const dir = navBtn.dataset.pnFlow === 'next' ? 1 : -1;
+      const visibleFlowCards = cards.filter(c => !c.hidden && c.dataset.f && FLOWS[c.dataset.f]);
+      const pool = visibleFlowCards.length ? [...new Set(visibleFlowCards.map(c => c.dataset.f))] : flowIds;
+      const curFid = curCard?.dataset.f || pool[0];
+      let curIdx = pool.indexOf(curFid);
+      if (curIdx < 0) curIdx = 0;
+      const nextIdx = (curIdx + dir + pool.length) % pool.length;
+      const nextFid = pool[nextIdx];
+      const targetCard = cards.find(c => c.dataset.f === nextFid && !c.hidden) || cards.find(c => c.dataset.f === nextFid);
+      if (targetCard) {
+        if (targetCard.hidden) resetFilter();
+        select(targetCard, { hash: true, scroll: true });
+      }
+      return;
+    }
     const b = e.target.closest('[data-go]'); if (!b) return;
     select(byId.get(b.dataset.go), { hash: true, scroll: true });
   });
