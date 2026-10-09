@@ -182,6 +182,7 @@ The robot PC is the **server**: it runs ROS 2, the arm and the UX | Nexus Launch
 | Robot PC itself | App window `127.0.0.2:8081` (opens on start) | Holds control after start; gamepad via `joy_node` |
 | Laptop / tablet, mouse or touch | `http://<server-IP>:8081` | *Request control* (or the first motion attempt) → server approves |
 | Laptop with gamepad | `https://<server-IP>:8443` – browsers only expose the Gamepad API over HTTPS; the *VR Quest 3 Teleop* card provides 8443/9091 | Take control → Robot | Hardware: *Arm gamepad* → tick *Remote gamepad* |
+| Tablet as control panel (app) | `https://<server-IP>:8443` → browser menu *Add to Home screen* / *Install app* | Like laptop: *Request control*; starts as an app in full screen, the screen stays on (HTTPS only, install the server certificate on the tablet as trusted) |
 | Quest 3 (VR) | `https://<server-IP>:8443` (USB: `https://localhost:8443`) | VR motion passes the same lock as UI buttons |
 | Second PC with ROS | Nexus *client* sequence, UI card with `connect_to:=<server-IP>` | Own RViz / `joy_node` / voice nodes via DDS (see below) |
 
