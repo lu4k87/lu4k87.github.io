@@ -328,3 +328,258 @@ a.hero-card:hover { border-color: color-mix(in srgb, var(--accent) 65%, var(--gl
 .strip .st-band li .ico { flex: none; margin-top: 2px; }
 .st-band-k { font: 700 11px/22px var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--fg-2); }
 @media (max-width: 700px) { .strip .st-band { grid-template-columns: minmax(0, 1fr); } .strip .st-band ul { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+/* ─────────────────────────────────────────────────────────────
+   Plattform-Showcase: Cinematic Diashow (N73)
+   ───────────────────────────────────────────────────────────── */
+.dia-theater {
+  background: var(--stage, #060a12);
+  color: var(--frame-ink, #c3cfe0);
+  padding-block: 64px;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  position: relative;
+  overflow: hidden;
+}
+.dia-theater::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 70% 50% at 50% 50%, rgb(56 189 248 / 6%) 0%, transparent 100%);
+  pointer-events: none;
+}
+.dia-theater-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 20px;
+  gap: 16px;
+}
+.dia-theater-kicker {
+  font: 700 12px/1.4 var(--mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.dia-theater-kicker .tag {
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  padding: 3px 8px;
+  border-radius: var(--radius-sm, 4px);
+  border: 1px solid color-mix(in srgb, var(--accent) 32%, transparent);
+}
+.dia-theater-status {
+  font: 600 12px/1 var(--mono);
+  color: var(--fg-2, #94a3b8);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.dia-btn-play {
+  background: color-mix(in srgb, var(--surface) 10%, transparent);
+  border: 1px solid var(--line);
+  color: var(--fg);
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  padding: 0;
+  transition: background-color var(--t-fast), border-color var(--t-fast);
+}
+.dia-btn-play:hover {
+  background: color-mix(in srgb, var(--accent) 20%, transparent);
+  border-color: var(--accent);
+}
+.dia-btn-play .ico { width: 14px; height: 14px; }
+
+.dia-theater-stage {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  max-height: 640px;
+  background: #000;
+  border-radius: var(--radius, 8px);
+  overflow: hidden;
+  box-shadow: 0 20px 48px -12px rgb(0 0 0 / 70%), 0 0 0 1px color-mix(in srgb, var(--line) 40%, transparent);
+  outline: none;
+}
+.dia-theater-stage:focus-visible {
+  box-shadow: 0 0 0 2px var(--accent), 0 20px 48px -12px rgb(0 0 0 / 80%);
+}
+
+.dia-theater-progress {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: rgb(255 255 255 / 10%);
+  z-index: 10;
+}
+.dia-theater-progress i {
+  display: block;
+  height: 100%;
+  width: 0%;
+  background: var(--accent);
+  box-shadow: 0 0 8px var(--accent);
+  transition: width 100ms linear;
+}
+
+.dia-slides {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+.dia-slide {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 900ms cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: 1;
+}
+.dia-slide.is-active {
+  opacity: 1;
+  pointer-events: auto;
+  z-index: 2;
+}
+
+.dia-theater-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.dia-theater-overlay {
+  position: absolute;
+  left: 24px;
+  bottom: 24px;
+  max-width: min(640px, calc(100% - 48px));
+  background: color-mix(in srgb, #070c18 84%, transparent);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgb(255 255 255 / 14%);
+  border-radius: var(--radius-sm, 6px);
+  padding: 20px 24px;
+  box-shadow: 0 16px 36px rgb(0 0 0 / 60%);
+  z-index: 3;
+  transition: transform var(--t-slow) var(--ease-out);
+}
+.dia-theater-overlay .kicker {
+  font: 700 11px/1.3 var(--mono);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--accent);
+  margin-bottom: 6px;
+}
+.dia-theater-overlay .slogan {
+  font: 800 22px/1.25 var(--sans);
+  color: #fff;
+  margin: 0 0 8px;
+}
+.dia-theater-overlay .fact {
+  font-size: 13px;
+  line-height: 1.5;
+  color: #cbd5e1;
+  margin: 0;
+}
+
+.dia-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: color-mix(in srgb, #070c18 70%, transparent);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgb(255 255 255 / 15%);
+  color: #cbd5e1;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  z-index: 5;
+  opacity: 0;
+  transition: opacity var(--t-base), background-color var(--t-fast), color var(--t-fast);
+}
+.dia-theater-stage:hover .dia-arrow,
+.dia-theater-stage:focus-within .dia-arrow {
+  opacity: 1;
+}
+.dia-arrow:hover {
+  background: color-mix(in srgb, var(--accent) 30%, transparent);
+  color: #fff;
+  border-color: var(--accent);
+}
+.dia-prev { left: 16px; }
+.dia-next { right: 16px; }
+
+.dia-theater-nav {
+  position: absolute;
+  right: 24px;
+  bottom: 24px;
+  display: flex;
+  align-items: center;
+  background: color-mix(in srgb, #070c18 78%, transparent);
+  backdrop-filter: blur(12px);
+  padding: 6px 12px;
+  border-radius: 20px;
+  border: 1px solid rgb(255 255 255 / 14%);
+  z-index: 5;
+}
+.dia-theater-dots {
+  display: flex;
+  gap: 6px;
+}
+.dia-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgb(255 255 255 / 28%);
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition: all var(--t-base) var(--ease-out);
+}
+.dia-dot:hover {
+  background: rgb(255 255 255 / 60%);
+}
+.dia-dot.is-active {
+  background: var(--accent);
+  width: 22px;
+  border-radius: 4px;
+  box-shadow: 0 0 6px var(--accent);
+}
+
+@media (max-width: 760px) {
+  .dia-theater-overlay {
+    position: static;
+    margin: 12px 16px;
+    max-width: none;
+    border-radius: var(--radius-sm, 6px);
+  }
+  .dia-theater-stage {
+    aspect-ratio: 16 / 10;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+  }
+  .dia-theater-nav {
+    right: 16px;
+    bottom: 16px;
+  }
+  .dia-arrow {
+    opacity: 0.8;
+    width: 36px;
+    height: 36px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dia-slide { transition: none !important; }
+  .dia-theater-progress i { transition: none !important; }
+}

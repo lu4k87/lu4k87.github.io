@@ -951,6 +951,84 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
     </div>
   </section>
 
+  <!-- ═════════ Plattform-Showcase (Diashow) ═════════ -->
+  <section class="dia-theater dark-zone" id="showcase" aria-label="Plattform-Showcase" data-en-aria="Platform showcase">
+    <div class="wrap">
+      <div class="dia-theater-head">
+        <div class="dia-theater-kicker">
+          <span class="tag" data-en="Showcase">Showcase</span>
+          <span data-en="Platform in action · Key features">Plattform im Einsatz · Kernmerkmale</span>
+        </div>
+        <div class="dia-theater-status">
+          <span class="dia-count" data-dia-count aria-live="polite">01 / 05</span>
+          <button type="button" class="dia-btn-play" data-dia-play aria-label="Diashow pausieren" data-en-aria="Pause slideshow" title="Pause / Abspielen (Leertaste)">
+            <svg class="ico dia-ico-pause" aria-hidden="true"><use href="#i-pause"/></svg>
+            <svg class="ico dia-ico-play" aria-hidden="true" hidden><use href="#i-play"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="dia-theater-stage" data-dia-stage tabindex="0" role="region" aria-roledescription="Diashow" data-en-aria-roledescription="Slideshow" aria-label="Plattform-Showcase Folien" data-en-aria="Platform showcase slides">
+        <div class="dia-theater-progress"><i data-dia-bar></i></div>
+        <div class="dia-slides" data-dia-track>
+          <!-- Folie 1 -->
+          <article class="dia-slide is-active" data-dia-slide="0" aria-label="Folie 1 von 5" data-en-aria="Slide 1 of 5">
+            <img class="dia-theater-img" src="img/presentation/rcu.jpg" width="1600" height="900" alt="UX | Control Interface: Digital Twin mit Rapier-Physik" data-en-alt="UX | Control Interface: Digital Twin with Rapier physics" loading="eager">
+            <div class="dia-theater-overlay">
+              <div class="kicker">01 · <span data-en="Digital Twin · Rapier Physics">Digital Twin · Rapier-Physik</span></div>
+              <h3 class="slogan" data-en="First virtual, then real.">Erst virtuell, dann real.</h3>
+              <p class="fact" data-en="Live 3D twin in the browser, Rapier physics sandbox with gravity, contact and virtual grasping.">Live-3D-Zwilling im Browser, Rapier-Physik-Sandbox mit Schwerkraft, Kontakt und virtuellem Greifen.</p>
+            </div>
+          </article>
+          <!-- Folie 2 -->
+          <article class="dia-slide" data-dia-slide="1" aria-label="Folie 2 von 5" data-en-aria="Slide 2 of 5">
+            <img class="dia-theater-img" src="img/rcu_palletizing.png" width="1300" height="960" alt="Palettierzelle: Assistive Autonomie mit KI-Agent" data-en-alt="Palletizing cell: Assistive autonomy with AI agent" loading="lazy">
+            <div class="dia-theater-overlay">
+              <div class="kicker">02 · <span data-en="Assistive Autonomy">Assistive Autonomie</span></div>
+              <h3 class="slogan" data-en="The AI plans. The human confirms.">Die KI plant. Der Mensch bestätigt.</h3>
+              <p class="fact" data-en="The AI agent translates natural language into robot motions; human confirmation and feedback guide every step.">Der KI-Agent übersetzt natürliche Sprache in Roboterabläufe; Bestätigung und Feedback des Menschen steuern jeden Schritt.</p>
+            </div>
+          </article>
+          <!-- Folie 3 -->
+          <article class="dia-slide" data-dia-slide="2" aria-label="Folie 3 von 5" data-en-aria="Slide 3 of 5">
+            <img class="dia-theater-img" src="img/monitoring_dashboard.png" width="1600" height="1000" alt="UX | Monitoring: System- und Nutzungserfassung" data-en-alt="UX | Monitoring: system and usage tracking" loading="lazy">
+            <div class="dia-theater-overlay">
+              <div class="kicker">03 · <span data-en="Control &amp; Monitoring">Kontrolle &amp; Überwachung</span></div>
+              <h3 class="slogan" data-en="Everything in view. Step in any time.">Alles im Blick. Jederzeit eingreifen.</h3>
+              <p class="fact" data-en="Robot state, ZED camera, OctoMap and motion execution live in UX | Monitoring; integrated blackbox.">Roboterzustand, ZED-Kamera, OctoMap und Bewegungsausführung live im UX | Monitoring; integrierte Blackbox.</p>
+            </div>
+          </article>
+          <!-- Folie 4 -->
+          <article class="dia-slide" data-dia-slide="3" aria-label="Folie 4 von 5" data-en-aria="Slide 4 of 5">
+            <img class="dia-theater-img" src="img/nexus_start_check.png" width="1400" height="772" alt="UX | Nexus Launcher: Webbasierter Start" data-en-alt="UX | Nexus Launcher: web-based start" loading="lazy">
+            <div class="dia-theater-overlay">
+              <div class="kicker">04 · <span data-en="Web · Remote">Web · Remote</span></div>
+              <h3 class="slogan" data-en="Open, don't install.">Öffnen statt installieren.</h3>
+              <p class="fact" data-en="Complete operation in the browser without installation on PC, tablet, smartphone or Quest 3 via WebXR.">Bedienung komplett im Browser ohne Installation auf PC, Tablet, Smartphone oder Quest 3 per WebXR.</p>
+            </div>
+          </article>
+          <!-- Folie 5 -->
+          <article class="dia-slide" data-dia-slide="4" aria-label="Folie 5 von 5" data-en-aria="Slide 5 of 5">
+            <img class="dia-theater-img" src="img/vla_agent.png" width="1240" height="860" alt="Sicherheitskette: E-STOP, Bodenschutz und Kollisionsvorprüfung" data-en-alt="Safety chain: E-STOP, floor guard and collision pre-check" loading="lazy">
+            <div class="dia-theater-overlay">
+              <div class="kicker">05 · <span data-en="Safety · Protection">Sicherheit · Schutz</span></div>
+              <h3 class="slogan" data-en="One chain for every input.">Eine Kette für jede Eingabe.</h3>
+              <p class="fact" data-en="E-STOP, floor guard and collision pre-check for all ten control modes; control lock prevents concurrent access.">E-STOP, Bodenschutz und Kollisionsvorprüfung für alle zehn Steuerwege; Control-Lock schützt vor Doppelsteuerung.</p>
+            </div>
+          </article>
+        </div>
+        <button type="button" class="dia-arrow dia-prev" data-dia-prev aria-label="Vorherige Folie" data-en-aria="Previous slide">
+          <svg class="ico" aria-hidden="true"><use href="#i-prev"/></svg>
+        </button>
+        <button type="button" class="dia-arrow dia-next" data-dia-next aria-label="Nächste Folie" data-en-aria="Next slide">
+          <svg class="ico" aria-hidden="true"><use href="#i-next"/></svg>
+        </button>
+        <div class="dia-theater-nav">
+          <div class="dia-theater-dots" data-dia-dots role="tablist" aria-label="Folienauswahl" data-en-aria="Slide selection"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- ═════════ Kapitel 1 · Features: was die Plattform bietet (Prinzipien, Steuerwege, NUI, Web-Apps, Funktionsatlas) ═════════ -->
   <div class="chapter" id="features">
     <div class="wrap">
