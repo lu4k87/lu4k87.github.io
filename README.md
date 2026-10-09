@@ -8,15 +8,20 @@ Marius Kaul · Assistive Robotics, AI Systems, Scrollytelling & Multi-Agent Work
 
 <table>
   <tr>
-    <td align="center" width="50%">
+    <td align="center" width="33%">
       <b>🤖 UX Robot (Projekt 1)</b><br>
       <a href="https://lu4k87.github.io/p_1"><img src="qr_ux_robot.svg" width="190" alt="QR-Code: UX Robot (lu4k87.github.io/p_1)"></a><br>
       <a href="https://lu4k87.github.io/p_1"><code>lu4k87.github.io/p_1</code></a>
     </td>
-    <td align="center" width="50%">
+    <td align="center" width="33%">
       <b>🌐 GitHub Pages (Hauptseite)</b><br>
       <a href="https://lu4k87.github.io/"><img src="qr.svg" width="190" alt="QR-Code: Hauptseite (lu4k87.github.io)"></a><br>
       <a href="https://lu4k87.github.io/"><code>lu4k87.github.io</code></a>
+    </td>
+    <td align="center" width="33%">
+      <b>🔬 Forschung (Projekt 5)</b><br>
+      <a href="https://lu4k87.github.io/research"><img src="qr_research.svg" width="190" alt="QR-Code: Forschung (lu4k87.github.io/research)"></a><br>
+      <a href="https://lu4k87.github.io/research"><code>lu4k87.github.io/research</code></a>
     </td>
   </tr>
 </table>
@@ -31,6 +36,7 @@ Marius Kaul · Assistive Robotics, AI Systems, Scrollytelling & Multi-Agent Work
 | **02** | **[Claude Ops](#-projekt-2-claude-ops)** | [`/p_2`](https://lu4k87.github.io/p_2) | [`/claude-ops`](https://lu4k87.github.io/claude-ops) | Live-Dashboard für Claude-Code-Chats & Agenten |
 | **03** | **[ACCREDO](#-projekt-3-accredo)** | [`/p_3`](https://lu4k87.github.io/p_3) | [`/accredo`](https://lu4k87.github.io/accredo) · [`/akkreditierung`](https://lu4k87.github.io/akkreditierung) | Hochschul-Reakkreditierungs- & PO-Novellierungsprozess |
 | **04** | **[Claude Workflow](#-projekt-4-claude-workflow)** | [`/p_4`](https://lu4k87.github.io/p_4) | [`/workflow`](https://lu4k87.github.io/workflow) | Multi-Agenten Pair-Programming Workflow & Senior-Regeln |
+| **05** | **[Forschung · Look, Speak, Confirm](#-projekt-5-forschung)** | [`/p_5`](https://lu4k87.github.io/p_5) | [`/research`](https://lu4k87.github.io/research) | Paper in Vorbereitung: Blick, Sprache und Bestätigung für die Roboterbedienung, Human-Factors-Studie |
 
 ---
 
@@ -81,3 +87,14 @@ Entwicklungsprozess, Qualitäts-Gates und Richtlinien im `dev_ws`: Feste Rollen 
 
 - **Projekt-URL:** [lu4k87.github.io/p_4](https://lu4k87.github.io/p_4)
 - **Kurzlink:** [lu4k87.github.io/workflow](https://lu4k87.github.io/workflow)
+
+---
+
+### 🔬 Projekt 5: Forschung
+
+> **„Look, Speak, Confirm.“**
+
+Paper in Vorbereitung zur Plattform UX Robot: Blick zeigt das Objekt, Sprache nennt die Aufgabe, eine ausdrückliche Bestätigung löst die Bewegung aus. Geplante Nutzerstudie mit drei Bedingungen (C1–C3), gemessen werden Leistung, Workload (NASA-TLX), Blickdaten und Physiologie (HRV, EDA). Ergebnisse stehen noch aus.
+
+- **Projekt-URL:** [lu4k87.github.io/p_5](https://lu4k87.github.io/p_5)
+- **Kurzlink:** [lu4k87.github.io/research](https://lu4k87.github.io/research)
