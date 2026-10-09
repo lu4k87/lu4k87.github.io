@@ -84,6 +84,12 @@ svg { display: block; }
 .top nav { margin-left: auto; display: flex; gap: 4px; flex-wrap: wrap; }
 .top nav a { text-decoration: none; font-size: 14px; font-weight: 600; padding: 7px 12px; border-radius: var(--radius-sm); color: var(--fg-2); }
 .top nav a:hover { background: var(--surface-2); color: var(--fg); }
+.tools { display: flex; gap: 8px; align-items: center; }
+.seg { display: inline-flex; flex-wrap: nowrap; align-items: center; gap: 2px; padding: 3px; width: fit-content; max-width: 100%; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface-2); }
+.seg button { display: inline-flex; align-items: center; justify-content: center; min-height: 28px; min-width: 34px; padding: 0 10px; border: 0; border-radius: var(--radius-sm); background: transparent; color: var(--fg-2); font: 700 12px/1 var(--font-mono); transition: background-color var(--t-fast), box-shadow var(--t-fast), color var(--t-fast); cursor: pointer; }
+.seg button:hover:not(:disabled) { background: color-mix(in srgb, var(--fg) 7%, transparent); }
+.seg button[aria-pressed="true"] { background: var(--surface); color: var(--fg); box-shadow: 0 0 0 1px var(--line-strong); }
+
 
 /* ── Hero ── */
 .hero { padding-block: 56px 56px; border-bottom: 1px solid var(--line);
@@ -396,6 +402,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 10px 24px; align-items: cent
 @media (max-width: 860px) {
   .hero .wrap { grid-template-columns: 1fr; gap: 32px; }
   .top nav { display: none; }
+  .tools { margin-left: auto; }
 }
 @media (max-width: 720px) {
   .index { grid-template-columns: repeat(3, minmax(0, 1fr)); }
@@ -465,13 +472,23 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 10px 24px; align-items: cent
       <span class="brand-mark"><svg class="ico"><use href="#i-arm"/></svg></span>
       <span>UX Robot<small data-en="Control modes &amp; safety chain">Steuerwege &amp; Sicherheitskette</small></span>
     </a>
-    <nav aria-label="Abschnitte">
-      <a href="#merkmale">Merkmale</a>
-      <a href="#geraete">Eingabegeräte</a>
-      <a href="#wege">Steuerwege</a>
-      <a href="#uebersicht">Übersicht</a>
-      <a href="#sicherheit">Sicherheit</a>
+    <nav aria-label="Abschnitte" data-en-aria="Sections">
+      <a href="#merkmale" data-en="Key features">Merkmale</a>
+      <a href="#geraete" data-en="Input devices">Eingabegeräte</a>
+      <a href="#wege" data-en="Control modes">Steuerwege</a>
+      <a href="#uebersicht" data-en="Overview">Übersicht</a>
+      <a href="#sicherheit" data-en="Safety">Sicherheit</a>
     </nav>
+    <div class="tools">
+      <div class="seg" role="group" aria-label="Sprache / Language">
+        <button type="button" data-lang="de" aria-pressed="true">DE</button>
+        <button type="button" data-lang="en" aria-pressed="false">EN</button>
+      </div>
+      <div class="seg" role="group" aria-label="Theme">
+        <button type="button" data-theme-btn="dark" aria-pressed="false" data-en="Dark" title="Dunkles Theme" data-en-title="Dark theme">Dunkel</button>
+        <button type="button" data-theme-btn="light" aria-pressed="false" data-en="Light" title="Helles Theme" data-en-title="Light theme">Hell</button>
+      </div>
+    </div>
   </div>
   <span class="progress" aria-hidden="true"></span>
 </header>
@@ -480,33 +497,33 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 10px 24px; align-items: cent
   <section class="hero dark-zone">
     <div class="wrap">
       <div>
-        <div class="eyebrow">Der Mensch führt. Die KI assistiert.</div>
-        <h1>Ein Roboter.<br><em>Zehn Wege,</em> ihn zu bedienen.</h1>
-        <p class="lede">Assistive Robotik-Plattform für den xArm&nbsp;Lite&nbsp;6 auf Basis von ROS&nbsp;2 Humble. Hand, Blick, Stimme, Brille oder Chat: Jede Eingabe läuft durch dieselbe Sicherheitskette zum Arm.</p>
+        <div class="eyebrow" data-en="The human leads. The AI assists.">Der Mensch führt. Die KI assistiert.</div>
+        <h1 data-en="One robot.<br><em>Ten ways</em> to control it.">Ein Roboter.<br><em>Zehn Wege,</em> ihn zu bedienen.</h1>
+        <p class="lede" data-en="Assistive robotics platform for the xArm&nbsp;Lite&nbsp;6, built on ROS&nbsp;2 Humble. Hand, gaze, voice, headset or chat: every command runs through the same safety chain to the arm.">Assistive Robotik-Plattform für den xArm&nbsp;Lite&nbsp;6 auf Basis von ROS&nbsp;2 Humble. Hand, Blick, Stimme, Brille oder Chat: Jede Eingabe läuft durch dieselbe Sicherheitskette zum Arm.</p>
         <ul class="hero-facts">
-          <li><svg class="ico"><use href="#i-cube"/></svg><span><b>Erst virtuell, dann real:</b> zuerst im Digital Twin simuliert und geprüft</span></li>
-          <li><svg class="ico"><use href="#i-globe"/></svg><span><b>Öffnen statt installieren:</b> Bedienung komplett im Browser</span></li>
-          <li><svg class="ico"><use href="#i-blocks"/></svg><span><b>Lehre und Forschung:</b> Beispielszenarien wie Auto-Palettieren</span></li>
+          <li><svg class="ico"><use href="#i-cube"/></svg><span data-en="&lt;b&gt;First virtual, then real:&lt;/b&gt; simulated and verified in the Digital Twin first"><b>Erst virtuell, dann real:</b> zuerst im Digital Twin simuliert und geprüft</span></li>
+          <li><svg class="ico"><use href="#i-globe"/></svg><span data-en="&lt;b&gt;Open, don't install:&lt;/b&gt; operate entirely in the browser"><b>Öffnen statt installieren:</b> Bedienung komplett im Browser</span></li>
+          <li><svg class="ico"><use href="#i-blocks"/></svg><span data-en="&lt;b&gt;Teaching and research:&lt;/b&gt; example scenarios like auto-palletizing"><b>Lehre und Forschung:</b> Beispielszenarien wie Auto-Palettieren</span></li>
         </ul>
-        <nav class="index" aria-label="Alle Steuerwege">
-          <a href="#gamepad" style="--hue: var(--accent)"><svg class="ico"><use href="#i-pad"/></svg>Gamepad</a>
-          <a href="#vr" style="--hue: var(--indigo)"><svg class="ico"><use href="#i-vr"/></svg>VR Quest 3</a>
-          <a href="#blick" style="--hue: var(--teal)"><svg class="ico"><use href="#i-eye"/></svg>Blick</a>
-          <a href="#sprache" style="--hue: var(--gold)"><svg class="ico"><use href="#i-mic"/></svg>Sprache</a>
-          <a href="#tastatur" style="--hue: var(--violet)"><svg class="ico"><use href="#i-key"/></svg>Tastatur</a>
-          <a href="#touch" style="--hue: var(--green)"><svg class="ico"><use href="#i-tab"/></svg>UX | Compact Interface</a>
-          <a href="#rcu" style="--hue: var(--accent)"><svg class="ico"><use href="#i-mon"/></svg>UX | Control Interface</a>
-          <a href="#gizmo" style="--hue: var(--indigo)"><svg class="ico"><use href="#i-gizmo"/></svg>TCP-Gizmo</a>
-          <a href="#vla" style="--hue: var(--violet)"><svg class="ico"><use href="#i-chat"/></svg>VLA-M-Chat</a>
-          <a href="#remote" style="--hue: var(--teal)"><svg class="ico"><use href="#i-net"/></svg>Remote</a>
+        <nav class="index" aria-label="Alle Steuerwege" data-en-aria="All control modes">
+          <a href="#gamepad" style="--hue: var(--accent)"><svg class="ico"><use href="#i-pad"/></svg><span data-en="Gamepad">Gamepad</span></a>
+          <a href="#vr" style="--hue: var(--indigo)"><svg class="ico"><use href="#i-vr"/></svg><span data-en="VR Quest 3">VR Quest 3</span></a>
+          <a href="#blick" style="--hue: var(--teal)"><svg class="ico"><use href="#i-eye"/></svg><span data-en="Gaze">Blick</span></a>
+          <a href="#sprache" style="--hue: var(--gold)"><svg class="ico"><use href="#i-mic"/></svg><span data-en="Voice">Sprache</span></a>
+          <a href="#tastatur" style="--hue: var(--violet)"><svg class="ico"><use href="#i-key"/></svg><span data-en="Keyboard">Tastatur</span></a>
+          <a href="#touch" style="--hue: var(--green)"><svg class="ico"><use href="#i-tab"/></svg><span>UX | Compact Interface</span></a>
+          <a href="#rcu" style="--hue: var(--accent)"><svg class="ico"><use href="#i-mon"/></svg><span>UX | Control Interface</span></a>
+          <a href="#gizmo" style="--hue: var(--indigo)"><svg class="ico"><use href="#i-gizmo"/></svg><span data-en="TCP gizmo">TCP-Gizmo</span></a>
+          <a href="#vla" style="--hue: var(--violet)"><svg class="ico"><use href="#i-chat"/></svg><span data-en="VLA-M chat">VLA-M-Chat</span></a>
+          <a href="#remote" style="--hue: var(--teal)"><svg class="ico"><use href="#i-net"/></svg><span data-en="Remote">Remote</span></a>
         </nav>
       </div>
       <figure class="hero-shot" style="margin:0">
-        <img src="img/presentation/hero.jpg" alt="xArm Lite 6 über dem Arbeitstisch mit ArUco-Markern und farbigen Greifobjekten" width="1400" height="934">
+        <img src="img/presentation/hero.jpg" alt="xArm Lite 6 über dem Arbeitstisch mit ArUco-Markern und farbigen Greifobjekten" data-en-alt="xArm Lite 6 above workbench with ArUco markers and colored grasp objects" width="1400" height="934">
         <div class="hud" aria-hidden="true">
-          <span class="chip"><span class="dot"></span>Digital Twin + echte Roboter-Hardware</span>
+          <span class="chip"><span class="dot"></span><span data-en="Digital Twin + real robot hardware">Digital Twin + echte Roboter-Hardware</span></span>
           <span class="chip">IDLE</span>
-          <span class="chip">Tempo 60 %</span>
+          <span class="chip" data-en="Speed 60 %">Tempo 60 %</span>
           <span class="chip"><svg class="ico" style="width:13px;height:13px"><use href="#i-lock"/></svg>this PC</span>
           <span class="chip stop">E-STOP <kbd>Space</kbd></span>
         </div>
@@ -522,20 +539,20 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 10px 24px; align-items: cent
     <div class="wrap">
       <div class="block-head">
         <div>
-          <div class="eyebrow"><span class="n">01</span><span>Kernmerkmale</span></div>
-          <h2>Der Mensch führt. Die KI assistiert.</h2>
+          <div class="eyebrow"><span class="n">01</span><span data-en="Key features">Kernmerkmale</span></div>
+          <h2 data-en="The human leads. The AI assists.">Der Mensch führt. Die KI assistiert.</h2>
         </div>
-        <p>Acht Merkmale machen aus einem ferngesteuerten Arm eine assistive Plattform.</p>
+        <p data-en="Eight key features turn a remotely controlled arm into an assistive platform.">Acht Merkmale machen aus einem ferngesteuerten Arm eine assistive Plattform.</p>
       </div>
       <div class="feats feats-num">
-        <div class="feat" style="--hue: var(--accent)"><span class="badge-ico"><svg class="ico"><use href="#i-cube"/></svg></span><span class="k-t">Digital Twin · Physik</span><b>Erst virtuell, dann real.</b><p>Live-3D-Zwilling im Browser; die Physik-Sandbox simuliert Schwerkraft, Kontakt und Greifen vor der echten Fahrt.</p></div>
-        <div class="feat" style="--hue: var(--indigo)"><span class="badge-ico"><svg class="ico"><use href="#i-shapes"/></svg></span><span class="k-t">Virtuelle Objekte</span><b>Testen ohne Aufbau.</b><p>Würfel, Flasche, Bälle, Schale, Korb: greifen, verschieben, stapeln; kollisionsgeprüft in MoveIt, ohne Kamera.</p></div>
-        <div class="feat" style="--hue: var(--teal)"><span class="badge-ico"><svg class="ico"><use href="#i-eye"/></svg></span><span class="k-t">Kontrolle · Überwachung</span><b>Alles im Blick. Jederzeit eingreifen.</b><p>Roboterzustand, Umgebung (ZED, OctoMap) und Bewegungsausführung live; UX | Monitoring und Blackbox zeichnen mit.</p></div>
-        <div class="feat" style="--hue: var(--violet)"><span class="badge-ico"><svg class="ico"><use href="#i-spark"/></svg></span><span class="k-t">Assistive Autonomie</span><b>Die KI plant. Der Mensch bestätigt.</b><p>Der Agent macht aus Sprache Bewegungsabläufe; Entscheidung und Feedback des Menschen steuern jeden Schritt.</p></div>
-        <div class="feat" style="--hue: var(--green)"><span class="badge-ico"><svg class="ico"><use href="#i-globe"/></svg></span><span class="k-t">Web · Remote</span><b>Öffnen statt installieren.</b><p>Bedienung komplett im Browser: am Roboter-PC, aus dem Heimnetz oder in der Quest 3 per WebXR.</p></div>
-        <div class="feat" style="--hue: var(--gold)"><span class="badge-ico"><svg class="ico"><use href="#i-shield"/></svg></span><span class="k-t">Sicherheit</span><b>Eine Kette für jede Eingabe.</b><p>E-STOP, Bodenschutz und Kollisionsschutz für alle zehn Steuerwege; der Control-Lock gibt immer nur einem Client die Steuerung.</p></div>
-        <div class="feat" style="--hue: var(--teal)"><span class="badge-ico"><svg class="ico"><use href="#i-code"/></svg></span><span class="k-t">Open Source</span><b>Offen, nachbaubar, erweiterbar.</b><p>Eigene Pakete unter Apache 2.0, aufgebaut auf ROS&nbsp;2 Humble und MoveIt&nbsp;2.</p></div>
-        <div class="feat" style="--hue: var(--indigo)"><span class="badge-ico"><svg class="ico"><use href="#i-blocks"/></svg></span><span class="k-t">Multimodal · Modular</span><b>Austauschbar statt festgelegt.</b><p>Bessere Eingabegeräte, Kameras, KI-Modelle oder Software-Module ersetzen die alten einzeln; feste ROS&#8209;2-Schnittstellen halten den Rest unverändert. Auch den Roboterarm wählt ein Profil: 7 Profile im Robot | Digital Twin, Robot | Hardware nur mit dem xArm Lite&nbsp;6.</p></div>
+        <div class="feat" style="--hue: var(--accent)"><span class="badge-ico"><svg class="ico"><use href="#i-cube"/></svg></span><span class="k-t" data-en="Digital Twin · Physics">Digital Twin · Physik</span><b data-en="First virtual, then real.">Erst virtuell, dann real.</b><p data-en="Live 3D twin in the browser; the physics sandbox simulates gravity, contact and grasping before real motion.">Live-3D-Zwilling im Browser; die Physik-Sandbox simuliert Schwerkraft, Kontakt und Greifen vor der echten Fahrt.</p></div>
+        <div class="feat" style="--hue: var(--indigo)"><span class="badge-ico"><svg class="ico"><use href="#i-shapes"/></svg></span><span class="k-t" data-en="Virtual objects">Virtuelle Objekte</span><b data-en="Test without a setup.">Testen ohne Aufbau.</b><p data-en="Cube, bottle, balls, bowl, bin: grasp, move, stack; collision-checked in MoveIt, without camera.">Würfel, Flasche, Bälle, Schale, Korb: greifen, verschieben, stapeln; kollisionsgeprüft in MoveIt, ohne Kamera.</p></div>
+        <div class="feat" style="--hue: var(--teal)"><span class="badge-ico"><svg class="ico"><use href="#i-eye"/></svg></span><span class="k-t" data-en="Control · Monitoring">Kontrolle · Überwachung</span><b data-en="Everything in view. Step in any time.">Alles im Blick. Jederzeit eingreifen.</b><p data-en="Robot state, environment (ZED, OctoMap) and motion execution live; UX | Monitoring and blackbox record everything.">Roboterzustand, Umgebung (ZED, OctoMap) und Bewegungsausführung live; UX | Monitoring und Blackbox zeichnen mit.</p></div>
+        <div class="feat" style="--hue: var(--violet)"><span class="badge-ico"><svg class="ico"><use href="#i-spark"/></svg></span><span class="k-t" data-en="Assistive autonomy">Assistive Autonomie</span><b data-en="The AI plans. The human confirms.">Die KI plant. Der Mensch bestätigt.</b><p data-en="The agent turns natural language into motion sequences; human decision and feedback guide every step.">Der Agent macht aus Sprache Bewegungsabläufe; Entscheidung und Feedback des Menschen steuern jeden Schritt.</p></div>
+        <div class="feat" style="--hue: var(--green)"><span class="badge-ico"><svg class="ico"><use href="#i-globe"/></svg></span><span class="k-t" data-en="Web · Remote">Web · Remote</span><b data-en="Open, don't install.">Öffnen statt installieren.</b><p data-en="Operate entirely in the browser: on the robot PC, from the local network or in Quest 3 via WebXR.">Bedienung komplett im Browser: am Roboter-PC, aus dem Heimnetz oder in der Quest 3 per WebXR.</p></div>
+        <div class="feat" style="--hue: var(--gold)"><span class="badge-ico"><svg class="ico"><use href="#i-shield"/></svg></span><span class="k-t" data-en="Safety">Sicherheit</span><b data-en="One chain for every input.">Eine Kette für jede Eingabe.</b><p data-en="E-STOP, floor guard and collision protection for all ten control modes; the control lock grants control to only one client at a time.">E-STOP, Bodenschutz und Kollisionsschutz für alle zehn Steuerwege; der Control-Lock gibt immer nur einem Client die Steuerung.</p></div>
+        <div class="feat" style="--hue: var(--teal)"><span class="badge-ico"><svg class="ico"><use href="#i-code"/></svg></span><span class="k-t" data-en="Open source">Open Source</span><b data-en="Open, reproducible, extensible.">Offen, nachbaubar, erweiterbar.</b><p data-en="Custom packages under Apache 2.0, built on ROS&nbsp;2 Humble and MoveIt&nbsp;2.">Eigene Pakete unter Apache 2.0, aufgebaut auf ROS&nbsp;2 Humble und MoveIt&nbsp;2.</p></div>
+        <div class="feat" style="--hue: var(--indigo)"><span class="badge-ico"><svg class="ico"><use href="#i-blocks"/></svg></span><span class="k-t" data-en="Multimodal · Modular">Multimodal · Modular</span><b data-en="Interchangeable instead of fixed.">Austauschbar statt festgelegt.</b><p data-en="Better input devices, cameras, AI models or software modules replace old ones individually; fixed ROS&#8209;2 interfaces keep the rest unchanged. A profile also selects the robot arm: 7 profiles in Robot | Digital Twin, Robot | Hardware exclusively with xArm Lite&nbsp;6.">Bessere Eingabegeräte, Kameras, KI-Modelle oder Software-Module ersetzen die alten einzeln; feste ROS&#8209;2-Schnittstellen halten den Rest unverändert. Auch den Roboterarm wählt ein Profil: 7 Profile im Robot | Digital Twin, Robot | Hardware nur mit dem xArm Lite&nbsp;6.</p></div>
       </div>
     </div>
   </section>
@@ -545,17 +562,17 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 10px 24px; align-items: cent
     <div class="wrap">
       <div class="block-head">
         <div>
-          <div class="eyebrow"><span class="n">02</span><span>Hardware in der Hand</span></div>
-          <h2>Eingabegeräte</h2>
+          <div class="eyebrow"><span class="n">02</span><span data-en="Hardware in hand">Hardware in der Hand</span></div>
+          <h2 data-en="Input devices">Eingabegeräte</h2>
         </div>
-        <p>Sechs Geräte, ein Ziel: der Werkzeugpunkt (TCP) des Arms. Jedes Gerät ist austauschbar.</p>
+        <p data-en="Six devices, one goal: the tool center point (TCP) of the arm. Every device is interchangeable.">Sechs Geräte, ein Ziel: der Werkzeugpunkt (TCP) des Arms. Jedes Gerät ist austauschbar.</p>
       </div>
 
       <div class="grid">
         <!-- Gamepad -->
         <article class="card wide span-12" id="gamepad" style="--hue: var(--accent)">
           <div class="visual">
-            <svg viewBox="0 0 520 310" role="img" aria-label="Xbox-Controller mit markierten Tasten">
+            <svg viewBox="0 0 520 310" role="img" aria-label="Xbox-Controller mit markierten Tasten" data-en-aria="Xbox controller with highlighted buttons">
               <rect class="s-hue" x="114" y="16" width="64" height="32" rx="11" transform="rotate(-8 146 32)"/>
               <rect class="s-hue" x="342" y="16" width="64" height="32" rx="11" transform="rotate(8 374 32)"/>
               <text class="s-txt" x="146" y="30" transform="rotate(-8 146 32)">LT</text>
@@ -590,31 +607,31 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 10px 24px; align-items: cent
               <circle class="s-blue" cx="338" cy="122" r="14"/><text class="s-txt" x="338" y="122">X</text>
               <circle class="s-red" cx="390" cy="122" r="14"/><text class="s-txt" x="390" y="122">B</text>
               <circle class="s-green" cx="364" cy="148" r="14"/><text class="s-txt" x="364" y="148">A</text>
-              <text class="s-txt-sm" x="260" y="300">VIBRATION BEI KOLLISIONSGEFAHR</text>
+              <text class="s-txt-sm" x="260" y="300" data-en="VIBRATION ON COLLISION RISK">VIBRATION BEI KOLLISIONSGEFAHR</text>
             </svg>
           </div>
           <div class="body">
             <div class="title-row">
               <span class="badge-ico"><svg class="ico"><use href="#i-pad"/></svg></span>
-              <div><h3>Gamepad</h3><div class="kind">Xbox Elite Series 2 · MoveIt Servo</div></div>
+              <div><h3 data-en="Gamepad">Gamepad</h3><div class="kind">Xbox Elite Series 2 · MoveIt Servo</div></div>
             </div>
-            <p class="tagline">Feinfühliges Verfahren in Echtzeit, mit Rückmeldung in der Hand.</p>
+            <p class="tagline" data-en="Sensitive real-time motion, with tactile feedback in hand.">Feinfühliges Verfahren in Echtzeit, mit Rückmeldung in der Hand.</p>
             <div class="blocks">
-              <div class="blk"><h4>Funktionen</h4><ul class="list"><li><b>MoveIt Servo:</b> Verfahren in Echtzeit</li><li><b>Tasten:</b> Greifer, Vakuum, Home-Pose</li><li><b>Tempo:</b> 5 Stufen, dazu die Linearachse</li></ul></div>
-              <div class="blk"><h4>Bedienung</h4>
+              <div class="blk"><h4 data-en="Features">Funktionen</h4><ul class="list"><li data-en="&lt;b&gt;MoveIt Servo:&lt;/b&gt; real-time jogging"><b>MoveIt Servo:</b> Verfahren in Echtzeit</li><li data-en="&lt;b&gt;Buttons:&lt;/b&gt; gripper, vacuum, home pose"><b>Tasten:</b> Greifer, Vakuum, Home-Pose</li><li data-en="&lt;b&gt;Speed:&lt;/b&gt; 5 presets, plus linear axis"><b>Tempo:</b> 5 Stufen, dazu die Linearachse</li></ul></div>
+              <div class="blk"><h4 data-en="Controls">Bedienung</h4>
             <ul class="map">
-              <li><span class="key">L-Stick</span><span><b>X / Y</b> verfahren</span></li>
-              <li><span class="key">LT · RT</span><span><b>Z</b> heben / senken</span></li>
-              <li><span class="key">LB · RB</span><span><b>Yaw</b> drehen</span></li>
-              <li><span class="key" style="color:var(--gold)">D-Pad ↕</span><span>Tempo, 5 Stufen</span></li>
-              <li><span class="key" style="color:var(--gold)">D-Pad ↔</span><span>Linearachse</span></li>
-              <li><span class="key a">A</span><span>Greifer auf/zu · Vakuum an/aus</span></li>
-              <li><span class="key b">B</span><span>Greifer aus</span></li>
-              <li><span class="key x">X</span><span>Mikrofon starten</span></li>
-              <li><span class="key y">Y</span><span>Home-Pose</span></li>
+              <li><span class="key">L-Stick</span><span data-en="&lt;b&gt;X / Y&lt;/b&gt; jog"><b>X / Y</b> verfahren</span></li>
+              <li><span class="key">LT · RT</span><span data-en="&lt;b&gt;Z&lt;/b&gt; lift / lower"><b>Z</b> heben / senken</span></li>
+              <li><span class="key">LB · RB</span><span data-en="&lt;b&gt;Yaw&lt;/b&gt; rotate"><b>Yaw</b> drehen</span></li>
+              <li><span class="key" style="color:var(--gold)">D-Pad ↕</span><span data-en="Speed, 5 presets">Tempo, 5 Stufen</span></li>
+              <li><span class="key" style="color:var(--gold)">D-Pad ↔</span><span data-en="Linear axis">Linearachse</span></li>
+              <li><span class="key a">A</span><span data-en="Gripper open/close · vacuum on/off">Greifer auf/zu · Vakuum an/aus</span></li>
+              <li><span class="key b">B</span><span data-en="Gripper off">Greifer aus</span></li>
+              <li><span class="key x">X</span><span data-en="Start microphone">Mikrofon starten</span></li>
+              <li><span class="key y">Y</span><span data-en="Home pose">Home-Pose</span></li>
             </ul>
               </div>
-              <div class="blk safe"><h4>Sicherheit</h4><ul class="list"><li><b>Vibration:</b> bei Kollisionsgefahr, Vorausschau 0,25 s</li><li><b>Tisch-Stopp:</b> bremst 19 mm über dem Z Collision Level, stoppt am Level</li></ul></div>
+              <div class="blk safe"><h4 data-en="Safety">Sicherheit</h4><ul class="list"><li data-en="&lt;b&gt;Vibration:&lt;/b&gt; on collision risk, 0.25 s preview"><b>Vibration:</b> bei Kollisionsgefahr, Vorausschau 0,25 s</li><li data-en="&lt;b&gt;Table stop:&lt;/b&gt; slows down 19 mm above Z Collision Level, stops at level"><b>Tisch-Stopp:</b> bremst 19 mm über dem Z Collision Level, stoppt am Level</li></ul></div>
             </div>
           </div>
         </article>
@@ -622,7 +639,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 10px 24px; align-items: cent
         <!-- VR -->
         <article class="card wide span-12" id="vr" style="--hue: var(--indigo)">
           <div class="visual">
-            <svg viewBox="0 0 520 300" role="img" aria-label="Meta Quest 3 Brille und Controller mit Grip und Trigger">
+            <svg viewBox="0 0 520 300" role="img" aria-label="Meta Quest 3 Brille und Controller mit Grip und Trigger" data-en-aria="Meta Quest 3 headset and controllers with grip and trigger">
               <!-- Brille -->
               <rect class="s-body" x="188" y="22" width="144" height="66" rx="26"/>
               <rect class="s-part" x="206" y="38" width="22" height="34" rx="11"/>
@@ -655,19 +672,19 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 10px 24px; align-items: cent
                 <line class="s-ax-y" x1="470" y1="150" x2="434" y2="122"/><path class="s-ax-y" d="M428 117 l11 1 -6 9 z"/>
               </g>
               <text class="s-txt-sm" x="470" y="196">6-DoF</text>
-              <text class="s-txt-sm" x="260" y="290">GRIP = KUPPLUNG · TRIGGER = GREIFER</text>
+              <text class="s-txt-sm" x="260" y="290" data-en="GRIP = CLUTCH · TRIGGER = GRIPPER">GRIP = KUPPLUNG · TRIGGER = GREIFER</text>
             </svg>
           </div>
           <div class="body">
             <div class="title-row">
               <span class="badge-ico"><svg class="ico"><use href="#i-vr"/></svg></span>
-              <div><h3>VR · Meta Quest 3</h3><div class="kind">WebXR · https :8443</div></div>
+              <div><h3 data-en="VR · Meta Quest 3">VR · Meta Quest 3</h3><div class="kind">WebXR · https :8443</div></div>
             </div>
-            <p class="tagline">Die Hand wird zum Werkzeug: Der TCP folgt dem Controller 1 : 1.</p>
+            <p class="tagline" data-en="The hand becomes the tool: TCP follows the controller 1 : 1.">Die Hand wird zum Werkzeug: Der TCP folgt dem Controller 1 : 1.</p>
             <div class="blocks">
-              <div class="blk"><h4>Funktionen</h4><ul class="list"><li><b>6-DoF:</b> der TCP folgt dem Controller 1 : 1</li><li><b>Modi:</b> SERVO (live) oder PLAN (erst planen)</li><li><b>Szene:</b> um den Roboter gehen und fliegen</li></ul></div>
-              <div class="blk"><h4>Bedienung</h4><ul class="map"><li><span class="key" style="color:var(--indigo)">Grip</span><span><b>Kupplung</b>, Hand führt den TCP</span></li><li><span class="key a">Trigger</span><span>Greifer schalten · Objekt wählen</span></li><li><span class="key" style="color:var(--indigo)">B</span><span>Modus SERVO ↔ PLAN</span></li><li><span class="key">Sticks</span><span>Gehen · um den Roboter fliegen</span></li><li><span class="key b">2× Grip+2× Trig.</span><span>E-STOP</span></li></ul></div>
-              <div class="blk safe"><h4>Sicherheit</h4><ul class="list"><li><b>Kupplung:</b> ohne Grip keine Bewegung</li><li><b>Tracking weg:</b> Stopp nach 0,3 s</li><li><b>E-STOP:</b> 2× Grip + 2× Trigger</li></ul></div>
+              <div class="blk"><h4 data-en="Features">Funktionen</h4><ul class="list"><li data-en="&lt;b&gt;6-DoF:&lt;/b&gt; TCP follows controller 1 : 1"><b>6-DoF:</b> der TCP folgt dem Controller 1 : 1</li><li data-en="&lt;b&gt;Modes:&lt;/b&gt; SERVO (live) or PLAN (plan first)"><b>Modi:</b> SERVO (live) oder PLAN (erst planen)</li><li data-en="&lt;b&gt;Scene:&lt;/b&gt; walk and fly around the robot"><b>Szene:</b> um den Roboter gehen und fliegen</li></ul></div>
+              <div class="blk"><h4 data-en="Controls">Bedienung</h4><ul class="map"><li><span class="key" style="color:var(--indigo)">Grip</span><span data-en="&lt;b&gt;Clutch&lt;/b&gt;, hand guides TCP"><b>Kupplung</b>, Hand führt den TCP</span></li><li><span class="key a">Trigger</span><span data-en="Toggle gripper · select object">Greifer schalten · Objekt wählen</span></li><li><span class="key" style="color:var(--indigo)">B</span><span data-en="Mode SERVO ↔ PLAN">Modus SERVO ↔ PLAN</span></li><li><span class="key">Sticks</span><span data-en="Walk · fly around robot">Gehen · um den Roboter fliegen</span></li><li><span class="key b">2× Grip+2× Trig.</span><span>E-STOP</span></li></ul></div>
+              <div class="blk safe"><h4 data-en="Safety">Sicherheit</h4><ul class="list"><li data-en="&lt;b&gt;Clutch:&lt;/b&gt; no movement without grip"><b>Kupplung:</b> ohne Grip keine Bewegung</li><li data-en="&lt;b&gt;Tracking lost:&lt;/b&gt; stop after 0.3 s"><b>Tracking weg:</b> Stopp nach 0,3 s</li><li data-en="&lt;b&gt;E-STOP:&lt;/b&gt; 2× Grip + 2× Trigger"><b>E-STOP:</b> 2× Grip + 2× Trigger</li></ul></div>
             </div>
           </div>
         </article>
@@ -676,29 +693,29 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 10px 24px; align-items: cent
         <article class="card wide span-12" id="blick" style="--hue: var(--teal)">
           <div class="visual">
             <div class="gaze">
-              <img src="img/project_docs/stage_gaze.jpg" alt="Blick-UI: Kamerabild mit Blick-Schaltflächen am Rand" width="960" height="540" loading="lazy">
+              <img src="img/project_docs/stage_gaze.jpg" alt="Blick-UI: Kamerabild mit Blick-Schaltflächen am Rand" data-en-alt="Gaze UI: camera stream with gaze buttons along the frame" width="960" height="540" loading="lazy">
               <svg class="gaze-cursor" viewBox="0 0 64 64" aria-hidden="true">
                 <circle class="ring-bg" cx="32" cy="32" r="24"/>
                 <circle class="ring" cx="32" cy="32" r="24"/>
                 <circle class="pupil" cx="32" cy="32" r="6"/>
               </svg>
-              <span class="chip gaze-tag">Fixation ≈ 1 s = Klick</span>
+              <span class="chip gaze-tag" data-en="Fixation ≈ 1 s = click">Fixation ≈ 1 s = Klick</span>
             </div>
           </div>
           <div class="body">
             <div class="title-row">
               <span class="badge-ico"><svg class="ico"><use href="#i-eye"/></svg></span>
-              <div><h3>Blicksteuerung</h3><div class="kind">Tobii Pro Glasses 3</div></div>
+              <div><h3 data-en="Gaze control">Blicksteuerung</h3><div class="kind">Tobii Pro Glasses 3</div></div>
             </div>
-            <p class="tagline">Hinschauen und halten. Schaltflächen am Bildrand lösen die Bewegung aus.</p>
+            <p class="tagline" data-en="Look and hold. Buttons on the frame trigger motion.">Hinschauen und halten. Schaltflächen am Bildrand lösen die Bewegung aus.</p>
             <div class="blocks">
-              <div class="blk"><h4>Funktionen</h4><ul class="list"><li><b>Fixation ≈ 1 s:</b> der Blick ersetzt den Klick</li><li><b>8 Bewegungsfelder:</b> vor, zurück, links, rechts, hoch, runter, drehen</li><li><b>Greifer + Home-Pose:</b> per Blick schalten</li></ul></div>
-              <div class="blk"><h4>Bedienung</h4><ul class="map">
-              <li><span class="key" style="color:var(--teal)">Ränder</span><span>Vor · Zurück · Links · Rechts</span></li>
-              <li><span class="key" style="color:var(--teal)">Ecken</span><span>Hoch, Runter rechts · Drehen links oben</span></li>
-              <li><span class="key a">Ecken</span><span>Home-Pose oben, Greifer unten rechts · Blick an/aus unten links</span></li>
+              <div class="blk"><h4 data-en="Features">Funktionen</h4><ul class="list"><li data-en="&lt;b&gt;Fixation ≈ 1 s:&lt;/b&gt; gaze replaces the click"><b>Fixation ≈ 1 s:</b> der Blick ersetzt den Klick</li><li data-en="&lt;b&gt;8 motion zones:&lt;/b&gt; forward, backward, left, right, up, down, rotate"><b>8 Bewegungsfelder:</b> vor, zurück, links, rechts, hoch, runter, drehen</li><li data-en="&lt;b&gt;Gripper + home pose:&lt;/b&gt; triggered by gaze"><b>Greifer + Home-Pose:</b> per Blick schalten</li></ul></div>
+              <div class="blk"><h4 data-en="Controls">Bedienung</h4><ul class="map">
+              <li><span class="key" style="color:var(--teal)" data-en="Edges">Ränder</span><span data-en="Forward · Backward · Left · Right">Vor · Zurück · Links · Rechts</span></li>
+              <li><span class="key" style="color:var(--teal)" data-en="Corners">Ecken</span><span data-en="Up, down on right · rotate top-left">Hoch, Runter rechts · Drehen links oben</span></li>
+              <li><span class="key a" data-en="Corners">Ecken</span><span data-en="Home pose top, gripper bottom-right · gaze on/off bottom-left">Home-Pose oben, Greifer unten rechts · Blick an/aus unten links</span></li>
             </ul></div>
-              <div class="blk safe"><h4>Sicherheit</h4><ul class="list"><li><b>Tempo in 3 Stufen:</b> abwärts höchstens Stufe 2</li><li><b>Bremszone:</b> ab Z 40 mm sanft abbremsen</li><li><b>Hard-Stop:</b> bei Z 33 mm</li></ul></div>
+              <div class="blk safe"><h4 data-en="Safety">Sicherheit</h4><ul class="list"><li data-en="&lt;b&gt;Speed in 3 presets:&lt;/b&gt; downward max preset 2"><b>Tempo in 3 Stufen:</b> abwärts höchstens Stufe 2</li><li data-en="&lt;b&gt;Braking zone:&lt;/b&gt; gentle deceleration below Z 40 mm"><b>Bremszone:</b> ab Z 40 mm sanft abbremsen</li><li data-en="&lt;b&gt;Hard-stop:&lt;/b&gt; at Z 33 mm"><b>Hard-Stop:</b> bei Z 33 mm</li></ul></div>
             </div>
           </div>
         </article>
@@ -709,23 +726,23 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 10px 24px; align-items: cent
             <div class="voice">
               <div class="wave" id="wave" aria-hidden="true"></div>
               <div class="said">
-                <span>„Fahre zur Startposition“</span><span>„Szene scannen“</span><span>„schneller“</span><span>„Greifer schließen“</span><span>„Not-Aus“</span>
+                <span data-en="“Move to start position”">„Fahre zur Startposition“</span><span data-en="“Scan scene”">„Szene scannen“</span><span data-en="“faster”">„schneller“</span><span data-en="“Close gripper”">„Greifer schließen“</span><span data-en="“E-STOP”">„Not-Aus“</span>
               </div>
             </div>
           </div>
           <div class="body">
             <div class="title-row">
               <span class="badge-ico"><svg class="ico"><use href="#i-mic"/></svg></span>
-              <div><h3>Sprache</h3><div class="kind">Whisper · Deutsch + Englisch</div></div>
+              <div><h3 data-en="Voice">Sprache</h3><div class="kind" data-en="Whisper · German + English">Whisper · Deutsch + Englisch</div></div>
             </div>
-            <p class="tagline">Sagen statt klicken. Kurze Befehle lösen fertige Abläufe aus.</p>
+            <p class="tagline" data-en="Speak instead of click. Short commands trigger complete routines.">Sagen statt klicken. Kurze Befehle lösen fertige Abläufe aus.</p>
             <div class="blocks">
-              <div class="blk"><h4>Funktionen</h4><ul class="list"><li><b>Zweisprachig:</b> Befehle auf Deutsch und Englisch</li><li><b>Befehle:</b> Startposition, Scan, Zielpose, Tempo, Greifer, E-STOP</li><li><b>Erkennung:</b> 50–120 ms auf der GPU</li></ul></div>
-              <div class="blk"><h4>Bedienung</h4><ul class="map">
-              <li><span class="key x">X</span><span>oder Mikrofon-Knopf in der UI</span></li>
-              <li><span class="key" style="color:var(--gold)">5 s</span><span>Hörfenster, dann Befehl</span></li>
+              <div class="blk"><h4 data-en="Features">Funktionen</h4><ul class="list"><li data-en="&lt;b&gt;Bilingual:&lt;/b&gt; commands in German and English"><b>Zweisprachig:</b> Befehle auf Deutsch und Englisch</li><li data-en="&lt;b&gt;Commands:&lt;/b&gt; start pose, scan, target pose, speed, gripper, E-STOP"><b>Befehle:</b> Startposition, Scan, Zielpose, Tempo, Greifer, E-STOP</li><li data-en="&lt;b&gt;Recognition:&lt;/b&gt; 50–120 ms on GPU"><b>Erkennung:</b> 50–120 ms auf der GPU</li></ul></div>
+              <div class="blk"><h4 data-en="Controls">Bedienung</h4><ul class="map">
+              <li><span class="key x">X</span><span data-en="or microphone button in UI">oder Mikrofon-Knopf in der UI</span></li>
+              <li><span class="key" style="color:var(--gold)">5 s</span><span data-en="Listening window, then command">Hörfenster, dann Befehl</span></li>
             </ul></div>
-              <div class="blk safe"><h4>Sicherheit</h4><ul class="list"><li><b>Hörfenster:</b> erkennt nur 5 s nach dem Auslöser</li><li><b>Kein Dauerbetrieb:</b> ohne Taste oder Knopf hört niemand mit</li></ul></div>
+              <div class="blk safe"><h4 data-en="Safety">Sicherheit</h4><ul class="list"><li data-en="&lt;b&gt;Listening window:&lt;/b&gt; only active for 5 s after trigger"><b>Hörfenster:</b> erkennt nur 5 s nach dem Auslöser</li><li data-en="&lt;b&gt;No continuous listening:&lt;/b&gt; no audio processed without trigger"><b>Kein Dauerbetrieb:</b> ohne Taste oder Knopf hört niemand mit</li></ul></div>
             </div>
           </div>
         </article>
@@ -734,32 +751,32 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 10px 24px; align-items: cent
         <article class="card wide span-12" id="tastatur" style="--hue: var(--violet)">
           <div class="visual">
             <div class="keys" aria-hidden="true">
-              <div class="cap hot">T<small>Schieben</small></div>
-              <div class="cap hot">R<small>Drehen</small></div>
+              <div class="cap hot">T<small data-en="Translate">Schieben</small></div>
+              <div class="cap hot">R<small data-en="Rotate">Drehen</small></div>
               <div class="cap hot">G<small>Gizmo</small></div>
-              <div class="cap">Esc<small>Reset</small></div>
-              <div class="cap">M<small>Ton</small></div>
-              <div class="cap">Pos1<small>Ansicht</small></div>
-              <div class="cap">↵<small>Senden</small></div>
-              <div class="cap">Tab<small>Fokus</small></div>
+              <div class="cap">Esc<small data-en="Reset">Reset</small></div>
+              <div class="cap">M<small data-en="Audio">Ton</small></div>
+              <div class="cap">Pos1<small data-en="View">Ansicht</small></div>
+              <div class="cap">↵<small data-en="Send">Senden</small></div>
+              <div class="cap">Tab<small data-en="Focus">Fokus</small></div>
               <div class="cap space">SPACE · E-STOP</div>
             </div>
           </div>
           <div class="body">
             <div class="title-row">
               <span class="badge-ico"><svg class="ico"><use href="#i-key"/></svg></span>
-              <div><h3>Tastatur</h3><div class="kind">Kürzel in der UX | Control Interface</div></div>
+              <div><h3 data-en="Keyboard">Tastatur</h3><div class="kind" data-en="Shortcuts in UX | Control Interface">Kürzel in der UX | Control Interface</div></div>
             </div>
-            <p class="tagline">Schnell ohne Maus. Die Leertaste stoppt überall außer in Textfeldern.</p>
+            <p class="tagline" data-en="Fast without mouse. Space bar stops everywhere except text fields.">Schnell ohne Maus. Die Leertaste stoppt überall außer in Textfeldern.</p>
             <div class="blocks">
-              <div class="blk"><h4>Funktionen</h4><ul class="list"><li><b>Kürzel:</b> TCP-Gizmo, Ansicht, Ton, Reset</li><li><b>Chat:</b> Enter sendet die Aufgabe</li><li><b>Tab:</b> Fokus von Bedienelement zu Bedienelement</li></ul></div>
-              <div class="blk"><h4>Bedienung</h4><ul class="map">
-              <li><span class="key b">Space</span><span><b>E-STOP</b>, außer beim Tippen</span></li>
-              <li><span class="key" style="color:var(--violet)">T · R · G</span><span>TCP-Gizmo: Schieben, Drehen, ein/aus</span></li>
-              <li><span class="key">Pos1</span><span>Digital Twin einpassen</span></li>
-              <li><span class="key">M</span><span>Ton an/aus</span></li>
+              <div class="blk"><h4 data-en="Features">Funktionen</h4><ul class="list"><li data-en="&lt;b&gt;Shortcuts:&lt;/b&gt; TCP gizmo, view, sound, reset"><b>Kürzel:</b> TCP-Gizmo, Ansicht, Ton, Reset</li><li data-en="&lt;b&gt;Chat:&lt;/b&gt; Enter sends prompt"><b>Chat:</b> Enter sendet die Aufgabe</li><li data-en="&lt;b&gt;Tab:&lt;/b&gt; cycle focus through controls"><b>Tab:</b> Fokus von Bedienelement zu Bedienelement</li></ul></div>
+              <div class="blk"><h4 data-en="Controls">Bedienung</h4><ul class="map">
+              <li><span class="key b">Space</span><span data-en="&lt;b&gt;E-STOP&lt;/b&gt;, except while typing"><b>E-STOP</b>, außer beim Tippen</span></li>
+              <li><span class="key" style="color:var(--violet)">T · R · G</span><span data-en="TCP gizmo: translate, rotate, toggle">TCP-Gizmo: Schieben, Drehen, ein/aus</span></li>
+              <li><span class="key">Pos1</span><span data-en="Fit Digital Twin to view">Digital Twin einpassen</span></li>
+              <li><span class="key">M</span><span data-en="Audio on/off">Ton an/aus</span></li>
             </ul></div>
-              <div class="blk safe"><h4>Sicherheit</h4><ul class="list"><li><b>Leertaste = E-STOP:</b> in der ganzen UX | Control Interface</li><li><b>E-STOP im Viewport:</b> erscheint, sobald der Arm fährt</li></ul></div>
+              <div class="blk safe"><h4 data-en="Safety">Sicherheit</h4><ul class="list"><li data-en="&lt;b&gt;Space bar = E-STOP:&lt;/b&gt; across entire UX | Control Interface"><b>Leertaste = E-STOP:</b> in der ganzen UX | Control Interface</li><li data-en="&lt;b&gt;Viewport E-STOP:&lt;/b&gt; appears as soon as arm moves"><b>E-STOP im Viewport:</b> erscheint, sobald der Arm fährt</li></ul></div>
             </div>
           </div>
         </article>
@@ -781,16 +798,16 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 10px 24px; align-items: cent
           <div class="body">
             <div class="title-row">
               <span class="badge-ico"><svg class="ico"><use href="#i-tab"/></svg></span>
-              <div><h3>UX | Compact Interface</h3><div class="kind">Am Roboter · /touch</div></div>
+              <div><h3>UX | Compact Interface</h3><div class="kind" data-en="At the robot · /touch">Am Roboter · /touch</div></div>
             </div>
-            <p class="tagline">Bedienung direkt am Roboter, mit dem Finger statt mit der Maus.</p>
+            <p class="tagline" data-en="Operation right at the robot, with fingers instead of mouse.">Bedienung direkt am Roboter, mit dem Finger statt mit der Maus.</p>
             <div class="blocks">
-              <div class="blk"><h4>Funktionen</h4><ul class="list"><li><b>Am Roboter:</b> eigenes Touch-Display (USB + HDMI)</li><li><b>Bereiche:</b> Jogging (Arm von Hand in kleinen Schritten fahren), Gelenke, Greifer, Home-Pose, Sequenzen</li><li><b>Ohne Installation:</b> im Browser unter <code>/touch</code> (Port 8080)</li></ul></div>
-              <div class="blk"><h4>Bedienung</h4><ul class="map">
-              <li><span class="key a">Tippen</span><span>Jogging, Gelenke, Greifer, Home-Pose</span></li>
-              <li><span class="key">Halten</span><span>Entsperren gegen Fehlgriffe</span></li>
+              <div class="blk"><h4 data-en="Features">Funktionen</h4><ul class="list"><li data-en="&lt;b&gt;At the robot:&lt;/b&gt; dedicated touch display (USB + HDMI)"><b>Am Roboter:</b> eigenes Touch-Display (USB + HDMI)</li><li data-en="&lt;b&gt;Areas:&lt;/b&gt; jogging (moving arm by hand in small steps), joints, gripper, home pose, sequences"><b>Bereiche:</b> Jogging (Arm von Hand in kleinen Schritten fahren), Gelenke, Greifer, Home-Pose, Sequenzen</li><li data-en="&lt;b&gt;Zero install:&lt;/b&gt; in browser at &lt;code&gt;/touch&lt;/code&gt; (port 8080)"><b>Ohne Installation:</b> im Browser unter <code>/touch</code> (Port 8080)</li></ul></div>
+              <div class="blk"><h4 data-en="Controls">Bedienung</h4><ul class="map">
+              <li><span class="key a" data-en="Tap">Tippen</span><span data-en="Jogging, joints, gripper, home pose">Jogging, Gelenke, Greifer, Home-Pose</span></li>
+              <li><span class="key" data-en="Hold">Halten</span><span data-en="Unlock to prevent accidental input">Entsperren gegen Fehlgriffe</span></li>
             </ul></div>
-              <div class="blk safe"><h4>Sicherheit</h4><ul class="list"><li><b>Freigabe:</b> Roboter-PC erlaubt die Steuerung (Allow / Deny)</li><li><b>Jogging:</b> halten = fahren, loslassen = Stopp</li><li><b>Halten statt Tippen:</b> für folgenreiche Aktionen</li></ul></div>
+              <div class="blk safe"><h4 data-en="Safety">Sicherheit</h4><ul class="list"><li data-en="&lt;b&gt;Approval:&lt;/b&gt; robot PC authorizes control (Allow / Deny)"><b>Freigabe:</b> Roboter-PC erlaubt die Steuerung (Allow / Deny)</li><li data-en="&lt;b&gt;Jogging:&lt;/b&gt; hold = move, release = stop"><b>Jogging:</b> halten = fahren, loslassen = Stopp</li><li data-en="&lt;b&gt;Hold instead of tap:&lt;/b&gt; for high-impact actions"><b>Halten statt Tippen:</b> für folgenreiche Aktionen</li></ul></div>
             </div>
           </div>
         </article>
@@ -803,10 +820,10 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 10px 24px; align-items: cent
     <div class="wrap">
       <div class="block-head">
         <div>
-          <div class="eyebrow"><span class="n">03</span><span>Software im Browser</span></div>
-          <h2>Steuerwege</h2>
+          <div class="eyebrow"><span class="n">03</span><span data-en="Software in browser">Software im Browser</span></div>
+          <h2 data-en="Control modes">Steuerwege</h2>
         </div>
-        <p>Vom präzisen Jogging bis zur Anweisung in Alltagssprache.</p>
+        <p data-en="From precise jogging to natural language instructions.">Vom präzisen Jogging bis zur Anweisung in Alltagssprache.</p>
       </div>
 
       <div class="grid">
@@ -814,7 +831,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 10px 24px; align-items: cent
         <article class="card wide rcu span-12" id="rcu" style="--hue: var(--accent)">
           <div class="visual">
             <div class="shot">
-              <img src="img/presentation/rcu.jpg" alt="UX | Control Interface in der Roboter-Simulation mit Digital Twin, Jogging und Greifer" width="1600" height="900" loading="lazy">
+              <img src="img/presentation/rcu.jpg" alt="UX | Control Interface in der Roboter-Simulation mit Digital Twin, Jogging und Greifer" data-en-alt="UX | Control Interface in robot simulation with Digital Twin, jogging and gripper" width="1600" height="900" loading="lazy">
               <span class="pin" style="left:78%; top:2.6%">1</span>
               <span class="pin" style="left:2.1%; top:26%">2</span>
               <span class="pin" style="left:30%; top:58%">3</span>
@@ -826,22 +843,22 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 10px 24px; align-items: cent
           <div class="body">
             <div class="title-row">
               <span class="badge-ico"><svg class="ico"><use href="#i-mon"/></svg></span>
-              <div><h3>UX | Control Interface</h3><div class="kind">Maus oder Touch · Port 8081</div></div>
+              <div><h3>UX | Control Interface</h3><div class="kind" data-en="Mouse or touch · port 8081">Maus oder Touch · Port 8081</div></div>
             </div>
-            <p class="tagline">Die Zentrale: Alles, was der Roboter kann, an einem Ort.</p>
+            <p class="tagline" data-en="The control centre: everything the robot can do, in one place.">Die Zentrale: Alles, was der Roboter kann, an einem Ort.</p>
             <div class="blocks">
-              <div class="blk"><h4>Funktionen</h4>
+              <div class="blk"><h4 data-en="Features">Funktionen</h4>
             <ol class="pins">
-              <li><span class="n">1</span><div><b>Sicherheitszone</b><span>Modus, Tempo, Control-Lock, E-STOP</span></div></li>
-              <li><span class="n">2</span><div><b>Bereiche</b><span>Move, Teach, Assistent (VLA), Vision</span></div></li>
-              <li><span class="n">3</span><div><b>Digital Twin</b><span>Live-3D mit Objekten</span></div></li>
-              <li><span class="n">4</span><div><b>Jogging</b><span>Halten = fahren · Schritt 1/5/10 mm</span></div></li>
-              <li><span class="n">5</span><div><b>Zielposen</b><span>Home, Align TCP, Scan</span></div></li>
-              <li><span class="n">6</span><div><b>Greifer</b><span>Release, Suction, Off</span></div></li>
+              <li><span class="n">1</span><div><b data-en="Safety zone">Sicherheitszone</b><span data-en="Mode, speed, control lock, E-STOP">Modus, Tempo, Control-Lock, E-STOP</span></div></li>
+              <li><span class="n">2</span><div><b data-en="Panels">Bereiche</b><span data-en="Move, Teach, Assistant (VLA), Vision">Move, Teach, Assistent (VLA), Vision</span></div></li>
+              <li><span class="n">3</span><div><b>Digital Twin</b><span data-en="Live 3D with objects">Live-3D mit Objekten</span></div></li>
+              <li><span class="n">4</span><div><b>Jogging</b><span data-en="Hold = move · step 1/5/10 mm">Halten = fahren · Schritt 1/5/10 mm</span></div></li>
+              <li><span class="n">5</span><div><b data-en="Target poses">Zielposen</b><span data-en="Home, Align TCP, Scan">Home, Align TCP, Scan</span></div></li>
+              <li><span class="n">6</span><div><b data-en="Gripper">Greifer</b><span data-en="Release, Suction, Off">Release, Suction, Off</span></div></li>
             </ol>
               </div>
-              <div class="blk"><h4>Bedienung</h4><ul class="list"><li><b>Maus oder Touch:</b> am Roboter-PC, Laptop oder Tablet</li><li><b>Jogging:</b> Halten = fahren · Schritt 1 / 5 / 10 mm</li><li><b>Strg+K:</b> Befehlspalette für jede Funktion</li></ul></div>
-              <div class="blk safe"><h4>Sicherheit</h4><ul class="list"><li><b>Sicherheitszone:</b> E-STOP, Modus, Tempo, Control-Lock immer sichtbar</li><li><b>Echte Roboter-Hardware:</b> Wechsel nur mit Bestätigung</li><li><b>BUSY:</b> eine laufende Fahrt sperrt alle anderen</li></ul></div>
+              <div class="blk"><h4 data-en="Controls">Bedienung</h4><ul class="list"><li data-en="&lt;b&gt;Mouse or touch:&lt;/b&gt; on robot PC, laptop or tablet"><b>Maus oder Touch:</b> am Roboter-PC, Laptop oder Tablet</li><li data-en="&lt;b&gt;Jogging:&lt;/b&gt; hold = move · step 1 / 5 / 10 mm"><b>Jogging:</b> Halten = fahren · Schritt 1 / 5 / 10 mm</li><li data-en="&lt;b&gt;Ctrl+K:&lt;/b&gt; command palette for every feature"><b>Strg+K:</b> Befehlspalette für jede Funktion</li></ul></div>
+              <div class="blk safe"><h4 data-en="Safety">Sicherheit</h4><ul class="list"><li data-en="&lt;b&gt;Safety zone:&lt;/b&gt; E-STOP, mode, speed, control lock always visible"><b>Sicherheitszone:</b> E-STOP, Modus, Tempo, Control-Lock immer sichtbar</li><li data-en="&lt;b&gt;Real robot hardware:&lt;/b&gt; switch only with confirmation"><b>Echte Roboter-Hardware:</b> Wechsel nur mit Bestätigung</li><li data-en="&lt;b&gt;BUSY:&lt;/b&gt; active motion locks all others"><b>BUSY:</b> eine laufende Fahrt sperrt alle anderen</li></ul></div>
             </div>
           </div>
         </article>
@@ -849,7 +866,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 10px 24px; align-items: cent
         <!-- Gizmo -->
         <article class="card wide span-12" id="gizmo" style="--hue: var(--indigo)">
           <div class="visual">
-            <svg viewBox="0 0 320 240" role="img" aria-label="TCP-Gizmo mit Achspfeilen und Drehringen, Ziel als gestrichelte Zielpose">
+            <svg viewBox="0 0 320 240" role="img" aria-label="TCP-Gizmo mit Achspfeilen und Drehringen, Ziel als gestrichelte Zielpose" data-en-aria="TCP gizmo with axis arrows and rotation rings, target as dashed target pose">
               <ellipse class="s-dash" cx="160" cy="132" rx="96" ry="34"/>
               <ellipse cx="160" cy="132" rx="70" ry="70" fill="none" stroke="var(--axis-y)" stroke-width="2" opacity=".55" transform="rotate(0)" style="transform-box: fill-box"/>
               <ellipse cx="160" cy="132" rx="70" ry="24" fill="none" stroke="var(--axis-z)" stroke-width="2.5" opacity=".75"/>
@@ -861,19 +878,19 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 10px 24px; align-items: cent
               <circle cx="160" cy="132" r="9" style="fill: var(--surface); stroke: var(--fg); stroke-width: 3"/>
               <!-- Ziehende Hand / Cursor -->
               <path d="M226 60 l0 34 9 -9 7 15 7 -3 -7 -15 13 0 z" style="fill: var(--fg); stroke: var(--surface); stroke-width: 2; stroke-linejoin: round"/>
-              <text class="s-txt-sm" x="160" y="226">ZIEHEN → LOSLASSEN → FAHRT</text>
+              <text class="s-txt-sm" x="160" y="226" data-en="DRAG → RELEASE → MOTION">ZIEHEN → LOSLASSEN → FAHRT</text>
             </svg>
           </div>
           <div class="body">
             <div class="title-row">
               <span class="badge-ico"><svg class="ico"><use href="#i-gizmo"/></svg></span>
-              <div><h3>TCP-Gizmo</h3><div class="kind">Griff am Greiferpunkt im Digital Twin</div></div>
+              <div><h3 data-en="TCP gizmo">TCP-Gizmo</h3><div class="kind" data-en="Handle at tool point in Digital Twin">Griff am Greiferpunkt im Digital Twin</div></div>
             </div>
-            <p class="tagline">Zielpose direkt im 3D-Modell ziehen. Beim Loslassen plant MoveIt die Bahn.</p>
+            <p class="tagline" data-en="Drag target pose directly in the 3D model. On release, MoveIt plans the trajectory.">Zielpose direkt im 3D-Modell ziehen. Beim Loslassen plant MoveIt die Bahn.</p>
             <div class="blocks">
-              <div class="blk"><h4>Funktionen</h4><ul class="list"><li><b>Zielpose:</b> im Digital Twin schieben oder drehen</li><li><b>MoveIt:</b> plant die Bahn beim Loslassen</li><li><b>IK + Kollision:</b> geprüft wie jede MoveTo-Fahrt</li></ul></div>
-              <div class="blk"><h4>Bedienung</h4><ul class="map"><li><span class="key" style="color:var(--indigo)">G</span><span>TCP-Gizmo ein/aus</span></li><li><span class="key" style="color:var(--indigo)">T · R</span><span>Schieben · Drehen</span></li><li><span class="key">Esc</span><span>zurück zum Roboter-TCP</span></li></ul></div>
-              <div class="blk safe"><h4>Sicherheit</h4><ul class="list"><li><b>Bestätigung:</b> bei Auto-Move aus wartet die Bahn auf Execute</li><li><b>Bahnvorschau:</b> Geisterroboter zeigt die Bahn vorher (optional)</li></ul></div>
+              <div class="blk"><h4 data-en="Features">Funktionen</h4><ul class="list"><li data-en="&lt;b&gt;Target pose:&lt;/b&gt; translate or rotate in Digital Twin"><b>Zielpose:</b> im Digital Twin schieben oder drehen</li><li data-en="&lt;b&gt;MoveIt:&lt;/b&gt; plans trajectory on release"><b>MoveIt:</b> plant die Bahn beim Loslassen</li><li data-en="&lt;b&gt;IK + collision:&lt;/b&gt; checked like every MoveTo motion"><b>IK + Kollision:</b> geprüft wie jede MoveTo-Fahrt</li></ul></div>
+              <div class="blk"><h4 data-en="Controls">Bedienung</h4><ul class="map"><li><span class="key" style="color:var(--indigo)">G</span><span data-en="TCP gizmo on/off">TCP-Gizmo ein/aus</span></li><li><span class="key" style="color:var(--indigo)">T · R</span><span data-en="Translate · Rotate">Schieben · Drehen</span></li><li><span class="key">Esc</span><span data-en="return to robot TCP">zurück zum Roboter-TCP</span></li></ul></div>
+              <div class="blk safe"><h4 data-en="Safety">Sicherheit</h4><ul class="list"><li data-en="&lt;b&gt;Confirmation:&lt;/b&gt; with Auto-Move off, trajectory waits for Execute"><b>Bestätigung:</b> bei Auto-Move aus wartet die Bahn auf Execute</li><li data-en="&lt;b&gt;Trajectory preview:&lt;/b&gt; ghost robot shows path in advance (optional)"><b>Bahnvorschau:</b> Geisterroboter zeigt die Bahn vorher (optional)</li></ul></div>
             </div>
           </div>
         </article>
@@ -882,24 +899,24 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 10px 24px; align-items: cent
         <article class="card wide span-12" id="vla" style="--hue: var(--violet)">
           <div class="visual">
             <div class="chat" aria-hidden="true">
-              <div class="bubble me">Stapel den blauen Würfel auf den Zylinder</div>
+              <div class="bubble me" data-en="Stack the blue cube onto the cylinder">Stapel den blauen Würfel auf den Zylinder</div>
               <div class="plan">
-                <span class="plan-h">Planned actions</span>
-                <ol><li>Pick up the Cube</li><li>Place the Cube onto the Cylinder</li></ol>
-                <div class="btns"><span class="go"><svg class="ico f"><use href="#i-play"/></svg>Execute</span><span class="stop"><svg class="ico f"><use href="#i-stop"/></svg>Abort</span></div>
+                <span class="plan-h" data-en="Planned actions">Planned actions</span>
+                <ol><li data-en="Pick up the Cube">Pick up the Cube</li><li data-en="Place the Cube onto the Cylinder">Place the Cube onto the Cylinder</li></ol>
+                <div class="btns"><span class="go"><svg class="ico f"><use href="#i-play"/></svg><span data-en="Execute">Execute</span></span><span class="stop"><svg class="ico f"><use href="#i-stop"/></svg><span data-en="Abort">Abort</span></span></div>
               </div>
             </div>
           </div>
           <div class="body">
             <div class="title-row">
               <span class="badge-ico"><svg class="ico"><use href="#i-chat"/></svg></span>
-              <div><h3>VLA-M-Chat</h3><div class="kind">KI-Agent · lokal oder Cloud</div></div>
+              <div><h3 data-en="VLA-M chat">VLA-M-Chat</h3><div class="kind" data-en="AI agent · local or cloud">KI-Agent · lokal oder Cloud</div></div>
             </div>
-            <p class="tagline">Aufgabe eintippen, Plan prüfen, ausführen. Ein Klick: <b>Grasp</b> oder <b>Place here</b>.</p>
+            <p class="tagline" data-en="Type instruction, review plan, execute. One click: &lt;b&gt;Grasp&lt;/b&gt; or &lt;b&gt;Place here&lt;/b&gt;.">Aufgabe eintippen, Plan prüfen, ausführen. Ein Klick: <b>Grasp</b> oder <b>Place here</b>.</p>
             <div class="blocks">
-              <div class="blk"><h4>Funktionen</h4><ul class="list"><li><b>KI-Agent:</b> macht aus Alltagssprache einen Plan aus Skills</li><li><b>Planprüfung:</b> simulierte Szene, Selbstkorrektur in ≤ 2 Runden</li><li><b>Ein Klick:</b> Grasp oder Place here am Objekt</li></ul></div>
-              <div class="blk"><h4>Bedienung</h4><ul class="map"><li><span class="key" style="color:var(--violet)">Eintippen</span><span>Aufgabe in Alltagssprache</span></li><li><span class="key a">Execute</span><span>Plan bestätigen</span></li><li><span class="key b">Abort</span><span>nach dem laufenden Schritt stoppen</span></li></ul></div>
-              <div class="blk safe"><h4>Sicherheit</h4><ul class="list"><li><b>Bestätigung:</b> jeder Plan wartet auf Execute</li><li><b>Zielposen aus dem Code:</b> das Modell wählt nur Skill + Objekt</li><li><b>Robot | Hardware:</b> ohne <code>allow_real_motion</code> nur Plan, keine Fahrt</li></ul></div>
+              <div class="blk"><h4 data-en="Features">Funktionen</h4><ul class="list"><li data-en="&lt;b&gt;AI agent:&lt;/b&gt; turns everyday language into a skill plan"><b>KI-Agent:</b> macht aus Alltagssprache einen Plan aus Skills</li><li data-en="&lt;b&gt;Plan review:&lt;/b&gt; simulated scene, self-correction in ≤ 2 rounds"><b>Planprüfung:</b> simulierte Szene, Selbstkorrektur in ≤ 2 Runden</li><li data-en="&lt;b&gt;One click:&lt;/b&gt; Grasp or Place here on target object"><b>Ein Klick:</b> Grasp oder Place here am Objekt</li></ul></div>
+              <div class="blk"><h4 data-en="Controls">Bedienung</h4><ul class="map"><li><span class="key" style="color:var(--violet)" data-en="Type">Eintippen</span><span data-en="Task in natural language">Aufgabe in Alltagssprache</span></li><li><span class="key a">Execute</span><span data-en="Confirm plan">Plan bestätigen</span></li><li><span class="key b">Abort</span><span data-en="stop after current step">nach dem laufenden Schritt stoppen</span></li></ul></div>
+              <div class="blk safe"><h4 data-en="Safety">Sicherheit</h4><ul class="list"><li data-en="&lt;b&gt;Confirmation:&lt;/b&gt; every plan waits for Execute"><b>Bestätigung:</b> jeder Plan wartet auf Execute</li><li data-en="&lt;b&gt;Target poses from code:&lt;/b&gt; model only chooses skill + object"><b>Zielposen aus dem Code:</b> das Modell wählt nur Skill + Objekt</li><li data-en="&lt;b&gt;Robot | Hardware:&lt;/b&gt; without &lt;code&gt;allow_real_motion&lt;/code&gt; plan only, no real motion"><b>Robot | Hardware:</b> ohne <code>allow_real_motion</code> nur Plan, keine Fahrt</li></ul></div>
             </div>
           </div>
         </article>
@@ -907,26 +924,26 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 10px 24px; align-items: cent
         <!-- Remote -->
         <article class="card wide span-12" id="remote" style="--hue: var(--teal)">
           <div class="visual">
-            <svg viewBox="0 0 320 240" role="img" aria-label="Roboter-PC vergibt die Steuerung an genau einen Client">
+            <svg viewBox="0 0 320 240" role="img" aria-label="Roboter-PC vergibt die Steuerung an genau einen Client" data-en-aria="Robot PC grants control to exactly one client">
               <path d="M160 92 L70 168" fill="none" stroke="var(--hue)" stroke-width="3"/>
               <path class="s-dash" d="M160 92 L160 168 M160 92 L250 168"/>
               <rect class="s-hue" x="104" y="28" width="112" height="64" rx="12"/>
-              <text class="s-txt" x="160" y="52">Roboter-PC</text>
+              <text class="s-txt" x="160" y="52" data-en="Robot PC">Roboter-PC</text>
               <text class="s-txt-sm" x="160" y="74">WATCHDOG</text>
               <g>
                 <rect class="s-body" x="34" y="168" width="72" height="46" rx="8"/>
                 <text class="s-txt" x="70" y="186" style="font-size:11px">Laptop</text>
-                <text class="s-txt-sm" x="70" y="202" style="fill: var(--hue)">STEUERT</text>
+                <text class="s-txt-sm" x="70" y="202" style="fill: var(--hue)" data-en="CONTROLS">STEUERT</text>
               </g>
               <g>
                 <rect class="s-body" x="124" y="168" width="72" height="46" rx="8"/>
                 <text class="s-txt" x="160" y="186" style="font-size:11px">Tablet</text>
-                <text class="s-txt-sm" x="160" y="202">SIEHT ZU</text>
+                <text class="s-txt-sm" x="160" y="202" data-en="WATCHING">SIEHT ZU</text>
               </g>
               <g>
                 <rect class="s-body" x="214" y="168" width="72" height="46" rx="8"/>
                 <text class="s-txt" x="250" y="186" style="font-size:11px">Touch</text>
-                <text class="s-txt-sm" x="250" y="202">SIEHT ZU</text>
+                <text class="s-txt-sm" x="250" y="202" data-en="WATCHING">SIEHT ZU</text>
               </g>
               <circle cx="112" cy="130" r="15" style="fill: var(--surface); stroke: var(--hue); stroke-width: 2"/>
               <use href="#i-lock" x="102" y="120" width="20" height="20" style="fill:none; stroke: var(--hue); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round"/>
@@ -935,13 +952,13 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 10px 24px; align-items: cent
           <div class="body">
             <div class="title-row">
               <span class="badge-ico"><svg class="ico"><use href="#i-net"/></svg></span>
-              <div><h3>Remote Control</h3><div class="kind">Laptop · Tablet · Browser-Gamepad</div></div>
+              <div><h3>Remote Control</h3><div class="kind" data-en="Laptop · tablet · browser gamepad">Laptop · Tablet · Browser-Gamepad</div></div>
             </div>
-            <p class="tagline">Immer nur einer steuert. <b>Request control</b> → Roboter-PC sagt <b>Allow</b> oder <b>Deny</b>.</p>
+            <p class="tagline" data-en="Only one controls at a time. &lt;b&gt;Request control&lt;/b&gt; → Robot PC approves &lt;b&gt;Allow&lt;/b&gt; or &lt;b&gt;Deny&lt;/b&gt;.">Immer nur einer steuert. <b>Request control</b> → Roboter-PC sagt <b>Allow</b> oder <b>Deny</b>.</p>
             <div class="blocks">
-              <div class="blk"><h4>Funktionen</h4><ul class="list"><li><b>Ein Besitzer:</b> genau ein Client steuert, alle anderen sehen zu</li><li><b>Heimnetz:</b> Laptop, Tablet, Quest 3 im Browser</li><li><b>Remote-Gamepad:</b> am eigenen Gerät angeschlossen</li></ul></div>
-              <div class="blk"><h4>Bedienung</h4><ul class="map"><li><span class="key" style="color:var(--teal)">Request</span><span>Steuerung anfragen</span></li><li><span class="key">Allow · Deny</span><span>am Roboter-PC entscheiden</span></li><li><span class="key">Release</span><span>Steuerung abgeben</span></li></ul></div>
-              <div class="blk safe"><h4>Sicherheit</h4><ul class="list"><li><b>Heartbeat:</b> Tab zu oder WLAN weg = Stopp (echte Roboter-Hardware: 0,4 s)</li><li><b>Echte Roboter-Hardware:</b> höchstens 50 % Tempo</li><li><b>E-STOP:</b> geht von jedem Client</li></ul></div>
+              <div class="blk"><h4 data-en="Features">Funktionen</h4><ul class="list"><li data-en="&lt;b&gt;Single owner:&lt;/b&gt; exactly one client controls, all others observe"><b>Ein Besitzer:</b> genau ein Client steuert, alle anderen sehen zu</li><li data-en="&lt;b&gt;Local network:&lt;/b&gt; laptop, tablet, Quest 3 in browser"><b>Heimnetz:</b> Laptop, Tablet, Quest 3 im Browser</li><li data-en="&lt;b&gt;Remote gamepad:&lt;/b&gt; connected to client device"><b>Remote-Gamepad:</b> am eigenen Gerät angeschlossen</li></ul></div>
+              <div class="blk"><h4 data-en="Controls">Bedienung</h4><ul class="map"><li><span class="key" style="color:var(--teal)">Request</span><span data-en="Request control">Steuerung anfragen</span></li><li><span class="key">Allow · Deny</span><span data-en="decide on robot PC">am Roboter-PC entscheiden</span></li><li><span class="key">Release</span><span data-en="Release control">Steuerung abgeben</span></li></ul></div>
+              <div class="blk safe"><h4 data-en="Safety">Sicherheit</h4><ul class="list"><li data-en="&lt;b&gt;Heartbeat:&lt;/b&gt; tab closed or Wi-Fi lost = stop (real robot hardware: 0.4 s)"><b>Heartbeat:</b> Tab zu oder WLAN weg = Stopp (echte Roboter-Hardware: 0,4 s)</li><li data-en="&lt;b&gt;Real robot hardware:&lt;/b&gt; maximum 50 % speed"><b>Echte Roboter-Hardware:</b> höchstens 50 % Tempo</li><li data-en="&lt;b&gt;E-STOP:&lt;/b&gt; available from every client"><b>E-STOP:</b> geht von jedem Client</li></ul></div>
             </div>
           </div>
         </article>
@@ -954,33 +971,41 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 10px 24px; align-items: cent
     <div class="wrap">
       <div class="block-head">
         <div>
-          <div class="eyebrow"><span class="n">04</span><span>Auf einen Blick</span></div>
-          <h2>Was kann welcher Weg?</h2>
+          <div class="eyebrow"><span class="n">04</span><span data-en="At a glance">Auf einen Blick</span></div>
+          <h2 data-en="What can each mode do?">Was kann welcher Weg?</h2>
         </div>
-        <p>8 von 10 Steuerwegen im Vergleich. TCP-Gizmo und Remote Control stehen oben bei den Steuerwegen.</p>
+        <p data-en="8 of 10 control modes compared. TCP gizmo and remote control are listed above.">8 von 10 Steuerwegen im Vergleich. TCP-Gizmo und Remote Control stehen oben bei den Steuerwegen.</p>
       </div>
       <div class="table-scroll">
         <table>
           <thead>
-            <tr><th scope="col" style="text-align:left">Steuerweg</th><th scope="col">Verfahren</th><th scope="col">Drehen</th><th scope="col">Greifer</th><th scope="col">Home-Pose</th><th scope="col">Objekt greifen</th><th scope="col">E-STOP</th></tr>
+            <tr>
+              <th scope="col" style="text-align:left" data-en="Control mode">Steuerweg</th>
+              <th scope="col"><button type="button" aria-pressed="false" data-en="Translate">Verfahren</button></th>
+              <th scope="col"><button type="button" aria-pressed="false" data-en="Rotate">Drehen</button></th>
+              <th scope="col"><button type="button" aria-pressed="false" data-en="Gripper">Greifer</button></th>
+              <th scope="col"><button type="button" aria-pressed="false" data-en="Home pose">Home-Pose</button></th>
+              <th scope="col"><button type="button" aria-pressed="false" data-en="Grasp object">Objekt greifen</button></th>
+              <th scope="col"><button type="button" aria-pressed="false">E-STOP</button></th>
+            </tr>
           </thead>
           <tbody>
-            <tr style="--hue: var(--accent)"><th scope="row"><span class="cell"><svg class="ico"><use href="#i-mon"/></svg>UX | Control Interface</span></th><td><i class="m full" title="ja"></i></td><td><i class="m full"></i></td><td><i class="m full"></i></td><td><i class="m full"></i></td><td><i class="m full"></i></td><td><i class="m full"></i></td></tr>
+            <tr style="--hue: var(--accent)"><th scope="row"><span class="cell"><svg class="ico"><use href="#i-mon"/></svg>UX | Control Interface</span></th><td><i class="m full" title="ja" data-en-title="yes"></i></td><td><i class="m full"></i></td><td><i class="m full"></i></td><td><i class="m full"></i></td><td><i class="m full"></i></td><td><i class="m full"></i></td></tr>
             <tr style="--hue: var(--accent)"><th scope="row"><span class="cell"><svg class="ico"><use href="#i-pad"/></svg>Gamepad</span></th><td><i class="m full"></i></td><td><i class="m part"></i></td><td><i class="m full"></i></td><td><i class="m full"></i></td><td><i class="m none"></i></td><td><i class="m none"></i></td></tr>
             <tr style="--hue: var(--indigo)"><th scope="row"><span class="cell"><svg class="ico"><use href="#i-vr"/></svg>VR Quest 3</span></th><td><i class="m full"></i></td><td><i class="m full"></i></td><td><i class="m full"></i></td><td><i class="m full"></i></td><td><i class="m full"></i></td><td><i class="m full"></i></td></tr>
-            <tr style="--hue: var(--teal)"><th scope="row"><span class="cell"><svg class="ico"><use href="#i-eye"/></svg>Blick</span></th><td><i class="m full"></i></td><td><i class="m part"></i></td><td><i class="m full"></i></td><td><i class="m full"></i></td><td><i class="m full"></i></td><td><i class="m none"></i></td></tr>
-            <tr style="--hue: var(--gold)"><th scope="row"><span class="cell"><svg class="ico"><use href="#i-mic"/></svg>Sprache</span></th><td><i class="m part"></i></td><td><i class="m part"></i></td><td><i class="m full"></i></td><td><i class="m full"></i></td><td><i class="m part"></i></td><td><i class="m full"></i></td></tr>
-            <tr style="--hue: var(--violet)"><th scope="row"><span class="cell"><svg class="ico"><use href="#i-chat"/></svg>VLA-M-Chat</span></th><td><i class="m none"></i></td><td><i class="m none"></i></td><td><i class="m full"></i></td><td><i class="m full"></i></td><td><i class="m full"></i></td><td><i class="m none"></i></td></tr>
-            <tr style="--hue: var(--violet)"><th scope="row"><span class="cell"><svg class="ico"><use href="#i-key"/></svg>Tastatur</span></th><td><i class="m none"></i></td><td><i class="m none"></i></td><td><i class="m none"></i></td><td><i class="m none"></i></td><td><i class="m none"></i></td><td><i class="m full"></i></td></tr>
+            <tr style="--hue: var(--teal)"><th scope="row"><span class="cell"><svg class="ico"><use href="#i-eye"/></svg><span data-en="Gaze">Blick</span></span></th><td><i class="m full"></i></td><td><i class="m part"></i></td><td><i class="m full"></i></td><td><i class="m full"></i></td><td><i class="m full"></i></td><td><i class="m none"></i></td></tr>
+            <tr style="--hue: var(--gold)"><th scope="row"><span class="cell"><svg class="ico"><use href="#i-mic"/></svg><span data-en="Voice">Sprache</span></span></th><td><i class="m part"></i></td><td><i class="m part"></i></td><td><i class="m full"></i></td><td><i class="m full"></i></td><td><i class="m part"></i></td><td><i class="m full"></i></td></tr>
+            <tr style="--hue: var(--violet)"><th scope="row"><span class="cell"><svg class="ico"><use href="#i-chat"/></svg><span data-en="VLA-M chat">VLA-M-Chat</span></span></th><td><i class="m none"></i></td><td><i class="m none"></i></td><td><i class="m full"></i></td><td><i class="m full"></i></td><td><i class="m full"></i></td><td><i class="m none"></i></td></tr>
+            <tr style="--hue: var(--violet)"><th scope="row"><span class="cell"><svg class="ico"><use href="#i-key"/></svg><span data-en="Keyboard">Tastatur</span></span></th><td><i class="m none"></i></td><td><i class="m none"></i></td><td><i class="m none"></i></td><td><i class="m none"></i></td><td><i class="m none"></i></td><td><i class="m full"></i></td></tr>
             <tr style="--hue: var(--green)"><th scope="row"><span class="cell"><svg class="ico"><use href="#i-tab"/></svg>UX | Compact Interface</span></th><td><i class="m full"></i></td><td><i class="m full"></i></td><td><i class="m full"></i></td><td><i class="m full"></i></td><td><i class="m none"></i></td><td><i class="m full"></i></td></tr>
           </tbody>
         </table>
       </div>
       <p class="mx-sum" id="mx-sum" aria-live="polite">Fähigkeit im Tabellenkopf anklicken: Welche Wege können das?</p>
       <div class="legend">
-        <span><i class="m full"></i>direkt</span>
-        <span><i class="m part"></i>teilweise (z. B. nur Yaw, nur feste Zielposen)</span>
-        <span><i class="m none"></i>nicht über diesen Weg</span>
+        <span data-en="&lt;i class=&quot;m full&quot;&gt;&lt;/i&gt;direct"><i class="m full"></i>direkt</span>
+        <span data-en="&lt;i class=&quot;m part&quot;&gt;&lt;/i&gt;partial (e.g. yaw only, fixed target poses only)"><i class="m part"></i>teilweise (z. B. nur Yaw, nur feste Zielposen)</span>
+        <span data-en="&lt;i class=&quot;m none&quot;&gt;&lt;/i&gt;not via this mode"><i class="m none"></i>nicht über diesen Weg</span>
       </div>
     </div>
   </section>
@@ -990,42 +1015,41 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 10px 24px; align-items: cent
     <div class="wrap">
       <div class="block-head">
         <div>
-          <div class="eyebrow"><span class="n">05</span><span>Gilt für jeden Weg</span></div>
-          <h2>Jede Eingabe durchläuft dieselbe Kette</h2>
+          <div class="eyebrow"><span class="n">05</span><span data-en="Applies to every mode">Gilt für jeden Weg</span></div>
+          <h2 data-en="Every command passes the same chain">Jede Eingabe durchläuft dieselbe Kette</h2>
         </div>
-        <p>Kein Gerät spricht direkt mit dem Arm.</p>
+        <p data-en="No device talks directly to the arm.">Kein Gerät spricht direkt mit dem Arm.</p>
       </div>
 
       <div class="ch-bar">
-        <div class="ch-row"><span class="lbl">Steuerweg</span><span class="grp" id="ch-ways" role="group" aria-label="Steuerweg wählen"></span></div>
-        <div class="ch-row"><span class="lbl">Fall</span><span class="grp" id="ch-cases" role="group" aria-label="Fall wählen"></span></div>
-        <div class="ch-row"><span class="lbl">Ausprobieren</span><button type="button" class="pill go" id="ch-send"><svg class="ico f"><use href="#i-play"/></svg>Befehl senden</button></div>
+        <div class="ch-row"><span class="lbl" data-en="Control mode">Steuerweg</span><span class="grp" id="ch-ways" role="group" aria-label="Steuerweg wählen" data-en-aria="Select control mode"></span></div>
+        <div class="ch-row"><span class="lbl" data-en="Case">Fall</span><span class="grp" id="ch-cases" role="group" aria-label="Fall wählen" data-en-aria="Select case"></span></div>
+        <div class="ch-row"><span class="lbl" data-en="Try out">Ausprobieren</span><button type="button" class="pill go" id="ch-send"><svg class="ico f"><use href="#i-play"/></svg><span data-en="Send command">Befehl senden</span></button></div>
       </div>
       <div class="chain" id="chain">
-        <div class="link" id="ch-in"><svg class="ico"><use href="#i-pad"/></svg><b>Eingabe</b><span>Gerät oder Browser</span></div>
+        <div class="link" id="ch-in"><svg class="ico"><use href="#i-pad"/></svg><b data-en="Input">Eingabe</b><span data-en="Device or browser">Gerät oder Browser</span></div>
         <div class="arrow" aria-hidden="true"><svg class="ico"><use href="#i-right"/></svg></div>
-        <div class="link"><svg class="ico"><use href="#i-lock"/></svg><b>Control-Lock</b><span>Nur ein Bediener</span></div>
+        <div class="link"><svg class="ico"><use href="#i-lock"/></svg><b>Control-Lock</b><span data-en="Only one operator">Nur ein Bediener</span></div>
         <div class="arrow" aria-hidden="true"><svg class="ico"><use href="#i-right"/></svg></div>
-        <div class="link"><svg class="ico"><use href="#i-shield"/></svg><b>Vorprüfung</b><span>Tisch-Kollision voraus</span></div>
+        <div class="link"><svg class="ico"><use href="#i-shield"/></svg><b data-en="Pre-check">Vorprüfung</b><span data-en="Table collision ahead">Tisch-Kollision voraus</span></div>
         <div class="arrow" aria-hidden="true"><svg class="ico"><use href="#i-right"/></svg></div>
-        <div class="link"><svg class="ico"><use href="#i-cube"/></svg><b>MoveIt</b><span>IK, Kollision, Boden</span></div>
-        <div class="arrow" aria-hidden="true"><svg class="ico"><use href="#i-right"/></svg></div>
-        <div class="link"><svg class="ico"><use href="#i-arm"/></svg><b>xArm Lite 6</b><span>Roboter-Simulation oder echte Roboter-Hardware</span></div>
+        <div class="link"><svg class="ico"><use href="#i-cube"/></svg><b>MoveIt</b><span data-en="IK, collision, floor">IK, Kollision, Boden</span></div>
+        <div class="arrow" aria-hidden="true"><svg class="ico"><use href="#i-arm"/></svg><b>xArm Lite 6</b><span data-en="Robot simulation or real robot hardware">Roboter-Simulation oder echte Roboter-Hardware</span></div>
       </div>
 
       <p class="ch-msg" id="ch-msg" aria-live="polite"></p>
       <div class="estop-band">
         <svg class="ico octo"><use href="#i-octo"/></svg>
-        <b>E-STOP wirkt immer</b>
-        <button type="button" class="estop" id="ch-estop" aria-pressed="false">E-STOP testen</button>
-        <div class="ways"><span>Space</span><span>roter Knopf</span><span>UX | Compact Interface</span><span>Sprache: „Not-Aus“</span><span>VR: 2× Grip + 2× Trigger</span></div>
+        <b data-en="E-STOP always active">E-STOP wirkt immer</b>
+        <button type="button" class="estop" id="ch-estop" aria-pressed="false" data-en="Test E-STOP">E-STOP testen</button>
+        <div class="ways"><span>Space</span><span data-en="red button">roter Knopf</span><span>UX | Compact Interface</span><span data-en="Voice: “E-STOP”">Sprache: „Not-Aus“</span><span data-en="VR: 2× grip + 2× trigger">VR: 2× Grip + 2× Trigger</span></div>
       </div>
 
       <div class="numbers">
-        <div class="num"><strong class="mono">10 mm</strong><span>Gamepad-Stopp über dem Tisch (TCP, Z Collision Level einstellbar)</span></div>
-        <div class="num"><strong class="mono">0,25 s</strong><span>Vorausschau der Kollisionsvorprüfung</span></div>
-        <div class="num"><strong class="mono">0,3 s</strong><span>bis Stopp bei VR-Signalverlust</span></div>
-        <div class="num"><strong class="mono" style="color:var(--gold)">Bestätigung</strong><span>vor dem Wechsel auf echte Roboter-Hardware</span></div>
+        <div class="num"><strong class="mono">10 mm</strong><span data-en="Gamepad stop above table (TCP, configurable Z Collision Level)">Gamepad-Stopp über dem Tisch (TCP, Z Collision Level einstellbar)</span></div>
+        <div class="num"><strong class="mono">0,25 s</strong><span data-en="Collision pre-check lookahead">Vorausschau der Kollisionsvorprüfung</span></div>
+        <div class="num"><strong class="mono">0,3 s</strong><span data-en="to stop on VR signal loss">bis Stopp bei VR-Signalverlust</span></div>
+        <div class="num"><strong class="mono" style="color:var(--gold)" data-en="Confirmation">Bestätigung</strong><span data-en="before switching to real robot hardware">vor dem Wechsel auf echte Roboter-Hardware</span></div>
       </div>
     </div>
   </section>
@@ -1058,89 +1082,219 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 10px 24px; align-items: cent
     var l = document.createElement('link'); l.rel = 'stylesheet'; l.href = '/vendor/fonts/fonts_modern.css'; document.head.appendChild(l);
   }
 
+  // ── Theme & Sprache ──
+  const store = (k, v) => { try { if (v === undefined) return localStorage.getItem(k); localStorage.setItem(k, v); } catch (e) { return null; } };
+  const root = document.documentElement;
+  const setTheme = t => {
+    if (t) root.dataset.theme = t;
+    const cur = root.dataset.theme || (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+    document.querySelectorAll('[data-theme-btn]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.themeBtn === cur)));
+  };
+  const qTheme = new URLSearchParams(location.search).get('theme');
+  setTheme(['dark', 'light'].includes(qTheme) ? qTheme : store('project_docs_theme'));
+  document.querySelectorAll('[data-theme-btn]').forEach(b => b.addEventListener('click', () => { setTheme(b.dataset.themeBtn); store('project_docs_theme', b.dataset.themeBtn); }));
+
+  const keep = (el, key, val) => { if (el.dataset[key] === undefined) el.dataset[key] = val; return el.dataset[key]; };
+  let curLang = 'de';
+  let updateInteractiveLang = null;
+
+  const setLang = lang => {
+    curLang = lang;
+    root.lang = lang;
+    const en = lang === 'en';
+    document.querySelectorAll('[data-en]').forEach(el => { const de = keep(el, 'de', el.innerHTML); el.innerHTML = en ? el.dataset.en : de; });
+    document.querySelectorAll('[data-en-title]').forEach(el => { const de = keep(el, 'deTitle', el.title); el.title = en ? el.dataset.enTitle : de; });
+    document.querySelectorAll('[data-en-alt]').forEach(el => { const de = keep(el, 'deAlt', el.alt); el.alt = en ? el.dataset.enAlt : de; });
+    document.querySelectorAll('[data-en-aria]').forEach(el => { const de = keep(el, 'deAria', el.getAttribute('aria-label')); el.setAttribute('aria-label', en ? el.dataset.enAria : de); });
+    document.querySelectorAll('[data-lang]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.lang === lang)));
+    if (updateInteractiveLang) updateInteractiveLang(lang);
+  };
+  document.querySelectorAll('[data-lang]').forEach(b => b.addEventListener('click', () => { setLang(b.dataset.lang); store('project_docs_lang', b.dataset.lang); }));
+
   // ── Kette zum Ausprobieren: Steuerweg + Fall wählen, Befehl läuft Glied für Glied ──
   (() => {
     const $ = (s, el = document) => el.querySelector(s), $$ = (s, el = document) => [...el.querySelectorAll(s)];
     const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const WAYS = [['Gamepad', 'i-pad', 'accent'], ['VR Quest 3', 'i-vr', 'indigo'], ['Blick', 'i-eye', 'teal'], ['Sprache', 'i-mic', 'gold'], ['Tastatur', 'i-key', 'violet'],
-      ['UX | Compact Interface', 'i-tab', 'green'], ['UX | Control Interface', 'i-mon', 'accent'], ['TCP-Gizmo', 'i-gizmo', 'indigo'], ['VLA-M-Chat', 'i-chat', 'violet'], ['Remote Control', 'i-net', 'teal']];
-    const CASES = [['ok', 'Normaler Befehl'], ['lock', 'Zweiter Bediener'], ['table', 'Bahn in den Tisch'], ['reach', 'Ziel außer Reichweite']];
-    // Vorprüfung je Weg: Gamepad über teleop_pre_collision_checker, Jog-Wege über das Twist-Gate des Watchdogs,
-    // Blick mit eigener Bremszone, geplante Bahnen über MoveIt mit Boden (docs/de/running.md, teleoperation.md, voice_gaze.md)
-    const PRE = {
+    const WAYS_DE = ['Gamepad', 'VR Quest 3', 'Blick', 'Sprache', 'Tastatur', 'UX | Compact Interface', 'UX | Control Interface', 'TCP-Gizmo', 'VLA-M-Chat', 'Remote Control'];
+    const WAYS_EN = ['Gamepad', 'VR Quest 3', 'Gaze', 'Voice', 'Keyboard', 'UX | Compact Interface', 'UX | Control Interface', 'TCP gizmo', 'VLA-M chat', 'Remote Control'];
+    const WAYS_ICONS = ['i-pad', 'i-vr', 'i-eye', 'i-mic', 'i-key', 'i-tab', 'i-mon', 'i-gizmo', 'i-chat', 'i-net'];
+    const WAYS_COLORS = ['accent', 'indigo', 'teal', 'gold', 'violet', 'green', 'accent', 'indigo', 'violet', 'teal'];
+
+    const CASES_DE = [['ok', 'Normaler Befehl'], ['lock', 'Zweiter Bediener'], ['table', 'Bahn in den Tisch'], ['reach', 'Ziel außer Reichweite']];
+    const CASES_EN = [['ok', 'Normal command'], ['lock', 'Second operator'], ['table', 'Trajectory into table'], ['reach', 'Target out of reach']];
+
+    const PRE_DE = {
       pad: ['0,25 s voraus · Stopp am Z Collision Level', 'Die Vorprüfung schaut 0,25 s voraus und stoppt die Abwärtsfahrt am Z Collision Level (TCP, Standard 10 mm über dem Tisch).'],
       jog: ['Bodensperre im Watchdog', 'Der Watchdog bremst die Abwärtsfahrt vor dem Z Collision Level; ohne aktuelle TCP-Position bleibt abwärts gesperrt.'],
       gaze: ['Bremszone 40 mm · Stopp 33 mm', 'Ab Z 40 mm bremst die Blicksteuerung sanft ab, bei Z 33 mm folgt der Hard-Stop; der Watchdog sperrt zusätzlich am Z Collision Level.'],
       plan: ['Boden in der Planung', 'MoveIt plant mit Tisch und Boden als Hindernis: Eine Bahn in den Tisch wird verworfen, der Arm bleibt stehen.'],
     };
+    const PRE_EN = {
+      pad: ['0.25 s preview · Stop at Z Collision Level', 'The collision pre-check looks 0.25 s ahead and stops downward motion at the Z Collision Level (TCP, default 10 mm above table).'],
+      jog: ['Floor guard in watchdog', 'The watchdog slows down downward motion before the Z Collision Level; without a current TCP pose, downward motion remains locked.'],
+      gaze: ['Braking zone 40 mm · Stop 33 mm', 'From Z 40 mm gaze control decelerates gently, at Z 33 mm a hard-stop follows; the watchdog additionally blocks at Z Collision Level.'],
+      plan: ['Floor in planning scene', 'MoveIt plans with table and floor as obstacles: Trajectories into the table are rejected, the arm remains stationary.'],
+    };
     const PRE_OF = ['pad', 'jog', 'gaze', 'plan', 'plan', 'jog', 'jog', 'plan', 'plan', 'jog'];
-    const LOCK_MSG = ['Remote-Gamepad gesperrt: Ein anderer Client hat die Steuerung. Das lokale Gamepad am Roboter-PC geht direkt an /joy und ist nicht an den Control-Lock gebunden.',
-      'Ein anderer Client hat die Steuerung. Erst „Request control“, dann Freigabe am Roboter-PC.'];
-    const BLOCK = { lock: [1, 'GESPERRT', ''], table: [2, 'GEBREMST', ''],
-      reach: [3, 'KEINE LÖSUNG', 'MoveIt findet keine Bahn: Das Ziel liegt außerhalb der 440 mm Reichweite. Der Arm bleibt stehen.'] };
+
+    const LOCK_MSG_DE = [
+      'Remote-Gamepad gesperrt: Ein anderer Client hat die Steuerung. Das lokale Gamepad am Roboter-PC geht direkt an /joy und ist nicht an den Control-Lock gebunden.',
+      'Ein anderer Client hat die Steuerung. Erst „Request control“, dann Freigabe am Roboter-PC.'
+    ];
+    const LOCK_MSG_EN = [
+      'Remote gamepad locked: Another client holds control. The local gamepad on the robot PC routes directly to /joy and is not tied to the control lock.',
+      'Another client holds control. First click “Request control”, then grant access on the robot PC.'
+    ];
+
+    const BLOCK_DE = {
+      lock: [1, 'GESPERRT', ''],
+      table: [2, 'GEBREMST', ''],
+      reach: [3, 'KEINE LÖSUNG', 'MoveIt findet keine Bahn: Das Ziel liegt außerhalb der 440 mm Reichweite. Der Arm bleibt stehen.']
+    };
+    const BLOCK_EN = {
+      lock: [1, 'LOCKED', ''],
+      table: [2, 'BRAKED', ''],
+      reach: [3, 'NO SOLUTION', 'MoveIt finds no valid trajectory: Target is outside the 440 mm reach. The arm remains stationary.']
+    };
+
     const links = $$('#chain .link'), arrows = $$('#chain .arrow');
     links.forEach(l => { const st = document.createElement('span'); st.className = 'st'; st.textContent = '—'; l.appendChild(st); });
     let way = 0, kase = 'ok', run = 0, stopped = false;
     const pill = (txt, ic, c, data, on) => `<button type="button" class="pill" ${data} aria-pressed="${on}" style="--c: var(--${c})">${ic ? `<svg class="ico"><use href="#${ic}"/></svg>` : ''}${txt}</button>`;
-    $('#ch-ways').insertAdjacentHTML('beforeend', WAYS.map(([n, ic, c], i) => pill(n, ic, c, `data-w="${i}"`, i === way)).join(''));
-    $('#ch-cases').insertAdjacentHTML('beforeend', CASES.map(([k, n]) => pill(n, '', k === 'ok' ? 'green' : 'red', `data-c="${k}"`, k === kase)).join(''));
+    $('#ch-ways').insertAdjacentHTML('beforeend', WAYS_DE.map((n, i) => pill(n, WAYS_ICONS[i], WAYS_COLORS[i], `data-w="${i}"`, i === way)).join(''));
+    $('#ch-cases').insertAdjacentHTML('beforeend', CASES_DE.map(([k, n]) => pill(n, '', k === 'ok' ? 'green' : 'red', `data-c="${k}"`, k === kase)).join(''));
     const msg = (tag, color, text) => { $('#ch-msg').innerHTML = tag ? `<span class="tag" style="color: var(--${color})">${tag}</span><span>${text}</span>` : ''; };
     const clear = () => { links.forEach(l => { l.classList.remove('run', 'ok', 'block'); $('.st', l).textContent = '—'; }); arrows.forEach(a => a.classList.remove('flow')); };
     const setWay = i => {
-      way = i; const [n, ic, c] = WAYS[i], inp = links[0];
-      $('use', inp).setAttribute('href', `#${ic}`); $('b', inp).textContent = n; $('.ico', inp).style.color = `var(--${c})`;
-      $('span:not(.st)', links[2]).textContent = PRE[PRE_OF[i]][0];
+      way = i;
+      const n = (curLang === 'en' ? WAYS_EN : WAYS_DE)[i];
+      const ic = WAYS_ICONS[i], c = WAYS_COLORS[i], inp = links[0];
+      $('use', inp).setAttribute('href', `#${ic}`);
+      $('b', inp).textContent = curLang === 'en' ? 'Input' : 'Eingabe';
+      $('.ico', inp).style.color = `var(--${c})`;
+      const preList = curLang === 'en' ? PRE_EN : PRE_DE;
+      $('span:not(.st)', links[2]).textContent = preList[PRE_OF[i]][0];
       $$('#ch-ways [data-w]').forEach(b => b.setAttribute('aria-pressed', String(+b.dataset.w === i)));
     };
     const wait = (ms, r) => new Promise(res => setTimeout(() => res(r === run), reduce ? 0 : ms));
     const send = async () => {
       if (stopped) return;
       const r = ++run; clear(); msg('', '', '');
-      const blockAt = BLOCK[kase] ? BLOCK[kase][0] : -1;
+      const blockDict = curLang === 'en' ? BLOCK_EN : BLOCK_DE;
+      const blockAt = blockDict[kase] ? blockDict[kase][0] : -1;
       for (let i = 0; i < links.length; i++) {
         links[i].classList.add('run');
         if (!await wait(420, r)) return;
         links[i].classList.remove('run');
         if (i === blockAt) {
-          links[i].classList.add('block'); $('.st', links[i]).textContent = BLOCK[kase][1];
-          const why = kase === 'lock' ? LOCK_MSG[way === 0 ? 0 : 1] : kase === 'table' ? PRE[PRE_OF[way]][1] : BLOCK[kase][2];
-          msg(BLOCK[kase][1], 'red', why); return;
+          const blk = blockDict[kase];
+          links[i].classList.add('block'); $('.st', links[i]).textContent = blk[1];
+          const lockMsgs = curLang === 'en' ? LOCK_MSG_EN : LOCK_MSG_DE;
+          const preDict = curLang === 'en' ? PRE_EN : PRE_DE;
+          const why = kase === 'lock' ? lockMsgs[way === 0 ? 0 : 1] : kase === 'table' ? preDict[PRE_OF[way]][1] : blk[2];
+          msg(blk[1], 'red', why); return;
         }
-        links[i].classList.add('ok'); $('.st', links[i]).textContent = i === links.length - 1 ? 'FÄHRT' : 'OK';
+        links[i].classList.add('ok'); $('.st', links[i]).textContent = i === links.length - 1 ? (curLang === 'en' ? 'MOVING' : 'FÄHRT') : 'OK';
         if (arrows[i]) arrows[i].classList.add('flow');
       }
-      msg('FREIGABE', 'green', `${WAYS[way][0]}: Jedes Glied hat geprüft, der Arm fährt. Die Vorprüfung passt sich dem Steuerweg an, E-STOP und MoveIt gelten für alle zehn.`);
+      const wayName = (curLang === 'en' ? WAYS_EN : WAYS_DE)[way];
+      const okTag = curLang === 'en' ? 'CLEARED' : 'FREIGABE';
+      const okMsg = curLang === 'en'
+        ? `${wayName}: Every link verified, the arm moves. The pre-check adapts to the control mode, while E-STOP and MoveIt apply to all ten.`
+        : `${wayName}: Jedes Glied hat geprüft, der Arm fährt. Die Vorprüfung passt sich dem Steuerweg an, E-STOP und MoveIt gelten für alle zehn.`;
+      msg(okTag, 'green', okMsg);
     };
     $$('#ch-ways [data-w]').forEach(b => b.addEventListener('click', () => { setWay(+b.dataset.w); send(); }));
     $$('#ch-cases [data-c]').forEach(b => b.addEventListener('click', () => { kase = b.dataset.c; $$('#ch-cases [data-c]').forEach(x => x.setAttribute('aria-pressed', String(x === b))); send(); }));
     $('#ch-send').addEventListener('click', send);
     $('#ch-estop').addEventListener('click', e => {
       const b = e.currentTarget; stopped = !stopped; run++;
-      b.setAttribute('aria-pressed', String(stopped)); b.textContent = stopped ? 'Quittieren' : 'E-STOP testen';
+      b.setAttribute('aria-pressed', String(stopped));
+      b.textContent = stopped ? (curLang === 'en' ? 'Acknowledge' : 'Quittieren') : (curLang === 'en' ? 'Test E-STOP' : 'E-STOP testen');
       $('#ch-send').disabled = stopped; clear();
-      if (stopped) { links.forEach(l => { l.classList.add('block'); $('.st', l).textContent = 'STOPP'; }); msg('E-STOP', 'red', 'Alle Wege gesperrt, Gelenke auf Geschwindigkeit 0. Weiter erst nach Quittieren.'); }
-      else msg('BEREIT', 'green', 'Quittiert. Steuerweg wählen und Befehl senden.');
+      if (stopped) {
+        links.forEach(l => { l.classList.add('block'); $('.st', l).textContent = curLang === 'en' ? 'STOP' : 'STOPP'; });
+        msg('E-STOP', 'red', curLang === 'en'
+          ? 'All command paths locked, joint velocities at 0. Resume only after acknowledgement.'
+          : 'Alle Wege gesperrt, Gelenke auf Geschwindigkeit 0. Weiter erst nach Quittieren.');
+      } else {
+        msg(curLang === 'en' ? 'READY' : 'BEREIT', 'green', curLang === 'en'
+          ? 'Acknowledged. Choose control mode and send command.'
+          : 'Quittiert. Steuerweg wählen und Befehl senden.');
+      }
     });
     setWay(0);
     new IntersectionObserver((es, o) => { if (es[0].isIntersecting) { o.disconnect(); send(); } }, { threshold: .5 }).observe($('#chain'));
 
     // ── Matrix: Fähigkeit anklicken → Spalte hervorheben, Wege zählen ──
     const heads = $$('thead th').slice(1), rows = $$('tbody tr');
+    let activeTh = null;
+    const updateMatrixSummary = () => {
+      const en = curLang === 'en';
+      if (!activeTh) {
+        $('#mx-sum').textContent = en
+          ? 'Click a capability in the table header: Which modes support this?'
+          : 'Fähigkeit im Tabellenkopf anklicken: Welche Wege können das?';
+        return;
+      }
+      const ci = heads.indexOf(activeTh);
+      const thBtn = $('button', activeTh);
+      const capName = thBtn ? thBtn.textContent : activeTh.textContent;
+      let full = [], part = [];
+      rows.forEach(tr => {
+        const td = tr.children[ci + 1];
+        const rowTh = tr.querySelector('th');
+        const nameSpan = rowTh.querySelector('[data-en]') || rowTh.querySelector('.cell');
+        const name = en && nameSpan && nameSpan.dataset.en ? nameSpan.dataset.en : rowTh.textContent.trim();
+        if (td.querySelector('.full')) full.push(name);
+        else if (td.querySelector('.part')) part.push(name);
+      });
+      if (en) {
+        $('#mx-sum').textContent = `${capName}: ${full.length} modes direct${part.length ? `, ${part.length} partial (${part.join(', ')})` : ''}.`;
+      } else {
+        $('#mx-sum').textContent = `${capName}: ${full.length} Wege direkt${part.length ? `, ${part.length} teilweise (${part.join(', ')})` : ''}.`;
+      }
+    };
+
     heads.forEach((th, ci) => {
-      th.innerHTML = `<button type="button" aria-pressed="false">${th.textContent}</button>`;
-      $('button', th).addEventListener('click', e => {
+      const btn = $('button', th);
+      if (!btn) return;
+      btn.addEventListener('click', e => {
         const on = e.currentTarget.getAttribute('aria-pressed') !== 'true';
-        heads.forEach(h => { $('button', h).setAttribute('aria-pressed', 'false'); h.classList.remove('hl'); });
+        heads.forEach(h => { const b = $('button', h); if (b) b.setAttribute('aria-pressed', 'false'); h.classList.remove('hl'); });
         rows.forEach(tr => [...tr.children].forEach(td => td.classList.remove('hl')));
-        if (!on) { $('#mx-sum').textContent = 'Fähigkeit im Tabellenkopf anklicken: Welche Wege können das?'; return; }
+        if (!on) { activeTh = null; updateMatrixSummary(); return; }
+        activeTh = th;
         e.currentTarget.setAttribute('aria-pressed', 'true'); th.classList.add('hl');
-        let full = [], part = [];
-        rows.forEach(tr => { const td = tr.children[ci + 1]; td.classList.add('hl'); const name = tr.querySelector('th').textContent.trim();
-          if (td.querySelector('.full')) full.push(name); else if (td.querySelector('.part')) part.push(name); });
-        $('#mx-sum').textContent = `${th.textContent}: ${full.length} Wege direkt${part.length ? `, ${part.length} teilweise (${part.join(', ')})` : ''}.`;
+        rows.forEach(tr => { tr.children[ci + 1].classList.add('hl'); });
+        updateMatrixSummary();
       });
     });
+
+    updateInteractiveLang = (lang) => {
+      const en = lang === 'en';
+      $$('#ch-ways [data-w]').forEach(b => {
+        const i = +b.dataset.w;
+        const ic = WAYS_ICONS[i];
+        const n = en ? WAYS_EN[i] : WAYS_DE[i];
+        b.innerHTML = `${ic ? `<svg class="ico"><use href="#${ic}"/></svg>` : ''}${n}`;
+      });
+      $$('#ch-cases [data-c]').forEach(b => {
+        const k = b.dataset.c;
+        const item = (en ? CASES_EN : CASES_DE).find(c => c[0] === k);
+        if (item) b.textContent = item[1];
+      });
+      const estopBtn = $('#ch-estop');
+      if (estopBtn) {
+        estopBtn.textContent = stopped ? (en ? 'Acknowledge' : 'Quittieren') : (en ? 'Test E-STOP' : 'E-STOP testen');
+      }
+      setWay(way);
+      updateMatrixSummary();
+    };
   })();
+
+  if (store('project_docs_lang') === 'en') setLang('en');
+
   // ── Lesefluss (js/scroll_flow.js): Fortschritt, aktiver Abschnitt, Einstieg, Köpfe, Karten aus der Tiefe, Kette + Tabelle bauen sich auf ──
   window.ScrollFlow?.init({
     hero: '.hero .wrap > div > *', heroFig: '.hero-shot', heroExit: '.hero .wrap',
