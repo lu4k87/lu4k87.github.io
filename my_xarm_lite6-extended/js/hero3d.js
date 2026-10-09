@@ -658,7 +658,7 @@ function build(L, wrap, host, o) {
         lock, brk, tips, waves, ghost, gFill, gRim, yawG: 0,
         slot: null, home: false, mat: { v: 0, to: 0, D: 1 }, hopT: -1, hopDir: 1, hopYaw: 0, swell: 0, popT: 1, sinkT: 1, jumpT: -1, yaw0: 0, yaw1: 0, shake: 0,
         on: null, from: null, fall: null, pickTop: sz,
-        eyes, eye, face: 0, phi: rnd(-3, 3), lx: 0, ly: 0, blink: 1, blinkT: rnd(1, 4), mood: 'open', moodTill: 0, sq: 1, crouch: 0 };
+        eyes, eye, face: 0, faceLocked: false, phi: rnd(-3, 3), lx: 0, ly: 0, blink: 1, blinkT: rnd(1, 4), mood: 'open', moodTill: 0, sq: 1, crouch: 0 };
     };
     // Aussparung: dunkle Grundfläche + Rand (innen schwächere Kante = Tiefe), Schein und Welle als Klick-Hinweis
     const makeTpl = K => {
@@ -786,7 +786,7 @@ function build(L, wrap, host, o) {
     // spricht gerade: Blase aus, Restzeit steht, danach wieder ein → Dialog, nie zwei Blasen übereinander. swap = nur Inhalt
     // tauschen (kein Pop). Kopfzeile (Leuchtpunkt, Name, Messwert) kommt aus headerFor(obj); Rumpf tippt sich Zeichen für
     // Zeichen; Führungslinie + Punkt (eigene Elemente neben der Blase) zeigen auf den Sprecher statt einer Blasen-Spitze.
-    const TYPE_MS = 26, LBL_DX = 54, LBL_DY = 58;
+    const TYPE_MS = 30, LBL_DX = 54, LBL_DY = 58;
     const hexOf = n => `#${n.toString(16).padStart(6, '0')}`;
     const sizeFor = K => K.id === 'box' ? `${mm(K.S[0])}×${mm(K.S[1])}` : K.id === 'cyl' ? `⌀${mm(K.S[0])} MM` : `${mm(K.S[0])} MM`;
     const headerFor = o => o.K
@@ -807,7 +807,7 @@ function build(L, wrap, host, o) {
       const lead = document.createElement('div'); lead.className = 'h3d-line'; host.appendChild(lead);
       const tip = document.createElement('div'); tip.className = 'h3d-tip'; host.appendChild(tip);
       const v = new THREE.Vector3();
-      let o = null, until = 0, rest = 0, wait = false, typeText = '', typeFrom = 0;   // Uhr = echte Zeit (läuft auch bei reduzierter Bewegung ohne dt)
+      let o = null, until = 0, rest = 0, wait = false, typeText = '', typeFrom = 0, sx = 0, sy = 0, hasPos = false;   // Uhr = echte Zeit (läuft auch bei reduzierter Bewegung ohne dt); sx/sy = geglättete Bildschirmlage
       const vis = on => { el.classList.toggle('in', on); lead.classList.toggle('in', on); tip.classList.toggle('in', on); };
       const paintHead = () => {
         if (!o) return;
@@ -817,10 +817,15 @@ function build(L, wrap, host, o) {
       };
       const renderType = () => { const n = reduce ? typeText.length : Math.max(0, Math.min(typeText.length, Math.floor((performance.now() - typeFrom) / TYPE_MS))); bodyText.textContent = typeText.slice(0, n); };
       // Label schräg neben dem Objekt (nie darüber → verdeckt es nie), zur Bühnenmitte hin gespiegelt; Führungslinie vom
-      // objektseitigen Eckpunkt der Blase (= Anker, CSS-Translate legt ihn auf diese Ecke) zum Punkt am Objekt
-      const place = () => {
+      // objektseitigen Eckpunkt der Blase (= Anker, CSS-Translate legt ihn auf diese Ecke) zum Punkt am Objekt. Anker wird
+      // geglättet (dt, Wunsch User 09.10.2026: Blase soll ruhig stehen, nicht mit einem drehenden/fallenden Objekt wild
+      // mitzucken) – beim Erscheinen (pop, kein dt) springt sie sofort auf die aktuelle Lage.
+      const place = dt => {
         v.copy(o.g.position); v.z += o.h * 0.6 + 0.02; v.project(st.camera);
-        const W = host.clientWidth, H = host.clientHeight, x = (v.x + 1) / 2 * W, y = (1 - v.y) / 2 * H, right = x < W / 2;
+        const W = host.clientWidth, H = host.clientHeight, rx = (v.x + 1) / 2 * W, ry = (1 - v.y) / 2 * H;
+        if (!hasPos || reduce || dt == null) { sx = rx; sy = ry; hasPos = true; }
+        else { const k = Math.min(1, dt * 6); sx += (rx - sx) * k; sy += (ry - sy) * k; }
+        const x = sx, y = sy, right = x < W / 2;
         const bw = el.offsetWidth || 160, bh = el.offsetHeight || 54;
         let ax = x + (right ? LBL_DX : -LBL_DX); ax = right ? Math.min(ax, W - 10) : Math.max(ax, bw + 10);
         const ay = Math.max(bh + 10, Math.min(H - 10, y - LBL_DY));
@@ -829,29 +834,32 @@ function build(L, wrap, host, o) {
         const dx = ax - x, dy = ay - y;
         lead.style.left = `${x}px`; lead.style.top = `${y}px`; lead.style.width = `${Math.hypot(dx, dy)}px`; lead.style.transform = `rotate(${Math.atan2(dy, dx)}rad)`;
       };
-      const pop = () => { typeFrom = performance.now(); paintHead(); renderType(); place(); el.classList.remove('in'); void el.offsetWidth; el.classList.add('in'); lead.classList.add('in'); tip.classList.add('in'); };
+      const pop = () => { typeFrom = performance.now(); paintHead(); renderType(); hasPos = false; place(); el.classList.remove('in'); void el.offsetWidth; el.classList.add('in'); lead.classList.add('in'); tip.classList.add('in'); };
       return {
         get left() { return (wait ? rest : until ? until - performance.now() : 0) / 1000; },
         get busy() { return this.left > 0; },
+        // ms = Lesezeit NACH dem Fertigtippen (nicht mehr die Gesamtdauer ab Erscheinen, Wunsch User 09.10.2026):
+        // lange Sprüche fressen sich sonst selbst die Lesezeit an, Blase verschwindet mitten im Tippen oder sofort danach.
         show(obj, content, ms = 2600, quiet = false, swap = false) {
           const live = this.busy && !wait && o === obj;
           const kids = [].concat(content), first = kids[0];
           typeText = typeof first === 'string' ? first : first.textContent;
           extra.replaceChildren(...kids.slice(1));
-          o = obj; until = performance.now() + ms;
+          o = obj; const hold = ms + (reduce ? 0 : typeText.length * TYPE_MS);
+          until = performance.now() + hold;
           wait = still();
-          if (wait) { rest = ms; vis(false); }
+          if (wait) { rest = hold; vis(false); }
           else if (!(swap && live)) pop();
           else { typeFrom = performance.now(); paintHead(); renderType(); }
           if (!quiet) sfx('pop');
         },
         hide() { vis(false); until = rest = 0; wait = false; },
-        tick() {
+        tick(dt) {
           if (!o) return;
           const now = performance.now();
           if (this.busy && still()) { if (!wait) { wait = true; rest = until - now; vis(false); } return; }
           if (wait) { wait = false; until = now + rest; rest = 0; pop(); }
-          place(); renderType(); paintHead();
+          place(dt); renderType(); paintHead();
           if (until && now > until) { until = 0; vis(false); }
         },
       };
@@ -1142,7 +1150,7 @@ function build(L, wrap, host, o) {
         step([pool, name, val, ph], ms = 60000) { this.say(line(pool), [name, val, ph], ms); },
         get left() { return b.left; },
         hide() { b.hide(); prio = 0; },
-        tick: () => b.tick(),
+        tick: dt => b.tick(dt),
       };
     })();
     // reduzierte Bewegung = Standbild, rendert nur nach Eingaben → solange eine Blase mit Ablaufzeit steht, je 250 ms ein Frame
@@ -1582,9 +1590,13 @@ function build(L, wrap, host, o) {
       const cl = Math.hypot(camL.x, camL.y) || 1, cx = camL.x / cl, cy = camL.y / cl, S = o.K.S, cyl = o.K.id === 'cyl';
       if (cyl) o.phi += wrapA(Math.atan2(cy, cx) - o.phi) * (reduce ? 1 : Math.min(1, dt * 5));
       else {
-        const sc = f => FACES[f][0] * cx + FACES[f][1] * cy;
-        let b = o.face; for (let f = 0; f < 4; f++) if (sc(f) > sc(b) + 0.3) b = f;
-        if (b !== o.face) { o.face = b; o.blink = 0; }
+        // Gesicht wird einmal beim ersten Tick gewählt und bleibt für die Lebensdauer des Objekts fest (Wunsch User
+        // 09.10.2026: Augen springen nicht mehr zwischen Flächen, drehen sich mit dem Objekt mit statt die Seite zu wechseln).
+        if (!o.faceLocked) {
+          const sc = f => FACES[f][0] * cx + FACES[f][1] * cy;
+          let b = 0; for (let f = 1; f < 4; f++) if (sc(f) > sc(b)) b = f;
+          o.face = b; o.faceLocked = true;
+        }
         o.phi = Math.atan2(FACES[o.face][1], FACES[o.face][0]);
       }
       const nx = Math.cos(o.phi), ny = Math.sin(o.phi), side = Math.abs(nx) > 0.5;
@@ -1819,7 +1831,7 @@ function build(L, wrap, host, o) {
         v.fall = { t: 0, k: 0, lx, ly, dx, dy, x0: p.x, y0: p.y, c0: 0, q0: v.g.quaternion.clone(), yaw: v.g.rotation.z, spin: rnd(-0.7, 0.7), hit: false, quiet: clk - lastClick >= 45 };
         v.hopT = -1; v.jolt = -1; v.swell = 0; v.vx = v.vy = 0; shake();
         later(0.9, () => { if (canTalk()) { const [x, y] = duo(L.tip); talk(w, x, v, y, 2200); } });
-      } else if (canTalk()) { const [x, y] = duo(L.crash, a.K); talk(a, x, b, y, 2200); }
+      } else later(0.6, () => { if (canTalk()) { const [x, y] = duo(L.crash, a.K); talk(a, x, b, y, 2200); } });   // Blase erst, wenn der erste Dreh-Schwung abklingt (Wunsch User 09.10.2026: Ruhe statt Gerede mitten im Wirbeln)
     };
     const chargeTick = dt => {
       const C = charge, { a, b } = C, pa = a.g.position, pb = b.g.position; C.t += dt;
@@ -2093,7 +2105,7 @@ function build(L, wrap, host, o) {
       });
       fxTick(dt);
       if (flashT < 1) { flashT = Math.min(1, flashT + dt / 0.45); flash.material.opacity = 0.95 * (1 - flashT); flash.scale.setScalar(1 + flashT * 1.6); }
-      say.tick(); say2.tick(); arm.tick();
+      say.tick(dt); say2.tick(dt); arm.tick(dt);
       // Klick-Hinweis der Formen: in Ruhe selten und zufällig, während ein Objekt eine Form sucht alle im Takt
       if (!reduce) TPL.forEach(p => {
         if (p.full) return;

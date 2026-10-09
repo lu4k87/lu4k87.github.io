@@ -243,20 +243,24 @@ a.hero-card:hover { border-color: color-mix(in srgb, var(--accent) 65%, var(--gl
 .h3d-lbl:focus-visible { opacity: 1; }
 /* Mini-Spiel der Hero-Bühne (js/hero3d.js): Sprechblase als Holo-Callout (Wunsch User 09.10.2026, Vorschau Dlg:B) – dunkles
    Glas, Rand in Sprecherfarbe (--sc), Führungslinie + Punkt am Objekt statt Blasen-Spitze, Kopfzeile mit Leuchtpunkt,
-   Name und Messwert, Text tippt sich Zeichen für Zeichen (js setzt .h3d-body-Inhalt, Cursor blinkt per CSS) */
+   Name und Messwert, Text tippt sich Zeichen für Zeichen (js setzt .h3d-body-Inhalt, Cursor blinkt per CSS).
+   Überarbeitet (Wunsch User 09.10.2026, zu wild/schnell): Erscheinen ohne Überschwinger (kein Bounce, Skill soft-motion
+   §5), etwas mehr Zeit zum Lesen (Lage folgt dem Objekt jetzt geglättet statt pixelgenau, js place()); Trennlinie unter
+   der Kopfzeile, mehr Luft für den Text. */
 .h3d-say { position: absolute; left: 0; top: 0; z-index: 2; translate: 0 -100%; pointer-events: none;
-  display: grid; gap: 6px; text-align: left; max-width: min(260px, 70vw);
-  padding: 8px 12px; border: 1px solid color-mix(in srgb, var(--sc, var(--accent)) 75%, var(--glass-bd)); border-radius: var(--radius-sm);
-  background: var(--glass-bg); color: var(--glass-fg); font: 700 13px/1.25 var(--mono); box-shadow: inset 0 1px 0 var(--glass-hi), 0 0 22px -6px var(--glow);
-  opacity: 0; scale: .5; transform-origin: 0 100%; transition: opacity 280ms var(--ease-io), scale 300ms var(--ease-io); }
+  display: grid; gap: 7px; text-align: left; max-width: min(280px, 72vw);
+  padding: 10px 13px; border: 1px solid color-mix(in srgb, var(--sc, var(--accent)) 75%, var(--glass-bd)); border-radius: var(--radius-sm);
+  background: var(--glass-bg); color: var(--glass-fg); font: 700 13px/1.3 var(--mono); box-shadow: inset 0 1px 0 var(--glass-hi), 0 0 18px -7px var(--glow);
+  opacity: 0; scale: .88; transform-origin: 0 100%; transition: opacity 360ms var(--ease-io), scale 360ms var(--ease-io); }
 .h3d-say.left { translate: -100% -100%; transform-origin: 100% 100%; }
-.h3d-say.in { opacity: 1; scale: 1; animation: h3d-pop 520ms var(--ease-out); }
-@keyframes h3d-pop { 0% { opacity: 0; scale: .5; } 55% { opacity: 1; scale: 1.08; } 100% { scale: 1; } }
-.h3d-say .h3d-head { display: flex; align-items: center; gap: 7px; font: 700 11px/1 var(--mono); letter-spacing: .04em; }
+.h3d-say.in { opacity: 1; scale: 1; animation: h3d-pop 420ms var(--ease-out); }
+@keyframes h3d-pop { 0% { opacity: 0; scale: .88; } 100% { opacity: 1; scale: 1; } }
+.h3d-say .h3d-head { display: flex; align-items: center; gap: 7px; padding-bottom: 6px; border-bottom: 1px solid color-mix(in srgb, var(--sc, var(--accent)) 22%, transparent);
+  font: 700 11px/1 var(--mono); letter-spacing: .04em; }
 .h3d-say .h3d-dot { width: 7px; height: 7px; border-radius: 50%; flex: none; background: var(--sc, var(--accent)); box-shadow: 0 0 7px -1px var(--sc, var(--accent)); }
 .h3d-say .h3d-name { color: var(--sc, var(--accent)); white-space: nowrap; }
 .h3d-say .h3d-val { margin-left: auto; padding-left: 10px; color: var(--sc, var(--accent)); opacity: .68; font-weight: 500; white-space: nowrap; }
-.h3d-say .h3d-body { font: 700 14px/1.3 var(--mono); }
+.h3d-say .h3d-body { font: 700 14px/1.42 var(--mono); }
 .h3d-say .h3d-cursor { display: inline-block; width: 2px; height: 1em; margin-left: 1px; vertical-align: -.15em;
   background: var(--glass-fg); animation: h3d-blink 1s steps(1, end) infinite; }
 @keyframes h3d-blink { 0%, 49% { opacity: 1; } 50%, 100% { opacity: 0; } }
