@@ -96,7 +96,8 @@ dev_ws/
 │   │   ├── index.html                                                     # Roboter-Steuerungsoberfläche (Port 8081)
 │   │   ├── vr_mirror.html                                                 # PC-Fenster, das die Sicht der Quest 3 spiegelt
 │   │   ├── install_desktop_icon.sh                                        # Installiert Icon & .desktop-Eintrag der UX | Control Interface
-│   │   ├── style.css · css/                                               # Stylesheet; css/theme_light.gen.css erzeugt von tools/gen_theme_light.py
+│   │   ├── css/rcu/ · css/                                                # Stylesheets nach Bereich (NN_*.css, Reihenfolge = Kaskade); css/theme_light.gen.css erzeugt von tools/gen_theme_light.py
+│   │   ├── partials/                                                      # HTML-Teile, von server.py eingesetzt (<!--#include …-->)
 │   │   ├── launch/                                                        # http_robot_control_ui.launch.py: Webserver, rosbridge 9090, Watchdog
 │   │   ├── js/                                                            # ES-Module (main.js, ros.js, jog.js, motion.js, sequence.js, sandbox.js, remote.js, hud_dock.js, config.js …)
 │   │   │   └── twin/                                                      # digital_twin.js (three.js-Twin), lab_room.js, logistics_cell.js, vcam_render.js, reachability*.js, xr*.js (VR-Viewport, HUD, Spiegel)
