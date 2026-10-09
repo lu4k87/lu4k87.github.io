@@ -2308,7 +2308,7 @@ source install/setup.bash</pre><button class="copy" type="button">Kopieren</butt
       <ul class="bl sm mut"><li>Fahrt fertig erst bei <code>/ui/moveit_motion_state</code> = „succeeded“ für genau diesen Lauf (wie SEQUENCES)</li><li>Mit Bahnvorschau (Ghost): jede Fahrt wartet auf Execute im MoveIt-Popup</li><li>Einmalig: <code>bash src/vla_bridge/scripts/install_ollama.sh</code> → <code>vla_bridge</code> startet das Modell selbst</li></ul>
     </div>
     <div class="card s-12" id="vla-palettieren" style="--k:var(--c-vla)">
-      <div class="card-h"><h3>Auto-Palettieren</h3><span class="chip" style="--k:var(--c-fake)">Robot | Digital Twin · SIM physics</span><span class="chip" style="--k:var(--c-svc)">Skill palletize</span><span class="sub">Bereichs-Leiste › Scene › <b>Palletizing</b>: schaltet die Logistik-Zelle (Europalette PAL-01, zwei Zuführbänder mit Lichtschranken, Rollenauslauf, Palettenmagazin mit pneumatischem Pusher) und öffnet das Fenster <i>Palletizing</i></span></div>
+      <div class="card-h"><h3>Auto-Palettieren</h3><span class="chip" style="--k:var(--c-fake)">Robot | Digital Twin · SIM physics</span><span class="chip" style="--k:var(--c-svc)">Skill palletize</span><span class="sub">Bereichs-Leiste › Scene › <b>Palletizing</b>: schaltet die Palettierzelle (Europalette PAL-01, zwei Zuführbänder mit Lichtschranken, Rollenauslauf, Palettenmagazin mit pneumatischem Pusher) und öffnet das Fenster <i>Palletizing</i></span></div>
       <div class="pls-h">Ablauf je Karton &amp; Materialfluss</div>
       <ol class="pls">
         <li><span class="n">1</span><div><b>Plan</b><p><code>vla_bridge/palletizing.py</code>: Kartons bis 80 kg, schwer + groß unten, nie schwer auf leicht, nichts auf zerbrechlich, ≥ 80 % Auflage · Ghost-Boxen mit Schritt-Nr. im Viewport · Rest unter <i>Stays on the conveyor</i> mit Grund</p></div>
@@ -2376,7 +2376,7 @@ source install/setup.bash</pre><button class="copy" type="button">Kopieren</butt
       </table></div>
       <ul class="bl sm">
         <li><b>Materialfluss &amp; Nachrücken:</b> Nach jedem Anheben (<code>picked</code>) rücken die Kartons auf dem Zuführband automatisch zur Lichtschranke nach; <code>wait_still</code> sichert die Ruheposition vor dem nächsten Greifen.</li>
-        <li><b>Autonome Logistik-Zelle:</b> Ist eine Palette voll (<code>state: changing</code>, Event <code>pallet_full</code>), fährt sie über die Rollenbahn aus der Zelle; das Überkopf-Magazin vereinzelt eine Leerpalette, der pneumatische Pusher schiebt sie ein und neue Kartons laufen ein (Timeout 90 s).</li>
+        <li><b>Autonome Palettierzelle:</b> Ist eine Palette voll (<code>state: changing</code>, Event <code>pallet_full</code>), fährt sie über die Rollenbahn aus der Zelle; das Überkopf-Magazin vereinzelt eine Leerpalette, der pneumatische Pusher schiebt sie ein und neue Kartons laufen ein (Timeout 90 s).</li>
         <li>Robot | Digital Twin nur mit <b>SIM physics</b> (Kartons = Rapier-Körper), sonst lehnt <code>vla_bridge</code> ab · Robot | Hardware lehnt virtuelle Kartons ab (<code>allow_virtual_in_real</code>)</li>
         <li>Chat „belade die Palette“ / „load the pallet“ → Skill <code>palletize</code>, derselbe Planer und Ablauf</li>
         <li>Bänder, Rollenauslauf und Zaun der Zelle sind MoveIt-Hindernisse, solange die Szene aktiv ist · Test: <code>tools/grasp_e2e.py --pallet</code> (Robot | Digital Twin, Domain 94)</li>

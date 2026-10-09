@@ -906,7 +906,7 @@ const FLOWS = (() => {
       },
     },
     scene: {
-      t: ['Szenen und Logistik-Zelle', 'Scenes and logistics cell'], hue: 'teal', icon: 'i-layers', s: 'sr',
+      t: ['Szenen und Palettierzelle', 'Scenes and palletizing cell'], hue: 'teal', icon: 'i-layers', s: 'sr',
       d: ['Drei Szenen: Standard, Logistik – automatisch palettieren (Europalette, Förderbänder, Zaun) und Intralogistik – AMR (nur Robot | Digital Twin). virtual_object_detections hält den Zustand latched für alle Clients und meldet Zaun und Bänder alle 5 s als Hindernis an MoveIt.', 'Three scenes: Standard, Logistics – auto palletizing (euro pallet, conveyor belts, fence) and Intralogistics – AMR (Robot | Digital Twin only). virtual_object_detections keeps the state latched for all clients and reports fence and belts to MoveIt as obstacles every 5 s.'],
       spec: {
         lanes: lanes('ui', 'br', ['vis', ['Szenen-Node', 'Scene node']], 'mv'),
@@ -1044,7 +1044,7 @@ const FLOWS = (() => {
         lanes: lanes(['in', ['Bediener', 'Operator']], 'br', ['ai', ['Planer', 'Planner']], 'mo', 'hw'),
         nodes: [N('pan', 'in', 0, { label: ['Palettier-Fenster', 'Palletizing window'], short: ['Palette', 'Pallet'], sub: 'pallet.js · :8081', icon: 'i-layers', hue: 'accent', info: ['Plan, Start, Dry run, Abort, Palettenwechsel.', 'Plan, start, dry run, abort, pallet change.'] }),
           N('rb', 'br', 0), N('pj', 'ai', 0, { label: 'PalletJob', short: 'Job', sub: 'vla_bridge', icon: 'i-spark', hue: 'violet', info: ['Rechnet den Plan (Auflage ≥ 80 %, nie schwer auf leicht) und führt ihn Karton für Karton aus.', 'Computes the plan (support ≥ 80 %, never heavy on light) and runs it carton by carton.'] }),
-          N('vo', 'ai', 1.5, { label: ['Virtuelle Kartons', 'Virtual cartons'], short: ['Kartons', 'Cartons'], sub: '/ui/virtual_objects', icon: 'i-cube', hue: 'teal', info: ['Palette und Kartons der Logistik-Zelle (Maßstab 1:6).', 'Pallet and cartons of the logistics cell (scale 1:6).'] }),
+          N('vo', 'ai', 1.5, { label: ['Virtuelle Kartons', 'Virtual cartons'], short: ['Kartons', 'Cartons'], sub: '/ui/virtual_objects', icon: 'i-cube', hue: 'teal', info: ['Palette und Kartons der Palettierzelle (Maßstab 1:6).', 'Pallet and cartons of the palletizing cell (scale 1:6).'] }),
           N('mh', 'mo', 0), N('gj', 'mo', 1.5), N('arm', 'hw', 0, { sub: 'DigTwin · Sandbox' })],
         edges: [E('pan', 'rb', '/vla/skill'), E('rb', 'pj', '/vla/skill'), E('vo', 'pj', '/ui/virtual_objects'), R('pj', 'rb', '/vla/pallet/plan'), R('rb', 'pan', '/vla/pallet/plan'),
           E('pj', 'mh', '/ui/approach_from_above', { kind: 'service' }), E('mh', 'arm', ['MoveGroup → Controller', 'MoveGroup → controller']), E('pj', 'gj', '/ui/gripper_cmd', { ports: 'rl' })],
