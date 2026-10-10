@@ -434,10 +434,10 @@ const Ring = (() => {
     let geo = null;
 
     function draw() {
-      const W = Math.max(280, Math.min(420, Math.round(host.clientWidth || 380)));
+      const W = Math.max(300, Math.min(480, Math.round(host.clientWidth || 400)));
       if (geo && geo.W === W) return;
-      const rw = W < 340 ? 112 : 140, rh = 44, H = 360;
-      const rx = Math.min(150, W / 2 - rw / 2 - 6), ry = 130, cx = W / 2, cy = H / 2;
+      const rw = W < 340 ? 116 : (W < 430 ? 144 : 158), rh = 46, H = 360;
+      const rx = Math.min(160, W / 2 - rw / 2 - 6), ry = 130, cx = W / 2, cy = H / 2;
       const off = n % 4 === 0 ? Math.PI / n : 0;  // 4 oder 8 Stationen: diagonal, damit die Mitte frei bleibt
       const ang = k => 2 * Math.PI * k / n + off;
       const pos = k => [cx + rx * Math.sin(ang(k)), cy - ry * Math.cos(ang(k))];
@@ -489,9 +489,9 @@ const Ring = (() => {
       }
       geo.st = loop.st.map(([t, s, plan], k) => {
         const [x, y] = pos(k), g = el('g', { class: plan ? 'st plan' : 'st', transform: `translate(${(x - rw / 2).toFixed(1)} ${(y - rh / 2).toFixed(1)})` }, svg);
-        el('rect', { width: rw, height: rh, rx: 2 }, g);
-        const a = el('text', { class: 't', x: rw / 2, y: 18, 'text-anchor': 'middle' }, g); a.textContent = L(t); fit(a, rw - 10);
-        const b = el('text', { class: 's', x: rw / 2, y: 34, 'text-anchor': 'middle' }, g); b.textContent = L(s); fit(b, rw - 10);
+        el('rect', { width: rw, height: rh, rx: 4 }, g);
+        const a = el('text', { class: 't', x: rw / 2, y: 19, 'text-anchor': 'middle' }, g); a.textContent = L(t); fit(a, rw - 8);
+        const b = el('text', { class: 's', x: rw / 2, y: 34, 'text-anchor': 'middle' }, g); b.textContent = L(s); fit(b, rw - 8);
         return g;
       });
       geo.pk = el('g', { class: 'pkt' }, svg);
@@ -1400,7 +1400,13 @@ const FLOWS = (() => {
       </div>`;
     const title = document.getElementById('pn-title');
     title.innerHTML = esc(L(f.t)); title.removeAttribute('data-en'); delete title.dataset.de;
-    document.getElementById('pn-text').innerHTML = L(f.d);
+    const desc = L(f.d);
+    const colonIdx = desc.indexOf(':');
+    if (colonIdx > 0 && colonIdx < 45) {
+      document.getElementById('pn-text').innerHTML = `<strong class="pn-lead">${esc(desc.slice(0, colonIdx + 1))}</strong> ${esc(desc.slice(colonIdx + 1))}`;
+    } else {
+      document.getElementById('pn-text').innerHTML = esc(desc);
+    }
     const meta = [];
     if (f.s) meta.push(stage(f.s));
     if (f.plan) meta.push(`<span class="tag plan">${L(PLAN.plan)}: ${esc(L(f.plan))}</span>`);
@@ -1410,11 +1416,15 @@ const FLOWS = (() => {
     ring?.destroy(); ring = null;
     lb.hidden = !f.loop;
     if (f.loop) {
-      lb.innerHTML = `<div class="ring-host" id="ring-${fid}"></div><div class="loop-txt"><h3>${ico('i-loop')}${L(['Kreislauf', 'Loop'])} · ${esc(L(f.loop.t))}</h3>
-        <ol>${f.loop.st.map(([t, s, plan]) => `<li><b>${esc(L(t))}</b> · ${esc(L(s))}${plan ? ` <span class="tag plan">${L(PLAN.plan)}</span>` : ''}</li>`).join('')}</ol>
+      lb.innerHTML = `<div class="ring-host" id="ring-${fid}"></div><div class="loop-txt">
+        <div class="loop-head">
+          <div class="loop-kicker">${ico('i-loop')}<span>${L(['Kreislauf', 'Loop'])}</span>${f.loop.s ? `<span class="loop-sub">· ${esc(L(f.loop.s))}</span>` : ''}</div>
+          <h3>${esc(L(f.loop.t))}</h3>
+        </div>
+        <ol class="loop-steps">${f.loop.st.map(([t, s, plan]) => `<li><span class="st-main"><b>${esc(L(t))}</b><span class="st-sep">·</span><span class="st-sub">${esc(L(s))}</span></span>${plan ? ` <span class="tag plan">${L(PLAN.plan)}</span>` : ''}</li>`).join('')}</ol>
         ${f.loop.back ? `<p class="loop-back">${ico('i-loop')}<span><b>${L(['Wiederholung', 'Repeat'])}:</b> ${esc(L(f.loop.back.t))}</span></p>` : ''}
-        ${f.loop.x ? `<p>${esc(L(f.loop.x))}</p>` : ''}
-        <p>${L(['Die belegten Topics stehen im Ablauf darunter.', 'The verified topics are in the flow below.'])}</p></div>`;
+        ${f.loop.x ? `<p class="loop-x">${ico('i-pulse')}<span>${esc(L(f.loop.x))}</span></p>` : ''}
+        <p class="loop-foot">${ico('i-link')}<span>${L(['Die belegten Topics stehen im Ablauf darunter.', 'The verified topics are in the flow below.'])}</span></p></div>`;
       const lis = lb.querySelectorAll('.loop-txt li');
       ring = Ring.create(lb.querySelector('.ring-host'), f.loop, { lang: lang(), hue: f.hue, onStation: k => lis.forEach((li, i) => li.classList.toggle('now', i === k)) });
     } else lb.innerHTML = '';
