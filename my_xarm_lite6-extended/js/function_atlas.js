@@ -1282,6 +1282,7 @@ const FLOWS = (() => {
   const decorateCard = c => {
     const a = AREAS[c.dataset.a], f = FLOWS[c.dataset.f];
     c.style.setProperty('--c', `var(--${a.hue})`);
+    if (f?.loop) c.dataset.hasLoop = 'true';
     let meta = c.querySelector('.fn-meta');
     if (!meta) { meta = document.createElement('div'); meta.className = 'fn-meta'; c.append(meta); }
     const tags = [`<span class="tag area" style="--c: var(--${a.hue})">${ico(a.icon)}${a[lang()]}</span>`];
@@ -1297,15 +1298,45 @@ const FLOWS = (() => {
     sel.setAttribute('aria-controls', 'panel');
   };
 
-  // Bereichs-Chips mit Anzahl; Zwischenüberschrift je Bereich in der Kartenliste
+  // Bereichs-Chips mit Anzahl in Filterleiste und Split-Hub-Dock
   const areaBox = document.getElementById('areas');
-  let area = '', onlyLoops = false, q = '';
+  const hubAreas = document.getElementById('fa-hub-areas');
+  let area = 'ctl', onlyLoops = false, q = '';
   const renderAreas = () => {
-    areaBox.innerHTML = `<button type="button" class="chip" data-area="" aria-pressed="${!area}">${L(['Alle', 'All'])} <b>${cards.length}</b></button>`
-      + Object.entries(AREAS).map(([k, a]) => `<button type="button" class="chip" data-area="${k}" style="--c: var(--${a.hue})" aria-pressed="${area === k}">${ico(a.icon)}${a[lang()]} <b>${cards.filter(c => c.dataset.a === k).length}</b></button>`).join('');
-    cardsBox.querySelectorAll('.grp-h').forEach(h => { const a = AREAS[h.dataset.a]; h.innerHTML = `${ico(a.icon)}${a[lang()]}<b>${cards.filter(c => c.dataset.a === h.dataset.a).length}</b>`; });
+    if (areaBox) {
+      areaBox.innerHTML = `<button type="button" class="chip" data-area="" aria-pressed="${!area}">${L(['Alle', 'All'])} <b>${cards.length}</b></button>`
+        + Object.entries(AREAS).map(([k, a]) => `<button type="button" class="chip" data-area="${k}" style="--c: var(--${a.hue})" aria-pressed="${area === k}">${ico(a.icon)}${a[lang()]} <b>${cards.filter(c => c.dataset.a === k).length}</b></button>`).join('');
+    }
+    if (hubAreas) {
+      hubAreas.innerHTML = Object.entries(AREAS).map(([k, a]) => {
+        const count = cards.filter(c => c.dataset.a === k).length;
+        return `<button type="button" class="fa-hub-area-btn ${area === k ? 'active' : ''}" data-hub-area="${k}" style="--c: var(--${a.hue})" aria-selected="${area === k}">`
+          + `${ico(a.icon)}<span>${a[lang()]}</span><b>${count}</b></button>`;
+      }).join('');
+    }
   };
-  areaBox.addEventListener('click', e => { const b = e.target.closest('[data-area]'); if (!b) return; area = b.dataset.area; renderAreas(); filter(); });
+  if (areaBox) {
+    areaBox.addEventListener('click', e => {
+      const b = e.target.closest('[data-area]');
+      if (!b) return;
+      area = b.dataset.area;
+      renderAreas();
+      filter();
+      const firstFn = cards.find(c => !c.hidden);
+      if (firstFn && (!curCard || (area && curCard.dataset.a !== area))) select(firstFn, { hash: true });
+    });
+  }
+  if (hubAreas) {
+    hubAreas.addEventListener('click', e => {
+      const b = e.target.closest('[data-hub-area]');
+      if (!b) return;
+      area = b.dataset.hubArea;
+      renderAreas();
+      filter();
+      const firstFn = cards.find(c => !c.hidden && c.dataset.a === area);
+      if (firstFn && (!curCard || curCard.dataset.a !== area)) select(firstFn, { hash: true });
+    });
+  }
   const loopBtn = document.getElementById('only-loops');
   loopBtn.addEventListener('click', () => { onlyLoops = !onlyLoops; loopBtn.setAttribute('aria-pressed', String(onlyLoops)); filter(); });
   const qIn = document.getElementById('q');
@@ -1330,7 +1361,7 @@ const FLOWS = (() => {
     count.setAttribute('aria-label', L([`${n} von ${cards.length} Funktionen`, `${n} of ${cards.length} functions`]));
   }
   const resetFilter = (a = '', loops = false) => {
-    area = a; onlyLoops = loops; q = ''; qIn.value = ''; loopBtn.setAttribute('aria-pressed', String(loops));
+    area = a; onlyLoops = loops; q = ''; if (qIn) qIn.value = ''; if (loopBtn) loopBtn.setAttribute('aria-pressed', String(loops));
     renderAreas(); filter();
   };
 
@@ -1402,27 +1433,23 @@ const FLOWS = (() => {
   }
   function select(card, opts = {}) {
     if (!card) return;
-    if (card.hidden) resetFilter();
+    if (card.hidden) {
+      area = card.dataset.a || '';
+      renderAreas();
+      filter();
+    }
     cards.forEach(c => {
       const isSel = c === card;
       c.classList.toggle('sel', isSel);
       c.querySelector('.fn-sel')?.setAttribute('aria-pressed', String(isSel));
     });
     curCard = card;
-    placePanel();
     showFlow(card.dataset.f, card);
     if (opts.hash) history.replaceState(null, '', `#${card.id}`);
     if (opts.scroll) {
-      if (narrow.matches) panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      else card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
   }
-  // Schmal: Ablauf direkt unter der gewählten Karte; breit: rechte Spalte
-  function placePanel() {
-    if (narrow.matches && curCard) curCard.after(panel);
-    else if (!narrow.matches && panel.parentElement !== grid) grid.append(panel);
-  }
-  narrow.addEventListener('change', placePanel);
 
   cardsBox.addEventListener('click', e => {
     const sel = e.target.closest('.fn-sel'); if (sel) { select(sel.closest('.fn'), { hash: true }); return; }
@@ -1450,7 +1477,18 @@ const FLOWS = (() => {
     const b = e.target.closest('[data-go]'); if (!b) return;
     select(byId.get(b.dataset.go), { hash: true, scroll: true });
   });
-  window.addEventListener('hashchange', () => { const c = byId.get(location.hash.slice(1)); if (c) select(c, { scroll: true }); });
+
+  window.addEventListener('hashchange', () => {
+    const c = byId.get(location.hash.slice(1));
+    if (c) {
+      if (c.dataset.a && area !== c.dataset.a) {
+        area = c.dataset.a;
+        renderAreas();
+        filter();
+      }
+      select(c, { scroll: true });
+    }
+  });
 
   // Übersicht darüber: Bereichs-Kachel/Ringstück → Liste auf den Bereich gefiltert; Kreislauf-Chip → seinen Ablauf zeigen
   document.addEventListener('click', e => {
@@ -1474,5 +1512,15 @@ const FLOWS = (() => {
   for (const c of cards) if (c.dataset.f && !FLOWS[c.dataset.f]) console.warn('[atlas] Karte mit unbekanntem Ablauf:', c.id, c.dataset.f);
   setPh(); decorate(); renderAreas(); filter();
   const hashCard = byId.get(location.hash.slice(1));
-  select(hashCard || cardsBox.querySelector('.fn[data-default]') || cards[0], { scroll: !!hashCard });
+  if (hashCard) {
+    if (hashCard.dataset.a) {
+      area = hashCard.dataset.a;
+      renderAreas();
+      filter();
+    }
+    select(hashCard, { scroll: true });
+  } else {
+    const defaultCard = cardsBox.querySelector('.fn[data-default]') || cards.find(c => c.dataset.a === area) || cards[0];
+    select(defaultCard);
+  }
 })();

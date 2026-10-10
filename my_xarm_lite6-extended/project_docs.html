@@ -1466,9 +1466,9 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
             </div>
           </div>
 
-          <div class="fa-grid">
-            <div class="cards" id="cards">
-              <h2 class="grp-h" data-a="ctl" style="--c: var(--accent)">Steuerwege</h2>
+          <div class="fa-hub" id="fa-hub">
+            <nav class="fa-hub-areas" id="fa-hub-areas" role="tablist" aria-label="Bereichs-Auswahl" data-en-aria="Area selection"></nav>
+            <div class="cards fa-hub-matrix" id="cards">
               <article class="fn" id="gamepad" data-a="ctl" data-f="pad" data-s="spr">
                 <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-pad"/></svg><span data-en="Gamepad, local and remote">Gamepad lokal und remote</span></button></h3>
                 <p data-en="Xbox pad on the robot PC (&lt;code&gt;/joy&lt;/code&gt;) or in the browser (&lt;code&gt;/remote/joy&lt;/code&gt;, 20 Hz).">Xbox-Pad am Roboter-PC (<code>/joy</code>) oder im Browser (<code>/remote/joy</code>, 20 Hz).</p>
@@ -1815,6 +1815,7 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
               </article>
               <p class="empty" id="empty" hidden data-en="No function matches. Reset the filter or search for a topic such as &lt;code&gt;/joy&lt;/code&gt;.">Keine Funktion passt. Filter zurücksetzen oder nach einem Topic wie <code>/joy</code> suchen.</p>
             </div>
+          </div>
 
             <section class="panel" id="panel" aria-labelledby="pn-title" aria-live="off">
               <div class="pn-head">
@@ -2654,7 +2655,7 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
     heads: '.land-head, .ch-head, .sec-head, .ct-copy',
     depth: ['.app-frame'],
     groups: ['.strip ul', '.fx-grid', '.at-areas', '.ar-stack ol', '.path', '.list', '.dg-grid'],
-    items: ['.at-ring', '.at-loops', '.ar-grp', '.fa-legend', '.fa .filter', '.fa .panel', '.fa .grp-h', '.list-note', '.contact .vcard'],
+    items: ['.at-ring', '.at-loops', '.ar-grp', '.fa-legend', '.fa .filter', '.fa .fa-hub', '.fa .panel', '.fa .grp-h', '.list-note', '.contact .vcard'],
     cards: '.fa .cards > .fn',
     tilt: { sel: '.fx, .list > a.item', lift: -2 },
     shine: '.thumb',
