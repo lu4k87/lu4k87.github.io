@@ -1,12 +1,14 @@
 <!DOCTYPE html>
-<!-- Forschungsseite zum Paper „Look, Speak, Confirm“ (UX Robot), akademischer Aufbau (Vorschau 2026-10-09, Seite:B), DE + EN umschaltbar.
-     Quelle der Inhalte: research/README.md + Paper-Entwurf DRAFT8; nur Ansatz, Hypothesen, Studiendesign – keine Ergebnisse, bis die Studie gelaufen ist (Skill research §0).
-     Online unter https://lu4k87.github.io/research (tools/publish_pages.py, Karte im Doku-Hub unter 07 Verstehen). -->
+<!-- Academic Research Page: "Look, Speak, Confirm" (UX Robot).
+     Grounding: Vorarbeit für ein empirisches Paper zu RobotUX_DRAFT8.pdf & research/README.md.
+     Scope: Empirical Human-Factors foundation, research gap, complementary architecture, intent-safety layer,
+            synchronized measurement suite (HRV/EDA/eye tracking/SDA-M), controlled study design, guidelines & literature.
+     Online at https://lu4k87.github.io/my_xarm_lite6-extended/present_research.html -->
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="Look, Speak, Confirm: research on complementary gaze, speech and explicit control for low-barrier robot manipulation on the UX Robot platform.">
+<meta name="description" content="Look, Speak, Confirm: A Human-Factors evaluation of complementary multimodal interaction and intent safety for low-barrier robot manipulation on the UX Robot platform.">
 <title>Research · UX Robot</title>
 <link rel="stylesheet" href="fonts/fonts.css">
 <link rel="stylesheet" href="css/doc_path.css">
@@ -14,7 +16,7 @@
 :root {
   --radius-sm: 4px; --radius: 6px; --radius-lg: 8px;
   color-scheme: dark;
-  /* Tokens wie docs/project_docs.html (Graphit + Türkis) */
+  /* Brand Tokens: Graphit + Türkis (docs/brand/brand.yaml) */
   --bg: #111315; --surface: #181b1e; --surface-2: #1f2327; --line: #2a2f34; --line-strong: #3b4248;
   --fg: #eef2f3; --fg-2: #b9c2c6; --accent: #2ee6c8; --accent-ink: #04201c;
   --indigo: #818cf8; --violet: #a78bfa; --gold: #f5b942; --green: #4ade80; --blue: #60a5fa; --pink: #f472b6; --orange: #fb923c;
@@ -42,40 +44,36 @@
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; scroll-padding-top: 72px; }
 body { margin: 0; background: var(--bg); color: var(--fg); font: 400 16px/1.6 var(--font); -webkit-font-smoothing: antialiased; }
-h1, h2, h3, p, ol, ul, figure, dl, dd { margin: 0; }
+h1, h2, h3, h4, p, ol, ul, figure, dl, dd { margin: 0; }
 a { color: var(--accent); }
 .wrap { max-width: 1240px; margin-inline: auto; padding-inline: 24px; }
 .narrow { max-width: 880px; }
 .ico { width: 20px; height: 20px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.ico-s { width: 18px; height: 18px; }
+.ico-xs { width: 16px; height: 16px; }
 
-/* Kopfzeile */
-.top { position: sticky; top: 0; z-index: 10; background: color-mix(in srgb, var(--bg) 92%, transparent); border-bottom: 1px solid var(--line); }
-.top .wrap { display: flex; align-items: center; gap: 20px; min-height: 56px; }
+/* Sticky Header */
+.top { position: sticky; top: 0; z-index: 10; background: color-mix(in srgb, var(--bg) 92%, transparent); backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); }
+.top .wrap { display: flex; align-items: center; gap: 24px; min-height: 56px; }
 .brand { display: inline-flex; align-items: center; gap: 10px; font-weight: 800; color: var(--fg); text-decoration: none; white-space: nowrap; }
 .brand .ico { color: var(--accent); }
-.top nav { display: flex; gap: 4px 20px; flex-wrap: wrap; margin-inline-start: auto; font-size: 14px; font-weight: 600; }
+.top nav { display: flex; gap: 4px 18px; flex-wrap: wrap; margin-inline-start: auto; font-size: 14px; font-weight: 600; }
 .top nav a { color: var(--fg-2); text-decoration: none; }
 .top nav a:hover { color: var(--accent); }
-.tools { display: flex; gap: 8px; align-items: center; }
-.seg { display: inline-flex; flex-wrap: nowrap; align-items: center; gap: 2px; padding: 2px 3px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface-2); }
-.seg .lang-ico { width: 16px; height: 16px; margin-inline: 4px 2px; color: var(--fg-2); }
-.seg button { display: inline-flex; align-items: center; justify-content: center; min-height: 28px; min-width: 32px; padding: 0 8px; border: 0; border-radius: var(--radius-sm); background: transparent; color: var(--fg-2); font: 700 12px/1 var(--mono); transition: background-color .15s, box-shadow .15s, color .15s; cursor: pointer; }
-.seg button:hover:not(:disabled) { background: color-mix(in srgb, var(--fg) 7%, transparent); }
-.seg button[aria-pressed="true"] { background: var(--surface); color: var(--fg); box-shadow: 0 0 0 1px var(--line-strong); }
 .theme { display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); color: var(--fg); cursor: pointer; }
 .theme .ico { width: 18px; height: 18px; }
 
-/* Titelblock */
+/* Title Section */
 .title { padding-block: 72px 48px; text-align: center; }
 .title .wrap { display: grid; gap: 16px; justify-items: center; }
 .status { display: inline-flex; align-items: center; gap: 10px; padding: 6px 12px; border: 1px solid color-mix(in srgb, var(--gold) 50%, transparent); border-radius: var(--radius-sm);
   background: color-mix(in srgb, var(--gold) 10%, transparent); font: 700 12px/1.2 var(--mono); letter-spacing: .12em; text-transform: uppercase; }
 .status .ico { width: 16px; height: 16px; color: var(--gold); }
-h1 { max-width: 26ch; font-size: var(--fs-h1); line-height: 1.12; letter-spacing: -.02em; font-weight: 800; }
+h1 { max-width: 28ch; font-size: var(--fs-h1); line-height: 1.14; letter-spacing: -.02em; font-weight: 800; }
 h1 em { font-style: normal; color: var(--accent); }
 .wt { font: 600 13px/1.4 var(--mono); color: var(--fg-2); }
-.authors { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 24px; font-size: 17px; }
-.authors b { font-weight: 700; }
+.authors { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 6px 16px; font-size: 17px; }
+.authors b { font-weight: 700; color: var(--fg); }
 .affil { font-size: 15px; color: var(--fg-2); }
 .btns { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; padding-top: 8px; }
 .btn { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 10px 16px; border: 1px solid var(--line-strong); border-radius: var(--radius);
@@ -86,7 +84,7 @@ h1 em { font-style: normal; color: var(--accent); }
 .btn[aria-disabled="true"]:hover { border-color: var(--line-strong); }
 .btn small { font: 600 12px var(--mono); color: var(--fg-2); }
 
-/* Abbildung 1 */
+/* Teaser Figure */
 .teaser { padding-bottom: 64px; }
 .fig { border: 1px solid var(--line); border-radius: var(--radius-lg); background: var(--surface); padding: 24px; display: grid; gap: 16px; }
 .fig-row { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
@@ -95,71 +93,99 @@ h1 em { font-style: normal; color: var(--accent); }
 .node small { font: 700 12px/1.2 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--hue, var(--accent)); }
 .node b { font-size: 16px; line-height: 1.3; }
 .node span { font-size: 14px; color: var(--fg-2); }
+.feedback-loop { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: var(--radius-sm); border: 1px dashed color-mix(in srgb, var(--accent) 40%, var(--line)); background: color-mix(in srgb, var(--accent) 5%, transparent); font-size: 13.5px; color: var(--fg-2); }
+.feedback-loop b { color: var(--accent); font: 700 12px var(--mono); text-transform: uppercase; letter-spacing: .08em; }
 .log { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; padding-top: 14px; border-top: 1px dashed var(--line-strong); font-size: 14px; color: var(--fg-2); }
 .log b { font: 700 12px/1.2 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--fg); }
 .chip { padding: 3px 8px; border: 1px solid var(--line); border-radius: var(--radius-sm); background: var(--surface-2); font: 600 13px/1.3 var(--mono); color: var(--fg); }
 figcaption { font-size: 14px; color: var(--fg-2); }
 figcaption b { color: var(--fg); }
 
-/* Abschnitte */
+/* Sections */
 .sec { padding-block: 72px 64px; }
 .sec.alt { background: var(--band); border-block: 1px solid var(--line); }
 .head { display: grid; gap: 14px; margin-bottom: 40px; }
 .eyebrow { display: inline-flex; align-items: center; gap: 10px; font: 700 12px/1 var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--hue, var(--accent)); }
 .eyebrow .n { padding: 4px 6px; border: 1px solid currentColor; border-radius: var(--radius-sm); }
 h2 { font-size: var(--fs-h2); line-height: 1.2; letter-spacing: -.01em; }
-.lede { max-width: 58ch; color: var(--fg-2); font-size: 17px; }
-.abstract p { max-width: 72ch; font-size: 17px; line-height: 1.7; }
-.abstract p + p { margin-top: 14px; }
+h3 { font-size: 18px; line-height: 1.3; margin-top: 32px; }
+.lede { max-width: 60ch; color: var(--fg-2); font-size: 17px; }
+
+/* Grid layouts */
+.grid2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
 .grid3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.grid4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
 .card { display: grid; gap: 8px; align-content: start; padding: 24px; border: 1px solid var(--line); border-radius: var(--radius-lg); background: var(--surface); }
 .card .k { display: inline-flex; align-items: center; gap: 8px; font: 700 12px/1.2 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--hue, var(--accent)); }
 .card .k .ico { width: 18px; height: 18px; }
-.card b { font-size: 18px; line-height: 1.3; }
-.card p { color: var(--fg-2); font-size: 15px; }
+.card b { font-size: 17px; line-height: 1.3; color: var(--fg); }
+.card p { color: var(--fg-2); font-size: 15px; line-height: 1.55; }
+.card small { font-size: 13px; color: var(--fg-2); }
+
+/* Steps */
 .steps { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin-top: 16px; padding: 0; list-style: none; counter-reset: st; }
 .steps li { display: grid; gap: 6px; align-content: start; padding: 16px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); counter-increment: st; }
 .steps li::before { content: counter(st) " · " attr(data-k); font: 700 12px/1.2 var(--mono); letter-spacing: .1em; color: var(--accent); }
-.steps b { font-size: 16px; }
-.steps span { font-size: 14px; color: var(--fg-2); }
-h3 { font-size: 18px; line-height: 1.3; margin-top: 40px; }
+.steps b { font-size: 16px; color: var(--fg); }
+.steps span { font-size: 14px; color: var(--fg-2); line-height: 1.45; }
+
+/* Two Column Layout */
+.two { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 24px 48px; }
+
+/* Tables */
 .table-wrap { overflow-x: auto; margin-top: 16px; border: 1px solid var(--line); border-radius: var(--radius); }
-table { width: 100%; min-width: 560px; border-collapse: collapse; background: var(--surface); font-size: 15px; }
+table { width: 100%; min-width: 600px; border-collapse: collapse; background: var(--surface); font-size: 15px; }
 th, td { padding: 12px 16px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
 tr:last-child td { border-bottom: 0; }
 th { font: 700 12px/1.3 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--fg-2); background: var(--surface-2); }
-td b { white-space: nowrap; }
-.list { display: grid; gap: 10px; padding-left: 22px; }
-.list li { padding-left: 4px; }
+td b { color: var(--fg); white-space: nowrap; }
+td span { color: var(--fg-2); font-size: 14px; }
+
+/* Lists & Quotes */
+.list { display: grid; gap: 12px; padding-left: 22px; }
+.list li { padding-left: 4px; font-size: 15px; color: var(--fg-2); line-height: 1.55; }
 .list b { color: var(--fg); }
 .note { display: flex; gap: 12px; align-items: flex-start; margin-top: 24px; padding: 14px 16px; border: 1px solid color-mix(in srgb, var(--gold) 50%, transparent); border-radius: var(--radius);
-  background: color-mix(in srgb, var(--gold) 9%, transparent); font-size: 15px; }
+  background: color-mix(in srgb, var(--gold) 9%, transparent); font-size: 15px; line-height: 1.5; color: var(--fg-2); }
 .note .ico { color: var(--gold); margin-top: 2px; }
-.two { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px 48px; }
+.note b { color: var(--fg); }
 
-/* Abschluss */
-.foot { padding-block: 64px; border-top: 1px solid var(--line); }
+/* Literature Section */
+.bib-grid { display: grid; gap: 12px; margin-top: 16px; }
+.bib-item { padding: 14px 18px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); font-size: 14px; line-height: 1.55; color: var(--fg-2); }
+.bib-item b { color: var(--fg); font-weight: 600; }
+.bib-item a { word-break: break-all; }
+
+/* Footer */
+.foot { padding-block: 64px; border-top: 1px solid var(--line); background: var(--surface); }
 .foot .wrap { display: flex; flex-wrap: wrap; gap: 24px 48px; align-items: center; justify-content: space-between; }
 .qr-foot { display: flex; gap: 16px; align-items: center; color: inherit; text-decoration: none; }
 .qr-code { flex: none; line-height: 0; padding: 6px; background: #fff; border: 1px solid var(--line); border-radius: var(--radius); }
 .qr-code svg { display: block; width: 88px; height: 88px; }
 .qr-txt { display: grid; gap: 4px; }
 .qr-txt b { font: 700 12px/1.2 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--accent); }
-.qr-txt span { font-weight: 700; }
+.qr-txt span { font-weight: 700; color: var(--fg); }
 .qr-txt small { font: 600 13px/1.35 var(--mono); color: var(--fg-2); }
 .contact { display: grid; gap: 6px; font-size: 15px; }
 .contact a { display: inline-flex; gap: 8px; align-items: center; text-decoration: none; font-weight: 600; }
 .contact a .ico { width: 16px; height: 16px; }
 
+@media (max-width: 980px) {
+  .fig-row, .steps, .grid4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .grid3 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
 @media (max-width: 760px) {
   .title { padding-block: 56px 40px; }
   .sec { padding-block: 56px 48px; }
   .head { margin-bottom: 24px; }
-  .fig-row, .steps, .grid3, .two { grid-template-columns: minmax(0, 1fr); }
+  .fig-row, .steps, .grid3, .grid2, .grid4, .two { grid-template-columns: minmax(0, 1fr); }
   .top nav { display: none; }
-  .tools { margin-inline-start: auto; }
 }
-@media (max-width: 560px) { .wrap { padding-inline: 16px; } .fig { padding: 16px; } .card { padding: 16px; } }
+@media (max-width: 560px) {
+  .wrap { padding-inline: 16px; }
+  .fig { padding: 16px; }
+  .card { padding: 18px 16px; }
+}
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
 </style>
 </head>
@@ -176,212 +202,488 @@ td b { white-space: nowrap; }
   <symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 3 2 21h20zM12 10v5M12 18h.01"/></symbol>
   <symbol id="i-mail" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></symbol>
   <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></symbol>
-  <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c2.6 2.8 3.8 6 3.8 9.5s-1.2 6.7-3.8 9.5c-2.6-2.8-3.8-6-3.8-9.5S9.4 5.3 12 2.5z"/></symbol>
+  <symbol id="i-heart" viewBox="0 0 24 24"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></symbol>
+  <symbol id="i-brain" viewBox="0 0 24 24"><path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 4.44-2.04ZM14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-4.44-2.04Z"/></symbol>
+  <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></symbol>
+  <symbol id="i-sliders" viewBox="0 0 24 24"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></symbol>
+  <symbol id="i-layers" viewBox="0 0 24 24"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></symbol>
   <symbol id="qr-research" viewBox="0 0 29 29"><path class="qrline" stroke="#000" d="M0 0.5h7m2 0h3m1 0h1m2 0h4m2 0h7m-29 1h1m5 0h1m2 0h1m3 0h3m1 0h1m4 0h1m5 0h1m-29 1h1m1 0h3m1 0h1m4 0h3m2 0h2m1 0h2m1 0h1m1 0h3m1 0h1m-29 1h1m1 0h3m1 0h1m2 0h1m1 0h5m2 0h1m3 0h1m1 0h3m1 0h1m-29 1h1m1 0h3m1 0h1m3 0h1m1 0h3m1 0h3m1 0h1m1 0h1m1 0h3m1 0h1m-29 1h1m5 0h1m1 0h3m2 0h2m2 0h4m1 0h1m5 0h1m-29 1h7m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h7m-19 1h1m1 0h1m1 0h1m2 0h3m-20 1h1m2 0h1m1 0h2m1 0h3m4 0h2m1 0h1m2 0h1m1 0h1m-24 1h1m2 0h1m3 0h1m1 0h2m1 0h1m1 0h2m4 0h1m1 0h2m1 0h1m2 0h1m-27 1h3m1 0h1m1 0h2m2 0h1m4 0h1m1 0h1m2 0h2m1 0h3m-28 1h4m1 0h1m1 0h3m2 0h1m1 0h2m2 0h2m1 0h1m2 0h1m1 0h2m-28 1h1m2 0h1m1 0h3m1 0h1m2 0h1m3 0h2m4 0h1m2 0h1m1 0h2m-29 1h3m4 0h1m7 0h6m-21 1h1m4 0h2m1 0h1m1 0h1m1 0h1m3 0h1m1 0h1m2 0h8m-29 1h1m1 0h2m1 0h1m4 0h1m1 0h4m1 0h1m1 0h1m2 0h1m2 0h1m1 0h1m-28 1h1m1 0h1m3 0h1m1 0h1m2 0h1m1 0h3m1 0h1m2 0h1m2 0h1m3 0h1m-27 1h3m1 0h1m1 0h4m5 0h1m4 0h2m2 0h1m2 0h1m-29 1h1m3 0h3m2 0h2m1 0h2m6 0h2m1 0h2m2 0h2m-20 1h2m2 0h1m2 0h3m1 0h2m5 0h2m-29 1h1m2 0h1m1 0h3m1 0h1m1 0h2m1 0h1m1 0h1m3 0h5m1 0h1m-19 1h1m2 0h3m2 0h3m1 0h1m3 0h1m1 0h3m-29 1h7m4 0h4m2 0h2m1 0h1m1 0h1m1 0h1m2 0h1m-28 1h1m5 0h1m1 0h2m2 0h2m4 0h1m1 0h1m3 0h3m-27 1h1m1 0h3m1 0h1m3 0h1m3 0h1m2 0h1m2 0h5m3 0h1m-29 1h1m1 0h3m1 0h1m1 0h3m1 0h1m1 0h1m2 0h1m1 0h1m2 0h1m1 0h4m-28 1h1m1 0h3m1 0h1m2 0h3m2 0h1m2 0h1m2 0h1m3 0h3m1 0h1m-29 1h1m5 0h1m2 0h1m3 0h3m1 0h4m2 0h1m3 0h1m-28 1h7m1 0h7m2 0h1m2 0h4m1 0h1m1 0h1"/></symbol>
 </svg>
 
 <header class="top">
   <div class="wrap">
-    <a class="brand" href="#top"><svg class="ico" aria-hidden="true"><use href="#i-flask"/></svg><span data-de="UX Robot · Forschung">UX Robot · Research</span></a>
-    <nav aria-label="Sections" data-de-aria="Abschnitte">
-      <a href="#abstract" data-de="Abstract">Abstract</a><a href="#approach" data-de="Ansatz">Approach</a><a href="#study" data-de="Studie">Study</a><a href="#contributions" data-de="Beiträge">Contributions</a>
+    <a class="brand" href="#top"><svg class="ico" aria-hidden="true"><use href="#i-flask"/></svg>UX Robot · Research</a>
+    <nav aria-label="Sections">
+      <a href="#abstract">Abstract</a>
+      <a href="#foundations">Foundations</a>
+      <a href="#architecture">Architecture</a>
+      <a href="#testbed">Measurement Suite</a>
+      <a href="#study">Study Design</a>
+      <a href="#guidelines">Guidelines</a>
+      <a href="#literature">Literature</a>
     </nav>
-    <div class="tools">
-      <div class="seg" role="group" aria-label="Sprache / Language" data-de-aria="Sprache">
-        <svg class="ico lang-ico" aria-hidden="true"><use href="#i-globe"/></svg>
-        <button type="button" data-lang="de" aria-pressed="false">DE</button>
-        <button type="button" data-lang="en" aria-pressed="true">EN</button>
-      </div>
-      <button class="theme" type="button" id="theme" aria-label="Switch light / dark" data-de-aria="Theme wechseln (hell / dunkel)"><svg class="ico" aria-hidden="true"><use href="#i-sun"/></svg></button>
-    </div>
+    <button class="theme" type="button" id="theme" aria-label="Switch light / dark"><svg class="ico" aria-hidden="true"><use href="#i-sun"/></svg></button>
   </div>
 </header>
-<nav class="doc-path" aria-label="Path in the project docs" data-de-aria="Pfad in der Projekt-Doku"><a href="project_docs.html" data-de="← Projekt-Doku">← Project docs</a><span aria-hidden="true">›</span><a href="project_docs.html#verstehen" data-de="Verstehen">Understand</a><span aria-hidden="true">›</span><span aria-current="page" data-de="Forschung">Research</span></nav>
+<nav class="doc-path" aria-label="Path in the project docs"><a href="project_docs.html">← Project docs</a><span aria-hidden="true">›</span><a href="project_docs.html#verstehen">Understand</a><span aria-hidden="true">›</span><span aria-current="page">Research</span></nav>
 
 <main id="top">
+  <!-- Title / Working Title -->
   <section class="title" aria-labelledby="t">
     <div class="wrap">
-      <span class="status"><svg class="ico" aria-hidden="true"><use href="#i-clock"/></svg><span data-de="In Arbeit · Studie in Vorbereitung">Work in progress · study in preparation</span></span>
-      <h1 id="t"><em data-de="Look, Speak, Confirm:">Look, Speak, Confirm:</em> <span data-de="Eine Human-Factors-Evaluation komplementärer multimodaler Interaktion für robotische Manipulation">A Human-Factors Evaluation of Complementary Multimodal Interaction for Robot Manipulation</span></h1>
-      <p class="wt" data-de="Arbeitstitel">Working title</p>
-      <p class="authors"><b>Marius Kaul</b><b>Mr X</b><b>Mr Y</b></p>
-      <p class="affil" data-de="Usability Lab · Hochschule Rhein-Waal">Usability Lab · Rhine-Waal University of Applied Sciences</p>
+      <span class="status"><svg class="ico" aria-hidden="true"><use href="#i-clock"/></svg>Working Paper · Draft 8 · Empirical Study in Preparation</span>
+      <h1 id="t"><em>Look, Speak, Confirm:</em> A Human-Factors Evaluation of Complementary Multimodal Interaction for Robot Manipulation</h1>
+      <p class="wt">Working Title &amp; Empirical Framework · Usability Lab</p>
+      <p class="authors"><b>Marius Kaul</b><span>·</span><b>HCI &amp; Usability Research Group</b></p>
+      <p class="affil">Usability Lab · Rhine-Waal University of Applied Sciences</p>
       <div class="btns">
-        <span class="btn" aria-disabled="true"><svg class="ico" aria-hidden="true"><use href="#i-doc"/></svg><span data-de="Paper">Paper</span> <small data-de="in Vorbereitung">in preparation</small></span>
-        <a class="btn" href="https://github.com/lu4k87/my_xarm_lite6-extended" target="_blank" rel="noopener"><svg class="ico" aria-hidden="true"><use href="#i-code"/></svg>Code</a>
-        <a class="btn" href="project_docs.html"><svg class="ico" aria-hidden="true"><use href="#i-book"/></svg><span data-de="Plattform UX Robot">Platform UX Robot</span></a>
+        <span class="btn" aria-disabled="true"><svg class="ico" aria-hidden="true"><use href="#i-doc"/></svg>Paper Draft 8 <small>in preparation</small></span>
+        <a class="btn" href="https://github.com/lu4k87/my_xarm_lite6-extended" target="_blank" rel="noopener"><svg class="ico" aria-hidden="true"><use href="#i-code"/></svg>Code Repository</a>
+        <a class="btn" href="project_docs.html"><svg class="ico" aria-hidden="true"><use href="#i-book"/></svg>Platform UX Robot</a>
       </div>
     </div>
   </section>
 
-  <section class="teaser" aria-label="Figure 1" data-de-aria="Abbildung 1">
+  <!-- Conceptual Architecture Figure (Figure 1 in Paper Draft 8) -->
+  <section class="teaser" aria-label="Figure 1: Conceptual Information Flow">
     <div class="wrap">
       <figure class="fig">
         <div class="fig-row" role="list">
-          <div class="node" role="listitem" style="--hue: var(--blue)"><small data-de="Mensch">Human</small><b data-de="Blick · Sprache · Controller">Gaze · speech · controller</b><span data-de="drei Kanäle, drei Rollen">three channels, three roles</span></div>
-          <div class="node" role="listitem" style="--hue: var(--violet)"><small data-de="Fusion">Fusion</small><b data-de="Intent-Safety-Schicht">Intent-safety layer</b><span data-de="Kandidat → Scharf → Bestätigt">candidate → armed → confirmed</span></div>
-          <div class="node" role="listitem" style="--hue: var(--indigo)"><small data-de="Planung">Planning</small><b data-de="Roboter-Task-Planer">Robot task planner</b><span>ROS 2 Humble · MoveIt 2</span></div>
-          <div class="node" role="listitem" style="--hue: var(--green)"><small data-de="Roboter">Robot</small><b>xArm Lite 6</b><span data-de="Vakuumgreifer">vacuum gripper</span></div>
+          <div class="node" role="listitem" style="--hue: var(--blue)">
+            <small>Human Operator</small>
+            <b>Gaze · Speech · Controller</b>
+            <span>Complementary functional allocation across sensory-motor channels</span>
+          </div>
+          <div class="node" role="listitem" style="--hue: var(--violet)">
+            <small>Intent-Safety Layer</small>
+            <b>Attention → Candidate → Armed → Confirmed</b>
+            <span>State-based cognitive buffer solving the Midas Touch problem</span>
+          </div>
+          <div class="node" role="listitem" style="--hue: var(--indigo)">
+            <small>Task Planning</small>
+            <b>ROS 2 Humble · MoveIt 2</b>
+            <span>Deterministic skill execution &amp; collision-checked trajectory generation</span>
+          </div>
+          <div class="node" role="listitem" style="--hue: var(--green)">
+            <small>Robotic Hardware</small>
+            <b>xArm Lite 6 · Vacuum Gripper</b>
+            <span>Assistive manipulation in shared workspace</span>
+          </div>
         </div>
-        <div class="log"><b data-de="Ereignis-Logger">Event logger</b><span class="chip" data-de="Eye-Tracking">eye tracking</span><span class="chip">HRV</span><span class="chip">EDA</span><span class="chip" data-de="Leistung">performance</span><span class="chip">NASA-TLX</span></div>
-        <figcaption><b data-de="Abbildung 1.">Figure 1.</b> <span data-de="Informationsfluss: Jeder Eingabekanal hat genau eine Rolle. Rückmeldung kehrt auf jeder Stufe zum Nutzer zurück, und jedes Interaktionsereignis wird mit Zeitstempel protokolliert.">Information flow: each input channel has one role; feedback returns to the user at every stage, and every interaction event is time-stamped for the measurement suite.</span></figcaption>
+        <div class="feedback-loop">
+          <svg class="ico ico-s" aria-hidden="true"><use href="#i-shield"/></svg>
+          <div><b>Closed-Loop Feedback:</b> Continuous visual bounding, dwell indicators, and audio confirmations return to the user at every state transition before any arm movement.</div>
+        </div>
+        <div class="log">
+          <b>Synchronized HF Event Logger:</b>
+          <span class="chip">Eye-Tracking (Tobii)</span>
+          <span class="chip">Sympathetic Tone (EDA)</span>
+          <span class="chip">Parasympathetic Tone (HRV)</span>
+          <span class="chip">NASA-TLX</span>
+          <span class="chip">SUS &amp; TAM</span>
+          <span class="chip">SDA-M (BACs)</span>
+        </div>
+        <figcaption><b>Figure 1.</b> Information flow architecture: each modality is strictly dedicated to a single complementary role. Feedback returns to the operator at every transition stage, and every interaction event is timestamped to correlate system events with objective biosignals and psychometrics.</figcaption>
       </figure>
     </div>
   </section>
 
+  <!-- 01 Abstract -->
   <section class="sec alt abstract" id="abstract" aria-labelledby="h-abs">
     <div class="wrap narrow">
-      <div class="head"><span class="eyebrow"><span class="n">01</span><span data-de="Abstract">Abstract</span></span><h2 id="h-abs" data-de="Wer trägt die Interaktionskosten?">Who pays the cost of interaction?</h2></div>
-      <p data-de="Roboter-Manipulation bleibt für Laien anspruchsvoll, die oft passive Auslöser bleiben. Multimodale Schnittstellen versprechen Entlastung, doch viele Studien blenden das Midas-Touch-Problem aus.">Robot manipulation remains hard for non-experts, who often stay <b>passive steerers</b> that trigger scripts instead of steering intent. Multimodal interfaces promise relief, but most studies report task success and leave out the <b>Midas Touch</b> problem and the physiological cost to the user.</p>
-      <p data-de="Wir schlagen eine komplementäre Zuweisung vor: Blick für räumliche Referenz, Sprache für Intention und Tasten für Bestätigung. Eine geplante Within-Subjects-Studie verknüpft Leistung, NASA-TLX und Psychophysiologie.">We propose a <b>complementary allocation</b> of interaction channels: gaze for spatial reference (“where”), speech for semantic intent (“what”) and explicit controls for confirmation and recovery (“yes / no”). A planned within-subjects study combines performance, subjective workload, eye tracking and psychophysiology (HRV, EDA) on the open UX Robot platform.</p>
+      <div class="head">
+        <span class="eyebrow" style="--hue: var(--accent)"><span class="n">01</span>Abstract</span>
+        <h2 id="h-abs">From Passive Steerers to Dynamic Intent Steering</h2>
+        <p class="lede">Resolving the cognitive mapping gap and the "Physiological Paradox" in novice robot manipulation.</p>
+      </div>
+      <p>Robot manipulation remains challenging for non-experts, who frequently stay passive steerers that trigger pre-defined scripts. Conventional teach pendants and nested menus impose severe extraneous cognitive load and high interaction costs.</p>
+      <p>We propose a complementary architecture where gaze references space, speech communicates task intent, and controllers confirm execution. The robot acts as a human-factors testbed to resolve the physiological paradox.</p>
     </div>
   </section>
 
-  <section class="sec" id="approach" aria-labelledby="h-app">
+  <!-- 02 Theoretical Foundations & Research Gap -->
+  <section class="sec" id="foundations" aria-labelledby="h-foundations">
     <div class="wrap">
-      <div class="head"><span class="eyebrow"><span class="n">02</span><span data-de="Ansatz">Approach</span></span><h2 id="h-app" data-de="Eine Rolle pro Kanal.">One role per channel.</h2><p class="lede" data-de="Blicken und Auslösen bleiben getrennt: Der Arm bewegt sich erst nach expliziter Bestätigung.">Looking and triggering stay separate: the arm moves only after an explicit confirmation.</p></div>
-      <div class="grid3">
-        <div class="card" style="--hue: var(--blue)"><span class="k"><svg class="ico" aria-hidden="true"><use href="#i-eye"/></svg><span data-de="Blick · Tobii Pro Glasses 3">Gaze · Tobii Pro Glasses 3</span></span><b data-de="Wo? Räumliche Referenz.">Where? Spatial reference.</b><p data-de="Der Blick wählt das Objekt aus, löst aber nie eine Bewegung aus.">Gaze selects the object, it never triggers a motion.</p></div>
-        <div class="card" style="--hue: var(--violet)"><span class="k"><svg class="ico" aria-hidden="true"><use href="#i-mic"/></svg><span data-de="Sprache · Whisper">Speech · Whisper</span></span><b data-de="Was? Semantische Intention.">What? Semantic intent.</b><p data-de="„Greifen“ oder „Platzieren“ ersetzt tiefe Menühierarchien.">“Pick” or “place” replaces deep GUI menus.</p></div>
-        <div class="card" style="--hue: var(--green)"><span class="k"><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg><span data-de="Controller · Web-UI">Controller · GUI</span></span><b data-de="Ja oder Nein? Bestätigen &amp; Eingriff.">Yes or no? Confirm and recover.</b><p data-de="Ein latenzarmer Kanal zum Bestätigen, Abbrechen oder manuellen Übernehmen.">A low-latency channel to confirm, cancel or take over.</p></div>
+      <div class="head">
+        <span class="eyebrow" style="--hue: var(--blue)"><span class="n">02</span>Theoretical Foundations</span>
+        <h2 id="h-foundations">The Human Cost of Human-Robot Collaboration</h2>
+        <p class="lede">Bridging the Gulf of Execution under the paradigm of Industry 5.0 and Hedonomics.</p>
       </div>
-      <h3 data-de="Intent-Safety-Zustandsautomat">Intent-safety state machine</h3>
-      <ol class="steps" aria-label="Intent-safety states" data-de-aria="Intent-Safety-Zustände">
-        <li data-k="ATTENTION" data-de-k="AUFMERKSAMKEIT"><b data-de="Blick erfassen">Track gaze</b><span data-de="kontinuierlich, ohne Auswirkung">continuous, without effect</span></li>
-        <li data-k="CANDIDATE" data-de-k="KANDIDAT"><b data-de="Objekt hervorheben">Highlight object</b><span data-de="nächstes Objekt am Blickvektor">nearest object to the gaze vector</span></li>
-        <li data-k="ARMED" data-de-k="SCHARF"><b data-de="Verweildauer ≈ 300 ms">Dwell ≈ 300 ms</b><span data-de="sichtbare Rückmeldung, noch reversibel">visible feedback, still reversible</span></li>
-        <li data-k="CONFIRMED" data-de-k="BESTÄTIGT"><b data-de="Explizite Bestätigung">Explicit confirmation</b><span data-de="Sprachbefehl oder Controller → Bewegung">speech command or controller → motion</span></li>
+      <div class="grid4">
+        <div class="card" style="--hue: var(--blue)">
+          <span class="k"><svg class="ico" aria-hidden="true"><use href="#i-brain"/></svg>Cognitive Load Theory</span>
+          <b>Extraneous Load &amp; Interaction Cost</b>
+          <p>Indirect menu hierarchies overload working memory (Sweller, 1988; Nielsen, 1994). Multiple Resource Theory (Wickens, 2002) dictates distributing demands across sensory channels.</p>
+        </div>
+        <div class="card" style="--hue: var(--gold)">
+          <span class="k"><svg class="ico" aria-hidden="true"><use href="#i-eye"/></svg>Gaze &amp; Midas Touch</span>
+          <b>Decoupling Perception from Triggering</b>
+          <p>Eye-tracking offers rapid deictic spatial referencing. Treating fixations as direct triggers causes dangerous accidental executions (Jones et al., 2018).</p>
+        </div>
+        <div class="card" style="--hue: var(--pink)">
+          <span class="k"><svg class="ico" aria-hidden="true"><use href="#i-heart"/></svg>Physiological Paradox</span>
+          <b>Subjective Reports vs. Sympathetic Arousal</b>
+          <p>Collaborative operators often report low subjective stress despite high galvanic skin response arousal (Su et al., 2026). Objective biosignals reveal hidden strain.</p>
+        </div>
+        <div class="card" style="--hue: var(--green)">
+          <span class="k"><svg class="ico" aria-hidden="true"><use href="#i-layers"/></svg>Mental Models (SDA-M)</span>
+          <b>Conceptual Structure vs. Tool Shortcut</b>
+          <p>Experts possess structured cognitive action networks (Schack et al., 2014). Structural Dimensional Analysis reveals whether assistance aids understanding or bypasses learning.</p>
+        </div>
+      </div>
+
+      <h3>The Critical Research Gap</h3>
+      <div class="card" style="margin-top: 16px; --hue: var(--indigo)">
+        <b>Where Engineering Fusion Meets Human Factors:</b>
+        <p>Multimodal technical fusion and human-factors evaluations rarely intersect systematically. Prior literature lacks evidence on how complementary allocation simultaneously influences performance, physiological strain, and novice mental representations.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 03 Interaction Architecture & Intent-Safety Layer -->
+  <section class="sec alt" id="architecture" aria-labelledby="h-arch">
+    <div class="wrap">
+      <div class="head">
+        <span class="eyebrow" style="--hue: var(--violet)"><span class="n">03</span>Interaction Architecture</span>
+        <h2 id="h-arch">One Role per Modality: Look, Speak, Confirm</h2>
+        <p class="lede">Replacing redundant channel confusion with a strict division of communicative labor.</p>
+      </div>
+      <div class="grid3">
+        <div class="card" style="--hue: var(--blue)">
+          <span class="k"><svg class="ico" aria-hidden="true"><use href="#i-eye"/></svg>Spatial Reference (Where)</span>
+          <b>Eye Gaze · Tobii Pro Glasses 3</b>
+          <p>Identifies target objects in 3D space via raycasting (RGB-D + YOLOv8). Gaze solely designates target locations and never triggers irreversible mechanical motion.</p>
+        </div>
+        <div class="card" style="--hue: var(--violet)">
+          <span class="k"><svg class="ico" aria-hidden="true"><use href="#i-mic"/></svg>Task Intent (What)</span>
+          <b>Speech · Offline Whisper</b>
+          <p>Communicates high-level semantic intentions ("Pick", "Place") without menu traversal. Grounded by temporal lead-lag synchronization where gaze precedes speech (Khan et al., 2026).</p>
+        </div>
+        <div class="card" style="--hue: var(--green)">
+          <span class="k"><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg>Confirmation &amp; Override</span>
+          <b>Physical Controller &amp; Low-Latency GUI</b>
+          <p>Provides a deterministic channel for confirmation, emergency stop, and error recovery. Guarantees that physical actuation remains explicitly governed by the human.</p>
+        </div>
+      </div>
+
+      <h3>Intent-Safety State Machine: The Cognitive Buffer</h3>
+      <p style="margin-top: 8px; color: var(--fg-2); max-width: 72ch; font-size: 15px;">
+        To solve the Midas Touch without introducing latency bottlenecks, the Intent-Safety Layer enforces a 4-stage deterministic transition:
+      </p>
+      <ol class="steps" aria-label="Intent-safety states">
+        <li data-k="ATTENTION">
+          <b>Visual Exploration</b>
+          <span>Continuous gaze monitoring. Free ocular exploration across the workspace produces zero technical side effects.</span>
+        </li>
+        <li data-k="CANDIDATE">
+          <b>Target Raycast</b>
+          <span>The object nearest to the 3D gaze vector is identified via YOLOv8 and highlighted with a subtle visual bounding cue.</span>
+        </li>
+        <li data-k="ARMED">
+          <b>Dwell Buffer (≈ 300 ms)</b>
+          <span>Prolonged gaze on the candidate arms the selection with clear visual feedback. Resolves gaze-shift conflicts before movement.</span>
+        </li>
+        <li data-k="CONFIRMED">
+          <b>Explicit Execution</b>
+          <span>Physical trajectory execution begins strictly upon verbal command or controller press. Cancellation remains possible at any time.</span>
+        </li>
       </ol>
     </div>
   </section>
 
-  <section class="sec alt" id="study" aria-labelledby="h-study">
+  <!-- 04 Measurement Suite & The High-Resolution HF Laboratory -->
+  <section class="sec" id="testbed" aria-labelledby="h-testbed">
     <div class="wrap">
-      <div class="head"><span class="eyebrow"><span class="n">03</span><span data-de="Studiendesign">Study design</span></span><h2 id="h-study" data-de="Drei Bedingungen, ein Arbeitsplatz.">Three conditions, one workplace.</h2><p class="lede" data-de="Within-Subjects-Design, Pick-and-Place mit steigender Ambiguität: ähnliche Objekte, höhere Dichte.">Within-subjects, pick-and-place with rising ambiguity: similar objects, higher density.</p></div>
+      <div class="head">
+        <span class="eyebrow" style="--hue: var(--gold)"><span class="n">04</span>Measurement Suite</span>
+        <h2 id="h-testbed">Treating the Robotic Platform as a Human-Factors Laboratory</h2>
+        <p class="lede">Synchronizing ROS 2 machine state with high-frequency ocular, autonomic, and psychometric metrics.</p>
+      </div>
+
       <div class="table-wrap">
         <table>
-          <thead><tr><th scope="col" data-de="Bedingung">Condition</th><th scope="col" data-de="Eingabe">Input</th><th scope="col" data-de="Rolle des Blicks">Role of gaze</th></tr></thead>
+          <thead>
+            <tr>
+              <th scope="col">Measurement Layer</th>
+              <th scope="col">Sensors &amp; Instruments</th>
+              <th scope="col">Metrics &amp; Variables</th>
+              <th scope="col">Human-Factors Construct</th>
+            </tr>
+          </thead>
           <tbody>
-            <tr><td><b>C1</b> <span data-de="Konventionell">Conventional</span></td><td data-de="Nur Web-UI / Controller">GUI / controller only</td><td data-de="keine">none</td></tr>
-            <tr><td><b>C2</b> <span data-de="Blickunterstützt">Gaze-assisted</span></td><td data-de="Blick wählt aus, Controller bestätigt">gaze selects, controller confirms</td><td data-de="Referenz">reference</td></tr>
-            <tr><td><b>C3</b> <span data-de="Komplementär">Complementary</span></td><td data-de="Blick (Referenz) + Sprache (Intention) + Controller (Bestätigung, Fallback)">gaze (reference) + speech (intent) + controller (confirm, fallback)</td><td data-de="Referenz">reference</td></tr>
+            <tr>
+              <td><b>Behavioral Performance</b></td>
+              <td>ROS 2 Event Logger &amp; UX | Monitoring</td>
+              <td>Task Completion Time (s), Task Success Rate (%), Wrong Target Errors, Interaction Steps</td>
+              <td>Operational efficiency, execution fluency, and error rates</td>
+            </tr>
+            <tr>
+              <td><b>Ocular Dynamics</b></td>
+              <td>Tobii Pro Glasses 3 (50 Hz / scene camera)</td>
+              <td>Fixation Duration, Target Acquisition Latency, Candidate Transitions, Gaze-Shift Conflicts</td>
+              <td>Visual attention allocation, target searching efficiency, and Midas-Touch friction</td>
+            </tr>
+            <tr>
+              <td><b>Sympathetic Arousal</b></td>
+              <td>EDA / Galvanic Skin Response Sensors</td>
+              <td>Tonic Skin Conductance Level (SCL), Phasic Skin Conductance Responses (SCR amplitude &amp; frequency)</td>
+              <td>Acute physiological stress, arousal spikes during errors, and internal effort</td>
+            </tr>
+            <tr>
+              <td><b>Parasympathetic Tone</b></td>
+              <td>PPG / ECG Heart Rate Monitor</td>
+              <td>Heart Rate (HR), Heart Rate Variability: RMSSD (ms) &amp; SDNN baseline-normalized</td>
+              <td>Autonomic nervous system recovery, cognitive strain, and mental workload cost</td>
+            </tr>
+            <tr>
+              <td><b>Psychometrics (ISO 9241-11)</b></td>
+              <td>Standardized Digital Survey Battery</td>
+              <td>NASA-TLX (6 subscales), System Usability Scale (SUS 0–100), TAM (PU &amp; PEOU), Perceived Control Scale</td>
+              <td>Subjective mental/physical workload, perceived agency, usability, and system acceptance</td>
+            </tr>
+            <tr>
+              <td><b>Cognitive Representation</b></td>
+              <td>SDA-M (Structural Dimensional Analysis)</td>
+              <td>Pre- &amp; Post-experiment hierarchical clustering of 8–12 Basic Action Concepts (BACs) vs. expert network</td>
+              <td>Conceptual learning: novice structural mental model formation vs. operational shortcut</td>
+            </tr>
           </tbody>
         </table>
       </div>
-      <div class="two">
-        <div>
-          <h3 data-de="Hypothesen">Hypotheses</h3>
-          <ol class="list">
-            <li><b>H1</b> <span data-de="C3 zeigt kürzere Bearbeitungszeiten als C1.">C3 shows shorter completion times than C1.</span></li>
-            <li><b>H2</b> <span data-de="C3 führt zu geringeren NASA-TLX-Werten als C1 und C2.">C3 results in lower NASA-TLX scores than C1 and C2.</span></li>
-            <li><b>H3</b> <span data-de="Der Scharf-Zustand hält unbeabsichtigte Auslösungen unter 5 %.">The armed state keeps unintended activations below 5 %.</span></li>
-            <li><b>H4</b> <span data-de="Geringere subjektive Belastung korrespondiert mit physiologischen Indikatoren.">Lower subjective workload converges with lower physiological workload indicators.</span></li>
-          </ol>
+
+      <div class="grid2" style="margin-top: 24px;">
+        <div class="card" style="--hue: var(--pink)">
+          <span class="k"><svg class="ico" aria-hidden="true"><use href="#i-heart"/></svg>Resolving Arousal Ambiguity</span>
+          <b>Multimodal Sensor Convergence</b>
+          <p>Neither heart rate nor skin conductance alone distinguishes between positive engagement and cognitive distress (Tesch et al., 2021). Correlating EDA peaks with armed states maps internal strain.</p>
         </div>
-        <div>
-          <h3 data-de="Messwerte">Measures</h3>
-          <ul class="list">
-            <li><b data-de="Primär:">Primary:</b> <span data-de="Aufgabenzeit, Erfolgsquote, NASA-TLX, wahrgenommene Kontrolle">task time, success rate, NASA-TLX, perceived control</span></li>
-            <li><b data-de="Sekundär:">Secondary:</b> <span data-de="Midas-Touch-Ereignisse, Blick-zu-Ziel-Latenz, HRV (RMSSD), EDA (SCL / SCR)">Midas Touch events, gaze-to-target latency, HRV (RMSSD), EDA (SCL / SCR)</span></li>
-            <li><b data-de="Usability:">Usability:</b> <span data-de="System Usability Scale (SUS), Technology Acceptance Model (TAM)">System Usability Scale, Technology Acceptance Model</span></li>
-            <li><b data-de="Explorativ:">Exploratory:</b> <span data-de="SDA-M vorab / danach zur mentalen Handlungsrepräsentation">SDA-M pre / post on task representation</span></li>
-          </ul>
+        <div class="card" style="--hue: var(--green)">
+          <span class="k"><svg class="ico" aria-hidden="true"><use href="#i-sliders"/></svg>Ability-Based Design Lens</span>
+          <b>Accessibility Beyond Robotic Expertise</b>
+          <p>Grounded in Ability-Based Design (Wobbrock et al., 2011), the testbed isolates individual sensory-motor requirements. Evaluating novice users provides empirical baselines for assistive adaptation.</p>
         </div>
       </div>
-      <p class="note"><svg class="ico" aria-hidden="true"><use href="#i-alert"/></svg><span><b data-de="Noch keine Ergebnisse.">No results yet.</b> <span data-de="Hypothesen und Design sind Entwürfe; sie werden vor dem ersten Probanden mit der Betreuung abgestimmt.">Hypotheses and design are drafts; they are fixed with the supervision before the first participant.</span></span></p>
     </div>
   </section>
 
-  <section class="sec" id="contributions" aria-labelledby="h-con">
-    <div class="wrap narrow">
-      <div class="head"><span class="eyebrow"><span class="n">04</span><span data-de="Beiträge">Contributions</span></span><h2 id="h-con" data-de="Was das Paper beiträgt.">What the paper adds.</h2></div>
-      <ol class="list">
-        <li><b data-de="Architektur:">Architecture:</b> <span data-de="Ein multimodales HRI-Konzept, das räumliche Referenz, Handlungsintention und Bestätigung bzw. Fallback trennt.">a multimodal HRI design that separates spatial reference, task intent and confirmation / recovery.</span></li>
-        <li><b data-de="Intent-Safety:">Intent safety:</b> <span data-de="Ein Zustandsautomat für blickbasierte Auswahl, der zeitliche und räumliche Mehrdeutigkeiten auflöst.">a state machine for gaze-based selection that handles temporal and spatial conflicts.</span></li>
-        <li><b data-de="Evaluation:">Evaluation:</b> <span data-de="Eine kontrollierte Human-Factors-Studie, die Leistung, Workload, Blickverhalten und Psychophysiologie verknüpft.">a controlled human-factors study combining performance, workload, gaze behaviour and psychophysiology.</span></li>
+  <!-- 05 Experimental Design & Hypotheses -->
+  <section class="sec alt" id="study" aria-labelledby="h-study">
+    <div class="wrap">
+      <div class="head">
+        <span class="eyebrow" style="--hue: var(--green)"><span class="n">05</span>Experimental Design</span>
+        <h2 id="h-study">Controlled Within-Subjects Evaluation</h2>
+        <p class="lede">Isolating the effects of complementary allocation under identical task autonomy and increasing spatial ambiguity.</p>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">Condition</th>
+              <th scope="col">Spatial Reference ("Where")</th>
+              <th scope="col">Task Intent ("What")</th>
+              <th scope="col">Confirmation &amp; Fallback</th>
+              <th scope="col">Scientific Comparison</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><b>C1 Conventional</b> (Baseline)</td>
+              <td>GUI / Controller selection</td>
+              <td>GUI / Teach pendant command</td>
+              <td>Manual button confirm</td>
+              <td>Establishes industrial baseline; assesses standard extraneous menu overhead</td>
+            </tr>
+            <tr>
+              <td><b>C2 Gaze-Assisted</b></td>
+              <td>Gaze dwell (Armed state)</td>
+              <td>GUI / Controller command</td>
+              <td>Manual button confirm</td>
+              <td>Isolates the specific contribution of ocular target referencing (Contrast C2 vs. C1)</td>
+            </tr>
+            <tr>
+              <td><b>C3 Complementary</b></td>
+              <td>Gaze dwell (Armed state)</td>
+              <td>Spoken natural language ("Pick")</td>
+              <td>Controller confirmation &amp; fallback</td>
+              <td>Tests complete Look, Speak, Confirm paradigm (Contrasts C3 vs. C2 and C3 vs. C1)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="two" style="margin-top: 32px;">
+        <div>
+          <h3>Confirmatory Hypotheses</h3>
+          <ol class="list" style="margin-top: 14px;">
+            <li><b>H1 (Efficiency):</b> Condition C3 (Complementary) will yield significantly shorter task completion times and fewer discrete interaction steps compared to C1 (Conventional).</li>
+            <li><b>H2 (Workload):</b> Condition C3 will result in significantly lower overall NASA-TLX workload scores compared to C1 and C2, while maintaining or improving task success rates.</li>
+            <li><b>H3 (Intent-Safety):</b> The multi-stage Armed state mechanism will constrain unintended activations (Midas Touch errors) to &lt; 5% of total trials across C2 and C3.</li>
+            <li><b>H4 (Physiological Convergence):</b> Conditions exhibiting lower subjective workload will demonstrate converging reductions in autonomic physiological strain (increased HRV/RMSSD and reduced phasic EDA arousal).</li>
+          </ol>
+        </div>
+        <div>
+          <h3>Methodological Rigor</h3>
+          <ul class="list" style="margin-top: 14px;">
+            <li><b>Constant Autonomy:</b> Robot motion planning, collision avoidance, and trajectory speeds are held strictly identical across all conditions to prevent algorithmic confounds.</li>
+            <li><b>Task Ambiguity:</b> Novice participants perform pick-and-place trials with systematically escalating clutter, distractor objects, and spatial density.</li>
+            <li><b>Counterbalancing:</b> Condition presentation order is systematically balanced across subjects using a Balanced Latin Square design to mitigate learning and fatigue effects.</li>
+            <li><b>Planned Contrasts:</b> Hypotheses are tested using directional Wilcoxon signed-rank tests with Holm-Bonferroni correction and linear mixed-effects modeling.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="note">
+        <svg class="ico ico-s" aria-hidden="true"><use href="#i-alert"/></svg>
+        <div><b>Empirical Status Notice:</b> In accordance with research integrity standards (Skill <code>research</code> §0), hypotheses, measurement pipelines, and condition designs are formalized prior to participant testing. No empirical conclusions are reported until ethical clearance and experimental trials have concluded.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 06 Contributions & Design Guidelines -->
+  <section class="sec" id="guidelines" aria-labelledby="h-guide">
+    <div class="wrap">
+      <div class="head">
+        <span class="eyebrow" style="--hue: var(--indigo)"><span class="n">06</span>Contributions &amp; Guidelines</span>
+        <h2 id="h-guide">Generalizable Design Knowledge for Low-Barrier HRI</h2>
+        <p class="lede">Translating empirical testbed findings into actionable principles for assistive and industrial manipulation.</p>
+      </div>
+
+      <div class="grid3">
+        <div class="card" style="--hue: var(--blue)">
+          <span class="k"><svg class="ico" aria-hidden="true"><use href="#i-eye"/></svg>Guideline 1</span>
+          <b>Spatiality → Gaze</b>
+          <p>Reserve eye gaze strictly for spatial deictic referencing. Gaze must never be coupled directly to irreversible mechanical motions without an explicit decoupling state.</p>
+        </div>
+        <div class="card" style="--hue: var(--violet)">
+          <span class="k"><svg class="ico" aria-hidden="true"><use href="#i-mic"/></svg>Guideline 2</span>
+          <b>Intent → Speech</b>
+          <p>Employ spoken natural language for high-level semantic intentions ("what should happen") to bypass extraneous GUI navigation depth and eliminate spatial parameterization friction.</p>
+        </div>
+        <div class="card" style="--hue: var(--green)">
+          <span class="k"><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg>Guideline 3</span>
+          <b>Control → Explicit</b>
+          <p>Preserve a dedicated, low-latency, deterministic channel (controller/button) for confirmation, instantaneous cancellation, and continuous override.</p>
+        </div>
+        <div class="card" style="--hue: var(--gold)">
+          <span class="k"><svg class="ico" aria-hidden="true"><use href="#i-shield"/></svg>Guideline 4</span>
+          <b>Safety → State-Based</b>
+          <p>Implement a multi-stage transition (Attention → Candidate → Armed → Confirmed). The Armed state provides an indispensable cognitive buffer to correct gaze-shift errors.</p>
+        </div>
+        <div class="card" style="--hue: var(--pink)">
+          <span class="k"><svg class="ico" aria-hidden="true"><use href="#i-heart"/></svg>Guideline 5</span>
+          <b>Evaluation → Converging</b>
+          <p>Never rely on subjective surveys (NASA-TLX) alone. Synchronize objective behavioral telemetry with autonomic biomarkers (EDA/HRV) to detect hidden internal strain.</p>
+        </div>
+        <div class="card" style="--hue: var(--accent)">
+          <span class="k"><svg class="ico" aria-hidden="true"><use href="#i-sliders"/></svg>Guideline 6</span>
+          <b>Architecture → Modular</b>
+          <p>Architect multimodal platforms modularly so individual channels can be dynamically enabled, weighted, or substituted based on operator motor abilities and acoustic environment.</p>
+        </div>
+      </div>
+
+      <h3>Core Academic Contributions of the Paper</h3>
+      <ol class="list" style="margin-top: 16px;">
+        <li><b>Complementary Interaction Architecture:</b> A human-factors-driven HRI framework that partitions spatial reference (gaze), semantic intent (speech), and confirmation/recovery (controller) to resolve cognitive bottlenecks.</li>
+        <li><b>Intent-Safety Mechanism:</b> A deterministic state machine with calibrated dwell arming (≈300 ms) and real-time visual feedback that reliably mitigates the Midas Touch without incurring high latency costs.</li>
+        <li><b>Multidimensional Evaluation Suite:</b> A high-resolution HF testbed synchronizing ROS 2 machine states, ocular tracking, EDA, HRV, and psychometrics to expose the physiological paradox.</li>
+        <li><b>Cognitive Mental Model Investigation:</b> An exploratory SDA-M protocol revealing whether multimodal assistance supports novice development of structured Basic Action Concepts.</li>
+        <li><b>Design Guidelines for Adaptive HRI:</b> A set of generalizable principles for configuring low-barrier robotic interfaces across industrial and future assistive scenarios.</li>
       </ol>
+    </div>
+  </section>
+
+  <!-- 07 Academic References & Literature -->
+  <section class="sec alt" id="literature" aria-labelledby="h-lit">
+    <div class="wrap">
+      <div class="head">
+        <span class="eyebrow" style="--hue: var(--accent)"><span class="n">07</span>Literature</span>
+        <h2 id="h-lit">Academic References &amp; Foundations</h2>
+        <p class="lede">Key literature grounding the theoretical framework and empirical methodology of Draft 8.</p>
+      </div>
+
+      <div class="bib-grid">
+        <div class="bib-item">
+          <b>Coronado, E., et al. (2022).</b> Evaluating quality in human-robot interaction: A systematic search and classification of performance and human-centered factors, measures and metrics towards an Industry 5.0. <em>Journal of Manufacturing Systems</em>, 63, 283–310.
+        </div>
+        <div class="bib-item">
+          <b>Hopko, S., Wang, J., &amp; Mehta, R. (2022).</b> Human Factors Considerations and Metrics in Shared Space Human-Robot Collaboration: A Systematic Review. <em>Frontiers in Robotics and AI</em>, 9, 873426.
+        </div>
+        <div class="bib-item">
+          <b>Jones, E. R., et al. (2018).</b> Symmetric Evaluation of Multimodal Human–Robot Interaction with Gaze and Standard Control. <em>Symmetry</em>, 10(12), 744.
+        </div>
+        <div class="bib-item">
+          <b>Khan, A. A., et al. (2026).</b> Gaze and Speech in Multimodal Human-Computer Interaction: A Scoping Review. In <em>Proceedings of the CHI Conference on Human Factors in Computing Systems</em>.
+        </div>
+        <div class="bib-item">
+          <b>Lai, Y., et al. (2026).</b> FAM-HRI: Foundation-Model Assisted Multimodal Human-Robot Interaction Combining Gaze and Speech. <em>IEEE Transactions on Automation Science and Engineering</em>.
+        </div>
+        <div class="bib-item">
+          <b>Nielsen, J. (1994).</b> <em>Usability Engineering</em>. Morgan Kaufmann Publishers.
+        </div>
+        <div class="bib-item">
+          <b>Norman, D. A. (1988).</b> <em>The Psychology of Everyday Things</em>. Basic Books.
+        </div>
+        <div class="bib-item">
+          <b>Picard, R. W. (2000).</b> <em>Affective Computing</em>. MIT Press.
+        </div>
+        <div class="bib-item">
+          <b>Schack, T., Essig, K., Frank, C., &amp; Koester, D. (2014).</b> Mental representation and motor imagery training. <em>Frontiers in Human Neuroscience</em>, 8, 328.
+        </div>
+        <div class="bib-item">
+          <b>Shneiderman, B. (1983).</b> Direct Manipulation: A New Paradigm for Human-Computer Interaction. <em>IEEE Computer</em>, 16(8), 79–88.
+        </div>
+        <div class="bib-item">
+          <b>Steinmetz, F. J. (2022).</b> <em>Intuitive robot programming for novice and expert users</em>. Doctoral dissertation, RWTH Aachen University.
+        </div>
+        <div class="bib-item">
+          <b>Su, B., et al. (2026).</b> Exploring the integration of large language models in human-robot collaboration: Effects on performance, mental stress, and trust. <em>Applied Ergonomics</em>, 114, 104142.
+        </div>
+        <div class="bib-item">
+          <b>Sweller, J. (1988).</b> Cognitive load during problem solving: Effects on learning. <em>Cognitive Science</em>, 12(2), 257–285.
+        </div>
+        <div class="bib-item">
+          <b>Tesch, S., et al. (2021).</b> Multimodal Assessment of Cognitive Load in Human-Robot Collaboration: Integrating Physiological and Behavioral Markers. In <em>IEEE International Conference on Robot and Human Interactive Communication (RO-MAN)</em>.
+        </div>
+        <div class="bib-item">
+          <b>Wickens, C. D. (2002).</b> Multiple Resources and Performance Prediction. <em>Theoretical Issues in Ergonomics Science</em>, 3(2), 159–177.
+        </div>
+        <div class="bib-item">
+          <b>Wobbrock, J. O., Kane, S. K., Gajos, K. Z., Harada, S., &amp; Froehlich, J. (2011).</b> Ability-Based Design: Concept, principles and examples. <em>ACM Transactions on Accessible Computing</em>, 3(3), 1–27.
+        </div>
+      </div>
     </div>
   </section>
 </main>
 
+<!-- Footer -->
 <footer class="foot">
   <div class="wrap">
-    <a class="qr-foot" href="https://lu4k87.github.io/research" target="_blank" rel="noopener">
-      <span class="qr-code"><svg role="img" aria-label="QR code: open this page" data-de-aria="QR-Code: Diese Seite öffnen"><use href="#qr-research"/></svg></span>
-      <span class="qr-txt"><b data-de="Diese Seite">This page</b><span data-de="Forschung · UX Robot">Research · UX Robot</span><small>lu4k87.github.io/research</small></span>
+    <a class="qr-foot" href="https://lu4k87.github.io/my_xarm_lite6-extended/present_research.html" target="_blank" rel="noopener">
+      <span class="qr-code"><svg role="img" aria-label="QR code: open this page"><use href="#qr-research"/></svg></span>
+      <span class="qr-txt">
+        <b>Direct Page Access</b>
+        <span>Research · UX Robot</span>
+        <small>lu4k87.github.io/my_xarm_lite6-extended/present_research.html</small>
+      </span>
     </a>
     <div class="contact">
       <b>Marius Kaul</b>
-      <span data-de="Usability Lab · Hochschule Rhein-Waal">Usability Lab · Rhine-Waal University of Applied Sciences</span>
+      <span>Usability Lab · Rhine-Waal University of Applied Sciences</span>
       <a href="mailto:marius.kaul@hochschule-rhein-waal.de"><svg class="ico" aria-hidden="true"><use href="#i-mail"/></svg>marius.kaul@hochschule-rhein-waal.de</a>
     </div>
   </div>
 </footer>
+
 <script>
 (() => {
-  const root = document.documentElement;
-  const store = (k, v) => { try { if (v === undefined) return localStorage.getItem(k); localStorage.setItem(k, v); } catch (e) { return null; } };
-
-  // Theme: uxr-theme speichern und anwenden
-  const THEME_KEY = 'uxr-theme';
-  const savedTheme = store(THEME_KEY);
-  if (savedTheme) root.dataset.theme = savedTheme;
+  const root = document.documentElement, KEY = 'uxr-theme';
+  try { const t = localStorage.getItem(KEY); if (t) root.dataset.theme = t; } catch (e) { /* fallback to system preference */ }
   document.getElementById('theme').addEventListener('click', () => {
     const dark = root.dataset.theme ? root.dataset.theme === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
     root.dataset.theme = dark ? 'light' : 'dark';
-    store(THEME_KEY, root.dataset.theme);
+    try { localStorage.setItem(KEY, root.dataset.theme); } catch (e) { /* ignore storage errors */ }
   });
-
-  // Sprache DE / EN mit data-de, data-de-aria, data-de-k
-  const keep = (el, key, val) => { if (el.dataset[key] === undefined) el.dataset[key] = val; return el.dataset[key]; };
-  const metaDesc = document.querySelector('meta[name="description"]');
-
-  const setLang = lang => {
-    root.lang = lang;
-    const de = lang === 'de';
-
-    document.querySelectorAll('[data-de]').forEach(el => {
-      const en = keep(el, 'en', el.innerHTML);
-      el.innerHTML = de ? el.dataset.de : en;
-    });
-    document.querySelectorAll('[data-de-title]').forEach(el => {
-      const en = keep(el, 'enTitle', el.title);
-      el.title = de ? el.dataset.deTitle : en;
-    });
-    document.querySelectorAll('[data-de-alt]').forEach(el => {
-      const en = keep(el, 'enAlt', el.alt);
-      el.alt = de ? el.dataset.deAlt : en;
-    });
-    document.querySelectorAll('[data-de-aria]').forEach(el => {
-      const en = keep(el, 'enAria', el.getAttribute('aria-label'));
-      el.setAttribute('aria-label', de ? el.dataset.deAria : en);
-    });
-    document.querySelectorAll('[data-de-k]').forEach(el => {
-      const en = keep(el, 'enK', el.getAttribute('data-k'));
-      el.setAttribute('data-k', de ? el.dataset.deK : en);
-    });
-    document.querySelectorAll('[data-lang]').forEach(b => {
-      b.setAttribute('aria-pressed', String(b.dataset.lang === lang));
-    });
-
-    if (metaDesc) {
-      const enDesc = keep(metaDesc, 'enDesc', metaDesc.getAttribute('content'));
-      metaDesc.setAttribute('content', de ? 'Look, Speak, Confirm: Forschung zu komplementärer Blick-, Sprach- und expliziter Steuerung für barrierearme Robotermanipulation auf der UX-Robot-Plattform.' : enDesc);
-    }
-    document.title = de ? 'Forschung · UX Robot' : 'Research · UX Robot';
-  };
-
-  document.querySelectorAll('[data-lang]').forEach(b => {
-    b.addEventListener('click', () => {
-      setLang(b.dataset.lang);
-      store('project_docs_lang', b.dataset.lang);
-    });
-  });
-
-  const qLang = new URLSearchParams(location.search).get('lang');
-  const storedLang = store('project_docs_lang');
-  const initLang = ['de', 'en'].includes(qLang) ? qLang : (storedLang || (navigator.language && navigator.language.startsWith('de') ? 'de' : 'en'));
-  setLang(initLang);
 })();
 </script>
 </body>
