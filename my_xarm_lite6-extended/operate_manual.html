@@ -1430,32 +1430,7 @@
   </aside>
 </header>
 
-<!-- ============ Kopf: VLA-M ============ -->
-<header class="hero" data-area="vla">
-  <div class="hero-main" style="--hero:var(--c-vla)">
-    <span class="eyebrow">VLA-M · Vision-Language-Action</span>
-    <h1>Den Roboter per Chat anweisen</h1>
-    <ul class="bl" style="--k:var(--c-vla)">
-      <li>Anweisung tippen oder per Mikrofon diktieren → das Modell macht daraus einen Plan → du bestätigst → der Arm führt aus</li>
-      <li>Heute: <code>vla_bridge</code> ist ein VLA-Agent (lokal Ollama <code>qwen3.8:27b</code>) · kennt die Szene (erkannte + virtuelle Objekte) · plant, prüft, fährt, plant bei Fehlern neu</li>
-      <li>Mit der Physik-Sandbox (Robot | Digital Twin) werden die virtuellen Objekte wirklich gegriffen, getragen, gestapelt</li>
-      <li>Objektmenü im Viewport: <i>Grasp</i> / <i>Place here</i> mit einem Klick, ohne Sprachmodell (<code>/vla/skill</code>)</li>
-      <li><i>Pick &amp; Place to …</i> im Objektmenü → Ziel auf Tisch oder Palette klicken → <i>Start</i>: Greifen und Ablegen als eine Aufgabe, ein <i>Abort</i> (Esc bricht die Zielwahl ab)</li>
-      <li>Auto-Palettieren (Szene <i>Auto palletizing</i>, Fenster <i>Palletizing</i>): <i>Plan</i> → Lagen, <code>80 / 80 kg</code>, Ghost-Boxen · über der Palette live das abgelegte Gewicht · <i>Start</i> belädt Karton für Karton (Robot | Digital Twin mit Physik-Sandbox) · <i>Abort</i> hält sofort an · <i>Reset</i> legt alles zurück · im Chat: „belade die Palette“</li><li>Nächster Schritt: mit <i>Record demo</i> aufgenommene Demonstrationen → SmolVLA nachtrainieren</li>
-    </ul>
-  </div>
-  <aside class="hero-side" aria-label="Eckdaten">
-    <span class="label">Eckdaten</span>
-    <div class="tiles">
-      <div class="tile" style="--k:var(--c-vla)"><span>Agent</span><b>LLM · lokal</b></div>
-      <div class="tile" style="--k:var(--c-topic)"><span>UI</span><b>:8081 · VLA-M</b></div>
-      <div class="tile" style="--k:var(--c-ws)"><span>Backend</span><b>vla_bridge</b></div>
-      <div class="tile" style="--k:var(--c-http)"><span>Szene</span><b>/zed/bboxes_3d</b></div>
-      <div class="tile" style="--k:var(--c-svc)"><span>Modell geplant</span><b>SmolVLA → π0.5</b></div>
-      <div class="tile" style="--k:var(--c-hw)"><span>GPU</span><b>RTX A5000 · 24 GB</b></div>
-    </div>
-  </aside>
-</header>
+
 
 
 <main>
