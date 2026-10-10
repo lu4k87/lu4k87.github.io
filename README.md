@@ -76,6 +76,7 @@ Interaktive Prozessvisualisierung für komplexe Qualitätssicherungs- und Akkred
 
 - **Projekt-URL:** [lu4k87.github.io/p_3](https://lu4k87.github.io/p_3)
 - **Kurzlinks:** [lu4k87.github.io/accredo](https://lu4k87.github.io/accredo) · [lu4k87.github.io/akkreditierung](https://lu4k87.github.io/akkreditierung)
+- **Projektseite:** [`accredo.html`](https://lu4k87.github.io/my_xarm_lite6-extended/accredo.html)
 
 ---
 
