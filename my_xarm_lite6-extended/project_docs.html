@@ -719,8 +719,28 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
   .tm-eval .bi-l { display: none; }
   .tm-eval :is(.chips, .more) { grid-column: auto; grid-row: auto; }
 }
-@media (prefers-reduced-motion: reduce) { .tm-on .tm-card, .tm-on .tm-card:not(.on) { transition: none; } }
 .tm-pk { transition: opacity var(--t-base) var(--ease-out); }
+
+/* Drei Betriebsabläufe: direkt steuern · Bahn planen & bestätigen · Aufgabe per KI-Agent ausführen */
+.tm-ops { margin-top: 48px; display: grid; gap: 24px; }
+.tm-ops-h { display: grid; gap: 8px; }
+.tm-ops-h h3 { font-size: 22px; font-weight: 800; letter-spacing: -.02em; line-height: 1.2; color: var(--fg); }
+.tm-ops-h p { font-size: 15px; line-height: 1.5; color: var(--fg-2); max-width: 68ch; }
+.op-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.op-card { border: 1px solid var(--line); border-radius: var(--radius-lg); background: var(--surface); padding: 20px; display: grid; gap: 16px; align-content: start; box-shadow: var(--shadow); transition: border-color var(--t-fast); }
+.op-card:hover { border-color: color-mix(in srgb, var(--hue) 50%, var(--line)); }
+.op-head { display: grid; gap: 6px; border-bottom: 1px solid var(--line); padding-bottom: 14px; }
+.op-k { font: 700 11px/1.3 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--hue); }
+.op-head h4 { display: flex; align-items: center; gap: 8px; font-size: 17px; font-weight: 800; color: var(--fg); line-height: 1.25; margin: 0; }
+.op-head h4 .ico { width: 18px; height: 18px; color: var(--hue); }
+.op-head p { font-size: 13.5px; color: var(--fg-2); line-height: 1.4; margin: 0; }
+.op-steps { margin: 0; padding-left: 20px; display: grid; gap: 10px; font-size: 13px; line-height: 1.45; color: var(--fg-2); }
+.op-steps li b { color: var(--fg); font-family: var(--mono); font-size: 11.5px; text-transform: uppercase; letter-spacing: .04em; }
+.op-steps li span { color: var(--fg-2); }
+.op-steps li code { font: 500 12px var(--mono); color: var(--fg); }
+@media (max-width: 880px) {
+  .op-grid { grid-template-columns: minmax(0, 1fr); }
+}
 
 /* ═════ 11 Fragen & Antworten: Themen-Chips (JS) über einer Aufklappliste (<details>, geht ohne JS); Ansicht in #faq[data-view] ═════ */
 .faq-bar { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 24px; }
@@ -1068,10 +1088,10 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
         </header>
         <ul class="fx-grid">
           <li class="fx" style="--hue: var(--blue)"><span class="bi-l"><svg class="ico" aria-hidden="true"><use href="#i-cube"/></svg></span><b data-en="First virtual, then real.">Erst virtuell, dann real.</b><p data-en="Every motion runs in the physics-based Digital Twin first, then the same flow on the xArm&amp;nbsp;Lite&amp;nbsp;6.">Jede Bewegung läuft zuerst im physikbasierten Digital Twin, danach derselbe Ablauf am xArm&nbsp;Lite&nbsp;6.</p><a class="more" href="present_presentation.html#merkmale"><span data-en="Key features">Kernmerkmale</span><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg></a></li>
-          <li class="fx" style="--hue: var(--violet)"><span class="bi-l"><svg class="ico" aria-hidden="true"><use href="#i-user"/></svg></span><b data-en="The AI plans. The human confirms.">Die KI plant. Der Mensch bestätigt.</b><p data-en="The arm moves only after confirmation; step in any time.">Der Arm fährt erst nach Bestätigung; Eingreifen geht jederzeit.</p><a class="more" href="#stage"><span data-en="The principle">Das Prinzip</span><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg></a></li>
+          <li class="fx" style="--hue: var(--violet)"><span class="bi-l"><svg class="ico" aria-hidden="true"><use href="#i-user"/></svg></span><b data-en="The AI plans. The human confirms.">Die KI plant. Der Mensch bestätigt.</b><p data-en="The arm moves only after confirmation; step in any time.">Der Arm fährt erst nach Bestätigung; Eingreifen geht jederzeit.</p><a class="more" href="#tm-stage"><span data-en="The principle">Das Prinzip</span><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg></a></li>
           <li class="fx" style="--hue: var(--green)"><span class="bi-l"><svg class="ico" aria-hidden="true"><use href="#i-globe"/></svg></span><b data-en="Open, don't install.">Öffnen statt installieren.</b><p data-en="A web browser is all you need; nothing gets installed on the device. Operate, launch, monitor and tap: on PC, tablet, smartphone or Quest&amp;nbsp;3, locally or on the home network.">Ein Webbrowser genügt, auf dem Endgerät wird nichts installiert. Bedienen, starten, überwachen und tippen: am PC, Tablet, Smartphone oder auf der Quest&nbsp;3, lokal oder im Heimnetz.</p><a class="more" href="#webapps"><span data-en="Four web apps">Vier Web-Apps</span><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg></a></li>
           <li class="fx" style="--hue: var(--orange)"><span class="bi-l"><svg class="ico" aria-hidden="true"><use href="#i-shield"/></svg></span><b data-en="One chain for every input.">Eine Kette für jede Eingabe.</b><p data-en="E-STOP, floor guard and collision protection apply to all ten control modes, from gamepad to AI chat.">E-STOP, Bodenschutz und Kollisionsschutz gelten für alle zehn Steuerwege, vom Gamepad bis zum KI-Chat.</p><a class="more" href="present_presentation.html#ablaeufe"><span data-en="Function flows">Funktionsabläufe</span><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg></a></li>
-          <li class="fx" style="--hue: var(--indigo)"><span class="bi-l"><svg class="ico" aria-hidden="true"><use href="#i-layers"/></svg></span><b data-en="Replaceable, not fixed.">Austauschbar statt festgelegt.</b><p data-en="Input device, camera, AI model and software module swap individually; robot arm planned.">Eingabegerät, Kamera, KI-Modell und Software-Baustein einzeln ersetzbar; Roboterarm geplant.</p><a class="more" href="present_presentation.html#stack"><span data-en="System stack">System-Stack</span><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg></a></li>
+          <li class="fx" style="--hue: var(--indigo)"><span class="bi-l"><svg class="ico" aria-hidden="true"><use href="#i-layers"/></svg></span><b data-en="Replaceable, not fixed.">Austauschbar statt festgelegt.</b><p data-en="Input device, camera, AI model and software module swap individually; 7 robot profiles in simulation.">Eingabegerät, Kamera, KI-Modell und Software-Baustein einzeln ersetzbar; 7 Roboterprofile in Simulation.</p><a class="more" href="present_presentation.html#stack"><span data-en="System stack">System-Stack</span><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg></a></li>
           <li class="fx" style="--hue: var(--gold)"><span class="bi-l"><svg class="ico" aria-hidden="true"><use href="#i-chart"/></svg></span><b data-en="Measured, not guessed.">Gemessen statt geschätzt.</b><p data-en="The UX | Monitoring records system and usage; usability tests with SUS and NASA-TLX.">UX | Monitoring erfasst System und Nutzung; Usability-Tests mit SUS und NASA-TLX.</p><a class="more" href="present_presentation.html#forschung"><span data-en="Evaluation logic">Evaluierungslogik</span><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg></a></li>
         </ul>
       </section>
@@ -1080,7 +1100,7 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
       <section class="sec" id="teilhabe" aria-labelledby="tm-h">
         <header class="sec-head">
           <div><span class="eyebrow" style="--hue: var(--orange)"><span class="n">02</span><span data-en="Human at the centre">Mensch im Mittelpunkt</span></span><h2 id="tm-h" data-en="Control modes">Steuerwege</h2></div>
-          <div class="brief" style="--hue: var(--orange)"><p class="slogan" data-en="Assistive robotics for real participation.">Assistive Robotik für echte Teilhabe.</p><ul class="kpis"><li class="kpi"><strong>10</strong><span data-en="control modes">Steuerwege</span></li><li class="kpi"><strong>1</strong><span data-en="safety chain">Sicherheits&shy;kette</span></li><li class="kpi"><strong>5</strong><span data-en="measures">Messgrößen</span></li></ul></div>
+          <div class="brief" style="--hue: var(--orange)"><p class="slogan" data-en="The platform investigates whether different input methods lower operating barriers.">Die Plattform untersucht, ob unterschiedliche Eingabemethoden Bedienhürden senken.</p><ul class="kpis"><li class="kpi"><strong>10</strong><span data-en="control modes">Steuerwege</span></li><li class="kpi"><strong>1</strong><span data-en="safety chain">Sicherheits&shy;kette</span></li><li class="kpi"><strong>5</strong><span data-en="measures">Messgrößen</span></li></ul></div>
         </header>
         <div class="tm-grid" id="tm">
           <figure class="tm-fig">
@@ -1159,8 +1179,8 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
                 <h3><svg class="ico" aria-hidden="true"><use href="#i-mic"/></svg><span data-en="Voice &lt;small&gt;with your voice&lt;/small&gt;">Sprache <small>mit der Stimme</small></span></h3>
                 <p data-en="Say it, don't click it: short commands start ready-made flows.">Sagen statt klicken: kurze Befehle lösen fertige Abläufe aus.</p>
                 <ul>
-                  <li data-en="&lt;b&gt;Recognition&lt;/b&gt; in 50–120&amp;nbsp;ms on the GPU, German and English"><b>Erkennung</b> in 50–120&nbsp;ms auf der GPU, Deutsch und Englisch</li>
-                  <li data-en="&lt;b&gt;Listening window&lt;/b&gt; of 5&amp;nbsp;s after the trigger, never always on"><b>Hörfenster</b> 5&nbsp;s nach dem Auslöser, kein Dauerbetrieb</li>
+                  <li data-en="&lt;b&gt;Model inference:&lt;/b&gt; 50–120&amp;nbsp;ms on local NVIDIA GPU (faster-whisper base) after speech ends"><b>Modell-Inferenz:</b> 50–120&nbsp;ms auf lokaler NVIDIA-GPU (faster-whisper base) nach Sprechende</li>
+                  <li data-en="&lt;b&gt;Operating latency:&lt;/b&gt; push-to-talk with 5&amp;nbsp;s listening window; total delay includes VAD cutoff and safety check"><b>Bedienlatenz:</b> Push-to-Talk mit 5&nbsp;s Hörfenster; Gesamtlatenz umfasst VAD-Schnitt und Sicherheitsprüfung</li>
                 </ul>
                 <a class="more" href="present_control_modes.html#sprache"><span data-en="Voice commands">Sprachbefehle</span><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg></a>
               </article>
@@ -1217,6 +1237,63 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
             </div>
           </div>
         </div>
+        <!-- Drei Betriebsabläufe: direkt steuern · Bahn planen & bestätigen · Aufgabe per KI-Agent ausführen -->
+        <div class="tm-ops" style="--hue: var(--accent)">
+          <header class="tm-ops-h">
+            <span class="eyebrow" style="--hue: var(--accent)"><span class="n">Abläufe</span><span data-en="Three operational flows">Drei Betriebsabläufe</span></span>
+            <h3 data-en="From input to safe robot motion">Von der Eingabe zur sicheren Bewegung</h3>
+            <p data-en="Every command path follows one of three distinct control paradigms with an unbroken chain: input → check → approval/confirmation → motion → abort → recording.">Jeder Steuerweg folgt einem von drei klar getrennten Steuerparadigmen mit durchgängiger Kette: Eingabe → Prüfung → Freigabe bzw. Bestätigung → Bewegung → Abbruch → Aufzeichnung.</p>
+          </header>
+          <div class="op-grid">
+            <article class="op-card" style="--hue: var(--accent)">
+              <div class="op-head">
+                <span class="op-k" data-en="Simultaneous Shared Control">Simultanes Shared Control</span>
+                <h4><svg class="ico" aria-hidden="true"><use href="#i-pad"/></svg><span data-en="1. Direct steering">1. Direkt steuern</span></h4>
+                <p data-en="Teleoperation &amp; jogging in real time (gamepad, VR, jogging buttons)">Teleoperation &amp; Jogging in Echtzeit (Gamepad, VR, Jogging-Tasten)</p>
+              </div>
+              <ol class="op-steps">
+                <li><b data-en="Input:">Eingabe:</b> <span data-en="Continuous velocity input via joystick axis, VR controller movement or jog key hold.">Kontinuierlicher Geschwindigkeitsvektor über Joy-Stick, VR-Handführung oder gedrückte Jog-Taste.</span></li>
+                <li><b data-en="Check:">Prüfung:</b> <span data-en="Control-lock ownership, heartbeat watchdog and dynamic collision pre-check (&lt;code&gt;/joy_check&lt;/code&gt;).">Control-Lock-Besitz, Heartbeat-Watchdog und dynamische Kollisionsvorprüfung (<code>/joy_check</code>).</span></li>
+                <li><b data-en="Approval:">Freigabe:</b> <span data-en="Continuous automatic regulation in active mode; live clutch (dead-man grip/hold).">Automatische Regelfreigabe im aktiven Modus; Live-Kupplung (Grip/Halten als Totmann-Bedingung).</span></li>
+                <li><b data-en="Motion:">Bewegung:</b> <span data-en="MoveIt Servo tracks Cartesian speed in real time; system slows down near tables and limits.">MoveIt Servo regelt Geschwindigkeiten in Echtzeit; System bremst vor Tisch- und Gelenkgrenzen zeitgleich ab.</span></li>
+                <li><b data-en="Abort:">Abbruch:</b> <span data-en="Releasing stick/button stops motion instantly; watchdog timeout or E-STOP immediately halts.">Loslassen des Sticks stoppt sofort (Dead-Man); E-STOP oder Watchdog-Timeout hält den Arm an.</span></li>
+                <li><b data-en="Recording:">Aufzeichnung:</b> <span data-en="Commands, clamp events and latency logged in UX | Monitoring; 60&amp;nbsp;s ring buffer in blackbox.">Befehle, Bremsereignisse und Latenzen im UX | Monitoring; 60&nbsp;s Ringpuffer in der Blackbox.</span></li>
+              </ol>
+            </article>
+
+            <article class="op-card" style="--hue: var(--gold)">
+              <div class="op-head">
+                <span class="op-k" data-en="Trading Control · Human-in-the-Loop">Trading Control · Human-in-the-Loop</span>
+                <h4><svg class="ico" aria-hidden="true"><use href="#i-route"/></svg><span data-en="2. Plan &amp; confirm path">2. Bahn planen &amp; bestätigen</span></h4>
+                <p data-en="Assisted path planning (TCP gizmo, pose presets, click-to-move)">Assistierte Bahnplanung (TCP-Gizmo, Posen-Presets, Click-to-Move)</p>
+              </div>
+              <ol class="op-steps">
+                <li><b data-en="Input:">Eingabe:</b> <span data-en="Discrete target pose (XYZ/RPY) via 3D gizmo drag, preset button (Home, Scan) or coordinates.">Diskrete Zielpose (XYZ/RPY) über 3D-Gizmo im Digital Twin, Preset (Home, Scan) oder Zielkoordinaten.</span></li>
+                <li><b data-en="Check:">Prüfung:</b> <span data-en="Inverse kinematics (IK) and full collision planning against scene mesh and table (MoveGroup).">Inverse Kinematik (IK) und vollständige Kollisionsprüfung gegen Szene, Hindernisse und Tisch (MoveGroup).</span></li>
+                <li><b data-en="Confirmation:">Bestätigung:</b> <span data-en="Ghost preview plays in Digital Twin; real arm stays put until operator clicks &lt;i&gt;Execute&lt;/i&gt;.">Ghost-Vorschau läuft im Digital Twin ab; echter Arm bleibt stehen, bis Bediener explizit <i>Execute</i> klickt.</span></li>
+                <li><b data-en="Motion:">Bewegung:</b> <span data-en="MoveIt executes verified trajectory; joint states stream back to Digital Twin in real time.">MoveIt führt kollisionsfreie Trajektorie ab; Zustand wird in Echtzeit in der UI visualisiert.</span></li>
+                <li><b data-en="Abort:">Abbruch:</b> <span data-en="Operator discards preview before start, hits &lt;i&gt;STOP&lt;/i&gt; during motion, or triggers E-STOP.">Bediener verwirft Vorschau vorab per <i>Discard</i>, klickt während der Fahrt <i>STOP</i> oder drückt E-STOP.</span></li>
+                <li><b data-en="Recording:">Aufzeichnung:</b> <span data-en="Planning duration, trajectory length, execution time and deviations stored in monitoring database.">Planungszeit, Pfaddauer, Trajektorienpunkte und Ausführungsstatus in der Monitoring-Datenbank.</span></li>
+              </ol>
+            </article>
+
+            <article class="op-card" style="--hue: var(--violet)">
+              <div class="op-head">
+                <span class="op-k" data-en="Supervisory Control · Task-Level">Supervisory Control · Task-Level</span>
+                <h4><svg class="ico" aria-hidden="true"><use href="#i-spark"/></svg><span data-en="3. Execute task via AI agent">3. Aufgabe per KI-Agent ausführen</span></h4>
+                <p data-en="Supervised autonomous task execution (VLA-M chat, voice instruction)">Überwachte Aufgabenausführung (VLA-M-Chat, Sprachbefehle)</p>
+              </div>
+              <ol class="op-steps">
+                <li><b data-en="Input:">Eingabe:</b> <span data-en="Task instruction in natural language via VLA-M chat or microphone dictate (e.g. &amp;ldquo;grasp blue cylinder&amp;rdquo;).">Aufgabe in Alltagssprache per VLA-M-Chat oder diktiert per Mikrofon (z.&nbsp;B. „Greife blauen Zylinder“).</span></li>
+                <li><b data-en="Check:">Prüfung:</b> <span data-en="Rule and plan validation by &lt;code&gt;vla_bridge&lt;/code&gt; (object existence, reach, gripper state; max 2 replan rounds).">Regel- und Planprüfung durch <code>vla_bridge</code> (Objekt vorhanden, Reichweite, Greiferstatus; max. 2 Replan-Runden).</span></li>
+                <li><b data-en="Confirmation:">Bestätigung:</b> <span data-en="Structured action list (&amp;ldquo;Planned actions&amp;rdquo;) presented in UI; human confirms execution.">Strukturierte Aktionsliste („Planned actions“) in der UI; Bediener bestätigt Ausführung per <i>Execute</i>.</span></li>
+                <li><b data-en="Motion:">Bewegung:</b> <span data-en="Sequential execution of high-level skills (approach, grasp, lift, place) through motion handler.">Sequenzielle Ausführung modularer Skills (Approach, Grasp, Lift, Place) über den Motion Handler.</span></li>
+                <li><b data-en="Abort:">Abbruch:</b> <span data-en="&lt;i&gt;Abort&lt;/i&gt; button in chat, physical slip/recovery detection or immediate E-STOP."><i>Abort</i>-Taste im Chat, automatische Schlupf-/Greifprüfung mit Rettungsplan oder physischer E-STOP.</span></li>
+                <li><b data-en="Recording:">Aufzeichnung:</b> <span data-en="Full dialog transcript, LLM plan, replan events, grasp outcome and durations saved in evaluation log.">Kompletter Dialog, LLM-Plan, Replan-Ereignisse, Greiferfolg und Laufzeiten im Evaluationsprotokoll.</span></li>
+              </ol>
+            </article>
+          </div>
+        </div>
         <div class="tm-eval" style="--hue: var(--orange)">
           <span class="bi-l"><svg class="ico" aria-hidden="true"><use href="#i-chart"/></svg></span>
           <div class="tm-eval-t">
@@ -1240,7 +1317,7 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
         <ul class="fx-grid nui-grid">
           <li class="fx"><span class="bi-l"><svg class="ico" aria-hidden="true"><use href="#i-vr"/></svg></span><b data-en="Virtual reality">Virtual Reality</b><p data-en="Meta Quest&amp;nbsp;3: the TCP follows your hand 1&amp;nbsp;:&amp;nbsp;1, no grip, no motion.">Meta Quest&nbsp;3: der TCP folgt der Hand 1&nbsp;:&nbsp;1, ohne Grip keine Bewegung.</p><a class="more" href="present_control_modes.html#vr"><span data-en="VR with Quest&amp;nbsp;3">VR mit Quest&nbsp;3</span><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg></a></li>
           <li class="fx"><span class="bi-l"><svg class="ico" aria-hidden="true"><use href="#i-eye"/></svg></span><b data-en="Gaze">Blick</b><p data-en="Tobii Pro Glasses&amp;nbsp;3: a fixation of about 1&amp;nbsp;s replaces the click.">Tobii Pro Glasses&nbsp;3: eine Fixation von etwa 1&nbsp;s ersetzt den Klick.</p><a class="more" href="present_control_modes.html#blick"><span data-en="Gaze control">Blicksteuerung</span><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg></a></li>
-          <li class="fx"><span class="bi-l"><svg class="ico" aria-hidden="true"><use href="#i-mic"/></svg></span><b data-en="Voice">Sprache</b><p data-en="Whisper on the GPU: commands in German and English recognised in 50–120&amp;nbsp;ms.">Whisper auf der GPU: Befehle auf Deutsch und Englisch in 50–120&nbsp;ms erkannt.</p><a class="more" href="present_control_modes.html#sprache"><span data-en="Voice commands">Sprachbefehle</span><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg></a></li>
+          <li class="fx"><span class="bi-l"><svg class="ico" aria-hidden="true"><use href="#i-mic"/></svg></span><b data-en="Voice">Sprache</b><p data-en="Whisper on local GPU: 50–120&amp;nbsp;ms inference time after speech end; push-to-talk with a 5&amp;nbsp;s listening window.">Whisper auf lokaler GPU: 50–120&nbsp;ms Inferenzzeit nach Sprechende; Push-to-Talk mit 5&nbsp;s Hörfenster.</p><a class="more" href="present_control_modes.html#sprache"><span data-en="Voice commands">Sprachbefehle</span><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg></a></li>
           <li class="fx soon"><span class="bi-l"><svg class="ico" aria-hidden="true"><use href="#i-touch"/></svg></span><b data-en="Hand tracking">Hand-Tracking</b><p data-en="Quest&amp;nbsp;3 without controllers: a two-finger pinch grasps.">Quest&nbsp;3 ohne Controller: Pinch mit zwei Fingern greift.</p><span class="tag opt" data-en="planned">geplant</span></li>
           <li class="fx soon"><span class="bi-l"><svg class="ico" aria-hidden="true"><use href="#i-user"/></svg></span><b data-en="Gestures">Gesten</b><p data-en="ZED skeleton: pointing picks the target, an open hand pauses.">ZED-Skelett: Zeigen wählt das Ziel, offene Hand pausiert.</p><span class="tag opt" data-en="planned">geplant</span></li>
         </ul>
@@ -1280,7 +1357,7 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
                   </figure>
                   <figure class="slide app-slide" data-url="127.0.0.1:8080/touch · UX | Compact Interface">
                     <div class="sl-media"><img src="img/project_docs/app_touch.jpg" width="720" height="450" alt="UX | Compact Interface: Bedienung am Touch-Display" data-en-alt="UX | Compact Interface: operation on the touch display" loading="lazy"></div>
-                    <figcaption><span class="k-t" data-k>UX | Compact Interface · /touch</span><b data-k data-slide-title data-en="Operate right at the robot.">Bedienen direkt am Roboter.</b><span data-k data-en="Touch display next to the workcell, served by the UX | Nexus Launcher under /touch.">Touch-Display neben dem Arbeitsplatz, ausgeliefert von der UX | Nexus Launcher unter /touch.</span></figcaption>
+                    <figcaption><span class="k-t" data-k>UX | Compact Interface · /touch</span><b data-k data-slide-title data-en="Operate right at the robot.">Bedienen direkt am Roboter.</b><span data-k data-en="Touch display next to the workcell, served by the UX | Nexus Launcher under /touch.">Touch-Display neben dem Arbeitsplatz, ausgeliefert vom UX | Nexus Launcher unter /touch.</span></figcaption>
                   </figure>
                 </div>
                 <div class="deck-arrows media">
@@ -1773,9 +1850,9 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
         <ol class="path" aria-label="Unterlagen nach Zielgruppe" data-en-aria="Documents by audience">
           <li><a href="#vorstellen" style="--hue: var(--violet)"><span class="pn"><svg class="ico"><use href="#i-star"/></svg><span data-en="06 · Visitors">06 · Besucher</span><span class="cnt" data-count="vorstellen"></span></span><b data-en="Present">Vorstellen</b><small data-en="Presentation, control modes, poster">Präsentation, Steuerwege, Poster</small></a></li>
           <li><a href="#verstehen" style="--hue: var(--gold)"><span class="pn"><svg class="ico"><use href="#i-spark"/></svg><span data-en="07 · Newcomers">07 · Einsteiger</span><span class="cnt" data-count="verstehen"></span></span><b data-en="Understand">Verstehen</b><small data-en="Why, what, with what, how">Warum, Was, Womit, Wie</small></a></li>
-          <li><a href="#technik" style="--hue: var(--indigo)"><span class="pn"><svg class="ico"><use href="#i-code"/></svg><span data-en="08 · Developers">08 · Entwickler</span><span class="cnt" data-count="technik"></span></span><b data-en="Develop">Entwickeln</b><small data-en="Architecture, concept, packages">Architektur, Konzept, Pakete</small></a></li>
-          <li><a href="#einrichten" style="--hue: var(--blue)"><span class="pn"><svg class="ico"><use href="#i-tool"/></svg><span data-en="09 · Commissioning">09 · Inbetriebnahme</span><span class="cnt" data-count="einrichten"></span></span><b data-en="Set up">Einrichten</b><small data-en="Setup guide, setup card">Setup-Guide, Setup-Karte</small></a></li>
-          <li><a href="#bedienen" style="--hue: var(--teal)"><span class="pn"><svg class="ico"><use href="#i-user"/></svg><span data-en="10 · Operators">10 · Bediener</span><span class="cnt" data-count="bedienen"></span></span><b data-en="Operate">Bedienen</b><small data-en="Quick start, manual">Schnellstart, Handbuch</small></a></li>
+          <li><a href="#einrichten" style="--hue: var(--blue)"><span class="pn"><svg class="ico"><use href="#i-tool"/></svg><span data-en="08 · Commissioning">08 · Inbetriebnahme</span><span class="cnt" data-count="einrichten"></span></span><b data-en="Set up">Einrichten</b><small data-en="Setup guide, setup card">Setup-Guide, Setup-Karte</small></a></li>
+          <li><a href="#bedienen" style="--hue: var(--teal)"><span class="pn"><svg class="ico"><use href="#i-user"/></svg><span data-en="09 · Operators">09 · Bediener</span><span class="cnt" data-count="bedienen"></span></span><b data-en="Operate">Bedienen</b><small data-en="Quick start, manual">Schnellstart, Handbuch</small></a></li>
+          <li><a href="#technik" style="--hue: var(--indigo)"><span class="pn"><svg class="ico"><use href="#i-code"/></svg><span data-en="10 · Developers">10 · Entwickler</span><span class="cnt" data-count="technik"></span></span><b data-en="Develop">Entwickeln</b><small data-en="Architecture, concept, packages">Architektur, Konzept, Pakete</small></a></li>
         </ol>
       </header>
 
@@ -1817,20 +1894,58 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
       <section class="sec" id="verstehen">
         <header class="sec-head">
           <div><span class="eyebrow" style="--hue: var(--gold)"><span class="n">07</span><span data-en="In brief">Kurzfassung</span></span><h2 data-en="Understand">Verstehen</h2></div>
-          <div class="brief" style="--hue: var(--gold)"><p class="slogan" data-en="Four questions. One project.">Vier Fragen. Ein Projekt.</p><ul class="kpis"><li class="kpi"><strong>8</strong><span data-en="key features">Merkmale</span></li><li class="kpi"><strong>7</strong><span data-en="layers">Schichten</span></li><li class="kpi"><strong>6</strong><span data-en="flows">Abläufe</span></li></ul></div>
+          <div class="brief" style="--hue: var(--gold)"><p class="slogan" data-en="Four core questions. One research project.">Vier Kernfragen. Ein Forschungsprojekt.</p><ul class="kpis"><li class="kpi"><strong>8</strong><span data-en="key features">Merkmale</span></li><li class="kpi"><strong>7</strong><span data-en="layers">Schichten</span></li><li class="kpi"><strong>6</strong><span data-en="flows">Abläufe</span></li></ul></div>
         </header>
         <ol class="path" aria-label="Lesepfad" data-en-aria="Reading path">
           <li><a href="present_presentation.html#forschung" style="--hue: var(--gold)"><span class="pn"><span data-en="Why">Warum</span></span><b data-en="Concept &amp; objectives">Konzept &amp; Ziel&shy;setzung</b><small data-en="Problem, research question, approach, evaluation">Problem, Leitfrage, Lösungs&shy;ansatz, Evaluierung</small></a></li>
           <li><a href="present_presentation.html#merkmale" style="--hue: var(--violet)"><span class="pn"><span data-en="What">Was</span></span><b data-en="Key features">Kern&shy;merkmale</b><small data-en="Human in the loop, eight features, standards">Human-in-the-Loop, acht Merkmale, Normbezüge</small></a></li>
           <li><a href="present_presentation.html#stack" style="--hue: var(--indigo)"><span class="pn"><span data-en="With what">Womit</span></span><b data-en="System stack">System-Stack</b><small data-en="Seven layers, reference hardware">Sieben Schichten, Referenz-Hardware</small></a></li>
-          <li><a href="present_presentation.html#ablaeufe" style="--hue: var(--green)"><span class="pn"><span data-en="How">Wie</span></span><b data-en="Function flows">Funktions&shy;abläufe</b><small data-en="Six flows, safety checks, faults">Sechs Abläufe, Sicherheits&shy;prüfungen, Störfälle</small></a></li>
+          <li><a href="present_presentation.html#ablaeufe" style="--hue: var(--green)"><span class="pn"><span data-en="How">Wie</span></span><b data-en="Function flows">Funktions&shy;abläufe</b><small data-en="Direct control, path planning, AI agent: 3 flows, input to recording">Direkt steuern, Bahn planen, KI-Agent: 3 Abläufe, Eingabe bis Aufzeichnung</small></a></li>
           <li><a href="present_research.html" style="--hue: var(--pink)"><span class="pn"><span data-en="Research">Forschung</span></span><b data-en="Paper &amp; study">Paper &amp; Studie</b><small data-en="Look, Speak, Confirm: approach, hypotheses, study design">Look, Speak, Confirm: Ansatz, Hypothesen, Studien&shy;design</small></a></li>
         </ol>
       </section>
 
+      <section class="sec" id="einrichten">
+        <header class="sec-head">
+          <div><span class="eyebrow" style="--hue: var(--blue)"><span class="n">08</span><span data-en="For commissioning">Für die Inbetriebnahme</span></span><h2 data-en="Set up">Einrichten</h2></div>
+          <div class="brief" style="--hue: var(--blue)"><p class="slogan" data-en="From the box to acceptance.">Vom Karton zur Abnahme.</p><ul class="kpis"><li class="kpi"><strong>8</strong><span data-en="phases">Phasen</span></li><li class="kpi"><strong>41</strong><span data-en="steps">Schritte</span></li><li class="kpi"><strong>1</strong><span data-en="quick setup card">Quick Setup-Karte</span></li></ul></div>
+        </header>
+        <div class="list">
+          <a class="item" href="operate_setup_guide.html" data-nexus-href="operate_setup_guide.html" target="_blank" rel="noopener" style="--hue: var(--indigo)">
+            <span class="thumb"><img src="img/project_docs/setup_guide.jpg" alt="" loading="lazy"></span>
+            <span class="txt"><b><svg class="ico"><use href="#i-tool"/></svg><span data-en="Setup guide">Setup-Guide</span></b><p data-en="From the box to acceptance: 8 phases, 41 steps; pre-installed PC or from Ubuntu 22.04">Vom Karton zur Abnahme: 8 Phasen, 41 Schritte; PC vorinstalliert oder ab Ubuntu 22.04</p></span>
+            <span class="end"><span class="tag">HTML</span><span class="go"><svg class="ico"><use href="#i-go"/></svg></span></span>
+          </a>
+          <a class="item" href="http://127.0.0.1:8080/" data-setup data-local target="_blank" rel="noopener" style="--hue: var(--teal)" title="Öffnet die Setup-Karte (über die UX | Nexus Launcher)" data-en-title="Opens the setup card (via the UX | Nexus Launcher)">
+            <span class="thumb"><img src="img/project_docs/setup.jpg" alt="" loading="lazy"></span>
+            <span class="txt"><b><svg class="ico"><use href="#i-net"/></svg><span data-en="Setup card">Setup-Karte</span></b><p data-en="Networks, addresses and ports at a glance; HTTPS/VR, server/client">Netze, Adressen und Ports auf einen Blick; HTTPS/VR, Server/Client</p></span>
+            <span class="end"><span class="tag">UX | Nexus Launcher</span><span class="go"><svg class="ico"><use href="#i-go"/></svg></span></span>
+          </a>
+        </div>
+      </section>
+
+      <section class="sec" id="bedienen">
+        <header class="sec-head">
+          <div><span class="eyebrow" style="--hue: var(--teal)"><span class="n">09</span><span data-en="For operators">Für Bediener</span></span><h2 data-en="Operate">Bedienen</h2></div>
+          <div class="brief" style="--hue: var(--teal)"><p class="slogan" data-en="First virtual, then real.">Erst virtuell, dann real.</p><ul class="kpis"><li class="kpi"><strong>2</strong><span data-en="operating modes">Betriebsarten</span></li><li class="kpi"><strong>10</strong><span data-en="control modes">Steuerwege</span></li><li class="kpi"><strong>1</strong><span data-en="safety chain">Sicherheits&shy;kette</span></li></ul></div>
+        </header>
+        <div class="list">
+          <a class="item" href="de/running.html" data-href-en="en/running.html" target="_blank" rel="noopener" style="--hue: var(--green)">
+            <span class="thumb"><img src="img/project_docs/rcu_viewport.jpg" alt="" loading="lazy"></span>
+            <span class="txt"><b><svg class="ico"><use href="#i-rocket"/></svg><span data-en="Quick start">Schnellstart</span></b><p data-en="Start the system and choose the mode: robot simulation (Digital Twin) or real robot hardware">System starten, Betriebsart wählen: Roboter-Simulation (Digital Twin) oder echte Roboter-Hardware</p></span>
+            <span class="end"><span class="tag">MD</span><span class="go"><svg class="ico"><use href="#i-go"/></svg></span></span>
+          </a>
+          <a class="item" href="operate_manual.html" data-nexus-href="operate_manual.html" target="_blank" rel="noopener" style="--hue: var(--accent)">
+            <span class="thumb"><img src="img/project_docs/handbuch.jpg" alt="" loading="lazy"></span>
+            <span class="txt"><b><svg class="ico"><use href="#i-book"/></svg><span data-en="Manual xArm Lite 6">Handbuch xArm Lite 6</span></b><p data-en="Look things up during operation: system map, control loop, safety, ports, remote guide, VLA-M, palletizing cell">Nachschlagen im Betrieb: System Map, Regelkreis, Sicherheit, Ports, Remote Guide, VLA-M, Palettierzelle</p></span>
+            <span class="end"><span class="tag">HTML</span><span class="go"><svg class="ico"><use href="#i-go"/></svg></span></span>
+          </a>
+        </div>
+      </section>
+
       <section class="sec" id="technik">
         <header class="sec-head">
-          <div><span class="eyebrow" style="--hue: var(--indigo)"><span class="n">08</span><span data-en="For developers">Für Entwickler</span></span><h2 data-en="Develop">Entwickeln</h2></div>
+          <div><span class="eyebrow" style="--hue: var(--indigo)"><span class="n">10</span><span data-en="For developers">Für Entwickler</span></span><h2 data-en="Develop">Entwickeln</h2></div>
           <div class="brief" style="--hue: var(--indigo)"><p class="slogan" data-en="Open, reproducible, extensible.">Offen, nachbaubar, erweiterbar.</p><ul class="kpis"><li class="kpi"><strong>13</strong><span data-en="documents">Dokumente</span></li><li class="kpi"><strong>4</strong><span data-en="topics">Themen</span></li><li class="kpi"><strong>23</strong><span data-en="ROS&amp;nbsp;2 packages">ROS-2-Pakete</span></li></ul></div>
         </header>
         <div class="sec-stack">
@@ -1966,44 +2081,6 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
         </div>
       </section>
 
-      <section class="sec" id="einrichten">
-        <header class="sec-head">
-          <div><span class="eyebrow" style="--hue: var(--blue)"><span class="n">09</span><span data-en="For commissioning">Für die Inbetriebnahme</span></span><h2 data-en="Set up">Einrichten</h2></div>
-          <div class="brief" style="--hue: var(--blue)"><p class="slogan" data-en="From the box to acceptance.">Vom Karton zur Abnahme.</p><ul class="kpis"><li class="kpi"><strong>8</strong><span data-en="phases">Phasen</span></li><li class="kpi"><strong>41</strong><span data-en="steps">Schritte</span></li><li class="kpi"><strong>1</strong><span data-en="quick setup card">Quick Setup-Karte</span></li></ul></div>
-        </header>
-        <div class="list">
-          <a class="item" href="operate_setup_guide.html" data-nexus-href="operate_setup_guide.html" target="_blank" rel="noopener" style="--hue: var(--indigo)">
-            <span class="thumb"><img src="img/project_docs/setup_guide.jpg" alt="" loading="lazy"></span>
-            <span class="txt"><b><svg class="ico"><use href="#i-tool"/></svg><span data-en="Setup guide">Setup-Guide</span></b><p data-en="From the box to acceptance: 8 phases, 41 steps; pre-installed PC or from Ubuntu 22.04">Vom Karton zur Abnahme: 8 Phasen, 41 Schritte; PC vorinstalliert oder ab Ubuntu 22.04</p></span>
-            <span class="end"><span class="tag">HTML</span><span class="go"><svg class="ico"><use href="#i-go"/></svg></span></span>
-          </a>
-          <a class="item" href="http://127.0.0.1:8080/" data-setup data-local target="_blank" rel="noopener" style="--hue: var(--teal)" title="Öffnet die Setup-Karte (über die UX | Nexus Launcher)" data-en-title="Opens the setup card (via the UX | Nexus Launcher)">
-            <span class="thumb"><img src="img/project_docs/setup.jpg" alt="" loading="lazy"></span>
-            <span class="txt"><b><svg class="ico"><use href="#i-net"/></svg><span data-en="Setup card">Setup-Karte</span></b><p data-en="Networks, addresses and ports at a glance; HTTPS/VR, server/client">Netze, Adressen und Ports auf einen Blick; HTTPS/VR, Server/Client</p></span>
-            <span class="end"><span class="tag">UX | Nexus Launcher</span><span class="go"><svg class="ico"><use href="#i-go"/></svg></span></span>
-          </a>
-        </div>
-      </section>
-
-      <section class="sec" id="bedienen">
-        <header class="sec-head">
-          <div><span class="eyebrow" style="--hue: var(--teal)"><span class="n">10</span><span data-en="For operators">Für Bediener</span></span><h2 data-en="Operate">Bedienen</h2></div>
-          <div class="brief" style="--hue: var(--teal)"><p class="slogan" data-en="First virtual, then real.">Erst virtuell, dann real.</p><ul class="kpis"><li class="kpi"><strong>2</strong><span data-en="operating modes">Betriebsarten</span></li><li class="kpi"><strong>10</strong><span data-en="control modes">Steuerwege</span></li><li class="kpi"><strong>1</strong><span data-en="safety chain">Sicherheits&shy;kette</span></li></ul></div>
-        </header>
-        <div class="list">
-          <a class="item" href="de/running.html" data-href-en="en/running.html" target="_blank" rel="noopener" style="--hue: var(--green)">
-            <span class="thumb"><img src="img/project_docs/rcu_viewport.jpg" alt="" loading="lazy"></span>
-            <span class="txt"><b><svg class="ico"><use href="#i-rocket"/></svg><span data-en="Quick start">Schnellstart</span></b><p data-en="Start the system and choose the mode: robot simulation (Digital Twin) or real robot hardware">System starten, Betriebsart wählen: Roboter-Simulation (Digital Twin) oder echte Roboter-Hardware</p></span>
-            <span class="end"><span class="tag">MD</span><span class="go"><svg class="ico"><use href="#i-go"/></svg></span></span>
-          </a>
-          <a class="item" href="operate_manual.html" data-nexus-href="operate_manual.html" target="_blank" rel="noopener" style="--hue: var(--accent)">
-            <span class="thumb"><img src="img/project_docs/handbuch.jpg" alt="" loading="lazy"></span>
-            <span class="txt"><b><svg class="ico"><use href="#i-book"/></svg><span data-en="Manual xArm Lite 6">Handbuch xArm Lite 6</span></b><p data-en="Look things up during operation: system map, control loop, safety, ports, remote guide, VLA-M, palletizing cell">Nachschlagen im Betrieb: System Map, Regelkreis, Sicherheit, Ports, Remote Guide, VLA-M, Palettierzelle</p></span>
-            <span class="end"><span class="tag">HTML</span><span class="go"><svg class="ico"><use href="#i-go"/></svg></span></span>
-          </a>
-        </div>
-      </section>
-
       <!-- 11 Fragen & Antworten: Text aus docs/brand/faq.md (de im Element, en in data-en), Anker #faq-<thema>-<nr> bleiben stabil;
            ohne JS alle Fragen nach Themen, mit JS filtern die Themen-Chips (Start: „Häufig gefragt“) -->
       <section class="sec" id="faq" aria-labelledby="faq-h">
@@ -2069,7 +2146,7 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
             <details class="faq-item" id="faq-idee-07">
               <summary><span class="faq-q"><span class="k" data-en="Idea and goal">Idee und Ziel</span><span data-en="Can the software be adapted to my own use case?">Kann die Software an meinen eigenen Anwendungsfall angepasst werden?</span></span><svg class="ico" aria-hidden="true"><use href="#i-next"/></svg></summary>
               <div class="faq-body noimg">
-                <div class="faq-txt"><p data-en="Yes. Beyond the scenarios already shipped, a custom scene for your use case takes shape in the Digital Twin, developed in close exchange with you.">Ja. Über die mitgelieferten Szenarien hinaus entsteht eine maßgeschneiderte Szene für Ihren Anwendungsfall im Digital Twin – entwickelt in enger Abstimmung mit Ihnen.</p><ul><li data-en="&lt;b&gt;Prepared to your needs:&lt;/b&gt; based on your requirements, we prepare the scene together with you."><b>Bedürfnisgerecht vorbereitet:</b> nach Ihren Anforderungen bereiten wir die Szene gemeinsam mit Ihnen vor.</li><li data-en="&lt;b&gt;Test &amp;amp; learn:&lt;/b&gt; you test and learn risk-free in the Digital Twin."><b>Testen &amp; lernen:</b> Sie testen und lernen gefahrlos im Digital Twin.</li><li data-en="&lt;b&gt;Evaluate &amp;amp; optimize:&lt;/b&gt; evaluation leads to need-based optimization."><b>Evaluieren &amp; optimieren:</b> aus der Evaluierung entsteht die bedürfnisgerechte Optimierung.</li><li data-en="&lt;b&gt;Transfer to hardware:&lt;/b&gt; only then does it move to the real robot – optimized for your requirements, with monitoring, evaluation, analysis and ongoing optimization."><b>Übertragung auf Hardware:</b> erst danach geht es auf den echten Roboter – optimal auf Ihre Anforderungen angepasst, mit Monitoring, Evaluation, Analyse und laufender Optimierung.</li></ul></div>
+                <div class="faq-txt"><p data-en="Yes. Beyond the scenarios already shipped, a custom scene for your use case takes shape in the Digital Twin, developed in close exchange with you.">Ja. Über die mitgelieferten Szenarien hinaus entsteht eine maßgeschneiderte Szene für Ihren Anwendungsfall im Digital Twin – entwickelt in enger Abstimmung mit Ihnen.</p><ul><li data-en="&lt;b&gt;Prepared to your needs:&lt;/b&gt; based on your requirements, we prepare the scene together with you."><b>Bedürfnisgerecht vorbereitet:</b> nach Ihren Anforderungen bereiten wir die Szene gemeinsam mit Ihnen vor.</li><li data-en="&lt;b&gt;Test &amp;amp; learn:&lt;/b&gt; you test and learn risk-free in the Digital Twin."><b>Testen &amp; lernen:</b> Sie testen und lernen gefahrlos im Digital Twin.</li><li data-en="&lt;b&gt;Evaluate &amp;amp; optimize:&lt;/b&gt; evaluation leads to need-based optimization."><b>Evaluieren &amp; optimieren:</b> aus der Evaluierung entsteht die bedürfnisgerechte Optimierung.</li><li data-en="&lt;b&gt;Transfer to hardware:&lt;/b&gt; only then does it move to the real robot – optimized for your requirements, with monitoring, evaluation, analysis and ongoing optimization."><b>Übertragung auf Hardware:</b> erst danach geht es auf den echten Roboter – optimal auf Ihre Anforderungen angepasst, mit Monitoring, Evaluierung, Analyse und laufender Optimierung.</li></ul></div>
               </div>
             </details>
           </div>
@@ -2111,7 +2188,7 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
             <details class="faq-item" id="faq-steuern-06">
               <summary><span class="faq-q"><span class="k" data-en="Operation and control modes">Bedienung und Steuerwege</span><span data-en="How do voice commands work?">Wie funktionieren Sprachbefehle?</span></span><svg class="ico" aria-hidden="true"><use href="#i-next"/></svg></summary>
               <div class="faq-body">
-                <div class="faq-txt"><p data-en="Whisper turns speech into text locally, in German and English. Recognised commands steer the arm; in the VLA-M chat the microphone dictates tasks to the AI agent.">Whisper wandelt Sprache lokal in Text, auf Deutsch und Englisch. Erkannte Befehle steuern den Arm; im VLA-M-Chat diktiert das Mikrofon Aufträge an den KI-Agenten.</p></div>
+                <div class="faq-txt"><p data-en="Whisper converts speech locally into text on the GPU, in German and English. Recognised commands steer the arm; in the VLA-M chat the microphone dictates tasks to the AI agent.">Whisper wandelt Sprache lokal auf der GPU in Text, auf Deutsch und Englisch. Erkannte Befehle steuern den Arm; im VLA-M-Chat diktiert das Mikrofon Aufträge an den KI-Agenten.</p><ul><li data-en="&lt;b&gt;Inference latency (50–120&amp;nbsp;ms):&lt;/b&gt; Pure model execution of faster-whisper (base) on NVIDIA RTX from speech end to text tokens."><b>Inferenzlatenz (50–120&nbsp;ms):</b> Misst die reine Modellausführung von faster-whisper (base) auf NVIDIA RTX ab Sprechende bis zum Text.</li><li data-en="&lt;b&gt;Total operating latency:&lt;/b&gt; Push-to-talk opens a 5&amp;nbsp;s listening window; end-to-end response includes VAD cutoff, intent matching and collision check."><b>Gesamte Bedienlatenz:</b> Push-to-Talk öffnet ein 5&nbsp;s Hörfenster; die Ende-zu-Ende-Reaktion umfasst VAD-Schnitt, Intent-Matching und Kollisionsprüfung bis zum Fahrbeginn.</li></ul></div>
                 <figure class="faq-fig"><img src="img/rcu_speech.png" width="484" height="330" alt="Speech Control im Bereich Assistant (VLA): Mikrofon-Knopf und zuletzt erkannter Befehl" data-en-alt="Speech control in the Assistant (VLA) area: microphone button and last recognised command" loading="lazy" decoding="async"></figure>
               </div>
             </details>
@@ -2125,7 +2202,7 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
             <details class="faq-item" id="faq-steuern-08">
               <summary><span class="faq-q"><span class="k" data-en="Operation and control modes">Bedienung und Steuerwege</span><span data-en="Can I control the robot from another device?">Kann ich den Roboter von einem anderen Gerät steuern?</span></span><svg class="ico" aria-hidden="true"><use href="#i-next"/></svg></summary>
               <div class="faq-body noimg">
-                <div class="faq-txt"><p data-en="Yes, via remote control from a laptop or tablet on the home network. Not over the internet: the firewall only lets in the home network and lab networks.">Ja, per Remote Control vom Laptop oder Tablet im Heimnetz. Übers Internet geht das nicht: Die Firewall lässt nur Heimnetz und Labornetze herein.</p><ul><li data-en="&lt;b&gt;Approval:&lt;/b&gt; on the robot PC via &lt;i&gt;Allow&lt;/i&gt; / &lt;i&gt;Deny&lt;/i&gt;; open requests expire after 60&amp;nbsp;s."><b>Freigabe:</b> am Roboter-PC per <i>Allow</i> / <i>Deny</i>; offene Anfragen verfallen nach 60&nbsp;s.</li><li data-en="&lt;b&gt;Scope:&lt;/b&gt; remote devices may jog, use gamepad and VR, and stop."><b>Umfang:</b> entfernte Geräte dürfen joggen, Gamepad und VR nutzen und stoppen.</li><li data-en="&lt;b&gt;Limit:&lt;/b&gt; at most 50&amp;nbsp;% speed in Robot | Hardware."><b>Grenze:</b> im Robot | Hardware höchstens 50&nbsp;% Tempo.</li></ul></div>
+                <div class="faq-txt"><p data-en="Yes, via remote control from a laptop or tablet on the home network. Not over the internet: the firewall only lets in the home network and lab networks.">Ja, per Remote Control vom Laptop oder Tablet im Heimnetz. Übers Internet geht das nicht: Die Firewall lässt nur Heimnetz und Labornetze herein.</p><ul><li data-en="&lt;b&gt;Approval:&lt;/b&gt; on the robot PC via &lt;i&gt;Allow&lt;/i&gt; / &lt;i&gt;Deny&lt;/i&gt;; open requests expire after 60&amp;nbsp;s."><b>Freigabe:</b> am Roboter-PC per <i>Allow</i> / <i>Deny</i>; offene Anfragen verfallen nach 60&nbsp;s.</li><li data-en="&lt;b&gt;Scope:&lt;/b&gt; remote devices may jog, use gamepad and VR, and stop."><b>Umfang:</b> entfernte Geräte dürfen per Jogging fahren, Gamepad und VR nutzen und stoppen.</li><li data-en="&lt;b&gt;Limit:&lt;/b&gt; at most 50&amp;nbsp;% speed in Robot | Hardware."><b>Grenze:</b> im Robot | Hardware höchstens 50&nbsp;% Tempo.</li></ul></div>
               </div>
             </details>
             <details class="faq-item" id="faq-steuern-09">
@@ -2299,7 +2376,7 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
             <details class="faq-item" id="faq-forschung-01">
               <summary><span class="faq-q"><span class="k" data-en="Research and evaluation">Forschung und Evaluierung</span><span data-en="Which question does the project investigate?">Welche Frage untersucht das Projekt?</span></span><svg class="ico" aria-hidden="true"><use href="#i-next"/></svg></summary>
               <div class="faq-body noimg">
-                <div class="faq-txt"><p data-en="How can processes and workplaces be designed so that they measurably meet the human-centred requirements of Industry&amp;nbsp;5.0? The focus is on how multimodal input, assistive autonomy and a Digital Twin lower barriers without restricting human control.">Wie lassen sich Prozesse und Arbeitsplätze so gestalten, dass sie die menschzentrierten Anforderungen der Industrie&nbsp;5.0 messbar erfüllen? Im Fokus steht, wie multimodale Eingaben, assistive Autonomie und ein Digital Twin Barrieren senken, ohne die Kontrolle des Menschen einzuschränken.</p></div>
+                <div class="faq-txt"><p data-en="Industry&amp;nbsp;5.0 defines a broad framework of human-centricity, sustainability and resilience. The platform&amp;rsquo;s specific research question focuses on the human-centred core: how multimodal inputs and assistive autonomy affect usability, workload and task performance.">Industrie&nbsp;5.0 formuliert ein breites Leitbild aus Menschzentrierung, Nachhaltigkeit und Resilienz. Die konkrete Forschungsfrage der Plattform fokussiert gezielt den menschenzentrierten Kern: Wie wirken sich multimodale Eingaben und assistive Autonomie auf Bedienbarkeit, Beanspruchung und Aufgabenleistung aus?</p><ul><li data-en="&lt;b&gt;Measured core:&lt;/b&gt; Usability (SUS), perceived mental workload (NASA-TLX) and task performance (time, error rate, success rate)."><b>Messbarer Kern:</b> Bedienbarkeit (SUS), mentale Beanspruchung (NASA-TLX) und Aufgabenleistung (Zeit, Fehlerrate, Erfolgsquote).</li><li data-en="&lt;b&gt;Scope distinction:&lt;/b&gt; For ecological sustainability and organizational resilience, no separate metrics are captured."><b>Abgrenzung:</b> Für ökologische Nachhaltigkeit und organisationale Resilienz werden keine separaten Messgrößen erhoben.</li></ul></div>
               </div>
             </details>
             <details class="faq-item" id="faq-forschung-02">
@@ -2319,7 +2396,7 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
             <details class="faq-item" id="faq-forschung-04">
               <summary><span class="faq-q"><span class="k" data-en="Research and evaluation">Forschung und Evaluierung</span><span data-en="How are participants and data protected?">Wie werden Testpersonen und Daten geschützt?</span></span><svg class="ico" aria-hidden="true"><use href="#i-next"/></svg></summary>
               <div class="faq-body noimg">
-                <div class="faq-txt"><p data-en="All data stays local on the robot PC, in a database of the UX | Monitoring.">Alle Daten bleiben lokal auf dem Roboter-PC, in einer Datenbank des UX | Monitoring.</p><ul><li data-en="&lt;b&gt;Participants:&lt;/b&gt; only as a pseudonym, personal details optional."><b>Testpersonen:</b> nur als Pseudonym, Angaben zur Person freiwillig.</li><li data-en="&lt;b&gt;UI clicks:&lt;/b&gt; only label and area, never input values."><b>UI-Klicks:</b> nur Bezeichnung und Bereich, nie Eingabewerte.</li></ul></div>
+                <div class="faq-txt"><p data-en="All evaluation and telemetry data remains strictly local on the robot PC in the UX | Monitoring database. A necessary exception applies to optional cloud AI: using Claude or Gemini sends instruction text and scene descriptions to the provider.">Alle Evaluierungs- und Telemetriedaten bleiben strikt lokal auf dem Roboter-PC in der Datenbank des UX | Monitoring. Eine notwendige Ausnahme gilt bei optionaler Cloud-KI: Bei Nutzung von Claude oder Gemini gehen Anweisungstext und Szenenbeschreibung an den Anbieter.</p><ul><li data-en="&lt;b&gt;Local evaluation:&lt;/b&gt; Study metrics, questionnaires (SUS/TLX), clicks and rosbag2 recordings never leave the robot PC."><b>Lokale Evaluierung:</b> Messgrößen, Fragebögen (SUS/TLX), UI-Klicks und rosbag2-Aufzeichnungen verlassen den Roboter-PC nie.</li><li data-en="&lt;b&gt;Participants:&lt;/b&gt; Recorded only under pseudonyms; personal details are optional."><b>Testpersonen:</b> nur als Pseudonym, Angaben zur Person freiwillig.</li><li data-en="&lt;b&gt;Local AI option:&lt;/b&gt; With local Ollama models (default), AI planning also runs 100&amp;nbsp;% offline and strictly local."><b>Lokale KI-Option:</b> Mit lokalem Ollama (Standard) läuft auch die KI-Planung zu 100&nbsp;% offline und lokal.</li></ul></div>
               </div>
             </details>
             <details class="faq-item" id="faq-forschung-05">
@@ -2346,19 +2423,19 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
             <details class="faq-item" id="faq-prinzip-02">
               <summary><span class="faq-q"><span class="k" data-en="Background: why this way?">Hintergrund: Warum so?</span><span data-en="What does this have to do with Industry&amp;nbsp;5.0?">Was hat das mit Industrie&nbsp;5.0 zu tun?</span></span><svg class="ico" aria-hidden="true"><use href="#i-next"/></svg></summary>
               <div class="faq-body noimg">
-                <div class="faq-txt"><p data-en="Industry&amp;nbsp;5.0 puts people, sustainability and resilience at the centre of production. UX Robot investigates how workplaces with robots can be designed to meet these requirements measurably.">Industrie&nbsp;5.0 stellt den Menschen, Nachhaltigkeit und Resilienz in den Mittelpunkt der Produktion. UX Robot untersucht, wie sich Arbeitsplätze mit Robotern so gestalten lassen, dass sie diese Anforderungen messbar erfüllen.</p></div>
+                <div class="faq-txt"><p data-en="Industry&amp;nbsp;5.0 places people, sustainability and resilience at the centre of production. UX Robot operationalizes the human-centric pillar: evaluating whether flexible interaction modes measurably reduce physical and cognitive barriers.">Industrie&nbsp;5.0 stellt den Menschen, Nachhaltigkeit und Resilienz in den Mittelpunkt der Produktion. UX Robot operationalisiert den menschenzentrierten Pfeiler: Untersucht wird, ob flexible Interaktionsformen körperliche und kognitive Barrieren messbar abbauen.</p><ul><li data-en="&lt;b&gt;Human-centric focus:&lt;/b&gt; Adapting technology to diverse human capabilities, not vice versa."><b>Menschzentrierter Fokus:</b> Anpassung der Technik an individuelle Fähigkeiten statt umgekehrt.</li><li data-en="&lt;b&gt;Human-in-the-Loop:&lt;/b&gt; Retaining human decision authority and situational oversight at every step."><b>Human-in-the-Loop:</b> Volle menschliche Entscheidungshoheit und Situationskontrolle in jeder Phase.</li></ul></div>
               </div>
             </details>
             <details class="faq-item" id="faq-prinzip-03">
               <summary><span class="faq-q"><span class="k" data-en="Background: why this way?">Hintergrund: Warum so?</span><span data-en="What does this have to do with participation and inclusion?">Was hat das mit Teilhabe und Inklusion zu tun?</span></span><svg class="ico" aria-hidden="true"><use href="#i-next"/></svg></summary>
               <div class="faq-body noimg">
-                <div class="faq-txt"><p data-en="Anyone who cannot use a gamepad steers by gaze or voice. Ten control modes aim to let people with different physical or cognitive abilities use the same robot; the UX | Monitoring measures whether this succeeds.">Wer kein Gamepad bedienen kann, steuert per Blick oder Sprache. Zehn Steuerwege sollen ermöglichen, dass Menschen mit unterschiedlichen physischen oder kognitiven Voraussetzungen denselben Roboter nutzen; das UX | Monitoring misst, ob das gelingt.</p></div>
+                <div class="faq-txt"><p data-en="Real participation is the project’s long-term goal, to be confirmed in user studies. The platform investigates whether different input methods such as gaze, voice or touch jogging measurably lower operating barriers.">Echte Teilhabe ist das langfristige Ziel des Projekts, das in Nutzerstudien überprüft wird. Die Plattform untersucht, ob unterschiedliche Eingabemethoden wie Blick, Sprache oder Touch-Jogging spezifische Bedienhürden messbar senken.</p><ul><li data-en="&lt;b&gt;Hypothesis:&lt;/b&gt; Multimodal interaction widens the group of people who can independently operate robots."><b>Hypothese:</b> Multimodale Eingabewege erweitern den Kreis der Personen, die Roboteraufgaben eigenständig bewältigen können.</li><li data-en="&lt;b&gt;Evaluation:&lt;/b&gt; UX | Monitoring records usability and workload data in direct comparison."><b>Evaluation:</b> Das UX | Monitoring erfasst Usability und Arbeitsbeanspruchung im direkten Vergleich.</li></ul></div>
               </div>
             </details>
             <details class="faq-item" id="faq-prinzip-04">
               <summary><span class="faq-q"><span class="k" data-en="Background: why this way?">Hintergrund: Warum so?</span><span data-en="Who is in control: me or the system?">Wer steuert: ich oder das System?</span></span><svg class="ico" aria-hidden="true"><use href="#i-next"/></svg></summary>
               <div class="faq-body noimg">
-                <div class="faq-txt"><p data-en="Both, on three levels (shared control).">Beide, auf drei Ebenen (Shared Control).</p><ul><li data-en="&lt;b&gt;Goal:&lt;/b&gt; the human sets it by gaze, voice or chat with the AI agent."><b>Ziel:</b> Der Mensch gibt es per Blick, Sprache oder Chat mit dem KI-Agenten vor.</li><li data-en="&lt;b&gt;Fine correction:&lt;/b&gt; the human adjusts via gamepad, VR or jogging."><b>Feinkorrektur:</b> Der Mensch fährt per Gamepad, VR oder Jogging nach.</li><li data-en="&lt;b&gt;Safeguarding:&lt;/b&gt; the system plans collision-free paths and checks every execution."><b>Absicherung:</b> Das System plant kollisionsfreie Bahnen und prüft jede Ausführung.</li></ul></div>
+                <div class="faq-txt"><p data-en="That depends on the operational workflow. Simultaneous shared control takes place during direct teleoperation, whereas path planning and AI agents rely on sequential traded or supervisory control.">Das hängt vom gewählten Betriebsablauf ab. Echtes simultanes Shared Control findet bei der direkten Teleoperation statt, während Bahnplanung und KI-Agent auf sequenzieller Autonomie (Trading bzw. Supervisory Control) beruhen.</p><ul><li data-en="&lt;b&gt;Simultaneous Shared Control (teleoperation):&lt;/b&gt; Human and system influence motion simultaneously: the operator steers velocity, while collision pre-check clamps speeds near tables and obstacles."><b>Simultanes Shared Control (Teleoperation):</b> Mensch und System wirken gleichzeitig auf die Bewegung ein: Der Mensch steuert kontinuierlich die Richtung, während die Kollisionsvorprüfung Geschwindigkeiten an Hindernissen und Tischgrenzen zeitgleich abbremst.</li><li data-en="&lt;b&gt;Assisted path planning (Trading Control):&lt;/b&gt; Human sets target pose, MoveIt plans collision-free trajectories, and execution starts only after human visual confirmation in the Digital Twin."><b>Assistierte Bahnplanung (Trading Control):</b> Der Mensch gibt das Ziel vor, MoveIt berechnet kollisionsfreie Trajektorien, und die Ausführung startet erst nach visueller Bestätigung im Digital Twin.</li><li data-en="&lt;b&gt;Supervised task execution (Supervisory Control):&lt;/b&gt; The AI agent structures the high-level plan; the human authorizes execution and retains abort authority at all times."><b>Überwachte Aufgabenausführung (Supervisory Control):</b> Der KI-Agent plant strukturierte Handgriffe; der Mensch gibt die Ausführung frei und behält jederzeit die Abbruchhoheit.</li></ul></div>
               </div>
             </details>
             <details class="faq-item" id="faq-prinzip-05">
@@ -2472,7 +2549,7 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
   </section>
 </main>
 
-<footer><div class="wrap"><a class="qr-foot" href="https://lu4k87.github.io/" target="_blank" rel="noopener"><span class="qr-code"><svg role="img" aria-label="QR-Code: Projekt-Doku öffnen" data-en-aria="QR code: open the project docs"><use href="#qr-docs"/></svg></span><span class="qr-txt"><b data-en="Open page">Seite öffnen</b><small>lu4k87.github.io</small></span></a><span data-en="Last updated 08.10.2026">Stand 08.10.2026</span><span>dev_ws · docs/project_docs.html</span></div></footer>
+<footer><div class="wrap"><a class="qr-foot" href="https://lu4k87.github.io/" target="_blank" rel="noopener"><span class="qr-code"><svg role="img" aria-label="QR-Code: Projekt-Doku öffnen" data-en-aria="QR code: open the project docs"><use href="#qr-docs"/></svg></span><span class="qr-txt"><b data-en="Open page">Seite öffnen</b><small>lu4k87.github.io</small></span></a><span data-en="Last updated 10.10.2026">Stand 10.10.2026</span><span>dev_ws · docs/project_docs.html</span></div></footer>
 
 <script src="js/scroll_flow.js"></script>
 <script src="js/landing.js"></script>
