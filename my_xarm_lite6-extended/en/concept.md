@@ -46,7 +46,7 @@ Beyond being a demonstrator, the system produces transferable knowledge about in
 *System architecture and data flow · source: `tools/make_diagrams.py`*
 
 ### 2.1 The System Concept: An Integrated Development, Evaluation and Validation Platform
-A modular software architecture for multimodal teleoperation and AI-assisted robotics. As an integration layer (middleware level) it unifies heterogeneous subsystems in one runtime environment. With a distributed server/client setup and a real-time **Digital Twin** (WebGL in the UX | Control Interface (formerly Robot Control UI), optionally NVIDIA Isaac Sim) it serves as development environment and as reproducible test environment – a closed loop of development and empirical validation:
+A modular software architecture for multimodal teleoperation and AI-assisted robotics. As an integration layer (middleware level) it unifies heterogeneous subsystems in one runtime environment. With a distributed server/client setup and a **Digital Twin** for live visualization (WebGL in the UX | Control Interface (formerly Robot Control UI), optionally NVIDIA Isaac Sim) it serves as development environment and as reproducible test environment – a closed loop of development and empirical validation:
 
 - **Sensors & perception:** depth cameras (YOLO object detection, marker tracking) and tactile or physiological sensors for state estimation.
 - **Multimodal control:** gaze control for target selection, voice commands (OpenAI Whisper) and classic controllers (gamepads, 3D mice) in parallel.

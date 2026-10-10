@@ -46,7 +46,7 @@ Ein voll funktionsfähiger, reproduzierbarer und erschwinglicher Proof-of-Concep
 *Systemarchitektur und Datenfluss · Quelle: `tools/make_diagrams.py`*
 
 ### 2.1 Die Systemidee: Eine integrierte Entwicklungs-, Evaluierungs- und Validierungsplattform
-Eine modulare Softwarearchitektur für multimodale Teleoperation und KI-gestützte Assistenzrobotik. Als Integrationsschicht (Middleware-Ebene) führt sie heterogene Teilsysteme in einer Laufzeitumgebung zusammen. Mit verteiltem Server/Client-Aufbau und einem echtzeitfähigen **Digital Twin** (WebGL in der UX | Control Interface (früher „Robot Control UI“), optional NVIDIA Isaac Sim) dient sie als Entwicklungs- und als reproduzierbare Testumgebung – ein geschlossener Kreislauf aus Entwicklung und empirischer Validierung:
+Eine modulare Softwarearchitektur für multimodale Teleoperation und KI-gestützte Assistenzrobotik. Als Integrationsschicht (Middleware-Ebene) führt sie heterogene Teilsysteme in einer Laufzeitumgebung zusammen. Mit verteiltem Server/Client-Aufbau und einem **Digital Twin** zur Live-Visualisierung (WebGL in der UX | Control Interface (früher „Robot Control UI“), optional NVIDIA Isaac Sim) dient sie als Entwicklungs- und als reproduzierbare Testumgebung – ein geschlossener Kreislauf aus Entwicklung und empirischer Validierung:
 
 - **Sensorik & Perzeption:** Tiefenkameras (YOLO-Objekterkennung, Marker-Tracking) sowie taktile oder physiologische Sensoren zur Zustandserfassung.
 - **Multimodale Steuerung:** Blicksteuerung zur Zielauswahl, Sprachbefehle (OpenAI Whisper) und klassische Controller (Gamepads, 3D-Mäuse) parallel.
