@@ -742,6 +742,30 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
   .op-grid { grid-template-columns: minmax(0, 1fr); }
 }
 
+/* ═════ Exploded Architecture Stack (Feat:C): 6 Schichten von Hardware bis Web ═════ */
+.tm-stack { margin-top: 48px; display: grid; gap: 20px; }
+.tm-stack-h { display: grid; gap: 8px; }
+.tm-stack-h h3 { font-size: 22px; font-weight: 800; letter-spacing: -.02em; line-height: 1.2; color: var(--fg); }
+.tm-stack-h p { font-size: 15px; line-height: 1.5; color: var(--fg-2); max-width: 68ch; }
+.stack-layers { display: grid; gap: 8px; }
+.stack-layer { display: grid; grid-template-columns: 76px 250px minmax(0, 1fr) auto; gap: 12px 18px; align-items: center; padding: 14px 18px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); box-shadow: var(--shadow); transition: transform var(--t-fast), border-color var(--t-fast), background-color var(--t-fast); }
+.stack-layer:hover { transform: translateX(6px); border-color: color-mix(in srgb, var(--hue) 50%, var(--line)); background: color-mix(in srgb, var(--hue) 6%, var(--surface)); }
+.stack-layer.layer-safe { border-color: color-mix(in srgb, var(--green) 35%, var(--line)); }
+.stack-layer.layer-safe .layer-idx { color: var(--green); }
+.stack-layer.layer-safe:hover { border-color: var(--green); background: color-mix(in srgb, var(--green) 6%, var(--surface)); }
+.layer-idx { font: 800 12px/1 var(--mono); color: var(--hue); letter-spacing: .08em; }
+.layer-title { font-size: 15px; font-weight: 800; color: var(--fg); display: flex; align-items: center; gap: 8px; }
+.layer-title .ico { width: 18px; height: 18px; color: var(--hue); flex-shrink: 0; }
+.layer-desc { font-size: 13.5px; color: var(--fg-2); line-height: 1.4; }
+.layer-modes { display: flex; flex-wrap: wrap; gap: 6px; font: 600 11px/1.2 var(--mono); color: var(--fg-2); }
+.layer-modes span { padding: 3px 8px; border-radius: var(--radius-sm); background: var(--surface-2); border: 1px solid var(--line); white-space: nowrap; }
+.layer-modes span.active { color: var(--fg); border-color: color-mix(in srgb, var(--hue) 40%, var(--line)); background: color-mix(in srgb, var(--hue) 10%, var(--surface-2)); }
+@media (max-width: 960px) {
+  .stack-layer { grid-template-columns: auto 1fr; gap: 8px 14px; }
+  .layer-desc { grid-column: 1 / -1; }
+  .layer-modes { grid-column: 1 / -1; }
+}
+
 /* ═════ 11 Fragen & Antworten: Themen-Chips (JS) über einer Aufklappliste (<details>, geht ohne JS); Ansicht in #faq[data-view] ═════ */
 .faq-bar { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 24px; }
 .faq-bar[hidden], .faq-more[hidden], .faq-grp[hidden], .faq-item[hidden] { display: none; }
@@ -1234,6 +1258,52 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
                 </ul>
                 <a class="more" href="present_control_modes.html#rcu"><span>UX | Control Interface</span><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg></a>
               </article>
+            </div>
+          </div>
+        </div>
+        <!-- Exploded Architecture Stack: 6 Schichten von Hardware bis Web (Feat:C) -->
+        <div class="tm-stack" style="--hue: var(--indigo)">
+          <header class="tm-stack-h">
+            <span class="eyebrow" style="--hue: var(--indigo)"><span class="n" data-en="Stack">Architektur</span><span data-en="Exploded architecture stack">Exploded Architecture Stack</span></span>
+            <h3 data-en="Six decoupled layers: from hardware to web">Sechs entkoppelte Ebenen: von Hardware bis Web</h3>
+            <p data-en="Every control mode maps to modular, replaceable layers connected via ROS 2 Humble. Software and hardware remain fully decoupled.">Jeder Steuerweg greift auf modulare, austauschbare Schichten zu, die über ROS 2 Humble verbunden sind. Software und Hardware bleiben vollständig entkoppelt.</p>
+          </header>
+          <div class="stack-layers">
+            <div class="stack-layer">
+              <span class="layer-idx">L-06</span>
+              <div class="layer-title"><svg class="ico" aria-hidden="true"><use href="#i-globe"/></svg><span data-en="Web frontends &amp; clients">Web-Frontends &amp; Clients</span></div>
+              <p class="layer-desc" data-en="UX | Control Interface, Nexus Launcher, Compact Interface &amp; WebXR Quest&amp;nbsp;3. Complete browser control on ports 8080–8083 without native installs.">UX | Control Interface, Nexus Launcher, Compact Interface &amp; WebXR Quest&nbsp;3. Vollständige Browserbedienung auf Ports 8080–8083 ohne native Installation.</p>
+              <div class="layer-modes"><span class="active">VR Quest&nbsp;3</span><span class="active">Web-Jogging</span><span>UX | Compact Interface</span><span>Gizmo</span></div>
+            </div>
+            <div class="stack-layer">
+              <span class="layer-idx">L-05</span>
+              <div class="layer-title"><svg class="ico" aria-hidden="true"><use href="#i-spark"/></svg><span data-en="VLA &amp; assistive AI">VLA &amp; Assistive KI</span></div>
+              <p class="layer-desc" data-en="Multimodal voice and gaze agents, semantic task decomposition via Ollama Qwen&amp;nbsp;27B and Whisper STT with human-in-the-loop confirmation.">Multimodale Sprach- und Blickagenten, semantische Task-Dekomposition via Ollama Qwen&nbsp;27B und Whisper STT mit Human-in-the-Loop Bestätigung.</p>
+              <div class="layer-modes"><span class="active">VLA-M-Chat</span><span class="active">Sprache (Whisper)</span><span class="active">Blick (Tobii)</span></div>
+            </div>
+            <div class="stack-layer">
+              <span class="layer-idx">L-04</span>
+              <div class="layer-title"><svg class="ico" aria-hidden="true"><use href="#i-route"/></svg><span data-en="MoveIt 2 &amp; Servo">MoveIt 2 &amp; Servo</span></div>
+              <p class="layer-desc" data-en="Real-time servo streaming (250&amp;nbsp;Hz) and collision-free OMPL trajectory planning with Cartesian speed tracking and joint limits.">Echtzeit-Servoing (250&nbsp;Hz) und kollisionsfreie OMPL-Trajektorienplanung mit kartesischer Geschwindigkeitsregelung und Gelenkgrenzen.</p>
+              <div class="layer-modes"><span class="active">Gamepad lokal</span><span class="active">Gamepad remote</span><span>SpaceMouse</span><span>Presets</span></div>
+            </div>
+            <div class="stack-layer layer-safe">
+              <span class="layer-idx">L-03</span>
+              <div class="layer-title"><svg class="ico" aria-hidden="true"><use href="#i-shield"/></svg><span data-en="Safety chain">Sicherheitskette</span></div>
+              <p class="layer-desc" data-en="Collision pre-check (0.25&amp;nbsp;s look-ahead), table protection, control lock ownership, watchdog heartbeat (100&amp;nbsp;ms) and deterministic E-STOP.">Kollisionsvorprüfung (0,25&nbsp;s Vorausschau), Bodenschutz, Control-Lock-Besitz, Watchdog-Heartbeat (100&nbsp;ms) und deterministischer E-STOP.</p>
+              <div class="layer-modes"><span class="active">0,25&nbsp;s Vorprüfung</span><span class="active">Control-Lock</span><span class="active">E-STOP</span><span>Bodenschutz</span></div>
+            </div>
+            <div class="stack-layer">
+              <span class="layer-idx">L-02</span>
+              <div class="layer-title"><svg class="ico" aria-hidden="true"><use href="#i-cube"/></svg><span data-en="Digital Twin &amp; physics">Digital Twin &amp; Physik</span></div>
+              <p class="layer-desc" data-en="Rapier Physics 3D WASM sandbox in the browser, OctoMap 3D occupancy grid and virtual objects for contact simulation before real execution.">Rapier Physics 3D WASM-Sandbox im Browser, OctoMap 3D-Belegungsraster und virtuelle Objekte für Kontaktsimulation vor der Realfahrt.</p>
+              <div class="layer-modes"><span class="active">Robot | Digital Twin</span><span>Rapier 3D</span><span>OctoMap</span><span>Virtuelle Objekte</span></div>
+            </div>
+            <div class="stack-layer">
+              <span class="layer-idx">L-01</span>
+              <div class="layer-title"><svg class="ico" aria-hidden="true"><use href="#i-arm"/></svg><span data-en="Robot | Hardware">Robot | Hardware</span></div>
+              <p class="layer-desc" data-en="xArm Lite&amp;nbsp;6 (6-DoF robotic arm), ZED Mini stereo camera, parallel gripper and hardware sensors communicating via ROS&amp;nbsp;2 Humble.">xArm Lite&nbsp;6 (6-DoF Knickarm), ZED Mini Stereokamera, Parallelgreifer und Hardwaresensoren über feste ROS-2-Schnittstellen.</p>
+              <div class="layer-modes"><span class="active">Robot | Hardware</span><span>xArm Lite 6</span><span>ZED Mini</span><span>Tobii Glasses</span></div>
             </div>
           </div>
         </div>
@@ -2654,7 +2724,7 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
     heroExit: '.hero-inner',
     heads: '.land-head, .ch-head, .sec-head, .ct-copy',
     depth: ['.app-frame'],
-    groups: ['.strip ul', '.fx-grid', '.at-areas', '.ar-stack ol', '.path', '.list', '.dg-grid'],
+    groups: ['.strip ul', '.fx-grid', '.at-areas', '.ar-stack ol', '.path', '.list', '.dg-grid', '.stack-layers'],
     items: ['.at-ring', '.at-loops', '.ar-grp', '.fa-legend', '.fa .filter', '.fa .fa-hub', '.fa .panel', '.fa .grp-h', '.list-note', '.contact .vcard'],
     cards: '.fa .cards > .fn',
     tilt: { sel: '.fx, .list > a.item', lift: -2 },
