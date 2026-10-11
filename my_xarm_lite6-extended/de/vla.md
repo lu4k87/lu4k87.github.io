@@ -62,9 +62,12 @@ Anweisung ─► Plan (LLM: Skills + Objekt-IDs) ─► Prüfung (Code: Objekte,
 bash src/vla_bridge/scripts/install_ollama.sh        # einmalig je PC: Ollama (~/.local, ohne sudo) + qwen3.8:27b (~18 GB)
 # fehlt es, warnen Check (Preflight) der UX | Nexus Launcher und die Setup-Karte (Log: "Ollama not found")
 ros2 launch vla_bridge vla_bridge.launch.py          # Agent; startet `ollama serve` bei Bedarf selbst
-# weitere Argumente: llm_backend (ollama | ollama_fast | anthropic | google), llm_model, dry_run, allow_real_motion, real_require_confirm, config_file
+ros2 launch vla_bridge vla_bridge.launch.py robot_profile:=abb_irb1100 dry_run:=true  # manueller ABB-Start: gleiches Profil wie robot_bringup
+# weitere Argumente: robot_profile, llm_backend (ollama | ollama_fast | anthropic | google), llm_model, dry_run, allow_real_motion, real_require_confirm, config_file
 # sie überschreiben src/vla_bridge/config/vla_bridge.yaml (Sprachmodell, Szenen-Topic, Sicherheit, Greifhöhen, Zeitgrenzen)
 ```
+
+Ein leeres `robot_profile` verwendet das aktive Profil. Eine explizite ID wählt denselben Arm und dieselben Ablage-Standardwerte für Agent und Skill-Ausführung. Das ABB-Profil verwendet einen Ablageradius von 200–500 mm; ROS-Parameter überschreiben diese Profil-Standardwerte. Jede konkrete Pose durchläuft weiterhin die bestehenden MoveIt-Prüfungen.
 
 *UX | Nexus Launcher: **VLA-M Bridge** im RUN DEV SETUP und SERVER SETUP (eigene Kategorie *VLA-M (Vision-Language-Action)*, übersprungen bis angehakt; Parameter *LLM*, *Dry run*, *Robot | Hardware: execute plans*, *Robot | Hardware: always confirm*; *Recommended for Robot | Digital Twin / Robot | Hardware* setzt sie je Sequenz, Robot | Hardware = execute plans + always confirm an) sowie die Karte **VLA-M (Vision-Language-Action)** mit der Bridge, *Virtual objects ON* (`/ui/set_virtual_detections`) und *VLA-M status (live)*. Bedienung: [Handbuch](../operate_manual.html), Kapitel *Den Roboter per Chat anweisen*.*
 
