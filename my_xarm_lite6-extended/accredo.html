@@ -1,35 +1,53 @@
 <!DOCTYPE html>
-<html lang="de" data-theme="dark">
+<html lang="de" data-theme="light">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ACCREDO · Interaktiver Akkreditierungs- & Reakkreditierungsprozess</title>
   <style>
     /* ═══ CSS TOKENS & THEMING ═══ */
-    :root {
-      /* Dark Theme (Default) */
-      --bg-canvas: #090d16;
-      --bg-surface: #0f172a;
-      --bg-surface-elevated: #162238;
-      --bg-glass: rgba(15, 23, 42, 0.75);
-      --bg-card: rgba(22, 34, 56, 0.6);
-      --border-subtle: rgba(148, 163, 184, 0.12);
-      --border-active: rgba(56, 189, 248, 0.45);
-      --border-glow: rgba(56, 189, 248, 0.2);
+    /* Look „Klar“ (Vorschau 2026-10-11): Navy-Tinte + Königsblau, Status/RACI/Gate vollflächig */
+    :root,
+    [data-theme="light"] {
+      color-scheme: light;
+      --bg-canvas: #f3f5f8;
+      --bg-surface: #ffffff;
+      --bg-surface-elevated: #f6f8fb;
+      --bg-glass: rgba(255, 255, 255, 0.96);
+      --bg-card: #ffffff;
+      --border-subtle: #d3dae3;
+      --border-control: #c3ccd8;
+      --border-strong: #9aa6b6;
+      --border-active: #1d4ed8;
 
-      --text-main: #f1f5f9;
-      --text-muted: #94a3b8;
-      --text-dim: #64748b;
+      --text-main: #0b1a33;
+      --text-muted: #2c3a50;
+      --text-dim: #46546a;
 
-      --accent-cyan: #38bdf8;
-      --accent-indigo: #818cf8;
-      --accent-emerald: #10b981;
-      --accent-amber: #f59e0b;
-      --accent-rose: #f43f5e;
-      --accent-purple: #a855f7;
+      --accent: #1d4ed8;
+      --accent-ring: rgba(29, 78, 216, 0.14);
+      --accent-soft: #eef2ff;
+      --accent-soft-border: #c7d2fe;
+      --accent-soft-text: #1e3a8a;
+      --accent-emerald: #047857;
+      --accent-amber: #b45309;
+      --accent-rose: #be123c;
+      --accent-purple: #6d28d9;
 
-      --glow-cyan: rgba(56, 189, 248, 0.25);
-      --glow-emerald: rgba(16, 185, 129, 0.2);
+      /* Vollflächige Status-/Rollenfarben, Text darauf = --on-solid */
+      --solid-blue: #1d4ed8;
+      --solid-green: #047857;
+      --solid-amber: #b45309;
+      --solid-violet: #6d28d9;
+      --on-solid: #ffffff;
+
+      /* Invertierte Ankerfläche: Gate, aktive Auswahl, Avatare */
+      --ink-bg: #0b1a33;
+      --ink-fg: #ffffff;
+      --ink-muted: #c9d3e2;
+      --ink-line: rgba(255, 255, 255, 0.25);
+
+      --glow-cyan: transparent;
 
       --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
       --font-mono: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
@@ -40,41 +58,56 @@
       --t-fast: 150ms;
       --t-base: 250ms;
       --t-slow: 400ms;
-      --t-pulse: 2.8s;
+      --t-reveal: 450ms;
+      --t-ping: 1.2s;
+      --t-sweep: 1.4s;
+      --stagger: 50ms;
+      --rise: 12px;
       --lift: -2px;
 
-      --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.25);
-      --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.35);
-      --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.5);
+      --shadow-sm: 0 1px 2px rgba(11, 26, 51, 0.06);
+      --shadow-md: 0 1px 2px rgba(11, 26, 51, 0.06), 0 4px 14px rgba(11, 26, 51, 0.05);
+      --shadow-lg: 0 1px 2px rgba(11, 26, 51, 0.06), 0 10px 28px rgba(11, 26, 51, 0.08);
     }
 
-    [data-theme="light"] {
-      --bg-canvas: #f8fafc;
-      --bg-surface: #ffffff;
-      --bg-surface-elevated: #f1f5f9;
-      --bg-glass: rgba(255, 255, 255, 0.85);
-      --bg-card: rgba(255, 255, 255, 0.9);
-      --border-subtle: rgba(148, 163, 184, 0.25);
-      --border-active: #0284c7;
-      --border-glow: rgba(2, 132, 199, 0.15);
+    [data-theme="dark"] {
+      color-scheme: dark;
+      --bg-canvas: #0a1220;
+      --bg-surface: #101a2c;
+      --bg-surface-elevated: #16223a;
+      --bg-glass: rgba(16, 26, 44, 0.96);
+      --bg-card: #101a2c;
+      --border-subtle: #2a3954;
+      --border-control: #3a4a66;
+      --border-strong: #5b6b86;
+      --border-active: #60a5fa;
 
-      --text-main: #0f172a;
-      --text-muted: #475569;
-      --text-dim: #94a3b8;
+      --text-main: #f1f5f9;
+      --text-muted: #d5dde8;
+      --text-dim: #b4c0d0;
 
-      --accent-cyan: #0284c7;
-      --accent-indigo: #6366f1;
-      --accent-emerald: #059669;
-      --accent-amber: #d97706;
-      --accent-rose: #e11d48;
-      --accent-purple: #9333ea;
+      --accent: #60a5fa;
+      --accent-ring: rgba(96, 165, 250, 0.22);
+      --accent-soft: rgba(96, 165, 250, 0.12);
+      --accent-soft-border: rgba(96, 165, 250, 0.35);
+      --accent-soft-text: #bfdbfe;
+      --accent-emerald: #34d399;
+      --accent-amber: #fbbf24;
+      --accent-rose: #fb7185;
+      --accent-purple: #c4b5fd;
 
-      --glow-cyan: rgba(2, 132, 199, 0.12);
-      --glow-emerald: rgba(5, 150, 105, 0.1);
+      --solid-blue: #2563eb;
 
-      --shadow-sm: 0 2px 8px rgba(15, 23, 42, 0.05);
-      --shadow-md: 0 8px 24px rgba(15, 23, 42, 0.08);
-      --shadow-lg: 0 16px 36px rgba(15, 23, 42, 0.12);
+      --ink-bg: #e2e8f0;
+      --ink-fg: #0b1a33;
+      --ink-muted: #334155;
+      --ink-line: rgba(11, 26, 51, 0.2);
+
+      --glow-cyan: rgba(96, 165, 250, 0.18);
+
+      --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+      --shadow-md: 0 1px 2px rgba(0, 0, 0, 0.3), 0 6px 18px rgba(0, 0, 0, 0.3);
+      --shadow-lg: 0 1px 2px rgba(0, 0, 0, 0.3), 0 14px 36px rgba(0, 0, 0, 0.4);
     }
 
     /* ═══ GLOBAL RESET & BASE ═══ */
@@ -86,7 +119,6 @@
 
     html {
       scroll-behavior: smooth;
-      color-scheme: dark light;
     }
 
     body {
@@ -106,10 +138,8 @@
       top: 0;
       z-index: 100;
       background: var(--bg-glass);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
       border-bottom: 1px solid var(--border-subtle);
-      transition: background-color var(--t-base) var(--ease-out), border-color var(--t-base) var(--ease-out);
+      transition: box-shadow var(--t-base) var(--ease-out), background-color var(--t-base) var(--ease-out);
     }
 
     .header-inner {
@@ -133,15 +163,14 @@
     .brand-mark {
       width: 36px;
       height: 36px;
-      border-radius: 10px;
-      background: linear-gradient(135deg, var(--accent-cyan), var(--accent-indigo));
+      border-radius: 6px;
+      background: var(--ink-bg);
       display: flex;
       align-items: center;
       justify-content: center;
-      color: #fff;
+      color: var(--ink-fg);
       font-weight: 800;
       font-size: 16px;
-      box-shadow: 0 0 16px var(--glow-cyan);
     }
 
     .brand-text h1 {
@@ -167,8 +196,8 @@
       display: flex;
       background: var(--bg-surface-elevated);
       padding: 3px;
-      border-radius: 10px;
-      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      border: 1px solid var(--border-control);
     }
 
     .nav-tab-btn {
@@ -176,20 +205,19 @@
       background: transparent;
       color: var(--text-muted);
       padding: 6px 14px;
-      border-radius: 8px;
+      border-radius: 6px;
       font-size: 13px;
       font-weight: 600;
       cursor: pointer;
       display: flex;
       align-items: center;
       gap: 6px;
-      transition: all var(--t-fast) var(--ease-out);
+      transition: background-color var(--t-fast) var(--ease-out), color var(--t-fast) var(--ease-out);
     }
 
     .nav-tab-btn.active {
-      background: var(--bg-surface);
-      color: var(--text-main);
-      box-shadow: var(--shadow-sm);
+      background: var(--ink-bg);
+      color: var(--ink-fg);
     }
 
     .nav-tab-btn:hover:not(.active) {
@@ -197,18 +225,17 @@
     }
 
     .theme-toggle-btn {
-      background: var(--bg-surface-elevated);
-      border: 1px solid var(--border-subtle);
-      color: var(--text-muted);
+      background: var(--bg-surface);
+      border: 1px solid var(--border-control);
+      color: var(--text-main);
       width: 36px;
       height: 36px;
-      border-radius: 10px;
+      border-radius: 8px;
       display: flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
-      font-size: 16px;
-      transition: all var(--t-fast) var(--ease-out);
+      transition: border-color var(--t-fast) var(--ease-out), transform var(--t-base) var(--ease-out);
     }
 
     .theme-toggle-btn:hover {
@@ -236,10 +263,10 @@
 
     .filter-label {
       font-size: 12px;
-      font-weight: 600;
+      font-weight: 700;
       text-transform: uppercase;
-      letter-spacing: 0.05em;
-      color: var(--text-dim);
+      letter-spacing: 0.06em;
+      color: var(--text-main);
       display: flex;
       align-items: center;
       gap: 6px;
@@ -252,15 +279,15 @@
     }
 
     .filter-pill {
-      border: 1px solid var(--border-subtle);
-      background: var(--bg-canvas);
+      border: 1px solid var(--border-control);
+      background: var(--bg-surface);
       color: var(--text-muted);
       padding: 5px 12px;
-      border-radius: 20px;
+      border-radius: 6px;
       font-size: 12px;
       font-weight: 500;
       cursor: pointer;
-      transition: all var(--t-fast) var(--ease-out);
+      transition: border-color var(--t-fast) var(--ease-out), color var(--t-fast) var(--ease-out), background-color var(--t-fast) var(--ease-out);
       display: flex;
       align-items: center;
       gap: 6px;
@@ -272,11 +299,10 @@
     }
 
     .filter-pill.active {
-      background: var(--accent-cyan);
-      color: #041226;
-      border-color: var(--accent-cyan);
+      background: var(--ink-bg);
+      color: var(--ink-fg);
+      border-color: var(--ink-bg);
       font-weight: 600;
-      box-shadow: 0 0 12px var(--glow-cyan);
     }
 
     /* ═══ HERO SECTION ═══ */
@@ -290,13 +316,13 @@
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      background: var(--bg-surface-elevated);
-      border: 1px solid var(--border-subtle);
+      background: var(--bg-surface);
+      border: 1px solid var(--border-control);
       padding: 5px 14px;
-      border-radius: 24px;
+      border-radius: 6px;
       font-size: 12px;
       font-weight: 600;
-      color: var(--accent-cyan);
+      color: var(--text-main);
       margin-bottom: 16px;
     }
 
@@ -305,14 +331,8 @@
       height: 8px;
       border-radius: 50%;
       background: var(--accent-emerald);
-      box-shadow: 0 0 8px var(--accent-emerald);
-      animation: gentle-pulse 2.2s infinite ease-in-out;
     }
 
-    @keyframes gentle-pulse {
-      0%, 100% { transform: scale(1); opacity: 0.8; }
-      50% { transform: scale(1.3); opacity: 1; }
-    }
 
     .hero-title {
       font-size: clamp(28px, 3.8vw, 44px);
@@ -324,9 +344,7 @@
     }
 
     .hero-title-highlight {
-      background: linear-gradient(135deg, var(--accent-cyan) 20%, var(--accent-indigo) 80%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
+      color: var(--accent);
     }
 
     .hero-desc {
@@ -339,39 +357,40 @@
 
     .kpi-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 16px;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 1px;
       margin-top: 24px;
+      background: var(--border-subtle);
+      border: 1px solid var(--border-subtle);
+      border-radius: 10px;
+      overflow: hidden;
     }
 
     .kpi-card {
       background: var(--bg-surface);
-      border: 1px solid var(--border-subtle);
-      border-radius: 14px;
-      padding: 16px 20px;
-      transition: transform var(--t-base) var(--ease-out), border-color var(--t-base) var(--ease-out);
+      padding: 20px 24px;
+      transition: background-color var(--t-base) var(--ease-out);
     }
 
     .kpi-card:hover {
-      transform: translateY(var(--lift));
-      border-color: var(--border-active);
+      background: var(--bg-surface-elevated);
     }
 
     .kpi-label {
       font-size: 12px;
       color: var(--text-dim);
-      font-weight: 600;
+      font-weight: 700;
       text-transform: uppercase;
-      letter-spacing: 0.04em;
+      letter-spacing: 0.06em;
       margin-bottom: 4px;
     }
 
     .kpi-value {
-      font-size: 24px;
-      font-weight: 800;
+      font-size: 30px;
+      font-weight: 750;
       color: var(--text-main);
-      font-family: var(--font-mono);
       letter-spacing: -0.02em;
+      font-variant-numeric: tabular-nums;
     }
 
     .kpi-sub {
@@ -386,7 +405,7 @@
       margin: 0 auto;
       padding: 32px 24px 80px;
       display: grid;
-      grid-template-columns: 380px 1fr;
+      grid-template-columns: 380px minmax(0, 1fr);
       gap: 40px;
       align-items: start;
     }
@@ -397,10 +416,9 @@
       top: 130px;
       background: var(--bg-surface);
       border: 1px solid var(--border-subtle);
-      border-radius: 20px;
+      border-radius: 12px;
       padding: 24px;
       box-shadow: var(--shadow-md);
-      transition: all var(--t-base) var(--ease-out);
     }
 
     .visualizer-header {
@@ -417,17 +435,16 @@
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.06em;
-      color: var(--text-dim);
+      color: var(--text-main);
     }
 
     .active-phase-badge {
       font-size: 12px;
       font-weight: 700;
-      color: var(--accent-cyan);
-      background: var(--bg-surface-elevated);
+      color: var(--on-solid);
+      background: var(--solid-blue);
       padding: 3px 10px;
-      border-radius: 12px;
-      border: 1px solid var(--border-active);
+      border-radius: 6px;
     }
 
     /* PROGRESS RAIL */
@@ -453,10 +470,9 @@
       top: 12px;
       width: 2px;
       height: 0%;
-      background: linear-gradient(180deg, var(--accent-cyan), var(--accent-emerald));
+      background: var(--accent);
       border-radius: 2px;
       transition: height var(--t-base) var(--ease-out);
-      box-shadow: 0 0 10px var(--accent-cyan);
     }
 
     .rail-node {
@@ -477,8 +493,8 @@
       width: 24px;
       height: 24px;
       border-radius: 50%;
-      background: var(--bg-canvas);
-      border: 2px solid var(--border-subtle);
+      background: var(--bg-surface);
+      border: 2px solid var(--border-strong);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -486,21 +502,20 @@
       font-weight: 700;
       font-family: var(--font-mono);
       color: var(--text-dim);
-      transition: all var(--t-base) var(--ease-out);
+      transition: background-color var(--t-base) var(--ease-out), border-color var(--t-base) var(--ease-out), color var(--t-base) var(--ease-out), box-shadow var(--t-base) var(--ease-out);
     }
 
     .rail-node.active .rail-dot {
-      background: var(--accent-cyan);
-      border-color: var(--accent-cyan);
-      color: #031427;
-      transform: scale(1.15);
-      box-shadow: 0 0 14px var(--glow-cyan);
+      background: var(--solid-blue);
+      border-color: var(--solid-blue);
+      color: var(--on-solid);
+      box-shadow: 0 0 0 3px var(--accent-ring);
     }
 
     .rail-node.completed .rail-dot {
-      background: var(--bg-surface-elevated);
-      border-color: var(--accent-emerald);
-      color: var(--accent-emerald);
+      background: var(--solid-green);
+      border-color: var(--solid-green);
+      color: var(--on-solid);
     }
 
     .rail-content {
@@ -532,7 +547,7 @@
     .radar-card {
       background: var(--bg-surface-elevated);
       border: 1px solid var(--border-subtle);
-      border-radius: 14px;
+      border-radius: 10px;
       padding: 16px;
       margin-bottom: 16px;
     }
@@ -541,8 +556,8 @@
       font-size: 11px;
       font-weight: 700;
       text-transform: uppercase;
-      letter-spacing: 0.05em;
-      color: var(--text-dim);
+      letter-spacing: 0.06em;
+      color: var(--text-main);
       margin-bottom: 10px;
       display: flex;
       align-items: center;
@@ -560,10 +575,9 @@
       align-items: center;
       gap: 10px;
       padding: 6px 8px;
-      background: var(--bg-card);
+      background: var(--bg-surface);
       border-radius: 8px;
       border: 1px solid var(--border-subtle);
-      transition: all var(--t-fast) var(--ease-out);
     }
 
     .actor-avatar {
@@ -571,7 +585,7 @@
       height: 28px;
       border-radius: 8px;
       background: var(--bg-surface);
-      color: var(--accent-cyan);
+      color: var(--accent);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -603,24 +617,25 @@
     }
 
     .raci-badge {
-      font-size: 9px;
-      font-weight: 800;
-      font-family: var(--font-mono);
-      padding: 2px 6px;
-      border-radius: 4px;
-      text-transform: uppercase;
+      font-size: 11px;
+      font-weight: 700;
+      font-family: var(--font-sans);
+      padding: 3px 8px;
+      border-radius: 6px;
+      white-space: nowrap;
+      color: var(--on-solid);
     }
 
-    .raci-r { background: rgba(56, 189, 248, 0.15); color: var(--accent-cyan); border: 1px solid rgba(56, 189, 248, 0.3); }
-    .raci-a { background: rgba(16, 185, 129, 0.15); color: var(--accent-emerald); border: 1px solid rgba(16, 185, 129, 0.3); }
-    .raci-c { background: rgba(245, 158, 11, 0.15); color: var(--accent-amber); border: 1px solid rgba(245, 158, 11, 0.3); }
-    .raci-i { background: rgba(168, 85, 247, 0.15); color: var(--accent-purple); border: 1px solid rgba(168, 85, 247, 0.3); }
+    .raci-r { background: var(--solid-blue); }
+    .raci-a { background: var(--solid-green); }
+    .raci-c { background: var(--solid-amber); }
+    .raci-i { background: var(--solid-violet); }
 
     /* LIVE HANDOVER CARD */
     .handover-radar-card {
       background: var(--bg-card);
-      border: 1px solid var(--border-subtle);
-      border-radius: 12px;
+      border: 1px solid var(--ink-bg);
+      border-radius: 10px;
       padding: 12px 14px;
       font-size: 12px;
     }
@@ -636,7 +651,7 @@
     }
 
     .handover-arrow {
-      color: var(--accent-cyan);
+      color: var(--accent);
       font-family: var(--font-mono);
     }
 
@@ -650,20 +665,16 @@
     .step-card {
       background: var(--bg-surface);
       border: 1px solid var(--border-subtle);
-      border-radius: 24px;
+      border-radius: 12px;
       padding: 36px 36px 32px;
       box-shadow: var(--shadow-sm);
       position: relative;
-      transition: all var(--t-slow) var(--ease-out);
-      opacity: 0.85;
-      transform: translateY(8px);
+      transition: border-color var(--t-slow) var(--ease-out), box-shadow var(--t-slow) var(--ease-out);
     }
 
     .step-card.active-step {
-      opacity: 1;
-      transform: translateY(0);
       border-color: var(--border-active);
-      box-shadow: var(--shadow-lg), 0 0 30px var(--glow-cyan);
+      box-shadow: 0 0 0 3px var(--accent-ring), var(--shadow-lg);
     }
 
     .step-card-header {
@@ -674,6 +685,7 @@
       border-bottom: 1px solid var(--border-subtle);
       padding-bottom: 20px;
       margin-bottom: 24px;
+      flex-wrap: wrap;
     }
 
     .step-meta-chips {
@@ -689,36 +701,35 @@
       font-weight: 800;
       letter-spacing: 0.08em;
       text-transform: uppercase;
-      color: var(--accent-cyan);
-      background: rgba(56, 189, 248, 0.1);
-      border: 1px solid rgba(56, 189, 248, 0.25);
+      color: var(--on-solid);
+      background: var(--solid-blue);
       padding: 3px 10px;
-      border-radius: 8px;
+      border-radius: 6px;
       font-family: var(--font-mono);
     }
 
     .chip-time {
       font-size: 12px;
-      color: var(--text-dim);
-      font-weight: 500;
+      color: var(--text-muted);
+      font-weight: 600;
     }
 
     .step-title {
       font-size: 24px;
-      font-weight: 700;
+      font-weight: 750;
       line-height: 1.25;
       letter-spacing: -0.01em;
       color: var(--text-main);
     }
 
     .step-target-badge {
-      background: var(--bg-surface-elevated);
-      border: 1px solid var(--border-subtle);
+      background: var(--accent-soft);
+      border: 1px solid var(--accent-soft-border);
       padding: 6px 14px;
-      border-radius: 12px;
+      border-radius: 6px;
       font-size: 12px;
       font-weight: 600;
-      color: var(--text-muted);
+      color: var(--accent-soft-text);
       white-space: nowrap;
     }
 
@@ -734,8 +745,8 @@
       font-size: 13px;
       font-weight: 700;
       text-transform: uppercase;
-      letter-spacing: 0.05em;
-      color: var(--text-dim);
+      letter-spacing: 0.06em;
+      color: var(--text-main);
       margin-bottom: 14px;
       display: flex;
       align-items: center;
@@ -743,7 +754,8 @@
     }
 
     .subheading-icon {
-      color: var(--accent-cyan);
+      color: var(--accent);
+      display: inline-flex;
     }
 
     .step-actors-grid {
@@ -754,14 +766,15 @@
     }
 
     .actor-box {
-      background: var(--bg-surface-elevated);
+      background: var(--bg-surface);
       border: 1px solid var(--border-subtle);
-      border-radius: 12px;
+      border-radius: 8px;
       padding: 12px 14px;
-      display: flex;
+      display: grid;
+      grid-template-columns: 36px minmax(0, 1fr);
       align-items: center;
-      gap: 12px;
-      transition: border-color var(--t-fast) var(--ease-out), transform var(--t-fast) var(--ease-out);
+      gap: 10px 12px;
+      transition: border-color var(--t-fast) var(--ease-out), transform var(--t-base) var(--ease-out);
     }
 
     .actor-box:hover {
@@ -772,16 +785,14 @@
     .actor-box-avatar {
       width: 36px;
       height: 36px;
-      border-radius: 10px;
-      background: var(--bg-card);
-      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      background: var(--ink-bg);
       display: flex;
       align-items: center;
       justify-content: center;
       font-weight: 700;
-      color: var(--accent-cyan);
+      color: var(--ink-fg);
       font-size: 13px;
-      flex-shrink: 0;
     }
 
     .actor-box-details {
@@ -816,9 +827,9 @@
       align-items: flex-start;
       gap: 12px;
       padding: 10px 14px;
-      background: var(--bg-surface-elevated);
+      background: var(--bg-surface);
       border: 1px solid var(--border-subtle);
-      border-radius: 10px;
+      border-radius: 8px;
       font-size: 13.5px;
     }
 
@@ -826,9 +837,8 @@
       width: 18px;
       height: 18px;
       border-radius: 50%;
-      background: rgba(16, 185, 129, 0.15);
-      border: 1px solid rgba(16, 185, 129, 0.4);
-      color: var(--accent-emerald);
+      background: var(--solid-green);
+      color: var(--on-solid);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -851,6 +861,7 @@
       font-family: var(--font-mono);
       color: var(--text-dim);
       margin-left: 6px;
+      white-space: nowrap;
     }
 
     /* SECTION: ARTIFACTS / DELIVERABLES (PDFs) */
@@ -864,20 +875,20 @@
     .artifact-card {
       background: var(--bg-card);
       border: 1px solid var(--border-subtle);
-      border-radius: 14px;
+      border-radius: 10px;
       padding: 14px 16px;
       cursor: pointer;
       position: relative;
       display: flex;
       flex-direction: column;
       gap: 10px;
-      transition: all var(--t-fast) var(--ease-out);
+      transition: border-color var(--t-fast) var(--ease-out), transform var(--t-base) var(--ease-out), box-shadow var(--t-base) var(--ease-out);
     }
 
     .artifact-card:hover {
       border-color: var(--border-active);
       transform: translateY(var(--lift));
-      box-shadow: 0 4px 16px var(--glow-cyan);
+      box-shadow: var(--shadow-md);
     }
 
     .artifact-top {
@@ -896,34 +907,30 @@
       font-family: var(--font-mono);
       padding: 2px 7px;
       border-radius: 6px;
-      background: rgba(244, 63, 94, 0.12);
-      color: var(--accent-rose);
-      border: 1px solid rgba(244, 63, 94, 0.25);
+      background: var(--bg-surface-elevated);
+      color: var(--text-main);
+      border: 1px solid var(--border-control);
     }
 
     .doc-status-badge {
       font-size: 11px;
-      font-weight: 600;
+      font-weight: 700;
       padding: 2px 8px;
       border-radius: 6px;
+      color: var(--on-solid);
+      white-space: nowrap;
     }
 
     .doc-status-final {
-      background: rgba(16, 185, 129, 0.12);
-      color: var(--accent-emerald);
-      border: 1px solid rgba(16, 185, 129, 0.25);
+      background: var(--solid-green);
     }
 
     .doc-status-draft {
-      background: rgba(245, 158, 11, 0.12);
-      color: var(--accent-amber);
-      border: 1px solid rgba(245, 158, 11, 0.25);
+      background: var(--solid-amber);
     }
 
     .doc-status-verified {
-      background: rgba(56, 189, 248, 0.12);
-      color: var(--accent-cyan);
-      border: 1px solid rgba(56, 189, 248, 0.25);
+      background: var(--solid-blue);
     }
 
     .artifact-title {
@@ -940,7 +947,7 @@
       justify-content: space-between;
       font-size: 11px;
       color: var(--text-dim);
-      border-top: 1px dashed var(--border-subtle);
+      border-top: 1px solid var(--border-subtle);
       padding-top: 8px;
       margin-top: auto;
     }
@@ -948,23 +955,26 @@
     .artifact-action-hint {
       font-size: 11px;
       font-weight: 600;
-      color: var(--accent-cyan);
+      color: var(--accent);
       display: flex;
       align-items: center;
       gap: 4px;
+      transition: transform var(--t-base) var(--ease-out);
     }
 
     /* SECTION: MILESTONE GATE / HANDOVER */
     .step-gate-box {
-      background: linear-gradient(135deg, rgba(56, 189, 248, 0.04), rgba(129, 140, 248, 0.04));
-      border: 1px solid var(--border-active);
-      border-radius: 14px;
+      background: var(--ink-bg);
+      border: 1px solid var(--ink-bg);
+      border-radius: 10px;
       padding: 16px 20px;
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 16px;
       flex-wrap: wrap;
+      position: relative;
+      overflow: hidden;
     }
 
     .gate-info {
@@ -976,40 +986,40 @@
     .gate-icon {
       width: 40px;
       height: 40px;
-      border-radius: 10px;
-      background: rgba(56, 189, 248, 0.12);
-      border: 1px solid rgba(56, 189, 248, 0.3);
-      color: var(--accent-cyan);
+      border-radius: 8px;
+      background: transparent;
+      border: 1px solid var(--ink-line);
+      color: var(--ink-fg);
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 18px;
       flex-shrink: 0;
     }
 
     .gate-texts h4 {
-      font-size: 13px;
+      font-size: 14px;
       font-weight: 700;
-      color: var(--text-main);
+      color: var(--ink-fg);
       margin-bottom: 2px;
     }
 
     .gate-texts p {
       font-size: 12px;
-      color: var(--text-muted);
+      color: var(--ink-muted);
     }
 
     .gate-flow-badge {
       display: flex;
       align-items: center;
       gap: 8px;
-      background: var(--bg-surface);
-      border: 1px solid var(--border-subtle);
+      background: var(--ink-fg);
+      border: 1px solid var(--ink-fg);
       padding: 6px 14px;
-      border-radius: 20px;
+      border-radius: 6px;
       font-size: 12px;
       font-weight: 600;
-      color: var(--text-main);
+      color: var(--ink-bg);
+      flex-wrap: wrap;
     }
 
     /* ═══ DELIVERABLES MATRIX VIEW (TABLE) ═══ */
@@ -1099,7 +1109,7 @@
     }
 
     .matrix-table .doc-link:hover {
-      color: var(--accent-cyan);
+      color: var(--accent);
     }
 
     /* ═══ DOCUMENT PREVIEW MODAL ═══ */
@@ -1126,14 +1136,14 @@
 
     .modal-window {
       background: var(--bg-surface);
-      border: 1px solid var(--border-active);
-      border-radius: 20px;
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
       max-width: 760px;
       width: 100%;
       max-height: 90vh;
       overflow-y: auto;
-      box-shadow: var(--shadow-lg), 0 0 40px var(--glow-cyan);
-      transform: scale(0.96) translateY(12px);
+      box-shadow: var(--shadow-lg);
+      transform: scale(0.98) translateY(12px);
       transition: transform var(--t-base) var(--ease-out);
     }
 
@@ -1168,7 +1178,7 @@
       justify-content: center;
       cursor: pointer;
       font-size: 18px;
-      transition: all var(--t-fast) var(--ease-out);
+      transition: background-color var(--t-fast) var(--ease-out), border-color var(--t-fast) var(--ease-out), color var(--t-fast) var(--ease-out);
     }
 
     .modal-close-btn:hover {
@@ -1272,7 +1282,7 @@
     }
 
     .download-mock-btn {
-      background: var(--accent-cyan);
+      background: var(--accent);
       color: #041226;
       border: none;
       padding: 8px 16px;
@@ -1283,7 +1293,7 @@
       display: flex;
       align-items: center;
       gap: 8px;
-      transition: all var(--t-fast) var(--ease-out);
+      transition: background-color var(--t-fast) var(--ease-out), border-color var(--t-fast) var(--ease-out), color var(--t-fast) var(--ease-out);
     }
 
     .download-mock-btn:hover {
@@ -1311,10 +1321,83 @@
       color: var(--text-dim);
     }
 
+    /* ═══ LOOK „KLAR“: ERGÄNZUNGEN ═══ */
+    .top-header.is-scrolled {
+      box-shadow: var(--shadow-md);
+    }
+
+    /* RACI im Klartext in den Rollen-Karten (Sidebar bleibt beim Buchstaben) */
+    .actor-box .raci-badge {
+      grid-column: 2;
+      justify-self: start;
+    }
+    .actor-box .raci-r::after { content: " · Durchführung"; }
+    .actor-box .raci-a::after { content: " · Verantwortung"; }
+    .actor-box .raci-c::after { content: " · Beratung"; }
+    .actor-box .raci-i::after { content: " · Information"; }
+
+    .matrix-table td:first-child {
+      white-space: nowrap;
+    }
+    .doc-ico {
+      color: var(--accent-rose);
+      flex-shrink: 0;
+    }
+    .artifact-card:hover .artifact-action-hint {
+      transform: translateX(3px);
+    }
+
+    /* ═══ SOFT MOTION: einmal je Ereignis, nichts pulsiert dauerhaft ═══ */
+    /* Phasenwechsel: einmaliger Ring um den aktiven Navigator-Punkt */
+    .rail-node.active .rail-dot::after {
+      content: "";
+      position: absolute;
+      inset: -3px;
+      border-radius: 50%;
+      border: 1px solid var(--accent);
+      opacity: 0;
+      pointer-events: none;
+      animation: rail-ping var(--t-ping) var(--ease-out) 1;
+    }
+    @keyframes rail-ping {
+      from { transform: scale(1); opacity: 0.8; }
+      to { transform: scale(2.2); opacity: 0; }
+    }
+
+    /* Karten-Inhalt blendet beim ersten Erscheinen gestaffelt ein (Klassen aus initSoftMotion) */
+    .js-reveal .step-card:not(.is-in) .reveal {
+      opacity: 0;
+    }
+    .js-reveal .step-card.is-in .reveal {
+      animation: reveal-up var(--t-reveal) var(--ease-out) calc(var(--i, 0) * var(--stagger)) backwards;
+    }
+    @keyframes reveal-up {
+      from { opacity: 0; transform: translateY(var(--rise)); }
+      to { opacity: 1; transform: none; }
+    }
+
+    /* Gate: einmaliger Lichtstreif, sobald es sichtbar wird */
+    .step-gate-box::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(105deg, transparent 38%, var(--ink-line) 50%, transparent 62%);
+      opacity: 0;
+      pointer-events: none;
+    }
+    .step-gate-box.is-lit::after {
+      animation: gate-sweep var(--t-sweep) var(--ease-out) 1;
+    }
+    @keyframes gate-sweep {
+      from { transform: translateX(-100%); opacity: 1; }
+      to { transform: translateX(100%); opacity: 1; }
+    }
+
+
     /* ═══ RESPONSIVE BREAKPOINTS ═══ */
     @media (max-width: 1024px) {
       .scrolly-container {
-        grid-template-columns: 1fr;
+        grid-template-columns: minmax(0, 1fr);
       }
 
       .sticky-visualizer {
@@ -1324,10 +1407,27 @@
       }
     }
 
-    @media (max-width: 640px) {
+    @media (max-width: 860px) {
       .header-inner {
         flex-direction: column;
-        align-items: flex-start;
+        align-items: stretch;
+      }
+      .header-actions {
+        justify-content: space-between;
+      }
+      .kpi-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 640px) {
+      .nav-tabs {
+        flex: 1;
+        min-width: 0;
+      }
+      .nav-tab-btn {
+        flex: 1;
+        justify-content: center;
       }
       .filter-inner {
         flex-direction: column;
@@ -1336,8 +1436,14 @@
       .step-card {
         padding: 24px 20px;
       }
+      .brand-text span {
+        display: none;
+      }
       .hero-title {
         font-size: 26px;
+      }
+      .kpi-grid {
+        grid-template-columns: minmax(0, 1fr);
       }
     }
 
@@ -1353,6 +1459,17 @@
   </style>
 </head>
 <body>
+  <!-- Linien-Icons (einmal definiert, per <use href="#i-…"> genutzt) -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <symbol id="i-team" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 19c.6-3 2.8-4.6 5.5-4.6s4.9 1.6 5.5 4.6"/><path d="M16 5.2a3 3 0 0 1 0 5.6M18 14.6c1.5.6 2.4 2.1 2.6 4.4"/></symbol>
+    <symbol id="i-tasks" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4h6v3H9z"/><path d="M8.5 12h7M8.5 16h5"/></symbol>
+    <symbol id="i-docs" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3h7l4 4v12H8z"/><path d="M15 3v4h4"/><path d="M5 7v14h11"/></symbol>
+    <symbol id="i-doc" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4"/><path d="M9 13h6M9 17h4"/></symbol>
+    <symbol id="i-scale" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v16M7 20h10M5 8h14"/><path d="M5 8l-2.5 6a2.5 2 0 0 0 5 0z"/><path d="M19 8l-2.5 6a2.5 2 0 0 0 5 0z"/></symbol>
+    <symbol id="i-landmark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-5 9 5"/><path d="M5 9v9M9.5 9v9M14.5 9v9M19 9v9"/><path d="M3 20h18"/></symbol>
+    <symbol id="i-package" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z"/><path d="M4 7.5l8 4.5 8-4.5M12 12v9"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="6"/><path d="M20 20l-4.5-4.5"/></symbol>
+  </svg>
 
   <!-- TOP STICKY HEADER -->
   <header class="top-header">
@@ -1368,7 +1485,7 @@
       <div class="header-actions">
         <nav class="nav-tabs" aria-label="Ansichtswechsel">
           <button class="nav-tab-btn active" id="btnViewScrolly" onclick="switchView('scrolly')">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="6" cy="6" r="2"/><circle cx="6" cy="18" r="2"/><path d="M6 8v8M11 6h9M11 18h9"/></svg>
             Prozessablauf (Scrolly)
           </button>
           <button class="nav-tab-btn" id="btnViewMatrix" onclick="switchView('matrix')">
@@ -1378,7 +1495,7 @@
         </nav>
 
         <button class="theme-toggle-btn" id="btnThemeToggle" title="Theme wechseln (Hell / Dunkel)" onclick="toggleTheme()">
-          🌓
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 0 0 0 16z" fill="currentColor"/></svg>
         </button>
       </div>
     </div>
@@ -1510,7 +1627,7 @@
       <div class="radar-card">
         <div class="radar-card-title">
           <span>Zuständige Akteure (Aktiv)</span>
-          <span style="font-size:10px; color:var(--accent-cyan); font-family:var(--font-mono);">RACI-Modell</span>
+          <span style="font-size:10px; color:var(--accent); font-family:var(--font-mono);">RACI-Modell</span>
         </div>
         <div class="live-actor-list" id="liveActorList">
           <!-- Dynamically populated via JS based on current active step -->
@@ -1553,7 +1670,7 @@
 
         <!-- ACTORS -->
         <div class="step-subheading">
-          <span class="subheading-icon">👥</span>
+          <span class="subheading-icon"><svg width="16" height="16" aria-hidden="true"><use href="#i-team"/></svg></span>
           Beteiligte Rollen & Zuständigkeiten
         </div>
         <div class="step-actors-grid">
@@ -1587,7 +1704,7 @@
 
         <!-- ACTIVITIES -->
         <div class="step-subheading">
-          <span class="subheading-icon">📋</span>
+          <span class="subheading-icon"><svg width="16" height="16" aria-hidden="true"><use href="#i-tasks"/></svg></span>
           Prozessaktivitäten & Rechtliche Grundlagen
         </div>
         <div class="step-tasks-list">
@@ -1615,7 +1732,7 @@
 
         <!-- ARTIFACTS (PDFS) -->
         <div class="step-subheading">
-          <span class="subheading-icon">📁</span>
+          <span class="subheading-icon"><svg width="16" height="16" aria-hidden="true"><use href="#i-docs"/></svg></span>
           Übergabe-Dokumente (.pdf) in diesem Schritt
         </div>
         <div class="step-artifacts-grid">
@@ -1647,7 +1764,7 @@
         <!-- GATE / HANDOVER -->
         <div class="step-gate-box">
           <div class="gate-info">
-            <div class="gate-icon">⚖️</div>
+            <div class="gate-icon"><svg width="20" height="20" aria-hidden="true"><use href="#i-scale"/></svg></div>
             <div class="gate-texts">
               <h4>Gate 1: Übergabepunkt an Curriculums-AG</h4>
               <p>Übergabe der qualitativen Bedarfs- und Mängelanalysen an die Überarbeitungskommission.</p>
@@ -1655,7 +1772,7 @@
           </div>
           <div class="gate-flow-badge">
             <span>Studiengangsleitung</span>
-            <span style="color:var(--accent-cyan)">──▶</span>
+            <span style="color:var(--accent)">──▶</span>
             <span>Curriculums-AG</span>
           </div>
         </div>
@@ -1680,7 +1797,7 @@
 
         <!-- ACTORS -->
         <div class="step-subheading">
-          <span class="subheading-icon">👥</span>
+          <span class="subheading-icon"><svg width="16" height="16" aria-hidden="true"><use href="#i-team"/></svg></span>
           Beteiligte Rollen & Zuständigkeiten
         </div>
         <div class="step-actors-grid">
@@ -1714,7 +1831,7 @@
 
         <!-- ACTIVITIES -->
         <div class="step-subheading">
-          <span class="subheading-icon">📋</span>
+          <span class="subheading-icon"><svg width="16" height="16" aria-hidden="true"><use href="#i-tasks"/></svg></span>
           Prozessaktivitäten & Rechtliche Grundlagen
         </div>
         <div class="step-tasks-list">
@@ -1742,7 +1859,7 @@
 
         <!-- ARTIFACTS (PDFS) -->
         <div class="step-subheading">
-          <span class="subheading-icon">📁</span>
+          <span class="subheading-icon"><svg width="16" height="16" aria-hidden="true"><use href="#i-docs"/></svg></span>
           Übergabe-Dokumente (.pdf) in diesem Schritt
         </div>
         <div class="step-artifacts-grid">
@@ -1786,7 +1903,7 @@
         <!-- GATE / HANDOVER -->
         <div class="step-gate-box">
           <div class="gate-info">
-            <div class="gate-icon">📑</div>
+            <div class="gate-icon"><svg width="20" height="20" aria-hidden="true"><use href="#i-docs"/></svg></div>
             <div class="gate-texts">
               <h4>Gate 2: Übergabe zur juristischen Prüfung</h4>
               <p>Vollständiger Satzungsentwurf mit Modulhandbuch wird an das Justitiariat & Gremien übergeben.</p>
@@ -1794,7 +1911,7 @@
           </div>
           <div class="gate-flow-badge">
             <span>Curriculums-AG</span>
-            <span style="color:var(--accent-cyan)">──▶</span>
+            <span style="color:var(--accent)">──▶</span>
             <span>Justitiariat & Fakultätsrat</span>
           </div>
         </div>
@@ -1819,7 +1936,7 @@
 
         <!-- ACTORS -->
         <div class="step-subheading">
-          <span class="subheading-icon">👥</span>
+          <span class="subheading-icon"><svg width="16" height="16" aria-hidden="true"><use href="#i-team"/></svg></span>
           Beteiligte Rollen & Zuständigkeiten
         </div>
         <div class="step-actors-grid">
@@ -1853,7 +1970,7 @@
 
         <!-- ACTIVITIES -->
         <div class="step-subheading">
-          <span class="subheading-icon">📋</span>
+          <span class="subheading-icon"><svg width="16" height="16" aria-hidden="true"><use href="#i-tasks"/></svg></span>
           Prozessaktivitäten & Rechtliche Grundlagen
         </div>
         <div class="step-tasks-list">
@@ -1880,7 +1997,7 @@
 
         <!-- ARTIFACTS (PDFS) -->
         <div class="step-subheading">
-          <span class="subheading-icon">📁</span>
+          <span class="subheading-icon"><svg width="16" height="16" aria-hidden="true"><use href="#i-docs"/></svg></span>
           Übergabe-Dokumente (.pdf) in diesem Schritt
         </div>
         <div class="step-artifacts-grid">
@@ -1924,7 +2041,7 @@
         <!-- GATE / HANDOVER -->
         <div class="step-gate-box">
           <div class="gate-info">
-            <div class="gate-icon">🏛️</div>
+            <div class="gate-icon"><svg width="20" height="20" aria-hidden="true"><use href="#i-landmark"/></svg></div>
             <div class="gate-texts">
               <h4>Gate 3: Übergabe an Qualitätsmanagement (ZQA)</h4>
               <p>Rechtsgültig beschlossene Satzung wird für das offizielle Akkreditierungsdossier übergeben.</p>
@@ -1932,7 +2049,7 @@
           </div>
           <div class="gate-flow-badge">
             <span>Dekanat & Fakultätsrat</span>
-            <span style="color:var(--accent-cyan)">──▶</span>
+            <span style="color:var(--accent)">──▶</span>
             <span>Qualitätsmanagement (ZQA)</span>
           </div>
         </div>
@@ -1957,7 +2074,7 @@
 
         <!-- ACTORS -->
         <div class="step-subheading">
-          <span class="subheading-icon">👥</span>
+          <span class="subheading-icon"><svg width="16" height="16" aria-hidden="true"><use href="#i-team"/></svg></span>
           Beteiligte Rollen & Zuständigkeiten
         </div>
         <div class="step-actors-grid">
@@ -1991,7 +2108,7 @@
 
         <!-- ACTIVITIES -->
         <div class="step-subheading">
-          <span class="subheading-icon">📋</span>
+          <span class="subheading-icon"><svg width="16" height="16" aria-hidden="true"><use href="#i-tasks"/></svg></span>
           Prozessaktivitäten & Rechtliche Grundlagen
         </div>
         <div class="step-tasks-list">
@@ -2018,7 +2135,7 @@
 
         <!-- ARTIFACTS (PDFS) -->
         <div class="step-subheading">
-          <span class="subheading-icon">📁</span>
+          <span class="subheading-icon"><svg width="16" height="16" aria-hidden="true"><use href="#i-docs"/></svg></span>
           Übergabe-Dokumente (.pdf) in diesem Schritt
         </div>
         <div class="step-artifacts-grid">
@@ -2050,7 +2167,7 @@
         <!-- GATE / HANDOVER -->
         <div class="step-gate-box">
           <div class="gate-info">
-            <div class="gate-icon">📦</div>
+            <div class="gate-icon"><svg width="20" height="20" aria-hidden="true"><use href="#i-package"/></svg></div>
             <div class="gate-texts">
               <h4>Gate 4: Einreichung bei Akkreditierungsagentur</h4>
               <p>Offizielle Übergabe des Gesamtpakets an die zertifizierte Agentur (z. B. ASIIN / AQAS).</p>
@@ -2058,7 +2175,7 @@
           </div>
           <div class="gate-flow-badge">
             <span>Hochschul-QM</span>
-            <span style="color:var(--accent-cyan)">──▶</span>
+            <span style="color:var(--accent)">──▶</span>
             <span>Akkreditierungsagentur</span>
           </div>
         </div>
@@ -2083,7 +2200,7 @@
 
         <!-- ACTORS -->
         <div class="step-subheading">
-          <span class="subheading-icon">👥</span>
+          <span class="subheading-icon"><svg width="16" height="16" aria-hidden="true"><use href="#i-team"/></svg></span>
           Beteiligte Rollen & Zuständigkeiten
         </div>
         <div class="step-actors-grid">
@@ -2117,7 +2234,7 @@
 
         <!-- ACTIVITIES -->
         <div class="step-subheading">
-          <span class="subheading-icon">📋</span>
+          <span class="subheading-icon"><svg width="16" height="16" aria-hidden="true"><use href="#i-tasks"/></svg></span>
           Prozessaktivitäten & Rechtliche Grundlagen
         </div>
         <div class="step-tasks-list">
@@ -2144,7 +2261,7 @@
 
         <!-- ARTIFACTS (PDFS) -->
         <div class="step-subheading">
-          <span class="subheading-icon">📁</span>
+          <span class="subheading-icon"><svg width="16" height="16" aria-hidden="true"><use href="#i-docs"/></svg></span>
           Übergabe-Dokumente (.pdf) in diesem Schritt
         </div>
         <div class="step-artifacts-grid">
@@ -2176,7 +2293,7 @@
         <!-- GATE / HANDOVER -->
         <div class="step-gate-box">
           <div class="gate-info">
-            <div class="gate-icon">🔍</div>
+            <div class="gate-icon"><svg width="20" height="20" aria-hidden="true"><use href="#i-search"/></svg></div>
             <div class="gate-texts">
               <h4>Gate 5: Übermittlung des Gutachterberichts</h4>
               <p>Gutachtergruppe übermittelt den Prüfbericht an die Hochschule zur Stellungnahme.</p>
@@ -2184,7 +2301,7 @@
           </div>
           <div class="gate-flow-badge">
             <span>Gutachtergruppe</span>
-            <span style="color:var(--accent-cyan)">──▶</span>
+            <span style="color:var(--accent)">──▶</span>
             <span>Hochschule & QM</span>
           </div>
         </div>
@@ -2209,7 +2326,7 @@
 
         <!-- ACTORS -->
         <div class="step-subheading">
-          <span class="subheading-icon">👥</span>
+          <span class="subheading-icon"><svg width="16" height="16" aria-hidden="true"><use href="#i-team"/></svg></span>
           Beteiligte Rollen & Zuständigkeiten
         </div>
         <div class="step-actors-grid">
@@ -2243,7 +2360,7 @@
 
         <!-- ACTIVITIES -->
         <div class="step-subheading">
-          <span class="subheading-icon">📋</span>
+          <span class="subheading-icon"><svg width="16" height="16" aria-hidden="true"><use href="#i-tasks"/></svg></span>
           Prozessaktivitäten & Rechtliche Grundlagen
         </div>
         <div class="step-tasks-list">
@@ -2271,7 +2388,7 @@
 
         <!-- ARTIFACTS (PDFS) -->
         <div class="step-subheading">
-          <span class="subheading-icon">📁</span>
+          <span class="subheading-icon"><svg width="16" height="16" aria-hidden="true"><use href="#i-docs"/></svg></span>
           Übergabe-Dokumente (.pdf) in diesem Schritt
         </div>
         <div class="step-artifacts-grid">
@@ -2398,7 +2515,7 @@
         </div>
 
         <div class="step-subheading">
-          <span class="subheading-icon">📄</span>
+          <span class="subheading-icon"><svg width="16" height="16" aria-hidden="true"><use href="#i-doc"/></svg></span>
           Auszug aus dem Dokumenteninhalt (Prüffassung)
         </div>
         <pre class="doc-preview-sheet" id="modalDocPreview">
@@ -2989,16 +3106,23 @@ Der Vorsitzende des Akkreditierungsrates`
     }
 
     /* ═══ DELIVERABLES MATRIX TABLE ═══ */
+    /* Status → Farbe: grün = abgeschlossen, blau = bestätigt/eingereicht, gelb = in Arbeit */
+    function statusClass(status) {
+      if (/Prüfung|Entwurf/.test(status)) return 'doc-status-draft';
+      if (/Bestätigt|Eingereicht/.test(status)) return 'doc-status-verified';
+      return 'doc-status-final';
+    }
+
     function renderMatrixTable() {
       const tbody = document.querySelector('#matrixTable tbody');
       if (!tbody) return;
 
       tbody.innerHTML = Object.values(DOC_DATABASE).map(doc => `
         <tr>
-          <td><span style="font-family:var(--font-mono); font-size:11px; color:var(--accent-cyan);">${doc.id}</span></td>
+          <td><span style="font-family:var(--font-mono); font-size:11px; color:var(--accent);">${doc.id}</span></td>
           <td>
             <div class="doc-link" onclick="openDocModal('${doc.id}')">
-              <span style="color:var(--accent-rose);">📄</span>
+              <svg class="doc-ico" width="14" height="14" aria-hidden="true"><use href="#i-doc"/></svg>
               <span>${doc.title}</span>
             </div>
             <div style="font-size:11px; color:var(--text-dim); margin-top:2px;">${doc.type}</div>
@@ -3006,7 +3130,7 @@ Der Vorsitzende des Akkreditierungsrates`
           <td><span style="font-family:var(--font-mono); font-size:12px;">${doc.phase}</span></td>
           <td>${doc.author}</td>
           <td>${doc.recipient}</td>
-          <td><span class="doc-status-badge doc-status-final">${doc.status}</span></td>
+          <td><span class="doc-status-badge ${statusClass(doc.status)}">${doc.status}</span></td>
           <td><span style="font-family:var(--font-mono); font-size:11px;">${doc.size}</span></td>
           <td>
             <button class="nav-tab-btn" style="padding:4px 8px; font-size:11px;" onclick="openDocModal('${doc.id}')">Vorschau ↗</button>
@@ -3070,10 +3194,40 @@ Der Vorsitzende des Akkreditierungsrates`
     /* ═══ THEME TOGGLE ═══ */
     function toggleTheme() {
       const html = document.documentElement;
-      const current = html.getAttribute('data-theme') || 'dark';
+      const current = html.getAttribute('data-theme') || 'light';
       const next = current === 'dark' ? 'light' : 'dark';
       html.setAttribute('data-theme', next);
       localStorage.setItem('accredo_theme', next);
+    }
+
+    /* ═══ SOFT MOTION (Skill soft-motion: einmal je Ereignis) ═══ */
+    function revealOnce(selector, className, threshold) {
+      const io = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (!entry.isIntersecting) return;
+          entry.target.classList.add(className);
+          io.unobserve(entry.target);
+        });
+      }, { threshold });
+      document.querySelectorAll(selector).forEach(el => io.observe(el));
+    }
+
+    function initSoftMotion() {
+      const header = document.querySelector('.top-header');
+      const onScroll = () => header.classList.toggle('is-scrolled', window.scrollY > 8);
+      window.addEventListener('scroll', onScroll, { passive: true });
+      onScroll();
+
+      if (!('IntersectionObserver' in window)) return;
+      document.documentElement.classList.add('js-reveal');
+      document.querySelectorAll('.step-card').forEach(card => {
+        card.querySelectorAll('.actor-box, .task-item, .artifact-card, .step-gate-box').forEach((el, i) => {
+          el.classList.add('reveal');
+          el.style.setProperty('--i', Math.min(i, 8));
+        });
+      });
+      revealOnce('.step-card', 'is-in', 0.12);
+      revealOnce('.step-gate-box', 'is-lit', 0.6);
     }
 
     /* ═══ INITIALIZATION ═══ */
@@ -3084,6 +3238,7 @@ Der Vorsitzende des Akkreditierungsrates`
       }
 
       initScrollObserver();
+      initSoftMotion();
       updateLiveRadar(1);
       renderMatrixTable();
 
