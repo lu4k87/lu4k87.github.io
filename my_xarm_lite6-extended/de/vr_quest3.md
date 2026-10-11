@@ -101,6 +101,7 @@
 >> | **`/remote/twist`** | `std_msgs/String` (JSON) | *Kartesische Geschwindigkeit mit der Client-id der Brille (`client` in `controller_data`) → Twist-Gate des `remote_control_watchdog` → MoveIt Servo; Greifer und Linearachse nur, solange die Brille die Steuerung hat (`/remote/control_state`).* |
 >> | **`/linear_axis_cmd`** | `std_msgs/Float64` | *Verfährt die Linearachse über die Daumensticks der VR-Controller.* |
 >> | **`/vr_teleop/controller_active`** | `std_msgs/Bool` | *1 Hz, `true`, solange `controller_data` in den letzten 2 s ankam – ohne Client-id, damit die Quest-Anzeige von UX \| Control Interface und UX \| Compact Interface auch über LAN geht (`controller_data` ist auf 9090/9091 nicht abonnierbar).* |
+>> | **`/ui/emergency_stop_topic`** | `std_msgs/Empty` | *Nur wenn `/ui/emergency_stop_active` nach einem E-STOP `false` ohne vorheriges `true` meldet (Neustart eines hängenden Motion Handlers): sendet den E-STOP neu (bis 5×, 1 Hz, `ESTOP_RESEND_TRIES`), bis der neue Motion Handler verriegelt.* |
 >
 >
 > ![Services](https://img.shields.io/badge/Services-FF1493?style=flat-square)

@@ -80,6 +80,7 @@
 >> | **`/remote/twist`** | `std_msgs/String` (JSON) | *Cartesian velocity with the headset's client id (`client` in `controller_data`) → twist gate of `remote_control_watchdog` → MoveIt Servo; gripper and linear axis only while the headset has control (`/remote/control_state`).* |
 >> | **`/linear_axis_cmd`** | `std_msgs/Float64` | *Commands linear axis displacement from VR controller thumbsticks.* |
 >> | **`/vr_teleop/controller_active`** | `std_msgs/Bool` | *1 Hz, `true` while `controller_data` arrived within the last 2 s – without client id, so the Quest display of the UX \| Control Interface and the UX \| Compact Interface also works over LAN (`controller_data` cannot be subscribed on 9090/9091).* |
+>> | **`/ui/emergency_stop_topic`** | `std_msgs/Empty` | *Only if `/ui/emergency_stop_active` reports `false` without a preceding `true` after an E-STOP (motion handler restarted while hanging): sends the E-STOP again (up to 5×, 1 Hz, `ESTOP_RESEND_TRIES`) until the new motion handler latches.* |
 >
 >
 > ![Services](https://img.shields.io/badge/Services-FF1493?style=flat-square)

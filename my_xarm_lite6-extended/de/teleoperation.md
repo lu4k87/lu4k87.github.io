@@ -181,6 +181,8 @@ Die folgende Übersicht zeigt auf einen Blick, welche Projektmodule in reiner So
 >> | **`/ui/robot_control/current_speed`** | `std_msgs/Float32` | *Liest den aktuellen Geschwindigkeitsfaktor zur dynamischen Dämpfungsberechnung.* |
 >> | **`/ui/moveit_collision_ground_enabled`** | `std_msgs/Bool` (latched) | *Folgt dem Boden-Kollisionsschalter der UX \| Control Interface: Ist er AUS, wird die Abwärtsbewegung nicht mehr gesperrt. Ohne Nachricht (Node läuft nicht) bleibt die Sperre aktiv.* |
 >> | **`/ui/ground_collision_level`** | `std_msgs/Float64` (latched) | *Z Collision Level in mm (TCP-Höhe) von `moveit_floor_collision`, eingestellt im Boden-Kollisions-Popup der UX \| Control Interface → `Z_LIMIT`, Vorsichtszone beginnt 19 mm darüber. Auf 0–200 mm geklemmt. Bis zur ersten Nachricht gilt streng 91 mm (ohne diesen Node fehlt auch die Bodenbox in MoveIt Servo).* |
+>> | **`/ui/emergency_stop_active`** | `std_msgs/Bool` (latched) | *E-STOP verriegelt → Gamepad gesperrt; nach dem Quittieren geht `/joy` erst nach 0,3 s Ruhelage durch (`NEUTRAL_HOLD`).* |
+>> | **`/ui/emergency_stop_topic`** | `std_msgs/Empty` | *E-STOP gedrückt → sperrt sofort, auch wenn der Motion Handler hängt; frei erst nach dem Quittieren (true → false).* |
 >
 >
 > ![Publishes](https://img.shields.io/badge/Publishes-green?style=flat-square)
@@ -189,6 +191,7 @@ Die folgende Übersicht zeigt auf einen Blick, welche Projektmodule in reiner So
 >> |---|---|---|
 >> | **`/joy_check`** | `sensor_msgs/Joy` | *Leitet das auf Kollisionen geprüfte Gamepad-Signal an `xarm_joystick_input` weiter.* |
 >> | **`/ui/collision_msg`** | `std_msgs/String` | *Meldet harte Stopps an das UI-Log.* |
+>> | **`/ui/emergency_stop_topic`** | `std_msgs/Empty` | *Nur wenn `/ui/emergency_stop_active` nach einem E-STOP `false` ohne vorheriges `true` meldet (Neustart eines hängenden Motion Handlers): sendet den E-STOP neu (bis 5×, 1 Hz, `ESTOP_RESEND_TRIES`), bis der neue Motion Handler verriegelt.* |
 >
 > *Das haptische Rumble-Feedback des Xbox-Controllers wird nicht über ROS verschickt, sondern direkt über `pygame` am Joystick-Gerät ausgelöst (`joystick.rumble(...)`).*
 >

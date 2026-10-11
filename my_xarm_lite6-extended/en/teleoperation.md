@@ -180,6 +180,8 @@ The table below illustrates which project modules can be evaluated in pure softw
 >> | **`/ui/robot_control/current_speed`** | `std_msgs/Float32` | *Current velocity scaling factor for accurate lookahead prediction.* |
 >> | **`/ui/moveit_collision_ground_enabled`** | `std_msgs/Bool` (latched) | *Follows the ground collision switch of the UX \| Control Interface: when it is OFF, downward motion is no longer blocked. Without a message (node not running) the block stays active.* |
 >> | **`/ui/ground_collision_level`** | `std_msgs/Float64` (latched) | *Z Collision Level in mm (TCP height) from `moveit_floor_collision`, set in the ground collision popup of the UX \| Control Interface → `Z_LIMIT`, caution zone starts 19 mm above. Clamped to 0–200 mm. Until the first message a strict fallback of 91 mm applies (without that node MoveIt Servo has no floor box either).* |
+>> | **`/ui/emergency_stop_active`** | `std_msgs/Bool` (latched) | *E-STOP latched → gamepad blocked; after the reset `/joy` passes only after 0.3 s in neutral (`NEUTRAL_HOLD`).* |
+>> | **`/ui/emergency_stop_topic`** | `std_msgs/Empty` | *E-STOP pressed → blocks at once, even if the motion handler hangs; released only after the reset (true → false).* |
 >
 >
 > ![Publishes](https://img.shields.io/badge/Publishes-green?style=flat-square)
@@ -188,6 +190,7 @@ The table below illustrates which project modules can be evaluated in pure softw
 >> |---|---|---|
 >> | **`/joy_check`** | `sensor_msgs/Joy` | *Sanitized gamepad signal forwarded to `xarm_joystick_input`.* |
 >> | **`/ui/collision_msg`** | `std_msgs/String` | *Publishes collision warnings to RViz overlay and Web UI.* |
+>> | **`/ui/emergency_stop_topic`** | `std_msgs/Empty` | *Only if `/ui/emergency_stop_active` reports `false` without a preceding `true` after an E-STOP (motion handler restarted while hanging): sends the E-STOP again (up to 5×, 1 Hz, `ESTOP_RESEND_TRIES`) until the new motion handler latches.* |
 >
 > *The haptic rumble feedback of the Xbox controller is not sent over ROS but triggered directly on the joystick device via `pygame` (`joystick.rumble(...)`).*
 >

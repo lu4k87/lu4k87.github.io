@@ -82,6 +82,7 @@ ros2 launch vla_bridge vla_bridge.launch.py          # agent; starts `ollama ser
 | `/vla/skill` | UI (object menu) → `vla_bridge` | `{id, skill: pick\|place, object?, target?, relation?, side?, x_mm?, y_mm?, confirmed, source}` - one-click *Grasp* / *Place here* without the language model, same checks and skills, no re-planning; Robot | Hardware only with `confirmed` |
 | `/vla/skill` `{actions: [{skill: pick, object}, {skill: place, …}]}` | UI (object menu *Pick & Place to …*) → `vla_bridge` | pick + place as ONE task (at most 2 actions, `MAX_DIRECT_ACTIONS`): one validation of the whole sequence, progress 1/2 → 2/2, one Abort; Robot | Hardware only with `confirmed` |
 | `/ui/emergency_stop_active` | → `vla_bridge` | `std_msgs/Bool` (latched) - the E-STOP aborts every task |
+| `/ui/emergency_stop_topic` | → `vla_bridge` | `std_msgs/Empty` - E-STOP button: aborts the task at once and locks, also with a hanging motion handler; released only after the reset (`/ui/emergency_stop_active` true → false) |
 | `/zed/bboxes_3d` | YOLO / `virtual_object_detections` → `vla_bridge` | `visualization_msgs/MarkerArray` - the scene (label, colour, grasp sphere, box) |
 | `/ui/approach_from_above`, `/ui/execute_move_to_pose`, `/ui/execute_initial_pose`, `/ui/gripper_cmd` | `vla_bridge` → motion stack | the same services / topic the UI uses |
 | `/ui/moveit_motion_state` | motion handler → `vla_bridge` | a move step is done at `succeeded` |
