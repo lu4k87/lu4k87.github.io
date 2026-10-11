@@ -37,6 +37,8 @@ Marius Kaul · Assistive Robotics, AI Systems, Scrollytelling & Multi-Agent Work
 | **03** | **[ACCREDO](#-projekt-3-accredo)** | [`/p_3`](https://lu4k87.github.io/p_3) | [`/accredo`](https://lu4k87.github.io/accredo) · [`/akkreditierung`](https://lu4k87.github.io/akkreditierung) | Hochschul-Reakkreditierungs- & PO-Novellierungsprozess |
 | **04** | **[Claude Workflow](#-projekt-4-claude-workflow)** | [`/p_4`](https://lu4k87.github.io/p_4) | [`/workflow`](https://lu4k87.github.io/workflow) | Multi-Agenten Pair-Programming Workflow & Senior-Regeln |
 | **05** | **[Forschung · Look, Speak, Confirm](#-projekt-5-forschung)** | [`/p_5`](https://lu4k87.github.io/p_5) | [`/research`](https://lu4k87.github.io/research) | Paper in Vorbereitung: Blick, Sprache und Bestätigung für die Roboterbedienung, Human-Factors-Studie |
+| **06** | **[Bohlien Immo](#-projekt-6-bohlien-immo)** | [`/p_6`](https://lu4k87.github.io/p_6) | [`/immobilien`](https://lu4k87.github.io/immobilien) | Landingpage-Neugestaltung für ein Immobilienbüro (three.js-Hausmodell, fünf Entwürfe) |
+| **07** | **[Systembrett](#-projekt-7-systembrett)** | [`/p_7`](https://lu4k87.github.io/p_7) | [`/christian`](https://lu4k87.github.io/christian) | Web-App für Aufstellungen auf dem Systembrett: Foto → Figuren-Erkennung (YOLO) → interaktive Skizze |
 
 ---
 
@@ -99,3 +101,26 @@ Paper in Vorbereitung zur Plattform UX Robot: Blick zeigt das Objekt, Sprache ne
 
 - **Projekt-URL:** [lu4k87.github.io/p_5](https://lu4k87.github.io/p_5)
 - **Kurzlink:** [lu4k87.github.io/research](https://lu4k87.github.io/research)
+
+---
+
+### 🏡 Projekt 6: Bohlien Immo
+
+> **„Ein Zuhause, das man vor dem ersten Besuch schon kennt.“**
+
+Neugestaltung der Website eines Immobilienbüros in Kamp-Lintfort als One-Page-Landingpage. Hauptseite mit three.js-Architekturmodell als Bühne: Die Scrollposition steuert Kamera, Tageszeit und Etagen. Dazu vier weitere Entwürfe mit eigenem Aufbau (Split-Screen, Bento, Kartografie, Exposé-Bahn). Entwurf, noch nicht live.
+
+- **Projekt-URL:** [lu4k87.github.io/p_6](https://lu4k87.github.io/p_6)
+- **Kurzlink:** [lu4k87.github.io/immobilien](https://lu4k87.github.io/immobilien)
+- **Alle Entwürfe:** [`versionen/`](https://lu4k87.github.io/my_xarm_lite6-extended/bohlien_immo/versionen/index.html)
+
+---
+
+### 🧩 Projekt 7: Systembrett
+
+> **„Aufstellen, fotografieren, verstehen.“**
+
+Web-App für systemische Aufstellungen auf dem Systembrett / Familienbrett: Figuren aufstellen, mit dem Handy fotografieren, die App erkennt die Figuren lokal (YOLO) und macht daraus eine interaktive Skizze mit Beziehungen, Blickrichtungen und Abständen. Dazu Akten, Sitzungen, Verlauf und Methoden aus der Therapie (Ist-/Zielbild, Perspektive, Vorlagen, Skalen, Zeitraffer). Online steht die Demo mit fiktiven Daten.
+
+- **Projekt-URL (Demo):** [lu4k87.github.io/p_7](https://lu4k87.github.io/p_7)
+- **Kurzlink:** [lu4k87.github.io/christian](https://lu4k87.github.io/christian)

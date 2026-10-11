@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bohlien Immo – fünf Versionen</title>
+<meta name="description" content="Fünf Entwürfe der Landingpage für Immobilien Gisela Bohlien, je mit eigenem Aufbau.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%27240 -20 246 110%27%3E%3Cpath d=%27M250 38 300 6l44 25M301 67l87-59 88 58%27 fill=%27none%27 stroke=%27%2359b130%27 stroke-width=%2714%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* Übersicht der fünf Entwürfe – schlicht, damit die Entwürfe wirken */
+:root { --bg: #f4f2ed; --card: #fffefb; --ink: #1d1d1b; --ink-2: #45433e; --line: #dcd7cd; --green: #3f8a1f; }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 400 1rem/1.55 Jost, "Helvetica Neue", Arial, sans-serif; }
+a { color: inherit; }
+:focus-visible { outline: 2px solid var(--green); outline-offset: 3px; }
+.wrap { width: min(1240px, 100% - 32px); margin: 0 auto; padding: 56px 0 64px; display: grid; gap: 32px; }
+header { display: grid; gap: 10px; max-width: 46rem; }
+header h1 { margin: 0; font-size: clamp(2rem, 4vw, 3rem); font-weight: 500; letter-spacing: -.02em; line-height: 1.05; }
+header p { margin: 0; color: var(--ink-2); font-size: 1.08rem; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 360px), 1fr)); gap: 20px; }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 6px; overflow: hidden; display: grid; grid-template-rows: auto 1fr; text-decoration: none; transition: transform .2s, box-shadow .2s; }
+.card:hover { transform: translateY(-2px); box-shadow: 0 14px 30px rgba(29, 29, 27, .1); }
+.card img { display: block; width: 100%; aspect-ratio: 16 / 10; object-fit: cover; border-bottom: 1px solid var(--line); }
+.card .body { padding: 18px 20px 20px; display: grid; gap: 8px; align-content: start; }
+.card h2 { margin: 0; font-size: 1.3rem; font-weight: 600; display: flex; gap: 10px; align-items: baseline; }
+.card h2 span { font-size: .95rem; font-weight: 500; color: var(--green); }
+.card p { margin: 0; color: var(--ink-2); font-size: .98rem; }
+.card dl { margin: 6px 0 0; display: grid; grid-template-columns: 6.5rem 1fr; gap: 4px 10px; font-size: .9rem; }
+.card dt { font-weight: 600; }
+.card dd { margin: 0; color: var(--ink-2); }
+.card .go { margin-top: 8px; font-weight: 600; color: var(--green); }
+.note { font-size: .92rem; color: var(--ink-2); border-top: 1px solid var(--line); padding-top: 16px; }
+</style>
+</head>
+<body>
+<main class="wrap">
+  <header>
+    <h1>Immobilien Gisela Bohlien – fünf Versionen</h1>
+    <p>Jede Version hat einen eigenen Aufbau, eine eigene Schrift und einen Haupteffekt. Inhalte, Kontakt und Impressum sind überall gleich (Stand der alten Seite).</p>
+  </header>
+  <div class="grid">
+    <a class="card" href="1-atelier.html"><img src="vorschau/1-atelier.jpg" alt="Version 1 Atelier: links großes Abendfoto, rechts Titel auf dunklem Waldgrün" width="1200" height="750">
+      <div class="body"><h2><span>1</span>Atelier</h2><p>Geteilter Bildschirm: links eine Bildbühne, rechts die Kapitel. Beim Lesen löst sich das Bild weich ins nächste auf.</p>
+        <dl><dt>Aufbau</dt><dd>Split-Screen, Kapitel-Index auf der Bühne</dd><dt>Stil</dt><dd>Waldgrün, Creme, Altrosa · Source Serif</dd><dt>Effekt</dt><dd>three.js-Shader-Übergang, Referenz als gerahmtes Foto</dd></dl><span class="go">Version öffnen</span></div></a>
+    <a class="card" href="2-uebersicht.html"><img src="vorschau/2-uebersicht.jpg" alt="Version 2 Übersicht: Bento-Raster mit Titelfoto, grüner Bewertungskachel und Fragekacheln" width="1200" height="750">
+      <div class="body"><h2><span>2</span>Übersicht</h2><p>Alles auf einen Blick: jede Kachel beantwortet eine Frage – Wert, Ablauf, Gebiet, Referenzen, Ansprechpartnerin.</p>
+        <dl><dt>Aufbau</dt><dd>Bento-Raster, erste Ansicht = ganze Seite im Kleinen</dd><dt>Stil</dt><dd>Warmweiß, Stein, Logo-Grün · Albert Sans</dd><dt>Effekt</dt><dd>leise: Kacheln setzen sich zusammen, sanfte Bild-Parallaxe</dd></dl><span class="go">Version öffnen</span></div></a>
+    <a class="card" href="3-kartografie.html"><img src="vorschau/3-kartografie.jpg" alt="Version 3 Kartografie: Kompass-Tafel mit Haarlinien-Ringen und runder Foto-Linse" width="1200" height="750">
+      <div class="body"><h2><span>3</span>Kartografie</h2><p>Eine Tafel ohne langes Scrollen: Reiter wechseln die Ansicht, die Kompass-Tafel zeigt Leistungen, Ablauf, Gebiet und Werte.</p>
+        <dl><dt>Aufbau</dt><dd>eine Bildschirmseite mit Reitern</dd><dt>Stil</dt><dd>Steintöne, Haarlinien, Bordeaux · Bodoni Moda</dd><dt>Effekt</dt><dd>Ringe zeichnen sich, Nadel dreht, Linse blendet über</dd></dl><span class="go">Version öffnen</span></div></a>
+    <a class="card" href="../index.html"><img src="vorschau/4-modell.jpg" alt="Version 4 Modell: weißes 3D-Architekturmodell eines Hauses mit Bäumen" width="1200" height="750">
+      <div class="body"><h2><span>4</span>Modell</h2><p>Ein weißes Architekturmodell füllt den Bildschirm. Beim Scrollen fährt die Kamera, das Dach hebt sich im Ablauf ab, es wird Abend.</p>
+        <dl><dt>Aufbau</dt><dd>3D-Bühne, Text als schmale Leiste</dd><dt>Stil</dt><dd>Monochrom, Akzent nur Grün + Fensterlicht · Schibsted Grotesk</dd><dt>Effekt</dt><dd>three.js-Szene, Tag → Nacht, Explosionsansicht</dd></dl><span class="go">Version öffnen</span></div></a>
+    <a class="card" href="5-expose.html"><img src="vorschau/5-expose.jpg" alt="Version 5 Exposé: großer Serif-Titel neben Foto von Kloster Kamp auf Papierton" width="1200" height="750">
+      <div class="body"><h2><span>5</span>Exposé</h2><p>Die Seite läuft wie ein Exposé seitwärts. Leistungen als Lamellen „Ihr Ziel → unser Weg“, ein Maßband zeigt die Position.</p>
+        <dl><dt>Aufbau</dt><dd>horizontale Bahn, Details klappen auf</dd><dt>Stil</dt><dd>Papier, Marineblau, Kobalt · Gloock</dd><dt>Effekt</dt><dd>Bahn 1:1 zum Scrollen, Masken, Zeitlinie zeichnet sich</dd></dl><span class="go">Version öffnen</span></div></a>
+    <a class="card" href="../index.html#kontakt"><img src="vorschau/4-modell-nacht.jpg" alt="Version 4 Modell am Seitenende: das Haus bei Nacht mit warm leuchtenden Fenstern" width="1200" height="750">
+      <div class="body"><h2><span>4</span>Modell am Abend</h2><p>Dieselbe Szene am Seitenende: Kontakt bei Nacht, die Fenster leuchten warm.</p><span class="go">Zum Kontakt springen</span></div></a>
+  </div>
+  <p class="note">Alle Versionen: ohne JavaScript lesbar, Bewegung aus bei „Bewegung reduzieren“, mobil geprüft (390 px). Formular öffnet eine vorausgefüllte E-Mail. Vor Veröffentlichung offen: Datenschutzerklärung, Schriften lokal einbinden, Freigabe der Inhaberin.</p>
+</main>
+</body>
+</html>
