@@ -16,45 +16,67 @@
 <path d='M820.0,145.0 L880.0,145.0 L880.0,255.0 L940.0,255.0' fill='none' stroke='#475569' stroke-width='1.6' stroke-linejoin='round' marker-end='url(#a)'/>
 <path d='M1200.0,135.0 L1215.0,135.0 L1215.0,385.0 L1200.0,385.0' fill='none' stroke='#475569' stroke-width='1.6' stroke-linejoin='round' marker-end='url(#a)'/>
 <path d='M1070.0,285.0 L1070.0,320.0 L1070.0,350.0' fill='none' stroke='#475569' stroke-width='1.6' stroke-linejoin='round' marker-end='url(#a)'/>
+<g class="node">
 <rect x='20' y='100' width='230' height='60' rx='9' fill='#e0f2fe' stroke='#0284c7' stroke-width='1.6'/>
 <text x='135.0' y='126.0' font-family='Inter, Segoe UI, Helvetica, Arial, sans-serif' font-size='13.5' font-weight='700' text-anchor='middle' fill='#0f172a'>Start popup (browser / app)</text>
 <text x='135.0' y='142.0' font-family='Inter, Segoe UI, Helvetica, Arial, sans-serif' font-size='11.5' text-anchor='middle' fill='#334155'>cards, parameters, EXECUTE</text>
+</g>
+<g class="node">
 <rect x='20' y='220' width='230' height='60' rx='9' fill='#e0f2fe' stroke='#0284c7' stroke-width='1.6'/>
 <text x='135.0' y='246.0' font-family='Inter, Segoe UI, Helvetica, Arial, sans-serif' font-size='13.5' font-weight='700' text-anchor='middle' fill='#0f172a'>UX | Compact Interface /touch</text>
 <text x='135.0' y='262.0' font-family='Inter, Segoe UI, Helvetica, Arial, sans-serif' font-size='11.5' text-anchor='middle' fill='#334155'>status, runs, STOP</text>
+</g>
+<g class="node">
 <rect x='360' y='95' width='460' height='70' rx='9' fill='#f1f5f9' stroke='#475569' stroke-width='1.6'/>
 <text x='590.0' y='118.0' font-family='Inter, Segoe UI, Helvetica, Arial, sans-serif' font-size='13.5' font-weight='700' text-anchor='middle' fill='#0f172a'>REST API</text>
 <text x='590.0' y='134.0' font-family='Inter, Segoe UI, Helvetica, Arial, sans-serif' font-size='11.5' text-anchor='middle' fill='#334155'>/api/run · run_sequence · runs · run_log · run/&lt;id&gt;/restart</text>
 <text x='590.0' y='150.0' font-family='Inter, Segoe UI, Helvetica, Arial, sans-serif' font-size='11.5' text-anchor='middle' fill='#334155'>/api/config (+ backups, prune) · /api/events (SSE)</text>
+</g>
+<g class="node">
 <rect x='360' y='215' width='210' height='70' rx='9' fill='#ede9fe' stroke='#7c3aed' stroke-width='1.6'/>
 <text x='465.0' y='238.0' font-family='Inter, Segoe UI, Helvetica, Arial, sans-serif' font-size='13.5' font-weight='700' text-anchor='middle' fill='#0f172a'>SequenceRunner</text>
 <text x='465.0' y='254.0' font-family='Inter, Segoe UI, Helvetica, Arial, sans-serif' font-size='11.5' text-anchor='middle' fill='#334155'>readiness gates:</text>
 <text x='465.0' y='270.0' font-family='Inter, Segoe UI, Helvetica, Arial, sans-serif' font-size='11.5' text-anchor='middle' fill='#334155'>nodes · HTTP · process</text>
+</g>
+<g class="node">
 <rect x='610' y='215' width='210' height='70' rx='9' fill='#ede9fe' stroke='#7c3aed' stroke-width='1.6'/>
 <text x='715.0' y='238.0' font-family='Inter, Segoe UI, Helvetica, Arial, sans-serif' font-size='13.5' font-weight='700' text-anchor='middle' fill='#0f172a'>RunRegistry</text>
 <text x='715.0' y='254.0' font-family='Inter, Segoe UI, Helvetica, Arial, sans-serif' font-size='11.5' text-anchor='middle' fill='#334155'>state, exit code,</text>
 <text x='715.0' y='270.0' font-family='Inter, Segoe UI, Helvetica, Arial, sans-serif' font-size='11.5' text-anchor='middle' fill='#334155'>ERROR count</text>
+</g>
+<g class="node">
 <rect x='610' y='325' width='210' height='70' rx='9' fill='#ede9fe' stroke='#7c3aed' stroke-width='1.6'/>
 <text x='715.0' y='348.0' font-family='Inter, Segoe UI, Helvetica, Arial, sans-serif' font-size='13.5' font-weight='700' text-anchor='middle' fill='#0f172a'>LogWatch (15 s)</text>
 <text x='715.0' y='364.0' font-family='Inter, Segoe UI, Helvetica, Arial, sans-serif' font-size='11.5' text-anchor='middle' fill='#334155'>trim &gt; 50 MB, folder ≤ 2 GB</text>
 <text x='715.0' y='380.0' font-family='Inter, Segoe UI, Helvetica, Arial, sans-serif' font-size='11.5' text-anchor='middle' fill='#334155'>count ERROR lines</text>
+</g>
+<g class="node">
 <rect x='360' y='325' width='210' height='70' rx='9' fill='#f1f5f9' stroke='#475569' stroke-width='1.6'/>
 <text x='465.0' y='348.0' font-family='Inter, Segoe UI, Helvetica, Arial, sans-serif' font-size='13.5' font-weight='700' text-anchor='middle' fill='#0f172a'>launcher_config.json</text>
 <text x='465.0' y='364.0' font-family='Inter, Segoe UI, Helvetica, Arial, sans-serif' font-size='11.5' text-anchor='middle' fill='#334155'>backups (last 20)</text>
 <text x='465.0' y='380.0' font-family='Inter, Segoe UI, Helvetica, Arial, sans-serif' font-size='11.5' text-anchor='middle' fill='#334155'>prune dead commands</text>
+</g>
+<g class="node">
 <rect x='360' y='440' width='460' height='60' rx='9' fill='#ede9fe' stroke='#7c3aed' stroke-width='1.6'/>
 <text x='590.0' y='466.0' font-family='Inter, Segoe UI, Helvetica, Arial, sans-serif' font-size='13.5' font-weight='700' text-anchor='middle' fill='#0f172a'>ROS graph poll</text>
 <text x='590.0' y='482.0' font-family='Inter, Segoe UI, Helvetica, Arial, sans-serif' font-size='11.5' text-anchor='middle' fill='#334155'>ros2 node list (readiness, duplicates, mode conflicts)</text>
+</g>
+<g class="node">
 <rect x='940' y='100' width='260' height='70' rx='9' fill='#dcfce7' stroke='#16a34a' stroke-width='1.6'/>
 <text x='1070.0' y='123.0' font-family='Inter, Segoe UI, Helvetica, Arial, sans-serif' font-size='13.5' font-weight='700' text-anchor='middle' fill='#0f172a'>Terminal per start</text>
 <text x='1070.0' y='139.0' font-family='Inter, Segoe UI, Helvetica, Arial, sans-serif' font-size='11.5' text-anchor='middle' fill='#334155'>gnome-terminal + script</text>
 <text x='1070.0' y='155.0' font-family='Inter, Segoe UI, Helvetica, Arial, sans-serif' font-size='11.5' text-anchor='middle' fill='#334155'>→ ~/.ros/nexus_logs</text>
+</g>
+<g class="node">
 <rect x='940' y='225' width='260' height='60' rx='9' fill='#dcfce7' stroke='#16a34a' stroke-width='1.6'/>
 <text x='1070.0' y='251.0' font-family='Inter, Segoe UI, Helvetica, Arial, sans-serif' font-size='13.5' font-weight='700' text-anchor='middle' fill='#0f172a'>Background processes</text>
 <text x='1070.0' y='267.0' font-family='Inter, Segoe UI, Helvetica, Arial, sans-serif' font-size='11.5' text-anchor='middle' fill='#334155'>mode bg (own process group)</text>
+</g>
+<g class="node">
 <rect x='940' y='350' width='260' height='70' rx='9' fill='#dcfce7' stroke='#16a34a' stroke-width='1.6'/>
 <text x='1070.0' y='381.0' font-family='Inter, Segoe UI, Helvetica, Arial, sans-serif' font-size='13.5' font-weight='700' text-anchor='middle' fill='#0f172a'>ROS 2 launches</text>
 <text x='1070.0' y='397.0' font-family='Inter, Segoe UI, Helvetica, Arial, sans-serif' font-size='11.5' text-anchor='middle' fill='#334155'>MoveIt, UIs, cameras, VLA …</text>
+</g>
 <rect x='258.7' y='108.0' width='37.6' height='19' rx='4' fill='#ffffff' stroke='#e2e8f0'/>
 <text x='277.5' y='121.0' font-family='JetBrains Mono, Consolas, monospace' font-size='11.5' text-anchor='middle' fill='#334155'>HTTP</text>
 <rect x='235.5' y='228.0' width='79.0' height='19' rx='4' fill='#ffffff' stroke='#e2e8f0'/>
@@ -63,4 +85,32 @@
 <text x='377.2' y='363.5' font-family='JetBrains Mono, Consolas, monospace' font-size='11.5' text-anchor='middle' fill='#334155'>waits</text>
 <rect x='887.8' y='113.0' width='44.5' height='19' rx='4' fill='#ffffff' stroke='#e2e8f0'/>
 <text x='910.0' y='126.0' font-family='JetBrains Mono, Consolas, monospace' font-size='11.5' text-anchor='middle' fill='#334155'>start</text>
+
+    <style>
+        /* A: Dash-Animation für alle Verbindungen */
+        path {
+            stroke-dasharray: 6;
+            animation: dash 20s linear infinite;
+        }
+        @keyframes dash {
+            to { stroke-dashoffset: -100; }
+        }
+        
+        /* B: Hover-Effekte auf Gruppen/Knoten */
+        .node rect {
+            transition: filter 0.3s ease, transform 0.3s ease;
+            transform-origin: center;
+        }
+        .node:hover rect {
+            filter: brightness(1.1);
+        }
+        
+        /* C: Happy-Path in grasp_states hervorheben */
+        .happy-edge {
+            stroke: #0a7a6d !important;
+            stroke-width: 3px !important;
+            filter: drop-shadow(0 0 2px #0a7a6d);
+        }
+    </style>
+    
 </svg>

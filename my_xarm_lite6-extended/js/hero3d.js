@@ -158,7 +158,7 @@ function build(L, wrap, host, o) {
   // ── Zielführung: Ziel = TCP auf Höhe Z über dem Tisch, Radius 170–320 mm; Gelenke folgen gedämpft ──
   const Z = 0.1, hit = new THREE.Vector3(), ndc = new THREE.Vector2(), ray = new THREE.Raycaster();
   const plane = new THREE.Plane(new THREE.Vector3(0, 0, 1), -Z);
-  const solve = (x, y, seed) => { const r = Math.hypot(x, y); if (r < 1e-3) return null; const rc = Math.min(0.32, Math.max(0.17, r)); return L.ikDown(x / r * rc, y / r * rc, Z, 0, seed); };
+  const solve = (x, y, seed, z = Z, yaw = 0, tilt = 0) => { const r = Math.hypot(x, y); if (r < 1e-3) return null; const rc = Math.min(0.32, Math.max(0.17, r)); return L.ikDown(x / r * rc, y / r * rc, z, yaw, seed, tilt); };
   const toward = (a, r = 0.28) => [r * Math.cos(a), r * Math.sin(a)];
   let q = L.HOME.slice(), goal = q.slice(), follow = false;
   const ptr = new THREE.Vector2();
@@ -224,7 +224,7 @@ function build(L, wrap, host, o) {
   }
 
   // Steuerwege: N Lichtpunkte im Ring, Leitung zum Sockel; aktiver Punkt pulsiert zum Arm, Arm zeigt hin
-  let active = 0, pick = null, next = null;
+  let active = 0, pick = null, next = null, setMode = null;
   if (scene === 'modes') {
     const items = o.items || [];
     const RM = 0.6, nodes = [], lbls = [];
@@ -273,53 +273,304 @@ function build(L, wrap, host, o) {
   }
 
   // Ghost: Plan (Ghost fährt zum Ziel) → Freigabe (Ring blitzt am Ziel) → Fahrt (Arm folgt) → Pause
+  // Logische Steuerweg-Aktionen je nach gewähltem Modus (Blick, Gamepad, VR, UI, VLA, Sprache)
   if (scene === 'ghost') {
-    const gm = new THREE.MeshStandardMaterial({ color: ACC, emissive: ACC, emissiveIntensity: 0.35, transparent: true, opacity: 0.3, depthWrite: false, roughness: 0.6 });
+    const gm = new THREE.MeshStandardMaterial({ color: ACC, emissive: ACC, emissiveIntensity: 0.35, transparent: true, opacity: 0.32, depthWrite: false, roughness: 0.55 });
     const ghost = L.buildRobot(THREE, { creased: toCreasedNormals, material: gm, toolMaterial: gm });
     st.scene.add(ghost.group);
-    const N = 90, trail = new Float32Array(N * 3), tg = new THREE.BufferGeometry(); tg.setAttribute('position', new THREE.BufferAttribute(trail, 3));
-    const trailLine = new THREE.Line(tg, new THREE.LineDashedMaterial({ color: ACC, dashSize: 0.012, gapSize: 0.01, transparent: true, opacity: 0.85 }));
-    const flash = new THREE.Mesh(new THREE.RingGeometry(0.02, 0.026, 48), new THREE.MeshBasicMaterial({ color: ACC, transparent: true, opacity: 0, side: THREE.DoubleSide, depthWrite: false }));
-    st.scene.add(trailLine, flash);
+
+    const N = 120, trail = new Float32Array(N * 3), tg = new THREE.BufferGeometry(); tg.setAttribute('position', new THREE.BufferAttribute(trail, 3));
+    const trailLine = new THREE.Line(tg, new THREE.LineDashedMaterial({ color: ACC, dashSize: 0.012, gapSize: 0.008, transparent: true, opacity: 0.85 }));
+    const flash = new THREE.Mesh(new THREE.RingGeometry(0.018, 0.028, 48), new THREE.MeshBasicMaterial({ color: ACC, transparent: true, opacity: 0, side: THREE.DoubleSide, depthWrite: false }));
+    const flashGlow = new THREE.Mesh(new THREE.PlaneGeometry(0.14, 0.14), glowMat(0));
+    st.scene.add(trailLine, flash, flashGlow);
+
+    // ── Visuelle 3D-Overlays für die Steuerwege ──
+    const overlays = new THREE.Group(); st.scene.add(overlays);
+
+    // 1. Blick: Gaze-Reticle mit animiertem Dwell-Ring
+    const gaze = new THREE.Group();
+    const gazeOuter = new THREE.Mesh(new THREE.RingGeometry(0.024, 0.028, 48), new THREE.MeshBasicMaterial({ color: ACC, transparent: true, opacity: 0.85, side: THREE.DoubleSide, depthWrite: false }));
+    const gazeDot = new THREE.Mesh(new THREE.CircleGeometry(0.004, 24), new THREE.MeshBasicMaterial({ color: ACC, transparent: true, opacity: 0.95, depthWrite: false }));
+    const gazeGlow = new THREE.Mesh(new THREE.PlaneGeometry(0.10, 0.10), glowMat(0.55));
+    const dwellGeo = new THREE.RingGeometry(0.016, 0.022, 48, 1, 0, 0.01);
+    const dwellMesh = new THREE.Mesh(dwellGeo, new THREE.MeshBasicMaterial({ color: ACC2, transparent: true, opacity: 0.95, side: THREE.DoubleSide, depthWrite: false }));
+    gaze.add(gazeOuter, gazeDot, gazeGlow, dwellMesh);
+    gaze.position.z = 0.0022; gaze.visible = false;
+    overlays.add(gaze);
+
+    // 2. Gamepad: 3D-Jogging Achsen-Kreuz am TCP (Velocity-Servo)
+    const jog = new THREE.Group();
+    const makeArrow = (dir, col) => {
+      const g = new THREE.Group(), len = 0.045;
+      const shaft = new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(), dir.clone().multiplyScalar(len)]), new THREE.LineBasicMaterial({ color: col, transparent: true, opacity: 0.85 }));
+      const head = new THREE.Mesh(new THREE.ConeGeometry(0.004, 0.01, 16), new THREE.MeshBasicMaterial({ color: col, transparent: true, opacity: 0.9 }));
+      head.position.copy(dir.clone().multiplyScalar(len));
+      head.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir);
+      g.add(shaft, head); return g;
+    };
+    const jx = makeArrow(new THREE.Vector3(1, 0, 0), ACC), jy = makeArrow(new THREE.Vector3(0, 1, 0), ACC2), jz = makeArrow(new THREE.Vector3(0, 0, 1), 0xffffff);
+    const jogRing = new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(circle(0.032, 0, 36)), lineMat(0.5, ACC));
+    jog.add(jx, jy, jz, jogRing); jog.visible = false;
+    overlays.add(jog);
+
+    // 3. VR: 3D Raumtrajektorie (flüssige 6-DoF Handkurve)
+    const vr = new THREE.Group();
+    const vrCurvePts = [new THREE.Vector3(0.2, -0.12, 0.11), new THREE.Vector3(0.24, -0.02, 0.17), new THREE.Vector3(0.26, 0.08, 0.22), new THREE.Vector3(0.22, 0.18, 0.12)];
+    const vrCurve = new THREE.CatmullRomCurve3(vrCurvePts);
+    const vrLineGeo = new THREE.BufferGeometry().setFromPoints(vrCurve.getPoints(50));
+    const vrLine = new THREE.Line(vrLineGeo, new THREE.LineDashedMaterial({ color: ACC, dashSize: 0.014, gapSize: 0.008, transparent: true, opacity: 0.85 }));
+    vrLine.computeLineDistances();
+    const vrBeads = [0.25, 0.5, 0.75].map(t => {
+      const b = new THREE.Mesh(new THREE.SphereGeometry(0.0045, 16, 16), new THREE.MeshBasicMaterial({ color: ACC2, transparent: true, opacity: 0.9 }));
+      b.position.copy(vrCurve.getPoint(t)); return b;
+    });
+    vr.add(vrLine, ...vrBeads); vr.visible = false;
+    overlays.add(vr);
+
+    // 4. UI: Kartesischer Waypoint Target (präziser Industriemarker)
+    const ui = new THREE.Group();
+    const uiR1 = new THREE.Mesh(new THREE.RingGeometry(0.028, 0.032, 48), new THREE.MeshBasicMaterial({ color: ACC, transparent: true, opacity: 0.85, side: THREE.DoubleSide, depthWrite: false }));
+    const uiR2 = new THREE.Mesh(new THREE.RingGeometry(0.014, 0.017, 36), new THREE.MeshBasicMaterial({ color: ACC, transparent: true, opacity: 0.5, side: THREE.DoubleSide, depthWrite: false }));
+    const uiTicks = new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints([
+      new THREE.Vector3(-0.04, 0, 0), new THREE.Vector3(-0.02, 0, 0), new THREE.Vector3(0.02, 0, 0), new THREE.Vector3(0.04, 0, 0),
+      new THREE.Vector3(0, -0.04, 0), new THREE.Vector3(0, -0.02, 0), new THREE.Vector3(0, 0.02, 0), new THREE.Vector3(0, 0.04, 0),
+    ]), lineMat(0.75, ACC));
+    const uiGlow = new THREE.Mesh(new THREE.PlaneGeometry(0.12, 0.12), glowMat(0.45));
+    ui.add(uiR1, uiR2, uiTicks, uiGlow); ui.position.z = 0.0022; ui.visible = false;
+    overlays.add(ui);
+
+    // 5. VLA: Wahrnehmungs-Scanfächer & Holografische Bounding Box
+    const vla = new THREE.Group();
+    const scanShape = new THREE.Shape();
+    scanShape.moveTo(0, 0); scanShape.arc(0, 0, 0.38, -0.45, 0.45, false); scanShape.closePath();
+    const scanFan = new THREE.Mesh(new THREE.ShapeGeometry(scanShape, 32), new THREE.MeshBasicMaterial({ color: ACC, transparent: true, opacity: 0.14, side: THREE.DoubleSide, depthWrite: false }));
+    scanFan.position.z = 0.0022;
+    const bboxGroup = new THREE.Group();
+    const bbBox = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(0.045, 0.045, 0.045)), lineMat(0.85, ACC2));
+    bbBox.position.z = 0.0225;
+    const bbMarker = new THREE.Mesh(new THREE.RingGeometry(0.028, 0.033, 32), new THREE.MeshBasicMaterial({ color: ACC2, transparent: true, opacity: 0.8, side: THREE.DoubleSide, depthWrite: false }));
+    bbMarker.position.z = 0.0022;
+    bboxGroup.add(bbBox, bbMarker);
+    vla.add(scanFan, bboxGroup); vla.visible = false;
+    overlays.add(vla);
+
+    // 6. Sprache: Akustische Wellen / Frequenzringe
+    const voice = new THREE.Group();
+    const vWaves = [0.03, 0.065, 0.10].map(r => new THREE.Mesh(new THREE.RingGeometry(r, r + 0.003, 48), new THREE.MeshBasicMaterial({ color: ACC2, transparent: true, opacity: 0.6, side: THREE.DoubleSide, depthWrite: false })));
+    voice.add(...vWaves); voice.position.z = 0.0022; voice.visible = false;
+    overlays.add(voice);
+
+    let curMode = 'ui', subStep = 0;
     const gtcp = new THREE.Vector3(), last = new THREE.Vector3();
     let tn = 0;
-    let gq = q.slice(), gGoal = q.slice(), phase = 'run', tPhase = 0, wp = 0, rest = 0, start = new THREE.Vector3();
-    const WAY = [[0.27, -0.15], [0.3, 0.12], [0.2, 0.2], [0.22, -0.05]];
+    let gq = q.slice(), gGoal = q.slice(), phase = 'run', tPhase = 0, rest = 0, start = new THREE.Vector3();
+
     const setPhase = (p, t) => { phase = p; tPhase = t; o.onPhase && o.onPhase(p); };
-    const plan = (x, y, t) => {
-      const s = solve(x, y, gGoal); if (!s) return;
-      gGoal = s; robot.tcp.getWorldPosition(start); tn = 0; tg.setDrawRange(0, 0); flash.material.opacity = 0; setPhase('plan', t);
+
+    const MODE_ACTIONS = {
+      blick: {
+        pos: [0.23, 0.17, Z], yaw: 0.1, tilt: 0,
+        prep: () => {
+          gaze.position.set(0.23, 0.17, 0.0022);
+          gaze.visible = true;
+          dwellMesh.geometry.dispose();
+          dwellMesh.geometry = new THREE.RingGeometry(0.016, 0.022, 48, 1, 0, 0.01);
+        }
+      },
+      gamepad: {
+        steps: [
+          { x: 0.23, y: -0.14, z: Z + 0.025, yaw: 0, tilt: 0 },
+          { x: 0.27, y: -0.07, z: Z + 0.012, yaw: 0.16, tilt: 0.04 },
+          { x: 0.29, y: 0.03, z: Z, yaw: -0.12, tilt: 0 }
+        ],
+        prep: () => { jog.visible = true; }
+      },
+      vr: {
+        apex: [0.26, 0.08, 0.22, 0.65, 0.35],
+        target: [0.22, 0.18, 0.11, 0.2, 0.1],
+        prep: () => { vr.visible = true; }
+      },
+      ui: {
+        pos: [0.28, -0.16, Z], yaw: 0, tilt: 0,
+        prep: () => {
+          ui.position.set(0.28, -0.16, 0.0022);
+          ui.visible = true;
+        }
+      },
+      vla: {
+        scan: [0.22, 0, 0.19, 0, 0.12],
+        pick: [0.26, 0.13, 0.045, 0.1, 0],
+        place: [0.18, -0.17, 0.05, -0.2, 0],
+        prep: () => {
+          vla.visible = true;
+          bboxGroup.position.set(0.26, 0.13, 0);
+          scanFan.rotation.z = 0;
+        }
+      },
+      sprache: {
+        inspect: [0.20, 0.05, 0.20, 1.57, 0.35],
+        ready: [0.25, -0.09, Z, 0, 0],
+        prep: () => {
+          voice.position.set(0.20, 0.05, 0.0022);
+          voice.visible = true;
+        }
+      }
     };
+
+    const hideAllOverlays = () => {
+      gaze.visible = false; jog.visible = false; vr.visible = false;
+      ui.visible = false; vla.visible = false; voice.visible = false;
+    };
+
+    const planMode = (m, t) => {
+      curMode = m || curMode;
+      hideAllOverlays();
+      robot.tcp.getWorldPosition(start);
+      tn = 0; tg.setDrawRange(0, 0);
+      flash.material.opacity = 0; flashGlow.material.opacity = 0;
+      subStep = 0;
+
+      const act = MODE_ACTIONS[curMode] || MODE_ACTIONS.ui;
+      if (act && act.prep) act.prep();
+
+      let p = [0.28, -0.16, Z, 0, 0];
+      if (curMode === 'blick') p = [act.pos[0], act.pos[1], act.pos[2], act.yaw, act.tilt];
+      else if (curMode === 'gamepad') p = [act.steps[0].x, act.steps[0].y, act.steps[0].z, act.steps[0].yaw, act.steps[0].tilt];
+      else if (curMode === 'vr') p = [act.apex[0], act.apex[1], act.apex[2], act.apex[3], act.apex[4]];
+      else if (curMode === 'ui') p = [act.pos[0], act.pos[1], act.pos[2], act.yaw, act.tilt];
+      else if (curMode === 'vla') p = [act.scan[0], act.scan[1], act.scan[2], act.scan[3], act.scan[4]];
+      else if (curMode === 'sprache') p = [act.inspect[0], act.inspect[1], act.inspect[2], act.inspect[3], act.inspect[4]];
+
+      const s = solve(p[0], p[1], gGoal, p[2], p[3] || 0, p[4] || 0);
+      if (s) {
+        gGoal = s;
+        setPhase('plan', t);
+      }
+    };
+
     host.addEventListener('pointermove', e => {
       if (e.pointerType !== 'mouse' || e.buttons) return;
       const p = pointerPlane(e); if (!p) return;
       follow = true; rest = performance.now();
-      const s = solve(p.x, p.y, gGoal); if (s) { gGoal = s; if (phase !== 'plan') { robot.tcp.getWorldPosition(start); tn = 0; tg.setDrawRange(0, 0); setPhase('plan', rest); } }
+      const s = solve(p.x, p.y, gGoal);
+      if (s) {
+        gGoal = s;
+        if (phase !== 'plan') {
+          robot.tcp.getWorldPosition(start);
+          tn = 0; tg.setDrawRange(0, 0);
+          setPhase('plan', rest);
+        }
+      }
     });
     host.addEventListener('pointerleave', () => { follow = false; });
-    next = () => { if (reduce) return; wp = (wp + 1) % WAY.length; plan(...WAY[wp], performance.now()); };
-    if (reduce) { const s = solve(0.27, -0.15, q); if (s) { gq = gGoal = s; ghost.setJoints(gq); } }
-    else setTimeout(() => plan(...WAY[0], performance.now()), 200);
+
+    setMode = m => {
+      if (reduce) return;
+      curMode = m;
+      planMode(m, performance.now());
+    };
+
+    next = m => {
+      if (reduce) return;
+      if (m) curMode = m;
+      planMode(curMode, performance.now());
+    };
+
+    if (reduce) {
+      const s = solve(0.28, -0.16, q);
+      if (s) { gq = gGoal = s; ghost.setJoints(gq); }
+    } else {
+      setTimeout(() => planMode(curMode, performance.now()), 200);
+    }
+
     extra = (dt, t) => {
       if (reduce) return;
-      // Ghost folgt dem Plan zügig, Spur = Weg des Ghost-TCP
-      const k = 1 - Math.exp(-dt * 4); gq = gq.map((v, i) => v + (gGoal[i] - v) * k); ghost.setJoints(gq);
+      const k = 1 - Math.exp(-dt * 4.2);
+      gq = gq.map((v, i) => v + (gGoal[i] - v) * k);
+      ghost.setJoints(gq);
       ghost.tcp.getWorldPosition(gtcp);
+
+      if (jog.visible) jog.position.copy(tcp);
+
+      if (curMode === 'blick' && gaze.visible) {
+        const uDwell = Math.min(1, (t - tPhase) / 800);
+        dwellMesh.geometry.dispose();
+        dwellMesh.geometry = new THREE.RingGeometry(0.016, 0.022, 48, 1, 0, Math.PI * 2 * uDwell);
+        gazeDot.scale.setScalar(1 + 0.3 * Math.sin(t * 0.008));
+      } else if (curMode === 'vla' && vla.visible) {
+        scanFan.rotation.z += dt * 1.5;
+        scanFan.material.opacity = 0.12 + 0.06 * Math.sin(t * 0.006);
+        bbMarker.scale.setScalar(1 + 0.08 * Math.sin(t * 0.007));
+      } else if (curMode === 'sprache' && voice.visible) {
+        const uV = ((t - tPhase) % 1200) / 1200;
+        vWaves.forEach((w, i) => {
+          const shift = (uV + i * 0.3) % 1;
+          w.scale.setScalar(1 + shift * 1.6);
+          w.material.opacity = Math.max(0, (1 - shift) * 0.7);
+        });
+      } else if (curMode === 'gamepad' && jog.visible) {
+        jogRing.rotation.z += dt * 0.8;
+      }
+
       if (phase === 'plan') {
-        if (tn < N && (!tn || gtcp.distanceTo(last) > 0.004)) {
-          trail.set(tn ? [gtcp.x, gtcp.y, gtcp.z] : [start.x, start.y, start.z], tn * 3); last.copy(tn ? gtcp : start); tn++;
-          tg.setDrawRange(0, tn); tg.attributes.position.needsUpdate = true; tg.computeBoundingSphere(); trailLine.computeLineDistances();
+        if (tn < N && (!tn || gtcp.distanceTo(last) > 0.003)) {
+          trail.set(tn ? [gtcp.x, gtcp.y, gtcp.z] : [start.x, start.y, start.z], tn * 3);
+          last.copy(tn ? gtcp : start); tn++;
+          tg.setDrawRange(0, tn); tg.attributes.position.needsUpdate = true;
+          tg.computeBoundingSphere(); trailLine.computeLineDistances();
         }
         const settled = gq.every((v, i) => Math.abs(v - gGoal[i]) < 0.01);
-        if (settled && t - tPhase > 900 && (!follow || t - rest > 700)) { setPhase('ok', t); flash.position.set(gtcp.x, gtcp.y, 0.003); }
+        const minT = curMode === 'blick' ? 850 : (curMode === 'vla' ? 1000 : 800);
+        if (settled && t - tPhase > minT && (!follow || t - rest > 700)) {
+          setPhase('ok', t);
+          flash.position.set(gtcp.x, gtcp.y, 0.003);
+          flashGlow.position.set(gtcp.x, gtcp.y, 0.002);
+        }
       } else if (phase === 'ok') {
-        const u = (t - tPhase) / 650; flash.material.opacity = Math.max(0, 1 - u); flash.scale.setScalar(1 + u * 2.2);
-        if (u >= 1) { goal = gGoal.slice(); setPhase('run', t); }
+        const u = (t - tPhase) / 600;
+        flash.material.opacity = Math.max(0, 1 - u);
+        flash.scale.setScalar(1 + u * 2.2);
+        flashGlow.material.opacity = Math.max(0, (1 - u) * 0.65);
+        flashGlow.scale.setScalar(1 + u * 1.8);
+        if (u >= 1) {
+          goal = gGoal.slice();
+          setPhase('run', t);
+        }
       } else if (phase === 'run') {
-        if (!follow && q.every((v, i) => Math.abs(v - goal[i]) < 0.008) && t - tPhase > 1800) { wp = (wp + 1) % WAY.length; plan(...WAY[wp], t); }
+        const arrived = q.every((v, i) => Math.abs(v - goal[i]) < 0.008);
+        if (arrived && !follow && t - tPhase > 1500) {
+          if (curMode === 'gamepad' && subStep < 2) {
+            subStep++;
+            const sNext = MODE_ACTIONS.gamepad.steps[subStep];
+            const s = solve(sNext.x, sNext.y, goal, sNext.z, sNext.yaw, sNext.tilt);
+            if (s) { gGoal = s; goal = s.slice(); setPhase('run', t); }
+          } else if (curMode === 'vr' && subStep === 0) {
+            subStep++;
+            const sNext = MODE_ACTIONS.vr.target;
+            const s = solve(sNext[0], sNext[1], goal, sNext[2], sNext[3], sNext[4]);
+            if (s) { gGoal = s; goal = s.slice(); setPhase('run', t); }
+          } else if (curMode === 'vla' && subStep === 0) {
+            subStep++;
+            const sNext = MODE_ACTIONS.vla.pick;
+            const s = solve(sNext[0], sNext[1], goal, sNext[2], sNext[3], sNext[4]);
+            if (s) { gGoal = s; goal = s.slice(); setPhase('run', t); }
+          } else if (curMode === 'vla' && subStep === 1) {
+            subStep++;
+            const sNext = MODE_ACTIONS.vla.place;
+            const s = solve(sNext[0], sNext[1], goal, sNext[2], sNext[3], sNext[4]);
+            if (s) { gGoal = s; goal = s.slice(); setPhase('run', t); }
+          } else if (curMode === 'sprache' && subStep === 0) {
+            subStep++;
+            const sNext = MODE_ACTIONS.sprache.ready;
+            const s = solve(sNext[0], sNext[1], goal, sNext[2], sNext[3], sNext[4]);
+            if (s) { gGoal = s; goal = s.slice(); setPhase('run', t); }
+          }
+        }
       }
-      damp(dt, 2.2);
-      trailLine.material.opacity = phase === 'run' ? Math.max(0.15, 0.85 - (t - tPhase) / 2000) : 0.85;
+
+      damp(dt, 2.4);
+      trailLine.material.opacity = phase === 'run' ? Math.max(0.12, 0.85 - (t - tPhase) / 2200) : 0.85;
     };
   }
 
@@ -2168,7 +2419,7 @@ function build(L, wrap, host, o) {
   };
   tick(0, 0); st.kick(100);
   wrap.classList.add('is-3d');
-  return { stage: st, pick: i => pick && pick(i), next: () => next && next(), get active() { return active; } };
+  return { stage: st, pick: i => pick && pick(i), next: m => next && next(m), setMode: m => setMode && setMode(m), get active() { return active; } };
 }
 
 window.Hero3D = { init };
