@@ -3,11 +3,11 @@
 <defs><marker id='a' viewBox='0 0 10 10' refX='9' refY='5' markerWidth='7' markerHeight='7' orient='auto-start-reverse'><path d='M0,0 L10,5 L0,10 z' fill='#475569'/></marker></defs>
 <rect x='1' y='1' width='1598' height='418' rx='14' fill='#ffffff' stroke='#cbd5e1'/>
 <text x='24' y='36' font-family='Inter, Segoe UI, Helvetica, Arial, sans-serif' font-size='19' font-weight='700' fill='#0f172a'>3-phase grasp sequence (yolo_planned_grasp_executor)</text>
-<path d='M170.0,158.0 L255.0,158.0 L330.0,158.0' fill='none' stroke='#475569' stroke-width='1.6' stroke-linejoin='round' marker-end='url(#a)'/>
-<path d='M500.0,158.0 L542.5,158.0 L580.0,158.0' fill='none' stroke='#475569' stroke-width='1.6' stroke-linejoin='round' marker-end='url(#a)'/>
-<path d='M760.0,158.0 L812.5,158.0 L850.0,158.0' fill='none' stroke='#475569' stroke-width='1.6' stroke-linejoin='round' marker-end='url(#a)'/>
-<path d='M1060.0,158.0 L1107.5,158.0 L1150.0,158.0' fill='none' stroke='#475569' stroke-width='1.6' stroke-linejoin='round' marker-end='url(#a)'/>
-<path d='M1370.0,158.0 L1390.0,158.0 L1460.0,158.0' fill='none' stroke='#475569' stroke-width='1.6' stroke-linejoin='round' marker-end='url(#a)'/>
+<path d='M170.0,158.0 L255.0,158.0 L330.0,158.0' fill='none' stroke='#475569' stroke-width='1.6' stroke-linejoin='round' marker-end='url(#a)' class='happy-edge'/>
+<path d='M500.0,158.0 L542.5,158.0 L580.0,158.0' fill='none' stroke='#475569' stroke-width='1.6' stroke-linejoin='round' marker-end='url(#a)' class='happy-edge'/>
+<path d='M760.0,158.0 L812.5,158.0 L850.0,158.0' fill='none' stroke='#475569' stroke-width='1.6' stroke-linejoin='round' marker-end='url(#a)' class='happy-edge'/>
+<path d='M1060.0,158.0 L1107.5,158.0 L1150.0,158.0' fill='none' stroke='#475569' stroke-width='1.6' stroke-linejoin='round' marker-end='url(#a)' class='happy-edge'/>
+<path d='M1370.0,158.0 L1390.0,158.0 L1460.0,158.0' fill='none' stroke='#475569' stroke-width='1.6' stroke-linejoin='round' marker-end='url(#a)' class='happy-edge'/>
 <path d='M415.0,186.0 L415.0,350.0 L700.0,350.0' fill='none' stroke='#475569' stroke-width='1.6' stroke-linejoin='round' stroke-dasharray='6 4' marker-end='url(#a)'/>
 <path d='M955.0,193.0 L955.0,256.5 L840.0,256.5 L840.0,320.0' fill='none' stroke='#475569' stroke-width='1.6' stroke-linejoin='round' stroke-dasharray='6 4' marker-end='url(#a)'/>
 <path d='M1260.0,193.0 L1260.0,350.0 L980.0,350.0' fill='none' stroke='#475569' stroke-width='1.6' stroke-linejoin='round' stroke-dasharray='6 4' marker-end='url(#a)'/>
@@ -66,14 +66,17 @@
 
     <style>
         /* A: Dash-Animation für alle Verbindungen */
-        path {
+        svg > path {
             stroke-dasharray: 6;
             animation: dash 20s linear infinite;
         }
         @keyframes dash {
             to { stroke-dashoffset: -100; }
         }
-        
+        @media (prefers-reduced-motion: reduce) {
+            svg > path { animation: none; }
+        }
+
         /* B: Hover-Effekte auf Gruppen/Knoten */
         .node rect {
             transition: filter 0.3s ease, transform 0.3s ease;
@@ -82,7 +85,7 @@
         .node:hover rect {
             filter: brightness(1.1);
         }
-        
+
         /* C: Happy-Path in grasp_states hervorheben */
         .happy-edge {
             stroke: #0a7a6d !important;

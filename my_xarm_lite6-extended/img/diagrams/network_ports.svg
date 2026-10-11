@@ -102,14 +102,17 @@
 
     <style>
         /* A: Dash-Animation für alle Verbindungen */
-        path {
+        svg > path {
             stroke-dasharray: 6;
             animation: dash 20s linear infinite;
         }
         @keyframes dash {
             to { stroke-dashoffset: -100; }
         }
-        
+        @media (prefers-reduced-motion: reduce) {
+            svg > path { animation: none; }
+        }
+
         /* B: Hover-Effekte auf Gruppen/Knoten */
         .node rect {
             transition: filter 0.3s ease, transform 0.3s ease;
@@ -118,7 +121,7 @@
         .node:hover rect {
             filter: brightness(1.1);
         }
-        
+
         /* C: Happy-Path in grasp_states hervorheben */
         .happy-edge {
             stroke: #0a7a6d !important;
