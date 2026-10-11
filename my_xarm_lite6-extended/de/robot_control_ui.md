@@ -691,7 +691,7 @@
 >> | **`/ui/set_moveit_collision_objects`** | `std_srvs/srv/SetBool` (Client) | *Schalter „Object collision“ im Planning-Panel (MoveIt).* |
 >> | **`/ui/set_moveit_collision_ground`** | `std_srvs/srv/SetBool` (Client) | *Schild von „Scene › Environment › Table + floor“ (MoveIt-Bodenkollision).* |
 >> | **`/ui/set_moveto_preview`** / **`/ui/confirm_moveto_preview`** | `std_srvs/srv/SetBool` (Client) | *Geist-Icon bzw. „Execute path / Discard“ im MoveIt-Popup.* |
->> | **`/remote/control_request`** `reset_estop` | `std_msgs/String` (JSON) | *Reset-Button neben dem E-STOP: der Watchdog ruft `/ui/reset_emergency_stop` für den Besitzer der Steuerung / den Server-PC auf; Antwort in `control_state.results`.* |
+>> | **`/remote/control_request`** `reset_estop` | `std_msgs/String` (JSON) | *Reset-Button neben dem E-STOP: der Watchdog ruft `/ui/reset_emergency_stop` nur für den Server-PC auf; Antwort in `control_state.results`.* |
 >> | **`/ui/approach_from_above`** | `xarm_msgs/srv/MoveCartesian` (Client) | *„Approach from above“ im Objekt-Kontextmenü.* |
 >> | **`/ui/plan_move_to_pose_confirm`** / **`/ui/approach_from_above_confirm`** | `xarm_msgs/srv/MoveCartesian` (Client) | *Gizmo loslassen / „Approach from above“ bei Auto-Move aus: erst planen, nach *Execute* fahren.* |
 >> | **`/rosapi/nodes`** | `rosapi/Nodes` (Client) | *Erkennt anhand der Node-Liste den aktiven Hardware-Modus (Fake Arm vs. Real Arm).* |

@@ -687,7 +687,7 @@
 >> | **`/ui/set_moveit_collision_objects`** | `std_srvs/srv/SetBool` (Client) | *"Object collision" switch in the Planning panel (MoveIt).* |
 >> | **`/ui/set_moveit_collision_ground`** | `std_srvs/srv/SetBool` (Client) | *Shield of "Scene › Environment › Table + floor" (MoveIt floor collision).* |
 >> | **`/ui/set_moveto_preview`** / **`/ui/confirm_moveto_preview`** | `std_srvs/srv/SetBool` (Client) | *Ghost icon and "Execute path / Discard" in the MoveIt popup.* |
->> | **`/remote/control_request`** `reset_estop` | `std_msgs/String` (JSON) | *Reset button next to the E-STOP: the watchdog calls `/ui/reset_emergency_stop` for the lock owner / server PC; answer in `control_state.results`.* |
+>> | **`/remote/control_request`** `reset_estop` | `std_msgs/String` (JSON) | *Reset button next to the E-STOP: the watchdog calls `/ui/reset_emergency_stop` only for the server PC; answer in `control_state.results`.* |
 >> | **`/ui/approach_from_above`** | `xarm_msgs/srv/MoveCartesian` (Client) | *"Approach from above" in the object context menu.* |
 >> | **`/ui/plan_move_to_pose_confirm`** / **`/ui/approach_from_above_confirm`** | `xarm_msgs/srv/MoveCartesian` (Client) | *Gizmo release / "Approach from above" with Auto-Move off: plan first, move after *Execute*.* |
 >> | **`/rosapi/nodes`** | `rosapi/Nodes` (Client) | *Detects the running hardware mode (Fake Arm vs. Real Arm) from the node list.* |
