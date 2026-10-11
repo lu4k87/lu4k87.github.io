@@ -14,7 +14,7 @@ dev_ws/
 │   ├── agents/                                                            # Project agents: ws-explorer, test-runner, ui-verifier, safety-reviewer, robustness-reviewer, showcase-reviewer, docs-auditor
 │   ├── hooks/                                                             # Checks before a command and after each edit
 │   ├── memory/                                                            # Shared Claude memory (in Git, linked by tools/ws_sync.sh)
-│   ├── mods/                                                              # Claude Code mods: answer-cards (answers as cards in VS Code), ros-safety-status (Robot | Digital Twin / Robot | Hardware status line)
+│   ├── mods/                                                              # Claude Code mods: ros-safety-status (Robot | Digital Twin / Robot | Hardware status line)
 │   ├── skills/                                                            # Skills with their scripts, e.g. preview/ (capture.py screenshots, build.py spec → page), answer-page/ (answer format)
 │   └── README.md                                                          # Overview of hooks, skills, agents, mods
 ├── _imgs/                                                                 # System screenshots, architecture diagrams & assets
