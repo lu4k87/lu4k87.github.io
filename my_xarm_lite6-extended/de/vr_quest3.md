@@ -89,6 +89,7 @@
 >> |---|---|---|
 >> | **`/vr_teleop/controller_data`** | `std_msgs/String` | *Empfängt 6-DoF-Controller-Posen, Buttons und Joystick-Zustände als JSON aus der WebXR-Oberfläche.* |
 >> | **`/ui/emergency_stop_active`** | `std_msgs/Bool` (latched) | *E-STOP verriegelt → Grip, Trigger und Linearachse ignoriert, Servo angehalten.* |
+>> | **`/ui/emergency_stop_topic`** | `std_msgs/Empty` | *E-STOP gedrückt → verriegelt sofort, auch wenn der Motion Handler hängt; frei erst nach dem Quittieren (`/ui/emergency_stop_active` true → false).* |
 >> | **`/ui/motion_busy`** | `std_msgs/Bool` (latched) | *Geplante Fahrt des Motion Handlers läuft → kein Servo-Start, Grip und Linearachse ignoriert.* |
 >> | **`/remote/control_state`** | `std_msgs/String` (latched) | *Control-Lock des `remote_control_watchdog`: nur mit Steuerung bewegt die Brille Roboter, Greifer und Linearachse.* |
 >

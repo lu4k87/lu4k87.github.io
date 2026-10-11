@@ -68,6 +68,7 @@
 >> |---|---|---|
 >> | **`/vr_teleop/controller_data`** | `std_msgs/String` | *Receives JSON-encoded 6DoF controller poses, buttons, and joystick states from WebXR.* |
 >> | **`/ui/emergency_stop_active`** | `std_msgs/Bool` (latched) | *E-STOP latched → grip, trigger and linear axis ignored, servo halted.* |
+>> | **`/ui/emergency_stop_topic`** | `std_msgs/Empty` | *E-STOP pressed → latches at once, even if the motion handler hangs; released only after the reset (`/ui/emergency_stop_active` true → false).* |
 >> | **`/ui/motion_busy`** | `std_msgs/Bool` (latched) | *Planned motion of the motion handler running → no servo start, grip and linear axis ignored.* |
 >> | **`/remote/control_state`** | `std_msgs/String` (latched) | *Control lock of `remote_control_watchdog`: only with control does the headset move the robot, gripper and linear axis.* |
 >
