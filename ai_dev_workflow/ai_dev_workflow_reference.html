@@ -735,7 +735,7 @@ html.wf-js .wf-stage.reset .msg { transition-duration: 200ms; }
 .kit-search input { flex: 1 1 auto; min-width: 0; border: 0; background: transparent; color: var(--fg); font: 600 14.5px var(--font); outline: none; }
 .kit-count { font: 700 13px/1.2 var(--mono); color: var(--fg); }
 .kit { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; align-items: start; }
-.kcol.k-skills { grid-column: 1 / -1; }
+.kcol.k-skills, .kcol.k-mcp { grid-column: 1 / -1; }
 .kgs { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 12px 16px; align-items: start; }
 .kg { display: grid; gap: 6px; align-content: start; }
 .kcol { display: grid; gap: 10px; min-width: 0; padding: 14px; border: 1px solid color-mix(in srgb, var(--hue) 35%, var(--line)); border-radius: var(--radius); background: var(--surface); box-shadow: var(--shadow); }
@@ -919,6 +919,7 @@ html.wf-js .wf-stage.reset .msg { transition-duration: 200ms; }
   <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></symbol>
   <symbol id="i-spark" viewBox="0 0 24 24"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8zM19 16l.8 2.2L22 19l-2.2.8L19 22l-.8-2.2L16 19l2.2-.8z"/></symbol>
   <symbol id="i-repo" viewBox="0 0 24 24"><path d="M5 4.5A1.5 1.5 0 0 1 6.5 3H19v15H6.5A1.5 1.5 0 0 0 5 19.5zM5 19.5A1.5 1.5 0 0 0 6.5 21H19v-3"/><path d="M9 7h6"/></symbol>
+  <symbol id="i-plug" viewBox="0 0 24 24"><path d="M9 2.5v5M15 2.5v5M6.5 7.5h11v3a5.5 5.5 0 0 1-11 0zM12 16v5.5"/></symbol>
   <symbol id="i-win" viewBox="0 0 24 24"><rect x="2.5" y="4" width="19" height="16" rx="2"/><path d="M2.5 8.5h19M6 6.3h.01M8.5 6.3h.01"/></symbol>
   <symbol id="i-book" viewBox="0 0 24 24"><path d="M4 4.5A1.5 1.5 0 0 1 5.5 3H11v17H5.5A1.5 1.5 0 0 1 4 18.5zM20 4.5A1.5 1.5 0 0 0 18.5 3H13v17h5.5a1.5 1.5 0 0 0 1.5-1.5z"/></symbol>
   <symbol id="i-chat" viewBox="0 0 24 24"><path d="M4 5.5h16v10H10l-4 3.5v-3.5H4z"/><path d="M8 9.5h8M8 12.5h5"/></symbol>
@@ -1006,7 +1007,7 @@ html.wf-js .wf-stage.reset .msg { transition-duration: 200ms; }
 <section class="sec" id="werkzeugkasten">
         <header class="sec-head">
           <div><span class="eyebrow" style="--hue: var(--pink)"><span class="n">01</span><span data-en="Toolbox">Werkzeugkasten</span></span><h2 data-en="Skills, agents, hooks and scripts interlock">Skills, Agenten, Hooks und Skripte greifen ineinander</h2></div>
-          <div class="brief"><p data-en="Skills carry the knowledge, agents are thin shells that load a skill and work in isolation, hooks enforce rules, scripts deliver the evidence. Search, or touch an element to see its connections.">Skills tragen das Wissen, Agenten sind dünne Hüllen, die einen Skill laden und isoliert arbeiten, Hooks setzen Regeln durch, Skripte liefern den Beleg. Suchen oder Element berühren zeigt Verbindungen.</p></div>
+          <div class="brief"><p data-en="Skills carry the knowledge, agents are thin shells that load a skill and work in isolation, hooks enforce rules, scripts deliver the evidence, MCP servers connect the chat to running programs. Search, or touch an element to see its connections.">Skills tragen das Wissen, Agenten sind dünne Hüllen, die einen Skill laden und isoliert arbeiten, Hooks setzen Regeln durch, Skripte liefern den Beleg, MCP-Server verbinden den Chat mit laufenden Programmen. Suchen oder Element berühren zeigt Verbindungen.</p></div>
         </header>
         <div class="kit-bar">
           <label class="kit-search"><svg class="ico" aria-hidden="true"><use href="#i-search"/></svg><span class="sr" hidden data-en="Search">Suchen</span><input type="search" placeholder="Suchen: ui, test, vla …" data-en-ph="Search: ui, test, vla …" aria-label="Werkzeugkasten durchsuchen" data-en-aria="Search the toolbox"></label>
@@ -1165,6 +1166,21 @@ html.wf-js .wf-stage.reset .msg { transition-duration: 200ms; }
               <li><button type="button" class="ki" data-id="check_print" data-rel=""><span class="nm">check_print.py</span><span class="ds" data-en="Print part: watertight, walls, overhang">Druckteil: dicht, Wandstärke, Überhang</span></button></li>
             </ul>
           </div>
+          <div class="kcol k-mcp" style="--hue: var(--blue)" data-kind="MCP-Server" data-kind-en="MCP server">
+            <header><h3><svg class="ico" aria-hidden="true"><use href="#i-plug"/></svg><span data-en="MCP servers">MCP-Server</span><em data-en="1 active">1 aktiv</em></h3><p data-en="Connect a running program to the chat as extra tools (Model Context Protocol). Only where no terminal command can reach – each server costs context in every chat for its tool descriptions.">Binden ein laufendes Programm als zusätzliche Werkzeuge an den Chat an (Model Context Protocol). Nur dort, wo kein Befehl im Terminal hinkommt – jeder Server kostet in jedem Chat Kontext für seine Werkzeug-Beschreibungen.</p></header>
+            <div class="kgs">
+              <div class="kg"><span class="kgrp" data-en="Active · .mcp.json of the project">Eingebunden · .mcp.json des Projekts</span>
+              <ul class="kl">
+              <li><button type="button" class="ki" data-id="mcp-blender" data-rel="blender motion-3d"><span class="nm">blender</span><span class="ds" data-en="Live access to the open Blender scene">Live-Zugriff auf die geöffnete Blender-Szene</span></button></li>
+              </ul></div>
+              <div class="kg"><span class="kgrp" data-en="Deliberately not added">Bewusst nicht eingebunden</span>
+              <ul class="kl">
+              <li><button type="button" class="ki" data-id="mcp-ros2" data-rel="ros-debug stack-diagnoser"><span class="nm">ROS 2 MCP</span><span class="ds" data-en="Duplicates ros2 commands; read-only at most, never moves the robot">Doppelt zu ros2-Befehlen; höchstens nur lesend, bewegt nie den Roboter</span></button></li>
+              <li><button type="button" class="ki" data-id="mcp-chrome" data-rel="capture ui_checker"><span class="nm">Chrome DevTools MCP</span><span class="ds" data-en="Duplicates capture.py and ui_new_code_checker.py">Doppelt zu capture.py und ui_new_code_checker.py</span></button></li>
+              <li><button type="button" class="ki" data-id="mcp-github" data-rel="commit"><span class="nm">GitHub MCP</span><span class="ds" data-en="The gh command is enough">Der Befehl gh reicht</span></button></li>
+              </ul></div>
+            </div>
+          </div>
         </div>
         <p class="kit-none" data-en="No match. Try ui, test, vla or review.">Kein Treffer – probier ui, test, vla oder review.</p>
         <p class="kit-detail" aria-live="polite"></p>
@@ -1313,6 +1329,8 @@ python3 tools/claim.py done --who &lt;chat-id&gt;</pre>
         <div class="tr"><span class="p"><svg class="ico"><use href="#i-shield"/></svg>Hook</span><span class="w" data-en="Script that runs automatically at fixed points of a chat and checks, warns, asks or blocks.">Skript, das an festen Stellen eines Chats automatisch läuft und prüft, warnt, fragt oder blockiert.</span></div>
         <div class="tr"><span class="p"><svg class="ico"><use href="#i-stop"/></svg><span data-en="Stop hook">Stop-Hook</span></span><span class="w" data-en="Hook at the end of every answer; &lt;code&gt;format_check.py&lt;/code&gt; checks the answer format there.">Hook am Ende jeder Antwort; <code>format_check.py</code> prüft dort das Antwortformat.</span></div>
         <div class="tr"><span class="p"><svg class="ico"><use href="#i-loop"/></svg>Bridge</span><span class="w" data-en="Adapter script that runs the same hooks in Codex and Antigravity.">Übersetzer-Skript, mit dem dieselben Hooks auch in Codex und Antigravity laufen.</span></div>
+        <div class="tr"><span class="p"><svg class="ico"><use href="#i-plug"/></svg>MCP</span><span class="w" data-en="Model Context Protocol: open standard through which an AI tool uses other programs as extra tools.">Model Context Protocol: offener Standard, über den ein KI-Werkzeug fremde Programme als zusätzliche Werkzeuge nutzt.</span></div>
+        <div class="tr"><span class="p"><svg class="ico"><use href="#i-plug"/></svg><span data-en="MCP server">MCP-Server</span></span><span class="w" data-en="Small program that offers a chat the tools of another program (e.g. Blender live); listed in the project’s &lt;code&gt;.mcp.json&lt;/code&gt;.">Kleines Programm, das einem Chat die Werkzeuge eines anderen Programms anbietet (z.&nbsp;B. Blender live); eingetragen in <code>.mcp.json</code> des Projekts.</span></div>
         <div class="tr"><span class="p"><svg class="ico"><use href="#i-key"/></svg>Trust</span><span class="w" data-en="Approval in Codex that the project and hooks may run; needed again after hook changes.">Freigabe in Codex, dass Projekt und Hooks laufen dürfen; nach Änderungen an Hooks neu nötig.</span></div>
         <div class="tr"><span class="p"><svg class="ico"><use href="#i-info"/></svg><span data-en="Situation report">Lagebild</span></span><span class="w" data-en="Overview at chat start: running chats, others’ changes, open handoffs.">Übersicht beim Chat-Start: laufende Chats, fremde Änderungen, offene Übergaben.</span></div>
         <div class="tr"><span class="p"><svg class="ico"><use href="#i-file"/></svg><span data-en="File register">Datei-Register</span></span><span class="w" data-en="List of which chat changed which file uncommitted – this computer only, live.">Liste, welcher Chat welche Datei uncommittet geändert hat – nur dieser Rechner, live.</span></div>
@@ -1390,7 +1408,7 @@ window.ScrollFlow?.init({
 
 
 
-/* Werkzeugkasten: Verbindungen (data-rel, beidseitig) beim Berühren, Klick hält die Auswahl, Suche filtert alle vier Spalten */
+/* Werkzeugkasten: Verbindungen (data-rel, beidseitig) beim Berühren, Klick hält die Auswahl, Suche filtert alle Spalten */
 function initKit() {
   const kit = document.querySelector('.kit'), out = document.querySelector('.kit-detail'), cnt = document.querySelector('.kit-count'), q = document.querySelector('.kit-search input');
   const IDLE = ['Element berühren, fokussieren oder anklicken (Klick hält die Auswahl, Esc löst sie).', 'Touch, focus or click an element (a click keeps the selection, Esc releases it).'];
