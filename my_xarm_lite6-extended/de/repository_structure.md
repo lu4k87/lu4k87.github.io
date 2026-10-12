@@ -129,6 +129,7 @@ dev_ws/
 │   │       ├── yolo_grasp_executor.py                                     # Fallback: direktes kartesisches Greifen über /ui/execute_move_to_pose
 │   │       ├── grasp_action_bridge.py                                     # Bridge /ui/grasp_object_cmd (Topic) → GraspObject Action
 │   │       └── virtual_object_detections.py                               # Virtuelle Szenenobjekte (Cube, Rectangle, Cylinder + 5 Greif-Objekte) als Detektionen
+│   ├── leap_hand_teleop/                                                  # ✋ Python: Leap Motion 2 – der TCP folgt der kneifenden Hand (/remote/twist → Twist-Gate des Watchdogs)
 │   ├── remote_control_watchdog/                                           # 🔒 Python: Server-Seite der Client/Server-Steuerung
 │   │   ├── launch/remote_control_watchdog.launch.py                       # Eingebunden von http_robot_control_ui.launch.py
 │   │   └── remote_control_watchdog/remote_control_watchdog.py             # Control-Lock, Freigabe, Heartbeats, Grenzen (Robot | Hardware / Robot | Digital Twin), Remote-Gamepad → /joy

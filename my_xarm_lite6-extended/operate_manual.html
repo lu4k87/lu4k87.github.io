@@ -1679,14 +1679,14 @@
   <div class="bento">
     <div class="card safety-card s-8">
       <div class="safety-key" aria-label="Legende" data-en-aria="Legend">
-        <span class="chip" style="--k:var(--c-cli)" data-en="1 – 2 Remote gamepad only">1 – 2 nur Remote-Gamepad</span>
+        <span class="chip" style="--k:var(--c-cli)" data-en="1 Remote gamepad + twist gate · 2 remote gamepad + twist of remote clients">1 Remote-Gamepad + Twist-Gate · 2 Remote-Gamepad + Twist entfernter Clients</span>
         <span class="chip" style="--k:var(--c-ws)" data-en="3 Gamepad local + remote">3 Gamepad lokal + remote</span>
-        <span class="chip" style="--k:var(--c-svc)" data-en="4 all Servo modes: Gamepad, Jogging, VR">4 alle Servo-Wege: Gamepad, Jogging, VR</span>
+        <span class="chip" style="--k:var(--c-svc)" data-en="4 all Servo modes: Gamepad, Jogging, VR, Leap">4 alle Servo-Wege: Gamepad, Jogging, VR, Leap</span>
         <span class="chip" style="--k:var(--c-topic)" data-en="5 – 6 Planned target pose">5 – 6 geplante Zielpose</span>
         <span class="chip" style="--k:var(--crit)" data-en="7 always applies">7 wirkt immer</span>
       </div>
       <ol class="safety">
-        <li style="--k:var(--c-cli)"><div><b data-en="Control Lock and Heartbeat">Control-Lock und Heartbeat</b><small>remote_control_watchdog</small></div><ul class="bl sm"><li data-en="Only remote gamepad and jogging (browser, UX | Compact Interface, VR) of control holder pass through">Nur Remote-Gamepad und Jogging (Browser, UX | Compact Interface, VR) des Control-Inhabers kommen durch</li><li data-en="No heartbeat → Node sends neutral gamepad or zero twist">Kein Heartbeat → Node sendet neutrales Gamepad bzw. Null-Twist</li><li data-en="Server PC authenticates with signed server token (127.x only)">Server-PC weist sich mit signiertem Server-Token aus (nur 127.x)</li></ul><span class="where srv" data-en="Server">Server</span></li>
+        <li style="--k:var(--c-cli)"><div><b data-en="Control Lock and Heartbeat">Control-Lock und Heartbeat</b><small>remote_control_watchdog</small></div><ul class="bl sm"><li data-en="Only remote gamepad and jogging (browser, UX | Compact Interface, VR, Leap) of control holder pass through">Nur Remote-Gamepad und Jogging (Browser, UX | Compact Interface, VR, Leap) des Control-Inhabers kommen durch</li><li data-en="No heartbeat → Node sends neutral gamepad or zero twist">Kein Heartbeat → Node sendet neutrales Gamepad bzw. Null-Twist</li><li data-en="Server PC authenticates with signed server token (127.x only)">Server-PC weist sich mit signiertem Server-Token aus (nur 127.x)</li></ul><span class="where srv" data-en="Server">Server</span></li>
         <li style="--k:var(--c-cli)"><div><b data-en="Limits for Robot | Hardware and Robot | Digital Twin">Grenzen für Robot | Hardware und Robot | Digital Twin</b><small>fake_max_speed · real_max_speed · real_require_arm</small></div><ul class="bl sm"><li data-en="Robot | Hardware: lower speed, shorter timeout">Robot | Hardware: geringeres Tempo, kürzerer Timeout</li><li data-en="Robot | Hardware: approval required, expires without activity">Robot | Hardware: Freigabe nötig, verfällt ohne Aktivität</li></ul><span class="where srv" data-en="Server">Server</span></li>
         <li style="--k:var(--c-ws)"><div><b data-en="Collision Pre-Check">Kollisionsvorprüfung</b><small>teleop_pre_collision_checker · /joy → /joy_check</small></div><ul class="bl sm"><li data-en="Looks 0.25 s ahead">Schaut 0,25 s voraus</li><li data-en="Up to 19 mm above Z Collision Level: 25 % speed">Bis 19 mm über dem Z Collision Level: 25 % Tempo</li><li data-en="At Z Collision Level: halt downward motion">Am Z Collision Level: Stopp nach unten</li></ul><span class="where srv" data-en="Server">Server</span></li>
         <li style="--k:var(--c-svc)"><div><b>MoveIt Servo</b><small>/servo_server/status</small></div><ul class="bl sm"><li data-en="Decelerates and halts on singularity, joint limit, collision">Bremst und stoppt bei Singularität, Gelenkgrenze, Kollision</li><li data-en="Status in HUD and RViz overlay">Status im HUD und im RViz-Overlay</li></ul><span class="where srv" data-en="Server">Server</span></li>
@@ -1706,7 +1706,8 @@
       <div class="card accent" style="--k:var(--warn)">
         <span class="label" data-en="Checked in browser">Im Browser geprüft</span>
         <ul class="bl" style="--k:var(--warn)">
-          <li data-en="Jogging buttons and VR go directly to Servo (4)">Jogging-Tasten und VR gehen direkt an Servo (4)</li>
+          <li data-en="Jogging buttons and VR: lock in the browser, plus twist gate (1) on the server">Jogging-Tasten und VR: Sperre im Browser, dazu Twist-Gate (1) am Server</li>
+          <li data-en="Leap: only the confirmation in the browser, dead man and locks in the node">Leap: nur die Bestätigung im Browser, Totmann und Sperren im Node</li>
           <li data-en="Control lock: Browser">Steuerungssperre: Browser</li>
           <li data-en="Floor brake of jogging buttons: Browser">Bodenbremse der Jogging-Tasten: Browser</li>
         </ul>
@@ -1895,6 +1896,7 @@
             <tr><td data-en="Max. speed remote gamepad">Max. Tempo Remote-Gamepad</td><td class="num col-fake">100 %</td><td class="num col-real">50 %</td></tr>
             <tr><td data-en="Stop without heartbeat">Stopp ohne Heartbeat</td><td class="num col-fake">1,0 s</td><td class="num col-real">0,4 s</td></tr>
             <tr><td data-en="Approval &amp;ldquo;Arm gamepad&amp;rdquo;">Freigabe „Arm gamepad“</td><td class="col-fake" data-en="no">nein</td><td class="col-real" data-en="yes, when &lt;code&gt;real_require_arm&lt;/code&gt; is on · expires after 60 s without input and on any mode change">ja, wenn <code>real_require_arm</code> an · verfällt nach 60 s ohne Eingabe und bei jedem Moduswechsel</td></tr>
+            <tr><td data-en="Leap hand control (Leap Motion 2)">Leap-Handsteuerung (Leap Motion 2)</td><td class="col-fake" data-en="Gestures switches on at once · speed override in the header × 400 mm/s, at most 100 mm/s">Gestures schaltet sofort ein · Tempo-Override im Header × 400 mm/s, höchstens 100 mm/s</td><td class="col-real" data-en="switch on only after holding 1 s in the confirmation dialog · half speed (× &lt;code&gt;real_max_speed&lt;/code&gt; 0.5)">Einschalten erst nach 1 s Halten im Bestätigungs-Dialog · halbes Tempo (× <code>real_max_speed</code> 0,5)</td></tr>
             <tr><td data-en="Mouse/touch on remote client">Maus/Touch am Remote-Client</td><td class="col-fake" data-en="only after approval on server (&amp;ldquo;Allow&amp;rdquo;)">erst nach Freigabe am Server („Allow“)</td><td class="col-real" data-en="only after approval on server (&amp;ldquo;Allow&amp;rdquo;)">erst nach Freigabe am Server („Allow“)</td></tr>
           </tbody>
         </table>
@@ -3073,7 +3075,7 @@ function initShell(onShow) {
 
 (function () {
   var LAYERS = [
-    { id: 'human', name: 'Mensch und Geräte', hint: 'Maus, Touch, Gamepad, Quest 3, Mikrofon, Tobii' },
+    { id: 'human', name: 'Mensch und Geräte', hint: 'Maus, Touch, Gamepad, Quest 3, Leap Motion 2, Mikrofon, Tobii' },
     { id: 'ui', name: 'Oberflächen', hint: ':8080 · :8081 · :8083 · :8443 · RViz' },
     { id: 'bridge', name: 'Server und Brücken', hint: 'rosbridge :9090/:9091/:9092, HTTP-Server, joy_node' },
     { id: 'logic', name: 'Koordination und Sicherheit', hint: 'Watchdog, Kollisionsvorprüfung, Motion Handler, VLA, Blackbox' },
@@ -3087,6 +3089,7 @@ function initShell(onShow) {
     ['touchdisp', 'human', 'Touch-Display', 'USB + HDMI am Roboter-PC', 'Kleines Zusatzdisplay direkt am Rechner für Start, Stopp und Systemzustand.'],
     ['pad', 'human', 'Gamepad', 'USB lokal oder am Remote-Browser', 'Fährt den Arm kontinuierlich. Lokal über joy_node, entfernt über die Gamepad-API des Browsers.'],
     ['quest', 'human', 'Meta Quest 3', 'Headset + Controller', 'Immersive Bedienung: Hand führt den Arm (SERVO) oder zieht ein Ziel (PLAN). Gibt Haptik zurück.'],
+    ['leap', 'human', 'Leap Motion 2', 'USB am Roboter-PC · Ultraleap-Dienst', 'Erkennt eine Hand von unten. Kneifen kuppelt die Hand an den TCP, Hand öffnen hält an.'],
     ['mic', 'human', 'Mikrofon', 'Sprache', 'Audioquelle für die Spracherkennung.'],
     ['tobii', 'human', 'Tobii Glasses', 'Blickpunkt · RTSP :8554', 'Brille für die Blicksteuerung: liefert Szenevideo und Blickpunkt. Auswahl durch Hinsehen.'],
 
@@ -3111,6 +3114,7 @@ function initShell(onShow) {
     ['pre', 'logic', 'Kollisionsvorprüfung', 'teleop_pre_collision_checker', 'Filtert Gamepad-Befehle anhand der aktuellen TCP-Position, bevor sie zu Servo gelangen.'],
     ['joyin', 'logic', 'Joystick → Servo', 'xarm_joystick_input', 'Rechnet Gamepad-Achsen in Twist- und Gelenkbefehle um. Veröffentlicht auch TCP-Position, Geschwindigkeit und Frame.'],
     ['vrnode', 'logic', 'VR-Teleop', 'vr_quest3_teleop_node', 'Rechnet Controller-Posen in Servo-Befehle um, schaltet Greifer und Linearachse.'],
+    ['leapnode', 'logic', 'Leap-Handsteuerung', 'leap_hand_teleop_node', 'Macht aus der kneifenden Hand Twist-Befehle (Handweg / Skala 1:1, 1:2, 1:4) für das Twist-Gate des Watchdogs. Totmann: jede Störung hält an und entkuppelt.'],
     ['voice', 'logic', 'Sprachbefehle', 'voice_command_listener', 'Startet auf Auslöser die Erkennung, ordnet den Text einem Befehl zu und meldet ihn an die UI.'],
     ['whisper', 'logic', 'Whisper', 'ros2_whisper · /whisper/inference', 'Sprache zu Text, mit GPU und Silero VAD.'],
     ['vla', 'logic', 'VLA-M Bridge', 'vla_bridge · /vla/*', 'Backend des VLA-M-Chats: VLA-Agent (lokal Ollama, optional Claude) plant mit den Objekten der Szene (auch virtuelle), prüft den Plan, führt nach Bestätigung über den Motion Handler aus, prüft den Griff und plant bei Fehlern neu. dry_run = nur Plan. Später LeRobot als Skill.'],
@@ -3204,6 +3208,11 @@ function initShell(onShow) {
     ['vrnode', 'grip', 'svc', '/ufactory/open_lite6_gripper · close_lite6_gripper · set_vacuum_gripper'],
     ['vrnode', 'axis', 'topic', '/linear_axis_cmd'],
     ['motion', 'vrnode', 'topic', '/ui/emergency_stop_active (latched)'],
+    ['leap', 'leapnode', 'hci', 'Hand: 21 Gelenke, Kneif-Stärke'],
+    ['rb9090', 'leapnode', 'topic', '/leap/config (nur :9092, Client-id, an/aus, Skala)'],
+    ['leapnode', 'rb9090', 'topic', '/leap/hand → Ring LEAP im Viewport'],
+    ['leapnode', 'wd', 'topic', '/remote/twist (Client-id des Browsers)'],
+    ['motion', 'leapnode', 'topic', '/ui/emergency_stop_active (latched)'],
     ['voice', 'whisper', 'svc', '/whisper/inference (Action)'],
     ['gazegrasp', 'motion', 'svc', '/ui/execute_move_to_pose'],
     ['tftuner', 'motion', 'topic', '/ui/safety_zone_params'],
@@ -3243,6 +3252,8 @@ function initShell(onShow) {
       steps: [['mouse', 'rcui', 'TCP-Gizmo ziehen'], ['rcui', 'rb9090', 'Service-Aufruf'], ['rb9090', 'motion', '/ui/plan_move_to_pose_confirm'], ['motion', 'mg', 'Bahn planen, Szene prüfen'], ['motion', 'rb9090', '/ui/moveto_preview_path als Vorschau'], ['rb9090', 'motion', 'Bestätigung: /ui/confirm_moveto_preview'], ['mg', 'ctrl', 'Bahn ausführen'], ['ctrl', 'arm', 'Arm bewegt sich']] },
     { id: 'vr', name: 'VR Quest 3', intro: 'Im Modus SERVO folgt der Arm der Hand, solange der Grip gehalten wird.',
       steps: [['quest', 'vrui', 'Grip halten, Hand bewegen'], ['vrui', 'https', 'Seite kommt über HTTPS'], ['vrui', 'rb9091', '/vr_teleop/controller_data'], ['rb9091', 'vrnode', 'Pose in Geschwindigkeit umrechnen'], ['vrnode', 'wd', '/remote/twist, Besitz prüfen'], ['wd', 'servo', 'Twist-Befehl'], ['servo', 'ctrl', 'kurze Trajektorie'], ['ctrl', 'arm', 'Arm bewegt sich'], ['vrnode', 'grip', 'Trigger schaltet den Greifer']] },
+    { id: 'leap', name: 'Leap Motion 2', intro: 'Gestures in der Viewport-Leiste wählt die Leap am Roboter-PC; Robot | Hardware: erst 1 s halten im Bestätigungs-Dialog, dann halbes Tempo. Kneifen kuppelt, der TCP folgt dem Handweg / Skala (1:1, 1:2, 1:4), Hand öffnen hält an. Tempo = Tempo-Override im Header × 400 mm/s, höchstens 100 mm/s.',
+      steps: [['mouse', 'rcui', 'Gestures klicken'], ['rcui', 'rb9090', '/leap/config alle 250 ms (nur :9092)'], ['rb9090', 'leapnode', 'an/aus, Skala, Client-id'], ['leap', 'leapnode', 'kneifen = kuppeln, öffnen = Halt'], ['leapnode', 'wd', '/remote/twist, Besitz, Heartbeat, E-STOP, Boden'], ['wd', 'servo', 'Twist-Befehl'], ['servo', 'ctrl', 'kurze Trajektorie'], ['ctrl', 'arm', 'Arm bewegt sich'], ['leapnode', 'rb9090', '/leap/hand → Ring LEAP im Viewport']] },
     { id: 'voice', name: 'Sprache', intro: 'Der erkannte Befehl kommt als Text zurück in den Browser. Erst die UI löst die Bewegung aus.',
       steps: [['mouse', 'rcui', 'Zuhören starten'], ['rcui', 'rb9090', '/ui/voice_listen_trigger'], ['rb9090', 'voice', 'Erkennung anstoßen'], ['mic', 'whisper', 'Audio'], ['voice', 'whisper', '/whisper/inference'], ['voice', 'rb9090', '/ui/voice_feedback'], ['rb9090', 'rcui', 'voice.js ordnet den Befehl zu'], ['rb9090', 'motion', 'z. B. /ui/execute_initial_pose'], ['motion', 'mg', 'planen'], ['mg', 'ctrl', 'ausführen'], ['ctrl', 'arm', 'Arm bewegt sich']] },
     { id: 'gaze', name: 'Blick', intro: 'Ein Objekt ansehen genügt als Auswahl. Dieser Weg braucht keinen Browser.',
@@ -3261,8 +3272,9 @@ function initShell(onShow) {
   var STAGE_K = ['c-cli', 'c-cli', 'c-ws', 'c-svc', 'c-topic', 'c-topic', 'crit'];
   [['Remote-Gamepad', '', [1, 2, 3, 4, 7]],
    ['Gamepad lokal', '', [3, 4, 7]],
-   ['Jogging-Tasten', '+ Sperre, Bodenbremse im Browser', [4, 7]],
-   ['VR Quest 3', '+ Sperre im Browser', [4, 7]],
+   ['Jogging-Tasten', '+ Sperre, Bodenbremse im Browser · 2 nur bei entfernten Clients', [1, 4, 7]],
+   ['VR Quest 3', '+ Sperre im Browser', [1, 2, 4, 7]],
+   ['Leap Motion 2', '+ Totmann · Robot | Hardware: Bestätigung, halbes Tempo', [1, 4, 7]],
    ['Zielpose planen', '', [5, 6, 7]],
    ['VLA-M (Agent)', '+ Execute im Chat, Robot | Hardware gesperrt · 6 nur im Ghost-Modus', [5, 7]]].forEach(function (r) {
     var tr = document.createElement('tr');
@@ -3712,7 +3724,7 @@ function initShell(onShow) {
   // [Weg, Icon, Titel, Kurz, Stichpunkte, Tags, Knoten in der Architektur]
   var ST = {
     op: ['act', 'user', 'Bediener', 'Absicht', ['Wählt: Jogging, Zielpose, Objekt greifen, VLA-Anweisung, E-STOP', 'Prüft Twin, HUD und Kamerabild, korrigiert oder stoppt'], [], null],
-    dev: ['act', 'pad', 'Eingabegerät', 'Gamepad, Eyetracker, VR, Spracheingabe', ['Gamepad lokal: joy_node → /joy', 'Gamepad remote: Gamepad-API im Browser → /remote/joy', 'Quest 3: Controller-Pose → /vr_teleop/controller_data', 'Mikrofon → Whisper · Tobii → Blickpunkt + RTSP :8554'], ['Maus · Touch', 'Gamepad', 'Meta Quest 3', 'Mikrofon', 'Tobii Glasses'], 'pad'],
+    dev: ['act', 'pad', 'Eingabegerät', 'Gamepad, Eyetracker, VR, Leap, Spracheingabe', ['Gamepad lokal: joy_node → /joy', 'Gamepad remote: Gamepad-API im Browser → /remote/joy', 'Quest 3: Controller-Pose → /vr_teleop/controller_data', 'Leap Motion 2: kneifende Hand → leap_hand_teleop', 'Mikrofon → Whisper · Tobii → Blickpunkt + RTSP :8554'], ['Maus · Touch', 'Gamepad', 'Meta Quest 3', 'Leap Motion 2', 'Mikrofon', 'Tobii Glasses'], 'pad'],
     ui: ['act', 'screen', 'Oberfläche', 'Browser, VR, RViz', ['Jogging-Taste halten → delta_twist_cmds, loslassen = Stopp', 'TCP-Gizmo ziehen → Planung mit Ghost-Vorschau', 'Buttons → /ui/*-Services des Motion Handlers'], ['UX | Control Interface :8081', 'VR-Ansicht :8443', 'RViz + Control-Panel', 'Blick-UI (Fenster Gaze Control UI)'], 'rcui'],
     tr: ['act', 'swap', 'Transport', 'rosbridge, HTTP', ['rosbridge: JSON über WebSocket ↔ ROS-Topics und -Services', 'Einziger Weg vom Browser in den ROS-Graphen', 'UI-Server: /api/settings, /api/header_status, /api/sys_load, /api/cam_snapshot'], ['ws :9090', 'wss :9091', 'ws :9092', '/api/*'], 'rb9090'],
     lg: ['act', 'cpu', 'Logik + Planung', 'Nodes, MoveIt', ['Remote-Gamepad: remote_control_watchdog → /joy', 'Jogging aus Browser/VR: remote_control_watchdog → Servo', 'Gamepad: teleop_pre_collision_checker → /joy_check → xarm_joystick_input → Servo', 'Zielpose, Greifen, VLA: Motion Handler (/ui/*) → move_group'], ['remote_control_watchdog', 'teleop_pre_collision_checker', 'Motion Handler', 'move_group', 'MoveIt Servo'], 'motion'],
@@ -4707,6 +4719,7 @@ var NODES_EN = {
   touchdisp: ['Touch Display', 'USB + HDMI on robot PC', 'Small auxiliary display directly at computer for start, stop and system state.'],
   pad: ['Gamepad', 'USB local or on remote browser', 'Drives arm continuously. Locally via joy_node, remotely via browser Gamepad API.'],
   quest: ['Meta Quest 3', 'Headset + controller', 'Immersive operation: hand guides arm (SERVO) or drags target (PLAN). Provides haptic feedback.'],
+  leap: ['Leap Motion 2', 'USB at the robot PC · Ultraleap service', 'Tracks one hand from below. Pinching couples the hand to the TCP, opening the hand stops.'],
   mic: ['Microphone', 'Voice', 'Audio input source for speech recognition.'],
   tobii: ['Tobii Glasses', 'Gaze point · RTSP :8554', 'Eye tracking glasses: provides scene video and gaze point. Selection by looking.'],
   nexus: ['UX | Nexus Launcher', ':8080', 'Startup hub. Selects launch profiles (dev_fake, dev_real, server_fake, server_real, client), configures launch arguments, starts and stops processes, verifies pre-flight (checks robot, cameras, ports, GPU, Ollama), inspects per-run logs, and manages launcher_config.json backups.'],
@@ -4728,6 +4741,7 @@ var NODES_EN = {
   pre: ['Collision Pre-Check', 'teleop_pre_collision_checker', 'Filters gamepad commands against current TCP position before reaching MoveIt Servo.'],
   joyin: ['Joystick → Servo', 'xarm_joystick_input', 'Converts gamepad axes into twist and joint commands. Publishes TCP position, speed and reference frame.'],
   vrnode: ['VR Teleoperation', 'vr_quest3_teleop_node', 'Translates controller poses into Servo commands, toggles gripper and linear axis.'],
+  leapnode: ['Leap hand control', 'leap_hand_teleop_node', 'Turns the pinched hand into twist commands (hand path / scale 1:1, 1:2, 1:4) for the twist gate of the watchdog. Dead man: every disturbance stops and decouples.'],
   voice: ['Voice Commands', 'voice_command_listener', 'Triggers recognition on prompt, maps transcript to command, reports feedback to UI.'],
   whisper: ['Whisper', 'ros2_whisper · /whisper/inference', 'Speech-to-text processing using GPU and Silero VAD.'],
   vla: ['VLA-M Bridge', 'vla_bridge · /vla/*', 'Backend of VLA-M chat: VLA agent (local Ollama, optional Claude) plans using scene objects (including virtual), verifies plan, executes via Motion Handler upon confirmation, verifies grasp and replans on failure. dry_run = plan only. Future LeRobot skill.'],
@@ -4758,6 +4772,7 @@ var PATHS_EN = {
   jog: { name: 'Jogging controls', intro: 'Jogging section (ring segments X/Y, roll/pitch, yaw outer ring, Z proportional lever; speed bar = header speed), Hold mode: moves while button is held, release = stop. Step mode (1 / 5 / 10 mm/°): one click = planned step via MoveIt.' },
   plan: { name: 'Plan target pose', intro: 'Drag TCP gizmo in Digital Twin, inspect planned trajectory, execute.' },
   vr: { name: 'VR Quest 3', intro: 'In SERVO mode, the arm tracks the controller hand while holding grip.' },
+  leap: { name: 'Leap Motion 2', intro: 'Gestures in the viewport toolbar picks the Leap at the robot PC; Robot | Hardware: hold 1 s in the confirmation dialog first, then half speed. Pinching couples, the TCP follows the hand path / scale (1:1, 1:2, 1:4), opening the hand stops. Speed = speed override in the header × 400 mm/s, at most 100 mm/s.' },
   voice: { name: 'Voice commands', intro: 'Recognized voice command returns as text to browser. UI triggers motion execution.' },
   gaze: { name: 'Gaze control', intro: 'Looking at an object selects it. Requires no web browser.' },
   grasp: { name: 'Grasp object', intro: 'ZED → YOLO → /zed/bboxes_3d → select object in UI → /ui/grasp_object_cmd → grasp executor → Motion Handler → gripper.' },
@@ -4768,7 +4783,7 @@ var PATHS_EN = {
 
 var ST_EN = {
   op: ['act', 'user', 'Operator', 'Action & Decision', ['Intent: wants to move the robot', 'Selects input method', 'Keeps eye on E-STOP and safety'], ['Human', 'Decision'], null],
-  dev: ['act', 'mouse', 'Input Device', 'Mouse, Touch, Gamepad, VR', ['Captures user interaction', 'Buttons, thumbsticks, gestures', 'Transmits raw events to interface'], ['Gamepad', 'Quest 3', 'Mouse', 'Tobii'], 'pad'],
+  dev: ['act', 'mouse', 'Input Device', 'Mouse, Touch, Gamepad, VR, Leap', ['Captures user interaction', 'Buttons, thumbsticks, gestures', 'Transmits raw events to interface'], ['Gamepad', 'Quest 3', 'Leap Motion 2', 'Mouse', 'Tobii'], 'pad'],
   ui: ['act', 'layout', 'Web UI', 'UX | Control Interface, VR, Touch', ['Interprets events into velocity or target poses', 'Checks control lock and table distance', 'Sends heartbeat to watchdog'], ['js/jog.js', 'js/remote.js', 'WebXR', 'touch_panel'], 'rcui'],
   tr: ['act', 'radio', 'Bridge & Network', 'rosbridge, WebSocket, HTTPS', ['Translates JSON into ROS topics and services', 'WebSocket :9090 / :9091 / :9092', 'Enforces whitelist on remote commands'], ['rosbridge', 'Network', 'Whitelist'], 'rb9090'],
   lg: ['act', 'cpu', 'Control Logic', 'Watchdog, Pre-Check, MoveIt', ['remote_control_watchdog manages ownership & heartbeat', 'teleop_pre_collision_checker looks 0.25 s ahead', 'MoveIt Servo / MoveGroup plans trajectory'], ['watchdog', 'pre_collision', 'MoveIt Servo', 'MoveGroup'], 'wd'],

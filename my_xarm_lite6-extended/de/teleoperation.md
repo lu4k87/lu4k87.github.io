@@ -2,9 +2,9 @@
 
 # 🎮 Betriebsmodi & Gamepad-Teleoperation
 
-[🏠 Übersicht](../readme-de.html) · [🇬🇧 English](../en/teleoperation.html) · Kapitel 3.1, 3.2, 5
+[🏠 Übersicht](../readme-de.html) · [🇬🇧 English](../en/teleoperation.html) · Kapitel 3.1–3.3, 5
 
-**Inhalt:** [3.1 Betriebsmodi: Robot | Digital Twin vs. Robot | Hardware (Hardware Interfaces)](#31-betriebsmodi-fake-vs-real-hardware-interfaces) · [3.2 Funktion: Gamepad Teleoperation & Harter Kollisionsschutz](#32-funktion-gamepad-teleoperation--harter-kollisionsschutz) · [5. 🎮 Gamepad-Steuerung — Technische Tiefenanalyse](#5--gamepad-steuerung--technische-tiefenanalyse)
+**Inhalt:** [3.1 Betriebsmodi: Robot | Digital Twin vs. Robot | Hardware (Hardware Interfaces)](#31-betriebsmodi-fake-vs-real-hardware-interfaces) · [3.2 Funktion: Gamepad Teleoperation & Harter Kollisionsschutz](#32-funktion-gamepad-teleoperation--harter-kollisionsschutz) · [3.3 Funktion: Leap-Motion-2-Handsteuerung](#33-funktion-leap-motion-2-handsteuerung) · [5. 🎮 Gamepad-Steuerung — Technische Tiefenanalyse](#5--gamepad-steuerung--technische-tiefenanalyse)
 
 ---
 
@@ -30,7 +30,7 @@ Das `ros2_control` Framework bindet das echte `xarm_api` Hardware Interface ein,
 Die folgende Übersicht zeigt auf einen Blick, welche Projektmodule in reiner Software-Simulation auf einem Standard-PC evaluiert werden können und welche Funktionen physische Hardware-Geräte voraussetzen:
 
 <details>
-<summary><b>🔽 Tabelle anzeigen</b> · 16 Subsysteme · Robot | Digital Twin vs. Robot | Hardware · benötigte Hardware</summary>
+<summary><b>🔽 Tabelle anzeigen</b> · 17 Subsysteme · Robot | Digital Twin vs. Robot | Hardware · benötigte Hardware</summary>
 
 | Feature / Subsystem | Reine Simulation (Robot | Digital Twin) | Echte Hardware (Robot | Hardware) | Benötigte Hardware / Peripherie |
 |---|:---:|:---:|---|
@@ -50,6 +50,7 @@ Die folgende Übersicht zeigt auf einen Blick, welche Projektmodule in reiner So
 | **Autonome 3D-Greifroutine** | ❌ *(Benötigt 3D-Kamera)* | ✅ Funktionsfähig | xArm Lite 6 & ZED Mini |
 | **Tobii-Blicksteuerung** | ❌ *(Benötigt Brille)* | ✅ Funktionsfähig | Tobii Pro Glasses 3 (WLAN / LAN) |
 | **Meta Quest 3 WebXR Teleoperation** | ❌ *(Benötigt VR-Headset)* | ✅ Funktionsfähig | Meta Quest 3 (WLAN, Port 8443) |
+| **Leap-Motion-2-Handsteuerung (TCP folgt Hand)** | ✅ Funktioniert (auch mit Aufnahme, `source:=replay`) | ✅ Funktioniert (Bestätigung beim Einschalten, halbes Tempo) | Ultraleap Leap Motion 2 (USB, Roboter-PC) |
 
 </details>
 
@@ -290,6 +291,102 @@ Die folgende Übersicht zeigt auf einen Blick, welche Projektmodule in reiner So
 </details>
 
 ---
+
+
+## 3.3 Funktion: Leap-Motion-2-Handsteuerung
+*Eine Leap Motion 2 am Roboter-PC erkennt eine Hand von unten: Daumen und Zeigefinger zusammenführen (kneifen) kuppelt die Hand an den TCP, der TCP folgt der Hand, Hand öffnen hält an. Bedienung im Viewport der UX | Control Interface; nur Verschieben, keine Drehung.*
+
+---
+
+<br>
+
+### ![Node](https://img.shields.io/badge/Node-blue?style=flat-square) `leap_hand_teleop_node.py` (`leap_hand_teleop`) &nbsp;&nbsp; <sub><i>`/src/leap_hand_teleop/leap_hand_teleop/leap_hand_teleop_node.py`</i></sub>
+
+**Zweck & Aufgabe:** Macht aus der kneifenden Hand eine kartesische Geschwindigkeit: TCP-Soll = TCP-Position beim Kuppeln + Handweg / Skala (1:1, 1:2, 1:4), nachgeführt von einem P-Regler (Totband 1,5 mm, höchstens 300 mm je Achse und Griff). Kein eigener Bewegungsweg: wie der VR-Node sendet er `/remote/twist` an das Twist-Gate von `remote_control_watchdog` (Control-Lock, Heartbeat, E-STOP, Bodenbremse) → MoveIt Servo. Die Handdaten liefert `leap.py` aus `__Project_Claude_Ops` (per Pfad geladen). Quelle der Wahrheit: README des Pakets; Ultraleap-Software einrichten: `__Project_Claude_Ops/README.md`, Abschnitt *Gestensteuerung (Leap Motion 2 oder Webcam)* › *Leap Motion 2 einrichten*.
+
+```text
+Leap Motion 2 ──▶ leap_hand_teleop_node ──▶ /remote/twist ──▶ remote_control_watchdog ──▶ /servo_server/delta_twist_cmds ──▶ MoveIt Servo
+```
+
+**Bedienung (UX | Control Interface, Viewport):**
+
+| Schritt | Aktion | Ergebnis |
+|---|---|---|
+| Einschalten | ✋ **Gestures** (deutsch *Gesten*) in der Viewport-Leiste | Mit angesteckter Leap Motion 2 und laufendem Node wählt Gestures die Leap statt der Webcam; das Fenster **LEAP** öffnet sich unten rechts im Viewport. Robot \| Hardware (auch Modus unbekannt): Dialog *Leap-Handsteuerung für den echten Roboter einschalten?* – **Halten zum Einschalten** 1 s halten |
+| Hand zeigen | Eine Hand etwa 20 cm über die Leap Motion halten | Chip **Bereit**; der Ring zeigt die Hand von oben, der Bogen = Kneif-Stärke |
+| Kuppeln | Daumen und Zeigefinger zusammenführen | Chip **Gekuppelt**; der TCP folgt der Hand – Mitte des Rings = TCP, Punkt = TCP-Ziel |
+| Anhalten | Hand öffnen | Null-Twist, entkuppelt; weiter: erneut kneifen |
+| Skala | Knopf **1:2** im LEAP-Fenster | Wechselt 1:1 / 1:2 / 1:4 (1:2 = TCP fährt den halben Handweg), wirkt sofort, bleibt je Browser gespeichert |
+| Ausschalten | **Gestures** erneut | Fenster schließt; Wechsel Robot \| Digital Twin ↔ Robot \| Hardware oder 2 s ohne Daten vom Leap-Node schalten ebenfalls aus. Verdeckter Tab pausiert nur (Node hält an, entkuppelt); zurück im Tab ist Leap ohne neuen Dialog wieder an – kuppeln mit neuem Kneifen |
+
+- **Tempo:** Tempo-Override im Header (5 Stufen = Faktor 0,1–0,5 auf `/ui/robot_control/current_speed`, × 400 mm/s → 40 / 80 / 100 / 100 / 100 mm/s), ohne Stufe 40 mm/s, nie über `max_speed_mm_s` (100 mm/s). Außer im Robot | Digital Twin (auch Modus unbekannt) zusätzlich × `real_max_speed` des Watchdogs (Standard 0,5) – halbes Tempo wie bei entfernten Clients.
+- **Geisterhand:** Layers-Panel › **Leap hand** (*Ghost at the TCP*; deutsch *Leap-Hand*, *Geisterhand am TCP*) zeigt die erkannte Hand am TCP im Digital Twin – nur Anzeige, nur bei eingeschalteter Leap-Handsteuerung.
+- **Nur eine Hand:** Kneifen ist keine Zustimmtaste – jede kneifende Hand über der Leap bewegt den Roboter. In Robot | Hardware nur die eigene Hand über der Leap.
+
+**Totmann und Sperren** (jedes Ereignis = Null-Twist und entkuppelt; neu kuppeln erst nach sichtbar geöffneter Hand und neuem Kneifen – ein über das Ereignis gehaltenes Kneifen fährt nie von selbst an):
+
+| Ereignis | Anzeige (Chip **Gesperrt** oder **Keine Hand**) |
+|---|---|
+| Hand geöffnet, Hand weg oder ungültige Handwerte (NaN, außerhalb 0–1), 100 ms ohne Daten (`data_timeout_s`) | *Hand geöffnet – zum Kuppeln erneut zusammenführen* (nur kurz, danach Chip **Bereit**) · *Keine Hand über der Leap Motion* (auch bei ungültigen Werten) · *Keine Daten von der Leap Motion* |
+| Schlechte Erkennung (`min_confidence`), Sprung > `jump_mm`, andere Hand | *Hand nicht sicher erkannt – flach und ruhig halten* · *Eine andere Hand wurde erkannt* (nur kurz) |
+| UI hat Leap ausgeschaltet, Tab verdeckt, 0,75 s kein `/leap/config` (vor dem Heartbeat-Halt des Watchdogs nach 1 s) | *Leap-Steuerung ist aus* |
+| Browser ohne Steuerung, `/leap/config` eines anderen Browsers mit Steuerung während gekuppelt | *Dieser Browser hat keine Steuerung (Control-Lock)* · *Ein anderer Browser hat die Leap-Steuerung eingeschaltet – hier angehalten* |
+| E-STOP, geplante Fahrt läuft (`/ui/motion_busy`), mobile Basis fährt (`/mobile_base/moving`) | *E-STOP ist verriegelt* · *Eine geplante Fahrt läuft* · *Die mobile Basis fährt* |
+| TCP-Pose (tf) fehlt oder älter als 0,15 s | *Keine Roboterpose (tf) – läuft der Roboter-Stack?* |
+| Aufnahme (`source:=replay`) außerhalb Robot \| Digital Twin | *Aufgezeichnete Handdaten (Replay) bewegen den Roboter nur im Robot \| Digital Twin* |
+
+Ereignisse ohne anhaltende Sperre (Hand geöffnet, andere Hand, anderer Browser) zeigen ihren Text nur kurz; danach steht der Chip auf **Bereit** – bei weiter geschlossener Hand mit *Erst Hand öffnen, dann erneut zusammenführen*. *Ungültige Werte von der Leap Motion – angehalten* erscheint nur, wenn die berechnete Geschwindigkeit nicht endlich ist (z. B. NaN aus tf).
+
+<details>
+<summary><b>🔽 Details anzeigen</b> · Run Command · Subscribes · Publishes · Parameters</summary>
+
+> [!NOTE]
+> 💻 **Run Command:**
+> ```bash
+> # mit der UX | Control Interface (nur Roboter-PC, nie auf Clients):
+> ros2 launch http_robot_control_ui_p8081 http_robot_control_ui.launch.py leap_hand:=true
+>
+> # allein, Test ohne Gerät mit Aufnahme (fährt nur im Robot | Digital Twin):
+> ros2 launch leap_hand_teleop leap_hand_teleop.launch.py source:=replay
+> ```
+>
+>
+> ![Subscribes](https://img.shields.io/badge/Subscribes-orange?style=flat-square)
+>
+>> | Topic / Interface | Msg Type | Beschreibung |
+>> |---|---|---|
+>> | **`/leap/config`** | `std_msgs/String` (JSON) | *`{"id", "on", "scale"}` von der UI alle 250 ms; nur über die lokale rosbridge 9092 (Roboter-PC), für entfernte Clients in `config/network.yaml` gesperrt.* |
+>> | **`/ui/robot_control/current_speed`** | `std_msgs/Float32` (latched) | *Tempo-Stufe 0–1 der UI (Anteil von 400 mm/s).* |
+>> | **`/remote/control_state`** | `std_msgs/String` (JSON) | *Inhaber des Control-Locks, Modus `fake`/`real`, `limits.real_max_speed`.* |
+>> | **`/ui/emergency_stop_active`**, **`/ui/motion_busy`**, **`/mobile_base/moving`** | `std_msgs/Bool` (latched) | *Sperrt das Kuppeln, solange true.* |
+>> | **`/ui/emergency_stop_topic`** | `std_msgs/Empty` | *E-STOP gedrückt: verriegelt sofort; frei erst nach `/ui/emergency_stop_active` true → false.* |
+>> | **tf** Basis → TCP | `tf2` | *Aktuelle TCP-Position; älter als 0,15 s = Stopp.* |
+>
+>
+> ![Publishes](https://img.shields.io/badge/Publishes-green?style=flat-square)
+>
+>> | Topic / Interface | Msg Type | Beschreibung |
+>> |---|---|---|
+>> | **`/remote/twist`** | `std_msgs/String` (JSON) | *Kartesische Geschwindigkeit mit Client-id, 50 Hz, nur gekuppelt – dasselbe Twist-Gate wie Jogging und VR-Node.* |
+>> | **`/leap/hand`** | `std_msgs/String` (JSON) | *Zustand für den Ring, 30 Hz: `state` (`nohand`/`ready`/`blocked`/`coupled`) + `reason`, `scale`, `tcp`, `target`, `delta` (mm), `hand` (21 Gelenke).* |
+>
+>
+> ![Parameters](https://img.shields.io/badge/Parameters-yellow?style=flat-square)
+>
+>> | Parameter | Standardwert | Beschreibung |
+>> |---|---|---|
+>> | `source` | `leap` | *`leap` = Gerät, `replay` = Aufnahme `replay_file` (spielt einmal; endlos mit Node-Parameter `replay_loop` true – kein Launch-Argument); Gestures wählt eine Aufnahme nie.* |
+>> | `mount_yaw_deg` | `0.0` | *Blickrichtung des Nutzers: 0 = hinter dem Roboter mit Blick in +X, 180 = gegenüber.* |
+>> | `max_speed_mm_s` | `100.0` | *Obere Tempo-Grenze (5–250).* |
+>> | `kp` / `deadband_mm` / `smooth` | `4.0` / `1.5` / `0.35` | *P-Regler, Totband, Glättung; `kp` ≤ 8.* |
+>> | `max_offset_mm` / `jump_mm` | `300.0` / `60.0` | *Max. Versatz je Achse und Griff; Handsprung, der entkuppelt (≤ 100).* |
+>> | `min_confidence` / `data_timeout_s` | `0.5` / `0.1` | *Erkennungsgüte ≥ 0,3; Daten-Timeout ≤ 0,2 s. Werte außerhalb der Grenzen beenden den Node beim Start.* |
+>> | `record_file` | *(leer)* | *Schreibt Handbilder als JSONL mit (neue Testdaten).* |
+
+</details>
+
+---
+<br>
 
 
 ## 5. 🎮 Gamepad-Steuerung — Technische Tiefenanalyse

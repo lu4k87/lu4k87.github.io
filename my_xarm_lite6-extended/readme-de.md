@@ -41,7 +41,7 @@ Eine Forschungs- und Evaluationsplattform für die **multimodale Teleoperation**
 
 | | Funktion | Details |
 |---|---|---|
-| 🎮 | **Teleoperation** – Gamepad über MoveIt Servo mit vorausschauendem Kollisionsschutz; Remote Control vom Laptop im Heimnetz (Control-Lock, Freigabe am Roboter-PC) | [Modi & Gamepad](de/teleoperation.html) · [Remote Control](de/running.html#75-remote-control-server-client-kommunikation) |
+| 🎮 | **Teleoperation** – Gamepad über MoveIt Servo mit vorausschauendem Kollisionsschutz; Remote Control vom Laptop im Heimnetz (Control-Lock, Freigabe am Roboter-PC); Leap Motion 2: der TCP folgt der kneifenden Hand | [Modi & Gamepad](de/teleoperation.html) · [Leap Motion 2](de/teleoperation.html#33-funktion-leap-motion-2-handsteuerung) · [Remote Control](de/running.html#75-remote-control-server-client-kommunikation) |
 | 🥽 | **VR (Meta Quest 3)** – 6-DoF-Teleoperation per WebXR, UX \| Control Interface in der Brille, VR-Spiegel am PC | [VR-Teleoperation](de/vr_quest3.html) |
 | 👁️ | **3D-Vision & Greifen** – ZED Mini + YOLOv8-3D-Boxen, MoveIt-Kollisionsobjekte, OctoMap, kollisionsfreier 3-Phasen-Griff, virtuelle Objekte für Tests ohne Kamera | [Vision & Greifen](de/vision_grasping.html) |
 | 🗣️ | **Sprache & Blick** – Whisper-Sprachbefehle (DE/EN), Tobii-Pro-Glasses-3-Blick-UI und Greifen per Verweildauer | [Sprache & Blick](de/voice_gaze.html) |
@@ -77,7 +77,7 @@ Eine Forschungs- und Evaluationsplattform für die **multimodale Teleoperation**
 
 | Rolle | Hardware |
 |---|---|
-| Bedienung | Xbox Elite 2 · Meta Quest 3 · Touch-Display |
+| Bedienung | Xbox Elite 2 · Meta Quest 3 · Leap Motion 2 · Touch-Display |
 | Sensorik | ZED Mini · 2× Raspberry-Pi-Kamera · Tobii Pro Glasses 3 · Mikrofon |
 | Workstation | Dell Precision 3660 · CPU Intel Core i9-12900K · GPU NVIDIA RTX A5000 · RAM 32 GB · VRAM 24 GB |
 | Roboter | UFactory xArm Lite 6 · Vakuumgreifer |
@@ -108,7 +108,7 @@ Alle Ports: [7.4 Netzwerk & Ports](de/running.html#74-netzwerk---port-architektu
 | [🔬 Konzept & Architektur](de/concept.html) | 1, 2, 4 | Motivation, Shared Control, Leitprinzipien, Interaktionskonzepte |
 | [📦 Installation](de/installation.html) | 6 | Voraussetzungen, Hardware-Stückliste, Tobii- und ZED-Setup, Build |
 | [🚀 System starten & betreiben](de/running.html) | 1.1, 7 | Schnellstart, UX \| Nexus Launcher, Ports, Remote Control, DDS-Tuning, FAQ |
-| [🎮 Modi & Gamepad](de/teleoperation.html) | 3.1, 3.2, 5 | Robot | Digital Twin vs. Robot | Hardware, Kollisionsschutz, Gamepad-Pipeline im Detail |
+| [🎮 Modi & Gamepad](de/teleoperation.html) | 3.1–3.3, 5 | Robot | Digital Twin vs. Robot | Hardware, Kollisionsschutz, Leap-Motion-2-Handsteuerung, Gamepad-Pipeline im Detail |
 | [👁️ Vision & Greifen](de/vision_grasping.html) | 3.3 | ZED / IP-Kamera, YOLO 3D, MoveIt-Kollision, Greif-Executoren |
 | [🗣️ Sprache & Blick](de/voice_gaze.html) | 3.4 | Whisper-Pipeline, Sprach-Intents, Tobii-Blick-UI und Greifroutine |
 | [🥽 VR Quest 3](de/vr_quest3.html) | 3.5 | WebXR-Teleoperation, VR-HUD, Einrichtung und Fehlersuche |
