@@ -83,6 +83,10 @@ body { padding-top: var(--hdr, 61px); }
 .top.sf-min:not(:has(:focus-visible:not(.sf-crumb))) .sf-crumb.on { opacity: 1; visibility: visible; transition: opacity var(--t-base) var(--ease-out) 80ms, visibility 0s; }
 .brand { display: flex; align-items: center; gap: 10px; font-weight: 800; }
 .brand-mark { width: 34px; height: 34px; border-radius: var(--radius); display: grid; place-items: center; background: var(--accent); color: var(--accent-ink); box-shadow: 0 0 18px var(--glow); }
+/* Rückweg zur Projektübersicht lu4k87.github.io: dezent neben der Marke, außerhalb der Scrollspy-Navigation */
+.top .site-up { display: inline-flex; align-items: center; gap: 6px; min-height: 32px; padding: 0 8px; font-size: 13px; font-weight: 600; color: var(--fg-2); border-radius: var(--radius-sm); transition: background var(--t-fast), color var(--t-fast); }
+.top .site-up .ico { width: 16px; height: 16px; }
+.top .site-up:hover { background: var(--surface-2); color: var(--fg); }
 .brand small { display: block; font: 600 11px/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--fg-2); margin-top: 3px; }
 .top nav { margin-left: auto; display: flex; gap: 2px; flex-wrap: wrap; }
 .top nav a { font-size: 14px; font-weight: 600; padding: 7px 11px; border-radius: var(--radius-sm); color: var(--fg-2); transition: background var(--t-fast), color var(--t-fast); }
@@ -887,6 +891,7 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
 <header class="top">
   <div class="wrap">
     <a class="brand" href="#start"><span class="brand-mark"><svg class="ico" aria-hidden="true"><use href="#i-arm"/></svg></span><span>UX Robot<small data-en="Project docs">Projekt-Doku</small></span></a>
+    <a class="site-up" href="https://lu4k87.github.io/" aria-label="Projektübersicht auf lu4k87.github.io" data-en-aria="Project overview on lu4k87.github.io"><svg class="ico" aria-hidden="true"><use href="#i-globe"/></svg><span>GitHub: Projects</span></a>
     <nav aria-label="Abschnitte" data-en-aria="Sections">
       <a href="#features">Features</a>
       <a href="#unterlagen" data-en="Documents">Unterlagen</a>
