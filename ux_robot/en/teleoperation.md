@@ -335,6 +335,8 @@ Leap Motion 2 ──▶ leap_hand_teleop_node ──▶ /remote/twist ──▶ 
 
 - **Peace sign:** only coupling the TCP to the hand (pinch) still needs the 3 s peace sign of the node; gesture commands do not.
 - **Fist and pinch:** the Leap reads some poses (often the fist) as a pinch (≥ 85 %). With an unlocked hand (peace sign, then an open hand) the node then couples the TCP to the hand and the command would not fire – such a gesture is shown as *Read as pinch – not armed* and the page warns. Recording with the Leap needs Gestures switched off (the node then cannot couple); while coupled the recording is rejected. Choose another pose.
+- **Open gripper:** in Robot | Hardware (also mode unknown), while the gripper may hold an object (state not open/off), the gesture needs a second show within 5 s – as with voice control.
+- **Webcam in Robot | Hardware:** switching Gestures on asks with the 1 s hold dialog like the Leap; switching between Robot | Digital Twin and Robot | Hardware switches it off.
 
 **Dead man and locks** (every event = zero twist and decoupled; hand gone, a second/different hand, a jump, 100 ms without data, E-STOP, no control, Leap off or 10 s without coupling (from unlock or halt) also lock – coupling again needs a 3 s peace sign, then an open hand first, then a new pinch – a pinch held through the event never starts by itself):
 

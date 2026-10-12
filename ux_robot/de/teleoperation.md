@@ -335,6 +335,8 @@ Leap Motion 2 ──▶ leap_hand_teleop_node ──▶ /remote/twist ──▶ 
 
 - **Peace-Zeichen:** nur das Kuppeln des TCP an die Hand (Kneifen) braucht weiter das 3-s-Peace-Zeichen des Nodes; Gesten-Befehle nicht.
 - **Faust und Kneifen:** die Leap liest manche Handhaltungen (oft die Faust) als Kneifen (≥ 85 %). Bei entsperrter Hand (Peace-Zeichen, danach offene Hand) kuppelt der Node dann den TCP an die Hand und der Befehl würde nicht auslösen – so eine Geste steht als *Als Kneifen gelesen – nicht scharf*, die Seite warnt. Aufnehmen mit der Leap geht nur bei ausgeschalteten Gesten (der Node kann dann nicht kuppeln); beim Kuppeln wird die Aufnahme abgewiesen. Andere Handhaltung wählen.
+- **Greifer öffnen:** in Robot | Hardware (auch Modus unbekannt) braucht die Geste, solange der Greifer evtl. ein Objekt hält (Zustand nicht offen/aus), ein zweites Zeigen innerhalb von 5 s – wie bei der Sprachsteuerung.
+- **Webcam in Robot | Hardware:** Einschalten der Gesten fragt wie bei der Leap mit dem 1-s-Halte-Dialog; ein Wechsel zwischen Robot | Digital Twin und Robot | Hardware schaltet aus.
 
 **Totmann und Sperren** (jedes Ereignis = Null-Twist und entkuppelt; Hand weg, zweite/andere Hand, Sprung, 100 ms ohne Daten, E-STOP, fehlende Steuerung, Leap aus oder 10 s ohne Kuppeln (ab Entsperren bzw. Halt) sperren zusätzlich – neu kuppeln erst nach 3 s Peace-Zeichen, dann nach sichtbar geöffneter Hand und neuem Kneifen – ein über das Ereignis gehaltenes Kneifen fährt nie von selbst an):
 
