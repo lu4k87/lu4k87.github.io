@@ -1,0 +1,462 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Immobilien Gisela Bohlien – Übersicht</title>
+<meta name="description" content="Immobilien Gisela Bohlien, Kamp-Lintfort: Verkauf, Vermietung und Bewertung von Wohn- und Gewerbeimmobilien am Niederrhein – alles auf einen Blick.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%27240 -20 246 110%27%3E%3Cpath d=%27M250 38 300 6l44 25M301 67l87-59 88 58%27 fill=%27none%27 stroke=%27%2359b130%27 stroke-width=%2714%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Albert+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+/* Version 2 · Übersicht – Bento: jede Kachel beantwortet eine Frage, die erste Ansicht zeigt alles.
+   Leise Variante: dicht, ruhig, Bewegung nur beim ersten Aufbau + sanfte Bild-Parallaxe in den Kacheln. */
+:root {
+  --bg: #f3efe7;
+  --tile: #fffdf8;
+  --stone: #e6e0d4;
+  --ink: #23221f;
+  --ink-2: #45423c;
+  --line: #d6cfc1;
+  --green: #3c7a1f;
+  --green-hi: #59b130;
+  --green-bg: #2f5a1c;
+  --char: #23221f;
+  --r: 10px;
+  --gap: 12px;
+  --font: "Albert Sans", "Helvetica Neue", Arial, sans-serif;
+  --ease: cubic-bezier(.2, .7, .2, 1);
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: 84px; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 400 1rem/1.55 var(--font); -webkit-font-smoothing: antialiased; }
+img { display: block; max-width: 100%; height: auto; }
+a { color: inherit; }
+:focus-visible { outline: 2px solid var(--green); outline-offset: 3px; }
+.skip { position: fixed; left: 16px; top: -60px; z-index: 50; background: var(--ink); color: #fff; padding: 10px 14px; }
+.skip:focus { top: 16px; }
+.wrap { width: min(1360px, 100% - 32px); margin-inline: auto; }
+
+header { position: sticky; top: 0; z-index: 20; background: rgba(243, 239, 231, .94); border-bottom: 1px solid transparent; transition: border-color .3s; }
+header.scrolled { border-bottom-color: var(--line); }
+.bar { display: flex; align-items: center; justify-content: space-between; gap: 18px; min-height: 72px; }
+.logo img { height: 46px; width: auto; }
+header nav { display: flex; align-items: center; gap: 4px; }
+header nav a { text-decoration: none; padding: 10px 14px; border-radius: 6px; font-weight: 500; font-size: .95rem; }
+header nav a:hover { background: var(--stone); }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-height: 46px; padding: 0 20px; border-radius: 6px; border: 1px solid var(--ink); background: var(--ink); color: #fff; font: 600 .95rem/1 var(--font); text-decoration: none; cursor: pointer; transition: transform .15s var(--ease), background .2s; }
+.btn:hover { background: #000; }
+.btn:active { transform: scale(.98); }
+.btn-ghost { background: transparent; color: var(--ink); }
+.btn-ghost:hover { background: var(--stone); }
+.btn-white { background: #fff; color: var(--green-bg); border-color: #fff; }
+.btn-white:hover { background: #f2f7ee; }
+.btn svg { width: 18px; height: 18px; flex: none; }
+
+/* Bento */
+.bento { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: var(--gap); }
+.tile { position: relative; overflow: hidden; border-radius: var(--r); background: var(--tile); border: 1px solid var(--line); padding: 22px; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.tile h2, .tile h3 { margin: 0; letter-spacing: -.01em; }
+.tile h3 { font-size: 1.12rem; font-weight: 600; line-height: 1.25; }
+.tile p { margin: 0; color: var(--ink-2); }
+.q { font-size: .82rem; font-weight: 600; color: var(--green); display: flex; align-items: center; gap: 8px; }
+.q svg { width: 22px; height: 8px; color: var(--green-hi); }
+.tile.photo { padding: 0; border: 0; background: var(--stone); }
+.tile.photo > img, .tile .bg { position: absolute; inset: -14px 0; width: 100%; height: calc(100% + 28px); object-fit: cover; transform: translateY(var(--py, 0px)); }
+.tile.dark { background: var(--char); color: #f5f1e8; border-color: var(--char); }
+.tile.dark p { color: #e3ddd0; }
+.tile.dark .q { color: #a6d98b; }
+.tile.green { background: var(--green-bg); color: #fff; border-color: var(--green-bg); }
+.tile.green p { color: #e7f0e0; }
+.tile.green .q { color: #c6e8b3; }
+.tile.stone { background: var(--stone); border-color: var(--stone); }
+.tile .push { margin-top: auto; }
+
+/* Ansicht 1: alles auf einen Blick */
+.glance { padding-block: 12px 12px; height: calc(100svh - 73px); min-height: 720px; max-height: 1100px; grid-template-rows: repeat(6, minmax(0, 1fr)); }
+.glance .tile { min-height: 0; }
+.t-hero { grid-column: 1 / 8; grid-row: 1 / 5; }
+.t-hero .panel { position: relative; margin: auto 18px 18px; max-width: 34rem; background: var(--tile); border-radius: 8px; padding: 24px 26px; display: grid; gap: 12px; }
+.t-hero h1 { margin: 0; font-size: clamp(2rem, 3.3vw, 3.2rem); line-height: 1.04; font-weight: 600; letter-spacing: -.025em; }
+.t-hero .row { display: flex; flex-wrap: wrap; gap: 10px; }
+.t-value { grid-column: 8 / 13; grid-row: 1 / 3; }
+.t-value h2 { font-size: clamp(1.4rem, 2vw, 1.9rem); font-weight: 600; line-height: 1.12; }
+.t-steps { grid-column: 8 / 13; grid-row: 3 / 5; }
+.mini-steps { list-style: none; margin: auto 0 0; padding: 0; display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; counter-reset: s; }
+.mini-steps li { counter-increment: s; border-top: 2px solid var(--ink); padding-top: 8px; font-weight: 600; font-size: .92rem; line-height: 1.25; }
+.mini-steps li::before { content: counter(s); display: block; font-size: 1.6rem; font-weight: 500; line-height: 1; margin-bottom: 6px; color: var(--green); }
+.t-map { grid-column: 1 / 4; grid-row: 5 / 7; }
+.t-map svg { width: 100%; height: 0; min-height: 0; flex: 1 1 0; }
+.t-refs { grid-column: 4 / 8; grid-row: 5 / 7; }
+.thumbs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: auto; }
+.thumbs img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 4px; }
+.t-who { grid-column: 8 / 11; grid-row: 5 / 7; }
+.t-call { grid-column: 11 / 13; grid-row: 5 / 7; }
+.t-call a { text-decoration: none; font-weight: 600; font-size: 1.05rem; display: block; }
+.t-call small { display: block; font-size: .8rem; color: #e3ddd0; }
+
+/* Abschnitte */
+section.block { padding-block: 72px 0; }
+.head { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 12px 40px; margin-bottom: 20px; }
+.head h2 { margin: 0; font-size: clamp(1.8rem, 3vw, 2.6rem); font-weight: 600; letter-spacing: -.025em; line-height: 1.08; max-width: 22ch; }
+.head p { margin: 0; max-width: 44ch; color: var(--ink-2); font-size: 1.05rem; }
+
+.serv { grid-auto-rows: minmax(150px, auto); }
+.s-main { grid-column: span 6; grid-row: span 2; }
+.s-main .txt { position: relative; margin-top: auto; background: var(--tile); border-radius: 8px; padding: 20px; max-width: 30rem; display: grid; gap: 8px; margin: auto 16px 16px; }
+.s-a { grid-column: span 3; }
+.s-b { grid-column: span 3; }
+.s-c { grid-column: span 3; }
+.s-d { grid-column: span 3; }
+.s-net { grid-column: span 6; }
+.s-bon { grid-column: span 6; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: auto; }
+.chips span { padding: 7px 12px; border-radius: 6px; background: var(--stone); font-weight: 500; font-size: .9rem; }
+.tile.dark .chips span { background: #3a3833; color: #f5f1e8; }
+
+.flow { grid-auto-rows: auto; }
+.f-quote { grid-column: span 12; display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: center; padding: 30px; }
+.f-quote blockquote { margin: 0; font-size: clamp(1.4rem, 2.3vw, 2rem); line-height: 1.25; font-weight: 500; letter-spacing: -.015em; }
+.f-quote ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.f-quote li { display: grid; grid-template-columns: 9rem 1fr; gap: 12px; padding-top: 10px; border-top: 1px solid var(--line); }
+.f-quote li b { font-weight: 600; }
+.f-step { grid-column: span 3; padding: 0; }
+.f-step figure { margin: 0; height: 190px; position: relative; overflow: hidden; }
+.f-step .body { padding: 18px 20px 22px; display: grid; gap: 6px; }
+.f-step .n { font-size: 2rem; font-weight: 500; line-height: 1; color: var(--green); }
+.f-step b { font-size: .88rem; font-weight: 600; color: var(--ink); }
+
+.filter { display: inline-flex; gap: 4px; padding: 4px; border-radius: 8px; background: var(--stone); }
+.filter button { border: 0; background: transparent; padding: 9px 16px; border-radius: 6px; font: 600 .92rem/1 var(--font); color: var(--ink); cursor: pointer; }
+.filter button[aria-pressed="true"] { background: var(--tile); box-shadow: 0 1px 2px rgba(0,0,0,.08); }
+.refs { grid-auto-rows: auto; }
+.ref { grid-column: span 3; padding: 0; }
+.ref.wide { grid-column: span 6; }
+.ref figure { margin: 0; aspect-ratio: 4 / 3; overflow: hidden; position: relative; }
+.ref.wide figure { aspect-ratio: auto; height: 100%; min-height: 240px; }
+.ref figure img { width: 100%; height: 100%; object-fit: cover; transition: transform .6s var(--ease); }
+.ref:hover figure img { transform: scale(1.04); }
+.ref .tag { position: absolute; left: 10px; top: 10px; background: var(--tile); border-radius: 4px; padding: 4px 9px; font-size: .78rem; font-weight: 600; }
+.ref .body { padding: 14px 16px 18px; display: grid; gap: 4px; }
+.ref .loc { font-size: .84rem; font-weight: 600; color: var(--green); }
+.ref h3 { font-size: 1rem; }
+.ref .facts { font-size: .9rem; color: var(--ink-2); }
+.ref[hidden] { display: none; }
+.more { grid-column: span 6; }
+.more ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 0; }
+.more li { display: flex; justify-content: space-between; gap: 14px; padding: 9px 0; border-top: 1px solid var(--line); font-size: .93rem; }
+.more li span:last-child { color: var(--ink-2); text-align: right; }
+
+.place { grid-auto-rows: auto; }
+.p-map { grid-column: span 5; grid-row: span 2; }
+.p-map svg { width: 100%; height: auto; }
+.p-photo { grid-column: span 4; min-height: 300px; }
+.p-photo figcaption { position: relative; margin-top: auto; padding: 10px 14px; background: rgba(35,34,31,.82); color: #f5f1e8; font-size: .78rem; }
+.p-photo figcaption a { color: #fff; }
+.p-towns { grid-column: span 3; }
+.towns { list-style: none; margin: 0; padding: 0; display: grid; gap: 0; }
+.towns li { display: flex; justify-content: space-between; padding: 9px 0; border-top: 1px solid var(--line); font-weight: 500; }
+.towns b { color: var(--green); }
+.p-prof { grid-column: span 7; display: grid; grid-template-columns: 1fr 1fr; gap: 18px 26px; padding: 26px; }
+.p-prof .intro { grid-column: 1 / -1; display: grid; gap: 8px; }
+.p-prof h3 { font-size: 1.05rem; }
+.creds { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; font-size: .92rem; }
+.creds li { display: flex; gap: 8px; }
+.creds li::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--green-hi); flex: none; margin-top: 8px; }
+
+.contact { grid-auto-rows: auto; padding-bottom: 72px; }
+.c-form { grid-column: span 7; padding: 28px; }
+.c-side { grid-column: span 5; display: grid; gap: var(--gap); }
+.c-side .tile a { text-decoration: none; font-weight: 600; font-size: 1.2rem; }
+form { display: grid; gap: 12px; }
+.two { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.field { display: grid; gap: 5px; }
+.field label { font-size: .86rem; font-weight: 600; }
+input, select, textarea { font: 400 1rem/1.4 var(--font); color: var(--ink); background: #fff; border: 1px solid var(--line); border-radius: 6px; padding: 11px 12px; width: 100%; }
+input:focus, select:focus, textarea:focus { outline: 2px solid var(--green); outline-offset: 0; border-color: var(--green); }
+textarea { min-height: 110px; resize: vertical; }
+.consent { display: flex; gap: 10px; font-size: .9rem; color: var(--ink-2); }
+.consent input { width: 18px; height: 18px; flex: none; margin-top: 2px; accent-color: var(--green); }
+
+footer { background: var(--char); color: #e3ddd0; padding: 48px 0 30px; font-size: .92rem; }
+footer .cols { display: grid; grid-template-columns: 1.3fr 1fr 1fr; gap: 30px; }
+footer b { display: block; color: #fff; margin-bottom: 6px; }
+footer img { width: 180px; }
+footer details { margin-top: 26px; border-top: 1px solid #3a3833; padding-top: 18px; }
+footer summary { cursor: pointer; color: #fff; font-weight: 600; }
+footer .legal { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; padding-top: 14px; }
+footer .base { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 10px; margin-top: 26px; padding-top: 16px; border-top: 1px solid #3a3833; }
+
+/* Erster Aufbau: Kacheln setzen sich einmal zusammen (gestaffelt) */
+.js .glance .tile { opacity: 0; transform: scale(.985); transition: opacity .6s var(--ease), transform .8s var(--ease); transition-delay: calc(var(--i) * 60ms); }
+.js .glance.ready .tile { opacity: 1; transform: none; }
+
+@media (max-width: 1080px) {
+  .glance { grid-template-rows: none; height: auto; min-height: 0; max-height: none; }
+  .t-hero { grid-column: 1 / -1; grid-row: auto; min-height: 520px; }
+  .t-value, .t-steps { grid-column: span 6; grid-row: auto; }
+  .t-map, .t-refs, .t-who, .t-call { grid-column: span 6; grid-row: auto; min-height: 220px; }
+  .s-main, .s-net, .s-bon { grid-column: span 12; }
+  .s-a, .s-b, .s-c, .s-d { grid-column: span 6; }
+  .f-step { grid-column: span 6; }
+  .ref { grid-column: span 4; } .ref.wide, .more { grid-column: span 12; }
+  .p-map { grid-column: span 6; grid-row: auto; } .p-photo { grid-column: span 6; } .p-towns { grid-column: span 4; } .p-prof { grid-column: span 8; }
+  .c-form, .c-side { grid-column: span 12; }
+  header nav a:not(.btn) { display: none; }
+}
+@media (max-width: 680px) {
+  .bento > .tile, .c-side { grid-column: 1 / -1 !important; }
+  .t-hero { min-height: 560px; }
+  .f-quote, .p-prof, .two { grid-template-columns: 1fr; }
+  .f-quote li { grid-template-columns: 1fr; gap: 2px; }
+  footer .cols, footer .legal { grid-template-columns: 1fr; }
+  .logo img { height: 38px; }
+  .t-hero .panel { margin: auto 10px 10px; padding: 20px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { transition: none !important; animation: none !important; }
+  .js .glance .tile { opacity: 1; transform: none; }
+  .tile.photo > img, .tile .bg { transform: none; }
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#inhalt">Zum Inhalt</a>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="roofs" viewBox="240 -4 246 78"><path d="M250 38 300 6l44 25M301 67l87-59 88 58" fill="none" stroke="currentColor" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/><path fill="currentColor" d="M295 17h9v9h-9zM380 31h16v16h-16z"/></symbol>
+  <symbol id="phone" viewBox="0 0 24 24"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <defs><g id="map">
+    <path d="M428 600C414 560 360 536 356 502 352 470 425 450 424 420 423 395 420 380 415 365 405 320 392 290 386 261 378 230 360 210 351 193 335 150 310 110 300 89 280 70 240 55 214 55 190 55 165 30 146 0" fill="none" stroke="#7fa7c4" stroke-width="9" stroke-linecap="round"/>
+    <circle cx="254" cy="299" r="210" fill="rgba(89,177,48,.08)" stroke="#59b130" stroke-width="2" stroke-dasharray="6 8"/>
+    <g fill="#23221f" font-family="Albert Sans, sans-serif" font-weight="600" font-size="24">
+      <circle cx="322" cy="370" r="9"/><text x="338" y="378">Moers</text>
+      <circle cx="439" cy="394" r="9"/><text x="420" y="430">Duisburg</text>
+      <circle cx="288" cy="524" r="7"/><text x="304" y="532">Krefeld</text>
+      <circle cx="423" cy="216" r="7"/><text x="439" y="224">Dinslaken</text>
+      <circle cx="301" cy="239" r="5"/><text x="314" y="246" font-weight="400" font-size="20">Rheinberg</text>
+    </g>
+    <g transform="translate(236 276)"><path d="M18 0 36 15v21H0V15Z" fill="#3c7a1f"/></g>
+    <text x="226" y="300" text-anchor="end" font-family="Albert Sans, sans-serif" font-weight="700" font-size="26" fill="#3c7a1f">Kamp-Lintfort</text>
+  </g></defs>
+</svg>
+
+<header>
+  <div class="wrap bar">
+    <a class="logo" href="#top" aria-label="Immobilien Gisela Bohlien – zum Anfang"><img src="../img/logo.png" alt="Immobilien Gisela Bohlien" width="720" height="334"></a>
+    <nav aria-label="Hauptmenü">
+      <a href="#leistungen">Leistungen</a><a href="#ablauf">Ablauf</a><a href="#referenzen">Referenzen</a><a href="#region">Region</a>
+      <a class="btn" href="#kontakt">Kontakt</a>
+    </nav>
+  </div>
+</header>
+
+<main id="inhalt">
+  <div class="wrap bento glance" id="top">
+    <article class="tile photo t-hero" style="--i:0">
+      <img src="../img/stock-wohnen-hell.jpg" alt="Heller Wohnraum mit Sofa, Kamin und großen Fenstern" width="1400" height="934" fetchpriority="high" data-par>
+      <div class="panel">
+        <span class="q"><svg aria-hidden="true"><use href="#roofs"/></svg>Immobilien am Niederrhein</span>
+        <h1>Ihre Immobilie in guten Händen.</h1>
+        <p>Vermittlung und Beratung rund um Wohn- und Gewerbeimmobilien – kompetent, fair und diskret. Mit einem Netzwerk, das Türen öffnet.</p>
+        <div class="row"><a class="btn" href="#kontakt">Beratung anfragen</a><a class="btn btn-ghost" href="#leistungen">Leistungen ansehen</a></div>
+      </div>
+    </article>
+    <a class="tile green t-value" href="#kontakt" style="--i:1;text-decoration:none">
+      <span class="q">Was ist meine Immobilie wert?</span>
+      <h2>Marktanalyse und realistische Bewertung – passend zu Ihrem Objekt und Ihrem Ziel.</h2>
+      <span class="push"><span class="btn btn-white">Bewertung anfragen <svg aria-hidden="true"><use href="#arrow"/></svg></span></span>
+    </a>
+    <a class="tile t-steps" href="#ablauf" style="--i:2;text-decoration:none">
+      <span class="q">Wie läuft das ab?</span>
+      <h3>In vier Schritten zum Ziel – wir begleiten Sie, bis alles unterschrieben ist.</h3>
+      <ol class="mini-steps"><li>Service</li><li>Konzept &amp; Bewertung</li><li>Netzwerk</li><li>Vermarktung</li></ol>
+    </a>
+    <a class="tile stone t-map" href="#region" style="--i:3;text-decoration:none">
+      <span class="q">Wo sind Sie tätig?</span>
+      <svg viewBox="40 150 520 420" role="img" aria-label="Kerngebiet rund um Kamp-Lintfort mit Moers, Duisburg, Krefeld und Dinslaken"><use href="#map"/></svg>
+    </a>
+    <a class="tile t-refs" href="#referenzen" style="--i:4;text-decoration:none">
+      <span class="q">Was haben Sie vermittelt?</span>
+      <h3>Häuser und Wohnungen zwischen Krefeld und Dinslaken</h3>
+      <div class="thumbs"><img src="../img/ref-kamp-lintfort-dhh.jpg" alt="" width="349" height="244"><img src="../img/ref-baerl-efh.jpg" alt="" width="349" height="244"><img src="../img/ref-moers-dhh.jpg" alt="" width="349" height="244"></div>
+    </a>
+    <a class="tile t-who" href="#profil" style="--i:5;text-decoration:none">
+      <span class="q">Wer berät mich?</span>
+      <h3>Gisela Bohlien, Inhaberin und Immobilienmaklerin</h3>
+      <ul class="creds push"><li>Erlaubnis nach § 34c GewO</li><li>Mitglied der IHK Niederrhein</li></ul>
+    </a>
+    <div class="tile dark t-call" style="--i:6">
+      <span class="q">Lieber sprechen?</span>
+      <a href="tel:+4915732529526"><small>Mobil</small>01573 2529526</a>
+      <a href="tel:+4928423399652"><small>Büro</small>02842 3399652</a>
+    </div>
+  </div>
+
+  <section class="block" id="leistungen" aria-labelledby="h-serv">
+    <div class="wrap">
+      <div class="head"><h2 id="h-serv">Was Sie von uns erwarten dürfen</h2><p>Rund um Ihre Immobilie und Ihr Grundstück: von der ersten Einschätzung bis zum Termin beim Notar.</p></div>
+      <div class="bento serv">
+        <article class="tile photo s-main">
+          <img class="bg" src="../img/stock-haus-hecke.jpg" alt="Einfamilienhaus mit dunklem Dach hinter einer Hecke" width="1400" height="953" loading="lazy" data-par>
+          <div class="txt"><span class="q">Verkaufen oder vermieten?</span><h3>Verkauf &amp; Vermietung</h3><p>Wohn- und Gewerbeimmobilien – mit passender Vermarktung bis zum vereinbarten Ziel. Interessenten kommen auch aus unserer Käufer- und Verkäuferdatenbank.</p></div>
+        </article>
+        <article class="tile s-a"><span class="q">Was ist sie wert?</span><h3>Marktanalyse &amp; Bewertung</h3><p>Konzepte und Bewertung – für Sie erstellt und passend zu Ihrer Immobilie und Ihrem Ziel.</p></article>
+        <article class="tile s-b"><span class="q">Bauland gesucht?</span><h3>Grundstücke</h3><p>Vermittlung von Nutz- und Baugrundstücken, auch unbebaut.</p></article>
+        <article class="tile s-c"><span class="q">Mehr Platz für den Betrieb?</span><h3>Gewerbe</h3><p>Betriebs- und Hallenflächen für Unternehmen, die wachsen oder umziehen.</p></article>
+        <article class="tile stone s-d"><span class="q">Sicher vermieten?</span><h3>Mietverträge &amp; Bonität</h3><p>Wir erstellen Mietverträge und prüfen die Bonität – für ein Mietverhältnis ohne böse Überraschungen.</p></article>
+        <article class="tile dark s-net"><span class="q">Wen brauche ich noch?</span><h3>Netzwerk – Schlüsselfunktionen und „Türöffner“</h3><p>Gern stellen wir den Kontakt zu Fachleuten und Spezialisten her.</p><div class="chips"><span>Notare</span><span>Finanzdienstleister</span><span>Bauunternehmen</span><span>Architekten</span><span>Handwerker</span></div></article>
+        <article class="tile s-bon"><span class="q">Warum mit uns?</span><h3>Beratung auf aktuellem Stand</h3><p>Durch fortlaufende Seminare bieten wir Ihnen Beratung auf aktuellem Stand – mit langjähriger Erfahrung am Niederrhein, gepaart mit Kreativität und Diskretion.</p></article>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="ablauf" aria-labelledby="h-flow">
+    <div class="wrap">
+      <div class="head"><h2 id="h-flow">In vier Schritten zum Ziel</h2><p>Durch umfassende Analyse entwickeln wir individuelle Konzepte – und begleiten Sie, bis alles unterschrieben ist.</p></div>
+      <div class="bento flow">
+        <article class="tile f-step"><figure><img class="bg" src="../img/stock-beratung.jpg" alt="Maklerin bespricht Unterlagen mit einem Paar auf dem Sofa" loading="lazy" width="1400" height="934" data-par></figure><div class="body"><span class="n">1</span><h3>Service</h3><b>Rundum-Beratung. Wir machen das.</b><p>Wir lernen Sie und Ihre Immobilie kennen und klären, was Sie erreichen möchten.</p></div></article>
+        <article class="tile f-step"><figure><img class="bg" src="../img/stock-konzept.jpg" alt="Grundrisse und Unterlagen auf einem Holztisch" loading="lazy" width="1400" height="934" data-par></figure><div class="body"><span class="n">2</span><h3>Konzept &amp; Bewertung</h3><b>Für Sie erstellt und passend.</b><p>Marktanalyse, realistischer Preis und ein Vermarktungskonzept, das zu Ihrem Objekt passt.</p></div></article>
+        <article class="tile f-step"><figure><img class="bg" src="../img/stock-tuer.jpg" alt="Geöffnete Holztür mit Blick ins Grüne" loading="lazy" width="900" height="1295" data-par></figure><div class="body"><span class="n">3</span><h3>Netzwerk</h3><b>Schlüsselfunktionen und „Türöffner“.</b><p>Käufer- und Verkäuferdatenbank, Finanzierer, Notare und Handwerker – alles aus einer Hand.</p></div></article>
+        <article class="tile f-step"><figure><img class="bg" src="../img/stock-schluessel.jpg" alt="Hand mit Hausschlüsseln vor einer Wohnungstür" loading="lazy" width="1400" height="934" data-par></figure><div class="body"><span class="n">4</span><h3>Vermarktung</h3><b>Bis zum vereinbarten Ziel.</b><p>Besichtigungen, Verhandlung und Vertrag – wir bleiben an Ihrer Seite bis zur Übergabe.</p></div></article>
+        <article class="tile stone f-quote">
+          <blockquote>Sie suchen einen verantwortungsvollen Partner in allen Fragen rund um Immobilien? Dann sind Sie bei uns richtig.</blockquote>
+          <ul><li><b>Beratungsstandard</b><span>Durch fortlaufende Seminare bieten wir Ihnen Beratung auf aktuellem Stand.</span></li><li><b>Netzwerk</b><span>Notare, Finanzdienstleister und Bauunternehmen – unsere Kontakte sind Ihr Vorteil.</span></li><li><b>Know-how</b><span>Langjährige Erfahrung am Niederrhein, gepaart mit Kreativität und Diskretion.</span></li></ul>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="referenzen" aria-labelledby="h-refs">
+    <div class="wrap">
+      <div class="head"><h2 id="h-refs">Bereits vermittelt</h2>
+        <div class="filter" role="group" aria-label="Referenzen filtern"><button type="button" aria-pressed="true" data-f="alle">Alle</button><button type="button" aria-pressed="false" data-f="kauf">Kauf</button><button type="button" aria-pressed="false" data-f="miete">Miete</button></div>
+      </div>
+      <div class="bento refs">
+        <article class="tile ref wide" data-t="kauf"><figure><img src="../img/ref-kamp-lintfort-dhh.jpg" alt="Doppelhaushälfte in Kamp-Lintfort" loading="lazy" width="349" height="244"><span class="tag">Kauf · vermittelt</span></figure><div class="body"><span class="loc">Kamp-Lintfort</span><h3>„Koffer packen und einziehen“ – Doppelhaushälfte mit Pool</h3><span class="facts">112 m² · 4 Zimmer · Gäste-WC · Bj. 1959</span></div></article>
+        <article class="tile ref" data-t="kauf"><figure><img src="../img/ref-baerl-efh.jpg" alt="Freistehendes Einfamilienhaus in Duisburg-Baerl" loading="lazy" width="349" height="244"><span class="tag">Kauf</span></figure><div class="body"><span class="loc">Duisburg-Baerl</span><h3>„Repräsentativ und großzügig“ – Einfamilienhaus</h3><span class="facts">119 m² · 4 Zimmer · Grundstück 1.226 m²</span></div></article>
+        <article class="tile ref" data-t="miete"><figure><img src="../img/ref-utfort-eckhaus.jpg" alt="Wohnbereich mit Treppe im Eckhaus in Moers-Utfort" loading="lazy" width="349" height="244"><span class="tag">Miete</span></figure><div class="body"><span class="loc">Moers-Utfort</span><h3>Schickes Eckhaus mit Terrasse und Garten</h3><span class="facts">186 m² · 5 Zimmer</span></div></article>
+        <article class="tile ref" data-t="kauf"><figure><img src="../img/ref-moers-dhh.jpg" alt="Doppelhaushälfte in Moers" loading="lazy" width="349" height="244"><span class="tag">Kauf</span></figure><div class="body"><span class="loc">Moers</span><h3>Doppelhaushälfte mit Terrasse und Garten</h3><span class="facts">125 m² · 4 Zimmer · Bj. 2002</span></div></article>
+        <article class="tile ref" data-t="miete"><figure><img src="../img/ref-utfort-maisonette.jpg" alt="Maisonettewohnung mit Treppe in Moers-Utfort" loading="lazy" width="349" height="244"><span class="tag">Miete</span></figure><div class="body"><span class="loc">Moers-Utfort</span><h3>Moderne Maisonettewohnung mit Balkon</h3><span class="facts">103 m² · 3 Zimmer</span></div></article>
+        <article class="tile ref" data-t="kauf"><figure><img src="../img/ref-moers-etw.jpg" alt="Offene Küche der Eigentumswohnung in Moers" loading="lazy" width="349" height="244"><span class="tag">Kauf</span></figure><div class="body"><span class="loc">Moers</span><h3>„Schöner Wohnen zu Zweit“ – Eigentumswohnung</h3><span class="facts">65 m² · 2 Zimmer · Balkon</span></div></article>
+        <article class="tile ref" data-t="kauf"><figure><img src="../img/ref-krefeld-etw.jpg" alt="Wohnhaus mit Eigentumswohnung in Krefeld" loading="lazy" width="349" height="244"><span class="tag">Kauf</span></figure><div class="body"><span class="loc">Krefeld</span><h3>Eigentumswohnung mit Balkon</h3><span class="facts">82 m² · 3 Zimmer · Bj. 1985</span></div></article>
+        <article class="tile ref" data-t="kauf"><figure><img src="../img/ref-moers-zentrum.jpg" alt="Heller Flur der Wohnung in Moers-Zentrum" loading="lazy" width="349" height="244"><span class="tag">Kauf</span></figure><div class="body"><span class="loc">Moers-Zentrum</span><h3>Drei-Zimmer-Wohnung mit Gartennutzung</h3><span class="facts">75 m² · 3 Zimmer · Erdgeschoss</span></div></article>
+        <article class="tile ref" data-t="miete"><figure><img src="../img/ref-rheinhausen.jpg" alt="Heller Wohnraum in Duisburg-Rheinhausen" loading="lazy" width="349" height="244"><span class="tag">Miete</span></figure><div class="body"><span class="loc">Duisburg-Rheinhausen</span><h3>„Ideal für Single“ – Apartment mit Balkon</h3><span class="facts">45 m² · 1 Zimmer</span></div></article>
+        <article class="tile stone more" data-t="kauf"><span class="q">Weitere vermittelte Objekte</span><ul>
+          <li><span>„Hier stimmt einfach alles“ – Einfamilienhaus</span><span>Kamp-Lintfort · 119 m²</span></li>
+          <li><span>„Großzügig wohnen“ – Wohnung mit Garage</span><span>Duisburg-Bergheim · 98 m²</span></li>
+          <li><span>„Bevorzugte Wohnlage“ – Wohnung mit Aufzug</span><span>Dinslaken-Hiesfeld · 76 m²</span></li>
+          <li><span>Über den Dächern – Wohnung mit Balkon</span><span>Duisburg · 65 m²</span></li>
+          <li><span>Maisonette mit zwei Balkonen und Garage</span><span>Moers-Mitte · 90 m²</span></li>
+          <li><span>Zwei Wohneinheiten auf einer Etage</span><span>176 m² · 6 Zimmer</span></li>
+        </ul></article>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="region" aria-labelledby="h-place">
+    <div class="wrap">
+      <div class="head"><h2 id="h-place">Zuhause am Niederrhein</h2><p>Von unserem Büro in Kamp-Lintfort aus betreuen wir Eigentümer, Käufer und Mieter in der Region – wir kennen die Lagen, die Preise und die Menschen vor Ort.</p></div>
+      <div class="bento place">
+        <article class="tile stone p-map"><span class="q">Kerngebiet rund um Kamp-Lintfort</span><svg viewBox="40 150 520 420" role="img" aria-label="Karte: Kerngebiet rund um Kamp-Lintfort mit Moers, Duisburg, Krefeld und Dinslaken"><use href="#map"/></svg></article>
+        <figure class="tile photo p-photo"><img class="bg" src="../img/regio-schloss-moers.jpg" alt="Schloss Moers mit Turm zwischen Bäumen" width="1600" height="1178" loading="lazy" data-par><figcaption>Foto: Schloss Moers · Steffen Schmitz · <a href="https://commons.wikimedia.org/wiki/File:Moers,_Schloss,_2024-07_CN-01.jpg" rel="noopener">CC BY-SA 4.0</a></figcaption></figure>
+        <article class="tile p-towns"><span class="q">Referenzen je Stadt</span><ul class="towns"><li>Moers<b>6</b></li><li>Duisburg<b>4</b></li><li>Kamp-Lintfort<b>2</b></li><li>Krefeld<b>1</b></li><li>Dinslaken<b>1</b></li></ul></article>
+        <article class="tile p-prof" id="profil">
+          <div class="intro"><span class="q">Wer berät Sie?</span><h3 style="font-size:1.5rem">Unsere Erfahrung – Ihr Vorteil</h3><p>Sie möchten kompetent, fair und freundlich beraten werden? Gisela Bohlien, Inhaberin und Immobilienmaklerin, steht Ihnen in allen Fragen rund um Immobilien zur Seite – persönlich und ohne Umwege.</p></div>
+          <div><h3>Kompetenz</h3><p>Langjährige Erfahrung und Marktkenntnis der Region.</p></div>
+          <div><h3>Kreativität</h3><p>Vermarktung, die Ihr Objekt von seiner besten Seite zeigt.</p></div>
+          <div><h3>Diskretion</h3><p>Ihre Daten und Pläne bleiben vertraulich.</p></div>
+          <div><h3>Fairness</h3><p>Ehrliche Einschätzung – für Verkäufer wie Käufer.</p></div>
+          <ul class="creds" style="grid-column:1/-1"><li>Erlaubnis nach § 34c GewO, Kreis Wesel</li><li>Mitglied der IHK Niederrhein</li><li>Fortlaufende Seminare und Weiterbildung</li></ul>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="kontakt" aria-labelledby="h-contact">
+    <div class="wrap">
+      <div class="head"><h2 id="h-contact">Wir freuen uns auf Sie.</h2><p>Schreiben Sie uns kurz, worum es geht – wir melden uns persönlich.</p></div>
+      <div class="bento contact">
+        <div class="tile c-form">
+          <form id="form" novalidate>
+            <div class="two"><div class="field"><label for="f-name">Name</label><input id="f-name" name="Name" autocomplete="name" required></div><div class="field"><label for="f-tel">Telefon</label><input id="f-tel" name="Telefon" type="tel" autocomplete="tel"></div></div>
+            <div class="field"><label for="f-topic">Anliegen</label><select id="f-topic" name="Anliegen"><option>Immobilie bewerten lassen</option><option>Immobilie verkaufen</option><option>Immobilie vermieten</option><option>Immobilie suchen</option><option>Sonstiges</option></select></div>
+            <div class="field"><label for="f-msg">Nachricht</label><textarea id="f-msg" name="Nachricht"></textarea></div>
+            <label class="consent"><input type="checkbox" id="f-ok" required><span>Ihre Angaben nutzen wir vertraulich und nur, um persönlich Kontakt mit Ihnen aufzunehmen.</span></label>
+            <div><button class="btn" type="submit">Nachricht senden <svg aria-hidden="true"><use href="#arrow"/></svg></button></div>
+          </form>
+        </div>
+        <div class="c-side">
+          <div class="tile green"><span class="q">Mobil</span><a href="tel:+4915732529526">01573 2529526</a></div>
+          <div class="tile"><span class="q">Telefon · Fax</span><a href="tel:+4928423399652">02842 3399652</a><p>Fax 02842 3397319</p></div>
+          <div class="tile"><span class="q">E-Mail</span><a href="mailto:info@bohlien-immo.de">info@bohlien-immo.de</a></div>
+          <div class="tile stone"><span class="q">Büro</span><p style="color:var(--ink);font-weight:500">Im Torfgrund 13, 47475 Kamp-Lintfort</p></div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="cols">
+      <div><img src="../img/logo-hell.png" alt="Immobilien Gisela Bohlien" width="720" height="334" loading="lazy"><p>Vermittlung und Beratung rund um Wohn- und Gewerbeimmobilien am Niederrhein.</p></div>
+      <div><b>Kontakt</b>01573 2529526<br>02842 3399652<br>info@bohlien-immo.de</div>
+      <div><b>Büro</b>Im Torfgrund 13<br>47475 Kamp-Lintfort</div>
+    </div>
+    <details id="legal"><summary>Impressum &amp; Datenschutz</summary><div class="legal">
+      <div><b>Anbieterin</b>Immobilien Gisela Bohlien<br>Inhaberin: Gisela Bohlien (Einzelunternehmerin), Immobilienmaklerin/Kauffrau<br>Im Torfgrund 13, 47475 Kamp-Lintfort</div>
+      <div><b>Kontakt</b>Telefon +49 (0)2842 3399652<br>Telefax +49 (0)2842 3397319<br>E-Mail info@bohlien-immo.de<br>Steuernummer 119/5028/1855</div>
+      <div><b>Aufsicht &amp; Kammer</b>Erlaubnis nach § 34c GewO erteilt durch das Gewerbeaufsichtsamt des Kreises Wesel<br>Berufskammer: IHK Niederrhein, Mercatorstraße 22, 47051 Duisburg</div>
+    </div></details>
+    <div class="base"><span>© 2026 Immobilien Gisela Bohlien</span><span>Entwurf 2 von 5 · Übersicht · <a href="index.html">alle Versionen</a></span></div>
+  </div>
+</footer>
+
+<script>
+document.documentElement.classList.add('js');
+(() => {
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const header = document.querySelector('header');
+  addEventListener('scroll', () => header.classList.toggle('scrolled', scrollY > 6), { passive: true });
+  requestAnimationFrame(() => requestAnimationFrame(() => document.querySelector('.glance').classList.add('ready')));
+
+  // Bild-Parallaxe in den Kacheln (±14 px), nur für sichtbare Bilder
+  if (!reduce) {
+    const imgs = new Set();
+    const io = new IntersectionObserver(es => es.forEach(e => e.isIntersecting ? imgs.add(e.target) : imgs.delete(e.target)));
+    document.querySelectorAll('[data-par]').forEach(i => io.observe(i));
+    let raf = 0;
+    const tick = () => {
+      raf = 0;
+      imgs.forEach(img => {
+        const r = img.parentElement.getBoundingClientRect();
+        const k = (r.top + r.height / 2 - innerHeight / 2) / (innerHeight / 2 + r.height / 2);
+        img.style.setProperty('--py', (Math.max(-1, Math.min(1, k)) * -14).toFixed(1) + 'px');
+      });
+    };
+    addEventListener('scroll', () => { if (!raf) raf = requestAnimationFrame(tick); }, { passive: true });
+    tick();
+  }
+
+  // Referenzen filtern
+  const btns = document.querySelectorAll('.filter button');
+  btns.forEach(b => b.addEventListener('click', () => {
+    btns.forEach(x => x.setAttribute('aria-pressed', x === b ? 'true' : 'false'));
+    document.querySelectorAll('.refs .ref').forEach(r => { r.hidden = b.dataset.f !== 'alle' && r.dataset.t !== b.dataset.f; });
+  }));
+
+  // ponytail: mailto statt Server-Formular, Ausbau wenn das Hosting einen Formular-Endpunkt bietet
+  document.getElementById('form').addEventListener('submit', ev => {
+    ev.preventDefault();
+    const f = ev.target;
+    if (!f.Name.value.trim() || !f.querySelector('#f-ok').checked) { f.reportValidity(); return; }
+    const body = ['Name: ' + f.Name.value, 'Telefon: ' + f.Telefon.value, '', f.Nachricht.value].join('\n');
+    location.href = 'mailto:info@bohlien-immo.de?subject=' + encodeURIComponent('Anfrage über die Webseite: ' + f.Anliegen.value) + '&body=' + encodeURIComponent(body);
+  });
+})();
+</script>
+</body>
+</html>
