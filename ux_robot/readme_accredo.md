@@ -34,9 +34,9 @@ Interaktive Scrollytelling-Webseite zur schrittweisen Visualisierung eines Hochs
 Einfach die Datei direkt im Browser öffnen:
 ```bash
 # Direkt im Standard-Browser:
-xdg-open __Project_accredo/index.html
+xdg-open __project_accredo/index.html
 
 # Oder per lokalem Webserver:
-python3 -m http.server 8090 --directory __Project_accredo/
+python3 -m http.server 8090 --directory __project_accredo/
 # Dann aufrufen: http://localhost:8090
 ```
