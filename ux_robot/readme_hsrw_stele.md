@@ -4,8 +4,8 @@ Web-CMS für eine **digitale Stele** (Hochformat 1080 × 1920, Touch, PC mit Chr
 Inhalte pflegen, Präsentationen gestalten, per Zeitplan ausspielen, Stelen überwachen.
 
 <p>
-  <img src="https://github.com/lu4k87/stele_hsrw/raw/HEAD/docs/img/dashboard.png" alt="Admin-Oberfläche: Übersicht mit Stele, Freigaben und letzter Aktivität" width="72%">
-  <img src="https://github.com/lu4k87/stele_hsrw/raw/HEAD/docs/img/player.png" alt="Player auf der Stele im Hochformat" width="24%">
+  <img src="https://github.com/lu4k87/__project_hsrw_stele/raw/HEAD/docs/img/dashboard.png" alt="Admin-Oberfläche: Übersicht mit Stele, Freigaben und letzter Aktivität" width="72%">
+  <img src="https://github.com/lu4k87/__project_hsrw_stele/raw/HEAD/docs/img/player.png" alt="Player auf der Stele im Hochformat" width="24%">
 </p>
 
 *Links die Admin-Oberfläche (Übersicht), rechts der Player, wie er auf der Stele läuft.*
@@ -62,11 +62,11 @@ Alle Bilder zeigen die Demo-Daten einer frischen Installation.
 - Hinweise auf wartende Freigaben, unveröffentlichte Änderungen, ablaufende Folien und Präsentationen, die länger nicht aktualisiert wurden (Tage in den Einstellungen)
 - Kopfleiste: Testbetrieb-Hinweis, Stelen-Status, Zoom 80–150 %, Hell/Dunkel, Benutzer-Menü
 
-![Kopfleiste mit Testbetrieb, Stelen-Status, Zoom, Hell/Dunkel und Benutzer](https://github.com/lu4k87/stele_hsrw/raw/HEAD/docs/img/topbar.png)
+![Kopfleiste mit Testbetrieb, Stelen-Status, Zoom, Hell/Dunkel und Benutzer](https://github.com/lu4k87/__project_hsrw_stele/raw/HEAD/docs/img/topbar.png)
 
 <p>
-  <img src="https://github.com/lu4k87/stele_hsrw/raw/HEAD/docs/img/dashboard.png" alt="Übersicht im hellen Farbschema" width="49%">
-  <img src="https://github.com/lu4k87/stele_hsrw/raw/HEAD/docs/img/dashboard-dark.png" alt="Übersicht im dunklen Farbschema" width="49%">
+  <img src="https://github.com/lu4k87/__project_hsrw_stele/raw/HEAD/docs/img/dashboard.png" alt="Übersicht im hellen Farbschema" width="49%">
+  <img src="https://github.com/lu4k87/__project_hsrw_stele/raw/HEAD/docs/img/dashboard-dark.png" alt="Übersicht im dunklen Farbschema" width="49%">
 </p>
 
 *Übersicht in Hell und Dunkel.*
@@ -77,20 +77,20 @@ Alle Bilder zeigen die Demo-Daten einer frischen Installation.
 - Suche, Filter nach Typ und Schlagwort, Sortierung, Raster- oder Listenansicht
 - Anzeige, in wie vielen Präsentationen ein Inhalt verwendet wird
 
-![Mediathek in der Rasteransicht](https://github.com/lu4k87/stele_hsrw/raw/HEAD/docs/img/media.png)
+![Mediathek in der Rasteransicht](https://github.com/lu4k87/__project_hsrw_stele/raw/HEAD/docs/img/media.png)
 
-![Suche, Filter und Umschalter Raster/Liste](https://github.com/lu4k87/stele_hsrw/raw/HEAD/docs/img/media-toolbar.png)
+![Suche, Filter und Umschalter Raster/Liste](https://github.com/lu4k87/__project_hsrw_stele/raw/HEAD/docs/img/media-toolbar.png)
 
 <p>
-  <img src="https://github.com/lu4k87/stele_hsrw/raw/HEAD/docs/img/media-new.png" alt="Menü „Neu“: Info-Folie oder Webseite" width="36%">
-  <img src="https://github.com/lu4k87/stele_hsrw/raw/HEAD/docs/img/media-list.png" alt="Mediathek in der Listenansicht" width="62%">
+  <img src="https://github.com/lu4k87/__project_hsrw_stele/raw/HEAD/docs/img/media-new.png" alt="Menü „Neu“: Info-Folie oder Webseite" width="36%">
+  <img src="https://github.com/lu4k87/__project_hsrw_stele/raw/HEAD/docs/img/media-list.png" alt="Mediathek in der Listenansicht" width="62%">
 </p>
 
 *Links: neuer Inhalt über „Neu“. Rechts: Listenansicht mit Typ, Größe und Verwendung.*
 
 <p>
-  <img src="https://github.com/lu4k87/stele_hsrw/raw/HEAD/docs/img/media-detail.png" alt="Details eines Bildes: Vorschau, Titel, Schlagworte, Dateiangaben" width="40%">
-  <img src="https://github.com/lu4k87/stele_hsrw/raw/HEAD/docs/img/media-web.png" alt="Webseite einbinden: Adresse prüfen, Zoom, Neuladen, Touch-Bedienung" width="40%">
+  <img src="https://github.com/lu4k87/__project_hsrw_stele/raw/HEAD/docs/img/media-detail.png" alt="Details eines Bildes: Vorschau, Titel, Schlagworte, Dateiangaben" width="40%">
+  <img src="https://github.com/lu4k87/__project_hsrw_stele/raw/HEAD/docs/img/media-web.png" alt="Webseite einbinden: Adresse prüfen, Zoom, Neuladen, Touch-Bedienung" width="40%">
 </p>
 
 *Links: Details eines Inhalts mit Löschen, Original und „Zu Präsentation“. Rechts: Webseite einbinden mit Prüfung, ob sie sich einbetten lässt.*
@@ -106,11 +106,11 @@ Alle Bilder zeigen die Demo-Daten einer frischen Installation.
 - Layout: Ausrichtung, senkrechte Lage, Innenabstand, Textfeld (Fläche oder Milchglas), Akzentlinie, Logo in einer Ecke
 - Live-Vorschau im Hochformat, auf Wunsch mit Header und Footer eines Designs
 
-![Editor für Info-Folien mit Vorlage, Inhalt und Live-Vorschau](https://github.com/lu4k87/stele_hsrw/raw/HEAD/docs/img/text-editor.png)
+![Editor für Info-Folien mit Vorlage, Inhalt und Live-Vorschau](https://github.com/lu4k87/__project_hsrw_stele/raw/HEAD/docs/img/text-editor.png)
 
 <p>
-  <img src="https://github.com/lu4k87/stele_hsrw/raw/HEAD/docs/img/text-templates.png" alt="Auswahl der Vorlage" width="49%">
-  <img src="https://github.com/lu4k87/stele_hsrw/raw/HEAD/docs/img/text-design.png" alt="Gestaltung: Farbpaletten, Farben, Verlauf, Hintergrundbild" width="49%">
+  <img src="https://github.com/lu4k87/__project_hsrw_stele/raw/HEAD/docs/img/text-templates.png" alt="Auswahl der Vorlage" width="49%">
+  <img src="https://github.com/lu4k87/__project_hsrw_stele/raw/HEAD/docs/img/text-design.png" alt="Gestaltung: Farbpaletten, Farben, Verlauf, Hintergrundbild" width="49%">
 </p>
 
 ### Präsentationen
@@ -124,26 +124,26 @@ Alle Bilder zeigen die Demo-Daten einer frischen Installation.
 - Vier-Augen-Prinzip abgesichert: Bearbeiten nach dem Einreichen setzt die Freigabe zurück; wurde der Stand seit dem Einreichen geändert (z. B. Design), fragt das Veröffentlichen nach
 - Gleichzeitiges Bearbeiten: speichert jemand anderes zwischendurch, erscheint „von X geändert – neu laden“ statt stillem Überschreiben
 
-![Präsentationen mit Status, Folienzahl, Dauer, Design und Verwendung](https://github.com/lu4k87/stele_hsrw/raw/HEAD/docs/img/presentations.png)
+![Präsentationen mit Status, Folienzahl, Dauer, Design und Verwendung](https://github.com/lu4k87/__project_hsrw_stele/raw/HEAD/docs/img/presentations.png)
 
-![Präsentations-Editor: Folienliste, Vorschau im Hochformat, Einstellungen](https://github.com/lu4k87/stele_hsrw/raw/HEAD/docs/img/editor.png)
+![Präsentations-Editor: Folienliste, Vorschau im Hochformat, Einstellungen](https://github.com/lu4k87/__project_hsrw_stele/raw/HEAD/docs/img/editor.png)
 
 <p>
-  <img src="https://github.com/lu4k87/stele_hsrw/raw/HEAD/docs/img/editor-slides.png" alt="Folienliste: sortieren, aktivieren, Dauer" width="32%">
-  <img src="https://github.com/lu4k87/stele_hsrw/raw/HEAD/docs/img/editor-slide.png" alt="Einstellungen der Folie: Dauer, Übergang, Zeitraum, Bildunterschrift, Vollbild" width="32%">
-  <img src="https://github.com/lu4k87/stele_hsrw/raw/HEAD/docs/img/editor-show.png" alt="Diashow-Einstellungen: Dauer, Reihenfolge, Übergang, Bilder, Videos, Anzeige" width="32%">
+  <img src="https://github.com/lu4k87/__project_hsrw_stele/raw/HEAD/docs/img/editor-slides.png" alt="Folienliste: sortieren, aktivieren, Dauer" width="32%">
+  <img src="https://github.com/lu4k87/__project_hsrw_stele/raw/HEAD/docs/img/editor-slide.png" alt="Einstellungen der Folie: Dauer, Übergang, Zeitraum, Bildunterschrift, Vollbild" width="32%">
+  <img src="https://github.com/lu4k87/__project_hsrw_stele/raw/HEAD/docs/img/editor-show.png" alt="Diashow-Einstellungen: Dauer, Reihenfolge, Übergang, Bilder, Videos, Anzeige" width="32%">
 </p>
 
 *Folienliste (Ziehen zum Sortieren), Einstellungen der Folie und der Diashow.*
 
 <p>
-  <img src="https://github.com/lu4k87/stele_hsrw/raw/HEAD/docs/img/editor-frame.png" alt="Rahmen und Touch: Design und Touch-Menü zuordnen" width="32%">
-  <img src="https://github.com/lu4k87/stele_hsrw/raw/HEAD/docs/img/editor-preview.png" alt="Vorschau der Präsentation mit Steuerung und Touch-Test" width="64%">
+  <img src="https://github.com/lu4k87/__project_hsrw_stele/raw/HEAD/docs/img/editor-frame.png" alt="Rahmen und Touch: Design und Touch-Menü zuordnen" width="32%">
+  <img src="https://github.com/lu4k87/__project_hsrw_stele/raw/HEAD/docs/img/editor-preview.png" alt="Vorschau der Präsentation mit Steuerung und Touch-Test" width="64%">
 </p>
 
 *Links: Design und Touch-Menü zuordnen. Rechts: Vorschau wie auf der Stele, mit „Touch testen“.*
 
-![Freigabe: eingereichte Präsentation veröffentlichen oder ablehnen](https://github.com/lu4k87/stele_hsrw/raw/HEAD/docs/img/editor-review.png)
+![Freigabe: eingereichte Präsentation veröffentlichen oder ablehnen](https://github.com/lu4k87/__project_hsrw_stele/raw/HEAD/docs/img/editor-review.png)
 
 ### Designs und Touch-Menüs
 
@@ -152,16 +152,16 @@ Alle Bilder zeigen die Demo-Daten einer frischen Installation.
 - **Touch-Menü:** Kacheln führen zu Inhalt, Galerie oder Untermenü; nach Inaktivität zurück zur Diashow
 - Beide wiederverwendbar; die Übersicht zeigt, welche Präsentationen sie nutzen
 
-![Design-Editor mit Live-Vorschau](https://github.com/lu4k87/stele_hsrw/raw/HEAD/docs/img/design-editor.png)
+![Design-Editor mit Live-Vorschau](https://github.com/lu4k87/__project_hsrw_stele/raw/HEAD/docs/img/design-editor.png)
 
 <p>
-  <img src="https://github.com/lu4k87/stele_hsrw/raw/HEAD/docs/img/designs.png" alt="Liste der Designs mit Skizze und Verwendung" width="49%">
-  <img src="https://github.com/lu4k87/stele_hsrw/raw/HEAD/docs/img/design-header-footer.png" alt="Header und Footer eines Designs einstellen" width="30%">
+  <img src="https://github.com/lu4k87/__project_hsrw_stele/raw/HEAD/docs/img/designs.png" alt="Liste der Designs mit Skizze und Verwendung" width="49%">
+  <img src="https://github.com/lu4k87/__project_hsrw_stele/raw/HEAD/docs/img/design-header-footer.png" alt="Header und Footer eines Designs einstellen" width="30%">
 </p>
 
-![Touch-Menü-Editor mit Kacheln und Vorschau](https://github.com/lu4k87/stele_hsrw/raw/HEAD/docs/img/touch-editor.png)
+![Touch-Menü-Editor mit Kacheln und Vorschau](https://github.com/lu4k87/__project_hsrw_stele/raw/HEAD/docs/img/touch-editor.png)
 
-![Kacheln des Touch-Menüs: Ziel, Reihenfolge, Bearbeiten](https://github.com/lu4k87/stele_hsrw/raw/HEAD/docs/img/touch-tiles.png)
+![Kacheln des Touch-Menüs: Ziel, Reihenfolge, Bearbeiten](https://github.com/lu4k87/__project_hsrw_stele/raw/HEAD/docs/img/touch-tiles.png)
 
 ### Zeitplan
 
@@ -169,11 +169,11 @@ Alle Bilder zeigen die Demo-Daten einer frischen Installation.
 - Ohne passenden Eintrag läuft die Standard-Präsentation
 - Wochenansicht mit aktueller Uhrzeit und Hinweis auf Konflikte und unveröffentlichte Stände
 
-![Zeitplan in der Wochenansicht](https://github.com/lu4k87/stele_hsrw/raw/HEAD/docs/img/schedule.png)
+![Zeitplan in der Wochenansicht](https://github.com/lu4k87/__project_hsrw_stele/raw/HEAD/docs/img/schedule.png)
 
 <p>
-  <img src="https://github.com/lu4k87/stele_hsrw/raw/HEAD/docs/img/schedule-entries.png" alt="Liste der Einträge mit Tagen, Uhrzeit, Zeitraum, Priorität" width="58%">
-  <img src="https://github.com/lu4k87/stele_hsrw/raw/HEAD/docs/img/schedule-dialog.png" alt="Eintrag bearbeiten mit Warnung bei unveröffentlichter Präsentation" width="40%">
+  <img src="https://github.com/lu4k87/__project_hsrw_stele/raw/HEAD/docs/img/schedule-entries.png" alt="Liste der Einträge mit Tagen, Uhrzeit, Zeitraum, Priorität" width="58%">
+  <img src="https://github.com/lu4k87/__project_hsrw_stele/raw/HEAD/docs/img/schedule-dialog.png" alt="Eintrag bearbeiten mit Warnung bei unveröffentlichter Präsentation" width="40%">
 </p>
 
 *Links: Einträge (höhere Priorität gewinnt). Rechts: Eintrag bearbeiten – Hinweis, wenn die Präsentation noch nicht veröffentlicht ist.*
@@ -185,18 +185,18 @@ Alle Bilder zeigen die Demo-Daten einer frischen Installation.
 - Einstellungen: Lautstärke, Touch-Bedienung, Mauszeiger, Nachtmodus, täglicher Neustart
 - Kopplung per 6-stelligem Code oder Player-Link; Kiosk- und Agent-Aufruf zum Kopieren
 
-![Stelen als Karten mit Zustand und laufender Präsentation](https://github.com/lu4k87/stele_hsrw/raw/HEAD/docs/img/steles.png)
+![Stelen als Karten mit Zustand und laufender Präsentation](https://github.com/lu4k87/__project_hsrw_stele/raw/HEAD/docs/img/steles.png)
 
-![Stele im Detail: Live-Ansicht, Wiedergabe, Netzwerk, Stelen-PC, letzter Screenshot](https://github.com/lu4k87/stele_hsrw/raw/HEAD/docs/img/stele-detail.png)
+![Stele im Detail: Live-Ansicht, Wiedergabe, Netzwerk, Stelen-PC, letzter Screenshot](https://github.com/lu4k87/__project_hsrw_stele/raw/HEAD/docs/img/stele-detail.png)
 
 <p>
-  <img src="https://github.com/lu4k87/stele_hsrw/raw/HEAD/docs/img/stele-settings.png" alt="Einstellungen einer Stele" width="49%">
-  <img src="https://github.com/lu4k87/stele_hsrw/raw/HEAD/docs/img/stele-connection.png" alt="Verbindung: Kopplung, Player-Link, Stelen-Agent" width="49%">
+  <img src="https://github.com/lu4k87/__project_hsrw_stele/raw/HEAD/docs/img/stele-settings.png" alt="Einstellungen einer Stele" width="49%">
+  <img src="https://github.com/lu4k87/__project_hsrw_stele/raw/HEAD/docs/img/stele-connection.png" alt="Verbindung: Kopplung, Player-Link, Stelen-Agent" width="49%">
 </p>
 
 *Links: Gerät, Wiedergabe und Zeiten. Rechts: Kopplung, Player-Link und Agent-Aufruf (Schlüssel im Bild ersetzt).*
 
-![Befehlsverlauf und Ereignisse einer Stele](https://github.com/lu4k87/stele_hsrw/raw/HEAD/docs/img/stele-log.png)
+![Befehlsverlauf und Ereignisse einer Stele](https://github.com/lu4k87/__project_hsrw_stele/raw/HEAD/docs/img/stele-log.png)
 
 ### Monitoring
 
@@ -205,17 +205,17 @@ Alle Bilder zeigen die Demo-Daten einer frischen Installation.
 - Touch-Nutzung (Sitzungen, Dauer, meistgeöffnete Kacheln), Wiedergabeprotokoll, Ereignisse
 - Letzter Screenshot der Stele, Zustand des Servers
 
-![Monitoring: Hinweise und Zustand der Stelen](https://github.com/lu4k87/stele_hsrw/raw/HEAD/docs/img/monitoring.png)
+![Monitoring: Hinweise und Zustand der Stelen](https://github.com/lu4k87/__project_hsrw_stele/raw/HEAD/docs/img/monitoring.png)
 
-![Verfügbarkeit der letzten 24 Stunden](https://github.com/lu4k87/stele_hsrw/raw/HEAD/docs/img/monitoring-avail.png)
+![Verfügbarkeit der letzten 24 Stunden](https://github.com/lu4k87/__project_hsrw_stele/raw/HEAD/docs/img/monitoring-avail.png)
 
-![Stelen-PC und Touch-Nutzung](https://github.com/lu4k87/stele_hsrw/raw/HEAD/docs/img/monitoring-pc.png)
+![Stelen-PC und Touch-Nutzung](https://github.com/lu4k87/__project_hsrw_stele/raw/HEAD/docs/img/monitoring-pc.png)
 
-![Wiedergabeprotokoll und Ereignisse](https://github.com/lu4k87/stele_hsrw/raw/HEAD/docs/img/monitoring-log.png)
+![Wiedergabeprotokoll und Ereignisse](https://github.com/lu4k87/__project_hsrw_stele/raw/HEAD/docs/img/monitoring-log.png)
 
 <p>
-  <img src="https://github.com/lu4k87/stele_hsrw/raw/HEAD/docs/img/monitoring-screenshot.png" alt="Letzter Screenshot der Stele" width="36%">
-  <img src="https://github.com/lu4k87/stele_hsrw/raw/HEAD/docs/img/monitoring-server.png" alt="Server: Version, Laufzeit, Datenbank, Medien, Speicherplatz" width="62%">
+  <img src="https://github.com/lu4k87/__project_hsrw_stele/raw/HEAD/docs/img/monitoring-screenshot.png" alt="Letzter Screenshot der Stele" width="36%">
+  <img src="https://github.com/lu4k87/__project_hsrw_stele/raw/HEAD/docs/img/monitoring-server.png" alt="Server: Version, Laufzeit, Datenbank, Medien, Speicherplatz" width="62%">
 </p>
 
 ### Benutzer, Rollen, Protokoll
@@ -225,15 +225,15 @@ Alle Bilder zeigen die Demo-Daten einer frischen Installation.
 - Protokoll aller Änderungen und Anmeldungen, filterbar, als CSV exportierbar
 
 <p>
-  <img src="https://github.com/lu4k87/stele_hsrw/raw/HEAD/docs/img/users.png" alt="Benutzerliste mit Rolle, Status und letzter Anmeldung" width="62%">
-  <img src="https://github.com/lu4k87/stele_hsrw/raw/HEAD/docs/img/user-dialog.png" alt="Benutzer anlegen mit erzeugtem Passwort" width="34%">
+  <img src="https://github.com/lu4k87/__project_hsrw_stele/raw/HEAD/docs/img/users.png" alt="Benutzerliste mit Rolle, Status und letzter Anmeldung" width="62%">
+  <img src="https://github.com/lu4k87/__project_hsrw_stele/raw/HEAD/docs/img/user-dialog.png" alt="Benutzer anlegen mit erzeugtem Passwort" width="34%">
 </p>
 
-![Rollen und Rechte bearbeiten](https://github.com/lu4k87/stele_hsrw/raw/HEAD/docs/img/roles.png)
+![Rollen und Rechte bearbeiten](https://github.com/lu4k87/__project_hsrw_stele/raw/HEAD/docs/img/roles.png)
 
-![Vergleich aller Rollen: Rechte × Rollen](https://github.com/lu4k87/stele_hsrw/raw/HEAD/docs/img/roles-compare.png)
+![Vergleich aller Rollen: Rechte × Rollen](https://github.com/lu4k87/__project_hsrw_stele/raw/HEAD/docs/img/roles-compare.png)
 
-![Protokoll mit Filter und aufgeklapptem Eintrag](https://github.com/lu4k87/stele_hsrw/raw/HEAD/docs/img/audit.png)
+![Protokoll mit Filter und aufgeklapptem Eintrag](https://github.com/lu4k87/__project_hsrw_stele/raw/HEAD/docs/img/audit.png)
 
 ### Einstellungen und Profil
 
@@ -243,13 +243,13 @@ Alle Bilder zeigen die Demo-Daten einer frischen Installation.
 - Profil: eigene Angaben, Passwort, Farbschema, eigene Rechte
 
 <p>
-  <img src="https://github.com/lu4k87/stele_hsrw/raw/HEAD/docs/img/settings.png" alt="Einstellungen: Allgemein" width="49%">
-  <img src="https://github.com/lu4k87/stele_hsrw/raw/HEAD/docs/img/settings-security.png" alt="Einstellungen: Sicherheit und Testbetrieb" width="49%">
+  <img src="https://github.com/lu4k87/__project_hsrw_stele/raw/HEAD/docs/img/settings.png" alt="Einstellungen: Allgemein" width="49%">
+  <img src="https://github.com/lu4k87/__project_hsrw_stele/raw/HEAD/docs/img/settings-security.png" alt="Einstellungen: Sicherheit und Testbetrieb" width="49%">
 </p>
 
 <p>
-  <img src="https://github.com/lu4k87/stele_hsrw/raw/HEAD/docs/img/settings-system.png" alt="Einstellungen: System und Sicherung" width="49%">
-  <img src="https://github.com/lu4k87/stele_hsrw/raw/HEAD/docs/img/profile.png" alt="Profil mit persönlichen Angaben, Passwort und Darstellung" width="49%">
+  <img src="https://github.com/lu4k87/__project_hsrw_stele/raw/HEAD/docs/img/settings-system.png" alt="Einstellungen: System und Sicherung" width="49%">
+  <img src="https://github.com/lu4k87/__project_hsrw_stele/raw/HEAD/docs/img/profile.png" alt="Profil mit persönlichen Angaben, Passwort und Darstellung" width="49%">
 </p>
 
 ### Player
@@ -261,10 +261,10 @@ Alle Bilder zeigen die Demo-Daten einer frischen Installation.
 - Keine externen CDNs, kein Build-Schritt – alles läuft aus dem Repo
 
 <p>
-  <img src="https://github.com/lu4k87/stele_hsrw/raw/HEAD/docs/img/player.png" alt="Player: Diashow mit Header und Laufband" width="24%">
-  <img src="https://github.com/lu4k87/stele_hsrw/raw/HEAD/docs/img/player-touch.png" alt="Player: Touch-Menü mit Kacheln" width="24%">
-  <img src="https://github.com/lu4k87/stele_hsrw/raw/HEAD/docs/img/player-touch-item.png" alt="Player: geöffneter Inhalt aus dem Touch-Menü" width="24%">
-  <img src="https://github.com/lu4k87/stele_hsrw/raw/HEAD/docs/img/player-pairing.png" alt="Player: Kopplungscode einer neuen Stele" width="24%">
+  <img src="https://github.com/lu4k87/__project_hsrw_stele/raw/HEAD/docs/img/player.png" alt="Player: Diashow mit Header und Laufband" width="24%">
+  <img src="https://github.com/lu4k87/__project_hsrw_stele/raw/HEAD/docs/img/player-touch.png" alt="Player: Touch-Menü mit Kacheln" width="24%">
+  <img src="https://github.com/lu4k87/__project_hsrw_stele/raw/HEAD/docs/img/player-touch-item.png" alt="Player: geöffneter Inhalt aus dem Touch-Menü" width="24%">
+  <img src="https://github.com/lu4k87/__project_hsrw_stele/raw/HEAD/docs/img/player-pairing.png" alt="Player: Kopplungscode einer neuen Stele" width="24%">
 </p>
 
 *Diashow, Touch-Menü, geöffneter Inhalt und Kopplungscode einer neuen Stele.*
@@ -277,11 +277,11 @@ Alle Bilder zeigen die Demo-Daten einer frischen Installation.
 - **Folie anlegen:** Info-Folie gestalten (Live-Vorschau), in neue oder bestehende Präsentation legen, optional veröffentlichen; Angelegtes wieder löschen
 - **UI-Bausteine:** Knöpfe, Status, Formulare, Meldungen, Dialoge, Tabelle, Diagramme mit Beispieldaten
 
-![Vorführseite: Rundgang durch das Backend](https://github.com/lu4k87/stele_hsrw/raw/HEAD/docs/img/show-tour.png)
+![Vorführseite: Rundgang durch das Backend](https://github.com/lu4k87/__project_hsrw_stele/raw/HEAD/docs/img/show-tour.png)
 
 <p>
-  <img src="https://github.com/lu4k87/stele_hsrw/raw/HEAD/docs/img/show-create.png" alt="Vorführseite: Info-Folie und Präsentation anlegen" width="49%">
-  <img src="https://github.com/lu4k87/stele_hsrw/raw/HEAD/docs/img/show-gallery.png" alt="Vorführseite: UI-Bausteine ausprobieren" width="49%">
+  <img src="https://github.com/lu4k87/__project_hsrw_stele/raw/HEAD/docs/img/show-create.png" alt="Vorführseite: Info-Folie und Präsentation anlegen" width="49%">
+  <img src="https://github.com/lu4k87/__project_hsrw_stele/raw/HEAD/docs/img/show-gallery.png" alt="Vorführseite: UI-Bausteine ausprobieren" width="49%">
 </p>
 
 ## 2. Schnellstart
@@ -342,7 +342,7 @@ STELECMS_PORT=8091 STELECMS_DATA=/tmp/stele-test ./run.sh
 
 ## 4. Konten und Rollen
 
-![Anmeldung mit Schnellanmeldung im Testbetrieb](https://github.com/lu4k87/stele_hsrw/raw/HEAD/docs/img/login.png)
+![Anmeldung mit Schnellanmeldung im Testbetrieb](https://github.com/lu4k87/__project_hsrw_stele/raw/HEAD/docs/img/login.png)
 
 - Schnellanmeldung mit Demo-Konten: nur im Testbetrieb und nur von localhost
 
@@ -377,18 +377,18 @@ Eigenes Administratorkonto und Passwörter auf der Kommandozeile:
 
 3. Der Player zeigt einen 6-stelligen Code → im Assistenten auswählen oder eingeben.
 
-   <img src="https://github.com/lu4k87/stele_hsrw/raw/HEAD/docs/img/stele-wizard.png" alt="Assistent „Stele hinzufügen“: Angaben, Koppeln, Standard-Präsentation" width="60%">
+   <img src="https://github.com/lu4k87/__project_hsrw_stele/raw/HEAD/docs/img/stele-wizard.png" alt="Assistent „Stele hinzufügen“: Angaben, Koppeln, Standard-Präsentation" width="60%">
 
    Alternativ direkt den Player-Link mit Schlüssel verwenden.
 4. Optional den Stelen-Agenten starten (CPU, RAM, Temperatur, Screenshots):
-   [stele_agent/README.md](https://github.com/lu4k87/stele_hsrw/blob/HEAD/stele_agent/README.md).
+   [stele_agent/README.md](https://github.com/lu4k87/__project_hsrw_stele/blob/HEAD/stele_agent/README.md).
 
 ## 6. Aufbau des Repos
 
 | Pfad | Inhalt |
 |---|---|
 | `server/` | Flask-Backend (`stelecms/`), `run.py`, `manage.py`, Tests (`tests/`) |
-| `web/admin/` | Admin-Oberfläche (Vanilla JS, ohne Build) – Aufbau in [web/admin/README.md](https://github.com/lu4k87/stele_hsrw/blob/HEAD/web/admin/README.md) |
+| `web/admin/` | Admin-Oberfläche (Vanilla JS, ohne Build) – Aufbau in [web/admin/README.md](https://github.com/lu4k87/__project_hsrw_stele/blob/HEAD/web/admin/README.md) |
 | `web/player/` | Player für die Stele (Diashow, Rahmen, Touch-Modus, Offline-Cache) |
 | `web/shared/` | gemeinsame Icons |
 | `stele_agent/` | Agent für den Stelen-PC |
