@@ -314,7 +314,7 @@ Leap Motion 2 ──▶ leap_hand_teleop_node ──▶ /remote/twist ──▶ 
 |---|---|---|
 | Switch on | ✋ **Gestures** in the viewport toolbar | With a Leap Motion 2 connected and the node running, Gestures picks the Leap instead of the webcam; the window **LEAP** opens bottom right in the viewport. Robot \| Hardware (also mode unknown): dialog *Switch on Leap hand control for the real robot?* – hold **Hold to switch on** for 1 s |
 | Show the hand | One hand about 20 cm above the Leap Motion | Chip **Unlock** (hand locked); the ring shows the hand from above |
-| Unlock | Hold a peace sign for 3 s (index and middle finger up, ring and little finger curled) | The arc fills within 3 s, then chip **Ready**; from now on the arc = pinch strength. Hand gone, a second or different hand, Leap off → locked again |
+| Unlock | Hold a peace sign for 3 s (index and middle finger up, ring and little finger curled) | The arc fills within 3 s, then chip **Ready**; from now on the arc = pinch strength. Hand gone, a second or different hand, Leap off, 10 s without coupling → locked again |
 | Couple | Pinch thumb and index finger | Chip **Coupled**; the TCP follows the hand – centre of the ring = TCP, dot = TCP target |
 | Stop | Open the hand | Zero twist, decoupled; to go on: pinch again |
 | Scale | Button **1:2** in the LEAP window | Cycles 1:1 / 1:2 / 1:4 (1:2 = TCP moves half the hand path), applies immediately, kept per browser |
@@ -324,7 +324,7 @@ Leap Motion 2 ──▶ leap_hand_teleop_node ──▶ /remote/twist ──▶ 
 - **Ghost hand:** Layers panel › **Leap hand** (*Ghost at the TCP*) shows the tracked hand at the TCP in the Digital Twin – display only, only while Leap hand control is on.
 - **Only one hand:** pinching is no enabling switch – any pinching hand above the Leap moves the robot. A second hand above the Leap always stops (chip **No hand**). In Robot | Hardware only your own hand above the Leap.
 
-**Dead man and locks** (every event = zero twist and decoupled; hand gone, a second/different hand, a jump, 100 ms without data, E-STOP, no control or Leap off also lock – coupling again needs a 3 s peace sign, then an open hand first, then a new pinch – a pinch held through the event never starts by itself):
+**Dead man and locks** (every event = zero twist and decoupled; hand gone, a second/different hand, a jump, 100 ms without data, E-STOP, no control, Leap off or 10 s without coupling (from unlock or halt) also lock – coupling again needs a 3 s peace sign, then an open hand first, then a new pinch – a pinch held through the event never starts by itself):
 
 | Event | Shown as (chip **Locked** or **No hand**) |
 |---|---|
