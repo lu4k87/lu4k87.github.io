@@ -1,1 +1,337 @@
-<!doctype html><meta charset="utf-8"><title>Projekt-Doku</title><meta http-equiv="refresh" content="0; url=ux_robot/project_docs.html"><a href="ux_robot/project_docs.html">ux_robot/project_docs.html</a>
+<!doctype html>
+<!-- Startseite https://lu4k87.github.io/ = Übersicht aller Projekte (Entscheidung User 2026-10-12: Start:C, Theme technisch/edel).
+     Vorlage für tools/publish_pages.py: Marker-Kommentare (@workflow, @lab, @projects, @project-names) ersetzt der Bau
+     durch Karten aus config/projects.yaml (home:, projects[].card).
+     Sprache DE/EN per data-en (wie docs/project_docs.html), Theme hell/dunkel per System oder Umschalter. -->
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title data-en="Projects · Marius Kaul">Projekte · Marius Kaul</title>
+<meta name="description" content="Projekte von Marius Kaul: UX Robot, Forschung im UX-Labor der Hochschule Rhein-Waal, AI Dev Workflow und weitere Web-Projekte – mit QR-Code, Doku und Code.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3' fill='%23111315'/%3E%3Crect x='4' y='4' width='8' height='8' rx='1' fill='%232ee6c8'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="ux_robot/fonts/fonts.css">
+<style>
+:root {
+  color-scheme: dark;
+  --bg: #0c0e10; --surface: #121619; --surface-2: #171c20;
+  --line: rgba(222, 236, 240, .10); --line-strong: rgba(222, 236, 240, .22);
+  --fg: #eef2f3; --fg-2: #d5dee1;
+  --accent: #2ee6c8; --grid: rgba(222, 236, 240, .045); --halo: rgba(46, 230, 200, .10);
+  --qr-bg: #f3f5f5; --qr-ink: #0c0e10;
+  --radius-sm: 4px; --radius: 6px; --radius-lg: 8px;
+  --ease-out: cubic-bezier(.22, 1, .36, 1); --ease-io: cubic-bezier(.65, 0, .35, 1);
+  --t-fast: 150ms; --t-base: 250ms; --t-slow: 450ms; --t-xfade: 900ms; --t-sweep: 1.4s; --stagger: 60ms; --rise: 12px; --lift: 2px;
+  --f-head: 'Space Grotesk', system-ui, sans-serif; --f-body: 'Inter', system-ui, sans-serif; --f-mono: 'JetBrains Mono', ui-monospace, monospace;
+}
+:root[data-theme="light"] {
+  color-scheme: light;
+  --bg: #f3f5f5; --surface: #ffffff; --surface-2: #f7f9f9;
+  --line: rgba(20, 24, 26, .12); --line-strong: rgba(20, 24, 26, .26);
+  --fg: #14181a; --fg-2: #263034;
+  --accent: #0a7a6d; --grid: rgba(20, 24, 26, .05); --halo: transparent;
+  --qr-bg: #ffffff;
+}
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    color-scheme: light;
+    --bg: #f3f5f5; --surface: #ffffff; --surface-2: #f7f9f9;
+    --line: rgba(20, 24, 26, .12); --line-strong: rgba(20, 24, 26, .26);
+    --fg: #14181a; --fg-2: #263034;
+    --accent: #0a7a6d; --grid: rgba(20, 24, 26, .05); --halo: transparent;
+    --qr-bg: #ffffff;
+  }
+}
+@property --mark { syntax: '<color>'; inherits: true; initial-value: transparent; }
+
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--bg); color: var(--fg); font: 400 1rem/1.5 var(--f-body); }
+a { color: inherit; }
+code { font-family: var(--f-mono); font-size: .875rem; overflow-wrap: anywhere; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.i { width: 1em; height: 1em; flex: none; fill: none; stroke: currentColor; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; }
+
+/* Hintergrund: feines Raster, nach unten ausgeblendet, oben ein Lichthof (nur dunkel) */
+.backdrop { position: fixed; inset: 0; z-index: -1; pointer-events: none;
+  background: radial-gradient(60% 45% at 18% 0%, var(--halo), transparent 70%),
+              linear-gradient(var(--grid) 1px, transparent 1px) 0 0 / 32px 32px,
+              linear-gradient(90deg, var(--grid) 1px, transparent 1px) 0 0 / 32px 32px;
+  -webkit-mask-image: linear-gradient(#000 0, #000 35%, transparent 90%); mask-image: linear-gradient(#000 0, #000 35%, transparent 90%); }
+
+.wrap { max-width: 1200px; margin-inline: auto; padding-inline: 16px; }
+@media (min-width: 720px) { .wrap { padding-inline: 32px; } }
+
+/* Kopf */
+.bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; padding-block: 20px; }
+.site { display: inline-flex; align-items: center; gap: 10px; font: 500 .875rem/1.2 var(--f-mono); text-decoration: none; }
+.site::before { content: ""; width: 10px; height: 10px; border-radius: 2px; background: var(--accent); }
+.switches { display: flex; gap: 8px; }
+.seg { display: inline-flex; border: 1px solid var(--line-strong); border-radius: var(--radius-sm); overflow: hidden; }
+.seg button { display: inline-flex; align-items: center; justify-content: center; min-width: 40px; min-height: 36px; padding: 0 10px;
+  border: 0; background: transparent; color: var(--fg); font: 600 .875rem/1.2 var(--f-mono); cursor: pointer;
+  transition: background-color var(--t-fast) var(--ease-out), color var(--t-fast) var(--ease-out); }
+.seg button + button { box-shadow: -1px 0 0 var(--line-strong); }
+.seg button:hover { background: var(--surface-2); }
+.seg button[aria-pressed="true"] { background: var(--fg); color: var(--bg); }
+
+.hero { padding-block: 40px 56px; }
+.hero h1 { margin: 0; max-width: 18ch; font: 700 clamp(2.25rem, 1.5rem + 3vw, 3.5rem)/1.1 var(--f-head); letter-spacing: -.02em; text-wrap: balance; }
+.hero .lead { margin: 20px 0 0; max-width: 60ch; font-size: 1.125rem; line-height: 1.5; color: var(--fg-2); text-wrap: pretty; }
+.legend { display: flex; flex-wrap: wrap; gap: 8px 20px; margin: 28px 0 0; padding: 0; list-style: none; font-size: .875rem; color: var(--fg-2); }
+.legend li { display: inline-flex; align-items: center; gap: 8px; }
+.legend .i { font-size: 1rem; }
+.rule { height: 1px; margin-top: 40px; background: linear-gradient(90deg, var(--accent), var(--line-strong) 30%, transparent); transform-origin: left; }
+
+/* Abschnitte */
+section { padding-block: 48px; }
+.kicker { display: flex; align-items: center; gap: 12px; margin: 0 0 12px; font: 500 .875rem/1.2 var(--f-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--fg-2); }
+.kicker b { color: var(--fg); font-weight: 600; }
+.kicker::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+section h2 { margin: 0; font: 700 1.5rem/1.25 var(--f-head); letter-spacing: -.01em; text-wrap: balance; }
+section .intro { margin: 8px 0 28px; max-width: 68ch; color: var(--fg-2); text-wrap: pretty; }
+
+.grid { display: grid; gap: 20px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); }
+.flow { display: grid; gap: 20px; grid-template-columns: minmax(0, 1fr); align-items: start; }
+@media (min-width: 960px) { .flow { grid-template-columns: minmax(300px, 380px) minmax(0, 1fr); } }
+
+/* Karte: QR-Zeile · Text · Knöpfe; Licht folgt dem Zeiger (nur Fläche, dezent) */
+.card { position: relative; isolation: isolate; display: flex; flex-direction: column; gap: 20px; padding: 20px;
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg); --mark: var(--line-strong);
+  transition: border-color var(--t-fast) var(--ease-out), transform var(--t-base) var(--ease-out), --mark var(--t-base) var(--ease-out); }
+.card::before { content: ""; position: absolute; inset: 0; z-index: -1; border-radius: inherit; pointer-events: none; opacity: 0;
+  background: radial-gradient(280px circle at var(--mx, 50%) var(--my, 0), color-mix(in srgb, var(--accent) 8%, transparent), transparent 70%);
+  transition: opacity var(--t-base) var(--ease-out); }
+.card:hover { border-color: color-mix(in srgb, var(--accent) 45%, var(--line)); transform: translateY(calc(-1 * var(--lift))); --mark: var(--accent); }
+.card:hover::before { opacity: 1; }
+
+.qr-row { display: flex; align-items: center; gap: 16px; }
+.qr-frame { flex: none; padding: 7px; --c: var(--mark); background-repeat: no-repeat;
+  background-image: linear-gradient(var(--c) 0 0), linear-gradient(var(--c) 0 0), linear-gradient(var(--c) 0 0), linear-gradient(var(--c) 0 0),
+                    linear-gradient(var(--c) 0 0), linear-gradient(var(--c) 0 0), linear-gradient(var(--c) 0 0), linear-gradient(var(--c) 0 0);
+  background-size: 12px 1px, 1px 12px, 12px 1px, 1px 12px, 12px 1px, 1px 12px, 12px 1px, 1px 12px;
+  background-position: 0 0, 0 0, 100% 0, 100% 0, 0 100%, 0 100%, 100% 100%, 100% 100%; }
+.qr-code { display: grid; place-items: center; width: 120px; aspect-ratio: 1; padding: 12px; background: var(--qr-bg); border-radius: var(--radius-sm); }
+.qr-code svg { display: block; width: 100%; height: auto; shape-rendering: crispEdges; }
+.qr-code path { stroke: var(--qr-ink); }
+.qr-code.wip { padding: 8px; background: repeating-linear-gradient(135deg, var(--surface-2) 0 8px, var(--surface) 8px 16px);
+  border: 1px dashed var(--line-strong); font: 600 .875rem/1.2 var(--f-mono); text-align: center; }
+.qr-meta { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.qr-meta .k { font: 500 .875rem/1.2 var(--f-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--fg-2); }
+.qr-meta .host { font: 400 .875rem/1.35 var(--f-mono); color: var(--fg-2); overflow-wrap: anywhere; }
+.qr-meta .path { font: 600 1.5rem/1.2 var(--f-mono); text-decoration: none; }
+.qr-meta .path:hover { text-decoration: underline; text-underline-offset: 4px; }
+
+.body { display: flex; flex-direction: column; gap: 6px; }
+.tag { margin: 0; font: 500 .875rem/1.2 var(--f-mono); color: var(--fg-2); }
+.card h3 { margin: 0; font: 700 1.25rem/1.25 var(--f-head); }
+.desc { margin: 0; color: var(--fg-2); line-height: 1.5; text-wrap: pretty; }
+
+.acts { display: flex; flex-wrap: wrap; gap: 8px; margin-top: auto; }
+.btn { display: inline-flex; align-items: center; gap: 8px; min-height: 40px; padding: 0 14px; border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm); background: transparent; color: var(--fg); font: 600 .875rem/1.2 var(--f-body); text-decoration: none;
+  transition: border-color var(--t-fast) var(--ease-out), background-color var(--t-fast) var(--ease-out); }
+a.btn:hover { border-color: color-mix(in srgb, var(--accent) 55%, var(--line-strong)); background: color-mix(in srgb, var(--accent) 8%, transparent); }
+.btn.main { background: var(--fg); border-color: var(--fg); color: var(--bg); }
+.btn.main:hover { background: color-mix(in srgb, var(--accent) 22%, var(--fg)); border-color: transparent; }
+.btn .go { transition: transform var(--t-base) var(--ease-out); }
+.btn:hover .go { transform: translateX(3px); }
+.btn.private { border-style: dashed; }
+
+/* Workflow: Hierarchie Haupt-Repo → Rechner → Projekte → diese Seite */
+.tree { margin: 0; padding: 20px; list-style: none; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg); }
+.node { margin-inline-start: calc(var(--lvl) * .75rem); padding: 16px; background: var(--surface-2); border: 1px solid var(--line); border-radius: var(--radius); }
+@media (min-width: 720px) { .node { margin-inline-start: calc(var(--lvl) * 1.75rem); } }
+.node-head { display: flex; align-items: baseline; gap: 12px; }
+.node-no { font: 600 .875rem/1.2 var(--f-mono); color: var(--fg-2); }
+.node h3 { margin: 0; font: 700 1rem/1.25 var(--f-head); }
+.node p { margin: 6px 0 0; color: var(--fg-2); line-height: 1.45; text-wrap: pretty; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 12px 0 0; padding: 0; list-style: none; }
+.chips li { padding: 3px 8px; border: 1px solid var(--line-strong); border-radius: var(--radius-sm); font-size: .875rem; line-height: 1.35; }
+.chips code { font-size: inherit; }
+.edge { display: grid; grid-template-columns: 24px minmax(0, 1fr); gap: 12px; align-items: center;
+  margin-inline-start: calc(var(--lvl) * .75rem + 16px); padding-block: 4px; }
+@media (min-width: 720px) { .edge { margin-inline-start: calc(var(--lvl) * 1.75rem + 16px); } }
+.rail { position: relative; overflow: hidden; display: grid; justify-items: center; align-content: end; min-height: 44px; height: 100%;
+  background: linear-gradient(var(--line-strong), var(--line-strong)) center / 1px 100% no-repeat; color: var(--fg-2); }
+.rail .i { font-size: 14px; margin-bottom: -2px; background: var(--surface); }
+.rail::after { content: ""; position: absolute; inset: -40% auto auto 50%; width: 1px; height: 40%; transform: translate(-50%, 0); opacity: 0;
+  background: linear-gradient(transparent, var(--accent)); box-shadow: 0 0 9px color-mix(in srgb, var(--accent) 22%, transparent); }
+.tree.lit .rail::after { animation: sweep var(--t-sweep) var(--ease-out) calc(var(--i) * 350ms) 1 both; }
+@keyframes sweep { 0% { transform: translate(-50%, 0); opacity: 1; } 100% { transform: translate(-50%, 350%); opacity: 0; } }
+.edge-txt { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; font-size: .875rem; color: var(--fg-2); }
+.edge-txt code { color: var(--fg); }
+
+footer { padding-block: 32px 48px; border-top: 1px solid var(--line); font-size: .875rem; color: var(--fg-2); }
+footer p { margin: 0; }
+
+/* Einblenden einmal je Besuch (nur mit JS + ohne reduced-motion; sonst sofort sichtbar). Animation statt Transition
+   mit fill backwards: danach gelten wieder die Hover-Übergänge der Karte */
+.js [data-reveal]:not(.in) { opacity: 0; }
+.js [data-reveal].in { animation: rise var(--t-slow) var(--ease-out) calc(var(--i, 0) * var(--stagger)) backwards; }
+@keyframes rise { from { opacity: 0; transform: translateY(var(--rise)); } }
+.js .rule:not(.in) { transform: scaleX(0); }
+.js .rule.in { animation: draw var(--t-xfade) var(--ease-out) 200ms backwards; }
+@keyframes draw { from { transform: scaleX(0); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .card, .card::before, .btn, .btn .go { transition: none; }
+  .card:hover { transform: none; }
+}
+</style>
+</head>
+<body>
+<div class="backdrop" aria-hidden="true"></div>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-go" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+  <symbol id="i-ext" viewBox="0 0 24 24"><path d="M7 17 17 7M9 7h8v8"/></symbol>
+  <symbol id="i-doc" viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></symbol>
+  <symbol id="i-git" viewBox="0 0 24 24"><circle cx="6" cy="6" r="2"/><circle cx="6" cy="18" r="2"/><circle cx="18" cy="8" r="2"/><path d="M6 8v8M18 10c0 4-6 3-10.5 6.5"/></symbol>
+  <symbol id="i-qr" viewBox="0 0 24 24"><rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><path d="M14 14h2v2h-2zM18 18h2v2h-2zM14 20h2M20 14v2"/></symbol>
+  <symbol id="i-down" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></symbol>
+  <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></symbol>
+  <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></symbol>
+</svg>
+
+<header class="wrap">
+  <div class="bar">
+    <a class="site" href="./">lu4k87.github.io</a>
+    <div class="switches">
+      <div class="seg" role="group" aria-label="Sprache" data-en-aria="Language">
+        <button type="button" data-lang="de" aria-pressed="true">DE</button>
+        <button type="button" data-lang="en" aria-pressed="false">EN</button>
+      </div>
+      <div class="seg" role="group" aria-label="Darstellung" data-en-aria="Appearance">
+        <button type="button" data-theme-btn="light" aria-label="Hell" data-en-aria="Light"><svg class="i"><use href="#i-sun"/></svg></button>
+        <button type="button" data-theme-btn="dark" aria-label="Dunkel" data-en-aria="Dark"><svg class="i"><use href="#i-moon"/></svg></button>
+      </div>
+    </div>
+  </div>
+  <div class="hero">
+    <h1 data-en="Projects by Marius&nbsp;Kaul">Projekte von Marius&nbsp;Kaul</h1>
+    <p class="lead" data-en="Robotics, research and web projects in one place. Scan the QR code or open the page directly.">Robotik, Forschung und Web-Projekte an einem Ort. QR-Code scannen oder Seite direkt öffnen.</p>
+    <ul class="legend">
+      <li><svg class="i"><use href="#i-qr"/></svg><span data-en="QR code = short link to the page">QR-Code = Kurzlink zur Seite</span></li>
+      <li><svg class="i"><use href="#i-doc"/></svg><span data-en="README = project docs">README = Doku zum Projekt</span></li>
+      <li><svg class="i"><use href="#i-lock"/></svg><span data-en="Code private = page public, repo private">Code privat = Seite öffentlich, Repo privat</span></li>
+    </ul>
+    <div class="rule"></div>
+  </div>
+</header>
+
+<main class="wrap">
+  <section aria-labelledby="h-workflow">
+    <p class="kicker"><b>01</b><span data-en="Way of working">Arbeitsweise</span></p>
+    <h2 id="h-workflow" data-en="One workflow for every project">Ein Workflow für alle Projekte</h2>
+    <p class="intro" data-en="Rules, skills, agents, hooks and memory live in one main repo. Every machine and every project draws on it.">Regeln, Skills, Agenten, Hooks und Memory liegen zentral im Haupt-Repo. Jeder Rechner und jedes Projekt bezieht sie von dort.</p>
+    <div class="flow">
+      <article class="card" data-reveal><div class="qr-row"><div class="qr-frame"><a class="qr-code" href="ux_robot/develop_workflow.html" aria-label="QR-Code lu4k87.github.io/p_4" data-en-aria="QR code lu4k87.github.io/p_4"><svg viewBox="0 0 29 29" class="segno"><path class="qrline" stroke="#000" d="M0 0.5h7m3 0h8m2 0h1m1 0h7m-29 1h1m5 0h1m1 0h3m1 0h2m5 0h1m2 0h1m5 0h1m-29 1h1m1 0h3m1 0h1m2 0h3m3 0h1m2 0h1m1 0h1m1 0h1m1 0h3m1 0h1m-29 1h1m1 0h3m1 0h1m1 0h3m3 0h1m1 0h2m1 0h1m2 0h1m1 0h3m1 0h1m-29 1h1m1 0h3m1 0h1m1 0h2m1 0h1m1 0h1m2 0h5m1 0h1m1 0h3m1 0h1m-29 1h1m5 0h1m4 0h3m1 0h3m2 0h1m1 0h1m5 0h1m-29 1h7m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h7m-21 1h1m1 0h1m4 0h2m1 0h2m-19 1h1m1 0h4m1 0h1m3 0h2m1 0h2m1 0h5m1 0h2m1 0h1m-28 1h1m1 0h2m1 0h1m3 0h1m1 0h3m3 0h2m4 0h5m-27 1h2m1 0h1m1 0h4m1 0h3m4 0h1m1 0h4m2 0h1m-26 1h3m5 0h6m2 0h1m7 0h1m2 0h1m-28 1h2m1 0h4m2 0h1m1 0h2m4 0h2m1 0h2m2 0h1m1 0h1m-27 1h2m1 0h2m5 0h2m3 0h1m5 0h1m1 0h1m1 0h3m-29 1h1m2 0h1m1 0h3m3 0h5m2 0h2m1 0h1m1 0h1m1 0h1m2 0h1m-29 1h1m1 0h1m1 0h1m3 0h2m4 0h1m1 0h1m1 0h1m2 0h2m1 0h5m-28 1h1m1 0h1m2 0h4m1 0h3m1 0h1m1 0h3m3 0h1m1 0h1m1 0h2m-29 1h1m3 0h2m3 0h1m1 0h1m1 0h1m4 0h3m2 0h2m1 0h1m-27 1h5m1 0h4m1 0h1m2 0h1m1 0h4m3 0h1m1 0h2m1 0h1m-29 1h3m4 0h1m1 0h4m2 0h2m1 0h1m2 0h2m1 0h1m1 0h1m-27 1h3m1 0h3m3 0h1m1 0h3m1 0h3m1 0h5m1 0h1m-19 1h1m1 0h1m1 0h4m1 0h1m2 0h1m3 0h3m-27 1h7m3 0h3m2 0h1m3 0h2m1 0h1m1 0h1m1 0h1m-27 1h1m5 0h1m1 0h2m2 0h1m1 0h2m2 0h3m3 0h2m1 0h1m-28 1h1m1 0h3m1 0h1m1 0h1m2 0h2m4 0h1m1 0h6m3 0h1m-29 1h1m1 0h3m1 0h1m1 0h1m1 0h2m6 0h1m4 0h1m2 0h2m-28 1h1m1 0h3m1 0h1m2 0h1m1 0h1m1 0h1m1 0h1m1 0h1m2 0h2m1 0h2m2 0h2m-29 1h1m5 0h1m1 0h1m2 0h3m2 0h1m4 0h1m2 0h3m1 0h1m-29 1h7m4 0h2m1 0h2m2 0h1m1 0h1m1 0h3"/></svg></a></div><div class="qr-meta"><span class="k" data-en="Short link">Kurzlink</span><span class="host">lu4k87.github.io</span><a class="path" href="ux_robot/develop_workflow.html">/p_4</a></div></div><div class="body"><p class="tag" data-en="Way of working · Claude Code, Codex, Gemini">Arbeitsweise · Claude Code, Codex, Gemini</p><h3>AI Dev Workflow</h3><p class="desc" data-en="How every project here is built – cycle, guardrails and definition of done for working with AI agents.">So entsteht jedes Projekt hier – Kreislauf, Leitplanken und Definition of Done für die Arbeit mit KI-Agenten.</p></div><div class="acts"><a class="btn main" href="ux_robot/develop_workflow.html"><span data-en="Open docs">Doku öffnen</span><svg class="i go" aria-hidden="true"><use href="#i-go"/></svg></a></div></article>
+      <ol class="tree" data-reveal aria-label="Aufbau des Workflows, von der Quelle bis zur Veröffentlichung" data-en-aria="Workflow structure, from source to publication">
+        <li class="node" style="--lvl:0">
+          <div class="node-head"><span class="node-no">01</span><h3 data-en="Main repo · single source">Haupt-Repo · einzige Quelle</h3></div>
+          <p data-en="Everything the AI tools need is versioned in Git.">Alles, was die KI-Werkzeuge brauchen, liegt versioniert in Git.</p>
+          <ul class="chips">
+            <li data-en="Shared rules">Gemeinsame Regeln</li><li>Skills</li><li data-en="Agents">Agenten</li><li>Hooks</li>
+            <li data-en="Memory (shared + per project)">Memory (gemeinsam + je Projekt)</li><li data-en="Handoffs between chats">Übergaben zwischen Chats</li>
+          </ul>
+        </li>
+        <li class="edge" style="--lvl:0; --i:0"><span class="rail" aria-hidden="true"><svg class="i"><use href="#i-down"/></svg></span>
+          <span class="edge-txt"><code>ws_sync.sh</code><span data-en="syncs and links globally">gleicht ab und verlinkt global</span></span></li>
+        <li class="node" style="--lvl:1">
+          <div class="node-head"><span class="node-no">02</span><h3 data-en="Every machine">Jeder Rechner</h3></div>
+          <p data-en="Laptop, lab PC, home PC: Claude Code, Codex and Gemini read the same rules via links in the home folder.">Laptop, Labor-PC, Home-PC: Claude Code, Codex und Gemini lesen dieselben Regeln über Links im Home-Ordner.</p>
+          <ul class="chips">
+            <li>Claude Code</li><li>Codex</li><li>Gemini</li>
+            <li data-en="Global skills + agents">Globale Skills + Agenten</li><li data-en="Chat history via Git">Chat-Verläufe über Git</li>
+          </ul>
+        </li>
+        <li class="edge" style="--lvl:1; --i:1"><span class="rail" aria-hidden="true"><svg class="i"><use href="#i-down"/></svg></span>
+          <span class="edge-txt"><code>projects.py sync</code><span data-en="clones and updates project repos">klont und aktualisiert die Projekt-Repos</span></span></li>
+        <li class="node" style="--lvl:2">
+          <div class="node-head"><span class="node-no">03</span><h3 data-en="Projects · own repos">Projekte · eigene Repos</h3></div>
+          <p data-en="Each project adds its own rules and keeps its own memory.">Jedes Projekt ergänzt eigene Regeln und hält eigene Memory.</p>
+          <ul class="chips"><li>ACCREDO</li><li>Bohlien Immo</li><li>Stele CMS</li><li>Claude Ops</li><li>Systembrett</li><li>my_webpage</li></ul>
+        </li>
+        <li class="edge" style="--lvl:2; --i:2"><span class="rail" aria-hidden="true"><svg class="i"><use href="#i-down"/></svg></span>
+          <span class="edge-txt"><code>git push</code><span data-en="publishes automatically">veröffentlicht automatisch</span></span></li>
+        <li class="node" style="--lvl:3">
+          <div class="node-head"><span class="node-no">04</span><h3>lu4k87.github.io</h3></div>
+          <p data-en="Docs, READMEs, short links and QR codes – this page.">Doku, READMEs, Kurzlinks und QR-Codes – diese Seite.</p>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <section aria-labelledby="h-lab">
+    <p class="kicker"><b>02</b><span>UX Lab</span></p>
+    <h2 id="h-lab" data-en="UX Lab · Rhine-Waal University of Applied Sciences">UX Lab · Hochschule Rhein-Waal</h2>
+    <p class="intro" data-en="Robotics platform and research belong together: the study runs on UX Robot.">Robotik-Plattform und Forschung gehören zusammen: Die Studie läuft auf UX Robot.</p>
+    <div class="grid"><article class="card" data-reveal><div class="qr-row"><div class="qr-frame"><a class="qr-code" href="ux_robot/project_docs.html" aria-label="QR-Code lu4k87.github.io/p_1" data-en-aria="QR code lu4k87.github.io/p_1"><svg viewBox="0 0 29 29" class="segno"><path class="qrline" stroke="#000" d="M0 0.5h7m4 0h3m1 0h1m1 0h1m2 0h1m1 0h7m-29 1h1m5 0h1m1 0h6m5 0h1m2 0h1m5 0h1m-29 1h1m1 0h3m1 0h1m2 0h2m4 0h1m2 0h1m1 0h1m1 0h1m1 0h3m1 0h1m-29 1h1m1 0h3m1 0h1m1 0h4m2 0h4m1 0h1m2 0h1m1 0h3m1 0h1m-29 1h1m1 0h3m1 0h1m1 0h2m1 0h1m4 0h5m1 0h1m1 0h3m1 0h1m-29 1h1m5 0h1m3 0h4m1 0h4m1 0h1m1 0h1m5 0h1m-29 1h7m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h7m-21 1h2m3 0h1m1 0h2m2 0h1m-19 1h1m1 0h4m1 0h2m3 0h4m1 0h5m1 0h2m1 0h1m-28 1h2m5 0h3m1 0h3m1 0h4m4 0h5m-27 1h4m1 0h4m2 0h2m1 0h2m1 0h1m1 0h4m2 0h1m-26 1h2m6 0h3m1 0h2m2 0h1m7 0h1m2 0h1m-28 1h2m1 0h4m2 0h4m1 0h1m2 0h2m1 0h2m2 0h1m1 0h1m-27 1h2m2 0h1m3 0h1m1 0h2m3 0h1m5 0h1m1 0h1m1 0h3m-29 1h1m2 0h1m2 0h2m1 0h1m1 0h2m1 0h2m2 0h2m1 0h1m1 0h1m1 0h1m2 0h1m-28 1h2m5 0h1m7 0h1m1 0h1m2 0h2m1 0h5m-28 1h1m2 0h1m1 0h2m1 0h1m1 0h3m1 0h1m1 0h3m3 0h1m1 0h1m1 0h2m-29 1h3m1 0h1m4 0h1m1 0h3m4 0h3m2 0h2m1 0h1m-27 1h2m1 0h2m1 0h4m1 0h2m1 0h1m1 0h4m3 0h1m1 0h2m1 0h1m-29 1h4m5 0h2m1 0h1m2 0h2m1 0h1m2 0h2m1 0h1m1 0h1m-27 1h2m2 0h4m2 0h5m1 0h3m1 0h5m1 0h1m-19 1h3m1 0h1m1 0h2m1 0h1m2 0h1m3 0h3m-27 1h7m3 0h3m2 0h1m3 0h2m1 0h1m1 0h1m1 0h1m-27 1h1m5 0h1m1 0h3m1 0h4m2 0h3m3 0h2m1 0h1m-28 1h1m1 0h3m1 0h1m1 0h1m2 0h1m1 0h1m3 0h1m1 0h6m3 0h1m-29 1h1m1 0h3m1 0h1m1 0h1m5 0h1m3 0h1m4 0h1m2 0h2m-28 1h1m1 0h3m1 0h1m2 0h1m1 0h1m1 0h1m1 0h1m1 0h1m2 0h2m1 0h2m2 0h2m-29 1h1m5 0h1m1 0h1m3 0h2m2 0h1m4 0h1m2 0h3m1 0h1m-29 1h7m4 0h2m1 0h2m2 0h1m1 0h1m1 0h3"/></svg></a></div><div class="qr-meta"><span class="k" data-en="Short link">Kurzlink</span><span class="host">lu4k87.github.io</span><a class="path" href="ux_robot/project_docs.html">/p_1</a></div></div><div class="body"><p class="tag" data-en="Robotics · ROS 2 · xArm Lite 6">Robotik · ROS 2 · xArm Lite 6</p><h3>UX Robot</h3><p class="desc" data-en="Assistive robotics platform for the xArm Lite 6 – The human leads. The AI assists.">Assistive Robotik-Plattform für den xArm Lite 6 – Der Mensch führt. Die KI assistiert.</p></div><div class="acts"><a class="btn main" href="ux_robot/project_docs.html"><span data-en="Open docs hub">Doku-Hub öffnen</span><svg class="i go" aria-hidden="true"><use href="#i-go"/></svg></a><a class="btn" href="ux_robot/readme-de.html" data-href-en="ux_robot/readme-en.html"><svg class="i" aria-hidden="true"><use href="#i-doc"/></svg><span data-en="Read README">README lesen</span></a><span class="btn private"><svg class="i" aria-hidden="true"><use href="#i-lock"/></svg><span data-en="Code private">Code privat</span></span></div></article><article class="card" data-reveal><div class="qr-row"><div class="qr-frame"><a class="qr-code" href="ux_robot/present_research.html" aria-label="QR-Code lu4k87.github.io/p_5" data-en-aria="QR code lu4k87.github.io/p_5"><svg viewBox="0 0 29 29" class="segno"><path class="qrline" stroke="#000" d="M0 0.5h7m3 0h1m2 0h5m2 0h1m1 0h7m-29 1h1m5 0h1m1 0h3m2 0h1m1 0h2m2 0h1m2 0h1m5 0h1m-29 1h1m1 0h3m1 0h1m2 0h4m3 0h1m1 0h1m1 0h1m1 0h1m1 0h3m1 0h1m-29 1h1m1 0h3m1 0h1m1 0h4m2 0h1m1 0h2m1 0h1m2 0h1m1 0h3m1 0h1m-29 1h1m1 0h3m1 0h1m1 0h2m1 0h1m4 0h5m1 0h1m1 0h3m1 0h1m-29 1h1m5 0h1m4 0h3m1 0h3m2 0h1m1 0h1m5 0h1m-29 1h7m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h7m-21 1h1m4 0h1m1 0h2m2 0h1m-19 1h1m1 0h4m1 0h2m4 0h2m2 0h5m1 0h2m1 0h1m-28 1h1m2 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h4m4 0h5m-27 1h2m1 0h1m1 0h2m1 0h1m3 0h1m1 0h2m1 0h1m1 0h4m2 0h1m-26 1h2m5 0h3m1 0h6m7 0h1m2 0h1m-28 1h2m1 0h4m2 0h1m1 0h2m4 0h2m1 0h2m2 0h1m1 0h1m-27 1h2m1 0h2m5 0h3m2 0h1m5 0h1m1 0h1m1 0h3m-29 1h2m1 0h2m1 0h2m1 0h4m2 0h1m2 0h2m1 0h1m1 0h1m1 0h1m2 0h1m-29 1h3m5 0h3m2 0h1m2 0h1m1 0h1m2 0h2m1 0h5m-26 1h5m1 0h1m1 0h2m2 0h1m1 0h3m3 0h1m1 0h1m1 0h2m-29 1h1m1 0h4m1 0h8m3 0h3m2 0h2m1 0h1m-27 1h2m1 0h2m1 0h4m1 0h1m2 0h1m1 0h4m3 0h1m1 0h2m1 0h1m-29 1h2m1 0h1m3 0h1m1 0h2m1 0h1m2 0h2m1 0h1m2 0h2m1 0h1m1 0h1m-27 1h3m1 0h4m2 0h1m1 0h3m1 0h3m1 0h5m1 0h1m-19 1h1m1 0h1m1 0h1m1 0h2m1 0h1m2 0h1m3 0h3m-27 1h7m2 0h1m1 0h2m1 0h2m3 0h2m1 0h1m1 0h1m1 0h1m-27 1h1m5 0h1m1 0h1m1 0h1m1 0h2m1 0h1m2 0h3m3 0h2m1 0h1m-28 1h1m1 0h3m1 0h1m1 0h1m1 0h2m2 0h1m2 0h1m1 0h6m3 0h1m-29 1h1m1 0h3m1 0h1m1 0h1m1 0h3m5 0h1m4 0h1m2 0h2m-28 1h1m1 0h3m1 0h1m2 0h1m3 0h1m1 0h1m1 0h1m2 0h2m1 0h2m2 0h2m-29 1h1m5 0h1m1 0h1m3 0h2m2 0h1m4 0h1m2 0h3m1 0h1m-29 1h7m5 0h1m1 0h2m2 0h1m1 0h1m1 0h3"/></svg></a></div><div class="qr-meta"><span class="k" data-en="Short link">Kurzlink</span><span class="host">lu4k87.github.io</span><a class="path" href="ux_robot/present_research.html">/p_5</a></div></div><div class="body"><p class="tag" data-en="Research · human factors">Forschung · Human Factors</p><h3>Look, Speak, Confirm</h3><p class="desc" data-en="Study of gaze, speech and confirmation as complementary interaction for robot manipulation.">Studie zu Blick, Sprache und Bestätigung als sich ergänzende Bedienung für Roboter-Manipulation.</p></div><div class="acts"><a class="btn main" href="ux_robot/present_research.html"><span data-en="Open study">Studie öffnen</span><svg class="i go" aria-hidden="true"><use href="#i-go"/></svg></a></div></article></div>
+  </section>
+
+  <section aria-labelledby="h-projects">
+    <p class="kicker"><b>03</b><span data-en="Projects">Projekte</span></p>
+    <h2 id="h-projects" data-en="More projects">Weitere Projekte</h2>
+    <p class="intro" data-en="Each in its own repo. Public repos show README and code, private ones only the page.">Jedes in einem eigenen Repo. Öffentliche Repos zeigen README und Code, private nur die Seite.</p>
+    <div class="grid"><article class="card" data-reveal><div class="qr-row"><div class="qr-frame"><a class="qr-code" href="ux_robot/accredo.html" aria-label="QR-Code lu4k87.github.io/p_3" data-en-aria="QR code lu4k87.github.io/p_3"><svg viewBox="0 0 29 29" class="segno"><path class="qrline" stroke="#000" d="M0 0.5h7m1 0h1m3 0h1m1 0h3m2 0h1m2 0h7m-29 1h1m5 0h1m3 0h2m2 0h3m3 0h1m1 0h1m5 0h1m-29 1h1m1 0h3m1 0h1m2 0h1m1 0h1m1 0h1m4 0h3m1 0h1m1 0h3m1 0h1m-29 1h1m1 0h3m1 0h1m8 0h1m1 0h1m1 0h2m1 0h1m1 0h3m1 0h1m-29 1h1m1 0h3m1 0h1m1 0h2m4 0h1m1 0h1m1 0h2m2 0h1m1 0h3m1 0h1m-29 1h1m5 0h1m1 0h1m3 0h2m3 0h2m1 0h1m1 0h1m5 0h1m-29 1h7m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h7m-15 1h1m1 0h1m3 0h1m-20 1h7m1 0h1m4 0h2m2 0h1m1 0h1m2 0h2m3 0h1m-29 1h3m1 0h1m2 0h2m1 0h1m1 0h2m1 0h4m1 0h6m2 0h1m-28 1h1m1 0h5m1 0h1m3 0h2m2 0h2m2 0h2m-22 1h5m1 0h1m3 0h4m6 0h3m1 0h1m1 0h1m-26 1h1m3 0h3m3 0h1m1 0h1m1 0h3m1 0h2m1 0h1m2 0h3m-29 1h1m2 0h3m1 0h3m1 0h2m1 0h3m2 0h4m1 0h2m2 0h1m-28 1h1m1 0h4m4 0h2m2 0h2m1 0h1m2 0h3m-24 1h2m1 0h1m1 0h1m3 0h2m2 0h3m2 0h1m1 0h1m3 0h2m-25 1h2m1 0h1m1 0h2m4 0h1m1 0h2m2 0h3m4 0h4m-29 1h3m2 0h1m1 0h1m2 0h1m1 0h11m1 0h1m1 0h3m-29 1h1m4 0h2m1 0h6m4 0h1m1 0h1m1 0h1m-23 1h1m2 0h1m3 0h2m1 0h1m2 0h2m1 0h1m1 0h3m1 0h1m1 0h2m1 0h1m-28 1h1m1 0h1m2 0h2m4 0h2m1 0h1m2 0h10m1 0h1m-21 1h2m2 0h2m2 0h2m2 0h1m3 0h2m1 0h2m-29 1h7m1 0h2m2 0h4m1 0h1m1 0h2m1 0h1m1 0h1m-25 1h1m5 0h1m1 0h7m1 0h5m3 0h2m2 0h1m-29 1h1m1 0h3m1 0h1m1 0h1m1 0h1m1 0h1m3 0h1m3 0h7m-27 1h1m1 0h3m1 0h1m1 0h2m1 0h5m2 0h4m1 0h1m1 0h1m-26 1h1m1 0h3m1 0h1m1 0h4m3 0h3m1 0h7m1 0h1m-28 1h1m5 0h1m1 0h3m2 0h3m4 0h1m1 0h1m1 0h2m1 0h1m-28 1h7m5 0h1m2 0h1m1 0h2m3 0h1m1 0h1m1 0h1"/></svg></a></div><div class="qr-meta"><span class="k" data-en="Short link">Kurzlink</span><span class="host">lu4k87.github.io</span><a class="path" href="ux_robot/accredo.html">/p_3</a></div></div><div class="body"><p class="tag" data-en="Scrollytelling · university">Scrollytelling · Hochschule</p><h3>ACCREDO</h3><p class="desc" data-en="Scrollytelling on the reaccreditation and examination-regulation process of a university.">Scrollytelling zum Reakkreditierungs- und PO-Novellierungsprozess einer Hochschule.</p></div><div class="acts"><a class="btn main" href="ux_robot/accredo.html"><span data-en="Open scrollytelling">Scrollytelling öffnen</span><svg class="i go" aria-hidden="true"><use href="#i-go"/></svg></a><a class="btn" href="ux_robot/readme_accredo.html"><svg class="i" aria-hidden="true"><use href="#i-doc"/></svg><span data-en="Read README">README lesen</span></a><a class="btn" href="https://github.com/lu4k87/Accredo" rel="noopener"><svg class="i" aria-hidden="true"><use href="#i-git"/></svg><span data-en="Code on GitHub">Code auf GitHub</span><svg class="i" aria-hidden="true"><use href="#i-ext"/></svg></a></div></article><article class="card" data-reveal><div class="qr-row"><div class="qr-frame"><a class="qr-code" href="ux_robot/bohlien_immo/index.html" aria-label="QR-Code lu4k87.github.io/p_6" data-en-aria="QR code lu4k87.github.io/p_6"><svg viewBox="0 0 29 29" class="segno"><path class="qrline" stroke="#000" d="M0 0.5h7m4 0h7m2 0h1m1 0h7m-29 1h1m5 0h1m1 0h3m2 0h1m2 0h1m2 0h1m2 0h1m5 0h1m-29 1h1m1 0h3m1 0h1m2 0h2m5 0h1m1 0h1m1 0h1m1 0h1m1 0h3m1 0h1m-29 1h1m1 0h3m1 0h1m1 0h4m2 0h4m1 0h1m2 0h1m1 0h3m1 0h1m-29 1h1m1 0h3m1 0h1m1 0h2m1 0h1m1 0h1m2 0h5m1 0h1m1 0h3m1 0h1m-29 1h1m5 0h1m2 0h1m1 0h3m1 0h2m3 0h1m1 0h1m5 0h1m-29 1h7m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h7m-21 1h1m1 0h1m4 0h2m1 0h2m-19 1h1m1 0h4m1 0h1m1 0h1m1 0h2m1 0h2m1 0h5m1 0h2m1 0h1m-28 1h1m1 0h1m2 0h1m2 0h2m2 0h7m4 0h5m-27 1h2m1 0h1m1 0h4m3 0h1m1 0h2m1 0h1m1 0h4m2 0h1m-26 1h3m3 0h1m1 0h2m2 0h5m7 0h1m2 0h1m-28 1h1m2 0h3m3 0h1m1 0h2m1 0h1m2 0h2m1 0h2m2 0h1m1 0h1m-28 1h3m2 0h1m3 0h1m1 0h3m2 0h1m5 0h1m1 0h1m1 0h3m-26 1h1m2 0h2m1 0h4m2 0h1m2 0h2m1 0h1m1 0h1m1 0h1m2 0h1m-27 1h1m2 0h1m2 0h2m3 0h2m1 0h1m1 0h1m2 0h2m1 0h5m-28 1h1m1 0h1m1 0h3m3 0h2m2 0h1m1 0h3m3 0h1m1 0h1m1 0h2m-29 1h1m2 0h3m1 0h1m1 0h1m1 0h1m1 0h2m3 0h3m2 0h2m1 0h1m-27 1h2m2 0h1m1 0h2m1 0h1m4 0h1m1 0h4m3 0h1m1 0h2m1 0h1m-29 1h4m3 0h1m1 0h3m3 0h2m1 0h1m2 0h2m1 0h1m1 0h1m-27 1h2m2 0h3m3 0h1m1 0h3m1 0h3m1 0h5m1 0h1m-19 1h3m1 0h1m1 0h2m1 0h1m2 0h1m3 0h3m-27 1h7m2 0h1m1 0h3m1 0h1m3 0h2m1 0h1m1 0h1m1 0h1m-27 1h1m5 0h1m1 0h1m1 0h1m1 0h1m1 0h2m2 0h3m3 0h2m1 0h1m-28 1h1m1 0h3m1 0h1m1 0h1m2 0h1m2 0h1m2 0h1m1 0h6m3 0h1m-29 1h1m1 0h3m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m3 0h1m4 0h1m2 0h2m-28 1h1m1 0h3m1 0h1m2 0h1m1 0h1m1 0h1m1 0h1m1 0h1m2 0h2m1 0h2m2 0h2m-29 1h1m5 0h1m1 0h1m2 0h1m1 0h1m2 0h1m4 0h1m2 0h3m1 0h1m-29 1h7m4 0h2m1 0h2m2 0h1m1 0h1m1 0h3"/></svg></a></div><div class="qr-meta"><span class="k" data-en="Short link">Kurzlink</span><span class="host">lu4k87.github.io</span><a class="path" href="ux_robot/bohlien_immo/index.html">/p_6</a></div></div><div class="body"><p class="tag" data-en="Landing page · three.js">Landingpage · three.js</p><h3>Bohlien Immo</h3><p class="desc" data-en="New landing page for a real estate agency – three.js house model and five designs.">Neue Landingpage für ein Immobilienbüro – three.js-Hausmodell und fünf Entwürfe.</p></div><div class="acts"><a class="btn main" href="ux_robot/bohlien_immo/index.html"><span data-en="Open landing page">Landingpage öffnen</span><svg class="i go" aria-hidden="true"><use href="#i-go"/></svg></a><a class="btn" href="ux_robot/readme_bohlien_immo.html"><svg class="i" aria-hidden="true"><use href="#i-doc"/></svg><span data-en="Read README">README lesen</span></a><a class="btn" href="https://github.com/lu4k87/project_immo_bohlien" rel="noopener"><svg class="i" aria-hidden="true"><use href="#i-git"/></svg><span data-en="Code on GitHub">Code auf GitHub</span><svg class="i" aria-hidden="true"><use href="#i-ext"/></svg></a></div></article><article class="card" data-reveal><div class="qr-row"><div class="qr-frame"><a class="qr-code" href="ux_robot/readme_hsrw_stele.html" aria-label="QR-Code lu4k87.github.io/p_8" data-en-aria="QR code lu4k87.github.io/p_8"><svg viewBox="0 0 29 29" class="segno"><path class="qrline" stroke="#000" d="M0 0.5h7m4 0h4m1 0h2m2 0h1m1 0h7m-29 1h1m5 0h1m1 0h3m1 0h2m1 0h2m2 0h1m2 0h1m5 0h1m-29 1h1m1 0h3m1 0h1m2 0h3m3 0h1m2 0h1m1 0h1m1 0h1m1 0h3m1 0h1m-29 1h1m1 0h3m1 0h1m1 0h4m2 0h1m1 0h2m1 0h1m2 0h1m1 0h3m1 0h1m-29 1h1m1 0h3m1 0h1m1 0h1m2 0h1m1 0h1m2 0h1m1 0h3m1 0h1m1 0h3m1 0h1m-29 1h1m5 0h1m3 0h4m1 0h4m1 0h1m1 0h1m5 0h1m-29 1h7m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h7m-21 1h2m5 0h2m1 0h2m-19 1h1m1 0h4m1 0h1m5 0h3m1 0h5m1 0h2m1 0h1m-28 1h2m5 0h3m1 0h3m1 0h4m4 0h5m-27 1h1m1 0h2m1 0h1m2 0h1m1 0h3m1 0h2m1 0h1m1 0h4m2 0h1m-26 1h1m1 0h1m3 0h9m1 0h1m7 0h1m2 0h1m-28 1h2m1 0h3m3 0h1m1 0h2m4 0h2m1 0h2m2 0h1m1 0h1m-28 1h3m2 0h1m5 0h2m3 0h1m5 0h1m1 0h1m1 0h3m-29 1h2m1 0h2m1 0h2m1 0h5m1 0h1m2 0h2m1 0h1m1 0h1m1 0h1m2 0h1m-29 1h3m1 0h2m2 0h3m3 0h1m1 0h1m1 0h1m2 0h2m1 0h5m-29 1h1m2 0h2m1 0h3m1 0h2m1 0h1m1 0h1m1 0h3m3 0h1m1 0h1m1 0h2m-29 1h3m1 0h2m1 0h1m1 0h1m1 0h3m4 0h3m2 0h2m1 0h1m-27 1h3m1 0h1m1 0h1m1 0h2m4 0h1m1 0h4m3 0h1m1 0h2m1 0h1m-29 1h2m1 0h1m4 0h3m1 0h1m2 0h2m1 0h1m2 0h2m1 0h1m1 0h1m-27 1h2m2 0h3m3 0h5m1 0h3m1 0h5m1 0h1m-19 1h1m1 0h1m1 0h1m1 0h2m1 0h1m2 0h1m3 0h3m-27 1h7m2 0h7m3 0h2m1 0h1m1 0h1m1 0h1m-27 1h1m5 0h1m1 0h1m3 0h2m1 0h1m2 0h3m3 0h2m1 0h1m-28 1h1m1 0h3m1 0h1m1 0h2m1 0h1m5 0h1m1 0h6m3 0h1m-29 1h1m1 0h3m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m3 0h1m4 0h1m2 0h2m-28 1h1m1 0h3m1 0h1m2 0h1m3 0h1m1 0h1m1 0h1m2 0h2m1 0h2m2 0h2m-29 1h1m5 0h1m1 0h1m2 0h3m2 0h1m4 0h1m2 0h3m1 0h1m-29 1h7m5 0h1m1 0h2m2 0h1m1 0h1m1 0h3"/></svg></a></div><div class="qr-meta"><span class="k" data-en="Short link">Kurzlink</span><span class="host">lu4k87.github.io</span><a class="path" href="ux_robot/readme_hsrw_stele.html">/p_8</a></div></div><div class="body"><p class="tag" data-en="Web CMS · university">Web-CMS · Hochschule</p><h3>Stele CMS</h3><p class="desc" data-en="Web CMS for digital info steles – manage content, schedule presentations, monitor devices.">Web-CMS für digitale Stelen – Inhalte pflegen, Präsentationen planen, Stelen überwachen.</p></div><div class="acts"><a class="btn" href="ux_robot/readme_hsrw_stele.html"><svg class="i" aria-hidden="true"><use href="#i-doc"/></svg><span data-en="Read README">README lesen</span></a><a class="btn" href="https://github.com/lu4k87/stele_hsrw" rel="noopener"><svg class="i" aria-hidden="true"><use href="#i-git"/></svg><span data-en="Code on GitHub">Code auf GitHub</span><svg class="i" aria-hidden="true"><use href="#i-ext"/></svg></a></div></article><article class="card" data-reveal><div class="qr-row"><div class="qr-frame"><a class="qr-code" href="ux_robot/claude_ops.html" aria-label="QR-Code lu4k87.github.io/p_2" data-en-aria="QR code lu4k87.github.io/p_2"><svg viewBox="0 0 29 29" class="segno"><path class="qrline" stroke="#000" d="M0 0.5h7m3 0h1m2 0h1m1 0h1m1 0h1m2 0h1m1 0h7m-29 1h1m5 0h1m1 0h6m1 0h1m3 0h1m2 0h1m5 0h1m-29 1h1m1 0h3m1 0h1m2 0h4m2 0h1m2 0h1m1 0h1m1 0h1m1 0h3m1 0h1m-29 1h1m1 0h3m1 0h1m1 0h4m2 0h1m1 0h2m1 0h1m2 0h1m1 0h3m1 0h1m-29 1h1m1 0h3m1 0h1m1 0h2m1 0h1m1 0h1m2 0h5m1 0h1m1 0h3m1 0h1m-29 1h1m5 0h1m2 0h5m1 0h2m1 0h1m1 0h1m1 0h1m5 0h1m-29 1h7m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h7m-21 1h3m4 0h2m1 0h2m-19 1h1m1 0h4m1 0h1m1 0h1m1 0h1m2 0h1m2 0h5m1 0h2m1 0h1m-28 1h4m5 0h1m3 0h6m4 0h5m-27 1h4m1 0h2m1 0h1m2 0h2m1 0h2m1 0h1m1 0h4m2 0h1m-26 1h3m3 0h8m2 0h1m7 0h1m2 0h1m-28 1h1m2 0h3m3 0h4m4 0h2m1 0h2m2 0h1m1 0h1m-28 1h3m1 0h2m5 0h2m3 0h1m5 0h1m1 0h1m1 0h3m-28 1h1m1 0h2m1 0h2m1 0h1m1 0h2m1 0h2m2 0h2m1 0h1m1 0h1m1 0h1m2 0h1m-29 1h1m1 0h1m2 0h1m2 0h1m1 0h1m3 0h1m1 0h1m1 0h1m2 0h2m1 0h5m-23 1h2m3 0h3m1 0h1m1 0h3m3 0h1m1 0h1m1 0h2m-29 1h2m2 0h1m3 0h4m1 0h1m4 0h3m2 0h2m1 0h1m-27 1h2m2 0h1m1 0h2m1 0h1m2 0h1m1 0h1m1 0h4m3 0h1m1 0h2m1 0h1m-29 1h2m1 0h1m5 0h3m3 0h2m1 0h1m2 0h2m1 0h1m1 0h1m-27 1h3m1 0h3m3 0h5m1 0h3m1 0h5m1 0h1m-19 1h1m1 0h1m1 0h1m1 0h2m1 0h1m2 0h1m3 0h3m-27 1h7m3 0h6m3 0h2m1 0h1m1 0h1m1 0h1m-27 1h1m5 0h1m1 0h3m1 0h1m2 0h1m2 0h3m3 0h2m1 0h1m-28 1h1m1 0h3m1 0h1m1 0h1m1 0h2m1 0h1m3 0h1m1 0h6m3 0h1m-29 1h1m1 0h3m1 0h1m1 0h1m2 0h1m6 0h1m4 0h1m2 0h2m-28 1h1m1 0h3m1 0h1m2 0h1m3 0h1m1 0h1m1 0h1m2 0h2m1 0h2m2 0h2m-29 1h1m5 0h1m1 0h1m2 0h1m1 0h1m2 0h1m4 0h1m2 0h3m1 0h1m-29 1h7m5 0h1m1 0h2m2 0h1m1 0h1m1 0h3"/></svg></a></div><div class="qr-meta"><span class="k" data-en="Short link">Kurzlink</span><span class="host">lu4k87.github.io</span><a class="path" href="ux_robot/claude_ops.html">/p_2</a></div></div><div class="body"><p class="tag" data-en="Dashboard · live">Dashboard · Live</p><h3>Claude Ops</h3><p class="desc" data-en="Live dashboard of Claude Code chats and agents in a HUD look.">Live-Dashboard der Claude-Code-Chats und Agenten im HUD-Look.</p></div><div class="acts"><a class="btn main" href="ux_robot/claude_ops.html"><span data-en="Open landing page">Landingpage öffnen</span><svg class="i go" aria-hidden="true"><use href="#i-go"/></svg></a><span class="btn private"><svg class="i" aria-hidden="true"><use href="#i-lock"/></svg><span data-en="Code private">Code privat</span></span></div></article><article class="card" data-reveal><div class="qr-row"><div class="qr-frame"><a class="qr-code" href="ux_robot/systembrett_demo.html" aria-label="QR-Code lu4k87.github.io/p_7" data-en-aria="QR code lu4k87.github.io/p_7"><svg viewBox="0 0 29 29" class="segno"><path class="qrline" stroke="#000" d="M0 0.5h7m6 0h5m2 0h1m1 0h7m-29 1h1m5 0h1m1 0h3m1 0h2m1 0h1m3 0h1m2 0h1m5 0h1m-29 1h1m1 0h3m1 0h1m2 0h2m1 0h1m2 0h1m2 0h1m1 0h1m1 0h1m1 0h3m1 0h1m-29 1h1m1 0h3m1 0h1m1 0h3m3 0h4m1 0h1m2 0h1m1 0h3m1 0h1m-29 1h1m1 0h3m1 0h1m1 0h2m1 0h1m4 0h5m1 0h1m1 0h3m1 0h1m-29 1h1m5 0h1m2 0h1m1 0h3m1 0h2m3 0h1m1 0h1m5 0h1m-29 1h7m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h7m-21 1h1m4 0h1m1 0h2m2 0h1m-19 1h1m1 0h4m1 0h3m3 0h2m2 0h5m1 0h2m1 0h1m-28 1h1m4 0h1m1 0h3m3 0h2m2 0h2m4 0h5m-27 1h2m1 0h1m1 0h2m1 0h1m1 0h3m4 0h1m1 0h4m2 0h1m-26 1h2m4 0h5m1 0h2m2 0h1m7 0h1m2 0h1m-28 1h1m2 0h3m3 0h1m1 0h2m1 0h1m2 0h2m1 0h2m2 0h1m1 0h1m-28 1h3m2 0h1m3 0h1m1 0h2m3 0h1m5 0h1m1 0h1m1 0h3m-28 1h1m1 0h5m3 0h5m2 0h2m1 0h1m1 0h1m1 0h1m2 0h1m-28 1h2m1 0h2m2 0h3m5 0h1m1 0h1m2 0h2m1 0h5m-26 1h2m1 0h3m2 0h3m1 0h1m1 0h3m3 0h1m1 0h1m1 0h2m-29 1h1m1 0h1m1 0h2m2 0h6m4 0h3m2 0h2m1 0h1m-27 1h3m1 0h1m1 0h2m1 0h1m4 0h1m1 0h4m3 0h1m1 0h2m1 0h1m-29 1h2m5 0h1m1 0h2m4 0h2m1 0h1m2 0h2m1 0h1m1 0h1m-27 1h2m2 0h4m2 0h1m1 0h3m1 0h3m1 0h5m1 0h1m-19 1h3m1 0h4m1 0h1m2 0h1m3 0h3m-27 1h7m3 0h6m3 0h2m1 0h1m1 0h1m1 0h1m-27 1h1m5 0h1m1 0h2m2 0h2m1 0h1m2 0h3m3 0h2m1 0h1m-28 1h1m1 0h3m1 0h1m1 0h1m1 0h3m4 0h1m1 0h6m3 0h1m-29 1h1m1 0h3m1 0h1m1 0h1m1 0h1m3 0h1m3 0h1m4 0h1m2 0h2m-28 1h1m1 0h3m1 0h1m2 0h1m3 0h1m1 0h1m1 0h1m2 0h2m1 0h2m2 0h2m-29 1h1m5 0h1m1 0h1m4 0h1m2 0h1m4 0h1m2 0h3m1 0h1m-29 1h7m5 0h1m1 0h2m2 0h1m1 0h1m1 0h3"/></svg></a></div><div class="qr-meta"><span class="k" data-en="Short link">Kurzlink</span><span class="host">lu4k87.github.io</span><a class="path" href="ux_robot/systembrett_demo.html">/p_7</a></div></div><div class="body"><p class="tag" data-en="Web app · on-device YOLO">Web-App · YOLO lokal</p><h3>Systembrett</h3><p class="desc" data-en="Web app for constellation work – detects figures from a phone photo and lays them out as an interactive sketch.">Web-App für Aufstellungen – Figuren per Handyfoto erkennen und als interaktive Skizze legen.</p></div><div class="acts"><a class="btn main" href="ux_robot/systembrett_demo.html"><span data-en="Open demo">Demo öffnen</span><svg class="i go" aria-hidden="true"><use href="#i-go"/></svg></a><span class="btn private"><svg class="i" aria-hidden="true"><use href="#i-lock"/></svg><span data-en="Code private">Code privat</span></span></div></article><article class="card" data-reveal><div class="qr-row"><div class="qr-frame"><div class="qr-code wip" data-en="in progress">in Arbeit</div></div></div><div class="body"><p class="tag" data-en="Portfolio">Portfolio</p><h3>my_webpage</h3><p class="desc" data-en="Portfolio and contact landing page.">Portfolio- und Kontakt-Landingpage.</p></div><div class="acts"></div></article></div>
+  </section>
+</main>
+
+<footer class="wrap">
+  <p data-en="Built automatically on every push · fonts served locally, no tracking.">Automatisch gebaut bei jedem Push · Schriften lokal eingebunden, kein Tracking.</p>
+</footer>
+
+<script>
+(() => {
+  const root = document.documentElement;
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const store = (k, v) => { try { if (v === undefined) return localStorage.getItem(k); localStorage.setItem(k, v); } catch (e) { return null; } };
+
+  // Theme: ?theme=, gespeicherte Wahl, sonst System
+  const setTheme = t => {
+    if (t) root.dataset.theme = t;
+    const cur = root.dataset.theme || (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+    document.querySelectorAll('[data-theme-btn]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.themeBtn === cur)));
+  };
+  const qTheme = new URLSearchParams(location.search).get('theme');
+  setTheme(['dark', 'light'].includes(qTheme) ? qTheme : store('home_theme'));
+  document.querySelectorAll('[data-theme-btn]').forEach(b => b.addEventListener('click', () => { setTheme(b.dataset.themeBtn); store('home_theme', b.dataset.themeBtn); }));
+
+  // Sprache: Texte mit data-en, Links mit data-href-en (wie docs/project_docs.html); ohne Wahl: Sprache des Browsers
+  const keep = (el, key, val) => { if (el.dataset[key] === undefined) el.dataset[key] = val; return el.dataset[key]; };
+  const setLang = lang => {
+    root.lang = lang;
+    const en = lang === 'en';
+    document.querySelectorAll('[data-en]').forEach(el => { const de = keep(el, 'de', el.innerHTML); el.innerHTML = en ? el.dataset.en : de; });
+    document.querySelectorAll('[data-en-aria]').forEach(el => { const de = keep(el, 'deAria', el.getAttribute('aria-label')); el.setAttribute('aria-label', en ? el.dataset.enAria : de); });
+    document.querySelectorAll('[data-href-en]').forEach(el => { const de = keep(el, 'hrefDe', el.getAttribute('href')); el.setAttribute('href', en ? el.dataset.hrefEn : de); });
+    document.querySelectorAll('[data-lang]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.lang === lang)));
+  };
+  document.querySelectorAll('[data-lang]').forEach(b => b.addEventListener('click', () => { setLang(b.dataset.lang); store('home_lang', b.dataset.lang); }));
+  const qLang = new URLSearchParams(location.search).get('lang');
+  const lang = ['de', 'en'].includes(qLang) ? qLang : store('home_lang') || (/^de\b/i.test(navigator.language || 'de') ? 'de' : 'en');
+  if (lang === 'en') setLang('en');
+
+  // Licht folgt dem Zeiger auf der Karte
+  document.querySelectorAll('.card').forEach(c => c.addEventListener('pointermove', e => {
+    const r = c.getBoundingClientRect();
+    c.style.setProperty('--mx', `${e.clientX - r.left}px`);
+    c.style.setProperty('--my', `${e.clientY - r.top}px`);
+  }));
+
+  // Einblenden einmal je Besuch, gestaffelt je Gruppe; Lichtstreif im Workflow-Baum einmal
+  if (reduce || !('IntersectionObserver' in window)) return;
+  root.classList.add('js');
+  document.querySelectorAll('.grid, .flow').forEach(g => [...g.querySelectorAll('[data-reveal]')].forEach((el, i) => el.style.setProperty('--i', Math.min(i, 7))));
+  const io = new IntersectionObserver(entries => entries.forEach(e => {
+    if (!e.isIntersecting) return;
+    e.target.classList.add('in');
+    if (e.target.classList.contains('tree')) setTimeout(() => e.target.classList.add('lit'), 500);
+    io.unobserve(e.target);
+  }), { rootMargin: '0px 0px -8% 0px' });
+  document.querySelectorAll('[data-reveal], .rule').forEach(el => io.observe(el));
+})();
+</script>
+</body>
+</html>
