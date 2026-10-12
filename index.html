@@ -1,7 +1,9 @@
 <!doctype html>
-<!-- Startseite https://lu4k87.github.io/ = Übersicht aller Projekte (Entscheidung User 2026-10-12: Start:C, Theme technisch/edel).
-     Vorlage für tools/publish_pages.py: Marker-Kommentare (@workflow, @lab, @projects, @project-names) ersetzt der Bau
-     durch Karten aus config/projects.yaml (home:, projects[].card).
+<!-- Startseite https://lu4k87.github.io/ = Übersicht aller Projekte (Entscheidung User 2026-10-12: Start:C, Theme technisch/edel;
+     Baukasten-Wahl 2026-10-12: Kopf:0 → Projekt-Karten:0 → Arbeitsweise mit Ablauf:B (Tabelle je Schritt), Regeln:0 präzisiert,
+     Daten:0 als Kette, Begriffe als eigener Block).
+     Vorlage für tools/publish_pages.py: Marker-Kommentare (@workflow, @lab, @projects, @project-names, @n-skills u. a.) ersetzt der Bau
+     durch Karten aus config/projects.yaml (home:, projects[].card) und Zahlen aus dem Haupt-Repo.
      Sprache DE/EN per data-en (wie docs/project_docs.html), Theme hell/dunkel per System oder Umschalter. -->
 <html lang="de">
 <head>
@@ -17,12 +19,12 @@
   --bg: #0c0e10; --surface: #121619; --surface-2: #171c20;
   --line: rgba(222, 236, 240, .10); --line-strong: rgba(222, 236, 240, .22);
   --fg: #eef2f3; --fg-2: #d5dee1;
-  --accent: #2ee6c8; --grid: rgba(222, 236, 240, .045); --halo: rgba(46, 230, 200, .10);
+  --accent: #2ee6c8; --stop: #ff6b6b; --grid: rgba(222, 236, 240, .045); --halo: rgba(46, 230, 200, .10);
   --qr-bg: #f3f5f5; --qr-ink: #0c0e10;
   --band: #101417; --c1: #2ee6c8; --c2: #5aa9ff; --c3: #b18cff; --c4: #ffb547; --c5: #ff7ab6;
   --radius-sm: 4px; --radius: 6px; --radius-lg: 8px;
   --ease-out: cubic-bezier(.22, 1, .36, 1); --ease-io: cubic-bezier(.65, 0, .35, 1);
-  --t-fast: 150ms; --t-base: 250ms; --t-slow: 450ms; --t-xfade: 900ms; --t-sweep: 1.4s; --stagger: 60ms; --rise: 12px; --lift: 2px;
+  --t-fast: 150ms; --t-base: 250ms; --t-slow: 450ms; --t-xfade: 900ms; --stagger: 60ms; --rise: 12px; --lift: 2px;
   --f-head: 'Space Grotesk', system-ui, sans-serif; --f-body: 'Inter', system-ui, sans-serif; --f-mono: 'JetBrains Mono', ui-monospace, monospace;
 }
 :root[data-theme="light"] {
@@ -30,7 +32,7 @@
   --bg: #f3f5f5; --surface: #ffffff; --surface-2: #f7f9f9;
   --line: rgba(20, 24, 26, .12); --line-strong: rgba(20, 24, 26, .26);
   --fg: #14181a; --fg-2: #263034;
-  --accent: #0a7a6d; --grid: rgba(20, 24, 26, .05); --halo: transparent;
+  --accent: #0a7a6d; --stop: #b42318; --grid: rgba(20, 24, 26, .05); --halo: transparent;
   --qr-bg: #ffffff;
   --band: #e7ecec; --c1: #0a7a6d; --c2: #1f63c6; --c3: #6f42c1; --c4: #9a5800; --c5: #b0306f;
 }
@@ -40,7 +42,7 @@
     --bg: #f3f5f5; --surface: #ffffff; --surface-2: #f7f9f9;
     --line: rgba(20, 24, 26, .12); --line-strong: rgba(20, 24, 26, .26);
     --fg: #14181a; --fg-2: #263034;
-    --accent: #0a7a6d; --grid: rgba(20, 24, 26, .05); --halo: transparent;
+    --accent: #0a7a6d; --stop: #b42318; --grid: rgba(20, 24, 26, .05); --halo: transparent;
     --qr-bg: #ffffff;
     --band: #e7ecec; --c1: #0a7a6d; --c2: #1f63c6; --c3: #6f42c1; --c4: #9a5800; --c5: #b0306f;
   }
@@ -48,12 +50,13 @@
 @property --mark { syntax: '<color>'; inherits: true; initial-value: transparent; }
 
 *, *::before, *::after { box-sizing: border-box; }
-html { -webkit-text-size-adjust: 100%; }
+html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
 body { margin: 0; background: var(--bg); color: var(--fg); font: 400 1rem/1.5 var(--f-body); }
 a { color: inherit; }
 code { font-family: var(--f-mono); font-size: .875rem; overflow-wrap: anywhere; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .i { width: 1em; height: 1em; flex: none; fill: none; stroke: currentColor; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; }
+[id] { scroll-margin-top: 16px; }
 
 /* Hintergrund: feines Raster, nach unten ausgeblendet, oben ein Lichthof (nur dunkel) */
 .backdrop { position: fixed; inset: 0; z-index: -1; pointer-events: none;
@@ -65,10 +68,14 @@ code { font-family: var(--f-mono); font-size: .875rem; overflow-wrap: anywhere; 
 .wrap { max-width: 1200px; margin-inline: auto; padding-inline: 16px; }
 @media (min-width: 720px) { .wrap { padding-inline: 32px; } }
 
-/* Kopf */
-.bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; padding-block: 20px; }
+/* Kopf: Marke · Sprungleiste · Sprache · Theme */
+.bar { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 24px; padding-block: 20px; }
 .site { display: inline-flex; align-items: center; gap: 10px; font: 500 .875rem/1.2 var(--f-mono); text-decoration: none; }
 .site::before { content: ""; width: 10px; height: 10px; border-radius: 2px; background: var(--accent); }
+.nav { display: flex; flex-wrap: wrap; gap: 4px; margin-inline-end: auto; }
+.nav a { padding: 8px 12px; border-radius: var(--radius-sm); font: 600 .875rem/1.2 var(--f-body); text-decoration: none;
+  transition: background-color var(--t-fast) var(--ease-out); }
+.nav a:hover { background: var(--surface-2); }
 .switches { display: flex; gap: 8px; }
 .seg { display: inline-flex; border: 1px solid var(--line-strong); border-radius: var(--radius-sm); overflow: hidden; }
 .seg button { display: inline-flex; align-items: center; justify-content: center; min-width: 40px; min-height: 36px; padding: 0 10px;
@@ -77,6 +84,7 @@ code { font-family: var(--f-mono); font-size: .875rem; overflow-wrap: anywhere; 
 .seg button + button { box-shadow: -1px 0 0 var(--line-strong); }
 .seg button:hover { background: var(--surface-2); }
 .seg button[aria-pressed="true"] { background: var(--fg); color: var(--bg); }
+@media (max-width: 559px) { .nav { order: 3; flex-basis: 100%; margin-inline: -8px 0; } }
 
 .hero { padding-block: 40px 56px; }
 .hero h1 { margin: 0; max-width: 18ch; font: 700 clamp(2.25rem, 1.5rem + 3vw, 3.5rem)/1.1 var(--f-head); letter-spacing: -.02em; text-wrap: balance; }
@@ -87,7 +95,7 @@ code { font-family: var(--f-mono); font-size: .875rem; overflow-wrap: anywhere; 
 .rule { height: 1px; margin-top: 40px; background: linear-gradient(90deg, var(--accent), var(--line-strong) 30%, transparent); transform-origin: left; }
 
 /* Abschnitte */
-main > section { margin-block: 0 28px; padding: 32px 16px; background: var(--band); border: 1px solid var(--line); border-radius: var(--radius-lg); scroll-margin-top: 16px; }
+main > section { margin-block: 0 28px; padding: 32px 16px; background: var(--band); border: 1px solid var(--line); border-radius: var(--radius-lg); }
 @media (min-width: 720px) { main > section { padding: 40px 32px; } }
 @media (max-width: 419px) { main > section { padding-inline: 12px; } .qr-code { width: 104px; } }
 main { padding-bottom: 20px; }
@@ -98,8 +106,6 @@ main > section h2 { margin: 0; font: 700 1.5rem/1.25 var(--f-head); letter-spaci
 main > section .intro { margin: 8px 0 28px; max-width: 68ch; color: var(--fg-2); text-wrap: pretty; }
 
 .grid { display: grid; gap: 20px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); }
-.flow { display: grid; gap: 20px; grid-template-columns: minmax(0, 1fr); align-items: start; }
-@media (min-width: 960px) { .flow { grid-template-columns: minmax(0, 1fr) minmax(300px, 360px); } }
 
 /* Karte: QR-Zeile · Text · Knöpfe; Licht folgt dem Zeiger (nur Fläche, dezent) */
 .card { position: relative; isolation: isolate; display: flex; flex-direction: column; gap: 20px; padding: 20px;
@@ -125,7 +131,7 @@ main > section .intro { margin: 8px 0 28px; max-width: 68ch; color: var(--fg-2);
 .qr-meta { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
 .qr-meta .k { font: 500 .875rem/1.2 var(--f-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--fg-2); }
 .qr-meta .host { font: 400 .875rem/1.35 var(--f-mono); color: var(--fg-2); overflow-wrap: anywhere; }
-.qr-meta .path { font: 600 1.5rem/1.2 var(--f-mono); text-decoration: none; }
+.qr-meta .path { font: 600 1.5rem/1.2 var(--f-mono); text-decoration: none; overflow-wrap: anywhere; }
 .qr-meta .path:hover { text-decoration: underline; text-underline-offset: 4px; }
 
 .body { display: flex; flex-direction: column; gap: 6px; }
@@ -144,118 +150,130 @@ a.btn:hover { border-color: color-mix(in srgb, var(--accent) 55%, var(--line-str
 .btn:hover .go { transform: translateX(3px); }
 .btn.private { border-style: dashed; }
 
-/* Workflow-Karte: Stufen (Haupt-Repo → Rechner → Projekte → Seite), dazwischen Pull/Push-Bahnen, Satellit Chat-Repo */
-.atlas { display: flex; flex-direction: column; min-width: 0; }
-.stage { padding: 20px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg); }
-.st-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; }
-.node-no { font: 600 .875rem/1.2 var(--f-mono); color: var(--fg-2); }
-.st-head h3 { margin: 0; font: 700 1.125rem/1.25 var(--f-head); }
-.where { flex-basis: 100%; font: 400 .875rem/1.4 var(--f-mono); color: var(--fg-2); overflow-wrap: anywhere; }
-.st-lead { margin: 10px 0 0; color: var(--fg-2); line-height: 1.45; text-wrap: pretty; }
-.groups { display: grid; gap: 20px 28px; margin-top: 18px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); }
-.grp h4 { display: flex; align-items: center; gap: 12px; margin: 0 0 10px; font: 500 .875rem/1.2 var(--f-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--fg-2); }
-.grp h4::after { content: ""; flex: 1; height: 1px; background: var(--line); }
-.map { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
-.map > li { display: flex; flex-direction: column; gap: 2px; padding-inline-start: 10px; border-inline-start: 1px solid var(--line-strong); }
-.map code { color: var(--fg); }
-.map span { font-size: .875rem; line-height: 1.4; color: var(--fg-2); text-wrap: pretty; }
-.chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 14px 0 0; padding: 0; list-style: none; }
-.chips li { padding: 3px 8px; border: 1px solid var(--line-strong); border-radius: var(--radius-sm); font-size: .875rem; line-height: 1.35; }
-.grp.wide { grid-column: 1 / -1; }
-.tools { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); }
-.tools li { padding: 10px 12px; background: var(--surface-2); border: 1px solid var(--line); border-radius: var(--radius); }
-.tools b { display: block; margin-bottom: 4px; font: 700 .875rem/1.25 var(--f-head); }
-.tools span { display: block; font-size: .875rem; line-height: 1.4; color: var(--fg-2); }
+/* Arbeitsweise: Kopf mit Kennzahlen und Karte „AI Dev Workflow“ */
+.wf-head { display: grid; gap: 20px; grid-template-columns: minmax(0, 1fr); align-items: start; }
+@media (min-width: 960px) { .wf-head { grid-template-columns: minmax(0, 1fr) minmax(300px, 360px); } }
+.facts { display: grid; gap: 12px; margin: 0; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+@media (max-width: 419px) { .facts { grid-template-columns: minmax(0, 1fr); } }
+.facts div { padding: 14px 16px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+.facts dt { display: grid; gap: 2px; font: 700 1.5rem/1.15 var(--f-head); font-variant-numeric: tabular-nums; }
+.facts dt small { font: 600 .875rem/1.2 var(--f-mono); color: var(--fg-2); }
+.facts dd { margin: 6px 0 0; font-size: .875rem; line-height: 1.4; color: var(--fg-2); text-wrap: pretty; }
 
-.bridge { display: grid; gap: 0 28px; padding: 8px 20px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); }
-.lane { display: grid; grid-template-columns: 24px minmax(0, 1fr); gap: 12px; padding-block: 6px; }
-.rail { position: relative; overflow: hidden; display: grid; justify-items: center; min-height: 52px; height: 100%; color: var(--fg-2);
-  background: linear-gradient(var(--line-strong), var(--line-strong)) center / 1px 100% no-repeat; }
-.lane.down .rail { align-content: end; }
-.lane.up .rail { align-content: start; }
-.rail .i { font-size: 14px; background: var(--bg); }
-.lane.down .rail .i { margin-bottom: -2px; }
-.lane.up .rail .i { margin-top: -2px; }
-.rail::after { content: ""; position: absolute; left: 50%; width: 1px; height: 40%; opacity: 0;
-  box-shadow: 0 0 9px color-mix(in srgb, var(--accent) 22%, transparent); }
-.lane.down .rail::after { top: -40%; transform: translate(-50%, 0); background: linear-gradient(transparent, var(--accent)); }
-.lane.up .rail::after { bottom: -40%; transform: translate(-50%, 0); background: linear-gradient(var(--accent), transparent); }
-.atlas.lit .lane.down .rail::after { animation: sweep var(--t-sweep) var(--ease-out) calc(var(--i) * 350ms) 1 both; }
-.atlas.lit .lane.up .rail::after { animation: sweep-up var(--t-sweep) var(--ease-out) calc(var(--i) * 350ms + 200ms) 1 both; }
-@keyframes sweep { 0% { transform: translate(-50%, 0); opacity: 1; } 100% { transform: translate(-50%, 350%); opacity: 0; } }
-@keyframes sweep-up { 0% { transform: translate(-50%, 0); opacity: 1; } 100% { transform: translate(-50%, -350%); opacity: 0; } }
-.lane-k { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; margin: 0; font-size: .875rem; color: var(--fg-2); }
-.dir { font: 600 .875rem/1.2 var(--f-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--fg); }
-.lane-k code { color: var(--fg); }
-.steps { margin: 6px 0 0; padding-inline-start: 1.25rem; font-size: .875rem; line-height: 1.45; color: var(--fg-2); }
-.steps li { padding-inline-start: 4px; }
-.steps li + li { margin-top: 2px; }
-.steps code { color: var(--fg); }
-.lane-t { margin: 4px 0 0; font-size: .875rem; line-height: 1.45; color: var(--fg-2); text-wrap: pretty; }
+/* Teile 1–4: Überschrift mit Nummer, Untertitel */
+.part { display: flex; align-items: baseline; gap: 12px; margin: 48px 0 0; font: 700 1.25rem/1.25 var(--f-head); text-wrap: balance; }
+.part .no { flex: none; padding: 5px 7px; border-radius: var(--radius-sm); background: var(--fg); color: var(--bg); font: 600 .875rem/1 var(--f-mono); }
+.sub { margin: 6px 0 16px; max-width: 72ch; font-size: .9375rem; line-height: 1.45; color: var(--fg-2); text-wrap: pretty; }
+.two { display: grid; gap: 20px; grid-template-columns: minmax(0, 1fr); align-items: start; }
+@media (min-width: 960px) { .two { grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); } }
+.gap { margin-top: 20px; }
 
-.branch { display: grid; gap: 0 20px; align-items: start; grid-template-columns: minmax(0, 1fr); }
-@media (min-width: 720px) { .branch { grid-template-columns: minmax(0, 1fr) minmax(0, 300px); } }
-.stage.side { margin-block: 12px; border-style: dashed; border-color: var(--line-strong); }
-.stage.side h3 { font-size: 1rem; }
-
-.life-wrap { margin-top: 20px; }
-.life-wrap h3 { margin: 0; font: 700 1.125rem/1.25 var(--f-head); }
-.life-wrap > p { margin: 6px 0 0; color: var(--fg-2); text-wrap: pretty; }
-.life { display: grid; gap: 10px; margin: 14px 0 0; padding: 0; list-style: none; counter-reset: life; }
-.life li { counter-increment: life; display: grid; gap: 4px 16px; padding: 14px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); grid-template-columns: minmax(0, 1fr); }
-@media (min-width: 720px) { .life li { grid-template-columns: 2.5rem 7rem minmax(0, 1fr); align-items: baseline; } }
-.life li::before { content: counter(life, decimal-leading-zero); font: 600 .875rem/1.2 var(--f-mono); color: var(--fg-2); }
-.life b { font: 700 1rem/1.25 var(--f-head); }
-.life div { display: flex; flex-direction: column; gap: 2px; }
-.life span { font-size: .875rem; line-height: 1.4; color: var(--fg-2); }
-.life .hk { color: var(--fg); }
-.life code { color: var(--fg); }
-.flow > .card { position: sticky; top: 24px; }
-@media (max-width: 959px) { .flow > .card { position: static; order: -1; } }
-
-/* Farben je Stufe (--c): 01 Haupt-Repo · 02 Rechner · 03 Projekte · 04 Seite · Chat-Repo */
-.stage[style*="--c"] { background: color-mix(in srgb, var(--c) 6%, var(--surface)); border-color: color-mix(in srgb, var(--c) 38%, var(--line)); }
-.stage[style*="--c"] .node-no, .ov-node .node-no { padding: 2px 7px; border-radius: var(--radius-sm); background: var(--c); color: var(--bg); }
-.stage[style*="--c"] .grp h4 { color: color-mix(in srgb, var(--c) 75%, var(--fg)); }
-.stage[style*="--c"] .grp h4::after { background: color-mix(in srgb, var(--c) 30%, var(--line)); }
-.stage[style*="--c"] .map > li { border-inline-start-color: color-mix(in srgb, var(--c) 55%, var(--line)); }
-.stage[style*="--c"] .tools li { border-color: color-mix(in srgb, var(--c) 25%, var(--line)); }
-.bridge[style*="--from"] .rail { background: linear-gradient(var(--from), var(--to)) center / 2px 100% no-repeat; }
-.bridge[style*="--from"] .lane.down .rail { color: var(--to); }
-.bridge[style*="--from"] .lane.up .rail { color: var(--from); }
-.bridge[style*="--from"] .lane.down .dir { color: var(--from); }
-.bridge[style*="--from"] .lane.up .dir { color: var(--to); }
-.dir { padding: 1px 6px; border-radius: var(--radius-sm); background: color-mix(in srgb, currentColor 14%, transparent); }
-
-/* Übersicht: vier Stufen als Kette, breit nebeneinander, schmal untereinander */
-.ov { display: grid; gap: 0; grid-template-columns: minmax(0, 1fr); margin-top: 24px; }
-@media (min-width: 960px) { .ov { grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) auto minmax(0, 1fr) auto minmax(0, 1fr); } }
-.ov-node { --c: var(--c1); display: flex; flex-direction: column; gap: 6px; padding: 16px; border-radius: var(--radius);
-  background: color-mix(in srgb, var(--c) 8%, var(--surface)); border: 1px solid color-mix(in srgb, var(--c) 40%, var(--line)); }
-.ov-top { display: flex; align-items: center; gap: 10px; }
-.ov-ico { display: grid; place-items: center; width: 36px; height: 36px; flex: none; border-radius: var(--radius); color: var(--c);
-  background: color-mix(in srgb, var(--c) 16%, transparent); }
-.ov-ico .i { font-size: 20px; }
-.ov-node h3 { margin: 4px 0 0; font: 700 1rem/1.25 var(--f-head); overflow-wrap: anywhere; }
-.ov-node .where { font: 400 .875rem/1.4 var(--f-mono); color: var(--fg-2); overflow-wrap: anywhere; }
-.ov-node p { margin: 0; font-size: .875rem; line-height: 1.45; color: var(--fg-2); text-wrap: pretty; }
-.ov-arrow { display: flex; align-items: center; gap: 4px 10px; padding: 4px 0 4px 18px; font-size: .875rem; color: var(--fg-2); }
-.ov-arrow code { color: var(--fg); }
-.ov-arrow .ln { display: flex; flex-direction: column; align-items: center; align-self: stretch; min-height: 44px; color: var(--to); }
-.ov-arrow .ln i { flex: 1; width: 2px; background: linear-gradient(var(--from), var(--to)); }
-.ov-arrow .ln .i { font-size: 14px; margin-top: -4px; transform: rotate(90deg); }
-@media (min-width: 960px) {
-  .ov-arrow { flex-direction: column; justify-content: center; width: 7.5rem; padding: 0 4px; text-align: center; }
-  .ov-arrow .ln { flex-direction: row; align-self: stretch; min-height: 0; }
-  .ov-arrow .ln i { width: auto; height: 2px; background: linear-gradient(90deg, var(--from), var(--to)); }
-  .ov-arrow .ln .i { margin: 0 0 0 -4px; transform: none; }
+/* Tabellen: Ablauf je Schritt, Rollen, Regeln, Prüfstufen */
+.tb { width: 100%; border-collapse: separate; border-spacing: 0; background: var(--surface); border: 1px solid var(--line-strong); border-radius: var(--radius-lg); overflow: hidden; }
+.tb th { text-align: left; padding: 12px 14px; font: 600 .8125rem/1.3 var(--f-mono); letter-spacing: .02em; color: var(--fg-2); background: var(--surface-2); border-bottom: 1px solid var(--line-strong); }
+.tb td { padding: 12px 14px; vertical-align: top; font-size: .875rem; line-height: 1.45; text-wrap: pretty; }
+.tb tr + tr td { border-top: 1px solid var(--line); }
+.tb td.k { font: 700 1rem/1.3 var(--f-head); }
+.tb td.k i { display: inline-grid; place-items: center; width: 24px; height: 24px; margin-inline-end: 8px; border-radius: var(--radius-sm); vertical-align: -6px;
+  background: var(--accent); color: var(--bg); font: 600 .8125rem/1 var(--f-mono); font-style: normal; }
+.tb td.k small { display: block; margin-top: 2px; font: 400 .8125rem/1.4 var(--f-body); color: var(--fg-2); }
+.tb ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; }
+.tb code { font-size: .8125rem; font-weight: 600; }
+.tb .hk li { display: grid; gap: 1px; }
+.tb .hk code { color: var(--accent); }
+.tb .hk span { color: var(--fg-2); }
+.tb .role { display: block; font-weight: 700; }
+.tb .stp { display: flex; gap: 8px; align-items: flex-start; }
+.tb .stp .i { font-size: 16px; margin-top: 2px; color: var(--stop); }
+.tb .none { color: var(--fg-2); }
+.tb .crit { color: var(--stop); }
+.tb-steps td.k { white-space: nowrap; }
+.tb-rules td:nth-child(3) { white-space: nowrap; }
+.note { display: flex; flex-wrap: wrap; gap: 8px 20px; margin: 12px 0 0; padding: 0; list-style: none; font-size: .875rem; color: var(--fg-2); }
+.note li { display: inline-flex; gap: 8px; align-items: center; }
+.note .stop { color: var(--stop); }
+.note .loop { color: var(--accent); }
+/* Schmal: jede Zeile als Karte, Spaltenkopf steht vor der Zelle (data-l) */
+@media (max-width: 1023px) {
+  .tb-steps thead { display: none; }
+  .tb-steps, .tb-steps tbody, .tb-steps tr, .tb-steps td { display: block; }
+  .tb-steps tr { padding: 6px 0 12px; }
+  .tb-steps tr + tr { border-top: 1px solid var(--line-strong); }
+  .tb-steps tr + tr td { border-top: 0; }
+  .tb-steps td { padding: 8px 14px; }
+  .tb-steps td.k { padding: 12px 14px 6px; }
+  .tb-steps td.none { display: none; }
+  .tb-steps td:not(.k)::before { content: attr(data-l); display: block; font: 600 .75rem/1.7 var(--f-mono); letter-spacing: .04em; text-transform: uppercase; color: var(--fg-2); }
 }
-.ov-side { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin-top: 16px; padding: 12px 16px; border-radius: var(--radius);
-  border: 1px dashed color-mix(in srgb, var(--c5) 50%, var(--line)); font-size: .875rem; color: var(--fg-2); }
-.ov-side .i { color: var(--c5); font-size: 18px; }
-.ov-side b { color: var(--fg); font-family: var(--f-head); }
-.ov-side code { color: var(--fg); }
-.ov-go { margin-top: 20px; }
+@media (max-width: 559px) {
+  .tb-sm thead { display: none; }
+  .tb-sm, .tb-sm tbody, .tb-sm tr, .tb-sm td { display: block; }
+  .tb-sm tr { padding: 6px 0 10px; }
+  .tb-sm tr + tr { border-top: 1px solid var(--line-strong); }
+  .tb-sm tr + tr td { border-top: 0; }
+  .tb-sm td { padding: 6px 14px; }
+  .tb-sm td.k { padding-top: 10px; }
+  .tb-sm td:not(.k)::before { content: attr(data-l); display: block; font: 600 .75rem/1.7 var(--f-mono); letter-spacing: .04em; text-transform: uppercase; color: var(--fg-2); }
+  .tb-rules td:nth-child(3) { white-space: normal; }
+}
+
+/* Kasten mit Überschrift (Zusammenspiel) + Begriffspaare */
+.box { padding: 18px 20px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg); }
+.box h4 { display: flex; align-items: center; gap: 10px; margin: 0 0 6px; font: 700 1.0625rem/1.25 var(--f-head); }
+.box h4 .i { font-size: 20px; color: var(--accent); }
+.kv { margin: 0; display: grid; gap: 0 28px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); }
+.kv div { display: grid; grid-template-columns: 7.5rem minmax(0, 1fr); gap: 10px; padding-block: 10px; border-top: 1px solid var(--line); font-size: .9375rem; }
+.kv dt { font: 700 .9375rem/1.45 var(--f-head); }
+.kv dd { margin: 0; color: var(--fg-2); line-height: 1.45; text-wrap: pretty; }
+.kv a { text-decoration-color: color-mix(in srgb, var(--accent) 70%, transparent); text-underline-offset: 3px; }
+.kv a:hover { text-decoration-color: var(--accent); }
+@media (max-width: 419px) { .kv div { grid-template-columns: minmax(0, 1fr); gap: 2px; } }
+
+/* Weg der Daten: Stationen untereinander, dazwischen der Befehl, der den Stand weiterträgt */
+.chain { margin: 0; padding: 0; list-style: none; display: grid; }
+.stn { --c: var(--c1); display: grid; gap: 16px 28px; padding: 18px 20px; grid-template-columns: minmax(0, 1fr);
+  background: color-mix(in srgb, var(--c) 7%, var(--surface)); border: 1px solid color-mix(in srgb, var(--c) 45%, var(--line)); border-radius: var(--radius-lg); }
+@media (min-width: 960px) { .stn { grid-template-columns: minmax(0, 300px) minmax(0, 1fr); } }
+.stn.end { background: var(--surface); border-style: dashed; }
+.stn-head { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.stn-head b { display: flex; align-items: center; gap: 10px; font: 700 1.125rem/1.25 var(--f-head); }
+.stn-head b .i { font-size: 20px; color: var(--c); }
+.stn-head .nm { font: 600 1rem/1.3 var(--f-mono); overflow-wrap: anywhere; }
+.stn-head .wh { font: 400 .875rem/1.4 var(--f-mono); color: var(--fg-2); overflow-wrap: anywhere; }
+.stn-head p { margin: 6px 0 0; font-size: .9375rem; line-height: 1.45; color: var(--fg-2); text-wrap: pretty; }
+.stn dl { margin: 0; display: grid; gap: 10px 20px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); align-content: start; }
+.stn dl div { display: grid; gap: 2px; padding-inline-start: 10px; border-inline-start: 1px solid color-mix(in srgb, var(--c) 55%, var(--line)); }
+.stn dt { font-size: .875rem; font-weight: 700; line-height: 1.4; }
+.stn dt code { font-size: .8125rem; font-weight: 600; }
+.stn dd { margin: 0; font-size: .8125rem; line-height: 1.4; color: var(--fg-2); text-wrap: pretty; }
+.stn .chips { grid-column: 1 / -1; margin: 0; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; padding: 0; list-style: none; }
+.chips li { padding: 3px 8px; border: 1px solid var(--line-strong); border-radius: var(--radius-sm); font-size: .875rem; line-height: 1.35; }
+.cmd { display: grid; grid-template-columns: 28px minmax(0, 1fr); gap: 8px 12px; padding: 10px 0 10px 20px; align-items: start; }
+.cmd .dn { display: grid; justify-items: center; align-content: start; gap: 2px; color: var(--accent); }
+.cmd .dn i { display: block; width: 2px; height: 14px; background: var(--accent); }
+.cmd .dn .i { font-size: 20px; }
+.cmd .what { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; margin: 0; font-size: .9375rem; color: var(--fg-2); }
+.cmd .what code { font-weight: 600; color: var(--fg); }
+.dir { padding: 1px 6px; border-radius: var(--radius-sm); font: 600 .8125rem/1.4 var(--f-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--fg); background: color-mix(in srgb, var(--accent) 14%, transparent); }
+.cmd ol { margin: 0; padding: 0; list-style: none; counter-reset: s; display: grid; gap: 4px 20px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); font-size: .875rem; line-height: 1.4; color: var(--fg-2); }
+.cmd ol li { counter-increment: s; position: relative; padding-inline-start: 1.5rem; text-wrap: pretty; }
+.cmd ol li::before { content: counter(s); position: absolute; inset-inline-start: 0; top: 0; font: 600 .75rem/1.7 var(--f-mono); color: var(--accent); }
+.cmd ol code { color: var(--fg); }
+.aside { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin-top: 16px; padding: 12px 16px; border-radius: var(--radius);
+  border: 1px dashed color-mix(in srgb, var(--c5) 50%, var(--line)); font-size: .875rem; line-height: 1.45; color: var(--fg-2); }
+.aside .i { color: var(--c5); font-size: 18px; }
+.aside b { color: var(--fg); font-family: var(--f-head); }
+.aside code { color: var(--fg); }
+
+/* Begriffe */
+.gloss { margin: 0; display: grid; gap: 0 28px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); }
+.gloss div { display: grid; grid-template-columns: 7rem minmax(0, 1fr); gap: 10px; padding: 10px 8px; margin-inline: -8px; border-top: 1px solid var(--line); border-radius: var(--radius-sm); font-size: .9375rem;
+  transition: background-color var(--t-base) var(--ease-out); }
+.gloss div:target { background: color-mix(in srgb, var(--accent) 10%, transparent); }
+.gloss dt { font: 700 .9375rem/1.45 var(--f-head); }
+.gloss dd { margin: 0; color: var(--fg-2); line-height: 1.45; text-wrap: pretty; }
+@media (max-width: 419px) { .gloss div { grid-template-columns: minmax(0, 1fr); gap: 2px; } }
 
 footer { padding-block: 32px 48px; border-top: 1px solid var(--line); font-size: .875rem; color: var(--fg-2); }
 footer p { margin: 0; }
@@ -270,7 +288,8 @@ footer p { margin: 0; }
 @keyframes draw { from { transform: scaleX(0); } }
 
 @media (prefers-reduced-motion: reduce) {
-  .card, .card::before, .btn, .btn .go { transition: none; }
+  html { scroll-behavior: auto; }
+  .card, .card::before, .btn, .btn .go, .gloss div, .nav a { transition: none; }
   .card:hover { transform: none; }
 }
 </style>
@@ -284,12 +303,14 @@ footer p { margin: 0; }
   <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></symbol>
   <symbol id="i-git" viewBox="0 0 24 24"><circle cx="6" cy="6" r="2"/><circle cx="6" cy="18" r="2"/><circle cx="18" cy="8" r="2"/><path d="M6 8v8M18 10c0 4-6 3-10.5 6.5"/></symbol>
   <symbol id="i-qr" viewBox="0 0 24 24"><rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><path d="M14 14h2v2h-2zM18 18h2v2h-2zM14 20h2M20 14v2"/></symbol>
-  <symbol id="i-down" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></symbol>
-  <symbol id="i-up" viewBox="0 0 24 24"><path d="M6 15l6-6 6 6"/></symbol>
+  <symbol id="i-down" viewBox="0 0 24 24"><path d="M12 5v14M6 13l6 6 6-6"/></symbol>
   <symbol id="i-laptop" viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="11" rx="1.5"/><path d="M2 19h20"/></symbol>
   <symbol id="i-folders" viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h6a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M7 21h12a2 2 0 0 0 2-2v-8"/></symbol>
   <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.6-3.8-9S9.5 5.6 12 3z"/></symbol>
   <symbol id="i-sync" viewBox="0 0 24 24"><path d="M4 10a8 8 0 0 1 14-4l2 2M20 14a8 8 0 0 1-14 4l-2-2"/><path d="M20 4v4h-4M4 20v-4h4"/></symbol>
+  <symbol id="i-book" viewBox="0 0 24 24"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 19V5M8 7h7"/></symbol>
+  <symbol id="i-stop" viewBox="0 0 24 24"><path d="M8 3h8l5 5v8l-5 5H8l-5-5V8z"/><path d="M12 8v5M12 16h.01"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol>
   <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></symbol>
   <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></symbol>
 </svg>
@@ -297,6 +318,11 @@ footer p { margin: 0; }
 <header class="wrap">
   <div class="bar">
     <a class="site" href="./">lu4k87.github.io</a>
+    <nav class="nav" aria-label="Abschnitte" data-en-aria="Sections">
+      <a href="#h-lab">UX Lab</a>
+      <a href="#h-projects" data-en="Projects">Projekte</a>
+      <a href="#h-workflow" data-en="Way of working">Arbeitsweise</a>
+    </nav>
     <div class="switches">
       <div class="seg" role="group" aria-label="Sprache" data-en-aria="Language">
         <button type="button" data-lang="de" aria-pressed="true">DE</button>
@@ -310,7 +336,7 @@ footer p { margin: 0; }
   </div>
   <div class="hero">
     <h1 data-en="Projects by Marius&nbsp;Kaul">Projekte von Marius&nbsp;Kaul</h1>
-    <p class="lead" data-en="Robotics, research and web projects in one place. Scan the QR code or open the page directly.">Robotik, Forschung und Web-Projekte an einem Ort. QR-Code scannen oder Seite direkt öffnen.</p>
+    <p class="lead" data-en="Robotics, research and web projects in one place – built with one shared AI workflow. Scan the QR code or open the page directly.">Robotik, Forschung und Web-Projekte an einem Ort – gebaut mit einem gemeinsamen KI-Workflow. QR-Code scannen oder Seite direkt öffnen.</p>
     <ul class="legend">
       <li><svg class="i"><use href="#i-qr"/></svg><span data-en="QR code = address of the page">QR-Code = Adresse der Seite</span></li>
       <li><svg class="i"><use href="#i-doc"/></svg><span data-en="README = project docs">README = Doku zum Projekt</span></li>
@@ -321,15 +347,6 @@ footer p { margin: 0; }
 </header>
 
 <main class="wrap">
-  <section aria-labelledby="h-repo">
-    <p class="kicker"><span data-en="Overview">Überblick</span></p>
-    <h2 id="h-repo" data-en="One main repo behind every project">Ein Haupt-Repo hinter allen Projekten</h2>
-    <p class="intro" data-en="The private repo <code>dev_ws</code> holds rules, skills, agents, hooks and memory for Claude Code, Codex and Gemini. Every machine links to it, every project inherits it, and every push publishes this page.">Das private Repo <code>dev_ws</code> enthält Regeln, Skills, Agenten, Hooks und Memory für Claude Code, Codex und Gemini. Jeder Rechner verlinkt es, jedes Projekt erbt es, jeder Push veröffentlicht diese Seite.</p>
-    <div class="ov" data-reveal role="img" aria-label="Haupt-Repo, über ws_sync.sh auf jeden Rechner, über projects.py sync in die Projekte, über git push auf lu4k87.github.io" data-en-aria="Main repo, via ws_sync.sh to every machine, via projects.py sync into the projects, via git push to lu4k87.github.io"><div class="ov-node" style="--c: var(--c1)"><div class="ov-top"><span class="ov-ico"><svg class="i"><use href="#i-git"/></svg></span><span class="node-no">01</span></div><h3 data-en="Main repo">Haupt-Repo</h3><span class="where">~/dev_ws · privat</span><p data-en="Rules, skills, agents, hooks, memory, TODOs">Regeln, Skills, Agenten, Hooks, Memory, TODOs</p></div><div class="ov-arrow" style="--from: var(--c1); --to: var(--c2)"><span class="ln" aria-hidden="true"><i></i><svg class="i"><use href="#i-go"/></svg></span><span><code>ws_sync.sh</code> <span data-en="links">verlinkt</span></span></div><div class="ov-node" style="--c: var(--c2)"><div class="ov-top"><span class="ov-ico"><svg class="i"><use href="#i-laptop"/></svg></span><span class="node-no">02</span></div><h3 data-en="Every machine">Jeder Rechner</h3><span class="where">Laptop · Labor · Home</span><p data-en="Claude Code, Codex and Gemini read the same links">Claude Code, Codex und Gemini lesen dieselben Links</p></div><div class="ov-arrow" style="--from: var(--c2); --to: var(--c3)"><span class="ln" aria-hidden="true"><i></i><svg class="i"><use href="#i-go"/></svg></span><span><code>projects.py sync</code> <span data-en="clones">klont</span></span></div><div class="ov-node" style="--c: var(--c3)"><div class="ov-top"><span class="ov-ico"><svg class="i"><use href="#i-folders"/></svg></span><span class="node-no">03</span></div><h3 data-en="Projects">Projekte</h3><span class="where">~/__project_&lt;name&gt;</span><p data-en="Own rules + memory, inherit everything global">Eigene Regeln + Memory, erben alles Globale</p></div><div class="ov-arrow" style="--from: var(--c3); --to: var(--c4)"><span class="ln" aria-hidden="true"><i></i><svg class="i"><use href="#i-go"/></svg></span><span><code>git push</code> <span data-en="publishes">veröffentlicht</span></span></div><div class="ov-node" style="--c: var(--c4)"><div class="ov-top"><span class="ov-ico"><svg class="i"><use href="#i-globe"/></svg></span><span class="node-no">04</span></div><h3 data-en="lu4k87.github.io">lu4k87.github.io</h3><span class="where">öffentlich</span><p data-en="Docs, READMEs and QR codes – this page">Doku, READMEs und QR-Codes – diese Seite</p></div></div>
-    <p class="ov-side"><svg class="i" aria-hidden="true"><use href="#i-sync"/></svg><b data-en="Chat histories">Chat-Verläufe</b><span data-en="private repo via <code>tools/chat_sync.py</code> – every chat resumes on any machine">privates Repo über <code>tools/chat_sync.py</code> – jeder Chat läuft auf jedem Rechner weiter</span></p>
-    <a class="btn ov-go" href="#h-workflow"><span data-en="Structure in detail · 03 Way of working">Aufbau im Detail · 03 Arbeitsweise</span><svg class="i go" aria-hidden="true"><use href="#i-down"/></svg></a>
-  </section>
-
   <section aria-labelledby="h-lab">
     <p class="kicker"><b>01</b><span>UX Lab</span></p>
     <h2 id="h-lab" data-en="UX Lab · Rhine-Waal University of Applied Sciences">UX Lab · Hochschule Rhein-Waal</h2>
@@ -347,20 +364,253 @@ footer p { margin: 0; }
   <section aria-labelledby="h-workflow">
     <p class="kicker"><b>03</b><span data-en="Way of working">Arbeitsweise</span></p>
     <h2 id="h-workflow" data-en="One workflow for every project">Ein Workflow für alle Projekte</h2>
-    <p class="intro" data-en="Rules, skills, agents, hooks, memory, TODOs and handoffs live in one main repo. Pull lanes bring them to every machine and project; push lanes publish the result.">Regeln, Skills, Agenten, Hooks, Memory, TODOs und Übergaben liegen zentral im Haupt-Repo. Pull-Bahnen bringen sie auf jeden Rechner und in jedes Projekt, Push-Bahnen veröffentlichen das Ergebnis.</p>
-    <div class="flow">
-<div class="atlas" data-reveal aria-label="Aufbau des Workflows: Haupt-Repo, Rechner, Projekte und veröffentlichte Seite mit Pull- und Push-Bahnen" data-en-aria="Workflow structure: main repo, machines, projects and published site with pull and push lanes">
-<article class="stage" style="--c: var(--c1)"><div class="st-head"><span class="node-no">01</span><h3 data-en="Main repo · single source">Haupt-Repo · einzige Quelle</h3><span class="where">GitHub · privat · Checkout <code>~/dev_ws</code></span></div><p class="st-lead" data-en="Everything the AI tools need is versioned in Git – rules, knowledge, memory, automation and coordination.">Alles, was die KI-Werkzeuge brauchen, liegt versioniert in Git – Regeln, Wissen, Gedächtnis, Automatik und Koordination.</p><div class="groups"><div class="grp"><h4 data-en="Rules">Regeln</h4><ul class="map"><li><code>AGENTS.md</code><span data-en="Project rules of the main repo (safety first, override the shared rules)">Projektregeln des Haupt-Repos (Sicherheit zuerst, Vorrang vor den gemeinsamen Regeln)</span></li><li><code>.claude/common/RULES.md</code><span data-en="Shared rules for all projects: answer format, roles, UI basics, skill finder">Gemeinsame Regeln für alle Projekte: Antwortformat, Rollen, UI-Grundregeln, Skill-Finder</span></li><li><code>.claude/ROLES.md</code><span data-en="Role map: designer, developer, reviewer, synchronizer …">Rollenkarte: Designer, Entwickler, Prüfer, Synchronizer …</span></li></ul></div><div class="grp"><h4 data-en="Knowledge (loaded on demand)">Wissen (bei Bedarf geladen)</h4><ul class="map"><li><code>.claude/skills/</code><span data-en="32 skills (32 of them global), found via the finder table in RULES.md">32 Skills (32 davon global), gefunden über die Finder-Tabelle in RULES.md</span></li><li><code>.claude/agents/</code><span data-en="2 agents for review, search, tests, e.g. <code>safety-reviewer</code>">2 Agenten für Prüfung, Suche, Tests, z. B. <code>safety-reviewer</code></span></li><li><code>.claude/repertoire/</code><span data-en="Reusable building blocks for previews and scenes">Wiederverwendbare Bausteine für Vorschauen und Szenen</span></li></ul></div><div class="grp"><h4 data-en="Memory">Gedächtnis</h4><ul class="map"><li><code>.claude/common/memory/</code><span data-en="Shared memory: who the user is, way of working (applies to all projects)">Gemeinsame Memory: wer der User ist, Arbeitsweise (gilt in allen Projekten)</span></li><li><code>.claude/memory/</code><span data-en="Memory of the main repo; Claude writes here directly">Memory des Haupt-Repos; Claude schreibt direkt hierhin</span></li><li><code>.claude/handoff/</code><span data-en="Handoffs: start text for “chat weiter …” in a new chat">Übergaben: Starttext für „chat weiter …“ im neuen Chat</span></li></ul></div><div class="grp"><h4 data-en="Automation">Automatik</h4><ul class="map"><li><code>.claude/hooks/</code><span data-en="6 hook scripts: answer format, safety guard, claims, situation report">6 Hook-Skripte: Antwortformat, Schutz vor Gefährlichem, Claims, Lagebild</span></li><li><code>.claude/settings.json</code><span data-en="Wires hooks to events (before/after tool, start, stop)">Verdrahtet Hooks mit Ereignissen (vor/nach Werkzeug, Start, Ende)</span></li><li><code>tools/pre-commit</code><span data-en="Checks every commit (tests, terms, format)">Prüft jeden Commit (Tests, Begriffe, Format)</span></li></ul></div><div class="grp"><h4 data-en="Coordination">Koordination</h4><ul class="map"><li><code>TODOS.md</code><span data-en="Backlog + “In progress” section: claims of parallel chats, visible to all via Git">Backlog + Abschnitt „In Arbeit“: Claims paralleler Chats, per Git für alle sichtbar</span></li><li><code>config/projects.yaml</code><span data-en="Project list: folder, repo, card on this page">Projektliste: Ordner, Repo, Karte auf dieser Seite</span></li></ul></div><div class="grp"><h4 data-en="Generated for Codex + Gemini">Erzeugt für Codex + Gemini</h4><ul class="map"><li><code>.codex/</code><code>.agents/</code><span data-en="Generated from <code>.claude/</code> by <code>tools/agents_sync.py</code>, never edit by hand">Aus <code>.claude/</code> erzeugt von <code>tools/agents_sync.py</code>, nie von Hand ändern</span></li></ul></div></div></article>
-<div class="bridge" style="--from: var(--c1); --to: var(--c2)"><div class="lane down" style="--i:0"><span class="rail" aria-hidden="true"><svg class="i"><use href="#i-down"/></svg></span><div><p class="lane-k"><span class="dir">Pull</span><code>tools/ws_sync.sh</code><span data-en="syncs and links globally">gleicht ab und verlinkt global</span></p><ol class="steps"><li data-en="<code>git pull --rebase --autostash</code> fetches the latest state"><code>git pull --rebase --autostash</code> holt den neuen Stand</li><li data-en="Set up memory + user settings">Memory + Benutzer-Settings einrichten</li><li data-en="<code>agents_sync.py --home</code> links rules, skills, agents into <code>~</code>"><code>agents_sync.py --home</code> verlinkt Regeln, Skills, Agenten in <code>~</code></li><li data-en="<code>codex_setup.py</code> trusts the Codex hooks"><code>codex_setup.py</code> gibt Codex-Hooks frei</li><li data-en="<code>colcon build</code> only for changed ROS packages"><code>colcon build</code> nur für geänderte ROS-Pakete</li></ol></div></div><div class="lane up" style="--i:0"><span class="rail" aria-hidden="true"><svg class="i"><use href="#i-up"/></svg></span><div><p class="lane-k"><span class="dir">Push</span><code>git commit</code> → <code>git push</code><span data-en="publishes the finished state">veröffentlicht den fertigen Stand</span></p><ol class="steps"><li data-en="<code>tools/pre-commit</code> checks the commit"><code>tools/pre-commit</code> prüft den Commit</li><li data-en="Skill <code>commit</code> commits + pushes after every task">Skill <code>commit</code> macht Commit + Push nach jeder Aufgabe</li><li data-en="<code>claim.py</code> pushes claims in <code>TODOS.md</code> immediately"><code>claim.py</code> pusht Claims in <code>TODOS.md</code> sofort</li></ol></div></div></div>
-<article class="stage" style="--c: var(--c2)"><div class="st-head"><span class="node-no">02</span><h3 data-en="Every machine">Jeder Rechner</h3><span class="where">Laptop · Labor-PC · Home-PC</span></div><p class="st-lead" data-en="Claude Code, Codex and Gemini read the same rules, skills and agents – via links in the home folder, not copies.">Claude Code, Codex und Gemini lesen dieselben Regeln, Skills und Agenten – über Links im Home-Ordner statt Kopien.</p><div class="groups"><div class="grp"><h4 data-en="Links in the home folder → main repo">Links im Home-Ordner → Haupt-Repo</h4><ul class="map"><li><code>~/.claude/CLAUDE.md</code><code>~/.codex/AGENTS.md</code><code>~/.gemini/config/rules/common_rules.md</code><span data-en="all three point to <code>RULES.md</code>">alle drei zeigen auf <code>RULES.md</code></span></li><li><code>~/.claude/skills/</code><code>~/.agents/skills/</code><code>~/.gemini/config/skills/</code><span data-en="32 global skills">32 globale Skills</span></li><li><code>~/.claude/agents/</code><code>~/.codex/agents/</code><span data-en="2 global agents (Codex as <code>.toml</code>)">2 globale Agenten (Codex als <code>.toml</code>)</span></li><li><code>~/.claude/settings.json</code><span data-en="Copy of <code>.claude/user-settings.json</code>: model, mods, <code>global_hook.py</code>">Kopie aus <code>.claude/user-settings.json</code>: Modell, Mods, <code>global_hook.py</code></span></li></ul></div><div class="grp"><h4 data-en="Local only · not in Git (cache + state)">Nur lokal · nicht im Git (Cache + Zustand)</h4><ul class="map"><li><code>~/.claude/projects/…/*.jsonl</code><span data-en="Chat histories; travel to other machines via the chat repo (right)">Chat-Verläufe; gehen über das Chat-Repo (rechts) auf andere Rechner</span></li><li><code>.claude/settings.local.json</code><span data-en="Local settings; <code>autoMemoryDirectory</code> points the memory into the repo">Lokale Einstellungen; <code>autoMemoryDirectory</code> zeigt das Memory ins Repo</span></li><li><code>build/</code><code>install/</code><code>log/</code><code>_studio/vorschauen/</code><span data-en="Build output and previews, can be regenerated any time">Build-Ausgabe und Vorschauen, jederzeit neu erzeugbar</span></li></ul></div><div class="grp wide"><h4 data-en="Who reads what">Wer liest was</h4><ul class="tools"><li><b>Claude Code</b><span data-en="<code>CLAUDE.md</code>, hooks from <code>.claude/settings.json</code>, skills, agents"><code>CLAUDE.md</code>, Hooks aus <code>.claude/settings.json</code>, Skills, Agenten</span></li><li><b>Codex</b><span data-en="<code>AGENTS.md</code>, <code>.codex/hooks.json</code> → <code>codex_bridge.py</code>"><code>AGENTS.md</code>, <code>.codex/hooks.json</code> → <code>codex_bridge.py</code></span></li><li><b>Gemini · Antigravity</b><span data-en="<code>.agents/rules/dev_ws.md</code>, <code>.agents/hooks.json</code> → <code>antigravity_bridge.py</code>"><code>.agents/rules/dev_ws.md</code>, <code>.agents/hooks.json</code> → <code>antigravity_bridge.py</code></span></li></ul></div></div></article>
-<div class="branch"><div class="bridge" style="--from: var(--c2); --to: var(--c3)"><div class="lane down" style="--i:1"><span class="rail" aria-hidden="true"><svg class="i"><use href="#i-down"/></svg></span><div><p class="lane-k"><span class="dir">Pull</span><code>tools/projects.py sync</code><span data-en="clones and updates the project repos">klont und aktualisiert die Projekt-Repos</span></p><ol class="steps"><li data-en="clones missing repos from <code>config/projects.yaml</code>">klont fehlende Repos aus <code>config/projects.yaml</code></li><li data-en="updates existing ones fast-forward only and without local changes">holt vorhandene nur per fast-forward und ohne lokale Änderungen</li><li data-en="puts the memory into the project repo and sets the <code>pre-push</code> hook">legt das Memory ins Projekt-Repo und setzt den <code>pre-push</code>-Hook</li></ol></div></div><div class="lane up" style="--i:1"><span class="rail" aria-hidden="true"><svg class="i"><use href="#i-up"/></svg></span><div><p class="lane-k"><span class="dir">Push</span><code>git push</code><span data-en="in the project repo, own history">im Projekt-Repo, eigene Historie</span></p></div></div></div><article class="stage side" style="--c: var(--c5)"><div class="st-head"><span class="node-no">⇄</span><h3 data-en="Chat histories">Chat-Verläufe</h3><span class="where">privates Repo · <code>tools/chat_sync.py</code></span></div><div class="groups"><div class="grp"><h4 data-en="Sync">Abgleich</h4><ul class="map"><li><code>Pull</code><span data-en="on <code>ws_sync.sh</code> – a paused chat resumes anywhere via <code>claude --resume</code>">bei <code>ws_sync.sh</code> – ein pausierter Chat läuft per <code>claude --resume</code> auf jedem Rechner weiter</span></li><li><code>Push</code><span data-en="in the background on every <code>git push</code>, only chats of the last days">im Hintergrund bei jedem <code>git push</code>, nur Chats der letzten Tage</span></li></ul></div></div></article></div>
-<article class="stage" style="--c: var(--c3)"><div class="st-head"><span class="node-no">03</span><h3 data-en="Projects · own repos">Projekte · eigene Repos</h3><span class="where"><code>~/__project_&lt;Name&gt;</code> neben dem Haupt-Repo, nie darin</span></div><p class="st-lead" data-en="Each project adds its own rules and keeps its own memory, but inherits everything global via the links from stage 02.">Jedes Projekt ergänzt eigene Regeln und hält eigenes Memory, erbt aber alles Globale über die Links aus Stufe 02.</p><div class="groups"><div class="grp"><h4 data-en="In the project repo">Im Projekt-Repo</h4><ul class="map"><li><code>AGENTS.md</code><code>README.md</code><span data-en="Own rules extend the shared ones; the project wins on conflict, safety always">Eigene Regeln ergänzen die gemeinsamen; bei Widerspruch gilt das Projekt, Sicherheit immer</span></li><li><code>.claude/memory/</code><span data-en="Own memory, committed together with the project">Eigenes Memory, wird mit dem Projekt committet</span></li></ul></div><div class="grp"><h4 data-en="Inherited">Geerbt</h4><ul class="map"><li><code>~/.claude/CLAUDE.md</code><span data-en="shared rules, global skills + agents (links from stage 02)">gemeinsame Regeln, globale Skills + Agenten (Links aus Stufe 02)</span></li><li><code>global_hook.py</code><span data-en="checks answer format, stops broad <code>pkill</code> and <code>git push --force</code>, checks syntax">Antwortformat prüfen, breites <code>pkill</code> und <code>git push --force</code> stoppen, Syntax prüfen</span></li></ul></div></div><ul class="chips"><li>ACCREDO</li><li>Bohlien Immo</li><li>Stele CMS</li><li>Claude Ops</li><li>Psycho</li><li>my_webpage</li></ul></article>
-<div class="bridge" style="--from: var(--c3); --to: var(--c4)"><div class="lane down" style="--i:2"><span class="rail" aria-hidden="true"><svg class="i"><use href="#i-down"/></svg></span><div><p class="lane-k"><span class="dir">Pull</span><code>post-merge</code><span data-en="keeps the checkout current">hält den Checkout aktuell</span></p><p class="lane-t" data-en="Every <code>git pull</code> also updates <code>~/lu4k87.github.io</code>.">Jeder <code>git pull</code> zieht <code>~/lu4k87.github.io</code> mit.</p></div></div><div class="lane up" style="--i:2"><span class="rail" aria-hidden="true"><svg class="i"><use href="#i-up"/></svg></span><div><p class="lane-k"><span class="dir">Push</span><code>git push</code> → <code>pre-push</code><span data-en="publishes automatically">veröffentlicht automatisch</span></p><ol class="steps"><li data-en="<code>tools/pages_hook.sh</code> runs <code>publish_pages.py --push</code>"><code>tools/pages_hook.sh</code> startet <code>publish_pages.py --push</code></li><li data-en="builds from the pushed state, not from local changes">baut aus dem gepushten Stand, nicht aus lokalen Änderungen</li></ol></div></div></div>
-<article class="stage" style="--c: var(--c4)"><div class="st-head"><span class="node-no">04</span><h3 data-en="lu4k87.github.io">lu4k87.github.io</h3><span class="where">GitHub Pages · öffentlich · Checkout <code>~/lu4k87.github.io</code></span></div><p class="st-lead" data-en="Docs, READMEs and QR codes – this page. Repos stay private unless explicitly public.">Doku, READMEs und QR-Codes – diese Seite. Repos bleiben privat, wenn nicht ausdrücklich öffentlich.</p><div class="groups"><div class="grp"><h4 data-en="Built by tools/publish_pages.py">Erzeugt von tools/publish_pages.py</h4><ul class="map"><li><code>index.html</code><span data-en="This start page from <code>tools/pages_home.html</code> + <code>config/projects.yaml</code>">Diese Startseite aus <code>tools/pages_home.html</code> + <code>config/projects.yaml</code></span></li><li><code>ux_robot/</code><span data-en="Docs hub, project pages, READMEs of public repos">Doku-Hub, Projektseiten, READMEs öffentlicher Repos</span></li><li><code>/&lt;projektname&gt;/</code><span data-en="Address and QR code for every project page">Adresse und QR-Code zu jeder Projektseite</span></li></ul></div></div></article>
-<div class="life-wrap"><h3 data-en="How it fits together: one chat from start to push">So greift es ineinander: ein Chat von Start bis Push</h3><p data-en="Hooks, skills, agents, memory and TODOs work together in this order – without the user wiring anything.">Hooks, Skills, Agenten, Memory und TODOS arbeiten in dieser Reihenfolge zusammen – ohne dass der User etwas verdrahten muss.</p><ol class="life"><li><b data-en="Start">Start</b><div><span class="hk"><code>session_overview.py</code></span><span data-en="Situation report: parallel chats, claims, open handoffs. Rules + memory index are already loaded.">Lagebild: parallele Chats, Claims, offene Übergaben. Regeln + Memory-Index sind schon geladen.</span></div></li><li><b data-en="Request">Anfrage</b><div><span class="hk"><code>chat_length_hint.py</code></span><span data-en="Reminds of matching skills from the finder table and of a new chat when the context grows long.">Erinnert an passende Skills aus der Finder-Tabelle und an einen neuen Chat bei langem Kontext.</span></div></li><li><b data-en="Work">Arbeit</b><div><span class="hk"><code>todo_claim_hook.py</code> · <code>pre_tool_guard.py</code></span><span data-en="The first change adds a claim to <code>TODOS.md</code>; the guard checks every command; agents review results.">Erste Änderung trägt einen Claim in <code>TODOS.md</code> ein; Schutz prüft jeden Befehl; Agenten prüfen Ergebnisse.</span></div></li><li><b data-en="Answer">Antwort</b><div><span class="hk"><code>post_edit_check.py</code> · <code>format_check.py</code></span><span data-en="Every file is checked right away; at the end the stop hook checks the answer format.">Jede Datei wird sofort geprüft; am Ende prüft der Stop-Hook das Antwortformat.</span></div></li><li><b data-en="Finish">Abschluss</b><div><span class="hk"><code>chat_handoff.py</code></span><span data-en="Commit + push (see lanes above), claim is removed; the rest becomes a handoff in <code>.claude/handoff/</code>.">Commit + Push (siehe Bahnen oben), Claim wird gelöscht; Rest als Übergabe in <code>.claude/handoff/</code>.</span></div></li></ol></div>
-</div>
+    <p class="intro" data-en="AI agents work by fixed rules. Every change is checked. Every finished state lands in Git and on this page.">KI-Agenten arbeiten nach festen Regeln. Jede Änderung wird geprüft. Jeder fertige Stand landet in Git und auf dieser Seite.</p>
+    <div class="wf-head">
+      <dl class="facts">
+        <div data-reveal><dt>3<small data-en="AI tools">KI-Werkzeuge</small></dt><dd data-en="Claude Code, Codex, Gemini – all read the same rules">Claude Code, Codex, Gemini – lesen dieselben Regeln</dd></div>
+        <div data-reveal><dt>2<small data-en="Source repos">Quell-Repos</small></dt><dd data-en="Rules, global skills and hooks (<code>ai_dev_workflow</code>) + robot workspace (<code>dev_ws</code>), both private">Regeln, globale Skills und Hooks (<code>ai_dev_workflow</code>) + Roboter-Workspace (<code>dev_ws</code>), beide privat</dd></div>
+        <div data-reveal><dt>32 · 2 · 6<small data-en="Skills · agents · hooks">Skills · Agenten · Hooks</small></dt><dd data-en="Knowledge, helpers, automation – versioned in Git">Wissen, Helfer, Automatik – versioniert in Git</dd></div>
+        <div data-reveal><dt>1<small data-en="Decision maker">Entscheider</small></dt><dd data-en="Only the user approves – in their own chat">Nur der User gibt frei – im eigenen Chat</dd></div>
+      </dl>
       <article class="card" data-reveal><div class="qr-row"><div class="qr-frame"><a class="qr-code" href="ai_dev_workflow/index.html" aria-label="QR-Code lu4k87.github.io/ai_dev_workflow" data-en-aria="QR code lu4k87.github.io/ai_dev_workflow"><svg viewBox="0 0 29 29" class="segno"><path class="qrline" stroke="#000" d="M0 0.5h7m2 0h1m1 0h1m2 0h2m1 0h3m2 0h7m-29 1h1m5 0h1m3 0h1m1 0h4m1 0h1m4 0h1m5 0h1m-29 1h1m1 0h3m1 0h1m3 0h2m3 0h3m1 0h2m1 0h1m1 0h3m1 0h1m-29 1h1m1 0h3m1 0h1m4 0h2m1 0h1m3 0h1m3 0h1m1 0h3m1 0h1m-29 1h1m1 0h3m1 0h1m2 0h1m1 0h1m2 0h5m1 0h1m1 0h1m1 0h3m1 0h1m-29 1h1m5 0h1m1 0h3m1 0h2m1 0h1m1 0h4m1 0h1m5 0h1m-29 1h7m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h7m-19 1h1m5 0h4m-20 1h1m2 0h1m1 0h2m1 0h3m1 0h3m3 0h1m2 0h1m1 0h1m-23 1h2m1 0h1m7 0h1m3 0h1m3 0h1m1 0h2m1 0h1m2 0h1m-29 1h1m2 0h2m1 0h1m3 0h1m1 0h1m3 0h2m1 0h1m2 0h2m1 0h3m-28 1h1m2 0h2m3 0h1m3 0h2m2 0h1m1 0h2m1 0h1m2 0h1m1 0h2m-27 1h1m2 0h1m1 0h1m2 0h1m2 0h2m1 0h3m4 0h1m2 0h1m1 0h2m-29 1h2m1 0h1m3 0h1m2 0h1m1 0h1m1 0h1m2 0h1m1 0h2m-20 1h1m1 0h4m2 0h2m2 0h2m2 0h2m2 0h8m-27 1h1m2 0h1m1 0h3m3 0h2m1 0h4m2 0h1m2 0h1m1 0h1m-26 1h5m1 0h1m1 0h1m1 0h3m1 0h2m2 0h1m2 0h1m3 0h1m-25 1h3m1 0h4m1 0h3m1 0h2m3 0h2m2 0h1m2 0h1m-29 1h1m2 0h2m1 0h1m4 0h2m1 0h1m3 0h1m1 0h2m1 0h2m2 0h2m-27 1h2m1 0h1m1 0h2m8 0h2m1 0h2m5 0h2m-29 1h1m1 0h2m2 0h3m1 0h1m1 0h1m2 0h1m1 0h1m2 0h5m1 0h1m-19 1h2m1 0h1m3 0h2m1 0h1m1 0h1m3 0h1m1 0h3m-29 1h7m2 0h2m6 0h1m2 0h1m1 0h1m1 0h1m2 0h1m-28 1h1m5 0h1m1 0h1m2 0h1m2 0h1m1 0h1m1 0h1m1 0h1m3 0h4m-28 1h1m1 0h3m1 0h1m3 0h1m6 0h1m2 0h5m-25 1h1m1 0h3m1 0h1m1 0h3m1 0h1m4 0h1m1 0h1m2 0h1m1 0h4m-28 1h1m1 0h3m1 0h1m2 0h5m3 0h1m2 0h1m3 0h3m1 0h1m-29 1h1m5 0h1m2 0h1m2 0h2m1 0h3m1 0h2m2 0h1m3 0h1m-28 1h7m1 0h1m1 0h3m1 0h1m2 0h1m2 0h4m1 0h1m1 0h1"/></svg></a></div><div class="qr-meta"><span class="k" data-en="Address">Adresse</span><span class="host">lu4k87.github.io</span><a class="path" href="ai_dev_workflow/index.html">/ai_dev_workflow</a></div></div><div class="body"><p class="tag" data-en="Way of working · Claude Code, Codex, Gemini">Arbeitsweise · Claude Code, Codex, Gemini</p><h3>AI Dev Workflow</h3><p class="desc" data-en="How every project here is built – cycle, guardrails and definition of done for working with AI agents.">So entsteht jedes Projekt hier – Kreislauf, Leitplanken und Definition of Done für die Arbeit mit KI-Agenten.</p></div><div class="acts"><a class="btn main" href="ai_dev_workflow/index.html"><span data-en="Open docs">Doku öffnen</span><svg class="i go" aria-hidden="true"><use href="#i-go"/></svg></a></div></article>
     </div>
+
+    <h3 class="part" id="h-ablauf"><span class="no">1</span><span data-en="How a task runs – who does what">Ablauf einer Aufgabe – wer macht was</span></h3>
+    <p class="sub" data-en="One row per step · columns = who acts · last column = when the chat stops. Hooks are scripts that run on their own; the Git column shows what reaches the repos.">Eine Zeile je Schritt · Spalten = wer handelt · letzte Spalte = wann der Chat anhält. Hooks sind Skripte, die von selbst laufen; die Spalte Git zeigt, was in den Repos ankommt.</p>
+    <table class="tb tb-steps" data-reveal>
+      <thead><tr>
+        <th data-en="Step">Schritt</th><th data-en="You">Du</th><th data-en="Chat · role">Chat · Rolle</th><th data-en="Skills · agents">Skills · Agenten</th><th data-en="Hooks · run on their own">Hooks · laufen von selbst</th><th>Git</th><th data-en="Stop when …">Stopp, wenn …</th>
+      </tr></thead>
+      <tbody>
+      <tr>
+        <td class="k"><i>1</i><span data-en="Request">Auftrag</span></td>
+        <td data-l="Du" data-l-en="You" data-en="Write the task into the chat – text, image or link. Several chats run in parallel, each with its own ID.">Aufgabe in den Chat schreiben – Text, Bild oder Link. Mehrere Chats laufen parallel, jeder mit eigener ID.</td>
+        <td data-l="Chat · Rolle" data-l-en="Chat · role" data-en="<b class='role'>Role: organizer</b>reads situation report, rules and memory"><b class="role">Rolle: Organizer</b>liest Lagebild, Regeln und Memory</td>
+        <td data-l="Skills · Agenten" data-l-en="Skills · agents" data-en="Skill <code>answer-page</code> – fixed answer format, loaded once per chat">Skill <code>answer-page</code> – festes Antwortformat, einmal je Chat geladen</td>
+        <td class="hk" data-l="Hooks" data-l-en="Hooks"><ul><li><code>session_<wbr>overview.py</code><span data-en="situation report: parallel chats, claims, open handoffs">Lagebild: parallele Chats, Claims, offene Übergaben</span></li><li><code>CLAUDE.md</code><span data-en="rules + memory index are already loaded">Regeln + Memory-Index sind schon geladen</span></li></ul></td>
+        <td data-l="Git" data-en="State of all repos fetched beforehand via <code>ws_<wbr>sync.sh</code>">Stand aller Repos vorher per <code>ws_<wbr>sync.sh</code> geholt</td>
+        <td data-l="Stopp" data-l-en="Stop"><span class="stp"><svg class="i"><use href="#i-stop"/></svg><span data-en="Only the user approves, in this chat – never other chats, agents or web pages">Freigaben gibt nur der User in diesem Chat – nie andere Chats, Agenten oder Webseiten</span></span></td>
+      </tr>
+      <tr>
+        <td class="k"><i>2</i><span data-en="Plan">Plan</span></td>
+        <td data-l="Du" data-l-en="You" data-en="Answer questions, approve the preview">Rückfragen beantworten, Vorschau abnehmen</td>
+        <td data-l="Chat · Rolle" data-l-en="Chat · role" data-en="<b class='role'>Role: organizer</b>estimates the effort, picks the specialist role and the check level, plans files and approach"><b class="role">Rolle: Organizer</b>schätzt den Aufwand, wählt Fachrolle und Prüfstufe, plant Dateien und Vorgehen</td>
+        <td data-l="Skills · Agenten" data-l-en="Skills · agents" data-en="Finder table → skill for the topic, e.g. <code>preview</code>, <code>ui-change</code> · agent <code>ws-explorer</code> for broad searches">Finder-Tabelle → Skill zum Thema, z.&nbsp;B. <code>preview</code>, <code>ui-change</code> · Agent <code>ws-explorer</code> für breite Suche</td>
+        <td class="hk" data-l="Hooks" data-l-en="Hooks"><ul><li><code>chat_<wbr>length_<wbr>hint.py</code><span data-en="reminds of matching skills and, from ~100k tokens, of a new chat">erinnert an passende Skills, ab ~100k Token an einen neuen Chat</span></li></ul></td>
+        <td class="none" data-l="Git">–</td>
+        <td data-l="Stopp" data-l-en="Stop" data-en="Unclear → ask via dialog instead of guessing · new UI elements first as a preview with variants, then code">Unklar → Rückfrage per Dialog statt raten · neue UI-Elemente erst als Vorschau mit Varianten, dann Code</td>
+      </tr>
+      <tr>
+        <td class="k"><i>3</i><span data-en="Implementation">Umsetzung</span></td>
+        <td class="none" data-l="Du" data-l-en="You">–</td>
+        <td data-l="Chat · Rolle" data-l-en="Chat · role" data-en="<b class='role'>Role: designer, developer or editor</b>the specialist role chosen in step 2 – smallest diff in the right place; first check whether it already exists in the repo"><b class="role">Rolle: Designer, Entwickler oder Redakteur</b>die in Schritt 2 gewählte Fachrolle – kleinster Diff am richtigen Ort; erst prüfen, ob es das im Repo schon gibt</td>
+        <td data-l="Skills · Agenten" data-l-en="Skills · agents" data-en="Skill for the topic, <code>root-cause</code> for bugs · agent <code>ws-worker</code> for well-defined changes, the main chat checks the diff">Skill zum Thema, bei Bugs <code>root-cause</code> · Agent <code>ws-worker</code> für klar umrissene Änderungen, der Haupt-Chat prüft den Diff</td>
+        <td class="hk" data-l="Hooks" data-l-en="Hooks"><ul><li><code>todo_<wbr>claim_<wbr>hook.py</code><span data-en="adds every file to <code>TODOS.md</code> as a claim before it changes">trägt jede Datei vor dem Ändern als Claim in <code>TODOS.md</code> ein</span></li><li><code>pre_<wbr>tool_<wbr>guard.py</code><span data-en="checks every command before it runs">prüft jeden Befehl vor dem Start</span></li><li><code>post_<wbr>edit_<wbr>check.py</code><span data-en="checks every file right after saving">prüft jede Datei direkt nach dem Speichern</span></li></ul></td>
+        <td data-l="Git" data-en="Claim pushed at once – other chats and machines see it">Claim sofort gepusht – andere Chats und Rechner sehen ihn</td>
+        <td data-l="Stopp" data-l-en="Stop"><span class="stp"><svg class="i"><use href="#i-stop"/></svg><span data-en="File of another chat → coordinate first, never overwrite">Datei eines anderen Chats → erst abstimmen, nie überschreiben</span></span></td>
+      </tr>
+      <tr>
+        <td class="k"><i>4</i><span data-en="Check">Prüfung</span></td>
+        <td class="none" data-l="Du" data-l-en="You">–</td>
+        <td data-l="Chat · Rolle" data-l-en="Chat · role" data-en="<b class='role'>Role: reviewer</b>definition of done by check level 0–3; evidence from this chat after the last change, no “should work”"><b class="role">Rolle: Prüfer</b>Definition of Done nach Prüfstufe 0–3; Beleg aus diesem Chat nach der letzten Änderung, kein „sollte gehen“</td>
+        <td data-l="Skills · Agenten" data-l-en="Skills · agents" data-en="Skill <code>test-isolated</code> · agents <code>test-runner</code>, <code>ui-verifier</code>; critical code: <code>safety-reviewer</code>">Skill <code>test-isolated</code> · Agenten <code>test-runner</code>, <code>ui-verifier</code>; kritischer Code: <code>safety-reviewer</code></td>
+        <td class="hk" data-l="Hooks" data-l-en="Hooks"><ul><li><code>tools/pre-commit</code><span data-en="tests, terms and format before every commit">Tests, Begriffe und Format vor jedem Commit</span></li></ul></td>
+        <td data-l="Git" data-en="Only checked states get committed">Nur geprüfte Stände werden committet</td>
+        <td data-l="Stopp" data-l-en="Stop"><span class="stp"><svg class="i"><use href="#i-stop"/></svg><span data-en="Check red → back to step 3, no “done”">Prüfung rot → zurück zu Schritt 3, kein „fertig“</span></span></td>
+      </tr>
+      <tr>
+        <td class="k"><i>5</i><span data-en="Finish">Abschluss</span></td>
+        <td data-l="Du" data-l-en="You" data-en="Read the result: result line, check table, status">Ergebnis lesen: Ergebnis-Zeile, Prüf-Tabelle, Status</td>
+        <td data-l="Chat · Rolle" data-l-en="Chat · role" data-en="<b class='role'>Role: synchronizer</b>commit + push; answer in the fixed format; open rest → handoff for a new chat"><b class="role">Rolle: Synchronizer</b>Commit + Push; Antwort im festen Format; offener Rest → Übergabe für einen neuen Chat</td>
+        <td data-l="Skills · Agenten" data-l-en="Skills · agents" data-en="Skill <code>commit</code> – commit in the repo's style, never <code>--force</code>">Skill <code>commit</code> – Commit im Stil des Repos, nie <code>--force</code></td>
+        <td class="hk" data-l="Hooks" data-l-en="Hooks"><ul><li><code>format_<wbr>check.py</code><span data-en="checks the answer format">prüft das Antwortformat</span></li><li><code>chat_<wbr>handoff.py</code><span data-en="writes the handoff, removes the claim">schreibt die Übergabe, löscht den Claim</span></li></ul></td>
+        <td data-l="Git" data-en="Commit + push to the repo of the project">Commit + Push ins Repo des Projekts</td>
+        <td data-l="Stopp" data-l-en="Stop"><span class="stp"><svg class="i"><use href="#i-stop"/></svg><span data-en="Never <code>git push --force</code>, never commit changes of other chats">Nie <code>git push --force</code>, nie fremde Änderungen mitcommitten</span></span></td>
+      </tr>
+      <tr>
+        <td class="k"><i>6</i><span data-en="Distribution">Verteilung</span></td>
+        <td data-l="Du" data-l-en="You" data-en="Use the page and the projects">Seite und Projekte nutzen</td>
+        <td class="none" data-l="Chat · Rolle" data-l-en="Chat · role" data-en="– Git hooks work on their own">– Git-Hooks arbeiten allein</td>
+        <td class="none" data-l="Skills · Agenten" data-l-en="Skills · agents">–</td>
+        <td class="hk" data-l="Hooks" data-l-en="Hooks"><ul><li><code>pre-push</code> → <code>pages_<wbr>hook.sh</code><span data-en="builds lu4k87.github.io from the pushed state">baut lu4k87.github.io aus dem gepushten Stand</span></li><li><code>chat_<wbr>sync.py</code><span data-en="backs up the chat histories">sichert die Chat-Verläufe</span></li><li><code>post-merge</code><span data-en="keeps the checkout of the page current">hält den Checkout der Seite aktuell</span></li></ul></td>
+        <td data-l="Git" data-en="Other machines fetch the state via <code>ws_<wbr>sync.sh</code>">Andere Rechner holen den Stand per <code>ws_<wbr>sync.sh</code></td>
+        <td data-l="Stopp" data-l-en="Stop" data-en="Repos stay private unless explicitly public">Repos bleiben privat, wenn nicht ausdrücklich öffentlich</td>
+      </tr>
+      </tbody>
+    </table>
+    <ul class="note">
+      <li><svg class="i stop"><use href="#i-stop"/></svg><span data-en="Stop = the chat halts and asks or goes one step back">Stopp = Chat hält an und fragt nach oder geht einen Schritt zurück</span></li>
+      <li><svg class="i loop"><use href="#i-sync"/></svg><span data-en="After step 6 the next task starts again at 1">Nach Schritt 6 beginnt die nächste Aufgabe wieder bei 1</span></li>
+    </ul>
+    <div class="two gap">
+      <table class="tb tb-sm" data-reveal>
+        <thead><tr><th data-en="Role">Rolle</th><th data-en="Task">Aufgabe</th></tr></thead>
+        <tbody>
+        <tr><td class="k">Organizer</td><td data-l="Aufgabe" data-l-en="Task" data-en="Start, plan, questions, splitting into chats – every chat begins here">Start, Plan, Rückfragen, Aufteilen in Chats – jeder Chat beginnt hier</td></tr>
+        <tr><td class="k" data-en="Designer · Developer · Editor<small>also project manager, scrum master, researcher, marketing, 3D designer</small>">Designer · Entwickler · Redakteur<small>außerdem Projektmanager, Scrum Master, Forscher, Marketing, 3D-Designer</small></td><td data-l="Aufgabe" data-l-en="Task" data-en="Implementation – one specialist role per task, chosen in the plan">Umsetzung – eine Fachrolle je Aufgabe, gewählt im Plan</td></tr>
+        <tr><td class="k" data-en="Reviewer">Prüfer</td><td data-l="Aufgabe" data-l-en="Task" data-en="Definition of done before “done” – evidence from this chat">Definition of Done vor „fertig“ – Beleg aus diesem Chat</td></tr>
+        <tr><td class="k">Synchronizer</td><td data-l="Aufgabe" data-l-en="Task" data-en="Commit + push, coordinate parallel chats, hand over the rest">Commit + Push, parallele Chats abstimmen, Rest übergeben</td></tr>
+        </tbody>
+      </table>
+      <div class="box">
+        <h4><svg class="i"><use href="#i-laptop"/></svg><span data-en="Who reads what">Wer liest was</span></h4>
+        <dl class="kv">
+          <div><dt>Claude Code</dt><dd data-en="<code>CLAUDE.md</code>, hooks from <code>.claude/settings.json</code>, skills, agents"><code>CLAUDE.md</code>, Hooks aus <code>.claude/settings.json</code>, Skills, Agenten</dd></div>
+          <div><dt>Codex</dt><dd data-en="<code>AGENTS.md</code>, <code>.codex/hooks.json</code> → <code>codex_<wbr>bridge.py</code>"><code>AGENTS.md</code>, <code>.codex/hooks.json</code> → <code>codex_<wbr>bridge.py</code></dd></div>
+          <div><dt>Gemini · Antigravity</dt><dd data-en="<code>.agents/rules/</code>, <code>.agents/hooks.json</code> → <code>antigravity_<wbr>bridge.py</code>"><code>.agents/rules/</code>, <code>.agents/hooks.json</code> → <code>antigravity_<wbr>bridge.py</code></dd></div>
+        </dl>
+      </div>
+    </div>
+
+    <h3 class="part" id="h-regeln"><span class="no">2</span><span data-en="Rules and checking">Regeln und Prüfung</span></h3>
+    <p class="sub" data-en="Every rule has a hook that checks it automatically – at a fixed moment. How deeply a change is checked depends on its check level.">Jede Regel hat einen Hook, der sie automatisch prüft – zu einem festen Zeitpunkt. Wie tief eine Änderung geprüft wird, legt ihre Prüfstufe fest.</p>
+    <div class="two">
+      <table class="tb tb-sm tb-rules" data-reveal>
+        <thead><tr><th data-en="Rule (target)">Regel (Soll)</th><th data-en="Checks automatically (actual)">prüft automatisch (Ist)</th><th data-en="Runs">läuft</th></tr></thead>
+        <tbody>
+        <tr><td data-en="Before the work: situation report with parallel chats, claims and open handoffs">Vor der Arbeit das Lagebild: parallele Chats, Claims, offene Übergaben</td><td class="hk" data-l="Hook"><code>session_<wbr>overview.py</code></td><td data-l="läuft" data-l-en="runs" data-en="at chat start">beim Chat-Start</td></tr>
+        <tr><td data-en="Load matching skills only; from ~100k tokens a new chat with handoff">Nur passende Skills laden; ab ~100k Token neuer Chat mit Übergabe</td><td class="hk" data-l="Hook"><code>chat_<wbr>length_<wbr>hint.py</code></td><td data-l="läuft" data-l-en="runs" data-en="on every message">bei jeder Nachricht</td></tr>
+        <tr><td data-en="Every file becomes a claim before it changes; claims of other chats only after agreement">Jede Datei wird vor dem Ändern zum Claim; fremde Claims nur nach Absprache</td><td class="hk" data-l="Hook"><code>todo_<wbr>claim_<wbr>hook.py</code></td><td data-l="läuft" data-l-en="runs" data-en="before every file change">vor jeder Dateiänderung</td></tr>
+        <tr><td data-en="No broad <code>pkill</code>, no <code>git push --force</code>, no bypassing of safeguards">Kein breites <code>pkill</code>, kein <code>git push --force</code>, kein Umgehen von Schutzmechanismen</td><td class="hk" data-l="Hook"><code>pre_<wbr>tool_<wbr>guard.py</code></td><td data-l="läuft" data-l-en="runs" data-en="before every command">vor jedem Befehl</td></tr>
+        <tr><td data-en="Every saved file error-free: syntax, UI rules, corners ≤ 8 px">Jede gespeicherte Datei fehlerfrei: Syntax, UI-Regeln, Ecken ≤&nbsp;8&nbsp;px</td><td class="hk" data-l="Hook"><code>post_<wbr>edit_<wbr>check.py</code></td><td data-l="läuft" data-l-en="runs" data-en="after every file change">nach jeder Dateiänderung</td></tr>
+        <tr><td data-en="Only checked states get committed: tests, terms, format">Nur geprüfte Stände committen: Tests, Begriffe, Format</td><td class="hk" data-l="Hook"><code>tools/pre-commit</code></td><td data-l="läuft" data-l-en="runs" data-en="on every commit">bei jedem Commit</td></tr>
+        <tr><td data-en="Every answer in the fixed format: result, warnings, check table, status">Jede Antwort im festen Format: Ergebnis, Warnungen, Prüf-Tabelle, Status</td><td class="hk" data-l="Hook"><code>format_<wbr>check.py</code></td><td data-l="läuft" data-l-en="runs" data-en="at the end of every answer">am Ende jeder Antwort</td></tr>
+        <tr><td data-en="The open rest is handed over, the claim removed">Offener Rest wird übergeben, der Claim gelöscht</td><td class="hk" data-l="Hook"><code>chat_<wbr>handoff.py</code></td><td data-l="läuft" data-l-en="runs" data-en="on “chat weiter” in the new chat">bei „chat weiter“ im neuen Chat</td></tr>
+        </tbody>
+      </table>
+      <table class="tb tb-sm" data-reveal>
+        <thead><tr><th data-en="Level">Stufe</th><th data-en="Change">Änderung</th><th data-en="Check before “done”">Prüfung vor „fertig“</th></tr></thead>
+        <tbody>
+        <tr><td class="k"><i>0</i>trivial</td><td data-l="Änderung" data-l-en="Change" data-en="Text, comment, docs, config without effect">Text, Kommentar, Doku, Config ohne Wirkung</td><td data-l="Prüfung" data-l-en="Check" data-en="Hooks + pre-commit">Hooks + pre-commit</td></tr>
+        <tr><td class="k"><i>1</i><span data-en="small">klein</span></td><td data-l="Änderung" data-l-en="Change" data-en="Existing element, one area, ≤ 3 files">Bestehendes Element, ein Bereich, ≤&nbsp;3 Dateien</td><td data-l="Prüfung" data-l-en="Check" data-en="Quick checks, UI light + dark; bug fix: original symptom + 1 test">Schnelle Prüfungen, UI hell + dunkel; Bugfix: Originalsymptom + 1 Test</td></tr>
+        <tr><td class="k"><i>2</i>normal</td><td data-l="Änderung" data-l-en="Change" data-en="New element, several files, rebuild">Neues Element, mehrere Dateien, Umbau</td><td data-l="Prüfung" data-l-en="Check" data-en="Full check of the project">Volle Prüfung des Projekts</td></tr>
+        <tr><td class="k crit"><i>3</i><span data-en="critical">kritisch</span></td><td data-l="Änderung" data-l-en="Change" data-en="Safety, data loss, hardware">Sicherheit, Datenverlust, Hardware</td><td data-l="Prüfung" data-l-en="Check" data-en="Full check + review agent, never shortened">Volle Prüfung + Prüf-Agent, nie abkürzen</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="box gap">
+      <h4><svg class="i"><use href="#i-check"/></svg><span data-en="How the parts work together">So greifen die Teile ineinander</span></h4>
+      <dl class="kv">
+        <div><dt><a href="#g-rules" data-en="Rules">Regeln</a></dt><dd data-en="<code>RULES.md</code> for all projects + <code>AGENTS.md</code> per project; every chat reads them at the start, the project extends them, safety always wins"><code>RULES.md</code> für alle Projekte + <code>AGENTS.md</code> je Projekt; jeder Chat liest sie zu Beginn, das Projekt ergänzt sie, Sicherheit hat immer Vorrang</dd></div>
+        <div><dt><a href="#g-role" data-en="Roles">Rollen</a></dt><dd data-en="Organizer → specialist role → reviewer → synchronizer: the chat switches roles with each step and names the current one in its answer">Organizer → Fachrolle → Prüfer → Synchronizer: der Chat wechselt die Rolle mit dem Schritt und nennt sie in der Antwort</dd></div>
+        <div><dt><a href="#g-skill">Skills</a></dt><dd data-en="Instructions per topic; the chat loads only those that match the task, via the finder table in <code>RULES.md</code>">Anleitungen je Thema; der Chat lädt nur die zur Aufgabe passenden, über die Finder-Tabelle in <code>RULES.md</code></dd></div>
+        <div><dt><a href="#g-agent" data-en="Agents">Agenten</a></dt><dd data-en="Helper chats for search, tests and reviews; they return only the result, the main chat checks it (<code>git diff</code>)">Hilfs-Chats für Suche, Tests und Reviews; sie liefern nur das Ergebnis, der Haupt-Chat prüft es (<code>git diff</code>)</dd></div>
+        <div><dt><a href="#g-hook">Hooks</a></dt><dd data-en="Run on events (table above) without anyone calling them; Codex and Gemini receive them via bridge scripts">Laufen bei Ereignissen (Tabelle oben), ohne dass jemand sie aufruft; Codex und Gemini bekommen sie über Bridge-Skripte</dd></div>
+        <div><dt><a href="#g-memory">Memory</a> · <a href="#g-claim">Claims</a></dt><dd data-en="Both live in Git: memory keeps decisions across chats, claims show parallel chats who edits which file">Beides liegt in Git: Memory hält Entscheidungen über Chats hinweg, Claims zeigen parallelen Chats, wer welche Datei bearbeitet</dd></div>
+      </dl>
+    </div>
+
+    <h3 class="part" id="h-daten"><span class="no">3</span><span data-en="Path of the data">Weg der Daten</span></h3>
+    <p class="sub" data-en="From the two source repos via every machine and project to this page – one station per row, in between the command that carries the state onward.">Von den zwei Quell-Repos über jeden Rechner und jedes Projekt bis zu dieser Seite – eine Station je Zeile, dazwischen der Befehl, der den Stand weiterträgt.</p>
+    <ol class="chain">
+      <li class="stn" style="--c: var(--c5)" data-reveal>
+        <div class="stn-head"><b><svg class="i"><use href="#i-book"/></svg><span data-en="Rules repo">Regel-Repo</span></b><span class="nm">ai_dev_workflow</span><span class="wh" data-en="GitHub · private">GitHub · privat</span><p data-en="Shared rules, global skills, agents, hooks and memory of all projects – the only place where they are edited.">Gemeinsame Regeln, globale Skills, Agenten, Hooks und Memory aller Projekte – der einzige Ort, an dem sie bearbeitet werden.</p></div>
+        <dl>
+          <div><dt><code>rules/RULES.md</code></dt><dd data-en="shared rules for all projects: answer format, roles, way of working">gemeinsame Regeln aller Projekte: Antwortformat, Rollen, Arbeitsweise</dd></div>
+          <div><dt><code>rules/project_AGENTS.md</code></dt><dd data-en="template for the rules of a new project">Vorlage für die Regeln eines neuen Projekts</dd></div>
+          <div><dt><code>skills/</code> · <code>agents/</code></dt><dd data-en="global skills and agents for all projects, e.g. answer format, preview, commit">globale Skills und Agenten für alle Projekte, z.&nbsp;B. Antwortformat, Vorschau, Commit</dd></div>
+          <div><dt><code>hooks/</code></dt><dd data-en="hooks for Claude, Codex and Gemini: answer format, protection, handoff">Hooks für Claude, Codex und Gemini: Antwortformat, Schutz, Übergabe</dd></div>
+          <div><dt><code>memory/</code></dt><dd data-en="shared memory: who the user is, way of working, machine quirks">gemeinsame Memory: wer der User ist, Arbeitsweise, Eigenheiten der Rechner</dd></div>
+          <div><dt><code>bin/</code></dt><dd data-en="tools: <code>agents_<wbr>sync.py</code>, <code>projects.py</code>, <code>chat_<wbr>sync.py</code>, <code>publish_<wbr>pages.py</code> + this page's template">Werkzeuge: <code>agents_<wbr>sync.py</code>, <code>projects.py</code>, <code>chat_<wbr>sync.py</code>, <code>publish_<wbr>pages.py</code> + Vorlage dieser Seite</dd></div>
+          <div><dt><code>config/projects.yaml</code></dt><dd data-en="project list + cards on this page">Projektliste + Karten dieser Seite</dd></div>
+          <div><dt><code>docs/</code> → <code>/ai_dev_workflow</code></dt><dd data-en="the page on the way of working, published from this repo">die Seite zur Arbeitsweise, aus diesem Repo veröffentlicht</dd></div>
+        </dl>
+      </li>
+      <li class="stn" style="--c: var(--c1)" data-reveal>
+        <div class="stn-head"><b><svg class="i"><use href="#i-git"/></svg><span data-en="Main repo">Haupt-Repo</span></b><span class="nm">dev_ws</span><span class="wh" data-en="GitHub · private · checkout <code>~/dev_ws</code>">GitHub · privat · Checkout <code>~/dev_ws</code></span><p data-en="Robot workspace UX Robot with its own skills, agents and hooks – the pattern every project follows for its own additions.">Roboter-Workspace UX Robot mit eigenen Skills, Agenten und Hooks – das Muster, nach dem jedes Projekt Eigenes ergänzt.</p></div>
+        <dl>
+          <div><dt><code>.claude/skills/</code> · <code>.claude/agents/</code></dt><dd data-en="skills and agents only for this repo: ROS, digital twin, web UIs, tests">Skills und Agenten nur für dieses Repo: ROS, Digital Twin, Web-UIs, Tests</dd></div>
+          <div><dt><code>.claude/hooks/</code></dt><dd data-en="hook scripts of the repo: situation report, claims, file check, command guard">Hook-Skripte des Repos: Lagebild, Claims, Datei-Prüfung, Befehls-Schutz</dd></div>
+          <div><dt><code>.claude/memory/</code> · <code>.claude/handoff/</code></dt><dd data-en="memory of the repo, handoffs for new chats">Memory des Repos, Übergaben für neue Chats</dd></div>
+          <div><dt><code>TODOS.md</code></dt><dd data-en="backlog + claims of parallel chats">Backlog + Claims paralleler Chats</dd></div>
+          <div><dt><code>tools/</code></dt><dd data-en="<code>ws_<wbr>sync.sh</code>, <code>claim.py</code>, <code>pre-commit</code>, check scripts"><code>ws_<wbr>sync.sh</code>, <code>claim.py</code>, <code>pre-commit</code>, Prüfskripte</dd></div>
+          <div><dt><code>.codex/</code> · <code>.agents/</code></dt><dd data-en="generated for Codex + Gemini, never edited by hand">erzeugt für Codex + Gemini, nie von Hand</dd></div>
+        </dl>
+      </li>
+      <li class="cmd">
+        <span class="dn" aria-hidden="true"><i></i><svg class="i"><use href="#i-down"/></svg></span>
+        <div>
+          <p class="what"><span class="dir">Pull</span><code>tools/ws_sync.sh</code><span data-en="fetches and links – on every machine">holt und verlinkt – auf jedem Rechner</span></p>
+          <ol>
+            <li data-en="<code>git pull --rebase --autostash</code> – fetch the latest state"><code>git pull --rebase --autostash</code> – neuen Stand holen</li>
+            <li data-en="<code>projects.py sync</code> – clone the rules repo and the projects"><code>projects.py sync</code> – Regel-Repo und Projekte klonen</li>
+            <li data-en="<code>agents_sync.py --home</code> – link rules, skills, agents into <code>~</code>"><code>agents_sync.py --home</code> – Regeln, Skills, Agenten in <code>~</code> verlinken</li>
+            <li data-en="<code>codex_<wbr>setup.py</code> – trust the Codex hooks"><code>codex_<wbr>setup.py</code> – Codex-Hooks freigeben</li>
+            <li data-en="set up memory + user settings">Memory + Benutzer-Settings einrichten</li>
+            <li data-en="<code>colcon build</code> – only changed ROS packages"><code>colcon build</code> – nur geänderte ROS-Pakete</li>
+          </ol>
+        </div>
+      </li>
+      <li class="stn" style="--c: var(--c2)" data-reveal>
+        <div class="stn-head"><b><svg class="i"><use href="#i-laptop"/></svg><span data-en="Every machine">Jeder Rechner</span></b><span class="nm" data-en="laptop · lab PC · home PC">Laptop · Labor-PC · Home-PC</span><span class="wh" data-en="links in the home folder instead of copies">Links im Home-Ordner statt Kopien</span><p data-en="Claude Code, Codex and Gemini read the same rules, skills and agents – each via its own entry point.">Claude Code, Codex und Gemini lesen dieselben Regeln, Skills und Agenten – jedes über seinen eigenen Einstieg.</p></div>
+        <dl>
+          <div><dt><code>~/.claude/CLAUDE.md</code> · <code>~/.codex/AGENTS.md</code></dt><dd data-en="point to <code>RULES.md</code> (Gemini: <code>common_rules.md</code>)">zeigen auf <code>RULES.md</code> (Gemini: <code>common_rules.md</code>)</dd></div>
+          <div><dt><code>~/.claude/skills/</code> · <code>~/.claude/agents/</code></dt><dd data-en="point to the global skills and agents in the rules repo">zeigen auf die globalen Skills und Agenten im Regel-Repo</dd></div>
+          <div><dt><code>~/.claude/settings.json</code></dt><dd data-en="from <code>user-settings.json</code>: model, hooks">aus <code>user-settings.json</code>: Modell, Hooks</dd></div>
+          <div><dt data-en="Local only">Nur lokal</dt><dd data-en="chat histories, <code>settings.local.json</code>, build output, previews">Chat-Verläufe, <code>settings.local.json</code>, Build, Vorschauen</dd></div>
+        </dl>
+      </li>
+      <li class="cmd">
+        <span class="dn" aria-hidden="true"><i></i><svg class="i"><use href="#i-down"/></svg></span>
+        <div>
+          <p class="what"><span class="dir">Pull</span><code>tools/projects.py sync</code><span data-en="clones and updates the project repos">klont und aktualisiert die Projekt-Repos</span></p>
+          <ol>
+            <li data-en="clones missing repos from <code>config/projects.yaml</code>">fehlende Repos aus <code>config/projects.yaml</code> klonen</li>
+            <li data-en="updates existing ones fast-forward only, without local changes">vorhandene nur fast-forward, nur ohne lokale Änderungen</li>
+            <li data-en="puts the memory into the project, sets the <code>pre-push</code> hook">Memory ins Projekt, <code>pre-push</code>-Hook setzen</li>
+          </ol>
+        </div>
+      </li>
+      <li class="stn" style="--c: var(--c3)" data-reveal>
+        <div class="stn-head"><b><svg class="i"><use href="#i-folders"/></svg><span data-en="Projects">Projekte</span></b><span class="nm">~/__project_&lt;Name&gt;</span><span class="wh" data-en="own repos next to dev_ws, never inside it">eigene Repos neben dev_ws, nie darin</span><p data-en="Each project adds its own rules and keeps its own memory, but inherits everything global.">Jedes Projekt ergänzt eigene Regeln und hält eigenes Memory, erbt aber alles Globale.</p></div>
+        <dl>
+          <div><dt><code>AGENTS.md</code></dt><dd data-en="own rules, win on conflict – safety always">eigene Regeln, Vorrang bei Widerspruch – Sicherheit immer</dd></div>
+          <div><dt><code>.claude/memory/</code></dt><dd data-en="own memory, committed with the project">eigenes Memory, mit dem Projekt committet</dd></div>
+          <div><dt data-en="Inherits">Erbt</dt><dd data-en="shared rules, global skills + agents, <code>global_<wbr>hook.py</code>">gemeinsame Regeln, globale Skills + Agenten, <code>global_<wbr>hook.py</code></dd></div>
+        </dl>
+        <ul class="chips"><li>ACCREDO</li><li>Bohlien Immo</li><li>Stele CMS</li><li>Claude Ops</li><li>Psycho</li><li>my_webpage</li></ul>
+      </li>
+      <li class="cmd">
+        <span class="dn" aria-hidden="true"><i></i><svg class="i"><use href="#i-down"/></svg></span>
+        <div>
+          <p class="what"><span class="dir">Push</span><code>git push</code> → <code>pre-push</code><span data-en="publishes automatically">veröffentlicht automatisch</span></p>
+          <ol>
+            <li data-en="<code>tools/pre-commit</code> has already checked every commit"><code>tools/pre-commit</code> hat vorher jeden Commit geprüft</li>
+            <li data-en="<code>pages_<wbr>hook.sh</code> starts <code>publish_pages.py --push</code>"><code>pages_<wbr>hook.sh</code> startet <code>publish_pages.py --push</code></li>
+            <li data-en="builds from the pushed state, not from local changes">baut aus dem gepushten Stand, nicht aus lokalen Änderungen</li>
+          </ol>
+        </div>
+      </li>
+      <li class="stn end" style="--c: var(--c4)" data-reveal>
+        <div class="stn-head"><b><svg class="i"><use href="#i-globe"/></svg><span data-en="Result: this page">Ergebnis: diese Seite</span></b><span class="nm">lu4k87.github.io</span><span class="wh" data-en="GitHub Pages · public · no repo to work in">GitHub Pages · öffentlich · kein Arbeits-Repo</span><p data-en="Rebuilt on every push – nothing is edited here. Repos stay private unless explicitly public.">Wird bei jedem Push neu gebaut – hier wird nichts bearbeitet. Repos bleiben privat, wenn nicht ausdrücklich öffentlich.</p></div>
+        <dl>
+          <div><dt><code>index.html</code></dt><dd data-en="this start page from <code>bin/pages_home.html</code> + <code>config/projects.yaml</code> of the rules repo">diese Startseite aus <code>bin/pages_home.html</code> + <code>config/projects.yaml</code> des Regel-Repos</dd></div>
+          <div><dt><code>/ux_robot/</code></dt><dd data-en="docs hub, project pages, READMEs of public repos">Doku-Hub, Projektseiten, READMEs öffentlicher Repos</dd></div>
+          <div><dt><code>/project/&lt;name&gt;</code></dt><dd data-en="address + QR code for every project">Adresse + QR-Code je Projekt</dd></div>
+          <div><dt><code>/ai_dev_workflow</code></dt><dd data-en="the page on the way of working">die Seite zur Arbeitsweise</dd></div>
+        </dl>
+      </li>
+    </ol>
+    <p class="aside"><svg class="i" aria-hidden="true"><use href="#i-sync"/></svg><b data-en="Chat histories">Chat-Verläufe</b><span data-en="private repo via <code>chat_<wbr>sync.py</code>: push in the background on every <code>git push</code>, pull on <code>ws_<wbr>sync.sh</code> – a paused chat resumes on any machine via <code>claude --resume</code>">privates Repo über <code>chat_<wbr>sync.py</code>: Push im Hintergrund bei jedem <code>git push</code>, Pull bei <code>ws_<wbr>sync.sh</code> – ein pausierter Chat läuft per <code>claude --resume</code> auf jedem Rechner weiter</span></p>
+
+    <h3 class="part" id="h-begriffe"><span class="no">4</span><span data-en="Terms">Begriffe</span></h3>
+    <p class="sub" data-en="Briefly explained – for everyone who is here for the first time.">Kurz erklärt – für alle, die zum ersten Mal hier sind.</p>
+    <dl class="gloss">
+      <div id="g-repo"><dt>Repo</dt><dd data-en="Git folder with the complete history of all changes; private on GitHub here unless explicitly public.">Git-Ordner mit vollständigem Verlauf aller Änderungen; hier privat auf GitHub, außer wenn ausdrücklich öffentlich.</dd></div>
+      <div id="g-rules"><dt data-en="Rules">Regeln</dt><dd data-en="<code>RULES.md</code> for all projects + <code>AGENTS.md</code> per project: requirements every chat reads at the start."><code>RULES.md</code> für alle Projekte + <code>AGENTS.md</code> je Projekt: Vorgaben, die jeder Chat zu Beginn liest.</dd></div>
+      <div id="g-chat"><dt>Chat</dt><dd data-en="One session with an AI tool (Claude Code, Codex, Gemini) for one task; several run in parallel, each with its own ID.">Eine Sitzung mit einem KI-Werkzeug (Claude Code, Codex, Gemini) für eine Aufgabe; mehrere laufen parallel, jeder mit eigener ID.</dd></div>
+      <div id="g-role"><dt data-en="Role">Rolle</dt><dd data-en="What the chat does in a step: organizer, then designer, developer or editor, then reviewer, then synchronizer.">Tätigkeit des Chats in einem Schritt: Organizer, dann Designer, Entwickler oder Redakteur, dann Prüfer, dann Synchronizer.</dd></div>
+      <div id="g-skill"><dt>Skill</dt><dd data-en="Instructions for one topic (e.g. preview, commit, UI change); the chat loads it only when the task touches the topic.">Anleitung zu einem Thema (z.&nbsp;B. Vorschau, Commit, UI-Änderung); der Chat lädt sie nur, wenn die Aufgabe das Thema berührt.</dd></div>
+      <div id="g-agent"><dt>Agent</dt><dd data-en="Helper chat with its own job – search, tests, review; returns only the result, the main chat checks it.">Hilfs-Chat mit eigenem Auftrag – Suche, Tests, Review; liefert nur das Ergebnis zurück, der Haupt-Chat prüft es.</dd></div>
+      <div id="g-hook"><dt>Hook</dt><dd data-en="Script that runs automatically on an event: chat start, before a command, after saving, at the end of the answer.">Skript, das bei einem Ereignis automatisch läuft: Chat-Start, vor einem Befehl, nach dem Speichern, am Ende der Antwort.</dd></div>
+      <div id="g-memory"><dt>Memory</dt><dd data-en="Notes that persist across chats: who the user is, decisions, machine quirks – versioned in the repo.">Notizen, die über Chats hinweg bleiben: wer der User ist, Entscheidungen, Eigenheiten der Rechner – im Repo versioniert.</dd></div>
+      <div id="g-claim"><dt>Claim</dt><dd data-en="Line “chat X edits file Y” in <code>TODOS.md</code>; visible to all chats and machines via Git – prevents duplicate work.">Zeile „Chat X bearbeitet Datei Y“ in <code>TODOS.md</code>; per Git für alle Chats und Rechner sichtbar – verhindert doppelte Arbeit.</dd></div>
+      <div id="g-overview"><dt data-en="Situation report">Lagebild</dt><dd data-en="Overview at chat start: running chats, claims, open handoffs, due team rituals.">Übersicht beim Chat-Start: laufende Chats, Claims, offene Übergaben, fällige Team-Rituale.</dd></div>
+      <div id="g-handoff"><dt data-en="Handoff">Übergabe</dt><dd data-en="Start text for a new chat (“chat weiter …”) when the context or the task grows too large.">Starttext für einen neuen Chat („chat weiter …“), wenn Kontext oder Aufgabe zu groß werden.</dd></div>
+      <div id="g-level"><dt data-en="Check level">Prüfstufe</dt><dd data-en="How deeply a change is checked before “done”: 0 trivial to 3 critical; when in doubt one level higher.">Wie tief eine Änderung vor „fertig“ geprüft wird: 0 trivial bis 3 kritisch; im Zweifel eine Stufe höher.</dd></div>
+      <div id="g-preview"><dt data-en="Preview">Vorschau</dt><dd data-en="Web page with variants of a planned change; the user chooses there, only then code is written.">Webseite mit Varianten einer geplanten Änderung; der User wählt dort, erst dann entsteht Code.</dd></div>
+      <div id="g-pullpush"><dt>Pull · Push</dt><dd data-en="Fetch the state from the repo · upload your own state; a push triggers the checks and the build of this page.">Stand aus dem Repo holen · eigenen Stand hochladen; ein Push löst Prüfung und Bau dieser Seite aus.</dd></div>
+    </dl>
   </section>
 </main>
 
@@ -384,7 +634,8 @@ footer p { margin: 0; }
   setTheme(['dark', 'light'].includes(qTheme) ? qTheme : store('home_theme'));
   document.querySelectorAll('[data-theme-btn]').forEach(b => b.addEventListener('click', () => { setTheme(b.dataset.themeBtn); store('home_theme', b.dataset.themeBtn); }));
 
-  // Sprache: Texte mit data-en, Links mit data-href-en (wie docs/project_docs.html); ohne Wahl: Sprache des Browsers
+  // Sprache: Texte mit data-en, Links mit data-href-en, Spaltenköpfe schmaler Tabellen mit data-l-en (wie docs/project_docs.html);
+  // ohne Wahl: Sprache des Browsers
   const keep = (el, key, val) => { if (el.dataset[key] === undefined) el.dataset[key] = val; return el.dataset[key]; };
   const setLang = lang => {
     root.lang = lang;
@@ -392,6 +643,7 @@ footer p { margin: 0; }
     document.querySelectorAll('[data-en]').forEach(el => { const de = keep(el, 'de', el.innerHTML); el.innerHTML = en ? el.dataset.en : de; });
     document.querySelectorAll('[data-en-aria]').forEach(el => { const de = keep(el, 'deAria', el.getAttribute('aria-label')); el.setAttribute('aria-label', en ? el.dataset.enAria : de); });
     document.querySelectorAll('[data-href-en]').forEach(el => { const de = keep(el, 'hrefDe', el.getAttribute('href')); el.setAttribute('href', en ? el.dataset.hrefEn : de); });
+    document.querySelectorAll('[data-l-en]').forEach(el => { const de = keep(el, 'lDe', el.dataset.l); el.dataset.l = en ? el.dataset.lEn : de; });
     document.querySelectorAll('[data-lang]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.lang === lang)));
   };
   document.querySelectorAll('[data-lang]').forEach(b => b.addEventListener('click', () => { setLang(b.dataset.lang); store('home_lang', b.dataset.lang); }));
@@ -406,14 +658,13 @@ footer p { margin: 0; }
     c.style.setProperty('--my', `${e.clientY - r.top}px`);
   }));
 
-  // Einblenden einmal je Besuch, gestaffelt je Gruppe; Lichtstreifen auf den Pull-/Push-Bahnen einmal
+  // Einblenden einmal je Besuch, gestaffelt je Gruppe
   if (reduce || !('IntersectionObserver' in window)) return;
   root.classList.add('js');
-  document.querySelectorAll('.grid, .flow, .ov').forEach(g => [...g.querySelectorAll('[data-reveal]')].forEach((el, i) => el.style.setProperty('--i', Math.min(i, 7))));
+  document.querySelectorAll('.grid, .facts, .two, .chain').forEach(g => [...g.querySelectorAll('[data-reveal]')].forEach((el, i) => el.style.setProperty('--i', Math.min(i, 7))));
   const io = new IntersectionObserver(entries => entries.forEach(e => {
     if (!e.isIntersecting) return;
     e.target.classList.add('in');
-    if (e.target.classList.contains('atlas')) setTimeout(() => e.target.classList.add('lit'), 500);
     io.unobserve(e.target);
   }), { rootMargin: '0px 0px -8% 0px' });
   document.querySelectorAll('[data-reveal], .rule').forEach(el => io.observe(el));
