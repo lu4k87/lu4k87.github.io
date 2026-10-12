@@ -1411,7 +1411,7 @@
 <header class="hero" data-area="remote">
   <div class="hero-main" style="--hero:var(--c-https)">
     <span class="eyebrow">Remote Control im Heimnetz</span>
-    <h1>Server/Client-Steuerung einrichten und starten</h1>
+    <h1 data-en="Set up and start server/client control">Server/Client-Steuerung einrichten und starten</h1>
     <div class="roles">
       <div class="role" style="--k:var(--c-srv)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg><b>Server · Roboter-PC</b><span>ROS 2 · Arm · UX | Nexus Launcher</span></div>
       <div class="role" style="--k:var(--c-cli)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="4" y="5" width="16" height="11" rx="1.5"/><path d="M2 19h20"/></svg><b>Client · Browser</b><span>Laptop · Tablet · Quest 3 · keine Installation</span></div>
@@ -1672,7 +1672,7 @@
     <div class="ph"><span class="eyebrow"><span class="n">04</span><span class="kicker" data-en="Safety">Sicherheit</span></span><h2 data-en="Safety Chain">Sicherheitskette</h2></div>
     <ul class="bl cols">
       <li data-en="Stages intervene in this order">Stufen greifen in dieser Reihenfolge</li>
-      <li data-en="Which stages apply depends on the control mode (matrix)">Welche greifen, hängt vom Befehlsweg ab (Matrix)</li>
+      <li data-en="Which stages apply depends on the command path (matrix)">Welche greifen, hängt vom Befehlsweg ab (Matrix)</li>
       <li data-en="E-STOP (7) always applies">E-STOP (7) wirkt immer</li>
     </ul>
   </header>
@@ -1697,8 +1697,8 @@
     </div>
     <div class="stack s-4">
       <div class="card">
-        <div class="card-h"><h3 data-en="Stages per control mode">Stufen je Befehlsweg</h3></div>
-        <table class="mx" aria-label="Stufen der Sicherheitskette je Befehlsweg" data-en-aria="Stages of the safety chain per control mode">
+        <div class="card-h"><h3 data-en="Stages per command path">Stufen je Befehlsweg</h3></div>
+        <table class="mx" aria-label="Stufen der Sicherheitskette je Befehlsweg" data-en-aria="Stages of the safety chain per command path">
           <thead><tr><th data-en="Mode">Weg</th><th style="--k:var(--c-cli)">1</th><th style="--k:var(--c-cli)">2</th><th style="--k:var(--c-ws)">3</th><th style="--k:var(--c-svc)">4</th><th style="--k:var(--c-topic)">5</th><th style="--k:var(--c-topic)">6</th><th style="--k:var(--crit)">7</th></tr></thead>
           <tbody id="mx-body"></tbody>
         </table>
@@ -2347,7 +2347,7 @@ source install/setup.bash</pre><button class="copy" type="button" data-en="Copy"
         <thead><tr><th data-en="Step">Schritt</th><th data-en="Target (link_base, gripper downward)">Ziel (link_base, Greifer nach unten)</th><th data-en="Example: Cube onto Cylinder">Beispiel Würfel auf Zylinder</th></tr></thead>
         <tbody>
           <tr><td data-en="pick: approach">pick: Anfahrt</td><td data-en="<code>/ui/approach_from_above</code>: 70 mm above, vertically down to <code>cup_gap_mm</code> (2 mm) above grasp sphere · finger gripper: max 5 mm above bottom edge"><code>/ui/approach_from_above</code>: 70 mm darüber, senkrecht runter bis <code>cup_gap_mm</code> (2 mm) über der Greifkugel · Finger-Greifer: max. 5 mm über Unterkante</td><td>Z 104 → 34 mm</td></tr>
-          <tr><td data-en="Yaw search">Yaw-Suche</td><td data-en="If fingers collide (round / slanted objects), gripper turns: 0, ±45, 90, ±30, ±60° - zero motion, IK check only">stoßen die Finger an (runde / schräge Objekte), dreht der Greifer: 0, ±45, 90, ±30, ±60° - ohne Fahrt, nur IK</td><td>Würfel: 0°</td></tr>
+          <tr><td data-en="Yaw search">Yaw-Suche</td><td data-en="If fingers collide (round / slanted objects), gripper turns: 0, ±45, 90, ±30, ±60° - zero motion, IK check only">stoßen die Finger an (runde / schräge Objekte), dreht der Greifer: 0, ±45, 90, ±30, ±60° - ohne Fahrt, nur IK</td><td data-en="Cube: 0°">Würfel: 0°</td></tr>
           <tr><td data-en="grip + lift">grip + lift</td><td data-en="<code>/ui/gripper_cmd close</code> · + <code>lift_height_mm</code> (80), ≥ 30 mm above highest neighbor (<code>transit_clearance_mm</code>) · grasp check: sandbox reports this exact object"><code>/ui/gripper_cmd close</code> · + <code>lift_height_mm</code> (80), ≥ 30 mm über dem höchsten Nachbarn (<code>transit_clearance_mm</code>) · Greifprüfung: Sandbox meldet genau dieses Objekt</td><td>Z 114 mm</td></tr>
           <tr><td data-en="place onto / into">place auf / in</td><td data-en="Top edge target + object + <code>release_clearance_mm</code> (10; above <code>tall_object_mm</code> 80 mm only 3, prevents tipping) · via pre-position, same yaw">Oberkante Ziel + Objekt + <code>release_clearance_mm</code> (10; über <code>tall_object_mm</code> 80 mm nur 3, kippt nicht) · über die Vorposition, gleicher Yaw</td><td>Z 122 → 52 mm</td></tr>
           <tr><td data-en="place beside">place neben</td><td data-en="Table + object + 10 (tall objects 3), lateral half widths + <code>beside_gap_mm</code> (25)">Tisch + Objekt + 10 (hohe Objekte 3), seitlich halbe Breiten + <code>beside_gap_mm</code> (25)</td><td>–</td></tr>
@@ -2474,7 +2474,7 @@ ros2 launch vla_bridge vla_bridge.launch.py              # dry_run:=true = nur P
       <ul class="bl sm mut"><li data-en="Further parameters in <code>config/vla_bridge.yaml</code>: LLM (<code>llm_url</code>, <code>llm_keep_alive</code>, <code>max_recoveries</code>), scene (<code>objects_topic</code>, <code>object_timeout</code>), <code>allow_virtual_in_real</code>, grasp heights, timeouts">Weitere Werte in <code>config/vla_bridge.yaml</code>: Sprachmodell (<code>llm_url</code>, <code>llm_keep_alive</code>, <code>max_recoveries</code>), Szene (<code>objects_topic</code>, <code>object_timeout</code>), <code>allow_virtual_in_real</code>, Greifhöhen, Zeitgrenzen</li><li data-en="UX | Nexus Launcher: area “Config Files” of the card">UX | Nexus Launcher: Bereich „Config Files“ der Karte</li><li data-en="After editing: <code>colcon build --packages-select vla_bridge</code>">Nach Änderung: <code>colcon build --packages-select vla_bridge</code></li></ul>
     </div>
     <div class="card flush s-12">
-      <div class="card-h"><h3 data-en="Topics">Topics</h3><span class="chip" style="--k:var(--c-http)">std_msgs/String mit JSON</span></div>
+      <div class="card-h"><h3 data-en="Topics">Topics</h3><span class="chip" style="--k:var(--c-http)" data-en="std_msgs/String with JSON">std_msgs/String mit JSON</span></div>
       <div class="tablewrap"><table>
         <thead><tr><th data-en="Topic">Topic</th><th data-en="Direction">Richtung</th><th data-en="Payload">Inhalt</th></tr></thead>
         <tbody>
@@ -2878,7 +2878,7 @@ function initShell(onShow) {
     var nav = document.createElement('nav');
     nav.className = 'pager';
     nav.setAttribute('aria-label', 'Weiter');
-    [[i - 1, 'prev', '← Zurück'], [i + 1, 'next', 'Weiter →']].forEach(function (x) {
+    [[i - 1, 'prev', '← Zurück', '← Back'], [i + 1, 'next', 'Weiter →', 'Next →']].forEach(function (x) {
       if (x[0] < 0 || x[0] >= ids.length) return;
       var id = ids[x[0]], t = item(id);
       var b = document.createElement('button');
@@ -2887,12 +2887,21 @@ function initShell(onShow) {
       var other = areaOf(id) !== p.dataset.area;
       b.innerHTML = '<span class="pn"></span><small></small><b></b>';
       b.querySelector('.pn').textContent = t.querySelector('.n').textContent;
-      b.querySelector('small').textContent = x[2] + (other ? ' · ' + areaBtn(areaOf(id)).querySelector('b').textContent : '');
-      b.querySelector('b').textContent = t.querySelector('.t').textContent;
+      b._paint = function () {
+        b.querySelector('small').textContent = L(x[2], x[3]) + (other ? ' · ' + areaBtn(areaOf(id)).querySelector('b').textContent : '');
+        b.querySelector('b').textContent = t.querySelector('.t').textContent;
+      };
+      b._paint();
       b.addEventListener('click', function () { select(id, { anim: true }); });
       nav.appendChild(b);
     });
     p.appendChild(nav);
+  });
+  document.addEventListener('manual:lang', function () {
+    document.querySelectorAll('.pager').forEach(function (nav) {
+      nav.setAttribute('aria-label', L('Weiter', 'Next'));
+      nav.querySelectorAll('button').forEach(function (b) { b._paint(); });
+    });
   });
 
   // Interne Links (#…) öffnen Bereich und Abschnitt
@@ -2950,22 +2959,22 @@ function initShell(onShow) {
     if (!btn) return;
     var src = btn.dataset.copyFrom ? document.getElementById(btn.dataset.copyFrom) : btn.parentElement.querySelector('pre');
     if (!src) return;
-    var label = btn.dataset.label || (btn.dataset.label = btn.textContent.trim());
+    var label = btn._t ? btn.dataset.label : (btn.dataset.label = btn.textContent.trim());
     var text = src.dataset.copy || src.textContent;
     function selectIt() {
       var r = document.createRange(); r.selectNodeContents(src);
       var sl = window.getSelection(); sl.removeAllRanges(); sl.addRange(r);
       btn.classList.remove('ok');
-      btn.textContent = 'Markiert';
+      btn.textContent = L('Markiert', 'Selected');
     }
     try {
       navigator.clipboard.writeText(text).then(function () {
-        btn.innerHTML = TICK + '<span>Kopiert</span>';
+        btn.innerHTML = TICK + '<span>' + L('Kopiert', 'Copied') + '</span>';
         btn.classList.add('ok');
       }, selectIt);
     } catch (err) { selectIt(); }
     clearTimeout(btn._t);
-    btn._t = setTimeout(function () { btn.classList.remove('ok'); btn.textContent = label; }, 1800);
+    btn._t = setTimeout(function () { btn._t = null; btn.classList.remove('ok'); btn.textContent = label; }, 1800);
   });
 
   // Mockup-Lagen
@@ -3057,6 +3066,17 @@ function initShell(onShow) {
   }
   vmBtns.forEach(function (b) { b.addEventListener('click', function () { vmShow(b.dataset.s); }); });
   vmShow('wait');
+
+  // Sprache: Stichpunkte „Jetzt“ der Mockups (übrige Felder sind englische UI-Texte)
+  var DE_MOCK = { s: {}, vs: {} };
+  document.addEventListener('manual:lang', function () {
+    langRows(S, null, 'now', S_EN, DE_MOCK.s);
+    langRows(VS, null, 'now', VS_EN, DE_MOCK.vs);
+    var b = document.querySelector('#m-states button[aria-pressed="true"]');
+    if (b) show(b.dataset.s);
+    b = document.querySelector('#vm-states button[aria-pressed="true"]');
+    if (b) vmShow(b.dataset.s);
+  });
 
   // Fehlerfilter
   var fBtns = document.querySelectorAll('#err-filter button');
@@ -3268,30 +3288,38 @@ function initShell(onShow) {
       steps: [['mouse', 'nexus', 'Profil wählen, Start'], ['nexus', 'nexusbe', '/api/preflight: Check vor dem Start'], ['nexus', 'nexusbe', '/api/run'], ['nexusbe', 'servo', 'MoveIt Servo + Armtreiber'], ['nexusbe', 'uisrv', 'UX | Control Interface + rosbridge'], ['nexusbe', 'zed', 'Kameras + YOLO'], ['nexusbe', 'vrnode', 'VR-Teleop'], ['nexusbe', 'voice', 'Sprachbefehle'], ['nexusbe', 'gazegrasp', 'Blick-Greifroutine']] }
   ];
 
-  // Matrix: welche Stufen je Befehlsweg (aus der Sicherheitskette)
+  // Matrix: welche Stufen je Befehlsweg (aus der Sicherheitskette) – [Weg de, en, Hinweis de, en, Stufen]
   var STAGE_K = ['c-cli', 'c-cli', 'c-ws', 'c-svc', 'c-topic', 'c-topic', 'crit'];
-  [['Remote-Gamepad', '', [1, 2, 3, 4, 7]],
-   ['Gamepad lokal', '', [3, 4, 7]],
-   ['Jogging-Tasten', '+ Sperre, Bodenbremse im Browser · 2 nur bei entfernten Clients', [1, 4, 7]],
-   ['VR Quest 3', '+ Sperre im Browser', [1, 2, 4, 7]],
-   ['Leap Motion 2', '+ Totmann · Robot | Hardware: Bestätigung, halbes Tempo', [1, 4, 7]],
-   ['Zielpose planen', '', [5, 6, 7]],
-   ['VLA-M (Agent)', '+ Execute im Chat, Robot | Hardware gesperrt · 6 nur im Ghost-Modus', [5, 7]]].forEach(function (r) {
-    var tr = document.createElement('tr');
-    var td = document.createElement('td');
-    td.innerHTML = '<b></b><small></small>';
-    td.querySelector('b').textContent = r[0];
-    td.querySelector('small').textContent = r[1];
-    tr.appendChild(td);
-    for (var i = 1; i <= 7; i++) {
-      var c = document.createElement('td');
-      var on = r[2].indexOf(i) >= 0;
-      c.innerHTML = '<span class="dot' + (on ? '' : ' off') + '" style="--k:var(--' + STAGE_K[i - 1] + ')"></span>';
-      c.setAttribute('aria-label', 'Stufe ' + i + (on ? ' greift' : ' greift nicht'));
-      tr.appendChild(c);
-    }
-    document.getElementById('mx-body').appendChild(tr);
-  });
+  var MX = [
+    ['Remote-Gamepad', 'Remote gamepad', '', '', [1, 2, 3, 4, 7]],
+    ['Gamepad lokal', 'Gamepad local', '', '', [3, 4, 7]],
+    ['Jogging-Tasten', 'Jogging buttons', '+ Sperre, Bodenbremse im Browser · 2 nur bei entfernten Clients', '+ lock, floor brake in the browser · 2 only for remote clients', [1, 4, 7]],
+    ['VR Quest 3', 'VR Quest 3', '+ Sperre im Browser', '+ lock in the browser', [1, 2, 4, 7]],
+    ['Leap Motion 2', 'Leap Motion 2', '+ Totmann · Robot | Hardware: Bestätigung, halbes Tempo', '+ dead man · Robot | Hardware: confirmation, half speed', [1, 4, 7]],
+    ['Zielpose planen', 'Plan target pose', '', '', [5, 6, 7]],
+    ['VLA-M (Agent)', 'VLA-M (agent)', '+ Execute im Chat, Robot | Hardware gesperrt · 6 nur im Ghost-Modus', '+ Execute in the chat, Robot | Hardware blocked · 6 only in ghost mode', [5, 7]]
+  ];
+  function renderMx() {
+    var body = document.getElementById('mx-body');
+    body.textContent = '';
+    MX.forEach(function (r) {
+      var tr = document.createElement('tr');
+      var td = document.createElement('td');
+      td.innerHTML = '<b></b><small></small>';
+      td.querySelector('b').textContent = L(r[0], r[1]);
+      td.querySelector('small').textContent = L(r[2], r[3]);
+      tr.appendChild(td);
+      for (var i = 1; i <= 7; i++) {
+        var c = document.createElement('td');
+        var on = r[4].indexOf(i) >= 0;
+        c.innerHTML = '<span class="dot' + (on ? '' : ' off') + '" style="--k:var(--' + STAGE_K[i - 1] + ')"></span>';
+        c.setAttribute('aria-label', L('Stufe ' + i + (on ? ' greift' : ' greift nicht'), 'Stage ' + i + (on ? ' applies' : ' does not apply')));
+        tr.appendChild(c);
+      }
+      body.appendChild(tr);
+    });
+  }
+  renderMx();
 
   // Sinnesfilter
   var sBtns = document.querySelectorAll('#sense-filter button');
@@ -3499,12 +3527,12 @@ function initShell(onShow) {
   var walk = { timer: null, i: -1, P: null, lis: [] };
   function setPlayBtn(b, on, label) {
     b.setAttribute('aria-pressed', on ? 'true' : 'false');
-    b.querySelector('span').textContent = on ? 'Anhalten' : label;
+    b.querySelector('span').textContent = on ? L('Anhalten', 'Pause') : label;
     b.querySelector('path').setAttribute('d', on ? 'M7 5h4v14H7zM13 5h4v14h-4z' : 'M7 5v14l12-7z');
   }
   function stopWalk() {
     if (walk.timer) { clearInterval(walk.timer); walk.timer = null; }
-    if (walk.play) setPlayBtn(walk.play, false, 'Abspielen');
+    if (walk.play) setPlayBtn(walk.play, false, L('Abspielen', 'Play'));
   }
   function walkTo(i) {
     var P = walk.P;
@@ -3551,22 +3579,23 @@ function initShell(onShow) {
   }
 
   function resetBtn() {
-    var b = h('button', { 'class': 'btn-reset', type: 'button' }, 'Auswahl aufheben');
+    var b = h('button', { 'class': 'btn-reset', type: 'button' }, L('Auswahl aufheben', 'Clear selection'));
     b.addEventListener('click', function () { selectPath(null); });
     return b;
   }
 
   function showIntro() {
     detail.textContent = '';
-    detail.appendChild(h('span', { 'class': 'conn-title' }, 'So liest du die Karte'));
-    detail.appendChild(h('h3', null, 'Zwei Nadelöhre'));
-    detail.appendChild(bl([NODES.length + ' Komponenten in ' + LAYERS.length + ' Schichten: oben Geräte, unten Hardware', 'Linienfarbe = Art der Verbindung', 'Browser → ROS 2 nur über rosbridge', 'Geplante Bewegung nur über den Motion Handler', 'Komponente anklicken → Nachbarn mit Topics', 'Befehlsweg wählen → ▶ Schritt für Schritt']));
+    detail.appendChild(h('span', { 'class': 'conn-title' }, L('So liest du die Karte', 'How to read the map')));
+    detail.appendChild(h('h3', null, L('Zwei Nadelöhre', 'Two bottlenecks')));
+    detail.appendChild(bl(L([NODES.length + ' Komponenten in ' + LAYERS.length + ' Schichten: oben Geräte, unten Hardware', 'Linienfarbe = Art der Verbindung', 'Browser → ROS 2 nur über rosbridge', 'Geplante Bewegung nur über den Motion Handler', 'Komponente anklicken → Nachbarn mit Topics', 'Befehlsweg wählen → ▶ Schritt für Schritt'],
+      [NODES.length + ' components in ' + LAYERS.length + ' layers: devices on top, hardware at the bottom', 'Line color = type of connection', 'Browser → ROS 2 only via rosbridge', 'Planned motion only via the Motion Handler', 'Click a component → neighbors with topics', 'Choose a command path → ▶ step by step'])));
     var ul = h('ul', { 'class': 'conn' });
     [['rb9090', 'rosbridge'], ['motion', 'Motion Handler'], ['servo', 'MoveIt Servo'], ['rcui', 'UX | Control Interface']].forEach(function (x) {
       var li = h('li', { style: '--c:var(--focus)' });
       li.appendChild(h('i'));
       var d = h('div');
-      var a = h('button', { 'class': 'btn-reset', type: 'button' }, x[1] + ' ansehen');
+      var a = h('button', { 'class': 'btn-reset', type: 'button' }, L(x[1] + ' ansehen', 'View ' + x[1]));
       a.addEventListener('click', function () { selectNode(x[0]); });
       d.appendChild(a);
       li.appendChild(d); ul.appendChild(li);
@@ -3596,7 +3625,7 @@ function initShell(onShow) {
     detail.appendChild(h('h3', null, n.title));
     detail.appendChild(h('div', { 'class': 'sub' }, n.sub));
     detail.appendChild(bl(sentences(n.desc)));
-    [['Sendet an', outs, '→'], ['Empfängt von', ins, '←']].forEach(function (g) {
+    [[L('Sendet an', 'Sends to'), outs, '→'], [L('Empfängt von', 'Receives from'), ins, '←']].forEach(function (g) {
       if (!g[1].length) return;
       detail.appendChild(h('span', { 'class': 'conn-title' }, g[0]));
       var ul = h('ul', { 'class': 'conn' });
@@ -3622,24 +3651,24 @@ function initShell(onShow) {
     document.getElementById('p-' + id).setAttribute('aria-pressed', 'true');
     map.classList.add('focus');
     detail.textContent = '';
-    detail.appendChild(h('span', { 'class': 'conn-title' }, 'Befehlsweg'));
+    detail.appendChild(h('span', { 'class': 'conn-title' }, L('Befehlsweg', 'Command path')));
     detail.appendChild(h('h3', null, P.name));
     detail.appendChild(bl(sentences(P.intro)));
 
     var w = h('div', { 'class': 'walk' });
-    walk.prev = iconBtn('m15 6-6 6 6 6', 'Voriger Schritt');
-    walk.next = iconBtn('m9 6 6 6-6 6', 'Nächster Schritt');
+    walk.prev = iconBtn('m15 6-6 6 6 6', L('Voriger Schritt', 'Previous step'));
+    walk.next = iconBtn('m9 6 6 6-6 6', L('Nächster Schritt', 'Next step'));
     walk.play = h('button', { type: 'button', 'class': 'play', 'aria-pressed': 'false' });
-    walk.play.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 5v14l12-7z"/></svg><span>Abspielen</span>';
+    walk.play.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 5v14l12-7z"/></svg><span>' + L('Abspielen', 'Play') + '</span>';
     walk.pos = h('span', { 'class': 'walk-pos' }, '– / ' + P.steps.length);
-    walk.now = h('div', { 'class': 'walk-now' }, 'Abspielen oder Schritt anklicken');
+    walk.now = h('div', { 'class': 'walk-now' }, L('Abspielen oder Schritt anklicken', 'Play or click a step'));
     walk.prev.disabled = true;
     walk.prev.addEventListener('click', function () { stopWalk(); walkTo(walk.i - 1); });
     walk.next.addEventListener('click', function () { stopWalk(); walkTo(walk.i + 1); });
     walk.play.addEventListener('click', function () {
       if (walk.timer) { stopWalk(); return; }
       if (walk.i >= P.steps.length - 1) walk.i = -1;
-      setPlayBtn(walk.play, true, 'Abspielen');
+      setPlayBtn(walk.play, true, L('Abspielen', 'Play'));
       walkTo(walk.i + 1);
       walk.timer = setInterval(function () {
         if (walk.i >= P.steps.length - 1) { stopWalk(); return; }
@@ -3746,6 +3775,9 @@ function initShell(onShow) {
   var det = document.getElementById('lp-detail');
   var els = {};
 
+  // Beschriftung der Verbindungen im Regelkreis [de, en]
+  var CONN = { c1: ['bedient', 'operates'], c2: ['Event', 'event'], c3: ['publish', 'publish'], c4: ['prüft', 'checks'], c5: ['fährt', 'moves'],
+    c6: ['misst', 'measures'], c7: ['subscribe', 'subscribe'], c8: ['zeigt', 'shows'] };
   function node(id, end) {
     var s = ST[id];
     var b = h('button', { 'class': 'lp-node' + (end ? ' end' : ''), type: 'button', 'data-lane': s[0], style: '--k:var(--' + LANE_K[s[0]] + ')' });
@@ -3756,18 +3788,18 @@ function initShell(onShow) {
     els[id] = b;
     return b;
   }
-  function conn(key, lane, dir, label) {
+  function conn(key, lane, dir) {
     var c = h('div', { 'class': 'lp-conn', 'data-lane': lane, 'data-dir': dir, 'aria-hidden': 'true' });
     c.innerHTML = '<span class="lp-lbl"></span><span class="lp-line"><i></i><b></b></span>';
-    c.querySelector('.lp-lbl').textContent = label;
+    c.querySelector('.lp-lbl').textContent = L(CONN[key][0], CONN[key][1]);
     els[key] = c;
     return c;
   }
   var top = document.getElementById('lp-top');
-  [node('op', 1), conn('c1', 'act', 'r', 'bedient'), node('dev'), conn('c2', 'act', 'r', 'Event'), node('ui'), conn('c3', 'act', 'r', 'publish'),
-   node('tr'), conn('c4', 'act', 'r', 'prüft'), node('lg'), conn('c5', 'act', 'r', 'fährt'), node('rb', 1)].forEach(function (e) { top.appendChild(e); });
+  [node('op', 1), conn('c1', 'act', 'r'), node('dev'), conn('c2', 'act', 'r'), node('ui'), conn('c3', 'act', 'r'),
+   node('tr'), conn('c4', 'act', 'r'), node('lg'), conn('c5', 'act', 'r'), node('rb', 1)].forEach(function (e) { top.appendChild(e); });
   var bot = document.getElementById('lp-bot');
-  [node('pc', 1), conn('c8', 'fb', 'l', 'zeigt'), node('rd'), conn('c7', 'fb', 'l', 'subscribe'), node('tp'), conn('c6', 'fb', 'l', 'misst'), node('sn', 1)].forEach(function (e) { bot.appendChild(e); });
+  [node('pc', 1), conn('c8', 'fb', 'l'), node('rd'), conn('c7', 'fb', 'l'), node('tp'), conn('c6', 'fb', 'l'), node('sn', 1)].forEach(function (e) { bot.appendChild(e); });
   els.down = document.getElementById('lp-down');
   els.up = document.getElementById('lp-up');
   els.safe = document.getElementById('lp-safe');
@@ -3803,7 +3835,7 @@ function initShell(onShow) {
     });
   }
   function onMap(mapId) {
-    return ['In der Architektur zeigen →', function () {
+    return [L('In der Architektur zeigen →', 'Show in the architecture →'), function () {
       if (shell) shell.select('karte');
       if (state.node !== mapId) selectNode(mapId);
       document.getElementById('map').scrollIntoView({ block: 'start' });
@@ -3831,19 +3863,20 @@ function initShell(onShow) {
     var s = ST[id];
     var acts = [];
     if (s[6]) acts.push(onMap(s[6]));
-    if (id === 'pc') acts.push(['Rückmeldekanäle ↓', function () { document.getElementById('senses').scrollIntoView({ block: 'center' }); }]);
-    lpDetail(LANE_K[s[0]], s[1], s[0] === 'act' ? 'Handlungsweg' : 'Rückmeldeweg', s[2] + ' · ' + s[3], null, s[4], s[5], acts);
+    if (id === 'pc') acts.push([L('Rückmeldekanäle ↓', 'Feedback channels ↓'), function () { document.getElementById('senses').scrollIntoView({ block: 'center' }); }]);
+    lpDetail(LANE_K[s[0]], s[1], s[0] === 'act' ? L('Handlungsweg', 'Forward path') : L('Rückmeldeweg', 'Feedback path'), s[2] + ' · ' + s[3], null, s[4], s[5], acts);
   }
   function showSafe(id) {
     var s = SAFE[id];
     clearSel();
     els['s-' + id].classList.add('sel');
-    lpDetail(s[0], s[1], 'Sicherheit auf dem Hinweg', s[2], null, s[3], s[4], [onMap(s[5]), ['Zur Sicherheitskette →', function () { if (shell) shell.select('sicherheit'); }]]);
+    lpDetail(s[0], s[1], L('Sicherheit auf dem Hinweg', 'Safety on the forward path'), s[2], null, s[3], s[4], [onMap(s[5]), [L('Zur Sicherheitskette →', 'To the safety chain →'), function () { if (shell) shell.select('sicherheit'); }]]);
   }
   function loopIntro() {
     clearSel();
-    lpDetail('focus', 'info', 'Regelkreis', 'Oben Befehl, unten Rückmeldung', null,
-      ['Oben: Befehl Mensch → Arm (Handlungsweg)', 'Unten: Wirkung Arm → Mensch (Rückmeldeweg)', 'Mitte: Sicherheitsstufen auf dem Server', 'Station anklicken oder ▶ abspielen'], [], []);
+    lpDetail('focus', 'info', L('Regelkreis', 'Control loop'), L('Oben Befehl, unten Rückmeldung', 'Command on top, feedback below'), null,
+      L(['Oben: Befehl Mensch → Arm (Handlungsweg)', 'Unten: Wirkung Arm → Mensch (Rückmeldeweg)', 'Mitte: Sicherheitsstufen auf dem Server', 'Station anklicken oder ▶ abspielen'],
+        ['Top: command human → arm (forward path)', 'Bottom: effect arm → human (feedback path)', 'Middle: safety stages on the server', 'Click a station or ▶ play']), [], []);
   }
 
   // Fokus-Filter
@@ -3904,7 +3937,7 @@ function initShell(onShow) {
   MOTION.sub(function () { pktMove(pos, true); });
   function setPlayUi(on) {
     playBtn.setAttribute('aria-pressed', on ? 'true' : 'false');
-    playBtn.querySelector('span').textContent = on ? 'Anhalten' : (pos >= 0 && pos < STORY.length - 1 ? 'Weiter abspielen' : 'Durchlauf abspielen');
+    playBtn.querySelector('span').textContent = on ? L('Anhalten', 'Pause') : (pos >= 0 && pos < STORY.length - 1 ? L('Weiter abspielen', 'Continue') : L('Durchlauf abspielen', 'Play run'));
     playBtn.querySelector('path').setAttribute('d', on ? 'M7 5h4v14H7zM13 5h4v14h-4z' : 'M7 5v14l12-7z');
   }
   function clearRun() { loop.querySelectorAll('.cur, .done').forEach(function (e) { e.classList.remove('cur', 'done'); }); }
@@ -3919,9 +3952,9 @@ function initShell(onShow) {
     });
     STORY[i][0].forEach(function (k) { els[k].classList.remove('done'); els[k].classList.add('cur'); });
     var st = STORY[i][1];
-    if (st === 'safe') lpDetail('warn', 'shield', 'Sicherheit auf dem Hinweg', 'Der Befehl wird geprüft', null, STORY[i][3], ['Watchdog', 'Kollisionsvorprüfung', 'MoveIt', 'E-STOP'], []);
+    if (st === 'safe') lpDetail('warn', 'shield', L('Sicherheit auf dem Hinweg', 'Safety on the forward path'), L('Der Befehl wird geprüft', 'The command is checked'), null, STORY[i][3], ['Watchdog', L('Kollisionsvorprüfung', 'Collision pre-check'), 'MoveIt', 'E-STOP'], []);
     else showStation(st);
-    stepEl.textContent = 'Schritt ' + (i + 1) + ' / ' + STORY.length;
+    stepEl.textContent = L('Schritt ', 'Step ') + (i + 1) + ' / ' + STORY.length;
     progEl.style.width = ((i + 1) / STORY.length * 100) + '%';
     prevBtn.disabled = i <= 0;
     nextBtn.disabled = i >= STORY.length - 1;
@@ -3950,7 +3983,7 @@ function initShell(onShow) {
     if (timer) { pausePlay(); return; }
     if (pos >= STORY.length - 1) pos = -1;
     timer = setInterval(function () {
-      if (pos >= STORY.length - 1) { pausePlay(); stepEl.textContent = 'Kreis geschlossen'; return; }
+      if (pos >= STORY.length - 1) { pausePlay(); stepEl.textContent = L('Kreis geschlossen', 'Loop closed'); return; }
       goStep(pos + 1);
     }, 3600);
     setPlayUi(true);
@@ -3960,6 +3993,52 @@ function initShell(onShow) {
   nextBtn.addEventListener('click', function () { pausePlay(); goStep(Math.min(STORY.length - 1, pos + 1)); });
   document.getElementById('loop-reset').addEventListener('click', resetRun);
   resetRun();
+
+  // Sprache: Daten übersetzen, Beschriftungen und offene Ansicht neu setzen
+  var DE = { types: {}, layers: {}, nodes: {}, edges: {}, paths: {}, steps: {}, st: {}, safe: {}, story: {} };
+  document.addEventListener('manual:lang', function () {
+    langRows(TYPE_NAME, null, null, TYPE_NAME_EN, DE.types);
+    langRows(LAYERS, function (l) { return l.id; }, ['name', 'hint'], LAYERS_EN, DE.layers);
+    langRows(NODES, function (n) { return n[0]; }, [2, 3, 4], NODES_EN, DE.nodes);
+    langRows(EDGES, function (e) { return e[0] + '>' + e[1]; }, 3, EDGES_EN, DE.edges);
+    langRows(PATHS, function (P) { return P.id; }, ['name', 'intro'], PATHS_EN, DE.paths);
+    PATHS.forEach(function (P) {
+      if (PATHS_EN[P.id]) langRows(P.steps, null, 2, PATHS_EN[P.id][2], DE.steps[P.id] || (DE.steps[P.id] = {}));
+    });
+    LAYERS.forEach(function (Ly) {
+      var nm = map.querySelector('.layer[data-l="' + Ly.id + '"] .layer-name');
+      nm.querySelector('b').textContent = Ly.name;
+      nm.lastChild.textContent = Ly.hint;
+    });
+    NODES.forEach(function (n) {
+      var o = byId[n[0]];
+      o.title = n[2]; o.sub = n[3]; o.desc = n[4];
+      elById[n[0]].querySelector('strong').textContent = n[2];
+      elById[n[0]].querySelector('small').textContent = n[3];
+    });
+    PATHS.forEach(function (P) { document.getElementById('p-' + P.id).textContent = P.name; });
+    renderMx();
+    if (state.path) selectPath(state.path);
+    else if (state.node) { var id = state.node; state.node = null; selectNode(id); }
+    else showIntro();
+
+    langRows(ST, null, [2, 3, 4, 5], ST_EN, DE.st);
+    langRows(SAFE, null, [2, 3, 4], SAFE_EN, DE.safe);
+    langRows(STORY, null, [2, 3], STORY_EN, DE.story);
+    Object.keys(ST).forEach(function (id) {
+      els[id].querySelector('b').textContent = ST[id][2];
+      els[id].querySelector('small').textContent = ST[id][3];
+    });
+    Object.keys(SAFE).forEach(function (id) { els['s-' + id].querySelector('span').textContent = SAFE[id][2]; });
+    Object.keys(CONN).forEach(function (k) { els[k].querySelector('.lp-lbl').textContent = L(CONN[k][0], CONN[k][1]); });
+    storyLis.forEach(function (li, i) {
+      li.querySelector('b').textContent = STORY[i][2];
+      li.querySelector('ul').replaceWith(bl(STORY[i][3]));
+    });
+    if (pos >= 0) goStep(pos); else loopIntro();
+    setPlayUi(!!timer);
+    requestAnimationFrame(draw);
+  });
 
   shell = initShell(function (id) { if (id === 'karte') requestAnimationFrame(function () { draw(); drawIn(); }); });
   // Für die Suche: Komponenten, Befehlswege und Sprungfunktionen
@@ -3975,6 +4054,12 @@ function initShell(onShow) {
   var CHECK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg>';
   var RESET = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>';
   var LISTS = { setup: 'Einmalig am Server-PC', start: 'Jedes Mal, erst Server, dann Client' };
+  var LISTS_DE = {};
+  document.addEventListener('manual:lang', function () { langRows(LISTS, null, null, LISTS_EN, LISTS_DE); });
+  function chkLabel(num, title) {
+    var t = title ? title.textContent.replace(/:$/, '') : '';
+    return L('Schritt ' + num + (t ? ' „' + t + '“' : '') + ' erledigt', 'Step ' + num + (t ? ' “' + t + '”' : '') + ' done');
+  }
 
   Object.keys(LISTS).forEach(function (pid) {
     var panel = document.getElementById(pid);
@@ -3985,7 +4070,8 @@ function initShell(onShow) {
     card.className = 'card check-card s-12';
     card.innerHTML = '<span class="check-ring"><span class="cr-h r"><i></i></span><span class="cr-h l"><i></i></span><b></b></span><div class="check-tx"><h3></h3><div class="check-bar"><i></i></div><small></small></div>' +
       '<button type="button" class="btn">' + RESET + 'Zurücksetzen</button>';
-    card.querySelector('small').textContent = LISTS[pid] + ' · Nummer anklicken = erledigt';
+    function sub() { return LISTS[pid] + L(' · Nummer anklicken = erledigt', ' · click a number = done'); }
+    card.querySelector('small').textContent = sub();
     var bento = panel.querySelector('.bento');
     bento.insertBefore(card, bento.firstChild);
 
@@ -4001,7 +4087,8 @@ function initShell(onShow) {
       btn.type = 'button';
       btn.className = 'chk';
       btn.innerHTML = '<span>' + num + '</span>' + CHECK;
-      btn.setAttribute('aria-label', 'Schritt ' + num + (title ? ' „' + title.textContent.replace(/:$/, '') + '“' : '') + ' erledigt');
+      btn.dataset.num = num;
+      btn.setAttribute('aria-label', chkLabel(num, title));
       btn.addEventListener('click', function () {
         var k = done.indexOf(i);
         if (k >= 0) done.splice(k, 1); else done.push(i);
@@ -4053,12 +4140,21 @@ function initShell(onShow) {
       card.querySelector('.check-bar i').style.transform = 'scaleX(' + (p / 100) + ')';
       if (lastP !== null && n === all && !wasDone) burst();
       lastP = p;
-      card.querySelector('h3').textContent = n === all ? 'Alle ' + all + ' Schritte erledigt' : n + ' von ' + all + ' Schritten erledigt';
+      card.querySelector('h3').textContent = n === all ? L('Alle ' + all + ' Schritte erledigt', 'All ' + all + ' steps done') : L(n + ' von ' + all + ' Schritten erledigt', n + ' of ' + all + ' steps done');
       var meta = document.querySelector('#t-' + pid + ' .nav-meta');
       meta.textContent = n === all ? '✓ ' + all : n + '/' + all;
       meta.dataset.done = n === all ? 'true' : 'false';
     }
     paint();
+    document.addEventListener('manual:lang', function () {
+      card.querySelector('small').textContent = sub();
+      card.querySelector('.btn').innerHTML = RESET + L('Zurücksetzen', 'Reset');
+      lis.forEach(function (li) {
+        var b = li.querySelector('.chk');
+        b.setAttribute('aria-label', chkLabel(b.dataset.num, li.querySelector('b')));
+      });
+      paint();
+    });
   });
 })();
 
@@ -4083,7 +4179,9 @@ function initShell(onShow) {
     Schritt: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg>',
     Inhalt: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6"/></svg>'
   };
+  var KIND_EN = { Abschnitt: 'Section', Komponente: 'Component', Befehlsweg: 'Command path', Tabelle: 'Table', Schritt: 'Step', Inhalt: 'Content' };
   var index = null, hits = [], sel = 0, area = 'all';
+  document.addEventListener('manual:lang', function () { index = null; });
 
   function norm(s) { return (s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/ß/g, 'ss'); }
   function txt(el) { return el ? el.textContent.replace(/\s+/g, ' ').trim() : ''; }
@@ -4122,10 +4220,10 @@ function initShell(onShow) {
       });
     });
     (M.NODES || []).forEach(function (n) {
-      add({ area: 'sys', panel: 'karte', where: 'Architektur', kind: 'Komponente', title: n[2], text: n[3] + ' · ' + n[4], node: n[0], rank: 2 });
+      add({ area: 'sys', panel: 'karte', where: L('Architektur', 'Architecture'), kind: 'Komponente', title: n[2], text: n[3] + ' · ' + n[4], node: n[0], rank: 2 });
     });
     (M.PATHS || []).forEach(function (P) {
-      add({ area: 'sys', panel: 'karte', where: 'Architektur', kind: 'Befehlsweg', title: P.name, text: P.intro, path: P.id, rank: 2 });
+      add({ area: 'sys', panel: 'karte', where: L('Architektur', 'Architecture'), kind: 'Befehlsweg', title: P.name, text: P.intro, path: P.id, rank: 2 });
     });
   }
 
@@ -4186,8 +4284,8 @@ function initShell(onShow) {
     var shown = hits.filter(function (o) { return area === 'all' || o.area === area; }).slice(0, 60);
     list.textContent = '';
     if (!shown.length) {
-      list.innerHTML = '<li class="sx-empty">Kein Treffer. Andere Schreibweise oder weniger Wörter versuchen.</li>';
-      countEl.textContent = '0 Treffer';
+      list.innerHTML = '<li class="sx-empty">' + L('Kein Treffer. Andere Schreibweise oder weniger Wörter versuchen.', 'No match. Try a different spelling or fewer words.') + '</li>';
+      countEl.textContent = L('0 Treffer', '0 hits');
       return;
     }
     var lastArea = null;
@@ -4204,13 +4302,13 @@ function initShell(onShow) {
       li.setAttribute('role', 'option');
       li.style.setProperty('--k', AREA[o.area][1]);
       li.innerHTML = '<span class="si">' + KIND_IC[o.kind] + '</span><b>' + markup(o.title, toks) + '</b><small>' +
-        esc(o.kind) + ' · ' + markup(snippet(o.text || '', toks), toks) + '</small><span class="where">' + esc(o.where) + '</span>';
+        esc(L(o.kind, KIND_EN[o.kind])) + ' · ' + markup(snippet(o.text || '', toks), toks) + '</small><span class="where">' + esc(o.where) + '</span>';
       li.addEventListener('mousemove', function () { if (sel !== i) { sel = i; paintSel(); } });
       li.addEventListener('click', function () { open(o); });
       list.appendChild(li);
     });
     sel = 0; paintSel();
-    countEl.textContent = (toks.length ? hits.length + ' Treffer' : shown.length + ' Abschnitte');
+    countEl.textContent = (toks.length ? hits.length + L(' Treffer', ' hits') : shown.length + L(' Abschnitte', ' sections'));
     list._shown = shown;
   }
   function paintSel() {
@@ -4389,10 +4487,8 @@ function initShell(onShow) {
     ['ollama', 'Ollama', 'Ollama', 'Lokales Sprachmodell', ['Lokaler Server für das Sprachmodell von VLA-M (qwen3.8:27b)', 'Check in der UX | Nexus Launcher prüft Ollama + qwen3.8:27b'], 'vla', '#vla-start']
   ];
   var byKey = {};
-  GL.forEach(function (g) {
-    g.re = new RegExp('(?<![\\p{L}\\p{N}_/.-])(?:' + g[1] + ')(?![\\p{L}\\p{N}_])', 'gu');
-    byKey[g[0]] = g;
-  });
+  function glRe(g) { g.re = new RegExp('(?<![\\p{L}\\p{N}_/.-])(?:' + g[1] + ')(?![\\p{L}\\p{N}_])', 'gu'); }
+  GL.forEach(function (g) { glRe(g); byKey[g[0]] = g; });
   var EXC = 'code, pre, kbd, button, a, svg, h1, h2, h3, h4, label, input, th, dt, .chip, .proto, .url, .label, .kicker, .eyebrow, .scr, .nx, .vm, .map, .detail, .loop, .lp-below, .flow, .tile, .crumbs, .cmd, .where, .st, .key, .co, .w-box, .w-view, .pager, .cfg-card, .seg-switch, .side-tag, .card-name, .gl';
   function wrapTerms(box) {
     var used = {}, list = [];
@@ -4430,6 +4526,17 @@ function initShell(onShow) {
   try {
     document.querySelectorAll('.page .panel, .page .hero-main').forEach(wrapTerms);
   } catch (e) { /* ohne Unicode-Lookbehind: kein Glossar, Text bleibt */ }
+  // Sprache: Glossar übersetzen, Begriffe im neuen Text neu markieren
+  var GL_DE = {};
+  document.addEventListener('manual:lang', function () {
+    closeGl();
+    langRows(GL, function (g) { return g[0]; }, [1, 2, 3, 4], GL_EN, GL_DE);
+    GL.forEach(glRe);
+    document.querySelectorAll('.page .gl').forEach(function (b) { b.replaceWith(b.textContent); });
+    try {
+      document.querySelectorAll('.page .panel, .page .hero-main').forEach(function (box) { box.normalize(); wrapTerms(box); });
+    } catch (e) {}
+  });
 
   var pop = $('glp'), popK = $('glp-k'), popT = $('glp-t'), popB = $('glp-b'), popA = $('glp-a');
   var openBtn = null, pinned = false, tIn = 0, tOut = 0;
@@ -4465,7 +4572,7 @@ function initShell(onShow) {
       popA.textContent = '';
       var here = btn.closest('.panel');
       if (g[5] && M.selectNode) {
-        var nb = h('button', { type: 'button' }, 'In der Architektur zeigen →');
+        var nb = h('button', { type: 'button' }, L('In der Architektur zeigen →', 'Show in the architecture →'));
         nb.addEventListener('click', function () {
           closeGl();
           M.shell.select('karte');
@@ -4480,7 +4587,7 @@ function initShell(onShow) {
         if (tp && !(tp === here && tgt === tp)) {
           var tl = $('t-' + tp.id), name = tl ? tl.querySelector('.t').textContent : '';
           var hd = tgt !== tp && tgt.querySelector('h3');
-          var a = h('a', { href: g[6] }, (hd ? hd.textContent : 'Abschnitt ' + name) + ' →');
+          var a = h('a', { href: g[6] }, (hd ? hd.textContent : L('Abschnitt ', 'Section ') + name) + ' →');
           a.addEventListener('click', function () { closeGl(); });
           popA.appendChild(a);
         }
@@ -4546,9 +4653,9 @@ function initShell(onShow) {
   try { var sv = JSON.parse(localStorage.getItem(CKEY) || 'null'); if (sv) for (var k in st) if (typeof sv[k] === 'string') st[k] = sv[k]; } catch (e) {}
   var GROUPS = { dev: 'cfg-dev', inp: 'cfg-in', link: 'cfg-link', mode: 'cfg-mode' };
   var COMBO = {
-    B: ['Laptop / Tablet, Maus oder Touch', 'http :8081', 'var(--c-http)'],
-    C: ['Laptop mit Gamepad', 'https :8443', 'var(--c-https)'],
-    D: ['Quest 3 (VR)', 'https :8443', 'var(--c-https)']
+    B: ['Laptop / Tablet, Maus oder Touch', 'http :8081', 'var(--c-http)', 'Laptop / tablet, mouse or touch'],
+    C: ['Laptop mit Gamepad', 'https :8443', 'var(--c-https)', 'Laptop with gamepad'],
+    D: ['Quest 3 (VR)', 'https :8443', 'var(--c-https)', 'Quest 3 (VR)']
   };
   function validIp(s) {
     var m = /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/.exec(s);
@@ -4557,7 +4664,7 @@ function initShell(onShow) {
   function cmd(text) {
     var c = h('div', { 'class': 'cmd' });
     c.appendChild(h('pre', null, text));
-    c.appendChild(h('button', { type: 'button', 'class': 'copy' }, 'Kopieren'));
+    c.appendChild(h('button', { type: 'button', 'class': 'copy' }, L('Kopieren', 'Copy')));
     return c;
   }
   function sec(label, kids) {
@@ -4580,19 +4687,19 @@ function initShell(onShow) {
     var ipIn = $('cfg-ip'), ipH = $('cfg-ip-h'), ok = validIp(st.ip);
     ipIn.setAttribute('aria-invalid', ok ? 'false' : 'true');
     ipH.classList.toggle('bad', !ok);
-    ipH.textContent = ok ? 'Stand jetzt · neue IP: im Remote-Panel nachsehen' : 'Keine gültige IPv4-Adresse → Ergebnis gilt für 192.168.0.xxx · Beispiel: 192.168.0.xxx';
+    ipH.textContent = ok ? L('Stand jetzt · neue IP: im Remote-Panel nachsehen', 'Current value · new IP: check the Remote panel') : L('Keine gültige IPv4-Adresse → Ergebnis gilt für 192.168.0.xxx · Beispiel: 192.168.0.xxx', 'No valid IPv4 address → result applies to 192.168.0.xxx · example: 192.168.0.xxx');
     var ip = ok ? st.ip : '192.168.0.xxx';
     var net = ip.split('.').slice(0, 3).join('.') + '.0/24';
     var real = st.mode === 'real';
     var combo = st.dev === 'quest' ? 'D' : (st.dev === 'laptop' && st.inp === 'pad' ? 'C' : 'B');
     var https = combo !== 'B', usb = combo === 'D' && st.link === 'usb';
-    var C = COMBO[combo];
+    var C = COMBO[combo], cname = L(C[0], C[3]);
     out.style.setProperty('--k', C[2]);
     out.textContent = '';
 
     var head = h('div', { 'class': 'cfg-res' });
     head.appendChild(h('span', { 'class': 'key', style: '--k:' + C[2] }, combo));
-    head.appendChild(h('h3', null, 'Kombination ' + combo + ' · ' + C[0]));
+    head.appendChild(h('h3', null, L('Kombination ', 'Combination ') + combo + ' · ' + cname));
     head.appendChild(h('span', { 'class': 'proto', style: '--k:' + C[2] }, C[1]));
     head.appendChild(h('span', { 'class': 'proto', style: '--k:var(--c-' + st.mode + ')' }, real ? 'REAL' : 'FAKE'));
     out.appendChild(head);
@@ -4600,12 +4707,12 @@ function initShell(onShow) {
     // URLs
     var urls = [];
     if (combo === 'B') urls.push(['http://' + ip + ':8081', 'UX | Control Interface']);
-    if (combo === 'C') urls.push(['https://' + ip + ':8443', 'HTTPS Pflicht: über http sperren Browser die Gamepad-API']);
-    if (combo === 'D') urls.push(usb ? ['https://localhost:8443', 'Quest per USB: beim Start angesteckt → Launch richtet adb reverse ein'] : ['https://' + ip + ':8443', 'Quest im WLAN']);
-    if (https && !usb) urls.push(['https://' + ip + ':9091', 'Nur wenn das Overlay bleibt: öffnen, Zertifikat akzeptieren, UI neu laden']);
+    if (combo === 'C') urls.push(['https://' + ip + ':8443', L('HTTPS Pflicht: über http sperren Browser die Gamepad-API', 'HTTPS required: over http browsers block the Gamepad API')]);
+    if (combo === 'D') urls.push(usb ? ['https://localhost:8443', L('Quest per USB: beim Start angesteckt → Launch richtet adb reverse ein', 'Quest via USB: connected at start → the launch sets up adb reverse')] : ['https://' + ip + ':8443', L('Quest im WLAN', 'Quest on Wi-Fi')]);
+    if (https && !usb) urls.push(['https://' + ip + ':9091', L('Nur wenn das Overlay bleibt: öffnen, Zertifikat akzeptieren, UI neu laden', 'Only if the overlay stays: open, accept the certificate, reload the UI')]);
     var ul = h('ul', { 'class': 'cfg-urls' });
     urls.forEach(function (u) { var li = h('li'); li.appendChild(h('span', { 'class': 'url' }, u[0])); li.appendChild(h('span', null, u[1])); ul.appendChild(li); });
-    out.appendChild(sec('Adresse am Client', [ul]));
+    out.appendChild(sec(L('Adresse am Client', 'Address on the client'), [ul]));
 
     // Ports + Firewall
     var ports = combo === 'B' ? [['8081', 'UI http'], ['8082', 'Video'], ['9090', 'rosbridge ws']] : [['8443', 'UI https'], ['9091', 'rosbridge wss'], ['8082', 'Video']];
@@ -4616,63 +4723,64 @@ function initShell(onShow) {
       pl.appendChild(li);
     });
     var fwHint = h('ul', { 'class': 'bl sm', style: '--k:var(--c-srv)' });
-    fwHint.appendChild(h('li', null, 'Empfohlen: Skript erlaubt Heimnetz + Roboter-, Tobii- und Kamera-Netze aus config/network.yaml, sperrt alle anderen'));
+    fwHint.appendChild(h('li', null, L('Empfohlen: Skript erlaubt Heimnetz + Roboter-, Tobii- und Kamera-Netze aus config/network.yaml, sperrt alle anderen', 'Recommended: the script allows the home network + robot, Tobii and camera networks from config/network.yaml, blocks all others')));
     var fwPorts = ports.map(function (p) { return p[0]; }).sort().join(',');
     var fwHint2 = h('ul', { 'class': 'bl sm', style: '--k:var(--c-srv)' });
-    fwHint2.appendChild(h('li', null, 'Oder nur diese Ports für ' + net + ' freigeben'));
-    out.appendChild(sec('Firewall am Server-PC (einmalig)', [pl, fwHint, cmd('cd ~/dev_ws && tools/firewall_setup.sh --apply'), fwHint2,
+    fwHint2.appendChild(h('li', null, L('Oder nur diese Ports für ' + net + ' freigeben', 'Or only allow these ports for ' + net)));
+    out.appendChild(sec(L('Firewall am Server-PC (einmalig)', 'Firewall on the server PC (once)'), [pl, fwHint, cmd('cd ~/dev_ws && tools/firewall_setup.sh --apply'), fwHint2,
       cmd('sudo ufw allow from ' + net + ' to any port ' + fwPorts + ' proto tcp\nsudo ufw status')]));
 
     // Schritte
     var srv = [
-      'UX | Nexus Launcher öffnen: http://localhost:8080',
-      'UI-Karte → PARAMETERS & ARGS: Remote access an, Clients: subnet (gilt nach Neustart der Karte)',
-      'Popup SERVER SETUP, Modus ' + (real ? 'REAL' : 'FAKE') + ': ' + (real ? 'MoveIt Servo & MoveGroup (Real) [Server]' : 'MoveIt Servo & MoveGroup (Fake) + Linear Axis [Server]'),
-      'UI starten: UX | Control Interface, WebSocket, Remote Watchdog & Video Server (Port 8081 / 9090 / 8082)'
+      L('UX | Nexus Launcher öffnen: http://localhost:8080', 'Open UX | Nexus Launcher: http://localhost:8080'),
+      L('UI-Karte → PARAMETERS & ARGS: Remote access an, Clients: subnet (gilt nach Neustart der Karte)', 'UI card → PARAMETERS & ARGS: Remote access on, Clients: subnet (applies after restarting the card)'),
+      L('Popup SERVER SETUP, Modus ', 'Popup SERVER SETUP, mode ') + (real ? 'REAL' : 'FAKE') + ': ' + (real ? 'MoveIt Servo & MoveGroup (Real) [Server]' : 'MoveIt Servo & MoveGroup (Fake) + Linear Axis [Server]'),
+      L('UI starten: ', 'Start UI: ') + 'UX | Control Interface, WebSocket, Remote Watchdog & Video Server (Port 8081 / 9090 / 8082)'
     ];
-    if (https) srv.push('VR Quest 3 Teleop (Port 9091 / 8443) starten' + (usb ? ' · Quest vorher per USB anstecken' : ''));
-    srv.push('Remote-Panel prüfen: Chip zeigt ' + (real ? 'REAL' : 'FAKE') + ', nicht „WATCHDOG OFF“ · „Access from home network“: „On (subnet)“');
-    var cli = [urls[0][0] + ' öffnen'];
-    if (https) cli.push('Zertifikat akzeptieren: „Erweitert“ → „Weiter zu …“');
-    cli.push('Verbindung prüfen: kein Overlay, Chip zeigt „Remote · <IP>“');
-    cli.push('„Request control“ (oder einfach bedienen) → am Server-PC „Allow“ · ohne Antwort verfällt die Anfrage nach 60 s');
-    if (combo === 'C') cli.push((real ? '„Arm gamepad“ → ' : '') + 'Haken „Remote gamepad“ → Tempo · Gamepad mit Xbox-Layout');
-    if (combo === 'D') cli.push('Bereichsleiste → Remote Teleop (Alt+Shift+4) → Enter VR in der Viewport-Leiste');
-    cli.push('Beenden: „Release control“ · Tab schließen: Remote-Gamepad stoppt sofort, Steuerung nach 10 s frei');
-    out.appendChild(sec('Server · Roboter-PC', [steps(srv)]));
+    if (https) srv.push(L('VR Quest 3 Teleop (Port 9091 / 8443) starten', 'Start VR Quest 3 Teleop (Port 9091 / 8443)') + (usb ? L(' · Quest vorher per USB anstecken', ' · connect the Quest via USB first') : ''));
+    srv.push(L('Remote-Panel prüfen: Chip zeigt ', 'Check the Remote panel: chip shows ') + (real ? 'REAL' : 'FAKE') + L(', nicht „WATCHDOG OFF“ · „Access from home network“: „On (subnet)“', ', not “WATCHDOG OFF” · “Access from home network”: “On (subnet)”'));
+    var cli = [L(urls[0][0] + ' öffnen', 'Open ' + urls[0][0])];
+    if (https) cli.push(L('Zertifikat akzeptieren: „Erweitert“ → „Weiter zu …“', 'Accept the certificate: “Advanced” → “Proceed to …”'));
+    cli.push(L('Verbindung prüfen: kein Overlay, Chip zeigt „Remote · <IP>“', 'Check the connection: no overlay, chip shows “Remote · <IP>”'));
+    cli.push(L('„Request control“ (oder einfach bedienen) → am Server-PC „Allow“ · ohne Antwort verfällt die Anfrage nach 60 s', '“Request control” (or just operate) → “Allow” on the server PC · without an answer the request expires after 60 s'));
+    if (combo === 'C') cli.push((real ? L('„Arm gamepad“ → ', '“Arm gamepad” → ') : '') + L('Haken „Remote gamepad“ → Tempo · Gamepad mit Xbox-Layout', 'Tick “Remote gamepad” → speed · gamepad with Xbox layout'));
+    if (combo === 'D') cli.push(L('Bereichsleiste → Remote Teleop (Alt+Shift+4) → Enter VR in der Viewport-Leiste', 'Area bar → Remote Teleop (Alt+Shift+4) → Enter VR in the viewport bar'));
+    cli.push(L('Beenden: „Release control“ · Tab schließen: Remote-Gamepad stoppt sofort, Steuerung nach 10 s frei', 'Finish: “Release control” · closing the tab: remote gamepad stops immediately, control free after 10 s'));
+    out.appendChild(sec(L('Server · Roboter-PC', 'Server · robot PC'), [steps(srv)]));
     out.appendChild(sec('Client · ' + (st.dev === 'quest' ? 'Quest 3' : st.dev === 'tablet' ? 'Tablet' : 'Laptop'), [steps(cli)]));
 
     // Grenzen je Modus (Remote-Gamepad)
     if (combo === 'C') {
       var lim = h('div', { 'class': 'cfg-lims' });
-      [['Max. Tempo', real ? '50 %' : '100 %'], ['Stopp ohne Heartbeat', real ? '0,4 s' : '1,0 s'], ['„Arm gamepad“', real ? 'ja · 60 s' : 'nein']].forEach(function (t) {
+      [[L('Max. Tempo', 'Max. speed'), real ? '50 %' : '100 %'], [L('Stopp ohne Heartbeat', 'Stop without heartbeat'), real ? L('0,4 s', '0.4 s') : L('1,0 s', '1.0 s')], [L('„Arm gamepad“', '“Arm gamepad”'), real ? L('ja · 60 s', 'yes · 60 s') : L('nein', 'no')]].forEach(function (t) {
         var d = h('div', { 'class': 'tile', style: '--k:var(--c-' + st.mode + ')' });
         d.appendChild(h('span', null, t[0])); d.appendChild(h('b', null, t[1]));
         lim.appendChild(d);
       });
-      out.appendChild(sec('Grenzen Remote-Gamepad · ' + (real ? 'REAL' : 'FAKE'), [lim]));
+      out.appendChild(sec(L('Grenzen Remote-Gamepad · ', 'Remote gamepad limits · ') + (real ? 'REAL' : 'FAKE'), [lim]));
     }
     if (real) {
       var n = h('div', { 'class': 'note crit' });
-      n.appendChild(h('b', null, 'Hardware-E-STOP in Reichweite'));
+      n.appendChild(h('b', null, L('Hardware-E-STOP in Reichweite', 'Hardware E-STOP within reach')));
       var nl = h('ul', { 'class': 'bl sm', style: '--k:var(--crit)' });
-      ['An echter Roboter-Hardware bleibt immer jemand am Hardware-E-STOP', 'Laptop zuklappen stoppt nur das Remote-Gamepad sofort', 'Laufendes „Move to“: keine Garantie'].forEach(function (t) { nl.appendChild(h('li', null, t)); });
+      L(['An echter Roboter-Hardware bleibt immer jemand am Hardware-E-STOP', 'Laptop zuklappen stoppt nur das Remote-Gamepad sofort', 'Laufendes „Move to“: keine Garantie'],
+        ['On real robot hardware someone always stays at the hardware E-STOP', 'Closing the laptop only stops the remote gamepad immediately', 'Running “Move to”: no guarantee']).forEach(function (t) { nl.appendChild(h('li', null, t)); });
       n.appendChild(nl);
       out.appendChild(n);
     }
 
     // Alles als Text kopieren
-    var txt = ['Kombination ' + combo + ' · ' + C[0] + ' · ' + (real ? 'REAL' : 'FAKE'), '',
-      'Adresse: ' + urls.map(function (u) { return u[0]; }).join(' · '), '',
-      'Firewall (einmalig, Server-PC):', '  cd ~/dev_ws && tools/firewall_setup.sh --apply',
-      '  oder: sudo ufw allow from ' + net + ' to any port ' + fwPorts + ' proto tcp', '',
-      'Server · Roboter-PC:'].concat(srv.map(function (t, i) { return '  ' + (i + 1) + '. ' + t; }), ['', 'Client:'], cli.map(function (t, i) { return '  ' + (i + 1) + '. ' + t; })).join('\n');
+    var txt = [L('Kombination ', 'Combination ') + combo + ' · ' + cname + ' · ' + (real ? 'REAL' : 'FAKE'), '',
+      L('Adresse: ', 'Address: ') + urls.map(function (u) { return u[0]; }).join(' · '), '',
+      L('Firewall (einmalig, Server-PC):', 'Firewall (once, server PC):'), '  cd ~/dev_ws && tools/firewall_setup.sh --apply',
+      L('  oder: ', '  or: ') + 'sudo ufw allow from ' + net + ' to any port ' + fwPorts + ' proto tcp', '',
+      L('Server · Roboter-PC:', 'Server · robot PC:')].concat(srv.map(function (t, i) { return '  ' + (i + 1) + '. ' + t; }), ['', 'Client:'], cli.map(function (t, i) { return '  ' + (i + 1) + '. ' + t; })).join('\n');
     var pre = h('pre', { id: 'cfg-text', hidden: '' });
     pre.dataset.copy = txt;
     var acts = h('div', { 'class': 'cfg-acts' });
-    var cb = h('button', { type: 'button', 'class': 'btn', 'data-copy-from': 'cfg-text' }, 'Alle Schritte kopieren');
+    var cb = h('button', { type: 'button', 'class': 'btn', 'data-copy-from': 'cfg-text' }, L('Alle Schritte kopieren', 'Copy all steps'));
     acts.appendChild(cb);
-    var more = h('a', { href: '#combo-' + combo.toLowerCase() }, 'Kombination ' + combo + ' im Detail →');
+    var more = h('a', { href: '#combo-' + combo.toLowerCase() }, L('Kombination ' + combo + ' im Detail →', 'Combination ' + combo + ' in detail →'));
     acts.appendChild(more);
     out.appendChild(acts);
     out.appendChild(pre);
@@ -4687,6 +4795,7 @@ function initShell(onShow) {
   });
   $('cfg-ip').value = st.ip;
   $('cfg-ip').addEventListener('input', function () { st.ip = this.value.trim(); save(); render(); });
+  document.addEventListener('manual:lang', render);
   render();
 })();
 
@@ -4701,344 +4810,237 @@ function keep(el, key, val) {
   return el.dataset[key];
 }
 
-var TYPE_NAME_DE = { hci: 'Mensch ↔ Gerät', http: 'HTTP', ws: 'WebSocket', topic: 'Topic / Service / Action' };
-var TYPE_NAME_EN = { hci: 'Human ↔ Device', http: 'HTTP', ws: 'WebSocket', topic: 'Topic / Service / Action' };
+// Skript-Texte je Sprache: L('Deutsch', 'English'); vor dem ersten setLang gilt Deutsch
+function L(de, en) { return curLang === 'en' ? en : de; }
 
+// Daten der Grafiken an Ort und Stelle übersetzen (Grafiken rufen das bei 'manual:lang' auf).
+// rows: Liste oder Objekt · key(row) → Schlüssel in en (ohne key: Index bzw. Objektschlüssel)
+// fields: Feldliste (en[k] = Texte in dieser Reihenfolge, null = bleibt), ein Feld (en[k] = Text)
+// oder null (Eintrag selbst ist der Text) · de sichert beim ersten Wechsel den deutschen Text
+function langRows(rows, key, fields, en, de) {
+  var one = !Array.isArray(fields), fs = one ? [fields] : fields;
+  Object.keys(rows).forEach(function (i) {
+    var r = rows[i], k = key ? key(r) : i, t = en[k];
+    if (t == null) return;
+    var ts = one ? [t] : t;
+    if (!de[k]) de[k] = fs.map(function (f) { return f == null ? r : r[f]; });
+    fs.forEach(function (f, j) {
+      if (ts[j] == null) return;
+      var v = curLang === 'en' ? ts[j] : de[k][j];
+      if (f == null) rows[i] = v; else r[f] = v;
+    });
+  });
+}
+
+/* Englische Texte der Grafiken; Aufbau je Wörterbuch wie im Kommentar, null = wie im Deutschen */
+var TYPE_NAME_EN = { hci: 'Human ↔ device', topic: 'Topic', svc: 'Service / Action', hw: 'Hardware', proc: 'starts' };
+
+// Schicht → [Name, Hinweis]
 var LAYERS_EN = {
-  human: 'Human & Devices',
-  ui: 'User Interfaces',
-  bridge: 'Bridges & Servers',
-  logic: 'Control Logic & Safety',
-  vision: 'Vision & Perception',
-  sensor: 'Sensors & Cameras',
-  planning: 'Motion Planning (MoveIt)',
-  robot: 'Hardware & Actuators'
+  human: ['Humans and devices', 'Mouse, touch, gamepad, Quest 3, Leap Motion 2, microphone, Tobii'],
+  ui: ['User interfaces', null],
+  bridge: ['Servers and bridges', 'rosbridge :9090/:9091/:9092, HTTP servers, joy_node'],
+  logic: ['Coordination and safety', 'Watchdog, collision pre-check, Motion Handler, VLA, blackbox'],
+  vision: ['Perception', 'ZED, YOLO, point cloud, OctoMap'],
+  plan: ['Motion', 'MoveIt and ros2_control'],
+  hw: ['Hardware', 'xArm Lite 6 (Robot | Hardware or Robot | Digital Twin), gripper, cameras']
 };
 
+// Komponente → [Titel, Unterzeile, Beschreibung]
 var NODES_EN = {
-  touchdisp: ['Touch Display', 'USB + HDMI on robot PC', 'Small auxiliary display directly at computer for start, stop and system state.'],
-  pad: ['Gamepad', 'USB local or on remote browser', 'Drives arm continuously. Locally via joy_node, remotely via browser Gamepad API.'],
-  quest: ['Meta Quest 3', 'Headset + controller', 'Immersive operation: hand guides arm (SERVO) or drags target (PLAN). Provides haptic feedback.'],
-  leap: ['Leap Motion 2', 'USB at the robot PC · Ultraleap service', 'Tracks one hand from below. Pinching couples the hand to the TCP, opening the hand stops.'],
-  mic: ['Microphone', 'Voice', 'Audio input source for speech recognition.'],
-  tobii: ['Tobii Glasses', 'Gaze point · RTSP :8554', 'Eye tracking glasses: provides scene video and gaze point. Selection by looking.'],
-  nexus: ['UX | Nexus Launcher', ':8080', 'Startup hub. Selects launch profiles (dev_fake, dev_real, server_fake, server_real, client), configures launch arguments, starts and stops processes, verifies pre-flight (checks robot, cameras, ports, GPU, Ollama), inspects per-run logs, and manages launcher_config.json backups.'],
-  touch: ['UX | Compact Interface', ':8080/touch', 'Part of UX | Nexus Launcher for touch display. Status bar in every view: Robot | Digital Twin / Robot | Hardware, state, speed, control lock, STOP. Start view Move: Cartesian jogging as in UX | Control Interface (ring + joystick, Z lever, orientation ring, joints), gripper, Go to pose (Home, Align, Scan), programs. Plus Programs, Robot (position, joints, collision/path preview, E-STOP state – reset only on the server PC, input channels), Launch (bringup tiles Robot | Digital Twin / Robot | Hardware, sections as chips, cards with run state + stop), System (load, network, services, ROS graph, log); Monitoring button brings UX | Monitoring forward. Hazardous actions via hold instead of dialog (1 s, stop all 2 s), physical movements (Robot | Hardware) with confirmation dialog.'],
-  dash: ['UX | Monitoring', ':8083 · js/main.js', 'System overview, processes, ROS graph with live rates, topics, robot usage, grasp/place metrics, VLA-M requests with model comparison, sessions and clicks as well as usability test evaluation.'],
-  rcui: ['UX | Control Interface', ':8081 · js/main.js', 'Main web control interface: Digital Twin, jogging, target poses, grasping, cameras, voice, VLA-M chat, remote control.'],
-  vrui: ['VR View (WebXR)', 'https :8443 · js/twin/xr*.js', 'Identical UX | Control Interface in headset. Same scene and renderer as Digital Twin, featuring HUD and wrist panel.'],
-  gazeui: ['Gaze UI (Gaze Control UI window)', 'gaze_control_ui_tobii_glasses', 'Standalone eye tracking interface operated by looking, directly transmitting Servo commands.'],
-  rviz: ['RViz', 'scene_objects · servo_status · scene_objects_distance_to_tcp', 'Developer visualization with warning overlays, 3D markers and TCP distance vector.'],
-  nexusbe: ['UX | Nexus Launcher Backend', 'Flask · ros2_nexus_web.py · touch_panel_server.py', 'Executes ros2 launch/run as processes, parses launch arguments, saves launcher_config.json. Read (GET) accessible across entire network, launch and stop (POST) restricted to robot PC inside UX | Nexus Launcher.'],
-  monbe: ['Monitoring Backend', 'monitoring_server.py · ros_monitor.py · SQLite', 'ROS node + HTTP API of UX | Monitoring: collects system load, ROS graph, usage events, and VLA-M requests (/vla/metrics) into ~/.local/share/monitoring_dashboard/monitoring.db.'],
-  uisrv: ['UI Server', 'server.py · /api/*', 'Serves UX | Control Interface and provides lightweight REST endpoints: settings, TF tuner values, device status, CPU/GPU load, remote info.'],
-  rb9090: ['rosbridge', 'ws :9090 · ws :9092 · rosapi', 'Translates JSON over WebSocket into ROS topics and services. Sole pathway from browser into ROS graph. Sending restricted by whitelist in config/network.yaml: :9090 (network) uses minimal rosbridge.remote list, :9092 (127.0.0.1 only, robot PC local pages) uses full rosbridge: list.'],
-  rb9091: ['rosbridge SSL', 'wss :9091 · rosapi_guard', 'Secondary rosbridge with TLS for Meta Quest, identical whitelist to :9090. rosapi_guard prevents duplicate /rosapi nodes.'],
-  https: ['HTTPS Server', ':8443 · certs/cert.pem', 'Serves UI securely encrypted as required by WebXR. Certificate generated automatically on startup.'],
-  wvs: ['web_video_server', ':8082', 'Converts camera image topics into MJPEG streams for web browsers.'],
-  joy: ['joy_node', 'local gamepad → /joy', 'Reads locally attached USB gamepad.'],
-  wd: ['Remote Watchdog', 'remote_control_watchdog', 'Arbitrates control ownership. Verifies heartbeat, client claim and authorization (server signed token), limits speed, forwards remote gamepad to /joy and jogging commands with floor guard to MoveIt Servo, acknowledges E-STOP for owner.'],
-  pre: ['Collision Pre-Check', 'teleop_pre_collision_checker', 'Filters gamepad commands against current TCP position before reaching MoveIt Servo.'],
-  joyin: ['Joystick → Servo', 'xarm_joystick_input', 'Converts gamepad axes into twist and joint commands. Publishes TCP position, speed and reference frame.'],
-  vrnode: ['VR Teleoperation', 'vr_quest3_teleop_node', 'Translates controller poses into Servo commands, toggles gripper and linear axis.'],
-  leapnode: ['Leap hand control', 'leap_hand_teleop_node', 'Turns the pinched hand into twist commands (hand path / scale 1:1, 1:2, 1:4) for the twist gate of the watchdog. Dead man: every disturbance stops and decouples.'],
-  voice: ['Voice Commands', 'voice_command_listener', 'Triggers recognition on prompt, maps transcript to command, reports feedback to UI.'],
-  whisper: ['Whisper', 'ros2_whisper · /whisper/inference', 'Speech-to-text processing using GPU and Silero VAD.'],
-  vla: ['VLA-M Bridge', 'vla_bridge · /vla/*', 'Backend of VLA-M chat: VLA agent (local Ollama, optional Claude) plans using scene objects (including virtual), verifies plan, executes via Motion Handler upon confirmation, verifies grasp and replans on failure. dry_run = plan only. Future LeRobot skill.'],
-  gazegrasp: ['Gaze Grasp Routine', 'gaze_grasp_routine_tobii_glasses', 'Detects targeted object in scene video via YOLO and navigates arm to it.'],
-  bbox: ['Blackbox Recorder', 'robot_blackbox_recorder · /blackbox/save', 'Buffers last 60 s of essential topics in RAM and dumps rosbag2 to ~/.ros/blackbox upon E-STOP, Servo halt, collision or manual trigger.'],
-  demo: ['Demo Recorder', 'demo_recorder · /vla/demo/*', 'Records demonstrations (joints, gripper, camera frames) for VLA training via “Record demo”, saving episodes in ~/.local/share/vla_demos.'],
-  motion: ['Motion Handler', 'robot_motion_handler_movegroup', 'Central motion API under /ui/*: target pose, joint goal, home pose, scan, preview, stop and E-STOP.'],
-  tftuner: ['TF Tuner', 'tf_control_tuner', 'Configures coordinate transformations and safety zones.'],
-  zed: ['ZED Wrapper', '/zed/zed_node', 'Stereo camera driver: color image, depth map, point cloud.'],
-  yolo: ['YOLO 3D Bounding Boxes', 'yolo_3d_bbox_for_zed_m · _for_ip_cam', 'Detects objects and projects them as 3D bounding boxes in workspace. Table camera fallback without ZED uses ArUco table alignment, overlaying stream 2.'],
-  pc: ['Point Cloud Processing', 'pointcloud_optimizer', 'Thins point cloud (/zed/pointcloud_web, currently unused). Optional secondary cloud for MoveIt OctoMap (publish_moveit_cloud, disabled by default to prevent grasp targets becoming obstacles).'],
-  yolocol: ['Objects as Obstacles', 'yolo_moveit_collision', 'Inserts detected objects as collision geometries into planning scene.'],
-  grasp: ['Grasp Execution', 'yolo_planned_grasp_executor · grasp_action_bridge', 'Executes grasping workflow for selected object: approach, grasp, status reporting.'],
-  zedcam: ['ZED Mini', 'Stereo camera above table', 'Visual sensor on arm base / mount.'],
-  ipcam: ['Table Camera', 'IP stream :8554 / RTSP', 'Second camera perspective overlooking workspace.'],
-  table: ['Safety & Table Obstacle', 'scene_objects · Table plane', 'Virtual collision geometry preventing arm collisions with tabletop.'],
-  mg: ['MoveGroup', 'move_group · MoveIt 2', 'Motion planning pipeline computing collision-free joint trajectories to cartesian target poses.'],
-  servo: ['MoveIt Servo', '/servo_server/delta_twist_cmds', 'Real-time kinematic controller executing low-latency velocity and jogging commands.'],
-  ctrl: ['Controller Manager', 'ros2_control · joint_trajectory_controller', 'Hardware abstraction layer sending interpolated setpoints to actuators.'],
-  arm: ['xArm Lite 6', 'Hardware / Digital Twin', '6-DOF robotic manipulator.'],
-  grip: ['Gripper & Vacuum', 'End effector', 'Suction cup and parallel gripper attached to tool flange.'],
-  mouse: ['Mouse / Touchscreen', 'User input', 'Direct interactive manipulation of web controls.']
+  mouse: ['Mouse · keyboard · touch', 'PC, laptop or tablet on the LAN', 'Standard input for all browser interfaces. Includes keyboard shortcuts and drag and drop.'],
+  touchdisp: ['Touch display', 'USB + HDMI on the robot PC', 'Small extra display right at the computer for start, stop and system state.'],
+  pad: [null, 'USB locally or on the remote browser', 'Drives the arm continuously. Locally via joy_node, remotely via the Gamepad API of the browser.'],
+  quest: [null, 'Headset + controllers', 'Immersive operation: the hand guides the arm (SERVO) or drags a target (PLAN). Gives haptic feedback.'],
+  leap: [null, 'USB on the robot PC · Ultraleap service', 'Tracks one hand from below. Pinching couples the hand to the TCP, opening the hand stops.'],
+  mic: ['Microphone', 'Voice', 'Audio source for speech recognition.'],
+  tobii: [null, 'Gaze point · RTSP :8554', 'Glasses for gaze control: deliver scene video and gaze point. Select by looking.'],
+  nexus: [null, null, 'Start hub. Selects launch profiles (dev_fake, dev_real, server_fake, server_real, client), sets launch arguments, starts and stops processes, checks before the start (check: robot, cameras, ports, GPU, Ollama), shows logs per start and backs up launcher_config.json (backups).'],
+  touch: [null, null, 'Part of UX | Nexus Launcher for the touch display. Status bar in every view: Robot | Digital Twin / Robot | Hardware, state, speed, control lock, STOP. Start view Move: Cartesian jogging as in UX | Control Interface (ring + joystick, Z lever, orient ring, joints), gripper, Go to pose (Home, Align, Scan), program. Plus Programs, Robot (position, joints, collision/path preview, E-STOP state – acknowledge only on the server PC, input methods), Launch (bringup tiles Robot | Digital Twin / Robot | Hardware, sections as chips, cards with run state + stop), System (load, network, services, ROS graph, log); the Monitoring button brings UX | Monitoring to the front. Dangerous actions by holding instead of a dialog (1 s, Stop all 2 s), motions (Robot | Hardware) with a dialog.'],
+  dash: [null, null, 'Overview of system, processes, ROS graph with live rates, topics, robot usage, grasp/place, VLA-M requests with model comparison, sessions and clicks, plus evaluation of usability tests.'],
+  rcui: [null, null, 'Main control interface: Digital Twin, jogging, target poses, grasping, cameras, voice, VLA-M chat, Remote Control.'],
+  vrui: ['VR view (WebXR)', null, 'The same UX | Control Interface in the headset. Same scene and renderer as the Digital Twin, with HUD and wrist panel.'],
+  gazeui: ['Gaze UI (Gaze Control UI window)', null, 'Standalone interface operated by gaze that sends Servo commands directly.'],
+  rviz: [null, null, 'Developer view with warning overlays, 3D markers and distance line to the TCP.'],
+  nexusbe: ['UX | Nexus Launcher backend', null, 'Runs ros2 launch/run as processes, reads launch arguments, saves launcher_config.json. Reading (GET) works from the whole network, starting and stopping (POST) only from the robot PC in UX | Nexus Launcher.'],
+  monbe: ['Monitoring backend', null, 'ROS node + HTTP API of UX | Monitoring: collects system load, ROS graph, usage events and VLA-M requests (/vla/metrics) and stores them in ~/.local/share/monitoring_dashboard/monitoring.db.'],
+  uisrv: ['UI server', null, 'Serves UX | Control Interface and offers small REST endpoints: settings, TF tuner values, device status, CPU/GPU load, remote info.'],
+  rb9090: [null, null, 'Translates JSON over WebSocket into ROS topics and services. The only path from the browser into the ROS graph. Sending only per whitelist in config/network.yaml: :9090 (network) the short list rosbridge.remote, :9092 (127.0.0.1 only, pages on the robot PC) the full list rosbridge:.'],
+  rb9091: [null, null, 'Second rosbridge with TLS for the Quest, same whitelist as :9090. rosapi_guard makes sure that two /rosapi nodes never run.'],
+  https: ['HTTPS server', null, 'Serves the UI encrypted, because WebXR requires a secure context. The certificate is created at startup.'],
+  wvs: [null, null, 'Turns image topics into MJPEG streams for the browser.'],
+  joy: [null, 'local gamepad → /joy', 'Reads the locally connected gamepad.'],
+  wd: ['Remote watchdog', null, 'Decides who may control. Checks heartbeat, ownership and approval (server via signed token), limits speed, forwards the remote gamepad to /joy and jogging commands with floor guard to MoveIt Servo, and resets the E-STOP for the owner.'],
+  pre: ['Collision pre-check', null, 'Filters gamepad commands based on the current TCP position before they reach Servo.'],
+  joyin: [null, null, 'Converts gamepad axes into twist and joint commands. Also publishes TCP position, speed and frame.'],
+  vrnode: ['VR teleop', null, 'Converts controller poses into Servo commands, switches gripper and linear axis.'],
+  leapnode: ['Leap hand control', null, 'Turns the pinching hand into twist commands (hand path / scale 1:1, 1:2, 1:4) for the twist gate of the watchdog. Dead man: any disturbance stops and decouples.'],
+  voice: ['Voice commands', null, 'Starts recognition on a trigger, maps the text to a command and reports it to the UI.'],
+  whisper: [null, null, 'Speech to text, with GPU and Silero VAD.'],
+  vla: [null, null, 'Backend of the VLA-M chat: VLA agent (local Ollama, optional Claude) plans with the scene objects (including virtual ones), checks the plan, executes it after confirmation via the Motion Handler, checks the grasp and replans on errors. dry_run = plan only. Later LeRobot as a skill.'],
+  gazegrasp: ['Gaze grasp routine', null, 'Uses YOLO on the scene video to detect which object is looked at, and moves to it.'],
+  bbox: [null, null, 'Keeps the last 60 s of important topics in RAM and writes them as rosbag2 to ~/.ros/blackbox on E-STOP, Servo halt, collision or at the push of a button.'],
+  demo: ['Demo recorder', null, 'Records demonstrations (joints, gripper, camera images) with “Record demo” for VLA training, episodes in ~/.local/share/vla_demos.'],
+  motion: [null, null, 'Central motion API under /ui/*: target pose, joint goal, start pose, scan, preview, stop and E-STOP.'],
+  tftuner: [null, null, 'Sets transforms and safety zones.'],
+  zed: [null, null, 'Driver of the stereo camera: color image, depth, point cloud.'],
+  yolo: ['YOLO 3D boxes', null, 'Detects objects and places them as 3D boxes in space. Without ZED via the table camera: pose from ArUco markers on the table, overlay in Live Stream 2.'],
+  pc: ['Point cloud processing', null, 'Thins out the point cloud (/zed/pointcloud_web, currently without consumer). Optionally publishes a second cloud for the MoveIt OctoMap (publish_moveit_cloud, off by default, otherwise the objects to grasp would become obstacles).'],
+  yolocol: ['Objects as obstacles', null, 'Adds detected objects as collision bodies to the planning scene.'],
+  grasp: ['Grasp execution', null, 'Runs the grasp sequence for a selected object: approach, grasp, report status.'],
+  octo: [null, null, 'Builds its own occupancy map from the raw point cloud, e.g. for RViz. MoveIt does not use it; move_group builds its OctoMap itself from cloud_optimized.'],
+  mg: [null, null, 'Plans collision-free paths to a target pose.'],
+  servo: [null, null, 'Real-time control: turns velocity commands into small motions immediately.'],
+  ctrl: ['Trajectory controller', null, 'ros2_control: accepts trajectories and passes them to the driver.'],
+  arm: [null, 'ufactory_driver · 192.168.1.xxx or fake', 'The robot arm. Simulated in mode (Robot | Digital Twin), via the driver on the network in mode (Robot | Hardware).'],
+  grip: ['Gripper · vacuum', null, 'Lite 6 gripper and vacuum gripper on the flange.'],
+  axis: ['Linear axis', null, 'Travel axis the arm sits on (simulated).'],
+  zedcam: [null, 'Stereo camera on a stand with pan-tilt head (optionally on the end effector)', 'Delivers image and depth.'],
+  ipcam: ['IP and RPi cameras', null, 'Overview cameras, each fetched as JPEG.']
 };
 
+// Verbindung 'von>nach' → Beschriftung (nur Beschriftungen mit deutschem Text)
+var EDGES_EN = {
+  'mouse>nexus': 'Choose profile, start, stop',
+  'mouse>dash': 'View system, ROS graph, usage and evaluation',
+  'mouse>rcui': 'Jogging buttons, drag TCP gizmo, buttons',
+  'mouse>rviz': 'Operate panel',
+  'touchdisp>touch': 'tap',
+  'pad>joy': 'USB, local',
+  'pad>rcui': 'Gamepad API in the browser (remote)',
+  'quest>vrui': 'Controller pose, buttons ⇄ image, vibration',
+  'tobii>gazeui': 'Gaze point + video',
+  'tobii>gazegrasp': 'Gaze point + video (RTSP)',
+  'touch>rb9090': 'Move view: jogging, gripper, target poses, E-STOP, /vla/abort, /ui/voice_listen_trigger, state via roslib',
+  'rb9090>monbe': '/ui/interaction_events (clicks from UX | Control Interface) · /ui/* · /vla/* · /remote/*',
+  'rcui>rb9090': 'all topics and services via roslib',
+  'rcui>wvs': 'MJPEG stream of the ZED',
+  'vrui>https': 'loads the same UI over HTTPS',
+  'nexusbe>bbox': 'with the UI card (blackbox:=true · demo_recorder:=true)',
+  'wd>pre': '/joy (checked and limited)',
+  'wd>servo': 'Jogging (checked): /servo_server/delta_twist_cmds · delta_joint_cmds',
+  'wd>motion': '/ui/reset_emergency_stop (for the owner)',
+  'rb9090>voice': '/ui/voice_listen_trigger ⇄ /ui/voice_feedback · /ui/voice_status · /ui/voice_dictation (dictation for VLA-M)',
+  'rb9090>bbox': '/blackbox/save (button in Diagnostics)',
+  'motion>bbox': '/ui/emergency_stop_active · /servo_server/status → trigger',
+  'yolo>vla': '/zed/bboxes_3d (including virtual objects)',
+  'vrnode>wd': '/remote/twist (client id of the headset)',
+  'leap>leapnode': 'Hand: 21 joints, pinch strength',
+  'rb9090>leapnode': '/leap/config (:9092 only, client id, on/off, scale)',
+  'leapnode>rb9090': '/leap/hand → LEAP ring in the viewport',
+  'leapnode>wd': '/remote/twist (client id of the browser)',
+  'zed>yolo': 'rgb/image_rect_color · depth',
+  'zed>wvs': 'Image topics',
+  'ipcam>yolo': 'Video image',
+  'pc>mg': '/zed/zed_node/point_cloud/cloud_optimized → OctoMap (only with publish_moveit_cloud)',
+  'ctrl>arm': 'Setpoints',
+  'arm>grip': 'Tool IO',
+  'arm>rb9090': '/joint_states · TF for the Digital Twin'
+};
+
+// Befehlsweg → [Name, Einleitung, Schritte (je Schritt Text oder null)]
 var PATHS_EN = {
-  pad: { name: 'Gamepad local', intro: 'Continuous manual driving with gamepad directly connected to robot PC.' },
-  remote: { name: 'Gamepad remote', intro: 'Laptop on local network after server approval. Extra tier: remote_control_watchdog validates ownership, heartbeat, arm authorization and speed limits.' },
-  jog: { name: 'Jogging controls', intro: 'Jogging section (ring segments X/Y, roll/pitch, yaw outer ring, Z proportional lever; speed bar = header speed), Hold mode: moves while button is held, release = stop. Step mode (1 / 5 / 10 mm/°): one click = planned step via MoveIt.' },
-  plan: { name: 'Plan target pose', intro: 'Drag TCP gizmo in Digital Twin, inspect planned trajectory, execute.' },
-  vr: { name: 'VR Quest 3', intro: 'In SERVO mode, the arm tracks the controller hand while holding grip.' },
-  leap: { name: 'Leap Motion 2', intro: 'Gestures in the viewport toolbar picks the Leap at the robot PC; Robot | Hardware: hold 1 s in the confirmation dialog first, then half speed. Pinching couples, the TCP follows the hand path / scale (1:1, 1:2, 1:4), opening the hand stops. Speed = speed override in the header × 400 mm/s, at most 100 mm/s.' },
-  voice: { name: 'Voice commands', intro: 'Recognized voice command returns as text to browser. UI triggers motion execution.' },
-  gaze: { name: 'Gaze control', intro: 'Looking at an object selects it. Requires no web browser.' },
-  grasp: { name: 'Grasp object', intro: 'ZED → YOLO → /zed/bboxes_3d → select object in UI → /ui/grasp_object_cmd → grasp executor → Motion Handler → gripper.' },
-  vla: { name: 'VLA-M chat', intro: 'Natural language instruction in chat, VLA agent plans, code verifies plan, user confirms. Arm moves - including virtual objects (graspable via sandbox) - and agent replans on error.' },
-  estop: { name: 'E-STOP', intro: 'Halts MoveIt Servo, resets arm state (/ufactory/set_state), locks VR teleoperation. Remains latched until /ui/reset_emergency_stop, also across a restart of the Motion Handler (starts latched, no initial pose).' },
-  start: { name: 'System startup', intro: 'UX | Nexus Launcher (:8080) → /api/run → distinct process per card (ros2 launch / ros2 run), logs recorded in ~/.ros/nexus_logs.' }
+  pad: ['Gamepad local', 'Continuous driving with the gamepad directly on the robot PC.',
+    ['Move stick', null, '/joy_check, slowed down near the table', 'Twist command', 'short trajectory', 'Arm moves', '/joint_states back', 'Digital Twin follows']],
+  remote: [null, 'Laptop on the home network, after approval on the server. Extra stage: remote_control_watchdog checks ownership, heartbeat, arm approval and speed limit.',
+    ['Browser reads the gamepad', null, 'Check ownership, heartbeat, approval', '/joy, speed limited', null, 'Twist command', 'short trajectory', 'Arm moves']],
+  jog: ['Jogging buttons', 'Jogging section (ring segments X/Y, roll/pitch, yaw outer ring, proportional Z lever; speed bar = speed from the header), Hold mode: moves while the button is pressed, release = stop (this path). Step mode (1 / 5 / 10): one click = one step in mm / °, planned by MoveIt.',
+    ['Hold button', '/remote/twist or /remote/joint_jog', 'Ownership, heartbeat, E-STOP, floor guard', 'delta_twist_cmds or delta_joint_cmds', 'short trajectory', 'Arm moves', '/servo_server/status to the HUD']],
+  plan: ['Plan target', 'Drag the TCP gizmo in the Digital Twin, check the path, then execute.',
+    ['Drag TCP gizmo', 'Service call', null, 'Plan path, check scene', '/ui/moveto_preview_path as preview', 'Confirmation: /ui/confirm_moveto_preview', 'Execute path', 'Arm moves']],
+  vr: [null, 'In SERVO mode the arm follows the hand while the grip is held.',
+    ['Hold grip, move hand', 'Page comes over HTTPS', null, 'Convert pose to velocity', '/remote/twist, check ownership', 'Twist command', 'short trajectory', 'Arm moves', 'Trigger switches the gripper']],
+  leap: [null, 'Gestures in the viewport toolbar selects the Leap on the robot PC; Robot | Hardware: first hold 1 s in the confirmation dialog, then half speed. Pinching couples, the TCP follows the hand path / scale (1:1, 1:2, 1:4), opening the hand stops. Speed = speed override in the header × 400 mm/s, at most 100 mm/s.',
+    ['Click Gestures', '/leap/config every 250 ms (:9092 only)', 'on/off, scale, client id', 'pinch = couple, open = stop', '/remote/twist, ownership, heartbeat, E-STOP, floor', 'Twist command', 'short trajectory', 'Arm moves', '/leap/hand → LEAP ring in the viewport']],
+  voice: ['Voice', 'The recognized command returns as text to the browser. Only the UI triggers the motion.',
+    ['Start listening', null, 'Trigger recognition', null, null, null, 'voice.js maps the command', 'e.g. /ui/execute_initial_pose', 'plan', 'execute', 'Arm moves']],
+  gaze: ['Gaze', 'Looking at an object is enough to select it. This path needs no browser.',
+    ['Scene video + gaze point', null, 'plan', 'execute', 'Arm moves to the object']],
+  grasp: ['Grasp object', 'ZED → YOLO → /zed/bboxes_3d → select object in the UI → /ui/grasp_object_cmd → grasp executor → Motion Handler → gripper.',
+    ['Image + depth', 'Detect objects', null, 'Boxes in the Twin and in the list', 'Select object', null, null, 'plan', 'execute', 'approach', 'grasp']],
+  vla: ['VLA-M chat', 'Instruction in the chat, the VLA agent plans, the code checks the plan, you confirm. The arm moves - also to virtual objects (graspable with sandbox) - and the agent replans on errors.',
+    ['Type instruction, Enter', null, 'Scene objects', 'Agent (language model) builds the plan, code checks it', '/vla/response with plan', null, 'Approach from above / MoveTo per step', 'plan', 'execute', 'Gripper on / off', 'Progress step i / n, then done']],
+  estop: [null, 'Stops MoveIt Servo, sets the arm state (/ufactory/set_state), locks VR teleop. Stays latched until /ui/reset_emergency_stop, also across a restart of the Motion Handler (starts latched, without initial pose).',
+    ['Press E-STOP', null, 'Trigger E-STOP', null, null, '/ui/emergency_stop_active locks VR', 'Banner, sound, vibration']],
+  start: ['Start system', 'UX | Nexus Launcher (:8080) → /api/run → one process per card (ros2 launch / ros2 run), log per start in ~/.ros/nexus_logs.',
+    ['Choose profile, start', '/api/preflight: check before the start', null, 'MoveIt Servo + arm driver', null, 'Cameras + YOLO', 'VR teleop', 'Voice commands', 'Gaze grasp routine']]
 };
 
+// Station im Regelkreis → [Titel, Kurz, Stichpunkte, Tags]
 var ST_EN = {
-  op: ['act', 'user', 'Operator', 'Action & Decision', ['Intent: wants to move the robot', 'Selects input method', 'Keeps eye on E-STOP and safety'], ['Human', 'Decision'], null],
-  dev: ['act', 'mouse', 'Input Device', 'Mouse, Touch, Gamepad, VR, Leap', ['Captures user interaction', 'Buttons, thumbsticks, gestures', 'Transmits raw events to interface'], ['Gamepad', 'Quest 3', 'Leap Motion 2', 'Mouse', 'Tobii'], 'pad'],
-  ui: ['act', 'layout', 'Web UI', 'UX | Control Interface, VR, Touch', ['Interprets events into velocity or target poses', 'Checks control lock and table distance', 'Sends heartbeat to watchdog'], ['js/jog.js', 'js/remote.js', 'WebXR', 'touch_panel'], 'rcui'],
-  tr: ['act', 'radio', 'Bridge & Network', 'rosbridge, WebSocket, HTTPS', ['Translates JSON into ROS topics and services', 'WebSocket :9090 / :9091 / :9092', 'Enforces whitelist on remote commands'], ['rosbridge', 'Network', 'Whitelist'], 'rb9090'],
-  lg: ['act', 'cpu', 'Control Logic', 'Watchdog, Pre-Check, MoveIt', ['remote_control_watchdog manages ownership & heartbeat', 'teleop_pre_collision_checker looks 0.25 s ahead', 'MoveIt Servo / MoveGroup plans trajectory'], ['watchdog', 'pre_collision', 'MoveIt Servo', 'MoveGroup'], 'wd'],
-  rb: ['act', 'arm', 'Robot', 'xArm Lite 6', ['Robot | Digital Twin: simulated', 'Robot | Hardware: via ufactory_driver over network', 'Plus gripper, vacuum, linear axis'], ['ufactory_driver', 'lite6_traj_controller', 'Gripper · Vacuum', 'Linear Axis'], 'arm'],
-  sn: ['fb', 'scan', 'Sensors', 'Joints, ZED, YOLO', ['Arm joint positions', 'ZED camera RGB and depth', 'Detected objects as 3D bounding boxes'], ['/joint_states', 'ZED Mini', 'YOLO 3D Boxes', 'Point Cloud'], 'zed'],
-  tp: ['fb', 'radio', 'Status Topics', '/joint_states, /ui/*', ['UX | Control Interface, VR view, UX | Compact Interface and UX | Monitoring subscribe to identical topics', '/ui/emergency_stop_active is latched: new tabs receive E-STOP immediately'], ['/joint_states', 'TF', '/servo_server/status', '/ui/motion_status', '/ui/collision_msg', '/ui/emergency_stop_active'], 'rb9090'],
-  rd: ['fb', 'layers', 'Visualization', 'Twin, HUD, Audio, Haptics', ['Digital Twin mirrors arm kinematics', 'Trajectory preview prior to execution', 'Jogging status bar, banners, audio cues', 'VR: haptic pulses, colored peripheral boundary'], ['digital_twin.js', 'safety.js', 'audio.js', 'xr_feedback.js'], 'rcui'],
-  pc: ['fb', 'eye', 'Perception', 'Sight, Hearing, Feel', ['Sight: 7 channels', 'Hearing: 2 channels', 'Feel: 3 channels'], [], null]
+  op: ['Operator', 'Intent', ['Chooses: jogging, target pose, grasp object, VLA instruction, E-STOP', 'Checks Twin, HUD and camera image, corrects or stops'], null],
+  dev: ['Input device', 'Gamepad, eye tracker, VR, Leap, voice input', ['Gamepad local: joy_node → /joy', 'Gamepad remote: Gamepad API in the browser → /remote/joy', 'Quest 3: controller pose → /vr_teleop/controller_data', 'Leap Motion 2: pinching hand → leap_hand_teleop', 'Microphone → Whisper · Tobii → gaze point + RTSP :8554'], ['Mouse · touch', 'Gamepad', 'Meta Quest 3', 'Leap Motion 2', 'Microphone', 'Tobii Glasses']],
+  ui: ['User interface', 'Browser, VR, RViz', ['Hold jogging button → delta_twist_cmds, release = stop', 'Drag TCP gizmo → planning with ghost preview', 'Buttons → /ui/* services of the Motion Handler'], ['UX | Control Interface :8081', 'VR view :8443', 'RViz + control panel', 'Gaze UI (Gaze Control UI window)']],
+  tr: [null, null, ['rosbridge: JSON over WebSocket ↔ ROS topics and services', 'The only path from the browser into the ROS graph', 'UI server: /api/settings, /api/header_status, /api/sys_load, /api/cam_snapshot'], null],
+  lg: ['Logic + planning', null, ['Remote gamepad: remote_control_watchdog → /joy', 'Jogging from browser/VR: remote_control_watchdog → Servo', 'Gamepad: teleop_pre_collision_checker → /joy_check → xarm_joystick_input → Servo', 'Target pose, grasp, VLA: Motion Handler (/ui/*) → move_group'], null],
+  rb: ['Robot', null, ['Robot | Digital Twin: simulated', 'Robot | Hardware: via ufactory_driver on the network', 'Plus gripper, vacuum, linear axis'], ['ufactory_driver', 'lite6_traj_controller', 'Gripper · vacuum', 'Linear axis']],
+  sn: ['Sensors', 'Joints, ZED, YOLO', ['Joint positions of the arm', 'Image and depth of the ZED camera', 'Detected objects as 3D boxes'], ['/joint_states', 'ZED Mini', 'YOLO 3D boxes', 'Point cloud']],
+  tp: ['Status topics', null, ['UX | Control Interface, VR view, UX | Compact Interface and UX | Monitoring subscribe to the same topics', '/ui/emergency_stop_active is latched: a newly opened tab sees the E-STOP immediately'], null],
+  rd: ['Display', 'Twin, HUD, sound, haptics', ['Digital Twin follows the arm', 'Path preview before execution', 'Jogging status line, banners, sounds', 'VR: vibration, colored view border'], null],
+  pc: ['Perception', 'see, hear, feel', ['See: 7 channels', 'Hear: 2 channels', 'Feel: 3 channels'], null]
 };
 
+// Sicherheitsstufe → [Titel, Stichpunkte, Tags]
 var SAFE_EN = {
-  wd: ['warn', 'shield', 'Watchdog', ['Remote gamepad and jogging from browser / VR', 'Checks control lock, heartbeat, approval, speed limit, floor guard', 'Missing heartbeat → neutral gamepad / zero twist'], ['remote_control_watchdog', 'Tier 1 – 2'], 'wd'],
-  pre: ['warn', 'warn', 'Collision Pre-Check', ['Looks 0.25 s ahead', 'Down to 19 mm above Z Collision Level: 25% speed', 'At Z Collision Level: stops downward motion'], ['teleop_pre_collision_checker', '/joy → /joy_check', 'Tier 3'], 'pre'],
-  mi: ['warn', 'route', 'MoveIt', ['Servo decelerates and halts at singularity, joint limit, collision', 'Planned trajectories avoid floor and detected obstacles', 'Motion executes only after confirmation'], ['MoveIt Servo', 'Planning Scene', 'Tier 4 – 6'], 'servo'],
-  es: ['crit', 'stop', 'E-STOP', ['Always active', 'Motion Handler stops Servo, resets arm state, locks', 'VR teleop refuses Servo start while E-STOP is active'], ['/ui/emergency_stop', '/ui/emergency_stop_active (latched)', 'Tier 7'], 'motion']
+  wd: [null, ['Remote gamepad and jogging from browser/VR', 'Checks control lock, heartbeat, approval, speed limit, floor guard', 'No heartbeat → neutral gamepad / zero twist'], ['remote_control_watchdog', 'Stage 1 – 2']],
+  pre: ['Collision pre-check', ['Looks 0.25 s ahead', 'Up to 19 mm above the Z Collision Level: 25 % speed', 'At the Z Collision Level: stop downward'], ['teleop_pre_collision_checker', '/joy → /joy_check', 'Stage 3']],
+  mi: [null, ['Servo slows down and stops at singularity, joint limit, collision', 'Planned paths avoid the floor and detected objects', 'Moves only after confirmation'], ['MoveIt Servo', 'Planning scene', 'Stage 4 – 6']],
+  es: [null, ['Always active', 'Motion Handler stops Servo, sets arm state, latches', 'VR teleop does not start Servo while E-STOP is active'], ['/ui/emergency_stop', '/ui/emergency_stop_active (latched)', 'Stage 7']]
 };
 
+// Ablauf am Beispiel Jogging-Taste +Z, je Schritt → [Titel, Stichpunkte]
 var STORY_EN = [
-  [['op'], 'op', 'Intent', ['Hold jogging button +Z → gripper should lift']],
-  [['c1', 'dev'], 'dev', 'Input', ['Mouse or touch registers the command', 'Alternatively: gamepad, Quest 3, microphone, Tobii']],
-  [['c2', 'ui'], 'ui', 'User Interface', ['jog.js verifies control lock + floor clearance', 'Transmits velocity while held · release = stop']],
-  [['c3', 'tr'], 'tr', 'Transport', ['roslib → rosbridge (ws :9090 · wss :9091 · ws :9092 on robot PC)', '→ /remote/twist → twist gate in watchdog → /servo_server/delta_twist_cmds']],
-  [['c4', 'lg'], 'lg', 'Logic & Planning', ['MoveIt Servo → small incremental joint movements', 'Target pose, grasp, VLA-M: Motion Handler → move_group']],
-  [['safe'], 'safe', 'Safety Intervenes', ['Jogging: watchdog (control lock, E-STOP, floor guard) + Servo (singularity, joint limits, collision)', 'Gamepad: + collision pre-check · remote: + watchdog', 'E-STOP always takes effect, even without browser']],
-  [['c5', 'rb'], 'rb', 'Robot Moves', ['lite6_traj_controller → xArm Lite 6', 'Robot | Digital Twin simulated · Robot | Hardware via ufactory_driver']],
-  [['down', 'sn'], 'sn', 'Measurement', ['Joints → /joint_states, TF', 'ZED + YOLO → /zed/bboxes_3d']],
-  [['c6', 'tp'], 'tp', 'Status Distribution', ['rosbridge → all active user interfaces', 'E-STOP status latched: new tab sees it immediately']],
-  [['c7', 'rd'], 'rd', 'Visualization', ['Digital Twin mirrors arm · status bar: Servo, reach, table clearance', 'Audio tones · VR: field boundary, vibration']],
-  [['c8', 'pc'], 'pc', 'Perception', ['Digital Twin + camera stream: gripper is raised', 'Channels: 7 visual · 2 audio · 3 haptic']],
-  [['up', 'op'], 'op', 'Correction', ['Release, change direction, adjust speed or hit E-STOP', 'During jogging, this loop executes continuously']]
+  ['Intent', ['Hold jogging button +Z → gripper should go up']],
+  ['Input', ['Mouse or touch picks up the command', 'Likewise: gamepad, Quest 3, microphone, Tobii']],
+  ['User interface', ['jog.js checks control lock + floor clearance', 'Sends speed while held · release = stop']],
+  ['Transport', ['roslib → rosbridge (ws :9090 · wss :9091 · ws :9092 on the robot PC)', '→ /remote/twist → twist gate in the watchdog → /servo_server/delta_twist_cmds']],
+  ['Logic + planning', ['MoveIt Servo → small joint motions', 'Target pose, grasp, VLA-M: Motion Handler → move_group']],
+  ['Safety steps in', ['Jogging: watchdog (control lock, E-STOP, floor guard) + Servo (singularity, joint limits, collision)', 'Gamepad: + collision pre-check · remote: + watchdog', 'E-STOP always works, even without a browser']],
+  ['Robot moves', ['lite6_traj_controller → xArm Lite 6', 'Robot | Digital Twin simulated · Robot | Hardware via ufactory_driver']],
+  ['Measure', ['Joints → /joint_states, TF', 'ZED + YOLO → /zed/bboxes_3d']],
+  ['Distribute status', ['rosbridge → all open interfaces', 'E-STOP status latched: a new tab sees it immediately']],
+  ['Display', ['Twin moves along · status line: Servo, reach, table', 'Sounds · VR: view border, vibration']],
+  ['Perceive', ['Twin + camera image: gripper is up', 'Channels: 7 see · 2 hear · 3 feel']],
+  ['Correct', ['Release, direction, speed or E-STOP', 'While jogging the loop runs continuously']]
 ];
 
+// Mockup-Lagen → Stichpunkte „Jetzt“ (übrige Felder zeigen englische UI-Texte)
 var S_EN = {
-  idle: { now: ['Normal state: arm stationary, wait for command', 'Control lock: owner can move the arm'],
-          st: 'Robot | Digital Twin · normal · MoveIt Servo standby',
-          btn: ['Release control', 'warn'], mode: 'Robot | Digital Twin', own: 'Client · owner', ping: '12 ms · Heartbeat OK' },
-  step: { now: ['Continuous driving with gamepad or jogging', 'Missing heartbeat → immediate stop'],
-          st: 'Robot | Digital Twin · jog z+ · Servo active',
-          btn: ['Release control', 'warn'], mode: 'Robot | Digital Twin', own: 'Client · owner', ping: '14 ms · Jogging' },
-  stop: { now: ['E-STOP triggered: arm halted immediately, VR locked', 'Only the owner can reset it in Remote mode'],
-          st: 'E-STOP ACTIVE · Servo halted · locked',
-          btn: ['Reset E-STOP', 'acc'], mode: 'E-STOP', own: 'Client · owner', ping: '11 ms · E-STOP' }
+  other: ['Server PC holds control after the start', 'You are a viewer: moving blocked, E-STOP works', '“Request control” or an operating attempt → request to the server'],
+  req: ['Request waiting: popup “Allow” / “Deny” on the server PC', 'Without an answer it expires after 60 s', '“Cancel request” withdraws it'],
+  mine: ['Server approved: you control, the gamepad drives', 'All other clients are locked', '“Release control” hands over control']
 };
-
 var VS_EN = {
-  off: { now: ['Backend not running, status OFFLINE', 'Instruction remains in chat, nothing transmitted to robot'],
-         st: ['OFFLINE', 'off'], model: 'Model: —', meta: 'backend offline', mode: '—', objs: '0 objects' },
-  wait: { now: ['Plan with scene objects awaits approval', 'Execute starts execution, Abort discards it'],
-          st: ['IDLE', 'idle'], model: 'Model: qwen3.8:27b', meta: 'qwen3.8:27b', mode: 'Robot | Digital Twin', objs: '8 objects · 8 virtual',
-          pstate: 'waiting for confirmation', exec: true, step: 0 },
-  run: { now: ['Agent executes step by step: cube is picked and verified', 'Abort stops after current step, E-STOP immediately'],
-         st: ['RUNNING', 'run'], model: 'Model: qwen3.8:27b', meta: 'qwen3.8:27b', mode: 'Robot | Digital Twin', objs: '8 objects · 8 virtual',
-         pstate: 'step 1 / 2', exec: false, step: 1 }
+  off: ['Backend not running, status OFFLINE', 'Instruction stays in the chat, nothing is sent'],
+  wait: ['Plan with the scene objects awaits approval', 'Execute starts it, Abort discards it'],
+  run: ['Agent moves step by step: cube is grasped and checked', 'Abort stops after the current step, E-STOP immediately']
 };
 
-var LISTS_EN = { setup: 'One-time on server PC', start: 'Every time: server first, then client' };
+// Checkliste → Untertitel
+var LISTS_EN = { setup: 'Once on the server PC', start: 'Every time, server first, then client' };
 
+// Glossar → [Muster, Titel, Art, Stichpunkte]
 var GL_EN = {
-  rosbridge: ['rosbridge', 'Browser → ROS 2 bridge', ['Translates JSON over WebSocket into ROS topics and services', 'Sole gateway from browser into ROS graph', 'ws :9090 · wss :9091 (TLS, Quest 3 and HTTPS clients) · ws :9092 (127.0.0.1 only, local pages on robot PC)', 'Sending restricted by whitelist (9090/9091: rosbridge.remote, 9092: rosbridge:), reading unrestricted']],
-  servo: ['MoveIt Servo', 'Motion planning', ['Real-time trajectory guidance: transforms velocity commands into smooth incremental motions', 'Jogging, gamepad, and VR teleoperation rely on this (/servo_server/delta_twist_cmds)', 'Monitors singularities, joint limits, and collisions']],
-  mg: ['MoveIt move_group', 'Motion planning', ['Plans collision-free trajectories to cartesian target poses', 'Addressed via Motion Handler (/ui/*)', '/move_action · /compute_ik']],
-  motion: ['Motion Handler', 'Logic', ['Central motion API under /ui/*', 'Target pose, joint goal, home pose, scan, preview, stop and E-STOP', 'Package robot_motion_handler_movegroup']],
-  tcp: ['TCP · Tool Center Point', 'Robot', ['Work point at end effector, e.g. suction cup or gripper tip', 'Manipulated in Digital Twin via TCP gizmo (Off/Move/Rotate)', 'Collision pre-check filters gamepad commands based on TCP position']],
-  wd: ['Remote Watchdog', 'Logic · remote_control_watchdog', ['Arbitrates control ownership', 'Monitors heartbeat, ownership, and authorization', 'Limits velocity, forwards remote gamepad to /joy and jogging to MoveIt Servo', 'Detects Robot | Digital Twin vs. Robot | Hardware automatically']],
-  hb: ['Heartbeat', 'Remote Control', ['Client liveness signal on /remote/heartbeat', 'If missing, remote gamepad halts: Robot | Hardware after 0.4 s, Robot | Digital Twin after 1.0 s', 'Closed tab or lost Wi-Fi: control unlocked after 10 s']],
-  lock: ['Control Lock', 'Remote Control', ['Exactly one client holds “Control”, all others are observers', 'E-STOP callable by any client', '“Request control” → “Allow” / “Deny” prompt on server · unhandled requests expire after 60 s']],
-  wl: ['Whitelist', 'Safety', ['Section rosbridge: in config/network.yaml', 'Browsers only transmit /ui/*, /vla/*, /remote/*, /vr_teleop/*, Servo jogging', 'Only /ui/* services, no /joy · reading unrestricted']],
-  dds: ['DDS', 'ROS 2 Network', ['Underlying transport for ROS 2 node discovery (UDP, ports 7400+)', 'Browser clients do not need DDS: they communicate via rosbridge', 'Second PC with ROS (F): “Localhost only” turned off on both PCs, UDP open in firewall']],
-  lo: ['Localhost only', 'Toggle in UX | Nexus Launcher popup', ['Restricts DDS discovery to local machine', 'A – E: ON (recommended) · F: OFF on both PCs', 'Takes effect only after sequence restart']],
-  dom: ['ROS_DOMAIN_ID', 'ROS 2 Network', ['Isolates ROS graphs on same physical network', 'Client requires matching ID with server (UX | Nexus Launcher: 66)']],
-  fake: ['Robot | Digital Twin · Robot Simulation', 'Mode', ['Detected when ufactory_driver is not running', 'Remote gamepad up to 100% velocity', 'Stop after 1.0 s without heartbeat · no “Arm gamepad” required']],
-  real: ['Robot | Hardware · Real Robot Hardware', 'Mode', ['ufactory_driver running · ambiguous state (“DETECTING”) treated as Robot | Hardware', 'Remote gamepad max 50% velocity, stops after 0.4 s without heartbeat', '“Arm gamepad” required when real_require_arm is active']],
-  latched: ['latched', 'Topic Property', ['Topic retains its latest published message', 'New browser tab immediately receives current E-STOP state (/ui/emergency_stop_active)']],
-  pre: ['Collision Pre-Check', 'Logic · teleop_pre_collision_checker', ['Filters gamepad commands based on current TCP position before reaching Servo']],
-  xr: ['WebXR', 'VR in browser', ['Same UX | Control Interface inside Meta Quest 3', 'Requires secure origin → HTTPS :8443, certificate certs/cert.pem']],
-  arm: ['Arm gamepad', 'Hardware Motion Approval', ['Remote gamepad moves Robot | Hardware only after arming', 'Mandatory when real_require_arm is active (recommended)', 'Expires after 60 s idle and on any mode change']],
-  ollama: ['Ollama', 'Local Language Model Server', ['Local server executing VLA-M language model (qwen3.8:27b)', 'Pre-flight check in UX | Nexus Launcher verifies Ollama + qwen3.8:27b']]
+  rosbridge: [null, null, 'Bridge browser → ROS 2', ['Translates JSON over WebSocket into ROS topics and services', 'The only path from the browser into the ROS graph', 'ws :9090 · wss :9091 (TLS, Quest 3 and HTTPS clients) · ws :9092 (127.0.0.1 only, pages on the robot PC)', 'Sending only per whitelist (9090/9091: rosbridge.remote, 9092: rosbridge:), reading unrestricted']],
+  servo: [null, null, 'Motion planning', ['Real-time control: turns velocity commands into small motions immediately', 'Jogging, gamepad and VR drive through it (/servo_server/delta_twist_cmds)', 'Checks singularity, joint limits, collision']],
+  mg: [null, null, 'Motion planning', ['Plans collision-free paths to a target pose', 'Addressed via the Motion Handler (/ui/*)', '/move_action · /compute_ik']],
+  motion: [null, null, 'Logic', ['Central motion API under /ui/*', 'Target pose, joint goal, start pose, scan, preview, stop and E-STOP', 'Package robot_motion_handler_movegroup']],
+  tcp: [null, null, 'Robot', ['Working point on the tool, e.g. at the gripper tip', 'Move or rotate in the Digital Twin with the TCP gizmo (Off/Move/Rotate)', 'Collision pre-check filters gamepad commands based on the TCP position']],
+  wd: ['Remote watchdog|Remote-Watchdog|Remote Control Watchdog|Watchdog', 'Remote watchdog', 'Logic · remote_control_watchdog', ['Decides who may control', 'Checks heartbeat, ownership and approval', 'Limits speed, forwards the remote gamepad to /joy and jogging to MoveIt Servo', 'Detects Robot | Digital Twin / Robot | Hardware by itself']],
+  hb: [null, null, null, ['Sign of life of the client on /remote/heartbeat', 'If it is missing, the remote gamepad stops: Robot | Hardware after 0.4 s, Robot | Digital Twin after 1.0 s', 'Tab closed or Wi-Fi lost: control free after 10 s']],
+  lock: ['[Cc]ontrol lock|Control-Lock', 'Control lock', null, ['Exactly one client has “Control”, all others watch', 'E-STOP works from every client', '“Request control” → “Allow” / “Deny” on the server · without an answer the request expires after 60 s']],
+  wl: [null, null, 'Safety', ['Section rosbridge: in config/network.yaml', 'Browsers only send /ui/*, /vla/*, /remote/*, /vr_teleop/*, Servo jogging', 'Only /ui/* services, no /joy · reading unrestricted']],
+  dds: [null, null, 'ROS 2 network', ['ROS 2 nodes find each other on the network through it (UDP, ports 7400+)', 'Browser clients do not need it: they talk via rosbridge', 'Second PC with ROS (F): “Localhost only” off on both PCs, UDP open in the firewall']],
+  lo: [null, null, 'Switch in the UX | Nexus Launcher popup', ['DDS stays on this PC', 'A – E: on (recommended) · F: off, on both PCs', 'Takes effect only after restarting the sequence']],
+  dom: ['[Dd]omain IDs?', null, 'ROS 2 network', ['Separates ROS graphs on the same network', 'Client needs the same ID as the server (UX | Nexus Launcher: 66)']],
+  fake: [null, 'Robot | Digital Twin · robot simulation', 'Mode', ['Detected by no ufactory_driver running', 'Remote gamepad up to 100 % speed', 'Stop after 1.0 s without heartbeat · no “Arm gamepad”']],
+  real: [null, 'Robot | Hardware · real robot hardware', 'Mode', ['ufactory_driver running · unclear (“DETECTING”) counts as Robot | Hardware', 'Remote gamepad max. 50 % speed, stop after 0.4 s without heartbeat', '“Arm gamepad” required when real_require_arm is on']],
+  latched: [null, null, 'Topic property', ['Topic keeps the last value', 'A new tab sees the E-STOP status immediately (/ui/emergency_stop_active)']],
+  pre: ['[Cc]ollision pre-check|Collision Pre-Check', 'Collision pre-check', 'Logic · teleop_pre_collision_checker', ['Filters gamepad commands based on the current TCP position before they reach Servo']],
+  xr: [null, null, 'VR in the browser', ['The same UX | Control Interface in the Quest 3', 'Requires a secure context → HTTPS :8443, certificate certs/cert.pem']],
+  arm: [null, null, 'Approval on real robot hardware', ['Remote gamepad drives Robot | Hardware only after this', 'Required when real_require_arm is on (recommended)', 'Expires after 60 s without input and on every mode change']],
+  ollama: [null, null, 'Local language model', ['Local server for the VLA-M language model (qwen3.8:27b)', 'Check in UX | Nexus Launcher tests Ollama + qwen3.8:27b']]
 };
-
-var COMBO_EN = {
-  B: ['Laptop / tablet, mouse or touch', 'http :8081', 'var(--c-http)'],
-  C: ['Laptop with gamepad', 'https :8443', 'var(--c-https)'],
-  D: ['Quest 3 (VR)', 'https :8443', 'var(--c-https)']
-};
-
-var NODES_DE = null, LAYERS_DE = null, PATHS_DE = null, ST_DE = null, SAFE_DE = null, STORY_DE = null, S_DE = null, VS_DE = null, LISTS_DE = null, GL_DE = null, COMBO_DE = null;
-
-function updateManualLang(lang) {
-  var en = lang === 'en';
-
-  // 1. TYPE_NAME
-  for (var k in TYPE_NAME_DE) {
-    if (TYPE_NAME) TYPE_NAME[k] = en ? TYPE_NAME_EN[k] : TYPE_NAME_DE[k];
-  }
-
-  // 2. NODES
-  if (!NODES_DE && typeof NODES !== 'undefined') {
-    NODES_DE = {};
-    NODES.forEach(function (n) { NODES_DE[n[0]] = [n[2], n[3], n[4]]; });
-  }
-  if (typeof NODES !== 'undefined') {
-    NODES.forEach(function (n) {
-      var d = en ? NODES_EN[n[0]] : (NODES_DE ? NODES_DE[n[0]] : null);
-      if (d) { n[2] = d[0]; n[3] = d[1]; n[4] = d[2]; }
-    });
-  }
-
-  // 3. LAYERS
-  if (!LAYERS_DE && typeof LAYERS !== 'undefined') {
-    LAYERS_DE = {};
-    LAYERS.forEach(function (l) { LAYERS_DE[l[0]] = l[1]; });
-  }
-  if (typeof LAYERS !== 'undefined') {
-    LAYERS.forEach(function (l) {
-      if (en && LAYERS_EN[l[0]]) l[1] = LAYERS_EN[l[0]];
-      else if (!en && LAYERS_DE && LAYERS_DE[l[0]]) l[1] = LAYERS_DE[l[0]];
-    });
-  }
-
-  // 4. PATHS
-  if (!PATHS_DE && typeof PATHS !== 'undefined') {
-    PATHS_DE = {};
-    PATHS.forEach(function (p) { PATHS_DE[p.id] = { name: p.name, intro: p.intro }; });
-  }
-  if (typeof PATHS !== 'undefined') {
-    PATHS.forEach(function (p) {
-      var d = en ? PATHS_EN[p.id] : (PATHS_DE ? PATHS_DE[p.id] : null);
-      if (d) { p.name = d.name; p.intro = d.intro; }
-    });
-  }
-
-  // Re-render selected map node / path
-  if (typeof state !== 'undefined') {
-    if (state.node && typeof selectNode === 'function') selectNode(state.node, true);
-    if (state.path && typeof selectPath === 'function') selectPath(state.path);
-  }
-
-  // 5. ST, SAFE, STORY
-  if (!ST_DE && typeof ST !== 'undefined') {
-    ST_DE = {};
-    for (var sid in ST) ST_DE[sid] = [ST[sid][2], ST[sid][3], ST[sid][4], ST[sid][5]];
-  }
-  if (typeof ST !== 'undefined') {
-    for (var sid in ST) {
-      var sd = en ? ST_EN[sid] : (ST_DE ? ST_DE[sid] : null);
-      if (sd) {
-        ST[sid][2] = sd[0] || sd[2];
-        ST[sid][3] = sd[1] || sd[3];
-        if (sd[2]) ST[sid][4] = sd[2];
-        if (sd[3]) ST[sid][5] = sd[3];
-      }
-      var nb = els && els[sid];
-      if (nb) {
-        var bEl = nb.querySelector('b'), sEl = nb.querySelector('small');
-        if (bEl) bEl.textContent = ST[sid][2];
-        if (sEl) sEl.textContent = ST[sid][3];
-      }
-    }
-  }
-
-  if (!SAFE_DE && typeof SAFE !== 'undefined') {
-    SAFE_DE = {};
-    for (var sfid in SAFE) SAFE_DE[sfid] = [SAFE[sfid][2], SAFE[sfid][3], SAFE[sfid][4]];
-  }
-  if (typeof SAFE !== 'undefined') {
-    for (var sfid in SAFE) {
-      var sfd = en ? SAFE_EN[sfid] : (SAFE_DE ? SAFE_DE[sfid] : null);
-      if (sfd) {
-        SAFE[sfid][2] = sfd[0] || sfd[2];
-        if (sfd[1]) SAFE[sfid][3] = sfd[1];
-        if (sfd[2]) SAFE[sfid][4] = sfd[2];
-      }
-      var cb = els && els['s-' + sfid];
-      if (cb) {
-        var sp = cb.querySelector('span');
-        if (sp) sp.textContent = SAFE[sfid][2];
-      }
-    }
-  }
-
-  if (!STORY_DE && typeof STORY !== 'undefined') {
-    STORY_DE = STORY.map(function (s) { return [s[2], s[3]]; });
-  }
-  if (typeof STORY !== 'undefined') {
-    STORY.forEach(function (s, i) {
-      var stItem = en ? STORY_EN[i] : (STORY_DE ? STORY_DE[i] : null);
-      if (stItem) { s[2] = stItem[0] || stItem[2]; s[3] = stItem[1] || stItem[3]; }
-    });
-    if (typeof storyLis !== 'undefined' && storyLis && storyLis.length) {
-      storyLis.forEach(function (li, i) {
-        var h4 = li.querySelector('h4');
-        if (h4) h4.textContent = STORY[i][2];
-      });
-    }
-  }
-
-  // 6. S and VS
-  if (!S_DE && typeof S !== 'undefined') S_DE = JSON.parse(JSON.stringify(S));
-  if (typeof S !== 'undefined') {
-    for (var sk in S_DE) {
-      if (en && S_EN[sk]) S[sk] = S_EN[sk];
-      else if (!en && S_DE[sk]) S[sk] = S_DE[sk];
-    }
-    var curM = document.querySelector('#m-states button[aria-pressed="true"]');
-    if (curM && typeof show === 'function') show(curM.dataset.s);
-  }
-
-  if (!VS_DE && typeof VS !== 'undefined') VS_DE = JSON.parse(JSON.stringify(VS));
-  if (typeof VS !== 'undefined') {
-    for (var vsk in VS_DE) {
-      if (en && VS_EN[vsk]) VS[vsk] = VS_EN[vsk];
-      else if (!en && VS_DE[vsk]) VS[vsk] = VS_DE[vsk];
-    }
-    var curVM = document.querySelector('#vm-states button[aria-pressed="true"]');
-    if (curVM && typeof vmShow === 'function') vmShow(curVM.dataset.s);
-  }
-
-  // 7. LISTS
-  if (!LISTS_DE && typeof LISTS !== 'undefined') LISTS_DE = JSON.parse(JSON.stringify(LISTS));
-  if (typeof LISTS !== 'undefined') {
-    for (var lk in LISTS_DE) {
-      LISTS[lk] = en ? LISTS_EN[lk] : LISTS_DE[lk];
-      var p = document.getElementById(lk);
-      if (p) {
-        var sm = p.querySelector('.check-card small');
-        if (sm) sm.textContent = LISTS[lk] + (en ? ' · click number = done' : ' · Nummer anklicken = erledigt');
-        var rbtn = p.querySelector('.check-card .btn');
-        if (rbtn) {
-          rbtn.innerHTML = (typeof RESET !== 'undefined' ? RESET : '') + (en ? 'Reset' : 'Zurücksetzen');
-        }
-      }
-    }
-  }
-
-  // 8. GLOSSARY
-  if (!GL_DE && typeof GL !== 'undefined') {
-    GL_DE = {};
-    GL.forEach(function (g) { GL_DE[g[0]] = [g[2], g[3], g[4]]; });
-  }
-  if (typeof GL !== 'undefined') {
-    GL.forEach(function (g) {
-      var gd = en ? GL_EN[g[0]] : (GL_DE ? GL_DE[g[0]] : null);
-      if (gd) { g[2] = gd[0]; g[3] = gd[1]; g[4] = gd[2]; }
-    });
-  }
-
-  // 9. CONFIGURATOR
-  if (!COMBO_DE && typeof COMBO !== 'undefined') COMBO_DE = JSON.parse(JSON.stringify(COMBO));
-  if (typeof COMBO !== 'undefined') {
-    for (var ck in COMBO_DE) {
-      COMBO[ck] = en ? COMBO_EN[ck] : COMBO_DE[ck];
-    }
-    if (typeof render === 'function') render();
-  }
-}
 
 function setLang(lang, persist) {
   curLang = lang;
@@ -5073,7 +5075,8 @@ function setLang(lang, persist) {
   if (persist !== false) {
     try { localStorage.setItem('project_docs_lang', lang); } catch (e) {}
   }
-  updateManualLang(lang);
+  // Grafiken übersetzen ihre Daten selbst (jede IIFE hört auf dieses Ereignis)
+  document.dispatchEvent(new CustomEvent('manual:lang', { detail: lang }));
 }
 
 function setTheme(t, persist) {
