@@ -12,6 +12,7 @@
 
 | Projekt | Adresse | Thema | Code |
 |---|---|---|---|
+| **AI Dev Workflow** | [`/ai_dev_workflow`](https://lu4k87.github.io/ai_dev_workflow) | So entsteht jedes Projekt hier – Kreislauf, Leitplanken und Definition of Done für die Arbeit mit KI-Agenten. | – |
 | **UX Robot** | [`/ux_robot`](https://lu4k87.github.io/ux_robot) | Assistive Robotik-Plattform für den xArm Lite 6 – Der Mensch führt. Die KI assistiert. | privat |
 | **Look, Speak, Confirm** | [`/ux_robot_research`](https://lu4k87.github.io/ux_robot_research) | Studie zu Blick, Sprache und Bestätigung als sich ergänzende Bedienung für Roboter-Manipulation. | – |
 | **ACCREDO** | [`/project/accredo`](https://lu4k87.github.io/project/accredo) | Scrollytelling zum Reakkreditierungs- und PO-Novellierungsprozess einer Hochschule. | [GitHub](https://github.com/lu4k87/__project_accredo) |

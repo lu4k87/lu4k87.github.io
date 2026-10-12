@@ -13,7 +13,7 @@ dev_ws/
 ├── .claude/                                                               # Hilfsmittel nur für Claude Code (nicht für den Roboterbetrieb)
 │   ├── agents/                                                            # Projekt-Agenten: ws-explorer, test-runner, ui-verifier, safety-reviewer, robustness-reviewer, showcase-reviewer, docs-auditor
 │   ├── hooks/                                                             # Prüfungen vor einem Befehl und nach jedem Edit
-│   ├── memory/                                                            # Gemeinsames Claude-Memory (im Git, verknüpft von tools/ws_sync.sh)
+│   ├── memory/                                                            # Gemeinsames Claude-Memory (im Git, verknüpft von tools/ws_sync.sh; globales Werkzeug: ~/ai_dev_workflow_global)
 │   ├── mods/                                                              # Claude-Code-Mods: ros-safety-status (Statuszeile Robot | Digital Twin / Robot | Hardware)
 │   ├── skills/                                                            # Skills mit ihren Skripten, z.B. preview/ (capture.py Screenshots, build.py Spec → Seite), answer-page/ (Antwortformat)
 │   └── README.md                                                          # Übersicht über Hooks, Skills, Agents, Mods
@@ -202,7 +202,6 @@ dev_ws/
 │   ├── vla_eval.py                                                        # Bewertungs-Set für den VLA-Agenten (vla_eval_cases.json, --check ohne LLM)
 │   ├── pre-commit · install_hooks.sh                                      # Git-Vor-Commit-Prüfung der gestageten Dateien (flake8, JSON/YAML, Tokens, check_ws, check_ports, pytest-Suiten, check_showcase; --changed = alles Uncommittete)
 │   ├── check_showcase.py                                                  # README, docs/, Projektseiten, Poster gegen docs/brand/brand.yaml (Namen, tote Links, en/de-Dateien)
-│   ├── publish_pages.py                                                   # Stellt die Projektseiten für GitHub Pages zusammen (maskiert IPs, lokale Schriften); pages_hook.sh veröffentlicht bei jedem git push, pullt bei git pull mit
 │   ├── make_diagrams.py                                                   # Erzeugt die Architektur-Diagramme docs/img/diagrams/*.svg
 │   ├── check_ports.py                                                     # Ports in config/network.yaml gültig/eindeutig, keine festen ws-Ports im JS
 │   ├── demos_to_lerobot.py                                                # Aufgenommene Demos (demo_recorder) -> LeRobotDataset (LeRobot-venv); --check
