@@ -510,10 +510,15 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
   /* Kopfzeile zweizeilig: Marke + Schalter oben, Navigation volle Breite darunter; eingeklappt bleibt nur die Navigation */
   .top .wrap { row-gap: 6px; }
   .tools { margin-left: auto; }
-  .top nav { order: 3; flex-basis: 100%; margin-left: 0; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
+  .top nav { order: 3; flex: 1 1 calc(100% - 48px); margin-left: 0; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
+  /* Rückweg als Globus am Ende der Navigationszeile (Name bleibt per aria-label) → spart eine Kopfzeile, bleibt auch eingeklappt */
+  .top .site-up { order: 4; width: 32px; justify-content: center; padding: 0; }
+  .top .site-up span { display: none; }
+  @media (max-width: 400px) { .top nav a { padding-inline: 7px; } }  /* 4 Links + Globus passen bei 360 px ohne Scrollen */
   .top .sf-crumb { display: none; }
   .top.sf-min:not(:has(:focus-visible:not(.sf-crumb))) .wrap { row-gap: 0; }
-  .top.sf-min:not(:has(:focus-visible:not(.sf-crumb))) :is(.brand, .site-up, .tools) { max-height: 0; min-height: 0; overflow: hidden; }
+  .top.sf-min:not(:has(:focus-visible:not(.sf-crumb))) :is(.brand, .tools) { max-height: 0; overflow: hidden; }
+  .top.sf-min:not(:has(:focus-visible:not(.sf-crumb))) .site-up { opacity: 1; visibility: visible; pointer-events: auto; }
   .at-areas, .af-side { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .land, .contact { padding-block: 72px; }
   .atlas { padding: 48px 16px; }
