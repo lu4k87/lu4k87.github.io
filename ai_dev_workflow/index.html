@@ -773,6 +773,11 @@ html.wf-js .wf-stage.reset .msg { transition-duration: 200ms; }
 .mem5 { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; margin-top: 16px; }
 .mem5 .feat .ico { width: 20px; height: 20px; color: var(--hue); }
 .mem5 .feat h3 { display: flex; align-items: center; gap: 8px; font-size: 16px; font-weight: 800; }
+.konf4 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+@media (max-width: 640px) { .konf4 { grid-template-columns: minmax(0, 1fr); } }
+.konf4 .feat .ico { width: 20px; height: 20px; color: var(--hue); }
+.konf4 .feat h3 { display: flex; align-items: center; gap: 8px; font-size: 17px; font-weight: 800; }
+.konf4 .feat b { font: 700 12px/1.6 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--hue); }
 .mem5 .feat .k-t { margin-top: auto; padding-top: 6px; text-transform: none; letter-spacing: .02em; }
 .sync6 { margin-top: 16px; }
 
@@ -1483,9 +1488,21 @@ html.wf-js .wf-stage.reset .msg { transition-duration: 200ms; }
           </div>
         </div>
       </section>
+<section class="sec" id="konflikte">
+        <header class="sec-head">
+          <div><span class="eyebrow" style="--hue: var(--orange)"><span class="n">5.2</span><span data-en="Conflicts">Konflikte</span></span><h2 data-en="Four kinds of conflict, four reactions">Vier Arten von Konflikten, vier Reaktionen</h2></div>
+          <div class="brief"><p data-en="A conflict arises when two chats, the user or two machines change the same file or the same Git state without agreeing. The workflow recognizes four kinds, each at a different moment.">Ein Konflikt entsteht, wenn zwei Chats, der User oder zwei Rechner dieselbe Datei oder denselben Git-Stand ändern, ohne sich abzustimmen. Der Workflow erkennt vier Arten, jede zu einem anderen Zeitpunkt.</p></div>
+        </header>
+        <div class="konf4">
+          <div class="feat" style="--hue: var(--gold)"><h3><svg class="ico" aria-hidden="true"><use href="#i-lock"/></svg><span data-en="Claim conflict">Claim-Konflikt</span></h3><span class="k-t" data-en="Before the edit">Vor dem Edit</span><p><b data-en="Trigger">Auslöser</b><br><span data-en="The file is in another chat’s line of &lt;code&gt;TODOS.md&lt;/code&gt;.">Die Datei steht in einer fremden Zeile von <code>TODOS.md</code>.</span></p><p><b data-en="Then">Dann</b><br><span data-en="Do not change it; agree with the other chat (&lt;code&gt;SendMessage&lt;/code&gt;). Codex blocks the edit (&lt;code&gt;deny&lt;/code&gt;).">Nicht ändern, mit dem anderen Chat abstimmen (<code>SendMessage</code>). Codex blockiert den Edit (<code>deny</code>).</span></p></div>
+          <div class="feat" style="--hue: var(--orange)"><h3><svg class="ico" aria-hidden="true"><use href="#i-chat"/></svg><span data-en="File conflict">Datei-Konflikt</span></h3><span class="k-t" data-en="During the edit">Beim Edit</span><p><b data-en="Trigger">Auslöser</b><br><span data-en="The file has uncommitted changes from another chat or an unknown source.">Die Datei hat uncommittete Änderungen eines anderen Chats oder einer unbekannten Quelle.</span></p><p><b data-en="Then">Dann</b><br><span data-en="One warning per file, then agree with that chat. Same file: prepare in the scratchpad and combine with a three-way merge.">Eine Warnung je Datei, danach Abstimmung beim Chat. Gleiche Datei: im Scratchpad vorbereiten, per 3-Wege-Merge zusammenführen.</span></p></div>
+          <div class="feat" style="--hue: var(--blue)"><h3><svg class="ico" aria-hidden="true"><use href="#i-git"/></svg><span data-en="Index conflict">Index-Konflikt</span></h3><span class="k-t" data-en="At commit">Beim Commit</span><p><b data-en="Trigger">Auslöser</b><br><span data-en="A commit would take along changes of others from the shared index or working tree.">Ein Commit würde fremde Änderungen aus dem gemeinsamen Index oder Arbeitsbaum mitnehmen.</span></p><p><b data-en="Then">Dann</b><br><span data-en="Stage only your own files; for shared files use a private index and check &lt;code&gt;git show --stat HEAD&lt;/code&gt; before the push.">Nur eigene Dateien stagen; bei geteilten Dateien privaten Index nutzen, vor dem Push <code>git show --stat HEAD</code> prüfen.</span></p></div>
+          <div class="feat" style="--hue: var(--red)"><h3><svg class="ico" aria-hidden="true"><use href="#i-stop"/></svg><span data-en="Git conflict">Git-Konflikt</span></h3><span class="k-t" data-en="At sync">Beim Sync</span><p><b data-en="Trigger">Auslöser</b><br><span data-en="&lt;code&gt;pull --rebase&lt;/code&gt; or &lt;code&gt;push&lt;/code&gt; fails, the merge contains conflict markers."><code>pull --rebase</code> oder <code>push</code> scheitert, im Merge stehen Konfliktmarker.</span></p><p><b data-en="Then">Dann</b><br><span data-en="Run &lt;code&gt;tools/ws_sync.sh&lt;/code&gt; first, resolve the markers, push fast-forward only, never &lt;code&gt;--force&lt;/code&gt;.">Zuerst <code>tools/ws_sync.sh</code>, Marker auflösen, nur Fast-Forward pushen, nie <code>--force</code>.</span></p></div>
+        </div>
+      </section>
 <section class="sec" id="rollen">
         <header class="sec-head">
-          <div><span class="eyebrow" style="--hue: var(--green)"><span class="n">5.2</span><span data-en="Roles">Rollen</span></span><h2 data-en="Roles and task ownership">Rollen und Aufgabenteilung</h2></div>
+          <div><span class="eyebrow" style="--hue: var(--green)"><span class="n">5.3</span><span data-en="Roles">Rollen</span></span><h2 data-en="Roles and task ownership">Rollen und Aufgabenteilung</h2></div>
           <div class="brief"><p data-en="Each task has one owner for implementation, checks, docs and push. Independent areas run in parallel; shared files need an agreed handoff.">Jede Aufgabe hat einen Verantwortlichen für Umsetzung, Prüfung, Doku und Push. Unabhängige Bereiche laufen parallel; gemeinsame Dateien brauchen eine abgestimmte Übergabe.</p></div>
         </header>
         <div class="rflow">
@@ -2145,7 +2162,7 @@ window.ScrollFlow?.init({
   heroExit: '.hero-inner',
   heads: '.sec-head, .land-head, .ct-copy',
   depth: ['.fg'],
-  groups: ['.strip ul', '.trio', '.keys7', '.fx8', '.day', '.perm', '.collab', '.mem5', '.ev .kpis'],
+  groups: ['.strip ul', '.trio', '.keys7', '.fx8', '.day', '.perm', '.collab', '.mem5', '.konf4', '.ev .kpis'],
   items: ['.part-head', '.ov', '.note', '.ex > *', '.bt', '.rflow', '.kit', '.guard', '.learn', '.chart', '.setup > *', '.life', '.dod > *', '.dod-area', '.contact .vcard'],
   progress: '.progress',
   nav: { links: '.toc a', reset: '.hero', hue: '.eyebrow' },
