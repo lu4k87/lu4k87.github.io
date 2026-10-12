@@ -321,13 +321,14 @@ Leap Motion 2 ──▶ leap_hand_teleop_node ──▶ /remote/twist ──▶ 
 
 - **Speed:** speed override in the header (5 levels = factor 0.1–0.5 on `/ui/robot_control/current_speed`, × 400 mm/s → 40 / 80 / 100 / 100 / 100 mm/s), 40 mm/s without a level, never above `max_speed_mm_s` (100 mm/s). Outside Robot | Digital Twin (also mode unknown) additionally × `real_max_speed` of the watchdog (default 0.5) – half speed, as for remote clients.
 - **Ghost hand:** Layers panel › **Leap hand** (*Ghost at the TCP*) shows the tracked hand at the TCP in the Digital Twin – display only, only while Leap hand control is on.
-- **Only one hand:** pinching is no enabling switch – any pinching hand above the Leap moves the robot. In Robot | Hardware only your own hand above the Leap.
+- **Only one hand:** pinching is no enabling switch – any pinching hand above the Leap moves the robot. A second hand above the Leap always stops (chip **No hand**). In Robot | Hardware only your own hand above the Leap.
 
 **Dead man and locks** (every event = zero twist and decoupled; coupling again needs an open hand first, then a new pinch – a pinch held through the event never starts by itself):
 
 | Event | Shown as (chip **Locked** or **No hand**) |
 |---|---|
 | Hand opened, hand gone or invalid hand values (NaN, outside 0–1), no data for 100 ms (`data_timeout_s`) | *Hand opened – pinch again to couple* (only for a moment, then chip **Ready**) · *No hand above the Leap Motion* (also for invalid values) · *No data from the Leap Motion* |
+| Second hand above the Leap (even while the coupled hand stays visible); coupling again only once a single hand is left | *Two hands above the Leap Motion – keep only one hand there* |
 | Poor tracking (`min_confidence`), jump > `jump_mm`, a different hand | *Hand not tracked reliably – hold it flat and steady* · *A different hand was detected* (only for a moment) |
 | UI switched Leap off, tab hidden, no `/leap/config` for 0.75 s (before the watchdog's 1 s heartbeat stop) | *Leap control is off* |
 | Browser without control, `/leap/config` from another browser with control while coupled | *This browser has no control (control lock)* · *Another browser switched Leap control on – stopped here* |

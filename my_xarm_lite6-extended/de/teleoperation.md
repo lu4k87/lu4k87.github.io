@@ -321,13 +321,14 @@ Leap Motion 2 ──▶ leap_hand_teleop_node ──▶ /remote/twist ──▶ 
 
 - **Tempo:** Tempo-Override im Header (5 Stufen = Faktor 0,1–0,5 auf `/ui/robot_control/current_speed`, × 400 mm/s → 40 / 80 / 100 / 100 / 100 mm/s), ohne Stufe 40 mm/s, nie über `max_speed_mm_s` (100 mm/s). Außer im Robot | Digital Twin (auch Modus unbekannt) zusätzlich × `real_max_speed` des Watchdogs (Standard 0,5) – halbes Tempo wie bei entfernten Clients.
 - **Geisterhand:** Layers-Panel › **Leap hand** (*Ghost at the TCP*; deutsch *Leap-Hand*, *Geisterhand am TCP*) zeigt die erkannte Hand am TCP im Digital Twin – nur Anzeige, nur bei eingeschalteter Leap-Handsteuerung.
-- **Nur eine Hand:** Kneifen ist keine Zustimmtaste – jede kneifende Hand über der Leap bewegt den Roboter. In Robot | Hardware nur die eigene Hand über der Leap.
+- **Nur eine Hand:** Kneifen ist keine Zustimmtaste – jede kneifende Hand über der Leap bewegt den Roboter. Eine zweite Hand über der Leap hält immer an (Chip **Keine Hand**). In Robot | Hardware nur die eigene Hand über der Leap.
 
 **Totmann und Sperren** (jedes Ereignis = Null-Twist und entkuppelt; neu kuppeln erst nach sichtbar geöffneter Hand und neuem Kneifen – ein über das Ereignis gehaltenes Kneifen fährt nie von selbst an):
 
 | Ereignis | Anzeige (Chip **Gesperrt** oder **Keine Hand**) |
 |---|---|
 | Hand geöffnet, Hand weg oder ungültige Handwerte (NaN, außerhalb 0–1), 100 ms ohne Daten (`data_timeout_s`) | *Hand geöffnet – zum Kuppeln erneut zusammenführen* (nur kurz, danach Chip **Bereit**) · *Keine Hand über der Leap Motion* (auch bei ungültigen Werten) · *Keine Daten von der Leap Motion* |
+| Zweite Hand über der Leap (auch wenn die gekuppelte Hand sichtbar bleibt); erneutes Kuppeln erst, wenn nur noch eine Hand da ist | *Zwei Hände über der Leap Motion – nur eine Hand darüber halten* |
 | Schlechte Erkennung (`min_confidence`), Sprung > `jump_mm`, andere Hand | *Hand nicht sicher erkannt – flach und ruhig halten* · *Eine andere Hand wurde erkannt* (nur kurz) |
 | UI hat Leap ausgeschaltet, Tab verdeckt, 0,75 s kein `/leap/config` (vor dem Heartbeat-Halt des Watchdogs nach 1 s) | *Leap-Steuerung ist aus* |
 | Browser ohne Steuerung, `/leap/config` eines anderen Browsers mit Steuerung während gekuppelt | *Dieser Browser hat keine Steuerung (Control-Lock)* · *Ein anderer Browser hat die Leap-Steuerung eingeschaltet – hier angehalten* |
