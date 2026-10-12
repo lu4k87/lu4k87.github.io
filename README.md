@@ -109,7 +109,7 @@ Neugestaltung der Website eines Immobilienbüros in Kamp-Lintfort als One-Page-L
 
 - **Projekt-URL:** [lu4k87.github.io/project/immo_bohlien](https://lu4k87.github.io/project/immo_bohlien)
 - **Code:** [github.com/lu4k87/__project_immo_bohlien](https://github.com/lu4k87/__project_immo_bohlien)
-- **Alle Entwürfe:** [`versionen/`](https://lu4k87.github.io/ux_robot/bohlien_immo/versionen/index.html)
+- **Alle Entwürfe:** [`versionen/`](https://lu4k87.github.io/ux_robot/immo_bohlien/versionen/index.html)
 
 ---
 
