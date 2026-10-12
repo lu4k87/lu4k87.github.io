@@ -313,7 +313,8 @@ Leap Motion 2 ──▶ leap_hand_teleop_node ──▶ /remote/twist ──▶ 
 | Schritt | Aktion | Ergebnis |
 |---|---|---|
 | Einschalten | ✋ **Gestures** (deutsch *Gesten*) in der Viewport-Leiste | Mit angesteckter Leap Motion 2 und laufendem Node wählt Gestures die Leap statt der Webcam; das Fenster **LEAP** öffnet sich unten rechts im Viewport. Robot \| Hardware (auch Modus unbekannt): Dialog *Leap-Handsteuerung für den echten Roboter einschalten?* – **Halten zum Einschalten** 1 s halten |
-| Hand zeigen | Eine Hand etwa 20 cm über die Leap Motion halten | Chip **Bereit**; der Ring zeigt die Hand von oben, der Bogen = Kneif-Stärke |
+| Hand zeigen | Eine Hand etwa 20 cm über die Leap Motion halten | Chip **Entsperren** (Hand gesperrt); der Ring zeigt die Hand von oben |
+| Entsperren | 3 s Peace-Zeichen halten (Zeige- und Mittelfinger hoch, Ring- und kleiner Finger eingerollt) | Der Bogen füllt sich in 3 s, dann Chip **Bereit**; ab jetzt Bogen = Kneif-Stärke. Hand weg, zweite oder andere Hand, Leap aus → wieder gesperrt |
 | Kuppeln | Daumen und Zeigefinger zusammenführen | Chip **Gekuppelt**; der TCP folgt der Hand – Mitte des Rings = TCP, Punkt = TCP-Ziel |
 | Anhalten | Hand öffnen | Null-Twist, entkuppelt; weiter: erneut kneifen |
 | Skala | Knopf **1:2** im LEAP-Fenster | Wechselt 1:1 / 1:2 / 1:4 (1:2 = TCP fährt den halben Handweg), wirkt sofort, bleibt je Browser gespeichert |
@@ -323,7 +324,7 @@ Leap Motion 2 ──▶ leap_hand_teleop_node ──▶ /remote/twist ──▶ 
 - **Geisterhand:** Layers-Panel › **Leap hand** (*Ghost at the TCP*; deutsch *Leap-Hand*, *Geisterhand am TCP*) zeigt die erkannte Hand am TCP im Digital Twin – nur Anzeige, nur bei eingeschalteter Leap-Handsteuerung.
 - **Nur eine Hand:** Kneifen ist keine Zustimmtaste – jede kneifende Hand über der Leap bewegt den Roboter. Eine zweite Hand über der Leap hält immer an (Chip **Keine Hand**). In Robot | Hardware nur die eigene Hand über der Leap.
 
-**Totmann und Sperren** (jedes Ereignis = Null-Twist und entkuppelt; neu kuppeln erst nach sichtbar geöffneter Hand und neuem Kneifen – ein über das Ereignis gehaltenes Kneifen fährt nie von selbst an):
+**Totmann und Sperren** (jedes Ereignis = Null-Twist und entkuppelt; Hand weg, zweite/andere Hand, Sprung, 100 ms ohne Daten, E-STOP, fehlende Steuerung oder Leap aus sperren zusätzlich – neu kuppeln erst nach 3 s Peace-Zeichen, dann nach sichtbar geöffneter Hand und neuem Kneifen – ein über das Ereignis gehaltenes Kneifen fährt nie von selbst an):
 
 | Ereignis | Anzeige (Chip **Gesperrt** oder **Keine Hand**) |
 |---|---|
