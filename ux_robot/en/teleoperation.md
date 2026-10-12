@@ -324,6 +324,18 @@ Leap Motion 2 ──▶ leap_hand_teleop_node ──▶ /remote/twist ──▶ 
 - **Ghost hand:** Layers panel › **Leap hand** (*Ghost at the TCP*) shows the tracked hand at the TCP in the Digital Twin – display only, only while Leap hand control is on.
 - **Only one hand:** pinching is no enabling switch – any pinching hand above the Leap moves the robot. A second hand above the Leap always stops (chip **No hand**). In Robot | Hardware only your own hand above the Leap.
 
+**Gesture commands** (window **Remote Teleop** › **Gestures**, source = Leap Motion or webcam): your own poses trigger commands. Peace sign (unlock), pinch (couple) and open hand (release) stay fixed in the Leap node and cannot be assigned.
+
+| Step | Action | Result |
+|---|---|---|
+| Calibrate | Select a gesture (Fist, Thumbs up, Point up, Thumbs down), **Record – hold 2 s**, keep the pose still | Template per source (Leap / webcam) saved in the browser; live match in %, finger bars with a tick for your recording. Poses that look too similar, or that the Leap reads as a pinch, are flagged |
+| Link | Pick a command and a hold time (0.3–5 s, minimum per command) per gesture | Close / open gripper (also Robot \| Hardware, hold ≥ 1 s), next hand scale 1:n (Leap only), speed ±1, stop planned motion (always allowed). Defaults: Fist = close gripper, Thumbs up = open gripper, Point up = next hand scale, Thumbs down = stop (0.5 s); a calibrated gesture is armed at once, **No command** disarms it |
+| Run | Gestures switched on, hand not coupled (no peace sign needed), hold the pose for the hold time | Fires once per show, then a 2 s pause; the command takes the same way as its button (control lock, E-STOP, rosbridge connection; no extra confirmation – the hold time replaces it). Chip **Locked** (e.g. planned motion running) does not block commands – that is what *Stop planned motion* is for. Not calibrated poses and a coupled hand never fire |
+| Backup | **Export** / **Import** | JSON file `rcu_gestures.json` with calibrations and commands (checked on import) |
+
+- **Peace sign:** only coupling the TCP to the hand (pinch) still needs the 3 s peace sign of the node; gesture commands do not.
+- **Fist and pinch:** the Leap reads some poses (often the fist) as a pinch (≥ 85 %). With an unlocked hand (peace sign, then an open hand) the node then couples the TCP to the hand and the command would not fire – such a gesture is shown as *Read as pinch – not armed* and the page warns. Recording with the Leap needs Gestures switched off (the node then cannot couple); while coupled the recording is rejected. Choose another pose.
+
 **Dead man and locks** (every event = zero twist and decoupled; hand gone, a second/different hand, a jump, 100 ms without data, E-STOP, no control, Leap off or 10 s without coupling (from unlock or halt) also lock – coupling again needs a 3 s peace sign, then an open hand first, then a new pinch – a pinch held through the event never starts by itself):
 
 | Event | Shown as (chip **Locked** or **No hand**) |

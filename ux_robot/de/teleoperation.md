@@ -324,6 +324,18 @@ Leap Motion 2 ──▶ leap_hand_teleop_node ──▶ /remote/twist ──▶ 
 - **Geisterhand:** Layers-Panel › **Leap hand** (*Ghost at the TCP*; deutsch *Leap-Hand*, *Geisterhand am TCP*) zeigt die erkannte Hand am TCP im Digital Twin – nur Anzeige, nur bei eingeschalteter Leap-Handsteuerung.
 - **Nur eine Hand:** Kneifen ist keine Zustimmtaste – jede kneifende Hand über der Leap bewegt den Roboter. Eine zweite Hand über der Leap hält immer an (Chip **Keine Hand**). In Robot | Hardware nur die eigene Hand über der Leap.
 
+**Gesten-Befehle** (Fenster **Remote Teleop** › **Gestures** (deutsch *Remote-Teleop* › *Gesten*), Quelle = Leap Motion oder Webcam): eigene Handhaltungen lösen Befehle aus. Peace-Zeichen (Entsperren), Kneifen (Kuppeln) und Hand öffnen (Loslassen) bleiben fest im Leap-Node und sind nicht belegbar.
+
+| Schritt | Aktion | Ergebnis |
+|---|---|---|
+| Kalibrieren | Geste wählen (Faust, Daumen hoch, Zeigefinger hoch, Daumen runter), **Aufnehmen – 2 s halten**, Handhaltung ruhig halten | Vorlage je Quelle (Leap / Webcam) im Browser gespeichert; Treffer live in %, Fingerbalken mit Strich für deine Aufnahme. Zu ähnliche Handhaltungen und Handhaltungen, die die Leap als Kneifen liest, werden gemeldet |
+| Verknüpfen | Je Geste Befehl und Haltezeit (0,3–5 s, Untergrenze je Befehl) wählen | Greifer schließen / öffnen (auch Robot \| Hardware, Haltezeit ≥ 1 s), nächste Hand-Skala 1:n (nur Leap), Tempo ±1, geplante Bewegung stoppen (immer erlaubt). Vorgaben: Faust = Greifer schließen, Daumen hoch = Greifer öffnen, Zeigefinger hoch = nächste Hand-Skala, Daumen runter = Stopp (0,5 s); eine kalibrierte Geste ist sofort scharf, **Kein Befehl** entschärft sie |
+| Ausführen | Gesten eingeschaltet, Hand nicht gekuppelt (kein Peace-Zeichen nötig), Handhaltung die Haltezeit halten | Löst einmal je Zeigen aus, danach 2 s Pause; der Befehl nimmt denselben Weg wie sein Knopf (Control-Lock, E-STOP, rosbridge-Verbindung; keine zusätzliche Bestätigung – die Haltezeit ersetzt sie). Der Chip **Gesperrt** (z. B. geplante Fahrt läuft) blockiert Befehle nicht – dafür gibt es *Geplante Bewegung stoppen*. Nicht kalibrierte Handhaltungen und eine gekuppelte Hand lösen nie aus |
+| Sichern | **Exportieren** / **Importieren** | JSON-Datei `rcu_gestures.json` mit Kalibrierungen und Befehlen (beim Import geprüft) |
+
+- **Peace-Zeichen:** nur das Kuppeln des TCP an die Hand (Kneifen) braucht weiter das 3-s-Peace-Zeichen des Nodes; Gesten-Befehle nicht.
+- **Faust und Kneifen:** die Leap liest manche Handhaltungen (oft die Faust) als Kneifen (≥ 85 %). Bei entsperrter Hand (Peace-Zeichen, danach offene Hand) kuppelt der Node dann den TCP an die Hand und der Befehl würde nicht auslösen – so eine Geste steht als *Als Kneifen gelesen – nicht scharf*, die Seite warnt. Aufnehmen mit der Leap geht nur bei ausgeschalteten Gesten (der Node kann dann nicht kuppeln); beim Kuppeln wird die Aufnahme abgewiesen. Andere Handhaltung wählen.
+
 **Totmann und Sperren** (jedes Ereignis = Null-Twist und entkuppelt; Hand weg, zweite/andere Hand, Sprung, 100 ms ohne Daten, E-STOP, fehlende Steuerung, Leap aus oder 10 s ohne Kuppeln (ab Entsperren bzw. Halt) sperren zusätzlich – neu kuppeln erst nach 3 s Peace-Zeichen, dann nach sichtbar geöffneter Hand und neuem Kneifen – ein über das Ereignis gehaltenes Kneifen fährt nie von selbst an):
 
 | Ereignis | Anzeige (Chip **Gesperrt** oder **Keine Hand**) |
