@@ -317,7 +317,7 @@ Leap Motion 2 ──▶ leap_hand_teleop_node ──▶ /remote/twist ──▶ 
 | Kuppeln | Daumen und Zeigefinger zusammenführen | Chip **Gekuppelt**; der TCP folgt der Hand – Mitte des Rings = TCP, Punkt = TCP-Ziel |
 | Anhalten | Hand öffnen | Null-Twist, entkuppelt; weiter: erneut kneifen |
 | Skala | Knopf **1:2** im LEAP-Fenster | Wechselt 1:1 / 1:2 / 1:4 (1:2 = TCP fährt den halben Handweg), wirkt sofort, bleibt je Browser gespeichert |
-| Ausschalten | **Gestures** erneut | Fenster schließt; Wechsel Robot \| Digital Twin ↔ Robot \| Hardware oder 2 s ohne Daten vom Leap-Node schalten ebenfalls aus. Verdeckter Tab pausiert nur (Node hält an, entkuppelt); zurück im Tab ist Leap ohne neuen Dialog wieder an – kuppeln mit neuem Kneifen |
+| Ausschalten | **Gestures** erneut | Fenster schließt; Wechsel Robot \| Digital Twin ↔ Robot \| Hardware oder 2 s ohne Daten vom Leap-Node schalten ebenfalls aus. Verdeckter Tab: in Robot \| Hardware (auch Modus unbekannt) aus – erneutes Einschalten fragt wieder mit dem 1-s-Halte-Dialog; im Robot \| Digital Twin nur Pause (Node hält an, entkuppelt), zurück im Tab kuppeln mit neuem Kneifen |
 
 - **Tempo:** Tempo-Override im Header (5 Stufen = Faktor 0,1–0,5 auf `/ui/robot_control/current_speed`, × 400 mm/s → 40 / 80 / 100 / 100 / 100 mm/s), ohne Stufe 40 mm/s, nie über `max_speed_mm_s` (100 mm/s). Außer im Robot | Digital Twin (auch Modus unbekannt) zusätzlich × `real_max_speed` des Watchdogs (Standard 0,5) – halbes Tempo wie bei entfernten Clients.
 - **Geisterhand:** Layers-Panel › **Leap hand** (*Ghost at the TCP*; deutsch *Leap-Hand*, *Geisterhand am TCP*) zeigt die erkannte Hand am TCP im Digital Twin – nur Anzeige, nur bei eingeschalteter Leap-Handsteuerung.

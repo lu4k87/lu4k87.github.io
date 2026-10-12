@@ -317,7 +317,7 @@ Leap Motion 2 ──▶ leap_hand_teleop_node ──▶ /remote/twist ──▶ 
 | Couple | Pinch thumb and index finger | Chip **Coupled**; the TCP follows the hand – centre of the ring = TCP, dot = TCP target |
 | Stop | Open the hand | Zero twist, decoupled; to go on: pinch again |
 | Scale | Button **1:2** in the LEAP window | Cycles 1:1 / 1:2 / 1:4 (1:2 = TCP moves half the hand path), applies immediately, kept per browser |
-| Switch off | **Gestures** again | Window closes; switching Robot \| Digital Twin ↔ Robot \| Hardware or 2 s without data from the Leap node also switches it off. Hiding the tab only pauses it (the node stops and decouples); back on the tab Leap is on again without a new dialog – couple with a new pinch |
+| Switch off | **Gestures** again | Window closes; switching Robot \| Digital Twin ↔ Robot \| Hardware or 2 s without data from the Leap node also switches it off. Hiding the tab: in Robot \| Hardware (also mode unknown) switches it off – switching on again asks with the 1 s hold dialog; in Robot \| Digital Twin it only pauses (the node stops and decouples), back on the tab couple with a new pinch |
 
 - **Speed:** speed override in the header (5 levels = factor 0.1–0.5 on `/ui/robot_control/current_speed`, × 400 mm/s → 40 / 80 / 100 / 100 / 100 mm/s), 40 mm/s without a level, never above `max_speed_mm_s` (100 mm/s). Outside Robot | Digital Twin (also mode unknown) additionally × `real_max_speed` of the watchdog (default 0.5) – half speed, as for remote clients.
 - **Ghost hand:** Layers panel › **Leap hand** (*Ghost at the TCP*) shows the tracked hand at the TCP in the Digital Twin – display only, only while Leap hand control is on.
