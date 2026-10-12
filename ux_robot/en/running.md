@@ -190,6 +190,8 @@ The robot PC is the **server**: it runs ROS 2, the arm and the UX | Nexus Launch
 
 *Client side in the UX | Control Interface (area **Remote Teleop › Remote Control**): mode chip Robot | Digital Twin and location *This PC (server)*, control owner *Server (you)* with **Release control**, remote gamepad with max. speed, connected clients and the addresses for the home network (Control UI 8081, VR/HTTPS 8443, Touch UI 8080/touch).*
 
+**Mobile base (Robot | Digital Twin):** `mobile_base_bridge` stops immediately on E-STOP. Each new press requests another latch via `/ui/emergency_stop`; stale service replies are ignored. A delayed `/ui/emergency_stop_active` = `false` does not directly release the base: it checks the current handler state through the read-only Trigger service `/ui/emergency_stop_status` (`success: true`, `message: latched` or `clear`). Without confirmation it remains locked; after resetting, a new drive command is required to move again. The status service is not exposed to browsers.
+
 **Rules enforced by the watchdog (server side):**
 - **One owner:** exactly one client has control; all others are viewers (motion locked, E-STOP always works). The owner presses *Release*; other clients press *Request control*; only the server PC can *Take over* directly (with confirmation).
 - **Approval on the server:** every client except the robot PC itself needs approval. Its request opens an **Allow / Deny** popup in the UX | Control Interface on the robot PC; unanswered requests expire after 60 s. The UX | Compact Interface (`/touch`) asks the same way.
