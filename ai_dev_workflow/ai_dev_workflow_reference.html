@@ -1,0 +1,1402 @@
+<!doctype html>
+<!-- AI Dev Workflow: Software entwickeln mit Claude Code, Codex und Antigravity/Gemini im dev_ws – eine große Seite aus aktueller Fassung + V2 (Wunsch User 10.10.2026).
+     Gerüst wie die Projekt-Doku (docs/project_docs.html, Skill docs-layout): Hero mit Live-Chat → Gebaut auf → Prinzip (Du · Chat · Repo, 7 Bausteine) →
+     Nachschlagewerk mit Inhaltsverzeichnis in fünf Teilen: I Prinzip (01 Wer macht was, 02 Arbeitsplatz) · II Ablauf (03 Kreislauf-Ring, 04 Datenfluss, 05 Nummernsystem) ·
+     III Werkzeuge (06 Rollen, 07 KI-Werkzeuge, 08 Werkzeugkasten, 09 Hook-Takt) · IV Sicherheit (10 Rechte + Prüfkette, 11 Definition of Done) ·
+     V Betrieb (12 Gedächtnis, 13 Einrichtung, 14 Zahlen) → Weiter.
+     Bausteine: css/landing.css + js/landing.js (Hero, Zahlen), css/scroll_flow.css + js/scroll_flow.js (Lesefluss).
+     Flow-Graph: Engine unverändert aus .claude/skills/flow-graph/flow_graph_template.html, nur SPEC eigen.
+     Zahlen: git log + .claude/ (Stand 10.10.2026) → bei größeren Änderungen am Workflow nachziehen. -->
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI Dev Workflow · Nachschlagen</title>
+<meta name="description" content="AI Dev Workflow: wie Projekte mit Claude Code, Codex und Gemini entwickelt werden (Beispiel UX Robot) – Kreislauf, Leitplanken, Definition of Done.">
+<link rel="stylesheet" href="../ux_robot/fonts/fonts.css">
+<link rel="stylesheet" href="css/landing.css">
+<link rel="stylesheet" href="css/doc_path.css">
+<style>
+/* ═════ Bausteine aus docs/project_docs.html (Tokens, Kopf, Kicker, Kennzahlen, Visitenkarte, Fakten, Atlas-Ring, App-Fenster, Kontakt, Teile, Abschnitte) ═════ */
+:root {
+  --radius-sm: 4px; --radius: 6px; --radius-lg: 8px; /* Ecken dezent: klein (Chips, Buttons, Code) · Karten · große Rahmen; Balken/Linien kantig, höchstens 8 px (Wunsch User 04.10.2026, Hook prüft) */
+  color-scheme: dark;
+  /* Graphit + Türkis-Akzent (Wunsch User 04.10.2026), je Bereich eine eigene Farbe wie im Funktionsatlas (Wunsch User 05.10.2026); --warn nur Hinweise, --red nur Fehler.
+     Gleiche Werte in .hero (Kopf bleibt in beiden Themes dunkel) */
+  --bg: #111315; --surface: #181b1e; --surface-2: #1f2327; --line: #2a2f34; --line-strong: #3b4248;
+  --fg: #eef2f3; --fg-2: #b9c2c6; --accent: var(--indigo); --accent-ink: #0d0f2e; /* eigener Akzent: Bereichsfarbe Entwickeln (brand.yaml), unabhängig vom Projekt-Türkis */
+  --indigo: #818cf8; --teal: #2dd4bf; --violet: #a78bfa; --gold: #f5b942; --green: #4ade80; --red: #f87171; --warn: #fbbf24;
+  --blue: #60a5fa; --pink: #f472b6; --orange: #fb923c; --lime: #a3e635;
+  --band: #15181a; --grid: rgba(129, 140, 248, .045); --glow: rgba(129, 140, 248, .28);
+  --shadow: 0 1px 0 rgba(255,255,255,.04) inset, 0 20px 40px -24px rgba(0,0,0,.7);
+  --font: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+  /* Motion-Tokens (Skill motion-viz §2) */
+  --ease-out: cubic-bezier(.2, .7, .2, 1); --ease-io: cubic-bezier(.65, 0, .35, 1);
+  --t-fast: 150ms; --t-base: 250ms; --t-slow: 450ms; --t-story: 700ms; --stagger: 50ms; --rise: 12px;
+}
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    color-scheme: light;
+    --bg: #f3f5f5; --surface: #ffffff; --surface-2: #eef2f2; --line: #d9e0e0; --line-strong: #b9c4c4;
+    --fg: #14181a; --fg-2: #3a4448; --accent: var(--indigo); --accent-ink: #ffffff;
+    --indigo: #4338ca; --teal: #0f766e; --violet: #6d28d9; --gold: #9a5b00; --green: #15803d; --red: #b91c1c; --warn: #a15c00;
+    --blue: #1d4ed8; --pink: #be185d; --orange: #c2410c; --lime: #4d7c0f;
+    --band: #e9eeee; --grid: rgba(67, 56, 202, .05); --glow: transparent;
+    --shadow: 0 1px 2px rgba(20,30,30,.06), 0 16px 32px -24px rgba(20,40,40,.35);
+  }
+}
+:root[data-theme="light"] {
+  color-scheme: light;
+  --bg: #f3f5f5; --surface: #ffffff; --surface-2: #eef2f2; --line: #d9e0e0; --line-strong: #b9c4c4;
+  --fg: #14181a; --fg-2: #3a4448; --accent: var(--indigo); --accent-ink: #ffffff;
+  --indigo: #4338ca; --teal: #0f766e; --violet: #6d28d9; --gold: #9a5b00; --green: #15803d; --red: #b91c1c; --warn: #a15c00;
+  --blue: #1d4ed8; --pink: #be185d; --orange: #c2410c; --lime: #4d7c0f;
+  --band: #e9eeee; --grid: rgba(67, 56, 202, .05); --glow: transparent;
+  --shadow: 0 1px 2px rgba(20,30,30,.06), 0 16px 32px -24px rgba(20,40,40,.35);
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: calc(var(--hdr, 60px) + 16px); }
+body { margin: 0; background: var(--bg); color: var(--fg); font: 500 15px/1.55 var(--font); -webkit-font-smoothing: antialiased; }
+h1, h2, h3, p { margin: 0; }
+h1, h2, h3 { text-wrap: balance; }
+a { color: inherit; text-decoration: none; }
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: var(--radius-sm); }
+.ico { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+.wrap { max-width: 1240px; margin-inline: auto; padding-inline: 24px; }
+.mono { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+
+/* Kopfzeile: Navigation folgt dem Lesefortschritt (aktiver Abschnitt + Fortschrittslinie) */
+.top { position: sticky; top: 0; z-index: 10; border-bottom: 1px solid var(--line); background: color-mix(in srgb, var(--bg) 95%, transparent); }
+.top .wrap { display: flex; align-items: center; gap: 16px; padding-block: 12px; flex-wrap: wrap; }
+.brand { display: flex; align-items: center; gap: 10px; font-weight: 800; }
+.brand-mark { width: 34px; height: 34px; border-radius: var(--radius); display: grid; place-items: center; background: var(--accent); color: var(--accent-ink); box-shadow: 0 0 18px var(--glow); }
+.brand small { display: block; font: 600 11px/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--fg-2); margin-top: 3px; }
+.tools { display: flex; gap: 8px; margin-left: auto; }
+/* Steuerknöpfe „Leiste“: Auswahl = Gruppe mit Rahmen, gewählt = heller Daumen; Einzelaktionen = .btn/.pf-btn */
+.seg { display: inline-flex; gap: 2px; padding: 3px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface-2); }
+.seg button { font: 700 12px/1 var(--mono); padding: 0 10px; min-height: 28px; min-width: 34px; border: 0; border-radius: var(--radius-sm); background: transparent; color: var(--fg-2); cursor: pointer; transition: background-color var(--t-fast), color var(--t-fast); }
+.seg button:hover { color: var(--fg); background: color-mix(in srgb, var(--fg) 7%, transparent); }
+.seg button[aria-pressed="true"] { background: var(--surface); color: var(--fg); box-shadow: 0 0 0 1px var(--line-strong); }
+.progress { position: absolute; left: 0; right: 0; bottom: -1px; height: 2px; background: var(--accent); box-shadow: 0 0 10px var(--glow); transform-origin: 0 50%; transform: scaleX(var(--p, 0)); pointer-events: none; }
+@supports (animation-timeline: scroll()) {
+  .progress { animation: progress linear both; animation-timeline: scroll(root); }
+  @keyframes progress { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+}
+
+.eyebrow { font: 700 12px/1 var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--hue, var(--accent)); display: flex; align-items: center; gap: 10px; }
+.eyebrow::before { content: ""; width: 22px; height: 2px; background: currentColor; border-radius: 2px; }
+.eyebrow .n { padding: 4px 6px; border: 1px solid color-mix(in srgb, currentColor 55%, transparent); border-radius: var(--radius-sm); letter-spacing: .04em; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { font: 600 12px/1 var(--mono); padding: 7px 9px; border-radius: var(--radius-sm); border: 1px solid var(--line-strong); color: var(--fg-2); background: var(--surface); }
+.chip b { color: var(--fg); }
+/* Kennzahlen: 3 × 2 Kacheln, Zahl zählt beim ersten Sichtbarwerden hoch, Kachel springt zum Abschnitt */
+.kpis { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow); }
+.kpi { display: grid; gap: 6px; align-content: center; justify-items: center; text-align: center; padding: 14px 14px 12px; background: var(--surface); transition: background var(--t-fast); }
+a.kpi:hover { background: var(--surface-2); }
+.kpi strong { font: 800 30px/1 var(--mono); letter-spacing: -.04em; color: var(--hue, var(--accent)); font-variant-numeric: tabular-nums; }
+.kpi span { font-size: 13px; font-weight: 600; line-height: 1.3; color: var(--fg-2); }
+.kpi span b { color: var(--fg); }
+/* QR „Seite öffnen“: immer dunkel auf Weiß (sicher scanbar, auch im dunklen Theme) */
+.qr-foot { display: flex; gap: 14px; align-items: center; text-decoration: none; color: inherit; }
+.qr-code { flex: none; line-height: 0; padding: 6px; background: #fff; border: 1px solid var(--line); border-radius: var(--radius); }
+.qr-code svg { display: block; width: var(--qr, 104px); height: var(--qr, 104px); }
+.qr-foot .qr-code { --qr: 88px; }
+.qr-txt { display: grid; gap: 4px; min-width: 0; }
+.qr-txt b { font: 700 12px/1.2 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--accent); }
+.qr-txt span { font-size: 14px; font-weight: 700; line-height: 1.35; }
+.qr-txt small { font: 600 12px/1.35 var(--mono); color: var(--fg-2); overflow-wrap: anywhere; }
+.qr-foot:hover small { text-decoration: underline; }
+/* Visitenkarte (Kontakt-Abschnitt): Projekt, Person, Kontakt, QR zur Seite; liegt in einer dunklen Zone → immer Graphit mit Türkis-Schein */
+.vcard { display: grid; gap: 14px; padding: 18px; border: 1px solid color-mix(in srgb, var(--accent) 45%, var(--line)); border-radius: var(--radius-lg);
+  background: radial-gradient(70% 90% at 100% 0%, color-mix(in srgb, var(--accent) 16%, transparent), transparent 65%), var(--surface); box-shadow: 0 0 34px -10px var(--glow), var(--shadow); }
+.vc-head { display: flex; align-items: center; gap: 10px; }
+.vc-head .brand-mark { width: 30px; height: 30px; }
+.vc-head b { display: block; font: 700 12px/1.2 var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--accent); }
+.vc-head small { display: block; font-size: 13px; font-weight: 600; color: var(--fg-2); margin-top: 2px; }
+.vc-body { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 16px; align-items: end; padding-top: 14px; border-top: 1px solid var(--line); }
+.vc-name { font-size: 26px; font-weight: 800; letter-spacing: -.02em; line-height: 1.1; transform: translate(-2px, -3px); }
+.vc-role { font-size: 14px; font-weight: 600; line-height: 1.35; color: var(--fg-2); margin-top: 4px; }
+.vc-links { display: grid; gap: 6px; margin-top: 12px; }
+.vc-links a { display: flex; align-items: center; gap: 8px; font-size: 13.5px; font-weight: 600; line-height: 1.3; overflow-wrap: anywhere; }
+.vc-links a:hover { text-decoration: underline; }
+.vc-links .ico { width: 16px; height: 16px; color: var(--accent); }
+.vc-qr { display: grid; gap: 6px; justify-items: center; font: 700 11px/1 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--accent); }
+.vc-qr .qr-code { --qr: 96px; box-shadow: 0 0 22px -4px var(--glow); }
+@media (max-width: 700px) { .vc-qr { display: none; } }
+
+.ct-copy h2 { font-size: var(--fs-h2); line-height: 1.08; letter-spacing: -.035em; font-weight: 800; }
+/* Überblick: sechs Fakten-Karten (Icon, Slogan, Faktensatz, Sprung zum Abschnitt) */
+.bi-l { width: 64px; height: 64px; flex: none; justify-self: center; display: grid; place-items: center; border-radius: var(--radius); color: var(--accent);
+  background: radial-gradient(circle at 30% 20%, color-mix(in srgb, var(--accent) 28%, transparent), color-mix(in srgb, var(--accent) 7%, transparent) 72%);
+  border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent); box-shadow: 0 0 26px -8px var(--glow), inset 0 1px 0 rgba(255, 255, 255, .14); }
+.bi-l .ico { width: 34px; height: 34px; }
+.af-dots { display: flex; gap: 6px; flex: none; }
+.af-dots i { width: 10px; height: 10px; border-radius: 50%; background: var(--line-strong); }
+.kpis-6 { grid-template-columns: repeat(6, minmax(0, 1fr)); box-shadow: none; }
+.contact { padding-block: 104px; border-top: 1px solid var(--line);
+  background: radial-gradient(44% 70% at 80% 50%, color-mix(in srgb, var(--accent) 12%, transparent), transparent 72%),
+    linear-gradient(var(--grid) 1px, transparent 1px) 0 0 / 32px 32px, linear-gradient(90deg, var(--grid) 1px, transparent 1px) 0 0 / 32px 32px, var(--bg); }
+.contact .wrap { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(300px, .9fr); gap: 40px 64px; align-items: center; }
+.ct-copy { display: grid; gap: 18px; justify-items: start; }
+.ct-copy p { color: var(--fg-2); font-size: 17px; line-height: 1.55; max-width: 52ch; }
+
+/* Abschnitte: Kicker (Nummer + Leitfrage) + Titel links, Nutzen rechts; Trennlinie zwischen Abschnitten, Weiter-Button mittig im Zwischenraum */
+.sec { padding-bottom: 64px; container-type: inline-size; }
+.sec + .sec { padding-top: 72px; border-top: 1px solid var(--line); }
+.sec-head { display: flex; align-items: end; justify-content: space-between; gap: 12px 40px; flex-wrap: wrap; margin-bottom: 40px; }
+.sec-head h2 { font-size: clamp(25px, 2.7vw, 34px); letter-spacing: -.028em; font-weight: 800; line-height: 1.1; margin-top: 12px; }
+.sec-head p { color: var(--fg-2); max-width: 54ch; font-size: 15px; }
+.brief { display: grid; gap: 10px; flex: 1 1 420px; max-width: 62ch; }
+.brief dl { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 6px 16px; margin: 0; }
+.brief dt { font: 700 12px/1.6 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--hue, var(--accent)); }
+.brief dd { margin: 0; color: var(--fg-2); font-size: 15px; line-height: 1.45; text-wrap: pretty; }
+@container (max-width: 520px) { .brief dl { grid-template-columns: minmax(0, 1fr); gap: 2px; } .brief dd + dt { margin-top: 8px; } }
+.sub { color: var(--fg-2); font-size: 14px; }
+.panel { border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); box-shadow: var(--shadow); padding: 16px; display: grid; gap: 14px; }
+.feat { display: grid; align-content: start; gap: 6px; min-width: 0; padding: 16px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); box-shadow: var(--shadow);
+  transition: border-color var(--t-fast), transform var(--t-base) var(--ease-out); }
+.feat:hover { border-color: color-mix(in srgb, var(--hue) 50%, var(--line)); transform: translateY(-2px); }
+.k-t { font: 700 11.5px/1.2 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--hue, var(--accent)); }
+.feat .k-t { margin-top: 4px; }
+.feat b { font-size: 15.5px; font-weight: 800; line-height: 1.25; }
+.feat p { font-size: 13.5px; line-height: 1.5; color: var(--fg-2); }
+footer { border-top: 1px solid var(--line); padding-block: 18px 28px; font: 600 12px/1.4 var(--mono); color: var(--fg-2); }
+footer .wrap { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px 16px; }
+footer .foot-link { text-decoration: underline 1px var(--line); text-underline-offset: 3px; }
+footer .foot-link:hover { text-decoration-color: currentColor; }
+
+
+/* ═════ Hero-Bühne: Beispiel-Chat statt 3D, eine Aufgabe von der Bitte bis zum Push (Nachrichten erscheinen nacheinander) ═════ */
+.chat { grid-area: 1 / 1 / 2 / -1; margin: 0; display: grid; grid-template-rows: auto minmax(0, 1fr); min-width: 0; min-height: 0; overflow: hidden;
+  border: 1px solid var(--glass-bd); border-radius: var(--radius-lg); background: var(--glass-bg); box-shadow: inset 0 1px 0 var(--glass-hi), 0 40px 80px -40px rgba(0, 0, 0, .9); }
+.chat-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; padding: 10px 14px; border-bottom: 1px solid var(--glass-bd); }
+.chat-bar b { font: 700 12px/1.2 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--fg-2); }
+.chat-bar .hchip { margin-left: auto; }
+.chat-log { list-style: none; margin: 0; padding: 16px; display: grid; gap: 10px; align-content: start; }
+.msg { --c: var(--violet); display: grid; grid-template-columns: 74px minmax(0, 1fr); gap: 4px 12px; align-items: start; }
+.msg.me { --c: var(--accent); } .msg.hook { --c: var(--gold); } .msg.test { --c: var(--green); }
+.msg .who { display: inline-flex; justify-content: center; padding: 5px 6px; border: 1px solid color-mix(in srgb, var(--c) 55%, var(--line)); border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--c) 14%, transparent); font: 700 11.5px/1.2 var(--mono); color: var(--fg); }
+.msg .bub { display: grid; gap: 8px; justify-items: start; padding: 8px 12px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); font-size: 14.5px; line-height: 1.45; }
+.msg .bub code { font: 600 13px/1.3 var(--mono); }
+.msg.sys .bub { display: flex; align-items: center; gap: 8px; border-style: dashed; background: transparent; font: 600 13px/1.4 var(--mono); }
+.msg.sys .bub .ico { width: 16px; height: 16px; color: var(--c); }
+.msg .btns, .msg .st { display: flex; flex-wrap: wrap; gap: 5px; }
+.msg .btns span, .msg .st span { font: 700 12px/1.2 var(--mono); padding: 5px 8px; border: 1px solid var(--line-strong); border-radius: var(--radius-sm); }
+.msg .btns .on { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 18%, transparent); }
+
+/* Übersichtsgrafik „Auf einen Blick“: Raster mit Knoten + Pfeilen (Flow-Layout, Pfeile per Flexbox, Spitze per clip-path); ≤ 960 px senkrecht */
+.ov { display: grid; gap: 16px; margin: 0 0 48px; padding: 24px; border: 1px solid var(--line); border-radius: var(--radius-lg); background: var(--surface); box-shadow: var(--shadow); }
+.ov-grid { display: grid; align-items: center; gap: 10px;
+  grid-template-columns: minmax(0, 1fr) 120px minmax(0, 1.3fr) 120px minmax(0, 1fr);
+  grid-template-areas: ". . know . ." ". . a1 . ." "human a2 core a3 repo" ". . a4 . ." ". . help . ."; }
+.ov-node { --hue: var(--accent); display: grid; justify-items: center; align-content: start; gap: 8px; min-width: 0; padding: 16px; text-align: center;
+  border: 1px solid color-mix(in srgb, var(--hue) 40%, var(--line)); border-radius: var(--radius); background: color-mix(in srgb, var(--hue) 9%, var(--surface)); }
+.ov-node > .ico { width: 26px; height: 26px; color: var(--hue); }
+.ov-node b { font-size: 15px; line-height: 1.35; font-weight: 700; }
+.ov-chips { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; }
+.ov-chips li { font: 600 12px/1.2 var(--mono); padding: 4px 8px; border: 1px solid var(--line-strong); border-radius: var(--radius-sm); }
+.ov-core { grid-area: core; display: grid; gap: 10px; padding: 10px; border: 1.5px dashed color-mix(in srgb, var(--gold) 55%, transparent); border-radius: var(--radius-lg); }
+.ov-guard { display: flex; justify-content: center; align-items: center; gap: 8px; font: 700 12px/1.2 var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--gold); }
+.ov-guard .ico { width: 16px; height: 16px; }
+.ov-arr { display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 12px; min-width: 0; }
+.ov-arr.v { flex-direction: row; gap: 24px; }
+.ov-step { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.ov-arr.v .ov-step { flex-direction: row; gap: 8px; }
+.ov-l { font: 600 12px/1.25 var(--mono); color: var(--fg-2); text-align: center; }
+.ov-p { --fd: row; --cp: polygon(0 0, 100% 50%, 0 100%); display: flex; flex-direction: var(--fd); align-items: center; width: 72px; height: 12px; color: var(--line-strong); }
+.ov-p::before { content: ""; flex: 1 1 auto; align-self: center; width: auto; height: 2px; background: currentColor; }
+.ov-p::after { content: ""; flex: none; width: 10px; height: 12px; background: currentColor; clip-path: var(--cp); }
+.ov-p.l { --fd: row-reverse; --cp: polygon(100% 0, 0 50%, 100% 100%); }
+.ov-p.d, .ov-p.u { width: 12px; height: 32px; }
+.ov-p.d::before, .ov-p.u::before { width: 2px; height: auto; align-self: stretch; margin-inline: 5px; }
+.ov-p.d::after, .ov-p.u::after { width: 12px; height: 10px; }
+.ov-p.d { --fd: column; --cp: polygon(0 0, 100% 0, 50% 100%); }
+.ov-p.u { --fd: column-reverse; --cp: polygon(0 100%, 100% 100%, 50% 0); }
+.ov-loop { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 8px 10px; padding-top: 16px; border-top: 1px solid var(--line); font-size: 15px; line-height: 1.5; text-align: center; }
+.ov-loop .ico { width: 18px; height: 18px; color: var(--violet); }
+.ov figcaption { font-size: 15px; line-height: 1.5; color: var(--fg-2); text-align: center; max-width: 72ch; justify-self: center; text-wrap: pretty; }
+@media (max-width: 960px) {
+  .ov-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-areas: "human human" "a2 a2" "know help" "a1 a4" "core core" "a3 a3" "repo repo"; }
+  .ov-arr.h { flex-direction: row; gap: 24px; }
+  .ov-arr.h .ov-step { flex-direction: row; gap: 8px; }
+  .ov-arr.h .ov-p { width: 12px; height: 32px; }
+  .ov-arr.h .ov-p::before { width: 2px; height: auto; align-self: stretch; margin-inline: 5px; }
+  .ov-arr.h .ov-p::after { width: 12px; height: 10px; }
+  .ov-arr.h .ov-p:not(.l) { --fd: column; --cp: polygon(0 0, 100% 0, 50% 100%); }
+  .ov-arr.h .ov-p.l { --fd: column-reverse; --cp: polygon(0 100%, 100% 100%, 50% 0); }
+  .ov-arr.a4 .ov-p.d { --fd: column-reverse; --cp: polygon(0 100%, 100% 100%, 50% 0); }
+  .ov-arr.a4 .ov-p.u { --fd: column; --cp: polygon(0 0, 100% 0, 50% 100%); }
+}
+@media (max-width: 560px) {
+  .ov { padding: 16px; }
+  .ov-node { padding: 12px; }
+  .ov-arr.v { gap: 16px; }
+  .ov-arr.v .ov-step { flex-direction: column; gap: 4px; }
+  .ov-arr.v .ov-l { order: 1; }
+}
+
+/* 01 Ablauf: fünf kleine Kacheln (Icon groß mittig, Nummer in der Ecke), darunter wer handelt + Fachbegriff */
+.steps5 { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; }
+.step { position: relative; display: grid; grid-template-rows: auto auto 1fr auto auto; justify-items: center; gap: 10px; min-width: 0; padding: 22px 14px 14px; text-align: center;
+  border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); box-shadow: var(--shadow); transition: border-color var(--t-fast); }
+.step:hover { border-color: color-mix(in srgb, var(--hue) 55%, var(--line)); }
+.step .no { position: absolute; top: 10px; left: 10px; padding: 4px 6px; border: 1px solid var(--hue); border-radius: var(--radius-sm); font: 800 13px/1 var(--mono); color: var(--hue); }
+.step .bi-l { color: var(--hue); border-color: color-mix(in srgb, var(--hue) 40%, transparent); box-shadow: none;
+  background: radial-gradient(circle at 30% 20%, color-mix(in srgb, var(--hue) 28%, transparent), color-mix(in srgb, var(--hue) 7%, transparent) 72%); }
+.step b { font-size: 17px; font-weight: 800; line-height: 1.25; }
+.step p { font-size: 14.5px; line-height: 1.45; color: var(--fg-2); text-wrap: balance; }
+.act-row { display: flex; flex-wrap: wrap; justify-content: center; align-items: start; gap: 4px; }
+.act { --c: var(--accent); font: 700 11.5px/1.2 var(--mono); padding: 5px 7px; border: 1px solid color-mix(in srgb, var(--c) 55%, var(--line)); border-radius: var(--radius-sm); background: color-mix(in srgb, var(--c) 12%, transparent); }
+.act.c { --c: var(--violet); } .act.a { --c: var(--gold); }
+.step .tech { align-self: end; width: 100%; padding-top: 10px; border-top: 1px solid var(--line); font: 600 12px/1.35 var(--mono); color: var(--fg-2); overflow-wrap: anywhere; }
+.note { display: flex; align-items: flex-start; gap: 12px; margin-top: 16px; max-width: 92ch; padding: 12px 16px; border: 1px solid color-mix(in srgb, var(--accent) 40%, var(--line)); border-radius: var(--radius);
+  background: color-mix(in srgb, var(--accent) 7%, var(--surface)); font-size: 15px; line-height: 1.5; }
+.note .ico { color: var(--accent); margin-top: 2px; }
+
+/* 02 Rollen: Ablauf-Band Organizer → Fachrolle (9, Paar Marketing + Designer) → Prüfer → Synchronizer */
+.rflow { display: grid; grid-template-columns: minmax(0, 1fr) 20px minmax(0, 2.6fr) 20px minmax(0, 1fr) 20px minmax(0, 1fr); gap: 12px; align-items: center; }
+.rflow > .ico { width: 20px; height: 20px; color: var(--fg-2); }
+.rfix { display: grid; justify-items: center; gap: 10px; min-width: 0; padding: 18px 12px; text-align: center; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); box-shadow: var(--shadow); }
+.rfix .bi-l { width: 48px; height: 48px; } .rfix .bi-l .ico { width: 26px; height: 26px; }
+.rfix b { font-size: 16px; font-weight: 800; }
+.rmid { display: grid; gap: 12px; min-width: 0; padding: 16px; border: 1px solid color-mix(in srgb, var(--accent) 45%, var(--line)); border-radius: var(--radius); background: var(--surface); box-shadow: var(--shadow); }
+.rroles { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; }
+.rroles li { display: flex; align-items: center; gap: 8px; min-width: 0; padding: 8px 10px; border: 1px solid color-mix(in srgb, var(--h) 45%, var(--line)); border-radius: var(--radius-sm); font-size: 14.5px; font-weight: 700; }
+.rroles li.pair { border-width: 2px; }
+.rroles .ico { flex: none; width: 18px; height: 18px; color: var(--h); }
+.rmid .rnote { display: flex; align-items: flex-start; gap: 8px; margin: 0; font-size: 14px; line-height: 1.45; color: var(--fg-2); }
+.rmid .rnote .ico { flex: none; width: 18px; height: 18px; color: var(--gold); }
+@media (max-width: 900px) { .rflow { grid-template-columns: minmax(0, 1fr); } .rflow > .ico { transform: rotate(90deg); justify-self: center; } }
+
+/* 03 Sicherheit: drei Stufen (frei · mit Rückfrage · nie ohne Freigabe), darunter die Prüfkette zum Durchklicken */
+.perm { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin-bottom: 16px; }
+.pm { display: grid; align-content: start; gap: 12px; min-width: 0; padding: 18px; border: 1px solid color-mix(in srgb, var(--hue) 35%, var(--line)); border-radius: var(--radius); background: var(--surface); box-shadow: var(--shadow); }
+.pm-h { display: flex; align-items: center; gap: 12px; }
+.pm-h .ico { box-sizing: border-box; width: 42px; height: 42px; padding: 8px; border-radius: var(--radius); color: var(--hue);
+  background: color-mix(in srgb, var(--hue) 14%, transparent); border: 1px solid color-mix(in srgb, var(--hue) 35%, transparent); }
+.pm-h b { display: block; margin-top: 4px; font-size: 17px; font-weight: 800; line-height: 1.25; }
+.pm ul { margin: 0; padding-left: 18px; display: grid; gap: 6px; font-size: 14.5px; line-height: 1.45; }
+.pm li::marker { color: var(--hue); }
+
+/* Belege: Kennzahlen in einer Zeile, darunter Diagramme */
+.ev .kpis { margin-bottom: 16px; }
+.kpis-6 { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+.gitg { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 16px; align-items: stretch; }
+.chart .callout { align-self: end; }
+
+/* ═════ Bausteine aus der vorigen Fassung dieser Seite (Ordnerbaum, Datenfluss, Hook-Takt, Ansichten, Prüfkette, Diagramme, DoD, Lernkreis) ═════ */
+/* ── 00 Einrichtung: Ordnerbaum + Verdrahtung ── */
+.setup { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 16px; align-items: start; }
+@media (max-width: 1100px) { .setup { grid-template-columns: minmax(0, 1fr); } }
+.tree { padding: 16px 18px; display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 2px 18px; align-content: start; }
+.tree h3 { grid-column: 1 / -1; }
+.tree h3, .wire h3 { font-size: 19px; font-weight: 800; margin-bottom: 8px; }
+.tr { grid-column: 1 / -1; display: grid; grid-template-columns: subgrid; gap: 2px 18px; align-items: baseline; padding: 6px 8px; border-radius: var(--radius-sm); }
+.tr:hover { background: var(--surface-2); }
+.tr .p { font: 700 13.5px/1.4 var(--mono); padding-left: calc(var(--d, 0) * 22px); display: flex; gap: 8px; align-items: center; white-space: nowrap; }
+.tr .p .ico { width: 16px; height: 16px; color: var(--hue, var(--accent)); }
+.tr .w { font-size: 14.5px; line-height: 1.45; }
+.tr .w code { font-size: 12.5px; white-space: nowrap; }
+.tr .w .chip { padding: 2px 6px; font-size: 12.5px; margin-left: 6px; }
+@media (max-width: 640px) { .tree { grid-template-columns: minmax(0, 1fr); } .tr .p { white-space: normal; overflow-wrap: anywhere; } }
+.wire { padding: 16px 18px; display: grid; gap: 12px; align-content: start; }
+.code { margin: 0; padding: 12px 14px; border: 1px solid var(--line-strong); border-radius: var(--radius); background: var(--surface-2); font: 500 13px/1.6 var(--mono); white-space: pre; overflow-x: auto; tab-size: 2; }
+.code .k { color: var(--accent); font-weight: 700; }
+.code .s { color: var(--green); }
+.code .c { color: var(--fg-2); font-style: italic; }
+.env { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr)); gap: 8px; }
+.env > div { display: grid; gap: 2px; padding: 9px 11px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface-2); font-size: 14px; line-height: 1.4; }
+.env b { font-weight: 800; display: flex; gap: 8px; align-items: center; }
+.env b .ico { width: 18px; height: 18px; color: var(--hue, var(--accent)); }
+
+/* ═════════ flow-graph (in Zielseite übernehmen) ═════════ */
+.fg { --pc: var(--accent); margin: 0; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg); overflow: hidden; }
+.fg-bar { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; justify-content: space-between; padding: 14px 18px; border-bottom: 1px solid var(--line); }
+.fg-scn { display: flex; flex-wrap: wrap; gap: 6px; }
+.fg-scn button, .fg-ctl button, .fg-ctl select {
+  --c: var(--accent); display: inline-flex; align-items: center; gap: 8px; min-height: 40px; padding: 0 14px;
+  font-size: 13.5px; font-weight: 700; background: var(--surface); border: 1px solid var(--line-strong); border-radius: var(--radius-sm);
+  cursor: pointer; transition: border-color var(--t-fast), background var(--t-fast), transform var(--t-fast);
+}
+.fg-scn button svg, .fg-ctl button svg { width: 17px; height: 17px; flex: none; color: var(--c); fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
+.fg-scn button[aria-pressed="true"] { border-color: var(--c); background: color-mix(in srgb, var(--c) 16%, var(--surface)); }
+.fg-scn button:hover, .fg-ctl button:hover { border-color: var(--c); }
+.fg-scn button:active, .fg-ctl button:active { transform: scale(.97); }
+.fg-ctl { display: flex; gap: 6px; align-items: center; }
+.fg-ctl button { padding: 0; width: 40px; justify-content: center; }
+.fg-ctl button svg { color: var(--fg); }
+.fg-ctl button[disabled] { opacity: .45; cursor: default; }
+.fg-ctl select { padding: 0 10px; font: 600 13px var(--mono); }
+.fg-stage { padding: 12px 10px 6px; background: linear-gradient(var(--grid) 1px, transparent 1px) 0 0 / 24px 24px, linear-gradient(90deg, var(--grid) 1px, transparent 1px) 0 0 / 24px 24px, var(--surface-2); }
+.fg-svg { display: block; width: 100%; height: auto; overflow: visible; font-family: var(--font); }
+.fg-svg .lane { fill: var(--fg-2); font: 700 11px var(--mono); letter-spacing: .12em; text-transform: uppercase; }
+.fg-svg .lane-line { stroke: var(--line); stroke-width: 1; stroke-dasharray: 2 6; }
+/* Kanten: Art = Linienstil (nie nur Farbe) → topic durchgezogen, service gestrichelt + Pfeil beidseitig, action Strich-Punkt, stream breit */
+.fg-svg .edge { fill: none; stroke: var(--line-strong); stroke-width: 1.6; transition: opacity var(--t-base), stroke var(--t-base), stroke-width var(--t-base); }
+.fg-svg .edge.k-service { stroke-dasharray: 6 4; }
+.fg-svg .edge.k-action { stroke-dasharray: 14 4 2 4; }
+.fg-svg .edge.k-stream { stroke-width: 3.4; }
+.fg-svg .edge.stale { stroke-dasharray: 2 5; }
+.fg-svg .edge-hit { fill: none; stroke: transparent; stroke-width: 14; pointer-events: stroke; }
+.fg-svg .edge.on { stroke: var(--pc); }
+.fg-svg .edge.now { stroke-width: 3; }
+.fg-svg .edge.k-stream.now { stroke-width: 4.4; }
+.fg-svg marker path { fill: var(--line-strong); }
+.fg-svg marker.on path { fill: var(--pc); }
+.fg-svg .node { cursor: pointer; transition: opacity var(--t-base); outline: none; }
+.fg-svg .node rect { fill: var(--surface); stroke: var(--line-strong); stroke-width: 1.5; transition: stroke var(--t-base), fill var(--t-base), stroke-width var(--t-base); }
+.fg-svg .node.on rect { stroke: var(--c); }
+.fg-svg .node.now rect { fill: color-mix(in srgb, var(--pc) 20%, var(--surface)); stroke: var(--pc); stroke-width: 2.5; }
+.fg-svg .node.pin rect, .fg-svg .node:focus-visible rect { stroke: var(--fg); stroke-width: 2.5; }
+.fg-svg .node .t { fill: var(--fg); font-weight: 800; font-size: 14px; }
+.fg-svg .node .s { fill: var(--fg-2); font: 600 11px var(--mono); }
+.fg-svg .node use { color: var(--c); fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.fg-svg.dim .edge:not(.hl), .fg-svg.dim .node:not(.hl), .fg-svg.dim .badge:not(.hl) { opacity: .3; }
+.fg-svg .badge rect { fill: var(--surface); stroke: var(--pc); stroke-width: 1.5; }
+.fg-svg .badge text { fill: var(--fg); font: 700 11px var(--mono); text-anchor: middle; dominant-baseline: central; }
+.fg-svg .chip rect { fill: var(--surface); stroke: var(--line-strong); stroke-width: 1; }
+.fg-svg .chip.now rect { stroke: var(--pc); stroke-width: 1.5; }
+.fg-svg .chip text { fill: var(--fg); font: 600 11.5px var(--mono); dominant-baseline: central; }
+.fg-svg .pkt circle { fill: var(--pc); }
+.fg-svg .pkt .halo { opacity: .28; }
+.fg-foot { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr); gap: 16px 28px; padding: 16px 18px 18px; border-top: 1px solid var(--line); }
+.fg-detail h3 { margin: 0; font-size: 19px; font-weight: 800; letter-spacing: -.01em; }
+.fg-detail p { margin: 6px 0 0; color: var(--fg-2); font-size: 15px; max-width: 60ch; }
+.fg-detail .io { display: grid; gap: 4px; margin-top: 10px; font-size: 14px; }
+.fg-detail .io b { font-weight: 800; }
+.fg-detail code, .fg-steps code { font: 600 12px/1.35 var(--mono); color: var(--fg); overflow-wrap: anywhere; }
+.fg-status { margin-top: 10px; font: 600 13px/1.4 var(--mono); color: var(--fg); }
+.fg-steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.fg-steps li { display: grid; grid-template-columns: 24px minmax(0, 1fr); gap: 2px 10px; align-items: baseline; padding: 7px 10px; border: 1px solid transparent; border-radius: var(--radius); font-size: 14px; cursor: pointer; transition: border-color var(--t-fast), background var(--t-fast); }
+.fg-steps li:hover { border-color: var(--line-strong); }
+.fg-steps li .n { font: 700 12px/1 var(--mono); color: var(--pc); }
+.fg-steps li .w { display: flex; flex-wrap: wrap; gap: 2px 12px; align-items: baseline; }
+.fg-steps li b { font-weight: 800; }
+.fg-steps li .note { grid-column: 2; color: var(--fg-2); }
+.fg-steps li.now { border-color: var(--pc); background: color-mix(in srgb, var(--pc) 10%, var(--surface)); }
+.fg-legend { display: flex; flex-wrap: wrap; gap: 8px 20px; padding: 10px 18px 14px; border-top: 1px solid var(--line); font-size: 13px; color: var(--fg-2); }
+.fg-legend span { display: inline-flex; align-items: center; gap: 8px; }
+.fg-legend svg { width: 34px; height: 10px; overflow: visible; }
+.fg-legend line { stroke: var(--fg-2); stroke-width: 1.6; }
+.fg figcaption { padding: 0 18px 14px; font-size: 14px; color: var(--fg-2); }
+.fg .fg-fallback { margin: 0; padding: 14px 18px 14px 40px; }
+.fg.fg-ready .fg-fallback, .fg:not(.fg-ready) .fg-bar, .fg:not(.fg-ready) .fg-stage, .fg:not(.fg-ready) .fg-foot, .fg:not(.fg-ready) .fg-legend { display: none; }
+@media (max-width: 760px) { .fg-foot { grid-template-columns: minmax(0, 1fr); } .fg-bar { padding: 12px; } }
+@media (prefers-reduced-motion: reduce) { .fg *, .fg-svg * { transition: none !important; } }
+#fg-work .fg-legend { display: none; }
+.fg-key { display: flex; flex-wrap: wrap; gap: 8px 22px; padding: 12px 18px 14px; border-top: 1px solid var(--line); font-size: 14px; color: var(--fg-2); }
+.fg-key span { display: inline-flex; align-items: center; gap: 8px; }
+.fg-key svg { width: 34px; height: 10px; overflow: visible; }
+.fg-key line { stroke: var(--fg-2); stroke-width: 1.6; }
+/* ── 04 Leitplanken: Hook-Takt ── */
+.life { padding: 20px 18px; }
+.life-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 0 12px; }
+.life-line { grid-row: 1; grid-column: 1 / -1; align-self: center; height: 2px; background: var(--line-strong); margin-inline: calc(100% / 14 - 6px); }
+.life-dot { grid-row: 1; grid-column: 1 / -1; align-self: center; justify-self: start; width: 14px; height: 14px; margin-left: -7px; border-radius: 50%; background: var(--accent); transition: transform 900ms var(--ease-io); }
+.lf-pin { grid-row: 1; justify-self: center; width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; background: var(--surface); border: 2px solid var(--line-strong); font: 700 13px var(--mono); transition: border-color var(--t-base), background var(--t-base); z-index: 1; }
+.lf-pin.on { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 22%, var(--surface)); }
+.lf { grid-row: 2; margin-top: 14px; display: grid; gap: 6px; align-content: start; padding: 12px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface-2); transition: border-color var(--t-base); }
+.lf.on { border-color: var(--accent); }
+.lf .ev { font: 700 13px/1.2 var(--mono); color: var(--accent); }
+.lf h3 { font-size: 16px; font-weight: 800; overflow-wrap: anywhere; }
+.lf p { font-size: 14px; line-height: 1.45; color: var(--fg-2); }
+.lf p code { color: var(--fg); font-size: 12.5px; }
+.hbadge { justify-self: start; display: inline-flex; align-items: center; gap: 6px; font: 700 13px/1 var(--mono); padding: 5px 8px; border-radius: var(--radius-sm); border: 1px solid color-mix(in srgb, var(--hue, var(--fg-2)) 60%, var(--line)); color: var(--fg); background: color-mix(in srgb, var(--hue, var(--fg-2)) 12%, var(--surface)); }
+.hbadge .ico { width: 16px; height: 16px; color: var(--hue, var(--fg-2)); }
+.life-grid .lf-mob { display: none; }
+@container (max-width: 1100px) { /* Kapitelbreite statt Fensterbreite: neben dem Inhaltsverzeichnis passen 7 Spalten nicht */
+  .life-grid { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; }
+  .life-line, .life-dot, .lf-pin { display: none; }
+  .lf { grid-row: auto; margin-top: 0; }
+  .life-grid .lf-mob { display: inline; }
+}
+.prefix { margin-top: 16px; padding: 16px 18px; display: grid; grid-template-columns: minmax(220px, .5fr) minmax(0, 2fr); gap: 12px 28px; align-items: start; }
+.prefix h3 { font-size: 19px; font-weight: 800; }
+.prefix p { color: var(--fg-2); font-size: 15px; line-height: 1.5; margin-top: 6px; }
+.pfx { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 8px; }
+.pfx span { display: grid; gap: 2px; padding: 9px 11px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface-2); font-size: 14px; line-height: 1.35; }
+.pfx span b { font: 700 13.5px/1.2 var(--mono); color: var(--accent); }
+@media (max-width: 800px) { .prefix { grid-template-columns: minmax(0, 1fr); } }
+.guard { padding: 16px 18px 18px; display: grid; gap: 14px; }
+.guard h3 { font-size: 19px; font-weight: 800; }
+.g-btns { display: flex; flex-wrap: wrap; gap: 6px; }
+.g-btns button { min-height: 42px; padding: 0 12px; display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--line-strong); border-radius: var(--radius-sm); background: var(--surface); font: 700 13.5px/1.2 var(--mono); cursor: pointer; transition: border-color var(--t-fast), background var(--t-fast), transform var(--t-fast); }
+.g-btns button:hover { border-color: var(--accent); }
+.g-btns button:active { transform: scale(.97); }
+.g-btns button[aria-pressed="true"] { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 14%, var(--surface)); }
+.g-chain { display: grid; grid-template-columns: minmax(0, 1fr) 28px minmax(0, 1fr) 28px minmax(0, 1fr) 28px minmax(0, 1.2fr); align-items: stretch; }
+.g-chain > svg { align-self: center; justify-self: center; width: 20px; height: 20px; color: var(--fg-2); }
+.gs { display: grid; gap: 6px; align-content: start; padding: 12px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface-2); transition: border-color var(--t-base), background var(--t-base); min-width: 0; }
+.gs .k { font: 700 13px/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--fg-2); }
+.gs .v { font-size: 14.5px; line-height: 1.45; font-weight: 700; }
+.gs .v code { font-size: 13px; }
+.gs.lit { border-color: var(--hue, var(--accent)); background: color-mix(in srgb, var(--hue, var(--accent)) 10%, var(--surface)); }
+.gs.shake { animation: shake 320ms var(--ease-io); }
+@keyframes shake { 20% { transform: translateX(-5px); } 45% { transform: translateX(4px); } 70% { transform: translateX(-3px); } 100% { transform: none; } }
+.g-out { font-size: 15px; line-height: 1.5; padding: 10px 12px; border: 1px solid var(--line); border-radius: var(--radius); min-height: 48px; }
+@media (max-width: 760px) { .g-chain { grid-template-columns: minmax(0, 1fr); } .g-chain > svg { transform: rotate(90deg); margin: 4px 0; } }
+@media (prefers-reduced-motion: reduce) { .gs.shake { animation: none; } }
+.chart { overflow: clip; padding: 16px 18px; display: grid; gap: 12px; align-content: start; }
+.chart h3 { font-size: 17px; font-weight: 800; }
+.chart .sub { font-size: 14px; color: var(--fg-2); margin-top: -8px; }
+.vbars { display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 0 8px; }
+.vb-axis { display: grid; grid-template-rows: repeat(3, 1fr); height: 220px; font: 500 13px/1 var(--mono); color: var(--fg-2); text-align: right; font-variant-numeric: tabular-nums; }
+.vb-axis span { transform: translateY(-6px); }
+.vb-plot { display: grid; height: 220px; }
+.vb-plot > * { grid-area: 1 / 1; }
+.vb-grid { display: grid; grid-template-rows: repeat(3, 1fr); }
+.vb-grid i { border-top: 1px solid var(--line); }
+.vb-cols { display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 2px; align-items: end; border-bottom: 1px solid var(--line-strong); }
+.vb { position: relative; height: calc(var(--v) / 1500 * 100%); min-height: 2px; background: var(--accent); border-radius: 2px 2px 0 0; transform-origin: bottom; transition: transform 900ms var(--ease-out); outline-offset: 2px; }
+.charts-anim .vb { transform: scaleY(0); }
+.charts-anim .in .vb { transform: none; }
+.vb .lbl { position: absolute; bottom: calc(100% + 4px); left: 50%; translate: -50% 0; font: 700 13px/1 var(--mono); white-space: nowrap; }
+.vb-x { grid-column: 2; display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 2px; font: 500 13px/1.3 var(--mono); text-align: center; padding-top: 6px; }
+.tt { position: absolute; bottom: calc(100% + 8px); left: 50%; translate: -50% 0; z-index: 3; padding: 6px 8px; border: 1px solid var(--line-strong); border-radius: var(--radius-sm); background: var(--surface); font: 500 13px/1.35 var(--mono); white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity var(--t-fast); }
+.vb:hover .tt, .vb:focus-visible .tt, .hb:hover .tt, .hb:focus-visible .tt { opacity: 1; }
+.vb:nth-last-child(-n+2) .tt { left: auto; right: 0; translate: 0 0; }
+.vb:nth-child(-n+2) .tt { left: 0; translate: 0 0; }
+.vb:hover .lbl, .vb:focus-visible .lbl { opacity: 0; }
+.hbars { display: grid; gap: 7px; }
+.hrow { display: grid; grid-template-columns: 88px minmax(0, 1fr) 48px; gap: 10px; align-items: center; font: 500 13.5px/1.2 var(--mono); }
+.hrow .v { text-align: right; font-variant-numeric: tabular-nums; font-weight: 700; }
+.htrack { height: 14px; display: flex; }
+.hb { position: relative; width: calc(var(--v) / var(--max) * 100%); min-width: 2px; height: 100%; background: var(--accent); border-radius: 0 2px 2px 0; transform-origin: left; transition: transform 900ms var(--ease-out); }
+.charts-anim .hb { transform: scaleX(0); }
+.charts-anim .in .hb { transform: none; }
+.hb .tt { left: 0; translate: 0 0; }
+.chart details { font-size: 14px; }
+.chart summary { cursor: pointer; font-weight: 700; min-height: 32px; display: flex; align-items: center; }
+.chart table { border-collapse: collapse; width: 100%; font: 500 13px/1.35 var(--mono); margin-top: 6px; }
+.chart th, .chart td { padding: 5px 8px; border-bottom: 1px solid var(--line); text-align: left; }
+.chart td.r, .chart th.r { text-align: right; font-variant-numeric: tabular-nums; }
+.callout { font-size: 14px; line-height: 1.45; padding: 10px 12px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface-2); }
+.dod-t { padding: 16px 18px; display: grid; gap: 10px; align-content: start; }
+.dod-t h3, .commit-path h3 { font-size: 19px; font-weight: 800; }
+.dod-t table { border-collapse: collapse; width: 100%; font-size: 14.5px; line-height: 1.4; }
+.dod-t th { text-align: left; font: 700 13px/1.2 var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--fg-2); padding: 6px 10px; border-bottom: 1px solid var(--line-strong); }
+.dod-t td { padding: 8px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.dod-t td:first-child { font-weight: 700; white-space: nowrap; }
+.commit-path { padding: 16px 18px; display: grid; gap: 12px; align-content: start; }
+.cp { display: grid; gap: 0; }
+.cp-s { display: grid; grid-template-columns: 36px minmax(0, 1fr); gap: 2px 12px; }
+.cp-s .dot { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; border: 2px solid var(--hue, var(--accent)); grid-row: span 2; background: var(--surface); }
+.cp-s .dot .ico { width: 16px; height: 16px; color: var(--hue, var(--accent)); }
+.cp-s b { font-weight: 800; font-size: 15.5px; padding-top: 4px; }
+.cp-s p { font-size: 14.5px; line-height: 1.45; color: var(--fg-2); padding-bottom: 14px; }
+.cp-s p code { color: var(--fg); }
+.cp-s:not(:last-child) .dot { position: relative; }
+.cp-s:not(:last-child) { background: linear-gradient(var(--line-strong), var(--line-strong)) 14px 32px / 2px calc(100% - 32px) no-repeat; }
+.learn { padding: 18px; display: grid; gap: 14px; }
+.learn h3 { font-size: 19px; font-weight: 800; }
+.lflow { display: grid; grid-template-columns: minmax(0, 1fr) 28px minmax(0, 1fr) 28px minmax(0, 1fr) 28px minmax(0, 1fr); align-items: stretch; }
+.lflow > svg { align-self: center; justify-self: center; width: 20px; height: 20px; color: var(--fg-2); }
+.lstep { --hue: var(--accent); padding: 12px 14px; border: 1px solid color-mix(in srgb, var(--hue) 45%, var(--line)); background: color-mix(in srgb, var(--hue) 7%, var(--surface)); border-radius: var(--radius); display: grid; gap: 4px; align-content: start; justify-items: center; text-align: center; }
+.lstep .k { display: flex; flex-direction: column; align-items: center; gap: 6px; font: 700 13px/1.2 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--hue); }
+.lstep .k .ico { width: 34px; height: 34px; }  /* kleine Kachel: Icon groß über der Nummer */
+.lstep b { font-size: 15.5px; font-weight: 800; text-wrap: balance; }
+.lstep p { font-size: 14px; line-height: 1.45; color: var(--fg-2); text-wrap: balance; }
+.lex { display: grid; gap: 6px; }
+.lex-r { display: grid; grid-template-columns: minmax(0, 1fr) 28px minmax(0, 1fr) 28px minmax(0, 1fr) 28px minmax(0, 1fr); font-size: 14px; line-height: 1.4; }
+.lex-r > span { padding: 7px 10px; border: 1px dashed var(--line-strong); border-radius: var(--radius); }
+.lex-r > i { display: block; }
+.lex-h { font: 700 13px/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--fg-2); }
+@media (max-width: 1000px) {
+  .lflow, .lex-r { grid-template-columns: minmax(0, 1fr); gap: 6px; }
+  .lflow > svg { transform: rotate(90deg); }
+  .lex-r > i { display: none; }
+}
+.learn, .life, .tree, .wire, .guard, .dod-t, .commit-path, .prefix, .chart { box-shadow: var(--shadow); }
+.wire, .dod-t, .learn, .lex { grid-template-columns: minmax(0, 1fr); }  /* breite Code-Zeilen scrollen im Block, nicht die Seite */
+.lex code, .dod-t code, .gs code, .tr .w code { overflow-wrap: anywhere; white-space: normal; }
+
+/* Nachschlagewerk (Variante KA, Wunsch User 07.10.2026): Kopf nur Titel + Sachsatz + Kennzahlen; Inhaltsverzeichnis links (sticky), zehn Kapitel rechts;
+   ≤ 1100 px Inhaltsverzeichnis als Raster über den Kapiteln */
+.hero-inner { grid-template-columns: minmax(0, 1fr); min-height: 0; padding-block: 72px 64px; }
+.hero-kv { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+.hero-kv li { display: flex; align-items: baseline; gap: 8px; padding: 8px 14px; border: 1px solid var(--glass-bd); border-radius: var(--radius); background: var(--glass-bg); font-size: 14px; font-weight: 600; }
+.hero-kv b { font: 800 20px/1 var(--mono); color: var(--accent); font-variant-numeric: tabular-nums; }
+.ka { display: grid; grid-template-columns: 210px minmax(0, 1fr); gap: 48px; padding-block: 72px 32px; }
+.ka-main { min-width: 0; }
+.toc { position: sticky; top: calc(var(--hdr, 60px) + 24px); align-self: start; display: grid; gap: 10px; }
+.toc-k { font: 700 12px/1.2 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--fg-2); padding-inline: 10px; }
+.toc ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+.toc a { display: grid; grid-template-columns: 24px minmax(0, 1fr); gap: 8px; align-items: baseline; padding: 7px 10px; border: 1px solid transparent; border-radius: var(--radius-sm);
+  font-size: 14.5px; font-weight: 600; line-height: 1.3; transition: background-color var(--t-fast), border-color var(--t-fast); }
+.toc a .n { font: 700 12px/1 var(--mono); color: var(--accent); }
+.toc a:hover { background: var(--surface-2); }
+.toc a[aria-current="true"] { border-color: color-mix(in srgb, var(--accent) 45%, var(--line)); background: color-mix(in srgb, var(--accent) 10%, var(--surface)); font-weight: 800; }
+.sub-head { display: grid; gap: 6px; margin: 48px 0 16px; }
+.sub-head h3 { font-size: 19px; font-weight: 800; }
+.sub-head p { color: var(--fg-2); font-size: 15px; max-width: 72ch; }
+.ex { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; margin-top: 16px; align-items: start; }
+.ex-chat { grid-area: auto; border-color: var(--line); background: var(--surface); box-shadow: var(--shadow); }
+.ex-chat .chat-bar { border-bottom-color: var(--line); }
+.bt :is(th, td).r { text-align: right; font-family: var(--mono); }
+@media (max-width: 760px) { /* Tabelle als Liste: Name + Anzahl in einer Zeile, Zweck/Ort/Beispiel darunter */
+  .bt thead { display: none; }
+  .bt tr { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 10px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+  .bt td { padding: 0 10px; border: 0; }
+  .bt td:nth-child(n + 3) { grid-column: 1 / -1; }
+}
+
+/* Umbruchpunkte */
+@media (max-width: 1100px) {
+  .ka { grid-template-columns: minmax(0, 1fr); gap: 24px; padding-top: 48px; }
+  .toc { position: static; }
+  .toc ol { grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); }
+}
+@media (max-width: 1200px) {
+  .steps5 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .kpis-6 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@media (max-width: 960px) {
+  .contact .wrap, .gitg, .ex { grid-template-columns: minmax(0, 1fr); }
+  .perm { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 760px) {
+  .steps5 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .contact { padding-block: 72px; }
+  .hero-inner { padding-block: 56px 48px; }
+}
+@media (max-width: 560px) {
+  .wrap { padding-inline: 16px; }
+  .kpi strong { font-size: 26px; }
+  .sec { padding-bottom: 48px; }
+  .sec + .sec { padding-top: 56px; }
+  .perm, .steps5 { grid-template-columns: minmax(0, 1fr); }
+  .kpis-6 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .bt td:nth-child(4) code { white-space: normal; overflow-wrap: anywhere; }
+  .msg { grid-template-columns: minmax(0, 1fr); }
+  .msg .who { justify-self: start; }
+  .dod-t table { table-layout: fixed; }
+  .dod-t :is(th, td) { overflow-wrap: anywhere; }
+  .dod-t td:first-child { white-space: normal; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *:not(.progress), *::before, *::after { transition-duration: 0ms !important; transition-delay: 0ms !important; animation-duration: 0ms !important; animation-iteration-count: 1 !important; }
+}
+.dark-zone { --accent: var(--indigo); --accent-ink: #0d0f2e; --grid: rgba(129, 140, 248, .045); --glow: rgba(129, 140, 248, .28); } /* landing.css setzt sonst Türkis */
+.strip ul { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); } /* „Claude Opus + Sonnet“ passt nicht in 150 px (nowrap) → überlappte */
+
+/* ═════════ AI Dev Workflow: eine große Seite aus aktueller Fassung + V2 (Wunsch User 10.10.2026) ═════════ */
+:root { --t-xfade: 900ms; --t-pulse: 2.6s; --t-ping: 1.2s; --lift: 2px; }
+
+/* Hero: Claim links, Live-Chat rechts (Nachrichten erscheinen einmal nacheinander, Phasen-Leiste folgt) */
+.hero-inner.wf-hero { grid-template-columns: minmax(0, 1fr) minmax(0, 1.04fr); gap: 40px 56px; align-items: center; min-height: 0; padding-block: 72px 72px; }
+.wf-hero .hero-copy { gap: 22px; }
+.wf-hero .h1-claim { font-size: clamp(40px, 5.2vw, 76px); }
+.wf-hero .h1-claim em { padding-right: .04em; }
+.wf-hero .abstract { font-size: 17.5px; }
+.wf-hero .hero-kv { justify-content: flex-start; }
+.wf-stage { display: grid; gap: 12px; min-width: 0; }
+.kap-demo .wf-stage { max-width: 760px; margin-inline: auto; }
+.wf-stage .chat { grid-area: auto; }
+.chat-bar .replay { display: inline-flex; align-items: center; gap: 6px; min-height: 30px; padding: 0 10px; border: 1px solid var(--glass-bd); border-radius: var(--radius-sm);
+  background: transparent; font: 700 12px/1 var(--mono); color: var(--fg); cursor: pointer; transition: border-color var(--t-fast), background-color var(--t-fast); }
+.chat-bar .replay:hover { border-color: color-mix(in srgb, var(--accent) 60%, var(--glass-bd)); background: color-mix(in srgb, var(--accent) 10%, transparent); }
+.chat-bar .replay .ico { width: 16px; height: 16px; }
+html.wf-js .wf-stage .msg { opacity: 0; transform: translateY(8px); transition: opacity var(--t-slow) var(--ease-out), transform var(--t-slow) var(--ease-out); }
+html.wf-js .wf-stage .msg.in { opacity: 1; transform: none; }
+html.wf-js .wf-stage.reset .msg { transition-duration: 200ms; }
+.phases { list-style: none; margin: 0; padding: 10px; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; border: 1px solid var(--glass-bd); border-radius: var(--radius); background: var(--glass-bg); }
+.phases li { --hue: var(--accent); position: relative; display: grid; justify-items: center; gap: 6px; padding: 8px 4px 6px; border-radius: var(--radius-sm); text-align: center;
+  font: 700 12px/1.2 var(--mono); color: var(--fg-2); transition: color var(--t-base), background-color var(--t-base); }
+.phases li .ico { width: 18px; height: 18px; color: var(--fg-2); transition: color var(--t-base); }
+.phases li::after { content: ""; position: absolute; left: 10%; right: 10%; bottom: 0; height: 2px; background: var(--hue); transform: scaleX(0); transform-origin: 0 50%; transition: transform var(--t-story) var(--ease-out); }
+.phases li.on { color: var(--fg); background: color-mix(in srgb, var(--hue) 12%, transparent); }
+.phases li.on .ico, .phases li.done .ico { color: var(--hue); }
+.phases li.on::after, .phases li.done::after { transform: none; }
+.phases li.done { color: var(--fg); }
+
+/* Prinzip (Landing, hell): Du · Chat · Repo, darunter sieben Bausteine als Lesepfad */
+.land .wrap { display: grid; gap: 40px; }
+.land-head .eyebrow { justify-content: center; }
+.trio { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.tri { --hue: var(--accent); display: grid; align-content: start; gap: 12px; padding: 24px; border: 1px solid color-mix(in srgb, var(--hue) 35%, var(--line)); border-radius: var(--radius);
+  background: radial-gradient(90% 70% at 100% 0%, color-mix(in srgb, var(--hue) 9%, transparent), transparent 70%), var(--surface); box-shadow: var(--shadow); }
+.tri .bi-l { justify-self: start; color: var(--hue); border-color: color-mix(in srgb, var(--hue) 40%, transparent); box-shadow: 0 0 26px -8px color-mix(in srgb, var(--hue) 45%, transparent);
+  background: radial-gradient(circle at 30% 20%, color-mix(in srgb, var(--hue) 28%, transparent), color-mix(in srgb, var(--hue) 7%, transparent) 72%); }
+.tri h3 { font-size: 22px; font-weight: 800; letter-spacing: -.015em; }
+.tri ul { margin: 0; padding-left: 18px; display: grid; gap: 6px; font-size: 15px; line-height: 1.45; }
+.tri li::marker { color: var(--hue); }
+.tri-arrow { display: none; }
+.keys7 { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 10px; }
+.keys7 a { --hue: var(--accent); display: grid; justify-items: center; align-content: start; gap: 8px; height: 100%; padding: 16px 10px 14px; text-align: center;
+  border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface);
+  transition: border-color var(--t-fast), background-color var(--t-fast), transform var(--t-base) var(--ease-out); }
+.keys7 a:hover, .keys7 a:focus-visible { border-color: color-mix(in srgb, var(--hue) 50%, var(--line)); background: color-mix(in srgb, var(--hue) 7%, var(--surface)); transform: translateY(calc(-1 * var(--lift))); }
+.keys7 .ico { width: 26px; height: 26px; color: var(--hue); }
+.keys7 b { font-size: 15px; font-weight: 800; }
+.keys7 span { font-size: 13.5px; line-height: 1.4; color: var(--fg-2); text-wrap: balance; }
+
+/* Inhaltsverzeichnis in fünf Teilen */
+.toc .grp { margin-top: 10px; padding: 0 10px 2px; font: 700 12px/1.2 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--fg); }
+.toc .grp:first-child { margin-top: 0; }
+.part-head { display: flex; align-items: center; gap: 14px; padding: 8px 0 32px; font: 700 12px/1.2 var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--fg); }
+.part-head::after { content: ""; flex: 1 1 auto; height: 1px; background: var(--line-strong); }
+.part-head b { padding: 5px 8px; border: 1px solid var(--line-strong); border-radius: var(--radius-sm); }
+.sec + .part-head { padding-top: 40px; border-top: 1px solid var(--line); }
+
+/* 02 Arbeitsplatz: acht Merkmale + ein Arbeitstag */
+.fx8 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+.fx8 .feat .ico { width: 26px; height: 26px; color: var(--hue); }
+.fx8 .feat .k-t { margin-top: auto; padding-top: 8px; font-size: 12px; text-transform: none; letter-spacing: .02em; overflow-wrap: anywhere; }
+.day { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; counter-reset: d; }
+.day li { --hue: var(--accent); position: relative; display: grid; align-content: start; gap: 6px; padding: 14px 14px 16px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); box-shadow: var(--shadow); }
+.day li::before { counter-increment: d; content: counter(d, decimal-leading-zero); font: 800 13px/1 var(--mono); color: var(--hue); }
+.day b { font-size: 15.5px; font-weight: 800; line-height: 1.3; }
+.day p { font-size: 14px; line-height: 1.45; color: var(--fg-2); }
+.day p code { color: var(--fg); }
+
+/* 03 Kreislauf: Ring bleibt stehen (sticky), Schritte scrollen daneben; Weg-Wahl zeigt, welche Schritte eine Anfrage braucht */
+.cyc-paths { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; margin-bottom: 24px; }
+.cyc-paths .k-t { color: var(--fg); }
+.cyc { display: grid; grid-template-columns: minmax(280px, .9fr) minmax(0, 1.1fr); gap: 40px; align-items: start; }
+.ring-col { position: sticky; top: calc(var(--hdr, 60px) + 24px); }
+.ring-box { display: grid; place-items: center; aspect-ratio: 1; max-width: 460px; margin-inline: auto; }
+.ring-box > * { grid-area: 1 / 1; }
+.ring { width: 100%; height: 100%; overflow: visible; }
+.ring .trk { fill: none; stroke: var(--line-strong); stroke-width: 2; }
+.ring .arc { fill: none; stroke: var(--accent); stroke-width: 3; stroke-linecap: butt; transition: stroke-dashoffset var(--t-story) var(--ease-io); }
+.ring .glow { fill: none; stroke: var(--glow); stroke-width: 12; opacity: .5; transition: stroke-dashoffset var(--t-story) var(--ease-io); }
+.ring .nd { cursor: pointer; outline: none; }
+.ring .nd circle { fill: var(--surface); stroke: var(--line-strong); stroke-width: 1.5; transition: fill var(--t-base), stroke var(--t-base); }
+.ring .nd text { fill: var(--fg); font: 700 13px var(--mono); text-anchor: middle; dominant-baseline: central; pointer-events: none; }
+.ring .nd .lb { fill: var(--fg-2); font: 600 15px var(--font); dominant-baseline: central; transition: fill var(--t-base); }
+.ring .nd.done circle { stroke: var(--accent); }
+.ring .nd.on circle { fill: color-mix(in srgb, var(--accent) 24%, var(--surface)); stroke: var(--accent); stroke-width: 2.5; }
+.ring .nd.on .lb { fill: var(--fg); font-weight: 800; }
+.ring .nd.skip circle { stroke-dasharray: 3 4; }
+.ring .nd.skip text { opacity: .45; }
+.ring .nd:hover circle, .ring .nd:focus-visible circle { stroke: var(--fg); }
+.ring-center { display: grid; justify-items: center; gap: 6px; max-width: 46%; text-align: center; pointer-events: none; }
+.ring-center .n { font: 700 12px/1 var(--mono); letter-spacing: .14em; color: var(--accent); }
+.ring-center .t { font-size: clamp(19px, 2vw, 25px); font-weight: 800; line-height: 1.15; letter-spacing: -.02em; text-wrap: balance; }
+.ring-center .d { font: 600 12px/1.4 var(--mono); color: var(--fg-2); text-wrap: balance; }
+.csteps { display: grid; gap: 12px; }
+.cs { display: grid; gap: 10px; padding: 18px 20px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); box-shadow: var(--shadow);
+  transition: border-color var(--t-base), background-color var(--t-base), opacity var(--t-base); scroll-margin-top: calc(var(--hdr, 60px) + 120px); }
+.cs header { display: flex; align-items: center; gap: 12px; }
+.cs .num { flex: none; width: 34px; height: 34px; display: grid; place-items: center; border-radius: 50%; border: 1.5px solid var(--line-strong); font: 800 13px/1 var(--mono); transition: border-color var(--t-base), background-color var(--t-base); }
+.cs h3 { font-size: 19px; font-weight: 800; letter-spacing: -.01em; }
+.cs .skipnote { margin-left: auto; font: 700 12px/1.2 var(--mono); padding: 4px 8px; border: 1px dashed var(--line-strong); border-radius: var(--radius-sm); color: var(--fg-2); display: none; }
+.cs p, .cs li { font-size: 15px; line-height: 1.55; color: var(--fg-2); }
+.cs p b, .cs li b { color: var(--fg); }
+.cs ul { margin: 0; padding-left: 18px; display: grid; gap: 4px; }
+.cs li::marker { color: var(--accent); }
+.cs.on { border-color: color-mix(in srgb, var(--accent) 55%, var(--line)); background: color-mix(in srgb, var(--accent) 6%, var(--surface)); }
+.cs.on .num { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 20%, transparent); }
+.cs.skip { opacity: .55; }
+.cs.skip .skipnote { display: inline-block; }
+
+/* 05 Zusammenarbeit: Dialog · Vorschau · Antwort teilen dieselbe Nummer – Klick im Dialog setzt F1 überall */
+.collab { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; align-items: stretch; }
+.mk { display: grid; grid-template-rows: auto auto 1fr auto; gap: 12px; min-width: 0; padding: 16px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); box-shadow: var(--shadow); }
+.mk h3 { display: flex; align-items: center; gap: 10px; font-size: 17px; font-weight: 800; }
+.mk h3 .ico { color: var(--hue, var(--accent)); }
+.mk > p { font-size: 14px; line-height: 1.45; color: var(--fg-2); }
+.mk-win { display: grid; align-content: start; gap: 8px; padding: 12px; border: 1px solid var(--line-strong); border-radius: var(--radius); background: var(--surface-2); font-size: 14px; }
+.mk-win .q { display: flex; gap: 8px; align-items: baseline; font-weight: 700; }
+.mk-win .q b, .fno { font: 800 12px/1 var(--mono); padding: 4px 6px; border-radius: var(--radius-sm); border: 1px solid var(--accent); color: var(--accent); flex: none; }
+.opt { display: grid; gap: 2px; width: 100%; padding: 8px 10px; text-align: left; border: 1px solid var(--line-strong); border-radius: var(--radius-sm); background: var(--surface); cursor: pointer;
+  transition: border-color var(--t-fast), background-color var(--t-fast), transform var(--t-fast); }
+.opt:hover { border-color: var(--accent); }
+.opt:active { transform: scale(.98); }
+.opt b { font-size: 14px; }
+.opt small { font-size: 13px; color: var(--fg-2); }
+.opt[aria-pressed="true"] { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 14%, var(--surface)); }
+.mk-var { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+.mk-var span { display: grid; justify-items: center; gap: 4px; padding: 8px 4px; border: 1px solid var(--line-strong); border-radius: var(--radius-sm); font: 700 12px/1.2 var(--mono); background: var(--surface); }
+.mk-var i { display: block; width: 100%; height: 26px; border-radius: 2px; background: linear-gradient(90deg, var(--line-strong) 40%, transparent 40%) 0 0 / 100% 8px no-repeat, linear-gradient(var(--line) 0 0) 0 13px / 70% 5px no-repeat, linear-gradient(var(--line) 0 0) 0 21px / 50% 5px no-repeat; }
+.mk-var span.pick { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, var(--surface)); }
+.mk-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.tag { display: inline-flex; align-items: center; gap: 6px; font: 700 12px/1.2 var(--mono); padding: 5px 8px; border: 1px solid var(--line-strong); border-radius: var(--radius-sm); background: var(--surface); transition: border-color var(--t-base), background-color var(--t-base); }
+.tag.ok { border-color: var(--green); background: color-mix(in srgb, var(--green) 12%, var(--surface)); }
+.tag.go { border-color: var(--accent); background: var(--accent); color: var(--accent-ink); }
+.mk-ans { display: grid; gap: 6px; font-size: 13.5px; line-height: 1.4; }
+.mk-ans .ln { display: grid; gap: 2px; padding: 6px 8px; border: 1px solid var(--line); border-radius: var(--radius-sm); background: var(--surface); }
+.mk-ans .ln > b { font: 700 12px/1.2 var(--mono); letter-spacing: .06em; }
+.mk-ans .ln code { font-size: 12.5px; color: var(--fg); }
+.mk ul.how { margin: 0; padding-left: 18px; display: grid; gap: 4px; font-size: 14px; line-height: 1.45; }
+.mk ul.how li::marker { color: var(--accent); }
+.sync-out { margin-top: 12px; }
+
+/* 08 Werkzeugkasten: Suche + Filter, Element berühren zeigt Verbindungen */
+.kit-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; margin-bottom: 16px; }
+.kit-search { display: flex; align-items: center; gap: 8px; flex: 1 1 260px; max-width: 420px; min-height: 42px; padding: 0 12px; border: 1px solid var(--line-strong); border-radius: var(--radius-sm); background: var(--surface); }
+.kit-search:focus-within { border-color: var(--accent); }
+.kit-search .ico { width: 18px; height: 18px; color: var(--fg-2); }
+.kit-search input { flex: 1 1 auto; min-width: 0; border: 0; background: transparent; color: var(--fg); font: 600 14.5px var(--font); outline: none; }
+.kit-count { font: 700 13px/1.2 var(--mono); color: var(--fg); }
+.kit { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; align-items: start; }
+.kcol.k-skills { grid-column: 1 / -1; }
+.kgs { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 12px 16px; align-items: start; }
+.kg { display: grid; gap: 6px; align-content: start; }
+.kcol { display: grid; gap: 10px; min-width: 0; padding: 14px; border: 1px solid color-mix(in srgb, var(--hue) 35%, var(--line)); border-radius: var(--radius); background: var(--surface); box-shadow: var(--shadow); }
+.kcol > header { display: grid; gap: 4px; padding-bottom: 10px; border-bottom: 1px solid var(--line); }
+.kcol > header h3 { display: flex; align-items: center; gap: 8px; font-size: 18px; font-weight: 800; }
+.kcol > header h3 .ico { color: var(--hue); }
+.kcol > header h3 em { margin-left: auto; font: 800 13px/1 var(--mono); font-style: normal; padding: 4px 7px; border-radius: var(--radius-sm); color: var(--hue); border: 1px solid color-mix(in srgb, var(--hue) 50%, transparent); }
+.kcol > header p { font-size: 13.5px; line-height: 1.45; color: var(--fg-2); }
+.kgrp { font: 700 11.5px/1.2 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--hue); padding-top: 4px; }
+.kl { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.ki { display: grid; gap: 1px; width: 100%; padding: 6px 8px; text-align: left; border: 1px solid transparent; border-radius: var(--radius-sm); background: transparent; cursor: pointer;
+  transition: border-color var(--t-fast), background-color var(--t-fast), opacity var(--t-base); }
+.ki .nm { font: 700 13px/1.3 var(--mono); color: var(--fg); overflow-wrap: anywhere; }
+.ki .ds { font-size: 13px; line-height: 1.35; color: var(--fg-2); }
+.ki:hover { border-color: var(--line-strong); background: var(--surface-2); }
+.kit.focus .ki { opacity: .38; }
+.kit.focus .ki.self, .kit.focus .ki.rel { opacity: 1; }
+.ki.self { border-color: var(--fg); background: var(--surface-2); }
+.ki.rel { border-color: color-mix(in srgb, var(--accent) 60%, var(--line)); background: color-mix(in srgb, var(--accent) 10%, var(--surface)); }
+.ki[aria-pressed="true"] { border-color: var(--accent); }
+.ki[hidden], .kgrp[hidden] { display: none; }
+.kit-detail { margin-top: 12px; min-height: 46px; padding: 10px 12px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); font-size: 14.5px; line-height: 1.45; }
+.kit-detail code { font-size: 12.5px; }
+.kit-none { display: none; padding: 10px 12px; font-size: 14.5px; }
+.kit.empty + .kit-none { display: block; }
+
+/* 11 Definition of Done: Prüfstufen + Commit-Weg nebeneinander, Bereiche als Tabelle darunter */
+.dod { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 16px; align-items: start; }
+.dod-area { margin-top: 16px; }
+.dod-t .lvl { display: inline-flex; align-items: center; gap: 8px; }
+.dod-t .lvl i { width: 10px; height: 10px; border-radius: 50%; background: var(--hue); flex: none; }
+
+/* 12 Gedächtnis: wo was liegt */
+.mem5 { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; margin-top: 16px; }
+.mem5 .feat .ico { width: 20px; height: 20px; color: var(--hue); }
+.mem5 .feat h3 { display: flex; align-items: center; gap: 8px; font-size: 16px; font-weight: 800; }
+.mem5 .feat .k-t { margin-top: auto; padding-top: 6px; text-transform: none; letter-spacing: .02em; }
+.sync6 { margin-top: 16px; }
+
+/* Umbrüche der neuen Teile */
+@media (max-width: 1200px) {
+  .keys7 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .fx8 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .day { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@media (max-width: 900px) { .kit { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 1100px) {
+  .collab { grid-template-columns: minmax(0, 1fr); }
+  .cyc { grid-template-columns: minmax(0, 1fr); }
+  .ring-col { display: none; }
+  .dod { grid-template-columns: minmax(0, 1fr); }
+  .toc .grp { grid-column: 1 / -1; }
+}
+@media (max-width: 960px) {
+  .hero-inner.wf-hero { grid-template-columns: minmax(0, 1fr); padding-block: 56px; }
+  .trio { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 760px) {
+  .land { padding-block: 64px; }
+  .keys7 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .day { grid-template-columns: minmax(0, 1fr); }
+  .phases { grid-template-columns: repeat(5, minmax(0, 1fr)); padding: 6px; gap: 2px; }
+  .phases li { font-size: 0; gap: 0; }
+  .phases li .ico { width: 20px; height: 20px; }
+}
+@media (max-width: 560px) {
+  .kit, .fx8 { grid-template-columns: minmax(0, 1fr); }
+  .tri { padding: 18px; }
+  .cs { padding: 16px; }
+  .mk-var { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@media (prefers-reduced-motion: reduce) {
+  html.wf-js .wf-stage .msg { opacity: 1; transform: none; }
+}
+
+
+/* ═════ Workflow-Graphen (6 Kapitel, Vorschau 12.10.2026: Aufbau:A Ablauf:A Leitpl:A Fertig:C Team:C Lernen:A) ═════ */
+:root { --pa1: #5FC8E0; --pa2: #F58E86; --pa3: #4DD3DB; --pa4: #F0B08E; --pc1: #8FB8E3; --pc2: #6FA8D6; --pc3: #2A4D73; }
+@media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) { --pa1: #0081A7; --pa2: #F07167; --pa3: #00AFB9; --pa4: #E29578; --pc1: #274C77; --pc2: #6096BA; --pc3: #A3CEF1; } }
+:root[data-theme="light"] { --pa1: #0081A7; --pa2: #F07167; --pa3: #00AFB9; --pa4: #E29578; --pc1: #274C77; --pc2: #6096BA; --pc3: #A3CEF1; }
+.wf-panel { gap: 10px; margin-top: 4px; }
+.wf-scroll { overflow-x: auto; }
+.wf-scroll .dia svg { min-width: 880px; }
+.wf-cap { margin: 0; color: var(--fg-2); font-size: var(--fs-sm, 14px); line-height: 1.5; }
+.wf-legend { margin: 0; padding: 0; list-style: none; display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 10px 24px; counter-reset: wf; }
+.wf-legend li { font-size: var(--fs-sm, 14px); line-height: 1.5; color: var(--fg-2); }
+.wf-legend li b { color: var(--fg); }
+.wf-ol li { counter-increment: wf; padding-left: 30px; position: relative; }
+.wf-ol li::before { content: counter(wf); position: absolute; left: 0; top: 1px; width: 22px; height: 22px; border-radius: var(--radius-sm); background: var(--accent); color: var(--accent-ink); font: 700 12px/22px var(--font); text-align: center; }
+.dia { --ink: var(--fg); --ink-2: var(--fg-2); --ok: var(--green); --bad: var(--red);
+  --ok-soft: color-mix(in srgb, var(--green) 16%, var(--surface)); --warn-soft: color-mix(in srgb, var(--warn) 16%, var(--surface)); --bad-soft: color-mix(in srgb, var(--red) 14%, var(--surface));
+  --sans: var(--font); margin: 0; }
+.dia svg { width: 100%; height: auto; display: block; }
+.dia-a { --h1: var(--pa1); --h2: var(--pa2); --h3: var(--pa3); --h4: var(--pa4); --sun: var(--pa4); }
+.dia-c { --h1: var(--pc1); --h2: var(--pc2); --h3: var(--pc3); --h4: var(--pc1); --sun: var(--pc3); }
+.dia text { font-family: var(--sans); fill: var(--ink); font-size: 15px; }
+.dia .ts { font-size: 13.5px; fill: var(--ink-2); } .dia .th { font-size: 17px; font-weight: 700; } .dia .tb { font-size: 13px; font-weight: 700; }
+.dia .tm { font-family: var(--mono); font-size: 12.5px; fill: var(--ink-2); } .dia .tmh { font-family: var(--mono); font-size: 13px; font-weight: 700; fill: var(--ink); }
+.dia .tbig { font-size: 22px; font-weight: 800; } .dia .tnum { font-size: 30px; font-weight: 800; fill: var(--ink); }
+.dia .tn { font-size: 12px; font-weight: 700; fill: #fff; } .dia .tn.ink { fill: var(--ink); }
+.dia .halo { paint-order: stroke; stroke: var(--surface); stroke-width: 6px; stroke-linejoin: round; }
+.dia .nd { fill: var(--surface); stroke: var(--line-strong); stroke-width: 1.5; }
+.dia .s0 { stroke: var(--line-strong); } .dia .s1 { stroke: var(--h1); } .dia .s2 { stroke: var(--h2); } .dia .s3 { stroke: var(--h3); }
+.dia .f1 { fill: color-mix(in srgb, var(--h1) 13%, var(--surface)); } .dia .f2 { fill: color-mix(in srgb, var(--h2) 13%, var(--surface)); } .dia .f3 { fill: color-mix(in srgb, var(--h3) 16%, var(--surface)); }
+.dia .fsun { fill: color-mix(in srgb, var(--sun) 32%, var(--surface)); } .dia .fold { stroke: none; }
+.dia .fok { fill: var(--ok-soft); } .dia .sok { stroke: var(--ok); } .dia .fwarn { fill: var(--warn-soft); } .dia .swarn { stroke: var(--warn); } .dia .fbad { fill: var(--bad-soft); } .dia .sbad { stroke: var(--bad); }
+.dia .ln { fill: none; stroke: var(--line-strong); stroke-width: 1.8; stroke-linecap: round; }
+.dia .ln.s1 { stroke: var(--h1); stroke-width: 2.2; } .dia .ln.s2 { stroke: var(--h2); stroke-width: 2.2; }
+.dia .dash { stroke-dasharray: .012 .012; } .dia .ln.dash { stroke-dasharray: .014 .01; } .dia .bus { stroke-dasharray: .02 .01; stroke: var(--line-strong); }
+.dia .rail { stroke-width: 3; stroke: var(--h1); } .dia .git { stroke-width: 5; stroke: var(--h2); } .dia .gate { stroke-width: 4; } .dia .spiral { stroke-width: 3; }
+.dia .seg { fill: none; stroke: color-mix(in srgb, var(--sun) 55%, var(--surface)); stroke-linecap: butt; }
+.dia .ring { fill: none; stroke-width: 1.5; }
+.dia .ring.f1 { fill: color-mix(in srgb, var(--h1) 8%, var(--surface)); } .dia .ring.f2 { fill: color-mix(in srgb, var(--h1) 5%, var(--surface)); } .dia .ring.f3 { fill: color-mix(in srgb, var(--h1) 3%, var(--surface)); }
+.dia .stair { stroke-width: 2; } .dia .funnel { stroke-width: 2; }
+.dia .lane { fill: var(--surface); stroke: var(--line); stroke-width: 1; } .dia .lane.alt { fill: var(--surface-2); }
+.dia .day { fill: var(--surface); stroke: var(--line); stroke-width: 1; } .dia .day.alt { fill: var(--surface-2); } .dia .bar { stroke-width: 1.5; }
+.dia .zone { stroke-width: 1.5; }
+.dia .zone.f3 { fill: color-mix(in srgb, var(--h3) 10%, var(--surface)); } .dia .zone.f1 { fill: color-mix(in srgb, var(--h1) 7%, var(--surface)); } .dia .zone.fsun { fill: color-mix(in srgb, var(--sun) 26%, var(--surface)); }
+.dia .num { fill: var(--h1); stroke: none; }
+.dia .bd { fill: var(--surface-2); stroke: var(--line-strong); stroke-width: 1; }
+.dia .bd.ok { fill: var(--ok-soft); stroke: var(--ok); } .dia .bd.warn { fill: var(--warn-soft); stroke: var(--warn); } .dia .bd.bad { fill: var(--bad-soft); stroke: var(--bad); }
+.dia .dot { fill: var(--sun); stroke: var(--h1); stroke-width: 2; }
+.dia .halo.breathe { fill: var(--sun); stroke: none; opacity: .25; transform-box: fill-box; transform-origin: center; animation: wf-breathe 2.6s var(--ease-io) infinite alternate; }
+@keyframes wf-breathe { from { opacity: .18; transform: scale(1.04); } to { opacity: .42; transform: scale(1.12); } }
+.dia .rv { opacity: 0; transform: translateY(8px); transition: opacity .45s var(--ease-out), transform .45s var(--ease-out); transition-delay: calc(var(--i, 0) * 55ms); }
+.dia.in .rv { opacity: 1; transform: none; }
+.dia .dr { stroke-dasharray: 1; stroke-dashoffset: 1; transition: stroke-dashoffset .9s var(--ease-out); transition-delay: calc(var(--i, 0) * 55ms + .15s); }
+.dia .dr.dash { stroke-dasharray: 1; } .dia.in .dr { stroke-dashoffset: 0; }
+.dia.in .dr.dash, .dia.in .bus { transition: stroke-dasharray 0s .9s; stroke-dasharray: .014 .01; }
+@media (prefers-reduced-motion: reduce) {
+  .dia .rv, .dia .dr { transition: none; opacity: 1; transform: none; stroke-dashoffset: 0; }
+  .dia .dr.dash, .dia .bus { stroke-dasharray: .014 .01; }
+  .dia .dot { display: none; } .dia .halo.breathe { animation: none; opacity: .3; }
+}
+
+/* ═════════ Leitstand (Redesign 12.10.2026, Seite:C): Kachel-Hero, Kapitel-Panels ═════════ */
+.leit { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; min-width: 0; }
+.tile { display: grid; gap: 10px; align-content: start; padding: 16px; min-height: 148px; border: 1px solid var(--line); border-radius: var(--radius-lg); background: color-mix(in srgb, var(--surface) 82%, transparent); color: var(--fg); text-decoration: none; transition: border-color .25s, box-shadow .25s, transform .25s; }
+.tile:hover, .tile:focus-visible { border-color: color-mix(in srgb, var(--hue) 55%, var(--line)); box-shadow: 0 0 22px -10px var(--hue); transform: translateY(-2px); }
+.tile .tk { display: flex; justify-content: space-between; gap: 8px; font: 700 12px/1.2 var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--hue); }
+.tile .tk > span:last-child { color: var(--fg-2); }
+.tile .tv { width: 100%; height: 56px; fill: color-mix(in srgb, var(--hue) 22%, transparent); stroke: var(--hue); stroke-width: 1.6; }
+.tile .tv path { fill: none; }
+.tile .tv .live { fill: var(--hue); animation: leit-pulse 3.2s ease-in-out infinite; }
+.tile b { font-size: 16px; line-height: 1.25; }
+@keyframes leit-pulse { 50% { opacity: .35; } }
+.kaps { display: grid; gap: 24px; }
+.kap { display: grid; gap: 32px; padding: 32px; border: 1px solid var(--line); border-radius: var(--radius-lg); background: var(--surface); scroll-margin-top: calc(var(--hdr, 60px) + 16px); }
+.kap-head { display: flex; align-items: end; justify-content: space-between; gap: 16px 32px; flex-wrap: wrap; padding-bottom: 20px; border-bottom: 1px solid var(--line); }
+.kap-head > div:first-child { display: grid; gap: 10px; }
+.kap-head h2 { font-size: clamp(24px, 2.6vw, 32px); font-weight: 800; letter-spacing: -.028em; line-height: 1.1; }
+.kap .eyebrow { --hue: inherit; color: var(--hue); }
+.kn { text-align: right; display: grid; gap: 4px; }
+.kn b { font: 800 34px/1 var(--mono); color: var(--hue); font-variant-numeric: tabular-nums; }
+.kn span { font: 700 12px/1.2 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--fg-2); }
+.kap-body { display: grid; gap: 0; min-width: 0; }
+.kap-body > .sec, .kap-body > .land { padding: 56px 0 0; border-top: 1px solid var(--line); }
+.kap-body > :first-child { padding-top: 0; border-top: 0; }
+.kap-body > .sec:last-child { padding-bottom: 0; }
+.kap .land { padding-inline: 0; }
+.kap .land > .wrap { max-width: none; padding-inline: 0; }
+.kap .sec-head h2 { font-size: clamp(20px, 2vw, 25px); }
+.kap-demo { padding: 24px; border-radius: var(--radius-lg); margin-bottom: 56px; border: 1px solid var(--line); }
+.kap-refs { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+.kap-refs a { display: grid; gap: 8px; align-content: start; padding: 20px; border: 1px solid var(--line); border-radius: var(--radius-lg); background: var(--surface-2); color: var(--fg); text-decoration: none; transition: border-color .25s; }
+.kap-refs a:hover, .kap-refs a:focus-visible { border-color: color-mix(in srgb, var(--hue) 55%, var(--line)); }
+.kap-refs .ico { width: 26px; height: 26px; color: var(--hue); }
+.kap-refs b { font-size: 17px; }
+.kap-refs span { font-size: 14px; color: var(--fg-2); line-height: 1.45; }
+@media (max-width: 1100px) { .leit { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 760px) { .kap { padding: 20px; gap: 24px; } .kap-body > .sec, .kap-body > .land { padding-top: 40px; } }
+@media (max-width: 480px) { .leit { grid-template-columns: minmax(0, 1fr); } .tile { min-height: 0; } }
+@media (prefers-reduced-motion: reduce) { .tile .tv .live { animation: none; } .tile { transition: none; } .tile:hover { transform: none; } }
+</style>
+<link rel="stylesheet" href="css/scroll_flow.css">
+</head>
+<body>
+<svg width="0" height="0" style="position: absolute" aria-hidden="true">
+  <defs id="wf-markers"><marker id="ar-ink" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--line-strong)"/></marker><marker id="ar-a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--pa2)"/></marker><marker id="ar-c" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--pc1)"/></marker></defs>
+  
+  <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></symbol>
+  <symbol id="i-spark" viewBox="0 0 24 24"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8zM19 16l.8 2.2L22 19l-2.2.8L19 22l-.8-2.2L16 19l2.2-.8z"/></symbol>
+  <symbol id="i-repo" viewBox="0 0 24 24"><path d="M5 4.5A1.5 1.5 0 0 1 6.5 3H19v15H6.5A1.5 1.5 0 0 0 5 19.5zM5 19.5A1.5 1.5 0 0 0 6.5 21H19v-3"/><path d="M9 7h6"/></symbol>
+  <symbol id="i-win" viewBox="0 0 24 24"><rect x="2.5" y="4" width="19" height="16" rx="2"/><path d="M2.5 8.5h19M6 6.3h.01M8.5 6.3h.01"/></symbol>
+  <symbol id="i-book" viewBox="0 0 24 24"><path d="M4 4.5A1.5 1.5 0 0 1 5.5 3H11v17H5.5A1.5 1.5 0 0 1 4 18.5zM20 4.5A1.5 1.5 0 0 0 18.5 3H13v17h5.5a1.5 1.5 0 0 0 1.5-1.5z"/></symbol>
+  <symbol id="i-chat" viewBox="0 0 24 24"><path d="M4 5.5h16v10H10l-4 3.5v-3.5H4z"/><path d="M8 9.5h8M8 12.5h5"/></symbol>
+  <symbol id="i-layers" viewBox="0 0 24 24"><path d="M12 3l9.5 5L12 13 2.5 8z"/><path d="M2.5 12.5L12 17.5l9.5-5M2.5 16.5L12 21.5l9.5-5"/></symbol>
+  <symbol id="i-bot" viewBox="0 0 24 24"><rect x="4" y="8" width="16" height="12" rx="2"/><path d="M12 8V4.5M9 13h.01M15 13h.01M9.5 16.5h5M2 13v3M22 13v3"/><circle cx="12" cy="3.5" r="1"/></symbol>
+  <symbol id="i-flag" viewBox="0 0 24 24"><path d="M5 21V4M5 4h11l-2 4 2 4H5"/></symbol>
+  <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 2.5l8 3v6c0 5-3.4 8.7-8 10.5-4.6-1.8-8-5.5-8-10.5v-6z"/><path d="M8.5 12l2.5 2.5 4.5-5"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="17" height="17" rx="2"/><path d="M8 12.5l3 3 5-6.5"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24"><rect x="4.5" y="10.5" width="15" height="10.5" rx="2"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3M12 14.5v2.5"/></symbol>
+  <symbol id="i-code" viewBox="0 0 24 24"><path d="M8 7l-5 5 5 5M16 7l5 5-5 5M13.5 4l-3 16"/></symbol>
+  <symbol id="i-test" viewBox="0 0 24 24"><path d="M9 3h6M10 3v6l-5.5 9.5A1.7 1.7 0 0 0 6 21h12a1.7 1.7 0 0 0 1.5-2.5L14 9V3"/><path d="M7.5 15h9"/></symbol>
+  <symbol id="i-git" viewBox="0 0 24 24"><circle cx="6" cy="5.5" r="2.5"/><circle cx="6" cy="18.5" r="2.5"/><circle cx="18" cy="9" r="2.5"/><path d="M6 8v8M18 11.5c0 4-5 3.5-10.5 6"/></symbol>
+  <symbol id="i-q" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.5"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.7.3-1 .9-1 1.6v.6M12 17h.01"/></symbol>
+  <symbol id="i-warn" viewBox="0 0 24 24"><path d="M12 3.5l9.5 17h-19z"/><path d="M12 10v4.5M12 17.5h.01"/></symbol>
+  <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.5"/><path d="M12 11v6M12 7.5h.01"/></symbol>
+  <symbol id="i-stop" viewBox="0 0 24 24"><path d="M8 2.5h8l5.5 5.5v8L16 21.5H8L2.5 16V8z"/><path d="M8.5 12h7"/></symbol>
+  <symbol id="i-go" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+  <symbol id="i-loop" viewBox="0 0 24 24"><path d="M3 12a9 9 0 0 1 15.4-6.4L21 8M21 3v5h-5M21 12a9 9 0 0 1-15.4 6.4L3 16M3 21v-5h5"/></symbol>
+  <symbol id="i-brain" viewBox="0 0 24 24"><path d="M9 4a3 3 0 0 0-3 3 3 3 0 0 0-2 5 3 3 0 0 0 2 5 3 3 0 0 0 3 3h1V4zM15 4a3 3 0 0 1 3 3 3 3 0 0 1 2 5 3 3 0 0 1-2 5 3 3 0 0 1-3 3h-1V4z"/></symbol>
+  <symbol id="i-term" viewBox="0 0 24 24"><rect x="2.5" y="4" width="19" height="16" rx="2"/><path d="M6.5 9l3 3-3 3M12 15h5"/></symbol>
+  <symbol id="i-key" viewBox="0 0 24 24"><circle cx="8" cy="15" r="4"/><path d="M11 12l9-9M17 6l2 2M15 8l2 2"/></symbol>
+  <symbol id="i-arm" viewBox="0 0 24 24"><path d="M4 21h16M7 21v-3h10v3M12 18v-5M12 13l5-5M17 8l3 1.5M17 8l1.2-3.2"/><circle cx="12" cy="13" r="2"/><circle cx="17" cy="8" r="1.6"/></symbol>
+  <symbol id="i-pulse" viewBox="0 0 24 24"><path d="M2.5 12h4l2.5-6 4 12 2.5-6h6"/></symbol>
+  <symbol id="i-prev" viewBox="0 0 24 24"><path d="M6 5v14M18 5l-9 7 9 7z"/></symbol>
+  <symbol id="i-next" viewBox="0 0 24 24"><path d="M18 5v14M6 5l9 7-9 7z"/></symbol>
+  <symbol id="i-play" viewBox="0 0 24 24"><path d="M7 4.5l12 7.5-12 7.5z"/></symbol>
+  <symbol id="i-pause" viewBox="0 0 24 24"><path d="M8 5v14M16 5v14"/></symbol>
+  <symbol id="i-file" viewBox="0 0 24 24"><path d="M6 2.5h8l4 4V21a.5.5 0 0 1-.5.5h-11A.5.5 0 0 1 6 21z"/><path d="M14 2.5v4h4M9 12h6M9 15.5h6"/></symbol>
+  <symbol id="i-mail" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="1.5"/><path d="m3.5 7 8.5 6 8.5-6"/></symbol>
+  <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c2.6 2.8 3.8 6 3.8 9.5s-1.2 6.7-3.8 9.5c-2.6-2.8-3.8-6-3.8-9.5S9.4 5.3 12 2.5z"/></symbol>
+  <symbol id="i-cube" viewBox="0 0 24 24"><path d="M12 2.5l8.5 4.75v9.5L12 21.5l-8.5-4.75v-9.5z"/><path d="M3.5 7.25L12 12l8.5-4.75M12 12v9.5"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></symbol>
+  <symbol id="i-chev-l" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></symbol>
+  <symbol id="i-chev-r" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></symbol>
+  <symbol id="qr-docs" viewBox="0 0 27 27"><path stroke="#0b1424" stroke-width="1" shape-rendering="crispEdges" d="M1 1.5h7m4 0h1m3 0h1m2 0h7m-25 1h1m5 0h1m1 0h1m2 0h6m1 0h1m5 0h1m-25 1h1m1 0h3m1 0h1m2 0h1m4 0h1m1 0h1m1 0h1m1 0h3m1 0h1m-25 1h1m1 0h3m1 0h1m4 0h1m2 0h1m3 0h1m1 0h3m1 0h1m-25 1h1m1 0h3m1 0h1m1 0h3m2 0h3m2 0h1m1 0h3m1 0h1m-25 1h1m5 0h1m2 0h1m1 0h3m1 0h2m1 0h1m5 0h1m-25 1h7m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h7m-15 1h2m1 0h1m2 0h1m-17 1h1m1 0h1m1 0h1m1 0h1m2 0h3m1 0h1m2 0h1m3 0h1m2 0h1m-21 1h1m1 0h1m2 0h4m1 0h2m1 0h1m1 0h1m5 0h1m-24 1h1m2 0h3m1 0h2m1 0h2m3 0h3m1 0h1m1 0h3m-24 1h2m8 0h1m1 0h2m1 0h1m3 0h1m2 0h1m-22 1h1m2 0h2m2 0h5m1 0h2m1 0h1m2 0h1m1 0h2m-24 1h3m1 0h1m1 0h2m1 0h2m1 0h1m4 0h1m2 0h1m2 0h1m-25 1h1m5 0h4m2 0h3m2 0h3m2 0h3m-24 1h1m1 0h3m2 0h1m2 0h1m1 0h1m2 0h2m2 0h1m2 0h1m-24 1h1m1 0h1m1 0h3m1 0h2m2 0h3m1 0h6m-14 1h4m4 0h1m3 0h2m1 0h2m-25 1h7m2 0h1m3 0h1m1 0h2m1 0h1m1 0h2m1 0h2m-25 1h1m5 0h1m5 0h2m1 0h2m3 0h2m-22 1h1m1 0h3m1 0h1m1 0h6m2 0h6m-22 1h1m1 0h3m1 0h1m3 0h1m4 0h1m3 0h4m-23 1h1m1 0h3m1 0h1m1 0h3m3 0h1m5 0h1m3 0h1m-25 1h1m5 0h1m2 0h1m2 0h3m1 0h3m1 0h2m1 0h1m-24 1h7m1 0h2m1 0h3m2 0h2m1 0h1m3 0h2"/></symbol>
+
+</svg>
+
+<nav class="doc-path" aria-label="Pfad" data-en-aria="Path"><a href="https://lu4k87.github.io/" data-en="← All projects">← Alle Projekte</a><span aria-hidden="true">›</span><a href="index.html">AI Dev Workflow</a><span aria-hidden="true">›</span><span aria-current="page" data-en="Reference">Nachschlagen</span></nav>
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="#start"><span class="brand-mark"><svg class="ico"><use href="#i-term"/></svg></span><span>AI Dev Workflow<small data-en="How we work · dev_ws">Arbeitsweise · dev_ws</small></span></a>
+    <div class="tools">
+      <div class="seg" role="group" aria-label="Sprache / Language">
+        <button type="button" data-lang="de" aria-pressed="true">DE</button>
+        <button type="button" data-lang="en" aria-pressed="false">EN</button>
+      </div>
+      <div class="seg" role="group" aria-label="Theme">
+        <button type="button" data-theme-btn="dark" aria-pressed="false" data-en="Dark" title="Dunkles Theme">Dunkel</button>
+        <button type="button" data-theme-btn="light" aria-pressed="false" data-en="Light" title="Helles Theme">Hell</button>
+      </div>
+    </div>
+  </div>
+  <span class="progress" aria-hidden="true"></span>
+</header>
+
+<main id="start">
+  <section class="hero dark-zone" aria-label="Abstract">
+    <div class="wrap hero-inner wf-hero">
+      <div class="hero-copy">
+        <span class="badge"><span class="bi-s"><svg class="ico" aria-hidden="true"><use href="#i-book"/></svg></span><span data-en="Develop · AI Dev Workflow">Entwickeln · AI Dev Workflow</span></span>
+        <h1>
+          <span class="h1-name" data-en="Claude Code, Codex and Gemini in dev_ws">Claude Code, Codex und Gemini im dev_ws</span>
+          <span class="h1-claim"><span class="ln"><span><em data-en="Reference">Nachschlagen</em></span></span></span>
+        </h1>
+        <p class="abstract" data-en="Toolbox, setup and figures: the details behind the AI Dev Workflow."><b>Werkzeugkasten, Einrichtung, Zahlen:</b> die Details hinter dem AI Dev Workflow.</p>
+        <div class="cta-row">
+          <a class="b-pri" href="index.html"><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg><span data-en="Back to the workflow">Zurück zum Workflow</span></a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="wrap ka">
+    <nav class="toc" aria-label="Inhalt" data-en-aria="Contents">
+      <span class="toc-k" data-en="Contents">Inhalt</span>
+      <ol>
+        <li><a href="#werkzeugkasten"><span class="n">01</span><span data-en="Toolbox">Werkzeugkasten</span></a></li>
+        <li><a href="#einrichtung"><span class="n">02</span><span data-en="Setup and sync">Einrichtung und Abgleich</span></a></li>
+        <li><a href="#zahlen"><span class="n">03</span><span data-en="Figures from git log">Zahlen aus git log</span></a></li>
+      </ol>
+    </nav>
+    <div class="ka-main">
+<section class="sec" id="werkzeugkasten">
+        <header class="sec-head">
+          <div><span class="eyebrow" style="--hue: var(--pink)"><span class="n">01</span><span data-en="Toolbox">Werkzeugkasten</span></span><h2 data-en="Skills, agents, hooks and scripts interlock">Skills, Agenten, Hooks und Skripte greifen ineinander</h2></div>
+          <div class="brief"><p data-en="Skills carry the knowledge, agents are thin shells that load a skill and work in isolation, hooks enforce rules, scripts deliver the evidence. Search, or touch an element to see its connections.">Skills tragen das Wissen, Agenten sind dünne Hüllen, die einen Skill laden und isoliert arbeiten, Hooks setzen Regeln durch, Skripte liefern den Beleg. Suchen oder Element berühren zeigt Verbindungen.</p></div>
+        </header>
+        <div class="kit-bar">
+          <label class="kit-search"><svg class="ico" aria-hidden="true"><use href="#i-search"/></svg><span class="sr" hidden data-en="Search">Suchen</span><input type="search" placeholder="Suchen: ui, test, vla …" data-en-ph="Search: ui, test, vla …" aria-label="Werkzeugkasten durchsuchen" data-en-aria="Search the toolbox"></label>
+          <span class="kit-count" aria-live="polite"></span>
+        </div>
+        <div class="kit">
+          <div class="kcol k-skills" style="--hue: var(--teal)" data-kind="Skill" data-kind-en="skill">
+            <header><h3><svg class="ico" aria-hidden="true"><use href="#i-layers"/></svg>Skills<em>32</em></h3><p data-en="One SKILL.md per topic, scripts and templates alongside. Loaded only when needed, once per chat.">Je Thema ein SKILL.md, Skripte und Vorlagen daneben. Geladen nur bei Bedarf, einmal je Chat.</p></header>
+            <div class="kgs">
+            <div class="kg"><span class="kgrp">Workflow</span>
+            <ul class="kl">
+              <li><button type="button" class="ki" data-id="answer-page" data-rel="format_check answer-cards turn_stats"><span class="nm">answer-page</span><span class="ds" data-en="Answer format of every reply">Antwortformat jeder Antwort</span></button></li>
+              <li><button type="button" class="ki" data-id="commit" data-rel="pre-commit claim"><span class="nm">commit</span><span class="ds" data-en="Commits in repo style + push">Commits im Repo-Stil + Push</span></button></li>
+              <li><button type="button" class="ki" data-id="docs" data-rel="check_showcase make_diagrams docs-auditor"><span class="nm">docs</span><span class="ds" data-en="en + de, README, manual, setup card">en + de, README, Handbuch, Setup-Karte</span></button></li>
+              <li><button type="button" class="ki" data-id="preview" data-rel="capture build"><span class="nm">preview</span><span class="ds" data-en="Preview pages with variants">Vorschau-Seiten mit Varianten</span></button></li>
+              <li><button type="button" class="ki" data-id="ponytail" data-rel=""><span class="nm">ponytail</span><span class="ds" data-en="Lean, not overbuilt; debt list">Schlank statt überbaut, Schulden-Liste</span></button></li>
+              <li><button type="button" class="ki" data-id="model-routing" data-rel="token_report"><span class="nm">model-routing</span><span class="ds" data-en="Opus or Sonnet, effort per task">Opus oder Sonnet, Effort je Aufgabe</span></button></li>
+              <li><button type="button" class="ki" data-id="scrum" data-rel="teamwork-optimizer team-briefing"><span class="nm">scrum</span><span class="ds" data-en="Sprint goal, daily, review, retro">Sprint-Ziel, Daily, Review, Retro</span></button></li>
+              <li><button type="button" class="ki" data-id="team-briefing" data-rel=""><span class="nm">team-briefing</span><span class="ds" data-en="Weekly briefing of the expert team">Wöchentliches Briefing des Expertenteams</span></button></li>
+            </ul></div>
+            <div class="kg"><span class="kgrp" data-en="Operating UIs">Bedien-UIs</span>
+            <ul class="kl">
+              <li><button type="button" class="ki" data-id="ui-change" data-rel="preview ui_checker text-format ui-motion i18n_check"><span class="nm">ui-change</span><span class="ds" data-en="Procedure + checklist of every UI change">Vorgehen + Prüfliste jeder UI-Änderung</span></button></li>
+              <li><button type="button" class="ki" data-id="ui-motion" data-rel="audit_motion"><span class="nm">ui-motion</span><span class="ds" data-en="Transitions, ISA-101 blinking, reduced motion">Übergänge, ISA-101-Blinken, reduced motion</span></button></li>
+              <li><button type="button" class="ki" data-id="text-format" data-rel="motion-viz"><span class="nm">text-format</span><span class="ds" data-en="Typography: wrap, line height, sizes">Typografie: Umbruch, Zeilenabstand, Größen</span></button></li>
+              <li><button type="button" class="ki" data-id="webxr-twin" data-rel=""><span class="nm">webxr-twin</span><span class="ds" data-en="Digital twin + Quest 3">Digital Twin + Quest 3</span></button></li>
+            </ul></div>
+            <div class="kg"><span class="kgrp" data-en="Project pages">Projektseiten</span>
+            <ul class="kl">
+              <li><button type="button" class="ki" data-id="motion-viz" data-rel="flow-graph check_showcase"><span class="nm">motion-viz</span><span class="ds" data-en="Animation, three.js, scrollytelling">Animation, three.js, Scrollytelling</span></button></li>
+              <li><button type="button" class="ki" data-id="flow-graph" data-rel="check_flow"><span class="nm">flow-graph</span><span class="ds" data-en="Animated data-flow graphs">Animierte Data-Flow-Graphen</span></button></li>
+              <li><button type="button" class="ki" data-id="story-design" data-rel="motion-viz project-copy"><span class="nm">story-design</span><span class="ds" data-en="Storyline before motion and design">Storyline vor Motion und Design</span></button></li>
+              <li><button type="button" class="ki" data-id="project-copy" data-rel="check_showcase"><span class="nm">project-copy</span><span class="ds" data-en="Texts in product tone, brand kit">Texte im Produkt-Ton, Brand-Kit</span></button></li>
+              <li><button type="button" class="ki" data-id="docs-layout" data-rel="motion-viz"><span class="nm">docs-layout</span><span class="ds" data-en="Layout, spacing, grid of the pages">Anordnung, Abstände, Raster der Seiten</span></button></li>
+              <li><button type="button" class="ki" data-id="soft-motion" data-rel="motion-viz"><span class="nm">soft-motion</span><span class="ds" data-en="Fade, glow, pulse: subtle, fixed durations">Fade, Glow, Puls: dezent, feste Dauern</span></button></li>
+              <li><button type="button" class="ki" data-id="ui-ux-pro-max" data-rel="ui-change"><span class="nm">ui-ux-pro-max</span><span class="ds" data-en="UI/UX knowledge base: styles, palettes">UI/UX-Wissen: Stile, Paletten</span></button></li>
+              <li><button type="button" class="ki" data-id="screenshots" data-rel="capture"><span class="nm">screenshots</span><span class="ds" data-en="Images in a clean Robot | Digital Twin state">Bilder im sauberen Zustand (Robot | Digital Twin)</span></button></li>
+              <li><button type="button" class="ki" data-id="video-shots" data-rel="reel_render"><span class="nm">video-shots</span><span class="ds" data-en="Clips, deterministic rendering">Clips, deterministisches Rendering</span></button></li>
+              <li><button type="button" class="ki" data-id="pitch-video" data-rel="video-shots"><span class="nm">pitch-video</span><span class="ds" data-en="Explainer video with Remotion">Erklärvideo mit Remotion</span></button></li>
+            </ul></div>
+            <div class="kg"><span class="kgrp" data-en="Robotics + quality">Robotik + Qualität</span>
+            <ul class="kl">
+              <li><button type="button" class="ki" data-id="vla-motion" data-rel="grasp_e2e vla_eval safety-reviewer"><span class="nm">vla-motion</span><span class="ds" data-en="vla_bridge, Motion Handler, sandbox">vla_bridge, Motion Handler, Sandbox</span></button></li>
+              <li><button type="button" class="ki" data-id="ros-debug" data-rel="ros-safety-status stack-diagnoser"><span class="nm">ros-debug</span><span class="ds" data-en="Diagnose the running stack, hands off">Laufenden Stack diagnostizieren, ohne Eingriff</span></button></li>
+              <li><button type="button" class="ki" data-id="ros-robust" data-rel="robustness-reviewer"><span class="nm">ros-robust</span><span class="ds" data-en="Timeouts, reconnect, fault injection">Timeouts, Reconnect, Fehlerinjektion</span></button></li>
+              <li><button type="button" class="ki" data-id="build-pkg" data-rel="check_ws"><span class="nm">build-pkg</span><span class="ds" data-en="Targeted colcon, short output">colcon gezielt, kurze Ausgabe</span></button></li>
+              <li><button type="button" class="ki" data-id="test-isolated" data-rel="grasp_e2e monitoring_sim capture test-runner ui-verifier"><span class="nm">test-isolated</span><span class="ds" data-en="Test without disturbing running stacks">Testen, ohne laufende Stacks zu stören</span></button></li>
+              <li><button type="button" class="ki" data-id="root-cause" data-rel="test-runner"><span class="nm">root-cause</span><span class="ds" data-en="Cause first, then fix">Erst Ursache, dann Fix</span></button></li>
+            </ul></div>
+            <div class="kg"><span class="kgrp" data-en="3D + research">3D + Forschung</span>
+            <ul class="kl">
+              <li><button type="button" class="ki" data-id="cad-print" data-rel="check_print print-reviewer"><span class="nm">cad-print</span><span class="ds" data-en="Print parts in FreeCAD, FDM-ready">Druckteile in FreeCAD, FDM-gerecht</span></button></li>
+              <li><button type="button" class="ki" data-id="motion-3d" data-rel="blender"><span class="nm">motion-3d</span><span class="ds" data-en="Assembly animation, hero renders">Montage-Animation, Hero-Renders</span></button></li>
+              <li><button type="button" class="ki" data-id="blender" data-rel=""><span class="nm">blender</span><span class="ds" data-en="Models, scenes, renders, live via MCP">Modelle, Szenen, Renders, live per MCP</span></button></li>
+              <li><button type="button" class="ki" data-id="research" data-rel="paper-reviewer"><span class="nm">research</span><span class="ds" data-en="Study, analysis, paper">Studie, Analyse, Paper</span></button></li>
+            </ul></div>
+          </div>
+          </div>
+          <div class="kcol" style="--hue: var(--indigo)" data-kind="Agent" data-kind-en="agent">
+            <header><h3><svg class="ico" aria-hidden="true"><use href="#i-bot"/></svg><span data-en="Agents">Agenten</span><em>13</em></h3><p data-en="Thin shell of role, model, tools and return; knowledge comes from the skill. Long logs stay out of the main chat.">Dünne Hülle aus Rolle, Modell, Tools und Rückgabe; das Wissen kommt aus dem Skill. Lange Logs bleiben aus dem Hauptchat.</p></header>
+            <span class="kgrp" data-en="Search + work">Suchen + Arbeiten</span>
+            <ul class="kl">
+              <li><button type="button" class="ki" data-id="ws-explorer" data-rel=""><span class="nm">ws-explorer</span><span class="ds" data-en="Broad search, returns file:line only">Breite Suche, nur Fundstellen Datei:Zeile</span></button></li>
+              <li><button type="button" class="ki" data-id="ws-worker" data-rel=""><span class="nm">ws-worker</span><span class="ds" data-en="Clear, simple changes; main chat checks the diff">Klare, einfache Änderungen; Hauptchat prüft den Diff</span></button></li>
+              <li><button type="button" class="ki" data-id="test-runner" data-rel="pre-commit"><span class="nm">test-runner</span><span class="ds" data-en="Check runs with much output, result only">Prüfläufe mit viel Ausgabe, nur Ergebnis</span></button></li>
+              <li><button type="button" class="ki" data-id="ui-verifier" data-rel="ui-change ui_checker"><span class="nm">ui-verifier</span><span class="ds" data-en="UI light + dark, breakpoints, screenshots">UI hell + dunkel, Umbruchpunkte, Screenshots</span></button></li>
+              <li><button type="button" class="ki" data-id="stack-diagnoser" data-rel=""><span class="nm">stack-diagnoser</span><span class="ds" data-en="Situation and cause of the running stack">Lagebild und Ursache des laufenden Stacks</span></button></li>
+            </ul>
+            <span class="kgrp" data-en="Reviews">Reviews</span>
+            <ul class="kl">
+              <li><button type="button" class="ki" data-id="safety-reviewer" data-rel="pre-commit"><span class="nm">safety-reviewer</span><span class="ds" data-en="Diff against AGENTS.md §0 before commit">Diff gegen AGENTS.md §0 vor dem Commit</span></button></li>
+              <li><button type="button" class="ki" data-id="robustness-reviewer" data-rel=""><span class="nm">robustness-reviewer</span><span class="ds" data-en="Robustness audit, findings P1–P3">Robustheits-Audit, Befunde P1–P3</span></button></li>
+              <li><button type="button" class="ki" data-id="showcase-reviewer" data-rel="project-copy check_showcase"><span class="nm">showcase-reviewer</span><span class="ds" data-en="Public face against the brand kit">Außendarstellung gegen das Brand-Kit</span></button></li>
+              <li><button type="button" class="ki" data-id="docs-auditor" data-rel=""><span class="nm">docs-auditor</span><span class="ds" data-en="Docs against code, deviations only">Doku gegen Code, nur Abweichungen</span></button></li>
+              <li><button type="button" class="ki" data-id="coherence-reviewer" data-rel="project-copy"><span class="nm">coherence-reviewer</span><span class="ds" data-en="Same names everywhere, common thread">Gleiche Namen überall, roter Faden</span></button></li>
+              <li><button type="button" class="ki" data-id="paper-reviewer" data-rel=""><span class="nm">paper-reviewer</span><span class="ds" data-en="Research like a referee, P1–P3">Forschung wie ein Gutachter, P1–P3</span></button></li>
+              <li><button type="button" class="ki" data-id="print-reviewer" data-rel="check_print"><span class="nm">print-reviewer</span><span class="ds" data-en="Print parts for printability">Druckteile auf Druckbarkeit</span></button></li>
+              <li><button type="button" class="ki" data-id="teamwork-optimizer" data-rel=""><span class="nm">teamwork-optimizer</span><span class="ds" data-en="Evidence for the workflow retro">Belege für die Workflow-Retro</span></button></li>
+            </ul>
+            <span class="kgrp" data-en="Mods (Claude Code)">Mods (Claude Code)</span>
+            <ul class="kl">
+              <li><button type="button" class="ki" data-id="answer-cards" data-rel="format_check"><span class="nm">answer-cards</span><span class="ds" data-en="Answers as cards, ❓ questions as buttons">Antworten als Karten, ❓-Fragen als Buttons</span></button></li>
+              <li><button type="button" class="ki" data-id="ros-safety-status" data-rel=""><span class="nm">ros-safety-status</span><span class="ds" data-en="Status line Robot | Digital Twin / Robot | Hardware">Statuszeile Robot | Digital Twin / Robot | Hardware</span></button></li>
+            </ul>
+          </div>
+          <div class="kcol" style="--hue: var(--orange)" data-kind="Hook" data-kind-en="hook">
+            <header><h3><svg class="ico" aria-hidden="true"><use href="#i-shield"/></svg>Hooks<em>5 + Git</em></h3><p data-en="Run automatically at fixed points of a chat and enforce rules one would otherwise forget, with their own test suite.">Laufen automatisch an festen Stellen eines Chats und setzen Regeln durch, die man sonst vergisst – mit eigener Testsuite.</p></header>
+            <ul class="kl">
+              <li><button type="button" class="ki" data-id="session_overview" data-rel="chat_claims chat_handoff"><span class="nm">session_overview.py</span><span class="ds" data-en="Situation report of parallel chats at start">Lagebild paralleler Chats beim Start</span></button></li>
+              <li><button type="button" class="ki" data-id="chat_length_hint" data-rel="chat_handoff"><span class="nm">chat_length_hint.py</span><span class="ds" data-en="From ~100k tokens: suggest a new chat">Ab ~100k Token: neuen Chat vorschlagen</span></button></li>
+              <li><button type="button" class="ki" data-id="pre_tool_guard" data-rel="chat_claims ui-change vla-motion flow-graph docs"><span class="nm">pre_tool_guard.py</span><span class="ds" data-en="Question/warning before Bash + edit, skill hints">Rückfrage/Warnung vor Bash + Edit, Skill-Hinweise</span></button></li>
+              <li><button type="button" class="ki" data-id="post_edit_check" data-rel="chat_claims check_ws check_ports check_ui_tokens"><span class="nm">post_edit_check.py</span><span class="ds" data-en="Checks every changed file at once">Prüft jede geänderte Datei sofort</span></button></li>
+              <li><button type="button" class="ki" data-id="format_check" data-rel=""><span class="nm">format_check.py</span><span class="ds" data-en="Checks the ending of every answer">Prüft den Schluss jeder Antwort</span></button></li>
+              <li><button type="button" class="ki" data-id="chat_claims" data-rel="todo_claim_hook"><span class="nm">chat_claims.py</span><span class="ds" data-en="File register: which chat changes what">Datei-Register: welcher Chat ändert was</span></button></li>
+              <li><button type="button" class="ki" data-id="todo_claim_hook" data-rel="claim"><span class="nm">todo_claim_hook.py</span><span class="ds" data-en="Claim line in TODOS.md per task">Claim-Zeile in TODOS.md je Aufgabe</span></button></li>
+              <li><button type="button" class="ki" data-id="chat_handoff" data-rel=""><span class="nm">chat_handoff.py</span><span class="ds" data-en="Handoff to a new chat, “chat weiter”">Übergabe an neuen Chat, „chat weiter“</span></button></li>
+              <li><button type="button" class="ki" data-id="turn_stats" data-rel=""><span class="nm">turn_stats.py</span><span class="ds" data-en="Effort line: duration + tokens">Aufwand-Zeile: Dauer + Token</span></button></li>
+              <li><button type="button" class="ki" data-id="codex_bridge" data-rel="pre_tool_guard post_edit_check format_check"><span class="nm">codex_bridge.py</span><span class="ds" data-en="Same hooks for Codex">Dieselben Hooks für Codex</span></button></li>
+              <li><button type="button" class="ki" data-id="antigravity_bridge" data-rel="pre_tool_guard post_edit_check"><span class="nm">antigravity_bridge.py</span><span class="ds" data-en="Same hooks for Antigravity/Gemini">Dieselben Hooks für Antigravity/Gemini</span></button></li>
+              <li><button type="button" class="ki" data-id="pre-commit" data-rel="check_ws check_ports check_showcase check_ui_tokens"><span class="nm">tools/pre-commit</span><span class="ds" data-en="Checks staged files, mostly under 10&amp;nbsp;s">Prüft Gestagtes, meist unter 10&nbsp;s</span></button></li>
+              <li><button type="button" class="ki" data-id="test_hooks" data-rel="pre_tool_guard post_edit_check format_check session_overview chat_length_hint"><span class="nm">test_hooks.py · test_skills.py</span><span class="ds" data-en="pytest for hooks, skills, references">pytest für Hooks, Skills, Verweise</span></button></li>
+            </ul>
+          </div>
+          <div class="kcol" style="--hue: var(--green)" data-kind="Skript" data-kind-en="script">
+            <header><h3><svg class="ico" aria-hidden="true"><use href="#i-term"/></svg><span data-en="Scripts">Skripte</span><em>tools/</em></h3><p data-en="Deliver the evidence before “done”. Reusable scripts in tools/, one-off scripts only in the scratchpad.">Liefern den Beleg vor „fertig“. Wiederverwendbare Skripte in tools/, Einmal-Skripte nur im Scratchpad.</p></header>
+            <ul class="kl">
+              <li><button type="button" class="ki" data-id="ui_checker" data-rel=""><span class="nm">ui_new_code_checker.py</span><span class="ds" data-en="UI rules, pages light + dark">UI-Regeln, Seiten hell + dunkel</span></button></li>
+              <li><button type="button" class="ki" data-id="i18n_check" data-rel=""><span class="nm">i18n_check.py</span><span class="ds" data-en="New UI texts in DE + EN">Neue UI-Texte in DE + EN</span></button></li>
+              <li><button type="button" class="ki" data-id="grasp_e2e" data-rel="safety-reviewer"><span class="nm">grasp_e2e.py</span><span class="ds" data-en="Grasping end to end, domain 94">Greifen Ende-zu-Ende, Domain 94</span></button></li>
+              <li><button type="button" class="ki" data-id="vla_eval" data-rel=""><span class="nm">vla_eval.py</span><span class="ds" data-en="AI agent and prompts against cases">KI-Agent und Prompts gegen Fälle</span></button></li>
+              <li><button type="button" class="ki" data-id="check_ws" data-rel=""><span class="nm">check_ws.py</span><span class="ds" data-en="setup.py, launch, launcher config">setup.py, Launch, Launcher-Konfiguration</span></button></li>
+              <li><button type="button" class="ki" data-id="check_ports" data-rel=""><span class="nm">check_ports.py</span><span class="ds" data-en="network.yaml, rosbridge whitelist">network.yaml, rosbridge-Whitelist</span></button></li>
+              <li><button type="button" class="ki" data-id="check_ui_tokens" data-rel=""><span class="nm">check_ui_tokens.py</span><span class="ds" data-en="Colour and font tokens of the UIs">Farb- und Schrift-Tokens der UIs</span></button></li>
+              <li><button type="button" class="ki" data-id="check_showcase" data-rel=""><span class="nm">check_showcase.py</span><span class="ds" data-en="Brand kit, names, links, en/de">Brand-Kit, Namen, Links, en/de</span></button></li>
+              <li><button type="button" class="ki" data-id="make_diagrams" data-rel=""><span class="nm">make_diagrams.py</span><span class="ds" data-en="Generates docs/img/diagrams/*.svg">Erzeugt docs/img/diagrams/*.svg</span></button></li>
+              <li><button type="button" class="ki" data-id="monitoring_sim" data-rel=""><span class="nm">monitoring_sim.py</span><span class="ds" data-en="Test data for monitoring, domain 97">Testdaten fürs Monitoring, Domain 97</span></button></li>
+              <li><button type="button" class="ki" data-id="capture" data-rel=""><span class="nm">capture.py · build.py</span><span class="ds" data-en="Isolated screenshots, build previews">Screenshots isoliert, Vorschau bauen</span></button></li>
+              <li><button type="button" class="ki" data-id="build" data-rel="capture"><span class="nm">build.py --look</span><span class="ds" data-en="Capture the finished preview + JS errors">Fertige Vorschau aufnehmen + JS-Fehler</span></button></li>
+              <li><button type="button" class="ki" data-id="check_flow" data-rel=""><span class="nm">check_flow.py</span><span class="ds" data-en="Graph in all states">Graph in allen Zuständen prüfen</span></button></li>
+              <li><button type="button" class="ki" data-id="audit_motion" data-rel=""><span class="nm">audit_motion.py</span><span class="ds" data-en="Static check of animations">Statische Prüfung von Animationen</span></button></li>
+              <li><button type="button" class="ki" data-id="reel_render" data-rel=""><span class="nm">reel_render.py</span><span class="ds" data-en="Project reel frame by frame">Projekt-Reel Bild für Bild</span></button></li>
+              <li><button type="button" class="ki" data-id="claim" data-rel=""><span class="nm">claim.py</span><span class="ds" data-en="Claims: who works on which files">Claims: wer arbeitet an welchen Dateien</span></button></li>
+              <li><button type="button" class="ki" data-id="ws_sync" data-rel="chat_sync"><span class="nm">ws_sync.sh</span><span class="ds" data-en="Sync laptop, lab and home PC">Abgleich Laptop, Labor, Home-PC</span></button></li>
+              <li><button type="button" class="ki" data-id="chat_sync" data-rel=""><span class="nm">chat_sync.py</span><span class="ds" data-en="Chat histories on every computer">Chat-Verläufe auf allen Rechnern</span></button></li>
+              <li><button type="button" class="ki" data-id="token_report" data-rel=""><span class="nm">token_report.py</span><span class="ds" data-en="Measure token use per chat">Token-Verbrauch je Chat messen</span></button></li>
+              <li><button type="button" class="ki" data-id="ws_backup" data-rel=""><span class="nm">ws_backup.sh</span><span class="ds" data-en="Local full backup">Lokales Voll-Backup</span></button></li>
+              <li><button type="button" class="ki" data-id="check_print" data-rel=""><span class="nm">check_print.py</span><span class="ds" data-en="Print part: watertight, walls, overhang">Druckteil: dicht, Wandstärke, Überhang</span></button></li>
+            </ul>
+          </div>
+        </div>
+        <p class="kit-none" data-en="No match. Try ui, test, vla or review.">Kein Treffer – probier ui, test, vla oder review.</p>
+        <p class="kit-detail" aria-live="polite"></p>
+      </section>
+<section class="sec" id="einrichtung"><span id="dateien"></span>
+        <header class="sec-head">
+          <div><span class="eyebrow" style="--hue: var(--blue)"><span class="n">02</span><span data-en="Setup">Einrichtung</span></span><h2 data-en="Three computers, one state">Drei Rechner, ein Stand</h2></div>
+          <div class="brief"><dl><dt data-en="In the repo">Im Repo</dt><dd data-en="Rules, skills, hooks, agents, mods, memory">Regeln, Skills, Hooks, Agenten, Mods, Memory</dd><dt data-en="Per computer">Je Rechner</dt><dd data-en="Install and sign in to the client; Claude settings and Codex trust per computer.">Client installieren und anmelden; Claude-Settings und Codex-Trust je Rechner.</dd><dt data-en="Chat histories">Chat-Verläufe</dt><dd data-en="Claude histories via &lt;code&gt;tools/chat_sync.py&lt;/code&gt;; other tools get a file handoff">Claude-Verläufe per <code>tools/chat_sync.py</code>; andere Werkzeuge erhalten eine Datei-Übergabe</dd></dl></div>
+        </header>
+    <div class="setup">
+      <div class="panel tree">
+        <h3 data-en="Shared sources and local setup">Gemeinsame Quellen und lokale Einrichtung</h3>
+        <div class="tr"><span class="p"><svg class="ico"><use href="#i-repo"/></svg>dev_ws/</span><span class="w" data-en="ROS&amp;nbsp;2 Humble workspace, branch &lt;code&gt;main&lt;/code&gt;">ROS-2-Humble-Workspace, Branch <code>main</code></span></div>
+        <div class="tr" style="--d:1"><span class="p"><svg class="ico"><use href="#i-book"/></svg>AGENTS.md</span><span class="w" data-en="Rules for every tool: safety, names, roles and Definition of Done">Regeln für jedes Werkzeug: Sicherheit, Namen, Rollen und Definition of Done</span></div>
+        <div class="tr" style="--d:1"><span class="p"><svg class="ico"><use href="#i-book"/></svg>src/&lt;pkg&gt;/CLAUDE.md</span><span class="w" data-en="Module maps of the large packages (UX | Control Interface, UX | Monitoring, vla_bridge, UX | Nexus Launcher)">Modul-Karten der großen Pakete (UX | Control Interface, UX | Monitoring, vla_bridge, UX | Nexus Launcher)</span></div>
+        <div class="tr" style="--d:1"><span class="p" style="--hue: var(--gold)"><svg class="ico"><use href="#i-user"/></svg>.claude/ROLES.md</span><span class="w" data-en="Role map: Specialist roles and fixed steps → lead skills, agents, checks">Rollenkarte: Fachrollen und feste Schritte → Leit-Skills, Agenten, Prüfungen</span></div>
+        <div class="tr" style="--d:1"><span class="p" style="--hue: var(--gold)"><svg class="ico"><use href="#i-key"/></svg>.claude/settings.json</span><span class="w" data-en="Hooks on five events, allowed check commands, blocked folders, plugins">Hooks an fünf Ereignissen, erlaubte Prüfbefehle, gesperrte Ordner, Plugins</span></div>
+        <div class="tr" style="--d:1"><span class="p" style="--hue: var(--gold)"><svg class="ico"><use href="#i-key"/></svg>.claude/user-settings.json</span><span class="w" data-en="Template for &lt;code&gt;~/.claude/settings.json&lt;/code&gt; on every computer: model, effort per model, mods, Remote Control">Vorlage für <code>~/.claude/settings.json</code> auf allen Rechnern: Modell, Effort je Modell, Mods, Remote Control</span></div>
+        <div class="tr" style="--d:1"><span class="p" style="--hue: var(--gold)"><svg class="ico"><use href="#i-shield"/></svg>.claude/hooks/</span><span class="w" data-en="Shared hooks, bridges + test suites &lt;code&gt;test_hooks.py&lt;/code&gt;, &lt;code&gt;test_skills.py&lt;/code&gt;">Gemeinsame Hooks, Bridges + Testsuites <code>test_hooks.py</code>, <code>test_skills.py</code></span></div>
+        <div class="tr" style="--d:1"><span class="p" style="--hue: var(--teal)"><svg class="ico"><use href="#i-layers"/></svg>.claude/skills/</span><span class="w" data-en="Skills, scripts and templates in the skill&#x27;s folder">Skills, Skripte und Vorlagen im Ordner des Skills</span></div>
+        <div class="tr" style="--d:1"><span class="p" style="--hue: var(--indigo)"><svg class="ico"><use href="#i-bot"/></svg>.claude/agents/</span><span class="w" data-en="Project agents for Claude Code; other tools apply checklists according to &lt;code&gt;.agents/rules/dev_ws.md&lt;/code&gt;">Projekt-Agenten für Claude Code; andere Werkzeuge wenden die Prüflisten gemäß <code>.agents/rules/dev_ws.md</code> an</span></div>
+        <div class="tr" style="--d:1"><span class="p" style="--hue: var(--violet)"><svg class="ico"><use href="#i-win"/></svg>.claude/mods/</span><span class="w" data-en="&lt;code&gt;answer-cards&lt;/code&gt; (answer cards), &lt;code&gt;ros-safety-status&lt;/code&gt; (Robot | Digital Twin / Robot | Hardware status line)"><code>answer-cards</code> (Antwort-Karten), <code>ros-safety-status</code> (Statuszeile (Robot | Digital Twin / Robot | Hardware))</span></div>
+        <div class="tr" style="--d:1"><span class="p" style="--hue: var(--violet)"><svg class="ico"><use href="#i-brain"/></svg>.claude/memory/</span><span class="w" data-en="Memory: one file per fact, index &lt;code&gt;MEMORY.md&lt;/code&gt; (via &lt;code&gt;autoMemoryDirectory&lt;/code&gt;)">Memory: eine Datei je Fakt, Index <code>MEMORY.md</code> (über <code>autoMemoryDirectory</code>)</span></div>
+        <div class="tr" style="--d:1"><span class="p" style="--hue: var(--violet)"><svg class="ico"><use href="#i-chat"/></svg>.claude/handoff/</span><span class="w" data-en="Handoffs to a new chat; typing “chat weiter” picks them up">Übergaben an einen neuen Chat; „chat weiter“ übernimmt sie</span></div>
+        <div class="tr" style="--d:1"><span class="p" style="--hue: var(--teal)"><svg class="ico"><use href="#i-loop"/></svg>.agents/ · GEMINI.md</span><span class="w" data-en="Shared rules, skills, memory; &lt;code&gt;.agents/hooks.json&lt;/code&gt; for Antigravity, &lt;code&gt;.codex/hooks.json&lt;/code&gt; for Codex">Gemeinsame Regeln, Skills, Memory; <code>.agents/hooks.json</code> für Antigravity, <code>.codex/hooks.json</code> für Codex</span></div>
+        <div class="tr" style="--d:1"><span class="p" style="--hue: var(--green)"><svg class="ico"><use href="#i-term"/></svg>tools/</span><span class="w" data-en="Check and helper scripts, Git hook &lt;code&gt;pre-commit&lt;/code&gt;, sync &lt;code&gt;ws_sync.sh&lt;/code&gt; + &lt;code&gt;chat_sync.py&lt;/code&gt;, backup &lt;code&gt;ws_backup.sh&lt;/code&gt;">Prüf- und Hilfsskripte, Git-Hook <code>pre-commit</code>, Abgleich <code>ws_sync.sh</code> + <code>chat_sync.py</code>, Backup <code>ws_backup.sh</code></span></div>
+        <div class="tr" style="--d:1"><span class="p"><svg class="ico"><use href="#i-check"/></svg>TODOS.md</span><span class="w" data-en="Backlog, sprint goal and claims in the In Progress section">Backlog, Sprint-Ziel und Claims im Abschnitt „In Arbeit“</span></div>
+      </div>
+      <div class="panel wire">
+        <h3 data-en="Set up, verify, coordinate">Einrichten, prüfen, abstimmen</h3>
+<pre class="code" data-en="cd ~/dev_ws
+# Once per computer; does not install AI clients
+tools/ws_sync.sh --setup
+# Codex: read trust status only
+python3 tools/codex_setup.py --check
+# Before parallel edits
+git status --short
+python3 tools/claim.py list --fetch
+# Use the chat ID from the startup overview
+python3 tools/claim.py start --who &amp;lt;chat-id&amp;gt; \
+  --task &quot;[Area] Goal&quot; --files &quot;path (section)&quot;
+# After verified commit + push
+python3 tools/claim.py done --who &amp;lt;chat-id&amp;gt;">cd ~/dev_ws
+# Einmal je Rechner; installiert keine KI-Clients
+tools/ws_sync.sh --setup
+# Codex: Trust-Status nur lesen
+python3 tools/codex_setup.py --check
+# Vor parallelen Änderungen
+git status --short
+python3 tools/claim.py list --fetch
+# Chat-Kennung aus dem Start-Lagebild einsetzen
+python3 tools/claim.py start --who &lt;chat-id&gt; \
+  --task "[Bereich] Ziel" --files "pfad (Abschnitt)"
+# Nach geprüftem Commit + Push
+python3 tools/claim.py done --who &lt;chat-id&gt;</pre>
+        <div class="env">
+          <div style="--hue: var(--accent)"><b><svg class="ico"><use href="#i-code"/></svg><span data-en="Claude Code">Claude Code</span></b><p data-en="&lt;code&gt;.claude/settings.json&lt;/code&gt;: project hooks. &lt;code&gt;ws_sync.sh --setup&lt;/code&gt; configures memory and user settings; restart afterwards."><code>.claude/settings.json</code>: Projekt-Hooks. <code>ws_sync.sh --setup</code> überträgt Memory und Benutzer-Settings; danach neu starten.</p></div>
+          <div style="--hue: var(--violet)"><b><svg class="ico"><use href="#i-win"/></svg>Codex</b><p data-en="&lt;code&gt;.codex/hooks.json&lt;/code&gt; → &lt;code&gt;codex_bridge.py&lt;/code&gt;. Trust the project and hook hashes; check again after changes."><code>.codex/hooks.json</code> → <code>codex_bridge.py</code>. Projekt und Hook-Hashes müssen vertraut sein; nach Änderungen erneut prüfen.</p></div>
+          <div style="--hue: var(--gold)"><b><svg class="ico"><use href="#i-key"/></svg><span data-en="Antigravity / Gemini">Antigravity / Gemini</span></b><p data-en="&lt;code&gt;GEMINI.md&lt;/code&gt; and &lt;code&gt;.agents/&lt;/code&gt; share rules, skills and memory. Pre/post adapter: &lt;code&gt;.agents/hooks.json&lt;/code&gt;; verify activation in the client."><code>GEMINI.md</code> und <code>.agents/</code> teilen Regeln, Skills und Memory. Pre-/Post-Adapter: <code>.agents/hooks.json</code>; Aktivierung im Client prüfen.</p></div>
+          <div style="--hue: var(--green)"><b><svg class="ico"><use href="#i-git"/></svg><span data-en="Computer switch">Rechnerwechsel</span></b><p data-en="Push your completed work. Run &lt;code&gt;tools/ws_sync.sh&lt;/code&gt; only by agreement with no ongoing edits: pull with rebase/autostash and build changed ROS packages.">Eigene fertige Arbeit pushen. <code>tools/ws_sync.sh</code> nur abgestimmt ohne laufende Edits: Pull mit Rebase/Autostash und Build geänderter ROS-Pakete.</p></div>
+        </div>
+      </div>
+    </div>
+      </section>
+<section class="sec" id="zahlen"><span id="belege"></span>
+        <header class="sec-head">
+          <div><span class="eyebrow" style="--hue: var(--lime)"><span class="n">03</span><span data-en="Figures">Zahlen</span></span><h2 data-en="Figures from git log">Zahlen aus git log</h2></div>
+          <div class="brief"><p data-en="All values straight from &lt;code&gt;git log&lt;/code&gt; on &lt;code&gt;main&lt;/code&gt;, snapshot 10 Oct 2026; repo inventory counted locally. Commits measure activity, not quality.">Alle Werte direkt aus <code>git log</code> auf <code>main</code>, Stichtag 10.10.2026; Repo-Inventar lokal gezählt. Commits messen Aktivität, nicht Qualität.</p></div>
+        </header>
+        <div class="ev">
+          <div class="kpis kpis-6" aria-label="Kennzahlen" data-en-aria="Key figures">
+            <div class="kpi" style="--hue: var(--accent)"><strong data-num="2988">2988</strong><span data-en="&lt;b&gt;commits&lt;/b&gt; since March"><b>Commits</b> seit März</span></div>
+            <div class="kpi" style="--hue: var(--accent)"><strong data-num="2022">2022</strong><span data-en="&lt;b&gt;commits&lt;/b&gt; in 30 days"><b>Commits</b> in 30 Tagen</span></div>
+            <div class="kpi" style="--hue: var(--teal)"><strong data-num="710">710</strong><span data-en="&lt;b&gt;docs commits&lt;/b&gt; in total"><b>Doku-Commits</b> gesamt</span></div>
+            <div class="kpi" style="--hue: var(--violet)"><strong data-num="32">32</strong><span data-en="&lt;b&gt;skills&lt;/b&gt; in the repo"><b>Skills</b> im Repo</span></div>
+            <div class="kpi" style="--hue: var(--indigo)"><strong data-num="13">13</strong><span data-en="&lt;b&gt;agents&lt;/b&gt; for separate jobs"><b>Agenten</b> für Einzelaufträge</span></div>
+            <div class="kpi" style="--hue: var(--orange)"><strong data-num="22">22</strong><span data-en="&lt;b&gt;memory&lt;/b&gt; preferences"><b>Memory</b>-Vorgaben</span></div>
+          </div>
+          <div class="gitg charts">
+            <div class="panel chart" data-chart>
+              <h3 data-en="Commits per month">Commits je Monat</h3>
+              <p class="sub" data-en="2026, all commits on &lt;code&gt;main&lt;/code&gt;; October up to the 10th.">2026, alle Commits auf <code>main</code>; Oktober bis 10.10.</p>
+              <div class="vbars">
+                <div class="vb-axis" aria-hidden="true"><span>1500</span><span>1000</span><span>500</span></div>
+                <div class="vb-plot">
+                  <div class="vb-grid" aria-hidden="true"><i></i><i></i><i></i></div>
+                  <div class="vb-cols">
+                    <div class="vb" style="--v:105" tabindex="0" aria-label="März: 105 Commits" data-en-aria="March: 105 commits"><span class="tt" data-en="March · 105">März · 105</span></div>
+                    <div class="vb" style="--v:0" tabindex="0" aria-label="April: 0 Commits" data-en-aria="April: 0 commits"><span class="tt">April · 0</span></div>
+                    <div class="vb" style="--v:123" tabindex="0" aria-label="Mai: 123 Commits" data-en-aria="May: 123 commits"><span class="tt" data-en="May · 123">Mai · 123</span></div>
+                    <div class="vb" style="--v:350" tabindex="0" aria-label="Juni: 350 Commits" data-en-aria="June: 350 commits"><span class="tt" data-en="June · 350">Juni · 350</span></div>
+                    <div class="vb" style="--v:13" tabindex="0" aria-label="Juli: 13 Commits" data-en-aria="July: 13 commits"><span class="tt" data-en="July · 13">Juli · 13</span></div>
+                    <div class="vb" style="--v:242" tabindex="0" aria-label="August: 242 Commits" data-en-aria="August: 242 commits"><span class="tt">August · 242</span></div>
+                    <div class="vb" style="--v:708" tabindex="0" aria-label="September: 708 Commits" data-en-aria="September: 708 commits"><span class="lbl">708</span><span class="tt">September · 708</span></div>
+                    <div class="vb" style="--v:1447" tabindex="0" aria-label="Oktober bis 10.: 1447 Commits" data-en-aria="October up to the 10th: 1447 commits"><span class="lbl">1447</span><span class="tt" data-en="1–10 October · 1447">1.–10. Oktober · 1447</span></div>
+                  </div>
+                </div>
+                <div class="vb-x" aria-hidden="true"><span data-en="Mar">Mär</span><span>Apr</span><span data-en="May">Mai</span><span>Jun</span><span>Jul</span><span>Aug</span><span>Sep</span><span data-en="Oct*">Okt*</span></div>
+              </div>
+              <p class="callout" data-en="&lt;b&gt;Since September&lt;/b&gt; with skills, hooks and agents: 2,022 commits in 30 days. *October: ten days only."><b>Seit September</b> mit Skills, Hooks und Agenten: 2.022 Commits in 30 Tagen. *Oktober: nur zehn Tage.</p>
+              <details><summary data-en="As a table">Als Tabelle</summary>
+                <table><thead><tr><th data-en="Month">Monat</th><th class="r">Commits</th></tr></thead><tbody>
+                  <tr><td data-en="March">März</td><td class="r">105</td></tr><tr><td>April</td><td class="r">0</td></tr><tr><td data-en="May">Mai</td><td class="r">123</td></tr><tr><td data-en="June">Juni</td><td class="r">350</td></tr>
+                  <tr><td data-en="July">Juli</td><td class="r">13</td></tr><tr><td>August</td><td class="r">242</td></tr><tr><td>September</td><td class="r">708</td></tr><tr><td data-en="October (1–10)">Oktober (1.–10.)</td><td class="r">1447</td></tr>
+                </tbody></table>
+              </details>
+            </div>
+            <div class="panel chart" data-chart>
+              <h3 data-en="Type of change">Art der Änderung</h3>
+              <p class="sub" data-en="Conventional commit type, all 2,988 commits">Conventional-Commit-Typ, alle 2.988 Commits</p>
+              <div class="hbars" style="--max:770">
+                <div class="hrow"><span>feat</span><span class="htrack"><span class="hb" style="--v:770" tabindex="0" aria-label="feat: 770"><span class="tt" data-en="new feature · 770">neue Funktion · 770</span></span></span><span class="v">770</span></div>
+                <div class="hrow"><span>docs</span><span class="htrack"><span class="hb" style="--v:710" tabindex="0" aria-label="docs: 710"><span class="tt" data-en="docs · 710">Doku · 710</span></span></span><span class="v">710</span></div>
+                <div class="hrow"><span>fix</span><span class="htrack"><span class="hb" style="--v:377" tabindex="0" aria-label="fix: 377"><span class="tt" data-en="bug fix · 377">Fehlerbehebung · 377</span></span></span><span class="v">377</span></div>
+                <div class="hrow"><span>chore</span><span class="htrack"><span class="hb" style="--v:317" tabindex="0" aria-label="chore: 317"><span class="tt" data-en="maintenance · 317">Pflege · 317</span></span></span><span class="v">317</span></div>
+                <div class="hrow"><span>style</span><span class="htrack"><span class="hb" style="--v:246" tabindex="0" aria-label="style: 246"><span class="tt" data-en="styling · 246">Optik · 246</span></span></span><span class="v">246</span></div>
+                <div class="hrow"><span>refactor</span><span class="htrack"><span class="hb" style="--v:52" tabindex="0" aria-label="refactor: 52"><span class="tt" data-en="refactoring · 52">Umbau · 52</span></span></span><span class="v">52</span></div>
+              </div>
+              <p class="callout" data-en="&lt;b&gt;docs ≈ feat:&lt;/b&gt; nearly every new feature gets a docs commit; tests and review provide the quality evidence."><b>docs ≈ feat:</b> auf fast jede neue Funktion kommt ein Doku-Commit; Tests und Review liefern den Qualitätsbeleg.</p>
+              <h3 data-en="Most frequent areas">Häufigste Bereiche</h3>
+              <div class="hbars" style="--max:491">
+                <div class="hrow"><span>agent*</span><span class="htrack"><span class="hb" style="--v:491" tabindex="0" aria-label="agent: 491"><span class="tt" data-en="workflow itself · 491">Workflow selbst · 491</span></span></span><span class="v">491</span></div>
+                <div class="hrow"><span>ui</span><span class="htrack"><span class="hb" style="--v:325" tabindex="0" aria-label="ui: 325"><span class="tt">UX | Control Interface · 325</span></span></span><span class="v">325</span></div>
+                <div class="hrow"><span>nexus</span><span class="htrack"><span class="hb" style="--v:179" tabindex="0" aria-label="nexus: 179"><span class="tt">UX | Nexus Launcher · 179</span></span></span><span class="v">179</span></div>
+                <div class="hrow"><span>vla</span><span class="htrack"><span class="hb" style="--v:60" tabindex="0" aria-label="vla: 60"><span class="tt">vla_bridge · 60</span></span></span><span class="v">60</span></div>
+              </div>
+              <p class="callout" data-en="&lt;b&gt;agent*&lt;/b&gt; = agent + agents + claude: work on the workflow itself (skills, hooks, agents) is the largest area."><b>agent*</b> = agent + agents + claude: Arbeit am Workflow selbst (Skills, Hooks, Agenten) ist der größte Bereich.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+</main>
+
+<footer><div class="wrap"><a class="qr-foot" href="https://lu4k87.github.io/" target="_blank" rel="noopener"><span class="qr-code"><svg role="img" aria-label="QR-Code: Projektübersicht öffnen" data-en-aria="QR code: open the project overview"><use href="#qr-docs"/></svg></span><span class="qr-txt"><b data-en="Open page">Seite öffnen</b><small>lu4k87.github.io</small></span></a><span data-en="Updated 10 Oct 2026 · sources: AGENTS.md, .agents/rules/dev_ws.md, .claude/README.md, hooks, git log">Stand 10.10.2026 · Quellen: AGENTS.md, .agents/rules/dev_ws.md, .claude/README.md, Hooks, git log</span><span><a class="foot-link" href="https://lu4k87.github.io/" data-en="All projects">Alle Projekte</a> · ai_workflow · docs/ai_dev_workflow_reference.html</span></div></footer>
+
+<script src="js/scroll_flow.js"></script>
+<script src="js/landing.js"></script>
+<script>
+/* ═════════ Seite: Theme + Sprache (gleiche Speicher-Schlüssel wie project_docs.html), Lesefluss, Hero-Chat, Kreislauf, Nummernsystem, Werkzeugkasten, Hook-Takt, Prüfkette, Diagramme ═════════ */
+const root = document.documentElement;
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const io1 = (el, fn, opt) => { const o = new IntersectionObserver(es => es.forEach(e => e.isIntersecting && (fn(e.target), o.unobserve(e.target))), opt); o.observe(el); };
+const store = (k, v) => { try { if (v === undefined) return localStorage.getItem(k); localStorage.setItem(k, v); } catch { return null; } };
+let lang = 'de';
+const L = v => (Array.isArray(v) ? v[lang === 'en' ? 1 : 0] : v);
+const onLang = [];  // Teile, die ihre Texte per JS setzen, zeichnen sich bei Sprachwechsel neu
+root.classList.add('wf-js');
+
+const setTheme = t => {
+  if (t) root.dataset.theme = t;
+  const cur = root.dataset.theme || (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+  document.querySelectorAll('[data-theme-btn]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.themeBtn === cur)));
+};
+const qTheme = new URLSearchParams(location.search).get('theme');
+setTheme(['dark', 'light'].includes(qTheme) ? qTheme : store('project_docs_theme'));
+document.querySelectorAll('[data-theme-btn]').forEach(b => b.addEventListener('click', () => { setTheme(b.dataset.themeBtn); store('project_docs_theme', b.dataset.themeBtn); }));
+
+const keep = (el, key, val) => { if (el.dataset[key] === undefined) el.dataset[key] = val; return el.dataset[key]; };
+const title = ['AI Dev Workflow · Nachschlagen', 'AI Dev Workflow · Reference'];
+const setLang = l => {
+  lang = l; root.lang = l;
+  const en = l === 'en';
+  document.querySelectorAll('[data-en]').forEach(el => { const de = keep(el, 'de', el.innerHTML); el.innerHTML = en ? el.dataset.en : de; });
+  document.querySelectorAll('[data-en-aria]').forEach(el => { const de = keep(el, 'deAria', el.getAttribute('aria-label')); el.setAttribute('aria-label', en ? el.dataset.enAria : de); });
+  document.querySelectorAll('[data-en-roledesc]').forEach(el => { const de = keep(el, 'deRoledesc', el.getAttribute('aria-roledescription')); el.setAttribute('aria-roledescription', en ? el.dataset.enRoledesc : de); });
+  document.querySelectorAll('[data-en-ph]').forEach(el => { const de = keep(el, 'dePh', el.placeholder); el.placeholder = en ? el.dataset.enPh : de; });
+  document.title = L(title);
+  document.querySelectorAll('[data-lang]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.lang === l)));
+  onLang.forEach(f => f());
+};
+document.querySelectorAll('[data-lang]').forEach(b => b.addEventListener('click', () => { setLang(b.dataset.lang); store('project_docs_lang', b.dataset.lang); }));
+
+// Lesefluss (js/scroll_flow.js): Einstieg gestaffelt, Köpfe bauen sich auf, Inhaltsverzeichnis folgt dem aktiven Kapitel
+window.ScrollFlow?.init({
+  hero: '.hero-copy > .badge, .h1-name, .hero-copy > .abstract, .hero-copy > .cta-row, .hero-kv > li',
+  heroExit: '.hero-inner',
+  heads: '.sec-head, .land-head, .ct-copy',
+  depth: ['.fg'],
+  groups: ['.strip ul', '.trio', '.keys7', '.fx8', '.day', '.perm', '.collab', '.mem5', '.ev .kpis'],
+  items: ['.part-head', '.ov', '.note', '.ex > *', '.bt', '.rflow', '.kit', '.guard', '.learn', '.chart', '.setup > *', '.life', '.dod > *', '.dod-area', '.contact .vcard'],
+  progress: '.progress',
+  nav: { links: '.toc a', reset: '.hero', hue: '.eyebrow' },
+  relay: ['.keys7', '.day', '.ev .kpis'],
+  spot: ['.keys7', '.fx8', '.ev .kpis'],
+  lines: ['.strip', '.contact'],
+});
+
+
+
+
+/* Werkzeugkasten: Verbindungen (data-rel, beidseitig) beim Berühren, Klick hält die Auswahl, Suche filtert alle vier Spalten */
+function initKit() {
+  const kit = document.querySelector('.kit'), out = document.querySelector('.kit-detail'), cnt = document.querySelector('.kit-count'), q = document.querySelector('.kit-search input');
+  const IDLE = ['Element berühren, fokussieren oder anklicken (Klick hält die Auswahl, Esc löst sie).', 'Touch, focus or click an element (a click keeps the selection, Esc releases it).'];
+  const items = [...kit.querySelectorAll('.ki')], by = new Map(items.map(i => [i.dataset.id, i])), adj = new Map(items.map(i => [i.dataset.id, new Set()]));
+  items.forEach(i => (i.dataset.rel || '').split(/\s+/).filter(Boolean).forEach(r => {
+    if (!by.has(r)) { console.warn('[kit] unbekannte Verbindung:', i.dataset.id, '→', r); return; }
+    adj.get(i.dataset.id).add(r); adj.get(r).add(i.dataset.id);
+  }));
+  const name = id => by.get(id).querySelector('.nm').textContent;
+  const kind = id => { const d = by.get(id).closest('.kcol').dataset; return L([d.kind, d.kindEn]); };
+  let pin = null;
+  const show = id => {
+    kit.classList.toggle('focus', !!id);
+    items.forEach(i => { i.classList.toggle('self', i.dataset.id === id); i.classList.toggle('rel', !!id && adj.get(id).has(i.dataset.id)); });
+    if (!id) { out.textContent = L(IDLE); return; }
+    const rel = [...adj.get(id)].map(r => `<code>${name(r)}</code>`).join(' ');
+    out.innerHTML = `<b>${name(id)}</b> · ${kind(id)} · ${rel ? `${L(['verbunden mit', 'connected to'])} ${rel}` : L(['arbeitet für sich', 'works on its own'])}`;
+  };
+  const filter = () => {
+    const t = q.value.trim().toLowerCase();
+    let n = 0;
+    items.forEach(i => { const hit = !t || i.textContent.toLowerCase().includes(t); i.parentElement.hidden = !hit; n += hit; });
+    kit.querySelectorAll('.kl').forEach(ul => { const g = ul.previousElementSibling; if (g?.classList.contains('kgrp')) g.hidden = ![...ul.children].some(li => !li.hidden); });
+    kit.classList.toggle('empty', n === 0);
+    cnt.textContent = t ? `${n} ${L(['Treffer', n === 1 ? 'match' : 'matches'])}` : `${items.length} ${L(['Bausteine', 'elements'])}`;
+  };
+  q.addEventListener('input', filter);
+  onLang.push(() => { show(pin); filter(); });
+  items.forEach(i => {
+    i.addEventListener('pointerenter', () => show(i.dataset.id));
+    i.addEventListener('pointerleave', () => show(pin));
+    i.addEventListener('focus', () => show(i.dataset.id));
+    i.addEventListener('blur', () => show(pin));
+    i.addEventListener('click', () => {
+      pin = pin === i.dataset.id ? null : i.dataset.id;
+      items.forEach(x => x.setAttribute('aria-pressed', String(x.dataset.id === pin)));
+      show(pin || i.dataset.id);
+    });
+  });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && pin) { pin = null; items.forEach(x => x.setAttribute('aria-pressed', 'false')); show(null); } });
+  show(null); filter();
+}
+
+
+
+function initCharts() {
+  if (reduce) return;
+  document.querySelector('.charts').classList.add('charts-anim');
+  document.querySelectorAll('[data-chart]').forEach(el => io1(el, t => t.classList.add('in'), { threshold: .3 }));
+}
+
+initKit(); initCharts();
+// ?lang=en (Links, Screenshots) vor gespeicherter Wahl
+if ((new URLSearchParams(location.search).get('lang') || store('project_docs_lang')) === 'en') setLang('en');
+
+
+/* Workflow-Graphen: einblenden, wenn sichtbar; Punkte nur laufen lassen, solange sichtbar (reduced-motion = Standbild per CSS) */
+(function () {
+  const dias = [...document.querySelectorAll('.wf-panel .dia')];
+  if (!dias.length) return;
+  const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (still || !('IntersectionObserver' in window)) { dias.forEach(d => d.classList.add('in')); return; }
+  const io = new IntersectionObserver(es => es.forEach(x => {
+    const s = x.target.querySelector('svg');
+    if (x.isIntersecting) { x.target.classList.add('in'); s.unpauseAnimations && s.unpauseAnimations(); }
+    else s.pauseAnimations && s.pauseAnimations();
+  }), { threshold: .15 });
+  dias.forEach(d => { const s = d.querySelector('svg'); s.pauseAnimations && s.pauseAnimations(); io.observe(d); });
+})();
+</script>
+</body>
+</html>
