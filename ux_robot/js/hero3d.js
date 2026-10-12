@@ -96,9 +96,7 @@ function build(L, wrap, host, o) {
     for (let i = 0; i <= 10; i++) { const a = i / 10 * Math.PI / 2; prof.push(new THREE.Vector2(0.397 + 0.008 * Math.cos(a), -0.008 + 0.008 * Math.sin(a))); }
     prof.push(new THREE.Vector2(0.0001, 0));
     const disc = new THREE.Mesh(new THREE.LatheGeometry(prof, 160).rotateX(Math.PI / 2),
-      // matt (Wunsch User 13.10.2026, Vorschau „Robot-Hero Feinschliff“): glänzend spiegelte sich das indigo Gegenlicht je nach
-      // Kamerawinkel als lila Fläche im Sockel; so bleibt er in jedem Winkel graphit
-      new THREE.MeshPhysicalMaterial({ color: 0x14181b, roughness: 0.74, metalness: 0.18, clearcoat: 0.16, clearcoatRoughness: 0.62, envMapIntensity: 0.3 }));
+      new THREE.MeshPhysicalMaterial({ color: 0x14181b, roughness: 0.5, metalness: 0.3, clearcoat: 0.5, clearcoatRoughness: 0.4, envMapIntensity: 0.3 }));
     disc.receiveShadow = true;
     dash = new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(circle(0.47, -0.02, 240)),
       new THREE.LineDashedMaterial({ color: ACC, dashSize: 0.018, gapSize: 0.014, transparent: true, opacity: 0.55 }));
@@ -213,17 +211,7 @@ function build(L, wrap, host, o) {
     }
     const pg = new THREE.BufferGeometry(); pg.setAttribute('position', new THREE.Float32BufferAttribute(pts, 3));
     const DO = scene === 'atlas' ? 0.6 : 1;   // atlas: Kuppel leiser, die farbigen Bögen tragen
-    // Vordere Kuppelhälfte leiser (Wunsch User 13.10.2026, Vorschau „Robot-Hero Feinschliff“): Punkte vor der Kuppelmitte (näher an
-    // der Kamera) bis auf 18 % → keine hellen Sprenkel auf dem Arm, die Kuppel liest sich als Raum hinter ihm
-    const domeMat = new THREE.PointsMaterial({ map: dot, color: ACC, size: 0.014, transparent: true, opacity: 0.8 * DO, depthWrite: false, blending: THREE.AdditiveBlending });
-    domeMat.onBeforeCompile = sh => {
-      sh.uniforms.uMid = { value: new THREE.Vector3(0, 0, SH) };
-      sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nuniform vec3 uMid; varying float vFront;')
-        .replace('#include <project_vertex>', '#include <project_vertex>\n  vFront = clamp((mvPosition.z - (modelViewMatrix * vec4(uMid, 1.0)).z) / 0.28, 0.0, 1.0);');
-      sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\nvarying float vFront;')
-        .replace('#include <fog_fragment>', '#include <fog_fragment>\n  gl_FragColor.a *= mix(1.0, 0.18, vFront);');
-    };
-    dome.add(new THREE.Points(pg, domeMat));
+    dome.add(new THREE.Points(pg, new THREE.PointsMaterial({ map: dot, color: ACC, size: 0.014, transparent: true, opacity: 0.8 * DO, depthWrite: false, blending: THREE.AdditiveBlending })));
     [0.0015, 0.16, 0.34, 0.52].forEach((z, i) => dome.add(ring(Math.sqrt(R * R - (z - SH) ** 2), z, i ? 0.12 : 0.6)));
     const rim = Math.acos(-SH / R);
     for (let m = 0; m < 8; m++) {
@@ -1049,10 +1037,7 @@ function build(L, wrap, host, o) {
     // spricht gerade: Blase aus, Restzeit steht, danach wieder ein → Dialog, nie zwei Blasen übereinander. swap = nur Inhalt
     // tauschen (kein Pop). Kopfzeile (Leuchtpunkt, Name, Messwert) kommt aus headerFor(obj); Rumpf tippt sich Zeichen für
     // Zeichen; Führungslinie + Punkt (eigene Elemente neben der Blase) zeigen auf den Sprecher statt einer Blasen-Spitze.
-    // Takt (Wunsch User 13.10.2026, Vorschau „Robot-Hero Feinschliff“: Sprechblasen sauber timen, keine hektische Flut):
-    // Lesezeit wächst mit der Länge (READ, mindestens ms), Sprecherwechsel mit kurzer Pause (BEAT), ein Ablauf-Spruch steht
-    // mindestens LINE_MIN fertig getippt da, bevor der nächste Schritt ihn ersetzt (die Fortschrittszeile wechselt sofort)
-    const TYPE_MS = 30, LBL_DX = 54, LBL_DY = 58, BEAT = 450, LINE_MIN = 2600, READ = s => 1200 + 48 * s.length;
+    const TYPE_MS = 30, LBL_DX = 54, LBL_DY = 58;
     const hexOf = n => `#${n.toString(16).padStart(6, '0')}`;
     const sizeFor = K => K.id === 'box' ? `${mm(K.S[0])}×${mm(K.S[1])}` : K.id === 'cyl' ? `⌀${mm(K.S[0])} MM` : `${mm(K.S[0])} MM`;
     const headerFor = o => o.K
@@ -1073,14 +1058,12 @@ function build(L, wrap, host, o) {
       const lead = document.createElement('div'); lead.className = 'h3d-line'; host.appendChild(lead);
       const tip = document.createElement('div'); tip.className = 'h3d-tip'; host.appendChild(tip);
       const v = new THREE.Vector3();
-      let o = null, until = 0, rest = 0, wait = false, typeText = '', typeFrom = 0, sx = 0, sy = 0, hasPos = false, beatAt = 0;   // Uhr = echte Zeit (läuft auch bei reduzierter Bewegung ohne dt); sx/sy = geglättete Bildschirmlage
+      let o = null, until = 0, rest = 0, wait = false, typeText = '', typeFrom = 0, sx = 0, sy = 0, hasPos = false;   // Uhr = echte Zeit (läuft auch bei reduzierter Bewegung ohne dt); sx/sy = geglättete Bildschirmlage
       const vis = on => { el.classList.toggle('in', on); lead.classList.toggle('in', on); tip.classList.toggle('in', on); };
       const paintHead = () => {
         if (!o) return;
         const h = headerFor(o);
-        // Name in hellem Ton der Sprecherfarbe, Messwert in Textfarbe (CSS): Blau/Rot auf dunklem Glas war kaum lesbar (Wunsch User 13.10.2026)
-        dotEl.style.background = lead.style.background = tip.style.background = h.c;
-        nameEl.style.color = `color-mix(in srgb, ${h.c} 42%, var(--glass-fg))`;
+        dotEl.style.background = nameEl.style.color = valEl.style.color = lead.style.background = tip.style.background = h.c;
         tip.style.boxShadow = `0 0 8px -1px ${h.c}`; nameEl.textContent = h.name; valEl.textContent = h.val;
       };
       const renderType = () => { const n = reduce ? typeText.length : Math.max(0, Math.min(typeText.length, Math.floor((performance.now() - typeFrom) / TYPE_MS))); bodyText.textContent = typeText.slice(0, n); };
@@ -1108,29 +1091,25 @@ function build(L, wrap, host, o) {
         get busy() { return this.left > 0; },
         // ms = Lesezeit NACH dem Fertigtippen (nicht mehr die Gesamtdauer ab Erscheinen, Wunsch User 09.10.2026):
         // lange Sprüche fressen sich sonst selbst die Lesezeit an, Blase verschwindet mitten im Tippen oder sofort danach.
-        // steady = laufender Ablauf-Schritt: steht der letzte Spruch noch keine LINE_MIN fertig da, bleibt er stehen, nur die
-        // Fortschrittszeile wechselt (sonst tippte jeder Fahrschritt einen neuen Spruch → hektisch)
-        show(obj, content, ms = 2600, quiet = false, swap = false, steady = false) {
-          const live = this.busy && !wait && o === obj, now = performance.now();
-          const kids = [].concat(content), first = kids[0], text = typeof first === 'string' ? first : first.textContent;
-          const keep = steady && swap && live && now - typeFrom < typeText.length * TYPE_MS + LINE_MIN;
-          if (!keep) typeText = text;
+        show(obj, content, ms = 2600, quiet = false, swap = false) {
+          const live = this.busy && !wait && o === obj;
+          const kids = [].concat(content), first = kids[0];
+          typeText = typeof first === 'string' ? first : first.textContent;
           extra.replaceChildren(...kids.slice(1));
-          o = obj; const hold = Math.max(ms, READ(typeText)) + (reduce ? 0 : typeText.length * TYPE_MS);
-          until = now + hold;
+          o = obj; const hold = ms + (reduce ? 0 : typeText.length * TYPE_MS);
+          until = performance.now() + hold;
           wait = still();
-          if (wait) { rest = hold; beatAt = 0; vis(false); }
+          if (wait) { rest = hold; vis(false); }
           else if (!(swap && live)) pop();
-          else if (!keep) { typeFrom = now; paintHead(); renderType(); }
+          else { typeFrom = performance.now(); paintHead(); renderType(); }
           if (!quiet) sfx('pop');
         },
-        hide() { vis(false); until = rest = beatAt = 0; wait = false; },
+        hide() { vis(false); until = rest = 0; wait = false; },
         tick(dt) {
           if (!o) return;
           const now = performance.now();
-          if (this.busy && still()) { if (!wait) { wait = true; rest = until - now; vis(false); } beatAt = 0; return; }
-          // Sprecherwechsel: kurze Pause, bevor die wartende Blase erscheint (Dialog statt Schlag auf Schlag)
-          if (wait) { if (!beatAt) beatAt = now + BEAT; if (now < beatAt) return; wait = false; beatAt = 0; until = now + rest; rest = 0; pop(); }
+          if (this.busy && still()) { if (!wait) { wait = true; rest = until - now; vis(false); } return; }
+          if (wait) { wait = false; until = now + rest; rest = 0; pop(); }
           place(dt); renderType(); paintHead();
           if (until && now > until) { until = 0; vis(false); }
         },
@@ -1276,7 +1255,7 @@ function build(L, wrap, host, o) {
     // unsichtbare Zeile (nur bei Missionswechsel, nie je Zehntel); beide neben dem Canvas, nicht im role=img
     const quest = (() => {
       const g = new THREE.Group(); st.scene.add(g);
-      const R = 0.47, Z = -0.02, W = 0.66, GAP = 0.09, FILL = 0.9, TILT = 35 * Math.PI / 180, CT = Math.cos(TILT), ST = Math.sin(TILT);
+      const R = 0.47, Z = -0.02, W = 0.66, GAP = 0.09, FILL = 0.6, TILT = 35 * Math.PI / 180, CT = Math.cos(TILT), ST = Math.sin(TILT);
       const fg = tok('--glass-fg') || '#e8f4f2', warn = tok('--warn') || '#ffb36b', gold = '#f2c14e', acc = `#${ACC.getHexString()}`;
       const mono = tok('--mono') || 'monospace', aniso = st.renderer.capabilities.getMaxAnisotropy();
       const canvasTex = (w, h) => {
@@ -1290,38 +1269,19 @@ function build(L, wrap, host, o) {
         m.matrixAutoUpdate = false; m.matrix.makeBasis(x, y, new THREE.Vector3().crossVectors(x, y)).setPosition((r - h / 2 * CT) * c, (r - h / 2 * CT) * s, -0.03 + h / 2 * ST);
         g.add(m); return m;
       };
-      // Fortschrittsring (Wunsch User 13.10.2026, Vorschau „Robot-Hero Feinschliff“, Stand:C – hochwertig statt flacher Bänder):
-      // je Objekt ein Lichtleiter-Bogen außen am Bodenring. Offen = feine, ungeleuchtete Kernlinie; zu Hause = Licht fließt mit
-      // hellem Kopf von links nach rechts ein (FILL) und blüht kurz auf; Kernlinie + weicher Schein quer zum Band (Gauß), weiche
-      // Enden; gefüllte Bögen: ruhiger Lichtstreif alle 10 s, läuft von Bogen zu Bogen weiter; Runde geschafft = die drei leuchten
-      // nacheinander auf. Additiv ohne Tonemapping → Objektfarben bleiben klar; reduzierte Bewegung = gefüllt, ohne Streif
-      const RB = 0.485, HB = 0.034;
-      const beamMat = (core, halo, a0, k) => new THREE.ShaderMaterial({
-        uniforms: { uA0: { value: a0 }, uW: { value: W }, uFill: { value: 0 }, uLit: { value: 0 }, uHead: { value: 0 }, uFlash: { value: 0 },
-          uT: { value: 0 }, uOff: { value: k * 1.6 }, uSheen: { value: reduce ? 0 : 1 }, uCore: { value: new THREE.Color(core) }, uHalo: { value: new THREE.Color(halo) } },
-        vertexShader: 'varying vec2 vP; void main() { vP = position.xy; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
-        fragmentShader: `uniform float uA0, uW, uFill, uLit, uHead, uFlash, uT, uOff, uSheen; uniform vec3 uCore, uHalo; varying vec2 vP;
-          void main() {
-            float s = (atan(vP.y, vP.x) - uA0) / uW, d = length(vP) - ${RB};
-            float ends = smoothstep(0.0, 0.04, s) * (1.0 - smoothstep(0.96, 1.0, s));
-            float core = exp(-d * d / 5.0e-6), halo = exp(-d * d / 2.4e-4);
-            float lit = uLit * (1.0 - smoothstep(uFill - 0.015, uFill + 0.015, s));
-            float head = uHead * exp(-pow((s - uFill) / 0.025, 2.0));
-            float sheen = uSheen * lit * 0.35 * exp(-pow((s - mod(uT - uOff, 10.0) / 1.4 + 0.2) / 0.07, 2.0));
-            float k = (0.32 * core + 0.05 * halo) * (1.0 - lit) + (lit * (0.85 + sheen) + 1.8 * head + uFlash) * (core + 0.32 * halo), I = k * ends;
-            // Alpha = Helligkeit: die Leinwand ist durchsichtig (alpha: true); Alpha 1 machte dunkle Stellen sonst zu schwarzen Balken
-            gl_FragColor = vec4(mix(uHalo, uCore, clamp(core * 1.3, 0.0, 1.0)) * max(I, 1.0), min(I, 1.0));
-            #include <colorspace_fragment>
-          }`,
-        transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false,
-      });
+      const SEG = 48;
       const arcs = OBJ.map((o, k) => {
         const mid = (k - 1) * (W + GAP), a0 = mid - W / 2, col = `#${o.K.color.toString(16).padStart(6, '0')}`;
-        const mat = beamMat(o.K.glow, o.K.color, a0, k), beam = new THREE.Mesh(new THREE.RingGeometry(RB - HB, RB + HB, 96, 1, a0, W), mat);
-        beam.position.z = Z; g.add(beam);
+        const dashed = new THREE.Line(new THREE.BufferGeometry().setFromPoints(circle(R, Z, 64, a0, a0 + W)),
+          new THREE.LineDashedMaterial({ color: o.K.color, dashSize: 0.006, gapSize: 0.012, transparent: true, opacity: 0.7 }));
+        dashed.computeLineDistances();
+        const band = new THREE.Mesh(new THREE.RingGeometry(R - 0.007, R + 0.007, SEG, 1, a0, W), new THREE.MeshBasicMaterial({ color: o.K.color, transparent: true, depthWrite: false }));
+        const glow = new THREE.Mesh(new THREE.RingGeometry(R - 0.022, R + 0.022, SEG, 1, a0, W), new THREE.MeshBasicMaterial({ color: o.K.color, transparent: true, opacity: 0.28, blending: THREE.AdditiveBlending, depthWrite: false }));
+        band.position.z = glow.position.z = Z;
+        g.add(dashed, band, glow);
         const [ctx, tx] = canvasTex(128, 128);
         slab(tx, 0.044, 0.044, mid, R + 0.075);
-        return { o, col, mat, ctx, tx, f: 0, flT: 9, on: null };   // flT = Zeit seit dem Aufleuchten (s; < 0 = wartet)
+        return { o, col, dashed, band, glow, ctx, tx, f: 0, on: null };
       });
       // Formsymbol unter dem Bogen: offen = Umriss, zu Hause = gefüllt + ✓ (nicht nur Farbe)
       const symbol = a => {
@@ -1377,19 +1337,16 @@ function build(L, wrap, host, o) {
       btn.addEventListener('click', () => { mute = !mute; render(); save(); if (!mute) { sfx.unlock(); sfx('pop'); } });
       new MutationObserver(() => { arcs.forEach(a => { a.on = null; }); render(); show(); }).observe(document.documentElement, { attributes: true, attributeFilter: ['lang'] });
       document.fonts?.ready.then(() => { shown = ''; show(); });
-      const tgt = st.controls.target, eo = u => 1 - (1 - u) ** 3, eio = u => (u < 0.5 ? 4 * u ** 3 : 1 - (2 - 2 * u) ** 3 / 2);
-      let tS = 0;
+      const tgt = st.controls.target, eo = u => 1 - (1 - u) ** 3;
       return {
         render, clock,
         tick(dt) {
           g.rotation.z = Math.atan2(st.camera.position.y - tgt.y, st.camera.position.x - tgt.x);
-          tS += dt;
           arcs.forEach(a => {
-            if (a.on && a.f < 1) { a.f = Math.min(1, a.f + dt / FILL); if (a.f === 1 && !reduce) a.flT = 0; }   // angekommen: kurz aufblühen
-            if (a.flT < 0.8) a.flT += dt;
-            const u = a.mat.uniforms, e = eio(a.f), fl = a.flT >= 0 && a.flT < 0.8 ? (1 - a.flT / 0.8) ** 2 : 0;
-            u.uLit.value = a.on ? 1 : 0; u.uFill.value = a.on ? 1.04 * e : 0; u.uHead.value = a.on && a.f < 1 ? 1 - 0.5 * e : 0;
-            u.uFlash.value = 0.55 * fl; u.uT.value = tS;
+            if (a.on && a.f < 1) a.f = Math.min(1, a.f + dt / FILL);
+            const e = eo(a.f), n = Math.round(SEG * e) * 6;
+            a.band.geometry.setDrawRange(0, n); a.glow.geometry.setDrawRange(0, n);
+            a.band.visible = a.glow.visible = n > 0; a.dashed.visible = !a.on;
           });
           if (waveT < 0) return;
           waveT += dt; const u = Math.min(1, waveT / 1.2), s = 0.06 + 0.34 * eo(u);
@@ -1399,7 +1356,7 @@ function build(L, wrap, host, o) {
         badge() {
           arm.say(newBest ? T(`Neue Bestzeit! ${fmt(tRun)} ★`, `New best time! ${fmt(tRun)} ★`)
             : T(`Runde ${rounds} in ${fmt(tRun)} geschafft!`, `Round ${rounds} done in ${fmt(tRun)}!`), null, 3400, 2);
-          if (!reduce) { waveT = 0; arcs.forEach((a, k) => { a.flT = -0.12 * k; }); }   // die drei Bögen leuchten nacheinander auf
+          if (!reduce) waveT = 0;
         },
         // wichtige Hinweise (falsche Form, kein Platz, erst ein Objekt) auch für Screenreader; render() setzt danach wieder den Stand
         tell(text) { sr.textContent = text; },
@@ -1429,7 +1386,7 @@ function build(L, wrap, host, o) {
       const b = bubble('arm', () => say.busy || say2.busy), at = { g: { position: tcpW }, h: 0.05 };
       let prio = 0;
       return {
-        say(text, step = null, ms = 2600, p = 0, steady = false) {
+        say(text, step = null, ms = 2600, p = 0) {
           if (b.busy && p < prio) return;
           prio = p;
           const kids = [Object.assign(document.createElement('span'), { textContent: text })];
@@ -1438,11 +1395,10 @@ function build(L, wrap, host, o) {
             u.textContent = '●'.repeat(ph + 1).slice(0, 4).padEnd(4, '○');
             s.append(u, [name, val].filter(Boolean).join(' · ')); kids.push(s);
           }
-          b.show(at, kids, ms, true, p === 0, steady);
+          b.show(at, kids, ms, true, p === 0);
         },
-        // Schritt eines Ablaufs: [Sprüche, Schritt, Wert, Phase]; steht bis zum nächsten Schritt. Laufende Schritte (ohne ms)
-        // wechseln den Spruch höchstens alle LINE_MIN, Halten (Ziel wählen) und Fertig sofort
-        step([pool, name, val, ph], ms) { this.say(line(pool), [name, val, ph], ms ?? 60000, 0, ms == null); },
+        // Schritt eines Ablaufs: [Sprüche, Schritt, Wert, Phase]; steht bis zum nächsten Schritt
+        step([pool, name, val, ph], ms = 60000) { this.say(line(pool), [name, val, ph], ms); },
         get left() { return b.left; },
         hide() { b.hide(); prio = 0; },
         tick: dt => b.tick(dt),
@@ -1754,7 +1710,7 @@ function build(L, wrap, host, o) {
         { act: grip, dwell: 0.25, say: [L.grip, T('Greifen', 'Grip'), T('Sauger an', 'suction on'), 0] },
         { lazy: () => job.to >= 0 ? place(job.to, true) : [
           { pts: [P(A, R, H + 0.035), P(A - s * 0.2, 0.28, H + 0.13, d * 0.45, 0.35), P(A, 0.22, 0.33, d)], v: 0.3,
-            act: () => { if (Math.random() < 0.35) say.show(o, line(L.ride, o.K), 2000, true); },   // Objekt freut sich (oder nicht); selten, damit die Blase des Arms ruhig stehen bleibt
+            act: () => { if (Math.random() < 0.6) say.show(o, line(L.ride, o.K), 2000, true); },   // Objekt freut sich (oder nicht)
             say: [L.lift, T('Anheben + drehen', 'Lift + rotate'), `z 330 mm · ${T('Gelenk', 'joint')} 6 ${d > 0 ? '+' : '−'}90°`, 1] },
           { hold: P(A, 0.22, 0.33, d) }] },
       ], to);
@@ -1950,11 +1906,9 @@ function build(L, wrap, host, o) {
     const shake = () => { if (!reduce && host.animate) host.animate([{ translate: '0 0' }, { translate: '3px -2px' }, { translate: '-3px 2px' }, { translate: '2px 1px' }, { translate: '0 0' }], { duration: 340, easing: 'ease-out' }); };
     OBJ.forEach(o => Object.assign(o, { wTh: rnd(-Math.PI, Math.PI), wP: [rnd(0, 7), rnd(0, 7), rnd(0, 7)], wS: 0, wRest: 0, wFix: true,
       vx: 0, vy: 0, spin: 0, wob: rnd(0, 7), dz: 0, bump: 1, bumpCD: 0, evCD: 0, homeAt: rnd(8, 18), homeTill: 0, peeked: false, orb: Math.random() < 0.5 ? 1 : -1, danceCD: 0 }));
-    let dance = null, chatAt = 8, bumpTalkAt = 0, lastScene = '', reply = null, quietFrom = 0;   // reply = Antwort eines Objekts auf den Arm (später); quietFrom = letzte Blase (clk)
-    // Plaudern nur in Ruhe (kein Ablauf, nichts gewählt, keine Blase offen und seit QUIET s keine mehr: keine Flut, Wunsch User
-    // 13.10.2026); Klänge nie im Leerlauf (quiet)
-    const QUIET = 4.5;
-    const canTalk = () => !job && !cur && !newRoundAt && !say.busy && !say2.busy && arm.left <= 0 && clk - quietFrom >= QUIET;
+    let dance = null, chatAt = 8, bumpTalkAt = 0, lastScene = '', reply = null;   // reply = Antwort eines Objekts auf den Arm (später)
+    // Plaudern nur in Ruhe (kein Ablauf, nichts gewählt, keine Blase offen); Klänge nie im Leerlauf (quiet)
+    const canTalk = () => !job && !cur && !newRoundAt && !say.busy && !say2.busy && arm.left <= 0;
     const talk = (a, ta, b, tb, ms = 2400) => { say.show(a, ta, ms, true); if (b === 'arm') arm.say(tb, null, ms, 1); else if (b) say2.show(b, tb, ms, true); };
     const freeObjs = () => OBJ.filter(o => !o.home && !o.fall && o.popT >= 1 && o !== cur);
     const anyOf = a => a[Math.floor(Math.random() * a.length)];
@@ -1994,7 +1948,7 @@ function build(L, wrap, host, o) {
     // Zusammenstoß zweier fahrender Objekte: Tanz (wenn Platz) oder kurzer Wortwechsel (selten, mit Pause)
     const bumped = (a, b) => {
       if (!dance && clk > a.danceCD && clk > b.danceCD && Math.random() < 0.35 && startDance(a, b)) return;
-      if (clk > bumpTalkAt && Math.random() < 0.45 && canTalk()) { const [p, re] = duo(L.bump); talk(a, p, b, re, 1800); bumpTalkAt = clk + 12; }
+      if (clk > bumpTalkAt && Math.random() < 0.45 && canTalk()) { const [p, re] = duo(L.bump); talk(a, p, b, re, 1800); bumpTalkAt = clk + 7; }
     };
     // Wand/Hindernis berührt (gap = Abstand der Grundflächen, n = Normale zum Objekt hin, ov = Geschwindigkeit des anderen)
     // Weiter weg (≤ 110 mm) lenkt der Kurs nur sanft weg → Objekte verteilen sich über die Fläche, ohne einander zu meiden
@@ -2259,13 +2213,9 @@ function build(L, wrap, host, o) {
         const dz = sup(o.K, o.g.rotation.z, -Math.sin(hv), Math.cos(hv)) * Math.abs(Math.sin(bank)) + (o.bumpH || 0.006) * hop;
         p.z += dz - o.dz; o.dz = dz; o.swell = 0.5 * hop;
       });
-      // Plaudern (Wunsch User 06.10.2026: Dialoge abwechselnd, nicht immer dieselben Texte): alle 14–22 s eine kleine Szene
-      // (Wunsch User 13.10.2026: ruhiger); Antwort auf eine Frage des Arms erst, wenn seine Blase weg ist (+ BEAT)
-      if (reply && clk >= reply.at) {
-        if (arm.left > 0) reply.at = clk + BEAT / 1000;
-        else { if (!job && !cur && freeObjs().includes(reply.o)) say2.show(reply.o, reply.text, 2400, true); reply = null; }
-      }
-      if (clk >= chatAt) { chatAt = clk + rnd(14, 22); if (canTalk() && clk > 6) (asleep ? doze : chat)(); }
+      // Plaudern (Wunsch User 06.10.2026: Dialoge abwechselnd, nicht immer dieselben Texte): alle 9–15 s eine kleine Szene
+      if (reply && clk >= reply.at) { if (!job && !cur && freeObjs().includes(reply.o)) say2.show(reply.o, reply.text, 2400, true); reply = null; }
+      if (clk >= chatAt) { chatAt = clk + rnd(9, 15); if (canTalk() && clk > 6) (asleep ? doze : chat)(); }
       if (clk >= figAt) {
         figAt = clk + rnd(9, 15);
         if (!dance && !fig && !charge && !job && !cur && !newRoundAt && !asleep) {
@@ -2339,7 +2289,6 @@ function build(L, wrap, host, o) {
     extra = (dt, t) => {
       ex(dt, t);
       clk += dt; pt += dt;
-      if (say.busy || say2.busy || arm.left > 0) quietFrom = clk;
       for (let i = todo.length - 1; i >= 0; i--) if (clk >= todo[i].at) todo.splice(i, 1)[0].fn();
       if (!asleep && !reduce && !job && !cur && !newRoundAt && clk - lastClick > 25) { asleep = true; endFig(); endDance(); if (charge) stopFig(charge.a); chatAt = clk + 2; }
       // Begrüßung einmal je Seitenaufruf, sobald die Bühne läuft (rendert nur sichtbar) und noch niemand gespielt hat
@@ -2382,7 +2331,7 @@ function build(L, wrap, host, o) {
           const free = OBJ.filter(o => !o.home && o.popT >= 1 && !o.on && !o.fall && !above(o));
           if (free.length) {
             const o = free[hopIdx++ % free.length]; o.hopT = 0; o.hopYaw = o.g.rotation.z;
-            if (!clicked && hops++ % 3 === 0 && canTalk()) say.show(o, line(L.pick, o.K), 2200, true);
+            if (!clicked && hops++ % 3 === 0) say.show(o, line(L.pick, o.K), 2200, true);
           }
           rest = 0;
         }

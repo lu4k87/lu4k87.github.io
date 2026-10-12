@@ -552,19 +552,11 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
 /* NUI: fünf kleine Kacheln in einer Reihe; geplante gestrichelt + Badge „geplant“ (nie Farbe allein) */
 .fx.soon { border-style: dashed; background: transparent; box-shadow: none; }
 #nui .list-note { margin-top: 16px; }
-/* Hero: 3D-Bühne breiter und höher als in landing.css (Roboter groß, Wunsch User 05.10.2026). Kopf kürzer, Bühne neben dem
-   Steckbrief (Wunsch User 13.10.2026, Vorschau „Robot-Hero Feinschliff“, Bühne:C): Badge, Claim und Abstract mittig über beiden
-   Spalten, darunter links Steckbrief, Links, Autor und Kernmerkmale (2 × 2), rechts die Bühne → Roboter im ersten Bildschirm.
-   .hero-head löst sich dafür ins Raster auf (display: contents, nur breit; schmal bleibt die Reihenfolge des HTML) */
+/* Hero: 3D-Bühne breiter und höher als in landing.css (Roboter groß, Wunsch User 05.10.2026) */
 @media (min-width: 961px) {
-  .hero-inner { grid-template-columns: minmax(0, .84fr) minmax(0, 1.26fr); column-gap: 32px; align-items: start; row-gap: 16px; padding-top: 32px; }
-  .hero-head { display: contents; }
-  .hero-head > .badge { grid-column: 1 / -1; grid-row: 1; justify-self: center; }
-  .hero-head > h1 { grid-column: 1 / -1; grid-row: 2; justify-self: center; }
-  .hero-head > .abstract { grid-column: 1 / -1; grid-row: 3; justify-self: center; }
-  .hero-copy { grid-column: 1; grid-row: 4; align-self: start; }
-  .hero-keys { grid-column: 1; grid-row: 5; grid-template-columns: repeat(2, minmax(0, 1fr)); align-self: start; }
-  .hero-stage { grid-column: 2; grid-row: 4 / span 2; align-self: start; aspect-ratio: 1 / 1.02; max-height: 900px; }
+  .hero-inner { grid-template-columns: minmax(0, .84fr) minmax(0, 1.26fr); column-gap: 32px; align-items: start; row-gap: 36px; padding-top: 56px; }
+  .hero-stage { aspect-ratio: 1 / 1.02; max-height: 900px; }
+  .hero-copy { align-self: center; }
 }
 /* Hero-Kopf (.hero-head, .hero-keys) aus css/landing.css; hier nur breitere Bühne */
 .hero .wrap.hero-inner { max-width: 1400px; }
