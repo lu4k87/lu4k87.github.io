@@ -22,4 +22,3 @@
 | **Stele CMS** | [`/project/hsrw_stele`](https://lu4k87.github.io/project/hsrw_stele) | Web-CMS für digitale Stelen – Inhalte pflegen, Präsentationen planen, Stelen überwachen. | [GitHub](https://github.com/lu4k87/__project_hsrw_stele) |
 | **Claude Ops** | [`/project/claude_ops`](https://lu4k87.github.io/project/claude_ops) | Live-Dashboard der Claude-Code-Chats und Agenten im HUD-Look. | privat |
 | **Psycho** | [`/project/psycho`](https://lu4k87.github.io/project/psycho) | Web-App für Aufstellungen – Figuren per Handyfoto erkennen und als interaktive Skizze legen. | privat |
-| **my_webpage** | in Arbeit | Portfolio- und Kontakt-Landingpage. | – |
