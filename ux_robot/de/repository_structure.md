@@ -33,7 +33,6 @@ dev_ws/
 │   ├── present_presentation.html                                          # Projektvorstellung: interaktive Seite zu Shared Control, KI/VLA, Vision, UI/UX, Evaluierung (Bilder: img/presentation/)
 │   ├── present_control_modes.html                                         # Steuerwege & Sicherheitskette: Produktseite des Projekts
 │   ├── present_function_atlas.html                                        # Weiterleitung zum Funktionsatlas in project_docs.html
-│   ├── develop_workflow.html                                              # Wie das Projekt mit Claude Code entwickelt wird (Skills, Hooks, parallele Chats)
 │   ├── en/ · de/                                                          # je 13 Seiten: Konzept, Installation, Starten, Teleoperation, …
 │   ├── brand/                                                             # Brand-Kit brand.yaml: Name, Claim, Slogans, Farben, Schriften (geprüft von tools/check_showcase.py)
 │   ├── css/ · js/ · fonts/ · templates/                                   # Gemeinsame Styles, Skripte (z. B. lite6_mesh.js), lokale Schriften und Vorlagen der Projektseiten
