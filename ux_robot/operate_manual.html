@@ -1407,28 +1407,6 @@
   </aside>
 </header>
 
-<!-- ============ Kopf: Remote ============ -->
-<header class="hero" data-area="remote">
-  <div class="hero-main" style="--hero:var(--c-https)">
-    <span class="eyebrow">Remote Control im Heimnetz</span>
-    <h1 data-en="Set up and start server/client control">Server/Client-Steuerung einrichten und starten</h1>
-    <div class="roles">
-      <div class="role" style="--k:var(--c-srv)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg><b>Server · Roboter-PC</b><span>ROS 2 · Arm · UX | Nexus Launcher</span></div>
-      <div class="role" style="--k:var(--c-cli)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="4" y="5" width="16" height="11" rx="1.5"/><path d="M2 19h20"/></svg><b>Client · Browser</b><span>Laptop · Tablet · Quest 3 · keine Installation</span></div>
-    </div>
-  </div>
-  <aside class="hero-side" aria-label="Eckdaten">
-    <span class="label">Eckdaten</span>
-    <div class="tiles">
-      <div class="tile" style="--k:var(--c-srv)"><span>Server-IP jetzt</span><b>192.168.0.xxx</b></div>
-      <div class="tile" style="--k:var(--c-srv)"><span>UX | Nexus Launcher</span><b>:8080 nur am Server</b></div>
-      <div class="tile" style="--k:var(--c-http)"><span>UI http</span><b>:8081</b></div>
-      <div class="tile" style="--k:var(--c-https)"><span>UI https</span><b>:8443</b></div>
-      <div class="tile" style="--k:var(--c-https)"><span>rosbridge</span><b>ws :9090 · wss :9091</b></div>
-      <div class="tile" style="--k:var(--c-http)"><span>Video</span><b>:8082</b></div>
-    </div>
-  </aside>
-</header>
 
 
 
@@ -2535,7 +2513,7 @@ ros2 launch vla_bridge vla_bridge.launch.py              # dry_run:=true = nur P
         <span class="down">↓ gRPC / WebSocket</span>
         <div class="w-box" style="--k:var(--c-svc)"><b>Policy-Server (LeRobot)</b><small data-en="Dedicated venv or Docker · GPU · action chunks 6 joints + gripper, 10-30 Hz">eigene venv oder Docker · GPU · Aktions-Chunks 6 Gelenke + Greifer, 10-30 Hz</small></div>
         <span class="down">↓</span>
-        <div class="w-box" style="--k:var(--crit)"><b data-en="Safety chain">Sicherheitskette</b><small data-en="robot_limits · Floor Guard · teleop_pre_collision_checker · &gt; 200 ms without command → halt">robot_limits · Floor Guard · teleop_pre_collision_checker · &gt; 200 ms ohne Befehl → Halt</small></div>
+        <div class="w-box" style="--k:var(--crit)"><b data-en="Safety chain">Sicherheitskette</b><small data-en="robot_limits · floor guard · teleop_pre_collision_checker · &gt; 200 ms without command → halt">robot_limits · Bodenschutz · teleop_pre_collision_checker · &gt; 200 ms ohne Befehl → Halt</small></div>
         <span class="down">↓</span>
         <div class="w-box" style="--k:var(--c-act)"><b>MoveIt Servo</b><small>/servo_server/delta_joint_cmds</small></div>
       </div>
