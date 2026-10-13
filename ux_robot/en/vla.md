@@ -58,6 +58,8 @@ instruction ─► plan (LLM: skills + object ids) ─► check (code: objects, 
 *VLA-M popup in Robot | Digital Twin mode: the agent (`qwen3.8:27b`, dry run) has planned the instruction „Stapel den blauen Würfel auf den Zylinder und leg danach die Stahlkugel in den Korb“ into four steps and waits for **Execute**.*
 
 
+Cloud API key files under `~/.config/vla_bridge/` must be regular files owned by the current user with mode `0600`; group/world-readable files and symbolic links are rejected. Environment variables remain supported.
+
 ```bash
 bash src/vla_bridge/scripts/install_ollama.sh        # once per PC: Ollama (~/.local, no sudo) + qwen3.8:27b (~18 GB)
 # if missing, the UX | Nexus Launcher Check (preflight) and the Setup card warn (log: "Ollama not found")

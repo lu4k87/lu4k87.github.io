@@ -50,7 +50,13 @@ Web dashboard for system load, ROS 2 communication, robot usage and user session
 ```bash
 ros2 launch http_monitoring_dashboard_p8083 monitoring_dashboard.launch.py   # port:=8083 open_browser:=true db:=<SQLite file>
 # → http://localhost:8083/ · UX | Nexus Launcher: card "UX | Monitoring" in RUN DEV SETUP and SERVER SETUP
+
+# Optional access from the trusted LAN: explicit bind plus a password of at least 16 characters.
+# Use HTTPS through a reverse proxy outside a trusted LAN because HTTP Basic credentials are not encrypted.
+MONITORING_PASSWORD='use-a-long-random-secret' ros2 launch http_monitoring_dashboard_p8083 monitoring_dashboard.launch.py host:=0.0.0.0
 ```
+
+By default the server binds only to `127.0.0.1`. With a non-loopback bind, the browser asks for user `monitoring` and `MONITORING_PASSWORD`; only the public service-health endpoint `/api/services` remains unauthenticated. CSV exports prefix cells that spreadsheet applications could otherwise execute as formulas.
 
 ---
 

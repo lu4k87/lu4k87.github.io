@@ -50,7 +50,13 @@ Web-Dashboard für Systemlast, ROS-2-Kommunikation, Roboter-Nutzung und Nutzer-S
 ```bash
 ros2 launch http_monitoring_dashboard_p8083 monitoring_dashboard.launch.py   # port:=8083 open_browser:=true db:=<SQLite-Datei>
 # → http://localhost:8083/ · UX | Nexus Launcher: Karte „UX | Monitoring“ im RUN DEV SETUP und SERVER SETUP
+
+# Optionaler Zugriff aus dem vertrauenswürdigen LAN: Bind-Adresse plus Passwort mit mindestens 16 Zeichen.
+# Außerhalb eines vertrauenswürdigen LANs HTTPS über einen Reverse-Proxy verwenden, da HTTP Basic nicht verschlüsselt ist.
+MONITORING_PASSWORD='langes-zufälliges-geheimnis' ros2 launch http_monitoring_dashboard_p8083 monitoring_dashboard.launch.py host:=0.0.0.0
 ```
+
+Standardmäßig bindet der Server nur an `127.0.0.1`. Bei einer anderen Bind-Adresse fragt der Browser nach Benutzer `monitoring` und `MONITORING_PASSWORD`; nur der öffentliche Dienstzustands-Endpunkt `/api/services` bleibt ohne Anmeldung erreichbar. CSV-Exporte stellen Zellen, die Tabellenprogramme sonst als Formel ausführen könnten, ein Apostroph voran.
 
 ---
 
