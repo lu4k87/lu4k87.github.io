@@ -336,7 +336,7 @@ Leap Motion 2 ──▶ leap_hand_teleop_node ──▶ /remote/twist ──▶ 
 - **Greifer öffnen:** in Robot | Hardware (auch Modus unbekannt) braucht die Geste, solange der Greifer evtl. ein Objekt hält (Zustand nicht offen/aus), ein zweites Zeigen innerhalb von 5 s – wie bei der Sprachsteuerung.
 - **Webcam in Robot | Hardware:** Einschalten der Gesten fragt wie bei der Leap mit dem 1-s-Halte-Dialog; ein Wechsel zwischen Robot | Digital Twin und Robot | Hardware schaltet aus.
 
-**Totmann und Sperren** (jedes Ereignis = Null-Twist und entkuppelt; neu kuppeln erst nach sichtbar geöffneter Hand nach dem Ereignis und neuem Kneifen – ein über das Ereignis gehaltenes Kneifen fährt nie von selbst an, eine während einer Sperre gezeigte offene Hand zählt nicht; eine neue Hand öffnet ebenfalls zuerst. **Faust:** Mittel-, Ring- und kleiner Finger eingerollt zählen nie als Kneifen, auch wenn die Leap eines meldet – gekuppelt hält eine Faust an wie eine offene Hand):
+**Totmann und Sperren** (jedes Ereignis = Null-Twist und entkuppelt; neu kuppeln erst nach sichtbar geöffneter Hand nach dem Ereignis und neuem Kneifen, begonnen höchstens 2 s nach der letzten offenen Hand (0,15 s gehalten) – ein über das Ereignis gehaltenes Kneifen fährt nie von selbst an, eine während einer Sperre gezeigte offene Hand zählt nicht; eine neue Hand öffnet ebenfalls zuerst. **Faust:** Mittel-, Ring- und kleiner Finger eingerollt zählen nie als Kneifen, auch wenn die Leap eines meldet – gekuppelt hält eine Faust an wie eine offene Hand):
 
 | Ereignis | Anzeige (Chip **Gesperrt** oder **Keine Hand**) |
 |---|---|

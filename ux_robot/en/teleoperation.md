@@ -336,7 +336,7 @@ Leap Motion 2 ──▶ leap_hand_teleop_node ──▶ /remote/twist ──▶ 
 - **Open gripper:** in Robot | Hardware (also mode unknown), while the gripper may hold an object (state not open/off), the gesture needs a second show within 5 s – as with voice control.
 - **Webcam in Robot | Hardware:** switching Gestures on asks with the 1 s hold dialog like the Leap; switching between Robot | Digital Twin and Robot | Hardware switches it off.
 
-**Dead man and locks** (every event = zero twist and decoupled; coupling again needs a visibly open hand after the event, then a new pinch – a pinch held through the event never starts by itself, an open hand shown during a lock does not count; a new hand also opens first. **Fist:** middle, ring and little finger curled never count as a pinch, even if the Leap reports one – while coupled a fist stops like an open hand):
+**Dead man and locks** (every event = zero twist and decoupled; coupling again needs a visibly open hand after the event, then a new pinch started within 2 s of the last open hand (held for 0.15 s) – a pinch held through the event never starts by itself, an open hand shown during a lock does not count; a new hand also opens first. **Fist:** middle, ring and little finger curled never count as a pinch, even if the Leap reports one – while coupled a fist stops like an open hand):
 
 | Event | Shown as (chip **Locked** or **No hand**) |
 |---|---|
