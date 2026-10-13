@@ -1211,7 +1211,7 @@
 <aside class="side" id="side" aria-label="Handbuch-Navigation" data-en-aria="Manual navigation">
   <div class="side-top">
     <span class="brand-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 5a2 2 0 0 1 2-2h5a3 3 0 0 1 3 3v15a2 2 0 0 0-2-2H2z"/><path d="M22 5a2 2 0 0 0-2-2h-5a3 3 0 0 0-3 3v15a2 2 0 0 1 2-2h8z"/></svg></span>
-    <div class="brand"><b data-en="xArm Lite 6 · Manual">xArm Lite 6 · Handbuch</b><span>dev_ws · ROS 2 Humble</span></div>
+    <div class="brand"><b data-en="UX Robot · Manual">UX Robot · Handbuch</b><span>dev_ws · ROS 2 Humble</span></div>
     <button type="button" class="icon-btn side-close" id="side-close" aria-label="Navigation schließen" data-en-aria="Close navigation"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
   </div>
 
@@ -1390,7 +1390,7 @@
       <li data-en="With physics sandbox (Robot | Digital Twin) virtual objects are truly grasped, carried, stacked">Mit der Physik-Sandbox (Robot | Digital Twin) werden die virtuellen Objekte wirklich gegriffen, getragen, gestapelt</li>
       <li data-en="Object menu in viewport: &lt;i&gt;Grasp&lt;/i&gt; / &lt;i&gt;Place here&lt;/i&gt; with one click, without language model (&lt;code&gt;/vla/skill&lt;/code&gt;)">Objektmenü im Viewport: <i>Grasp</i> / <i>Place here</i> mit einem Klick, ohne Sprachmodell (<code>/vla/skill</code>)</li>
       <li data-en="&lt;i&gt;Pick &amp;amp; Place to …&lt;/i&gt; in object menu → click target on table or pallet → &lt;i&gt;Start&lt;/i&gt;: pick and place as one task, one &lt;i&gt;Abort&lt;/i&gt; (Esc cancels target selection)"><i>Pick &amp; Place to …</i> im Objektmenü → Ziel auf Tisch oder Palette klicken → <i>Start</i>: Greifen und Ablegen als eine Aufgabe, ein <i>Abort</i> (Esc bricht die Zielwahl ab)</li>
-      <li data-en="Auto-palletizing (scene &lt;i&gt;Auto palletizing&lt;/i&gt;, window &lt;i&gt;Palletizing&lt;/i&gt;): &lt;i&gt;Plan&lt;/i&gt; → layers, &lt;code&gt;80 / 80 kg&lt;/code&gt;, ghost boxes · live deposited weight above pallet · &lt;i&gt;Start&lt;/i&gt; loads carton by carton (Robot | Digital Twin with physics sandbox) · &lt;i&gt;Abort&lt;/i&gt; halts immediately · &lt;i&gt;Reset&lt;/i&gt; returns everything · in chat: &amp;ldquo;load the pallet&amp;rdquo;">Auto-Palettieren (Szene <i>Auto palletizing</i>, Fenster <i>Palletizing</i>): <i>Plan</i> → Lagen, <code>80 / 80 kg</code>, Ghost-Boxen · über der Palette live das abgelegte Gewicht · <i>Start</i> belädt Karton für Karton (Robot | Digital Twin mit Physik-Sandbox) · <i>Abort</i> hält sofort an · <i>Reset</i> legt alles zurück · im Chat: „belade die Palette“</li>
+      <li data-en="Auto-palletizing (scene &lt;i&gt;Auto palletizing&lt;/i&gt;, window &lt;i&gt;Palletizing&lt;/i&gt;): &lt;i&gt;Plan&lt;/i&gt; → layers, &lt;code&gt;80 / 80 kg&lt;/code&gt;, ghost boxes · live deposited weight above pallet · &lt;i&gt;Start&lt;/i&gt; loads carton by carton (Robot | Digital Twin with physics sandbox) · &lt;i&gt;Abort&lt;/i&gt; halts immediately · &lt;i&gt;Reset&lt;/i&gt; returns everything · in chat: &amp;ldquo;load the pallet&amp;rdquo;">Auto-Palettieren (Szene <i>Automatisch palettieren</i>, Fenster <i>Palettieren</i>): <i>Plan</i> → Lagen, <code>80 / 80 kg</code>, Ghost-Boxen · über der Palette live das abgelegte Gewicht · <i>Start</i> belädt Karton für Karton (Robot | Digital Twin mit Physik-Sandbox) · <i>Abort</i> hält sofort an · <i>Reset</i> legt alles zurück · im Chat: „belade die Palette“</li>
       <li data-en="Next step: demonstrations recorded with &lt;i&gt;Record demo&lt;/i&gt; → fine-tune SmolVLA">Nächster Schritt: mit <i>Record demo</i> aufgenommene Demonstrationen → SmolVLA nachtrainieren</li>
     </ul>
   </div>
@@ -2448,7 +2448,7 @@ source install/setup.bash</pre><button class="copy" type="button" data-en="Copy"
     <div class="card s-7">
       <div class="card-h"><h3 data-en="Startup steps">Schritte zum Starten</h3></div>
       <ol class="howto">
-        <li><div><b data-en="Preparation">Vorbereitung</b><ul class="bl sm"><li data-en="MoveIt Servo and Control Interface must be running (<a href=&quot;#start&quot;>Remote Guide</a>)">MoveIt Servo und UX | Control Interface laufen (<a href="#start">Remote Guide</a>)</li><li data-en="Ollama running with model <code>qwen3.8:27b</code>: <code>ollama list</code> · once: <code>bash src/vla_bridge/scripts/install_ollama.sh</code>">Ollama läuft und Modell <code>qwen3.8:27b</code> vorhanden: <code>ollama list</code> · einmalig: <code>bash src/vla_bridge/scripts/install_ollama.sh</code></li></ul></div></li>
+        <li><div><b data-en="Preparation">Vorbereitung</b><ul class="bl sm"><li data-en="MoveIt Servo and UX | Control Interface must be running (<a href=&quot;#start&quot;>Remote Guide</a>)">MoveIt Servo und UX | Control Interface laufen (<a href="#start">Remote Guide</a>)</li><li data-en="Ollama running with model <code>qwen3.8:27b</code>: <code>ollama list</code> · once: <code>bash src/vla_bridge/scripts/install_ollama.sh</code>">Ollama läuft und Modell <code>qwen3.8:27b</code> vorhanden: <code>ollama list</code> · einmalig: <code>bash src/vla_bridge/scripts/install_ollama.sh</code></li></ul></div></li>
         <li><div><b data-en="Method A · UX | Nexus Launcher (recommended)">Weg A · UX | Nexus Launcher (empfohlen)</b><ul class="bl sm"><li data-en="Category <b>VLA-M</b> → Card <b>VLA-M Bridge</b>">Kategorie <b>VLA-M</b> → Karte <b>VLA-M Bridge</b></li><li data-en="Pre-flight check verifies Ollama running, model installed, ports available">Check vor dem Start prüft: Ollama läuft, Modell installiert, Ports frei</li><li data-en="Button <b>Start</b> executes launch file with configured arguments">Knopf <b>Start</b> startet das Launch-File mit den eingestellten Argumenten</li></ul></div></li>
         <li><div><b data-en="Method B · Terminal">Weg B · Terminal</b>
           <div class="cmd"><pre># Localhost only AN (sonst: export ROS_LOCALHOST_ONLY=0; unset CYCLONEDDS_URI)
@@ -4701,7 +4701,7 @@ function initShell(onShow) {
     head.appendChild(h('span', { 'class': 'key', style: '--k:' + C[2] }, combo));
     head.appendChild(h('h3', null, L('Kombination ', 'Combination ') + combo + ' · ' + cname));
     head.appendChild(h('span', { 'class': 'proto', style: '--k:' + C[2] }, C[1]));
-    head.appendChild(h('span', { 'class': 'proto', style: '--k:var(--c-' + st.mode + ')' }, real ? 'REAL' : 'FAKE'));
+    head.appendChild(h('span', { 'class': 'proto', style: '--k:var(--c-' + st.mode + ')' }, real ? 'Real' : 'DigTwin'));
     out.appendChild(head);
 
     // URLs
@@ -4734,11 +4734,11 @@ function initShell(onShow) {
     var srv = [
       L('UX | Nexus Launcher öffnen: http://localhost:8080', 'Open UX | Nexus Launcher: http://localhost:8080'),
       L('UI-Karte → PARAMETERS & ARGS: Remote access an, Clients: subnet (gilt nach Neustart der Karte)', 'UI card → PARAMETERS & ARGS: Remote access on, Clients: subnet (applies after restarting the card)'),
-      L('Popup SERVER SETUP, Modus ', 'Popup SERVER SETUP, mode ') + (real ? 'REAL' : 'FAKE') + ': ' + (real ? 'MoveIt Servo & MoveGroup (Real) [Server]' : 'MoveIt Servo & MoveGroup (Fake) + Linear Axis [Server]'),
+      L('Popup SERVER SETUP, Betriebsart ', 'Popup SERVER SETUP, operating mode ') + (real ? 'Robot | Hardware' : 'Robot | Digital Twin') + ': ' + (real ? 'MoveIt Servo & MoveGroup (Real) [Server]' : 'MoveIt Servo & MoveGroup (Fake) + Linear Axis [Server]'),
       L('UI starten: ', 'Start UI: ') + 'UX | Control Interface, WebSocket, Remote Watchdog & Video Server (Port 8081 / 9090 / 8082)'
     ];
     if (https) srv.push(L('VR Quest 3 Teleop (Port 9091 / 8443) starten', 'Start VR Quest 3 Teleop (Port 9091 / 8443)') + (usb ? L(' · Quest vorher per USB anstecken', ' · connect the Quest via USB first') : ''));
-    srv.push(L('Remote-Panel prüfen: Chip zeigt ', 'Check the Remote panel: chip shows ') + (real ? 'REAL' : 'FAKE') + L(', nicht „WATCHDOG OFF“ · „Access from home network“: „On (subnet)“', ', not “WATCHDOG OFF” · “Access from home network”: “On (subnet)”'));
+    srv.push(L('Remote-Panel prüfen: Chip zeigt ', 'Check the Remote panel: chip shows ') + (real ? 'Robot | Hardware' : 'Robot | Digital Twin') + L(', nicht „WATCHDOG OFF“ · „Access from home network“: „On (subnet)“', ', not “WATCHDOG OFF” · “Access from home network”: “On (subnet)”'));
     var cli = [L(urls[0][0] + ' öffnen', 'Open ' + urls[0][0])];
     if (https) cli.push(L('Zertifikat akzeptieren: „Erweitert“ → „Weiter zu …“', 'Accept the certificate: “Advanced” → “Proceed to …”'));
     cli.push(L('Verbindung prüfen: kein Overlay, Chip zeigt „Remote · <IP>“', 'Check the connection: no overlay, chip shows “Remote · <IP>”'));
