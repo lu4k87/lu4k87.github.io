@@ -1015,7 +1015,7 @@ html.wf-js .wf-stage.reset .msg { transition-duration: 200ms; }
         </div>
         <div class="kit">
           <div class="kcol k-skills" style="--hue: var(--teal)" data-kind="Skill" data-kind-en="skill">
-            <header><h3><svg class="ico" aria-hidden="true"><use href="#i-layers"/></svg>Skills<em>51</em></h3><p data-en="One SKILL.md per topic, scripts and templates alongside. Loaded only when needed, once per chat.">Je Thema ein SKILL.md, Skripte und Vorlagen daneben. Geladen nur bei Bedarf, einmal je Chat.</p></header>
+            <header><h3><svg class="ico" aria-hidden="true"><use href="#i-layers"/></svg>Skills<em>54</em></h3><p data-en="One SKILL.md per topic, scripts and templates alongside. Loaded only when needed, once per chat.">Je Thema ein SKILL.md, Skripte und Vorlagen daneben. Geladen nur bei Bedarf, einmal je Chat.</p></header>
             <div class="kgs">
             <div class="kg"><span class="kgrp">Workflow</span>
             <ul class="kl">
@@ -1027,6 +1027,7 @@ html.wf-js .wf-stage.reset .msg { transition-duration: 200ms; }
               <li><button type="button" class="ki" data-id="model-routing" data-rel="token_report"><span class="nm">model-routing</span><span class="ds" data-en="Opus or Sonnet, effort per task">Opus oder Sonnet, Effort je Aufgabe</span></button></li>
               <li><button type="button" class="ki" data-id="scrum" data-rel="teamwork-optimizer team-briefing"><span class="nm">scrum</span><span class="ds" data-en="Sprint goal, daily, review, retro">Sprint-Ziel, Daily, Review, Retro</span></button></li>
               <li><button type="button" class="ki" data-id="team-briefing" data-rel=""><span class="nm">team-briefing</span><span class="ds" data-en="Weekly briefing of the expert team">Wöchentliches Briefing des Expertenteams</span></button></li>
+              <li><button type="button" class="ki" data-id="mein-feedback" data-rel=""><span class="nm">mein-feedback</span><span class="ds" data-en="Feedback round on the workflow every 4 days">Feedback-Runde zum Workflow alle 4 Tage</span></button></li>
             </ul></div>
             <div class="kg"><span class="kgrp" data-en="Operating UIs">Bedien-UIs</span>
             <ul class="kl">
@@ -1055,6 +1056,7 @@ html.wf-js .wf-stage.reset .msg { transition-duration: 200ms; }
             <div class="kg"><span class="kgrp" data-en="Robotics + quality">Robotik + Qualität</span>
             <ul class="kl">
               <li><button type="button" class="ki" data-id="vla-motion" data-rel="grasp_e2e vla_eval safety-reviewer"><span class="nm">vla-motion</span><span class="ds" data-en="vla_bridge, Motion Handler, sandbox">vla_bridge, Motion Handler, Sandbox</span></button></li>
+              <li><button type="button" class="ki" data-id="intrinsic-ros" data-rel=""><span class="nm">intrinsic-ros</span><span class="ds" data-en="Google Intrinsic: which module fits, spike plan">Google Intrinsic: welches Modul passt, Spike-Plan</span></button></li>
               <li><button type="button" class="ki" data-id="ros-debug" data-rel="ros-safety-status stack-diagnoser"><span class="nm">ros-debug</span><span class="ds" data-en="Diagnose the running stack, hands off">Laufenden Stack diagnostizieren, ohne Eingriff</span></button></li>
               <li><button type="button" class="ki" data-id="ros-robust" data-rel="robustness-reviewer"><span class="nm">ros-robust</span><span class="ds" data-en="Timeouts, reconnect, fault injection">Timeouts, Reconnect, Fehlerinjektion</span></button></li>
               <li><button type="button" class="ki" data-id="build-pkg" data-rel="check_ws"><span class="nm">build-pkg</span><span class="ds" data-en="Targeted colcon, short output">colcon gezielt, kurze Ausgabe</span></button></li>
@@ -1067,6 +1069,7 @@ html.wf-js .wf-stage.reset .msg { transition-duration: 200ms; }
               <li><button type="button" class="ki" data-id="motion-3d" data-rel="blender"><span class="nm">motion-3d</span><span class="ds" data-en="Assembly animation, hero renders">Montage-Animation, Hero-Renders</span></button></li>
               <li><button type="button" class="ki" data-id="blender" data-rel=""><span class="nm">blender</span><span class="ds" data-en="Models, scenes, renders, live via MCP">Modelle, Szenen, Renders, live per MCP</span></button></li>
               <li><button type="button" class="ki" data-id="research" data-rel="paper-reviewer"><span class="nm">research</span><span class="ds" data-en="Study, analysis, paper">Studie, Analyse, Paper</span></button></li>
+              <li><button type="button" class="ki" data-id="reverse-engineer" data-rel=""><span class="nm">reverse-engineer</span><span class="ds" data-en="Analyse binaries and apps without source code">Binaries und Apps ohne Quellcode untersuchen</span></button></li>
               </ul></div>
               <div class="kg"><span class="kgrp" data-en="Motion pack (only via /name)">Motion-Pack (nur per /name)</span>
               <ul class="kl">
@@ -1254,16 +1257,16 @@ python3 tools/claim.py done --who &lt;chat-id&gt;</pre>
 <section class="sec" id="zahlen"><span id="belege"></span>
         <header class="sec-head">
           <div><span class="eyebrow" style="--hue: var(--lime)"><span class="n">03</span><span data-en="Figures">Zahlen</span></span><h2 data-en="Figures from git log">Zahlen aus git log</h2></div>
-          <div class="brief"><p data-en="All values straight from &lt;code&gt;git log&lt;/code&gt; on &lt;code&gt;main&lt;/code&gt;, snapshot 10 Oct 2026; inventory (skills, agents, memory) counted on 12 Oct 2026 in both repos. Commits measure activity, not quality.">Alle Werte direkt aus <code>git log</code> auf <code>main</code>, Stichtag 10.10.2026; Inventar (Skills, Agenten, Memory) am 12.10.2026 in beiden Repos gezählt. Commits messen Aktivität, nicht Qualität.</p></div>
+          <div class="brief"><p data-en="All values straight from &lt;code&gt;git log&lt;/code&gt; on &lt;code&gt;main&lt;/code&gt;, snapshot 10 Oct 2026; inventory (skills, agents, memory) counted on 14 Oct 2026 in both repos. Commits measure activity, not quality.">Alle Werte direkt aus <code>git log</code> auf <code>main</code>, Stichtag 10.10.2026; Inventar (Skills, Agenten, Memory) am 14.10.2026 in beiden Repos gezählt. Commits messen Aktivität, nicht Qualität.</p></div>
         </header>
         <div class="ev">
           <div class="kpis kpis-6" aria-label="Kennzahlen" data-en-aria="Key figures">
             <div class="kpi" style="--hue: var(--accent)"><strong data-num="2988">2988</strong><span data-en="&lt;b&gt;commits&lt;/b&gt; since March"><b>Commits</b> seit März</span></div>
             <div class="kpi" style="--hue: var(--accent)"><strong data-num="2022">2022</strong><span data-en="&lt;b&gt;commits&lt;/b&gt; in 30 days"><b>Commits</b> in 30 Tagen</span></div>
             <div class="kpi" style="--hue: var(--teal)"><strong data-num="710">710</strong><span data-en="&lt;b&gt;docs commits&lt;/b&gt; in total"><b>Doku-Commits</b> gesamt</span></div>
-            <div class="kpi" style="--hue: var(--violet)"><strong data-num="51">51</strong><span data-en="&lt;b&gt;skills&lt;/b&gt;: 32 general + 19 dev_ws"><b>Skills</b>: 32 allgemein + 19 dev_ws</span></div>
-            <div class="kpi" style="--hue: var(--indigo)"><strong data-num="16">16</strong><span data-en="&lt;b&gt;agents&lt;/b&gt; for separate jobs"><b>Agenten</b> für Einzelaufträge</span></div>
-            <div class="kpi" style="--hue: var(--orange)"><strong data-num="17">17</strong><span data-en="&lt;b&gt;memory&lt;/b&gt; entries: 10 shared + 7 dev_ws"><b>Memory</b>: 10 gemeinsam + 7 dev_ws</span></div>
+            <div class="kpi" style="--hue: var(--violet)"><strong data-num="54">54</strong><span data-en="&lt;b&gt;skills&lt;/b&gt;: 34 general + 20 dev_ws"><b>Skills</b>: 34 allgemein + 20 dev_ws</span></div>
+            <div class="kpi" style="--hue: var(--indigo)"><strong data-num="17">17</strong><span data-en="&lt;b&gt;agents&lt;/b&gt; for separate jobs"><b>Agenten</b> für Einzelaufträge</span></div>
+            <div class="kpi" style="--hue: var(--orange)"><strong data-num="20">20</strong><span data-en="&lt;b&gt;memory&lt;/b&gt; entries: 12 shared + 8 dev_ws"><b>Memory</b>: 12 gemeinsam + 8 dev_ws</span></div>
           </div>
           <div class="gitg charts">
             <div class="panel chart" data-chart>
