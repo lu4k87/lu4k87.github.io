@@ -23,6 +23,7 @@
   --qr-bg: #f3f5f5; --qr-ink: #0c0e10;
   --band: #101417; --c1: #2ee6c8; --c2: #5aa9ff; --c3: #b18cff; --c4: #ffb547; --c5: #ff7ab6;
   --radius-sm: 4px; --radius: 6px; --radius-lg: 8px;
+  --key: color-mix(in srgb, var(--accent) 40%, var(--fg)); --code: color-mix(in srgb, var(--c2) 70%, var(--fg));
   --ease-out: cubic-bezier(.22, 1, .36, 1); --ease-io: cubic-bezier(.65, 0, .35, 1);
   --t-fast: 150ms; --t-base: 250ms; --t-slow: 450ms; --t-xfade: 900ms; --stagger: 60ms; --rise: 12px; --lift: 2px;
   --f-head: 'Space Grotesk', system-ui, sans-serif; --f-body: 'Inter', system-ui, sans-serif; --f-mono: 'JetBrains Mono', ui-monospace, monospace;
@@ -173,17 +174,20 @@ a.btn:hover { border-color: color-mix(in srgb, var(--accent) 55%, var(--line-str
 
 /* Tabellen: Ablauf je Schritt, Rollen, Regeln, Prüfstufen */
 .tb { width: 100%; border-collapse: separate; border-spacing: 0; background: var(--surface); border: 1px solid var(--line-strong); border-radius: var(--radius-lg); overflow: hidden; }
-.tb th { text-align: left; padding: 12px 14px; font: 600 .8125rem/1.3 var(--f-mono); letter-spacing: .02em; color: var(--fg-2); background: var(--surface-2); border-bottom: 1px solid var(--line-strong); }
+.tb th { text-align: left; padding: 12px 14px; font: 600 .8125rem/1.3 var(--f-mono); letter-spacing: .02em; color: var(--fg-2); background: color-mix(in srgb, var(--accent) 7%, var(--surface-2)); border-bottom: 1px solid var(--line-strong); }
 .tb td { padding: 12px 14px; vertical-align: top; font-size: .875rem; line-height: 1.45; text-wrap: pretty; }
 .tb tr + tr td { border-top: 1px solid var(--line); }
+/* Dezente Farbe gliedert dichte Tabellen/Listen: Begriff getönt, Pfade + Befehle als blaue Marke */
+.tb td.k, .kv dt { color: var(--key); }
 .tb td.k { font: 700 1rem/1.3 var(--f-head); }
 .tb td.k i { display: inline-grid; place-items: center; width: 24px; height: 24px; margin-inline-end: 8px; border-radius: var(--radius-sm); vertical-align: -6px;
   background: var(--accent); color: var(--bg); font: 600 .8125rem/1 var(--f-mono); font-style: normal; }
 .tb td.k small { display: block; margin-top: 2px; font: 400 .8125rem/1.4 var(--f-body); color: var(--fg-2); }
 .tb ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; }
 .tb code { font-size: .8125rem; font-weight: 600; }
+.tb code, .kv code { padding: 0 .3em; border-radius: var(--radius-sm); color: var(--code); background: color-mix(in srgb, var(--c2) 10%, transparent); -webkit-box-decoration-break: clone; box-decoration-break: clone; }
 .tb .hk li { display: grid; gap: 1px; }
-.tb .hk code { color: var(--accent); }
+.tb .hk code { justify-self: start; color: var(--accent); background: color-mix(in srgb, var(--accent) 10%, transparent); }
 .tb .hk span { color: var(--fg-2); }
 .tb .role { display: block; font-weight: 700; }
 .tb .stp { display: flex; gap: 8px; align-items: flex-start; }
