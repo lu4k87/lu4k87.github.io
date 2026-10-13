@@ -434,7 +434,7 @@ document.documentElement.classList.add('js');
 
   // WebGL-Übergang (three.js): Rausch-Auflösung mit weicher Kante + leichte Maus-Parallaxe
   if (reduce || innerWidth < 960 || location.protocol === 'file:') return;   // file:// lädt keine Bild-Texturen
-  import('https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js').then(THREE => {
+  import('../vendor/three/three.module.js').then(THREE => {
     const renderer = new THREE.WebGLRenderer({ antialias: false, alpha: false, powerPreference: 'high-performance' });
     renderer.setPixelRatio(Math.min(devicePixelRatio, 1.75));
     renderer.outputColorSpace = THREE.LinearSRGBColorSpace;

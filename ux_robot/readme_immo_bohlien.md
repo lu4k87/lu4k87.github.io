@@ -18,7 +18,7 @@ Eigenes Projekt im dev_ws, kein Teil des Roboters: Neugestaltung von [bohlien-im
   - `3-kartografie.html` eine Tafel mit Reitern: Kompass-Ringe (SVG), Foto-Linse, Nadel; Steintöne/Bordeaux, Bodoni Moda + Instrument Sans.
   - `index.html` (früher `4-modell.html`, jetzt Hauptseite) three.js-Architekturmodell als Bühne: Scrollposition = Uhr (Kamera, Tag → Nacht, Dach/Etagen, Markierung), Text als Leiste; Schibsted Grotesk. Stand 2026-10-12: Hero-Karte auch am Desktop, Referenzbilder größer, Regionalfoto (Schloss Moers) im Profil, Ladehinweis + Fallback-Foto (kein WebGL/Netz), mobil 1024er Schatten + Pixeldichte ≤ 1,25 (sinkt bei < 30 fps), reduzierte Bewegung folgt dem Scrollen ohne Dämpfung.
   - `5-expose.html` horizontale Bahn (Scrollen 1:1 seitwärts, mobil/reduzierte Bewegung senkrecht), Lamellen „Ihr Ziel → unser Weg“, Maßband; Gloock + Hanken Grotesk.
-  - three.js 0.170.0 per jsDelivr; ohne Netz/WebGL bleibt ein Foto. `vorschau/*.jpg` = Bilder der Übersicht.
+  - three.js 0.170.0 liegt mit MIT-Lizenz lokal in `vendor/three/`; ohne WebGL bleibt ein Foto. `vorschau/*.jpg` = Bilder der Übersicht.
 - **Schrift:** Cormorant Garamond (Überschriften, klassisch-elegant) + Jost (Text, geometrisch wie das Logo) von Google Fonts; Logo-Grün `#59B130`.
 - **Aufbau:** Hero (Collage, Häuserzeile) → Städte-Band → Willkommen → Leistungen → Ablauf → Referenzen (Filter, Karussell) → Einsatzgebiet (Karte) → Profil → Bewertung → Kontakt → Footer mit Impressum.
 - **Formular:** öffnet eine vorausgefüllte E-Mail an info@bohlien-immo.de (kein Backend).
