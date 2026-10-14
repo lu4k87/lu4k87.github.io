@@ -79,7 +79,7 @@ Ein leeres `robot_profile` verwendet das aktive Profil. Eine explizite ID wählt
 |---|---|---|
 | `/vla/instruction` | UI → `vla_bridge` | `{id, text, camera, confirm, source}` - `source` = `voice` nach Diktat, sonst `chat` (nur fürs UX \| Monitoring) |
 | `/vla/response` | `vla_bridge` → UI | `{id, text?, plan?, awaiting?, step?, total?, state?}` - `state` auch `clarify` (Rückfrage) und `replan` (Schritt fehlgeschlagen, Agent plant neu) |
-| `/vla/status` | `vla_bridge` → UI (1 Hz) | `{state, model, llm, executes, pending, mode, sandbox, gripper, held, objects}` - die UI zeigt `OFFLINE` nach 3 s ohne Status |
+| `/vla/status` | `vla_bridge` → UI (1 Hz) | `{state, model, llm, executes, pending, mode, sandbox, gripper, held, held_id, limits, objects}` - die UI zeigt `OFFLINE` nach 3 s ohne Status |
 | `/vla/execute` | UI → `vla_bridge` | `{id}` - gibt den wartenden Plan frei |
 | `/vla/metrics` | `vla_bridge` → UX \| Monitoring | je LLM-Runde (`event: round` - task, attempt, backend, model, latency_s, errors, usage) und je Ausgang (`event: outcome` - state, text, note) mit der Auftrags-`id`; dasselbe wie das Sitzungsprotokoll `~/.ros/vla_logs`, ohne Anfrage-/Antworttext. Seite *VLA-M* im UX \| Monitoring ([Monitoring](monitoring.html)) |
 | `/vla/abort` | UI → `vla_bridge` | `{id}` - stoppt die laufende Aufgabe |

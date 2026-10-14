@@ -79,7 +79,7 @@ An empty `robot_profile` uses the active profile. An explicit ID selects the sam
 |---|---|---|
 | `/vla/instruction` | UI → `vla_bridge` | `{id, text, camera, confirm, source}` - `source` = `voice` after dictation, otherwise `chat` (only for the UX \| Monitoring) |
 | `/vla/response` | `vla_bridge` → UI | `{id, text?, plan?, awaiting?, step?, total?, state?}` - `state` also `clarify` (question back) and `replan` (step failed, agent re-plans) |
-| `/vla/status` | `vla_bridge` → UI (1 Hz) | `{state, model, llm, executes, pending, mode, sandbox, gripper, held, objects}` - UI shows `OFFLINE` after 3 s without status |
+| `/vla/status` | `vla_bridge` → UI (1 Hz) | `{state, model, llm, executes, pending, mode, sandbox, gripper, held, held_id, limits, objects}` - UI shows `OFFLINE` after 3 s without status |
 | `/vla/execute` | UI → `vla_bridge` | `{id}` - releases the waiting plan |
 | `/vla/metrics` | `vla_bridge` → UX \| Monitoring | per LLM round (`event: round` - task, attempt, backend, model, latency_s, errors, usage) and per outcome (`event: outcome` - state, text, note) with the task `id`; same as the session log `~/.ros/vla_logs`, without request/answer text. Page *VLA-M* of the UX \| Monitoring ([monitoring](monitoring.html)) |
 | `/vla/abort` | UI → `vla_bridge` | `{id}` - stops the running task |
