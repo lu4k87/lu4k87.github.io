@@ -1192,14 +1192,14 @@ html.wf-js .wf-stage.reset .msg { transition-duration: 200ms; }
 <section class="sec" id="einrichtung"><span id="dateien"></span>
         <header class="sec-head">
           <div><span class="eyebrow" style="--hue: var(--blue)"><span class="n">02</span><span data-en="Setup">Einrichtung</span></span><h2 data-en="Three computers, one state">Drei Rechner, ein Stand</h2></div>
-          <div class="brief"><dl><dt data-en="In Git">In Git</dt><dd data-en="Tool repo: rules, general skills, agents, hooks, shared memory · project repo: code, project skills, memory per project">Werkzeug-Repo: Regeln, allgemeine Skills, Agenten, Hooks, gemeinsame Memory · Projekt-Repo: Code, Projekt-Skills, Memory je Projekt</dd><dt data-en="Per computer">Je Rechner</dt><dd data-en="Install and sign in to the client; Claude settings and Codex trust per computer.">Client installieren und anmelden; Claude-Settings und Codex-Trust je Rechner.</dd><dt data-en="Chat histories">Chat-Verläufe</dt><dd data-en="Claude histories via &lt;code&gt;bin/chat_sync.py&lt;/code&gt;; other tools get a file handoff">Claude-Verläufe per <code>bin/chat_sync.py</code>; andere Werkzeuge erhalten eine Datei-Übergabe</dd></dl></div>
+          <div class="brief"><dl><dt data-en="In Git">In Git</dt><dd data-en="Tool repo: rules, general skills, agents, hooks, shared memory · project repo: code, project skills, memory per project">Werkzeug-Repo: Regeln, allgemeine Skills, Agenten, Hooks, gemeinsame Memory · Projekt-Repo: Code, Projekt-Skills, Memory je Projekt</dd><dt data-en="Per computer">Je Rechner</dt><dd data-en="Install and sign in to the clients, SSH key for GitHub, &lt;code&gt;python3-yaml&lt;/code&gt;. Model and effort via &lt;code&gt;/model&lt;/code&gt; per computer; laptop without GPU skips CUDA/ZED packages in &lt;code&gt;~/.colcon/defaults.yaml&lt;/code&gt;.">Clients installieren und anmelden, SSH-Key für GitHub, <code>python3-yaml</code>. Modell und Effort per <code>/model</code> je Rechner; Laptop ohne GPU lässt CUDA-/ZED-Pakete in <code>~/.colcon/defaults.yaml</code> aus.</dd><dt data-en="Chat histories">Chat-Verläufe</dt><dd data-en="Claude histories via &lt;code&gt;bin/chat_sync.py&lt;/code&gt;; other tools get a file handoff">Claude-Verläufe per <code>bin/chat_sync.py</code>; andere Werkzeuge erhalten eine Datei-Übergabe</dd></dl></div>
         </header>
     <div class="setup">
       <div class="panel tree">
         <h3 data-en="Shared sources and local setup">Gemeinsame Quellen und lokale Einrichtung</h3>
         <div class="tr"><span class="p"><svg class="ico"><use href="#i-repo"/></svg>~/ai_dev_workflow_global/</span><span class="w" data-en="Tool repo for all projects, branch &lt;code&gt;main&lt;/code&gt;">Werkzeug-Repo für alle Projekte, Branch <code>main</code></span></div>
         <div class="tr" style="--d:1"><span class="p" style="--hue: var(--gold)"><svg class="ico"><use href="#i-book"/></svg>rules/</span><span class="w" data-en="&lt;code&gt;RULES.md&lt;/code&gt; (shared rules), &lt;code&gt;ROLES.md&lt;/code&gt; (role map), template &lt;code&gt;project_AGENTS.md&lt;/code&gt;"><code>RULES.md</code> (gemeinsame Regeln), <code>ROLES.md</code> (Rollenkarte), Vorlage <code>project_AGENTS.md</code></span></div>
-        <div class="tr" style="--d:1"><span class="p" style="--hue: var(--teal)"><svg class="ico"><use href="#i-layers"/></svg>skills/ agents/ hooks/</span><span class="w" data-en="32 general skills, 6 agents, hook core – linked globally for Claude, Codex, Gemini">32 allgemeine Skills, 6 Agenten, Kern der Hooks – global verlinkt für Claude, Codex, Gemini</span></div>
+        <div class="tr" style="--d:1"><span class="p" style="--hue: var(--teal)"><svg class="ico"><use href="#i-layers"/></svg>skills/ agents/ hooks/</span><span class="w" data-en="34 general skills, 6 agents, hook core – linked globally for Claude, Codex, Gemini">34 allgemeine Skills, 6 Agenten, Kern der Hooks – global verlinkt für Claude, Codex, Gemini</span></div>
         <div class="tr" style="--d:1"><span class="p" style="--hue: var(--pink)"><svg class="ico"><use href="#i-brain"/></svg>memory/</span><span class="w" data-en="Shared memory: who the user is, feedback on how we work">Gemeinsame Memory: wer der User ist, Feedback zur Arbeitsweise</span></div>
         <div class="tr" style="--d:1"><span class="p" style="--hue: var(--green)"><svg class="ico"><use href="#i-term"/></svg>bin/</span><span class="w" data-en="&lt;code&gt;sync.sh&lt;/code&gt; (set up a computer), &lt;code&gt;chat_sync.py&lt;/code&gt;, &lt;code&gt;projects.py&lt;/code&gt;, &lt;code&gt;preview_server.py&lt;/code&gt;, &lt;code&gt;publish_pages.py&lt;/code&gt;"><code>sync.sh</code> (Rechner einrichten), <code>chat_sync.py</code>, <code>projects.py</code>, <code>preview_server.py</code>, <code>publish_pages.py</code></span></div>
         <div class="tr" style="--d:1"><span class="p" style="--hue: var(--gold)"><svg class="ico"><use href="#i-key"/></svg>config/</span><span class="w" data-en="&lt;code&gt;user-settings.json&lt;/code&gt; (template for the Claude settings per computer), &lt;code&gt;projects.yaml&lt;/code&gt; (project list)"><code>user-settings.json</code> (Vorlage für die Claude-Settings je Rechner), <code>projects.yaml</code> (Projektliste)</span></div>
@@ -1220,36 +1220,45 @@ html.wf-js .wf-stage.reset .msg { transition-duration: 200ms; }
       </div>
       <div class="panel wire">
         <h3 data-en="Set up, verify, coordinate">Einrichten, prüfen, abstimmen</h3>
-<pre class="code" data-en="cd ~/dev_ws
-# Once per computer; does not install AI clients
-tools/ws_sync.sh --setup
-# Codex: read trust status only
-python3 tools/codex_setup.py --check
-# Before parallel edits
-git status --short
-python3 tools/claim.py list --fetch
-# Use the chat ID from the startup overview
-python3 tools/claim.py start --who &amp;lt;chat-id&amp;gt; \
-  --task &quot;[Area] Goal&quot; --files &quot;path (section)&quot;
-# After verified commit + push
-python3 tools/claim.py done --who &amp;lt;chat-id&amp;gt;">cd ~/dev_ws
-# Einmal je Rechner; installiert keine KI-Clients
-tools/ws_sync.sh --setup
-# Codex: Trust-Status nur lesen
-python3 tools/codex_setup.py --check
-# Vor parallelen Änderungen
-git status --short
-python3 tools/claim.py list --fetch
-# Chat-Kennung aus dem Start-Lagebild einsetzen
-python3 tools/claim.py start --who &lt;chat-id&gt; \
-  --task "[Bereich] Ziel" --files "pfad (Abschnitt)"
-# Nach geprüftem Commit + Push
-python3 tools/claim.py done --who &lt;chat-id&gt;</pre>
+<pre class="code" data-en="# New computer with dev_ws (clones the tool repo + all projects)
+git clone git@github.com:lu4k87/ux_robot.git \
+  ~/dev_ws
+~/dev_ws/tools/ws_sync.sh --setup
+# Without dev_ws: tool repo only + projects
+git clone git@github.com:lu4k87/ai_dev_workflow_global.git \
+  ~/ai_dev_workflow_global
+~/ai_dev_workflow_global/bin/sync.sh
+# What is missing on this computer (read only)
+tools/ws_sync.sh --check
+# Every day: pull, set up, build changed packages
+tools/ws_sync.sh
+# New project = own repo + own VS&amp;nbsp;Code workspace
+python3 ~/ai_dev_workflow_global/bin/projects.py new &amp;lt;Name&amp;gt;
+# dev_ws: claim before parallel edits (the hook does it automatically)
+python3 tools/claim.py list --fetch">
+# Neuer Rechner mit dev_ws (klont Werkzeug-Repo + alle Projekte)
+git clone git@github.com:lu4k87/ux_robot.git \
+  ~/dev_ws
+~/dev_ws/tools/ws_sync.sh --setup
+# Ohne dev_ws: nur Werkzeug-Repo + Projekte
+git clone git@github.com:lu4k87/ai_dev_workflow_global.git \
+  ~/ai_dev_workflow_global
+~/ai_dev_workflow_global/bin/sync.sh
+# Was fehlt auf diesem Rechner (nur lesen)
+tools/ws_sync.sh --check
+# Jeden Tag: holen, einrichten, geänderte Pakete bauen
+tools/ws_sync.sh
+# Neues Projekt = eigenes Repo + eigener VS&nbsp;Code-Workspace
+python3 ~/ai_dev_workflow_global/bin/projects.py new &lt;Name&gt;
+# dev_ws: Claim vor parallelen Edits (der Hook legt ihn selbst an)
+python3 tools/claim.py list --fetch</pre>
         <div class="env">
           <div style="--hue: var(--accent)"><b><svg class="ico"><use href="#i-code"/></svg><span data-en="Claude Code">Claude Code</span></b><p data-en="&lt;code&gt;.claude/settings.json&lt;/code&gt;: project hooks. &lt;code&gt;ws_sync.sh --setup&lt;/code&gt; configures memory and user settings; restart afterwards."><code>.claude/settings.json</code>: Projekt-Hooks. <code>ws_sync.sh --setup</code> überträgt Memory und Benutzer-Settings; danach neu starten.</p></div>
           <div style="--hue: var(--violet)"><b><svg class="ico"><use href="#i-win"/></svg>Codex</b><p data-en="&lt;code&gt;.codex/hooks.json&lt;/code&gt; → &lt;code&gt;codex_bridge.py&lt;/code&gt;. Project and hook checksums must be marked as trusted; check again after changes."><code>.codex/hooks.json</code> → <code>codex_bridge.py</code>. Projekt und Prüfsummen der Hooks müssen als vertrauenswürdig markiert sein (Trust); nach Änderungen erneut prüfen.</p></div>
           <div style="--hue: var(--gold)"><b><svg class="ico"><use href="#i-key"/></svg><span data-en="Antigravity / Gemini">Antigravity / Gemini</span></b><p data-en="&lt;code&gt;GEMINI.md&lt;/code&gt; and &lt;code&gt;.agents/&lt;/code&gt; share rules, skills and memory. Pre/post adapter: &lt;code&gt;.agents/hooks.json&lt;/code&gt;; verify activation in the client."><code>GEMINI.md</code> und <code>.agents/</code> teilen Regeln, Skills und Memory. Pre-/Post-Adapter: <code>.agents/hooks.json</code>; Aktivierung im Client prüfen.</p></div>
-          <div style="--hue: var(--green)"><b><svg class="ico"><use href="#i-git"/></svg><span data-en="Computer switch">Rechnerwechsel</span></b><p data-en="Push your completed work. Run &lt;code&gt;tools/ws_sync.sh&lt;/code&gt; only by agreement with no ongoing edits: pull with rebase/autostash and build changed ROS packages.">Eigene fertige Arbeit pushen. <code>tools/ws_sync.sh</code> nur abgestimmt ohne laufende Edits: Pull mit Rebase/Autostash und Build geänderter ROS-Pakete.</p></div>
+          <div style="--hue: var(--green)"><b><svg class="ico"><use href="#i-git"/></svg><span data-en="Computer switch">Rechnerwechsel</span></b><p data-en="Push your completed work. Run &lt;code&gt;tools/ws_sync.sh&lt;/code&gt; only by agreement with no ongoing edits: pull with rebase/autostash and build changed ROS packages. If the tool repo itself was updated, the setup restarts once with the new state.">Eigene fertige Arbeit pushen. <code>tools/ws_sync.sh</code> nur abgestimmt ohne laufende Edits: Pull mit Rebase/Autostash und Build geänderter ROS-Pakete. Kam ein neuer Stand des Werkzeug-Repos, startet das Setup einmal selbst neu.</p></div>
+          <div style="--hue: var(--teal)"><b><svg class="ico"><use href="#i-repo"/></svg><span data-en="Projects">Projekte</span></b><p data-en="Every project is its own repo &lt;code&gt;~/__project_&amp;lt;name&amp;gt;&lt;/code&gt; with its own workspace, memory and AGENTS.md (list &lt;code&gt;config/projects.yaml&lt;/code&gt;). The sync clones missing ones and pulls the others fast-forward only; a project with local changes stays untouched, a single failing project does not stop the rest.">Jedes Projekt ist ein eigenes Repo <code>~/__project_&lt;Name&gt;</code> mit eigenem Workspace, eigener Memory und AGENTS.md (Liste <code>config/projects.yaml</code>). Der Abgleich klont fehlende und holt die übrigen nur per Fast-Forward; ein Projekt mit lokalen Änderungen bleibt unberührt, ein einzelnes fehlerhaftes Projekt hält den Rest nicht auf.</p></div>
+          <div style="--hue: var(--pink)"><b><svg class="ico"><use href="#i-chat"/></svg><span data-en="Messages between tools">Nachrichten zwischen Werkzeugen</span></b><p data-en="Claude chats reach each other via SendMessage; Codex and Gemini chats via the mailbox &lt;code&gt;bin/chat_msg.py&lt;/code&gt;, delivered with the next prompt. The mailbox is per computer – across computers only Git (commits, claims, handoffs) counts.">Claude-Chats erreichen sich per SendMessage, Codex- und Gemini-Chats über das Postfach <code>bin/chat_msg.py</code>, zugestellt beim nächsten Prompt. Das Postfach gilt je Rechner – über Rechner hinweg zählt nur Git (Commits, Claims, Übergaben).</p></div>
         </div>
       </div>
     </div>
