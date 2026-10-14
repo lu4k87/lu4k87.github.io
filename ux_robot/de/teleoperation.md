@@ -321,6 +321,19 @@ Leap Motion 2 ──▶ leap_hand_teleop_node ──▶ /remote/twist ──▶ 
 
 - **Tempo:** Tempo-Override im Header (5 Stufen = Faktor 0,1–0,5 auf `/ui/robot_control/current_speed`, × 400 mm/s → 40 / 80 / 100 / 100 / 100 mm/s), ohne Stufe 40 mm/s, nie über `max_speed_mm_s` (100 mm/s). Außer im Robot | Digital Twin (auch Modus unbekannt) zusätzlich × `real_max_speed` des Watchdogs (Standard 0,5) – halbes Tempo wie bei entfernten Clients.
 - **Geisterhand:** Layers-Panel › **Leap hand** (*Ghost at the TCP*; deutsch *Leap-Hand*, *Geisterhand am TCP*) zeigt die erkannte Hand am TCP im Digital Twin – nur Anzeige, nur bei eingeschalteter Leap-Handsteuerung.
+
+#### Freie Gesten (Modus **Free** im LEAP-Fenster)
+*Der zweite Modus neben „TCP folgt Hand“: die Hand ist nur ein Zeiger im 3D-Viewport – der Roboter folgt ihr nie.* Umschalten mit den zwei Knöpfen **TCP | Free** oben im LEAP-Fenster (pro Browser gemerkt). In Free bekommt der Node dauernd „aus“ (`/leap/config` `on:false`), es kuppelt also nichts; Klicks gehen nur auf die Greifpunkte der virtuellen Objekte und auf die Knöpfe des Objekt-Menüs.
+
+| Was | Wie | Ergebnis |
+|---|---|---|
+| Zeigen | Zeigefingerspitze über der Leap Motion | Ein Punkt folgt der Fingerspitze im Viewport; ein Greifpunkt darunter leuchtet wie mit der Maus |
+| Klicken | Fingerspitze **2 s** ruhig auf einem Greifpunkt oder Menü-Knopf halten (Ring schließt sich) | Objekt-Menü öffnet sich / der Knopf wird geklickt; der nächste Klick braucht erst ein Wegbewegen |
+| Zoomen | Daumen und Zeigefinger mit **beiden Händen** kneifen, auseinander = hinein, zusammen = heraus | Sanfte Kamerafahrt, gleiche Grenzen wie das Mausrad |
+
+Robot \| Hardware: Einschalten fragt mit dem 1-s-Halten-Dialog; Knöpfe, bei denen der Roboter fährt (**Approach**, **Grasp** …), klickt die Hand dort nicht – dafür die Maus. Mit Befehlen verknüpfte Handhaltungen (Remote › Gestures) ruhen in Free und während der Kalibrierung.
+
+**Kalibrierung je Nutzer** (Remote › Gestures › *Free gestures: calibrate for your hand*): 8 kurze Schritte mit einer Live-Ansicht der Hand von oben (der Rahmen ist die 3D-Ansicht) – Fingerspitze ganz links / rechts / nah / weit, offene Hand, Kneifen, beide Hände zusammen, beide Hände auseinander. Jeder Schritt wird übernommen, wenn die Hand ~1 s ruht. Das Ergebnis setzt Reichweite des Zeigers, Kneif-Schwellen und Zoom-Stärke; der Zeiger im Viewport nutzt die neuen Werte sofort. *Save profile* speichert es unter einem Namen im Browser (bis 12 Profile, **Export / Import** als JSON, eingebaute Werte = Standard), *Click after* stellt die Haltezeit ein (0,8–5 s). Während der Kalibrierung pausieren Klicks und Zoom, der Node bleibt „aus“. Braucht den neu gestarteten Node `leap_hand_teleop` (sendet `hands`) – sonst weist das LEAP-Fenster darauf hin. Test: `python3 tools/test_gesture_free.py`.
 - **Nur eine Hand:** Kneifen ist keine Zustimmtaste – jede kneifende Hand über der Leap bewegt den Roboter. Eine zweite Hand über der Leap hält immer an (Chip **Keine Hand**). In Robot | Hardware nur die eigene Hand über der Leap.
 
 **Gesten-Befehle** (Fenster **Remote Teleop** › **Gestures** (deutsch *Remote-Teleop* › *Gesten*), Quelle = Leap Motion oder Webcam): eigene Handhaltungen lösen Befehle aus. Kneifen (Kuppeln) und Hand öffnen (Loslassen) bleiben fest im Leap-Node und sind nicht belegbar.

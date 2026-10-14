@@ -321,6 +321,19 @@ Leap Motion 2 ──▶ leap_hand_teleop_node ──▶ /remote/twist ──▶ 
 
 - **Speed:** speed override in the header (5 levels = factor 0.1–0.5 on `/ui/robot_control/current_speed`, × 400 mm/s → 40 / 80 / 100 / 100 / 100 mm/s), 40 mm/s without a level, never above `max_speed_mm_s` (100 mm/s). Outside Robot | Digital Twin (also mode unknown) additionally × `real_max_speed` of the watchdog (default 0.5) – half speed, as for remote clients.
 - **Ghost hand:** Layers panel › **Leap hand** (*Ghost at the TCP*) shows the tracked hand at the TCP in the Digital Twin – display only, only while Leap hand control is on.
+
+#### Free gestures (mode **Free** in the LEAP window)
+*The second mode next to „TCP follows the hand“: the hand is only a pointer in the 3D viewport – the robot never follows it.* Switch with the two buttons **TCP | Free** at the top of the LEAP window (kept per browser). In Free the node gets „off“ all the time (`/leap/config` `on:false`), so nothing couples; clicks work only on the grasp points of the virtual objects and on the buttons of the object menu.
+
+| What | How | Result |
+|---|---|---|
+| Point | Index fingertip above the Leap Motion | A dot follows the fingertip in the viewport; a grasp point under it glows like with the mouse |
+| Click | Hold the fingertip still **2 s** on a grasp point or a menu button (ring closes) | Object menu opens / the button is clicked; the next click needs a move away first |
+| Zoom | Pinch thumb and index finger with **both hands**, spread = zoom in, together = zoom out | Smooth dolly of the camera, same limits as the mouse wheel |
+
+Robot \| Hardware: switching on asks with the 1 s hold dialog; buttons that make the robot move (**Approach**, **Grasp** …) are not clicked by the hand there – use the mouse. Hand poses linked to commands (Remote › Gestures) rest in Free and during calibration.
+
+**Calibration per user** (Remote › Gestures › *Free gestures: calibrate for your hand*): 8 short steps with a live top view of the hand (the frame is the 3D view) – far left / right / near / far fingertip, open hand, pinch, both hands together, both hands apart. Every step is taken over when the hand rests for ~1 s. The result sets the reach of the pointer, the pinch thresholds and the zoom strength; the pointer in the viewport uses the new values at once. *Save profile* stores it under a name in the browser (up to 12 profiles, **Export / Import** as JSON, built-in values = default), *Click after* sets the hold time (0.8–5 s). During the calibration clicks and zoom are paused and the node stays „off“. Needs the restarted node `leap_hand_teleop` (publishes `hands`) – otherwise the LEAP window says so. Test: `python3 tools/test_gesture_free.py`.
 - **Only one hand:** pinching is no enabling switch – any pinching hand above the Leap moves the robot. A second hand above the Leap always stops (chip **No hand**). In Robot | Hardware only your own hand above the Leap.
 
 **Gesture commands** (window **Remote Teleop** › **Gestures**, source = Leap Motion or webcam): your own poses trigger commands. Pinch (couple) and open hand (release) stay fixed in the Leap node and cannot be assigned.
