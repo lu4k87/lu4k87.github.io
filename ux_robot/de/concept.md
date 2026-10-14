@@ -61,7 +61,7 @@ Der **Digital Twin** (digitaler Zwilling) ist das live mitlaufende 3D-Modell des
 - **Arbeitszelle im Digital Twin:** Tisch, Laborraum, Schutzzonen, Kamerastativ, erkannte Objekte als 3D-Boxen mit Greifkugeln (`/zed/bboxes_3d`), virtuelle Objekte und Szenen (Standard, Auto palletizing).
 - **Planen im Digital Twin:** Ziel mit dem TCP-Gizmo ziehen → MoveIt plant → Ghost-Vorschau der Bahn (`/ui/moveto_preview_path`) → Mensch bestätigt → erst dann fährt der Arm.
 - **Handeln im Digital Twin:** Objekt anklicken → *Grasp*; Tisch anklicken → *Place here*.
-- **Testen im Digital Twin:** Modus (Robot | Digital Twin) + virtuelle Objekte + Physik-Sandbox → Neues gefahrlos ausprobieren, danach mit derselben UI am echten Arm.
+- **Testen im Digital Twin:** Modus (Robot | Digital Twin) + virtuelle Objekte + Physics-Sandbox → Neues gefahrlos ausprobieren, danach mit derselben UI am echten Arm.
 - **Jeder Blickwinkel:** bis zu 4 virtuelle Kameras = eigene Ansichten des Digital Twin, nutzbar wie echte Kamerakacheln.
 - **Immersiv:** derselbe Digital Twin in der Meta Quest 3 (WebXR) für die VR-Teleoperation.
 - **High-Fidelity:** NVIDIA Isaac Sim läuft optional als passiver Schatten-Digital-Twin mit ([Isaac Sim](isaac_sim.html)).

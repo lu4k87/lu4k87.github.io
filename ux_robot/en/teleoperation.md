@@ -35,7 +35,7 @@ The table below illustrates which project modules can be evaluated in pure softw
 | Feature / Subsystem | Pure Simulation (Robot | Digital Twin) | Real Hardware (Robot | Hardware) | Required Hardware / Peripheral |
 |---|:---:|:---:|---|
 | **UX \| Control Interface (Port 8081)** | ✅ Functional (RViz Mirror) | ✅ Functional (Hardware Motion) | Host PC & Web Browser |
-| **Physics Sandbox (virtual grasping)** | ✅ Functional | ➖ Simulation Only | Host PC |
+| **Physics-Sandbox (virtual grasping)** | ✅ Functional | ➖ Simulation Only | Host PC |
 | **Remote Control (client / server)** | ✅ Functional | ✅ Functional (stricter limits) | Laptop, tablet or Quest 3 in the home network |
 | **UX \| Compact Interface (`/touch`)** | ✅ Functional | ✅ Functional | Extra touch display (USB + HDMI) |
 | **UX \| Monitoring (Port 8083)** | ✅ Functional | ✅ Functional | Host PC & Web Browser |
@@ -44,7 +44,7 @@ The table below illustrates which project modules can be evaluated in pure softw
 | **Gamepad Teleoperation (MoveIt Servo)** | ✅ Functional | ✅ Functional | Xbox One / Series Controller |
 | **Predictive Hard Collision Guard** | ✅ Functional | ✅ Functional | Host PC |
 | **Acoustic Speech Interaction (Whisper AI)** | ✅ Functional | ✅ Functional | Standard USB / Laptop Microphone |
-| **VLA-M chat (Vision-Language-Action)** | 🧪 VLA agent plans and moves the arm (pick & place, also virtual objects with the physics sandbox) | 🧪 Plan only (execution with `allow_real_motion:=true`) | Host PC, NVIDIA GPU for the local language model (Ollama, ~16 GB VRAM) |
+| **VLA-M chat (Vision-Language-Action)** | 🧪 VLA agent plans and moves the arm (pick & place, also virtual objects with the Physics-Sandbox) | 🧪 Plan only (execution with `allow_real_motion:=true`) | Host PC, NVIDIA GPU for the local language model (Ollama, ~16 GB VRAM) |
 | **3D YOLO Object Detection & Clustering** | ❌ *(or via Rosbag replay)* | ✅ Functional | Stereolabs ZED Mini (USB 3.0) |
 | **Dynamic MoveIt Collision Objects** | ❌ *(or via Rosbag replay)* | ✅ Functional | Stereolabs ZED Mini (USB 3.0) |
 | **Autonomous 3D Grasp Routine** | ❌ *(Needs 3D Camera)* | ✅ Functional | xArm Lite 6 & ZED Mini |
@@ -98,7 +98,7 @@ The table below illustrates which project modules can be evaluated in pure softw
 >> | **Button A** (🟢) | **Gripper Open / Close or Vacuum On / Off** | *Depends on the launch argument: `add_gripper:=true` toggles the Lite 6 gripper open/closed, `add_vacuum_gripper:=true` toggles the vacuum on/off. Without either (`gripper_type: none`) the button does nothing.* |
 >> | **Button B** (🔴) | **Gripper Off** | *Lite 6 gripper: stops immediately and releases the holding force. Vacuum: switches off.* |
 >> | **Button X** (🔵) | **Microphone (Voice)** | *Starts/Stops recording for Whisper AI* |
->> | **Button Y** (🟡) | **Initial Pose** | *Moves the robot to the safe home position* |
+>> | **Button Y** (🟡) | **Home Pose** | *Moves the robot to the safe home pose* |
 >
 >
 > ![Subscribes](https://img.shields.io/badge/Subscribes-orange?style=flat-square)
@@ -142,7 +142,7 @@ The table below illustrates which project modules can be evaluated in pure softw
 >> | **`/ufactory/close_lite6_gripper`** | `xarm_msgs/srv/Call` (Client) | *Closes the Lite 6 gripper (Button A, with `add_gripper:=true`).* |
 >> | **`/ufactory/stop_lite6_gripper`** | `xarm_msgs/srv/Call` (Client) | *Stops the Lite 6 gripper immediately, releasing the holding force (Button B, with `add_gripper:=true`).* |
 >> | **`/ufactory/get_position`** | `xarm_msgs/srv/GetFloat32List` (Client) | *Queries the current Cartesian controller position from the xArm driver.* |
->> | **`/ui/execute_initial_pose`** | `std_srvs/srv/Trigger` (Client) | *Triggers initial/home pose sequence via central motion handler (Button Y).* |
+>> | **`/ui/execute_initial_pose`** | `std_srvs/srv/Trigger` (Client) | *Moves the robot to the defined home pose (button Y).* |
 >
 >
 > ![Action Client](https://img.shields.io/badge/Action_Client-00BCD4?style=flat-square)
@@ -197,7 +197,7 @@ The table below illustrates which project modules can be evaluated in pure softw
 >
 > *Browser-side feedback in the UX | Control Interface (formerly Robot Control UI) (port 8081), only while this client holds the control lock (`hasControlLock()` in `js/remote.js`):*
 > - *`js/gamepad.js`: gamepad connected to the browser rumbles (Gamepad API `vibrationActuator.playEffect('dual-rumble')`) while the robot moves within 20 mm of the Z Collision Level, within 20 mm of the unreachable zone around the axis, within 30 mm of the 440 mm reach (measured from the shoulder, Z 243.5 mm), in the outer 10 % of a joint range or on a Servo singularity / joint-limit / collision status; strength grows towards the limit.*
-> - *`js/twin/xr_feedback.js`: Quest 3 controllers pulse on grasp contact (vacuum `closed` or object held in the physics sandbox) and repeatedly near the same limits.*
+> - *`js/twin/xr_feedback.js`: Quest 3 controllers pulse on grasp contact (vacuum `closed` or object held in the Physics-Sandbox) and repeatedly near the same limits.*
 > - *`js/sound.js`: synthesized tones (Web Audio API, no audio files) for vacuum ON/OFF, limit warning and E-STOP; muted together with the sound switch in the header.*
 >
 >
@@ -511,7 +511,7 @@ This node receives the already-sanitized `/joy_check` signal and translates it i
 | **A (green)** | Gripper toggle / vacuum on-off | Service: `open/close_lite6_gripper` or `set_vacuum_gripper` | *Depends on `gripper_type` (from `add_gripper` / `add_vacuum_gripper`)* |
 | **B (red)** | Gripper off | Service: `/ufactory/stop_lite6_gripper` or `set_vacuum_gripper(on=false)` | *Release holding force / vacuum off* |
 | **X (blue)** | Whisper AI voice record | Action: `/whisper/inference` (max 5 sec) | *Toggle: press once to start, again to stop* |
-| **Y (yellow)** | Move to home position | Service: `/ui/execute_initial_pose` | *Calls the `robot_motion_handler_movegroup`* |
+| **Y (yellow)** | Move to home pose | Service: `/ui/execute_initial_pose` | *Calls the `robot_motion_handler_movegroup`* |
 
 **Speed Levels (D-Pad):**
 
@@ -596,7 +596,7 @@ Status feedback is published to `/ui/joy_button_presses` after every state trans
 | **Service Client** | `/ufactory/set_vacuum_gripper` | `xarm_msgs/srv/VacuumGripperCtrl` | *Vacuum on/off* |
 | **Subscriber** | `/ui/gripper_cmd` | `std_msgs/String` | *Gripper commands from the UX \| Control Interface* |
 | **Publisher** | `/ui/gripper_state` / `/ui/gripper_type` | `std_msgs/String` (latched) | *Gripper state and type for the UI* |
-| **Service Client** | `/ui/execute_initial_pose` | `std_srvs/srv/Trigger` | *Triggers home position sequence via motion handler* |
+| **Service Client** | `/ui/execute_initial_pose` | `std_srvs/srv/Trigger` | *Moves the robot to the home pose via the motion handler* |
 | **Action Client** | `/whisper/inference` | `whisper_idl/action/Inference` | *Starts/cancels Whisper voice recording* |
 
 </details>
