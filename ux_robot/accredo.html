@@ -251,9 +251,11 @@
 
     /* ═══ FILTER & SUB-BAR ═══ */
     .filter-bar {
-      border-bottom: 1px solid var(--border-subtle);
+      margin-top: 24px;
+      border: 1px solid var(--border-subtle);
+      border-radius: 10px;
       background: var(--bg-surface);
-      padding: 10px 24px;
+      padding: 10px 16px;
     }
 
     .filter-inner {
@@ -1870,7 +1872,6 @@
 
     @media (max-width: 560px) {
       .header-inner,
-      .filter-bar,
       .hero-section,
       .scrolly-container,
       .matrix-section,
@@ -1972,24 +1973,6 @@
     </div>
   </header>
 
-  <!-- ROLE FILTER BAR -->
-  <aside class="filter-bar">
-    <div class="filter-inner">
-      <div class="filter-label">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
-        Perspektive nach Zuständigkeit:
-      </div>
-      <div class="filter-pills">
-        <button class="filter-pill active" data-role="all" onclick="filterByRole('all', this)">Alle Akteure (Gesamtablauf)</button>
-        <button class="filter-pill" data-role="leitung" onclick="filterByRole('leitung', this)">Studiengangsleitung</button>
-        <button class="filter-pill" data-role="qm" onclick="filterByRole('qm', this)">Qualitätsmanagement (ZQA)</button>
-        <button class="filter-pill" data-role="pruefung" onclick="filterByRole('pruefung', this)">Prüfungsausschuss & Justitiariat</button>
-        <button class="filter-pill" data-role="gremien" onclick="filterByRole('gremien', this)">Fakultätsrat & Dekanat</button>
-        <button class="filter-pill" data-role="gutachter" onclick="filterByRole('gutachter', this)">Gutachter & Akkreditierungsrat</button>
-      </div>
-    </div>
-  </aside>
-
   <!-- HERO SECTION -->
   <section class="hero-section">
     <div class="hero-grid">
@@ -2036,6 +2019,24 @@
         <button class="link-btn" type="button" onclick="switchView('programs')">Alle 12 Studiengänge und die Ablage-Struktur ansehen</button>
       </aside>
     </div>
+
+    <!-- ROLE FILTER BAR -->
+    <aside class="filter-bar">
+      <div class="filter-inner">
+        <div class="filter-label">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+          Perspektive nach Zuständigkeit:
+        </div>
+        <div class="filter-pills">
+          <button class="filter-pill active" data-role="all" onclick="filterByRole('all', this)">Alle Akteure (Gesamtablauf)</button>
+          <button class="filter-pill" data-role="leitung" onclick="filterByRole('leitung', this)">Studiengangsleitung</button>
+          <button class="filter-pill" data-role="qm" onclick="filterByRole('qm', this)">Qualitätsmanagement (ZQA)</button>
+          <button class="filter-pill" data-role="pruefung" onclick="filterByRole('pruefung', this)">Prüfungsausschuss & Justitiariat</button>
+          <button class="filter-pill" data-role="gremien" onclick="filterByRole('gremien', this)">Fakultätsrat & Dekanat</button>
+          <button class="filter-pill" data-role="gutachter" onclick="filterByRole('gutachter', this)">Gutachter & Akkreditierungsrat</button>
+        </div>
+      </div>
+    </aside>
 
     <div class="kpi-grid">
       <div class="kpi-card">
