@@ -124,7 +124,13 @@
 
     html {
       scroll-behavior: smooth;
+      /* Sprungziele landen unter dem Sticky-Header; --header-h misst das Skript (Header wächst mobil auf 2 Zeilen) */
+      scroll-padding-top: calc(var(--header-h, 64px) + 16px);
     }
+
+    p { text-wrap: pretty; }
+    h2, h3, h4 { text-wrap: balance; }
+    .nobr { white-space: nowrap; }
 
     body {
       background-color: var(--bg-canvas);
@@ -143,6 +149,8 @@
       top: 0;
       z-index: 100;
       background: var(--bg-glass);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
       border-bottom: 1px solid var(--border-subtle);
       transition: box-shadow var(--t-base) var(--ease-out), background-color var(--t-base) var(--ease-out);
     }
@@ -190,7 +198,7 @@
       line-height: 1.2;
     }
 
-    .brand-text span {
+    .brand-text > span {
       font-size: 12px;
       color: var(--text-muted);
       display: block;
@@ -1065,7 +1073,6 @@
       max-width: 1440px;
       margin: 0 auto;
       padding: 32px 24px 80px;
-      scroll-margin-top: 72px;
     }
 
     .matrix-card {
@@ -1159,13 +1166,16 @@
       justify-content: center;
       padding: 24px;
       opacity: 0;
+      visibility: hidden;   /* geschlossen: Knöpfe nicht per Tab erreichbar */
       pointer-events: none;
-      transition: opacity var(--t-base) var(--ease-out);
+      transition: opacity var(--t-base) var(--ease-out), visibility 0s linear var(--t-base);
     }
 
     .modal-backdrop.open {
       opacity: 1;
+      visibility: visible;
       pointer-events: auto;
+      transition: opacity var(--t-base) var(--ease-out);
     }
 
     .modal-window {
@@ -1226,7 +1236,7 @@
 
     .modal-meta-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
       gap: 12px;
       background: var(--bg-surface-elevated);
       border-radius: 12px;
@@ -1504,6 +1514,12 @@
       overflow-wrap: anywhere;
     }
 
+    #modalDocType {
+      display: block;
+      line-height: 1.4;
+      margin-top: 2px;
+    }
+
     .modal-header-info,
     .modal-header-info > div {
       min-width: 0;
@@ -1557,7 +1573,9 @@
     .link-btn:focus-visible,
     .nav-tab-btn:focus-visible,
     .filter-pill:focus-visible,
-    .theme-toggle-btn:focus-visible {
+    .theme-toggle-btn:focus-visible,
+    .artifact-card:focus-visible,
+    .rail-node:focus-visible {
       outline: 2px solid var(--accent);
       outline-offset: 2px;
     }
@@ -1646,7 +1664,6 @@
       display: flex;
       flex-direction: column;
       gap: 32px;
-      scroll-margin-top: 72px;
     }
 
     .section-head h3 {
@@ -1881,8 +1898,9 @@
         padding-right: 16px;
       }
       .nav-tab-btn {
-        padding: 6px 8px;
+        padding: 6px 4px;
         font-size: 12px;
+        white-space: nowrap;
       }
       .nav-tab-btn svg {
         display: none;
@@ -1894,8 +1912,15 @@
       .step-card {
         padding: 24px 20px;
       }
-      .brand-text span {
+      .brand-text > span,
+      .brand-sep {
         display: none;
+      }
+      .brand-sub {
+        display: block;   /* „ACCREDO“ / „Hochschul-Prozessnavigator“ statt Bruch im Wort */
+      }
+      .modal-backdrop {
+        padding: 12px;
       }
       .hero-title {
         font-size: 26px;
@@ -1947,7 +1972,7 @@
       <a href="#" class="brand">
         <div class="brand-mark">A</div>
         <div class="brand-text">
-          <h1>ACCREDO · Hochschul-Prozessnavigator</h1>
+          <h1>ACCREDO<span class="brand-sep"> · </span><span class="brand-sub">Hochschul-Prozessnavigator</span></h1>
           <span>Reakkreditierung & PO-Novellierung · Musterrechtsverordnung</span>
         </div>
       </a>
@@ -3048,7 +3073,7 @@
 
   <!-- DOCUMENT DETAIL MODAL -->
   <div class="modal-backdrop" id="docModal" onclick="closeDocModal(event)">
-    <div class="modal-window" onclick="event.stopPropagation()">
+    <div class="modal-window" role="dialog" aria-modal="true" aria-labelledby="modalDocTitle" onclick="event.stopPropagation()">
       <div class="modal-header">
         <div class="modal-header-info">
           <div class="brand-mark" style="width:32px; height:32px; font-size:13px;">PDF</div>
@@ -3536,7 +3561,8 @@ Der Vorsitzende des Akkreditierungsrates`
     const xFolder = p => `${STORAGE.xRoot}\\${p.level === 'master' ? 'Master' : 'Bachelor'}\\${p.folder}`;
     const xPhaseFolder = (p, n) => `${xFolder(p)}\\${PHASE_FOLDERS[n]}`;
     const xDocPath = (p, doc) => `${xPhaseFolder(p, phaseNum(doc))}\\${doc.title}`;
-    const pathHtml = path => esc(path).replace(/\\/g, '\\<wbr>');
+    // Pfade + Dateinamen brechen nach „\“ und „_“, nie in der Dokument-Nummer („DOC-“ | „03“)
+    const pathHtml = path => esc(path).replace(/[\\_]/g, '$&<wbr>').replace(/DOC-\d+/g, '<span class="nobr">$&</span>');
     const setPath = (el, path) => { el.innerHTML = pathHtml(path); };
 
     function moodleUrl(p) {
@@ -3866,8 +3892,10 @@ Der Vorsitzende des Akkreditierungsrates`
         btn.classList.toggle('active', on);
         btn.setAttribute('aria-pressed', String(on));
       });
+      // Nach Wechsel tief unten liegt der Anfang der neuen Ansicht oft über dem Fenster → dann auch hinscrollen
       const section = document.getElementById(VIEWS[view][0]);
-      if (section.getBoundingClientRect().top > window.innerHeight * 0.6) {
+      const top = section.getBoundingClientRect().top;
+      if (top < document.querySelector('.top-header').offsetHeight || top > window.innerHeight * 0.6) {
         section.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
     }
@@ -3913,11 +3941,11 @@ Der Vorsitzende des Akkreditierungsrates`
           <td>
             <div class="doc-link" onclick="openDocModal('${doc.id}')">
               <svg class="doc-ico" width="14" height="14" aria-hidden="true"><use href="#i-doc"/></svg>
-              <span>${esc(doc.title).replace(/_/g, '_<wbr>')}</span>
+              <span>${pathHtml(doc.title)}</span>
             </div>
             <div style="font-size:11px; color:var(--text-dim); margin-top:2px;">${doc.type}</div>
           </td>
-          <td><span style="font-family:var(--font-mono); font-size:12px;">${doc.phase}</span></td>
+          <td><span style="font-family:var(--font-mono); font-size:12px; white-space:nowrap;">${doc.phase}</span></td>
           <td>${doc.author}</td>
           <td>${doc.recipient}</td>
           <td><span class="doc-status-badge ${statusClass(doc.status)}">${doc.status}</span></td>
@@ -3945,12 +3973,14 @@ Der Vorsitzende des Akkreditierungsrates`
     }
 
     /* ═══ MODAL LOGIC ═══ */
+    let modalOpener = null;   // Fokus kehrt nach dem Schließen dorthin zurück
+
     function openDocModal(docId) {
       const doc = DOC_DATABASE[docId];
       if (!doc) return;
 
       const p = currentProgram();
-      document.getElementById('modalDocTitle').textContent = doc.title;
+      setPath(document.getElementById('modalDocTitle'), doc.title);
       document.getElementById('modalDocType').textContent = `${doc.type} · ${doc.phase} · ${programLabel(p)}`;
       document.getElementById('modalDocId').textContent = doc.id;
       document.getElementById('modalDocVer').textContent = doc.ver;
@@ -3972,15 +4002,17 @@ Der Vorsitzende des Akkreditierungsrates`
       document.getElementById('modalDocPreview').textContent = fillProgram(doc.content, p);
 
       const xPath = xDocPath(p, doc);
-      document.getElementById('modalMoodlePath').textContent = `${moodleSection(p)} › ${doc.title}`;
+      setPath(document.getElementById('modalMoodlePath'), `${moodleSection(p)} › ${doc.title}`);
       document.getElementById('modalMoodleLink').href = moodleUrl(p);
       setPath(document.getElementById('modalXPath'), xPath);
       document.getElementById('modalXCopy').onclick = () => copyText(xPath);
       setFileLink(document.getElementById('modalXOpen'), xPath);
 
       const modal = document.getElementById('docModal');
+      modalOpener = document.activeElement;
       modal.classList.add('open');
       document.body.style.overflow = 'hidden';
+      modal.querySelector('.modal-close-btn').focus({ preventScroll: true });
     }
 
     function closeDocModal(e) {
@@ -3988,8 +4020,10 @@ Der Vorsitzende des Akkreditierungsrates`
         return;
       }
       const modal = document.getElementById('docModal');
+      if (!modal.classList.contains('open')) return;
       modal.classList.remove('open');
       document.body.style.overflow = '';
+      if (modalOpener && modalOpener.isConnected) modalOpener.focus({ preventScroll: true });
     }
 
     /* ═══ THEME TOGGLE ═══ */
@@ -4043,9 +4077,28 @@ Der Vorsitzende des Akkreditierungsrates`
       initPrograms();
       updateLiveRadar(1);
 
-      // Keyboard Esc to close modal
+      // Sticky-Header-Höhe für scroll-padding-top (wächst mobil auf 2 Zeilen)
+      const header = document.querySelector('.top-header');
+      new ResizeObserver(() => {
+        document.documentElement.style.setProperty('--header-h', header.offsetHeight + 'px');
+      }).observe(header);
+
+      // Lange Dateinamen der Dokument-Karten an „_“ umbrechen
+      document.querySelectorAll('.artifact-title').forEach(el => setPath(el, el.textContent));
+
+      // Klickbare Karten + Meilensteine auch per Tastatur (Tab, Enter/Leertaste)
+      const CLICKABLE = '.artifact-card, .rail-node';
+      document.querySelectorAll(CLICKABLE).forEach(el => {
+        el.tabIndex = 0;
+        el.setAttribute('role', 'button');
+      });
+
       document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') closeDocModal();
+        if ((e.key === 'Enter' || e.key === ' ') && e.target.matches(CLICKABLE)) {
+          e.preventDefault();
+          e.target.click();
+        }
       });
     });
   </script>
