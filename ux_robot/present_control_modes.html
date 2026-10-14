@@ -77,14 +77,14 @@ svg { display: block; }
   backdrop-filter: blur(10px);
   border-bottom: 1px solid var(--line);
 }
-.top .wrap { display: flex; align-items: center; gap: 24px; padding-block: 12px; }
+.top .wrap { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 24px; padding-block: 12px; }
 .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; font-weight: 800; letter-spacing: -.01em; }
 .brand-mark { width: 34px; height: 34px; border-radius: var(--radius); display: grid; place-items: center; background: var(--accent); color: var(--accent-ink); }
 .brand small { display: block; font: 600 11px/1 var(--font-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--fg-2); margin-top: 3px; }
 .top nav { margin-left: auto; display: flex; gap: 4px; flex-wrap: wrap; }
 .top nav a { text-decoration: none; font-size: 14px; font-weight: 600; padding: 7px 12px; border-radius: var(--radius-sm); color: var(--fg-2); }
 .top nav a:hover { background: var(--surface-2); color: var(--fg); }
-.tools { display: flex; gap: 8px; align-items: center; }
+.tools { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 .seg { display: inline-flex; flex-wrap: nowrap; align-items: center; gap: 2px; padding: 3px; width: fit-content; max-width: 100%; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface-2); }
 .seg button { display: inline-flex; align-items: center; justify-content: center; min-height: 28px; min-width: 34px; padding: 0 10px; border: 0; border-radius: var(--radius-sm); background: transparent; color: var(--fg-2); font: 700 12px/1 var(--font-mono); transition: background-color var(--t-fast), box-shadow var(--t-fast), color var(--t-fast); cursor: pointer; }
 .seg button:hover:not(:disabled) { background: color-mix(in srgb, var(--fg) 7%, transparent); }
