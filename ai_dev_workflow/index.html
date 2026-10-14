@@ -497,6 +497,18 @@ footer .foot-link:hover { text-decoration-color: currentColor; }
 .cp-s p code { color: var(--fg); }
 .cp-s:not(:last-child) .dot { position: relative; }
 .cp-s:not(:last-child) { background: linear-gradient(var(--line-strong), var(--line-strong)) 14px 32px / 2px calc(100% - 32px) no-repeat; }
+/* Protokoll einer Anfrage (2.2): je Hook-Zeitpunkt ein Panel mit nummerierten Schritten */
+.proto { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+.proto-p header { display: grid; gap: 4px; }
+.proto-ev { font: 700 13px/1.2 var(--mono); letter-spacing: .06em; color: var(--hue, var(--accent)); }
+.proto-p .dot { font: 800 13px/1 var(--mono); color: var(--hue, var(--accent)); }
+.proto-note { display: flex; gap: 8px; align-items: flex-start; font-size: 14.5px; line-height: 1.45; padding: 10px 12px; border-radius: var(--radius-sm); background: color-mix(in srgb, var(--hue, var(--accent)) 10%, var(--surface)); }
+.proto-note .ico { width: 18px; height: 18px; flex: none; color: var(--hue, var(--accent)); margin-top: 1px; }
+.proto-sum { grid-column: 1 / -1; }
+.proto-flow { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.proto-flow li { display: flex; gap: 8px; align-items: center; font-size: 14.5px; font-weight: 700; }
+.proto-flow li span { padding: 5px 10px; border: 1px solid var(--line-strong); border-radius: var(--radius-sm); background: var(--surface); }
+.proto-flow li:not(:last-child)::after { content: "→"; color: var(--accent); }
 .learn { padding: 18px; display: grid; gap: 14px; }
 .learn h3 { font-size: 19px; font-weight: 800; }
 .learn td:first-child { white-space: normal; }  /* Zitat darf umbrechen */
@@ -1263,9 +1275,77 @@ html.wf-js .wf-stage.reset .msg { transition-duration: 200ms; }
           </div>
         </div>
       </section>
+<section class="sec" id="protokoll">
+        <header class="sec-head">
+          <div><span class="eyebrow" style="--hue: var(--pink)"><span class="n">2.2</span><span data-en="Protocol">Protokoll</span></span><h2 data-en="What happens when you press Enter">Was passiert, wenn du Enter drückst</h2></div>
+          <div class="brief"><dl><dt data-en="Example">Beispiel</dt><dd data-en="“[RCU] jog button spacing to 12&amp;nbsp;px” – a small change, check level&amp;nbsp;1">„[RCU] Jog-Abstand auf 12&nbsp;px“ – kleine Änderung, Prüfstufe&nbsp;1</dd><dt data-en="Read it like this">So lesen</dt><dd data-en="Each panel is one fixed moment in Claude Code; the hooks named there run automatically, without the chat asking for them. Details of every hook: &lt;a href=&quot;#leitplanken&quot;&gt;3.1 Guard rails&lt;/a&gt;.">Jedes Panel ist ein fester Zeitpunkt in Claude Code; die genannten Hooks laufen dort automatisch, ohne dass der Chat sie aufruft. Details zu jedem Hook: <a href="#leitplanken">3.1 Leitplanken</a>.</dd></dl></div>
+        </header>
+        <div class="proto">
+          <div class="panel commit-path proto-p" style="--hue: var(--accent)">
+            <header><span class="proto-ev">SessionStart</span><h3 data-en="A · Once at chat start">A · Einmal beim Chat-Start</h3></header>
+            <div class="cp">
+              <div class="cp-s"><span class="dot">01</span><b data-en="Report handoffs and news">Übergaben und Neues melden</b><p data-en="&lt;code&gt;global_hook.py start&lt;/code&gt;: open handoffs, global repo behind GitHub, new skills linked, “Mein Feedback fällig”, mailbox messages."><code>global_hook.py start</code>: offene Übergaben, globales Repo hinter GitHub, neue Skills verlinkt, „Mein Feedback fällig“, Nachrichten im Postfach.</p></div>
+              <div class="cp-s"><span class="dot">02</span><b data-en="Status overview">Lagebild</b><p data-en="&lt;code&gt;session_overview.py&lt;/code&gt; (dev_ws): running chats, claims, files left uncommitted, rituals due."><code>session_overview.py</code> (dev_ws): laufende Chats, Claims, liegen gebliebene Dateien, fällige Rituale.</p></div>
+              <div class="cp-s"><span class="dot">03</span><b data-en="Load the base context">Grundkontext laden</b><p data-en="Claude Code reads &lt;code&gt;RULES.md&lt;/code&gt; (via &lt;code&gt;~/.claude/CLAUDE.md&lt;/code&gt;), &lt;code&gt;AGENTS.md&lt;/code&gt;, both &lt;code&gt;MEMORY.md&lt;/code&gt; and the skill list – only the one-line descriptions, not the skills themselves.">Claude Code liest <code>RULES.md</code> (über <code>~/.claude/CLAUDE.md</code>), <code>AGENTS.md</code>, beide <code>MEMORY.md</code> und die Skill-Liste – nur die Kurzbeschreibungen, nicht die Skills selbst.</p></div>
+            </div>
+          </div>
+          <div class="panel commit-path proto-p" style="--hue: var(--gold)">
+            <header><span class="proto-ev">UserPromptSubmit</span><h3 data-en="B · You press Enter – before the model">B · Du drückst Enter – vor dem Modell</h3></header>
+            <div class="cp">
+              <div class="cp-s"><span class="dot">04</span><b data-en="Fetch the latest state">Neuesten Stand holen</b><p data-en="&lt;code&gt;global_hook.py prompt&lt;/code&gt;: &lt;code&gt;git pull --ff-only&lt;/code&gt; for the global tools and the active project. If it fails, the chat only reports the sync error and does not work on an old state."><code>global_hook.py prompt</code>: <code>git pull --ff-only</code> für das globale Werkzeug und das aktive Projekt. Scheitert er, meldet der Chat nur den Sync-Fehler und arbeitet nicht auf altem Stand.</p></div>
+              <div class="cp-s"><span class="dot">05</span><b data-en="Take over a handoff">Übergabe übernehmen</b><p data-en="With “chat weiter …” the same hook inserts the start text and marks the handoff as taken.">Bei „chat weiter …“ fügt derselbe Hook den Starttext ein und vermerkt die Übergabe als übernommen.</p></div>
+              <div class="cp-s"><span class="dot">06</span><b data-en="Length and claim">Länge und Claim</b><p data-en="&lt;code&gt;chat_length_hint.py&lt;/code&gt; suggests a new chat from ~100k tokens; &lt;code&gt;todo_claim_hook.py&lt;/code&gt; refreshes the own claim (at most every 30&amp;nbsp;min) and reports a failed push."><code>chat_length_hint.py</code> schlägt ab ~100k Token einen neuen Chat vor; <code>todo_claim_hook.py</code> frischt den eigenen Claim auf (höchstens alle 30&nbsp;min) und meldet einen fehlgeschlagenen Push.</p></div>
+              <div class="cp-s"><span class="dot">07</span><b data-en="Attach to the prompt">An den Prompt hängen</b><p data-en="All hook output reaches the model as extra context with your message, e.g. “Current state before this request …”.">Alle Hook-Ausgaben erreichen das Modell als Zusatzkontext zu deiner Nachricht, z.&nbsp;B. „Aktueller Stand vor dieser Anfrage …“.</p></div>
+            </div>
+          </div>
+          <div class="panel commit-path proto-p" style="--hue: var(--violet)">
+            <header><span class="proto-ev" data-en="no hook">ohne Hook</span><h3 data-en="C · The model plans">C · Das Modell plant</h3></header>
+            <div class="cp">
+              <div class="cp-s"><span class="dot">08</span><b data-en="Check the effort">Aufwand prüfen</b><p data-en="Rules §0b: pick the role (here designer) and the check level (here 1, small).">Regeln §0b: Rolle wählen (hier Designer) und Prüfstufe festlegen (hier 1, klein).</p></div>
+              <div class="cp-s"><span class="dot">09</span><b data-en="Load skills">Skills laden</b><p data-en="Skill finder §0c: only matching skills, several in one call – here &lt;code&gt;answer-page&lt;/code&gt; (once per chat) and &lt;code&gt;ui-change&lt;/code&gt;.">Skill-Finder §0c: nur passende Skills, mehrere in einem Aufruf – hier <code>answer-page</code> (einmal je Chat) und <code>ui-change</code>.</p></div>
+              <div class="cp-s"><span class="dot">10</span><b data-en="Look around">Umschauen</b><p data-en="&lt;code&gt;ListAgents&lt;/code&gt; + &lt;code&gt;git status&lt;/code&gt;: own chat ID, other chats, foreign uncommitted changes.">
+<code>ListAgents</code> + <code>git status</code>: eigene Chat-ID, andere Chats, fremde uncommittete Änderungen.</p></div>
+              <div class="cp-s"><span class="dot">11</span><b data-en="Plan or ask">Planen oder fragen</b><p data-en="Short plan (files, approach); a real decision becomes a question &lt;code&gt;❓ F1&lt;/code&gt; with a dialog.">Kurzer Plan (Dateien, Vorgehen); eine echte Entscheidung wird zur Frage <code>❓ F1</code> mit Dialog.</p></div>
+            </div>
+          </div>
+          <div class="panel commit-path proto-p" style="--hue: var(--orange)">
+            <header><span class="proto-ev">PreToolUse → Tool → PostToolUse</span><h3 data-en="D · Every tool call">D · Jeder Werkzeug-Aufruf</h3></header>
+            <div class="cp">
+              <div class="cp-s"><span class="dot">12</span><b data-en="Hard limits">Harte Grenzen</b><p data-en="&lt;code&gt;global_hook.py pre&lt;/code&gt; (Bash): broad &lt;code&gt;pkill&lt;/code&gt;, &lt;code&gt;git push --force&lt;/code&gt;, real robot → asks you first."><code>global_hook.py pre</code> (Bash): breites <code>pkill</code>, <code>git push --force</code>, echter Roboter → fragt dich vorher.</p></div>
+              <div class="cp-s"><span class="dot">13</span><b data-en="Workspace rules and claim">Workspace-Regeln und Claim</b><p data-en="&lt;code&gt;pre_tool_guard.py&lt;/code&gt;: protected files, safety code, Robot&amp;nbsp;|&amp;nbsp;Hardware. &lt;code&gt;todo_claim_hook.py&lt;/code&gt; creates the claim on the first change and registers each file; another chat’s claim → warning."><code>pre_tool_guard.py</code>: geschützte Dateien, Sicherheitscode, Robot&nbsp;|&nbsp;Hardware. <code>todo_claim_hook.py</code> legt bei der ersten Änderung den Claim an und trägt jede Datei ein; Claim eines anderen Chats → Warnung.</p></div>
+              <div class="cp-s"><span class="dot">14</span><b data-en="The tool runs">Das Werkzeug läuft</b><p data-en="Read, Edit, Bash or a subagent – the actual work.">Read, Edit, Bash oder ein Subagent – die eigentliche Arbeit.</p></div>
+              <div class="cp-s"><span class="dot">15</span><b data-en="Check right away">Sofort prüfen</b><p data-en="&lt;code&gt;global_hook.py post&lt;/code&gt; + &lt;code&gt;post_edit_check.py&lt;/code&gt;: note the file in the register, syntax (&lt;code&gt;.py&lt;/code&gt;, JSON, YAML), UI rules. A finding is fixed at once."><code>global_hook.py post</code> + <code>post_edit_check.py</code>: Datei im Register vermerken, Syntax (<code>.py</code>, JSON, YAML), UI-Regeln. Ein Befund wird sofort behoben.</p></div>
+            </div>
+            <p class="proto-note"><svg class="ico" aria-hidden="true"><use href="#i-loop"/></svg><span data-en="Steps 12–15 repeat on &lt;b&gt;every&lt;/b&gt; call, and each call sends the whole chat to the model again. That is why the chat bundles independent reads and checks into one call.">Die Schritte 12–15 laufen bei <b>jedem</b> Aufruf erneut, und jeder Aufruf schickt den ganzen Chat noch einmal an das Modell. Deshalb bündelt der Chat unabhängige Reads und Prüfungen in einem Aufruf.</span></p>
+          </div>
+          <div class="panel commit-path proto-p proto-sum" style="--hue: var(--green)">
+            <header><span class="proto-ev">git commit · Stop</span><h3 data-en="E · Verify, deliver, answer">E · Prüfen, abliefern, antworten</h3></header>
+            <div class="cp">
+              <div class="cp-s"><span class="dot">16</span><b data-en="Verify by check level">Prüfen nach Prüfstufe</b><p data-en="Level&amp;nbsp;1: &lt;code&gt;tools/pre-commit --changed&lt;/code&gt;, light + dark at 1280 and 360&amp;nbsp;px, one image sheet afterwards.">Stufe&nbsp;1: <code>tools/pre-commit --changed</code>, hell + dunkel bei 1280 und 360&nbsp;px, ein Bildbogen danach.</p></div>
+              <div class="cp-s"><span class="dot">17</span><b data-en="Commit + push">Commit + Push</b><p data-en="Skill &lt;code&gt;commit&lt;/code&gt;: the Git hook &lt;code&gt;tools/pre-commit&lt;/code&gt; checks the staged files (safety path → reminds of &lt;code&gt;safety-reviewer&lt;/code&gt;), then commit and push.">Skill <code>commit</code>: der Git-Hook <code>tools/pre-commit</code> prüft die vorgemerkten Dateien (Sicherheitspfad → erinnert an <code>safety-reviewer</code>), danach Commit und Push.</p></div>
+              <div class="cp-s"><span class="dot">18</span><b data-en="Write the answer">Antwort schreiben</b><p data-en="Fixed template: result line, changes, status line, chat ID with Git status.">Feste Vorlage: Ergebnis-Zeile, Geändert, Status-Zeile, Chat-ID mit Git-Stand.</p></div>
+              <div class="cp-s"><span class="dot">19</span><b data-en="Check the answer">Antwort prüfen</b><p data-en="&lt;code&gt;global_hook.py stop&lt;/code&gt; → &lt;code&gt;format_check.py&lt;/code&gt; blocks false claims (push hash without push, &lt;code&gt;[MCP]&lt;/code&gt; without a call, question outside “Jetzt du”) – the chat then rewrites only the ending."><code>global_hook.py stop</code> → <code>format_check.py</code> blockt falsche Angaben (Push-Hash ohne Push, <code>[MCP]</code> ohne Aufruf, Frage außerhalb von „Jetzt du“) – der Chat schreibt dann nur den Schluss neu.</p></div>
+              <div class="cp-s"><span class="dot">20</span><b data-en="Release the claim">Claim freigeben</b><p data-en="&lt;code&gt;todo_claim_hook.py&lt;/code&gt;: with “🏁 AUFGABE ERLEDIGT” the claim is deleted; then the answer appears in your chat."><code>todo_claim_hook.py</code>: bei „🏁 AUFGABE ERLEDIGT“ wird der Claim gelöscht; danach erscheint die Antwort in deinem Chat.</p></div>
+            </div>
+          </div>
+          <div class="panel commit-path proto-sum">
+            <h3 data-en="In short">Kurzform</h3>
+            <ol class="proto-flow" aria-label="Ablauf einer Anfrage in Kurzform" data-en-aria="Path of a request in short">
+              <li><span>Enter</span></li>
+              <li><span data-en="pull + claim">Pull + Claim</span></li>
+              <li><span data-en="plan + skills">Planen + Skills</span></li>
+              <li><span data-en="[check → tool → check] × n">[Prüfen → Werkzeug → Prüfen] × n</span></li>
+              <li><span data-en="verify + push">Prüfen + Push</span></li>
+              <li><span>format_check</span></li>
+              <li><span data-en="answer">Antwort</span></li>
+            </ol>
+            <p class="proto-note"><svg class="ico" aria-hidden="true"><use href="#i-info"/></svg><span data-en="A &lt;b&gt;plain question&lt;/b&gt; changes nothing: it passes B, C, 18 and 19 only – no tool hooks, no check, no commit. Codex and Gemini follow the same path via &lt;code&gt;codex_bridge.py&lt;/code&gt; and &lt;code&gt;agy_hook.py&lt;/code&gt;.">Eine <b>reine Frage</b> ändert nichts: Sie durchläuft nur B, C, 18 und 19 – ohne Werkzeug-Hooks, Prüfung und Commit. Codex und Gemini gehen denselben Weg über <code>codex_bridge.py</code> bzw. <code>agy_hook.py</code>.</span></p>
+          </div>
+        </div>
+      </section>
 <section class="sec" id="datenfluss">
         <header class="sec-head">
-          <div><span class="eyebrow" style="--hue: var(--teal)"><span class="n">2.2</span><span data-en="Data flow">Datenfluss</span></span><h2 data-en="Who talks to whom?">Wer spricht mit wem?</h2></div>
+          <div><span class="eyebrow" style="--hue: var(--teal)"><span class="n">2.3</span><span data-en="Data flow">Datenfluss</span></span><h2 data-en="Who talks to whom?">Wer spricht mit wem?</h2></div>
           <div class="brief"><p data-en="The diagram shows which parts exchange data during a task, in five lanes from user to repo. Choose a scenario; click a node to see its inputs and outputs (keys: ←/→ step, &lt;code&gt;K&lt;/code&gt; pause).">Das Diagramm zeigt, welche Teile bei einem Auftrag Daten austauschen – in fünf Bahnen vom User bis zum Repo. Wähle ein Szenario; ein Klick auf einen Knoten zeigt seine Ein- und Ausgänge (Tasten: ←/→ Schritt, <code>K</code> Pause).</p></div>
         </header>
     <figure class="fg" id="fg-work" aria-labelledby="fg-work-cap">
