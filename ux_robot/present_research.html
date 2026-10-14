@@ -275,15 +275,15 @@ td span { color: var(--fg-2); font-size: 14px; }
           <div><b>Closed-Loop Feedback:</b> Continuous visual bounding, dwell indicators, and audio confirmations return to the user at every state transition before any arm movement.</div>
         </div>
         <div class="log">
-          <b>Synchronized HF Event Logger:</b>
+          <b>Synchronized HF Event Logger (planned):</b>
           <span class="chip">Eye-Tracking (Tobii)</span>
-          <span class="chip">Sympathetic Tone (EDA)</span>
-          <span class="chip">Parasympathetic Tone (HRV)</span>
+          <span class="chip">Sympathetic Tone (EDA) · planned</span>
+          <span class="chip">Parasympathetic Tone (HRV) · planned</span>
           <span class="chip">NASA-TLX</span>
           <span class="chip">SUS &amp; TAM</span>
-          <span class="chip">SDA-M (BACs)</span>
+          <span class="chip">SDA-M (BACs) · planned</span>
         </div>
-        <figcaption><b>Figure 1.</b> Information flow architecture: each modality is strictly dedicated to a single complementary role. Feedback returns to the operator at every transition stage, and every interaction event is timestamped to correlate system events with objective biosignals and psychometrics.</figcaption>
+        <figcaption><b>Figure 1.</b> Information flow architecture: each modality is strictly dedicated to a single complementary role. Feedback returns to the operator at every transition stage, and every interaction event is timestamped to correlate system events with objective biosignals and psychometrics (event logger and biosignal sensors planned, not yet implemented).</figcaption>
       </figure>
     </div>
   </section>
@@ -413,7 +413,7 @@ td span { color: var(--fg-2); font-size: 14px; }
           <tbody>
             <tr>
               <td><b>Behavioral Performance</b></td>
-              <td>ROS 2 Event Logger &amp; UX | Monitoring</td>
+              <td>ROS 2 Event Logger (planned) &amp; UX | Monitoring</td>
               <td>Task Completion Time (s), Task Success Rate (%), Wrong Target Errors, Interaction Steps</td>
               <td>Operational efficiency, execution fluency, and error rates</td>
             </tr>
@@ -425,13 +425,13 @@ td span { color: var(--fg-2); font-size: 14px; }
             </tr>
             <tr>
               <td><b>Sympathetic Arousal</b></td>
-              <td>EDA / Galvanic Skin Response Sensors</td>
+              <td>EDA / Galvanic Skin Response Sensors (planned)</td>
               <td>Tonic Skin Conductance Level (SCL), Phasic Skin Conductance Responses (SCR amplitude &amp; frequency)</td>
               <td>Acute physiological stress, arousal spikes during errors, and internal effort</td>
             </tr>
             <tr>
               <td><b>Parasympathetic Tone</b></td>
-              <td>PPG / ECG Heart Rate Monitor</td>
+              <td>PPG / ECG Heart Rate Monitor (planned)</td>
               <td>Heart Rate (HR), Heart Rate Variability: RMSSD (ms) &amp; SDNN baseline-normalized</td>
               <td>Autonomic nervous system recovery, cognitive strain, and mental workload cost</td>
             </tr>
@@ -443,7 +443,7 @@ td span { color: var(--fg-2); font-size: 14px; }
             </tr>
             <tr>
               <td><b>Cognitive Representation</b></td>
-              <td>SDA-M (Structural Dimensional Analysis)</td>
+              <td>SDA-M (Structural Dimensional Analysis, planned)</td>
               <td>Pre- &amp; Post-experiment hierarchical clustering of 8–12 Basic Action Concepts (BACs) vs. expert network</td>
               <td>Conceptual learning: novice structural mental model formation vs. operational shortcut</td>
             </tr>
@@ -586,8 +586,8 @@ td span { color: var(--fg-2); font-size: 14px; }
       <ol class="list" style="margin-top: 16px;">
         <li><b>Complementary Interaction Architecture:</b> A human-factors-driven HRI framework that partitions spatial reference (gaze), semantic intent (speech), and confirmation/recovery (controller) to resolve cognitive bottlenecks.</li>
         <li><b>Intent-Safety Mechanism:</b> A deterministic state machine with calibrated dwell arming (≈300 ms) and real-time visual feedback whose evaluation will test whether it reduces unintended Midas Touch activations while keeping added interaction latency acceptable.</li>
-        <li><b>Multidimensional Evaluation Suite:</b> A high-resolution HF testbed synchronizing ROS 2 machine states, ocular tracking, EDA, HRV, and psychometrics to expose the physiological paradox.</li>
-        <li><b>Cognitive Mental Model Investigation:</b> An exploratory SDA-M protocol revealing whether multimodal assistance supports novice development of structured Basic Action Concepts.</li>
+        <li><b>Multidimensional Evaluation Suite:</b> A high-resolution HF testbed synchronizing ROS 2 machine states, ocular tracking, EDA, HRV, and psychometrics to expose the physiological paradox (event logger and biosignal pipeline planned).</li>
+        <li><b>Cognitive Mental Model Investigation:</b> An exploratory SDA-M protocol (planned) revealing whether multimodal assistance supports novice development of structured Basic Action Concepts.</li>
         <li><b>Design Guidelines for Adaptive HRI:</b> A set of generalizable principles for configuring low-barrier robotic interfaces across industrial and future assistive scenarios.</li>
       </ol>
     </div>
@@ -604,7 +604,7 @@ td span { color: var(--fg-2); font-size: 14px; }
 
       <div class="bib-grid">
         <div class="bib-item">
-          <b>Coronado, E., et al. (2022).</b> Evaluating quality in human-robot interaction: A systematic search and classification of performance and human-centered factors, measures and metrics towards an Industry 5.0. <em>Journal of Manufacturing Systems</em>, 63, 283–310.
+          <b>Coronado, E., et al. (2022).</b> Evaluating quality in human-robot interaction: A systematic search and classification of performance and human-centered factors, measures and metrics towards an industry 5.0. <em>Journal of Manufacturing Systems</em>, 63, 392–410. <a href="https://doi.org/10.1016/j.jmsy.2022.04.007">doi:10.1016/j.jmsy.2022.04.007</a>
         </div>
         <div class="bib-item">
           <b>Hopko, S., Wang, J., &amp; Mehta, R. (2022).</b> Human Factors Considerations and Metrics in Shared Space Human-Robot Collaboration: A Systematic Review. <em>Frontiers in Robotics and AI</em>, 9, 873426.
@@ -631,13 +631,13 @@ td span { color: var(--fg-2); font-size: 14px; }
           <b>Schack, T., Essig, K., Frank, C., &amp; Koester, D. (2014).</b> Mental representation and motor imagery training. <em>Frontiers in Human Neuroscience</em>, 8, 328.
         </div>
         <div class="bib-item">
-          <b>Shneiderman, B. (1983).</b> Direct Manipulation: A New Paradigm for Human-Computer Interaction. <em>IEEE Computer</em>, 16(8), 79–88.
+          <b>Shneiderman, B. (1983).</b> Direct Manipulation: A Step Beyond Programming Languages. <em>IEEE Computer</em>, 16(8), 57–69. <a href="https://doi.org/10.1109/MC.1983.1654471">doi:10.1109/MC.1983.1654471</a>
         </div>
         <div class="bib-item">
           <b>Steinmetz, F. J. (2022).</b> <em>Intuitive robot programming for novice and expert users</em>. Doctoral dissertation, RWTH Aachen University.
         </div>
         <div class="bib-item">
-          <b>Su, B., et al. (2026).</b> Exploring the integration of large language models in human-robot collaboration: Effects on performance, mental stress, and trust. <em>Applied Ergonomics</em>, 114, 104142.
+          <b>Su, B., et al. (2026).</b> Exploring the integration of large language models in human-robot collaboration: Effects on performance, mental stress, and trust. <em>Applied Ergonomics</em>, 134, 104736. <a href="https://doi.org/10.1016/j.apergo.2026.104736">doi:10.1016/j.apergo.2026.104736</a>
         </div>
         <div class="bib-item">
           <b>Sweller, J. (1988).</b> Cognitive load during problem solving: Effects on learning. <em>Cognitive Science</em>, 12(2), 257–285.

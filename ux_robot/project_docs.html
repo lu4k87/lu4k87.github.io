@@ -180,8 +180,9 @@ a.kpi:hover { background: var(--surface-2); }
 .ct-copy h2 { font-size: var(--fs-h2); line-height: 1.08; letter-spacing: -.035em; font-weight: 800; }
 /* Überblick: sechs Fakten-Karten (Icon, Slogan, Faktensatz, Sprung zum Abschnitt) */
 .fx-grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+#ueberblick .fx-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }  /* 8 Kernmerkmale (brand.yaml): 4 × 2 */
 .fx { display: grid; grid-template-rows: auto auto 1fr auto; justify-items: center; gap: 12px; min-width: 0; text-align: center; padding: 24px; border: 1px solid var(--line); border-radius: var(--radius-lg); background: var(--surface); box-shadow: var(--shadow); transition: border-color var(--t-fast); }
-/* Karten-Farbe je Karte über --hue (Prinzipien: Wunsch User 06.10.2026 „mehr Farben“), sonst --accent */
+/* Karten-Farbe je Karte über --hue (Kernmerkmale: Wunsch User 06.10.2026 „mehr Farben“), sonst --accent */
 .fx:hover { border-color: color-mix(in srgb, var(--hue, var(--accent)) 50%, var(--line)); }
 .fx .more { color: var(--hue, var(--accent)); }
 .bi-l { width: 64px; height: 64px; flex: none; justify-self: center; display: grid; place-items: center; border-radius: var(--radius); color: var(--hue, var(--accent));
@@ -195,7 +196,7 @@ a.kpi:hover { background: var(--surface-2); }
 .more:hover .ico { transform: translateX(3px); }
 .more:hover span { text-decoration: underline; text-underline-offset: 3px; }
 
-/* ═════ Funktionsatlas: Ring (Anteil je Bereich an 84 Funktionen) + 9 Bereichs-Kacheln + 10 Kreisläufe; darunter alle Funktionen (css/function_atlas.css) ═════ */
+/* ═════ Funktionsatlas: Ring (Anteil je Bereich an 85 Funktionen) + 9 Bereichs-Kacheln + 10 Kreisläufe; darunter alle Funktionen (css/function_atlas.css) ═════ */
 /* Funktionsatlas als dunkles Panel im Abschnitt 05 Features (Wunsch User 06.10.2026) */
 .atlas { padding: 64px 40px; border: 1px solid var(--line); border-radius: var(--radius-lg);
   background: radial-gradient(40% 58% at 22% 52%, color-mix(in srgb, var(--hue, var(--accent)) 13%, transparent), transparent 72%),
@@ -209,7 +210,7 @@ a.kpi:hover { background: var(--surface-2); }
 .at-ring .core { fill: var(--surface); stroke: var(--line-strong); stroke-width: 1; }
 .at-ring .seg { fill: none; stroke: var(--c); stroke-width: 26; cursor: pointer;
   transition: stroke-width var(--t-base) var(--ease-out), opacity var(--t-base), stroke-dasharray 1.1s var(--ease-out) calc(250ms + var(--i, 0) * 90ms); }
-html.sf-on .at-ring:not(.in) .seg { stroke-dasharray: 0 84; }
+html.sf-on .at-ring:not(.in) .seg { stroke-dasharray: 0 85; }
 .at-ring .seg.hl { stroke-width: 36; }
 .at-num { font: 800 50px/1 var(--mono); fill: var(--accent); letter-spacing: -.04em; }
 .at-lbl { font: 700 11px/1 var(--font); fill: var(--fg); }
@@ -498,10 +499,11 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
 @media (max-width: 1200px) {
   .top .sf-crumb { max-width: calc(100% - 380px); }
   .af-main .kpis-6 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  #ueberblick .fx-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media (max-width: 960px) {
   .ch-head, .contact .wrap, .at-grid { grid-template-columns: minmax(0, 1fr); }
-  .fx-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .fx-grid, #ueberblick .fx-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .af-body { grid-template-columns: minmax(0, 1fr); }
   .af-side { grid-template-columns: repeat(4, minmax(0, 1fr)); padding: 10px; border-right: 0; border-bottom: 1px solid var(--line); }
   .af-brand { display: none; }
@@ -530,7 +532,7 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
   .chapter { padding-top: 64px; }
   .sec { padding-bottom: 48px; }
   .sec + .sec { padding-top: 56px; }
-  .fx-grid, .at-areas, .ar-legend { grid-template-columns: minmax(0, 1fr); }
+  .fx-grid, #ueberblick .fx-grid, .at-areas, .ar-legend { grid-template-columns: minmax(0, 1fr); }
   .af-main { padding: 14px; }
   .af-main .kpis-6 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .af-url { display: none; }
@@ -759,7 +761,7 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
   .op-grid { grid-template-columns: minmax(0, 1fr); }
 }
 
-/* ═════ Exploded Architecture Stack (Feat:C): 6 Schichten von Hardware bis Web ═════ */
+/* ═════ Exploded Architecture Stack (Feat:C): 7 Schichten wie die Architekturkarte, vom Menschen bis zur Hardware ═════ */
 .tm-stack { margin-top: 48px; display: grid; gap: 20px; }
 .tm-stack-h { display: grid; gap: 8px; }
 .tm-stack-h h3 { font-size: 22px; font-weight: 800; letter-spacing: -.02em; line-height: 1.2; color: var(--fg); }
@@ -983,7 +985,7 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
         </a>
         <a class="hero-card hc-2" href="#atlas-sec">
           <small><svg class="ico" aria-hidden="true"><use href="#i-layers"/></svg><span data-en="Functions">Funktionen</span></small>
-          <strong data-num="84">84</strong>
+          <strong data-num="85">85</strong>
           <span data-en="in 9 areas, in the atlas">in 9 Bereichen im Atlas</span>
           <span class="hc-seg" aria-hidden="true"><i style="--n: 14; --c: var(--accent)"></i><i style="--n: 16; --c: var(--gold)"></i><i style="--n: 13; --c: var(--blue)"></i><i style="--n: 6; --c: var(--green)"></i><i style="--n: 8; --c: var(--violet)"></i><i style="--n: 11; --c: var(--pink)"></i><i style="--n: 8; --c: var(--orange)"></i><i style="--n: 3; --c: var(--indigo)"></i><i style="--n: 5; --c: var(--lime)"></i></span>
         </a>
@@ -1075,7 +1077,7 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
           </article>
           <!-- Folie 4 -->
           <article class="dia-slide" data-dia-slide="3" aria-label="Folie 4 von 5" data-en-aria="Slide 4 of 5">
-            <img class="dia-theater-img" src="img/nexus_start_check.png" width="1400" height="772" alt="UX | Nexus Launcher: Start im Browser, ohne Installation" data-en-alt="UX | Nexus Launcher: start in the browser, nothing to install" loading="lazy">
+            <img class="dia-theater-img" src="img/nexus_setup_light.png" width="1400" height="900" alt="UX | Nexus Launcher im Browser: Startfenster mit Roboter, Komponenten und Start, ohne Installation" data-en-alt="UX | Nexus Launcher in the browser: start window with robot, components and start, nothing to install" loading="lazy">
             <div class="dia-theater-overlay">
               <div class="kicker">04 · <span data-en="Web · Remote">Web · Remote</span></div>
               <h3 class="slogan" data-en="Open, don't install.">Öffnen statt installieren.</h3>
@@ -1105,36 +1107,38 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
     </div>
   </section>
 
-  <!-- ═════════ Kapitel 1 · Features: was die Plattform bietet (Prinzipien, Steuerwege, NUI, Web-Apps, Funktionsatlas) ═════════ -->
+  <!-- ═════════ Kapitel 1 · Features: was die Plattform bietet (Kernmerkmale, Steuerwege, NUI, Web-Apps, Funktionsatlas) ═════════ -->
   <div class="chapter" id="features">
     <div class="wrap">
       <header class="ch-head">
         <div>
           <span class="eyebrow" data-en="What we offer">Was wir bieten</span>
           <h2>Features</h2>
-          <p class="lede" data-en="What the platform does: principles, control modes, natural user interfaces, web apps and every function.">Was die Plattform kann: Prinzipien, Steuerwege, natürliche Bedienung, Web-Apps und alle Funktionen.</p>
+          <p class="lede" data-en="What the platform does: key features, control modes, natural user interfaces, web apps and every function.">Was die Plattform kann: Kernmerkmale, Steuerwege, natürliche Bedienung, Web-Apps und alle Funktionen.</p>
         </div>
         <ol class="path" aria-label="Features" data-en-aria="Features">
-          <li><a href="#ueberblick" style="--hue: var(--accent)"><span class="pn"><svg class="ico" aria-hidden="true"><use href="#i-layers"/></svg><span>01</span></span><b data-en="Principles">Prinzipien</b><small data-en="Six principles carry the platform">Sechs Prinzipien tragen die Plattform</small></a></li>
+          <li><a href="#ueberblick" style="--hue: var(--accent)"><span class="pn"><svg class="ico" aria-hidden="true"><use href="#i-layers"/></svg><span>01</span></span><b data-en="Key features">Kernmerkmale</b><small data-en="Eight key features carry the platform">Acht Kernmerkmale tragen die Plattform</small></a></li>
           <li><a href="#teilhabe" style="--hue: var(--orange)"><span class="pn"><svg class="ico" aria-hidden="true"><use href="#i-pad"/></svg><span>02</span></span><b data-en="Control modes">Steuerwege</b><small data-en="Ten modes, one safety chain">Zehn Wege, eine Sicherheitskette</small></a></li>
           <li><a href="#nui" style="--hue: var(--green)"><span class="pn"><svg class="ico" aria-hidden="true"><use href="#i-eye"/></svg><span>03</span></span><b>NUI</b><small data-en="Voice, gaze, hands">Stimme, Blick, Hände</small></a></li>
           <li><a href="#webapps" style="--hue: var(--lime)"><span class="pn"><svg class="ico" aria-hidden="true"><use href="#i-globe"/></svg><span>04</span></span><b data-en="Web apps">Web-Apps</b><small data-en="Four apps, one browser">Vier Apps, ein Browser</small></a></li>
-          <li><a href="#atlas-sec" style="--hue: var(--pink)"><span class="pn"><svg class="ico" aria-hidden="true"><use href="#i-chart"/></svg><span>05</span></span><b data-en="Function atlas">Funktionsatlas</b><small data-en="84 functions in 9 areas">84 Funktionen in 9 Bereichen</small></a></li>
+          <li><a href="#atlas-sec" style="--hue: var(--pink)"><span class="pn"><svg class="ico" aria-hidden="true"><use href="#i-chart"/></svg><span>05</span></span><b data-en="Function atlas">Funktionsatlas</b><small data-en="85 functions in 9 areas">85 Funktionen in 9 Bereichen</small></a></li>
         </ol>
       </header>
 
       <section class="sec" id="ueberblick">
         <header class="sec-head">
           <div><span class="eyebrow" style="--hue: var(--accent)"><span class="n">01</span><span data-en="At a glance">Auf einen Blick</span></span><h2 data-en="Key features">Kernmerkmale</h2></div>
-          <div class="brief" style="--hue: var(--accent)"><p class="slogan" data-en="Six key features carry the platform.">Sechs Kernmerkmale tragen die Plattform.</p><ul class="kpis"><li class="kpi"><strong>6</strong><span data-en="key features">Merkmale</span></li><li class="kpi"><strong>0</strong><span data-en="installs">Installation</span></li><li class="kpi"><strong>10</strong><span data-en="control modes">Steuerwege</span></li></ul></div>
+          <div class="brief" style="--hue: var(--accent)"><p class="slogan" data-en="Eight key features carry the platform.">Acht Kernmerkmale tragen die Plattform.</p><ul class="kpis"><li class="kpi"><strong>8</strong><span data-en="key features">Merkmale</span></li><li class="kpi"><strong>0</strong><span data-en="installs">Installation</span></li><li class="kpi"><strong>10</strong><span data-en="control modes">Steuerwege</span></li></ul></div>
         </header>
         <ul class="fx-grid">
           <li class="fx" style="--hue: var(--blue)"><span class="bi-l"><svg class="ico" aria-hidden="true"><use href="#i-cube"/></svg></span><b data-en="First virtual, then real.">Erst virtuell, dann real.</b><p data-en="Every flow can be tried in the physics-based Digital Twin first; planned paths are previewed by the ghost before the move.">Jeder Ablauf lässt sich zuerst im physikbasierten Digital Twin erproben; geplante Bahnen zeigt der Ghost vor der Fahrt.</p><a class="more" href="present_presentation.html#merkmale"><span data-en="Key features">Kernmerkmale</span><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg></a></li>
+          <li class="fx" style="--hue: var(--teal)"><span class="bi-l"><svg class="ico" aria-hidden="true"><use href="#i-shapes"/></svg></span><b data-en="Test without a setup.">Testen ohne Aufbau.</b><p data-en="Cube, bottle, balls, bowl and basket as virtual objects, collision-checked in MoveIt; no camera needed.">Würfel, Flasche, Bälle, Schale und Korb als virtuelle Objekte, kollisionsgeprüft in MoveIt; ganz ohne Kamera.</p><a class="more" href="#atlas-sec"><span data-en="Function atlas">Funktionsatlas</span><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg></a></li>
+          <li class="fx" style="--hue: var(--pink)"><span class="bi-l"><svg class="ico" aria-hidden="true"><use href="#i-eye"/></svg></span><b data-en="Everything in view. Step in any time.">Alles im Blick. Jederzeit eingreifen.</b><p data-en="Robot state, surroundings (ZED, OctoMap) and motion execution live; UX | Monitoring records, the blackbox keeps the last 60&amp;nbsp;s.">Roboterzustand, Umgebung (ZED, OctoMap) und Bewegungsausführung live; UX | Monitoring zeichnet auf, die Blackbox sichert die letzten 60&nbsp;s.</p><a class="more" href="#webapps"><span data-en="UX | Monitoring">UX | Monitoring</span><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg></a></li>
           <li class="fx" style="--hue: var(--violet)"><span class="bi-l"><svg class="ico" aria-hidden="true"><use href="#i-user"/></svg></span><b data-en="The AI plans. The human confirms.">Die KI plant. Der Mensch bestätigt.</b><p data-en="AI plans move only after confirmation; E-STOP works any time.">Pläne des KI-Agenten fahren erst nach Bestätigung; E-STOP wirkt jederzeit.</p><a class="more" href="#tm-stage"><span data-en="The principle">Das Prinzip</span><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg></a></li>
-          <li class="fx" style="--hue: var(--green)"><span class="bi-l"><svg class="ico" aria-hidden="true"><use href="#i-globe"/></svg></span><b data-en="Open, don't install.">Öffnen statt installieren.</b><p data-en="A web browser is all you need; nothing gets installed on the device. Operate, launch, monitor and tap: on PC, tablet, smartphone or Quest&amp;nbsp;3, locally or on the home network.">Ein Webbrowser genügt, auf dem Endgerät wird nichts installiert. Bedienen, starten, überwachen und tippen: am PC, Tablet, Smartphone oder auf der Quest&nbsp;3, lokal oder im Heimnetz.</p><a class="more" href="#webapps"><span data-en="Four web apps">Vier Web-Apps</span><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg></a></li>
+          <li class="fx" style="--hue: var(--green)"><span class="bi-l"><svg class="ico" aria-hidden="true"><use href="#i-globe"/></svg></span><b data-en="Open, don't install.">Öffnen statt installieren.</b><p data-en="A web browser is all you need; nothing gets installed on the device. Operate, launch, monitor and tap: on PC, tablet, smartphone or Quest&amp;nbsp;3, locally or on the home network.">Ein Webbrowser genügt, auf dem Endgerät wird nichts installiert. Bedienen, starten, überwachen und tippen: am PC, Tablet, Smartphone oder auf der Quest&nbsp;3, lokal oder im Heimnetz.</p><a class="more" href="#einrichten"><span data-en="Set up">Einrichten</span><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg></a></li>
           <li class="fx" style="--hue: var(--orange)"><span class="bi-l"><svg class="ico" aria-hidden="true"><use href="#i-shield"/></svg></span><b data-en="One chain for every input.">Eine Kette für jede Eingabe.</b><p data-en="E-STOP, floor guard and collision protection apply to all ten control modes, from gamepad to AI chat.">E-STOP, Bodenschutz und Kollisionsschutz gelten für alle zehn Steuerwege, vom Gamepad bis zum KI-Chat.</p><a class="more" href="present_presentation.html#ablaeufe"><span data-en="Function flows">Funktionsabläufe</span><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg></a></li>
+          <li class="fx" style="--hue: var(--gold)"><span class="bi-l"><svg class="ico" aria-hidden="true"><use href="#i-code"/></svg></span><b data-en="Open, reproducible, extensible.">Offen, nachbaubar, erweiterbar.</b><p data-en="Own packages under Apache 2.0 on ROS 2 Humble and MoveIt 2; source code, docs and setup guide are public.">Eigene Pakete unter Apache 2.0 auf ROS 2 Humble und MoveIt 2; Quellcode, Doku und Setup-Guide sind offen.</p><a class="more" href="#technik"><span data-en="Develop">Entwickeln</span><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg></a></li>
           <li class="fx" style="--hue: var(--indigo)"><span class="bi-l"><svg class="ico" aria-hidden="true"><use href="#i-layers"/></svg></span><b data-en="Replaceable, not fixed.">Austauschbar statt festgelegt.</b><p data-en="Input device, camera, AI model and software module swap individually; 7 robot profiles in Robot | Digital Twin.">Eingabegerät, Kamera, KI-Modell und Software-Baustein einzeln ersetzbar; 7 Roboterprofile im Robot | Digital Twin.</p><a class="more" href="present_presentation.html#stack"><span data-en="System stack">System-Stack</span><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg></a></li>
-          <li class="fx" style="--hue: var(--gold)"><span class="bi-l"><svg class="ico" aria-hidden="true"><use href="#i-chart"/></svg></span><b data-en="Measured, not guessed.">Gemessen statt geschätzt.</b><p data-en="The UX | Monitoring records system and usage; usability tests with SUS and NASA-TLX.">UX | Monitoring erfasst System und Nutzung; Usability-Tests mit SUS und NASA-TLX.</p><a class="more" href="present_presentation.html#forschung"><span data-en="Evaluation logic">Evaluierungslogik</span><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg></a></li>
         </ul>
       </section>
 
@@ -1279,49 +1283,55 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
             </div>
           </div>
         </div>
-        <!-- Exploded Architecture Stack: 6 Schichten von Hardware bis Web (Feat:C) -->
+        <!-- Exploded Architecture Stack: 7 Schichten wie die Architekturkarte im Handbuch (#karte), vom Menschen bis zur Hardware (Feat:C) -->
         <div class="tm-stack" style="--hue: var(--indigo)">
           <header class="tm-stack-h">
             <span class="eyebrow" style="--hue: var(--indigo)"><span class="n" data-en="Stack">Architektur</span><span data-en="Exploded architecture stack">Exploded Architecture Stack</span></span>
-            <h3 data-en="Six functional levels: from hardware to web">Sechs Funktionsebenen: von Hardware bis Web</h3>
-            <p data-en="Every control mode maps to modular, replaceable layers connected via ROS 2 Humble. Software and hardware remain fully decoupled.">Jeder Steuerweg greift auf modulare, austauschbare Schichten zu, die über ROS 2 Humble verbunden sind. Software und Hardware bleiben vollständig entkoppelt.</p>
+            <h3 data-en="Seven layers: from human to hardware">Sieben Schichten: vom Menschen bis zur Hardware</h3>
+            <p data-en="Every control mode runs through the same seven layers as the architecture map in the manual; ROS 2 Humble connects the modules, software and hardware stay decoupled.">Jeder Steuerweg läuft durch dieselben sieben Schichten wie die Architekturkarte im Handbuch; ROS 2 Humble verbindet die Module, Software und Hardware bleiben entkoppelt.</p>
           </header>
           <div class="stack-layers">
             <div class="stack-layer">
+              <span class="layer-idx">L-07</span>
+              <div class="layer-title"><svg class="ico" aria-hidden="true"><use href="#i-user"/></svg><span data-en="Humans and devices">Mensch und Geräte</span></div>
+              <p class="layer-desc" data-en="Mouse, touch display, gamepad, Quest&amp;nbsp;3, Leap Motion&amp;nbsp;2, microphone and Tobii glasses: every device is one entry point, replaceable behind its interface.">Maus, Touch-Display, Gamepad, Quest&nbsp;3, Leap Motion&nbsp;2, Mikrofon und Tobii-Brille: jedes Gerät ein Einstieg, austauschbar hinter seiner Schnittstelle.</p>
+              <div class="layer-modes"><span class="active">Gamepad</span><span class="active">VR Quest&nbsp;3</span><span>Leap Motion&nbsp;2</span><span>Blick (Tobii)</span><span>Sprache</span></div>
+            </div>
+            <div class="stack-layer">
               <span class="layer-idx">L-06</span>
-              <div class="layer-title"><svg class="ico" aria-hidden="true"><use href="#i-globe"/></svg><span data-en="Web frontends &amp; clients">Web-Frontends &amp; Clients</span></div>
-              <p class="layer-desc" data-en="UX | Control Interface, UX | Nexus Launcher, UX | Compact Interface and WebXR on Quest&amp;nbsp;3: operated entirely in the browser, nothing to install.">UX | Control Interface, UX | Nexus Launcher, UX | Compact Interface und WebXR auf der Quest&nbsp;3: Bedienung komplett im Browser, ohne Installation.</p>
-              <div class="layer-modes"><span class="active">VR Quest&nbsp;3</span><span class="active">Web-Jogging</span><span>UX | Compact Interface</span><span>TCP-Gizmo</span></div>
+              <div class="layer-title"><svg class="ico" aria-hidden="true"><use href="#i-win"/></svg><span data-en="Interfaces">Oberflächen</span></div>
+              <p class="layer-desc" data-en="UX | Control Interface (:8081) with the Digital Twin and Rapier physics, UX | Nexus Launcher (:8080), UX | Compact Interface, UX | Monitoring (:8083), the VR view (WebXR) and RViz: operated entirely in the browser.">UX | Control Interface (:8081) mit Digital Twin und Rapier-Physik, UX | Nexus Launcher (:8080), UX | Compact Interface, UX | Monitoring (:8083), VR-Ansicht (WebXR) und RViz: Bedienung komplett im Browser.</p>
+              <div class="layer-modes"><span class="active">Web-Jogging</span><span class="active">TCP-Gizmo</span><span>VLA-M-Chat</span><span>UX | Compact Interface</span></div>
             </div>
             <div class="stack-layer">
               <span class="layer-idx">L-05</span>
-              <div class="layer-title"><svg class="ico" aria-hidden="true"><use href="#i-spark"/></svg><span data-en="VLA &amp; assistive AI">VLA &amp; Assistive KI</span></div>
-              <p class="layer-desc" data-en="Voice commands (Whisper STT) and gaze control as input; the AI agent breaks tasks down (locally Ollama qwen3.8:27b, optionally Claude or Gemini), the human confirms.">Sprachbefehle (Whisper STT) und Blicksteuerung als Eingabe; der KI-Agent zerlegt Aufgaben (lokal Ollama qwen3.8:27b, optional Claude oder Gemini), der Mensch bestätigt.</p>
-              <div class="layer-modes"><span class="active">VLA-M-Chat</span><span class="active">Sprache (Whisper)</span><span class="active">Blick (Tobii)</span></div>
-            </div>
-            <div class="stack-layer">
-              <span class="layer-idx">L-04</span>
-              <div class="layer-title"><svg class="ico" aria-hidden="true"><use href="#i-route"/></svg><span data-en="MoveIt 2 &amp; Servo">MoveIt 2 &amp; Servo</span></div>
-              <p class="layer-desc" data-en="Real-time servo streaming (about 30&amp;nbsp;Hz) and collision-free OMPL path planning with Cartesian speed tracking and joint limits.">Echtzeit-Servoing (rund 30&nbsp;Hz) und kollisionsfreie OMPL-Bahnplanung mit kartesischer Geschwindigkeitsregelung und Gelenkgrenzen.</p>
-              <div class="layer-modes"><span class="active">Gamepad lokal</span><span class="active">Gamepad remote</span><span>Tastatur</span><span>Remote Control</span></div>
+              <div class="layer-title"><svg class="ico" aria-hidden="true"><use href="#i-link"/></svg><span data-en="Servers and bridges">Server und Brücken</span></div>
+              <p class="layer-desc" data-en="rosbridge (:9090, :9091 TLS, :9092 local) with a whitelist, UI, HTTPS and monitoring servers, web_video_server and joy_node: the only way from the browser into the ROS graph.">rosbridge (:9090, :9091 TLS, :9092 lokal) mit Whitelist, UI-, HTTPS- und Monitoring-Server, web_video_server und joy_node: der einzige Weg vom Browser in den ROS-Graphen.</p>
+              <div class="layer-modes"><span class="active">Whitelist</span><span class="active">Remote Control</span><span>Gamepad remote</span><span>MJPEG-Streams</span></div>
             </div>
             <div class="stack-layer layer-safe">
+              <span class="layer-idx">L-04</span>
+              <div class="layer-title"><svg class="ico" aria-hidden="true"><use href="#i-shield"/></svg><span data-en="Coordination and safety">Koordination und Sicherheit</span></div>
+              <p class="layer-desc" data-en="Watchdog (control lock, heartbeat 100&amp;nbsp;ms), collision pre-check (0.25&amp;nbsp;s look-ahead), motion handler (preview, confirmation, floor guard, E-STOP), AI agent vla_bridge and blackbox.">Watchdog (Control-Lock, Heartbeat 100&nbsp;ms), Kollisionsvorprüfung (0,25&nbsp;s Vorausschau), Motion Handler (Vorschau, Bestätigung, Bodenschutz, E-STOP), KI-Agent vla_bridge und Blackbox.</p>
+              <div class="layer-modes"><span class="active">0,25&nbsp;s Vorprüfung</span><span class="active">Control-Lock</span><span class="active">E-STOP</span><span>Bestätigung</span></div>
+            </div>
+            <div class="stack-layer">
               <span class="layer-idx">L-03</span>
-              <div class="layer-title"><svg class="ico" aria-hidden="true"><use href="#i-shield"/></svg><span data-en="Safety chain">Sicherheitskette</span></div>
-              <p class="layer-desc" data-en="Collision pre-check (0.25&amp;nbsp;s look-ahead), floor guard, control lock ownership, watchdog heartbeat (100&amp;nbsp;ms) and deterministic E-STOP.">Kollisionsvorprüfung (0,25&nbsp;s Vorausschau), Bodenschutz, Control-Lock-Besitz, Watchdog-Heartbeat (100&nbsp;ms) und deterministischer E-STOP.</p>
-              <div class="layer-modes"><span class="active">0,25&nbsp;s Vorprüfung</span><span class="active">Control-Lock</span><span class="active">E-STOP</span><span>Bodenschutz</span></div>
+              <div class="layer-title"><svg class="ico" aria-hidden="true"><use href="#i-cam"/></svg><span data-en="Perception">Wahrnehmung</span></div>
+              <p class="layer-desc" data-en="ZED Mini (colour, depth, point cloud), YOLO 3D boxes and OctoMap as occupancy grid; virtual objects replace the camera in Robot | Digital Twin.">ZED Mini (Farbbild, Tiefe, Punktwolke), YOLO-3D-Boxen und OctoMap als Belegungsraster; virtuelle Objekte ersetzen die Kamera im Robot | Digital Twin.</p>
+              <div class="layer-modes"><span class="active">ZED Mini</span><span class="active">YOLO</span><span>OctoMap</span><span>Virtuelle Objekte</span></div>
             </div>
             <div class="stack-layer">
               <span class="layer-idx">L-02</span>
-              <div class="layer-title"><svg class="ico" aria-hidden="true"><use href="#i-cube"/></svg><span data-en="Digital Twin &amp; physics">Digital Twin &amp; Physik</span></div>
-              <p class="layer-desc" data-en="Rapier Physics 3D WASM sandbox in the browser, OctoMap 3D occupancy grid and virtual objects for contact simulation before real execution.">Rapier Physics 3D WASM-Sandbox im Browser, OctoMap 3D-Belegungsraster und virtuelle Objekte für Kontaktsimulation vor der Realfahrt.</p>
-              <div class="layer-modes"><span class="active">Robot | Digital Twin</span><span>Rapier 3D</span><span>OctoMap</span><span>Virtuelle Objekte</span></div>
+              <div class="layer-title"><svg class="ico" aria-hidden="true"><use href="#i-route"/></svg><span data-en="Motion">Bewegung</span></div>
+              <p class="layer-desc" data-en="MoveIt 2: servo streaming (about 30&amp;nbsp;Hz) for gamepad, VR and Leap, OMPL path planning with ghost preview; ros2_control executes.">MoveIt 2: Servo-Streaming (rund 30&nbsp;Hz) für Gamepad, VR und Leap, OMPL-Bahnplanung mit Ghost-Vorschau; ros2_control führt aus.</p>
+              <div class="layer-modes"><span class="active">MoveIt Servo</span><span class="active">OMPL-Planung</span><span>Ghost-Vorschau</span><span>ros2_control</span></div>
             </div>
             <div class="stack-layer">
               <span class="layer-idx">L-01</span>
-              <div class="layer-title"><svg class="ico" aria-hidden="true"><use href="#i-arm"/></svg><span data-en="Robot | Hardware">Robot | Hardware</span></div>
-              <p class="layer-desc" data-en="xArm Lite&amp;nbsp;6 (6-DoF robotic arm), ZED Mini stereo camera, vacuum gripper and hardware sensors communicating via ROS&amp;nbsp;2 Humble.">xArm Lite&nbsp;6 (6-DoF Knickarm), ZED Mini Stereokamera, Vakuumgreifer und Hardwaresensoren über feste ROS-2-Schnittstellen.</p>
-              <div class="layer-modes"><span class="active">Robot | Hardware</span><span>xArm Lite 6</span><span>ZED Mini</span><span>Tobii Glasses</span></div>
+              <div class="layer-title"><svg class="ico" aria-hidden="true"><use href="#i-arm"/></svg><span data-en="Hardware">Hardware</span></div>
+              <p class="layer-desc" data-en="xArm Lite&amp;nbsp;6 (Robot | Hardware or Robot | Digital Twin), vacuum gripper and cameras behind fixed ROS&amp;nbsp;2 interfaces.">xArm Lite&nbsp;6 (Robot | Hardware oder Robot | Digital Twin), Vakuumgreifer und Kameras hinter festen ROS-2-Schnittstellen.</p>
+              <div class="layer-modes"><span class="active">Robot | Hardware</span><span class="active">Robot | Digital Twin</span><span>xArm Lite 6</span><span>Vakuumgreifer</span></div>
             </div>
           </div>
         </div>
@@ -1400,13 +1410,13 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
       <section class="sec" id="nui">
         <header class="sec-head">
           <div><span class="eyebrow" style="--hue: var(--green)"><span class="n">03</span><span data-en="Operate naturally">Natürlich bedienen</span></span><h2 data-en="NUI">NUI</h2></div>
-          <div class="brief" style="--hue: var(--green)"><p class="slogan" data-en="Speak, look, grasp: operate even without mouse or keyboard.">Sprechen, schauen, greifen: bedienen auch ohne Maus und Tastatur.</p><ul class="kpis"><li class="kpi"><strong>3</strong><span data-en="in use">im Einsatz</span></li><li class="kpi"><strong>1</strong><span data-en="being tested">in Erprobung</span></li><li class="kpi"><strong>2</strong><span data-en="planned">geplant</span></li></ul></div>
+          <div class="brief" style="--hue: var(--green)"><p class="slogan" data-en="Speak, look, grasp: operate even without mouse or keyboard.">Sprechen, schauen, greifen: bedienen auch ohne Maus und Tastatur.</p><ul class="kpis"><li class="kpi"><strong>4</strong><span data-en="in use">im Einsatz</span></li><li class="kpi"><strong>2</strong><span data-en="planned">geplant</span></li></ul></div>
         </header>
         <ul class="fx-grid nui-grid">
           <li class="fx"><span class="bi-l"><svg class="ico" aria-hidden="true"><use href="#i-vr"/></svg></span><b data-en="Virtual reality">Virtual Reality</b><p data-en="Meta Quest&amp;nbsp;3: the TCP follows your hand 1&amp;nbsp;:&amp;nbsp;1, no grip, no motion.">Meta Quest&nbsp;3: der TCP folgt der Hand 1&nbsp;:&nbsp;1, ohne Grip keine Bewegung.</p><a class="more" href="present_control_modes.html#vr"><span data-en="VR with Quest&amp;nbsp;3">VR mit Quest&nbsp;3</span><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg></a></li>
           <li class="fx"><span class="bi-l"><svg class="ico" aria-hidden="true"><use href="#i-eye"/></svg></span><b data-en="Gaze">Blick</b><p data-en="Tobii Pro Glasses&amp;nbsp;3: a fixation of about 1&amp;nbsp;s replaces the click.">Tobii Pro Glasses&nbsp;3: eine Fixation von etwa 1&nbsp;s ersetzt den Klick.</p><a class="more" href="present_control_modes.html#blick"><span data-en="Gaze control">Blicksteuerung</span><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg></a></li>
           <li class="fx"><span class="bi-l"><svg class="ico" aria-hidden="true"><use href="#i-mic"/></svg></span><b data-en="Voice">Sprache</b><p data-en="Whisper on local GPU: 50–120&amp;nbsp;ms inference time after speech end; push-to-talk with a 5&amp;nbsp;s listening window.">Whisper auf lokaler GPU: 50–120&nbsp;ms Inferenzzeit nach Sprechende; Push-to-Talk mit 5&nbsp;s Hörfenster.</p><a class="more" href="present_control_modes.html#sprache"><span data-en="Voice commands">Sprachbefehle</span><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg></a></li>
-          <li class="fx"><span class="bi-l"><svg class="ico" aria-hidden="true"><use href="#i-scan"/></svg></span><b data-en="Gesture control">Gestensteuerung</b><p data-en="Leap Motion&amp;nbsp;2: a pinch couples the hand to the TCP, opening the hand stops. Robot | Hardware: being tested.">Leap Motion&nbsp;2: Kneifen kuppelt die Hand an den TCP, Hand öffnen hält an. Robot | Hardware: in Erprobung.</p><a class="more" href="operate_manual.html#p-leap" data-nexus-href="operate_manual.html#p-leap"><span data-en="Leap Motion&amp;nbsp;2 in the manual">Leap Motion&nbsp;2 im Handbuch</span><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg></a></li>
+          <li class="fx"><span class="bi-l"><svg class="ico" aria-hidden="true"><use href="#i-scan"/></svg></span><b data-en="Gesture control">Gestensteuerung</b><p data-en="Leap Motion&amp;nbsp;2: a pinch couples the hand to the TCP, opening the hand stops. Robot | Hardware: confirmation, then half speed.">Leap Motion&nbsp;2: Kneifen kuppelt die Hand an den TCP, Hand öffnen hält an. Robot | Hardware: Bestätigung, dann halbes Tempo.</p><a class="more" href="operate_manual.html#p-leap" data-nexus-href="operate_manual.html#p-leap"><span data-en="Leap Motion&amp;nbsp;2 in the manual">Leap Motion&nbsp;2 im Handbuch</span><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg></a></li>
           <li class="fx soon"><span class="bi-l"><svg class="ico" aria-hidden="true"><use href="#i-touch"/></svg></span><b data-en="Hand tracking">Hand-Tracking</b><p data-en="Quest&amp;nbsp;3 without controllers: a two-finger pinch grasps.">Quest&nbsp;3 ohne Controller: Pinch mit zwei Fingern greift.</p><span class="tag opt" data-en="planned">geplant</span></li>
           <li class="fx soon"><span class="bi-l"><svg class="ico" aria-hidden="true"><use href="#i-user"/></svg></span><b data-en="ZED skeleton gestures">ZED-Skelettgesten</b><p data-en="Planned: pointing selects the target, an open hand pauses. Available webcam gestures move the TCP gizmo in the Digital Twin.">Geplant: Zeigen wählt das Ziel, offene Hand pausiert. Vorhandene Webcam-Gesten bewegen das TCP-Gizmo im Digital Twin.</p><span class="tag opt" data-en="planned">geplant</span></li>
         </ul>
@@ -1433,15 +1443,15 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
               <div class="deck-stage">
                 <div class="deck-track">
                   <figure class="slide app-slide" data-url="127.0.0.1:8081 · UX | Control Interface">
-                    <div class="sl-media"><img src="img/presentation/rcu.jpg" width="1600" height="900" alt="UX | Control Interface: Digital Twin mit Bedienfeldern, E-STOP und Statusleiste" data-en-alt="UX | Control Interface: Digital Twin with control panels, E-STOP and status bar" loading="lazy"></div>
+                    <div class="sl-media"><img src="img/rcu_dark.jpg" width="1600" height="900" alt="UX | Control Interface im dunklen Theme: Digital Twin, Jogging-Bedienfeld, E-STOP und Statusleiste" data-en-alt="UX | Control Interface in the dark theme: Digital Twin, jogging panel, E-STOP and status bar" loading="lazy"></div>
                     <figcaption><span class="k-t" data-k>UX | Control Interface · 8081</span><b data-k data-slide-title data-en="Move the arm, place objects, plan sequences.">Arm bewegen, Objekte anlegen, Abläufe planen.</b><span data-k data-en="Digital Twin with three.js and Rapier physics; E-STOP, Robot | Digital Twin / Robot | Hardware and speed always in the same place.">Digital Twin mit three.js und Rapier-Physik; E-STOP, Robot | Digital Twin / Robot | Hardware und Tempo immer an derselben Stelle.</span></figcaption>
                   </figure>
                   <figure class="slide app-slide" data-url="127.0.0.1:8080 · UX | Nexus Launcher">
-                    <div class="sl-media"><img src="img/nexus_run_dev_setup.png" width="988" height="921" alt="UX | Nexus Launcher: Startfenster in drei Schritten (Roboter, Komponenten, Start) mit Wahl (Robot | Digital Twin / Robot | Hardware), Prüfung vor dem Start und EXECUTE" data-en-alt="UX | Nexus Launcher: three-step start window (robot, components, start) with Robot | Digital Twin / Robot | Hardware choice, pre-start check and EXECUTE" loading="lazy"></div>
+                    <div class="sl-media"><img src="img/nexus_run_dev_setup.png" width="988" height="921" alt="UX | Nexus Launcher: Startfenster in drei Schritten (Roboter, Komponenten, Start), Robot | Digital Twin / Robot | Hardware im Kopf, Komponenten anhaken, dann EXECUTE" data-en-alt="UX | Nexus Launcher: three-step start window (robot, components, start), Robot | Digital Twin / Robot | Hardware in the header, tick components, then EXECUTE" loading="lazy"></div>
                     <figcaption><span class="k-t" data-k>UX | Nexus Launcher · 8080</span><b data-k data-slide-title data-en="One click instead of many terminals.">Ein Klick statt vieler Terminals.</b><span data-k data-en="Starts everything in three steps: pick the robot, tick the modules, start (check Robot | Digital Twin or Robot | Hardware, EXECUTE).">Startet alles in drei Schritten: Roboter wählen, Module anhaken, starten (Robot | Digital Twin oder Robot | Hardware prüfen, EXECUTE).</span></figcaption>
                   </figure>
                   <figure class="slide app-slide" data-url="127.0.0.1:8083 · UX | Monitoring">
-                    <div class="sl-media"><img src="img/monitoring_dashboard.png" width="1600" height="1000" alt="UX | Monitoring: Systemübersicht mit Verlaufskurven" data-en-alt="UX | Monitoring: system overview with trend charts" loading="lazy"></div>
+                    <div class="sl-media"><img src="img/mon_evaluation.png" width="1600" height="1000" alt="UX | Monitoring: Evaluierung mit Testperson, Aufgaben und Durchläufen je Methode" data-en-alt="UX | Monitoring: evaluation with participant, tasks and runs per method" loading="lazy"></div>
                     <figcaption><span class="k-t" data-k>UX | Monitoring · 8083</span><b data-k data-slide-title data-en="Measured, not guessed.">Gemessen statt geschätzt.</b><span data-k data-en="System, ROS graph, robot usage, user statistics and evaluation with SUS and NASA-TLX.">System, ROS-Graph, Robot-Nutzung, Nutzerstatistik und Evaluierung mit SUS und NASA-TLX.</span></figcaption>
                   </figure>
                   <figure class="slide app-slide" data-url="127.0.0.1:8080/touch · UX | Compact Interface">
@@ -1460,30 +1470,30 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
         </div>
       </section>
 
-      <!-- Funktionsatlas: Ring (Anteil je Bereich), 9 Bereiche + 10 Kreisläufe filtern die Liste darunter; Liste = Filter, 84 Karten, Ablauf-Panel (js/function_atlas.js) -->
+      <!-- Funktionsatlas: Ring (Anteil je Bereich), 9 Bereiche + 10 Kreisläufe filtern die Liste darunter; Liste = Filter, 85 Karten, Ablauf-Panel (js/function_atlas.js) -->
       <section class="sec" id="atlas-sec">
         <header class="sec-head">
           <div><span class="eyebrow" style="--hue: var(--pink)"><span class="n">05</span><span data-en="Every function">Alle Funktionen</span></span><h2 data-en="Function atlas">Funktionsatlas</h2></div>
-          <div class="brief" style="--hue: var(--pink)"><p class="slogan" data-en="All 84 functions on one map.">Alle 84 Funktionen auf einer Karte.</p><ul class="kpis"><li class="kpi"><strong>84</strong><span data-en="functions">Funktionen</span></li><li class="kpi"><strong>9</strong><span data-en="areas">Bereiche</span></li><li class="kpi"><strong>10</strong><span data-en="loops">Kreisläufe</span></li></ul></div>
+          <div class="brief" style="--hue: var(--pink)"><p class="slogan" data-en="All 85 functions on one map.">Alle 85 Funktionen auf einer Karte.</p><ul class="kpis"><li class="kpi"><strong>84</strong><span data-en="functions">Funktionen</span></li><li class="kpi"><strong>9</strong><span data-en="areas">Bereiche</span></li><li class="kpi"><strong>10</strong><span data-en="loops">Kreisläufe</span></li></ul></div>
         </header>
         <div class="atlas dark-zone" id="atlas" role="region" aria-label="Funktionsatlas" data-en-aria="Function atlas">
           <div class="at-grid">
             <figure class="at-ring" id="at-ring">
-              <svg viewBox="0 0 240 240" role="img" aria-label="Ring: 84 Funktionen, Anteil je Bereich" data-en-aria="Ring: 84 functions, share per area">
+              <svg viewBox="0 0 240 240" role="img" aria-label="Ring: 85 Funktionen, Anteil je Bereich" data-en-aria="Ring: 85 functions, share per area">
                 <g transform="rotate(-90 120 120)">
-                  <circle class="trk" cx="120" cy="120" r="96" pathLength="84"/>
-                  <circle class="seg" data-a="ctl" style="--c: var(--accent); --i: 0" cx="120" cy="120" r="96" pathLength="84" stroke-dasharray="13.5 84" stroke-dashoffset="0"/>
-                  <circle class="seg" data-a="safe" style="--c: var(--gold); --i: 1" cx="120" cy="120" r="96" pathLength="84" stroke-dasharray="15.5 84" stroke-dashoffset="-14"/>
-                  <circle class="seg" data-a="twin" style="--c: var(--blue); --i: 2" cx="120" cy="120" r="96" pathLength="84" stroke-dasharray="12.5 84" stroke-dashoffset="-30"/>
-                  <circle class="seg" data-a="vis" style="--c: var(--green); --i: 3" cx="120" cy="120" r="96" pathLength="84" stroke-dasharray="5.5 84" stroke-dashoffset="-43"/>
-                  <circle class="seg" data-a="ai" style="--c: var(--violet); --i: 4" cx="120" cy="120" r="96" pathLength="84" stroke-dasharray="7.5 84" stroke-dashoffset="-49"/>
-                  <circle class="seg" data-a="mon" style="--c: var(--pink); --i: 5" cx="120" cy="120" r="96" pathLength="84" stroke-dasharray="10.5 84" stroke-dashoffset="-57"/>
-                  <circle class="seg" data-a="eval" style="--c: var(--orange); --i: 6" cx="120" cy="120" r="96" pathLength="84" stroke-dasharray="7.5 84" stroke-dashoffset="-68"/>
-                  <circle class="seg" data-a="data" style="--c: var(--indigo); --i: 7" cx="120" cy="120" r="96" pathLength="84" stroke-dasharray="2.5 84" stroke-dashoffset="-76"/>
-                  <circle class="seg" data-a="infra" style="--c: var(--lime); --i: 8" cx="120" cy="120" r="96" pathLength="84" stroke-dasharray="4.5 84" stroke-dashoffset="-79"/>
+                  <circle class="trk" cx="120" cy="120" r="96" pathLength="85"/>
+                  <circle class="seg" data-a="ctl" style="--c: var(--accent); --i: 0" cx="120" cy="120" r="96" pathLength="85" stroke-dasharray="14.5 85" stroke-dashoffset="0"/>
+                  <circle class="seg" data-a="safe" style="--c: var(--gold); --i: 1" cx="120" cy="120" r="96" pathLength="85" stroke-dasharray="15.5 85" stroke-dashoffset="-15"/>
+                  <circle class="seg" data-a="twin" style="--c: var(--blue); --i: 2" cx="120" cy="120" r="96" pathLength="85" stroke-dasharray="12.5 85" stroke-dashoffset="-31"/>
+                  <circle class="seg" data-a="vis" style="--c: var(--green); --i: 3" cx="120" cy="120" r="96" pathLength="85" stroke-dasharray="5.5 85" stroke-dashoffset="-44"/>
+                  <circle class="seg" data-a="ai" style="--c: var(--violet); --i: 4" cx="120" cy="120" r="96" pathLength="85" stroke-dasharray="7.5 85" stroke-dashoffset="-50"/>
+                  <circle class="seg" data-a="mon" style="--c: var(--pink); --i: 5" cx="120" cy="120" r="96" pathLength="85" stroke-dasharray="10.5 85" stroke-dashoffset="-58"/>
+                  <circle class="seg" data-a="eval" style="--c: var(--orange); --i: 6" cx="120" cy="120" r="96" pathLength="85" stroke-dasharray="7.5 85" stroke-dashoffset="-69"/>
+                  <circle class="seg" data-a="data" style="--c: var(--indigo); --i: 7" cx="120" cy="120" r="96" pathLength="85" stroke-dasharray="2.5 85" stroke-dashoffset="-77"/>
+                  <circle class="seg" data-a="infra" style="--c: var(--lime); --i: 8" cx="120" cy="120" r="96" pathLength="85" stroke-dasharray="4.5 85" stroke-dashoffset="-80"/>
                 </g>
                 <circle class="core" cx="120" cy="120" r="72"/>
-                <text class="at-num" x="120" y="122" text-anchor="middle" data-num="84">84</text>
+                <text class="at-num" x="120" y="122" text-anchor="middle" data-num="85">85</text>
                 <text class="at-lbl" x="120" y="143" text-anchor="middle" data-en="functions">Funktionen</text>
                 <text class="at-sub" x="120" y="161" text-anchor="middle" data-en="9 AREAS">9 BEREICHE</text>
               </svg>
@@ -1506,7 +1516,7 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
             </figure>
             <div class="at-side">
               <ul class="at-areas">
-                <li class="at-area" data-a="ctl" style="--c: var(--accent)"><a href="#atlas-list" data-fa-area="ctl"><svg class="ico" aria-hidden="true"><use href="#i-pad"/></svg><b data-en="Control modes">Steuerwege</b><em>14</em><small data-en="Gamepad, jogging, TCP gizmo&amp;nbsp;…">Gamepad, Jogging, TCP-Gizmo&nbsp;…</small></a></li>
+                <li class="at-area" data-a="ctl" style="--c: var(--accent)"><a href="#atlas-list" data-fa-area="ctl"><svg class="ico" aria-hidden="true"><use href="#i-pad"/></svg><b data-en="Control modes">Steuerwege</b><em>15</em><small data-en="Gamepad, jogging, TCP gizmo&amp;nbsp;…">Gamepad, Jogging, TCP-Gizmo&nbsp;…</small></a></li>
                 <li class="at-area" data-a="safe" style="--c: var(--gold)"><a href="#atlas-list" data-fa-area="safe"><svg class="ico" aria-hidden="true"><use href="#i-shield"/></svg><b data-en="Safety">Sicherheit</b><em>16</em><small data-en="E-STOP, control lock, heartbeat&amp;nbsp;…">E-STOP, Control-Lock, Heartbeat&nbsp;…</small></a></li>
                 <li class="at-area" data-a="twin" style="--c: var(--blue)"><a href="#atlas-list" data-fa-area="twin"><svg class="ico" aria-hidden="true"><use href="#i-cube"/></svg><b>Digital Twin</b><em>13</em><small data-en="URDF, ghost plan, collision display&amp;nbsp;…">URDF, Ghost-Plan, Kollisionsanzeige&nbsp;…</small></a></li>
                 <li class="at-area" data-a="vis" style="--c: var(--green)"><a href="#atlas-list" data-fa-area="vis"><svg class="ico" aria-hidden="true"><use href="#i-cam"/></svg><b>Vision</b><em>6</em><small data-en="ZED + YOLOv8, ArUco, collision objects">ZED + YOLOv8, ArUco, Kollisionsobjekte</small></a></li>
@@ -1561,6 +1571,10 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
               <article class="fn" id="gamepad" data-a="ctl" data-f="pad" data-s="spr">
                 <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-pad"/></svg><span data-en="Gamepad, local and remote">Gamepad lokal und remote</span></button></h3>
                 <p data-en="Xbox pad on the robot PC (&lt;code&gt;/joy&lt;/code&gt;) or in the browser (&lt;code&gt;/remote/joy&lt;/code&gt;, 20 Hz).">Xbox-Pad am Roboter-PC (<code>/joy</code>) oder im Browser (<code>/remote/joy</code>, 20 Hz).</p>
+              </article>
+              <article class="fn" id="leap" data-a="ctl" data-f="jog" data-s="spr">
+                <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-scan"/></svg><span data-en="Leap Motion&amp;nbsp;2 hand control">Leap-Motion-2-Handsteuerung</span></button></h3>
+                <p data-en="Pinching couples the hand to the TCP (&lt;code&gt;/remote/twist&lt;/code&gt; through the watchdog), opening the hand stops; Robot | Hardware: confirmation, half speed.">Kneifen kuppelt die Hand an den TCP (<code>/remote/twist</code> über den Watchdog), Hand öffnen hält an; Robot | Hardware: Bestätigung, halbes Tempo.</p>
               </article>
               <article class="fn" id="jog" data-a="ctl" data-f="jog" data-s="sr">
                 <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-gizmo"/></svg><span data-en="Cartesian and joint jogging">Jogging kartesisch und je Gelenk</span></button></h3>
@@ -1964,7 +1978,7 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
           </a>
           <a class="item" href="#atlas-sec" style="--hue: var(--teal)">
             <span class="thumb"><img src="img/project_docs/atlas.jpg" alt="" loading="lazy"></span>
-            <span class="txt"><b><span data-en="Function atlas">Funktionsatlas</span></b><p data-en="All 84 functions in 9 areas, each with data flow and topics; 10 loops as a ring">Alle 84 Funktionen in 9 Bereichen, je mit Datenfluss und Topics; 10 Kreisläufe als Ring</p></span>
+            <span class="txt"><b><span data-en="Function atlas">Funktionsatlas</span></b><p data-en="All 85 functions in 9 areas, each with data flow and topics; 10 loops as a ring">Alle 85 Funktionen in 9 Bereichen, je mit Datenfluss und Topics; 10 Kreisläufe als Ring</p></span>
             <span class="end"><span class="tag">HTML</span><span class="go"></span></span>
           </a>
           <a class="item" href="poster/poster_a2.html" target="_blank" rel="noopener" style="--hue: var(--gold)">
@@ -2231,7 +2245,7 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
               <summary><span class="faq-q"><span class="k" data-en="Idea and goal">Idee und Ziel</span><span data-en="What does UX Robot add to the manufacturer’s software?">Was ergänzt UX Robot gegenüber der Software des Herstellers?</span></span><svg class="ico" aria-hidden="true"><use href="#i-next"/></svg></summary>
               <div class="faq-body">
                 <div class="faq-txt"><p data-en="UX Robot builds on the official &lt;code&gt;xarm_ros2&lt;/code&gt; by UFactory and adds functions for operation, assistance and measurement.">UX Robot baut auf dem offiziellen <code>xarm_ros2</code> von UFactory auf und ergänzt Funktionen für Bedienung, Assistenz und Messung.</p><ul><li data-en="&lt;b&gt;Ten control modes&lt;/b&gt; in one system."><b>Zehn Steuerwege</b> in einem System.</li><li data-en="&lt;b&gt;AI assistance&lt;/b&gt; for sequences from everyday language."><b>KI-Assistenz</b> für Abläufe aus Alltagssprache.</li><li data-en="&lt;b&gt;Digital Twin&lt;/b&gt; with robot simulation."><b>Digital Twin</b> mit Roboter-Simulation.</li><li data-en="&lt;b&gt;Measurement&lt;/b&gt; of usability and workload in the UX | Monitoring."><b>Messung</b> von Usability und Beanspruchung im UX | Monitoring.</li></ul></div>
-                <figure class="faq-fig"><img src="img/presentation/rcu.jpg" width="1600" height="900" alt="UX | Control Interface: Digital Twin des xArm Lite 6 mit Bedienfeldern für Bewegung, Objekte und Abläufe" data-en-alt="UX | Control Interface: Digital Twin of the xArm Lite 6 with panels for motion, objects and sequences" loading="lazy" decoding="async"></figure>
+                <figure class="faq-fig"><img src="img/rcu_objects.jpg" width="1008" height="921" alt="UX | Control Interface: Digital Twin des xArm Lite 6 aus der Nähe mit virtuellen Objekten, links die Bereichsleiste" data-en-alt="UX | Control Interface: close-up of the xArm Lite 6 Digital Twin with virtual objects, area bar on the left" loading="lazy" decoding="async"></figure>
               </div>
             </details>
             <details class="faq-item" id="faq-idee-07">
@@ -2548,7 +2562,7 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
               <summary><span class="faq-q"><span class="k" data-en="Setup and operation">Einrichtung und Betrieb</span><span data-en="How do I start the system?">Wie starte ich das System?</span></span><svg class="ico" aria-hidden="true"><use href="#i-next"/></svg></summary>
               <div class="faq-body">
                 <div class="faq-txt"><p data-en="In UX | Nexus Launcher, users select a robot profile, operating mode and required components. The start check verifies prerequisites, then the selected setup starts.">In der UX | Nexus Launcher wählt man Roboter-Profil, Betriebsart und benötigte Komponenten. Der Start-Check prüft die Voraussetzungen; anschließend startet das gewählte Setup.</p><p data-en="Choose Robot | Digital Twin first for experiments. Robot | Hardware requires a prepared workstation and explicit confirmation of the switch to Robot | Hardware.">Zum Erproben zuerst Robot | Digital Twin wählen. Robot | Hardware setzt den vorbereiteten Arbeitsplatz und die ausdrückliche Bestätigung des Wechsels nach Robot | Hardware voraus.</p></div>
-                <figure class="faq-fig"><img src="img/nexus_start_check.png" width="1400" height="772" alt="UX | Nexus Launcher, Start: Wahl Robot | Digital Twin oder Robot | Hardware, darunter die Prüfung vor dem Start" data-en-alt="UX | Nexus Launcher, start: choice of Robot | Digital Twin or Robot | Hardware, below it the pre-start check" loading="lazy" decoding="async"></figure>
+                <figure class="faq-fig"><img src="img/nexus_start_check.png" width="1030" height="634" alt="UX | Nexus Launcher, Schritt 3 Start: Wahl Robot | Digital Twin oder Robot | Hardware, darunter die Prüfung vor dem Start mit Warnungen und erfüllten Punkten" data-en-alt="UX | Nexus Launcher, step 3 start: choice of Robot | Digital Twin or Robot | Hardware, below it the pre-start check with warnings and passed items" loading="lazy" decoding="async"></figure>
               </div>
             </details>
             <details class="faq-item" id="faq-apps-03">
