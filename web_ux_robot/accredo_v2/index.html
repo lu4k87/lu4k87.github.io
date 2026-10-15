@@ -1,0 +1,631 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ACCREDO · Leitfaden zur Reakkreditierung von Studiengängen</title>
+  <meta name="description" content="Interaktiver Leitfaden zur Programm-Reakkreditierung: sechs Phasen, Zuständigkeiten (RACI), Übergabedokumente und Rechtsgrundlagen nach StudakVO NRW und HG NRW.">
+  <meta property="og:title" content="ACCREDO · Leitfaden zur Reakkreditierung">
+  <meta property="og:description" content="Sechs Phasen, 14 Übergabedokumente, klare Zuständigkeiten – mit Beispieldaten.">
+  <meta property="og:type" content="website">
+  <meta name="theme-color" content="#F6F4EE">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='14' fill='none' stroke='%230F5C63' stroke-width='2.5'/%3E%3Cpath d='M9.5 22 16 9l6.5 13M12 17.5h8' fill='none' stroke='%230F5C63' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="styles.css">
+  <script>
+    (function () {
+      var t = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      document.documentElement.setAttribute('data-theme', t);
+    })();
+  </script>
+</head>
+<body>
+  <a class="skip" href="#ablauf">Zum Inhalt springen</a>
+
+  <header class="topbar">
+    <div class="wrap topbar-inner">
+      <a class="brand" href="#top" aria-label="ACCREDO – zum Seitenanfang">
+        <svg class="brand-mark" viewBox="0 0 40 40" fill="none" aria-hidden="true">
+          <circle cx="20" cy="20" r="17.5" stroke="currentColor" stroke-width="2"/>
+          <circle cx="20" cy="20" r="13" stroke="currentColor" stroke-width="1" stroke-dasharray="1.6 2.2"/>
+          <path d="M13.5 27 20 12.5 26.5 27M15.8 22h8.4" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span class="brand-text"><b>ACCREDO</b><small>Leitfaden Reakkreditierung</small></span>
+      </a>
+      <nav class="mainnav" aria-label="Hauptnavigation">
+        <a href="#ablauf">Ablauf</a>
+        <a href="#dokumente">Dokumente</a>
+        <a href="#studiengaenge">Studiengänge</a>
+        <a href="#recht">Rechtsgrundlagen</a>
+      </nav>
+      <div class="topbar-tools">
+        <label class="sr-only" for="programSelect">Studiengang wählen</label>
+        <select id="programSelect" class="select"></select>
+        <button class="icon-btn" id="themeToggle" type="button" aria-label="Farbschema wechseln">
+          <svg class="i-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6"/></svg>
+          <svg class="i-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5Z"/></svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <div class="notice" role="note">
+    <div class="wrap notice-inner">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16.2v.1"/></svg>
+      <p><b>Beispieldaten.</b> Personen, Aktenzeichen, Termine, Dateigrößen und Status sind fiktiv und zeigen nur, wie der Ablauf funktioniert. Kein Studiengang ist hier tatsächlich im Verfahren.</p>
+    </div>
+  </div>
+
+  <main id="top">
+    <section class="hero wrap">
+      <div class="hero-text">
+        <p class="eyebrow">Programmakkreditierung · NRW</p>
+        <h1>Reakkreditierung eines Studiengangs in 13&nbsp;Monaten</h1>
+        <p class="lead">Von der Auswertung der Lehrevaluation über die neue Prüfungsordnung bis zur Entscheidung des Akkreditierungsrats. Für jede Phase zeigt der Leitfaden, wer zuständig ist, welche Dokumente übergeben werden und auf welche Vorschrift sich der Schritt stützt.</p>
+        <p class="hero-program">Ansicht für: <b id="heroProgram">–</b></p>
+      </div>
+      <dl class="facts">
+        <div><dt>Phasen</dt><dd>6</dd><span>Okt 2026 – Okt 2027</span></div>
+        <div><dt>Übergabedokumente</dt><dd>14</dd><span>PDF, je Phase 2–3</span></div>
+        <div><dt>Studiengänge</dt><dd>12</dd><span>8 Bachelor · 4 Master</span></div>
+        <div><dt>Geltungsdauer</dt><dd>8 J.</dd><span>§ 26 StudakVO NRW</span></div>
+      </dl>
+    </section>
+
+    <section id="ablauf" class="section wrap" aria-labelledby="ablauf-h">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">Ablauf</p>
+          <h2 id="ablauf-h">Sechs Phasen, fünf Übergabepunkte</h2>
+        </div>
+        <div class="chips" id="roleChips" role="group" aria-label="Nach Zuständigkeit filtern"></div>
+      </div>
+
+      <div class="gantt" id="gantt" role="tablist" aria-label="Phasen im Zeitverlauf"></div>
+      <p class="gantt-hint" id="roleHint" aria-live="polite"></p>
+
+      <article class="phase" id="phasePanel" role="tabpanel" aria-live="polite"></article>
+    </section>
+
+    <section id="dokumente" class="section wrap" aria-labelledby="dok-h">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">Übergabematrix</p>
+          <h2 id="dok-h">Alle 14 Dokumente</h2>
+          <p class="section-sub">Versionsstand, Verfasser, Empfänger und Status – für <b class="js-program">–</b>.</p>
+        </div>
+        <div class="filters">
+          <label class="field"><span>Suche</span><input id="docSearch" type="search" placeholder="Titel, Person, ID" autocomplete="off"></label>
+          <label class="field"><span>Phase</span><select id="docPhase" class="select"><option value="">Alle</option></select></label>
+          <label class="field"><span>Status</span><select id="docStatus" class="select"><option value="">Alle</option></select></label>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table class="doc-table">
+          <thead><tr><th scope="col">ID</th><th scope="col">Dokument</th><th scope="col">Phase</th><th scope="col">Verfasst von</th><th scope="col">Empfänger</th><th scope="col">Status</th><th scope="col"><span class="sr-only">Aktion</span></th></tr></thead>
+          <tbody id="docRows"></tbody>
+        </table>
+        <p class="empty" id="docEmpty" hidden>Keine Dokumente für diese Auswahl. <button class="link" type="button" id="docReset">Filter zurücksetzen</button></p>
+      </div>
+      <dl class="legend" id="statusLegend"></dl>
+    </section>
+
+    <section id="studiengaenge" class="section wrap" aria-labelledby="sg-h">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">Studiengänge &amp; Ablage</p>
+          <h2 id="sg-h">Zwölf Studiengänge, zwei Ablageorte</h2>
+          <p class="section-sub">Jedes Dokument liegt mit gleichem Dateinamen im Moodle-Kurs „ACCREDO“ (ein Abschnitt je Studiengang) und auf Laufwerk X, geordnet nach Abschluss › Studiengang › Phase.</p>
+        </div>
+      </div>
+      <div class="storage">
+        <div class="store-card">
+          <h3>Moodle-Kurs „ACCREDO“</h3>
+          <ul class="plain">
+            <li><b>Abschnitt 0</b> · Allgemeines, dieser Leitfaden</li>
+            <li><b>Abschnitt 1–8</b> · Bachelorstudiengänge</li>
+            <li><b>Abschnitt 9–12</b> · Masterstudiengänge</li>
+          </ul>
+          <p class="muted small" id="moodleNote"></p>
+          <a class="btn" id="moodleMain" target="_blank" rel="noopener">Moodle öffnen <span aria-hidden="true">↗</span></a>
+        </div>
+        <div class="store-card">
+          <h3>Laufwerk X · Ordnerstruktur</h3>
+          <pre class="tree" id="xTree"></pre>
+        </div>
+      </div>
+      <h3 class="group-h">Bachelor <span>8 Studiengänge</span></h3>
+      <div class="programs" id="progBachelor"></div>
+      <h3 class="group-h">Master <span>4 Studiengänge</span></h3>
+      <div class="programs" id="progMaster"></div>
+    </section>
+
+    <section id="recht" class="section wrap" aria-labelledby="recht-h">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">Rechtsgrundlagen</p>
+          <h2 id="recht-h">Worauf sich die Schritte stützen</h2>
+          <p class="section-sub">In NRW gilt die Studienakkreditierungsverordnung (StudakVO NRW). Sie setzt die Musterrechtsverordnung (MRVO) um; die Paragrafen sind gleich nummeriert.</p>
+        </div>
+      </div>
+      <div class="laws" id="laws"></div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="wrap footer-inner">
+      <p><b>ACCREDO</b> · Leitfaden für Studiengangsleitungen, Qualitätsmanagement und Gremien.</p>
+      <p class="muted small">Rechtsgrundlagen: <a href="https://recht.nrw.de/gvnrw/2018-s98/" target="_blank" rel="noopener">StudakVO NRW</a>, <a href="https://recht.nrw.de/lrgv/gesetz/12122013-gesetz-ueber-die-hochschulen-des-landes-nordrhein-westfalen-hochschulgesetz-hg/" target="_blank" rel="noopener">Hochschulgesetz NRW</a>, <a href="https://www.akkreditierungsrat.de/sites/default/files/downloads/2019/Musterrechtsverordnung.pdf" target="_blank" rel="noopener">MRVO</a>. Alle Personen und Status sind Beispieldaten. Schriften lokal eingebunden, kein Tracking.</p>
+    </div>
+  </footer>
+
+  <dialog class="modal" id="docModal" aria-labelledby="modalTitle">
+    <form method="dialog" class="modal-inner">
+      <header class="modal-head">
+        <div>
+          <p class="eyebrow" id="modalType"></p>
+          <h3 id="modalTitle"></h3>
+          <p class="mono small muted" id="modalFile"></p>
+        </div>
+        <button class="icon-btn" value="close" aria-label="Schließen">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
+        </button>
+      </header>
+      <div class="modal-body">
+        <dl class="meta" id="modalMeta"></dl>
+        <h4>Freigabekette</h4>
+        <ol class="chain" id="modalChain"></ol>
+        <h4>Ablageorte</h4>
+        <div class="paths" id="modalPaths"></div>
+        <h4>Auszug <span class="muted">(Muster)</span></h4>
+        <pre class="excerpt" id="modalExcerpt"></pre>
+      </div>
+      <footer class="modal-foot">
+        <button class="btn btn-ghost" value="close">Schließen</button>
+      </footer>
+    </form>
+  </dialog>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="app.js"></script>
+<script data-pplx-inline-edit>
+(function () {
+  if (window === window.top) return;
+
+  const allowedParentOrigins = ["https://www.perplexity.ai","https://perplexity.ai","https://testing.perplexity.ai","https://staging.perplexity.ai","https://*.preview.i.perplexity.ai","http://perplexity.localhost","http://localhost:1420","http://127.0.0.1:1420","http://localhost:3000","http://127.0.0.1:3000","http://localhost:5173","http://127.0.0.1:5173"];
+  const MAX_FONT_BYTES = 500 * 1024;
+  const MAX_TOTAL_FONT_BYTES = 2 * 1024 * 1024;
+  const DEFAULT_LINE_HEIGHT = 16;
+  let scrollForwarding = false;
+  let scrollRaf = 0;
+  let trustedTopOrigin = null;
+
+  // Allow entries like "https://*.preview.i.perplexity.ai" — the wildcard
+  // matches a single DNS label (no dots), so "https://*.foo" cannot stretch
+  // across multiple labels.
+  function matchesAllowedOrigin(origin) {
+    if (!origin) return false;
+    for (const entry of allowedParentOrigins) {
+      if (!entry.includes("*")) {
+        if (entry === origin) return true;
+        continue;
+      }
+      const pattern = new RegExp(
+        "^" +
+          entry.replace(/[.+?^${}()|[\]\\]/g, "\\$&").replace(/\*/g, "[^.]+") +
+          "$",
+      );
+      if (pattern.test(origin)) return true;
+    }
+    return false;
+  }
+
+  // Trust decision: when the sender is same-origin-visible (event.origin is a
+  // real origin like https://www.perplexity.ai) we trust event.origin directly.
+  // When event.origin is "null" (opaque broker srcdoc), we fall back to the
+  // broker's stamped `parentOrigin` to identify the top window. The fallback
+  // is claim-only — we rely on the browser's native `targetOrigin` enforcement
+  // on the response path (see postToTrustedTop) to ensure replies can't be
+  // delivered to anyone but the actual top window of that claimed origin.
+  function getTrustedParentOrigin(event) {
+    const forwardedParentOrigin =
+      typeof event.data.parentOrigin === "string" ? event.data.parentOrigin : null;
+    const parentOrigin = event.origin === "null" ? forwardedParentOrigin : event.origin;
+    return matchesAllowedOrigin(parentOrigin) ? parentOrigin : null;
+  }
+
+  // All responses go to window.top with targetOrigin = the allowlisted origin.
+  // An attacker that iframes us inside their own null-origin broker can claim
+  // any parentOrigin they like, but the browser will drop the reply whenever
+  // the real top's origin doesn't match — so the screenshot never leaves.
+  function postToTrustedTop(message) {
+    if (!trustedTopOrigin) return;
+    try {
+      window.top.postMessage(message, trustedTopOrigin);
+    } catch (_error) {}
+  }
+
+  const PICK_CAPABILITIES = ["pick"];
+  const PICK_CHAIN_LENGTH = 4;
+  const PICK_MAX_TEXT_CHARS = 120;
+  const PICK_MAX_HTML_CHARS = 300;
+
+  function truncate(value, maxChars) {
+    return value.length > maxChars ? value.slice(0, maxChars - 1) + "…" : value;
+  }
+
+  function isPickableElement(element) {
+    return (
+      element instanceof Element &&
+      element !== document.documentElement &&
+      element !== document.body
+    );
+  }
+
+  function resolvePickTarget(x, y) {
+    if (!Number.isFinite(x) || !Number.isFinite(y)) return null;
+    const element = document.elementFromPoint(x, y);
+    return isPickableElement(element) ? element.closest("svg") || element : null;
+  }
+
+  function pickLabel(element) {
+    if (element.id) return element.localName + "#" + element.id;
+    return [element.localName].concat(Array.from(element.classList).slice(0, 2)).join(".");
+  }
+
+  // Only attributes that help find the element in source. data-* values and URL
+  // query strings or fragments can carry tokens.
+  const PICK_ATTRIBUTES = new Set([
+    "id",
+    "class",
+    "name",
+    "type",
+    "role",
+    "alt",
+    "aria-label",
+    "href",
+    "src",
+  ]);
+
+  function pickAttributeValue(attribute) {
+    return attribute.name === "href" || attribute.name === "src"
+      ? attribute.value.split(/[?#]/)[0]
+      : attribute.value;
+  }
+
+  function describePickElement(element) {
+    const chain = [];
+    for (
+      let current = element;
+      isPickableElement(current) && chain.length < PICK_CHAIN_LENGTH;
+      current = current.parentElement
+    ) {
+      chain.unshift(current);
+    }
+    const attributes = Array.from(element.attributes)
+      .filter((attribute) => PICK_ATTRIBUTES.has(attribute.name))
+      .map((attribute) => ` ${attribute.name}="${pickAttributeValue(attribute).replace(/"/g, "&quot;")}"`)
+      .join("");
+    const text = (element.innerText || element.textContent || "").replace(/\s+/g, " ").trim();
+    return {
+      chain: chain.map(pickLabel),
+      html: truncate(`<${element.localName}${attributes}>`, PICK_MAX_HTML_CHARS),
+      text: text ? truncate(text, PICK_MAX_TEXT_CHARS) : undefined,
+    };
+  }
+
+  // Hover asks once per frame, and innerText on a large section forces layout,
+  // so only the rect is re-read while the pointer stays on the same element.
+  // Clicks ask for fresh details since the page may have changed the element.
+  let lastPick = null;
+
+  function describePickTarget(element, fresh) {
+    if (fresh || lastPick?.element !== element) {
+      lastPick = { element, details: describePickElement(element) };
+    }
+    const rect = element.getBoundingClientRect();
+    return {
+      rect: { x: rect.left, y: rect.top, width: rect.width, height: rect.height },
+      ...lastPick.details,
+    };
+  }
+
+  function inlineAll(original, clone) {
+    if (original.nodeType !== 1 || clone.nodeType !== 1) return;
+
+    try {
+      const computedStyle = getComputedStyle(original);
+      // cssText on a computed style is the serialized declaration in modern
+      // Chromium/Safari — a single read beats enumerating ~400 longhand
+      // properties. Firefox returns "" here, so we fall back on empty.
+      const serialized = computedStyle.cssText;
+      if (serialized) {
+        clone.style.cssText = serialized;
+      } else {
+        const parts = new Array(computedStyle.length);
+        for (let index = 0; index < computedStyle.length; index += 1) {
+          const property = computedStyle[index];
+          parts[index] = `${property}:${computedStyle.getPropertyValue(property)};`;
+        }
+        clone.style.cssText = parts.join("");
+      }
+    } catch (_error) {}
+
+    const originalChildren = original.children;
+    const clonedChildren = clone.children;
+    for (
+      let index = 0;
+      index < originalChildren.length && index < clonedChildren.length;
+      index += 1
+    ) {
+      inlineAll(originalChildren[index], clonedChildren[index]);
+    }
+  }
+
+  function extractFontUrl(srcValue) {
+    const matches = [
+      ...srcValue.matchAll(
+        /url\(["']?([^"')]+)["']?\)(?:\s*format\(["']?([^"')]+)["']?\))?/gi,
+      ),
+    ];
+    if (matches.length === 0) return null;
+    const woff2 = matches.find((m) => m[2] && m[2].toLowerCase().includes("woff2"));
+    if (woff2) return woff2[1];
+    const woff = matches.find((m) => m[2] && m[2].toLowerCase().includes("woff"));
+    if (woff) return woff[1];
+    return matches[0][1];
+  }
+
+  // Cache resolved font URL -> data URI across captures. Fonts on a page
+  // essentially never change, and a batch run emits multiple captures back to
+  // back — without this we'd refetch + re-base64 every time.
+  const fontDataUriCache = new Map();
+  const SRC_DECLARATION_RE = /src\s*:\s*[^;}]+/i;
+
+  async function fetchAsDataUri(url) {
+    if (fontDataUriCache.has(url)) return fontDataUriCache.get(url);
+    let dataUri = null;
+    try {
+      const response = await fetch(url, { mode: "cors", credentials: "omit" });
+      if (response.ok) {
+        const blob = await response.blob();
+        if (blob.size <= MAX_FONT_BYTES) {
+          dataUri = await new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onloadend = () =>
+              resolve(typeof reader.result === "string" ? reader.result : null);
+            reader.onerror = () => resolve(null);
+            reader.readAsDataURL(blob);
+          });
+        }
+      }
+    } catch (_error) {
+      dataUri = null;
+    }
+    fontDataUriCache.set(url, dataUri);
+    return dataUri;
+  }
+
+  function collectFontFaceRuleTexts() {
+    const rules = [];
+    for (const sheet of document.styleSheets) {
+      let cssRules;
+      try {
+        cssRules = sheet.cssRules;
+      } catch (_error) {
+        continue;
+      }
+      if (!cssRules) continue;
+      for (const rule of cssRules) {
+        const cssText = rule.cssText || "";
+        if (cssText.startsWith("@font-face")) rules.push(cssText);
+      }
+    }
+    return rules;
+  }
+
+  async function buildInlinedFontCss() {
+    const ruleTexts = collectFontFaceRuleTexts();
+    if (ruleTexts.length === 0) return null;
+
+    const resolved = ruleTexts.map((cssText) => {
+      if (!SRC_DECLARATION_RE.test(cssText)) return null;
+      const srcMatch = cssText.match(/src\s*:\s*([^;}]+)[;}]/i);
+      if (!srcMatch) return null;
+      const url = extractFontUrl(srcMatch[1]);
+      if (!url) return null;
+      try {
+        return { cssText, url: new URL(url, document.baseURI).href };
+      } catch (_error) {
+        return null;
+      }
+    });
+
+    const dataUris = await Promise.all(
+      resolved.map((entry) => (entry ? fetchAsDataUri(entry.url) : Promise.resolve(null))),
+    );
+
+    const inlined = [];
+    let totalBytes = 0;
+    for (let index = 0; index < resolved.length; index += 1) {
+      const entry = resolved[index];
+      const dataUri = dataUris[index];
+      if (!entry || !dataUri) continue;
+      const approxBytes = dataUri.length * 0.75;
+      if (totalBytes + approxBytes > MAX_TOTAL_FONT_BYTES) break;
+      totalBytes += approxBytes;
+      inlined.push(entry.cssText.replace(SRC_DECLARATION_RE, `src: url("${dataUri}")`));
+    }
+    return inlined.length > 0 ? inlined.join("\n") : null;
+  }
+
+  function stripExternal(clone) {
+    const images = clone.querySelectorAll("img");
+    for (let index = 0; index < images.length; index += 1) {
+      const src = images[index].getAttribute("src");
+      if (src && !src.startsWith("data:")) images[index].removeAttribute("src");
+    }
+
+    const elements = clone.querySelectorAll("*");
+    for (let index = 0; index < elements.length; index += 1) {
+      const style = elements[index].style.cssText;
+      if (style && style.includes("url(")) {
+        elements[index].style.cssText = style.replace(
+          /url\(["']?(?!data:)[^)"']*["']?\)/gi,
+          "none",
+        );
+      }
+    }
+  }
+
+  function emitScroll() {
+    scrollRaf = 0;
+    if (!scrollForwarding) return;
+    postToTrustedTop({
+      type: "INLINE_EDIT_SCROLL",
+      scrollX: window.scrollX,
+      scrollY: window.scrollY,
+      capabilities: PICK_CAPABILITIES,
+    });
+  }
+
+  window.addEventListener(
+    "scroll",
+    function () {
+      if (!scrollForwarding || scrollRaf) return;
+      scrollRaf = requestAnimationFrame(emitScroll);
+    },
+    { passive: true, capture: true },
+  );
+
+  async function handleCaptureRequest(event) {
+    const requestId = event.data.requestId;
+    const scrollX = window.scrollX;
+    const scrollY = window.scrollY;
+    const width = window.innerWidth;
+    const height = window.innerHeight;
+
+    function postResult(dataUrl) {
+      postToTrustedTop({
+        type: "INLINE_EDIT_SCREENSHOT_RESULT",
+        requestId,
+        dataUrl,
+        scrollX,
+        scrollY,
+      });
+    }
+
+    try {
+      // Wait for any pending web fonts to resolve so both inline metrics and
+      // the @font-face inlining below see the same loaded faces.
+      if (document.fonts && document.fonts.ready) {
+        try {
+          await document.fonts.ready;
+        } catch (_error) {}
+      }
+
+      const clone = document.documentElement.cloneNode(true);
+      inlineAll(document.documentElement, clone);
+
+      const removedNodes = clone.querySelectorAll("script,link[rel=\"stylesheet\"],style");
+      for (let index = 0; index < removedNodes.length; index += 1) {
+        removedNodes[index].remove();
+      }
+
+      stripExternal(clone);
+
+      // Re-embed web fonts as data-URI @font-face rules so the SVG rasterizer
+      // can resolve them — external font URLs aren't fetched during
+      // foreignObject rendering, which would otherwise force a fallback face
+      // and change text metrics.
+      const inlinedFontCss = await buildInlinedFontCss();
+      if (inlinedFontCss) {
+        const styleEl = document.createElement("style");
+        styleEl.textContent = inlinedFontCss;
+        const head = clone.querySelector("head");
+        if (head) head.appendChild(styleEl);
+        else clone.insertBefore(styleEl, clone.firstChild);
+      }
+
+      const html = new XMLSerializer().serializeToString(clone);
+      const svg =
+        `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}">` +
+        '<foreignObject width="100%" height="100%">' +
+        `<div xmlns="http://www.w3.org/1999/xhtml" style="width:${width}px;height:${height}px;overflow:hidden">` +
+        `<div style="position:relative;left:-${scrollX}px;top:-${scrollY}px">` +
+        html +
+        "</div></div></foreignObject></svg>";
+      const svgUrl = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+      const image = new Image();
+      image.onload = function () {
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+        canvas.getContext("2d").drawImage(image, 0, 0);
+        postResult(canvas.toDataURL("image/png"));
+      };
+      image.onerror = function () {
+        postResult(null);
+      };
+      image.src = svgUrl;
+    } catch (_error) {
+      postResult(null);
+    }
+  }
+
+  window.addEventListener("message", function (event) {
+    if (!event.data) return;
+    // Only accept messages from the direct parent frame. Blocks sibling /
+    // unrelated-window postMessage senders that could otherwise reach us.
+    if (event.source !== window.parent) return;
+
+    const trustedParentOrigin = getTrustedParentOrigin(event);
+    if (!trustedParentOrigin) return;
+    trustedTopOrigin = trustedParentOrigin;
+
+    if (event.data.type === "INLINE_EDIT_PICK") {
+      const element = resolvePickTarget(event.data.x, event.data.y);
+      postToTrustedTop({
+        type: "INLINE_EDIT_PICK_RESULT",
+        seq: event.data.seq,
+        target: element ? describePickTarget(element, event.data.fresh === true) : null,
+      });
+      return;
+    }
+
+    if (event.data.type === "INLINE_EDIT_SCROLL_START") {
+      scrollForwarding = true;
+      emitScroll();
+      return;
+    }
+
+    if (event.data.type === "INLINE_EDIT_SCROLL_STOP") {
+      scrollForwarding = false;
+      if (scrollRaf) cancelAnimationFrame(scrollRaf);
+      scrollRaf = 0;
+      return;
+    }
+
+    if (event.data.type === "INLINE_EDIT_SCROLL_BY") {
+      const { deltaX, deltaY, deltaMode } = event.data;
+      if (!scrollForwarding || !Number.isFinite(deltaX) || !Number.isFinite(deltaY)) return;
+      if (deltaMode !== 0 && deltaMode !== 1 && deltaMode !== 2) return;
+      const lineHeight =
+        parseFloat(getComputedStyle(document.documentElement).lineHeight) || DEFAULT_LINE_HEIGHT;
+      const scaleX = deltaMode === 1 ? lineHeight : deltaMode === 2 ? window.innerWidth : 1;
+      const scaleY = deltaMode === 1 ? lineHeight : deltaMode === 2 ? window.innerHeight : 1;
+      // The selection overlay receives the wheel event instead of this iframe.
+      // Instant scrolling preserves trackpad deltas even on smooth-scroll sites.
+      window.scrollBy({ left: deltaX * scaleX, top: deltaY * scaleY, behavior: "instant" });
+      emitScroll();
+      return;
+    }
+
+    if (event.data.type !== "INLINE_EDIT_CAPTURE_REQUEST") return;
+
+    handleCaptureRequest(event);
+  });
+})();
+
+
+</script></body>
+</html>
