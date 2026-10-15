@@ -7,6 +7,7 @@
                Glas-Pfeile [data-deck-prev|next], Punkte [data-deck-dots], Zähler [data-deck-count], URL [data-deck-url] (data-url
                je Folie), Sprungknöpfe [data-slide-to] mit gleitender Markierung .deck-ind, Tasten ←/→. Kein Autoplay.
                Bilder laden vor, sobald das Deck in die Nähe kommt. Ohne JS stehen die Folien untereinander.
+   Geräte    .hws-plate (Hardware Stack): Zeiger kippt die Zeichnung leicht in 3D (Tiefe durch gestapelte Kopien), sonst sanftes Wiegen; Touch wischt weiter.
    Texte DE/EN folgen <html lang> (MutationObserver). prefers-reduced-motion: keine Bewegung. Herkunft: project_docs.html (cab50a03). */
 (() => {
   'use strict';
@@ -252,5 +253,56 @@
     updateUI();
     resetProgress();
     if (!reduce) requestAnimationFrame(step);
+  }
+
+  // ── Geräte kippen (Hardware Stack 05.1): Zeiger kippt die Zeichnung ±22°/±14°, gestapelte Kopien dahinter geben Tiefe; ohne Zeiger wiegt sie leicht ──
+  const plates = [...document.querySelectorAll('.hws-plate')].map(plate => {
+    const art = plate.querySelector('.hws-art'), slide = plate.closest('.slide');
+    if (!art) return null;
+    const box = document.createElement('div');
+    box.className = 'hws-3d';
+    plate.classList.add('is-3d');
+    plate.insertBefore(box, art);
+    box.append(art);
+    for (let i = 1; i <= 8; i++) {
+      const g = art.cloneNode(true);
+      g.classList.add('hws-ghost');
+      g.style.setProperty('--i', i);
+      g.style.transform = `translateZ(${-i * 4}px)`;
+      box.append(g);
+    }
+    const st = { plate, box, slide, x: 0, y: 0, tx: 0, ty: 0, hover: false, vis: false };
+    plate.addEventListener('pointermove', e => {
+      if (e.pointerType === 'touch') return;   // Touch: Wischen bleibt Folienwechsel
+      const r = plate.getBoundingClientRect();
+      st.hover = true;
+      st.ty = ((e.clientX - r.left) / r.width - .5) * 44;
+      st.tx = -((e.clientY - r.top) / r.height - .5) * 28;
+      kick();
+    });
+    plate.addEventListener('pointerleave', () => { st.hover = false; kick(); });
+    return st;
+  }).filter(Boolean);
+  let tiltRaf = 0;
+  const tilt = t => {
+    tiltRaf = 0;
+    let live = false;
+    plates.forEach(st => {
+      if (!st.vis || !st.slide?.classList.contains('is-on')) return;
+      live = true;
+      if (!st.hover) { st.tx = reduce ? 0 : Math.sin(t / 3100) * 4; st.ty = reduce ? 0 : Math.sin(t / 2300) * 11; }
+      st.x += (st.tx - st.x) * (reduce ? 1 : .09);
+      st.y += (st.ty - st.y) * (reduce ? 1 : .09);
+      st.box.style.setProperty('--rx', `${st.x.toFixed(2)}deg`);
+      st.box.style.setProperty('--ry', `${st.y.toFixed(2)}deg`);
+    });
+    if (live && !(reduce && !plates.some(s => s.hover))) tiltRaf = requestAnimationFrame(tilt);
+  };
+  function kick() { if (!tiltRaf) tiltRaf = requestAnimationFrame(tilt); }
+  if (plates.length) {
+    const io = new IntersectionObserver(es => { es.forEach(e => { plates.find(s => s.plate === e.target).vis = e.isIntersecting; }); kick(); });
+    plates.forEach(st => io.observe(st.plate));
+    document.addEventListener('visibilitychange', () => { if (document.hidden) { cancelAnimationFrame(tiltRaf); tiltRaf = 0; } else kick(); });
+    document.querySelectorAll('.hws-frame').forEach(d => d.addEventListener('deck:change', kick));
   }
 })();
