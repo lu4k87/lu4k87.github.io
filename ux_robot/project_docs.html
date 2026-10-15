@@ -319,6 +319,30 @@ html.sf-on .at-ring:not(.in) .seg { stroke-dasharray: 0 85; }
 .app-slide figcaption { display: grid; gap: 4px; padding: 14px 16px; border-top: 1px solid var(--line); background: var(--surface); }
 .app-slide figcaption b { font-size: 17px; font-weight: 800; line-height: 1.3; }
 .app-slide figcaption span:not(.k-t) { font-size: 15px; line-height: 1.5; color: var(--fg-2); max-width: 80ch; }
+/* Hardware Stack (05.1): Geräte-Folien mit Zeichnung (.hws-plate) oder Foto (.sl-media), Geräteliste links; schmal nur Symbole */
+.hws-slide .sl-mock { aspect-ratio: 16 / 9; overflow: hidden; }
+.hws-plate { display: grid; place-items: center; width: 100%; height: 100%; color: var(--hue);
+  background: radial-gradient(52% 72% at 50% 52%, color-mix(in srgb, var(--hue) 20%, transparent), transparent 72%),
+    repeating-radial-gradient(circle at 50% 52%, transparent 0 46px, color-mix(in srgb, var(--hue) 13%, transparent) 46px 47px),
+    linear-gradient(var(--grid) 1px, transparent 1px) 0 0 / 32px 32px, linear-gradient(90deg, var(--grid) 1px, transparent 1px) 0 0 / 32px 32px, var(--surface-2); }
+.hws-art { width: min(56%, 520px); height: auto; max-height: 84%; fill: none; stroke: currentColor; stroke-width: 2.4px; stroke-linecap: round; stroke-linejoin: round;
+  filter: drop-shadow(0 0 16px color-mix(in srgb, var(--hue) 40%, transparent)); }
+.hws-art * { vector-effect: non-scaling-stroke; }
+.hws-art .f { fill: color-mix(in srgb, var(--hue) 13%, transparent); }
+.hws-art .d { stroke-dasharray: 2 6; opacity: .75; }
+.hws-slide figcaption .chips { list-style: none; margin: 4px 0 0; padding: 0; }
+.hws-slide .sl-media img { object-position: center; }
+.hws-ico { grid-row: span 2; box-sizing: border-box; width: 28px; height: 28px; padding: 5px; border-radius: var(--radius-sm); color: var(--hue);
+  background: color-mix(in srgb, var(--hue) 14%, transparent); border: 1px solid color-mix(in srgb, var(--hue) 35%, transparent); }
+.hws-n { font-weight: 700; line-height: 1.2; }
+.hws-frame .af-tab { position: relative; min-height: 44px; padding-block: 6px; }
+@media (max-width: 960px) {
+  .hws-frame .af-side { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+  .hws-frame .af-tab { display: grid; place-items: center; min-height: 44px; padding: 6px; }
+  .hws-frame .af-tab .hws-ico { grid-row: auto; }
+  .hws-n, .hws-c { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+}
+@media (max-width: 560px) { .hws-frame .af-side { padding: 8px; gap: 4px; } }
 
 /* ═════ Kontakt: Abschluss in dunkler Zone, Visitenkarte rechts ═════ */
 .contact { padding-block: 104px; border-top: 1px solid var(--line);
@@ -1122,6 +1146,7 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
           <li><a href="#nui" style="--hue: var(--green)"><span class="pn"><svg class="ico" aria-hidden="true"><use href="#i-eye"/></svg><span>03</span></span><b>NUI</b><small data-en="Voice, gaze, hands">Stimme, Blick, Hände</small></a></li>
           <li><a href="#webapps" style="--hue: var(--lime)"><span class="pn"><svg class="ico" aria-hidden="true"><use href="#i-globe"/></svg><span>04</span></span><b data-en="Web apps">Web-Apps</b><small data-en="Four apps, one browser">Vier Apps, ein Browser</small></a></li>
           <li><a href="#atlas-sec" style="--hue: var(--pink)"><span class="pn"><svg class="ico" aria-hidden="true"><use href="#i-chart"/></svg><span>05</span></span><b data-en="Function atlas">Funktionsatlas</b><small data-en="85 functions in 9 areas">85 Funktionen in 9 Bereichen</small></a></li>
+          <li><a href="#hardware" style="--hue: var(--teal)"><span class="pn"><svg class="ico" aria-hidden="true"><use href="#i-chip"/></svg><span>05.1</span></span><b data-en="Hardware stack">Hardware Stack</b><small data-en="12 devices from gamepad to robot">12 Geräte vom Gamepad bis zum Roboter</small></a></li>
         </ol>
       </header>
 
@@ -1937,7 +1962,148 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
               <div class="pn-fns" id="pn-fns" hidden><h3 data-en="Functions in this flow">Funktionen in diesem Ablauf</h3><div class="chips" id="pn-chips"></div></div>
             </section>
           </div>
+      </section>
+
+      <!-- Hardware Stack (Unterkapitel 05.1): alle verwendeten Geräte als Folien; Gerät wählen (Seitenleiste), blättern, wischen -->
+      <section class="sec" id="hardware">
+        <header class="sec-head">
+          <div><span class="eyebrow" style="--hue: var(--teal)"><span class="n">5.1</span><span data-en="Every device">Alle Geräte</span></span><h2 data-en="Hardware stack">Hardware Stack</h2></div>
+          <div class="brief" style="--hue: var(--teal)"><p class="slogan" data-en="Twelve devices, one setup.">Zwölf Geräte, ein Aufbau.</p><ul class="kpis"><li class="kpi"><strong>12</strong><span data-en="devices">Geräte</span></li><li class="kpi"><strong>4</strong><span data-en="groups">Gruppen</span></li><li class="kpi"><strong>1</strong><span data-en="robot">Roboter</span></li></ul></div>
+        </header>
+        <div class="app-frame deck hws-frame" data-deck role="region" aria-label="Hardware Stack als Folien" data-en-aria="Hardware stack as slides" style="--hue: var(--teal)">
+          <div class="af-body">
+            <div class="af-side">
+              <span class="af-brand"><span class="brand-mark"><svg class="ico" aria-hidden="true"><use href="#i-chip"/></svg></span><span data-en="Hardware stack">Hardware Stack</span></span>
+              <button type="button" class="af-tab" data-slide-to="0" title="Xbox Elite Series 2"><svg class="ico hws-ico" aria-hidden="true"><use href="#i-pad"/></svg><span class="hws-n">Xbox Elite Series&nbsp;2</span><small class="hws-c" data-en="Gamepad">Gamepad</small></button>
+              <button type="button" class="af-tab" data-slide-to="1" title="Meta Quest 3"><svg class="ico hws-ico" aria-hidden="true"><use href="#i-vr"/></svg><span class="hws-n">Meta Quest&nbsp;3</span><small class="hws-c" data-en="VR headset">VR-Headset</small></button>
+              <button type="button" class="af-tab" data-slide-to="2" title="Leap Motion 2"><svg class="ico hws-ico" aria-hidden="true"><use href="#i-scan"/></svg><span class="hws-n">Leap Motion&nbsp;2</span><small class="hws-c" data-en="Hand tracking">Handtracking</small></button>
+              <button type="button" class="af-tab" data-slide-to="3" title="Touch-Display"><svg class="ico hws-ico" aria-hidden="true"><use href="#i-touch"/></svg><span class="hws-n" data-en="Touch display">Touch-Display</span><small class="hws-c" data-en="Touch input">Touch-Bedienung</small></button>
+              <button type="button" class="af-tab" data-slide-to="4" title="ZED Mini"><svg class="ico hws-ico" aria-hidden="true"><use href="#i-cam"/></svg><span class="hws-n">ZED Mini</span><small class="hws-c" data-en="Depth camera">Tiefenkamera</small></button>
+              <button type="button" class="af-tab" data-slide-to="5" title="Raspberry Pi"><svg class="ico hws-ico" aria-hidden="true"><use href="#i-chip"/></svg><span class="hws-n">Raspberry Pi</span><small class="hws-c" data-en="Camera host">Kamera-Host</small></button>
+              <button type="button" class="af-tab" data-slide-to="6" title="Raspberry Pi Camera V2"><svg class="ico hws-ico" aria-hidden="true"><use href="#i-cam"/></svg><span class="hws-n" data-en="2× Pi camera">2× Pi-Kamera</span><small class="hws-c" data-en="Camera">Kamera</small></button>
+              <button type="button" class="af-tab" data-slide-to="7" title="Tobii Pro Glasses 3"><svg class="ico hws-ico" aria-hidden="true"><use href="#i-eye"/></svg><span class="hws-n">Tobii Pro Glasses&nbsp;3</span><small class="hws-c" data-en="Eye tracking">Eye-Tracking</small></button>
+              <button type="button" class="af-tab" data-slide-to="8" title="Mikrofon"><svg class="ico hws-ico" aria-hidden="true"><use href="#i-mic"/></svg><span class="hws-n" data-en="Microphone">Mikrofon</span><small class="hws-c" data-en="Voice">Sprache</small></button>
+              <button type="button" class="af-tab" data-slide-to="9" title="Dell Precision 3660"><svg class="ico hws-ico" aria-hidden="true"><use href="#i-pc"/></svg><span class="hws-n">Dell Precision&nbsp;3660</span><small class="hws-c" data-en="Workstation">Workstation</small></button>
+              <button type="button" class="af-tab" data-slide-to="10" title="xArm Lite 6"><svg class="ico hws-ico" aria-hidden="true"><use href="#i-arm"/></svg><span class="hws-n">xArm Lite&nbsp;6</span><small class="hws-c" data-en="Robot">Roboter</small></button>
+              <button type="button" class="af-tab" data-slide-to="11" title="Vakuumgreifer"><svg class="ico hws-ico" aria-hidden="true"><use href="#i-grip"/></svg><span class="hws-n" data-en="Vacuum gripper">Vakuumgreifer</span><small class="hws-c" data-en="End effector">Endeffektor</small></button>
+            </div>
+            <div class="af-main">
+              <div class="deck-stage">
+                <div class="deck-track">
+
+                  <figure class="slide app-slide hws-slide">
+                    <div class="sl-mock"><div class="hws-plate"><svg class="hws-art" viewBox="0 0 160 90" aria-hidden="true">
+                      <path class="f" d="M42 18C30 18 20 38 15 62c-2 12 7 16 14 9l17-11h68l17 11c7 7 16 3 14-9C140 38 130 18 118 18z"/>
+                      <path d="M44 13h22M94 13h22"/><circle cx="50" cy="34" r="9"/><circle cx="50" cy="34" r="4"/><circle cx="94" cy="50" r="7"/>
+                      <path d="M66 43v14M59 50h14"/><circle cx="76" cy="33" r="2"/><circle cx="84" cy="33" r="2"/>
+                      <circle cx="112" cy="26" r="4"/><circle cx="112" cy="42" r="4"/><circle cx="104" cy="34" r="4"/><circle cx="120" cy="34" r="4"/>
+                    </svg></div></div>
+                    <figcaption><span class="k-t" data-k data-en="Gamepad · input">Gamepad · Bedienung</span><b data-k data-slide-title data-en="Jogging with your hands.">Jogging mit den Händen.</b><span data-k data-en="Cartesian jogging with speed scaling over USB or Bluetooth, local on the PC or remote from the browser.">Kartesisches Jogging mit Speed-Scaling per USB oder Bluetooth, lokal am PC oder remote aus dem Browser.</span><ul class="chips" data-k><li class="chip">Xbox Elite Series&nbsp;2</li><li class="chip">MoveIt Servo</li><li class="chip" data-en="Pre-collision check">Kollisionsvorprüfung</li></ul></figcaption>
+                  </figure>
+
+                  <figure class="slide app-slide hws-slide">
+                    <div class="sl-mock"><div class="hws-plate"><svg class="hws-art" viewBox="0 0 160 90" aria-hidden="true">
+                      <rect class="f" x="30" y="24" width="100" height="44" rx="20"/>
+                      <path d="M30 40H20a4 4 0 0 0-4 4v8a4 4 0 0 0 4 4h10M130 40h10a4 4 0 0 1 4 4v8a4 4 0 0 1-4 4h-10M58 24c14-12 30-12 44 0"/>
+                      <rect x="52" y="36" width="8" height="22" rx="4"/><rect x="76" y="36" width="8" height="22" rx="4"/><rect x="100" y="36" width="8" height="22" rx="4"/>
+                      <path class="d" d="M40 78h80"/>
+                    </svg></div></div>
+                    <figcaption><span class="k-t" data-k data-en="VR headset · input">VR-Headset · Bedienung</span><b data-k data-slide-title data-en="The TCP follows your hand.">Der TCP folgt der Hand.</b><span data-k data-en="6-DoF teleoperation in the browser via WebXR over Wi-Fi: the TCP follows the hand 1 : 1, without grip no motion.">6-DoF-Teleoperation im Browser per WebXR über WLAN: der TCP folgt der Hand 1&nbsp;:&nbsp;1, ohne Grip keine Bewegung.</span><ul class="chips" data-k><li class="chip">Meta Quest&nbsp;3</li><li class="chip">WebXR</li><li class="chip">HTTPS</li><li class="chip">6-DoF</li></ul></figcaption>
+                  </figure>
+
+                  <figure class="slide app-slide hws-slide">
+                    <div class="sl-mock"><div class="hws-plate"><svg class="hws-art" viewBox="0 0 160 90" aria-hidden="true">
+                      <rect class="f" x="34" y="66" width="92" height="14" rx="7"/><circle cx="62" cy="73" r="3"/><circle cx="98" cy="73" r="3"/>
+                      <path class="d" d="M48 64 28 14M112 64l20-50M28 14c34-14 70-14 104 0"/>
+                      <circle cx="80" cy="40" r="8"/><path d="M80 32V16M74 34l-12-14M86 34l12-14M70 40l-14-6M90 40l14-6"/>
+                      <circle cx="80" cy="14" r="2.5"/><circle cx="61" cy="18" r="2.5"/><circle cx="99" cy="18" r="2.5"/><circle cx="54" cy="32" r="2.5"/><circle cx="106" cy="32" r="2.5"/>
+                    </svg></div></div>
+                    <figcaption><span class="k-t" data-k data-en="Hand tracking · input">Handtracking · Bedienung</span><b data-k data-slide-title data-en="Gestures instead of a joystick.">Gesten statt Joystick.</b><span data-k data-en="A pinch couples the hand to the TCP; free mode makes it a pointer in the 3D view. Robot | Hardware: confirmation, half speed.">Kneifen kuppelt die Hand an den TCP; im freien Modus wird sie zum Zeiger im 3D-Viewport. Robot | Hardware: Bestätigung, halbes Tempo.</span><ul class="chips" data-k><li class="chip">Leap Motion&nbsp;2</li><li class="chip" data-en="Pinch">Kneifen</li><li class="chip" data-en="Free mode">Freier Modus</li><li class="chip" data-en="Calibration per user">Kalibrierung je Nutzer</li></ul></figcaption>
+                  </figure>
+
+                  <figure class="slide app-slide hws-slide">
+                    <div class="sl-mock"><div class="hws-plate"><svg class="hws-art" viewBox="0 0 160 90" aria-hidden="true">
+                      <rect class="f" x="30" y="8" width="100" height="66" rx="7"/><rect x="37" y="15" width="86" height="52" rx="3"/>
+                      <path d="M80 74v9M56 83h48"/><rect x="44" y="22" width="34" height="7" rx="2"/><rect x="44" y="34" width="22" height="20" rx="2"/>
+                      <circle cx="98" cy="46" r="4"/><circle class="d" cx="98" cy="46" r="11"/><circle class="d" cx="98" cy="46" r="18"/>
+                    </svg></div></div>
+                    <figcaption><span class="k-t" data-k data-en="Touch · input">Touch · Bedienung</span><b data-k data-slide-title data-en="Operate right at the robot.">Bedienen direkt am Roboter.</b><span data-k data-en="Touch display next to the workcell, served by the UX | Nexus Launcher under /touch; touch targets of 56&amp;nbsp;px.">Touch-Display neben dem Arbeitsplatz, ausgeliefert von der UX | Nexus Launcher unter /touch; Touch-Ziele mit 56&nbsp;px.</span><ul class="chips" data-k><li class="chip">UX | Compact Interface</li><li class="chip">/touch</li><li class="chip">56&nbsp;px</li></ul></figcaption>
+                  </figure>
+
+                  <figure class="slide app-slide hws-slide">
+                    <div class="sl-mock"><div class="hws-plate"><svg class="hws-art" viewBox="0 0 160 90" aria-hidden="true">
+                      <rect class="f" x="20" y="24" width="120" height="30" rx="10"/>
+                      <circle cx="50" cy="39" r="10"/><circle cx="50" cy="39" r="4"/><circle cx="110" cy="39" r="10"/><circle cx="110" cy="39" r="4"/>
+                      <rect x="73" y="34" width="14" height="8" rx="2"/><path d="M80 54v10M62 64h36M80 64v18M62 82h36"/>
+                    </svg></div></div>
+                    <figcaption><span class="k-t" data-k data-en="Depth camera · sensing">Tiefenkamera · Sensorik</span><b data-k data-slide-title data-en="The scene in 3D.">Die Szene in 3D.</b><span data-k data-en="Delivers depth and 3D point clouds for YOLO object detection, OctoMap and grasping; USB 3.0 on the workstation.">Liefert Tiefe und 3D-Punktwolken für YOLO-Objekterkennung, OctoMap und Greifen; USB 3.0 an der Workstation.</span><ul class="chips" data-k><li class="chip">Stereolabs ZED Mini</li><li class="chip">ZED SDK&nbsp;4.1</li><li class="chip">YOLOv8</li><li class="chip" data-en="3D-printed stand">Stativ aus dem 3D-Drucker</li></ul></figcaption>
+                  </figure>
+
+                  <figure class="slide app-slide hws-slide">
+                    <div class="sl-media"><img src="img/hardware/raspberry_pi.jpg" width="900" height="506" alt="Raspberry Pi im schwarzen Gehäuse neben dem Roboterarm auf dem Arbeitstisch" data-en-alt="Raspberry Pi in a black case next to the robot arm on the work table" loading="lazy"></div>
+                    <figcaption><span class="k-t" data-k data-en="Camera host · sensing">Kamera-Host · Sensorik</span><b data-k data-slide-title data-en="Pi cameras on the network.">Pi-Kameras im Netz.</b><span data-k data-en="The Raspberry Pi serves the camera images to the workstation over the network via the RPi Cam Web Interface.">Der Raspberry Pi stellt die Kamerabilder über das RPi Cam Web Interface im Netzwerk der Workstation bereit.</span><ul class="chips" data-k><li class="chip">Raspberry Pi</li><li class="chip">RPi Cam Web Interface</li><li class="chip" data-en="ArUco · in preparation">ArUco · in Vorbereitung</li></ul></figcaption>
+                  </figure>
+
+                  <figure class="slide app-slide hws-slide">
+                    <div class="sl-media"><img src="img/hardware/pi_camera.jpg" width="900" height="506" alt="Raspberry Pi Camera V2 im gedruckten Halter am Vakuumgreifer des xArm Lite 6, Flachbandkabel nach oben" data-en-alt="Raspberry Pi Camera V2 in a printed mount on the vacuum gripper of the xArm Lite 6, ribbon cable pointing up" loading="lazy"></div>
+                    <figcaption><span class="k-t" data-k data-en="Camera · sensing">Kamera · Sensorik</span><b data-k data-slide-title data-en="One camera on the gripper, one on the profile.">Eine Kamera am Greifer, eine am Profil.</b><span data-k data-en="Pi Camera V2 as nozzle cam on the vacuum gripper and on a 30&amp;nbsp;mm aluminium profile; both mounts are 3D-printed and parametric in FreeCAD.">Pi Camera V2 als Nozzle-Cam am Vakuumgreifer und am 30er-Aluprofil; beide Halter sind 3D-gedruckt und parametrisch in FreeCAD.</span><ul class="chips" data-k><li class="chip">Pi Camera V2</li><li class="chip" data-en="3D print">3D-Druck</li><li class="chip">FreeCAD</li></ul></figcaption>
+                  </figure>
+
+                  <figure class="slide app-slide hws-slide">
+                    <div class="sl-mock"><div class="hws-plate"><svg class="hws-art" viewBox="0 0 160 90" aria-hidden="true">
+                      <rect class="f" x="26" y="30" width="48" height="32" rx="12"/><rect class="f" x="86" y="30" width="48" height="32" rx="12"/>
+                      <path d="M74 40c4-5 8-5 12 0M26 38 8 32M134 38l18-6"/><circle cx="80" cy="33" r="3"/>
+                      <circle cx="34" cy="37" r="1.8"/><circle cx="66" cy="37" r="1.8"/><circle cx="34" cy="55" r="1.8"/><circle cx="66" cy="55" r="1.8"/>
+                      <circle cx="94" cy="37" r="1.8"/><circle cx="126" cy="37" r="1.8"/><circle cx="94" cy="55" r="1.8"/><circle cx="126" cy="55" r="1.8"/>
+                      <circle cx="50" cy="46" r="5"/><circle cx="110" cy="46" r="5"/><circle class="d" cx="50" cy="46" r="10"/><circle class="d" cx="110" cy="46" r="10"/>
+                    </svg></div></div>
+                    <figcaption><span class="k-t" data-k data-en="Eye tracking · sensing">Eye-Tracking · Sensorik</span><b data-k data-slide-title data-en="A look replaces the click.">Ein Blick ersetzt den Klick.</b><span data-k data-en="Binocular gaze tracking at 50/100&amp;nbsp;Hz via RTSP over Wi-Fi or Ethernet; a fixation of about 1&amp;nbsp;s triggers the selection.">Binokulare Blickerfassung mit 50/100&nbsp;Hz per RTSP über WLAN oder Ethernet; eine Fixation von etwa 1&nbsp;s löst die Auswahl aus.</span><ul class="chips" data-k><li class="chip">Tobii Pro Glasses&nbsp;3</li><li class="chip">50/100&nbsp;Hz</li><li class="chip">RTSP</li><li class="chip" data-en="ArUco calibration">ArUco-Kalibrierung</li></ul></figcaption>
+                  </figure>
+
+                  <figure class="slide app-slide hws-slide">
+                    <div class="sl-mock"><div class="hws-plate"><svg class="hws-art" viewBox="0 0 160 90" aria-hidden="true">
+                      <rect class="f" x="68" y="8" width="24" height="42" rx="12"/><path d="M68 22h24M68 30h24M68 38h24"/>
+                      <path d="M56 36a24 24 0 0 0 48 0M80 60v14M62 76h36"/>
+                      <path class="d" d="M44 26c-6 8-6 16 0 24M32 20c-10 12-10 28 0 40M116 26c6 8 6 16 0 24M128 20c10 12 10 28 0 40"/>
+                    </svg></div></div>
+                    <figcaption><span class="k-t" data-k data-en="Microphone · sensing">Mikrofon · Sensorik</span><b data-k data-slide-title data-en="Speak instead of typing.">Sprechen statt tippen.</b><span data-k data-en="Push-to-talk with a 5&amp;nbsp;s listening window; Whisper on the local GPU needs 50–120&amp;nbsp;ms after the end of speech.">Push-to-Talk mit 5&nbsp;s Hörfenster; Whisper auf der lokalen GPU braucht 50–120&nbsp;ms nach Sprechende.</span><ul class="chips" data-k><li class="chip">Whisper</li><li class="chip">PyAudio</li><li class="chip" data-en="Push-to-talk">Push-to-Talk</li></ul></figcaption>
+                  </figure>
+
+                  <figure class="slide app-slide hws-slide">
+                    <div class="sl-mock"><div class="hws-plate"><svg class="hws-art" viewBox="0 0 160 90" aria-hidden="true">
+                      <rect class="f" x="54" y="4" width="52" height="82" rx="6"/><rect x="62" y="11" width="36" height="5" rx="2"/>
+                      <circle cx="80" cy="42" r="17"/><circle cx="80" cy="42" r="10"/><circle cx="80" cy="42" r="3"/><path d="M80 25v7M80 52v7M63 42h7M90 42h7"/>
+                      <circle cx="80" cy="72" r="4"/><rect x="62" y="78" width="8" height="3" rx="1"/><rect x="90" y="78" width="8" height="3" rx="1"/>
+                      <path class="d" d="M30 20h18M30 44h18M30 68h18M112 20h18M112 44h18M112 68h18"/>
+                    </svg></div></div>
+                    <figcaption><span class="k-t" data-k data-en="Workstation · compute">Workstation · Rechenleistung</span><b data-k data-slide-title data-en="Everything runs locally.">Alles läuft lokal.</b><span data-k data-en="Intel Core i9-12900K, NVIDIA RTX A5000 with 24&amp;nbsp;GB VRAM and 32&amp;nbsp;GB RAM run ROS 2, MoveIt Servo, YOLO, Whisper and the local language model.">Intel Core i9-12900K, NVIDIA RTX A5000 mit 24&nbsp;GB VRAM und 32&nbsp;GB RAM führen ROS 2, MoveIt Servo, YOLO, Whisper und das lokale Sprachmodell aus.</span><ul class="chips" data-k><li class="chip">Dell Precision&nbsp;3660</li><li class="chip">Ubuntu&nbsp;22.04</li><li class="chip">ROS&nbsp;2 Humble</li><li class="chip">CUDA&nbsp;12</li></ul></figcaption>
+                  </figure>
+
+                  <figure class="slide app-slide hws-slide">
+                    <div class="sl-media"><img src="img/hardware/xarm_lite6.jpg" width="1120" height="630" alt="xArm Lite 6 in Weiß auf dem Arbeitstisch, am Handgelenk Kamera und Vakuumgreifer" data-en-alt="White xArm Lite 6 on the work table with camera and vacuum gripper at the wrist" loading="lazy"></div>
+                    <figcaption><span class="k-t" data-k data-en="Robot · motion">Roboter · Bewegung</span><b data-k data-slide-title data-en="Six axes, 440&amp;nbsp;mm reach.">Sechs Achsen, 440&nbsp;mm Reichweite.</b><span data-k data-en="Light 6-axis robot from UFactory, controlled over Ethernet (Modbus TCP); every control mode runs through the same safety chain.">Leichter 6-Achs-Roboter von UFactory, angesteuert per Ethernet (Modbus TCP); jeder Steuerweg läuft durch dieselbe Sicherheitskette.</span><ul class="chips" data-k><li class="chip">UFactory xArm Lite&nbsp;6</li><li class="chip">6-DoF</li><li class="chip">Modbus TCP</li></ul></figcaption>
+                  </figure>
+
+                  <figure class="slide app-slide hws-slide">
+                    <div class="sl-mock"><div class="hws-plate"><svg class="hws-art" viewBox="0 0 160 90" aria-hidden="true">
+                      <rect x="74" y="4" width="12" height="22" rx="2"/><rect class="f" x="70" y="26" width="20" height="8" rx="2"/>
+                      <path class="f" d="M72 34h16l6 12H66z"/><path class="f" d="M66 46h28l10 14H56z"/>
+                      <rect class="f" x="38" y="66" width="84" height="16" rx="3"/><path class="d" d="M80 64V36M70 64V48M90 64V48"/>
+                    </svg></div></div>
+                    <figcaption><span class="k-t" data-k data-en="End effector · motion">Endeffektor · Bewegung</span><b data-k data-slide-title data-en="Grasping by vacuum.">Greifen per Unterdruck.</b><span data-k data-en="Suction gripper on the tool digital I/O (TGPIO) for pick and place; a 5&amp;nbsp;V laser diode marks the target below 50&amp;nbsp;mm Z height.">Sauggreifer am Tool-Digital-I/O (TGPIO) für Pick-and-Place; eine 5-V-Laserdiode zeigt das Ziel unter 50&nbsp;mm Z-Höhe.</span><ul class="chips" data-k><li class="chip" data-en="xArm Lite 6 vacuum gripper">xArm Lite 6 Vakuumgreifer</li><li class="chip">TGPIO</li><li class="chip" data-en="Laser aiming aid">Laser-Zielhilfe</li></ul></figcaption>
+                  </figure>
+
+                </div>
+                <div class="deck-arrows media">
+                  <button type="button" class="glass-btn g-prev on-media" data-deck-prev aria-label="Vorheriges Gerät" data-en-aria="Previous device"><svg class="ico" aria-hidden="true"><use href="#i-prev"/></svg></button>
+                  <button type="button" class="glass-btn g-next on-media" data-deck-next aria-label="Nächstes Gerät" data-en-aria="Next device"><svg class="ico" aria-hidden="true"><use href="#i-next"/></svg></button>
+                </div>
+              </div>
+              <div class="deck-bar"><span class="deck-count" data-deck-count></span><span class="deck-dots" data-deck-dots></span><span></span></div>
+            </div>
+          </div>
         </div>
+        <p class="sub list-note" data-en="Bill of materials and wiring: &lt;a href=&quot;operate_setup_guide.html&quot;&gt;setup guide&lt;/a&gt;.">Stückliste und Verkabelung: <a href="operate_setup_guide.html">Setup-Guide</a>.</p>
       </section>
     </div>
   </div>
