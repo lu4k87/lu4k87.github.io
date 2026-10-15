@@ -11,7 +11,7 @@
 (function () {
 'use strict';
 const D = Math.PI / 180, R1 = 150, R2 = 270, FRONT = 180;   // Radien in Szenen-Einheiten; gewähltes Segment steht vorn (zur Kamera)
-const EL = 56 * D, FOV = 30;                                  // Kamera-Neigung (steiler = Scheibe weniger geneigt, Wunsch User 15.10.2026), senkrechtes Sichtfeld
+const EL = 38 * D, FOV = 30;                                  // Kamera-Neigung, senkrechtes Sichtfeld
 const LABEL_MIN_W = 440;                                      // schmalere Bühne: Namen < 12 px → nur Icons, Name steht im Panel
 const HOLO_MIN_W = 760, SHIFT = 290;                          // ab dieser Bühnenbreite: Ring nach links, Hologramm-Karte rechts
 
