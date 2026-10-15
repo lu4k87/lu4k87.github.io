@@ -1,9 +1,5 @@
 <!doctype html>
-<!-- Claude Ops: Landingpage + Doku des Live-Dashboards der Claude-Chats (eigenes Projekt, kein Teil des Roboters).
-     Aufbau wie die develop_-Seiten (Skill docs-layout): Kopfzeile → Hero (Text + Beispiel-Lage) → Gebaut auf → 01 Lage → 02 Ansichten (.alt)
-     → 03 Jarvis-Ebene → 04 Gesten (.alt) → 05 Technik → Weiter. Inhalte aus README.md; Gesten = Liste GEST in hand.js (Posen wie test_hand.py),
-     Schwellenwerte (REC.T) bewusst nicht genannt. Bausteine aus docs/ (landing.css, scroll_flow.*) per ../docs/ → als Datei und über den Server nutzbar.
-     Öffentlich: tools/publish_pages.py → lu4k87.github.io/claude-ops ([data-local] = nur lokal Nutzbares, dort entfernt). -->
+
 <html lang="de">
 <head>
 <meta charset="utf-8">
@@ -319,7 +315,7 @@ footer .foot-link:hover { text-decoration-color: currentColor; }
 </header>
 
 <main id="start">
-  <!-- ═════════ Kopf: Name, Claim, Sachsatz, Kennzahlen · rechts Beispiel-Lage im HUD-Look ═════════ -->
+  
   <section class="hero dark-zone" aria-label="Abstract">
     <div class="wrap hero-inner">
       <div class="hero-head">
@@ -341,7 +337,7 @@ footer .foot-link:hover { text-decoration-color: currentColor; }
           <li><b>1</b><span data-en="report by voice">Lagebericht per Stimme</span></li>
         </ul>
       </div>
-      <!-- Beispiel-Lage: zeigt den Aufbau der Kopfzeile von Claude Ops, keine echten Daten -->
+      
       <figure class="hud" aria-label="Beispiel: Kopfzeile und Crew von Claude Ops" data-en-aria="Example: header and crew of Claude Ops">
         <div class="hud-top"><span class="hud-logo"><svg class="ico i16" aria-hidden="true"><use href="#i-radar"/></svg>CLAUDE OPS</span><span class="hud-tag" data-en="EXAMPLE">BEISPIEL</span></div>
         <ul class="hud-kv">
@@ -361,7 +357,7 @@ footer .foot-link:hover { text-decoration-color: currentColor; }
     </div>
   </section>
 
-  <!-- ═════════ Gebaut auf ═════════ -->
+  
   <section class="strip" aria-label="Gebaut auf" data-en-aria="Built on">
     <div class="wrap">
       <div class="strip-row">
@@ -378,7 +374,7 @@ footer .foot-link:hover { text-decoration-color: currentColor; }
     </div>
   </section>
 
-  <!-- ═════════ 01 Lage: was Claude Ops zeigt (Kopfzeile, Spalten, Missionen) ═════════ -->
+  
   <section class="zone" id="lage" style="--hue: var(--blue)" aria-labelledby="lage-h">
     <div class="wrap">
       <header class="sec-head">
@@ -402,7 +398,7 @@ footer .foot-link:hover { text-decoration-color: currentColor; }
     </div>
   </section>
 
-  <!-- ═════════ 02 Ansichten: Zentrum A–H (VIEWS in index.html), BRAIN = Standard ═════════ -->
+  
   <section class="zone alt" id="ansichten" style="--hue: var(--violet)" aria-labelledby="ansichten-h">
     <div class="wrap">
       <header class="sec-head">
@@ -438,7 +434,7 @@ footer .foot-link:hover { text-decoration-color: currentColor; }
     </div>
   </section>
 
-  <!-- ═════════ 03 Jarvis-Ebene: Stimme, Ton, Hero-Effekte, Raum ═════════ -->
+  
   <section class="zone" id="jarvis" style="--hue: var(--teal)" aria-labelledby="jarvis-h">
     <div class="wrap">
       <header class="sec-head">
@@ -467,7 +463,7 @@ footer .foot-link:hover { text-decoration-color: currentColor; }
     </div>
   </section>
 
-  <!-- ═════════ 04 Gesten: einschalten, sieben Gesten (Liste GEST, Modul HAND), Anzeige ═════════ -->
+  
   <section class="zone alt" id="gesten" style="--hue: var(--teal)" aria-labelledby="gesten-h">
     <div class="wrap">
       <header class="sec-head">
@@ -568,7 +564,7 @@ footer .foot-link:hover { text-decoration-color: currentColor; }
     </div>
   </section>
 
-  <!-- ═════════ 05 Technik: Server, Restzeit, Erkenner, Aufnahme, Tests, Datenschutz ═════════ -->
+  
   <section class="zone" id="technik" style="--hue: var(--indigo)" aria-labelledby="technik-h">
     <div class="wrap">
       <header class="sec-head">
@@ -602,7 +598,7 @@ python3 -m pytest -q __project_claude_ops/test_server.py __project_claude_ops/te
     </div>
   </section>
 
-  <!-- ═════════ Weiter: Claude Ops öffnen (nur lokal), Arbeitsweise der Chats, Kontakt ═════════ -->
+  
   <section class="contact dark-zone" id="weiter" aria-labelledby="weiter-h">
     <div class="wrap">
       <div class="ct-copy">

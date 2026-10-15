@@ -1,10 +1,5 @@
 <!doctype html>
-<!-- Setup-Guide: Arbeitsplatz xArm Lite 6 in Betrieb nehmen (Hardware → Ubuntu → ROS 2 → Workspace → Umgebung →
-     Zusatzmodule → Abnahme). Zwei Einstiege: „PC vorinstalliert“ (nur Hardware, Netz, Abnahme) oder „selbst installieren“.
-     Öffnen: direkt als Datei, über die UX | Nexus Launcher unter /manuals/operate_setup_guide.html (Footer-Knopf) oder aus der
-     Projekt-Doku (docs/project_docs.html). Design wie die Projekt-Doku (Palette Monochrom); Kopf = Landing-Hero aus css/landing.css +
-     js/landing.js, 3D-Bühne js/hero3d.js (Szene „cell“, ohne WebGL/Netz bleibt das Foto). Häkchen bleiben im Browser gespeichert.
-     Befehle aus docs/<de|en>/installation.md, running.md, vr_quest3.md und den Skripten in tools/ – bei Änderungen dort mitziehen. -->
+
 <html lang="de">
 <head>
 <meta charset="utf-8">
@@ -296,7 +291,7 @@ footer .wrap { display: flex; justify-content: space-between; flex-wrap: wrap; g
 </header>
 
 <main id="start">
-  <!-- ═════════ Hero: Titel, Einstiege als Knöpfe; rechts 3D-Bühne „cell“ (Tisch, ZED Mini, Objekte) mit Karte „Fortschritt“ aus den Häkchen ═════════ -->
+  
   <section class="hero dark-zone" aria-labelledby="setup-h1">
     <div class="wrap hero-inner">
       <div class="hero-copy">
@@ -377,7 +372,7 @@ footer .wrap { display: flex; justify-content: space-between; flex-wrap: wrap; g
       <ol class="jr-track" id="jr-track"></ol>
     </section>
 
-    <!-- Phase 1 -->
+    
     <details class="phase" id="phase-1" data-for="all" open>
       <summary><span class="n">1</span><h2 data-en="Check the delivery">Lieferumfang prüfen</h2><span class="meta"><span class="tag" data-en="Hardware">Hardware</span><span class="tag cnt"></span><svg class="ico chev"><use href="#i-chev"/></svg></span></summary>
       <div class="body">
@@ -395,7 +390,7 @@ footer .wrap { display: flex; justify-content: space-between; flex-wrap: wrap; g
       </div>
     </details>
 
-    <!-- Phase 2 -->
+    
     <details class="phase" id="phase-2" data-for="all" open>
       <summary><span class="n">2</span><h2 data-en="Assembly &amp; cabling">Aufbau &amp; Verkabelung</h2><span class="meta"><span class="tag" data-en="Hardware">Hardware</span><span class="tag cnt"></span><svg class="ico chev"><use href="#i-chev"/></svg></span></summary>
       <div class="body">
@@ -448,7 +443,7 @@ footer .wrap { display: flex; justify-content: space-between; flex-wrap: wrap; g
       </div>
     </details>
 
-    <!-- Phase 3 -->
+    
     <details class="phase" id="phase-3" data-for="install" open>
       <summary><span class="n">3</span><h2 data-en="Ubuntu base system">Ubuntu-Grundsystem</h2><span class="meta"><span class="tag" data-en="Software">Software</span><span class="tag cnt"></span><svg class="ico chev"><use href="#i-chev"/></svg></span></summary>
       <div class="body">
@@ -474,7 +469,7 @@ ping -c 3 192.168.1.xxx</pre></div></div></li>
       </div>
     </details>
 
-    <!-- Phase 4 -->
+    
     <details class="phase" id="phase-4" data-for="install" open>
       <summary><span class="n">4</span><h2>ROS 2 Humble</h2><span class="meta"><span class="tag" data-en="Software">Software</span><span class="tag cnt"></span><svg class="ico chev"><use href="#i-chev"/></svg></span></summary>
       <div class="body">
@@ -501,7 +496,7 @@ sudo apt install -y python3-pyaudio portaudio19-dev python3-pyqt5.qtwebengine py
       </div>
     </details>
 
-    <!-- Phase 5 -->
+    
     <details class="phase" id="phase-5" data-for="install" open>
       <summary><span class="n">5</span><h2 data-en="Workspace, CUDA/ZED, build">Workspace, CUDA/ZED, Build</h2><span class="meta"><span class="tag" data-en="Software">Software</span><span class="tag cnt"></span><svg class="ico chev"><use href="#i-chev"/></svg></span></summary>
       <div class="body">
@@ -524,7 +519,7 @@ colcon build --symlink-install 2&gt;&amp;1 | tail -20</pre></div></div></li>
       </div>
     </details>
 
-    <!-- Phase 6 -->
+    
     <details class="phase" id="phase-6" data-for="all" open>
       <summary><span class="n">6</span><h2 data-en="Environment &amp; network">Umgebung &amp; Netzwerk</h2><span class="meta"><span class="tag" data-en="critical">kritisch</span><span class="tag cnt"></span><svg class="ico chev"><use href="#i-chev"/></svg></span></summary>
       <div class="body">
@@ -569,7 +564,7 @@ python3 ~/dev_ws/tools/check_ports.py</pre></div></div></li>
       </div>
     </details>
 
-    <!-- Phase 7 -->
+    
     <details class="phase" id="phase-7" data-for="all" open>
       <summary><span class="n">7</span><h2 data-en="Apps &amp; add-on modules">Apps &amp; Zusatzmodule</h2><span class="meta"><span class="tag" data-en="optional per module">optional je Modul</span><span class="tag cnt"></span><svg class="ico chev"><use href="#i-chev"/></svg></span></summary>
       <div class="body">
@@ -594,7 +589,7 @@ python3 ~/__project_claude_ops/leap.py        # Selbsttest: „ok · Leap Motion
       </div>
     </details>
 
-    <!-- Phase 8 -->
+    
     <details class="phase" id="phase-8" data-for="all" open>
       <summary><span class="n">8</span><h2 data-en="First start &amp; acceptance">Erster Start &amp; Abnahme</h2><span class="meta"><span class="tag ok" data-en="Check">Prüfen</span><span class="tag cnt"></span><svg class="ico chev"><use href="#i-chev"/></svg></span></summary>
       <div class="body">

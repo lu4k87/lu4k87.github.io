@@ -1,12 +1,5 @@
 <!doctype html>
-<!-- Projekt-Doku: zentraler Einstieg zu allen Unterlagen (Handbuch, Setup-Karte, Poster, Projektseiten, docs) als Landing Page.
-     Design „UX Robot“ (~/ai_dev_workflow_global/skills/preview/showcase_template.html), Motion: Skill motion-viz, js/scroll_flow.js.
-     Aufbau (Landingpage = Einstieg, Inhalte auf den Unterseiten): Hero (Abstract, 3D-Bühne) → Gebaut auf →
-     Teil 1 Unterlagen (01 Vorstellen … 05 Bedienen; in 05: Überblick → Funktionsatlas → Schnellstart/Handbuch) → Web-Apps (Folien) →
-     Teil 2 Kurzfassung (04–07 als Kacheln → present_presentation.html) → Kontakt. Unterseiten: Rückweg css/doc_path.css.
-     Folien: [data-deck] mit .slide (Glas-Pfeile, Punkte, ←/→, Wischen; ohne JS untereinander).
-     Öffnen: direkt als Datei oder über die UX | Nexus Launcher unter /ws/docs/project_docs.html
-     (dann öffnet „Setup-Karte“ den Dialog aus ui_shared/net_info.js). Neue Unterlage → hier eine Karte ergänzen. -->
+
 <html lang="de">
 <head>
 <meta charset="utf-8">
@@ -926,7 +919,7 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
   <symbol id="i-pause" viewBox="0 0 24 24"><path d="M8 5v14M16 5v14"/></symbol>
   <symbol id="i-warn" viewBox="0 0 24 24"><path d="M12 3.5l9.5 17h-19z"/><path d="M12 10v4.5M12 17.5h.01"/></symbol>
   <symbol id="i-stop" viewBox="0 0 24 24"><path d="M8 2.5h8l5.5 5.5v8L16 21.5H8L2.5 16V8z"/><path d="M8.5 12h7"/></symbol>
-  <!-- QR „Seite öffnen“ → https://lu4k87.github.io/ (Startseite, leitet auf diesen Hub) · neu erzeugen: segno.make(URL, error="m").svg_inline(scale=1, border=1, omitsize=True) -->
+  
   <symbol id="qr-docs" viewBox="0 0 27 27"><path stroke="#0b1424" stroke-width="1" shape-rendering="crispEdges" d="M1 1.5h7m4 0h1m3 0h1m2 0h7m-25 1h1m5 0h1m1 0h1m2 0h6m1 0h1m5 0h1m-25 1h1m1 0h3m1 0h1m2 0h1m4 0h1m1 0h1m1 0h1m1 0h3m1 0h1m-25 1h1m1 0h3m1 0h1m4 0h1m2 0h1m3 0h1m1 0h3m1 0h1m-25 1h1m1 0h3m1 0h1m1 0h3m2 0h3m2 0h1m1 0h3m1 0h1m-25 1h1m5 0h1m2 0h1m1 0h3m1 0h2m1 0h1m5 0h1m-25 1h7m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h7m-15 1h2m1 0h1m2 0h1m-17 1h1m1 0h1m1 0h1m1 0h1m2 0h3m1 0h1m2 0h1m3 0h1m2 0h1m-21 1h1m1 0h1m2 0h4m1 0h2m1 0h1m1 0h1m5 0h1m-24 1h1m2 0h3m1 0h2m1 0h2m3 0h3m1 0h1m1 0h3m-24 1h2m8 0h1m1 0h2m1 0h1m3 0h1m2 0h1m-22 1h1m2 0h2m2 0h5m1 0h2m1 0h1m2 0h1m1 0h2m-24 1h3m1 0h1m1 0h2m1 0h2m1 0h1m4 0h1m2 0h1m2 0h1m-25 1h1m5 0h4m2 0h3m2 0h3m2 0h3m-24 1h1m1 0h3m2 0h1m2 0h1m1 0h1m2 0h2m2 0h1m2 0h1m-24 1h1m1 0h1m1 0h3m1 0h2m2 0h3m1 0h6m-14 1h4m4 0h1m3 0h2m1 0h2m-25 1h7m2 0h1m3 0h1m1 0h2m1 0h1m1 0h2m1 0h2m-25 1h1m5 0h1m5 0h2m1 0h2m3 0h2m-22 1h1m1 0h3m1 0h1m1 0h6m2 0h6m-22 1h1m1 0h3m1 0h1m3 0h1m4 0h1m3 0h4m-23 1h1m1 0h3m1 0h1m1 0h3m3 0h1m5 0h1m3 0h1m-25 1h1m5 0h1m2 0h1m2 0h3m1 0h3m1 0h2m1 0h1m-24 1h7m1 0h2m1 0h3m2 0h2m1 0h1m3 0h2"/></symbol>
   <symbol id="i-chat" viewBox="0 0 24 24"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/><path d="M8 12h.01M12 12h.01M16 12h.01"/></symbol>
   <symbol id="i-quote" viewBox="0 0 24 24"><path d="M4 18c0-5.5 1.6-9 5.5-11.5M13 18c0-5.5 1.6-9 5.5-11.5"/><circle cx="6.5" cy="15.5" r="2.5"/><circle cx="15.5" cy="15.5" r="2.5"/></symbol>
@@ -975,7 +968,7 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
 </header>
 
 <main id="start">
-  <!-- ═════════ Hero (Abstract): Claim, Positionierung, Einstiege; rechts 3D-Bühne mit Kennzahl-Karten ═════════ -->
+  
   <section class="hero dark-zone" aria-label="Abstract">
     <div class="wrap hero-inner">
       <div class="hero-head">
@@ -1046,7 +1039,7 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
     </div>
   </section>
 
-  <!-- ═════════ Kapitel 1 · Features: was die Plattform bietet (Kernmerkmale, Steuerwege, NUI, Web-Apps, Funktionsatlas) ═════════ -->
+  
   <div class="chapter" id="features">
     <div class="wrap">
       <header class="ch-head">
@@ -1082,7 +1075,7 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
         </ul>
       </section>
 
-      <!-- Steuerwege: Orbit der Steuerwege um den Menschen, eine Sicherheitskette zum Arm, Evaluationssystem -->
+      
       <section class="sec" id="teilhabe" aria-labelledby="tm-h">
         <header class="sec-head">
           <div><span class="eyebrow" style="--hue: var(--orange)"><span class="n">02</span><span data-en="Human at the centre">Mensch im Mittelpunkt</span></span><h2 id="tm-h" data-en="Control modes">Steuerwege</h2></div>
@@ -1223,7 +1216,7 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
             </div>
           </div>
         </div>
-        <!-- Exploded Architecture Stack: 7 Schichten wie die Architekturkarte im Handbuch (#karte), vom Menschen bis zur Hardware (Feat:C) -->
+        
         <div class="tm-stack" style="--hue: var(--indigo)">
           <header class="tm-stack-h">
             <span class="eyebrow" style="--hue: var(--indigo)"><span class="n" data-en="Stack">Architektur</span><span data-en="Exploded architecture stack">Exploded Architecture Stack</span></span>
@@ -1275,7 +1268,7 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
             </div>
           </div>
         </div>
-        <!-- Drei Betriebsabläufe: direkt steuern · Bahn planen & bestätigen · Aufgabe per KI-Agent ausführen -->
+        
         <div class="tm-ops" style="--hue: var(--accent)">
           <header class="tm-ops-h">
             <span class="eyebrow" style="--hue: var(--accent)"><span class="n" data-en="Flows">Abläufe</span><span data-en="Three operational flows">Drei Betriebsabläufe</span></span>
@@ -1346,7 +1339,7 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
         </div>
       </section>
 
-      <!-- NUI: natürliche Bedienung (VR, Blick, Sprache, Gesten per Leap Motion 2; Link ins Handbuch #p-leap) + geplante (Hand-Tracking TODOS I43, Gesten I62) -->
+      
       <section class="sec" id="nui">
         <header class="sec-head">
           <div><span class="eyebrow" style="--hue: var(--green)"><span class="n">03</span><span data-en="Operate naturally">Natürlich bedienen</span></span><h2 data-en="NUI">NUI</h2></div>
@@ -1363,7 +1356,7 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
         <p class="sub list-note" data-en="Note: the E-STOP button on the robot always works, even without a browser. Watchdog and connection loss: &lt;a href=&quot;operate_manual.html#sicherheit&quot;&gt;manual, safety chain&lt;/a&gt;.">Hinweis: Der E-STOP-Taster am Roboter wirkt immer, auch ohne Browser. Watchdog und Verbindungsverlust: <a href="operate_manual.html#sicherheit">Handbuch, Sicherheitskette</a>.</p>
       </section>
 
-      <!-- Web-Apps: App-Fenster mit Folien je App -->
+      
       <section class="sec" id="webapps">
         <header class="sec-head">
           <div><span class="eyebrow" style="--hue: var(--lime)"><span class="n">04</span><span data-en="Four web apps · one browser">Vier Web-Apps · ein Browser</span></span><h2 data-en="Web apps">Web-Apps</h2></div>
@@ -1410,7 +1403,7 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
         </div>
       </section>
 
-      <!-- Funktionsatlas: Ring (Anteil je Bereich), 9 Bereiche + 10 Kreisläufe filtern die Liste darunter; Liste = Filter, 85 Karten, Ablauf-Panel (js/function_atlas.js) -->
+      
       <section class="sec" id="atlas-sec">
         <header class="sec-head">
           <div><span class="eyebrow" style="--hue: var(--pink)"><span class="n">05</span><span data-en="Every function">Alle Funktionen</span></span><h2 data-en="Function atlas">Funktionsatlas</h2></div>
@@ -1879,7 +1872,7 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
           </div>
       </section>
 
-      <!-- Hardware Stack (Unterkapitel 05.1): alle verwendeten Geräte als Folien; Gerät wählen (Seitenleiste), blättern, wischen -->
+      
       <section class="sec" id="hardware">
         <header class="sec-head">
           <div><span class="eyebrow" style="--hue: var(--teal)"><span class="n">5.1</span><span data-en="Every device">Alle Geräte</span></span><h2 data-en="Hardware stack">Hardware Stack</h2></div>
@@ -2048,7 +2041,7 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
     </div>
   </div>
 
-  <!-- ═════════ Gebaut auf ═════════ -->
+  
   <section class="strip" aria-label="Gebaut auf" data-en-aria="Built on">
     <div class="wrap">
       <div class="strip-row">
@@ -2077,7 +2070,7 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
     </div>
   </section>
 
-  <!-- ═════════ Plattform-Showcase (Diashow) ═════════ -->
+  
   <section class="dia-theater dark-zone" id="showcase" aria-label="Plattform-Showcase" data-en-aria="Platform showcase">
     <div class="wrap">
       <div class="dia-theater-head">
@@ -2096,7 +2089,7 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
       <div class="dia-theater-stage" data-dia-stage tabindex="0" role="region" aria-roledescription="Diashow" data-en-aria-roledescription="Slideshow" aria-label="Plattform-Showcase Folien" data-en-aria="Platform showcase slides">
         <div class="dia-theater-progress"><i data-dia-bar></i></div>
         <div class="dia-slides" data-dia-track>
-          <!-- Folie 1 -->
+          
           <article class="dia-slide is-active" data-dia-slide="0" aria-label="Folie 1 von 5" data-en-aria="Slide 1 of 5">
             <img class="dia-theater-img" src="img/presentation/rcu.jpg" width="1600" height="900" alt="UX | Control Interface: Digital Twin mit Rapier-Physik" data-en-alt="UX | Control Interface: Digital Twin with Rapier physics" loading="eager">
             <div class="dia-theater-overlay">
@@ -2105,7 +2098,7 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
               <p class="fact" data-en="Live 3D twin in the browser, Physics-Sandbox (Rapier) with gravity, contact and virtual grasping.">Live-3D-Zwilling im Browser, Physics-Sandbox (Rapier) mit Schwerkraft, Kontakt und virtuellem Greifen.</p>
             </div>
           </article>
-          <!-- Folie 2 -->
+          
           <article class="dia-slide" data-dia-slide="1" aria-label="Folie 2 von 5" data-en-aria="Slide 2 of 5">
             <img class="dia-theater-img" src="img/monitoring_dashboard.png" width="1600" height="1000" alt="UX | Monitoring: System- und Nutzungserfassung" data-en-alt="UX | Monitoring: system and usage tracking" loading="lazy">
             <div class="dia-theater-overlay">
@@ -2114,7 +2107,7 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
               <p class="fact" data-en="Robot state, ZED camera and OctoMap live in the UX | Control Interface; usage and blackbox incidents in UX | Monitoring.">Roboterzustand, ZED-Kamera und OctoMap live in der UX | Control Interface; Nutzung und Blackbox-Vorfälle im UX | Monitoring.</p>
             </div>
           </article>
-          <!-- Folie 3 -->
+          
           <article class="dia-slide" data-dia-slide="2" aria-label="Folie 3 von 5" data-en-aria="Slide 3 of 5">
             <img class="dia-theater-img" src="img/vla_agent.png" width="1240" height="860" alt="VLA-M-Chat: Plan aus vier Schritten wartet auf Execute, Abort jederzeit" data-en-alt="VLA-M chat: four-step plan waits for Execute, Abort any time" loading="lazy">
             <div class="dia-theater-overlay">
@@ -2123,7 +2116,7 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
               <p class="fact" data-en="The AI agent translates natural language into robot motions; human confirmation and feedback guide every step.">Der KI-Agent übersetzt natürliche Sprache in Roboterabläufe; Bestätigung und Feedback des Menschen steuern jeden Schritt.</p>
             </div>
           </article>
-          <!-- Folie 4 -->
+          
           <article class="dia-slide" data-dia-slide="3" aria-label="Folie 4 von 5" data-en-aria="Slide 4 of 5">
             <img class="dia-theater-img" src="img/nexus_setup_light.png" width="1400" height="900" alt="UX | Nexus Launcher im Browser: Startfenster mit Roboter, Komponenten und Start, ohne Installation" data-en-alt="UX | Nexus Launcher in the browser: start window with robot, components and start, nothing to install" loading="lazy">
             <div class="dia-theater-overlay">
@@ -2132,7 +2125,7 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
               <p class="fact" data-en="Complete operation in the browser without installation on PC, tablet, smartphone or Quest 3 via WebXR.">Bedienung komplett im Browser ohne Installation auf PC, Tablet, Smartphone oder Quest 3 per WebXR.</p>
             </div>
           </article>
-          <!-- Folie 5 -->
+          
           <article class="dia-slide" data-dia-slide="4" aria-label="Folie 5 von 5" data-en-aria="Slide 5 of 5">
             <img class="dia-theater-img" src="img/rcu_moveit_exec.png" width="1116" height="708" alt="MoveIt-Fahrt im Digital Twin: IK, Planung und Fahrt im Blick, E-STOP jederzeit per Leertaste" data-en-alt="MoveIt motion in the Digital Twin: IK, planning and execution in view, E-STOP any time via space bar" loading="lazy">
             <div class="dia-theater-overlay">
@@ -2155,7 +2148,7 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
     </div>
   </section>
 
-  <!-- ═════════ Kapitel 2 · Unterlagen ═════════ -->
+  
   <div class="chapter alt" id="unterlagen">
     <div class="wrap">
       <header class="ch-head">
@@ -2293,7 +2286,7 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
             <a href="https://lu4k87.github.io/ai_dev_workflow/" target="_blank" rel="noopener"><svg class="ico" aria-hidden="true"><use href="#i-loop"/></svg><b>AI Dev Workflow</b><svg class="ico go-s"><use href="#i-go"/></svg><small data-en="Claude Code, Codex and Gemini: cycle, guard rails, Definition of Done">Claude Code, Codex und Gemini: Kreislauf, Leitplanken, Definition of Done</small></a>
           </div>
         </div>
-        <!-- Architektur: Teaser der interaktiven Karte im Handbuch (#karte): 7 Schichten, 12 Befehlswege mit Deep-Link #p-<weg> -->
+        
         <div class="atlas arch dark-zone" id="architektur" role="region" aria-labelledby="arch-h">
           <header class="land-head">
             <span class="eyebrow" style="--hue: var(--indigo)" data-en="Architecture">Architektur</span>
@@ -2399,8 +2392,7 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
         </div>
       </section>
 
-      <!-- 11 Fragen & Antworten: Text aus docs/brand/faq.md (de im Element, en in data-en), Anker #faq-<thema>-<nr> bleiben stabil;
-           ohne JS alle Fragen nach Themen, mit JS filtern die Themen-Chips (Start: „Häufig gefragt“) -->
+      
       <section class="sec" id="faq" aria-labelledby="faq-h">
         <header class="sec-head">
           <div><span class="eyebrow" style="--hue: var(--accent)"><span class="n">11</span><span data-en="For everyone">Für alle</span></span><h2 id="faq-h" data-en="Questions &amp;amp; answers">Fragen &amp; Antworten</h2></div>
@@ -2837,7 +2829,7 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
     </div>
   </div>
 
-  <!-- ═════════ Kontakt: Abschluss, Visitenkarte mit QR ═════════ -->
+  
   <section class="contact dark-zone" id="kontakt" aria-labelledby="kontakt-h">
     <div class="wrap">
       <div class="ct-copy">

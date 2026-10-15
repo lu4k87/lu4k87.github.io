@@ -1949,7 +1949,7 @@
   </style>
 </head>
 <body>
-  <!-- Linien-Icons (einmal definiert, per <use href="#i-…"> genutzt) -->
+  
   <svg width="0" height="0" style="position:absolute" aria-hidden="true">
     <symbol id="i-team" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 19c.6-3 2.8-4.6 5.5-4.6s4.9 1.6 5.5 4.6"/><path d="M16 5.2a3 3 0 0 1 0 5.6M18 14.6c1.5.6 2.4 2.1 2.6 4.4"/></symbol>
     <symbol id="i-tasks" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4h6v3H9z"/><path d="M8.5 12h7M8.5 16h5"/></symbol>
@@ -1966,7 +1966,7 @@
     <symbol id="i-award" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="9" r="5"/><path d="M8.6 13.4L7 21l5-2.6 5 2.6-1.6-7.6"/></symbol>
   </svg>
 
-  <!-- TOP STICKY HEADER -->
+  
   <header class="top-header">
     <div class="header-inner">
       <a href="#" class="brand">
@@ -1998,7 +1998,7 @@
     </div>
   </header>
 
-  <!-- HERO SECTION -->
+  
   <section class="hero-section">
     <div class="hero-grid">
       <div class="hero-text">
@@ -2068,7 +2068,7 @@
       </div>
     </div>
 
-    <!-- ROLE FILTER BAR -->
+    
     <aside class="filter-bar">
       <div class="filter-inner">
         <div class="filter-label">
@@ -2087,17 +2087,17 @@
     </aside>
   </section>
 
-  <!-- SCROLLYTELLING MAIN VIEW -->
+  
   <main class="scrolly-container" id="scrollyView">
 
-    <!-- STICKY LEFT VISUALIZER -->
+    
     <aside class="sticky-visualizer" aria-label="Prozessfortschritt">
       <div class="visualizer-header">
         <span class="visualizer-title">Ablauf-Navigator</span>
         <span class="active-phase-badge" id="lblActivePhase">Phase 1 / 6</span>
       </div>
 
-      <!-- PROGRESS RAIL -->
+      
       <div class="progress-rail">
         <div class="rail-track"></div>
         <div class="rail-bar-fill" id="railBarFill"></div>
@@ -2151,18 +2151,18 @@
         </div>
       </div>
 
-      <!-- LIVE RADAR: AKTUELLE ZUSTÄNDIGKEITEN -->
+      
       <div class="radar-card">
         <div class="radar-card-title">
           <span>Zuständige Akteure (Aktiv)</span>
           <span style="font-size:11px; color:var(--accent); font-family:var(--font-mono);">RACI-Modell</span>
         </div>
         <div class="live-actor-list" id="liveActorList">
-          <!-- Dynamically populated via JS based on current active step -->
+          
         </div>
       </div>
 
-      <!-- LIVE HANDOVER CARD -->
+      
       <div class="handover-radar-card">
         <div class="live-label">Aktiver Übergabeschritt</div>
         <div class="handover-flow-line" id="liveHandoverLine">
@@ -2184,10 +2184,10 @@
       </div>
     </aside>
 
-    <!-- RIGHT STORY CARDS COLUMN -->
+    
     <div class="story-cards-col">
 
-      <!-- PHASE 1 -->
+      
       <article class="step-card active-step" id="step-1" data-step="1" data-roles="leitung,qm">
         <div class="step-card-header">
           <div>
@@ -2204,7 +2204,7 @@
           Auswertung der zyklischen Studierendenbefragungen, Absolventen-Verbleibsstudien und Workload-Analysen. Festlegung des Reakkreditierungs-Fahrplans und Einberufung der universitären Curriculums-AG zur Vorbereitung der neuen Prüfungsordnung.
         </p>
 
-        <!-- ACTORS -->
+        
         <div class="step-subheading">
           <span class="subheading-icon"><svg width="16" height="16" aria-hidden="true"><use href="#i-team"/></svg></span>
           Beteiligte Rollen & Zuständigkeiten
@@ -2238,7 +2238,7 @@
           </div>
         </div>
 
-        <!-- ACTIVITIES -->
+        
         <div class="step-subheading">
           <span class="subheading-icon"><svg width="16" height="16" aria-hidden="true"><use href="#i-tasks"/></svg></span>
           Prozessaktivitäten & Rechtliche Grundlagen
@@ -2266,7 +2266,7 @@
           </div>
         </div>
 
-        <!-- ARTIFACTS (PDFS) -->
+        
         <div class="step-subheading">
           <span class="subheading-icon"><svg width="16" height="16" aria-hidden="true"><use href="#i-docs"/></svg></span>
           Übergabe-Dokumente (.pdf) in diesem Schritt
@@ -2297,7 +2297,7 @@
           </div>
         </div>
 
-        <!-- GATE / HANDOVER -->
+        
         <div class="step-gate-box">
           <div class="gate-info">
             <div class="gate-icon"><svg width="20" height="20" aria-hidden="true"><use href="#i-scale"/></svg></div>
@@ -2314,7 +2314,7 @@
         </div>
       </article>
 
-      <!-- PHASE 2 -->
+      
       <article class="step-card" id="step-2" data-step="2" data-roles="leitung,pruefung">
         <div class="step-card-header">
           <div>
@@ -2331,7 +2331,7 @@
           Neukonzeption des Studienverlaufsplans, Überarbeitung der Modulhandbücher und juristische Neufassung der Speziellen Prüfungsordnung (SPO). Harmonisierung der Prüfungsformen mit kompetenzorientierten Lernzielen nach Bloom.
         </p>
 
-        <!-- ACTORS -->
+        
         <div class="step-subheading">
           <span class="subheading-icon"><svg width="16" height="16" aria-hidden="true"><use href="#i-team"/></svg></span>
           Beteiligte Rollen & Zuständigkeiten
@@ -2365,7 +2365,7 @@
           </div>
         </div>
 
-        <!-- ACTIVITIES -->
+        
         <div class="step-subheading">
           <span class="subheading-icon"><svg width="16" height="16" aria-hidden="true"><use href="#i-tasks"/></svg></span>
           Prozessaktivitäten & Rechtliche Grundlagen
@@ -2393,7 +2393,7 @@
           </div>
         </div>
 
-        <!-- ARTIFACTS (PDFS) -->
+        
         <div class="step-subheading">
           <span class="subheading-icon"><svg width="16" height="16" aria-hidden="true"><use href="#i-docs"/></svg></span>
           Übergabe-Dokumente (.pdf) in diesem Schritt
@@ -2436,7 +2436,7 @@
           </div>
         </div>
 
-        <!-- GATE / HANDOVER -->
+        
         <div class="step-gate-box">
           <div class="gate-info">
             <div class="gate-icon"><svg width="20" height="20" aria-hidden="true"><use href="#i-docs"/></svg></div>
@@ -2453,7 +2453,7 @@
         </div>
       </article>
 
-      <!-- PHASE 3 -->
+      
       <article class="step-card" id="step-3" data-step="3" data-roles="gremien,pruefung">
         <div class="step-card-header">
           <div>
@@ -2470,7 +2470,7 @@
           Formale und materielle Rechtsprüfung durch die Hochschuljuristen. Einholung des offiziellen Votums der Studierendenschaft (Fachschaftsrat) und formeller Beschluss der Prüfungsordnung im Fakultätsrat.
         </p>
 
-        <!-- ACTORS -->
+        
         <div class="step-subheading">
           <span class="subheading-icon"><svg width="16" height="16" aria-hidden="true"><use href="#i-team"/></svg></span>
           Beteiligte Rollen & Zuständigkeiten
@@ -2504,7 +2504,7 @@
           </div>
         </div>
 
-        <!-- ACTIVITIES -->
+        
         <div class="step-subheading">
           <span class="subheading-icon"><svg width="16" height="16" aria-hidden="true"><use href="#i-tasks"/></svg></span>
           Prozessaktivitäten & Rechtliche Grundlagen
@@ -2531,7 +2531,7 @@
           </div>
         </div>
 
-        <!-- ARTIFACTS (PDFS) -->
+        
         <div class="step-subheading">
           <span class="subheading-icon"><svg width="16" height="16" aria-hidden="true"><use href="#i-docs"/></svg></span>
           Übergabe-Dokumente (.pdf) in diesem Schritt
@@ -2574,7 +2574,7 @@
           </div>
         </div>
 
-        <!-- GATE / HANDOVER -->
+        
         <div class="step-gate-box">
           <div class="gate-info">
             <div class="gate-icon"><svg width="20" height="20" aria-hidden="true"><use href="#i-landmark"/></svg></div>
@@ -2591,7 +2591,7 @@
         </div>
       </article>
 
-      <!-- PHASE 4 -->
+      
       <article class="step-card" id="step-4" data-step="4" data-roles="qm,leitung">
         <div class="step-card-header">
           <div>
@@ -2608,7 +2608,7 @@
           Erstellung des umfassenden Selbstberichts (Selbstdokumentation) gemäß Kriterien des Akkreditierungsrates. Bündelung aller Nachweise über Personalausstattung, Laborinfrastruktur, Internationalisierung und Prüfungserfolg.
         </p>
 
-        <!-- ACTORS -->
+        
         <div class="step-subheading">
           <span class="subheading-icon"><svg width="16" height="16" aria-hidden="true"><use href="#i-team"/></svg></span>
           Beteiligte Rollen & Zuständigkeiten
@@ -2642,7 +2642,7 @@
           </div>
         </div>
 
-        <!-- ACTIVITIES -->
+        
         <div class="step-subheading">
           <span class="subheading-icon"><svg width="16" height="16" aria-hidden="true"><use href="#i-tasks"/></svg></span>
           Prozessaktivitäten & Rechtliche Grundlagen
@@ -2669,7 +2669,7 @@
           </div>
         </div>
 
-        <!-- ARTIFACTS (PDFS) -->
+        
         <div class="step-subheading">
           <span class="subheading-icon"><svg width="16" height="16" aria-hidden="true"><use href="#i-docs"/></svg></span>
           Übergabe-Dokumente (.pdf) in diesem Schritt
@@ -2700,7 +2700,7 @@
           </div>
         </div>
 
-        <!-- GATE / HANDOVER -->
+        
         <div class="step-gate-box">
           <div class="gate-info">
             <div class="gate-icon"><svg width="20" height="20" aria-hidden="true"><use href="#i-package"/></svg></div>
@@ -2717,7 +2717,7 @@
         </div>
       </article>
 
-      <!-- PHASE 5 -->
+      
       <article class="step-card" id="step-5" data-step="5" data-roles="gutachter,leitung">
         <div class="step-card-header">
           <div>
@@ -2734,7 +2734,7 @@
           Vor-Ort-Begehung durch die unabhängige Gutachtergruppe (Hochschullehrende, Studierende, Vertreter der Berufspraxis). Auditgespräche mit Hochschulleitung, Dozierenden, Studierenden und Laborbesichtigungen.
         </p>
 
-        <!-- ACTORS -->
+        
         <div class="step-subheading">
           <span class="subheading-icon"><svg width="16" height="16" aria-hidden="true"><use href="#i-team"/></svg></span>
           Beteiligte Rollen & Zuständigkeiten
@@ -2768,7 +2768,7 @@
           </div>
         </div>
 
-        <!-- ACTIVITIES -->
+        
         <div class="step-subheading">
           <span class="subheading-icon"><svg width="16" height="16" aria-hidden="true"><use href="#i-tasks"/></svg></span>
           Prozessaktivitäten & Rechtliche Grundlagen
@@ -2795,7 +2795,7 @@
           </div>
         </div>
 
-        <!-- ARTIFACTS (PDFS) -->
+        
         <div class="step-subheading">
           <span class="subheading-icon"><svg width="16" height="16" aria-hidden="true"><use href="#i-docs"/></svg></span>
           Übergabe-Dokumente (.pdf) in diesem Schritt
@@ -2826,7 +2826,7 @@
           </div>
         </div>
 
-        <!-- GATE / HANDOVER -->
+        
         <div class="step-gate-box">
           <div class="gate-info">
             <div class="gate-icon"><svg width="20" height="20" aria-hidden="true"><use href="#i-search"/></svg></div>
@@ -2843,7 +2843,7 @@
         </div>
       </article>
 
-      <!-- PHASE 6 -->
+      
       <article class="step-card" id="step-6" data-step="6" data-roles="gutachter,qm,leitung">
         <div class="step-card-header">
           <div>
@@ -2860,7 +2860,7 @@
           Verfassen der hochschulischen Stellungnahme zum Gutachten, Beseitigung etwaiger Auflagen und formeller Antrag im Portal ELIAS des Akkreditierungsrates. Verleihung des offiziellen Siegels und Veröffentlichung der PO im Amtlichen Mitteilungsblatt.
         </p>
 
-        <!-- ACTORS -->
+        
         <div class="step-subheading">
           <span class="subheading-icon"><svg width="16" height="16" aria-hidden="true"><use href="#i-team"/></svg></span>
           Beteiligte Rollen & Zuständigkeiten
@@ -2894,7 +2894,7 @@
           </div>
         </div>
 
-        <!-- ACTIVITIES -->
+        
         <div class="step-subheading">
           <span class="subheading-icon"><svg width="16" height="16" aria-hidden="true"><use href="#i-tasks"/></svg></span>
           Prozessaktivitäten & Rechtliche Grundlagen
@@ -2922,7 +2922,7 @@
           </div>
         </div>
 
-        <!-- ARTIFACTS (PDFS) -->
+        
         <div class="step-subheading">
           <span class="subheading-icon"><svg width="16" height="16" aria-hidden="true"><use href="#i-docs"/></svg></span>
           Übergabe-Dokumente (.pdf) in diesem Schritt
@@ -2953,7 +2953,7 @@
           </div>
         </div>
 
-        <!-- GATE / FINAL SUCCESS -->
+        
         <div class="step-gate-box is-final">
           <div class="gate-info">
             <div class="gate-icon"><svg width="20" height="20" aria-hidden="true"><use href="#i-award"/></svg></div>
@@ -2973,7 +2973,7 @@
     </div>
   </main>
 
-  <!-- DELIVERABLES MATRIX VIEW (TABLE) -->
+  
   <section class="matrix-section" id="matrixView" hidden>
     <div class="matrix-card">
       <div class="matrix-header">
@@ -3002,14 +3002,14 @@
             </tr>
           </thead>
           <tbody>
-            <!-- Populated via JS -->
+            
           </tbody>
         </table>
       </div>
     </div>
   </section>
 
-  <!-- STUDIENGÄNGE & DOKUMENTENABLAGE -->
+  
   <section class="programs-section" id="programsView" hidden>
     <div class="section-head">
       <h3>Studiengänge & Dokumentenablage</h3>
@@ -3071,7 +3071,7 @@
     </div>
   </section>
 
-  <!-- DOCUMENT DETAIL MODAL -->
+  
   <div class="modal-backdrop" id="docModal" onclick="closeDocModal(event)">
     <div class="modal-window" role="dialog" aria-modal="true" aria-labelledby="modalDocTitle" onclick="event.stopPropagation()">
       <div class="modal-header">
@@ -3108,7 +3108,7 @@
         <div class="doc-signature-chain">
           <div class="chain-title">Verbindliche Freigabekette & Prüfvermerke</div>
           <div class="chain-steps" id="modalSignatureChain">
-            <!-- Populated via JS -->
+            
           </div>
         </div>
 
@@ -3153,7 +3153,7 @@ Loading preview...
     </div>
   </div>
 
-  <!-- FOOTER -->
+  
   <footer class="page-footer">
     <div class="footer-inner">
       <div>
@@ -3169,7 +3169,7 @@ Loading preview...
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-  <!-- SCRIPT -->
+  
   <script>
     /* ═══ DOCUMENT DATABASE ═══ */
     const DOC_DATABASE = {
