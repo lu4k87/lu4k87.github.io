@@ -41,7 +41,7 @@ Eine Forschungs- und Evaluationsplattform für die **multimodale Teleoperation**
 
 | | Funktion | Details |
 |---|---|---|
-| 🎮 | **Teleoperation** – Gamepad über MoveIt Servo mit vorausschauendem Kollisionsschutz; Remote Control vom Laptop im Heimnetz (Control-Lock, Freigabe am Roboter-PC); Leap Motion 2: der TCP folgt der kneifenden Hand | [Modi & Gamepad](de/teleoperation.html) · [Leap Motion 2](de/teleoperation.html#33-funktion-leap-motion-2-handsteuerung) · [Remote Control](de/running.html#75-remote-control-server-client-kommunikation) |
+| 🎮 | **Teleoperation** – Gamepad über MoveIt Servo mit vorausschauendem Kollisionsschutz; Remote Control vom Laptop im Heimnetz (Control-Lock, Freigabe am Roboter-PC); Leap Motion 2: der TCP folgt der kneifenden Hand, oder – im freien Modus – die Hand ist ein Zeiger im 3D-Viewport (je Nutzer kalibrierbar) | [Modi & Gamepad](de/teleoperation.html) · [Leap Motion 2](de/teleoperation.html#33-funktion-leap-motion-2-handsteuerung) · [Remote Control](de/running.html#75-remote-control-server-client-kommunikation) |
 | 🥽 | **VR (Meta Quest 3)** – 6-DoF-Teleoperation per WebXR, UX \| Control Interface in der Brille, VR-Spiegel am PC | [VR-Teleoperation](de/vr_quest3.html) |
 | 👁️ | **3D-Vision & Greifen** – ZED Mini + YOLOv8-3D-Boxen, MoveIt-Kollisionsobjekte, OctoMap, kollisionsfreier 3-Phasen-Griff, virtuelle Objekte für Tests ohne Kamera | [Vision & Greifen](de/vision_grasping.html) |
 | 🗣️ | **Sprache & Blick** – Whisper-Sprachbefehle (DE/EN), Tobii-Pro-Glasses-3-Blick-UI und Greifen per Verweildauer | [Sprache & Blick](de/voice_gaze.html) |

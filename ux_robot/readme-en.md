@@ -41,7 +41,7 @@ A research and evaluation platform for **multimodal teleoperation** of the UFact
 
 | | Feature | Details |
 |---|---|---|
-| 🎮 | **Teleoperation** – gamepad via MoveIt Servo with a predictive collision guard; remote control from a laptop in the home network (control lock, approval on the robot PC); Leap Motion 2: the TCP follows the pinched hand | [Modes & gamepad](en/teleoperation.html) · [Leap Motion 2](en/teleoperation.html#33-feature-leap-motion-2-hand-control) · [Remote control](en/running.html#75-remote-control-server-client-communication) |
+| 🎮 | **Teleoperation** – gamepad via MoveIt Servo with a predictive collision guard; remote control from a laptop in the home network (control lock, approval on the robot PC); Leap Motion 2: the TCP follows the pinched hand, or – in free mode – the hand is a pointer in the 3D view (can be calibrated per user) | [Modes & gamepad](en/teleoperation.html) · [Leap Motion 2](en/teleoperation.html#33-feature-leap-motion-2-hand-control) · [Remote control](en/running.html#75-remote-control-server-client-communication) |
 | 🥽 | **VR (Meta Quest 3)** – 6-DoF WebXR teleoperation, UX \| Control Interface inside the headset, VR mirror on the PC | [VR teleoperation](en/vr_quest3.html) |
 | 👁️ | **3D vision & grasping** – ZED Mini + YOLOv8 3D boxes, MoveIt collision objects, OctoMap, collision-free 3-phase grasp, virtual objects for tests without a camera | [Vision & grasping](en/vision_grasping.html) |
 | 🗣️ | **Voice & gaze** – Whisper voice commands (EN/DE), Tobii Pro Glasses 3 gaze UI and dwell-time grasping | [Voice & gaze](en/voice_gaze.html) |
