@@ -1,14 +1,16 @@
 <!doctype html>
 
+
 <html lang="de">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>AI Dev Workflow</title>
-<meta name="description" content="AI Dev Workflow: wie Projekte mit Claude Code, Codex und Gemini entwickelt werden (Beispiel UX Robot) – Kreislauf, Leitplanken, Definition of Done.">
+<meta name="description" content="AI Dev Workflow: wie Projekte mit Claude Code, Codex und Gemini entwickelt werden (Beispiel UX Robot) – ein Auftrag in elf Frames, Leitplanken, Definition of Done.">
 <link rel="stylesheet" href="../web_ux_robot/fonts/fonts.css">
 <link rel="stylesheet" href="css/landing.css">
 <link rel="stylesheet" href="css/doc_path.css">
+<link rel="stylesheet" href="css/frames.css">
 <style>
 /* ═════ Bausteine aus docs/project_docs.html (Tokens, Kopf, Kicker, Kennzahlen, Visitenkarte, Fakten, Atlas-Ring, App-Fenster, Kontakt, Teile, Abschnitte) ═════ */
 :root {
@@ -997,7 +999,8 @@ html.wf-js .wf-stage.reset .msg { transition-duration: 200ms; }
         </h1>
         <p class="abstract" data-en="&lt;b&gt;People lead. AI assists.&lt;/b&gt; Three AI tools, one rule set for every project: hooks stop risky actions before they run, and appropriate checks verify changes before delivery."><b>Der Mensch führt. Die KI assistiert.</b> Drei KI-Werkzeuge, ein Regelwerk für alle Projekte: Hooks stoppen riskante Schritte, bevor sie laufen, und passende Prüfungen belegen Änderungen vor der Übergabe.</p>
         <div class="cta-row">
-          <a class="b-pri" href="#kap-ablauf"><span data-en="See the path of a task">Weg eines Auftrags</span><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg></a>
+          <a class="b-pri" href="#frames"><span data-en="See the path of a task">Weg eines Auftrags</span><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg></a>
+          <a class="b-sec" href="#kurz"><svg class="ico" aria-hidden="true"><use href="#i-pulse"/></svg><span data-en="In 30 seconds">In 30 Sekunden</span></a>
           <a class="b-sec" href="ai_dev_workflow_reference.html"><svg class="ico" aria-hidden="true"><use href="#i-book"/></svg><span data-en="Reference">Nachschlagen</span></a>
         </div>
         <ul class="hero-kv" aria-label="Kennzahlen" data-en-aria="Key figures">
@@ -1037,6 +1040,285 @@ html.wf-js .wf-stage.reset .msg { transition-duration: 200ms; }
     </div>
   </section>
 
+  
+<section class="fx-kurz" id="kurz" aria-labelledby="kurz-h"><div class="wrap">
+<div class="fx-kurz-head"><span class="eyebrow" style="--hue: var(--indigo)"><span data-en="In 30 seconds">In 30 Sekunden</span></span>
+<h2 id="kurz-h" data-en="One task in eleven sentences">Ein Auftrag in elf Sätzen</h2>
+<p data-en="The headlines of the eleven frames tell the whole story. Click to jump to a frame.">Die Überschriften der elf Frames erzählen den ganzen Ablauf. Klick springt zum Frame.</p></div>
+<ol class="fx-kurz-list">
+<li><a href="#f01"><span class="n">01</span><span data-en="You name the goal – the chat starts from a fresh state with a status overview.">Du nennst das Ziel – der Chat startet mit frischem Stand und einem Lagebild.</span></a></li>
+<li><a href="#f02"><span class="n">02</span><span data-en="Before starting, the chat estimates what this task really needs.">Bevor er anfängt, schätzt der Chat ein, was dieser Auftrag wirklich braucht.</span></a></li>
+<li><a href="#f03"><span class="n">03</span><span data-en="The chat loads only the knowledge this task touches.">Der Chat lädt nur das Wissen, das dieser Auftrag berührt.</span></a></li>
+<li><a href="#f04"><span class="n">04</span><span data-en="The plan names the files; the chat asks only about real decisions.">Der Plan nennt die Dateien; fragen muss der Chat nur bei echten Entscheidungen.</span></a></li>
+<li><a href="#f05"><span class="n">05</span><span data-en="Before every edit a hook checks whether the file is free – afterwards a second one checks the change.">Vor jedem Edit prüft ein Hook, ob die Datei frei ist – danach prüft ein zweiter die Änderung.</span></a></li>
+<li><a href="#f06"><span class="n">06</span><span data-en="The chat reports “done” only when a check after the last change is green.">„Fertig“ meldet der Chat erst, wenn eine Prüfung nach der letzten Änderung grün ist.</span></a></li>
+<li><a href="#f07"><span class="n">07</span><span data-en="When what users see or set changes, the chat updates the docs in both languages.">Ändert sich, was Nutzer sehen oder einstellen, zieht der Chat die Doku in beiden Sprachen nach.</span></a></li>
+<li><a href="#f08"><span class="n">08</span><span data-en="Only the chat’s own, verified files go into the commit – and the push never overwrites anything.">Nur eigene, geprüfte Dateien kommen in den Commit – und der Push überschreibt nie etwas.</span></a></li>
+<li><a href="#f09"><span class="n">09</span><span data-en="The answer always has the same shape: result first, status and Git state at the end.">Die Antwort hat immer dieselbe Form: Ergebnis zuerst, Status und Git-Stand am Schluss.</span></a></li>
+<li><a href="#f10"><span class="n">10</span><span data-en="Several chats work at once – claims and messages keep them apart.">Mehrere Chats arbeiten gleichzeitig – Claims und Nachrichten halten sie auseinander.</span></a></li>
+<li><a href="#f11"><span class="n">11</span><span data-en="When you correct the chat, it becomes a rule the next chat already knows.">Korrigierst du den Chat, wird daraus eine Regel, die der nächste Chat schon kennt.</span></a></li>
+</ol></div></section>
+<section class="fx" id="frames" aria-labelledby="frames-h"><div class="wrap">
+<header class="fx-head"><span class="eyebrow" style="--hue: var(--violet)"><span data-en="Path of a task">Weg eines Auftrags</span></span>
+<h2 id="frames-h" data-en="One task, eleven frames – from the first sentence to the push">Ein Auftrag, elf Frames – vom ersten Satz bis zum Push</h2>
+<p data-en="The chat runs along on the left; the right explains what is happening and which terms come up. Underlined terms can be tapped.">Links läuft der Chat mit, rechts steht, was gerade passiert und welche Begriffe dabei auftauchen. Unterstrichene Begriffe lassen sich antippen.</p></header>
+<div class="fx-grid">
+<div class="fx-stage dark-zone" aria-hidden="true"><div class="st">
+<div class="st-bar"><span>VS CODE · CLAUDE CODE</span><span class="st-fno">FRAME <b>01</b> / 11</span></div>
+<div class="st-ide"><div class="st-pane st-chat"><h4><span data-en="Chat [RCU] jog limit · example">Chat [RCU] Jog-Grenze · Beispiel</span></h4><ol class="st-log">
+<li class="st-msg sys" data-f="1"><i data-en="Status">Lagebild</i><span data-en="2 other chats active · no claim on &lt;code&gt;jog.js&lt;/code&gt;">2 andere Chats aktiv · kein Claim auf <code>jog.js</code></span></li>
+<li class="st-msg me" data-f="1"><i data-en="You">Du</i><span data-en="[RCU] Jogging should move 10&amp;nbsp;mm per step at most.">[RCU] Jogging soll höchstens 10&nbsp;mm pro Schritt fahren.</span></li>
+<li class="st-msg ai" data-f="2"><i data-en="Chat · Effort">Chat · Aufwand</i><span data-en="1 file, but robot motion → check level 2, role developer.">1 Datei, aber Roboterbewegung → Prüfstufe 2, Rolle Entwickler.</span></li>
+<li class="st-msg ai" data-f="3"><i data-en="Chat · Context">Chat · Kontext</i><span data-en="Rules + memory loaded; found &lt;code&gt;jogStep&lt;/code&gt; in &lt;code&gt;jog.js&lt;/code&gt;.">Regeln + Memory geladen; <code>jogStep</code> in <code>jog.js</code> gefunden.</span></li>
+<li class="st-msg ai" data-f="4"><i data-en="Chat · Plan">Chat · Plan</i><span data-en="Limit in &lt;code&gt;jog.js&lt;/code&gt;, add a test.">Grenze in <code>jog.js</code>, Test ergänzen.</span></li>
+<li class="st-msg ask" data-f="4"><i data-en="F1">F1</i><span data-en="Update the twin display as well? &lt;span class=&quot;st-btns&quot;&gt;&lt;span&gt;yes&lt;/span&gt;&lt;span class=&quot;on&quot;&gt;later ✓&lt;/span&gt;&lt;/span&gt;">Anzeige im Twin gleich mit anpassen? <span class="st-btns"><span>ja</span><span class="on">später ✓</span></span></span></li>
+<li class="st-msg ai" data-f="5"><i data-en="Chat · Build">Chat · Bauen</i><span data-en="Editing &lt;code&gt;jog.js&lt;/code&gt;: limit the step to 10&amp;nbsp;mm.">Ändere <code>jog.js</code>: Schritt auf 10&nbsp;mm begrenzen.</span></li>
+<li class="st-msg bad" data-f="6"><i data-en="Test">Test</i><span data-en="✕ &lt;code&gt;pytest&lt;/code&gt; 41/42 – negative steps not limited">✕ <code>pytest</code> 41/42 – negative Schritte nicht begrenzt</span></li>
+<li class="st-msg ok" data-f="6"><i data-en="Test">Test</i><span data-en="✓ fixed · &lt;code&gt;pytest&lt;/code&gt; 42/42">✓ nachgebessert · <code>pytest</code> 42/42</span></li>
+<li class="st-msg ai" data-f="7"><i data-en="Chat · Docs">Chat · Doku</i><span data-en="Operating manual de + en updated.">Bedienhandbuch de + en nachgezogen.</span></li>
+<li class="st-msg ok" data-f="8"><i data-en="Git">Git</i><span data-en="✓ &lt;code&gt;fix(rcu)&lt;/code&gt; pushed · &lt;code&gt;a1b2c3d&lt;/code&gt;">✓ <code>fix(rcu)</code> gepusht · <code>a1b2c3d</code></span></li>
+<li class="st-msg ai" data-f="9"><i data-en="Chat · Answer">Chat · Antwort</i><span data-en="&lt;b&gt;Result:&lt;/b&gt; jog step 10&amp;nbsp;mm at most · verified ✅"><b>Ergebnis:</b> Jog-Schritt höchstens 10&nbsp;mm · geprüft ✅</span></li>
+<li class="st-msg sys" data-f="10"><i data-en="dev-ws-91">dev-ws-91</i><span data-en="Are you done with &lt;code&gt;jog.js&lt;/code&gt;?">Bist du mit <code>jog.js</code> fertig?</span></li>
+<li class="st-msg ai" data-f="10"><i data-en="Chat → dev-ws-91">Chat → dev-ws-91</i><span data-en="Yes, pushed – the file is free.">Ja, gepusht – die Datei ist frei.</span></li>
+<li class="st-msg me" data-f="11"><i data-en="You">Du</i><span data-en="Limits belong in the motion handler too.">Grenzen gehören auch in den Motion Handler.</span></li>
+<li class="st-msg ai" data-f="11"><i data-en="Chat · Memory">Chat · Memory</i><span data-en="Noted: &lt;code&gt;memory/limits-im-backend.md&lt;/code&gt;">Gemerkt: <code>memory/limits-im-backend.md</code></span></li>
+</ol></div><div class="st-pane st-scenes">
+<div class="st-scene" data-f="1"><h4><span data-en="Status at start">Lagebild beim Start</span></h4><div class="st-row" data-en="dev-ws-bd · [RCU] optimise UI">dev-ws-bd · [RCU] UI optimieren</div><div class="st-row" data-en="dev-ws-d7 · [VLA] wire pick_ik">dev-ws-d7 · [VLA] pick_ik verdrahten</div><div class="st-row ok" data-en="Claims on &lt;code&gt;jog.js&lt;/code&gt;: none">Claims auf <code>jog.js</code>: keine</div><div class="st-row ok" data-en="Repos: fast-forward, up to date">Repos: Fast-Forward, aktuell</div></div>
+<div class="st-scene" data-f="2"><h4><span data-en="Effort · RULES.md §0b">Aufwand · RULES.md §0b</span></h4><div class="st-row" data-en="Scope: 1 file, 1 function → level 1">Umfang: 1 Datei, 1 Funktion → Stufe 1</div><div class="st-row warn" data-en="Risk: robot motion → one level higher">Risiko: Roboterbewegung → eine Stufe höher</div><div class="st-row ok" data-en="Check level 2 · role developer">Prüfstufe 2 · Rolle Entwickler</div><div class="st-row" data-en="Preview: no (no new UI element)">Vorschau: nein (kein neues UI-Element)</div></div>
+<div class="st-scene" data-f="3"><h4><span data-en="Loaded for this task">Geladen für diesen Auftrag</span></h4><div class="st-row ok" data-en="RULES.md · all projects">RULES.md · alle Projekte</div><div class="st-row ok" data-en="AGENTS.md · dev_ws">AGENTS.md · dev_ws</div><div class="st-row ok" data-en="MEMORY.md · index of insights">MEMORY.md · Index der Erkenntnisse</div><div class="st-row" data-en="Skill test-isolated · only when testing">Skill test-isolated · erst beim Testen</div><div class="st-row" data-en="Skill ui-change · not needed, no visuals">Skill ui-change · nicht nötig, keine Optik</div></div>
+<div class="st-scene" data-f="4"><h4><span data-en="Plan">Plan</span></h4><div class="st-row" data-en="1 · &lt;code&gt;js/jog.js&lt;/code&gt;: limit the step">1 · <code>js/jog.js</code>: Schritt begrenzen</div><div class="st-row" data-en="2 · add a test for the limit">2 · Test für die Grenze ergänzen</div><div class="st-row" data-en="3 · update docs, commit + push">3 · Doku nachziehen, Commit + Push</div><div class="st-row warn" data-en="open: twin display → question F1">offen: Twin-Anzeige → Rückfrage F1</div></div>
+<div class="st-scene" data-f="5"><h4><span data-en="js/jog.js · diff">js/jog.js · Diff</span></h4><div class="st-row code" data-en="  export function jogStep(mm) {">  export function jogStep(mm) {</div><div class="st-row code add" data-en="+   const MAX_STEP_MM = 10;">+   const MAX_STEP_MM = 10;</div><div class="st-row code add" data-en="+   mm = Math.min(mm, MAX_STEP_MM);">+   mm = Math.min(mm, MAX_STEP_MM);</div><div class="st-row code" data-en="    send(&#x27;/jog&#x27;, mm);">    send('/jog', mm);</div><div class="st-row code" data-en="  }">  }</div></div>
+<div class="st-scene" data-f="6"><h4><span data-en="Checks · level 2">Prüfung · Stufe 2</span></h4><div class="st-row bad" data-en="✕ pytest 41/42 · jogStep(-50) → -50">✕ pytest 41/42 · jogStep(-50) → -50</div><div class="st-row code add" data-en="+   mm = Math.max(-MAX_STEP_MM, Math.min(mm, MAX_STEP_MM));">+   mm = Math.max(-MAX_STEP_MM, Math.min(mm, MAX_STEP_MM));</div><div class="st-row ok" data-en="✓ pytest 42/42">✓ pytest 42/42</div><div class="st-row ok" data-en="✓ ui_new_code_checker · light + dark · 1280 + 360 px">✓ ui_new_code_checker · hell + dunkel · 1280 + 360 px</div></div>
+<div class="st-scene" data-f="7"><h4><span data-en="docs · diff">docs · Diff</span></h4><div class="st-row code" data-en="docs/de/rcu.md">docs/de/rcu.md</div><div class="st-row code add" data-en="+ Ein Jog-Schritt fährt höchstens 10 mm.">+ Ein Jog-Schritt fährt höchstens 10 mm.</div><div class="st-row code" data-en="docs/en/rcu.md">docs/en/rcu.md</div><div class="st-row code add" data-en="+ One jog step moves 10 mm at most.">+ One jog step moves 10 mm at most.</div></div>
+<div class="st-scene" data-f="8"><h4><span data-en="Terminal">Terminal</span></h4><div class="st-row code" data-en="$ git add js/jog.js test/test_jog.py docs/">$ git add js/jog.js test/test_jog.py docs/</div><div class="st-row ok" data-en="[Hook] pre-commit ✓ 4 checks green">[Hook] pre-commit ✓ 4 Prüfungen grün</div><div class="st-row code" data-en="$ git commit -m &quot;fix(rcu): limit jog step to 10 mm&quot;">$ git commit -m "fix(rcu): limit jog step to 10 mm"</div><div class="st-row ok" data-en="$ git push → main a1b2c3d">$ git push → main a1b2c3d</div></div>
+<div class="st-scene" data-f="9"><h4><span data-en="Answer in the chat">Antwort im Chat</span></h4><div class="st-row" data-en="&lt;b&gt;Result:&lt;/b&gt; jog step 10 mm at most · verified ✅"><b>Ergebnis:</b> Jog-Schritt höchstens 10 mm · geprüft ✅</div><div class="st-row" data-en="&lt;b&gt;Changed:&lt;/b&gt; jog.js · test_jog.py · docs de/en"><b>Geändert:</b> jog.js · test_jog.py · docs de/en</div><div class="st-row" data-en="&lt;b&gt;Log:&lt;/b&gt; pull ✅ · claim ✅ · pre-commit ✅ · push ✅"><b>Ablauf:</b> Pull ✅ · Claim ✅ · pre-commit ✅ · Push ✅</div><div class="st-row ok" data-en="[Developer] · 🏁 TASK DONE">[Entwickler] · 🏁 AUFGABE ERLEDIGT</div><div class="st-row code" data-en="([Claude] dev-ws-d4 · pushed a1b2c3d)">([Claude] dev-ws-d4 · gepusht a1b2c3d)</div></div>
+<div class="st-scene" data-f="10"><h4><span data-en="Second chat · [RCU] status bar">Zweiter Chat · [RCU] Statusleiste</span></h4><div class="st-row warn" data-en="⚠ jog.js belongs to claim dev-ws-d4 → coordinate first">⚠ jog.js gehört Claim dev-ws-d4 → erst abstimmen</div><div class="st-row" data-en="SendMessage → dev-ws-d4: are you done?">SendMessage → dev-ws-d4: Bist du fertig?</div><div class="st-row ok" data-en="dev-ws-d4: yes, pushed – file free.">dev-ws-d4: Ja, gepusht – Datei frei.</div><div class="st-row" data-en="dev-ws-91 pulls, then changes jog.js">dev-ws-91 holt den Stand, ändert dann jog.js</div></div>
+<div class="st-scene" data-f="11"><h4><span data-en="Learning">Lernen</span></h4><div class="st-row" data-en="1 · your correction in the chat">1 · Korrektur von dir im Chat</div><div class="st-row ok" data-en="2 · &lt;code&gt;memory/limits-im-backend.md&lt;/code&gt; + index line">2 · <code>memory/limits-im-backend.md</code> + Zeile im Index</div><div class="st-row" data-en="3 · repeated? → rule in AGENTS.md">3 · wiederholt? → Regel in AGENTS.md</div><div class="st-row" data-en="4 · checkable? → a hook catches it automatically">4 · prüfbar? → Hook fängt es automatisch ab</div></div>
+</div></div>
+<ol class="st-beats">
+<li data-f="1"><b>01</b><span data-en="Request">Auftrag</span></li>
+<li data-f="2"><b>02</b><span data-en="Effort">Aufwand</span></li>
+<li data-f="3"><b>03</b><span data-en="Context">Kontext</span></li>
+<li data-f="4"><b>04</b><span data-en="Plan">Plan</span></li>
+<li data-f="5"><b>05</b><span data-en="Build">Bauen</span></li>
+<li data-f="6"><b>06</b><span data-en="Verify">Prüfen</span></li>
+<li data-f="7"><b>07</b><span data-en="Docs">Doku</span></li>
+<li data-f="8"><b>08</b><span data-en="Push">Push</span></li>
+<li data-f="9"><b>09</b><span data-en="Answer">Antwort</span></li>
+<li data-f="10"><b>10</b><span data-en="Parallel">Parallel</span></li>
+<li data-f="11"><b>11</b><span data-en="Learn">Lernen</span></li>
+</ol><div class="st-console">
+<div class="st-con" data-f="1"><div class="st-cl" data-en="hooks ▸ SessionStart">hooks ▸ SessionStart</div><div class="st-cl live" data-en="session_overview.py ✓ status attached">session_overview.py ✓ Lagebild beigelegt</div><div class="st-cl live" data-en="global_hook.py prompt ✓ pull dev_ws 45f21b9a">global_hook.py prompt ✓ Pull dev_ws 45f21b9a</div></div>
+<div class="st-con" data-f="2"><div class="st-cl" data-en="organizer ▸ check effort first">organizer ▸ Aufwand zuerst prüfen</div><div class="st-cl live" data-en="level 2 → full UI check">Stufe 2 → volle Prüfung der UI</div></div>
+<div class="st-con" data-f="3"><div class="st-cl" data-en="grep -n &quot;jogStep&quot; js/*.js">grep -n "jogStep" js/*.js</div><div class="st-cl live" data-en="js/jog.js:42 export function jogStep(mm)">js/jog.js:42 export function jogStep(mm)</div></div>
+<div class="st-con" data-f="4"><div class="st-cl" data-en="AskUserQuestion ▸ F1 twin as well?">AskUserQuestion ▸ F1 Twin gleich mit?</div><div class="st-cl live" data-en="answer: later">Antwort: später</div></div>
+<div class="st-con" data-f="5"><div class="st-cl" data-en="PreToolUse ▸ pre_tool_guard.py ✓ file free">PreToolUse ▸ pre_tool_guard.py ✓ Datei frei</div><div class="st-cl live" data-en="todo_claim_hook ✓ claim created: jog.js">todo_claim_hook ✓ Claim angelegt: jog.js</div><div class="st-cl live" data-en="PostToolUse ▸ post_edit_check.py ✓ no findings">PostToolUse ▸ post_edit_check.py ✓ ohne Befund</div></div>
+<div class="st-con" data-f="6"><div class="st-cl" data-en="test ▸ pytest">test ▸ pytest</div><div class="st-cl bad" data-en="41/42 red → back to building">41/42 rot → zurück ins Bauen</div><div class="st-cl live" data-en="42/42 green after the fix">42/42 grün nach dem Fix</div></div>
+<div class="st-con" data-f="7"><div class="st-cl" data-en="skill ▸ docs">skill ▸ docs</div><div class="st-cl live" data-en="de + en alike · ✓">de + en gleich · ✓</div></div>
+<div class="st-con" data-f="8"><div class="st-cl" data-en="file_register ▸ 4 own files · 0 foreign">file_register ▸ 4 eigene Dateien · 0 fremde</div><div class="st-cl live" data-en="push ✓ fast-forward">push ✓ Fast-Forward</div></div>
+<div class="st-con" data-f="9"><div class="st-cl" data-en="Stop ▸ format_check.py">Stop ▸ format_check.py</div><div class="st-cl live" data-en="✓ form + truth checked">✓ Form + Wahrheit geprüft</div></div>
+<div class="st-con" data-f="10"><div class="st-cl" data-en="pre_tool_guard ▸ foreign claim detected">pre_tool_guard ▸ fremder Claim erkannt</div><div class="st-cl live" data-en="coordinated · no conflict">abgestimmt · kein Konflikt</div></div>
+<div class="st-con" data-f="11"><div class="st-cl" data-en="memory ▸ +1 file · MEMORY.md +1 line">memory ▸ +1 Datei · MEMORY.md +1 Zeile</div><div class="st-cl live" data-en="next chat loads the index at start">nächster Chat lädt den Index beim Start</div></div>
+</div>
+<div class="st-terms"><span class="st-terms-k"><span data-en="Terms explained">Begriffe erklärt</span></span><span class="st-meter"><i></i></span><b class="st-count">0 / 0</b></div>
+</div></div>
+<div class="fx-text">
+<article class="fr" id="f01" data-f="1" aria-labelledby="f01-h">
+<div class="fr-kick"><span class="n">01</span><span data-en="Request">Auftrag</span><span class="fr-of">01 / 11</span></div>
+<h3 id="f01-h" data-en="You name the goal – the chat starts from a fresh state with a status overview.">Du nennst das Ziel – der Chat startet mit frischem Stand und einem Lagebild.</h3>
+<p class="fr-p" data-en="On the left is a re-enacted chat in VS&amp;nbsp;Code. We follow one task from the first sentence to the push. Before your message, a &lt;button type=&quot;button&quot; class=&quot;term&quot; data-t=&quot;hook&quot;&gt;hook&lt;/button&gt; pulls the latest state from Git and attaches a &lt;button type=&quot;button&quot; class=&quot;term&quot; data-t=&quot;lagebild&quot;&gt;status overview&lt;/button&gt;: which chats are running and which files they change. The &lt;button type=&quot;button&quot; class=&quot;term&quot; data-t=&quot;praefix&quot;&gt;prefix&lt;/button&gt; &lt;code&gt;[RCU]&lt;/code&gt; names the area.">Links siehst du einen nachgestellten Chat in VS&nbsp;Code. Wir folgen einem Auftrag vom ersten Satz bis zum Push. Vor deiner Nachricht holt ein <button type="button" class="term" data-t="hook">Hook</button> den neuesten Stand aus Git und legt ein <button type="button" class="term" data-t="lagebild">Lagebild</button> bei: welche Chats laufen und welche Dateien sie ändern. Das <button type="button" class="term" data-t="praefix">Präfix</button> <code>[RCU]</code> sagt, um welchen Bereich es geht.</p>
+<div class="fr-def" id="f01-def" aria-live="polite" hidden></div>
+<div class="fr-vs"><div class="no"><b><span data-en="✕ Without">✕ Ohne</span></b><span data-en="The chat works on an old state and does not know another chat is changing the same file.">Der Chat arbeitet auf altem Stand und weiß nicht, dass ein anderer Chat dieselbe Datei ändert.</span></div>
+<div class="yes"><b><span data-en="✓ With">✓ Mit</span></b><span data-en="Pull and status before every request; if the pull fails, the chat reports only the error.">Pull und Lagebild vor jeder Anfrage; scheitert der Pull, meldet der Chat nur den Fehler.</span></div></div>
+<div class="fr-gl"><h4><span data-en="Terms in this frame">Begriffe in diesem Frame</span></h4><dl>
+<div class="gl-i" data-t="hook" data-f="1"><dt data-en="Hook">Hook</dt><dd data-en="script that runs automatically at fixed points and checks, warns or blocks.">Skript, das an festen Stellen automatisch läuft und prüft, warnt oder blockt.</dd></div>
+<div class="gl-i" data-t="lagebild" data-f="1"><dt data-en="Status overview">Lagebild</dt><dd data-en="list at start and before every request: running chats, their files, open handoffs.">Liste beim Start und vor jeder Anfrage: laufende Chats, ihre Dateien, offene Übergaben.</dd></div>
+<div class="gl-i" data-t="praefix" data-f="1"><dt data-en="Prefix">Präfix</dt><dd data-en="tag in the chat title like &lt;code&gt;[RCU]&lt;/code&gt; – shows the area so chats stay out of each other’s way.">Kürzel im Chat-Titel wie <code>[RCU]</code> – zeigt den Bereich, damit Chats sich nicht in die Quere kommen.</dd></div>
+</dl></div>
+<p class="fr-proof"><b><span data-en="Evidence:">Beleg:</span></b> <span data-en="Line &lt;code&gt;[Hook] Pull · dev_ws 45f21b9a → ✅ up to date&lt;/code&gt; in the answer’s log.">Zeile <code>[Hook] Pull · dev_ws 45f21b9a → ✅ aktuell</code> im Ablauf der Antwort.</span></p>
+<a class="fr-more" href="#kap-leitplanken"><span data-en="More: chapter 03 guard rails">Mehr: Kapitel 03 Leitplanken</span><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg></a>
+</article>
+<article class="fr" id="f02" data-f="2" aria-labelledby="f02-h">
+<div class="fr-kick"><span class="n">02</span><span data-en="Effort">Aufwand</span><span class="fr-of">02 / 11</span></div>
+<h3 id="f02-h" data-en="Before starting, the chat estimates what this task really needs.">Bevor er anfängt, schätzt der Chat ein, was dieser Auftrag wirklich braucht.</h3>
+<p class="fr-p" data-en="A limit in one function is small. Because it limits robot motion, “when in doubt, one level higher” applies: &lt;button type=&quot;button&quot; class=&quot;term&quot; data-t=&quot;pruefstufe&quot;&gt;check level&lt;/button&gt; 2. The &lt;button type=&quot;button&quot; class=&quot;term&quot; data-t=&quot;rolle&quot;&gt;role&lt;/button&gt; is developer; it decides which &lt;button type=&quot;button&quot; class=&quot;term&quot; data-t=&quot;skill&quot;&gt;skills&lt;/button&gt; and checks belong to the task.">Eine Grenze in einer Funktion ist klein. Weil sie aber eine Roboterbewegung begrenzt, gilt „im Zweifel eine Stufe höher“: <button type="button" class="term" data-t="pruefstufe">Prüfstufe</button> 2. Die <button type="button" class="term" data-t="rolle">Rolle</button> ist Entwickler; sie bestimmt, welche <button type="button" class="term" data-t="skill">Skills</button> und Prüfungen dazugehören.</p>
+<div class="fr-def" id="f02-def" aria-live="polite" hidden></div>
+<div class="fr-vs"><div class="no"><b><span data-en="✕ Without">✕ Ohne</span></b><span data-en="Every request gets the full programme – a text change takes as long as a safety fix.">Jede Anfrage bekommt das volle Programm – eine Textänderung dauert so lange wie ein Sicherheits-Fix.</span></div>
+<div class="yes"><b><span data-en="✓ With">✓ Mit</span></b><span data-en="Effort by check level 0–3: little for text, everything for safety.">Aufwand nach Prüfstufe 0–3: wenig für Text, alles für Sicherheit.</span></div></div>
+<div class="fr-gl"><h4><span data-en="Terms in this frame">Begriffe in diesem Frame</span></h4><dl>
+<div class="gl-i" data-t="pruefstufe" data-f="2"><dt data-en="Check level">Prüfstufe</dt><dd data-en="0 trivial · 1 small · 2 normal · 3 critical – sets how deeply the work is checked before “done”.">0 trivial · 1 klein · 2 normal · 3 kritisch – legt fest, wie tief vor „fertig“ geprüft wird.</dd></div>
+<div class="gl-i" data-t="rolle" data-f="2"><dt data-en="Role">Rolle</dt><dd data-en="what the chat is doing: developer, designer, reviewer, synchronizer … – each with its own skills and checks.">Tätigkeit des Chats: Entwickler, Designer, Prüfer, Synchronizer … – mit eigenen Skills und Prüfungen.</dd></div>
+<div class="gl-i" data-t="skill" data-f="2"><dt data-en="Skill">Skill</dt><dd data-en="knowledge on one topic as a file; loaded only when the request touches the topic.">Wissen zu einem Thema als Datei; geladen nur, wenn die Anfrage das Thema berührt.</dd></div>
+</dl></div>
+<p class="fr-proof"><b><span data-en="Evidence:">Beleg:</span></b> <span data-en="The chat’s first message names check level and role.">Die erste Nachricht des Chats nennt Prüfstufe und Rolle.</span></p>
+<a class="fr-more" href="#kap-fertig"><span data-en="More: chapter 04 done">Mehr: Kapitel 04 Fertig</span><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg></a>
+</article>
+<article class="fr" id="f03" data-f="3" aria-labelledby="f03-h">
+<div class="fr-kick"><span class="n">03</span><span data-en="Context">Kontext</span><span class="fr-of">03 / 11</span></div>
+<h3 id="f03-h" data-en="The chat loads only the knowledge this task touches.">Der Chat lädt nur das Wissen, das dieser Auftrag berührt.</h3>
+<p class="fr-p" data-en="Always included: the shared rules, the project’s &lt;button type=&quot;button&quot; class=&quot;term&quot; data-t=&quot;agents&quot;&gt;AGENTS.md&lt;/button&gt; and the &lt;button type=&quot;button&quot; class=&quot;term&quot; data-t=&quot;memory&quot;&gt;memory&lt;/button&gt; index. A skill is added only when its topic comes up; the chat reads large files selectively with &lt;code&gt;grep&lt;/code&gt;. This keeps the &lt;button type=&quot;button&quot; class=&quot;term&quot; data-t=&quot;kontext&quot;&gt;context&lt;/button&gt; small.">Immer dabei sind die gemeinsamen Regeln, die <button type="button" class="term" data-t="agents">AGENTS.md</button> des Projekts und der Index der <button type="button" class="term" data-t="memory">Memory</button>. Ein Skill kommt nur dazu, wenn sein Thema vorkommt; große Dateien liest der Chat gezielt per <code>grep</code>. So bleibt der <button type="button" class="term" data-t="kontext">Kontext</button> klein.</p>
+<div class="fr-def" id="f03-def" aria-live="polite" hidden></div>
+<div class="fr-vs"><div class="no"><b><span data-en="✕ Without">✕ Ohne</span></b><span data-en="All skills in context: every call re-reads them, the chat gets slow and expensive.">Alle Skills im Kontext: jeder Aufruf liest sie neu, der Chat wird langsam und teuer.</span></div>
+<div class="yes"><b><span data-en="✓ With">✓ Mit</span></b><span data-en="Skill finder: keyword of the request → matching skill, the rest stays out.">Skill-Finder: Stichwort der Anfrage → passender Skill, der Rest bleibt draußen.</span></div></div>
+<div class="fr-gl"><h4><span data-en="Terms in this frame">Begriffe in diesem Frame</span></h4><dl>
+<div class="gl-i" data-t="agents" data-f="3"><dt data-en="AGENTS.md">AGENTS.md</dt><dd data-en="rules of this project; extends &lt;code&gt;RULES.md&lt;/code&gt; (all projects) and wins on conflict.">Regeln dieses Projekts; ergänzt <code>RULES.md</code> (alle Projekte) und geht bei Widerspruch vor.</dd></div>
+<div class="gl-i" data-t="memory" data-f="3"><dt data-en="Memory">Memory</dt><dd data-en="memory across chats: one file per insight, in Git, the same on every computer.">Gedächtnis über Chats: je Erkenntnis eine Datei, im Git, auf jedem Rechner gleich.</dd></div>
+<div class="gl-i" data-t="kontext" data-f="3"><dt data-en="Context">Kontext</dt><dd data-en="everything the chat has read so far; every call re-reads it – so keep it small.">alles, was der Chat gerade gelesen hat; jeder Aufruf liest ihn neu – darum klein halten.</dd></div>
+</dl></div>
+<p class="fr-proof"><b><span data-en="Evidence:">Beleg:</span></b> <span data-en="The log shows which files and skills the chat read.">Im Verlauf steht, welche Dateien und Skills der Chat gelesen hat.</span></p>
+<a class="fr-more" href="#kap-aufbau"><span data-en="More: chapter 01 structure">Mehr: Kapitel 01 Aufbau</span><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg></a>
+</article>
+<article class="fr" id="f04" data-f="4" aria-labelledby="f04-h">
+<div class="fr-kick"><span class="n">04</span><span data-en="Plan">Plan</span><span class="fr-of">04 / 11</span></div>
+<h3 id="f04-h" data-en="The plan names the files; the chat asks only about real decisions.">Der Plan nennt die Dateien; fragen muss der Chat nur bei echten Entscheidungen.</h3>
+<p class="fr-p" data-en="Limit in &lt;code&gt;jog.js&lt;/code&gt;, add a test – that is routine. Whether the twin display follows is your call: the chat asks as &lt;button type=&quot;button&quot; class=&quot;term&quot; data-t=&quot;f1&quot;&gt;F1&lt;/button&gt; with answer buttons. For new UI elements it first shows a &lt;button type=&quot;button&quot; class=&quot;term&quot; data-t=&quot;vorschau&quot;&gt;preview&lt;/button&gt; with variants.">Grenze in <code>jog.js</code>, Test ergänzen – das ist Routine. Ob die Anzeige im Twin mitzieht, entscheidest du: Der Chat fragt als <button type="button" class="term" data-t="f1">F1</button> mit Antwort-Knöpfen. Für neue UI-Elemente zeigt er vorher eine <button type="button" class="term" data-t="vorschau">Vorschau</button> mit Varianten.</p>
+<div class="fr-def" id="f04-def" aria-live="polite" hidden></div>
+<div class="fr-vs"><div class="no"><b><span data-en="✕ Without">✕ Ohne</span></b><span data-en="The chat guesses, rebuilds the twin as well – and you undo it.">Der Chat rät, baut den Twin gleich mit um – und du machst es wieder rückgängig.</span></div>
+<div class="yes"><b><span data-en="✓ With">✓ Mit</span></b><span data-en="A question with options; tests, docs and commit happen without asking.">Rückfrage mit Optionen; Tests, Doku, Commit erledigt er ohne Nachfrage.</span></div></div>
+<div class="fr-gl"><h4><span data-en="Terms in this frame">Begriffe in diesem Frame</span></h4><dl>
+<div class="gl-i" data-t="f1" data-f="4"><dt data-en="F1">F1</dt><dd data-en="numbered question; the same number in dialog, preview page and answer.">nummerierte Rückfrage; dieselbe Nummer in Dialog, Vorschau-Seite und Antwort.</dd></div>
+<div class="gl-i" data-t="vorschau" data-f="4"><dt data-en="Preview">Vorschau</dt><dd data-en="page with variants and images before any code; you choose, then it gets built.">Seite mit Varianten und Bildern, bevor Code entsteht; du wählst, dann wird gebaut.</dd></div>
+</dl></div>
+<p class="fr-proof"><b><span data-en="Evidence:">Beleg:</span></b> <span data-en="Your choice is in the chat: &lt;code&gt;F1 → later&lt;/code&gt;.">Deine Wahl steht im Chat: <code>F1 → später</code>.</span></p>
+<a class="fr-more" href="#kap-ablauf"><span data-en="More: chapter 02 flow">Mehr: Kapitel 02 Ablauf</span><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg></a>
+</article>
+<article class="fr" id="f05" data-f="5" aria-labelledby="f05-h">
+<div class="fr-kick"><span class="n">05</span><span data-en="Build">Bauen</span><span class="fr-of">05 / 11</span></div>
+<h3 id="f05-h" data-en="Before every edit a hook checks whether the file is free – afterwards a second one checks the change.">Vor jedem Edit prüft ein Hook, ob die Datei frei ist – danach prüft ein zweiter die Änderung.</h3>
+<p class="fr-p" data-en="With the first changed file the chat creates a &lt;button type=&quot;button&quot; class=&quot;term&quot; data-t=&quot;claim&quot;&gt;claim&lt;/button&gt;: other chats see that &lt;code&gt;jog.js&lt;/code&gt; is in progress. The &lt;button type=&quot;button&quot; class=&quot;term&quot; data-t=&quot;register&quot;&gt;file register&lt;/button&gt; warns if another chat already holds it. The build stays lean: the smallest &lt;button type=&quot;button&quot; class=&quot;term&quot; data-t=&quot;diff&quot;&gt;diff&lt;/button&gt; in the right place.">Mit der ersten geänderten Datei legt der Chat einen <button type="button" class="term" data-t="claim">Claim</button> an: Andere Chats sehen, dass <code>jog.js</code> gerade in Arbeit ist. Das <button type="button" class="term" data-t="register">Datei-Register</button> warnt, falls ein anderer Chat sie schon offen hat. Gebaut wird schlank: kleinster <button type="button" class="term" data-t="diff">Diff</button> am richtigen Ort.</p>
+<div class="fr-def" id="f05-def" aria-live="polite" hidden></div>
+<div class="fr-vs"><div class="no"><b><span data-en="✕ Without">✕ Ohne</span></b><span data-en="Two chats change &lt;code&gt;jog.js&lt;/code&gt; at once; the second overwrites the first one’s work, nobody notices.">Zwei Chats ändern <code>jog.js</code> zugleich; der zweite überschreibt die Arbeit des ersten, keiner merkt es.</span></div>
+<div class="yes"><b><span data-en="✓ With">✓ Mit</span></b><span data-en="Hook and register warn before the edit; the chats coordinate, nothing is lost.">Hook und Register warnen vor dem Edit; die Chats stimmen sich ab, nichts geht verloren.</span></div></div>
+<div class="fr-gl"><h4><span data-en="Terms in this frame">Begriffe in diesem Frame</span></h4><dl>
+<div class="gl-i" data-t="claim" data-f="5"><dt data-en="Claim">Claim</dt><dd data-en="a Git ref per chat (&lt;code&gt;refs/claims/…&lt;/code&gt;, dev_ws): which files it is changing; removed when done.">eigener Git-Ref je Chat (<code>refs/claims/…</code>, dev_ws): welche Dateien er gerade ändert; gelöscht bei „erledigt“.</dd></div>
+<div class="gl-i" data-t="register" data-f="5"><dt data-en="File register">Datei-Register</dt><dd data-en="remembers per computer which chat holds which uncommitted file; warns before edit and commit.">merkt sich je Rechner, welcher Chat welche uncommittete Datei hält; warnt vor Edit und Commit.</dd></div>
+<div class="gl-i" data-t="diff" data-f="5"><dt data-en="Diff">Diff</dt><dd data-en="the change line by line; &lt;code&gt;+&lt;/code&gt; = new.">die Änderung Zeile für Zeile; <code>+</code> = neu.</dd></div>
+</dl></div>
+<p class="fr-proof"><b><span data-en="Evidence:">Beleg:</span></b> <span data-en="Hook output &lt;code&gt;post_edit_check: no findings&lt;/code&gt; in the chat.">Hook-Ausgabe <code>post_edit_check: ohne Befund</code> im Chat.</span></p>
+<a class="fr-more" href="#kap-leitplanken"><span data-en="More: chapter 03 guard rails">Mehr: Kapitel 03 Leitplanken</span><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg></a>
+</article>
+<article class="fr is-climax" id="f06" data-f="6" aria-labelledby="f06-h">
+<div class="fr-kick"><span class="n">06</span><span data-en="Verify">Prüfen</span><span class="fr-of">06 / 11</span></div>
+<h3 id="f06-h" data-en="The chat reports “done” only when a check after the last change is green.">„Fertig“ meldet der Chat erst, wenn eine Prüfung nach der letzten Änderung grün ist.</h3>
+<p class="fr-p" data-en="The first test run is red: negative steps are not limited. A red test sends the task back to building; only the second run is the &lt;button type=&quot;button&quot; class=&quot;term&quot; data-t=&quot;beleg&quot;&gt;evidence&lt;/button&gt;. The check level sets the depth – the &lt;button type=&quot;button&quot; class=&quot;term&quot; data-t=&quot;dod&quot;&gt;definition of done&lt;/button&gt; lists the checks, and at level 3 a &lt;button type=&quot;button&quot; class=&quot;term&quot; data-t=&quot;pruefagent&quot;&gt;review agent&lt;/button&gt; reads along independently.">Der erste Testlauf ist rot: Negative Schritte werden nicht begrenzt. Ein roter Test schickt den Auftrag zurück ins Bauen; erst der zweite Lauf ist der <button type="button" class="term" data-t="beleg">Beleg</button>. Wie tief geprüft wird, legt die Prüfstufe fest – die <button type="button" class="term" data-t="dod">Definition of Done</button> nennt die Prüfungen, bei Stufe 3 liest ein <button type="button" class="term" data-t="pruefagent">Prüf-Agent</button> unabhängig mit.</p>
+<div class="fr-def" id="f06-def" aria-live="polite" hidden></div>
+<ol class="fr-levels">
+<li><b>0</b><span data-en="&lt;strong&gt;Trivial&lt;/strong&gt; · text, docs – hooks + pre-commit only"><strong>Trivial</strong> · Text, Doku – nur Hooks + pre-commit</span></li>
+<li><b>1</b><span data-en="&lt;strong&gt;Small&lt;/strong&gt; · 1 element – quick checks, UI light + dark"><strong>Klein</strong> · 1 Element – schnelle Checks, UI hell + dunkel</span></li>
+<li class="is-cur"><b>2</b><span data-en="&lt;strong&gt;Normal&lt;/strong&gt; · new or rebuilt – full project check"><strong>Normal</strong> · neu oder Umbau – volle Prüfung des Projekts</span><em><span data-en="this task">dieser Auftrag</span></em></li>
+<li><b>3</b><span data-en="&lt;strong&gt;Critical&lt;/strong&gt; · safety, hardware – plus review agent, never cut"><strong>Kritisch</strong> · Sicherheit, Hardware – plus Prüf-Agent, nie gekürzt</span></li>
+</ol>
+<div class="fr-vs"><div class="no"><b><span data-en="✕ Without">✕ Ohne</span></b><span data-en="“Should work now” – the bug shows up only on the robot.">„Sollte jetzt gehen“ – der Fehler fällt erst am Roboter auf.</span></div>
+<div class="yes"><b><span data-en="✓ With">✓ Mit</span></b><span data-en="✅ only with check output from this chat, after the last change.">✅ nur mit Prüfausgabe aus diesem Chat, nach der letzten Änderung.</span></div></div>
+<div class="fr-gl"><h4><span data-en="Terms in this frame">Begriffe in diesem Frame</span></h4><dl>
+<div class="gl-i" data-t="beleg" data-f="6"><dt data-en="Evidence">Beleg</dt><dd data-en="output of a check from this chat after the last change – no ✅ without it.">Ausgabe einer Prüfung aus diesem Chat nach der letzten Änderung – ohne sie kein ✅.</dd></div>
+<div class="gl-i" data-t="dod" data-f="6"><dt data-en="Definition of done">Definition of Done</dt><dd data-en="per-project list of what must be green before “done”, graded by check level.">Liste je Projekt, was vor „fertig“ grün sein muss, gestaffelt nach Prüfstufe.</dd></div>
+<div class="gl-i" data-t="pruefagent" data-f="6"><dt data-en="Review agent">Prüf-Agent</dt><dd data-en="a separate helper with fresh context, e.g. &lt;code&gt;safety-reviewer&lt;/code&gt;; reads only, changes nothing.">eigener Helfer mit frischem Kontext, z.&nbsp;B. <code>safety-reviewer</code>; liest nur, ändert nichts.</dd></div>
+</dl></div>
+<p class="fr-proof"><b><span data-en="Evidence:">Beleg:</span></b> <span data-en="&lt;code&gt;pytest 42/42&lt;/code&gt; and checker light + dark, both after the fix."><code>pytest 42/42</code> und Checker hell + dunkel, beide nach dem Fix.</span></p>
+<a class="fr-more" href="#kap-fertig"><span data-en="More: chapter 04 done">Mehr: Kapitel 04 Fertig</span><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg></a>
+</article>
+<article class="fr" id="f07" data-f="7" aria-labelledby="f07-h">
+<div class="fr-kick"><span class="n">07</span><span data-en="Docs">Doku</span><span class="fr-of">07 / 11</span></div>
+<h3 id="f07-h" data-en="When what users see or set changes, the chat updates the docs in both languages.">Ändert sich, was Nutzer sehen oder einstellen, zieht der Chat die Doku in beiden Sprachen nach.</h3>
+<p class="fr-p" data-en="The new limit appears in the operating manual, in German and English. Which docs belong to which change is listed in the check table of &lt;button type=&quot;button&quot; class=&quot;term&quot; data-t=&quot;agents&quot;&gt;AGENTS.md&lt;/button&gt;; in a &lt;button type=&quot;button&quot; class=&quot;term&quot; data-t=&quot;abgleich&quot;&gt;docs review&lt;/button&gt; an agent finds where text and code drift apart.">Die neue Grenze steht im Bedienhandbuch, auf Deutsch und Englisch. Welche Doku zu welcher Änderung gehört, steht in der Prüftabelle der <button type="button" class="term" data-t="agents">AGENTS.md</button>; beim <button type="button" class="term" data-t="abgleich">Doku-Abgleich</button> findet ein Agent, wo Text und Code auseinanderlaufen.</p>
+<div class="fr-def" id="f07-def" aria-live="polite" hidden></div>
+<div class="fr-vs"><div class="no"><b><span data-en="✕ Without">✕ Ohne</span></b><span data-en="The code says 10&amp;nbsp;mm, the manual says nothing – users rely on the old behaviour.">Code sagt 10&nbsp;mm, das Handbuch nichts – Nutzer verlassen sich auf die alte Angabe.</span></div>
+<div class="yes"><b><span data-en="✓ With">✓ Mit</span></b><span data-en="Docs in the same commit as the code, de and en alike.">Doku im selben Commit wie der Code, de und en gleich.</span></div></div>
+<div class="fr-gl"><h4><span data-en="Terms in this frame">Begriffe in diesem Frame</span></h4><dl>
+<div class="gl-i" data-t="abgleich" data-f="7"><dt data-en="Docs review">Doku-Abgleich</dt><dd data-en="check docs against code; the &lt;code&gt;docs-auditor&lt;/code&gt; agent reports only deviations.">Doku gegen Code prüfen; der Agent <code>docs-auditor</code> meldet nur Abweichungen.</dd></div>
+</dl></div>
+<p class="fr-proof"><b><span data-en="Evidence:">Beleg:</span></b> <span data-en="Diff in &lt;code&gt;docs/de/&lt;/code&gt; and &lt;code&gt;docs/en/&lt;/code&gt; in the same commit.">Diff in <code>docs/de/</code> und <code>docs/en/</code> im selben Commit.</span></p>
+<a class="fr-more" href="#kap-fertig"><span data-en="More: chapter 04 done">Mehr: Kapitel 04 Fertig</span><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg></a>
+</article>
+<article class="fr" id="f08" data-f="8" aria-labelledby="f08-h">
+<div class="fr-kick"><span class="n">08</span><span data-en="Push">Push</span><span class="fr-of">08 / 11</span></div>
+<h3 id="f08-h" data-en="Only the chat’s own, verified files go into the commit – and the push never overwrites anything.">Nur eigene, geprüfte Dateien kommen in den Commit – und der Push überschreibt nie etwas.</h3>
+<p class="fr-p" data-en="The chat takes only files it changed itself; the &lt;button type=&quot;button&quot; class=&quot;term&quot; data-t=&quot;precommit&quot;&gt;pre-commit&lt;/button&gt; hook checks them once more. The message follows the &lt;button type=&quot;button&quot; class=&quot;term&quot; data-t=&quot;cc&quot;&gt;conventional commit&lt;/button&gt; style. The push is a &lt;button type=&quot;button&quot; class=&quot;term&quot; data-t=&quot;ff&quot;&gt;fast-forward&lt;/button&gt;: commits are appended, never replaced.">Der Chat nimmt nur Dateien, die er selbst geändert hat; der <button type="button" class="term" data-t="precommit">pre-commit</button>-Hook prüft sie noch einmal. Die Nachricht folgt dem <button type="button" class="term" data-t="cc">Conventional-Commit</button>-Stil. Gepusht wird per <button type="button" class="term" data-t="ff">Fast-Forward</button>: Commits werden angehängt, nie ersetzt.</p>
+<div class="fr-def" id="f08-def" aria-live="polite" hidden></div>
+<div class="fr-vs"><div class="no"><b><span data-en="✕ Without">✕ Ohne</span></b><span data-en="&lt;code&gt;git add -A&lt;/code&gt; takes another chat’s half-finished files along."><code>git add -A</code> nimmt die halbfertigen Dateien eines anderen Chats mit.</span></div>
+<div class="yes"><b><span data-en="✓ With">✓ Mit</span></b><span data-en="&lt;code&gt;git status&lt;/code&gt; + register: own files only; others’ files stay."><code>git status</code> + Register: nur eigene Dateien; fremde bleiben liegen.</span></div></div>
+<div class="fr-gl"><h4><span data-en="Terms in this frame">Begriffe in diesem Frame</span></h4><dl>
+<div class="gl-i" data-t="precommit" data-f="8"><dt data-en="pre-commit">pre-commit</dt><dd data-en="check script at commit time; if anything is red, no commit is made.">Prüfskript beim Commit; ist etwas rot, entsteht kein Commit.</dd></div>
+<div class="gl-i" data-t="cc" data-f="8"><dt data-en="Conventional commit">Conventional Commit</dt><dd data-en="title with type and area, e.g. &lt;code&gt;fix(rcu): …&lt;/code&gt; – the history shows what changed where.">Titel mit Art und Bereich, z.&nbsp;B. <code>fix(rcu): …</code> – der Verlauf zeigt so, was wo geändert wurde.</dd></div>
+<div class="gl-i" data-t="ff" data-f="8"><dt data-en="Fast-forward">Fast-Forward</dt><dd data-en="a push that appends new commits; nothing is overwritten, never &lt;code&gt;--force&lt;/code&gt;.">Push hängt neue Commits an; nichts wird überschrieben, nie <code>--force</code>.</dd></div>
+</dl></div>
+<p class="fr-proof"><b><span data-en="Evidence:">Beleg:</span></b> <span data-en="Hash in the last line of the answer: &lt;code&gt;pushed a1b2c3d&lt;/code&gt;.">Hash in der letzten Zeile der Antwort: <code>gepusht a1b2c3d</code>.</span></p>
+<a class="fr-more" href="#kap-zusammenarbeit"><span data-en="More: chapter 05 working together">Mehr: Kapitel 05 Zusammenarbeit</span><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg></a>
+</article>
+<article class="fr" id="f09" data-f="9" aria-labelledby="f09-h">
+<div class="fr-kick"><span class="n">09</span><span data-en="Answer">Antwort</span><span class="fr-of">09 / 11</span></div>
+<h3 id="f09-h" data-en="The answer always has the same shape: result first, status and Git state at the end.">Die Antwort hat immer dieselbe Form: Ergebnis zuerst, Status und Git-Stand am Schluss.</h3>
+<p class="fr-p" data-en="You see in seconds whether everything is green. A &lt;button type=&quot;button&quot; class=&quot;term&quot; data-t=&quot;stophook&quot;&gt;stop hook&lt;/button&gt; checks every answer and blocks false claims, such as a push hash without a push. The &lt;button type=&quot;button&quot; class=&quot;term&quot; data-t=&quot;status&quot;&gt;status line&lt;/button&gt; says whether you need to act; the &lt;button type=&quot;button&quot; class=&quot;term&quot; data-t=&quot;chatid&quot;&gt;chat ID&lt;/button&gt; is at the very bottom.">So siehst du in Sekunden, ob alles grün ist. Ein <button type="button" class="term" data-t="stophook">Stop-Hook</button> prüft jede Antwort und blockt falsche Angaben, etwa einen Push-Hash ohne Push. Die <button type="button" class="term" data-t="status">Status-Zeile</button> sagt, ob du jetzt etwas tun musst; ganz unten steht die <button type="button" class="term" data-t="chatid">Chat-ID</button>.</p>
+<div class="fr-def" id="f09-def" aria-live="polite" hidden></div>
+<div class="fr-vs"><div class="no"><b><span data-en="✕ Without">✕ Ohne</span></b><span data-en="Long prose, “should be fine” – whether it was pushed is somewhere in the text.">Lange Prosa, „sollte passen“ – ob gepusht wurde, steht irgendwo im Text.</span></div>
+<div class="yes"><b><span data-en="✓ With">✓ Mit</span></b><span data-en="One template for Claude, Codex and Gemini; status and Git state always at the bottom.">Eine Vorlage für Claude, Codex und Gemini; Status und Git-Stand stehen immer unten.</span></div></div>
+<div class="fr-gl"><h4><span data-en="Terms in this frame">Begriffe in diesem Frame</span></h4><dl>
+<div class="gl-i" data-t="stophook" data-f="9"><dt data-en="Stop hook">Stop-Hook</dt><dd data-en="&lt;code&gt;format_check.py&lt;/code&gt;; runs when the chat finishes its answer."><code>format_check.py</code>; läuft, wenn der Chat seine Antwort beendet.</dd></div>
+<div class="gl-i" data-t="status" data-f="9"><dt data-en="Status line">Status-Zeile</dt><dd data-en="done · waiting for you · still running – exactly one per answer.">erledigt · wartet auf dich · läuft weiter – genau eine je Antwort.</dd></div>
+<div class="gl-i" data-t="chatid" data-f="9"><dt data-en="Chat ID">Chat-ID</dt><dd data-en="the chat’s identifier, e.g. &lt;code&gt;dev-ws-d4&lt;/code&gt;; chats and you address each other with it.">Kennung des Chats, z.&nbsp;B. <code>dev-ws-d4</code>; damit sprechen Chats einander und du sie an.</dd></div>
+</dl></div>
+<p class="fr-proof"><b><span data-en="Evidence:">Beleg:</span></b> <span data-en="Last line &lt;code&gt;([Claude] dev-ws-d4 · pushed a1b2c3d)&lt;/code&gt;.">Letzte Zeile <code>([Claude] dev-ws-d4 · gepusht a1b2c3d)</code>.</span></p>
+<a class="fr-more" href="#kap-ablauf"><span data-en="More: chapter 02 flow">Mehr: Kapitel 02 Ablauf</span><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg></a>
+</article>
+<article class="fr" id="f10" data-f="10" aria-labelledby="f10-h">
+<div class="fr-kick"><span class="n">10</span><span data-en="Parallel">Parallel</span><span class="fr-of">10 / 11</span></div>
+<h3 id="f10-h" data-en="Several chats work at once – claims and messages keep them apart.">Mehrere Chats arbeiten gleichzeitig – Claims und Nachrichten halten sie auseinander.</h3>
+<p class="fr-p" data-en="A second chat also wanted to change &lt;code&gt;jog.js&lt;/code&gt; during the build. The hook showed it our claim; it asked via &lt;button type=&quot;button&quot; class=&quot;term&quot; data-t=&quot;sendmessage&quot;&gt;SendMessage&lt;/button&gt; and waited. Some things no chat does without your &lt;button type=&quot;button&quot; class=&quot;term&quot; data-t=&quot;freigabe&quot;&gt;approval&lt;/button&gt; – such as moving the real robot.">Ein zweiter Chat wollte während des Bauens auch <code>jog.js</code> ändern. Der Hook zeigte ihm unseren Claim; per <button type="button" class="term" data-t="sendmessage">SendMessage</button> hat er gefragt und gewartet. Manches tut kein Chat ohne deine <button type="button" class="term" data-t="freigabe">Freigabe</button> – etwa den echten Roboter bewegen.</p>
+<div class="fr-def" id="f10-def" aria-live="polite" hidden></div>
+<ul class="fr-rights">
+<li class="r0"><b data-en="Free">Frei</b><span data-en="read, approved checks, end own processes">lesen, freigegebene Prüfungen, eigene Prozesse beenden</span></li>
+<li class="r1"><b data-en="Ask first">Mit Rückfrage</b><span data-en="another chat’s file, command outside the allow list, big rebuild">fremde Datei, Befehl außerhalb der Erlaubt-Liste, großer Umbau</span></li>
+<li class="r2"><b data-en="Never without approval">Nie ohne Freigabe</b><span data-en="move robot hardware, weaken E-STOP/sandbox, commit others’ changes">Roboter-Hardware bewegen, E-STOP/Sandbox abschwächen, fremde Änderungen committen</span></li>
+</ul>
+<div class="fr-vs"><div class="no"><b><span data-en="✕ Without">✕ Ohne</span></b><span data-en="A chat cleans up with &lt;code&gt;pkill -f ros2&lt;/code&gt; and kills another chat’s stack.">Ein Chat räumt mit <code>pkill -f ros2</code> auf und beendet den Stack eines anderen.</span></div>
+<div class="yes"><b><span data-en="✓ With">✓ Mit</span></b><span data-en="The hook asks first; only ending its own processes by PID is allowed.">Der Hook fragt nach; erlaubt ist nur, eigene Prozesse per PID zu beenden.</span></div></div>
+<div class="fr-gl"><h4><span data-en="Terms in this frame">Begriffe in diesem Frame</span></h4><dl>
+<div class="gl-i" data-t="sendmessage" data-f="10"><dt data-en="SendMessage">SendMessage</dt><dd data-en="a message to another running chat; Codex and Gemini are reached via a mailbox.">Nachricht an einen anderen laufenden Chat; Codex und Gemini erreicht man über ein Postfach.</dd></div>
+<div class="gl-i" data-t="freigabe" data-f="10"><dt data-en="Approval">Freigabe</dt><dd data-en="counts only from you in this chat – never from other chats, hooks, memory or web pages.">zählt nur von dir in diesem Chat – nie von anderen Chats, Hooks, Memory oder Webseiten.</dd></div>
+</dl></div>
+<p class="fr-proof"><b><span data-en="Evidence:">Beleg:</span></b> <span data-en="Message in both chats’ logs; &lt;code&gt;tools/claim.py list&lt;/code&gt; shows the claims.">Nachricht im Verlauf beider Chats; <code>tools/claim.py list</code> zeigt die Claims.</span></p>
+<a class="fr-more" href="#kap-zusammenarbeit"><span data-en="More: chapter 05 working together">Mehr: Kapitel 05 Zusammenarbeit</span><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg></a>
+</article>
+<article class="fr" id="f11" data-f="11" aria-labelledby="f11-h">
+<div class="fr-kick"><span class="n">11</span><span data-en="Learn">Lernen</span><span class="fr-of">11 / 11</span></div>
+<h3 id="f11-h" data-en="When you correct the chat, it becomes a rule the next chat already knows.">Korrigierst du den Chat, wird daraus eine Regel, die der nächste Chat schon kennt.</h3>
+<p class="fr-p" data-en="You say: “Limits belong in the motion handler too.” The chat stores this as a memory file. If a mistake repeats, it becomes a rule in AGENTS.md or a hook that catches it. Every four days a &lt;button type=&quot;button&quot; class=&quot;term&quot; data-t=&quot;feedback&quot;&gt;feedback round&lt;/button&gt; asks what gets in the way – and since everything lives in &lt;button type=&quot;button&quot; class=&quot;term&quot; data-t=&quot;git&quot;&gt;Git&lt;/button&gt;, it applies on every computer.">Du sagst: „Grenzen gehören auch in den Motion Handler.“ Der Chat legt das als Memory-Datei ab. Wiederholt sich ein Fehler, wird daraus eine Regel in der AGENTS.md oder ein Hook, der ihn abfängt. Alle vier Tage fragt eine <button type="button" class="term" data-t="feedback">Feedback-Runde</button>, was am Ablauf stört – und weil alles im <button type="button" class="term" data-t="git">Git</button> liegt, gilt es auf jedem Rechner.</p>
+<div class="fr-def" id="f11-def" aria-live="polite" hidden></div>
+<div class="fr-vs"><div class="no"><b><span data-en="✕ Without">✕ Ohne</span></b><span data-en="Every new chat makes the same mistake, and you correct it every time.">Jeder neue Chat macht denselben Fehler, du korrigierst ihn jedes Mal.</span></div>
+<div class="yes"><b><span data-en="✓ With">✓ Mit</span></b><span data-en="Correction → memory → rule → hook: saying it once is enough.">Korrektur → Memory → Regel → Hook: einmal sagen genügt.</span></div></div>
+<div class="fr-gl"><h4><span data-en="Terms in this frame">Begriffe in diesem Frame</span></h4><dl>
+<div class="gl-i" data-t="feedback" data-f="11"><dt data-en="Feedback round">Feedback-Runde</dt><dd data-en="every 4 days, 2–3 targeted questions on the workflow; answers get implemented.">alle 4 Tage 2–3 gezielte Fragen zum Workflow; Antworten werden umgesetzt.</dd></div>
+<div class="gl-i" data-t="git" data-f="11"><dt data-en="Git as source">Git als Quelle</dt><dd data-en="rules, skills, hooks and memory live in Git and are the same on laptop, lab and home PC.">Regeln, Skills, Hooks und Memory liegen im Git und sind auf Laptop, Labor und Home-PC gleich.</dd></div>
+</dl></div>
+<p class="fr-proof"><b><span data-en="Evidence:">Beleg:</span></b> <span data-en="New file in &lt;code&gt;.claude/memory/&lt;/code&gt; in the same commit as the work.">Neue Datei in <code>.claude/memory/</code> im selben Commit wie die Arbeit.</span></p>
+<a class="fr-more" href="#kap-lernen"><span data-en="More: chapter 06 learning">Mehr: Kapitel 06 Lernen</span><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg></a>
+</article>
+</div></div>
+<div class="fx-end"><p data-en="That was one task. Now try three cases – or use the workflow in your own project.">Das war ein Auftrag. Probier jetzt drei Fälle aus – oder nutze den Workflow im eigenen Projekt.</p><div class="cta-row"><a class="b-pri" href="#selbsttest"><span data-en="Self-test">Selbsttest</span><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg></a><a class="b-sec" href="#weiter"><svg class="ico" aria-hidden="true"><use href="#i-repo"/></svg><span data-en="Use in your own project">Im eigenen Projekt nutzen</span></a><a class="b-sec" href="ai_dev_workflow_reference.html"><svg class="ico" aria-hidden="true"><use href="#i-book"/></svg><span data-en="Reference">Nachschlagen</span></a></div></div>
+</div></section>
+<section class="fx-quiz" id="selbsttest" aria-labelledby="quiz-h"><div class="wrap">
+<div class="fx-kurz-head"><span class="eyebrow" style="--hue: var(--green)"><span data-en="Self-test">Selbsttest</span></span>
+<h2 id="quiz-h" data-en="Three cases: did you get the guard rails?">Drei Fälle: Hast du die Leitplanken verstanden?</h2>
+<p data-en="Pick one answer per case; the explanation appears below.">Wähle je Fall eine Antwort; die Erklärung erscheint darunter.</p></div>
+<div class="qz-grid">
+<fieldset class="qz" data-q="1"><legend><span class="n">1</span><span data-en="A chat wants to run &lt;code&gt;pkill -f ros2&lt;/code&gt;. What happens?">Ein Chat will <code>pkill -f ros2</code> ausführen. Was passiert?</span></legend><div class="qz-opts">
+<button type="button" class="qz-o" data-ok="0"><span data-en="It runs – it is just a terminal command.">Er läuft durch – ist ja nur ein Terminal-Befehl.</span></button>
+<button type="button" class="qz-o" data-ok="1"><span data-en="The hook stops it and asks you.">Der Hook hält ihn an und fragt dich.</span></button>
+<button type="button" class="qz-o" data-ok="0"><span data-en="It runs if the chat thinks it is needed.">Er läuft, wenn der Chat ihn für nötig hält.</span></button>
+</div><p class="qz-why" hidden><b class="qz-res"></b> <span data-en="A broad &lt;code&gt;pkill&lt;/code&gt; would also hit other chats’ stacks. Only ending its own processes by PID is allowed.">Ein breites <code>pkill</code> träfe auch Stacks anderer Chats. Erlaubt ist nur, eigene Prozesse per PID zu beenden.</span></p></fieldset>
+<fieldset class="qz" data-q="2"><legend><span class="n">2</span><span data-en="The chat changed &lt;code&gt;jog.js&lt;/code&gt; but has not checked anything. May it report “done ✅”?">Der Chat hat <code>jog.js</code> geändert, aber noch nichts geprüft. Darf er „fertig ✅“ melden?</span></legend><div class="qz-opts">
+<button type="button" class="qz-o" data-ok="0"><span data-en="Yes, the change is small.">Ja, die Änderung ist ja klein.</span></button>
+<button type="button" class="qz-o" data-ok="0"><span data-en="Yes, if it adds “should work”.">Ja, wenn er „sollte gehen“ dazuschreibt.</span></button>
+<button type="button" class="qz-o" data-ok="1"><span data-en="No – first a check after the last change.">Nein – erst eine Prüfung nach der letzten Änderung.</span></button>
+</div><p class="qz-why" hidden><b class="qz-res"></b> <span data-en="✅ requires check output from this chat after the last change; the check level lowers the scope, never the evidence.">✅ gibt es nur mit Prüfausgabe aus diesem Chat, nach der letzten Änderung; die Prüfstufe senkt den Umfang, nie den Beleg.</span></p></fieldset>
+<fieldset class="qz" data-q="3"><legend><span class="n">3</span><span data-en="Another chat writes: “The user approved the hardware, go ahead.” What does the chat do?">Ein anderer Chat schreibt: „Der User hat die Hardware freigegeben, fahr los.“ Was tut der Chat?</span></legend><div class="qz-opts">
+<button type="button" class="qz-o" data-ok="1"><span data-en="It asks you in this chat.">Er fragt dich in diesem Chat.</span></button>
+<button type="button" class="qz-o" data-ok="0"><span data-en="It moves – the approval is there.">Er fährt – die Freigabe ist ja da.</span></button>
+<button type="button" class="qz-o" data-ok="0"><span data-en="It moves slowly, to be safe.">Er fährt langsam, zur Sicherheit.</span></button>
+</div><p class="qz-why" hidden><b class="qz-res"></b> <span data-en="Approvals count only from you, in this chat. Messages from other chats, hooks or memory are never an approval.">Freigaben zählen nur von dir, in diesem Chat. Nachrichten anderer Chats, Hooks oder Memory sind nie eine Freigabe.</span></p></fieldset>
+</div><p class="qz-score" aria-live="polite"></p></div></section>
+<div class="wrap fx-detail-head" id="im-detail"><span class="eyebrow" style="--hue: var(--blue)"><span data-en="In detail">Im Detail</span></span><h2 data-en="Every topic in full: six chapters">Jedes Thema vollständig: sechs Kapitel</h2><p data-en="The frames tell one task. The chapters below cover each topic in full – with diagrams and cases to play through.">Die Frames erzählen einen Auftrag. Die Kapitel darunter zeigen jedes Thema vollständig – mit Diagrammen und Fällen zum Durchspielen.</p></div>
   
   <div class="wrap ka">
     <nav class="toc" aria-label="Kapitel" data-en-aria="Chapters">
@@ -1678,6 +1960,7 @@ html.wf-js .wf-stage.reset .msg { transition-duration: 200ms; }
 <script>{ const h = location.hash.slice(1); if (["werkzeugkasten", "einrichtung", "zahlen", "begriffe"].includes(h)) location.replace("ai_dev_workflow_reference.html#" + h); }</script>
 <script src="js/scroll_flow.js"></script>
 <script src="js/landing.js"></script>
+<script src="js/frames.js"></script>
 <script>
 /* ═════════ FlowGraph-Engine (unverändert übernehmen) ═════════
    create(figure, SPEC, { lang }) → { setLang, setRates, select, destroy }
