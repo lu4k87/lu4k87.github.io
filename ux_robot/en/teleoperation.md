@@ -98,7 +98,7 @@ The table below illustrates which project modules can be evaluated in pure softw
 >> | **Button A** (🟢) | **Gripper Open / Close or Vacuum On / Off** | *Depends on the launch argument: `add_gripper:=true` toggles the Lite 6 gripper open/closed, `add_vacuum_gripper:=true` toggles the vacuum on/off. Without either (`gripper_type: none`) the button does nothing.* |
 >> | **Button B** (🔴) | **Gripper Off** | *Lite 6 gripper: stops immediately and releases the holding force. Vacuum: switches off.* |
 >> | **Button X** (🔵) | **Microphone (Voice)** | *Starts/Stops recording for Whisper AI* |
->> | **Button Y** (🟡) | **Home Pose** | *Moves the robot to the safe home pose* |
+>> | **Button Y** (🟡) | **Home Pose** | *Moves the robot to the safe home pose. Y is the default: A / B / X / Y / Back / Start can be reassigned in Settings › Gamepad (sticks, triggers, LB / RB and the D-pad stay fixed)* |
 >
 >
 > ![Subscribes](https://img.shields.io/badge/Subscribes-orange?style=flat-square)

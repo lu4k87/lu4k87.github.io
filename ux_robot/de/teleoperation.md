@@ -99,7 +99,7 @@ Die folgende Übersicht zeigt auf einen Blick, welche Projektmodule in reiner So
 >> | **A-Taste** (🟢) | **Greifer auf / zu bzw. Vakuum an / aus** | *Hängt vom Launch-Argument ab: `add_gripper:=true` schaltet den Lite 6 Greifer auf/zu, `add_vacuum_gripper:=true` das Vakuum an/aus. Ohne beides (`gripper_type: none`) keine Funktion.* |
 >> | **B-Taste** (🔴) | **Greifer aus** | *Lite 6 Greifer: stoppt sofort und löst die Haltekraft. Vakuum: schaltet ab.* |
 >> | **X-Taste** (🔵) | **Mikrofon (Voice)** | *Startet/Stoppt die Aufnahme für Whisper AI* |
->> | **Y-Taste** (🟡) | **Home-Pose** | *Fährt den Roboter in die sichere Startposition* |
+>> | **Y-Taste** (🟡) | **Home-Pose** | *Fährt den Roboter in die sichere Startposition. Y ist der Standard: A / B / X / Y / Back / Start lassen sich in Settings › Gamepad umbelegen (Sticks, Trigger, LB / RB und Steuerkreuz bleiben fest)* |
 >
 >
 > ![Subscribes](https://img.shields.io/badge/Subscribes-orange?style=flat-square)
