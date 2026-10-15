@@ -18,7 +18,7 @@ Ursprünglich wurde die Greiflogik des Roboters von einem Node namens `motion_se
 
 ### 10.2 2D Raspberry Pi Kameras vs. 3D Stereo Vision [VERALTET]
 Frühe Iterationen setzten auf Standard-2D-Webcams oder Raspberry Pi Kameras in Kombination mit 2D-Homographie (ArUco Marker), um Objektpositionen auf einem flachen Tisch zu schätzen.
-- **Status:** Der 2D-Weg ist weiterhin als leichtgewichtige Alternative verfügbar (`zed_m:=false ip_cams:=true`, Pi-Streams in der UX | Control Interface (früher „Robot Control UI“), `RUN DEV + Gaze UI (Rpi Cam) - Egocentric`); Standard ist die ZED Mini.
+- **Status:** Der 2D-Weg ist weiterhin als leichtgewichtige Alternative verfügbar (`zed_m:=false ip_cams:=true`, Pi-Streams im UX | Control Interface (früher „Robot Control UI“), `RUN DEV + Gaze UI (Rpi Cam) - Egocentric`); Standard ist die ZED Mini.
 - **Warum es abgelöst wurde:** 2D-Vision kann keine Tiefen oder Objektvolumen wahrnehmen. Das System wurde auf die ZED Mini 3D-Stereokamera aufgerüstet. Dichte Punktwolken kombiniert mit YOLOv8 3D-Boundingboxen ermöglichen echte räumliche Wahrnehmung, sodass der Roboter Objekte unterschiedlicher Höhe greifen und komplexen Hindernissen ausweichen kann, die eine 2D-Kamera nicht sehen würde.
 
 ### 10.3 Manuelle Multi-Terminal Shell-Skripte (`lite6.sh`) [VERALTET]

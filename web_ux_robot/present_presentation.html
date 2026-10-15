@@ -1021,7 +1021,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: cent
   <div class="kpis" aria-label="Kennzahlen" data-en-aria="Key figures">
     <div class="wrap">
       <div class="kpi" style="--hue: var(--accent)"><strong data-count="10">10</strong><span data-en="&lt;b&gt;control modes&lt;/b&gt;, one system"><b>Steuerwege</b>, ein System</span></div>
-      <div class="kpi" style="--hue: var(--gold)"><strong data-count="1">1</strong><span data-en="&lt;b&gt;safety chain&lt;/b&gt; for every input"><b>Sicherheitskette</b> für jede Eingabe</span></div>
+      <div class="kpi" style="--hue: var(--gold)"><strong data-count="5">5</strong><span data-en="&lt;b&gt;safety stages&lt;/b&gt; used according to the command path"><b>Schutzstufen</b> je nach Befehlsweg</span></div>
       <div class="kpi" style="--hue: var(--violet)"><strong data-count="3">3</strong><span data-en="&lt;b&gt;autonomy levels&lt;/b&gt;: manual to delegated"><b>Autonomiestufen</b>: manuell bis delegiert</span></div>
       <div class="kpi" style="--hue: var(--teal)"><strong data-count="0">0</strong><span data-en="&lt;b&gt;installation&lt;/b&gt; on the client"><b>Installation</b> am Client</span></div>
       <div class="kpi" style="--hue: var(--indigo)"><strong data-count="440">440<small>mm</small></strong><span data-en="&lt;b&gt;reach&lt;/b&gt; of the xArm&amp;nbsp;Lite&amp;nbsp;6"><b>Reichweite</b> des xArm&nbsp;Lite&nbsp;6</span></div>
@@ -1064,7 +1064,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: cent
                 <span class="rk-link" aria-hidden="true"></span>
                 <button type="button" class="rk-step" role="tab" data-i="2" aria-selected="false" tabindex="-1" style="--hue: var(--accent)"><span class="bi"><svg class="ico"><use href="#i-cube"/></svg></span><span class="k">Digital Twin</span><b data-en="Simulates in advance">Simuliert vorab</b><small data-en="Physics, virtual objects and MoveIt collision checks show the outcome first.">Physik, virtuelle Objekte und Kollisionsprüfung (MoveIt) zeigen das Ergebnis vorher.</small><span class="bar"><i></i></span></button>
                 <span class="rk-link" aria-hidden="true"></span>
-                <button type="button" class="rk-step" role="tab" data-i="3" aria-selected="false" tabindex="-1" style="--hue: var(--green)"><span class="bi"><svg class="ico"><use href="#i-arm"/></svg></span><span class="k" data-en="Robot">Roboter</span><b data-en="Executes after confirmation">Führt nach Bestätigung aus</b><small data-en="Every motion monitored live, E-STOP always within reach.">Jede Bewegung live überwacht, E-STOP jederzeit erreichbar.</small><span class="bar"><i></i></span></button>
+                <button type="button" class="rk-step" role="tab" data-i="3" aria-selected="false" tabindex="-1" style="--hue: var(--green)"><span class="bi"><svg class="ico"><use href="#i-arm"/></svg></span><span class="k" data-en="Robot">Roboter</span><b data-en="Planned paths execute after confirmation">Geplante Bahnen nach Bestätigung</b><small data-en="Motion monitored live; software stop remains available.">Bewegung live überwacht; Software-Stopp bleibt verfügbar.</small><span class="bar"><i></i></span></button>
               </div>
               <div class="rk-back" id="rk-back"><svg class="ico" aria-hidden="true"><use href="#i-loop"/></svg><span data-en="&lt;b&gt;Human in the loop:&lt;/b&gt; camera, Digital Twin and status flow back to the human: confirm, correct or stop."><b>Mensch im Loop:</b> Kamerabild, Digital Twin und Status gehen zurück an den Menschen: bestätigen, korrigieren oder stoppen.</span></div>
               <div class="rk-ctrl"><button type="button" class="btn" id="rk-play"><svg class="ico" aria-hidden="true"><use href="#i-run"/></svg><span data-en="Play">Abspielen</span></button></div>
@@ -1105,20 +1105,20 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: cent
         <div class="feat" style="--hue: var(--gold)">
           <span class="badge-ico"><svg class="ico"><use href="#i-shield"/></svg></span>
           <span class="k-t" data-en="Safety">Sicherheit</span>
-          <b data-en="One chain for every input.">Eine Kette für jede Eingabe.</b>
-          <p data-en="E-STOP, floor guard and collision protection for all ten control modes; the control lock gives control to one client at a time (local gamepad on the robot PC excluded).">E-STOP, Bodenschutz und Kollisionsschutz für alle zehn Steuerwege; der Control-Lock gibt immer nur einem Client die Steuerung (lokales Gamepad am Roboter-PC ausgenommen).</p>
+          <b data-en="Safeguards matched to each path.">Schutzstufen passend zum Steuerweg.</b>
+          <p data-en="Software stop and collision or floor safeguards support every path; control lock, watchdog, pre-check, MoveIt and confirmation apply where relevant.">Software-Stopp sowie Kollisions- oder Bodenschutz unterstützen jeden Weg; Control-Lock, Watchdog, Vorprüfung, MoveIt und Bestätigung greifen je nach Steuerweg.</p>
         </div>
         <div class="feat" style="--hue: var(--teal)">
           <span class="badge-ico"><svg class="ico"><use href="#i-code"/></svg></span>
-          <span class="k-t">Open Source</span>
-          <b data-en="Open, reproducible, extensible.">Offen, nachbaubar, erweiterbar.</b>
-          <p data-en="Own packages under Apache 2.0, built on ROS&amp;nbsp;2 Humble and MoveIt&amp;nbsp;2.">Eigene Pakete unter Apache 2.0, aufgebaut auf ROS&nbsp;2 Humble und MoveIt&nbsp;2.</p>
+          <span class="k-t" data-en="Publication planned">Veröffentlichung geplant</span>
+          <b data-en="Reproducible and extensible.">Nachbaubar und erweiterbar.</b>
+          <p data-en="Project code currently private; publication under Apache 2.0 planned. Built on ROS&amp;nbsp;2 Humble and MoveIt&amp;nbsp;2.">Projekt-Code derzeit privat; Veröffentlichung unter Apache 2.0 geplant. Aufgebaut auf ROS&nbsp;2 Humble und MoveIt&nbsp;2.</p>
         </div>
         <div class="feat" style="--hue: var(--indigo)">
           <span class="badge-ico"><svg class="ico"><use href="#i-blocks"/></svg></span>
           <span class="k-t" data-en="Multimodal · Modular">Multimodal · Modular</span>
           <b data-en="Every module replaceable.">Jedes Modul tauschbar.</b>
-          <p data-en="Better input devices, cameras, AI models or software modules replace the old ones one by one; fixed ROS&amp;nbsp;2 interfaces keep the rest of the system unchanged. The robot arm is chosen by profile too: 7 profiles in Robot | Digital Twin, Robot | Hardware only with the xArm Lite&amp;nbsp;6.">Bessere Eingabegeräte, Kameras, KI-Modelle oder Software-Module ersetzen die alten einzeln; feste ROS&#8209;2-Schnittstellen halten den Rest des Systems unverändert. Auch den Roboterarm wählt ein Profil: 7 Profile im Robot | Digital Twin, Robot | Hardware nur mit dem xArm Lite&nbsp;6.</p>
+          <p data-en="Better input devices, cameras, AI models or software modules replace the old ones one by one; fixed ROS&amp;nbsp;2 interfaces keep the rest of the system unchanged. The robot arm is chosen by profile too: 7 profiles in Robot | Digital Twin, Robot | Hardware only with the xArm Lite&amp;nbsp;6.">Bessere Eingabegeräte, Kameras, KI-Modelle oder Software-Module ersetzen die alten einzeln; feste ROS&#8209;2-Schnittstellen halten den Rest des Systems unverändert. Auch den Roboterarm wählt ein Profil: 7 Profile in der Betriebsart Robot | Digital Twin, Robot | Hardware nur mit dem xArm Lite&nbsp;6.</p>
         </div>
       </div>
     </div>
@@ -1493,7 +1493,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: cent
             <span class="badge-ico"><svg class="ico"><use href="#i-cube"/></svg></span>
             <div><h3>Digital Twin</h3><div class="kind">three.js · URDF · /joint_states</div></div>
           </div>
-          <p class="tagline" data-en="Every motion appears in the Digital Twin before the real arm moves. The human confirms, then the arm follows.">Jede Bewegung erscheint im Digital Twin, bevor der echte Arm fährt. Der Mensch bestätigt, dann folgt der Arm.</p>
+          <p class="tagline" data-en="Planned paths appear in the Digital Twin before the real arm moves. Direct control is mirrored live and uses its own safeguards.">Geplante Bahnen erscheinen im Digital Twin, bevor der echte Arm fährt. Direkte Steuerwege werden live gespiegelt und nutzen eigene Schutzstufen.</p>
           <div class="pipe" id="gd-pipe" data-driven>
             <span data-en="Choose target">Ziel wählen</span><i>→</i><span>MoveIt</span><i>→</i><span data-en="Ghost preview">Ghost-Vorschau</span><i>→</i><span data-en="Execute">Ausführen</span><i>→</i><span data-en="Real arm">Echter Arm</span>
           </div>
@@ -1628,7 +1628,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: cent
           </div>
           <div class="pkgs" id="pkgs"></div>
           <div class="facts">
-            <span class="fact" data-en="Open source">Open Source</span>
+            <span class="fact" data-en="Publication planned (Apache 2.0)">Veröffentlichung geplant (Apache 2.0)</span>
             <span class="fact" data-en="Affordable hardware (COTS)">Erschwingliche Hardware (COTS)</span>
             <span class="fact" data-en="Digital Twin: Robot | Digital Twin first">Digital Twin: erst Robot | Digital Twin</span>
           </div>
@@ -1793,7 +1793,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: cent
           <ul>
             <li data-en="&lt;b&gt;Demonstrator:&lt;/b&gt; runs on the xArm Lite 6 with direct control, Digital Twin and AI tasks"><b>Demonstrator:</b> läuft am xArm Lite 6 mit direkter Bedienung, Digital Twin und KI-Aufgaben</li>
             <li data-en="&lt;b&gt;Test bed:&lt;/b&gt; develop and test assistive systems under realistic conditions"><b>Testumgebung:</b> assistive Systeme unter realitätsnahen Bedingungen entwickeln und erproben</li>
-            <li data-en="&lt;b&gt;Open:&lt;/b&gt; own packages under Apache 2.0, reproducible for other labs"><b>Offen:</b> eigene Pakete unter Apache 2.0, nachbaubar für andere Labore</li>
+            <li data-en="&lt;b&gt;Publication planned:&lt;/b&gt; project code under Apache 2.0, intended to support replication in other labs"><b>Veröffentlichung geplant:</b> Projekt-Code unter Apache 2.0, damit andere Labore den Aufbau leichter replizieren können</li>
             </ul>
         </div>
         <div class="feat" style="--hue: var(--green)">
@@ -1839,7 +1839,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: cent
             <li class="arr" aria-hidden="true"><svg class="ico"><use href="#i-go"/></svg></li>
             <li class="st" style="--hue: var(--accent)"><svg class="ico" aria-hidden="true"><use href="#i-arm"/></svg><b data-en="Test">Erproben</b><span data-en="reproducibly on the xArm Lite 6 (Robot | Hardware), locally or remote">reproduzierbar am xArm Lite 6 (Robot | Hardware), lokal oder remote</span></li>
             <li class="arr" aria-hidden="true"><svg class="ico"><use href="#i-go"/></svg></li>
-            <li class="st" style="--hue: var(--green)"><svg class="ico" aria-hidden="true"><use href="#i-chart"/></svg><b data-en="Validate">Validieren</b><span data-en="empirically with UX | Monitoring, blackbox and questionnaires">empirisch mit UX | Monitoring, Blackbox und Fragebögen</span></li>
+            <li class="st" style="--hue: var(--green)"><svg class="ico" aria-hidden="true"><use href="#i-chart"/></svg><b data-en="Validate">Validieren</b><span data-en="empirically with UX | Monitoring, blackbox and questionnaires">empirisch mit dem UX | Monitoring, Blackbox und Fragebögen</span></li>
           </ol>
           <p class="sys-back"><span class="sb-lbl"><svg class="ico" aria-hidden="true"><use href="#i-loop"/></svg><span data-en="&lt;b&gt;Closed loop:&lt;/b&gt; findings from validation flow back into development."><b>Geschlossener Kreislauf:</b> Erkenntnisse aus der Validierung fließen zurück in die Entwicklung.</span></span></p>
     </div>
@@ -1949,7 +1949,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: cent
   const S = (l, g, t, d, c = []) => ({ l, g, t, d, c });
   const FLOWS = {
     start: {
-      d: ['Ein Klick statt vieler Terminals: die UX | Nexus Launcher startet den ganzen Stack in fester Reihenfolge.', 'One click instead of many terminals: the UX | Nexus Launcher starts the whole stack in a fixed order.'],
+      d: ['Ein Klick statt vieler Terminals: der UX | Nexus Launcher startet den ganzen Stack in fester Reihenfolge.', 'One click instead of many terminals: the UX | Nexus Launcher starts the whole stack in a fixed order.'],
       fail: { at: 1, de: 'Robot | Hardware gesperrt: Ein Stack (Robot | Digital Twin) läuft noch. Erst Kill Daemon oder die Karte stoppen; ein gemischter Stack startet nie.', en: 'Robot | Hardware blocked: a Robot | Digital Twin stack is still running. Use Kill Daemon or stop the card first; a mixed stack never starts.' },
       steps: [
         S('in', 0, ['UX | Nexus Launcher öffnen', 'Open the UX | Nexus Launcher'], ['App-Menü „UX | Nexus Launcher“ oder Startskript; es öffnet das Start-Popup RUN DEV SETUP.', 'App menu “UX | Nexus Launcher” or the start script; it opens the RUN DEV SETUP popup.'], [':8080', 'ros2_nexus_web_start.sh']),
@@ -1965,12 +1965,12 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: cent
       d: ['Erst virtuell, dann real: jede geplante Bahn erscheint als Vorschau im Digital Twin, der Arm fährt erst nach Bestätigung.', 'Virtual first, then real: every planned path appears as a preview in the Digital Twin; the arm moves only after confirmation.'],
       fail: { at: 4, de: 'Bediener verwirft die Vorschau: Es wird nichts ausgeführt, der Arm bleibt stehen.', en: 'The operator discards the preview: nothing is executed, the arm stays put.' },
       steps: [
-        S('in', 0, ['Ziel ziehen', 'Drag the target'], ['TCP-Gizmo im Digital Twin der UX | Control Interface auf die Zielpose ziehen.', 'Drag the TCP gizmo in the Digital Twin of the UX | Control Interface to the target pose.'], ['three.js']),
+        S('in', 0, ['Ziel ziehen', 'Drag the target'], ['TCP-Gizmo im Digital Twin des UX | Control Interface auf die Zielpose ziehen.', 'Drag the TCP gizmo in the Digital Twin of the UX | Control Interface to the target pose.'], ['three.js']),
         S('bridge', 0, ['Anfrage an ROS', 'Request to ROS'], ['Die Zielpose geht über rosbridge an den Motion Handler.', 'The target pose goes to the motion handler via rosbridge.'], [':9090']),
         S('motion', 0, ['MoveIt plant', 'MoveIt plans'], ['Inverse Kinematik und kollisionsfreie Bahn mit Szene, OctoMap und erkannten Objekten.', 'Inverse kinematics and a collision-free path with scene, OctoMap and detected objects.'], ['MoveGroup']),
         S('app', 0, ['Ghost-Vorschau', 'Ghost preview'], ['Die Bahn läuft als halbtransparenter Arm im Twin; der echte Arm bewegt sich nicht.', 'The path plays as a translucent arm in the twin; the real arm does not move.'], ['/ui/moveto_preview_path']),
         S('in', 1, ['Mensch bestätigt', 'Human confirms'], ['Erst die Bestätigung des Bedieners startet die Fahrt (Human-in-the-Loop).', 'Only the operator’s confirmation starts the motion (human in the loop).']),
-        S('motion', 1, ['Sicherheitskette', 'Safety chain'], ['Control-Lock, Bodenschutz und E-STOP-Zustand werden vor jeder Fahrt geprüft.', 'Control lock, floor guard and E-STOP state are checked before every motion.'], ['/ui/emergency_stop_active']),
+        S('motion', 1, ['Wegabhängige Schutzstufen', 'Path-specific safeguards'], ['Je nach Befehlsweg greifen Control-Lock, Watchdog, Bodenschutz, Vorprüfung, MoveIt oder Bestätigung; der Software-Stopp bleibt verfügbar.', 'Depending on the command path, control lock, watchdog, floor guard, pre-check, MoveIt or confirmation apply; software stop remains available.'], ['/ui/emergency_stop_active']),
         S('hw', 0, ['Arm fährt', 'Arm moves'], ['Roboter-Simulation: simulierte Controller, echte Roboter-Hardware: xArm Lite 6. Der Zustand läuft zurück in die UI.', 'Robot simulation: simulated controllers, real robot hardware: xArm Lite 6. The state flows back to the UI.'], ['/ui/moveit_motion_state']),
       ],
     },
@@ -1983,7 +1983,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: cent
         S('motion', 1, ['Kollisionsvorprüfung', 'Pre-collision check'], ['Sagt die TCP-Höhe 0,25 s voraus: bis 19 mm über dem Z Collision Level höchstens 25 % abwärts, am Level Stopp mit Vibration.', 'Predicts the TCP height 0.25 s ahead: within 19 mm above the Z Collision Level at most 25 % downward, at the level a stop with rumble.'], ['teleop_pre_collision_checker', '/ui/eef_position']),
         S('motion', 0, ['Joystick → Twist', 'Joystick → twist'], ['C++-Node glättet das Signal und rechnet Achsen in kartesische Geschwindigkeiten um.', 'C++ node smooths the signal and turns axes into Cartesian velocities.'], ['xarm_joystick_input']),
         S('motion', 0, ['MoveIt Servo', 'MoveIt Servo'], ['Echtzeitregelung mit Prüfung auf Singularitäten und Kollisionen.', 'Real-time control with singularity and collision checks.'], ['servo_server']),
-        S('hw', 0, ['Arm folgt', 'Arm follows'], ['Roboter-Simulation oder echte Roboter-Hardware: dieselbe Kette, dieselben Grenzen.', 'Robot simulation or real robot hardware: the same chain, the same limits.']),
+        S('hw', 0, ['Arm folgt', 'Arm follows'], ['Roboter-Simulation oder echte Roboter-Hardware nutzen denselben Befehl, aber betriebsart- und wegabhängige Grenzen.', 'Robot simulation and real robot hardware use the same command, but mode- and path-specific limits.']),
       ],
     },
     grasp: {
@@ -2008,7 +2008,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: cent
         S('ai', 1, ['Planprüfung', 'Plan check'], ['Code prüft Objekte, Greifer, Reichweite, freien Platz; Fehler gehen zurück ans Modell (höchstens 2 Runden).', 'Code checks objects, gripper, reach and free space; errors go back to the model (at most 2 rounds).'], ['vla_bridge']),
         S('app', 0, ['Plan in der UI', 'Plan in the UI'], ['Liste „Planned actions“ in der Section VLA-M mit Schrittfortschritt.', '“Planned actions” list in the VLA-M section with step progress.'], ['/vla/response']),
         S('in', 1, ['Execute', 'Execute'], ['Jeder Plan wartet auf Bestätigung; Robot | Hardware nur mit allow_real_motion.', 'Every plan waits for confirmation; Robot | Hardware only with allow_real_motion.'], ['/vla/execute']),
-        S('motion', 0, ['Schritt für Schritt', 'Step by step'], ['Jede Fahrt über den Motion Handler: IK, Kollisionsprüfung (MoveIt), Bodenschutz, E-STOP.', 'Every move through the motion handler: IK, MoveIt collision check, floor guard, E-STOP.'], ['/ui/moveit_motion_state']),
+        S('motion', 0, ['Schritt für Schritt', 'Step by step'], ['Dieser geplante Weg läuft über den Motion Handler: IK, MoveIt-Kollisionsprüfung, Bodenschutz und Software-Stopp.', 'This planned path runs through the motion handler: IK, MoveIt collision check, floor guard and software stop.'], ['/ui/moveit_motion_state']),
         S('ai', 1, ['Prüfen + Rettungsplan', 'Check + recovery'], ['Schlägt ein Schritt fehl (unreachable, collision, slipped), plant der Agent mit der neuen Szene neu.', 'If a step fails (unreachable, collision, slipped), the agent replans with the new scene.'], ['replan']),
       ],
     },
@@ -2018,10 +2018,10 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: cent
       steps: [
         S('in', 0, ['Client öffnet die UI', 'Client opens the UI'], ['Laptop/Tablet über HTTP, Gamepad und VR über HTTPS.', 'Laptop/tablet via HTTP, gamepad and VR via HTTPS.'], [':8081', ':8443']),
         S('in', 0, ['Request control', 'Request control'], ['Anfrage per Knopf oder beim ersten Bewegungsversuch.', 'Request by button or on the first motion attempt.'], ['/remote/control_request']),
-        S('app', 1, ['Allow / Deny am Server', 'Allow / Deny on the server'], ['Popup in der UX | Control Interface am Roboter-PC; unbeantwortete Anfragen verfallen nach 60 s.', 'Popup in the UX | Control Interface on the robot PC; unanswered requests expire after 60 s.']),
+        S('app', 1, ['Allow / Deny am Server', 'Allow / Deny on the server'], ['Popup im UX | Control Interface am Roboter-PC; unbeantwortete Anfragen verfallen nach 60 s.', 'Popup in the UX | Control Interface on the robot PC; unanswered requests expire after 60 s.']),
         S('bridge', 0, ['Ein Besitzer', 'One owner'], ['Genau ein Client steuert, alle anderen sehen zu; der E-STOP geht immer.', 'Exactly one client controls, all others watch; the E-STOP always works.']),
         S('bridge', 1, ['Heartbeat', 'Heartbeat'], ['Tab zu oder WLAN weg: Remote-Gamepad stoppt nach 1,0 s (Robot | Digital Twin) bzw. 0,4 s (Robot | Hardware).', 'Tab closed or Wi-Fi lost: the remote gamepad stops after 1.0 s (Robot | Digital Twin) or 0.4 s (Robot | Hardware).']),
-        S('motion', 0, ['Befehle über den Watchdog', 'Commands via the watchdog'], ['Joy, Twist und Gelenk-Jogging gehen nur für den Besitzer weiter an Servo; dann dieselbe Kette wie lokal.', 'Joy, twist and joint jogging pass on to Servo only for the owner; then the same chain as locally.'], ['/remote/twist', '/joy']),
+        S('motion', 0, ['Befehle über den Watchdog', 'Commands via the watchdog'], ['Remote Joy, Twist und Gelenk-Jogging gehen nur mit Control-Lock und frischem Heartbeat an Servo; das lokale Gamepad nutzt stattdessen die Kollisionsvorprüfung.', 'Remote joy, twist and joint jogging reach Servo only with control lock and a fresh heartbeat; the local gamepad uses the collision pre-check instead.'], ['/remote/twist', '/joy']),
       ],
     },
   };
@@ -2198,11 +2198,11 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: cent
       alt: ['VLA-M-Chat: Anweisung in Alltagssprache, rechts vier geplante Aktionen mit Execute und Abort', 'VLA-M chat: instruction in plain language, four planned actions with Execute and Abort on the right'],
       cap: ['<b>KI-Assistenz:</b> Aus „Stapel den blauen Würfel auf den Zylinder …“ werden vier Planned Actions; der Plan wartet auf Execute.', '<b>AI assistant:</b> “Stack the blue cube on the cylinder …” becomes four planned actions; the plan waits for Execute.'] },
     { tag: ['Digital Twin · MoveIt', 'Digital Twin · MoveIt'], mode: 'FAKE', ico: 'i-cube',
-      alt: ['Digital Twin der UX | Control Interface: MoveIt-Karte mit Planung und Wegpunkten, Kollisionsobjekte auf dem Tisch, E-STOP-Knopf', 'Digital Twin of the UX | Control Interface: MoveIt card with planning and waypoints, collision objects on the table, E-STOP button'],
+      alt: ['Digital Twin des UX | Control Interface: MoveIt-Karte mit Planung und Wegpunkten, Kollisionsobjekte auf dem Tisch, E-STOP-Knopf', 'Digital Twin of the UX | Control Interface: MoveIt card with planning and waypoints, collision objects on the table, E-STOP button'],
       cap: ['<b>Digital Twin:</b> MoveIt plant die Bahn um Tisch und Objekte, hier in der Betriebsart Robot | Digital Twin mit 26 Wegpunkten in 2,5 s; der echte Arm steht still.', '<b>Digital Twin:</b> MoveIt plans the path around table and objects, here in Robot | Digital Twin mode with 26 waypoints in 2.5 s; the real arm stays still.'] },
     { tag: ['xArm Lite 6', 'xArm Lite 6'], mode: 'REAL', ico: 'i-arm',
       alt: ['xArm Lite 6 über dem Arbeitstisch mit ArUco-Markern und farbigen Greifobjekten', 'xArm Lite 6 above the work table with ArUco markers and coloured objects to grasp'],
-      cap: ['<b>Roboter:</b> Erst nach der Bestätigung fährt der xArm Lite 6 die geprüfte Bahn; der E-STOP bleibt in jedem Steuerweg erreichbar.', '<b>Robot:</b> only after confirmation does the xArm Lite 6 run the checked path; the E-STOP stays within reach in every control mode.'] },
+      cap: ['<b>Roboter:</b> Erst nach der Bestätigung fährt der xArm Lite 6 diese geplante Bahn; der Software-Stopp bleibt erreichbar.', '<b>Robot:</b> only after confirmation does the xArm Lite 6 run this planned path; software stop remains available.'] },
   ];
   const shots = [...box.querySelectorAll('.rk-shot img')], steps = [...box.querySelectorAll('.rk-step')], links = [...box.querySelectorAll('.rk-link')];
   const back = document.getElementById('rk-back'), cap = document.getElementById('rk-cap'), playBtn = document.getElementById('rk-play');
@@ -2282,7 +2282,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: cent
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const ease = k => (k < .5 ? 4 * k * k * k : 1 - (-2 * k + 2) ** 3 / 2);
 
-  // Über die UX | Nexus Launcher: lokale Schriften; als Artifact (kein project_docs.html daneben): Link ausblenden,
+  // Über den UX | Nexus Launcher: lokale Schriften; als Artifact (kein project_docs.html daneben): Link ausblenden,
   // GitHub Pages (tools/publish_pages.py) hat die Seiten daneben
   if (location.protocol.startsWith('http') && /\/ws\/docs\//.test(location.pathname)) {
     const l = document.createElement('link'); l.rel = 'stylesheet'; l.href = '/vendor/fonts/fonts_modern.css'; document.head.appendChild(l);
@@ -2982,7 +2982,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: cent
     $('.sub', goal).textContent = T(`${n} VON ${WAYS.length} WEGEN`, `${n} OF ${WAYS.length} WAYS`);
   };
 
-  // ── Pins auf der UX | Control Interface ──
+  // ── Pins auf dem UX | Control Interface ──
   const PINS = [[78, 2.6, ['Sicherheitszone', 'Safety zone'], ['Betriebsart Robot | Digital Twin / Robot | Hardware, Zustand (BUSY bei laufender Fahrt), Tempo, Control-Lock und E-STOP. Immer sichtbar, immer oben rechts.', 'Operating mode Robot | Digital Twin / Robot | Hardware, state (BUSY while a motion runs), speed, control lock and E-STOP. Always visible, always top right.']],
     [2.1, 26, ['Bereichsleiste', 'Area bar'], ['Gruppen Scene, Operate, World, System: Move, Roboter einlernen, Assistent (VLA-M), Vision, Szenen wie Auto-Palettieren.', 'Groups Scene, Operate, World, System: Move, Teach Robot, Assistant (VLA-M), Vision, scenes such as auto palletizing.']],
     [32.1, 10, ['Zielposen', 'Target poses'], ['Home, Align TCP, Scan Pose: häufige Ziele mit einem Klick in der Viewport-Leiste.', 'Home, Align TCP, Scan pose: frequent targets with one click in the viewport bar.']],
@@ -3233,7 +3233,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: cent
   // Weg = Folge von Knoten (+ optionale Nebenäste); je Knoten: Topic/Paket + was dort passiert
   const APATHS = [
     { id: 'pad', ic: 'i-pad', c: 'accent', n: ['Gamepad', 'Gamepad'],
-      d: ['Das Gamepad am Browser steuert den Werkzeugpunkt in Echtzeit, über dieselbe Kette wie das lokale Gamepad.', 'The gamepad at the browser drives the tool point in real time, through the same chain as a local gamepad.'],
+      d: ['Das Gamepad im Browser steuert den Werkzeugpunkt in Echtzeit über Control-Lock und Watchdog; das lokale Gamepad nutzt stattdessen die Kollisionsvorprüfung.', 'The browser gamepad drives the tool point in real time through control lock and watchdog; the local gamepad uses the collision pre-check instead.'],
       seq: [['ui', '/remote/joy', ['Browser liest das Gamepad, sendet mit Client-id', 'Browser reads the gamepad, sends with client id']],
         ['rb', ':9090', ['Whitelist lässt nur freigegebene Topics durch', 'Whitelist passes approved topics only']],
         ['wd', '/joy', ['Besitz, Heartbeat und Tempo-Limit geprüft', 'Ownership, heartbeat and speed limit checked']],

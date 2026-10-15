@@ -666,7 +666,7 @@ const FLOWS = (() => {
         edges: [E('ui', 'rb', '/ui/gripper_cmd'), E('rb', 'gj', '/ui/gripper_cmd'), E('pad', 'gj', '/joy_check', { ports: 'rb' }), E('gj', 'drv', '/ufactory/set_vacuum_gripper', { kind: 'service' }),
           E('gj', 'sim', ['nur Zustand', 'state only'], { ports: 'bl' }), R('gj', 'ui', '/ui/gripper_state')],
         scenarios: [
-          SC('ui', ['Knopf', 'Button'], 'i-win', 'indigo', ['Open, Close oder Off in der UX | Control Interface. Der Knopf zeigt den Zustand erst nach der Rückmeldung, nie vorab.', 'Open, Close or Off in the UX | Control Interface. The button shows the state only after the feedback, never in advance.'], [
+          SC('ui', ['Knopf', 'Button'], 'i-win', 'indigo', ['Open, Close oder Off im UX | Control Interface. Der Knopf zeigt den Zustand erst nach der Rückmeldung, nie vorab.', 'Open, Close or Off in the UX | Control Interface. The button shows the state only after the feedback, never in advance.'], [
             S('ui>rb', ['Der Knopf sendet open, close oder off; dasselbe Topic nutzen Sequenzen und KI-Agent.', 'The button sends open, close or off; sequences and the AI agent use the same topic.']),
             S('rb>gj', ['Der Greifer-Node nimmt den Befehl an und wählt je nach Greifertyp Sauger oder Finger.', 'The gripper node accepts the command and picks suction or fingers depending on the gripper type.']),
             S('gj>drv', ['In Robot | Hardware ruft er den Service des xArm-Treibers auf; in Robot | Digital Twin gibt es keinen Treiber, nur der Zustand wechselt.', 'In Robot | Hardware it calls the xArm driver service; in Robot | Digital Twin there is no driver and only the state changes.'], { also: ['gj>sim'] }),
@@ -699,7 +699,7 @@ const FLOWS = (() => {
     linear: {
       t: ['Linearachse (nur Robot | Digital Twin)', 'Linear axis (Robot | Digital Twin only)'], hue: 'teal', icon: 'i-go', s: 's',
       d: ['Die simulierte Achse verschiebt den Roboter auf einer 1,2-m-Schiene um bis zu ±0,5 m. fake_linear_axis setzt die Position als TF world → linear_axis_link, damit MoveIt, Digital Twin und RViz den Arm an derselben Stelle sehen.', 'The simulated axis moves the robot along a 1.2 m rail by up to ±0.5 m. fake_linear_axis sets the position as TF world → linear_axis_link, so MoveIt, Digital Twin and RViz see the arm at the same place.'],
-      note: ['Nur Robot | Digital Twin: Ein Treiber für eine echte Achse fehlt; die UX | Nexus Launcher verhindert Robot | Hardware mit Achse.', 'Robot | Digital Twin only: there is no driver for a real axis; the UX | Nexus Launcher blocks Robot | Hardware with the axis.'],
+      note: ['Nur Robot | Digital Twin: Ein Treiber für eine echte Achse fehlt; der UX | Nexus Launcher verhindert Robot | Hardware mit Achse.', 'Robot | Digital Twin only: there is no driver for a real axis; the UX | Nexus Launcher blocks Robot | Hardware with the axis.'],
       spec: {
         lanes: lanes('in', 'br', ['mo', ['Achse', 'Axis']], ['hw', ['Szene', 'Scene']]),
         nodes: [N('ui', 'in', 0, { label: ['Achs-Regler', 'Axis slider'], short: ['Regler', 'Slider'], sub: 'UX | Control Interface' }),
@@ -708,7 +708,7 @@ const FLOWS = (() => {
           N('tf', 'hw', 0, { label: 'TF · MoveIt · Twin', short: 'TF', sub: 'world → linear_axis_link', icon: 'i-layers', hue: 'indigo', info: ['Alle Abnehmer sehen den Roboter an der neuen Stelle.', 'All consumers see the robot at its new place.'] })],
         edges: [E('ui', 'rb', '/linear_axis_cmd'), E('rb', 'fla', '/linear_axis_cmd'), E('dev', 'fla', '/linear_axis_cmd', { ports: 'rb' }), E('fla', 'tf', ['TF + Schienen-Marker', 'TF + rail markers'])],
         scenarios: [
-          SC('ui', ['Regler', 'Slider'], 'i-win', 'teal', ['Den Achs-Regler in der UX | Control Interface ziehen und loslassen: Die Achse fährt auf das Ziel. Ohne Control-Lock ist der Regler gesperrt.', 'Drag and release the axis slider in the UX | Control Interface: the axis moves to the target. Without the control lock the slider is locked.'], [
+          SC('ui', ['Regler', 'Slider'], 'i-win', 'teal', ['Den Achs-Regler im UX | Control Interface ziehen und loslassen: Die Achse fährt auf das Ziel. Ohne Control-Lock ist der Regler gesperrt.', 'Drag and release the axis slider in the UX | Control Interface: the axis moves to the target. Without the control lock the slider is locked.'], [
             S('ui>rb', ['Erst beim Loslassen sendet die UI die Zielposition in Metern, begrenzt auf ±0,5 m.', 'Only on release does the UI send the target position in metres, limited to ±0.5 m.']),
             S('rb>fla', ['Das Ziel geht als Float64 an fake_linear_axis; ohne Control-Lock sendet die UI gar nicht erst.', 'The target goes to fake_linear_axis as Float64; without the control lock the UI does not send at all.']),
             S('fla>tf', ['Die Achse publiziert ihre Position mit 20 Hz als TF und zeichnet die Schiene als Marker.', 'The axis publishes its position at 20 Hz as TF and draws the rail as markers.'])]),
@@ -792,7 +792,7 @@ const FLOWS = (() => {
     },
     touch: {
       t: ['UX | Compact Interface: Bedienen am Roboter', 'UX | Compact Interface: operate at the robot'], hue: 'accent', icon: 'i-touch', s: 'spr',
-      d: ['Ein Chrome-Kiosk unter /touch der UX | Nexus Launcher bündelt Jogging, Zielposen, Greifer, Sequenzen und den Start der Launches. Der E-STOP ist immer sichtbar; bewegen darf das Panel erst, wenn der Roboter-PC die Steuerung per Allow freigibt.', 'A Chrome kiosk at /touch of the UX | Nexus Launcher combines jogging, target poses, gripper, sequences and starting the launches. The E-STOP is always visible; the panel may move the arm only after the robot PC grants control via Allow.'],
+      d: ['Ein Chrome-Kiosk unter /touch des UX | Nexus Launcher bündelt Jogging, Zielposen, Greifer, Sequenzen und den Start der Launches. Der E-STOP ist immer sichtbar; bewegen darf das Panel erst, wenn der Roboter-PC die Steuerung per Allow freigibt.', 'A Chrome kiosk at /touch of the UX | Nexus Launcher combines jogging, target poses, gripper, sequences and starting the launches. The E-STOP is always visible; the panel may move the arm only after the robot PC grants control via Allow.'],
       spec: {
         lanes: lanes(['tp', ['UX | Compact Interface', 'UX | Compact Interface']], ['nx', ['UX | Nexus Launcher', 'UX | Nexus Launcher']], 'br', 'wd', ['mo', ['Roboter', 'Robot']]),
         nodes: [N('tp', 'tp', 0, { label: 'UX | Compact Interface', short: 'Touch', sub: '/touch · Kiosk', icon: 'i-touch', hue: 'accent', info: ['Chrome-Kiosk: Tabs Move, Programs, Robot, Launch, System; E-STOP immer sichtbar.', 'Chrome kiosk: tabs Move, Programs, Robot, Launch, System; E-STOP always visible.'] }),
@@ -806,14 +806,14 @@ const FLOWS = (() => {
           S('rb>wd', ['Jogging-Befehle tragen die Client-id, der Heartbeat kommt alle 250 ms.', 'Jogging commands carry the client id; the heartbeat comes every 250 ms.']),
           S('wd>mo', ['Das Twist-Gate prüft Besitz, Heartbeat, Tempo und Bodenschutz, bevor Servo fährt.', 'The twist gate checks ownership, heartbeat, speed and floor guard before Servo moves.']),
           S('rb>tp', ['Der E-STOP-Zustand kommt zurück ans Panel; Quittieren verlangt 1 s Halten gegen Fehlberührung.', 'The E-STOP state returns to the panel; resetting requires a 1 s hold against accidental touches.']),
-          S('tp>nx', ['Der Launch-Tab startet Karten der UX | Nexus Launcher; POST nimmt der Server nur von Loopback und eigener Origin an.', 'The Launch tab starts UX | Nexus Launcher cards; the server accepts POST only from loopback and its own origin.'])])],
+          S('tp>nx', ['Der Launch-Tab startet Karten des UX | Nexus Launcher; POST nimmt der Server nur von Loopback und eigener Origin an.', 'The Launch tab starts UX | Nexus Launcher cards; the server accepts POST only from loopback and its own origin.'])])],
       },
     },
 
     // ─────────── Sicherheit ───────────
     remote: {
       t: ['Remote Control: genau ein Besitzer', 'Remote control: exactly one owner'], hue: 'gold', icon: 'i-lock', s: 'spr',
-      d: ['Laptop, Tablet, UX | Compact Interface oder Quest 3 fragen an, die UX | Control Interface auf dem Roboter-PC gibt per Allow frei. Genau ein Gerät steuert, ein WLAN-Aussetzer stoppt nur die Bewegung (der Besitz hält 10 s), und der E-STOP geht immer.', 'Laptop, tablet, UX | Compact Interface or Quest 3 request control; the UX | Control Interface on the robot PC grants it via Allow. Exactly one device controls, a Wi-Fi dropout only stops the motion (ownership holds for 10 s), and the E-STOP always works.'],
+      d: ['Laptop, Tablet, UX | Compact Interface oder Quest 3 fragen an, das UX | Control Interface auf dem Roboter-PC gibt per Allow frei. Genau ein Gerät steuert, ein WLAN-Aussetzer stoppt nur die Bewegung (der Besitz hält 10 s), und der E-STOP geht immer.', 'Laptop, tablet, UX | Compact Interface or Quest 3 request control; the UX | Control Interface on the robot PC grants it via Allow. Exactly one device controls, a Wi-Fi dropout only stops the motion (ownership holds for 10 s), and the E-STOP always works.'],
       spec: {
         lanes: lanes('cl', 'br', 'wd', ['pc', ['Roboter-PC', 'Robot PC']], 'mo'),
         nodes: [N('ui', 'cl', 0, { label: ['UX | Control Interface (Client)', 'UX | Control Interface (client)'], short: 'Client', sub: 'Laptop · Tablet' }), N('rb', 'br', 0), N('wd', 'wd', 0),
@@ -869,8 +869,8 @@ const FLOWS = (() => {
             S('rb>mh', ['Ein Topic statt Service: Der Stopp wartet nie hinter anderen Anfragen in einer Warteschlange.', 'A topic instead of a service: the stop never waits behind other requests in a queue.']),
             S('mh>arm', ['Der Motion Handler verriegelt, bricht die laufende Bahn ab und schaltet Servo aus; der Arm hält.', 'The motion handler latches, aborts the running path and switches Servo off; the arm holds.']),
             S('mh>vb', ['Der KI-Agent bricht die laufende Aufgabe ab, der Watchdog sperrt jedes weitere Jogging.', 'The AI agent aborts the running task; the watchdog blocks any further jogging.'], { also: ['mh>wd'] })]),
-          SC('reset', ['Quittieren', 'Reset'], 'i-lock', 'gold', ['Nur die verifizierte UX | Control Interface am Server-PC quittiert, immer über den Watchdog. Entfernte Clients und die UX | Compact Interface dürfen auch mit Control-Lock nicht quittieren; die rosbridge-Whitelist sperrt den direkten Reset-Service.', 'Only the verified UX | Control Interface on the server PC resets, always via the watchdog. Remote clients and UX | Compact Interface may not reset even with the control lock; the rosbridge whitelist blocks the direct reset service.'], [
-            S('trig>wd', ['Quittieren per Knopf in der UX | Control Interface am Server-PC, mit dem Roboter in Sicht; gesendet wird die signierte Anfrage reset_estop.', 'Reset via the button in UX | Control Interface on the server PC, with the robot in sight; the signed reset_estop request is sent.']),
+          SC('reset', ['Quittieren', 'Reset'], 'i-lock', 'gold', ['Nur die verifizierte UX | Control Interface am Server-PC quittiert, immer über den Watchdog. Entfernte Clients und das UX | Compact Interface dürfen auch mit Control-Lock nicht quittieren; die rosbridge-Whitelist sperrt den direkten Reset-Service.', 'Only the verified UX | Control Interface on the server PC resets, always via the watchdog. Remote clients and UX | Compact Interface may not reset even with the control lock; the rosbridge whitelist blocks the direct reset service.'], [
+            S('trig>wd', ['Quittieren per Knopf im UX | Control Interface am Server-PC, mit dem Roboter in Sicht; gesendet wird die signierte Anfrage reset_estop.', 'Reset via the button in UX | Control Interface on the server PC, with the robot in sight; the signed reset_estop request is sent.']),
             S('wd>mh', ['Der Watchdog lässt nur den verifizierten Server zu und ruft dann den Reset-Service auf.', 'The watchdog admits only the verified server and then calls the reset service.']),
             S('mh>wd', ['Der Motion Handler hebt die Verriegelung auf und startet Servo; das Ergebnis steht im Control-Zustand.', 'The motion handler releases the latch and restarts Servo; the result shows in the control state.'])])],
       },
@@ -986,13 +986,13 @@ const FLOWS = (() => {
           N('ui', 'ui', 0, { sub: ['Streams · :8081', 'streams · :8081'] })],
         edges: [E('zed', 'wvs', '/zed/zed_node/rgb/image_rect_color'), E('wvs', 'ui', 'MJPEG :8082', { kind: 'stream' }), E('pi', 'ipy', ['Einzelbild per HTTP', 'Single frame via HTTP'], { kind: 'stream' }), E('ipy', 'wvs', '/ip_cam/table/annotated')],
         scenarios: [
-          SC('zed', ['ZED-Stream', 'ZED stream'], 'i-cam', 'green', ['Das ROS-Bild der ZED Mini kommt als MJPEG in die UX | Control Interface. Ein zugeklapptes Stream-Fenster pausiert und spart Bandbreite.', 'The ROS image of the ZED Mini reaches the UX | Control Interface as MJPEG. A collapsed stream window pauses and saves bandwidth.'], [
+          SC('zed', ['ZED-Stream', 'ZED stream'], 'i-cam', 'green', ['Das ROS-Bild der ZED Mini kommt als MJPEG in das UX | Control Interface. Ein zugeklapptes Stream-Fenster pausiert und spart Bandbreite.', 'The ROS image of the ZED Mini reaches the UX | Control Interface as MJPEG. A collapsed stream window pauses and saves bandwidth.'], [
             S('zed>wvs', ['Der Video-Server abonniert das entzerrte Farbbild der ZED Mini.', 'The video server subscribes to the rectified colour image of the ZED Mini.']),
             S('wvs>ui', ['Der Browser zeigt den MJPEG-Stream; ist das Fenster zugeklappt, pausiert er.', 'The browser shows the MJPEG stream; when the window is collapsed, it pauses.'])]),
           SC('aruco', ['Tisch-Kamera + ArUco', 'Table camera + ArUco'], 'i-eye', 'teal', ['Marker finden, Tischposition rechnen, Overlay streamen. Aus den Fußpunkten der Objekte auf der Tischebene ergibt sich ihre Position.', 'Find markers, compute the table position, stream the overlay. The foot points of the objects on the table plane give their positions.'], [
             S('pi>ipy', ['Der Node holt ein Einzelbild per HTTP und sucht die ArUco-Marker darin.', 'The node fetches a single frame via HTTP and finds the ArUco markers in it.']),
             S('ipy>wvs', ['Ab 4 bekannten Markern rechnet eine Homographie die Fußpunkte der YOLO-Objekte in Tischkoordinaten.', 'From 4 known markers a homography maps the foot points of the YOLO objects to table coordinates.']),
-            S('wvs>ui', ['Das annotierte Bild erscheint als Live Stream 2 in der UX | Control Interface.', 'The annotated image appears as Live Stream 2 in the UX | Control Interface.'])])],
+            S('wvs>ui', ['Das annotierte Bild erscheint als Live Stream 2 im UX | Control Interface.', 'The annotated image appears as Live Stream 2 in the UX | Control Interface.'])])],
       },
     },
 
@@ -1098,7 +1098,7 @@ const FLOWS = (() => {
     },
     clicks: {
       t: ['Klick-Statistik: Nutzung messen', 'Click statistics: measuring use'], hue: 'indigo', icon: 'i-touch',
-      d: ['usage_stats.js in der UX | Control Interface zählt Klicks und Änderungen nur mit Label (≤ 48 Zeichen) und Bereich, nie Eingaben; Passwortfelder zählen gar nicht. Alle 3 s geht ein Batch von höchstens 200 Einträgen per ROS-Topic an das UX | Monitoring.', 'usage_stats.js in the UX | Control Interface counts clicks and changes with label (≤ 48 characters) and area only, never input values; password fields do not count at all. Every 3 s a batch of at most 200 entries goes to the UX | Monitoring via a ROS topic.'],
+      d: ['usage_stats.js im UX | Control Interface zählt Klicks und Änderungen nur mit Label (≤ 48 Zeichen) und Bereich, nie Eingaben; Passwortfelder zählen gar nicht. Alle 3 s geht ein Batch von höchstens 200 Einträgen per ROS-Topic an das UX | Monitoring.', 'usage_stats.js in the UX | Control Interface counts clicks and changes with label (≤ 48 characters) and area only, never input values; password fields do not count at all. Every 3 s a batch of at most 200 entries goes to the UX | Monitoring via a ROS topic.'],
       loop: { t: ['Klick-Statistik', 'Click statistics'], s: 'usage_stats → SQLite',
         st: [[['Klick', 'Click'], ['Label + Bereich', 'label + area']], [['Puffern', 'Buffer'], ['≤ 200 Einträge', '≤ 200 entries']], [['Senden', 'Send'], ['alle 3 s', 'every 3 s']],
           [['Speichern', 'Store'], ['SQLite · 30 Tage', 'SQLite · 30 days']], [['Anzeigen', 'Show'], ['Nutzer & Sessions', 'users & sessions']]],
@@ -1120,7 +1120,7 @@ const FLOWS = (() => {
     },
     study: {
       t: ['Usability-Studie: vom Test zum Bericht', 'Usability study: from test to report'], hue: 'indigo', icon: 'i-flask',
-      d: ['Die Testleitung plant und startet Durchläufe in der Evaluierung des UX | Monitoring, die Testperson bedient die UX | Control Interface. Jeder Durchlauf speichert 10 Kennzahlen und die Fragebögen SUS, NASA-TLX, UEQ-S und SEQ in SQLite; der Bericht folgt ISO 9241-11.', 'The test lead plans and starts runs in the evaluation of the UX | Monitoring; the participant operates the UX | Control Interface. Every run stores 10 metrics and the SUS, NASA-TLX, UEQ-S and SEQ questionnaires in SQLite; the report follows ISO 9241-11.'],
+      d: ['Die Testleitung plant und startet Durchläufe in der Evaluierung des UX | Monitoring, die Testperson bedient das UX | Control Interface. Jeder Durchlauf speichert 10 Kennzahlen und die Fragebögen SUS, NASA-TLX, UEQ-S und SEQ in SQLite; der Bericht folgt ISO 9241-11.', 'The test lead plans and starts runs in the evaluation of the UX | Monitoring; the participant operates the UX | Control Interface. Every run stores 10 metrics and the SUS, NASA-TLX, UEQ-S and SEQ questionnaires in SQLite; the report follows ISO 9241-11.'],
       loop: { t: ['Studienschleife', 'Study loop'], s: ['Evaluierung · study.py', 'Evaluation · study.py'],
         st: [[['Test', 'Test'], ['Aufgaben × Methoden', 'tasks × methods']], [['Aufgabe', 'Task'], ['Ziel · Zielzeit', 'goal · target time']], [['Person', 'Participant'], ['Code · Latin Square', 'code · Latin square']],
           [['Durchlauf', 'Run'], ['▶ … ■ · KPI', '▶ … ■ · KPI']], [['Fragebogen', 'Questionnaire'], ['SUS · TLX · UEQ-S · SEQ', 'SUS · TLX · UEQ-S · SEQ']], [['Auswertung', 'Analysis'], ['ISO 9241-11', 'ISO 9241-11']]],
@@ -1203,7 +1203,7 @@ const FLOWS = (() => {
 
     // ─────────── Infrastruktur ───────────
     start: {
-      t: ['Systemstart über die UX | Nexus Launcher', 'System start via the UX | Nexus Launcher'], hue: 'accent', icon: 'i-rocket', s: 'spr',
+      t: ['Systemstart über den UX | Nexus Launcher', 'System start via the UX | Nexus Launcher'], hue: 'accent', icon: 'i-rocket', s: 'spr',
       d: ['Ein Klick statt vieler Terminals: Der Preflight prüft Roboter, Kameras, Gamepad, Ports, Doppelstacks, DDS, GPU, Ollama und Platte, ohne etwas zu starten. Dann startet EXECUTE die Karten in fester Reihenfolge und wartet je Karte, bis Node, Port oder Prozess bereit ist.', 'One click instead of many terminals: the preflight checks robot, cameras, gamepad, ports, duplicate stacks, DDS, GPU, Ollama and disk without starting anything. Then EXECUTE starts the cards in a fixed order and waits per card until node, port or process is ready.'],
       spec: {
         lanes: lanes(['ui', ['UX | Nexus Launcher', 'UX | Nexus Launcher']], ['be', ['Backend', 'Backend']], ['ros', ['ROS-2-Stack', 'ROS 2 stack']]),

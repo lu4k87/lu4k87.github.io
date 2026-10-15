@@ -4,6 +4,18 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="UX Robot ist eine modulare Forschungs- und Lehrplattform für Shared Control, Human-Robot Interaction und assistive Robotik mit dem xArm Lite 6.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="UX Robot · Projekt-Doku">
+<meta property="og:description" content="Der Mensch führt. Die KI assistiert. Zehn Steuerwege, Digital Twin, KI-Assistenz und Evaluation auf ROS 2 Humble.">
+<meta property="og:url" content="https://lu4k87.github.io/web_ux_robot/project_docs.html">
+<meta property="og:image" content="https://lu4k87.github.io/web_ux_robot/img/project_docs/rcu_viewport.jpg">
+<meta property="og:image:width" content="1600">
+<meta property="og:image:height" content="900">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="UX Robot · Projekt-Doku">
+<meta name="twitter:description" content="Zehn Steuerwege, Digital Twin, KI-Assistenz und Evaluation für den xArm Lite 6.">
+<meta name="twitter:image" content="https://lu4k87.github.io/web_ux_robot/img/project_docs/rcu_viewport.jpg">
 <title>Projekt-Doku · UX Robot</title>
 <link rel="stylesheet" href="fonts/fonts.css">
 <link rel="stylesheet" href="css/landing.css">
@@ -159,6 +171,12 @@ a.kpi:hover { background: var(--surface-2); }
 .hero-links small { font: 700 12px/1 var(--mono); color: var(--fg-2); }
 .hero-links a:hover, .hero-links a:focus-visible { border-color: var(--hue); }
 .hero-links a:hover .go { transform: translateX(3px); }
+.repo-status { display: inline-grid; grid-template-columns: 38px minmax(0, auto); align-items: stretch; overflow: hidden; border: 1px solid var(--line-strong); border-radius: var(--radius); background: var(--surface); color: var(--fg); line-height: 1.2; }
+.repo-status .status-icon { display: grid; place-items: center; min-height: 42px; background: var(--surface-2); border-right: 1px solid var(--line-strong); }
+.repo-status .status-icon .ico { width: 18px; height: 18px; color: var(--gold); }
+.repo-status .status-copy { display: flex; flex-direction: column; justify-content: center; gap: 2px; padding: 7px 11px; text-align: left; }
+.repo-status .status-copy b { font-size: 13px; font-weight: 700; }
+.repo-status .status-copy small { font: 600 11px/1.2 var(--mono); color: var(--fg-2); }
 .author { display: flex; align-items: center; gap: 14px; }
 .author > div { display: grid; gap: 3px; font-size: 14px; color: var(--fg-2); }
 .author b { font-size: 17px; color: var(--fg); }
@@ -481,6 +499,7 @@ a.pdf { font: 700 11px/1 var(--mono); padding: 5px 7px; border-radius: var(--rad
   .dg { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 16px; padding: 16px 18px 12px; }
   .dg .k-t { grid-column: 1 / -1; }
 }
+button.item { width: 100%; padding: 0; color: inherit; font: inherit; text-align: start; cursor: pointer; }
 
 /* Karten mit Kicker → Slogan → Fakt/Liste (Konzept, Kernmerkmale) */
 .panel { border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); box-shadow: var(--shadow); padding: 16px; display: grid; gap: 14px; }
@@ -981,7 +1000,7 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
         <ul class="hero-keys" aria-label="Kernmerkmale" data-en-aria="Key features">
           <li style="--hue: var(--blue)"><svg class="ico" aria-hidden="true"><use href="#i-eye"/></svg><b data-en="Everything in view. Step in any time.">Alles im Blick. Jederzeit eingreifen.</b><span data-en="State, surroundings (ZED, OctoMap) and execution live">Zustand, Umgebung (ZED, OctoMap) und Ausführung live</span></li>
           <li style="--hue: var(--violet)"><svg class="ico" aria-hidden="true"><use href="#i-user"/></svg><b data-en="The AI plans. The human confirms.">Die KI plant. Der Mensch bestätigt.</b><span data-en="AI agent turns speech into task sequences">KI-Agent macht aus Sprache Abläufe</span></li>
-          <li style="--hue: var(--accent)"><svg class="ico" aria-hidden="true"><use href="#i-shield"/></svg><b data-en="One chain for every input.">Eine Kette für jede Eingabe.</b><span data-en="E-STOP, floor guard and collision protection for all ten control modes">E-STOP, Bodenschutz und Kollisionsschutz für alle zehn Steuerwege</span></li>
+          <li style="--hue: var(--accent)"><svg class="ico" aria-hidden="true"><use href="#i-shield"/></svg><b data-en="Safeguards for every path.">Schutz für jeden Steuerweg.</b><span data-en="Software stop and collision or floor safeguards support all ten paths; the active checks vary">Software-Stopp sowie Kollisions- oder Bodenschutz unterstützen alle zehn Wege; die aktiven Prüfungen unterscheiden sich</span></li>
           <li style="--hue: var(--gold)"><svg class="ico" aria-hidden="true"><use href="#i-blocks"/></svg><b data-en="Every module replaceable.">Jedes Modul tauschbar.</b><span data-en="Input devices, cameras, AI models replaceable one by one">Eingabegeräte, Kameras, KI-Modelle einzeln ersetzbar</span></li>
         </ul>
       </div>
@@ -992,13 +1011,13 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
           <div style="--hue: var(--violet)"><dt><svg class="ico" aria-hidden="true"><use href="#i-user"/></svg><span data-en="Purpose">Zweck</span></dt><dd data-en="Teaching and research">Lehre und Forschung</dd></div>
           <div style="--hue: var(--blue)"><dt><svg class="ico" aria-hidden="true"><use href="#i-cube"/></svg><span data-en="Principle">Prinzip</span></dt><dd>Human-in-the-Loop</dd></div>
           <div style="--hue: var(--green)"><dt><svg class="ico" aria-hidden="true"><use href="#i-globe"/></svg><span>Client</span></dt><dd data-en="Browser, nothing to install">Browser, ohne Installation</dd></div>
-          <div style="--hue: var(--gold)"><dt><svg class="ico" aria-hidden="true"><use href="#i-code"/></svg><span data-en="License">Lizenz</span></dt><dd>Open Source&nbsp;· Apache 2.0</dd></div>
+          <div style="--hue: var(--gold)"><dt><svg class="ico" aria-hidden="true"><use href="#i-code"/></svg><span data-en="License">Lizenz</span></dt><dd data-en="Publication planned (Apache 2.0)">Veröffentlichung geplant (Apache 2.0)</dd></div>
         </dl>
         <nav class="hero-links" aria-label="Direkt ins Projekt" data-en-aria="Straight into the project">
           <a href="present_presentation.html" target="_blank" rel="noopener" style="--hue: var(--violet)"><svg class="ico" aria-hidden="true"><use href="#i-star"/></svg><span data-en="Project presentation">Projektvorstellung</span><svg class="ico go" aria-hidden="true"><use href="#i-go"/></svg></a>
           <a href="poster/poster_a2.pdf" target="_blank" rel="noopener" style="--hue: var(--gold)"><svg class="ico" aria-hidden="true"><use href="#i-poster"/></svg><span>Poster A2 <small>PDF</small></span><svg class="ico go" aria-hidden="true"><use href="#i-go"/></svg></a>
           <a href="operate_manual.html" data-nexus-href="operate_manual.html" target="_blank" rel="noopener" style="--hue: var(--teal)"><svg class="ico" aria-hidden="true"><use href="#i-book"/></svg><span data-en="Manual">Handbuch</span><svg class="ico go" aria-hidden="true"><use href="#i-go"/></svg></a>
-          <a href="https://github.com/lu4k87/ux_robot" target="_blank" rel="noopener" style="--hue: var(--indigo)"><svg class="ico" aria-hidden="true"><use href="#i-code"/></svg><span data-en="Source code">Quellcode</span><svg class="ico go" aria-hidden="true"><use href="#i-ext"/></svg></a>
+          <span class="repo-status" role="img" aria-label="Code privat; Veröffentlichung geplant" data-en-aria="Code private; publication planned"><span class="status-icon" aria-hidden="true"><svg class="ico"><use href="#i-lock"/></svg></span><span class="status-copy"><b data-en="Code private">Code privat</b><small data-en="Publication planned">Veröffentlichung geplant</small></span></span>
         </nav>
         <div class="author" role="group" aria-label="Autor: Marius Kaul" data-en-aria="Author: Marius Kaul">
           <div>
@@ -1019,7 +1038,7 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
         <a class="hero-card hc-1" href="#teilhabe">
           <small><svg class="ico" aria-hidden="true"><use href="#i-pad"/></svg><span data-en="Control modes">Steuerwege</span></small>
           <strong data-num="10">10</strong>
-          <span data-en="one system, one safety chain">ein System, eine Sicherheitskette</span>
+          <span data-en="one system, path-specific safeguards">ein System, wegabhängige Schutzstufen</span>
           <span class="pips" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
         </a>
         <a class="hero-card hc-2" href="#atlas-sec">
@@ -1050,7 +1069,7 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
         </div>
         <ol class="path" aria-label="Features" data-en-aria="Features">
           <li><a href="#ueberblick" style="--hue: var(--accent)"><span class="pn"><svg class="ico" aria-hidden="true"><use href="#i-layers"/></svg><span>01</span></span><b data-en="Key features">Kernmerkmale</b><small data-en="Digital Twin, safety chain, browser control and five more">Digital Twin, Sicherheitskette, Browser-Bedienung und fünf weitere</small></a></li>
-          <li><a href="#teilhabe" style="--hue: var(--orange)"><span class="pn"><svg class="ico" aria-hidden="true"><use href="#i-pad"/></svg><span>02</span></span><b data-en="Control modes">Steuerwege</b><small data-en="Ten modes, one safety chain">Zehn Wege, eine Sicherheitskette</small></a></li>
+          <li><a href="#teilhabe" style="--hue: var(--orange)"><span class="pn"><svg class="ico" aria-hidden="true"><use href="#i-pad"/></svg><span>02</span></span><b data-en="Control modes">Steuerwege</b><small data-en="Ten modes, safeguards matched to each path">Zehn Wege, passende Schutzstufen je Weg</small></a></li>
           <li><a href="#nui" style="--hue: var(--green)"><span class="pn"><svg class="ico" aria-hidden="true"><use href="#i-eye"/></svg><span>03</span></span><b>NUI</b><small data-en="Voice, gaze, hands">Stimme, Blick, Hände</small></a></li>
           <li><a href="#webapps" style="--hue: var(--lime)"><span class="pn"><svg class="ico" aria-hidden="true"><use href="#i-globe"/></svg><span>04</span></span><b data-en="Web apps">Web-Apps</b><small data-en="Four apps, one browser">Vier Apps, ein Browser</small></a></li>
           <li><a href="#atlas-sec" style="--hue: var(--pink)"><span class="pn"><svg class="ico" aria-hidden="true"><use href="#i-chart"/></svg><span>05</span></span><b data-en="Function atlas">Funktionsatlas</b><small data-en="85 functions in 9 areas">85 Funktionen in 9 Bereichen</small></a></li>
@@ -1069,9 +1088,9 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
           <li class="fx" style="--hue: var(--pink)"><span class="bi-l"><svg class="ico" aria-hidden="true"><use href="#i-eye"/></svg></span><b data-en="Everything in view. Step in any time.">Alles im Blick. Jederzeit eingreifen.</b><p data-en="Robot state, surroundings (ZED, OctoMap) and motion execution live; UX | Monitoring records, the blackbox keeps the last 60&amp;nbsp;s.">Roboterzustand, Umgebung (ZED, OctoMap) und Bewegungsausführung live; UX | Monitoring zeichnet auf, die Blackbox sichert die letzten 60&nbsp;s.</p><a class="more" href="#webapps"><span data-en="UX | Monitoring">UX | Monitoring</span><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg></a></li>
           <li class="fx" style="--hue: var(--violet)"><span class="bi-l"><svg class="ico" aria-hidden="true"><use href="#i-user"/></svg></span><b data-en="The AI plans. The human confirms.">Die KI plant. Der Mensch bestätigt.</b><p data-en="AI plans move only after confirmation; E-STOP works any time.">Pläne des KI-Agenten fahren erst nach Bestätigung; E-STOP wirkt jederzeit.</p><a class="more" href="#tm-stage"><span data-en="The principle">Das Prinzip</span><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg></a></li>
           <li class="fx" style="--hue: var(--green)"><span class="bi-l"><svg class="ico" aria-hidden="true"><use href="#i-globe"/></svg></span><b data-en="Open, don't install.">Öffnen statt installieren.</b><p data-en="A web browser is all you need; nothing gets installed on the device. Operate, launch, monitor and tap: on PC, tablet, smartphone or Quest&amp;nbsp;3, locally or on the home network.">Ein Webbrowser genügt, auf dem Endgerät wird nichts installiert. Bedienen, starten, überwachen und tippen: am PC, Tablet, Smartphone oder auf der Quest&nbsp;3, lokal oder im Heimnetz.</p><a class="more" href="#einrichten"><span data-en="Set up">Einrichten</span><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg></a></li>
-          <li class="fx" style="--hue: var(--orange)"><span class="bi-l"><svg class="ico" aria-hidden="true"><use href="#i-shield"/></svg></span><b data-en="One chain for every input.">Eine Kette für jede Eingabe.</b><p data-en="E-STOP, floor guard and collision protection apply to all ten control modes, from gamepad to AI chat.">E-STOP, Bodenschutz und Kollisionsschutz gelten für alle zehn Steuerwege, vom Gamepad bis zum KI-Chat.</p><a class="more" href="present_presentation.html#ablaeufe"><span data-en="Function flows">Funktionsabläufe</span><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg></a></li>
-          <li class="fx" style="--hue: var(--gold)"><span class="bi-l"><svg class="ico" aria-hidden="true"><use href="#i-code"/></svg></span><b data-en="Open, reproducible, extensible.">Offen, nachbaubar, erweiterbar.</b><p data-en="Own packages under Apache 2.0 on ROS 2 Humble and MoveIt 2; source code, docs and setup guide are public.">Eigene Pakete unter Apache 2.0 auf ROS 2 Humble und MoveIt 2; Quellcode, Doku und Setup-Guide sind offen.</p><a class="more" href="#technik"><span data-en="Develop">Entwickeln</span><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg></a></li>
-          <li class="fx" style="--hue: var(--indigo)"><span class="bi-l"><svg class="ico" aria-hidden="true"><use href="#i-layers"/></svg></span><b data-en="Every module replaceable.">Jedes Modul tauschbar.</b><p data-en="Input device, camera, AI model and software module swap individually; 7 robot profiles in Robot | Digital Twin.">Eingabegerät, Kamera, KI-Modell und Software-Baustein einzeln ersetzbar; 7 Roboterprofile im Robot | Digital Twin.</p><a class="more" href="present_presentation.html#stack"><span data-en="System stack">System-Stack</span><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg></a></li>
+          <li class="fx" style="--hue: var(--orange)"><span class="bi-l"><svg class="ico" aria-hidden="true"><use href="#i-shield"/></svg></span><b data-en="Safeguards matched to each path.">Schutzstufen passend zum Steuerweg.</b><p data-en="Software stop and collision or floor safeguards support every path; control lock, watchdog, pre-check, MoveIt and confirmation apply where relevant.">Software-Stopp sowie Kollisions- oder Bodenschutz unterstützen jeden Weg; Control-Lock, Watchdog, Vorprüfung, MoveIt und Bestätigung greifen je nach Steuerweg.</p><a class="more" href="present_presentation.html#ablaeufe"><span data-en="Function flows">Funktionsabläufe</span><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg></a></li>
+          <li class="fx" style="--hue: var(--gold)"><span class="bi-l"><svg class="ico" aria-hidden="true"><use href="#i-code"/></svg></span><b data-en="Reproducible and extensible.">Nachbaubar und erweiterbar.</b><p data-en="Documentation and setup guide are public. Publication of the project packages under Apache 2.0 is planned; the code is currently private.">Doku und Setup-Guide sind öffentlich. Die Veröffentlichung der Projektpakete unter Apache 2.0 ist geplant; der Code ist derzeit privat.</p><a class="more" href="#technik"><span data-en="Develop">Entwickeln</span><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg></a></li>
+          <li class="fx" style="--hue: var(--indigo)"><span class="bi-l"><svg class="ico" aria-hidden="true"><use href="#i-layers"/></svg></span><b data-en="Every module replaceable.">Jedes Modul tauschbar.</b><p data-en="Input device, camera, AI model and software module swap individually; 7 robot profiles in Robot | Digital Twin.">Eingabegerät, Kamera, KI-Modell und Software-Baustein einzeln ersetzbar; 7 Roboterprofile in der Betriebsart Robot | Digital Twin.</p><a class="more" href="present_presentation.html#stack"><span data-en="System stack">System-Stack</span><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg></a></li>
         </ul>
       </section>
 
@@ -1084,7 +1103,7 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
         <div class="tm-grid" id="tm">
           <figure class="tm-fig">
             <svg class="tm-svg" viewBox="0 88 720 656" role="group" aria-labelledby="tm-svg-t">
-            <title id="tm-svg-t" data-en="Six of ten control modes around the human; every input runs through the same safety chain to the xArm Lite 6">Sechs von zehn Steuerwegen um den Menschen; jede Eingabe läuft durch dieselbe Sicherheitskette zum xArm Lite 6</title>
+            <title id="tm-svg-t" data-en="Six of ten control modes around the human; each path uses the relevant safeguards on the way to the xArm Lite 6">Sechs der zehn Steuerwege rund um den Menschen; jeder Weg nutzt die passenden Schutzstufen zum xArm Lite 6</title>
             <defs>
               <filter id="tm-glow" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="5" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
             </defs>
@@ -1106,8 +1125,8 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
             <circle class="tm-ring" cx="360" cy="300" r="112"/>
             <path id="tm-txt-up" fill="none" d="M268 300 A92 92 0 0 1 452 300"/>
             <path id="tm-txt-dn" fill="none" d="M256 300 A104 104 0 0 0 464 300"/>
-            <text class="tm-ring-t" aria-hidden="true"><textPath href="#tm-txt-up" startOffset="50%" text-anchor="middle" data-en="CONTROL LOCK · PRE-CHECK · MOVEIT">CONTROL-LOCK · VORPRÜFUNG · MOVEIT</textPath></text>
-            <text class="tm-ring-t" aria-hidden="true"><textPath href="#tm-txt-dn" startOffset="50%" text-anchor="middle" data-en="E-STOP ALWAYS WORKS">E-STOP WIRKT IMMER</textPath></text>
+            <text class="tm-ring-t" aria-hidden="true"><textPath href="#tm-txt-up" startOffset="50%" text-anchor="middle" data-en="PATH-SPECIFIC CHECKS">WEGABHÄNGIGE PRÜFUNGEN</textPath></text>
+            <text class="tm-ring-t" aria-hidden="true"><textPath href="#tm-txt-dn" startOffset="50%" text-anchor="middle" data-en="SOFTWARE STOP AVAILABLE">SOFTWARE-STOPP VERFÜGBAR</textPath></text>
             <circle class="tm-core-pulse" cx="360" cy="300" r="68"/>
             <circle class="tm-core" cx="360" cy="300" r="58"/>
             <use class="tm-core-ico" href="#i-user" x="340" y="268" width="40" height="40"/>
@@ -1127,7 +1146,7 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
             <g class="tm-vis" style="--hue: var(--green)"><rect class="tm-obj" x="308" y="694" width="36" height="28" rx="2"/><path class="tm-bbox" d="M300 698v-12h12 M340 686h12v12 M352 718v12h-12 M312 730h-12v-12"/><line class="tm-vline" x1="226" y1="708" x2="296" y2="708"/><circle class="tm-dot" cx="200" cy="708" r="26"/><use href="#i-scan" x="188" y="696" width="24" height="24"/><text class="tm-k" x="162" y="682" text-anchor="end" data-en="ASSISTANCE">ASSISTENZ</text><text class="tm-t" x="162" y="706" text-anchor="end">Vision</text><text class="tm-d" x="162" y="725" text-anchor="end">ZED MINI · YOLOV8</text></g>
             <circle class="tm-pk" r="6" cx="0" cy="0"/>
             </svg>
-            <figcaption class="tm-hint"><svg class="ico" aria-hidden="true"><use href="#i-pointer"/></svg><span data-en="Pick a control mode: the input runs through the safety chain to the arm">Steuerweg wählen: die Eingabe läuft durch die Sicherheitskette zum Arm</span></figcaption>
+            <figcaption class="tm-hint"><svg class="ico" aria-hidden="true"><use href="#i-pointer"/></svg><span data-en="Pick a control mode: the relevant checks accompany the command to the arm">Steuerweg wählen: Die jeweils relevanten Prüfungen begleiten den Befehl zum Arm</span></figcaption>
           </figure>
           <div class="tm-main">
             <div class="tm-stage dark-zone" id="tm-stage">
@@ -1136,15 +1155,15 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
               <div class="tm-canvas" id="tm3d" role="img" aria-label="Digital Twin in der Betriebsart Robot | Digital Twin: der Ghost-Arm plant den Weg voraus, nach der Bestätigung fährt der xArm Lite 6 nach" data-en-aria="Digital Twin in Robot | Digital Twin mode: the ghost arm plans the path ahead, after confirmation the xArm Lite 6 follows"></div>
               <ol class="tm-steps">
                 <li><b data-en="Input">Eingabe</b><small data-en="from the human">vom Menschen</small></li>
-                <li><b>Control-Lock</b><small data-en="one operator">nur ein Bediener</small></li>
-                <li><b data-en="Pre-check">Vorprüfung</b><small data-en="ghost plans ahead">Ghost plant voraus</small></li>
-                <li><b data-en="Confirmation">Bestätigung</b><small data-en="path checked, human confirms">Bahn geprüft, Mensch bestätigt</small></li>
-                <li><b data-en="MoveIt moves">MoveIt fährt</b><small data-en="twin or hardware">Twin oder Hardware</small></li>
+                <li><b data-en="Path checks">Wegprüfungen</b><small data-en="lock, watchdog or pre-check">Lock, Watchdog oder Vorprüfung</small></li>
+                <li><b data-en="Motion protection">Bewegungsschutz</b><small data-en="Servo or MoveIt">Servo oder MoveIt</small></li>
+                <li><b data-en="Confirmation">Bestätigung</b><small data-en="for planned paths">bei geplanten Wegen</small></li>
+                <li><b data-en="Motion">Bewegung</b><small data-en="twin or hardware">Twin oder Hardware</small></li>
               </ol>
             </div>
-            <p class="tm-estop"><svg class="ico" aria-hidden="true"><use href="#i-stop"/></svg><span data-en="&lt;b&gt;E-STOP always works&lt;/b&gt; – in every phase, through every control mode"><b>E-STOP wirkt immer</b> – in jeder Phase, über jeden Steuerweg</span></p>
+            <p class="tm-estop"><svg class="ico" aria-hidden="true"><use href="#i-stop"/></svg><span data-en="&lt;b&gt;Software stop is available&lt;/b&gt; through every control mode; the physical emergency-stop remains separate"><b>Software-Stopp ist über jeden Steuerweg verfügbar</b>; der physische Not-Halt bleibt davon getrennt</span></p>
             <div class="tm-pick" role="group" aria-labelledby="tm-pick-l">
-              <span class="tm-pick-l" id="tm-pick-l"><svg class="ico" aria-hidden="true"><use href="#i-pointer"/></svg><span data-en="Pick a control mode: the input runs through the safety chain to the arm">Steuerweg wählen: die Eingabe läuft durch die Sicherheitskette zum Arm</span></span>
+              <span class="tm-pick-l" id="tm-pick-l"><svg class="ico" aria-hidden="true"><use href="#i-pointer"/></svg><span data-en="Pick a control mode: the relevant checks vary by path">Steuerweg wählen: Die relevanten Prüfungen unterscheiden sich je Weg</span></span>
               <button type="button" class="tm-tab" data-m="gamepad" aria-pressed="false" style="--hue: var(--accent)"><svg class="ico" aria-hidden="true"><use href="#i-pad"/></svg><span>Gamepad</span></button>
               <button type="button" class="tm-tab" data-m="vr" aria-pressed="false" style="--hue: var(--accent)"><svg class="ico" aria-hidden="true"><use href="#i-vr"/></svg><span data-en="Virtual reality">Virtual Reality</span></button>
               <button type="button" class="tm-tab" data-m="ui" aria-pressed="false" style="--hue: var(--accent)"><svg class="ico" aria-hidden="true"><use href="#i-touch"/></svg><span data-en="User interface">User Interface</span></button>
@@ -1251,7 +1270,7 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
             <div class="stack-layer">
               <span class="layer-idx">L-03</span>
               <div class="layer-title"><svg class="ico" aria-hidden="true"><use href="#i-cam"/></svg><span data-en="Perception">Wahrnehmung</span></div>
-              <p class="layer-desc" data-en="ZED Mini (colour, depth, point cloud), YOLO 3D boxes and OctoMap as occupancy grid; virtual objects replace the camera in Robot | Digital Twin.">ZED Mini (Farbbild, Tiefe, Punktwolke), YOLO-3D-Boxen und OctoMap als Belegungsraster; virtuelle Objekte ersetzen die Kamera im Robot | Digital Twin.</p>
+              <p class="layer-desc" data-en="ZED Mini (colour, depth, point cloud), YOLO 3D boxes and OctoMap as occupancy grid; virtual objects replace the camera in Robot | Digital Twin.">ZED Mini (Farbbild, Tiefe, Punktwolke), YOLO-3D-Boxen und OctoMap als Belegungsraster; virtuelle Objekte ersetzen die Kamera in der Betriebsart Robot | Digital Twin.</p>
               <div class="layer-modes"><span class="active">ZED Mini</span><span class="active">YOLO</span><span>OctoMap</span><span>Virtuelle Objekte</span></div>
             </div>
             <div class="stack-layer">
@@ -1389,7 +1408,7 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
                   </figure>
                   <figure class="slide app-slide" data-url="127.0.0.1:8080/touch · UX | Compact Interface">
                     <div class="sl-media"><img src="img/project_docs/app_touch.jpg" width="720" height="450" alt="UX | Compact Interface: Bedienung am Touch-Display" data-en-alt="UX | Compact Interface: operation on the touch display" loading="lazy"></div>
-                    <figcaption><span class="k-t" data-k>UX | Compact Interface · /touch</span><b data-k data-slide-title data-en="Operate right at the robot.">Bedienen direkt am Roboter.</b><span data-k data-en="Touch display next to the workcell, served by the UX | Nexus Launcher under /touch.">Touch-Display neben dem Arbeitsplatz, ausgeliefert von der UX | Nexus Launcher unter /touch.</span></figcaption>
+                    <figcaption><span class="k-t" data-k>UX | Compact Interface · /touch</span><b data-k data-slide-title data-en="Operate right at the robot.">Bedienen direkt am Roboter.</b><span data-k data-en="Touch display next to the workcell, served by the UX | Nexus Launcher under /touch.">Touch-Display neben dem Arbeitsplatz, ausgeliefert vom UX | Nexus Launcher unter /touch.</span></figcaption>
                   </figure>
                 </div>
                 <div class="deck-arrows media">
@@ -1435,7 +1454,7 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
                 <span class="atd-k">Bereich 1 / 9</span>
                 <span class="atd-h"><b class="atd-t">Steuerwege</b><span class="atd-big"><strong class="atd-n">15</strong><span data-en="functions">Funktionen</span></span></span>
                 <span class="atd-d" data-a="ctl" data-en="How people move the arm – from gamepad to the TCP gizmo (handle at the gripper point in the Digital Twin).">Wie Menschen den Arm bewegen – vom Gamepad bis zum TCP-Gizmo (Griff am Greiferpunkt im Digital Twin).</span>
-                <span class="atd-d" data-a="safe" data-en="What checks and stops every motion before the arm moves." hidden>Was jede Bewegung prüft und stoppt, bevor der Arm fährt.</span>
+                <span class="atd-d" data-a="safe" data-en="Which checks and stops apply to each command path before or during motion." hidden>Welche Prüfungen und Stopps vor oder während der Bewegung für den jeweiligen Befehlsweg gelten.</span>
                 <span class="atd-d" data-a="twin" data-en="The arm as a 3D model, with the plan shown before it runs." hidden>Der Arm als 3D-Modell, mit Plan vor der Ausführung.</span>
                 <span class="atd-d" data-a="vis" data-en="Camera, object detection and obstacles in the room." hidden>Kamera, Objekterkennung und Hindernisse im Raum.</span>
                 <span class="atd-d" data-a="ai" data-en="Language in, checked motion plan out." hidden>Sprache rein, geprüfter Bewegungsplan raus.</span>
@@ -1515,7 +1534,7 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
               </article>
               <article class="fn" id="tcp-gizmo" data-a="ctl" data-f="moveto" data-s="spr" data-default>
                 <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-gizmo"/></svg><span data-en="TCP gizmo in the Digital Twin">TCP-Gizmo im Digital Twin</span></button></h3>
-                <p data-en="Drag the target in the twin, MoveIt plans, it moves after Execute.">Ziel im Twin ziehen, MoveIt plant, gefahren wird nach Execute.</p>
+                <p data-en="Drag the target in the Digital Twin. With Auto-Move off, MoveIt plans and waits for Execute; with Auto-Move on, releasing the gizmo executes after the checks. Robot | Digital Twin moves only the simulation, Robot | Hardware moves the real arm.">Ziel im Digital Twin ziehen. Ohne Auto-Move plant MoveIt und wartet auf Execute; mit Auto-Move führt das Loslassen nach den Prüfungen aus. In der Betriebsart Robot | Digital Twin fährt nur die Simulation, in der Betriebsart Robot | Hardware der echte Arm.</p>
               </article>
               <article class="fn" id="moveto-scan" data-a="ctl" data-f="moveto" data-s="spr">
                 <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg><span data-en="MoveTo, home pose and scan pose">MoveTo, Home-Pose und Scan-Pose</span></button></h3>
@@ -1543,7 +1562,7 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
               </article>
               <article class="fn" id="gaze" data-a="ctl" data-f="gaze" data-s="spr">
                 <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-eye"/></svg><span data-en="Gaze UI and gaze grasp (Tobii)">Blick-UI und Blick-Greifen (Tobii)</span></button></h3>
-                <p data-en="Buttons fire after 1&amp;nbsp;s of gaze; gaze grasp moves above the object.">Knöpfe lösen nach 1&nbsp;s Blick aus; Blick-Greifen fährt über das Objekt.</p>
+                <p data-en="Gaze UI buttons fire after 1&amp;nbsp;s; holding the gaze on a detected object for 2&amp;nbsp;s triggers gaze grasp. Downward gaze motion brakes from Z&amp;nbsp;40&amp;nbsp;mm and stops at Z&amp;nbsp;33&amp;nbsp;mm.">Knöpfe der Blick-UI lösen nach 1&nbsp;s aus; 2&nbsp;s Blick auf ein erkanntes Objekt starten das Blick-Greifen. Abwärtsfahrt per Blick bremst ab Z&nbsp;40&nbsp;mm und stoppt bei Z&nbsp;33&nbsp;mm.</p>
               </article>
               <article class="fn" id="vr-quest3" data-a="ctl" data-f="vr" data-s="spr">
                 <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-vr"/></svg><span data-en="VR Quest 3 and VR cockpit">VR Quest 3 und VR-Cockpit</span></button></h3>
@@ -1604,7 +1623,7 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
               </article>
               <article class="fn" id="speed" data-a="safe" data-f="pad" data-s="sr">
                 <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-pulse"/></svg><span data-en="Speed">Tempo</span></button></h3>
-                <p data-en="5 levels; MoveIt scales to 0.15 / 0.3 / 0.6; remote in Robot | Hardware at most 50&amp;nbsp;%.">5 Stufen; MoveIt skaliert auf 0,15 / 0,3 / 0,6; remote in Robot | Hardware höchstens 50&nbsp;%.</p>
+                <p data-en="5 levels: scale factors 0.1 / 0.2 / 0.3 / 0.4 / 0.5, displayed as 20 / 40 / 60 / 80 / 100&amp;nbsp;%; remote control in Robot | Hardware is limited to 50&amp;nbsp;%.">5 Stufen: Faktoren 0,1 / 0,2 / 0,3 / 0,4 / 0,5, angezeigt als 20 / 40 / 60 / 80 / 100&nbsp;%; Remote Control ist in der Betriebsart Robot | Hardware auf 50&nbsp;% begrenzt.</p>
               </article>
               <article class="fn" id="path-confirm" data-a="safe" data-f="moveto" data-s="spr">
                 <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg><span data-en="Path confirmation">Bahn-Bestätigung</span></button></h3>
@@ -1623,7 +1642,7 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
                 <p data-en="&lt;code&gt;dry_run&lt;/code&gt; never moves; Robot | Hardware runs only with &lt;code&gt;allow_real_motion&lt;/code&gt; and Execute."><code>dry_run</code> bewegt nie; Robot | Hardware fährt nur mit <code>allow_real_motion</code> und Execute.</p>
               </article>
               <article class="fn" id="nexus-preflight" data-a="safe" data-f="start" data-s="spr">
-                <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg><span data-en="Preflight in the UX | Nexus Launcher">Preflight in der UX | Nexus Launcher</span></button></h3>
+                <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg><span data-en="Preflight in the UX | Nexus Launcher">Preflight im UX | Nexus Launcher</span></button></h3>
                 <p data-en="Checks robot, cameras, ports, duplicate stacks, GPU and disk; automatic in Robot | Hardware.">Prüft Roboter, Kameras, Ports, Doppelstacks, GPU und Platte; in Robot | Hardware automatisch.</p>
               </article>
               <h2 class="grp-h" data-a="twin" style="--c: var(--blue)">Digital Twin</h2>
@@ -1735,7 +1754,7 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
               </article>
               <article class="fn" id="rl-refine" data-a="ai" data-f="demo" data-s="s">
                 <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-loop"/></svg><span data-en="Reinforcement learning (planned)">Reinforcement Learning (geplant)</span></button></h3>
-                <p data-en="The policy from the demos keeps learning in robot simulation; reward: object held and placed. Never in Robot | Hardware.">Die Policy aus den Demos lernt in der Roboter-Simulation nach; Belohnung: Objekt gehalten und abgelegt. Nie im Robot | Hardware.</p>
+                <p data-en="The policy from the demos keeps learning in robot simulation; reward: object held and placed. Never in Robot | Hardware.">Die Policy aus den Demos lernt in der Roboter-Simulation nach; Belohnung: Objekt gehalten und abgelegt. Nie in der Betriebsart Robot | Hardware.</p>
               </article>
               <h2 class="grp-h" data-a="mon" style="--c: var(--pink)">UX | Monitoring</h2>
               <article class="fn" id="mon-overview" data-a="mon" data-f="mon">
@@ -1835,7 +1854,7 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
               </article>
               <article class="fn" id="infra-touch" data-a="infra" data-f="touch">
                 <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-touch"/></svg><span data-en="UX | Compact Interface setup">UX | Compact Interface einrichten</span></button></h3>
-                <p data-en="Flask blueprint of the UX | Nexus Launcher; kiosk start with &lt;code&gt;touch_panel_start.sh&lt;/code&gt;.">Flask-Blueprint der UX | Nexus Launcher; Kiosk-Start mit <code>touch_panel_start.sh</code>.</p>
+                <p data-en="Flask blueprint of the UX | Nexus Launcher; kiosk start with &lt;code&gt;touch_panel_start.sh&lt;/code&gt;.">Flask-Blueprint des UX | Nexus Launcher; Kiosk-Start mit <code>touch_panel_start.sh</code>.</p>
               </article>
               <article class="fn" id="infra-setup-card" data-a="infra" data-f="">
                 <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-globe"/></svg><span data-en="Setup card">Setup-Karte</span></button></h3>
@@ -1875,7 +1894,7 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
       
       <section class="sec" id="hardware">
         <header class="sec-head">
-          <div><span class="eyebrow" style="--hue: var(--teal)"><span class="n">5.1</span><span data-en="Every device">Alle Geräte</span></span><h2 data-en="Hardware stack">Hardware Stack</h2></div>
+          <div><span class="eyebrow" style="--hue: var(--teal)"><span class="n">05.1</span><span data-en="Every device">Alle Geräte</span></span><h2 data-en="Hardware stack">Hardware Stack</h2></div>
           <div class="brief" style="--hue: var(--teal)"><p class="slogan" data-en="Twelve devices, one setup.">Zwölf Geräte, ein Aufbau.</p><ul class="kpis"><li class="kpi"><strong>12</strong><span data-en="devices">Geräte</span></li><li class="kpi"><strong>4</strong><span data-en="groups">Gruppen</span></li><li class="kpi"><strong>1</strong><span data-en="robot">Roboter</span></li></ul></div>
         </header>
         <div class="app-frame deck hws-frame" data-deck role="region" aria-label="Hardware Stack als Folien" data-en-aria="Hardware stack as slides" style="--hue: var(--teal)">
@@ -1944,7 +1963,7 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
                       <rect x="35" y="16" width="44" height="5" rx="2"/><rect x="35" y="26" width="28" height="16" rx="2"/><rect x="67" y="26" width="28" height="16" rx="2"/><rect x="35" y="46" width="60" height="9" rx="2"/>
                       <circle cx="112" cy="40" r="4"/><circle class="d" cx="112" cy="40" r="11"/><circle class="d" cx="112" cy="40" r="18"/>
                     </svg></div></div>
-                    <figcaption><span class="k-t" data-k data-en="Touch · input">Touch · Bedienung</span><b data-k data-slide-title data-en="Operate right at the robot.">Bedienen direkt am Roboter.</b><span data-k data-en="Touch display next to the workcell, served by the UX | Nexus Launcher under /touch; touch targets of 56&amp;nbsp;px.">Touch-Display neben dem Arbeitsplatz, ausgeliefert von der UX | Nexus Launcher unter /touch; Touch-Ziele mit 56&nbsp;px.</span><ul class="chips" data-k><li class="chip">UX | Compact Interface</li><li class="chip">/touch</li><li class="chip">56&nbsp;px</li></ul></figcaption>
+                    <figcaption><span class="k-t" data-k data-en="Touch · input">Touch · Bedienung</span><b data-k data-slide-title data-en="Operate right at the robot.">Bedienen direkt am Roboter.</b><span data-k data-en="Touch display next to the workcell, served by the UX | Nexus Launcher under /touch; touch targets of 56&amp;nbsp;px.">Touch-Display neben dem Arbeitsplatz, ausgeliefert vom UX | Nexus Launcher unter /touch; Touch-Ziele mit 56&nbsp;px.</span><ul class="chips" data-k><li class="chip">UX | Compact Interface</li><li class="chip">/touch</li><li class="chip">56&nbsp;px</li></ul></figcaption>
                   </figure>
 
                   <figure class="slide app-slide hws-slide">
@@ -2010,7 +2029,7 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
 
                   <figure class="slide app-slide hws-slide">
                     <div class="sl-media"><img src="img/hardware/xarm_lite6.jpg" width="1120" height="630" alt="xArm Lite 6 in Weiß auf dem Arbeitstisch, am Handgelenk Kamera und Vakuumgreifer" data-en-alt="White xArm Lite 6 on the work table with camera and vacuum gripper at the wrist" loading="lazy"></div>
-                    <figcaption><span class="k-t" data-k data-en="Robot · motion">Roboter · Bewegung</span><b data-k data-slide-title data-en="Six axes, 440&amp;nbsp;mm reach.">Sechs Achsen, 440&nbsp;mm Reichweite.</b><span data-k data-en="Light 6-axis robot from UFactory, controlled over Ethernet (Modbus TCP); every control mode runs through the same safety chain.">Leichter 6-Achs-Roboter von UFactory, angesteuert per Ethernet (Modbus TCP); jeder Steuerweg läuft durch dieselbe Sicherheitskette.</span><ul class="chips" data-k><li class="chip">UFactory xArm Lite&nbsp;6</li><li class="chip">6-DoF</li><li class="chip">Modbus TCP</li></ul></figcaption>
+                    <figcaption><span class="k-t" data-k data-en="Robot · motion">Roboter · Bewegung</span><b data-k data-slide-title data-en="Six axes, 440&amp;nbsp;mm reach.">Sechs Achsen, 440&nbsp;mm Reichweite.</b><span data-k data-en="Light 6-axis robot from UFactory, controlled over Ethernet (Modbus TCP); each control mode uses the safeguards relevant to its command path.">Leichter 6-Achs-Roboter von UFactory, angesteuert per Ethernet (Modbus TCP); jeder Steuerweg nutzt die für seinen Befehlsweg relevanten Schutzstufen.</span><ul class="chips" data-k><li class="chip">UFactory xArm Lite&nbsp;6</li><li class="chip">6-DoF</li><li class="chip">Modbus TCP</li></ul></figcaption>
                   </figure>
 
                   <figure class="slide app-slide hws-slide">
@@ -2104,7 +2123,7 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
             <div class="dia-theater-overlay">
               <div class="kicker">02 · <span data-en="Control &amp; Monitoring">Kontrolle &amp; Überwachung</span></div>
               <h3 class="slogan" data-en="Everything in view. Step in any time.">Alles im Blick. Jederzeit eingreifen.</h3>
-              <p class="fact" data-en="Robot state, ZED camera and OctoMap live in the UX | Control Interface; usage and blackbox incidents in UX | Monitoring.">Roboterzustand, ZED-Kamera und OctoMap live in der UX | Control Interface; Nutzung und Blackbox-Vorfälle im UX | Monitoring.</p>
+              <p class="fact" data-en="Robot state, ZED camera and OctoMap live in the UX | Control Interface; usage and blackbox incidents in UX | Monitoring.">Roboterzustand, ZED-Kamera und OctoMap live im UX | Control Interface; Nutzung und Blackbox-Vorfälle im UX | Monitoring.</p>
             </div>
           </article>
           
@@ -2130,8 +2149,8 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
             <img class="dia-theater-img" src="img/rcu_moveit_exec.png" width="1116" height="708" alt="MoveIt-Fahrt im Digital Twin: IK, Planung und Fahrt im Blick, E-STOP jederzeit per Leertaste" data-en-alt="MoveIt motion in the Digital Twin: IK, planning and execution in view, E-STOP any time via space bar" loading="lazy">
             <div class="dia-theater-overlay">
               <div class="kicker">05 · <span data-en="Safety · Protection">Sicherheit · Schutz</span></div>
-              <h3 class="slogan" data-en="One chain for every input.">Eine Kette für jede Eingabe.</h3>
-              <p class="fact" data-en="E-STOP, floor guard and collision protection for all ten control modes; the control lock gives control to one client at a time.">E-STOP, Bodenschutz und Kollisionsschutz für alle zehn Steuerwege; Control-Lock gibt immer nur einem Client die Steuerung.</p>
+              <h3 class="slogan" data-en="Safeguards matched to each path.">Schutzstufen passend zum Steuerweg.</h3>
+              <p class="fact" data-en="Software stop and collision or floor safeguards support all ten control modes. Control lock, watchdog, pre-check, MoveIt and confirmation apply only where the respective path uses them.">Software-Stopp sowie Kollisions- oder Bodenschutz unterstützen alle zehn Steuerwege. Control-Lock, Watchdog, Vorprüfung, MoveIt und Bestätigung greifen nur auf den Wegen, die sie verwenden.</p>
             </div>
           </article>
         </div>
@@ -2179,7 +2198,7 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
           </a>
           <a class="item" href="present_control_modes.html" target="_blank" rel="noopener" style="--hue: var(--accent)">
             <span class="thumb"><img src="img/project_docs/interakt.jpg" alt="" loading="lazy"></span>
-            <span class="txt"><b><svg class="ico" aria-hidden="true"><use href="#i-arm"/></svg><span data-en="Control modes &amp; safety chain">Steuerwege &amp; Sicherheitskette</span></b><p data-en="Ten control modes, one safety chain: devices, chain to try out with E-STOP, capability matrix">Zehn Steuerwege, eine Sicherheitskette: Eingabegeräte, Kette zum Ausprobieren mit E-STOP, Fähigkeits-Matrix</p></span>
+            <span class="txt"><b><svg class="ico" aria-hidden="true"><use href="#i-arm"/></svg><span data-en="Control modes &amp; safeguards">Steuerwege &amp; Schutzstufen</span></b><p data-en="Ten control modes with path-specific safeguards: devices, interactive command paths and capability matrix">Zehn Steuerwege mit wegabhängigen Schutzstufen: Eingabegeräte, interaktive Befehlswege und Fähigkeits-Matrix</p></span>
             <span class="end"><span class="tag">HTML</span><span class="go"><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg></span></span>
           </a>
           <a class="item" href="#atlas-sec" style="--hue: var(--teal)">
@@ -2226,11 +2245,16 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
             <span class="txt"><b><svg class="ico" aria-hidden="true"><use href="#i-tool"/></svg><span data-en="Setup guide">Setup-Guide</span></b><p data-en="From the box to acceptance: 8 phases, 43 steps; pre-installed PC or from Ubuntu 22.04">Vom Karton zur Abnahme: 8 Phasen, 43 Schritte; PC vorinstalliert oder ab Ubuntu 22.04</p></span>
             <span class="end"><span class="tag">HTML</span><span class="go"><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg></span></span>
           </a>
-          <a class="item" href="http://127.0.0.1:8080/" data-setup data-local target="_blank" rel="noopener" style="--hue: var(--teal)" title="Öffnet die Setup-Karte (über die UX | Nexus Launcher)" data-en-title="Opens the setup card (via the UX | Nexus Launcher)">
+          <button class="item" type="button" data-setup data-local style="--hue: var(--teal)" title="Öffnet die Setup-Karte über den UX | Nexus Launcher" data-en-title="Opens the setup card via UX | Nexus Launcher">
             <span class="thumb"><img src="img/project_docs/setup.jpg" alt="" loading="lazy"></span>
             <span class="txt"><b><svg class="ico" aria-hidden="true"><use href="#i-net"/></svg><span data-en="Setup card">Setup-Karte</span></b><p data-en="Networks, addresses and ports at a glance; HTTPS/VR, server/client">Netze, Adressen und Ports auf einen Blick; HTTPS/VR, Server/Client</p></span>
             <span class="end"><span class="tag">UX | Nexus Launcher</span><span class="go"><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg></span></span>
-          </a>
+          </button>
+          <div class="item" data-public-only hidden style="--hue: var(--teal)" role="note">
+            <span class="thumb"><img src="img/project_docs/setup.jpg" alt="" loading="lazy"></span>
+            <span class="txt"><b><svg class="ico" aria-hidden="true"><use href="#i-net"/></svg><span data-en="Setup card">Setup-Karte</span></b><p data-en="Contains local networks, addresses and ports and is therefore available only in the lab via UX | Nexus Launcher.">Enthält lokale Netze, Adressen und Ports und ist deshalb nur im Labor über den UX | Nexus Launcher verfügbar.</p></span>
+            <span class="end"><span class="tag" data-en="Lab only">nur im Labor</span></span>
+          </div>
         </div>
       </section>
 
@@ -2338,7 +2362,7 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
             <figure class="ar-stack" id="ar-stack">
               <ol aria-label="Sieben Schichten von oben nach unten" data-en-aria="Seven layers from top to bottom">
                 <li class="ar-row" data-l="human"><svg class="ico" aria-hidden="true"><use href="#i-user"/></svg><b data-en="Humans and devices">Mensch und Geräte</b><em>7</em><small data-en="Mouse, touch, gamepad, Quest&amp;nbsp;3, Leap Motion&amp;nbsp;2, microphone, Tobii">Maus, Touch, Gamepad, Quest&nbsp;3, Leap Motion&nbsp;2, Mikrofon, Tobii</small></li>
-                <li class="ar-row" data-l="ui"><svg class="ico" aria-hidden="true"><use href="#i-win"/></svg><b data-en="Interfaces">Oberflächen</b><em>7</em><small>:8080 · :8081 · :8083 · :8443 · RViz</small></li>
+                <li class="ar-row" data-l="ui"><svg class="ico" aria-hidden="true"><use href="#i-win"/></svg><b data-en="Interfaces">Oberflächen</b><em>6</em><small>UX | Nexus Launcher :8080 · UX | Control Interface :8081 · UX | Compact Interface /touch · UX | Monitoring :8083 · WebXR :8443 · RViz 2</small></li>
                 <li class="ar-row" data-l="bridge"><svg class="ico" aria-hidden="true"><use href="#i-link"/></svg><b data-en="Servers and bridges">Server und Brücken</b><em>8</em><small data-en="rosbridge :9090/:9091/:9092, HTTP servers, joy_node">rosbridge :9090/:9091/:9092, HTTP-Server, joy_node</small></li>
                 <li class="ar-row" data-l="logic"><svg class="ico" aria-hidden="true"><use href="#i-shield"/></svg><b data-en="Coordination and safety">Koordination und Sicherheit</b><em>13</em><small data-en="Watchdog, collision pre-check, motion handler, VLA, blackbox">Watchdog, Kollisionsvorprüfung, Motion Handler, VLA, Blackbox</small></li>
                 <li class="ar-row" data-l="vision"><svg class="ico" aria-hidden="true"><use href="#i-cam"/></svg><b data-en="Perception">Wahrnehmung</b><em>6</em><small data-en="ZED, YOLO, point cloud, OctoMap">ZED, YOLO, Punktwolke, OctoMap</small></li>
@@ -2418,7 +2442,7 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
             <details class="faq-item" id="faq-idee-01" data-top>
               <summary><span class="faq-q"><span class="k" data-en="Idea and goal">Idee und Ziel</span><span data-en="What is UX Robot?">Was ist UX Robot?</span></span><svg class="ico" aria-hidden="true"><use href="#i-next"/></svg></summary>
               <div class="faq-body">
-                <div class="faq-txt"><p data-en="An open-source platform on which teaching and research control the xArm Lite 6 in ten ways, from the gamepad to the AI chat, and measure how well that works. It runs on ROS 2 Humble and is operated in the browser.">Eine Open-Source-Plattform, auf der Lehre und Forschung den xArm Lite 6 auf zehn Wegen bedienen, vom Gamepad bis zum KI-Chat, und messen, wie gut das gelingt. Sie läuft auf ROS 2 Humble, bedient wird im Browser.</p></div>
+                <div class="faq-txt"><p data-en="A research platform on which teaching and research control the xArm Lite 6 in ten ways, from the gamepad to the AI chat, and measure how well that works. It runs on ROS 2 Humble and is operated in the browser; publication under Apache 2.0 is planned.">Eine Forschungsplattform, auf der Lehre und Forschung den xArm Lite 6 auf zehn Wegen bedienen, vom Gamepad bis zum KI-Chat, und messen, wie gut das gelingt. Sie läuft auf ROS 2 Humble und wird im Browser bedient; die Veröffentlichung unter Apache 2.0 ist geplant.</p></div>
                 <figure class="faq-fig"><img src="img/presentation/hero.jpg" width="1400" height="935" alt="xArm Lite 6 am Arbeitsplatz im UX-Labor, davor Würfel, Quader und Zylinder auf dem Tisch" data-en-alt="xArm Lite 6 at the workstation in the UX Lab, with cube, cuboid and cylinder on the table" loading="lazy" decoding="async"></figure>
               </div>
             </details>
@@ -2472,26 +2496,26 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
               <summary><span class="faq-q"><span class="k" data-en="Operation and control modes">Bedienung und Steuerwege</span><span data-en="How do I move the arm by hand?">Wie fahre ich den Arm von Hand?</span></span><svg class="ico" aria-hidden="true"><use href="#i-next"/></svg></summary>
               <div class="faq-body">
                 <div class="faq-txt"><p data-en="With jogging: moving the arm by hand in small steps, with keys, gamepad or touch. In Hold the arm moves as long as the key is pressed; in Step it moves 1, 5 or 10&amp;nbsp;mm per press.">Per Jogging: den Arm von Hand in kleinen Schritten fahren, mit Tasten, Gamepad oder Touch. Bei Halten fährt der Arm, solange die Taste gedrückt ist; bei Schritt fährt er 1, 5 oder 10&nbsp;mm je Druck.</p></div>
-                <figure class="faq-fig"><img src="img/rcu_jogging.png" width="694" height="960" alt="Jogging-Panel der UX | Control Interface: Halten oder Schritt 1, 5, 10 mm, Felder zum Verschieben und Drehen, Gelenkregler" data-en-alt="Jogging panel of the UX | Control Interface: Hold or Step 1, 5, 10 mm, pads to translate and rotate, joint sliders" loading="lazy" decoding="async"></figure>
+                <figure class="faq-fig"><img src="img/rcu_jogging.png" width="694" height="960" alt="Jogging-Panel des UX | Control Interface: Halten oder Schritt 1, 5, 10 mm, Felder zum Verschieben und Drehen, Gelenkregler" data-en-alt="Jogging panel of the UX | Control Interface: Hold or Step 1, 5, 10 mm, pads to translate and rotate, joint sliders" loading="lazy" decoding="async"></figure>
               </div>
             </details>
             <details class="faq-item" id="faq-steuern-03">
               <summary><span class="faq-q"><span class="k" data-en="Operation and control modes">Bedienung und Steuerwege</span><span data-en="How does gamepad control work?">Wie funktioniert die Steuerung per Gamepad?</span></span><svg class="ico" aria-hidden="true"><use href="#i-next"/></svg></summary>
               <div class="faq-body noimg">
-                <div class="faq-txt"><p data-en="An Xbox Elite Series 2 provides direct control of the arm’s position and orientation. The collision pre-check limits movement near the table; MoveIt additionally checks obstacles represented in the system.">Mit einem Xbox Elite Series 2 lassen sich Position und Orientierung des Arms direkt steuern. Die Kollisionsvorprüfung begrenzt Bewegungen nahe der Tischfläche; MoveIt prüft zusätzlich die im System erfassten Hindernisse.</p></div>
+                <div class="faq-txt"><p data-en="An Xbox Elite Series 2 provides direct control of the arm’s position and orientation. The configurable Z Collision Level starts at 10&amp;nbsp;mm; the gamepad pre-check enters its caution zone 19&amp;nbsp;mm above that level and blocks downward motion at the level. MoveIt additionally checks represented obstacles.">Mit einem Xbox Elite Series 2 lassen sich Position und Orientierung des Arms direkt steuern. Das einstellbare Z Collision Level startet bei 10&nbsp;mm; die Gamepad-Vorprüfung beginnt ihre Vorsichtszone 19&nbsp;mm über diesem Level und sperrt Abwärtsfahrt am Level. MoveIt prüft zusätzlich die erfassten Hindernisse.</p></div>
               </div>
             </details>
             <details class="faq-item" id="faq-steuern-04">
               <summary><span class="faq-q"><span class="k" data-en="Operation and control modes">Bedienung und Steuerwege</span><span data-en="How does VR with the Meta Quest&amp;nbsp;3 work?">Wie funktioniert VR mit der Meta Quest&nbsp;3?</span></span><svg class="ico" aria-hidden="true"><use href="#i-next"/></svg></summary>
               <div class="faq-body">
-                <div class="faq-txt"><p data-en="The Quest&amp;nbsp;3 opens the UX | Control Interface right in the headset’s browser, without installing an app. The arm follows the hand in six degrees of freedom; on the PC a VR mirror shows what the headset sees.">Die Quest&nbsp;3 öffnet die UX | Control Interface direkt im Browser der Brille, ohne App-Installation. Der Arm folgt der Hand in sechs Freiheitsgraden; am PC zeigt ein VR-Spiegel, was die Brille sieht.</p></div>
+                <div class="faq-txt"><p data-en="The Quest&amp;nbsp;3 opens the UX | Control Interface right in the headset’s browser, without installing an app. The arm follows the hand in six degrees of freedom; on the PC a VR mirror shows what the headset sees.">Die Quest&nbsp;3 öffnet das UX | Control Interface direkt im Browser der Brille, ohne App-Installation. Der Arm folgt der Hand in sechs Freiheitsgraden; am PC zeigt ein VR-Spiegel, was die Brille sieht.</p></div>
                 <figure class="faq-fig"><img src="img/rcu_vr.png" width="484" height="322" alt="Bereich Remote Teleop, VR headset: Enter VR, Passthrough AR (vorbereitet) und VR-Spiegel am PC" data-en-alt="Remote Teleop, VR headset: Enter VR, Passthrough AR (prepared) and VR mirror window on the PC" loading="lazy" decoding="async"></figure>
               </div>
             </details>
             <details class="faq-item" id="faq-steuern-05">
               <summary><span class="faq-q"><span class="k" data-en="Operation and control modes">Bedienung und Steuerwege</span><span data-en="How does gaze control work?">Wie funktioniert die Blicksteuerung?</span></span><svg class="ico" aria-hidden="true"><use href="#i-next"/></svg></summary>
               <div class="faq-body">
-                <div class="faq-txt"><p data-en="The Tobii Pro Glasses 3 provides a gaze point, which the system associates with detected objects. With gaze control enabled, looking at a detected object for 2 s can trigger the grasp sequence.">Die Tobii Pro Glasses 3 liefert den Blickpunkt, den das System erkannten Objekten zuordnet. Bei aktivierter Blicksteuerung kann ein Blick von 2 s auf ein erkanntes Objekt den Greifablauf auslösen.</p></div>
+                <div class="faq-txt"><p data-en="The Tobii Pro Glasses 3 provides a gaze point. Gaze UI buttons trigger after 1&amp;nbsp;s; holding the gaze on a detected object for 2&amp;nbsp;s can trigger the grasp sequence. Downward gaze motion brakes from Z&amp;nbsp;40&amp;nbsp;mm and hard-stops at Z&amp;nbsp;33&amp;nbsp;mm. These are fixed thresholds of the gaze UI, unlike the gamepad’s 19-mm margin relative to the configurable Z Collision Level.">Die Tobii Pro Glasses 3 liefert den Blickpunkt. Knöpfe der Blick-UI lösen nach 1&nbsp;s aus; 2&nbsp;s Blick auf ein erkanntes Objekt können den Greifablauf starten. Abwärtsfahrt per Blick bremst ab Z&nbsp;40&nbsp;mm und endet am Hard-Stop bei Z&nbsp;33&nbsp;mm. Das sind feste Schwellen der Blick-UI, anders als der 19-mm-Abstand des Gamepads zum einstellbaren Z Collision Level.</p></div>
                 <figure class="faq-fig"><img src="img/project_docs/stage_gaze.jpg" width="1400" height="788" alt="Blicksteuerung: Kamerabild der Tobii-Brille mit erkannten Objekten, Blickpunkt und Bedientasten" data-en-alt="Gaze control: camera view of the Tobii glasses with detected objects, gaze point and control buttons" loading="lazy" decoding="async"></figure>
               </div>
             </details>
@@ -2505,21 +2529,21 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
             <details class="faq-item" id="faq-steuern-07">
               <summary><span class="faq-q"><span class="k" data-en="Operation and control modes">Bedienung und Steuerwege</span><span data-en="What is the TCP gizmo?">Was ist der TCP-Gizmo?</span></span><svg class="ico" aria-hidden="true"><use href="#i-next"/></svg></summary>
               <div class="faq-body">
-                <div class="faq-txt"><p data-en="A handle at the gripper point in the Digital Twin. You drag it to the target pose, see the path preview and confirm it; with Auto-Move switched on, the arm moves straight away.">Ein Griff am Greiferpunkt im Digital Twin. Der Mensch zieht ihn an die Zielpose, sieht die Bahnvorschau und bestätigt sie; mit eingeschaltetem Auto-Move fährt der Arm direkt.</p></div>
+                <div class="faq-txt"><p data-en="A handle at the gripper point in the Digital Twin view. With Auto-Move off, releasing it requests a MoveIt plan and the motion waits for Execute. With Auto-Move on, releasing it starts execution after the checks: only the simulated arm in Robot | Digital Twin, the real arm in Robot | Hardware.">Ein Griff am Greiferpunkt in der Digital-Twin-Ansicht. Ohne Auto-Move fordert das Loslassen einen MoveIt-Plan an; die Fahrt wartet auf Execute. Mit Auto-Move startet das Loslassen die Ausführung nach den Prüfungen: in der Betriebsart Robot | Digital Twin nur am simulierten Arm, in der Betriebsart Robot | Hardware am echten Arm.</p></div>
                 <figure class="faq-fig"><img src="img/rcu_tcp_gizmo.jpg" width="1200" height="744" alt="TCP-Gizmo im Digital Twin: Pfeile X, Y, Z am Greiferpunkt, Abstand zum Tisch und Zielpose im Pose-Feld" data-en-alt="TCP gizmo in the Digital Twin: X, Y, Z arrows at the gripper point, distance to the table and target pose in the pose field" loading="lazy" decoding="async"></figure>
               </div>
             </details>
             <details class="faq-item" id="faq-steuern-08">
               <summary><span class="faq-q"><span class="k" data-en="Operation and control modes">Bedienung und Steuerwege</span><span data-en="Can I control the robot from another device?">Kann ich den Roboter von einem anderen Gerät steuern?</span></span><svg class="ico" aria-hidden="true"><use href="#i-next"/></svg></summary>
               <div class="faq-body noimg">
-                <div class="faq-txt"><p data-en="Yes, from a laptop or tablet on an approved local network. The current network configuration is designed for home and lab networks, rather than direct internet access.">Ja, von einem Laptop oder Tablet in einem freigegebenen lokalen Netz. Die derzeitige Netzkonfiguration ist für Heim- und Labornetze ausgelegt, nicht für einen direkten Zugriff aus dem Internet.</p><ul><li data-en="&lt;b&gt;Approval:&lt;/b&gt; Allow / Deny on the robot PC; requests expire after 60 s."><b>Freigabe:</b> am Roboter-PC per Allow / Deny; Anfragen verfallen nach 60 s.</li><li data-en="&lt;b&gt;Scope:&lt;/b&gt; jogging, gamepad, VR teleoperation and stop; no remote AI or target-motion requests."><b>Umfang:</b> Jogging, Gamepad, VR-Teleoperation und Stopp; keine entfernten KI- oder Zielfahrt-Aufträge.</li><li data-en="&lt;b&gt;Speed:&lt;/b&gt; remote control is limited to at most 50% in Robot | Hardware."><b>Tempo:</b> Remote Control ist im Robot | Hardware auf höchstens 50 % begrenzt.</li></ul></div>
+                <div class="faq-txt"><p data-en="Yes, from a laptop or tablet on an approved local network. The current network configuration is designed for home and lab networks, rather than direct internet access.">Ja, von einem Laptop oder Tablet in einem freigegebenen lokalen Netz. Die derzeitige Netzkonfiguration ist für Heim- und Labornetze ausgelegt, nicht für einen direkten Zugriff aus dem Internet.</p><ul><li data-en="&lt;b&gt;Approval:&lt;/b&gt; Allow / Deny on the robot PC; requests expire after 60 s."><b>Freigabe:</b> am Roboter-PC per Allow / Deny; Anfragen verfallen nach 60 s.</li><li data-en="&lt;b&gt;Scope:&lt;/b&gt; jogging, gamepad, VR teleoperation and stop; no remote AI or target-motion requests."><b>Umfang:</b> Jogging, Gamepad, VR-Teleoperation und Stopp; keine entfernten KI- oder Zielfahrt-Aufträge.</li><li data-en="&lt;b&gt;Speed:&lt;/b&gt; remote control is limited to at most 50% in Robot | Hardware."><b>Tempo:</b> Remote Control ist in der Betriebsart Robot | Hardware auf höchstens 50 % begrenzt.</li></ul></div>
               </div>
             </details>
             <details class="faq-item" id="faq-steuern-09">
               <summary><span class="faq-q"><span class="k" data-en="Operation and control modes">Bedienung und Steuerwege</span><span data-en="Are the interfaces accessible?">Sind die Oberflächen barrierearm?</span></span><svg class="ico" aria-hidden="true"><use href="#i-next"/></svg></summary>
               <div class="faq-body">
-                <div class="faq-txt"><p data-en="The platform offers several input methods, large touch buttons and German and English interfaces. Suitability for a particular person must be assessed in context; a complete accessibility assessment is not yet available.">Die Plattform bietet verschiedene Eingaben, große Touch-Tasten sowie deutsche und englische Oberflächen. Ob sie für eine bestimmte Person geeignet ist, muss im Anwendungskontext geprüft werden; eine vollständige Barrierefreiheitsprüfung liegt noch nicht vor.</p><ul><li data-en="&lt;b&gt;Alternative input:&lt;/b&gt; gaze and voice complement manual control."><b>Alternative Eingaben:</b> Blick und Sprache ergänzen die Bedienung von Hand.</li><li data-en="&lt;b&gt;Touch:&lt;/b&gt; large buttons in UX | Compact Interface."><b>Touch:</b> große Tasten in der UX | Compact Interface.</li><li data-en="&lt;b&gt;Display:&lt;/b&gt; all four web apps offer language selection and light or dark themes."><b>Darstellung:</b> alle vier Web-Apps mit Sprachwahl und hellem oder dunklem Theme.</li></ul></div>
-                <figure class="faq-fig"><img src="img/rcu_theme_list.png" width="624" height="676" alt="Schnellauswahl (Alt+T) der UX | Control Interface: Themes Dark, Light, Jarvis, Nord Blue und Sprache DE/EN" data-en-alt="Quick switch (Alt+T) of the UX | Control Interface: themes Dark, Light, Jarvis, Nord Blue and language DE/EN" loading="lazy" decoding="async"></figure>
+                <div class="faq-txt"><p data-en="The platform offers several input methods, large touch buttons and German and English interfaces. Suitability for a particular person must be assessed in context; a complete accessibility assessment is not yet available.">Die Plattform bietet verschiedene Eingaben, große Touch-Tasten sowie deutsche und englische Oberflächen. Ob sie für eine bestimmte Person geeignet ist, muss im Anwendungskontext geprüft werden; eine vollständige Barrierefreiheitsprüfung liegt noch nicht vor.</p><ul><li data-en="&lt;b&gt;Alternative input:&lt;/b&gt; gaze and voice complement manual control."><b>Alternative Eingaben:</b> Blick und Sprache ergänzen die Bedienung von Hand.</li><li data-en="&lt;b&gt;Touch:&lt;/b&gt; large buttons in UX | Compact Interface."><b>Touch:</b> große Tasten im UX | Compact Interface.</li><li data-en="&lt;b&gt;Display:&lt;/b&gt; all four web apps offer language selection and light or dark themes."><b>Darstellung:</b> alle vier Web-Apps mit Sprachwahl und hellem oder dunklem Theme.</li></ul></div>
+                <figure class="faq-fig"><img src="img/rcu_theme_list.png" width="624" height="676" alt="Schnellauswahl (Alt+T) des UX | Control Interface: Themes Dark, Light, Jarvis, Nord Blue und Sprache DE/EN" data-en-alt="Quick switch (Alt+T) of the UX | Control Interface: themes Dark, Light, Jarvis, Nord Blue and language DE/EN" loading="lazy" decoding="async"></figure>
               </div>
             </details>
           </div>
@@ -2528,7 +2552,7 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
             <details class="faq-item" id="faq-sicher-01" data-top>
               <summary><span class="faq-q"><span class="k" data-en="Safety">Sicherheit</span><span data-en="How does UX Robot ensure safety?">Wie sorgt UX Robot für Sicherheit?</span></span><svg class="ico" aria-hidden="true"><use href="#i-next"/></svg></summary>
               <div class="faq-body noimg">
-                <div class="faq-txt"><p data-en="Inputs pass through the control software before moving the arm. The following checks support operation; they do not replace a certified safety system.">Eingaben werden über die Steuerungssoftware verarbeitet, bevor sie den Arm bewegen. Die folgenden Prüfungen unterstützen den Betrieb; sie ersetzen kein zertifiziertes Sicherheitssystem.</p><ul><li data-en="&lt;b&gt;E-STOP:&lt;/b&gt; requests a stop and blocks further movement."><b>E-STOP:</b> fordert den Stopp an und sperrt weitere Bewegungen.</li><li data-en="&lt;b&gt;Collision protection:&lt;/b&gt; checks movement against the represented scene and limits downward motion."><b>Kollisionsschutz:</b> prüft Bewegungen gegen die erfasste Szene und begrenzt Abwärtsfahrten.</li><li data-en="&lt;b&gt;Control lock:&lt;/b&gt; only one browser client controls the robot; the local gamepad is exempt."><b>Control-Lock:</b> nur ein Browser-Client steuert; das lokale Gamepad ist ausgenommen.</li><li data-en="&lt;b&gt;Confirmation:&lt;/b&gt; planned hardware sequences wait for human confirmation."><b>Bestätigung:</b> geplante Hardware-Abläufe warten auf die Bestätigung des Menschen.</li></ul></div>
+                <div class="faq-txt"><p data-en="Inputs pass through the control software before moving the arm. The checks depend on the command path and support operation; they do not replace a certified safety system.">Eingaben werden über die Steuerungssoftware verarbeitet, bevor sie den Arm bewegen. Die Prüfungen hängen vom Befehlsweg ab und unterstützen den Betrieb; sie ersetzen kein zertifiziertes Sicherheitssystem.</p><ul><li data-en="&lt;b&gt;Software stop:&lt;/b&gt; requests a stop and blocks further movement; it is not the physical, certified emergency-stop device."><b>Software-Stopp:</b> fordert einen Stopp an und sperrt weitere Bewegungen; er ist nicht der physische, zertifizierte Not-Halt.</li><li data-en="&lt;b&gt;Collision and floor safeguards:&lt;/b&gt; check represented obstacles or limit downward motion where the path supports them."><b>Kollisions- und Bodenschutz:</b> prüfen erfasste Hindernisse oder begrenzen Abwärtsfahrten, soweit der Steuerweg diese Stufe nutzt.</li><li data-en="&lt;b&gt;Control lock:&lt;/b&gt; only one browser client controls the robot; the local gamepad is exempt."><b>Control-Lock:</b> nur ein Browser-Client steuert; das lokale Gamepad ist ausgenommen.</li><li data-en="&lt;b&gt;Confirmation:&lt;/b&gt; planned hardware sequences wait for human confirmation; direct paths use other safeguards."><b>Bestätigung:</b> geplante Hardware-Abläufe warten auf den Menschen; direkte Wege nutzen andere Schutzstufen.</li></ul></div>
               </div>
             </details>
             <details class="faq-item" id="faq-sicher-02">
@@ -2540,7 +2564,7 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
             <details class="faq-item" id="faq-sicher-03">
               <summary><span class="faq-q"><span class="k" data-en="Safety">Sicherheit</span><span data-en="Where is the E-STOP, and what happens afterwards?">Wo ist der E-STOP, und was passiert danach?</span></span><svg class="ico" aria-hidden="true"><use href="#i-next"/></svg></summary>
               <div class="faq-body">
-                <div class="faq-txt"><p data-en="E-STOP controls are located in the fixed safety area of UX | Control Interface, UX | Compact Interface and the VR HUD. The robot’s physical switch is also available at the workstation.">Die E-STOP-Bedienfelder liegen in der festen Sicherheitszone der UX | Control Interface, der UX | Compact Interface und im VR-HUD. Am Arbeitsplatz gibt es zusätzlich den physischen Schalter des Roboters.</p><p data-en="The software E-STOP blocks further movement until it is reset in the UX | Control Interface on the robot PC. Resetting it does not automatically restart the interrupted task.">Der Software-E-STOP sperrt weitere Bewegungen bis zur Quittierung in der UX | Control Interface am Roboter-PC. Eine Quittierung startet die unterbrochene Aufgabe nicht automatisch neu.</p></div>
+                <div class="faq-txt"><p data-en="The red E-STOP controls in the fixed safety areas of UX | Control Interface, UX | Compact Interface and the VR HUD trigger a software stop. This software function requests a stop and latches the application state; it is not a certified emergency-stop device.">Die roten E-STOP-Bedienfelder in den festen Sicherheitszonen des UX | Control Interface, des UX | Compact Interface und des VR-HUD lösen einen Software-Stopp aus. Diese Softwarefunktion fordert den Stopp an und verriegelt den Anwendungszustand; sie ist kein zertifizierter Not-Halt.</p><p data-en="The separate physical emergency-stop button remains available at the workstation. The software stop blocks further movement until reset in UX | Control Interface on the robot PC; resetting it does not restart the interrupted task.">Der separate physische Not-Halt-Taster bleibt am Arbeitsplatz verfügbar. Der Software-Stopp sperrt weitere Bewegungen bis zur Quittierung im UX | Control Interface am Roboter-PC; die Quittierung startet die unterbrochene Aufgabe nicht neu.</p></div>
                 <figure class="faq-fig"><img src="img/project_docs/stage_twin.jpg" width="1116" height="708" alt="Digital Twin mit E-STOP-Taste im Viewport, darüber eine laufende Bewegung (MoveIt)" data-en-alt="Digital Twin with the E-STOP button in the viewport, above it a running motion (MoveIt)" loading="lazy" decoding="async"></figure>
               </div>
             </details>
@@ -2587,19 +2611,19 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
             <details class="faq-item" id="faq-ki-02">
               <summary><span class="faq-q"><span class="k" data-en="AI assistance">KI-Assistenz</span><span data-en="What is the VLA-M chat?">Was ist der VLA-M-Chat?</span></span><svg class="ico" aria-hidden="true"><use href="#i-next"/></svg></summary>
               <div class="faq-body noimg">
-                <div class="faq-txt"><p data-en="The VLA-M chat is the AI agent’s task chat in UX | Control Interface. A language model plans actions using the instruction and the detected or virtual objects.">Der VLA-M-Chat ist der Aufgaben-Chat des KI-Agenten in der UX | Control Interface. Ein Sprachmodell plant dort Handgriffe anhand der Anweisung und der erkannten oder virtuellen Objekte.</p><p data-en="Planning and execution already run in Robot | Digital Twin. A trained model that generates robot actions directly from camera images is a further planned development.">Die Planung und Ausführung laufen bereits im Robot | Digital Twin. Ein trainiertes Modell, das direkt aus Kamerabildern Roboteraktionen erzeugt, ist ein weiterer geplanter Ausbauschritt.</p></div>
+                <div class="faq-txt"><p data-en="The VLA-M chat is the AI agent’s task chat in UX | Control Interface. A language model plans actions using the instruction and the detected or virtual objects.">Der VLA-M-Chat ist der Aufgaben-Chat des KI-Agenten im UX | Control Interface. Ein Sprachmodell plant dort Handgriffe anhand der Anweisung und der erkannten oder virtuellen Objekte.</p><p data-en="Planning and execution already run in Robot | Digital Twin. A trained model that generates robot actions directly from camera images is a further planned development.">Die Planung und Ausführung laufen bereits in der Betriebsart Robot | Digital Twin. Ein trainiertes Modell, das direkt aus Kamerabildern Roboteraktionen erzeugt, ist ein weiterer geplanter Ausbauschritt.</p></div>
               </div>
             </details>
             <details class="faq-item" id="faq-ki-03" data-top>
               <summary><span class="faq-q"><span class="k" data-en="AI assistance">KI-Assistenz</span><span data-en="Can the AI simply move the arm anywhere?">Kann die KI den Arm einfach irgendwohin fahren?</span></span><svg class="ico" aria-hidden="true"><use href="#i-next"/></svg></summary>
               <div class="faq-body noimg">
-                <div class="faq-txt"><p data-en="The AI agent does not generate arbitrary joint commands. It selects supported actions such as grasping, placing or palletizing; the control software computes and checks the motion.">Der KI-Agent erzeugt keine beliebigen Gelenkbefehle. Er wählt unterstützte Handgriffe wie Greifen, Ablegen oder Palettieren; die Steuerungssoftware berechnet und prüft die Bewegung.</p><p data-en="AI execution is disabled by default in Robot | Hardware. It requires explicit activation and confirmation of the plan; virtual objects are not permitted AI targets in that mode.">Im Robot | Hardware ist die KI-Ausführung standardmäßig gesperrt. Sie setzt eine ausdrückliche Aktivierung und die Bestätigung des Plans voraus; virtuelle Objekte sind dort kein zulässiges KI-Ziel.</p></div>
+                <div class="faq-txt"><p data-en="The AI agent does not generate arbitrary joint commands. It selects supported actions such as grasping, placing or palletizing; the control software computes and checks the motion.">Der KI-Agent erzeugt keine beliebigen Gelenkbefehle. Er wählt unterstützte Handgriffe wie Greifen, Ablegen oder Palettieren; die Steuerungssoftware berechnet und prüft die Bewegung.</p><p data-en="AI execution is disabled by default in Robot | Hardware. It requires explicit activation and confirmation of the plan; virtual objects are not permitted AI targets in that mode.">In der Betriebsart Robot | Hardware ist die KI-Ausführung standardmäßig gesperrt. Sie setzt eine ausdrückliche Aktivierung und die Bestätigung des Plans voraus; virtuelle Objekte sind dort kein zulässiges KI-Ziel.</p></div>
               </div>
             </details>
             <details class="faq-item" id="faq-ki-04">
               <summary><span class="faq-q"><span class="k" data-en="AI assistance">KI-Assistenz</span><span data-en="What happens if the AI makes a mistake?">Was passiert, wenn die KI einen Fehler macht?</span></span><svg class="ico" aria-hidden="true"><use href="#i-next"/></svg></summary>
               <div class="faq-body noimg">
-                <div class="faq-txt"><p data-en="With plan confirmation enabled, the proposed sequence can be reviewed or rejected before starting; confirmation is required in Robot | Hardware. The human can abort during execution.">Mit aktivierter Planbestätigung lässt sich der vorgeschlagene Ablauf vor dem Start prüfen oder verwerfen; im Robot | Hardware ist die Bestätigung vorgeschrieben. Während der Ausführung kann der Mensch abbrechen.</p><p data-en="After a failed grasp, the agent can propose a corrective plan. Its hardware execution also waits for confirmation; a new plan does not guarantee success.">Bei einem fehlgeschlagenen Griff kann der Agent einen Korrekturplan vorschlagen. Auch dessen Hardware-Ausführung wartet auf Bestätigung; ein neuer Plan garantiert noch keinen Erfolg.</p></div>
+                <div class="faq-txt"><p data-en="With plan confirmation enabled, the proposed sequence can be reviewed or rejected before starting; confirmation is required in Robot | Hardware. The human can abort during execution.">Mit aktivierter Planbestätigung lässt sich der vorgeschlagene Ablauf vor dem Start prüfen oder verwerfen; in der Betriebsart Robot | Hardware ist die Bestätigung vorgeschrieben. Während der Ausführung kann der Mensch abbrechen.</p><p data-en="After a failed grasp, the agent can propose a corrective plan. Its hardware execution also waits for confirmation; a new plan does not guarantee success.">Bei einem fehlgeschlagenen Griff kann der Agent einen Korrekturplan vorschlagen. Auch dessen Hardware-Ausführung wartet auf Bestätigung; ein neuer Plan garantiert noch keinen Erfolg.</p></div>
               </div>
             </details>
             <details class="faq-item" id="faq-ki-05">
@@ -2628,22 +2652,22 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
             <details class="faq-item" id="faq-twin-01">
               <summary><span class="faq-q"><span class="k" data-en="Digital Twin and robot simulation">Digital Twin und Roboter-Simulation</span><span data-en="What is the Digital Twin?">Was ist der Digital Twin?</span></span><svg class="ico" aria-hidden="true"><use href="#i-next"/></svg></summary>
               <div class="faq-body">
-                <div class="faq-txt"><p data-en="The Digital Twin displays the arm and workcell as a 3D model in the browser. When connected, it follows reported joint states and previews planned paths before execution.">Der Digital Twin zeigt Arm und Arbeitszelle als 3D-Modell im Browser. Bei verbundenem System folgt er den gemeldeten Gelenkzuständen und zeigt geplante Bahnen vor der Ausführung.</p><p data-en="In Robot | Digital Twin, motions execute virtually. Robot simulation supports experimentation but does not replace checks at the physical workstation.">Im Robot | Digital Twin werden Bewegungen virtuell ausgeführt. Die Roboter-Simulation hilft beim Erproben, ersetzt aber keine Prüfung des realen Arbeitsplatzes.</p></div>
+                <div class="faq-txt"><p data-en="The Digital Twin displays the arm and workcell as a 3D model in the browser. When connected, it follows reported joint states and previews planned paths before execution.">Der Digital Twin zeigt Arm und Arbeitszelle als 3D-Modell im Browser. Bei verbundenem System folgt er den gemeldeten Gelenkzuständen und zeigt geplante Bahnen vor der Ausführung.</p><p data-en="In Robot | Digital Twin, motions execute virtually. Robot simulation supports experimentation but does not replace checks at the physical workstation.">In der Betriebsart Robot | Digital Twin werden Bewegungen virtuell ausgeführt. Die Roboter-Simulation hilft beim Erproben, ersetzt aber keine Prüfung des realen Arbeitsplatzes.</p></div>
                 <figure class="faq-fig"><img src="img/rcu_viewport.png" width="1102" height="677" alt="Digital Twin im Viewport: xArm Lite 6 am Tisch mit Objekten, Navigationswürfel und Kamera-Kacheln" data-en-alt="Digital Twin in the viewport: xArm Lite 6 at the table with objects, navigation cube and camera tiles" loading="lazy" decoding="async"></figure>
               </div>
             </details>
             <details class="faq-item" id="faq-twin-02" data-top>
               <summary><span class="faq-q"><span class="k" data-en="Digital Twin and robot simulation">Digital Twin und Roboter-Simulation</span><span data-en="Do I need a real robot?">Brauche ich einen echten Roboter?</span></span><svg class="ico" aria-hidden="true"><use href="#i-next"/></svg></summary>
               <div class="faq-body">
-                <div class="faq-txt"><p data-en="No: Robot | Digital Twin supports experimenting with motion, AI tasks and virtual objects without real robot hardware or a depth camera. The Physics-Sandbox requires a browser with suitable 3D support.">Nein: Im Robot | Digital Twin lassen sich Bewegungen, KI-Aufgaben und virtuelle Objekte ohne echte Roboter-Hardware oder Tiefenkamera erproben. Für die Physics-Sandbox wird ein Browser mit geeigneter 3D-Unterstützung benötigt.</p><p data-en="VR and gaze control still require their respective devices. Local AI, speech recognition and additional cameras have their own computing requirements.">Für VR und Blicksteuerung bleiben die jeweiligen Geräte nötig. Lokale KI, Spracherkennung und zusätzliche Kameras stellen eigene Anforderungen an den Rechner.</p></div>
+                <div class="faq-txt"><p data-en="No: Robot | Digital Twin supports experimenting with motion, AI tasks and virtual objects without real robot hardware or a depth camera. The Physics-Sandbox requires a browser with suitable 3D support.">Nein: In der Betriebsart Robot | Digital Twin lassen sich Bewegungen, KI-Aufgaben und virtuelle Objekte ohne echte Roboter-Hardware oder Tiefenkamera erproben. Für die Physics-Sandbox wird ein Browser mit geeigneter 3D-Unterstützung benötigt.</p><p data-en="VR and gaze control still require their respective devices. Local AI, speech recognition and additional cameras have their own computing requirements.">Für VR und Blicksteuerung bleiben die jeweiligen Geräte nötig. Lokale KI, Spracherkennung und zusätzliche Kameras stellen eigene Anforderungen an den Rechner.</p></div>
                 <figure class="faq-fig"><img src="img/presentation/twin.jpg" width="690" height="480" alt="Robot | Digital Twin: Arm mit roter Sicherheitszone, Schale und Objekten auf dem Tisch" data-en-alt="Robot | Digital Twin: arm with red safety zone, bowl and objects on the table" loading="lazy" decoding="async"></figure>
               </div>
             </details>
             <details class="faq-item" id="faq-twin-03">
               <summary><span class="faq-q"><span class="k" data-en="Digital Twin and robot simulation">Digital Twin und Roboter-Simulation</span><span data-en="What is the Physics-Sandbox?">Was ist die Physics-Sandbox?</span></span><svg class="ico" aria-hidden="true"><use href="#i-next"/></svg></summary>
               <div class="faq-body">
-                <div class="faq-txt"><p data-en="The Physics-Sandbox simulates gravity, contact and grasping of virtual objects in the browser. Objects can fall, roll and be picked up with the virtual vacuum gripper.">Die Physics-Sandbox simuliert Schwerkraft, Kontakt und das Greifen virtueller Objekte im Browser. Objekte können fallen, rollen und mit dem virtuellen Vakuumgreifer aufgenommen werden.</p><p data-en="It uses Rapier and runs exclusively in Robot | Digital Twin. Its behaviour represents an experimental setup, rather than a reliable prediction of all real material and grasping properties.">Sie nutzt Rapier und läuft ausschließlich im Robot | Digital Twin. Ihr Verhalten bildet einen Versuchsaufbau ab, keine verlässliche Vorhersage aller realen Material- und Greifeigenschaften.</p></div>
-                <figure class="faq-fig"><img src="img/rcu_physix.png" width="800" height="1399" alt="Physics-Sandbox: Schwerkraft Erde, Mars, Mond, Zero-G und Solver, nur im Robot | Digital Twin" data-en-alt="Physics-Sandbox: gravity Earth, Mars, Moon, Zero-G and solver, Robot | Digital Twin only" loading="lazy" decoding="async"></figure>
+                <div class="faq-txt"><p data-en="The Physics-Sandbox simulates gravity, contact and grasping of virtual objects in the browser. Objects can fall, roll and be picked up with the virtual vacuum gripper.">Die Physics-Sandbox simuliert Schwerkraft, Kontakt und das Greifen virtueller Objekte im Browser. Objekte können fallen, rollen und mit dem virtuellen Vakuumgreifer aufgenommen werden.</p><p data-en="It uses Rapier and runs exclusively in Robot | Digital Twin. Its behaviour represents an experimental setup, rather than a reliable prediction of all real material and grasping properties.">Sie nutzt Rapier und läuft ausschließlich in der Betriebsart Robot | Digital Twin. Ihr Verhalten bildet einen Versuchsaufbau ab, keine verlässliche Vorhersage aller realen Material- und Greifeigenschaften.</p></div>
+                <figure class="faq-fig"><img src="img/rcu_physix.png" width="800" height="1399" alt="Physics-Sandbox: Schwerkraft Erde, Mars, Mond, Zero-G und Solver, nur in der Betriebsart Robot | Digital Twin" data-en-alt="Physics-Sandbox: gravity Earth, Mars, Moon, Zero-G and solver, Robot | Digital Twin only" loading="lazy" decoding="async"></figure>
               </div>
             </details>
             <details class="faq-item" id="faq-twin-04">
@@ -2677,7 +2701,7 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
             <details class="faq-item" id="faq-sehen-03">
               <summary><span class="faq-q"><span class="k" data-en="Perception and grasping">Wahrnehmung und Greifen</span><span data-en="Does all this work without a camera?">Geht das alles auch ohne Kamera?</span></span><svg class="ico" aria-hidden="true"><use href="#i-next"/></svg></summary>
               <div class="faq-body noimg">
-                <div class="faq-txt"><p data-en="Yes: virtual objects replace the camera in Robot | Digital Twin. On real robot hardware the AI agent never moves to virtual objects, by hand only after confirmation.">Ja: Virtuelle Objekte ersetzen die Kamera im Robot | Digital Twin. Auf echter Roboter-Hardware fährt der KI-Agent virtuelle Objekte nie an, von Hand nur nach Bestätigung.</p></div>
+                <div class="faq-txt"><p data-en="Yes: virtual objects replace the camera in Robot | Digital Twin. On real robot hardware the AI agent never moves to virtual objects, by hand only after confirmation.">Ja: Virtuelle Objekte ersetzen die Kamera in der Betriebsart Robot | Digital Twin. Auf echter Roboter-Hardware fährt der KI-Agent virtuelle Objekte nie an, von Hand nur nach Bestätigung.</p></div>
               </div>
             </details>
           </div>
@@ -2766,7 +2790,7 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
             <details class="faq-item" id="faq-apps-02">
               <summary><span class="faq-q"><span class="k" data-en="Setup and operation">Einrichtung und Betrieb</span><span data-en="How do I start the system?">Wie starte ich das System?</span></span><svg class="ico" aria-hidden="true"><use href="#i-next"/></svg></summary>
               <div class="faq-body">
-                <div class="faq-txt"><p data-en="In UX | Nexus Launcher, users select a robot profile, operating mode and required components. The start check verifies prerequisites, then the selected setup starts.">In der UX | Nexus Launcher wählt man Roboter-Profil, Betriebsart und benötigte Komponenten. Der Start-Check prüft die Voraussetzungen; anschließend startet das gewählte Setup.</p><p data-en="Choose Robot | Digital Twin first for experiments. Robot | Hardware requires a prepared workstation and explicit confirmation of the switch to Robot | Hardware.">Zum Erproben zuerst Robot | Digital Twin wählen. Robot | Hardware setzt den vorbereiteten Arbeitsplatz und die ausdrückliche Bestätigung des Wechsels nach Robot | Hardware voraus.</p></div>
+                <div class="faq-txt"><p data-en="In UX | Nexus Launcher, users select a robot profile, operating mode and required components. The start check verifies prerequisites, then the selected setup starts.">Im UX | Nexus Launcher wählt man Roboter-Profil, Betriebsart und benötigte Komponenten. Der Start-Check prüft die Voraussetzungen; anschließend startet das gewählte Setup.</p><p data-en="Choose Robot | Digital Twin first for experiments. Robot | Hardware requires a prepared workstation and explicit confirmation of the switch to Robot | Hardware.">Zum Erproben zuerst Robot | Digital Twin wählen. Robot | Hardware setzt den vorbereiteten Arbeitsplatz und die ausdrückliche Bestätigung des Wechsels nach Robot | Hardware voraus.</p></div>
                 <figure class="faq-fig"><img src="img/nexus_start_check.png" width="1030" height="634" alt="UX | Nexus Launcher, Schritt 3 Start: Wahl Robot | Digital Twin oder Robot | Hardware, darunter die Prüfung vor dem Start mit Warnungen und erfüllten Punkten" data-en-alt="UX | Nexus Launcher, step 3 start: choice of Robot | Digital Twin or Robot | Hardware, below it the pre-start check with warnings and passed items" loading="lazy" decoding="async"></figure>
               </div>
             </details>
@@ -2779,7 +2803,7 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
             <details class="faq-item" id="faq-apps-04">
               <summary><span class="faq-q"><span class="k" data-en="Setup and operation">Einrichtung und Betrieb</span><span data-en="Which hardware do I need?">Welche Hardware brauche ich?</span></span><svg class="ico" aria-hidden="true"><use href="#i-next"/></svg></summary>
               <div class="faq-body noimg">
-                <div class="faq-txt"><p data-en="Getting started in Robot | Digital Twin requires a configured PC and a browser with 3D support. Additional hardware depends on the functions used.">Für den Einstieg im Robot | Digital Twin braucht man einen eingerichteten PC und einen Browser mit 3D-Unterstützung. Zusätzliche Hardware hängt davon ab, welche Funktionen genutzt werden.</p><ul><li data-en="&lt;b&gt;Robot operation:&lt;/b&gt; xArm Lite 6 with vacuum gripper and a prepared workstation."><b>Roboterbetrieb:</b> xArm Lite 6 mit Vakuumgreifer und vorbereitetem Arbeitsplatz.</li><li data-en="&lt;b&gt;Perception:&lt;/b&gt; ZED Mini; Tobii Pro Glasses 3 for gaze control."><b>Wahrnehmung:</b> ZED Mini; Tobii Pro Glasses 3 für Blicksteuerung.</li><li data-en="&lt;b&gt;Input:&lt;/b&gt; gamepad, microphone, Meta Quest 3 or touch display as needed."><b>Eingaben:</b> Gamepad, Mikrofon, Meta Quest 3 oder Touch-Display nach Bedarf.</li><li data-en="&lt;b&gt;Computing:&lt;/b&gt; size GPU and memory for the camera, speech recognition and selected AI model."><b>Rechenleistung:</b> GPU und Speicher passend zu Kamera, Spracherkennung und gewähltem KI-Modell einplanen.</li></ul></div>
+                <div class="faq-txt"><p data-en="Getting started in Robot | Digital Twin requires a configured PC and a browser with 3D support. Additional hardware depends on the functions used.">Für den Einstieg in der Betriebsart Robot | Digital Twin braucht man einen eingerichteten PC und einen Browser mit 3D-Unterstützung. Zusätzliche Hardware hängt davon ab, welche Funktionen genutzt werden.</p><ul><li data-en="&lt;b&gt;Robot operation:&lt;/b&gt; xArm Lite 6 with vacuum gripper and a prepared workstation."><b>Roboterbetrieb:</b> xArm Lite 6 mit Vakuumgreifer und vorbereitetem Arbeitsplatz.</li><li data-en="&lt;b&gt;Perception:&lt;/b&gt; ZED Mini; Tobii Pro Glasses 3 for gaze control."><b>Wahrnehmung:</b> ZED Mini; Tobii Pro Glasses 3 für Blicksteuerung.</li><li data-en="&lt;b&gt;Input:&lt;/b&gt; gamepad, microphone, Meta Quest 3 or touch display as needed."><b>Eingaben:</b> Gamepad, Mikrofon, Meta Quest 3 oder Touch-Display nach Bedarf.</li><li data-en="&lt;b&gt;Computing:&lt;/b&gt; size GPU and memory for the camera, speech recognition and selected AI model."><b>Rechenleistung:</b> GPU und Speicher passend zu Kamera, Spracherkennung und gewähltem KI-Modell einplanen.</li></ul></div>
               </div>
             </details>
             <details class="faq-item" id="faq-apps-05">
@@ -2794,7 +2818,7 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
             <details class="faq-item" id="faq-offen-01" data-top>
               <summary><span class="faq-q"><span class="k" data-en="Openness and outlook">Offenheit und Ausblick</span><span data-en="Can I rebuild UX Robot, and what does the software cost?">Kann ich UX Robot nachbauen, und was kostet die Software?</span></span><svg class="ico" aria-hidden="true"><use href="#i-next"/></svg></summary>
               <div class="faq-body noimg">
-                <div class="faq-txt"><p data-en="Open, reproducible, extensible. The project’s own packages are free under Apache&amp;nbsp;2.0, so other groups can repeat studies under the same conditions; third-party code such as &lt;code&gt;xarm_ros2&lt;/code&gt;, ZED drivers and Whisper keeps its own licence.">Offen, nachbaubar, erweiterbar. Die eigenen Pakete stehen kostenfrei unter Apache&nbsp;2.0, damit andere Gruppen Studien unter gleichen Bedingungen wiederholen können; Fremdcode wie <code>xarm_ros2</code>, ZED-Treiber und Whisper behält seine eigene Lizenz.</p></div>
+                <div class="faq-txt"><p data-en="Reproducible and extensible. Docs and setup guide are public. The project’s own packages are to be published under Apache&amp;nbsp;2.0, so other groups can repeat studies under the same conditions; the code is currently private; third-party code such as &lt;code&gt;xarm_ros2&lt;/code&gt;, ZED drivers and Whisper keeps its own licence.">Nachbaubar und erweiterbar. Doku und Setup-Guide sind öffentlich. Die eigenen Pakete sollen unter Apache&nbsp;2.0 veröffentlicht werden, damit andere Gruppen Studien unter gleichen Bedingungen wiederholen können; der Code ist derzeit privat; Fremdcode wie <code>xarm_ros2</code>, ZED-Treiber und Whisper behält seine eigene Lizenz.</p></div>
               </div>
             </details>
             <details class="faq-item" id="faq-offen-02">
@@ -2807,13 +2831,13 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
             <details class="faq-item" id="faq-offen-03">
               <summary><span class="faq-q"><span class="k" data-en="Openness and outlook">Offenheit und Ausblick</span><span data-en="How far along is the project?">Wie weit ist das Projekt?</span></span><svg class="ico" aria-hidden="true"><use href="#i-next"/></svg></summary>
               <div class="faq-body noimg">
-                <div class="faq-txt"><p data-en="UX Robot is a research prototype with direct control, a Digital Twin, AI tasks and measurement tools. The VLA-M chat and Physics-Sandbox are available in Robot | Digital Twin and continue to evolve.">UX Robot ist ein Forschungsprototyp mit direkter Bedienung, Digital Twin, KI-Aufgaben und Messwerkzeugen. VLA-M-Chat und Physics-Sandbox sind im Robot | Digital Twin nutzbar und werden weiterentwickelt.</p><p data-en="Additional robot profiles and the Construction – tiling scenario remain in development. Available functions do not establish production readiness or certified operation.">Der Ausbau weiterer Roboter-Profile und das Szenario Bau – Fliesenlegen laufen weiter. Vorliegende Funktionen sind kein Nachweis für einen produktionsreifen oder zertifizierten Betrieb.</p></div>
+                <div class="faq-txt"><p data-en="UX Robot is a research prototype with direct control, a Digital Twin, AI tasks and measurement tools. The VLA-M chat and Physics-Sandbox are available in Robot | Digital Twin and continue to evolve.">UX Robot ist ein Forschungsprototyp mit direkter Bedienung, Digital Twin, KI-Aufgaben und Messwerkzeugen. VLA-M-Chat und Physics-Sandbox sind in der Betriebsart Robot | Digital Twin nutzbar und werden weiterentwickelt.</p><p data-en="Additional robot profiles and the Construction – tiling scenario remain in development. Available functions do not establish production readiness or certified operation.">Der Ausbau weiterer Roboter-Profile und das Szenario Bau – Fliesenlegen laufen weiter. Vorliegende Funktionen sind kein Nachweis für einen produktionsreifen oder zertifizierten Betrieb.</p></div>
               </div>
             </details>
             <details class="faq-item" id="faq-offen-04">
               <summary><span class="faq-q"><span class="k" data-en="Openness and outlook">Offenheit und Ausblick</span><span data-en="What is planned next?">Was ist als Nächstes geplant?</span></span><svg class="ico" aria-hidden="true"><use href="#i-next"/></svg></summary>
               <div class="faq-body noimg">
-                <div class="faq-txt"><ul><li data-en="&lt;b&gt;Robot profiles:&lt;/b&gt; validate ABB IRB 1100 across the motion handler, AI tasks and Twin in Robot | Digital Twin."><b>Roboter-Profile:</b> ABB IRB 1100 im Robot | Digital Twin durch Motion Handler, KI-Aufgaben und Twin prüfen.</li><li data-en="&lt;b&gt;Learning AI:&lt;/b&gt; use recorded demonstrations to train and compare custom models."><b>Lernende KI:</b> aufgezeichnete Vorführungen für Training und Vergleich eigener Modelle nutzen.</li><li data-en="&lt;b&gt;Studies:&lt;/b&gt; compare control modes with participants and UX | Monitoring."><b>Studien:</b> Steuerwege mit Testpersonen und der UX | Monitoring vergleichen.</li></ul></div>
+                <div class="faq-txt"><ul><li data-en="&lt;b&gt;Robot profiles:&lt;/b&gt; validate ABB IRB 1100 across the motion handler, AI tasks and Twin in Robot | Digital Twin."><b>Roboter-Profile:</b> ABB IRB 1100 in der Betriebsart Robot | Digital Twin durch Motion Handler, KI-Aufgaben und Twin prüfen.</li><li data-en="&lt;b&gt;Learning AI:&lt;/b&gt; use recorded demonstrations to train and compare custom models."><b>Lernende KI:</b> aufgezeichnete Vorführungen für Training und Vergleich eigener Modelle nutzen.</li><li data-en="&lt;b&gt;Studies:&lt;/b&gt; compare control modes with participants and UX | Monitoring."><b>Studien:</b> Steuerwege mit Testpersonen mithilfe des UX | Monitoring vergleichen.</li></ul></div>
               </div>
             </details>
             <details class="faq-item" id="faq-offen-05">
@@ -2835,7 +2859,7 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
       <div class="ct-copy">
         <span class="eyebrow" data-en="Contact · project">Kontakt · Projekt</span>
         <h2 id="kontakt-h" data-en="See it live: in the UX lab or in the browser.">Live erleben: im UX‑Labor oder im Browser.</h2>
-        <p data-en="Demo, questions or a rebuild for your own lab: every document is linked here, the code is under Apache&amp;nbsp;2.0.">Vorführung, Fragen oder Nachbau im eigenen Labor: alle Unterlagen sind hier verlinkt, der Code steht unter Apache&nbsp;2.0.</p>
+        <p data-en="Demo, questions or a rebuild for your own lab: every document is linked here; the code is currently private, publication under Apache&amp;nbsp;2.0 is planned.">Vorführung, Fragen oder Nachbau im eigenen Labor: alle Unterlagen sind hier verlinkt; der Code ist derzeit privat, die Veröffentlichung unter Apache&nbsp;2.0 ist geplant.</p>
         <div class="cta-row">
           <a class="b-pri" href="mailto:marius.kaul@hochschule-rhein-waal.de"><svg class="ico" aria-hidden="true"><use href="#i-mail"/></svg><span data-en="Write an email">E-Mail schreiben</span></a>
           <a class="b-sec" href="present_control_modes.html" target="_blank" rel="noopener"><svg class="ico" aria-hidden="true"><use href="#i-arm"/></svg><span data-en="See the control modes">Steuerwege ansehen</span></a>
@@ -2859,7 +2883,7 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
   </section>
 </main>
 
-<footer><div class="wrap"><a class="qr-foot" href="https://lu4k87.github.io/" target="_blank" rel="noopener"><span class="qr-code"><svg role="img" aria-label="QR-Code: Projektübersicht öffnen" data-en-aria="QR code: open the project overview"><use href="#qr-docs"/></svg></span><span class="qr-txt"><b data-en="Open page">Seite öffnen</b><small>lu4k87.github.io</small></span></a><span data-en="Last updated 14.10.2026">Stand 14.10.2026</span><a href="https://github.com/lu4k87/ux_robot" target="_blank" rel="noopener" data-en="Source code: github.com/lu4k87/ux_robot">Quellcode: github.com/lu4k87/ux_robot</a></div></footer>
+<footer><div class="wrap"><a class="qr-foot" href="https://lu4k87.github.io/" target="_blank" rel="noopener"><span class="qr-code"><svg role="img" aria-label="QR-Code: Projektübersicht öffnen" data-en-aria="QR code: open the project overview"><use href="#qr-docs"/></svg></span><span class="qr-txt"><b data-en="Open page">Seite öffnen</b><small>lu4k87.github.io</small></span></a><span data-en="Last updated 15.10.2026">Stand 15.10.2026</span><span data-en="Code private · publication planned (Apache 2.0)">Code privat · Veröffentlichung geplant (Apache 2.0)</span></div></footer>
 
 <script src="js/scroll_flow.js"></script>
 <script src="js/landing.js"></script>
@@ -2871,7 +2895,7 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
   const pub = location.hostname.endsWith('.github.io');   // öffentliche Kopie (tools/publish_pages.py)
   const viaNexus = location.protocol.startsWith('http') && !pub;
 
-  // Über die UX | Nexus Launcher: Handbuch über /manuals/ (lokale Schriften), Setup-Karte als Dialog
+  // Über den UX | Nexus Launcher: Handbuch über /manuals/ (lokale Schriften), Setup-Karte als Dialog
   if (viaNexus) {
     document.querySelectorAll('[data-nexus-href]').forEach(a => { a.href = a.dataset.nexusHref; });
     for (const href of ['/vendor/fonts/fonts_modern.css', '/vendor/fontawesome/css/all.min.css', '/ui_shared/net_info.css']) {
@@ -2879,13 +2903,18 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
     }
     const s = document.createElement('script'); s.src = '/ui_shared/net_info.js'; document.body.appendChild(s);
   }
-  document.querySelector('[data-setup]').addEventListener('click', e => {
+  document.querySelector('[data-setup]')?.addEventListener('click', e => {
     if (!window.NetInfo) return;  // als Datei geöffnet: Link zur UX | Nexus Launcher
     e.preventDefault();
     window.NetInfo.open({ theme: root.dataset.theme || (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark') });  // ohne docsUrl: kein Link auf diese Seite selbst
   });
-  // Öffentliche Kopie: nur lokal Nutzbares entfernen (Setup-Karte über die UX | Nexus Launcher), vor dem Zählen unten
-  if (pub) document.querySelectorAll('[data-local]').forEach(el => el.remove());
+  // Öffentliche Kopie: nur lokal Nutzbares entfernen (Setup-Karte über den UX | Nexus Launcher), vor dem Zählen unten
+  if (pub) {
+    document.querySelectorAll('[data-local]').forEach(el => el.remove());
+    document.querySelectorAll('[data-public-only]').forEach(el => { el.hidden = false; });
+  } else {
+    document.querySelectorAll('[data-public-only]').forEach(el => el.remove());
+  }
 
   // Anzahl je Abschnitt in der Übersicht (Dokumente, Merkmale, Module, Schichten + Geräte, Abläufe)
   document.querySelectorAll('[data-count]').forEach(el => {

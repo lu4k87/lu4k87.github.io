@@ -18,7 +18,7 @@ dev_ws/
 │   ├── skills/                                                            # Skills mit ihren Skripten, z.B. preview/ (capture.py Screenshots, build.py Spec → Seite), answer-page/ (Antwortformat)
 │   └── README.md                                                          # Übersicht über Hooks, Skills, Agents, Mods
 ├── _imgs/                                                                 # System-Screenshots, Architekturgrafiken & Assets
-│   ├── icons/                                                             # SVG-Icons der Karten der UX | Nexus Launcher (z. B. icon_vla.svg, icon_touch_panel.svg)
+│   ├── icons/                                                             # SVG-Icons der Karten des UX | Nexus Launcher (z. B. icon_vla.svg, icon_touch_panel.svg)
 │   ├── robotsystem.jpg                                                    # Gesamtsystem Hardware-Setup Übersicht
 │   └── gaze_control_interface.png                                         # Vorschau der Blick-UI (Tobii)
 ├── certs/                                                                 # SSL/TLS-Zertifikate für WebXR HTTPS-Server
@@ -65,7 +65,7 @@ dev_ws/
 │   ├── test/                                                              # Unit-Tests (Logs, Config-Sicherungen), ohne ROS
 │   ├── ros2_nexus_runs.js                                                 # Fortschrittszeile, Laufzustand auf den Karten, Log-Schublade, Deep-Links
 │   ├── ros2_nexus_backups.{js,css}                                        # Knopf „Backups“ im Start-Popup: Config-Sicherungen auflisten und wiederherstellen
-│   ├── ros2_nexus_web.html                                                # Startseite der UX | Nexus Launcher (nur Start-Popup)
+│   ├── ros2_nexus_web.html                                                # Startseite des UX | Nexus Launcher (nur Start-Popup)
 │   ├── ros2_nexus_popup_window.py                                         # Rahmenloses WebKitGTK-Fenster für das Start-Popup
 │   ├── ros2_nexus_styles.css                                              # Nexus CSS-Stylesheets
 │   ├── ros2_nexus_script.js                                               # Zentraler Prozessmanager & Log-Viewer
@@ -94,7 +94,7 @@ dev_ws/
 │   ├── http_robot_control_ui_p8081/                                       # 🎮 HTML/JS: Eigenständiges Roboter-Steuerungs- & Jogging-Webpanel
 │   │   ├── index.html                                                     # Roboter-Steuerungsoberfläche (Port 8081)
 │   │   ├── vr_mirror.html                                                 # PC-Fenster, das die Sicht der Quest 3 spiegelt
-│   │   ├── install_desktop_icon.sh                                        # Installiert Icon & .desktop-Eintrag der UX | Control Interface
+│   │   ├── install_desktop_icon.sh                                        # Installiert Icon & .desktop-Eintrag des UX | Control Interface
 │   │   ├── css/rcu/ · css/                                                # Stylesheets nach Bereich (NN_*.css, Reihenfolge = Kaskade); css/theme_light.gen.css erzeugt von tools/gen_theme_light.py
 │   │   ├── partials/                                                      # HTML-Teile, von server.py eingesetzt (<!--#include …-->)
 │   │   ├── launch/                                                        # http_robot_control_ui.launch.py: Webserver, rosbridge 9090, Watchdog
@@ -223,7 +223,7 @@ dev_ws/
 ├── ui_shared/                                                             # Gemeinsam für die Web-UIs
 │   ├── ui_tokens.css                                                      # Farben, Achsenfarben, Schriften, Schriftgrößen (--ui-*, --fs-*)
 │   ├── ui_theme.{js,css}                                                  # Themes aller Web-UIs (THEMES, html[data-ui-theme], Alt+T); themes/<id>.css, fonts/
-│   └── net_info.{js,css}                                                  # Info-Karte „Setup“ (Systemübersicht, Netze, IPs, Ports, HTTPS, Touch-Display, VLA-M; DE/EN) für UX | Monitoring + Nexus
+│   └── net_info.{js,css}                                                  # Info-Karte „Setup“ (Systemübersicht, Netze, IPs, Ports, HTTPS, Touch-Display, VLA-M; DE/EN) für das UX | Monitoring + den Nexus Launcher
 ├── video/                                                                 # Präsentationsvideos (kein ROS-Paket)
 │   ├── reel/                                                              # reel.html (deterministische Video-Seite) + drehbuch.md, gerendert von tools/reel_render.py
 │   └── vorlagen/ · vorlagen_src/                                          # Overlay-Bilder (Badges, Bauchbinden); Quellen in vorlagen_src/ (templates.html, render.sh)

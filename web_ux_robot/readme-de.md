@@ -25,8 +25,8 @@
 
 > [!TIP]
 > **📘 Handbuch:** [`docs/operate_manual.html`](operate_manual.html) – Architektur, Sicherheitskette, Ports, Server/Client-Steuerung, VLA-M-Chat.
-> [Online gerendert ansehen](operate_manual.html) · lokal über den Button **Manual** in der UX | Nexus Launcher (früher „Nexus Webapp“) (`http://localhost:8080/manuals/operate_manual.html`).
-> **🛠️ Setup-Guide (DE/EN):** [`docs/operate_setup_guide.html`](operate_setup_guide.html) – Inbetriebnahme Schritt für Schritt, für einen vorinstallierten PC oder ab nacktem Ubuntu 22.04 (verlinkt in der Projekt-Doku, Footer-Knopf **Projekt-Doku** der UX | Nexus Launcher).
+> [Öffentliches Handbuch ansehen](https://lu4k87.github.io/web_ux_robot/operate_manual.html) · lokal über den Button **Manual** im UX | Nexus Launcher (früher „Nexus Webapp“) (`http://localhost:8080/manuals/operate_manual.html`).
+> **🛠️ Setup-Guide (DE/EN):** [`docs/operate_setup_guide.html`](operate_setup_guide.html) – Inbetriebnahme Schritt für Schritt, für einen vorinstallierten PC oder ab nacktem Ubuntu 22.04 (verlinkt in der Projekt-Doku, Footer-Knopf **Projekt-Doku** des UX | Nexus Launcher).
 
 Eine Forschungs- und Evaluationsplattform für die **multimodale Teleoperation** des UFactory xArm Lite 6. Blicksteuerung, Sprache, Gamepad, VR und Web-UIs – kombiniert mit assistiver Automatisierung – senken die Einstiegshürden der Robotersteuerung. Grundlage ist das *Shared-Control*-Prinzip (Industrie 5.0): Der Mensch bleibt im Regelkreis, das System plant kollisionsfreie Bewegungen im Hintergrund. Das System schlägt vor, der Mensch entscheidet (Human-in-the-Loop). Im Zentrum steht ein live mitlaufender **Digital Twin**: Jede Bewegung ist in 3D zu sehen, bevor der echte Arm fährt.
 
@@ -91,7 +91,7 @@ source install/setup.bash
 ./ros2_nexus/ros2_nexus_web_start.sh     # UX | Nexus Launcher auf http://localhost:8080
 ```
 
-Im Popup **RUN DEV SETUP** den Modus **Robot | Digital Twin** wählen und **EXECUTE** drücken: simulierter Arm, MoveIt Servo + MoveGroup, RViz2 und die UX | Control Interface (`http://localhost:8081`) starten gemeinsam. Schritt für Schritt: [1.1 Schnellstart](de/running.html#11--5-minuten-quickstart-reine-simulation).
+Im Popup **RUN DEV SETUP** den Modus **Robot | Digital Twin** wählen und **EXECUTE** drücken: simulierter Arm, MoveIt Servo + MoveGroup, RViz2 und das UX | Control Interface (`http://localhost:8081`) starten gemeinsam. Schritt für Schritt: [1.1 Schnellstart](de/running.html#11--5-minuten-quickstart-reine-simulation).
 
 | UI / Dienst | Port | UI / Dienst | Port |
 |---|---|---|---|
@@ -140,4 +140,4 @@ Alle Ports: [7.4 Netzwerk & Ports](de/running.html#74-netzwerk---port-architektu
 
 ## ⚖️ Lizenz
 
-Apache License 2.0 für die eigenen Pakete, die UX | Nexus Launcher, das UX | Compact Interface und die Werkzeuge. Fremdcode (`xarm_ros2`, `zed-ros2-*`, `ros2_whisper`, `web_video_server`, Bibliotheken unter `lib/` und `vendor/`) behält seine eigene Lizenz.
+Der Projekt-Code ist derzeit privat. Die Veröffentlichung der eigenen Pakete, des UX | Nexus Launcher, des UX | Compact Interface und der Werkzeuge unter der Apache License 2.0 ist geplant. Fremdcode (`xarm_ros2`, `zed-ros2-*`, `ros2_whisper`, `web_video_server`, Bibliotheken unter `lib/` und `vendor/`) behält seine eigene Lizenz.

@@ -25,7 +25,7 @@
 
 > [!TIP]
 > **📘 Manual (German):** [`docs/operate_manual.html`](operate_manual.html) – system map, safety chain, ports, server/client control, VLA-M chat.
-> [View rendered online](operate_manual.html) · locally via the **Manual** button in the UX | Nexus Launcher (formerly Nexus Webapp) (`http://localhost:8080/manuals/operate_manual.html`).
+> [View the public manual](https://lu4k87.github.io/web_ux_robot/operate_manual.html) · locally via the **Manual** button in the UX | Nexus Launcher (formerly Nexus Webapp) (`http://localhost:8080/manuals/operate_manual.html`).
 > **🛠️ Setup guide (DE/EN):** [`docs/operate_setup_guide.html`](operate_setup_guide.html) – commissioning step by step, for a pre-installed PC or from bare Ubuntu 22.04 (linked from the project docs, UX | Nexus Launcher footer button **Project docs**).
 
 A research and evaluation platform for **multimodal teleoperation** of the UFactory xArm Lite 6. Gaze control, voice commands, gamepad, VR and web UIs – combined with assistive automation – lower the barrier to robot control. The platform follows the *shared control* paradigm (Industry 5.0): the human stays in the loop while the system plans collision-free motion in the background. The system proposes, the human decides (human-in-the-loop). At its centre is a live **Digital Twin**: every motion is shown in 3D before the real arm moves.
@@ -140,4 +140,4 @@ All ports: [7.4 Network & ports](en/running.html#74-network--port-architecture).
 
 ## ⚖️ License
 
-Apache License 2.0 for the own packages, the UX | Nexus Launcher, the UX | Compact Interface and the tools. Vendored code (`xarm_ros2`, `zed-ros2-*`, `ros2_whisper`, `web_video_server`, libraries under `lib/` and `vendor/`) keeps its own license.
+The project code is currently private. Publication of the own packages, UX | Nexus Launcher, UX | Compact Interface and tools under the Apache License 2.0 is planned. Vendored code (`xarm_ros2`, `zed-ros2-*`, `ros2_whisper`, `web_video_server`, libraries under `lib/` and `vendor/`) keeps its own license.

@@ -82,7 +82,7 @@ Die folgende Übersicht zeigt auf einen Blick, welche Projektmodule in reiner So
 > # Simulation (Robot | Digital Twin, mit virtueller Linearachse & 3D-Szenenobjekten):
 > ros2 launch xarm_moveit_servo lite6_moveit_servo_fake.launch.py add_vacuum_gripper:=true attach_to:=linear_axis_link static_objects:=true
 > ```
-> *`rviz:=false` startet MoveIt Servo ohne RViz-Fenster (Standard `true`; in der UX | Nexus Launcher (früher „Nexus Webapp“) als Checkbox `rviz:=true` in der Servo-Action-Card).*
+> *`rviz:=false` startet MoveIt Servo ohne RViz-Fenster (Standard `true`; im UX | Nexus Launcher (früher „Nexus Webapp“) als Checkbox `rviz:=true` in der Servo-Action-Card).*
 > *Weitere Argumente beider Launch-Files: `joystick_and_checker:=false` startet weder `joy_node` noch `teleop_pre_collision_checker` (genutzt von den Server-Sequenzen, dort hängt das Gamepad am Client-PC); `floor_collision:=false` lässt `moveit_floor_collision` weg. Beide Launches binden außerdem `standalone_move_group.launch.py` ein.*
 > *(Nativ als Component im MoveIt Servo Bringup geladen)*
 >
@@ -196,7 +196,7 @@ Die folgende Übersicht zeigt auf einen Blick, welche Projektmodule in reiner So
 >
 > *Das haptische Rumble-Feedback des Xbox-Controllers wird nicht über ROS verschickt, sondern direkt über `pygame` am Joystick-Gerät ausgelöst (`joystick.rumble(...)`).*
 >
-> *Rückmeldung im Browser der UX | Control Interface (früher „Robot Control UI“) (Port 8081), nur solange dieser Client den Control-Lock hat (`hasControlLock()` in `js/remote.js`):*
+> *Rückmeldung im Browser des UX | Control Interface (früher „Robot Control UI“) (Port 8081), nur solange dieser Client den Control-Lock hat (`hasControlLock()` in `js/remote.js`):*
 > - *`js/gamepad.js`: ein am Browser angeschlossenes Gamepad rüttelt (Gamepad API `vibrationActuator.playEffect('dual-rumble')`), solange der Roboter fährt und weniger als 20 mm über der Z Collision Level, 20 mm vor der unerreichbaren Zone um die Achse, 30 mm vor der Reichweite von 440 mm (ab Schulter, Z 243,5 mm) oder in den äußeren 10 % eines Gelenkbereichs ist bzw. Servo Singularität, Gelenkgrenze oder Kollision meldet; je näher an der Grenze, desto stärker.*
 > - *`js/twin/xr_feedback.js`: die Quest-3-Controller pulsieren bei Greifkontakt (Vakuum `closed` oder Objekt in der Physics-Sandbox gehalten) und wiederholt nahe denselben Grenzen.*
 > - *`js/sound.js`: synthetische Töne (Web Audio API, keine Audiodateien) für Vakuum AN/AUS, Grenzwarnung und E-STOP; stumm mit dem Ton-Schalter im Header.*
@@ -294,7 +294,7 @@ Die folgende Übersicht zeigt auf einen Blick, welche Projektmodule in reiner So
 
 
 ## 3.3 Funktion: Leap-Motion-2-Handsteuerung
-*Eine Leap Motion 2 am Roboter-PC erkennt eine Hand von unten: Daumen und Zeigefinger zusammenführen (kneifen) kuppelt die Hand an den TCP, der TCP folgt der Hand, Hand öffnen hält an. Bedienung im Viewport der UX | Control Interface; nur Verschieben, keine Drehung.*
+*Eine Leap Motion 2 am Roboter-PC erkennt eine Hand von unten: Daumen und Zeigefinger zusammenführen (kneifen) kuppelt die Hand an den TCP, der TCP folgt der Hand, Hand öffnen hält an. Bedienung im Viewport des UX | Control Interface; nur Verschieben, keine Drehung.*
 
 ---
 
@@ -319,7 +319,7 @@ Leap Motion 2 ──▶ leap_hand_teleop_node ──▶ /remote/twist ──▶ 
 | Skala | Knopf **1:2** im LEAP-Fenster | Wechselt 1:1 / 1:2 / 1:4 (1:2 = TCP fährt den halben Handweg), wirkt sofort, bleibt je Browser gespeichert |
 | Ausschalten | **Gestures** erneut | Fenster schließt; Wechsel Robot \| Digital Twin ↔ Robot \| Hardware oder 2 s ohne Daten vom Leap-Node schalten ebenfalls aus. Verdeckter Tab: in Robot \| Hardware (auch Modus unbekannt) aus – erneutes Einschalten fragt wieder mit dem 1-s-Halte-Dialog; im Robot \| Digital Twin nur Pause (Node hält an, entkuppelt), zurück im Tab kuppeln mit neuem Kneifen |
 
-- **Tempo:** Tempo-Override im Header (5 Stufen = Faktor 0,1–0,5 auf `/ui/robot_control/current_speed`, × 400 mm/s → 40 / 80 / 100 / 100 / 100 mm/s), ohne Stufe 40 mm/s, nie über `max_speed_mm_s` (100 mm/s). Außer im Robot | Digital Twin (auch Modus unbekannt) zusätzlich × `real_max_speed` des Watchdogs (Standard 0,5) – halbes Tempo wie bei entfernten Clients.
+- **Tempo:** Tempo-Override im Header (5 Stufen = Faktor 0,1–0,5 auf `/ui/robot_control/current_speed`, × 400 mm/s → 40 / 80 / 100 / 100 / 100 mm/s), ohne Stufe 40 mm/s, nie über `max_speed_mm_s` (100 mm/s). Außer in der Betriebsart Robot | Digital Twin (auch Modus unbekannt) zusätzlich × `real_max_speed` des Watchdogs (Standard 0,5) – halbes Tempo wie bei entfernten Clients.
 - **Geisterhand:** Layers-Panel › **Leap hand** (*Ghost at the TCP*; deutsch *Leap-Hand*, *Geisterhand am TCP*) zeigt die erkannte Hand am TCP im Digital Twin – nur Anzeige, nur bei eingeschalteter Leap-Handsteuerung.
 - **Nur eine Hand:** Kneifen ist keine Zustimmtaste – jede kneifende Hand über der Leap bewegt den Roboter. Eine zweite Hand über der Leap hält immer an (Chip **Keine Hand**). In Robot | Hardware nur die eigene Hand über der Leap.
 
@@ -351,8 +351,8 @@ Robot \| Hardware: Einschalten fragt mit dem 1-s-Halten-Dialog (*Freie Gesten f�
 | Sichern | **Exportieren** / **Importieren** | JSON-Datei `rcu_gestures.json` mit Kalibrierungen und Befehlen (beim Import geprüft) |
 
 - **Faust und Kneifen:** die Leap liest manche Handhaltungen (oft die Faust) als Kneifen (≥ 85 %). Eine Faust (Mittel-, Ring- und kleiner Finger eingerollt oder Greif-Stärke der Leap ≥ 50 %) kuppelt der Node nie, andere als Kneifen gelesene Handhaltungen aber schon – dann folgt der TCP der Hand und der Befehl würde nicht auslösen; so eine Geste steht als *Als Kneifen gelesen – nicht scharf*, die Seite warnt. Aufnehmen mit der Leap geht nur bei ausgeschalteten Gesten (der Node kann dann nicht kuppeln); beim Kuppeln wird die Aufnahme abgewiesen. Andere Handhaltung wählen.
-- **Greifer öffnen:** in Robot | Hardware (auch Modus unbekannt) braucht die Geste, solange der Greifer evtl. ein Objekt hält (Zustand nicht offen/aus), ein zweites Zeigen innerhalb von 5 s – wie bei der Sprachsteuerung.
-- **Webcam in Robot | Hardware:** Einschalten der Gesten fragt wie bei der Leap mit dem 1-s-Halte-Dialog; ein Wechsel zwischen Robot | Digital Twin und Robot | Hardware schaltet aus.
+- **Greifer öffnen:** in der Betriebsart Robot | Hardware (auch Modus unbekannt) braucht die Geste, solange der Greifer evtl. ein Objekt hält (Zustand nicht offen/aus), ein zweites Zeigen innerhalb von 5 s – wie bei der Sprachsteuerung.
+- **Webcam in der Betriebsart Robot | Hardware:** Einschalten der Gesten fragt wie bei der Leap mit dem 1-s-Halte-Dialog; ein Wechsel zwischen Robot | Digital Twin und Robot | Hardware schaltet aus.
 
 **Totmann und Sperren** (jedes Ereignis = Null-Twist und entkuppelt; neu kuppeln erst nach sichtbar geöffneter Hand nach dem Ereignis und neuem Kneifen, begonnen höchstens 2 s nach der letzten offenen Hand (0,15 s gehalten) – ein über das Ereignis gehaltenes Kneifen fährt nie von selbst an, eine während einer Sperre gezeigte offene Hand zählt nicht; eine neue Hand öffnet ebenfalls zuerst. **Faust:** Mittel-, Ring- und kleiner Finger eingerollt oder Greif-Stärke der Leap ≥ 0,5 (fängt die locker geschlossene Faust) zählen nie als Kneifen, auch wenn die Leap eines meldet – gekuppelt hält eine Faust an wie eine offene Hand):
 
@@ -375,10 +375,10 @@ Ereignisse ohne anhaltende Sperre (Hand geöffnet, andere Hand, anderer Browser)
 > [!NOTE]
 > 💻 **Run Command:**
 > ```bash
-> # mit der UX | Control Interface (nur Roboter-PC, nie auf Clients):
+> # mit dem UX | Control Interface (nur Roboter-PC, nie auf Clients):
 > ros2 launch http_robot_control_ui_p8081 http_robot_control_ui.launch.py leap_hand:=true
 >
-> # allein, Test ohne Gerät mit Aufnahme (fährt nur im Robot | Digital Twin):
+> # allein, Test ohne Gerät mit Aufnahme (fährt nur in der Betriebsart Robot | Digital Twin):
 > ros2 launch leap_hand_teleop leap_hand_teleop.launch.py source:=replay
 > ```
 >

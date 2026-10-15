@@ -98,13 +98,13 @@ The GUI follows established HCI principles: instead of coordinating single degre
 - **Performance parameters:** *task completion time*, error rates and gaze paths.
 - **Load analysis:** cognitive load via the *NASA-TLX* for iterative optimization.
 
-### 🔓 Reproducible & Open Source
-The open code base makes all algorithms, configurations and data flows methodologically transparent:
+### 🔓 Reproducible · Publication Planned
+The documentation makes the architecture, configurations and data flows traceable. The project code is currently private; publication under Apache 2.0 is planned:
 
-- **Transparency:** all algorithms, URDF models and MoveIt configurations are visible.
-- **Replication:** independent groups can repeat studies under identical conditions.
+- **Transparency:** the docs and function atlas describe algorithms, modules and data flows.
+- **Replication:** the setup guide and manual document the reference setup.
 - **Verifiability:** recorded sensor data and control inputs can be traced and validated.
-- **Benchmark:** a reliable baseline for comparative studies in assistive and inclusive robotics.
+- **Outlook:** the planned code release is intended to simplify independent replication.
 
 ### 💶 Cost-Effective Hardware
 Mostly affordable off-the-shelf components (COTS) – without sacrificing precision or reliability:
