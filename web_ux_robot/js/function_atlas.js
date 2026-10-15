@@ -1298,21 +1298,13 @@ const FLOWS = (() => {
     sel.setAttribute('aria-controls', 'panel');
   };
 
-  // Bereichs-Chips mit Anzahl in Filterleiste und Split-Hub-Dock
+  // Bereichs-Chips mit Anzahl in der Filterleiste (einzige Bereichswahl der Liste)
   const areaBox = document.getElementById('areas');
-  const hubAreas = document.getElementById('fa-hub-areas');
   let area = 'ctl', onlyLoops = false, q = '';
   const renderAreas = () => {
     if (areaBox) {
       areaBox.innerHTML = `<button type="button" class="chip" data-area="" aria-pressed="${!area}">${L(['Alle', 'All'])} <b>${cards.length}</b></button>`
         + Object.entries(AREAS).map(([k, a]) => `<button type="button" class="chip" data-area="${k}" style="--c: var(--${a.hue})" aria-pressed="${area === k}">${ico(a.icon)}${a[lang()]} <b>${cards.filter(c => c.dataset.a === k).length}</b></button>`).join('');
-    }
-    if (hubAreas) {
-      hubAreas.innerHTML = Object.entries(AREAS).map(([k, a]) => {
-        const count = cards.filter(c => c.dataset.a === k).length;
-        return `<button type="button" class="fa-hub-area-btn ${area === k ? 'active' : ''}" data-hub-area="${k}" style="--c: var(--${a.hue})" aria-selected="${area === k}">`
-          + `${ico(a.icon)}<span>${a[lang()]}</span><b>${count}</b></button>`;
-      }).join('');
     }
   };
   if (areaBox) {
@@ -1324,17 +1316,6 @@ const FLOWS = (() => {
       filter();
       const firstFn = cards.find(c => !c.hidden);
       if (firstFn && (!curCard || (area && curCard.dataset.a !== area))) select(firstFn, { hash: true });
-    });
-  }
-  if (hubAreas) {
-    hubAreas.addEventListener('click', e => {
-      const b = e.target.closest('[data-hub-area]');
-      if (!b) return;
-      area = b.dataset.hubArea;
-      renderAreas();
-      filter();
-      const firstFn = cards.find(c => !c.hidden && c.dataset.a === area);
-      if (firstFn && (!curCard || curCard.dataset.a !== area)) select(firstFn, { hash: true });
     });
   }
   const loopBtn = document.getElementById('only-loops');
@@ -1395,7 +1376,7 @@ const FLOWS = (() => {
         <button type="button" class="pn-nav-btn next" data-pn-flow="next" title="${L(['Nächster Ablauf', 'Next flow'])}" aria-label="${L(['Nächster Ablauf', 'Next flow'])}">${ico('i-next')}</button>
       </div>
       <div class="pn-meta-tags">
-        ${f.loop ? `<span class="pn-tag loop">${ico('i-loop')}<span>${L(['Kreislauf', 'Loop'])}</span></span>` : ''}
+        ${f.loop ? `<span class="pn-tag is-loop">${ico('i-loop')}<span>${L(['Kreislauf', 'Loop'])}</span></span>` : ''}
         ${a ? `<span class="pn-tag area" style="--c: var(--${a.hue})">${ico(a.icon)}<span>${a[lang()]}</span></span>` : ''}
       </div>`;
     const title = document.getElementById('pn-title');
