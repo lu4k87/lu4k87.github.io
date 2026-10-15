@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ACCREDO · Interaktiver Akkreditierungs- & Reakkreditierungsprozess</title>
-  <meta name="description" content="Prozessleitfaden zur Reakkreditierung: Phasen, Rollen (RACI), Übergabedokumente und Ablageorte (Moodle-Kurs, Laufwerk X) für 12 Studiengänge.">
+  <title>ACCREDO · Leitfaden zur Reakkreditierung von Studiengängen</title>
+  <meta name="description" content="Interaktiver Leitfaden zur Programm-Reakkreditierung: sechs Phasen, Zuständigkeiten (RACI), Übergabedokumente und Rechtsgrundlagen nach StudakVO NRW und HG NRW.">
   <style>
     /* ═══ CSS TOKENS & THEMING ═══ */
     /* Look „Ruhig“ (2026-10-12): gedämpfter Kontrast, Stahlblau als einziger Akzent,
@@ -168,7 +168,7 @@
 
     .brand { grid-area: brand; min-width: 0; }
     .nav-tabs { grid-area: nav; }
-    .theme-toggle-btn { grid-area: theme; }
+    .header-actions { grid-area: theme; display: flex; gap: 8px; }
 
     .brand {
       display: flex;
@@ -1333,6 +1333,8 @@
     }
 
     /* ═══ FOOTER ═══ */
+    .page-footer a { color: inherit; text-underline-offset: 2px; }
+
     .page-footer {
       border-top: 1px solid var(--border-subtle);
       background: var(--bg-surface);
@@ -1972,8 +1974,8 @@
       <a href="#" class="brand">
         <div class="brand-mark">A</div>
         <div class="brand-text">
-          <h1>ACCREDO<span class="brand-sep"> · </span><span class="brand-sub">Hochschul-Prozessnavigator</span></h1>
-          <span>Reakkreditierung & PO-Novellierung · Musterrechtsverordnung</span>
+          <h1>ACCREDO<span class="brand-sep"> · </span><span class="brand-sub">Leitfaden Reakkreditierung</span></h1>
+          <span>Programmakkreditierung NRW · StudakVO NRW &amp; HG NRW</span>
         </div>
       </a>
 
@@ -1992,9 +1994,14 @@
         </button>
       </nav>
 
+      <div class="header-actions">
+      <a class="theme-toggle-btn" href="ACCREDO_v2/index.html" title="ACCREDO v2 öffnen (neue Fassung)" aria-label="ACCREDO v2 öffnen (neue Fassung)">
+        <svg width="18" height="18" viewBox="0 0 40 40" fill="none" stroke="currentColor" aria-hidden="true"><circle cx="20" cy="20" r="17.5" stroke-width="2.4"/><path d="M13.5 27 20 12.5 26.5 27M15.8 22h8.4" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </a>
       <button class="theme-toggle-btn" id="btnThemeToggle" title="Theme wechseln (Hell / Dunkel)" aria-label="Theme wechseln (Hell / Dunkel)" onclick="toggleTheme()">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 0 0 0 16z" fill="currentColor"/></svg>
       </button>
+      </div>
     </div>
   </header>
 
@@ -2003,12 +2010,11 @@
     <div class="hero-grid">
       <div class="hero-text">
         <h2 class="hero-title">
-          Strukturierter Prozessablauf der <span class="hero-title-highlight">Programm-Reakkreditierung</span>
+          Reakkreditierung eines Studiengangs in <span class="hero-title-highlight">13&nbsp;Monaten</span>
         </h2>
 
         <p class="hero-desc">
-          Vom Evaluationsbefund über die Überarbeitung der Prüfungsordnung (SPO) und Modulhandbücher bis zum offiziellen Beschluss des Akkreditierungsrates:
-          Dieser Leitfaden visualisiert jede Phase, definiert feste Übergabedokumente (.pdf) und weist klare Verantwortlichkeiten (RACI) für alle Gremien und Beteiligten aus.
+          Von der Auswertung der Lehrevaluation über die neue Prüfungsordnung bis zur Entscheidung des Akkreditierungsrats. Für jede Phase zeigt der Leitfaden, wer zuständig ist, welche Dokumente übergeben werden und auf welche Vorschrift sich der Schritt stützt.
         </p>
       </div>
 
@@ -2047,14 +2053,14 @@
 
     <div class="kpi-grid">
       <div class="kpi-card">
-        <div class="kpi-label">Prozesszyklus</div>
-        <div class="kpi-value">13 Monate</div>
-        <div class="kpi-sub">Gesamtlaufzeit Phase 1 bis 6</div>
+        <div class="kpi-label">Phasen</div>
+        <div class="kpi-value">6</div>
+        <div class="kpi-sub">Okt 2026 – Okt 2027</div>
       </div>
       <div class="kpi-card">
         <div class="kpi-label">Übergabedokumente</div>
-        <div class="kpi-value">14 Artefakte</div>
-        <div class="kpi-sub">Geprüfte PDFs & Beschlüsse</div>
+        <div class="kpi-value">14</div>
+        <div class="kpi-sub">PDF, je Phase 2–3</div>
       </div>
       <div class="kpi-card">
         <div class="kpi-label">Studiengänge</div>
@@ -2062,9 +2068,9 @@
         <div class="kpi-sub">8 Bachelor · 4 Master</div>
       </div>
       <div class="kpi-card">
-        <div class="kpi-label">Siegelstatus</div>
-        <div class="kpi-value">Bis 2035</div>
-        <div class="kpi-sub">8 Jahre Vollakkreditierung</div>
+        <div class="kpi-label">Geltungsdauer</div>
+        <div class="kpi-value">8 Jahre</div>
+        <div class="kpi-sub">§ 26 StudakVO NRW</div>
       </div>
     </div>
 
@@ -2076,12 +2082,13 @@
           Perspektive nach Zuständigkeit:
         </div>
         <div class="filter-pills">
-          <button class="filter-pill active" data-role="all" onclick="filterByRole('all', this)">Alle Akteure (Gesamtablauf)</button>
-          <button class="filter-pill" data-role="leitung" onclick="filterByRole('leitung', this)">Studiengangsleitung</button>
-          <button class="filter-pill" data-role="qm" onclick="filterByRole('qm', this)">Qualitätsmanagement (ZQA)</button>
-          <button class="filter-pill" data-role="pruefung" onclick="filterByRole('pruefung', this)">Prüfungsausschuss & Justitiariat</button>
-          <button class="filter-pill" data-role="gremien" onclick="filterByRole('gremien', this)">Fakultätsrat & Dekanat</button>
-          <button class="filter-pill" data-role="gutachter" onclick="filterByRole('gutachter', this)">Gutachter & Akkreditierungsrat</button>
+          <button class="filter-pill active" data-role="all" onclick="filterByRole('all', this)">Alle</button>
+          <button class="filter-pill" data-role="sgl" onclick="filterByRole('sgl', this)">Studiengangsleitung</button>
+          <button class="filter-pill" data-role="qm" onclick="filterByRole('qm', this)">Qualitätsmanagement</button>
+          <button class="filter-pill" data-role="stud" onclick="filterByRole('stud', this)">Studierende</button>
+          <button class="filter-pill" data-role="recht" onclick="filterByRole('recht', this)">Prüfungsausschuss &amp; Justitiariat</button>
+          <button class="filter-pill" data-role="gremien" onclick="filterByRole('gremien', this)">Fakultätsrat, Dekanat &amp; Präsidium</button>
+          <button class="filter-pill" data-role="extern" onclick="filterByRole('extern', this)">Agentur &amp; Akkreditierungsrat</button>
         </div>
       </div>
     </aside>
@@ -2105,15 +2112,15 @@
         <div class="rail-node active" id="node-step-1" onclick="scrollToStep(1)">
           <div class="rail-dot">01</div>
           <div class="rail-content">
-            <div class="rail-step-title">Initiierung & Bestandsaufnahme</div>
-            <div class="rail-step-meta"><span>Monat 01–02</span><span>·</span><span>QM & Leitung</span></div>
+            <div class="rail-step-title">Initiierung und Bestandsaufnahme</div>
+            <div class="rail-step-meta"><span>Monat 01–02</span><span>·</span><span>QM &amp; Studiengangsleitung</span></div>
           </div>
         </div>
 
         <div class="rail-node" id="node-step-2" onclick="scrollToStep(2)">
           <div class="rail-dot">02</div>
           <div class="rail-content">
-            <div class="rail-step-title">Curriculum & PO-Novellierung</div>
+            <div class="rail-step-title">Curriculum und Prüfungsordnung überarbeiten</div>
             <div class="rail-step-meta"><span>Monat 03–05</span><span>·</span><span>Curriculums-AG</span></div>
           </div>
         </div>
@@ -2121,15 +2128,15 @@
         <div class="rail-node" id="node-step-3" onclick="scrollToStep(3)">
           <div class="rail-dot">03</div>
           <div class="rail-content">
-            <div class="rail-step-title">Rechtsprüfung & Gremienbeschluss</div>
-            <div class="rail-step-meta"><span>Monat 06–07</span><span>·</span><span>Fakultätsrat</span></div>
+            <div class="rail-step-title">Rechtsprüfung und Beschluss im Fakultätsrat</div>
+            <div class="rail-step-meta"><span>Monat 06–07</span><span>·</span><span>Justitiariat &amp; Fakultätsrat</span></div>
           </div>
         </div>
 
         <div class="rail-node" id="node-step-4" onclick="scrollToStep(4)">
           <div class="rail-dot">04</div>
           <div class="rail-content">
-            <div class="rail-step-title">Selbstbericht & Dossier</div>
+            <div class="rail-step-title">Selbstbericht und Anlagen erstellen</div>
             <div class="rail-step-meta"><span>Monat 08–09</span><span>·</span><span>Qualitätsmanagement</span></div>
           </div>
         </div>
@@ -2137,15 +2144,15 @@
         <div class="rail-node" id="node-step-5" onclick="scrollToStep(5)">
           <div class="rail-dot">05</div>
           <div class="rail-content">
-            <div class="rail-step-title">Peer-Review & Begehung</div>
-            <div class="rail-step-meta"><span>Monat 10–11</span><span>·</span><span>Externe Gutachter</span></div>
+            <div class="rail-step-title">Begutachtung durch das Gutachtergremium</div>
+            <div class="rail-step-meta"><span>Monat 10–11</span><span>·</span><span>Gutachtergremium</span></div>
           </div>
         </div>
 
         <div class="rail-node" id="node-step-6" onclick="scrollToStep(6)">
           <div class="rail-dot">06</div>
           <div class="rail-content">
-            <div class="rail-step-title">Beschluss & Siegelverleihung</div>
+            <div class="rail-step-title">Antrag beim Akkreditierungsrat und Entscheidung</div>
             <div class="rail-step-meta"><span>Monat 12–13</span><span>·</span><span>Akkreditierungsrat</span></div>
           </div>
         </div>
@@ -2188,20 +2195,20 @@
     <div class="story-cards-col">
 
       
-      <article class="step-card active-step" id="step-1" data-step="1" data-roles="leitung,qm">
+      <article class="step-card active-step" id="step-1" data-step="1" data-roles="sgl,qm,stud,gremien">
         <div class="step-card-header">
           <div>
             <div class="step-meta-chips">
               <span class="chip-step-num">PHASE 01</span>
               <span class="chip-time">Monat 1 – 2 · Initiierung</span>
             </div>
-            <h3 class="step-title">Strategische Initiierung & Bestandsaufnahme</h3>
+            <h3 class="step-title">Initiierung und Bestandsaufnahme</h3>
           </div>
           <div class="step-target-badge">Meilenstein: Startfreigabe</div>
         </div>
 
         <p class="step-lead-text">
-          Auswertung der zyklischen Studierendenbefragungen, Absolventen-Verbleibsstudien und Workload-Analysen. Festlegung des Reakkreditierungs-Fahrplans und Einberufung der universitären Curriculums-AG zur Vorbereitung der neuen Prüfungsordnung.
+          Auswertung der Studierendenbefragungen, Verbleibsstudien und Workload-Erhebungen. Festlegung des Zeitplans und Einberufung der Curriculums-AG des Studiengangs, die die neue Prüfungsordnung vorbereitet.
         </p>
 
         
@@ -2216,25 +2223,34 @@
               <div class="actor-box-name">Prof. Dr. Miriam Weber</div>
               <div class="actor-box-function">Studiengangsleitung</div>
             </div>
-            <span class="raci-badge raci-r" title="Responsible (Verantwortlich)">R</span>
+            <span class="raci-badge raci-a" title="Accountable (Verantwortung)">A</span>
           </div>
 
           <div class="actor-box">
             <div class="actor-box-avatar">LB</div>
             <div class="actor-box-details">
               <div class="actor-box-name">Dr. Laurenz Becker</div>
-              <div class="actor-box-function">Leitung Stabsstelle QM (ZQA)</div>
+              <div class="actor-box-function">Qualitätsmanagement (Akkreditierung)</div>
             </div>
-            <span class="raci-badge raci-a" title="Accountable (Gesamtverantwortung)">A</span>
+            <span class="raci-badge raci-r" title="Responsible (Durchführung)">R</span>
           </div>
 
           <div class="actor-box">
             <div class="actor-box-avatar">SK</div>
             <div class="actor-box-details">
               <div class="actor-box-name">Samira Klein</div>
-              <div class="actor-box-function">Fachschaftsrat (FSR)</div>
+              <div class="actor-box-function">Fachschaftsrat · Studierendenvertretung</div>
             </div>
-            <span class="raci-badge raci-c" title="Consulted (Beratend einbezogen)">C</span>
+            <span class="raci-badge raci-c" title="Consulted (Beratung)">C</span>
+          </div>
+
+          <div class="actor-box">
+            <div class="actor-box-avatar">AN</div>
+            <div class="actor-box-details">
+              <div class="actor-box-name">Prof. Dr. Anke Neumann</div>
+              <div class="actor-box-function">Dekanin · Vorsitz Fakultätsrat</div>
+            </div>
+            <span class="raci-badge raci-i" title="Informed (Information)">I</span>
           </div>
         </div>
 
@@ -2247,21 +2263,21 @@
           <div class="task-item">
             <div class="task-bullet">✓</div>
             <div class="task-content">
-              <strong>Kohorten- & Studienerfolgsanalyse:</strong> Statistische Auswertung von Abbrecherquoten, Studienverlaufszeiten und ECTS-Progression je Fachsemester.
-              <span class="task-ref">[MRVO §5 Abs. 1]</span>
+              <strong>Studienerfolgsanalyse:</strong> Auswertung von Abbruchquoten, Studiendauer und ECTS-Fortschritt je Fachsemester.
+              <span class="task-ref" title="Studienerfolg: Kontinuierliches Monitoring des Studiengangs unter Beteiligung von Studierenden und Absolventen.">[StudakVO NRW § 14]</span>
             </div>
           </div>
           <div class="task-item">
             <div class="task-bullet">✓</div>
             <div class="task-content">
-              <strong>Qualitätsdialog & Stakeholder-Workshop:</strong> Feedbackgespräche mit Lehrenden, Wirtschaftsbeirat und Alumni zur Arbeitsmarktrelevanz.
-              <span class="task-ref">[ESG 1.9]</span>
+              <strong>Qualitätsdialog:</strong> Gespräche mit Lehrenden, Studierenden, Praxisbeirat und Alumni zur Arbeitsmarktrelevanz.
+              <span class="task-ref" title="Laufendes Monitoring: Europäische Standards: Studiengänge werden regelmäßig überprüft und weiterentwickelt.">[ESG 1.9]</span>
             </div>
           </div>
           <div class="task-item">
             <div class="task-bullet">✓</div>
             <div class="task-content">
-              <strong>Terminierung & Projektstrukturplan:</strong> Festlegung des Fristenkalenders für Gremienläufe zur Vorlage beim Präsidium.
+              <strong>Zeitplan:</strong> Fristenkalender für die Gremienläufe, Vorlage beim Präsidium.
             </div>
           </div>
         </div>
@@ -2274,12 +2290,12 @@
         <div class="step-artifacts-grid">
           <div class="artifact-card" onclick="openDocModal('DOC-01')">
             <div class="artifact-top">
-              <span class="doc-type-badge">PDF · BERICHT</span>
+              <span class="doc-type-badge">PDF · EVALUATIONSBERICHT</span>
               <span class="doc-status-badge doc-status-final">Freigegeben</span>
             </div>
             <div class="artifact-title">DOC-01_Bestandsaufnahme_Evaluationsbericht_2022-2026.pdf</div>
             <div class="artifact-meta">
-              <span>v1.2 · 4.2 MB</span>
+              <span>v1.2 · 4,2 MB</span>
               <span class="artifact-action-hint">Details ↗</span>
             </div>
           </div>
@@ -2287,11 +2303,11 @@
           <div class="artifact-card" onclick="openDocModal('DOC-02')">
             <div class="artifact-top">
               <span class="doc-type-badge">PDF · ZEITPLAN</span>
-              <span class="doc-status-badge doc-status-verified">Bestätigt</span>
+              <span class="doc-status-badge doc-status-final">Freigegeben</span>
             </div>
-            <div class="artifact-title">DOC-02_Projektstrukturplan_Meilensteine_Reakkreditierung.pdf</div>
+            <div class="artifact-title">DOC-02_Projektplan_Meilensteine_Reakkreditierung.pdf</div>
             <div class="artifact-meta">
-              <span>v1.0 · 1.1 MB</span>
+              <span>v1.0 · 1,1 MB</span>
               <span class="artifact-action-hint">Details ↗</span>
             </div>
           </div>
@@ -2302,8 +2318,8 @@
           <div class="gate-info">
             <div class="gate-icon"><svg width="20" height="20" aria-hidden="true"><use href="#i-scale"/></svg></div>
             <div class="gate-texts">
-              <h4>Gate 1: Übergabepunkt an Curriculums-AG</h4>
-              <p>Übergabe der qualitativen Bedarfs- und Mängelanalysen an die Überarbeitungskommission.</p>
+              <h4>Gate 1 · Übergabe an die Curriculums-AG</h4>
+              <p>Bedarfs- und Schwachstellenanalyse geht an die Arbeitsgruppe. Den Vorsitz der AG hat die Studiengangsleitung; die Übergabe ist deshalb ein Arbeitsauftrag, kein Wechsel der Verantwortung.</p>
             </div>
           </div>
           <div class="gate-flow-badge">
@@ -2315,20 +2331,20 @@
       </article>
 
       
-      <article class="step-card" id="step-2" data-step="2" data-roles="leitung,pruefung">
+      <article class="step-card" id="step-2" data-step="2" data-roles="sgl,gremien,recht,stud,qm">
         <div class="step-card-header">
           <div>
             <div class="step-meta-chips">
               <span class="chip-step-num">PHASE 02</span>
-              <span class="chip-time">Monat 3 – 5 · Konzeption</span>
+              <span class="chip-time">Monat 3 – 5 · Curriculum &amp; PO</span>
             </div>
-            <h3 class="step-title">Curriculumsreform & Prüfungsordnung (SPO)</h3>
+            <h3 class="step-title">Curriculum und Prüfungsordnung überarbeiten</h3>
           </div>
-          <div class="step-target-badge">Meilenstein: SPO-Entwurf v2.0</div>
+          <div class="step-target-badge">Meilenstein: PO-Entwurf v2.0</div>
         </div>
 
         <p class="step-lead-text">
-          Neukonzeption des Studienverlaufsplans, Überarbeitung der Modulhandbücher und juristische Neufassung der Speziellen Prüfungsordnung (SPO). Harmonisierung der Prüfungsformen mit kompetenzorientierten Lernzielen nach Bloom.
+          Neuer Studienverlaufsplan, überarbeitetes Modulhandbuch und Neufassung der studiengangsspezifischen Prüfungsordnung (PO). Prüfungsformen werden auf kompetenzorientierte Lernziele abgestimmt. Studierende wirken an der Ausarbeitung mit.
         </p>
 
         
@@ -2341,9 +2357,18 @@
             <div class="actor-box-avatar">MW</div>
             <div class="actor-box-details">
               <div class="actor-box-name">Prof. Dr. Miriam Weber</div>
-              <div class="actor-box-function">Vorsitz Curriculums-AG</div>
+              <div class="actor-box-function">Studiengangsleitung</div>
             </div>
-            <span class="raci-badge raci-r" title="Responsible">R</span>
+            <span class="raci-badge raci-r" title="Responsible (Durchführung)">R</span>
+          </div>
+
+          <div class="actor-box">
+            <div class="actor-box-avatar">AN</div>
+            <div class="actor-box-details">
+              <div class="actor-box-name">Prof. Dr. Anke Neumann</div>
+              <div class="actor-box-function">Dekanin · Vorsitz Fakultätsrat</div>
+            </div>
+            <span class="raci-badge raci-a" title="Accountable (Verantwortung)">A</span>
           </div>
 
           <div class="actor-box">
@@ -2352,16 +2377,34 @@
               <div class="actor-box-name">Prof. Dr. Klaus Sommer</div>
               <div class="actor-box-function">Vorsitz Prüfungsausschuss</div>
             </div>
-            <span class="raci-badge raci-a" title="Accountable">A</span>
+            <span class="raci-badge raci-c" title="Consulted (Beratung)">C</span>
           </div>
 
           <div class="actor-box">
             <div class="actor-box-avatar">JL</div>
             <div class="actor-box-details">
               <div class="actor-box-name">Prof. Dr. Jens Lindner</div>
-              <div class="actor-box-function">Modulkoordinator Software</div>
+              <div class="actor-box-function">Modulkoordination</div>
             </div>
-            <span class="raci-badge raci-c" title="Consulted">C</span>
+            <span class="raci-badge raci-c" title="Consulted (Beratung)">C</span>
+          </div>
+
+          <div class="actor-box">
+            <div class="actor-box-avatar">SK</div>
+            <div class="actor-box-details">
+              <div class="actor-box-name">Samira Klein</div>
+              <div class="actor-box-function">Fachschaftsrat · Studierendenvertretung</div>
+            </div>
+            <span class="raci-badge raci-c" title="Consulted (Beratung)">C</span>
+          </div>
+
+          <div class="actor-box">
+            <div class="actor-box-avatar">LB</div>
+            <div class="actor-box-details">
+              <div class="actor-box-name">Dr. Laurenz Becker</div>
+              <div class="actor-box-function">Qualitätsmanagement (Akkreditierung)</div>
+            </div>
+            <span class="raci-badge raci-i" title="Informed (Information)">I</span>
           </div>
         </div>
 
@@ -2374,21 +2417,21 @@
           <div class="task-item">
             <div class="task-bullet">✓</div>
             <div class="task-content">
-              <strong>Novellierung der Prüfungsordnung (SPO):</strong> Neuregelung von Fristen, Nachteilsausgleich, Anrechnung externer Leistungen und modularer Wiederholbarkeit.
-              <span class="task-ref">[HG NRW §64]</span>
+              <strong>Prüfungsordnung neu fassen:</strong> Fristen, Nachteilsausgleich, Anerkennung externer Leistungen, Wiederholung von Prüfungen.
+              <span class="task-ref" title="Prüfungsordnungen: Der Fachbereichsrat (an der Hochschule: Fakultätsrat) erlässt die Prüfungsordnung nach Überprüfung durch das Präsidium; Studierende werden an der Ausarbeitung beteiligt.">[HG NRW § 64]</span>
             </div>
           </div>
           <div class="task-item">
             <div class="task-bullet">✓</div>
             <div class="task-content">
-              <strong>Kompetenzmatrix & ECTS-Allokation:</strong> Präzisierung von Modulbeschreibungen (Lernergebnisse, Workload 30h/ECTS, Prüfungsdauer).
-              <span class="task-ref">[ECTS Users' Guide]</span>
+              <strong>Module und Leistungspunkte:</strong> Modulbeschreibungen mit Lernergebnissen, Prüfungsform und Workload (25–30 Stunden je Leistungspunkt).
+              <span class="task-ref" title="Modularisierung und Leistungspunkte: Module, Modulbeschreibungen, 25–30 Stunden Arbeitsaufwand je Leistungspunkt.">[StudakVO NRW §§ 7, 8]</span>
             </div>
           </div>
           <div class="task-item">
             <div class="task-bullet">✓</div>
             <div class="task-content">
-              <strong>Abstimmung mit Prüfungsausschuss:</strong> Beseitigung von Rechtsunsicherheiten bei Multiple-Choice- und E-Prüfungsformaten.
+              <strong>Abstimmung mit dem Prüfungsausschuss:</strong> Klärung rechtlicher Fragen bei Antwort-Wahl- und E-Prüfungen.
             </div>
           </div>
         </div>
@@ -2401,12 +2444,12 @@
         <div class="step-artifacts-grid">
           <div class="artifact-card" onclick="openDocModal('DOC-03')">
             <div class="artifact-top">
-              <span class="doc-type-badge">PDF · SATZUNG</span>
+              <span class="doc-type-badge">PDF · SATZUNGSENTWURF</span>
               <span class="doc-status-badge doc-status-draft">In Prüfung</span>
             </div>
-            <div class="artifact-title">DOC-03_Entwurf_Pruefungsordnung_SPO_v2.0.pdf</div>
+            <div class="artifact-title">DOC-03_Entwurf_Pruefungsordnung_PO_v2.0.pdf</div>
             <div class="artifact-meta">
-              <span>v2.0 Draft · 850 KB</span>
+              <span>v2.0 Entwurf · 850 KB</span>
               <span class="artifact-action-hint">Details ↗</span>
             </div>
           </div>
@@ -2414,11 +2457,11 @@
           <div class="artifact-card" onclick="openDocModal('DOC-04')">
             <div class="artifact-top">
               <span class="doc-type-badge">PDF · MODULHANDBUCH</span>
-              <span class="doc-status-badge doc-status-verified">Geprüft</span>
+              <span class="doc-status-badge doc-status-final">Freigegeben</span>
             </div>
-            <div class="artifact-title">DOC-04_Modulhandbuch_MHB_Curriculum_Gesamt.pdf</div>
+            <div class="artifact-title">DOC-04_Modulhandbuch_Curriculum_Gesamt.pdf</div>
             <div class="artifact-meta">
-              <span>v2.1 · 6.8 MB</span>
+              <span>v2.1 · 6,8 MB</span>
               <span class="artifact-action-hint">Details ↗</span>
             </div>
           </div>
@@ -2428,9 +2471,9 @@
               <span class="doc-type-badge">PDF · MATRIX</span>
               <span class="doc-status-badge doc-status-final">Freigegeben</span>
             </div>
-            <div class="artifact-title">DOC-05_Kompetenzmatrix_Qualifikationsziele_Matrix.pdf</div>
+            <div class="artifact-title">DOC-05_Kompetenzmatrix_Qualifikationsziele.pdf</div>
             <div class="artifact-meta">
-              <span>v1.4 · 1.9 MB</span>
+              <span>v1.4 · 1,9 MB</span>
               <span class="artifact-action-hint">Details ↗</span>
             </div>
           </div>
@@ -2441,33 +2484,33 @@
           <div class="gate-info">
             <div class="gate-icon"><svg width="20" height="20" aria-hidden="true"><use href="#i-docs"/></svg></div>
             <div class="gate-texts">
-              <h4>Gate 2: Übergabe zur juristischen Prüfung</h4>
-              <p>Vollständiger Satzungsentwurf mit Modulhandbuch wird an das Justitiariat & Gremien übergeben.</p>
+              <h4>Gate 2 · Übergabe zur Rechtsprüfung</h4>
+              <p>Vollständiger PO-Entwurf mit Modulhandbuch geht zur rechtlichen Prüfung und danach in den Fakultätsrat.</p>
             </div>
           </div>
           <div class="gate-flow-badge">
             <span>Curriculums-AG</span>
             <span style="color:var(--accent)">──▶</span>
-            <span>Justitiariat & Fakultätsrat</span>
+            <span>Justitiariat &amp; Präsidium</span>
           </div>
         </div>
       </article>
 
       
-      <article class="step-card" id="step-3" data-step="3" data-roles="gremien,pruefung">
+      <article class="step-card" id="step-3" data-step="3" data-roles="recht,gremien,stud,sgl">
         <div class="step-card-header">
           <div>
             <div class="step-meta-chips">
               <span class="chip-step-num">PHASE 03</span>
-              <span class="chip-time">Monat 6 – 7 · Legitimation</span>
+              <span class="chip-time">Monat 6 – 7 · Recht &amp; Beschluss</span>
             </div>
-            <h3 class="step-title">Rechtsprüfung & Gremien-Beschlussfassung</h3>
+            <h3 class="step-title">Rechtsprüfung und Beschluss im Fakultätsrat</h3>
           </div>
-          <div class="step-target-badge">Meilenstein: Fakultätsratsbeschluss</div>
+          <div class="step-target-badge">Meilenstein: Beschluss Fakultätsrat</div>
         </div>
 
         <p class="step-lead-text">
-          Formale und materielle Rechtsprüfung durch die Hochschuljuristen. Einholung des offiziellen Votums der Studierendenschaft (Fachschaftsrat) und formeller Beschluss der Prüfungsordnung im Fakultätsrat.
+          Das Justitiariat prüft den Entwurf für das Präsidium formal und inhaltlich. Der Fachschaftsrat nimmt Stellung, danach beschließt der Fakultätsrat die Prüfungsordnung. In Kraft tritt sie erst mit der Veröffentlichung.
         </p>
 
         
@@ -2479,28 +2522,46 @@
           <div class="actor-box">
             <div class="actor-box-avatar">BH</div>
             <div class="actor-box-details">
-              <div class="actor-box-name">RA Barbara Hoffmann</div>
-              <div class="actor-box-function">Leitung Justitiariat / Recht</div>
+              <div class="actor-box-name">Barbara Hoffmann</div>
+              <div class="actor-box-function">Justitiariat</div>
             </div>
-            <span class="raci-badge raci-r" title="Responsible">R</span>
+            <span class="raci-badge raci-r" title="Responsible (Durchführung)">R</span>
+          </div>
+
+          <div class="actor-box">
+            <div class="actor-box-avatar">PR</div>
+            <div class="actor-box-details">
+              <div class="actor-box-name">Präsidium</div>
+              <div class="actor-box-function">Hochschulleitung</div>
+            </div>
+            <span class="raci-badge raci-c" title="Consulted (Beratung)">C</span>
           </div>
 
           <div class="actor-box">
             <div class="actor-box-avatar">AN</div>
             <div class="actor-box-details">
               <div class="actor-box-name">Prof. Dr. Anke Neumann</div>
-              <div class="actor-box-function">Dekanin / Fakultätsratsvorsitz</div>
+              <div class="actor-box-function">Dekanin · Vorsitz Fakultätsrat</div>
             </div>
-            <span class="raci-badge raci-a" title="Accountable">A</span>
+            <span class="raci-badge raci-a" title="Accountable (Verantwortung)">A</span>
           </div>
 
           <div class="actor-box">
             <div class="actor-box-avatar">SK</div>
             <div class="actor-box-details">
               <div class="actor-box-name">Samira Klein</div>
-              <div class="actor-box-function">Studentische Vertretung</div>
+              <div class="actor-box-function">Fachschaftsrat · Studierendenvertretung</div>
             </div>
-            <span class="raci-badge raci-c" title="Consulted">C</span>
+            <span class="raci-badge raci-c" title="Consulted (Beratung)">C</span>
+          </div>
+
+          <div class="actor-box">
+            <div class="actor-box-avatar">MW</div>
+            <div class="actor-box-details">
+              <div class="actor-box-name">Prof. Dr. Miriam Weber</div>
+              <div class="actor-box-function">Studiengangsleitung</div>
+            </div>
+            <span class="raci-badge raci-i" title="Informed (Information)">I</span>
           </div>
         </div>
 
@@ -2513,20 +2574,22 @@
           <div class="task-item">
             <div class="task-bullet">✓</div>
             <div class="task-content">
-              <strong>Justitiariats-Prüfvermerk:</strong> Verifikation von Widerspruchsfristen, Prüfungsausschuss-Befugnissen und Übereinstimmung mit dem Hochschulgesetz.
-              <span class="task-ref">[HG NRW §29]</span>
+              <strong>Rechtsprüfung:</strong> Widerspruchsfristen, Befugnisse des Prüfungsausschusses, Vereinbarkeit mit dem Hochschulgesetz. Das Präsidium prüft die Rechtmäßigkeit vor der Veröffentlichung.
+              <span class="task-ref" title="Prüfungsordnungen: Der Fachbereichsrat (an der Hochschule: Fakultätsrat) erlässt die Prüfungsordnung nach Überprüfung durch das Präsidium; Studierende werden an der Ausarbeitung beteiligt.">[HG NRW § 64]</span> <span class="task-ref" title="Ordnungen der Hochschule: Das Präsidium prüft Ordnungen vor ihrer Veröffentlichung auf Rechtmäßigkeit; wirksam werden sie mit der Bekanntmachung.">[HG NRW § 2 Abs. 4]</span>
             </div>
           </div>
           <div class="task-item">
             <div class="task-bullet">✓</div>
             <div class="task-content">
-              <strong>Stellungnahme des Fachschaftsrats:</strong> Offizielles Hearing der Studierenden zur Studierbarkeit und Prüfungsbelastung.
+              <strong>Stellungnahme der Studierenden:</strong> Anhörung des Fachschaftsrats zu Studierbarkeit und Prüfungsbelastung.
+              <span class="task-ref" title="Prüfungsordnungen: Der Fachbereichsrat (an der Hochschule: Fakultätsrat) erlässt die Prüfungsordnung nach Überprüfung durch das Präsidium; Studierende werden an der Ausarbeitung beteiligt.">[HG NRW § 64]</span>
             </div>
           </div>
           <div class="task-item">
             <div class="task-bullet">✓</div>
             <div class="task-content">
-              <strong>Sitzung des Fakultätsrats:</strong> Beratung, Abstimmung und einstimmige Beschlussfassung der Satzung nach 2. Lesung.
+              <strong>Sitzung des Fakultätsrats:</strong> Beratung und Beschluss der Prüfungsordnung.
+              <span class="task-ref" title="Prüfungsordnungen: Der Fachbereichsrat (an der Hochschule: Fakultätsrat) erlässt die Prüfungsordnung nach Überprüfung durch das Präsidium; Studierende werden an der Ausarbeitung beteiligt.">[HG NRW § 64]</span>
             </div>
           </div>
         </div>
@@ -2539,10 +2602,10 @@
         <div class="step-artifacts-grid">
           <div class="artifact-card" onclick="openDocModal('DOC-06')">
             <div class="artifact-top">
-              <span class="doc-type-badge">PDF · JURA</span>
-              <span class="doc-status-badge doc-status-final">Testiert</span>
+              <span class="doc-type-badge">PDF · RECHTSPRÜFUNG</span>
+              <span class="doc-status-badge doc-status-final">Freigegeben</span>
             </div>
-            <div class="artifact-title">DOC-06_Justitiariat_Rechtsgutachten_Pruefvermerk.pdf</div>
+            <div class="artifact-title">DOC-06_Justitiariat_Pruefvermerk.pdf</div>
             <div class="artifact-meta">
               <span>v1.0 · 620 KB</span>
               <span class="artifact-action-hint">Details ↗</span>
@@ -2551,10 +2614,10 @@
 
           <div class="artifact-card" onclick="openDocModal('DOC-07')">
             <div class="artifact-top">
-              <span class="doc-type-badge">PDF · VOTUM</span>
-              <span class="doc-status-badge doc-status-verified">Protokolliert</span>
+              <span class="doc-type-badge">PDF · STELLUNGNAHME</span>
+              <span class="doc-status-badge doc-status-final">Beschlossen</span>
             </div>
-            <div class="artifact-title">DOC-07_Stellungnahme_Fachschaftsrat_Studierende.pdf</div>
+            <div class="artifact-title">DOC-07_Stellungnahme_Fachschaftsrat.pdf</div>
             <div class="artifact-meta">
               <span>v1.0 · 450 KB</span>
               <span class="artifact-action-hint">Details ↗</span>
@@ -2563,12 +2626,12 @@
 
           <div class="artifact-card" onclick="openDocModal('DOC-08')">
             <div class="artifact-top">
-              <span class="doc-type-badge">PDF · BESCHLUSS</span>
-              <span class="doc-status-badge doc-status-final">Gesiegelt</span>
+              <span class="doc-type-badge">PDF · BESCHLUSSAUSZUG</span>
+              <span class="doc-status-badge doc-status-final">Beschlossen</span>
             </div>
-            <div class="artifact-title">DOC-08_Fakultaetsratsbeschluss_PO_Beschlussauszug.pdf</div>
+            <div class="artifact-title">DOC-08_Fakultätsratsbeschluss_PO_Auszug.pdf</div>
             <div class="artifact-meta">
-              <span>vFinal · 1.4 MB</span>
+              <span>final · 1,4 MB</span>
               <span class="artifact-action-hint">Details ↗</span>
             </div>
           </div>
@@ -2579,33 +2642,33 @@
           <div class="gate-info">
             <div class="gate-icon"><svg width="20" height="20" aria-hidden="true"><use href="#i-landmark"/></svg></div>
             <div class="gate-texts">
-              <h4>Gate 3: Übergabe an Qualitätsmanagement (ZQA)</h4>
-              <p>Rechtsgültig beschlossene Satzung wird für das offizielle Akkreditierungsdossier übergeben.</p>
+              <h4>Gate 3 · Übergabe an das Qualitätsmanagement</h4>
+              <p>Die beschlossene Prüfungsordnung geht in den Selbstbericht. Die Veröffentlichung im Amtlichen Mitteilungsblatt wird parallel vorbereitet.</p>
             </div>
           </div>
           <div class="gate-flow-badge">
-            <span>Dekanat & Fakultätsrat</span>
+            <span>Dekanat</span>
             <span style="color:var(--accent)">──▶</span>
-            <span>Qualitätsmanagement (ZQA)</span>
+            <span>Qualitätsmanagement</span>
           </div>
         </div>
       </article>
 
       
-      <article class="step-card" id="step-4" data-step="4" data-roles="qm,leitung">
+      <article class="step-card" id="step-4" data-step="4" data-roles="qm,sgl,stud,gremien">
         <div class="step-card-header">
           <div>
             <div class="step-meta-chips">
               <span class="chip-step-num">PHASE 04</span>
-              <span class="chip-time">Monat 8 – 9 · Dossiererstellung</span>
+              <span class="chip-time">Monat 8 – 9 · Selbstbericht</span>
             </div>
-            <h3 class="step-title">Erstellung Selbstbericht & Dokumentenpaket</h3>
+            <h3 class="step-title">Selbstbericht und Anlagen erstellen</h3>
           </div>
-          <div class="step-target-badge">Meilenstein: Einreichung Agentur</div>
+          <div class="step-target-badge">Meilenstein: Einreichung bei der Agentur</div>
         </div>
 
         <p class="step-lead-text">
-          Erstellung des umfassenden Selbstberichts (Selbstdokumentation) gemäß Kriterien des Akkreditierungsrates. Bündelung aller Nachweise über Personalausstattung, Laborinfrastruktur, Internationalisierung und Prüfungserfolg.
+          Selbstbericht nach den Kriterien der StudakVO NRW, unter Beteiligung der Studierendenvertretung. Dazu kommen die Nachweise zu Personal, Laboren, Internationalisierung und Studienerfolg.
         </p>
 
         
@@ -2618,9 +2681,9 @@
             <div class="actor-box-avatar">LB</div>
             <div class="actor-box-details">
               <div class="actor-box-name">Dr. Laurenz Becker</div>
-              <div class="actor-box-function">Akkreditierungsbeauftragter QM</div>
+              <div class="actor-box-function">Qualitätsmanagement (Akkreditierung)</div>
             </div>
-            <span class="raci-badge raci-r" title="Responsible">R</span>
+            <span class="raci-badge raci-r" title="Responsible (Durchführung)">R</span>
           </div>
 
           <div class="actor-box">
@@ -2629,16 +2692,34 @@
               <div class="actor-box-name">Prof. Dr. Miriam Weber</div>
               <div class="actor-box-function">Studiengangsleitung</div>
             </div>
-            <span class="raci-badge raci-a" title="Accountable">A</span>
+            <span class="raci-badge raci-a" title="Accountable (Verantwortung)">A</span>
+          </div>
+
+          <div class="actor-box">
+            <div class="actor-box-avatar">SK</div>
+            <div class="actor-box-details">
+              <div class="actor-box-name">Samira Klein</div>
+              <div class="actor-box-function">Fachschaftsrat · Studierendenvertretung</div>
+            </div>
+            <span class="raci-badge raci-c" title="Consulted (Beratung)">C</span>
           </div>
 
           <div class="actor-box">
             <div class="actor-box-avatar">TR</div>
             <div class="actor-box-details">
               <div class="actor-box-name">Torsten Richter</div>
-              <div class="actor-box-function">Dezernat Finanzen/Personal</div>
+              <div class="actor-box-function">Dezernat Finanzen &amp; Personal</div>
             </div>
-            <span class="raci-badge raci-c" title="Consulted">C</span>
+            <span class="raci-badge raci-c" title="Consulted (Beratung)">C</span>
+          </div>
+
+          <div class="actor-box">
+            <div class="actor-box-avatar">PR</div>
+            <div class="actor-box-details">
+              <div class="actor-box-name">Präsidium</div>
+              <div class="actor-box-function">Hochschulleitung</div>
+            </div>
+            <span class="raci-badge raci-i" title="Informed (Information)">I</span>
           </div>
         </div>
 
@@ -2651,20 +2732,21 @@
           <div class="task-item">
             <div class="task-bullet">✓</div>
             <div class="task-content">
-              <strong>Selbstbericht-Konsolidierung:</strong> Darstellung der Qualifikationsziele, didaktischen Konzepten, Geschlechtergerechtigkeit und Barrierefreiheit.
-              <span class="task-ref">[MRVO §1-§4]</span>
+              <strong>Selbstbericht:</strong> Qualifikationsziele, Studiengangskonzept, didaktische Konzepte, Geschlechtergerechtigkeit und Nachteilsausgleich.
+              <span class="task-ref" title="Qualifikationsziele und Studiengangskonzept: Abschlussniveau nach dem Hochschulqualifikationsrahmen (HQR), schlüssiges Konzept und Umsetzung.">[StudakVO NRW §§ 11, 12]</span> <span class="task-ref" title="Geschlechtergerechtigkeit und Nachteilsausgleich: Konzepte der Hochschule zur Chancengleichheit werden auf Studiengangsebene umgesetzt.">[StudakVO NRW § 15]</span> <span class="task-ref" title="Begutachtung und Akkreditierungsbericht: Selbstbericht unter Beteiligung der Studierendenvertretung, Begehung (bei Reakkreditierung verzichtbar), Prüfbericht und Gutachten.">[StudakVO NRW § 24]</span>
             </div>
           </div>
           <div class="task-item">
             <div class="task-bullet">✓</div>
             <div class="task-content">
-              <strong>Kapazitäts- & Deputatsrechnung:</strong> Nachweis der personellen Absicherung des Lehrangebots nach Kapazitätsverordnung (KapVO).
+              <strong>Kapazitätsnachweis:</strong> Nachweis, dass das Lehrangebot personell abgesichert ist.
+              <span class="task-ref" title="Kapazitätsverordnung: Grundlage für die Berechnung der Lehrkapazität und Deputate.">[KapVO NRW]</span>
             </div>
           </div>
           <div class="task-item">
             <div class="task-bullet">✓</div>
             <div class="task-content">
-              <strong>Präsidiale Freigabe:</strong> Vorlage des Dossiers beim Präsidium zur Genehmigung vor der Agentur-Übermittlung.
+              <strong>Freigabe durch das Präsidium:</strong> Vorlage beim Präsidium vor der Übermittlung an die Agentur.
             </div>
           </div>
         </div>
@@ -2677,24 +2759,24 @@
         <div class="step-artifacts-grid">
           <div class="artifact-card" onclick="openDocModal('DOC-09')">
             <div class="artifact-top">
-              <span class="doc-type-badge">PDF · DOSSIER</span>
-              <span class="doc-status-badge doc-status-final">Signiert</span>
+              <span class="doc-type-badge">PDF · SELBSTBERICHT</span>
+              <span class="doc-status-badge doc-status-verified">Eingereicht</span>
             </div>
-            <div class="artifact-title">DOC-09_Selbstbericht_Akkreditierungsdossier_Hauptteil.pdf</div>
+            <div class="artifact-title">DOC-09_Selbstbericht_Hauptteil.pdf</div>
             <div class="artifact-meta">
-              <span>v1.0 Final · 14.2 MB</span>
+              <span>v1.0 · 14,2 MB</span>
               <span class="artifact-action-hint">Details ↗</span>
             </div>
           </div>
 
           <div class="artifact-card" onclick="openDocModal('DOC-10')">
             <div class="artifact-top">
-              <span class="doc-type-badge">PDF · ANLAGEN</span>
+              <span class="doc-type-badge">PDF · ANLAGENBAND</span>
               <span class="doc-status-badge doc-status-final">Freigegeben</span>
             </div>
-            <div class="artifact-title">DOC-10_Anlagenband_Kapazitaetsrechnung_Ressourcen.pdf</div>
+            <div class="artifact-title">DOC-10_Anlagen_Kapazitaet_Ressourcen.pdf</div>
             <div class="artifact-meta">
-              <span>v1.0 · 8.9 MB</span>
+              <span>v1.0 · 8,9 MB</span>
               <span class="artifact-action-hint">Details ↗</span>
             </div>
           </div>
@@ -2705,12 +2787,12 @@
           <div class="gate-info">
             <div class="gate-icon"><svg width="20" height="20" aria-hidden="true"><use href="#i-package"/></svg></div>
             <div class="gate-texts">
-              <h4>Gate 4: Einreichung bei Akkreditierungsagentur</h4>
-              <p>Offizielle Übergabe des Gesamtpakets an die zertifizierte Agentur (z. B. ASIIN / AQAS).</p>
+              <h4>Gate 4 · Einreichung bei der Agentur</h4>
+              <p>Gesamtpaket an die Agentur, die die Hochschule beauftragt hat. Die Agentur muss beim Akkreditierungsrat zugelassen sein.</p>
             </div>
           </div>
           <div class="gate-flow-badge">
-            <span>Hochschul-QM</span>
+            <span>Qualitätsmanagement</span>
             <span style="color:var(--accent)">──▶</span>
             <span>Akkreditierungsagentur</span>
           </div>
@@ -2718,20 +2800,24 @@
       </article>
 
       
-      <article class="step-card" id="step-5" data-step="5" data-roles="gutachter,leitung">
+      <article class="step-card" id="step-5" data-step="5" data-roles="extern,sgl,stud,qm">
         <div class="step-card-header">
           <div>
             <div class="step-meta-chips">
               <span class="chip-step-num">PHASE 05</span>
               <span class="chip-time">Monat 10 – 11 · Begutachtung</span>
             </div>
-            <h3 class="step-title">Externe Begutachtung & Peer-Review (Begehung)</h3>
+            <h3 class="step-title">Begutachtung durch das Gutachtergremium</h3>
           </div>
-          <div class="step-target-badge">Meilenstein: Gutachterbericht</div>
+          <div class="step-target-badge">Meilenstein: Akkreditierungsbericht (Entwurf)</div>
         </div>
 
         <p class="step-lead-text">
-          Vor-Ort-Begehung durch die unabhängige Gutachtergruppe (Hochschullehrende, Studierende, Vertreter der Berufspraxis). Auditgespräche mit Hochschulleitung, Dozierenden, Studierenden und Laborbesichtigungen.
+          Das Gutachtergremium besteht aus mindestens zwei Hochschullehrenden, einer Person aus der Berufspraxis und einer bzw. einem Studierenden. Die Agentur erstellt den Akkreditierungsbericht aus Prüfbericht (formale Kriterien) und Gutachten (fachlich-inhaltliche Kriterien).
+        </p>
+
+        <p class="step-lead-text">
+          Monat 10–11 entspricht Juli/August 2027 und fällt damit größtenteils in die vorlesungsfreie Zeit. Die Begehung sollte so terminiert werden, dass Studierende an den Gesprächen teilnehmen können. Bei einer Reakkreditierung kann auf die Begehung auch verzichtet werden.
         </p>
 
         
@@ -2744,27 +2830,45 @@
             <div class="actor-box-avatar">HB</div>
             <div class="actor-box-details">
               <div class="actor-box-name">Prof. Dr. Hendrik Brandt</div>
-              <div class="actor-box-function">Vorsitz Gutachterkommission</div>
+              <div class="actor-box-function">Sprecher Gutachtergremium</div>
             </div>
-            <span class="raci-badge raci-r" title="Responsible">R</span>
+            <span class="raci-badge raci-r" title="Responsible (Durchführung)">R</span>
           </div>
 
           <div class="actor-box">
             <div class="actor-box-avatar">SV</div>
             <div class="actor-box-details">
               <div class="actor-box-name">Dr. Susanne Völkel</div>
-              <div class="actor-box-function">Projektleiterin Akkreditierungsagentur</div>
+              <div class="actor-box-function">Referentin der Agentur</div>
             </div>
-            <span class="raci-badge raci-a" title="Accountable">A</span>
+            <span class="raci-badge raci-a" title="Accountable (Verantwortung)">A</span>
           </div>
 
           <div class="actor-box">
             <div class="actor-box-avatar">MW</div>
             <div class="actor-box-details">
               <div class="actor-box-name">Prof. Dr. Miriam Weber</div>
-              <div class="actor-box-function">Studiengangsleitung (Auskunft)</div>
+              <div class="actor-box-function">Studiengangsleitung</div>
             </div>
-            <span class="raci-badge raci-c" title="Consulted">C</span>
+            <span class="raci-badge raci-c" title="Consulted (Beratung)">C</span>
+          </div>
+
+          <div class="actor-box">
+            <div class="actor-box-avatar">SK</div>
+            <div class="actor-box-details">
+              <div class="actor-box-name">Samira Klein</div>
+              <div class="actor-box-function">Fachschaftsrat · Studierendenvertretung</div>
+            </div>
+            <span class="raci-badge raci-c" title="Consulted (Beratung)">C</span>
+          </div>
+
+          <div class="actor-box">
+            <div class="actor-box-avatar">LB</div>
+            <div class="actor-box-details">
+              <div class="actor-box-name">Dr. Laurenz Becker</div>
+              <div class="actor-box-function">Qualitätsmanagement (Akkreditierung)</div>
+            </div>
+            <span class="raci-badge raci-c" title="Consulted (Beratung)">C</span>
           </div>
         </div>
 
@@ -2777,20 +2881,21 @@
           <div class="task-item">
             <div class="task-bullet">✓</div>
             <div class="task-content">
-              <strong>Zweitägiges Audit & Vor-Ort-Gespräche:</strong> Getrennte Interviewrunden mit Studierenden ohne Beisein der Dozierenden; Begutachtung der Prüfungsakten.
-              <span class="task-ref">[MRVO §22]</span>
+              <strong>Begehung:</strong> Zwei Tage mit getrennten Gesprächsrunden, Studierende ohne Lehrende.
+              <span class="task-ref" title="Begutachtung und Akkreditierungsbericht: Selbstbericht unter Beteiligung der Studierendenvertretung, Begehung (bei Reakkreditierung verzichtbar), Prüfbericht und Gutachten.">[StudakVO NRW § 24]</span> <span class="task-ref" title="Gutachtergremium: Mindestens zwei Hochschullehrende, eine Person aus der Berufspraxis, eine Studierende oder ein Studierender.">[StudakVO NRW § 25]</span>
             </div>
           </div>
           <div class="task-item">
             <div class="task-bullet">✓</div>
             <div class="task-content">
-              <strong>Infrastruktur- & Laborvisite:</strong> Prüfung von Arbeitsplätzen, Softwarelizenzen und Barrierefreiheit der Lehrräume.
+              <strong>Labore und Räume:</strong> Arbeitsplätze, Softwarelizenzen und Barrierefreiheit.
             </div>
           </div>
           <div class="task-item">
             <div class="task-bullet">✓</div>
             <div class="task-content">
-              <strong>Abschlussfeedback & Berichtsentwurf:</strong> Mündliche Rückmeldung der Peers und Erstellung des schriftlichen Gutachtens mit Empfehlungen.
+              <strong>Akkreditierungsbericht:</strong> Mündliche Rückmeldung, danach Berichtsentwurf der Agentur mit Empfehlungen.
+              <span class="task-ref" title="Begutachtung und Akkreditierungsbericht: Selbstbericht unter Beteiligung der Studierendenvertretung, Begehung (bei Reakkreditierung verzichtbar), Prüfbericht und Gutachten.">[StudakVO NRW § 24]</span>
             </div>
           </div>
         </div>
@@ -2803,10 +2908,10 @@
         <div class="step-artifacts-grid">
           <div class="artifact-card" onclick="openDocModal('DOC-11')">
             <div class="artifact-top">
-              <span class="doc-type-badge">PDF · PROTOKOLL</span>
-              <span class="doc-status-badge doc-status-verified">Abgeschlossen</span>
+              <span class="doc-type-badge">PDF · ABLAUFPLAN</span>
+              <span class="doc-status-badge doc-status-final">Freigegeben</span>
             </div>
-            <div class="artifact-title">DOC-11_Ablaufplan_Begehung_Interviews.pdf</div>
+            <div class="artifact-title">DOC-11_Ablaufplan_Begehung.pdf</div>
             <div class="artifact-meta">
               <span>v1.0 · 380 KB</span>
               <span class="artifact-action-hint">Details ↗</span>
@@ -2815,12 +2920,12 @@
 
           <div class="artifact-card" onclick="openDocModal('DOC-12')">
             <div class="artifact-top">
-              <span class="doc-type-badge">PDF · GUTACHTEN</span>
-              <span class="doc-status-badge doc-status-final">Eingereicht</span>
+              <span class="doc-type-badge">PDF · PRÜFBERICHT UND GUTACHTEN</span>
+              <span class="doc-status-badge doc-status-draft">Entwurf</span>
             </div>
-            <div class="artifact-title">DOC-12_Vorlaeufiger_Gutachterbericht_der_Peers.pdf</div>
+            <div class="artifact-title">DOC-12_Akkreditierungsbericht_Entwurf.pdf</div>
             <div class="artifact-meta">
-              <span>v1.0 · 3.4 MB</span>
+              <span>v1.0 Entwurf · 3,4 MB</span>
               <span class="artifact-action-hint">Details ↗</span>
             </div>
           </div>
@@ -2831,33 +2936,33 @@
           <div class="gate-info">
             <div class="gate-icon"><svg width="20" height="20" aria-hidden="true"><use href="#i-search"/></svg></div>
             <div class="gate-texts">
-              <h4>Gate 5: Übermittlung des Gutachterberichts</h4>
-              <p>Gutachtergruppe übermittelt den Prüfbericht an die Hochschule zur Stellungnahme.</p>
+              <h4>Gate 5 · Berichtsentwurf an die Hochschule</h4>
+              <p>Die Agentur sendet den Entwurf des Akkreditierungsberichts zur Stellungnahme. Danach erstellt sie die finale Fassung.</p>
             </div>
           </div>
           <div class="gate-flow-badge">
-            <span>Gutachtergruppe</span>
+            <span>Agentur</span>
             <span style="color:var(--accent)">──▶</span>
-            <span>Hochschule & QM</span>
+            <span>Hochschule (QM)</span>
           </div>
         </div>
       </article>
 
       
-      <article class="step-card" id="step-6" data-step="6" data-roles="gutachter,qm,leitung">
+      <article class="step-card" id="step-6" data-step="6" data-roles="qm,gremien,sgl,extern,stud">
         <div class="step-card-header">
           <div>
             <div class="step-meta-chips">
               <span class="chip-step-num">PHASE 06</span>
-              <span class="chip-time">Monat 12 – 13 · Abschluss</span>
+              <span class="chip-time">Monat 12 – 13 · Antrag &amp; Entscheidung</span>
             </div>
-            <h3 class="step-title">Stellungnahme, Beschluss & Siegelverleihung</h3>
+            <h3 class="step-title">Antrag beim Akkreditierungsrat und Entscheidung</h3>
           </div>
-          <div class="step-target-badge is-done">Meilenstein: Akkreditiert bis 2035</div>
+          <div class="step-target-badge">Meilenstein: Akkreditiert für 8 Jahre</div>
         </div>
 
         <p class="step-lead-text">
-          Verfassen der hochschulischen Stellungnahme zum Gutachten, Beseitigung etwaiger Auflagen und formeller Antrag im Portal ELIAS des Akkreditierungsrates. Verleihung des offiziellen Siegels und Veröffentlichung der PO im Amtlichen Mitteilungsblatt.
+          Stellungnahme zum Berichtsentwurf, Antrag in ELIAS, dem elektronischen Antragssystem des Akkreditierungsrats. Der Akkreditierungsrat entscheidet und vergibt sein Siegel. Die Prüfungsordnung wird im Amtlichen Mitteilungsblatt veröffentlicht.
         </p>
 
         
@@ -2867,21 +2972,21 @@
         </div>
         <div class="step-actors-grid">
           <div class="actor-box">
-            <div class="actor-box-avatar">AR</div>
-            <div class="actor-box-details">
-              <div class="actor-box-name">Akkreditierungsrat (Bonn)</div>
-              <div class="actor-box-function">Zentrale Beschlusskammer</div>
-            </div>
-            <span class="raci-badge raci-a" title="Accountable">A</span>
-          </div>
-
-          <div class="actor-box">
             <div class="actor-box-avatar">LB</div>
             <div class="actor-box-details">
               <div class="actor-box-name">Dr. Laurenz Becker</div>
-              <div class="actor-box-function">QM-Koordination / ELIAS-Portal</div>
+              <div class="actor-box-function">Qualitätsmanagement (Akkreditierung)</div>
             </div>
-            <span class="raci-badge raci-r" title="Responsible">R</span>
+            <span class="raci-badge raci-r" title="Responsible (Durchführung)">R</span>
+          </div>
+
+          <div class="actor-box">
+            <div class="actor-box-avatar">PR</div>
+            <div class="actor-box-details">
+              <div class="actor-box-name">Präsidium</div>
+              <div class="actor-box-function">Hochschulleitung</div>
+            </div>
+            <span class="raci-badge raci-a" title="Accountable (Verantwortung)">A</span>
           </div>
 
           <div class="actor-box">
@@ -2890,7 +2995,25 @@
               <div class="actor-box-name">Prof. Dr. Miriam Weber</div>
               <div class="actor-box-function">Studiengangsleitung</div>
             </div>
-            <span class="raci-badge raci-c" title="Consulted">C</span>
+            <span class="raci-badge raci-c" title="Consulted (Beratung)">C</span>
+          </div>
+
+          <div class="actor-box">
+            <div class="actor-box-avatar">AR</div>
+            <div class="actor-box-details">
+              <div class="actor-box-name">Akkreditierungsrat</div>
+              <div class="actor-box-function">Stiftung Akkreditierungsrat, Bonn</div>
+            </div>
+            <span class="raci-badge raci-i" title="Informed (Information)">I</span>
+          </div>
+
+          <div class="actor-box">
+            <div class="actor-box-avatar">SK</div>
+            <div class="actor-box-details">
+              <div class="actor-box-name">Samira Klein</div>
+              <div class="actor-box-function">Fachschaftsrat · Studierendenvertretung</div>
+            </div>
+            <span class="raci-badge raci-i" title="Informed (Information)">I</span>
           </div>
         </div>
 
@@ -2903,21 +3026,28 @@
           <div class="task-item">
             <div class="task-bullet">✓</div>
             <div class="task-content">
-              <strong>Hochschulische Stellungnahme:</strong> Würdigung von Empfehlungen und Richtigstellung faktischer Details im Gutachten.
-              <span class="task-ref">[MRVO §23]</span>
+              <strong>Stellungnahme:</strong> Umgang mit den Empfehlungen und Richtigstellung sachlicher Details.
             </div>
           </div>
           <div class="task-item">
             <div class="task-bullet">✓</div>
             <div class="task-content">
-              <strong>Beschluss des Akkreditierungsrates:</strong> Prüfung des Antrags und Verleihung des Qualitätssiegels ohne Auflagen für 8 Jahre.
+              <strong>Antrag in ELIAS:</strong> Selbstbericht und finaler Akkreditierungsbericht werden elektronisch eingereicht.
+              <span class="task-ref" title="Antrag und Unterlagen: Selbstbericht und Akkreditierungsbericht; die Antragstellung erfolgt elektronisch über ELIAS.">[StudakVO NRW § 23]</span>
             </div>
           </div>
           <div class="task-item">
             <div class="task-bullet">✓</div>
             <div class="task-content">
-              <strong>Amtliche Bekanntmachung:</strong> Rechtskräftige Veröffentlichung der novellierten Prüfungsordnung im Verkündungsblatt der Hochschule.
-              <span class="task-ref">[Amtsblatt Nr. 14/2027]</span>
+              <strong>Entscheidung:</strong> Der Akkreditierungsrat entscheidet über die Akkreditierung; die Reakkreditierung gilt acht Jahre.
+              <span class="task-ref" title="Entscheidung des Akkreditierungsrats: Der Akkreditierungsrat entscheidet auf Antrag der Hochschule und vergibt sein Siegel.">[StudakVO NRW § 22]</span> <span class="task-ref" title="Geltungszeitraum: Acht Jahre ab Beginn des Semesters, in dem die Entscheidung bekanntgegeben wird – auch bei Reakkreditierung.">[StudakVO NRW § 26]</span>
+            </div>
+          </div>
+          <div class="task-item">
+            <div class="task-bullet">✓</div>
+            <div class="task-content">
+              <strong>Veröffentlichung:</strong> Bekanntmachung der neuen Prüfungsordnung im Amtlichen Mitteilungsblatt (Nr. 14/2027).
+              <span class="task-ref" title="Ordnungen der Hochschule: Das Präsidium prüft Ordnungen vor ihrer Veröffentlichung auf Rechtmäßigkeit; wirksam werden sie mit der Bekanntmachung.">[HG NRW § 2 Abs. 4]</span>
             </div>
           </div>
         </div>
@@ -2930,42 +3060,42 @@
         <div class="step-artifacts-grid">
           <div class="artifact-card" onclick="openDocModal('DOC-13')">
             <div class="artifact-top">
-              <span class="doc-type-badge">PDF · REPLIK</span>
-              <span class="doc-status-badge doc-status-final">Eingereicht</span>
+              <span class="doc-type-badge">PDF · STELLUNGNAHME</span>
+              <span class="doc-status-badge doc-status-verified">Eingereicht</span>
             </div>
-            <div class="artifact-title">DOC-13_Hochschulische_Stellungnahme_zu_Empfehlungen.pdf</div>
+            <div class="artifact-title">DOC-13_Stellungnahme_Hochschule.pdf</div>
             <div class="artifact-meta">
-              <span>v1.0 · 1.2 MB</span>
+              <span>v1.0 · 1,2 MB</span>
               <span class="artifact-action-hint">Details ↗</span>
             </div>
           </div>
 
           <div class="artifact-card" onclick="openDocModal('DOC-14')">
             <div class="artifact-top">
-              <span class="doc-type-badge">PDF · URKUNDE</span>
-              <span class="doc-status-badge doc-status-final">Offiziell Gesiegelt</span>
+              <span class="doc-type-badge">PDF · BESCHEID</span>
+              <span class="doc-status-badge doc-status-final">Entschieden</span>
             </div>
-            <div class="artifact-title">DOC-14_Bescheid_Akkreditierungsurkunde_Qualitaetssiegel.pdf</div>
+            <div class="artifact-title">DOC-14_Akkreditierungsentscheidung_Siegel.pdf</div>
             <div class="artifact-meta">
-              <span>vFinal · 2.1 MB</span>
+              <span>final · 2,1 MB</span>
               <span class="artifact-action-hint">Details ↗</span>
             </div>
           </div>
         </div>
 
         
-        <div class="step-gate-box is-final">
+        <div class="step-gate-box">
           <div class="gate-info">
             <div class="gate-icon"><svg width="20" height="20" aria-hidden="true"><use href="#i-award"/></svg></div>
             <div class="gate-texts">
-              <h4>Prozessabschluss: Reakkreditierung erfolgreich</h4>
-              <p>Studiengang ist bis 2035 akkreditiert. Alle Dokumente liegen im Moodle-Kurs (Abschnitt des Studiengangs) und auf Laufwerk X.</p>
+              <h4>Abschluss · Reakkreditierung</h4>
+              <p>Der Studiengang ist bis 30.09.2035 akkreditiert. Alle Dokumente liegen im Moodle-Kurs und auf Laufwerk X.</p>
             </div>
           </div>
           <div class="gate-flow-badge">
             <span>Akkreditierungsrat</span>
             <span style="color:var(--accent)">──▶</span>
-            <span>Hochschule & Studierende</span>
+            <span>Hochschule</span>
           </div>
         </div>
       </article>
@@ -2978,13 +3108,13 @@
     <div class="matrix-card">
       <div class="matrix-header">
         <div>
-          <h3 style="font-size: 20px; font-weight: 700; margin-bottom: 4px;">Zentrale Übergabematrix aller Dokumente</h3>
+          <h3 style="font-size: 20px; font-weight: 700; margin-bottom: 4px;">Übergabematrix · alle 14 Dokumente</h3>
           <p style="font-size: 13px; color: var(--text-muted);">
-            Alle 14 Übergabeartefakte (.pdf) mit Versionsstand, Verantwortlichkeit, Prüfstatus und Ablageort – für <strong id="matrixProgram">Studiengang</strong>.
+            Versionsstand, Verfasser, Empfänger, Status und Ablageort – für <strong id="matrixProgram">Studiengang</strong>.
           </p>
         </div>
 
-        <input type="text" id="matrixSearchInput" class="matrix-search" placeholder="Dokument suchen (z.B. SPO, MHB)..." oninput="filterMatrixTable()">
+        <input type="text" id="matrixSearchInput" class="matrix-search" placeholder="Titel, Person, ID" oninput="filterMatrixTable()">
       </div>
 
       <div class="matrix-table-wrap">
@@ -2994,8 +3124,8 @@
               <th>ID</th>
               <th>Dokumentenname (.pdf)</th>
               <th>Phase</th>
-              <th>Verfasser (Lead)</th>
-              <th>Empfänger / Freigabe</th>
+              <th>Verfasst von</th>
+              <th>Empfänger</th>
               <th>Status</th>
               <th>Größe</th>
               <th>Vorschau & Ablage</th>
@@ -3014,8 +3144,8 @@
     <div class="section-head">
       <h3>Studiengänge & Dokumentenablage</h3>
       <p>
-        ACCREDO begleitet die Reakkreditierung von 12 Studiengängen. Jedes Übergabedokument liegt mit demselben Dateinamen an zwei Orten:
-        im Moodle-Kurs (ein Abschnitt je Studiengang) und zusätzlich lokal auf Laufwerk X der Hochschule.
+        Zwölf Studiengänge, zwei Ablageorte: Jedes Dokument liegt mit gleichem Dateinamen im Moodle-Kurs „ACCREDO“ (ein Abschnitt je Studiengang)
+        und auf Laufwerk X, geordnet nach Abschluss › Studiengang › Phase.
       </p>
     </div>
 
@@ -3032,7 +3162,7 @@
           <li><strong>Abschnitt 0</strong> · Allgemeines: dieser Leitfaden (ACCREDO)</li>
           <li><strong>Abschnitt 1–8</strong> · Bachelorstudiengänge</li>
           <li><strong>Abschnitt 9–12</strong> · Masterstudiengänge</li>
-          <li><strong>Im Abschnitt</strong> · alle PDFs des Studiengangs (SPO, Modulhandbuch, Selbstbericht …), nach Phase 1–6</li>
+          <li><strong>Im Abschnitt</strong> · alle PDFs des Studiengangs (Prüfungsordnung, Modulhandbuch, Selbstbericht …), nach Phase 1–6</li>
         </ul>
         <div class="program-actions">
           <a class="store-btn" id="progMoodleCourse" href="#" target="_blank" rel="noopener">Moodle-Kurs öffnen ↗</a>
@@ -3078,8 +3208,8 @@
         <div class="modal-header-info">
           <div class="brand-mark" style="width:32px; height:32px; font-size:13px;">PDF</div>
           <div>
-            <h4 id="modalDocTitle" style="font-size:15px; font-weight:700; color:var(--text-main);">DOC-03_Entwurf_Pruefungsordnung_SPO_v2.0.pdf</h4>
-            <span id="modalDocType" style="font-size:11px; color:var(--text-dim);">Satzungsentwurf · Modulordnung</span>
+            <h4 id="modalDocTitle" style="font-size:15px; font-weight:700; color:var(--text-main);">DOC-03_Entwurf_Pruefungsordnung_PO_v2.0.pdf</h4>
+            <span id="modalDocType" style="font-size:11px; color:var(--text-dim);">Satzungsentwurf · Phase 2</span>
           </div>
         </div>
         <button class="modal-close-btn" onclick="closeDocModal()" aria-label="Dokument schließen">✕</button>
@@ -3093,7 +3223,7 @@
           </div>
           <div>
             <div class="meta-item-label">Version</div>
-            <div class="meta-item-val" id="modalDocVer">v2.0 Draft</div>
+            <div class="meta-item-val" id="modalDocVer">v2.0 Entwurf</div>
           </div>
           <div>
             <div class="meta-item-label">Prüfstatus</div>
@@ -3157,12 +3287,13 @@ Loading preview...
   <footer class="page-footer">
     <div class="footer-inner">
       <div>
-        <strong>ACCREDO · Hochschulinterner Prozessleitfaden</strong><br>
-        Entwickelt für Studiengangsleitungen, Qualitätsmanagement und Fakultätsräte.
+        <strong>ACCREDO</strong> · Leitfaden für Studiengangsleitungen, Qualitätsmanagement und Gremien.<br>
+        Beispieldaten: Personen, Aktenzeichen, Termine, Dateigrößen und Status sind fiktiv. Kein Studiengang ist hier tatsächlich im Verfahren.
       </div>
       <div>
         Ablage: Moodle-Kurs ACCREDO (je Studiengang ein Abschnitt) · Laufwerk X (lokal)<br>
-        Rechtliche Grundlage: Musterrechtsverordnung (MRVO) & Hochschulgesetz (HG NRW).
+        Rechtsgrundlagen: <a href="https://recht.nrw.de/gvnrw/2018-s98/" target="_blank" rel="noopener">StudakVO NRW</a> (setzt die <a href="https://www.akkreditierungsrat.de/sites/default/files/downloads/2019/Musterrechtsverordnung.pdf" target="_blank" rel="noopener">MRVO</a> um, gleiche Paragrafen),
+        <a href="https://recht.nrw.de/lrgv/gesetz/12122013-gesetz-ueber-die-hochschulen-des-landes-nordrhein-westfalen-hochschulgesetz-hg/" target="_blank" rel="noopener">Hochschulgesetz NRW</a>.
       </div>
     </div>
   </footer>
@@ -3176,351 +3307,349 @@ Loading preview...
       'DOC-01': {
         id: 'DOC-01',
         title: 'DOC-01_Bestandsaufnahme_Evaluationsbericht_2022-2026.pdf',
-        type: 'Evaluationsbericht · Qualitätsanalyse',
+        type: 'Evaluationsbericht',
         phase: 'Phase 1',
-        ver: 'v1.2 Final',
+        ver: 'v1.2',
         status: 'Freigegeben',
-        size: '4.2 MB',
+        size: '4,2 MB',
         author: 'Dr. Laurenz Becker (QM)',
-        recipient: 'Studiengangsleitung & Curriculums-AG',
+        recipient: 'Studiengangsleitung, Curriculums-AG',
         hash: 'SHA-256: 9b12a87c...e01f44',
-        chain: ['QM: Datenerhebung ✓', 'Fakultätsrat: Zur Kenntnis ✓', 'Studiengangsleitung: Abnahme ✓'],
-        content: `HOCHSCHULE EVALUATIONSBERICHT (2022–2026)
+        chain: ['QM: Datenerhebung ✓', 'Fakultätsrat: zur Kenntnis ✓', 'Studiengangsleitung: Abnahme ✓'],
+        content: `EVALUATIONSBERICHT 2022–2026
 Studiengang: {SG}
-Aktenzeichen: ZQA-2026-REAKK
+Aktenzeichen: QM-2026-REAKK
 
-1. ZUSAMMENFASSUNG DER STUDIERENDENBEFRAGUNGEN
-- Gesamtzufriedenheit: 84% positiv
-- Hohe Anerkennung der praxisnahen Projekt- und Laboranteile.
-- Kritikpunkt: Workload-Spitzen im vorletzten Fachsemester durch zwei parallel laufende Projektmodule.
+1. STUDIERENDENBEFRAGUNGEN
+- Gesamtzufriedenheit: 84 % positiv
+- Praxisnahe Projekt- und Laboranteile werden besonders geschätzt.
+- Kritik: Workload-Spitze im vorletzten Fachsemester durch zwei parallele Projektmodule.
 
-2. STATISTISCHE KENNZAHLEN
+2. KENNZAHLEN
 - Durchschnittliche Studiendauer: 0,8 Fachsemester über der Regelstudienzeit
 - Erfolgsquote (Regelstudienzeit + 2 Semester): 89,2 %
-- Empfehlung: Entzerrung der Prüfungsleistungen im vorletzten Semester im Zuge der neuen Prüfungsordnung (SPO v2.0).`
+- Empfehlung: Prüfungen im vorletzten Semester in der neuen Prüfungsordnung (PO v2.0) entzerren.`
       },
       'DOC-02': {
         id: 'DOC-02',
-        title: 'DOC-02_Projektstrukturplan_Meilensteine_Reakkreditierung.pdf',
-        type: 'Projektmanagement · Zeitplan',
+        title: 'DOC-02_Projektplan_Meilensteine_Reakkreditierung.pdf',
+        type: 'Zeitplan',
         phase: 'Phase 1',
         ver: 'v1.0',
-        status: 'Bestätigt',
-        size: '1.1 MB',
-        author: 'Studiengangsleitung (Weber)',
-        recipient: 'Präsidium & Dekanat',
+        status: 'Freigegeben',
+        size: '1,1 MB',
+        author: 'Prof. Dr. Miriam Weber (Studiengangsleitung)',
+        recipient: 'Dekanat, Präsidium',
         hash: 'SHA-256: 77a1e4c9...55b892',
-        chain: ['Studiengangsleitung: Erstellt ✓', 'Dekanat: Bestätigt ✓', 'Präsidium: Freigabe ✓'],
-        content: `PROJEKTSTRUKTURPLAN REAKKREDITIERUNG
+        chain: ['Studiengangsleitung: erstellt ✓', 'Dekanat: bestätigt ✓', 'Präsidium: freigegeben ✓'],
+        content: `PROJEKTPLAN REAKKREDITIERUNG
 Laufzeit: 01.10.2026 bis 31.10.2027 (13 Monate)
 
-MEILENSTEINE:
-M1 (Monat 02): Abschluss Bestandsaufnahme & Workshop
-M2 (Monat 05): Fertigstellung SPO v2.0 & Modulhandbuch
-M3 (Monat 07): Beschluss im Fakultätsrat
-M4 (Monat 09): Abgabe Selbstbericht an Agentur
-M5 (Monat 11): Vor-Ort-Begehung der Peers
-M6 (Monat 13): Siegel des Akkreditierungsrates`
+MEILENSTEINE
+M1 (Monat 2):  Bestandsaufnahme und Workshop abgeschlossen
+M2 (Monat 5):  PO v2.0 und Modulhandbuch fertig
+M3 (Monat 7):  Beschluss im Fakultätsrat
+M4 (Monat 9):  Selbstbericht an die Agentur
+M5 (Monat 11): Begehung durch das Gutachtergremium
+M6 (Monat 13): Entscheidung des Akkreditierungsrats`
       },
       'DOC-03': {
         id: 'DOC-03',
-        title: 'DOC-03_Entwurf_Pruefungsordnung_SPO_v2.0.pdf',
-        type: 'Satzung · Spezielle Prüfungsordnung',
+        title: 'DOC-03_Entwurf_Pruefungsordnung_PO_v2.0.pdf',
+        type: 'Satzungsentwurf',
         phase: 'Phase 2',
-        ver: 'v2.0 Draft',
+        ver: 'v2.0 Entwurf',
         status: 'In Prüfung',
         size: '850 KB',
         author: 'Curriculums-AG (Weber, Lindner)',
-        recipient: 'Justitiariat & Prüfungsausschuss',
+        recipient: 'Prüfungsausschuss, Justitiariat',
         hash: 'SHA-256: c398ef01...617a22',
-        chain: ['Curriculums-AG: Entwurf ✓', 'Prüfungsausschuss: In Prüfung ⏳', 'Justitiariat: Ausstehend ○'],
-        content: `SPEZIELLE PRÜFUNGSORDNUNG (SPO v2.0)
+        chain: ['Curriculums-AG: Entwurf ✓', 'Prüfungsausschuss: Prüfung ⏳', 'Justitiariat: Rechtsprüfung ○'],
+        content: `PRÜFUNGSORDNUNG (PO v2.0)
 für den {SG_ART} {SG}
+– ergänzt die Rahmenprüfungsordnung der Hochschule –
 
-§ 4 Regelstudienzeit und ECTS-Punkte
+§ 4 Regelstudienzeit und Leistungspunkte
 (1) Regelstudienzeit und Umfang in Leistungspunkten (ECTS) ergeben sich aus dem Studienverlaufsplan (Anlage 1).
-(2) Ein Leistungspunkt entspricht einem studentischen Arbeitsaufwand von 25 bis 30 Stunden.
+(2) Ein Leistungspunkt entspricht einem Arbeitsaufwand von 25 bis 30 Stunden.
 
-§ 12 Zulässige Prüfungsformen
-(1) Prüfungsleistungen werden erbracht durch:
-    a) Klausurarbeiten (60–120 Minuten)
-    b) Mündliche Prüfungen (20–30 Minuten)
-    c) Projektarbeiten mit praktischem Implementierungsanteil und Fachgespräch
-    d) E-Prüfungen im gesicherten Prüfungsumfeld
+§ 12 Prüfungsformen
+(1) Prüfungsleistungen werden erbracht durch
+    a) Klausurarbeiten (60–120 Minuten),
+    b) mündliche Prüfungen (20–30 Minuten),
+    c) Projektarbeiten mit praktischem Anteil und Fachgespräch,
+    d) elektronische Prüfungen in gesicherter Umgebung.
 
 § 18 Nachteilsausgleich
-(1) Bei Vorliegen von chronischen Erkrankungen oder Behinderungen gewährt der Prüfungsausschuss auf Antrag modifizierte Prüfungsbedingungen (z.B. Schreibzeitverlängerung).`
+(1) Bei chronischer Erkrankung oder Behinderung gewährt der Prüfungsausschuss auf Antrag angepasste Prüfungsbedingungen, z. B. eine verlängerte Bearbeitungszeit.`
       },
       'DOC-04': {
         id: 'DOC-04',
-        title: 'DOC-04_Modulhandbuch_MHB_Curriculum_Gesamt.pdf',
-        type: 'Modulhandbuch · Modulkatalog',
+        title: 'DOC-04_Modulhandbuch_Curriculum_Gesamt.pdf',
+        type: 'Modulhandbuch',
         phase: 'Phase 2',
         ver: 'v2.1',
-        status: 'Geprüft',
-        size: '6.8 MB',
-        author: 'Modulverantwortliche & Curriculums-AG',
-        recipient: 'Studiendekanat & Akkreditierungsagentur',
+        status: 'Freigegeben',
+        size: '6,8 MB',
+        author: 'Modulverantwortliche, Curriculums-AG',
+        recipient: 'Dekanat, Agentur',
         hash: 'SHA-256: ea44b029...810f3c',
-        chain: ['Modulverantwortliche: Erstellt ✓', 'Curriculums-AG: Konsolidiert ✓', 'QM: Taxonomieprüfung ✓'],
-        content: `MODULHANDBUCH (MHB 2027)
+        chain: ['Modulverantwortliche: erstellt ✓', 'Curriculums-AG: zusammengeführt ✓', 'QM: formale Prüfung ✓'],
+        content: `MODULHANDBUCH 2027
 {SG}
 
 MODUL M-101: Einführung in das Fachgebiet
-- ECTS: 6 LP | Workload: 180 h (Präsenz: 60 h, Eigenstudium: 120 h)
+- Leistungspunkte: 6 | Workload: 180 h (Präsenz 60 h, Selbststudium 120 h)
 - Qualifikationsziele:
   Die Studierenden können zentrale Begriffe, Methoden und Standards des Fachs benennen, analysieren und in einem ersten Praxisprojekt anwenden.
-- Prüfungsform: Projektarbeit mit Prototyp & Präsentation`
+- Prüfungsform: Projektarbeit mit Prototyp und Präsentation`
       },
       'DOC-05': {
         id: 'DOC-05',
-        title: 'DOC-05_Kompetenzmatrix_Qualifikationsziele_Matrix.pdf',
-        type: 'Kompetenzmatrix · Mapping',
+        title: 'DOC-05_Kompetenzmatrix_Qualifikationsziele.pdf',
+        type: 'Matrix',
         phase: 'Phase 2',
         ver: 'v1.4',
         status: 'Freigegeben',
-        size: '1.9 MB',
-        author: 'Curriculums-AG & QM',
-        recipient: 'Gutachterkommission',
+        size: '1,9 MB',
+        author: 'Curriculums-AG, QM',
+        recipient: 'Gutachtergremium',
         hash: 'SHA-256: 12de78cc...bb9011',
-        chain: ['Curriculums-AG: Mapping ✓', 'Fachschaft: Feedback eingeholt ✓', 'QM: Freigabe ✓'],
-        content: `KOMPETENZMATRIX & LERNZIEL-MAPPING
-Verknüpfung der Studiengangsprofile mit dem DQR (Stufe {DQR}):
+        chain: ['Curriculums-AG: Zuordnung ✓', 'Fachschaft: Rückmeldung ✓', 'QM: Freigabe ✓'],
+        content: `KOMPETENZMATRIX
+Zuordnung der Qualifikationsziele zum Hochschulqualifikationsrahmen (HQR), {HQR}:
 
-1. Wissen & Verstehen:
-   - Module M-101 bis M-106 vermitteln die fachlichen Grundlagen.
-2. Einsatz & Problemlösung:
-   - Labor- und Projektmodule im Studienverlauf.
-3. Kommunikation & Kooperation:
-   - Interdisziplinäres Studienprojekt.
-4. Wissenschaftliches Selbstverständnis:
-   - Abschlussarbeit & Kolloquium (letztes Fachsemester).`
+1. Wissen und Verstehen
+   - Module M-101 bis M-106: fachliche Grundlagen
+2. Einsatz, Anwendung und Erzeugung von Wissen
+   - Labor- und Projektmodule im Studienverlauf
+3. Kommunikation und Kooperation
+   - Interdisziplinäres Studienprojekt
+4. Wissenschaftliches Selbstverständnis
+   - Abschlussarbeit und Kolloquium (letztes Fachsemester)`
       },
       'DOC-06': {
         id: 'DOC-06',
-        title: 'DOC-06_Justitiariat_Rechtsgutachten_Pruefvermerk.pdf',
-        type: 'Rechtsgutachten · Prüfvermerk',
+        title: 'DOC-06_Justitiariat_Pruefvermerk.pdf',
+        type: 'Rechtsprüfung',
         phase: 'Phase 3',
         ver: 'v1.0',
-        status: 'Testiert',
+        status: 'Freigegeben',
         size: '620 KB',
-        author: 'RA Barbara Hoffmann (Justitiariat)',
-        recipient: 'Fakultätsrat & Dekanin',
+        author: 'Barbara Hoffmann (Justitiariat)',
+        recipient: 'Präsidium, Dekanat',
         hash: 'SHA-256: 6a54019f...9c87d2',
-        chain: ['Justitiariat: Juristische Prüfung ✓', 'Prüfungsausschuss: Abstimmung ✓', 'Dekanat: Testiert ✓'],
-        content: `RECHTSPRÜFVERMERK DES JUSTITIARIATS
-Az: JUR-2027-PO-04
+        chain: ['Justitiariat: Rechtsprüfung ✓', 'Prüfungsausschuss: Abstimmung ✓', 'Präsidium: zur Kenntnis ✓'],
+        content: `PRÜFVERMERK DES JUSTITIARIATS
+Az.: JUR-2027-PO-04
+Gegenstand: Prüfungsordnung PO v2.0, {SG}
 
-Gegenstand: Spezielle Prüfungsordnung (SPO v2.0) {SG}
-
-ERGEBNIS DER PRÜFUNG:
-1. Die Regelungen zur Notenbildung und Prüfungswiederholung (§ 14) entsprechen den Vorgaben des § 64 HG NRW.
-2. Die Formulierung zum Nachteilsausgleich (§ 18) erfüllt die bundesverfassungsgerichtlichen Anforderungen an Chancengleichheit.
-3. Der Entwurf ist satzungsreif und kann dem Fakultätsrat zur Beschlussfassung vorgelegt werden.`
+ERGEBNIS
+1. Notenbildung und Wiederholung von Prüfungen (§ 14) entsprechen § 64 HG NRW und der Rahmenprüfungsordnung.
+2. Die Regelung zum Nachteilsausgleich (§ 18) wahrt die Chancengleichheit.
+3. Keine rechtlichen Bedenken. Der Entwurf kann dem Fakultätsrat zur Beschlussfassung vorgelegt werden.`
       },
       'DOC-07': {
         id: 'DOC-07',
-        title: 'DOC-07_Stellungnahme_Fachschaftsrat_Studierende.pdf',
-        type: 'Stellungnahme · Studierendenhearing',
+        title: 'DOC-07_Stellungnahme_Fachschaftsrat.pdf',
+        type: 'Stellungnahme',
         phase: 'Phase 3',
         ver: 'v1.0',
-        status: 'Protokolliert',
+        status: 'Beschlossen',
         size: '450 KB',
         author: 'Samira Klein (Fachschaftsrat)',
         recipient: 'Fakultätsrat',
         hash: 'SHA-256: dd338901...4410ab',
-        chain: ['Fachschaft: Vollversammlung ✓', 'FSR-Vorstand: Beschluss ✓', 'Fakultätsrat: Übergeben ✓'],
-        content: `STELLUNGNAHME DES FACHSCHAFTSRATS (FSR)
-zum Satzungsentwurf SPO v2.0
+        chain: ['Fachschaft: Vollversammlung ✓', 'Fachschaftsrat: Beschluss ✓', 'Fakultätsrat: übergeben ✓'],
+        content: `STELLUNGNAHME DES FACHSCHAFTSRATS
+zum Entwurf der PO v2.0
 
-Der Fachschaftsrat begrüßt ausdrücklich:
-- Die Entzerrung der Prüfungen im vorletzten Semester.
-- Die Einführung von Projektarbeiten als vollwertige Prüfungsform in den Modulen M-101 und M-105.
-- Die Flexibilisierung der Wahlpflichtbereiche.
+Der Fachschaftsrat begrüßt:
+- die Entzerrung der Prüfungen im vorletzten Semester,
+- Projektarbeiten als Prüfungsform in den Modulen M-101 und M-105,
+- mehr Wahlfreiheit im Wahlpflichtbereich.
 
-Votum: Einstimmig befürwortet (5 Ja-Stimmen).`
+Votum: befürwortet (5 Ja-Stimmen, 0 Nein, 0 Enthaltungen).`
       },
       'DOC-08': {
         id: 'DOC-08',
-        title: 'DOC-08_Fakultaetsratsbeschluss_PO_Beschlussauszug.pdf',
-        type: 'Gremienbeschluss · Auszug',
+        title: 'DOC-08_Fakultätsratsbeschluss_PO_Auszug.pdf',
+        type: 'Beschlussauszug',
         phase: 'Phase 3',
-        ver: 'vFinal',
-        status: 'Gesiegelt',
-        size: '1.4 MB',
+        ver: 'final',
+        status: 'Beschlossen',
+        size: '1,4 MB',
         author: 'Prof. Dr. Anke Neumann (Dekanin)',
-        recipient: 'QM & Präsidium',
+        recipient: 'QM, Präsidium',
         hash: 'SHA-256: fee78901...aa4567',
-        chain: ['Fakultätsrat: 1. Lesung ✓', 'Fakultätsrat: 2. Lesung & Beschluss ✓', 'Dekanin: Ausfertigung ✓'],
-        content: `BESCHLUSSAUSZUG DER 84. SITZUNG DES FAKULTÄTSRATS
+        chain: ['Fakultätsrat: 1. Lesung ✓', 'Fakultätsrat: 2. Lesung und Beschluss ✓', 'Dekanin: Ausfertigung ✓'],
+        content: `BESCHLUSSAUSZUG, 84. SITZUNG DES FACHBEREICHSRATS
 Datum: 14. April 2027
+TOP 4: Neufassung der Prüfungsordnung {SG} (PO v2.0)
 
-TOP 4: Neufassung der Prüfungsordnung {SG} (SPO v2.0)
+BESCHLUSS
+Der Fakultätsrat beschließt die Prüfungsordnung (PO v2.0) in der Fassung vom 10.04.2027.
 
-BESCHLUSS:
-Der Fakultätsrat beschließt die Spezielle Prüfungsordnung (SPO v2.0) in der Fassung vom 10.04.2027 einstimmig.
-Abstimmungsergebnis:
-- Ja-Stimmen: 11
-- Nein-Stimmen: 0
-- Enthaltungen: 0`
+Abstimmung: 11 Ja, 0 Nein, 0 Enthaltungen
+
+Die Ordnung tritt nach Prüfung durch das Präsidium mit der Veröffentlichung im Amtlichen Mitteilungsblatt in Kraft.`
       },
       'DOC-09': {
         id: 'DOC-09',
-        title: 'DOC-09_Selbstbericht_Akkreditierungsdossier_Hauptteil.pdf',
-        type: 'Akkreditierungsdossier · Selbstbericht',
+        title: 'DOC-09_Selbstbericht_Hauptteil.pdf',
+        type: 'Selbstbericht',
         phase: 'Phase 4',
-        ver: 'v1.0 Final',
-        status: 'Signiert',
-        size: '14.2 MB',
-        author: 'Dr. Laurenz Becker & Prof. Dr. Weber',
+        ver: 'v1.0',
+        status: 'Eingereicht',
+        size: '14,2 MB',
+        author: 'Dr. Laurenz Becker, Prof. Dr. Miriam Weber',
         recipient: 'Akkreditierungsagentur',
         hash: 'SHA-256: 334455aa...bbccdd',
-        chain: ['QM: Redaktion ✓', 'Dekanat: Gegenzeichnung ✓', 'Präsident: Offizielle Unterschrift ✓'],
+        chain: ['QM: Redaktion ✓', 'Fachschaftsrat: beteiligt ✓', 'Dekanat: gegengezeichnet ✓', 'Präsidium: Freigabe ✓'],
         content: `SELBSTBERICHT ZUR REAKKREDITIERUNG
 Studiengang: {SG}
-Einreichung bei Agentur: ASIIN / AQAS
+Beauftragte Agentur: [Name der zugelassenen Agentur]
 
-INHALTSVERZEICHNIS:
-1. Profil & Qualifikationsziele des Studiengangs
-2. Curriculare Struktur & Prüfungsordnung (SPO v2.0)
-3. Studierbarkeit, Workload-Monitoring & Beratungssysteme
-4. Personelle Ausstattung & wissenschaftliche Qualifikation
-5. Sächliche Ressourcen, Labore & IT-Infrastruktur
-6. Qualitätssicherung & Weiterentwicklungskonzept`
+INHALT
+1. Profil und Qualifikationsziele
+2. Studiengangskonzept und Prüfungsordnung (PO v2.0)
+3. Studierbarkeit, Workload-Monitoring und Beratung
+4. Personelle Ausstattung
+5. Räume, Labore und IT
+6. Qualitätssicherung und Weiterentwicklung`
       },
       'DOC-10': {
         id: 'DOC-10',
-        title: 'DOC-10_Anlagenband_Kapazitaetsrechnung_Ressourcen.pdf',
-        type: 'Anlagenband · Kapazitätsnachweis',
+        title: 'DOC-10_Anlagen_Kapazitaet_Ressourcen.pdf',
+        type: 'Anlagenband',
         phase: 'Phase 4',
         ver: 'v1.0',
         status: 'Freigegeben',
-        size: '8.9 MB',
-        author: 'Dezernat Finanzen / Personal',
+        size: '8,9 MB',
+        author: 'Dezernat Finanzen & Personal',
         recipient: 'Akkreditierungsagentur',
         hash: 'SHA-256: 778899aa...112233',
-        chain: ['Personaldezernat: Deputatsberechnung ✓', 'Dekanat: Bestätigung ✓', 'QM: Bündelung ✓'],
-        content: `ANLAGENBAND: KAPAZITÄTS- & RESSOURCENNACHWEIS
+        chain: ['Personaldezernat: Deputate berechnet ✓', 'Dekanat: bestätigt ✓', 'QM: gebündelt ✓'],
+        content: `ANLAGEN: KAPAZITÄTS- UND RESSOURCENNACHWEIS
 
-1. Lehrdeputate der beteiligten Professuren:
-   - 6 hauptamtliche Professuren mit je 9 SWS Lehrverpflichtung
-   - 4 wissenschaftliche Mitarbeiter:innen mit je 4 SWS
-   - Kapazitätsauslastung: 94.2% (solide gesichert)
+1. Lehrdeputate
+   - 6 Professuren mit je 18 SWS Lehrverpflichtung
+   - 4 wissenschaftliche Mitarbeitende mit je 4 SWS
+   - Auslastung: 94,2 %
 
-2. Laborausstattung:
+2. Labore
    - Robotics & Usability Lab (24 Arbeitsplätze)
-   - XR & Interaction Studio (16 VR/AR-Testplätze)
-   - MakerSpace & Hardware-Labor (3D-Druck, Sensorik)`
+   - XR & Interaction Studio (16 VR/AR-Plätze)
+   - MakerSpace und Hardware-Labor (3D-Druck, Sensorik)`
       },
       'DOC-11': {
         id: 'DOC-11',
-        title: 'DOC-11_Ablaufplan_Begehung_Interviews.pdf',
-        type: 'Ablaufplan · Auditprotokoll',
+        title: 'DOC-11_Ablaufplan_Begehung.pdf',
+        type: 'Ablaufplan',
         phase: 'Phase 5',
         ver: 'v1.0',
-        status: 'Abgeschlossen',
+        status: 'Freigegeben',
         size: '380 KB',
         author: 'Dr. Susanne Völkel (Agentur)',
-        recipient: 'Gutachter & Hochschule',
+        recipient: 'Gutachtergremium, Hochschule',
         hash: 'SHA-256: 99aabbcc...ddeeff',
-        chain: ['Agentur: Abstimmung ✓', 'Hochschule: Bestätigung ✓', 'Peers: Durchführung ✓'],
-        content: `ABLAUFPLAN DER VOR-ORT-BEGEHUNG
-Tag 1:
-- 09:00 Uhr: Vorgespräch Gutachtergruppe
-- 10:00 Uhr: Gespräch mit Hochschulleitung & Dekanat
-- 11:30 Uhr: Gespräch mit Studiengangsleitung & Curriculums-AG
-- 14:00 Uhr: Gespräch mit Studierenden (vertraulich, ohne Lehrende)
-- 16:00 Uhr: Begehung der Labore und Lehrräume
+        chain: ['Agentur: abgestimmt ✓', 'Hochschule: bestätigt ✓', 'Gutachtergremium: durchgeführt ✓'],
+        content: `ABLAUFPLAN DER BEGEHUNG
 
-Tag 2:
-- 09:30 Uhr: Gespräch mit Kooperationspartnern aus der Praxis
-- 11:30 Uhr: Interne Gutachterberatung
-- 13:00 Uhr: Abschlussgespräch & mündliches Feedback`
+Tag 1
+09:00  Vorgespräch des Gutachtergremiums
+10:00  Gespräch mit Hochschulleitung und Dekanat
+11:30  Gespräch mit Studiengangsleitung und Curriculums-AG
+14:00  Gespräch mit Studierenden (ohne Lehrende)
+16:00  Besichtigung von Laboren und Lehrräumen
+
+Tag 2
+09:30  Gespräch mit Praxispartnern
+11:30  Interne Beratung des Gremiums
+13:00  Abschlussgespräch mit mündlicher Rückmeldung`
       },
       'DOC-12': {
         id: 'DOC-12',
-        title: 'DOC-12_Vorlaeufiger_Gutachterbericht_der_Peers.pdf',
-        type: 'Gutachten · Peer-Review',
+        title: 'DOC-12_Akkreditierungsbericht_Entwurf.pdf',
+        type: 'Prüfbericht und Gutachten',
         phase: 'Phase 5',
-        ver: 'v1.0',
-        status: 'Eingereicht',
-        size: '3.4 MB',
-        author: 'Prof. Dr. Brandt & Gutachterteam',
+        ver: 'v1.0 Entwurf',
+        status: 'Entwurf',
+        size: '3,4 MB',
+        author: 'Agentur mit Gutachtergremium (Sprecher: Prof. Dr. Brandt)',
         recipient: 'Hochschule zur Stellungnahme',
         hash: 'SHA-256: a1b2c3d4...e5f6a7',
-        chain: ['Gutachterkommission: Konsensbeschluss ✓', 'Agentur: Formale Prüfung ✓', 'Hochschule: Zustellung ✓'],
-        content: `GUTACHTERBERICHT DER PEER-KOMMISSION
-Akkreditierung des Studiengangs {SG}
+        chain: ['Gutachtergremium: Gutachten ✓', 'Agentur: Prüfbericht formale Kriterien ✓', 'Hochschule: Stellungnahme ⏳'],
+        content: `AKKREDITIERUNGSBERICHT (ENTWURF)
+Studiengang {SG}
 
-GESAMTURTEIL:
-Die Gutachtergruppe stellt dem Studiengang ein hervorragendes Zeugnis aus. Profil, Curriculum und Praxisbezug sind schlüssig aufeinander abgestimmt.
+TEIL A – PRÜFBERICHT (formale Kriterien)
+Alle formalen Kriterien sind erfüllt.
 
-EMPFEHLUNGEN (keine Auflagen):
-- E1: Weiterer Ausbau der englischsprachigen Fachliteratur in Modul M-104.
-- E2: Stärkere Sichtbarmachung studentischer Forschungsergebnisse auf Fachtagungen.
+TEIL B – GUTACHTEN (fachlich-inhaltliche Kriterien)
+Profil, Curriculum und Praxisbezug sind schlüssig aufeinander abgestimmt.
 
-BESCHLUSSEMPFEHLUNG:
-Akkreditierung ohne Auflagen für die maximale Dauer von 8 Jahren.`
+EMPFEHLUNGEN (keine Auflagen)
+E1: Englischsprachige Fachliteratur in Modul M-104 erweitern.
+E2: Studentische Forschungsergebnisse stärker auf Fachtagungen zeigen.
+
+BESCHLUSSEMPFEHLUNG
+Akkreditierung ohne Auflagen.`
       },
       'DOC-13': {
         id: 'DOC-13',
-        title: 'DOC-13_Hochschulische_Stellungnahme_zu_Empfehlungen.pdf',
-        type: 'Stellungnahme · Replik',
+        title: 'DOC-13_Stellungnahme_Hochschule.pdf',
+        type: 'Stellungnahme',
         phase: 'Phase 6',
         ver: 'v1.0',
         status: 'Eingereicht',
-        size: '1.2 MB',
-        author: 'Studiengangsleitung & QM',
-        recipient: 'Akkreditierungsrat',
+        size: '1,2 MB',
+        author: 'Studiengangsleitung, QM',
+        recipient: 'Agentur, Akkreditierungsrat',
         hash: 'SHA-256: 55667788...99aabb',
-        chain: ['Studiengangsleitung: Erstellt ✓', 'QM: Freigabe ✓', 'Präsidium: Eingereicht in ELIAS ✓'],
-        content: `HOCHSCHULISCHE STELLUNGNAHME ZUM GUTACHTERBERICHT
-Eingereicht im Portal ELIAS des Akkreditierungsrates
+        chain: ['Studiengangsleitung: erstellt ✓', 'QM: Freigabe ✓', 'Präsidium: Antrag in ELIAS ✓'],
+        content: `STELLUNGNAHME DER HOCHSCHULE ZUM AKKREDITIERUNGSBERICHT
 
-1. Die Hochschule dankt der Gutachterkommission für das sehr positive Feedback und die konstruktiven Anregungen.
-2. Zu Empfehlung E1: Im Modulhandbuch M-104 wurden bereits drei zusätzliche internationale Leitwerke verankert.
-3. Zu Empfehlung E2: Es wird ein Reisekosten-Fonds für studentische Konferenzbeiträge eingerichtet.
+1. Die Hochschule dankt dem Gutachtergremium für die Rückmeldung.
+2. Zu E1: Im Modulhandbuch (M-104) sind drei zusätzliche internationale Standardwerke aufgenommen.
+3. Zu E2: Ein Fonds für Reisekosten zu studentischen Konferenzbeiträgen wird eingerichtet.
 
-Antrag auf formelle Beschlussfassung und Siegelvergabe wird aufrechterhalten.`
+Der Antrag auf Akkreditierung wird über ELIAS gestellt.`
       },
       'DOC-14': {
         id: 'DOC-14',
-        title: 'DOC-14_Bescheid_Akkreditierungsurkunde_Qualitaetssiegel.pdf',
-        type: 'Urkunde · Bescheid des Akkreditierungsrates',
+        title: 'DOC-14_Akkreditierungsentscheidung_Siegel.pdf',
+        type: 'Bescheid',
         phase: 'Phase 6',
-        ver: 'vFinal',
-        status: 'Offiziell Gesiegelt',
-        size: '2.1 MB',
-        author: 'Akkreditierungsrat (Bonn)',
-        recipient: 'Hochschule & Öffentlichkeit',
+        ver: 'final',
+        status: 'Entschieden',
+        size: '2,1 MB',
+        author: 'Akkreditierungsrat',
+        recipient: 'Hochschule',
         hash: 'SHA-256: 00112233...445566',
-        chain: ['Akkreditierungsrat: Beschlusskammer ✓', 'Geschäftsstelle: Siegelung ✓', 'Hochschule: Zustellung ✓'],
-        content: `BESCHEID DES AKKREDITIERUNGSRATES
+        chain: ['Akkreditierungsrat: Entscheidung ✓', 'Geschäftsstelle: Bekanntgabe ✓', 'Hochschule: Eingang ✓'],
+        content: `ENTSCHEIDUNG DES AKKREDITIERUNGSRATS
 Aktenzeichen: AR-2027-PROG-8821
 
-Der Akkreditierungsrat beschließt in seiner Sitzung vom 24. Oktober 2027:
-
+Der Akkreditierungsrat hat in seiner Sitzung vom 24. Oktober 2027 entschieden:
 Der {SG_ART}
-"{SG}"
-wird gem. § 24 Musterrechtsverordnung akkreditiert.
+„{SG}“
+wird gemäß § 22 StudakVO NRW akkreditiert.
 
-SIEGEL: Siegel des Akkreditierungsrates
-GÜLTIGKEITSDAUER: 01.10.2027 bis 30.09.2035 (8 Jahre)
-AUFLAGEN: Keine Auflagen erteilt.
-
-Bonn, den 28. Oktober 2027
-Der Vorsitzende des Akkreditierungsrates`
+Siegel: Siegel des Akkreditierungsrats
+Geltungszeitraum: 01.10.2027 bis 30.09.2035 (8 Jahre, § 26)
+Auflagen: keine`
       }
     };
 
     /* ═══ STUDIENGÄNGE & ABLAGEORTE ═══ */
     /* Ablage: Moodle-Kurs (Abschnitt 0 = Allgemeines, dann je Studiengang ein Abschnitt in der Reihenfolge von PROGRAMS)
        und Laufwerk X (Abschluss › Studiengang › Phase › Datei, gleicher Dateiname wie in Moodle).
-       ponytail: Kurs-ID 4711 ist ein Platzhalter (User, 2026-10-12), echte ID eintragen, sobald der Kurs steht;
-       leer lassen → Links öffnen die Moodle-Kurssuche „ACCREDO“ */
+       Moodle-Kurs-ID ist noch nicht festgelegt (vorher Platzhalter 4711, der auf einen echten Kurs zeigen kann).
+       Leer lassen → Links öffnen die Moodle-Kurssuche „ACCREDO“. Echte ID eintragen, sobald der Kurs steht. */
     const STORAGE = {
       moodleBase: 'https://moodle.hochschule-rhein-waal.de',
-      moodleCourseId: '4711',
+      moodleCourseId: '',
       moodleCourseName: 'ACCREDO',
       xRoot: 'X:\\ACCREDO'
     };
@@ -3533,7 +3662,7 @@ Der Vorsitzende des Akkreditierungsrates`
       { id: 'mi',   level: 'bachelor', degree: 'B.Sc.', name: 'Medieninformatik', folder: 'BSc_Medieninformatik' },
       { id: 'ml',   level: 'bachelor', degree: 'B.Sc.', name: 'Mobility and Logistics', folder: 'BSc_Mobility_and_Logistics' },
       { id: 'psy',  level: 'bachelor', degree: 'B.Sc.', name: 'Psychologie (Arbeits- und Organisationspsychologie)', folder: 'BSc_Psychologie_AO' },
-      { id: 'egov', level: 'bachelor', degree: 'B.Sc.', name: 'Verwaltungsinformatik – E-Government', note: 'auch als duales Studium', folder: 'BSc_Verwaltungsinformatik_E-Government' },
+      { id: 'egov', level: 'bachelor', degree: 'B.Sc.', name: 'Verwaltungsinformatik – E-Government', note: 'auch dual', folder: 'BSc_Verwaltungsinformatik_E-Government' },
       { id: 'di',   level: 'master',   degree: 'M.A.',  name: 'Design and Interaction', folder: 'MA_Design_and_Interaction' },
       { id: 'iecs', level: 'master',   degree: 'M.Sc.', name: 'Information Engineering and Computer Science', folder: 'MSc_Information_Engineering_and_Computer_Science' },
       { id: 'imp',  level: 'master',   degree: 'M.Sc.', name: 'International Management and Psychology', folder: 'MSc_International_Management_and_Psychology' },
@@ -3542,11 +3671,11 @@ Der Vorsitzende des Akkreditierungsrates`
 
     const PHASE_FOLDERS = {
       1: 'Phase_1_Initiierung',
-      2: 'Phase_2_Curriculum_SPO',
+      2: 'Phase_2_Curriculum_PO',
       3: 'Phase_3_Recht_Gremien',
       4: 'Phase_4_Selbstbericht',
       5: 'Phase_5_Begutachtung',
-      6: 'Phase_6_Beschluss_Siegel'
+      6: 'Phase_6_Antrag_Entscheidung'
     };
 
     let currentProgramId = PROGRAMS[0].id;
@@ -3583,7 +3712,7 @@ Der Vorsitzende des Akkreditierungsrates`
       return text
         .replaceAll('{SG_ART}', p.level === 'master' ? 'Masterstudiengang' : 'Bachelorstudiengang')
         .replaceAll('{SG}', programLabel(p))
-        .replaceAll('{DQR}', p.level === 'master' ? '7' : '6');
+        .replaceAll('{HQR}', p.level === 'master' ? 'Masterebene (Stufe 2)' : 'Bachelorebene (Stufe 1)');
     }
 
     let toastTimer = 0;
@@ -3709,68 +3838,80 @@ Der Vorsitzende des Akkreditierungsrates`
       1: {
         phaseName: 'Phase 1 / 6',
         actors: [
-          { name: 'Prof. Dr. Miriam Weber', role: 'Studiengangsleitung', avatar: 'MW', raci: 'r', raciLabel: 'R' },
-          { name: 'Dr. Laurenz Becker', role: 'Leitung QM (ZQA)', avatar: 'LB', raci: 'a', raciLabel: 'A' },
-          { name: 'Samira Klein', role: 'Fachschaftsrat (FSR)', avatar: 'SK', raci: 'c', raciLabel: 'C' }
+          { name: 'Prof. Dr. Miriam Weber', role: 'Studiengangsleitung', avatar: 'MW', raci: 'a', raciLabel: 'A' },
+          { name: 'Dr. Laurenz Becker', role: 'Qualitätsmanagement (Akkreditierung)', avatar: 'LB', raci: 'r', raciLabel: 'R' },
+          { name: 'Samira Klein', role: 'Fachschaftsrat · Studierendenvertretung', avatar: 'SK', raci: 'c', raciLabel: 'C' },
+          { name: 'Prof. Dr. Anke Neumann', role: 'Dekanin · Vorsitz Fakultätsrat', avatar: 'AN', raci: 'i', raciLabel: 'I' }
         ],
         from: 'Studiengangsleitung',
         to: 'Curriculums-AG',
-        artifact: 'Evaluationsbericht 2022-2026.pdf'
+        artifact: 'DOC-01 · Bestandsaufnahme und Evaluationsbericht 2022–2026'
       },
       2: {
         phaseName: 'Phase 2 / 6',
         actors: [
-          { name: 'Prof. Dr. Miriam Weber', role: 'Vorsitz Curriculums-AG', avatar: 'MW', raci: 'r', raciLabel: 'R' },
-          { name: 'Prof. Dr. Klaus Sommer', role: 'Vorsitz Prüfungsausschuss', avatar: 'KS', raci: 'a', raciLabel: 'A' },
-          { name: 'Prof. Dr. Jens Lindner', role: 'Modulkoordinator', avatar: 'JL', raci: 'c', raciLabel: 'C' }
+          { name: 'Prof. Dr. Miriam Weber', role: 'Studiengangsleitung', avatar: 'MW', raci: 'r', raciLabel: 'R' },
+          { name: 'Prof. Dr. Anke Neumann', role: 'Dekanin · Vorsitz Fakultätsrat', avatar: 'AN', raci: 'a', raciLabel: 'A' },
+          { name: 'Prof. Dr. Klaus Sommer', role: 'Vorsitz Prüfungsausschuss', avatar: 'KS', raci: 'c', raciLabel: 'C' },
+          { name: 'Prof. Dr. Jens Lindner', role: 'Modulkoordination', avatar: 'JL', raci: 'c', raciLabel: 'C' },
+          { name: 'Samira Klein', role: 'Fachschaftsrat · Studierendenvertretung', avatar: 'SK', raci: 'c', raciLabel: 'C' },
+          { name: 'Dr. Laurenz Becker', role: 'Qualitätsmanagement (Akkreditierung)', avatar: 'LB', raci: 'i', raciLabel: 'I' }
         ],
         from: 'Curriculums-AG',
-        to: 'Justitiariat & Fakultätsrat',
-        artifact: 'Entwurf Prüfungsordnung SPO v2.0.pdf'
+        to: 'Justitiariat & Präsidium',
+        artifact: 'DOC-03 · Entwurf Prüfungsordnung PO v2.0'
       },
       3: {
         phaseName: 'Phase 3 / 6',
         actors: [
-          { name: 'RA Barbara Hoffmann', role: 'Justitiariat / Recht', avatar: 'BH', raci: 'r', raciLabel: 'R' },
-          { name: 'Prof. Dr. Anke Neumann', role: 'Dekanin / Fakultätsratsvorsitz', avatar: 'AN', raci: 'a', raciLabel: 'A' },
-          { name: 'Samira Klein', role: 'Studentische Vertretung', avatar: 'SK', raci: 'c', raciLabel: 'C' }
+          { name: 'Barbara Hoffmann', role: 'Justitiariat', avatar: 'BH', raci: 'r', raciLabel: 'R' },
+          { name: 'Präsidium', role: 'Hochschulleitung', avatar: 'PR', raci: 'c', raciLabel: 'C' },
+          { name: 'Prof. Dr. Anke Neumann', role: 'Dekanin · Vorsitz Fakultätsrat', avatar: 'AN', raci: 'a', raciLabel: 'A' },
+          { name: 'Samira Klein', role: 'Fachschaftsrat · Studierendenvertretung', avatar: 'SK', raci: 'c', raciLabel: 'C' },
+          { name: 'Prof. Dr. Miriam Weber', role: 'Studiengangsleitung', avatar: 'MW', raci: 'i', raciLabel: 'I' }
         ],
-        from: 'Dekanat & Fakultätsrat',
-        to: 'Qualitätsmanagement (ZQA)',
-        artifact: 'Fakultätsratsbeschluss SPO.pdf'
+        from: 'Dekanat',
+        to: 'Qualitätsmanagement',
+        artifact: 'DOC-08 · Beschluss des Fakultätsrats zur PO'
       },
       4: {
         phaseName: 'Phase 4 / 6',
         actors: [
-          { name: 'Dr. Laurenz Becker', role: 'QM / Akkreditierungsbeauftragter', avatar: 'LB', raci: 'r', raciLabel: 'R' },
+          { name: 'Dr. Laurenz Becker', role: 'Qualitätsmanagement (Akkreditierung)', avatar: 'LB', raci: 'r', raciLabel: 'R' },
           { name: 'Prof. Dr. Miriam Weber', role: 'Studiengangsleitung', avatar: 'MW', raci: 'a', raciLabel: 'A' },
-          { name: 'Torsten Richter', role: 'Dezernat Finanzen/Personal', avatar: 'TR', raci: 'c', raciLabel: 'C' }
+          { name: 'Samira Klein', role: 'Fachschaftsrat · Studierendenvertretung', avatar: 'SK', raci: 'c', raciLabel: 'C' },
+          { name: 'Torsten Richter', role: 'Dezernat Finanzen & Personal', avatar: 'TR', raci: 'c', raciLabel: 'C' },
+          { name: 'Präsidium', role: 'Hochschulleitung', avatar: 'PR', raci: 'i', raciLabel: 'I' }
         ],
-        from: 'Hochschul-QM',
+        from: 'Qualitätsmanagement',
         to: 'Akkreditierungsagentur',
-        artifact: 'Selbstbericht Dossier Final.pdf'
+        artifact: 'DOC-09 · Selbstbericht'
       },
       5: {
         phaseName: 'Phase 5 / 6',
         actors: [
-          { name: 'Prof. Dr. Hendrik Brandt', role: 'Vorsitz Gutachterkommission', avatar: 'HB', raci: 'r', raciLabel: 'R' },
-          { name: 'Dr. Susanne Völkel', role: 'Projektleiterin Agentur', avatar: 'SV', raci: 'a', raciLabel: 'A' },
-          { name: 'Prof. Dr. Miriam Weber', role: 'Studiengangsleitung (Auskunft)', avatar: 'MW', raci: 'c', raciLabel: 'C' }
+          { name: 'Prof. Dr. Hendrik Brandt', role: 'Sprecher Gutachtergremium', avatar: 'HB', raci: 'r', raciLabel: 'R' },
+          { name: 'Dr. Susanne Völkel', role: 'Referentin der Agentur', avatar: 'SV', raci: 'a', raciLabel: 'A' },
+          { name: 'Prof. Dr. Miriam Weber', role: 'Studiengangsleitung', avatar: 'MW', raci: 'c', raciLabel: 'C' },
+          { name: 'Samira Klein', role: 'Fachschaftsrat · Studierendenvertretung', avatar: 'SK', raci: 'c', raciLabel: 'C' },
+          { name: 'Dr. Laurenz Becker', role: 'Qualitätsmanagement (Akkreditierung)', avatar: 'LB', raci: 'c', raciLabel: 'C' }
         ],
-        from: 'Gutachtergruppe',
-        to: 'Hochschule & QM',
-        artifact: 'Vorläufiger Gutachterbericht.pdf'
+        from: 'Agentur',
+        to: 'Hochschule (QM)',
+        artifact: 'DOC-12 · Akkreditierungsbericht (Entwurf)'
       },
       6: {
         phaseName: 'Phase 6 / 6',
         actors: [
-          { name: 'Akkreditierungsrat (Bonn)', role: 'Beschlusskammer', avatar: 'AR', raci: 'a', raciLabel: 'A' },
-          { name: 'Dr. Laurenz Becker', role: 'QM-Koordination / ELIAS', avatar: 'LB', raci: 'r', raciLabel: 'R' },
-          { name: 'Prof. Dr. Miriam Weber', role: 'Studiengangsleitung', avatar: 'MW', raci: 'c', raciLabel: 'C' }
+          { name: 'Dr. Laurenz Becker', role: 'Qualitätsmanagement (Akkreditierung)', avatar: 'LB', raci: 'r', raciLabel: 'R' },
+          { name: 'Präsidium', role: 'Hochschulleitung', avatar: 'PR', raci: 'a', raciLabel: 'A' },
+          { name: 'Prof. Dr. Miriam Weber', role: 'Studiengangsleitung', avatar: 'MW', raci: 'c', raciLabel: 'C' },
+          { name: 'Akkreditierungsrat', role: 'Stiftung Akkreditierungsrat, Bonn', avatar: 'AR', raci: 'i', raciLabel: 'I' },
+          { name: 'Samira Klein', role: 'Fachschaftsrat · Studierendenvertretung', avatar: 'SK', raci: 'i', raciLabel: 'I' }
         ],
         from: 'Akkreditierungsrat',
-        to: 'Hochschule & Öffentlichkeit',
-        artifact: 'Akkreditierungsurkunde Siegel.pdf'
+        to: 'Hochschule',
+        artifact: 'DOC-14 · Akkreditierungsentscheidung'
       }
     };
 
