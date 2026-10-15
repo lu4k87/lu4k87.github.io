@@ -257,7 +257,7 @@ td span { color: var(--fg-2); font-size: 14px; }
           <div class="node" role="listitem" style="--hue: var(--violet)">
             <small>Intent-Safety Layer</small>
             <b>Attention → Candidate → Armed → Confirmed</b>
-            <span>State-based cognitive buffer solving the Midas Touch problem</span>
+            <span>State-based buffer meant to prevent Midas Touch errors (planned)</span>
           </div>
           <div class="node" role="listitem" style="--hue: var(--indigo)">
             <small>Task Planning</small>
@@ -293,11 +293,11 @@ td span { color: var(--fg-2); font-size: 14px; }
     <div class="wrap narrow">
       <div class="head">
         <span class="eyebrow" style="--hue: var(--accent)"><span class="n">01</span>Abstract</span>
-        <h2 id="h-abs">From Passive Steerers to Dynamic Intent Steering</h2>
-        <p class="lede">Resolving the cognitive mapping gap and the "Physiological Paradox" in novice robot manipulation.</p>
+        <h2 id="h-abs">Problem and approach</h2>
+        <p class="lede">Why novices struggle to control a robot arm, and how complementary input could help.</p>
       </div>
-      <p>Robot manipulation remains challenging for non-experts, who frequently stay passive steerers that trigger pre-defined scripts. Conventional teach pendants and nested menus impose severe extraneous cognitive load and high interaction costs.</p>
-      <p>We propose a complementary architecture where gaze references space, speech communicates task intent, and controllers confirm execution. The robot acts as a human-factors testbed to resolve the physiological paradox.</p>
+      <p>Robot manipulation remains challenging for non-experts, who frequently stay passive steerers that trigger pre-defined scripts. Conventional teach pendants and nested menus add extraneous cognitive load and interaction cost.</p>
+      <p>We propose a complementary architecture where gaze references space, speech communicates task intent, and controllers confirm execution. The robot serves as a human-factors testbed to study this, including the gap between reported and measured strain (the "physiological paradox").</p>
     </div>
   </section>
 
@@ -307,7 +307,7 @@ td span { color: var(--fg-2); font-size: 14px; }
       <div class="head">
         <span class="eyebrow" style="--hue: var(--blue)"><span class="n">02</span>Theoretical Foundations</span>
         <h2 id="h-foundations">The Human Cost of Human-Robot Collaboration</h2>
-        <p class="lede">Bridging the Gulf of Execution under the paradigm of Industry 5.0 and Hedonomics.</p>
+        <p class="lede">The theories behind the design: cognitive load, gaze interaction, physiological strain and mental models.</p>
       </div>
       <div class="grid4">
         <div class="card" style="--hue: var(--blue)">
@@ -346,13 +346,13 @@ td span { color: var(--fg-2); font-size: 14px; }
       <div class="head">
         <span class="eyebrow" style="--hue: var(--violet)"><span class="n">03</span>Interaction Architecture</span>
         <h2 id="h-arch">One Role per Modality: Look, Speak, Confirm</h2>
-        <p class="lede">Replacing redundant channel confusion with a strict division of communicative labor.</p>
+        <p class="lede">Each input channel has exactly one job.</p>
       </div>
       <div class="grid3">
         <div class="card" style="--hue: var(--blue)">
           <span class="k"><svg class="ico" aria-hidden="true"><use href="#i-eye"/></svg>Spatial Reference (Where)</span>
           <b>Eye Gaze · Tobii Pro Glasses 3</b>
-          <p>Identifies target objects in 3D space via raycasting (RGB-D + YOLOv8). Gaze solely designates target locations and never triggers irreversible mechanical motion.</p>
+          <p>Identifies target objects in 3D space via raycasting (RGB-D + YOLOv8). Gaze only selects targets; it never starts a motion.</p>
         </div>
         <div class="card" style="--hue: var(--violet)">
           <span class="k"><svg class="ico" aria-hidden="true"><use href="#i-mic"/></svg>Task Intent (What)</span>
@@ -362,7 +362,7 @@ td span { color: var(--fg-2); font-size: 14px; }
         <div class="card" style="--hue: var(--green)">
           <span class="k"><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg>Confirmation &amp; Override</span>
           <b>Physical Controller &amp; Low-Latency GUI</b>
-          <p>Provides a deterministic channel for confirmation, emergency stop, and error recovery. Guarantees that physical actuation remains explicitly governed by the human.</p>
+          <p>A fixed channel for confirmation, emergency stop and error recovery, so the arm only moves on a human command.</p>
         </div>
       </div>
 
@@ -373,7 +373,7 @@ td span { color: var(--fg-2); font-size: 14px; }
       <ol class="steps" aria-label="Intent-safety states">
         <li data-k="ATTENTION">
           <b>Visual Exploration</b>
-          <span>Continuous gaze monitoring. Free ocular exploration across the workspace produces zero technical side effects.</span>
+          <span>Continuous gaze monitoring. Looking around the workspace triggers nothing.</span>
         </li>
         <li data-k="CANDIDATE">
           <b>Target Raycast</b>
@@ -385,7 +385,7 @@ td span { color: var(--fg-2); font-size: 14px; }
         </li>
         <li data-k="CONFIRMED">
           <b>Explicit Execution</b>
-          <span>Physical trajectory execution begins strictly upon verbal command or controller press. Cancellation remains possible at any time.</span>
+          <span>The arm starts moving only on a verbal command or controller press. Cancellation remains possible at any time.</span>
         </li>
       </ol>
     </div>
@@ -396,7 +396,7 @@ td span { color: var(--fg-2); font-size: 14px; }
     <div class="wrap">
       <div class="head">
         <span class="eyebrow" style="--hue: var(--gold)"><span class="n">04</span>Measurement Suite</span>
-        <h2 id="h-testbed">Treating the Robotic Platform as a Human-Factors Laboratory</h2>
+        <h2 id="h-testbed">Measurement suite</h2>
         <p class="lede">Synchronizing ROS 2 machine state with high-frequency ocular, autonomic, and psychometric metrics.</p>
       </div>
 
@@ -535,7 +535,7 @@ td span { color: var(--fg-2); font-size: 14px; }
 
       <div class="note">
         <svg class="ico ico-s" aria-hidden="true"><use href="#i-alert"/></svg>
-        <div><b>Empirical Status Notice:</b> In accordance with research integrity standards (Skill <code>research</code> §0), hypotheses, measurement pipelines, and condition designs are formalized prior to participant testing. No empirical conclusions are reported until ethical clearance and experimental trials have concluded.</div>
+        <div><b>Empirical Status Notice:</b> In line with research integrity standards, hypotheses, measurement pipelines, and condition designs are formalized prior to participant testing. No empirical conclusions are reported until ethical clearance and experimental trials have concluded.</div>
       </div>
     </div>
   </section>
@@ -546,7 +546,7 @@ td span { color: var(--fg-2); font-size: 14px; }
       <div class="head">
         <span class="eyebrow" style="--hue: var(--indigo)"><span class="n">06</span>Contributions &amp; Guidelines</span>
         <h2 id="h-guide">Generalizable Design Knowledge for Low-Barrier HRI</h2>
-        <p class="lede">Translating empirical testbed findings into actionable principles for assistive and industrial manipulation.</p>
+        <p class="lede">Proposed design principles for assistive and industrial manipulation, to be checked against the study results.</p>
       </div>
 
       <div class="grid3">
@@ -558,7 +558,7 @@ td span { color: var(--fg-2); font-size: 14px; }
         <div class="card" style="--hue: var(--violet)">
           <span class="k"><svg class="ico" aria-hidden="true"><use href="#i-mic"/></svg>Guideline 2</span>
           <b>Intent → Speech</b>
-          <p>Employ spoken natural language for high-level semantic intentions ("what should happen") to bypass extraneous GUI navigation depth and eliminate spatial parameterization friction.</p>
+          <p>Employ spoken natural language for high-level semantic intentions ("what should happen") so users skip menu navigation and do not have to enter coordinates.</p>
         </div>
         <div class="card" style="--hue: var(--green)">
           <span class="k"><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg>Guideline 3</span>
@@ -568,7 +568,7 @@ td span { color: var(--fg-2); font-size: 14px; }
         <div class="card" style="--hue: var(--gold)">
           <span class="k"><svg class="ico" aria-hidden="true"><use href="#i-shield"/></svg>Guideline 4</span>
           <b>Safety → State-Based</b>
-          <p>Implement a multi-stage transition (Attention → Candidate → Armed → Confirmed). The Armed state provides an indispensable cognitive buffer to correct gaze-shift errors.</p>
+          <p>Implement a multi-stage transition (Attention → Candidate → Armed → Confirmed). The Armed state gives the user time to correct a gaze shift before anything moves.</p>
         </div>
         <div class="card" style="--hue: var(--pink)">
           <span class="k"><svg class="ico" aria-hidden="true"><use href="#i-heart"/></svg>Guideline 5</span>
@@ -584,9 +584,9 @@ td span { color: var(--fg-2); font-size: 14px; }
 
       <h3>Core Academic Contributions of the Paper</h3>
       <ol class="list" style="margin-top: 16px;">
-        <li><b>Complementary Interaction Architecture:</b> A human-factors-driven HRI framework that partitions spatial reference (gaze), semantic intent (speech), and confirmation/recovery (controller) to resolve cognitive bottlenecks.</li>
+        <li><b>Complementary Interaction Architecture:</b> A human-factors-driven HRI framework that partitions spatial reference (gaze), semantic intent (speech), and confirmation/recovery (controller) to reduce cognitive bottlenecks.</li>
         <li><b>Intent-Safety Mechanism:</b> A deterministic state machine with calibrated dwell arming (≈300 ms) and real-time visual feedback whose evaluation will test whether it reduces unintended Midas Touch activations while keeping added interaction latency acceptable.</li>
-        <li><b>Multidimensional Evaluation Suite:</b> A high-resolution HF testbed synchronizing ROS 2 machine states, ocular tracking, EDA, HRV, and psychometrics to expose the physiological paradox (event logger and biosignal pipeline planned).</li>
+        <li><b>Multidimensional Evaluation Suite:</b> A testbed that synchronizes ROS 2 machine states, eye tracking, EDA, HRV and questionnaires to compare reported and measured strain (event logger and biosignal pipeline planned).</li>
         <li><b>Cognitive Mental Model Investigation:</b> An exploratory SDA-M protocol (planned) revealing whether multimodal assistance supports novice development of structured Basic Action Concepts.</li>
         <li><b>Design Guidelines for Adaptive HRI:</b> A set of generalizable principles for configuring low-barrier robotic interfaces across industrial and future assistive scenarios.</li>
       </ol>
