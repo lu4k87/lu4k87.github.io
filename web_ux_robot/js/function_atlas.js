@@ -1301,10 +1301,24 @@ const FLOWS = (() => {
   // Bereichs-Chips mit Anzahl in der Filterleiste (einzige Bereichswahl der Liste)
   const areaBox = document.getElementById('areas');
   let area = 'ctl', onlyLoops = false, q = '';
+  // Bereichs-Skala (Wunsch User 15.10.2026): Segment je Bereich, Breite ~ Anzahl, ein Strich je Funktion (voll = läuft real, Rahmen = nur Simulation)
+  const hubHead = document.getElementById('fa-hub-head');
+  const isReal = c => (c.dataset.s || '').includes('r');
   const renderAreas = () => {
     if (areaBox) {
-      areaBox.innerHTML = `<button type="button" class="chip" data-area="" aria-pressed="${!area}">${L(['Alle', 'All'])} <b>${cards.length}</b></button>`
-        + Object.entries(AREAS).map(([k, a]) => `<button type="button" class="chip" data-area="${k}" style="--c: var(--${a.hue})" aria-pressed="${area === k}">${ico(a.icon)}${a[lang()]} <b>${cards.filter(c => c.dataset.a === k).length}</b></button>`).join('');
+      areaBox.innerHTML = `<button type="button" class="aseg all" data-area="" aria-pressed="${!area}"><span class="aseg-h"><span class="aseg-t">${L(['Alle', 'All'])}</span><b>${cards.length}</b></span>`
+        + `<span class="aseg-bar" aria-hidden="true">${Object.values(AREAS).map(a => `<i style="--c: var(--${a.hue})"></i>`).join('')}</span></button>`
+        + Object.entries(AREAS).map(([k, a]) => {
+          const cs = cards.filter(c => c.dataset.a === k), real = cs.filter(isReal).length;
+          return `<button type="button" class="aseg" data-area="${k}" style="--c: var(--${a.hue}); --n: ${cs.length}" aria-pressed="${area === k}" aria-label="${a[lang()]}: ${cs.length} ${L(['Funktionen', 'functions'])}, ${L(['davon', 'of which'])} ${real} real">`
+            + `<span class="aseg-h">${ico(a.icon)}<span class="aseg-t">${a[lang()]}</span><b>${cs.length}</b></span>`
+            + `<span class="aseg-bar" aria-hidden="true">${cs.map(c => (isReal(c) ? '<i></i>' : '<i class="sim"></i>')).join('')}</span></button>`;
+        }).join('');
+    }
+    if (hubHead) {   // Kopf der Funktionsliste: gewählter Bereich + Anzahl
+      const a = AREAS[area], n = area ? cards.filter(c => c.dataset.a === area).length : cards.length;
+      hubHead.style.setProperty('--c', a ? `var(--${a.hue})` : 'var(--accent)');
+      hubHead.innerHTML = `${a ? ico(a.icon) : ico('i-layers')}<span>${a ? a[lang()] : L(['Alle Funktionen', 'All functions'])}</span><b>${n}</b>`;
     }
   };
   if (areaBox) {

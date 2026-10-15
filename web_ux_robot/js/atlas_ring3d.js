@@ -1,5 +1,7 @@
 /* Funktionsatlas als 3D-Segment-Ring (docs/project_docs.html, #atlas-sec; Vorschau „Segment-Ring“, Wunsch User 06.10.2026):
-   Hub (83 Funktionen, 9 Bereiche), 9 extrudierte Glas-Segmente in den Bereichsfarben, Speichen + Lichtimpuls Hub → Segment.
+   Hub (85 Funktionen, 9 Bereiche), 9 extrudierte Glas-Segmente in den Bereichsfarben, Speichen + Lichtimpuls Hub → Segment.
+   Breite Bühne (≥ 760 px, Vorschau Ring:B, Wunsch User 15.10.2026): Ring links, rechts Hologramm-Karte des gewählten Bereichs (Satz, Anzahl je
+   Prüfstufe, Funktionen aus der Liste); Klasse .at-holo blendet dann die HTML-Detailkarte bis auf den Autoscan aus. Schmal: Detailkarte wie bisher.
    Gewähltes Segment dreht nach vorn und hebt sich; Zeiger hebt leicht an, Icon leuchtet (Glow); Icons groß, drehen sich leicht.
    Ziehen dreht den Ring, Klick = Link der Bereichs-Kachel (filtert die Liste, js/function_atlas.js); Pfeiltasten wählen, Enter filtert.
    Auswahl, Detail-Panel und Autoscan steuert die Seite (#at-ring: atKeys, atCur, atPick(a, user), atGo(a), Ereignis „at-pick“);
@@ -11,6 +13,7 @@
 const D = Math.PI / 180, R1 = 150, R2 = 270, FRONT = 180;   // Radien in Szenen-Einheiten; gewähltes Segment steht vorn (zur Kamera)
 const EL = 38 * D, FOV = 30;                                  // Kamera-Neigung, senkrechtes Sichtfeld
 const LABEL_MIN_W = 440;                                      // schmalere Bühne: Namen < 12 px → nur Icons, Name steht im Panel
+const HOLO_MIN_W = 760, SHIFT = 290;                          // ab dieser Bühnenbreite: Ring nach links, Hologramm-Karte rechts
 
 const webgl = () => { try { const c = document.createElement('canvas'); return !!(c.getContext('webgl2') || c.getContext('webgl')); } catch (e) { return false; } };
 
@@ -29,6 +32,7 @@ function build(THREE, ring, host) {
   const hueOf = i => { const m = /var\(--([\w-]+)\)/.exec(tiles[i].style.getPropertyValue('--c')); return tok(m ? m[1] : 'accent'); };
   const mid = i => (i + .5) * 360 / N;
   const polar = (a, r, y = 0) => new THREE.Vector3(r * Math.sin(a * D), y, -r * Math.cos(a * D));
+  const fns = keys.map(a => [...document.querySelectorAll(`article.fn[data-a="${a}"]`)]);   // Funktionskarten der Liste je Bereich (Hologramm)
 
   ring.classList.add('at-3d');   // Bühne sichtbar → Größe messbar
   const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
@@ -115,6 +119,38 @@ function build(THREE, ring, host) {
   hubRing.rotation.x = Math.PI / 2; hubRing.position.y = 32; world.add(hubRing);
   const hubLab = sprite(256, 256, 150); hubLab.position.set(0, 64, 0); scene.add(hubLab);
 
+  /* Hologramm-Karte rechts neben dem Ring (nur breite Bühne): Bereich, Satz, Anzahl je Prüfstufe, Funktionen; Klick filtert wie das Segment */
+  const holo = sprite(720, 640, 540); holo.position.set(330, 40, 0); holo.visible = false; scene.add(holo);
+  let wide = false;
+  function paintHolo(i) {
+    const c = cols[i].getStyle(), en = root.lang === 'en', T = (de, e) => en ? e : de, list = fns[i].map(x => x.querySelector('.fn-sel span').textContent.trim());
+    const n = k => fns[i].filter(x => (x.dataset.s || '').includes(k)).length, all = Math.max(1, list.length);
+    const dsc = ring.querySelector(`.atd-d[data-a="${keys[i]}"]`)?.textContent.trim() || '';
+    paint(holo, (g, w, h) => {
+      g.fillStyle = 'rgba(12,17,20,.84)'; g.strokeStyle = c; g.lineWidth = 3; g.beginPath(); g.roundRect(6, 6, w - 12, h - 12, 14); g.fill(); g.stroke();
+      g.save(); g.translate(30, 26); drawIcon(g, document.querySelector(segs[i].userData.sym), 52, c); g.restore();
+      g.textBaseline = 'middle'; g.fillStyle = fg; g.font = `800 44px ${font}`; g.fillText(tiles[i].querySelector('b').textContent.trim(), 98, 54);
+      g.textAlign = 'right'; g.fillStyle = c; g.font = `800 40px ${mono}`; g.fillText(String(list.length), w - 30, 54); g.textAlign = 'left';
+      g.fillStyle = fg; g.font = `500 25px ${font}`;
+      let line = '', y = 110;
+      for (const wd of dsc.split(' ')) { if (line && g.measureText(line + wd).width > w - 60) { g.fillText(line, 30, y); line = ''; y += 34; } line += wd + ' '; }
+      g.fillText(line, 30, y); y += 52;
+      [[T('Simulieren', 'Simulate'), n('s')], [T('Prüfen', 'Check'), n('p')], ['Real', n('r')]].forEach(([t, v]) => {
+        g.fillStyle = fg; g.font = `700 26px ${font}`; g.fillText(t, 30, y);
+        g.fillStyle = 'rgba(255,255,255,.12)'; g.fillRect(200, y - 7, 420, 14); g.fillStyle = c; g.fillRect(200, y - 7, 420 * v / all, 14);
+        g.fillStyle = fg; g.font = `700 24px ${mono}`; g.textAlign = 'right'; g.fillText(String(v), w - 30, y); g.textAlign = 'left'; y += 40;
+      });
+      y += 4; g.strokeStyle = 'rgba(255,255,255,.18)'; g.lineWidth = 2; g.beginPath(); g.moveTo(30, y); g.lineTo(w - 30, y); g.stroke(); y += 38;
+      list.slice(0, 8).forEach((t, k) => {
+        const x = 30 + (k % 2) * 335, yy = y + (k >> 1) * 46;
+        g.fillStyle = c; g.beginPath(); g.arc(x + 6, yy, 6, 0, Math.PI * 2); g.fill();
+        g.fillStyle = fg; g.font = `600 25px ${font}`; let tt = t; while (g.measureText(tt).width > 300 && tt.length > 4) tt = tt.slice(0, -2);
+        g.fillText(tt === t ? t : tt.trimEnd() + '…', x + 22, yy + 1);
+      });
+      if (list.length > 8) { g.fillStyle = c; g.font = `700 24px ${mono}`; g.fillText(T(`+ ${list.length - 8} weitere in der Liste`, `+ ${list.length - 8} more in the list`), 30, y + 4 * 46 + 4); }
+    });
+  }
+
   /* Lichtimpuls Hub → Segment */
   const pulse = new THREE.Mesh(new THREE.SphereGeometry(6, 20, 12), new THREE.MeshBasicMaterial());
   const pglow = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false }));
@@ -153,6 +189,7 @@ function build(THREE, ring, host) {
       c.font = `700 30px ${font}`; c.fillText(lbl, w / 2, 160);
       c.fillStyle = accent; c.font = `700 24px ${mono}`; c.fillText(sub, w / 2, 198);
     });
+    if (wide) paintHolo(ring.atCur ? Math.max(0, keys.indexOf(ring.atCur())) : 0);
     need();
   }
 
@@ -163,6 +200,7 @@ function build(THREE, ring, host) {
     segs.forEach((g, k) => { g.userData.target = k === i ? 1 : 0; });
     spokes.forEach((s, k) => s.material.color.set(k === i ? cols[k] : LINE));
     nodes.forEach((n, k) => { n.material.emissiveIntensity = k === i ? 1.2 : 0; });
+    if (wide) paintHolo(i);
     let t = (FRONT - mid(i)) * D; while (t - rotTarget > Math.PI) t -= 2 * Math.PI; while (t - rotTarget < -Math.PI) t += 2 * Math.PI;
     rotTarget = t; pulseSeg = i; pulse.material.color.copy(cols[i]); pglow.material.color.copy(cols[i]); hot.color.copy(cols[i]);
     pulseT = anim && !reduce ? 0 : 1;
@@ -175,7 +213,8 @@ function build(THREE, ring, host) {
   const ray = new THREE.Raycaster(), ptr = new THREE.Vector2(), meshes = segs.map(g => g.children[0]), cv = renderer.domElement;
   const pick = e => {
     const r = cv.getBoundingClientRect(); ptr.set((e.clientX - r.left) / r.width * 2 - 1, -(e.clientY - r.top) / r.height * 2 + 1);
-    ray.setFromCamera(ptr, cam); const h = ray.intersectObjects(meshes)[0]; return h ? h.object.userData.i : -1;
+    ray.setFromCamera(ptr, cam); const h = ray.intersectObjects(meshes)[0]; if (h) return h.object.userData.i;
+    return holo.visible && ray.intersectObject(holo).length ? N : -1;   // N = Hologramm-Karte
   };
   cv.addEventListener('pointerdown', e => { drag = { x: e.clientX, id: e.pointerId, moved: false }; });
   cv.addEventListener('pointermove', e => {
@@ -187,7 +226,7 @@ function build(THREE, ring, host) {
     }
     const h = pick(e); if (h !== hover) { hover = h; cv.style.cursor = h >= 0 ? 'pointer' : 'grab'; need(); }
   });
-  cv.addEventListener('pointerup', e => { if (drag && !drag.moved) { const i = pick(e); if (i >= 0) ring.atGo(keys[i]); } drag = null; cv.style.cursor = hover >= 0 ? 'pointer' : 'grab'; });
+  cv.addEventListener('pointerup', e => { if (drag && !drag.moved) { const i = pick(e); if (i >= 0) ring.atGo(keys[i === N ? cur : i]); } drag = null; cv.style.cursor = hover >= 0 ? 'pointer' : 'grab'; });
   cv.addEventListener('pointercancel', () => { drag = null; });
   cv.addEventListener('pointerleave', () => { if (hover >= 0) { hover = -1; need(); } });
   host.addEventListener('keydown', e => {
@@ -200,10 +239,13 @@ function build(THREE, ring, host) {
   function resize() {
     const w = host.clientWidth, h = host.clientHeight; if (!w || !h) return;
     renderer.setSize(w, h, false); cam.aspect = w / h;
-    const tv = Math.tan(FOV / 2 * D), th = tv * cam.aspect, RR = R2 + 34;
-    const d = Math.max(RR / th * 1.06, (RR * Math.sin(EL) + 70) / tv * 1.04);
+    wide = w >= HOLO_MIN_W; ring.classList.toggle('at-holo', wide); holo.visible = wide;
+    world.position.x = hubLab.position.x = wide ? -SHIFT : 0;
+    const tv = Math.tan(FOV / 2 * D), th = tv * cam.aspect, RR = R2 + 34, RX = wide ? SHIFT + 320 : RR;
+    const d = Math.max(RX / th * 1.06, (RR * Math.sin(EL) + 70) / tv * 1.04);
     cam.position.set(0, d * Math.sin(EL), d * Math.cos(EL)); cam.lookAt(0, 4, 18); cam.updateProjectionMatrix();
     segs.forEach(g => { g.userData.label.visible = w >= LABEL_MIN_W; });
+    if (wide) paintHolo(cur);
     need();
   }
 
@@ -236,7 +278,7 @@ function build(THREE, ring, host) {
     const f = pulseT < .5 ? 2 * pulseT * pulseT : 1 - (-2 * pulseT + 2) ** 2 / 2;
     pulse.position.copy(polar(mid(pulseSeg), 70 + (R1 - 76) * f, 8)); pulse.visible = pulseT < 1;
     const s = segs[cur];
-    hot.position.copy(s.position).add(polar(mid(cur), 200, 120)).applyAxisAngle(UP, -rot); hot.intensity = 9000 * s.userData.lift;
+    hot.position.copy(s.position).add(polar(mid(cur), 200, 120)).applyAxisAngle(UP, -rot).add(world.position); hot.intensity = 9000 * s.userData.lift;
     hubRing.rotation.z = reduce ? 0 : t * .15;
     renderer.render(scene, cam);
     if (busy || Math.abs(rotTarget - rot) > .001 || segs.some(g => Math.abs(g.userData.lift - Math.max(g.userData.target, .45 * g.userData.hover)) > .002)) need();

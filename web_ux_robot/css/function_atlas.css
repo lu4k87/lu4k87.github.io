@@ -37,8 +37,30 @@
 .fa .chip .ico { width: 18px; height: 18px; color: var(--c); }
 .fa .chip b { font: 700 12px/1 var(--mono); padding: 3px 6px; border-radius: var(--radius-sm); background: var(--surface-2); font-variant-numeric: tabular-nums; }
 .fa .chip[aria-pressed="true"] { background: var(--surface); border-color: var(--line-strong); }
-.fa #areas .chip b { background: color-mix(in srgb, var(--c) 22%, var(--surface-2)); }
-.fa #areas .chip[aria-pressed="true"] { background: color-mix(in srgb, var(--c) 16%, var(--surface)); border-color: var(--c); }
+/* Bereichs-Skala (Wunsch User 15.10.2026): der Ring als Leiste – Segment je Bereich (Icon + Zahl, Name, ein Strich je Funktion) */
+.fa #areas { flex: 1 1 100%; display: grid; grid-template-columns: auto repeat(9, minmax(0, 1fr)); gap: 6px; width: auto; padding: 0; border: 0; background: none; }
+.fa .aseg { --c: var(--accent); min-width: 0; display: grid; grid-template-rows: auto 6px; align-content: space-between; gap: 8px; padding: 10px 10px 9px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface-2);
+  color: var(--fg); text-align: left; cursor: pointer; transition: border-color var(--t-fast), background-color var(--t-fast), box-shadow var(--t-base); }
+.fa .aseg.all { min-width: 64px; }
+.fa .aseg:hover { border-color: color-mix(in srgb, var(--c) 55%, var(--line)); }
+.fa .aseg:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.fa .aseg[aria-pressed="true"] { border-color: var(--c); background: color-mix(in srgb, var(--c) 14%, var(--surface)); box-shadow: 0 0 18px -8px var(--c); }
+.fa .aseg-h { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 6px 8px; min-width: 0; font-size: 13.5px; font-weight: 700; line-height: 1.2; }
+.fa .aseg-h .ico { width: 18px; height: 18px; flex: none; color: var(--c); }
+.fa .aseg-t { grid-column: 1 / -1; grid-row: 2; min-width: 0; hyphens: auto; }
+.fa .aseg.all .aseg-t { grid-row: 1; grid-column: 1; }
+.fa .aseg-h b { justify-self: end; font: 800 13px/1 var(--mono); color: var(--c); font-variant-numeric: tabular-nums; }
+.fa .aseg.all .aseg-h b { color: var(--accent); }
+.fa .aseg-bar { display: flex; gap: 2px; height: 6px; }
+.fa .aseg-bar i { flex: 1; min-width: 2px; border-radius: 1px; background: var(--c); opacity: .5; transition: opacity var(--t-base); }
+.fa .aseg-bar i.sim { background: transparent; box-shadow: inset 0 0 0 1px var(--c); }
+.fa .aseg[aria-pressed="true"] .aseg-bar i, .fa .aseg:hover .aseg-bar i { opacity: 1; }
+.fa .aseg.all .aseg-bar i { opacity: .85; }
+/* Liste links, Ablauf rechts (Vorschau Atlas:A, Wunsch User 15.10.2026): Funktionsliste bleibt beim Scrollen stehen */
+.fa-hub-head { --c: var(--accent); display: flex; align-items: center; gap: 8px; padding: 2px 4px 10px; border-bottom: 1px solid var(--line); font-size: 15px; font-weight: 800; }
+.fa-hub-head .ico { width: 18px; height: 18px; color: var(--c); }
+.fa-hub-head span { flex: 1; min-width: 0; }
+.fa-hub-head b { font: 800 15px/1 var(--mono); color: var(--c); font-variant-numeric: tabular-nums; }
 .fa .f-right { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
 .fa .search { display: inline-flex; align-items: center; gap: 8px; min-height: 40px; padding: 0 10px; border: 1px solid var(--line-strong); border-radius: var(--radius-sm); background: var(--surface); }
 .fa .search:focus-within { border-color: var(--accent); }
@@ -444,6 +466,8 @@
   .fa .loop { grid-template-columns: minmax(0, 1fr); }
   .fa .panel .fg-foot { grid-template-columns: minmax(0, 1fr); }
 }
+@media (max-width: 1100px) { .fa #areas { grid-template-columns: repeat(5, minmax(0, 1fr)); } }
+@media (max-width: 560px) { .fa #areas { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 560px) {
   .fa .fa-hub { padding: 12px; }
   .fa .cards { grid-template-columns: minmax(0, 1fr); }
@@ -455,4 +479,11 @@
 @media (prefers-reduced-motion: reduce) {
   .fa :is(.fn, .chip, .ring .st rect) { transition: none; }
   .fa .fg-svg .edge.now, .fa .fg-svg .pkt .halo { animation: none !important; }
+}
+/* Liste links, Ablauf rechts ab 1101 px (nach den Grundregeln von .fa-hub/.cards, damit sie gelten) */
+@media (min-width: 1101px) {
+  .fa { grid-template-columns: minmax(260px, 300px) minmax(0, 1fr); align-items: start; }
+  .fa > :is(.fa-legend, .filter) { grid-column: 1 / -1; }
+  .fa .fa-hub { position: sticky; top: 80px; max-height: calc(100vh - 96px); overflow-y: auto; gap: 8px; padding: 12px; }
+  .fa .fa-hub .cards { grid-template-columns: minmax(0, 1fr); gap: 4px; }
 }

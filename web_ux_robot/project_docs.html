@@ -258,6 +258,20 @@ html.sf-on .at-ring:not(.in) .seg { stroke-dasharray: 0 85; }
 .at-cta { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px; }
 .at-cta p { flex: 1 1 240px; font-size: 14px; line-height: 1.45; color: var(--fg-2); }
 .at-cta code { font: 600 13px/1.3 var(--mono); color: var(--fg); overflow-wrap: anywhere; }
+/* Atlas oben (Vorschau Ring:B, Wunsch User 15.10.2026): Kachelleiste der 9 Bereiche, darunter Bühne über volle Breite (Ring + Hologramm-Karte), Autoscan, Kreisläufe */
+#atlas .at-grid { grid-template-columns: minmax(0, 1fr); gap: 24px; }
+#atlas .at-side { display: contents; }
+#atlas .at-areas { order: -1; grid-template-columns: repeat(9, minmax(0, 1fr)); gap: 8px; }
+#atlas .at-area a { grid-template-columns: auto minmax(0, 1fr); align-content: start; gap: 8px; padding: 12px; }
+#atlas .at-area b { grid-column: 1 / -1; grid-row: 2; font-size: 14px; hyphens: auto; }
+#atlas .at-area em { justify-self: end; }
+#atlas .at-area small { display: none; }
+#atlas .at-stage { max-width: none; }
+#atlas .at-holo .at-stage { aspect-ratio: 2.3 / 1; }
+#atlas .at-holo .at-detail { max-width: none; padding: 10px 14px; background: transparent; }
+#atlas .at-holo .at-detail > :is(.atd-k, .atd-h, .atd-d, .atd-chips) { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }   /* Text bleibt für Screenreader */
+#atlas .at-holo .atd-scan { padding-top: 0; border-top: 0; }
+@media (max-width: 1180px) { #atlas .at-areas { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 /* Kreislauf-Chips = Knöpfe: zeigen ihren Ablauf in der Funktionsliste darunter (#atlas-list, js/function_atlas.js) */
 .at-loops .chip { cursor: pointer; transition: border-color var(--t-fast), background-color var(--t-fast); }
 .at-loops .chip:hover { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 9%, var(--surface)); color: var(--fg); }
@@ -1586,7 +1600,7 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
             <div class="fa-leg-stages">
               <span class="fa-leg-label" data-en="Stages:">Prüfstufen:</span>
               <span data-stage-ex="sr"></span>
-              <small data-en="Circle with tick = active stage · dashed circle = omitted stage">Haken = aktive Stufe · gestrichelt = entfällt</small>
+              <small data-en="Circle with tick = active stage · dashed circle = omitted stage · strokes per area: filled = runs on real hardware, outline = simulation only">Haken = aktive Stufe · gestrichelt = entfällt · Striche je Bereich: voll = läuft real, Rahmen = nur Simulation</small>
             </div>
           </div>
           <div class="filter" role="search" aria-label="Funktionen filtern" data-en-aria="Filter functions">
@@ -1599,6 +1613,7 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
           </div>
 
           <div class="fa-hub" id="fa-hub">
+            <div class="fa-hub-head" id="fa-hub-head"></div>
             <div class="cards fa-hub-matrix" id="cards">
               <article class="fn" id="gamepad" data-a="ctl" data-f="pad" data-s="spr">
                 <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-pad"/></svg><span data-en="Gamepad, local and remote">Gamepad lokal und remote</span></button></h3>
