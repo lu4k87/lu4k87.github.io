@@ -143,6 +143,8 @@ a.hero-card:hover { border-color: color-mix(in srgb, var(--accent) 65%, var(--gl
 .strip .wrap { display: grid; gap: 18px; padding-block: 24px; }
 .strip-row { display: grid; grid-template-columns: max-content minmax(0, 1fr); align-items: start; gap: 12px 40px; }
 .strip-row + .strip-row { padding-top: 18px; border-top: 1px solid var(--line); }
+.chapter + .strip { margin-top: 96px; border-top: 1px solid var(--line); }
+@media (max-width: 700px) { .chapter + .strip { margin-top: 64px; } }
 .strip-k { font: 700 12px/22px var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--fg-2); }
 .strip ul { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px 24px; }
 .strip li { display: flex; align-items: center; gap: 9px; min-height: 22px; font-size: 16px; font-weight: 800; letter-spacing: -.01em; white-space: nowrap; }
