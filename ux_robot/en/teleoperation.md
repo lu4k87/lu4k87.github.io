@@ -331,6 +331,10 @@ Leap Motion 2 ──▶ leap_hand_teleop_node ──▶ /remote/twist ──▶ 
 | Point | Index fingertip above the Leap Motion | A dot follows the fingertip in the viewport; a grasp point under it glows like with the mouse |
 | Click | Hold the fingertip still **2 s** (default, *Click after*) on a grasp point or a menu button (ring closes) | Object menu opens / the button is clicked; the next click needs a move away first |
 | Zoom | Pinch thumb and index finger with **both hands**, spread = zoom in, together = zoom out | Smooth dolly of the camera, same limits as the mouse wheel |
+| Rotate view | **One open hand, fingers spread**, turn the hand: roll left / right = circle sideways, tilt the fingers up / down = look higher / lower | Like dragging the left mouse button – only the display camera turns, same limits as the mouse; hand still = view stays |
+| Move view | **One flat hand, fingers together**, move it | Like dragging the right mouse button – the view follows the hand (same scale as the pointer) |
+
+The **posture decides** (checked over ~130 ms, so the pointer never flips by accident): index finger out and the others curled = pointer / click as before · open hand with spread fingers = rotate · flat hand with fingers together = move. Sensitivity per user in *Rotate view* / *Move view* (Remote › Gestures, saved in the profile, 0 = gesture off); older profiles keep working with the defaults. If the direction feels wrong tell us – it is one sign in `viewFrame` (`gesture_free.js`).
 
 Robot \| Hardware: switching on asks with the 1 s hold dialog (*Switch on free gestures for the real robot?*), switching from Free back to TCP asks again. The hand clicks only info / edit / setting buttons of the object menu and never faster than 2 s – everything else (**Approach from above**, **Grasp** …) stays with the mouse. Clicks and zoom pause (the dot stays) while the node does not confirm „off“ – e.g. another browser has the TCP coupled or Leap control on, and during calibration. Hand poses linked to commands (Remote › Gestures) rest in Free and during calibration – except *Stop planned motion*, which stays available.
 
