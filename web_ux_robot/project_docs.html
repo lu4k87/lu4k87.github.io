@@ -79,7 +79,7 @@ body { padding-top: var(--hdr, 61px); }
 .top { position: fixed; top: 0; left: 0; right: 0; z-index: 10; border-bottom: 1px solid var(--line); background: color-mix(in srgb, var(--bg) 95%, transparent); }
 .top .wrap { display: flex; align-items: center; gap: 16px; padding-block: 12px; flex-wrap: wrap; transition: padding var(--t-base) var(--ease-out), row-gap var(--t-base) var(--ease-out); }
 .top :is(.brand, .site-up, .tools) { max-height: 48px; transition: opacity var(--t-base) var(--ease-out), visibility 0s, max-height var(--t-base) var(--ease-out), max-width var(--t-base) var(--ease-out), margin var(--t-base) var(--ease-out); }
-.top .tools { max-width: 320px; }
+.top .tools { max-width: 440px; }
 .top .sf-crumb { position: absolute; left: 24px; top: 50%; max-width: calc(100% - 420px); font-size: 14px; opacity: 0; visibility: hidden; transform: translateY(-50%);
   transition: opacity 180ms var(--ease-out), visibility 0s 180ms; }
 .top.sf-min:not(:has(:focus-visible:not(.sf-crumb))) .wrap { padding-block: 4px; }
@@ -103,9 +103,9 @@ body { padding-top: var(--hdr, 61px); }
 .tools { display: flex; gap: 8px; }
 /* Steuerknöpfe „Leiste“: Auswahl = Gruppe mit Rahmen, gewählt = heller Daumen; Einzelaktionen = .btn/.pf-btn */
 .seg { display: inline-flex; gap: 2px; padding: 3px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface-2); }
-.seg button { font: 700 12px/1 var(--mono); padding: 0 10px; min-height: 28px; min-width: 34px; border: 0; border-radius: var(--radius-sm); background: transparent; color: var(--fg-2); cursor: pointer; transition: background-color var(--t-fast), color var(--t-fast); }
-.seg button:hover { color: var(--fg); background: color-mix(in srgb, var(--fg) 7%, transparent); }
-.seg button[aria-pressed="true"] { background: var(--surface); color: var(--fg); box-shadow: 0 0 0 1px var(--line-strong); }
+.seg :is(button, a) { display: inline-grid; place-items: center; font: 700 12px/1 var(--mono); padding: 0 10px; min-height: 28px; min-width: 34px; border: 0; border-radius: var(--radius-sm); background: transparent; color: var(--fg-2); cursor: pointer; transition: background-color var(--t-fast), color var(--t-fast); }
+.seg :is(button, a):hover { color: var(--fg); background: color-mix(in srgb, var(--fg) 7%, transparent); }
+.seg :is(button[aria-pressed="true"], a[aria-current="page"]) { background: var(--surface); color: var(--fg); box-shadow: 0 0 0 1px var(--line-strong); }
 .progress { position: absolute; left: 0; right: 0; bottom: -1px; height: 2px; background: var(--accent); box-shadow: 0 0 10px var(--glow); transform-origin: 0 50%; transform: scaleX(var(--p, 0)); pointer-events: none; }
 @supports (animation-timeline: scroll()) {
   .progress { animation: progress linear both; animation-timeline: scroll(root); }
@@ -973,6 +973,10 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
       <a href="#kontakt" data-en="Contact">Kontakt</a>
     </nav>
     <div class="tools">
+      <div class="seg" role="group" aria-label="Version">
+        <a href="project_docs.html" aria-current="page" title="Klassische Vollversion (v1)" data-en-title="Classic full version (v1)">v1</a>
+        <a href="project_docs_v2.html" title="Neu gegliederte Version (v2)" data-en-title="Restructured version (v2)">v2</a>
+      </div>
       <div class="seg" role="group" aria-label="Sprache / Language">
         <button type="button" data-lang="de" aria-pressed="true">DE</button>
         <button type="button" data-lang="en" aria-pressed="false">EN</button>
