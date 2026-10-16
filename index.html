@@ -256,6 +256,40 @@ a.btn:hover { border-color: color-mix(in srgb, var(--accent) 55%, var(--line-str
   .tb-rules td:nth-child(3) { white-space: normal; }
 }
 
+/* Ablauf als Schwimmbahnen: Spalten = Schritte, Zeilen = Beteiligte und Ablagen, Farbe = Gruppe (--c je tbody) */
+.fl-wrap { margin: 0 0 28px; }
+.fl { table-layout: fixed; border-collapse: separate; border-spacing: 6px; margin: -6px; width: calc(100% + 12px); }
+.fl th, .fl td { padding: 0; text-align: left; font-weight: 400; vertical-align: top; }
+.fl-steps td:first-child, .fl-steps th:first-child { width: 176px; }
+.fl-steps th { padding: 10px 16px 10px 18px; background: var(--fg); color: var(--bg); font: 600 .8125rem/1.25 var(--f-head); clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 50%, calc(100% - 12px) 100%, 0 100%, 12px 50%); }
+.fl-steps th i { display: inline-block; margin-right: 4px; font: 600 .8125rem/1 var(--f-mono); font-style: normal; }
+.fl .band th { padding: 16px 2px 2px; font: 600 .8125rem/1.3 var(--f-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--c); border-bottom: 1px solid color-mix(in srgb, var(--c) 45%, var(--line)); }
+.fl .band th span::before { content: ""; display: inline-block; width: 10px; height: 10px; margin-right: 10px; border-radius: 2px; background: var(--c); }
+.fl .lane > th { padding: 9px 12px; background: color-mix(in srgb, var(--c) 16%, var(--surface)); border: 1px solid color-mix(in srgb, var(--c) 55%, var(--line)); border-radius: var(--radius); }
+.fl .lane > th > .i { float: left; margin: 2px 10px 0 0; font-size: 18px; color: var(--c); }
+.fl .lane > th .i.fill { fill: currentColor; stroke: none; }
+.fl .lane > th span { display: block; overflow: hidden; }
+.fl .lane > th b { display: block; font: 700 .9375rem/1.25 var(--f-head); }
+.fl .lane > th small { display: block; margin-top: 2px; font-size: .8125rem; line-height: 1.3; color: var(--fg-2); overflow-wrap: anywhere; }
+.fl td { padding: 8px 10px; font-size: .8125rem; line-height: 1.4; text-wrap: pretty; overflow-wrap: anywhere; background: color-mix(in srgb, var(--c) 8%, var(--surface)); border: 1px solid color-mix(in srgb, var(--c) 35%, var(--line)); border-radius: var(--radius); }
+.fl td code { font-size: .8125rem; color: var(--fg); }
+.fl td b { font-weight: 700; }
+.fl td.none { background: transparent; border: 1px dashed var(--line); }
+.fl td.none::after { content: "–"; color: var(--fg-2); }
+.fl-steps td { background: none; border: 0; padding: 0; }
+@media (max-width: 1023px) {
+  .fl, .fl tbody, .fl tr, .fl th, .fl td { display: block; }
+  .fl { margin: 0; width: 100%; }
+  .fl thead { display: none; }
+  .fl .band th { padding: 20px 2px 6px; }
+  .fl .lane { margin: 10px 0 0; background: var(--surface); border: 1px solid color-mix(in srgb, var(--c) 45%, var(--line)); border-radius: var(--radius-lg); overflow: hidden; }
+  .fl .lane > th { border: 0; border-radius: 0; border-bottom: 1px solid color-mix(in srgb, var(--c) 45%, var(--line)); }
+  .fl td { border: 0; border-radius: 0; background: none; padding: 8px 12px; }
+  .fl td + td { border-top: 1px solid var(--line); }
+  .fl td.none { display: none; }
+  .fl td::before { content: attr(data-l); display: block; font: 600 .8125rem/1.6 var(--f-mono); letter-spacing: .04em; color: var(--c); }
+}
+
 /* Kasten mit Überschrift (Zusammenspiel) + Begriffspaare */
 .box { padding: 18px 20px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg); }
 .box h4 { display: flex; align-items: center; gap: 10px; margin: 0 0 6px; font: 700 1.0625rem/1.25 var(--f-head); }
@@ -356,6 +390,13 @@ footer p { margin: 0; }
   <symbol id="i-book" viewBox="0 0 24 24"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 19V5M8 7h7"/></symbol>
   <symbol id="i-stop" viewBox="0 0 24 24"><path d="M8 3h8l5 5v8l-5 5H8l-5-5V8z"/><path d="M12 8v5M12 16h.01"/></symbol>
   <symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol>
+  <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></symbol>
+  <symbol id="i-chat" viewBox="0 0 24 24"><path d="M4 5.5h16v10H10l-4 3.5v-3.5H4z"/><path d="M8 9.5h8M8 12.5h5"/></symbol>
+  <symbol id="i-spark" viewBox="0 0 24 24"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8zM19 16l.8 2.2L22 19l-2.2.8L19 22l-.8-2.2L16 19l2.2-.8z"/></symbol>
+  <symbol id="i-bot" viewBox="0 0 24 24"><rect x="4" y="8" width="16" height="12" rx="2"/><path d="M12 8V4.5M9 13h.01M15 13h.01M9.5 16.5h5M2 13v3M22 13v3"/><circle cx="12" cy="3.5" r="1"/></symbol>
+  <symbol id="i-tool" viewBox="0 0 24 24"><path d="M14.7 6.3a4 4 0 0 0-5 5L3.5 17.5l3 3 6.2-6.2a4 4 0 0 0 5-5l-2.5 2.5-2.2-.5-.5-2.2z"/></symbol>
+  <symbol id="i-bolt" viewBox="0 0 24 24"><path d="M13 3 5 14h6l-1 7 8-11h-6z"/></symbol>
+  <symbol id="i-flag" viewBox="0 0 24 24"><path d="M5 21V4M5 4h11l-2 4 2 4H5"/></symbol>
   <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></symbol>
   <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></symbol>
 </svg>
@@ -432,6 +473,152 @@ footer p { margin: 0; }
     </div>
 
     <h3 class="part" id="h-ablauf"><span class="no">1</span><span data-en="How a task runs – who does what">Ablauf einer Aufgabe – wer macht was</span></h3>
+    <p class="sub" data-en="Overview: columns = the 6 steps, rows = everyone and everything involved, colour = group. A dashed box means nothing happens there in this step; red = the chat stops. The table below has every detail.">Überblick: Spalten = die 6 Schritte, Zeilen = alle Beteiligten und Ablagen, Farbe = Gruppe. Gestrichelt = in diesem Schritt passiert dort nichts; rot = hier hält der Chat an. Alle Einzelheiten stehen darunter in der Tabelle.</p>
+    <div class="fl-wrap" data-reveal>
+    <table class="fl" aria-label="Ablauf einer Aufgabe als Schwimmbahnen: Spalten sind die sechs Schritte, Zeilen alle Beteiligten und Ablagen" data-en-aria="Task flow as swim lanes: columns are the six steps, rows are everyone and everything involved">
+      <thead><tr class="fl-steps"><td aria-hidden="true"></td>
+        <th scope="col"><i>1</i><span data-en="Request">Auftrag</span></th>
+        <th scope="col"><i>2</i><span data-en="Plan">Plan</span></th>
+        <th scope="col"><i>3</i><span data-en="Implementation">Umsetzung</span></th>
+        <th scope="col"><i>4</i><span data-en="Check">Prüfung</span></th>
+        <th scope="col"><i>5</i><span data-en="Finish">Abschluss</span></th>
+        <th scope="col"><i>6</i><span data-en="Distribution">Verteilung</span></th>
+      </tr></thead>
+      <tbody class="g-a" style="--c: var(--c1)">
+        <tr class="band"><th colspan="7" scope="colgroup"><span data-en="Who acts">Wer handelt</span></th></tr>
+        <tr class="lane">
+          <th scope="row"><svg class="i" aria-hidden="true"><use href="#i-user"/></svg><span><b data-en="You">Du</b><small data-en="product owner">Product Owner</small></span></th>
+          <td data-l="1 · Auftrag" data-l-en="1 · Request" data-en="State the task – text, image or link">Aufgabe nennen – Text, Bild oder Link</td>
+          <td data-l="2 · Plan" data-l-en="2 · Plan" data-en="Answer questions, approve preview">Fragen beantworten, Vorschau abnehmen</td>
+          <td class="none" aria-hidden="true" data-l="3 · Umsetzung" data-l-en="3 · Implementation"></td>
+          <td class="none" aria-hidden="true" data-l="4 · Prüfung" data-l-en="4 · Check"></td>
+          <td data-l="5 · Abschluss" data-l-en="5 · Finish" data-en="Read the result">Ergebnis lesen</td>
+          <td data-l="6 · Verteilung" data-l-en="6 · Distribution" data-en="Use page and projects">Seite und Projekte nutzen</td>
+        </tr>
+        <tr class="lane">
+          <th scope="row"><svg class="i" aria-hidden="true"><use href="#i-chat"/></svg><span><b data-en="Chat · role">Chat · Rolle</b><small>Claude · Codex · Gemini</small></span></th>
+          <td data-l="1 · Auftrag" data-l-en="1 · Request" data-en="<b>Organizer</b> reads situation report, rules, memory"><b>Organizer</b> liest Lagebild, Regeln, Memory</td>
+          <td data-l="2 · Plan" data-l-en="2 · Plan" data-en="<b>Organizer</b> plans, picks specialist role + check level"><b>Organizer</b> plant, wählt Fachrolle + Prüfstufe</td>
+          <td data-l="3 · Umsetzung" data-l-en="3 · Implementation" data-en="<b>Designer · developer · editor</b> – smallest diff"><b>Designer · Entwickler · Redakteur</b> – kleinster Diff</td>
+          <td data-l="4 · Prüfung" data-l-en="4 · Check" data-en="<b>Reviewer</b> – evidence after the last change"><b>Prüfer</b> – Beleg nach der letzten Änderung</td>
+          <td data-l="5 · Abschluss" data-l-en="5 · Finish" data-en="<b>Synchronizer</b> – commit + push, handoff"><b>Synchronizer</b> – Commit + Push, Übergabe</td>
+          <td data-l="6 · Verteilung" data-l-en="6 · Distribution" data-en="Git hooks run on their own">Git-Hooks laufen allein</td>
+        </tr>
+      </tbody>
+      <tbody class="g-b" style="--c: var(--c3)">
+        <tr class="band"><th colspan="7" scope="colgroup"><span data-en="Knowledge and tools">Wissen und Werkzeuge</span></th></tr>
+        <tr class="lane">
+          <th scope="row"><svg class="i" aria-hidden="true"><use href="#i-spark"/></svg><span><b>Skills</b><small data-en="guides per topic">Anleitungen je Thema</small></span></th>
+          <td data-l="1 · Auftrag" data-l-en="1 · Request" data-en="<code>answer-page</code> – fixed answer format"><code>answer-page</code> – festes Antwortformat</td>
+          <td data-l="2 · Plan" data-l-en="2 · Plan" data-en="Finder table → skill for the topic">Finder-Tabelle → Skill zum Thema</td>
+          <td data-l="3 · Umsetzung" data-l-en="3 · Implementation" data-en="Skill for the topic · <code>root-cause</code> for bugs">Skill zum Thema · <code>root-cause</code> bei Bugs</td>
+          <td data-l="4 · Prüfung" data-l-en="4 · Check"><code>test-isolated</code></td>
+          <td data-l="5 · Abschluss" data-l-en="5 · Finish"><code>commit</code></td>
+          <td class="none" aria-hidden="true" data-l="6 · Verteilung" data-l-en="6 · Distribution"></td>
+        </tr>
+        <tr class="lane">
+          <th scope="row"><svg class="i" aria-hidden="true"><use href="#i-bot"/></svg><span><b data-en="Agents">Agenten</b><small data-en="helpers with their own task">Helfer mit eigenem Auftrag</small></span></th>
+          <td class="none" aria-hidden="true" data-l="1 · Auftrag" data-l-en="1 · Request"></td>
+          <td data-l="2 · Plan" data-l-en="2 · Plan" data-en="<code>ws-explorer</code> for broad searches"><code>ws-explorer</code> für breite Suche</td>
+          <td data-l="3 · Umsetzung" data-l-en="3 · Implementation" data-en="<code>ws-worker</code> for well-defined changes"><code>ws-worker</code> für klar umrissene Änderungen</td>
+          <td data-l="4 · Prüfung" data-l-en="4 · Check"><code>test-runner</code> · <code>ui-verifier</code> · <code>safety-reviewer</code></td>
+          <td class="none" aria-hidden="true" data-l="5 · Abschluss" data-l-en="5 · Finish"></td>
+          <td class="none" aria-hidden="true" data-l="6 · Verteilung" data-l-en="6 · Distribution"></td>
+        </tr>
+        <tr class="lane">
+          <th scope="row"><svg class="i" aria-hidden="true"><use href="#i-tool"/></svg><span><b data-en="Tools · scripts">Tools · Skripte</b><small><code>tools/</code> + <code>bin/</code></small></span></th>
+          <td data-l="1 · Auftrag" data-l-en="1 · Request" data-en="<code>ws_<wbr>sync.sh</code> fetches all repos"><code>ws_<wbr>sync.sh</code> holt alle Repos</td>
+          <td data-l="2 · Plan" data-l-en="2 · Plan" data-en="Preview: <code>build.py</code>">Vorschau: <code>build.py</code></td>
+          <td data-l="3 · Umsetzung" data-l-en="3 · Implementation"><code>claim.py</code></td>
+          <td data-l="4 · Prüfung" data-l-en="4 · Check"><code>ui_<wbr>new_<wbr>code_<wbr>checker.py</code> · <code>grasp_<wbr>e2e.py</code></td>
+          <td data-l="5 · Abschluss" data-l-en="5 · Finish" data-en="<code>treasury.py</code> saves previews"><code>treasury.py</code> sichert Vorschauen</td>
+          <td data-l="6 · Verteilung" data-l-en="6 · Distribution" data-en="<code>publish_<wbr>pages.py</code> builds the pages"><code>publish_<wbr>pages.py</code> baut die Seiten</td>
+        </tr>
+        <tr class="lane">
+          <th scope="row"><svg class="i" aria-hidden="true"><use href="#i-bolt"/></svg><span><b>Hooks</b><small data-en="run on their own">laufen von selbst</small></span></th>
+          <td data-l="1 · Auftrag" data-l-en="1 · Request"><code>session_<wbr>overview</code></td>
+          <td data-l="2 · Plan" data-l-en="2 · Plan"><code>chat_<wbr>length_<wbr>hint</code></td>
+          <td data-l="3 · Umsetzung" data-l-en="3 · Implementation"><code>todo_<wbr>claim_<wbr>hook</code> · <code>pre_<wbr>tool_<wbr>guard</code> · <code>post_<wbr>edit_<wbr>check</code></td>
+          <td data-l="4 · Prüfung" data-l-en="4 · Check"><code>pre-commit</code></td>
+          <td data-l="5 · Abschluss" data-l-en="5 · Finish"><code>format_<wbr>check</code> · <code>chat_<wbr>handoff</code></td>
+          <td data-l="6 · Verteilung" data-l-en="6 · Distribution"><code>pre-push</code> · <code>chat_<wbr>sync</code> · <code>post-merge</code></td>
+        </tr>
+      </tbody>
+      <tbody class="g-c" style="--c: var(--c4)">
+        <tr class="band"><th colspan="7" scope="colgroup"><span data-en="Coordination">Abstimmung</span></th></tr>
+        <tr class="lane">
+          <th scope="row"><svg class="i" aria-hidden="true"><use href="#i-flag"/></svg><span><b data-en="Claims · tasks">Claims · Aufgaben</b><small data-en="handoffs, mailbox">Übergaben, Postfach</small></span></th>
+          <td data-l="1 · Auftrag" data-l-en="1 · Request" data-en="Situation report: claims, open handoffs, mailbox">Lagebild: Claims, offene Übergaben, Postfach</td>
+          <td data-l="2 · Plan" data-l-en="2 · Plan" data-en="<code>TODOS.md</code> – change status only"><code>TODOS.md</code> – nur Status ändern</td>
+          <td data-l="3 · Umsetzung" data-l-en="3 · Implementation" data-en="Claim per file before changing it">Claim je Datei vor dem Ändern</td>
+          <td class="none" aria-hidden="true" data-l="4 · Prüfung" data-l-en="4 · Check"></td>
+          <td data-l="5 · Abschluss" data-l-en="5 · Finish" data-en="Claim removed · handoff note for the rest">Claim gelöscht · Übergabe-Zettel für den Rest</td>
+          <td class="none" aria-hidden="true" data-l="6 · Verteilung" data-l-en="6 · Distribution"></td>
+        </tr>
+      </tbody>
+      <tbody class="g-d" style="--c: var(--c2)">
+        <tr class="band"><th colspan="7" scope="colgroup"><span data-en="Storage – the path of the state">Ablage – der Weg des Stands</span></th></tr>
+        <tr class="lane">
+          <th scope="row"><svg class="i" aria-hidden="true"><use href="#i-doc"/></svg><span><b data-en="Local files">Lokale Dateien</b><small data-en="working folder on the computer">Arbeitsordner auf dem Rechner</small></span></th>
+          <td data-l="1 · Auftrag" data-l-en="1 · Request" data-en="Rules + memory – loaded via link">Regeln + Memory – per Link geladen</td>
+          <td data-l="2 · Plan" data-l-en="2 · Plan" data-en="Preview page in the treasury">Vorschau-Seite in der Schatzkammer</td>
+          <td data-l="3 · Umsetzung" data-l-en="3 · Implementation" data-en="Change code, docs, UI – own files only">Code, Doku, UI ändern – nur eigene Dateien</td>
+          <td data-l="4 · Prüfung" data-l-en="4 · Check" data-en="Tests, screenshots, checkers">Tests, Screenshots, Checker</td>
+          <td data-l="5 · Abschluss" data-l-en="5 · Finish" data-en="Checked state is ready">Geprüfter Stand liegt fertig</td>
+          <td data-l="6 · Verteilung" data-l-en="6 · Distribution" data-en="Checkout of the page is kept current">Checkout der Seite wird aktuell gehalten</td>
+        </tr>
+        <tr class="lane">
+          <th scope="row"><svg class="i" aria-hidden="true"><use href="#i-git"/></svg><span><b data-en="Local repo">Lokales Repo</b><small data-en="Git on the computer">Git auf dem Rechner</small></span></th>
+          <td data-l="1 · Auftrag" data-l-en="1 · Request" data-en="Pull by fast-forward only">Pull nur per Fast-Forward</td>
+          <td class="none" aria-hidden="true" data-l="2 · Plan" data-l-en="2 · Plan"></td>
+          <td class="none" aria-hidden="true" data-l="3 · Umsetzung" data-l-en="3 · Implementation"></td>
+          <td data-l="4 · Prüfung" data-l-en="4 · Check" data-en="Checked states only">Nur geprüfte Stände</td>
+          <td data-l="5 · Abschluss" data-l-en="5 · Finish" data-en="Commit in the style of the repo">Commit im Stil des Repos</td>
+          <td class="none" aria-hidden="true" data-l="6 · Verteilung" data-l-en="6 · Distribution"></td>
+        </tr>
+        <tr class="lane">
+          <th scope="row"><svg class="i fill" aria-hidden="true"><use href="#i-github"/></svg><span><b data-en="Online repo">Online-Repo</b><small data-en="GitHub, private">GitHub, privat</small></span></th>
+          <td data-l="1 · Auftrag" data-l-en="1 · Request" data-en="Fetch: state of other chats and computers">Fetch: Stand anderer Chats und Rechner</td>
+          <td class="none" aria-hidden="true" data-l="2 · Plan" data-l-en="2 · Plan"></td>
+          <td data-l="3 · Umsetzung" data-l-en="3 · Implementation" data-en="Claim as Git ref pushed at once">Claim als Git-Ref sofort gepusht</td>
+          <td class="none" aria-hidden="true" data-l="4 · Prüfung" data-l-en="4 · Check"></td>
+          <td data-l="5 · Abschluss" data-l-en="5 · Finish" data-en="Push – never <code>--force</code>">Push – nie <code>--force</code></td>
+          <td data-l="6 · Verteilung" data-l-en="6 · Distribution" data-en="Other computers fetch the state">Andere Rechner holen den Stand</td>
+        </tr>
+        <tr class="lane">
+          <th scope="row"><svg class="i" aria-hidden="true"><use href="#i-book"/></svg><span><b data-en="Global repo">Globales Repo</b><small><code>ai_dev_<wbr>workflow</code></small></span></th>
+          <td data-l="1 · Auftrag" data-l-en="1 · Request" data-en="Provides rules, memory, skills, agents, hooks">Liefert Regeln, Memory, Skills, Agenten, Hooks</td>
+          <td data-l="2 · Plan" data-l-en="2 · Plan" data-en="Skills + agents + templates get loaded">Skills + Agenten + Vorlagen werden geladen</td>
+          <td class="none" aria-hidden="true" data-l="3 · Umsetzung" data-l-en="3 · Implementation"></td>
+          <td class="none" aria-hidden="true" data-l="4 · Prüfung" data-l-en="4 · Check"></td>
+          <td data-l="5 · Abschluss" data-l-en="5 · Finish" data-en="Tooling changed → own commit + push">Werkzeug geändert → eigener Commit + Push</td>
+          <td data-l="6 · Verteilung" data-l-en="6 · Distribution" data-en="Start page lu4k87.github.io is built from it">Startseite lu4k87.github.io wird daraus gebaut</td>
+        </tr>
+        <tr class="lane">
+          <th scope="row"><svg class="i" aria-hidden="true"><use href="#i-folders"/></svg><span><b data-en="Project repos">Projekt-Repos</b><small>dev_ws · __project_*</small></span></th>
+          <td data-l="1 · Auftrag" data-l-en="1 · Request" data-en="Pull: dev_ws + active project">Pull: dev_ws + aktives Projekt</td>
+          <td data-l="2 · Plan" data-l-en="2 · Plan" data-en="<code>AGENTS.md</code> + skills of the project"><code>AGENTS.md</code> + Skills des Projekts</td>
+          <td class="none" aria-hidden="true" data-l="3 · Umsetzung" data-l-en="3 · Implementation"></td>
+          <td data-l="4 · Prüfung" data-l-en="4 · Check" data-en="Definition of done by check level">Definition of Done nach Prüfstufe</td>
+          <td data-l="5 · Abschluss" data-l-en="5 · Finish" data-en="Commit + push to the repo of the project">Commit + Push ins Repo des Projekts</td>
+          <td data-l="6 · Verteilung" data-l-en="6 · Distribution" data-en="pre-push builds the project page">pre-push baut die Projektseite</td>
+        </tr>
+      </tbody>
+      <tbody class="g-e" style="--c: var(--stop)">
+        <tr class="band"><th colspan="7" scope="colgroup"><span data-en="Stopping">Anhalten</span></th></tr>
+        <tr class="lane">
+          <th scope="row"><svg class="i" aria-hidden="true"><use href="#i-stop"/></svg><span><b data-en="Stop when …">Stopp, wenn …</b><small data-en="chat asks or steps back">Chat fragt oder geht zurück</small></span></th>
+          <td data-l="1 · Auftrag" data-l-en="1 · Request" data-en="No approval – only the user gives it, in this chat">Freigabe fehlt – nur der User gibt sie, in diesem Chat</td>
+          <td data-l="2 · Plan" data-l-en="2 · Plan" data-en="Unclear → ask instead of guessing">Unklar → Rückfrage statt raten</td>
+          <td data-l="3 · Umsetzung" data-l-en="3 · Implementation" data-en="File of another chat → coordinate first">Fremde Datei → erst abstimmen</td>
+          <td data-l="4 · Prüfung" data-l-en="4 · Check" data-en="Red → back to 3, no “done”">Rot → zurück zu 3, kein „fertig“</td>
+          <td data-l="5 · Abschluss" data-l-en="5 · Finish" data-en="Never <code>--force</code>">Nie <code>--force</code></td>
+          <td data-l="6 · Verteilung" data-l-en="6 · Distribution" data-en="Repos stay private">Repos bleiben privat</td>
+        </tr>
+      </tbody>
+    </table>
+    </div>
+
     <p class="sub" data-en="One row per step · columns = who acts · last column = when the chat stops. Hooks are scripts that run on their own; the Git column shows what reaches the repos.">Eine Zeile je Schritt · Spalten = wer handelt · letzte Spalte = wann der Chat anhält. Hooks sind Skripte, die von selbst laufen; die Spalte Git zeigt, was in den Repos ankommt.</p>
     <table class="tb tb-steps" data-reveal>
       <thead><tr>
