@@ -886,33 +886,91 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
   .faq-q { font-size: 16px; }
 }
 
-/* v2: Kompakte Prozessleiste (Human-in-the-Loop), 2x2 Rollen-Bento und Voll-Katalog-Brücken */
-.v2-flow { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; margin-top: 24px; padding: 16px; border: 1px solid var(--line); border-radius: var(--radius-lg); background: var(--surface); }
-.v2-step { display: grid; gap: 6px; padding: 12px 14px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface-2); position: relative; }
-.v2-step .k { font: 700 12px/1 var(--mono); color: var(--hue, var(--accent)); letter-spacing: .06em; text-transform: uppercase; display: flex; align-items: center; justify-content: space-between; }
-.v2-step b { font-size: 14px; line-height: 1.3; }
-.v2-step small { font-size: 13px; color: var(--fg-2); line-height: 1.35; }
-.v2-subhead { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-top: 40px; margin-bottom: 16px; padding-top: 24px; border-top: 1px solid var(--line); }
-.v2-subhead h3 { font-size: 20px; font-weight: 800; letter-spacing: -.01em; }
-.v2-subhead p { font-size: 14px; color: var(--fg-2); }
-.v2-bridge { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-top: 16px; padding: 16px 18px; border: 1px solid color-mix(in srgb, var(--hue, var(--accent)) 45%, var(--line)); border-radius: var(--radius-lg); background: radial-gradient(80% 120% at 0% 50%, color-mix(in srgb, var(--hue, var(--accent)) 12%, transparent), transparent 70%), var(--surface); }
-.v2-bridge-copy { display: grid; gap: 4px; }
-.v2-bridge-copy b { font-size: 15px; display: flex; align-items: center; gap: 8px; }
-.v2-bridge-copy span { font-size: 13.5px; color: var(--fg-2); }
+/* ═══════════════════════════════════════════════════════════════════════════
+   v2: Typografie-Hierarchie, Rhythmus, Farben, Bullet-Points & Bento-Rastern
+   ═══════════════════════════════════════════════════════════════════════════ */
+.chapter { padding-block: 96px; }
+.sec { padding-block: 72px 64px; }
+.sec.alt { background: var(--band); border-block: 1px solid var(--line); }
+
+/* Human-in-the-Loop Prozessleiste */
+.hitl-banner { display: grid; gap: 16px; margin-top: 32px; padding: 24px; border: 1px solid color-mix(in srgb, var(--accent) 35%, var(--line)); border-radius: var(--radius-lg); background: radial-gradient(85% 120% at 50% 0%, color-mix(in srgb, var(--accent) 8%, transparent), transparent 70%), var(--surface); box-shadow: var(--shadow); }
+.hitl-head { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+.hitl-head h3 { font-size: 19px; font-weight: 800; display: flex; align-items: center; gap: 10px; }
+.hitl-head p { font-size: 14px; color: var(--fg-2); margin: 0; }
+.hitl-steps { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; margin: 0; padding: 0; list-style: none; }
+.hitl-step { display: grid; gap: 8px; padding: 16px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface-2); position: relative; }
+.hitl-step .step-tag { font: 700 11px/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--hue, var(--accent)); display: flex; align-items: center; justify-content: space-between; }
+.hitl-step b { font-size: 14.5px; font-weight: 800; line-height: 1.3; }
+.hitl-step p { font-size: 13px; color: var(--fg-2); line-height: 1.45; margin: 0; }
+.hitl-step ul { margin: 4px 0 0; padding-left: 16px; font-size: 12.5px; color: var(--fg-2); line-height: 1.4; display: grid; gap: 3px; }
+
+/* NUI Grid */
+.nui-box { margin-top: 48px; padding-top: 36px; border-top: 1px solid var(--line); }
+.nui-intro { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 24px; }
+.nui-intro h3 { font-size: 22px; font-weight: 800; }
+.nui-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
+.nui-card { display: grid; gap: 12px; padding: 20px; border: 1px solid color-mix(in srgb, var(--hue) 35%, var(--line)); border-radius: var(--radius-lg); background: radial-gradient(80% 90% at 100% 0%, color-mix(in srgb, var(--hue) 10%, transparent), transparent 60%), var(--surface); box-shadow: var(--shadow); }
+.nui-card-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.nui-card-head .ico { width: 26px; height: 26px; color: var(--hue); }
+.nui-card-head .tag { font: 700 11px/1 var(--mono); padding: 5px 7px; border-radius: var(--radius-sm); background: color-mix(in srgb, var(--hue) 14%, var(--surface-2)); color: var(--fg); border: 1px solid color-mix(in srgb, var(--hue) 40%, transparent); }
+.nui-card h4 { font-size: 16px; font-weight: 800; margin: 0; }
+.nui-card p { font-size: 13.5px; color: var(--fg-2); line-height: 1.45; margin: 0; }
+.nui-specs { margin: 0; padding: 0; list-style: none; display: grid; gap: 5px; font-size: 12.5px; border-top: 1px solid var(--line); padding-top: 10px; }
+.nui-specs li { display: flex; align-items: center; justify-content: space-between; }
+.nui-specs li span { color: var(--fg-2); }
+.nui-specs li b { font-family: var(--mono); font-size: 12px; color: var(--fg); }
+
+/* Sicherheitskette Timeline */
+.safety-box { margin-top: 48px; padding-top: 36px; border-top: 1px solid var(--line); }
+.safety-head { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 20px; }
+.safety-head h3 { font-size: 20px; font-weight: 800; }
+.safety-chain { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 10px; margin: 0; padding: 0; list-style: none; }
+.safety-step { display: grid; gap: 6px; padding: 14px 12px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); text-align: center; }
+.safety-step .sn { font: 800 13px/1 var(--mono); color: var(--gold); }
+.safety-step b { font-size: 13px; font-weight: 700; line-height: 1.3; }
+.safety-step small { font-size: 11.5px; color: var(--fg-2); line-height: 1.35; }
+
+/* 9-Bereiche-Raster im Atlas */
+.at-overview-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin-top: 24px; }
+.at-card { display: grid; gap: 8px; padding: 18px; border: 1px solid color-mix(in srgb, var(--c) 35%, var(--line)); border-radius: var(--radius-lg); background: var(--surface); }
+.at-card-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.at-card-head b { font-size: 15px; font-weight: 800; display: flex; align-items: center; gap: 8px; color: var(--c); }
+.at-card-head .count { font: 800 13px/1 var(--mono); padding: 4px 6px; border-radius: var(--radius-sm); background: color-mix(in srgb, var(--c) 15%, transparent); color: var(--fg); border: 1px solid color-mix(in srgb, var(--c) 40%, transparent); }
+.at-card p { font-size: 13.5px; color: var(--fg-2); line-height: 1.45; margin: 0; }
+.at-card ul { margin: 4px 0 0; padding-left: 16px; font-size: 12.5px; color: var(--fg-2); line-height: 1.4; display: grid; gap: 3px; }
+
+/* Voll-Katalog Banner */
+.v2-bridge { display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap; margin-top: 28px; padding: 20px 24px; border: 1px solid color-mix(in srgb, var(--hue, var(--accent)) 45%, var(--line)); border-radius: var(--radius-lg); background: radial-gradient(80% 120% at 0% 50%, color-mix(in srgb, var(--hue, var(--accent)) 12%, transparent), transparent 70%), var(--surface); }
+.v2-bridge-copy { display: grid; gap: 6px; }
+.v2-bridge-copy b { font-size: 16px; font-weight: 800; display: flex; align-items: center; gap: 10px; color: var(--fg); }
+.v2-bridge-copy span { font-size: 14px; color: var(--fg-2); max-width: 65ch; }
 .v2-bridge-links { display: flex; gap: 10px; flex-wrap: wrap; }
-.v2-role-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
-.v2-role-card { display: grid; gap: 14px; align-content: start; padding: 24px; border: 1px solid color-mix(in srgb, var(--hue, var(--accent)) 40%, var(--line)); border-radius: var(--radius-lg); background: radial-gradient(70% 90% at 100% 0%, color-mix(in srgb, var(--hue, var(--accent)) 10%, transparent), transparent 65%), var(--surface); box-shadow: var(--shadow); }
-.v2-role-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-bottom: 12px; border-bottom: 1px solid var(--line); }
-.v2-role-head div { display: grid; gap: 4px; }
-.v2-role-head .k { font: 700 12px/1 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--hue, var(--accent)); }
-.v2-role-head h3 { font-size: 20px; font-weight: 800; }
-.v2-role-head .tag { font: 700 12px/1 var(--mono); padding: 6px 8px; border-radius: var(--radius-sm); background: color-mix(in srgb, var(--hue, var(--accent)) 14%, var(--surface-2)); color: var(--fg); border: 1px solid color-mix(in srgb, var(--hue, var(--accent)) 40%, transparent); }
-@media (max-width: 900px) {
-  .v2-flow { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .v2-role-grid { grid-template-columns: 1fr; }
+
+/* Rollen-Bento-Raster */
+.role-bento { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; margin-top: 24px; }
+.role-card { display: grid; gap: 16px; padding: 26px; border: 1px solid color-mix(in srgb, var(--hue) 45%, var(--line)); border-radius: var(--radius-lg); background: radial-gradient(75% 90% at 100% 0%, color-mix(in srgb, var(--hue) 12%, transparent), transparent 65%), var(--surface); box-shadow: var(--shadow); }
+.role-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-bottom: 14px; border-bottom: 1px solid var(--line); }
+.role-head div { display: grid; gap: 4px; }
+.role-head .k { font: 700 12px/1 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--hue); }
+.role-head h3 { font-size: 22px; font-weight: 800; margin: 0; }
+.role-head .badge-role { font: 700 11.5px/1 var(--mono); padding: 6px 10px; border-radius: var(--radius-sm); background: color-mix(in srgb, var(--hue) 15%, var(--surface-2)); color: var(--fg); border: 1px solid color-mix(in srgb, var(--hue) 45%, transparent); }
+.role-desc { font-size: 14px; color: var(--fg-2); line-height: 1.5; margin: 0; }
+.role-bullets { margin: 0; padding-left: 18px; font-size: 13.5px; color: var(--fg-2); line-height: 1.5; display: grid; gap: 6px; }
+.role-bullets li b { color: var(--fg); }
+
+@media (max-width: 1080px) {
+  .hitl-steps { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .nui-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .safety-chain { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .at-overview-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
-@media (max-width: 560px) {
-  .v2-flow { grid-template-columns: 1fr; }
+@media (max-width: 760px) {
+  .hitl-steps { grid-template-columns: 1fr; }
+  .nui-grid { grid-template-columns: 1fr; }
+  .safety-chain { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .at-overview-grid { grid-template-columns: 1fr; }
+  .role-bento { grid-template-columns: 1fr; }
 }
 
 </style>
@@ -997,10 +1055,10 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
     <a class="brand" href="#start"><span class="brand-mark"><svg class="ico" aria-hidden="true"><use href="#i-arm"/></svg></span><span>UX Robot<small data-en="Project docs · v2">Projekt-Doku · v2</small></span></a>
     <a class="site-up" href="https://lu4k87.github.io/" aria-label="Projektübersicht auf lu4k87.github.io" data-en-aria="Project overview on lu4k87.github.io"><svg class="ico" aria-hidden="true"><use href="#i-globe"/></svg><span>GitHub: Projects</span></a>
     <nav aria-label="Abschnitte" data-en-aria="Sections">
-      <a href="#ueberblick" data-en="Principle">Prinzip</a>
+      <a href="#features" data-en="Features">Features</a>
       <a href="#teilhabe" data-en="Control &amp; NUI">Steuerung &amp; NUI</a>
-      <a href="#webapps" data-en="System &amp; Atlas">System &amp; Atlas</a>
-      <a href="#unterlagen" data-en="Role hub">Rollen-Einstieg</a>
+      <a href="#system" data-en="System &amp; Atlas">System &amp; Atlas</a>
+      <a href="#unterlagen" data-en="Role hub">Rollen-Hub</a>
       <a href="#faq">Top-FAQ</a>
       <a href="#kontakt" data-en="Contact">Kontakt</a>
     </nav>
@@ -1099,17 +1157,15 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
     <div class="wrap">
       <header class="ch-head">
         <div>
-          <span class="eyebrow" data-en="Platform · 3 pillars">Plattform · 3 Säulen</span>
-          <h2 data-en="Platform &amp; system">Plattform &amp; System</h2>
-          <p class="lede" data-en="Compactly structured in three pillars: 01 Principle &amp; key features, 02 Control modes, NUI &amp; safeguards, 03 Web apps, atlas compass &amp; hardware stack.">Kompakt in drei Säulen gegliedert: 01 Prinzip &amp; Kernmerkmale, 02 Steuerwege, NUI &amp; Schutzstufen, 03 Web-Apps, Atlas-Kompass &amp; Hardware-Stack.</p>
+          <span class="eyebrow" data-en="Principle &amp; features">Prinzip &amp; Features</span>
+          <h2 data-en="Key features &amp; principle">Kernmerkmale &amp; Prinzip</h2>
+          <p class="lede" data-en="Human in the loop: the human leads, the AI assists. All eight key features and the end-to-end flow.">Human-in-the-Loop: Der Mensch führt, die KI assistiert. Alle acht Kernmerkmale und der Ablauf von der Eingabe bis zur Ausführung.</p>
         </div>
-        <ol class="path" aria-label="Plattform &amp; System" data-en-aria="Platform &amp; system">
-          <li><a href="#ueberblick" style="--hue: var(--accent)"><span class="pn"><svg class="ico" aria-hidden="true"><use href="#i-layers"/></svg><span>01</span></span><b data-en="Principle &amp; features">Prinzip &amp; Merkmale</b><small data-en="Human-in-the-loop flow and all eight key features">Human-in-the-Loop-Ablauf und alle acht Kernmerkmale</small></a></li>
-          <li><a href="#teilhabe" style="--hue: var(--orange)"><span class="pn"><svg class="ico" aria-hidden="true"><use href="#i-pad"/></svg><span>02</span></span><b data-en="Control &amp; NUI">Steuerung &amp; NUI</b><small data-en="Ten control modes, VR/gaze/voice/hand and the 7-stage safety chain">Zehn Steuerwege, VR/Blick/Sprache/Hand und die 7-stufige Sicherheitskette</small></a></li>
-          <li><a href="#webapps" style="--hue: var(--lime)"><span class="pn"><svg class="ico" aria-hidden="true"><use href="#i-globe"/></svg><span>03</span></span><b data-en="Web apps &amp; stack">Web-Apps &amp; Stack</b><small data-en="Four UX | … web apps, 3D atlas compass and 12 hardware devices">Vier UX | … Web-Apps, 3D-Atlas-Kompass und 12 Hardware-Geräte</small></a></li>
+        <ol class="path" aria-label="Features" data-en-aria="Features">
+          <li><a href="#ueberblick" style="--hue: var(--accent)"><span class="pn"><svg class="ico" aria-hidden="true"><use href="#i-layers"/></svg><span>01</span></span><b data-en="Key features">Kernmerkmale</b><small data-en="All eight features from brand.yaml">Alle acht Kernmerkmale aus brand.yaml</small></a></li>
+          <li><a href="#teilhabe" style="--hue: var(--orange)"><span class="pn"><svg class="ico" aria-hidden="true"><use href="#i-pad"/></svg><span>02</span></span><b data-en="Control modes &amp; NUI">Steuerwege &amp; NUI</b><small data-en="10 modes, 4 NUIs and the 7-stage safety chain">10 Steuerwege, 4 NUI-Zugänge und 7 Schutzstufen</small></a></li>
         </ol>
       </header>
-
 <section class="sec" id="ueberblick">
         <header class="sec-head">
           <div><span class="eyebrow" style="--hue: var(--accent)"><span class="n">01</span><span data-en="At a glance">Auf einen Blick</span></span><h2 data-en="Key features">Kernmerkmale</h2></div>
@@ -1128,13 +1184,12 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
       </section>
 
       
-      
-<section class="sec" id="teilhabe" aria-labelledby="tm-h">
+            <section class="sec alt" id="teilhabe" aria-labelledby="tm-h">
         <header class="sec-head">
-          <div><span class="eyebrow" style="--hue: var(--orange)"><span class="n">02</span><span data-en="Human at the centre">Mensch im Mittelpunkt</span></span><h2 id="tm-h" data-en="Control modes">Steuerwege</h2></div>
-          <div class="brief" style="--hue: var(--orange)"><p class="slogan" data-en="How do multimodal input and assistive autonomy affect usability, workload and task performance?">Wie wirken sich multimodale Eingaben und assistive Autonomie auf Bedienbarkeit, Beanspruchung und Aufgabenleistung aus?</p><ul class="kpis"><li class="kpi"><strong>10</strong><span data-en="control modes">Steuerwege</span></li><li class="kpi"><strong>5</strong><span data-en="safety stages + E-STOP">Sicherheits&shy;stufen + E-STOP</span></li><li class="kpi"><strong>5</strong><span data-en="measures">Messgrößen</span></li></ul></div>
+          <div><span class="eyebrow" style="--hue: var(--orange)"><span class="n">02</span><span data-en="Human at the centre">Mensch im Mittelpunkt</span></span><h2 id="tm-h" data-en="Control modes &amp; NUI">10 Steuerwege &amp; NUI</h2></div>
+          <div class="brief" style="--hue: var(--orange)"><p class="slogan" data-en="One system. Safeguards matched to each path.">Ein System. Schutzstufen passend zum Steuerweg.</p><ul class="kpis"><li class="kpi"><strong>10</strong><span data-en="control modes">Steuerwege</span></li><li class="kpi"><strong>7</strong><span data-en="safety stages">Schutzstufen</span></li><li class="kpi"><strong>4</strong><span data-en="NUI methods">NUI-Wege</span></li></ul></div>
         </header>
-        <div class="tm-grid" id="tm">
+<div class="tm-grid" id="tm">
           <figure class="tm-fig">
             <svg class="tm-svg" viewBox="0 88 720 656" role="group" aria-labelledby="tm-svg-t">
             <title id="tm-svg-t" data-en="Six of ten control modes around the human; each path uses the relevant safeguards on the way to the xArm Lite 6">Sechs der zehn Steuerwege rund um den Menschen; jeder Weg nutzt die passenden Schutzstufen zum xArm Lite 6</title>
@@ -1390,10 +1445,111 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
           </ul>
           <a class="more" href="#eval-hierarchy"><span data-en="Evaluation in the atlas">Evaluierung im Atlas</span><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg></a>
         </div>
-      </section>
+              
+        <div class="nui-box" id="nui">
+          <div class="nui-intro">
+            <div>
+              <span class="eyebrow" style="--hue: var(--green)"><span class="n">02.1</span><span data-en="Natural User Interfaces">Natural User Interfaces</span></span>
+              <h3 data-en="Operate naturally: VR, gaze, voice and hand">Natürlich bedienen: VR, Blick, Sprache und Hand</h3>
+            </div>
+            <p data-en="Show, look, speak instead of menus: four multimodal extensions on the same safety chain.">Zeigen, blicken, sprechen statt Menüs: vier multimodale Zugänge an derselben Sicherheitskette.</p>
+          </div>
+          <div class="nui-grid">
+            <article class="nui-card" style="--hue: var(--violet)">
+              <div class="nui-card-head">
+                <svg class="ico" aria-hidden="true"><use href="#i-vr"/></svg>
+                <span class="tag">WebXR · Wi-Fi</span>
+              </div>
+              <h4 data-en="VR · Meta Quest 3">VR · Meta Quest 3</h4>
+              <p data-en="6-DoF teleoperation directly in the headset browser without software installation. The TCP follows the hand 1 : 1.">6-DoF-Teleoperation direkt im Browser des Headsets ohne Software-Installation. Der Greifer folgt der Hand 1&nbsp;:&nbsp;1.</p>
+              <ul class="nui-specs">
+                <li><span>Latenz:</span> <b>&lt; 25 ms</b></li>
+                <li><span>Steuerungsart:</span> <b>6-DoF Raumführung</b></li>
+                <li><span>Sicherheit:</span> <b>Grip-Taste aktiv</b></li>
+              </ul>
+            </article>
 
-      
-      
+            <article class="nui-card" style="--hue: var(--blue)">
+              <div class="nui-card-head">
+                <svg class="ico" aria-hidden="true"><use href="#i-eye"/></svg>
+                <span class="tag">Tobii · 50/100 Hz</span>
+              </div>
+              <h4 data-en="Gaze control">Blicksteuerung</h4>
+              <p data-en="Binocular eye tracking with Tobii Pro Glasses 3. A 1 s dwell fixation on an object triggers the selection.">Binokulares Eye-Tracking mit Tobii Pro Glasses 3. Eine 1-sekündige Fixation auf ein Objekt löst die Zielauswahl aus.</p>
+              <ul class="nui-specs">
+                <li><span>Abtastung:</span> <b>50 / 100 Hz</b></li>
+                <li><span>Kalibrierung:</span> <b>ArUco Marker</b></li>
+                <li><span>Trigger:</span> <b>Dwell 1.0 s</b></li>
+              </ul>
+            </article>
+
+            <article class="nui-card" style="--hue: var(--green)">
+              <div class="nui-card-head">
+                <svg class="ico" aria-hidden="true"><use href="#i-mic"/></svg>
+                <span class="tag">Whisper · GPU</span>
+              </div>
+              <h4 data-en="Voice commands">Sprachbefehle</h4>
+              <p data-en="Spoken commands such as 'Stop', 'Grasp' or 'Home' are transcribed locally on the GPU in 50–120 ms.">Gesprochene Befehle wie „Stopp“, „Greifen“ oder „Home“ werden lokal auf der GPU in 50–120 ms ausgewertet.</p>
+              <ul class="nui-specs">
+                <li><span>Erkennung:</span> <b>Whisper local</b></li>
+                <li><span>Reaktionszeit:</span> <b>50–120 ms</b></li>
+                <li><span>Aktivierung:</span> <b>Push-to-Talk</b></li>
+              </ul>
+            </article>
+
+            <article class="nui-card" style="--hue: var(--teal)">
+              <div class="nui-card-head">
+                <svg class="ico" aria-hidden="true"><use href="#i-scan"/></svg>
+                <span class="tag">Leap Motion 2</span>
+              </div>
+              <h4 data-en="Hand tracking">Hand-Tracking</h4>
+              <p data-en="Pinching couples the hand to the TCP; opening the hand stops execution immediately.">Kneifen kuppelt die Hand an den TCP; Öffnen der Hand stoppt die Bewegung sofort (halbes Tempo an echter Hardware).</p>
+              <ul class="nui-specs">
+                <li><span>Sensor:</span> <b>Infrarot-Stereo</b></li>
+                <li><span>Geste:</span> <b>Pinch / Release</b></li>
+                <li><span>Hardware:</span> <b>Bestätigung + 50%</b></li>
+              </ul>
+            </article>
+          </div>
+        </div>
+
+        
+        <div class="safety-box">
+          <div class="safety-head">
+            <div>
+              <span class="eyebrow" style="--hue: var(--gold)"><span class="n">02.2</span><span data-en="Safety chain">Sicherheitskette</span></span>
+              <h3 data-en="Seven stages of protection before motion execution">Sieben Schutzstufen vor der Ausführung</h3>
+            </div>
+            <p data-en="From input filter to physical stop: safeguards matched to each command path.">Vom Eingabefilter bis zum Stopp: passgenaue Schutzstufen für jeden Befehlsweg.</p>
+          </div>
+          <ol class="safety-chain">
+            <li class="safety-step"><span class="sn">01</span><b data-en="Control-Lock">Control-Lock</b><small data-en="Only 1 active path">Nur 1 Steuerweg</small></li>
+            <li class="safety-step"><span class="sn">02</span><b data-en="Heartbeat">Heartbeat</b><small data-en="Watchdog 150 ms">Watchdog 150 ms</small></li>
+            <li class="safety-step"><span class="sn">03</span><b data-en="Floor guard">Bodenschutz</b><small data-en="Z height minimum">Z-Mindesthöhe</small></li>
+            <li class="safety-step"><span class="sn">04</span><b data-en="Pre-check">Vorprüfung</b><small data-en="0.25 s forward">0,25 s voraus</small></li>
+            <li class="safety-step"><span class="sn">05</span><b data-en="Planning scene">Planungsszene</b><small data-en="MoveIt collision">MoveIt-Kollision</small></li>
+            <li class="safety-step"><span class="sn">06</span><b data-en="Confirmation">Bestätigung</b><small data-en="Dialog on real arm">Dialog vor Real</small></li>
+            <li class="safety-step"><span class="sn">07</span><b data-en="E-STOP">E-STOP</b><small data-en="Hard software stop">Sofort-Stopp</small></li>
+          </ol>
+        </div>
+      </section>
+    </div>
+  </div>
+  
+  <div class="chapter" id="system">
+    <div class="wrap">
+      <header class="ch-head">
+        <div>
+          <span class="eyebrow" data-en="Architecture &amp; devices">Architektur &amp; Geräte</span>
+          <h2 data-en="Web apps, atlas &amp; hardware">Web-Apps, Atlas &amp; Hardware</h2>
+          <p class="lede" data-en="Four web applications, 3D function atlas compass with 9 areas and the complete hardware stack.">Vier Web-Anwendungen, 3D-Funktionsatlas-Kompass mit 9 Bereichen und der komplette Hardware-Stack.</p>
+        </div>
+        <ol class="path" aria-label="System &amp; Hardware" data-en-aria="System &amp; hardware">
+          <li><a href="#webapps" style="--hue: var(--lime)"><span class="pn"><svg class="ico" aria-hidden="true"><use href="#i-globe"/></svg><span>03</span></span><b data-en="Web apps">Web-Apps</b><small data-en="Launcher, Control UI, Monitoring, Touch">Launcher, Control UI, Monitoring, Touch</small></a></li>
+          <li><a href="#atlas-sec" style="--hue: var(--pink)"><span class="pn"><svg class="ico" aria-hidden="true"><use href="#i-layers"/></svg><span>04</span></span><b data-en="Function atlas">Funktionsatlas</b><small data-en="9 areas, 85 functions, 10 loops">9 Bereiche, 85 Funktionen, 10 Kreisläufe</small></a></li>
+          <li><a href="#hardware" style="--hue: var(--teal)"><span class="pn"><svg class="ico" aria-hidden="true"><use href="#i-chip"/></svg><span>05</span></span><b data-en="Hardware stack">Hardware Stack</b><small data-en="12 devices from robot to sensors">12 Geräte vom Roboter bis zur Sensorik</small></a></li>
+        </ol>
+      </header>
 <section class="sec" id="webapps">
         <header class="sec-head">
           <div><span class="eyebrow" style="--hue: var(--lime)"><span class="n">03</span><span data-en="Four web apps · one browser">Vier Web-Apps · ein Browser</span></span><h2 data-en="Web apps">Web-Apps</h2></div>
@@ -1441,10 +1597,9 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
       </section>
 
       
-      
-<section class="sec" id="atlas-sec">
+      <section class="sec" id="atlas-sec">
         <header class="sec-head">
-          <div><span class="eyebrow" style="--hue: var(--pink)"><span class="n">03.1</span><span data-en="Every function">Alle Funktionen</span></span><h2 data-en="Function atlas">Funktionsatlas</h2></div>
+          <div><span class="eyebrow" style="--hue: var(--pink)"><span class="n">04</span><span data-en="Every function">Alle Funktionen</span></span><h2 data-en="Function atlas">Funktionsatlas</h2></div>
           <div class="brief" style="--hue: var(--pink)"><p class="slogan" data-en="All 85 functions on one map.">Alle 85 Funktionen auf einer Karte.</p><ul class="kpis"><li class="kpi"><strong>85</strong><span data-en="functions">Funktionen</span></li><li class="kpi"><strong>9</strong><span data-en="areas">Bereiche</span></li><li class="kpi"><strong>10</strong><span data-en="loops">Kreisläufe</span></li></ul></div>
         </header>
         <div class="atlas dark-zone" id="atlas" role="region" aria-label="Funktionsatlas" data-en-aria="Function atlas">
@@ -1515,10 +1670,60 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
             </div>
           </div>
         </div>
-                <div class="v2-bridge" style="--hue: var(--pink)">
+        
+        
+        <div class="at-overview-grid">
+          <article class="at-card" style="--c: var(--accent)">
+            <div class="at-card-head"><b><svg class="ico" aria-hidden="true"><use href="#i-pad"/></svg><span>Steuerwege</span></b><span class="count">15</span></div>
+            <p data-en="Gamepad, Jogging, TCP-Gizmo, Posen &amp; Waypoints.">Gamepad, Jogging, TCP-Gizmo, Posen &amp; Waypoints.</p>
+            <ul><li>Xbox Pad &amp; Web-Gamepad</li><li>MoveIt Servo &amp; MoveGroup</li></ul>
+          </article>
+          <article class="at-card" style="--c: var(--gold)">
+            <div class="at-card-head"><b><svg class="ico" aria-hidden="true"><use href="#i-shield"/></svg><span data-en="Safety">Sicherheit</span></b><span class="count">16</span></div>
+            <p data-en="E-STOP, Control-Lock, Heartbeat, Watchdog &amp; Limits.">E-STOP, Control-Lock, Heartbeat, Watchdog &amp; Limits.</p>
+            <ul><li>Z-Bodenschutz &amp; Vorprüfung</li><li>Bestätigungsdialog vor Hardware</li></ul>
+          </article>
+          <article class="at-card" style="--c: var(--blue)">
+            <div class="at-card-head"><b><svg class="ico" aria-hidden="true"><use href="#i-cube"/></svg><span>Digital Twin</span></b><span class="count">13</span></div>
+            <p data-en="Three.js 3D viewport, URDF, Physics-Sandbox &amp; WebXR.">Three.js 3D-Viewport, URDF, Physics-Sandbox &amp; WebXR.</p>
+            <ul><li>Rapier-Physik mit Schwerkraft</li><li>Ghost-Bahnvorschau &amp; Kollision</li></ul>
+          </article>
+          <article class="at-card" style="--c: var(--green)">
+            <div class="at-card-head"><b><svg class="ico" aria-hidden="true"><use href="#i-cam"/></svg><span>Vision</span></b><span class="count">6</span></div>
+            <p data-en="ZED Mini, YOLOv8 object detection, ArUco &amp; OctoMap.">ZED Mini, YOLOv8 Objekterkennung, ArUco &amp; OctoMap.</p>
+            <ul><li>3D-Punktwolken &amp; Raumgitter</li><li>Nozzle-Cam &amp; RPi-Streamer</li></ul>
+          </article>
+          <article class="at-card" style="--c: var(--violet)">
+            <div class="at-card-head"><b><svg class="ico" aria-hidden="true"><use href="#i-spark"/></svg><span data-en="AI / VLA-M">KI / VLA-M</span></b><span class="count">8</span></div>
+            <p data-en="Local LLM agent, speech commands &amp; pick-and-place.">Lokaler LLM-Agent, Sprachbefehle &amp; Pick-and-Place.</p>
+            <ul><li>VLA-M Chat &amp; Skill-Engine</li><li>Automatisches Palettieren</li></ul>
+          </article>
+          <article class="at-card" style="--c: var(--pink)">
+            <div class="at-card-head"><b><svg class="ico" aria-hidden="true"><use href="#i-chart"/></svg><span>UX | Monitoring</span></b><span class="count">11</span></div>
+            <p data-en="System metrics, ROS 2 graph, nodes &amp; click tracking.">Systemmetriken, ROS-Graph, Nodes &amp; Klick-Tracking.</p>
+            <ul><li>CPU/RAM/GPU &amp; Topic-Raten</li><li>Prozess-Überwachung &amp; Logs</li></ul>
+          </article>
+          <article class="at-card" style="--c: var(--orange)">
+            <div class="at-card-head"><b><svg class="ico" aria-hidden="true"><use href="#i-user"/></svg><span data-en="Evaluation">Evaluierung</span></b><span class="count">8</span></div>
+            <p data-en="User study framework, Latin Square &amp; SUS/NASA-TLX.">Nutzertest-Framework, Latin Square &amp; SUS/NASA-TLX.</p>
+            <ul><li>Teilnehmer-Session &amp; Timing</li><li>Messung von Beanspruchung</li></ul>
+          </article>
+          <article class="at-card" style="--c: var(--indigo)">
+            <div class="at-card-head"><b><svg class="ico" aria-hidden="true"><use href="#i-file"/></svg><span data-en="Data">Daten</span></b><span class="count">3</span></div>
+            <p data-en="Blackbox ring buffer, demo recorder &amp; export.">Blackbox-Ringpuffer, Demo-Recorder &amp; Export.</p>
+            <ul><li>60-Sekunden Störfall-Puffer</li><li>Dataset-Export für Training</li></ul>
+          </article>
+          <article class="at-card" style="--c: var(--lime)">
+            <div class="at-card-head"><b><svg class="ico" aria-hidden="true"><use href="#i-net"/></svg><span data-en="Infrastructure">Infrastruktur</span></b><span class="count">5</span></div>
+            <p data-en="UX | Nexus Launcher, Setup card &amp; ROS network.">UX | Nexus Launcher, Setup-Karte &amp; ROS-Netzwerk.</p>
+            <ul><li>Zero-Client-Install via Browser</li><li>Port-Management &amp; Whitelist</li></ul>
+          </article>
+        </div>
+
+        <div class="v2-bridge" style="--hue: var(--pink)">
           <div class="v2-bridge-copy">
-            <b><svg class="ico" aria-hidden="true"><use href="#i-layers"/></svg><span data-en="Full function matrix (85 functions with live topic flows)">Vollständige Funktions-Matrix (85 Funktionen mit Topic-Fluss)</span></b>
-            <span data-en="In v2 the 3D ring acts as a compact compass. Open the full searchable 85-card catalog in v1 or the architecture map in the manual.">In v2 dient der 3D-Ring als kompakter Kompass. Den durchsuchbaren Vollkatalog aller 85 Karten findest du in v1 oder im Handbuch.</span>
+            <b><svg class="ico" aria-hidden="true"><use href="#i-layers"/></svg><span data-en="Searchable 85-Function Matrix with Topic Flows">Durchsuchbare 85-Funktionen-Matrix mit Topic-Fluss</span></b>
+            <span data-en="The 3D ring above provides an instant overview. To inspect individual ROS topics, services, execution stages and parameters for all 85 functions, open the full catalog in v1.">Der 3D-Ring oben bietet den schnellen Überblick. Um einzelne ROS-Topics, Services, Ausführungsstufen und Parameter aller 85 Funktionen zu prüfen, öffne den Vollkatalog in v1.</span>
           </div>
           <div class="v2-bridge-links">
             <a class="b-pri" href="project_docs.html#atlas-list"><span data-en="Open all 85 cards in v1">Alle 85 Karten in v1 öffnen</span><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg></a>
@@ -1526,10 +1731,9 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
           </div>
         </div>
       </section>
-
 <section class="sec" id="hardware">
         <header class="sec-head">
-          <div><span class="eyebrow" style="--hue: var(--teal)"><span class="n">03.2</span><span data-en="Every device">Alle Geräte</span></span><h2 data-en="Hardware stack">Hardware Stack</h2></div>
+          <div><span class="eyebrow" style="--hue: var(--teal)"><span class="n">05</span><span data-en="Every device">Alle Geräte</span></span><h2 data-en="Hardware stack">Hardware Stack</h2></div>
           <div class="brief" style="--hue: var(--teal)"><p class="slogan" data-en="Twelve devices, one setup.">Zwölf Geräte, ein Aufbau.</p><ul class="kpis"><li class="kpi"><strong>12</strong><span data-en="devices">Geräte</span></li><li class="kpi"><strong>4</strong><span data-en="groups">Gruppen</span></li><li class="kpi"><strong>1</strong><span data-en="robot">Roboter</span></li></ul></div>
         </header>
         <div class="app-frame deck hws-frame" data-deck role="region" aria-label="Hardware Stack als Folien" data-en-aria="Hardware stack as slides" style="--hue: var(--teal)">
@@ -1696,7 +1900,6 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
   </div>
 
   
-
   <section class="strip" aria-label="Gebaut auf" data-en-aria="Built on">
     <div class="wrap">
       <div class="strip-row">
@@ -1804,113 +2007,101 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
   </section>
 
   
-    <div class="chapter alt" id="unterlagen">
+    
+  <div class="chapter alt" id="unterlagen">
     <div class="wrap">
       <header class="ch-head">
         <div>
           <span class="eyebrow" data-en="Entry by role">Einstieg nach Rolle</span>
-          <h2 data-en="Role hub &amp; documents">Rollen-Einstieg &amp; Unterlagen</h2>
-          <p class="lede" data-en="All project pages, manuals and technical docs bundled into a compact 2×2 role compass, architecture stack and Top-10 FAQ.">Alle Projektseiten, Handbücher und Fachdokumente gebündelt im kompakten 2×2-Rollen-Kompass, Architektur-Stack und Top-10-FAQ.</p>
+          <h2 data-en="Role hub &amp; documentation">Rollen-Hub &amp; Dokumentation</h2>
+          <p class="lede" data-en="The direct entry point for visitors, researchers, operators and developers – with architecture map and Top-10 FAQ.">Der direkte Einstieg für Besucher, Forscher, Bediener und Entwickler – mit Architektur-Karte und Top-10-FAQ.</p>
         </div>
-        <ol class="path" aria-label="Unterlagen &amp; Einstieg" data-en-aria="Documents &amp; entry">
-          <li><a href="#vorstellen" style="--hue: var(--violet)"><span class="pn"><svg class="ico" aria-hidden="true"><use href="#i-star"/></svg><span>04</span></span><b data-en="Role compass (4 roles)">Rollen-Kompass (4 Rollen)</b><small data-en="Present, understand, set up and operate side by side">Vorstellen, Verstehen, Einrichten und Bedienen nebeneinander</small></a></li>
-          <li><a href="#technik" style="--hue: var(--indigo)"><span class="pn"><svg class="ico" aria-hidden="true"><use href="#i-code"/></svg><span>05</span></span><b data-en="Develop &amp; architecture">Entwickeln &amp; Architektur</b><small data-en="13 developer docs, live architecture console and 5-layer stack">13 Entwickler-Dokumente, Live-Architektur-Konsole und 5-Schichten-Stack</small></a></li>
-          <li><a href="#faq" style="--hue: var(--accent)"><span class="pn"><svg class="ico" aria-hidden="true"><use href="#i-book"/></svg><span>06</span></span><b>Top-10-FAQ</b><small data-en="The 10 most asked questions directly + link to all 60 in v1">Die 10 wichtigsten Fragen direkt + Link auf alle 60 in v1</small></a></li>
+        <ol class="path" aria-label="Rollen &amp; Doku" data-en-aria="Roles &amp; docs">
+          <li><a href="#vorstellen" style="--hue: var(--violet)"><span class="pn"><svg class="ico" aria-hidden="true"><use href="#i-star"/></svg><span>06</span></span><b data-en="Role compass">Rollen-Kompass</b><small data-en="Four audiences side by side">Vier Zielgruppen nebeneinander</small></a></li>
+          <li><a href="#technik" style="--hue: var(--indigo)"><span class="pn"><svg class="ico" aria-hidden="true"><use href="#i-code"/></svg><span>07</span></span><b data-en="Developers">Entwickler</b><small data-en="13 docs, architecture console &amp; 5 layers">13 Dokumente, Konsole &amp; 5 Schichten</small></a></li>
+          <li><a href="#faq" style="--hue: var(--accent)"><span class="pn"><svg class="ico" aria-hidden="true"><use href="#i-book"/></svg><span>08</span></span><b>Top-10-FAQ</b><small data-en="Core questions + bridge to 60 in v1">Kernfragen + Brücke zu 60 in v1</small></a></li>
         </ol>
       </header>
-
       <section class="sec" id="vorstellen">
         <header class="sec-head">
-          <div><span class="eyebrow" style="--hue: var(--violet)"><span class="n">04</span><span data-en="Four audiences · one view">Vier Zielgruppen · ein Blick</span></span><h2 data-en="Role compass">Rollen-Kompass</h2></div>
-          <div class="brief" style="--hue: var(--violet)"><p class="slogan" data-en="The right entry point for every role.">Für jede Rolle der direkte Einstieg.</p><ul class="kpis"><li class="kpi"><strong>4</strong><span data-en="roles">Rollen</span></li><li class="kpi"><strong>10</strong><span data-en="control modes">Steuerwege</span></li><li class="kpi"><strong>1</strong><span data-en="safety chain">Sicherheits&shy;kette</span></li></ul></div>
+          <div><span class="eyebrow" style="--hue: var(--violet)"><span class="n">06</span><span data-en="Four entry paths">Vier Einstiegswege</span></span><h2 data-en="Role compass">Rollen-Kompass</h2></div>
+          <div class="brief" style="--hue: var(--violet)"><p class="slogan" data-en="The right documents for every role.">Für jede Rolle die passenden Dokumente.</p><ul class="kpis"><li class="kpi"><strong>4</strong><span data-en="roles">Rollen</span></li><li class="kpi"><strong>10</strong><span data-en="control modes">Steuerwege</span></li><li class="kpi"><strong>1</strong><span data-en="safety chain">Sicherheits&shy;kette</span></li></ul></div>
         </header>
-        <div class="v2-role-grid">
-          <article class="v2-role-card" style="--hue: var(--violet)">
-            <header class="v2-role-head">
-              <div><span class="k" data-en="04.1 · Visitors &amp; decision-makers">04.1 · Besucher &amp; Entscheider</span><h3 data-en="Present">Vorstellen</h3></div>
-              <span class="tag" data-en="Talk · Lab · Poster">Vortrag · Labor · Poster</span>
-            </header>
-            <div class="list">
-              <a class="item" href="present_presentation.html" target="_blank" rel="noopener" style="--hue: var(--violet)">
-                <span class="thumb"><img src="img/project_docs/vorstellung.jpg" alt="" loading="lazy"></span>
-                <span class="txt"><b><svg class="ico" aria-hidden="true"><use href="#i-star"/></svg><span data-en="Project presentation">Projektvorstellung</span></b><p data-en="Interactive 3D Digital Twin with pick &amp; place, 7-step grasp flow, AI agent and evaluation">Interaktiver 3D-Digital-Twin mit Pick &amp; Place, Greif-Ablauf in 7 Schritten, KI-Agent und Evaluierung</p></span>
-                <span class="end"><span class="tag">HTML</span><span class="go"><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg></span></span>
-              </a>
-              <a class="item" href="present_control_modes.html" target="_blank" rel="noopener" style="--hue: var(--accent)">
-                <span class="thumb"><img src="img/project_docs/interakt.jpg" alt="" loading="lazy"></span>
-                <span class="txt"><b><svg class="ico" aria-hidden="true"><use href="#i-arm"/></svg><span data-en="Control modes &amp; safeguards">Steuerwege &amp; Schutzstufen</span></b><p data-en="Ten control modes with path-specific safeguards, input devices and capability matrix">Zehn Steuerwege mit wegabhängigen Schutzstufen, Eingabegeräten und Fähigkeits-Matrix</p></span>
-                <span class="end"><span class="tag">HTML</span><span class="go"><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg></span></span>
-              </a>
-              <a class="item" href="poster/poster_a2.html" target="_blank" rel="noopener" style="--hue: var(--gold)">
-                <span class="thumb"><img src="img/project_docs/poster.jpg" alt="" loading="lazy"></span>
-                <span class="txt"><b><svg class="ico" aria-hidden="true"><use href="#i-poster"/></svg>Poster A2</b><p data-en="The project on one page for poster sessions and print (also as PDF)">Das Projekt auf einer Seite für Poster-Session und Druck (auch als PDF)</p></span>
-                <span class="end"><span class="tag">HTML / PDF</span><span class="go"><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg></span></span>
-              </a>
-            </div>
-          </article>
 
-          <article class="v2-role-card" id="verstehen" style="--hue: var(--gold)">
-            <header class="v2-role-head">
-              <div><span class="k" data-en="04.2 · Researchers &amp; reviewers">04.2 · Forscher &amp; Gutachter</span><h3 data-en="Understand &amp; research">Verstehen &amp; Forschen</h3></div>
-              <span class="tag" data-en="Four core questions">Vier Kernfragen</span>
-            </header>
-            <ol class="path" aria-label="Lesepfad" data-en-aria="Reading path">
-              <li><a href="present_presentation.html#forschung" style="--hue: var(--gold)"><span class="pn"><span data-en="Why">Warum</span></span><b data-en="Concept &amp; objectives">Konzept &amp; Ziel&shy;setzung</b><small data-en="Problem, research question, approach, evaluation">Problem, Leitfrage, Lösungs&shy;ansatz, Evaluierung</small></a></li>
-              <li><a href="present_presentation.html#merkmale" style="--hue: var(--violet)"><span class="pn"><span data-en="What">Was</span></span><b data-en="Key features">Kern&shy;merkmale</b><small data-en="Human in the loop, eight features, standards">Human-in-the-Loop, acht Merkmale, Normbezüge</small></a></li>
-              <li><a href="present_presentation.html#stack" style="--hue: var(--indigo)"><span class="pn"><span data-en="With what">Womit</span></span><b data-en="System stack">System-Stack</b><small data-en="Seven layers, reference hardware">Sieben Schichten, Referenz-Hardware</small></a></li>
-              <li><a href="present_presentation.html#ablaeufe" style="--hue: var(--green)"><span class="pn"><span data-en="How">Wie</span></span><b data-en="Function flows">Funktions&shy;abläufe</b><small data-en="Start, twin, gamepad, grasp, AI chat, remote: 6 flows">Start, Twin, Gamepad, Greifen, KI-Chat, Remote: 6 Abläufe</small></a></li>
-              <li><a href="present_research.html" style="--hue: var(--pink)"><span class="pn"><span data-en="Study">Studie</span></span><b data-en="Paper &amp; study">Paper &amp; Studie</b><small data-en="Look, Speak, Confirm: hypotheses and study design">Look, Speak, Confirm: Hypothesen und Studien&shy;design</small></a></li>
-            </ol>
-          </article>
-
-          <article class="v2-role-card" id="einrichten" style="--hue: var(--blue)">
-            <header class="v2-role-head">
-              <div><span class="k" data-en="04.3 · Commissioning">04.3 · Inbetriebnahme</span><h3 data-en="Set up">Einrichten</h3></div>
-              <span class="tag" data-en="8 phases · 43 steps">8 Phasen · 43 Schritte</span>
-            </header>
-            <div class="list">
-              <a class="item" href="operate_setup_guide.html" data-nexus-href="operate_setup_guide.html" target="_blank" rel="noopener" style="--hue: var(--indigo)">
-                <span class="thumb"><img src="img/project_docs/setup_guide.jpg" alt="" loading="lazy"></span>
-                <span class="txt"><b><svg class="ico" aria-hidden="true"><use href="#i-tool"/></svg><span data-en="Setup guide">Setup-Guide</span></b><p data-en="From the box to acceptance: 8 phases, 43 steps; pre-installed PC or from Ubuntu 22.04">Vom Karton zur Abnahme: 8 Phasen, 43 Schritte; PC vorinstalliert oder ab Ubuntu 22.04</p></span>
-                <span class="end"><span class="tag">HTML</span><span class="go"><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg></span></span>
-              </a>
-              <button class="item" type="button" data-setup data-local style="--hue: var(--teal)" title="Öffnet die Setup-Karte über den UX | Nexus Launcher" data-en-title="Opens the setup card via UX | Nexus Launcher">
-                <span class="thumb"><img src="img/project_docs/setup.jpg" alt="" loading="lazy"></span>
-                <span class="txt"><b><svg class="ico" aria-hidden="true"><use href="#i-net"/></svg><span data-en="Setup card">Setup-Karte</span></b><p data-en="Networks, addresses and ports at a glance; HTTPS/VR, server/client">Netze, Adressen und Ports auf einen Blick; HTTPS/VR, Server/Client</p></span>
-                <span class="end"><span class="tag">UX | Nexus Launcher</span><span class="go"><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg></span></span>
-              </button>
-              <div class="item" data-public-only hidden style="--hue: var(--teal)" role="note">
-                <span class="thumb"><img src="img/project_docs/setup.jpg" alt="" loading="lazy"></span>
-                <span class="txt"><b><svg class="ico" aria-hidden="true"><use href="#i-net"/></svg><span data-en="Setup card">Setup-Karte</span></b><p data-en="Contains local networks, addresses and ports and is available in the lab via UX | Nexus Launcher.">Enthält lokale Netze, Adressen und Ports und ist im Labor über den UX | Nexus Launcher verfügbar.</p></span>
-                <span class="end"><span class="tag" data-en="Lab only">nur im Labor</span></span>
+        <div class="role-bento">
+          
+          <article class="role-card" style="--hue: var(--violet)">
+            <header class="role-head">
+              <div>
+                <span class="k" data-en="06.1 · Visitors &amp; Lab Guests">06.1 · Besucher &amp; Laborgäste</span>
+                <h3 data-en="Present">Vorstellen</h3>
               </div>
-            </div>
+              <span class="badge-role" data-en="Demo &amp; Poster">Demo &amp; Poster</span>
+            </header>
+            <p class="role-desc" data-en="Interactive overview of the platform for talks, lab visits and poster sessions:">Interaktive Gesamtübersicht der Plattform für Vorträge, Laborbesuche und Konferenzen:</p>
+            <ul class="role-bullets">
+              <li><b><a href="present_presentation.html" target="_blank" rel="noopener">Projektvorstellung:</a></b> Interaktiver 3D-Twin mit Pick &amp; Place, Greif-Ablauf in 7 Schritten, KI-Agent und Evaluierung.</li>
+              <li><b><a href="present_control_modes.html" target="_blank" rel="noopener">Steuerwege &amp; Schutzstufen:</a></b> 10 Steuerwege mit wegabhängigen Schutzstufen und Fähigkeits-Matrix.</li>
+              <li><b><a href="poster/poster_a2.html" target="_blank" rel="noopener">Poster A2:</a></b> Kompakte Gesamtdarstellung für den Posterdruck (auch als <a href="poster/poster_a2.pdf" target="_blank" rel="noopener">PDF</a>).</li>
+            </ul>
           </article>
 
-          <article class="v2-role-card" id="bedienen" style="--hue: var(--teal)">
-            <header class="v2-role-head">
-              <div><span class="k" data-en="04.4 · Operators in the lab">04.4 · Bediener im Labor</span><h3 data-en="Operate">Bedienen</h3></div>
-              <span class="tag" data-en="First virtual, then real">Erst virtuell, dann real</span>
+          
+          <article class="role-card" id="verstehen" style="--hue: var(--gold)">
+            <header class="role-head">
+              <div>
+                <span class="k" data-en="06.2 · Researchers &amp; Reviewers">06.2 · Forscher &amp; Gutachter</span>
+                <h3 data-en="Understand">Verstehen &amp; Forschen</h3>
+              </div>
+              <span class="badge-role" data-en="Paper &amp; Study">Paper &amp; Studie</span>
             </header>
-            <div class="list">
-              <a class="item" href="de/running.html" data-href-en="en/running.html" target="_blank" rel="noopener" style="--hue: var(--green)">
-                <span class="thumb"><img src="img/project_docs/rcu_viewport.jpg" alt="" loading="lazy"></span>
-                <span class="txt"><b><svg class="ico" aria-hidden="true"><use href="#i-rocket"/></svg><span data-en="Quick start">Schnellstart</span></b><p data-en="Start the system and choose the mode: robot simulation (Digital Twin) or real robot hardware">System starten, Betriebsart wählen: Roboter-Simulation (Digital Twin) oder echte Roboter-Hardware</p></span>
-                <span class="end"><span class="tag">MD</span><span class="go"><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg></span></span>
-              </a>
-              <a class="item" href="operate_manual.html" data-nexus-href="operate_manual.html" target="_blank" rel="noopener" style="--hue: var(--accent)">
-                <span class="thumb"><img src="img/project_docs/handbuch.jpg" alt="" loading="lazy"></span>
-                <span class="txt"><b><svg class="ico" aria-hidden="true"><use href="#i-book"/></svg><span data-en="Manual">Handbuch</span></b><p data-en="Look things up during operation: architecture, control loop, safety chain, ports, remote control, VLA-M">Nachschlagen im Betrieb: Architektur, Regelkreis, Sicherheitskette, Ports, Remote Control, VLA-M</p></span>
-                <span class="end"><span class="tag">HTML</span><span class="go"><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg></span></span>
-              </a>
-            </div>
+            <p class="role-desc" data-en="Four core questions and the research study on multimodal robot control:">Die vier Kernfragen und der wissenschaftliche Rahmen zur multimodalen Roboterbedienung:</p>
+            <ul class="role-bullets">
+              <li><b><a href="present_presentation.html#forschung">Warum &amp; Ziel:</a></b> Problemstellung, zentrale Forschungsfrage und Lösungsansatz mit Shared Control.</li>
+              <li><b><a href="present_presentation.html#merkmale">Was &amp; Normen:</a></b> Acht Kernmerkmale, Human-in-the-Loop-Prinzip und Industrie-5.0-Rahmen.</li>
+              <li><b><a href="present_presentation.html#stack">Womit &amp; Hardware:</a></b> Sieben Softwareschichten auf ROS 2 Humble und Referenz-Hardware.</li>
+              <li><b><a href="present_research.html">Paper &amp; Studie:</a></b> Arbeitsstudie „Look, Speak, Confirm“: Hypothesen, Messung von Beanspruchung und Studiendesign.</li>
+            </ul>
+          </article>
+
+          
+          <article class="role-card" id="einrichten" style="--hue: var(--blue)">
+            <header class="role-head">
+              <div>
+                <span class="k" data-en="06.3 · Lab Engineers">06.3 · Inbetriebnahme</span>
+                <h3 data-en="Set up">Einrichten</h3>
+              </div>
+              <span class="badge-role" data-en="8 Phases · 43 Steps">8 Phasen · 43 Schritte</span>
+            </header>
+            <p class="role-desc" data-en="From hardware unboxing to full system acceptance:">Schrittweise Anleitung vom ersten Anschließen der Hardware bis zur fertigen System-Abnahme:</p>
+            <ul class="role-bullets">
+              <li><b><a href="operate_setup_guide.html" target="_blank" rel="noopener">Setup-Guide:</a></b> 8 Phasen und 43 geprüfte Schritte für Neuinstallation ab Ubuntu 22.04 oder vorkonfigurierten PC.</li>
+              <li><b>Setup-Karte:</b> Netzwerkkonfiguration, feste IP-Adressen, Ports und VR-HTTPS-Zertifikate (im Labor über UX | Nexus Launcher).</li>
+              <li><b>Peripherie:</b> Verkabelung von ZED Mini, Tobii Eye-Tracker, Xbox Controller und UFactory Roboterarm.</li>
+            </ul>
+          </article>
+
+          
+          <article class="role-card" id="bedienen" style="--hue: var(--teal)">
+            <header class="role-head">
+              <div>
+                <span class="k" data-en="06.4 · Operators">06.4 · Bediener im Labor</span>
+                <h3 data-en="Operate">Bedienen</h3>
+              </div>
+              <span class="badge-role" data-en="Manual &amp; Quickstart">Handbuch &amp; Start</span>
+            </header>
+            <p class="role-desc" data-en="Daily operation, safety rules and full system reference manual:">Für die tägliche Bedienung, Sicherheitsprüfung und Nachschlagen aller Funktionen:</p>
+            <ul class="role-bullets">
+              <li><b><a href="de/running.html" target="_blank" rel="noopener">Schnellstart:</a></b> System hochfahren, Betriebsart wählen (Robot | Digital Twin oder Robot | Hardware) und erster Fahrbefehl.</li>
+              <li><b><a href="operate_manual.html" target="_blank" rel="noopener">Bedienhandbuch:</a></b> Vollständiges Nachschlagewerk: Regelkreise, Not-Aus-Matrix, Ports, Teleoperation und Palettierzelle.</li>
+              <li><b>Sicherheitsregeln:</b> Freigabeprozess vor Hardware-Bewegung, E-Stop und Vorprüfung einsehen.</li>
+            </ul>
           </article>
         </div>
       </section>
-
 <section class="sec" id="technik">
         <header class="sec-head">
-          <div><span class="eyebrow" style="--hue: var(--indigo)"><span class="n">05</span><span data-en="For developers">Für Entwickler</span></span><h2 data-en="Develop">Entwickeln</h2></div>
+          <div><span class="eyebrow" style="--hue: var(--indigo)"><span class="n">07</span><span data-en="For developers">Für Entwickler</span></span><h2 data-en="Develop">Entwickeln</h2></div>
           <div class="brief" style="--hue: var(--indigo)"><p class="slogan" data-en="Open, reproducible, extensible.">Offen, nachbaubar, erweiterbar.</p><ul class="kpis"><li class="kpi"><strong>13</strong><span data-en="documents">Dokumente</span></li><li class="kpi"><strong>4</strong><span data-en="topics">Themen</span></li><li class="kpi"><strong>25</strong><span data-en="ROS&amp;nbsp;2 packages">ROS-2-Pakete</span></li></ul></div>
         </header>
         <div class="sec-stack">
@@ -2047,13 +2238,13 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
         </div>
       </section>
 
-      
             
       <section class="sec" id="faq" aria-labelledby="faq-h">
         <header class="sec-head">
-          <div><span class="eyebrow" style="--hue: var(--accent)"><span class="n">06</span><span data-en="For everyone · compact">Für alle · kompakt</span></span><h2 id="faq-h" data-en="Top 10 questions &amp; answers">Top-10 Fragen &amp; Antworten</h2></div>
+          <div><span class="eyebrow" style="--hue: var(--accent)"><span class="n">08</span><span data-en="Frequently asked">Häufig gefragt</span></span><h2 id="faq-h" data-en="Top 10 questions &amp; answers">Top-10 Fragen &amp; Antworten</h2></div>
           <div class="brief" style="--hue: var(--accent)"><p class="slogan" data-en="Short questions. Clear answers.">Kurz gefragt. Klar beantwortet.</p><ul class="kpis"><li class="kpi"><strong>10</strong><span data-en="core questions">Kernfragen</span></li><li class="kpi"><strong>10</strong><span data-en="topics">Themen</span></li><li class="kpi"><strong>60</strong><span data-en="in full catalog (v1)">im Vollkatalog (v1)</span></li></ul></div>
         </header>
+
         <div class="faq-list">
           <div class="faq-grp" data-g="top" style="--hue: var(--accent)">
             <details class="faq-item" id="faq-idee-01" data-top>
@@ -2120,10 +2311,11 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
             </details>
           </div>
         </div>
+
         <div class="v2-bridge" style="--hue: var(--accent)">
           <div class="v2-bridge-copy">
-            <b><svg class="ico" aria-hidden="true"><use href="#i-book"/></svg><span data-en="All 60 questions in 10 topic areas">Alle 60 Fragen in 10 Themenbereichen</span></b>
-            <span data-en="Looking for deeper details on ROS 2 topics, AI models, Tobii calibration or evaluation? Open the complete 60-question catalog in v1.">Suchst du tiefere Details zu ROS-2-Topics, KI-Modellen, Tobii-Kalibrierung oder Evaluierung? Öffne den vollständigen 60-Fragen-Katalog in v1.</span>
+            <b><svg class="ico" aria-hidden="true"><use href="#i-book"/></svg><span data-en="Searchable 60-Question Catalog in 10 Topic Areas">Durchsuchbarer 60-Fragen-Katalog in 10 Themenbereichen</span></b>
+            <span data-en="Detailed questions on ROS 2 Humble, DDS setup, MoveIt 2, eye tracking calibration, AI prompts or ethics? The classic full version contains all 60 questions with live topic filter.">Ausführliche Einzelfragen zu ROS-2-Nodes, MoveIt-Konfiguration, Blick-Kalibrierung oder Evaluierungs-Statistik? In der klassischen Vollversion (v1) findest du alle 60 Fragen mit interaktivem Themen-Filter.</span>
           </div>
           <div class="v2-bridge-links">
             <a class="b-pri" href="project_docs.html#faq"><span data-en="Open all 60 questions in v1">Alle 60 Fragen in v1 öffnen</span><svg class="ico" aria-hidden="true"><use href="#i-go"/></svg></a>
@@ -2132,7 +2324,6 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
       </section>
     </div>
   </div>
-
 
   <section class="contact dark-zone" id="kontakt" aria-labelledby="kontakt-h">
     <div class="wrap">
