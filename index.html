@@ -211,14 +211,14 @@ a.btn:hover { border-color: color-mix(in srgb, var(--accent) 55%, var(--line-str
 .tb td { padding: 12px 14px; vertical-align: top; font-size: .875rem; line-height: 1.45; text-wrap: pretty; }
 .tb tr + tr td { border-top: 1px solid var(--line); }
 /* Dezente Farbe gliedert dichte Tabellen/Listen: Begriff getönt, Pfade + Befehle als blaue Marke */
-.tb td.k, .kv dt { color: var(--key); }
+.tb td.k { color: var(--key); }
 .tb td.k { font: 700 1rem/1.3 var(--f-head); }
 .tb td.k i { display: inline-grid; place-items: center; width: 24px; height: 24px; margin-inline-end: 8px; border-radius: var(--radius-sm); vertical-align: -6px;
   background: var(--accent); color: var(--bg); font: 600 .8125rem/1 var(--f-mono); font-style: normal; }
 .tb td.k small { display: block; margin-top: 2px; font: 400 .8125rem/1.4 var(--f-body); color: var(--fg-2); }
 .tb ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; }
 .tb code { font-size: .8125rem; font-weight: 600; }
-.tb code, .kv code { padding: 0 .3em; border-radius: var(--radius-sm); color: var(--code); background: color-mix(in srgb, var(--c2) 10%, transparent); -webkit-box-decoration-break: clone; box-decoration-break: clone; }
+.tb code { padding: 0 .3em; border-radius: var(--radius-sm); color: var(--code); background: color-mix(in srgb, var(--c2) 10%, transparent); -webkit-box-decoration-break: clone; box-decoration-break: clone; }
 .tb .hk li { display: grid; gap: 1px; }
 .tb .hk code { justify-self: start; color: var(--accent); background: color-mix(in srgb, var(--accent) 10%, transparent); }
 .tb .hk span { color: var(--fg-2); }
@@ -417,24 +417,10 @@ a.btn:hover { border-color: color-mix(in srgb, var(--accent) 55%, var(--line-str
 .wf-more[open] > summary .i { transform: rotate(180deg); }
 .wf-more-in { padding: 0 16px 16px; }
 
-/* Kasten mit Überschrift (Zusammenspiel) + Begriffspaare */
-.box { padding: 18px 20px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg); }
-.box h4 { display: flex; align-items: center; gap: 10px; margin: 0 0 6px; font: 700 1.0625rem/1.25 var(--f-head); }
-.box h4 .i { font-size: 20px; color: var(--accent); }
-.kv { margin: 0; display: grid; gap: 0 28px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); }
-.kv div { display: grid; grid-template-columns: 7.5rem minmax(0, 1fr); gap: 10px; padding-block: 10px; border-top: 1px solid var(--line); font-size: .9375rem; }
-.kv dt { font: 700 .9375rem/1.45 var(--f-head); }
-.kv dd { margin: 0; color: var(--fg-2); line-height: 1.45; text-wrap: pretty; }
-.kv a { text-decoration-color: color-mix(in srgb, var(--accent) 70%, transparent); text-underline-offset: 3px; }
-.kv a:hover { text-decoration-color: var(--accent); }
-@media (max-width: 419px) { .kv div { grid-template-columns: minmax(0, 1fr); gap: 2px; } }
-
-/* Weg der Daten: Stationen untereinander, dazwischen der Befehl, der den Stand weiterträgt */
-.chain { margin: 0; padding: 0; list-style: none; display: grid; }
+/* Weg der Daten: Details je Station (Paket-Reise unten) */
 .stn { --c: var(--c1); display: grid; gap: 16px 28px; padding: 18px 20px; grid-template-columns: minmax(0, 1fr);
   background: color-mix(in srgb, var(--c) 7%, var(--surface)); border: 1px solid color-mix(in srgb, var(--c) 45%, var(--line)); border-radius: var(--radius-lg); }
 @media (min-width: 960px) { .stn { grid-template-columns: minmax(0, 300px) minmax(0, 1fr); } }
-.stn.end { background: var(--surface); border-style: dashed; }
 .stn-head { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
 .stn-head b { display: flex; align-items: center; gap: 10px; font: 700 1.125rem/1.25 var(--f-head); }
 .stn-head b .i { font-size: 20px; color: var(--c); }
@@ -449,35 +435,171 @@ a.btn:hover { border-color: color-mix(in srgb, var(--accent) 55%, var(--line-str
 .stn .chips { grid-column: 1 / -1; margin: 0; }
 .chips { display: flex; flex-wrap: wrap; gap: 6px; padding: 0; list-style: none; }
 .chips li { padding: 3px 8px; border: 1px solid var(--line-strong); border-radius: var(--radius-sm); font-size: .875rem; line-height: 1.35; }
-.cmd { display: grid; grid-template-columns: 28px minmax(0, 1fr); gap: 8px 12px; padding: 10px 0 10px 20px; align-items: start; }
-.cmd .dn { display: grid; justify-items: center; align-content: start; gap: 2px; color: var(--accent); }
-.cmd .dn i { display: block; width: 2px; height: 14px; background: var(--accent); }
-.cmd .dn .i { font-size: 20px; }
-.cmd .what { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; margin: 0; font-size: .9375rem; color: var(--fg-2); }
-.cmd .what code { font-weight: 600; color: var(--fg); }
-.dir { padding: 1px 6px; border-radius: var(--radius-sm); font: 600 .8125rem/1.4 var(--f-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--fg); background: color-mix(in srgb, var(--accent) 14%, transparent); }
-.cmd ol { margin: 0; padding: 0; list-style: none; counter-reset: s; display: grid; gap: 4px 20px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); font-size: .875rem; line-height: 1.4; color: var(--fg-2); }
-.cmd ol li { counter-increment: s; position: relative; padding-inline-start: 1.5rem; text-wrap: pretty; }
-.cmd ol li::before { content: counter(s); position: absolute; inset-inline-start: 0; top: 0; font: 600 .75rem/1.7 var(--f-mono); color: var(--accent); }
-.cmd ol code { color: var(--fg); }
 .aside { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin-top: 16px; padding: 12px 16px; border-radius: var(--radius);
   border: 1px dashed color-mix(in srgb, var(--c5) 50%, var(--line)); font-size: .875rem; line-height: 1.45; color: var(--fg-2); }
 .aside .i { color: var(--c5); font-size: 18px; }
 .aside b { color: var(--fg); font-family: var(--f-head); }
 .aside code { color: var(--fg); }
 
-/* Begriffe */
-.gloss { margin: 0; display: grid; gap: 0 28px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); }
-.gloss div { display: grid; grid-template-columns: 7rem minmax(0, 1fr); gap: 10px; padding: 10px 8px; margin-inline: -8px; border-top: 1px solid var(--line); border-radius: var(--radius-sm); font-size: .9375rem;
-  transition: background-color var(--t-base) var(--ease-out); }
-.gloss div:target { background: color-mix(in srgb, var(--accent) 10%, transparent); }
-.gloss dt { font: 700 .9375rem/1.45 var(--f-head); }
-.gloss dd { margin: 0; color: var(--fg-2); line-height: 1.45; text-wrap: pretty; }
-@media (max-width: 419px) { .gloss div { grid-template-columns: minmax(0, 1fr); gap: 2px; } }
-.gloss div:has(.why) { align-content: start; }
-.gloss dd.why { grid-column: 2; margin-top: -4px; }
-.gloss dd.why::before { content: attr(data-l) " "; font: 600 .75rem/1.45 var(--f-mono); letter-spacing: .04em; text-transform: uppercase; color: var(--fg); }
-@media (max-width: 419px) { .gloss dd.why { grid-column: auto; margin-top: 4px; } }
+.dir { padding: 1px 6px; border-radius: var(--radius-sm); font: 600 .8125rem/1.4 var(--f-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--fg); background: color-mix(in srgb, var(--accent) 14%, transparent); }
+
+/* 03 Arbeitsweise ab Kopf: Staffellauf (Vorschau 2026-10-16, Rest:A + Begriffe-Suche C5) – eine Uhr je Grafik, Zustand nur aus seek(t) */
+.xa-h4 { margin: 36px 0 6px; font: 700 1.0625rem/1.25 var(--f-head); }
+#x-rollen > .xa-h4:first-child { margin-top: 20px; }
+.xa-odo .xa-t { position: relative; overflow: hidden; }
+.xa-num { font-variant-numeric: tabular-nums; }
+.xa-n { font: inherit; }
+.xa-bar { position: absolute; inset: auto 0 0 0; height: 2px; background: var(--accent); transform-origin: left; transform: scaleX(var(--p, 1)); }
+.xa-one { transition: border-color var(--t-slow) var(--ease-out), box-shadow var(--t-slow) var(--ease-out); }
+.xa-one.on { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent), 0 0 28px var(--halo); }
+.xa-relay, .xa-life { display: grid; gap: 12px; }
+.xa-track { position: relative; height: 28px; }
+.xa-track::before, .xa-run { content: ""; position: absolute; left: 0; right: 0; top: 13px; height: 2px; background: var(--line-strong); }
+.xa-run { background: var(--accent); transform-origin: left; transform: scaleX(0); }
+.xa-baton { position: absolute; left: 0; top: 4px; width: 40px; height: 20px; margin-left: -20px; border-radius: var(--radius-sm); background: var(--accent); box-shadow: 0 0 18px color-mix(in srgb, var(--accent) 45%, transparent); }
+.xa-legs { display: grid; gap: 12px; margin: 0; padding: 0; list-style: none; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.xa-leg { display: grid; gap: 8px; align-content: start; padding: 16px; background: var(--surface); border: 1px solid var(--line-strong); border-radius: var(--radius-lg); cursor: pointer;
+  transition: border-color var(--t-base) var(--ease-out), background-color var(--t-base) var(--ease-out); }
+.xa-k { display: flex; align-items: center; gap: 10px; font: 700 1.0625rem/1.25 var(--f-head); }
+.xa-k i { display: grid; place-items: center; flex: none; width: 26px; height: 26px; border-radius: 50%; border: 1px solid var(--c); color: var(--c); font: 600 .8125rem/1 var(--f-mono); font-style: normal;
+  transition: background-color var(--t-base) var(--ease-out), color var(--t-base) var(--ease-out); }
+.xa-leg p { margin: 0; font-size: .9375rem; line-height: 1.45; color: var(--fg-2); text-wrap: pretty; }
+.xa-leg .chips { margin: 2px 0 0; } .xa-leg .chips li { font-size: .8125rem; }
+.xa-leg.done .xa-k i { background: var(--c); color: var(--bg); }
+.xa-leg.on { border-color: var(--c); background: color-mix(in srgb, var(--c) 12%, var(--surface)); }
+.xa-rd { display: grid; gap: 10px 0; grid-template-columns: 13rem minmax(0, 1fr) minmax(220px, 17rem); align-items: center; margin-top: 8px; }
+.xa-rd-tool { grid-column: 1; display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 10px 14px; background: var(--surface); border: 1px solid var(--line-strong); border-radius: var(--radius); font: 700 .9375rem/1.25 var(--f-head); }
+.xa-rd-tool .i { color: var(--accent); font-size: 18px; }
+.xa-rd-line { grid-column: 2; position: relative; display: grid; padding: 0 18px; }
+.xa-rd-line i { position: absolute; left: 0; right: 0; top: 50%; height: 1px; background: var(--accent); transform-origin: left; transform: scaleX(var(--p, 1)); }
+.xa-rd-line span { position: relative; justify-self: center; padding: 4px 10px; background: var(--band); font-size: .875rem; line-height: 1.4; text-align: center; opacity: var(--p, 1); }
+.xa-rd-hub { grid-column: 3; grid-row: 1 / span 3; align-self: stretch; display: grid; align-content: center; gap: 6px; padding: 16px 18px; background: var(--surface); border: 1px dashed var(--line-strong); border-radius: var(--radius-lg);
+  transition: border-color var(--t-slow) var(--ease-out); }
+.xa-rd-hub .i { font-size: 22px; color: var(--accent); }
+.xa-rd-hub b { font: 700 1.0625rem/1.25 var(--f-head); }
+.xa-rd-hub span { font-size: .875rem; line-height: 1.45; color: var(--fg-2); }
+.xa-rd-hub.on { border-style: solid; border-color: var(--accent); }
+.xa-axis { position: relative; }
+.xa-ticks { position: relative; display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 4px; margin: 0; padding: 0; list-style: none; }
+.xa-ticks::before { content: ""; position: absolute; left: 6%; right: 6%; top: 21px; height: 2px; background: var(--line-strong); }
+.xa-tick { position: relative; display: grid; justify-items: center; align-content: start; gap: 8px; width: 100%; min-height: 44px; padding: 13px 4px 8px; border: 0; border-radius: var(--radius);
+  background: none; color: var(--fg); font: 600 .8125rem/1.3 var(--f-mono); text-align: center; cursor: pointer; }
+.xa-tick:hover { background: var(--surface-2); }
+.xa-tick i { width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--line-strong); background: var(--band); transition: background-color var(--t-base) var(--ease-out), border-color var(--t-base) var(--ease-out), box-shadow var(--t-base) var(--ease-out); }
+.xa-tick.done i { background: var(--accent); border-color: var(--accent); }
+.xa-tick.stop i { border-color: var(--stop); } .xa-tick.stop.done i { background: var(--stop); }
+.xa-tick[aria-pressed="true"] i { border-color: var(--accent); box-shadow: 0 0 0 5px color-mix(in srgb, var(--accent) 22%, transparent); }
+.xa-tick.stop[aria-pressed="true"] i { border-color: var(--stop); box-shadow: 0 0 0 5px color-mix(in srgb, var(--stop) 22%, transparent); }
+.xa-ph { position: absolute; left: 0; top: 0; z-index: 1; width: 2px; height: 42px; margin-left: -1px; background: var(--accent); box-shadow: 0 0 12px var(--accent); pointer-events: none; }
+.xa-now, .xa-detail { display: grid; gap: 12px; }
+.xa .xa-now, .xa .xa-detail { gap: 0; }
+.xa-card { display: grid; gap: 10px 32px; grid-template-columns: minmax(0, 20rem) minmax(0, 1fr); align-items: center; padding: 20px 22px; background: var(--surface);
+  border: 1px solid var(--line-strong); border-radius: var(--radius-lg);
+  transition: opacity var(--t-base) var(--ease-out), transform var(--t-base) var(--ease-out), visibility 0s linear var(--t-base); }
+.xa .xa-card, .xa .xa-pane { grid-area: 1 / 1; }
+.xa .xa-card:not(.on), .xa .xa-pane:not(.on) { opacity: 0; visibility: hidden; transform: translateY(6px); }
+.xa .xa-card.on, .xa .xa-pane.on { transition-delay: 0s; }
+.xa-card.stop { border-color: color-mix(in srgb, var(--stop) 60%, var(--line)); }
+.xa-cl { display: grid; gap: 6px; min-width: 0; }
+.xa-when { margin: 0; font: 600 .8125rem/1.3 var(--f-mono); letter-spacing: .04em; text-transform: uppercase; color: var(--fg-2); }
+.xa-hk { font: 700 1.25rem/1.25 var(--f-mono); color: var(--accent); overflow-wrap: anywhere; }
+.xa-card.stop .xa-hk { color: var(--stop); }
+.xa-rule { margin: 0; font-size: 1.0625rem; line-height: 1.5; text-wrap: pretty; }
+.xa-badge { display: inline-flex; gap: 6px; align-items: center; justify-self: start; padding: 4px 8px; border: 1px solid color-mix(in srgb, var(--stop) 60%, var(--line)); border-radius: var(--radius-sm); font: 600 .8125rem/1.2 var(--f-mono); color: var(--stop); }
+.xa-more { margin-top: 12px; }
+.xa-stairs { display: grid; gap: 12px; grid-template-columns: repeat(4, minmax(0, 1fr)); align-items: end; margin: 8px 0 0; padding: 0; list-style: none; }
+.xa-st { display: grid; gap: 10px; align-content: start; min-height: calc(176px + var(--k) * 44px); padding: 16px; background: var(--surface); border: 1px solid var(--line-strong); border-radius: var(--radius-lg);
+  opacity: var(--r, 1); transform: translateY(calc((1 - var(--r, 1)) * 28px)); }
+.xa-st.crit { border-color: color-mix(in srgb, var(--stop) 55%, var(--line)); }
+.xa-lvh { display: flex; align-items: center; gap: 10px; font: 700 1.0625rem/1.25 var(--f-head); }
+.xa-lvh i { display: grid; place-items: center; width: 26px; height: 26px; border-radius: var(--radius-sm); background: var(--accent); color: var(--bg); font: 600 .875rem/1 var(--f-mono); font-style: normal; }
+.xa-st.crit .xa-lvh i { background: var(--stop); }
+.xa-depth { display: block; height: 6px; border-radius: 3px; background: var(--line); overflow: hidden; }
+.xa-depth::after { content: ""; display: block; height: 100%; width: calc((var(--k) + 1) * 25%); background: var(--accent); transform-origin: left; transform: scaleX(var(--r, 1)); }
+.xa-st.crit .xa-depth::after { background: var(--stop); }
+.xa-st p { margin: 0; font-size: .875rem; line-height: 1.45; text-wrap: pretty; }
+.xa-chg { color: var(--fg-2); }
+.xa-chk { display: flex; gap: 8px; align-items: flex-start; font-weight: 600; }
+.xa-chk .i { margin-top: 2px; color: var(--accent); } .xa-st.crit .xa-chk .i { color: var(--stop); }
+.xa-gears { display: grid; gap: 10px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr)); margin: 8px 0 0; padding: 0; list-style: none; }
+.xa-gears li { display: grid; gap: 4px; align-content: start; padding: 12px 14px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); font-size: .875rem; line-height: 1.45; color: var(--fg-2); }
+.xa-gears b { font: 700 .9375rem/1.3 var(--f-head); color: var(--key); }
+.xa-gears a { text-decoration-color: color-mix(in srgb, var(--accent) 70%, transparent); text-underline-offset: 3px; }
+.xa-trip { display: grid; gap: 20px; grid-template-columns: minmax(260px, 330px) minmax(0, 1fr); align-items: start; }
+.xa-route { position: relative; display: grid; gap: 2px; margin: 0; padding: 0; list-style: none; }
+.xa-route::before { content: ""; position: absolute; left: 21px; top: 24px; bottom: 24px; width: 2px; background: var(--line-strong); }
+.xa-pkt { position: absolute; left: 22px; top: 0; z-index: 1; width: 22px; height: 22px; margin: -11px 0 0 -11px; border-radius: 50%; border: 2px solid var(--accent); background: color-mix(in srgb, var(--accent) 30%, var(--band));
+  box-shadow: 0 0 0 6px color-mix(in srgb, var(--accent) 16%, transparent), 0 0 22px var(--accent); pointer-events: none; }
+.xa-ri { position: relative; display: grid; grid-template-columns: 28px minmax(0, 1fr); gap: 12px; align-items: center; width: 100%; min-height: 48px; padding: 8px; border: 1px solid transparent;
+  border-radius: var(--radius); background: none; color: var(--fg); font: inherit; text-align: left; cursor: pointer; transition: background-color var(--t-fast) var(--ease-out), border-color var(--t-fast) var(--ease-out); }
+.xa-ri:hover { background: var(--surface-2); }
+.xa-ri[aria-pressed="true"] { background: var(--surface); border-color: var(--line-strong); }
+.xa-dot { justify-self: center; width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--c); background: var(--band); transition: background-color var(--t-base) var(--ease-out); }
+.xa-ri.done .xa-dot { background: var(--c); }
+.xa-ri b { display: block; font: 700 .9375rem/1.25 var(--f-head); }
+.xa-ri small { display: block; font: 500 .8125rem/1.3 var(--f-mono); color: var(--fg-2); overflow-wrap: anywhere; }
+.xa-ri.cmd { min-height: 40px; }
+.xa-ri.cmd .xa-dot { width: 10px; height: 10px; border-radius: 2px; }
+.xa-ri.cmd b { font: 600 .8125rem/1.3 var(--f-mono); color: var(--accent); }
+.xa .xa-detail { position: sticky; top: 16px; }
+.xa-pane { transition: opacity var(--t-base) var(--ease-out), transform var(--t-base) var(--ease-out), visibility 0s linear var(--t-base); }
+.stn.xa-pane { border-color: color-mix(in srgb, var(--c) 50%, var(--line)); }
+.xa-cp { display: grid; gap: 12px; align-content: start; padding: 18px 20px; background: var(--surface); border: 1px solid color-mix(in srgb, var(--accent) 50%, var(--line)); border-radius: var(--radius-lg); }
+.xa-cp .what { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; margin: 0; font-weight: 600; }
+.xa-cp .dir { padding: 3px 8px; border-radius: var(--radius-sm); background: var(--accent); color: var(--bg); font: 600 .8125rem/1.2 var(--f-mono); }
+.xa-cp ol { display: grid; gap: 8px; margin: 0; padding-left: 1.25rem; font-size: .9375rem; line-height: 1.45; }
+.xa-gl { display: grid; gap: 16px; }
+.xa-gg { display: grid; gap: 12px 24px; grid-template-columns: 11rem minmax(0, 1fr); padding-top: 16px; border-top: 1px solid var(--line); }
+.xa-gg h4 { display: flex; align-items: center; gap: 10px; align-self: start; margin: 0; font: 700 1rem/1.3 var(--f-head); }
+.xa-gg h4 i { padding: 5px 7px; border-radius: var(--radius-sm); background: var(--fg); color: var(--bg); font: 600 .8125rem/1 var(--f-mono); font-style: normal; }
+.xa-gg dl { display: grid; gap: 10px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 250px), 1fr)); margin: 0; }
+.xa-gg dl > div { display: grid; gap: 4px; align-content: start; padding: 12px 14px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+.xa-gg dl > div:target { border-color: var(--accent); }
+.xa-gg dt { font: 700 .9375rem/1.3 var(--f-head); color: var(--key); }
+.xa-gg dd { margin: 0; font-size: .875rem; line-height: 1.45; text-wrap: pretty; }
+.xa-gg dd.why { color: var(--fg-2); }
+.xa-gg dd.why::before { content: attr(data-l) " · "; font-weight: 600; color: var(--fg); }
+@media (max-width: 899px) {
+  .xa-legs { grid-template-columns: repeat(2, minmax(0, 1fr)); } .xa-ticks::before { display: none; }
+  .xa-rd { grid-template-columns: minmax(0, 1fr); gap: 8px; } .xa-rd-tool, .xa-rd-line, .xa-rd-hub { grid-column: auto; grid-row: auto; }
+  .xa-rd-line { padding: 0 0 6px 14px; } .xa-rd-line i { display: none; } .xa-rd-line span { justify-self: start; padding: 0; background: none; text-align: left; opacity: 1; }
+  .xa-ticks { grid-template-columns: repeat(4, minmax(0, 1fr)); row-gap: 8px; } .xa-card { grid-template-columns: minmax(0, 1fr); }
+  .xa-stairs { grid-template-columns: repeat(2, minmax(0, 1fr)); } .xa-st { min-height: 0; }
+}
+@media (max-width: 759px) { .xa-trip { grid-template-columns: minmax(0, 1fr); } .xa-detail { position: static; } .xa-gg { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 519px) { .xa-legs, .xa-stairs { grid-template-columns: minmax(0, 1fr); } .xa-ticks { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.xa-track, .xa-ph, .xa-pkt, .xa-ctl { display: none; }
+.xa .xa-pkt { display: block; }
+@media (min-width: 900px) { .xa .xa-track, .xa .xa-ph { display: block; } } .xa .xa-ctl { display: flex; }
+/* Steuerung je Grafik: Schritt zurück · Abspielen/Pause · Schritt vor · Position · Tempo (gilt für alle Grafiken) */
+.xa-ctl { flex-wrap: wrap; align-items: center; gap: 6px 8px; }
+.xa-cb { display: inline-grid; place-items: center; width: 44px; height: 40px; border: 1px solid var(--line-strong); border-radius: var(--radius); background: var(--surface); color: var(--fg); cursor: pointer;
+  transition: border-color var(--t-fast) var(--ease-out), background-color var(--t-fast) var(--ease-out); }
+.xa-cb:hover { border-color: var(--accent); }
+.xa-cb .i { font-size: 18px; }
+.xa-prev .i { transform: scaleX(-1); }
+.xa-pp { border-color: var(--accent); } .xa-pp .i { color: var(--accent); }
+.xa-pos { min-width: 4.5ch; padding: 0 4px; font: 600 .875rem/1 var(--f-mono); font-variant-numeric: tabular-nums; }
+.xa-rate { display: inline-flex; margin-inline-start: auto; border: 1px solid var(--line-strong); border-radius: var(--radius); overflow: hidden; }
+.xa-rate button { min-width: 48px; min-height: 40px; padding: 0 10px; border: 0; background: var(--surface); color: var(--fg); font: 600 .8125rem/1 var(--f-mono); cursor: pointer; }
+.xa-rate button + button { box-shadow: -1px 0 0 var(--line-strong); }
+.xa-rate button[aria-pressed="true"] { background: var(--fg); color: var(--bg); }
+.xa-cb:focus-visible, .xa-rate button:focus-visible, .xa-tick:focus-visible, .xa-ri:focus-visible, .xa-leg:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.xa-trip > .xa-ctl { grid-column: 1 / -1; }
+/* Begriffe: Suche (C5) */
+.xa-search { display: flex; align-items: center; gap: 10px; max-width: 420px; margin-bottom: 16px; padding: 0 14px; border: 1px solid var(--line-strong); border-radius: var(--radius); background: var(--surface); }
+.xa-search:focus-within { border-color: var(--accent); }
+.xa-search .i { color: var(--fg-2); }
+.xa-search input { flex: 1; min-width: 0; min-height: 44px; border: 0; outline: 0; background: none; color: var(--fg); font: 400 1rem/1.3 var(--f-body); }
+.xa-gg[hidden], .xa-gg dl > div[hidden] { display: none; }
+.xa-none { margin: 12px 0 0; }
+/* Fuß: eine ruhige Zeile mit Status-Punkt (C5) */
+.xa-foot p { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; }
+.xa-led { flex: none; width: 8px; height: 8px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 8px var(--accent); }
+@media (prefers-reduced-motion: reduce) {
+  .xa-pp, .xa-rate { display: none !important; }
+  .xa-leg, .xa-k i, .xa-tick i, .xa-card, .xa-pane, .xa-dot, .xa-ri, .xa-one, .xa-rd-hub, .xa-cb { transition: none; }
+}
 
 footer { padding-block: 32px 48px; border-top: 1px solid var(--line); font-size: .875rem; color: var(--fg-2); }
 footer p { margin: 0; }
@@ -493,7 +615,7 @@ footer p { margin: 0; }
 
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
-  .card, .card::before, .qr-code, .btn, .btn .go, .gloss div, .nav a, .gh { transition: none; }
+  .card, .card::before, .qr-code, .btn, .btn .go, .nav a, .gh { transition: none; }
   .card:hover { transform: none; }
 }
 </style>
@@ -597,11 +719,11 @@ footer p { margin: 0; }
     <h2 id="h-workflow" data-en="One workflow for every project">Ein Workflow für alle Projekte</h2>
     <p class="intro" data-en="AI agents work by fixed rules. Every change is checked. Every finished state lands in Git and on this page."><abbr title="selbstständig arbeitende KI-Helfer">KI-Agenten</abbr> arbeiten nach festen Regeln. Jede Änderung wird geprüft. Jeder fertige Stand landet in Git und auf dieser Seite.</p>
     <div class="wf-head">
-      <dl class="facts">
-        <div data-reveal><dt>3<small data-en="AI tools">KI-Werkzeuge</small></dt><dd data-en="Claude Code, Codex, Gemini – all read the same rules">Claude Code, Codex, Gemini – lesen dieselben Regeln</dd></div>
-        <div data-reveal><dt>2<small data-en="Source repos">Quell-Repos</small></dt><dd data-en="Rules, global skills and hooks (<code>ai_dev_workflow</code>) + robot workspace (<code>dev_ws</code>), both private">Regeln, globale <abbr title="thematische Anleitungen">Skills</abbr> und <abbr title="automatisch gestartete Skripte">Hooks</abbr> (<code>ai_dev_workflow</code>) + Roboter-Workspace (<code>dev_ws</code>), beide privat</dd></div>
-        <div data-reveal><dt>60 · 17 · 19<small data-en="Skills · agents · hooks"><abbr title="thematische Anleitungen">Skills</abbr> · Agenten · <abbr title="automatisch gestartete Skripte">Hooks</abbr></small></dt><dd data-en="Knowledge, helpers, automation – versioned in Git">Wissen, Helfer, Automatik – versioniert in Git</dd></div>
-        <div data-reveal><dt>1<small data-en="Decision maker">Entscheider</small></dt><dd data-en="Only the user approves – in their own chat">Nur der User gibt frei – im eigenen Chat</dd></div>
+      <dl class="facts xa-odo" id="xa-odo">
+        <div class="xa-t"><dt><span class="xa-num"><b class="xa-n">3</b></span><small data-en="AI tools">KI-Werkzeuge</small></dt><dd data-en="Claude Code, Codex, Gemini – all read the same rules">Claude Code, Codex, Gemini – lesen dieselben Regeln</dd><i class="xa-bar" aria-hidden="true"></i></div>
+        <div class="xa-t"><dt><span class="xa-num"><b class="xa-n">2</b></span><small data-en="Source repos">Quell-Repos</small></dt><dd data-en="Rules, global skills and hooks (<code>ai_dev_workflow</code>) + robot workspace (<code>dev_ws</code>), both private">Regeln, globale <abbr title="thematische Anleitungen">Skills</abbr> und <abbr title="automatisch gestartete Skripte">Hooks</abbr> (<code>ai_dev_workflow</code>) + Roboter-Workspace (<code>dev_ws</code>), beide privat</dd><i class="xa-bar" aria-hidden="true"></i></div>
+        <div class="xa-t"><dt><span class="xa-num"><b class="xa-n">60</b> · <b class="xa-n">17</b> · <b class="xa-n">19</b></span><small data-en="Skills · agents · hooks"><abbr title="thematische Anleitungen">Skills</abbr> · Agenten · <abbr title="automatisch gestartete Skripte">Hooks</abbr></small></dt><dd data-en="Knowledge, helpers, automation – versioned in Git">Wissen, Helfer, Automatik – versioniert in Git</dd><i class="xa-bar" aria-hidden="true"></i></div>
+        <div class="xa-t xa-one"><dt><span class="xa-num"><b class="xa-n">1</b></span><small data-en="Decision maker">Entscheider</small></dt><dd data-en="Only the user approves – in their own chat">Nur der User gibt frei – im eigenen Chat</dd><i class="xa-bar" aria-hidden="true"></i></div>
       </dl>
       <article class="card" data-reveal><div class="plate"><a class="qr-code" href="web_ai_dev_workflow/index.html" aria-label="QR-Code lu4k87.github.io/web_ai_dev_workflow" data-en-aria="QR code lu4k87.github.io/web_ai_dev_workflow"><svg viewBox="0 0 33 33" class="segno"><path class="qrline" stroke="#000" d="M0 0.5h7m1 0h1m2 0h4m1 0h1m1 0h2m1 0h4m1 0h7m-33 1h1m5 0h1m4 0h1m2 0h1m1 0h1m1 0h1m3 0h1m1 0h1m1 0h1m5 0h1m-33 1h1m1 0h3m1 0h1m2 0h1m1 0h3m2 0h1m1 0h2m1 0h2m1 0h1m1 0h1m1 0h3m1 0h1m-33 1h1m1 0h3m1 0h1m4 0h1m2 0h2m2 0h1m3 0h2m2 0h1m1 0h3m1 0h1m-33 1h1m1 0h3m1 0h1m1 0h1m1 0h1m1 0h1m3 0h3m2 0h1m1 0h1m2 0h1m1 0h3m1 0h1m-33 1h1m5 0h1m1 0h5m1 0h4m2 0h1m1 0h1m3 0h1m5 0h1m-33 1h7m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h7m-24 1h5m1 0h1m2 0h6m-23 1h7m1 0h1m3 0h1m3 0h1m5 0h1m3 0h2m3 0h1m-33 1h2m1 0h2m4 0h2m1 0h1m1 0h2m1 0h4m2 0h2m1 0h2m1 0h4m-33 1h1m1 0h1m3 0h1m1 0h4m1 0h1m2 0h2m2 0h1m1 0h1m3 0h1m1 0h1m1 0h2m-30 1h1m2 0h1m2 0h1m1 0h1m1 0h3m1 0h3m1 0h6m2 0h5m-33 1h2m1 0h2m1 0h4m1 0h1m1 0h1m1 0h2m3 0h1m1 0h2m1 0h1m1 0h3m1 0h2m-29 1h1m3 0h1m1 0h1m4 0h1m2 0h3m1 0h1m2 0h1m3 0h4m-33 1h4m2 0h1m1 0h3m1 0h3m3 0h1m1 0h1m1 0h1m1 0h3m2 0h1m1 0h1m-30 1h2m1 0h1m2 0h1m1 0h1m1 0h2m3 0h1m1 0h3m1 0h1m1 0h3m1 0h2m-31 1h1m1 0h1m3 0h1m3 0h2m1 0h2m1 0h1m2 0h2m1 0h1m1 0h2m1 0h2m3 0h1m-20 1h1m1 0h1m3 0h3m1 0h1m2 0h2m1 0h2m1 0h1m-33 1h1m1 0h2m2 0h1m9 0h3m5 0h5m1 0h1m-31 1h1m9 0h1m1 0h1m4 0h1m3 0h1m3 0h8m-28 1h2m2 0h1m5 0h1m1 0h3m2 0h1m2 0h1m1 0h3m1 0h2m-33 1h4m1 0h1m1 0h1m2 0h1m3 0h1m1 0h1m2 0h3m1 0h1m2 0h1m2 0h2m1 0h1m-33 1h1m3 0h4m1 0h1m2 0h5m1 0h1m3 0h1m2 0h2m1 0h4m-32 1h1m1 0h1m1 0h2m1 0h2m2 0h5m1 0h2m1 0h3m5 0h3m-31 1h1m2 0h1m1 0h2m1 0h1m2 0h2m6 0h1m2 0h1m1 0h5m2 0h2m-25 1h1m1 0h1m1 0h1m1 0h3m2 0h2m2 0h2m3 0h1m1 0h1m1 0h1m-33 1h7m1 0h1m1 0h1m3 0h2m1 0h1m5 0h2m1 0h1m1 0h1m1 0h2m-32 1h1m5 0h1m1 0h1m2 0h1m4 0h1m3 0h3m1 0h1m3 0h4m-32 1h1m1 0h3m1 0h1m1 0h1m1 0h2m1 0h1m3 0h1m4 0h1m1 0h6m2 0h1m-33 1h1m1 0h3m1 0h1m1 0h1m5 0h4m1 0h2m2 0h3m2 0h1m1 0h1m1 0h1m-33 1h1m1 0h3m1 0h1m1 0h3m1 0h1m1 0h2m5 0h1m1 0h5m-28 1h1m5 0h1m1 0h1m1 0h3m3 0h2m1 0h4m2 0h1m2 0h3m-31 1h7m5 0h1m1 0h1m2 0h1m2 0h1m1 0h3m2 0h1m1 0h3"/></svg></a><div class="qr-meta"><span class="host">lu4k87.github.io</span><a class="path" href="web_ai_dev_workflow/index.html">/web_<wbr>ai_<wbr>dev_<wbr>workflow</a><span class="scan"><svg class="i" aria-hidden="true"><use href="#i-qr"/></svg><span data-en="Scan to open">Zum Scannen</span></span></div></div><div class="body"><p class="tag" data-en="Way of working · Claude Code, Codex, Gemini">Arbeitsweise · Claude Code, Codex, Gemini</p><h3>AI Dev Workflow</h3><p class="desc" data-en="How every project here is built – cycle, guardrails and definition of done for working with AI agents.">So entsteht jedes Projekt hier – Kreislauf, Leitplanken und Definition of Done für die Arbeit mit KI-Agenten.</p></div><div class="acts"><a class="btn main" href="web_ai_dev_workflow/index.html"><span data-en="Open docs">Doku öffnen</span><svg class="i go" aria-hidden="true"><use href="#i-go"/></svg></a><span class="repo-status" role="img" aria-label="Code privat" data-en-aria="Code private"><svg class="i" aria-hidden="true"><use href="#i-lock"/></svg><span data-en="Code private">Code privat</span></span></div></article>
     </div>
@@ -690,30 +812,56 @@ footer p { margin: 0; }
     </ul>
       </div>
     </details>
-    <div class="two gap">
-      <table class="tb tb-sm" data-reveal>
-        <thead><tr><th data-en="Role">Rolle</th><th data-en="Task">Aufgabe</th></tr></thead>
-        <tbody>
-        <tr><td class="k">Organizer</td><td data-l="Aufgabe" data-l-en="Task" data-en="Start, plan, questions, splitting into chats – every chat begins here">Start, Plan, Rückfragen, Aufteilen in Chats – jeder Chat beginnt hier</td></tr>
-        <tr><td class="k" data-en="Designer · Developer · Editor<small>also project manager, scrum master, researcher, marketing, 3D designer</small>">Designer · Entwickler · Redakteur<small>außerdem Projektmanager, Scrum Master, Forscher, Marketing, 3D-Designer</small></td><td data-l="Aufgabe" data-l-en="Task" data-en="Implementation – one specialist role per task, chosen in the plan">Umsetzung – eine Fachrolle je Aufgabe, gewählt im Plan</td></tr>
-        <tr><td class="k" data-en="Reviewer">Prüfer</td><td data-l="Aufgabe" data-l-en="Task" data-en="Definition of done before “done” – evidence from this chat">Definition of Done vor „fertig“ – Beleg aus diesem Chat</td></tr>
-        <tr><td class="k">Synchronizer</td><td data-l="Aufgabe" data-l-en="Task" data-en="Commit + push, coordinate parallel chats, hand over the rest">Commit + Push, parallele Chats abstimmen, Rest übergeben</td></tr>
-        </tbody>
-      </table>
-      <div class="box">
-        <h4><svg class="i"><use href="#i-laptop"/></svg><span data-en="Who reads what">Wer liest was</span></h4>
-        <dl class="kv">
-          <div><dt>Claude Code</dt><dd data-en="<code>CLAUDE.md</code>, hooks from <code>.claude/settings.json</code>, skills, agents"><code>CLAUDE.md</code>, Hooks aus <code>.claude/settings.json</code>, Skills, Agenten</dd></div>
-          <div><dt>Codex</dt><dd data-en="<code>AGENTS.md</code>, <code>.codex/hooks.json</code> → <code>codex_<wbr>bridge.py</code>"><code>AGENTS.md</code>, <code>.codex/hooks.json</code> → <code>codex_<wbr>bridge.py</code></dd></div>
-          <div><dt>Gemini · Antigravity</dt><dd data-en="<code>.agents/rules/</code>, <code>.agents/hooks.json</code> → <code>antigravity_<wbr>bridge.py</code>"><code>.agents/rules/</code>, <code>.agents/hooks.json</code> → <code>antigravity_<wbr>bridge.py</code></dd></div>
-        </dl>
+    <h4 class="xa-h4" id="h-rollen"><span data-en="Roles in a chat">Rollen im Chat</span></h4>
+    <p class="sub" data-en="Every task runs through four roles – the baton shows whose turn it is. Click a role to jump there.">Jede Aufgabe läuft durch vier Rollen – der Staffelstab zeigt, wer gerade dran ist. Rolle anklicken = dorthin springen.</p>
+    <div class="xa-relay" id="xa-relay">
+      <div class="xa-ctl" role="group" aria-label="Steuerung" data-en-aria="Controls"><button type="button" class="xa-cb xa-prev" data-act="prev" aria-label="Schritt zurück" data-en-aria="Step back" title="Schritt zurück"><svg class="i" aria-hidden="true"><use href="#i-go"/></svg></button><button type="button" class="xa-cb xa-pp" data-act="play" aria-label="Pause" title="Pause"><svg class="i" aria-hidden="true"><use href="#i-pause"/></svg></button><button type="button" class="xa-cb" data-act="next" aria-label="Schritt vor" data-en-aria="Step forward" title="Schritt vor"><svg class="i" aria-hidden="true"><use href="#i-go"/></svg></button><span class="xa-pos" aria-live="polite">1 / 4</span><span class="xa-rate" role="group" aria-label="Tempo" data-en-aria="Speed"><button type="button" data-rate=".5" aria-pressed="false">0,5×</button><button type="button" data-rate="1" aria-pressed="true">1×</button><button type="button" data-rate="2" aria-pressed="false">2×</button></span></div>
+      <div class="xa-track" aria-hidden="true"><i class="xa-run"></i><i class="xa-baton"></i></div>
+      <ol class="xa-legs">
+          <li class="xa-leg" style="--c: var(--c1)" tabindex="0"><span class="xa-k"><i>1</i><span data-en="Organizer">Organizer</span></span><p data-en="Start, plan, questions, splitting into chats – every chat begins here">Start, Plan, Rückfragen, Aufteilen in Chats – jeder Chat beginnt hier</p></li>
+          <li class="xa-leg" style="--c: var(--c2)" tabindex="0"><span class="xa-k"><i>2</i><span data-en="Specialist role">Fachrolle</span></span><p data-en="Implementation – one specialist role per task, chosen in the plan">Umsetzung – eine Fachrolle je Aufgabe, gewählt im Plan</p><ul class="chips"><li data-en="Designer">Designer</li><li data-en="Developer">Entwickler</li><li data-en="Editor">Redakteur</li><li data-en="Project manager">Projektmanager</li><li data-en="Scrum master">Scrum Master</li><li data-en="Researcher">Forscher</li><li data-en="Marketing">Marketing</li><li data-en="3D designer">3D-Designer</li></ul></li>
+          <li class="xa-leg" style="--c: var(--c3)" tabindex="0"><span class="xa-k"><i>3</i><span data-en="Reviewer">Prüfer</span></span><p data-en="Definition of done before “done” – evidence from this chat">Definition of Done vor „fertig“ – Beleg aus diesem Chat</p></li>
+          <li class="xa-leg" style="--c: var(--c4)" tabindex="0"><span class="xa-k"><i>4</i><span data-en="Synchronizer">Synchronizer</span></span><p data-en="Commit + push, coordinate parallel chats, hand over the rest">Commit + Push, parallele Chats abstimmen, Rest übergeben</p></li>
+      </ol>
+    </div>
+    <div id="xa-read">
+      <h4 class="xa-h4"><span data-en="Who reads what">Wer liest was</span></h4>
+      <div class="xa-rd">
+          <div class="xa-rd-tool"><svg class="i" aria-hidden="true"><use href="#i-laptop"/></svg><b>Claude Code</b></div><div class="xa-rd-line"><i></i><span data-en="<code>CLAUDE.md</code>, hooks from <code>.claude/settings.json</code>, skills, agents"><code>CLAUDE.md</code>, Hooks aus <code>.claude/settings.json</code>, Skills, Agenten</span></div>
+          <div class="xa-rd-tool"><svg class="i" aria-hidden="true"><use href="#i-laptop"/></svg><b>Codex</b></div><div class="xa-rd-line"><i></i><span><code>AGENTS.md</code>, <code>.codex/hooks.json</code> → <code>codex_<wbr>bridge.py</code></span></div>
+          <div class="xa-rd-tool"><svg class="i" aria-hidden="true"><use href="#i-laptop"/></svg><b>Gemini · Antigravity</b></div><div class="xa-rd-line"><i></i><span><code>.agents/rules/</code>, <code>.agents/hooks.json</code> → <code>antigravity_<wbr>bridge.py</code></span></div>
+        <div class="xa-rd-hub"><svg class="i" aria-hidden="true"><use href="#i-book"/></svg><b data-en="The same rules">Dieselben Regeln</b><span data-en="<code>RULES.md</code> for all projects + <code>AGENTS.md</code> per project"><code>RULES.md</code> für alle Projekte + <code>AGENTS.md</code> je Projekt</span></div>
       </div>
     </div>
 
     <h3 class="part" id="h-regeln"><span class="no">2</span><span data-en="Rules and checking">Regeln und Prüfung</span></h3>
-    <p class="sub" data-en="Every rule has a hook that checks it automatically – at a fixed moment. How deeply a change is checked depends on its check level.">Jede Regel hat einen Hook, der sie automatisch prüft – zu einem festen Zeitpunkt. Wie tief eine Änderung geprüft wird, legt ihre Prüfstufe fest.</p>
-    <div class="two">
-      <table class="tb tb-sm tb-rules" data-reveal>
+    <p class="sub" data-en="Eight hooks accompany a chat – each at its own moment. Red = can stop the chat.">Acht Hooks begleiten einen Chat – jeder zu seinem Zeitpunkt. Rot = kann den Chat anhalten.</p>
+    <div class="xa-life" id="xa-life">
+      <div class="xa-ctl" role="group" aria-label="Steuerung" data-en-aria="Controls"><button type="button" class="xa-cb xa-prev" data-act="prev" aria-label="Schritt zurück" data-en-aria="Step back" title="Schritt zurück"><svg class="i" aria-hidden="true"><use href="#i-go"/></svg></button><button type="button" class="xa-cb xa-pp" data-act="play" aria-label="Pause" title="Pause"><svg class="i" aria-hidden="true"><use href="#i-pause"/></svg></button><button type="button" class="xa-cb" data-act="next" aria-label="Schritt vor" data-en-aria="Step forward" title="Schritt vor"><svg class="i" aria-hidden="true"><use href="#i-go"/></svg></button><span class="xa-pos" aria-live="polite">1 / 8</span><span class="xa-rate" role="group" aria-label="Tempo" data-en-aria="Speed"><button type="button" data-rate=".5" aria-pressed="false">0,5×</button><button type="button" data-rate="1" aria-pressed="true">1×</button><button type="button" data-rate="2" aria-pressed="false">2×</button></span></div>
+      <div class="xa-axis"><i class="xa-ph" aria-hidden="true"></i><ol class="xa-ticks">
+          <li><button type="button" class="xa-tick" aria-pressed="false"><i></i><span data-en="at chat start">beim Chat-Start</span></button></li>
+          <li><button type="button" class="xa-tick" aria-pressed="false"><i></i><span data-en="on every message">bei jeder Nachricht</span></button></li>
+          <li><button type="button" class="xa-tick" aria-pressed="false"><i></i><span data-en="before every file change">vor jeder Dateiänderung</span></button></li>
+          <li><button type="button" class="xa-tick stop" aria-pressed="false"><i></i><span data-en="before every command">vor jedem Befehl</span></button></li>
+          <li><button type="button" class="xa-tick" aria-pressed="false"><i></i><span data-en="after every file change">nach jeder Dateiänderung</span></button></li>
+          <li><button type="button" class="xa-tick stop" aria-pressed="false"><i></i><span data-en="on every commit">bei jedem Commit</span></button></li>
+          <li><button type="button" class="xa-tick stop" aria-pressed="false"><i></i><span data-en="at the end of every answer">am Ende jeder Antwort</span></button></li>
+          <li><button type="button" class="xa-tick" aria-pressed="false"><i></i><span data-en="on “chat weiter” in the new chat">bei „chat weiter“ im neuen Chat</span></button></li>
+      </ol></div>
+      <div class="xa-now" aria-live="polite">
+          <article class="xa-card"><div class="xa-cl"><p class="xa-when">1/8 · <span data-en="at chat start">beim Chat-Start</span></p><code class="xa-hk">session_<wbr>overview.py</code></div><p class="xa-rule" data-en="Before the work: situation report with parallel chats, claims and open handoffs">Vor der Arbeit das Lagebild: parallele Chats, Claims, offene Übergaben</p></article>
+          <article class="xa-card"><div class="xa-cl"><p class="xa-when">2/8 · <span data-en="on every message">bei jeder Nachricht</span></p><code class="xa-hk">chat_<wbr>length_<wbr>hint.py</code></div><p class="xa-rule" data-en="Load matching skills only; from ~100k tokens a new chat with handoff">Nur passende Skills laden; ab ~100k Token neuer Chat mit Übergabe</p></article>
+          <article class="xa-card"><div class="xa-cl"><p class="xa-when">3/8 · <span data-en="before every file change">vor jeder Dateiänderung</span></p><code class="xa-hk">todo_<wbr>claim_<wbr>hook.py</code></div><p class="xa-rule" data-en="Every file becomes a claim before it changes; claims of other chats only after agreement">Jede Datei wird vor dem Ändern zum Claim; fremde Claims nur nach Absprache</p></article>
+          <article class="xa-card stop"><div class="xa-cl"><p class="xa-when">4/8 · <span data-en="before every command">vor jedem Befehl</span></p><code class="xa-hk">pre_<wbr>tool_<wbr>guard.py</code><span class="xa-badge"><svg class="i" aria-hidden="true"><use href="#i-stop"/></svg><span data-en="can stop the chat">kann den Chat anhalten</span></span></div><p class="xa-rule" data-en="No broad <code>pkill</code>, no <code>git push --force</code>, no bypassing of safeguards">Kein breites <code>pkill</code>, kein <code>git push --force</code>, kein Umgehen von Schutzmechanismen</p></article>
+          <article class="xa-card"><div class="xa-cl"><p class="xa-when">5/8 · <span data-en="after every file change">nach jeder Dateiänderung</span></p><code class="xa-hk">post_<wbr>edit_<wbr>check.py</code></div><p class="xa-rule" data-en="Every saved file error-free: syntax, UI rules, corners ≤ 8 px">Jede gespeicherte Datei fehlerfrei: Syntax, UI-Regeln, Ecken ≤&nbsp;8&nbsp;px</p></article>
+          <article class="xa-card stop"><div class="xa-cl"><p class="xa-when">6/8 · <span data-en="on every commit">bei jedem Commit</span></p><code class="xa-hk">tools/pre-commit</code><span class="xa-badge"><svg class="i" aria-hidden="true"><use href="#i-stop"/></svg><span data-en="can stop the chat">kann den Chat anhalten</span></span></div><p class="xa-rule" data-en="Only checked states get committed: tests, terms, format">Nur geprüfte Stände committen: Tests, Begriffe, Format</p></article>
+          <article class="xa-card stop"><div class="xa-cl"><p class="xa-when">7/8 · <span data-en="at the end of every answer">am Ende jeder Antwort</span></p><code class="xa-hk">format_<wbr>check.py</code><span class="xa-badge"><svg class="i" aria-hidden="true"><use href="#i-stop"/></svg><span data-en="can stop the chat">kann den Chat anhalten</span></span></div><p class="xa-rule" data-en="Every answer in the fixed format: result, warnings, check table, status">Jede Antwort im festen Format: Ergebnis, Warnungen, Prüf-Tabelle, Status</p></article>
+          <article class="xa-card"><div class="xa-cl"><p class="xa-when">8/8 · <span data-en="on “chat weiter” in the new chat">bei „chat weiter“ im neuen Chat</span></p><code class="xa-hk">chat_<wbr>handoff.py</code></div><p class="xa-rule" data-en="The open rest is handed over, the claim removed">Offener Rest wird übergeben, der Claim gelöscht</p></article>
+      </div>
+    </div>
+    <details class="wf-more xa-more">
+      <summary><svg class="i" aria-hidden="true"><use href="#i-down"/></svg><span data-en="All 8 rules as a table">Alle 8 Regeln als Tabelle</span></summary>
+      <div class="wf-more-in"><table class="tb tb-sm tb-rules">
         <thead><tr><th data-en="Rule (target)">Regel (Soll)</th><th data-en="Checks automatically (actual)">prüft automatisch (Ist)</th><th data-en="Runs">läuft</th></tr></thead>
         <tbody>
         <tr><td data-en="Before the work: situation report with parallel chats, claims and open handoffs">Vor der Arbeit das Lagebild: parallele Chats, Claims, offene Übergaben</td><td class="hk" data-l="Hook"><code>session_<wbr>overview.py</code></td><td data-l="läuft" data-l-en="runs" data-en="at chat start">beim Chat-Start</td></tr>
@@ -725,35 +873,41 @@ footer p { margin: 0; }
         <tr><td data-en="Every answer in the fixed format: result, warnings, check table, status">Jede Antwort im festen Format: Ergebnis, Warnungen, Prüf-Tabelle, Status</td><td class="hk" data-l="Hook"><code>format_<wbr>check.py</code></td><td data-l="läuft" data-l-en="runs" data-en="at the end of every answer">am Ende jeder Antwort</td></tr>
         <tr><td data-en="The open rest is handed over, the claim removed">Offener Rest wird übergeben, der Claim gelöscht</td><td class="hk" data-l="Hook"><code>chat_<wbr>handoff.py</code></td><td data-l="läuft" data-l-en="runs" data-en="on “chat weiter” in the new chat">bei „chat weiter“ im neuen Chat</td></tr>
         </tbody>
-      </table>
-      <table class="tb tb-sm" data-reveal>
-        <thead><tr><th data-en="Level">Stufe</th><th data-en="Change">Änderung</th><th data-en="Check before “done”">Prüfung vor „fertig“</th></tr></thead>
-        <tbody>
-        <tr><td class="k"><i>0</i>trivial</td><td data-l="Änderung" data-l-en="Change" data-en="Text, comment, docs, config without effect">Text, Kommentar, Doku, Config ohne Wirkung</td><td data-l="Prüfung" data-l-en="Check" data-en="Hooks + pre-commit">Hooks + pre-commit</td></tr>
-        <tr><td class="k"><i>1</i><span data-en="small">klein</span></td><td data-l="Änderung" data-l-en="Change" data-en="Existing element, one area, ≤ 3 files">Bestehendes Element, ein Bereich, ≤&nbsp;3 Dateien</td><td data-l="Prüfung" data-l-en="Check" data-en="Quick checks, UI light + dark; bug fix: original symptom + 1 test">Schnelle Prüfungen, UI hell + dunkel; Bugfix: Originalsymptom + 1 Test</td></tr>
-        <tr><td class="k"><i>2</i>normal</td><td data-l="Änderung" data-l-en="Change" data-en="New element, several files, rebuild">Neues Element, mehrere Dateien, Umbau</td><td data-l="Prüfung" data-l-en="Check" data-en="Full check of the project">Volle Prüfung des Projekts</td></tr>
-        <tr><td class="k crit"><i>3</i><span data-en="critical">kritisch</span></td><td data-l="Änderung" data-l-en="Change" data-en="Safety, data loss, hardware">Sicherheit, Datenverlust, Hardware</td><td data-l="Prüfung" data-l-en="Check" data-en="Full check + review agent, never shortened">Volle Prüfung + Prüf-Agent, nie abkürzen</td></tr>
-        </tbody>
-      </table>
-    </div>
-    <div class="box gap">
-      <h4><svg class="i"><use href="#i-check"/></svg><span data-en="How the parts work together">So greifen die Teile ineinander</span></h4>
-      <dl class="kv">
-        <div><dt><a href="#g-rules" data-en="Rules">Regeln</a></dt><dd data-en="<code>RULES.md</code> for all projects + <code>AGENTS.md</code> per project; every chat reads them at the start, the project extends them, safety always wins"><code>RULES.md</code> für alle Projekte + <code>AGENTS.md</code> je Projekt; jeder Chat liest sie zu Beginn, das Projekt ergänzt sie, Sicherheit hat immer Vorrang</dd></div>
-        <div><dt><a href="#g-role" data-en="Roles">Rollen</a></dt><dd data-en="Organizer → specialist role → reviewer → synchronizer: the chat switches roles with each step and names the current one in its answer">Organizer → Fachrolle → Prüfer → Synchronizer: der Chat wechselt die Rolle mit dem Schritt und nennt sie in der Antwort</dd></div>
-        <div><dt><a href="#g-skill">Skills</a></dt><dd data-en="Instructions per topic; the chat loads only those that match the task, via the finder table in <code>RULES.md</code>">Anleitungen je Thema; der Chat lädt nur die zur Aufgabe passenden, über die Finder-Tabelle in <code>RULES.md</code></dd></div>
-        <div><dt><a href="#g-agent" data-en="Agents">Agenten</a></dt><dd data-en="Helper chats for search, tests and reviews; they return only the result, the main chat checks it (<code>git diff</code>)">Hilfs-Chats für Suche, Tests und Reviews; sie liefern nur das Ergebnis, der Haupt-Chat prüft es (<code>git diff</code>)</dd></div>
-        <div><dt><a href="#g-hook">Hooks</a></dt><dd data-en="Run on events (table above) without anyone calling them; Codex and Gemini receive them via bridge scripts">Laufen bei Ereignissen (Tabelle oben), ohne dass jemand sie aufruft; Codex und Gemini bekommen sie über Bridge-Skripte</dd></div>
-        <div><dt><a href="#g-memory">Memory</a> · <a href="#g-claim">Claims</a></dt><dd data-en="Both live in Git: memory keeps decisions across chats, claims show parallel chats who edits which file">Beides liegt in Git: Memory hält Entscheidungen über Chats hinweg, Claims zeigen parallelen Chats, wer welche Datei bearbeitet</dd></div>
-      </dl>
-    </div>
+      </table></div>
+    </details>
+    <h4 class="xa-h4"><span data-en="Check levels – the more critical, the deeper">Prüfstufen – je kritischer, desto tiefer</span></h4>
+    <ol class="xa-stairs" id="xa-stairs">
+          <li class="xa-st" style="--k: 0"><span class="xa-lvh"><i>0</i><span data-en="trivial">trivial</span></span><span class="xa-depth" aria-hidden="true"></span><p class="xa-chg" data-en="Text, comment, docs, config without effect">Text, Kommentar, Doku, Config ohne Wirkung</p><p class="xa-chk"><svg class="i" aria-hidden="true"><use href="#i-check"/></svg><span data-en="Hooks + pre-commit">Hooks + pre-commit</span></p></li>
+          <li class="xa-st" style="--k: 1"><span class="xa-lvh"><i>1</i><span data-en="small">klein</span></span><span class="xa-depth" aria-hidden="true"></span><p class="xa-chg" data-en="Existing element, one area, ≤ 3 files">Bestehendes Element, ein Bereich, ≤&nbsp;3 Dateien</p><p class="xa-chk"><svg class="i" aria-hidden="true"><use href="#i-check"/></svg><span data-en="Quick checks, UI light + dark; bug fix: original symptom + 1 test">Schnelle Prüfungen, UI hell + dunkel; Bugfix: Originalsymptom + 1 Test</span></p></li>
+          <li class="xa-st" style="--k: 2"><span class="xa-lvh"><i>2</i><span data-en="normal">normal</span></span><span class="xa-depth" aria-hidden="true"></span><p class="xa-chg" data-en="New element, several files, rebuild">Neues Element, mehrere Dateien, Umbau</p><p class="xa-chk"><svg class="i" aria-hidden="true"><use href="#i-check"/></svg><span data-en="Full check of the project">Volle Prüfung des Projekts</span></p></li>
+          <li class="xa-st crit" style="--k: 3"><span class="xa-lvh"><i>3</i><span data-en="critical">kritisch</span></span><span class="xa-depth" aria-hidden="true"></span><p class="xa-chg" data-en="Safety, data loss, hardware">Sicherheit, Datenverlust, Hardware</p><p class="xa-chk"><svg class="i" aria-hidden="true"><use href="#i-stop"/></svg><span data-en="Full check + review agent, never shortened">Volle Prüfung + Prüf-Agent, nie abkürzen</span></p></li>
+    </ol>
+    <h4 class="xa-h4"><span data-en="How the parts work together">So greifen die Teile ineinander</span></h4>
+    <ul class="xa-gears">
+          <li><b><a href="#g-rules" data-en="Rules">Regeln</a></b><span data-en="<code>RULES.md</code> for all projects + <code>AGENTS.md</code> per project; every chat reads them at the start, the project extends them, safety always wins"><code>RULES.md</code> für alle Projekte + <code>AGENTS.md</code> je Projekt; jeder Chat liest sie zu Beginn, das Projekt ergänzt sie, Sicherheit hat immer Vorrang</span></li>
+          <li><b><a href="#g-role" data-en="Roles">Rollen</a></b><span data-en="Organizer → specialist role → reviewer → synchronizer: the chat switches roles with each step and names the current one in its answer">Organizer → Fachrolle → Prüfer → Synchronizer: der Chat wechselt die Rolle mit dem Schritt und nennt sie in der Antwort</span></li>
+          <li><b><a href="#g-skill">Skills</a></b><span data-en="Instructions per topic; the chat loads only those that match the task, via the finder table in <code>RULES.md</code>">Anleitungen je Thema; der Chat lädt nur die zur Aufgabe passenden, über die Finder-Tabelle in <code>RULES.md</code></span></li>
+          <li><b><a href="#g-agent" data-en="Agents">Agenten</a></b><span data-en="Helper chats for search, tests and reviews; they return only the result, the main chat checks it (<code>git diff</code>)">Hilfs-Chats für Suche, Tests und Reviews; sie liefern nur das Ergebnis, der Haupt-Chat prüft es (<code>git diff</code>)</span></li>
+          <li><b><a href="#g-hook">Hooks</a></b><span data-en="Run on events (table above) without anyone calling them; Codex and Gemini receive them via bridge scripts">Laufen bei Ereignissen (Tabelle oben), ohne dass jemand sie aufruft; Codex und Gemini bekommen sie über Bridge-Skripte</span></li>
+          <li><b><a href="#g-memory">Memory</a> · <a href="#g-claim">Claims</a></b><span data-en="Both live in Git: memory keeps decisions across chats, claims show parallel chats who edits which file">Beides liegt in Git: Memory hält Entscheidungen über Chats hinweg, Claims zeigen parallelen Chats, wer welche Datei bearbeitet</span></li>
+    </ul>
 
     <h3 class="part" id="h-daten"><span class="no">3</span><span data-en="Path of the data">Weg der Daten</span></h3>
-    <p class="sub" data-en="From the two source repos via every work computer and project to this page – one station per row, in between the command that carries the state onward.">Von den zwei Quell-Repos über jeden Arbeitsrechner und jedes Projekt bis zu dieser Seite – eine Station je Zeile, dazwischen der Befehl, der den Stand weiterträgt.</p>
-    <ol class="chain">
-      <li class="stn" style="--c: var(--c5)" data-reveal>
-        <div class="stn-head"><b><svg class="i"><use href="#i-book"/></svg><span data-en="Rules repo">Regel-Repo</span></b><span class="nm">ai_dev_workflow</span><span class="wh" data-en="GitHub · private">GitHub · privat</span><p data-en="Shared rules, global skills, agents, hooks and memory of all projects – the only place where they are edited.">Gemeinsame Regeln, globale Skills, Agenten, Hooks und Memory aller Projekte – der einzige Ort, an dem sie bearbeitet werden.</p></div>
-        <dl>
+    <p class="sub" data-en="A state travels from the two source repos to this page – station by station, in between the command that carries it onward. Click a station for details.">Ein Stand reist von den zwei Quell-Repos bis auf diese Seite – Station für Station, dazwischen der Befehl, der ihn weiterträgt. Station anklicken = Details.</p>
+    <div class="xa-trip" id="xa-trip">
+      <div class="xa-ctl" role="group" aria-label="Steuerung" data-en-aria="Controls"><button type="button" class="xa-cb xa-prev" data-act="prev" aria-label="Schritt zurück" data-en-aria="Step back" title="Schritt zurück"><svg class="i" aria-hidden="true"><use href="#i-go"/></svg></button><button type="button" class="xa-cb xa-pp" data-act="play" aria-label="Pause" title="Pause"><svg class="i" aria-hidden="true"><use href="#i-pause"/></svg></button><button type="button" class="xa-cb" data-act="next" aria-label="Schritt vor" data-en-aria="Step forward" title="Schritt vor"><svg class="i" aria-hidden="true"><use href="#i-go"/></svg></button><span class="xa-pos" aria-live="polite">1 / 8</span><span class="xa-rate" role="group" aria-label="Tempo" data-en-aria="Speed"><button type="button" data-rate=".5" aria-pressed="false">0,5×</button><button type="button" data-rate="1" aria-pressed="true">1×</button><button type="button" data-rate="2" aria-pressed="false">2×</button></span></div>
+      <ol class="xa-route"><i class="xa-pkt" aria-hidden="true"></i>
+          <li><button type="button" class="xa-ri" style="--c: var(--c5)" aria-pressed="false"><span class="xa-dot"></span><span><b data-en="Rules repo">Regel-Repo</b><span class="xa-nm">ai_dev_workflow</span></span></button></li>
+          <li><button type="button" class="xa-ri" style="--c: var(--c1)" aria-pressed="false"><span class="xa-dot"></span><span><b data-en="Main repo">Haupt-Repo</b><span class="xa-nm">dev_ws</span></span></button></li>
+          <li><button type="button" class="xa-ri cmd" style="--c: var(--accent)" aria-pressed="false"><span class="xa-dot"></span><span><b>Pull · tools/ws_sync.sh</b></span></button></li>
+          <li><button type="button" class="xa-ri" style="--c: var(--c2)" aria-pressed="false"><span class="xa-dot"></span><span><b data-en="Every work computer">Jeder Arbeitsrechner</b><span class="xa-nm" data-en="same setup">gleiche Einrichtung</span></span></button></li>
+          <li><button type="button" class="xa-ri cmd" style="--c: var(--accent)" aria-pressed="false"><span class="xa-dot"></span><span><b>Pull · bin/projects.py sync</b></span></button></li>
+          <li><button type="button" class="xa-ri" style="--c: var(--c3)" aria-pressed="false"><span class="xa-dot"></span><span><b data-en="Projects">Projekte</b><span class="xa-nm" data-en="project folders">Projektordner</span></span></button></li>
+          <li><button type="button" class="xa-ri cmd" style="--c: var(--accent)" aria-pressed="false"><span class="xa-dot"></span><span><b>Push · git push</b></span></button></li>
+          <li><button type="button" class="xa-ri" style="--c: var(--c4)" aria-pressed="false"><span class="xa-dot"></span><span><b data-en="Result: this page">Ergebnis: diese Seite</b><span class="xa-nm">lu4k87.github.io</span></span></button></li>
+      </ol>
+      <div class="xa-detail">
+          <div class="stn xa-pane" style="--c: var(--c5)"><div class="stn-head"><b><svg class="i"><use href="#i-book"/></svg><span data-en="Rules repo">Regel-Repo</span></b><span class="nm">ai_dev_workflow</span><span class="wh" data-en="GitHub · private">GitHub · privat</span><p data-en="Shared rules, global skills, agents, hooks and memory of all projects – the only place where they are edited.">Gemeinsame Regeln, globale Skills, Agenten, Hooks und Memory aller Projekte – der einzige Ort, an dem sie bearbeitet werden.</p></div><dl>
           <div><dt><code>rules/RULES.md</code></dt><dd data-en="shared rules for all projects: answer format, roles, way of working">gemeinsame Regeln aller Projekte: Antwortformat, Rollen, Arbeitsweise</dd></div>
           <div><dt><code>rules/project_AGENTS.md</code></dt><dd data-en="template for the rules of a new project">Vorlage für die Regeln eines neuen Projekts</dd></div>
           <div><dt><code>skills/</code> · <code>agents/</code></dt><dd data-en="global skills and agents for all projects, e.g. answer format, preview, commit">globale Skills und Agenten für alle Projekte, z.&nbsp;B. Antwortformat, Vorschau, Commit</dd></div>
@@ -762,111 +916,69 @@ footer p { margin: 0; }
           <div><dt><code>bin/</code></dt><dd data-en="tools: <code>agents_<wbr>sync.py</code>, <code>projects.py</code>, <code>chat_<wbr>sync.py</code>, <code>publish_<wbr>pages.py</code> + this page's template">Werkzeuge: <code>agents_<wbr>sync.py</code>, <code>projects.py</code>, <code>chat_<wbr>sync.py</code>, <code>publish_<wbr>pages.py</code> + Vorlage dieser Seite</dd></div>
           <div><dt><code>config/projects.yaml</code></dt><dd data-en="project list + cards on this page">Projektliste + Karten dieser Seite</dd></div>
           <div><dt><code>docs/</code> → <code>/ai_dev_workflow</code></dt><dd data-en="the page on the way of working, published from this repo">die Seite zur Arbeitsweise, aus diesem Repo veröffentlicht</dd></div>
-        </dl>
-      </li>
-      <li class="stn" style="--c: var(--c1)" data-reveal>
-        <div class="stn-head"><b><svg class="i"><use href="#i-git"/></svg><span data-en="Main repo">Haupt-Repo</span></b><span class="nm">dev_ws</span><span class="wh" data-en="GitHub · private · robot workspace">GitHub · privat · Roboter-Workspace</span><p data-en="Robot workspace UX Robot with its own skills, agents and hooks – the pattern every project follows for its own additions.">Roboter-Workspace UX Robot mit eigenen Skills, Agenten und Hooks – das Muster, nach dem jedes Projekt Eigenes ergänzt.</p></div>
-        <dl>
+        </dl></div>
+          <div class="stn xa-pane" style="--c: var(--c1)"><div class="stn-head"><b><svg class="i"><use href="#i-git"/></svg><span data-en="Main repo">Haupt-Repo</span></b><span class="nm">dev_ws</span><span class="wh" data-en="GitHub · private · robot workspace">GitHub · privat · Roboter-Workspace</span><p data-en="Robot workspace UX Robot with its own skills, agents and hooks – the pattern every project follows for its own additions.">Roboter-Workspace UX Robot mit eigenen Skills, Agenten und Hooks – das Muster, nach dem jedes Projekt Eigenes ergänzt.</p></div><dl>
           <div><dt><code>.claude/skills/</code> · <code>.claude/agents/</code></dt><dd data-en="skills and agents only for this repo: ROS, digital twin, web UIs, tests">Skills und Agenten nur für dieses Repo: ROS, Digital Twin, Web-UIs, Tests</dd></div>
           <div><dt><code>.claude/hooks/</code></dt><dd data-en="hook scripts of the repo: situation report, claims, file check, command guard">Hook-Skripte des Repos: Lagebild, Claims, Datei-Prüfung, Befehls-Schutz</dd></div>
           <div><dt><code>.claude/memory/</code> · <code>.claude/handoff/</code></dt><dd data-en="memory of the repo, handoffs for new chats">Memory des Repos, Übergaben für neue Chats</dd></div>
-          <div><dt><code>TODOS.md</code></dt><dd data-en="backlog + claims of parallel chats">Backlog + Claims paralleler Chats</dd></div>
+          <div><dt><code>TODOS.md</code></dt><dd data-en="backlog of the repo">Backlog des Repos</dd></div>
           <div><dt><code>tools/</code></dt><dd data-en="<code>ws_<wbr>sync.sh</code>, <code>claim.py</code>, <code>pre-commit</code>, check scripts"><code>ws_<wbr>sync.sh</code>, <code>claim.py</code>, <code>pre-commit</code>, Prüfskripte</dd></div>
           <div><dt><code>.codex/</code> · <code>.agents/</code></dt><dd data-en="generated for Codex + Gemini, never edited by hand">erzeugt für Codex + Gemini, nie von Hand</dd></div>
-        </dl>
-      </li>
-      <li class="cmd">
-        <span class="dn" aria-hidden="true"><i></i><svg class="i"><use href="#i-down"/></svg></span>
-        <div>
-          <p class="what"><span class="dir" data-en="Pull"><abbr title="aktuellen Stand aus Git holen">Pull</abbr></span><code>tools/ws_sync.sh</code><span data-en="fetches and links – on every work computer">holt und verlinkt – auf jedem Arbeitsrechner</span></p>
-          <ol>
-            <li data-en="<code>git pull --rebase --autostash</code> – fetch the latest state"><code>git pull --rebase --autostash</code> – neuen Stand holen</li>
+        </dl></div>
+          <div class="xa-pane xa-cp"><p class="what"><span class="dir" data-en="Pull"><abbr title="aktuellen Stand aus Git holen">Pull</abbr></span><code>tools/ws_sync.sh</code><span data-en="fetches and links – on every work computer">holt und verlinkt – auf jedem Arbeitsrechner</span></p><ol>
+            <li data-en="<code>git merge --ff-only</code> – fetch the latest state, fast-forward only"><code>git merge --ff-only</code> – neuen Stand holen, nur Fast-Forward</li>
             <li data-en="<code>projects.py sync</code> – clone the rules repo and the projects"><code>projects.py sync</code> – Regel-Repo und Projekte klonen</li>
             <li data-en="<code>agents_sync.py --home</code> – link rules, skills, agents into <code>~</code>"><code>agents_sync.py --home</code> – Regeln, Skills, Agenten in <code>~</code> verlinken</li>
             <li data-en="<code>codex_<wbr>setup.py</code> – trust the Codex hooks"><code>codex_<wbr>setup.py</code> – Codex-Hooks freigeben</li>
             <li data-en="set up memory + user settings">Memory + Benutzer-Settings einrichten</li>
             <li data-en="<code>colcon build</code> – only changed ROS packages"><code>colcon build</code> – nur geänderte ROS-Pakete</li>
-          </ol>
-        </div>
-      </li>
-      <li class="stn" style="--c: var(--c2)" data-reveal>
-        <div class="stn-head"><b><svg class="i"><use href="#i-laptop"/></svg><span data-en="Every work computer">Jeder Arbeitsrechner</span></b><span class="nm" data-en="same setup">gleiche Einrichtung</span><span class="wh" data-en="linked rules instead of copies">Verknüpfte Regeln statt Kopien</span><p data-en="Claude Code, Codex and Gemini read the same rules, skills and agents – each via its own entry point.">Claude Code, Codex und Gemini lesen dieselben Regeln, Skills und Agenten – jedes über seinen eigenen Einstieg.</p></div>
-        <dl>
+          </ol></div>
+          <div class="stn xa-pane" style="--c: var(--c2)"><div class="stn-head"><b><svg class="i"><use href="#i-laptop"/></svg><span data-en="Every work computer">Jeder Arbeitsrechner</span></b><span class="nm" data-en="same setup">gleiche Einrichtung</span><span class="wh" data-en="linked rules instead of copies">Verknüpfte Regeln statt Kopien</span><p data-en="Claude Code, Codex and Gemini read the same rules, skills and agents – each via its own entry point.">Claude Code, Codex und Gemini lesen dieselben Regeln, Skills und Agenten – jedes über seinen eigenen Einstieg.</p></div><dl>
           <div><dt data-en="Entry files of the AI tools">Einstiegsdateien der KI-Werkzeuge</dt><dd data-en="point to <code>RULES.md</code> (Gemini: <code>common_rules.md</code>)">zeigen auf <code>RULES.md</code> (Gemini: <code>common_rules.md</code>)</dd></div>
           <div><dt data-en="Global skills · agents">Globale Skills · Agenten</dt><dd data-en="point to the shared content in the rules repo">zeigen auf die gemeinsamen Inhalte im Regel-Repo</dd></div>
           <div><dt data-en="User settings">Benutzer-Settings</dt><dd data-en="from <code>user-settings.json</code>: model, hooks">aus <code>user-settings.json</code>: Modell, Hooks</dd></div>
           <div><dt data-en="Local only">Nur lokal</dt><dd data-en="chat histories, <code>settings.local.json</code>, build output, previews">Chat-Verläufe, <code>settings.local.json</code>, Build, Vorschauen</dd></div>
-        </dl>
-      </li>
-      <li class="cmd">
-        <span class="dn" aria-hidden="true"><i></i><svg class="i"><use href="#i-down"/></svg></span>
-        <div>
-          <p class="what"><span class="dir">Pull</span><code>tools/projects.py sync</code><span data-en="clones and updates the project repos">klont und aktualisiert die Projekt-Repos</span></p>
-          <ol>
+        </dl></div>
+          <div class="xa-pane xa-cp"><p class="what"><span class="dir">Pull</span><code>bin/projects.py sync</code><span data-en="clones and updates the project repos">klont und aktualisiert die Projekt-Repos</span></p><ol>
             <li data-en="clones missing repos from <code>config/projects.yaml</code>">fehlende Repos aus <code>config/projects.yaml</code> klonen</li>
             <li data-en="updates existing ones fast-forward only, without local changes">vorhandene nur fast-forward, nur ohne lokale Änderungen</li>
             <li data-en="puts the memory into the project, sets the <code>pre-push</code> hook">Memory ins Projekt, <code>pre-push</code>-Hook setzen</li>
-          </ol>
-        </div>
-      </li>
-      <li class="stn" style="--c: var(--c3)" data-reveal>
-        <div class="stn-head"><b><svg class="i"><use href="#i-folders"/></svg><span data-en="Projects">Projekte</span></b><span class="nm" data-en="project folders">Projektordner</span><span class="wh" data-en="own repos alongside the robot workspace">eigene Repos neben dem Roboter-Workspace</span><p data-en="Each project adds its own rules and keeps its own memory, but inherits everything global.">Jedes Projekt ergänzt eigene Regeln und hält eigenes Memory, erbt aber alles Globale.</p></div>
-        <dl>
+          </ol></div>
+          <div class="stn xa-pane" style="--c: var(--c3)"><div class="stn-head"><b><svg class="i"><use href="#i-folders"/></svg><span data-en="Projects">Projekte</span></b><span class="nm" data-en="project folders">Projektordner</span><span class="wh" data-en="own repos alongside the robot workspace">eigene Repos neben dem Roboter-Workspace</span><p data-en="Each project adds its own rules and keeps its own memory, but inherits everything global.">Jedes Projekt ergänzt eigene Regeln und hält eigenes Memory, erbt aber alles Globale.</p></div><dl>
           <div><dt><code>AGENTS.md</code></dt><dd data-en="own rules, win on conflict – safety always">eigene Regeln, Vorrang bei Widerspruch – Sicherheit immer</dd></div>
           <div><dt><code>.claude/memory/</code></dt><dd data-en="own memory, committed with the project">eigenes Memory, mit dem Projekt committet</dd></div>
           <div><dt data-en="Inherits">Erbt</dt><dd data-en="shared rules, global skills + agents, <code>global_<wbr>hook.py</code>">gemeinsame Regeln, globale Skills + Agenten, <code>global_<wbr>hook.py</code></dd></div>
-        </dl>
-        <ul class="chips"><li>ACCREDO</li><li>Stele CMS</li><li>Claude Ops</li><li>Bohlien Immo</li></ul>
-      </li>
-      <li class="cmd">
-        <span class="dn" aria-hidden="true"><i></i><svg class="i"><use href="#i-down"/></svg></span>
-        <div>
-          <p class="what"><span class="dir">Push</span><code>git push</code> → <code>pre-push</code><span data-en="publishes automatically">veröffentlicht automatisch</span></p>
-          <ol>
+        </dl><ul class="chips"><li>ACCREDO</li><li>Stele CMS</li><li>Claude Ops</li><li>Bohlien Immo</li></ul></div>
+          <div class="xa-pane xa-cp"><p class="what"><span class="dir">Push</span><code>git push</code> → <code>pre-push</code><span data-en="publishes automatically">veröffentlicht automatisch</span></p><ol>
             <li data-en="<code>tools/pre-commit</code> has already checked every commit"><code>tools/pre-commit</code> hat vorher jeden Commit geprüft</li>
             <li data-en="<code>pages_<wbr>hook.sh</code> starts <code>publish_pages.py --push</code>"><code>pages_<wbr>hook.sh</code> startet <code>publish_pages.py --push</code></li>
             <li data-en="builds from the pushed state, not from local changes">baut aus dem gepushten Stand, nicht aus lokalen Änderungen</li>
-          </ol>
-        </div>
-      </li>
-      <li class="stn end" style="--c: var(--c4)" data-reveal>
-        <div class="stn-head"><b><svg class="i"><use href="#i-globe"/></svg><span data-en="Result: this page">Ergebnis: diese Seite</span></b><span class="nm">lu4k87.github.io</span><span class="wh" data-en="GitHub Pages · public · no repo to work in">GitHub Pages · öffentlich · kein Arbeits-Repo</span><p data-en="Rebuilt on every push – nothing is edited here. Repos stay private unless explicitly public.">Wird bei jedem Push neu gebaut – hier wird nichts bearbeitet. Repos bleiben privat, wenn nicht ausdrücklich öffentlich.</p></div>
-        <dl>
+          </ol></div>
+          <div class="stn xa-pane" style="--c: var(--c4)"><div class="stn-head"><b><svg class="i"><use href="#i-globe"/></svg><span data-en="Result: this page">Ergebnis: diese Seite</span></b><span class="nm">lu4k87.github.io</span><span class="wh" data-en="GitHub Pages · public · no repo to work in">GitHub Pages · öffentlich · kein Arbeits-Repo</span><p data-en="Rebuilt on every push – nothing is edited here. Repos stay private unless explicitly public.">Wird bei jedem Push neu gebaut – hier wird nichts bearbeitet. Repos bleiben privat, wenn nicht ausdrücklich öffentlich.</p></div><dl>
           <div><dt><code>index.html</code></dt><dd data-en="this start page from <code>bin/pages_home.html</code> + <code>config/projects.yaml</code> of the rules repo">diese Startseite aus <code>bin/pages_home.html</code> + <code>config/projects.yaml</code> des Regel-Repos</dd></div>
           <div><dt><code>/web_ux_robot/</code></dt><dd data-en="docs hub, project pages, READMEs of public repos">Doku-Hub, Projektseiten, READMEs öffentlicher Repos</dd></div>
           <div><dt><code>/web_projects/web_&lt;name&gt;</code></dt><dd data-en="address + QR code for every project">Adresse + QR-Code je Projekt</dd></div>
           <div><dt><code>/web_ai_dev_workflow</code></dt><dd data-en="the page on the way of working">die Seite zur Arbeitsweise</dd></div>
-        </dl>
-      </li>
-    </ol>
+        </dl></div>
+      </div>
+    </div>
     <p class="aside"><svg class="i" aria-hidden="true"><use href="#i-sync"/></svg><b data-en="Chat histories">Chat-Verläufe</b><span data-en="Chat histories are backed up privately and can be continued on every work computer.">Chat-Verläufe werden privat gesichert und sind auf jedem Arbeitsrechner fortsetzbar.</span></p>
 
     <h3 class="part" id="h-begriffe"><span class="no">4</span><span data-en="Terms">Begriffe</span></h3>
-    <p class="sub" data-en="Briefly explained – for everyone who is here for the first time.">Kurz erklärt – für alle, die zum ersten Mal hier sind.</p>
-    <dl class="gloss">
-      <div id="g-repo"><dt>Repo</dt><dd data-en="Git folder with the complete history of all changes; private on GitHub here unless explicitly public.">Git-Ordner mit vollständigem Verlauf aller Änderungen; hier privat auf GitHub, außer wenn ausdrücklich öffentlich.</dd><dd class="why" data-l="Zweck" data-l-en="Purpose" data-en="Nothing gets lost: every state can be restored, all machines work with the same one.">Nichts geht verloren: jeder Stand lässt sich zurückholen, alle Rechner arbeiten mit demselben.</dd></div>
-      <div id="g-rules"><dt data-en="Rules">Regeln</dt><dd data-en="<code>RULES.md</code> for all projects + <code>AGENTS.md</code> per project: requirements every chat reads at the start."><code>RULES.md</code> für alle Projekte + <code>AGENTS.md</code> je Projekt: Vorgaben, die jeder Chat zu Beginn liest.</dd><dd class="why" data-l="Zweck" data-l-en="Purpose" data-en="Every chat works the same way – whatever the tool, whatever the project.">Jeder Chat arbeitet gleich – egal mit welchem Werkzeug, in welchem Projekt.</dd></div>
-      <div id="g-chat"><dt>Chat</dt><dd data-en="One session with an AI tool (Claude Code, Codex, Gemini) for one task; several run in parallel, each with its own ID.">Eine Sitzung mit einem KI-Werkzeug (Claude Code, Codex, Gemini) für eine Aufgabe; mehrere laufen parallel, jeder mit eigener ID.</dd><dd class="why" data-l="Zweck" data-l-en="Purpose" data-en="Tasks run separately and in parallel without getting in each other’s way.">Aufgaben laufen getrennt und parallel, ohne sich gegenseitig zu stören.</dd></div>
-      <div id="g-role"><dt data-en="Role">Rolle</dt><dd data-en="What the chat does in a step: organizer, then designer, developer or editor, then reviewer, then synchronizer.">Tätigkeit des Chats in einem Schritt: Organizer, dann Designer, Entwickler oder Redakteur, dann Prüfer, dann Synchronizer.</dd><dd class="why" data-l="Zweck" data-l-en="Purpose" data-en="Every step gets the right perspective – from plan to commit.">Jeder Schritt bekommt den passenden Blickwinkel – vom Plan bis zum Commit.</dd></div>
-      <div id="g-organizer"><dt>Organizer</dt><dd data-en="Role at the start: assesses effort, chooses the specialist role and check level, plans and asks questions.">Rolle am Anfang: schätzt Aufwand, wählt Fachrolle und Prüfstufe, plant und stellt Rückfragen.</dd><dd class="why" data-l="Zweck" data-l-en="Purpose" data-en="The task is clear before files change.">Die Aufgabe ist geklärt, bevor sich Dateien ändern.</dd></div>
-      <div id="g-reviewer"><dt data-en="Reviewer · definition of done">Prüfer · Definition of Done</dt><dd data-en="The reviewer checks the fixed completion criteria at the appropriate check level and requires evidence from the current chat.">Der Prüfer kontrolliert die festgelegten Fertig-Kriterien in der passenden Prüfstufe und verlangt einen Beleg aus dem aktuellen Chat.</dd><dd class="why" data-l="Zweck" data-l-en="Purpose" data-en="Only demonstrably correct states count as done.">Nur nachweislich richtige Stände gelten als fertig.</dd></div>
-      <div id="g-synchronizer"><dt>Synchronizer</dt><dd data-en="Final role: commits and pushes the checked state, coordinates parallel chats and hands over anything unfinished.">Abschlussrolle: committet und pusht den geprüften Stand, stimmt parallele Chats ab und übergibt offene Reste.</dd><dd class="why" data-l="Zweck" data-l-en="Purpose" data-en="Repos and work computers remain on the same state.">Repos und Arbeitsrechner bleiben auf demselben Stand.</dd></div>
-      <div id="g-skill"><dt>Skill</dt><dd data-en="Instructions for one topic (e.g. preview, commit, UI change); the chat loads it only when the task touches the topic.">Anleitung zu einem Thema (z.&nbsp;B. Vorschau, Commit, UI-Änderung); der Chat lädt sie nur, wenn die Aufgabe das Thema berührt.</dd><dd class="why" data-l="Zweck" data-l-en="Purpose" data-en="Expertise only when needed → short context, fewer tokens.">Fachwissen nur bei Bedarf → kurzer Kontext, weniger Token.</dd></div>
-      <div id="g-agent"><dt>Agent</dt><dd data-en="Helper chat with its own job – search, tests, review; returns only the result, the main chat checks it.">Hilfs-Chat mit eigenem Auftrag – Suche, Tests, Review; liefert nur das Ergebnis zurück, der Haupt-Chat prüft es.</dd><dd class="why" data-l="Zweck" data-l-en="Purpose" data-en="Long searches and logs stay out of the main chat; review with fresh eyes.">Lange Suchen und Logs bleiben aus dem Haupt-Chat; Prüfung mit frischem Blick.</dd></div>
-      <div id="g-hook"><dt>Hook</dt><dd data-en="Script that runs automatically on an event: chat start, before a command, after saving, at the end of the answer.">Skript, das bei einem Ereignis automatisch läuft: Chat-Start, vor einem Befehl, nach dem Speichern, am Ende der Antwort.</dd><dd class="why" data-l="Zweck" data-l-en="Purpose" data-en="Rules apply automatically – even when a chat forgets them.">Regeln greifen automatisch – auch wenn ein Chat sie vergisst.</dd></div>
-      <div id="g-memory"><dt>Memory</dt><dd data-en="Notes that persist across chats: who the user is, decisions, machine quirks – versioned in the repo.">Notizen, die über Chats hinweg bleiben: wer der User ist, Entscheidungen, Eigenheiten der Rechner – im Repo versioniert.</dd><dd class="why" data-l="Zweck" data-l-en="Purpose" data-en="Decisions don’t have to be explained again in every chat.">Entscheidungen müssen nicht in jedem Chat neu erklärt werden.</dd></div>
-      <div id="g-claim"><dt>Claim</dt><dd data-en="Line “chat X edits file Y” in <code>TODOS.md</code>; visible to all chats and machines via Git – prevents duplicate work.">Zeile „Chat X bearbeitet Datei Y“ in <code>TODOS.md</code>; per Git für alle Chats und Rechner sichtbar – verhindert doppelte Arbeit.</dd><dd class="why" data-l="Zweck" data-l-en="Purpose" data-en="Two chats never change the same file at the same time.">Zwei Chats ändern nie gleichzeitig dieselbe Datei.</dd></div>
-      <div id="g-overview"><dt data-en="Situation report">Lagebild</dt><dd data-en="Overview at chat start: running chats, claims, open handoffs, due team rituals.">Übersicht beim Chat-Start: laufende Chats, Claims, offene Übergaben, fällige Team-Rituale.</dd><dd class="why" data-l="Zweck" data-l-en="Purpose" data-en="Know what is already running before starting – no duplicate work, nothing left behind.">Vor dem Start wissen, was schon läuft – keine doppelte Arbeit, nichts bleibt liegen.</dd></div>
-      <div id="g-handoff"><dt data-en="Handoff">Übergabe</dt><dd data-en="Start text for a new chat (“chat weiter …”) when the context or the task grows too large.">Starttext für einen neuen Chat („chat weiter …“), wenn Kontext oder Aufgabe zu groß werden.</dd><dd class="why" data-l="Zweck" data-l-en="Purpose" data-en="A fresh chat continues seamlessly without losing knowledge.">Ein frischer Chat macht nahtlos weiter, ohne Wissen zu verlieren.</dd></div>
-      <div id="g-level"><dt data-en="Check level">Prüfstufe</dt><dd data-en="How deeply a change is checked before “done”: 0 trivial to 3 critical; when in doubt one level higher.">Wie tief eine Änderung vor „fertig“ geprüft wird: 0 trivial bis 3 kritisch; im Zweifel eine Stufe höher.</dd><dd class="why" data-l="Zweck" data-l-en="Purpose" data-en="Effort matches the change: small things fast, critical ones thoroughly.">Aufwand passt zur Änderung: Kleines schnell, Kritisches gründlich.</dd></div>
-      <div id="g-preview"><dt data-en="Preview">Vorschau</dt><dd data-en="Web page with variants of a planned change; the user chooses there, only then code is written.">Webseite mit Varianten einer geplanten Änderung; der User wählt dort, erst dann entsteht Code.</dd><dd class="why" data-l="Zweck" data-l-en="Purpose" data-en="The user decides before effort goes into code.">Der User entscheidet, bevor Aufwand in Code fließt.</dd></div>
-      <div id="g-pullpush"><dt>Pull · Push</dt><dd data-en="Fetch the state from the repo · upload your own state; a push triggers the checks and the build of this page.">Stand aus dem Repo holen · eigenen Stand hochladen; ein Push löst Prüfung und Bau dieser Seite aus.</dd><dd class="why" data-l="Zweck" data-l-en="Purpose" data-en="All machines and chats stay on the same state.">Alle Rechner und Chats bleiben auf demselben Stand.</dd></div>
-    </dl>
+    <p class="sub" data-en="In four steps from repo to collaboration – for everyone who is here for the first time.">In vier Schritten vom Repo bis zur Zusammenarbeit – für alle, die zum ersten Mal hier sind.</p>
+    <label class="xa-search"><svg class="i" aria-hidden="true"><use href="#i-list"/></svg><input type="search" aria-label="Begriff suchen" data-en-aria="Search terms" placeholder="Begriff suchen, z.&nbsp;B. Hook" data-en-ph="Search a term, e.g. hook"></label>
+    <div class="xa-gl">
+        <section class="xa-gg"><h4><i>1</i><span data-en="Basics">Grundlagen</span></h4><dl><div id="g-repo"><dt>Repo</dt><dd data-en="Git folder with the complete history of all changes; private on GitHub here unless explicitly public.">Git-Ordner mit vollständigem Verlauf aller Änderungen; hier privat auf GitHub, außer wenn ausdrücklich öffentlich.</dd><dd class="why" data-l="Zweck" data-l-en="Purpose" data-en="Nothing gets lost: every state can be restored, all machines work with the same one.">Nichts geht verloren: jeder Stand lässt sich zurückholen, alle Rechner arbeiten mit demselben.</dd></div><div id="g-rules"><dt data-en="Rules">Regeln</dt><dd data-en="<code>RULES.md</code> for all projects + <code>AGENTS.md</code> per project: requirements every chat reads at the start."><code>RULES.md</code> für alle Projekte + <code>AGENTS.md</code> je Projekt: Vorgaben, die jeder Chat zu Beginn liest.</dd><dd class="why" data-l="Zweck" data-l-en="Purpose" data-en="Every chat works the same way – whatever the tool, whatever the project.">Jeder Chat arbeitet gleich – egal mit welchem Werkzeug, in welchem Projekt.</dd></div><div id="g-chat"><dt>Chat</dt><dd data-en="One session with an AI tool (Claude Code, Codex, Gemini) for one task; several run in parallel, each with its own ID.">Eine Sitzung mit einem KI-Werkzeug (Claude Code, Codex, Gemini) für eine Aufgabe; mehrere laufen parallel, jeder mit eigener ID.</dd><dd class="why" data-l="Zweck" data-l-en="Purpose" data-en="Tasks run separately and in parallel without getting in each other’s way.">Aufgaben laufen getrennt und parallel, ohne sich gegenseitig zu stören.</dd></div><div id="g-pullpush"><dt>Pull · Push</dt><dd data-en="Fetch the state from the repo · upload your own state; a push triggers the checks and the build of this page.">Stand aus dem Repo holen · eigenen Stand hochladen; ein Push löst Prüfung und Bau dieser Seite aus.</dd><dd class="why" data-l="Zweck" data-l-en="Purpose" data-en="All machines and chats stay on the same state.">Alle Rechner und Chats bleiben auf demselben Stand.</dd></div></dl></section>
+        <section class="xa-gg"><h4><i>2</i><span data-en="Roles">Rollen</span></h4><dl><div id="g-role"><dt data-en="Role">Rolle</dt><dd data-en="What the chat does in a step: organizer, then designer, developer or editor, then reviewer, then synchronizer.">Tätigkeit des Chats in einem Schritt: Organizer, dann Designer, Entwickler oder Redakteur, dann Prüfer, dann Synchronizer.</dd><dd class="why" data-l="Zweck" data-l-en="Purpose" data-en="Every step gets the right perspective – from plan to commit.">Jeder Schritt bekommt den passenden Blickwinkel – vom Plan bis zum Commit.</dd></div><div id="g-organizer"><dt>Organizer</dt><dd data-en="Role at the start: assesses effort, chooses the specialist role and check level, plans and asks questions.">Rolle am Anfang: schätzt Aufwand, wählt Fachrolle und Prüfstufe, plant und stellt Rückfragen.</dd><dd class="why" data-l="Zweck" data-l-en="Purpose" data-en="The task is clear before files change.">Die Aufgabe ist geklärt, bevor sich Dateien ändern.</dd></div><div id="g-reviewer"><dt data-en="Reviewer · definition of done">Prüfer · Definition of Done</dt><dd data-en="The reviewer checks the fixed completion criteria at the appropriate check level and requires evidence from the current chat.">Der Prüfer kontrolliert die festgelegten Fertig-Kriterien in der passenden Prüfstufe und verlangt einen Beleg aus dem aktuellen Chat.</dd><dd class="why" data-l="Zweck" data-l-en="Purpose" data-en="Only demonstrably correct states count as done.">Nur nachweislich richtige Stände gelten als fertig.</dd></div><div id="g-synchronizer"><dt>Synchronizer</dt><dd data-en="Final role: commits and pushes the checked state, coordinates parallel chats and hands over anything unfinished.">Abschlussrolle: committet und pusht den geprüften Stand, stimmt parallele Chats ab und übergibt offene Reste.</dd><dd class="why" data-l="Zweck" data-l-en="Purpose" data-en="Repos and work computers remain on the same state.">Repos und Arbeitsrechner bleiben auf demselben Stand.</dd></div></dl></section>
+        <section class="xa-gg"><h4><i>3</i><span data-en="Tools">Werkzeuge</span></h4><dl><div id="g-skill"><dt>Skill</dt><dd data-en="Instructions for one topic (e.g. preview, commit, UI change); the chat loads it only when the task touches the topic.">Anleitung zu einem Thema (z.&nbsp;B. Vorschau, Commit, UI-Änderung); der Chat lädt sie nur, wenn die Aufgabe das Thema berührt.</dd><dd class="why" data-l="Zweck" data-l-en="Purpose" data-en="Expertise only when needed → short context, fewer tokens.">Fachwissen nur bei Bedarf → kurzer Kontext, weniger Token.</dd></div><div id="g-agent"><dt>Agent</dt><dd data-en="Helper chat with its own job – search, tests, review; returns only the result, the main chat checks it.">Hilfs-Chat mit eigenem Auftrag – Suche, Tests, Review; liefert nur das Ergebnis zurück, der Haupt-Chat prüft es.</dd><dd class="why" data-l="Zweck" data-l-en="Purpose" data-en="Long searches and logs stay out of the main chat; review with fresh eyes.">Lange Suchen und Logs bleiben aus dem Haupt-Chat; Prüfung mit frischem Blick.</dd></div><div id="g-hook"><dt>Hook</dt><dd data-en="Script that runs automatically on an event: chat start, before a command, after saving, at the end of the answer.">Skript, das bei einem Ereignis automatisch läuft: Chat-Start, vor einem Befehl, nach dem Speichern, am Ende der Antwort.</dd><dd class="why" data-l="Zweck" data-l-en="Purpose" data-en="Rules apply automatically – even when a chat forgets them.">Regeln greifen automatisch – auch wenn ein Chat sie vergisst.</dd></div><div id="g-memory"><dt>Memory</dt><dd data-en="Notes that persist across chats: who the user is, decisions, machine quirks – versioned in the repo.">Notizen, die über Chats hinweg bleiben: wer der User ist, Entscheidungen, Eigenheiten der Rechner – im Repo versioniert.</dd><dd class="why" data-l="Zweck" data-l-en="Purpose" data-en="Decisions don’t have to be explained again in every chat.">Entscheidungen müssen nicht in jedem Chat neu erklärt werden.</dd></div></dl></section>
+        <section class="xa-gg"><h4><i>4</i><span data-en="Collaboration">Zusammenarbeit</span></h4><dl><div id="g-claim"><dt>Claim</dt><dd data-en="Own Git ref per chat (<code>refs/claims/…</code>) with the files it is changing; visible to all chats and machines via Git – prevents duplicate work.">Eigener Git-Ref je Chat (<code>refs/claims/…</code>) mit den Dateien, die er gerade ändert; per Git für alle Chats und Rechner sichtbar – verhindert doppelte Arbeit.</dd><dd class="why" data-l="Zweck" data-l-en="Purpose" data-en="Two chats never change the same file at the same time.">Zwei Chats ändern nie gleichzeitig dieselbe Datei.</dd></div><div id="g-overview"><dt data-en="Situation report">Lagebild</dt><dd data-en="Overview at chat start: running chats, claims, open handoffs, due team rituals.">Übersicht beim Chat-Start: laufende Chats, Claims, offene Übergaben, fällige Team-Rituale.</dd><dd class="why" data-l="Zweck" data-l-en="Purpose" data-en="Know what is already running before starting – no duplicate work, nothing left behind.">Vor dem Start wissen, was schon läuft – keine doppelte Arbeit, nichts bleibt liegen.</dd></div><div id="g-handoff"><dt data-en="Handoff">Übergabe</dt><dd data-en="Start text for a new chat (“chat weiter …”) when the context or the task grows too large.">Starttext für einen neuen Chat („chat weiter …“), wenn Kontext oder Aufgabe zu groß werden.</dd><dd class="why" data-l="Zweck" data-l-en="Purpose" data-en="A fresh chat continues seamlessly without losing knowledge.">Ein frischer Chat macht nahtlos weiter, ohne Wissen zu verlieren.</dd></div><div id="g-level"><dt data-en="Check level">Prüfstufe</dt><dd data-en="How deeply a change is checked before “done”: 0 trivial to 3 critical; when in doubt one level higher.">Wie tief eine Änderung vor „fertig“ geprüft wird: 0 trivial bis 3 kritisch; im Zweifel eine Stufe höher.</dd><dd class="why" data-l="Zweck" data-l-en="Purpose" data-en="Effort matches the change: small things fast, critical ones thoroughly.">Aufwand passt zur Änderung: Kleines schnell, Kritisches gründlich.</dd></div><div id="g-preview"><dt data-en="Preview">Vorschau</dt><dd data-en="Web page with variants of a planned change; the user chooses there, only then code is written.">Webseite mit Varianten einer geplanten Änderung; der User wählt dort, erst dann entsteht Code.</dd><dd class="why" data-l="Zweck" data-l-en="Purpose" data-en="The user decides before effort goes into code.">Der User entscheidet, bevor Aufwand in Code fließt.</dd></div></dl></section>
+    </div>
+    <p class="xa-none" hidden data-en="No term found.">Kein Begriff gefunden.</p>
   </section>
 </main>
 
-<footer class="wrap">
-  <p><a href="https://github.com/lu4k87" rel="noopener">GitHub · @lu4k87</a> · <span data-en="Built automatically on every push · fonts served locally, no tracking.">Automatisch gebaut bei jedem Push · Schriften lokal eingebunden, kein Tracking.</span></p>
+<footer class="wrap xa-foot">
+  <p><i class="xa-led" aria-hidden="true"></i><a href="https://github.com/lu4k87" rel="noopener">GitHub · @lu4k87</a> · <span data-en="Built automatically on every push · fonts served locally, no tracking.">Automatisch gebaut bei jedem Push · Schriften lokal eingebunden, kein Tracking.</span></p>
 </footer>
 
 <script>
@@ -893,6 +1005,7 @@ footer p { margin: 0; }
     const en = lang === 'en';
     document.querySelectorAll('[data-en]').forEach(el => { const de = keep(el, 'de', el.innerHTML); el.innerHTML = en ? el.dataset.en : de; });
     document.querySelectorAll('[data-en-aria]').forEach(el => { const de = keep(el, 'deAria', el.getAttribute('aria-label')); el.setAttribute('aria-label', en ? el.dataset.enAria : de); if (el.title) el.title = el.getAttribute('aria-label'); });
+    document.querySelectorAll('[data-en-ph]').forEach(el => { const de = keep(el, 'dePh', el.placeholder); el.placeholder = en ? el.dataset.enPh : de; });
     document.querySelectorAll('[data-l-en]').forEach(el => { const de = keep(el, 'lDe', el.dataset.l); el.dataset.l = en ? el.dataset.lEn : de; });
     document.querySelectorAll('[data-lang]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.lang === lang)));
   };
@@ -1186,6 +1299,139 @@ footer p { margin: 0; }
   select(views[q] ? q : views[store('home_wf_view')] ? store('home_wf_view') : 'map');
   new MutationObserver(renderAll).observe(document.documentElement, { attributes: true, attributeFilter: ['lang'] });
 })();
+</script>
+<script>
+// 03 Arbeitsweise ab Kopf (Vorschau 2026-10-16, Rest:A): Zählwerk, Staffelstab, Hook-Zeitachse, Prüf-Treppe, Paket-Reise.
+// Bewegung nach HyperFrames-Vertrag ohne Bibliothek: eine Uhr je Grafik, ganzer Zustand nur aus seek(t); spielt einmal, sobald sie ins
+// Bild kommt (F1: einmal automatisch); Schritt vor/zurück + Tempo 0,5×/1×/2× (gilt für alle Grafiken, gemerkt); reduzierte Bewegung = Standbild.
+(() => {
+  const root = document.documentElement;
+  root.classList.add('xa');
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const ease = t => 1 - Math.pow(1 - t, 3), seg = (t, a, b) => Math.max(0, Math.min(1, (t - a) / (b - a)));
+  const store = (k, v) => { try { if (v === undefined) return localStorage.getItem(k); localStorage.setItem(k, v); } catch (e) { return null; } };
+  const clocks = [];
+  let rate = [.5, 1, 2].includes(+store('home_rate')) ? +store('home_rate') : 1;
+  const setRate = r => { rate = r; document.querySelectorAll('.xa-rate button').forEach(b => b.setAttribute('aria-pressed', String(+b.dataset.rate === r))); };
+  setRate(rate);
+
+  // steps = Startzeiten der Halte-Punkte (nur Grafiken mit Steuerleiste)
+  const clock = (el, end, draw, steps) => {
+    const c = { t: 0, raf: 0, last: 0 };
+    const ctl = el.querySelector(':scope > .xa-ctl'), pp = ctl && ctl.querySelector('.xa-pp'), pos = ctl && ctl.querySelector('.xa-pos');
+    c.at = () => steps.reduce((i, s, k) => (c.t >= s - .02 ? k : i), 0);
+    c.ui = () => {
+      if (!ctl) return;
+      const run = !!c.raf, l = run ? 'Pause' : root.lang === 'en' ? 'Play' : 'Abspielen';
+      pp.querySelector('use').setAttribute('href', run ? '#i-pause' : '#i-play'); pp.setAttribute('aria-label', l); pp.title = l;
+      pos.textContent = `${c.at() + 1} / ${steps.length}`;
+    };
+    c.seek = t => { c.t = Math.max(0, Math.min(end, t)); draw(c.t); c.ui(); };
+    c.tick = now => { const dt = Math.min(.05, (now - (c.last || now)) / 1000) * rate; c.last = now; c.raf = c.t + dt < end ? requestAnimationFrame(c.tick) : 0; c.seek(c.t + dt); };
+    c.stop = () => { cancelAnimationFrame(c.raf); c.raf = 0; c.ui(); };
+    c.play = (from = c.t >= end ? 0 : c.t) => { c.stop(); if (reduce) return c.seek(end); c.t = from; c.last = 0; c.raf = requestAnimationFrame(c.tick); c.ui(); };
+    c.go = i => { c.touched = true; c.stop(); c.seek(steps[Math.max(0, Math.min(steps.length - 1, i))] + .01); };
+    if (ctl) ctl.addEventListener('click', e => {
+      const b = e.target.closest('button'); if (!b) return;
+      if (b.dataset.rate) { setRate(+b.dataset.rate); store('home_rate', b.dataset.rate); }
+      else if (b.dataset.act === 'play') { c.touched = true; if (c.raf) c.stop(); else c.play(); }
+      else c.go(c.at() + (b.dataset.act === 'next' ? 1 : -1));
+    });
+    const auto = !reduce && 'IntersectionObserver' in window;
+    c.seek(auto ? 0 : end);
+    if (auto) { const io = new IntersectionObserver(es => { if (es[0].isIntersecting) { io.disconnect(); if (!c.touched) c.play(0); } }, { threshold: .3 }); io.observe(el); }   // schon selbst gesteuert → kein Auto-Play
+    clocks.push(c);
+    return c;
+  };
+  const watch = (el, fn) => { fn(); if ('ResizeObserver' in window) new ResizeObserver(fn).observe(el); };
+  new MutationObserver(() => clocks.forEach(c => c.ui())).observe(root, { attributes: true, attributeFilter: ['lang'] });
+  // Halten H s je Schritt, M s Übergang: Schritt k, Anteil des Übergangs zum nächsten
+  const phase = (t, n, H, M) => { const P = H + M, k = Math.min(n - 1, Math.floor(t / P)), f = t - k * P, mv = k < n - 1 && f > H ? ease((f - H) / M) : 0; return { k, mv, cur: mv > .5 ? k + 1 : k }; };
+  const holds = (n, P) => Array.from({ length: n }, (_, i) => i * P);
+
+  // Kopf: Zählwerk – Zahlen aus dem gebauten Text, „1 Entscheider“ leuchtet zuletzt
+  const odo = document.getElementById('xa-odo');
+  if (odo) {
+    const tiles = [...odo.children], nums = [...odo.querySelectorAll('.xa-n')].map(n => ({ n, to: parseInt(n.textContent, 10) || 0, k: tiles.indexOf(n.closest('.xa-t')) }));
+    clock(odo, 2.6, t => {
+      nums.forEach(o => { o.n.textContent = Math.round(o.to * ease(seg(t, o.k * .3, o.k * .3 + 1.2))); });
+      tiles.forEach((el, k) => el.style.setProperty('--p', ease(seg(t, k * .3, k * .3 + 1.2)).toFixed(3)));
+      tiles[tiles.length - 1].classList.toggle('on', t >= 2.4);
+    }, [0]);
+  }
+
+  // Rollen: Staffelstab wandert Organizer → Fachrolle → Prüfer → Synchronizer
+  const relay = document.getElementById('xa-relay');
+  if (relay) {
+    const track = relay.querySelector('.xa-track'), legs = [...relay.querySelectorAll('.xa-leg')], baton = relay.querySelector('.xa-baton'), run = relay.querySelector('.xa-run');
+    const H = 1.4, M = .4, n = legs.length; let cx = legs.map(() => 0);
+    const rc = clock(relay, (n - 1) * (H + M) + H, t => {
+      const { k, mv, cur } = phase(t, n, H, M), x = cx[k] + (k < n - 1 ? (cx[k + 1] - cx[k]) * mv : 0);
+      baton.style.transform = `translateX(${x.toFixed(1)}px)`;
+      run.style.transform = `scaleX(${(x / (track.clientWidth || 1)).toFixed(4)})`;
+      legs.forEach((l, i) => { l.classList.toggle('on', i === cur); l.classList.toggle('done', i <= cur); });
+    }, holds(n, H + M));
+    watch(track, () => { const r = track.getBoundingClientRect(); cx = legs.map(l => { const b = l.getBoundingClientRect(); return b.left + b.width / 2 - r.left; }); rc.seek(rc.t); });
+    legs.forEach((l, i) => { l.addEventListener('click', () => rc.go(i)); l.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); rc.go(i); } }); });
+  }
+
+  // Wer liest was: drei Linien laufen zu „Dieselben Regeln“
+  const rd = document.getElementById('xa-read');
+  if (rd) {
+    const lines = [...rd.querySelectorAll('.xa-rd-line')], hub = rd.querySelector('.xa-rd-hub');
+    clock(rd, 2.2, t => { lines.forEach((l, i) => l.style.setProperty('--p', ease(seg(t, i * .35, i * .35 + .9)).toFixed(3))); hub.classList.toggle('on', t >= 2); }, [0]);
+  }
+
+  // Regeln: Abspielkopf fährt die 8 Zeitpunkte eines Chats ab
+  const life = document.getElementById('xa-life');
+  if (life) {
+    const axis = life.querySelector('.xa-axis'), ph = life.querySelector('.xa-ph'), ticks = [...life.querySelectorAll('.xa-tick')], cards = [...life.querySelectorAll('.xa-card')];
+    const H = 1.2, M = .3, n = ticks.length; let tx = ticks.map(() => 0);
+    const lc = clock(life, (n - 1) * (H + M) + H, t => {
+      const { k, mv, cur } = phase(t, n, H, M), x = tx[k] + (k < n - 1 ? (tx[k + 1] - tx[k]) * mv : 0);
+      ph.style.transform = `translateX(${x.toFixed(1)}px)`;
+      ticks.forEach((b, i) => { b.classList.toggle('done', i <= cur); b.setAttribute('aria-pressed', String(i === cur)); });
+      cards.forEach((c, i) => c.classList.toggle('on', i === cur));
+    }, holds(n, H + M));
+    watch(axis, () => { const r = axis.getBoundingClientRect(); tx = ticks.map(b => { const d = b.querySelector('i').getBoundingClientRect(); return d.left + d.width / 2 - r.left; }); lc.seek(lc.t); });
+    ticks.forEach((b, i) => b.addEventListener('click', () => lc.go(i)));
+  }
+
+  // Prüfstufen steigen nacheinander auf
+  const st = document.getElementById('xa-stairs');
+  if (st) { const steps = [...st.children]; clock(st, 1.9, t => steps.forEach((s, i) => s.style.setProperty('--r', ease(seg(t, i * .3, i * .3 + .8)).toFixed(3))), [0]); }
+
+  // Weg der Daten: Paket wandert Station für Station, rechts die Details
+  const trip = document.getElementById('xa-trip');
+  if (trip) {
+    const route = trip.querySelector('.xa-route'), pkt = trip.querySelector('.xa-pkt'), items = [...trip.querySelectorAll('.xa-ri')], panes = [...trip.querySelectorAll('.xa-pane')];
+    const H = 1.3, M = .45, n = items.length; let ty = items.map(() => 0);
+    const tc = clock(trip, (n - 1) * (H + M) + H, t => {
+      const { k, mv, cur } = phase(t, n, H, M), y = ty[k] + (k < n - 1 ? (ty[k + 1] - ty[k]) * mv : 0);
+      pkt.style.transform = `translateY(${y.toFixed(1)}px)`;
+      items.forEach((b, i) => { b.classList.toggle('done', i <= cur); b.setAttribute('aria-pressed', String(i === cur)); });
+      panes.forEach((p, i) => p.classList.toggle('on', i === cur));
+    }, holds(n, H + M));
+    watch(route, () => { const r = route.getBoundingClientRect(); ty = items.map(b => { const d = b.querySelector('.xa-dot').getBoundingClientRect(); return d.top + d.height / 2 - r.top; }); tc.seek(tc.t); });
+    items.forEach((b, i) => b.addEventListener('click', () => tc.go(i)));
+  }
+
+  // Begriffe: Suche filtert sofort; Sprung auf #g-… leert die Suche
+  const q = document.querySelector('.xa-search input');
+  if (q) {
+    const items = [...document.querySelectorAll('.xa-gg dl > div')], groups = [...document.querySelectorAll('.xa-gg')], none = document.querySelector('.xa-none');
+    const filter = () => {
+      const s = q.value.trim().toLowerCase();
+      items.forEach(d => { d.hidden = !!s && !d.textContent.toLowerCase().includes(s); });
+      groups.forEach(g => { g.hidden = !g.querySelector('dl > div:not([hidden])'); });
+      none.hidden = groups.some(g => !g.hidden);
+    };
+    q.addEventListener('input', filter);
+    addEventListener('hashchange', () => { if (/^#g-/.test(location.hash) && q.value) { q.value = ''; filter(); } });
+  }
+  window.__xaClocks = clocks;   // Aufnahmen (Vorschau/Screenshots): Zustand per seek(t) setzen
+})();
+
 </script>
 </body>
 </html>
