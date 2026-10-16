@@ -947,7 +947,7 @@ footer p { margin: 0; }
   };
 
   // ---------- Systemkarte: jede Komponente einmal, Auftrags-Paket mit Leuchtspur (svg-path-draw) ----------
-  const A = { el: document.getElementById('wf-p-map'), cur: 1, t: 99, plan: null, playing: false, auto: false, raf: 0, last: 0, ro: null };
+  const A = { el: document.getElementById('wf-p-map'), cur: 1, t: 99, plan: null, auto: false, once: false, played: false, raf: 0, last: 0, ro: null };
   const LEAD = .35, SEG = .85, GLOW = .8, TRAIL = 90, HOLD = 1.8;
   A.render = () => {
     const node = id => {
@@ -978,11 +978,11 @@ footer p { margin: 0; }
     map.prepend(fx);
     A.map = map; A.fx = fx; [A.route, A.trailEl, A.halo, A.dot] = fx.children;
     A.nodes = Object.fromEntries([...map.querySelectorAll('.wa-n')].map(n => [n.dataset.id, n]));
-    A.el.querySelectorAll('.wa-rail button').forEach(b => b.addEventListener('click', () => { A.auto = false; setBtn(A.btn, false); A.show(+b.dataset.s, 0); A.start(); }));
+    A.el.querySelectorAll('.wa-rail button').forEach(b => b.addEventListener('click', () => { A.auto = A.once = false; setBtn(A.btn, false); A.show(+b.dataset.s, 0); A.start(); }));
     A.btn = A.el.querySelector('.wf-play');
     A.btn.addEventListener('click', () => {
-      if (A.auto) { A.auto = false; A.stop(); setBtn(A.btn, false); return; }
-      A.auto = true; setBtn(A.btn, true);
+      if (A.auto) { A.auto = A.once = false; A.stop(); setBtn(A.btn, false); return; }
+      A.auto = true; A.once = false; setBtn(A.btn, true);
       if (A.t >= A.plan.end) A.show(A.cur % 6 + 1, 0);
       A.start();
     });
@@ -1048,13 +1048,21 @@ footer p { margin: 0; }
   A.tick = now => {   // die eine Uhr
     const dt = Math.min(.05, (now - (A.last || now)) / 1000); A.last = now;
     A.t += dt; A.seek(A.t);
-    if (A.t > A.plan.end + HOLD) { if (A.auto) A.show(A.cur % 6 + 1, 0); else return A.stop(); }
+    if (A.t > A.plan.end + HOLD) {
+      if (A.auto && !(A.once && A.cur === 6)) A.show(A.cur % 6 + 1, 0);
+      else { A.auto = A.once = false; setBtn(A.btn, false); return A.stop(); }
+    }
     A.raf = requestAnimationFrame(A.tick);
   };
   A.start = () => { if (reduce || A.raf) return; A.last = 0; A.raf = requestAnimationFrame(A.tick); };
   A.stop = () => { cancelAnimationFrame(A.raf); A.raf = 0; };
   A.on = () => {};
-  A.off = () => { A.stop(); A.auto = false; if (A.btn) setBtn(A.btn, false); };
+  A.off = () => { A.stop(); A.auto = A.once = false; if (A.btn) setBtn(A.btn, false); };
+  // einmal 1 → 6 abspielen, sobald die Karte erstmals ins Bild kommt (Wahl User 16.10.2026); Klick hält an
+  new IntersectionObserver(es => {
+    if (!es[0].isIntersecting || A.played || reduce || A.el.hidden) return;
+    A.played = true; A.auto = A.once = true; setBtn(A.btn, true); A.show(1, 0); A.start();
+  }, { threshold: .35 }).observe(A.el);
 
   // ---------- Zeitstrahl: ein Schritt offen, Weg als nummerierte Kette ----------
   const B = { el: document.getElementById('wf-p-time'), open: 2 };
