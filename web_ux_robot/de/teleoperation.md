@@ -93,7 +93,7 @@ Die folgende Übersicht zeigt auf einen Blick, welche Projektmodule in reiner So
 >> | **Linker Stick** (↕️/↔️) | **Verfahren (X / Y)** | *Bewegt den Roboter vor/zurück (X) und links/rechts (Y)* |
 >> | **LT / RT** (Trigger) | **Heben/Senken (Z)** | *Bewegt den Roboterarm auf/ab* |
 >> | **LB / RB** (Bumper) | **Rotieren (Yaw)** | *Dreht den Endeffektor um die eigene Achse* |
->> | **D-Pad** (↕️) | **Speed Control** | *Schaltet 5 Geschwindigkeitsstufen durch* |
+>> | **D-Pad** (↕️) | **Speed Control** | *Schaltet 7 Geschwindigkeitsstufen durch* |
 >> | **D-Pad** (↔️) | **Linearachse** | *Bewegt den Roboter auf der Schiene (Base Y-Shift)* |
 >> | **START / BACK** | **Referenzrahmen** | *Wechselt zwischen Basis- (`link_base`) und Werkzeug-Koordinaten (`link_tcp`)* |
 >> | **A-Taste** (🟢) | **Greifer auf / zu bzw. Vakuum an / aus** | *Hängt vom Launch-Argument ab: `add_gripper:=true` schaltet den Lite 6 Greifer auf/zu, `add_vacuum_gripper:=true` das Vakuum an/aus. Ohne beides (`gripper_type: none`) keine Funktion.* |
@@ -319,7 +319,7 @@ Leap Motion 2 ──▶ leap_hand_teleop_node ──▶ /remote/twist ──▶ 
 | Skala | Knopf **1:2** im LEAP-Fenster | Wechselt 1:1 / 1:2 / 1:4 (1:2 = TCP fährt den halben Handweg), wirkt sofort, bleibt je Browser gespeichert |
 | Ausschalten | **Gestures** erneut | Fenster schließt; Wechsel Robot \| Digital Twin ↔ Robot \| Hardware oder 2 s ohne Daten vom Leap-Node schalten ebenfalls aus. Verdeckter Tab: in Robot \| Hardware (auch Modus unbekannt) aus – erneutes Einschalten fragt wieder mit dem 1-s-Halte-Dialog; im Robot \| Digital Twin nur Pause (Node hält an, entkuppelt), zurück im Tab kuppeln mit neuem Kneifen |
 
-- **Tempo:** Tempo-Override im Header (5 Stufen = Faktor 0,1–0,5 auf `/ui/robot_control/current_speed`, × 400 mm/s → 40 / 80 / 100 / 100 / 100 mm/s), ohne Stufe 40 mm/s, nie über `max_speed_mm_s` (100 mm/s). Außer in der Betriebsart Robot | Digital Twin (auch Modus unbekannt) zusätzlich × `real_max_speed` des Watchdogs (Standard 0,5) – halbes Tempo wie bei entfernten Clients.
+- **Tempo:** Tempo-Override im Header (7 Stufen, **Stufe 6–7 (120 / 140 %) nur im Robot | Digital Twin** – `xarm_joystick_input` begrenzt ohne frischen Modus `fake` aus `/remote/control_state` auf Stufe 5, der Watchdog jeden Jog-Twist (auch den des Servers) außerhalb des Robot | Digital Twin auf 0,5; Faktor 0,1–0,7 auf `/ui/robot_control/current_speed`, Anzeige 20–140 %, × 400 mm/s → 40 / 80 / 100 / 100 / 100 / 100 / 100 mm/s), ohne Stufe 40 mm/s, nie über `max_speed_mm_s` (100 mm/s). Außer in der Betriebsart Robot | Digital Twin (auch Modus unbekannt) zusätzlich × `real_max_speed` des Watchdogs (Standard 0,5) – halbes Tempo wie bei entfernten Clients.
 - **Geisterhand:** Layers-Panel › **Leap hand** (*Ghost at the TCP*; deutsch *Leap-Hand*, *Geisterhand am TCP*) zeigt die erkannte Hand am TCP im Digital Twin – nur Anzeige, nur bei eingeschalteter Leap-Handsteuerung.
 - **Nur eine Hand:** Kneifen ist keine Zustimmtaste – jede kneifende Hand über der Leap bewegt den Roboter. Eine zweite Hand über der Leap hält immer an (Chip **Keine Hand**). In Robot | Hardware nur die eigene Hand über der Leap.
 
@@ -522,8 +522,8 @@ Dieser Node empfängt das bereits bereinigte Signal `/joy_check` und übersetzt 
 | **RT (Right Trigger)** | Z **abwärts** (Z−) | `TwistStamped.linear.z` | *`clamp(LT−RT, -1,1) × −speed_scale` → RT gedrückt: positiver z-Wert × −scale = **negative Z*** |
 | **LB (Left Bumper)** | Handgelenk CCW (Z-) | `TwistStamped.angular.z` | *`buttons[LB] - buttons[RB]`* |
 | **RB (Right Bumper)** | Handgelenk CW (Z+) | `TwistStamped.angular.z` | *`buttons[LB] - buttons[RB]`* |
-| **D-Pad ↑** | Geschwindigkeit hoch | Pub → `/ui/robot_control/current_speed` | *5 Stufen durchschalten* |
-| **D-Pad ↓** | Geschwindigkeit runter | Pub → `/ui/robot_control/current_speed` | *5 Stufen durchschalten* |
+| **D-Pad ↑** | Geschwindigkeit hoch | Pub → `/ui/robot_control/current_speed` | *7 Stufen durchschalten* |
+| **D-Pad ↓** | Geschwindigkeit runter | Pub → `/ui/robot_control/current_speed` | *7 Stufen durchschalten* |
 | **D-Pad ←** | Linearachse nach links | Pub → `/linear_axis_cmd` | *Verschiebt den Roboter auf der Schiene* |
 | **D-Pad →** | Linearachse nach rechts | Pub → `/linear_axis_cmd` | *Verschiebt den Roboter auf der Schiene* |
 | **Back (⊞)** | Rahmen → `link_base` | Pub → `/ui/joy_button_presses` + `/ui/robot_control/current_frame` | *Weltkoordinaten-Modus* |
