@@ -256,39 +256,165 @@ a.btn:hover { border-color: color-mix(in srgb, var(--accent) 55%, var(--line-str
   .tb-rules td:nth-child(3) { white-space: normal; }
 }
 
-/* Ablauf als Schwimmbahnen: Spalten = Schritte, Zeilen = Beteiligte und Ablagen, Farbe = Gruppe (--c je tbody) */
-.fl-wrap { margin: 0 0 28px; }
-.fl { table-layout: fixed; border-collapse: separate; border-spacing: 6px; margin: -6px; width: calc(100% + 12px); }
-.fl th, .fl td { padding: 0; text-align: left; font-weight: 400; vertical-align: top; }
-.fl-steps td:first-child, .fl-steps th:first-child { width: 176px; }
-.fl-steps th { padding: 10px 16px 10px 18px; background: var(--fg); color: var(--bg); font: 600 .8125rem/1.25 var(--f-head); clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 50%, calc(100% - 12px) 100%, 0 100%, 12px 50%); }
-.fl-steps th i { display: inline-block; margin-right: 4px; font: 600 .8125rem/1 var(--f-mono); font-style: normal; }
-.fl .band th { padding: 16px 2px 2px; font: 600 .8125rem/1.3 var(--f-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--c); border-bottom: 1px solid color-mix(in srgb, var(--c) 45%, var(--line)); }
-.fl .band th span::before { content: ""; display: inline-block; width: 10px; height: 10px; margin-right: 10px; border-radius: 2px; background: var(--c); }
-.fl .lane > th { padding: 9px 12px; background: color-mix(in srgb, var(--c) 16%, var(--surface)); border: 1px solid color-mix(in srgb, var(--c) 55%, var(--line)); border-radius: var(--radius); }
-.fl .lane > th > .i { float: left; margin: 2px 10px 0 0; font-size: 18px; color: var(--c); }
-.fl .lane > th .i.fill { fill: currentColor; stroke: none; }
-.fl .lane > th span { display: block; overflow: hidden; }
-.fl .lane > th b { display: block; font: 700 .9375rem/1.25 var(--f-head); }
-.fl .lane > th small { display: block; margin-top: 2px; font-size: .8125rem; line-height: 1.3; color: var(--fg-2); overflow-wrap: anywhere; }
-.fl td { padding: 8px 10px; font-size: .8125rem; line-height: 1.4; text-wrap: pretty; overflow-wrap: anywhere; background: color-mix(in srgb, var(--c) 8%, var(--surface)); border: 1px solid color-mix(in srgb, var(--c) 35%, var(--line)); border-radius: var(--radius); }
-.fl td code { font-size: .8125rem; color: var(--fg); }
-.fl td b { font-weight: 700; }
-.fl td.none { background: transparent; border: 1px dashed var(--line); }
-.fl td.none::after { content: "–"; color: var(--fg-2); }
-.fl-steps td { background: none; border: 0; padding: 0; }
-@media (max-width: 1023px) {
-  .fl, .fl tbody, .fl tr, .fl th, .fl td { display: block; }
-  .fl { margin: 0; width: 100%; }
-  .fl thead { display: none; }
-  .fl .band th { padding: 20px 2px 6px; }
-  .fl .lane { margin: 10px 0 0; background: var(--surface); border: 1px solid color-mix(in srgb, var(--c) 45%, var(--line)); border-radius: var(--radius-lg); overflow: hidden; }
-  .fl .lane > th { border: 0; border-radius: 0; border-bottom: 1px solid color-mix(in srgb, var(--c) 45%, var(--line)); }
-  .fl td { border: 0; border-radius: 0; background: none; padding: 8px 12px; }
-  .fl td + td { border-top: 1px solid var(--line); }
-  .fl td.none { display: none; }
-  .fl td::before { content: attr(data-l); display: block; font: 600 .8125rem/1.6 var(--f-mono); letter-spacing: .04em; color: var(--c); }
+/* Ablauf-Grafik: drei Ansichten (Systemkarte · Zeitstrahl · Linienplan) aus #wf-data, Umschalter als Tabs; Farbe = Gruppe (--c), rot = Stopp */
+.wf { display: grid; gap: 16px; margin: 0 0 20px; }
+.wf-vh { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.wf-tabs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; padding: 4px; border: 1px solid var(--line-strong); border-radius: var(--radius-lg); background: var(--surface-2); }
+.wf-tab { display: flex; gap: 12px; align-items: center; min-width: 0; min-height: 60px; padding: 10px 14px; border: 1px solid transparent; border-radius: var(--radius);
+  background: none; color: var(--fg); text-align: left; cursor: pointer; transition: background var(--t-fast) var(--ease-out), border-color var(--t-fast) var(--ease-out); }
+.wf-tab > .i { font-size: 24px; color: var(--fg-2); transition: color var(--t-fast) var(--ease-out); }
+.wf-tab span { display: grid; gap: 2px; min-width: 0; }
+.wf-tab b { font: 700 1rem/1.2 var(--f-head); }
+.wf-tab small { font-size: .8125rem; line-height: 1.3; color: var(--fg-2); }
+.wf-tab:hover { background: color-mix(in srgb, var(--surface) 70%, transparent); }
+.wf-tab[aria-selected="true"] { background: var(--surface); border-color: var(--line-strong); }
+.wf-tab[aria-selected="true"] > .i { color: var(--accent); }
+.wf-tab:focus-visible, .wf button:focus-visible, .wb summary:focus-visible, .wf-more > summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+@media (max-width: 639px) { .wf-tab { flex-direction: column; gap: 6px; text-align: center; padding: 10px 6px; } .wf-tab small { display: none; } }
+.wf-p[hidden] { display: none; }
+.wf-play { display: inline-flex; gap: 8px; align-items: center; min-height: 44px; padding: 8px 14px; border: 1px solid var(--accent); border-radius: var(--radius);
+  background: color-mix(in srgb, var(--accent) 12%, var(--surface)); color: var(--fg); font: 600 .875rem/1 var(--f-body); cursor: pointer; }
+.wf-play .i { color: var(--accent); }
+.wf-play[hidden] { display: none; }
+
+/* Systemkarte */
+.wa-top { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-bottom: 14px; }
+.wa-rail { flex: 1 1 640px; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)) auto; gap: 6px; }
+.wa-rail button { display: flex; gap: 8px; align-items: center; min-width: 0; min-height: 44px; padding: 8px 10px; border: 1px solid var(--line-strong); border-radius: var(--radius);
+  background: var(--surface); color: var(--fg); font: 600 .875rem/1.2 var(--f-head); cursor: pointer; transition: background var(--t-base) var(--ease-out), color var(--t-base) var(--ease-out); }
+.wa-rail button span { min-width: 0; hyphens: auto; }
+.wa-rail button i { display: grid; place-items: center; width: 24px; height: 24px; flex: none; border-radius: 50%; border: 1px solid currentColor; font: 600 .8125rem/1 var(--f-mono); font-style: normal; }
+.wa-rail button:hover { border-color: var(--fg); }
+.wa-rail button.done i { background: var(--fg); color: var(--bg); }
+.wa-rail button[aria-pressed="true"] { background: var(--fg); color: var(--bg); border-color: var(--fg); }
+.wa-rail button[aria-pressed="true"] i { background: none; color: var(--bg); }
+.wa-loop { display: flex; gap: 6px; align-items: center; padding: 0 6px; font: 600 .8125rem/1.2 var(--f-mono); color: var(--accent); }
+.wa-loop .i { font-size: 16px; }
+@media (max-width: 759px) { .wa-rail { grid-template-columns: repeat(3, minmax(0, 1fr)); } .wa-rail button { flex-direction: column; gap: 4px; justify-content: center; text-align: center; } .wa-loop { grid-column: 1 / -1; } }
+.wa-cap { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; margin-bottom: 14px; padding: 12px 16px; border: 1px solid var(--line-strong); border-radius: var(--radius-lg); background: var(--surface); }
+.wa-sum { flex: 1 1 420px; margin: 0; font-size: 1rem; line-height: 1.45; }
+.wa-sum b { margin-right: 4px; font-family: var(--f-head); }
+.wa-stop { display: inline-flex; gap: 8px; align-items: center; margin: 0; padding: 6px 10px; border: 1px solid color-mix(in srgb, var(--stop) 60%, var(--line)); border-radius: var(--radius);
+  background: color-mix(in srgb, var(--stop) 10%, var(--surface)); font-size: .875rem; line-height: 1.35; }
+.wa-stop .i { color: var(--stop); font-size: 18px; }
+.wa-map { position: relative; display: grid; gap: 12px; grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 1024px) {
+  .wa-map { grid-template-columns: minmax(0, .9fr) minmax(0, 1.45fr) minmax(0, 1.05fr); grid-template-areas: "du chat abl" "abst wis abl" "abst hook abl"; align-items: start; }
+  .z-du { grid-area: du; } .z-chat { grid-area: chat; } .z-abst { grid-area: abst; } .z-wis { grid-area: wis; } .z-hook { grid-area: hook; } .z-abl { grid-area: abl; }
+  .z-wis .wa-zb { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
+.wa-fx { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; }
+.wa-route { fill: none; stroke: var(--accent); stroke-width: 2; }
+.wa-trail { fill: none; stroke: var(--accent); stroke-width: 8; stroke-linecap: round; }
+.wa-dot, .wa-halo { fill: var(--accent); }
+.wa-z { display: grid; gap: 8px; padding: 12px; border: 1px dashed var(--line-strong); border-radius: var(--radius-lg); }
+.wa-z h4 { position: relative; margin: 0; font: 600 .8125rem/1.3 var(--f-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--fg-2); }
+.wa-zb { display: grid; gap: 8px; }
+.wa-pair { display: grid; gap: 8px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.wa-note { position: relative; margin: 2px 0 0; font-size: .8125rem; color: var(--fg-2); }
+.wa-dn { display: grid; place-items: center; margin: -4px 0; color: var(--c2); font-size: 18px; }
+.wa-n { position: relative; display: grid; gap: 4px; align-content: start; min-width: 0; padding: 10px 12px; border: 1px solid var(--line-strong); border-radius: var(--radius); background: var(--surface); }
+.wa-nh { display: flex; gap: 8px; align-items: center; min-width: 0; }
+.wa-nh .i { flex: none; font-size: 18px; color: var(--c); }
+.wa-nh strong { min-width: 0; font: 700 .9375rem/1.25 var(--f-head); }
+.wa-o { display: none; place-items: center; min-width: 24px; height: 24px; margin-left: auto; padding: 0 6px; border-radius: 12px; background: var(--c); color: var(--bg); font: 700 .8125rem/1 var(--f-mono); }
+.wa-sub { font-size: .8125rem; line-height: 1.35; color: var(--fg-2); overflow-wrap: anywhere; }
+.wa-act { display: none; font-size: .875rem; line-height: 1.4; overflow-wrap: anywhere; }
+.wa-n.on { border-color: var(--c); background: color-mix(in srgb, var(--c) 14%, var(--surface));
+  box-shadow: 0 0 0 1px var(--c), 0 0 calc(var(--glow, 0) * 28px) calc(var(--glow, 0) * 4px) color-mix(in srgb, var(--c) 55%, transparent); }
+.wa-n.on .wa-o { display: grid; }
+.wa-n.on .wa-act { display: block; }
+.wa-n.on .wa-sub { display: none; }
+.wa-roles { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+.wa-roles span { padding: 4px 8px; border: 1px solid var(--line-strong); border-radius: var(--radius-sm); font: 600 .8125rem/1.2 var(--f-mono); }
+.wa-roles span.on { background: var(--c1); border-color: var(--c1); color: var(--bg); }
+.z-chat .wa-n { padding: 14px 16px; }
+.z-chat .wa-nh strong { font-size: 1.125rem; }
+
+/* Zeitstrahl */
+.wb-leg { display: flex; flex-wrap: wrap; gap: 8px 18px; margin: 0 0 14px; padding: 0; list-style: none; font-size: .875rem; }
+.wb-leg li { display: inline-flex; gap: 8px; align-items: center; }
+.wb-leg i { width: 12px; height: 12px; border-radius: 3px; background: var(--c); }
+.wb { display: grid; margin: 0; padding: 0; list-style: none; }
+.wb-s { display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 0 14px; }
+.wb-rail { display: flex; flex-direction: column; align-items: center; }
+.wb-n { display: grid; place-items: center; flex: none; width: 36px; height: 36px; margin-top: 12px; border-radius: 50%; background: var(--fg); color: var(--bg); font: 700 .9375rem/1 var(--f-mono); }
+.wb-line { flex: 1; width: 2px; min-height: 14px; background: var(--line-strong); }
+.wb-s:last-child .wb-line { background: linear-gradient(var(--line-strong), transparent); }
+.wb details { margin: 0 0 10px; border: 1px solid var(--line-strong); border-radius: var(--radius-lg); background: var(--surface); }
+.wb details[open] { border-color: var(--fg-2); }
+.wb summary { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 8px 16px; align-items: center; padding: 14px 16px; list-style: none; cursor: pointer; }
+.wb summary::-webkit-details-marker { display: none; }
+.wb-h { display: grid; gap: 2px; }
+.wb-h b { font: 700 1.0625rem/1.25 var(--f-head); }
+.wb-h > span { font-size: .9375rem; line-height: 1.4; color: var(--fg-2); }
+.wb-ic { display: flex; flex-wrap: wrap; gap: 4px; justify-content: flex-end; max-width: 340px; }
+.wb-ic span { display: grid; place-items: center; width: 28px; height: 28px; border-radius: var(--radius-sm); background: color-mix(in srgb, var(--c) 14%, var(--surface)); color: var(--c); }
+.wb-ic .i { font-size: 16px; }
+.wb .i.fill, .wa-n .i.fill { fill: currentColor; stroke: none; }
+.wb-ch .i { font-size: 18px; transition: transform var(--t-base) var(--ease-out); }
+.wb details[open] .wb-ch .i { transform: rotate(180deg); }
+.wb-body { padding: 0 16px 16px; }
+.wb-weg { display: flex; flex-wrap: wrap; gap: 10px 26px; margin: 0; padding: 0; list-style: none; counter-reset: weg; }
+.wb-weg li { position: relative; display: grid; gap: 4px; align-content: start; width: 184px; padding: 10px 12px; border: 1px solid color-mix(in srgb, var(--c) 55%, var(--line)); border-radius: var(--radius);
+  background: color-mix(in srgb, var(--c) 10%, var(--surface)); font-size: .875rem; line-height: 1.4; counter-increment: weg; }
+.wb-weg li:not(:last-child)::after { content: "→"; position: absolute; top: 12px; right: -20px; font: 600 1rem/1 var(--f-mono); color: var(--fg-2); }
+.wb-kh { display: flex; gap: 8px; align-items: center; }
+.wb-kh::before { content: counter(weg); display: grid; place-items: center; min-width: 22px; height: 22px; border-radius: 11px; background: var(--c); color: var(--bg); font: 700 .8125rem/1 var(--f-mono); }
+.wb-kh .i { font-size: 16px; color: var(--c); }
+.wb-kh strong { font: 700 .9375rem/1.2 var(--f-head); }
+.wb-weg li.wb-stop { --c: var(--stop); display: flex; gap: 10px; align-items: flex-start; width: 260px; }
+.wb-stop .i { flex: none; font-size: 20px; color: var(--stop); }
+.wb-stop strong { display: block; font-family: var(--f-head); }
+.wb-loop { display: flex; gap: 8px; align-items: center; margin: 4px 0 0 58px; font-size: .9375rem; }
+.wb-loop .i { font-size: 18px; color: var(--accent); }
+@media (max-width: 699px) {
+  .wb summary { grid-template-columns: minmax(0, 1fr) auto; }
+  .wb-ic { grid-column: 1 / -1; justify-content: flex-start; max-width: none; }
+  .wb-weg { gap: 26px; }
+  .wb-weg li, .wb-weg li.wb-stop { width: 100%; }
+  .wb-weg li:not(:last-child)::after { content: "↓"; top: auto; right: auto; bottom: -21px; left: 50%; }
+}
+
+/* Linienplan (SVG, am Handy seitlich scrollbar) */
+.wc-scroll { overflow-x: auto; padding-bottom: 6px; }
+.wc-svg { display: block; width: 100%; min-width: 900px; height: auto; font-family: var(--f-body); }
+.wc-col { stroke: var(--line); stroke-width: 1; stroke-dasharray: 3 5; }
+.wc-head circle { fill: var(--fg); transition: fill var(--t-base) var(--ease-out); }
+.wc-head.hot circle { fill: var(--accent); }
+.wc-hn { fill: var(--bg); font: 700 14px var(--f-mono); }
+.wc-ht { fill: var(--fg); font: 700 16px var(--f-head); }
+.wc-g { fill: var(--c); font: 600 13px var(--f-mono); letter-spacing: .06em; }
+.wc-gl { stroke: color-mix(in srgb, var(--c) 40%, transparent); stroke-width: 1; }
+.wc-ic, .wc-stopi { fill: none; stroke: currentColor; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; }
+.wc-ic { color: var(--c); }
+.wc-ic.fill { fill: currentColor; stroke: none; }
+.wc-stopi { color: var(--stop); }
+.wc-n { fill: var(--fg); font: 700 15px var(--f-head); }
+.wc-tr { stroke: color-mix(in srgb, var(--c) 30%, transparent); stroke-width: 2; }
+.wc-seg { stroke: var(--c); stroke-width: 6; stroke-linecap: round; }
+.wc-dot { fill: var(--c); stroke: var(--surface); stroke-width: 3; transform-box: fill-box; transform-origin: center; transition: transform var(--t-base) var(--ease-out); }
+.wc-dot.hot { transform: scale(1.55); }
+.wc-st { fill: var(--fg); font: 500 13px var(--f-body); }
+.wc-loop { fill: none; stroke: var(--accent); stroke-width: 2; stroke-dasharray: 6 4; }
+.wc-arf { fill: var(--accent); }
+.wc-ll { fill: var(--accent); font: 600 13px var(--f-mono); }
+.wc-ph { stroke: var(--accent); stroke-width: 2; }
+.wc-phg { filter: drop-shadow(0 0 6px color-mix(in srgb, var(--accent) 70%, transparent)); }
+.wc-cap { display: flex; flex-wrap: wrap; gap: 8px 22px; align-items: center; margin-top: 10px; font-size: .875rem; color: var(--fg-2); }
+.wc-cap > span { display: inline-flex; gap: 8px; align-items: center; }
+.wc-cap .dot { width: 12px; height: 12px; border-radius: 50%; background: var(--c2); }
+.wc-cap .seg { width: 26px; height: 6px; border-radius: 3px; background: var(--c2); }
+@media (prefers-reduced-motion: reduce) { .wa-rail button, .wc-dot, .wc-head circle, .wb-ch .i, .wf-tab, .wf-tab > .i { transition: none; } }
+
+/* Tabelle mit allen Einzelheiten, eingeklappt unter der Grafik */
+.wf-more { border: 1px solid var(--line-strong); border-radius: var(--radius-lg); background: var(--surface); }
+.wf-more > summary { display: flex; gap: 10px; align-items: center; padding: 14px 16px; list-style: none; cursor: pointer; font: 600 1rem/1.3 var(--f-head); }
+.wf-more > summary::-webkit-details-marker { display: none; }
+.wf-more > summary .i { font-size: 18px; color: var(--accent); transition: transform var(--t-base) var(--ease-out); }
+.wf-more[open] > summary { border-bottom: 1px solid var(--line); }
+.wf-more[open] > summary .i { transform: rotate(180deg); }
+.wf-more-in { padding: 0 16px 16px; }
 
 /* Kasten mit Überschrift (Zusammenspiel) + Begriffspaare */
 .box { padding: 18px 20px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg); }
@@ -397,6 +523,13 @@ footer p { margin: 0; }
   <symbol id="i-tool" viewBox="0 0 24 24"><path d="M14.7 6.3a4 4 0 0 0-5 5L3.5 17.5l3 3 6.2-6.2a4 4 0 0 0 5-5l-2.5 2.5-2.2-.5-.5-2.2z"/></symbol>
   <symbol id="i-bolt" viewBox="0 0 24 24"><path d="M13 3 5 14h6l-1 7 8-11h-6z"/></symbol>
   <symbol id="i-flag" viewBox="0 0 24 24"><path d="M5 21V4M5 4h11l-2 4 2 4H5"/></symbol>
+  <symbol id="i-list" viewBox="0 0 24 24"><path d="M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01"/></symbol>
+  <symbol id="i-box" viewBox="0 0 24 24"><path d="M12 2.5l8.5 4.75v9.5L12 21.5l-8.5-4.75v-9.5z"/><path d="M3.5 7.25L12 12l8.5-4.75M12 12v9.5"/></symbol>
+  <symbol id="i-play" viewBox="0 0 24 24"><path d="M7 4.5l12 7.5-12 7.5z"/></symbol>
+  <symbol id="i-pause" viewBox="0 0 24 24"><path d="M8 5v14M16 5v14"/></symbol>
+  <symbol id="i-map" viewBox="0 0 24 24"><rect x="3" y="4" width="7" height="7" rx="1.5"/><rect x="14" y="4" width="7" height="16" rx="1.5"/><rect x="3" y="15" width="7" height="5" rx="1.5"/><path d="M10 7.5h4M6.5 11v4"/></symbol>
+  <symbol id="i-steps" viewBox="0 0 24 24"><circle cx="5" cy="5" r="2"/><circle cx="5" cy="12" r="2"/><circle cx="5" cy="19" r="2"/><path d="M5 7v3M5 14v3M10 5h10M10 12h10M10 19h7"/></symbol>
+  <symbol id="i-metro" viewBox="0 0 24 24"><path d="M3 7h18M3 17h18"/><circle cx="7" cy="7" r="2"/><circle cx="15" cy="7" r="2"/><circle cx="11" cy="17" r="2"/><circle cx="19" cy="17" r="2"/></symbol>
   <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></symbol>
   <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></symbol>
 </svg>
@@ -473,152 +606,21 @@ footer p { margin: 0; }
     </div>
 
     <h3 class="part" id="h-ablauf"><span class="no">1</span><span data-en="How a task runs – who does what">Ablauf einer Aufgabe – wer macht was</span></h3>
-    <p class="sub" data-en="Overview: columns = the 6 steps, rows = everyone and everything involved, colour = group. A dashed box means nothing happens there in this step; red = the chat stops. The table below has every detail.">Überblick: Spalten = die 6 Schritte, Zeilen = alle Beteiligten und Ablagen, Farbe = Gruppe. Gestrichelt = in diesem Schritt passiert dort nichts; rot = hier hält der Chat an. Alle Einzelheiten stehen darunter in der Tabelle.</p>
-    <div class="fl-wrap" data-reveal>
-    <table class="fl" aria-label="Ablauf einer Aufgabe als Schwimmbahnen: Spalten sind die sechs Schritte, Zeilen alle Beteiligten und Ablagen" data-en-aria="Task flow as swim lanes: columns are the six steps, rows are everyone and everything involved">
-      <thead><tr class="fl-steps"><td aria-hidden="true"></td>
-        <th scope="col"><i>1</i><span data-en="Request">Auftrag</span></th>
-        <th scope="col"><i>2</i><span data-en="Plan">Plan</span></th>
-        <th scope="col"><i>3</i><span data-en="Implementation">Umsetzung</span></th>
-        <th scope="col"><i>4</i><span data-en="Check">Prüfung</span></th>
-        <th scope="col"><i>5</i><span data-en="Finish">Abschluss</span></th>
-        <th scope="col"><i>6</i><span data-en="Distribution">Verteilung</span></th>
-      </tr></thead>
-      <tbody class="g-a" style="--c: var(--c1)">
-        <tr class="band"><th colspan="7" scope="colgroup"><span data-en="Who acts">Wer handelt</span></th></tr>
-        <tr class="lane">
-          <th scope="row"><svg class="i" aria-hidden="true"><use href="#i-user"/></svg><span><b data-en="You">Du</b><small data-en="product owner">Product Owner</small></span></th>
-          <td data-l="1 · Auftrag" data-l-en="1 · Request" data-en="State the task – text, image or link">Aufgabe nennen – Text, Bild oder Link</td>
-          <td data-l="2 · Plan" data-l-en="2 · Plan" data-en="Answer questions, approve preview">Fragen beantworten, Vorschau abnehmen</td>
-          <td class="none" aria-hidden="true" data-l="3 · Umsetzung" data-l-en="3 · Implementation"></td>
-          <td class="none" aria-hidden="true" data-l="4 · Prüfung" data-l-en="4 · Check"></td>
-          <td data-l="5 · Abschluss" data-l-en="5 · Finish" data-en="Read the result">Ergebnis lesen</td>
-          <td data-l="6 · Verteilung" data-l-en="6 · Distribution" data-en="Use page and projects">Seite und Projekte nutzen</td>
-        </tr>
-        <tr class="lane">
-          <th scope="row"><svg class="i" aria-hidden="true"><use href="#i-chat"/></svg><span><b data-en="Chat · role">Chat · Rolle</b><small>Claude · Codex · Gemini</small></span></th>
-          <td data-l="1 · Auftrag" data-l-en="1 · Request" data-en="<b>Organizer</b> reads situation report, rules, memory"><b>Organizer</b> liest Lagebild, Regeln, Memory</td>
-          <td data-l="2 · Plan" data-l-en="2 · Plan" data-en="<b>Organizer</b> plans, picks specialist role + check level"><b>Organizer</b> plant, wählt Fachrolle + Prüfstufe</td>
-          <td data-l="3 · Umsetzung" data-l-en="3 · Implementation" data-en="<b>Designer · developer · editor</b> – smallest diff"><b>Designer · Entwickler · Redakteur</b> – kleinster Diff</td>
-          <td data-l="4 · Prüfung" data-l-en="4 · Check" data-en="<b>Reviewer</b> – evidence after the last change"><b>Prüfer</b> – Beleg nach der letzten Änderung</td>
-          <td data-l="5 · Abschluss" data-l-en="5 · Finish" data-en="<b>Synchronizer</b> – commit + push, handoff"><b>Synchronizer</b> – Commit + Push, Übergabe</td>
-          <td data-l="6 · Verteilung" data-l-en="6 · Distribution" data-en="Git hooks run on their own">Git-Hooks laufen allein</td>
-        </tr>
-      </tbody>
-      <tbody class="g-b" style="--c: var(--c3)">
-        <tr class="band"><th colspan="7" scope="colgroup"><span data-en="Knowledge and tools">Wissen und Werkzeuge</span></th></tr>
-        <tr class="lane">
-          <th scope="row"><svg class="i" aria-hidden="true"><use href="#i-spark"/></svg><span><b>Skills</b><small data-en="guides per topic">Anleitungen je Thema</small></span></th>
-          <td data-l="1 · Auftrag" data-l-en="1 · Request" data-en="<code>answer-page</code> – fixed answer format"><code>answer-page</code> – festes Antwortformat</td>
-          <td data-l="2 · Plan" data-l-en="2 · Plan" data-en="Finder table → skill for the topic">Finder-Tabelle → Skill zum Thema</td>
-          <td data-l="3 · Umsetzung" data-l-en="3 · Implementation" data-en="Skill for the topic · <code>root-cause</code> for bugs">Skill zum Thema · <code>root-cause</code> bei Bugs</td>
-          <td data-l="4 · Prüfung" data-l-en="4 · Check"><code>test-isolated</code></td>
-          <td data-l="5 · Abschluss" data-l-en="5 · Finish"><code>commit</code></td>
-          <td class="none" aria-hidden="true" data-l="6 · Verteilung" data-l-en="6 · Distribution"></td>
-        </tr>
-        <tr class="lane">
-          <th scope="row"><svg class="i" aria-hidden="true"><use href="#i-bot"/></svg><span><b data-en="Agents">Agenten</b><small data-en="helpers with their own task">Helfer mit eigenem Auftrag</small></span></th>
-          <td class="none" aria-hidden="true" data-l="1 · Auftrag" data-l-en="1 · Request"></td>
-          <td data-l="2 · Plan" data-l-en="2 · Plan" data-en="<code>ws-explorer</code> for broad searches"><code>ws-explorer</code> für breite Suche</td>
-          <td data-l="3 · Umsetzung" data-l-en="3 · Implementation" data-en="<code>ws-worker</code> for well-defined changes"><code>ws-worker</code> für klar umrissene Änderungen</td>
-          <td data-l="4 · Prüfung" data-l-en="4 · Check"><code>test-runner</code> · <code>ui-verifier</code> · <code>safety-reviewer</code></td>
-          <td class="none" aria-hidden="true" data-l="5 · Abschluss" data-l-en="5 · Finish"></td>
-          <td class="none" aria-hidden="true" data-l="6 · Verteilung" data-l-en="6 · Distribution"></td>
-        </tr>
-        <tr class="lane">
-          <th scope="row"><svg class="i" aria-hidden="true"><use href="#i-tool"/></svg><span><b data-en="Tools · scripts">Tools · Skripte</b><small><code>tools/</code> + <code>bin/</code></small></span></th>
-          <td data-l="1 · Auftrag" data-l-en="1 · Request" data-en="<code>ws_<wbr>sync.sh</code> fetches all repos"><code>ws_<wbr>sync.sh</code> holt alle Repos</td>
-          <td data-l="2 · Plan" data-l-en="2 · Plan" data-en="Preview: <code>build.py</code>">Vorschau: <code>build.py</code></td>
-          <td data-l="3 · Umsetzung" data-l-en="3 · Implementation"><code>claim.py</code></td>
-          <td data-l="4 · Prüfung" data-l-en="4 · Check"><code>ui_<wbr>new_<wbr>code_<wbr>checker.py</code> · <code>grasp_<wbr>e2e.py</code></td>
-          <td data-l="5 · Abschluss" data-l-en="5 · Finish" data-en="<code>treasury.py</code> saves previews"><code>treasury.py</code> sichert Vorschauen</td>
-          <td data-l="6 · Verteilung" data-l-en="6 · Distribution" data-en="<code>publish_<wbr>pages.py</code> builds the pages"><code>publish_<wbr>pages.py</code> baut die Seiten</td>
-        </tr>
-        <tr class="lane">
-          <th scope="row"><svg class="i" aria-hidden="true"><use href="#i-bolt"/></svg><span><b>Hooks</b><small data-en="run on their own">laufen von selbst</small></span></th>
-          <td data-l="1 · Auftrag" data-l-en="1 · Request"><code>session_<wbr>overview</code></td>
-          <td data-l="2 · Plan" data-l-en="2 · Plan"><code>chat_<wbr>length_<wbr>hint</code></td>
-          <td data-l="3 · Umsetzung" data-l-en="3 · Implementation"><code>todo_<wbr>claim_<wbr>hook</code> · <code>pre_<wbr>tool_<wbr>guard</code> · <code>post_<wbr>edit_<wbr>check</code></td>
-          <td data-l="4 · Prüfung" data-l-en="4 · Check"><code>pre-commit</code></td>
-          <td data-l="5 · Abschluss" data-l-en="5 · Finish"><code>format_<wbr>check</code> · <code>chat_<wbr>handoff</code></td>
-          <td data-l="6 · Verteilung" data-l-en="6 · Distribution"><code>pre-push</code> · <code>chat_<wbr>sync</code> · <code>post-merge</code></td>
-        </tr>
-      </tbody>
-      <tbody class="g-c" style="--c: var(--c4)">
-        <tr class="band"><th colspan="7" scope="colgroup"><span data-en="Coordination">Abstimmung</span></th></tr>
-        <tr class="lane">
-          <th scope="row"><svg class="i" aria-hidden="true"><use href="#i-flag"/></svg><span><b data-en="Claims · tasks">Claims · Aufgaben</b><small data-en="handoffs, mailbox">Übergaben, Postfach</small></span></th>
-          <td data-l="1 · Auftrag" data-l-en="1 · Request" data-en="Situation report: claims, open handoffs, mailbox">Lagebild: Claims, offene Übergaben, Postfach</td>
-          <td data-l="2 · Plan" data-l-en="2 · Plan" data-en="<code>TODOS.md</code> – change status only"><code>TODOS.md</code> – nur Status ändern</td>
-          <td data-l="3 · Umsetzung" data-l-en="3 · Implementation" data-en="Claim per file before changing it">Claim je Datei vor dem Ändern</td>
-          <td class="none" aria-hidden="true" data-l="4 · Prüfung" data-l-en="4 · Check"></td>
-          <td data-l="5 · Abschluss" data-l-en="5 · Finish" data-en="Claim removed · handoff note for the rest">Claim gelöscht · Übergabe-Zettel für den Rest</td>
-          <td class="none" aria-hidden="true" data-l="6 · Verteilung" data-l-en="6 · Distribution"></td>
-        </tr>
-      </tbody>
-      <tbody class="g-d" style="--c: var(--c2)">
-        <tr class="band"><th colspan="7" scope="colgroup"><span data-en="Storage – the path of the state">Ablage – der Weg des Stands</span></th></tr>
-        <tr class="lane">
-          <th scope="row"><svg class="i" aria-hidden="true"><use href="#i-doc"/></svg><span><b data-en="Local files">Lokale Dateien</b><small data-en="working folder on the computer">Arbeitsordner auf dem Rechner</small></span></th>
-          <td data-l="1 · Auftrag" data-l-en="1 · Request" data-en="Rules + memory – loaded via link">Regeln + Memory – per Link geladen</td>
-          <td data-l="2 · Plan" data-l-en="2 · Plan" data-en="Preview page in the treasury">Vorschau-Seite in der Schatzkammer</td>
-          <td data-l="3 · Umsetzung" data-l-en="3 · Implementation" data-en="Change code, docs, UI – own files only">Code, Doku, UI ändern – nur eigene Dateien</td>
-          <td data-l="4 · Prüfung" data-l-en="4 · Check" data-en="Tests, screenshots, checkers">Tests, Screenshots, Checker</td>
-          <td data-l="5 · Abschluss" data-l-en="5 · Finish" data-en="Checked state is ready">Geprüfter Stand liegt fertig</td>
-          <td data-l="6 · Verteilung" data-l-en="6 · Distribution" data-en="Checkout of the page is kept current">Checkout der Seite wird aktuell gehalten</td>
-        </tr>
-        <tr class="lane">
-          <th scope="row"><svg class="i" aria-hidden="true"><use href="#i-git"/></svg><span><b data-en="Local repo">Lokales Repo</b><small data-en="Git on the computer">Git auf dem Rechner</small></span></th>
-          <td data-l="1 · Auftrag" data-l-en="1 · Request" data-en="Pull by fast-forward only">Pull nur per Fast-Forward</td>
-          <td class="none" aria-hidden="true" data-l="2 · Plan" data-l-en="2 · Plan"></td>
-          <td class="none" aria-hidden="true" data-l="3 · Umsetzung" data-l-en="3 · Implementation"></td>
-          <td data-l="4 · Prüfung" data-l-en="4 · Check" data-en="Checked states only">Nur geprüfte Stände</td>
-          <td data-l="5 · Abschluss" data-l-en="5 · Finish" data-en="Commit in the style of the repo">Commit im Stil des Repos</td>
-          <td class="none" aria-hidden="true" data-l="6 · Verteilung" data-l-en="6 · Distribution"></td>
-        </tr>
-        <tr class="lane">
-          <th scope="row"><svg class="i fill" aria-hidden="true"><use href="#i-github"/></svg><span><b data-en="Online repo">Online-Repo</b><small data-en="GitHub, private">GitHub, privat</small></span></th>
-          <td data-l="1 · Auftrag" data-l-en="1 · Request" data-en="Fetch: state of other chats and computers">Fetch: Stand anderer Chats und Rechner</td>
-          <td class="none" aria-hidden="true" data-l="2 · Plan" data-l-en="2 · Plan"></td>
-          <td data-l="3 · Umsetzung" data-l-en="3 · Implementation" data-en="Claim as Git ref pushed at once">Claim als Git-Ref sofort gepusht</td>
-          <td class="none" aria-hidden="true" data-l="4 · Prüfung" data-l-en="4 · Check"></td>
-          <td data-l="5 · Abschluss" data-l-en="5 · Finish" data-en="Push – never <code>--force</code>">Push – nie <code>--force</code></td>
-          <td data-l="6 · Verteilung" data-l-en="6 · Distribution" data-en="Other computers fetch the state">Andere Rechner holen den Stand</td>
-        </tr>
-        <tr class="lane">
-          <th scope="row"><svg class="i" aria-hidden="true"><use href="#i-book"/></svg><span><b data-en="Global repo">Globales Repo</b><small><code>ai_dev_<wbr>workflow</code></small></span></th>
-          <td data-l="1 · Auftrag" data-l-en="1 · Request" data-en="Provides rules, memory, skills, agents, hooks">Liefert Regeln, Memory, Skills, Agenten, Hooks</td>
-          <td data-l="2 · Plan" data-l-en="2 · Plan" data-en="Skills + agents + templates get loaded">Skills + Agenten + Vorlagen werden geladen</td>
-          <td class="none" aria-hidden="true" data-l="3 · Umsetzung" data-l-en="3 · Implementation"></td>
-          <td class="none" aria-hidden="true" data-l="4 · Prüfung" data-l-en="4 · Check"></td>
-          <td data-l="5 · Abschluss" data-l-en="5 · Finish" data-en="Tooling changed → own commit + push">Werkzeug geändert → eigener Commit + Push</td>
-          <td data-l="6 · Verteilung" data-l-en="6 · Distribution" data-en="Start page lu4k87.github.io is built from it">Startseite lu4k87.github.io wird daraus gebaut</td>
-        </tr>
-        <tr class="lane">
-          <th scope="row"><svg class="i" aria-hidden="true"><use href="#i-folders"/></svg><span><b data-en="Project repos">Projekt-Repos</b><small>dev_ws · __project_*</small></span></th>
-          <td data-l="1 · Auftrag" data-l-en="1 · Request" data-en="Pull: dev_ws + active project">Pull: dev_ws + aktives Projekt</td>
-          <td data-l="2 · Plan" data-l-en="2 · Plan" data-en="<code>AGENTS.md</code> + skills of the project"><code>AGENTS.md</code> + Skills des Projekts</td>
-          <td class="none" aria-hidden="true" data-l="3 · Umsetzung" data-l-en="3 · Implementation"></td>
-          <td data-l="4 · Prüfung" data-l-en="4 · Check" data-en="Definition of done by check level">Definition of Done nach Prüfstufe</td>
-          <td data-l="5 · Abschluss" data-l-en="5 · Finish" data-en="Commit + push to the repo of the project">Commit + Push ins Repo des Projekts</td>
-          <td data-l="6 · Verteilung" data-l-en="6 · Distribution" data-en="pre-push builds the project page">pre-push baut die Projektseite</td>
-        </tr>
-      </tbody>
-      <tbody class="g-e" style="--c: var(--stop)">
-        <tr class="band"><th colspan="7" scope="colgroup"><span data-en="Stopping">Anhalten</span></th></tr>
-        <tr class="lane">
-          <th scope="row"><svg class="i" aria-hidden="true"><use href="#i-stop"/></svg><span><b data-en="Stop when …">Stopp, wenn …</b><small data-en="chat asks or steps back">Chat fragt oder geht zurück</small></span></th>
-          <td data-l="1 · Auftrag" data-l-en="1 · Request" data-en="No approval – only the user gives it, in this chat">Freigabe fehlt – nur der User gibt sie, in diesem Chat</td>
-          <td data-l="2 · Plan" data-l-en="2 · Plan" data-en="Unclear → ask instead of guessing">Unklar → Rückfrage statt raten</td>
-          <td data-l="3 · Umsetzung" data-l-en="3 · Implementation" data-en="File of another chat → coordinate first">Fremde Datei → erst abstimmen</td>
-          <td data-l="4 · Prüfung" data-l-en="4 · Check" data-en="Red → back to 3, no “done”">Rot → zurück zu 3, kein „fertig“</td>
-          <td data-l="5 · Abschluss" data-l-en="5 · Finish" data-en="Never <code>--force</code>">Nie <code>--force</code></td>
-          <td data-l="6 · Verteilung" data-l-en="6 · Distribution" data-en="Repos stay private">Repos bleiben privat</td>
-        </tr>
-      </tbody>
-    </table>
+    <p class="sub" data-en="Three views of the same flow – switch above. Colour = group, red = the chat stops here. Every detail is in the table below.">Drei Ansichten desselben Ablaufs – oben umschalten. Farbe = Gruppe, rot = hier hält der Chat an. Alle Einzelheiten stehen in der Tabelle darunter.</p>
+    <div class="wf" id="wf-flow" hidden>
+      <div class="wf-tabs" role="tablist" aria-label="Ansicht des Ablaufs" data-en-aria="View of the flow">
+        <button type="button" class="wf-tab" role="tab" id="wf-tab-map" data-view="map" aria-controls="wf-p-map" aria-selected="true"><svg class="i" aria-hidden="true"><use href="#i-map"/></svg><span><b data-en="System map">Systemkarte</b><small data-en="step by step, in motion">Schritt für Schritt, mit Bewegung</small></span></button>
+        <button type="button" class="wf-tab" role="tab" id="wf-tab-time" data-view="time" aria-controls="wf-p-time" aria-selected="false" tabindex="-1"><svg class="i" aria-hidden="true"><use href="#i-steps"/></svg><span><b data-en="Timeline">Zeitstrahl</b><small data-en="to read through, one step open">zum Nachlesen, ein Schritt offen</small></span></button>
+        <button type="button" class="wf-tab" role="tab" id="wf-tab-metro" data-view="metro" aria-controls="wf-p-metro" aria-selected="false" tabindex="-1"><svg class="i" aria-hidden="true"><use href="#i-metro"/></svg><span><b data-en="Line map">Linienplan</b><small data-en="everything at a glance">alles auf einen Blick</small></span></button>
+      </div>
+      <div class="wf-p" id="wf-p-map" role="tabpanel" aria-labelledby="wf-tab-map"></div>
+      <div class="wf-p" id="wf-p-time" role="tabpanel" aria-labelledby="wf-tab-time" hidden></div>
+      <div class="wf-p" id="wf-p-metro" role="tabpanel" aria-labelledby="wf-tab-metro" hidden></div>
     </div>
-
+    <script type="application/json" id="wf-data">{"groups":{"wer":{"c":"c1","de":"Wer handelt","en":"Who acts"},"wissen":{"c":"c3","de":"Wissen und Werkzeuge","en":"Knowledge and tools"},"abst":{"c":"c4","de":"Abstimmung","en":"Coordination"},"ablage":{"c":"c2","de":"Ablage – Weg des Stands","en":"Storage – path of the state"}},"comps":{"du":["wer","user","Du","Product Owner – gibt frei","You","Product owner – approves"],"chat":["wer","chat","Chat","Claude · Codex · Gemini","Chat","Claude · Codex · Gemini"],"regeln":["wissen","book","Regeln + Memory","RULES.md · AGENTS.md · memory/","Rules + memory","RULES.md · AGENTS.md · memory/"],"skills":["wissen","spark","Skills","Anleitung je Thema","Skills","Guide per topic"],"agenten":["wissen","bot","Agenten","Helfer mit eigenem Auftrag","Agents","Helpers with their own task"],"tools":["wissen","tool","Tools","Skripte in tools/ + bin/","Tools","Scripts in tools/ + bin/"],"hooks":["wissen","bolt","Hooks","Skripte, die von selbst laufen","Hooks","Scripts that run on their own"],"claims":["abst","flag","Claims","wer bearbeitet welche Datei","Claims","who edits which file"],"aufgaben":["abst","list","Aufgaben","TODOS.md · Übergabe-Zettel · Postfach","Tasks","TODOS.md · handoff notes · mailbox"],"dateien":["ablage","doc","Lokale Dateien","Arbeitsordner auf dem Rechner","Local files","Working folder on the computer"],"lrepo":["ablage","git","Lokales Repo","Git auf dem Rechner","Local repo","Git on the computer"],"orepo":["ablage","github","Online-Repo","GitHub, privat","Online repo","GitHub, private"],"grepo":["ablage","box","Globales Repo","ai_dev_workflow – für alle Projekte","Global repo","ai_dev_workflow – for all projects"],"prepo":["ablage","folders","Projekt-Repos","dev_ws · __project_*","Project repos","dev_ws · __project_*"],"rechner":["ablage","laptop","Andere Rechner","Labor · Home-PC · Laptop","Other computers","Lab · home PC · laptop"],"seite":["ablage","globe","Webseite","lu4k87.github.io","Website","lu4k87.github.io"]},"roles":{"de":["Organizer","Fachrolle","Prüfer","Synchronizer"],"en":["Organizer","Specialist","Reviewer","Synchronizer"]},"steps":[{"r":0,"de":["Auftrag","Du nennst die Aufgabe – der Chat startet mit frischem Stand.","Freigaben gibt nur der User, in diesem Chat.","nur User gibt frei"],"en":["Request","You state the task – the chat starts from a fresh state.","Only the user approves, in this chat.","only user approves"],"w":[["du","schreibt die Aufgabe – Text, Bild oder Link","Aufgabe nennen","writes the task – text, image or link","state task"],["hooks","Pull vor jeder Anfrage, Lagebild","Pull + Lagebild","pull before every request, situation report","pull + report"],["orepo","liefert den Stand anderer Chats und Rechner","Stand holen","provides the state of other chats and computers","fetch state"],["grepo","Regeln, Memory, Skills per Fast-Forward aktuell","Regeln, Skills","rules, memory, skills fast-forwarded","rules, skills"],["prepo","dev_ws + aktives Projekt aktuell","Projekt aktuell","dev_ws + active project up to date","project current"],["regeln","Regeln + Memory-Index geladen","geladen","rules + memory index loaded","loaded"],["claims","Lagebild zeigt fremde Claims","fremde Claims","situation report shows claims of others","others' claims"],["chat","Organizer liest Lagebild und Postfach","Organizer","organizer reads situation report and mailbox","Organizer"],["skills","answer-page – festes Antwortformat","answer-page","answer-page – fixed answer format","answer-page"]]},{"r":0,"de":["Plan","Der Organizer schätzt den Aufwand, wählt Fachrolle und Prüfstufe.","Unklar → Rückfrage statt raten · neue UI erst als Vorschau.","unklar → fragen"],"en":["Plan","The organizer estimates the effort, picks specialist role and check level.","Unclear → ask instead of guessing · new UI first as a preview.","unclear → ask"],"w":[["chat","Organizer: Aufwand, Fachrolle, Prüfstufe","Organizer plant","organizer: effort, specialist role, check level","Organizer plans"],["skills","Finder-Tabelle → Skill zum Thema","Finder → Skill","finder table → skill for the topic","finder → skill"],["hooks","chat_length_hint erinnert an Skills","chat_length_hint","chat_length_hint suggests skills","chat_length_hint"],["agenten","ws-explorer für breite Suche","ws-explorer","ws-explorer for broad searches","ws-explorer"],["aufgaben","TODOS.md – nur Status ändern","TODOS-Status","TODOS.md – change status only","TODOS status"],["tools","Vorschau mit build.py","build.py","preview with build.py","build.py"],["dateien","Vorschau-Seite in der Schatzkammer","Vorschau","preview page in the treasury","preview"],["du","beantwortet Fragen, nimmt Vorschau ab","Vorschau abnehmen","answers questions, approves the preview","approve preview"]]},{"r":1,"de":["Umsetzung","Die Fachrolle ändert den kleinsten Teil am richtigen Ort.","Datei eines anderen Chats → erst abstimmen, nie überschreiben.","fremde Datei"],"en":["Implementation","The specialist changes the smallest part in the right place.","File of another chat → coordinate first, never overwrite.","other chat's file"],"w":[["chat","Designer · Entwickler · Redakteur","Fachrolle","designer · developer · editor","specialist"],["skills","Skill zum Thema, root-cause bei Bugs","Skill zum Thema","skill for the topic, root-cause for bugs","topic skill"],["claims","todo_claim_hook trägt jede Datei ein","Datei eintragen","todo_claim_hook registers every file","register file"],["orepo","Claim als Git-Ref sofort gepusht","Claim-Ref","claim pushed as Git ref at once","claim ref"],["agenten","ws-worker für klar umrissene Änderungen","ws-worker","ws-worker for well-defined changes","ws-worker"],["hooks","pre_tool_guard + post_edit_check","Guard, Edit-Check","pre_tool_guard + post_edit_check","guard, edit check"],["dateien","Code, Doku, UI – nur eigene Dateien","Dateien ändern","code, docs, UI – own files only","change files"]]},{"r":2,"de":["Prüfung","Der Prüfer belegt den Stand – nach der letzten Änderung, kein „sollte gehen“.","Prüfung rot → zurück zu Schritt 3, kein „fertig“.","rot → zurück zu 3"],"en":["Check","The reviewer proves the state – after the last change, no “should work”.","Check red → back to step 3, no “done”.","red → back to 3"],"w":[["chat","Prüfer: Definition of Done nach Prüfstufe","Prüfer","reviewer: definition of done by check level","Reviewer"],["skills","test-isolated","test-isolated","test-isolated","test-isolated"],["tools","ui_new_code_checker.py, pytest","Checker, pytest","ui_new_code_checker.py, pytest","checker, pytest"],["agenten","test-runner · ui-verifier · safety-reviewer","test-runner …","test-runner · ui-verifier · safety-reviewer","test-runner …"],["dateien","Tests und Screenshots auf diesem Stand","Tests, Bilder","tests and screenshots on this state","tests, images"],["hooks","pre-commit: Tests, Begriffe, Format","pre-commit","pre-commit: tests, terms, format","pre-commit"]]},{"r":3,"de":["Abschluss","Der Synchronizer committet, pusht und antwortet im festen Format.","Nie --force, nie fremde Änderungen mitcommitten.","nie --force"],"en":["Finish","The synchronizer commits, pushes and answers in the fixed format.","Never --force, never commit changes of other chats.","never --force"],"w":[["chat","Synchronizer: Commit + Push","Synchronizer","synchronizer: commit + push","Synchronizer"],["skills","commit – im Stil des Repos","commit","commit – in the style of the repo","commit"],["lrepo","Commit – nur eigene, geprüfte Dateien","Commit","commit – own, checked files only","commit"],["prepo","Projektarbeit ins Projekt-Repo","Projekt-Commit","project work into the project repo","project commit"],["grepo","Werkzeug-Änderung: eigener Commit","Werkzeug-Commit","tooling change: own commit","tooling commit"],["orepo","Push","Push","push","push"],["claims","Claim gelöscht","Claim gelöscht","claim removed","claim removed"],["aufgaben","offener Rest → Übergabe-Zettel","Übergabe-Zettel","open rest → handoff note","handoff note"],["hooks","format_check prüft die Antwort","format_check","format_check checks the answer","format_check"],["du","liest Ergebnis, Prüfung, Status","Ergebnis lesen","reads result, checks, status","read result"]]},{"r":null,"de":["Verteilung","Git-Hooks verteilen den Stand – ganz ohne Chat.","Repos bleiben privat, wenn nicht ausdrücklich öffentlich.","Repos privat"],"en":["Distribution","Git hooks distribute the state – without any chat.","Repos stay private unless explicitly public.","repos private"],"w":[["hooks","pre-push → pages_hook.sh, chat_sync","pre-push, sync","pre-push → pages_hook.sh, chat_sync","pre-push, sync"],["tools","publish_pages.py baut die Seiten","publish_pages","publish_pages.py builds the pages","publish_pages"],["seite","zeigt den neuen Stand","neu gebaut","shows the new state","rebuilt"],["rechner","holen den Stand per ws_sync.sh","ws_sync.sh","fetch the state via ws_sync.sh","ws_sync.sh"],["du","nutzt Seite und Projekte","Seite nutzen","uses page and projects","use page"]]}],"ui":{"de":{"step":"Schritt","stop":"Stopp","play":"Abspielen","pause":"Pause","loop":"dann wieder 1","rail":"Schritte des Ablaufs","both":"beide Repos liegen lokal und online:","stopWhen":"Stopp, wenn …","zWer":"Wer handelt","zChat":"Chat · Rolle","zAbst":"Abstimmung","zWis":"Wissen und Werkzeuge","zHook":"Automatik","zAbl":"Ablage – Weg des Stands","loopB":"Nach Schritt 6 beginnt die nächste Aufgabe wieder bei 1","loopC":"nächste Aufgabe → wieder Schritt 1","dot":"Punkt = arbeitet in diesem Schritt","seg":"dicke Linie = arbeitet über zwei Schritte durch","hover":"Zeiger auf einen Punkt zeigt die Einzelheit","mpTitle":"Ablauf einer Aufgabe als Linienplan","mpDesc":"Jede Komponente ist eine Linie, jeder der sechs Schritte eine Station; ein Punkt zeigt, dass die Komponente in diesem Schritt arbeitet."},"en":{"step":"Step","stop":"Stop","play":"Play","pause":"Pause","loop":"then 1 again","rail":"Steps of the flow","both":"both repos exist locally and online:","stopWhen":"Stop when …","zWer":"Who acts","zChat":"Chat · role","zAbst":"Coordination","zWis":"Knowledge and tools","zHook":"Automation","zAbl":"Storage – path of the state","loopB":"After step 6 the next task starts again at 1","loopC":"next task → step 1 again","dot":"dot = works in this step","seg":"thick line = keeps working across two steps","hover":"point at a dot for the detail","mpTitle":"Task flow as a line map","mpDesc":"Every component is a line, each of the six steps a station; a dot shows that the component works in that step."}}}</script>
+    <details class="wf-more">
+      <summary><svg class="i" aria-hidden="true"><use href="#i-down"/></svg><span data-en="All details as a table">Alle Einzelheiten als Tabelle</span></summary>
+      <div class="wf-more-in">
     <p class="sub" data-en="One row per step · columns = who acts · last column = when the chat stops. Hooks are scripts that run on their own; the Git column shows what reaches the repos.">Eine Zeile je Schritt · Spalten = wer handelt · letzte Spalte = wann der Chat anhält. Hooks sind Skripte, die von selbst laufen; die Spalte Git zeigt, was in den Repos ankommt.</p>
     <table class="tb tb-steps" data-reveal>
       <thead><tr>
@@ -685,6 +687,8 @@ footer p { margin: 0; }
       <li><svg class="i stop"><use href="#i-stop"/></svg><span data-en="Stop = the chat halts and asks or goes one step back">Stopp = Chat hält an und fragt nach oder geht einen Schritt zurück</span></li>
       <li><svg class="i loop"><use href="#i-sync"/></svg><span data-en="After step 6 the next task starts again at 1">Nach Schritt 6 beginnt die nächste Aufgabe wieder bei 1</span></li>
     </ul>
+      </div>
+    </details>
     <div class="two gap">
       <table class="tb tb-sm" data-reveal>
         <thead><tr><th data-en="Role">Rolle</th><th data-en="Task">Aufgabe</th></tr></thead>
@@ -913,6 +917,265 @@ footer p { margin: 0; }
     io.unobserve(e.target);
   }), { rootMargin: '0px 0px -8% 0px' });
   document.querySelectorAll('[data-reveal], .rule').forEach(el => io.observe(el));
+})();
+</script>
+<script>
+// Ablauf-Grafik „1 Ablauf einer Aufgabe“: drei Ansichten aus #wf-data (DE/EN), Umschalter als Tabs (Wahl User 16.10.2026).
+// Bewegung nach HyperFrames-Vertrag ohne Bibliothek: eine Uhr je Ansicht, Zustand nur aus seek(t),
+// Layout einmal je Schritt bzw. Größenänderung messen, nie während der Bewegung; „Bewegung reduzieren“ = Standbild.
+(() => {
+  const box = document.getElementById('wf-flow'), src = document.getElementById('wf-data');
+  if (!box || !src) return;
+  const D = JSON.parse(src.textContent);
+  const NS = 'http://www.w3.org/2000/svg';
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const en = () => document.documentElement.lang === 'en';
+  const ui = k => D.ui[en() ? 'en' : 'de'][k];
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+  const ico = name => `<svg class="i${name === 'github' ? ' fill' : ''}" aria-hidden="true"><use href="#i-${name}"/></svg>`;
+  const ease = x => x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
+  const store = (k, v) => { try { if (v === undefined) return localStorage.getItem(k); localStorage.setItem(k, v); } catch (e) { return null; } };
+  const comp = id => { const c = D.comps[id]; return { icon: c[1], name: en() ? c[4] : c[2], sub: en() ? c[5] : c[3], col: `var(--${D.groups[c[0]].c})` }; };
+  const step = i => {
+    const s = D.steps[i], L = s[en() ? 'en' : 'de'];
+    return { n: L[0], t: L[1], stop: L[2], stopS: L[3], r: s.r, w: s.w.map(w => ({ id: w[0], long: en() ? w[3] : w[1], short: en() ? w[4] : w[2] })) };
+  };
+  const setBtn = (btn, on) => {   // Abspielen/Pause-Knopf
+    btn.setAttribute('aria-pressed', String(on));
+    btn.querySelector('span').textContent = ui(on ? 'pause' : 'play');
+    btn.querySelector('use').setAttribute('href', on ? '#i-pause' : '#i-play');
+  };
+
+  // ---------- Systemkarte: jede Komponente einmal, Auftrags-Paket mit Leuchtspur (svg-path-draw) ----------
+  const A = { el: document.getElementById('wf-p-map'), cur: 1, t: 99, plan: null, playing: false, auto: false, raf: 0, last: 0, ro: null };
+  const LEAD = .35, SEG = .85, GLOW = .8, TRAIL = 90, HOLD = 1.8;
+  A.render = () => {
+    const node = id => {
+      const c = comp(id);
+      const roles = id === 'chat' ? `<span class="wa-roles">${D.roles[en() ? 'en' : 'de'].map((r, i) => `<span data-r="${i}">${esc(r)}</span>`).join('')}</span>` : '';
+      return `<div class="wa-n" data-id="${id}" style="--c:${c.col}"><span class="wa-nh">${ico(c.icon)}<strong>${esc(c.name)}</strong><b class="wa-o" aria-hidden="true"></b></span>`
+        + `<small class="wa-sub">${esc(c.sub)}</small><span class="wa-act"></span>${roles}</div>`;
+    };
+    const zone = (cls, title, inner) => `<section class="wa-z ${cls}"><h4>${esc(title)}</h4><div class="wa-zb">${inner}</div></section>`;
+    const down = `<span class="wa-dn" aria-hidden="true">${ico('down')}</span>`;
+    A.el.innerHTML = `<div class="wa-top"><div class="wa-rail" role="group" aria-label="${esc(ui('rail'))}">`
+      + D.steps.map((_, i) => `<button type="button" data-s="${i + 1}" aria-pressed="false"><i>${i + 1}</i><span>${esc(step(i).n)}</span></button>`).join('')
+      + `<span class="wa-loop">${ico('sync')}<span>${esc(ui('loop'))}</span></span></div>`
+      + `<button type="button" class="wf-play" aria-pressed="false">${ico('play')}<span>${esc(ui('play'))}</span></button></div>`
+      + `<div class="wa-cap" aria-live="polite"><p class="wa-sum"><b></b> <span></span></p><p class="wa-stop">${ico('stop')}<span></span></p></div>`
+      + `<div class="wa-map">`
+      + zone('z-du', ui('zWer'), node('du')) + zone('z-chat', ui('zChat'), node('chat'))
+      + zone('z-abst', ui('zAbst'), node('claims') + node('aufgaben'))
+      + zone('z-wis', ui('zWis'), ['regeln', 'skills', 'agenten', 'tools'].map(node).join(''))
+      + zone('z-hook', ui('zHook'), node('hooks'))
+      + zone('z-abl', ui('zAbl'), `<div class="wa-pair">${node('grepo')}${node('prepo')}</div><p class="wa-note">${esc(ui('both'))}</p>`
+        + `${node('dateien')}${down}${node('lrepo')}${down}${node('orepo')}${down}<div class="wa-pair">${node('rechner')}${node('seite')}</div>`)
+      + `</div>`;
+    const map = A.el.querySelector('.wa-map');
+    const fx = document.createElementNS(NS, 'svg');
+    fx.setAttribute('class', 'wa-fx'); fx.setAttribute('aria-hidden', 'true');
+    fx.innerHTML = '<path class="wa-route"/><path class="wa-trail"/><circle class="wa-halo" r="15"/><circle class="wa-dot" r="6"/>';
+    map.prepend(fx);
+    A.map = map; A.fx = fx; [A.route, A.trailEl, A.halo, A.dot] = fx.children;
+    A.nodes = Object.fromEntries([...map.querySelectorAll('.wa-n')].map(n => [n.dataset.id, n]));
+    A.el.querySelectorAll('.wa-rail button').forEach(b => b.addEventListener('click', () => { A.auto = false; setBtn(A.btn, false); A.show(+b.dataset.s, 0); A.start(); }));
+    A.btn = A.el.querySelector('.wf-play');
+    A.btn.addEventListener('click', () => {
+      if (A.auto) { A.auto = false; A.stop(); setBtn(A.btn, false); return; }
+      A.auto = true; setBtn(A.btn, true);
+      if (A.t >= A.plan.end) A.show(A.cur % 6 + 1, 0);
+      A.start();
+    });
+    if (A.ro) A.ro.disconnect();
+    A.ro = new ResizeObserver(() => { A.setup(A.cur); A.seek(A.t); });
+    A.ro.observe(map);
+    A.show(A.cur, A.t);
+  };
+  A.setup = n => {   // Layout-Konstanten für Schritt n
+    const s = step(n - 1), mr = A.map.getBoundingClientRect(), tmp = document.createElementNS(NS, 'path');
+    A.fx.setAttribute('viewBox', `0 0 ${Math.max(1, mr.width)} ${Math.max(1, mr.height)}`);
+    const pts = s.w.map(({ id }) => { const r = A.nodes[id].getBoundingClientRect(); return [r.left - mr.left + r.width / 2, r.top - mr.top + r.height / 2]; });
+    let d = `M${pts[0][0]} ${pts[0][1]}`; const parts = [d];
+    for (let i = 1; i < pts.length; i++) {   // rechtwinklig: erst waagrecht, dann senkrecht, Ecke gerundet
+      const [x0, y0] = pts[i - 1], [x1, y1] = pts[i], dx = x1 - x0, dy = y1 - y0;
+      if (Math.abs(dx) < 1 || Math.abs(dy) < 1) d += ` L${x1} ${y1}`;
+      else { const r = Math.min(14, Math.abs(dx) / 2, Math.abs(dy) / 2), sx = Math.sign(dx), sy = Math.sign(dy); d += ` L${x1 - sx * r} ${y0} Q${x1} ${y0} ${x1} ${y0 + sy * r} L${x1} ${y1}`; }
+      parts.push(d);
+    }
+    A.route.setAttribute('d', d); A.trailEl.setAttribute('d', d);
+    const cum = parts.map(p => { tmp.setAttribute('d', p); return tmp.getTotalLength(); });
+    const L = A.route.getTotalLength() || 1, samples = [];
+    for (let k = 0; k <= 240; k++) { const q = A.route.getPointAtLength(L * k / 240); samples.push([q.x, q.y]); }
+    A.route.style.strokeDasharray = `${L} ${L}`; A.trailEl.style.strokeDasharray = `${TRAIL} ${L + TRAIL}`;
+    const at = s.w.map((_, i) => LEAD + i * SEG);
+    A.plan = { s, L, cum, samples, at, end: at[at.length - 1] + .45 };
+  };
+  A.seek = tt => {   // ganzer Zustand nur aus t
+    const { s, at, cum, L, samples, end } = A.plan;
+    let len = 0;
+    for (let i = 0; i < at.length; i++) {
+      if (tt >= at[i]) len = cum[i];
+      if (i + 1 < at.length && tt > at[i] && tt < at[i + 1]) len = cum[i] + (cum[i + 1] - cum[i]) * ease((tt - at[i]) / SEG);
+    }
+    const f = Math.max(0, Math.min(1, len / L)) * (samples.length - 1), i0 = Math.floor(f), i1 = Math.min(i0 + 1, samples.length - 1), u = f - i0;
+    const x = samples[i0][0] + (samples[i1][0] - samples[i0][0]) * u, y = samples[i0][1] + (samples[i1][1] - samples[i0][1]) * u;
+    const vis = tt < LEAD ? tt / LEAD : tt > end ? Math.max(0, 1 - (tt - end) / .5) : 1;
+    A.dot.setAttribute('transform', `translate(${x} ${y})`);
+    A.halo.setAttribute('transform', `translate(${x} ${y}) scale(${1 + .25 * Math.sin(tt * 7)})`);
+    A.dot.style.opacity = vis; A.halo.style.opacity = .22 * vis; A.trailEl.style.opacity = .4 * vis; A.route.style.opacity = .7 * vis;
+    A.route.style.strokeDashoffset = L - len;
+    A.trailEl.style.strokeDashoffset = -(len - TRAIL);
+    const order = Object.fromEntries(s.w.map((w, i) => [w.id, [i, w.long]]));
+    for (const [id, el] of Object.entries(A.nodes)) {
+      const hit = order[id], on = !!hit && tt >= at[hit[0]];
+      el.classList.toggle('on', on);
+      el.style.setProperty('--glow', on ? Math.max(0, 1 - (tt - at[hit[0]]) / GLOW).toFixed(3) : 0);
+      el.querySelector('.wa-o').textContent = hit ? hit[0] + 1 : '';
+      el.querySelector('.wa-act').textContent = hit ? hit[1] : '';
+    }
+  };
+  A.show = (n, t0) => {
+    A.cur = n; const s = step(n - 1);
+    A.el.querySelectorAll('.wa-rail button').forEach(b => { const k = +b.dataset.s; b.setAttribute('aria-pressed', String(k === n)); b.classList.toggle('done', k < n); });
+    A.el.querySelector('.wa-sum b').textContent = `${ui('step')} ${n} · ${s.n}`;
+    A.el.querySelector('.wa-sum span').textContent = s.t;
+    A.el.querySelector('.wa-stop span').textContent = `${ui('stop')}: ${s.stop}`;
+    A.el.querySelectorAll('.wa-roles span').forEach(r => r.classList.toggle('on', +r.dataset.r === s.r));
+    A.setup(n);
+    A.t = reduce || t0 === undefined ? A.plan.end + 1 : t0;
+    A.seek(A.t);
+  };
+  A.tick = now => {   // die eine Uhr
+    const dt = Math.min(.05, (now - (A.last || now)) / 1000); A.last = now;
+    A.t += dt; A.seek(A.t);
+    if (A.t > A.plan.end + HOLD) { if (A.auto) A.show(A.cur % 6 + 1, 0); else return A.stop(); }
+    A.raf = requestAnimationFrame(A.tick);
+  };
+  A.start = () => { if (reduce || A.raf) return; A.last = 0; A.raf = requestAnimationFrame(A.tick); };
+  A.stop = () => { cancelAnimationFrame(A.raf); A.raf = 0; };
+  A.on = () => {};
+  A.off = () => { A.stop(); A.auto = false; if (A.btn) setBtn(A.btn, false); };
+
+  // ---------- Zeitstrahl: ein Schritt offen, Weg als nummerierte Kette ----------
+  const B = { el: document.getElementById('wf-p-time'), open: 2 };
+  B.render = () => {
+    const legend = Object.values(D.groups).map(g => `<li style="--c:var(--${g.c})"><i></i>${esc(en() ? g.en : g.de)}</li>`).join('')
+      + `<li style="--c:var(--stop)"><i></i>${esc(ui('stop'))}</li>`;
+    const items = D.steps.map((_, i) => {
+      const s = step(i);
+      const icons = s.w.map(w => { const c = comp(w.id); return `<span style="--c:${c.col}" title="${esc(c.name)}">${ico(c.icon)}</span>`; }).join('');
+      const chain = s.w.map(w => { const c = comp(w.id); return `<li style="--c:${c.col}"><span class="wb-kh">${ico(c.icon)}<strong>${esc(c.name)}</strong></span><span>${esc(w.long)}</span></li>`; }).join('');
+      return `<li class="wb-s"><div class="wb-rail" aria-hidden="true"><span class="wb-n">${i + 1}</span><span class="wb-line"></span></div>`
+        + `<details name="wf-time" data-i="${i}"${i === B.open ? ' open' : ''}><summary><span class="wb-h"><b><span class="wf-vh">${esc(ui('step'))} ${i + 1}: </span>${esc(s.n)}</b><span>${esc(s.t)}</span></span>`
+        + `<span class="wb-ic" aria-hidden="true">${icons}</span><span class="wb-ch" aria-hidden="true">${ico('down')}</span></summary>`
+        + `<div class="wb-body"><ol class="wb-weg">${chain}<li class="wb-stop">${ico('stop')}<span><strong>${esc(ui('stopWhen'))}</strong>${esc(s.stop)}</span></li></ol></div></details></li>`;
+    }).join('');
+    B.el.innerHTML = `<ul class="wb-leg">${legend}</ul><ol class="wb">${items}</ol><p class="wb-loop">${ico('sync')}<span>${esc(ui('loopB'))}</span></p>`;
+    B.el.querySelectorAll('details').forEach(d => d.addEventListener('toggle', () => { if (d.open) B.open = +d.dataset.i; }));
+  };
+  B.on = B.off = () => {};
+
+  // ---------- Linienplan: jede Komponente eine Linie, Abspielkopf fährt die Stationen ab (chart-scrub-readout) ----------
+  const C = { el: document.getElementById('wf-p-metro'), t: 0, run: !reduce, raf: 0, last: 0, hot: -1, seen: false, io: null };
+  const ROWS = [['wer', ['du', 'chat']], ['wissen', ['regeln', 'skills', 'agenten', 'tools', 'hooks']], ['abst', ['claims', 'aufgaben']],
+    ['ablage', ['dateien', 'lrepo', 'orepo', 'grepo', 'prepo', 'rechner', 'seite']]];
+  const W = 1056, LX = 196, TOP = 96, RH = 40, GH = 34, CW = (W - LX) / 6, SX = i => LX + i * CW + 16, MOVE = .7, STEP = 2.6;
+  C.render = () => {
+    const act = new Map();
+    D.steps.forEach((_, i) => step(i).w.forEach(w => act.set(`${w.id}|${i}`, w)));
+    const ys = {}, heads = [], p = [];
+    let y = TOP;
+    for (const [g, ids] of ROWS) { heads.push([g, y + GH - 10]); y += GH; for (const id of ids) { ys[id] = y + RH / 2; y += RH; } }
+    const ystop = y + 34 + RH / 2, H = Math.round(ystop + 30), x1 = SX(0), x6 = SX(5);
+    p.push(`<svg class="wc-svg" viewBox="0 0 ${W} ${H}" role="img" aria-labelledby="wc-title wc-desc">`,
+      `<title id="wc-title">${esc(ui('mpTitle'))}</title><desc id="wc-desc">${esc(ui('mpDesc'))}</desc>`,
+      `<defs><marker id="wc-ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="wc-arf"/></marker></defs>`,
+      `<path class="wc-loop" d="M${x6 + 20} 66 V 26 Q ${x6 + 20} 18 ${x6 + 12} 18 H ${x1 + 8} Q ${x1} 18 ${x1} 26 V 40" marker-end="url(#wc-ar)"/>`,
+      `<text class="wc-ll" x="${(x1 + x6) / 2}" y="12" text-anchor="middle">${esc(ui('loopC'))}</text>`);
+    D.steps.forEach((_, i) => {
+      const x = SX(i);
+      p.push(`<line class="wc-col" x1="${x}" y1="${TOP - 6}" x2="${x}" y2="${ystop}"/>`,
+        `<g class="wc-head" data-s="${i}"><circle cx="${x}" cy="62" r="15"/><text class="wc-hn" x="${x}" y="67" text-anchor="middle">${i + 1}</text><text class="wc-ht" x="${x + 24}" y="67">${esc(step(i).n)}</text></g>`);
+    });
+    p.push(`<g class="wc-phg" aria-hidden="true"><line class="wc-ph" x1="0" y1="${TOP - 6}" x2="0" y2="${ystop + 14}"/></g>`);
+    for (const [g, yy] of heads) {
+      const c = `var(--${D.groups[g].c})`;
+      p.push(`<text class="wc-g" x="0" y="${yy}" style="--c:${c}">${esc((en() ? D.groups[g].en : D.groups[g].de).toUpperCase())}</text>`,
+        `<line class="wc-gl" x1="0" y1="${yy + 8}" x2="${W}" y2="${yy + 8}" style="--c:${c}"/>`);
+    }
+    for (const [id, yy] of Object.entries(ys)) {
+      const c = comp(id), st = `style="--c:${c.col}"`;
+      p.push(`<g ${st}><title>${esc(c.name)} – ${esc(c.sub)}</title><use href="#i-${c.icon}" x="0" y="${yy - 10}" width="20" height="20" class="wc-ic${c.icon === 'github' ? ' fill' : ''}"/><text class="wc-n" x="30" y="${yy + 5}">${esc(c.name)}</text></g>`,
+        `<line class="wc-tr" ${st} x1="${LX - 8}" y1="${yy}" x2="${W - 4}" y2="${yy}"/>`);
+      for (let i = 0; i < 5; i++) if (act.has(`${id}|${i}`) && act.has(`${id}|${i + 1}`)) p.push(`<line class="wc-seg" ${st} x1="${SX(i)}" y1="${yy}" x2="${SX(i + 1)}" y2="${yy}"/>`);
+    }
+    for (const [key, w] of act) {
+      const [id, i] = key.split('|'), yy = ys[id], x = SX(+i), c = comp(id);
+      p.push(`<g style="--c:${c.col}"><title>${esc(ui('step'))} ${+i + 1} · ${esc(c.name)}: ${esc(w.long)}</title><circle class="wc-dot" data-s="${i}" cx="${x}" cy="${yy}" r="8"/><text class="wc-st" x="${x + 10}" y="${yy - 11}">${esc(w.short)}</text></g>`);
+    }
+    p.push(`<text class="wc-g" x="0" y="${ystop - 30}" style="--c:var(--stop)">${esc(ui('stopWhen').toUpperCase())}</text>`,
+      `<line class="wc-gl" x1="0" y1="${ystop - 22}" x2="${W}" y2="${ystop - 22}" style="--c:var(--stop)"/>`);
+    D.steps.forEach((_, i) => {
+      const s = step(i), x = SX(i);
+      p.push(`<g><title>${esc(ui('step'))} ${i + 1}: ${esc(s.stop)}</title><use href="#i-stop" x="${x - 10}" y="${ystop - 10}" width="20" height="20" class="wc-stopi"/><text class="wc-st" x="${x + 14}" y="${ystop + 5}">${esc(s.stopS)}</text></g>`);
+    });
+    p.push('</svg>');
+    C.el.innerHTML = `<div class="wc-scroll">${p.join('')}</div><div class="wc-cap"><button type="button" class="wf-play" aria-pressed="false">${ico('play')}<span>${esc(ui('play'))}</span></button>`
+      + `<span><i class="dot"></i>${esc(ui('dot'))}</span><span><i class="seg"></i>${esc(ui('seg'))}</span><span>${esc(ui('hover'))}</span></div>`;
+    C.ph = C.el.querySelector('.wc-phg'); C.dots = [...C.el.querySelectorAll('.wc-dot')]; C.heads = [...C.el.querySelectorAll('.wc-head')];
+    C.btn = C.el.querySelector('.wf-play'); C.hot = -1;
+    if (reduce) C.ph.style.display = 'none';
+    else C.btn.addEventListener('click', () => { C.run = !C.run; C.sync(); });
+    C.btn.hidden = reduce;
+    C.seek(C.t); C.sync();
+  };
+  C.seek = tt => {
+    const i = Math.floor(tt / STEP) % 6, u = tt % STEP, from = SX((i + 5) % 6);
+    C.ph.setAttribute('transform', `translate(${u < MOVE ? from + (SX(i) - from) * ease(u / MOVE) : SX(i)} 0)`);
+    const h = u < MOVE ? -1 : i;
+    if (h === C.hot) return;
+    C.hot = h;
+    C.dots.forEach(d => d.classList.toggle('hot', +d.dataset.s === h));
+    C.heads.forEach(g => g.classList.toggle('hot', +g.dataset.s === h));
+  };
+  C.tick = now => { const dt = Math.min(.05, (now - (C.last || now)) / 1000); C.last = now; C.t += dt; C.seek(C.t); C.raf = requestAnimationFrame(C.tick); };
+  C.sync = () => {   // Uhr läuft nur sichtbar, im Bild und nicht pausiert
+    const go = C.run && !reduce && C.seen && !C.el.hidden;
+    if (C.btn) setBtn(C.btn, C.run && !reduce);
+    if (go && !C.raf) { C.last = 0; C.raf = requestAnimationFrame(C.tick); }
+    if (!go && C.raf) { cancelAnimationFrame(C.raf); C.raf = 0; }
+  };
+  C.io = new IntersectionObserver(es => { C.seen = es[0].isIntersecting; C.sync(); });
+  C.io.observe(C.el);
+  C.on = C.off = () => C.sync();
+
+  // ---------- Tabs ----------
+  const views = { map: A, time: B, metro: C };
+  const tabs = [...box.querySelectorAll('[role="tab"]')];
+  const select = (key, focus) => {
+    tabs.forEach(t => {
+      const on = t.dataset.view === key;
+      t.setAttribute('aria-selected', String(on)); t.tabIndex = on ? 0 : -1;
+      document.getElementById(t.getAttribute('aria-controls')).hidden = !on;
+      if (on && focus) t.focus();
+    });
+    Object.entries(views).forEach(([k, v]) => (k === key ? v.on : v.off)());
+    store('home_wf_view', key);
+  };
+  tabs.forEach((t, i) => {
+    t.addEventListener('click', () => select(t.dataset.view));
+    t.addEventListener('keydown', e => {
+      const k = { ArrowRight: i + 1, ArrowLeft: i - 1, Home: 0, End: tabs.length - 1 }[e.key];
+      if (k === undefined) return;
+      e.preventDefault(); select(tabs[(k + tabs.length) % tabs.length].dataset.view, true);
+    });
+  });
+  const renderAll = () => Object.values(views).forEach(v => v.render());
+  box.hidden = false;
+  renderAll();
+  const q = new URLSearchParams(location.search).get('wf');
+  select(views[q] ? q : views[store('home_wf_view')] ? store('home_wf_view') : 'map');
+  new MutationObserver(renderAll).observe(document.documentElement, { attributes: true, attributeFilter: ['lang'] });
 })();
 </script>
 </body>
