@@ -200,7 +200,7 @@
   /* Kopfzeile: Ort, Weiter/Zurück, Lesefortschritt */
   .topbar { position: sticky; top: 0; z-index: 30; display: flex; flex-direction: column; background: color-mix(in srgb, var(--bg) 95%, transparent); border-bottom: 1px solid var(--line); }  /* wie .top der Hauptseite: kein Blur im Scrollbereich */
   .topbar-row { display: flex; align-items: center; gap: 12px; min-height: 60px; padding: 9px 28px; }
-  .crumb { display: flex; align-items: center; gap: 10px; min-width: 0; flex: 1 1 auto; font-size: 14.5px; }
+  .crumb { display: flex; align-items: center; gap: 10px; min-width: 0; flex: 1 1 auto; font-size: 14.5px; overflow: hidden; }  /* zu schmal: abschneiden statt über die Knöpfe rechts laufen */
   .crumb-area { display: inline-flex; align-items: center; gap: 7px; flex: 0 0 auto; font-weight: 700; color: var(--ak); background: color-mix(in srgb, var(--ak) 11%, transparent); border: 1px solid color-mix(in srgb, var(--ak) 30%, transparent); border-radius: var(--radius-sm); padding: 3px 11px 3px 8px; }
   .crumb-area svg { width: 16px; height: 16px; }
   .crumb-sep { color: var(--mut); flex: 0 0 auto; }
@@ -315,11 +315,12 @@
     .app.nav-open .side { transform: none; visibility: visible; transition: transform .24s ease; }
     .app.nav-open .scrim { display: block; position: fixed; inset: 0; z-index: 35; background: rgba(4, 8, 16, .45); }
     .side-close, .menu-btn, .top-search { display: inline-flex; }
+    .crumb-pos { display: none; }
   }
   @media (max-width: 700px) {
     .page { padding: 24px 16px 72px; gap: 24px; }
     .topbar-row { padding: 8px 16px; gap: 8px; }
-    .crumb-area span, .crumb-sep, .crumb-pos, .topbar .doc-path-area { display: none; }  /* .topbar: schlägt doc_path.css (lädt später) */
+    .crumb-area, .crumb-sep, .crumb-pos, .topbar .doc-path-area { display: none; }  /* .topbar: schlägt doc_path.css (lädt später) */
     .hero-main { padding: 20px; }
   }
   @container page (max-width: 640px) {
@@ -1195,8 +1196,8 @@
   .topbar .seg button { display: inline-flex; align-items: center; justify-content: center; min-height: 28px; padding: 0 8px; font-family: var(--mono); font-size: 12px; font-weight: 700; color: var(--mut); background: transparent; border: 0; border-radius: var(--radius-sm); cursor: pointer; }
   .topbar .seg button:hover { color: var(--ink); }
   .topbar .seg button[aria-pressed="true"] { color: var(--ink); background: var(--surface); box-shadow: 0 1px 2px rgba(0, 0, 0, .12), inset 0 0 0 1px var(--line); }
-  @media (max-width: 700px) {
-    .topbar .seg button { padding: 0 5px; font-size: 11px; min-height: 26px; }
+  @media (max-width: 1080px) {
+    .topbar .seg { display: none; }  /* schmal: Sprache + Farbschema nur in der Schublade (.side-foot), sonst läuft die Leiste über */
   }
 
 </style>
