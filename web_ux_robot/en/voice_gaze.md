@@ -206,6 +206,7 @@
 >> |---|---|---|
 >> | **`/ui/eef_position`** | `std_msgs/Float32MultiArray` | *Receives the current end-effector position for the Z-axis brake logic.* |
 >> | **`/remote/control_state`** | `std_msgs/String` (JSON) | *Control lock of `remote_control_watchdog`: owner, open requests, answers.* |
+>> | **`/ui/gripper_state`** | `std_msgs/String` (latched) | *Gripper state from the Servo node (`closed` only after the driver confirms); drives the gripper chip.* |
 >> | **`/zed/zed_node/rgb/image_rect_color`** | `sensor_msgs/Image` | *(ZED M variant only) Receives the camera feed.* |
 >
 >
@@ -216,13 +217,13 @@
 >> | **`/remote/twist`** | `std_msgs/String` (JSON) | *Cartesian jogging to the watchdog's twist gate (control lock, heartbeat, E-STOP, floor guard, `max_speed`); no commands → zero twist.* |
 >> | **`/remote/heartbeat`** | `std_msgs/String` (JSON) | *Heartbeat every 250 ms, kind `gaze`.* |
 >> | **`/remote/control_request`** | `std_msgs/String` (JSON) | *`request` on GAZE ON, `release`/`cancel` on GAZE OFF and on close.* |
+>> | **`/ui/gripper_cmd`** | `std_msgs/String` | *`close` / `open` to the Servo node (`xarm_joystick_input`), which picks the gripper type, blocks closing in Mixed Reality and reports `/ui/gripper_state` – the watchdog sees a held part (speed level 6 → level-5 speed). Gripper button, only with control.* |
 >
 >
 > ![Services](https://img.shields.io/badge/Services-FF1493?style=flat-square)
 >
 >> | Topic / Interface | Msg Type | Description |
 >> |---|---|---|
->> | **`/ufactory/set_vacuum_gripper`** | `xarm_msgs/srv/VacuumGripperCtrl` (Client) | *Toggles the vacuum gripper state (only with control).* |
 >> | **`/ui/execute_initial_pose`** | `std_srvs/srv/Trigger` (Client) | *Triggers the robot to move to its home pose (only with control).* |
 
 </details>

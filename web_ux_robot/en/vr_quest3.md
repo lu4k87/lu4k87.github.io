@@ -33,7 +33,7 @@
 > - Over HTTPS the UI's ROS-offline dialog shows a link **"Accept the certificate for port 9091"** – the Quest has to accept every newly generated certificate once for 8443 **and** 9091. If the PC's IP changes (e.g. another network), the launch adds the new IP to the certificate and keeps the known ones, so the Quest only has to accept each address once. `localhost` is always included (USB with `adb reverse`).
 > - Features an integrated WebGL rendering engine (`XRWebGLLayer`) to bypass the native Quest 3 "loading screen" (flying stars) and unlock the controller data streams.
 > - **Grip Trigger (middle finger):** Acts as a "clutch". Holding it maps the controller's exact positional delta directly to the robot's end effector (dynamically tracks whichever controller pressed the button).
-> - **Index Trigger (index finger):** Toggles the gripper. The node fires both end effectors in one go — the vacuum gripper via `/ufactory/set_vacuum_gripper` and the Lite 6 gripper via `open`/`close_lite6_gripper` — so the same trigger works whichever one is mounted.
+> - **Index Trigger (index finger):** Toggles the gripper via `/ui/gripper_cmd`; the Servo node switches whichever gripper is configured (vacuum or Lite 6 gripper) and reports the state.
 > - **Watchdog:** If controller data stops arriving for more than 0.3 s while grip is held (tracking lost, browser stalled, Wi-Fi drop), the node immediately sends a zero twist.
 >
 > 🥽 **VR viewport (UX | Control Interface in the headset):** The `8443` server also serves the complete **UX | Control Interface** over HTTPS (`https://<PC-IP>:8443/`), where it connects to the WSS rosbridge on `9091`. Entry points: the VR button 🥽 **Enter VR** in the viewport toolbar with its menu ⌄ (👓 **Passthrough AR**, prepared · 🖥️ **VR mirror window**) and the same three buttons in area **Remote Teleop › VR headset** (groups *Headset* and *On this PC*).
@@ -71,6 +71,7 @@
 >> | **`/ui/emergency_stop_topic`** | `std_msgs/Empty` | *E-STOP pressed → latches at once, even if the motion handler hangs; released only after the reset (`/ui/emergency_stop_active` true → false).* |
 >> | **`/ui/motion_busy`** | `std_msgs/Bool` (latched) | *Planned motion of the motion handler running → no servo start, grip and linear axis ignored.* |
 >> | **`/remote/control_state`** | `std_msgs/String` (latched) | *Control lock of `remote_control_watchdog`: only with control does the headset move the robot, gripper and linear axis.* |
+>> | **`/ui/gripper_state`** | `std_msgs/String` (latched) | *Gripper state from the Servo node (`closed` only after the driver confirms); the trigger closes when it is not `closed`, otherwise opens.* |
 >
 >
 > ![Publishes](https://img.shields.io/badge/Publishes-green?style=flat-square)
@@ -79,6 +80,7 @@
 >> |---|---|---|
 >> | **`/remote/twist`** | `std_msgs/String` (JSON) | *Cartesian velocity with the headset's client id (`client` in `controller_data`) → twist gate of `remote_control_watchdog` → MoveIt Servo; gripper and linear axis only while the headset has control (`/remote/control_state`).* |
 >> | **`/linear_axis_cmd`** | `std_msgs/Float64` | *Commands linear axis displacement from VR controller thumbsticks.* |
+>> | **`/ui/gripper_cmd`** | `std_msgs/String` | *`close` / `open` to the Servo node (`xarm_joystick_input`), which picks the gripper type, blocks closing in Mixed Reality and reports `/ui/gripper_state` – the watchdog sees a held part (speed level 6 → level-5 speed). Index trigger, only with control.* |
 >> | **`/vr_teleop/controller_active`** | `std_msgs/Bool` | *1 Hz, `true` while `controller_data` arrived within the last 2 s – without client id, so the Quest display of the UX \| Control Interface and the UX \| Compact Interface also works over LAN (`controller_data` cannot be subscribed on 9090/9091).* |
 >> | **`/ui/emergency_stop_topic`** | `std_msgs/Empty` | *Only if `/ui/emergency_stop_active` reports `false` without a preceding `true` after an E-STOP (motion handler restarted while hanging): sends the E-STOP again (up to 5×, 1 Hz, `ESTOP_RESEND_TRIES`) until the new motion handler latches.* |
 >
@@ -88,9 +90,6 @@
 >> | Topic / Interface | Msg Type | Description |
 >> |---|---|---|
 >> | **`/servo_server/start_servo`** | `std_srvs/srv/Trigger` (Client) | *Ensures MoveIt Servo is active before motion.* |
->> | **`/ufactory/set_vacuum_gripper`** | `xarm_msgs/srv/VacuumGripperCtrl` (Client) | *Toggles the vacuum gripper via index trigger.* |
->> | **`/ufactory/open_lite6_gripper`** | `xarm_msgs/srv/Call` (Client) | *Fallback gripper open command.* |
->> | **`/ufactory/close_lite6_gripper`** | `xarm_msgs/srv/Call` (Client) | *Fallback gripper close command.* |
 >
 > 🛠️ **System Setup & Usage:**
 > 1. **Network & Firewall:** The PC and Quest 3 must be on the same Wi-Fi/Network. If your Ubuntu uses a firewall (UFW), you MUST open the ports for the headset, otherwise the web interface and WebSocket connections will be blocked:

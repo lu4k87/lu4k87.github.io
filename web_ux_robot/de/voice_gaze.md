@@ -206,6 +206,7 @@
 >> |---|---|---|
 >> | **`/ui/eef_position`** | `std_msgs/Float32MultiArray` | *Empfängt die aktuelle Endeffektor-Position für die Z-Achsen-Bremslogik.* |
 >> | **`/remote/control_state`** | `std_msgs/String` (JSON) | *Control-Lock von `remote_control_watchdog`: Besitzer, offene Anfragen, Antworten.* |
+>> | **`/ui/gripper_state`** | `std_msgs/String` (latched) | *Greiferzustand vom Servo-Node (`closed` erst nach Bestätigung des Treibers); steuert den Greifer-Chip.* |
 >> | **`/zed/zed_node/rgb/image_rect_color`** | `sensor_msgs/Image` | *(Nur ZED M Variante) Empfängt den Kamera-Feed.* |
 >
 >
@@ -216,13 +217,13 @@
 >> | **`/remote/twist`** | `std_msgs/String` (JSON) | *Kartesisches Jogging an das Twist-Gate des Watchdogs (Control-Lock, Heartbeat, E-STOP, Bodensperre, `max_speed`); bleiben Befehle aus → Null-Twist.* |
 >> | **`/remote/heartbeat`** | `std_msgs/String` (JSON) | *Heartbeat alle 250 ms, Art `gaze`.* |
 >> | **`/remote/control_request`** | `std_msgs/String` (JSON) | *`request` bei GAZE ON, `release`/`cancel` bei GAZE OFF und beim Schließen.* |
+>> | **`/ui/gripper_cmd`** | `std_msgs/String` | *`close` / `open` an den Servo-Node (`xarm_joystick_input`): der wählt den Greifertyp, sperrt Schließen bei Mixed Reality und meldet `/ui/gripper_state` – so erkennt der Watchdog ein gehaltenes Teil (Tempostufe 6 → Tempo von Stufe 5). Greifer-Knopf, nur mit Steuerung.* |
 >
 >
 > ![Services](https://img.shields.io/badge/Services-FF1493?style=flat-square)
 >
 >> | Topic / Interface | Msg Type | Beschreibung |
 >> |---|---|---|
->> | **`/ufactory/set_vacuum_gripper`** | `xarm_msgs/srv/VacuumGripperCtrl` (Client) | *Schaltet den Lite 6 Vakuumgreifer per Blickbefehl (nur mit Steuerung).* |
 >> | **`/ui/execute_initial_pose`** | `std_srvs/srv/Trigger` (Client) | *Fährt den Roboter in die Home-Pose (nur mit Steuerung).* |
 
 </details>

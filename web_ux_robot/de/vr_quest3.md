@@ -33,7 +33,7 @@
 > - Über HTTPS zeigt das ROS-Offline-Fenster der UI einen Link **„Accept the certificate for port 9091“** – jedes neu erzeugte Zertifikat muss die Quest für 8443 **und** 9091 einmal akzeptieren. Wechselt die IP des PCs (z. B. anderes Netz), ergänzt der Launch die neue IP im Zertifikat; bekannte IPs bleiben drin, also muss die Quest jede Adresse nur einmal freigeben. `localhost` ist immer enthalten (USB mit `adb reverse`).
 > - Enthält eine integrierte WebGL-Rendering-Engine (`XRWebGLLayer`), um den nativen "Ladebildschirm" (die fliegenden Sterne) der Quest 3 zu beenden und die Controller-Datenströme freizuschalten.
 > - **Grip Trigger (Mittelfinger):** Wirkt als "Kupplung". Solange er gedrückt ist, wird das exakte räumliche Delta des Controllers direkt auf den Endeffektor des Roboters übertragen (es wird automatisch der Controller getrackt, dessen Taste gedrückt wird).
-> - **Index Trigger (Zeigefinger):** Schaltet den Greifer. Der Node bedient beide Endeffektoren gleichzeitig — den Vakuumgreifer über `/ufactory/set_vacuum_gripper` und den Lite 6 Greifer über `open`/`close_lite6_gripper` — damit derselbe Trigger unabhängig vom montierten Greifer funktioniert.
+> - **Index Trigger (Zeigefinger):** Schaltet den Greifer über `/ui/gripper_cmd`; der Servo-Node schaltet den konfigurierten Greifer (Vakuum oder Lite 6 Greifer) und meldet den Zustand.
 > - **Watchdog:** Bleiben die Controller-Daten bei gedrücktem Grip länger als 0,3 s aus (Tracking weg, Browser hängt, WLAN weg), sendet der Node sofort einen Null-Twist.
 >
 > 🥽 **VR-Viewport (UX | Control Interface in der Brille):** Der Server auf `8443` liefert zusätzlich die komplette **UX | Control Interface** über HTTPS aus (`https://<PC-IP>:8443/`). Die UI verbindet sich dort automatisch mit der WSS-rosbridge auf `9091`. Einstiege: der VR-Button 🥽 **Enter VR** in der Viewport-Leiste mit seinem Menü ⌄ (👓 **Passthrough AR**, vorbereitet · 🖥️ **VR mirror window**) und dieselben drei Buttons im Bereich **Remote Teleop › VR headset** (Gruppen *Headset* und *On this PC*).
@@ -92,6 +92,7 @@
 >> | **`/ui/emergency_stop_topic`** | `std_msgs/Empty` | *E-STOP gedrückt → verriegelt sofort, auch wenn der Motion Handler hängt; frei erst nach dem Quittieren (`/ui/emergency_stop_active` true → false).* |
 >> | **`/ui/motion_busy`** | `std_msgs/Bool` (latched) | *Geplante Fahrt des Motion Handlers läuft → kein Servo-Start, Grip und Linearachse ignoriert.* |
 >> | **`/remote/control_state`** | `std_msgs/String` (latched) | *Control-Lock des `remote_control_watchdog`: nur mit Steuerung bewegt die Brille Roboter, Greifer und Linearachse.* |
+>> | **`/ui/gripper_state`** | `std_msgs/String` (latched) | *Greiferzustand vom Servo-Node (`closed` erst nach Bestätigung des Treibers); der Trigger schließt, wenn er nicht `closed` ist, sonst öffnet er.* |
 >
 >
 > ![Publishes](https://img.shields.io/badge/Publishes-green?style=flat-square)
@@ -100,6 +101,7 @@
 >> |---|---|---|
 >> | **`/remote/twist`** | `std_msgs/String` (JSON) | *Kartesische Geschwindigkeit mit der Client-id der Brille (`client` in `controller_data`) → Twist-Gate des `remote_control_watchdog` → MoveIt Servo; Greifer und Linearachse nur, solange die Brille die Steuerung hat (`/remote/control_state`).* |
 >> | **`/linear_axis_cmd`** | `std_msgs/Float64` | *Verfährt die Linearachse über die Daumensticks der VR-Controller.* |
+>> | **`/ui/gripper_cmd`** | `std_msgs/String` | *`close` / `open` an den Servo-Node (`xarm_joystick_input`): der wählt den Greifertyp, sperrt Schließen bei Mixed Reality und meldet `/ui/gripper_state` – so erkennt der Watchdog ein gehaltenes Teil (Tempostufe 6 → Tempo von Stufe 5). Zeigefinger-Trigger, nur mit Steuerung.* |
 >> | **`/vr_teleop/controller_active`** | `std_msgs/Bool` | *1 Hz, `true`, solange `controller_data` in den letzten 2 s ankam – ohne Client-id, damit die Quest-Anzeige von UX \| Control Interface und UX \| Compact Interface auch über LAN geht (`controller_data` ist auf 9090/9091 nicht abonnierbar).* |
 >> | **`/ui/emergency_stop_topic`** | `std_msgs/Empty` | *Nur wenn `/ui/emergency_stop_active` nach einem E-STOP `false` ohne vorheriges `true` meldet (Neustart eines hängenden Motion Handlers): sendet den E-STOP neu (bis 5×, 1 Hz, `ESTOP_RESEND_TRIES`), bis der neue Motion Handler verriegelt.* |
 >
@@ -109,9 +111,6 @@
 >> | Topic / Interface | Msg Type | Beschreibung |
 >> |---|---|---|
 >> | **`/servo_server/start_servo`** | `std_srvs/srv/Trigger` (Client) | *Stellt sicher, dass MoveIt Servo vor der ersten Bewegung aktiv ist.* |
->> | **`/ufactory/set_vacuum_gripper`** | `xarm_msgs/srv/VacuumGripperCtrl` (Client) | *Schaltet den Vakuumgreifer über den Zeigefinger-Trigger.* |
->> | **`/ufactory/open_lite6_gripper`** | `xarm_msgs/srv/Call` (Client) | *Öffnet zusätzlich den Lite 6 Greifer, falls dieser montiert ist.* |
->> | **`/ufactory/close_lite6_gripper`** | `xarm_msgs/srv/Call` (Client) | *Schließt zusätzlich den Lite 6 Greifer, falls dieser montiert ist.* |
 
 </details>
 
