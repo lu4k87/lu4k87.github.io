@@ -149,6 +149,24 @@
 
 <br>
 
+### ![Node](https://img.shields.io/badge/Node-blue?style=flat-square) ![Web UI](https://img.shields.io/badge/Web_UI-0ea5e9?style=flat-square) `gaze_tracker` + Gaze Control window `gaze.html` (N64) &nbsp;&nbsp; <sub><i>`gaze_tracker.py` · `gaze.html` · `js/gaze/`</i></sub>
+
+**Purpose & Task:** The successor of the PyQt window: gaze steering as a web page in its **own window** next to the UX | Control Interface (button *Open Gaze Control* in the Input devices menu of the header; the interface keeps running normally). The node `gaze_tracker` (no UI, moves nothing) reads the Tobii RTSP stream, finds the four ArUco markers, maps the gaze by homography into the marker rectangle and publishes it as `/gaze/point` (JSON `u`, `v` 0…1, `valid`, `markers`, 30 Hz, also while the gaze is lost). The page converts it into window pixels (marker margin and offset under *Calibration*, with a tracker the fields only act in fullscreen (`F`), on the monitor that carries the markers) and drives like the PyQt window: its own watchdog client (kind `gaze`), twists only through the twist gate.
+
+> **Start:**
+> ```bash
+> ros2 run gaze_control_ui_tobii_glasses gaze_tracker
+> ```
+> Then open the window, look at **Gaze control** (requests control, approve in the UX | Control Interface on the robot PC) and look at a field for **1.4 s**. Without a tracker the mouse acts as gaze (test mode, banner shown).
+>
+> - **Layout:** perspectives left (Scene = ZED, Nozzle camera = real cam2 or the virtual tool camera in Robot | Digital Twin, further virtual twin cameras – their images come from the open UX | Control Interface via `BroadcastChannel`, keep that window visible), image with 12 motion fields at the edge (230 × 130 px at 1920 px: X/Y in 8 directions, Z up/down, rotate), actions right (gaze control on/off, speed 1…3, gripper, home), STOP always top right.
+> - **Dwell:** progress ring around the gaze cursor, 1.4 s (STOP 0.6 s), 1 s lock after switching fields. Motion fields drive while the gaze stays on them.
+> - **Mouse mode (no tracker):** only while the mouse button is held on a field. **E-STOP** (click only) sends `/ui/emergency_stop_topic` and also switches gaze control off; without connection the page says so instead of sending.
+> - **Halt (checked every cycle, dead-man):** gaze off the field, gaze/markers lost (> 0.3 s / 1 s), window without focus or hidden or closed, control lost, rosbridge lost, E-STOP, gaze control off, page stalled (> 0.2 s without cycle), DOWN at Z ≤ 33 mm or without a Z pose younger than 0.5 s. Second layer: heartbeat/command stream timeout of the watchdog. STOP (gaze 0.6 s, click or `Esc`) also switches gaze control off and halts the running motion.
+> - **Tilt correction** keeps the TCP vertical while driving (only with a fresh pose); DOWN never faster than speed 2 and with soft landing from 40 mm.
+> - **Open:** *grasp object* (stays in `gaze_grasp_routine_tobii_glasses`), clicks/dwell times into UX | Monitoring, card in the UX | Nexus Launcher; the PyQt packages' windows stay until the page is accepted.
+> - **Tests:** `python3 tools/test_gaze_ui.py` (logic, safety rules, layout), `tools/test_gaze_e2e.py` (page → rosbridge → twist gate, own domain 188, no robot).
+
 ### ![Node](https://img.shields.io/badge/Node-blue?style=flat-square) ![Python UI](https://img.shields.io/badge/Python_UI-8A2BE2?style=flat-square&logo=qt&logoColor=white) `gaze_ui_node_tobii_glasses.py` / `gaze_ui_node_tobii_glasses_zedm.py` (`gaze_control_ui_tobii_glasses`) &nbsp;&nbsp; <sub><i>`/src/gaze_control_ui_tobii_glasses/gaze_control_ui_tobii_glasses`</i></sub>
 
 **Purpose & Task:** A master control user interface (PyQt5). Maps gaze points (via RTSP gaze data) to button clicks (e.g., at 1 sec fixation time) and sends movement and gripper commands through the safety chain: own client of `remote_control_watchdog` (kind `gaze`). **GAZE ON** requests control (approve in the UX | Control Interface on the robot PC), **GAZE OFF** releases it; without control no driving, HOME or gripper. Two variants of the script exist for different camera setups:

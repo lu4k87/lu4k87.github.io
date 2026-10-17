@@ -149,6 +149,24 @@
 
 <br>
 
+### ![Node](https://img.shields.io/badge/Node-blue?style=flat-square) ![Web UI](https://img.shields.io/badge/Web_UI-0ea5e9?style=flat-square) `gaze_tracker` + Blicksteuerungs-Fenster `gaze.html` (N64) &nbsp;&nbsp; <sub><i>`gaze_tracker.py` · `gaze.html` · `js/gaze/`</i></sub>
+
+**Zweck & Aufgabe:** Nachfolger des PyQt-Fensters: Blicksteuerung als Webseite in einem **eigenen Fenster** neben der UX | Control Interface (Knopf *Blicksteuerung öffnen* im Menü Eingabegeräte im Kopf; die Oberfläche läuft normal weiter). Der Knoten `gaze_tracker` (ohne Oberfläche, bewegt nichts) liest den Tobii-RTSP-Stream, findet die vier ArUco-Marker, rechnet den Blick per Homographie in das Marker-Rechteck um und veröffentlicht ihn als `/gaze/point` (JSON `u`, `v` 0…1, `valid`, `markers`, 30 Hz, auch bei Blickverlust). Die Seite macht daraus Fensterpixel (Marker-Abstand und Versatz unter *Kalibrierung*, mit Tracker wirken die Felder nur im Vollbild (`F`), auf dem Monitor mit den Markern) und fährt wie das PyQt-Fenster: eigener Watchdog-Client (Art `gaze`), Twist nur über das Twist-Gate.
+
+> **Start:**
+> ```bash
+> ros2 run gaze_control_ui_tobii_glasses gaze_tracker
+> ```
+> Dann das Fenster öffnen, **Blicksteuerung** anblicken (fragt die Steuerung an, Freigabe in der UX | Control Interface am Roboter-PC) und ein Feld **1,4 s** anblicken. Ohne Tracker ersetzt die Maus den Blick (Testmodus, Hinweisband).
+>
+> - **Aufbau:** links Perspektiven (Szene = ZED, Nozzle-Kamera = echte cam2 bzw. virtuelle Werkzeug-Kamera im Robot | Digital Twin, weitere virtuelle Twin-Kameras – deren Bild kommt per `BroadcastChannel` aus der offenen UX | Control Interface, Fenster sichtbar lassen), Bild mit 12 Fahrfeldern am Rand (230 × 130 px bei 1920 px: X/Y in 8 Richtungen, Z hoch/runter, Drehen), rechts Aktionen (Blicksteuerung an/aus, Tempo 1…3, Greifer, Home), STOPP immer oben rechts.
+> - **Verweilen:** Fortschrittsring um den Blickcursor, 1,4 s (STOPP 0,6 s), 1 s Sperre nach Schaltfeldern. Fahrfelder fahren, solange der Blick auf ihnen bleibt.
+> - **Maus-Modus (kein Tracker):** nur bei gedrückter Maustaste auf einem Feld. **E-STOP** (nur Klick) sendet `/ui/emergency_stop_topic` und schaltet die Blicksteuerung aus; ohne Verbindung meldet die Seite das, statt zu senden.
+> - **Halt (jeden Takt geprüft, Totmann):** Blick neben dem Feld, Blick/Marker verloren (> 0,3 s / 1 s), Fenster ohne Fokus, verdeckt oder geschlossen, Steuerung weg, rosbridge weg, E-STOP, Blicksteuerung aus, Seite hängt (> 0,2 s ohne Takt), DOWN bei Z ≤ 33 mm oder ohne Z-Pose jünger als 0,5 s. Zweite Schicht: Heartbeat-/Befehlsstrom-Timeout des Watchdogs. STOPP (Blick 0,6 s, Klick oder `Esc`) schaltet zusätzlich die Blicksteuerung aus und hält die laufende Fahrt an.
+> - **Neigungskorrektur** hält den TCP beim Fahren senkrecht (nur mit frischer Pose); DOWN nie schneller als Tempo 2, Soft-Landing ab 40 mm.
+> - **Offen:** *Objekt greifen* (bleibt in `gaze_grasp_routine_tobii_glasses`), Klicks/Verweilzeiten ins UX | Monitoring, Karte im UX | Nexus Launcher; die PyQt-Fenster bleiben, bis die Seite abgenommen ist.
+> - **Tests:** `python3 tools/test_gaze_ui.py` (Logik, Sicherheitsregeln, Layout), `tools/test_gaze_e2e.py` (Seite → rosbridge → Twist-Gate, eigene Domain 188, ohne Roboter).
+
 ### ![Node](https://img.shields.io/badge/Node-blue?style=flat-square) ![Python UI](https://img.shields.io/badge/Python_UI-8A2BE2?style=flat-square&logo=qt&logoColor=white) `gaze_ui_node_tobii_glasses.py` / `gaze_ui_node_tobii_glasses_zedm.py` (`gaze_control_ui_tobii_glasses`) &nbsp;&nbsp; <sub><i>`/src/gaze_control_ui_tobii_glasses/gaze_control_ui_tobii_glasses`</i></sub>
 
 **Zweck & Aufgabe:** Eine übergeordnete Master-Control-UI (PyQt5). Setzt Blickpunkte (über RTSP Gaze-Daten) in Button-Klicks um (z.B. bei 1 Sek. Fixationsdauer) und sendet Bewegungs- und Greiferbefehle über die Sicherheitskette: eigener Client von `remote_control_watchdog` (Art `gaze`). **GAZE ON** fragt die Steuerung an (Freigabe im UX | Control Interface am Roboter-PC), **GAZE OFF** gibt sie ab; ohne Steuerung kein Fahren, kein HOME, kein Greifer. Es existieren zwei Varianten des Skripts für unterschiedliche Kamera-Setups:
