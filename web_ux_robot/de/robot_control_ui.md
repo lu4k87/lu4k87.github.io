@@ -670,6 +670,7 @@
 >> | **`/remote/twist`**, **`/remote/joint_jog`** | `std_msgs/String` (JSON) | *Kartesisches / Gelenk-Jogging mit Client-id → Twist-Gate des `remote_control_watchdog` → `/servo_server/delta_*_cmds` (nur Besitzer der Steuerung, Bodensperre).* |
 >> | **`/servo_server/delta_joint_cmds`** | `control_msgs/JointJog` | *Steuert feine Joint-Jogs per Klick.* |
 >> | **`/ui/robot_control/set_speed_index`** | `std_msgs/Int32` | *Sichert die geänderte Geschwindigkeit.* |
+>> | **`/ui/robot_control/speed_confirm`** | `std_msgs/Int32` | *Freigabe für Tempostufe 6 an Robot \| Hardware (nach der Bestätigung gesendet, 15 s gültig, von einem Anheben verbraucht; der Servo-Node prüft sie).* |
 >> | **`/ui/scan_speed`** | `std_msgs/Int32` | *Aus dem Tempo-Override abgeleitete Stufe für MoveTo/Scans (0: Slow, 1: Normal, 2: Fast).* |
 >> | **`/ui/emergency_stop_topic`** | `std_msgs/Empty` | *Publiziert sofortigen Software-E-STOP (blockierungsfreier Topic-Bypass).* |
 >> | **`/linear_axis_cmd`** | `std_msgs/Float64` | *Publiziert den Befehl zur Bewegung der Linearachse.* |
