@@ -164,7 +164,7 @@
 > - **Maus-Modus (kein Tracker):** nur bei gedrückter Maustaste auf einem Feld. **E-STOP** (nur Klick) sendet `/ui/emergency_stop_topic` und schaltet die Blicksteuerung aus; ohne Verbindung meldet die Seite das, statt zu senden.
 > - **Halt (jeden Takt geprüft, Totmann):** Blick neben dem Feld, Blick/Marker verloren (> 0,3 s / 1 s), Fenster ohne Fokus, verdeckt oder geschlossen, Steuerung weg, rosbridge weg, E-STOP, Blicksteuerung aus, Seite hängt (> 0,2 s ohne Takt), DOWN bei Z ≤ 33 mm oder ohne Z-Pose jünger als 0,5 s. Zweite Schicht: Heartbeat-/Befehlsstrom-Timeout des Watchdogs. STOPP (Blick 0,6 s, Klick oder `Esc`) schaltet zusätzlich die Blicksteuerung aus und hält die laufende Fahrt an.
 > - **Neigungskorrektur** hält den TCP beim Fahren senkrecht (nur mit frischer Pose); DOWN nie schneller als Tempo 2, Soft-Landing ab 40 mm.
-> - **Offen:** *Objekt greifen* (bleibt in `gaze_grasp_routine_tobii_glasses`), Klicks/Verweilzeiten ins UX | Monitoring, Karte im UX | Nexus Launcher; die PyQt-Fenster bleiben, bis die Seite abgenommen ist.
+> - **Offen:** *Objekt greifen* (bleibt in `gaze_grasp_routine_tobii_glasses`), Abnahme mit der Brille am Roboter; die Knopf-Klicks der Seite gehen ins UX | Monitoring (wie in der UX | Control Interface, Verweil-Auslösungen zählen noch nicht); die PyQt-Fenster bleiben, bis die Seite abgenommen ist.
 > - **Tests:** `python3 tools/test_gaze_ui.py` (Logik, Sicherheitsregeln, Layout), `tools/test_gaze_e2e.py` (Seite → rosbridge → Twist-Gate, eigene Domain 188, ohne Roboter).
 
 ### ![Node](https://img.shields.io/badge/Node-blue?style=flat-square) ![Python UI](https://img.shields.io/badge/Python_UI-8A2BE2?style=flat-square&logo=qt&logoColor=white) `gaze_ui_node_tobii_glasses.py` / `gaze_ui_node_tobii_glasses_zedm.py` (`gaze_control_ui_tobii_glasses`) &nbsp;&nbsp; <sub><i>`/src/gaze_control_ui_tobii_glasses/gaze_control_ui_tobii_glasses`</i></sub>
@@ -243,7 +243,7 @@
 > 💻 **Run Command:**
 > ```bash
 > # Teil von RUN DEV SETUP (Robot | Digital Twin und Robot | Hardware) im UX | Nexus Launcher:
-> # Karte "Eyetracker - Gaze Control", Modus Real World (Modus UI Gaze startet stattdessen gaze_ui)
+> # Karte "Eyetracker - Gaze Control", Modus Real World (Modus UI Gaze startet stattdessen den Tracker `gaze_tracker` der Gaze-Control-Seite)
 > ros2 run gaze_grasp_routine_tobii_glasses gaze_grasp_routine_tobii_glasses --ros-args -p tobii_ip:=192.168.100.xxx -p dwell_threshold:=2.0
 > ```
 >
