@@ -278,6 +278,30 @@ a.hero-card:hover { border-color: color-mix(in srgb, var(--accent) 65%, var(--gl
 .h3d-tip { position: absolute; left: 0; top: 0; width: 6px; height: 6px; border-radius: 50%; background: var(--accent);
   translate: -50% -50%; opacity: 0; z-index: 1; pointer-events: none; transition: opacity 280ms var(--ease-io); }
 .h3d-line.in, .h3d-tip.in { opacity: .9; }
+/* Runden-Karte (js/hero3d.js, dome, AAA-Feinschliff 18.10.2026): Glas-Panel mittig über der Bühne, Titel · Zeit zählt hoch ·
+   drei Sterne ploppen nacheinander · Punkte · Fehlgriffe; Zeiger geht durch. Lichtblitz .h3d-flash beim Rundenende (900 ms). */
+.h3d-card { position: absolute; left: 50%; top: 27%; z-index: 3;   /* oben in der Kuppel: verdeckt weder Roboter noch die Sprechblasen am Werkzeug */ display: grid; justify-items: center; gap: 6px; min-width: 220px; max-width: 80%;
+  padding: 16px 22px 14px; translate: -50% -50%; pointer-events: none; border: 1px solid var(--glass-bd); border-radius: var(--radius-lg);
+  background: var(--glass-bg); color: var(--glass-fg); text-align: center; box-shadow: inset 0 1px 0 var(--glass-hi), 0 14px 40px -12px rgba(0, 0, 0, .6);
+  opacity: 0; scale: .9; transition: opacity 360ms var(--ease-io), scale 360ms var(--ease-io); }
+.h3d-card.in { opacity: 1; scale: 1; animation: h3d-pop 420ms var(--ease-out); }
+.h3d-card-t { font: 700 12px/1.2 var(--mono); letter-spacing: .14em; text-transform: uppercase; color: color-mix(in srgb, var(--accent) 60%, var(--glass-fg)); }
+.h3d-card.best .h3d-card-t { color: #f2c14e; }
+.h3d-card-time { font: 800 40px/1 var(--mono); font-variant-numeric: tabular-nums; letter-spacing: -.02em; text-shadow: 0 0 18px color-mix(in srgb, var(--accent) 55%, transparent); }
+.h3d-stars { display: flex; gap: 6px; }
+.h3d-stars i { width: 22px; height: 22px; background: currentColor; color: color-mix(in srgb, var(--glass-fg) 22%, transparent); scale: .8;
+  clip-path: polygon(50% 0, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%); }
+.h3d-stars i.on { color: #f2c14e; scale: 1; }
+.h3d-card.in .h3d-stars i.on { animation: h3d-star 520ms var(--ease-out) both; }
+.h3d-card.in .h3d-stars i:nth-child(2) { animation-delay: 180ms; }
+.h3d-card.in .h3d-stars i:nth-child(3) { animation-delay: 360ms; }
+@keyframes h3d-star { 0% { scale: 0; rotate: -40deg; } 60% { scale: 1.25; } 100% { scale: 1; rotate: 0deg; } }
+.h3d-card-pts { font: 700 15px/1.2 var(--mono); font-variant-numeric: tabular-nums; color: var(--accent); }
+.h3d-card-sub { font: 500 12px/1.3 var(--mono); color: var(--glass-fg); }
+.h3d-flash { position: absolute; inset: 0; z-index: 1; pointer-events: none; opacity: 0;
+  background: radial-gradient(ellipse at 50% 55%, color-mix(in srgb, var(--accent) 36%, transparent), transparent 70%); }
+.h3d-flash.in { animation: h3d-flash 900ms var(--ease-out); }
+@keyframes h3d-flash { 0% { opacity: 0; } 18% { opacity: 1; } 100% { opacity: 0; } }
 /* Klang-Knopf frei unten rechts in der Bühne (gleiche Rasterzelle wie der Canvas, kein position: absolute); Missionsstand
    selbst liegt in der 3D-Szene (js/hero3d.js), für Screenreader als unsichtbare Statuszeile .h3d-sr */
 .h3d-snd { align-self: end; justify-self: end; z-index: 2; display: grid; place-items: center; width: 36px; height: 36px; margin: 14px; padding: 0;
@@ -289,7 +313,7 @@ a.hero-card:hover { border-color: color-mix(in srgb, var(--accent) 65%, var(--gl
 .h3d-snd[aria-pressed="false"] .x { display: inline; }
 .h3d-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; margin: 0; }
 @media (max-width: 520px) { .h3d-snd { margin: 10px; } }
-@media (prefers-reduced-motion: reduce) { .h3d-say, .h3d-say.in, .h3d-line, .h3d-tip, .h3d-cursor, .h3d-snd { transition: none; animation: none; } }
+@media (prefers-reduced-motion: reduce) { .h3d-say, .h3d-say.in, .h3d-line, .h3d-tip, .h3d-cursor, .h3d-snd, .h3d-card, .h3d-card.in, .h3d-stars i, .h3d-flash { transition: none; animation: none; } }
 /* Karten mit wechselndem Inhalt (aktiver Eintrag der Szene) und Phasen-Liste (Ghost: Plan → Freigabe → Fahrt) */
 .hc-live strong { font-size: 30px; }
 .hc-live .sub-k { font: 600 12px/1.3 var(--mono); color: var(--fg-2); }

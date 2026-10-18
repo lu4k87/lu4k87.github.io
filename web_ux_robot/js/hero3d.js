@@ -37,8 +37,9 @@ function init(three, addons, opts = {}) {
   THREE = three; ({ OrbitControls, toCreasedNormals, RoomEnvironment } = addons);
   const L = window.Lite6, wrap = document.querySelector(opts.wrap || '#hero-stage'), host = document.querySelector(opts.host || '#hero3d');
   if (!L || !window.LITE6_MESH || !host || !wrap || !webgl()) return null;
-  try { return build(L, wrap, host, opts); } catch (e) { console.warn('Hero-3D:', e); return null; }
+  try { const api = build(L, wrap, host, opts); if (api) init.scenes[opts.scene || 'dome'] = api; return api; } catch (e) { console.warn('Hero-3D:', e); return null; }
 }
+init.scenes = {};   // gebaute Szenen je Name (Prüfhaken: Hero3D.init.scenes.dome.probe() im Headless-Test)
 
 function build(L, wrap, host, o) {
   const scene = o.scene || 'dome', cam = { ...CAM[scene], ...o.cam };
@@ -148,6 +149,7 @@ function build(L, wrap, host, o) {
   const spot = new THREE.Mesh(new THREE.RingGeometry(0.012, 0.019, 40), new THREE.MeshBasicMaterial({ color: ACC, transparent: true, opacity: 0.95, side: THREE.DoubleSide, depthWrite: false }));
   const spotGlow = new THREE.Mesh(new THREE.PlaneGeometry(0.09, 0.09), glowMat(0.7));
   st.scene.add(robot.group, beam, spot, spotGlow);
+  const laser = { beam, spot, glow: spotGlow };   // Alias für die dome-Szene (dort heißt `spot` die freie Ablagestelle)
   const tcp = new THREE.Vector3();
   const place = () => {
     robot.tcp.getWorldPosition(tcp);
@@ -203,7 +205,7 @@ function build(L, wrap, host, o) {
   };
 
   // ════ Szenen ════
-  let extra = () => {};
+  let extra = () => {}, timeK = () => 1, probe = null;   // timeK: Zeitlupe der dome-Szene (Hit-Stop, Rundenende), skaliert dt der Bühne; probe: Prüfhaken (dome)
   if (scene === 'dome' || scene === 'atlas') {
     // Arbeitsraum: Punktkuppel (Fibonacci-Kugel r = 440 mm um Gelenk 2, nur über dem Tisch), Breiten- und Längenkreise
     const SH = L.JOINTS[0][2], R = L.REACH, dome = new THREE.Group(), pts = [];
@@ -820,7 +822,7 @@ function build(L, wrap, host, o) {
       { id: 'box', de: 'Quader', en: 'cuboid', S: [0.08, 0.04, 0.03], sym: Math.PI, color: 0xd9262e, glow: 0xff9a8a },
       { id: 'cyl', de: 'Zylinder', en: 'cylinder', S: [0.048, 0.048, 0.05], sym: 0, color: 0x23a55a, glow: 0x9ef0b8 },
     ];
-    const HOT = new THREE.Color(0xffb36b);
+    const HOT = new THREE.Color(0xffb36b), GOLD = new THREE.Color(0xf2c14e);
     const segs = v => new THREE.BufferGeometry().setAttribute('position', new THREE.Float32BufferAttribute(v, 3));
     // Umriss der Grundfläche (m = Rand nach außen), für Aussparung, Scan-Linie, Welle
     const outline = (K, m, z = 0) => K.id === 'cyl'
@@ -921,7 +923,8 @@ function build(L, wrap, host, o) {
         lock, brk, tips, waves, ghost, gFill, gRim, yawG: 0,
         slot: null, home: false, mat: { v: 0, to: 0, D: 1 }, hopT: -1, hopDir: 1, hopYaw: 0, swell: 0, popT: 1, sinkT: 1, jumpT: -1, yaw0: 0, yaw1: 0, shake: 0,
         on: null, from: null, fall: null, pickTop: sz,
-        eyes, eye, face: 0, faceLocked: false, phi: rnd(-3, 3), lx: 0, ly: 0, blink: 1, blinkT: rnd(1, 4), mood: 'open', moodTill: 0, sq: 1, crouch: 0 };
+        eyes, eye, face: 0, faceLocked: false, phi: rnd(-3, 3), lx: 0, ly: 0, blink: 1, blinkT: rnd(1, 4), mood: 'open', moodTill: 0, sq: 1, sqA: 0.24, crouch: 0,
+        hov: 0, cheer: -1 };   // hov = Zeiger darüber (geglättet), cheer = Jubelhüpfer am Rundenende (−1 = aus)
     };
     // Aussparung: dunkle Grundfläche + Rand (innen schwächere Kante = Tiefe), Schein und Welle als Klick-Hinweis
     const makeTpl = K => {
@@ -954,6 +957,21 @@ function build(L, wrap, host, o) {
     // Stoppuhr: tRun = Laufzeit der Runde (s), best = Bestzeit (s, 0 = keine), inside = Maus auf der Bühne, lastIn = letzte Eingabe (clk)
     let tRun = 0, started = false, finished = false, best = 0, newBest = false, inside = false, lastIn = -1e9;
     const IDLE = 15;
+    // AAA-Feinschliff (Wunsch User 18.10.2026): Punkte + Sterne je Runde (score gesamt, roundPts, mistakes = Fehlgriffe), Hinweis-
+    // Stufen beim Halten (holdAt), Ziehen statt Klick-Klick (drag), Rundenende-Kino (cine: Kamera-Push, Zeitlupe, Karte, Countdown),
+    // Hit-Stop (slow: Zeitfaktor k, hold s halten, in D s zurück) und 3D-Wackler (shk: Szene versetzt sich A m, klingt in D s ab)
+    let score = 0, roundPts = 0, mistakes = 0, stars = 0, holdAt = -1, cine = null, drag = false, countdown = 0, lastCd = 0, ledF = 0, laserK = 0;
+    const slow = { k: 1, t: 9, hold: 0, D: 1, depth: 1 }, shk = { t: 9, D: 1, A: 0 }, laserC = new THREE.Color(), camDir = new THREE.Vector3(), trailP = new THREE.Vector3();
+    timeK = () => slow.k;
+    const slowMo = (depth, hold, D) => { if (reduce) return; Object.assign(slow, { depth, hold, D, t: 0 }); };
+    const shake3 = (A, D) => { if (reduce) return; Object.assign(shk, { A, D, t: 0 }); };
+    const easeOut = u => 1 - (1 - u) ** 3;
+    // Stauchen mit Stärke a (Aufprall 0,24, weiches Absetzen 0,12); Einflug-Höhe der Objekte zu Rundenbeginn
+    const squash = (o, a = 0.24) => { o.sq = 0; o.sqA = a; };
+    const DROP_H = 0.14;
+    // Hinweis-Stufen beim Halten: ab HINT1 pulsiert nur noch die passende Form, ab HINT1 + 5 s zeigt ein Leitstrahl den Weg;
+    // in der allerersten Runde (noch nie eine geschafft) früher = sanftes Tutorial
+    const HINT1 = () => (rounds === 0 ? 1.2 : 4.5);
     const slotXY = s => [s.r * Math.cos(s.a), s.r * Math.sin(s.a)];
     const xy = s => { const [x, y] = slotXY(s); return `x ${mm(x)} · y ${mm(y)} mm`; };
     const ring = (x, y, z) => { flashT = 0; flash.position.set(x, y, z); };
@@ -980,14 +998,16 @@ function build(L, wrap, host, o) {
     const putAt = (o, s) => { o.slot = s; o.dz = 0; const [x, y] = slotXY(s); o.g.position.set(x, y, (o.on ? topZ(o.on) : 0) + o.h / 2); };
     // Speichern: Lage, Stand, Runden, Klang (privates Fenster/gesperrt → Spiel läuft ohne Merken)
     const STORE = 'hero3d.missions.v1';
-    const save = () => { try { localStorage.setItem(STORE, JSON.stringify({ rounds, mute, t: tRun, best, objs: OBJ.map(o => ({ a: o.slot.a, r: o.slot.r })), tpls: TPL.map(t => t.slot), home: OBJ.map(o => o.home),
+    const save = () => { try { localStorage.setItem(STORE, JSON.stringify({ rounds, mute, t: tRun, best, score, objs: OBJ.map(o => ({ a: o.slot.a, r: o.slot.r })), tpls: TPL.map(t => t.slot), home: OBJ.map(o => o.home),
       on: OBJ.map(o => OBJ.indexOf(o === cur && held ? o.from : o.on)), mat: OBJ.map(o => o.mat.to) })); } catch (e) { /* ohne Merken */ } };
     const saved = (() => { try { return JSON.parse(localStorage.getItem(STORE)) || {}; } catch (e) { return {}; } })();
     rounds = Number.isInteger(saved.rounds) && saved.rounds > 0 ? saved.rounds : 0; mute = saved.mute === true;
     const secs = v => (Number.isFinite(v) && v > 0 && v < 36000 ? v : 0);
     best = secs(saved.best);
-    // m:ss,z (Zehntel; en mit Punkt)
+    score = Number.isFinite(saved.score) && saved.score > 0 && saved.score < 1e8 ? Math.round(saved.score) : 0;
+    // m:ss,z (Zehntel; en mit Punkt); Punkte mit Tausendertrenner (de Punkt, en Komma)
     const fmt = v => { const z = Math.floor(v * 10), m = Math.floor(z / 600); return `${m}:${String(Math.floor(z / 10) % 60).padStart(2, '0')}${T(',', '.')}${z % 10}`; };
+    const fmtN = n => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, T('.', ','));
 
     // Klänge (Wunsch User 06.10.2026: dezent, an sinnvoller Stelle, Klänge der Robot Control UI): Dateien aus ~/dev_ws/sounds,
     // zugeschnitten (Stille weg, Ausblenden), mono, auf −3 dB Spitze angeglichen → docs/sounds/hero_*.mp3. Bedeutung wie in der
@@ -1033,6 +1053,7 @@ function build(L, wrap, host, o) {
         home: () => smp('chime', 0.42, { alt: () => [523.25, 659.25, 783.99].forEach((f, k) => tone(f, k * 0.09, 0.55, 0.04)) }),
         nope: () => smp('error', 0.26, { alt: () => { tone(233, 0, 0.13, 0.05, 'triangle', 207); tone(196, 0.13, 0.2, 0.05, 'triangle', 175); } }),
         win: () => { [523.25, 659.25, 783.99, 1046.5].forEach((f, k) => tone(f, 0.55 + k * 0.12, 0.9, 0.03)); smp('chime', 0.36, { rate: 1.5, at: 0.6, jit: 0 }); },
+        tick: () => tone(1046.5, 0, 0.05, 0.018),                                                // Countdown 3 · 2 · 1 vor der neuen Runde
       };
       const play = (name, arg) => { if (mute || !on) return; try { SND[name](arg); } catch (e) { /* ohne Ton weiter */ } };
       // Erst in einer Nutzergeste anlegen/fortsetzen (Autoplay-Regel der Browser); Dateien dann vorladen
@@ -1252,6 +1273,13 @@ function build(L, wrap, host, o) {
       tGood: [['Flott! Fast so schnell wie ich.', 'Quick! Almost as fast as me.'], ['Sauber gearbeitet.', 'Clean work.']],
       tOk: [['Solide. Ich hab nebenbei Kinematik gerechnet.', 'Solid. I computed kinematics meanwhile.'], ['Gutes Team, wir zwei.', 'Good team, the two of us.']],
       tSlow: [['Gemütlich. Wie der Quader.', 'Leisurely. Like the cuboid.'], ['Gut Ding will Weile haben.', 'Good things take time.']],
+      // AAA-Feinschliff (18.10.2026): Ansage der neuen Runde (Arm) + Party-Dialog zweier Objekte, wenn alle drei zu Hause sind
+      round: [['Neue Lage, neue Chance.', 'New layout, new chance.'], ['Bereit? Die Uhr startet beim ersten Klick.', 'Ready? The clock starts on your first click.'],
+        ['Drei Ausreißer, frisch gemischt.', 'Three runaways, freshly shuffled.'], ['Diesmal schneller? Ich halte mit.', 'Faster this time? I’ll keep up.']],
+      party: [['Alle daheim! Party!', 'Everyone’s home! Party!', 'Aber nicht auf meinem Deckel.', 'Not on my lid, though.'],
+        ['Wer hat die Uhr gestoppt?', 'Who stopped the clock?', 'Der Arm. Der stoppt alles.', 'The arm. It stops everything.'],
+        ['Geschafft! Gruppenfoto?', 'Done! Group photo?', 'Ich steh schon gerade.', 'I’m already standing straight.'],
+        ['Drei von drei. Wie berechnet.', 'Three of three. As computed.', 'Du hast gar nichts berechnet.', 'You computed nothing.']],
     };
     // Ziehen: sel = Objektart (wählt den Pool je Art), arg = Argument der Spruch-Funktion (Standard: sel)
     const bags = new Map();
@@ -1337,16 +1365,23 @@ function build(L, wrap, host, o) {
       const PAUSE_D = (c, x, y, s) => { c.beginPath(); c.arc(x + s / 2, y, s / 2 - 2, 0, Math.PI * 2); c.moveTo(x + s * 0.4, y - s * 0.17); c.lineTo(x + s * 0.4, y + s * 0.17); c.moveTo(x + s * 0.6, y - s * 0.17); c.lineTo(x + s * 0.6, y + s * 0.17); c.stroke(); };
       let shown = '';
       const clock = paused => {
-        const key = `${fmt(tRun)}|${paused}|${rounds}|${best}|${newBest}|${document.documentElement.lang}`;
+        const key = `${fmt(tRun)}|${paused}|${rounds}|${best}|${newBest}|${score}|${countdown}|${document.documentElement.lang}`;
         if (key === shown) return; shown = key;
         const c = tc; c.clearRect(0, 0, 1152, 256); c.textAlign = 'center'; c.textBaseline = 'middle';
-        c.shadowColor = acc; c.shadowBlur = 22; c.fillStyle = acc; c.font = `800 112px ${mono}`; c.fillText(fmt(tRun), 576, 86);
-        c.shadowBlur = 0; c.font = `700 48px ${mono}`;
+        // Countdown zur neuen Runde (3 · 2 · 1, Gold) steht an der Stelle der Zeit
+        c.shadowColor = countdown ? gold : acc; c.shadowBlur = 22; c.fillStyle = countdown ? gold : acc; c.font = `800 112px ${mono}`;
+        c.fillText(countdown ? `${T('NEUE RUNDE', 'NEXT ROUND')} ${countdown}` : fmt(tRun), 576, 86);
+        c.shadowBlur = 0;
         const parts = [];
         if (paused) parts.push({ t: T('PAUSE', 'PAUSED'), col: warn, icon: PAUSE_D });
         parts.push({ t: `${T('RUNDE', 'ROUND')} ${rounds + (finished ? 0 : 1)}`, col: fg });
+        if (score) parts.push({ t: `${fmtN(score)} ${T('PKT', 'PTS')}`, col: fg });
         if (best) parts.push(newBest ? { t: `★ ${T('REKORD', 'RECORD')} ${fmt(best)}`, col: gold } : { t: `${T('BESTZEIT', 'BEST')} ${fmt(best)}`, col: fg });
-        const sep = '  ·  ', IS = 44, w = parts.reduce((s, p, i) => s + c.measureText(p.t).width + (p.icon ? IS + 10 : 0) + (i ? c.measureText(sep).width : 0), 0);
+        // Zeile passt immer auf die Platte: Schrift schrumpft, wenn vier Teile (Pause · Runde · Punkte · Bestzeit) zu breit werden
+        const sep = '  ·  ';
+        let fs = 48, IS = 44, w = 0;
+        const measure = () => { c.font = `700 ${fs}px ${mono}`; IS = Math.round(44 * fs / 48); return parts.reduce((s, p, i) => s + c.measureText(p.t).width + (p.icon ? IS + 10 : 0) + (i ? c.measureText(sep).width : 0), 0); };
+        w = measure(); if (w > 1080) { fs = Math.max(30, Math.floor(48 * 1080 / w)); w = measure(); }
         let x = 576 - w / 2; c.textAlign = 'left'; c.lineWidth = 5; c.lineCap = 'round';
         parts.forEach((p, i) => {
           if (i) { c.fillStyle = fg; c.fillText(sep, x, 200); x += c.measureText(sep).width; }
@@ -1368,8 +1403,8 @@ function build(L, wrap, host, o) {
       const render = () => {
         const n = OBJ.filter(o => o.home).length;
         arcs.forEach(a => { if (a.on === a.o.home) return; a.on = a.o.home; if (!a.on || reduce) a.f = a.on ? 1 : 0; symbol(a); });
-        sr.textContent = finished ? T(`Pick-&-Place-Profi: Runde ${rounds} in ${fmt(tRun)} geschafft`, `Pick & place pro: round ${rounds} done in ${fmt(tRun)}`)
-          : T(`Missionen: ${n} von 3 zu Hause · Runde ${rounds + 1}`, `Missions: ${n} of 3 home · round ${rounds + 1}`);
+        sr.textContent = finished ? T(`Pick-&-Place-Profi: Runde ${rounds} in ${fmt(tRun)} geschafft, ${stars} von 3 Sternen, ${fmtN(roundPts)} Punkte`, `Pick & place pro: round ${rounds} done in ${fmt(tRun)}, ${stars} of 3 stars, ${fmtN(roundPts)} points`)
+          : T(`Missionen: ${n} von 3 zu Hause · Runde ${rounds + 1} · ${fmtN(score)} Punkte`, `Missions: ${n} of 3 home · round ${rounds + 1} · ${fmtN(score)} points`);
         btn.setAttribute('aria-pressed', String(!mute)); btn.setAttribute('aria-label', T('Klänge', 'Sounds'));
         btn.title = mute ? T('Klänge einschalten', 'Turn sounds on') : T('Klänge ausschalten', 'Turn sounds off');
         shown = '';
@@ -1397,17 +1432,45 @@ function build(L, wrap, host, o) {
         },
         // Runde geschafft: Sprechblase am Arm (folgt dem TCP) + Lichtwelle; Screenreader-Zeile setzt render()
         badge() {
-          arm.say(newBest ? T(`Neue Bestzeit! ${fmt(tRun)} ★`, `New best time! ${fmt(tRun)} ★`)
-            : T(`Runde ${rounds} in ${fmt(tRun)} geschafft!`, `Round ${rounds} done in ${fmt(tRun)}!`), null, 3400, 2);
+          // Zeit, Sterne, Punkte stehen auf der Runden-Karte; der Arm bleibt Figur, nicht Anzeige
+          arm.say(newBest ? T('Neue Bestzeit! ★', 'New best time! ★') : T(`Runde ${rounds} geschafft!`, `Round ${rounds} done!`), null, 2600, 2);
           if (!reduce) { waveT = 0; arcs.forEach((a, k) => { a.flT = -0.12 * k; }); }   // die drei Bögen leuchten nacheinander auf
         },
         // wichtige Hinweise (falsche Form, kein Platz, erst ein Objekt) auch für Screenreader; render() setzt danach wieder den Stand
         tell(text) { sr.textContent = text; },
       };
     })();
-    // Neue Runde: Formen + Objekte an ihre Plätze, Objekte ploppen gestaffelt auf (0,6 s, ease-out)
+    // Runden-Karte (AAA-Feinschliff, HTML über der Bühne wie die Sprechblasen): Titel, Zeit und Punkte zählen in 1,1 s hoch,
+    // drei Sterne ploppen nacheinander (CSS), Zeile Fehlgriffe bzw. fehlerfrei; Zeiger geht durch. Dazu ein Lichtblitz (.h3d-flash)
+    // über der ganzen Bühne beim Rundenende. Reduzierte Bewegung: Werte stehen sofort.
+    const card = (() => {
+      const el = document.createElement('div'); el.className = 'h3d-card'; el.setAttribute('aria-hidden', 'true');
+      el.innerHTML = '<b class="h3d-card-t"></b><strong class="h3d-card-time"></strong><span class="h3d-stars"><i></i><i></i><i></i></span><span class="h3d-card-pts"></span><small class="h3d-card-sub"></small>';
+      const fl = document.createElement('div'); fl.className = 'h3d-flash';
+      host.append(fl, el);
+      const [tt, tm, stEl, pts, sub] = el.children;
+      let t0 = 0, raf = 0;
+      const paint = e => { tm.textContent = fmt(tRun * e); pts.textContent = `+${fmtN(Math.round(roundPts * e))} ${T('Punkte', 'points')}`; };
+      const frame = () => { raf = 0; const u = Math.max(0, Math.min(1, (performance.now() - t0) / 1100)); paint(easeOut(u)); if (u < 1) raf = requestAnimationFrame(frame); };
+      return {
+        show() {
+          tt.textContent = newBest ? T('Neue Bestzeit', 'New best time') : T(`Runde ${rounds} geschafft`, `Round ${rounds} complete`);
+          el.classList.toggle('best', newBest);
+          [...stEl.children].forEach((s, i) => s.classList.toggle('on', i < stars));
+          sub.textContent = mistakes ? T(`${mistakes} Fehlgriff${mistakes > 1 ? 'e' : ''} · −${150 * mistakes}`, `${mistakes} miss${mistakes > 1 ? 'es' : ''} · −${150 * mistakes}`) : T('Fehlerfrei · +500', 'Flawless · +500');
+          el.classList.remove('in'); void el.offsetWidth; el.classList.add('in');
+          if (reduce) paint(1); else { paint(0); t0 = performance.now() + 250; if (!raf) raf = requestAnimationFrame(frame); }
+        },
+        hide() { el.classList.remove('in'); if (raf) cancelAnimationFrame(raf); raf = 0; },
+        flash() { if (reduce) return; fl.classList.remove('in'); void fl.offsetWidth; fl.classList.add('in'); },
+      };
+    })();
+    // Neue Runde: Formen + Objekte an ihre Plätze, Objekte fliegen gestaffelt ein (popT: −0,15 s je Objekt, 0,6 s Fall, siehe Haupt-Loop)
     const newRound = (Lx, t = 0) => {
-      newRoundAt = 0; say.hide(); say2.hide(); arm.hide(); dance = fig = charge = null; tRun = t; started = t > 0; finished = newBest = false;
+      newRoundAt = 0; say.hide(); say2.hide(); arm.hide(); card.hide(); dance = fig = charge = null; tRun = t; started = t > 0; finished = newBest = false;
+      mistakes = roundPts = stars = 0; holdAt = -1; cine = null; countdown = lastCd = 0; slow.k = 1; slow.t = 9;
+      // Ansage der Runde durch den Arm, sobald die Objekte gelandet sind (nicht beim Seitenaufruf: dort grüßt er)
+      if (clicked && !reduce) later(1.6, () => { if (!job && !cur && !newRoundAt) arm.say(line(L.round), null, 2400, 1); });
       Lx.tpls.forEach((s, k) => { const t = TPL[k]; t.slot = s; const [x, y] = slotXY(s); t.g.position.set(x, y, 0.0025); t.g.rotation.z = s.yaw; t.full = false; });
       OBJ.forEach((o, k) => { o.on = Lx.on[k] >= 0 ? OBJ[Lx.on[k]] : null; o.from = o.fall = null; });
       // Türme von unten nach oben aufbauen (Höhe hängt am Objekt darunter); gestapelt = genau über dem Objekt darunter
@@ -1562,7 +1625,7 @@ function build(L, wrap, host, o) {
         const g = cur.ghost, b = stackObj.g.position; g.position.set(b.x, b.y, topZ(stackObj) + 0.002); g.rotation.z = landYaw(stackObj.slot.a);
         cur.gFill.material.opacity = 0.14; cur.gRim.material.opacity = 0.9;
       }
-      host.style.cursor = hoverObj || (hover >= 0 && hover !== FREE) ? 'pointer' : hover === FREE ? (spot && spot.ok ? 'pointer' : 'not-allowed') : '';
+      host.style.cursor = drag ? (hover === FREE && spot && !spot.ok ? 'not-allowed' : 'grabbing') : hoverObj || (hover >= 0 && hover !== FREE) ? 'pointer' : hover === FREE ? (spot && spot.ok ? 'pointer' : 'not-allowed') : '';
       st.kick();
     };
     // Lage des Objekts nach dem Absetzen an Winkel B: Werkzeug hält seine Drehung im Raum (ikDown), das Objekt dreht nur um
@@ -1613,6 +1676,8 @@ function build(L, wrap, host, o) {
       const o = cur;
       if (o.hopT >= 0) { o.hopT = -1; o.swell = 0; o.g.position.z = o.h / 2; o.g.rotation.x = 0; }   // greift mitten im Hüpfer: erst landen
       held = true; ring(o.g.position.x, o.g.position.y, o.g.position.z + o.h / 2 + 0.002); sfx('grip');
+      // Sauger an (AAA): Lichtpunkte strömen in den Saugnapf, Laser nimmt die Objektfarbe an, kleiner Ruck, Leuchtspur startet hier
+      suck(o.g.position.x, o.g.position.y, o.g.position.z + o.h / 2); laserC.copy(o.glow); shake3(0.0015, 0.22); trailP.copy(o.g.position);
       o.from = o.on; o.on = null; o.mat.to = 0; o.mat.D = 1.2;   // vom Turm genommen; Material löst sich beim Anheben (Scan rückwärts)
       o.yawG = o.g.rotation.z; if (fx) fx.out = 0;   // Zielerfassung zieht sich zusammen und verlischt
       // Objekt hängt fest am Sauger: Lage + Versatz im Werkzeugrahmen merken (bleibt bei geneigtem Werkzeug dran)
@@ -1625,9 +1690,11 @@ function build(L, wrap, host, o) {
       const o = cur, to = job.to; held = false;
       o.g.rotation.set(0, 0, o.g.rotation.z); sfx('release');
       o.mat.D = 2.6;   // jedes Absetzen materialisiert (Wunsch User 06.10.2026)
-      if (to === BACK) { o.mat.to = 1; o.on = o.from; putAt(o, o.slot); return; }
-      if (to === FREE) { o.mat.to = 1; putAt(o, freeS); freeS = null; ring(o.g.position.x, o.g.position.y, 0.003); save(); return; }   // neuer Startplatz
-      if (to >= STACK) { o.mat.to = 1; const b = OBJ[to - STACK]; o.on = b; putAt(o, { a: b.slot.a, r: b.slot.r }); ring(o.g.position.x, o.g.position.y, topZ(b) + 0.002); save(); return; }
+      // Absetzen (AAA): weiches Stauchen, Staub am Boden, kleiner Ruck – Zurücklegen, freie Stelle, Turm (Heimkehr: Freudensprung)
+      const settle = () => { squash(o, 0.12); burst(o.g.position.x, o.g.position.y, floorZ(o) + 0.004, 8, 0.1, [ACC2, o.glow], 0.25, 1.4, 0.35); shake3(0.0012, 0.2); };
+      if (to === BACK) { o.mat.to = 1; o.on = o.from; putAt(o, o.slot); settle(); return; }
+      if (to === FREE) { o.mat.to = 1; putAt(o, freeS); freeS = null; ring(o.g.position.x, o.g.position.y, 0.003); settle(); save(); return; }   // neuer Startplatz
+      if (to >= STACK) { o.mat.to = 1; const b = OBJ[to - STACK]; o.on = b; putAt(o, { a: b.slot.a, r: b.slot.r }); ring(o.g.position.x, o.g.position.y, topZ(b) + 0.002); settle(); save(); return; }
       // Heimkehr: bleibt oben (kein Einsinken), richtet sich aus; Freudensprung (joyTick) läuft vor dem Färben, siehe dort
       const t = TPL[to]; t.full = true; putAt(o, t.slot); o.home = true;
       o.yaw0 = o.g.rotation.z; o.yaw1 = alignYaw(o.yaw0, t.slot.yaw, o.K.sym); o.sinkT = 0;
@@ -1646,7 +1713,7 @@ function build(L, wrap, host, o) {
         return;
       }
       if (prev < air) {   // soeben gelandet: Stauchen (generische Formel), Lichtring + Funken in Objektfarbe
-        o.g.position.z = o.h / 2; o.g.rotation.x = 0; o.crouch = 0; o.sq = 0;
+        o.g.position.z = o.h / 2; o.g.rotation.x = 0; o.crouch = 0; squash(o);
         flash.material.color.copy(o.col); ring(o.g.position.x, o.g.position.y, 0.003); later(0.5, () => flash.material.color.copy(ACC));
         burst(o.g.position.x, o.g.position.y, o.h * 0.3, 16, 0.3, [o.glow, o.col]); sfx('thud');
       }
@@ -1655,21 +1722,37 @@ function build(L, wrap, host, o) {
     // Zu Hause angekommen (nach Einrutschen + Freudensprung): Dank (Objekt), Klang, Mission abhaken; danach antwortet der Arm:
     // 2 von 3 → „fast geschafft“, alle drei → Rundenende/Bestzeit + Abzeichen, neue Runde
     const arrived = o => {
-      say.show(o, line(L.thanks, o.K), 3000, true); sfx('home');
+      sfx('home');
       if (OBJ.every(x => x.home)) {
         finished = true; rounds++; newBest = !best || tRun < best; if (newBest) best = tRun;
+        // Sterne + Punkte (AAA-Feinschliff): 3 ★ bis 45 s, 2 ★ bis 90 s, sonst 1; ab zwei Fehlgriffen einer weniger (mindestens 1).
+        // Punkte: 1500 Grundwert + Zeitbonus (3000 − 20 je s, nie negativ) + 500 fehlerfrei bzw. −150 je Fehlgriff
+        stars = Math.max(1, (tRun <= 45 ? 3 : tRun <= 90 ? 2 : 1) - (mistakes >= 2 ? 1 : 0));
+        roundPts = Math.max(0, 1500 + Math.max(0, Math.round(3000 - 20 * tRun)) + (mistakes ? -150 * mistakes : 500)); score += roundPts;
+        // Dialog: der Letzte ruft zur Party, ein anderes Objekt antwortet (statt des üblichen Danks); der Arm wartet mit seiner Blase
+        const [p, re] = duo(L.party), o2 = anyOf(OBJ.filter(x => x !== o));
+        say.show(o, p, 2400, true); say2.show(o2, re, 2000, true);
         quest.badge(); sfx('win'); newRoundAt = clk + 6.5;
+        // Kino: kurze Zeitlupe, Lichtblitz, Kamera fährt 8 % näher und zurück (cine), die drei jubeln nacheinander mit Konfetti
+        // in ihren Farben, Runden-Karte zählt Zeit + Punkte hoch (0,9 s später), Countdown 3·2·1 vor der neuen Runde (extra)
+        slowMo(0.4, 0.35, 0.8); card.flash(); cine = { t: 0, d0: st.camera.position.distanceTo(st.controls.target) };
+        OBJ.forEach((x, k) => later(0.3 + 0.14 * k, () => { x.cheer = 0; burst(x.g.position.x, x.g.position.y, x.h + 0.02, 14, 0.26, [x.glow, x.col, GOLD], 0.7, 1, 0.7); }));
+        later(0.9, () => card.show()); later(5.3, () => card.hide());
         // E3 Zeit-Kommentar (Wunsch User 08.10.2026): Arm kommentiert die Rundenzeit, neue Bestzeit → Mini-Feuerwerk; alle freuen sich
         const tl = tRun < 30 ? L.tFast : tRun < 60 ? L.tGood : tRun < 120 ? L.tOk : L.tSlow;
-        later(3.6, () => arm.say(line(tl), null, 2600, 2));
+        later(4.4, () => arm.say(line(tl), null, 2200, 2));
         if (newBest) fireworks();
         OBJ.forEach(x => feel(x, 'happy', 6));
-      } else if (OBJ.filter(x => x.home).length === 2) arm.say(line(L.near), null, 2600, 1);
+      } else {   // Dank des Objekts; zwei von drei → der Arm legt nach („fast geschafft“)
+        say.show(o, line(L.thanks, o.K), 3000, true);
+        if (OBJ.filter(x => x.home).length === 2) arm.say(line(L.near), null, 2600, 1);
+      }
       quest.render(); save(); show();
     };
     // Objekt lehnt ab (falsche Form → K = Form des Ziels, kein Platz); Hinweis auch für Screenreader
     const nope = (pool = L.nope, K) => {
       const text = line(pool, cur.K, K); say.show(cur, text, 2200, true); quest.tell(text); sfx('nope'); cur.shake = 1; feel(cur, 'angry', 2.2);
+      mistakes++; shake3(0.001, 0.18);   // Fehlgriff zählt für Sterne + Punkte der Runde
       // E1 Schadenfreude (Wunsch User 08.10.2026): bei falscher Form kichert ein anderes Objekt (antwortet nach der Absage)
       const o2 = pool === L.nope && anyOf(OBJ.filter(q => q !== cur && !q.fall && q.popT >= 1));
       if (o2) { say2.show(o2, line(L.gloat), 2000, true); feel(o2, 'happy', 2.6); }
@@ -1684,10 +1767,10 @@ function build(L, wrap, host, o) {
         if (op && op.lazy) { ops.splice(i, 1, ...op.lazy()); op = ops[i]; }
         if (!op) return finish();
         if (op.say) arm.step(op.say);
-        if (op.pts) { path = bahn(op.pts, op.v); if (op.say) sfx('move'); }
+        if (op.pts) { path = bahn(op.pts, op.v); ledF = 1; if (op.say) sfx('move'); }   // LED am Werkzeug blitzt auf: „fahre los“
         if (op.act) op.act();
         if (op.hold && job.to < 0) {
-          job.hold = true; lean = vlean = 0;
+          job.hold = true; lean = vlean = 0; holdAt = clk;
           arm.step([L.hold, T('Ziel wählen', 'Choose a target'), T('Form, Stelle, Objekt', 'shape, spot, object'), 1], 1e6);
           TPL.forEach((p, k) => { p.next = clk + 0.3 + k * 0.25; });
           show();
@@ -1697,7 +1780,7 @@ function build(L, wrap, host, o) {
         t += dt; if (!job.hold) busy += dt;
         if (op.hold && job.to < 0 && t > 8 && !op.bored) { op.bored = true; arm.step([L.wait, T('Ziel wählen', 'Choose a target'), T('Form, Stelle, Objekt', 'shape, spot, object'), 1], 1e6); }
         if (op.hold && job.to < 0 && t > 25) { job.to = BACK; show(); }   // niemand wählt → zurücklegen
-        if (op.hold && job.to >= 0) { job.hold = false; ops.push(...place(job.to, false)); next(); t = dt; }   // gleich im selben Frame los
+        if (op.hold && job.to >= 0) { job.hold = false; holdAt = -1; ops.push(...place(job.to, false)); next(); t = dt; }   // gleich im selben Frame los
         if (path) { setPose(path.at(t), dt); if (t >= path.D) next(); return; }
         if (op.hold) {
           // Schweben: leichtes Wiegen + Objekt pendelt um die Hochachse; Arm neigt sich zum Ziel unter dem Zeiger
@@ -1712,7 +1795,7 @@ function build(L, wrap, host, o) {
         if (t >= (op.dwell || 0)) next();
       } };
       const finish = () => {
-        job = null; cur = null; pol.gyaw = 0;
+        job = null; cur = null; pol.gyaw = 0; holdAt = -1;
         const sec = busy.toFixed(1);
         arm.step([L.done, T('Fertig', 'Done'), `${T(sec.replace('.', ','), sec)} s`, 4], 2600);
         if (follow) setGoalXY(ptr.x, ptr.y); else { ph = nearestPhase(); idleRamp = 0; }
@@ -1788,20 +1871,40 @@ function build(L, wrap, host, o) {
     const awake = () => { lastIn = clk; inside = true; };
     host.addEventListener('pointerenter', awake);
     host.addEventListener('wheel', awake, { passive: true });
+    // Ziehen (AAA-Feinschliff, 18.10.2026): Objekt anfassen und > 10 px bewegen = Objekt zum Ziel ziehen (Arm fährt schon los,
+    // Umriss zeigt die Ablage unter dem Zeiger), loslassen über Form, freier Stelle oder Turm = ablegen; sonst hält der Arm und
+    // wartet auf den Klick. Solange der Zeiger auf einem Objekt landet, dreht Ziehen nicht die Kamera (OrbitControls aus);
+    // Ziehen auf leerer Fläche dreht weiter die Ansicht. Klick-Klick bleibt wie bisher.
+    const tolFor = e => (e.pointerType === 'mouse' ? 0.06 : 0.08);
+    const endDrag = () => { if (st.controls) st.controls.enabled = true; if (!drag) return; drag = false; hover = -1; show(); };
     host.addEventListener('pointermove', e => {
       awake();
+      if (down && down.o && !drag && !job && !cur && Math.hypot(e.clientX - down.x, e.clientY - down.y) > 10) {
+        drag = true; touch = e.pointerType !== 'mouse'; sfx.unlock(); lastClick = clk; if (asleep) wake(); clicked = true; grab(down.o);
+      }
+      if (drag) { const k = cur ? tplAt(e, tolFor(e) + 0.01) : -1; if (k !== hover || hoverObj) { hoverObj = null; hover = k; show(); } return; }
       if (e.pointerType !== 'mouse' || e.buttons) return;
       const o = objAt(e, 0.06), k = o || !cur ? -1 : tplAt(e, 0.07);
-      if (o !== hoverObj || k !== hover) { hoverObj = o; hover = k; show(); }
+      if (o !== hoverObj || k !== hover) { if (o && o !== hoverObj) feel(o, 'big', 0.5); hoverObj = o; hover = k; show(); }   // Objekt schaut auf: „meinst du mich?“
     });
     host.addEventListener('pointerleave', e => { if (e.pointerType === 'mouse') inside = false; if (hover >= 0 || hoverObj) { hover = -1; hoverObj = null; show(); } });
-    host.addEventListener('pointerdown', e => { awake(); down = { x: e.clientX, y: e.clientY, t: performance.now() }; });
+    host.addEventListener('pointercancel', () => { down = null; endDrag(); });
+    host.addEventListener('pointerdown', e => {
+      awake();
+      if (e.target.closest('button')) { down = null; return; }
+      const o = job || cur ? null : objAt(e, tolFor(e));
+      down = { x: e.clientX, y: e.clientY, t: performance.now(), o };
+      if (o && st.controls) st.controls.enabled = false;
+    });
     addEventListener('pagehide', save);
     document.addEventListener('visibilitychange', () => { if (document.hidden) save(); });
-    // Tippen/Klick = kurz und ohne Ziehen (Ziehen dreht weiter die Kamera); Klang-Knopf hat eigenen Klick
+    // Tippen/Klick = kurz und ohne Ziehen (Ziehen auf leerer Fläche dreht die Kamera); Klang-Knopf hat eigenen Klick
     host.addEventListener('pointerup', e => {
-      if (e.target.closest('button') || !down || Math.hypot(e.clientX - down.x, e.clientY - down.y) > 6 || performance.now() - down.t > 600) return;
-      const tol = e.pointerType === 'mouse' ? 0.06 : 0.08;
+      const d = down; down = null;
+      if (drag) { const k = cur ? tplAt(e, tolFor(e) + 0.01) : -1; endDrag(); if (k >= 0 && k !== BACK) target(k); return; }
+      endDrag();
+      if (e.target.closest('button') || !d || Math.hypot(e.clientX - d.x, e.clientY - d.y) > 6 || performance.now() - d.t > 600) return;
+      const tol = tolFor(e);
       touch = e.pointerType !== 'mouse'; sfx.unlock(); lastClick = clk; if (asleep) wake();
       const o = objAt(e, tol); if (o) { clicked = true; grab(o); return; }
       const k = tplAt(e, tol + 0.01); if (k >= 0) { clicked = true; target(k); }
@@ -1844,6 +1947,20 @@ function build(L, wrap, host, o) {
       }
       if (fx.out === 1) { L.visible = beamLine.visible = beamDots.visible = false; o.waves.forEach(w => { w.visible = false; }); fx = null; }
     };
+    // Leitstrahl zum Zuhause (AAA-Feinschliff, Hinweis-Stufe 2): hält der Arm das Objekt länger als HINT1 + 5 s ohne Ziel, zeigt
+    // derselbe Strahl (Linie + wandernde Lichtpunkte, jetzt in Objektfarbe) vom Objekt zur passenden Form; blendet in 0,5 s ein
+    let guideOn = false, guideT = 0;
+    const guideTick = dt => {
+      if (!guideOn) { guideOn = true; guideT = 0; beamLine.material.color.copy(cur.glow); beamDots.material.color.copy(cur.glow); }
+      guideT += dt;
+      const op = Math.min(1, guideT / 0.5), tp = TPL[OBJ.indexOf(cur)].g.position;
+      beamA.copy(cur.g.position); beamB.set(tp.x, tp.y, 0.006);
+      const p = beamLine.geometry.attributes.position; p.setXYZ(0, beamA.x, beamA.y, beamA.z); p.setXYZ(1, beamB.x, beamB.y, beamB.z); p.needsUpdate = true;
+      for (let k = 0; k < BEAM_N; k++) { const f = (k / BEAM_N + guideT / 1.1) % 1; beamPos.set([beamA.x + (beamB.x - beamA.x) * f, beamA.y + (beamB.y - beamA.y) * f, beamA.z + (beamB.z - beamA.z) * f], k * 3); }
+      beamDots.geometry.attributes.position.needsUpdate = true;
+      beamLine.visible = beamDots.visible = true; beamLine.material.opacity = 0.55 * op; beamDots.material.opacity = 0.9 * op;
+    };
+    const guideOff = () => { if (!guideOn) return; guideOn = false; beamLine.visible = beamDots.visible = false; beamLine.material.color.copy(ACC2); beamDots.material.color.copy(ACC2); };
     // Ruhe-Hüpfer (Wunsch User 06.10.2026, bewusst gegen soft-motion §5: Klick-Einladung): liegt alles 5 s still, hebt ein freies
     // Objekt ab (24 mm, 1,3 s), dreht sich um 30° und kippt leicht (abwechselnd hin und zurück), schwillt um 8 % an, Lichthof hellt
     // auf; landet weich (sin^1.5) mit Ring am Boden; danach alle 3 s das nächste. Vor dem ersten Klick sagt jedes dritte „Heb mich auf!“.
@@ -1910,7 +2027,7 @@ function build(L, wrap, host, o) {
       });
     };
     // Funken (Zusammenstoß) + Mini-Feuerwerk (E3, neue Bestzeit): Lichtpunkte mit Schwerkraft und Luftwiderstand, verglühen
-    const FX_N = 180, fxPos = new Float32Array(FX_N * 3), fxCol = new Float32Array(FX_N * 3);
+    const FX_N = 320, fxPos = new Float32Array(FX_N * 3), fxCol = new Float32Array(FX_N * 3);
     const fxP = [...Array(FX_N)].map(() => ({ v: new THREE.Vector3(), life: 0, D: 1, c: new THREE.Color(), g: 0 }));
     const fxGeo = new THREE.BufferGeometry().setAttribute('position', new THREE.BufferAttribute(fxPos, 3)).setAttribute('color', new THREE.BufferAttribute(fxCol, 3));
     const fxPts = new THREE.Points(fxGeo, new THREE.PointsMaterial({ map: dot, vertexColors: true, size: 0.011, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending }));
@@ -1947,7 +2064,19 @@ function build(L, wrap, host, o) {
       burst(r * Math.cos(a), r * Math.sin(a), rnd(0.3, 0.42), 26, 0.3, [...OBJ.map(o => o.glow), new THREE.Color(0xf2c14e)], 0, 0.35, 1.1);
     }));
     // Bildwackler beim harten Zusammenstoß (F5 „krachen“): Bühne ruckt 0,34 s
-    const shake = () => { if (!reduce && host.animate) host.animate([{ translate: '0 0' }, { translate: '3px -2px' }, { translate: '-3px 2px' }, { translate: '2px 1px' }, { translate: '0 0' }], { duration: 340, easing: 'ease-out' }); };
+    // AAA-Feinschliff: statt CSS-Translate der ganzen Bühne versetzt sich die 3D-Szene (5,5 mm, 0,45 s abklingend) + Hit-Stop
+    // (Zeit 0,28× für 0,1 s, in 0,32 s zurück) – Sprechblasen und HUD stehen ruhig, nur die Welt ruckt
+    const shake = () => { shake3(0.0055, 0.45); slowMo(0.28, 0.1, 0.32); };
+    // Sauger an: 14 Lichtpunkte strömen aus 30 mm Umkreis in den Saugnapf (0,24 s, ohne Schwerkraft)
+    const suck = (x, y, z) => {
+      if (reduce) return;
+      for (let k = 0; k < 14; k++) {
+        const p = fxP[fxI], a = rnd(0, Math.PI * 2), e = rnd(-0.4, 0.9), h = Math.sqrt(1 - e * e), r = 0.03;
+        fxPos.set([x + h * Math.cos(a) * r, y + h * Math.sin(a) * r, z + e * r], fxI * 3); fxI = (fxI + 1) % FX_N;
+        p.v.set(-h * Math.cos(a), -h * Math.sin(a), -e).multiplyScalar(r / 0.22); p.D = p.life = 0.24; p.g = 0; p.c.copy(ACC2);
+      }
+      fxLive = 1;
+    };
     OBJ.forEach(o => Object.assign(o, { wTh: rnd(-Math.PI, Math.PI), wP: [rnd(0, 7), rnd(0, 7), rnd(0, 7)], wS: 0, wRest: 0, wFix: true,
       vx: 0, vy: 0, spin: 0, wob: rnd(0, 7), dz: 0, bump: 1, bumpCD: 0, evCD: 0, homeAt: rnd(8, 18), homeTill: 0, peeked: false, orb: Math.random() < 0.5 ? 1 : -1, danceCD: 0 }));
     let dance = null, chatAt = 8, bumpTalkAt = 0, lastScene = '', reply = null, quietFrom = 0;   // reply = Antwort eines Objekts auf den Arm (später); quietFrom = letzte Blase (clk)
@@ -2118,8 +2247,9 @@ function build(L, wrap, host, o) {
       charge = null;
       burst(pa.x + nx * s, pa.y + ny * s, Math.min(a.h, b.h) * 0.6, 18, 0.34, [HOT, a.glow, b.glow]);
       if (clk - lastClick < 45) sfx('bonk');   // Ton nur, solange der User gerade spielt
+      shake3(0.003, 0.3); slowMo(0.35, 0.08, 0.25);   // Hit-Stop + kleiner Wackler bei jedem Aufprall (Umkippen verstärkt ihn, s. shake)
       [[a, -1], [b, 1]].forEach(([o, k]) => {
-        o.crouch = 0; o.sq = 0; o.bump = 0; o.bumpCD = clk + 0.6; o.evCD = clk + 1.5; o.danceCD = clk + 6;
+        o.crouch = 0; squash(o); o.bump = 0; o.bumpCD = clk + 0.6; o.evCD = clk + 1.5; o.danceCD = clk + 6;
         o.vx = k * nx * 0.13; o.vy = k * ny * 0.13; o.wTh = Math.atan2(k * ny, k * nx); o.spin = rnd(1.5, 3) * (Math.random() < 0.5 ? 1 : -1);
         feel(o, 'squeeze', 0.5); later(0.5, () => feel(o, 'angry', 2.4));
       });
@@ -2338,6 +2468,29 @@ function build(L, wrap, host, o) {
     const ex = extra;
     extra = (dt, t) => {
       ex(dt, t);
+      // Zeitlupe + Wackler + Kino laufen in Echtzeit (dt kommt schon skaliert → zurückrechnen)
+      const rdt = slow.k > 0 ? dt / slow.k : dt;
+      if (slow.t < slow.hold + slow.D) { slow.t += rdt; const u = slow.t < slow.hold ? 0 : Math.min(1, (slow.t - slow.hold) / slow.D); slow.k = slow.depth + (1 - slow.depth) * u * u * (3 - 2 * u); }
+      else slow.k = 1;
+      if (shk.t < shk.D) { shk.t += rdt; const e = (1 - shk.t / shk.D) ** 2 * shk.A, s = shk.t * 60; st.scene.position.set(e * Math.sin(s * 1.7), e * Math.cos(s * 1.3) * 0.7, e * 0.5 * Math.sin(s * 2.1)); }
+      else if (st.scene.position.x || st.scene.position.y || st.scene.position.z) st.scene.position.set(0, 0, 0);
+      if (cine) {   // Rundenende: Kamera fährt in 1 s 8 % näher, hält bis 3 s, zurück bis 4,5 s (Abstand vom Start der Sequenz)
+        cine.t += rdt;
+        if (cine.t >= 4.5) cine = null;
+        else {
+          const u = cine.t < 1 ? easeOut(cine.t) : cine.t < 3 ? 1 : 1 - easeOut((cine.t - 3) / 1.5), tg = st.controls.target;
+          camDir.copy(st.camera.position).sub(tg).normalize(); st.camera.position.copy(tg).addScaledVector(camDir, cine.d0 * (1 - 0.08 * u));
+        }
+      }
+      // Countdown 3 · 2 · 1 auf der Bodenplatte vor der neuen Runde, je Schritt ein leiser Tick
+      countdown = newRoundAt ? Math.max(0, Math.min(3, Math.ceil(newRoundAt - clk))) : 0;
+      if (countdown !== lastCd) { lastCd = countdown; if (countdown) sfx('tick'); }
+      // Werkzeug-LED blitzt beim Losfahren warm auf und glüht, solange der Sauger hält; Laser + Zielring nehmen die Objektfarbe an
+      ledF = Math.max(0, ledF - rdt / 0.5);
+      const lk = Math.max(held ? 0.7 : 0, ledF);
+      led.material.color.copy(ACC).lerp(HOT, lk); led.material.opacity = 0.85 + 0.15 * lk;
+      laserK += ((held ? 1 : 0) - laserK) * Math.min(1, rdt * 5);
+      laser.beam.material.color.copy(ACC).lerp(laserC, laserK); laser.spot.material.color.copy(laser.beam.material.color); laser.glow.material.color.copy(laser.beam.material.color);
       clk += dt; pt += dt;
       if (say.busy || say2.busy || arm.left > 0) quietFrom = clk;
       for (let i = todo.length - 1; i >= 0; i--) if (clk >= todo[i].at) todo.splice(i, 1)[0].fn();
@@ -2367,6 +2520,12 @@ function build(L, wrap, host, o) {
         robot.tcp.getWorldPosition(tcpW); robot.tcp.getWorldQuaternion(tcpQ);
         cur.g.position.copy(relP).applyQuaternion(tcpQ).add(tcpW); cur.g.quaternion.multiplyQuaternions(tcpQ, rel);
         if (cur.shake > 0) { cur.shake = Math.max(0, cur.shake - dt / 0.6); cur.g.rotateOnWorldAxis(ZAX, 0.14 * Math.sin(cur.shake * Math.PI * 4) * cur.shake); }   // „nein“: kurz schütteln
+        // Leuchtspur (AAA): ab 100 mm/s lässt das getragene Objekt alle 7 mm einen Lichtpunkt in seiner Farbe zurück (0,5 s)
+        if (!reduce && dt > 0) {
+          const dP = cur.g.position.distanceTo(trailP);
+          if (dP > 0.1) trailP.copy(cur.g.position);
+          else if (dP > 0.007 && dP / dt > 0.1) { trailP.copy(cur.g.position); burst(cur.g.position.x, cur.g.position.y, cur.g.position.z, 1, 0.02, [cur.glow], 0, 0.15, 0.5); }
+        }
       }
       // Ruhe-Hüpfer + Einrutschen vor applyMat: Schnittebenen des Materials folgen der Lage im selben Frame
       if (!reduce) {
@@ -2388,8 +2547,15 @@ function build(L, wrap, host, o) {
         }
       }
       if (fx) lockTick(dt);
+      if (!fx && held && job && job.hold && job.to < 0 && holdAt >= 0 && clk - holdAt > HINT1() + 5) guideTick(dt); else guideOff();
       OBJ.forEach(o => {
         if (o.fall) fallTick(o, dt);
+        // Jubelhüpfer am Rundenende: 26 mm hoch mit kleinem Kippen, landet mit Stauchen + Ring in Objektfarbe
+        if (o.cheer >= 0) {
+          const u = o.cheer = Math.min(1, o.cheer + dt / 0.6), a = Math.sin(Math.PI * u);
+          o.g.position.z = floorZ(o) + o.h / 2 + 0.026 * a ** 1.2; o.g.rotation.x = 0.12 * a; o.swell = a * a;
+          if (u === 1) { o.cheer = -1; o.g.rotation.x = 0; o.swell = 0; squash(o, 0.18); flash.material.color.copy(o.col); ring(o.g.position.x, o.g.position.y, 0.003); later(0.4, () => flash.material.color.copy(ACC)); }
+        }
         // Röntgen-Welle: materialisierte Objekte, je 5–9 s versetzt, 1,2 s je Durchlauf, neue zufällige Achse je Durchlauf;
         // im Arm oder beim Lösen keine
         if (!reduce && o.mat.v === 1 && o.mat.to === 1 && !(held && o === cur)) {
@@ -2402,7 +2568,15 @@ function build(L, wrap, host, o) {
           o.g.rotation.z = o.yaw0 + (o.yaw1 - o.yaw0) * e;
         }
         if (o.jumpT >= 0) joyTick(o, dt);
-        if (o.popT < 1) o.popT = Math.min(1, o.popT + dt / 0.6);
+        if (o.popT < 1) {
+          o.popT = Math.min(1, o.popT + dt / 0.6);
+          // Einflug (AAA-Feinschliff): statt Aufploppen fällt das Objekt aus 140 mm wie unter Schwerkraft (u²) auf seinen Platz
+          // und landet mit Stauchen, Lichtring und Staub; gestapelte folgen ihrem Unterbau (floorZ)
+          if (!reduce && o.popT > 0) {
+            o.g.position.z = floorZ(o) + o.h / 2 + DROP_H * (1 - o.popT) ** 2;
+            if (o.popT === 1) { squash(o, 0.2); ring(o.g.position.x, o.g.position.y, floorZ(o) + 0.003); burst(o.g.position.x, o.g.position.y, floorZ(o) + 0.004, 10, 0.12, [ACC2, o.glow], 0.25, 1.4, 0.4); }
+          }
+        }
         applyMat(o, dt);
       });
       fxTick(dt);
@@ -2412,13 +2586,17 @@ function build(L, wrap, host, o) {
       if (!reduce) TPL.forEach(p => {
         if (p.full) return;
         if (clk >= p.next) {
-          if (cur && (!job || job.hold)) { p.t0 = clk; p.next = clk + 1.8; }
+          if (cur && (!job || job.hold)) {
+            // Hinweis-Stufe 1 (AAA): nach HINT1 s Halten pulsiert nur noch die passende Form, kräftiger und im schnelleren Takt
+            const hint = holdAt >= 0 && clk - holdAt > HINT1(), match = TPL.indexOf(p) === OBJ.indexOf(cur);
+            if (hint && !match) p.next = clk + 1.8; else { p.t0 = clk; p.next = clk + (hint ? 1.1 : 1.8); p.hi = hint ? 1.7 : 1; }
+          }
           else if (job || hover >= 0 || hoverObj || p.on) p.next = clk + rnd(1, 3);
-          else { p.t0 = clk; p.next = clk + rnd(5, 10) * (clicked ? 2 : 1); }
+          else { p.t0 = clk; p.next = clk + rnd(5, 10) * (clicked ? 2 : 1); p.hi = 1; }
         }
         const u = (clk - p.t0) / 1.6;
         if (u > 1.05) return;
-        const k = Math.min(1, u), b = Math.sin(Math.PI * k) ** 2;
+        const k = Math.min(1, u), b = Math.sin(Math.PI * k) ** 2 * (p.hi || 1);
         if (!p.on) paintT(p, b);
         p.wave.material.opacity = 0.32 * (1 - k) * Math.min(1, k * 6); p.wave.scale.setScalar(1 + k * 0.5);
       });
@@ -2427,20 +2605,29 @@ function build(L, wrap, host, o) {
       const fade = reduce ? 1 : 1 - (1 - FADE_MIN) * fadeAmp * (fu < 1 ? Math.sin(Math.PI * fu) ** 2 : 0);
       const pu = reduce ? 0.5 : Math.sin(Math.PI * pt / PULSE) ** 2, r = 0.05 + 0.006 * pu;
       OBJ.forEach(o => {
-        const inArm = held && o === cur, f = o.home ? 1 : fade, pop = o.popT <= 0 ? 0.001 : 1 - (1 - o.popT) ** 3;
+        // pop = Einblenden beim Einflug (Schein, Boden); vis = sichtbar erst, wenn der Einflug begonnen hat (Größe bleibt 1, kein Aufploppen)
+        const inArm = held && o === cur, f = o.home ? 1 : fade, pop = o.popT <= 0 ? 0.001 : 1 - (1 - o.popT) ** 3, vis = o.popT <= 0 ? 0.001 : 1;
+        // Zeiger darüber (AAA): Objekt schwillt 3,5 % an, Kanten + Lichthof hellen auf (geglättet, 0,1 s)
+        o.hov += ((o === hoverObj && !job ? 1 : 0) - o.hov) * Math.min(1, dt * 10);
         if (o !== hoverObj && o !== stackObj) { o.grid.material.opacity = 0.42 * f; o.fill.material.opacity = (0.09 + 0.03 * pu) * f; }
-        o.edge.material.opacity *= f; o.pts.material.opacity = 0.9 * f; o.pts.material.size = 0.016 + 0.003 * pu;
-        o.aura.material.opacity = ((o.home ? 0.07 : 0.16 + 0.08 * pu) + 0.14 * o.swell) * pop; o.aura.scale.setScalar(2 * r * (1 + 0.25 * o.swell));
+        o.edge.material.opacity = Math.min(1, o.edge.material.opacity * f + 0.3 * o.hov); o.pts.material.opacity = 0.9 * f; o.pts.material.size = 0.016 + 0.003 * pu;
+        o.aura.material.opacity = ((o.home ? 0.07 : 0.16 + 0.08 * pu) + 0.14 * o.swell + 0.12 * o.hov) * pop; o.aura.scale.setScalar(2 * r * (1 + 0.25 * o.swell + 0.15 * o.hov));
         o.aura.position.copy(o.g.position); if (!inArm) o.aura.position.z = Math.max(o.aura.position.z, r + 0.003);
         o.pool.visible = !inArm && !o.on; o.pool.position.set(o.g.position.x, o.g.position.y, 0.0028);
         const air = inArm ? 0 : Math.max(0, o.g.position.z - o.h / 2) / HOP_H;   // Bodenschein wird beim Abheben etwas kleiner + schwächer
-        o.pool.material.opacity = (0.2 + 0.1 * pu) * (1 - 0.3 * air) * (o.home ? 0.5 : 1) * pop; o.pool.scale.setScalar((0.95 + 0.06 * pu) * (1 - 0.12 * air));
-        // Stauchen: Ducken vor dem Anlauf (10 %) + Aufprall (24 %, 0,32 s); Breite wächst mit, Volumen bleibt grob gleich
+        o.pool.material.opacity = (0.2 + 0.1 * pu) * Math.max(0.1, 1 - 0.3 * air) * (o.home ? 0.5 : 1) * pop; o.pool.scale.setScalar((0.95 + 0.06 * pu) * Math.max(0.4, 1 - 0.12 * air));
+        // Stauchen: Ducken vor dem Anlauf (10 %) + Aufprall (sqA: 24 % Aufprall, 12 % Absetzen, 0,32 s); Breite wächst mit, Volumen bleibt grob gleich
         if (o.sq < 1) o.sq = Math.min(1, o.sq + dt / 0.32);
-        const sc = pop * (1 + 0.008 * pu + HOP_SWELL * o.swell), sq = o.fall || inArm ? 0 : 0.1 * o.crouch + (o.sq < 1 ? 0.24 * Math.sin(Math.PI * o.sq) : 0);
+        const sc = vis * (1 + 0.008 * pu + HOP_SWELL * o.swell + 0.035 * o.hov), sq = o.fall || inArm ? 0 : 0.1 * o.crouch + (o.sq < 1 ? o.sqA * Math.sin(Math.PI * o.sq) : 0);
         o.g.scale.set(sc * (1 + 0.5 * sq), sc * (1 + 0.5 * sq), sc * (1 - sq));
         eyesTick(o, dt);
       });
+    };
+    // Prüfhaken für den Headless-Test (kein Spielzustand wird geändert): Bildschirmlagen (px im Canvas) der Objekte und Formen + Stand
+    probe = () => {
+      const px = p => { v3.copy(p).project(st.camera); return [Math.round((v3.x + 1) / 2 * host.clientWidth), Math.round((1 - v3.y) / 2 * host.clientHeight)]; };
+      return { objs: OBJ.map(o => ({ id: o.K.id, home: o.home, held: held && o === cur, at: px(o.g.position) })), tpls: TPL.map(t => ({ id: t.K.id, full: t.full, at: px(t.g.position) })),
+        hold: !!(job && job.hold), job: !!job, cur: cur ? cur.K.id : null, finished, rounds, score, roundPts, mistakes, stars, tRun, drag, slow: slow.k, countdown };
     };
     // Start: gemerkte Runde (gültig und nicht schon fertig) oder neue Zufallslage
     const okSlot = s => s && Number.isFinite(s.a) && Number.isFinite(s.r) && s.r > 0.14 && s.r < 0.38 && Math.abs(s.a) < 2.95;
@@ -2458,6 +2645,7 @@ function build(L, wrap, host, o) {
   // Auto-Orbit läuft nach Ruhe weich an statt mit voller Geschwindigkeit zu starten
   let orbitRamp = 0;
   tick = (dt, t) => {
+    dt *= timeK();   // Zeitlupe (dome): Arm, Objekte, Funken langsamer; Sprechblasen laufen in Echtzeit weiter
     if (!reduce) {
       if (scene === 'dome' || scene === 'cell' || scene === 'atlas') followTick(dt);
       else if (scene !== 'ghost') damp(dt, 2.5);
@@ -2470,7 +2658,7 @@ function build(L, wrap, host, o) {
   };
   tick(0, 0); st.kick(100);
   wrap.classList.add('is-3d');
-  return { stage: st, pick: i => pick && pick(i), next: m => next && next(m), setMode: m => setMode && setMode(m), get active() { return active; } };
+  return { stage: st, pick: i => pick && pick(i), next: m => next && next(m), setMode: m => setMode && setMode(m), get active() { return active; }, probe: () => probe && probe() };
 }
 
 window.Hero3D = { init };
