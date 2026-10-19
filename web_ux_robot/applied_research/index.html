@@ -733,6 +733,17 @@ const thr = {}; FLOWS.forEach(f => { if (isEnergy(f)) return; const v = Math.max
 const maxThr = Math.max(...NODES.filter(n => n.cat !== 'port').map(n => thr[n.id] || 0));
 NODES.forEach(n => { n.r = n.cat === 'port' ? 0 : 10 + 8 * Math.sqrt((thr[n.id] || 0) / maxThr); });
 
+// Bahn je Fluss einmal abtasten (1 Punkt je viewBox-Einheit) – getPointAtLength je Punkt und Frame ist teuer
+function samplePath(f) {
+  const n = Math.max(2, Math.ceil(f.len) + 1), xy = new Float32Array(n * 2);
+  for (let i = 0; i < n; i++) { const p = f.el.getPointAtLength(i / (n - 1) * f.len); xy[2 * i] = p.x; xy[2 * i + 1] = p.y; }
+  f.xy = xy;
+}
+function pointAt(f, u) { // u ∈ [0, 1], linear zwischen den Stützpunkten
+  const a = f.xy, m = a.length / 2 - 1, s = u * m, i = Math.min(s | 0, m - 1), k = s - i;
+  return [a[2 * i] + (a[2 * i + 2] - a[2 * i]) * k, a[2 * i + 1] + (a[2 * i + 3] - a[2 * i + 1]) * k];
+}
+
 // Geometrie: Bogen je Fluss, parallele Flüsse auf eigene Spur
 const lanes = {};
 FLOWS.forEach(f => { const k = f.from + '>' + f.to; f.lane = lanes[k] = (lanes[k] ?? -1) + 1; });
@@ -746,6 +757,7 @@ FLOWS.forEach(f => {
   f.el.style.stroke = `var(--m-${f.mat})`;
   f.hit = S('path', { class: 'hit', d: f.d }, gHits);
   f.len = f.el.getTotalLength();
+  samplePath(f);
   f.parts = S('g', { class: 'parts' }, gParts);
   f.dots = [];
   f.hit.addEventListener('mouseenter', e => { state.hoverFlow = f.id; render(); showFlowTip(f, e); });
@@ -851,19 +863,20 @@ let last = performance.now(), clock = 0, raf = 0, tempo = 1, paused = false;
 function tick(now) {
   clock += Math.min(now - last, 64) / 1000 * tempo; last = now;
   for (const f of FLOWS) {
-    if (!f.active || tabKarte.hidden) continue;
+    if (!f.active) continue;
     const n = f.dots.length, base = (clock * SPEED / f.len) % 1;
     for (let i = 0; i < n; i++) {
-      const p = f.el.getPointAtLength(((base + i / n) % 1) * f.len);
-      f.dots[i].setAttribute('cx', p.x.toFixed(1)); f.dots[i].setAttribute('cy', p.y.toFixed(1));
+      const [x, y] = pointAt(f, (base + i / n) % 1);
+      f.dots[i].setAttribute('cx', x.toFixed(1)); f.dots[i].setAttribute('cy', y.toFixed(1));
     }
   }
   raf = requestAnimationFrame(tick);
 }
 function placeStatic() { // reduzierte Bewegung / Pause: Punkte fest verteilt
-  for (const f of FLOWS) f.dots.forEach((d, i) => { const p = f.el.getPointAtLength(((i + .5) / f.dots.length) * f.len); d.setAttribute('cx', p.x); d.setAttribute('cy', p.y); });
+  for (const f of FLOWS) f.dots.forEach((d, i) => { const [x, y] = pointAt(f, (i + .5) / f.dots.length); d.setAttribute('cx', x.toFixed(1)); d.setAttribute('cy', y.toFixed(1)); });
 }
-const moving = () => !RM && !paused && !document.hidden;
+// Schleife nur, solange die Karte sichtbar ist (andere Reiter, verdeckter Tab → kein rAF)
+const moving = () => !RM && !paused && !document.hidden && !tabKarte.hidden;
 function motion() { cancelAnimationFrame(raf); if (moving()) { last = performance.now(); raf = requestAnimationFrame(tick); } }
 document.addEventListener('visibilitychange', motion);
 
@@ -1177,6 +1190,7 @@ function showTab(name) {
   });
   if (name === 'sankey') skDraw();
   if (name === 'karte') fitPorts();
+  motion();
   hideTip();
 }
 tabBtns.forEach(b => b.addEventListener('click', () => showTab(b.dataset.tab)));
