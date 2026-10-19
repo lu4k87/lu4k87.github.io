@@ -2,39 +2,7 @@
    Alle Personen, Status, Termine und Aktenzeichen sind Beispieldaten. */
 'use strict';
 
-/* ---------- Ablage ----------
-   Moodle-Kurs-ID ist noch nicht festgelegt (vorher Platzhalter 4711, der auf einen echten Kurs zeigen kann).
-   Leer lassen → Links öffnen die Moodle-Kurssuche „ACCREDO“. Echte ID eintragen, sobald der Kurs steht. */
-const STORAGE = {
-  moodleBase: 'https://moodle.hochschule-rhein-waal.de',
-  moodleCourseId: '',
-  moodleCourseName: 'ACCREDO',
-  xRoot: 'X:\\ACCREDO'
-};
-
-const PROGRAMS = [
-  { id: 'icd',  level: 'bachelor', degree: 'B.A.',  name: 'Information and Communication Design', folder: 'BA_Information_and_Communication_Design' },
-  { id: 'iba',  level: 'bachelor', degree: 'B.A.',  name: 'International Business Administration', folder: 'BA_International_Business_Administration' },
-  { id: 'ee',   level: 'bachelor', degree: 'B.Sc.', name: 'Environment and Energy', folder: 'BSc_Environment_and_Energy' },
-  { id: 'ise',  level: 'bachelor', degree: 'B.Sc.', name: 'Infotronic Systems Engineering', folder: 'BSc_Infotronic_Systems_Engineering' },
-  { id: 'mi',   level: 'bachelor', degree: 'B.Sc.', name: 'Medieninformatik', folder: 'BSc_Medieninformatik' },
-  { id: 'ml',   level: 'bachelor', degree: 'B.Sc.', name: 'Mobility and Logistics', folder: 'BSc_Mobility_and_Logistics' },
-  { id: 'psy',  level: 'bachelor', degree: 'B.Sc.', name: 'Psychologie (Arbeits- und Organisationspsychologie)', folder: 'BSc_Psychologie_AO' },
-  { id: 'egov', level: 'bachelor', degree: 'B.Sc.', name: 'Verwaltungsinformatik – E-Government', note: 'auch dual', folder: 'BSc_Verwaltungsinformatik_E-Government' },
-  { id: 'di',   level: 'master',   degree: 'M.A.',  name: 'Design and Interaction', folder: 'MA_Design_and_Interaction' },
-  { id: 'iecs', level: 'master',   degree: 'M.Sc.', name: 'Information Engineering and Computer Science', folder: 'MSc_Information_Engineering_and_Computer_Science' },
-  { id: 'imp',  level: 'master',   degree: 'M.Sc.', name: 'International Management and Psychology', folder: 'MSc_International_Management_and_Psychology' },
-  { id: 'ue',   level: 'master',   degree: 'M.Sc.', name: 'Usability Engineering', folder: 'MSc_Usability_Engineering' }
-];
-
-const PHASE_FOLDERS = {
-  1: 'Phase_1_Initiierung',
-  2: 'Phase_2_Curriculum_PO',
-  3: 'Phase_3_Recht_Gremien',
-  4: 'Phase_4_Selbstbericht',
-  5: 'Phase_5_Begutachtung',
-  6: 'Phase_6_Antrag_Entscheidung'
-};
+/* Ablage, Studiengänge, Phasenordner, Dokumenttexte: ../data.js (gemeinsam mit der Hauptseite) */
 
 const MONTHS = ['Okt', 'Nov', 'Dez', 'Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt'];
 const YEARS  = [2026, 2026, 2026, 2027, 2027, 2027, 2027, 2027, 2027, 2027, 2027, 2027, 2027];
@@ -176,186 +144,46 @@ const STATUS = {
 const DOCS = {
   'DOC-01': { title: 'Bestandsaufnahme und Evaluationsbericht 2022–2026', file: 'DOC-01_Bestandsaufnahme_Evaluationsbericht_2022-2026.pdf', type: 'Evaluationsbericht', phase: 1, ver: 'v1.2', status: 'Freigegeben', size: '4,2 MB', author: 'Dr. Laurenz Becker (QM)', to: 'Studiengangsleitung, Curriculums-AG',
     chain: [['QM: Datenerhebung', 1], ['Fakultätsrat: zur Kenntnis', 1], ['Studiengangsleitung: Abnahme', 1]],
-    content: `EVALUATIONSBERICHT 2022–2026
-Studiengang: {SG}
-Aktenzeichen: QM-2026-REAKK
-
-1. STUDIERENDENBEFRAGUNGEN
-- Gesamtzufriedenheit: 84 % positiv
-- Praxisnahe Projekt- und Laboranteile werden besonders geschätzt.
-- Kritik: Workload-Spitze im vorletzten Fachsemester durch zwei parallele Projektmodule.
-
-2. KENNZAHLEN
-- Durchschnittliche Studiendauer: 0,8 Fachsemester über der Regelstudienzeit
-- Erfolgsquote (Regelstudienzeit + 2 Semester): 89,2 %
-- Empfehlung: Prüfungen im vorletzten Semester in der neuen Prüfungsordnung (PO v2.0) entzerren.` },
+    content: DOC_TEXT['DOC-01'] },
   'DOC-02': { title: 'Projektplan und Meilensteine', file: 'DOC-02_Projektplan_Meilensteine_Reakkreditierung.pdf', type: 'Zeitplan', phase: 1, ver: 'v1.0', status: 'Freigegeben', size: '1,1 MB', author: 'Prof. Dr. Miriam Weber (Studiengangsleitung)', to: 'Dekanat, Präsidium',
     chain: [['Studiengangsleitung: erstellt', 1], ['Dekanat: bestätigt', 1], ['Präsidium: freigegeben', 1]],
-    content: `PROJEKTPLAN REAKKREDITIERUNG
-Laufzeit: 01.10.2026 bis 31.10.2027 (13 Monate)
-
-MEILENSTEINE
-M1 (Monat 2):  Bestandsaufnahme und Workshop abgeschlossen
-M2 (Monat 5):  PO v2.0 und Modulhandbuch fertig
-M3 (Monat 7):  Beschluss im Fakultätsrat
-M4 (Monat 9):  Selbstbericht an die Agentur
-M5 (Monat 11): Begehung durch das Gutachtergremium
-M6 (Monat 13): Entscheidung des Akkreditierungsrats` },
+    content: DOC_TEXT['DOC-02'] },
   'DOC-03': { title: 'Entwurf Prüfungsordnung PO v2.0', file: 'DOC-03_Entwurf_Pruefungsordnung_PO_v2.0.pdf', type: 'Satzungsentwurf', phase: 2, ver: 'v2.0 Entwurf', status: 'In Prüfung', size: '850 KB', author: 'Curriculums-AG (Weber, Lindner)', to: 'Prüfungsausschuss, Justitiariat',
     chain: [['Curriculums-AG: Entwurf', 1], ['Prüfungsausschuss: Prüfung', 0], ['Justitiariat: Rechtsprüfung', 0]],
-    content: `PRÜFUNGSORDNUNG (PO v2.0)
-für den {SG_ART} {SG}
-– ergänzt die Rahmenprüfungsordnung der Hochschule –
-
-§ 4 Regelstudienzeit und Leistungspunkte
-(1) Regelstudienzeit und Umfang in Leistungspunkten (ECTS) ergeben sich aus dem Studienverlaufsplan (Anlage 1).
-(2) Ein Leistungspunkt entspricht einem Arbeitsaufwand von 25 bis 30 Stunden.
-
-§ 12 Prüfungsformen
-(1) Prüfungsleistungen werden erbracht durch
-    a) Klausurarbeiten (60–120 Minuten),
-    b) mündliche Prüfungen (20–30 Minuten),
-    c) Projektarbeiten mit praktischem Anteil und Fachgespräch,
-    d) elektronische Prüfungen in gesicherter Umgebung.
-
-§ 18 Nachteilsausgleich
-(1) Bei chronischer Erkrankung oder Behinderung gewährt der Prüfungsausschuss auf Antrag angepasste Prüfungsbedingungen, z. B. eine verlängerte Bearbeitungszeit.` },
+    content: DOC_TEXT['DOC-03'] },
   'DOC-04': { title: 'Modulhandbuch', file: 'DOC-04_Modulhandbuch_Curriculum_Gesamt.pdf', type: 'Modulhandbuch', phase: 2, ver: 'v2.1', status: 'Freigegeben', size: '6,8 MB', author: 'Modulverantwortliche, Curriculums-AG', to: 'Dekanat, Agentur',
     chain: [['Modulverantwortliche: erstellt', 1], ['Curriculums-AG: zusammengeführt', 1], ['QM: formale Prüfung', 1]],
-    content: `MODULHANDBUCH 2027
-{SG}
-
-MODUL M-101: Einführung in das Fachgebiet
-- Leistungspunkte: 6 | Workload: 180 h (Präsenz 60 h, Selbststudium 120 h)
-- Qualifikationsziele:
-  Die Studierenden können zentrale Begriffe, Methoden und Standards des Fachs benennen, analysieren und in einem ersten Praxisprojekt anwenden.
-- Prüfungsform: Projektarbeit mit Prototyp und Präsentation` },
+    content: DOC_TEXT['DOC-04'] },
   'DOC-05': { title: 'Kompetenzmatrix und Qualifikationsziele', file: 'DOC-05_Kompetenzmatrix_Qualifikationsziele.pdf', type: 'Matrix', phase: 2, ver: 'v1.4', status: 'Freigegeben', size: '1,9 MB', author: 'Curriculums-AG, QM', to: 'Gutachtergremium',
     chain: [['Curriculums-AG: Zuordnung', 1], ['Fachschaft: Rückmeldung', 1], ['QM: Freigabe', 1]],
-    content: `KOMPETENZMATRIX
-Zuordnung der Qualifikationsziele zum Hochschulqualifikationsrahmen (HQR), {HQR}:
-
-1. Wissen und Verstehen
-   - Module M-101 bis M-106: fachliche Grundlagen
-2. Einsatz, Anwendung und Erzeugung von Wissen
-   - Labor- und Projektmodule im Studienverlauf
-3. Kommunikation und Kooperation
-   - Interdisziplinäres Studienprojekt
-4. Wissenschaftliches Selbstverständnis
-   - Abschlussarbeit und Kolloquium (letztes Fachsemester)` },
+    content: DOC_TEXT['DOC-05'] },
   'DOC-06': { title: 'Prüfvermerk des Justitiariats', file: 'DOC-06_Justitiariat_Pruefvermerk.pdf', type: 'Rechtsprüfung', phase: 3, ver: 'v1.0', status: 'Freigegeben', size: '620 KB', author: 'Barbara Hoffmann (Justitiariat)', to: 'Präsidium, Dekanat',
     chain: [['Justitiariat: Rechtsprüfung', 1], ['Prüfungsausschuss: Abstimmung', 1], ['Präsidium: zur Kenntnis', 1]],
-    content: `PRÜFVERMERK DES JUSTITIARIATS
-Az.: JUR-2027-PO-04
-Gegenstand: Prüfungsordnung PO v2.0, {SG}
-
-ERGEBNIS
-1. Notenbildung und Wiederholung von Prüfungen (§ 14) entsprechen § 64 HG NRW und der Rahmenprüfungsordnung.
-2. Die Regelung zum Nachteilsausgleich (§ 18) wahrt die Chancengleichheit.
-3. Keine rechtlichen Bedenken. Der Entwurf kann dem Fakultätsrat zur Beschlussfassung vorgelegt werden.` },
+    content: DOC_TEXT['DOC-06'] },
   'DOC-07': { title: 'Stellungnahme des Fachschaftsrats', file: 'DOC-07_Stellungnahme_Fachschaftsrat.pdf', type: 'Stellungnahme', phase: 3, ver: 'v1.0', status: 'Beschlossen', size: '450 KB', author: 'Samira Klein (Fachschaftsrat)', to: 'Fakultätsrat',
     chain: [['Fachschaft: Vollversammlung', 1], ['Fachschaftsrat: Beschluss', 1], ['Fakultätsrat: übergeben', 1]],
-    content: `STELLUNGNAHME DES FACHSCHAFTSRATS
-zum Entwurf der PO v2.0
-
-Der Fachschaftsrat begrüßt:
-- die Entzerrung der Prüfungen im vorletzten Semester,
-- Projektarbeiten als Prüfungsform in den Modulen M-101 und M-105,
-- mehr Wahlfreiheit im Wahlpflichtbereich.
-
-Votum: befürwortet (5 Ja-Stimmen, 0 Nein, 0 Enthaltungen).` },
+    content: DOC_TEXT['DOC-07'] },
   'DOC-08': { title: 'Beschluss des Fakultätsrats zur PO', file: 'DOC-08_Fakultätsratsbeschluss_PO_Auszug.pdf', type: 'Beschlussauszug', phase: 3, ver: 'final', status: 'Beschlossen', size: '1,4 MB', author: 'Prof. Dr. Anke Neumann (Dekanin)', to: 'QM, Präsidium',
     chain: [['Fakultätsrat: 1. Lesung', 1], ['Fakultätsrat: 2. Lesung und Beschluss', 1], ['Dekanin: Ausfertigung', 1]],
-    content: `BESCHLUSSAUSZUG, 84. SITZUNG DES FACHBEREICHSRATS
-Datum: 14. April 2027
-TOP 4: Neufassung der Prüfungsordnung {SG} (PO v2.0)
-
-BESCHLUSS
-Der Fakultätsrat beschließt die Prüfungsordnung (PO v2.0) in der Fassung vom 10.04.2027.
-
-Abstimmung: 11 Ja, 0 Nein, 0 Enthaltungen
-
-Die Ordnung tritt nach Prüfung durch das Präsidium mit der Veröffentlichung im Amtlichen Mitteilungsblatt in Kraft.` },
+    content: DOC_TEXT['DOC-08'] },
   'DOC-09': { title: 'Selbstbericht', file: 'DOC-09_Selbstbericht_Hauptteil.pdf', type: 'Selbstbericht', phase: 4, ver: 'v1.0', status: 'Eingereicht', size: '14,2 MB', author: 'Dr. Laurenz Becker, Prof. Dr. Miriam Weber', to: 'Akkreditierungsagentur',
     chain: [['QM: Redaktion', 1], ['Fachschaftsrat: beteiligt', 1], ['Dekanat: gegengezeichnet', 1], ['Präsidium: Freigabe', 1]],
-    content: `SELBSTBERICHT ZUR REAKKREDITIERUNG
-Studiengang: {SG}
-Beauftragte Agentur: [Name der zugelassenen Agentur]
-
-INHALT
-1. Profil und Qualifikationsziele
-2. Studiengangskonzept und Prüfungsordnung (PO v2.0)
-3. Studierbarkeit, Workload-Monitoring und Beratung
-4. Personelle Ausstattung
-5. Räume, Labore und IT
-6. Qualitätssicherung und Weiterentwicklung` },
+    content: DOC_TEXT['DOC-09'] },
   'DOC-10': { title: 'Anlagen: Kapazitäts- und Ressourcennachweis', file: 'DOC-10_Anlagen_Kapazitaet_Ressourcen.pdf', type: 'Anlagenband', phase: 4, ver: 'v1.0', status: 'Freigegeben', size: '8,9 MB', author: 'Dezernat Finanzen & Personal', to: 'Akkreditierungsagentur',
     chain: [['Personaldezernat: Deputate berechnet', 1], ['Dekanat: bestätigt', 1], ['QM: gebündelt', 1]],
-    content: `ANLAGEN: KAPAZITÄTS- UND RESSOURCENNACHWEIS
-
-1. Lehrdeputate
-   - 6 Professuren mit je 18 SWS Lehrverpflichtung
-   - 4 wissenschaftliche Mitarbeitende mit je 4 SWS
-   - Auslastung: 94,2 %
-
-2. Labore
-   - Robotics & Usability Lab (24 Arbeitsplätze)
-   - XR & Interaction Studio (16 VR/AR-Plätze)
-   - MakerSpace und Hardware-Labor (3D-Druck, Sensorik)` },
+    content: DOC_TEXT['DOC-10'] },
   'DOC-11': { title: 'Ablaufplan der Begehung', file: 'DOC-11_Ablaufplan_Begehung.pdf', type: 'Ablaufplan', phase: 5, ver: 'v1.0', status: 'Freigegeben', size: '380 KB', author: 'Dr. Susanne Völkel (Agentur)', to: 'Gutachtergremium, Hochschule',
     chain: [['Agentur: abgestimmt', 1], ['Hochschule: bestätigt', 1], ['Gutachtergremium: durchgeführt', 1]],
-    content: `ABLAUFPLAN DER BEGEHUNG
-
-Tag 1
-09:00  Vorgespräch des Gutachtergremiums
-10:00  Gespräch mit Hochschulleitung und Dekanat
-11:30  Gespräch mit Studiengangsleitung und Curriculums-AG
-14:00  Gespräch mit Studierenden (ohne Lehrende)
-16:00  Besichtigung von Laboren und Lehrräumen
-
-Tag 2
-09:30  Gespräch mit Praxispartnern
-11:30  Interne Beratung des Gremiums
-13:00  Abschlussgespräch mit mündlicher Rückmeldung` },
+    content: DOC_TEXT['DOC-11'] },
   'DOC-12': { title: 'Akkreditierungsbericht (Entwurf)', file: 'DOC-12_Akkreditierungsbericht_Entwurf.pdf', type: 'Prüfbericht und Gutachten', phase: 5, ver: 'v1.0 Entwurf', status: 'Entwurf', size: '3,4 MB', author: 'Agentur mit Gutachtergremium (Sprecher: Prof. Dr. Brandt)', to: 'Hochschule zur Stellungnahme',
     chain: [['Gutachtergremium: Gutachten', 1], ['Agentur: Prüfbericht formale Kriterien', 1], ['Hochschule: Stellungnahme', 0]],
-    content: `AKKREDITIERUNGSBERICHT (ENTWURF)
-Studiengang {SG}
-
-TEIL A – PRÜFBERICHT (formale Kriterien)
-Alle formalen Kriterien sind erfüllt.
-
-TEIL B – GUTACHTEN (fachlich-inhaltliche Kriterien)
-Profil, Curriculum und Praxisbezug sind schlüssig aufeinander abgestimmt.
-
-EMPFEHLUNGEN (keine Auflagen)
-E1: Englischsprachige Fachliteratur in Modul M-104 erweitern.
-E2: Studentische Forschungsergebnisse stärker auf Fachtagungen zeigen.
-
-BESCHLUSSEMPFEHLUNG
-Akkreditierung ohne Auflagen.` },
+    content: DOC_TEXT['DOC-12'] },
   'DOC-13': { title: 'Stellungnahme der Hochschule', file: 'DOC-13_Stellungnahme_Hochschule.pdf', type: 'Stellungnahme', phase: 6, ver: 'v1.0', status: 'Eingereicht', size: '1,2 MB', author: 'Studiengangsleitung, QM', to: 'Agentur, Akkreditierungsrat',
     chain: [['Studiengangsleitung: erstellt', 1], ['QM: Freigabe', 1], ['Präsidium: Antrag in ELIAS', 1]],
-    content: `STELLUNGNAHME DER HOCHSCHULE ZUM AKKREDITIERUNGSBERICHT
-
-1. Die Hochschule dankt dem Gutachtergremium für die Rückmeldung.
-2. Zu E1: Im Modulhandbuch (M-104) sind drei zusätzliche internationale Standardwerke aufgenommen.
-3. Zu E2: Ein Fonds für Reisekosten zu studentischen Konferenzbeiträgen wird eingerichtet.
-
-Der Antrag auf Akkreditierung wird über ELIAS gestellt.` },
+    content: DOC_TEXT['DOC-13'] },
   'DOC-14': { title: 'Akkreditierungsentscheidung', file: 'DOC-14_Akkreditierungsentscheidung_Siegel.pdf', type: 'Bescheid', phase: 6, ver: 'final', status: 'Entschieden', size: '2,1 MB', author: 'Akkreditierungsrat', to: 'Hochschule',
     chain: [['Akkreditierungsrat: Entscheidung', 1], ['Geschäftsstelle: Bekanntgabe', 1], ['Hochschule: Eingang', 1]],
-    content: `ENTSCHEIDUNG DES AKKREDITIERUNGSRATS
-Aktenzeichen: AR-2027-PROG-8821
-
-Der Akkreditierungsrat hat in seiner Sitzung vom 24. Oktober 2027 entschieden:
-Der {SG_ART}
-„{SG}“
-wird gemäß § 22 StudakVO NRW akkreditiert.
-
-Siegel: Siegel des Akkreditierungsrats
-Geltungszeitraum: 01.10.2027 bis 30.09.2035 (8 Jahre, § 26)
-Auflagen: keine` }
+    content: DOC_TEXT['DOC-14'] }
 };
 
 /* ---------- Hilfsfunktionen ---------- */
