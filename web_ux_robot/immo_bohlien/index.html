@@ -364,6 +364,7 @@ document.documentElement.classList.add('js');
   document.getElementById('form').addEventListener('submit', ev => {
     ev.preventDefault();
     const f = ev.target;
+    f.Name.setCustomValidity(f.Name.value.trim() ? '' : 'Bitte Namen angeben');   // nur Leerzeichen erfüllt „required“ → sonst keine Meldung
     if (!f.Name.value.trim() || !f.querySelector('#f-ok').checked) { f.reportValidity(); return; }
     const txt = ['Name: ' + f.Name.value, 'Telefon: ' + f.Telefon.value, '', f.Nachricht.value].join('\n');
     location.href = 'mailto:info@bohlien-immo.de?subject=' + encodeURIComponent('Anfrage über die Webseite: ' + f.Anliegen.value) + '&body=' + encodeURIComponent(txt);
