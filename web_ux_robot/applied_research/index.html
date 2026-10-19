@@ -980,7 +980,8 @@ function company(id) {
     r.addEventListener('mouseleave', () => { state.hoverFlow = null; render(); });
   });
 }
-function panelRender(anim = true) { state.sel ? company(state.sel) : overview(); if (anim) enter(); render(); }
+// hoverMeasure zurücksetzen: neu gebaute Maßnahmen-Knöpfe melden kein mouseleave mehr
+function panelRender(anim = true) { state.hoverMeasure = null; state.sel ? company(state.sel) : overview(); if (anim) enter(); render(); }
 function select(id) {
   state.sel = id; state.hoverNode = null; hideTip();
   if (id && !RM && N[id].ping) { const p = N[id].ping; p.classList.remove('go'); void p.getBBox(); p.classList.add('go'); }
@@ -1028,12 +1029,13 @@ function filterState() {
 }
 function toggleFilter(set, k) { set.has(k) ? set.delete(k) : set.add(k); buildChips(); render(); skUpdate(); }
 document.addEventListener('click', e => {
+  const inFd = !!e.target.closest('#fdrop');   // vor buildChips(): danach hängt ein Chip nicht mehr im DOM
   const b = e.target.closest('[data-mat],[data-cat]');
   if (b && b.closest('.side')) toggleFilter(b.dataset.mat ? state.mats : state.cats, b.dataset.mat || b.dataset.cat);
   const r = e.target.closest('[data-reset]');
   if (r) { const s = state[r.dataset.reset]; Object.keys(r.dataset.reset === 'mats' ? MAT : CAT).forEach(k => s.add(k)); buildChips(); render(); skUpdate(); }
   const fd = $('#fdrop'); // Klappfilter (Kommandoleiste) schließt bei Klick daneben
-  if (fd.open && root.classList.contains('ui-C') && !e.target.closest('#fdrop')) fd.open = false;
+  if (fd.open && root.classList.contains('ui-C') && !inFd) fd.open = false;
 });
 const segBtns = $$('.scn button');
 function setMode(m) {
