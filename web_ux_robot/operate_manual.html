@@ -3206,7 +3206,7 @@ function initShell(onShow) {
     ['yolo', 'vision', 'YOLO 3D-Boxen', 'yolo_3d_bbox_for_zed_m · _for_ip_cam', 'Erkennt Objekte und legt sie als 3D-Boxen in den Raum. Ohne ZED über die Tisch-Kamera: Lage per ArUco-Marker auf dem Tisch, Overlay in Live Stream 2.'],
     ['pc', 'vision', 'Punktwolke aufbereiten', 'pointcloud_optimizer', 'Dünnt die Punktwolke aus (/zed/pointcloud_web, derzeit ohne Abnehmer). Optional gibt es eine zweite Wolke für die OctoMap von MoveIt aus (publish_moveit_cloud, standardmäßig aus, sonst würden die zu greifenden Objekte zum Hindernis).'],
     ['yolocol', 'vision', 'Objekte als Hindernis', 'yolo_moveit_collision', 'Trägt erkannte Objekte als Kollisionskörper in die Planungsszene ein.'],
-    ['grasp', 'vision', 'Greif-Ausführung', 'yolo_planned_grasp_executor · grasp_action_bridge', 'Führt den Greifablauf für ein gewähltes Objekt aus: anfahren, greifen, Status melden.'],
+    ['grasp', 'vision', 'Greif-Ausführung', 'yolo_planned_grasp_executor · grasp_action_bridge', 'Alter Greifpfad, startet nur mit legacy_grasp:=true (Standard aus): anfahren, greifen, Status melden. Gegriffen wird heute über die VLA-M Bridge.'],
     ['octo', 'vision', 'Octomap', 'octomap_server', 'Baut aus der rohen Punktwolke eine eigene Belegungskarte, etwa für RViz. MoveIt nutzt sie nicht; move_group baut seine OctoMap selbst aus cloud_optimized.'],
 
     ['mg', 'plan', 'MoveIt move_group', '/move_action · /compute_ik · Planning Scene', 'Plant kollisionsfreie Bahnen zu einer Zielpose.'],

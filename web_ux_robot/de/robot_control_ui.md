@@ -674,7 +674,7 @@
 >> | **`/ui/scan_speed`** | `std_msgs/Int32` | *Aus dem Tempo-Override abgeleitete Stufe für MoveTo/Scans (0: Slow, 1: Normal, 2: Fast).* |
 >> | **`/ui/emergency_stop_topic`** | `std_msgs/Empty` | *Publiziert sofortigen Software-E-STOP (blockierungsfreier Topic-Bypass).* |
 >> | **`/linear_axis_cmd`** | `std_msgs/Float64` | *Publiziert den Befehl zur Bewegung der Linearachse.* |
->> | **`/ui/grasp_object_cmd`** | `std_msgs/String` | *Triggert Autonomie-Aktionen per Objekt-Identifikator.* |
+>> | **`/ui/grasp_object_cmd`** | `std_msgs/String` | *Triggert Autonomie-Aktionen per Objekt-Identifikator (alter Greifpfad, nur mit `legacy_grasp:=true`).* |
 >> | **`/ui/voice_listen_trigger`** | `std_msgs/String` | *Startet Audio-Aufnahmen bei Klick auf das Mikrofon-Symbol.* |
 >> | **`/ui/safety_zone_params`** | `std_msgs/Float32MultiArray` | *Sendet aktualisierte Parameter für die Safety-Zone.* |
 >> | **`/tf_static`** | `tf2_msgs/TFMessage` | *Virtual Objects (Settings-Popup): sendet die eingestellten Transformationen latched und nur bei einer Änderung (plus Auffrischung alle 2 s für später gestartete Nodes), bei „Live TF“; die Frames der Szenenobjekte auch, solange die virtuellen Objekte an sind. Statische Frames veralten nicht – ein Tab im Hintergrund füllt die MoveIt-Logs nicht mehr mit „extrapolation into the past“.* |

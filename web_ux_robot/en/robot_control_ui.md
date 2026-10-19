@@ -670,7 +670,7 @@
 >> | **`/ui/scan_speed`** | `std_msgs/Int32` | *Level derived from the speed override for MoveTo/scans (0: Slow, 1: Normal, 2: Fast).* |
 >> | **`/ui/emergency_stop_topic`** | `std_msgs/Empty` | *Publishes immediate non-blocking software E-STOP.* |
 >> | **`/linear_axis_cmd`** | `std_msgs/Float64` | *Publishes the command to move the linear axis.* |
->> | **`/ui/grasp_object_cmd`** | `std_msgs/String` | *Triggers autonomy pipeline actions.* |
+>> | **`/ui/grasp_object_cmd`** | `std_msgs/String` | *Triggers autonomy pipeline actions (old grasp path, only with `legacy_grasp:=true`).* |
 >> | **`/ui/voice_listen_trigger`** | `std_msgs/String` | *Signals voice listener node to begin speech recording.* |
 >> | **`/ui/safety_zone_params`** | `std_msgs/Float32MultiArray` | *Publishes updated dynamic safety zone parameters `[x, y, radius]`.* |
 >> | **`/tf_static`** | `tf2_msgs/TFMessage` | *Virtual Objects (Settings popup): publishes the configured transforms latched, only when a value changes (plus a refresh every 2 s for nodes started later), while "Live TF" is on; the scene object frames also while the virtual objects are on. Static frames never go stale, so a background tab no longer floods the MoveIt logs with "extrapolation into the past".* |
