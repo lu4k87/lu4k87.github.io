@@ -2,7 +2,7 @@
    Alle Personen, Status, Termine und Aktenzeichen sind Beispieldaten. */
 'use strict';
 
-/* Ablage, Studiengänge, Phasenordner, Dokumenttexte: ../data.js (gemeinsam mit der Hauptseite) */
+/* Ablage, Studiengänge, Phasenordner, Dokumenttexte: data.js (gemeinsam mit der Hauptseite) */
 
 const MONTHS = ['Okt', 'Nov', 'Dez', 'Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt'];
 const YEARS  = [2026, 2026, 2026, 2027, 2027, 2027, 2027, 2027, 2027, 2027, 2027, 2027, 2027];
