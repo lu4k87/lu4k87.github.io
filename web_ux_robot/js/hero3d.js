@@ -2657,7 +2657,10 @@ function build(L, wrap, host, o) {
     place();
   };
   tick(0, 0); st.kick(100);
-  wrap.classList.add('is-3d');
+  // Einblenden erst, wenn die Bühne ihr erstes Bild in echter Größe gezeichnet hat (übersetzt dabei die Shader, ~130 ms) –
+  // sonst lief das Einblenden über leerem Canvas an und stockte am ersten Frame (gemessen 2026-10-19)
+  const tick0 = tick;
+  tick = (dt, t) => { tick = tick0; tick0(dt, t); requestAnimationFrame(() => wrap.classList.add('is-3d')); };
   return { stage: st, pick: i => pick && pick(i), next: m => next && next(m), setMode: m => setMode && setMode(m), get active() { return active; }, probe: () => probe && probe() };
 }
 
