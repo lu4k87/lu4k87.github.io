@@ -4013,6 +4013,8 @@ Auflagen: keine`
 
     function scrollToStep(stepNum) {
       const target = document.getElementById('step-' + stepNum);
+      // vom Rollenfilter ausgeblendeter Schritt: Filter auf „Alle“, sonst springt der Klick ins Leere
+      if (target && target.style.display === 'none') filterByRole('all', document.querySelector('.filter-pill[data-role="all"]'));
       if (target) {
         target.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
@@ -4173,7 +4175,7 @@ Auflagen: keine`
       const current = html.getAttribute('data-theme') || 'light';
       const next = current === 'dark' ? 'light' : 'dark';
       html.setAttribute('data-theme', next);
-      localStorage.setItem('accredo_theme', next);
+      try { localStorage.setItem('accredo_theme', next); } catch (e) { /* ohne Speicher: gilt bis zum Neuladen */ }
     }
 
     /* ═══ SOFT MOTION (Skill soft-motion: einmal je Ereignis) ═══ */
@@ -4208,7 +4210,8 @@ Auflagen: keine`
 
     /* ═══ INITIALIZATION ═══ */
     document.addEventListener('DOMContentLoaded', () => {
-      const savedTheme = localStorage.getItem('accredo_theme');
+      let savedTheme = null;
+      try { savedTheme = localStorage.getItem('accredo_theme'); } catch (e) { /* ohne Speicher: Standard-Theme */ }
       if (savedTheme) {
         document.documentElement.setAttribute('data-theme', savedTheme);
       }
