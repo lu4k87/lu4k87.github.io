@@ -370,7 +370,7 @@ document.documentElement.classList.add('js');
   });
 
   // ---------- three.js: Architekturmodell ----------
-  import('vendor/three/three.module.js').then(THREE => {
+  import('./vendor/three/three.module.js').then(THREE => {
     const stage = document.querySelector('.stage');
     const test = document.createElement('canvas');
     if (!(test.getContext('webgl2') || test.getContext('webgl'))) { stage.classList.add('fallback'); return; }

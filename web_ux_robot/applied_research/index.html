@@ -1,0 +1,1246 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Materialfluss Kehrum</title>
+<meta name="description" content="Interaktive Karte der Materialflüsse im Industriepark Kehrum (Kalkar) – Prototyp mit fiktiven Demo-Daten.">
+<link rel="stylesheet" href="../fonts/fonts.css">
+<style>
+:root {
+  color-scheme: light;
+  --bg: #f4f3ee; --surface: #fcfcfb; --surface-2: #efede6;
+  --ink: #141412; --ink-2: #3a3935; --line: #d9d6cc; --line-2: #c4c0b4;
+  --map-bg: #f7f6f1; --field: #e6e3d8; --park: #eeede6; --plot: #e4e1d6; --road: #d6d2c6; --road-mid: #f7f6f1;
+  --accent: #1f5fae;
+  /* Materialfarben = Referenz-Palette (dataviz), Slots 1–5 + 7 */
+  --m-metall: #2a78d6; --m-holz: #eb6834; --m-organik: #1baf7a; --m-mineral: #eda100; --m-kunst: #e87ba4; --m-energie: #6250d6; --m-rest: #6f6d66;
+  /* Zustände: Potenzial/neu = grün, Reststoff = bernstein, entfällt/Verbrennung = rot */
+  --ok: #1d8a57; --on-ok: #fff; --warn: #b26b00; --bad: #c2412d; --info: #1f6fb8;
+  /* Branchen (nur Variante „Branchenfarben“) */
+  --c-mp: #9a6b1f; --c-h: #2c7a7b; --c-hl: #8a4f7d; --c-r: #5d7f2a; --c-e: #a34b3a;
+  --ease-out: cubic-bezier(.22,.61,.36,1); --ease-io: cubic-bezier(.65,0,.35,1);
+  --t-fast: 150ms; --t-base: 250ms; --t-slow: 450ms; --t-xfade: 900ms; --t-pulse: 2.6s; --t-ping: 1.2s;
+  --radius-sm: 4px; --radius: 6px; --radius-lg: 8px;
+  --stick: 16px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #111110; --surface: #1a1a19; --surface-2: #242422;
+    --ink: #f0efec; --ink-2: #d2d0c6; --line: #33322e; --line-2: #4a4943;
+    --map-bg: #161615; --field: #1e1e1c; --park: #1b1b19; --plot: #262624; --road: #2f2e2b; --road-mid: #45443f;
+    --accent: #7fb0f0;
+    --m-metall: #3987e5; --m-holz: #d95926; --m-organik: #199e70; --m-mineral: #c98500; --m-kunst: #d55181; --m-energie: #9085e9; --m-rest: #9a988f;
+    --ok: #4cc48a; --on-ok: #08140e; --warn: #e3a338; --bad: #ef7a64; --info: #7fb0f0;
+    --c-mp: #d1a052; --c-h: #5bb5b5; --c-hl: #c58ab8; --c-r: #9cc160; --c-e: #e08574;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #111110; --surface: #1a1a19; --surface-2: #242422;
+  --ink: #f0efec; --ink-2: #d2d0c6; --line: #33322e; --line-2: #4a4943;
+  --map-bg: #161615; --field: #1e1e1c; --park: #1b1b19; --plot: #262624; --road: #2f2e2b; --road-mid: #45443f;
+  --accent: #7fb0f0;
+  --m-metall: #3987e5; --m-holz: #d95926; --m-organik: #199e70; --m-mineral: #c98500; --m-kunst: #d55181; --m-energie: #9085e9; --m-rest: #9a988f;
+  --ok: #4cc48a; --on-ok: #08140e; --warn: #e3a338; --bad: #ef7a64; --info: #7fb0f0;
+  --c-mp: #d1a052; --c-h: #5bb5b5; --c-hl: #c58ab8; --c-r: #9cc160; --c-e: #e08574;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.5 "IBM Plex Sans", system-ui, sans-serif; }
+button { font: inherit; color: inherit; }
+.wrap { max-width: 1440px; margin: 0 auto; padding: 20px 16px 48px; display: flex; flex-direction: column; gap: 16px; }
+@media (min-width: 700px) { .wrap { padding: 28px 28px 56px; } }
+
+/* ---------- Kopf ---------- */
+header.top { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px 16px; flex-wrap: wrap; }
+.titleblock { min-width: 0; flex: 1 1 520px; }
+.eyebrow { font: 600 13px/1.2 "IBM Plex Mono", monospace; letter-spacing: .05em; text-transform: uppercase; margin: 0 0 6px; color: var(--ink-2); }
+h1 { font-size: clamp(24px, 3vw, 34px); line-height: 1.15; margin: 0; font-weight: 600; letter-spacing: -.01em; text-wrap: balance; }
+.sub { margin: 6px 0 0; color: var(--ink-2); max-width: 70ch; }
+.hdr-tools { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.iconbtn { display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--line-2); background: var(--surface); border-radius: var(--radius); padding: 7px 12px; cursor: pointer; transition: border-color var(--t-fast), background var(--t-fast); }
+.iconbtn:hover { border-color: var(--ink-2); }
+.iconbtn svg { width: 16px; height: 16px; }
+.lang { display: inline-flex; border: 1px solid var(--line-2); border-radius: var(--radius); background: var(--surface); padding: 3px; gap: 3px; }
+.lang button { border: 0; background: transparent; border-radius: var(--radius-sm); padding: 4px 10px; cursor: pointer; font: 600 14px "IBM Plex Mono", monospace; transition: background var(--t-fast); }
+.lang button:hover { background: var(--surface-2); }
+.lang button[aria-pressed="true"] { background: var(--ink); color: var(--surface); }
+.uisw button { font: 500 14px "IBM Plex Sans", sans-serif; display: inline-flex; align-items: center; gap: 6px; }
+.uisw svg { width: 16px; height: 16px; flex: none; }
+@media (max-width: 699px) { .uisw .ul { display: none; } }
+
+/* ---------- Badges ---------- */
+.bdg { display: inline-flex; align-items: center; gap: 6px; font: 600 13px/1.35 "IBM Plex Sans", sans-serif; border: 1px solid var(--line-2); border-radius: var(--radius-sm); padding: 1px 7px; white-space: nowrap; vertical-align: 1px; background: var(--surface); color: var(--ink); }
+.bdg.mono { font-family: "IBM Plex Mono", monospace; font-weight: 600; }
+.bdg .sw { width: 12px; height: 4px; }
+.bdg.demo { border-style: dashed; }
+.bdg-list { display: flex; flex-wrap: wrap; gap: 4px 6px; align-items: center; }
+/* Material-Badge: immer getönt (Farbe = Material) */
+.bdg.mat { background: color-mix(in srgb, var(--mc) 14%, var(--surface)); border-color: color-mix(in srgb, var(--mc) 45%, var(--line)); }
+/* Status-Badges: neutral, farbig in Variante „Status“ */
+.c-status .bdg.neu { background: color-mix(in srgb, var(--ok) 14%, var(--surface)); border-color: color-mix(in srgb, var(--ok) 55%, var(--line)); color: color-mix(in srgb, var(--ok) 70%, var(--ink)); }
+.c-status .bdg.rest { background: color-mix(in srgb, var(--warn) 13%, var(--surface)); border-color: color-mix(in srgb, var(--warn) 50%, var(--line)); color: color-mix(in srgb, var(--warn) 65%, var(--ink)); }
+.c-status .bdg.weg, .c-status .bdg.mva { background: color-mix(in srgb, var(--bad) 12%, var(--surface)); border-color: color-mix(in srgb, var(--bad) 50%, var(--line)); color: color-mix(in srgb, var(--bad) 70%, var(--ink)); }
+.c-status .bdg.lic-oss { background: color-mix(in srgb, var(--ok) 14%, var(--surface)); border-color: color-mix(in srgb, var(--ok) 50%, var(--line)); }
+.c-status .bdg.lic-free { background: color-mix(in srgb, var(--info) 13%, var(--surface)); border-color: color-mix(in srgb, var(--info) 50%, var(--line)); }
+.c-status .bdg.lic-com { background: color-mix(in srgb, var(--warn) 13%, var(--surface)); border-color: color-mix(in srgb, var(--warn) 50%, var(--line)); }
+.c-status .bdg.lic-own { background: var(--ink); color: var(--surface); border-color: var(--ink); }
+.bdg.weg { text-decoration: line-through; }
+.ico { width: 12px; height: 12px; flex: none; }
+
+/* ---------- Kennzahlen ---------- */
+.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
+.kpi { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 12px 14px; display: flex; flex-direction: column; gap: 2px; min-width: 0; transition: background var(--t-base), border-color var(--t-base); }
+.kpi .lab { font-size: 14px; color: var(--ink-2); display: flex; align-items: center; gap: 8px; }
+.kpi .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--tone, var(--ink-2)); flex: none; display: none; }
+.kpi .val { font: 600 26px/1.2 "IBM Plex Mono", monospace; font-variant-numeric: tabular-nums; }
+.kpi .unit { font: 500 14px "IBM Plex Sans", sans-serif; margin-left: 4px; }
+.kpi .delta { font-size: 14px; color: var(--ink-2); min-height: 1.5em; }
+.kpi .delta.up { color: color-mix(in srgb, var(--ok) 75%, var(--ink)); }
+.kpi .delta.down { color: color-mix(in srgb, var(--bad) 75%, var(--ink)); }
+.c-kpi .kpi { background: color-mix(in srgb, var(--tone) 10%, var(--surface)); border-color: color-mix(in srgb, var(--tone) 40%, var(--line)); }
+.c-kpi .kpi .dot { display: block; }
+
+/* ---------- Steuerung (gemeinsame Bausteine) ---------- */
+.app { display: grid; gap: 16px; grid-template-columns: minmax(0, 1fr); align-items: start; }
+.side { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.main { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.grp { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.gl { font: 600 13px/1.2 "IBM Plex Mono", monospace; letter-spacing: .05em; text-transform: uppercase; color: var(--ink-2); display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.gl .reset { font: 500 14px "IBM Plex Sans", sans-serif; letter-spacing: 0; text-transform: none; border: 0; background: transparent; color: var(--accent); cursor: pointer; padding: 0 2px; text-decoration: underline; text-underline-offset: 3px; }
+.gl .reset[hidden] { display: none; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.chip { display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--line-2); background: var(--surface); border-radius: var(--radius); padding: 5px 10px; font-size: 14px; cursor: pointer; text-align: left; transition: border-color var(--t-fast), opacity var(--t-base), background var(--t-fast); }
+.chip:hover { border-color: var(--ink-2); }
+.chip.m[aria-pressed="true"] { background: color-mix(in srgb, var(--mc) 12%, var(--surface)); border-color: color-mix(in srgb, var(--mc) 50%, var(--line-2)); }
+.chip[aria-pressed="false"] { opacity: .5; }
+.chip[aria-pressed="false"] .name { text-decoration: line-through; }
+.chip .cnt { font: 500 13px "IBM Plex Mono", monospace; color: var(--ink-2); font-variant-numeric: tabular-nums; display: none; }
+.sw { display: inline-block; width: 16px; height: 5px; border-radius: 3px; flex: none; }
+.glyph { width: 14px; height: 14px; flex: none; }
+.glyph path { fill: var(--surface); stroke: var(--ink); stroke-width: 1.6; }
+.c-branch .glyph path { fill: color-mix(in srgb, var(--bc) 35%, var(--surface)); stroke: var(--bc); }
+.c-branch .chip.c[aria-pressed="true"] { background: color-mix(in srgb, var(--bc) 12%, var(--surface)); border-color: color-mix(in srgb, var(--bc) 50%, var(--line-2)); }
+
+.scn { display: inline-flex; border: 1px solid var(--line-2); border-radius: var(--radius); padding: 3px; background: var(--surface); gap: 3px; }
+.scn button { position: relative; border: 0; background: transparent; border-radius: var(--radius-sm); padding: 6px 14px; cursor: pointer; text-align: left; display: flex; flex-direction: column; gap: 2px; transition: background var(--t-base) var(--ease-out), color var(--t-base) var(--ease-out); }
+.scn button:hover { background: var(--surface-2); }
+.scn .sc-t { font-weight: 600; display: flex; align-items: center; gap: 8px; }
+.scn .sc-t i { width: 10px; height: 10px; border-radius: 50%; border: 2px solid currentColor; flex: none; }
+.scn button[data-mode="pot"] .sc-t i { border-style: dashed; }
+.scn .sc-v { font-size: 14px; display: none; }
+.scn button[aria-pressed="true"] { background: var(--ink); color: var(--surface); }
+.scn button[data-mode="pot"][aria-pressed="true"] { background: var(--ok); color: var(--on-ok); }
+.scn button.breathe::after { content: ""; position: absolute; inset: -3px; border-radius: var(--radius); pointer-events: none;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ok) 50%, transparent); opacity: 0; animation: breathe var(--t-pulse) var(--ease-io) 6 alternate; }
+@keyframes breathe { to { opacity: .9; } }
+
+.tabs { display: flex; flex-wrap: wrap; gap: 6px; }
+.tabs button { border: 1px solid transparent; background: transparent; border-radius: var(--radius); padding: 7px 14px; cursor: pointer; display: grid; grid-template-columns: auto auto; column-gap: 8px; align-items: center; text-align: left; transition: background var(--t-fast), border-color var(--t-fast); }
+.tabs button svg { width: 18px; height: 18px; grid-row: span 2; }
+.tabs .tb-t { font-weight: 500; }
+.tabs .tb-d { display: none; font-size: 14px; color: var(--ink-2); grid-column: 2; }
+.tabs button:hover { background: var(--surface-2); }
+.tabs button[aria-selected="true"] { background: var(--surface); border-color: var(--line-2); }
+.tabs button[aria-selected="true"] .tb-t { font-weight: 600; }
+.fdrop > summary { display: none; }
+.fbody { display: flex; flex-direction: column; gap: 12px; }
+.activef { display: none; }
+
+/* ---------- Variante A: Szenario-Bühne ---------- */
+.ui-A .side { gap: 14px; }
+.ui-A .grp-scn .gl { display: none; }
+.ui-A .scn { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); padding: 0; border: 0; background: transparent; gap: 12px; }
+.ui-A .scn button { border: 1px solid var(--line-2); background: var(--surface); border-radius: var(--radius-lg); padding: 14px 18px; gap: 4px; }
+.ui-A .scn .sc-t { font-size: 19px; }
+.ui-A .scn .sc-v { display: block; font-size: 15px; color: var(--ink-2); }
+.ui-A .scn button[aria-pressed="true"] { background: var(--ink); color: var(--surface); border-color: var(--ink); }
+.ui-A .scn button[data-mode="pot"][aria-pressed="true"] { background: var(--ok); color: var(--on-ok); border-color: var(--ok); }
+.ui-A .scn button[aria-pressed="true"] .sc-v { color: inherit; }
+.ui-A .scn button[data-mode="pot"]:not([aria-pressed="true"]) { border-color: color-mix(in srgb, var(--ok) 55%, var(--line-2)); }
+.ui-A .scn button[data-mode="pot"]:not([aria-pressed="true"]) .sc-t { color: color-mix(in srgb, var(--ok) 80%, var(--ink)); }
+.ui-A .fbody { flex-direction: row; flex-wrap: wrap; gap: 12px 28px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 12px 14px; }
+.ui-A .grp-mat { flex: 1 1 520px; } .ui-A .grp-cat { flex: 1 1 360px; }
+.ui-A .tabs { gap: 0; border-bottom: 1px solid var(--line-2); }
+.ui-A .tabs button { border: 1px solid transparent; border-radius: var(--radius) var(--radius) 0 0; padding: 10px 16px; margin-bottom: -1px; }
+.ui-A .tabs button[aria-selected="true"] { background: var(--surface); border-color: var(--line-2) var(--line-2) var(--surface); }
+
+/* ---------- Variante B: Seitenleiste ---------- */
+@media (min-width: 1000px) {
+  .ui-B .app { grid-template-columns: 290px minmax(0, 1fr); }
+  .ui-B .side { position: sticky; top: var(--stick); max-height: calc(100vh - 32px); overflow: auto; }
+}
+.ui-B .side { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 14px; gap: 18px; }
+.ui-B .tabs { flex-direction: column; gap: 4px; }
+.ui-B .tabs button { width: 100%; padding: 8px 10px; }
+.ui-B .tabs .tb-d { display: block; }
+.ui-B .tabs button[aria-selected="true"] { background: var(--surface-2); border-color: var(--line-2); }
+.ui-B .scn { display: flex; flex-direction: column; width: 100%; }
+.ui-B .scn .sc-v { display: block; opacity: .9; }
+.ui-B .chips { flex-direction: column; align-items: stretch; gap: 4px; }
+.ui-B .chip { justify-content: flex-start; width: 100%; }
+.ui-B .chip .name { flex: 1; }
+.ui-B .chip .cnt { display: inline; }
+.ui-B .grp-view { order: -1; }
+@media (min-width: 1000px) { .ui-B .layout { grid-template-columns: minmax(0, 1fr); } .ui-B .panel { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; } .ui-B .panel > .back, .ui-B .panel > .stack:first-of-type { grid-column: 1 / -1; } }
+@media (min-width: 1400px) { .ui-B .layout { grid-template-columns: minmax(0, 1fr) 340px; } .ui-B .panel { display: flex; } }
+
+/* ---------- Variante C: Kommandoleiste ---------- */
+.ui-C { --stick: 84px; }
+.ui-C .side { position: sticky; top: 0; z-index: 5; flex-direction: row; flex-wrap: wrap; align-items: center; gap: 10px 14px; padding: 10px 12px; margin: 0 -12px;
+  background: color-mix(in srgb, var(--bg) 82%, transparent); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); }
+.ui-C .grp { flex-direction: row; align-items: center; }
+.ui-C .grp-scn .gl, .ui-C .grp-view .gl { display: none; }
+.ui-C .tabs { border: 1px solid var(--line-2); border-radius: var(--radius); padding: 3px; gap: 3px; background: var(--surface); }
+.ui-C .tabs button { padding: 5px 12px; }
+.ui-C .tabs button[aria-selected="true"] { background: var(--ink); color: var(--surface); border-color: var(--ink); }
+.ui-C .fdrop { position: relative; }
+.ui-C .fdrop > summary { display: inline-flex; list-style: none; align-items: center; gap: 8px; border: 1px solid var(--line-2); background: var(--surface); border-radius: var(--radius); padding: 7px 12px; cursor: pointer; font-weight: 600; }
+.ui-C .fdrop > summary::-webkit-details-marker { display: none; }
+.ui-C .fdrop > summary svg { width: 16px; height: 16px; }
+.ui-C .fdrop[open] > summary { border-color: var(--ink-2); }
+.ui-C .fbody { position: absolute; top: calc(100% + 8px); left: 0; width: min(560px, calc(100vw - 32px)); background: var(--surface); border: 1px solid var(--line-2); border-radius: var(--radius-lg); padding: 14px; box-shadow: 0 10px 30px rgba(0,0,0,.18); }
+.ui-C .grp-filter { flex-direction: row; }
+.ui-C .fbody .grp { flex-direction: column; align-items: stretch; }
+.ui-C .activef { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.ui-C .activef button { cursor: pointer; }
+@media (max-width: 699px) { .ui-C .side { position: static; } }
+
+/* ---------- Karte + Seitenleiste ---------- */
+.layout { display: grid; gap: 16px; grid-template-columns: minmax(0, 1fr); align-items: start; }
+@media (min-width: 1120px) { .layout { grid-template-columns: minmax(0, 1fr) 360px; } .mapcard { position: sticky; top: var(--stick); } }
+.mapcard { background: var(--map-bg); border: 1px solid var(--line); border-radius: var(--radius-lg); overflow: hidden; display: flex; flex-direction: column; min-width: 0; }
+.maphead { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px 16px; padding: 10px 14px; border-bottom: 1px solid var(--line); background: var(--surface); font-size: 14px; }
+.maphead strong { font-weight: 600; }
+.mapscroll { overflow-x: auto; position: relative; }
+#map { display: block; width: 100%; min-width: 680px; height: auto; }
+.swipe { display: none; font-size: 14px; color: var(--ink-2); padding: 6px 14px; background: var(--surface); border-bottom: 1px solid var(--line); }
+@media (max-width: 720px) { .swipe { display: block; } }
+.legendline { display: flex; flex-wrap: wrap; gap: 6px 20px; padding: 10px 14px; border-top: 1px solid var(--line); font-size: 14px; color: var(--ink-2); background: var(--surface); }
+.legendline span { display: inline-flex; align-items: center; gap: 8px; }
+.tempo { display: inline-flex; align-items: center; gap: 4px; color: var(--ink-2); }
+.tempo button { border: 1px solid var(--line-2); background: transparent; border-radius: var(--radius-sm); padding: 2px 8px; cursor: pointer; font: 500 14px "IBM Plex Mono", monospace; display: inline-flex; align-items: center; gap: 4px; transition: background var(--t-fast); }
+.tempo button svg { width: 12px; height: 12px; }
+.tempo button[aria-pressed="true"] { background: var(--ink); color: var(--surface); border-color: var(--ink); }
+
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 16px; display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.panel.enter > * { animation: rise var(--t-slow) var(--ease-out) both; }
+.panel.enter > *:nth-child(2) { animation-delay: 50ms; } .panel.enter > *:nth-child(3) { animation-delay: 100ms; }
+.panel.enter > *:nth-child(4) { animation-delay: 150ms; } .panel.enter > *:nth-child(n+5) { animation-delay: 200ms; }
+@keyframes rise { from { opacity: 0; transform: translateY(8px); } }
+.panel h2 { font-size: 20px; line-height: 1.25; margin: 0; font-weight: 600; }
+.panel h3 { font-size: 15px; margin: 0 0 8px; font-weight: 600; letter-spacing: .01em; }
+.panel p { margin: 0; }
+.muted { color: var(--ink-2); }
+.small { font-size: 14px; }
+.back { align-self: flex-start; border: 1px solid var(--line-2); background: transparent; border-radius: var(--radius); padding: 4px 10px; cursor: pointer; font-size: 14px; transition: border-color var(--t-fast); }
+.back:hover { border-color: var(--ink-2); }
+.catline { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--ink-2); }
+
+.stack { display: flex; flex-direction: column; gap: 10px; }
+.vb { display: grid; grid-template-columns: 88px minmax(0, 1fr); gap: 4px 10px; align-items: center; font-size: 14px; }
+.vb .bar { display: flex; height: 14px; gap: 2px; }
+.vb .bar i { display: block; height: 100%; border-radius: 3px; transition: flex-grow var(--t-xfade) var(--ease-out); }
+.vb .bar .ok { background: var(--ink); }
+.vb .bar .ok.pot { background: var(--ok); }
+.vb .bar .no { background: repeating-linear-gradient(45deg, var(--line-2) 0 2px, transparent 2px 6px); border: 1px solid var(--line-2); }
+.vb .cur { font-weight: 600; }
+.vb .note { grid-column: 2; color: var(--ink-2); }
+
+.measures { display: flex; flex-direction: column; gap: 8px; }
+.measure { text-align: left; border: 1px solid var(--line); background: var(--surface); border-radius: var(--radius); padding: 10px 12px; cursor: pointer; display: flex; flex-direction: column; gap: 6px; transition: border-color var(--t-fast), background var(--t-fast), transform var(--t-base) var(--ease-out); }
+.measure:hover, .measure.on { border-color: color-mix(in srgb, var(--mc) 60%, var(--line-2)); background: color-mix(in srgb, var(--mc) 8%, var(--surface)); }
+.measure:hover { transform: translateY(-2px); }
+.measure .mt { display: flex; align-items: center; gap: 8px; font-weight: 600; }
+.measure .ms { font-size: 14px; color: var(--ink-2); }
+
+.cats { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 14px; }
+.cats div { display: flex; align-items: center; gap: 8px; }
+
+.facts { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.35fr); gap: 8px; }
+.facts div { border: 1px solid var(--line); border-radius: var(--radius); padding: 8px 10px; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.facts b { font: 600 18px/1.2 "IBM Plex Mono", monospace; font-variant-numeric: tabular-nums; }
+.facts span { font-size: 13px; color: var(--ink-2); line-height: 1.3; }
+.rows { display: flex; flex-direction: column; gap: 8px; }
+.row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 10px; font-size: 14px; padding: 4px 6px; margin: 0 -6px; border-radius: var(--radius-sm); cursor: default; transition: background var(--t-fast); }
+.row:hover { background: var(--surface-2); }
+.row .rl { display: flex; align-items: center; gap: 7px; min-width: 0; }
+.row .rl span { min-width: 0; }
+.row .rv { font: 500 14px "IBM Plex Mono", monospace; font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; }
+.row .rbar { grid-column: 1 / -1; height: 4px; border-radius: 2px; background: var(--surface-2); overflow: hidden; }
+.row .rbar i { display: block; height: 100%; border-radius: 2px; transition: width var(--t-xfade) var(--ease-out); }
+.row .bdg-list { grid-column: 1 / -1; }
+.row.gone .rl span, .row.gone .rv { text-decoration: line-through; }
+
+.persona { border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 14px; display: flex; flex-direction: column; gap: 10px; background: var(--surface-2); min-width: 0; }
+.ph { display: flex; gap: 12px; align-items: center; }
+.avatar { width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; font: 600 15px "IBM Plex Mono", monospace; background: var(--surface); border: 1px solid var(--line-2); flex: none; }
+.c-branch .avatar { background: color-mix(in srgb, var(--bc) 22%, var(--surface)); border: 2px solid var(--bc); }
+.ph b { display: block; font-size: 16px; }
+.ph span { font-size: 14px; color: var(--ink-2); }
+.quote { font-size: 15px; font-style: italic; }
+.persona ul { margin: 0; padding-left: 18px; font-size: 14px; display: flex; flex-direction: column; gap: 2px; }
+.persona .pl { font-size: 14px; font-weight: 600; margin-bottom: 2px; }
+
+details.tablewrap { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg); }
+details.tablewrap summary { cursor: pointer; padding: 12px 16px; font-weight: 600; }
+.tscroll { overflow-x: auto; padding: 0 16px 16px; }
+table { border-collapse: collapse; width: 100%; font-size: 14px; min-width: 760px; }
+th, td { text-align: left; padding: 7px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-weight: 600; }
+td.num, th.num { text-align: right; font-family: "IBM Plex Mono", monospace; font-variant-numeric: tabular-nums; white-space: nowrap; }
+td .bdg { margin: 2px 4px 0 0; }
+tbody tr { transition: background var(--t-fast); }
+tbody tr:hover { background: var(--surface-2); }
+footer { font-size: 14px; color: var(--ink-2); display: flex; flex-direction: column; gap: 4px; }
+
+.tip { position: fixed; z-index: 20; pointer-events: none; max-width: 320px; background: var(--ink); color: var(--surface); border-radius: var(--radius); padding: 8px 10px; font-size: 14px; line-height: 1.45; opacity: 0; transform: translateY(4px); transition: opacity var(--t-fast), transform var(--t-fast) var(--ease-out); }
+.tip.on { opacity: 1; transform: none; }
+.tip b { font-weight: 600; }
+.tip .tm { display: flex; align-items: center; gap: 6px; margin-top: 2px; }
+.tip .bdg { background: transparent; color: inherit; border-color: color-mix(in srgb, var(--surface) 40%, transparent); }
+
+.tabpanel[hidden] { display: none; }
+.tabpanel.enter { animation: rise var(--t-slow) var(--ease-out) both; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 16px; display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.cardhead { display: flex; flex-direction: column; gap: 4px; }
+.cardhead h2 { font-size: 20px; margin: 0; font-weight: 600; }
+.cardhead p { margin: 0; max-width: 80ch; }
+#tab-personas { display: flex; flex-direction: column; gap: 14px; }
+#tab-personas[hidden] { display: none; }
+.pgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 12px; }
+.pgrid .persona { background: var(--surface); }
+.pgrid .firms { font-size: 14px; color: var(--ink-2); }
+.pgrid .legendcard { background: var(--surface-2); border-style: dashed; }
+.legendcard .cats { flex-direction: column; gap: 8px; }
+.tscroll.flush { padding: 0; }
+.gap h3 { font-size: 15px; margin: 0 0 6px; }
+.gap ul { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 2px; }
+#sankey { display: block; width: 100%; min-width: 720px; height: auto; }
+.sk-link { cursor: pointer; transition: opacity var(--t-fast); }
+.sk-node { fill: var(--ink); }
+.sk-lbl { font: 500 calc(15px * var(--u, 1)) "IBM Plex Sans", sans-serif; fill: var(--ink); }
+.sk-val { font: 500 calc(14px * var(--u, 1)) "IBM Plex Mono", monospace; fill: var(--ink-2); }
+.sk-col { font: 600 calc(14px * var(--u, 1)) "IBM Plex Mono", monospace; fill: var(--ink-2); letter-spacing: .04em; text-transform: uppercase; }
+.sk-bg { fill: var(--surface); opacity: .92; stroke: var(--line); stroke-width: 1; }
+
+/* SVG-Karte: Schrift in Bildschirm-px (--u = viewBox-Einheiten je Bildschirm-px) */
+.bgfield { fill: url(#fieldpat); }
+.park { fill: var(--park); stroke: var(--line-2); stroke-width: 1.2; stroke-dasharray: 2 5; }
+.plot { fill: var(--plot); }
+.road { fill: none; stroke: var(--road); stroke-linecap: round; }
+.roadmid { fill: none; stroke: var(--road-mid); stroke-width: 1; stroke-dasharray: 8 8; }
+.maptxt { font: 500 calc(13px * var(--u, 1)) "IBM Plex Sans", sans-serif; fill: var(--ink-2); paint-order: stroke; stroke: var(--map-bg); stroke-width: 4px; stroke-linejoin: round; }
+.maptxt.mono { font-family: "IBM Plex Mono", monospace; }
+.flow { fill: none; stroke-linecap: round; transition: stroke-width var(--t-xfade) var(--ease-out), opacity var(--t-slow) var(--ease-out); }
+.flow.pot { stroke-dasharray: 7 6; }
+.hit { fill: none; stroke: transparent; stroke-width: 16; pointer-events: stroke; cursor: pointer; }
+.hit.off { pointer-events: none; }
+.parts circle { stroke: var(--map-bg); stroke-width: .8; }
+.parts { transition: opacity var(--t-slow) var(--ease-out); }
+.node { cursor: pointer; opacity: 0; transition: opacity var(--t-slow) var(--ease-out); outline: none; }
+.node.in { opacity: 1; }
+.node.in.dim { opacity: .3; }
+.node .shape { fill: var(--surface); stroke: var(--ink); stroke-width: 1.6; transition: stroke-width var(--t-fast), fill var(--t-fast); }
+.c-branch .node:not(.port) .shape { fill: color-mix(in srgb, var(--bc) 28%, var(--surface)); stroke: var(--bc); stroke-width: 2.2; }
+.node:hover .shape, .node.sel .shape { stroke-width: 2.8; }
+.node.sel .shape { fill: var(--surface-2); }
+.node:focus-visible .shape { stroke: var(--accent); stroke-width: 3; }
+.port .shape { fill: var(--surface); stroke: var(--line-2); stroke-width: 1.2; stroke-dasharray: 4 3; }
+.port:hover .shape, .port.sel .shape { stroke: var(--ink-2); stroke-width: 1.6; }
+.lbl { font: 600 calc(14px * var(--u, 1)) "IBM Plex Sans", sans-serif; fill: var(--ink); paint-order: stroke; stroke: var(--map-bg); stroke-width: calc(4px * var(--u, 1)); stroke-linejoin: round; text-anchor: middle; pointer-events: none; }
+.lbl.sub { font-size: calc(13px * var(--u, 1)); fill: var(--ink-2); font-weight: 400; }
+.ping { fill: none; stroke: var(--ink); stroke-width: 1; vector-effect: non-scaling-stroke; opacity: 0; transform-box: fill-box; transform-origin: center; pointer-events: none; }
+.ping.go { animation: ping var(--t-ping) var(--ease-out) 1; }
+@keyframes ping { from { transform: scale(1); opacity: .8; } to { transform: scale(2.6); opacity: 0; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .scn button.breathe::after { animation: none; opacity: 0; }
+  .panel.enter > *, .tabpanel.enter { animation: none; }
+  .ping.go { animation: none; }
+  .flow, .node, .vb .bar i, .row .rbar i, .measure { transition: none; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="titleblock">
+      <p class="eyebrow" data-t="eyebrow"></p>
+      <h1 data-t="h1"></h1>
+      <p class="sub"><span data-t="sub"></span> <span class="bdg mono demo" data-t="demo"></span></p>
+    </div>
+    <div class="hdr-tools">
+      <div class="lang" role="group" data-ta="langGroup">
+        <button type="button" data-lang="de" aria-pressed="true" lang="de">DE</button>
+        <button type="button" data-lang="en" aria-pressed="false" lang="en">EN</button>
+      </div>
+      <div class="lang uisw" role="group" data-ta="layout">
+        <button type="button" data-ui="A" aria-pressed="true" data-ta="uiA"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="4" width="8" height="6" rx="1"/><rect x="13" y="4" width="8" height="6" rx="1"/><path d="M3 14h18M3 19h18"/></svg><span class="ul" data-t="uiA"></span></button>
+        <button type="button" data-ui="B" aria-pressed="false" data-ta="uiB"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="1"/><path d="M9 4v16M5 8h2M5 12h2"/></svg><span class="ul" data-t="uiB"></span></button>
+        <button type="button" data-ui="C" aria-pressed="false" data-ta="uiC"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="4" width="18" height="4" rx="1"/><rect x="3" y="11" width="18" height="9" rx="1"/></svg><span class="ul" data-t="uiC"></span></button>
+      </div>
+      <button class="iconbtn" id="themeBtn" type="button" data-ta="themeAria">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+        <span id="themeLbl"></span>
+      </button>
+    </div>
+  </header>
+
+  <section class="kpis" id="kpis" aria-live="polite"></section>
+
+  <div class="app">
+    <div class="side" id="side">
+      <div class="grp grp-view">
+        <span class="gl" data-t="gView"></span>
+        <nav class="tabs" role="tablist" data-ta="gView">
+          <button type="button" role="tab" aria-selected="true" data-tab="karte"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2zM9 4v14M15 6v14"/></svg><span class="tb-t" data-t="tabMap"></span><span class="tb-d" data-t="tabMapD"></span></button>
+          <button type="button" role="tab" aria-selected="false" data-tab="sankey"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M3 5h4c6 0 6 7 14 7M3 12h4c6 0 6-7 14-7M3 19h18"/></svg><span class="tb-t" data-t="tabSankey"></span><span class="tb-d" data-t="tabSankeyD"></span></button>
+          <button type="button" role="tab" aria-selected="false" data-tab="personas"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-4.5 4.5-6.5 8-6.5s7 2 8 6.5"/></svg><span class="tb-t" data-t="tabPersonas"></span><span class="tb-d" data-t="tabPersonasD"></span></button>
+          <button type="button" role="tab" aria-selected="false" data-tab="tools"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M3 15h18M10 4v16"/></svg><span class="tb-t" data-t="tabTools"></span><span class="tb-d" data-t="tabToolsD"></span></button>
+        </nav>
+      </div>
+      <div class="grp grp-scn">
+        <span class="gl" data-t="gScenario"></span>
+        <div class="scn" role="group" data-ta="gScenario">
+          <button type="button" data-mode="ist" aria-pressed="true"><span class="sc-t"><i></i><span data-t="ist"></span></span><span class="sc-v" data-sv="ist"></span></button>
+          <button type="button" data-mode="pot" aria-pressed="false" class="breathe"><span class="sc-t"><i></i><span data-t="pot"></span></span><span class="sc-v" data-sv="pot"></span></button>
+        </div>
+      </div>
+      <div class="grp grp-filter">
+        <details class="fdrop" id="fdrop">
+          <summary><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M7 12h10M10 18h4"/></svg><span data-t="filter"></span> <span class="bdg mono" id="fcount"></span></summary>
+          <div class="fbody">
+            <div class="grp grp-mat"><span class="gl"><span data-t="gMat"></span><button type="button" class="reset" data-reset="mats" data-t="all" hidden></button></span><div class="chips" id="matChips"></div></div>
+            <div class="grp grp-cat"><span class="gl"><span data-t="gCat"></span><button type="button" class="reset" data-reset="cats" data-t="all" hidden></button></span><div class="chips" id="catChips"></div></div>
+          </div>
+        </details>
+        <div class="activef" id="activef"></div>
+      </div>
+    </div>
+
+    <div class="main">
+      <main class="layout tabpanel" id="tab-karte" role="tabpanel">
+        <section class="mapcard" data-ta="mapAria">
+          <div class="maphead"><strong data-t="mapTitle"></strong><span class="muted" data-t="mapHint"></span>
+            <span class="tempo" role="group" data-ta="tempoAria"><span data-t="tempo"></span>
+              <button type="button" id="pauseBtn" aria-pressed="false" data-ta="pause"><svg viewBox="0 0 12 12" fill="currentColor" aria-hidden="true"><rect x="2" y="1.5" width="3" height="9" rx=".8"/><rect x="7" y="1.5" width="3" height="9" rx=".8"/></svg></button>
+              <button type="button" data-sp=".5" aria-pressed="false">0,5×</button><button type="button" data-sp="1" aria-pressed="true">1×</button><button type="button" data-sp="2" aria-pressed="false">2×</button></span></div>
+          <div class="swipe" data-t="swipe"></div>
+          <div class="mapscroll" id="mapscroll"><svg id="map" viewBox="0 0 1080 640" role="img"></svg></div>
+          <div class="legendline">
+            <span><svg width="34" height="12" aria-hidden="true"><line x1="2" y1="6" x2="32" y2="6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span data-t="lgThin"></span> <svg width="34" height="12" aria-hidden="true"><line x1="4" y1="6" x2="30" y2="6" stroke="currentColor" stroke-width="9" stroke-linecap="round"/></svg><span data-t="lgWide"></span></span>
+            <span><svg width="34" height="12" aria-hidden="true"><line x1="2" y1="6" x2="32" y2="6" stroke="currentColor" stroke-width="2.4" stroke-dasharray="7 6" stroke-linecap="round"/></svg><span data-t="lgDash"></span></span>
+            <span><svg width="34" height="12" aria-hidden="true"><circle cx="8" cy="6" r="3" fill="currentColor"/><circle cx="24" cy="6" r="3" fill="currentColor"/></svg><span data-t="lgDots"></span></span>
+          </div>
+        </section>
+        <aside class="panel" id="panel" aria-live="polite"></aside>
+      </main>
+
+      <section class="tabpanel card" id="tab-sankey" role="tabpanel" hidden>
+        <div class="cardhead"><h2 data-t="tabSankey"></h2><p class="muted small" data-t="skIntro"></p></div>
+        <div class="mapscroll"><svg id="sankey" viewBox="0 0 1000 500" role="img"></svg></div>
+      </section>
+
+      <section class="tabpanel" id="tab-personas" role="tabpanel" hidden>
+        <div class="cardhead"><h2 data-t="pTitle"></h2><p class="muted small" data-t="pIntro"></p></div>
+        <div class="pgrid" id="pgrid"></div>
+      </section>
+
+      <section class="tabpanel card" id="tab-tools" role="tabpanel" hidden>
+        <div class="cardhead"><h2 data-t="tTitle"></h2><p class="muted small" data-t="tIntro"></p></div>
+        <div class="tscroll flush"><table id="ttable"></table></div>
+        <div class="gap"><h3 data-t="gapTitle"></h3><ul class="small" id="gapList"></ul></div>
+      </section>
+
+      <details class="tablewrap">
+        <summary data-t="allFlows"></summary>
+        <div class="tscroll"><table id="ftable"></table></div>
+      </details>
+    </div>
+  </div>
+
+  <footer>
+    <span data-t="foot1"></span>
+    <span data-t="foot2"></span>
+  </footer>
+</div>
+<div class="tip" id="tip" role="tooltip"></div>
+
+<script>
+(() => {
+'use strict';
+const RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const $ = s => document.querySelector(s);
+const $$ = s => document.querySelectorAll(s);
+const NS = 'http://www.w3.org/2000/svg';
+const S = (tag, attrs = {}, parent) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; };
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const Q = new URLSearchParams(location.search); // Direktlinks: ?lang=en&theme=dark&mode=pot&sel=beton&tab=sankey
+
+/* ---------- Sprache ---------- */
+let LANG = 'de';
+try { LANG = Q.get('lang') || localStorage.getItem('mfk-lang') || ((navigator.language || 'de').toLowerCase().startsWith('de') ? 'de' : 'en'); } catch (e) {}
+if (LANG !== 'en') LANG = 'de';
+const L = v => Array.isArray(v) ? v[LANG === 'en' ? 1 : 0] : v; // [de, en]
+const fmt = n => Math.round(n).toLocaleString(LANG === 'en' ? 'en-GB' : 'de-DE');
+const I = {
+  eyebrow: ['Projekt A · Materialflussanalyse', 'Project A · Material flow analysis'],
+  h1: ['Materialflüsse im Industriepark Kehrum', 'Material flows in Kehrum industrial park'],
+  sub: ['Kalkar · Wer liefert wem welches Material, wo landen Reststoffe – und wo könnten sie im Park weiterverwertet werden?', 'Kalkar, Germany · Who supplies which material to whom, where do residues end up – and where could they be reused inside the park?'],
+  demo: ['Demo-Daten · fiktiv', 'Demo data · fictional'],
+  langGroup: ['Sprache', 'Language'], layout: ['Layout der Bedienung', 'Control layout'], uiA: ['Bühne', 'Stage'], uiB: ['Seitenleiste', 'Sidebar'], uiC: ['Kompakt', 'Compact'], themeAria: ['Farbschema wechseln', 'Switch colour scheme'], dark: ['Dunkel', 'Dark'], light: ['Hell', 'Light'],
+  gView: ['Ansicht', 'View'], gScenario: ['Szenario', 'Scenario'], gMat: ['Material', 'Material'], gCat: ['Branche', 'Sector'],
+  filter: ['Filter', 'Filter'], all: ['alle zeigen', 'show all'],
+  tabMap: ['Karte', 'Map'], tabMapD: ['Lageplan und Flüsse', 'Site plan and flows'],
+  tabSankey: ['Stoffstrombilanz', 'Material balance'], tabSankeyD: ['Herkunft → Material → Verbleib', 'Origin → material → destination'],
+  tabPersonas: ['Personas', 'Personas'], tabPersonasD: ['Wer die Karte nutzt', 'Who uses the map'],
+  tabTools: ['Tool-Vergleich', 'Tool comparison'], tabToolsD: ['Werkzeuge im Vergleich', 'Existing tools compared'],
+  ist: ['Ist-Zustand', 'Current state'], pot: ['Potenzial · Symbiose', 'Potential · symbiosis'],
+  scnV: ['{q} % im Park verwertet', '{q} % reused in the park'],
+  mapAria: ['Karte der Materialflüsse', 'Map of material flows'], mapTitle: ['Lageplan Industriepark Kehrum', 'Site plan Kehrum industrial park'],
+  mapHint: ['Unternehmen anklicken · Fluss überfahren · schematisch', 'Click a company · hover a flow · schematic'],
+  mapImg: ['Schematischer Lageplan mit Materialflüssen zwischen den Unternehmen', 'Schematic site plan with material flows between the companies'],
+  tempo: ['Tempo', 'Speed'], tempoAria: ['Tempo der Punkte', 'Speed of the moving dots'], pause: ['Bewegung anhalten', 'Pause motion'],
+  swipe: ['← Karte seitlich wischen →', '← Swipe the map sideways →'],
+  lgThin: ['schmal ↔', 'thin ↔'], lgWide: ['breit = Menge pro Jahr', 'wide = amount per year'],
+  lgDash: ['gestrichelt = neuer Fluss im Potenzial', 'dashed = new flow in the potential scenario'], lgDots: ['wandernde Punkte = Richtung', 'moving dots = direction'],
+  skIntro: ['Woher kommen die Stoffe, welches Material, wohin gehen sie? Breite = Summe der Einzelflüsse in t/a (Weitergaben im Park zählen je Schritt). Abwärme (MWh/a) steht separat in den Kennzahlen.', 'Where do the materials come from, which material is it, where does it go? Width = sum of the individual flows in t/a (transfers inside the park count per step). Waste heat (MWh/a) is shown separately in the key figures.'],
+  skImg: ['Sankey-Diagramm: Herkunft, Material und Verbleib der Stoffströme', 'Sankey diagram: origin, material and destination of the material flows'],
+  skCols: [['Herkunft', 'Material', 'Verbleib'], ['Origin', 'Material', 'Destination']],
+  pTitle: ['Personas je Branche', 'Personas by sector'], pIntro: ['Eine Persona je Branche: Wer nutzt die Karte, mit welchem Ziel – und was hält heute vom Kreislauf ab?', 'One persona per sector: who uses the map, with which goal – and what keeps them from closing the loop today?'],
+  pLegend: ['Formen auf der Karte', 'Shapes on the map'], pLegendT: ['Form = Branche, Farbe = Material. Schnittstellen außerhalb des Parks sind gestrichelte Kästen.', 'Shape = sector, colour = material. Interfaces outside the park are dashed boxes.'],
+  tTitle: ['State of the Art: Werkzeuge für Materialflussanalysen', 'State of the art: tools for material flow analysis'],
+  tIntro: ['Vergleich gängiger Werkzeuge für Projekt A. Stand: Wissen bis Mitte 2026 – Lizenzen und Funktionen vor der Abgabe beim Anbieter prüfen.', 'Comparison of common tools for project A. Based on knowledge up to mid-2026 – check licences and features with the vendor before submission.'],
+  tHead: [['Werkzeug', 'Anbieter', 'Lizenz', 'Stärke', 'Grenze für Projekt A'], ['Tool', 'Vendor', 'Licence', 'Strength', 'Limit for project A']],
+  gapTitle: ['Lücke, die dieser Prototyp schließt', 'Gap this prototype fills'],
+  gap: [['Karte, Stoffströme und Potenzial in einer Ansicht – ohne Installation, im Browser.', 'Für Nicht-Fachleute lesbar: Firmen, Personas und Maßnahmen statt Bilanzgleichungen.', 'Grenze: keine Unsicherheitsrechnung und kein Datenausgleich wie in STAN; Bilanz bleibt eine Demo.'],
+        ['Map, material flows and potential in one view – no installation, in the browser.', 'Readable for non-experts: companies, personas and measures instead of balance equations.', 'Limit: no uncertainty analysis and no data reconciliation as in STAN; the balance remains a demo.']],
+  allFlows: ['Alle Flüsse als Tabelle', 'All flows as a table'],
+  fHead: [['Von', 'Nach', 'Stoffstrom', 'Material', 'Ist', 'Potenzial', 'Änderung'], ['From', 'To', 'Flow', 'Material', 'Current', 'Potential', 'Change']],
+  foot1: ['Alle Unternehmen, Personas und Mengen sind erfunden und dienen nur der Demonstration. Lage schematisch.', 'All companies, personas and amounts are fictional and for demonstration only. Layout is schematic.'],
+  foot2: ['CO₂e-Schätzung mit Demo-Faktoren: 0,3 t je t vermiedene Verbrennung · 1,5 t je t eingesparte Kunststoff-Neuware · 0,2 t je MWh genutzte Abwärme.', 'CO₂e estimate with demo factors: 0.3 t per t of avoided incineration · 1.5 t per t of saved virgin plastic · 0.2 t per MWh of used waste heat.'],
+  kTot: ['Reststoffe aus dem Park', 'Residues from the park'], kQuote: ['Davon im Park weiterverwertet', 'Reused inside the park'], kMva: ['Zur Verbrennung (extern)', 'To incineration (external)'],
+  kHeat: ['Genutzte Abwärme', 'Waste heat used'], kCo2: ['CO₂e-Einsparung (Schätzung)', 'CO₂e saved (estimate)'],
+  kIst: ['Ist-Zustand', 'Current state'], kNone: ['im Ist-Zustand keine', 'none in current state'], kSame: ['unverändert', 'unchanged'], kVs: ['ggü. Ist', 'vs. current'], kPp: ['Prozentpunkte', 'percentage points'],
+  ovTitle: ['Park-Überblick', 'Park overview'],
+  ovLine: ['{c} Unternehmen · {k} Branchen · {f} Flüsse heute, {p} weitere als Potenzial.', '{c} companies · {k} sectors · {f} flows today, {p} more as potential.'],
+  ovRest: ['Verbleib der Reststoffe', 'Where residues go'], ovIstNote: ['{q} % im Park · Rest über das Entsorgungszentrum', '{q} % in the park · rest via the waste centre'], ovPotNote: ['{q} % im Park', '{q} % in the park'],
+  ovBarAria: ['{q} Prozent im Park verwertet', '{q} percent reused in the park'],
+  ovMeasures: ['Potenziale im Park', 'Potentials in the park'], measure: ['Maßnahme', 'Measure'], ovCats: ['Branchen', 'Sectors'],
+  back: ['← Park-Überblick', '← Park overview'], port: ['Schnittstelle außerhalb des Parks', 'Interface outside the park'], portShort: ['Schnittstelle', 'Interface'],
+  fIn: ['t/a hinein', 't/a in'], fOut: ['t/a hinaus', 't/a out'], fRec: ['Reststoffe im Park verwertet', 'residues reused in park'],
+  inputs: ['Eingänge', 'Inputs'], outputs: ['Ausgänge', 'Outputs'],
+  bNew: ['neu im Potenzial', 'new in potential'], bGone: ['entfällt im Potenzial', 'dropped in potential'], bOnlyPot: ['nur im Potenzial: {v}', 'potential only: {v}'], bWasIst: ['Ist: {v}', 'current: {v}'],
+  bRest: ['Reststoff', 'Residue'], bMva: ['Verbrennung', 'Incineration'],
+  persona: ['Persona', 'Persona'], goals: ['Ziele', 'Goals'], pains: ['Hürden', 'Barriers'], need: ['Nutzen der Karte', 'What the map offers'],
+  tipClick: ['anklicken für Details', 'click for details'], tipIst: ['Ist', 'Current'], tipPot: ['Potenzial', 'Potential'],
+  north: ['N · schematisch', 'N · schematic'],
+};
+const t = (k, vars) => { let s = L(I[k]); if (vars) for (const v in vars) s = s.replace('{' + v + '}', vars[v]); return s; };
+
+/* ---------- Demo-Daten (fiktiv) ---------- */
+const MAT = {
+  metall:  { name: ['Metall', 'Metal'] },
+  holz:    { name: ['Holz & Papier', 'Wood & paper'] },
+  mineral: { name: ['Mineralik & Bau', 'Minerals & construction'] },
+  kunst:   { name: ['Kunststoff', 'Plastics'] },
+  organik: { name: ['Organik & Lebensmittel', 'Organics & food'] },
+  energie: { name: ['Abwärme', 'Waste heat'], unit: 'MWh/a' },
+  rest:    { name: ['Gemischter Restabfall', 'Mixed residual waste'] },
+};
+const CAT = {
+  mp: { name: ['Materialproduzent', 'Material producer'], plural: ['Materialproduzenten', 'Material producers'] },
+  h:  { name: ['Hersteller', 'Manufacturer'], plural: ['Hersteller', 'Manufacturers'] },
+  hl: { name: ['Handel & Logistik', 'Trade & logistics'], plural: ['Handel & Logistik', 'Trade & logistics'] },
+  r:  { name: ['Recycling', 'Recycling'], plural: ['Recycling', 'Recycling'] },
+  e:  { name: ['Entsorgung', 'Waste management'], plural: ['Entsorgung', 'Waste management'] },
+};
+const PERSONA = {
+  mp: { name: 'Jan Verhoeven', meta: ['52 · Betriebsleiter Kieswerk', '52 · plant manager, gravel works'],
+        quote: ['„Ich weiß, was rausgeht – aber nicht, wer unsere Nebenprodukte noch brauchen könnte.“', '“I know what leaves the site – but not who else could use our by-products.”'],
+        goals: [['Rohstoffe länger nutzen, Abbauflächen schonen', 'Nebenprodukte verkaufen statt entsorgen'], ['Use raw materials longer, spare extraction areas', 'Sell by-products instead of disposing of them']],
+        pains: [['Transportkosten und Leerfahrten', 'Kein Überblick über Abnehmer im Park'], ['Transport costs and empty runs', 'No overview of buyers in the park']],
+        need: ['Abnehmer für Nebenprodukte in direkter Nachbarschaft', 'Buyers for by-products right next door'] },
+  h:  { name: 'Sabine Kreutz', meta: ['44 · Produktionsleiterin Betonfertigteile', '44 · production manager, precast concrete'],
+        quote: ['„Jede Tonne Ausschuss bezahle ich zweimal: beim Einkauf und bei der Entsorgung.“', '“I pay for every tonne of scrap twice: when buying and when disposing.”'],
+        goals: [['Ausschuss und Entsorgungskosten senken', 'Sekundärrohstoffe mit geprüfter Qualität einsetzen'], ['Cut scrap and disposal costs', 'Use secondary raw materials of verified quality']],
+        pains: [['Qualitätsnachweise für Recyclingmaterial', 'Schwankende Liefermengen'], ['Quality certificates for recycled material', 'Fluctuating delivery volumes']],
+        need: ['Sehen, welcher Nachbar Reststoffe aufbereitet', 'See which neighbour processes residues'] },
+  hl: { name: 'Mehmet Aydın', meta: ['38 · Standortleiter Logistikzentrum', '38 · site manager, logistics centre'],
+        quote: ['„Folie, Kartons, Paletten – bei uns landet alles, was andere verpacken.“', '“Film, cartons, pallets – everything others pack ends up with us.”'],
+        goals: [['Verpackung im Kreislauf führen', 'Rücktransporte bündeln statt Leerfahrten'], ['Keep packaging in the loop', 'Bundle return trips instead of empty runs']],
+        pains: [['Gemischte Folien sind kaum verwertbar', 'Wenig Platz für Sammelbehälter'], ['Mixed films are hard to recycle', 'Little space for collection bins']],
+        need: ['Abnehmer und Sammelrouten je Verpackungsart', 'Buyers and collection routes per packaging type'] },
+  r:  { name: 'Lena Hoffmann', meta: ['35 · Vertrieb Sekundärrohstoffe', '35 · sales, secondary raw materials'],
+        quote: ['„Sortenreine Mengen, die planbar kommen – dann wird Recycling zum Geschäft.“', '“Clean, single-type volumes that arrive predictably – that’s when recycling becomes a business.”'],
+        goals: [['Planbare, sortenreine Eingangsmengen', 'Regranulat und RC-Material im Park absetzen'], ['Predictable, single-type input volumes', 'Sell regranulate and recycled aggregate inside the park']],
+        pains: [['Verschmutzte Fraktionen', 'Abnehmer greifen lieber zu Neuware'], ['Contaminated fractions', 'Buyers prefer virgin material']],
+        need: ['Mengen und Qualitäten der Nachbarn vorab kennen', 'Know neighbours’ volumes and qualities in advance'] },
+  e:  { name: 'Peter Janssen', meta: ['58 · Geschäftsführer Entsorgungszentrum', '58 · managing director, waste centre'],
+        quote: ['„Unser Ziel klingt paradox: weniger Abfall, der bei uns ankommt.“', '“Our goal sounds paradoxical: less waste arriving at our gate.”'],
+        goals: [['Abfälle vorrangig verwerten (Abfallhierarchie)', 'Biogas und Abwärme besser nutzen'], ['Recover waste first (waste hierarchy)', 'Make better use of biogas and waste heat']],
+        pains: [['Gemischte Gewerbeabfälle', 'Steigende Kosten der Verbrennung'], ['Mixed commercial waste', 'Rising incineration costs']],
+        need: ['Ströme erkennen, die vor der Verbrennung abzweigen können', 'Spot flows that could branch off before incineration'] },
+};
+// id, Kurzname, Name, Kategorie, x, y, Beschreibung, Unterzeile (Schnittstellen)
+const NODES = [
+  ['kies', ['Kieswerk', 'Gravel works'], ['Kieswerk Niederrhein', 'Niederrhein Gravel Works'], 'mp', 380, 140, ['Gewinnt Kies und Sand im Nassabbau.', 'Extracts gravel and sand by wet dredging.']],
+  ['holz', ['Sägewerk', 'Sawmill'], ['Sägewerk Kehrum', 'Kehrum Sawmill'], 'mp', 520, 105, ['Schneidet Rundholz aus der Region zu Bau- und Schnittholz.', 'Cuts regional logs into construction timber and sawn wood.']],
+  ['poly', ['Rhein-Polymer', 'Rhein-Polymer'], ['Rhein-Polymer Compounds', 'Rhein-Polymer Compounds'], 'mp', 800, 120, ['Stellt Kunststoffgranulat für Folien und Formteile her.', 'Produces plastic granulate for films and moulded parts.']],
+  ['beton', ['Betonfertigteile', 'Precast concrete'], ['Betonfertigteile Kalkar', 'Kalkar Precast Concrete'], 'h', 400, 255, ['Fertigt Wände, Decken und Schächte aus Beton.', 'Makes concrete walls, slabs and shafts.']],
+  ['moebel', ['Möbelwerk', 'Furniture'], ['Möbelwerk Kehrum', 'Kehrum Furniture Works'], 'h', 540, 215, ['Baut Büro- und Ladenmöbel aus Massivholz und Platten.', 'Builds office and shop furniture from solid wood and boards.']],
+  ['metall', ['Metallbau', 'Metalwork'], ['Metallbau Kehrum', 'Kehrum Metalwork'], 'h', 680, 200, ['Stahl- und Metallbau für Hallen, Treppen und Geländer.', 'Steel and metal construction for halls, stairs and railings.']],
+  ['verpack', ['FolienTec', 'FolienTec'], ['FolienTec Kehrum', 'FolienTec Kehrum'], 'h', 820, 240, ['Extrudiert Stretch- und Verpackungsfolien.', 'Extrudes stretch and packaging films.']],
+  ['kartoffel', ['Kartoffelwerk', 'Potato plant'], ['Kartoffelveredelung Niers', 'Niers Potato Processing'], 'h', 480, 505, ['Verarbeitet Kartoffeln aus dem Umland zu Pommes und Püree.', 'Turns potatoes from the surrounding farms into fries and mash.']],
+  ['bauhandel', ['Baustoffhandel', 'Builders’ merchant'], ['Baustoffhandel Kehrum', 'Kehrum Builders’ Merchant'], 'hl', 360, 380, ['Handelt Kies, Schotter und RC-Baustoffe für Baustellen der Region.', 'Sells gravel, crushed stone and recycled aggregates to regional sites.']],
+  ['logistik', ['Logistikzentrum', 'Logistics centre'], ['NRX Logistikzentrum', 'NRX Logistics Centre'], 'hl', 700, 360, ['Lager und Verteilung von Kühl- und Stückgut.', 'Storage and distribution of chilled and general cargo.']],
+  ['holzrc', ['Holzrecycling', 'Wood recycling'], ['Holz- & Palettenrecycling', 'Wood & Pallet Recycling'], 'r', 550, 395, ['Repariert Paletten und bereitet Altholz auf.', 'Repairs pallets and processes waste wood.']],
+  ['remet', ['ReMet Recycling', 'ReMet Recycling'], ['ReMet Schrott & Kunststoff', 'ReMet Scrap & Plastics'], 'r', 850, 395, ['Sortiert Metallschrott und Kunststoffe, stellt Regranulat her.', 'Sorts scrap metal and plastics, produces regranulate.']],
+  ['rcbau', ['RC-Baustoffe', 'RC aggregates'], ['RC-Baustoffe Niederrhein', 'Niederrhein RC Aggregates'], 'r', 340, 515, ['Bricht und siebt Bauschutt zu RC-Schotter und Gesteinskörnung.', 'Crushes and screens rubble into recycled ballast and aggregate.']],
+  ['biogas', ['Biogasanlage', 'Biogas plant'], ['Biogasanlage Kehrum', 'Kehrum Biogas Plant'], 'e', 625, 525, ['Vergärt organische Reststoffe zu Strom und Wärme.', 'Digests organic residues into power and heat.']],
+  ['ehof', ['Entsorgungszentrum', 'Waste centre'], ['Entsorgungszentrum Kehrum', 'Kehrum Waste Centre'], 'e', 790, 505, ['Sammelt, sortiert und leitet Gewerbeabfälle weiter.', 'Collects, sorts and forwards commercial waste.']],
+  // Schnittstellen außerhalb des Parks
+  ['region', ['Rohstoffe & Zulieferer', 'Raw materials & suppliers'], ['Rohstoffe & Zulieferer', 'Raw materials & suppliers'], 'port', 110, 140, ['Region und Import', 'Region and imports'], ['Region · Import', 'Region · imports']],
+  ['kunden', ['Kunden & Baustellen', 'Customers & sites'], ['Kunden & Baustellen', 'Customers & building sites'], 'port', 110, 330, ['Abnehmer der Produkte', 'Buyers of the products'], ['Niederrhein', 'Lower Rhine']],
+  ['agrar', ['Landwirtschaft', 'Agriculture'], ['Landwirtschaft', 'Agriculture'], 'port', 110, 520, ['Betriebe im Umland', 'Farms in the surrounding area'], ['Umland Kalkar', 'Around Kalkar']],
+  ['export', ['Industrie extern', 'External industry'], ['Industrie extern', 'External industry'], 'port', 985, 180, ['Stahlwerk, Papierfabrik, Spanplattenwerk', 'Steel mill, paper mill, chipboard plant'], ['Stahl · Papier · Altholz', 'Steel · paper · waste wood']],
+  ['mva', ['Verbrennung extern', 'External incineration'], ['Verbrennung extern', 'External incineration'], 'port', 985, 470, ['Müllverbrennung außerhalb des Parks', 'Waste incineration outside the park'], ['Müllverbrennung', 'Incineration plant']],
+].map(([id, short, name, cat, x, y, desc, sub]) => ({ id, short, name, cat, x, y, desc, sub }));
+const N = Object.fromEntries(NODES.map(n => [n.id, n]));
+
+// id, von, nach, Material, Bezeichnung, Ist, Potenzial, Reststoff?
+const FLOWS = [
+  ['f1', 'region', 'metall', 'metall', ['Stahlbleche & Profile', 'Steel sheets & sections'], 4200, 4200],
+  ['f2', 'metall', 'kunden', 'metall', ['Stahlbau-Teile', 'Steel components'], 3600, 3600],
+  ['f3', 'metall', 'remet', 'metall', ['Stahlschrott', 'Steel scrap'], 520, 520, 1],
+  ['f4', 'remet', 'export', 'metall', ['Schrott, sortenrein', 'Scrap, sorted'], 1900, 1900],
+  ['f6', 'region', 'holz', 'holz', ['Rundholz', 'Logs'], 24000, 24000],
+  ['f7', 'holz', 'moebel', 'holz', ['Schnittholz', 'Sawn timber'], 7800, 7800],
+  ['f8', 'holz', 'kunden', 'holz', ['Bau- & Schnittholz', 'Construction & sawn timber'], 9600, 9600],
+  ['f9', 'holz', 'ehof', 'holz', ['Rinde & Späne', 'Bark & shavings'], 4300, 600, 1],
+  ['p1', 'holz', 'holzrc', 'holz', ['Späne & Hackschnitzel', 'Shavings & wood chips'], 0, 3700, 1],
+  ['f10', 'moebel', 'kunden', 'holz', ['Möbel', 'Furniture'], 5900, 5900],
+  ['f11', 'moebel', 'ehof', 'holz', ['Plattenverschnitt', 'Board offcuts'], 1300, 300, 1],
+  ['p2', 'moebel', 'holzrc', 'holz', ['Plattenverschnitt', 'Board offcuts'], 0, 1000, 1],
+  ['p3', 'holzrc', 'moebel', 'holz', ['Spanplatten-Rohstoff', 'Chipboard feedstock'], 0, 2400],
+  ['f12', 'logistik', 'holzrc', 'holz', ['Defekte Paletten', 'Broken pallets'], 900, 900, 1],
+  ['f13', 'holzrc', 'logistik', 'holz', ['Reparierte Paletten', 'Repaired pallets'], 650, 650],
+  ['f16', 'holzrc', 'export', 'holz', ['Altholz', 'Waste wood'], 300, 800],
+  ['f14', 'logistik', 'ehof', 'holz', ['Kartonage', 'Cardboard'], 1100, 1100, 1],
+  ['f15', 'ehof', 'export', 'holz', ['Altpapier', 'Waste paper'], 1200, 1200],
+  ['f17', 'kies', 'beton', 'mineral', ['Kies & Sand', 'Gravel & sand'], 38000, 32000],
+  ['f18', 'kies', 'bauhandel', 'mineral', ['Kies & Sand', 'Gravel & sand'], 52000, 52000],
+  ['f19', 'beton', 'kunden', 'mineral', ['Betonfertigteile', 'Precast elements'], 41000, 41000],
+  ['f20', 'beton', 'ehof', 'mineral', ['Betonbruch & Ausschuss', 'Concrete rubble & rejects'], 2400, 0, 1],
+  ['p4', 'beton', 'rcbau', 'mineral', ['Betonbruch & Ausschuss', 'Concrete rubble & rejects'], 0, 2400, 1],
+  ['f21', 'region', 'rcbau', 'mineral', ['Bauschutt aus Abbruch', 'Demolition rubble'], 18000, 18000],
+  ['f22', 'rcbau', 'bauhandel', 'mineral', ['RC-Schotter', 'Recycled ballast'], 15500, 13000],
+  ['p5', 'rcbau', 'beton', 'mineral', ['RC-Gesteinskörnung', 'Recycled aggregate'], 0, 6000],
+  ['f23', 'bauhandel', 'kunden', 'mineral', ['Baustoffe', 'Building materials'], 64000, 64000],
+  ['f29', 'region', 'poly', 'kunst', ['Polymer-Neuware', 'Virgin polymer'], 5400, 4450],
+  ['f25', 'poly', 'verpack', 'kunst', ['Granulat', 'Granulate'], 5200, 5200],
+  ['f26', 'verpack', 'logistik', 'kunst', ['Folien & Verpackung', 'Films & packaging'], 4800, 4800],
+  ['f27', 'verpack', 'ehof', 'kunst', ['Folien-Produktionsreste', 'Film production scrap'], 450, 0, 1],
+  ['p6', 'verpack', 'poly', 'kunst', ['Folienreste, sortenrein', 'Film scrap, sorted'], 0, 450, 1],
+  ['f28', 'logistik', 'ehof', 'kunst', ['Stretchfolie, gemischt', 'Stretch film, mixed'], 260, 40, 1],
+  ['p7', 'logistik', 'remet', 'kunst', ['Stretchfolie, sortenrein', 'Stretch film, sorted'], 0, 220, 1],
+  ['p8', 'remet', 'poly', 'kunst', ['Regranulat', 'Regranulate'], 0, 500],
+  ['f31', 'agrar', 'kartoffel', 'organik', ['Kartoffeln', 'Potatoes'], 30000, 30000],
+  ['f32', 'kartoffel', 'logistik', 'organik', ['Kartoffelprodukte', 'Potato products'], 21000, 21000],
+  ['f33', 'logistik', 'kunden', 'organik', ['Lebensmittel & Waren', 'Food & goods'], 21000, 21000],
+  ['f34', 'kartoffel', 'biogas', 'organik', ['Schalen & Stärkereste', 'Peel & starch residues'], 6800, 7600, 1],
+  ['f35', 'kartoffel', 'agrar', 'organik', ['Futterkartoffeln', 'Feed potatoes'], 1800, 1000],
+  ['f36', 'biogas', 'agrar', 'organik', ['Gärreste (Dünger)', 'Digestate (fertiliser)'], 6100, 6800],
+  ['f30', 'ehof', 'mva', 'rest', ['Restabfall zur Verbrennung', 'Residual waste to incineration'], 8610, 840],
+  ['p9', 'biogas', 'kartoffel', 'energie', ['Abwärme als Prozesswärme', 'Waste heat as process heat'], 0, 3800],
+  ['p10', 'biogas', 'holz', 'energie', ['Abwärme zur Holztrocknung', 'Waste heat for timber drying'], 0, 1600],
+].map(([id, from, to, mat, label, ist, pot, rest]) => ({ id, from, to, mat, label, ist, pot, rest: !!rest }));
+const F = Object.fromEntries(FLOWS.map(f => [f.id, f]));
+
+const MEASURES = [
+  { id: 'm1', title: ['Betonbruch im Kreislauf', 'Concrete rubble in the loop'], flows: ['p4', 'p5', 'f20', 'f17', 'f22'], mat: 'mineral',
+    text: ['Ausschuss der Fertigteile geht zur RC-Aufbereitung und kommt als Gesteinskörnung zurück.', 'Rejected precast parts go to the RC plant and come back as aggregate.'],
+    value: [['2.400 t/a weniger Abfall', '6.000 t/a Kies gespart'], ['2,400 t/a less waste', '6,000 t/a gravel saved']] },
+  { id: 'm2', title: ['Holz-Kaskade', 'Wood cascade'], flows: ['p1', 'p2', 'p3', 'f9', 'f11', 'f16'], mat: 'holz',
+    text: ['Rinde, Späne und Plattenverschnitt werden zu Spanplatten-Rohstoff statt Abfall.', 'Bark, shavings and board offcuts become chipboard feedstock instead of waste.'],
+    value: [['4.700 t/a statt Verbrennung'], ['4,700 t/a instead of incineration']] },
+  { id: 'm3', title: ['Folien-Kreislauf', 'Film loop'], flows: ['p6', 'p7', 'p8', 'f27', 'f28', 'f29'], mat: 'kunst',
+    text: ['Produktionsreste und sortenreine Stretchfolie werden zu Regranulat.', 'Production scrap and sorted stretch film are turned into regranulate.'],
+    value: [['670 t/a statt Verbrennung', '950 t/a Neuware gespart'], ['670 t/a instead of incineration', '950 t/a virgin material saved']] },
+  { id: 'm4', title: ['Abwärme der Biogasanlage', 'Waste heat from the biogas plant'], flows: ['p9', 'p10'], mat: 'energie',
+    text: ['Wärme aus dem Blockheizkraftwerk ersetzt Erdgas in Veredelung und Holztrocknung.', 'Heat from the CHP unit replaces natural gas in potato processing and timber drying.'],
+    value: [['5.400 MWh/a Wärme genutzt'], ['5,400 MWh/a heat used']] },
+];
+
+/* ---------- Zustand ---------- */
+const state = { mode: 'ist', mats: new Set(Object.keys(MAT)), cats: new Set(Object.keys(CAT)),
+  sel: null, hoverNode: null, hoverFlow: null, hoverMeasure: null, selMeasure: null };
+const val = (f, mode = state.mode) => mode === 'ist' ? f.ist : f.pot;
+const isEnergy = f => f.mat === 'energie';
+const unit = f => isEnergy(f) ? 'MWh/a' : 't/a';
+const width = v => v <= 0 ? .6 : 1.2 + 8 * Math.sqrt(v / 64000);
+const widthE = v => v <= 0 ? .6 : 1.6 + 5 * Math.sqrt(v / 5000);
+const fw = (f, v) => isEnergy(f) ? widthE(v) : width(v);
+const catOn = id => N[id].cat !== 'port' && state.cats.has(N[id].cat);
+const flowOn = f => val(f) > 0 && state.mats.has(f.mat) && (catOn(f.from) || catOn(f.to));
+
+/* ---------- Form je Branche (Form = Branche, Farbe = Material) ---------- */
+function shapeD(cat, r) {
+  const k = r;
+  switch (cat) {
+    case 'mp': return `M0,${-k * 1.18}L${k * 1.18},0L0,${k * 1.18}L${-k * 1.18},0Z`;
+    case 'hl': { let d = ''; for (let i = 0; i < 6; i++) { const a = Math.PI / 6 + i * Math.PI / 3; d += (i ? 'L' : 'M') + (k * 1.08 * Math.cos(a)).toFixed(2) + ',' + (k * 1.08 * Math.sin(a)).toFixed(2); } return d + 'Z'; }
+    case 'r':  return `M0,${-k * 1.2}L${k * 1.12},${k * .78}L${-k * 1.12},${k * .78}Z`;
+    case 'e':  { const s = k * .92, c = 3; return `M${-s + c},${-s}H${s - c}Q${s},${-s} ${s},${-s + c}V${s - c}Q${s},${s} ${s - c},${s}H${-s + c}Q${-s},${s} ${-s},${s - c}V${-s + c}Q${-s},${-s} ${-s + c},${-s}Z`; }
+    default:   return `M${-k},0a${k},${k} 0 1,0 ${2 * k},0a${k},${k} 0 1,0 ${-2 * k},0`;
+  }
+}
+const glyph = cat => `<svg class="glyph" style="--bc:var(--c-${cat})" viewBox="-8 -8 16 16" aria-hidden="true"><path d="${shapeD(cat, 5.6)}"/></svg>`;
+const sw = mat => `<i class="sw" style="background:var(--m-${mat})"></i>`;
+const bMat = mat => `<span class="bdg mat" style="--mc:var(--m-${mat})">${sw(mat)}${esc(L(MAT[mat].name))}</span>`;
+const bdg = (cls, txt) => `<span class="bdg ${cls}">${esc(txt)}</span>`;
+
+/* ---------- Karte aufbauen ---------- */
+const svg = $('#map'), tabKarte = $('#tab-karte');
+const defs = S('defs', {}, svg);
+const pat = S('pattern', { id: 'fieldpat', width: 14, height: 14, patternUnits: 'userSpaceOnUse', patternTransform: 'rotate(35)' }, defs);
+S('rect', { width: 14, height: 14, fill: 'var(--map-bg)' }, pat);
+S('line', { x1: 0, y1: 0, x2: 0, y2: 14, stroke: 'var(--field)', 'stroke-width': 2 }, pat);
+
+S('rect', { class: 'bgfield', x: 0, y: 0, width: 1080, height: 640 }, svg);
+S('path', { class: 'park', d: 'M300,64 H900 Q920,64 920,84 V560 Q920,584 896,584 H304 Q282,584 282,562 V86 Q282,64 300,64Z' }, svg);
+// Straßen (Eigennamen bleiben deutsch)
+const roads = S('g', {}, svg);
+const B57 = 'M236,0 C256,160 222,330 244,470 S262,600 256,640';
+[[B57, 12], ['M244,312 H920', 9], ['M612,64 V452', 8], ['M248,452 H920', 8]].forEach(([d, w]) => { S('path', { class: 'road', d, 'stroke-width': w }, roads); S('path', { class: 'roadmid', d }, roads); });
+const t1 = S('text', { class: 'maptxt mono', x: 0, y: 0, transform: 'translate(226,250) rotate(-86)' }, roads); t1.textContent = 'B 57';
+[['Industriestraße', 742, 305], ['Am Kehrumer Feld', 0, 0, 'translate(604,186) rotate(-90)'], ['Ringstraße Süd', 626, 445]].forEach(([tx, x, y, tr]) => {
+  const e = S('text', { class: 'maptxt', x, y }, roads); if (tr) e.setAttribute('transform', tr); e.textContent = tx; });
+const north = S('text', { class: 'maptxt', x: 248, y: 24 }, roads); north.textContent = '↑ Kalkar';
+const south = S('text', { class: 'maptxt', x: 266, y: 630 }, roads); south.textContent = '↓ Xanten';
+const comp = S('g', { transform: 'translate(40,598)' }, svg);
+S('path', { d: 'M0,-14 L5,4 L0,0 L-5,4Z', fill: 'var(--ink-2)' }, comp);
+const compTxt = S('text', { class: 'maptxt mono', x: 12, y: 2 }, comp);
+// Grundstücke
+NODES.filter(n => n.cat !== 'port').forEach(n => S('rect', { class: 'plot', x: n.x - 60, y: n.y - 34, width: 120, height: 80, rx: 6 }, svg));
+
+const gFlows = S('g', {}, svg), gHits = S('g', {}, svg), gParts = S('g', {}, svg), gNodes = S('g', {}, svg);
+
+// Durchsatz je Knoten → Größe
+const thr = {}; FLOWS.forEach(f => { if (isEnergy(f)) return; const v = Math.max(f.ist, f.pot); thr[f.from] = (thr[f.from] || 0) + v; thr[f.to] = (thr[f.to] || 0) + v; });
+const maxThr = Math.max(...NODES.filter(n => n.cat !== 'port').map(n => thr[n.id] || 0));
+NODES.forEach(n => { n.r = n.cat === 'port' ? 0 : 10 + 8 * Math.sqrt((thr[n.id] || 0) / maxThr); });
+
+// Geometrie: Bogen je Fluss, parallele Flüsse auf eigene Spur
+const lanes = {};
+FLOWS.forEach(f => { const k = f.from + '>' + f.to; f.lane = lanes[k] = (lanes[k] ?? -1) + 1; });
+FLOWS.forEach(f => {
+  const a = N[f.from], b = N[f.to];
+  const dx = b.x - a.x, dy = b.y - a.y, len = Math.hypot(dx, dy);
+  const nx = -dy / len, ny = dx / len, bend = Math.min(.16 * len, 70) + f.lane * 16;
+  const cx = (a.x + b.x) / 2 + nx * bend, cy = (a.y + b.y) / 2 + ny * bend;
+  f.d = `M${a.x},${a.y} Q${cx.toFixed(1)},${cy.toFixed(1)} ${b.x},${b.y}`;
+  f.el = S('path', { class: 'flow' + (f.ist === 0 ? ' pot' : ''), d: f.d }, gFlows);
+  f.el.style.stroke = `var(--m-${f.mat})`;
+  f.hit = S('path', { class: 'hit', d: f.d }, gHits);
+  f.len = f.el.getTotalLength();
+  f.parts = S('g', { class: 'parts' }, gParts);
+  f.dots = [];
+  f.hit.addEventListener('mouseenter', e => { state.hoverFlow = f.id; render(); showFlowTip(f, e); });
+  f.hit.addEventListener('mousemove', e => moveTip(e));
+  f.hit.addEventListener('mouseleave', () => { state.hoverFlow = null; render(); hideTip(); });
+  f.hit.addEventListener('click', () => { if (N[f.from].cat !== 'port') select(f.from); });
+});
+
+// Knoten
+NODES.forEach((n, i) => {
+  const g = S('g', { class: 'node' + (n.cat === 'port' ? ' port' : ''), transform: `translate(${n.x},${n.y})`, tabindex: 0, role: 'button' }, gNodes);
+  if (n.cat === 'port') {
+    n.inner = S('g', {}, g);
+    n.box = S('rect', { class: 'shape', x: -78, y: -27, width: 156, height: 54, rx: 6 }, n.inner);
+    n.lblEl = S('text', { class: 'lbl', y: -5 }, n.inner);
+    n.subEl = S('text', { class: 'lbl sub', y: 15 }, n.inner);
+  } else {
+    g.style.setProperty('--bc', `var(--c-${n.cat})`);
+    n.ping = S('path', { class: 'ping', d: shapeD(n.cat, n.r) }, g);
+    S('path', { class: 'shape', d: shapeD(n.cat, n.r) }, g);
+    n.lblEl = S('text', { class: 'lbl', y: n.r + 19 }, g);
+  }
+  n.g = g;
+  g.addEventListener('mouseenter', e => { state.hoverNode = n.id; render(); showNodeTip(n, e); });
+  g.addEventListener('mousemove', e => moveTip(e));
+  g.addEventListener('mouseleave', () => { state.hoverNode = null; render(); hideTip(); });
+  g.addEventListener('click', () => select(n.id));
+  g.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); select(n.id); } if (e.key === 'Escape') select(null); });
+  setTimeout(() => g.classList.add('in'), RM ? 0 : 80 + Math.min(i, 8) * 60);
+});
+function mapTexts() {
+  NODES.forEach(n => {
+    n.lblEl.textContent = L(n.short);
+    if (n.subEl) n.subEl.textContent = L(n.sub);
+    n.g.setAttribute('aria-label', `${L(n.name)} – ${n.cat === 'port' ? t('portShort') : L(CAT[n.cat].name)}`);
+  });
+  compTxt.textContent = t('north');
+  fitPorts();
+  svg.setAttribute('aria-label', t('mapImg'));
+}
+// Schrift in Bildschirm-px halten: --u = viewBox-Einheiten je Bildschirm-px (gedeckelt, sonst überlappen Namen)
+const ro = new ResizeObserver(es => es.forEach(e => {
+  const el = e.target, w = el.clientWidth; if (!w) return;
+  el.style.setProperty('--u', Math.min(1.3, Math.max(.6, el.viewBox.baseVal.width / w)).toFixed(3));
+  if (el === sk) skDraw(); else fitPorts();
+}));
+ro.observe(svg);
+
+function fitPorts() { // Kasten = Textbreite + Rand, nie über den Kartenrand
+  if (tabKarte.hidden) return;
+  NODES.filter(n => n.inner).forEach(n => {
+    const w = Math.max(n.lblEl.getBBox().width, n.subEl.getBBox().width) + 22;
+    if (!w || w < 30) return;
+    n.box.setAttribute('x', -w / 2); n.box.setAttribute('width', w);
+    const dx = Math.min(0, 1074 - (n.x + w / 2)) || Math.max(0, 6 - (n.x - w / 2));
+    n.inner.setAttribute('transform', `translate(${dx.toFixed(1)},0)`);
+  });
+}
+
+/* ---------- Darstellung ---------- */
+function related(f) {
+  if (state.hoverFlow) return f.id === state.hoverFlow;
+  const m = state.hoverMeasure || (!state.hoverNode && !state.sel && state.selMeasure);
+  if (m) return MEASURES.find(x => x.id === m).flows.includes(f.id);
+  const n = state.hoverNode || state.sel;
+  if (n) return f.from === n || f.to === n;
+  return null;
+}
+function render() {
+  const focus = FLOWS.some(f => related(f) !== null);
+  const nodeFocus = state.hoverNode || state.sel;
+  const linked = new Set();
+  FLOWS.forEach(f => {
+    const on = flowOn(f), rel = related(f);
+    const v = val(f);
+    f.el.style.strokeWidth = fw(f, v);
+    const op = !on ? 0 : focus ? (rel ? .95 : .07) : (f.mat === 'rest' ? .4 : .5);
+    f.el.style.opacity = op;
+    f.parts.style.opacity = !on ? 0 : focus ? (rel ? 1 : .08) : .85;
+    f.hit.classList.toggle('off', !on);
+    f.active = on;
+    if (on && rel) { linked.add(f.from); linked.add(f.to); }
+  });
+  NODES.forEach(n => {
+    const catDim = n.cat !== 'port' && !state.cats.has(n.cat);
+    const focusDim = nodeFocus && n.id !== nodeFocus && !linked.has(n.id);
+    n.g.classList.toggle('dim', catDim || !!focusDim);
+    n.g.classList.toggle('sel', state.sel === n.id);
+  });
+  $$('.measure').forEach(b => b.classList.toggle('on', b.dataset.m === state.selMeasure));
+}
+
+/* ---------- Wandernde Punkte ---------- */
+const SPEED = 34; // px/s – ruhig, Ambient
+function ensureDots(f) {
+  const v = Math.max(f.ist, f.pot);
+  const n = isEnergy(f) ? Math.max(2, Math.round(2 + 3 * Math.sqrt(v / 5000))) : Math.max(1, Math.round(1 + 6 * Math.sqrt(v / 64000)));
+  const r = 1.8 + .2 * fw(f, v);
+  while (f.dots.length < n) f.dots.push(S('circle', { r: r.toFixed(2), fill: `var(--m-${f.mat})` }, f.parts));
+}
+FLOWS.forEach(ensureDots);
+let last = performance.now(), clock = 0, raf = 0, tempo = 1, paused = false;
+function tick(now) {
+  clock += Math.min(now - last, 64) / 1000 * tempo; last = now;
+  for (const f of FLOWS) {
+    if (!f.active || tabKarte.hidden) continue;
+    const n = f.dots.length, base = (clock * SPEED / f.len) % 1;
+    for (let i = 0; i < n; i++) {
+      const p = f.el.getPointAtLength(((base + i / n) % 1) * f.len);
+      f.dots[i].setAttribute('cx', p.x.toFixed(1)); f.dots[i].setAttribute('cy', p.y.toFixed(1));
+    }
+  }
+  raf = requestAnimationFrame(tick);
+}
+function placeStatic() { // reduzierte Bewegung / Pause: Punkte fest verteilt
+  for (const f of FLOWS) f.dots.forEach((d, i) => { const p = f.el.getPointAtLength(((i + .5) / f.dots.length) * f.len); d.setAttribute('cx', p.x); d.setAttribute('cy', p.y); });
+}
+const moving = () => !RM && !paused && !document.hidden;
+function motion() { cancelAnimationFrame(raf); if (moving()) { last = performance.now(); raf = requestAnimationFrame(tick); } }
+document.addEventListener('visibilitychange', motion);
+
+/* ---------- Kennzahlen ---------- */
+function kpi(mode) {
+  const rests = FLOWS.filter(f => f.rest);
+  const tot = rests.reduce((s, f) => s + val(f, mode), 0);
+  const rec = rests.filter(f => f.to !== 'ehof').reduce((s, f) => s + val(f, mode), 0);
+  const mva = val(F.f30, mode);
+  const heat = FLOWS.filter(isEnergy).reduce((s, f) => s + val(f, mode), 0);
+  const neu = F.f29.ist - val(F.f29, mode);
+  const co2 = (F.f30.ist - mva) * .3 + neu * 1.5 + heat * .2;
+  return { tot, quote: tot ? rec / tot * 100 : 0, mva, heat, co2 };
+}
+// Schlüssel, Label, Einheit, Farbton, höher = besser?
+const KPI_DEF = [
+  ['tot', 'kTot', 't/a', 'var(--warn)', false],
+  ['quote', 'kQuote', '%', 'var(--ok)', true],
+  ['mva', 'kMva', 't/a', 'var(--bad)', false],
+  ['heat', 'kHeat', 'MWh/a', 'var(--m-energie)', true],
+  ['co2', 'kCo2', 't/a', 'var(--m-organik)', true],
+];
+function buildKpis() {
+  $('#kpis').innerHTML = KPI_DEF.map(([k, lab, u, tone]) => `<div class="kpi" style="--tone:${tone}"><span class="lab"><i class="dot"></i>${t(lab)}</span><span class="val"><span data-k="${k}">0</span><span class="unit">${u}</span></span><span class="delta" data-d="${k}"></span></div>`).join('');
+}
+const shown = {};
+function updateKpis(animate = true) {
+  const cur = kpi(state.mode), ist = kpi('ist');
+  KPI_DEF.forEach(([k, , u, , better]) => {
+    const el = document.querySelector(`[data-k="${k}"]`), from = shown[k] ?? 0, to = cur[k];
+    shown[k] = to;
+    const show = x => k === 'quote' ? Math.round(x) : fmt(x);
+    if (RM || !animate) el.textContent = show(to);
+    else { const t0 = performance.now(), dur = 700; const step = now => { const p = Math.min(1, (now - t0) / dur), e = 1 - Math.pow(1 - p, 3); el.textContent = show(from + (to - from) * e); if (p < 1) requestAnimationFrame(step); }; requestAnimationFrame(step); }
+    const d = document.querySelector(`[data-d="${k}"]`);
+    const diff = cur[k] - ist[k];
+    d.className = 'delta';
+    if (state.mode === 'ist') d.textContent = k === 'co2' || k === 'heat' ? t('kNone') : t('kIst');
+    else if (Math.abs(diff) < .5) d.textContent = t('kSame');
+    else {
+      d.textContent = `${diff > 0 ? '▲ +' : '▼ −'}${k === 'quote' ? Math.round(Math.abs(diff)) + ' ' + t('kPp') : fmt(Math.abs(diff)) + ' ' + u} ${t('kVs')}`;
+      d.classList.add((diff > 0) === better ? 'up' : 'down');
+    }
+  });
+  $$('[data-sv]').forEach(e => { e.textContent = t('scnV', { q: Math.round(kpi(e.dataset.sv).quote) }); });
+}
+
+/* ---------- Seitenleiste ---------- */
+const panel = $('#panel');
+function enter() { if (RM) return; panel.classList.remove('enter'); void panel.offsetWidth; panel.classList.add('enter'); }
+function overview() {
+  const ist = kpi('ist'), pot = kpi('pot');
+  const comp = NODES.filter(n => n.cat !== 'port');
+  const bar = (k, label, q) => `<span class="${state.mode === k ? 'cur' : ''}">${label}</span><span class="bar" role="img" aria-label="${t('ovBarAria', { q: Math.round(q) })}"><i class="ok${k === 'pot' ? ' pot' : ''}" style="flex-grow:${q}"></i><i class="no" style="flex-grow:${100 - q}"></i></span>`;
+  panel.innerHTML = `
+    <div class="stack"><h2>${t('ovTitle')}</h2>
+      <p class="muted small">${t('ovLine', { c: comp.length, k: Object.keys(CAT).length, f: FLOWS.filter(f => f.ist > 0).length, p: FLOWS.filter(f => f.ist === 0).length })}</p></div>
+    <div><h3>${t('ovRest')}</h3>
+      <div class="vb">${bar('ist', t('tipIst'), ist.quote)}<span class="note small">${t('ovIstNote', { q: Math.round(ist.quote) })}</span>
+      ${bar('pot', t('tipPot'), pot.quote)}<span class="note small">${t('ovPotNote', { q: Math.round(pot.quote) })}</span></div></div>
+    <div><h3>${t('ovMeasures')}</h3><div class="measures">${MEASURES.map(m => `
+      <button type="button" class="measure" data-m="${m.id}" style="--mc:var(--m-${m.mat})"><span class="mt">${sw(m.mat)}${esc(L(m.title))}</span><span class="ms">${esc(L(m.text))}</span>
+        <span class="bdg-list">${bdg('neu', t('measure'))}${L(m.value).map(v => `<span class="bdg mono mat" style="--mc:var(--m-${m.mat})">${esc(v)}</span>`).join('')}</span></button>`).join('')}</div></div>
+    <div><h3>${t('ovCats')}</h3><div class="cats">${Object.entries(CAT).map(([k, c]) => `<div>${glyph(k)}${esc(L(c.plural))} <span class="muted">(${comp.filter(n => n.cat === k).length})</span></div>`).join('')}</div></div>`;
+  panel.querySelectorAll('.measure').forEach(b => {
+    b.addEventListener('mouseenter', () => { state.hoverMeasure = b.dataset.m; render(); });
+    b.addEventListener('mouseleave', () => { state.hoverMeasure = null; render(); });
+    b.addEventListener('click', () => { state.selMeasure = state.selMeasure === b.dataset.m ? null : b.dataset.m; if (state.selMeasure) setMode('pot'); render(); });
+  });
+}
+function flowBadges(f, withVal = true) {
+  const v = val(f), out = [];
+  if (state.mode === 'pot' && f.ist === 0) out.push(bdg('neu', t('bNew')));
+  else if (state.mode === 'pot' && v === 0) out.push(bdg('weg', t('bGone')));
+  else if (state.mode === 'ist' && f.ist === 0 && withVal) out.push(bdg('neu', t('bOnlyPot', { v: fmt(f.pot) + ' ' + unit(f) })));
+  else if (state.mode === 'pot' && v !== f.ist && withVal) out.push(bdg('mono', t('bWasIst', { v: fmt(f.ist) + ' ' + unit(f) })));
+  if (f.rest) out.push(bdg('rest', t('bRest')));
+  if (f.to === 'mva') out.push(bdg('mva', t('bMva')));
+  return out.join('');
+}
+function rowHtml(f, partner) {
+  const v = val(f);
+  const same = FLOWS.filter(x => (x.from === f.from || x.to === f.to || x.from === f.to || x.to === f.from) && isEnergy(x) === isEnergy(f));
+  const max = Math.max(...same.map(x => Math.max(x.ist, x.pot)));
+  const b = flowBadges(f);
+  return `<div class="row${v === 0 ? ' gone' : ''}" data-f="${f.id}"><span class="rl">${sw(f.mat)}<span>${esc(L(f.label))} · ${esc(L(N[partner].short))}</span></span><span class="rv">${fmt(v)} ${unit(f)}</span>
+    <span class="rbar"><i style="width:${(v / max * 100).toFixed(1)}%;background:var(--m-${f.mat})"></i></span>${b ? `<span class="bdg-list">${b}</span>` : ''}</div>`;
+}
+function personaHtml(cat, extra = '') {
+  const p = PERSONA[cat];
+  return `<div class="persona" style="--bc:var(--c-${cat})"><div class="ph"><span class="avatar" aria-hidden="true">${p.name.split(' ').map(s => s[0]).join('')}</span><div><b>${p.name}</b><span>${t('persona')} ${esc(L(CAT[cat].name))} · ${esc(L(p.meta))}</span></div></div>
+      <p class="quote">${esc(L(p.quote))}</p>
+      <div><div class="pl">${t('goals')}</div><ul>${L(p.goals).map(g => `<li>${esc(g)}</li>`).join('')}</ul></div>
+      <div><div class="pl">${t('pains')}</div><ul>${L(p.pains).map(g => `<li>${esc(g)}</li>`).join('')}</ul></div>
+      <div><div class="pl">${t('need')}</div><ul><li>${esc(L(p.need))}</li></ul></div>${extra}</div>`;
+}
+function company(id) {
+  const n = N[id];
+  const ins = FLOWS.filter(f => f.to === id), outs = FLOWS.filter(f => f.from === id);
+  const sum = arr => arr.filter(f => !isEnergy(f)).reduce((s, f) => s + val(f), 0);
+  const restOut = outs.filter(f => f.rest).reduce((s, f) => s + val(f), 0);
+  const restRec = outs.filter(f => f.rest && f.to !== 'ehof').reduce((s, f) => s + val(f), 0);
+  const persona = n.cat === 'port' ? '' : personaHtml(n.cat);
+  panel.innerHTML = `
+    <button type="button" class="back" id="backBtn">${t('back')}</button>
+    <div class="stack"><span class="catline">${n.cat === 'port' ? t('port') : glyph(n.cat) + esc(L(CAT[n.cat].name))}</span><h2>${esc(L(n.name))}</h2><p class="muted small">${esc(L(n.desc))}</p></div>
+    ${n.cat === 'port' ? '' : `<div class="facts"><div><b>${fmt(sum(ins))}</b><span>${t('fIn')}</span></div><div><b>${fmt(sum(outs))}</b><span>${t('fOut')}</span></div><div><b>${restOut ? Math.round(restRec / restOut * 100) + ' %' : '–'}</b><span>${t('fRec')}</span></div></div>`}
+    ${ins.length ? `<div><h3>${t('inputs')}</h3><div class="rows">${ins.map(f => rowHtml(f, f.from)).join('')}</div></div>` : ''}
+    ${outs.length ? `<div><h3>${t('outputs')}</h3><div class="rows">${outs.map(f => rowHtml(f, f.to)).join('')}</div></div>` : ''}
+    ${persona}`;
+  $('#backBtn').addEventListener('click', () => select(null));
+  panel.querySelectorAll('.row').forEach(r => {
+    r.addEventListener('mouseenter', () => { state.hoverFlow = r.dataset.f; render(); });
+    r.addEventListener('mouseleave', () => { state.hoverFlow = null; render(); });
+  });
+}
+function panelRender(anim = true) { state.sel ? company(state.sel) : overview(); if (anim) enter(); render(); }
+function select(id) {
+  state.sel = id; state.hoverNode = null; hideTip();
+  if (id && !RM && N[id].ping) { const p = N[id].ping; p.classList.remove('go'); void p.getBBox(); p.classList.add('go'); }
+  panelRender();
+}
+
+/* ---------- Tooltip ---------- */
+const tip = $('#tip');
+function showFlowTip(f, e) {
+  const ist = f.ist, pot = f.pot;
+  const change = ist === pot ? `${fmt(ist)} ${unit(f)}` : `${t('tipIst')} ${ist ? fmt(ist) : '–'} → ${t('tipPot')} ${pot ? fmt(pot) : '–'} ${unit(f)}`;
+  const b = flowBadges(f, false);
+  tip.innerHTML = `<b>${esc(L(f.label))}</b><br>${esc(L(N[f.from].short))} → ${esc(L(N[f.to].short))}<div class="tm">${sw(f.mat)}${esc(L(MAT[f.mat].name))} · ${change}</div>${b ? `<div class="tm">${b}</div>` : ''}`;
+  tip.classList.add('on'); moveTip(e);
+}
+function showNodeTip(n, e) {
+  tip.innerHTML = `<b>${esc(L(n.name))}</b><br>${n.cat === 'port' ? t('portShort') : esc(L(CAT[n.cat].name))} · ${t('tipClick')}`;
+  tip.classList.add('on'); moveTip(e);
+}
+function moveTip(e) {
+  const pad = 14, w = tip.offsetWidth, h = tip.offsetHeight;
+  let x = e.clientX + pad, y = e.clientY + pad;
+  if (x + w > innerWidth - 8) x = e.clientX - w - pad;
+  if (y + h > innerHeight - 8) y = e.clientY - h - pad;
+  tip.style.left = Math.max(8, x) + 'px'; tip.style.top = Math.max(8, y) + 'px';
+}
+function hideTip() { tip.classList.remove('on'); }
+
+/* ---------- Filter & Szenario ---------- */
+const matChips = $('#matChips'), catChips = $('#catChips');
+const matTotal = k => FLOWS.filter(f => f.mat === k).reduce((s, f) => s + val(f), 0);
+function buildChips() {
+  matChips.innerHTML = Object.entries(MAT).map(([k, m]) => `<button type="button" class="chip m" data-mat="${k}" style="--mc:var(--m-${k})" aria-pressed="${state.mats.has(k)}">${sw(k)}<span class="name">${esc(L(m.name))}</span><span class="cnt">${fmt(matTotal(k))} ${k === 'energie' ? 'MWh' : 't'}</span></button>`).join('');
+  catChips.innerHTML = Object.entries(CAT).map(([k, c]) => `<button type="button" class="chip c" data-cat="${k}" style="--bc:var(--c-${k})" aria-pressed="${state.cats.has(k)}">${glyph(k)}<span class="name">${esc(L(c.name))}</span><span class="cnt">${NODES.filter(n => n.cat === k).length}</span></button>`).join('');
+  filterState();
+}
+function filterState() {
+  const nm = Object.keys(MAT).length, nc = Object.keys(CAT).length;
+  $('[data-reset="mats"]').hidden = state.mats.size === nm;
+  $('[data-reset="cats"]').hidden = state.cats.size === nc;
+  $('#fcount').textContent = `${state.mats.size + state.cats.size}/${nm + nc}`;
+  const off = [...Object.keys(MAT).filter(k => !state.mats.has(k)).map(k => `<button type="button" class="bdg weg" data-mat="${k}">${esc(L(MAT[k].name))} ✕</button>`),
+    ...Object.keys(CAT).filter(k => !state.cats.has(k)).map(k => `<button type="button" class="bdg weg" data-cat="${k}">${esc(L(CAT[k].name))} ✕</button>`)];
+  $('#activef').innerHTML = off.join('');
+}
+function toggleFilter(set, k) { set.has(k) ? set.delete(k) : set.add(k); buildChips(); render(); skUpdate(); }
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-mat],[data-cat]');
+  if (b && b.closest('.side')) toggleFilter(b.dataset.mat ? state.mats : state.cats, b.dataset.mat || b.dataset.cat);
+  const r = e.target.closest('[data-reset]');
+  if (r) { const s = state[r.dataset.reset]; Object.keys(r.dataset.reset === 'mats' ? MAT : CAT).forEach(k => s.add(k)); buildChips(); render(); skUpdate(); }
+  const fd = $('#fdrop'); // Klappfilter (Kommandoleiste) schließt bei Klick daneben
+  if (fd.open && root.classList.contains('ui-C') && !e.target.closest('#fdrop')) fd.open = false;
+});
+const segBtns = $$('.scn button');
+function setMode(m) {
+  if (state.mode === m) return;
+  state.mode = m;
+  segBtns.forEach(b => { b.setAttribute('aria-pressed', b.dataset.mode === m); b.classList.remove('breathe'); });
+  updateKpis(); panelRender(false); buildTable(); buildChips(); skUpdate();
+}
+segBtns.forEach(b => b.addEventListener('click', () => { if (b.dataset.mode === 'ist') state.selMeasure = null; setMode(b.dataset.mode); render(); }));
+document.addEventListener('keydown', e => { if (e.key === 'Escape') { if (state.sel) select(null); $('#fdrop').open = root.classList.contains('ui-C') ? false : $('#fdrop').open; } });
+
+/* ---------- Tabelle ---------- */
+function buildTable() {
+  const order = Object.keys(MAT), H = L(I.fHead);
+  const rows = [...FLOWS].sort((a, b) => order.indexOf(a.mat) - order.indexOf(b.mat) || Math.max(b.ist, b.pot) - Math.max(a.ist, a.pot));
+  $('#ftable').innerHTML = `<thead><tr><th>${H[0]}</th><th>${H[1]}</th><th>${H[2]}</th><th>${H[3]}</th><th class="num">${H[4]}</th><th class="num">${H[5]}</th><th class="num">${H[6]}</th></tr></thead><tbody>${rows.map(f => {
+    const d = f.pot - f.ist;
+    return `<tr data-f="${f.id}"><td>${esc(L(N[f.from].name))}</td><td>${esc(L(N[f.to].name))}</td><td>${esc(L(f.label))}<br>${flowBadges(f, false)}</td><td>${bMat(f.mat)}</td>
+      <td class="num">${f.ist ? fmt(f.ist) : '–'}</td><td class="num">${f.pot ? fmt(f.pot) : '–'}</td><td class="num">${d ? (d > 0 ? '+' : '−') + fmt(Math.abs(d)) : '±0'} ${unit(f)}</td></tr>`; }).join('')}</tbody>`;
+  $('#ftable').querySelectorAll('tbody tr').forEach(r => {
+    r.addEventListener('mouseenter', () => { state.hoverFlow = r.dataset.f; render(); });
+    r.addEventListener('mouseleave', () => { state.hoverFlow = null; render(); });
+  });
+}
+
+/* ---------- Stoffstrombilanz (Sankey) ---------- */
+const SK = { s: { ext: ['Von außen', 'From outside'], int: ['Aus dem Park', 'From the park'] },
+  d: { park: ['Weitergabe im Park', 'Passed on in the park'], kunden: ['An Abnehmer', 'To customers'], extern: ['Extern verwertet', 'Recovered externally'], mva: ['Verbrennung', 'Incineration'] } };
+const skLabel = id => { const [ty, k] = id.split(':'); return L(ty === 's' ? SK.s[k] : ty === 'm' ? MAT[k].name : SK.d[k]); };
+const skLinks = (() => {
+  const Lk = {};
+  FLOWS.forEach(f => {
+    if (isEnergy(f)) return;
+    const s = N[f.from].cat === 'port' ? 'ext' : 'int';
+    const d = f.to === 'mva' ? 'mva' : f.to === 'export' ? 'extern' : (f.to === 'kunden' || f.to === 'agrar') ? 'kunden' : 'park';
+    [[`s:${s}`, `m:${f.mat}`], [`m:${f.mat}`, `d:${d}`]].forEach(([a, b]) => {
+      const k = a + '|' + b; Lk[k] = Lk[k] || { a, b, mat: f.mat, ist: 0, pot: 0, cur: 0 }; Lk[k].ist += f.ist; Lk[k].pot += f.pot; });
+  });
+  return Object.values(Lk);
+})();
+const SKC = [['s:ext', 's:int'], Object.keys(MAT).filter(m => m !== 'energie').map(m => 'm:' + m), Object.keys(SK.d).map(d => 'd:' + d)];
+const SKX = [230, 470, 730], NW = 14, TOP = 50, SKH = 430, PAD = 38;
+const sk = $('#sankey'), skL = S('g', {}, sk), skN = S('g', {}, sk), skNodes = {};
+const skCols = [0, 1, 2].map(i => S('text', { class: 'sk-col', x: i === 0 ? SKX[0] + NW : SKX[i], y: 24, 'text-anchor': i === 0 ? 'end' : 'start' }, sk));
+skLinks.forEach(l => {
+  l.el = S('path', { class: 'sk-link' }, skL); l.el.style.fill = `var(--m-${l.mat})`; l.el.style.opacity = .42;
+  l.el.addEventListener('mouseenter', e => { l.el.style.opacity = .8;
+    tip.innerHTML = `<b>${esc(skLabel(l.a))} → ${esc(skLabel(l.b))}</b><div class="tm">${sw(l.mat)}${esc(L(MAT[l.mat].name))}</div>${t('tipIst')} ${fmt(l.ist)} t/a · ${t('tipPot')} ${fmt(l.pot)} t/a`; tip.classList.add('on'); moveTip(e); });
+  l.el.addEventListener('mousemove', e => moveTip(e));
+  l.el.addEventListener('mouseleave', () => { l.el.style.opacity = .42; hideTip(); });
+});
+SKC.forEach((c, ci) => c.forEach(id => {
+  const g = S('g', {}, skN), r = S('rect', { class: 'sk-node', x: SKX[ci], width: NW, rx: 2 }, g);
+  if (id.startsWith('m:')) r.style.fill = `var(--m-${id.slice(2)})`;
+  const bg = S('rect', { class: 'sk-bg', rx: 4 }, g); // Hintergrund hinter der Beschriftung, damit sie nicht auf den Bändern liegt
+  const lx = ci === 0 ? SKX[0] - 10 : SKX[ci] + NW + 10;
+  const tx = S('text', { class: 'sk-lbl', x: lx, 'text-anchor': ci === 0 ? 'end' : 'start' }, g);
+  const tn = S('tspan', { x: lx, dy: '-.2em' }, tx);
+  const tv = S('tspan', { class: 'sk-val', x: lx, dy: '1.25em' }, tx);
+  skNodes[id] = { g, r, bg, t: tx, tn, tv, ci };
+}));
+function skTexts() {
+  L(I.skCols).forEach((c, i) => { skCols[i].textContent = c; });
+  Object.entries(skNodes).forEach(([id, n]) => { n.tn.textContent = skLabel(id); });
+  sk.setAttribute('aria-label', t('skImg'));
+}
+function skDraw() {
+  const out = {}, inn = {};
+  skLinks.forEach(l => { out[l.a] = (out[l.a] || 0) + l.cur; inn[l.b] = (inn[l.b] || 0) + l.cur; });
+  const nv = id => Math.max(out[id] || 0, inn[id] || 0);
+  const total = Math.max(1, ...SKC.map(c => c.reduce((s, id) => s + nv(id), 0)));
+  const k = (SKH - PAD * (Math.max(...SKC.map(c => c.length)) - 1)) / total;
+  const pos = {}, flat = SKC.flat();
+  SKC.forEach((c, ci) => {
+    const colH = c.reduce((s, id) => s + nv(id) * k, 0) + PAD * (c.length - 1);
+    let y = TOP + (SKH - colH) / 2;
+    c.forEach(id => { const h = nv(id) * k; pos[id] = { x: SKX[ci], y, h, so: 0, si: 0 }; y += h + PAD; });
+  });
+  [...skLinks].sort((p, q) => flat.indexOf(p.b) - flat.indexOf(q.b)).forEach(l => { const s = pos[l.a]; l.h = l.cur * k; l.y0 = s.y + s.so; s.so += l.h; });
+  [...skLinks].sort((p, q) => flat.indexOf(p.a) - flat.indexOf(q.a)).forEach(l => { const tt = pos[l.b]; l.y1 = tt.y + tt.si; tt.si += l.h; });
+  skLinks.forEach(l => {
+    const x0 = pos[l.a].x + NW, x1 = pos[l.b].x, xm = (x0 + x1) / 2, { y0, y1, h } = l;
+    l.el.setAttribute('d', h < .05 ? 'M0,0' : `M${x0},${y0}C${xm},${y0} ${xm},${y1} ${x1},${y1}L${x1},${y1 + h}C${xm},${y1 + h} ${xm},${y0 + h} ${x0},${y0 + h}Z`);
+  });
+  const visible = !$('#tab-sankey').hidden;
+  Object.entries(pos).forEach(([id, p]) => {
+    const n = skNodes[id];
+    n.r.setAttribute('y', p.y); n.r.setAttribute('height', Math.max(p.h, .5));
+    n.t.setAttribute('y', p.y + p.h / 2); n.tv.textContent = `${fmt(nv(id))} t/a`;
+    n.g.style.opacity = nv(id) > 0 ? 1 : .35;
+    if (visible && n.ci === 1) { const b = n.t.getBBox(); n.bg.setAttribute('x', b.x - 6); n.bg.setAttribute('y', b.y - 2); n.bg.setAttribute('width', b.width + 12); n.bg.setAttribute('height', b.height + 4); }
+    else n.bg.setAttribute('width', 0);
+  });
+}
+let skAnim = 0;
+function skUpdate(animate = true) {
+  const from = skLinks.map(l => l.cur), to = skLinks.map(l => state.mats.has(l.mat) ? l[state.mode] : 0);
+  cancelAnimationFrame(skAnim);
+  if (RM || !animate || $('#tab-sankey').hidden) { skLinks.forEach((l, i) => { l.cur = to[i]; }); skDraw(); return; }
+  const t0 = performance.now();
+  const step = now => { const p = Math.min(1, (now - t0) / 700), e = 1 - Math.pow(1 - p, 3);
+    skLinks.forEach((l, i) => { l.cur = from[i] + (to[i] - from[i]) * e; }); skDraw(); if (p < 1) skAnim = requestAnimationFrame(step); };
+  skAnim = requestAnimationFrame(step);
+}
+ro.observe(sk);
+
+/* ---------- Personas & Tool-Vergleich ---------- */
+function buildPersonas() {
+  $('#pgrid').innerHTML = Object.keys(PERSONA).map(k => personaHtml(k,
+    `<p class="firms catline">${glyph(k)}<span>${NODES.filter(n => n.cat === k).map(n => esc(L(n.name))).join(' · ')}</span></p>`)).join('') +
+    `<div class="persona legendcard"><div class="pl">${t('pLegend')}</div><p class="small muted">${t('pLegendT')}</p><div class="cats">${Object.entries(CAT).map(([k, c]) => `<div>${glyph(k)}${esc(L(c.plural))}</div>`).join('')}</div></div>`;
+}
+// Name, Anbieter, Lizenz-Typ, Stärke, Grenze
+const LIC = { free: ['kostenlos', 'free'], com: ['kommerziell', 'commercial'], oss: ['Open Source', 'open source'], own: ['frei (HTML)', 'free (HTML)'] };
+const TOOLS = [
+  ['STAN', 'TU Wien', 'free', ['Materialflussanalyse nach ÖNORM S 2096, Datenausgleich, Unsicherheiten', 'Material flow analysis per ÖNORM S 2096, data reconciliation, uncertainties'], ['keine Karte, Einzelplatz, für Firmen wenig anschaulich', 'no map, single-user, not very intuitive for companies']],
+  ['Umberto', ['iPoint (früher ifu Hamburg)', 'iPoint (formerly ifu Hamburg)'], 'com', ['Stoffstromnetze, Ökobilanz und Kosten in einem Modell', 'Material flow networks, LCA and costs in one model'], ['Lizenzkosten, lange Einarbeitung', 'licence costs, long learning curve']],
+  ['e!Sankey', ['iPoint (früher ifu Hamburg)', 'iPoint (formerly ifu Hamburg)'], 'com', ['Sankey-Diagramme mit Excel-Anbindung', 'Sankey diagrams linked to Excel'], ['nur Darstellung, keine Bilanzlogik, keine Geodaten', 'display only, no balance logic, no geodata']],
+  ['openLCA', 'GreenDelta', 'oss', ['Ökobilanzen (LCA) mit großen Datenbanken', 'Life cycle assessment (LCA) with large databases'], ['produktbezogen, nicht standortbezogen', 'product-based, not site-based']],
+  ['QGIS', ['QGIS-Projekt', 'QGIS project'], 'oss', ['Kartierung auf echten Geodaten, Flurstücke, Flusslinien', 'Mapping on real geodata, parcels, flow lines'], ['keine Stoffstromlogik, Flüsse nur über Plugins', 'no material flow logic, flows only via plugins']],
+  ['SankeyMATIC', ['Webtool', 'web tool'], 'free', ['schnelle Sankey-Diagramme im Browser', 'quick Sankey diagrams in the browser'], ['nur Darstellung, keine Karte, keine Szenarien', 'display only, no map, no scenarios']],
+  ['SYNERGie', 'International Synergies', 'com', ['Abgleich von Ressourcen zwischen Firmen (industrielle Symbiose)', 'Matching resources between companies (industrial symbiosis)'], ['Lizenz, Datenerfassung bei den Firmen nötig', 'licence, data collection at the companies required']],
+  [['Dieser Prototyp', 'This prototype'], ['Projekt A', 'Project A'], 'own', ['Karte, Flüsse, Szenario, Personas in einer Ansicht', 'Map, flows, scenario, personas in one view'], ['Demo-Daten, keine Unsicherheitsrechnung', 'demo data, no uncertainty analysis']],
+];
+function buildTools() {
+  const H = L(I.tHead);
+  $('#ttable').innerHTML = `<thead><tr>${H.map(h => `<th>${h}</th>`).join('')}</tr></thead><tbody>${TOOLS.map(([nm, by, lic, plus, minus]) =>
+    `<tr><td><b>${esc(L(nm))}</b></td><td>${esc(L(by))}</td><td>${bdg('lic-' + lic, L(LIC[lic]))}</td><td>${esc(L(plus))}</td><td>${esc(L(minus))}</td></tr>`).join('')}</tbody>`;
+  $('#gapList').innerHTML = L(I.gap).map(g => `<li>${esc(g)}</li>`).join('');
+}
+
+/* ---------- Reiter & Tempo ---------- */
+const tabBtns = $$('.tabs button');
+function showTab(name) {
+  tabBtns.forEach(x => x.setAttribute('aria-selected', x.dataset.tab === name));
+  $$('.tabpanel').forEach(p => {
+    const on = p.id === 'tab-' + name; p.hidden = !on;
+    if (on && !RM) { p.classList.remove('enter'); void p.offsetWidth; p.classList.add('enter'); }
+  });
+  if (name === 'sankey') skDraw();
+  if (name === 'karte') fitPorts();
+  hideTip();
+}
+tabBtns.forEach(b => b.addEventListener('click', () => showTab(b.dataset.tab)));
+$$('.tempo [data-sp]').forEach(b => b.addEventListener('click', () => {
+  tempo = +b.dataset.sp; $$('.tempo [data-sp]').forEach(x => x.setAttribute('aria-pressed', x === b));
+  if (paused) { paused = false; $('#pauseBtn').setAttribute('aria-pressed', 'false'); motion(); } }));
+$('#pauseBtn').addEventListener('click', e => { paused = !paused; e.currentTarget.setAttribute('aria-pressed', paused); if (paused) placeStatic(); motion(); });
+
+/* ---------- Sprache anwenden ---------- */
+function applyLang(first = false) {
+  root.lang = LANG;
+  document.title = LANG === 'en' ? 'Material flows Kehrum' : 'Materialfluss Kehrum';
+  $$('[data-t]').forEach(e => { e.textContent = t(e.dataset.t); });
+  $$('[data-ta]').forEach(e => { e.setAttribute('aria-label', t(e.dataset.ta)); });
+  $$('[data-sp]').forEach(b => { b.textContent = (+b.dataset.sp).toLocaleString(LANG === 'en' ? 'en-GB' : 'de-DE') + '×'; });
+  $$('.lang button').forEach(b => b.setAttribute('aria-pressed', b.dataset.lang === LANG));
+  themeLbl(); mapTexts(); skTexts(); buildKpis(); updateKpis(!first); buildChips(); buildTable(); buildPersonas(); buildTools();
+  if (!first) { panelRender(false); skDraw(); }
+}
+$$('.lang button').forEach(b => b.addEventListener('click', () => {
+  LANG = b.dataset.lang; try { localStorage.setItem('mfk-lang', LANG); } catch (e) {}
+  const u = new URL(location.href); u.searchParams.set('lang', LANG); history.replaceState(null, '', u);
+  applyLang();
+}));
+
+/* ---------- Farbschema ---------- */
+const root = document.documentElement;
+const isDark = () => root.dataset.theme ? root.dataset.theme === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+function themeLbl() { $('#themeLbl').textContent = isDark() ? t('light') : t('dark'); }
+try { const th = Q.get('theme') || localStorage.getItem('mfk-theme'); if (th) root.dataset.theme = th; } catch (e) {}
+$('#themeBtn').addEventListener('click', () => { root.dataset.theme = isDark() ? 'light' : 'dark'; try { localStorage.setItem('mfk-theme', root.dataset.theme); } catch (e) {} themeLbl(); });
+
+/* ---------- Layout der Bedienung: Bühne · Seitenleiste · Kompakt (?ui=A|B|C, gemerkt) ---------- */
+// Farbe trägt Bedeutung: Kennzahlen (Ton je Kennzahl), Branche (Symbole, Chips, Personas), Status-Badges
+root.classList.add('c-kpi', 'c-branch', 'c-status');
+function setUI(u) {
+  if (!['A', 'B', 'C'].includes(u)) u = 'A';
+  root.classList.remove('ui-A', 'ui-B', 'ui-C'); root.classList.add('ui-' + u);
+  $('#fdrop').open = u !== 'C';
+  $$('[data-ui]').forEach(b => b.setAttribute('aria-pressed', b.dataset.ui === u));
+}
+let UI0 = Q.get('ui'); try { UI0 = UI0 || localStorage.getItem('mfk-ui'); } catch (e) {}
+setUI(UI0);
+$$('[data-ui]').forEach(b => b.addEventListener('click', () => {
+  setUI(b.dataset.ui); try { localStorage.setItem('mfk-ui', b.dataset.ui); } catch (e) {} hideTip();
+}));
+
+/* ---------- Start: Flüsse zeichnen sich ein ---------- */
+if (Q.get('mode') === 'pot') { state.mode = 'pot'; segBtns.forEach(b => { b.setAttribute('aria-pressed', b.dataset.mode === 'pot'); b.classList.remove('breathe'); }); }
+if (N[Q.get('sel')]) state.sel = Q.get('sel');
+applyLang(true);
+render(); panelRender(); skUpdate(false);
+if (Q.get('tab')) showTab(Q.get('tab'));
+if (RM) placeStatic();
+else {
+  FLOWS.forEach((f, i) => {
+    if (!f.active) return;
+    f.el.style.strokeDasharray = `${f.len} ${f.len}`; f.el.style.strokeDashoffset = f.len;
+    f.parts.style.visibility = 'hidden';
+    const delay = 350 + (i % 8) * 70;
+    setTimeout(() => { f.el.style.transition = `stroke-dashoffset 1.4s var(--ease-out), stroke-width var(--t-xfade) var(--ease-out), opacity var(--t-slow) var(--ease-out)`; f.el.style.strokeDashoffset = 0; }, delay);
+    setTimeout(() => { f.el.style.strokeDasharray = ''; f.el.style.strokeDashoffset = ''; f.el.style.transition = ''; f.parts.style.visibility = ''; }, delay + 1500);
+  });
+  motion();
+}
+})();
+</script>
+</body>
+</html>
