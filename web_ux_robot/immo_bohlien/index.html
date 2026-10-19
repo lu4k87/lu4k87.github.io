@@ -530,7 +530,8 @@ document.documentElement.classList.add('js');
     const C = h => new THREE.Color(h);
     const skyStops = [[0, C(0xebe9e4)], [.45, C(0xe9e1d3)], [.62, C(0xd9c7b4)], [.8, C(0x8f97a8)], [1, C(0x262d3b)]];
     const sunStops = [[0, C(0xffffff)], [.45, C(0xfff1df)], [.62, C(0xffb877)], [.8, C(0xc7cbe0)], [1, C(0x8fa1c9)]];
-    const pick = (list, t) => { let i = 0; while (i < list.length - 2 && t > list[i + 1][0]) i++; const [t0, c0] = list[i], [t1, c1] = list[i + 1]; return c0.clone().lerp(c1, smooth(Math.min(1, Math.max(0, (t - t0) / (t1 - t0))))); };
+    const tmpC = new THREE.Color();                         // Rückgabe von pick: sofort kopieren, nicht halten
+    const pick = (list, t) => { let i = 0; while (i < list.length - 2 && t > list[i + 1][0]) i++; const [t0, c0] = list[i], [t1, c1] = list[i + 1]; return tmpC.copy(c0).lerp(c1, smooth(Math.min(1, Math.max(0, (t - t0) / (t1 - t0))))); };
     const applyTod = t => {
       const sky = pick(skyStops, t); bg.copy(sky); scene.fog.color.copy(sky);
       sun.color.copy(pick(sunStops, t));
@@ -544,13 +545,14 @@ document.documentElement.classList.add('js');
     };
 
     // Markierung (Ausnahme): nur das gewählte Objekt bekommt Kontur in Grün
-    let hover = null;
+    let hover = null, lastIn = 0;
+    const wake = () => { lastIn = performance.now(); };    // Eingabe beendet den Ruhezustand sofort
     const leist = document.getElementById('leistungen');
     document.querySelectorAll('.serv button').forEach(b => {
-      const on = () => { hover = b.dataset.hl; document.querySelectorAll('.serv button').forEach(x => x.classList.toggle('on', x === b)); };
+      const on = () => { wake(); hover = b.dataset.hl; document.querySelectorAll('.serv button').forEach(x => x.classList.toggle('on', x === b)); };
       b.addEventListener('mouseenter', on); b.addEventListener('focus', on); b.addEventListener('click', on);
     });
-    leist.addEventListener('mouseleave', () => { hover = null; document.querySelectorAll('.serv button').forEach(x => x.classList.remove('on')); });
+    leist.addEventListener('mouseleave', () => { wake(); hover = null; document.querySelectorAll('.serv button').forEach(x => x.classList.remove('on')); });
     const green = C(accent), dark = C(0x2b2a28);
 
     // Aufbau-Intro (einmal, ~2,6 s): Platte, Halle, Geschosse, Dach, Bäume
@@ -565,34 +567,40 @@ document.documentElement.classList.add('js');
 
     // Zustand + Dämpfung
     const cam = new THREE.Vector3(...K.hero.cam), tgt = new THREE.Vector3(...K.hero.tgt);
+    const want = new THREE.Vector3(), wantT = new THREE.Vector3(); // je Frame wiederverwendet
     const st = { tod: 0, roof: 0, explode: 0 };
     const pointer = new THREE.Vector2();
-    addEventListener('pointermove', e => pointer.set(e.clientX / innerWidth - .5, e.clientY / innerHeight - .5), { passive: true });
+    addEventListener('pointermove', e => { wake(); pointer.set(e.clientX / innerWidth - .5, e.clientY / innerHeight - .5); }, { passive: true });
+    addEventListener('scroll', wake, { passive: true });
     let w = 0, h = 0;
     const resize = () => {
-      w = innerWidth; h = innerHeight;
+      wake(); w = innerWidth; h = innerHeight;
       renderer.setSize(w, h, false); camera.aspect = w / h;
       if (w > 820) camera.setViewOffset(w * 1.36, h, 0, 0, w, h); else camera.clearViewOffset();
       camera.updateProjectionMatrix(); measure();
     };
     addEventListener('resize', resize); resize();
 
-    let last = performance.now(), raf = 0, running = true, fn = 0, avg = .016;
+    let last = performance.now(), raf = 0, running = true, fn = 0, avg = .016, idle = false, lastP = '';
     const frame = now => {
       raf = 0;
+      // Ruhezustand (Kamera, Übergänge, Intro fertig, keine Eingabe): ~20 statt 60 Bilder/s, nur das langsame Schwingen läuft
+      if (!reduce && idle && now - lastIn > 400 && now - last < 48) { if (running && !reduce) raf = requestAnimationFrame(frame); return; }
       const dt = Math.min(.05, (now - last) / 1000); last = now;
-      if (!reduce && ++fn > 20) {                             // zu langsam → Pixeldichte senken (einmalig je Stufe)
+      if (!reduce && !idle && ++fn > 20) {                    // zu langsam → Pixeldichte senken (einmalig je Stufe; Ruhe-Frames zählen nicht)
         fn = 0; avg = avg * .5 + dt * .5;
         if (avg > .034 && pr > 1) { pr = Math.max(1, pr - .25); renderer.setPixelRatio(pr); renderer.setSize(w, h, false); }
       }
       const max = Math.max(1, document.documentElement.scrollHeight - innerHeight);
       const p = Math.min(1, Math.max(0, scrollY / max));
-      hudBar.style.setProperty('--p', p.toFixed(4));
+      const pv = p.toFixed(4);
+      if (pv !== lastP) { lastP = pv; hudBar.style.setProperty('--p', pv); }
       const s = sample(p);
       const k = reduce ? 1 : 1 - Math.exp(-dt * 3.2);
       const far = w <= 820 ? 1.55 : 1;
-      const want = new THREE.Vector3(...s.cam).sub(new THREE.Vector3(...s.tgt)).multiplyScalar(far).add(new THREE.Vector3(...s.tgt));
-      cam.lerp(want, k); tgt.lerp(new THREE.Vector3(...s.tgt), k);
+      wantT.fromArray(s.tgt);
+      want.fromArray(s.cam).sub(wantT).multiplyScalar(far).add(wantT);
+      cam.lerp(want, k); tgt.lerp(wantT, k);
       st.tod += (s.tod - st.tod) * k; st.roof += (s.roof - st.roof) * k; st.explode += (s.explode - st.explode) * k;
       const time = now / 1000;
       const sway = reduce ? 0 : 1;
@@ -603,14 +611,20 @@ document.documentElement.classList.add('js');
       roof.position.y = H1 + H2 + st.roof * 4.2 + st.explode * 2.6 + drop * 9;
       applyTod(st.tod);
       const hl = (hover && p > stops[2] - .08 && p < stops[3] + .02) ? hover : s.hl;
+      // rest = verbleibender Weg aller gedämpften Werte → 0 heißt: alles eingeschwungen
+      let rest = cam.distanceToSquared(want) + tgt.distanceToSquared(wantT) + Math.abs(s.tod - st.tod) + Math.abs(s.roof - st.roof) + Math.abs(s.explode - st.explode);
       for (const key in groups) {
         const g = groups[key], on = hl === key || (hl === 'dims' && key === 'house');
         g.w += ((on ? 1 : 0) - g.w) * Math.min(1, k * 1.6 + .02);
         g.mat.color.copy(dark).lerp(green, g.w); g.mat.opacity = .2 + .8 * g.w;
+        rest += Math.abs((on ? 1 : 0) - g.w);
       }
-      mDoor.emissiveIntensity += ((hl === 'door' ? .16 : 0) - mDoor.emissiveIntensity) * k;
-      netMat.opacity += ((hl === 'net' ? .95 : 0) - netMat.opacity) * k; nodeMat.opacity = netMat.opacity;
-      dimMat.opacity += ((hl === 'dims' ? .75 : 0) - dimMat.opacity) * k;
+      const doorT = hl === 'door' ? .16 : 0, netT = hl === 'net' ? .95 : 0, dimT = hl === 'dims' ? .75 : 0;
+      mDoor.emissiveIntensity += (doorT - mDoor.emissiveIntensity) * k;
+      netMat.opacity += (netT - netMat.opacity) * k; nodeMat.opacity = netMat.opacity;
+      dimMat.opacity += (dimT - dimMat.opacity) * k;
+      rest += Math.abs(doorT - mDoor.emissiveIntensity) + Math.abs(netT - netMat.opacity) + Math.abs(dimT - dimMat.opacity);
+      idle = rest < 1e-4 && now - t0 > 2800 && now - lastIn > 400;
       renderer.render(scene, camera);
       if (!stage.classList.contains('ready')) stage.classList.add('ready');
       if (running && !reduce) raf = requestAnimationFrame(frame);
