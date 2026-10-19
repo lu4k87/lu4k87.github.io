@@ -7,6 +7,7 @@ import { STATIONS } from './office.js';
 import { STEP_STATION } from './sim.js';
 import { TOOL } from './cast.js';
 import { UNDER_OPS, opsChat, opsSend, noteOf } from './ops.js';
+import { disposeTree } from './kit.js';
 
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -39,7 +40,7 @@ export function createUI(ctx) {
       case 'mcp': return `<p>${esc(WF.MCP_RULE)}</p>` + table(['Server', 'Wo', 'Zweck'], (D.mcp || []).map(m => [m.id, m.where, m.does]));
       case 'hooks': return `<p>${n(D.hooks)} Hook-Stellen im Takt eines Chats – sie geben Kontext, warnen, fragen oder blocken.</p>` + table(['Ereignis', 'Werkzeuge', 'Skript'], (D.hooks || []).map(h => [h.event, h.matcher || '–', h.script]));
       case 'claims': return `<p>Jede Anfrage = eine Zeile „🔒 In Arbeit“ in TODOS.md (git-synchronisiert): Datei in fremder Zeile → erst abstimmen. <span class="badge ${live.ok ? 'live' : 'demo'}">${live.ok ? 'live · Claude Ops' : 'Demo-Daten'}</span></p>` + table(['Wer', 'Aufgabe', 'Dateien'], S.boardClaims().map(c => [c.who || c.text, c.task || '', c.files || (live.ok ? '' : 'Demo')])) + '<p><b>4 Konflikte:</b></p>' + li(WF.CONFLICTS.map(c => `<b>${esc(c.name)}</b> ${esc(c.when)}: ${esc(c.then)}`));
-      case 'previews': { const by = {}; (D.previews || []).forEach(p => (by[p.topic] = by[p.topic] || []).push(p)); return `<p>${n(D.previews)} Vorschauseiten (Archiv <code>_studio/vorschauen</code>, Port 8085): Varianten A/B/C, „An Chat senden“ ist endgültig.</p>` + Object.entries(by).sort((a, b) => b[1].length - a[1].length).map(([t, ps]) => `<details><summary>${esc(t)} · ${ps.length}</summary><ul>${ps.slice(0, 40).map(p => `<li><a href="${esc(p.url)}" target="_blank" rel="noopener">${esc(p.title)}</a> · <span class="meta">${esc(p.date)}</span></li>`).join('')}</ul></details>`).join(''); }
+      case 'previews': { const by = {}; (D.previews || []).forEach(p => (by[p.topic] = by[p.topic] || []).push(p)); return `<p>${n(D.previews)} Vorschauseiten (Archiv Schatzkammer <code>__treasury__allprojects/&lt;projekt&gt;/vorschauen</code>, Port 8085): Varianten A/B/C, „An Chat senden“ ist endgültig.</p>` + Object.entries(by).sort((a, b) => b[1].length - a[1].length).map(([t, ps]) => `<details><summary>${esc(t)} · ${ps.length}</summary><ul>${ps.slice(0, 40).map(p => `<li><a href="${esc(p.url)}" target="_blank" rel="noopener">${esc(p.title)}</a> · <span class="meta">${esc(p.date)}</span></li>`).join('')}</ul></details>`).join(''); }
       case 'settings': return table(['Datei', 'Zweck'], (D.settings || []).map(s => [s.file, s.does]));
       case 'sync': return `<p><b>Rechner:</b> ${(D.sync?.machines || []).map(esc).join(' · ')} – Git ist die einzige Quelle.</p>` + li((D.sync?.chain || []).map(esc));
       case 'qa': return table(['Stufe', 'Änderung', 'Prüfung'], WF.LEVELS.map(l => [`${l.n} · ${l.name}`, l.what, l.check])) + '<p><b>Vier Wege eines Auftrags:</b></p>' + li(Object.values(WF.ORDER_TYPES).map(t => `<b>${esc(t.name)}</b>: Schritte ${t.steps.join(' · ')} – ${esc(t.hint)}`));
@@ -60,7 +61,7 @@ export function createUI(ctx) {
 
   // ───────── Hover-Schild + Lupe + Hervorhebung im 3D-Raum
   function showSign(lines, x, y, z) {
-    if (UI.sign) { scene.remove(UI.sign); UI.sign.material.map.dispose(); UI.sign = null; }
+    if (UI.sign) { scene.remove(UI.sign); disposeTree(UI.sign); UI.sign = null; }
     if (!lines) return; UI.sign = k.label(lines, { h: 0.56, order: 12, depthTest: false }); UI.sign.position.set(x, y, z); scene.add(UI.sign);
   }
   UI.hover = hit => {
@@ -143,10 +144,13 @@ export function createUI(ctx) {
       `<div class="send"><textarea id="chat-text" placeholder="Nachricht an ${esc(c.id)} …" maxlength="4000"></textarea><button class="btn primary" data-send="1">Senden</button></div><p class="meta" id="chat-note"></p>` + routeLine(c);
   }
   // Chat:A – Sprechblasen über der Figur + Antwortfeld unten
-  const bubbles = [];
+  const bubbles = []; let bubbleSeq = 0;
+  // Blasen abhängen + Textur/Material freigeben; Zähler verwirft ein noch laufendes openBubbles (sonst doppelte Blasen nach await)
+  const clearBubbles = () => { bubbleSeq++; bubbles.forEach(b => { if (b.parent) b.parent.remove(b); disposeTree(b); }); bubbles.length = 0; };
   async function openBubbles(c) {
-    bubbles.forEach(b => b.parent && b.parent.remove(b)); bubbles.length = 0; UI.chat = c;
+    clearBubbles(); const seq = bubbleSeq; UI.chat = c;
     const m = (await history(c)).slice(-3);
+    if (seq !== bubbleSeq) return;
     m.forEach((x, i) => { const bg = x.role === 'user' ? L.label.fg : x.role === 'ask' ? L.signal.ask : L.label.bg, fg = x.role === 'user' ? L.label.bg : x.role === 'ask' ? '#1E1E1E' : L.label.fg; const b = k.label([{ t: (x.role === 'user' ? 'Du: ' : '') + x.text.slice(0, 44) + (x.text.length > 44 ? '…' : ''), size: 18, weight: 600, color: fg }], { h: 0.34, bg, border: L.label.border, order: 12, depthTest: false }); b.position.y = 2.95 + (m.length - 1 - i) * 0.4; c.P.root.add(b); bubbles.push(b); });
     const r = $('#reply'); r.hidden = false; $('#reply-who').textContent = c.name; $('#reply-note').innerHTML = routeLine(c); $('#reply-text').focus();
   }
@@ -167,7 +171,7 @@ export function createUI(ctx) {
     if (hit.station) { openInfo(hit.station); return true; }
     return false;
   };
-  UI.closeAll = () => { $('#dlg').close(); $('#card').hidden = true; $('#term').hidden = true; $('#drawer').hidden = true; $('#tabs').hidden = V.info !== 'A'; $('#reply').hidden = true; bubbles.forEach(b => b.parent && b.parent.remove(b)); bubbles.length = 0; UI.openId = null; UI.highlight(null); };
+  UI.closeAll = () => { $('#dlg').close(); $('#card').hidden = true; $('#term').hidden = true; $('#drawer').hidden = true; $('#tabs').hidden = V.info !== 'A'; $('#reply').hidden = true; clearBubbles(); UI.openId = null; UI.highlight(null); };
 
   // ───────── Ausnahmen (Rückfrage, Vorschau, Freigabe) als Dialog
   UI.ask = ex => {

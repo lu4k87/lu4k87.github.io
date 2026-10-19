@@ -302,7 +302,7 @@ export function createShell(ctx) {
     if (shell === 'card') tags(); else $('#tags').innerHTML = '';
     const bandOn = combo && prefs.band && st.level === 1 && shell !== 'miller', band = $('#band');
     band.hidden = !bandOn; document.documentElement.classList.toggle('band-on', bandOn); if (bandOn) setHtml(band, kanbanHtml());
-    bar(); signs();
+    bar(); signs(); remeasure();   // Ebene, Blase, Band, Schilder können Lage und Größe geändert haben
   }
   // Schilder über den Bereichen (Haus): als 3D-Schild, außer in der Kartenansicht am breiten Bildschirm (dort HTML-Schilder, klickbar)
   function signs() { const narrow = innerWidth <= 760; W.st.forEach(Z => { if (Z.sign1) Z.sign1.visible = st.level === 1 && (shell !== 'card' || narrow); }); }
@@ -432,13 +432,32 @@ export function createShell(ctx) {
     return [a, b];
   }
   const lead = $('#lead'), tagBox = [];
+  // Maße von Bild, Panel, Kopfleiste, Blase und Schildern: nur nach Neuaufbau (render), Größenänderung oder neuen Schriften messen,
+  // nicht je Bild – Lesen nach dem Schreiben der Positionen erzwang sonst in jedem Frame ein Layout
+  const M = { dirty: true, tags: [] }, remeasure = () => { M.dirty = true; };
+  const ro = new ResizeObserver(remeasure);
+  [renderer.domElement, panel, $('#bar'), $('#guide')].forEach(n => n && ro.observe(n));
+  addEventListener('resize', remeasure);
+  if (document.fonts) document.fonts.ready.then(remeasure);
+  function measure() {
+    M.dirty = false;
+    M.r = renderer.domElement.getBoundingClientRect();
+    M.w = panel.offsetWidth; M.h = panel.offsetHeight;
+    M.barB = $('#bar').getBoundingClientRect().bottom;
+    const g = $('#guide'); M.gr = g.hidden ? null : g.getBoundingClientRect();
+    M.pr = panel.getBoundingClientRect();   // Lage aus CSS (Ebene 1); in Ebene 2/3 setzt frame() sie selbst und rechnet sie mit
+    const op = panel.offsetParent, o = op ? op.getBoundingClientRect() : { left: 0, top: 0 };
+    M.ox = o.left + (op ? op.clientLeft : 0); M.oy = o.top + (op ? op.clientTop : 0);
+    M.tags = [...el.querySelectorAll('#tags .t3')].map(b => ({ b, Z: W.st.get(b.dataset.a), w: b.offsetWidth, h: b.offsetHeight }));
+  }
   function frame() {
     if (shell !== 'card') { lead.style.display = 'none'; return; }
-    const r = renderer.domElement.getBoundingClientRect(), narrow = innerWidth <= 760, pin = $('#pin');
+    if (M.dirty) measure();
+    const r = M.r, narrow = innerWidth <= 760, pin = $('#pin');
     if (st.level > 1 && !narrow) {
       const t = levels.target(), tip = st.level === 3 && anchor();   // Ebene 3 mit Figur: Pfeil über dem Kopf statt Punkt
       if (tip) v.copy(tip).project(camera); else v.set(t.x, t.y + (st.level === 2 ? 1.7 : 1.05), t.z).project(camera);
-      const px = (v.x + 1) / 2 * r.width, py = (1 - v.y) / 2 * r.height, w = panel.offsetWidth, h = panel.offsetHeight, top = $('#bar').getBoundingClientRect().bottom + 12;
+      const px = (v.x + 1) / 2 * r.width, py = (1 - v.y) / 2 * r.height, w = M.w, h = M.h, top = M.barB + 12;
       pin.hidden = false; pin.style.left = px + 'px'; pin.style.top = py + 'px';
       // Karte neben der Ausdehnung des Ziels: rechts, wenn Platz ist, sonst links; Seite bleibt, solange sie passt (kein Hin und Her);
       // Schalter „Karte folgt“ aus → einmal setzen
@@ -448,24 +467,25 @@ export function createShell(ctx) {
         if ((side === 'r' && fitR) || (side === 'l' && fitL)) want = side;
         side = want;
         const left = clamp(side === 'r' ? ex1 + 18 : ex0 - 18 - w, 12, r.width - 12 - w);
-        let maxB = r.height - 12; const g = $('#guide');   // nie über Kubis Blase legen (Zero Overlap)
-        if (!g.hidden) { const gr = g.getBoundingClientRect(); if (left < gr.right && left + w > gr.left) maxB = Math.min(maxB, gr.top - 12); }
-        panel.style.left = left + 'px'; panel.style.top = clamp(py - h * 0.35, top, Math.max(top, maxB - h)) + 'px';
+        let maxB = r.height - 12; const gr = M.gr;   // nie über Kubis Blase legen (Zero Overlap)
+        if (gr && left < gr.right && left + w > gr.left) maxB = Math.min(maxB, gr.top - 12);
+        const ptop = clamp(py - h * 0.35, top, Math.max(top, maxB - h));
+        panel.style.left = left + 'px'; panel.style.top = ptop + 'px';
+        M.pr = { left: M.ox + left, top: M.oy + ptop, right: M.ox + left + w, bottom: M.oy + ptop + h };
         if (!levels.flying()) placed = true;
       }
       // Leitlinie vom Punkt am Ziel zur nächsten Kante der Karte: zeigt, worauf sich die Karte bezieht
-      const pr = panel.getBoundingClientRect(), nx = clamp(px, pr.left, pr.right), ny = clamp(py, pr.top, pr.bottom), ln = $('#lead-l');
+      const pr = M.pr, nx = clamp(px, pr.left, pr.right), ny = clamp(py, pr.top, pr.bottom), ln = $('#lead-l');
       const inside = nx === px && ny === py, far = Math.hypot(nx - px, ny - py) < 14;
       const off = inside || far || py < top; lead.style.display = off ? 'none' : ''; if (!off) { ln.setAttribute('x1', px); ln.setAttribute('y1', py); ln.setAttribute('x2', nx); ln.setAttribute('y2', ny); }
       pin.hidden = py < top || !!tip;   // Punkt nie unter der Kopfleiste; bei einer Figur zeigt der Pfeil im Raum
     } else { pin.hidden = true; lead.style.display = 'none'; }
-    const barB = $('#bar').getBoundingClientRect().bottom;
+    const barB = M.barB;
     // Schilder im Haus: im Bild halten, nie hinter der Kopfleiste oder dem Panel (dann rechts neben das Panel)
     if (st.level === 1 && !narrow) {
-      const pr = panel.getBoundingClientRect(), g = $('#guide'), gr = g.hidden ? null : g.getBoundingClientRect();
-      el.querySelectorAll('#tags .t3').forEach(b => {
-        const Z = W.st.get(b.dataset.a); v.set(Z.g.position.x, Z.id === 'bench' ? 2.4 : 3.0, Z.g.position.z).project(camera);
-        const bw = b.offsetWidth, bh = b.offsetHeight;
+      const pr = M.pr, gr = M.gr;
+      M.tags.forEach(({ b, Z, w: bw, h: bh }) => {
+        v.set(Z.g.position.x, Z.id === 'bench' ? 2.4 : 3.0, Z.g.position.z).project(camera);
         let x = clamp((v.x + 1) / 2 * r.width, 12 + bw / 2, r.width - 12 - bw / 2); const y = Math.max(barB + 34, (1 - v.y) / 2 * r.height);
         if (x - bw / 2 < pr.right + 8 && x + bw / 2 > pr.left - 8 && y > pr.top && y - bh < pr.bottom) x = pr.right + 12 + bw / 2;
         let yy = y; if (gr && x + bw / 2 > gr.left - 8 && x - bw / 2 < gr.right + 8 && yy > gr.top - 8) yy = gr.top - 10;   // nie unter Kubis Blase

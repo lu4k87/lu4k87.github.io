@@ -94,15 +94,15 @@ if (CFG.warm) { const dt = 1 / 30; for (let t = 0; t < CFG.warm; t += dt) S.step
 shell.go(1, {}, { instant: true });
 
 // ───────────────────────── Eingabe ─────────────────────────
-let drag = null; const pointer = new THREE.Vector2(-1e4, -1e4);
+let drag = null, ptrMoved = true; const pointer = new THREE.Vector2(-1e4, -1e4);
 cv.addEventListener('pointerdown', e => { drag = { x: e.clientX, y: e.clientY, lx: e.clientX, ly: e.clientY, moved: false }; cv.setPointerCapture(e.pointerId); });
 cv.addEventListener('pointermove', e => {
-  pointer.set(e.clientX, e.clientY); if (!drag) return;
+  pointer.set(e.clientX, e.clientY); ptrMoved = true; if (!drag) return;
   if (Math.abs(e.clientX - drag.x) + Math.abs(e.clientY - drag.y) > 5) drag.moved = true;
   if (drag.moved) levels.drag(e.clientX - drag.lx, e.clientY - drag.ly); drag.lx = e.clientX; drag.ly = e.clientY;
 });
 cv.addEventListener('pointerup', e => { if (drag && !drag.moved) click(e); drag = null; });
-cv.addEventListener('pointerleave', () => pointer.set(-1e4, -1e4));
+cv.addEventListener('pointerleave', () => { pointer.set(-1e4, -1e4); ptrMoved = true; });
 cv.addEventListener('wheel', e => { e.preventDefault(); levels.zoom(Math.sign(e.deltaY)); }, { passive: false });
 addEventListener('keydown', e => {
   const t = e.target; if (t && t.closest && t.closest('input, textarea, select')) { if (e.key === 'Escape') t.blur(); return; }   // Ereignis kann auch vom Fenster kommen (kein Element)
@@ -137,9 +137,14 @@ function click(e) {
   if (hit && hit.station && !(st.level >= 2 && hit.station === st.station)) return shell.go(2, { station: hit.station });
   if (st.level >= 2) { const p = new THREE.Vector3(); if (ray.ray.intersectPlane(plane, p)) walkYou(p.x, p.z); }   // im Bereich: Du läufst hin
 }
-let hoverKey = '', hoverSign = null;
-function hover() {
-  const hit = drag || levels.flying() ? null : pick(pointer.x, pointer.y), lv = levels.state.level;
+let hoverKey = '', hoverSign = null, hoverHit = null, hoverAt = -1e9;
+const camP = new THREE.Vector3(), camQ = new THREE.Quaternion();
+// Raycast nur, wenn Zeiger oder Kamera sich bewegt haben; sonst alle 250 ms (Figuren laufen unter dem ruhenden Zeiger durch)
+function hover(now) {
+  if (!drag && !levels.flying() && (ptrMoved || now - hoverAt > 250 || !camP.equals(camera.position) || !camQ.equals(camera.quaternion))) {
+    hoverHit = pick(pointer.x, pointer.y); hoverAt = now; ptrMoved = false; camP.copy(camera.position); camQ.copy(camera.quaternion);
+  }
+  const hit = drag || levels.flying() ? null : hoverHit, lv = levels.state.level;
   const key = hit ? (hit.item ? hit.item.type + hit.item.id : 's' + hit.station) : '';
   cv.style.cursor = hit ? 'pointer' : drag ? 'grabbing' : 'grab';
   if (key === hoverKey) { if (hoverSign && hit && hit.item) { const a = actorFor(hit.item); if (a) hoverSign.position.set(a.x, 2.2, a.z); } return; }
@@ -234,7 +239,7 @@ function frame(now) {
   if (S.subPool) S.subPool.forEach(p => { if (p.badge) p.badge.visible = lv === 2 && p.busy && p.actor.station === ls.station; });
   youBadge.visible = lv < 3; if (kubi) kubi.P.root.children.forEach(o => { if (o.isSprite) o.visible = lv < 3; });
   marks.set('sel', lv === 2 ? { station: ls.station } : lv === 3 && ls.item ? markOf({ item: ls.item }) : null); marks.update(now / 1000, camera.position.distanceTo(levels.target()));
-  if (!fixed && !flyView) hover();
+  if (!fixed && !flyView) hover(now);
   shell.frame();
   hudT += dt; if (hudT > 1.2) { hudT = 0; shell.tick(); }
   pipe.render();
