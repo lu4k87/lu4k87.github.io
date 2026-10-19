@@ -5,6 +5,7 @@ import * as WF from './data/wf.js';
 import { makePerson, animatePerson } from './cast.js';
 import { drawBoard, drawChatBoard } from './office.js';
 import { makeLogo } from './logos.js';
+import { disposeTree } from './kit.js';
 
 const lerpAngle = (a, b, t) => { let d = ((b - a + Math.PI) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI) - Math.PI; return a + d * t; };
 const TOOLS = { Claude: { door: 0, hooks: 'all', subs: true }, Codex: { door: 1, hooks: 'all', subs: true }, Gemini: { door: 2, hooks: 'prepost', subs: false } };
@@ -150,13 +151,13 @@ export function createSim(ctx) {
     push(role, text) { this.msgs.push({ role, text, t: S.t }); if (this.msgs.length > 40) this.msgs.shift(); }
     setRole(r) { this.role = r; this.P.setRole(r); this.refresh(); }
     refresh() {
-      if (this.badge) { this.P.root.remove(this.badge); this.badge.material.map.dispose(); }
+      if (this.badge) { this.P.root.remove(this.badge); disposeTree(this.badge); }
       const R = this.role ? WF.ROLES[this.role] : null;
       this.badge = badge([{ t: this.name, size: 20, weight: 700 }, { t: `${R ? R.icon + ' ' + R.name : 'Chat-Start'} · [${this.order.prefix}]${this.live ? '' : ' · Demo'}`, size: 15, weight: 500 }], { h: 0.42 });
       this.badge.position.y = 1.9; this.P.root.add(this.badge);
     }
     say(text, kind = 'ask') {
-      if (this.bubble) { this.P.root.remove(this.bubble); this.bubble = null; }
+      if (this.bubble) { this.P.root.remove(this.bubble); disposeTree(this.bubble); this.bubble = null; }
       this.P.lockMood = text ? ({ ask: 'wait', err: 'err', ok: 'ok' }[kind] || null) : null;
       if (!text) return;
       const col = { ask: L.signal.ask, err: L.signal.err, ok: L.signal.ok, info: L.label.bg }[kind];
@@ -294,7 +295,7 @@ export function createSim(ctx) {
       evt('agent', `Befund ${this.A.id}: ${this.result}`, this.caller.name, this.caller); this.reported = true; this.a.anim = 'idle';
       const home = this.pool.home || spot('agents'); yield* walk(this.a, 'agents', home); this.a.anim = 'idle'; this.pool.busy = false; this.done = true;   // Stammplatz behalten, sonst füllt sich die Agentur mit Phantom-Belegungen
       if (this.clone) home.release();
-      if (this.clone) scene.remove(this.a.P.root);
+      if (this.clone) { scene.remove(this.a.P.root); disposeTree(this.a.P.root); }
     }
   }
   // Agentur: alle Agenten warten sichtbar hinter der Theke
@@ -368,7 +369,7 @@ export function createSim(ctx) {
     S.t += dt;
     if (S.t >= S.nextOrder) { const busy = S.chats.filter(c => c.alive).length; if (busy < 6) S.newOrder(); S.nextOrder = S.t + (busy < 3 ? 6 : 14) + rnd() * 6; }
     for (const c of S.chats) { if (c.alive) { const r = c.gen.next(dt); if (r.done && c.alive) c.alive = false; } c.a.update(dt); }
-    for (let i = S.chats.length - 1; i >= 0; i--) { const c = S.chats[i]; if (!c.alive && !c.a.path.length) { scene.remove(c.P.root); if (c.sp && c.sp.release) c.sp.release(); S.chats.splice(i, 1); drawChats(); } }
+    for (let i = S.chats.length - 1; i >= 0; i--) { const c = S.chats[i]; if (!c.alive && !c.a.path.length) { scene.remove(c.P.root); disposeTree(c.P.root); if (c.sp && c.sp.release) c.sp.release(); S.chats.splice(i, 1); drawChats(); } }
     for (const s of S.subs) { if (!s.done) s.gen.next(dt); if (s.clone) s.a.update(dt); }
     S.subs = S.subs.filter(s => !s.done);
     subPool.forEach(p => p.actor.update(dt));

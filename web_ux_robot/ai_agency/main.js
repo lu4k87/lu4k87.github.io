@@ -175,9 +175,9 @@ window.__shot = name => {
   return 'unbekannt: ' + name;
 };
 
-let last = performance.now(), hudT = 0;
+let last = performance.now(), hudT = 0, raf = 0;   // raf: höchstens eine Schleife (sonst startet visibilitychange eine zweite)
 function frame(now) {
-  const dt = Math.min(0.05, (now - last) / 1000); last = now;
+  raf = 0; const dt = Math.min(0.05, (now - last) / 1000); last = now;
   if (!CFG.freeze && !(reduced && S.t > (CFG.warm || 0) + 1)) { S.step(dt); playerStep(dt); S.ambient(dt); }
   else you.update(0);
   if (fixedCam) { camera.position.copy(fixedCam.p); camera.lookAt(fixedCam.t); } else camStep(dt, CFG.freeze);
@@ -186,9 +186,9 @@ function frame(now) {
   S.chats.forEach(c => { if (c.badge) c.badge.material.opacity = Math.min(1, Math.max(0.22, (Math.hypot(c.a.x - camera.position.x, 1.9 - camera.position.y, c.a.z - camera.position.z) - 3) / 2.5)); });
   hudT += dt; if (hudT > 0.12 || CFG.freeze) { hudT = 0; UI.tick(); }
   pipe.render();
-  if (!document.hidden) requestAnimationFrame(frame);
+  if (!document.hidden) raf = requestAnimationFrame(frame);
 }
-document.addEventListener('visibilitychange', () => { if (!document.hidden) { last = performance.now(); requestAnimationFrame(frame); } });
-requestAnimationFrame(frame);
+document.addEventListener('visibilitychange', () => { if (document.hidden) { cancelAnimationFrame(raf); raf = 0; } else if (!raf) { last = performance.now(); raf = requestAnimationFrame(frame); } });
+raf = requestAnimationFrame(frame);
 root.classList.add('ready');
 window.__dbg = { S, W, you, scene, camera, V, L, UI }; window.__agentsReady = true;

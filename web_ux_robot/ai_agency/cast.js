@@ -3,6 +3,7 @@
 // Gelb (wartet auf dich) und Rot (Fehler/Stopp) bleiben Signalen vorbehalten → Rollen und Werkzeuge meiden diese Töne.
 import * as THREE from 'three';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
+import { share } from './kit.js';
 
 const PI = Math.PI;
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
@@ -132,7 +133,7 @@ function emblemTex(tool) {
   x.fillStyle = tool === 'Codex' ? '#FFFFFF' : T.dark; x.textAlign = 'center'; x.textBaseline = 'middle';
   x.font = tool === 'Codex' ? '800 54px "JetBrains Mono", ui-monospace, monospace' : '800 84px system-ui, sans-serif';
   x.fillText(T.emblem, 64, tool === 'Codex' ? 66 : 70);
-  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; embCache.set(tool, t); return t;
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; embCache.set(tool, share(t)); return t;
 }
 function emblem(k, parent, tool, x, y, z, r) {
   const mesh = new THREE.Mesh(k.GEO.disc, new THREE.MeshBasicMaterial({ map: emblemTex(tool), transparent: true }));
@@ -319,14 +320,14 @@ export function drawFace(style, mood, closed, emblem, sparkle) {
   }
   if (sparkle) { x.fillStyle = 'rgba(255,255,255,.92)'; [[36, 212, 11], [220, 200, 8]].forEach(([sx, sy, r]) => { x.beginPath(); for (let i = 0; i < 8; i++) { const a = i * PI / 4, rr = i % 2 ? r * 0.32 : r; x.lineTo(sx + Math.cos(a) * rr, sy + Math.sin(a) * rr); } x.closePath(); x.fill(); }); }
   if (emblem) { x.fillStyle = 'rgba(255,255,255,.94)'; x.beginPath(); x.arc(128, 228, 21, 0, 2 * PI); x.fill(); x.fillStyle = FACE_INK; x.textAlign = 'center'; x.textBaseline = 'middle'; x.font = emblem === '>_' ? '800 18px "JetBrains Mono", monospace' : '800 27px system-ui, sans-serif'; x.fillText(emblem, 128, 230); }
-  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; faceCache.set(id, t); return t;
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; faceCache.set(id, share(t)); return t;
 }
 let CUBE_GEO = null;
 function cubeMat(k, color, finish) {
   const id = 'cube|' + color + '|' + finish; if (k.cache2.has(id)) return k.cache2.get(id);
   const m = finish === 'clay' ? new THREE.MeshStandardMaterial({ color, roughness: 0.88, metalness: 0 })
     : new THREE.MeshPhysicalMaterial({ color, roughness: finish === 'satin' ? 0.46 : 0.24, metalness: 0, clearcoat: finish === 'satin' ? 0.55 : 1, clearcoatRoughness: 0.12, sheen: 0.5, sheenRoughness: 0.4, sheenColor: new THREE.Color(shade(color, 0.2)) });
-  k.cache2.set(id, m); return m;
+  k.cache2.set(id, share(m)); return m;
 }
 function makeCube(k, L, o) {
   const V = k.V.cube, kind = o.kind || 'chat', finish = V.finish || 'jelly', limbFinish = finish === 'clay' ? 'clay' : 'satin';
@@ -344,7 +345,7 @@ function makeCube(k, L, o) {
   P.legL = limb(legGeo, legMat, -0.15, 0, 0.26, P.hips); P.legR = limb(legGeo, legMat, 0.15, 0, 0.26, P.hips);
   const bootMat = cubeMat(k, V.boots || kind === 'player' ? C.accent : shade(C.body, -0.24), limbFinish);
   [P.legL, P.legR].forEach(l => k.add(l, 'box', null, 0, -0.27, 0.03, 0.2, 0.1, 0.25, 0, { mat: bootMat }));
-  CUBE_GEO ||= new RoundedBoxGeometry(BW, BH, BD, 5, 0.17);
+  CUBE_GEO ||= share(new RoundedBoxGeometry(BW, BH, BD, 5, 0.17));
   const body = new THREE.Mesh(CUBE_GEO, cubeMat(k, C.body, finish)); body.position.y = LEG + BH / 2; body.castShadow = body.receiveShadow = true; rig.add(body); P.torso = body; P.front = BD / 2;
   const sy = LEG + BH * 0.42;
   P.armL = limb(armGeo, limbMat, -(BW / 2 + 0.06), sy, 0.2, rig); P.armR = limb(armGeo, limbMat, BW / 2 + 0.06, sy, 0.2, rig);

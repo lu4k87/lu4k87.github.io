@@ -4,12 +4,23 @@ import * as THREE from 'three';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 
 const PI = Math.PI;
+// Geteilte Ressourcen (Caches, GEO): disposeTree() gibt sie nie frei; WeakSet statt userData, damit clone() die Marke nicht erbt
+const SHARED = new WeakSet();
+export const share = x => (SHARED.add(x), x);
+// Entfernte Figur/Schild freigeben: eigene Geometrien, Materialien, Texturen – geteilte bleiben (Sprite-Geometrie gehört three.js)
+export function disposeTree(obj) {
+  obj.traverse(o => {
+    if (o.geometry && !o.isSprite && !SHARED.has(o.geometry)) o.geometry.dispose();
+    [].concat(o.material || []).forEach(m => { if (SHARED.has(m)) return; if (m.map && !SHARED.has(m.map)) m.map.dispose(); m.dispose(); });
+  });
+}
 export const GEO = {
   box: new THREE.BoxGeometry(1, 1, 1), cyl: new THREE.CylinderGeometry(0.5, 0.5, 1, 24), cyl6: new THREE.CylinderGeometry(0.5, 0.5, 1, 6),
   sph: new THREE.SphereGeometry(0.5, 24, 16), ico: new THREE.IcosahedronGeometry(0.5, 0), cone: new THREE.ConeGeometry(0.5, 1, 24),
   tor: new THREE.TorusGeometry(0.5, 0.08, 10, 32), plane: new THREE.PlaneGeometry(1, 1), half: new THREE.SphereGeometry(0.5, 24, 12, 0, PI * 2, 0, PI / 2),
   disc: new THREE.CircleGeometry(0.5, 32),
 };
+Object.values(GEO).forEach(share);
 
 function radialTex(inner, outer) {
   const c = document.createElement('canvas'); c.width = c.height = 128; const x = c.getContext('2d');
@@ -21,7 +32,7 @@ export function makeKit(L, renderer) {
   const cache = new Map(), rb = new Map();
   const rbox = (w, h, d) => {
     const key = w.toFixed(3) + '|' + h.toFixed(3) + '|' + d.toFixed(3); if (rb.has(key)) return rb.get(key);
-    const r = Math.min(0.06, Math.min(w, h, d) * 0.45); const g = new RoundedBoxGeometry(w, h, d, 2, r); rb.set(key, g); return g;
+    const r = Math.min(0.06, Math.min(w, h, d) * 0.45); const g = share(new RoundedBoxGeometry(w, h, d, 2, r)); rb.set(key, g); return g;
   };
   const m = (color, o = {}) => {
     const key = color + '|' + (o.emissive || '') + '|' + (o.opacity ?? 1) + '|' + (o.basic ? 'b' : '') + '|' + (o.metal ?? '') + '|' + (o.rough ?? '');
@@ -30,10 +41,10 @@ export function makeKit(L, renderer) {
     if (o.basic) mat = new THREE.MeshBasicMaterial({ color });
     else mat = new THREE.MeshStandardMaterial({ color, roughness: o.rough ?? L.rough ?? 0.85, metalness: o.metal ?? L.metal ?? 0, emissive: o.emissive ? new THREE.Color(o.emissive) : 0x000000, emissiveIntensity: o.emissive ? (o.glow ?? (L.dark ? 2.6 : 1.8)) : 0 });
     if (o.opacity != null && o.opacity < 1) { mat.transparent = true; mat.opacity = o.opacity; mat.depthWrite = false; }
-    mat.userData.src = color; cache.set(key, mat); return mat;
+    mat.userData.src = color; cache.set(key, share(mat)); return mat;
   };
-  const glowTex = radialTex('rgba(255,255,255,1)', 'rgba(255,255,255,0)');
-  const blobTex = radialTex('rgba(0,0,0,.95)', 'rgba(0,0,0,0)');
+  const glowTex = share(radialTex('rgba(255,255,255,1)', 'rgba(255,255,255,0)'));
+  const blobTex = share(radialTex('rgba(0,0,0,.95)', 'rgba(0,0,0,0)'));
   const aniso = renderer.capabilities.getMaxAnisotropy();
   function add(parent, geo, color, x, y, z, sx = 1, sy = 1, sz = 1, ry = 0, o = {}) {
     let mesh;

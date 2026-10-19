@@ -2,7 +2,7 @@
 // sechs Oberflächen (?v=A…F, Standard F). Aufnahmen für die Vorschau: window.__shot(name, arg).
 import * as THREE from 'three';
 import { addLights, createPipeline } from './look.js';
-import { makeKit } from './kit.js';
+import { makeKit, disposeTree } from './kit.js';
 import { buildOffice, ICON } from './office.js';
 import { makePerson, animatePerson } from './cast.js';
 import { createSim, Actor, HEAD } from './sim.js';
@@ -144,7 +144,7 @@ function hover() {
   cv.style.cursor = hit ? 'pointer' : drag ? 'grabbing' : 'grab';
   if (key === hoverKey) { if (hoverSign && hit && hit.item) { const a = actorFor(hit.item); if (a) hoverSign.position.set(a.x, 2.2, a.z); } return; }
   S.chats.forEach(c => { if (c.logo) hotLogo(c.logo, !!(hit && hit.item && hit.item.type === 'chat' && hit.item.id === c.id)); });
-  hoverKey = key; if (hoverSign) { scene.remove(hoverSign); hoverSign.material.map.dispose(); hoverSign = null; }
+  hoverKey = key; if (hoverSign) { scene.remove(hoverSign); disposeTree(hoverSign); hoverSign = null; }
   marks.set('ptr', !hit ? null : hit.item ? (actorFor(hit.item) ? { actor: actorFor(hit.item) } : null) : lv >= 2 && hit.station === levels.state.station ? null : { station: hit.station });
   if (!hit || (hit.station && lv === 1)) return;   // Haus: Schilder stehen schon über jedem Bereich
   if (hit.item) { const a = actorFor(hit.item); if (!a) return; hoverSign = k.label([{ t: hit.item.id, size: 22, weight: 700 }, { t: hit.item.type === 'kubi' ? (shell.prefs.lotse ? 'Klick: Tour starten' : 'Klick: Lotse erklärt') : 'Klick: ganz nah', size: 15, weight: 500 }], { h: 0.46, order: 14, depthTest: false }); hoverSign.position.set(a.x, 2.2, a.z); }
@@ -211,9 +211,9 @@ window.__shot = (name, arg) => {
 };
 
 // ───────────────────────── Takt ─────────────────────────
-let last = performance.now(), hudT = 0;
+let last = performance.now(), hudT = 0, raf = 0;   // raf: höchstens eine Schleife (sonst startet visibilitychange eine zweite)
 function frame(now) {
-  const dt = Math.min(0.05, (now - last) / 1000); last = now;
+  raf = 0; const dt = Math.min(0.05, (now - last) / 1000); last = now;
   if (!CFG.freeze && !sim.paused && !(reduced && S.t > (CFG.warm || 0) + 1)) { S.step(dt * sim.speed); S.ambient(dt); }
   you.update(dt); if (kubi) kubi.update(dt);
   levels.update(dt);
@@ -238,9 +238,9 @@ function frame(now) {
   shell.frame();
   hudT += dt; if (hudT > 1.2) { hudT = 0; shell.tick(); }
   pipe.render();
-  if (!document.hidden) requestAnimationFrame(frame);
+  if (!document.hidden) raf = requestAnimationFrame(frame);
 }
-document.addEventListener('visibilitychange', () => { if (!document.hidden) { last = performance.now(); requestAnimationFrame(frame); } });
-requestAnimationFrame(frame);
+document.addEventListener('visibilitychange', () => { if (document.hidden) { cancelAnimationFrame(raf); raf = 0; } else if (!raf) { last = performance.now(); raf = requestAnimationFrame(frame); } });
+raf = requestAnimationFrame(frame);
 root.classList.add('ready');
 window.__dbg = { S, W, you, scene, camera, V, L, levels, shell }; window.__agentsReady = true;

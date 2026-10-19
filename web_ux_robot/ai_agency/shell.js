@@ -341,7 +341,8 @@ export function createShell(ctx) {
   th.setAttribute('aria-pressed', String(night)); th.setAttribute('aria-label', night ? 'Tagbüro einschalten' : 'Nachtbüro einschalten');
   th.title = night ? 'Tagbüro' : 'Nachtbüro'; th.firstElementChild.outerHTML = night ? SUN : MOON; th.querySelector('.tl').textContent = night ? 'Tag' : 'Nacht';
   th.addEventListener('click', () => {
-    try { prefs.theme = night ? 'tag' : 'nacht'; savePrefs(); } catch { /* privat/gesperrt: nur neu laden */ }
+    // nur theme in den gespeicherten Stand schreiben: prefs hält ggf. Standard- oder URL-Werte (ohne Kombination nie geladen)
+    try { const p = JSON.parse(localStorage.getItem('buero.prefs') || '{}'); p.theme = night ? 'tag' : 'nacht'; localStorage.setItem('buero.prefs', JSON.stringify(p)); } catch { /* privat/gesperrt: nur neu laden */ }
     const u = new URL(location.href); u.searchParams.delete('theme'); location.replace(u.href);
   });
   if (combo) {
