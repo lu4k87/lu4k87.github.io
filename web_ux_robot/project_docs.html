@@ -1542,12 +1542,11 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
               </div>
             </div>
           </div>
-        </div>
         <div class="fna" id="atlas-list">
           <div class="fna-legend">
             <div class="fna-leg-lead">
               <svg class="ico" aria-hidden="true"><use href="#i-cube"/></svg>
-              <p data-en="&lt;b&gt;First virtual, then real.&lt;/b&gt; Pick any function to inspect its live topic flow to real hardware:"><b>Erst virtuell, dann real.</b> Funktion wählen, um ihren Topic-Ablauf zur echten Hardware interaktiv zu verfolgen:</p>
+              <p data-en="&lt;b&gt;First virtual, then real.&lt;/b&gt; Pick a stroke or a name – the signal runs through its flow to real hardware:"><b>Erst virtuell, dann real.</b> Strich oder Namen wählen – das Signal läuft durch den Ablauf bis zur echten Hardware:</p>
             </div>
             <div class="fna-leg-stages">
               <span class="fna-leg-label" data-en="Stages:">Prüfstufen:</span>
@@ -1555,8 +1554,11 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
               <small data-en="Circle with tick = active stage · dashed circle = omitted stage · strokes per area: filled = runs on real hardware, outline = simulation only">Haken = aktive Stufe · gestrichelt = entfällt · Striche je Bereich: voll = läuft real, Rahmen = nur Simulation</small>
             </div>
           </div>
-          <div class="filter" role="search" aria-label="Funktionen filtern" data-en-aria="Filter functions">
-            <div class="chips" id="areas" role="group" aria-label="Bereich" data-en-aria="Area"></div>
+          <div class="fnb-band" id="fa-band-wrap">
+            <svg class="fnb-svg" id="fa-band" tabindex="0" role="listbox" aria-label="85 Funktionen als Band, nach Bereich gruppiert: Pfeiltasten wählen, Enter öffnet den Ablauf" data-en-aria="85 functions as one band, grouped by area: arrow keys pick, Enter opens the flow"></svg>
+          </div>
+          <div class="filter fnb-read" role="search" aria-label="Funktionen filtern" data-en-aria="Filter functions">
+            <div class="fnb-now" id="fa-now" aria-live="polite"></div>
             <div class="f-right">
               <span class="chips"><button type="button" class="chip" id="only-loops" aria-pressed="false"><svg class="ico" aria-hidden="true"><use href="#i-loop"/></svg><span data-en="Loops only">nur Kreisläufe</span></button></span>
               <label class="search"><svg class="ico" aria-hidden="true"><use href="#i-search"/></svg><input type="search" id="q" placeholder="Funktion oder Topic suchen …" data-en-ph="Search function or topic …" aria-label="Funktion oder Topic suchen" data-en-aria="Search function or topic"></label>
@@ -1936,6 +1938,7 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
               <div class="pn-fns" id="pn-fns" hidden><h3 data-en="Functions in this flow">Funktionen in diesem Ablauf</h3><div class="chips" id="pn-chips"></div></div>
             </section>
           </div>
+        </div>
       </section>
 
       
@@ -3041,8 +3044,7 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
     depth: ['.app-frame'],
     groups: ['.strip ul', '.fx-grid', '.at-areas', '.ar-stack ol', '.path', '.list', '.dg-grid', '.stack-layers'],
     seq: [{ box: '.op-flows', items: '.op-chain > li', step: 70, x: true }],
-    items: ['.at-ring', '.at-loops', '.ar-grp', '.fna-legend', '.fna .filter', '.fna .fna-hub', '.fna .panel', '.fna .grp-h', '.list-note', '.contact .vcard'],
-    cards: '.fna .cards > .fn',
+    items: ['.at-ring', '.at-loops', '.ar-grp', '.fna-legend', '.fna .fnb-band', '.fna .filter', '.fna .fna-hub', '.fna .panel', '.list-note', '.contact .vcard'],
     tilt: { sel: '.fx, .list > a.item', lift: -2 },
     shine: '.thumb',
     rail: { sections: 'section.sec[id]', label: '.eyebrow .n' },
@@ -3051,7 +3053,7 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
            crumb: { into: '.top .wrap', sections: 'section.sec[id], .contact[id]', label: 'h2' } },
     collapse: { el: '.top', after: '.hero' },
     relay: [{ box: '.hero-kpis', items: '.hero-card' }, { box: '.path', items: 'a' }, '.fx-grid', '.kpis'],
-    spot: [{ box: '.path', items: 'a' }, '.fx-grid', '.kpis', { box: '.list', items: 'a.item' }, { box: '.fna .cards', items: '.fn' }],
+    spot: [{ box: '.path', items: 'a' }, '.fx-grid', '.kpis', { box: '.list', items: 'a.item' }],
     fill: '.pips, .hc-seg',
     lines: ['.strip', 'section.land', '.contact'],
   });

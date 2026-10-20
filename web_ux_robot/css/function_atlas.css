@@ -1,4 +1,4 @@
-/* Funktionsatlas in docs/project_docs.html (Abschnitt 05, #atlas-list): Filter, 83 Funktionskarten, Ablauf-Panel mit Flow-Graph + Ring.
+/* Funktionsatlas in docs/project_docs.html (Abschnitt 05, #atlas-list): Signalbus (Atlas:B) – Band aus 85 Strichen, Readout, Namensstreifen, Platine mit Flow-Graph + Ring.
    Früher eigene Seite present_function_atlas.html (jetzt Weiterleitung), eingebaut auf Wunsch User 06.10.2026.
    Alles unter .fna (nicht .fa: über den UX | Nexus Launcher lädt die Seite Font Awesome, dessen .fa sonst Icon-Schrift + line-height 1 erzwingt), weil die Hauptseite eigene .chip/.tag/.panel/.stage hat; Tokens (Farben, --t-*, --shadow) kommen von der Hauptseite.
    Logik + Daten: js/function_atlas.js. */
@@ -38,25 +38,6 @@
 .fna .chip b { font: 700 12px/1 var(--mono); padding: 3px 6px; border-radius: var(--radius-sm); background: var(--surface-2); font-variant-numeric: tabular-nums; }
 .fna .chip[aria-pressed="true"] { background: var(--surface); border-color: var(--line-strong); }
 /* Bereichs-Skala (Wunsch User 15.10.2026): der Ring als Leiste – Segment je Bereich (Icon + Zahl, Name, ein Strich je Funktion) */
-.fna #areas { flex: 1 1 100%; display: grid; grid-template-columns: auto repeat(9, minmax(0, 1fr)); gap: 6px; width: auto; padding: 0; border: 0; background: none; }
-.fna .aseg { --c: var(--accent); min-width: 0; display: grid; grid-template-rows: auto 6px; align-content: space-between; gap: 8px; padding: 10px 10px 9px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface-2);
-  color: var(--fg); text-align: left; cursor: pointer; transition: border-color var(--t-fast), background-color var(--t-fast), box-shadow var(--t-base); }
-.fna .aseg.all { min-width: 64px; }
-.fna .aseg:hover { border-color: color-mix(in srgb, var(--c) 55%, var(--line)); }
-.fna .aseg:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-.fna .aseg[aria-pressed="true"] { border-color: var(--c); background: color-mix(in srgb, var(--c) 14%, var(--surface)); box-shadow: 0 0 18px -8px var(--c); }
-.fna .aseg-h { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 6px 8px; min-width: 0; font-size: 13.5px; font-weight: 700; line-height: 1.2; }
-.fna .aseg-h .ico { width: 18px; height: 18px; flex: none; color: var(--c); }
-.fna .aseg-t { grid-column: 1 / -1; grid-row: 2; min-width: 0; hyphens: auto; }
-.fna .aseg.all .aseg-t { grid-row: 1; grid-column: 1; }
-.fna .aseg-h b { justify-self: end; font: 800 13px/1 var(--mono); color: var(--c); font-variant-numeric: tabular-nums; }
-.fna .aseg.all .aseg-h b { color: var(--accent); }
-.fna .aseg-bar { display: flex; gap: 2px; height: 6px; }
-.fna .aseg-bar i { flex: 1; min-width: 2px; border-radius: 1px; background: var(--c); opacity: .5; transition: opacity var(--t-base); }
-.fna .aseg-bar i.sim { background: transparent; box-shadow: inset 0 0 0 1px var(--c); }
-.fna .aseg[aria-pressed="true"] .aseg-bar i, .fna .aseg:hover .aseg-bar i { opacity: 1; }
-.fna .aseg.all .aseg-bar i { opacity: .85; }
-/* Liste links, Ablauf rechts (Vorschau Atlas:A, Wunsch User 15.10.2026): Funktionsliste bleibt beim Scrollen stehen */
 .fna-hub-head { --c: var(--accent); display: flex; align-items: center; gap: 8px; padding: 2px 4px 10px; border-bottom: 1px solid var(--line); font-size: 15px; font-weight: 800; }
 .fna-hub-head .ico { width: 18px; height: 18px; color: var(--c); }
 .fna-hub-head span { flex: 1; min-width: 0; }
@@ -466,8 +447,6 @@
   .fna .loop { grid-template-columns: minmax(0, 1fr); }
   .fna .panel .fg-foot { grid-template-columns: minmax(0, 1fr); }
 }
-@media (max-width: 1100px) { .fna #areas { grid-template-columns: repeat(5, minmax(0, 1fr)); } }
-@media (max-width: 560px) { .fna #areas { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 560px) {
   .fna .fna-hub { padding: 12px; }
   .fna .cards { grid-template-columns: minmax(0, 1fr); }
@@ -480,10 +459,75 @@
   .fna :is(.fn, .chip, .ring .st rect) { transition: none; }
   .fna .fg-svg .edge.now, .fna .fg-svg .pkt .halo { animation: none !important; }
 }
-/* Liste links, Ablauf rechts ab 1101 px (nach den Grundregeln von .fna-hub/.cards, damit sie gelten) */
-@media (min-width: 1101px) {
-  .fna { grid-template-columns: minmax(260px, 300px) minmax(0, 1fr); align-items: start; }
-  .fna > :is(.fna-legend, .filter) { grid-column: 1 / -1; }
-  .fna .fna-hub { position: sticky; top: 80px; max-height: calc(100vh - 96px); overflow-y: auto; gap: 8px; padding: 12px; }
-  .fna .fna-hub .cards { grid-template-columns: minmax(0, 1fr); gap: 4px; }
+
+/* ═════════ Signalbus (Atlas:B, Wahl User 20.10.2026): Fortsetzung der dunklen Ring-Zone #atlas (keine neue dunkle Zone) –
+   Band aus 85 Strichen, Readout, Namensstreifen (#cards), Platine mit Lichtpaket und Zeitachse t1…tn ═════════ */
+#atlas { display: grid; row-gap: 40px; }
+#atlas .fna { gap: 0; padding-top: 40px; border-top: 1px solid var(--line); }
+.fna .fna-legend { padding: 0 0 18px; border: 0; border-radius: 0; background: none; box-shadow: none; }
+/* Band: Gruppe je Bereich in Bereichsfarbe, Strich voll = auch real, Rahmen = nur Simulation */
+.fnb-band { min-width: 0; }
+.fnb-svg { display: block; width: 100%; overflow: visible; outline: none; border-radius: var(--radius-sm); }
+.fnb-svg:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
+.fnb-svg .base { stroke: var(--line-strong); stroke-width: 1; }
+.fnb-svg .lead { stroke: var(--c); stroke-opacity: .5; stroke-width: 1; }
+.fnb-svg .grp-l { font: 600 12px/1 var(--mono); letter-spacing: .04em; cursor: pointer; }
+.fnb-svg .grp-t { fill: var(--c); }
+.fnb-svg .grp-n { fill: var(--fg); font-weight: 800; }
+.fnb-svg .grp.on .grp-l { font-weight: 800; text-decoration: underline; text-underline-offset: 4px; }
+.fnb-svg .tick { cursor: pointer; }
+.fnb-svg .tick .hit { fill: transparent; }
+.fnb-svg .tick .bar { fill: transparent; stroke: var(--c); stroke-width: 1.5; transform-box: fill-box; transform-origin: 50% 100%; transition: transform var(--t-base) var(--ease-out), opacity var(--t-fast); }
+.fnb-svg .tick.r .bar { fill: var(--c); }
+.fnb-svg .tick:hover .bar, .fnb-svg .tick.cur .bar { transform: scaleY(1.25); }
+.fnb-svg .tick.sel .bar { transform: scaleY(1.5); filter: drop-shadow(0 0 6px var(--c)); }
+.fnb-svg .tick.cur .bar { stroke: var(--fg); stroke-width: 2; }
+.fnb-svg .tick.dim .bar { opacity: .2; }
+.fnb-svg .drop { stroke: var(--accent); stroke-width: 2; stroke-dasharray: 3 4; }
+/* Readout: gewählte Funktion + Suche, Zähler, „nur Kreisläufe“ */
+.fna .fnb-read { padding: 14px 0; gap: 12px 24px; border: 0; border-bottom: 1px solid var(--line); border-radius: 0; background: none; box-shadow: none; }
+.fnb-now { --c: var(--accent); flex: 1 1 380px; min-width: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; }
+.fnb-now .fnb-k { flex-basis: 100%; display: inline-flex; align-items: center; gap: 8px; font: 700 12px/1.2 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--c); }
+.fnb-now .fnb-k .ico { width: 16px; height: 16px; }
+.fnb-now b { font: 800 19px/1.3 var(--font); color: var(--fg); }
+.fnb-now p { flex-basis: 100%; font-size: 15px; line-height: 1.5; color: var(--fg-2); max-width: 78ch; text-wrap: pretty; }
+.fnb-now code { font: 600 13px/1.3 var(--mono); color: var(--fg); }
+/* Namensstreifen: Funktionen des gewählten Bereichs (bei Suche/Kreisläufen alle Treffer) */
+.fna .fna-hub { gap: 10px; padding: 16px 0 20px; border: 0; border-radius: 0; background: none; box-shadow: none; }
+.fna .fna-hub-head { padding: 0; border: 0; font-size: 14px; }
+.fna .cards { display: flex; flex-wrap: wrap; gap: 6px; }
+.fna .fn { min-height: 34px; padding: 6px 12px; border-color: color-mix(in srgb, var(--c) 45%, var(--line)); background: var(--surface); }
+.fna .fn:hover { transform: none; }
+.fna .fn.sel { background: var(--c); border-color: var(--c); box-shadow: 0 0 14px -4px var(--c); }
+.fna .fn.sel .fn-sel, .fna .fn.sel .fn-sel .ico { color: var(--bg); }
+.fna .fn.sel[data-has-loop] h3::after { background: var(--bg); box-shadow: none; }
+.fna .fn-link { display: none; }
+/* Platine: Ablauf-Panel ohne Fenster-Rahmen, Raster scheint durch, Kanten rechtwinklig (FlowGraph ortho) */
+.fna .panel { gap: 18px; padding: 20px; border-color: var(--line-strong); background: color-mix(in srgb, var(--surface) 70%, transparent); box-shadow: none; }
+.fna .panel .fg { background: transparent; border-color: var(--line-strong); }
+.fna .fg-bar:not(:has(.fg-scn button + button)) { display: none; }
+.fna .panel .fg-stage { background-color: color-mix(in srgb, var(--bg) 55%, transparent); }
+.fna .panel .fg-svg .node rect { fill: var(--band); }
+/* Zeitachse t1…tn, darunter Schritttext + Topic, rechts Pause/Abspielen + Schritt */
+.fna .fg-tick { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 14px 20px; align-items: center; padding: 14px 18px 18px; border-top: 1px solid var(--line-strong); }
+.fna .fg-tick .fg-steps { grid-column: 1 / -1; position: relative; display: grid; grid-auto-flow: column; grid-auto-columns: minmax(36px, 1fr); gap: 0; overflow-x: auto; }
+.fna .fg-tick .fg-steps::before { content: ""; position: absolute; left: 0; right: 0; top: 14px; height: 1px; background: var(--line-strong); }
+.fna .fg-tick .fg-steps li { display: block; padding: 0; border: 0; background: none; box-shadow: none; }
+.fna .fg-tick .fg-steps button { position: relative; display: grid; justify-items: start; gap: 6px; min-height: 40px; padding: 0 0 2px; border: 0; background: none; font: 800 13px/1 var(--mono); color: var(--fg-2); cursor: pointer; }
+.fna .fg-tick .fg-steps button i { width: 12px; height: 12px; margin-top: 8px; border: 1.5px solid var(--line-strong); border-radius: 50%; background: var(--bg); transition: background-color var(--t-base), border-color var(--t-base); }
+.fna .fg-tick .fg-steps li.done i { background: var(--line-strong); }
+.fna .fg-tick .fg-steps li.now i { background: var(--pc); border-color: var(--pc); box-shadow: 0 0 10px var(--pc); }
+.fna .fg-tick .fg-steps li.now button { color: var(--pc); }
+.fna .fg-now { display: grid; gap: 6px; min-width: 0; }
+.fna .fg-now b { font: 800 13px/1 var(--mono); letter-spacing: .06em; color: var(--pc); }
+.fna .fg-now p { margin: 0; font-size: 17px; font-weight: 600; line-height: 1.45; color: var(--fg); max-width: 72ch; min-height: 2.9em; text-wrap: pretty; }
+.fna .fg-now code { justify-self: start; padding: 4px 8px; border: 1px solid var(--line-strong); border-radius: var(--radius-sm); font: 700 13px/1.3 var(--mono); color: var(--fg); overflow-wrap: anywhere; }
+.fna .fg-tick .fg-ctl { align-self: end; }
+.fna .fg-tick .fg-ctl > button { width: auto; gap: 8px; min-height: 36px; padding: 0 14px; font: 700 13px/1 var(--mono); }
+.fna .fg-tick .fg-status { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+@media (max-width: 560px) {
+  .fna .fg-tick { grid-template-columns: minmax(0, 1fr); padding: 12px; }
+  .fna .panel { padding: 12px; }
+  .fna .fg-now p { font-size: 16px; }
 }
+@media (prefers-reduced-motion: reduce) { .fnb-svg .tick .bar, .fna .fg-tick .fg-steps button i { transition: none; } }

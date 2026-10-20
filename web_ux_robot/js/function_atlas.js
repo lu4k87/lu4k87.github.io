@@ -5,7 +5,8 @@
    Neuer Ablauf: Eintrag in FLOWS (SPEC wie Skill flow-graph, Topics per grep belegt; loop = Ring-Stationen).
    Styles: css/function_atlas.css (alles unter .fa). */
 /* ═════════ FlowGraph-Engine (aus .claude/skills/flow-graph/flow_graph_template.html, + via) ═════════
-   create(figure, SPEC, { lang }) → { setLang, setRates, select, destroy }
+   create(figure, SPEC, { lang, ortho, hopMs, dwellMs }) → { setLang, setRates, select, destroy }
+   ortho = alle Kanten rechtwinklig (Platine im Atlas); figure mit .fg-now = Ticker: Zeitachse t1…tn, Schritttext + Topic darunter
    SPEC: lanes[] (Spalten), nodes[] (lane, row, label, sub, icon, hue, info),
          edges[] (from, to, kind topic|service|action|stream, label, hz, ports 'rl'…, route 'ortho', via Zeile des Rückwegs),
          scenarios[] (id, label, icon, hue, text, steps[{ edge 'a>b' | 'b>a' bei service/action, note, also[] }]) */
@@ -38,6 +39,7 @@ const FlowGraph = (() => {
   };
   const fit = (t, max) => { while (t.getComputedTextLength() > max && t.textContent.length > 4) t.textContent = `${t.textContent.slice(0, -2)}…`; };
   const reduceMQ = matchMedia('(prefers-reduced-motion: reduce)');
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
   function create(fig, spec, opt = {}) {
     const o = { lang: 'de', nodeW: 196, nodeH: 56, rowGap: 34, hopMs: 750, dwellMs: 420, loopMs: 1400, pxPerSec: 170, ...opt };
@@ -103,7 +105,7 @@ const FlowGraph = (() => {
       };
       for (const e of edges.values()) {
         const [sa, sb] = e.sides, p = anchor(e.from, sa, e.off[0]), q = anchor(e.to, sb, e.off[1]);
-        if (e.route === 'ortho') { e.d = ortho(p, sa, q, sb, e.via == null ? null : vert ? 4 + g.colW * (e.via + .5) : g.top + e.via * (g.nh + o.rowGap) + g.nh / 2); continue; }
+        if (e.route === 'ortho' || o.ortho) { e.d = ortho(p, sa, q, sb, e.via == null ? null : vert ? 4 + g.colW * (e.via + .5) : g.top + e.via * (g.nh + o.rowGap) + g.nh / 2); continue; }
         const same = sa === sb, dist = Math.hypot(q[0] - p[0], q[1] - p[1]);
         const d = same ? Math.min(70, 28 + dist / 6) : Math.max(28, dist / 2.4);
         const c1 = [p[0] + NRM[sa][0] * d, p[1] + NRM[sa][1] * d], c2 = [q[0] + NRM[sb][0] * d, q[1] + NRM[sb][1] * d];
@@ -244,16 +246,18 @@ const FlowGraph = (() => {
       if (st.hover?.edge) chip(st.hover.edge, edgeText(edges.get(st.hover.edge)));
       else if (st.live && !focus) for (const e of edges.values()) if (e.hz === 0) chip(e.key, edgeText(e));  // nur Abweichung beschriften
       detail(focus);
-      $$('.fg-steps li').forEach((li, i) => li.classList.toggle('now', i === st.step));
+      $$('.fg-steps li').forEach((li, i) => { li.classList.toggle('now', i === st.step); li.classList.toggle('done', i < st.step); });
       $$('.fg-scn button').forEach((b, i) => b.setAttribute('aria-pressed', String(st.live ? b.dataset.live === '1' : i === st.scn && !b.dataset.live)));
-      const pb = $('[data-act="play"]');
+      const pb = $('[data-act="play"]'), pl = L(st.play ? ['Pause', 'Pause'] : ['Abspielen', 'Play']);
       pb.querySelector('use').setAttribute('href', st.play ? '#i-pause' : '#i-fg-play');
-      pb.setAttribute('aria-label', st.play ? L(['Pause', 'Pause']) : L(['Abspielen', 'Play']));
-      for (const a of ['prev', 'next', 'play']) $(`[data-act="${a}"]`).disabled = st.live || !s;
+      pb.setAttribute('aria-label', pl); pb.setAttribute('aria-pressed', String(st.play));
+      if (pb.querySelector('.lbl')) pb.querySelector('.lbl').textContent = pl;
+      for (const a of ['prev', 'next', 'play']) { const b = $(`[data-act="${a}"]`); if (b) b.disabled = st.live || !s; }
     }
     const $$ = s => [...fig.querySelectorAll(s)];
 
     function detail(focus) {
+      if (now) return tickerText(focus);
       const h3 = $('.fg-detail h3'), p = $('.fg-detail p'), io = $('.fg-detail .io');
       if (focus) {
         const n = nodes.get(focus), ins = [], outs = [];
@@ -272,6 +276,27 @@ const FlowGraph = (() => {
       h3.textContent = L(s.label); p.textContent = L(s.text);
     }
 
+    // Ticker (Platine): ein Textfeld unter der Zeitachse – laufender Schritt + Topic, beim Erkunden der Knoten mit Ein-/Ausgängen
+    const now = $('.fg-now');
+    function tickerText(focus) {
+      const h = now.querySelector('b'), p = now.querySelector('p'), code = now.querySelector('code');
+      if (focus) {
+        const n = nodes.get(focus), io = [];
+        for (const e of edges.values()) {
+          if (e.to === focus) io.push(`← ${L(e.label)}`);
+          if (e.from === focus) io.push(`→ ${L(e.label)}`);
+        }
+        h.textContent = L(n.label); p.textContent = L(n.info) || L(n.sub); code.textContent = io.join('  ·  '); code.hidden = !io.length;
+        return;
+      }
+      const s = scns[st.scn];
+      if (st.live || !s) { h.textContent = L(['Alle Ströme', 'All streams']); p.textContent = L(['Jede Kante zeigt ihre Rate.', 'Each edge shows its rate.']); code.hidden = true; return; }
+      const i = Math.max(0, st.step), x = s.steps[i], hp = x && hop(x.edge);
+      h.textContent = `t${i + 1} / ${s.steps.length}`;
+      p.textContent = x ? L(x.note) : L(s.text);
+      code.textContent = x ? L(x.topic) || (hp ? L(hp.e.label) : '') : ''; code.hidden = !code.textContent;
+    }
+
     function texts() {
       svg.querySelectorAll('[data-lane]').forEach(t => { t.textContent = L(spec.lanes[+t.dataset.lane].label); });
       for (const [id, g] of svgNode) {
@@ -286,7 +311,7 @@ const FlowGraph = (() => {
         + (spec.edges.some(e => e.hz != null) ? `<button type="button" data-live="1"><svg><use href="#i-pulse"/></svg>${L(['Alle Ströme', 'All streams'])}</button>` : '');
       $$('.fg-scn button').forEach(b => b.addEventListener('click', () => b.dataset.live ? setLive() : select(+b.dataset.i)));
       const s = scns[st.scn];
-      $('.fg-steps').innerHTML = !s || st.live ? '' : s.steps.map((x, i) => {
+      $('.fg-steps').innerHTML = !s || st.live ? '' : now ? s.steps.map((x, i) => `<li data-i="${i}"><button type="button" aria-label="${L(['Schritt', 'Step'])} ${i + 1}: ${esc(L(x.note))}"><i></i>t${i + 1}</button></li>`).join('') : s.steps.map((x, i) => {
         const h = hop(x.edge), n = h ? nodes.get(h.rev ? h.e.from : h.e.to) : null;
         return `<li data-i="${i}"><span class="n">${i + 1}</span><span class="w"><b>${n ? L(n.label) : '?'}</b><code>${L(x.topic) || (h ? L(h.e.label) : '')}</code></span><span class="note">${L(x.note)}</span></li>`;
       }).join('');
@@ -294,7 +319,7 @@ const FlowGraph = (() => {
       const lg = [['topic', [0, 0], ['Topic', 'Topic']], ['service', [6, 4], ['Service (Anfrage ⇄ Antwort)', 'Service (request ⇄ response)']],
         ['action', [14, 4, 2, 4], ['Action (Ziel, Feedback, Ergebnis)', 'Action (goal, feedback, result)']], ['stream', [0, 0], ['Datenstrom (Bild, Punktwolke)', 'Stream (image, point cloud)']]]
         .filter(([k]) => spec.edges.some(e => (e.kind || 'topic') === k));
-      $('.fg-legend').innerHTML = lg.map(([k, dash, t]) => `<span><svg viewBox="0 0 34 10"><line x1="0" y1="5" x2="34" y2="5" stroke-dasharray="${dash.join(' ')}" style="${k === 'stream' ? 'stroke-width:3.4' : ''}"/></svg>${L(t)}</span>`).join('');
+      if ($('.fg-legend')) $('.fg-legend').innerHTML = lg.map(([k, dash, t]) => `<span><svg viewBox="0 0 34 10"><line x1="0" y1="5" x2="34" y2="5" stroke-dasharray="${dash.join(' ')}" style="${k === 'stream' ? 'stroke-width:3.4' : ''}"/></svg>${L(t)}</span>`).join('');
     }
 
     // ── Animation: eine rAF-Schleife für alle Pakete, läuft nur bei sichtbarer Figur ──
@@ -371,9 +396,9 @@ const FlowGraph = (() => {
 
     // ── Bedienung: Knöpfe, Tastatur (←/→ Schritt, Leertaste Play, Esc Auswahl lösen) ──
     $('[data-act="play"]').addEventListener('click', () => { st.play = !st.play; if (st.play) { if (st.step >= scns[st.scn].steps.length - 1) st.step = -1; loop(); } else st.run++; paint(); });
-    $('[data-act="prev"]').addEventListener('click', () => { st.play = false; stepTo(st.step - 1); });
+    $('[data-act="prev"]')?.addEventListener('click', () => { st.play = false; stepTo(st.step - 1); });
     $('[data-act="next"]').addEventListener('click', () => { st.play = false; stepTo(st.step + 1); });
-    $('[data-act="speed"]').addEventListener('click', ev => {
+    $('[data-act="speed"]')?.addEventListener('click', ev => {
       const b = ev.target.closest('button'); if (!b) return;
       st.speed = +b.dataset.v; b.parentElement.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
     });
@@ -383,7 +408,7 @@ const FlowGraph = (() => {
       else if (ev.key === 'Escape') { st.pin = null; paint(); }
       else if ((ev.key === 'k' || ev.key === 'K')) $('[data-act="play"]').click();
     });
-    if (reduceMQ.matches) $('[data-act="speed"]').hidden = true;
+    if (reduceMQ.matches && $('[data-act="speed"]')) $('[data-act="speed"]').hidden = true;
 
     // ── Sichtbarkeit + Größe: außerhalb des Viewports / im Hintergrund-Tab läuft nichts ──
     const io = new IntersectionObserver(([en]) => {
@@ -1232,7 +1257,8 @@ const FLOWS = (() => {
 
 
 
-/* ═════════ Atlas in der Hauptseite: Filter, Auswahl, Ablauf-Panel; Theme + Sprache steuert project_docs.html ═════════ */
+/* ═════════ Atlas in der Hauptseite – Signalbus (Atlas:B, Wahl User 20.10.2026): Band aus 85 Strichen, Readout, Namensstreifen,
+   Platine mit Lichtpaket (Ticker t1…tn); #cards bleibt Datenquelle aller Texte (DE/EN, #id-Links). Theme + Sprache steuert project_docs.html ═════════ */
 (() => {
   const root = document.documentElement;
   const box = document.getElementById('atlas-list');
@@ -1261,15 +1287,15 @@ const FLOWS = (() => {
     + STAGES.map(([k, hue, t], i) => (i ? ST_TO : '') + (s.includes(k)
       ? `<span class="st on" style="--c: var(--${hue})"><i>${ST_OK}</i>${L(t)}</span>` : `<span class="st off"><i></i>${L(t)}</span>`)).join('') + '</span>';
 
-  const grid = box.querySelector('.fa-grid');
   const cardsBox = document.getElementById('cards'), panel = document.getElementById('panel'), fig = document.getElementById('fg-atlas');
   const cards = [...cardsBox.querySelectorAll('.fn')];
   const byId = new Map(cards.map(c => [c.id, c]));
-  const FIG_HTML = `<div class="fg-bar"><div class="fg-scn" role="group" aria-label="Szenario wählen"></div><div class="fg-ctl">
-    <button type="button" data-act="prev" aria-label="Schritt zurück"><svg><use href="#i-fg-prev"/></svg></button><button type="button" data-act="play" aria-label="Abspielen"><svg><use href="#i-fg-play"/></svg></button><button type="button" data-act="next" aria-label="Schritt vor"><svg><use href="#i-fg-next"/></svg></button>
-    <span class="fg-speed" data-act="speed" role="group" aria-label="Tempo"><button type="button" data-v=".5" aria-pressed="false">0,5×</button><button type="button" data-v="1" aria-pressed="true">1×</button><button type="button" data-v="2" aria-pressed="false">2×</button></span></div></div>
-    <div class="fg-stage"><svg class="fg-svg" role="group" aria-roledescription="Datenflussdiagramm"></svg></div>
-    <div class="fg-foot"><div class="fg-detail"><h3></h3><p></p><div class="io"></div><div class="fg-status" aria-live="polite"></div></div><ol class="fg-steps"></ol></div>
+  const figHtml = () => `<div class="fg-bar"><div class="fg-scn" role="group" aria-label="${L(['Szenario wählen', 'Pick a scenario'])}"></div></div>
+    <div class="fg-stage"><svg class="fg-svg" role="group" aria-roledescription="${L(['Datenflussdiagramm', 'data flow diagram'])}"></svg></div>
+    <div class="fg-tick"><ol class="fg-steps" aria-label="${L(['Zeitachse', 'Timeline'])}"></ol>
+      <div class="fg-now"><b></b><p></p><code></code></div>
+      <div class="fg-ctl"><button type="button" data-act="play" aria-pressed="true"><svg><use href="#i-pause"/></svg><span class="lbl">Pause</span></button><button type="button" data-act="next"><span class="lbl">${L(['Schritt', 'Step'])}</span><svg><use href="#i-fg-next"/></svg></button></div>
+      <div class="fg-status" aria-live="polite"></div></div>
     <div class="fg-legend" aria-hidden="true"></div><figcaption id="fg-atlas-cap"></figcaption><ol class="fg-fallback"></ol>`;
   const flowIds = Object.keys(FLOWS);
   const isLoop = c => !!FLOWS[c.dataset.f]?.loop;
@@ -1298,40 +1324,89 @@ const FLOWS = (() => {
     sel.setAttribute('aria-controls', 'panel');
   };
 
-  // Bereichs-Chips mit Anzahl in der Filterleiste (einzige Bereichswahl der Liste)
-  const areaBox = document.getElementById('areas');
-  let area = 'ctl', onlyLoops = false, q = '';
-  // Bereichs-Skala (Wunsch User 15.10.2026): Segment je Bereich, Breite ~ Anzahl, ein Strich je Funktion (voll = läuft real, Rahmen = nur Simulation)
-  const hubHead = document.getElementById('fa-hub-head');
+  // Band (Ring rollt sich auf): Gruppe je Bereich, Breite ~ Anzahl, gewählter Bereich ×2; Strich je Funktion (voll = auch real, Rahmen = nur Simulation,
+  // hoch = mit Prüfstufen); Name + Anzahl darüber in zwei versetzten Zeilen; gestrichelte Leitung fällt vom gewählten Strich zum Readout
+  const SVGNS = 'http://www.w3.org/2000/svg';
+  const mk = (t, at, p) => { const e = document.createElementNS(SVGNS, t); for (const k in at) e.setAttribute(k, at[k]); p?.append(e); return e; };
+  const band = document.getElementById('fa-band'), bandWrap = document.getElementById('fa-band-wrap');
+  const hubHead = document.getElementById('fa-hub-head'), nowBox = document.getElementById('fa-now');
+  const order = Object.keys(AREAS).flatMap(k => cards.filter(c => c.dataset.a === k));   // Band-Reihenfolge = Bereich, dann Seite
+  let area = 'ctl', onlyLoops = false, q = '', cursor = null;   // cursor = Strich unter dem Tastatur-Fokus (Enter wählt)
   const isReal = c => (c.dataset.s || '').includes('r');
-  const renderAreas = () => {
-    if (areaBox) {
-      areaBox.innerHTML = `<button type="button" class="aseg all" data-area="" aria-pressed="${!area}"><span class="aseg-h"><span class="aseg-t">${L(['Alle', 'All'])}</span><b>${cards.length}</b></span>`
-        + `<span class="aseg-bar" aria-hidden="true">${Object.values(AREAS).map(a => `<i style="--c: var(--${a.hue})"></i>`).join('')}</span></button>`
-        + Object.entries(AREAS).map(([k, a]) => {
-          const cs = cards.filter(c => c.dataset.a === k), real = cs.filter(isReal).length;
-          return `<button type="button" class="aseg" data-area="${k}" style="--c: var(--${a.hue}); --n: ${cs.length}" aria-pressed="${area === k}" aria-label="${a[lang()]}: ${cs.length} ${L(['Funktionen', 'functions'])}, ${L(['davon', 'of which'])} ${real} real">`
-            + `<span class="aseg-h">${ico(a.icon)}<span class="aseg-t">${a[lang()]}</span><b>${cs.length}</b></span>`
-            + `<span class="aseg-bar" aria-hidden="true">${cs.map(c => (isReal(c) ? '<i></i>' : '<i class="sim"></i>')).join('')}</span></button>`;
-        }).join('');
+  const match = c => (!onlyLoops || isLoop(c)) && (!q || hay.get(c.id).includes(q));
+  const nameOf = c => c.querySelector('.fn-sel').textContent.trim();
+  function renderBand() {
+    const W = Math.round(bandWrap.clientWidth);
+    if (W < 200) return;
+    const keys = Object.keys(AREAS), nRows = W < 560 ? 3 : W < 900 ? 2 : 1, per = Math.ceil(keys.length / nRows);
+    const GAP = W < 560 ? 10 : 16, LBL = 40, TICK = 66, ROW = LBL + TICK + 26;   // Etiketten · Striche (×1,5 bei Auswahl) · Leitung
+    band.replaceChildren();
+    band.setAttribute('viewBox', `0 0 ${W} ${nRows * ROW}`);
+    band.setAttribute('height', nRows * ROW);
+    band.setAttribute('aria-activedescendant', cursor ? `fnb-${cursor.id}` : curCard ? `fnb-${curCard.id}` : '');
+    for (let r = 0; r < nRows; r++) {
+      const row = keys.slice(r * per, (r + 1) * per), y0 = r * ROW, base = y0 + LBL + TICK;
+      const weight = k => Math.max(cards.filter(c => c.dataset.a === k).length, 7) * (k === area ? 2 : 1);
+      const unit = (W - GAP * (row.length - 1)) / row.reduce((s, k) => s + weight(k), 0);
+      mk('line', { x1: 0, y1: base + .5, x2: W, y2: base + .5, class: 'base' }, band);
+      let x = 0;
+      row.forEach((k, i) => {
+        const a = AREAS[k], cs = order.filter(c => c.dataset.a === k), w = weight(k) * unit, last = i === row.length - 1, ly = y0 + 14 + (i % 2) * 18;
+        const g = mk('g', { class: `grp${k === area ? ' on' : ''}`, style: `--c: var(--${a.hue})` }, band);
+        const l = mk('text', { x: last ? x + w : x, y: ly, 'text-anchor': last ? 'end' : 'start', class: 'grp-l', 'data-a': k }, g);
+        mk('tspan', { class: 'grp-t' }, l).textContent = a[lang()];
+        mk('tspan', { class: 'grp-n', dx: 6 }, l).textContent = cs.length;
+        mk('line', { x1: last ? x + w - .5 : x + .5, y1: ly + 5, x2: last ? x + w - .5 : x + .5, y2: base - 48, class: 'lead' }, g);
+        const step = w / cs.length, bw = Math.max(3, Math.min(9, step * .45));
+        cs.forEach((c, j) => {
+          const tx = x + j * step + (step - bw) / 2, h = c.dataset.s ? 44 : 26;
+          const t = mk('g', { id: `fnb-${c.id}`, role: 'option', 'aria-selected': String(c === curCard), 'aria-label': `${nameOf(c)} · ${a[lang()]}`, 'data-f': c.id,
+            class: `tick${isReal(c) ? ' r' : ''}${match(c) ? '' : ' dim'}${c === curCard ? ' sel' : ''}${c === cursor ? ' cur' : ''}` }, g);
+          mk('title', {}, t).textContent = nameOf(c);
+          mk('rect', { class: 'hit', x: x + j * step, y: base - TICK, width: step, height: TICK + 4 }, t);
+          mk('rect', { class: 'bar', x: tx, y: base - h, width: bw, height: h, rx: 1 }, t);
+          if (c === curCard) mk('line', { x1: tx + bw / 2, y1: base + 3, x2: tx + bw / 2, y2: base + 24, class: 'drop' }, band);
+        });
+        x += w + GAP;
+      });
     }
-    if (hubHead) {   // Kopf der Funktionsliste: gewählter Bereich + Anzahl
-      const a = AREAS[area], n = area ? cards.filter(c => c.dataset.a === area).length : cards.length;
-      hubHead.style.setProperty('--c', a ? `var(--${a.hue})` : 'var(--accent)');
-      hubHead.innerHTML = `${a ? ico(a.icon) : ico('i-layers')}<span>${a ? a[lang()] : L(['Alle Funktionen', 'All functions'])}</span><b>${n}</b>`;
-    }
-  };
-  if (areaBox) {
-    areaBox.addEventListener('click', e => {
-      const b = e.target.closest('[data-area]');
-      if (!b) return;
-      area = b.dataset.area;
-      renderAreas();
-      filter();
-      const firstFn = cards.find(c => !c.hidden);
-      if (firstFn && (!curCard || (area && curCard.dataset.a !== area))) select(firstFn, { hash: true });
-    });
   }
+  // Readout: gewählte Funktion (Name, Bereich, Prüfstufen, Text der Karte)
+  function renderNow() {
+    const c = curCard; if (!c) return;
+    const a = AREAS[c.dataset.a], same = order.filter(x => x.dataset.a === c.dataset.a);
+    nowBox.style.setProperty('--c', `var(--${a.hue})`);
+    nowBox.innerHTML = `<span class="fnb-k">${ico(a.icon)}<span>${a[lang()]} · ${same.indexOf(c) + 1} / ${same.length}</span></span>`
+      + `<b>${esc(nameOf(c))}</b>${c.dataset.s ? stage(c.dataset.s) : `<span class="tag plan">${L(['ohne Prüfstufe', 'no stages'])}</span>`}<p>${c.querySelector('p')?.innerHTML || ''}</p>`;
+  }
+  // Kopf des Namensstreifens: Bereich + Anzahl, bei Suche/Kreisläufen „Treffer“
+  function renderHead(n) {
+    const a = AREAS[area], wide = onlyLoops || !!q;
+    hubHead.style.setProperty('--c', a && !wide ? `var(--${a.hue})` : 'var(--accent)');
+    hubHead.innerHTML = wide ? `${ico(q ? 'i-search' : 'i-loop')}<span>${L(['Treffer in allen Bereichen', 'Matches in all areas'])}</span><b>${n}</b>`
+      : `${ico(a?.icon || 'i-layers')}<span>${a ? a[lang()] : L(['Alle Funktionen', 'All functions'])}</span><b>${n}</b>`;
+  }
+  band.addEventListener('click', e => {
+    const t = e.target.closest('.tick'); if (t) { cursor = null; select(byId.get(t.dataset.f), { hash: true }); return; }
+    const l = e.target.closest('.grp-l'); if (l) select(order.find(c => c.dataset.a === l.dataset.a && match(c)) || order.find(c => c.dataset.a === l.dataset.a), { hash: true });
+  });
+  // Tastatur: ←/→ Funktion, ↑/↓ Bereich, Pos1/Ende, Enter/Leertaste wählt; der Fokus bleibt auf dem Band
+  band.addEventListener('keydown', e => {
+    const cur = cursor || curCard, i = order.indexOf(cur), keys = Object.keys(AREAS);
+    let next = null;
+    if (e.key === 'ArrowRight') next = order[(i + 1) % order.length];
+    else if (e.key === 'ArrowLeft') next = order[(i - 1 + order.length) % order.length];
+    else if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+      const k = keys[(keys.indexOf(cur.dataset.a) + (e.key === 'ArrowDown' ? 1 : keys.length - 1)) % keys.length];
+      next = order.find(c => c.dataset.a === k);
+    } else if (e.key === 'Home') next = order[0];
+    else if (e.key === 'End') next = order.at(-1);
+    else if ((e.key === 'Enter' || e.key === ' ') && cursor) { e.preventDefault(); const c = cursor; cursor = null; select(c, { hash: true }); return; }
+    if (!next) return;
+    e.preventDefault(); cursor = next; renderBand();
+  });
+  band.addEventListener('blur', () => { if (cursor) { cursor = null; renderBand(); } });
+  new ResizeObserver(() => renderBand()).observe(bandWrap);
   const loopBtn = document.getElementById('only-loops');
   loopBtn.addEventListener('click', () => { onlyLoops = !onlyLoops; loopBtn.setAttribute('aria-pressed', String(onlyLoops)); filter(); });
   const qIn = document.getElementById('q');
@@ -1345,24 +1420,24 @@ const FLOWS = (() => {
   }));
   const count = document.getElementById('count'), empty = document.getElementById('empty');
   function filter() {
-    let n = 0;
+    const wide = onlyLoops || !!q;   // Suche/Kreisläufe: Treffer aller Bereiche im Streifen, sonst der gewählte Bereich
+    let n = 0, hits = 0;
     for (const c of cards) {
-      const ok = (!area || c.dataset.a === area) && (!onlyLoops || isLoop(c)) && (!q || hay.get(c.id).includes(q));
-      c.hidden = !ok; n += ok;
+      const m = match(c), ok = m && (wide || c.dataset.a === area);
+      c.hidden = !ok; n += ok; hits += m;
     }
-    cardsBox.querySelectorAll('.grp-h').forEach(h => { h.hidden = !cards.some(c => !c.hidden && c.dataset.a === h.dataset.a); });
     empty.hidden = n > 0;
-    count.textContent = `${n} / ${cards.length}`;
-    count.setAttribute('aria-label', L([`${n} von ${cards.length} Funktionen`, `${n} of ${cards.length} functions`]));
+    count.textContent = `${hits} / ${cards.length}`;
+    count.setAttribute('aria-label', L([`${hits} von ${cards.length} Funktionen`, `${hits} of ${cards.length} functions`]));
+    renderHead(n); renderBand();
   }
   const resetFilter = (a = '', loops = false) => {
     area = a; onlyLoops = loops; q = ''; if (qIn) qIn.value = ''; if (loopBtn) loopBtn.setAttribute('aria-pressed', String(loops));
-    renderAreas(); filter();
+    filter();
   };
 
   // Ablauf anzeigen: Kopf, Ring (Kreislauf), Flow-Graph, Funktionen dieses Ablaufs
   let graph = null, ring = null, curCard = null;
-  const narrow = matchMedia('(max-width: 1100px)');
   function showFlow(fid, card) {
     const f = FLOWS[fid];
     const kick = document.getElementById('pn-kick');
@@ -1426,11 +1501,10 @@ const FLOWS = (() => {
     // Flow-Graph neu aufbauen (Engine bindet Knöpfe beim Erzeugen)
     graph?.destroy();
     fig.classList.remove('fg-ready');
-    fig.innerHTML = FIG_HTML;
-    fig.querySelector('.fg-bar').dataset.title = L(['Datenfluss', 'Data flow']);
+    fig.innerHTML = figHtml();
     fig.querySelector('figcaption').textContent = L(f.cap || f.t);
     fig.querySelector('.fg-fallback').innerHTML = f.spec.scenarios.map(s => `<li>${esc(L(s.label))}: ${s.steps.map(x => esc(L(x.note))).join(' → ')}</li>`).join('');
-    graph = FlowGraph.create(fig, f.spec, { lang: lang() });
+    graph = FlowGraph.create(fig, f.spec, { lang: lang(), ortho: true, hopMs: 1300, dwellMs: 900 });   // Platine: Paket 1,3 s je Kante + 0,9 s Pause
     // Funktionen dieses Ablaufs
     const same = cards.filter(c => c.dataset.f === fid);
     document.getElementById('pn-fns').hidden = same.length < 2;
@@ -1438,22 +1512,17 @@ const FLOWS = (() => {
   }
   function select(card, opts = {}) {
     if (!card) return;
-    if (card.hidden) {
-      area = card.dataset.a || '';
-      renderAreas();
-      filter();
-    }
+    area = card.dataset.a || area;
     cards.forEach(c => {
       const isSel = c === card;
       c.classList.toggle('sel', isSel);
       c.querySelector('.fn-sel')?.setAttribute('aria-pressed', String(isSel));
     });
     curCard = card;
+    filter(); renderNow();
     showFlow(card.dataset.f, card);
     if (opts.hash) history.replaceState(null, '', `#${card.id}`);
-    if (opts.scroll) {
-      card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    }
+    if (opts.scroll) bandWrap.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
   cardsBox.addEventListener('click', e => {
@@ -1485,14 +1554,7 @@ const FLOWS = (() => {
 
   window.addEventListener('hashchange', () => {
     const c = byId.get(location.hash.slice(1));
-    if (c) {
-      if (c.dataset.a && area !== c.dataset.a) {
-        area = c.dataset.a;
-        renderAreas();
-        filter();
-      }
-      select(c, { scroll: true });
-    }
+    if (c) select(c, { scroll: true });
   });
 
   // Übersicht darüber: Bereichs-Kachel/Ringstück → Liste auf den Bereich gefiltert; Kreislauf-Chip → seinen Ablauf zeigen
@@ -1500,7 +1562,7 @@ const FLOWS = (() => {
     const a = e.target.closest('[data-fa-area]'), lp = e.target.closest('[data-fa-flow]');
     if (!a && !lp) return;
     e.preventDefault();
-    if (a) { resetFilter(a.dataset.faArea); select(cards.find(c => !c.hidden)); box.scrollIntoView(); return; }
+    if (a) { resetFilter(a.dataset.faArea); select(order.find(c => c.dataset.a === a.dataset.faArea)); box.scrollIntoView(); return; }
     resetFilter('', true);
     select(cards.find(c => c.dataset.f === lp.dataset.faFlow), { hash: true });
     box.scrollIntoView();
@@ -1511,21 +1573,11 @@ const FLOWS = (() => {
     if (el.dataset.dePh === undefined) el.dataset.dePh = el.placeholder;
     el.placeholder = lang() === 'en' ? el.dataset.enPh : el.dataset.dePh;
   });
-  new MutationObserver(() => { setPh(); decorate(); renderAreas(); filter(); if (curCard) showFlow(curCard.dataset.f, curCard); })
+  new MutationObserver(() => { setPh(); decorate(); filter(); renderNow(); if (curCard) showFlow(curCard.dataset.f, curCard); })
     .observe(root, { attributes: true, attributeFilter: ['lang'] });
 
   for (const c of cards) if (c.dataset.f && !FLOWS[c.dataset.f]) console.warn('[atlas] Karte mit unbekanntem Ablauf:', c.id, c.dataset.f);
-  setPh(); decorate(); renderAreas(); filter();
+  setPh(); decorate();
   const hashCard = byId.get(location.hash.slice(1));
-  if (hashCard) {
-    if (hashCard.dataset.a) {
-      area = hashCard.dataset.a;
-      renderAreas();
-      filter();
-    }
-    select(hashCard, { scroll: true });
-  } else {
-    const defaultCard = cardsBox.querySelector('.fn[data-default]') || cards.find(c => c.dataset.a === area) || cards[0];
-    select(defaultCard);
-  }
+  select(hashCard || cardsBox.querySelector('.fn[data-default]') || order[0], { scroll: !!hashCard });
 })();
