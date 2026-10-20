@@ -359,8 +359,7 @@ const BUILD = {
     k.add(g, 'box', L.prop2, -fx, 1.15, (fz0 + fz1) / 2, 0.05, 0.05, fz1 - fz0); k.add(g, 'box', L.prop2, fx, 1.15, (fz0 + fz1) / 2, 0.05, 0.05, fz1 - fz0); k.add(g, 'box', L.prop2, 0, 1.15, fz0, 2 * fx, 0.05, 0.05);
     k.add(g, 'box', L.prop, 0, 0.3, -0.6, 1.4, 0.6, 1.2); S.arm = robotArm(k, L, g, 0, -0.8);
     for (let i = 0; i < 3; i++) k.add(g, 'box', [L.ink, L.inkSoft, L.prop2][i], -0.45 + i * 0.3, 0.67, -0.25, 0.14, 0.14, 0.14);
-    // Sicherheitszone fest: E-STOP (rot = Stopp) + Schild Robot | Digital Twin / Robot | Hardware
-    k.add(g, 'box', L.prop2, w / 2 - 0.6, 0.5, d / 2 - 0.7, 0.36, 1.0, 0.36); k.add(g, 'cyl', L.signal.err, w / 2 - 0.6, 1.06, d / 2 - 0.7, 0.3, 0.12, 0.3, 0, { emissive: L.signal.err }); lbl(k, g, [{ t: 'E-STOP', size: 14, weight: 800, mono: true }], w / 2 - 0.6, 1.4, d / 2 - 0.7, 0.2);
+    // Schild Robot | Digital Twin / Robot | Hardware (nur Anzeige); kein E-STOP im Büro – es bewegt nie einen Roboter (Wahl des Users 2026-10-20)
     S.modeSign = lbl(k, g, [{ t: 'Robot | Digital Twin', size: 20 }, { t: 'Domain 94 · grasp_e2e.py', size: 14, weight: 500, mono: true }], 0, 2.3, -0.8, 0.42);
     S.work.push([-0.4, d / 2 - 0.6, PI], [0.9, d / 2 - 0.8, PI]);
   },

@@ -30,9 +30,10 @@ export function createShell(ctx) {
   const { S, W, D, V, levels, live, camera, renderer, walkYou, hilite = () => {}, sim = { paused: false, speed: 1 }, anchor = () => null, world = () => {} } = ctx;
   let shell = V.shell; const st = levels.state, memo = { station: null, item: null }, combo = !!V.combo;
   // Kombination (Variante K): Darstellung + Schalter je Betrachter (Browser-Speicher), URL-Parameter gehen vor (Aufnahmen)
-  const prefs = { view: 'card', follow: true, band: false, lotse: false, speed: 1, cam: 'ruhig', welt: true };
+  // pv 2 (2026-10-20): „band“ ist jetzt die Phasen-Zeile im Haus (Haus:B), Standard an – alter gespeicherter Wert gilt nicht mehr
+  const prefs = { view: 'card', follow: true, band: true, lotse: false, speed: 1, cam: 'ruhig', welt: true, pv: 2 };
   if (combo) {
-    try { Object.assign(prefs, JSON.parse(localStorage.getItem('buero.prefs') || '{}')); } catch { /* privat/gesperrt: Standard */ }
+    try { const p = JSON.parse(localStorage.getItem('buero.prefs') || '{}'); if (p.pv !== 2) delete p.band; Object.assign(prefs, p, { pv: 2 }); } catch { /* privat/gesperrt: Standard */ }
     const Q = new URLSearchParams(location.search);
     if (['card', 'stack', 'miller', 'guide'].includes(Q.get('view'))) prefs.view = Q.get('view');
     ['follow', 'band', 'lotse', 'welt'].forEach(k => { if (Q.has(k)) prefs[k] = Q.get(k) === '1'; });
@@ -44,25 +45,27 @@ export function createShell(ctx) {
   const savePrefs = () => { try { localStorage.setItem('buero.prefs', JSON.stringify(prefs)); } catch { /* egal */ } };
   let placed = false, side = null;   // Karte (B) einmal gesetzt, wenn „Karte folgt“ aus ist; side = Seite der Karte neben dem Ziel
   let tour = -1, lastWait = 0;
+  let fold = { all: false, about: false }, mobOpen = false;   // Bereichskarte: eingeklappte Teile · Handy: Panel nur als Zeile, bis „Details ▴“
   const reducedUi = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const narrowNow = () => innerWidth <= 760;
   const el = document.createElement('div'); el.id = 'v3';
   el.innerHTML = `
   <svg id="lead" aria-hidden="true"><line id="lead-l"></line></svg>
   <header id="bar" class="c3">
     <div class="brand"><b>Agenten-Büro</b><span id="src" class="badge">Demo-Daten</span></div>
     <nav id="crumbs" aria-label="Wo du bist"></nav>
+    <button id="ask" hidden></button>
     <ol id="steps" aria-label="Zoom-Ebenen"><li data-l="1"><button data-level="1">Haus</button></li><li data-l="2"><button data-level="2">Bereich</button></li><li data-l="3"><span>Detail</span></li></ol>
     <button id="play" class="tb" aria-pressed="false" aria-label="Simulation anhalten (Leertaste)" title="Pause (Leertaste)"><svg class="pi" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 2.5h3v11H4zM9 2.5h3v11H9z"/></svg><span class="tl">Pause</span></button>
     <button id="find" class="tb" hidden aria-label="Suchen (Taste /)" title="Suchen (Taste /)"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5l3.5 3.5"/></svg><span class="tl">Suchen</span><kbd>/</kbd></button>
     <button id="view-btn" class="tb" hidden aria-haspopup="true" aria-expanded="false" aria-controls="viewmenu" title="Ansicht: Darstellung, Kamera, Schalter"><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="2" y="2.5" width="12" height="11" rx="1.5"/><path d="M6 2.5v11M6 7h8"/></svg><span class="tl">Ansicht</span></button>
     <button id="theme" class="tb" aria-pressed="false"><span aria-hidden="true">☾</span><span class="tl">Nacht</span></button>
-    <button id="wait" class="wait" hidden></button>
-    <div id="safe" title="Sicherheitszone: immer an dieser Stelle"><span class="estop">E-STOP</span><span id="mode">Robot | Digital Twin</span></div>
+    <div id="safe" title="Betriebsart des Roboters – nur Anzeige, das Büro bewegt nie einen Roboter"><span id="mode">Robot | Digital Twin</span></div>
   </header>
   <div id="cmd" hidden><label class="cmd-box"><span class="cmd-ic" aria-hidden="true">⌕</span><input id="cmd-in" type="search" placeholder="Wohin? Bereich, Agent, Skill, Chat …" autocomplete="off" aria-label="Wohin"><kbd>/</kbd></label><ul id="cmd-res" role="listbox"></ul></div>
   <div id="viewmenu" class="c3" hidden role="dialog" aria-label="Ansicht"></div>
   <section id="panel" class="c3" aria-live="polite"></section>
-  <section id="band" class="c3" hidden aria-label="Phasen-Band"></section>
+  <div id="dock"><section id="ticker" class="c3" hidden aria-label="Offene Rückfrage" aria-live="polite"></section><section id="band" class="c3" hidden aria-label="Phasen-Band"></section></div>
   <div id="pin" hidden></div>
   <div id="tags"></div>
   <aside id="guide" class="c3" hidden><canvas id="guide-face" width="168" height="168" aria-hidden="true"></canvas><div class="g-body"><p class="g-name">Kubi · dein Lotse</p><p id="guide-text"></p><div class="g-act" id="guide-act"></div></div></aside>`;
@@ -82,8 +85,11 @@ export function createShell(ctx) {
     const k = (v, t, at, hot) => `<li${hot ? ' class="hot"' : ''}><button ${at}><b>${v}</b><span>${t}</span></button></li>`;
     return `<ul class="kpis">${k(n, 'Chats aktiv', 'data-station="doors"')}${k(S.ex.length, 'warten auf dich', w ? `data-item="chat:${esc(w.chat.id)}" data-from="${w.chat.a.station || 'doors'}"` : 'data-station="doors"', S.ex.length)}${k(S.stats.done, 'erledigt', 'data-station="tresen"')}${k(S.stats.commits, 'Commits', 'data-station="post"')}</ul>`;
   };
+  const exIc = e => e.kind === 'approve' ? '🔒' : e.kind === 'preview' ? '🖼️' : '❓';
+  const exAt = e => `data-item="chat:${esc(e.chat.id)}" data-from="${e.chat.a.station || 'doors'}"`;
+  // Kombination: offene Rückfragen stehen in Kopfleiste + Laufzeile unten (Kopf:C, Frage:B), nicht zusätzlich in den Panels
   const waitList = (calm = true) => S.ex.length
-    ? `<ul class="waits">${S.ex.map(e => `<li><button class="w" data-item="chat:${esc(e.chat.id)}"><span class="w-ic">${e.kind === 'approve' ? '🔒' : e.kind === 'preview' ? '🖼️' : '❓'}</span><span class="w-t"><b>${esc(e.question)}</b><small>${esc(e.chat.id)} · ${esc(e.chat.tool)}</small></span><span class="go">Antworten ›</span></button></li>`).join('')}</ul>`
+    ? combo ? '' : `<ul class="waits">${S.ex.map(e => `<li><button class="w" data-item="chat:${esc(e.chat.id)}"><span class="w-ic">${exIc(e)}</span><span class="w-t"><b>${esc(e.question)}</b><small>${esc(e.chat.id)} · ${esc(e.chat.tool)}</small></span><span class="go">Antworten ›</span></button></li>`).join('')}</ul>`
     : calm ? `<p class="calm">✓ Nichts wartet auf dich – ${S.chats.filter(c => c.alive).length} Chats arbeiten.</p>` : '';
   const stationChip = id => `<button class="chip st" data-station="${id}"><span class="ci" style="--ph:${PHASE_COLOR[STATIONS[id].phase]}">${ICON[id]}</span>${esc(STATIONS[id].name)}</button>`;
   const chatChip = c => `<button class="chip ch${exOf(c) ? ' hot' : ''}" data-item="chat:${esc(c.id)}"><span class="tdot" style="--tc:${CUBE[c.tool].body}"></span>${esc(c.id)}${exOf(c) ? ' ❓' : ''}</button>`;
@@ -159,7 +165,7 @@ export function createShell(ctx) {
     return head(`<span class="temb lg" style="--tc:${CUBE[c.tool].body}">${TOOL[c.tool].emblem}</span>`, `${c.tool} · Chat · ${real ? 'live' : 'Demo'}`, c.id, real && c.title ? c.title : `[${o.prefix}] ${o.title}`)
       + `<div class="tags"><span class="tag">${R ? esc(R.icon + ' ' + R.name) : '🚪 Chat-Start'}</span><span class="tag">[${esc(o.prefix)}]</span>${real ? '<span class="tag live">live</span>' : '<span class="tag">Demo</span>'}</div>`
       + weg(c)
-      + (ex ? `<div class="askbox"><p class="q">❓ ${esc(ex.question)}</p><div class="acts">${ex.choices.map(ch => `<button class="b ask" data-choice="${ex.id}|${esc(ch)}">${esc(ch)}</button>`).join('')}</div><p class="note">Deine Auswahl ist die Antwort – der Chat arbeitet direkt weiter.</p></div>` : '')
+      + (ex && !inTicker(ex) ? `<div class="askbox"><p class="q">❓ ${esc(ex.question)}</p><div class="acts">${ex.choices.map(ch => `<button class="b ask" data-choice="${ex.id}|${esc(ch)}">${esc(ch)}</button>`).join('')}</div><p class="note">Deine Auswahl ist die Antwort – der Chat arbeitet direkt weiter.</p></div>` : '')
       + `<h4 class="mh">Verlauf <span class="cnt">${real ? (h ? (h.m ? 'echt · Claude Ops' : 'Claude Ops nicht erreichbar · Demo') : 'lädt …') : 'Demo'}</span></h4><ul class="msgs">${msgs.slice(-6).map(m => `<li class="${m.role}"><small>${esc(who(m))}</small>${esc(m.text)}</li>`).join('')}</ul>`
       + `<div class="send"><input id="msg-in" type="text" placeholder="Nachricht an ${esc(c.id)} …" maxlength="2000" aria-label="Nachricht an ${esc(c.id)}"><button class="b primary" data-send="${esc(c.id)}">Senden</button></div>`
       + `<p class="note" id="send-note">${esc(sendNote(c))}</p>`
@@ -193,12 +199,56 @@ export function createShell(ctx) {
     if (inp) inp.value = '';
     render(false);
   }
-  // Hauptaktion eines Bereichs: am Tresen Auftrag geben, sonst Rückfrage eines Chats hier beantworten
-  const action = id => {
-    if (id === 'tresen') return orderForm();
-    const w = S.ex.find(e => e.chat.a.station === id);
-    return w ? `<button class="b ask xl" data-item="chat:${esc(w.chat.id)}">❓ ${esc(w.chat.id)} fragt: ${esc(w.question)} <span aria-hidden="true">›</span></button>` : '';
-  };
+  // Hauptaktion eines Bereichs (Kombination): am Tresen Auftrag geben; Rückfragen beantwortest du in Kopfleiste + Laufzeile
+  const action = id => id === 'tresen' ? orderForm() : '';
+  const inTicker = e => combo && !narrowNow() && e === S.ex[0];   // steht schon in der Laufzeile unten → im Chat nicht doppelt
+
+  // ───────── Bereichskarte (Karte:C): Phasen-Ring + Name, größter Knopf = zu dem fliegen, der gerade hier arbeitet; Liste + Erklärung eingeklappt
+  const pt = (c, r, a) => [c + r * Math.sin(a * Math.PI / 180), c - r * Math.cos(a * Math.PI / 180)];
+  const arc = (c, r0, r1, a0, a1) => { const [x0, y0] = pt(c, r1, a0), [x1, y1] = pt(c, r1, a1), [x2, y2] = pt(c, r0, a1), [x3, y3] = pt(c, r0, a0); return `M${x0.toFixed(1)} ${y0.toFixed(1)}A${r1} ${r1} 0 0 1 ${x1.toFixed(1)} ${y1.toFixed(1)}L${x2.toFixed(1)} ${y2.toFixed(1)}A${r0} ${r0} 0 0 0 ${x3.toFixed(1)} ${y3.toFixed(1)}Z`; };
+  const ring = (ph, s = 52, w = 9) => { const c = s / 2, r1 = c - 2, r0 = r1 - w;
+    return `<svg class="ring" width="${s}" height="${s}" viewBox="0 0 ${s} ${s}" aria-hidden="true">${PHASES.map((p, i) => `<path d="${arc(c, p.id === ph ? r0 - 4 : r0, r1, i * 72 + 3, (i + 1) * 72 - 3)}" fill="${PHASE_COLOR[p.id]}" opacity="${p.id === ph ? 1 : 0.45}"/>`).join('')}</svg>`; };
+  // wer gerade in diesem Bereich arbeitet: in der Agentur die gerufenen Subagenten (Simulation), sonst die Chats vor Ort
+  function nowHere(id) {
+    if (id === 'agents') {
+      const seen = new Set();
+      return S.subs.filter(s => !s.done && !seen.has(s.A.id) && seen.add(s.A.id)).map(s => ({ item: `agent:${s.A.id}`, title: s.A.id, meta: `${s.A.model} · gerufen von ${s.caller.id || s.caller.name || 'Chat'}`, dot: (CUBE[s.A.model] || {}).body, demo: true }));
+    }
+    return S.chats.filter(c => c.alive && c.a.station === id).map(c => ({ item: `chat:${c.id}`, title: c.id, meta: `${c.tool} · ${c.role ? WF.ROLES[c.role].name : 'Chat-Start'}`, dot: CUBE[c.tool].body, hot: !!exOf(c), demo: !isLive(c) }));
+  }
+  function areaCard(id) {
+    const p = phaseOf(id), n = itemsOf(id, D, S).length, now = nowHere(id), all = fold.all;
+    const foldBtn = (k, label, open) => `<button class="fold" data-fold="${k}" aria-expanded="${open}"><b>${esc(label)}</b><span aria-hidden="true">${open ? '▴' : k === 'all' ? '▾' : '▸'}</span></button>`;
+    return `<header class="head">${ring(p.id)}<div class="ht"><h2>${esc(STATIONS[id].name)}</h2><p class="sub">Phase ${p.n} · ${esc(p.name)} · ${n} ${esc(LIST[id].split(',')[0])}</p></div>${stepNav(id)}</header>`
+      + action(id)
+      + (now.length ? `<button class="b primary xl fly" data-item="${esc(now[0].item)}" data-from="${id}">▶ Zu ${esc(now[0].title)} fliegen</button>`
+        + `<h4 class="mh">${id === 'agents' ? 'Gerade gerufen' : 'Gerade hier'}${now.every(x => x.demo) ? ' <span class="cnt">Demo</span>' : ''}</h4><ul class="rows">${now.slice(0, 4).map(x => `<li><button class="row${x.hot ? ' hot' : ''}" data-item="${esc(x.item)}" data-from="${id}"><span class="r-t">${x.dot ? `<span class="dot" style="--tc:${x.dot}"></span>` : ''}<span>${esc(x.title)}${x.hot ? ' ❓' : ''}</span></span><span class="r-m">${esc(x.meta)}</span><span class="r-go" aria-hidden="true">›</span></button></li>`).join('')}</ul>`
+        : id === 'tresen' ? '' : `<p class="calm">${id === 'agents' ? 'Gerade ruft kein Chat einen Subagenten.' : 'Gerade arbeitet hier kein Chat.'}</p>`)
+      + foldBtn('all', `Alle ${n} ${LIST[id].split(',')[0]}`, all) + (all ? `<div class="fold-b">${rows(id)}</div>` : '')
+      + foldBtn('about', 'Was ist das?', fold.about) + (fold.about ? `<div class="fold-b">${track(p.id)}${about(id, true)}${legend(id)}${stepsHere(id)}</div>` : '');
+  }
+
+  // ───────── Laufzeile unten (Frage:B): erste offene Rückfrage mit Antwort-Knöpfen · Handy (Mobil:C): großer gelber Knopf
+  function ticker() {
+    const e = S.ex[0], n = S.ex.length;
+    if (narrowNow()) return `<button class="mob-ask" ${exAt(e)} data-open="1"><span class="aq-ic" aria-hidden="true">${exIc(e)}</span><span class="aq-t"><b>${n} ${n === 1 ? 'Rückfrage' : 'Rückfragen'} beantworten</b><small>${esc(e.question)}</small></span><span class="go" aria-hidden="true">›</span></button>`;
+    return `<span class="yb">${exIc(e)} ${n} ${n === 1 ? 'wartet' : 'warten'}</span><span class="aq-t"><b>${esc(e.question)}</b><small>${esc(e.chat.id)} · ${esc(e.chat.tool)}${isLive(e.chat) ? '' : ' · Demo'}</small></span>`
+      + `<div class="tk-acts">${e.choices.map(ch => `<button class="b" data-choice="${e.id}|${esc(ch)}">${esc(ch)}</button>`).join('')}<button class="b primary" ${exAt(e)} data-write="1">Antwort schreiben ›</button></div>`;
+  }
+  // Phasen-Zeile im Haus (Haus:B): Soll links, 5 Phasen (Klick → erster Bereich der Phase), Phase mit Rückfrage markiert, Ist rechts
+  function phaseBand() {
+    const alive = S.chats.filter(c => c.alive).length, exIn = ph => S.ex.filter(e => phaseOfStep(e.chat.step || 1) === ph);
+    return `<p class="pb-end"><small>Soll</small><b>Auftrag abliefern</b></p><ol class="pb">${PHASES.map(p => { const w = exIn(p.id);
+      return `<li class="${w.length ? 'hot' : ''}" style="--ph:${PHASE_COLOR[p.id]}"><button class="pb-b" data-station="${byPhase(p.id)[0]}" title="${esc(p.name)}: ${esc(byPhase(p.id).map(id => STATIONS[id].name).join(' · '))}"><span class="pd"></span><b>${p.n} ${esc(p.name)}</b></button>${w.length ? `<button class="yb" ${exAt(w[0])} aria-label="${w.length} Rückfrage in Phase ${esc(p.name)} beantworten">❓ ${w.length} wartet</button>` : ''}</li>`; }).join('')}</ol>`
+      + `<p class="pb-end ist"><small>Ist</small><b>${alive} aktiv · ${S.stats.done} erledigt</b></p>`;
+  }
+  // Handy: Panel als eine Zeile (Bereich bzw. Eintrag + „Details ▴“), aufgeklappt mit „Weniger ▾“ oben
+  function peekRow() {
+    const s = st.station, it = st.item, p = phaseOf(s);
+    const [ic, title, sub] = st.level === 3 && it ? [it.type === 'chat' ? '💬' : detailOf(it.type, it.id, D, S).icon, titleOf(it), it.type === 'chat' ? `Chat · ${(chatOf(it.id) || {}).tool || 'fertig'}` : detailOf(it.type, it.id, D, S).kick]
+      : [ICON[s], STATIONS[s].name, `${itemsOf(s, D, S).length} ${LIST[s].split(',')[0]} · Phase ${p.n} ${p.name}`];
+    return `<div class="peek"><span class="hi" style="--ph:${PHASE_COLOR[p.id]}">${ic}</span><p class="pk-t"><b>${esc(title)}</b><small>${esc(sub)}</small></p><button class="b" data-peek="1" aria-expanded="false">Details ▴</button></div>`;
+  }
   const homeBlock = () => head('🏢', 'Ebene 1 · Haus', 'Dein Büro', 'Klick einen Bereich an – die Kamera fliegt hin') + kpis() + waitList() + flow(true) + toolLegend() + logBlock(() => true, 'Zuletzt im Büro', 4);
 
   // ───────── Formen je Variante
@@ -258,8 +308,12 @@ export function createShell(ctx) {
     if (it) cr.push(`<span class="sep" aria-hidden="true">›</span><span class="cur">${esc(titleOf(it))}</span>`);
     $('#crumbs').innerHTML = cr.join('');
     el.querySelectorAll('#steps li').forEach(li => { const n = +li.dataset.l; li.classList.toggle('on', n === l); li.classList.toggle('done', n < l); });
-    const w = $('#wait'), n = S.ex.length; w.hidden = !n;
-    if (n) { w.innerHTML = `❓ ${n} ${n === 1 ? 'wartet' : 'warten'}<span class="w3"> auf dich</span>`; w.dataset.item = `chat:${S.ex[0].chat.id}`; w.dataset.from = S.ex[0].chat.a.station || 'doors'; }
+    // Kopf:C – erste offene Rückfrage als großer gelber Knopf (Frage · Chat · „Antworten ›“); ohne Rückfrage kein Knopf
+    const w = $('#ask'), n = S.ex.length, e = S.ex[0]; w.hidden = !n;
+    if (n) {
+      setHtml(w, `<span class="aq-ic" aria-hidden="true">${exIc(e)}</span><span class="aq-t"><b>${esc(e.question)}</b><small>${esc(e.chat.id)} · ${esc(e.chat.tool)}${n > 1 ? ` · ${n} warten` : ''}</small></span><span class="go">Antworten ›</span>`);
+      w.dataset.item = `chat:${e.chat.id}`; w.dataset.from = e.chat.a.station || 'doors'; w.title = e.question;
+    }
     if (n > lastWait && !reducedUi) { w.classList.remove('bump'); void w.offsetWidth; w.classList.add('bump'); } lastWait = n;
     $('#mode').textContent = S.hardware ? 'Robot | Hardware' : 'Robot | Digital Twin'; $('#safe').classList.toggle('hw', !!S.hardware);
     const src = $('#src'); src.textContent = live.ok ? `Live · ${live.n} ${live.n === 1 ? 'Chat' : 'Chats'}` : 'Demo-Daten'; src.className = 'badge' + (live.ok ? ' live' : '');
@@ -268,12 +322,17 @@ export function createShell(ctx) {
   // ───────── Rendern
   function body() {
     const l = st.level;
+    // Handy (Mobil:C, Kombination): Bereich/Eintrag erst als eine Zeile, „Details ▴“ klappt das Panel auf
+    if (combo && narrowNow() && l > 1) return mobOpen ? `<div class="peek-x"><button class="b" data-peek="0" aria-expanded="true">Weniger ▾</button></div>` + inner(l) : peekRow();
+    return inner(l);
+  }
+  function inner(l) {
     if (shell === 'stack') return stackHtml();
     if (shell === 'miller') return millerHtml();
     if (shell === 'kanban') return l === 1 ? kanbanHtml() : l === 2 ? stationBlock(st.station, true) : `<div class="explain"><p><b>Detail:</b> alles zu diesem Eintrag. Verknüpfte Einträge fliegen mit einem Klick hin, Esc geht zurück.</p></div>` + detailBlock(st.item);
     if (shell === 'cmd') return l === 1 ? cmdHome() : l === 2 ? stationBlock(st.station) : detailBlock(st.item);
-    if (combo) {   // Kombination: Erklärung (D) + „Zuletzt“ (A) in jeder Darstellung
-      if (shell === 'card') return l === 1 ? cardHome() : l === 2 ? stationBlock(st.station, true) + logHere() : detailBlock(st.item) + logItem();
+    if (combo) {   // Kombination: Erklärung (D) + „Zuletzt“ (A) in jeder Darstellung; Karte: Haus ohne Karte (Haus:B), Bereich als kompakte Karte (Karte:C)
+      if (shell === 'card') return l === 1 ? '' : l === 2 ? areaCard(st.station) : detailBlock(st.item) + logItem();
       return l === 1 ? homeBlock() : l === 2 ? stationBlock(st.station, true) + logHere() : detailBlock(st.item) + logItem();
     }
     if (shell === 'card') return l === 1 ? cardHome() : l === 2 ? stationBlock(st.station) : detailBlock(st.item);
@@ -291,7 +350,8 @@ export function createShell(ctx) {
   function render(nav = true) {
     const keep = panel.scrollTop, inner = el.querySelector('.lv.open .lv-b, .col.cur .col-b'), keepIn = inner ? inner.scrollTop : 0;
     panel.dataset.level = st.level; document.documentElement.dataset.level = st.level;
-    const changed = setHtml(panel, body(), true);
+    const html = body(), changed = setHtml(panel, html, true);
+    panel.hidden = !html; panel.classList.toggle('peeked', combo && narrowNow() && st.level > 1 && !mobOpen);
     if (nav) { panel.scrollTop = 0; panel.classList.add('fade'); requestAnimationFrame(() => requestAnimationFrame(() => panel.classList.remove('fade'))); hov(null); }
     else if (changed) { panel.scrollTop = keep; const n = el.querySelector('.lv.open .lv-b, .col.cur .col-b'); if (n) n.scrollTop = keepIn; }
     if (nav) { placed = false; side = null; }
@@ -299,38 +359,55 @@ export function createShell(ctx) {
     const showGuide = combo ? prefs.lotse || tour >= 0 : shell === 'guide';
     $('#guide').hidden = !showGuide; if (showGuide) guideRender();
     if (shell === 'cmd') $('#cmd').hidden = false;
-    if (shell === 'card') tags(); else $('#tags').innerHTML = '';
-    const bandOn = combo && prefs.band && st.level === 1 && shell !== 'miller', band = $('#band');
-    band.hidden = !bandOn; document.documentElement.classList.toggle('band-on', bandOn); if (bandOn) setHtml(band, kanbanHtml());
-    bar(); signs(); remeasure();   // Ebene, Blase, Band, Schilder können Lage und Größe geändert haben
+    if (shell === 'card') tags(); else setHtml($('#tags'), '');
+    // Dock unten (Fluss, nie überlappend): Laufzeile mit Rückfrage über der Phasen-Zeile; Panels, Blase und Schilder halten Abstand (--dock)
+    const tk = $('#ticker'), tkOn = combo && S.ex.length > 0; tk.hidden = !tkOn; tk.classList.toggle('mob', narrowNow()); if (tkOn) setHtml(tk, ticker());
+    const bandOn = combo && prefs.band && st.level === 1 && shell !== 'miller' && !narrowNow(), band = $('#band');
+    band.hidden = !bandOn; if (bandOn) setHtml(band, phaseBand());
+    syncDock(); bar(); signs(); remeasure();   // Ebene, Blase, Band, Schilder können Lage und Größe geändert haben
   }
+  const dock = $('#dock');
+  function syncDock() { const h = dock.offsetHeight; el.style.setProperty('--dock', h ? h + 10 + 'px' : '0px'); }
+  new ResizeObserver(() => { syncDock(); remeasure(); }).observe(dock);
+  let wasNarrow = narrowNow();
+  addEventListener('resize', () => { if (narrowNow() !== wasNarrow) { wasNarrow = narrowNow(); render(false); } });   // Handy ↔ breit: Laufzeile, Panel-Zeile, Band tauschen
   // Schilder über den Bereichen (Haus): als 3D-Schild, außer in der Kartenansicht am breiten Bildschirm (dort HTML-Schilder, klickbar)
   function signs() { const narrow = innerWidth <= 760; W.st.forEach(Z => { if (Z.sign1) Z.sign1.visible = st.level === 1 && (shell !== 'card' || narrow); }); }
+  // Schild:C – Bereich mit offener Rückfrage groß und gelb („· n wartet · Antworten ›“, Klick springt zur Antwort), übrige Schilder klein
   function tags() {
-    const t = $('#tags'); if (st.level !== 1) { t.innerHTML = ''; return; }
-    if (!t.children.length) t.innerHTML = Object.keys(STATIONS).map(id => `<button class="t3" data-station="${id}" data-a="${id}"><span class="ci" style="--ph:${PHASE_COLOR[STATIONS[id].phase]}">${ICON[id]}</span>${esc(STATIONS[id].name)}</button>`).join('');
+    const t = $('#tags'); if (st.level !== 1) { setHtml(t, ''); return; }
+    const hot = new Map(); S.ex.forEach(e => { const s = e.chat.a.station || 'doors'; hot.set(s, [...(hot.get(s) || []), e]); });
+    setHtml(t, Object.keys(STATIONS).map(id => { const ci = `<span class="ci" style="--ph:${PHASE_COLOR[STATIONS[id].phase]}">${ICON[id]}</span>`, h = hot.get(id);
+      return h ? `<button class="t3 hot" ${exAt(h[0])} data-a="${id}" aria-label="${esc(STATIONS[id].name)}: ${h.length} wartet – antworten">${ci}<b>${esc(STATIONS[id].name)}</b><span>· ${h.length} wartet</span><span class="go">Antworten ›</span></button>`
+        : `<button class="t3" data-station="${id}" data-a="${id}">${ci}${esc(STATIONS[id].name)}</button>`; }).join(''));
   }
   // Szene in die freie Fläche schieben (Anteil der Bildbreite/-höhe)
   function pads() {
     const narrow = innerWidth <= 760, l = st.level, p = levels.pad;
     if (narrow) { p.x = 0; p.y = 0.2; signs(); return; }
     // x > 0 schiebt die Szene nach links (Platz rechts), y > 0 nach oben; Karte (B) steht rechts neben dem Ziel → Szene nach links
-    const R = { guide: [0.15, 0], stack: [-0.15, 0], miller: [0, 0.18], kanban: l === 1 ? [0, 0.16] : [0.15, 0], cmd: l === 1 ? [0, 0] : [0.12, 0], card: l === 1 ? [-0.12, -0.05] : [0.12, 0] }[shell];
-    p.x = R[0]; p.y = R[1] + (combo && prefs.band && l === 1 && shell !== 'miller' ? 0.15 : 0);
+    const R = { guide: [0.15, 0], stack: [-0.15, 0], miller: [0, 0.18], kanban: l === 1 ? [0, 0.16] : [0.15, 0], cmd: l === 1 ? [0, 0] : [0.12, 0], card: l === 1 ? (combo ? [0, 0] : [-0.12, -0.05]) : [0.12, 0] }[shell];
+    p.x = R[0]; p.y = R[1] + (combo && prefs.band && l === 1 && shell !== 'miller' ? 0.05 : 0);   // Phasen-Zeile unten ≈ 1/10 der Höhe
     signs();
   }
   // ───────── Ansicht-Menü (Kombination): Darstellung wählen, Schalter, Tour
-  const VIEWS = [['card', 'Karte am Objekt', 'Info steht neben dem, was du anklickst'], ['stack', 'Stapel links', 'Haus, Bereich und Detail untereinander, einer offen'],
-    ['miller', 'Spalten unten', 'alle drei Ebenen nebeneinander'], ['guide', 'Schublade rechts', 'feste Spalte rechts, viel Platz für Listen']];
-  const CAMS = [['ruhig', 'Ruhig mitgehen', 'Blickrichtung wie im Haus, dreht nie von selbst'], ['schulter', 'Über die Schulter', 'hinter der Figur, Weg voraus im Blick'],
-    ['regie', 'Regie: Figur + Ziel', 'filmt von der Seite, zeigt wohin sie geht']];
-  const SWITCHES = [['follow', 'Karte folgt dem Objekt', 'aus: die Karte bleibt stehen, nur der Punkt folgt'], ['band', 'Phasen-Band im Haus', 'fünf Spalten von Beauftragen bis Abliefern'], ['lotse', 'Lotse Kubi', 'erklärt jede Ebene in einem Satz'], ['welt', 'Umgebung', 'Park rund ums Büro · aus: leere Fläche, spart Rechenzeit']];
+  // Ansicht:A – kompakt: Segment-Knöpfe für Infos und Kamera, Kippschalter; Erklärung beim Zeigen (title + Hinweiszeile unten)
+  const VIEWS = [['card', 'Karte', 'Karte am Objekt: Info steht neben dem, was du anklickst'], ['stack', 'Stapel', 'Stapel links: Haus, Bereich und Detail untereinander, einer offen'],
+    ['miller', 'Spalten', 'Spalten unten: alle drei Ebenen nebeneinander'], ['guide', 'Schublade', 'Schublade rechts: feste Spalte, viel Platz für Listen']];
+  const CAMS = [['ruhig', 'Ruhig', 'Ruhig mitgehen: Blickrichtung wie im Haus, dreht nie von selbst'], ['schulter', 'Schulter', 'Über die Schulter: hinter der Figur, Weg voraus im Blick'],
+    ['regie', 'Regie', 'Regie: filmt Figur und Ziel von der Seite, zeigt wohin sie geht']];
+  const SWITCHES = [['follow', 'Karte folgt', 'Karte folgt dem Objekt · aus: die Karte bleibt stehen, nur der Punkt folgt (nur Ansicht Karte)'], ['band', 'Phasen-Band', 'Phasen-Zeile unten im Haus: Soll, fünf Phasen, Ist'],
+    ['lotse', 'Lotse Kubi', 'Lotse Kubi erklärt jede Ebene in einem Satz'], ['welt', 'Umgebung', 'Park rund ums Büro · aus: leere Fläche, spart Rechenzeit']];
+  const VM_TIP = 'Zeig auf einen Knopf – hier steht, was er tut.';
   function viewMenu() {
-    $('#viewmenu').innerHTML = `<p class="vm-h">Darstellung der Infos</p>${VIEWS.map(([k, t, s]) => `<label class="vm-o"><input type="radio" name="view" value="${k}"${prefs.view === k ? ' checked' : ''}><span><b>${t}</b><small>${s}</small></span></label>`).join('')}`
-      + `<p class="vm-h">Kamera beim Folgen einer Figur</p>${CAMS.map(([k, t, s]) => `<label class="vm-o"><input type="radio" name="cam" value="${k}"${prefs.cam === k ? ' checked' : ''}><span><b>${t}</b><small>${s}</small></span></label>`).join('')}`
-      + `<p class="vm-h">Schalter</p>${SWITCHES.map(([k, t, s]) => `<label class="vm-o"><input type="checkbox" data-pref="${k}"${prefs[k] ? ' checked' : ''}${k === 'follow' && prefs.view !== 'card' ? ' disabled' : ''}><span><b>${t}</b><small>${s}</small></span></label>`).join('')}`
-      + `<p class="vm-h">Tempo der Simulation</p><div class="seg" role="radiogroup" aria-label="Tempo">${[[0.5, '½×'], [1, '1×'], [2, '2×'], [4, '4×']].map(([v, t]) => `<label class="sg"><input type="radio" name="speed" value="${v}"${prefs.speed === v ? ' checked' : ''}><span>${t}</span></label>`).join('')}</div>`
-      + `<div class="acts"><button class="b primary" data-tour="0">▶ Tour „Erster Arbeitstag“</button></div>`;
+    const m = $('#viewmenu'), a = document.activeElement, keep = m.contains(a) && a.name ? `input[name="${a.name}"]${a.type === 'radio' ? `[value="${a.value}"]` : ''}` : m.contains(a) && a.dataset.pref ? `input[data-pref="${a.dataset.pref}"]` : '';
+    const seg = (name, list, cur, label) => `<div class="seg vm-seg" role="radiogroup" aria-label="${label}">${list.map(([k, t, s]) => `<label class="sg" title="${esc(s)}" data-tip="${esc(s)}"><input type="radio" name="${name}" value="${k}"${cur === k ? ' checked' : ''}><span>${t}</span></label>`).join('')}</div>`;
+    m.innerHTML = `<p class="vm-h">Infos</p>${seg('view', VIEWS, prefs.view, 'Darstellung der Infos')}`
+      + `<p class="vm-h">Kamera beim Folgen</p>${seg('cam', CAMS, prefs.cam, 'Kamera beim Folgen einer Figur')}`
+      + `<p class="vm-h">Schalter</p><div class="tgs">${SWITCHES.map(([k, t, s]) => `<label class="tg" title="${esc(s)}" data-tip="${esc(s)}"><input type="checkbox" role="switch" data-pref="${k}"${prefs[k] ? ' checked' : ''}${k === 'follow' && prefs.view !== 'card' ? ' disabled' : ''}><i aria-hidden="true"></i><span>${t}</span></label>`).join('')}</div>`
+      + `<p class="vm-h">Tempo der Simulation</p>${seg('speed', [[0.5, '½×', 'halbe Geschwindigkeit'], [1, '1×', 'normale Geschwindigkeit'], [2, '2×', 'doppelte Geschwindigkeit'], [4, '4×', 'vierfache Geschwindigkeit']], prefs.speed, 'Tempo')}`
+      + `<p class="vm-tip" id="vm-tip">${VM_TIP}</p><div class="acts"><button class="b primary" data-tour="0">▶ Tour „Erster Arbeitstag“</button></div>`;
+    if (keep) m.querySelector(keep)?.focus();   // Neuaufbau nach einer Wahl: Tastatur-Fokus bleibt auf dem Knopf
   }
   function setView(v) { prefs.view = v; shell = v; document.documentElement.dataset.shell = v; savePrefs(); viewMenu(); pads(); render(true); }
   function setPref(k, on) { prefs[k] = on; if (k === 'welt') world(on); savePrefs(); viewMenu(); pads(); render(false); }
@@ -350,6 +427,8 @@ export function createShell(ctx) {
     $('#find').addEventListener('click', openFind);
     $('#view-btn').addEventListener('click', () => openMenu($('#viewmenu').hidden));
     $('#viewmenu').addEventListener('change', e => { const i = e.target; if (i.name === 'view') setView(i.value); else if (i.name === 'cam') { prefs.cam = i.value; levels.setCam(i.value); savePrefs(); } else if (i.name === 'speed') { prefs.speed = sim.speed = +i.value; savePrefs(); } else if (i.dataset.pref) setPref(i.dataset.pref, i.checked); });
+    const vmTip = e => { const t = e.target.closest && e.target.closest('[data-tip]'), p = $('#vm-tip'); if (p) p.textContent = t ? t.dataset.tip : VM_TIP; };
+    $('#viewmenu').addEventListener('pointerover', vmTip); $('#viewmenu').addEventListener('focusin', vmTip);
     document.addEventListener('pointerdown', e => { if (!$('#viewmenu').hidden && !e.target.closest('#viewmenu, #view-btn')) openMenu(false); });
     document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('#viewmenu').hidden) { e.stopPropagation(); openMenu(false); $('#view-btn').focus(); } });   // Esc schließt nur das Menü, nicht zusätzlich eine Ebene
   }
@@ -361,6 +440,8 @@ export function createShell(ctx) {
     if (level >= 2 && !p.station) p.station = p.item ? p.item.station : st.station || memo.station;
     if (level >= 2 && !p.station) return;
     if (level === 3 && !p.item) return;
+    if (level !== st.level || p.station !== st.station) fold = { all: false, about: false };
+    mobOpen = !!opt.open;
     levels.go(level, p, opt);
     if (st.station) memo.station = st.station; if (st.item) memo.item = st.item;
     pads(); render(true);
@@ -384,6 +465,8 @@ export function createShell(ctx) {
       else { notes.set(c.id, '✓ ' + S.demoReply(c, text)); render(false); setTimeout(() => render(false), 1000); }
       return;
     }
+    if (d.fold) { fold[d.fold] = !fold[d.fold]; render(false); return; }
+    if (d.peek) { mobOpen = d.peek === '1'; render(false); panel.querySelector('[data-peek]')?.focus(); return; }
     if (d.order) { giveOrder(); return; }
     if (d.ord) { const [k, v] = d.ord.split(':'); ord[k] = v; if (k === 'type') ord.prefix = OT_DEF[v][0]; render(false); return; }
     if (d.step) { go(2, { station: STEP_STATION[+d.step] }); return; }
@@ -391,7 +474,12 @@ export function createShell(ctx) {
     if (d.tour != null) { tourGo(+d.tour); return; }
     if (d.up) { up(); return; }
     if (d.station) { clearCmd(); go(2, { station: d.station }); return; }
-    if (d.item) { clearCmd(); const i = d.item.indexOf(':'), type = d.item.slice(0, i), id = d.item.slice(i + 1); go(3, { item: { type, id, station: d.from || (type === 'chat' ? (chatOf(id)?.a.station || 'doors') : homeOf(type, id)) } }); return; }
+    if (d.item) {
+      clearCmd(); const i = d.item.indexOf(':'), type = d.item.slice(0, i), id = d.item.slice(i + 1);
+      go(3, { item: { type, id, station: d.from || (type === 'chat' ? (chatOf(id)?.a.station || 'doors') : homeOf(type, id)) } }, { open: !!(d.open || d.write) });   // Antworten: Handy-Panel gleich offen
+      if (d.write) $('#msg-in')?.focus();   // „Antwort schreiben ›“: Cursor steht im Nachrichtenfeld des Chats
+      return;
+    }
     if (d.level) { const n = +d.level; if (n === 1) go(1); else if (n === 2 && (st.station || memo.station)) go(2, { station: st.station || memo.station }); }
   });
 
@@ -445,6 +533,7 @@ export function createShell(ctx) {
     M.w = panel.offsetWidth; M.h = panel.offsetHeight;
     M.barB = $('#bar').getBoundingClientRect().bottom;
     const g = $('#guide'); M.gr = g.hidden ? null : g.getBoundingClientRect();
+    M.dockT = dock.offsetHeight ? dock.getBoundingClientRect().top - M.r.top : M.r.height;   // Oberkante von Laufzeile/Phasen-Zeile im Bild
     M.pr = panel.getBoundingClientRect();   // Lage aus CSS (Ebene 1); in Ebene 2/3 setzt frame() sie selbst und rechnet sie mit
     const op = panel.offsetParent, o = op ? op.getBoundingClientRect() : { left: 0, top: 0 };
     M.ox = o.left + (op ? op.clientLeft : 0); M.oy = o.top + (op ? op.clientTop : 0);
@@ -467,7 +556,7 @@ export function createShell(ctx) {
         if ((side === 'r' && fitR) || (side === 'l' && fitL)) want = side;
         side = want;
         const left = clamp(side === 'r' ? ex1 + 18 : ex0 - 18 - w, 12, r.width - 12 - w);
-        let maxB = r.height - 12; const gr = M.gr;   // nie über Kubis Blase legen (Zero Overlap)
+        let maxB = Math.min(r.height, M.dockT) - 12; const gr = M.gr;   // nie über Kubis Blase oder das Dock unten legen (Zero Overlap)
         if (gr && left < gr.right && left + w > gr.left) maxB = Math.min(maxB, gr.top - 12);
         const ptop = clamp(py - h * 0.35, top, Math.max(top, maxB - h));
         panel.style.left = left + 'px'; panel.style.top = ptop + 'px';
@@ -486,7 +575,7 @@ export function createShell(ctx) {
       const pr = M.pr, gr = M.gr;
       M.tags.forEach(({ b, Z, w: bw, h: bh }) => {
         v.set(Z.g.position.x, Z.id === 'bench' ? 2.4 : 3.0, Z.g.position.z).project(camera);
-        let x = clamp((v.x + 1) / 2 * r.width, 12 + bw / 2, r.width - 12 - bw / 2); const y = Math.max(barB + 34, (1 - v.y) / 2 * r.height);
+        let x = clamp((v.x + 1) / 2 * r.width, 12 + bw / 2, r.width - 12 - bw / 2); const y = clamp((1 - v.y) / 2 * r.height, barB + 12 + bh, M.dockT - 8);   // unter der Kopfleiste, über dem Dock
         if (x - bw / 2 < pr.right + 8 && x + bw / 2 > pr.left - 8 && y > pr.top && y - bh < pr.bottom) x = pr.right + 12 + bw / 2;
         let yy = y; if (gr && x + bw / 2 > gr.left - 8 && x - bw / 2 < gr.right + 8 && yy > gr.top - 8) yy = gr.top - 10;   // nie unter Kubis Blase
         tagBox.push({ b, x, y: yy, w: bw, h: bh });
