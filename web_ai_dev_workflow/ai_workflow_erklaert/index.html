@@ -1,0 +1,1173 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI Workflow erklärt</title>
+<meta name="description" content="Wie der AI Dev Workflow arbeitet – vom ersten Satz bis zum Push, erklärt an einem einfachen Auftrag: ein Hell/Dunkel-Schalter für die Projektseite.">
+<link rel="stylesheet" href="motion_diagrams.css">
+<style>
+/* Tokens: hell = Standard, dunkel über System oder Umschalter. Kantig (≤ 8 px), eine Akzentfarbe. */
+:root {
+  --font: "Inter", system-ui, -apple-system, "Segoe UI", Ubuntu, Roboto, sans-serif;
+  --mono: ui-monospace, "JetBrains Mono", "SFMono-Regular", "DejaVu Sans Mono", Menlo, monospace;
+  --radius-sm: 4px; --radius: 6px; --radius-lg: 8px;
+  --bg: #f4f6f9; --surface: #ffffff; --surface-2: #eef1f6; --line: #d8dee7; --line-strong: #a9b3c1;
+  --fg: #0f141b; --fg-2: #36404d; --accent: #2a5bd7; --on-accent: #ffffff;
+  --teal: #0b7f78; --green: #157a46; --gold: #9a6200; --violet: #6446cf; --indigo: #3647a6; --red: #c22d2d;
+  --grid: rgba(15, 20, 27, .055); --glow: rgba(42, 91, 215, .16); --shadow: 0 1px 2px rgba(15,20,27,.06), 0 8px 24px rgba(15,20,27,.06);
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0b0e12; --surface: #12161c; --surface-2: #181d24; --line: #252c36; --line-strong: #3a4451;
+    --fg: #edf1f6; --fg-2: #c0c8d3; --accent: #6d94ff; --on-accent: #0b0e12;
+    --teal: #3cc5bb; --green: #47c47f; --gold: #e6ae48; --violet: #a58bff; --indigo: #8b9cff; --red: #ff6b6b;
+    --grid: rgba(237, 241, 246, .045); --glow: rgba(109, 148, 255, .14); --shadow: 0 1px 2px rgba(0,0,0,.3), 0 10px 30px rgba(0,0,0,.25);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0b0e12; --surface: #12161c; --surface-2: #181d24; --line: #252c36; --line-strong: #3a4451;
+  --fg: #edf1f6; --fg-2: #c0c8d3; --accent: #6d94ff; --on-accent: #0b0e12;
+  --teal: #3cc5bb; --green: #47c47f; --gold: #e6ae48; --violet: #a58bff; --indigo: #8b9cff; --red: #ff6b6b;
+  --grid: rgba(237, 241, 246, .045); --glow: rgba(109, 148, 255, .14); --shadow: 0 1px 2px rgba(0,0,0,.3), 0 10px 30px rgba(0,0,0,.25);
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: 76px; }
+body { margin: 0; background: var(--bg); color: var(--fg); font: 400 17px/1.6 var(--font); -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+code, kbd { font-family: var(--mono); font-size: .9em; }
+a { color: var(--accent); }
+h1, h2, h3 { margin: 0; line-height: 1.12; letter-spacing: -.02em; }
+p { margin: 0; }
+button { font: inherit; color: inherit; }
+[hidden]:not(.scene) { display: none !important; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.wrap { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+.ic { width: 1.15em; height: 1.15em; flex: none; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; vertical-align: -.2em; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* Kopf */
+.top { position: sticky; top: 0; z-index: 20; background: color-mix(in srgb, var(--bg) 86%, transparent); backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); }
+.top .wrap { display: flex; align-items: center; gap: 20px; min-height: 60px; }
+.brand { display: flex; align-items: center; gap: 10px; font-weight: 750; letter-spacing: -.01em; text-decoration: none; color: var(--fg); }
+.brand i { display: grid; place-items: center; width: 30px; height: 30px; border-radius: var(--radius); background: var(--accent); color: var(--on-accent); font-style: normal; font: 800 14px var(--mono); }
+.nav { display: flex; gap: 4px; margin-left: auto; }
+.nav a { padding: 8px 12px; border-radius: var(--radius); color: var(--fg); text-decoration: none; font-size: 15px; font-weight: 550; }
+.nav a:hover { background: var(--surface-2); }
+.theme { display: inline-flex; align-items: center; gap: 8px; min-height: 40px; padding: 0 12px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); cursor: pointer; font-size: 15px; }
+.theme:hover { border-color: var(--line-strong); }
+@media (max-width: 860px) { .nav { display: none; } .theme { margin-left: auto; } }
+
+/* Hero */
+.hero { position: relative; overflow: hidden; padding: 80px 0 64px; border-bottom: 1px solid var(--line); isolation: isolate; }
+.hero-bg { position: absolute; inset: 0; z-index: -1; pointer-events: none;
+  background: linear-gradient(var(--grid) 1px, transparent 1px) 0 0 / 32px 32px, linear-gradient(90deg, var(--grid) 1px, transparent 1px) 0 0 / 32px 32px;
+  -webkit-mask-image: radial-gradient(ellipse 80% 70% at 50% 30%, #000 30%, transparent 80%); mask-image: radial-gradient(ellipse 80% 70% at 50% 30%, #000 30%, transparent 80%); }
+.hero-glow { position: absolute; z-index: -1; width: 1100px; height: 1100px; left: 50%; top: -520px; margin-left: -550px; border-radius: 50%; pointer-events: none;
+  background: radial-gradient(circle, var(--glow), transparent 62%); }
+.ghost { position: absolute; z-index: -1; right: -.05em; bottom: -.18em; font-size: clamp(110px, 17vw, 240px); font-weight: 900; letter-spacing: -.06em; line-height: 1; color: var(--fg); opacity: .04; white-space: nowrap; pointer-events: none; user-select: none; }
+.kicker { display: inline-flex; align-items: center; gap: 8px; font: 600 14px var(--mono); letter-spacing: .04em; color: var(--accent); }
+.kicker::before { content: ""; width: 18px; height: 2px; background: currentColor; }
+.hero h1 { margin-top: 18px; font-size: clamp(40px, 6.4vw, 76px); font-weight: 850; letter-spacing: -.035em; }
+.hero h1 span { display: block; }
+.hero h1 span { color: var(--accent); }
+.lede { margin-top: 22px; max-width: 64ch; font-size: clamp(17px, 1.6vw, 20px); line-height: 1.6; color: var(--fg-2); }
+.lede strong { color: var(--fg); }
+.cta { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 30px; }
+.btn { display: inline-flex; align-items: center; gap: 10px; min-height: 46px; padding: 0 20px; border-radius: var(--radius); border: 1px solid var(--line-strong); background: var(--surface); color: var(--fg); font-weight: 650; text-decoration: none; cursor: pointer; transition: transform 150ms, background-color 150ms, border-color 150ms; }
+.btn:hover { border-color: var(--fg-2); }
+.btn:active { transform: scale(.98); }
+.btn.pri { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+.btn.pri:hover { background: color-mix(in srgb, var(--accent) 88%, var(--fg)); }
+.facts { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1px; margin: 44px 0 0; padding: 0; background: var(--line); border: 1px solid var(--line); border-radius: var(--radius-lg); overflow: hidden; }
+.facts div { background: var(--surface); padding: 16px 18px; }
+.facts dt { font-size: clamp(20px, 5.4vw, 28px); overflow-wrap: anywhere; font-weight: 800; letter-spacing: -.02em; }
+.facts dd { margin: 2px 0 0; font-size: 15px; line-height: 1.45; color: var(--fg-2); }
+@media (max-width: 760px) { .facts { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+/* Hero-Animation: ein Auftrag läuft durch fünf Phasen */
+.hf { margin-top: 44px; padding: 22px; border: 1px solid var(--line); border-radius: var(--radius-lg); background: color-mix(in srgb, var(--surface) 92%, transparent); box-shadow: var(--shadow); }
+.hf-top { display: flex; align-items: center; gap: 14px; }
+.hf-prompt { flex: 1; display: flex; align-items: center; gap: 12px; min-height: 52px; padding: 10px 14px; border: 1px solid var(--line-strong); border-radius: var(--radius); background: var(--surface-2); font: 500 16px/1.4 var(--mono); }
+.hf-prompt .who { flex: none; padding: 3px 8px; border-radius: var(--radius-sm); background: var(--accent); color: var(--on-accent); font: 700 13px var(--mono); }
+.hf-prompt .txt { flex: 1; min-height: 1.4em; }
+.typing::after { content: ""; display: inline-block; width: .55em; height: 1.05em; margin-left: 2px; vertical-align: -.15em; background: var(--accent); }
+.hf-prompt kbd { flex: none; padding: 3px 8px; border: 1px solid var(--line-strong); border-radius: var(--radius-sm); font-size: 13px; }
+.icon-btn { display: inline-grid; place-items: center; width: 40px; height: 40px; flex: none; padding: 0; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); cursor: pointer; }
+.icon-btn:hover { border-color: var(--line-strong); }
+.icon-btn .ic { width: 18px; height: 18px; }
+.hf-row { display: flex; align-items: stretch; margin: 22px 0 0; padding: 0; list-style: none; }
+.hf-st { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 14px 8px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); text-align: center; transition: border-color 250ms, background-color 250ms; }
+.hf-st .ico { display: grid; place-items: center; width: 44px; height: 44px; border-radius: var(--radius); background: var(--surface-2); border: 1px solid var(--line); transition: background-color 250ms, color 250ms, border-color 250ms; }
+.hf-st .ico .ic { width: 22px; height: 22px; }
+.hf-st b { font-size: 16px; }
+.hf-role { font-size: 14px; line-height: 1.35; color: var(--fg-2); }
+.hf-st .badge { margin-top: 4px; padding: 3px 8px; border-radius: var(--radius-sm); background: color-mix(in srgb, var(--green) 14%, var(--surface)); color: var(--green); font: 600 13px var(--mono); white-space: nowrap; }
+.hf-st.on { border-color: color-mix(in srgb, var(--accent) 60%, var(--line)); background: color-mix(in srgb, var(--accent) 6%, var(--surface)); }
+.hf-st.on .ico { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+.hf-cn { flex: 0 0 34px; display: flex; align-items: center; }
+.trk { position: relative; display: block; width: 100%; height: 4px; border-radius: 2px; background: var(--line); }
+.trk .bar { position: absolute; left: 0; top: 0; bottom: 0; width: calc(var(--p, 0) * 100%); border-radius: 2px; background: var(--accent); }
+.trk .bar::after { content: ""; position: absolute; right: -5px; top: 50%; width: 10px; height: 10px; margin-top: -5px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 25%, transparent); opacity: calc(min(var(--p, 0) * 30, (1 - var(--p, 0)) * 8)); }
+.trk .bar.rev { left: auto; right: 0; background: var(--gold); }
+.trk .bar.rev::after { right: auto; left: -5px; background: var(--gold); box-shadow: 0 0 0 4px color-mix(in srgb, var(--gold) 25%, transparent); }
+.hf-end { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 18px; font-weight: 650; }
+.hf-end .ok { display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px; border-radius: var(--radius); background: color-mix(in srgb, var(--green) 14%, var(--surface)); color: var(--green); }
+@media (max-width: 760px) {
+  .hf { padding: 16px; }
+  .hf-row { flex-direction: column; }
+  .hf-st { flex-direction: row; flex-wrap: wrap; text-align: left; justify-content: flex-start; gap: 4px 12px; }
+  .hf-st .ico { width: 38px; height: 38px; }
+  .hf-st .txt { flex: 1; min-width: 120px; }
+  .hf-st .badge { margin: 0; }
+  .hf-cn { flex: 0 0 22px; justify-content: center; }
+  .hf-cn .trk { width: 4px; height: 100%; }
+  .hf-cn .trk .bar { width: auto; right: 0; height: calc(var(--p, 0) * 100%); bottom: auto; }
+  .hf-cn .trk .bar::after { right: 50%; top: auto; bottom: -5px; margin: 0 -5px 0 0; }
+  .hf-prompt { font-size: 15px; }
+  .hf-prompt kbd { display: none; }
+}
+.hf-st .txt { display: flex; flex-direction: column; gap: 2px; }
+
+/* Abschnitte */
+section.sec { padding: 88px 0; border-bottom: 1px solid var(--line); }
+.sec-head { display: grid; gap: 14px; max-width: 760px; margin-bottom: 36px; }
+.sec-head h2 { font-size: clamp(30px, 4vw, 46px); font-weight: 820; }
+.sec-head p { font-size: 18px; color: var(--fg-2); max-width: 66ch; }
+@media (max-width: 600px) { .wrap { padding: 0 16px; } section.sec { padding: 60px 0; } .hero { padding: 52px 0 44px; } }
+
+/* Auftrag-Karte */
+.order { display: grid; grid-template-columns: auto 1fr; gap: 6px 16px; align-items: start; margin-bottom: 22px; padding: 18px 20px; border: 1px solid var(--line); border-radius: var(--radius-lg); background: var(--surface); }
+.order .ico { grid-row: span 2; display: grid; place-items: center; width: 44px; height: 44px; border-radius: var(--radius); background: var(--accent); color: var(--on-accent); }
+.order .ico .ic { width: 22px; height: 22px; }
+.order q { font: 600 18px/1.45 var(--mono); quotes: none; }
+.order p { color: var(--fg-2); font-size: 16px; }
+
+/* Player */
+.player { border: 1px solid var(--line); border-radius: var(--radius-lg); background: var(--surface); box-shadow: var(--shadow); overflow: hidden; outline: none; }
+.player:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.phases { display: flex; margin: 0; padding: 0; list-style: none; border-bottom: 1px solid var(--line); }
+.phases li { flex: 1 1 0; min-width: 0; display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-right: 1px solid var(--line); transition: background-color 250ms; }
+.phases li:last-child { border-right: 0; }
+.phases .n { display: grid; place-items: center; width: 28px; height: 28px; flex: none; border-radius: 50%; border: 1.5px solid var(--line-strong); font: 700 13px var(--mono); transition: background-color 250ms, color 250ms, border-color 250ms; }
+.phases .n .ic { display: none; width: 15px; height: 15px; }
+.phases .t { display: flex; flex-direction: column; min-width: 0; font-weight: 700; font-size: 15px; line-height: 1.25; }
+.phases .t small { font-weight: 500; font-size: 13px; color: var(--fg-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.phases li.done .n { background: var(--surface-2); border-color: var(--green); color: var(--green); }
+.phases li.done .n span { display: none; }
+.phases li.done .n .ic { display: block; }
+.phases li.now { background: color-mix(in srgb, var(--accent) 8%, var(--surface)); }
+.phases li.now .n { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+@media (max-width: 860px) { .phases li:not(.now) { flex: 0 0 auto; } .phases li:not(.now) .t { display: none; } }
+
+.pl-body { display: grid; grid-template-columns: minmax(270px, 340px) minmax(0, 1fr); }
+.pl-chat { contain: size; display: flex; flex-direction: column; min-height: 0; border-right: 1px solid var(--line); background: var(--surface); }
+.pl-chat-h { display: flex; align-items: center; gap: 8px; padding: 12px 14px; border-bottom: 1px solid var(--line); font: 600 14px var(--mono); }
+.pl-chat-h .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); }
+.msgs { flex: 1; min-height: 0; display: flex; flex-direction: column; justify-content: flex-end; gap: 10px; margin: 0; padding: 14px; list-style: none; overflow: hidden; }
+.msg[hidden] { display: none; }
+.msg { display: grid; grid-template-columns: 28px minmax(0, 1fr); gap: 4px 10px; }
+.msg .av { grid-row: span 2; display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; background: var(--surface-2); border: 1px solid var(--line); }
+.msg .av .ic { width: 15px; height: 15px; }
+.msg .who { font: 600 13px var(--mono); color: var(--fg-2); }
+.msg .tx { padding: 8px 10px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface-2); font-size: 15px; line-height: 1.45; overflow-wrap: anywhere; }
+.msg.me .av { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+.msg.me .tx { background: color-mix(in srgb, var(--accent) 10%, var(--surface)); border-color: color-mix(in srgb, var(--accent) 35%, var(--line)); }
+.msg.hook .tx, .msg.agent .tx { font: 500 14px/1.45 var(--mono); }
+.msg.warn .tx { border-color: color-mix(in srgb, var(--gold) 55%, var(--line)); }
+.msg.bad .tx { border-color: color-mix(in srgb, var(--red) 55%, var(--line)); }
+.msg.good .tx { border-color: color-mix(in srgb, var(--green) 50%, var(--line)); }
+
+.pl-stage { display: grid; padding: 22px; container-type: inline-size; min-width: 0;
+  background: linear-gradient(var(--grid) 1px, transparent 1px) 0 0 / 24px 24px, linear-gradient(90deg, var(--grid) 1px, transparent 1px) 0 0 / 24px 24px, var(--surface-2); }
+.scene { grid-area: 1 / 1; display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.scene[hidden] { display: flex; visibility: hidden; }
+.sc-h { display: grid; gap: 6px; }
+.role { display: inline-flex; align-items: center; gap: 8px; justify-self: start; padding: 4px 10px; border: 1px solid var(--line-strong); border-radius: var(--radius-sm); background: var(--surface); font: 600 13px var(--mono); }
+.sc-h h3 { font-size: clamp(22px, 2.6vw, 28px); font-weight: 800; }
+.sc-h p { color: var(--fg-2); font-size: 16px; max-width: 70ch; }
+.why { margin-top: auto; padding: 12px 14px; border-radius: var(--radius); background: var(--surface); border: 1px dashed var(--line-strong); font-size: 15px; line-height: 1.5; color: var(--fg); }
+.why b { color: var(--accent); }
+.box { padding: 14px 16px; border: 1px solid var(--line); border-radius: var(--radius-lg); background: var(--surface); min-width: 0; }
+.lbl { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; font: 600 13px var(--mono); letter-spacing: .03em; color: var(--fg-2); text-transform: uppercase; }
+.st { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; font-size: 15px; }
+.ok { color: var(--green); } .warn { color: var(--gold); } .bad { color: var(--red); }
+.chip { display: inline-flex; align-items: center; gap: 6px; padding: 3px 9px; border-radius: var(--radius-sm); border: 1px solid var(--line); background: var(--surface-2); font: 600 13px var(--mono); white-space: nowrap; }
+.chip.ok { border-color: color-mix(in srgb, var(--green) 45%, var(--line)); background: color-mix(in srgb, var(--green) 10%, var(--surface)); }
+.chip.warn { border-color: color-mix(in srgb, var(--gold) 50%, var(--line)); background: color-mix(in srgb, var(--gold) 10%, var(--surface)); }
+.chip.bad { border-color: color-mix(in srgb, var(--red) 50%, var(--line)); background: color-mix(in srgb, var(--red) 10%, var(--surface)); }
+.stack { display: grid; } .stack > * { grid-area: 1 / 1; }
+.two { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+@container (max-width: 560px) { .two { grid-template-columns: 1fr; } }
+
+/* Szene 1 */
+.repo code.big { font-size: 15px; font-weight: 600; }
+.ff { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 10px; margin: 12px 0 10px; font: 500 13px var(--mono); color: var(--fg-2); }
+.rows { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.rows li { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; font-size: 15px; }
+.cid { padding: 2px 7px; border-radius: var(--radius-sm); background: var(--surface-2); border: 1px solid var(--line); font-size: 13px; font-weight: 600; }
+.rows .chip { margin-left: auto; }
+
+/* Szene 2 */
+.gauge { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; margin: 0 0 12px; padding: 0; list-style: none; }
+.gauge li { display: flex; align-items: baseline; gap: 8px; padding: 10px 12px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface-2); font-size: 15px; transition: background-color 200ms, border-color 200ms, color 200ms; }
+.gauge li b { font: 800 20px var(--mono); }
+.gauge li.on { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+@container (max-width: 520px) { .gauge li { flex-direction: column; gap: 0; padding: 8px; } }
+.skills { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 12px; padding: 0; list-style: none; }
+.skills li { padding: 4px 9px; border: 1px dashed var(--line-strong); border-radius: var(--radius-sm); font: 500 13.5px var(--mono); transition: background-color 200ms, border-color 200ms, color 200ms; }
+.skills li.on { border: 1px solid var(--accent); background: var(--accent); color: var(--on-accent); font-weight: 700; }
+
+/* Szene 3 */
+.vars { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+@container (max-width: 560px) { .vars { grid-template-columns: 1fr; } }
+.var { margin: 0; height: 100%; display: flex; flex-direction: column; gap: 10px; transition: border-color 200ms, box-shadow 200ms; }
+.var figcaption { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; }
+.var.sel { border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent); }
+.var .pick { margin-left: auto; padding: 1px 7px; border-radius: var(--radius-sm); background: var(--accent); color: var(--on-accent); font: 700 12px var(--mono); visibility: hidden; }
+.var.sel .pick { visibility: visible; }
+.mock { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 8px; min-height: 92px; padding: 12px; border-radius: var(--radius); background: var(--surface-2); border: 1px solid var(--line); }
+.mk-row { display: flex; align-items: center; gap: 10px; }
+.mk-row .ic { width: 20px; height: 20px; }
+.sw { display: flex; justify-content: flex-end; width: 52px; height: 28px; padding: 3px; border-radius: var(--radius); background: var(--accent); }
+.sw i { width: 22px; height: 22px; border-radius: var(--radius-sm); background: var(--surface); }
+.ibtn { display: grid; place-items: center; width: 44px; height: 44px; border: 1px solid var(--line-strong); border-radius: var(--radius); background: var(--surface); }
+.ibtn .ic { width: 20px; height: 20px; }
+.seg { display: flex; align-self: flex-start; border: 1px solid var(--line-strong); border-radius: var(--radius); overflow: hidden; background: var(--surface); }
+.seg span { padding: 6px 10px; font-size: 14px; font-weight: 600; }
+.seg span + span { border-left: 1px solid var(--line-strong); }
+.seg .on { background: var(--accent); color: var(--on-accent); }
+.mk-note { font-size: 14px; color: var(--fg-2); }
+.send-row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; }
+.fake { display: inline-flex; align-items: center; gap: 8px; min-height: 38px; padding: 0 14px; border-radius: var(--radius); border: 1px solid var(--accent); color: var(--accent); background: var(--surface); font-weight: 650; font-size: 15px; transition: transform 120ms, background-color 150ms, color 150ms; }
+.fake.press { background: var(--accent); color: var(--on-accent); transform: scale(.97); }
+.f1 p:first-child { display: flex; align-items: center; gap: 10px; font-weight: 650; }
+.fnum { padding: 2px 8px; border-radius: var(--radius-sm); background: var(--violet); color: var(--surface); font: 700 13px var(--mono); }
+.opts { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0; }
+.opt { padding: 5px 12px; border: 1px solid var(--line-strong); border-radius: var(--radius); font-size: 15px; transition: background-color 150ms, color 150ms, border-color 150ms; }
+.opt.sel { background: var(--violet); border-color: var(--violet); color: var(--surface); font-weight: 650; }
+
+/* Szene 4 */
+.files { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.files li { display: grid; grid-template-columns: auto minmax(0, max-content) minmax(0, 1fr) auto auto; align-items: center; gap: 10px; padding: 7px 10px; border-radius: var(--radius); background: var(--surface-2); font-size: 15px; }
+.files li code { font-weight: 600; overflow-wrap: anywhere; }
+.files li .d { color: var(--fg-2); font-size: 14px; min-width: 0; }
+.files li.foreign { background: repeating-linear-gradient(135deg, var(--surface-2) 0 8px, color-mix(in srgb, var(--gold) 10%, var(--surface-2)) 8px 16px); }
+.files .lk { color: var(--accent); }
+@container (max-width: 560px) { .files li { grid-template-columns: auto minmax(0, 1fr) auto auto; } .files li .d { grid-column: 2 / -1; grid-row: 2; } }
+.claim { display: flex; align-items: center; gap: 14px; }
+.claim > .ic { width: 30px; height: 30px; color: var(--accent); }
+.claim p { font-size: 15px; color: var(--fg-2); }
+
+/* Szene 5 */
+.loop { display: flex; align-items: stretch; }
+.lst { flex: 1 1 0; display: flex; flex-direction: column; align-items: flex-start; gap: 4px; }
+.lst > .ic { width: 22px; height: 22px; color: var(--accent); }
+.lst b { font: 700 15px var(--mono); overflow-wrap: anywhere; }
+.lst span { font-size: 14px; color: var(--fg-2); }
+.lst .stack { margin-top: auto; padding-top: 6px; }
+.lcn { flex: 0 0 34px; display: flex; align-items: center; }
+@container (max-width: 600px) {
+  .loop { flex-direction: column; }
+  .lcn { flex: 0 0 20px; justify-content: center; }
+  .lcn .trk { width: 4px; height: 100%; }
+  .lcn .trk .bar { width: auto; right: 0; height: calc(var(--p, 0) * 100%); bottom: auto; }
+  .lcn .trk .bar.rev { top: auto; bottom: 0; left: 0; }
+  .lcn .trk .bar::after { display: none; }
+}
+.diff { margin: 0; padding: 0; list-style: none; font: 500 14px/1.6 var(--mono); }
+.diff li { padding: 1px 8px; border-radius: var(--radius-sm); overflow-wrap: anywhere; }
+.diff li.add { background: color-mix(in srgb, var(--green) 9%, transparent); }
+.diff .cut { transition: background-color 200ms; }
+.diff .cut.bad { display: block; margin: 0 -8px; padding: 0 8px; background: color-mix(in srgb, var(--red) 14%, var(--surface)); color: var(--red); text-decoration: line-through; }
+
+/* Szene 6 */
+.agent { display: flex; align-items: center; gap: 14px; }
+.agent > .ic { width: 30px; height: 30px; color: var(--violet); }
+.agent p { font-size: 14px; color: var(--fg-2); }
+.trow { display: grid; grid-template-columns: minmax(130px, 190px) minmax(0, 1fr) auto; align-items: center; gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--line); }
+.trow:last-child { border-bottom: 0; }
+.trow > code { font-weight: 600; font-size: 14px; overflow-wrap: anywhere; }
+.trow .trk .bar.re { background: var(--green); }
+.trow .trk .bar.re::after { background: var(--green); box-shadow: 0 0 0 4px color-mix(in srgb, var(--green) 25%, transparent); }
+.cause { padding: 6px 0 2px; font-size: 14.5px; }
+.shots { display: flex; flex-wrap: wrap; gap: 8px; }
+.shot { display: flex; flex-direction: column; align-items: center; gap: 3px; font: 500 12.5px var(--mono); }
+.scr { display: block; width: 46px; height: 30px; border-radius: 3px; border: 1px solid var(--line-strong); background: linear-gradient(var(--line) 0 0) 6px 6px / 60% 3px no-repeat, linear-gradient(var(--line) 0 0) 6px 13px / 40% 3px no-repeat, #ffffff; }
+.scr.dk { background: linear-gradient(#3a4451 0 0) 6px 6px / 60% 3px no-repeat, linear-gradient(#3a4451 0 0) 6px 13px / 40% 3px no-repeat, #12161c; }
+.scr.nar { width: 20px; }
+.stamp { display: inline-flex; align-items: center; gap: 10px; align-self: flex-start; padding: 8px 14px; border: 2px solid var(--green); border-radius: var(--radius); color: var(--green); font-weight: 750; }
+@container (max-width: 560px) { .trow { grid-template-columns: 1fr auto; } .trow > .trk, .trow > .shots { grid-column: 1 / -1; grid-row: 2; } }
+
+/* Szene 7 */
+.pipe { display: flex; align-items: center; margin: 0; padding: 0; list-style: none; }
+.pn { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 10px 6px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); text-align: center; font-size: 14px; font-weight: 600; line-height: 1.3; }
+.pn .ic { width: 20px; height: 20px; color: var(--accent); }
+.pcn { flex: 0 0 18px; display: flex; align-items: center; }
+.pcn .trk .bar::after { display: none; }
+@container (max-width: 640px) {
+  .pipe { flex-direction: column; align-items: stretch; }
+  .pn { flex-direction: row; text-align: left; padding: 8px 12px; }
+  .pcn { flex: 0 0 14px; justify-content: center; }
+  .pcn .trk { width: 4px; height: 100%; }
+  .pcn .trk .bar { width: auto; right: 0; height: calc(var(--p, 0) * 100%); bottom: auto; }
+}
+.term { margin: 0; padding: 12px 14px; border-radius: var(--radius-lg); background: #0d1117; color: #e6edf3; font: 500 14px/1.7 var(--mono); list-style: none; overflow-wrap: anywhere; }
+.term .p { color: #8fb4ff; }
+.term .g { color: #5fd38d; }
+
+/* Szene 8 */
+.answer { display: grid; gap: 6px; font-size: 15px; }
+.answer .l { overflow-wrap: anywhere; }
+.answer .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.answer h4 { margin: 4px 0 0; font-size: 16px; }
+.answer .cid2 { font: 500 14px var(--mono); color: var(--fg-2); }
+.learn { display: flex; align-items: stretch; }
+.ln { flex: 1 1 0; min-width: 0; display: flex; align-items: center; gap: 10px; padding: 10px 12px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); font-size: 14.5px; line-height: 1.35; }
+.ln > .ic { width: 22px; height: 22px; color: var(--teal); }
+.lcn2 { flex: 0 0 26px; display: flex; align-items: center; }
+@container (max-width: 600px) {
+  .learn { flex-direction: column; }
+  .lcn2 { flex: 0 0 16px; justify-content: center; }
+  .lcn2 .trk { width: 4px; height: 100%; }
+  .lcn2 .trk .bar { width: auto; right: 0; height: calc(var(--p, 0) * 100%); bottom: auto; }
+  .lcn2 .trk .bar::after { display: none; }
+}
+
+/* Steuerung */
+.pl-ctl { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 16px; padding: 14px 18px; border-top: 1px solid var(--line); }
+.ctl { display: inline-flex; gap: 4px; }
+.ctl button { display: inline-grid; place-items: center; width: 42px; height: 42px; padding: 0; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); cursor: pointer; transition: background-color 150ms, transform 120ms; }
+.ctl button:hover { background: var(--surface-2); }
+.ctl button:active { transform: scale(.96); }
+.ctl button.pp { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+.ctl .ic { width: 18px; height: 18px; }
+.ic.fill { fill: currentColor; stroke: none; }
+.tl { flex: 1 1 260px; display: grid; align-items: center; min-width: 200px; }
+.tl > * { grid-area: 1 / 1; }
+.segs { display: flex; gap: 3px; height: 6px; }
+.segs span { position: relative; height: 6px; border-radius: 3px; background: var(--line); overflow: hidden; }
+.segs span i { position: absolute; inset: 0 auto 0 0; width: calc(var(--p, 0) * 100%); background: var(--accent); }
+.scrub { width: 100%; height: 32px; margin: 0; background: transparent; -webkit-appearance: none; appearance: none; cursor: pointer; }
+.scrub::-webkit-slider-runnable-track { height: 32px; background: transparent; }
+.scrub::-moz-range-track { height: 32px; background: transparent; }
+.scrub::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; margin-top: 8px; border-radius: 50%; background: var(--surface); border: 3px solid var(--accent); }
+.scrub::-moz-range-thumb { width: 12px; height: 12px; border-radius: 50%; background: var(--surface); border: 3px solid var(--accent); }
+.scrub:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.time { font: 600 14px var(--mono); min-width: 96px; text-align: right; }
+.speed { min-height: 42px; padding: 0 12px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); cursor: pointer; font-size: 14px; font-weight: 600; }
+.speed:hover { background: var(--surface-2); }
+.chapters { display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 1px; margin: 0; padding: 0; list-style: none; border-top: 1px solid var(--line); background: var(--line); }
+.chapters button { width: 100%; height: 100%; min-height: 54px; display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 1px; padding: 8px 12px; border: 0; background: var(--surface); text-align: left; cursor: pointer; font-size: 14px; font-weight: 600; line-height: 1.25; }
+.chapters button span { font: 600 12.5px var(--mono); color: var(--fg-2); }
+.chapters button:hover { background: var(--surface-2); }
+.chapters button[aria-current="step"] { background: color-mix(in srgb, var(--accent) 10%, var(--surface)); color: var(--fg); box-shadow: inset 0 -3px 0 var(--accent); }
+@media (max-width: 900px) {
+  .pl-body { grid-template-columns: 1fr; }
+  .pl-chat { order: 2; height: 300px; border-right: 0; border-top: 1px solid var(--line); }
+  .chapters { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+@media (max-width: 600px) { .pl-stage { padding: 14px; } .time { min-width: 0; } }
+
+/* System-Karte */
+.sys { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(300px, 1fr); gap: 20px; align-items: start; }
+@media (max-width: 980px) { .sys { grid-template-columns: 1fr; } }
+.map { position: relative; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 64px 44px; padding: 34px; border: 1px solid var(--line); border-radius: var(--radius-lg); isolation: isolate;
+  background: radial-gradient(circle at 50% 50%, var(--glow), transparent 60%), linear-gradient(var(--grid) 1px, transparent 1px) 0 0 / 24px 24px, linear-gradient(90deg, var(--grid) 1px, transparent 1px) 0 0 / 24px 24px, var(--surface-2); }
+.map svg.wires { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; overflow: visible; }
+.wires line { stroke: var(--line-strong); stroke-width: 1.5; stroke-dasharray: 4 5; transition: stroke 200ms; }
+.wires line.on { stroke: var(--accent); stroke-width: 2.5; stroke-dasharray: none; }
+.wires .pk { fill: var(--accent); }
+.wires .pk-h { fill: var(--accent); opacity: .22; }
+.node { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; min-width: 0; padding: 14px 8px; border: 1px solid var(--line); border-radius: var(--radius-lg); background: var(--surface); cursor: pointer; text-align: center; transition: border-color 200ms, box-shadow 200ms, transform 150ms; }
+.node:hover { border-color: var(--line-strong); }
+.node:active { transform: scale(.98); }
+.node .ico { display: grid; place-items: center; width: 42px; height: 42px; border-radius: var(--radius); background: var(--surface-2); border: 1px solid var(--line); transition: background-color 200ms, color 200ms, border-color 200ms; }
+.node .ico .ic { width: 22px; height: 22px; }
+.node b { font-size: 16px; }
+.node small { font: 500 12.5px/1.35 var(--mono); color: var(--fg-2); overflow-wrap: anywhere; }
+.node.act { border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 20%, transparent); }
+.node.act .ico { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+.node[aria-pressed="true"] { border-color: var(--fg); box-shadow: 0 0 0 3px color-mix(in srgb, var(--fg) 18%, transparent); }
+.node.hub { padding: 22px 8px; border-width: 2px; border-color: color-mix(in srgb, var(--accent) 55%, var(--line)); }
+.node.hub .ico { width: 54px; height: 54px; background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
+.n-rules { grid-area: 1 / 1; } .n-user { grid-area: 1 / 2; } .n-skills { grid-area: 1 / 3; }
+.n-memory { grid-area: 2 / 1; } .n-chat { grid-area: 2 / 2; } .n-agents { grid-area: 2 / 3; }
+.n-git { grid-area: 3 / 1; } .n-hooks { grid-area: 3 / 2; } .n-peers { grid-area: 3 / 3; }
+@media (max-width: 640px) { .map { gap: 34px 12px; padding: 18px 12px; } .node small { display: none; } .node b { font-size: 14px; } }
+.side { display: grid; gap: 14px; }
+.tour { display: flex; align-items: flex-start; gap: 12px; padding: 14px 16px; border: 1px solid var(--line); border-radius: var(--radius-lg); background: var(--surface); }
+.tour .num { flex: none; font: 700 14px var(--mono); color: var(--accent); padding-top: 9px; min-width: 46px; }
+.tour p { flex: 1; padding-top: 7px; font-size: 16px; min-height: 3.2em; }
+.panel { padding: 22px; border: 1px solid var(--line); border-radius: var(--radius-lg); background: var(--surface); box-shadow: var(--shadow); }
+.panel .lbl { margin-bottom: 4px; }
+.panel h3 { display: flex; align-items: center; gap: 10px; font-size: 26px; font-weight: 800; }
+.panel h3 .ic { color: var(--accent); }
+.panel dl { display: grid; gap: 14px; margin: 18px 0 0; }
+.panel dt { font: 600 13px var(--mono); text-transform: uppercase; letter-spacing: .04em; color: var(--fg-2); }
+.panel dd { margin: 3px 0 0; font-size: 16px; line-height: 1.55; }
+.panel dd code { overflow-wrap: anywhere; }
+.panel .follow { margin-top: 16px; }
+
+/* Diagramme im Detail */
+.dgrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px; }
+@media (max-width: 1100px) { .dgrid { grid-template-columns: 1fr; } }
+.dcard { display: grid; gap: 12px; align-content: start; min-width: 0; }
+.dcard h3 { font-size: 22px; font-weight: 780; }
+.dcard > p { color: var(--fg-2); font-size: 16px; }
+.dcard .md { box-shadow: var(--shadow); }
+
+/* Grenzen */
+.perm-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+@media (max-width: 1100px) { .perm-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 560px) { .perm-grid { grid-template-columns: 1fr; } }
+.perm { display: flex; flex-direction: column; align-items: flex-start; gap: 12px; min-height: 150px; padding: 16px; border: 1px solid var(--line); border-radius: var(--radius-lg); background: var(--surface); text-align: left; cursor: pointer; transition: border-color 200ms, transform 150ms, background-color 200ms; }
+.perm:hover { border-color: var(--line-strong); }
+.perm:active { transform: scale(.99); }
+.perm .q { font-size: 17px; font-weight: 650; line-height: 1.4; }
+.perm .hint { margin-top: auto; display: inline-flex; align-items: center; gap: 8px; font: 600 13px var(--mono); color: var(--accent); }
+.perm .a { display: none; margin-top: auto; }
+.perm[aria-expanded="true"] .hint { display: none; }
+.perm[aria-expanded="true"] .a { display: grid; gap: 6px; animation: rise 300ms ease-out; }
+.v { display: inline-flex; align-items: center; gap: 8px; justify-self: start; padding: 4px 10px; border-radius: var(--radius-sm); font-weight: 750; font-size: 15px; }
+.perm .a span { font-size: 15px; line-height: 1.45; color: var(--fg-2); }
+.v.free { background: color-mix(in srgb, var(--green) 14%, var(--surface)); color: var(--green); }
+.v.ask { background: color-mix(in srgb, var(--gold) 16%, var(--surface)); color: var(--gold); }
+.v.you { background: color-mix(in srgb, var(--violet) 15%, var(--surface)); color: var(--violet); }
+.v.never { background: color-mix(in srgb, var(--red) 14%, var(--surface)); color: var(--red); }
+.perm[aria-expanded="true"] { background: var(--surface); border-color: var(--line-strong); }
+.legend { display: flex; flex-wrap: wrap; gap: 8px 10px; align-items: center; margin-bottom: 18px; }
+@keyframes rise { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+/* Kurzfassung */
+.steps8 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin: 0; padding: 0; list-style: none; counter-reset: s; }
+@media (max-width: 760px) { .steps8 { grid-template-columns: 1fr; } }
+@media (max-width: 600px) { .steps8 button { grid-template-columns: 44px minmax(0, 1fr); } .steps8 .go { grid-column: 2; } }
+.steps8 button { width: 100%; display: grid; grid-template-columns: 44px minmax(0, 1fr) auto; align-items: center; gap: 14px; padding: 14px 16px; border: 1px solid var(--line); border-radius: var(--radius-lg); background: var(--surface); text-align: left; cursor: pointer; font-size: 16.5px; line-height: 1.45; transition: border-color 200ms, transform 150ms; }
+.steps8 button:hover { border-color: var(--accent); }
+.steps8 button:active { transform: scale(.99); }
+.steps8 .k { display: grid; place-items: center; width: 44px; height: 44px; border-radius: var(--radius); background: var(--surface-2); border: 1px solid var(--line); font: 800 16px var(--mono); }
+.steps8 .go { font: 600 13px var(--mono); color: var(--accent); white-space: nowrap; }
+footer code { overflow-wrap: anywhere; }
+footer { padding: 40px 0 56px; color: var(--fg-2); font-size: 15px; }
+footer .wrap { display: grid; gap: 8px; }
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { transition: none !important; animation: none !important; }
+}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-chat" viewBox="0 0 24 24"><path d="M4 5h16v11H10l-6 4z"/><path d="M8 10h8"/></symbol>
+  <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></symbol>
+  <symbol id="i-book" viewBox="0 0 24 24"><path d="M5 4.5A1.5 1.5 0 0 1 6.5 3H19v15H6.5A1.5 1.5 0 0 0 5 19.5z"/><path d="M5 19.5A1.5 1.5 0 0 0 6.5 21H19v-3"/><path d="M9 7.5h6M9 11h4"/></symbol>
+  <symbol id="i-cards" viewBox="0 0 24 24"><rect x="3" y="7" width="13" height="14" rx="2"/><path d="M7 3h12a2 2 0 0 1 2 2v12"/><path d="M7 12h5M7 15.5h3"/></symbol>
+  <symbol id="i-bot" viewBox="0 0 24 24"><rect x="4" y="8" width="16" height="12" rx="3"/><path d="M12 4v4"/><circle cx="12" cy="3.5" r="1"/><path d="M9 13v1M15 13v1M9.5 17h5"/></symbol>
+  <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M9 12l2 2 4-4"/></symbol>
+  <symbol id="i-db" viewBox="0 0 24 24"><ellipse cx="12" cy="5.5" rx="7.5" ry="2.8"/><path d="M4.5 5.5v13c0 1.5 3.4 2.8 7.5 2.8s7.5-1.3 7.5-2.8v-13"/><path d="M4.5 12c0 1.5 3.4 2.8 7.5 2.8s7.5-1.3 7.5-2.8"/></symbol>
+  <symbol id="i-git" viewBox="0 0 24 24"><circle cx="6" cy="5.5" r="2.5"/><circle cx="6" cy="18.5" r="2.5"/><circle cx="18" cy="8" r="2.5"/><path d="M6 8v8"/><path d="M18 10.5c0 4-4 4.5-9.6 7"/></symbol>
+  <symbol id="i-users" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c1-3.5 3.5-5 6.5-5s5.5 1.5 6.5 5"/><path d="M16 4.6a3.5 3.5 0 0 1 0 6.8M18.5 15.3c1.6.8 2.6 2.4 3 4.7"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
+  <symbol id="i-warn" viewBox="0 0 24 24"><path d="M12 3.5l9.5 16.5h-19z"/><path d="M12 10v4.5M12 17.2v.1"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7.5a4 4 0 0 1 8 0V11"/></symbol>
+  <symbol id="i-file" viewBox="0 0 24 24"><path d="M6 3h8l5 5v13H6z"/><path d="M14 3v5h5"/></symbol>
+  <symbol id="i-pencil" viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/></symbol>
+  <symbol id="i-flask" viewBox="0 0 24 24"><path d="M9 3h6M10 3v6l-5.2 9.2A2 2 0 0 0 6.5 21h11a2 2 0 0 0 1.7-2.8L14 9V3"/><path d="M7.5 15h9"/></symbol>
+  <symbol id="i-up" viewBox="0 0 24 24"><path d="M12 20V5M6 11l6-6 6 6"/></symbol>
+  <symbol id="i-down" viewBox="0 0 24 24"><path d="M12 4v15M6 13l6 6 6-6"/></symbol>
+  <symbol id="i-gauge" viewBox="0 0 24 24"><path d="M3.5 18a8.5 8.5 0 1 1 17 0"/><path d="M12 18l4.5-6"/></symbol>
+  <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></symbol>
+  <symbol id="i-send" viewBox="0 0 24 24"><path d="M4 12l16-8-6 16-2.5-6.5z"/><path d="M11.5 13.5L20 4"/></symbol>
+  <symbol id="i-term" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 9l3 3-3 3M13 15h4"/></symbol>
+  <symbol id="i-doc" viewBox="0 0 24 24"><path d="M6 3h8l5 5v13H6z"/><path d="M9 12h7M9 15.5h7M9 8.5h3"/></symbol>
+  <symbol id="i-q" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.6 9.4a2.5 2.5 0 1 1 3.4 2.4c-.6.3-1 .8-1 1.5v.5M12 16.8v.1"/></symbol>
+  <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M5.3 18.7l1.4-1.4M17.3 6.7l1.4-1.4"/></symbol>
+  <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></symbol>
+  <symbol id="i-auto" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17z" fill="currentColor"/></symbol>
+  <symbol id="i-play" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></symbol>
+  <symbol id="i-pause" viewBox="0 0 24 24"><path d="M7 5h4v14H7zM13 5h4v14h-4z"/></symbol>
+  <symbol id="i-prev" viewBox="0 0 24 24"><path d="M6 5h2.4v14H6zM9.5 12L19 5v14z"/></symbol>
+  <symbol id="i-next" viewBox="0 0 24 24"><path d="M15.6 5H18v14h-2.4zM5 5l9.5 7L5 19z"/></symbol>
+  <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+</svg>
+
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="#top"><i>AI</i>Workflow erklärt</a>
+    <nav class="nav" aria-label="Abschnitte">
+      <a href="#ablauf">Ablauf</a><a href="#system">Bausteine</a><a href="#details">Im Detail</a><a href="#grenzen">Grenzen</a><a href="#kurz">Kurzfassung</a>
+    </nav>
+    <button class="theme" id="theme" type="button" aria-label="Farbschema wechseln"><svg class="ic" aria-hidden="true"><use href="#i-auto"/></svg><span>Auto</span></button>
+  </div>
+</header>
+
+<main id="top">
+
+<section class="hero" aria-labelledby="hero-h">
+  <div class="hero-bg"></div><div class="hero-glow" id="hero-glow"></div><div class="ghost" aria-hidden="true">Satz → Push</div>
+  <div class="wrap">
+    <p class="kicker">AI Dev Workflow · an einem Beispiel erklärt</p>
+    <h1 id="hero-h">Ein Satz rein. <span>Geprüfter Code raus.</span></h1>
+    <p class="lede">Du sagst, was du brauchst. Der Chat plant, baut, prüft und liefert ab – nach einem festen Regelwerk, mit automatischen Wächtern und einem <strong>Beleg für jedes „fertig“</strong>. Diese Seite zeigt den kompletten Weg an einem einfachen Auftrag: <strong>ein Schalter für hell und dunkel</strong> auf der Projektseite.</p>
+    <div class="cta">
+      <a class="btn pri" href="#ablauf"><svg class="ic fill" aria-hidden="true"><use href="#i-play"/></svg>Ablauf abspielen</a>
+      <a class="btn" href="#system"><svg class="ic" aria-hidden="true"><use href="#i-cards"/></svg>Bausteine ansehen</a>
+    </div>
+
+    <div class="hf" id="hero-tl">
+      <p class="sr">Animation: Der Auftrag läuft durch fünf Phasen – Beauftragen, Planen, Bauen, Prüfen, Abliefern – und endet mit einem Push.</p>
+      <div class="hf-top">
+        <div class="hf-prompt" aria-hidden="true"><span class="who">Du</span><span class="txt" data-at="0.2" data-fx="type">[Doku] Die Projektseite braucht einen Hell/Dunkel-Schalter.</span><kbd>Enter ↵</kbd></div>
+        <button class="icon-btn" id="hero-pp" type="button" aria-label="Animation anhalten"><svg class="ic fill" aria-hidden="true"><use href="#i-pause"/></svg></button>
+      </div>
+      <ol class="hf-row" aria-hidden="true">
+        <li class="hf-st" data-at="2.9" data-out="10.4" data-fx="cls"><span class="ico"><svg class="ic"><use href="#i-chat"/></svg></span><span class="txt"><b>Beauftragen</b><span class="hf-role">Claude Chat Organizer</span></span><span class="badge" data-at="3.1" data-out="10.4" data-fx="pop">Pull ✓ · Lagebild</span></li>
+        <li class="hf-cn"><span class="trk"><i class="bar" data-at="3.4" data-d=".8" data-out="10.4" data-fx="bar"></i></span></li>
+        <li class="hf-st" data-at="4.2" data-out="10.4" data-fx="cls"><span class="ico"><svg class="ic"><use href="#i-eye"/></svg></span><span class="txt"><b>Planen</b><span class="hf-role">Organizer · Designer</span></span><span class="badge" data-at="4.4" data-out="10.4" data-fx="pop">Stufe 2 · Toggle:A</span></li>
+        <li class="hf-cn"><span class="trk"><i class="bar" data-at="4.7" data-d=".8" data-out="10.4" data-fx="bar"></i></span></li>
+        <li class="hf-st" data-at="5.5" data-out="10.4" data-fx="cls"><span class="ico"><svg class="ic"><use href="#i-pencil"/></svg></span><span class="txt"><b>Bauen</b><span class="hf-role">Entwickler</span></span><span class="badge" data-at="5.7" data-out="10.4" data-fx="pop">Claim · Hooks ✓</span></li>
+        <li class="hf-cn"><span class="trk"><i class="bar" data-at="6.0" data-d=".8" data-out="10.4" data-fx="bar"></i></span></li>
+        <li class="hf-st" data-at="6.8" data-out="10.4" data-fx="cls"><span class="ico"><svg class="ic"><use href="#i-flask"/></svg></span><span class="txt"><b>Prüfen</b><span class="hf-role">Prüfer</span></span><span class="badge" data-at="7.0" data-out="10.4" data-fx="pop">12/12 ✓</span></li>
+        <li class="hf-cn"><span class="trk"><i class="bar" data-at="7.3" data-d=".8" data-out="10.4" data-fx="bar"></i></span></li>
+        <li class="hf-st" data-at="8.1" data-out="10.4" data-fx="cls"><span class="ico"><svg class="ic"><use href="#i-up"/></svg></span><span class="txt"><b>Abliefern</b><span class="hf-role">Synchronizer</span></span><span class="badge" data-at="8.3" data-out="10.4" data-fx="pop">Push 4f2c9e1</span></li>
+      </ol>
+      <div class="hf-end" aria-hidden="true"><span class="ok" data-at="8.7" data-out="10.4" data-fx="pop"><svg class="ic"><use href="#i-check"/></svg>Schalter gebaut, geprüft, dokumentiert, gepusht</span><span data-at="9.0" data-out="10.4" data-fx="up">– mit Beleg in der Antwort.</span></div>
+    </div>
+
+    <dl class="facts">
+      <div><dt>4 Rollen</dt><dd>Organizer → Fachrolle → Prüfer → Synchronizer</dd></div>
+      <div><dt>6 Hooks</dt><dd>prüfen jeden Schritt automatisch</dd></div>
+      <div><dt>4 Prüfstufen</dt><dd>Prüftiefe nach Umfang und Risiko</dd></div>
+      <div><dt>1 Regelwerk</dt><dd>für Claude, Codex und Gemini</dd></div>
+    </dl>
+  </div>
+</section>
+
+
+<section class="sec" id="ablauf" aria-labelledby="ablauf-h">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="kicker">01 · Ablauf · 8 Szenen · gut 1 Minute</p>
+      <h2 id="ablauf-h">Ein Auftrag – von der ersten Zeile bis zum Push</h2>
+      <p>Links der Chat, wie du ihn in VS Code siehst. Rechts, was dabei im Hintergrund passiert. Pausieren, zurückspulen, Szenen anspringen: Leertaste, ← → oder die Leiste unten.</p>
+    </div>
+    <div class="order">
+      <span class="ico"><svg class="ic" aria-hidden="true"><use href="#i-user"/></svg></span>
+      <q>[Doku] Die Projektseite braucht einen Schalter für hell und dunkel.</q>
+      <p>Das ist alles, was du schreibst – gemeint ist so ein Schalter wie oben rechts auf dieser Seite. Am Ende ist er gebaut, geprüft, dokumentiert, gepusht und mit Beleg gemeldet.</p>
+    </div>
+
+    <div class="player" id="player" tabindex="0" role="region" aria-label="Ablauf-Player: ein Auftrag in acht Szenen" aria-describedby="pl-help">
+      <p class="sr" id="pl-help">Leertaste startet oder hält an, Pfeil links und rechts springen eine Szene.</p>
+      <ol class="phases" id="phases">
+        <li><span class="n"><span>1</span><svg class="ic"><use href="#i-check"/></svg></span><span class="t">Beauftragen<small>Organizer</small></span></li>
+        <li><span class="n"><span>2</span><svg class="ic"><use href="#i-check"/></svg></span><span class="t">Planen<small>Organizer · Designer</small></span></li>
+        <li><span class="n"><span>3</span><svg class="ic"><use href="#i-check"/></svg></span><span class="t">Bauen<small>Entwickler</small></span></li>
+        <li><span class="n"><span>4</span><svg class="ic"><use href="#i-check"/></svg></span><span class="t">Prüfen<small>Prüfer</small></span></li>
+        <li><span class="n"><span>5</span><svg class="ic"><use href="#i-check"/></svg></span><span class="t">Abliefern<small>Synchronizer</small></span></li>
+      </ol>
+      <div class="pl-body">
+        <div class="pl-chat" aria-label="Chat-Verlauf">
+          <p class="pl-chat-h"><span class="dot"></span>[Claude] dev-ws-c3 · [Doku] Hell/Dunkel</p>
+          <ol class="msgs" id="msgs">
+            <li class="msg me" data-at="0.4" data-fx="msg"><span class="av"><svg class="ic"><use href="#i-user"/></svg></span><span class="who">Du</span><span class="tx">[Doku] Die Projektseite braucht einen Schalter für hell und dunkel.</span></li>
+            <li class="msg hook good" data-at="2.6" data-fx="msg"><span class="av"><svg class="ic"><use href="#i-shield"/></svg></span><span class="who">Hook · Pull</span><span class="tx">global a31a16e · dev_ws b0ca67b → ✅ aktuell</span></li>
+            <li class="msg hook" data-at="4.4" data-fx="msg"><span class="av"><svg class="ic"><use href="#i-shield"/></svg></span><span class="who">Hook · Lagebild</span><span class="tx">dev-ws-7a hält docs/css/layout.css · sonst alles frei</span></li>
+            <li class="msg ai" data-at="7.8" data-fx="msg"><span class="av"><svg class="ic"><use href="#i-chat"/></svg></span><span class="who">Chat · Organizer</span><span class="tx">Neues UI-Element, mehrere Dateien → Prüfstufe 2. Erst Vorschau, dann Code.</span></li>
+            <li class="msg ai" data-at="11.8" data-fx="msg"><span class="av"><svg class="ic"><use href="#i-chat"/></svg></span><span class="who">Chat · Organizer</span><span class="tx">Lade nur die Skills docs-layout und preview.</span></li>
+            <li class="msg ai" data-at="15.0" data-fx="msg"><span class="av"><svg class="ic"><use href="#i-chat"/></svg></span><span class="who">Chat · Designer</span><span class="tx">Vorschau fertig: Toggle:A Schiebeschalter · Toggle:B Symbol · Toggle:C Auswahl.</span></li>
+            <li class="msg me" data-at="19.6" data-fx="msg"><span class="av"><svg class="ic"><use href="#i-user"/></svg></span><span class="who">Du · per Vorschau</span><span class="tx">An Chat senden: Toggle:A</span></li>
+            <li class="msg ai" data-at="20.8" data-fx="msg"><span class="av"><svg class="ic"><use href="#i-chat"/></svg></span><span class="who">Chat · Designer</span><span class="tx">❓ F1 Auch auf den anderen Projektseiten?</span></li>
+            <li class="msg me" data-at="21.8" data-fx="msg"><span class="av"><svg class="ic"><use href="#i-user"/></svg></span><span class="who">Du · Dialog</span><span class="tx">F1 → Später, in die TODOs</span></li>
+            <li class="msg ai" data-at="24.0" data-fx="msg"><span class="av"><svg class="ic"><use href="#i-chat"/></svg></span><span class="who">Chat · Organizer</span><span class="tx">Plan: 3 Dateien. layout.css bleibt bei dev-ws-7a.</span></li>
+            <li class="msg hook good" data-at="27.2" data-fx="msg"><span class="av"><svg class="ic"><use href="#i-shield"/></svg></span><span class="who">Hook · Claim</span><span class="tx">angelegt · 3 Dateien eingetragen → ✅</span></li>
+            <li class="msg ai" data-at="30.6" data-fx="msg"><span class="av"><svg class="ic"><use href="#i-chat"/></svg></span><span class="who">Chat · Entwickler</span><span class="tx">Baue Schalter, Farben und Skript.</span></li>
+            <li class="msg hook warn" data-at="33.0" data-fx="msg"><span class="av"><svg class="ic"><use href="#i-shield"/></svg></span><span class="who">Hook · post_edit_check</span><span class="tx">⚠️ graue Schrift (#999) → Token --fg-2</span></li>
+            <li class="msg ai" data-at="35.4" data-fx="msg"><span class="av"><svg class="ic"><use href="#i-chat"/></svg></span><span class="who">Chat · Entwickler</span><span class="tx">Behoben – Hook ohne Befund ✅</span></li>
+            <li class="msg agent" data-at="39.6" data-fx="msg"><span class="av"><svg class="ic"><use href="#i-bot"/></svg></span><span class="who">Agent · test-runner</span><span class="tx">Starte Kontrast- und Bildprüfung (Stufe 2)</span></li>
+            <li class="msg agent bad" data-at="41.4" data-fx="msg"><span class="av"><svg class="ic"><use href="#i-bot"/></svg></span><span class="who">Agent · test-runner</span><span class="tx">❌ 11/12 · Links im Dunkelmodus zu blass</span></li>
+            <li class="msg ai" data-at="42.8" data-fx="msg"><span class="av"><svg class="ic"><use href="#i-chat"/></svg></span><span class="who">Chat · Prüfer</span><span class="tx">Ursache: Linkfarbe nur für hell gesetzt → Token für dunkel + Test.</span></li>
+            <li class="msg agent good" data-at="45.0" data-fx="msg"><span class="av"><svg class="ic"><use href="#i-bot"/></svg></span><span class="who">Agent · test-runner</span><span class="tx">✅ 12/12 · hell + dunkel · 1280 + 360 px</span></li>
+            <li class="msg ai" data-at="48.4" data-fx="msg"><span class="av"><svg class="ic"><use href="#i-chat"/></svg></span><span class="who">Chat · Synchronizer</span><span class="tx">Doku DE + EN nachgezogen.</span></li>
+            <li class="msg hook good" data-at="50.4" data-fx="msg"><span class="av"><svg class="ic"><use href="#i-shield"/></svg></span><span class="who">Hook · pre-commit</span><span class="tx">4 Prüfungen grün ✅</span></li>
+            <li class="msg hook good" data-at="52.4" data-fx="msg"><span class="av"><svg class="ic"><use href="#i-git"/></svg></span><span class="who">Sync · Push</span><span class="tx">origin main 4f2c9e1 ✅ · Claim gelöscht</span></li>
+            <li class="msg ai good" data-at="55.4" data-fx="msg"><span class="av"><svg class="ic"><use href="#i-chat"/></svg></span><span class="who">Chat · Antwort</span><span class="tx">🟩 Ergebnis: Hell/Dunkel-Schalter · geprüft ✅</span></li>
+            <li class="msg me" data-at="58.6" data-fx="msg"><span class="av"><svg class="ic"><use href="#i-user"/></svg></span><span class="who">Du</span><span class="tx">Bitte immer Text neben die Symbole: „Hell“, „Dunkel“.</span></li>
+            <li class="msg ai good" data-at="60.4" data-fx="msg"><span class="av"><svg class="ic"><use href="#i-chat"/></svg></span><span class="who">Chat · Organizer</span><span class="tx">Ergänzt, gepusht 9d1e0b2 · Memory „Symbole immer mit Text“ gilt ab jetzt für jeden Chat.</span></li>
+          </ol>
+        </div>
+
+        <div class="pl-stage" id="stage">
+          
+          <section class="scene" data-s="0" aria-labelledby="sc0">
+            <header class="sc-h" data-at="0.05"><span class="role"><svg class="ic" aria-hidden="true"><use href="#i-chat"/></svg>Claude Chat Organizer</span><h3 id="sc0">Frischer Stand, klares Lagebild</h3><p>Vor jeder Anfrage holt ein Hook beide Repos per Fast-Forward und zeigt, welche anderen Chats gerade woran arbeiten.</p></header>
+            <div class="two">
+              <div class="box" data-at="1.0"><p class="lbl"><svg class="ic" aria-hidden="true"><use href="#i-git"/></svg>Werkzeug-Repo</p><code class="big">ai_dev_workflow_global</code>
+                <div class="ff"><span>origin</span><span class="trk"><i class="bar" data-at="1.5" data-d=".9" data-fx="bar"></i></span><span>lokal</span></div>
+                <p class="st ok" data-at="2.4" data-fx="pop"><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg>Fast-Forward · <code>a31a16e</code></p></div>
+              <div class="box" data-at="1.3"><p class="lbl"><svg class="ic" aria-hidden="true"><use href="#i-git"/></svg>Projekt-Repo</p><code class="big">dev_ws</code>
+                <div class="ff"><span>origin</span><span class="trk"><i class="bar" data-at="1.8" data-d=".9" data-fx="bar"></i></span><span>lokal</span></div>
+                <p class="st ok" data-at="2.7" data-fx="pop"><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg>Fast-Forward · <code>b0ca67b</code></p></div>
+            </div>
+            <div class="box" data-at="3.6"><p class="lbl"><svg class="ic" aria-hidden="true"><use href="#i-users"/></svg>Lagebild · laufende Chats</p>
+              <ul class="rows">
+                <li data-at="4.0"><code class="cid">dev-ws-7a</code><span>[Doku] Abstände Startseite</span><span class="chip warn"><svg class="ic" aria-hidden="true"><use href="#i-lock"/></svg>hält docs/css/layout.css</span></li>
+                <li data-at="4.4"><code class="cid">dev-ws-bd</code><span>[Agency] Startseite</span><span class="chip">anderes Repo</span></li>
+                <li class="ok" data-at="5.0"><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg>Keine Claims auf den Dateien dieses Auftrags</li>
+              </ul></div>
+            <p class="why" data-at="0.6"><b>Warum so?</b> Kein Chat baut auf altem Code, keiner überschreibt fremde Arbeit. Scheitert der Pull, meldet der Chat nur den Fehler – statt auf altem Stand weiterzuarbeiten.</p>
+          </section>
+
+          
+          <section class="scene" data-s="1" aria-labelledby="sc1" hidden>
+            <header class="sc-h" data-at="7.05"><span class="role"><svg class="ic" aria-hidden="true"><use href="#i-chat"/></svg>Claude Chat Organizer</span><h3 id="sc1">Erst einschätzen, dann laden</h3><p>Was braucht dieser Auftrag wirklich? Die Antwort legt Prüfstufe, Skills und eine Vorschau fest – bevor eine Zeile Code entsteht.</p></header>
+            <div class="box" data-at="7.8"><p class="lbl"><svg class="ic" aria-hidden="true"><use href="#i-gauge"/></svg>Prüfstufe</p>
+              <ol class="gauge">
+                <li data-at="8.4" data-out="9.0" data-fx="cls"><b>0</b><span>trivial</span></li>
+                <li data-at="9.0" data-out="9.6" data-fx="cls"><b>1</b><span>klein</span></li>
+                <li data-at="9.6" data-fx="cls"><b>2</b><span>normal</span></li>
+                <li><b>3</b><span>kritisch</span></li>
+              </ol>
+              <p class="st" data-at="10.0" data-fx="pop">Neues Element, mehrere Dateien → Stufe 2 · erst Vorschau, dann Code</p></div>
+            <div class="box" data-at="10.4"><p class="lbl"><svg class="ic" aria-hidden="true"><use href="#i-cards"/></svg>Skill-Finder · Stichwort → Skill</p>
+              <ul class="skills">
+                <li>root-cause</li><li>ros-debug</li><li>docs</li><li data-at="11.4" data-fx="cls">docs-layout</li><li>text-format</li><li>vla-motion</li><li>build-pkg</li><li data-at="11.9" data-fx="cls">preview</li><li>test-isolated</li><li>gsap</li><li>flow-graph</li><li>threejs</li><li>research</li><li>scrum</li><li>commit</li><li>blender</li><li>cad-print</li><li>humanizer</li>
+              </ul>
+              <p class="st ok" data-at="12.4" data-fx="pop"><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg>2 von 51 Skills: „Projektseite“ → docs-layout · „neues Element“ → preview</p></div>
+            <p class="why" data-at="7.6"><b>Warum so?</b> Jeder geladene Skill füllt den Kontext – und Kontext kostet Zeit und Geld. Darum lädt der Chat nur, was die Anfrage berührt. Die Prüfstufe bestimmt, wie tief später geprüft wird.</p>
+          </section>
+
+          
+          <section class="scene" data-s="2" aria-labelledby="sc2" hidden>
+            <header class="sc-h" data-at="14.55"><span class="role"><svg class="ic" aria-hidden="true"><use href="#i-eye"/></svg>Designer</span><h3 id="sc2">Du wählst, bevor Code entsteht</h3><p>Neue UI-Elemente zeigt der Chat zuerst als Vorschau-Seite mit echten Varianten. Deine Wahl schickst du per Knopf zurück.</p></header>
+            <div class="vars">
+              <div data-at="15.3"><figure class="box var" data-at="19.0" data-fx="cls" data-cls="sel"><figcaption><code>Toggle:A</code> Schiebeschalter<span class="pick">gewählt</span></figcaption><div class="mock"><div class="mk-row"><svg class="ic" aria-hidden="true"><use href="#i-sun"/></svg><span class="sw"><i></i></span><svg class="ic" aria-hidden="true"><use href="#i-moon"/></svg></div><span class="mk-note">ein Griff, Zustand sichtbar</span></div></figure></div>
+              <div data-at="15.7"><figure class="box var"><figcaption><code>Toggle:B</code> Symbol<span class="pick">gewählt</span></figcaption><div class="mock"><span class="ibtn"><svg class="ic" aria-hidden="true"><use href="#i-moon"/></svg></span><span class="mk-note">klein, nur ein Symbol</span></div></figure></div>
+              <div data-at="16.1"><figure class="box var"><figcaption><code>Toggle:C</code> Auswahl<span class="pick">gewählt</span></figcaption><div class="mock"><span class="seg"><span>Hell</span><span class="on">Dunkel</span><span>Auto</span></span><span class="mk-note">drei Wege, auch „Auto“</span></div></figure></div>
+            </div>
+            <div class="send-row" data-at="17.0"><span class="fake" data-at="19.2" data-out="19.7" data-fx="cls" data-cls="press"><svg class="ic" aria-hidden="true"><use href="#i-send"/></svg>An Chat senden</span><span class="chip ok" data-at="19.6" data-fx="pop"><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg>Toggle:A gewählt</span></div>
+            <div class="box f1" data-at="20.6"><p><span class="fnum">F1</span>Auch auf den anderen Projektseiten?</p>
+              <div class="opts"><span class="opt">Ja, gleich mit</span><span class="opt" data-at="21.6" data-fx="cls" data-cls="sel">Später</span><span class="opt">Nein</span></div>
+              <p class="st" data-at="22.0" data-fx="pop"><svg class="ic" aria-hidden="true"><use href="#i-doc"/></svg>In TODOs vermerkt</p></div>
+            <p class="why" data-at="15.1"><b>Warum so?</b> Eine Vorschau kostet Minuten, ein falsch gebautes Element Stunden. Rückfragen tragen Nummern (F1) – gleich in Dialog, Vorschau und Antwort.</p>
+          </section>
+
+          
+          <section class="scene" data-s="3" aria-labelledby="sc3" hidden>
+            <header class="sc-h" data-at="23.55"><span class="role"><svg class="ic" aria-hidden="true"><use href="#i-chat"/></svg>Claude Chat Organizer</span><h3 id="sc3">Plan mit Dateien, Claim für alle sichtbar</h3><p>Der Plan nennt jede Datei. Ein Claim trägt sie ein, bevor die erste Änderung passiert – andere Chats sehen das sofort.</p></header>
+            <div class="box" data-at="23.8"><p class="lbl"><svg class="ic" aria-hidden="true"><use href="#i-file"/></svg>Plan · 3 Dateien · Prüfstufe 2</p>
+              <ul class="files">
+                <li data-at="24.2"><svg class="ic" aria-hidden="true"><use href="#i-file"/></svg><code>docs/project_docs.html</code><span class="d">Schalter in den Kopf</span><span class="chip">geändert</span><svg class="ic lk" data-at="27.4" data-fx="pop" aria-hidden="true"><use href="#i-lock"/></svg></li>
+                <li data-at="24.6"><svg class="ic" aria-hidden="true"><use href="#i-file"/></svg><code>docs/css/theme.css</code><span class="d">Farben für dunkel</span><span class="chip">geändert</span><svg class="ic lk" data-at="27.6" data-fx="pop" aria-hidden="true"><use href="#i-lock"/></svg></li>
+                <li data-at="25.0"><svg class="ic" aria-hidden="true"><use href="#i-file"/></svg><code>docs/js/theme.js</code><span class="d">Schalter, Wahl merken</span><span class="chip ok">neu</span><svg class="ic lk" data-at="27.8" data-fx="pop" aria-hidden="true"><use href="#i-lock"/></svg></li>
+                <li class="foreign" data-at="25.6"><svg class="ic warn" aria-hidden="true"><use href="#i-lock"/></svg><code>docs/css/layout.css</code><span class="d">gehört dev-ws-7a – nicht anfassen</span><span class="chip warn">fremd</span><span></span></li>
+              </ul></div>
+            <div class="box claim" data-at="26.8"><svg class="ic" aria-hidden="true"><use href="#i-lock"/></svg><div><p class="lbl">Claim · eigener Git-Ref</p><code>refs/claims/labor-c3</code><p>3 Dateien eingetragen · sichtbar für alle Chats und Rechner</p></div></div>
+            <p class="why" data-at="24.1"><b>Warum so?</b> Zwei Chats an derselben Datei überschreiben sich. Der Claim zeigt, wer woran arbeitet; fremde Dateien fasst der Chat nicht an, sondern stimmt sich ab.</p>
+          </section>
+
+          
+          <section class="scene" data-s="4" aria-labelledby="sc4" hidden>
+            <header class="sc-h" data-at="30.05"><span class="role"><svg class="ic" aria-hidden="true"><use href="#i-pencil"/></svg>Entwickler</span><h3 id="sc4">Jeder Edit läuft durch zwei Wächter</h3><p>Vor dem Werkzeug prüft <code>pre_tool_guard</code>, danach <code>post_edit_check</code>. Ein Befund wird sofort behoben – nicht erst beim Commit.</p></header>
+            <div class="loop">
+              <div class="box lst" data-at="30.5"><svg class="ic" aria-hidden="true"><use href="#i-shield"/></svg><b>pre_tool_guard</b><span>Datei frei? Befehl sicher?</span><div class="stack"><span class="st ok" data-at="31.1" data-fx="pop"><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg>frei</span></div></div>
+              <div class="lcn"><span class="trk"><i class="bar" data-at="31.3" data-d=".6" data-fx="bar"></i></span></div>
+              <div class="box lst" data-at="30.7"><svg class="ic" aria-hidden="true"><use href="#i-pencil"/></svg><b>Edit</b><span>theme.css</span><div class="stack"><span class="st" data-at="31.9" data-out="33.2" data-fx="pop">schreibt …</span><span class="st warn" data-at="33.4" data-out="34.3" data-fx="pop">korrigiert …</span></div></div>
+              <div class="lcn"><span class="trk"><i class="bar" data-at="32.2" data-d=".6" data-out="33.3" data-fx="bar"></i><i class="bar rev" data-at="33.4" data-d=".6" data-out="34.3" data-fx="bar"></i><i class="bar" data-at="34.4" data-d=".6" data-fx="bar"></i></span></div>
+              <div class="box lst" data-at="30.9"><svg class="ic" aria-hidden="true"><use href="#i-shield"/></svg><b>post_edit_check</b><span>UI-Regeln, flake8, JSON</span><div class="stack"><span class="st warn" data-at="32.9" data-out="34.4" data-fx="pop"><svg class="ic" aria-hidden="true"><use href="#i-warn"/></svg>graue Schrift</span><span class="st ok" data-at="35.1" data-fx="pop"><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg>ohne Befund</span></div></div>
+            </div>
+            <div class="box" data-at="31.4"><p class="lbl"><svg class="ic" aria-hidden="true"><use href="#i-file"/></svg>docs/css/theme.css · Diff</p>
+              <ol class="diff">
+                <li class="add" data-at="31.8">+ [data-theme="dark"] { --bg: #0b0e12; --fg: #edf1f6; }</li>
+                <li class="add" data-at="32.1">+ .theme-toggle { inline-size: 52px; block-size: 28px; }</li>
+                <li class="add" data-at="32.4"><span class="cut" data-at="32.9" data-fx="cls" data-cls="bad">+ .footnote { color: #999; }</span></li>
+                <li class="add" data-at="34.2">+ .footnote { color: var(--fg-2); }</li>
+              </ol></div>
+            <p class="why" data-at="30.6"><b>Warum so?</b> Fehler fallen beim Edit auf, solange der Kontext frisch ist. Riskante Befehle – breites <code>pkill</code>, <code>--force</code>, die echte Roboter-IP – brauchen vorher dein OK.</p>
+          </section>
+
+          
+          <section class="scene" data-s="5" aria-labelledby="sc5" hidden>
+            <header class="sc-h" data-at="39.05"><span class="role"><svg class="ic" aria-hidden="true"><use href="#i-flask"/></svg>Prüfer</span><h3 id="sc5">„Fertig“ nur mit Beleg</h3><p>Stufe 2 heißt volle Prüfung. Ein Agent führt sie in eigenem Kontext aus und meldet nur das Ergebnis zurück.</p></header>
+            <div class="box agent" data-at="39.4"><svg class="ic" aria-hidden="true"><use href="#i-bot"/></svg><div><b>test-runner</b> · Agent mit eigenem Kontext<p>lange Logs bleiben beim Agenten, der Chat bekommt nur das Ergebnis</p></div></div>
+            <div class="box" data-at="39.7">
+              <div class="trow"><code>Kontrast (WCAG)</code><span class="trk"><i class="bar" data-at="40.0" data-d="1.3" data-out="43.6" data-fx="bar"></i><i class="bar re" data-at="43.8" data-d="1" data-fx="bar"></i></span><span class="stack"><span class="chip bad" data-at="41.3" data-out="43.6" data-fx="pop"><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg>11/12</span><span class="chip ok" data-at="44.9" data-fx="pop"><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg>12/12</span></span></div>
+              <div class="stack cause"><p class="bad" data-at="41.6" data-out="43.5">Links im Dunkelmodus: 3,1 : 1 statt mindestens 4,5 : 1</p><p data-at="43.7">Ursache: Linkfarbe nur für hell gesetzt → Token für dunkel ergänzt, Test dazu</p></div>
+              <div class="trow"><code>Screenshots</code><span class="shots"><span class="shot" data-at="45.2" data-fx="pop"><i class="scr"></i>hell 1280</span><span class="shot" data-at="45.4" data-fx="pop"><i class="scr dk"></i>dunkel 1280</span><span class="shot" data-at="45.6" data-fx="pop"><i class="scr nar"></i>hell 360</span><span class="shot" data-at="45.8" data-fx="pop"><i class="scr dk nar"></i>dunkel 360</span></span><span class="chip ok" data-at="46.0" data-fx="pop"><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg>4/4</span></div>
+              <div class="trow"><code>check_showcase</code><span></span><span class="chip ok" data-at="46.2" data-fx="pop"><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg>DE + EN</span></div>
+            </div>
+            <p class="stamp" data-at="46.6" data-fx="pop"><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg>Beleg nach der letzten Änderung</p>
+            <p class="why" data-at="39.6"><b>Warum so?</b> „Sollte gehen“ zählt nicht. Ein Fehler heißt: Ursache finden, Test dazu, erneut prüfen. Die Tiefe richtet sich nach der Stufe – nichts wird doppelt geprüft.</p>
+          </section>
+
+          
+          <section class="scene" data-s="6" aria-labelledby="sc6" hidden>
+            <header class="sc-h" data-at="48.05"><span class="role"><svg class="ic" aria-hidden="true"><use href="#i-git"/></svg>Synchronizer</span><h3 id="sc6">Nur eigene, geprüfte Dateien – nie <code>--force</code></h3><p>Doku nachziehen, Commit durch den pre-commit-Hook, Push. Danach ist der Claim gelöscht und die Dateien sind wieder frei.</p></header>
+            <ol class="pipe">
+              <li class="pn" data-at="48.6"><svg class="ic" aria-hidden="true"><use href="#i-doc"/></svg>Doku DE + EN</li>
+              <li class="pcn"><span class="trk"><i class="bar" data-at="49.0" data-d=".5" data-fx="bar"></i></span></li>
+              <li class="pn" data-at="49.5"><svg class="ic" aria-hidden="true"><use href="#i-file"/></svg>git add · nur eigene</li>
+              <li class="pcn"><span class="trk"><i class="bar" data-at="49.9" data-d=".5" data-fx="bar"></i></span></li>
+              <li class="pn" data-at="50.4"><svg class="ic" aria-hidden="true"><use href="#i-shield"/></svg>pre-commit ✓</li>
+              <li class="pcn"><span class="trk"><i class="bar" data-at="50.8" data-d=".5" data-fx="bar"></i></span></li>
+              <li class="pn" data-at="51.3"><svg class="ic" aria-hidden="true"><use href="#i-git"/></svg>Commit</li>
+              <li class="pcn"><span class="trk"><i class="bar" data-at="51.7" data-d=".5" data-fx="bar"></i></span></li>
+              <li class="pn" data-at="52.2"><svg class="ic" aria-hidden="true"><use href="#i-up"/></svg>Push</li>
+              <li class="pcn"><span class="trk"><i class="bar" data-at="52.6" data-d=".5" data-fx="bar"></i></span></li>
+              <li class="pn" data-at="53.1"><svg class="ic" aria-hidden="true"><use href="#i-lock"/></svg>Claim gelöscht</li>
+            </ol>
+            <ul class="term" data-at="49.3">
+              <li data-at="49.5"><span class="p">$</span> git add docs/project_docs.html docs/css/theme.css docs/js/theme.js</li>
+              <li data-at="50.4"><span class="g">[Hook] pre-commit ✓ 4 Prüfungen grün</span></li>
+              <li data-at="51.3"><span class="p">$</span> git commit -m "feat(docs): light/dark toggle on project page"</li>
+              <li data-at="52.2"><span class="p">$</span> git push <span class="g">→ origin main 4f2c9e1</span></li>
+            </ul>
+            <p class="why" data-at="48.6"><b>Warum so?</b> Das Datei-Register kennt jede Datei – fremde Änderungen landen nie im eigenen Commit. Ohne <code>--force</code> bleibt Git die eine Quelle für Laptop, Labor und Home-PC.</p>
+          </section>
+
+          
+          <section class="scene" data-s="7" aria-labelledby="sc7" hidden>
+            <header class="sc-h" data-at="55.05"><span class="role"><svg class="ic" aria-hidden="true"><use href="#i-db"/></svg>Synchronizer · Memory</span><h3 id="sc7">Gleiche Antwortform – und Korrekturen bleiben</h3><p>Ergebnis zuerst, Git-Stand am Schluss. Korrigierst du etwas, wird daraus eine Memory-Datei für jeden künftigen Chat.</p></header>
+            <div class="box answer" data-at="55.5">
+              <p class="l" data-at="55.8"><b>🟩 Ergebnis:</b> Hell/Dunkel-Schalter auf der Projektseite · geprüft ✅</p>
+              <p class="chips" data-at="56.2"><span class="chip">🟩 geprüft</span><span class="chip">🟦 3 Dateien</span><span class="chip">🟩 gepusht</span></p>
+              <p class="l" data-at="56.6"><b>Ablauf:</b> Pull ✅ ── Claim ✅ ── pre-commit ✅ ── Push 4f2c9e1 🚀</p>
+              <h4 data-at="57.0">🟩 [Synchronizer] · 🏁 AUFGABE ERLEDIGT ✅</h4>
+              <p class="cid2" data-at="57.3">([Claude] dev-ws-c3 · gepusht 4f2c9e1)</p>
+            </div>
+            <div class="learn">
+              <div class="ln" data-at="58.6"><svg class="ic" aria-hidden="true"><use href="#i-user"/></svg><span>Du: „Symbole bitte immer mit Text“</span></div>
+              <div class="lcn2"><span class="trk"><i class="bar" data-at="59.1" data-d=".7" data-fx="bar"></i></span></div>
+              <div class="ln" data-at="59.8"><svg class="ic" aria-hidden="true"><use href="#i-db"/></svg><span><code>memory/symbol-mit-text.md</code> + Zeile in MEMORY.md</span></div>
+              <div class="lcn2"><span class="trk"><i class="bar" data-at="60.3" data-d=".7" data-fx="bar"></i></span></div>
+              <div class="ln" data-at="61.0"><svg class="ic" aria-hidden="true"><use href="#i-chat"/></svg><span>Jeder nächste Chat: richtig beim ersten Mal</span></div>
+            </div>
+            <p class="why" data-at="55.6"><b>Warum so?</b> Ergebnis, Risiken und Git-Stand stehen immer an derselben Stelle – du musst nie suchen. Was du einmal korrigierst, korrigierst du nie wieder: Memory liegt im Git, für jeden Chat auf jedem Rechner.</p>
+          </section>
+        </div>
+      </div>
+
+      <div class="pl-ctl">
+        <div class="ctl">
+          <button type="button" id="pl-prev" aria-label="Vorige Szene"><svg class="ic fill" aria-hidden="true"><use href="#i-prev"/></svg></button>
+          <button type="button" id="pl-pp" class="pp" aria-label="Abspielen"><svg class="ic fill" aria-hidden="true"><use href="#i-play"/></svg></button>
+          <button type="button" id="pl-next" aria-label="Nächste Szene"><svg class="ic fill" aria-hidden="true"><use href="#i-next"/></svg></button>
+        </div>
+        <div class="tl"><div class="segs" id="segs" aria-hidden="true"></div><input class="scrub" id="scrub" type="range" min="0" max="64" step="0.1" value="0" aria-label="Zeit im Ablauf"></div>
+        <span class="time" id="pl-time" aria-hidden="true">0:00 / 1:04</span>
+        <button type="button" class="speed" id="pl-speed">Tempo: normal</button>
+      </div>
+      <ol class="chapters" id="chapters"></ol>
+      <p class="sr" id="pl-live" aria-live="polite"></p>
+    </div>
+  </div>
+</section>
+
+
+<section class="sec" id="system" aria-labelledby="system-h">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="kicker">02 · Bausteine</p>
+      <h2 id="system-h">Was der Chat dabei alles nutzt</h2>
+      <p>In der Mitte der Chat, außen acht Bausteine. Die Punkte zeigen den Beispiel-Auftrag als Rundgang. Klick auf einen Baustein erklärt ihn – mit dem, was er im Beispiel getan hat.</p>
+    </div>
+    <div class="sys">
+      <div class="map" id="map">
+        <svg class="wires" id="wires" aria-hidden="true"></svg>
+        <button type="button" class="node n-rules" data-id="rules" aria-pressed="false"><span class="ico"><svg class="ic" aria-hidden="true"><use href="#i-book"/></svg></span><b>Regeln</b><small>RULES.md · AGENTS.md</small></button>
+        <button type="button" class="node n-user" data-id="user" aria-pressed="false"><span class="ico"><svg class="ic" aria-hidden="true"><use href="#i-user"/></svg></span><b>Du</b><small>Ziel · Wahl · Freigabe</small></button>
+        <button type="button" class="node n-skills" data-id="skills" aria-pressed="false"><span class="ico"><svg class="ic" aria-hidden="true"><use href="#i-cards"/></svg></span><b>Skills</b><small>Wissen je Thema</small></button>
+        <button type="button" class="node n-memory" data-id="memory" aria-pressed="false"><span class="ico"><svg class="ic" aria-hidden="true"><use href="#i-db"/></svg></span><b>Memory</b><small>Korrekturen bleiben</small></button>
+        <button type="button" class="node hub n-chat" data-id="chat" aria-pressed="false"><span class="ico"><svg class="ic" aria-hidden="true"><use href="#i-chat"/></svg></span><b>Chat</b><small>plant · baut · prüft</small></button>
+        <button type="button" class="node n-agents" data-id="agents" aria-pressed="false"><span class="ico"><svg class="ic" aria-hidden="true"><use href="#i-bot"/></svg></span><b>Agenten</b><small>eigener Kontext</small></button>
+        <button type="button" class="node n-git" data-id="git" aria-pressed="false"><span class="ico"><svg class="ic" aria-hidden="true"><use href="#i-git"/></svg></span><b>Git</b><small>eine Quelle</small></button>
+        <button type="button" class="node n-hooks" data-id="hooks" aria-pressed="false"><span class="ico"><svg class="ic" aria-hidden="true"><use href="#i-shield"/></svg></span><b>Hooks</b><small>6 Prüfstellen</small></button>
+        <button type="button" class="node n-peers" data-id="peers" aria-pressed="false"><span class="ico"><svg class="ic" aria-hidden="true"><use href="#i-users"/></svg></span><b>Andere Chats</b><small>Claims · Register</small></button>
+      </div>
+      <div class="side">
+        <div class="tour"><button class="icon-btn" id="map-pp" type="button" aria-label="Rundgang anhalten"><svg class="ic fill" aria-hidden="true"><use href="#i-pause"/></svg></button><span class="num" id="tour-n">1 / 12</span><p id="tour-t"></p></div>
+        <article class="panel" id="panel" aria-live="polite">
+          <p class="lbl">Baustein</p>
+          <h3 id="pn-h"><svg class="ic" aria-hidden="true"><use id="pn-ic" href="#i-chat"/></svg><span id="pn-t">Chat</span></h3>
+          <dl>
+            <div><dt>Was es ist</dt><dd id="pn-what"></dd></div>
+            <div><dt>Wo es liegt</dt><dd id="pn-where"></dd></div>
+            <div><dt>Im Beispiel</dt><dd id="pn-ex"></dd></div>
+          </dl>
+          <button class="btn follow" id="pn-follow" type="button" hidden><svg class="ic" aria-hidden="true"><use href="#i-arrow"/></svg>Wieder dem Rundgang folgen</button>
+        </article>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<section class="sec" id="details" aria-labelledby="details-h">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="kicker">03 · Im Detail</p>
+      <h2 id="details-h">Vier Mechanismen, Schritt für Schritt</h2>
+      <p>Jedes Diagramm spielt einen Weg aus dem Beispiel ab. Mit ◀ ▶ gehst du Schritt für Schritt, im Diagramm auch per Pfeiltasten.</p>
+    </div>
+    <div class="dgrid">
+      <div class="dcard"><h3>Ein Edit, drei Prüfstellen</h3><p>Wer prüft wann? Vom Edit bis zum Commit.</p>
+        <figure id="md-edit"><ol class="md-fallback"><li>Chat fragt pre_tool_guard → Datei frei → Edit → post_edit_check meldet graue Schrift → Fix → ohne Befund → git commit mit pre-commit</li></ol><figcaption>Hooks laufen automatisch; ein Befund wird sofort behoben.</figcaption></figure></div>
+      <div class="dcard"><h3>Welche Prüfstufe?</h3><p>Die Prüftiefe folgt aus der Art der Änderung – im Zweifel eine Stufe höher.</p>
+        <figure id="md-level"><ol class="md-fallback"><li>Roboter oder Sicherheit → Stufe 3 · neues Element oder Umbau → Stufe 2 · bestehendes Element → Stufe 1 · sonst Stufe 0</li></ol><figcaption>Das Beispiel landet in Stufe 2: neues Element, mehrere Dateien.</figcaption></figure></div>
+      <div class="dcard"><h3>Zwei Chats, eine Datei</h3><p>Was wäre, wenn der Schalter doch <code>layout.css</code> bräuchte?</p>
+        <figure id="md-peer"><ol class="md-fallback"><li>Register warnt → SendMessage an dev-ws-7a → der pusht → Pull → erst dann ändern</li></ol><figcaption>Abstimmen statt überschreiben: Register, SendMessage, Fast-Forward.</figcaption></figure></div>
+      <div class="dcard"><h3>Aus Korrektur wird Regel</h3><p>Wie der Workflow lernt – ohne dass du dich wiederholst.</p>
+        <figure id="md-learn"><ol class="md-fallback"><li>Du korrigierst → Memory-Datei → Commit + Push → nächster Chat lädt → wiederkehrend: Regel oder Skill</li></ol><figcaption>Memory, Regeln und Skills sind Dateien im Git – für Claude, Codex und Gemini gleich.</figcaption></figure></div>
+    </div>
+  </div>
+</section>
+
+
+<section class="sec" id="grenzen" aria-labelledby="grenzen-h">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="kicker">04 · Grenzen</p>
+      <h2 id="grenzen-h">Darf der Chat das allein?</h2>
+      <p>Rate zuerst, dann aufdecken. Die Antworten kommen aus §0 der Regeln: Sicherheit hat immer Vorrang.</p>
+    </div>
+    <div class="legend" aria-label="Legende"><span class="v free"><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg>Frei</span><span class="v ask"><svg class="ic" aria-hidden="true"><use href="#i-users"/></svg>Erst abstimmen</span><span class="v you"><svg class="ic" aria-hidden="true"><use href="#i-user"/></svg>Nur mit deiner Freigabe</span><span class="v never"><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg>Nie</span></div>
+    <div class="perm-grid" id="perms"></div>
+    <div class="cta"><button class="btn" id="perm-all" type="button"><svg class="ic" aria-hidden="true"><use href="#i-eye"/></svg>Alle aufdecken</button></div>
+  </div>
+</section>
+
+
+<section class="sec" id="kurz" aria-labelledby="kurz-h">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="kicker">05 · Kurzfassung</p>
+      <h2 id="kurz-h">Der ganze Weg in acht Sätzen</h2>
+      <p>Klick auf einen Satz spielt die passende Szene oben im Ablauf ab.</p>
+    </div>
+    <ol class="steps8" id="steps8"></ol>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>Quellen: <code>rules/RULES.md</code>, <code>rules/ROLES.md</code>, <code>dev_ws/AGENTS.md</code>, Skill <code>answer-page</code>, Hooks in <code>hooks/</code> und <code>.claude/hooks/</code>. Das Beispiel ist gestellt; Abläufe, Hooks, Prüfungen und Regeln sind echt.</p>
+    <p>Ausführliche Referenz mit allen Kapiteln: <code>ai_dev_workflow_global/docs/ai_dev_workflow.html</code> · Stand 20.10.2026</p>
+  </div>
+</footer>
+
+<script src="motion_diagrams.js"></script>
+<script>
+(() => {
+  'use strict';
+  const RM = matchMedia('(prefers-reduced-motion: reduce)');
+  const RENDER = new URLSearchParams(location.search).has('render');
+  const $ = (s, r = document) => r.querySelector(s);
+  const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+  const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
+  const eOut = p => 1 - Math.pow(1 - p, 3);
+  const eInOut = p => p < .5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2;
+  const eBack = p => { const c1 = 1.70158, c3 = c1 + 1; return 1 + c3 * Math.pow(p - 1, 3) + c1 * Math.pow(p - 1, 2); };
+  const icon = id => `<svg class="ic" aria-hidden="true"><use href="#${id}"/></svg>`;
+
+  /* Farbschema: Auto → Hell → Dunkel (nur Bequemlichkeit, darf fehlen) */
+  const THEMES = [['auto', 'Auto', 'i-auto'], ['light', 'Hell', 'i-sun'], ['dark', 'Dunkel', 'i-moon']];
+  const tBtn = $('#theme');
+  let theme = 'auto';
+  try { theme = localStorage.getItem('wf-theme') || 'auto'; } catch (e) { /* ohne Speicher */ }
+  const setTheme = k => {
+    theme = k; const t = THEMES.find(x => x[0] === k) || THEMES[0];
+    if (k === 'auto') delete document.documentElement.dataset.theme; else document.documentElement.dataset.theme = k;
+    tBtn.innerHTML = `${icon(t[2])}<span>${t[1]}</span>`; tBtn.setAttribute('aria-label', `Farbschema: ${t[1]} – wechseln`);
+    try { localStorage.setItem('wf-theme', k); } catch (e) { /* ohne Speicher */ }
+  };
+  setTheme(theme);
+  tBtn.addEventListener('click', () => setTheme(THEMES[(THEMES.findIndex(x => x[0] === theme) + 1) % 3][0]));
+
+  /* Eine Uhr je Zeitleiste: jedes Bild ist eine Funktion von t (seek in beliebiger Reihenfolge). */
+  function prep(el) {
+    const d = el.dataset;
+    return { el, at: +d.at, d: d.d != null ? +d.d : .45, out: d.out != null ? +d.out : Infinity, fx: d.fx || 'up', cls: d.cls || 'on', txt: d.fx === 'type' ? el.textContent : null, last: '' };
+  }
+  function put(o, op, tf) {
+    const k = op.toFixed(3) + tf; if (k === o.last) return; o.last = k;
+    const s = o.el.style; s.opacity = op >= 1 ? '' : op.toFixed(3); s.transform = tf; s.visibility = op <= .001 ? 'hidden' : '';
+  }
+  function apply(o, t) {
+    const rm = RM.matches;
+    const p = rm ? (t >= o.at ? 1 : 0) : clamp((t - o.at) / o.d);
+    const q = o.out === Infinity ? 1 : rm ? (t < o.out ? 1 : 0) : 1 - clamp((t - o.out) / .3);
+    switch (o.fx) {
+      case 'msg': { const show = t >= o.at; if (o.el.hidden === show) o.el.hidden = !show; }
+      /* fällt durch: Nachricht gleitet wie 'up' herein */
+      case 'up': { const e = eOut(p); put(o, Math.min(e, q), e < 1 ? `translateY(${((1 - e) * 12).toFixed(1)}px)` : ''); break; }
+      case 'pop': { put(o, Math.min(eOut(p), q), p < 1 ? `scale(${(.86 + .14 * eBack(p)).toFixed(3)})` : ''); break; }
+      case 'bar': { const v = eInOut(p).toFixed(3) + '|' + q; if (v !== o.last) { o.last = v; o.el.style.setProperty('--p', eInOut(p).toFixed(3)); o.el.style.opacity = q >= 1 ? '' : q.toFixed(3); } break; }
+      case 'cls': { o.el.classList.toggle(o.cls, t >= o.at && t < o.out); break; }
+      case 'type': {
+        const n = rm ? (t >= o.at ? o.txt.length : 0) : Math.round(clamp((t - o.at) / (o.txt.length * .032)) * o.txt.length);
+        if (o.n !== n) { o.n = n; o.el.textContent = o.txt.slice(0, n); }
+        o.el.classList.toggle('typing', !rm && n < o.txt.length && t >= o.at - .4 && q > 0);
+        o.el.style.opacity = q >= 1 ? '' : q.toFixed(3); break;
+      }
+    }
+  }
+  const timelines = [];
+  function Timeline(root, dur, { loop = false, onRender = null, scope = null } = {}) {
+    const tl = { root, dur, loop, t: 0, playing: false, speed: 1, visible: false, onRender, items: scope ? [] : $$('[data-at]', root).map(prep), started: false };
+    tl.seek = t => { tl.t = loop ? ((t % dur) + dur) % dur : clamp(t, 0, dur); const list = scope ? scope(tl.t) : tl.items; list.forEach(o => apply(o, tl.t)); onRender && onRender(tl.t); };
+    tl.play = () => { if (!loop && tl.t >= dur - .01) tl.t = 0; tl.playing = true; tl.ui && tl.ui(); };
+    tl.pause = () => { tl.playing = false; tl.ui && tl.ui(); };
+    tl.tick = dt => { let t = tl.t + dt * tl.speed; if (!loop && t >= dur) { t = dur; tl.pause(); } tl.seek(t); };
+    new IntersectionObserver(([e]) => { tl.visible = e.isIntersecting; if (tl.visible && !tl.started) { tl.started = true; tl.onFirst && tl.onFirst(); } }, { threshold: .3 }).observe(root);
+    timelines.push(tl); return tl;
+  }
+  let last = performance.now();
+  function frame(now) {
+    const dt = Math.min(.1, (now - last) / 1000); last = now;
+    if (!document.hidden) timelines.forEach(tl => { if (tl.playing && tl.visible) tl.tick(dt); });
+    requestAnimationFrame(frame);
+  }
+  const auto = !RM.matches && !RENDER;
+
+  /* Hero: Schleife 11 s */
+  const glow = $('#hero-glow');
+  const hero = Timeline($('#hero-tl'), 11, { loop: true, onRender: t => { glow.style.transform = `scale(${(1 + .05 * Math.sin(t / 11 * Math.PI * 2)).toFixed(3)})`; } });
+  const heroPP = $('#hero-pp');
+  hero.ui = () => { heroPP.innerHTML = `<svg class="ic fill" aria-hidden="true"><use href="#i-${hero.playing ? 'pause' : 'play'}"/></svg>`; heroPP.setAttribute('aria-label', hero.playing ? 'Animation anhalten' : 'Animation abspielen'); };
+  heroPP.addEventListener('click', () => hero.playing ? hero.pause() : hero.play());
+  hero.seek(RM.matches ? 9.5 : 0);
+  if (auto) hero.play(); else hero.ui();
+
+  /* Player: 8 Szenen, 64 s Zeitleiste */
+  const SC = [
+    { t: 0, d: 7, ph: 0, n: 'Auftrag' }, { t: 7, d: 7.5, ph: 1, n: 'Aufwand' }, { t: 14.5, d: 9, ph: 1, n: 'Vorschau' },
+    { t: 23.5, d: 6.5, ph: 1, n: 'Plan + Claim' }, { t: 30, d: 9, ph: 2, n: 'Bauen' }, { t: 39, d: 9, ph: 3, n: 'Prüfen' },
+    { t: 48, d: 7, ph: 4, n: 'Abliefern' }, { t: 55, d: 9, ph: 4, n: 'Antwort + Lernen' }];
+  const DUR = 64;
+  const scenes = $$('.scene', $('#stage'));
+  const phases = $$('#phases li');
+  const segs = $('#segs'), chapters = $('#chapters'), scrub = $('#scrub'), live = $('#pl-live');
+  SC.forEach((s, i) => {
+    const sp = document.createElement('span'); sp.style.flex = s.d; sp.innerHTML = '<i></i>'; segs.append(sp);
+    const li = document.createElement('li'); li.innerHTML = `<button type="button"><span>${i + 1}</span>${s.n}</button>`;
+    li.firstChild.addEventListener('click', () => goScene(i)); chapters.append(li);
+  });
+  const segFill = $$('#segs i'), chBtns = $$('#chapters button');
+  const msgItems = $$('#msgs [data-at]').map(prep);
+  const sceneItems = scenes.map(sc => $$('[data-at]', sc).map(prep));
+  const fmt = t => `${Math.floor(t / 60)}:${String(Math.floor(t % 60)).padStart(2, '0')}`;
+  const sceneAt = t => { let i = 0; SC.forEach((s, k) => { if (t >= s.t) i = k; }); return i; };
+  let cur = -1;
+  const player = Timeline($('#player'), DUR, {
+    scope: t => { const i = sceneAt(t); return msgItems.concat(sceneItems[i]); },
+    onRender: t => {
+      const i = sceneAt(t), s = SC[i];
+      if (i !== cur) {
+        scenes.forEach((sc, k) => { sc.hidden = k !== i; sc.style.opacity = ''; });
+        phases.forEach((li, k) => { li.classList.toggle('done', k < s.ph); li.classList.toggle('now', k === s.ph); });
+        chBtns.forEach((b, k) => k === i ? b.setAttribute('aria-current', 'step') : b.removeAttribute('aria-current'));
+        if (cur !== -1) live.textContent = `Szene ${i + 1} von 8: ${s.n}`;
+        cur = i;
+      }
+      const end = s.t + s.d;
+      if (!RM.matches && i < SC.length - 1) { const f = clamp((end - t) / .35); scenes[i].style.opacity = f >= 1 ? '' : f.toFixed(3); }
+      segFill.forEach((f, k) => f.style.setProperty('--p', clamp((t - SC[k].t) / SC[k].d).toFixed(3)));
+      if (document.activeElement !== scrub) scrub.value = t.toFixed(1);
+      $('#pl-time').textContent = `${fmt(t)} / ${fmt(DUR)}`;
+    }
+  });
+  const pp = $('#pl-pp');
+  player.ui = () => { pp.innerHTML = `<svg class="ic fill" aria-hidden="true"><use href="#i-${player.playing ? 'pause' : 'play'}"/></svg>`; pp.setAttribute('aria-label', player.playing ? 'Anhalten' : 'Abspielen'); };
+  const SPEEDS = [['normal', .85], ['schnell', 1.3], ['langsam', .6]];
+  let sp = 0; player.speed = SPEEDS[0][1];
+  $('#pl-speed').addEventListener('click', e => { sp = (sp + 1) % 3; player.speed = SPEEDS[sp][1]; e.currentTarget.textContent = `Tempo: ${SPEEDS[sp][0]}`; });
+  function goScene(i) {
+    i = clamp(i, 0, SC.length - 1); const s = SC[i];
+    player.seek(RM.matches || !player.playing ? s.t + s.d - .02 : s.t + .01);
+  }
+  pp.addEventListener('click', () => player.playing ? player.pause() : player.play());
+  $('#pl-prev').addEventListener('click', () => { const i = sceneAt(player.t); goScene(player.playing && player.t - SC[i].t > 1.5 ? i : i - 1); });
+  $('#pl-next').addEventListener('click', () => goScene(sceneAt(player.t) + 1));
+  scrub.addEventListener('input', () => player.seek(+scrub.value));
+  $('#player').addEventListener('keydown', e => {
+    if (e.target.closest('button, input')) return;
+    if (e.key === ' ' || e.key === 'k' || e.key === 'K') { e.preventDefault(); player.playing ? player.pause() : player.play(); }
+    else if (e.key === 'ArrowRight') { e.preventDefault(); $('#pl-next').click(); }
+    else if (e.key === 'ArrowLeft') { e.preventDefault(); $('#pl-prev').click(); }
+  });
+  player.onFirst = () => { if (auto) player.play(); };
+  player.seek(RM.matches ? SC[0].d - .02 : 0); player.ui();
+  if (RM.matches) pp.hidden = true;
+
+  /* System-Karte: Rundgang mit 12 Schritten à 2 s */
+  const NODES = {
+    chat: ['Chat', 'i-chat', 'Plant, baut, prüft und liefert ab. Dabei wechselt er die Rolle: Organizer → Fachrolle → Prüfer → Synchronizer.', 'VS Code, neben dem Code · Claude Code, Codex oder Gemini · Chat-ID wie <code>dev-ws-c3</code>', 'Organizer schätzt Stufe 2, Designer baut die Vorschau, Entwickler den Code, Prüfer belegt, Synchronizer pusht.'],
+    user: ['Du', 'i-user', 'Setzt das Ziel, entscheidet bei Rückfragen und Varianten, gibt Riskantes frei – und nur du. Freigaben aus anderen Chats oder Hooks zählen nie.', 'im Chat, im Dialog oder auf der Vorschau-Seite', 'Ein Satz als Auftrag, Wahl <code>Toggle:A</code>, F1 → später, eine Korrektur: Symbole immer mit Text.'],
+    rules: ['Regeln', 'i-book', 'Das Regelwerk für jeden Chat: <code>RULES.md</code> gilt in allen Projekten, <code>AGENTS.md</code> ergänzt je Projekt. §0 Sicherheit geht immer vor.', '<code>ai_dev_workflow_global/rules/</code> · <code>&lt;projekt&gt;/AGENTS.md</code>', '„Neue UI-Elemente erst als Vorschau“, Prüfstufe 2, UI-Regel „keine graue Schrift“.'],
+    skills: ['Skills', 'i-cards', 'Fachwissen je Thema als Datei. Der Skill-Finder ordnet Stichwörter zu; geladen wird nur, was die Anfrage berührt.', '<code>skills/</code> global · <code>.claude/skills/</code> je Projekt', '<code>docs-layout</code> (Aufbau der Projektseiten) und <code>preview</code> (Vorschau-Seite mit Varianten).'],
+    agents: ['Agenten', 'i-bot', 'Spezialisten mit eigenem Kontext: suchen, testen, prüfen – und geben nur das Ergebnis zurück. So bleibt der Chat schlank.', '<code>agents/</code> global · <code>.claude/agents/</code> je Projekt', '<code>test-runner</code> führt Kontrast- und Bildprüfung aus; 11/12 → Fix → 12/12.'],
+    hooks: ['Hooks', 'i-shield', 'Skripte an sechs festen Stellen: Kontext geben, warnen, nachfragen, blocken – immer mit Grund. Eine Regel im Text kann man übersehen, einen Hook nicht.', '<code>hooks/</code> · <code>.claude/hooks/</code> · <code>settings.json</code>', 'Pull vor der Anfrage, Datei-Prüfung vor dem Edit, Befund „graue Schrift“ danach, pre-commit, Formprüfung der Antwort.'],
+    memory: ['Memory', 'i-db', 'Gedächtnis über Chats hinweg: eine Datei je Erkenntnis, Index in <code>MEMORY.md</code>. Wiederkehrendes wird zur Regel.', '<code>&lt;projekt&gt;/.claude/memory/</code> · <code>ai_dev_workflow_global/memory/</code>', '„Symbole immer mit Text“ – ab jetzt weiß das jeder Chat.'],
+    git: ['Git', 'i-git', 'Die einzige Quelle über alle Rechner: Code, Regeln, Memory, Übergaben. Holen nur per Fast-Forward, nie <code>--force</code>.', '<code>origin</code> · Laptop · Labor · Home-PC', 'Pull <code>b0ca67b</code> vor dem Start, Push <code>4f2c9e1</code> am Ende, der Claim ist ein Git-Ref.'],
+    peers: ['Andere Chats', 'i-users', 'Laufen parallel – auch in Codex und Gemini. Datei-Register, Claims, SendMessage und Übergaben halten sie auseinander.', 'Lagebild beim Start · <code>refs/claims/*</code> · Datei-Register je Repo', '<code>dev-ws-7a</code> hält <code>docs/css/layout.css</code> – der Chat lässt die Datei in Ruhe.'],
+  };
+  const TOUR = [
+    ['user', 'chat', 'Du gibst den Auftrag: Hell/Dunkel-Schalter für die Projektseite.'],
+    ['hooks', 'chat', 'Ein Hook holt den neuesten Stand und zeigt das Lagebild.'],
+    ['peers', 'chat', 'dev-ws-7a hält layout.css – der Chat plant drumherum.'],
+    ['rules', 'chat', 'Die Regeln sagen: neues Element → Stufe 2, erst Vorschau.'],
+    ['skills', 'chat', 'Nur die Skills docs-layout und preview werden geladen.'],
+    ['chat', 'user', 'Vorschau mit drei Varianten und Rückfrage F1 an dich.'],
+    ['chat', 'hooks', 'Jeder Edit läuft durch pre_tool_guard und post_edit_check.'],
+    ['chat', 'agents', 'test-runner prüft in eigenem Kontext.'],
+    ['agents', 'chat', 'Zurück kommt nur das Ergebnis: 12/12 ✅.'],
+    ['chat', 'git', 'Commit durch pre-commit, Push, Claim gelöscht.'],
+    ['user', 'chat', 'Deine Korrektur: Symbole immer mit Text.'],
+    ['chat', 'memory', 'Daraus wird eine Memory-Datei – im Git, für jeden Chat.'],
+  ];
+  const STEP = 2;
+  const map = $('#map'), wires = $('#wires'), nodeEls = {};
+  $$('.node', map).forEach(b => { nodeEls[b.dataset.id] = b; });
+  const NS = 'http://www.w3.org/2000/svg';
+  const lines = {};
+  Object.keys(nodeEls).filter(k => k !== 'chat').forEach(k => { const l = document.createElementNS(NS, 'line'); wires.append(l); lines[k] = l; });
+  const halo = document.createElementNS(NS, 'circle'); halo.setAttribute('r', 11); halo.setAttribute('class', 'pk-h');
+  const pk = document.createElementNS(NS, 'circle'); pk.setAttribute('r', 5.5); pk.setAttribute('class', 'pk');
+  wires.append(halo, pk);
+  let C = {};
+  function layout() {
+    C = {}; Object.entries(nodeEls).forEach(([k, el]) => { C[k] = { x: el.offsetLeft + el.offsetWidth / 2, y: el.offsetTop + el.offsetHeight / 2 }; });
+    wires.setAttribute('viewBox', `0 0 ${map.clientWidth} ${map.clientHeight}`);
+    Object.entries(lines).forEach(([k, l]) => { l.setAttribute('x1', C.chat.x); l.setAttribute('y1', C.chat.y); l.setAttribute('x2', C[k].x); l.setAttribute('y2', C[k].y); });
+    mapTL && mapTL.seek(mapTL.t);
+  }
+  let pinned = null, shown = null, step = -1;
+  function showNode(id) {
+    if (id === shown) return; shown = id; const n = NODES[id];
+    $('#pn-t').textContent = n[0]; $('#pn-ic').setAttribute('href', '#' + n[1]);
+    $('#pn-what').innerHTML = n[2]; $('#pn-where').innerHTML = n[3]; $('#pn-ex').innerHTML = n[4];
+  }
+  const mapTL = Timeline(map, TOUR.length * STEP, {
+    loop: true,
+    onRender: t => {
+      const k = Math.floor(t / STEP) % TOUR.length, [a, b, txt] = TOUR[k];
+      const p = RM.matches ? 1 : eInOut(clamp(((t % STEP) / STEP - .08) / .62));
+      if (C.chat) {
+        const x = C[a].x + (C[b].x - C[a].x) * p, y = C[a].y + (C[b].y - C[a].y) * p;
+        pk.setAttribute('cx', x.toFixed(1)); pk.setAttribute('cy', y.toFixed(1)); halo.setAttribute('cx', x.toFixed(1)); halo.setAttribute('cy', y.toFixed(1));
+      }
+      if (k !== step) {
+        step = k; const other = a === 'chat' ? b : a;
+        Object.entries(lines).forEach(([id, l]) => l.classList.toggle('on', id === other));
+        Object.entries(nodeEls).forEach(([id, el]) => el.classList.toggle('act', id === a || id === b));
+        $('#tour-n').textContent = `${k + 1} / ${TOUR.length}`; $('#tour-t').textContent = txt;
+        if (!pinned) showNode(other);
+      }
+    }
+  });
+  const mapPP = $('#map-pp');
+  mapTL.ui = () => { mapPP.innerHTML = `<svg class="ic fill" aria-hidden="true"><use href="#i-${mapTL.playing ? 'pause' : 'play'}"/></svg>`; mapPP.setAttribute('aria-label', mapTL.playing ? 'Rundgang anhalten' : 'Rundgang abspielen'); };
+  mapPP.addEventListener('click', () => mapTL.playing ? mapTL.pause() : mapTL.play());
+  const follow = $('#pn-follow');
+  map.addEventListener('click', e => {
+    const b = e.target.closest('.node'); if (!b) return;
+    pinned = pinned === b.dataset.id ? null : b.dataset.id;
+    Object.values(nodeEls).forEach(el => el.setAttribute('aria-pressed', String(el.dataset.id === pinned)));
+    follow.hidden = !pinned;
+    if (pinned) showNode(pinned); else { shown = null; const [a, bb] = TOUR[step]; showNode(a === 'chat' ? bb : a); }
+  });
+  follow.addEventListener('click', () => { pinned = null; Object.values(nodeEls).forEach(el => el.setAttribute('aria-pressed', 'false')); follow.hidden = true; shown = null; const [a, bb] = TOUR[step]; showNode(a === 'chat' ? bb : a); });
+  new ResizeObserver(layout).observe(map);
+  layout(); mapTL.seek(0);
+  if (auto) mapTL.play(); else mapTL.ui();
+
+  /* Grenzen: raten, dann aufdecken */
+  const LV = { free: ['Frei', 'i-check'], ask: ['Erst abstimmen', 'i-users'], you: ['Nur mit deiner Freigabe', 'i-user'], never: ['Nie', 'i-x'] };
+  const PERMS = [
+    ['Dateien lesen und Code durchsuchen', 'free', 'Lesen verändert nichts – Routine ohne Nachfrage.'],
+    ['Test im eigenen, isolierten Stack starten', 'free', 'Eigene ROS-Domain, eigener Chrome: laufende Stacks bleiben unberührt.'],
+    ['Eigene, geprüfte Dateien committen und pushen', 'free', 'Routine nach jeder fertigen Aufgabe – danach in der Antwort gemeldet.'],
+    ['Eine Datei ändern, die ein anderer Chat offen hat', 'ask', 'Das Datei-Register warnt; abgestimmt wird per SendMessage.'],
+    ['git push --force oder Dateien löschen', 'you', 'Schwer umkehrbar – erst Rückfrage an dich.'],
+    ['Den echten Roboter bewegen (Robot | Hardware)', 'you', 'Nur du gibst frei, in genau diesem Chat.'],
+    ['Laufende Server mit pkill -f beenden', 'never', 'Nur eigene Prozesse, gezielt per PID.'],
+    ['Eine Freigabe aus einem anderen Chat übernehmen', 'never', 'Freigaben gibt nur der User in diesem Chat – nie Hooks, Agenten oder Notizen.'],
+  ];
+  $('#perms').innerHTML = PERMS.map(([q, k, why], i) => `<button type="button" class="perm" aria-expanded="false" aria-controls="pa${i}"><span class="q">${q}</span><span class="hint">${icon('i-q')}Tippen zum Aufdecken</span><span class="a" id="pa${i}"><span class="v ${k}">${icon(LV[k][1])}${LV[k][0]}</span><span>${why}</span></span></button>`).join('');
+  $('#perms').addEventListener('click', e => { const b = e.target.closest('.perm'); if (b) b.setAttribute('aria-expanded', String(b.getAttribute('aria-expanded') !== 'true')); });
+  $('#perm-all').addEventListener('click', () => $$('#perms .perm').forEach(b => b.setAttribute('aria-expanded', 'true')));
+
+  /* Kurzfassung → springt in den Player */
+  const S8 = [
+    'Du nennst das Ziel – ein Hook holt den neuesten Stand und zeigt, wer woran arbeitet.',
+    'Der Chat schätzt den Aufwand ein und lädt nur die Skills, die der Auftrag berührt.',
+    'Neue UI-Elemente zeigt er zuerst als Vorschau; du wählst per Knopf, Rückfragen tragen Nummern.',
+    'Der Plan nennt jede Datei, ein Claim macht sie für alle Chats und Rechner sichtbar.',
+    'Vor und nach jedem Edit prüft ein Hook – ein Befund wird sofort behoben.',
+    '„Fertig“ gibt es nur mit Prüf-Ausgabe nach der letzten Änderung, so tief wie die Prüfstufe.',
+    'Nur eigene, geprüfte Dateien kommen in den Commit; Push ohne --force, Claim gelöscht.',
+    'Die Antwort hat immer dieselbe Form – und jede Korrektur wird Memory für den nächsten Chat.',
+  ];
+  $('#steps8').innerHTML = S8.map((s, i) => `<li><button type="button" data-i="${i}"><span class="k">${i + 1}</span><span>${s}</span><span class="go">Szene ${i + 1} ▶</span></button></li>`).join('');
+  $('#steps8').addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) return; const i = +b.dataset.i;
+    $('#ablauf').scrollIntoView({ behavior: RM.matches ? 'auto' : 'smooth', block: 'start' });
+    player.seek(RM.matches ? SC[i].t + SC[i].d - .02 : SC[i].t + .01); if (!RM.matches) player.play();
+    $('#player').focus({ preventScroll: true });
+  });
+
+  /* Diagramme (Engine motion-diagrams) */
+  const MD = window.MotionDiagram;
+  if (MD) {
+    MD.create($('#md-edit'), { type: 'sequence', title: 'Ein Edit, drei Prüfstellen', runLabel: 'Edit', hue: 'accent',
+      actors: [{ id: 'chat', label: 'Chat', sub: 'Entwickler' }, { id: 'guard', label: 'pre_tool_guard', short: 'Guard', sub: 'vor dem Edit' },
+        { id: 'file', label: 'theme.css', short: 'Datei', sub: 'Werkzeug Edit' }, { id: 'check', label: 'post_edit_check', short: 'Check', sub: 'nach dem Edit' },
+        { id: 'pc', label: 'pre-commit', short: 'Commit', sub: 'beim Commit' }],
+      messages: [{ from: 'chat', to: 'guard', label: 'Edit erlaubt?' }, { from: 'guard', to: 'chat', label: 'Datei frei ✓', kind: 'reply' },
+        { from: 'chat', to: 'file', label: 'Farben für dunkel' }, { from: 'file', to: 'check', label: 'geänderte Datei' },
+        { from: 'check', to: 'chat', label: '⚠ graue Schrift', kind: 'reply' }, { from: 'chat', to: 'file', label: 'Token statt #999' },
+        { from: 'check', to: 'chat', label: 'ohne Befund ✓', kind: 'reply' }, { from: 'chat', to: 'pc', label: 'git commit' }] }, { lang: 'de' });
+    MD.create($('#md-level'), { type: 'flowchart', title: 'Welche Prüfstufe?', nodes: [
+        { id: 'q', kind: 'start', label: 'Was ist geändert?', col: 0, row: 0 },
+        { id: 'd1', kind: 'decision', label: 'Roboter, Sicherheit?', col: 0, row: 1 },
+        { id: 's3', label: 'Stufe 3 · kritisch', sub: '+ safety-reviewer', col: 1, row: 1, hue: 'gold' },
+        { id: 'd2', kind: 'decision', label: 'Neues Element?', col: 0, row: 2 },
+        { id: 's2', label: 'Stufe 2 · normal', sub: 'volle Prüfung', col: 1, row: 2 },
+        { id: 'd3', kind: 'decision', label: 'Element geändert?', col: 0, row: 3 },
+        { id: 's1', label: 'Stufe 1 · klein', sub: 'hell + dunkel', col: 1, row: 3 },
+        { id: 's0', label: 'Stufe 0 · trivial', sub: 'Hooks + pre-commit', col: 0, row: 4, hue: 'green' }],
+      edges: [{ from: 'q', to: 'd1' }, { from: 'd1', to: 's3', label: 'ja' }, { from: 'd1', to: 'd2', label: 'nein' }, { from: 'd2', to: 's2', label: 'ja' },
+        { from: 'd2', to: 'd3', label: 'nein' }, { from: 'd3', to: 's1', label: 'ja' }, { from: 'd3', to: 's0', label: 'nein' }],
+      paths: [{ label: 'Beispiel: Hell/Dunkel-Schalter', hue: 'accent', via: ['q', 'd1', 'd2', 's2'] },
+        { label: 'Tippfehler in der Doku', hue: 'green', via: ['q', 'd1', 'd2', 'd3', 's0'] },
+        { label: 'Änderung am Motion Handler', hue: 'gold', via: ['q', 'd1', 's3'] }] }, { lang: 'de' });
+    MD.create($('#md-peer'), { type: 'sequence', title: 'Zwei Chats, eine Datei', runLabel: 'Abstimmung', hue: 'violet',
+      actors: [{ id: 'c3', label: 'dev-ws-c3', short: 'c3', sub: 'Schalter' }, { id: 'reg', label: 'Register', sub: 'Datei-Register' },
+        { id: 'c7', label: 'dev-ws-7a', short: '7a', sub: 'Abstände' }, { id: 'git', label: 'Git', sub: 'origin' }],
+      messages: [{ from: 'c3', to: 'reg', label: 'Edit layout.css?' }, { from: 'reg', to: 'c3', label: '⚠ gehört dev-ws-7a', kind: 'reply' },
+        { from: 'c3', to: 'c7', label: 'SendMessage: fertig?' }, { from: 'c7', to: 'git', label: 'Commit + Push' },
+        { from: 'c7', to: 'c3', label: 'gepusht – frei', kind: 'reply' }, { from: 'git', to: 'c3', label: 'Pull, Fast-Forward', kind: 'reply' },
+        { from: 'c3', to: 'reg', label: 'eintragen, ändern' }] }, { lang: 'de' });
+    MD.create($('#md-learn'), { type: 'cycle', title: 'Aus Korrektur wird Regel', runLabel: 'Lernen', hue: 'teal', center: { label: 'Memory', sub: 'Dateien im Git' },
+      steps: [{ label: 'Du korrigierst', sub: 'Symbol + Text', note: 'Korrektur im Chat' },
+        { label: 'Memory-Datei', sub: 'eine je Erkenntnis', note: 'symbol-mit-text.md + Zeile in MEMORY.md' },
+        { label: 'Commit + Push', sub: 'alle Rechner', note: 'Git verteilt die Datei' },
+        { label: 'Nächster Chat', sub: 'lädt den Index', note: 'Claude, Codex und Gemini lesen dieselbe Datei' },
+        { label: 'Kehrt es wieder?', sub: '→ Regel, Skill', note: 'Wiederkehrendes wird Regel in RULES.md' }] }, { lang: 'de' });
+  }
+
+  /* Render-Modus (Prüfskripte): eine Uhr für alles */
+  const mdSeek = window.seek;
+  window.seek = s => { if (mdSeek) mdSeek(s); hero.seek(s); player.seek(s); mapTL.seek(s); };
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

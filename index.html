@@ -125,6 +125,9 @@ code { font-family: var(--f-mono); font-size: .875rem; overflow-wrap: anywhere; 
 main > section { margin-block: 0 28px; padding: 32px 16px; background: var(--band); border: 1px solid var(--line); border-radius: var(--radius-lg); }
 @media (min-width: 720px) { main > section { padding: 40px 32px; } }
 @media (max-width: 419px) { main > section { padding-inline: 12px; } .qr-code { width: 100px; } }
+/* 04: Seite „AI Workflow erklärt“ eingebettet; Höhe + Farbschema setzt das Skript unten, ohne Skript eigene Scrollfläche */
+.explain-frame { display: block; width: 100%; height: 80vh; border: 1px solid var(--line); border-radius: var(--radius-lg); background: var(--bg); }
+.explain-link { margin: 12px 0 0; }
 main { padding-bottom: 20px; }
 .kicker { display: flex; align-items: center; gap: 12px; margin: 0 0 12px; font: 500 .875rem/1.2 var(--f-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--fg-2); }
 .kicker b { color: var(--fg); font-weight: 600; }
@@ -975,6 +978,14 @@ footer p { margin: 0; }
     </div>
     <p class="xa-none" hidden data-en="No term found.">Kein Begriff gefunden.</p>
   </section>
+
+  <section aria-labelledby="h-explain">
+    <p class="kicker"><b>04</b><span data-en="Explained">Erklärt</span></p>
+    <h2 id="h-explain" data-en="AI workflow explained">AI Workflow erklärt</h2>
+    <p class="intro" data-en="One task from the first sentence to the push – shown step by step on a simple example (in German).">Ein Auftrag vom ersten Satz bis zum Push – Schritt für Schritt an einem einfachen Beispiel.</p>
+    <iframe class="explain-frame" id="explain-frame" src="web_ai_dev_workflow/ai_workflow_erklaert/index.html" title="AI Workflow erklärt" loading="lazy"></iframe>
+    <p class="explain-link"><a class="btn" href="web_ai_dev_workflow/ai_workflow_erklaert/index.html"><span data-en="Open as its own page">Als eigene Seite öffnen</span></a></p>
+  </section>
 </main>
 
 <footer class="wrap xa-foot">
@@ -1432,6 +1443,25 @@ footer p { margin: 0; }
   window.__xaClocks = clocks;   // Aufnahmen (Vorschau/Screenshots): Zustand per seek(t) setzen
 })();
 
+</script>
+<script>
+// 04 eingebettete Seite: Höhe = Inhalt (keine zweite Scrollleiste), Farbschema folgt dieser Seite
+(() => {
+  const f = document.getElementById('explain-frame'), root = document.documentElement;
+  if (!f) return;
+  const theme = () => root.dataset.theme || (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+  const doc = () => { try { return f.contentDocument; } catch (e) { return null; } };   // andere Herkunft → bleibt bei 80vh
+  const sync = () => { const d = doc(); if (d && d.documentElement) d.documentElement.dataset.theme = theme(); };
+  f.addEventListener('load', () => {
+    const d = doc();
+    if (!d || !d.body) return;
+    sync();
+    const fit = () => { f.style.height = d.documentElement.scrollHeight + 'px'; };
+    new ResizeObserver(fit).observe(d.body);
+    fit();
+  });
+  new MutationObserver(sync).observe(root, { attributes: true, attributeFilter: ['data-theme'] });
+})();
 </script>
 </body>
 </html>

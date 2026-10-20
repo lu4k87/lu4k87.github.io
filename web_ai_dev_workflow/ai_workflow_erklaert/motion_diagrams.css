@@ -1,0 +1,65 @@
+/* motion_diagrams.css – Stil der animierten Diagramme (Skill motion-diagrams). Braucht die Tokens der Seite:
+   --bg --surface --surface-2 --line --line-strong --fg --fg-2 --accent --teal --green --gold --violet --indigo --red --font --mono
+   (Projektseiten + showcase_template.html haben sie; hell/dunkel läuft über die Tokens von selbst). Kantig: Radius ≤ 8 px. */
+.md { margin: 0; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg, 8px); overflow: hidden; }
+.md-stage { padding: 12px 8px 6px; outline: none; background:
+  linear-gradient(var(--grid, transparent) 1px, transparent 1px) 0 0 / 24px 24px,
+  linear-gradient(90deg, var(--grid, transparent) 1px, transparent 1px) 0 0 / 24px 24px, var(--surface-2); }
+.md-stage:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.md-svg { --run: var(--accent); display: block; width: 100%; height: auto; overflow: visible; font-family: var(--font); }
+.md-node, .md-edge, .md-pk, .md-elbl { --c: var(--run); }
+
+/* Knoten */
+.md-node .shape { fill: var(--surface); stroke: var(--line-strong); stroke-width: 1.5; }
+.md-node .shape-in { fill: none; stroke: var(--line-strong); stroke-width: 1.2; }
+.md-node.on .shape { stroke: var(--c); fill: color-mix(in srgb, var(--c) 12%, var(--surface)); }
+.md-node.on .shape-in { stroke: var(--c); }
+.md-node.now .shape { stroke-width: 2.6; }
+.md-node .glow { fill: none; stroke: var(--c); stroke-width: 9; stroke-linejoin: round; opacity: 0; }
+.md-node .ring { fill: none; stroke: var(--c); stroke-width: 2; vector-effect: non-scaling-stroke; }
+.md-node.k-error .shape, .md-node.k-stop .shape { stroke-dasharray: 5 3; }
+.md-node.k-next .shape { stroke-dasharray: 3 3; }
+.md-node.k-done .shape, .md-node.k-now .shape { fill: var(--c); stroke: var(--c); }
+.md-node.sh-bar .shape { fill: var(--c); stroke: none; }
+.md-node.sh-band .shape { fill: color-mix(in srgb, var(--c) 5%, var(--surface)); }
+.md-node.sh-band.on .shape { fill: color-mix(in srgb, var(--c) 14%, var(--surface)); }
+.md-lbl { fill: var(--fg); font-weight: 700; }
+.md-sub { fill: var(--fg-2); font: 500 11.5px var(--mono); }
+.md-num { fill: var(--c); font: 700 11px var(--mono); letter-spacing: .08em; }
+.md-val { fill: var(--fg); font: 700 12px var(--mono); }
+.md-inner { fill: var(--fg); font: 700 12px var(--mono); }
+.md-node.on .md-inner { fill: var(--c); }
+.md-halo { paint-order: stroke; stroke: var(--surface-2); stroke-width: 4px; stroke-linejoin: round; }
+.md-ctr { fill: var(--fg); font-weight: 800; font-size: 15px; }
+.md-leg { fill: var(--fg); font-weight: 600; font-size: 13px; }
+.md-items { fill: var(--fg-2); font: 500 13px var(--mono); }
+.md-sample { fill: var(--fg); font: 700 11px var(--mono); letter-spacing: .1em; text-transform: uppercase; }
+.md-life { stroke: var(--line-strong); stroke-width: 1.2; stroke-dasharray: 3 5; }
+.md-rail { fill: var(--surface); stroke: var(--line-strong); stroke-width: 1.5; }
+
+/* Kanten: Linienstil trägt die Bedeutung (nie nur Farbe) */
+.md-edge .ln { fill: none; stroke: var(--line-strong); stroke-width: 1.7; }
+.md-edge.on .ln { stroke: var(--c); stroke-width: 2.4; }
+.md-edge .ah { fill: var(--line-strong); }
+.md-edge.on .ah { fill: var(--c); }
+.md-edge .gl { fill: none; stroke: var(--c); stroke-width: 9; stroke-linecap: round; stroke-linejoin: round; opacity: 0; }
+.md-edge .cl { fill: none; stroke: none; }
+.md-edge.rb .ln { fill: var(--c); fill-opacity: .2; stroke: none; }
+.md-edge.rb.on .ln { fill-opacity: .4; }
+.md-elbl rect { fill: var(--surface-2); stroke: var(--line); stroke-width: 1; }
+.md-elbl text { fill: var(--fg); font: 600 12px var(--mono); }
+.md-pk circle { fill: var(--c); }
+
+/* Leiste unter dem Diagramm */
+.md-foot { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; padding: 10px 14px; border-top: 1px solid var(--line); }
+.md-ctl { display: inline-flex; gap: 2px; padding: 3px; border: 1px solid var(--line); border-radius: var(--radius-sm, 4px); background: var(--surface-2); }
+.md-ctl button { display: inline-grid; place-items: center; width: 40px; height: 40px; padding: 0; color: var(--fg); background: transparent;
+  border: 0; border-radius: var(--radius-sm, 4px); cursor: pointer; transition: background-color 150ms, transform 150ms; }
+.md-ctl button:hover { background: color-mix(in srgb, var(--fg) 8%, transparent); }
+.md-ctl button:active { transform: scale(.97); }
+.md-ctl button:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.md-ctl svg { width: 18px; height: 18px; fill: currentColor; }
+.md-status { flex: 1 1 220px; margin: 0; font-size: 14px; line-height: 1.45; color: var(--fg); }
+.md figcaption { padding: 0 14px 12px; font-size: 14px; line-height: 1.5; color: var(--fg-2); }
+.md-alt { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.md-ready .md-fallback { display: none; }
