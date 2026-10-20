@@ -1,20 +1,17 @@
-/* Funktionsatlas als 3D-Segment-Ring (docs/project_docs.html, #atlas-sec; Vorschau „Segment-Ring“, Wunsch User 06.10.2026):
-   Hub (85 Funktionen, 9 Bereiche), 9 extrudierte Glas-Segmente in den Bereichsfarben, Speichen + Lichtimpuls Hub → Segment.
-   Breite Bühne (≥ 760 px, Vorschau Ring:B, Wunsch User 15.10.2026): Ring links, rechts Hologramm-Karte des gewählten Bereichs (Satz, Anzahl je
-   Prüfstufe, Funktionen aus der Liste); Klasse .at-holo blendet dann die HTML-Detailkarte bis auf den Autoscan aus. Schmal: Detailkarte wie bisher.
-   Gewähltes Segment dreht nach vorn und hebt sich; Zeiger hebt leicht an, Icon leuchtet (Glow); Icons groß, drehen sich leicht.
+/* Funktionsatlas als 3D-Ring „Skala“ (docs/project_docs.html, #atlas-sec; Vorschau „Funktionsatlas-Ring“, Wahl User 20.10.2026):
+   flache Sektoren in den unverfälschten Bereichsfarben, an der Innenkante ein Strich je Funktion (85), Name + Zahl außen, Hub mit der Gesamtzahl.
+   Der gewählte Bereich dreht nach rechts zur Karte (HTML-Karte der Seite, #at-detail), Leitlinie + einmaliger Ping; Zeiger hellt auf.
+   Aufbau einmal beim ersten Einblenden in drei Takten (Striche → Sektoren im Uhrzeigersinn → Namen, Außenring), danach nur der Außenring (sehr langsam).
    Ziehen dreht den Ring, Klick = Link der Bereichs-Kachel (filtert die Liste, js/function_atlas.js); Pfeiltasten wählen, Enter filtert.
-   Auswahl, Detail-Panel und Autoscan steuert die Seite (#at-ring: atKeys, atCur, atPick(a, user), atGo(a), Ereignis „at-pick“);
+   Auswahl, Karte und Autoscan steuert die Seite (#at-ring: atKeys, atCur, atPick(a, user), atGo(a), Ereignis „at-pick“);
    Namen und Hub-Texte liest der Ring aus Kacheln und SVG-Ring (Sprache folgt data-en), Farben aus den Tokens von #atlas (.dark-zone).
    Ohne WebGL/Netz bleibt der SVG-Ring; prefers-reduced-motion: Standbild, rendert nur bei Änderung. Rendert nur, solange sichtbar.
    Klassisches Skript (läuft auch per file://): window.AtlasRing3D.init(THREE, { ring: '#at-ring' }); three.js übergibt das Modul der Seite. */
 (function () {
 'use strict';
-const D = Math.PI / 180, R1 = 150, R2 = 270, FRONT = 180;   // Radien in Szenen-Einheiten; gewähltes Segment steht vorn (zur Kamera)
-const EL = 90 * D, FOV = 30;                                  // Draufsicht ohne Neigung (Wunsch User 20.10.2026), senkrechtes Sichtfeld
-const LABEL_MIN_W = 440;                                      // schmalere Bühne: Namen < 12 px → nur Icons, Name steht im Panel
-const HOLO_MIN_W = 760, SHIFT = 290;                          // ab dieser Bühnenbreite: Ring nach links, Hologramm-Karte rechts
-
+const D = Math.PI / 180, FOV = 30, FRONT = 90;
+const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x)), eo = x => 1 - (1 - x) ** 3;
+const sub = (p, s, d) => eo(clamp((p - s) / d));
 const webgl = () => { try { const c = document.createElement('canvas'); return !!(c.getContext('webgl2') || c.getContext('webgl')); } catch (e) { return false; } };
 
 function init(THREE, opts = {}) {
@@ -30,29 +27,26 @@ function build(THREE, ring, host) {
   const tiles = keys.map(a => document.querySelector(`.at-area[data-a="${a}"]`));
   const tok = n => getComputedStyle(box).getPropertyValue('--' + n).trim();
   const hueOf = i => { const m = /var\(--([\w-]+)\)/.exec(tiles[i].style.getPropertyValue('--c')); return tok(m ? m[1] : 'accent'); };
+  const fns = keys.map(a => [...document.querySelectorAll(`article.fn[data-a="${a}"]`)]);
+  const cnt = fns.map(f => f.length);
   const mid = i => (i + .5) * 360 / N;
   const polar = (a, r, y = 0) => new THREE.Vector3(r * Math.sin(a * D), y, -r * Math.cos(a * D));
-  const fns = keys.map(a => [...document.querySelectorAll(`article.fn[data-a="${a}"]`)]);   // Funktionskarten der Liste je Bereich (Hologramm)
 
-  ring.classList.add('at-3d');   // Bühne sichtbar → Größe messbar
+  ring.classList.add('at-3d');
   const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
   renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
-  renderer.toneMapping = THREE.ACESFilmicToneMapping;
   host.append(renderer.domElement);
-  const scene = new THREE.Scene(), cam = new THREE.PerspectiveCamera(FOV, 1, 10, 6000);
-  scene.add(new THREE.AmbientLight(0xffffff, .9));
-  const key = new THREE.DirectionalLight(0xffffff, 1.6); key.position.set(-300, 700, 500); scene.add(key);
-  const hot = new THREE.PointLight(0xffffff, 0, 420, 1.4); scene.add(hot);   // Licht über dem gewählten Segment
-  const world = new THREE.Group(); scene.add(world);
+  const scene = new THREE.Scene(), cam = new THREE.PerspectiveCamera(FOV, 1, 10, 8000), world = new THREE.Group(); scene.add(world);
+  scene.add(new THREE.AmbientLight(0xffffff, 1.15)); const key = new THREE.DirectionalLight(0xffffff, 1.5); key.position.set(-300, 700, 400); scene.add(key);
 
-  /* Canvas-Texturen: Icons aus den SVG-Symbolen der Seite (Path2D, kein Tainting), Texte in der Seitenschrift */
   const font = tok('font') || 'sans-serif', mono = tok('mono') || 'monospace';
+  let cols = [], fg = '#eef2f3', fg2 = '#9aa6ad', accent = '#2ee6c8', bg = '#0d1114';
   const canvasTex = (w, h, paint) => {
     const cv = document.createElement('canvas'); cv.width = w; cv.height = h; paint(cv.getContext('2d'), w, h);
     const t = new THREE.CanvasTexture(cv); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4; return t;
   };
   const drawIcon = (c, sym, s, color) => {
-    c.save(); c.scale(s / 24, s / 24); c.strokeStyle = color; c.lineWidth = 1.8; c.lineCap = c.lineJoin = 'round';
+    c.save(); c.scale(s / 24, s / 24); c.strokeStyle = color; c.lineWidth = 1.7; c.lineCap = c.lineJoin = 'round';
     for (const n of sym ? sym.children : []) {
       const A = k => +n.getAttribute(k) || 0, p = new Path2D();
       if (n.tagName === 'path') p.addPath(new Path2D(n.getAttribute('d')));
@@ -62,165 +56,60 @@ function build(THREE, ring, host) {
     }
     c.restore();
   };
-  const glowTex = canvasTex(128, 128, (g) => {
-    const r = g.createRadialGradient(64, 64, 0, 64, 64, 64); r.addColorStop(0, 'rgba(255,255,255,.9)'); r.addColorStop(1, 'rgba(255,255,255,0)');
-    g.fillStyle = r; g.fillRect(0, 0, 128, 128);
-  });
-  const sprite = (w, h, scale) => {
-    const sp = new THREE.Sprite(new THREE.SpriteMaterial({ transparent: true, depthWrite: false, depthTest: false }));
+  const glowTex = canvasTex(128, 128, g => { const r = g.createRadialGradient(64, 64, 0, 64, 64, 64); r.addColorStop(0, 'rgba(255,255,255,.85)'); r.addColorStop(1, 'rgba(255,255,255,0)'); g.fillStyle = r; g.fillRect(0, 0, 128, 128); });
+  const sprite = (w, h, scale, extra = {}) => {
+    const sp = new THREE.Sprite(new THREE.SpriteMaterial({ transparent: true, depthWrite: false, depthTest: false, ...extra }));
     sp.renderOrder = 10; sp.scale.set(scale, scale * h / w, 1); sp.userData.size = [w, h]; return sp;
   };
   const paint = (sp, fn) => { sp.material.map?.dispose(); sp.material.map = canvasTex(...sp.userData.size, fn); sp.material.needsUpdate = true; };
+  const icoSprite = (i, size) => { const sp = sprite(128, 128, size); sp.userData.i = i; return sp; };
+  const paintIco = sp => paint(sp, c => drawIcon(c, document.querySelector(tiles[sp.userData.i].querySelector('use')?.getAttribute('href')), 128, '#fff'));
+  const sector = (r1, r2, a0, a1, depth = 0) => {   // Winkel in Grad, Uhrzeigersinn ab oben (wie polar)
+    a0 *= D; a1 *= D; const s = new THREE.Shape();
+    s.moveTo(r2 * Math.sin(a0), r2 * Math.cos(a0)); s.absarc(0, 0, r2, Math.PI / 2 - a0, Math.PI / 2 - a1, true);
+    s.lineTo(r1 * Math.sin(a1), r1 * Math.cos(a1)); s.absarc(0, 0, r1, Math.PI / 2 - a1, Math.PI / 2 - a0, false);
+    const g = depth ? new THREE.ExtrudeGeometry(s, { depth, bevelEnabled: false, curveSegments: 20 }) : new THREE.ShapeGeometry(s, 20);
+    g.rotateX(-Math.PI / 2); return g;
+  };
+  const basic = (color, o = 1) => new THREE.MeshBasicMaterial({ color, transparent: true, opacity: o, depthWrite: false });
+  const labelPaint = (i, w, h, withCount = true) => (c) => {
+    const t = tiles[i].querySelector('b').textContent.trim(); c.textAlign = 'center'; c.textBaseline = 'middle';
+    const nm = `700 ${h * .42}px ${font}`, ct = `800 ${h * .38}px ${mono}`; c.font = nm; const w1 = c.measureText(t).width;
+    c.font = ct; const w2 = withCount ? c.measureText(String(cnt[i])).width : 0, gap = withCount ? h * .22 : 0, x0 = (w - (w1 + gap + w2)) / 2;
+    c.textAlign = 'left'; c.font = nm; c.fillStyle = '#fff'; c.fillText(t, x0, h / 2);
+    if (withCount) { c.font = ct; c.fillText(String(cnt[i]), x0 + w1 + gap, h / 2 + 1); }
+  };
 
-  /* Grundplatte, Rand, Innenfläche */
-  const plate = new THREE.Mesh(new THREE.CylinderGeometry(R2 + 24, R2 + 30, 14, 120), new THREE.MeshStandardMaterial({ color: 0x15191c, roughness: .7, metalness: .3 }));
-  plate.position.y = -14; world.add(plate);
-  const rim = new THREE.Mesh(new THREE.TorusGeometry(R2 + 14, 1.4, 8, 160), new THREE.MeshBasicMaterial({ transparent: true, opacity: .35 }));
-  rim.rotation.x = Math.PI / 2; rim.position.y = -6; world.add(rim);
-  const inner = new THREE.Mesh(new THREE.CylinderGeometry(R1 - 6, R1 - 6, 4, 96), new THREE.MeshStandardMaterial({ color: 0x0b0d0f, roughness: .9 }));
-  inner.position.y = -4; world.add(inner);
+  /* gemeinsamer Zustand */
+  let cur = 0, hover = -1, rot = 0, rotTarget = 0, first = true, introT = reduce ? 99 : 0, introOn = reduce, visible = false, drag = null, vel = 0;
+  const lift = new Array(N).fill(0), hov = new Array(N).fill(0), pickables = [];
+  const API = { THREE, world, scene, cam, N, keys, cnt, mid, polar, tiles, sector, basic, sprite, paint, icoSprite, paintIco, canvasTex, drawIcon, glowTex, labelPaint, sub, clamp, eo, reduce,
+    get cols() { return cols; }, get fg() { return fg; }, get fg2() { return fg2; }, get accent() { return accent; }, get bg() { return bg; }, get cur() { return cur; }, font, mono,
+    lift, hov, pickables, get intro() { return introT; }, get rot() { return rot; }, host };
+  const S = scene_(API);
 
-  /* Segmente: extrudiertes Glas, Kante + Knopf in Bereichsfarbe, großes Icon, Name, Schein */
-  const segs = [], spokes = [], nodes = [];
-  keys.forEach((a, i) => {
-    const a0 = (i * 360 / N + .6) * D, a1 = ((i + 1) * 360 / N - .6) * D, am = mid(i);
-    const s = new THREE.Shape();
-    s.moveTo(R2 * Math.sin(a0), R2 * Math.cos(a0));
-    s.absarc(0, 0, R2, Math.PI / 2 - a0, Math.PI / 2 - a1, true);
-    s.lineTo(R1 * Math.sin(a1), R1 * Math.cos(a1));
-    s.absarc(0, 0, R1, Math.PI / 2 - a1, Math.PI / 2 - a0, false);
-    const geo = new THREE.ExtrudeGeometry(s, { depth: 16, bevelEnabled: true, bevelThickness: 3, bevelSize: 2.5, bevelSegments: 3, curveSegments: 24 });
-    geo.rotateX(-Math.PI / 2);
-    const mat = new THREE.MeshPhysicalMaterial({ roughness: .28, metalness: .15, clearcoat: 1, clearcoatRoughness: .15, transparent: true, opacity: .9, emissiveIntensity: 0 });
-    const mesh = new THREE.Mesh(geo, mat); mesh.userData.i = i;
-    const edge = new THREE.LineSegments(new THREE.EdgesGeometry(geo, 25), new THREE.LineBasicMaterial({ transparent: true, opacity: .3 }));
-    const knob = new THREE.Mesh(new THREE.CylinderGeometry(34, 34, 4, 48), new THREE.MeshStandardMaterial({ color: 0x2c353b, roughness: .35, metalness: .3, emissiveIntensity: .08 }));
-    knob.position.copy(polar(am, 226, 22));
-    const ico = new THREE.Mesh(new THREE.PlaneGeometry(58, 58), new THREE.MeshBasicMaterial({ transparent: true, depthWrite: false, side: THREE.DoubleSide }));
-    ico.position.copy(polar(am, 226, 58)); ico.renderOrder = 9;
-    const icoGlow = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false }));
-    icoGlow.scale.set(130, 130, 1); icoGlow.position.copy(ico.position);
-    const label = sprite(512, 192, 124); label.position.copy(polar(am, 226, 4));   // Name unter dem Icon (Versatz je Bild in frame), schmaler als das Segment
-    const glow = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false }));
-    glow.scale.set(300, 300, 1); glow.position.copy(polar(am, 206, 8));
-    const g = new THREE.Group(); g.add(mesh, edge, knob, icoGlow, ico, label, glow);
-    g.userData = { mat, edge, knob, ico, icoGlow, label, glow, a: am, icoP: ico.position.clone(), labP: label.position.clone(), lift: 0, hover: 0, target: 0, sym: tiles[i].querySelector('use')?.getAttribute('href') };
-    world.add(g); segs.push(g);
-    const sp = new THREE.Line(new THREE.BufferGeometry().setFromPoints([polar(am, 70, 2), polar(am, R1 - 6, 2)]), new THREE.LineBasicMaterial());
-    world.add(sp); spokes.push(sp);
-    const nd = new THREE.Mesh(new THREE.SphereGeometry(5.5, 20, 12), new THREE.MeshStandardMaterial({ color: 0x2a2f34, emissiveIntensity: 0 }));
-    nd.position.copy(polar(am, i % 2 ? 92 : 118, 3)); world.add(nd); nodes.push(nd);
-  });
-
-  /* Hub mit Ring und Beschriftung (Texte aus dem SVG-Ring) */
-  const hub = new THREE.Mesh(new THREE.CylinderGeometry(62, 68, 34, 72), new THREE.MeshPhysicalMaterial({ color: 0x1d2328, roughness: .25, metalness: .4, clearcoat: 1 }));
-  hub.position.y = 15; world.add(hub);
-  const hubRing = new THREE.Mesh(new THREE.TorusGeometry(70, 1.2, 8, 96), new THREE.MeshBasicMaterial());
-  hubRing.rotation.x = Math.PI / 2; hubRing.position.y = 32; world.add(hubRing);
-  const hubLab = sprite(256, 256, 150); hubLab.position.set(0, 64, 0); scene.add(hubLab);
-
-  /* Hologramm-Karte rechts neben dem Ring (nur breite Bühne): Bereich, Satz, Anzahl je Prüfstufe, Funktionen; Klick filtert wie das Segment */
-  const HW = 720, HH = 640, HS = 640, holo = sprite(HW, HH, HS);   // Zeichenmaße; Canvas selbst in Bildschirmpixeln (resize)
-  holo.position.set(360, 40, 0); holo.visible = false; scene.add(holo);
-  let wide = false;
-  function paintHolo(i) {
-    const c = cols[i].getStyle(), en = root.lang === 'en', T = (de, e) => en ? e : de, list = fns[i].map(x => x.querySelector('.fn-sel span').textContent.trim());
-    const n = k => fns[i].filter(x => (x.dataset.s || '').includes(k)).length, all = Math.max(1, list.length);
-    const dsc = ring.querySelector(`.atd-d[data-a="${keys[i]}"]`)?.textContent.trim() || '';
-    paint(holo, (g, W, H) => {
-      const w = HW, h = HH; g.scale(W / w, H / h);   // 1 Canvas-Pixel = 1 Bildschirmpixel → Rahmen und Schrift scharf
-      g.fillStyle = 'rgba(12,17,20,.86)'; g.strokeStyle = c; g.lineWidth = 2.5; g.beginPath(); g.roundRect(4, 4, w - 8, h - 8, 12); g.fill(); g.stroke();
-      g.save(); g.translate(30, 26); drawIcon(g, document.querySelector(segs[i].userData.sym), 52, c); g.restore();
-      g.textBaseline = 'middle'; g.fillStyle = fg; g.font = `800 44px ${font}`; g.fillText(tiles[i].querySelector('b').textContent.trim(), 98, 54);
-      g.textAlign = 'right'; g.fillStyle = c; g.font = `800 40px ${mono}`; g.fillText(String(list.length), w - 30, 54); g.textAlign = 'left';
-      g.fillStyle = fg; g.font = `500 25px ${font}`;
-      let line = '', y = 110;
-      for (const wd of dsc.split(' ')) { if (line && g.measureText(line + wd).width > w - 60) { g.fillText(line, 30, y); line = ''; y += 34; } line += wd + ' '; }
-      g.fillText(line, 30, y); y += 52;
-      [[T('Simulieren', 'Simulate'), n('s')], [T('Prüfen', 'Check'), n('p')], ['Real', n('r')]].forEach(([t, v]) => {
-        g.fillStyle = fg; g.font = `700 26px ${font}`; g.fillText(t, 30, y);
-        g.fillStyle = 'rgba(255,255,255,.12)'; g.fillRect(200, y - 7, 420, 14); g.fillStyle = c; g.fillRect(200, y - 7, 420 * v / all, 14);
-        g.fillStyle = fg; g.font = `700 24px ${mono}`; g.textAlign = 'right'; g.fillText(String(v), w - 30, y); g.textAlign = 'left'; y += 40;
-      });
-      y += 4; g.strokeStyle = 'rgba(255,255,255,.18)'; g.lineWidth = 2; g.beginPath(); g.moveTo(30, y); g.lineTo(w - 30, y); g.stroke(); y += 38;
-      list.slice(0, 8).forEach((t, k) => {
-        const x = 30 + (k % 2) * 335, yy = y + (k >> 1) * 46;
-        g.fillStyle = c; g.beginPath(); g.arc(x + 6, yy, 6, 0, Math.PI * 2); g.fill();
-        g.fillStyle = fg; g.font = `600 24px ${font}`; const max = 335 - 22 - 24;   // Spaltenbreite − Punkt − Abstand zur nächsten Spalte
-        let tt = t; if (g.measureText(t).width > max) { while (tt.length > 4 && g.measureText(tt.trimEnd() + '…').width > max) tt = tt.slice(0, -1); tt = tt.trimEnd() + '…'; }
-        g.fillText(tt, x + 22, yy + 1);
-      });
-      if (list.length > 8) { g.fillStyle = c; g.font = `700 24px ${font}`; g.fillText(T(`+ ${list.length - 8} weitere in der Liste`, `+ ${list.length - 8} more in the list`), 30, y + 4 * 46 + 4); }
-    });
+  function recolor() {
+    cols = keys.map((_, i) => new THREE.Color(hueOf(i)));
+    fg = tok('fg') || fg; fg2 = tok('fg-2') || fg2; accent = tok('accent') || accent; bg = tok('bg') || bg;
+    S.recolor(); sel(cur, false);
   }
-
-  /* Lichtimpuls Hub → Segment */
-  const pulse = new THREE.Mesh(new THREE.SphereGeometry(6, 20, 12), new THREE.MeshBasicMaterial());
-  const pglow = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false }));
-  pglow.scale.set(60, 60, 1); pulse.add(pglow); pulse.visible = false; world.add(pulse);
-
-  const LINE = 0x3b4248, BASE = new THREE.Color(0x232b31);
-  let cols = [], fg = '#eef2f3', accent = '#2ee6c8';
-  function recolor() {   // Tokens neu lesen (Theme): Bereichsfarben, Akzent, Schrift
-    cols = keys.map((_, i) => new THREE.Color(hueOf(i))); fg = tok('fg') || fg; accent = tok('accent') || accent;
-    segs.forEach((g, i) => {
-      const u = g.userData, c = cols[i];
-      u.mat.color.copy(BASE).lerp(c, .14); u.mat.emissive.copy(c); u.edge.material.color.copy(c);
-      u.knob.material.emissive.copy(c); u.icoGlow.material.color.copy(c); u.glow.material.color.copy(c);
-      nodes[i].material.emissive.copy(c);
-      u.ico.material.map?.dispose();
-      u.ico.material.map = canvasTex(256, 256, cx => { cx.translate(16, 16); drawIcon(cx, document.querySelector(u.sym), 224, c.getStyle()); });
-      u.ico.material.needsUpdate = true;
-    });
-    rim.material.color.set(accent); hubRing.material.color.set(accent);
-    relabel(); sel(ring.atCur(), false);
-  }
-  function relabel() {   // Namen + Hub-Texte in der aktuellen Sprache
-    segs.forEach((g, i) => paint(g.userData.label, (c, w, h) => {
-      const t = tiles[i].querySelector('b').textContent.trim(), fit = s => c.measureText(s).width <= w - 24;
-      let px = 76, lines = [t]; c.font = `700 ${px}px ${font}`;
-      if (!fit(t) && t.includes(' ')) { const k = t.lastIndexOf(' '); lines = [t.slice(0, k), t.slice(k + 1)]; }   // lange Namen zweizeilig wie die Kachel
-      while (!lines.every(fit) && px > 44) { px -= 2; c.font = `700 ${px}px ${font}`; }
-      c.textAlign = 'center'; c.textBaseline = 'middle'; c.lineJoin = 'round';
-      c.lineWidth = 10; c.strokeStyle = 'rgba(8,10,12,.78)'; c.fillStyle = fg;   // dunkle Kontur: lesbar auch auf leuchtendem Segment
-      lines.forEach((l, k) => { const y = h / 2 + (k - (lines.length - 1) / 2) * px * 1.1; c.strokeText(l, w / 2, y); c.fillText(l, w / 2, y); });
-    }));
-    const num = ring.querySelector('.at-num'), big = num ? num.dataset.num || num.textContent : '', lbl = ring.querySelector('.at-lbl')?.textContent || '', sub = ring.querySelector('.at-sub')?.textContent || '';
-    paint(hubLab, (c, w) => {
-      c.textAlign = 'center'; c.fillStyle = fg;
-      c.font = `800 64px ${mono}`; c.fillText(big, w / 2, 110);
-      c.font = `700 30px ${font}`; c.fillText(lbl, w / 2, 160);
-      c.fillStyle = accent; c.font = `700 24px ${mono}`; c.fillText(sub, w / 2, 198);
-    });
-    if (wide) paintHolo(ring.atCur ? Math.max(0, keys.indexOf(ring.atCur())) : 0);
-    need();
-  }
-
-  /* Auswahl: Ring dreht das Segment nach vorn, Speiche + Knoten leuchten, Impuls läuft vom Hub hinaus */
-  let rot = 0, rotTarget = 0, hover = -1, pulseT = 1, pulseSeg = 0, drag = null, vel = 0, cur = 0, first = true;
   function sel(a, anim = true) {
-    const i = Math.max(0, keys.indexOf(a)); cur = i;
-    segs.forEach((g, k) => { g.userData.target = k === i ? 1 : 0; });
-    spokes.forEach((s, k) => s.material.color.set(k === i ? cols[k] : LINE));
-    nodes.forEach((n, k) => { n.material.emissiveIntensity = k === i ? 1.2 : 0; });
-    if (wide) paintHolo(i);
+    const i = Math.max(0, keys.indexOf(a)); const prev = cur; cur = i;
     let t = (FRONT - mid(i)) * D; while (t - rotTarget > Math.PI) t -= 2 * Math.PI; while (t - rotTarget < -Math.PI) t += 2 * Math.PI;
-    rotTarget = t; pulseSeg = i; pulse.material.color.copy(cols[i]); pglow.material.color.copy(cols[i]); hot.color.copy(cols[i]);
-    pulseT = anim && !reduce ? 0 : 1;
-    if (first || reduce) { rot = rotTarget; segs.forEach(g => { g.userData.lift = g.userData.target; }); first = false; }
-    need();
+    rotTarget = t; if (first || reduce) { rot = rotTarget; lift.forEach((_, k) => { lift[k] = k === i ? 1 : 0; }); first = false; }
+    S.select(i, prev, anim && !reduce); need();
   }
   ring.addEventListener('at-pick', e => sel(e.detail.a));
 
-  /* Zeiger: Hover hebt an, Klick filtert, waagerechtes Ziehen dreht (senkrecht scrollt die Seite: touch-action pan-y) */
-  const ray = new THREE.Raycaster(), ptr = new THREE.Vector2(), meshes = segs.map(g => g.children[0]), cv = renderer.domElement;
+  /* Zeiger */
+  const ray = new THREE.Raycaster(), ptr = new THREE.Vector2(), cv = renderer.domElement, pointer = { x: 0, y: 0, in: false };
   const pick = e => {
     const r = cv.getBoundingClientRect(); ptr.set((e.clientX - r.left) / r.width * 2 - 1, -(e.clientY - r.top) / r.height * 2 + 1);
-    ray.setFromCamera(ptr, cam); const h = ray.intersectObjects(meshes)[0]; if (h) return h.object.userData.i;
-    return holo.visible && ray.intersectObject(holo).length ? N : -1;   // N = Hologramm-Karte
+    ray.setFromCamera(ptr, cam); const h = ray.intersectObjects(pickables, false)[0]; return h ? h.object.userData.i : -1;
   };
   cv.addEventListener('pointerdown', e => { drag = { x: e.clientX, id: e.pointerId, moved: false }; });
   cv.addEventListener('pointermove', e => {
+    const r = cv.getBoundingClientRect(); pointer.x = (e.clientX - r.left) / r.width * 2 - 1; pointer.y = (e.clientY - r.top) / r.height * 2 - 1; pointer.in = true;
     if (drag) {
       const dx = e.clientX - drag.x;
       if (!drag.moved && Math.abs(dx) > 4) { drag.moved = true; cv.setPointerCapture(drag.id); cv.style.cursor = 'grabbing'; }
@@ -228,80 +117,113 @@ function build(THREE, ring, host) {
       return;
     }
     const h = pick(e); if (h !== hover) { hover = h; cv.style.cursor = h >= 0 ? 'pointer' : 'grab'; need(); }
+    need();
   });
-  cv.addEventListener('pointerup', e => { if (drag && !drag.moved) { const i = pick(e); if (i >= 0) ring.atGo(keys[i === N ? cur : i]); } drag = null; cv.style.cursor = hover >= 0 ? 'pointer' : 'grab'; });
+  cv.addEventListener('pointerup', e => { if (drag && !drag.moved) { const i = pick(e); if (i >= 0) ring.atGo(keys[i]); } drag = null; cv.style.cursor = hover >= 0 ? 'pointer' : 'grab'; });
   cv.addEventListener('pointercancel', () => { drag = null; });
-  cv.addEventListener('pointerleave', () => { if (hover >= 0) { hover = -1; need(); } });
+  cv.addEventListener('pointerleave', () => { pointer.in = false; if (hover >= 0) { hover = -1; } need(); });
   host.addEventListener('keydown', e => {
     const step = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }[e.key];
     if (step) { e.preventDefault(); ring.atPick(keys[(cur + step + N) % N], true); }
     else if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); ring.atGo(keys[cur]); }
   });
 
-  /* Größe: Kamera rückt so weit ab, dass der Ring mit Rand in die Bühne passt; schmale Bühne ohne Namen */
   function resize() {
     const w = host.clientWidth, h = host.clientHeight; if (!w || !h) return;
-    renderer.setSize(w, h, false); cam.aspect = w / h;
-    wide = w >= HOLO_MIN_W; ring.classList.toggle('at-holo', wide); holo.visible = wide;
-    world.position.x = hubLab.position.x = wide ? -SHIFT : 0;
-    const tv = Math.tan(FOV / 2 * D), th = tv * cam.aspect, RR = R2 + 34, RX = wide ? SHIFT + 400 : RR;   // rechts: Hologramm-Karte bis x = 680
-    const d = Math.max(RX / th * 1.06, (RR * Math.sin(EL) + 24) / tv * 1.04);
-    cam.position.set(0, d * Math.sin(EL), d * Math.cos(EL)); cam.up.set(0, 0, -1); cam.lookAt(0, 4, 0); cam.updateProjectionMatrix();
-    segs.forEach(g => { g.userData.label.visible = w >= LABEL_MIN_W; });
-    if (wide) {   // Hologramm-Canvas so groß wie die Karte auf dem Bildschirm (× Pixeldichte)
-      const px = HS * h / (2 * (d - holo.position.y) * tv) * renderer.getPixelRatio();
-      holo.userData.size = [Math.round(px), Math.round(px * HH / HW)]; paintHolo(cur);
-    }
-    need();
+    renderer.setSize(w, h, false); cam.aspect = w / h; cam.updateProjectionMatrix(); S.resize(w, h); need();
   }
-
-  /* Bild: läuft nur sichtbar + Tab im Vordergrund; reduced-motion = Standbild je Änderung */
-  let visible = false, raf = 0, last = 0;
-  const camQ = new THREE.Quaternion(), yawQ = new THREE.Quaternion(), UP = new THREE.Vector3(0, 1, 0), icoOff = new THREE.Vector3(), labOff = new THREE.Vector3();
-  function need() { if (!raf && visible && !document.hidden) raf = requestAnimationFrame(frame); }
+  let raf = 0, last = 0, tt = 0;
+  const need = () => { if (!raf && visible && !document.hidden) raf = requestAnimationFrame(frame); };
   function frame(now) {
-    raf = 0;
-    const dt = last ? Math.min((now - last) / 1000, .05) : .016, t = now / 1000; last = now;
-    let busy = !reduce;   // Ambient (Icons, Hub-Ring) läuft weiter, solange Bewegung erlaubt ist
-    if (!drag) {
-      if (Math.abs(vel) > .0005 && !reduce) { rot += vel; rotTarget = rot; vel *= .92; }
-      else { vel = 0; rot += (rotTarget - rot) * (reduce ? 1 : Math.min(1, dt * 4)); }
-    }
+    raf = 0; const dt = last ? Math.min((now - last) / 1000, .05) : .016; last = now; tt += dt;
+    if (introOn && introT < 90) introT += dt;
+    if (!drag) { if (Math.abs(vel) > .0005 && !reduce) { rot += vel; rotTarget = rot; vel *= .92; } else { vel = 0; rot += (rotTarget - rot) * (reduce ? 1 : Math.min(1, dt * 3.2)); } }
+    const k1 = reduce ? 1 : Math.min(1, dt * 7);
+    for (let k = 0; k < N; k++) { hov[k] += ((k === hover ? 1 : 0) - hov[k]) * k1; lift[k] += ((k === cur ? 1 : 0) - lift[k]) * Math.min(1, k1 * .8); }
     world.rotation.y = -rot;
-    camQ.copy(world.quaternion).invert().multiply(cam.quaternion);   // Icons zur Kamera, dann leichte Drehung um die Hochachse
-    icoOff.set(0, 0, -24).applyAxisAngle(UP, rot); labOff.set(0, 0, 34).applyAxisAngle(UP, rot);   // Draufsicht: Icon oben, Name unten
-    segs.forEach((g, k) => {
-      const u = g.userData, k1 = reduce ? 1 : Math.min(1, dt * 8);
-      u.hover += ((k === hover ? 1 : 0) - u.hover) * k1;
-      u.lift += (Math.max(u.target, .45 * u.hover) - u.lift) * k1;
-      g.position.copy(polar(u.a, 10 * u.lift, 12 * u.lift));
-      u.mat.emissiveIntensity = .55 * u.lift; u.edge.material.opacity = .3 + .6 * u.lift;
-      u.glow.material.opacity = .55 * u.target * u.lift;
-      u.icoGlow.material.opacity = .35 * Math.max(u.hover, .6 * u.target);
-      yawQ.setFromAxisAngle(UP, reduce ? 0 : .3 * Math.sin(t * .7 + k * .9));
-      u.ico.quaternion.copy(camQ).multiply(yawQ);
-      u.ico.position.copy(u.icoP).add(icoOff); u.icoGlow.position.copy(u.ico.position); u.label.position.copy(u.labP).add(labOff);
-    });
-    if (pulseT < 1) { pulseT = Math.min(1, pulseT + dt / .65); busy = true; }
-    const f = pulseT < .5 ? 2 * pulseT * pulseT : 1 - (-2 * pulseT + 2) ** 2 / 2;
-    pulse.position.copy(polar(mid(pulseSeg), 70 + (R1 - 76) * f, 8)); pulse.visible = pulseT < 1;
-    const s = segs[cur];
-    hot.position.copy(s.position).add(polar(mid(cur), 200, 120)).applyAxisAngle(UP, -rot).add(world.position); hot.intensity = 9000 * s.userData.lift;
-    hubRing.rotation.z = reduce ? 0 : t * .15;
+    S.tick(tt, dt, pointer);
     renderer.render(scene, cam);
-    if (busy || Math.abs(rotTarget - rot) > .001 || segs.some(g => Math.abs(g.userData.lift - Math.max(g.userData.target, .45 * g.userData.hover)) > .002)) need();
-    else last = 0;
+    const busy = !reduce && (introT < 4 || S.ambient) || Math.abs(rotTarget - rot) > .001 || lift.some((v, k) => Math.abs(v - (k === cur ? 1 : 0)) > .002) || S.busy?.();
+    if (busy) need(); else last = 0;
   }
-
   new ResizeObserver(resize).observe(host);
-  new IntersectionObserver(([e]) => { visible = e.isIntersecting; last = 0; need(); }).observe(host);
+  new IntersectionObserver(([e]) => { visible = e.isIntersecting; if (visible) introOn = true; last = 0; need(); }, { threshold: .25 }).observe(host);
   document.addEventListener('visibilitychange', () => { last = 0; need(); });
-  new MutationObserver(m => (m.some(r => r.attributeName === 'lang') ? relabel() : recolor()))
-    .observe(root, { attributes: true, attributeFilter: ['lang', 'data-theme'] });
-  recolor(); resize();
-  document.fonts?.ready.then(relabel);
+  new MutationObserver(m => (m.some(r => r.attributeName === 'lang') ? (S.relabel(), need()) : recolor())).observe(root, { attributes: true, attributeFilter: ['lang', 'data-theme'] });
+  recolor(); resize(); S.relabel();
+  document.fonts?.ready.then(() => { S.relabel(); need(); });
   host.dataset.ready = '1';
   return { renderer, scene, camera: cam, select: a => ring.atPick(a, true) };
+}
+
+/* Szene: Sektoren, 85 Strichmarken (eine je Funktion), Namen außen, Leitlinie zur Karte */
+function scene_(X) {
+  const { THREE, world, scene, cam, N, keys, cnt, mid, polar, sector, basic, sprite, paint, icoSprite, paintIco, labelPaint, sub, pickables, lift, hov, host } = X;
+  const R0 = 128, R1 = 160, R2 = 238, SPAN = 360 / N, G = 1.4;
+  const secs = [], bars = [], pings = [], icos = [], labs = [];
+  keys.forEach((a, i) => {
+    const a0 = i * SPAN + G, a1 = (i + 1) * SPAN - G, m = mid(i);
+    const fill = new THREE.Mesh(sector(R1, R2, a0, a1), basic(0xffffff, .14)); fill.userData.i = i; world.add(fill); secs.push(fill); pickables.push(fill);
+    const bar = new THREE.Mesh(sector(R2 - 5, R2 + 1, a0, a1), basic(0xffffff, .9)); world.add(bar); bars.push(bar);
+    const ping = new THREE.Mesh(sector(R2 - 5, R2 + 1, a0, a1), basic(0xffffff, 0)); ping.visible = false; world.add(ping); pings.push(ping);
+    const ico = icoSprite(i, 38); ico.position.copy(polar(m, (R1 + R2) / 2 - 4, 2)); world.add(ico); icos.push(ico);
+    const lab = sprite(480, 84, 275); scene.add(lab); labs.push(lab);
+  });
+  /* Strichmarken: eine je Funktion, im Winkelbereich ihres Bereichs */
+  const ticks = []; keys.forEach((a, i) => { const n = cnt[i], a0 = i * SPAN + G + 5, a1 = (i + 1) * SPAN - G - 5; for (let k = 0; k < n; k++) ticks.push({ i, a: n > 1 ? a0 + (a1 - a0) * k / (n - 1) : mid(i), k }); });
+  const tg = new THREE.PlaneGeometry(1.7, 1); tg.rotateX(-Math.PI / 2);
+  const tm = new THREE.InstancedMesh(tg, new THREE.MeshBasicMaterial({ transparent: true, depthWrite: false }), ticks.length); world.add(tm);
+  const M = new THREE.Matrix4(), Q = new THREE.Quaternion(), E = new THREE.Euler(), SC = new THREE.Vector3(), PO = new THREE.Vector3(), CC = new THREE.Color();
+  /* feiner Außenring (sehr langsam), Hub-Kreis, Leitlinie zur Karte */
+  const dashes = new THREE.InstancedMesh(new THREE.PlaneGeometry(1.2, 7).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ transparent: true, opacity: .22, depthWrite: false }), 120);
+  for (let k = 0; k < 120; k++) { const a = k * 3; E.set(0, -a * D, 0); Q.setFromEuler(E); M.compose(polar(a, R2 + 24), Q, SC.set(1, 1, 1)); dashes.setMatrixAt(k, M); }
+  const dashG = new THREE.Group(); dashG.add(dashes); scene.add(dashG);
+  const hubRing = new THREE.Mesh(new THREE.RingGeometry(R0 - 22, R0 - 21, 120).rotateX(-Math.PI / 2), basic(0xffffff, .22)); scene.add(hubRing);
+  const hubLab = sprite(256, 256, 150); hubLab.position.set(0, 2, 0); scene.add(hubLab);
+  const lead = new THREE.Mesh(new THREE.PlaneGeometry(1, 1.4).rotateX(-Math.PI / 2), basic(0xffffff, .5)); scene.add(lead);
+  let bgC = new THREE.Color(), fgC = new THREE.Color(), extX = 460, extY = 322;
+
+  const S = {
+    ambient: true,
+    recolor() {
+      secs.forEach((m, i) => { m.material.color.copy(X.cols[i]); bars[i].material.color.copy(X.cols[i]); pings[i].material.color.copy(X.cols[i]); });
+      lead.material.color.copy(X.cols[X.cur]); bgC.set(X.bg); fgC.set(X.fg); hubRing.material.color.set(X.fg);
+      icos.forEach(paintIco); labs.forEach((l, i) => paint(l, labelPaint(i, 480, 84)));
+    },
+    relabel() { labs.forEach((l, i) => paint(l, labelPaint(i, 480, 84))); const num = document.querySelector('#at-ring .at-num'), lbl = document.querySelector('#at-ring .at-lbl')?.textContent || '', sub2 = document.querySelector('#at-ring .at-sub')?.textContent || '';
+      paint(hubLab, (c, w) => { c.textAlign = 'center'; c.fillStyle = '#fff'; c.font = `800 92px ${X.mono}`; c.fillText(num ? num.dataset.num || num.textContent : '85', w / 2, 118); c.font = `700 28px ${X.font}`; c.fillText(lbl, w / 2, 160); c.font = `600 21px ${X.mono}`; c.globalAlpha = .7; c.fillText(sub2, w / 2, 196); });
+      hubLab.material.color.set(X.fg); },
+    select(i, prev, anim) { lead.material.color.copy(X.cols[i]); if (anim) { pings[i].visible = true; pings[i].userData.t = 0; } },
+    resize(w, h) {
+      const tv = Math.tan(FOV / 2 * D), th = tv * cam.aspect, lab = w >= 440, d = Math.max((lab ? extX : 270) / th, (lab ? extY : 270) / tv);
+      cam.position.set(0, d, 0); cam.up.set(0, 0, -1); cam.lookAt(0, 0, 0); cam.updateProjectionMatrix();
+      labs.forEach(l => { l.visible = w >= 440; });
+    },
+    tick(t, dt) {
+      const p = X.intro, sc = X.reduce ? 0 : 1;
+      secs.forEach((m, i) => { const r = sub(p, .25 + i * .09, .7), l = lift[i], h = hov[i];
+        m.material.opacity = (.07 + .09 * r) * (1 - l) + (.34 * r) * l + .06 * h; const s = .94 + .06 * r; m.scale.set(s, 1, s);
+        bars[i].material.opacity = r * (.5 + .5 * Math.max(l, h)); bars[i].scale.set(1 + .03 * l, 1, 1 + .03 * l); bars[i].scale.set(s, 1, s);
+        icos[i].material.color.copy(X.cols[i]); icos[i].material.opacity = r * (.62 + .38 * Math.max(l, h));
+        labs[i].material.color.copy(l > .5 ? X.cols[i] : fgC); labs[i].material.opacity = r * (.62 + .38 * Math.max(l, h));
+        const pg = pings[i]; if (pg.visible) { pg.userData.t += dt / .9; const u = pg.userData.t; if (u >= 1) pg.visible = false; else { const q = 1 + .09 * (1 - (1 - u) ** 3); pg.scale.set(q, 1, q); pg.material.opacity = .7 * (1 - u); } }
+      });
+      ticks.forEach((tk, n) => {
+        const l = lift[tk.i], h = hov[tk.i], r = sub(p, .1 + n * .011, .45), len = (9 + 9 * l + 4 * h) * r;
+        E.set(0, -tk.a * D, 0); Q.setFromEuler(E); M.compose(polar(tk.a, R0 + len / 2, 1), Q, SC.set(1, 1, Math.max(len, .01)));
+        tm.setMatrixAt(n, M); CC.copy(X.cols[tk.i]).lerp(bgC, .55 * (1 - Math.max(l, h * .6))); tm.setColorAt(n, CC);
+      });
+      tm.instanceMatrix.needsUpdate = true; tm.instanceColor.needsUpdate = true;
+      hubLab.material.opacity = sub(p, .1, .6);
+      hubRing.material.opacity = .22 * sub(p, 0, .8);
+      dashG.rotation.y = -t * .02 * sc; dashes.material.opacity = .22 * sub(p, 1.2, 1);
+      /* Leitlinie: von der gewählten Beschriftung nach rechts zur Karte */
+      labs.forEach((l, i) => { const a = mid(i) + X.rot / D, w = 275 * .6, h = 44, r = R2 + 22 + w * Math.abs(Math.sin(a * D)) * .5 + h * Math.abs(Math.cos(a * D)) * .5; l.position.copy(polar(a, r, 2)); });
+      lead.scale.set(26, 1, 1); lead.position.set(R2 + 13, 1, 0); lead.material.opacity = .6 * sub(p, 1.1, .8);
+    },
+    busy: () => false
+  };
+  return S;
 }
 
 window.AtlasRing3D = { init };

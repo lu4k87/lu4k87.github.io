@@ -243,8 +243,21 @@ html.sf-on .at-ring:not(.in) .seg { stroke-dasharray: 0 85; }
 .atd-n { font: 800 34px/1 var(--mono); color: var(--c); font-variant-numeric: tabular-nums; }
 .atd-d { font-size: 15px; line-height: 1.5; text-wrap: pretty; }
 .atd-d[hidden] { display: none; }
-.atd-chips { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
-.atd-chips li { padding: 4px 10px; border: 1px solid color-mix(in srgb, var(--c) 45%, var(--line)); border-radius: var(--radius-sm); font-size: 13px; line-height: 1.4; }
+.atd-chips { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px 14px; }
+.atd-chips li { display: flex; align-items: baseline; gap: 8px; min-width: 0; font-size: 14px; line-height: 1.35; }
+.atd-chips li::before { content: ""; flex: none; width: 8px; height: 8px; border: 1.5px solid var(--c); border-radius: 50%; }   /* leer = nur Simulation/Prüfung, gefüllt = auch Real */
+.atd-chips li.real::before { background: var(--c); }
+.atd-chips li.more { grid-column: 1 / -1; font-weight: 700; color: var(--c); }
+.atd-chips li.more::before { display: none; }
+.atd-lvl { display: grid; gap: 7px; }
+.atd-lvl div { display: grid; grid-template-columns: 92px minmax(0, 1fr) 28px; gap: 10px; align-items: center; font-size: 14px; }
+.atd-lvl i { display: block; height: 6px; border-radius: 3px; background: var(--line); overflow: hidden; }
+.atd-lvl i b { display: block; height: 100%; background: var(--c); }
+.atd-lvl span:last-child { font: 700 14px/1 var(--mono); text-align: right; font-variant-numeric: tabular-nums; }
+.atd-key { display: flex; flex-wrap: wrap; gap: 4px 16px; margin: 0; font-size: 13px; line-height: 1.4; color: var(--fg-2); }
+.atd-key span { display: inline-flex; align-items: center; gap: 6px; }
+.atd-key span::before { content: ""; width: 8px; height: 8px; border: 1.5px solid var(--c); border-radius: 50%; }
+.atd-key span + span::before { background: var(--c); }
 .atd-scan { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; padding-top: 12px; border-top: 1px solid var(--line); }
 .atd-scan button { min-height: 36px; padding: 8px 12px; font: 700 12px/1 var(--mono); color: var(--fg); background: var(--surface-2); border: 1px solid var(--line-strong);
   border-radius: var(--radius-sm); cursor: pointer; transition: border-color var(--t-fast); }
@@ -269,7 +282,7 @@ html.sf-on .at-ring:not(.in) .seg { stroke-dasharray: 0 85; }
 .at-cta { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px; }
 .at-cta p { flex: 1 1 240px; font-size: 14px; line-height: 1.45; color: var(--fg-2); }
 .at-cta code { font: 600 13px/1.3 var(--mono); color: var(--fg); overflow-wrap: anywhere; }
-/* Atlas oben (Vorschau Ring:B, Wunsch User 15.10.2026): Kachelleiste der 9 Bereiche, darunter Bühne über volle Breite (Ring + Hologramm-Karte), Autoscan, Kreisläufe */
+/* Atlas oben (Vorschau Ring:B, Wunsch User 15.10.2026): Kachelleiste der 9 Bereiche, darunter Bühne über volle Breite (Ring + Karte), Autoscan, Kreisläufe */
 #atlas .at-grid { grid-template-columns: minmax(0, 1fr); gap: 24px; }
 #atlas .at-side { display: contents; }
 #atlas .at-areas { order: -1; grid-template-columns: repeat(9, minmax(0, 1fr)); gap: 8px; }
@@ -277,11 +290,11 @@ html.sf-on .at-ring:not(.in) .seg { stroke-dasharray: 0 85; }
 #atlas .at-area b { grid-column: 1 / -1; grid-row: 2; font-size: 14px; hyphens: auto; }
 #atlas .at-area em { justify-self: end; }
 #atlas .at-area small { display: none; }
-#atlas .at-stage { max-width: none; }
-#atlas .at-holo .at-stage { aspect-ratio: 2.3 / 1; }
-#atlas .at-holo .at-detail { max-width: none; padding: 10px 14px; background: transparent; }
-#atlas .at-holo .at-detail > :is(.atd-k, .atd-h, .atd-d, .atd-chips) { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }   /* Text bleibt für Screenreader */
-#atlas .at-holo .atd-scan { padding-top: 0; border-top: 0; }
+/* Ring „Skala“ (Vorschau Funktionsatlas-Ring, Wahl User 20.10.2026): Ring links, Karte als HTML rechts (volle Funktionsnamen, Prüfstufen); schmal untereinander */
+#atlas .at-ring.at-3d { grid-template-columns: minmax(0, 1.3fr) minmax(300px, .7fr); gap: 8px 40px; align-items: center; justify-items: stretch; }
+#atlas .at-stage { max-width: none; aspect-ratio: 1.22 / 1; max-height: 560px; }
+#atlas .at-detail { max-width: none; align-self: center; padding: 22px 24px; gap: 14px; }
+@media (max-width: 860px) { #atlas .at-ring.at-3d { grid-template-columns: minmax(0, 1fr); } #atlas .at-stage { aspect-ratio: 1 / 1; } .atd-chips { grid-template-columns: minmax(0, 1fr); } }
 @media (max-width: 1180px) { #atlas .at-areas { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 /* Kreislauf-Chips = Knöpfe: zeigen ihren Ablauf in der Funktionsliste darunter (#atlas-list, js/function_atlas.js) */
 .at-loops .chip { cursor: pointer; transition: border-color var(--t-fast), background-color var(--t-fast); }
@@ -1467,6 +1480,8 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
                 <span class="atd-d" data-a="data" data-en="What gets recorded – for fault analysis and training." hidden>Was aufgezeichnet wird – für Fehleranalyse und Training.</span>
                 <span class="atd-d" data-a="infra" data-en="Start the system, set up the network, connect devices." hidden>System starten, Netz einrichten, Geräte anbinden.</span>
                 <ul class="atd-chips"><li>Gamepad</li><li>Jogging</li><li>TCP-Gizmo</li></ul>
+                <span class="atd-lvl"></span>
+                <span class="atd-key"><span data-en="simulation / check only">nur Simulation / Prüfung</span><span data-en="also real">auch Real</span></span>
                 <span class="atd-scan" hidden><button type="button" aria-pressed="false">Autoscan</button><span class="atd-bar"><i></i></span><small><span class="atd-drag" data-en="Drag turns the ring · ">Ziehen dreht den Ring · </span><span data-en="click filters the list below">Klick filtert die Liste darunter</span></small></span>
               </figcaption>
             </figure>
@@ -3081,8 +3096,14 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
       q('.atd-t').textContent = li.querySelector('b').textContent;
       q('.atd-n').textContent = li.querySelector('em').textContent;
       $$('.atd-d', det).forEach(p => { p.hidden = p.dataset.a !== cur; });
-      q('.atd-chips').replaceChildren(...li.querySelector('small').textContent.split(',').map(t => t.replace(/[\s\u00a0]*…$/, '').trim())
-        .filter(Boolean).map(t => Object.assign(document.createElement('li'), { textContent: t })));
+      const fns = $$(`article.fn[data-a="${cur}"]`), has = (c, k) => (c.dataset.s || '').includes(k), li2 = (cls, text) => Object.assign(document.createElement('li'), { className: cls, textContent: text });
+      q('.atd-chips').replaceChildren(...fns.slice(0, 8).map(c => li2(has(c, 'r') ? 'real' : '', c.querySelector('.fn-sel span').textContent.trim())),
+        ...(fns.length > 8 ? [li2('more', T(`+ ${fns.length - 8} weitere in der Liste`, `+ ${fns.length - 8} more in the list`))] : []));
+      q('.atd-lvl').replaceChildren(...[[T('Simulieren', 'Simulate'), 's'], [T('Prüfen', 'Check'), 'p'], ['Real', 'r']].map(([t, k]) => {
+        const n = fns.filter(c => has(c, k)).length, row = document.createElement('div'), bar = document.createElement('i'), fill = document.createElement('b');
+        fill.style.width = `${100 * n / Math.max(1, fns.length)}%`; bar.append(fill);
+        row.append(Object.assign(document.createElement('span'), { textContent: t }), bar, Object.assign(document.createElement('span'), { textContent: n })); return row;
+      }));
       btn.textContent = scanOn ? T('Autoscan pausieren', 'Pause autoscan') : T('Autoscan starten', 'Start autoscan');
       btn.setAttribute('aria-pressed', String(scanOn));
     };

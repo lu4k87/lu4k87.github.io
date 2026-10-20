@@ -126,8 +126,6 @@ main > section { margin-block: 0 28px; padding: 32px 16px; background: var(--ban
 @media (min-width: 720px) { main > section { padding: 40px 32px; } }
 @media (max-width: 419px) { main > section { padding-inline: 12px; } .qr-code { width: 100px; } }
 /* 04: Seite „AI Workflow erklärt“ eingebettet; Höhe + Farbschema setzt das Skript unten, ohne Skript eigene Scrollfläche */
-.explain-frame { display: block; width: 100%; height: 80vh; border: 1px solid var(--line); border-radius: var(--radius-lg); background: var(--bg); }
-.explain-link { margin: 12px 0 0; }
 main { padding-bottom: 20px; }
 .kicker { display: flex; align-items: center; gap: 12px; margin: 0 0 12px; font: 500 .875rem/1.2 var(--f-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--fg-2); }
 .kicker b { color: var(--fg); font-weight: 600; }
@@ -621,6 +619,51 @@ footer p { margin: 0; }
   .card, .card::before, .qr-code, .btn, .btn .go, .nav a, .gh { transition: none; }
   .card:hover { transform: none; }
 }
+
+/* 03 Film + Kapitelleiste (Vorschau 2026-10-20: Aufbau:A, Farbe:A, Film + Kacheln): jedes Kapitel hat seine Farbe, Kapitel stehen auf /web_ai_dev_workflow */
+:root { --h-ablauf: light-dark(#2f64f0, #6d94ff); --h-enter: light-dark(#6d4bff, #a58bff); --h-bausteine: light-dark(#0b9a91, #3cc5bb); --h-grenzen: light-dark(#d9700a, #f0a04a);
+  --h-fertig: light-dark(#23903f, #47c47f); --h-team: light-dark(#cc338f, #f074bf); --h-lernen: light-dark(#b87d00, #e6ae48); --h-nach: light-dark(#1783bd, #4fb4ea); }
+.wk { display: grid; grid-template-columns: minmax(250px, 310px) minmax(0, 1fr); gap: 20px; align-items: start; margin: 28px 0 8px; }
+.wk-nav { display: grid; gap: 10px; padding: 12px; border: 1px solid var(--line); border-radius: var(--radius-lg); background: var(--surface); }
+.wk-h { margin: 0; padding: 2px 6px; font: 600 .875rem/1.3 var(--f-mono); letter-spacing: .04em; text-transform: uppercase; }
+.wk-rail { display: grid; gap: 4px; margin: 0; padding: 0; list-style: none; }
+.wk-rail a { display: grid; grid-template-columns: 48px minmax(0, 1fr); gap: 0 12px; align-items: center; padding: 8px 10px; border: 1px solid transparent; border-radius: var(--radius); color: var(--fg); text-decoration: none;
+  transition: background-color var(--t-fast) var(--ease-out), border-color var(--t-fast) var(--ease-out); }
+.wk-rail a:hover { background: color-mix(in srgb, var(--hue) 10%, var(--surface)); border-color: color-mix(in srgb, var(--hue) 45%, var(--line)); }
+.wk-ico { grid-row: span 2; display: grid; place-items: center; width: 48px; height: 48px; border-radius: 14px; color: var(--hue); background: color-mix(in srgb, var(--hue) 14%, var(--surface)); border: 1px solid color-mix(in srgb, var(--hue) 38%, var(--line)); }
+.wk-ico .i { width: 28px; height: 28px; stroke-width: 1.7; }
+.wk-rail b { font: 600 1rem/1.25 var(--f-head); }
+.wk-rail small { font-size: .875rem; line-height: 1.3; color: var(--fg-2); }
+.hf { display: grid; gap: 16px; padding: 20px; border: 1px solid var(--line); border-radius: var(--radius-lg); background: var(--surface); }
+.hf-top { display: flex; align-items: center; gap: 12px; }
+.hf-prompt { flex: 1; min-width: 0; display: flex; align-items: center; gap: 12px; min-height: 52px; padding: 10px 14px; border: 1px solid var(--line-strong); border-radius: var(--radius); background: var(--surface-2); font: 500 .9375rem/1.4 var(--f-mono); }
+.hf-prompt .who { flex: none; padding: 3px 8px; border-radius: var(--radius-sm); background: var(--accent); color: var(--bg); font: 700 .875rem var(--f-mono); }
+.hf-prompt .txt { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.hf-prompt kbd { flex: none; padding: 3px 8px; border: 1px solid var(--line-strong); border-radius: var(--radius-sm); font: .875rem var(--f-mono); }
+.hf-pp { display: inline-grid; place-items: center; width: 44px; height: 44px; flex: none; border: 1px solid var(--line-strong); border-radius: var(--radius); background: var(--surface); color: var(--fg); cursor: pointer; }
+.hf-pp:hover { border-color: var(--accent); }
+.hf-pp .i { width: 18px; height: 18px; }
+.hf-row { display: flex; align-items: stretch; margin: 0; padding: 0; list-style: none; }
+.hf-st { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 14px 8px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface-2); text-align: center; transition: border-color var(--t-base) var(--ease-out), background-color var(--t-base) var(--ease-out); }
+.hf-st .ico { display: grid; place-items: center; width: 56px; height: 56px; border-radius: 16px; border: 1px solid var(--line-strong); background: var(--surface); transition: background-color var(--t-base) var(--ease-out), color var(--t-base) var(--ease-out); }
+.hf-st .ico .i { width: 30px; height: 30px; stroke-width: 1.7; }
+.hf-st .txt { display: flex; flex-direction: column; gap: 2px; }
+.hf-st b { font: 600 1rem/1.25 var(--f-head); }
+.hf-role { font-size: .875rem; line-height: 1.35; color: var(--fg-2); }
+.hf-st .badge { margin-top: 2px; padding: 3px 8px; border-radius: var(--radius-sm); background: color-mix(in srgb, var(--accent) 14%, var(--surface)); color: var(--accent); font: 600 .875rem var(--f-mono); }
+.hf-st.on { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 6%, var(--surface-2)); }
+.hf-st.on .ico { background: var(--accent); border-color: var(--accent); color: var(--bg); }
+.hf-cn { flex: 0 0 28px; display: flex; align-items: center; }
+.trk { position: relative; display: block; width: 100%; height: 4px; border-radius: 2px; background: var(--line-strong); }
+.trk .hf-bar { position: absolute; inset: 0 auto 0 0; width: calc(var(--p, 0) * 100%); border-radius: 2px; background: var(--accent); }
+.hf-end { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin: 0; font-weight: 600; }
+.hf-end .ok { display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px; border-radius: var(--radius); background: color-mix(in srgb, var(--accent) 14%, var(--surface)); color: var(--accent); }
+.hf-more { margin: 0; }
+@media (max-width: 960px) { .wk { grid-template-columns: minmax(0, 1fr); } .wk-rail { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 640px) { .wk-rail { grid-template-columns: minmax(0, 1fr); }
+  .hf-row { flex-direction: column; } .hf-st { flex-direction: row; flex-wrap: wrap; text-align: left; justify-content: flex-start; gap: 4px 12px; } .hf-st .txt { flex: 1; min-width: 120px; }
+  .hf-cn { flex: 0 0 22px; justify-content: center; } .trk { width: 4px; height: 100%; } .trk .hf-bar { inset: 0 0 auto 0; width: auto; height: calc(var(--p, 0) * 100%); }
+  .hf-prompt kbd { display: none; } }
 </style>
 </head>
 <body>
@@ -657,6 +700,16 @@ footer p { margin: 0; }
   <symbol id="i-steps" viewBox="0 0 24 24"><circle cx="5" cy="5" r="2"/><circle cx="5" cy="12" r="2"/><circle cx="5" cy="19" r="2"/><path d="M5 7v3M5 14v3M10 5h10M10 12h10M10 19h7"/></symbol>
   <symbol id="i-metro" viewBox="0 0 24 24"><path d="M3 7h18M3 17h18"/><circle cx="7" cy="7" r="2"/><circle cx="15" cy="7" r="2"/><circle cx="11" cy="17" r="2"/><circle cx="19" cy="17" r="2"/></symbol>
   <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></symbol>
+  <symbol id="i-send" viewBox="0 0 24 24"><path d="M4 12l16-8-6 16-2.5-6.5z"/><path d="M11.5 13.5L20 4"/></symbol>
+  <symbol id="i-term" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 9l3 3-3 3M13 15h4"/></symbol>
+  <symbol id="i-cards" viewBox="0 0 24 24"><rect x="3" y="7" width="13" height="14" rx="2"/><path d="M7 3h12a2 2 0 0 1 2 2v12"/><path d="M7 12h5M7 15.5h3"/></symbol>
+  <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M9 12l2 2 4-4"/></symbol>
+  <symbol id="i-flask" viewBox="0 0 24 24"><path d="M9 3h6M10 3v6l-5.2 9.2A2 2 0 0 0 6.5 21h11a2 2 0 0 0 1.7-2.8L14 9V3"/><path d="M7.5 15h9"/></symbol>
+  <symbol id="i-users" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c1-3.5 3.5-5 6.5-5s5.5 1.5 6.5 5"/><path d="M16 4.6a3.5 3.5 0 0 1 0 6.8M18.5 15.3c1.6.8 2.6 2.4 3 4.7"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></symbol>
+  <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></symbol>
+  <symbol id="i-pencil" viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/></symbol>
+  <symbol id="i-up" viewBox="0 0 24 24"><path d="M12 20V5M6 11l6-6 6 6"/></symbol>
   <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></symbol>
 </svg>
 
@@ -731,7 +784,42 @@ footer p { margin: 0; }
       <article class="card" data-reveal><div class="plate"><a class="qr-code" href="web_ai_dev_workflow/index.html" aria-label="QR-Code lu4k87.github.io/web_ai_dev_workflow" data-en-aria="QR code lu4k87.github.io/web_ai_dev_workflow"><svg viewBox="0 0 33 33" class="segno"><path class="qrline" stroke="#000" d="M0 0.5h7m1 0h1m2 0h4m1 0h1m1 0h2m1 0h4m1 0h7m-33 1h1m5 0h1m4 0h1m2 0h1m1 0h1m1 0h1m3 0h1m1 0h1m1 0h1m5 0h1m-33 1h1m1 0h3m1 0h1m2 0h1m1 0h3m2 0h1m1 0h2m1 0h2m1 0h1m1 0h1m1 0h3m1 0h1m-33 1h1m1 0h3m1 0h1m4 0h1m2 0h2m2 0h1m3 0h2m2 0h1m1 0h3m1 0h1m-33 1h1m1 0h3m1 0h1m1 0h1m1 0h1m1 0h1m3 0h3m2 0h1m1 0h1m2 0h1m1 0h3m1 0h1m-33 1h1m5 0h1m1 0h5m1 0h4m2 0h1m1 0h1m3 0h1m5 0h1m-33 1h7m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h7m-24 1h5m1 0h1m2 0h6m-23 1h7m1 0h1m3 0h1m3 0h1m5 0h1m3 0h2m3 0h1m-33 1h2m1 0h2m4 0h2m1 0h1m1 0h2m1 0h4m2 0h2m1 0h2m1 0h4m-33 1h1m1 0h1m3 0h1m1 0h4m1 0h1m2 0h2m2 0h1m1 0h1m3 0h1m1 0h1m1 0h2m-30 1h1m2 0h1m2 0h1m1 0h1m1 0h3m1 0h3m1 0h6m2 0h5m-33 1h2m1 0h2m1 0h4m1 0h1m1 0h1m1 0h2m3 0h1m1 0h2m1 0h1m1 0h3m1 0h2m-29 1h1m3 0h1m1 0h1m4 0h1m2 0h3m1 0h1m2 0h1m3 0h4m-33 1h4m2 0h1m1 0h3m1 0h3m3 0h1m1 0h1m1 0h1m1 0h3m2 0h1m1 0h1m-30 1h2m1 0h1m2 0h1m1 0h1m1 0h2m3 0h1m1 0h3m1 0h1m1 0h3m1 0h2m-31 1h1m1 0h1m3 0h1m3 0h2m1 0h2m1 0h1m2 0h2m1 0h1m1 0h2m1 0h2m3 0h1m-20 1h1m1 0h1m3 0h3m1 0h1m2 0h2m1 0h2m1 0h1m-33 1h1m1 0h2m2 0h1m9 0h3m5 0h5m1 0h1m-31 1h1m9 0h1m1 0h1m4 0h1m3 0h1m3 0h8m-28 1h2m2 0h1m5 0h1m1 0h3m2 0h1m2 0h1m1 0h3m1 0h2m-33 1h4m1 0h1m1 0h1m2 0h1m3 0h1m1 0h1m2 0h3m1 0h1m2 0h1m2 0h2m1 0h1m-33 1h1m3 0h4m1 0h1m2 0h5m1 0h1m3 0h1m2 0h2m1 0h4m-32 1h1m1 0h1m1 0h2m1 0h2m2 0h5m1 0h2m1 0h3m5 0h3m-31 1h1m2 0h1m1 0h2m1 0h1m2 0h2m6 0h1m2 0h1m1 0h5m2 0h2m-25 1h1m1 0h1m1 0h1m1 0h3m2 0h2m2 0h2m3 0h1m1 0h1m1 0h1m-33 1h7m1 0h1m1 0h1m3 0h2m1 0h1m5 0h2m1 0h1m1 0h1m1 0h2m-32 1h1m5 0h1m1 0h1m2 0h1m4 0h1m3 0h3m1 0h1m3 0h4m-32 1h1m1 0h3m1 0h1m1 0h1m1 0h2m1 0h1m3 0h1m4 0h1m1 0h6m2 0h1m-33 1h1m1 0h3m1 0h1m1 0h1m5 0h4m1 0h2m2 0h3m2 0h1m1 0h1m1 0h1m-33 1h1m1 0h3m1 0h1m1 0h3m1 0h1m1 0h2m5 0h1m1 0h5m-28 1h1m5 0h1m1 0h1m1 0h3m3 0h2m1 0h4m2 0h1m2 0h3m-31 1h7m5 0h1m1 0h1m2 0h1m2 0h1m1 0h3m2 0h1m1 0h3"/></svg></a><div class="qr-meta"><span class="host">lu4k87.github.io</span><a class="path" href="web_ai_dev_workflow/index.html">/web_<wbr>ai_<wbr>dev_<wbr>workflow</a><span class="scan"><svg class="i" aria-hidden="true"><use href="#i-qr"/></svg><span data-en="Scan to open">Zum Scannen</span></span></div></div><div class="body"><p class="tag" data-en="Way of working · Claude Code, Codex, Gemini">Arbeitsweise · Claude Code, Codex, Gemini</p><h3>AI Dev Workflow</h3><p class="desc" data-en="How every project here is built – cycle, guardrails and definition of done for working with AI agents.">So entsteht jedes Projekt hier – Kreislauf, Leitplanken und Definition of Done für die Arbeit mit KI-Agenten.</p></div><div class="acts"><a class="btn main" href="web_ai_dev_workflow/index.html"><span data-en="Open docs">Doku öffnen</span><svg class="i go" aria-hidden="true"><use href="#i-go"/></svg></a><span class="repo-status" role="img" aria-label="Code privat" data-en-aria="Code private"><svg class="i" aria-hidden="true"><use href="#i-lock"/></svg><span data-en="Code private">Code privat</span></span></div></article>
     </div>
 
-    <h3 class="part" id="h-ablauf"><span class="no">1</span><span data-en="How a task runs – who does what">Ablauf einer Aufgabe – wer macht was</span></h3>
+    <div class="wk">
+      <nav class="wk-nav" aria-label="Kapitel der Workflow-Seite" data-en-aria="Chapters of the workflow page">
+        <p class="wk-h" data-en="Eight chapters on the workflow page">Acht Kapitel auf der Workflow-Seite</p>
+        <ol class="wk-rail">
+          <li><a href="web_ai_dev_workflow/#k-ablauf" style="--hue: var(--h-ablauf)"><span class="wk-ico"><svg class="i" aria-hidden="true"><use href="#i-send"/></svg></span><b data-en="Flow">Ablauf</b><small data-en="Film · 10 scenes">Film · 10 Szenen</small></a></li>
+          <li><a href="web_ai_dev_workflow/#k-enter" style="--hue: var(--h-enter)"><span class="wk-ico"><svg class="i" aria-hidden="true"><use href="#i-term"/></svg></span><b data-en="Behind Enter">Hinter Enter</b><small data-en="Timeline · 5 beats">Zeitleiste · 5 Takte</small></a></li>
+          <li><a href="web_ai_dev_workflow/#k-bausteine" style="--hue: var(--h-bausteine)"><span class="wk-ico"><svg class="i" aria-hidden="true"><use href="#i-cards"/></svg></span><b data-en="Building blocks">Bausteine</b><small data-en="Map · toolbox">Karte · Werkzeugkasten</small></a></li>
+          <li><a href="web_ai_dev_workflow/#k-grenzen" style="--hue: var(--h-grenzen)"><span class="wk-ico"><svg class="i" aria-hidden="true"><use href="#i-shield"/></svg></span><b data-en="Guard rails">Leitplanken</b><small data-en="Quiz · 8 cases">Quiz · 8 Fälle</small></a></li>
+          <li><a href="web_ai_dev_workflow/#k-fertig" style="--hue: var(--h-fertig)"><span class="wk-ico"><svg class="i" aria-hidden="true"><use href="#i-flask"/></svg></span><b data-en="Done with evidence">Fertig mit Beleg</b><small data-en="Levels · commit path">Stufen · Commit-Weg</small></a></li>
+          <li><a href="web_ai_dev_workflow/#k-team" style="--hue: var(--h-team)"><span class="wk-ico"><svg class="i" aria-hidden="true"><use href="#i-users"/></svg></span><b data-en="Teamwork">Zusammenarbeit</b><small data-en="Conflicts · tools">Konflikte · Werkzeuge</small></a></li>
+          <li><a href="web_ai_dev_workflow/#k-lernen" style="--hue: var(--h-lernen)"><span class="wk-ico"><svg class="i" aria-hidden="true"><use href="#i-book"/></svg></span><b data-en="Learning">Lernen</b><small data-en="Loop · examples">Schleife · Beispiele</small></a></li>
+          <li><a href="web_ai_dev_workflow/#k-nach" style="--hue: var(--h-nach)"><span class="wk-ico"><svg class="i" aria-hidden="true"><use href="#i-search"/></svg></span><b data-en="Look up">Nachschlagen</b><small data-en="Terms · figures · start">Begriffe · Zahlen · Start</small></a></li>
+        </ol>
+      </nav>
+      <div class="hf" id="wk-film" role="group" aria-label="Animation: ein Auftrag läuft durch fünf Phasen" data-en-aria="Animation: one task runs through five phases">
+        <div class="hf-top">
+          <div class="hf-prompt"><span class="who" data-en="You">Du</span><span class="txt" data-at="0.2" data-fx="up" data-en="[Docs] The project page needs a light/dark switch.">[Doku] Die Projektseite braucht einen Hell/Dunkel-Schalter.</span><kbd aria-hidden="true">Enter ↵</kbd></div>
+          <button class="hf-pp" id="wk-pp" type="button" aria-label="Animation anhalten" data-en-aria="Pause animation"><svg class="i" aria-hidden="true"><use href="#i-pause"/></svg></button>
+        </div>
+        <ol class="hf-row">
+          <li class="hf-st" data-at="2.9" data-out="10.4" data-fx="cls"><span class="ico"><svg class="i" aria-hidden="true"><use href="#i-chat"/></svg></span><span class="txt"><b data-en="Request">Beauftragen</b><span class="hf-role">Claude Chat Organizer</span></span><span class="badge" data-at="3.1" data-out="10.4" data-fx="pop" data-en="Pull ✓ · overview">Pull ✓ · Lagebild</span></li>
+          <li class="hf-cn" aria-hidden="true"><span class="trk"><i class="hf-bar" data-at="3.4" data-d=".8" data-out="10.4" data-fx="bar"></i></span></li>
+          <li class="hf-st" data-at="4.2" data-out="10.4" data-fx="cls"><span class="ico"><svg class="i" aria-hidden="true"><use href="#i-eye"/></svg></span><span class="txt"><b data-en="Plan">Planen</b><span class="hf-role">Organizer · Designer</span></span><span class="badge" data-at="4.4" data-out="10.4" data-fx="pop" data-en="Level 2 · Toggle:A">Stufe 2 · Toggle:A</span></li>
+          <li class="hf-cn" aria-hidden="true"><span class="trk"><i class="hf-bar" data-at="4.7" data-d=".8" data-out="10.4" data-fx="bar"></i></span></li>
+          <li class="hf-st" data-at="5.5" data-out="10.4" data-fx="cls"><span class="ico"><svg class="i" aria-hidden="true"><use href="#i-pencil"/></svg></span><span class="txt"><b data-en="Build">Bauen</b><span class="hf-role" data-en="Developer">Entwickler</span></span><span class="badge" data-at="5.7" data-out="10.4" data-fx="pop">Claim · Hooks ✓</span></li>
+          <li class="hf-cn" aria-hidden="true"><span class="trk"><i class="hf-bar" data-at="6.0" data-d=".8" data-out="10.4" data-fx="bar"></i></span></li>
+          <li class="hf-st" data-at="6.8" data-out="10.4" data-fx="cls"><span class="ico"><svg class="i" aria-hidden="true"><use href="#i-flask"/></svg></span><span class="txt"><b data-en="Check">Prüfen</b><span class="hf-role" data-en="Reviewer">Prüfer</span></span><span class="badge" data-at="7.0" data-out="10.4" data-fx="pop">12/12 ✓</span></li>
+          <li class="hf-cn" aria-hidden="true"><span class="trk"><i class="hf-bar" data-at="7.3" data-d=".8" data-out="10.4" data-fx="bar"></i></span></li>
+          <li class="hf-st" data-at="8.1" data-out="10.4" data-fx="cls"><span class="ico"><svg class="i" aria-hidden="true"><use href="#i-up"/></svg></span><span class="txt"><b data-en="Deliver">Abliefern</b><span class="hf-role">Synchronizer</span></span><span class="badge" data-at="8.3" data-out="10.4" data-fx="pop">Push 4f2c9e1</span></li>
+        </ol>
+        <p class="hf-end"><span class="ok" data-at="8.7" data-out="10.4" data-fx="pop"><svg class="i" aria-hidden="true"><use href="#i-check"/></svg><span data-en="Switch built, checked, documented, pushed">Schalter gebaut, geprüft, dokumentiert, gepusht</span></span><span data-at="9.0" data-out="10.4" data-fx="up" data-en="– with evidence in the answer.">– mit Beleg in der Antwort.</span></p>
+        <p class="hf-more"><a class="btn" href="web_ai_dev_workflow/"><span data-en="Open the workflow page">Workflow-Seite öffnen</span><svg class="i go" aria-hidden="true"><use href="#i-go"/></svg></a></p>
+      </div>
+    </div>
+
+    <h3 class="part" id="h-ablauf"><span data-en="The flow in detail – who does what">Der Ablauf im Detail – wer macht was</span></h3>
     <p class="sub" data-en="Three views of the same flow – switch above. Colour = group, red = the chat stops here. Every detail is in the table below.">Drei Ansichten desselben Ablaufs – oben umschalten. Farbe = Gruppe, rot = hier hält der Chat an. Alle Einzelheiten stehen in der Tabelle darunter.</p>
     <div class="wf" id="wf-flow" hidden>
       <div class="wf-tabs" role="tablist" aria-label="Ansicht des Ablaufs" data-en-aria="View of the flow">
@@ -836,156 +924,8 @@ footer p { margin: 0; }
         <div class="xa-rd-hub"><svg class="i" aria-hidden="true"><use href="#i-book"/></svg><b data-en="The same rules">Dieselben Regeln</b><span data-en="<code>RULES.md</code> for all projects + <code>AGENTS.md</code> per project"><code>RULES.md</code> für alle Projekte + <code>AGENTS.md</code> je Projekt</span></div>
       </div>
     </div>
-
-    <h3 class="part" id="h-regeln"><span class="no">2</span><span data-en="Rules and checking">Regeln und Prüfung</span></h3>
-    <p class="sub" data-en="Eight hooks accompany a chat – each at its own moment. Red = can stop the chat.">Acht Hooks begleiten einen Chat – jeder zu seinem Zeitpunkt. Rot = kann den Chat anhalten.</p>
-    <div class="xa-life" id="xa-life">
-      <div class="xa-ctl" role="group" aria-label="Steuerung" data-en-aria="Controls"><button type="button" class="xa-cb xa-prev" data-act="prev" aria-label="Schritt zurück" data-en-aria="Step back" title="Schritt zurück"><svg class="i" aria-hidden="true"><use href="#i-go"/></svg></button><button type="button" class="xa-cb xa-pp" data-act="play" aria-label="Pause" title="Pause"><svg class="i" aria-hidden="true"><use href="#i-pause"/></svg></button><button type="button" class="xa-cb" data-act="next" aria-label="Schritt vor" data-en-aria="Step forward" title="Schritt vor"><svg class="i" aria-hidden="true"><use href="#i-go"/></svg></button><span class="xa-pos" aria-live="polite">1 / 8</span><span class="xa-rate" role="group" aria-label="Tempo" data-en-aria="Speed"><button type="button" data-rate=".5" aria-pressed="false">0,5×</button><button type="button" data-rate="1" aria-pressed="true">1×</button><button type="button" data-rate="2" aria-pressed="false">2×</button></span></div>
-      <div class="xa-axis"><i class="xa-ph" aria-hidden="true"></i><ol class="xa-ticks">
-          <li><button type="button" class="xa-tick" aria-pressed="false"><i></i><span data-en="at chat start">beim Chat-Start</span></button></li>
-          <li><button type="button" class="xa-tick" aria-pressed="false"><i></i><span data-en="on every message">bei jeder Nachricht</span></button></li>
-          <li><button type="button" class="xa-tick" aria-pressed="false"><i></i><span data-en="before every file change">vor jeder Dateiänderung</span></button></li>
-          <li><button type="button" class="xa-tick stop" aria-pressed="false"><i></i><span data-en="before every command">vor jedem Befehl</span></button></li>
-          <li><button type="button" class="xa-tick" aria-pressed="false"><i></i><span data-en="after every file change">nach jeder Dateiänderung</span></button></li>
-          <li><button type="button" class="xa-tick stop" aria-pressed="false"><i></i><span data-en="on every commit">bei jedem Commit</span></button></li>
-          <li><button type="button" class="xa-tick stop" aria-pressed="false"><i></i><span data-en="at the end of every answer">am Ende jeder Antwort</span></button></li>
-          <li><button type="button" class="xa-tick" aria-pressed="false"><i></i><span data-en="on “chat weiter” in the new chat">bei „chat weiter“ im neuen Chat</span></button></li>
-      </ol></div>
-      <div class="xa-now" aria-live="polite">
-          <article class="xa-card"><div class="xa-cl"><p class="xa-when">1/8 · <span data-en="at chat start">beim Chat-Start</span></p><code class="xa-hk">session_<wbr>overview.py</code></div><p class="xa-rule" data-en="Before the work: situation report with parallel chats, claims and open handoffs">Vor der Arbeit das Lagebild: parallele Chats, Claims, offene Übergaben</p></article>
-          <article class="xa-card"><div class="xa-cl"><p class="xa-when">2/8 · <span data-en="on every message">bei jeder Nachricht</span></p><code class="xa-hk">chat_<wbr>length_<wbr>hint.py</code></div><p class="xa-rule" data-en="Load matching skills only; from ~100k tokens a new chat with handoff">Nur passende Skills laden; ab ~100k Token neuer Chat mit Übergabe</p></article>
-          <article class="xa-card"><div class="xa-cl"><p class="xa-when">3/8 · <span data-en="before every file change">vor jeder Dateiänderung</span></p><code class="xa-hk">todo_<wbr>claim_<wbr>hook.py</code></div><p class="xa-rule" data-en="Every file becomes a claim before it changes; claims of other chats only after agreement">Jede Datei wird vor dem Ändern zum Claim; fremde Claims nur nach Absprache</p></article>
-          <article class="xa-card stop"><div class="xa-cl"><p class="xa-when">4/8 · <span data-en="before every command">vor jedem Befehl</span></p><code class="xa-hk">pre_<wbr>tool_<wbr>guard.py</code><span class="xa-badge"><svg class="i" aria-hidden="true"><use href="#i-stop"/></svg><span data-en="can stop the chat">kann den Chat anhalten</span></span></div><p class="xa-rule" data-en="No broad <code>pkill</code>, no <code>git push --force</code>, no bypassing of safeguards">Kein breites <code>pkill</code>, kein <code>git push --force</code>, kein Umgehen von Schutzmechanismen</p></article>
-          <article class="xa-card"><div class="xa-cl"><p class="xa-when">5/8 · <span data-en="after every file change">nach jeder Dateiänderung</span></p><code class="xa-hk">post_<wbr>edit_<wbr>check.py</code></div><p class="xa-rule" data-en="Every saved file error-free: syntax, UI rules, corners ≤ 8 px">Jede gespeicherte Datei fehlerfrei: Syntax, UI-Regeln, Ecken ≤&nbsp;8&nbsp;px</p></article>
-          <article class="xa-card stop"><div class="xa-cl"><p class="xa-when">6/8 · <span data-en="on every commit">bei jedem Commit</span></p><code class="xa-hk">tools/pre-commit</code><span class="xa-badge"><svg class="i" aria-hidden="true"><use href="#i-stop"/></svg><span data-en="can stop the chat">kann den Chat anhalten</span></span></div><p class="xa-rule" data-en="Only checked states get committed: tests, terms, format">Nur geprüfte Stände committen: Tests, Begriffe, Format</p></article>
-          <article class="xa-card stop"><div class="xa-cl"><p class="xa-when">7/8 · <span data-en="at the end of every answer">am Ende jeder Antwort</span></p><code class="xa-hk">format_<wbr>check.py</code><span class="xa-badge"><svg class="i" aria-hidden="true"><use href="#i-stop"/></svg><span data-en="can stop the chat">kann den Chat anhalten</span></span></div><p class="xa-rule" data-en="Every answer in the fixed format: result, warnings, check table, status">Jede Antwort im festen Format: Ergebnis, Warnungen, Prüf-Tabelle, Status</p></article>
-          <article class="xa-card"><div class="xa-cl"><p class="xa-when">8/8 · <span data-en="on “chat weiter” in the new chat">bei „chat weiter“ im neuen Chat</span></p><code class="xa-hk">chat_<wbr>handoff.py</code></div><p class="xa-rule" data-en="The open rest is handed over, the claim removed">Offener Rest wird übergeben, der Claim gelöscht</p></article>
-      </div>
-    </div>
-    <details class="wf-more xa-more">
-      <summary><svg class="i" aria-hidden="true"><use href="#i-down"/></svg><span data-en="All 8 rules as a table">Alle 8 Regeln als Tabelle</span></summary>
-      <div class="wf-more-in"><table class="tb tb-sm tb-rules">
-        <thead><tr><th data-en="Rule (target)">Regel (Soll)</th><th data-en="Checks automatically (actual)">prüft automatisch (Ist)</th><th data-en="Runs">läuft</th></tr></thead>
-        <tbody>
-        <tr><td data-en="Before the work: situation report with parallel chats, claims and open handoffs">Vor der Arbeit das Lagebild: parallele Chats, Claims, offene Übergaben</td><td class="hk" data-l="Hook"><code>session_<wbr>overview.py</code></td><td data-l="läuft" data-l-en="runs" data-en="at chat start">beim Chat-Start</td></tr>
-        <tr><td data-en="Load matching skills only; from ~100k tokens a new chat with handoff">Nur passende Skills laden; ab ~100k Token neuer Chat mit Übergabe</td><td class="hk" data-l="Hook"><code>chat_<wbr>length_<wbr>hint.py</code></td><td data-l="läuft" data-l-en="runs" data-en="on every message">bei jeder Nachricht</td></tr>
-        <tr><td data-en="Every file becomes a claim before it changes; claims of other chats only after agreement">Jede Datei wird vor dem Ändern zum Claim; fremde Claims nur nach Absprache</td><td class="hk" data-l="Hook"><code>todo_<wbr>claim_<wbr>hook.py</code></td><td data-l="läuft" data-l-en="runs" data-en="before every file change">vor jeder Dateiänderung</td></tr>
-        <tr><td data-en="No broad <code>pkill</code>, no <code>git push --force</code>, no bypassing of safeguards">Kein breites <code>pkill</code>, kein <code>git push --force</code>, kein Umgehen von Schutzmechanismen</td><td class="hk" data-l="Hook"><code>pre_<wbr>tool_<wbr>guard.py</code></td><td data-l="läuft" data-l-en="runs" data-en="before every command">vor jedem Befehl</td></tr>
-        <tr><td data-en="Every saved file error-free: syntax, UI rules, corners ≤ 8 px">Jede gespeicherte Datei fehlerfrei: Syntax, UI-Regeln, Ecken ≤&nbsp;8&nbsp;px</td><td class="hk" data-l="Hook"><code>post_<wbr>edit_<wbr>check.py</code></td><td data-l="läuft" data-l-en="runs" data-en="after every file change">nach jeder Dateiänderung</td></tr>
-        <tr><td data-en="Only checked states get committed: tests, terms, format">Nur geprüfte Stände committen: Tests, Begriffe, Format</td><td class="hk" data-l="Hook"><code>tools/pre-commit</code></td><td data-l="läuft" data-l-en="runs" data-en="on every commit">bei jedem Commit</td></tr>
-        <tr><td data-en="Every answer in the fixed format: result, warnings, check table, status">Jede Antwort im festen Format: Ergebnis, Warnungen, Prüf-Tabelle, Status</td><td class="hk" data-l="Hook"><code>format_<wbr>check.py</code></td><td data-l="läuft" data-l-en="runs" data-en="at the end of every answer">am Ende jeder Antwort</td></tr>
-        <tr><td data-en="The open rest is handed over, the claim removed">Offener Rest wird übergeben, der Claim gelöscht</td><td class="hk" data-l="Hook"><code>chat_<wbr>handoff.py</code></td><td data-l="läuft" data-l-en="runs" data-en="on “chat weiter” in the new chat">bei „chat weiter“ im neuen Chat</td></tr>
-        </tbody>
-      </table></div>
-    </details>
-    <h4 class="xa-h4"><span data-en="Check levels – the more critical, the deeper">Prüfstufen – je kritischer, desto tiefer</span></h4>
-    <ol class="xa-stairs" id="xa-stairs">
-          <li class="xa-st" style="--k: 0"><span class="xa-lvh"><i>0</i><span data-en="trivial">trivial</span></span><span class="xa-depth" aria-hidden="true"></span><p class="xa-chg" data-en="Text, comment, docs, config without effect">Text, Kommentar, Doku, Config ohne Wirkung</p><p class="xa-chk"><svg class="i" aria-hidden="true"><use href="#i-check"/></svg><span data-en="Hooks + pre-commit">Hooks + pre-commit</span></p></li>
-          <li class="xa-st" style="--k: 1"><span class="xa-lvh"><i>1</i><span data-en="small">klein</span></span><span class="xa-depth" aria-hidden="true"></span><p class="xa-chg" data-en="Existing element, one area, ≤ 3 files">Bestehendes Element, ein Bereich, ≤&nbsp;3 Dateien</p><p class="xa-chk"><svg class="i" aria-hidden="true"><use href="#i-check"/></svg><span data-en="Quick checks, UI light + dark; bug fix: original symptom + 1 test">Schnelle Prüfungen, UI hell + dunkel; Bugfix: Originalsymptom + 1 Test</span></p></li>
-          <li class="xa-st" style="--k: 2"><span class="xa-lvh"><i>2</i><span data-en="normal">normal</span></span><span class="xa-depth" aria-hidden="true"></span><p class="xa-chg" data-en="New element, several files, rebuild">Neues Element, mehrere Dateien, Umbau</p><p class="xa-chk"><svg class="i" aria-hidden="true"><use href="#i-check"/></svg><span data-en="Full check of the project">Volle Prüfung des Projekts</span></p></li>
-          <li class="xa-st crit" style="--k: 3"><span class="xa-lvh"><i>3</i><span data-en="critical">kritisch</span></span><span class="xa-depth" aria-hidden="true"></span><p class="xa-chg" data-en="Safety, data loss, hardware">Sicherheit, Datenverlust, Hardware</p><p class="xa-chk"><svg class="i" aria-hidden="true"><use href="#i-stop"/></svg><span data-en="Full check + review agent, never shortened">Volle Prüfung + Prüf-Agent, nie abkürzen</span></p></li>
-    </ol>
-    <h4 class="xa-h4"><span data-en="How the parts work together">So greifen die Teile ineinander</span></h4>
-    <ul class="xa-gears">
-          <li><b><a href="#g-rules" data-en="Rules">Regeln</a></b><span data-en="<code>RULES.md</code> for all projects + <code>AGENTS.md</code> per project; every chat reads them at the start, the project extends them, safety always wins"><code>RULES.md</code> für alle Projekte + <code>AGENTS.md</code> je Projekt; jeder Chat liest sie zu Beginn, das Projekt ergänzt sie, Sicherheit hat immer Vorrang</span></li>
-          <li><b><a href="#g-role" data-en="Roles">Rollen</a></b><span data-en="Organizer → specialist role → reviewer → synchronizer: the chat switches roles with each step and names the current one in its answer">Organizer → Fachrolle → Prüfer → Synchronizer: der Chat wechselt die Rolle mit dem Schritt und nennt sie in der Antwort</span></li>
-          <li><b><a href="#g-skill">Skills</a></b><span data-en="Instructions per topic; the chat loads only those that match the task, via the finder table in <code>RULES.md</code>">Anleitungen je Thema; der Chat lädt nur die zur Aufgabe passenden, über die Finder-Tabelle in <code>RULES.md</code></span></li>
-          <li><b><a href="#g-agent" data-en="Agents">Agenten</a></b><span data-en="Helper chats for search, tests and reviews; they return only the result, the main chat checks it (<code>git diff</code>)">Hilfs-Chats für Suche, Tests und Reviews; sie liefern nur das Ergebnis, der Haupt-Chat prüft es (<code>git diff</code>)</span></li>
-          <li><b><a href="#g-hook">Hooks</a></b><span data-en="Run on events (table above) without anyone calling them; Codex and Gemini receive them via bridge scripts">Laufen bei Ereignissen (Tabelle oben), ohne dass jemand sie aufruft; Codex und Gemini bekommen sie über Bridge-Skripte</span></li>
-          <li><b><a href="#g-memory">Memory</a> · <a href="#g-claim">Claims</a></b><span data-en="Both live in Git: memory keeps decisions across chats, claims show parallel chats who edits which file">Beides liegt in Git: Memory hält Entscheidungen über Chats hinweg, Claims zeigen parallelen Chats, wer welche Datei bearbeitet</span></li>
-    </ul>
-
-    <h3 class="part" id="h-daten"><span class="no">3</span><span data-en="Path of the data">Weg der Daten</span></h3>
-    <p class="sub" data-en="A state travels from the two source repos to this page – station by station, in between the command that carries it onward. Click a station for details.">Ein Stand reist von den zwei Quell-Repos bis auf diese Seite – Station für Station, dazwischen der Befehl, der ihn weiterträgt. Station anklicken = Details.</p>
-    <div class="xa-trip" id="xa-trip">
-      <div class="xa-ctl" role="group" aria-label="Steuerung" data-en-aria="Controls"><button type="button" class="xa-cb xa-prev" data-act="prev" aria-label="Schritt zurück" data-en-aria="Step back" title="Schritt zurück"><svg class="i" aria-hidden="true"><use href="#i-go"/></svg></button><button type="button" class="xa-cb xa-pp" data-act="play" aria-label="Pause" title="Pause"><svg class="i" aria-hidden="true"><use href="#i-pause"/></svg></button><button type="button" class="xa-cb" data-act="next" aria-label="Schritt vor" data-en-aria="Step forward" title="Schritt vor"><svg class="i" aria-hidden="true"><use href="#i-go"/></svg></button><span class="xa-pos" aria-live="polite">1 / 8</span><span class="xa-rate" role="group" aria-label="Tempo" data-en-aria="Speed"><button type="button" data-rate=".5" aria-pressed="false">0,5×</button><button type="button" data-rate="1" aria-pressed="true">1×</button><button type="button" data-rate="2" aria-pressed="false">2×</button></span></div>
-      <ol class="xa-route"><i class="xa-pkt" aria-hidden="true"></i>
-          <li><button type="button" class="xa-ri" style="--c: var(--c5)" aria-pressed="false"><span class="xa-dot"></span><span><b data-en="Rules repo">Regel-Repo</b><span class="xa-nm">ai_dev_workflow</span></span></button></li>
-          <li><button type="button" class="xa-ri" style="--c: var(--c1)" aria-pressed="false"><span class="xa-dot"></span><span><b data-en="Main repo">Haupt-Repo</b><span class="xa-nm">dev_ws</span></span></button></li>
-          <li><button type="button" class="xa-ri cmd" style="--c: var(--accent)" aria-pressed="false"><span class="xa-dot"></span><span><b>Pull · tools/ws_sync.sh</b></span></button></li>
-          <li><button type="button" class="xa-ri" style="--c: var(--c2)" aria-pressed="false"><span class="xa-dot"></span><span><b data-en="Every work computer">Jeder Arbeitsrechner</b><span class="xa-nm" data-en="same setup">gleiche Einrichtung</span></span></button></li>
-          <li><button type="button" class="xa-ri cmd" style="--c: var(--accent)" aria-pressed="false"><span class="xa-dot"></span><span><b>Pull · bin/projects.py sync</b></span></button></li>
-          <li><button type="button" class="xa-ri" style="--c: var(--c3)" aria-pressed="false"><span class="xa-dot"></span><span><b data-en="Projects">Projekte</b><span class="xa-nm" data-en="project folders">Projektordner</span></span></button></li>
-          <li><button type="button" class="xa-ri cmd" style="--c: var(--accent)" aria-pressed="false"><span class="xa-dot"></span><span><b>Push · git push</b></span></button></li>
-          <li><button type="button" class="xa-ri" style="--c: var(--c4)" aria-pressed="false"><span class="xa-dot"></span><span><b data-en="Result: this page">Ergebnis: diese Seite</b><span class="xa-nm">lu4k87.github.io</span></span></button></li>
-      </ol>
-      <div class="xa-detail">
-          <div class="stn xa-pane" style="--c: var(--c5)"><div class="stn-head"><b><svg class="i"><use href="#i-book"/></svg><span data-en="Rules repo">Regel-Repo</span></b><span class="nm">ai_dev_workflow</span><span class="wh" data-en="GitHub · private">GitHub · privat</span><p data-en="Shared rules, global skills, agents, hooks and memory of all projects – the only place where they are edited.">Gemeinsame Regeln, globale Skills, Agenten, Hooks und Memory aller Projekte – der einzige Ort, an dem sie bearbeitet werden.</p></div><dl>
-          <div><dt><code>rules/RULES.md</code></dt><dd data-en="shared rules for all projects: answer format, roles, way of working">gemeinsame Regeln aller Projekte: Antwortformat, Rollen, Arbeitsweise</dd></div>
-          <div><dt><code>rules/project_AGENTS.md</code></dt><dd data-en="template for the rules of a new project">Vorlage für die Regeln eines neuen Projekts</dd></div>
-          <div><dt><code>skills/</code> · <code>agents/</code></dt><dd data-en="global skills and agents for all projects, e.g. answer format, preview, commit">globale Skills und Agenten für alle Projekte, z.&nbsp;B. Antwortformat, Vorschau, Commit</dd></div>
-          <div><dt><code>hooks/</code></dt><dd data-en="hooks for Claude, Codex and Gemini: answer format, protection, handoff">Hooks für Claude, Codex und Gemini: Antwortformat, Schutz, Übergabe</dd></div>
-          <div><dt><code>memory/</code></dt><dd data-en="shared memory: who the user is, way of working, machine quirks">gemeinsame Memory: wer der User ist, Arbeitsweise, Eigenheiten der Rechner</dd></div>
-          <div><dt><code>bin/</code></dt><dd data-en="tools: <code>agents_<wbr>sync.py</code>, <code>projects.py</code>, <code>chat_<wbr>sync.py</code>, <code>publish_<wbr>pages.py</code> + this page's template">Werkzeuge: <code>agents_<wbr>sync.py</code>, <code>projects.py</code>, <code>chat_<wbr>sync.py</code>, <code>publish_<wbr>pages.py</code> + Vorlage dieser Seite</dd></div>
-          <div><dt><code>config/projects.yaml</code></dt><dd data-en="project list + cards on this page">Projektliste + Karten dieser Seite</dd></div>
-          <div><dt><code>docs/</code> → <code>/ai_dev_workflow</code></dt><dd data-en="the page on the way of working, published from this repo">die Seite zur Arbeitsweise, aus diesem Repo veröffentlicht</dd></div>
-        </dl></div>
-          <div class="stn xa-pane" style="--c: var(--c1)"><div class="stn-head"><b><svg class="i"><use href="#i-git"/></svg><span data-en="Main repo">Haupt-Repo</span></b><span class="nm">dev_ws</span><span class="wh" data-en="GitHub · private · robot workspace">GitHub · privat · Roboter-Workspace</span><p data-en="Robot workspace UX Robot with its own skills, agents and hooks – the pattern every project follows for its own additions.">Roboter-Workspace UX Robot mit eigenen Skills, Agenten und Hooks – das Muster, nach dem jedes Projekt Eigenes ergänzt.</p></div><dl>
-          <div><dt><code>.claude/skills/</code> · <code>.claude/agents/</code></dt><dd data-en="skills and agents only for this repo: ROS, digital twin, web UIs, tests">Skills und Agenten nur für dieses Repo: ROS, Digital Twin, Web-UIs, Tests</dd></div>
-          <div><dt><code>.claude/hooks/</code></dt><dd data-en="hook scripts of the repo: situation report, claims, file check, command guard">Hook-Skripte des Repos: Lagebild, Claims, Datei-Prüfung, Befehls-Schutz</dd></div>
-          <div><dt><code>.claude/memory/</code> · <code>.claude/handoff/</code></dt><dd data-en="memory of the repo, handoffs for new chats">Memory des Repos, Übergaben für neue Chats</dd></div>
-          <div><dt><code>TODOS.md</code></dt><dd data-en="backlog of the repo">Backlog des Repos</dd></div>
-          <div><dt><code>tools/</code></dt><dd data-en="<code>ws_<wbr>sync.sh</code>, <code>claim.py</code>, <code>pre-commit</code>, check scripts"><code>ws_<wbr>sync.sh</code>, <code>claim.py</code>, <code>pre-commit</code>, Prüfskripte</dd></div>
-          <div><dt><code>.codex/</code> · <code>.agents/</code></dt><dd data-en="generated for Codex + Gemini, never edited by hand">erzeugt für Codex + Gemini, nie von Hand</dd></div>
-        </dl></div>
-          <div class="xa-pane xa-cp"><p class="what"><span class="dir" data-en="Pull"><abbr title="aktuellen Stand aus Git holen">Pull</abbr></span><code>tools/ws_sync.sh</code><span data-en="fetches and links – on every work computer">holt und verlinkt – auf jedem Arbeitsrechner</span></p><ol>
-            <li data-en="<code>git merge --ff-only</code> – fetch the latest state, fast-forward only"><code>git merge --ff-only</code> – neuen Stand holen, nur Fast-Forward</li>
-            <li data-en="<code>projects.py sync</code> – clone the rules repo and the projects"><code>projects.py sync</code> – Regel-Repo und Projekte klonen</li>
-            <li data-en="<code>agents_sync.py --home</code> – link rules, skills, agents into <code>~</code>"><code>agents_sync.py --home</code> – Regeln, Skills, Agenten in <code>~</code> verlinken</li>
-            <li data-en="<code>codex_<wbr>setup.py</code> – trust the Codex hooks"><code>codex_<wbr>setup.py</code> – Codex-Hooks freigeben</li>
-            <li data-en="set up memory + user settings">Memory + Benutzer-Settings einrichten</li>
-            <li data-en="<code>colcon build</code> – only changed ROS packages"><code>colcon build</code> – nur geänderte ROS-Pakete</li>
-          </ol></div>
-          <div class="stn xa-pane" style="--c: var(--c2)"><div class="stn-head"><b><svg class="i"><use href="#i-laptop"/></svg><span data-en="Every work computer">Jeder Arbeitsrechner</span></b><span class="nm" data-en="same setup">gleiche Einrichtung</span><span class="wh" data-en="linked rules instead of copies">Verknüpfte Regeln statt Kopien</span><p data-en="Claude Code, Codex and Gemini read the same rules, skills and agents – each via its own entry point.">Claude Code, Codex und Gemini lesen dieselben Regeln, Skills und Agenten – jedes über seinen eigenen Einstieg.</p></div><dl>
-          <div><dt data-en="Entry files of the AI tools">Einstiegsdateien der KI-Werkzeuge</dt><dd data-en="point to <code>RULES.md</code> (Gemini: <code>common_rules.md</code>)">zeigen auf <code>RULES.md</code> (Gemini: <code>common_rules.md</code>)</dd></div>
-          <div><dt data-en="Global skills · agents">Globale Skills · Agenten</dt><dd data-en="point to the shared content in the rules repo">zeigen auf die gemeinsamen Inhalte im Regel-Repo</dd></div>
-          <div><dt data-en="User settings">Benutzer-Settings</dt><dd data-en="from <code>user-settings.json</code>: model, hooks">aus <code>user-settings.json</code>: Modell, Hooks</dd></div>
-          <div><dt data-en="Local only">Nur lokal</dt><dd data-en="chat histories, <code>settings.local.json</code>, build output, previews">Chat-Verläufe, <code>settings.local.json</code>, Build, Vorschauen</dd></div>
-        </dl></div>
-          <div class="xa-pane xa-cp"><p class="what"><span class="dir">Pull</span><code>bin/projects.py sync</code><span data-en="clones and updates the project repos">klont und aktualisiert die Projekt-Repos</span></p><ol>
-            <li data-en="clones missing repos from <code>config/projects.yaml</code>">fehlende Repos aus <code>config/projects.yaml</code> klonen</li>
-            <li data-en="updates existing ones fast-forward only, without local changes">vorhandene nur fast-forward, nur ohne lokale Änderungen</li>
-            <li data-en="puts the memory into the project, sets the <code>pre-push</code> hook">Memory ins Projekt, <code>pre-push</code>-Hook setzen</li>
-          </ol></div>
-          <div class="stn xa-pane" style="--c: var(--c3)"><div class="stn-head"><b><svg class="i"><use href="#i-folders"/></svg><span data-en="Projects">Projekte</span></b><span class="nm" data-en="project folders">Projektordner</span><span class="wh" data-en="own repos alongside the robot workspace">eigene Repos neben dem Roboter-Workspace</span><p data-en="Each project adds its own rules and keeps its own memory, but inherits everything global.">Jedes Projekt ergänzt eigene Regeln und hält eigenes Memory, erbt aber alles Globale.</p></div><dl>
-          <div><dt><code>AGENTS.md</code></dt><dd data-en="own rules, win on conflict – safety always">eigene Regeln, Vorrang bei Widerspruch – Sicherheit immer</dd></div>
-          <div><dt><code>.claude/memory/</code></dt><dd data-en="own memory, committed with the project">eigenes Memory, mit dem Projekt committet</dd></div>
-          <div><dt data-en="Inherits">Erbt</dt><dd data-en="shared rules, global skills + agents, <code>global_<wbr>hook.py</code>">gemeinsame Regeln, globale Skills + Agenten, <code>global_<wbr>hook.py</code></dd></div>
-        </dl><ul class="chips"><li>ACCREDO</li><li>Stele CMS</li><li>Claude Ops</li><li>Bohlien Immo</li><li>AI Agency</li><li>Applied Research</li><li>Trading Dashboard</li></ul></div>
-          <div class="xa-pane xa-cp"><p class="what"><span class="dir">Push</span><code>git push</code> → <code>pre-push</code><span data-en="publishes automatically">veröffentlicht automatisch</span></p><ol>
-            <li data-en="<code>tools/pre-commit</code> has already checked every commit"><code>tools/pre-commit</code> hat vorher jeden Commit geprüft</li>
-            <li data-en="<code>pages_<wbr>hook.sh</code> starts <code>publish_pages.py --push</code>"><code>pages_<wbr>hook.sh</code> startet <code>publish_pages.py --push</code></li>
-            <li data-en="builds from the pushed state, not from local changes">baut aus dem gepushten Stand, nicht aus lokalen Änderungen</li>
-          </ol></div>
-          <div class="stn xa-pane" style="--c: var(--c4)"><div class="stn-head"><b><svg class="i"><use href="#i-globe"/></svg><span data-en="Result: this page">Ergebnis: diese Seite</span></b><span class="nm">lu4k87.github.io</span><span class="wh" data-en="GitHub Pages · public · no repo to work in">GitHub Pages · öffentlich · kein Arbeits-Repo</span><p data-en="Rebuilt on every push – nothing is edited here. Repos stay private unless explicitly public.">Wird bei jedem Push neu gebaut – hier wird nichts bearbeitet. Repos bleiben privat, wenn nicht ausdrücklich öffentlich.</p></div><dl>
-          <div><dt><code>index.html</code></dt><dd data-en="this start page from <code>bin/pages_home.html</code> + <code>config/projects.yaml</code> of the rules repo">diese Startseite aus <code>bin/pages_home.html</code> + <code>config/projects.yaml</code> des Regel-Repos</dd></div>
-          <div><dt><code>/web_ux_robot/</code></dt><dd data-en="docs hub, project pages, READMEs of public repos">Doku-Hub, Projektseiten, READMEs öffentlicher Repos</dd></div>
-          <div><dt><code>/web_projects/web_&lt;name&gt;</code></dt><dd data-en="address + QR code for every project">Adresse + QR-Code je Projekt</dd></div>
-          <div><dt><code>/web_ai_dev_workflow</code></dt><dd data-en="the page on the way of working">die Seite zur Arbeitsweise</dd></div>
-        </dl></div>
-      </div>
-    </div>
-    <p class="aside"><svg class="i" aria-hidden="true"><use href="#i-sync"/></svg><b data-en="Chat histories">Chat-Verläufe</b><span data-en="Chat histories are backed up privately and can be continued on every work computer.">Chat-Verläufe werden privat gesichert und sind auf jedem Arbeitsrechner fortsetzbar.</span></p>
-
-    <h3 class="part" id="h-begriffe"><span class="no">4</span><span data-en="Terms">Begriffe</span></h3>
-    <p class="sub" data-en="In four steps from repo to collaboration – for everyone who is here for the first time.">In vier Schritten vom Repo bis zur Zusammenarbeit – für alle, die zum ersten Mal hier sind.</p>
-    <label class="xa-search"><svg class="i" aria-hidden="true"><use href="#i-list"/></svg><input type="search" aria-label="Begriff suchen" data-en-aria="Search terms" placeholder="Begriff suchen, z.&nbsp;B. Hook" data-en-ph="Search a term, e.g. hook"></label>
-    <div class="xa-gl">
-        <section class="xa-gg"><h4><i>1</i><span data-en="Basics">Grundlagen</span></h4><dl><div id="g-repo"><dt>Repo</dt><dd data-en="Git folder with the complete history of all changes; private on GitHub here unless explicitly public.">Git-Ordner mit vollständigem Verlauf aller Änderungen; hier privat auf GitHub, außer wenn ausdrücklich öffentlich.</dd><dd class="why" data-l="Zweck" data-l-en="Purpose" data-en="Nothing gets lost: every state can be restored, all machines work with the same one.">Nichts geht verloren: jeder Stand lässt sich zurückholen, alle Rechner arbeiten mit demselben.</dd></div><div id="g-rules"><dt data-en="Rules">Regeln</dt><dd data-en="<code>RULES.md</code> for all projects + <code>AGENTS.md</code> per project: requirements every chat reads at the start."><code>RULES.md</code> für alle Projekte + <code>AGENTS.md</code> je Projekt: Vorgaben, die jeder Chat zu Beginn liest.</dd><dd class="why" data-l="Zweck" data-l-en="Purpose" data-en="Every chat works the same way – whatever the tool, whatever the project.">Jeder Chat arbeitet gleich – egal mit welchem Werkzeug, in welchem Projekt.</dd></div><div id="g-chat"><dt>Chat</dt><dd data-en="One session with an AI tool (Claude Code, Codex, Gemini) for one task; several run in parallel, each with its own ID.">Eine Sitzung mit einem KI-Werkzeug (Claude Code, Codex, Gemini) für eine Aufgabe; mehrere laufen parallel, jeder mit eigener ID.</dd><dd class="why" data-l="Zweck" data-l-en="Purpose" data-en="Tasks run separately and in parallel without getting in each other’s way.">Aufgaben laufen getrennt und parallel, ohne sich gegenseitig zu stören.</dd></div><div id="g-pullpush"><dt>Pull · Push</dt><dd data-en="Fetch the state from the repo · upload your own state; a push triggers the checks and the build of this page.">Stand aus dem Repo holen · eigenen Stand hochladen; ein Push löst Prüfung und Bau dieser Seite aus.</dd><dd class="why" data-l="Zweck" data-l-en="Purpose" data-en="All machines and chats stay on the same state.">Alle Rechner und Chats bleiben auf demselben Stand.</dd></div></dl></section>
-        <section class="xa-gg"><h4><i>2</i><span data-en="Roles">Rollen</span></h4><dl><div id="g-role"><dt data-en="Role">Rolle</dt><dd data-en="What the chat does in a step: organizer, then designer, developer or editor, then reviewer, then synchronizer.">Tätigkeit des Chats in einem Schritt: Organizer, dann Designer, Entwickler oder Redakteur, dann Prüfer, dann Synchronizer.</dd><dd class="why" data-l="Zweck" data-l-en="Purpose" data-en="Every step gets the right perspective – from plan to commit.">Jeder Schritt bekommt den passenden Blickwinkel – vom Plan bis zum Commit.</dd></div><div id="g-organizer"><dt>Organizer</dt><dd data-en="Role at the start: assesses effort, chooses the specialist role and check level, plans and asks questions.">Rolle am Anfang: schätzt Aufwand, wählt Fachrolle und Prüfstufe, plant und stellt Rückfragen.</dd><dd class="why" data-l="Zweck" data-l-en="Purpose" data-en="The task is clear before files change.">Die Aufgabe ist geklärt, bevor sich Dateien ändern.</dd></div><div id="g-reviewer"><dt data-en="Reviewer · definition of done">Prüfer · Definition of Done</dt><dd data-en="The reviewer checks the fixed completion criteria at the appropriate check level and requires evidence from the current chat.">Der Prüfer kontrolliert die festgelegten Fertig-Kriterien in der passenden Prüfstufe und verlangt einen Beleg aus dem aktuellen Chat.</dd><dd class="why" data-l="Zweck" data-l-en="Purpose" data-en="Only demonstrably correct states count as done.">Nur nachweislich richtige Stände gelten als fertig.</dd></div><div id="g-synchronizer"><dt>Synchronizer</dt><dd data-en="Final role: commits and pushes the checked state, coordinates parallel chats and hands over anything unfinished.">Abschlussrolle: committet und pusht den geprüften Stand, stimmt parallele Chats ab und übergibt offene Reste.</dd><dd class="why" data-l="Zweck" data-l-en="Purpose" data-en="Repos and work computers remain on the same state.">Repos und Arbeitsrechner bleiben auf demselben Stand.</dd></div></dl></section>
-        <section class="xa-gg"><h4><i>3</i><span data-en="Tools">Werkzeuge</span></h4><dl><div id="g-skill"><dt>Skill</dt><dd data-en="Instructions for one topic (e.g. preview, commit, UI change); the chat loads it only when the task touches the topic.">Anleitung zu einem Thema (z.&nbsp;B. Vorschau, Commit, UI-Änderung); der Chat lädt sie nur, wenn die Aufgabe das Thema berührt.</dd><dd class="why" data-l="Zweck" data-l-en="Purpose" data-en="Expertise only when needed → short context, fewer tokens.">Fachwissen nur bei Bedarf → kurzer Kontext, weniger Token.</dd></div><div id="g-agent"><dt>Agent</dt><dd data-en="Helper chat with its own job – search, tests, review; returns only the result, the main chat checks it.">Hilfs-Chat mit eigenem Auftrag – Suche, Tests, Review; liefert nur das Ergebnis zurück, der Haupt-Chat prüft es.</dd><dd class="why" data-l="Zweck" data-l-en="Purpose" data-en="Long searches and logs stay out of the main chat; review with fresh eyes.">Lange Suchen und Logs bleiben aus dem Haupt-Chat; Prüfung mit frischem Blick.</dd></div><div id="g-hook"><dt>Hook</dt><dd data-en="Script that runs automatically on an event: chat start, before a command, after saving, at the end of the answer.">Skript, das bei einem Ereignis automatisch läuft: Chat-Start, vor einem Befehl, nach dem Speichern, am Ende der Antwort.</dd><dd class="why" data-l="Zweck" data-l-en="Purpose" data-en="Rules apply automatically – even when a chat forgets them.">Regeln greifen automatisch – auch wenn ein Chat sie vergisst.</dd></div><div id="g-memory"><dt>Memory</dt><dd data-en="Notes that persist across chats: who the user is, decisions, machine quirks – versioned in the repo.">Notizen, die über Chats hinweg bleiben: wer der User ist, Entscheidungen, Eigenheiten der Rechner – im Repo versioniert.</dd><dd class="why" data-l="Zweck" data-l-en="Purpose" data-en="Decisions don’t have to be explained again in every chat.">Entscheidungen müssen nicht in jedem Chat neu erklärt werden.</dd></div></dl></section>
-        <section class="xa-gg"><h4><i>4</i><span data-en="Collaboration">Zusammenarbeit</span></h4><dl><div id="g-claim"><dt>Claim</dt><dd data-en="Own Git ref per chat (<code>refs/claims/…</code>) with the files it is changing; visible to all chats and machines via Git – prevents duplicate work.">Eigener Git-Ref je Chat (<code>refs/claims/…</code>) mit den Dateien, die er gerade ändert; per Git für alle Chats und Rechner sichtbar – verhindert doppelte Arbeit.</dd><dd class="why" data-l="Zweck" data-l-en="Purpose" data-en="Two chats never change the same file at the same time.">Zwei Chats ändern nie gleichzeitig dieselbe Datei.</dd></div><div id="g-overview"><dt data-en="Situation report">Lagebild</dt><dd data-en="Overview at chat start: running chats, claims, open handoffs, due team rituals.">Übersicht beim Chat-Start: laufende Chats, Claims, offene Übergaben, fällige Team-Rituale.</dd><dd class="why" data-l="Zweck" data-l-en="Purpose" data-en="Know what is already running before starting – no duplicate work, nothing left behind.">Vor dem Start wissen, was schon läuft – keine doppelte Arbeit, nichts bleibt liegen.</dd></div><div id="g-handoff"><dt data-en="Handoff">Übergabe</dt><dd data-en="Start text for a new chat (“chat weiter …”) when the context or the task grows too large.">Starttext für einen neuen Chat („chat weiter …“), wenn Kontext oder Aufgabe zu groß werden.</dd><dd class="why" data-l="Zweck" data-l-en="Purpose" data-en="A fresh chat continues seamlessly without losing knowledge.">Ein frischer Chat macht nahtlos weiter, ohne Wissen zu verlieren.</dd></div><div id="g-level"><dt data-en="Check level">Prüfstufe</dt><dd data-en="How deeply a change is checked before “done”: 0 trivial to 3 critical; when in doubt one level higher.">Wie tief eine Änderung vor „fertig“ geprüft wird: 0 trivial bis 3 kritisch; im Zweifel eine Stufe höher.</dd><dd class="why" data-l="Zweck" data-l-en="Purpose" data-en="Effort matches the change: small things fast, critical ones thoroughly.">Aufwand passt zur Änderung: Kleines schnell, Kritisches gründlich.</dd></div><div id="g-preview"><dt data-en="Preview">Vorschau</dt><dd data-en="Web page with variants of a planned change; the user chooses there, only then code is written.">Webseite mit Varianten einer geplanten Änderung; der User wählt dort, erst dann entsteht Code.</dd><dd class="why" data-l="Zweck" data-l-en="Purpose" data-en="The user decides before effort goes into code.">Der User entscheidet, bevor Aufwand in Code fließt.</dd></div></dl></section>
-    </div>
-    <p class="xa-none" hidden data-en="No term found.">Kein Begriff gefunden.</p>
   </section>
 
-  <section aria-labelledby="h-explain">
-    <p class="kicker"><b>04</b><span data-en="Explained">Erklärt</span></p>
-    <h2 id="h-explain" data-en="AI workflow explained">AI Workflow erklärt</h2>
-    <p class="intro" data-en="One task from the first sentence to the push – shown step by step on a simple example (in German).">Ein Auftrag vom ersten Satz bis zum Push – Schritt für Schritt an einem einfachen Beispiel.</p>
-    <iframe class="explain-frame" id="explain-frame" src="web_ai_dev_workflow/ai_workflow_erklaert/index.html" title="AI Workflow erklärt" loading="lazy"></iframe>
-    <p class="explain-link"><a class="btn" href="web_ai_dev_workflow/ai_workflow_erklaert/index.html"><span data-en="Open as its own page">Als eigene Seite öffnen</span></a></p>
-  </section>
 </main>
 
 <footer class="wrap xa-foot">
@@ -1445,22 +1385,29 @@ footer p { margin: 0; }
 
 </script>
 <script>
-// 04 eingebettete Seite: Höhe = Inhalt (keine zweite Scrollleiste), Farbschema folgt dieser Seite
+// 03 Film „Ein Auftrag läuft durch fünf Phasen“ (Vorschau 2026-10-20): Schleife 11 s, Zustand nur aus seek(t); startet beim Sichtbarwerden, Pause-Knopf, reduzierte Bewegung = Standbild.
 (() => {
-  const f = document.getElementById('explain-frame'), root = document.documentElement;
-  if (!f) return;
-  const theme = () => root.dataset.theme || (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
-  const doc = () => { try { return f.contentDocument; } catch (e) { return null; } };   // andere Herkunft → bleibt bei 80vh
-  const sync = () => { const d = doc(); if (d && d.documentElement) d.documentElement.dataset.theme = theme(); };
-  f.addEventListener('load', () => {
-    const d = doc();
-    if (!d || !d.body) return;
-    sync();
-    const fit = () => { f.style.height = d.documentElement.scrollHeight + 'px'; };
-    new ResizeObserver(fit).observe(d.body);
-    fit();
+  const el = document.getElementById('wk-film'); if (!el) return;
+  const RM = matchMedia('(prefers-reduced-motion: reduce)'), DUR = 11, pp = document.getElementById('wk-pp');
+  const clamp = x => Math.max(0, Math.min(1, x)), eOut = p => 1 - Math.pow(1 - p, 3), eIO = p => p < .5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2;
+  const items = [...el.querySelectorAll('[data-at]')].map(n => ({ n, at: +n.dataset.at, d: n.dataset.d != null ? +n.dataset.d : .45, out: n.dataset.out != null ? +n.dataset.out : Infinity, fx: n.dataset.fx || 'up' }));
+  const seek = t => items.forEach(o => {
+    const rm = RM.matches, p = rm ? (t >= o.at ? 1 : 0) : clamp((t - o.at) / o.d), q = o.out === Infinity ? 1 : rm ? (t < o.out ? 1 : 0) : 1 - clamp((t - o.out) / .3), s = o.n.style;
+    if (o.fx === 'cls') { o.n.classList.toggle('on', t >= o.at && t < o.out); return; }
+    if (o.fx === 'bar') { s.setProperty('--p', eIO(p).toFixed(3)); s.opacity = q >= 1 ? '' : q.toFixed(3); return; }
+    const e = eOut(p), op = Math.min(e, q);
+    s.opacity = op >= 1 ? '' : op.toFixed(3); s.visibility = op <= .001 ? 'hidden' : '';
+    s.transform = o.fx === 'pop' ? (p < 1 ? `scale(${(.86 + .14 * e).toFixed(3)})` : '') : (e < 1 ? `translateY(${((1 - e) * 12).toFixed(1)}px)` : '');
   });
-  new MutationObserver(sync).observe(root, { attributes: true, attributeFilter: ['data-theme'] });
+  let t = RM.matches ? 9.5 : 0, playing = false, vis = false, last = performance.now();
+  const ui = () => { const l = playing ? ['Animation anhalten', 'Pause animation'] : ['Animation abspielen', 'Play animation'], en = document.documentElement.lang === 'en';
+    pp.querySelector('use').setAttribute('href', playing ? '#i-pause' : '#i-play'); pp.setAttribute('aria-label', l[+en]); pp.removeAttribute('data-en-aria'); };
+  const frame = now => { const dt = Math.min(.1, (now - last) / 1000); last = now; if (playing && vis && !document.hidden) { t = (t + dt) % DUR; seek(t); } requestAnimationFrame(frame); };
+  pp.addEventListener('click', () => { playing = !playing; ui(); });
+  if (RM.matches) pp.hidden = true;
+  new IntersectionObserver(([e]) => { vis = e.isIntersecting; if (vis && !RM.matches && !el.dataset.started) { el.dataset.started = '1'; playing = true; ui(); } }, { threshold: .3 }).observe(el);
+  seek(t); requestAnimationFrame(frame);
+  window.__wkFilm = { seek: x => { t = x; seek(t); } };   // Aufnahmen: Zustand per seek(t)
 })();
 </script>
 </body>
