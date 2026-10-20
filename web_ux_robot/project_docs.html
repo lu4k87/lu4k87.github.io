@@ -811,25 +811,56 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
 }
 .tm-pk { transition: opacity var(--t-base) var(--ease-out); }
 
-/* Drei Betriebsabläufe: direkt steuern · Bahn planen & bestätigen · Aufgabe per KI-Agent ausführen */
-.tm-ops { margin-top: 48px; display: grid; gap: 24px; }
-.tm-ops-h { display: grid; gap: 8px; }
-.tm-ops-h h3 { font-size: 22px; font-weight: 800; letter-spacing: -.02em; line-height: 1.2; color: var(--fg); }
-.tm-ops-h p { font-size: 15px; line-height: 1.5; color: var(--fg-2); max-width: 68ch; }
-.op-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
-.op-card { border: 1px solid var(--line); border-radius: var(--radius-lg); background: var(--surface); padding: 20px; display: grid; gap: 16px; align-content: start; box-shadow: var(--shadow); transition: border-color var(--t-fast); }
-.op-card:hover { border-color: color-mix(in srgb, var(--hue) 50%, var(--line)); }
-.op-head { display: grid; gap: 6px; border-bottom: 1px solid var(--line); padding-bottom: 14px; }
-.op-k { font: 700 11px/1.3 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--hue); }
-.op-head h4 { display: flex; align-items: center; gap: 8px; font-size: 17px; font-weight: 800; color: var(--fg); line-height: 1.25; margin: 0; }
-.op-head h4 .ico { width: 18px; height: 18px; color: var(--hue); }
-.op-head p { font-size: 13.5px; color: var(--fg-2); line-height: 1.4; margin: 0; }
-.op-steps { margin: 0; padding-left: 20px; display: grid; gap: 10px; font-size: 13px; line-height: 1.45; color: var(--fg-2); }
-.op-steps li b { color: var(--fg); font-family: var(--mono); font-size: 11.5px; text-transform: uppercase; letter-spacing: .04em; }
-.op-steps li span { color: var(--fg-2); }
-.op-steps li code { font: 500 12px var(--mono); color: var(--fg); }
-@media (max-width: 880px) {
-  .op-grid { grid-template-columns: minmax(0, 1fr); }
+/* Drei Betriebsabläufe (Ablauf:C + Fläche:B, Wahl User 20.10.2026): helle Konsole mit Raster wie der Funktionsatlas-Ring (folgt dem Theme),
+   Umschalter je Ablauf, waagerechte Kette mit 6 Stationen; Prüfung + Abbruch grün. Aufbau einmal per ScrollFlow seq (Stationen nacheinander) */
+.tm-ops { --op-grid: color-mix(in srgb, var(--line) 55%, transparent); margin-top: 48px; display: grid; gap: 28px; padding: 40px;
+  border: 1px solid var(--line); border-radius: var(--radius-lg);
+  background: linear-gradient(var(--op-grid) 1px, transparent 1px) 0 0 / 32px 32px, linear-gradient(90deg, var(--op-grid) 1px, transparent 1px) 0 0 / 32px 32px, var(--surface); }
+.tm-ops-h { display: grid; gap: 12px; max-width: 72ch; }
+.tm-ops-h h3 { font-size: 26px; font-weight: 800; letter-spacing: -.02em; line-height: 1.15; color: var(--fg); }
+.tm-ops-h p { font-size: 15px; line-height: 1.55; color: var(--fg-2); }
+.op-tabs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.op-tab { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 12px; align-items: start; padding: 16px; text-align: left; cursor: pointer;
+  font: inherit; color: var(--fg); border: 1px solid var(--line); border-radius: var(--radius); background: transparent;
+  transition: background-color var(--t-fast), border-color var(--t-fast); }
+.op-tab:hover, .op-tab[aria-selected="true"] { background: color-mix(in srgb, var(--hue) 12%, transparent); border-color: color-mix(in srgb, var(--hue) 55%, transparent); }
+.op-tab:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.op-fi { width: 40px; height: 40px; display: grid; place-items: center; border-radius: var(--radius-sm); background: color-mix(in srgb, var(--hue) 18%, transparent); color: var(--hue); }
+.op-ft { display: grid; gap: 4px; min-width: 0; }
+.op-k { font: 700 12px/1.3 var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--hue); }
+.op-ft b { font-size: 17px; font-weight: 800; line-height: 1.25; }
+.op-fs { font-size: 14px; line-height: 1.45; color: var(--fg-2); }
+.op-flows { display: grid; gap: 32px; }
+.op-panel[hidden] { display: none; }
+.op-chain { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 16px; }
+.op-chain li { position: relative; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 8px; align-content: start; align-items: center;
+  padding-top: 24px; font-size: 14px; line-height: 1.5; color: var(--fg); }
+.op-chain li::after { content: ""; position: absolute; top: 4px; left: 0; right: -16px; height: 1px; background: color-mix(in srgb, var(--hue) 60%, var(--line-strong)); }
+.op-chain li:last-child::after { right: 0; background: linear-gradient(90deg, color-mix(in srgb, var(--hue) 60%, var(--line-strong)), transparent); }
+.op-chain li > i { position: absolute; z-index: 1; top: 0; left: 0; width: 9px; height: 9px; border-radius: 2px; background: var(--hue); }
+.op-chain .op-n { grid-column: 1 / -1; font: 700 12px/1 var(--mono); letter-spacing: .08em; color: var(--hue); }
+.op-chain .ico { width: 18px; height: 18px; color: var(--hue); }
+.op-chain b { font-size: 15px; font-weight: 700; }
+.op-chain li > span:last-child { grid-column: 1 / -1; }
+.op-chain li.safe > i { background: var(--green); }
+.op-chain li.safe :is(.op-n, .ico) { color: var(--green); }
+.op-chain code { font: 500 13px var(--mono); }
+@media (max-width: 960px) {
+  .op-chain { grid-template-columns: repeat(3, minmax(0, 1fr)); row-gap: 24px; }
+  .op-chain li:nth-child(3n)::after { right: 0; }
+}
+@media (max-width: 760px) {
+  .tm-ops { padding: 24px 16px; }
+  .op-tabs { grid-template-columns: minmax(0, 1fr); gap: 8px; }
+  .op-tab { padding: 12px; }
+  .op-fs { display: none; }
+}
+@media (max-width: 560px) {
+  .op-chain { grid-template-columns: minmax(0, 1fr); row-gap: 20px; }
+  .op-chain li { padding: 0 0 0 22px; }
+  .op-chain li > i { top: 3px; }
+  .op-chain li::after { top: 16px; bottom: -18px; left: 4px; right: auto; width: 1px; height: auto; }
+  .op-chain li:last-child::after { display: none; }
 }
 
 /* ═════ Exploded Architecture Stack (Feat:C): 7 Schichten wie die Architekturkarte, vom Menschen bis zur Hardware ═════ */
@@ -1311,54 +1342,51 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
             <h3 data-en="From input to safe robot motion">Von der Eingabe zur sicheren Bewegung</h3>
             <p data-en="Every control mode follows one of three distinct control paradigms with an unbroken chain: input → check → approval/confirmation → motion → abort → recording.">Jeder Steuerweg folgt einem von drei klar getrennten Steuerparadigmen mit durchgängiger Kette: Eingabe → Prüfung → Freigabe bzw. Bestätigung → Bewegung → Abbruch → Aufzeichnung.</p>
           </header>
-          <div class="op-grid">
-            <article class="op-card" style="--hue: var(--accent)">
-              <div class="op-head">
-                <span class="op-k" data-en="Simultaneous Shared Control">Simultanes Shared Control</span>
-                <h4><svg class="ico" aria-hidden="true"><use href="#i-pad"/></svg><span data-en="1. Direct steering">1. Direkt steuern</span></h4>
-                <p data-en="Teleoperation &amp; jogging in real time (gamepad, VR, jogging buttons)">Teleoperation &amp; Jogging in Echtzeit (Gamepad, VR, Jogging-Tasten)</p>
-              </div>
-              <ol class="op-steps">
-                <li><b data-en="Input:">Eingabe:</b> <span data-en="Continuous velocity input via joystick axis, VR controller movement or holding a jogging key.">Kontinuierlicher Geschwindigkeitsvektor über Joystick, VR-Handführung oder gedrückte Jogging-Taste.</span></li>
-                <li><b data-en="Check:">Prüfung:</b> <span data-en="Control-lock ownership, heartbeat watchdog and dynamic collision pre-check (&lt;code&gt;/joy_check&lt;/code&gt;).">Control-Lock-Besitz, Heartbeat-Watchdog und dynamische Kollisionsvorprüfung (<code>/joy_check</code>).</span></li>
-                <li><b data-en="Approval:">Freigabe:</b> <span data-en="Continuous automatic regulation in active mode; live clutch (dead-man grip/hold).">Automatische Regelfreigabe im aktiven Modus; Live-Kupplung (Grip/Halten als Totmann-Bedingung).</span></li>
-                <li><b data-en="Motion:">Bewegung:</b> <span data-en="MoveIt Servo tracks Cartesian speed in real time; system slows down near tables and limits.">MoveIt Servo regelt Geschwindigkeiten in Echtzeit; System bremst vor Tisch- und Gelenkgrenzen zeitgleich ab.</span></li>
-                <li><b data-en="Abort:">Abbruch:</b> <span data-en="Releasing stick/button stops motion instantly; watchdog timeout or E-STOP immediately halts.">Loslassen des Sticks stoppt sofort (Dead-Man); E-STOP oder Watchdog-Timeout hält den Arm an.</span></li>
-                <li><b data-en="Recording:">Aufzeichnung:</b> <span data-en="Commands, clamp events and latency logged in UX | Monitoring; 60&amp;nbsp;s ring buffer in blackbox.">Befehle, Bremsereignisse und Latenzen im UX | Monitoring; 60&nbsp;s Ringpuffer in der Blackbox.</span></li>
+          <div class="op-tabs" role="tablist" aria-label="Betriebsabläufe" data-en-aria="Operational flows">
+            <button type="button" class="op-tab" role="tab" id="op-t1" aria-controls="op-p1" aria-selected="true" style="--hue: var(--accent)">
+              <span class="op-fi"><svg class="ico" aria-hidden="true"><use href="#i-pad"/></svg></span>
+              <span class="op-ft"><span class="op-k" data-en="Simultaneous Shared Control">Simultanes Shared Control</span><b data-en="1. Direct steering">1. Direkt steuern</b><span class="op-fs" data-en="Teleoperation &amp; jogging in real time (gamepad, VR, jogging buttons)">Teleoperation &amp; Jogging in Echtzeit (Gamepad, VR, Jogging-Tasten)</span></span>
+            </button>
+            <button type="button" class="op-tab" role="tab" id="op-t2" aria-controls="op-p2" aria-selected="false" tabindex="-1" style="--hue: var(--gold)">
+              <span class="op-fi"><svg class="ico" aria-hidden="true"><use href="#i-route"/></svg></span>
+              <span class="op-ft"><span class="op-k" data-en="Traded Control · Human-in-the-Loop">Traded Control · Human-in-the-Loop</span><b data-en="2. Plan &amp; confirm path">2. Bahn planen &amp; bestätigen</b><span class="op-fs" data-en="Assisted path planning (TCP gizmo, pose presets, click-to-move)">Assistierte Bahnplanung (TCP-Gizmo, Posen-Presets, Click-to-Move)</span></span>
+            </button>
+            <button type="button" class="op-tab" role="tab" id="op-t3" aria-controls="op-p3" aria-selected="false" tabindex="-1" style="--hue: var(--violet)">
+              <span class="op-fi"><svg class="ico" aria-hidden="true"><use href="#i-spark"/></svg></span>
+              <span class="op-ft"><span class="op-k" data-en="Supervisory Control · Task-Level">Supervisory Control · Task-Level</span><b data-en="3. Execute task via AI agent">3. Aufgabe per KI-Agent ausführen</b><span class="op-fs" data-en="Supervised autonomous task execution (VLA-M chat, voice instruction)">Überwachte Aufgabenausführung (VLA-M-Chat, Sprachbefehle)</span></span>
+            </button>
+          </div>
+          <div class="op-flows">
+            <div class="op-panel" role="tabpanel" id="op-p1" aria-labelledby="op-t1" style="--hue: var(--accent)">
+              <ol class="op-chain">
+                <li><i aria-hidden="true"></i><span class="op-n">01</span><svg class="ico" aria-hidden="true"><use href="#i-pointer"/></svg><b data-en="Input">Eingabe</b><span data-en="Continuous velocity input via joystick axis, VR controller movement or holding a jogging key.">Kontinuierlicher Geschwindigkeitsvektor über Joystick, VR-Handführung oder gedrückte Jogging-Taste.</span></li>
+                <li class="safe"><i aria-hidden="true"></i><span class="op-n">02</span><svg class="ico" aria-hidden="true"><use href="#i-shield"/></svg><b data-en="Check">Prüfung</b><span data-en="Control-lock ownership, heartbeat watchdog and dynamic collision pre-check (&lt;code&gt;/joy_check&lt;/code&gt;).">Control-Lock-Besitz, Heartbeat-Watchdog und dynamische Kollisionsvorprüfung (<code>/joy_check</code>).</span></li>
+                <li><i aria-hidden="true"></i><span class="op-n">03</span><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg><b data-en="Approval">Freigabe</b><span data-en="Continuous automatic regulation in active mode; live clutch (dead-man grip/hold).">Automatische Regelfreigabe im aktiven Modus; Live-Kupplung (Grip/Halten als Totmann-Bedingung).</span></li>
+                <li><i aria-hidden="true"></i><span class="op-n">04</span><svg class="ico" aria-hidden="true"><use href="#i-arm"/></svg><b data-en="Motion">Bewegung</b><span data-en="MoveIt Servo tracks Cartesian speed in real time; system slows down near tables and limits.">MoveIt Servo regelt Geschwindigkeiten in Echtzeit; System bremst vor Tisch- und Gelenkgrenzen zeitgleich ab.</span></li>
+                <li class="safe"><i aria-hidden="true"></i><span class="op-n">05</span><svg class="ico" aria-hidden="true"><use href="#i-stop"/></svg><b data-en="Abort">Abbruch</b><span data-en="Releasing stick/button stops motion instantly; watchdog timeout or E-STOP immediately halts.">Loslassen des Sticks stoppt sofort (Dead-Man); E-STOP oder Watchdog-Timeout hält den Arm an.</span></li>
+                <li><i aria-hidden="true"></i><span class="op-n">06</span><svg class="ico" aria-hidden="true"><use href="#i-db"/></svg><b data-en="Recording">Aufzeichnung</b><span data-en="Commands, clamp events and latency logged in UX | Monitoring; 60&amp;nbsp;s ring buffer in blackbox.">Befehle, Bremsereignisse und Latenzen im UX | Monitoring; 60&nbsp;s Ringpuffer in der Blackbox.</span></li>
               </ol>
-            </article>
-
-            <article class="op-card" style="--hue: var(--gold)">
-              <div class="op-head">
-                <span class="op-k" data-en="Traded Control · Human-in-the-Loop">Traded Control · Human-in-the-Loop</span>
-                <h4><svg class="ico" aria-hidden="true"><use href="#i-route"/></svg><span data-en="2. Plan &amp; confirm path">2. Bahn planen &amp; bestätigen</span></h4>
-                <p data-en="Assisted path planning (TCP gizmo, pose presets, click-to-move)">Assistierte Bahnplanung (TCP-Gizmo, Posen-Presets, Click-to-Move)</p>
-              </div>
-              <ol class="op-steps">
-                <li><b data-en="Input:">Eingabe:</b> <span data-en="Discrete target pose (XYZ/RPY) via 3D gizmo drag, preset button (home pose, scan position) or coordinates.">Diskrete Zielpose (XYZ/RPY) über 3D-Gizmo im Digital Twin, Preset (Home-Pose, Scanposition) oder Zielkoordinaten.</span></li>
-                <li><b data-en="Check:">Prüfung:</b> <span data-en="Inverse kinematics (IK) and full collision planning against scene mesh and table (MoveGroup).">Inverse Kinematik (IK) und vollständige Kollisionsprüfung gegen Szene, Hindernisse und Tisch (MoveGroup).</span></li>
-                <li><b data-en="Confirmation:">Bestätigung:</b> <span data-en="Ghost preview plays in Digital Twin; real arm stays put until operator clicks &lt;i&gt;Execute&lt;/i&gt;.">Ghost-Vorschau läuft im Digital Twin ab; echter Arm bleibt stehen, bis Bediener explizit <i>Execute</i> klickt.</span></li>
-                <li><b data-en="Motion:">Bewegung:</b> <span data-en="MoveIt executes the verified path; joint states stream back to Digital Twin in real time.">MoveIt fährt die geprüfte Bahn ab; Zustand wird in Echtzeit in der UI visualisiert.</span></li>
-                <li><b data-en="Abort:">Abbruch:</b> <span data-en="Operator discards preview before start, hits &lt;i&gt;STOP&lt;/i&gt; during motion, or triggers E-STOP.">Bediener verwirft Vorschau vorab per <i>Discard</i>, klickt während der Fahrt <i>STOP</i> oder drückt E-STOP.</span></li>
-                <li><b data-en="Recording:">Aufzeichnung:</b> <span data-en="IK, planning and execution time, path points and outcome in the monitoring database.">IK-, Planungs- und Fahrzeit, Bahnpunkte und Ergebnis in der Monitoring-Datenbank.</span></li>
+            </div>
+            <div class="op-panel" role="tabpanel" id="op-p2" aria-labelledby="op-t2" style="--hue: var(--gold)">
+              <ol class="op-chain">
+                <li><i aria-hidden="true"></i><span class="op-n">01</span><svg class="ico" aria-hidden="true"><use href="#i-pointer"/></svg><b data-en="Input">Eingabe</b><span data-en="Discrete target pose (XYZ/RPY) via 3D gizmo drag, preset button (home pose, scan position) or coordinates.">Diskrete Zielpose (XYZ/RPY) über 3D-Gizmo im Digital Twin, Preset (Home-Pose, Scanposition) oder Zielkoordinaten.</span></li>
+                <li class="safe"><i aria-hidden="true"></i><span class="op-n">02</span><svg class="ico" aria-hidden="true"><use href="#i-shield"/></svg><b data-en="Check">Prüfung</b><span data-en="Inverse kinematics (IK) and full collision planning against scene mesh and table (MoveGroup).">Inverse Kinematik (IK) und vollständige Kollisionsprüfung gegen Szene, Hindernisse und Tisch (MoveGroup).</span></li>
+                <li><i aria-hidden="true"></i><span class="op-n">03</span><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg><b data-en="Confirmation">Bestätigung</b><span data-en="Ghost preview plays in Digital Twin; real arm stays put until operator clicks &lt;i&gt;Execute&lt;/i&gt;.">Ghost-Vorschau läuft im Digital Twin ab; echter Arm bleibt stehen, bis Bediener explizit <i>Execute</i> klickt.</span></li>
+                <li><i aria-hidden="true"></i><span class="op-n">04</span><svg class="ico" aria-hidden="true"><use href="#i-arm"/></svg><b data-en="Motion">Bewegung</b><span data-en="MoveIt executes the verified path; joint states stream back to Digital Twin in real time.">MoveIt fährt die geprüfte Bahn ab; Zustand wird in Echtzeit in der UI visualisiert.</span></li>
+                <li class="safe"><i aria-hidden="true"></i><span class="op-n">05</span><svg class="ico" aria-hidden="true"><use href="#i-stop"/></svg><b data-en="Abort">Abbruch</b><span data-en="Operator discards preview before start, hits &lt;i&gt;STOP&lt;/i&gt; during motion, or triggers E-STOP.">Bediener verwirft Vorschau vorab per <i>Discard</i>, klickt während der Fahrt <i>STOP</i> oder drückt E-STOP.</span></li>
+                <li><i aria-hidden="true"></i><span class="op-n">06</span><svg class="ico" aria-hidden="true"><use href="#i-db"/></svg><b data-en="Recording">Aufzeichnung</b><span data-en="IK, planning and execution time, path points and outcome in the monitoring database.">IK-, Planungs- und Fahrzeit, Bahnpunkte und Ergebnis in der Monitoring-Datenbank.</span></li>
               </ol>
-            </article>
-
-            <article class="op-card" style="--hue: var(--violet)">
-              <div class="op-head">
-                <span class="op-k" data-en="Supervisory Control · Task-Level">Supervisory Control · Task-Level</span>
-                <h4><svg class="ico" aria-hidden="true"><use href="#i-spark"/></svg><span data-en="3. Execute task via AI agent">3. Aufgabe per KI-Agent ausführen</span></h4>
-                <p data-en="Supervised autonomous task execution (VLA-M chat, voice instruction)">Überwachte Aufgabenausführung (VLA-M-Chat, Sprachbefehle)</p>
-              </div>
-              <ol class="op-steps">
-                <li><b data-en="Input:">Eingabe:</b> <span data-en="Task instruction in natural language via VLA-M chat or microphone dictate (e.g. &amp;ldquo;grasp blue cylinder&amp;rdquo;).">Aufgabe in Alltagssprache per VLA-M-Chat oder diktiert per Mikrofon (z.&nbsp;B. „Greife blauen Zylinder“).</span></li>
-                <li><b data-en="Check:">Prüfung:</b> <span data-en="Rule and plan validation by &lt;code&gt;vla_bridge&lt;/code&gt; (object existence, reach, gripper state; max 2 replan rounds).">Regel- und Planprüfung durch <code>vla_bridge</code> (Objekt vorhanden, Reichweite, Greiferstatus; max. 2 Replan-Runden).</span></li>
-                <li><b data-en="Confirmation:">Bestätigung:</b> <span data-en="Structured action list (&amp;ldquo;Planned actions&amp;rdquo;) presented in UI; human confirms execution.">Strukturierte Aktionsliste („Planned actions“) in der UI; Bediener bestätigt Ausführung per <i>Execute</i>.</span></li>
-                <li><b data-en="Motion:">Bewegung:</b> <span data-en="Sequential execution of the skills (pick, place, gripper, palletize) through the motion handler.">Sequenzielle Ausführung der Skills (pick, place, gripper, palletize) über den Motion Handler.</span></li>
-                <li><b data-en="Abort:">Abbruch:</b> <span data-en="&lt;i&gt;Abort&lt;/i&gt; button in chat, automatic slip check with recovery plan, or the E-STOP."><i>Abort</i>-Taste im Chat, automatische Schlupfprüfung mit Rettungsplan oder E-STOP.</span></li>
-                <li><b data-en="Recording:">Aufzeichnung:</b> <span data-en="Full dialog transcript, LLM plan, replan events, grasp outcome and durations saved in evaluation log.">Kompletter Dialog, LLM-Plan, Replan-Ereignisse, Greiferfolg und Laufzeiten im Evaluationsprotokoll.</span></li>
+            </div>
+            <div class="op-panel" role="tabpanel" id="op-p3" aria-labelledby="op-t3" style="--hue: var(--violet)">
+              <ol class="op-chain">
+                <li><i aria-hidden="true"></i><span class="op-n">01</span><svg class="ico" aria-hidden="true"><use href="#i-pointer"/></svg><b data-en="Input">Eingabe</b><span data-en="Task instruction in natural language via VLA-M chat or microphone dictate (e.g. &amp;ldquo;grasp blue cylinder&amp;rdquo;).">Aufgabe in Alltagssprache per VLA-M-Chat oder diktiert per Mikrofon (z.&nbsp;B. „Greife blauen Zylinder“).</span></li>
+                <li class="safe"><i aria-hidden="true"></i><span class="op-n">02</span><svg class="ico" aria-hidden="true"><use href="#i-shield"/></svg><b data-en="Check">Prüfung</b><span data-en="Rule and plan validation by &lt;code&gt;vla_bridge&lt;/code&gt; (object existence, reach, gripper state; max 2 replan rounds).">Regel- und Planprüfung durch <code>vla_bridge</code> (Objekt vorhanden, Reichweite, Greiferstatus; max. 2 Replan-Runden).</span></li>
+                <li><i aria-hidden="true"></i><span class="op-n">03</span><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg><b data-en="Confirmation">Bestätigung</b><span data-en="Structured action list (&amp;ldquo;Planned actions&amp;rdquo;) presented in UI; human confirms execution.">Strukturierte Aktionsliste („Planned actions“) in der UI; Bediener bestätigt Ausführung per <i>Execute</i>.</span></li>
+                <li><i aria-hidden="true"></i><span class="op-n">04</span><svg class="ico" aria-hidden="true"><use href="#i-arm"/></svg><b data-en="Motion">Bewegung</b><span data-en="Sequential execution of the skills (pick, place, gripper, palletize) through the motion handler.">Sequenzielle Ausführung der Skills (pick, place, gripper, palletize) über den Motion Handler.</span></li>
+                <li class="safe"><i aria-hidden="true"></i><span class="op-n">05</span><svg class="ico" aria-hidden="true"><use href="#i-stop"/></svg><b data-en="Abort">Abbruch</b><span data-en="&lt;i&gt;Abort&lt;/i&gt; button in chat, automatic slip check with recovery plan, or the E-STOP."><i>Abort</i>-Taste im Chat, automatische Schlupfprüfung mit Rettungsplan oder E-STOP.</span></li>
+                <li><i aria-hidden="true"></i><span class="op-n">06</span><svg class="ico" aria-hidden="true"><use href="#i-db"/></svg><b data-en="Recording">Aufzeichnung</b><span data-en="Full dialog transcript, LLM plan, replan events, grasp outcome and durations saved in evaluation log.">Kompletter Dialog, LLM-Plan, Replan-Ereignisse, Greiferfolg und Laufzeiten im Evaluationsprotokoll.</span></li>
               </ol>
-            </article>
+            </div>
           </div>
         </div>
         <div class="tm-eval" style="--hue: var(--orange)">
@@ -3012,6 +3040,7 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
     heads: '.land-head, .ch-head, .sec-head, .ct-copy',
     depth: ['.app-frame'],
     groups: ['.strip ul', '.fx-grid', '.at-areas', '.ar-stack ol', '.path', '.list', '.dg-grid', '.stack-layers'],
+    seq: [{ box: '.op-flows', items: '.op-chain > li', step: 70, x: true }],
     items: ['.at-ring', '.at-loops', '.ar-grp', '.fna-legend', '.fna .filter', '.fna .fna-hub', '.fna .panel', '.fna .grp-h', '.list-note', '.contact .vcard'],
     cards: '.fna .cards > .fn',
     tilt: { sel: '.fx, .list > a.item', lift: -2 },
@@ -3031,6 +3060,25 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
   // durch den Sicherheitsring (SVG-Fassung: weiter durch die Kette zum Arm, Stationen leuchten nacheinander auf); einmal beim ersten
   // Sichtbarwerden, danach je Auswahl; Auswahl auch über die Leiste unten (.tm-tab). Ereignis tm-pick → Ghost-Bühne (Modul am Ende),
   // tm-routed = Eingabe hat den Orbit unten verlassen (Bühne übernimmt die Linie); tm.tmPick wählt von dort (Auto-Wechsel)
+  // Drei Betriebsabläufe: Umschalter zeigt eine Kette (Klick, ←/→, Pos1/Ende); ohne JS stehen alle drei untereinander
+  const opTabs = $$('.op-tab');
+  if (opTabs.length) {
+    const opPick = (t, focus) => {
+      opTabs.forEach(b => { const on = b === t; b.setAttribute('aria-selected', String(on)); b.tabIndex = on ? 0 : -1;
+        document.getElementById(b.getAttribute('aria-controls')).hidden = !on; });
+      if (focus) t.focus();
+    };
+    opTabs.forEach((t, i) => {
+      t.addEventListener('click', () => opPick(t));
+      t.addEventListener('keydown', e => {
+        const j = { ArrowRight: i + 1, ArrowLeft: i - 1, Home: 0, End: opTabs.length - 1 }[e.key];
+        if (j === undefined) return;
+        e.preventDefault(); opPick(opTabs[(j + opTabs.length) % opTabs.length], true);
+      });
+    });
+    opPick(opTabs[0]);
+  }
+
   const tm = document.getElementById('tm');
   if (tm) {
     tm.classList.add('tm-on');
