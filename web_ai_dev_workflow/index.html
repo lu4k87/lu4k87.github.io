@@ -616,6 +616,38 @@ pre.cmd .c { color: var(--green); }
   .bars { gap: 3px; padding: 10px 4px; }
   .ex { grid-template-columns: 1fr; } .ex p { grid-column: 1; }
 }
+
+/* Kapitelfarben + Icon-Medaillons (Vorschau 2026-10-20, Farbe:A, 72 px): jedes Kapitel hat seine Farbe */
+:root {
+  --h-ablauf: light-dark(#2f64f0, #6d94ff); --h-enter: light-dark(#6d4bff, #a58bff); --h-bausteine: light-dark(#0b9a91, #3cc5bb);
+  --h-grenzen: light-dark(#d9700a, #f0a04a); --h-fertig: light-dark(#23903f, #47c47f); --h-team: light-dark(#cc338f, #f074bf);
+  --h-lernen: light-dark(#b87d00, #e6ae48); --h-nach: light-dark(#1783bd, #4fb4ea);
+  --r-org: light-dark(#2f64f0, #6d94ff); --r-des: light-dark(#7a4dff, #a58bff); --r-dev: light-dark(#0b9a91, #3cc5bb);
+  --r-rev: light-dark(#d9700a, #f0a04a); --r-syn: light-dark(#23903f, #47c47f);
+  --kico: 72px; --tint: 12%;
+}
+#k-ablauf, [data-k="ablauf"] { --hue: var(--h-ablauf); } #k-enter, [data-k="enter"] { --hue: var(--h-enter); }
+#k-bausteine, [data-k="bausteine"] { --hue: var(--h-bausteine); } #k-grenzen, [data-k="grenzen"] { --hue: var(--h-grenzen); }
+#k-fertig, [data-k="fertig"] { --hue: var(--h-fertig); } #k-team, [data-k="team"] { --hue: var(--h-team); }
+#k-lernen, [data-k="lernen"] { --hue: var(--h-lernen); } #k-nach, [data-k="nach"] { --hue: var(--h-nach); }
+
+/* Icons: Rail, Kapitelkopf, Blocktitel */
+.rico, .kh-ico, .bic { display: grid; place-items: center; flex: none; color: var(--hue, var(--accent)); background: color-mix(in srgb, var(--hue, var(--accent)) var(--tint), var(--surface)); border: 1px solid color-mix(in srgb, var(--hue, var(--accent)) 38%, var(--line)); }
+.rico { width: 48px; height: 48px; border-radius: 14px; } .rico .ic { width: 28px; height: 28px; }
+.kh-ico { width: var(--kico); height: var(--kico); border-radius: 22px; } .kh-ico .ic { width: calc(var(--kico) * .56); height: calc(var(--kico) * .56); stroke-width: 1.6; }
+.bic { width: 42px; height: 42px; border-radius: 50%; } .bic .ic { width: 24px; height: 24px; }
+.kn-rail a { grid-template-columns: 48px minmax(0, 1fr); gap: 2px 12px; padding: 8px 10px; }
+.kn-rail .n { display: none; } .kn-rail .rico { grid-row: span 2; }
+.kn-rail [aria-current="true"] { background: color-mix(in srgb, var(--hue) 13%, var(--surface)); border-color: color-mix(in srgb, var(--hue) 55%, var(--line)); }
+.kn-rail [aria-current="true"] .rico { background: var(--hue); color: var(--surface); border-color: var(--hue); }
+.kap .kicker { color: var(--hue); }
+.kh { grid-template-columns: auto minmax(0, 1fr); column-gap: 22px; align-items: start; }
+.kh > :not(.kh-ico) { grid-column: 2; } .kh-ico { grid-column: 1; grid-row: 1 / span 3; }
+.blk > h3, .dcard > h3 { display: flex; align-items: center; gap: 12px; }
+.kap .card, .kap .dcard, .kap .ex { background: color-mix(in srgb, var(--hue) 5%, var(--surface)); border-color: color-mix(in srgb, var(--hue) 24%, var(--line)); }
+.kap .ex .ic, .kap .card > .ic { width: 28px; height: 28px; color: var(--hue); }
+@media (max-width: 640px) { :root { --kico: 56px; } .kh { grid-template-columns: 1fr; } .kh > :not(.kh-ico), .kh-ico { grid-column: 1; grid-row: auto; } }
+
 </style>
 <noscript><style>.kn-body .kap[hidden] { display: grid !important; } .kn-foot { display: none; }</style></noscript>
 </head>
@@ -722,20 +754,20 @@ pre.cmd .c { color: var(--green); }
     </div>
     <div class="kn">
       <nav class="kn-nav" aria-label="Kapitel" data-en-aria="Chapters"><ol class="kn-rail" id="rail">
-        <li><a href="#k-ablauf" data-k="ablauf"><span class="n">1</span><b><span data-en="Flow">Ablauf</span></b><small><span data-en="Film · 10 scenes">Film · 10 Szenen</span></small></a></li>
-        <li><a href="#k-enter" data-k="enter"><span class="n">2</span><b><span data-en="Behind Enter">Hinter Enter</span></b><small><span data-en="Timeline · 5 beats">Zeitleiste · 5 Takte</span></small></a></li>
-        <li><a href="#k-bausteine" data-k="bausteine"><span class="n">3</span><b><span data-en="Building blocks">Bausteine</span></b><small><span data-en="Map · toolbox">Karte · Werkzeugkasten</span></small></a></li>
-        <li><a href="#k-grenzen" data-k="grenzen"><span class="n">4</span><b><span data-en="Guard rails">Leitplanken</span></b><small><span data-en="Quiz · 8 cases">Quiz · 8 Fälle</span></small></a></li>
-        <li><a href="#k-fertig" data-k="fertig"><span class="n">5</span><b><span data-en="Done with evidence">Fertig mit Beleg</span></b><small><span data-en="Levels · commit path">Stufen · Commit-Weg</span></small></a></li>
-        <li><a href="#k-team" data-k="team"><span class="n">6</span><b><span data-en="Teamwork">Zusammenarbeit</span></b><small><span data-en="Conflicts · tools">Konflikte · Werkzeuge</span></small></a></li>
-        <li><a href="#k-lernen" data-k="lernen"><span class="n">7</span><b><span data-en="Learning">Lernen</span></b><small><span data-en="Loop · examples">Schleife · Beispiele</span></small></a></li>
-        <li><a href="#k-nach" data-k="nach"><span class="n">8</span><b><span data-en="Look up">Nachschlagen</span></b><small><span data-en="Terms · figures · start">Begriffe · Zahlen · Start</span></small></a></li>
+        <li><a href="#k-ablauf" data-k="ablauf"><span class="rico"><svg class="ic" aria-hidden="true"><use href="#i-send"/></svg></span><span class="n">1</span><b><span data-en="Flow">Ablauf</span></b><small><span data-en="Film · 10 scenes">Film · 10 Szenen</span></small></a></li>
+        <li><a href="#k-enter" data-k="enter"><span class="rico"><svg class="ic" aria-hidden="true"><use href="#i-term"/></svg></span><span class="n">2</span><b><span data-en="Behind Enter">Hinter Enter</span></b><small><span data-en="Timeline · 5 beats">Zeitleiste · 5 Takte</span></small></a></li>
+        <li><a href="#k-bausteine" data-k="bausteine"><span class="rico"><svg class="ic" aria-hidden="true"><use href="#i-cards"/></svg></span><span class="n">3</span><b><span data-en="Building blocks">Bausteine</span></b><small><span data-en="Map · toolbox">Karte · Werkzeugkasten</span></small></a></li>
+        <li><a href="#k-grenzen" data-k="grenzen"><span class="rico"><svg class="ic" aria-hidden="true"><use href="#i-shield"/></svg></span><span class="n">4</span><b><span data-en="Guard rails">Leitplanken</span></b><small><span data-en="Quiz · 8 cases">Quiz · 8 Fälle</span></small></a></li>
+        <li><a href="#k-fertig" data-k="fertig"><span class="rico"><svg class="ic" aria-hidden="true"><use href="#i-flask"/></svg></span><span class="n">5</span><b><span data-en="Done with evidence">Fertig mit Beleg</span></b><small><span data-en="Levels · commit path">Stufen · Commit-Weg</span></small></a></li>
+        <li><a href="#k-team" data-k="team"><span class="rico"><svg class="ic" aria-hidden="true"><use href="#i-users"/></svg></span><span class="n">6</span><b><span data-en="Teamwork">Zusammenarbeit</span></b><small><span data-en="Conflicts · tools">Konflikte · Werkzeuge</span></small></a></li>
+        <li><a href="#k-lernen" data-k="lernen"><span class="rico"><svg class="ic" aria-hidden="true"><use href="#i-book"/></svg></span><span class="n">7</span><b><span data-en="Learning">Lernen</span></b><small><span data-en="Loop · examples">Schleife · Beispiele</span></small></a></li>
+        <li><a href="#k-nach" data-k="nach"><span class="rico"><svg class="ic" aria-hidden="true"><use href="#i-search"/></svg></span><span class="n">8</span><b><span data-en="Look up">Nachschlagen</span></b><small><span data-en="Terms · figures · start">Begriffe · Zahlen · Start</span></small></a></li>
       </ol></nav>
       <div class="kn-body" id="kbody">
 
 
 <article class="kap" id="k-ablauf" aria-labelledby="k-ablauf-h">
-  <header class="kh"><p class="kicker"><span data-en="Chapter 1 · Flow · 10 scenes · 80 seconds">Kapitel 1 · Ablauf · 10 Szenen · 80 Sekunden</span></p><h2 id="k-ablauf-h"><span data-en="One task – from the first line to the push">Ein Auftrag – von der ersten Zeile bis zum Push</span></h2>
+  <header class="kh"><span class="kh-ico"><svg class="ic" aria-hidden="true"><use href="#i-send"/></svg></span><p class="kicker"><span data-en="Chapter 1 · Flow · 10 scenes · 80 seconds">Kapitel 1 · Ablauf · 10 Szenen · 80 Sekunden</span></p><h2 id="k-ablauf-h"><span data-en="One task – from the first line to the push">Ein Auftrag – von der ersten Zeile bis zum Push</span></h2>
     <p><span data-en="On the left the chat as you see it in VS Code. On the right what happens in the background. Pause, rewind, jump to scenes: space bar, ← → or the bar below.">Links der Chat, wie du ihn in VS Code siehst. Rechts, was dabei im Hintergrund passiert. Pausieren, zurückspulen, Szenen anspringen: Leertaste, ← → oder die Leiste unten.</span></p></header>
     <div class="order">
       <span class="ico"><svg class="ic" aria-hidden="true"><use href="#i-user"/></svg></span>
@@ -1003,13 +1035,13 @@ pre.cmd .c { color: var(--green); }
     </div>
 
   <div class="ex"><svg class="ic" aria-hidden="true"><use href="#i-sun"/></svg><b><span data-en="In the example">Im Beispiel</span></b><p><span data-en="The whole film is the example: one sentence runs through ten scenes to the push. The switch it is about sits at the top right of this page – try it.">Der ganze Film ist das Beispiel: Ein Satz läuft durch zehn Szenen bis zum Push. Der Schalter, um den es geht, steht oben rechts auf dieser Seite – probier ihn aus.</span></p></div>
-  <div class="blk"><h3><span data-en="The whole path in ten sentences">Der ganze Weg in zehn Sätzen</span></h3><p><span data-en="Click a sentence to play the matching scene.">Klick auf einen Satz spielt die passende Szene ab.</span></p>
+  <div class="blk"><h3><span class="bic"><svg class="ic" aria-hidden="true"><use href="#i-doc"/></svg></span><span data-en="The whole path in ten sentences">Der ganze Weg in zehn Sätzen</span></h3><p><span data-en="Click a sentence to play the matching scene.">Klick auf einen Satz spielt die passende Szene ab.</span></p>
     <ol class="steps8" id="steps10"></ol></div>
 </article>
 
 
 <article class="kap" id="k-enter" aria-labelledby="k-enter-h" hidden>
-  <header class="kh"><p class="kicker"><span data-en="Chapter 2 · Behind Enter">Kapitel 2 · Hinter Enter</span></p><h2 id="k-enter-h"><span data-en="What happens when you press Enter">Was passiert, wenn du Enter drückst</span></h2>
+  <header class="kh"><span class="kh-ico"><svg class="ic" aria-hidden="true"><use href="#i-term"/></svg></span><p class="kicker"><span data-en="Chapter 2 · Behind Enter">Kapitel 2 · Hinter Enter</span></p><h2 id="k-enter-h"><span data-en="What happens when you press Enter">Was passiert, wenn du Enter drückst</span></h2>
     <p><span data-en="Five beats of a chat. In every beat hooks run on their own – the chat does not call them, it only receives their result.">Fünf Takte eines Chats. In jedem Takt laufen Hooks von selbst – der Chat ruft sie nicht auf, er bekommt nur ihr Ergebnis.</span></p></header>
   <ol class="beats">
     <li><div class="bh"><span class="k">A</span><b><span data-en="Once at chat start">Einmal beim Chat-Start</span></b><code>SessionStart</code></div>
@@ -1037,17 +1069,17 @@ pre.cmd .c { color: var(--green); }
         <li><span data-en="At “🏁 TASK DONE” the claim is removed">Bei „🏁 AUFGABE ERLEDIGT“ wird der Claim gelöscht</span></li></ul></li>
   </ol>
   <p class="note"><span data-en="Beat D runs again for every tool call – and every call sends the whole chat to the model again. That is why the chat bundles independent steps into one call.">Takt D läuft bei jedem Werkzeug-Aufruf erneut – und jeder Aufruf schickt den ganzen Chat noch einmal ans Modell. Darum bündelt der Chat unabhängige Schritte in einem Aufruf.</span></p>
-  <div class="blk"><h3><span data-en="In short">Kurzform</span></h3>
+  <div class="blk"><h3><span class="bic"><svg class="ic" aria-hidden="true"><use href="#i-doc"/></svg></span><span data-en="In short">Kurzform</span></h3>
     <ol class="flow"><li>Enter</li><li>Pull + Claim</li><li><span data-en="Plan + skills">Planen + Skills</span></li><li><span data-en="[check → tool → check] × n">[Prüfen → Werkzeug → Prüfen] × n</span></li><li><span data-en="Check + push">Prüfen + Push</span></li><li>format_check</li><li class="ok"><span data-en="Answer">Antwort</span></li></ol>
     <p><span data-en="A pure question changes nothing: it only passes B, C and the answer check – without tool hooks, checks or commit. Codex and Gemini take the same path via <code>codex_bridge.py</code> and <code>agy_hook.py</code>.">Eine reine Frage ändert nichts: Sie läuft nur durch B, C und die Antwortprüfung – ohne Werkzeug-Hooks, Prüfung und Commit. Codex und Gemini gehen denselben Weg über <code>codex_bridge.py</code> bzw. <code>agy_hook.py</code>.</span></p></div>
-  <div class="dcard"><h3><span data-en="One edit, three checkpoints">Ein Edit, drei Prüfstellen</span></h3><p><span data-en="Who checks when? From the edit to the commit.">Wer prüft wann? Vom Edit bis zum Commit.</span></p>
+  <div class="dcard"><h3><span class="bic"><svg class="ic" aria-hidden="true"><use href="#i-shield"/></svg></span><span data-en="One edit, three checkpoints">Ein Edit, drei Prüfstellen</span></h3><p><span data-en="Who checks when? From the edit to the commit.">Wer prüft wann? Vom Edit bis zum Commit.</span></p>
     <figure id="md-edit"><ol class="md-fallback"><li><span data-en="Chat asks pre_tool_guard → file free → edit → post_edit_check reports grey text → fix → no findings → git commit with pre-commit">Chat fragt pre_tool_guard → Datei frei → Edit → post_edit_check meldet graue Schrift → Fix → ohne Befund → git commit mit pre-commit</span></li></ol><figcaption><span data-en="Hooks run automatically; a finding is fixed at once.">Hooks laufen automatisch; ein Befund wird sofort behoben.</span></figcaption></figure></div>
   <div class="ex"><svg class="ic" aria-hidden="true"><use href="#i-sun"/></svg><b><span data-en="In the example">Im Beispiel</span></b><p><span data-en="In beat B the pull hook reports “up to date”, in beat D <code>post_edit_check</code> finds the grey text in the switch, in beat E <code>format_check.py</code> checks the finished answer.">In Takt B meldet der Pull-Hook „aktuell“, in Takt D findet <code>post_edit_check</code> die graue Schrift im Schalter, in Takt E prüft <code>format_check.py</code> die fertige Antwort.</span></p></div>
 </article>
 
 
 <article class="kap" id="k-bausteine" aria-labelledby="k-bausteine-h" hidden>
-  <header class="kh"><p class="kicker"><span data-en="Chapter 3 · Building blocks">Kapitel 3 · Bausteine</span></p><h2 id="k-bausteine-h"><span data-en="Everything the chat uses along the way">Was der Chat dabei alles nutzt</span></h2>
+  <header class="kh"><span class="kh-ico"><svg class="ic" aria-hidden="true"><use href="#i-cards"/></svg></span><p class="kicker"><span data-en="Chapter 3 · Building blocks">Kapitel 3 · Bausteine</span></p><h2 id="k-bausteine-h"><span data-en="Everything the chat uses along the way">Was der Chat dabei alles nutzt</span></h2>
     <p><span data-en="The chat in the middle, eight building blocks around it. The dots show the example task as a tour. Click a block to get it explained – with what it did in the example.">In der Mitte der Chat, außen acht Bausteine. Die Punkte zeigen den Beispiel-Auftrag als Rundgang. Klick auf einen Baustein erklärt ihn – mit dem, was er im Beispiel getan hat.</span></p></header>
   <div class="sys">
     <div class="map" id="map">
@@ -1076,7 +1108,7 @@ pre.cmd .c { color: var(--green); }
       </article>
     </div>
   </div>
-  <div class="blk"><h3><span data-en="The toolbox in numbers">Der Werkzeugkasten in Zahlen</span></h3>
+  <div class="blk"><h3><span class="bic"><svg class="ic" aria-hidden="true"><use href="#i-gauge"/></svg></span><span data-en="The toolbox in numbers">Der Werkzeugkasten in Zahlen</span></h3>
     <div class="g5">
       <div class="card"><span class="k">66</span><b>Skills</b><p><span data-en="45 general + 21 dev_ws; one SKILL.md per topic with scripts, loaded only when needed">45 allgemein + 21 dev_ws; je Thema ein SKILL.md mit Skripten, geladen nur bei Bedarf</span></p></div>
       <div class="card"><span class="k">17</span><b><span data-en="Agents">Agenten</span></b><p><span data-en="6 global + 11 dev_ws; own context, return only the result">6 global + 11 dev_ws; eigener Kontext, geben nur das Ergebnis zurück</span></p></div>
@@ -1084,7 +1116,7 @@ pre.cmd .c { color: var(--green); }
       <div class="card"><span class="k">tools/ · bin/</span><b><span data-en="Scripts">Skripte</span></b><p><span data-en="deliver the evidence before “done”; one-off scripts only in the scratchpad">liefern den Beleg vor „fertig“; Einmal-Skripte nur im Scratchpad</span></p></div>
       <div class="card"><span class="k"><span data-en="1 active">1 aktiv</span></span><b><span data-en="MCP servers">MCP-Server</span></b><p><span data-en="only where no terminal command reaches, e.g. Blender live">nur wo kein Terminal-Befehl hinkommt, z. B. Blender live</span></p></div>
     </div></div>
-  <div class="blk"><h3><span data-en="Six layers under every tool">Sechs Schichten unter jedem Werkzeug</span></h3>
+  <div class="blk"><h3><span class="bic"><svg class="ic" aria-hidden="true"><use href="#i-db"/></svg></span><span data-en="Six layers under every tool">Sechs Schichten unter jedem Werkzeug</span></h3>
     <p><span data-en="Claude, Codex and Gemini sit on the same six layers. Git keeps them identical on every computer – so every chat follows the same rules.">Unter Claude, Codex und Gemini liegen dieselben sechs Schichten. Git hält sie auf jedem Rechner gleich – deshalb befolgt jeder Chat dieselben Regeln.</span></p>
     <ol class="layers">
       <li><b><span data-en="You">Du</span></b><span><span data-en="sets goals, decides, approves">setzt Ziele, entscheidet, gibt frei</span></span></li>
@@ -1094,7 +1126,7 @@ pre.cmd .c { color: var(--green); }
       <li><b><span data-en="Helpers">Helfer</span></b><span><span data-en="agents such as ws-explorer, test-runner, ui-verifier">Agenten wie ws-explorer, test-runner, ui-verifier</span></span></li>
       <li><b>Repo</b><span><span data-en="code, tests, docs, Git – every state saved">Code, Tests, Doku, Git – jeder Stand gesichert</span></span></li>
     </ol></div>
-  <div class="blk"><h3><span data-en="Who talks to whom – five typical paths">Wer spricht mit wem – fünf typische Wege</span></h3>
+  <div class="blk"><h3><span class="bic"><svg class="ic" aria-hidden="true"><use href="#i-users"/></svg></span><span data-en="Who talks to whom – five typical paths">Wer spricht mit wem – fünf typische Wege</span></h3>
     <div class="paths">
       <div><b><span data-en="UI feature">UI-Funktion</span></b><ol class="flow"><li><span data-en="You">Du</span></li><li>Chat</li><li>Skills ui-change, preview</li><li><span data-en="preview page">Vorschau-Seite</span></li><li><span data-en="your choice">deine Wahl</span></li><li>pre_tool_guard</li><li>Code</li><li class="ok">ui-verifier</li></ol></div>
       <div><b><span data-en="Safety fix">Sicherheits-Fix</span></b><ol class="flow"><li><span data-en="You">Du</span></li><li>Chat</li><li>Skills root-cause, vla-motion</li><li>Code</li><li>post_edit_check</li><li class="warn">safety-reviewer</li><li><span data-en="grasp_e2e (domain 94)">grasp_e2e (Domain 94)</span></li><li class="ok">Git</li></ol></div>
@@ -1108,18 +1140,18 @@ pre.cmd .c { color: var(--green); }
 
 
 <article class="kap" id="k-grenzen" aria-labelledby="k-grenzen-h" hidden>
-  <header class="kh"><p class="kicker"><span data-en="Chapter 4 · Guard rails">Kapitel 4 · Leitplanken</span></p><h2 id="k-grenzen-h"><span data-en="May the chat do this alone?">Darf der Chat das allein?</span></h2>
+  <header class="kh"><span class="kh-ico"><svg class="ic" aria-hidden="true"><use href="#i-shield"/></svg></span><p class="kicker"><span data-en="Chapter 4 · Guard rails">Kapitel 4 · Leitplanken</span></p><h2 id="k-grenzen-h"><span data-en="May the chat do this alone?">Darf der Chat das allein?</span></h2>
     <p><span data-en="Guess first, then reveal. The answers come from §0 of the rules: safety always comes first – the code in the dev_ws moves real robot hardware.">Rate zuerst, dann aufdecken. Die Antworten kommen aus §0 der Regeln: Sicherheit hat immer Vorrang – der Code im dev_ws bewegt echte Roboter-Hardware.</span></p></header>
   <div class="legend" aria-label="Legende" data-en-aria="Legend"><span class="v free"><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg><span data-en="Free">Frei</span></span><span class="v ask"><svg class="ic" aria-hidden="true"><use href="#i-users"/></svg><span data-en="Coordinate first">Erst abstimmen</span></span><span class="v you"><svg class="ic" aria-hidden="true"><use href="#i-user"/></svg><span data-en="Only with your approval">Nur mit deiner Freigabe</span></span><span class="v never"><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg><span data-en="Never">Nie</span></span></div>
   <div class="perm-grid" id="perms"></div>
   <div class="cta"><button class="btn" id="perm-all" type="button"><svg class="ic" aria-hidden="true"><use href="#i-eye"/></svg><span data-en="Reveal all">Alle aufdecken</span></button></div>
-  <div class="blk"><h3><span data-en="Three levels of permission">Drei Stufen von Rechten</span></h3>
+  <div class="blk"><h3><span class="bic"><svg class="ic" aria-hidden="true"><use href="#i-lock"/></svg></span><span data-en="Three levels of permission">Drei Stufen von Rechten</span></h3>
     <div class="g3">
       <div class="card"><span class="v free"><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg><span data-en="Free">Frei</span></span><b><span data-en="Works without asking">Arbeitet ohne Nachfrage</span></b><ul class="bl"><li><span data-en="read and search files">Dateien lesen und durchsuchen</span></li><li><span data-en="run approved checks">freigegebene Prüfungen ausführen</span></li><li><span data-en="test in isolation: own port, own domain">isoliert testen: eigener Port, eigene Domain</span></li><li><span data-en="stop own processes by PID">eigene Prozesse per PID beenden</span></li></ul></div>
       <div class="card"><span class="v ask"><svg class="ic" aria-hidden="true"><use href="#i-users"/></svg><span data-en="With a question">Mit Rückfrage</span></span><b><span data-en="Asks first">Fragt vorher nach</span></b><ul class="bl"><li><span data-en="commands outside the allow list">Befehle außerhalb der Erlaubt-Liste</span></li><li><span data-en="files another chat is editing">Dateien, die ein anderer Chat bearbeitet</span></li><li><span data-en="larger rebuilds: preview first">größere Umbauten: erst Vorschau</span></li><li><span data-en="deleting, overwriting, publishing">Löschen, Überschreiben, Veröffentlichen</span></li></ul></div>
       <div class="card"><span class="v you"><svg class="ic" aria-hidden="true"><use href="#i-lock"/></svg><span data-en="Never without approval">Nie ohne Freigabe</span></span><b><span data-en="Only with your OK in this chat">Nur mit deinem OK in diesem Chat</span></b><ul class="bl"><li><span data-en="move real robot hardware (Robot&amp;nbsp;|&amp;nbsp;Hardware)">echte Roboter-Hardware bewegen (Robot&nbsp;|&nbsp;Hardware)</span></li><li><span data-en="weaken E-STOP, sandbox or collision pre-check">E-STOP, Sandbox oder Kollisionsvorprüfung abschwächen</span></li><li><span data-en="commit changes of other chats">Änderungen anderer Chats committen</span></li><li><span data-en="overwrite Git history (<code>--force</code>)">Git-Verlauf überschreiben (<code>--force</code>)</span></li></ul></div>
     </div></div>
-  <div class="blk"><h3><span data-en="What happens if a chat …">Was passiert, wenn ein Chat …</span></h3>
+  <div class="blk"><h3><span class="bic"><svg class="ic" aria-hidden="true"><use href="#i-warn"/></svg></span><span data-en="What happens if a chat …">Was passiert, wenn ein Chat …</span></h3>
     <div class="cases" id="cases" role="group" aria-label="Fall wählen" data-en-aria="Choose a case"></div>
     <dl class="chain" id="chain">
       <div><dt><span data-en="Action">Aktion</span></dt><dd data-c="act">–</dd></div>
@@ -1133,30 +1165,30 @@ pre.cmd .c { color: var(--green); }
 
 
 <article class="kap" id="k-fertig" aria-labelledby="k-fertig-h" hidden>
-  <header class="kh"><p class="kicker"><span data-en="Chapter 5 · Done with evidence">Kapitel 5 · Fertig mit Beleg</span></p><h2 id="k-fertig-h"><span data-en="“Done” only with evidence">„Fertig“ nur mit Beleg</span></h2>
+  <header class="kh"><span class="kh-ico"><svg class="ic" aria-hidden="true"><use href="#i-flask"/></svg></span><p class="kicker"><span data-en="Chapter 5 · Done with evidence">Kapitel 5 · Fertig mit Beleg</span></p><h2 id="k-fertig-h"><span data-en="“Done” only with evidence">„Fertig“ nur mit Beleg</span></h2>
     <p><span data-en="A “done” without evidence can be wrong. Only a check output from this chat after the last change counts – as deep as the check level demands.">Ein „fertig“ ohne Beleg kann falsch sein. Es zählt nur eine Prüf-Ausgabe aus diesem Chat nach der letzten Änderung – so tief, wie die Prüfstufe verlangt.</span></p></header>
   <div class="g3">
     <div class="card"><span class="k"><span data-en="Why">Warum</span></span><p><span data-en="The check output shows it is right – “should work” does not count">Die Prüfausgabe zeigt, dass es stimmt – „sollte gehen“ zählt nicht</span></p></div>
     <div class="card"><span class="k"><span data-en="Evidence">Beleg</span></span><p><span data-en="check output from this chat, after the last change; an agent’s success → look at <code>git diff</code> yourself">Prüf-Ausgabe aus diesem Chat, nach der letzten Änderung; Erfolg eines Agenten → <code>git diff</code> selbst ansehen</span></p></div>
     <div class="card"><span class="k"><span data-en="Depth">Tiefe</span></span><p><span data-en="check level 0–3 by scope and risk; nothing checked twice">Prüfstufe 0–3 nach Umfang und Risiko; nichts doppelt geprüft</span></p></div>
   </div>
-  <div class="blk"><h3><span data-en="Check levels: how deep and why">Prüfstufen: wie tief und warum</span></h3>
+  <div class="blk"><h3><span class="bic"><svg class="ic" aria-hidden="true"><use href="#i-gauge"/></svg></span><span data-en="Check levels: how deep and why">Prüfstufen: wie tief und warum</span></h3>
     <div class="g4">
       <div class="card lvl l0"><span class="k">0</span><b><span data-en="trivial">trivial</span></b><p><span data-en="text, comment, docs → edit check and commit hook, no browser run. Text changes no behaviour.">Text, Kommentar, Doku → Edit-Check und Commit-Hook, kein Browserlauf. Text ändert kein Verhalten.</span></p></div>
       <div class="card lvl l1"><span class="k">1</span><b><span data-en="small">klein</span></b><p><span data-en="existing element → affected checks, UI light + dark at 1280 and 360 px. Catches overflow and contrast errors.">bestehendes Element → betroffene Checks, UI hell + dunkel bei 1280 und 360 px. Fängt Überlauf und Kontrastfehler.</span></p></div>
       <div class="card lvl l2"><span class="k">2</span><b><span data-en="normal">normal</span></b><p><span data-en="new element, rebuild → all affected tests, all widths, DE/EN, docs. New things touch several places.">neues Element, Umbau → alle betroffenen Tests, alle Breiten, DE/EN, Doku. Neues berührt mehrere Stellen.</span></p></div>
       <div class="card lvl l3"><span class="k">3</span><b><span data-en="critical">kritisch</span></b><p><span data-en="safety, hardware → full check + safety-reviewer + <code>grasp_e2e.py --quick</code> in domain 94. Never shortened.">Sicherheit, Hardware → volle Prüfung + safety-reviewer + <code>grasp_e2e.py --quick</code> in Domain 94. Nie gekürzt.</span></p></div>
     </div></div>
-  <div class="dcard"><h3><span data-en="Which check level?">Welche Prüfstufe?</span></h3><p><span data-en="The check depth follows from the kind of change – when in doubt, one level higher.">Die Prüftiefe folgt aus der Art der Änderung – im Zweifel eine Stufe höher.</span></p>
+  <div class="dcard"><h3><span class="bic"><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg></span><span data-en="Which check level?">Welche Prüfstufe?</span></h3><p><span data-en="The check depth follows from the kind of change – when in doubt, one level higher.">Die Prüftiefe folgt aus der Art der Änderung – im Zweifel eine Stufe höher.</span></p>
     <figure id="md-level"><ol class="md-fallback"><li><span data-en="robot or safety → level 3 · new element or rebuild → level 2 · existing element → level 1 · otherwise level 0">Roboter oder Sicherheit → Stufe 3 · neues Element oder Umbau → Stufe 2 · bestehendes Element → Stufe 1 · sonst Stufe 0</span></li></ol><figcaption><span data-en="The example lands in level 2: new element, several files.">Das Beispiel landet in Stufe 2: neues Element, mehrere Dateien.</span></figcaption></figure></div>
-  <div class="blk"><h3><span data-en="Path of a commit">Weg eines Commits</span></h3>
+  <div class="blk"><h3><span class="bic"><svg class="ic" aria-hidden="true"><use href="#i-git"/></svg></span><span data-en="Path of a commit">Weg eines Commits</span></h3>
     <ol class="steps4">
       <li><span class="k">1</span><b><span data-en="Collect own files">Eigene Dateien sammeln</span></b><p><span data-en="<code>git status</code> + file register: only what this chat changed."><code>git status</code> + Datei-Register: nur, was dieser Chat geändert hat.</span></p></li>
       <li><span class="k">2</span><b>tools/pre-commit</b><p><span data-en="checks only what fits the staged paths: flake8, JSON/YAML, ports, showcase, hook tests. Red → no commit.">prüft nur, was zu den vorgemerkten Pfaden passt: flake8, JSON/YAML, Ports, Showcase, Hook-Tests. Rot → kein Commit.</span></p></li>
       <li><span class="k">3</span><b><span data-en="Commit in repo style">Commit im Repo-Stil</span></b><p><span data-en="Conventional commits with scope, e.g. <code>fix(motion): …</code> – the history shows kind and place.">Conventional Commits mit Bereich, z. B. <code>fix(motion): …</code> – der Verlauf zeigt Art und Ort.</span></p></li>
       <li><span class="k">4</span><b><span data-en="Push the checked state">Geprüften Stand pushen</span></b><p><span data-en="fast-forward only, nothing is overwritten. If another computer is ahead, <code>ws_sync.sh</code> fetches its state first.">nur Fast-Forward, nichts wird überschrieben. Ist ein anderer Rechner voraus, holt <code>ws_sync.sh</code> erst dessen Stand.</span></p></li>
     </ol></div>
-  <div class="blk"><h3><span data-en="What changed decides the check">Was geändert wurde, bestimmt die Prüfung</span></h3><p><span data-en="Example dev_ws – other projects name their checks in their own AGENTS.md.">Beispiel dev_ws – andere Projekte nennen ihre Prüfungen in der eigenen AGENTS.md.</span></p>
+  <div class="blk"><h3><span class="bic"><svg class="ic" aria-hidden="true"><use href="#i-flask"/></svg></span><span data-en="What changed decides the check">Was geändert wurde, bestimmt die Prüfung</span></h3><p><span data-en="Example dev_ws – other projects name their checks in their own AGENTS.md.">Beispiel dev_ws – andere Projekte nennen ihre Prüfungen in der eigenen AGENTS.md.</span></p>
     <div class="g3 tight">
       <div class="card"><b>Web-UI</b><p><span data-en="skill ui-change, <code>ui_new_code_checker.py</code>, light + dark, before/after">Skill ui-change, <code>ui_new_code_checker.py</code>, hell + dunkel, vorher/nachher</span></p></div>
       <div class="card"><b>UX&nbsp;|&nbsp;Nexus Launcher</b><p><span data-en="<code>pytest ros2_nexus/test</code> + checker <code>--pages nexus</code>"><code>pytest ros2_nexus/test</code> + Checker <code>--pages nexus</code></span></p></div>
@@ -1173,9 +1205,9 @@ pre.cmd .c { color: var(--green); }
 
 
 <article class="kap" id="k-team" aria-labelledby="k-team-h" hidden>
-  <header class="kh"><p class="kicker"><span data-en="Chapter 6 · Teamwork">Kapitel 6 · Zusammenarbeit</span></p><h2 id="k-team-h"><span data-en="Working in parallel without getting in each other’s way">Parallel arbeiten, ohne sich zu stören</span></h2>
+  <header class="kh"><span class="kh-ico"><svg class="ic" aria-hidden="true"><use href="#i-users"/></svg></span><p class="kicker"><span data-en="Chapter 6 · Teamwork">Kapitel 6 · Zusammenarbeit</span></p><h2 id="k-team-h"><span data-en="Working in parallel without getting in each other’s way">Parallel arbeiten, ohne sich zu stören</span></h2>
     <p><span data-en="Several chats, computers and tools work on the same repo. Eight channels keep everyone informed, four reactions resolve conflicts – the same for Claude, Codex and Gemini.">Mehrere Chats, Rechner und Werkzeuge arbeiten am selben Repo. Acht Wege halten alle auf dem Laufenden, vier Reaktionen lösen Konflikte – gleich für Claude, Codex und Gemini.</span></p></header>
-  <div class="blk"><h3><span data-en="Eight ways to coordinate">Acht Wege, sich abzustimmen</span></h3>
+  <div class="blk"><h3><span class="bic"><svg class="ic" aria-hidden="true"><use href="#i-send"/></svg></span><span data-en="Eight ways to coordinate">Acht Wege, sich abzustimmen</span></h3>
     <div class="reach">
       <div><p class="lbl"><span data-en="This chat only">Nur dieser Chat</span></p>
         <div class="card"><b><span data-en="Chat context">Kontext des Chats</span></b><p><span data-en="Loaded skills, assumptions and plan end with the chat. What should last belongs in memory, rules or a handoff.">Geladene Skills, Annahmen und Plan enden mit dem Chat. Was bleiben soll, gehört in Memory, Regeln oder eine Übergabe.</span></p></div>
@@ -1189,7 +1221,7 @@ pre.cmd .c { color: var(--green); }
         <div class="card"><b><span data-en="Memory, rules, skills">Memory, Regeln, Skills</span></b><p><span data-en="Knowledge as files in Git; Claude, Codex and Gemini read the same files.">Wissen als Dateien in Git; Claude, Codex und Gemini lesen dieselben Dateien.</span></p></div>
         <div class="card"><b><span data-en="Syncing computers">Abgleich der Rechner</span></b><p><span data-en="<code>tools/ws_sync.sh</code> fetches the Git state and syncs; <code>chat_sync.py</code> transfers the chat histories."><code>tools/ws_sync.sh</code> holt den Git-Stand und gleicht ab; <code>chat_sync.py</code> überträgt die Chat-Verläufe.</span></p></div></div>
     </div></div>
-  <div class="blk"><h3><span data-en="Four conflicts, four reactions">Vier Konflikte, vier Reaktionen</span></h3>
+  <div class="blk"><h3><span class="bic"><svg class="ic" aria-hidden="true"><use href="#i-warn"/></svg></span><span data-en="Four conflicts, four reactions">Vier Konflikte, vier Reaktionen</span></h3>
     <p><span data-en="The earlier a conflict is detected, the less work is lost.">Je früher ein Konflikt erkannt wird, desto weniger Arbeit geht verloren.</span></p>
     <div class="g4">
       <div class="card"><span class="k"><span data-en="before the edit">vor dem Edit</span></span><b><span data-en="Claim conflict">Claim-Konflikt</span></b><p><span data-en="file is in another chat’s claim → do not change it, coordinate via SendMessage. Codex blocks the edit.">Datei steht im Claim eines anderen Chats → nicht ändern, per SendMessage abstimmen. Codex blockiert den Edit.</span></p></div>
@@ -1197,28 +1229,28 @@ pre.cmd .c { color: var(--green); }
       <div class="card"><span class="k"><span data-en="at commit">beim Commit</span></span><b><span data-en="Index conflict">Index-Konflikt</span></b><p><span data-en="the commit would take foreign changes → stage own files only, check <code>git show --stat HEAD</code> before the push.">Commit nähme fremde Änderungen mit → nur eigene Dateien vormerken, vor dem Push <code>git show --stat HEAD</code>.</span></p></div>
       <div class="card"><span class="k"><span data-en="at sync">beim Sync</span></span><b><span data-en="Git conflict">Git-Konflikt</span></b><p><span data-en="push rejected, no fast-forward → run <code>ws_sync.sh</code> first, coordinate foreign files, then retry; never <code>--force</code>.">Push abgelehnt, kein Fast-Forward → erst <code>ws_sync.sh</code>, fremde Dateien abstimmen, dann erneut; nie <code>--force</code>.</span></p></div>
     </div></div>
-  <div class="dcard"><h3><span data-en="Two chats, one file">Zwei Chats, eine Datei</span></h3><p><span data-en="What if the switch did need <code>layout.css</code>?">Was wäre, wenn der Schalter doch <code>layout.css</code> bräuchte?</span></p>
+  <div class="dcard"><h3><span class="bic"><svg class="ic" aria-hidden="true"><use href="#i-file"/></svg></span><span data-en="Two chats, one file">Zwei Chats, eine Datei</span></h3><p><span data-en="What if the switch did need <code>layout.css</code>?">Was wäre, wenn der Schalter doch <code>layout.css</code> bräuchte?</span></p>
     <figure id="md-peer"><ol class="md-fallback"><li><span data-en="register warns → SendMessage to dev-ws-7a → it pushes → pull → only then change">Register warnt → SendMessage an dev-ws-7a → der pusht → Pull → erst dann ändern</span></li></ol><figcaption><span data-en="Coordinate instead of overwrite: register, SendMessage, fast-forward.">Abstimmen statt überschreiben: Register, SendMessage, Fast-Forward.</span></figcaption></figure></div>
-  <div class="blk"><h3><span data-en="One numbering system for questions">Ein Nummernsystem für Rückfragen</span></h3>
+  <div class="blk"><h3><span class="bic"><svg class="ic" aria-hidden="true"><use href="#i-q"/></svg></span><span data-en="One numbering system for questions">Ein Nummernsystem für Rückfragen</span></h3>
     <p><span data-en="Dialog, preview page and answer use the same numbers – your choice is unambiguous wherever you answer.">Dialog, Vorschau-Seite und Antwort nutzen dieselben Nummern – deine Wahl ist überall eindeutig, egal wo du antwortest.</span></p>
     <div class="g3">
       <div class="card"><span class="k">F1, F2</span><b><span data-en="Question in a dialog">Rückfrage im Dialog</span></b><p><span data-en="The chat asks real decisions instead of guessing; the recommendation comes first, selection = answer.">Echte Entscheidungen fragt der Chat, statt zu raten; die Empfehlung steht oben, Auswahl = Antwort.</span></p></div>
       <div class="card"><span class="k">Hero:A · Deck:B</span><b><span data-en="Preview page">Vorschau-Seite</span></b><p><span data-en="Every variant with a real image; “send to chat” is final. Several areas → keys such as <code>Area:A</code>.">Jede Variante mit echtem Bild; „An Chat senden“ ist endgültig. Mehrere Bereiche → Schlüssel wie <code>Bereich:A</code>.</span></p></div>
       <div class="card"><span class="k">🟩 · 🟪 · 🏁</span><b><span data-en="Answer in a fixed form">Antwort in fester Form</span></b><p><span data-en="Result first, deviations, “your turn”, status line, chat ID with Git state as the last line.">Ergebnis zuerst, Abweichungen, „Jetzt du“, Status-Zeile, Chat-ID mit Git-Stand als letzte Zeile.</span></p></div>
     </div></div>
-  <div class="blk"><h3><span data-en="Roles: four per chat">Rollen: vier je Chat</span></h3>
+  <div class="blk"><h3><span class="bic"><svg class="ic" aria-hidden="true"><use href="#i-user"/></svg></span><span data-en="Roles: four per chat">Rollen: vier je Chat</span></h3>
     <ol class="flow"><li><span data-en="Organizer · plans">Organizer · plant</span></li><li><span data-en="Specialist · builds">Fachrolle · setzt um</span></li><li><span data-en="Reviewer · definition of done">Prüfer · Definition of Done</span></li><li class="ok"><span data-en="Synchronizer · commit + push">Synchronizer · Commit + Push</span></li></ol>
     <p><span data-en="The specialist role decides which skills, agents and checks apply:">Die Fachrolle legt fest, welche Skills, Agenten und Prüfungen gelten:</span></p>
     <div class="chips"><span class="chip">Designer</span><span class="chip"><span data-en="Developer">Entwickler</span></span><span class="chip"><span data-en="Editor">Redakteur</span></span><span class="chip"><span data-en="Project manager">Projektmanager</span></span><span class="chip">Scrum Master</span><span class="chip"><span data-en="Researcher">Forscher</span></span><span class="chip">Marketing</span><span class="chip"><span data-en="3D designer">3D-Designer</span></span></div>
     <p><span data-en="One topic per chat keeps the context small and commits separate. The prefix in the title shows the area, e.g. in the dev_ws:">Ein Thema je Chat hält den Kontext klein und die Commits getrennt. Das Präfix im Titel zeigt den Bereich, z. B. im dev_ws:</span></p>
     <div class="chips"><span class="chip">[Agent]</span><span class="chip">[RCU]</span><span class="chip">[Nexus]</span><span class="chip">[Mon]</span><span class="chip">[VLA]</span><span class="chip">[Vision]</span><span class="chip">[Infra]</span><span class="chip">[Doku]</span></div></div>
-  <div class="blk"><h3><span data-en="Three tools, one rule set">Drei Werkzeuge, ein Regelwerk</span></h3>
+  <div class="blk"><h3><span class="bic"><svg class="ic" aria-hidden="true"><use href="#i-bot"/></svg></span><span data-en="Three tools, one rule set">Drei Werkzeuge, ein Regelwerk</span></h3>
     <div class="g3">
       <div class="card"><span class="k"><span data-en="native">nativ</span></span><b>Claude Code</b><p><span data-en="uses hooks, project agents and roles directly · <code>.claude/settings.json</code>">nutzt Hooks, Projekt-Agenten und Rollen direkt · <code>.claude/settings.json</code></span></p></div>
       <div class="card"><span class="k">Bridge</span><b>Codex</b><p><span data-en="reads AGENTS.md; hooks via <code>codex_bridge.py</code> once the project is trusted">liest AGENTS.md; Hooks über <code>codex_bridge.py</code>, sobald das Projekt freigegeben ist (Trust)</span></p></div>
       <div class="card"><span class="k">Bridge</span><b>Gemini / Antigravity</b><p><span data-en="the same rules via symlinks; hooks via <code>agy_hook.py</code>, own chat ID <code>gemini-&amp;lt;6&amp;gt;</code>">dieselben Regeln über Symlinks; Hooks über <code>agy_hook.py</code>, eigene Chat-ID <code>gemini-&lt;6&gt;</code></span></p></div>
     </div></div>
-  <div class="blk"><h3><span data-en="VS Code is the workplace">VS Code ist der Arbeitsplatz</span></h3>
+  <div class="blk"><h3><span class="bic"><svg class="ic" aria-hidden="true"><use href="#i-term"/></svg></span><span data-en="VS Code is the workplace">VS Code ist der Arbeitsplatz</span></h3>
     <div class="g4">
       <div class="card"><span class="k"><span data-en="tabs">Tabs</span></span><b><span data-en="Chat next to the code">Chat neben dem Code</span></b><p><span data-en="several chats as tabs, one topic per chat, prefix in the title">mehrere Chats als Tabs, ein Thema je Chat, Präfix im Titel</span></p></div>
       <div class="card"><span class="k"><span data-en="IDE context">IDE-Kontext</span></span><b><span data-en="Selection is context">Markierung ist Kontext</span></b><p><span data-en="selected code and open file go along; answers link file:line">markierter Code und offene Datei gehen mit; Antworten verlinken Datei:Zeile</span></p></div>
@@ -1229,7 +1261,7 @@ pre.cmd .c { color: var(--green); }
       <div class="card"><span class="k">model-routing</span><b><span data-en="Model and effort">Modell und Denktiefe</span></b><p><span data-en="Fable for the hardest parts, Opus for code and safety, Sonnet for light, checkable tasks">Fable für die schwersten Teile, Opus für Code und Sicherheit, Sonnet für leichte, prüfbare Aufgaben</span></p></div>
       <div class="card"><span class="k">answer-page</span><b><span data-en="Answer page">Antwort-Seite</span></b><p><span data-en="every answer also as a page in the browser, newest on top">jede Antwort zusätzlich als Seite im Browser, neueste oben</span></p></div>
     </div></div>
-  <div class="blk"><h3><span data-en="A working day, three computers">Ein Arbeitstag, drei Rechner</span></h3>
+  <div class="blk"><h3><span class="bic"><svg class="ic" aria-hidden="true"><use href="#i-globe"/></svg></span><span data-en="A working day, three computers">Ein Arbeitstag, drei Rechner</span></h3>
     <ol class="steps4 five">
       <li><span class="k">1</span><b><span data-en="Open, sync">Öffnen, abgleichen</span></b><p><span data-en="<code>tools/ws_sync.sh</code> fetches the other computers’ commits, builds changed packages."><code>tools/ws_sync.sh</code> holt die Commits der anderen Rechner, baut geänderte Pakete.</span></p></li>
       <li><span class="k">2</span><b><span data-en="One chat per task">Ein Chat je Aufgabe</span></b><p><span data-en="You name the goal, not the solution; the overview shows foreign files.">Du nennst das Ziel, nicht den Lösungsweg; das Lagebild zeigt fremde Dateien.</span></p></li>
@@ -1242,7 +1274,7 @@ pre.cmd .c { color: var(--green); }
 
 
 <article class="kap" id="k-lernen" aria-labelledby="k-lernen-h" hidden>
-  <header class="kh"><p class="kicker"><span data-en="Chapter 7 · Learning">Kapitel 7 · Lernen</span></p><h2 id="k-lernen-h"><span data-en="A correction becomes a rule">Aus Korrektur wird Regel</span></h2>
+  <header class="kh"><span class="kh-ico"><svg class="ic" aria-hidden="true"><use href="#i-book"/></svg></span><p class="kicker"><span data-en="Chapter 7 · Learning">Kapitel 7 · Lernen</span></p><h2 id="k-lernen-h"><span data-en="A correction becomes a rule">Aus Korrektur wird Regel</span></h2>
     <p><span data-en="A chat’s context ends, the repo stays. What you correct once ends up in memory, rules or a skill – and often in a hook that checks it from then on.">Der Kontext eines Chats endet, das Repo bleibt. Was du einmal korrigierst, landet in Memory, Regeln oder einem Skill – und oft in einem Hook, der es künftig prüft.</span></p></header>
   <ol class="steps4 six">
     <li><span class="k">1</span><b><span data-en="Correction">Korrektur</span></b><p><span data-en="You repeat a correction or state a lasting preference.">Du wiederholst eine Korrektur oder nennst eine dauerhafte Vorliebe.</span></p></li>
@@ -1252,15 +1284,15 @@ pre.cmd .c { color: var(--green); }
     <li><span class="k">5</span><b><span data-en="Follow">Befolgen</span></b><p><span data-en="rules sit in every chat’s context, hooks check along.">Regeln stehen im Kontext jedes Chats, Hooks prüfen mit.</span></p></li>
     <li><span class="k">6</span><b><span data-en="Collect evidence">Belege sammeln</span></b><p><span data-en="workflow check every 3 days, team briefing every 7 days – the next improvement comes from there.">Workflow-Check alle 3 Tage, Team-Briefing alle 7 Tage – daraus entsteht die nächste Verbesserung.</span></p></li>
   </ol>
-  <div class="dcard"><h3><span data-en="A correction becomes a rule">Aus Korrektur wird Regel</span></h3><p><span data-en="How the workflow learns – without you repeating yourself.">Wie der Workflow lernt – ohne dass du dich wiederholst.</span></p>
+  <div class="dcard"><h3><span class="bic"><svg class="ic" aria-hidden="true"><use href="#i-pencil"/></svg></span><span data-en="A correction becomes a rule">Aus Korrektur wird Regel</span></h3><p><span data-en="How the workflow learns – without you repeating yourself.">Wie der Workflow lernt – ohne dass du dich wiederholst.</span></p>
     <figure id="md-learn"><ol class="md-fallback"><li><span data-en="you correct → memory file → commit + push → next chat loads → recurring: rule or skill">Du korrigierst → Memory-Datei → Commit + Push → nächster Chat lädt → wiederkehrend: Regel oder Skill</span></li></ol><figcaption><span data-en="Memory, rules and skills are files in Git – the same for Claude, Codex and Gemini.">Memory, Regeln und Skills sind Dateien im Git – für Claude, Codex und Gemini gleich.</span></figcaption></figure></div>
-  <div class="blk"><h3><span data-en="Examples from this repo">Beispiele aus diesem Repo</span></h3>
+  <div class="blk"><h3><span class="bic"><svg class="ic" aria-hidden="true"><use href="#i-book"/></svg></span><span data-en="Examples from this repo">Beispiele aus diesem Repo</span></h3>
     <div class="g3">
       <div class="card"><b><span data-en="“Round corners subtly”">„Ecken dezent runden“</span></b><p><span data-en="memory project-docs-radius → edit hook checks border-radius at most 8 px on the project pages.">Memory project-docs-radius → Edit-Hook prüft border-radius höchstens 8 px auf den Projektseiten.</span></p></div>
       <div class="card"><b><span data-en="“Always UX&amp;nbsp;|&amp;nbsp;Nexus Launcher”">„Immer UX&nbsp;|&nbsp;Nexus Launcher“</span></b><p><span data-en="AGENTS.md §1 + brand.yaml → <code>check_showcase.py</code> finds old names in README, project pages, poster.">AGENTS.md §1 + brand.yaml → <code>check_showcase.py</code> findet alte Namen in README, Projektseiten, Poster.</span></p></div>
       <div class="card"><b><span data-en="“No grey text”">„Keine graue Schrift“</span></b><p><span data-en="RULES.md §3 → <code>post_edit_check.py</code> checks every new line in all web UIs.">RULES.md §3 → <code>post_edit_check.py</code> prüft jede neue Zeile in allen Web-UIs.</span></p></div>
     </div></div>
-  <div class="blk"><h3><span data-en="Where the knowledge lives">Wo das Wissen liegt</span></h3>
+  <div class="blk"><h3><span class="bic"><svg class="ic" aria-hidden="true"><use href="#i-db"/></svg></span><span data-en="Where the knowledge lives">Wo das Wissen liegt</span></h3>
     <div class="g5">
       <div class="card"><span class="k">RULES · AGENTS</span><b><span data-en="Rules">Regeln</span></b><p><span data-en="RULES.md for all projects, AGENTS.md per project; safety first">RULES.md für alle Projekte, AGENTS.md je Projekt; Sicherheit geht vor</span></p></div>
       <div class="card"><span class="k">36</span><b>Memory</b><p><span data-en="one file per fact: 24 shared + 12 dev_ws; index MEMORY.md comes with every chat">eine Datei je Fakt: 24 gemeinsam + 12 dev_ws; Index MEMORY.md liegt jedem Chat bei</span></p></div>
@@ -1268,7 +1300,7 @@ pre.cmd .c { color: var(--green); }
       <div class="card"><span class="k">66</span><b>Skills</b><p><span data-en="knowledge per topic with scripts and templates">Wissen je Thema mit Skripten und Vorlagen</span></p></div>
       <div class="card"><span class="k">.claude/handoff/</span><b><span data-en="Handoffs">Übergaben</span></b><p><span data-en="task, state and open points for the next chat">Aufgabe, Stand und offene Punkte für den nächsten Chat</span></p></div>
     </div></div>
-  <div class="blk"><h3><span data-en="Fixed rituals">Feste Rituale</span></h3>
+  <div class="blk"><h3><span class="bic"><svg class="ic" aria-hidden="true"><use href="#i-auto"/></svg></span><span data-en="Fixed rituals">Feste Rituale</span></h3>
     <div class="g4">
       <div class="card"><span class="k"><span data-en="every 4 days">alle 4 Tage</span></span><b><span data-en="My feedback">Mein Feedback</span></b><p><span data-en="2–3 targeted questions on your own workflow, answers get implemented">2–3 gezielte Fragen zum eigenen Workflow, Antworten werden umgesetzt</span></p></div>
       <div class="card"><span class="k"><span data-en="every 3 days">alle 3 Tage</span></span><b><span data-en="Project interview">Projekt-Interview</span></b><p><span data-en="goal, audience, priority and acceptance per project in memory">Ziel, Zielgruppe, Vorrang und Abnahme je Projekt in der Memory</span></p></div>
@@ -1280,13 +1312,13 @@ pre.cmd .c { color: var(--green); }
 
 
 <article class="kap" id="k-nach" aria-labelledby="k-nach-h" hidden>
-  <header class="kh"><p class="kicker"><span data-en="Chapter 8 · Look up">Kapitel 8 · Nachschlagen</span></p><h2 id="k-nach-h"><span data-en="Look up">Nachschlagen</span></h2>
+  <header class="kh"><span class="kh-ico"><svg class="ic" aria-hidden="true"><use href="#i-search"/></svg></span><p class="kicker"><span data-en="Chapter 8 · Look up">Kapitel 8 · Nachschlagen</span></p><h2 id="k-nach-h"><span data-en="Look up">Nachschlagen</span></h2>
     <p><span data-en="Every term in one sentence, figures from git log and the start in your own project.">Jeder Begriff in einem Satz, Zahlen aus git log und der Start im eigenen Projekt.</span></p></header>
-  <div class="blk"><h3><span data-en="Every term in one sentence">Jeder Begriff in einem Satz</span></h3>
+  <div class="blk"><h3><span class="bic"><svg class="ic" aria-hidden="true"><use href="#i-search"/></svg></span><span data-en="Every term in one sentence">Jeder Begriff in einem Satz</span></h3>
     <label class="search"><svg class="ic" aria-hidden="true"><use href="#i-search"/></svg><span class="sr"><span data-en="Search a term">Begriff suchen</span></span><input type="search" id="term-q" placeholder="Begriff suchen …" data-en-ph="Search a term …" autocomplete="off"></label>
     <p class="note" id="term-n" aria-live="polite"></p>
     <dl class="terms" id="terms"></dl></div>
-  <div class="blk"><h3><span data-en="Figures from git log">Zahlen aus git log</span></h3>
+  <div class="blk"><h3><span class="bic"><svg class="ic" aria-hidden="true"><use href="#i-gauge"/></svg></span><span data-en="Figures from git log">Zahlen aus git log</span></h3>
     <p><span data-en="Commits on main in the dev_ws, as of 20 Oct 2026; inventory counted in both repos. Commits measure activity, not quality.">Commits auf main im dev_ws, Stichtag 20.10.2026; Inventar in beiden Repos gezählt. Commits messen Aktivität, nicht Qualität.</span></p>
     <div class="g5">
       <div class="card"><span class="k">4.486</span><b><span data-en="commits since March">Commits seit März</span></b></div>
@@ -1300,13 +1332,13 @@ pre.cmd .c { color: var(--green); }
         <div><span>105</span><i style="--v:105"></i><span data-en="Mar">Mär</span></div><div><span>0</span><i style="--v:0"></i>Apr</div><div><span>123</span><i style="--v:123"></i><span data-en="May">Mai</span></div><div><span>341</span><i style="--v:341"></i>Jun</div>
         <div><span>13</span><i style="--v:13"></i>Jul</div><div><span>242</span><i style="--v:242"></i>Aug</div><div><span>723</span><i style="--v:723"></i>Sep</div><div><span>2912</span><i style="--v:2912"></i><span data-en="Oct*">Okt*</span></div>
       </div></figure></div>
-  <div class="blk"><h3><span data-en="Use it in your own project">Im eigenen Projekt nutzen</span></h3>
+  <div class="blk"><h3><span class="bic"><svg class="ic" aria-hidden="true"><use href="#i-up"/></svg></span><span data-en="Use it in your own project">Im eigenen Projekt nutzen</span></h3>
     <ol class="steps4">
       <li><span class="k">1</span><b><code>bin/projects.py new &lt;Name&gt;</code></b><p><span data-en="creates the project repo with AGENTS.md">legt das Projekt-Repo mit AGENTS.md an</span></p></li>
       <li><span class="k">2</span><b><code>bin/sync.sh</code></b><p><span data-en="links rules, skills and hooks into all three tools">verlinkt Regeln, Skills und Hooks in alle drei Werkzeuge</span></p></li>
       <li><span class="k">3</span><b>AGENTS.md</b><p><span data-en="add the project’s own rules there">eigene Regeln des Projekts dort ergänzen</span></p></li>
     </ol></div>
-  <div class="blk"><h3><span data-en="Set up, check, coordinate">Einrichten, prüfen, abstimmen</span></h3>
+  <div class="blk"><h3><span class="bic"><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg></span><span data-en="Set up, check, coordinate">Einrichten, prüfen, abstimmen</span></h3>
     <pre class="cmd"><code><span class="c"><span data-en="# New computer with dev_ws (clones tooling repo + all projects)"># Neuer Rechner mit dev_ws (klont Werkzeug-Repo + alle Projekte)</span></span>
 git clone git@github.com:lu4k87/ux_robot.git ~/dev_ws
 ~/dev_ws/tools/ws_sync.sh --setup
