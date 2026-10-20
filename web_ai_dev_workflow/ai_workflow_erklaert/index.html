@@ -225,10 +225,10 @@ section.sec { padding: 88px 0; border-bottom: 1px solid var(--line); }
 .vars { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
 @container (max-width: 560px) { .vars { grid-template-columns: 1fr; } }
 .var { margin: 0; height: 100%; display: flex; flex-direction: column; gap: 10px; transition: border-color 200ms, box-shadow 200ms; }
-.var figcaption { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; }
+.var figcaption { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; font-size: 14px; font-weight: 600; }
 .var.sel { border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent); }
-.var .pick { margin-left: auto; padding: 1px 7px; border-radius: var(--radius-sm); background: var(--accent); color: var(--on-accent); font: 700 12px var(--mono); visibility: hidden; }
-.var.sel .pick { visibility: visible; }
+.var .pick { margin-left: auto; padding: 1px 7px; border-radius: var(--radius-sm); background: var(--accent); color: var(--on-accent); font: 700 12px var(--mono); display: none; }
+.var.sel .pick { display: inline-block; }
 .mock { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 8px; min-height: 92px; padding: 12px; border-radius: var(--radius); background: var(--surface-2); border: 1px solid var(--line); }
 .mk-row { display: flex; align-items: center; gap: 10px; }
 .mk-row .ic { width: 20px; height: 20px; }
