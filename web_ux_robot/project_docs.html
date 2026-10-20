@@ -1500,14 +1500,14 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
             </div>
           </div>
         </div>
-        <div class="fa" id="atlas-list">
-          <div class="fa-legend">
-            <div class="fa-leg-lead">
+        <div class="fna" id="atlas-list">
+          <div class="fna-legend">
+            <div class="fna-leg-lead">
               <svg class="ico" aria-hidden="true"><use href="#i-cube"/></svg>
               <p data-en="&lt;b&gt;First virtual, then real.&lt;/b&gt; Pick any function to inspect its live topic flow to real hardware:"><b>Erst virtuell, dann real.</b> Funktion wählen, um ihren Topic-Ablauf zur echten Hardware interaktiv zu verfolgen:</p>
             </div>
-            <div class="fa-leg-stages">
-              <span class="fa-leg-label" data-en="Stages:">Prüfstufen:</span>
+            <div class="fna-leg-stages">
+              <span class="fna-leg-label" data-en="Stages:">Prüfstufen:</span>
               <span data-stage-ex="sr"></span>
               <small data-en="Circle with tick = active stage · dashed circle = omitted stage · strokes per area: filled = runs on real hardware, outline = simulation only">Haken = aktive Stufe · gestrichelt = entfällt · Striche je Bereich: voll = läuft real, Rahmen = nur Simulation</small>
             </div>
@@ -1521,9 +1521,9 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
             </div>
           </div>
 
-          <div class="fa-hub" id="fa-hub">
-            <div class="fa-hub-head" id="fa-hub-head"></div>
-            <div class="cards fa-hub-matrix" id="cards">
+          <div class="fna-hub" id="fa-hub">
+            <div class="fna-hub-head" id="fa-hub-head"></div>
+            <div class="cards fna-hub-matrix" id="cards">
               <article class="fn" id="gamepad" data-a="ctl" data-f="pad" data-s="spr">
                 <h3><button type="button" class="fn-sel"><svg class="ico" aria-hidden="true"><use href="#i-pad"/></svg><span data-en="Gamepad, local and remote">Gamepad lokal und remote</span></button></h3>
                 <p data-en="Xbox pad on the robot PC (&lt;code&gt;/joy&lt;/code&gt;) or in the browser (&lt;code&gt;/remote/joy&lt;/code&gt;, 20 Hz).">Xbox-Pad am Roboter-PC (<code>/joy</code>) oder im Browser (<code>/remote/joy</code>, 20 Hz).</p>
@@ -2997,8 +2997,8 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
     heads: '.land-head, .ch-head, .sec-head, .ct-copy',
     depth: ['.app-frame'],
     groups: ['.strip ul', '.fx-grid', '.at-areas', '.ar-stack ol', '.path', '.list', '.dg-grid', '.stack-layers'],
-    items: ['.at-ring', '.at-loops', '.ar-grp', '.fa-legend', '.fa .filter', '.fa .fa-hub', '.fa .panel', '.fa .grp-h', '.list-note', '.contact .vcard'],
-    cards: '.fa .cards > .fn',
+    items: ['.at-ring', '.at-loops', '.ar-grp', '.fna-legend', '.fna .filter', '.fna .fna-hub', '.fna .panel', '.fna .grp-h', '.list-note', '.contact .vcard'],
+    cards: '.fna .cards > .fn',
     tilt: { sel: '.fx, .list > a.item', lift: -2 },
     shine: '.thumb',
     rail: { sections: 'section.sec[id]', label: '.eyebrow .n' },
@@ -3007,7 +3007,7 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
            crumb: { into: '.top .wrap', sections: 'section.sec[id], .contact[id]', label: 'h2' } },
     collapse: { el: '.top', after: '.hero' },
     relay: [{ box: '.hero-kpis', items: '.hero-card' }, { box: '.path', items: 'a' }, '.fx-grid', '.kpis'],
-    spot: [{ box: '.path', items: 'a' }, '.fx-grid', '.kpis', { box: '.list', items: 'a.item' }, { box: '.fa .cards', items: '.fn' }],
+    spot: [{ box: '.path', items: 'a' }, '.fx-grid', '.kpis', { box: '.list', items: 'a.item' }, { box: '.fna .cards', items: '.fn' }],
     fill: '.pips, .hc-seg',
     lines: ['.strip', 'section.land', '.contact'],
   });
