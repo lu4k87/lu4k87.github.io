@@ -29,21 +29,11 @@
 #steps li.done > *::before { background: #2BB673; }
 #steps li.on > * { background: var(--ink); color: #FFFFFF; }
 #steps li.on > *::before { background: #7EE0F0; }
-/* Kopf:C – offene Rückfrage als großer gelber Knopf (Frage · Chat · „Antworten ›“); ohne Rückfrage kein Knopf */
-#bar #crumbs { flex: 0 1 auto; }   /* Brotkrumen nur so breit wie nötig: der Rückfrage-Knopf bekommt den Platz */
-#bar #play { margin-left: auto; }
-#v3 #ask { flex: 1 1 auto; max-width: 560px; min-width: 200px; display: flex; align-items: center; gap: 10px; text-align: left; border: 2px solid #1E1E1E; border-radius: 8px; padding: 3px 12px; background: #FFB000; color: #1E1E1E; }
-#ask .aq-ic { font-size: 20px; line-height: 1; }
-.aq-t { flex: 1; min-width: 0; display: flex; flex-direction: column; line-height: 1.25; }
-.aq-t b, .aq-t small { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.aq-t b { font-size: 14px; }
-.aq-t small { font: 600 13px var(--mono); }
-#ask .go { font-weight: 800; white-space: nowrap; }
-#ask:hover { box-shadow: 0 0 0 3px rgba(255, 176, 0, .4); }
-#ask.bump { animation: bump 600ms cubic-bezier(.2, .7, .2, 1); }
-@keyframes bump { 0%, 100% { transform: scale(1); } 35% { transform: scale(1.04); } }
-/* Betriebsart (nur Anzeige): kein E-STOP im Büro – es bewegt nie einen Roboter (Wahl des Users 2026-10-20) */
+.wait { flex: none; border: 2px solid var(--ink); background: #FFB000; color: var(--ink); border-radius: 999px; padding: 5px 12px; font-weight: 700; }
+.wait.bump { animation: bump 600ms cubic-bezier(.2, .7, .2, 1); }
+@keyframes bump { 0%, 100% { transform: scale(1); } 35% { transform: scale(1.07); } }
 #v3 #safe { flex: none; display: flex; align-items: center; gap: 8px; padding: 4px 8px; border: 1.5px solid var(--ink); border-radius: 6px; font: 700 13px var(--mono); background: #FFFFFF; }
+#v3 #safe .estop { background: #E8423A; color: #FFFFFF; border-radius: 999px; padding: 2px 9px; font: 800 13px/1.2 var(--mono); letter-spacing: .04em; }
 #v3 #safe.hw #mode { background: #FFB000; padding: 2px 6px; border-radius: 4px; }
 
 /* ── Leitlinie Karte ↔ Ziel (Kartenansicht): liegt unter allen Feldern */
@@ -244,85 +234,35 @@
 .tb:hover, .tb[aria-expanded="true"] { border-color: var(--ink); background: var(--tint); }
 #play[aria-pressed="true"] { background: var(--ink); color: #FFFFFF; border-color: var(--ink); }
 #play .pi { width: 16px; height: 16px; fill: currentColor; }
-@media (max-width: 1440px) { .tb kbd, #steps { display: none; } }   /* Platz für Brotkrumen + Rückfrage-Knopf; die Ebene zeigen die Brotkrumen */
-@media (max-width: 1180px) { .tb .tl { display: none; } .tb { padding: 5px 9px; } }   /* erst schmaler: nur Symbole (Text darunter im title) */
+@media (max-width: 1440px) { .tb .tl, .tb kbd, #steps { display: none; } .tb { padding: 5px 9px; } }   /* Platz für die Brotkrumen; die Ebene zeigen die Brotkrumen */
 .tb kbd { font: 700 13px var(--mono); border: 1.5px solid var(--line3); border-radius: 4px; padding: 0 5px; }
-/* Ansicht:A – kompakt: Segment-Knöpfe (Infos, Kamera, Tempo), Kippschalter; Erklärung beim Zeigen in der Hinweiszeile */
-#viewmenu { position: absolute; z-index: 6; top: 76px; right: 12px; width: min(400px, calc(100vw - 24px)); max-height: calc(100vh - 88px); overflow: auto; padding: 12px 14px; display: flex; flex-direction: column; gap: 6px; }
+#viewmenu { position: absolute; z-index: 6; top: 76px; right: 12px; width: min(380px, calc(100vw - 24px)); padding: 12px 14px; display: flex; flex-direction: column; gap: 6px; }
 .vm-h { margin: 6px 0 2px; font: 700 13px var(--mono); color: var(--kick); }
-#viewmenu .vm-seg { flex-wrap: nowrap; }
-.vm-seg .sg { flex: 1 1 0; min-width: 0; padding: 7px 6px; }
-.tgs { display: flex; flex-wrap: wrap; gap: 6px; }
-.tg { position: relative; display: inline-flex; align-items: center; gap: 8px; padding: 6px 10px; border: 1.5px solid var(--line3); border-radius: 6px; font-weight: 700; font-size: 14px; cursor: pointer; }
-.tg:hover { border-color: var(--ink); background: var(--tint); }
-.tg input { position: absolute; opacity: 0; width: 1px; height: 1px; }
-.tg i { position: relative; flex: none; width: 30px; height: 17px; border-radius: 999px; background: #C9C4B8; transition: background 150ms; }
-.tg i::after { content: ""; position: absolute; left: 2px; top: 2px; width: 13px; height: 13px; border-radius: 50%; background: #FFFFFF; transition: left 150ms; }
-.tg:has(input:checked) i { background: var(--acc); }
-.tg:has(input:checked) i::after { left: 15px; }
-.tg:has(input:focus-visible) { outline: 3px solid var(--acc); outline-offset: 1px; }
-.tg:has(input:disabled) { opacity: .6; cursor: default; }
-.vm-tip { margin: 4px 0 0; padding: 7px 9px; border-radius: 6px; background: var(--tint); font-size: 14px; line-height: 1.4; min-height: 2.8em; text-wrap: pretty; }
-
-/* ── Dock unten (Fluss statt Überlagerung): Laufzeile mit Rückfrage (Frage:B) über der Phasen-Zeile (Haus:B).
-   --dock = Höhe des Docks + Abstand; Panels, Kubis Blase, Karte und Schilder bleiben darüber (Zero Overlap) */
-#v3 #dock { position: absolute; left: 12px; right: 12px; bottom: 12px; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
-#dock > * { pointer-events: auto; }
-#ticker { display: flex; align-items: center; gap: 12px; min-height: 58px; padding: 6px 8px 6px 12px; }
-#ticker .yb, #band .yb, #tags .t3.hot { background: #FFB000; color: #1E1E1E; border: 2px solid #1E1E1E; }
-#ticker .yb { flex: none; display: inline-flex; align-items: center; gap: 5px; border-radius: 999px; padding: 4px 12px; font-weight: 800; font-size: 14px; white-space: nowrap; }
-#ticker .aq-t b { font-size: 15px; }
-.tk-acts { flex: none; display: flex; gap: 6px; }
-.tk-acts .b { padding: 6px 12px; white-space: nowrap; }
-#band { display: flex; align-items: center; gap: 10px; min-height: 60px; padding: 6px 14px; }
-.pb-end { flex: none; margin: 0; display: flex; flex-direction: column; line-height: 1.25; }
-.pb-end small { font: 600 13px var(--mono); }
-.pb-end b { white-space: nowrap; }
-.pb-end.ist b { font: 700 14px var(--mono); }
-.pb { flex: 1; min-width: 0; display: flex; align-items: center; gap: 4px; margin: 0; padding: 0; list-style: none; }
-.pb li { flex: 1 1 0; min-width: 0; display: flex; align-items: center; gap: 6px; padding: 4px; border-radius: 6px; }
-.pb li.hot { flex-grow: 1.8; }   /* Phase mit Rückfrage: Name + „❓ n wartet“ ungekürzt */
-.pb li + li::before { content: "›"; flex: none; margin: 0 2px 0 -6px; font-weight: 800; }
-.pb li.hot { background: var(--tint); box-shadow: inset 0 0 0 1.5px var(--acc); }
-.pb-b { flex: 1 1 auto; min-width: 0; display: flex; align-items: center; gap: 7px; border: 1.5px solid transparent; background: none; border-radius: 6px; padding: 5px 8px; text-align: left; }
-.pb-b:hover { border-color: var(--ink); background: var(--tint); }
-.pb-b b { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-#band .yb { flex: none; border-radius: 999px; padding: 2px 10px; font-weight: 800; font-size: 13px; white-space: nowrap; }
-[data-shell="guide"] #panel, [data-shell="kanban"] #panel:not([data-level="1"]), [data-shell="stack"] #panel, [data-shell="cmd"] #panel, #guide { bottom: calc(12px + var(--dock, 0px)); }
-[data-shell="card"] #panel:not([data-level="1"]) { max-height: min(62vh, calc(100vh - 104px - var(--dock, 0px))); }
+.vm-o { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 10px; align-items: start; padding: 7px 9px; border-radius: 6px; border: 1.5px solid var(--line3); cursor: pointer; }
+.vm-o:hover, .vm-o:has(input:checked) { border-color: var(--ink); background: var(--tint); }
+.vm-o:has(input:disabled) { opacity: .6; cursor: default; }
+.vm-o input { margin: 3px 0 0; width: 18px; height: 18px; accent-color: var(--acc); }
+.vm-o span { display: flex; flex-direction: column; line-height: 1.35; }
+.vm-o small { font-size: 13px; }
+#band { position: absolute; left: 12px; right: 12px; bottom: 12px; height: 32vh; padding: 10px; overflow: hidden; }
+.band-on #panel { bottom: calc(32vh + 24px); max-height: calc(68vh - 108px); }
+.band-on #guide { bottom: calc(32vh + 24px); }
 /* Kubis Blase nie unter einem Panel: Stapel + Haus-Übersicht links → Blase rechts; Spalten-Dock unten → Blase darüber */
 [data-shell="stack"] #guide, [data-shell="card"][data-level="1"] #guide { left: auto; right: 12px; }
 [data-shell="miller"] #guide { bottom: calc(38vh + 24px); }
-
-/* ── Bereichskarte (Karte:C): Phasen-Ring + Name, größter Knopf „Zu … fliegen“, Liste und Erklärung eingeklappt */
-.head .ring { flex: none; }
-#v3 .b.fly { justify-content: center; }
-.fold { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 10px; text-align: left; border: 1.5px solid var(--line3); border-radius: 6px; background: #FFFFFF; padding: 9px 12px; }
-.fold:hover, .fold[aria-expanded="true"] { border-color: var(--ink); background: var(--tint); }
-.fold-b { display: flex; flex-direction: column; gap: 10px; margin-top: -4px; }
-
-/* ── Schild:C – Bereich mit offener Rückfrage groß und gelb, übrige Schilder klein */
-#v3 #tags .t3:not(.hot) { font-size: 13px; padding: 2px 7px 2px 3px; gap: 5px; }
-#v3 #tags .t3:not(.hot) .ci { width: 18px; height: 18px; font-size: 13px; border-radius: 4px; }
-#v3 #tags .t3.hot { z-index: 1; font-size: 17px; padding: 6px 12px 6px 6px; gap: 9px; }
-#v3 #tags .t3.hot .ci { width: 30px; height: 30px; font-size: 18px; }
-#tags .t3.hot .go { margin-left: 4px; padding: 1px 9px; border: 1.5px solid currentColor; border-radius: 6px; font-weight: 800; }
 
 /* ── schmal (Handy): ein Panel unten, Kopfleiste zweizeilig */
 @media (max-width: 760px) {
   #bar { left: 8px; right: 8px; top: 8px; gap: 8px; padding: 6px 8px; flex-wrap: wrap; min-height: 0; }
   #bar .brand .badge, #steps li > *::before { display: none; }
   #bar .brand b { font-size: 15px; }
-  #bar #crumbs { order: 5; flex: 1 1 0; }   /* Zeile 2: Brotkrumen + Betriebsart nebeneinander → Kopf zwei Zeilen */
-  #v3 #safe { order: 6; margin-left: auto; }
-  [data-level="1"] #crumbs, #v3 #ask { display: none; }   /* Handy: im Haus keine Brotkrumen-Zeile; Rückfrage als großer Knopf unten statt oben (Mobil:C) */
+  #crumbs { order: 5; flex-basis: 100%; }
+  [data-level="1"] #crumbs, .wait .w3 { display: none; }   /* Handy: im Haus keine Brotkrumen-Zeile, „wartet“ ohne „auf dich“ → Kopfleiste zwei Zeilen */
   #bar .brand { flex: 1; }
   #steps li > * { padding: 3px 8px; }
+  .wait { padding: 3px 8px; }
   #v3 #safe { padding: 3px 6px; }
-  #panel { left: 8px !important; right: 8px !important; top: auto !important; bottom: calc(8px + var(--dock, 0px)) !important; width: auto !important; height: auto !important; max-height: calc(46vh - var(--dock, 0px) / 2) !important; transform: none !important; }
-  #panel.peeked { padding: 8px 10px; }
-  #v3 #dock { left: 8px; right: 8px; bottom: 8px; }
-  #ticker.mob { padding: 0; min-height: 0; border: 0; background: none; box-shadow: none; }
+  #panel { left: 8px !important; right: 8px !important; top: auto !important; bottom: 8px !important; width: auto !important; height: auto !important; max-height: 46vh !important; transform: none !important; }
   [data-shell="kanban"] #panel[data-level="1"], [data-shell="miller"] #panel { height: 46vh !important; }
   .mil { grid-template-columns: 1fr !important; }
   .mil .col:not(.cur) { display: none; }
@@ -337,34 +277,21 @@
   #tags, #pin, #band, #lead { display: none !important; }
   .tb .tl, .tb kbd { display: none; }
 }
-/* Handy (Mobil:C): großer gelber Knopf „n Rückfrage beantworten“ unten, darüber eine Zeile Bereich/Eintrag mit „Details ▴“ */
-.mob-ask { width: 100%; min-height: 72px; display: flex; align-items: center; gap: 10px; text-align: left; border: 2px solid #1E1E1E; border-radius: 8px; padding: 8px 14px; background: #FFB000; color: #1E1E1E; box-shadow: var(--soft); }
-.mob-ask .aq-ic { font-size: 22px; }
-.mob-ask .aq-t b { font-size: 16px; }
-.mob-ask .aq-t small { font: 600 14px/1.3 var(--font); white-space: normal; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
-.mob-ask .go { font-size: 22px; font-weight: 800; }
-.peek { display: flex; align-items: center; gap: 10px; }
-.peek .hi { flex: none; width: 36px; height: 36px; display: grid; place-items: center; font-size: 20px; border-radius: 8px; background: color-mix(in srgb, var(--ph) 32%, #FFFFFF); }
-.pk-t { flex: 1; min-width: 0; margin: 0; display: flex; flex-direction: column; line-height: 1.3; }
-.pk-t b { font-size: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.pk-t small { font: 600 13px var(--mono); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.peek .b, .peek-x .b { flex: none; white-space: nowrap; }
-.peek-x { display: flex; justify-content: flex-end; }
-@media (prefers-reduced-motion: reduce) { #panel, .chip, .row, .wgs, .tg i, .tg i::after { transition: none; } #ask.bump { animation: none; } .wgs:hover { transform: none; } }
+@media (prefers-reduced-motion: reduce) { #panel, .chip, .row, .wgs { transition: none; } .wait.bump { animation: none; } .wgs:hover { transform: none; } }
 
 /* ── Nachtbüro (Theme „nacht“, Wunsch des Users 2026-10-14, Richtung Claude Ops): dunkle Flächen, Himmelblau-Akzent, Schrift hell.
    Gelb bleibt „wartet auf dich“ (dunkle Schrift), Rot nur Fehler/Stopp. */
 html[data-theme="nacht"] { --ink: #E6F7FF; --acc: #38BDF8; --tint: #0C2A3D; --line3: rgba(56, 189, 248, .4); --soft: 0 0 22px rgba(56, 189, 248, .16), 0 10px 28px rgba(0, 0, 0, .5); }
 html[data-theme="nacht"] #v3 { color: var(--ink); }
 html[data-theme="nacht"] #v3 .c3, html[data-theme="nacht"] #bar { background: #131D31; color: var(--ink); }
-html[data-theme="nacht"] #bar > button:not(#ask), html[data-theme="nacht"] #src, html[data-theme="nacht"] #steps, html[data-theme="nacht"] #v3 #safe { background: #1B2944; color: var(--ink); border-color: rgba(56, 189, 248, .35); }
+html[data-theme="nacht"] #bar > button:not(.wait), html[data-theme="nacht"] #src, html[data-theme="nacht"] #steps, html[data-theme="nacht"] #v3 #safe { background: #1B2944; color: var(--ink); border-color: rgba(56, 189, 248, .35); }
 html[data-theme="nacht"] #steps li > *::before { background: rgba(230, 247, 255, .35); }
 html[data-theme="nacht"] #steps li.done > *::before { background: #34D399; }
 html[data-theme="nacht"] #steps li.on > * { background: #38BDF8; color: #0A0F19; }
 html[data-theme="nacht"] #steps li.on > *::before { background: #0A0F19; }
 html[data-theme="nacht"] #crumbs .cur { background: var(--tint); color: #E6F7FF; }
 html[data-theme="nacht"] #crumbs button:hover { background: var(--tint); }
-html[data-theme="nacht"] #v3 :is(#ask, .mob-ask, #ticker .yb, #band .yb, #tags .t3.hot) { background: #FFB000; color: #0A0F19; border-color: #E6F7FF; }
+html[data-theme="nacht"] .wait { color: #0A0F19; border-color: #E6F7FF; }
 html[data-theme="nacht"] #v3 #safe.hw #mode { color: #0A0F19; }
 /* Helle Flächen der Ebenen (Karten, Chips, Zeilen, Hinweise, Verlauf) werden dunkel; danach Gelb, Grün und Rot wieder setzen */
 html[data-theme="nacht"] #v3 :is(.badge, .stnav, .mh .cnt, .explain, .kpis li, .w, .calm, .chip, .row, .tag, .links, .b, .note, .msgs li, .send input, .send select, .wgs, .order, .seg, .sg, .log li) { background: #1B2944; color: var(--ink); border-color: rgba(56, 189, 248, .35); }
@@ -435,16 +362,3 @@ html[data-theme="nacht"] #v3 :is(.w, .kcard.hot) { background: #FFB000; color: #
 html[data-theme="nacht"] #v3 .links.now { background: #0C2A3D; }
 html[data-theme="nacht"] #v3 .fl-n, html[data-theme="nacht"] #v3 .dot, html[data-theme="nacht"] #v3 .pd { border-color: rgba(230, 247, 255, .35); }
 html[data-theme="nacht"] #v3 #pin { border-color: #0A0F19; }
-/* Nachtbüro: Flächen der Design-Runde 2026-10-20 (Ansicht-Menü, Bereichskarte, Phasen-Zeile, Handy-Zeile); Gelb bleibt „wartet auf dich“ */
-html[data-theme="nacht"] #v3 :is(.fold, .tg) { background: #1B2944; color: var(--ink); border-color: rgba(56, 189, 248, .35); }
-html[data-theme="nacht"] #v3 :is(.fold, .tg):hover, html[data-theme="nacht"] #v3 .fold[aria-expanded="true"] { border-color: #38BDF8; background: #0C2A3D; }
-html[data-theme="nacht"] #v3 .tg i { background: #2A3A58; }
-html[data-theme="nacht"] #v3 .tg i::after { background: #E6F7FF; }
-html[data-theme="nacht"] #v3 .tg:has(input:checked) i { background: #38BDF8; }
-html[data-theme="nacht"] #v3 .tg:has(input:checked) i::after { background: #0A0F19; }
-html[data-theme="nacht"] #v3 .vm-tip { background: #0C2A3D; }
-html[data-theme="nacht"] #v3 .pb li.hot { background: #0C2A3D; box-shadow: inset 0 0 0 1.5px #38BDF8; }
-html[data-theme="nacht"] #v3 .pb-b:hover { border-color: #38BDF8; background: #0C2A3D; }
-html[data-theme="nacht"] #v3 .pb .pd { border-color: rgba(230, 247, 255, .35); }
-html[data-theme="nacht"] #v3 .peek .hi { background: color-mix(in srgb, var(--ph) 28%, #131D31); box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--ph) 80%, #131D31); }
-html[data-theme="nacht"] #v3 #tags .t3.hot:hover { background: #FFC233; }

@@ -46,7 +46,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 2px
 .badge.demo { background: var(--panel2); }
 .badge.live { background: var(--ok); color: #1E1E1E; border-color: var(--ok); }
 
-/* Kopf: Marke · Kennzahlen · Betriebsart (nur Anzeige, kein E-STOP: das Büro bewegt nie einen Roboter) · Tasten */
+/* Kopf: Marke · Kennzahlen · Sicherheitszone (immer gleiche Stelle) · Tasten */
 #top { grid-area: top; display: flex; align-items: center; gap: 16px; flex-wrap: wrap; padding: 8px 14px; pointer-events: auto; }
 #top .brand { display: flex; flex-direction: column; margin-right: auto; }
 #top h1 { font-size: 20px; font-weight: 800; }
@@ -56,6 +56,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 2px
 .kpis b { font-size: 20px; font-variant-numeric: tabular-nums; }
 .kpis span { font: 500 13px var(--mono); }
 #safe { display: flex; align-items: center; gap: 8px; padding: 4px 8px; border: var(--bw) solid var(--fg); border-radius: var(--radius-sm); font-weight: 700; }
+#safe .estop { background: var(--err); color: #fff; border-radius: 999px; padding: 2px 9px; font: 800 13px/1.2 var(--mono); letter-spacing: .04em; }
 #safe .mode { font-family: var(--mono); font-size: 13px; }
 #safe.hw .mode { background: var(--ask); color: var(--on-ask); padding: 2px 6px; border-radius: var(--radius-sm); }
 #keys { font: 500 13px var(--mono); }
@@ -192,7 +193,7 @@ dialog::backdrop { background: rgba(11, 19, 43, .35); }
       <li><b data-kpi="done">0</b><span>erledigt</span></li>
       <li><b data-kpi="commits">0</b><span>Commits</span></li>
     </ul>
-    <div id="safe" title="Betriebsart des Roboters – nur Anzeige, das Büro bewegt nie einen Roboter"><span class="mode" id="mode">Robot | Digital Twin</span></div>
+    <div id="safe" title="Sicherheitszone: immer an dieser Stelle"><span class="estop">E-STOP</span><span class="mode" id="mode">Robot | Digital Twin</span></div>
     <div id="keys"><b>E</b> handeln · <b>WASD</b> laufen · Maus: Blick · Rad: Zoom · Klick: Station</div>
   </header>
   <ul id="ex"></ul>
