@@ -161,8 +161,9 @@ section.sec { padding: 88px 0; border-bottom: 1px solid var(--line); }
 .phases li.done .n .ic { display: block; }
 .phases li.now { background: color-mix(in srgb, var(--accent) 8%, var(--surface)); }
 .phases li.now .n { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
-@media (max-width: 860px) { .phases li:not(.now) { flex: 0 0 auto; } .phases li:not(.now) .t { display: none; } }
+@media (max-width: 860px) { .phases li { padding: 10px 8px; gap: 8px; } .phases li:not(.now) { flex: 0 0 auto; padding: 10px 5px; } .phases li:not(.now) .t { display: none; } .phases .t { overflow: hidden; } .phases .t, .phases .t small { white-space: nowrap; text-overflow: ellipsis; } }
 
+@media (max-width: 340px) { .phases .t { display: block; font-size: 13.5px; } .phases .t small { display: block; } .phases .n { width: 24px; height: 24px; } .phases li.now { padding: 10px 6px; } .phases li:not(.now) { padding: 10px 3px; } }
 .pl-body { display: grid; grid-template-columns: minmax(270px, 340px) minmax(0, 1fr); }
 .pl-chat { contain: size; display: flex; flex-direction: column; min-height: 0; border-right: 1px solid var(--line); background: var(--surface); }
 .pl-chat-h { display: flex; align-items: center; gap: 8px; padding: 12px 14px; border-bottom: 1px solid var(--line); font: 600 14px var(--mono); }
