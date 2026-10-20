@@ -940,6 +940,7 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
 <script src="js/lite6_twin.js" defer></script>
 <script src="js/hero3d.js" defer></script>
 <script src="js/atlas_ring3d.js" defer></script>
+<script src="js/bg_floor3d.js" defer></script>
 </head>
 <body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
@@ -3216,6 +3217,9 @@ window.Hero3D?.init(THREE, addons, { scene: 'dome' });
 
 // Funktionsatlas: 3D-Segment-Ring (js/atlas_ring3d.js) ersetzt den SVG-Ring, sobald WebGL läuft
 window.AtlasRing3D?.init(THREE, { ring: '#at-ring' });
+
+// Seitenhintergrund (js/bg_floor3d.js, Bg:C): Hallenboden des Digital Twin, startet im Leerlauf nach der Hero-Einblendung
+window.BgFloor3D?.init(THREE);
 
 // Teilhabe-Bühne (Szene „ghost“): Steuerweg gewählt → Eingabe läuft durch den Orbit nach unten (tm-routed) → Linie fließt in die Bühne
 // bis in den Sockel (Welle = angekommen) → Ghost plant → Bestätigung → Arm fährt; die Kette auf der Bühne folgt. Auto-Wechsel alle 8,5 s,
