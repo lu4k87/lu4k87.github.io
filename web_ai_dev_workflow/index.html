@@ -644,10 +644,19 @@ pre.cmd .c { color: var(--green); }
 .kh { grid-template-columns: auto minmax(0, 1fr); column-gap: 22px; align-items: start; }
 .kh > :not(.kh-ico) { grid-column: 2; } .kh-ico { grid-column: 1; grid-row: 1 / span 3; }
 .blk > h3, .dcard > h3 { display: flex; align-items: center; gap: 12px; }
-.kap .card, .kap .dcard, .kap .ex { background: color-mix(in srgb, var(--hue) 5%, var(--surface)); border-color: color-mix(in srgb, var(--hue) 24%, var(--line)); }
+.kap .card, .kap .ex { background: color-mix(in srgb, var(--hue) 5%, var(--surface)); border-color: color-mix(in srgb, var(--hue) 24%, var(--line)); }
 .kap .ex .ic, .kap .card > .ic { width: 28px; height: 28px; color: var(--hue); }
 @media (max-width: 640px) { :root { --kico: 56px; } .kh { grid-template-columns: 1fr; } .kh > :not(.kh-ico), .kh-ico { grid-column: 1; grid-row: auto; } }
 
+
+/* Feinschliff Farbe:A: Nummern + Kennwerte in Kapitelfarbe, Umbruch nur an Leer-/Trennzeichen, Schritt-Karten: Nummer + Titel in einer Zeile */
+.kap .card:not(.lvl) .k, .kap .layers li::before, .kap .chain dt { color: var(--hue); }
+.g5 .card > .k:first-child { font-size: clamp(18px, 1.6vw, 22px); line-height: 1.2; overflow-wrap: normal; text-wrap: balance; }
+.kap .bh .k { background: var(--hue); color: var(--surface); }
+.kap .steps4 li { grid-template-columns: 32px minmax(0, 1fr); align-items: center; border-color: color-mix(in srgb, var(--hue) 22%, var(--line)); }
+.kap .steps4 .k { grid-row: auto; color: var(--hue); background: color-mix(in srgb, var(--hue) var(--tint), var(--surface)); border-color: color-mix(in srgb, var(--hue) 38%, var(--line)); }
+.kap .steps4 b { overflow-wrap: normal; hyphens: auto; }
+.kap .steps4 li > :not(.k):not(b) { grid-column: 1 / -1; align-self: start; }
 </style>
 <noscript><style>.kn-body .kap[hidden] { display: grid !important; } .kn-foot { display: none; }</style></noscript>
 </head>
@@ -1113,7 +1122,7 @@ pre.cmd .c { color: var(--green); }
       <div class="card"><span class="k">66</span><b>Skills</b><p><span data-en="45 general + 21 dev_ws; one SKILL.md per topic with scripts, loaded only when needed">45 allgemein + 21 dev_ws; je Thema ein SKILL.md mit Skripten, geladen nur bei Bedarf</span></p></div>
       <div class="card"><span class="k">17</span><b><span data-en="Agents">Agenten</span></b><p><span data-en="6 global + 11 dev_ws; own context, return only the result">6 global + 11 dev_ws; eigener Kontext, geben nur das Ergebnis zurück</span></p></div>
       <div class="card"><span class="k"><span data-en="5 + Git">5 + Git</span></span><b><span data-en="Hook events">Hook-Ereignisse</span></b><p><span data-en="start, prompt, before and after every tool, end of answer – plus the commit">Start, Prompt, vor und nach jedem Werkzeug, Antwortende – dazu der Commit</span></p></div>
-      <div class="card"><span class="k">tools/ · bin/</span><b><span data-en="Scripts">Skripte</span></b><p><span data-en="deliver the evidence before “done”; one-off scripts only in the scratchpad">liefern den Beleg vor „fertig“; Einmal-Skripte nur im Scratchpad</span></p></div>
+      <div class="card"><span class="k">tools/ ·<wbr> bin/</span><b><span data-en="Scripts">Skripte</span></b><p><span data-en="deliver the evidence before “done”; one-off scripts only in the scratchpad">liefern den Beleg vor „fertig“; Einmal-Skripte nur im Scratchpad</span></p></div>
       <div class="card"><span class="k"><span data-en="1 active">1 aktiv</span></span><b><span data-en="MCP servers">MCP-Server</span></b><p><span data-en="only where no terminal command reaches, e.g. Blender live">nur wo kein Terminal-Befehl hinkommt, z. B. Blender live</span></p></div>
     </div></div>
   <div class="blk"><h3><span class="bic"><svg class="ic" aria-hidden="true"><use href="#i-db"/></svg></span><span data-en="Six layers under every tool">Sechs Schichten unter jedem Werkzeug</span></h3>
@@ -1298,7 +1307,7 @@ pre.cmd .c { color: var(--green); }
       <div class="card"><span class="k">36</span><b>Memory</b><p><span data-en="one file per fact: 24 shared + 12 dev_ws; index MEMORY.md comes with every chat">eine Datei je Fakt: 24 gemeinsam + 12 dev_ws; Index MEMORY.md liegt jedem Chat bei</span></p></div>
       <div class="card"><span class="k">TODOS.md</span><b>Backlog</b><p><span data-en="the chat changes status only, new items only on request">der Chat ändert nur den Status, neue Punkte nur auf Wunsch</span></p></div>
       <div class="card"><span class="k">66</span><b>Skills</b><p><span data-en="knowledge per topic with scripts and templates">Wissen je Thema mit Skripten und Vorlagen</span></p></div>
-      <div class="card"><span class="k">.claude/handoff/</span><b><span data-en="Handoffs">Übergaben</span></b><p><span data-en="task, state and open points for the next chat">Aufgabe, Stand und offene Punkte für den nächsten Chat</span></p></div>
+      <div class="card"><span class="k">.claude/<wbr>handoff/</span><b><span data-en="Handoffs">Übergaben</span></b><p><span data-en="task, state and open points for the next chat">Aufgabe, Stand und offene Punkte für den nächsten Chat</span></p></div>
     </div></div>
   <div class="blk"><h3><span class="bic"><svg class="ic" aria-hidden="true"><use href="#i-auto"/></svg></span><span data-en="Fixed rituals">Feste Rituale</span></h3>
     <div class="g4">
