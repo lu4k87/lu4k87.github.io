@@ -11,7 +11,7 @@
 (function () {
 'use strict';
 const D = Math.PI / 180, R1 = 150, R2 = 270, FRONT = 180;   // Radien in Szenen-Einheiten; gewähltes Segment steht vorn (zur Kamera)
-const EL = 38 * D, FOV = 30;                                  // Kamera-Neigung, senkrechtes Sichtfeld
+const EL = 90 * D, FOV = 30;                                  // Draufsicht ohne Neigung (Wunsch User 20.10.2026), senkrechtes Sichtfeld
 const LABEL_MIN_W = 440;                                      // schmalere Bühne: Namen < 12 px → nur Icons, Name steht im Panel
 const HOLO_MIN_W = 760, SHIFT = 290;                          // ab dieser Bühnenbreite: Ring nach links, Hologramm-Karte rechts
 
@@ -100,11 +100,11 @@ function build(THREE, ring, host) {
     ico.position.copy(polar(am, 226, 58)); ico.renderOrder = 9;
     const icoGlow = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false }));
     icoGlow.scale.set(130, 130, 1); icoGlow.position.copy(ico.position);
-    const label = sprite(512, 192, 136); label.position.copy(polar(am, 226, 4));   // Name unter dem Icon, schmaler als das Segment (kein Überlappen)
+    const label = sprite(512, 192, 124); label.position.copy(polar(am, 226, 4));   // Name unter dem Icon (Versatz je Bild in frame), schmaler als das Segment
     const glow = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false }));
     glow.scale.set(300, 300, 1); glow.position.copy(polar(am, 206, 8));
     const g = new THREE.Group(); g.add(mesh, edge, knob, icoGlow, ico, label, glow);
-    g.userData = { mat, edge, knob, ico, icoGlow, label, glow, a: am, lift: 0, hover: 0, target: 0, sym: tiles[i].querySelector('use')?.getAttribute('href') };
+    g.userData = { mat, edge, knob, ico, icoGlow, label, glow, a: am, icoP: ico.position.clone(), labP: label.position.clone(), lift: 0, hover: 0, target: 0, sym: tiles[i].querySelector('use')?.getAttribute('href') };
     world.add(g); segs.push(g);
     const sp = new THREE.Line(new THREE.BufferGeometry().setFromPoints([polar(am, 70, 2), polar(am, R1 - 6, 2)]), new THREE.LineBasicMaterial());
     world.add(sp); spokes.push(sp);
@@ -120,14 +120,16 @@ function build(THREE, ring, host) {
   const hubLab = sprite(256, 256, 150); hubLab.position.set(0, 64, 0); scene.add(hubLab);
 
   /* Hologramm-Karte rechts neben dem Ring (nur breite Bühne): Bereich, Satz, Anzahl je Prüfstufe, Funktionen; Klick filtert wie das Segment */
-  const holo = sprite(720, 640, 540); holo.position.set(330, 40, 0); holo.visible = false; scene.add(holo);
+  const HW = 720, HH = 640, HS = 640, holo = sprite(HW, HH, HS);   // Zeichenmaße; Canvas selbst in Bildschirmpixeln (resize)
+  holo.position.set(360, 40, 0); holo.visible = false; scene.add(holo);
   let wide = false;
   function paintHolo(i) {
     const c = cols[i].getStyle(), en = root.lang === 'en', T = (de, e) => en ? e : de, list = fns[i].map(x => x.querySelector('.fn-sel span').textContent.trim());
     const n = k => fns[i].filter(x => (x.dataset.s || '').includes(k)).length, all = Math.max(1, list.length);
     const dsc = ring.querySelector(`.atd-d[data-a="${keys[i]}"]`)?.textContent.trim() || '';
-    paint(holo, (g, w, h) => {
-      g.fillStyle = 'rgba(12,17,20,.84)'; g.strokeStyle = c; g.lineWidth = 3; g.beginPath(); g.roundRect(6, 6, w - 12, h - 12, 14); g.fill(); g.stroke();
+    paint(holo, (g, W, H) => {
+      const w = HW, h = HH; g.scale(W / w, H / h);   // 1 Canvas-Pixel = 1 Bildschirmpixel → Rahmen und Schrift scharf
+      g.fillStyle = 'rgba(12,17,20,.86)'; g.strokeStyle = c; g.lineWidth = 2.5; g.beginPath(); g.roundRect(4, 4, w - 8, h - 8, 12); g.fill(); g.stroke();
       g.save(); g.translate(30, 26); drawIcon(g, document.querySelector(segs[i].userData.sym), 52, c); g.restore();
       g.textBaseline = 'middle'; g.fillStyle = fg; g.font = `800 44px ${font}`; g.fillText(tiles[i].querySelector('b').textContent.trim(), 98, 54);
       g.textAlign = 'right'; g.fillStyle = c; g.font = `800 40px ${mono}`; g.fillText(String(list.length), w - 30, 54); g.textAlign = 'left';
@@ -144,10 +146,11 @@ function build(THREE, ring, host) {
       list.slice(0, 8).forEach((t, k) => {
         const x = 30 + (k % 2) * 335, yy = y + (k >> 1) * 46;
         g.fillStyle = c; g.beginPath(); g.arc(x + 6, yy, 6, 0, Math.PI * 2); g.fill();
-        g.fillStyle = fg; g.font = `600 25px ${font}`; let tt = t; while (g.measureText(tt).width > 300 && tt.length > 4) tt = tt.slice(0, -2);
-        g.fillText(tt === t ? t : tt.trimEnd() + '…', x + 22, yy + 1);
+        g.fillStyle = fg; g.font = `600 24px ${font}`; const max = 335 - 22 - 24;   // Spaltenbreite − Punkt − Abstand zur nächsten Spalte
+        let tt = t; if (g.measureText(t).width > max) { while (tt.length > 4 && g.measureText(tt.trimEnd() + '…').width > max) tt = tt.slice(0, -1); tt = tt.trimEnd() + '…'; }
+        g.fillText(tt, x + 22, yy + 1);
       });
-      if (list.length > 8) { g.fillStyle = c; g.font = `700 24px ${mono}`; g.fillText(T(`+ ${list.length - 8} weitere in der Liste`, `+ ${list.length - 8} more in the list`), 30, y + 4 * 46 + 4); }
+      if (list.length > 8) { g.fillStyle = c; g.font = `700 24px ${font}`; g.fillText(T(`+ ${list.length - 8} weitere in der Liste`, `+ ${list.length - 8} more in the list`), 30, y + 4 * 46 + 4); }
     });
   }
 
@@ -241,17 +244,20 @@ function build(THREE, ring, host) {
     renderer.setSize(w, h, false); cam.aspect = w / h;
     wide = w >= HOLO_MIN_W; ring.classList.toggle('at-holo', wide); holo.visible = wide;
     world.position.x = hubLab.position.x = wide ? -SHIFT : 0;
-    const tv = Math.tan(FOV / 2 * D), th = tv * cam.aspect, RR = R2 + 34, RX = wide ? SHIFT + 320 : RR;
-    const d = Math.max(RX / th * 1.06, (RR * Math.sin(EL) + 70) / tv * 1.04);
-    cam.position.set(0, d * Math.sin(EL), d * Math.cos(EL)); cam.lookAt(0, 4, 18); cam.updateProjectionMatrix();
+    const tv = Math.tan(FOV / 2 * D), th = tv * cam.aspect, RR = R2 + 34, RX = wide ? SHIFT + 400 : RR;   // rechts: Hologramm-Karte bis x = 680
+    const d = Math.max(RX / th * 1.06, (RR * Math.sin(EL) + 24) / tv * 1.04);
+    cam.position.set(0, d * Math.sin(EL), d * Math.cos(EL)); cam.up.set(0, 0, -1); cam.lookAt(0, 4, 0); cam.updateProjectionMatrix();
     segs.forEach(g => { g.userData.label.visible = w >= LABEL_MIN_W; });
-    if (wide) paintHolo(cur);
+    if (wide) {   // Hologramm-Canvas so groß wie die Karte auf dem Bildschirm (× Pixeldichte)
+      const px = HS * h / (2 * (d - holo.position.y) * tv) * renderer.getPixelRatio();
+      holo.userData.size = [Math.round(px), Math.round(px * HH / HW)]; paintHolo(cur);
+    }
     need();
   }
 
   /* Bild: läuft nur sichtbar + Tab im Vordergrund; reduced-motion = Standbild je Änderung */
   let visible = false, raf = 0, last = 0;
-  const camQ = new THREE.Quaternion(), yawQ = new THREE.Quaternion(), UP = new THREE.Vector3(0, 1, 0);
+  const camQ = new THREE.Quaternion(), yawQ = new THREE.Quaternion(), UP = new THREE.Vector3(0, 1, 0), icoOff = new THREE.Vector3(), labOff = new THREE.Vector3();
   function need() { if (!raf && visible && !document.hidden) raf = requestAnimationFrame(frame); }
   function frame(now) {
     raf = 0;
@@ -263,6 +269,7 @@ function build(THREE, ring, host) {
     }
     world.rotation.y = -rot;
     camQ.copy(world.quaternion).invert().multiply(cam.quaternion);   // Icons zur Kamera, dann leichte Drehung um die Hochachse
+    icoOff.set(0, 0, -24).applyAxisAngle(UP, rot); labOff.set(0, 0, 34).applyAxisAngle(UP, rot);   // Draufsicht: Icon oben, Name unten
     segs.forEach((g, k) => {
       const u = g.userData, k1 = reduce ? 1 : Math.min(1, dt * 8);
       u.hover += ((k === hover ? 1 : 0) - u.hover) * k1;
@@ -273,6 +280,7 @@ function build(THREE, ring, host) {
       u.icoGlow.material.opacity = .35 * Math.max(u.hover, .6 * u.target);
       yawQ.setFromAxisAngle(UP, reduce ? 0 : .3 * Math.sin(t * .7 + k * .9));
       u.ico.quaternion.copy(camQ).multiply(yawQ);
+      u.ico.position.copy(u.icoP).add(icoOff); u.icoGlow.position.copy(u.ico.position); u.label.position.copy(u.labP).add(labOff);
     });
     if (pulseT < 1) { pulseT = Math.min(1, pulseT + dt / .65); busy = true; }
     const f = pulseT < .5 ? 2 * pulseT * pulseT : 1 - (-2 * pulseT + 2) ** 2 / 2;
