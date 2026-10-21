@@ -24,3 +24,4 @@
 | **AI Agency** | [`/web_ai_agency`](https://lu4k87.github.io/web_ai_agency) | Begehbares 3D-Agentenbüro zum AI Dev Workflow – jede Komponente des Setups anklickbar. | privat |
 | **Applied Research** | [`/web_applied_research`](https://lu4k87.github.io/web_applied_research) | Materialflussanalyse im Industriepark Kehrum (Kalkar) – interaktive Karte der Stoffströme. | privat |
 | **Trading Dashboard** | in Arbeit | Dashboard für Swing-Trading – Live-Kurse, Scanner, News mit Sentiment und Papierhandel. | privat |
+| **Radial HUD** | in Arbeit | Rundes Menü am Mauszeiger für Linux – Mitteltaste halten: Screenshot, neue Datei, Ordner, Apps, Ablage. | privat |
