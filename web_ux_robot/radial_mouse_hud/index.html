@@ -79,6 +79,7 @@
       <ul class="facts">
         <li>8 feste Bereiche</li>
         <li>Untermenüs fächern nach außen auf</li>
+        <li>Startet nach jedem Neustart von selbst</li>
         <li>Ein Python-Skript, PyQt5</li>
       </ul>
     </div>
@@ -115,6 +116,14 @@
         <figcaption><span class="pos">3 Uhr · Zuletzt benutzt</span><span>Die letzten sechs Dateien aus GNOME „Zuletzt verwendet“ – ein Klick öffnet sie.</span></figcaption>
       </figure>
       <figure>
+        <img src="img/ordner-projekte_dunkel.png" width="712" height="712" loading="lazy" alt="Bereich Ordner, Untermenü Projekte mit sechs Projektordnern im äußeren Ring, daneben Desktop, Downloads, Bilder, Dokumente und dev_ws">
+        <figcaption><span class="pos">4:30 · Ordner</span><span>Desktop, Downloads, Bilder, Dokumente, dev_ws – und unter Projekte jeder Ordner <code>~/__project_*</code>.</span></figcaption>
+      </figure>
+      <figure>
+        <img src="img/apps_hell.png" width="712" height="712" loading="lazy" alt="Bereich Apps mit den farbigen Icons von VS Code, Chrome, Dateien, Blender, FreeCAD und Discord">
+        <figcaption><span class="pos">6 Uhr · Apps</span><span>VS Code, Chrome, Dateien, Blender, FreeCAD, Discord – mit ihrem echten, farbigen App-Icon, nur installierte.</span></figcaption>
+      </figure>
+      <figure>
         <img src="img/schalter_dunkel.png" width="712" height="712" loading="lazy" alt="Bereich Werkzeuge, Untermenü Schalter mit Nicht stören an, Dunkel aus, Mikro stumm aus, Sperren">
         <figcaption><span class="pos">7:30 · Werkzeuge</span><span>Terminal, Systemmonitor und Schalter: Nicht stören, Dunkel, Mikro stumm, Sperren. Der Zustand steht im Label.</span></figcaption>
       </figure>
@@ -135,7 +144,7 @@
           <tr><td>1:30</td><td>Neue Datei</td><td>Textdatei, leeres PNG, Notiz, Inhalt der Ablage</td></tr>
           <tr><td>3 Uhr</td><td>Zuletzt benutzt</td><td>letzte 6 Dateien</td></tr>
           <tr><td>4:30</td><td>Ordner</td><td>Desktop, Downloads, Bilder, Dokumente, dev_ws, Projekte</td></tr>
-          <tr><td>6 Uhr</td><td>Apps</td><td>VS Code, Chrome, Dateien, Blender, FreeCAD, Discord (nur installierte)</td></tr>
+          <tr><td>6 Uhr</td><td>Apps</td><td>VS Code, Chrome, Dateien, Blender, FreeCAD, Discord (nur installierte, mit farbigem App-Icon)</td></tr>
           <tr><td>7:30</td><td>Werkzeuge</td><td>Terminal, Systemmonitor, Schalter</td></tr>
           <tr><td>9 Uhr</td><td>Ablage-Verlauf</td><td>letzte 6 kopierte Texte</td></tr>
           <tr><td>10:30</td><td>Medien</td><td>Wiedergabe steuern (nur wenn etwas läuft)</td></tr>
@@ -174,6 +183,7 @@
 <pre><code>python3 radial_hud.py          # Dienst im Vordergrund
 ./install_autostart.sh         # bei jeder Anmeldung starten
 python3 radial_hud.py --demo   # HUD einmal öffnen, ohne Maustasten-Grab</code></pre>
+    <p><strong>Autostart:</strong> <code>./install_autostart.sh</code> legt einmalig <code>~/.config/autostart/radial-hud.desktop</code> an. Danach startet GNOME das HUD bei jeder Anmeldung – auch nach einem Neustart von Ubuntu. Läuft es? <code>pgrep -af radial_hud.py</code>. Abschalten: <code>rm ~/.config/autostart/radial-hud.desktop</code>.</p>
     <p><strong>Voraussetzungen:</strong> X11-Sitzung mit Compositor (GNOME), <code>python3-pyqt5</code>, <code>python3-xlib</code>. Optional je Funktion: <code>tesseract-ocr</code> (Text aus Bild), <code>pulseaudio-utils</code> (Lautstärke, Mikro), <code>libnotify-bin</code> (Meldungen). Fehlt ein Programm, zeigt der Eintrag „nicht verfügbar“ und nennt den Installationsbefehl.</p>
   </section>
 
@@ -193,11 +203,11 @@ python3 radial_hud.py --demo   # HUD einmal öffnen, ohne Maustasten-Grab</code>
     <h2>Prüfen</h2>
 <pre><code>python3 -m pytest -q test_radial_hud.py          # Treffer, Labels, Kontrast ≥ 4,5 : 1, Schalter
 python3 radial_hud.py --snapshot /tmp/hud        # Bildbogen + je Bereich ein Bild (hell, dunkel)</code></pre>
-    <p>Alle Bilder auf dieser Seite stammen aus <code>--snapshot</code> bzw. den offscreen gerenderten Editoren – Beispieldateien und Ablage-Texte sind Platzhalter.</p>
+    <p>Alle Bilder auf dieser Seite stammen aus <code>--snapshot</code> bzw. den offscreen gerenderten Editoren – Beispieldateien, Projektordner und Ablage-Texte sind Platzhalter.</p>
   </section>
 
   <footer>
-    <p>Radial HUD · Stand 21.10.2026 · Bedienung im Detail: <code>README.md</code> im Repo</p>
+    <p>Radial HUD · Stand 22.10.2026 · Bedienung im Detail: <code>README.md</code> im Repo</p>
   </footer>
 
 </main>
