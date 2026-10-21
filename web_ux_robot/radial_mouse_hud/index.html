@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Radial HUD</title>
+<meta name="description" content="Rundes Menü am Mauszeiger für den Linux-Desktop: mittlere Maustaste halten – Screenshot, neue Datei, Ordner, Apps, Ablage.">
+<style>
+  :root {
+    --bg: #eef1f6; --surface: #ffffff; --line: #d3d9e4;
+    --text: #141821; --accent: #0f7f7a; --accent-soft: #d8f0ee; --code-bg: #e3e8f0;
+    --radius-sm: 4px; --radius: 6px; --radius-lg: 8px;
+    --gap: 24px; --max: 1080px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #151920; --surface: #1f252f; --line: #313a49;
+      --text: #eef1f6; --accent: #4fd1c5; --accent-soft: #173b3a; --code-bg: #2a313d;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #151920; --surface: #1f252f; --line: #313a49;
+    --text: #eef1f6; --accent: #4fd1c5; --accent-soft: #173b3a; --code-bg: #2a313d;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font: 17px/1.6 system-ui, -apple-system, "Segoe UI", Ubuntu, sans-serif;
+  }
+  main { max-width: var(--max); margin: 0 auto; padding: 48px 16px 64px; display: grid; gap: 64px; }
+  h1 { font-size: clamp(2rem, 5vw, 3rem); line-height: 1.1; margin: 0; }
+  h2 { font-size: 1.6rem; margin: 0 0 8px; }
+  h3 { font-size: 1.1rem; margin: 0; }
+  p { margin: 0; max-width: 68ch; }
+  a { color: var(--accent); }
+  code, pre { font: 0.92em/1.5 ui-monospace, "DejaVu Sans Mono", monospace; }
+  code { background: var(--code-bg); padding: 1px 6px; border-radius: var(--radius-sm); }
+  pre { background: var(--code-bg); padding: 16px; border-radius: var(--radius); overflow-x: auto; margin: 0; }
+  pre code { background: none; padding: 0; }
+  img { display: block; width: 100%; height: auto; border-radius: var(--radius-lg); }
+  section { display: grid; gap: var(--gap); }
+
+  .hero { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 40px; align-items: center; }
+  .hero-text { display: grid; gap: 20px; }
+  .lead { font-size: 1.2rem; }
+  .tag { justify-self: start; background: var(--accent-soft); color: var(--text); font-weight: 600;
+         padding: 4px 12px; border-radius: var(--radius); font-size: 0.95rem; }
+  .facts { display: flex; flex-wrap: wrap; gap: 12px; padding: 0; margin: 0; list-style: none; }
+  .facts li { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 8px 14px; }
+
+  .steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: var(--gap); padding: 0; margin: 0; list-style: none; counter-reset: step; }
+  .steps li { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 20px; display: grid; gap: 8px; align-content: start; }
+  .steps li::before { counter-increment: step; content: counter(step); font-weight: 700; font-size: 1.4rem; color: var(--accent); }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: var(--gap); }
+  figure { margin: 0; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg);
+           padding: 12px; display: grid; gap: 12px; align-content: start; }
+  figcaption { display: grid; gap: 4px; padding: 0 4px 4px; }
+  .pos { font-weight: 600; color: var(--accent); }
+  .wide { grid-template-columns: repeat(auto-fit, minmax(min(100%, 460px), 1fr)); }
+
+  table { width: 100%; border-collapse: collapse; background: var(--surface); border-radius: var(--radius-lg); overflow: hidden; }
+  th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { background: var(--code-bg); }
+  .table-wrap { overflow-x: auto; }
+  ul.plain { margin: 0; padding-left: 1.2em; display: grid; gap: 6px; max-width: 75ch; }
+  footer { border-top: 1px solid var(--line); padding-top: 24px; }
+</style>
+</head>
+<body>
+<main>
+
+  <header class="hero">
+    <div class="hero-text">
+      <span class="tag">Linux-Desktop · X11 · GNOME</span>
+      <h1>Radial HUD</h1>
+      <p class="lead">Ein rundes Menü direkt am Mauszeiger. <strong>Mittlere Maustaste kurz gedrückt halten</strong> – schon liegen Screenshot, neue Datei, Ordner, Apps und Ablage-Verlauf einen Handgriff entfernt.</p>
+      <p>Normale Mittelklicks bleiben unberührt: Einfügen, Tab schließen, Blender-Orbit und Autoscroll funktionieren wie immer. Das HUD erscheint erst, wenn die Taste rund 0,3 s still gehalten wird.</p>
+      <ul class="facts">
+        <li>8 feste Bereiche</li>
+        <li>Untermenüs fächern nach außen auf</li>
+        <li>Ein Python-Skript, PyQt5</li>
+      </ul>
+    </div>
+    <img src="img/screenshot_dunkel.png" width="712" height="712"
+         alt="Geöffnetes Radial HUD auf dunklem Desktop: innerer Ring mit acht Bereichen, Bereich Screenshot gewählt, äußerer Ring mit Zielen wie Vollbild, Fenster, In 3 s und Zuschneiden">
+  </header>
+
+  <section>
+    <h2>So bedienst du es</h2>
+    <ol class="steps">
+      <li><h3>Halten</h3><p>Mittlere Maustaste ~0,3 s gedrückt halten, ohne die Maus zu bewegen. Das HUD öffnet sich um den Zeiger.</p></li>
+      <li><h3>Ziehen</h3><p>Mit gehaltener Taste in einen Bereich ziehen. Sein Untermenü fächert nach außen auf.</p></li>
+      <li><h3>Loslassen</h3><p>Loslassen auf einem Endpunkt führt ihn aus. Loslassen in der Mitte lässt das HUD offen – dann geht es per Klick weiter.</p></li>
+      <li><h3>Schließen</h3><p>Klick in die Mitte, Klick daneben, Rechtsklick oder <code>Esc</code>.</p></li>
+    </ol>
+  </section>
+
+  <section>
+    <div>
+      <h2>Acht Bereiche, immer am selben Platz</h2>
+      <p>Jeder Bereich hat eine feste Lage im Uhrzeigersinn ab 12 Uhr und eine eigene Farbe. Nach kurzer Zeit findet die Hand den Weg ohne Hinsehen.</p>
+    </div>
+    <div class="grid">
+      <figure>
+        <img src="img/start_hell.png" width="712" height="712" loading="lazy" alt="Radial HUD direkt nach dem Öffnen: nur der innere Ring mit acht Bereichen, noch nichts gewählt">
+        <figcaption><span class="pos">Start</span><span>Das HUD direkt nach dem Öffnen: acht Bereiche, Mitte zum Schließen.</span></figcaption>
+      </figure>
+      <figure>
+        <img src="img/neue-datei_hell.png" width="712" height="712" loading="lazy" alt="Bereich Neue Datei mit Untermenü Textdatei, Leeres PNG, Notiz, Aus Ablage und Zielordnern">
+        <figcaption><span class="pos">1:30 · Neue Datei</span><span>Textdatei, leeres PNG, Notiz oder Inhalt der Ablage als Datei – direkt in den gewählten Ordner.</span></figcaption>
+      </figure>
+      <figure>
+        <img src="img/zuletzt-benutzt_dunkel.png" width="712" height="712" loading="lazy" alt="Bereich Zuletzt benutzt mit drei Beispieldateien im äußeren Ring">
+        <figcaption><span class="pos">3 Uhr · Zuletzt benutzt</span><span>Die letzten sechs Dateien aus GNOME „Zuletzt verwendet“ – ein Klick öffnet sie.</span></figcaption>
+      </figure>
+      <figure>
+        <img src="img/schalter_dunkel.png" width="712" height="712" loading="lazy" alt="Bereich Werkzeuge, Untermenü Schalter mit Nicht stören an, Dunkel aus, Mikro stumm aus, Sperren">
+        <figcaption><span class="pos">7:30 · Werkzeuge</span><span>Terminal, Systemmonitor und Schalter: Nicht stören, Dunkel, Mikro stumm, Sperren. Der Zustand steht im Label.</span></figcaption>
+      </figure>
+      <figure>
+        <img src="img/ablage-verlauf_hell.png" width="712" height="712" loading="lazy" alt="Bereich Ablage-Verlauf mit drei zuletzt kopierten Texten">
+        <figcaption><span class="pos">9 Uhr · Ablage-Verlauf</span><span>Die letzten sechs kopierten Texte, nur im Speicher. Ein Klick fügt sie ein.</span></figcaption>
+      </figure>
+      <figure>
+        <img src="img/medien_dunkel.png" width="712" height="712" loading="lazy" alt="Bereich Medien mit Play/Pause, Weiter, Zurück, Lauter, Leiser, Stumm">
+        <figcaption><span class="pos">10:30 · Medien</span><span>Nur während einer Wiedergabe: Play/Pause, Titel vor und zurück, Lautstärke.</span></figcaption>
+      </figure>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Lage</th><th>Bereich</th><th>Inhalt</th></tr></thead>
+        <tbody>
+          <tr><td>12 Uhr</td><td>Screenshot</td><td>Aufnehmen, Text aus Bild auslesen, Farbpipette, Zuschneiden</td></tr>
+          <tr><td>1:30</td><td>Neue Datei</td><td>Textdatei, leeres PNG, Notiz, Inhalt der Ablage</td></tr>
+          <tr><td>3 Uhr</td><td>Zuletzt benutzt</td><td>letzte 6 Dateien</td></tr>
+          <tr><td>4:30</td><td>Ordner</td><td>Desktop, Downloads, Bilder, Dokumente, dev_ws, Projekte</td></tr>
+          <tr><td>6 Uhr</td><td>Apps</td><td>VS Code, Chrome, Dateien, Blender, FreeCAD, Discord (nur installierte)</td></tr>
+          <tr><td>7:30</td><td>Werkzeuge</td><td>Terminal, Systemmonitor, Schalter</td></tr>
+          <tr><td>9 Uhr</td><td>Ablage-Verlauf</td><td>letzte 6 kopierte Texte</td></tr>
+          <tr><td>10:30</td><td>Medien</td><td>Wiedergabe steuern (nur wenn etwas läuft)</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <div>
+      <h2>Bild-Werkzeuge</h2>
+      <p>Helfer im Bereich Screenshot (12 Uhr), die sonst ein eigenes Programm bräuchten. Aufnehmen geht als Bereich, Vollbild, Fenster oder mit 3 s Verzögerung – nach Bilder, Desktop, Downloads oder in die Zwischenablage.</p>
+    </div>
+    <div class="grid wide">
+      <figure>
+        <img src="img/zuschneiden-editor.png" width="1280" height="720" loading="lazy" alt="Zuschneide-Editor im Vollbild: heller Rahmen mit Eckpunkten um einen Bildausschnitt, oben der Hinweis 480 × 480 px, Enter oder Doppelklick übernehmen, Esc abbrechen">
+        <figcaption><span class="pos">Zuschneiden</span><span>Rahmen aufziehen, Ecken oder Fläche ziehen, Größe in px oben. <code>Enter</code> speichert „… zugeschnitten.png“ neben dem Original.</span></figcaption>
+      </figure>
+      <figure>
+        <img src="img/farbpipette.png" width="1280" height="720" loading="lazy" alt="Farbpipette über einem Standbild: Farbfeld am Zeiger, oben der Hinweis #14b1ab, Klick kopiert den Farbwert">
+        <figcaption><span class="pos">Farbpipette</span><span>Standbild des Bildschirms, Farbfeld + Hex-Wert am Zeiger. Klick kopiert <code>#rrggbb</code> in die Ablage.</span></figcaption>
+      </figure>
+      <figure>
+        <img src="img/auslesen_dunkel.png" width="712" height="712" loading="lazy" alt="Untermenü Auslesen mit Text aus Bild und Farbpipette">
+        <figcaption><span class="pos">Auslesen</span><span>Text aus Bild: Bereich wählen, tesseract (deu + eng) erkennt ihn, das Ergebnis landet in der Ablage.</span></figcaption>
+      </figure>
+      <figure>
+        <img src="img/zuschneiden_hell.png" width="712" height="712" loading="lazy" alt="Untermenü Zuschneiden mit Letzter Screenshot und Bild aus Ablage">
+        <figcaption><span class="pos">Zuschneiden</span><span>Letzten Screenshot oder ein Bild aus der Ablage zuschneiden – ohne Bildbearbeitung zu öffnen.</span></figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section>
+    <h2>Starten</h2>
+<pre><code>python3 radial_hud.py          # Dienst im Vordergrund
+./install_autostart.sh         # bei jeder Anmeldung starten
+python3 radial_hud.py --demo   # HUD einmal öffnen, ohne Maustasten-Grab</code></pre>
+    <p><strong>Voraussetzungen:</strong> X11-Sitzung mit Compositor (GNOME), <code>python3-pyqt5</code>, <code>python3-xlib</code>. Optional je Funktion: <code>tesseract-ocr</code> (Text aus Bild), <code>pulseaudio-utils</code> (Lautstärke, Mikro), <code>libnotify-bin</code> (Meldungen). Fehlt ein Programm, zeigt der Eintrag „nicht verfügbar“ und nennt den Installationsbefehl.</p>
+  </section>
+
+  <section>
+    <h2>Wie es funktioniert</h2>
+    <ul class="plain">
+      <li><strong>Mittelklick abfangen, ohne ihn zu stehlen:</strong> ein passiver Grab auf Taste 2 hält jeden Mittelklick kurz an; XRecord sieht Loslassen und Bewegung.</li>
+      <li><strong>Kurz oder bewegt = normaler Klick:</strong> Loslassen oder mehr als 8 px Bewegung vor 300 ms → die App darunter bekommt den Klick bzw. das Ziehen vollständig zurück.</li>
+      <li><strong>Beschriftung passt immer:</strong> je Segment wird die breiteste Textbox gesucht, die samt Icon hineinpasst – erst Umbruch, dann in der Mitte gekürzt.</li>
+      <li><strong>Nichts geht verloren:</strong> neue Dateien überschreiben nie etwas (<code>Name (2).txt</code>), der Ablage-Verlauf bleibt nur im Speicher, Passwort-Manager werden ausgelassen.</li>
+      <li><strong>Ruhiger Look:</strong> jeder Bereich hat eine eigene Farbe; Leuchtsaum am gewählten Endpunkt, atmender Mittelkreis, Lichtstreif und weiches Schließen bleiben dezent.</li>
+      <li><strong>Einstellbar:</strong> Haltezeit, Bewegungsschwelle, Ringgrößen, Farben und Menü oben in <code>radial_hud.py</code>.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Prüfen</h2>
+<pre><code>python3 -m pytest -q test_radial_hud.py          # Treffer, Labels, Kontrast ≥ 4,5 : 1, Schalter
+python3 radial_hud.py --snapshot /tmp/hud        # Bildbogen + je Bereich ein Bild (hell, dunkel)</code></pre>
+    <p>Alle Bilder auf dieser Seite stammen aus <code>--snapshot</code> bzw. den offscreen gerenderten Editoren – Beispieldateien und Ablage-Texte sind Platzhalter.</p>
+  </section>
+
+  <footer>
+    <p>Radial HUD · Stand 21.10.2026 · Bedienung im Detail: <a href="../README.md">README</a></p>
+  </footer>
+
+</main>
+</body>
+</html>
