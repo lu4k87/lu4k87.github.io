@@ -4,7 +4,7 @@
   --bg: #edf5f6; --surface: #ffffff; --surface-2: #f4f9f9; --ink: #0f2a2e; --ink-2: #284448;
   --line: #d2e2e4; --line-2: #b3cdd0; --accent: #006d77; --accent-ink: #ffffff; --accent-2: #83c5be;
   --alert: #b4532f; --ok: #17794a; --ok-bg: #dcf1e5; --warn: #8f5a00; --warn-bg: #fbedd2;
-  --m-land: #f7fbfb; --m-town: #e2eeef; --m-water: #a9d3e4; --m-water-ink: #2f6f88; --m-road: #d3dfe0;
+  --m-land: #f7fbfb; --m-water: #a9d3e4; --m-water-ink: #2f6f88;
   --p-pp: #2a78d6; --p-hd: #eb6834; --p-ld: #1baf7a; --p-pet: #eda100; --p-abs: #e87ba4; --p-pa: #6250d6;
   --r: 8px; --r-sm: 6px;
   --f-disp: "Space Grotesk", system-ui, sans-serif; --f-body: "Inter", system-ui, sans-serif; --f-mono: "JetBrains Mono", ui-monospace, monospace;
@@ -17,7 +17,7 @@
     --bg: #0a1120; --surface: #13213a; --surface-2: #1a2b4a; --ink: #f3eee2; --ink-2: #d9d2c1;
     --line: #24395c; --line-2: #33507d; --accent: #ecc56a; --accent-ink: #1d1708; --accent-2: #3d5a87;
     --alert: #f08f6e; --ok: #5fd39a; --ok-bg: #143a33; --warn: #f0b85a; --warn-bg: #3a2f17;
-    --m-land: #0d1a31; --m-town: #13264a; --m-water: #1d4f78; --m-water-ink: #8fc3e0; --m-road: #1e3358;
+    --m-land: #0d1a31; --m-water: #1d4f78; --m-water-ink: #8fc3e0;
     --p-pp: #3987e5; --p-hd: #e0703f; --p-ld: #22b07f; --p-pet: #d99a12; --p-abs: #dc6a93; --p-pa: #9085e9;
   }
 }
@@ -26,7 +26,7 @@
   --bg: #0a1120; --surface: #13213a; --surface-2: #1a2b4a; --ink: #f3eee2; --ink-2: #d9d2c1;
   --line: #24395c; --line-2: #33507d; --accent: #ecc56a; --accent-ink: #1d1708; --accent-2: #3d5a87;
   --alert: #f08f6e; --ok: #5fd39a; --ok-bg: #143a33; --warn: #f0b85a; --warn-bg: #3a2f17;
-  --m-land: #0d1a31; --m-town: #13264a; --m-water: #1d4f78; --m-water-ink: #8fc3e0; --m-road: #1e3358;
+  --m-land: #0d1a31; --m-water: #1d4f78; --m-water-ink: #8fc3e0;
   --p-pp: #3987e5; --p-hd: #e0703f; --p-ld: #22b07f; --p-pet: #d99a12; --p-abs: #dc6a93; --p-pa: #9085e9;
 }
 
@@ -109,11 +109,24 @@ section.area { padding: 40px 0 56px; }
 
 /* ---------- Karte (SVG) ---------- */
 svg.map { display: block; width: 100%; height: 100%; }
-.m-land { fill: var(--m-land); }
-.m-town { fill: var(--m-town); }
-.m-town.main { fill: color-mix(in srgb, var(--accent-2) 30%, var(--m-town)); }
+.m-land { fill: color-mix(in srgb, var(--ink) 3%, var(--m-land)); }
+.m-settle { fill: color-mix(in srgb, var(--ink) 9%, var(--m-land)); }
+.m-settle.main { fill: color-mix(in srgb, var(--ink) 12%, var(--m-land)); }
+.m-grid { fill: none; stroke: color-mix(in srgb, var(--m-land) 85%, var(--surface)); stroke-width: calc(1.4px * var(--k, 1)); }
+.m-forest { fill: color-mix(in srgb, var(--ok) 16%, var(--m-land)); }
+.m-lake { fill: var(--m-water); }
+.m-stream { fill: none; stroke: var(--m-water); stroke-width: calc(2px * var(--k, 1)); stroke-linecap: round; }
 .m-rhine { fill: none; stroke: var(--m-water); stroke-width: 34; stroke-linecap: round; }
-.m-road { fill: none; stroke: var(--m-road); stroke-width: calc(5px * var(--k, 1)); stroke-linecap: round; }
+.m-minor-case, .m-road-case { fill: none; stroke-linecap: round; }
+.m-minor-case { stroke: color-mix(in srgb, var(--ink) 18%, var(--m-land)); stroke-width: calc(5px * var(--k, 1)); }
+.m-minor { fill: none; stroke: var(--surface); stroke-width: calc(3px * var(--k, 1)); stroke-linecap: round; }
+.m-road-case { stroke: color-mix(in srgb, var(--ink) 26%, var(--m-land)); stroke-width: calc(9px * var(--k, 1)); }
+.m-road { fill: none; stroke: color-mix(in srgb, var(--surface) 70%, var(--line)); stroke-width: calc(6.5px * var(--k, 1)); stroke-linecap: round; }
+.m-rail { fill: none; stroke: color-mix(in srgb, var(--ink) 38%, var(--m-land)); stroke-width: calc(1.6px * var(--k, 1)); stroke-dasharray: calc(8px * var(--k, 1)) calc(4px * var(--k, 1)); }
+.m-furn { pointer-events: none; }
+.m-scale-line { fill: none; stroke: var(--ink-2); stroke-width: calc(1.6px * var(--k, 1)); }
+.m-scale-lab { font: 600 calc(12px * var(--k, 1)) var(--f-mono); fill: var(--ink-2); paint-order: stroke; stroke: var(--m-land); stroke-width: calc(3px * var(--k, 1)); }
+.m-attr { font: 500 calc(11px * var(--k, 1)) var(--f-body); fill: var(--ink-2); paint-order: stroke; stroke: var(--m-land); stroke-width: calc(3px * var(--k, 1)); }
 .m-tlabel { font: 600 calc(15px * var(--k, 1)) var(--f-disp); fill: var(--ink-2); paint-order: stroke; stroke: var(--m-land); stroke-width: calc(4px * var(--k, 1)); }
 .m-tlabel.main { font-size: calc(18px * var(--k, 1)); fill: var(--ink); }
 .m-shield { fill: var(--surface); stroke: var(--line-2); stroke-width: 1.5; }

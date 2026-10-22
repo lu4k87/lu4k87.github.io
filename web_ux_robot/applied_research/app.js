@@ -236,6 +236,52 @@
   const qpt = (r, t) => [(1 - t) ** 2 * r.x1 + 2 * (1 - t) * t * r.cx + t * t * r.x2, (1 - t) ** 2 * r.y1 + 2 * (1 - t) * t * r.cy + t * t * r.y2];
   const pvar = p => `--pc:var(--p-${D.poly[p].key})`;
 
+  /* ---------- Kartenbild: Flächen, Netze, Maßstab (schematisch, eigene Zeichnung, kein Kartendienst) ---------- */
+  const seed = s => [...String(s)].reduce((h, c) => (h * 31 + c.charCodeAt(0)) % 9973, 7);
+  // geschlossene, leicht unregelmäßige Fläche um einen Mittelpunkt (SVG-Einheiten), glatt per Catmull-Rom
+  function blob(cx, cy, rx, ry, rot = 0, s = 1, n = 18) {
+    const p = [], a0 = rot * Math.PI / 180;
+    for (let i = 0; i < n; i++) {
+      const t = i / n * 2 * Math.PI, w = 1 + .13 * Math.sin(3 * t + s) + .08 * Math.sin(5 * t + s * 1.7) + .05 * Math.sin(8 * t + s * 2.3);
+      const x = Math.cos(t) * rx * w, y = Math.sin(t) * ry * w;
+      p.push([cx + x * Math.cos(a0) - y * Math.sin(a0), cy + x * Math.sin(a0) + y * Math.cos(a0)]);
+    }
+    let d = `M${p[0][0].toFixed(1)},${p[0][1].toFixed(1)}`;
+    for (let i = 0; i < n; i++) {
+      const a = p[(i - 1 + n) % n], b = p[i], c = p[(i + 1) % n], e = p[(i + 2) % n];
+      d += `C${(b[0] + (c[0] - a[0]) / 6).toFixed(1)},${(b[1] + (c[1] - a[1]) / 6).toFixed(1)} ${(c[0] - (e[0] - b[0]) / 6).toFixed(1)},${(c[1] - (e[1] - b[1]) / 6).toFixed(1)} ${c[0].toFixed(1)},${c[1].toFixed(1)}`;
+    }
+    return d + 'Z';
+  }
+  const area = f => { const [x, y] = pt(f.at); return blob(x, y, f.rx * U, f.ry * U, f.rot || 0, seed(f.at.join())); };
+  const townArea = t => { const [x, y] = proj(t.lat, t.lon); return blob(x, y, t.r * U * 1.12, t.r * U * .92, seed(t.name) % 60, seed(t.name)); };
+  function drawDecor(svg, base, k) {
+    const X = D.region.decor, grid = svg.id + '-grid';
+    // Straßenraster der Ortsflächen: Muster je Karte (eigene Id), Linien in Bildschirm-Pixeln
+    const pat = S('pattern', { id: grid, patternUnits: 'userSpaceOnUse', width: 15 * k, height: 11 * k, patternTransform: 'rotate(-14)' }, S('defs', {}, svg));
+    S('path', { class: 'm-grid', d: `M0,0H${15 * k}M0,0V${11 * k}` }, pat);
+    X.forest.forEach(f => S('path', { class: 'm-forest', d: area(f) }, base));
+    D.region.towns.forEach(t => {
+      S('path', { class: 'm-settle' + (t.main ? ' main' : ''), d: townArea(t) }, base);
+      S('path', { d: townArea(t), fill: `url(#${grid})` }, base);
+    });
+    X.streams.forEach(p => S('path', { class: 'm-stream', d: smooth(p) }, base));
+    X.lakes.forEach(l => S('path', { class: 'm-lake', d: area(l) }, base));
+    const minor = X.minor.map(p => smooth(p));
+    minor.forEach(d => S('path', { class: 'm-minor-case', d }, base));
+    minor.forEach(d => S('path', { class: 'm-minor', d }, base));
+    X.rail.forEach(p => S('path', { class: 'm-rail', d: smooth(p) }, base));
+  }
+  // Maßstab unten links, Hinweis unten rechts – am sichtbaren Bildrand (xMidYMid), nicht am viewBox-Rand
+  function drawFurniture(svg, k, view, sw, sh) {
+    const vw = sw * k, vh = sh * k, x0 = view[0] + view[2] / 2 - vw / 2, y0 = view[1] + view[3] / 2 - vh / 2;
+    const g = S('g', { class: 'm-furn', 'aria-hidden': 'true' }, svg);
+    const len = [1, 2, 5, 10].find(n => n * U / k >= 70) || 10, bw = len * U, bx = x0 + 16 * k, by = y0 + vh - 18 * k;   // runde Länge, 70–140 px
+    S('path', { class: 'm-scale-line', d: `M${bx},${by - 6 * k}V${by}H${bx + bw}V${by - 6 * k}` }, g);
+    S('text', { class: 'm-scale-lab', x: bx + bw + 6 * k, y: by + k }, g).textContent = `${len} km`;
+    S('text', { class: 'm-attr', x: x0 + vw - 10 * k, y: y0 + vh - 10 * k, 'text-anchor': 'end' }, g).textContent = T('schematic') + ' · KreiswertS';
+  }
+
   // o: { view:[x,y,w,h], par, routes:[{from,to,poly,cls,bend,dots,dr,label,glow,anim}], sel, hl, dim, halo, r, short, interactive }
   // k = SVG-Einheiten je Bildschirm-Pixel: Schrift, Symbole, Striche bleiben bei jedem Zoom und jeder Fensterbreite gleich groß
   function drawMap(svg, o = {}) {
@@ -247,9 +293,9 @@
     svg.style.setProperty('--k', k.toFixed(3));
     const base = S('g', { class: 'm-base', 'aria-hidden': 'true' }, svg);
     S('rect', { class: 'm-land', x: -900, y: -900, width: W + 1800, height: H + 1800 }, base);
-    D.region.towns.forEach(t => { const [x, y] = proj(t.lat, t.lon); S('circle', { class: 'm-town' + (t.main ? ' main' : ''), cx: x, cy: y, r: t.r * U }, base); });
+    drawDecor(svg, base, k);
     S('path', { class: 'm-rhine', d: smooth(D.region.water.pts) }, base);
-    D.region.roads.forEach(r => S('path', { class: 'm-road', d: smooth(r.pts) }, base));
+    D.region.roads.forEach(r => { S('path', { class: 'm-road-case', d: smooth(r.pts) }, base); S('path', { class: 'm-road', d: smooth(r.pts) }, base); });
     const lab = S('g', { class: 'm-labels', 'aria-hidden': 'true' }, svg);
     D.region.towns.forEach(t => { const [x, y] = proj(t.lat, t.lon); S('text', { class: 'm-tlabel' + (t.main ? ' main' : ''), x: x + (t.lx || 0) * U, y: y + (t.ly || 0) * U, 'text-anchor': 'middle' }, lab).textContent = t.name; });
     D.region.roads.forEach(r => {
@@ -293,6 +339,7 @@
         S('text', { class: 'm-flabel', x: at[0], y: at[1], 'text-anchor': at[2], 'aria-hidden': 'true' }, g).textContent = o.short || small ? f.name.split(' ')[0] : f.name;
       }
     });
+    drawFurniture(svg, k, view, sw, sh);
   }
   const pchip = p => `<span class="pchip" style="${pvar(p)}" title="${esc(L(D.poly[p]))}"><i></i>${p}</span>`;
   const roleShape = (role, size = 14) => `<svg class="rshape" viewBox="-16 -16 32 32" width="${size}" height="${size}" aria-hidden="true"><path d="${shape(role, 11)}"/></svg>`;
