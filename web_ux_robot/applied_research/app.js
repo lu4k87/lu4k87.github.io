@@ -32,6 +32,18 @@
       cyFlows: ['Granulat', 'Produktionsreste', 'Regranulat', 'Rezyklat'], cyLoop: 'Rückweg im Kreislauf', cyTitle: 'Kreislauf der drei Rollen', cyFwd: 'Neuware',
       vsToday: 'Heute: Einbahnstraße', vsNet: 'Mit KreiswertS: Kreislauf',
       vsBars: ['Neuware', 'Entsorgung'], vsEdge: ['Reste', 'Regranulat', 'Rezyklat'],
+      pzHint: 'Kreis, Pfeil oder Betrieb anklicken: eine Ebene tiefer', pzBack: 'Zurück', pzWhat: 'Was passiert hier', pzWhy: 'Warum das zählt', pzFirms: 'Betriebe in der Region', pzFirmsN: '{n} Betriebe',
+      pzPairs: 'Passende Wege (rechnerisch)', pzLost: 'Reste, die heute entsorgt werden', pzOffered: 'angeboten', pzWanted: 'gesucht', pzGives: 'gibt ab', pzGets: 'bezieht', pzDisposes: 'entsorgt heute',
+      pzNone: 'In den Demo-Daten gibt es dafür kein passendes Paar – Granulat kommt heute als Neuware von außen.', pzNoneShort: 'kein passendes Paar in den Demo-Daten',
+      pzRole: { P: ['Stellt Granulat und Halbzeug her und compoundiert Kunststoffe für die Verarbeiter.', 'Setzt Regranulat und Rezyklat als Rohstoff ein und spart so Neuware.'],
+        V: ['Macht aus Granulat Bauteile und Folien – dabei fallen Angüsse, Randbeschnitt und Fehlteile an.', 'Hier entstehen die meisten Reste; sortenrein getrennt sind sie wertvoller Rohstoff.'],
+        R: ['Mahlt, wäscht und regranuliert Produktionsreste aus der Region.', 'Schließt den Kreis: aus Resten wird wieder einsetzbarer Rohstoff.'] },
+      pzFlow: [['Granulat geht vom Produzenten zum Verarbeiter.', 'Heute der Hauptweg – jede Tonne Regranulat ersetzt hier Neuware.'],
+        ['Angüsse, Randbeschnitt und Fehlteile gehen an den Recycler in der Nähe.', 'Statt Entsorgung bleiben die Reste in der Region im Kreislauf.'],
+        ['Aufbereitetes Granulat geht zurück an die Verarbeiter.', 'Ersetzt Neuware direkt in der Produktion.'],
+        ['Rezyklat geht an die Produzenten für neue Compounds.', 'Rezyklat-Compounds mit bekannter Herkunft und Qualität.']],
+      pzFirmToday: ['Kauft Neuware und entsorgt die eigenen Reste.', 'Niemand sieht, was der andere hat oder braucht.'],
+      pzFirmNet: ['Reste und Rohstoff laufen über passende Partner in der Nähe.', 'Weniger Neuware, weniger Entsorgung.'],
       vsT: ['Jeder Betrieb kauft Neuware und entsorgt seine Reste', 'Der Recycler in der Nähe bekommt nichts davon ab', 'Niemand sieht, was der andere hat oder braucht'],
       vsN: ['Reste gehen an den Recycler in der Nähe', 'Regranulat und Rezyklat kehren als Rohstoff zurück', 'Weniger Neuware, weniger Entsorgung'],
       plTitle: 'Plattform-Prototyp',
@@ -110,6 +122,18 @@
       cyFlows: ['Granulate', 'Production scrap', 'Regranulate', 'Recyclate'], cyLoop: 'Way back in the loop', cyTitle: 'Loop of the three roles', cyFwd: 'Virgin material',
       vsToday: 'Today: one-way street', vsNet: 'With KreiswertS: a loop',
       vsBars: ['Virgin material', 'Disposal'], vsEdge: ['Scrap', 'Regranulate', 'Recyclate'],
+      pzHint: 'Click a circle, arrow or company: one level deeper', pzBack: 'Back', pzWhat: 'What happens here', pzWhy: 'Why it matters', pzFirms: 'Companies in the region', pzFirmsN: '{n} companies',
+      pzPairs: 'Matching routes (calculated)', pzLost: 'Scrap disposed of today', pzOffered: 'offered', pzWanted: 'wanted', pzGives: 'passes on', pzGets: 'receives', pzDisposes: 'disposed of today',
+      pzNone: 'The demo data has no matching pair for this – granulate comes in as virgin material from outside today.', pzNoneShort: 'no matching pair in the demo data',
+      pzRole: { P: ['Makes granulate and semi-finished goods and compounds plastics for processors.', 'Uses regranulate and recyclate as raw material and saves virgin material.'],
+        V: ['Turns granulate into parts and films – sprues, edge trim and rejects are left over.', 'Most scrap arises here; sorted by type it is a valuable raw material.'],
+        R: ['Grinds, washes and regranulates production scrap from the region.', 'Closes the loop: scrap becomes usable raw material again.'] },
+      pzFlow: [['Granulate goes from producer to processor.', 'The main route today – every tonne of regranulate replaces virgin material here.'],
+        ['Sprues, edge trim and rejects go to the recycler nearby.', 'Instead of disposal, scrap stays in the regional loop.'],
+        ['Reprocessed granulate goes back to the processors.', 'Replaces virgin material directly in production.'],
+        ['Recyclate goes to producers for new compounds.', 'Recycled compounds with known origin and quality.']],
+      pzFirmToday: ['Buys virgin material and disposes of its own scrap.', 'Nobody sees what the others have or need.'],
+      pzFirmNet: ['Scrap and raw material run via matching partners nearby.', 'Less virgin material, less disposal.'],
       vsT: ['Every company buys virgin material and disposes of its scrap', 'The recycler nearby gets none of it', 'Nobody sees what the others have or need'],
       vsN: ['Scrap goes to the recycler nearby', 'Regranulate and recyclate return as raw material', 'Less virgin material, less disposal'],
       plTitle: 'Platform prototype',
@@ -449,18 +473,19 @@
       const cx = mx - (Bc.y - A.y) * bend, cy = my + (Bc.x - A.x) * bend, d = `M${A.x},${A.y} Q${cx},${cy} ${Bc.x},${Bc.y}`;
       if (kind === 'loop') S('path', { class: 'cy-glow', d }, gf);
       S('path', { class: 'cy-flow ' + kind, d }, gf);
+      S('path', { class: 'pz-hit', d, 'data-pz': 'flow:' + i, 'aria-label': names[i] }, gf);
       const dur = 7 + i;
-      for (let j = 0; j < 3; j++) {
-        if (RM) { const u = (j + 1) / 4; S('circle', { class: 'cy-part ' + kind, r: 5, cx: (1 - u) ** 2 * A.x + 2 * (1 - u) * u * cx + u * u * Bc.x, cy: (1 - u) ** 2 * A.y + 2 * (1 - u) * u * cy + u * u * Bc.y }, gp); continue; }
+      for (let j = 0; j < 5; j++) {
+        if (RM) { const u = (j + 1) / 6; S('circle', { class: 'cy-part ' + kind, r: 5, cx: (1 - u) ** 2 * A.x + 2 * (1 - u) * u * cx + u * u * Bc.x, cy: (1 - u) ** 2 * A.y + 2 * (1 - u) * u * cy + u * u * Bc.y }, gp); continue; }
         const c = S('circle', { class: 'cy-part ' + kind, r: 5 }, gp);
         S('animateMotion', { dur: dur + 's', begin: (-j * dur / 3).toFixed(2) + 's', repeatCount: 'indefinite', path: d }, c);
       }
-      const tx = (mx + cx) / 2, ty = (my + cy) / 2, w = names[i].length * 9 + 24, g = S('g', { class: 'cy-tag', transform: `translate(${tx},${ty})` }, gt);
+      const tx = (mx + cx) / 2, ty = (my + cy) / 2, w = names[i].length * 9 + 24, g = S('g', { class: 'cy-tag', transform: `translate(${tx},${ty})`, 'data-pz': 'flow:' + i, 'aria-label': names[i] }, gt);
       S('rect', { x: -w / 2, y: -15, width: w, height: 30, rx: 6 }, g);
       S('text', { y: 5 }, g).textContent = names[i];
     });
     C.forEach((c, i) => {
-      const g = S('g', { transform: `translate(${c.x},${c.y})` }, gc);
+      const g = S('g', { transform: `translate(${c.x},${c.y})`, class: 'cy-cell', 'data-pz': 'role:' + c.role, 'aria-label': cells[i][0] }, gc);
       S('circle', { class: 'cy-mem', r: 106, 'stroke-dasharray': '2 6' }, g);
       S('circle', { class: 'cy-mem', r: 92, 'stroke-width': 1.5 }, g);
       S('circle', { class: 'cy-core', r: 80 }, g);
@@ -487,15 +512,15 @@
         if (!net || i === 2) arrow(`M${n.x},${Y + 46} V166`, 'loss');
       });
       if (net) {
-        const lab = (x, y, t) => { const w = t.length * 8 + 14, g = S('g', { class: 'vs-tag', transform: `translate(${x},${y})` }, s); S('rect', { x: -w / 2, y: -11, width: w, height: 22, rx: 5 }, g); S('text', { y: 4.5 }, g).textContent = t; };
+        const lab = (x, y, t, k) => { const w = t.length * 8 + 14, g = S('g', { class: 'vs-tag', transform: `translate(${x},${y})`, 'data-pz': 'edge:' + k, 'aria-label': t }, s); S('rect', { x: -w / 2, y: -11, width: w, height: 22, rx: 5 }, g); S('text', { y: 4.5 }, g).textContent = t; };
         arrow(`M${50 + RN},${Y - 6} Q150,${Y - 34} ${250 - RN - 3},${Y - 8}`, 'loop');
         arrow(`M${250 - RN},${Y + 8} Q150,${Y + 40} ${50 + RN + 3},${Y + 8}`, 'loop');
         arrow(`M${380 - RN},${Y} H${250 + RN + 4}`, 'loop');
         arrow(`M250,${Y - RN} Q360,18 ${475 - RN - 4},${Y - 10}`, 'loop');
-        lab(150, Y - 34, edge[0]); lab(150, Y + 34, edge[1]); lab(350, 44, edge[2]);
+        lab(150, Y - 34, edge[0], 0); lab(150, Y + 34, edge[1], 1); lab(350, 44, edge[2], 2);
       }
       N.forEach(n => {
-        const g = S('g', { transform: `translate(${n.x},${Y})` }, s);
+        const g = S('g', { transform: `translate(${n.x},${Y})`, 'data-pz': 'firm:' + n.f.id, 'aria-label': n.f.name }, s);
         S('circle', { class: 'vs-node' + (net ? ' on' : n.role === 'R' ? ' idle' : ''), r: RN }, g);
         const lg = S('svg', { class: 'logo', x: -12, y: -12, width: 24, height: 24, viewBox: '0 0 24 24' }, g);
         S('rect', { width: 24, height: 24, rx: 6, fill: n.f.logo.c }, lg); S('path', { d: n.f.logo.d }, lg);
@@ -874,9 +899,164 @@
   }
 
   /* ---------- Start ---------- */
+  /* ---------- 2 Prinzip: Klick = eine Ebene tiefer (Zoom:A+B+C, 2026-10-22) – Flug ins Element, Grafik-Ebene, Erklär-Leiste darunter ---------- */
+  const CY_FLOWS = [['P', 'V'], ['V', 'R'], ['R', 'V'], ['R', 'P']];
+  const VS_EDGES = [['lintra', 'regrana'], ['regrana', 'lintra'], ['regrana', 'kornwerk']];
+  const tsum = xs => xs.reduce((s, x) => s + (typeof x.q === 'number' ? x.q : x.t), 0);   // Paar: q = vergebene Menge · Angebot/Bedarf: t
+  const short = f => f.name.split(' ')[0];
+
+  // Inhalt einer Ebene: Rolle, Fluss im Kreislauf, Betrieb oder Pfeil in Heute/Kreislauf – alles aus daten.js + ALLOC
+  function pzData(kind, key, net) {
+    const cells = T('cyCells'), ri = r => ['P', 'V', 'R'].indexOf(r), perM = T('perMonth');
+    if (kind === 'role') {
+      const fs = D.firms.filter(f => f.role === key), rows = fs.map(f => ({ f, o: tsum(f.o), n: tsum(f.n) })).sort((a, b) => b.o + b.n - a.o - a.n);
+      return { kind, key, title: cells[ri(key)][0], sub: `${L(D.roles[key].pl)} · ${T('pzFirmsN', { n: fs.length })}`, text: T('pzRole')[key], rows,
+        polys: [...new Set(fs.flatMap(f => f.o.map(o => o.poly)))], forms: [...new Set(fs.flatMap(f => f.o.map(o => o.form)))],
+        facts: [[fmt(rows.reduce((s, r) => s + r.o, 0)), `${perM} ${T('pzOffered')}`], [fmt(rows.reduce((s, r) => s + r.n, 0)), `${perM} ${T('pzWanted')}`]] };
+    }
+    if (kind === 'flow') {
+      const [a, b] = CY_FLOWS[key], pairs = ALLOC.used.filter(m => F[m.o.firm].role === a && F[m.n.firm].role === b);
+      return { kind, key, title: T('cyFlows')[key], sub: `${cells[ri(a)][0]} → ${cells[ri(b)][0]}`, text: T('pzFlow')[key], pairs, facts: [[fmt(tsum(pairs)), perM], [pairs.length, T('pzPairs')]] };
+    }
+    if (kind === 'edge') {
+      const [a, b] = VS_EDGES[key], pairs = ALLOC.used.filter(m => m.o.firm === a && m.n.firm === b);
+      return { kind, key, title: T('vsEdge')[key], sub: `${F[a].name} → ${F[b].name}`, text: T('pzFlow')[key + 1], pairs, facts: [[fmt(tsum(pairs)), perM], [pairs.length, T('pzPairs')]] };
+    }
+    const f = F[key], out = ALLOC.used.filter(m => m.o.firm === key), inn = ALLOC.used.filter(m => m.n.firm === key);
+    return { kind, key, net, f, title: f.name, sub: `${L(D.roles[f.role])} · ${f.town}`, text: T(net ? 'pzFirmNet' : 'pzFirmToday'), pairs: net ? [...inn, ...out] : null,
+      facts: net ? [[fmt(tsum(out)), `${perM} ${T('pzGives')}`], [fmt(tsum(inn)), `${perM} ${T('pzGets')}`]]
+                 : [[fmt(tsum(f.o)), `${perM} ${T('pzDisposes')}`], [fmt(tsum(f.n)), `${perM} ${T('vsBars')[0]}`]] };
+  }
+
+  // Grafik-Ebene: Rolle = Ring der Betriebe (Speichenbreite = Menge), sonst Bahnen je Paar (Breite = Menge, Farbe = Polymer wie auf der Plattform-Karte)
+  function pzLevel(d, w, h) {
+    const s = S('svg', { class: 'pz-level', viewBox: `0 0 ${w} ${h}`, 'aria-hidden': 'true' });
+    const node = (x, y, f, r, lab, sub, side, up) => {
+      if (w < 500) side = '';   // schmal: Name unter (obere Hälfte: über) den Knoten, sonst ragt er seitlich heraus
+      const g = S('g', { transform: `translate(${x},${y})` }, s);
+      S('circle', { r, class: 'pz-nc' }, g);
+      if (f) { const lg = S('svg', { x: -r * .62, y: -r * .62, width: r * 1.24, height: r * 1.24, viewBox: '0 0 24 24', class: 'logo' }, g); S('rect', { width: 24, height: 24, rx: 6, fill: f.logo.c }, lg); S('path', { d: f.logo.d }, lg); }
+      const ta = { l: 'end', r: 'start' }[side] || 'middle', tx = side === 'l' ? -r - 10 : side === 'r' ? r + 10 : 0, ty = side ? -3 : up ? -r - 28 : r + 20;
+      S('text', { class: 'pz-nl', x: tx, y: ty, 'text-anchor': ta }, g).textContent = lab;
+      if (sub) S('text', { class: 'pz-ns', x: tx, y: ty + 18, 'text-anchor': ta }, g).textContent = sub;
+    };
+    const lane = (x1, y1, x2, y2, q, poly) => {
+      const mx = (x1 + x2) / 2, u = Math.abs(x2 - x1) < 240 ? .5 : .3;   // Beschriftung nahe der Quelle, damit sich Bahnen-Schilder nicht in der Mitte stapeln
+      S('path', { class: 'pz-lane', d: `M${x1},${y1} C${mx},${y1} ${mx},${y2} ${x2},${y2}`, style: `${pvar(poly)};stroke-width:${Math.min(20, 3 + q * 1.1).toFixed(1)}` }, s);
+      const bx = (1 - u) ** 3 * x1 + 3 * (1 - u) * u * mx + u ** 3 * x2, by = ((1 - u) ** 3 + 3 * (1 - u) ** 2 * u) * y1 + (3 * (1 - u) * u * u + u ** 3) * y2, t = `${poly} · ${fmt(q)} t`, tw = t.length * 8 + 16;
+      const g = S('g', { class: 'cy-tag', transform: `translate(${bx.toFixed(1)},${by.toFixed(1)})` }, s);
+      S('rect', { x: -tw / 2, y: -12, width: tw, height: 24, rx: 5 }, g); S('text', { y: 5 }, g).textContent = t;
+      if (w < 500) g.remove();   // schmal: Bahnen zu kurz für Schilder, Mengen stehen in der Liste darunter
+    };
+    if (d.kind === 'role') {
+      const cx = w / 2, cy = h / 2, R = Math.min(w, h) / 2 - 64, n = d.rows.length, ang = i => -Math.PI / 2 + i / n * 2 * Math.PI;
+      d.rows.forEach((r, i) => S('line', { class: 'pz-spoke', x1: cx, y1: cy, x2: cx + Math.cos(ang(i)) * R, y2: cy + Math.sin(ang(i)) * R, 'stroke-width': Math.min(10, 1.5 + (r.o + r.n) * .25) }, s));
+      const c = S('g', { transform: `translate(${cx},${cy})` }, s);
+      S('circle', { class: 'cy-core', r: 66 }, c); S('path', { class: 'cy-shape', d: shape(d.key, 7), transform: 'translate(0,-30)' }, c);
+      S('text', { class: 'cy-t', y: 8 }, c).textContent = d.title; S('text', { class: 'cy-s', y: 30 }, c).textContent = T('pzFirmsN', { n });
+      d.rows.forEach((r, i) => { const a = ang(i); node(cx + Math.cos(a) * R, cy + Math.sin(a) * R, r.f, 24, short(r.f), `↑${fmt(r.o)} ↓${fmt(r.n)} t`, Math.abs(Math.cos(a)) < .3 ? '' : Math.cos(a) < 0 ? 'l' : 'r', Math.sin(a) < -.3); });
+      return s;
+    }
+    let left, right, links;
+    if (d.kind === 'firm' && !d.net) {   // Heute: Neuware → Betrieb → Entsorgung
+      left = [{ id: 'v', lab: T('vsBars')[0], sub: fmt(tsum(d.f.n)) + ' t' }]; right = [{ id: 'w', lab: T('vsBars')[1], sub: fmt(tsum(d.f.o)) + ' t' }];
+      links = [['v', '*', tsum(d.f.n), d.f.n[0].poly[0]], ...d.f.o.map(o => ['*', 'w', o.t, o.poly])];
+    } else {
+      const me = d.kind === 'firm' ? d.key : null, ids = k => [...new Set(d.pairs.map(m => m[k].firm))].filter(x => x !== me).map(id => ({ id, f: F[id] }));
+      left = ids('o'); right = ids('n'); links = d.pairs.map(m => [m.o.firm === me ? '*' : m.o.firm, m.n.firm === me ? '*' : m.n.firm, m.q, m.o.poly]);
+    }
+    const col = (arr, x) => arr.map((o, i) => ({ ...o, x, y: (i + 1) * h / (arr.length + 1) })), inset = w < 500 ? 50 : 120, LN = col(left, inset), RN = col(right, w - inset);
+    const C = d.kind === 'firm' ? { x: w / 2, y: h / 2 } : null, at = (id, side) => id === '*' ? C : side.find(o => o.id === id);   // Quelle links, Ziel rechts (ein Partner kann auf beiden Seiten stehen)
+    if (!links.length) S('text', { class: 'pz-ns', x: w / 2, y: h / 2, 'text-anchor': 'middle' }, s).textContent = T('pzNoneShort');
+    links.forEach(([a, b, q, poly]) => { const A = at(a, LN), B = at(b, RN); lane(A.x + (A === C ? 30 : 26), A.y, B.x - (B === C ? 30 : 26), B.y, q, poly); });
+    LN.forEach(o => node(o.x, o.y, o.f, 24, o.f ? short(o.f) : o.lab, o.f ? '' : o.sub, 'l'));
+    RN.forEach(o => node(o.x, o.y, o.f, 24, o.f ? short(o.f) : o.lab, o.f ? '' : o.sub, 'r'));
+    if (C) node(C.x, C.y, d.f, 28, short(d.f), '', '');
+    return s;
+  }
+
+  // Erklär-Leiste unter der Grafik: Was passiert hier · Kennzahlen · Warum · Betriebe mit Mengenbalken bzw. passende Wege
+  function pzBand(d) {
+    const firmLi = (r, max) => `<li>${logo(r.f, 18)}<b>${esc(r.f.name)}</b><span>${esc(r.f.town)}</span><span class="pz-q">↑ ${fmt(r.o)} t · ↓ ${fmt(r.n)} t</span><i class="pz-bar" style="--w:${Math.max(4, Math.round(100 * (r.o + r.n) / max))}%"></i></li>`;
+    const pairLi = m => `<li>${logo(F[m.o.firm], 18)}<b>${esc(short(F[m.o.firm]))}</b><span>→</span>${logo(F[m.n.firm], 18)}<b>${esc(short(F[m.n.firm]))}</b>${pchip(m.o.poly)}<span>${esc(L(D.forms[m.o.form]))}</span><span class="pz-q">${fmt(m.q)} t · ${fmt(m.d)} km</span></li>`;
+    let list;
+    if (d.kind === 'role') { const max = Math.max(...d.rows.map(r => r.o + r.n)); list = `<h4>${T('pzFirms')}</h4><ul class="pz-list">${d.rows.map(r => firmLi(r, max)).join('')}</ul><p class="pz-chips">${d.polys.map(pchip).join('')}${d.forms.map(x => `<span class="bdg">${esc(L(D.forms[x]))}</span>`).join('')}</p>`; }
+    else if (!d.pairs) list = `<h4>${T('pzLost')}</h4><ul class="pz-list">${d.f.o.map(o => `<li>${pchip(o.poly)}<span>${esc(L(D.forms[o.form]))}</span><span class="pz-q">${fmt(o.t)} t → ${esc(T('vsBars')[1])}</span></li>`).join('')}</ul>`;
+    else list = `<h4>${T('pzPairs')}</h4>` + (d.pairs.length ? `<ul class="pz-list">${d.pairs.map(pairLi).join('')}</ul>` : `<p>${T('pzNone')}</p>`);
+    return `<div class="pz-cols"><div><h4>${T('pzWhat')}</h4><p>${esc(d.text[0])}</p><div class="pz-facts">${d.facts.map(([n, l]) => `<span><b>${n}</b>${esc(l)}</span>`).join('')}</div><h4>${T('pzWhy')}</h4><p class="fix">${esc(d.text[1])}</p></div><div>${list}</div></div>`;
+  }
+
+  // Zoom-Flug: viewBox weich zum Element und zurück (reduced-motion: sofort)
+  const vbOf = svg => svg.getAttribute('viewBox').split(/\s+/).map(Number);
+  function flyTo(svg, to, ms) {
+    if (RM) { svg.setAttribute('viewBox', to.join(' ')); return Promise.resolve(); }
+    const a = vbOf(svg), t0 = performance.now();
+    return new Promise(res => { const step = now => { const k = Math.min(1, (now - t0) / ms), e = 1 - (1 - k) ** 3; svg.setAttribute('viewBox', a.map((v, i) => (v + (to[i] - v) * e).toFixed(2)).join(' ')); k < 1 ? requestAnimationFrame(step) : res(); }; requestAnimationFrame(step); });
+  }
+  function boxIn(svg, el, home) {
+    const r = el.getBoundingClientRect(), m = svg.getScreenCTM().inverse(), p = new DOMPoint(r.left, r.top).matrixTransform(m), q = new DOMPoint(r.right, r.bottom).matrixTransform(m);
+    const ar = home[3] / home[2], w = Math.max((q.x - p.x) * 1.15, (q.y - p.y) * 1.15 / ar, home[2] / 4), h = w * ar;
+    return [(p.x + q.x) / 2 - w / 2, (p.y + q.y) / 2 - h / 2, w, h];
+  }
+
+  let PZ = null;
+  async function pzOpen(svg, el) {
+    if (PZ) pzClose(true);
+    const [kind, key] = el.dataset.pz.split(':'), d = pzData(kind, kind === 'flow' || kind === 'edge' ? +key : key, svg.id === 'vsNet');
+    const tile = svg.closest('.tile'), home = vbOf(svg), box = svg.getBoundingClientRect(), hide = [...tile.children].filter(c => c !== svg && c.tagName !== 'H3');
+    const cur = PZ = { svg, el, home, hide };
+    svg.classList.add('pz-on', 'pz-deep'); svg.querySelectorAll('[data-pz]').forEach(x => x.classList.toggle('pz-sel', x === el));
+    await flyTo(svg, boxIn(svg, el, home), 700);
+    if (PZ !== cur) return;   // während des Flugs geschlossen oder anderes Element gewählt
+    const lay = cur.layer = document.createElement('div'); lay.className = 'pz-layer';
+    lay.setAttribute('role', 'region'); lay.setAttribute('aria-label', `${d.title} – ${d.sub}`);
+    lay.innerHTML = `<div class="pz-head"><button type="button" class="btn pz-back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>${T('pzBack')}</button><div><h4 class="pz-t">${esc(d.title)}</h4><span class="pz-sub">${esc(d.sub)}</span></div></div>`;
+    const lw = Math.round(Math.max(360, Math.min(600, box.width)));   // Zeichenbreite = Kachelbreite: Schrift bleibt auch bei 360 px lesbar
+    const lh = Math.max(300, Math.min(520, Math.round(lw * box.height / box.width)));
+    lay.append(pzLevel(d, lw, d.kind === 'role' ? Math.max(lh, Math.min(lw, 520)) : lh));   // Ring braucht Höhe, sonst stößt der obere Betrieb an die Mitte
+    lay.insertAdjacentHTML('beforeend', pzBand(d));
+    const r0 = el.getBoundingClientRect();
+    svg.style.display = 'none'; hide.forEach(c => c.style.display = 'none'); svg.after(lay);
+    if (!RM) {   // Ebene wächst aus dem angeklickten Element
+      const l = lay.getBoundingClientRect();
+      lay.animate([{ transform: `translate(${r0.left - l.left}px,${r0.top - l.top}px) scale(${r0.width / l.width},${r0.height / l.height})`, opacity: .2 }, { transform: 'none', opacity: 1 }], { duration: 500, easing: 'cubic-bezier(.22,.61,.36,1)' });
+    }
+    lay.querySelector('.pz-back').addEventListener('click', () => pzClose());
+    lay.querySelector('.pz-back').focus({ preventScroll: true });
+  }
+  function pzClose(quick) {
+    if (!PZ) return;
+    const { svg, el, home, layer, hide } = PZ; PZ = null;
+    layer?.remove(); svg.style.display = ''; hide.forEach(c => c.style.display = '');
+    svg.classList.remove('pz-on', 'pz-deep'); svg.querySelectorAll('.pz-sel').forEach(x => x.classList.remove('pz-sel'));
+    if (quick) return svg.setAttribute('viewBox', home.join(' '));
+    el.focus({ preventScroll: true }); flyTo(svg, home, 550);
+  }
+  function pzBind(svg) {
+    svg.removeAttribute('aria-hidden'); svg.setAttribute('role', 'group');
+    svg.querySelectorAll('[data-pz]').forEach(el => {
+      el.setAttribute('tabindex', '0'); el.setAttribute('role', 'button');
+      el.addEventListener('click', e => { e.stopPropagation(); PZ?.el === el ? pzClose() : pzOpen(svg, el); });
+      el.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pzOpen(svg, el); } });
+    });
+  }
+  addEventListener('keydown', e => { if (e.key === 'Escape' && PZ) pzClose(); });
+
+  // Materialstrom (Anim:A, 2026-10-22): Punkte auf jedem Pfeil von Heute und Kreislauf; reduced-motion: keine Punkte
+  function renderPrinzipFx() {
+    if (PZ) pzClose(true);
+    $('#cyHint').textContent = T('pzHint');
+    [$('#cycle'), $('#vsToday'), $('#vsNet')].forEach(pzBind);
+    if (RM) return;
+    [$('#vsToday'), $('#vsNet')].forEach(s => s.querySelectorAll('.vs-flow, .vs-loss, .vs-loop').forEach(p => {
+      const loop = p.classList.contains('vs-loop'), n = loop ? 3 : 2, dur = loop ? 4 : 2.6;
+      for (let j = 0; j < n; j++) S('animateMotion', { dur: dur + 's', begin: (-j * dur / n).toFixed(2) + 's', repeatCount: 'indefinite', path: p.getAttribute('d') }, S('circle', { class: 'vs-dot ' + p.getAttribute('class').slice(3), r: 4 }, s));
+    }));
+  }
+
   function renderAll() {
     applyStatic(); renderRail(); renderTheme();
-    renderStart(); renderCycle(); renderVs();
+    renderStart(); renderCycle(); renderVs(); renderPrinzipFx();
     renderControls(); renderPlat(); renderScn(); renderProject(); renderContext();
     if (GEO.mapPlat) GEO.mapPlat.relabel();
   }

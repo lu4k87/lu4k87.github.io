@@ -247,8 +247,8 @@ svg.map { display: block; width: 100%; height: 100%; }
 .t-problem .fix { align-self: stretch; display: flex; align-items: center; justify-content: center; text-align: center; background: color-mix(in srgb, var(--accent-2) 22%, var(--surface)); border-radius: var(--r-sm); padding: 20px; font: 600 18px/1.35 var(--f-disp); text-wrap: balance; }
 .t-cycle { grid-column: 1 / 8; grid-row: span 2; padding: 0 8px 8px; margin: 0; }
 .t-cycle.hd > h3 { margin: 0 -8px; }
-.t-cycle svg { margin: auto 0; }
-.t-cycle svg { width: 100%; height: auto; max-height: 560px; display: block; }
+.t-cycle > svg { margin: auto 0; }
+.t-cycle > svg { width: 100%; height: auto; max-height: 560px; display: block; }
 .cy-mem { fill: none; stroke: var(--accent); stroke-opacity: .3; }
 .cy-core { fill: color-mix(in srgb, var(--accent-2) 26%, var(--surface)); stroke: var(--accent); stroke-width: 2; }
 .cy-shape { fill: var(--surface); stroke: var(--ink); stroke-width: 2.4; }
@@ -268,7 +268,7 @@ svg.map { display: block; width: 100%; height: 100%; }
 .cy-legend i { width: 26px; height: 3px; border-radius: 2px; background: var(--accent); }
 .cy-legend i.fwd { background: repeating-linear-gradient(90deg, var(--ink-2) 0 3px, transparent 3px 8px); }
 .vs { grid-column: 8 / 13; }
-.vs svg { width: 100%; height: auto; max-height: 230px; display: block; }
+.vs > svg { width: 100%; height: auto; max-height: 230px; display: block; }
 .vs ul { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 4px; }
 .vs-bar { stroke-width: 1; }
 .vs-bar.flow { fill: var(--surface-2); stroke: var(--line-2); }
@@ -546,3 +546,44 @@ td:first-child { font-weight: 600; }
   html { scroll-behavior: auto; }
   *, *::before, *::after { transition: none !important; }
 }
+
+/* ---------- 2 Prinzip: Materialstrom + Klick = eine Ebene tiefer (Anim:A, Zoom:A+B+C, 2026-10-22) ---------- */
+[data-pz] { cursor: pointer; }
+[data-pz]:focus-visible { outline: 3px solid var(--accent); outline-offset: 4px; }
+.pz-hit { fill: none; stroke: transparent; stroke-width: 26; }
+.cy-core, .cy-tag rect, .vs-tag rect, .vs-node { transition: stroke var(--t-fast) var(--ease), stroke-width var(--t-fast) var(--ease); }
+.cy-cell:hover .cy-core { stroke-width: 4; }
+.cy-tag:hover rect, .vs-tag:hover rect, [data-pz]:hover > .vs-node { stroke: var(--accent); stroke-width: 2; }
+.pz-hint { margin-left: auto; font-weight: 600; }
+.cy-mem[stroke-dasharray] { transform-box: fill-box; transform-origin: center; animation: pz-spin 40s linear infinite; }   /* Ring läuft langsam um (Ambient ≥ 8 s) */
+@keyframes pz-spin { to { transform: rotate(360deg); } }
+.vs-dot { fill: var(--surface); stroke-width: 2; }
+.vs-dot.flow { stroke: var(--ink-2); } .vs-dot.loss { stroke: var(--alert); } .vs-dot.loop { stroke: var(--accent); }
+.pz-on [data-pz]:not(.pz-sel), .pz-on .cy-flow, .pz-on .cy-glow, .pz-on .cy-part, .pz-on .vs-dot, .pz-on .vs-flow, .pz-on .vs-loss, .pz-on .vs-loop { opacity: .28; transition: opacity var(--t-base) var(--ease); }
+.pz-on .pz-hit { opacity: 1; }
+svg.pz-deep { transition: opacity .6s var(--ease); opacity: .15; }
+.pz-layer { display: flex; flex-direction: column; gap: 12px; }
+.pz-head { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+.pz-head .btn { padding: 6px 12px; }
+.pz-t { font: 700 20px var(--f-disp); margin: 0; }
+.pz-sub { font-size: 15px; font-weight: 500; }
+.pz-level { width: 100%; height: auto; max-height: 520px; display: block; }
+.pz-layer h4 { margin: 4px 0 0; font: 700 15px var(--f-body); }
+.pz-layer p { margin: 0; font-size: 15px; }
+.pz-layer .fix { background: color-mix(in srgb, var(--accent-2) 22%, var(--surface)); border-radius: var(--r-sm); padding: 10px 12px; font-weight: 600; }
+.pz-cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px 20px; border-top: 1px solid var(--line); padding-top: 12px; }
+.pz-cols > div { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.pz-facts { display: flex; gap: 8px 20px; flex-wrap: wrap; }
+.pz-facts span { display: inline-flex; gap: 6px; align-items: baseline; font-size: 15px; }
+.pz-facts b { font: 700 24px var(--f-disp); color: var(--accent); }
+.pz-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.pz-list li { display: flex; flex-wrap: wrap; gap: 4px 8px; align-items: center; font-size: 15px; padding: 6px 8px; border: 1px solid var(--line); border-radius: var(--r-sm); background: var(--surface-2); }
+.pz-list .pz-q { margin-left: auto; font: 600 14px var(--f-mono); }
+.pz-bar { flex: 1 0 100%; height: 6px; border-radius: 3px; background: linear-gradient(90deg, var(--accent) var(--w), color-mix(in srgb, var(--accent) 12%, transparent) var(--w)); }
+.pz-chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; }
+.pz-spoke { stroke: var(--accent); stroke-opacity: .45; stroke-linecap: round; }
+.pz-lane { fill: none; stroke: var(--pc); stroke-opacity: .55; stroke-linecap: round; }
+.pz-nc { fill: var(--surface); stroke: var(--accent); stroke-width: 2; }
+.pz-nl { font: 700 15px var(--f-body); fill: var(--ink); }
+.pz-ns { font: 600 13px var(--f-mono); fill: var(--ink-2); }
+@media (prefers-reduced-motion: reduce) { .cy-mem[stroke-dasharray] { animation: none; } svg.pz-deep { transition: none; } }
