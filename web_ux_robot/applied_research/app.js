@@ -29,7 +29,7 @@
       fix: 'KreiswertS macht Angebote, Bedarfe und Wege in der Region sichtbar.',
       cyAria: 'Kreislauf: Produzieren liefert Granulat an Verarbeiten, Produktionsreste gehen ans Recyceln, Regranulat und Rezyklat kehren zurück.',
       cyCells: [['Produzieren', 'Granulat, Halbzeug'], ['Verarbeiten', 'Bauteile, Folien'], ['Recyceln', 'Mahlgut, Regranulat']],
-      cyFlows: ['Granulat', 'Produktionsreste', 'Regranulat', 'Rezyklat'], cyLoop: 'Rückweg im Kreislauf', cyFwd: 'Neuware',
+      cyFlows: ['Granulat', 'Produktionsreste', 'Regranulat', 'Rezyklat'], cyLoop: 'Rückweg im Kreislauf', cyTitle: 'Kreislauf der drei Rollen', cyFwd: 'Neuware',
       vsToday: 'Heute: Einbahnstraße', vsNet: 'Mit KreiswertS: Kreislauf',
       vsBars: ['Neuware', 'Entsorgung'], vsEdge: ['Reste', 'Regranulat', 'Rezyklat'],
       vsT: ['Jeder Betrieb kauft Neuware und entsorgt seine Reste', 'Der Recycler in der Nähe bekommt nichts davon ab', 'Niemand sieht, was der andere hat oder braucht'],
@@ -84,7 +84,7 @@
       gaps: ['<b>Regional:</b> Angebote, Bedarfe und Wege einer Region auf einer Karte – Nähe zählt mit.',
         '<b>Begründet:</b> Polymer, Form, Qualität, Menge und Entfernung als sichtbare Prüfpunkte statt reiner Inserate.',
         '<b>Ehrlich:</b> Plausibilität statt Versprechen – Preise, Prüfprotokolle und Umwelteffekte bleiben offen.'],
-      limTitle: 'Grenzen des Prototyps', guideTitle: 'Replikation · Leitfaden in {n} Schritten',
+      limTitle: 'Grenzen des Prototyps', ctxLg: 'Zeichen', ctxLgAria: 'Legende der Zeichen', lgDoes: 'leistet der Prototyp', lgLimit: 'Grenze, offen', guideTitle: 'Replikation · Leitfaden in {n} Schritten',
       guideLead: 'Alle Daten einer Region stehen in einer Datei (daten.js) – Karte, Matching, Szenarien und Selbsttest passen sich an.',
       foot: 'Alle Unternehmen, Mengen und Wege sind fiktive Demo-Daten · Entfernungen als Luftlinie · Karte © OpenStreetMap-Mitwirkende, © GeoBasis-DE / BKG (2026) · Applied Research, Prototyp 2026',
     },
@@ -107,7 +107,7 @@
       fix: 'KreiswertS makes offers, needs and routes in the region visible.',
       cyAria: 'Loop: producing supplies granulate to processing, production scrap goes to recycling, regranulate and recyclate return.',
       cyCells: [['Producing', 'Granulate, semi-finished'], ['Processing', 'Parts, films'], ['Recycling', 'Regrind, regranulate']],
-      cyFlows: ['Granulate', 'Production scrap', 'Regranulate', 'Recyclate'], cyLoop: 'Way back in the loop', cyFwd: 'Virgin material',
+      cyFlows: ['Granulate', 'Production scrap', 'Regranulate', 'Recyclate'], cyLoop: 'Way back in the loop', cyTitle: 'Loop of the three roles', cyFwd: 'Virgin material',
       vsToday: 'Today: one-way street', vsNet: 'With KreiswertS: a loop',
       vsBars: ['Virgin material', 'Disposal'], vsEdge: ['Scrap', 'Regranulate', 'Recyclate'],
       vsT: ['Every company buys virgin material and disposes of its scrap', 'The recycler nearby gets none of it', 'Nobody sees what the others have or need'],
@@ -162,7 +162,7 @@
       gaps: ['<b>Regional:</b> offers, needs and routes of one region on one map – proximity counts.',
         '<b>Justified:</b> polymer, form, quality, quantity and distance as visible checkpoints instead of plain listings.',
         '<b>Honest:</b> plausibility instead of promises – prices, test reports and environmental effects remain open.'],
-      limTitle: 'Limits of the prototype', guideTitle: 'Replication · guide in {n} steps',
+      limTitle: 'Limits of the prototype', ctxLg: 'Symbols', ctxLgAria: 'Symbol legend', lgDoes: 'what the prototype does', lgLimit: 'limit, open', guideTitle: 'Replication · guide in {n} steps',
       guideLead: 'All data of a region sits in one file (daten.js) – map, matching, scenarios and self-test adapt.',
       foot: 'All companies, quantities and routes are fictional demo data · straight-line distances · map © OpenStreetMap contributors, © GeoBasis-DE / BKG (2026) · Applied Research, prototype 2026',
     },
@@ -826,6 +826,7 @@
       + `<tr class="self"><td>KreiswertS</td><td>${T('selfBy')}</td><td><span class="bdg ok">${acc.self}</span></td><td>${T('selfPlus')}</td><td>${T('selfGap')}</td></tr>`;
     $('#gapList').innerHTML = T('gaps').map(g => `<li class="y"><span>${g}</span></li>`).join('');
     $('#limList').innerHTML = D.project.limits.map(l => `<li class="o"><span>${esc(L(l))}</span></li>`).join('');
+    $('#ctxLegend').innerHTML = `<span class="lgt">${T('ctxLg')}</span><span class="vst ok"><b aria-hidden="true">✓</b>${T('lgDoes')}</span><span class="vst teil"><b aria-hidden="true">◌</b>${T('lgLimit')}</span>`;   // Zeichen der Listen Lücke/Grenzen (Einord:A)
     $('#guideTitle').textContent = T('guideTitle', { n: D.project.guide.length });
     $('#rsteps').innerHTML = D.project.guide.map(g => { const [a, b] = g[LANG] || g.de; return `<li><b>${esc(a)}</b><span>${esc(b)}</span></li>`; }).join('');
   }
