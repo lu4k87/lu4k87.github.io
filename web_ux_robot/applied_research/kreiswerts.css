@@ -79,12 +79,16 @@ a { color: var(--accent); }
 
 /* ---------- Bausteine ---------- */
 section.area { padding: 40px 0 56px; }
-.head { display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 16px 24px; margin-bottom: 20px; }
-.head > div:first-child { display: flex; flex-direction: column; gap: 6px; max-width: 70ch; }
-.head h2 { font-size: clamp(26px, 3.2vw, 34px); line-height: 1.15; }
-.head p { color: var(--ink-2); }
-.kicker { display: inline-flex; gap: 10px; align-items: center; font-weight: 600; font-size: 15px; color: var(--accent); }
-.kicker::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 20%, transparent); }
+/* Section-Kopf zentriert: Schrittnummer im Kreis auf feiner Linie, Kicker, Titel, Lead (Head:A, 2026-10-23) */
+.head { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 16px; margin-bottom: 28px; }
+.head > div:first-child { display: flex; flex-direction: column; align-items: center; gap: 10px; max-width: 68ch; }
+.head > :not(:first-child) { justify-content: center; }
+.head h2 { font-size: clamp(26px, 3.2vw, 34px); line-height: 1.15; color: var(--accent); }
+.head p { color: var(--ink-2); max-width: 62ch; }
+.medal { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 16px; width: min(560px, 100%); margin-bottom: 4px; }
+.medal::before, .medal::after { content: ""; height: 1px; background: var(--line-2); }
+.medal b { width: 56px; height: 56px; border-radius: 50%; border: 1px solid var(--accent); display: grid; place-items: center; font: 600 19px var(--f-mono); color: var(--accent); background: color-mix(in srgb, var(--accent) 8%, var(--surface)); }
+.kicker { font-weight: 600; font-size: 14px; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-2); }
 .tile { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 20px; min-width: 0; display: flex; flex-direction: column; gap: 12px; }
 .tile h3 { font-size: 19px; }
 .btn { display: inline-flex; align-items: center; gap: 8px; border-radius: var(--r-sm); padding: 10px 16px; font: 600 15px var(--f-body); border: 1px solid var(--line-2); background: var(--surface); color: var(--ink); text-decoration: none; transition: border-color var(--t-fast), background var(--t-fast); }
@@ -391,7 +395,7 @@ td:first-child { font-weight: 600; }
 .phases, .eval, .personas { grid-column: 1 / -1; }
 .outs { grid-column: 8 / 13; }
 .vi { width: 18px; height: 18px; flex: none; }
-:is(#prinzip, #projekt, #einordnung) .head h2, #projekt th { color: var(--accent); }
+#projekt th { color: var(--accent); }
 
 /* Kopfleiste: volle Breite der Kachel, Farbe nach Thema (hell: Vollfarbe + weiß, dunkel: getönt + Text) */
 #projekt .tile, .hd { --hc: var(--c-ph); padding-top: 0; overflow: hidden; }   /* .hd = Kachel mit Kopfleiste in den übrigen Sections (Prinz:A, Einord:A) */
