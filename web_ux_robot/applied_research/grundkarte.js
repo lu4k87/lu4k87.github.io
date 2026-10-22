@@ -59,14 +59,16 @@ function labels(s, c, o) {
     layout: { 'text-field': ['coalesce', ['get', 'name:de'], ['get', 'name']], 'text-font': ['Noto Sans Medium'], 'text-size': ['case', ['==', ['get', 'kind'], 'locality'], 13, 11] },
     paint: { 'text-color': c.ink2, 'text-halo-color': c.land, 'text-halo-width': 1.6 } };
 }
-// Flächen der Ebenen: unter dem Zeiger leicht getönt, Nachbarn der Auswahl abgeblendet
+// Flächen der Ebenen: Nachbarn der Auswahl abgeblendet; unter dem Zeiger getönt bzw. aufgehellt + Umriss (Hover vor dim)
+const HOV = ['boolean', ['feature-state', 'hover'], false], DIM = ['boolean', ['feature-state', 'dim'], false];
 const levelLayers = c => [
   ...['lan', 'krs', 'gem'].map(s => ({ id: `${s}-fill`, type: 'fill', source: s, paint: {
-    'fill-color': ['case', ['boolean', ['feature-state', 'dim'], false], c.land, c.accent],
-    'fill-opacity': ['case', ['boolean', ['feature-state', 'dim'], false], .62, ['boolean', ['feature-state', 'hover'], false], .14, 0] } })),
+    'fill-color': ['case', DIM, c.land, c.accent],
+    'fill-opacity': ['case', HOV, ['case', DIM, .3, .14], DIM, .62, 0] } })),
   { id: 'gem-line', type: 'line', source: 'gem', paint: { 'line-color': c.line2, 'line-width': 1 } },
   { id: 'krs-line', type: 'line', source: 'krs', paint: { 'line-color': c.line2, 'line-width': ['interpolate', ['linear'], ['zoom'], 5, .4, 9, 1.4] } },
   { id: 'lan-line', type: 'line', source: 'lan', paint: { 'line-color': c.border, 'line-width': ['interpolate', ['linear'], ['zoom'], 4, 1, 9, 2.4] } },
+  ...['lan', 'krs', 'gem'].map(s => ({ id: `${s}-hover`, type: 'line', source: s, paint: { 'line-color': c.accent, 'line-width': 1.6, 'line-opacity': ['case', HOV, 1, 0] } })),
   { id: 'sel-line', type: 'line', source: 'lan', filter: ['==', ['get', 'AGS'], '-'], paint: { 'line-color': c.accent, 'line-width': 2.6 } },
 ];
 // Namen der Länder und Kreise: ein Punkt je Fläche (mapshaper -points inner), sonst je Kachel doppelt; zuletzt im Stil = Vorrang vor Ortsnamen
@@ -112,9 +114,8 @@ export async function create(el, o) {
 
   const map = new ml.Map({ container: el, style: style(), bounds: o.bounds, fitBoundsOptions: { padding: 12 }, attributionControl: false,
     interactive: levels, minZoom: 4.5, maxZoom: 15, dragRotate: false, pitchWithRotate: false, touchPitch: false,
-    cooperativeGestures: levels, fadeDuration: o.RM ? 0 : 300,
-    locale: { 'CooperativeGesturesHandler.WindowsHelpText': T('geoCoopWin'), 'CooperativeGesturesHandler.MacHelpText': T('geoCoopMac'),
-      'CooperativeGesturesHandler.MobileHelpText': T('geoCoopTouch'), 'NavigationControl.ZoomIn': T('geoZoomIn'), 'NavigationControl.ZoomOut': T('geoZoomOut') } });
+    cooperativeGestures: levels && matchMedia('(pointer: coarse)').matches, fadeDuration: o.RM ? 0 : 300,   // Maus: Rad zoomt ohne Strg; Touch: zwei Finger, sonst hängt das Seiten-Scrollen
+    locale: { 'CooperativeGesturesHandler.MobileHelpText': T('geoCoopTouch'), 'NavigationControl.ZoomIn': T('geoZoomIn'), 'NavigationControl.ZoomOut': T('geoZoomOut') } });
   map.addControl(new ml.AttributionControl({ compact: false }), 'bottom-right');
   map.addControl(new ml.ScaleControl({ unit: 'metric' }), 'bottom-left');
   if (levels) { map.touchZoomRotate.disableRotation(); map.addControl(new ml.NavigationControl({ showCompass: false }), 'top-right'); }

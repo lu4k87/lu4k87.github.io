@@ -42,7 +42,7 @@
       mapHint: 'Symbol anklicken oder per Tab-Taste wählen', mapPlatAria: 'Karte der Unternehmen, Symbole sind wählbar',
       geoDE: 'Deutschland', geoLvl: ['Bund', 'Land', 'Kreis', 'Gemeinde'], geoNav: 'Kartenebene', geoBack: 'Zurück zu {x}', geoClick: 'Klick: {x}',
       geoPick: ['Land anklicken', 'Kreis anklicken · Esc: eine Ebene zurück', 'Gemeinde anklicken · Esc: eine Ebene zurück', 'Esc: eine Ebene zurück'],
-      geoCoopWin: 'Strg + Mausrad zum Zoomen', geoCoopMac: '⌘ + Mausrad zum Zoomen', geoCoopTouch: 'Karte mit zwei Fingern bewegen', geoZoomIn: 'Hineinzoomen', geoZoomOut: 'Herauszoomen',
+      geoCoopTouch: 'Karte mit zwei Fingern bewegen', geoZoomIn: 'Hineinzoomen', geoZoomOut: 'Herauszoomen',
       fict: 'fiktiv', offersH: 'Bietet an', needsH: 'Sucht',
       takers: '{n} Abnehmer', noTaker: 'kein Abnehmer in der Region', suppliers: '{n} Anbieter', noSupplier: 'kein Anbieter in der Region',
       bestFor: 'Beste Treffer für {x}', noMatch: 'Kein passender Partner in der Region – eine Lücke, die neue Partner schließen könnten.',
@@ -119,7 +119,7 @@
       mapHint: 'Click a symbol or select it with the Tab key', mapPlatAria: 'Map of companies, symbols are selectable',
       geoDE: 'Germany', geoLvl: ['Country', 'State', 'District', 'Municipality'], geoNav: 'Map level', geoBack: 'Back to {x}', geoClick: 'Click: {x}',
       geoPick: ['Click a state', 'Click a district · Esc: one level up', 'Click a municipality · Esc: one level up', 'Esc: one level up'],
-      geoCoopWin: 'Ctrl + scroll to zoom', geoCoopMac: '⌘ + scroll to zoom', geoCoopTouch: 'Use two fingers to move the map', geoZoomIn: 'Zoom in', geoZoomOut: 'Zoom out',
+      geoCoopTouch: 'Use two fingers to move the map', geoZoomIn: 'Zoom in', geoZoomOut: 'Zoom out',
       fict: 'fictional', offersH: 'Offers', needsH: 'Looking for',
       takers: '{n} takers', noTaker: 'no taker in the region', suppliers: '{n} suppliers', noSupplier: 'no supplier in the region',
       bestFor: 'Best matches for {x}', noMatch: 'No suitable partner in the region – a gap that new partners could close.',
@@ -350,14 +350,22 @@
       const cls = ['m-firm', 'r-' + f.role, o.sel === f.id ? 'sel' : '', dim ? 'dim' : '', (o.hl || []).includes(f.id) ? 'hl' : ''].join(' ');
       const a = { class: cls, transform: `translate(${x.toFixed(1)},${y.toFixed(1)})`, 'data-id': f.id };
       if (o.interactive) Object.assign(a, { tabindex: 0, role: 'button', 'aria-label': `${f.name}, ${L(D.roles[f.role])}, ${f.town}`, 'aria-pressed': String(o.sel === f.id) });
-      const g = S('g', a, gn);
+      const g = S('g', a, gn), s = r * 2.4, h = s / 2, b = r * .85;   // Logo (24 px bei r 10) im Rahmen, Rolle als Abzeichen oben rechts
       if (o.halo || o.interactive) S('circle', { class: 'm-halo', r: r * 2.6 }, g);
-      S('path', { class: 'm-shape', d: shape(f.role, r) }, g);
-      // schmale Karte: nur gewählte und hervorgehobene Firmen beschriften, Kurzname
+      S('rect', { class: 'm-frame', x: -h - 2 * k, y: -h - 2 * k, width: s + 4 * k, height: s + 4 * k, rx: 7 * k }, g);
+      const lg = S('svg', { class: 'm-logo', x: -h, y: -h, width: s, height: s, viewBox: '0 0 24 24' }, g);
+      S('rect', { width: 24, height: 24, rx: 6, fill: f.logo.c }, lg); S('path', { d: f.logo.d }, lg);
+      const bg = S('g', { transform: `translate(${h.toFixed(1)},${(-h).toFixed(1)})` }, g);
+      S('circle', { class: 'm-badge', r: b }, bg); S('path', { class: 'm-shape', d: shape(f.role, b * .5) }, bg);
+      // schmale Karte: nur gewählte und hervorgehobene Firmen beschriften, Kurzname; Name als Badge (Maß aus getBBox, unsichtbar geschätzt)
       if (!dim && (!small || o.sel === f.id || (o.hl || []).includes(f.id))) {
-        const side = f.lab || 't', gap = r * 1.7, fs = 14 * k;
-        const at = { r: [gap, fs * .35, 'start'], l: [-gap, fs * .35, 'end'], t: [0, -gap, 'middle'], b: [0, gap + fs * .8, 'middle'] }[side];
-        S('text', { class: 'm-flabel', x: at[0], y: at[1], 'text-anchor': at[2], 'aria-hidden': 'true' }, g).textContent = short ? f.name.split(' ')[0] : f.name;
+        const side = f.lab || 't', gap = h + 12 * k, fs = 14 * k, px = 6 * k, py = 3 * k;
+        const at = { r: [gap, fs * .35, 'start'], l: [-gap, fs * .35, 'end'], t: [0, -(h + b + 9 * k), 'middle'], b: [0, h + 8 * k + fs * .8, 'middle'] }[side];
+        const t = S('text', { class: 'm-flabel', x: at[0], y: at[1], 'text-anchor': at[2], 'aria-hidden': 'true' }, g);
+        t.textContent = short ? f.name.split(' ')[0] : f.name;
+        let bb; try { bb = t.getBBox(); } catch { bb = { width: 0 }; }   // Firefox wirft bei unsichtbarem SVG
+        if (!bb.width) { const w = t.textContent.length * fs * .56; bb = { x: at[0] - w * { start: 0, end: 1, middle: .5 }[at[2]], y: at[1] - fs * .8, width: w, height: fs * 1.05 }; }
+        g.insertBefore(S('rect', { class: 'm-fbadge', x: bb.x - px, y: bb.y - py, width: bb.width + 2 * px, height: bb.height + 2 * py, rx: 5 * k, 'aria-hidden': 'true' }), t);
       }
     });
     if (!geo) drawFurniture(svg, k, view, sw, sh);
@@ -782,7 +790,7 @@
   function initGeo() {
     if (Q.has('schematic') || !document.createElement('canvas').getContext('webgl2')) return;
     const mod = import('./grundkarte.js');
-    // ponytail: Texte der MapLibre-Bedienung (Strg + Mausrad, Zoom-Knöpfe) bleiben in der Sprache beim Laden, Ausbau wenn Sprachwechsel häufig
+    // ponytail: Texte der MapLibre-Bedienung (Zwei-Finger-Hinweis, Zoom-Knöpfe) bleiben in der Sprache beim Laden, Ausbau wenn Sprachwechsel häufig
     const opts = {
       mapStart: () => ({ bounds: viewBounds(START_VIEW) }),
       mapScn: () => ({ bounds: viewBounds(fitView(scn.path, $('#mapScn').parentNode)) }),
@@ -798,7 +806,11 @@
       const svg = e.target, stage = svg.parentNode, el = document.createElement('div');
       el.className = 'geo-map'; stage.prepend(el);
       mod.then(G => G.create(el, { ...opts[svg.id](stage), T, RM, onMove: () => redraw(svg) }))
-        .then(g => { GEO[svg.id] = g; stage.classList.add('geo'); if (svg.id === 'mapStart') renderStart(); else drawMap(svg, svg._o); })
+        .then(g => {
+          GEO[svg.id] = g; stage.classList.add('geo'); if (svg.id === 'mapStart') renderStart(); else drawMap(svg, svg._o);
+          // Mausrad über einer Firma (SVG liegt über der Karte) an MapLibre weitergeben, sonst zoomt dort nichts
+          if (svg.id === 'mapPlat' && !matchMedia('(pointer: coarse)').matches) svg.addEventListener('wheel', e => { e.preventDefault(); g.map.getCanvas().dispatchEvent(new WheelEvent('wheel', e)); }, { passive: false });
+        })
         .catch(err => { console.warn('Grundkarte nicht geladen, Karte bleibt schematisch:', err); el.remove(); stage.querySelectorAll('.geo-nav').forEach(n => n.remove()); });
     }), { rootMargin: '400px 0px' });
     ['#mapStart', '#mapScn', '#mapPlat'].forEach(s => io.observe($(s)));
