@@ -30,9 +30,10 @@
       cyAria: 'Kreislauf: Produzieren liefert Granulat an Verarbeiten, Produktionsreste gehen ans Recyceln, Regranulat und Rezyklat kehren zurück.',
       cyCells: [['Produzieren', 'Granulat, Halbzeug'], ['Verarbeiten', 'Bauteile, Folien'], ['Recyceln', 'Mahlgut, Regranulat']],
       cyFlows: ['Granulat', 'Produktionsreste', 'Regranulat', 'Rezyklat'], cyLoop: 'Rückweg im Kreislauf', cyFwd: 'Neuware',
-      vsToday: 'Heute: getrennte Inseln', vsNet: 'Mit KreiswertS: ein Netz',
-      vsT: ['Reste gehen in die Entsorgung', 'Nebenan wird Neuware gekauft', 'Niemand sieht den anderen'],
-      vsN: ['Angebote und Bedarfe auf einer Karte', 'Passende Partner in der Nähe', 'Wege werden sichtbar'],
+      vsToday: 'Heute: Einbahnstraße', vsNet: 'Mit KreiswertS: Kreislauf',
+      vsBars: ['Neuware', 'Entsorgung'], vsEdge: ['Reste', 'Regranulat', 'Rezyklat'],
+      vsT: ['Jeder Betrieb kauft Neuware und entsorgt seine Reste', 'Der Recycler in der Nähe bekommt nichts davon ab', 'Niemand sieht, was der andere hat oder braucht'],
+      vsN: ['Reste gehen an den Recycler in der Nähe', 'Regranulat und Rezyklat kehren als Rohstoff zurück', 'Weniger Neuware, weniger Entsorgung'],
       plTitle: 'Plattform-Prototyp',
       plLead: 'Profile, Materialbörse und Matching auf einer Karte. Unternehmen oder Material wählen – passende Partner erscheinen als Weg.',
       searchLabel: 'Suche', searchPh: 'Material, Polymer oder Unternehmen', role: 'Rolle', type: 'Typ',
@@ -103,9 +104,10 @@
       cyAria: 'Loop: producing supplies granulate to processing, production scrap goes to recycling, regranulate and recyclate return.',
       cyCells: [['Producing', 'Granulate, semi-finished'], ['Processing', 'Parts, films'], ['Recycling', 'Regrind, regranulate']],
       cyFlows: ['Granulate', 'Production scrap', 'Regranulate', 'Recyclate'], cyLoop: 'Way back in the loop', cyFwd: 'Virgin material',
-      vsToday: 'Today: separate islands', vsNet: 'With KreiswertS: one network',
-      vsT: ['Scrap goes to disposal', 'Virgin material is bought next door', 'Nobody sees the others'],
-      vsN: ['Offers and needs on one map', 'Suitable partners nearby', 'Routes become visible'],
+      vsToday: 'Today: one-way street', vsNet: 'With KreiswertS: a loop',
+      vsBars: ['Virgin material', 'Disposal'], vsEdge: ['Scrap', 'Regranulate', 'Recyclate'],
+      vsT: ['Every company buys virgin material and disposes of its scrap', 'The recycler nearby gets none of it', 'Nobody sees what the others have or need'],
+      vsN: ['Scrap goes to the recycler nearby', 'Regranulate and recyclate return as raw material', 'Less virgin material, less disposal'],
       plTitle: 'Platform prototype',
       plLead: 'Profiles, material exchange and matching on one map. Choose a company or material – suitable partners appear as a route.',
       searchLabel: 'Search', searchPh: 'Material, polymer or company', role: 'Role', type: 'Type',
@@ -294,6 +296,7 @@
   }
   const pchip = p => `<span class="pchip" style="${pvar(p)}" title="${esc(L(D.poly[p]))}"><i></i>${p}</span>`;
   const roleShape = (role, size = 14) => `<svg class="rshape" viewBox="-16 -16 32 32" width="${size}" height="${size}" aria-hidden="true"><path d="${shape(role, 11)}"/></svg>`;
+  const logo = (f, size = 20) => `<svg class="logo" viewBox="0 0 24 24" width="${size}" height="${size}" aria-hidden="true"><rect width="24" height="24" rx="6" fill="${f.logo.c}"/><path d="${f.logo.d}"/></svg>`;
   const roleLegend = () => Object.keys(D.roles).map(r => `<span>${roleShape(r)}${L(D.roles[r])}</span>`).join('');
 
   /* ---------- Kopf: Schritt-Leiste, Sprache, Theme ---------- */
@@ -386,13 +389,39 @@
       S('text', { class: 'cy-s', y: 30 }, g).textContent = cells[i][1];
     });
   }
+  // Heute vs. Kreislauf: dieselben vier Betriebe – links Einbahnstraße Neuware → Betrieb → Entsorgung, rechts Rückwege über den Recycler
   function renderVs() {
-    const P = [[70, 75], [190, 40], [190, 115], [330, 75], [450, 45], [450, 110]];
+    const N = [{ x: 50, f: F.lintra }, { x: 250, f: F.regrana }, { x: 380, f: F.velufol }, { x: 475, f: F.kornwerk }].map(n => ({ ...n, role: n.f.role })), Y = 98, RN = 21;
+    const bars = T('vsBars'), edge = T('vsEdge');
     [['#vsToday', false], ['#vsNet', true]].forEach(([id, net]) => {
-      const s = $(id); s.innerHTML = '';
-      if (net) [[0, 1], [1, 3], [2, 3], [3, 4], [3, 5], [0, 2], [4, 5]].forEach(([a, b]) => S('line', { class: 'vs-link', x1: P[a][0], y1: P[a][1], x2: P[b][0], y2: P[b][1] }, s));
-      else P.forEach(([x, y], i) => { if (i % 2) S('line', { class: 'vs-loss', x1: x, y1: y + 22, x2: x, y2: y + 40 }, s); });
-      P.forEach(([x, y]) => S('circle', { class: 'vs-node' + (net ? ' on' : ''), cx: x, cy: y, r: 22 }, s));
+      const s = $(id), pre = id.slice(1); s.innerHTML = '';
+      const defs = S('defs', {}, s);
+      ['flow', 'loss', 'loop'].forEach(c => { const m = S('marker', { id: `${pre}-${c}`, viewBox: '0 0 10 10', refX: 8, refY: 5, markerWidth: 7, markerHeight: 7, orient: 'auto-start-reverse' }, defs); S('path', { class: 'vs-head ' + c, d: 'M0,0 L10,5 L0,10 Z' }, m); });
+      const arrow = (d, c) => S('path', { class: 'vs-' + c, d, 'marker-end': `url(#${pre}-${c})` }, s);
+      const bar = (y, t, c) => { S('rect', { class: 'vs-bar ' + c, x: 10, y, width: 500, height: 24, rx: 5 }, s); S('text', { class: 'vs-bar-t', x: 260, y: y + 16.5 }, s).textContent = t; };
+      bar(4, bars[0], 'flow'); bar(170, bars[1], 'loss');
+      // Neuware hinein, Reste hinaus: heute bei jedem Betrieb außer dem Recycler, im Kreislauf nur noch je einmal
+      N.forEach((n, i) => {
+        if (n.role === 'R') return;
+        if (!net || n.role === 'P') arrow(`M${n.x},30 V${Y - RN - 4}`, 'flow');
+        if (!net || i === 2) arrow(`M${n.x},${Y + 46} V166`, 'loss');
+      });
+      if (net) {
+        const lab = (x, y, t) => { const w = t.length * 8 + 14, g = S('g', { class: 'vs-tag', transform: `translate(${x},${y})` }, s); S('rect', { x: -w / 2, y: -11, width: w, height: 22, rx: 5 }, g); S('text', { y: 4.5 }, g).textContent = t; };
+        arrow(`M${50 + RN},${Y - 6} Q150,${Y - 34} ${250 - RN - 3},${Y - 8}`, 'loop');
+        arrow(`M${250 - RN},${Y + 8} Q150,${Y + 40} ${50 + RN + 3},${Y + 8}`, 'loop');
+        arrow(`M${380 - RN},${Y} H${250 + RN + 4}`, 'loop');
+        arrow(`M250,${Y - RN} Q360,18 ${475 - RN - 4},${Y - 10}`, 'loop');
+        lab(150, Y - 34, edge[0]); lab(150, Y + 34, edge[1]); lab(350, 44, edge[2]);
+      }
+      N.forEach(n => {
+        const g = S('g', { transform: `translate(${n.x},${Y})` }, s);
+        S('circle', { class: 'vs-node' + (net ? ' on' : n.role === 'R' ? ' idle' : ''), r: RN }, g);
+        const lg = S('svg', { class: 'logo', x: -12, y: -12, width: 24, height: 24, viewBox: '0 0 24 24' }, g);
+        S('rect', { width: 24, height: 24, rx: 6, fill: n.f.logo.c }, lg); S('path', { d: n.f.logo.d }, lg);
+        const b = S('g', { transform: `translate(${RN - 3},${-RN + 3})` }, g); S('circle', { class: 'vs-badge', r: 8 }, b); S('path', { class: 'vs-shape', d: shape(n.role, 4.5) }, b);
+        S('text', { class: 'vs-lab', y: RN + 16 }, g).textContent = n.f.name.split(' ')[0];
+      });
     });
     $('#vsTodayL').innerHTML = T('vsT').map(t => `<li>${t}</li>`).join('');
     $('#vsNetL').innerHTML = T('vsN').map(t => `<li>${t}</li>`).join('');
@@ -414,19 +443,19 @@
   function itemBtn(x, withFirm) {
     const m = MX[x.id], f = F[x.firm], off = x.kind === 'o';
     const badge = m.length ? `<span class="bdg ok">${T(off ? 'takers' : 'suppliers', { n: m.length })}</span>` : `<span class="bdg warn wrap">${T(off ? 'noTaker' : 'noSupplier')}</span>`;
-    const who = withFirm ? `<span>${roleShape(f.role)} ${esc(f.name)}</span>` : '';
+    const who = withFirm ? `<span class="firm">${logo(f, 18)}${roleShape(f.role)} ${esc(f.name)}</span>` : '';
     return `<button type="button" class="item" data-item="${x.id}" aria-pressed="${st.item === x.id}"><span class="top">${polys(x).map(pchip).join('')}<span class="nm">${forms(x).map(k => esc(L(D.forms[k]))).join(' / ')}</span><span class="q">${fmt(x.t)} ${T('perMonth')}</span></span>`
       + `<span class="meta">${badge}${who}<span>${quals(x).map(q => esc(L(D.quality[q]))).join(' / ')}${x.note ? ' · ' + esc(L(x.note)) : ''}</span></span></button>`;
   }
   function matchRow(m, x) {
     const off = x.kind === 'o', other = F[off ? m.n.firm : m.o.firm], counter = off ? m.n : m.o;
     const checks = [['y', T('chkPoly')], ['y', T('chkForm')], ['y', T(m.qfit === 1 ? 'chkQual' : 'chkQual2')], m.cover >= .999 ? ['y', T('chkQty')] : ['o', T('chkQtyPart', { p: Math.round(m.cover * 100) })]];
-    return `<button type="button" class="item" data-item="${counter.id}"><span class="score"><span class="who">${roleShape(other.role)} ${esc(other.name)} · ${fmt(m.d)} km</span><b>${m.score} %</b><span class="bar"><i style="width:${m.score}%"></i></span></span>`
+    return `<button type="button" class="item" data-item="${counter.id}"><span class="score"><span class="who">${logo(other, 18)}${roleShape(other.role)} ${esc(other.name)} · ${fmt(m.d)} km</span><b>${m.score} %</b><span class="bar"><i style="width:${m.score}%"></i></span></span>`
       + `<span class="checks">${checks.map(([c, t]) => `<span class="${c}">${t}</span>`).join('')}</span></button>`;
   }
   function profileHTML(f) {
     const its = k => f[k].map(x => itemBtn(ITEM[x.id])).join('');
-    return `<div class="prof"><span class="role">${roleShape(f.role, 16)} ${L(D.roles[f.role])} · ${esc(f.town)} <span class="bdg demo">${T('fict')}</span></span><h3>${esc(f.name)}</h3><p>${esc(L(f.desc))}</p></div>`
+    return `<div class="prof"><span class="role">${roleShape(f.role, 16)} ${L(D.roles[f.role])} · ${esc(f.town)} <span class="bdg demo">${T('fict')}</span></span><h3 class="firm">${logo(f, 28)}<span>${esc(f.name)}</span></h3><p>${esc(L(f.desc))}</p></div>`
       + (f.o.length ? `<div class="lst"><div class="lt"><span>${T('offersH')}</span><span>${f.o.length}</span></div>${its('o')}</div>` : '')
       + (f.n.length ? `<div class="lst"><div class="lt"><span>${T('needsH')}</span><span>${f.n.length}</span></div>${its('n')}</div>` : '');
   }
@@ -450,7 +479,7 @@
   }
   function firmsHTML(fs) {
     if (!fs.length) return `<p class="empty">${T('noHits')}</p>`;
-    return `<div class="lst">${fs.map(f => `<button type="button" class="item" data-firm="${f.id}" aria-pressed="${st.firm === f.id}"><span class="top">${roleShape(f.role, 16)}<span class="nm">${esc(f.name)}</span><span class="lab">${esc(f.town)}</span></span><span class="meta">${[...new Set([...f.o.map(o => o.poly), ...f.n.flatMap(n => n.poly)])].map(pchip).join('')}</span></button>`).join('')}</div>`;
+    return `<div class="lst">${fs.map(f => `<button type="button" class="item" data-firm="${f.id}" aria-pressed="${st.firm === f.id}"><span class="top">${logo(f, 22)}${roleShape(f.role, 16)}<span class="nm">${esc(f.name)}</span><span class="lab">${esc(f.town)}</span></span><span class="meta">${[...new Set([...f.o.map(o => o.poly), ...f.n.flatMap(n => n.poly)])].map(pchip).join('')}</span></button>`).join('')}</div>`;
   }
   function platRoutes() {
     const x = ITEM[st.item];
@@ -607,7 +636,7 @@
   const inBox = f => f.lat > B.lat0 && f.lat < B.lat1 && f.lon > B.lon0 && f.lon < B.lon1;
   const CHECKS = [
     () => { const div = document.createElement('div');
-      const ok = D.firms.length >= 10 && D.firms.every(f => { div.innerHTML = profileHTML(f); return f.name && D.roles[f.role] && f.town && inBox(f) && (f.o.length + f.n.length) > 0 && div.querySelector('h3').textContent === f.name && div.querySelectorAll('[data-item]').length === f.o.length + f.n.length; });
+      const ok = D.firms.length >= 10 && D.firms.every(f => { div.innerHTML = profileHTML(f); return f.name && D.roles[f.role] && f.town && inBox(f) && (f.o.length + f.n.length) > 0 && div.querySelector('h3').textContent.trim() === f.name && div.querySelectorAll('[data-item]').length === f.o.length + f.n.length; });
       return [ok, { n: D.firms.length }]; },
     () => withState({}, () => { const es = entries(), div = document.createElement('div'); div.innerHTML = boardHTML(es);
       const ok = es.length === OFFERS.length + NEEDS.length && es.every(x => x.t > 0 && polys(x).every(p => D.poly[p]) && forms(x).every(k => D.forms[k])) && div.querySelectorAll('[data-item]').length === es.length;
