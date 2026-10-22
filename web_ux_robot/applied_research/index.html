@@ -6,6 +6,7 @@
 <title>KreiswertS</title>
 <meta name="description" content="KreiswertS – digitaler Plattform-Prototyp für den zirkulären Kunststoff-Materialaustausch in Kamp-Lintfort. Alle Unternehmen und Mengen sind fiktive Demo-Daten.">
 <link rel="stylesheet" href="../fonts/fonts.css">
+<link rel="stylesheet" href="vendor/maplibre-gl.css">
 <link rel="stylesheet" href="kreiswerts.css">
 </head>
 <body>
@@ -90,7 +91,7 @@
   <div class="plat">
     <div class="tile mapc">
       <div class="stage"><svg class="map" id="mapPlat" role="group"></svg></div>
-      <div class="hint"><span data-t="mapHint"></span><span class="legend" id="legendPlat"></span></div>
+      <div class="hint"><span data-t="mapHint"></span><span id="geoHint"></span><span class="legend" id="legendPlat"></span></div>
     </div>
     <div class="tile panel">
       <div class="tabs" role="tablist" id="ptabs">
@@ -144,6 +145,7 @@
 </main>
 <footer class="foot"><div class="wrap" data-t="foot"></div></footer>
 <script src="daten.js"></script>
+<script src="vendor/pmtiles.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

@@ -5,6 +5,7 @@ window.KW_DATA = {
   region: {
     name: 'Kamp-Lintfort',
     box: { lon0: 6.37, lon1: 6.75, lat0: 51.415, lat1: 51.600 },
+    ags: ['05', '05170'],   // echte Grundkarte: Startebene der Plattform (Land, Kreis; amtliche Gemeindeschlüssel VG250)
     towns: [
       { name: 'Kamp-Lintfort', lat: 51.5030, lon: 6.5430, r: 2.1, main: true, lx: -2.3, ly: -1.9 },
       { name: 'Moers', lat: 51.4516, lon: 6.6262, r: 2.4, lx: .4, ly: 2.3 },
@@ -20,7 +21,7 @@ window.KW_DATA = {
       { name: 'A42', pts: [[51.497, 6.588], [51.494, 6.640], [51.491, 6.690], [51.489, 6.760]], at: 0.35 },
       { name: 'A40', pts: [[51.431, 6.360], [51.429, 6.470], [51.432, 6.597], [51.434, 6.670], [51.432, 6.760]], at: 0.3 },
     ],
-    // Kartenbild (schematisch, eigene Zeichnung): Flächen als Ellipsen um einen Mittelpunkt, Lage grob nach echter Karte (at, rx/ry in km, rot in Grad)
+    // Kartenbild (schematisch, eigene Zeichnung; nur noch Ersatz ohne WebGL oder ohne geo/): Flächen als Ellipsen um einen Mittelpunkt, Lage grob nach echter Karte (at, rx/ry in km, rot in Grad)
     decor: {
       forest: [
         { name: 'Leucht', at: [51.556, 6.500], rx: 3.4, ry: 1.7, rot: -18 },
@@ -252,7 +253,7 @@ window.KW_DATA = {
     ],
     limits: [
       { de: 'Alle Unternehmen und Mengen sind fiktiv; die Recherche echter Firmen (Ziel 1) steht aus.', en: 'All companies and quantities are fictional; research on real companies (goal 1) is pending.' },
-      { de: 'Entfernungen als Luftlinie, Karte schematisch.', en: 'Distances as the crow flies, map is schematic.' },
+      { de: 'Entfernungen als Luftlinie; Kartengrundlage OpenStreetMap und BKG, Firmenstandorte fiktiv.', en: 'Distances as the crow flies; base map OpenStreetMap and BKG, company locations fictional.' },
       { de: 'Keine Preise, Verträge oder Nutzerkonten – kein operativer Marktplatz.', en: 'No prices, contracts or user accounts – not an operational marketplace.' },
       { de: 'Einsparungen und Umwelteffekte brauchen Validierung mit Partnerunternehmen.', en: 'Savings and environmental effects need validation with partner companies.' },
     ],

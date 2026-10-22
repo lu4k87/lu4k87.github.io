@@ -1,5 +1,5 @@
 /* KreiswertS · Logik: Matching, Karte, Plattform, Szenarien, Projekt, Selbsttest, Sprache + Theme.
-   Direktlinks: ?lang=de|en · ?theme=light|dark · ?firm=<id> · ?scn=s1|s2|s3 */
+   Direktlinks: ?lang=de|en · ?theme=light|dark · ?firm=<id> · ?scn=s1|s2|s3 · ?schematic (ohne echte Grundkarte) */
 (() => {
   'use strict';
   const D = window.KW_DATA;
@@ -19,7 +19,7 @@
       can2: 'Auf der Karte passende Partner für ein Material finden', can3: 'Drei Beispiele für plausiblen Austausch durchspielen',
       ctaNext: 'Weiter: Das Prinzip', ctaPlat: 'Direkt zur Plattform',
       mapTitle: 'Lagebild · Kamp-Lintfort und Umgebung', schematic: 'schematisch',
-      mapStartAria: 'Schematische Karte: {n} fiktive Unternehmen und die rechnerisch besten Austauschwege je Kunststoff',
+      mapStartAria: 'Karte: {n} fiktive Unternehmen und die rechnerisch besten Austauschwege je Kunststoff',
       potLabel: 'Austauschpotenzial, rechnerisch', perMonth: 't/Monat', potNote: 'jede Tonne Angebot und Bedarf nur einmal vergeben',
       kFirms: 'Unternehmen · {n} Rollen', kOffers: 'Angebote · {t} t/Monat', kNeeds: 'Bedarfe · {t} t/Monat', kPairs: 'passende Paare',
       prTitle: 'Was ein Betrieb übrig hat, braucht ein anderer',
@@ -40,6 +40,9 @@
       offers: 'Angebote', needs: 'Bedarfe', gapsOnly: 'nur Lücken', hits: '{f} Unternehmen · {e} Einträge',
       tabFirms: 'Firmen · {n}', tabBoard: 'Börse · {n}', tabMatch: 'Matching · {n}',
       mapHint: 'Symbol anklicken oder per Tab-Taste wählen', mapPlatAria: 'Karte der Unternehmen, Symbole sind wählbar',
+      geoDE: 'Deutschland', geoLvl: ['Bund', 'Land', 'Kreis', 'Gemeinde'], geoNav: 'Kartenebene', geoBack: 'Zurück zu {x}', geoClick: 'Klick: {x}',
+      geoPick: ['Land anklicken', 'Kreis anklicken · Esc: eine Ebene zurück', 'Gemeinde anklicken · Esc: eine Ebene zurück', 'Esc: eine Ebene zurück'],
+      geoCoopWin: 'Strg + Mausrad zum Zoomen', geoCoopMac: '⌘ + Mausrad zum Zoomen', geoCoopTouch: 'Karte mit zwei Fingern bewegen', geoZoomIn: 'Hineinzoomen', geoZoomOut: 'Herauszoomen',
       fict: 'fiktiv', offersH: 'Bietet an', needsH: 'Sucht',
       takers: '{n} Abnehmer', noTaker: 'kein Abnehmer in der Region', suppliers: '{n} Anbieter', noSupplier: 'kein Anbieter in der Region',
       bestFor: 'Beste Treffer für {x}', noMatch: 'Kein passender Partner in der Region – eine Lücke, die neue Partner schließen könnten.',
@@ -82,7 +85,7 @@
         '<b>Ehrlich:</b> Plausibilität statt Versprechen – Preise, Prüfprotokolle und Umwelteffekte bleiben offen.'],
       limTitle: 'Grenzen des Prototyps', guideTitle: 'Replikation · Leitfaden in {n} Schritten',
       guideLead: 'Alle Daten einer Region stehen in einer Datei (daten.js) – Karte, Matching, Szenarien und Selbsttest passen sich an.',
-      foot: 'Alle Unternehmen, Mengen und Wege sind fiktive Demo-Daten · Karte schematisch, Entfernungen als Luftlinie · Applied Research, Prototyp 2026',
+      foot: 'Alle Unternehmen, Mengen und Wege sind fiktive Demo-Daten · Entfernungen als Luftlinie · Karte © OpenStreetMap-Mitwirkende, © GeoBasis-DE / BKG (2026) · Applied Research, Prototyp 2026',
     },
     en: {
       demo: 'Demo data · fictional', railAria: 'Steps of the page', langAria: 'Language', themeDark: 'Dark theme', themeLight: 'Light theme',
@@ -93,7 +96,7 @@
       can2: 'Find suitable partners for a material on the map', can3: 'Play through three examples of plausible exchange',
       ctaNext: 'Next: the principle', ctaPlat: 'Straight to the platform',
       mapTitle: 'Overview · Kamp-Lintfort and surroundings', schematic: 'schematic',
-      mapStartAria: 'Schematic map: {n} fictional companies and the best exchange routes per plastic by calculation',
+      mapStartAria: 'Map: {n} fictional companies and the best exchange routes per plastic by calculation',
       potLabel: 'Exchange potential, calculated', perMonth: 't/month', potNote: 'each tonne of offer and need allocated only once',
       kFirms: 'companies · {n} roles', kOffers: 'offers · {t} t/month', kNeeds: 'needs · {t} t/month', kPairs: 'matching pairs',
       prTitle: 'What one company has left over, another needs',
@@ -114,6 +117,9 @@
       offers: 'Offers', needs: 'Needs', gapsOnly: 'gaps only', hits: '{f} companies · {e} entries',
       tabFirms: 'Companies · {n}', tabBoard: 'Exchange · {n}', tabMatch: 'Matching · {n}',
       mapHint: 'Click a symbol or select it with the Tab key', mapPlatAria: 'Map of companies, symbols are selectable',
+      geoDE: 'Germany', geoLvl: ['Country', 'State', 'District', 'Municipality'], geoNav: 'Map level', geoBack: 'Back to {x}', geoClick: 'Click: {x}',
+      geoPick: ['Click a state', 'Click a district · Esc: one level up', 'Click a municipality · Esc: one level up', 'Esc: one level up'],
+      geoCoopWin: 'Ctrl + scroll to zoom', geoCoopMac: '⌘ + scroll to zoom', geoCoopTouch: 'Use two fingers to move the map', geoZoomIn: 'Zoom in', geoZoomOut: 'Zoom out',
       fict: 'fictional', offersH: 'Offers', needsH: 'Looking for',
       takers: '{n} takers', noTaker: 'no taker in the region', suppliers: '{n} suppliers', noSupplier: 'no supplier in the region',
       bestFor: 'Best matches for {x}', noMatch: 'No suitable partner in the region – a gap that new partners could close.',
@@ -156,7 +162,7 @@
         '<b>Honest:</b> plausibility instead of promises – prices, test reports and environmental effects remain open.'],
       limTitle: 'Limits of the prototype', guideTitle: 'Replication · guide in {n} steps',
       guideLead: 'All data of a region sits in one file (daten.js) – map, matching, scenarios and self-test adapt.',
-      foot: 'All companies, quantities and routes are fictional demo data · schematic map, straight-line distances · Applied Research, prototype 2026',
+      foot: 'All companies, quantities and routes are fictional demo data · straight-line distances · map © OpenStreetMap contributors, © GeoBasis-DE / BKG (2026) · Applied Research, prototype 2026',
     },
   };
   let LANG = 'de';
@@ -213,6 +219,11 @@
 
   /* ---------- Karten-Baukasten (SVG) ---------- */
   const NS = 'http://www.w3.org/2000/svg';
+  const GEO = {};   // svg.id → echte Grundkarte darunter (initGeo), fehlt = schematische Karte
+  window.KW_GEO = GEO;   // Prüfskripte: Kamera und Projektion von außen ansehen
+  const lonlat = (x, y) => [B.lon0 + x / (KX * U), B.lat1 - y / (KY * U)];
+  const viewBounds = v => [lonlat(v[0], v[1] + v[3]), lonlat(v[0] + v[2], v[1])];
+  const START_VIEW = [60, 0, 960, 800], PLAT_VIEW = [40, 10, 980, 800];
   const S = (t, a = {}, p) => { const e = document.createElementNS(NS, t); for (const k in a) e.setAttribute(k, a[k]); if (p) p.appendChild(e); return e; };
   const pt = ([lat, lon]) => proj(lat, lon);
   function smooth(points) {   // Catmull-Rom → kubische Bézier
@@ -228,8 +239,8 @@
     if (role === 'R') return `M0,${-r * 1.25}L${r * 1.15},${r * .8}L${-r * 1.15},${r * .8}Z`;
     return `M${-r},0a${r},${r} 0 1,0 ${2 * r},0a${r},${r} 0 1,0 ${-2 * r},0`;
   }
-  function arc(a, b, bend = .18) {
-    const [x1, y1] = proj(a.lat, a.lon), [x2, y2] = proj(b.lat, b.lon);
+  function arc(a, b, bend = .18, P = proj) {
+    const [x1, y1] = P(a.lat, a.lon), [x2, y2] = P(b.lat, b.lon);
     const cx = (x1 + x2) / 2 - (y2 - y1) * bend, cy = (y1 + y2) / 2 + (x2 - x1) * bend;
     return { d: `M${x1.toFixed(1)},${y1.toFixed(1)} Q${cx.toFixed(1)},${cy.toFixed(1)} ${x2.toFixed(1)},${y2.toFixed(1)}`, x1, y1, x2, y2, cx, cy, len: Math.hypot(x2 - x1, y2 - y1) };
   }
@@ -282,15 +293,8 @@
     S('text', { class: 'm-attr', x: x0 + vw - 10 * k, y: y0 + vh - 10 * k, 'text-anchor': 'end' }, g).textContent = T('schematic') + ' · KreiswertS';
   }
 
-  // o: { view:[x,y,w,h], par, routes:[{from,to,poly,cls,bend,dots,dr,label,glow,anim}], sel, hl, dim, halo, r, short, interactive }
-  // k = SVG-Einheiten je Bildschirm-Pixel: Schrift, Symbole, Striche bleiben bei jedem Zoom und jeder Fensterbreite gleich groß
-  function drawMap(svg, o = {}) {
-    svg.innerHTML = '';
-    const view = o.view || [0, 0, W, H], sw = svg.clientWidth || 800, sh = svg.clientHeight || 600;
-    const k = 1 / (o.par === 'xMidYMid slice' ? Math.max : Math.min)(sw / view[2], sh / view[3]), small = sw < 520;
-    svg.setAttribute('viewBox', view.map(v => v.toFixed(1)).join(' '));
-    svg.setAttribute('preserveAspectRatio', o.par || 'xMidYMid meet');
-    svg.style.setProperty('--k', k.toFixed(3));
+  // Kartengrund der schematischen Karte: Land, Flächen, Wasser, Straßen, Ortsnamen
+  function drawBase(svg, k) {
     const base = S('g', { class: 'm-base', 'aria-hidden': 'true' }, svg);
     S('rect', { class: 'm-land', x: -900, y: -900, width: W + 1800, height: H + 1800 }, base);
     drawDecor(svg, base, k);
@@ -305,9 +309,26 @@
       S('text', { class: 'm-rlabel', y: 4.5, 'text-anchor': 'middle' }, g).textContent = r.name;
     });
     { const w = D.region.water, [x, y] = pt(w.at); S('text', { class: 'm-water', x, y, transform: `rotate(${w.angle} ${x} ${y})` }, lab).textContent = L(w.name); }
+  }
+
+  // o: { view:[x,y,w,h], par, routes:[{from,to,poly,cls,bend,dots,dr,label,glow,anim}], sel, hl, dim, halo, r, short, interactive }
+  // k = SVG-Einheiten je Bildschirm-Pixel: Schrift, Symbole, Striche bleiben bei jedem Zoom und jeder Fensterbreite gleich groß
+  // Mit echter Grundkarte (GEO) zeichnet das SVG nur Wege + Firmen in Pixeln über MapLibre (map.project), sonst das ganze Kartenbild
+  function drawMap(svg, o = {}) {
+    svg.innerHTML = '';
+    svg._o = o;
+    const geo = GEO[svg.id], sw = svg.clientWidth || 800, sh = svg.clientHeight || 600, P = geo ? geo.project : proj;
+    const view = geo ? [0, 0, sw, sh] : o.view || [0, 0, W, H];
+    const k = geo ? 1 : 1 / (o.par === 'xMidYMid slice' ? Math.max : Math.min)(sw / view[2], sh / view[3]), small = sw < 520;
+    const short = o.short || small || (geo && geo.zoom() < 10.6);   // weit hinausgezoomt: Kurznamen, sonst überlappen die Beschriftungen
+    svg.setAttribute('viewBox', view.map(v => v.toFixed(1)).join(' '));
+    svg.setAttribute('preserveAspectRatio', geo ? 'none' : o.par || 'xMidYMid meet');
+    svg.style.setProperty('--k', k.toFixed(3));
+    svg.classList.toggle('far', !!geo && geo.far());
+    if (!geo) drawBase(svg, k);
     const gr = S('g', { class: 'm-routes', 'aria-hidden': 'true' }, svg), gn = S('g', { class: 'm-firms' }, svg), gt = S('g', { class: 'm-tags', 'aria-hidden': 'true' }, svg);
     (o.routes || []).forEach(rt => {
-      const r = arc(F[rt.from], F[rt.to], rt.bend ?? .18), pc = pvar(rt.poly);
+      const r = arc(F[rt.from], F[rt.to], rt.bend ?? .18, P), pc = pvar(rt.poly);
       if (rt.glow) S('path', { class: 'm-route-glow', d: r.d, style: pc }, gr);
       S('path', { class: 'm-route ' + (rt.cls || ''), d: r.d, style: pc }, gr);
       const n = rt.dots || 0, dr = (rt.dr || 5) * k;
@@ -325,7 +346,7 @@
       }
     });
     D.firms.forEach(f => {
-      const [x, y] = proj(f.lat, f.lon), r = (o.r || 10) * k, dim = (o.dim || []).includes(f.id);
+      const [x, y] = P(f.lat, f.lon), r = (o.r || 10) * k, dim = (o.dim || []).includes(f.id);
       const cls = ['m-firm', 'r-' + f.role, o.sel === f.id ? 'sel' : '', dim ? 'dim' : '', (o.hl || []).includes(f.id) ? 'hl' : ''].join(' ');
       const a = { class: cls, transform: `translate(${x.toFixed(1)},${y.toFixed(1)})`, 'data-id': f.id };
       if (o.interactive) Object.assign(a, { tabindex: 0, role: 'button', 'aria-label': `${f.name}, ${L(D.roles[f.role])}, ${f.town}`, 'aria-pressed': String(o.sel === f.id) });
@@ -336,10 +357,10 @@
       if (!dim && (!small || o.sel === f.id || (o.hl || []).includes(f.id))) {
         const side = f.lab || 't', gap = r * 1.7, fs = 14 * k;
         const at = { r: [gap, fs * .35, 'start'], l: [-gap, fs * .35, 'end'], t: [0, -gap, 'middle'], b: [0, gap + fs * .8, 'middle'] }[side];
-        S('text', { class: 'm-flabel', x: at[0], y: at[1], 'text-anchor': at[2], 'aria-hidden': 'true' }, g).textContent = o.short || small ? f.name.split(' ')[0] : f.name;
+        S('text', { class: 'm-flabel', x: at[0], y: at[1], 'text-anchor': at[2], 'aria-hidden': 'true' }, g).textContent = short ? f.name.split(' ')[0] : f.name;
       }
     });
-    drawFurniture(svg, k, view, sw, sh);
+    if (!geo) drawFurniture(svg, k, view, sw, sh);
   }
   const pchip = p => `<span class="pchip" style="${pvar(p)}" title="${esc(L(D.poly[p]))}"><i></i>${p}</span>`;
   const roleShape = (role, size = 14) => `<svg class="rshape" viewBox="-16 -16 32 32" width="${size}" height="${size}" aria-hidden="true"><path d="${shape(role, 11)}"/></svg>`;
@@ -373,6 +394,7 @@
     $('#themeIc').setAttribute('d', dark ? 'M12 4V2M12 22v-2M4 12H2M22 12h-2M5.6 5.6 4.2 4.2M19.8 19.8l-1.4-1.4M5.6 18.4l-1.4 1.4M19.8 4.2l-1.4 1.4M12 17a5 5 0 1 0 0-10 5 5 0 0 0 0 10z' : 'M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z');
     $('#themeBtn').setAttribute('aria-label', T(dark ? 'themeLight' : 'themeDark'));
     $('#themeBtn').title = T(dark ? 'themeLight' : 'themeDark');
+    Object.values(GEO).forEach(g => g.restyle());
   }
   $('#themeBtn').addEventListener('click', () => { root.dataset.theme = isDark() ? 'light' : 'dark'; try { localStorage.setItem('kw-theme', root.dataset.theme); } catch (e) {} renderTheme(); });
   matchMedia('(prefers-color-scheme: dark)').addEventListener('change', renderTheme);
@@ -397,10 +419,11 @@
     $('#kPairs').textContent = ALL.length;
     $('#pot').textContent = fmt(ALLOC.sum, 0);
     $('#polyLegend').innerHTML = Object.keys(D.poly).map(pchip).join('');
-    $('#legendStart').innerHTML = roleLegend() + `<span class="bdg">${T('schematic')}</span>`;
+    $('#legendStart').innerHTML = roleLegend() + (GEO.mapStart ? '' : `<span class="bdg">${T('schematic')}</span>`);
     const svg = $('#mapStart');
+    if (GEO.mapStart) GEO.mapStart.fit(viewBounds(START_VIEW));
     svg.setAttribute('aria-label', T('mapStartAria', { n: D.firms.length }));
-    drawMap(svg, { routes: ALLOC.used.map(m => ({ from: m.o.firm, to: m.n.firm, poly: m.o.poly, dots: 3, dr: 4 })), view: [60, 0, 960, 800], short: true, r: 9 });
+    drawMap(svg, { routes: ALLOC.used.map(m => ({ from: m.o.firm, to: m.n.firm, poly: m.o.poly, dots: 3, dr: 4 })), view: START_VIEW, short: true, r: 9 });
   }
 
   /* ---------- 2 Prinzip: lebender Kreislauf ---------- */
@@ -551,7 +574,7 @@
     const routes = platRoutes(), partners = routes.map(r => r.from === st.firm ? r.to : r.from);
     const svg = $('#mapPlat');
     svg.setAttribute('aria-label', T('mapPlatAria'));
-    drawMap(svg, { interactive: true, sel: st.firm, hl: partners, r: 10, routes, view: [40, 10, 980, 800],
+    drawMap(svg, { interactive: true, sel: st.firm, hl: partners, r: 10, routes, view: PLAT_VIEW,
       dim: D.firms.filter(f => !shown.has(f.id) && f.id !== st.firm && !partners.includes(f.id)).map(f => f.id) });
     $('#legendPlat').innerHTML = roleLegend();
   }
@@ -610,7 +633,9 @@
     if (i >= 1) routes.push(leg(a, b, i !== 2, .3));
     if (i >= 2) routes.push(leg(b, c, true, loop ? .3 : .2));
     const hl = [...new Set(s.path.slice(0, i === 0 ? 1 : i === 1 ? 2 : 3))];
-    drawMap(svg, { sel: a, hl, halo: true, r: 11, routes, par: 'xMidYMid slice', view: fitView(s.path, svg.parentNode), dim: D.firms.filter(f => !s.path.includes(f.id)).map(f => f.id) });
+    const view = fitView(s.path, svg.parentNode);
+    if (GEO[svg.id]) GEO[svg.id].fit(viewBounds(view), true);
+    drawMap(svg, { sel: a, hl, halo: true, r: 11, routes, par: 'xMidYMid slice', view, dim: D.firms.filter(f => !s.path.includes(f.id)).map(f => f.id) });
     svg.setAttribute('aria-label', T('scnAria', { s: L(s.title) }));
     const v = scnVals(s);
     $('#scnCap').innerHTML = `<span class="pchip" style="${pvar(s.poly)}"><i></i>${s.poly} · ${loop ? v.d1 : `${v.d1} + ${v.d2}`} km</span><span class="bdg">${T('capStep', { i: i + 1, n: s.steps.length })}</span>`;
@@ -741,14 +766,54 @@
     $('#rsteps').innerHTML = D.project.guide.map(g => { const [a, b] = g[LANG] || g.de; return `<li><b>${esc(a)}</b><span>${esc(b)}</span></li>`; }).join('');
   }
 
+  /* ---------- Echte Grundkarte (grundkarte.js, MapLibre): je Karte erst kurz vor dem Sichtbarwerden laden ----------
+     Bis dahin, ohne WebGL oder ohne Daten in geo/ bleibt die schematische Karte. Das SVG bleibt obenauf (Wege, Firmen, Tastatur, Selbsttest). */
+  const queued = new Set();
+  function redraw(svg) {   // bei jeder Kamerabewegung neu zeichnen, höchstens einmal je Bild; Tastatur-Fokus bleibt auf der Firma
+    if (!GEO[svg.id] || !svg._o || queued.has(svg)) return;
+    queued.add(svg);
+    requestAnimationFrame(() => {
+      queued.delete(svg);
+      const a = document.activeElement, id = svg.contains(a) && a.dataset.id;
+      drawMap(svg, svg._o);
+      if (id) { const el = svg.querySelector(`[data-id="${id}"]`); if (el) el.focus({ preventScroll: true }); }
+    });
+  }
+  function initGeo() {
+    if (Q.has('schematic') || !document.createElement('canvas').getContext('webgl2')) return;
+    const mod = import('./grundkarte.js');
+    // ponytail: Texte der MapLibre-Bedienung (Strg + Mausrad, Zoom-Knöpfe) bleiben in der Sprache beim Laden, Ausbau wenn Sprachwechsel häufig
+    const opts = {
+      mapStart: () => ({ bounds: viewBounds(START_VIEW) }),
+      mapScn: () => ({ bounds: viewBounds(fitView(scn.path, $('#mapScn').parentNode)) }),
+      mapPlat: stage => {
+        const nav = document.createElement('nav'), hint = $('#geoHint');
+        nav.className = 'geo-nav'; stage.append(nav);
+        return { bounds: viewBounds(PLAT_VIEW), levels: { start: D.region.ags, nav, hint, tile: stage.closest('.mapc') } };
+      },
+    };
+    const io = new IntersectionObserver(es => es.forEach(e => {
+      if (!e.isIntersecting) return;
+      io.unobserve(e.target);
+      const svg = e.target, stage = svg.parentNode, el = document.createElement('div');
+      el.className = 'geo-map'; stage.prepend(el);
+      mod.then(G => G.create(el, { ...opts[svg.id](stage), T, RM, onMove: () => redraw(svg) }))
+        .then(g => { GEO[svg.id] = g; stage.classList.add('geo'); if (svg.id === 'mapStart') renderStart(); else drawMap(svg, svg._o); })
+        .catch(err => { console.warn('Grundkarte nicht geladen, Karte bleibt schematisch:', err); el.remove(); stage.querySelectorAll('.geo-nav').forEach(n => n.remove()); });
+    }), { rootMargin: '400px 0px' });
+    ['#mapStart', '#mapScn', '#mapPlat'].forEach(s => io.observe($(s)));
+  }
+
   /* ---------- Start ---------- */
   function renderAll() {
     applyStatic(); renderRail(); renderTheme();
     renderStart(); renderCycle(); renderVs();
     renderControls(); renderPlat(); renderScn(); renderProject(); renderContext();
+    if (GEO.mapPlat) GEO.mapPlat.relabel();
   }
   renderAll();
   runTests();
+  initGeo();
   let rz = 0;
   addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { renderStart(); renderPlat(); drawScn(); placeTimeline(); trackRail(); }, 150); });
 })();

@@ -151,6 +151,35 @@ svg.map { display: block; width: 100%; height: 100%; }
 .m-rtag-bg { fill: var(--surface); stroke: var(--line-2); }
 .m-rtag { font: 600 13px var(--f-mono); fill: var(--ink); }
 
+/* Echte Grundkarte (grundkarte.js) unter dem SVG: SVG nur noch Wege + Firmen, Klicks daneben gehen an die Karte */
+.stage > .geo-map { position: absolute; inset: 0; background: var(--m-land); font: 500 14px var(--f-body); }
+.stage.geo svg.map { pointer-events: none; }
+.stage.geo .m-firm[tabindex] { pointer-events: auto; }
+.stage.geo svg.map.far :is(.m-routes, .m-firms, .m-tags) { display: none; }   /* Deutschland/Land: Firmen erst ab Kreis-Zoom */
+.maplibregl-ctrl-attrib.maplibregl-ctrl { font: 500 12px var(--f-body); background: color-mix(in srgb, var(--surface) 88%, transparent); color: var(--ink-2); }
+.maplibregl-ctrl-attrib a { color: var(--ink-2); }
+.maplibregl-ctrl-scale { font: 600 12px var(--f-mono); color: var(--ink-2); border-color: var(--ink-2); background: color-mix(in srgb, var(--surface) 75%, transparent); }
+.maplibregl-ctrl-group { background: var(--surface); border: 1px solid var(--line-2); box-shadow: none; }
+.maplibregl-ctrl-group button + button { border-top-color: var(--line-2); }
+:root[data-theme="dark"] .maplibregl-ctrl-icon { filter: invert(1); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .maplibregl-ctrl-icon { filter: invert(1); } }
+.maplibregl-cooperative-gesture-screen { font: 600 18px var(--f-body); }
+/* Ebenen der Plattform-Karte: Zurück + Titel mit Pfadleiste oben links (Nav:A + Nav:B, 2026-10-22), Leiste lässt Klicks daneben durch */
+.geo-nav { position: relative; z-index: 2; display: flex; flex-wrap: wrap; align-items: flex-start; gap: 8px; margin: 12px 56px 0 12px; pointer-events: none; }
+.geo-nav > * { pointer-events: auto; }
+.geo-back, .geo-crumbs button { font: 600 15px var(--f-body); color: var(--ink); background: var(--surface); border: 1px solid var(--line-2); border-radius: var(--r-sm); padding: 6px 12px; }
+.geo-back:hover, .geo-crumbs button:hover { border-color: var(--accent); color: var(--accent); }
+.geo-back:focus-visible, .geo-crumbs button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.geo-title { display: flex; flex-direction: column; gap: 2px; min-width: 0; padding: 6px 8px; background: var(--surface); border: 1px solid var(--line-2); border-radius: var(--r); }
+.geo-title small { padding: 0 6px; font: 600 13px var(--f-mono); color: var(--ink-2); text-transform: uppercase; letter-spacing: .06em; }
+.geo-crumbs { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 4px; margin: 0; padding: 0; list-style: none; }
+.geo-crumbs li { display: flex; align-items: center; gap: 4px; }
+.geo-crumbs li + li::before { content: "›"; color: var(--ink-2); font-weight: 700; }
+.geo-crumbs button { border-color: transparent; background: none; padding: 2px 6px; }
+.geo-crumbs b { font: 700 16px var(--f-disp); padding: 2px 6px; color: var(--accent); }
+#geoHint:empty { display: none; }
+@media (max-width: 559px) { .geo-crumbs li:not(:last-child) { display: none; } .geo-crumbs li + li::before { content: none; } }   /* schmal: nur Zurück + Ebene */
+
 /* ---------- 1 Überblick: Kachel-Fläche mit Lagebild ---------- */
 .bento { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 16px; }
 .t-intro { grid-column: 1 / 6; padding: 28px; gap: 18px; }
