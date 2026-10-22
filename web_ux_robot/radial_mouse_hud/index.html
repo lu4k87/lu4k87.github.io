@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Radial HUD</title>
-<meta name="description" content="Rundes Menü am Mauszeiger für den Linux-Desktop: mittlere Maustaste halten – Screenshot, neue Datei, Ordner, Apps, Ablage.">
+<meta name="description" content="Rundes Menü am Mauszeiger für den Linux-Desktop: Klick auf Mittel- oder Vor-Taste – Screenshot, neue Datei, Ordner, Apps, Ablage.">
 <style>
   :root {
     --bg: #eef1f6; --surface: #ffffff; --line: #d3d9e4;
@@ -74,8 +74,8 @@
     <div class="hero-text">
       <span class="tag">Linux-Desktop · X11 · GNOME</span>
       <h1>Radial HUD</h1>
-      <p class="lead">Ein rundes Menü direkt am Mauszeiger. <strong>Mittlere Maustaste oder „Vor“-Seitentaste kurz gedrückt halten</strong> – schon liegen Screenshot, neue Datei, Ordner, Apps und Ablage-Verlauf einen Handgriff entfernt.</p>
-      <p>Normale Mittelklicks bleiben unberührt: Einfügen, Tab schließen, Blender-Orbit und Autoscroll funktionieren wie immer. Das HUD erscheint erst, wenn die Taste rund 0,3 s still gehalten wird.</p>
+      <p class="lead">Ein rundes Menü direkt am Mauszeiger. <strong>Ein Klick auf die mittlere Maustaste oder die „Vor“-Seitentaste</strong> – schon liegen Screenshot, neue Datei, Ordner, Apps und Ablage-Verlauf einen Handgriff entfernt.</p>
+      <p>Beide Tasten gehören dem HUD: Einfügen per Mittelklick, Blender-Orbit, Autoscroll und „Vorwärts“ im Browser entfallen dafür.</p>
       <ul class="facts">
         <li>8 feste Bereiche</li>
         <li>Untermenüs fächern nach außen auf</li>
@@ -90,8 +90,8 @@
   <section>
     <h2>So bedienst du es</h2>
     <ol class="steps">
-      <li><h3>Halten</h3><p>Mittlere Maustaste oder „Vor“-Seitentaste (z. B. Logitech G402) ~0,3 s gedrückt halten, ohne die Maus zu bewegen. Das HUD öffnet sich um den Zeiger.</p></li>
-      <li><h3>Ziehen</h3><p>Mit gehaltener Taste in einen Bereich ziehen. Sein Untermenü fächert nach außen auf.</p></li>
+      <li><h3>Klicken</h3><p>Mittlere Maustaste oder „Vor“-Seitentaste (z. B. Logitech G402) drücken. Das HUD öffnet sich sofort um den Zeiger.</p></li>
+      <li><h3>Wählen</h3><p>Bereich anklicken oder mit gedrückter Taste hineinziehen. Sein Untermenü fächert nach außen auf.</p></li>
       <li><h3>Loslassen</h3><p>Loslassen auf einem Endpunkt führt ihn aus. Loslassen in der Mitte lässt das HUD offen – dann geht es per Klick weiter.</p></li>
       <li><h3>Schließen</h3><p>Klick in die Mitte, Klick daneben, Rechtsklick oder <code>Esc</code>.</p></li>
     </ol>
@@ -190,12 +190,11 @@ python3 radial_hud.py --demo   # HUD einmal öffnen, ohne Maustasten-Grab</code>
   <section>
     <h2>Wie es funktioniert</h2>
     <ul class="plain">
-      <li><strong>Mittelklick abfangen, ohne ihn zu stehlen:</strong> ein passiver Grab auf Taste 2 hält jeden Mittelklick kurz an; XRecord sieht Loslassen und Bewegung.</li>
-      <li><strong>Kurz oder bewegt = normaler Klick:</strong> Loslassen oder mehr als 8 px Bewegung vor 300 ms → die App darunter bekommt den Klick bzw. das Ziehen vollständig zurück.</li>
+      <li><strong>Eigene Tasten:</strong> ein passiver Grab auf Mittel- und Vor-Taste öffnet das HUD beim Drücken; Apps bekommen diese Klicks nicht.</li>
       <li><strong>Beschriftung passt immer:</strong> je Segment wird die breiteste Textbox gesucht, die samt Icon hineinpasst – erst Umbruch, dann in der Mitte gekürzt.</li>
       <li><strong>Nichts geht verloren:</strong> neue Dateien überschreiben nie etwas (<code>Name (2).txt</code>), der Ablage-Verlauf bleibt nur im Speicher, Passwort-Manager werden ausgelassen.</li>
       <li><strong>Ruhiger Look:</strong> jeder Bereich hat eine eigene Farbe; Leuchtsaum am gewählten Endpunkt, atmender Mittelkreis, Lichtstreif und weiches Schließen bleiben dezent.</li>
-      <li><strong>Einstellbar:</strong> Haltezeit, Bewegungsschwelle, Ringgrößen, Farben und Menü oben in <code>radial_hud.py</code>.</li>
+      <li><strong>Einstellbar:</strong> Tasten (<code>BUTTONS</code>), Ringgrößen, Farben und Menü oben in <code>radial_hud.py</code>.</li>
     </ul>
   </section>
 
