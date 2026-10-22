@@ -69,6 +69,13 @@ const levelLayers = c => [
   { id: 'lan-line', type: 'line', source: 'lan', paint: { 'line-color': c.border, 'line-width': ['interpolate', ['linear'], ['zoom'], 4, 1, 9, 2.4] } },
   { id: 'sel-line', type: 'line', source: 'lan', filter: ['==', ['get', 'AGS'], '-'], paint: { 'line-color': c.accent, 'line-width': 2.6 } },
 ];
+// Namen der Länder und Kreise: ein Punkt je Fläche (mapshaper -points inner), sonst je Kachel doppelt; zuletzt im Stil = Vorrang vor Ortsnamen
+const nameLayers = c => [
+  { id: 'krs-name', type: 'symbol', source: 'krs-n', minzoom: 6, layout: { visibility: 'none', 'text-field': ['get', 'GEN'], 'text-font': ['Noto Sans Medium'], 'text-size': 13, 'text-max-width': 8 },
+    paint: { 'text-color': c.ink2, 'text-halo-color': c.land, 'text-halo-width': 1.8 } },
+  { id: 'lan-name', type: 'symbol', source: 'lan-n', maxzoom: 7.6, layout: { 'text-field': ['get', 'GEN'], 'text-font': ['Noto Sans Medium'], 'text-size': ['interpolate', ['linear'], ['zoom'], 4.5, 12, 7, 15],
+    'text-transform': 'uppercase', 'text-letter-spacing': .08, 'text-max-width': 9 }, paint: { 'text-color': c.ink, 'text-halo-color': c.land, 'text-halo-width': 2 } },
+];
 
 function bbox(fs) {
   const b = [180, 90, -180, -90], walk = a => typeof a[0] === 'number' ? (b[0] = Math.min(b[0], a[0]), b[1] = Math.min(b[1], a[1]), b[2] = Math.max(b[2], a[0]), b[3] = Math.max(b[3], a[1])) : a.forEach(walk);
@@ -80,7 +87,8 @@ const label = p => p.BEZ && !/Stadt|Gemeinde/.test(p.BEZ) ? `${p.BEZ} ${p.GEN}` 
 /* o: { bounds:[[w,s],[e,n]], levels: { start:[AGS…], nav, hint, tile }, T, RM, onMove }
    Rückgabe: { project(lat,lon) → [x,y] px, far(), zoom(), fit(bounds, fly), restyle(), relabel() } */
 export async function create(el, o) {
-  const T = o.T, levels = !!o.levels, [de, LAN, KRS] = await Promise.all([tiles('de'), levels && json('laender'), levels && json('kreise')]);
+  const T = o.T, levels = !!o.levels;
+  const [de, LAN, KRS, LAN_N, KRS_N] = await Promise.all([tiles('de'), ...['laender', 'kreise', 'laender-namen', 'kreise-namen'].map(f => levels && json(f))]);
   const GEM = {};
   const gem = async land => GEM[land] || (GEM[land] = await json(land));
   const st = { path: [{}], hover: null, region: null };
@@ -92,12 +100,13 @@ export async function create(el, o) {
       layers: [{ id: 'bg', type: 'background', paint: { 'background-color': c.land } }, ...base('de', c), ...(rg ? base('region', c, REGION_Z) : [])] };
     if (levels) {
       Object.assign(s.sources, { lan: { type: 'geojson', data: LAN, promoteId: 'AGS' }, krs: { type: 'geojson', data: KRS, promoteId: 'AGS' },
-        gem: { type: 'geojson', data: GEM[st.path[1]?.ags] || EMPTY, promoteId: 'AGS' } });
+        gem: { type: 'geojson', data: GEM[st.path[1]?.ags] || EMPTY, promoteId: 'AGS' }, 'lan-n': { type: 'geojson', data: LAN_N }, 'krs-n': { type: 'geojson', data: KRS_N } });
       s.layers.push(...levelLayers(c));
     }
     // Ortsnamen zuletzt, damit abgeblendete Nachbarflächen sie nicht verdecken
     if (rg) s.layers.push(labels('region', c, { minzoom: 9, filter: ['in', ['get', 'kind'], ['literal', ['locality', 'neighbourhood']]] }));
     s.layers.push(labels('de', c, { maxzoom: 9, filter: ['all', ['==', ['get', 'kind'], 'locality'], ['<=', ['get', 'min_zoom'], ['+', ['zoom'], .5]]] }));
+    if (levels) s.layers.push(...nameLayers(c));
     return s;
   }
 
@@ -131,6 +140,7 @@ export async function create(el, o) {
     const show = (id, on, filter) => { map.setLayoutProperty(id, 'visibility', on ? 'visible' : 'none'); map.setFilter(id, filter); };
     show('krs-line', i >= 1, ['==', ['slice', ['get', 'AGS'], 0, 2], st.path[1]?.ags || '']);
     show('gem-line', i >= 2, ['==', ['slice', ['get', 'AGS'], 0, 5], st.path[2]?.ags || '']);
+    show('krs-name', i === 1, ['==', ['slice', ['get', 'AGS'], 0, 2], st.path[1]?.ags || '']);   // Kreisnamen nur auf Ebene Land
     const c = colors();
     map.removeLayer('sel-line');
     map.addLayer({ id: 'sel-line', type: 'line', source: SRC[Math.max(0, i - 1)], filter: ['==', ['get', 'AGS'], i ? selAgs : '-'],

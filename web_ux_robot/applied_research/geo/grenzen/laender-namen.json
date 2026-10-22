@@ -1,0 +1,18 @@
+{"type":"FeatureCollection", "features": [
+{"type":"Feature","geometry":{"type":"Point","coordinates":[9.799,54.081]},"properties":{"AGS":"01","GEN":"Schleswig-Holstein"}},
+{"type":"Feature","geometry":{"type":"Point","coordinates":[10.024,53.558]},"properties":{"AGS":"02","GEN":"Hamburg"}},
+{"type":"Feature","geometry":{"type":"Point","coordinates":[9.852,52.678]},"properties":{"AGS":"03","GEN":"Niedersachsen"}},
+{"type":"Feature","geometry":{"type":"Point","coordinates":[8.784,53.105]},"properties":{"AGS":"04","GEN":"Bremen"}},
+{"type":"Feature","geometry":{"type":"Point","coordinates":[7.531,51.531]},"properties":{"AGS":"05","GEN":"Nordrhein-Westfalen"}},
+{"type":"Feature","geometry":{"type":"Point","coordinates":[9.054,50.681]},"properties":{"AGS":"06","GEN":"Hessen"}},
+{"type":"Feature","geometry":{"type":"Point","coordinates":[7.313,50.041]},"properties":{"AGS":"07","GEN":"Rheinland-Pfalz"}},
+{"type":"Feature","geometry":{"type":"Point","coordinates":[9.043,48.564]},"properties":{"AGS":"08","GEN":"Baden-Württemberg"}},
+{"type":"Feature","geometry":{"type":"Point","coordinates":[11.524,48.948]},"properties":{"AGS":"09","GEN":"Bayern"}},
+{"type":"Feature","geometry":{"type":"Point","coordinates":[6.958,49.407]},"properties":{"AGS":"10","GEN":"Saarland"}},
+{"type":"Feature","geometry":{"type":"Point","coordinates":[13.401,52.51]},"properties":{"AGS":"11","GEN":"Berlin"}},
+{"type":"Feature","geometry":{"type":"Point","coordinates":[14.113,52.057]},"properties":{"AGS":"12","GEN":"Brandenburg"}},
+{"type":"Feature","geometry":{"type":"Point","coordinates":[12.573,53.777]},"properties":{"AGS":"13","GEN":"Mecklenburg-Vorpommern"}},
+{"type":"Feature","geometry":{"type":"Point","coordinates":[13.218,51.004]},"properties":{"AGS":"14","GEN":"Sachsen"}},
+{"type":"Feature","geometry":{"type":"Point","coordinates":[11.688,52.007]},"properties":{"AGS":"15","GEN":"Sachsen-Anhalt"}},
+{"type":"Feature","geometry":{"type":"Point","coordinates":[10.998,50.894]},"properties":{"AGS":"16","GEN":"Thüringen"}}
+]}

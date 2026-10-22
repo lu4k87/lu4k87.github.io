@@ -7,6 +7,7 @@ Quellenangabe auf jeder Karte (Pflicht): **© OpenStreetMap-Mitwirkende · © Ge
 | `de.pmtiles` | Grundkarte Deutschland bis Zoom 8 | OpenStreetMap über den Protomaps-Basemap-Build (`build.protomaps.com`, Stand 2026-10-22) | Daten: ODbL 1.0 (OpenStreetMap-Mitwirkende) |
 | `region.pmtiles` | Grundkarte Region Kamp-Lintfort (6.33,51.40 – 6.78,51.62) Zoom 9–14 | wie oben | ODbL 1.0 |
 | `grenzen/laender.json`, `kreise.json`, `01.json` … `16.json` | Länder, Kreise, Gemeinden je Land (vereinfacht) | BKG VG250 Ebenen, Stand 01.01. (`daten.gdz.bkg.bund.de/produkte/vg/vg250_ebenen_0101/aktuell/`) | Datenlizenz Deutschland – Namensnennung 2.0 (dl-de/by-2.0) |
+| `grenzen/laender-namen.json`, `kreise-namen.json` | ein Beschriftungspunkt je Land/Kreis | aus `laender.json`/`kreise.json`: `mapshaper <datei> -points inner -o <ziel> format=geojson precision=0.001` | dl-de/by-2.0 |
 | `fonts/` | Schriften für Ortsnamen (Noto Sans, 3 Zeichenbereiche) | `github.com/protomaps/basemaps-assets` | SIL Open Font License 1.1 |
 
 Bibliotheken in `../vendor/`: MapLibre GL JS 6.15 (BSD-3-Clause, `LICENSE-maplibre-gl.txt`), pmtiles 4.5 (BSD-3-Clause, `LICENSE-pmtiles.txt`).
