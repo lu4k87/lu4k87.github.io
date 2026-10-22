@@ -119,19 +119,21 @@
 
 
 <section class="area" id="projekt">
-  <div class="head"><div><span class="kicker" data-kicker="4"></span><h2 data-t="pjTitle"></h2><p data-t="pjLead"></p></div></div>
+  <div class="head"><div><span class="kicker" data-kicker="4"></span><h2 data-t="pjTitle"></h2><p data-t="pjLead"></p></div><div class="lg" id="legend" role="group" data-ta="legendAria"></div></div>
   <div class="pgrid">
-    <div class="tile phases"><h3 data-t="phTitle"></h3><ol class="tl" id="tl"></ol></div>
-    <div class="tile sollist"><h3 data-t="goalsTitle"></h3>
+    <div class="tile phases"><h3><span class="hic" data-ic="flag" aria-hidden="true"></span><span data-t="phTitle"></span><span class="now" id="phNow"></span></h3><div class="pt" id="pt"></div></div>
+    <div class="tile sollist"><h3><span class="hic" data-ic="target" aria-hidden="true"></span><span data-t="goalsTitle"></span></h3>
       <div class="tscroll"><table><thead><tr><th data-t="thGoal"></th><th data-t="thSoll"></th><th data-t="thIst"></th><th data-t="thSt"></th></tr></thead><tbody id="goals"></tbody></table></div></div>
-    <div class="tile succ"><h3 data-t="succTitle"></h3><p class="crit" data-t="succCrit"></p>
+    <div class="tile succ"><h3><span class="hic" data-ic="check" aria-hidden="true"></span><span data-t="succTitle"></span></h3><p class="crit" data-t="succCrit"></p>
       <div class="cols"><div><p class="lab" data-t="succShows"></p><ul class="ticks" id="succY"></ul></div><div><p class="lab" data-t="succNeeds"></p><ul class="ticks" id="succO"></ul></div></div></div>
-    <div class="tile outs"><h3 data-t="outTitle"></h3><div class="mini" id="outs"></div></div>
-    <div class="tile eval" id="selftest"><h3 id="testTitle"></h3><p class="lab" data-t="testLead"></p>
+    <div class="tile outs"><h3><span class="hic" data-ic="file" aria-hidden="true"></span><span data-t="outTitle"></span></h3><div class="ob" id="outs"></div></div>
+    <div class="tile eval" id="selftest">
+      <div class="hb"><span class="hic" data-ic="flask" aria-hidden="true"></span>
+        <div class="tt"><h3 id="testTitle"></h3><p data-t="testLead"></p></div>
+        <div class="score"><b id="testScore"></b><span><strong id="testWord"></strong><small id="testStamp"></small></span></div></div>
       <ul class="tests" id="tests" aria-live="polite"></ul>
-      <div class="row"><button type="button" class="btn pri" id="testRun" data-t="testRun"></button><button type="button" class="btn" id="testSave" data-t="testSave"></button></div>
-      <p class="lab" id="testStamp"></p></div>
-    <div class="tile personas"><h3 data-t="perTitle"></h3><p class="lab" data-t="perLead"></p><div class="pgrid4" id="personas"></div></div>
+      <div class="row"><button type="button" class="btn pri" id="testRun"></button><button type="button" class="btn" id="testSave"></button></div></div>
+    <div class="tile personas"><h3><span class="hic" data-ic="users" aria-hidden="true"></span><span data-t="perTitle"></span></h3><p class="lab" data-t="perLead"></p><div class="pgrid4" id="personas"></div></div>
   </div>
 </section>
 

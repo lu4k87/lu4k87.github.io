@@ -196,21 +196,21 @@ window.KW_DATA = {
   project: {
     title: { de: 'Digitaler Plattform-Prototyp für den zirkulären Kunststoff-Materialaustausch in Kamp-Lintfort',
       en: 'Digital platform prototype for circular plastics material exchange in Kamp-Lintfort' },
-    // Projektphasen: [Titel, Inhalt, Stand], st = ok | teil · now = aktuelle Phase (0-basiert)
+    // Projektphasen: [Titel, Aufgabe, Ergebnis, Offen] ({p} von {n} = Selbsttest, {g} = Leitfaden-Schritte), ic = Icon, now = aktuelle Phase (0-basiert)
     now: 3,
     phases: [
-      { de: ['Regionale Analyse', 'Unternehmen und Materialströme der Region erfassen', '12 fiktive Profile · Recherche offen'],
-        en: ['Regional analysis', 'Capture companies and material flows in the region', '12 fictional profiles · research open'], st: 'teil' },
-      { de: ['Anforderungen', 'Nutzer- und Datenanforderungen festlegen', 'Zielgruppen + Kernfunktionen'],
-        en: ['Requirements', 'Define user and data requirements', 'Target groups + core functions'], st: 'ok' },
-      { de: ['Konzept & Design', 'Oberfläche und Datenstruktur entwerfen', 'Datenmodell + diese Seite'],
-        en: ['Concept & design', 'Design interface and data structure', 'Data model + this page'], st: 'ok' },
-      { de: ['Entwicklung', 'Listen, Suche/Matching und Karte umsetzen', 'Prototyp v1'],
-        en: ['Development', 'Build lists, search/matching and map', 'Prototype v1'], st: 'ok' },
-      { de: ['Test & Validierung', 'Kernfunktionen mit Beispieldaten prüfen', 'Selbsttest · Partner offen'],
-        en: ['Testing & validation', 'Check core functions with sample data', 'Self-test · partners open'], st: 'teil' },
-      { de: ['Dokumentation', 'Grenzen festhalten, Leitfaden schreiben', 'Leitfaden-Entwurf'],
-        en: ['Documentation', 'Record limitations, write guide', 'Draft guide'], st: 'teil' },
+      { de: ['Regionale Analyse', 'Unternehmen und Materialströme der Region erfassen', '12 fiktive Profile', 'Recherche echter Firmen'],
+        en: ['Regional analysis', 'Capture companies and material flows in the region', '12 fictional profiles', 'Research on real companies'], ic: 'search' },
+      { de: ['Anforderungen', 'Nutzer- und Datenanforderungen festlegen', 'Zielgruppen + Kernfunktionen', ''],
+        en: ['Requirements', 'Define user and data requirements', 'Target groups + core functions', ''], ic: 'list' },
+      { de: ['Konzept & Design', 'Oberfläche und Datenstruktur entwerfen', 'Datenmodell + diese Seite', ''],
+        en: ['Concept & design', 'Design interface and data structure', 'Data model + this page', ''], ic: 'layout' },
+      { de: ['Entwicklung', 'Listen, Suche/Matching und Karte umsetzen', 'Prototyp v1', ''],
+        en: ['Development', 'Build lists, search/matching and map', 'Prototype v1', ''], ic: 'code' },
+      { de: ['Test & Validierung', 'Kernfunktionen mit Beispieldaten prüfen', 'Selbsttest {p} von {n}', 'Test mit Partnerfirmen'],
+        en: ['Testing & validation', 'Check core functions with sample data', 'Self-test {p} of {n}', 'Test with partner companies'], ic: 'flask' },
+      { de: ['Dokumentation', 'Grenzen festhalten, Leitfaden schreiben', 'Leitfaden-Entwurf, {g} Schritte', 'Abschlussbericht'],
+        en: ['Documentation', 'Record limitations, write guide', 'Draft guide, {g} steps', 'Final report'], ic: 'book' },
     ],
     // Ziele: [Ziel, Soll] · ist = Schlüssel für den berechneten Stand in app.js
     goals: [
@@ -226,10 +226,10 @@ window.KW_DATA = {
         en: ['Replication', 'Step-by-step guide for other regions'], ist: 'guide', st: 'teil' },
     ],
     outputs: [
-      { de: ['App-Prototyp', 'vorführbar im Browser'], en: ['App prototype', 'demonstrable in the browser'], st: 'ok' },
-      { de: ['Interaktive Karte', 'Standorte und Materialflüsse'], en: ['Interactive map', 'sites and material flows'], st: 'ok' },
-      { de: ['Abschlussbericht', 'Methodik · Umsetzung · Tests · Grenzen'], en: ['Final report', 'method · implementation · tests · limitations'], st: 'offen' },
-      { de: ['Replikationshandbuch', 'Entwurf als Leitfaden auf dieser Seite'], en: ['Replication manual', 'draft as guide on this page'], st: 'teil' },
+      { de: ['App-Prototyp', 'Läuft im Browser, ohne Installation'], en: ['App prototype', 'Runs in the browser, no installation'], st: 'ok', ic: 'monitor' },
+      { de: ['Interaktive Karte', 'Standorte und Materialflüsse'], en: ['Interactive map', 'Sites and material flows'], st: 'ok', ic: 'map' },
+      { de: ['Abschlussbericht', 'Methodik, Umsetzung, Tests, Grenzen'], en: ['Final report', 'Method, implementation, tests, limitations'], st: 'offen', ic: 'file' },
+      { de: ['Replikationshandbuch', 'Entwurf als Leitfaden auf dieser Seite'], en: ['Replication manual', 'Draft as guide on this page'], st: 'teil', ic: 'book' },
     ],
     success: {
       shows: [{ de: 'passende Partner', en: 'suitable partners' }, { de: 'Mengen und Entfernung', en: 'quantities and distance' }, { de: 'Material und Qualität', en: 'material and quality' }],

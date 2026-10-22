@@ -56,11 +56,12 @@
       plausT: 'Plausibilitäts-Check', pMat: 'Material {p}, sortenrein', pQual: 'Qualität: {q} passt', pQty: 'Menge: ≈ {p} % des Bedarfs',
       pDist: 'Entfernung {d} km', pDist2: 'Wege {d1} + {d2} km', capStep: 'Schritt {i} von {n}', scnAria: 'Karte zum Szenario {s}',
       pjTitle: 'Projekt: Soll und Ist',
-      pjLead: 'Messbare Ziele aus dem Auftrag neben dem Stand des Prototyps. ✓ = im Prototyp sichtbar, ◐ = braucht Arbeit außerhalb des Prototyps.',
+      pjLead: 'Messbare Ziele aus dem Auftrag neben dem Stand des Prototyps.',
       goalsTitle: 'Messbare Ziele', thGoal: 'Ziel', thSoll: 'Soll', thIst: 'Prototyp', thSt: 'Stand',
       istFirms: '{n} Profile (Demo)', istProto: 'Profile, Börse, Suche und Filter klickbar', istScn: '{n} Szenarien auf der Karte',
       istTests: '{p} von {n} Selbsttests bestanden', istGuide: 'Entwurf, {n} Schritte',
-      st: { ok: '✓ sichtbar', teil: '◐ teilweise', offen: 'offen' }, stOut: { ok: '✓ da', teil: '◐ Entwurf', offen: 'offen' },
+      st: { ok: 'fertig', teil: 'in Arbeit', offen: 'offen' }, legendAria: 'Legende Status',
+      phNow: 'Phase {i} von {n} · {t} läuft', phase: 'Phase', phTask: 'Aufgabe', phRes: 'Ergebnis', phOpen: 'Offen', outRing: '{p} von {n} Ergebnissen fertig',
       succTitle: 'Erfolgskriterium', succCrit: 'Nachweis plausibler Austauschpotenziale', succShows: 'Zeigt der Prototyp', succNeeds: 'Braucht Validierung',
       phTitle: 'Vorgehen in sechs Phasen', outTitle: 'Ergebnisse',
       testTitle: 'Selbsttest · {n} Kernfunktionen',
@@ -69,7 +70,7 @@
       tests: ['Unternehmensprofile', 'Materialübersicht', 'Suche', 'Filter', 'Matching', 'Karte & Szenarien'],
       tDetail: ['{n} Profile vollständig', '{o} Angebote + {n} Bedarfe gelistet', 'Polymer, Firmenname und Leersuche', 'Rolle, Typ und Lücken', '{n} Paare regelkonform, Vergabe ohne Überbuchung', '{f} Symbole, {s} Szenarien mit gültigen Wegen'],
       perTitle: 'Zielgruppen', perLead: 'Je Zielgruppe eine Beispiel-Persona – erfunden, damit Bedürfnisse greifbar werden.', persona: 'Beispiel-Persona · fiktiv',
-      pGoal: 'Ziel', pHurdle: 'Hürde', pGain: 'Nutzen von KreiswertS',
+      pGoal: 'Ziel', pHurdle: 'Hürde', pGain: 'Lösung',
       go: { offers: 'Angebote in der Plattform', needs: 'Bedarfe in der Plattform', scenarios: 'Zu den Szenarien', gaps: 'Lücken in der Plattform' },
       ctxTitle: 'Einordnung und Übertragung',
       ctxLead: 'Was es schon gibt, welche Lücke der Prototyp schließt, wo seine Grenzen liegen – und wie eine andere Region ihn übernimmt.',
@@ -133,11 +134,12 @@
       plausT: 'Plausibility check', pMat: 'Material {p}, single-polymer', pQual: 'Quality: {q} fits', pQty: 'Quantity: ≈ {p} % of the need',
       pDist: 'Distance {d} km', pDist2: 'Routes {d1} + {d2} km', capStep: 'Step {i} of {n}', scnAria: 'Map of scenario {s}',
       pjTitle: 'Project: target and status',
-      pjLead: 'Measurable goals from the brief next to the status of the prototype. ✓ = visible in the prototype, ◐ = needs work outside the prototype.',
+      pjLead: 'Measurable goals from the brief next to the status of the prototype.',
       goalsTitle: 'Measurable goals', thGoal: 'Goal', thSoll: 'Target', thIst: 'Prototype', thSt: 'Status',
       istFirms: '{n} profiles (demo)', istProto: 'Profiles, exchange, search and filter clickable', istScn: '{n} scenarios on the map',
       istTests: '{p} of {n} self-tests passed', istGuide: 'Draft, {n} steps',
-      st: { ok: '✓ visible', teil: '◐ partly', offen: 'open' }, stOut: { ok: '✓ done', teil: '◐ draft', offen: 'open' },
+      st: { ok: 'done', teil: 'in progress', offen: 'open' }, legendAria: 'Status legend',
+      phNow: 'Phase {i} of {n} · {t} in progress', phase: 'Phase', phTask: 'Task', phRes: 'Result', phOpen: 'Open', outRing: '{p} of {n} deliverables done',
       succTitle: 'Success criterion', succCrit: 'Evidence of plausible exchange potential', succShows: 'Shown by the prototype', succNeeds: 'Needs validation',
       phTitle: 'Approach in six phases', outTitle: 'Deliverables',
       testTitle: 'Self-test · {n} core functions',
@@ -146,7 +148,7 @@
       tests: ['Company profiles', 'Material overview', 'Search', 'Filter', 'Matching', 'Map & scenarios'],
       tDetail: ['{n} profiles complete', '{o} offers + {n} needs listed', 'Polymer, company name and empty search', 'Role, type and gaps', '{n} pairs follow the rules, allocation without overbooking', '{f} symbols, {s} scenarios with valid routes'],
       perTitle: 'Target groups', perLead: 'One example persona per target group – invented to make needs tangible.', persona: 'Example persona · fictional',
-      pGoal: 'Goal', pHurdle: 'Hurdle', pGain: 'Benefit of KreiswertS',
+      pGoal: 'Goal', pHurdle: 'Hurdle', pGain: 'Solution',
       go: { offers: 'Offers in the platform', needs: 'Needs in the platform', scenarios: 'To the scenarios', gaps: 'Gaps in the platform' },
       ctxTitle: 'Context and transfer',
       ctxLead: 'What already exists, which gap the prototype closes, where its limits are – and how another region can adopt it.',
@@ -674,30 +676,82 @@
   /* ---------- 5 Projekt ---------- */
   let TESTS = [];
   const passed = () => TESTS.filter(t => t.pass).length;
+  /* ---------- 5 Projekt: Icons, Status-Chip, Kacheln ---------- */
+  const ICO = {
+    search: '<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>',
+    list: '<rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M12 11h4M12 16h4M8 11h.01M8 16h.01"/>',
+    layout: '<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/>',
+    code: '<path d="m16 18 6-6-6-6M8 6l-6 6 6 6"/>',
+    flask: '<path d="M9 3h6M10 3v6L4.5 19a1.5 1.5 0 0 0 1.3 2h12.4a1.5 1.5 0 0 0 1.3-2L14 9V3"/><path d="M7 15h10"/>',
+    book: '<path d="M2 4h6a4 4 0 0 1 4 4v13a3 3 0 0 0-3-3H2z"/><path d="M22 4h-6a4 4 0 0 0-4 4v13a3 3 0 0 1 3-3h7z"/>',
+    monitor: '<rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/>',
+    map: '<path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2z"/><path d="M9 4v14M15 6v14"/>',
+    file: '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h6"/>',
+    factory: '<path d="M2 20V9l6 4V9l6 4V4h8v16z"/><path d="M2 20h20"/>',
+    layers: '<path d="m12 2 10 5-10 5L2 7z"/><path d="m2 12 10 5 10-5M2 17l10 5 10-5"/>',
+    filter: '<path d="M3 4h18l-7 8v6l-4 2v-8z"/>',
+    link: '<path d="M10 13a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1"/><path d="M14 11a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"/>',
+    pin: '<path d="M12 22s7-6.5 7-12a7 7 0 0 0-14 0c0 5.5 7 12 7 12z"/><circle cx="12" cy="10" r="2.5"/>',
+    cart: '<circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/><path d="M2 3h3l2.5 12h12l2-8H6"/>',
+    users: '<circle cx="9" cy="8" r="4"/><path d="M2 21a7 7 0 0 1 14 0"/><path d="M16 4a4 4 0 0 1 0 8M22 21a7 7 0 0 0-5-6.7"/>',
+    hall: '<path d="M3 21h18M5 21V10M19 21V10M9 21V10M15 21V10M2 10l10-7 10 7z"/>',
+    target: '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/>',
+    alert: '<path d="M12 3 2 21h20z"/><path d="M12 10v5M12 18h.01"/>',
+    check: '<path d="M20 6 9 17l-5-5"/>',
+    run: '<path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/>',
+    save: '<path d="M12 3v12m-5-5 5 5 5-5M4 21h16"/>',
+    arrow: '<path d="M5 12h14M13 6l6 6-6 6"/>',
+    flag: '<path d="M4 22V4M4 4h13l-2 4 2 4H4"/>',
+  };
+  const ico = (k, c = '') => `<svg class="vi ${c}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICO[k]}</svg>`;
+  const SYM = { ok: '✓', teil: '◐', offen: '○' };
+  const stChip = (k, word = true) => `<span class="vst ${k}"><b aria-hidden="true">${SYM[k]}</b>${word ? T('st')[k] : `<span class="sr-only">${T('st')[k]}</span>`}</span>`;
+  const TEST_IC = ['factory', 'layers', 'search', 'filter', 'link', 'pin'];
+  const PERSONA_IC = { offers: 'factory', needs: 'cart', scenarios: 'users', gaps: 'hall' };
+
   function renderGoals() {
     const ist = { firms: T('istFirms', { n: D.firms.length }), proto: T('istProto'), scn: T('istScn', { n: D.scenarios.length }),
       tests: T('istTests', { p: passed(), n: T('tests').length }), guide: T('istGuide', { n: D.project.guide.length }) };
-    $('#goals').innerHTML = D.project.goals.map(g => { const [a, b] = g[LANG] || g.de; return `<tr><td>${esc(a)}</td><td>${esc(b)}</td><td>${esc(ist[g.ist])}</td><td><span class="bdg ${g.st === 'ok' ? 'ok' : 'warn'}">${T('st')[g.st]}</span></td></tr>`; }).join('');
+    $('#goals').innerHTML = D.project.goals.map(g => { const [a, b] = g[LANG] || g.de; return `<tr><td>${esc(a)}</td><td>${esc(b)}</td><td>${esc(ist[g.ist])}</td><td>${stChip(g.st)}</td></tr>`; }).join('');
   }
-  function placeTimeline() {
-    const tl = $('#tl'), now = tl.children[D.project.now];
-    if (!now) return;
-    const a = tl.getBoundingClientRect(), n = now.querySelector('.n').getBoundingClientRect();
-    tl.style.setProperty('--fill', Math.max(0, (n.left + n.width / 2 - a.left - 18) / Math.max(1, a.width - 36) * 100).toFixed(1) + '%');
+  // Phasen:C – Tabelle Phase × Aufgabe / Ergebnis / Offen (≤ 1099 px: eine Karte je Phase, Reihenfolge der Zellen = Phase für Phase)
+  function renderPhases() {
+    const P = D.project, v = { p: passed(), n: T('tests').length, g: P.guide.length };
+    const lab = [T('phTask'), T('phRes'), T('phOpen')];
+    const cell = (cls, c, i, k, html) => `<div class="c ${cls} ${c}" style="--c:${i + 2}"><span class="cl">${lab[k]}</span><span class="cv">${html}</span></div>`;
+    $('#phNow').textContent = T('phNow', { i: P.now + 1, n: P.phases.length, t: (P.phases[P.now][LANG] || P.phases[P.now].de)[0] });
+    $('#pt').innerHTML = lab.map((t, k) => `<span class="l r${k}" aria-hidden="true">${t}</span>`).join('')
+      + P.phases.map((p, i) => { const [a, b, c, d] = p[LANG] || p.de, s = i < P.now ? 'done' : i === P.now ? 'now' : 'next';
+        return `<div class="ph ${s}"><div class="h ${s}" style="--c:${i + 2}"${s === 'now' ? ' aria-current="step"' : ''}><span class="n">${T('phase')} ${i + 1}</span>${ico(p.ic)}<b>${esc(a)}</b></div>`
+          + cell('d', s, i, 0, esc(b)) + cell('e', s, i, 1, `${ico('check')}<span>${esc(fill(c, v))}</span>`)
+          + cell('op', s, i, 2, d ? `<span>○ ${esc(d)}</span>` : '<span class="none">–</span>') + '</div>'; }).join('');
+  }
+  // Abgabe:B – Fortschrittsring + Liste
+  function renderOuts() {
+    const O = D.project.outputs, n = O.length, done = O.filter(o => o.st === 'ok').length, C = 2 * Math.PI * 42, seg = C / n;
+    $('#outs').innerHTML = `<div class="ring" role="img" aria-label="${T('outRing', { p: done, n })}"><svg viewBox="0 0 112 112" aria-hidden="true"><g transform="rotate(-90 56 56)">`
+      + O.map((o, i) => `<circle r="42" cx="56" cy="56" class="seg ${o.st}" stroke-dasharray="${(seg - 4).toFixed(1)} ${(C - seg + 4).toFixed(1)}" stroke-dashoffset="${(-i * seg).toFixed(1)}"/>`).join('')
+      + `</g></svg><span aria-hidden="true"><b>${done}/${n}</b>${T('st').ok}</span></div><ul>`
+      + O.map(o => { const [a, b] = o[LANG] || o.de; return `<li><span class="ic">${ico(o.ic)}</span><span class="tx"><b>${esc(a)}</b><span>${esc(b)}</span></span>${stChip(o.st)}</li>`; }).join('') + '</ul>';
+  }
+  function renderPersonas() {
+    $('#personas').innerHTML = D.personas.map(p => `<article class="persona"><header><span class="av" aria-hidden="true">${p.name.replace(/^Dr\. /, '').split(' ').map(w => w[0]).join('')}</span><span class="who"><b>${esc(p.name)}</b><span>${esc(L(p.meta))}</span></span><span class="bdg demo">${T('persona')}</span><span class="grp">${ico(PERSONA_IC[p.go])}${esc(L(p.group))}</span></header>`
+      + `<blockquote>${esc(L(p.quote))}</blockquote>`
+      + `<ol class="flow"><li class="z"><span>${ico('target')}${T('pGoal')}</span>${esc(L(p.goal))}</li><li class="h"><span>${ico('alert')}${T('pHurdle')}</span>${esc(L(p.hurdle))}</li><li class="n"><span>${ico('check')}${T('pGain')}</span>${esc(L(p.gain))}</li></ol>`
+      + `<button type="button" class="btn pri" data-persona="${p.go}">${T('go')[p.go]}${ico('arrow')}</button></article>`).join('');
   }
   function renderProject() {
-    renderGoals();
     const P = D.project;
+    $$('[data-ic]').forEach(e => { e.innerHTML = ico(e.dataset.ic); });
+    $('#legend').innerHTML = `<span class="lgt">${T('thSt')}</span>` + ['ok', 'teil', 'offen'].map(k => stChip(k)).join('');
+    renderGoals();
     $('#succY').innerHTML = P.success.shows.map(x => `<li class="y">${esc(L(x))}</li>`).join('');
     $('#succO').innerHTML = P.success.needs.map(x => `<li class="o">${esc(L(x))}</li>`).join('');
-    $('#tl').innerHTML = P.phases.map((p, i) => { const [a, b, c] = p[LANG] || p.de; return `<li class="ph ${i < P.now ? 'done' : i === P.now ? 'now' : ''}"${i === P.now ? ' aria-current="step"' : ''}><span class="n">${i + 1}</span><b>${esc(a)}</b><p>${esc(b)}</p><span class="bdg ${p.st === 'ok' ? 'ok' : 'warn'}">${esc(c)}</span></li>`; }).join('');
-    placeTimeline();
-    $('#outs').innerHTML = P.outputs.map(o => { const [a, b] = o[LANG] || o.de; return `<div><span><b>${esc(a)}</b><small>${esc(b)}</small></span><span class="bdg ${o.st === 'ok' ? 'ok' : 'warn'}">${T('stOut')[o.st]}</span></div>`; }).join('');
+    renderPhases(); renderOuts();
     $('#testTitle').textContent = T('testTitle', { n: T('tests').length });
+    $('#testRun').innerHTML = ico('run') + T('testRun'); $('#testSave').innerHTML = ico('save') + T('testSave');
     renderTests();
-    $('#personas').innerHTML = D.personas.map(p => `<article class="persona"><span class="bdg demo">${T('persona')}</span><div class="who"><span class="av" aria-hidden="true">${p.name.replace(/^Dr\. /, '').split(' ').map(w => w[0]).join('')}</span><span><b>${esc(p.name)}</b><small>${esc(L(p.group))} · ${esc(L(p.meta))}</small></span></div>`
-      + `<blockquote>${esc(L(p.quote))}</blockquote><dl><dt>${T('pGoal')}</dt><dd>${esc(L(p.goal))}</dd><dt>${T('pHurdle')}</dt><dd>${esc(L(p.hurdle))}</dd><dt>${T('pGain')}</dt><dd>${esc(L(p.gain))}</dd></dl>`
-      + `<button type="button" class="btn" data-persona="${p.go}">${T('go')[p.go]}<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button></article>`).join('');
+    renderPersonas();
   }
   $('#personas').addEventListener('click', e => {
     const b = e.target.closest('[data-persona]'); if (!b) return;
@@ -741,12 +795,14 @@
   ];
   function runTests() {
     TESTS = CHECKS.map((fn, i) => { let pass = false, v = {}, err = ''; try { [pass, v] = fn(); } catch (e) { err = String(e && e.message || e); } return { i, pass: !!pass, v, err, at: new Date() }; });
-    renderTests(); renderGoals();
+    renderTests(); renderGoals(); renderPhases();
   }
   function renderTests() {
     const names = T('tests'), det = T('tDetail');
-    $('#tests').innerHTML = TESTS.map(t => `<li class="${t.pass ? 'pass' : 'fail'}"><span>${names[t.i]}</span><em>${T(t.pass ? 'pass' : 'fail')}</em><small>${esc(t.err || fill(det[t.i], t.v))}</small></li>`).join('');
-    $('#testStamp').textContent = TESTS.length ? T('testStamp', { d: TESTS[0].at.toLocaleString(LANG === 'de' ? 'de-DE' : 'en-GB') }) : '';
+    $('#tests').innerHTML = TESTS.map(t => `<li class="${t.pass ? 'pass' : 'fail'}"><span class="ic">${ico(TEST_IC[t.i])}</span><span class="tx"><b>${names[t.i]}</b><small>${esc(t.err || fill(det[t.i], t.v))}</small></span><span class="tr" aria-hidden="true">${t.pass ? '✓' : '✗'}</span><span class="sr-only">${T(t.pass ? 'pass' : 'fail')}</span></li>`).join('');
+    $('#testScore').textContent = TESTS.length ? `${passed()}/${TESTS.length}` : '';
+    $('#testWord').textContent = TESTS.length ? T('pass') : '';
+    $('#testStamp').textContent = TESTS.length ? T('testStamp', { d: TESTS[0].at.toLocaleString(LANG === 'de' ? 'de-DE' : 'en-GB', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) }) : '';
     $('#testSave').disabled = !TESTS.length;
   }
   $('#testRun').addEventListener('click', runTests);
@@ -827,5 +883,5 @@
   runTests();
   initGeo();
   let rz = 0;
-  addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { renderStart(); renderPlat(); drawScn(); placeTimeline(); trackRail(); }, 150); });
+  addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { renderStart(); renderPlat(); drawScn(); trackRail(); }, 150); });
 })();
