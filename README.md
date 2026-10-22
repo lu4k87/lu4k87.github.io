@@ -22,6 +22,6 @@
 | **Claude Ops** | [`/web_claude_ops`](https://lu4k87.github.io/web_claude_ops) | Live-Dashboard der Claude-Code-Chats und Agenten im HUD-Look. | privat |
 | **Bohlien Immo** | [`/web_immo_bohlien`](https://lu4k87.github.io/web_immo_bohlien) | Neue Landingpage für ein Immobilienbüro – three.js-Hausmodell und fünf Entwürfe. | privat |
 | **AI Agency** | [`/web_ai_agency`](https://lu4k87.github.io/web_ai_agency) | Begehbares 3D-Agentenbüro zum AI Dev Workflow – jede Komponente des Setups anklickbar. | privat |
-| **Applied Research** | [`/web_applied_research`](https://lu4k87.github.io/web_applied_research) | Materialflussanalyse im Industriepark Kehrum (Kalkar) – interaktive Karte der Stoffströme. | privat |
+| **Applied Research** | [`/web_applied_research`](https://lu4k87.github.io/web_applied_research) | KreiswertS – Plattform-Prototyp für den Austausch von Kunststoff-Resten in Kamp-Lintfort: Karte, Matching, drei Szenarien. | privat |
 | **Radial HUD** | [`/web_radial_mouse_hud`](https://lu4k87.github.io/web_radial_mouse_hud) | Rundes Menü am Mauszeiger für Linux – Mitteltaste halten: Screenshot, neue Datei, Ordner, Apps, Ablage. | privat |
 | **Trading Dashboard** | in Arbeit | Dashboard für Swing-Trading – Live-Kurse, Scanner, News mit Sentiment und Papierhandel. | privat |
