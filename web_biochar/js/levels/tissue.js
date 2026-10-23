@@ -1,7 +1,8 @@
 // Ebene 2: Holzgewebe als längliches Bruchstück (Einheit µm, lang in Faserrichtung −z wie das Stück auf Ebene 1), REM-Ansicht
 // nach dem Vorbild echter Aufnahmen: Stirnfläche in großen Stufen (der Bruch springt zwischen Faserlagen), darauf feine
 // Terrassen, einzelne eingebrochene Zellen, Rand als abgestufte Bruchkante, Längsseiten frei liegend, Gefäße als tiefe
-// dunkle Kanäle mit Durchbrechungsplatten, Lumina dunkel (Sekundärelektronen entkommen nicht aus dem Hohlraum).
+// dunkle Kanäle mit Durchbrechungsplatten, Lumina dunkel (Sekundärelektronen entkommen nicht aus dem Hohlraum). Längsseiten
+// als Splitter: Faserbündel brechen außen unterschiedlich lang ab, Tüpfel auf den frei liegenden Längswänden.
 // Pyrolyse: Schwindung, dünnere Wände und ein Radialriss, der sich entlang des breiten Holzstrahls öffnet (setParam 'temp').
 
 import * as THREE from 'three';
@@ -35,6 +36,12 @@ export function create(ctx) {
   };
   const inside = (x, y) => rim(x, y) < 1;
   const edgeDrop = (x, y) => 40 * Math.pow(clamp((rim(x, y) - 0.86) / 0.14, 0, 1), 2);
+  // Längsseiten: das Stück ist ein Splitter – außen brechen die Fasern kurz ab, innen laufen sie weiter (Hülle verjüngt
+  // sich zum fernen Ende), Bündel brechen gemeinsam (fbm), jede Wand etwas anders, einzelne Fasern ragen heraus
+  const breakLen = (x, y) => {
+    const n = 0.24 * (fbm3(x * 0.011 + 1, y * 0.011 + 2, 3, 3) - 0.5);
+    return LENGTH * Math.pow(clamp((1.08 + n - rim(x, y)) / 0.6, 0, 1), 1.3);
+  };
   // Risslinie: Außenkante (+x) des breiten Holzstrahls; alles rechts davon wandert mit der Rissöffnung nach +x
   const ray = wood.broad;
   const crackX = (y) => wood.rayX(ray, y) + (ray.cells * RAY_CELL_W) / 2 + 1.5;
@@ -58,13 +65,15 @@ export function create(ctx) {
     const drop = Math.max(broken.get(e.i) || 0, broken.get(e.j) || 0);
     if (drop) z1 -= drop * (0.55 + 0.45 * rand());
     else if (rand() < 0.012) z1 -= 6 + rand() * 25;      // vereinzelt abgebrochene Wände
-    walls.push({ a: e.a, b: e.b, t: e.t, kind: e.kind, seed: e.seed, late: e.late, z0: -LENGTH - rand() * 120, z1, outer });
+    let len = breakLen(mx, my) * (0.86 + 0.28 * rand()) + (rand() < 0.04 ? 180 + rand() * 220 : 0);
+    len = clamp(len, 30, LENGTH + 120);
+    walls.push({ a: e.a, b: e.b, t: e.t, kind: e.kind, seed: e.seed, late: e.late, z0: Math.min(z1 - len, z1 - 15), z1, outer });
   }
 
   // Tiefenabdunklung ab der eigenen Bruchkante (topMix): tiefere Stufen bleiben hell, Lumina und Gefäße dunkeln ab
   const sem = { openZ: OPEN_Z, depth: 16, base: 0.34, edge: 0.62, edgeW: 1.0, noise: 0.5, shade: 0.45, topMix: 0.75 };
   const scene = new THREE.Scene();
-  const wallGroup = buildWalls(walls, { ...sem, pits: false });
+  const wallGroup = buildWalls(walls, sem);     // mit Tüpfeln: die frei liegenden Längswände zeigen Struktur
   scene.add(wallGroup);
   const left = new THREE.Group(), right = new THREE.Group();   // Teile links/rechts des Risses
   scene.add(left, right);
