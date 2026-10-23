@@ -1,8 +1,9 @@
 // Ebene 1: ein Stück Buchen-Pflanzenkohle (Einheit cm). Prozedurale Texturen: Jahrringe, Strahlen, Gefäße in echter
 // Größe (Ø 15–24 µm), Faserriefen, Schwundrisse; Relief als Normal-Map (Sobel) und als Verschiebung im feinen Netz.
+// Form: längs gespaltener Splitter mit zerfasertem Bruchende, Würfelrisse aus der Schwindung als Geometrie.
 
 import * as THREE from 'three';
-import { mulberry32, fbm3, smoothstep, clamp, lerp } from '../util.js';
+import { mulberry32, fbm3, smoothstep, clamp, lerp, vnoisef, hash33 } from '../util.js';
 import { disposeGroup } from '../walls.js';
 
 const W = 4.4, H = 2.4, D = 2.2;
@@ -322,15 +323,39 @@ export function create(ctx) {
   const hEnd = smoothSampler(end.rb, 128), hA = smoothSampler(sideA.rb, 96), hB = smoothSampler(sideB.rb, 96);
   const heights = [hEnd, hEnd, hA, hA, hB, hB];
 
-  const geo = new THREE.BoxGeometry(W, H, D, 160, 90, 80);
+  const fbmf = (x, y, z, o = 3) => {
+    let s = 0, a = 0.5, f = 1, nn = 0;
+    for (let i = 0; i < o; i++) { s += a * vnoisef(x * f, y * f, z * f); nn += a; a *= 0.5; f *= 2.07; }
+    return s / nn;
+  };
+  // Splitter: verjüngt sich nach rechts, schiefer Querschnitt (Keil); die Unterseite bleibt flach und liegt auf
+  const shape = (p) => {
+    const t = p.x / W + 0.5, s = 1 - 0.26 * t;
+    const y = p.y * s + 0.42 * p.z * s * (p.y / H + 0.5) - (1 - s) * H / 2, z = p.z * s * (1 - 0.1 * t);
+    p.y = y; p.z = z;
+    return p;
+  };
+
+  const geo = new THREE.BoxGeometry(W, H, D, 240, 130, 120);
   const pos = geo.attributes.position, nor = geo.attributes.normal, uv = geo.attributes.uv;
   const faceOf = new Int8Array(pos.count);
   const index = geo.index.array;
   geo.groups.forEach((g) => { for (let i = g.start; i < g.start + g.count; i++) faceOf[index[i]] = g.materialIndex; });
+  // gemeinsame Verschiebungsrichtung je Ort: an Kanten gemittelt → keine Spalten zwischen den Flächen
+  const keyOf = (i) => `${Math.round(pos.getX(i) * 1e4)},${Math.round(pos.getY(i) * 1e4)},${Math.round(pos.getZ(i) * 1e4)}`;
+  const nsum = new Map();
+  for (let i = 0; i < pos.count; i++) {
+    const k = keyOf(i), s = nsum.get(k) || new THREE.Vector3();
+    nsum.set(k, s.add(new THREE.Vector3(nor.getX(i), nor.getY(i), nor.getZ(i))));
+  }
+  nsum.forEach((v) => v.normalize());
 
   // Abgeschlagene Kanten/Ecken: Hauptabplatzer + 2–3 kleinere, gekippte Sub-Abplatzer an ihrem Rand (muschelig gestuft)
   const corners = [];
-  for (const sx of [-1, 1]) for (const sy of [-1, 1]) for (const sz of [-1, 1]) corners.push([sx * W / 2, sy * H / 2, sz * D / 2]);
+  for (const sx of [-1, 1]) for (const sy of [-1, 1]) for (const sz of [-1, 1]) {
+    const c = shape({ x: sx * W / 2, y: sy * H / 2, z: sz * D / 2 });
+    corners.push([c.x, c.y, c.z]);
+  }
   const chips = [];
   const planeFor = (n, depth) => {
     const l = Math.hypot(...n);
@@ -349,6 +374,7 @@ export function create(ctx) {
       sub.ripple = 40 + 30 * rand();
       chips.push(sub);
     }
+    return main;
   };
   for (let k = 0; k < 4; k++) addChip([(rand() - 0.5) * 0.3, (k & 1 ? 1 : -1) * (0.6 + rand() * 0.6), (k & 2 ? 1 : -1) * (0.6 + rand() * 0.6)], 0.1 + rand() * 0.28, 2);
   for (let k = 0; k < 7; k++) {
@@ -356,19 +382,56 @@ export function create(ctx) {
     addChip([c[0] * (0.4 + rand()), c[1] * (0.6 + rand()), c[2] * (0.6 + rand())], 0.25 + rand() * 0.4, 2 + Math.floor(rand() * 2));
   }
   addChip([-1, (rand() - 0.5) * 0.7, (rand() - 0.5) * 0.9], 0.45, 0);   // Bruchende links
+  addChip([0.05, 0.5, 0.86], 0.62, 0).split = true;                    // Spaltfläche längs der Faser
+
+  // Schwundrisse (Würfelmuster): quer zur Faser, längs entlang der Holzstrahlen vom Mark, ein Ringriss; laufen über die
+  // Kanten weiter. CRACK.width = Öffnung in cm (Ansatz für die Pyrolyse-Animation: wächst mit der Schwindung)
+  const CRACK = { width: 0.05, depth: 0.16, lift: 0.035 };
+  const vr = mulberry32(4242);
+  const pithYZ = [-H * 1.5, -D * 1.4];            // Mark liegt außerhalb des Stücks
+  const angs = corners.map((c) => Math.atan2(c[2] - pithYZ[1], c[1] - pithYZ[0]));
+  const aMin = Math.min(...angs), aMax = Math.max(...angs);
+  const rays = Array.from({ length: 6 }, (_, j) => lerp(aMin, aMax, (j + 0.5 + (vr() - 0.5) * 0.6) / 6)).sort((a, b) => a - b);
+  const xCracks = [];
+  for (let x = -W / 2 + 0.25 + vr() * 0.2; x < W / 2 - 0.15; x += 0.38 + vr() * 0.3) xCracks.push(x);
+  const ringR = Math.hypot(pithYZ[0], pithYZ[1]) + 0.35;
+  const cracksAt = (p) => {
+    let open = 0, ix = 0, sec = 0;
+    xCracks.forEach((x0, j) => {
+      const xc = x0 + 0.14 * (fbmf(p.y * 1.4, p.z * 1.4, j * 3.1) - 0.5);
+      if (p.x > xc) ix = j + 1;
+      const w = CRACK.width * smoothstep(0.38, 0.6, fbmf(p.y * 0.8 + j, p.z * 0.8, j * 7.3));   // Risse laufen aus
+      if (w > 0.003) open = Math.max(open, clamp(1 - Math.abs(p.x - xc) / w, 0, 1));
+    });
+    const dy = p.y - pithYZ[0], dz = p.z - pithYZ[1], ang = Math.atan2(dz, dy), r = Math.hypot(dy, dz);
+    rays.forEach((a0, j) => {
+      const a = a0 + 0.05 * (fbmf(p.x * 0.9, j * 2.3, 0.5) - 0.5);
+      if (ang > a) sec = j + 1;
+      const w = 0.9 * CRACK.width * smoothstep(0.3, 0.5, fbmf(p.x * 0.5 + j * 5, 1.7, j));
+      if (w > 0.003) open = Math.max(open, clamp(1 - Math.abs(Math.sin(ang - a)) * r / w, 0, 1));
+    });
+    const wr = 0.7 * CRACK.width * smoothstep(0.45, 0.6, fbmf(p.x * 0.6, ang * 4, 9.9));
+    if (wr > 0.003) open = Math.max(open, clamp(1 - Math.abs(r - ringR - 0.05 * (fbmf(p.x, ang * 6, 2) - 0.5)) / wr, 0, 1));
+    // Blöcke zwischen den Rissen leicht gegeneinander versetzt
+    const lift = (hash33(ix, sec, 7)[0] - 0.5) * CRACK.lift;
+    return { k: lift - CRACK.depth * open, shade: 1 - 0.8 * open };
+  };
 
   const colors = new Float32Array(pos.count * 3);
   const p = new THREE.Vector3();
   for (let i = 0; i < pos.count; i++) {
+    const dn = nsum.get(keyOf(i));
+    const n = [dn.x, dn.y, dn.z];
     p.fromBufferAttribute(pos, i);
-    const n = [nor.getX(i), nor.getY(i), nor.getZ(i)];
+    shape(p);
     let shade = 1;
-    // Bruchende links: Terrassen quer zur Faser, dazu feine Splitter
-    if (p.x < -W / 2 + 0.5) {
+    // Bruchende links: tiefe Terrassen quer zur Faser, lange herausstehende Faserbündel, feine Splitter
+    if (p.x < -W / 2 + 0.95) {
       const step = Math.floor(fbm3(p.y * 2.2 + 7, p.z * 2.2 + 3, 0.5, 3) * 5) / 5;
       const splinter = fbm3(p.y * 9, p.z * 9, 2, 2) - 0.5;
-      const fiber = fbm3(p.y * 30, p.z * 30, 4, 2) - 0.5;          // einzelne herausstehende Faserbündel
-      p.x = Math.max(p.x, -W / 2 + 0.44 * step + 0.05 * splinter + 0.025 * fiber);
+      const bundle = 1 - Math.abs(2 * fbmf(p.y * 7, p.z * 7, 3.3) - 1);
+      const fiber = fbm3(p.y * 30, p.z * 30, 4, 2) - 0.5;
+      p.x = Math.max(p.x, -W / 2 + 0.85 * step + 0.1 * splinter + 0.16 * bundle + 0.03 * fiber);
     }
     let hit = null;
     for (const ch of chips) {
@@ -376,22 +439,32 @@ export function create(ctx) {
       if (d > 0) { p.set(p.x - ch.n[0] * d, p.y - ch.n[1] * d, p.z - ch.n[2] * d); hit = ch; }
     }
     const u = uv.getX(i), v = uv.getY(i), f = faceOf[i];
-    if (hit) {
+    if (hit && hit.split) {
+      // Spaltfläche: aufgerissene Faserbündel längs der Faser statt Muschelbögen
+      const fib = 1 - Math.abs(2 * fbmf(p.x * 0.5, p.y * 9, p.z * 9, 3) - 1);
+      const k = 0.03 * (fib - 0.5) + 0.012 * (fbmf(p.x * 2, p.y * 30, p.z * 30, 2) - 0.5);
+      p.set(p.x + hit.n[0] * k, p.y + hit.n[1] * k, p.z + hit.n[2] * k);
+      shade = 0.7;
+    } else if (hit) {
       // frische Bruchfläche: muschelige Wellen + Rauheit entlang der Abplatzer-Normale, glänzend schwarz
       const r = fbm3(p.x * 6 + 1, p.y * 6, p.z * 6, 3);
       const shell = Math.abs(Math.sin(r * 14 + hit.ripple));        // unregelmäßige Muschelbögen, keine parallelen Wellen
-      const k = -0.005 * shell - 0.02 * (r - 0.5);
+      const k = -0.005 * shell - 0.02 * (r - 0.5) - 0.012 * (fbmf(p.x * 14, p.y * 14, p.z * 14, 2) - 0.5);
       p.set(p.x + hit.n[0] * k, p.y + hit.n[1] * k, p.z + hit.n[2] * k);
       shade = 0.6;
     } else {
       const h = heights[f](u, v);
-      const crack = clamp((0.3 - h) / 0.3, 0, 1) * smoothstep(0, 0.05, Math.min(u, 1 - u, v, 1 - v));
-      const bump = fbm3(p.x * 1.4 + 3, p.y * 1.4, p.z * 1.4, 3) - 0.5;
-      // Relief aus der Höhe: Jahrringe/Strahlen auf der Stirnfläche ≈ 0,1 mm, Längsflächen flacher
-      const relief = (h - 0.7) * (f < 2 ? 0.014 : 0.004);
-      const k = -crack * 0.13 + bump * (f < 2 ? 0.05 : 0.09) + relief;
+      const edge = smoothstep(0, 0.05, Math.min(u, 1 - u, v, 1 - v));
+      const crack = clamp((0.3 - h) / 0.3, 0, 1) * edge;
+      const bump = fbm3(p.x * 1.4 + 3, p.y * 1.4, p.z * 1.4, 3) - 0.5;   // nur noch leicht: keine weichen Wellen
+      // Relief aus der Höhe: Jahrringe/Strahlen auf der Stirnfläche ≈ 0,1 mm, Längsflächen flacher; an den Kanten aus
+      const relief = (h - 0.7) * (f < 2 ? 0.014 : 0.004) * edge;
+      const k = -crack * 0.13 + bump * 0.015 + relief;
       p.set(p.x + n[0] * k, p.y + n[1] * k, p.z + n[2] * k);
     }
+    const c = cracksAt(p), dir = hit ? hit.n : n;
+    p.set(p.x + dir[0] * c.k, p.y + dir[1] * c.k, p.z + dir[2] * c.k);
+    shade *= c.shade;
     pos.setXYZ(i, p.x, p.y, p.z);
     colors[i * 3] = colors[i * 3 + 1] = colors[i * 3 + 2] = shade;
   }
@@ -404,7 +477,7 @@ export function create(ctx) {
     roughnessMap: texture(end.rb, false), roughness: 1, metalness: 0.08, vertexColors: true,
   });
   const sideMat = (t) => new THREE.MeshPhysicalMaterial({
-    map: texture(t.col, true), normalMap: texture(sobelNormal(t.rb, 1.6, 5), false), normalScale: new THREE.Vector2(0.75, 0.75),
+    map: texture(t.col, true), normalMap: texture(sobelNormal(t.rb, 1.6, 5), false), normalScale: new THREE.Vector2(1.1, 1.1),
     roughnessMap: texture(t.rb, false), roughness: 1, metalness: 0.22, vertexColors: true,
   });
   const matA = sideMat(sideA), matB = sideMat(sideB);
@@ -547,7 +620,7 @@ export function create(ctx) {
         m.color.copy(tint);
         m.metalness = m === matEnd ? lerp(0.02, 0.1, k) : lerp(0.04, 0.3, k);
         m.roughness = lerp(1.15, 0.85, k);
-        m.clearcoat = m === matEnd ? 0 : lerp(0, 0.55, k);   // Seidenglanz der Längsflächen
+        m.clearcoat = m === matEnd ? 0 : lerp(0, 0.2, k);    // Seidenglanz der Längsflächen, gedämpft: rau statt glatt
         m.clearcoatRoughness = 0.5;
       }
       crumbMat.color.copy(tint).multiplyScalar(0.11);
