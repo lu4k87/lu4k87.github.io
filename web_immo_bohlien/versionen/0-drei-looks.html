@@ -102,7 +102,7 @@ p { margin: 0; text-wrap: pretty; }
   transition: border-color .3s var(--ease), background-color .3s var(--ease);
 }
 .header.scrolled { border-bottom-color: var(--line); background: rgba(245, 242, 236, .94); }
-body { padding-top: var(--head-top); }
+body { padding-top: calc(var(--head-top) + var(--vbar-h, 0px)); }
 .header-inner { display: flex; align-items: center; gap: 24px; min-height: var(--head-top); transition: min-height .3s var(--ease); }
 .header.scrolled .header-inner { min-height: var(--head); }
 .brand { display: flex; align-items: center; flex: none; }
@@ -1324,5 +1324,6 @@ blockquote::after { content: "“"; color: var(--green-ink); }
   document.getElementById('year').textContent = new Date().getFullYear();
 })();
 </script>
+<script src="versionsleiste.js" defer></script>
 </body>
 </html>
