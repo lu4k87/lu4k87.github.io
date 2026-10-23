@@ -49,6 +49,10 @@ const VERT = /* glsl */ `
 attribute vec4 aWall;
 varying vec4 vWall;
 #endif
+#ifdef SEM_TOP
+attribute float aTop;      // eigene Oberkante (lokal): Tiefenabdunklung ab der eigenen Bruchkante statt ab der Weltebene
+varying float vTopW;
+#endif
 varying vec3 vWorld;
 varying vec3 vNormal;
 varying vec3 vLocal;
@@ -67,6 +71,9 @@ void main() {
 #ifdef SEM_WALLS
   vWall = aWall;
 #endif
+#ifdef SEM_TOP
+  vTopW = (modelMatrix * vec4(0.0, 0.0, aTop, 1.0)).z;
+#endif
   vNormal = normalize(mat3(modelMatrix) * n);
   vLocal = position;
   vWorld = wp.xyz;
@@ -77,9 +84,12 @@ void main() {
 const FRAG = /* glsl */ `
 uniform vec3 uDet;
 uniform vec3 uTint;
-uniform float uBase, uEdge, uEdgeW, uDepth, uUseDepth, uOpenZ, uOpenX, uNoise;
+uniform float uBase, uEdge, uEdgeW, uDepth, uUseDepth, uOpenZ, uOpenX, uNoise, uShade, uTopMix;
 #ifdef SEM_WALLS
 varying vec4 vWall;
+#endif
+#ifdef SEM_TOP
+varying float vTopW;
 #endif
 varying vec3 vWorld;
 varying vec3 vNormal;
@@ -153,10 +163,15 @@ void main() {
   }
 #endif
   if (uUseDepth > 0.5) {
-    float d = max(min(uOpenZ - vWorld.z, uOpenX - vWorld.x), 0.0);
-    g *= mix(0.05, 1.0, exp(-d / uDepth));
+    float top = uOpenZ;
+#ifdef SEM_TOP
+    top = mix(uOpenZ, vTopW, uTopMix);   // Terrassen: tiefer liegende Fläche bleibt hell, nur Hohlräume dunkeln ab
+#endif
+    float d = max(min(top - vWorld.z, uOpenX - vWorld.x), 0.0);
+    g *= mix(0.03, 1.0, exp(-d / uDepth));
   }
   g *= 0.86 + 0.28 * vnoise(vWorld * uNoise);
+  g *= 1.0 + uShade * (vnoise(vWorld * 0.0045 + 7.0) - 0.5);   // großräumige Helligkeit (Aufladung, Detektorlage)
   gl_FragColor = semOut(g, uTint);
 }
 `;
@@ -166,6 +181,7 @@ export function semMaterial(opts = {}) {
   if (opts.walls) defines.SEM_WALLS = '';
   if (opts.pits) defines.SEM_PITS = '';
   if (opts.joint) defines.SEM_JOINT = '';
+  if (opts.topMix) defines.SEM_TOP = '';
   return new THREE.ShaderMaterial({
     defines,
     uniforms: {
@@ -179,6 +195,8 @@ export function semMaterial(opts = {}) {
       uOpenZ: { value: opts.openZ ?? 1e6 },
       uOpenX: { value: opts.openX ?? 1e6 },
       uNoise: { value: opts.noise ?? 0.8 },
+      uShade: { value: opts.shade ?? 0 },
+      uTopMix: { value: opts.topMix ?? 0 },
     },
     vertexShader: VERT,
     fragmentShader: FRAG,

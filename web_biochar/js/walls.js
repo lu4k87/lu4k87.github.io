@@ -9,6 +9,7 @@ export function buildWalls(walls, semOpts) {
   const group = new THREE.Group();
   const box = new THREE.BoxGeometry(1, 1, 1);
   const data = new Float32Array(walls.length * 4);
+  const tops = new Float32Array(walls.length);
   const wallMat = semMaterial({ ...semOpts, walls: true, pits: semOpts.pits !== false });
   const mesh = new THREE.InstancedMesh(box, wallMat, walls.length);
   const m = new THREE.Matrix4();
@@ -30,6 +31,7 @@ export function buildWalls(walls, semOpts) {
     data[k * 4] = w.kind;
     data[k * 4 + 1] = w.seed;
     data[k * 4 + 2] = w.late || 0;
+    tops[k] = w.z1;
     for (const pt of [w.a, w.b]) {
       if (w.openEnd && pt === w.b) continue;
       const key = `${Math.round(pt[0] * 200)},${Math.round(pt[1] * 200)}`;
@@ -39,6 +41,7 @@ export function buildWalls(walls, semOpts) {
     }
   });
   box.setAttribute('aWall', new THREE.InstancedBufferAttribute(data, 4));
+  box.setAttribute('aTop', new THREE.InstancedBufferAttribute(tops, 1));
   mesh.instanceMatrix.needsUpdate = true;
   group.add(mesh);
 
@@ -46,11 +49,13 @@ export function buildWalls(walls, semOpts) {
   prism.rotateX(Math.PI / 2);
   const jointMat = semMaterial({ ...semOpts, joint: true });
   const list = [...joints.values()];
+  prism.setAttribute('aTop', new THREE.InstancedBufferAttribute(Float32Array.from(list, (j) => j.z1), 1));
   const jm = new THREE.InstancedMesh(prism, jointMat, list.length);
   const jgeo = list.map((j) => ({ p: new THREE.Vector3(j.p[0], j.p[1], (j.z0 + j.z1) / 2), t: j.t * 0.56, h: j.z1 - j.z0 }));
-  const setThin = (f) => {
-    geo.forEach((g, k) => mesh.setMatrixAt(k, m.compose(g.p, g.q, s.set(g.s.x, g.s.y * f, g.s.z))));
-    jgeo.forEach((j, k) => jm.setMatrixAt(k, m.compose(j.p, q.identity(), s.set(j.t * f, j.t * f, j.h))));
+  // f = Wanddicke relativ zur Ausgangsdicke; offset(x, y) = seitlicher Versatz in x (Risse, die sich mit der Schwindung öffnen)
+  const setThin = (f, offset) => {
+    geo.forEach((g, k) => mesh.setMatrixAt(k, m.compose(p.set(g.p.x + (offset ? offset(g.p.x, g.p.y) : 0), g.p.y, g.p.z), g.q, s.set(g.s.x, g.s.y * f, g.s.z))));
+    jgeo.forEach((j, k) => jm.setMatrixAt(k, m.compose(p.set(j.p.x + (offset ? offset(j.p.x, j.p.y) : 0), j.p.y, j.p.z), q.identity(), s.set(j.t * f, j.t * f, j.h))));
     mesh.instanceMatrix.needsUpdate = true;
     jm.instanceMatrix.needsUpdate = true;
   };
@@ -80,6 +85,7 @@ export function shrinkScene(scene, xy, z) {
 
 // Beliebige Teile als Instanzen im REM-Look: list = [{ p: [x, y, z], s: [sx, sy, sz], r: [rx, ry, rz] }]
 export function buildInstances(geometry, list, semOpts) {
+  if (semOpts.topMix) geometry.setAttribute('aTop', new THREE.InstancedBufferAttribute(Float32Array.from(list, (it) => it.p[2]), 1));
   const mesh = new THREE.InstancedMesh(geometry, semMaterial(semOpts), list.length);
   const m = new THREE.Matrix4(), q = new THREE.Quaternion(), e = new THREE.Euler(), p = new THREE.Vector3(), s = new THREE.Vector3();
   list.forEach((it, k) => {

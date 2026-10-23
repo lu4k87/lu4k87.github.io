@@ -151,7 +151,9 @@ export function labProps(t) {
 }
 
 // Schwindung und Wanddicke für die Gewebe-Ebenen, relativ zum Ausgangsbild bei 550 °C (Modell):
-// xy quer zur Faser, z längs, wall = Wanddicke im Verhältnis (Masseverlust macht die Wand dünner, Anteil ≈ 12 %)
+// xy quer zur Faser, z längs, wall = Wanddicke im Verhältnis (Masseverlust macht die Wand dünner, Anteil ≈ 12 %),
+// crack = Öffnung der Radialrisse entlang der Holzstrahlen (0 Holz … 1 voll): tangential schwindet das Gewebe stärker
+// als radial, die weichen Strahlzellen reißen zuerst (Modell, Beginn mit der Zellulose-Zersetzung)
 const WALL_REF = (m) => 0.88 + 0.12 * (m - 23) / 77;
 export function tissueScale(t) {
   const s = pyroState(t), r = pyroState(550);
@@ -159,5 +161,6 @@ export function tissueScale(t) {
     xy: (1 - s.shrinkT) / (1 - r.shrinkT),
     z: (1 - s.shrinkL) / (1 - r.shrinkL),
     wall: WALL_REF(s.mass) / WALL_REF(r.mass),
+    crack: sstep(320, 650, t),
   };
 }

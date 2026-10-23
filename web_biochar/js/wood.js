@@ -6,7 +6,7 @@ import { powerCells, cellEdges, polygonArea, polygonPerimeter } from './voronoi.
 
 export const BOUNDS = { x0: -600, y0: -420, x1: 600, y1: 420 };
 const FIBER = 9;          // Faserabstand
-const RAY_CELL_W = 7.5;   // Breite einer Strahlzelle (tangential)
+export const RAY_CELL_W = 7.5;   // Breite einer Strahlzelle (tangential)
 const RING_Y = 70;        // Jahrringgrenze (radial, wächst nach +y)
 
 export function ringY(x) {
