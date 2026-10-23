@@ -5,6 +5,7 @@
 import * as THREE from 'three';
 import { mulberry32, fbm3, smoothstep, clamp, lerp, vnoisef, hash33 } from '../util.js';
 import { disposeGroup } from '../walls.js';
+import { pyroState, glowColor } from '../science.js';
 
 const W = 4.4, H = 2.4, D = 2.2;
 const END_UM_PER_PX = (2.3e4 / 2048);      // Stirnfläche ≈ 2,3 cm auf 2048 px → ≈ 11 µm je Pixel
@@ -482,6 +483,26 @@ export function create(ctx) {
   });
   const matA = sideMat(sideA), matB = sideMat(sideB);
   const mats = [matEnd, matA, matB];
+
+  // Pyrolyse im Zeitraffer: Holzfarbe → braun → schwarz (Muster aus der Kohle-Textur bleibt erhalten) und Rotglut
+  // ab dem Draper-Punkt; dunkle Stellen (Poren, Risse) glühen stärker. Endzustand (uChar = 1) = unveränderte Kohle.
+  const pyro = { uChar: { value: 1 }, uGlow: { value: 0 }, uGlowCol: { value: new THREE.Color() }, uTime: { value: 0 } };
+  for (const m of mats) {
+    m.onBeforeCompile = (sh) => {
+      Object.assign(sh.uniforms, pyro);
+      sh.fragmentShader = sh.fragmentShader
+        .replace('#include <common>', '#include <common>\nuniform float uChar, uGlow, uTime;\nuniform vec3 uGlowCol;')
+        .replace('#include <color_fragment>', `#include <color_fragment>
+          float pl = dot(diffuseColor.rgb, vec3(0.3333));
+          float lr = clamp(pl / 0.016, 0.0, 1.8);       // Textur ist linear ≈ 0,015 im Mittel, Poren/Risse ≈ 0
+          float pd = 1.0 - clamp(lr, 0.0, 1.0);
+          vec3 wood = vec3(0.78, 0.48, 0.21) * (0.3 + 0.7 * lr);
+          vec3 brown = wood * vec3(0.5, 0.36, 0.3);
+          diffuseColor.rgb = uChar < 0.5 ? mix(wood, brown, smoothstep(0.0, 0.5, uChar)) : mix(brown, diffuseColor.rgb, smoothstep(0.5, 1.0, uChar));`)
+        .replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>
+          totalEmissiveRadiance += uGlowCol * uGlow * (0.1 + 0.9 * smoothstep(0.55, 1.0, pd)) * (0.9 + 0.1 * sin(uTime * 7.0 + vViewPosition.x * 3.0 + vViewPosition.y * 2.0));`);
+    };
+  }
   const piece = new THREE.Mesh(geo, [matEnd, matEnd, matA, matA, matB, matB]);
   scene.add(piece);
 
@@ -511,6 +532,7 @@ export function create(ctx) {
       return [x, z];
     }
   };
+  const fallout = [];      // Krümel und Staub entstehen erst beim Verkohlen (Zeitraffer)
   crumbGeos.forEach((g, gi) => {
     const count = [10, 12, 16, 10][gi];
     const mesh = new THREE.InstancedMesh(g, crumbMat, count);
@@ -523,6 +545,7 @@ export function create(ctx) {
     }
     mesh.instanceMatrix.needsUpdate = true;
     scene.add(mesh);
+    fallout.push(mesh);
   });
   // feiner Staub: 80–300 µm
   const dust = new THREE.InstancedMesh(new THREE.TetrahedronGeometry(1), crumbMat, 420);
@@ -534,6 +557,7 @@ export function create(ctx) {
   }
   dust.instanceMatrix.needsUpdate = true;
   scene.add(dust);
+  fallout.push(dust);
   const blobMesh = new THREE.InstancedMesh(blobGeo, new THREE.MeshBasicMaterial({ map: shadowTex, transparent: true, depthWrite: false, opacity: 0.8 }), blobs.length);
   blobs.forEach(([x, z, s], k) => blobMesh.setMatrixAt(k, m4.compose(s3.set(x, floorY - 0.004, z), q.identity(), new THREE.Vector3(s, 1, s))));
   blobMesh.instanceMatrix.needsUpdate = true;
@@ -589,6 +613,64 @@ export function create(ctx) {
   });
   const sheenPos = pick(2, (i) => Math.hypot(pos.getX(i) + 0.6, pos.getZ(i) - 0.25));
 
+  // Schwaden (Wasserdampf, Pyrolysegase, Teer): Punktwolke, Lebenslauf vollständig im Shader
+  const PLUME_N = 520;
+  const plumeGeo = new THREE.BufferGeometry();
+  {
+    const pp = new Float32Array(PLUME_N * 3), ps = new Float32Array(PLUME_N * 4);
+    const top = geo.boundingBox.max.y - 0.25;
+    for (let k = 0; k < PLUME_N; k++) {
+      pp.set([(rand() - 0.5) * W * 0.85, top - rand() * 0.5, (rand() - 0.5) * D * 0.8], k * 3);
+      ps.set([rand(), 0.6 + rand() * 0.8, rand() * 6.28, 0.5 + rand()], k * 4);
+    }
+    plumeGeo.setAttribute('position', new THREE.BufferAttribute(pp, 3));
+    plumeGeo.setAttribute('aSeed', new THREE.BufferAttribute(ps, 4));
+    plumeGeo.boundingSphere = new THREE.Sphere(new THREE.Vector3(0, 2, 0), 8);
+  }
+  const plumeMat = new THREE.ShaderMaterial({
+    uniforms: { uTime: { value: 0 }, uAmt: { value: 0 }, uCol: { value: new THREE.Color(0.8, 0.85, 0.9) } },
+    transparent: true, depthWrite: false,
+    vertexShader: /* glsl */ `
+      attribute vec4 aSeed; uniform float uTime, uAmt; varying float vA;
+      void main() {
+        float age = fract(uTime * 0.09 * aSeed.y + aSeed.x);
+        vec3 p = position;
+        p.y += age * 3.4;
+        p.x += sin(aSeed.z + age * 5.0 + uTime * 0.4) * 0.32 * age + 0.3 * age * age;
+        p.z += cos(aSeed.z * 1.3 + age * 4.0) * 0.32 * age;
+        vA = sin(3.14159 * age) * uAmt * (0.4 + 0.6 * aSeed.w);
+        vec4 mv = viewMatrix * modelMatrix * vec4(p, 1.0);
+        gl_PointSize = (0.45 + 1.5 * age) * aSeed.w * 1500.0 / -mv.z;
+        gl_Position = projectionMatrix * mv;
+      }`,
+    fragmentShader: /* glsl */ `
+      uniform vec3 uCol; varying float vA;
+      void main() { float d = length(gl_PointCoord - 0.5) * 2.0; float a = 1.0 - smoothstep(0.0, 1.0, d); gl_FragColor = vec4(uCol, a * a * vA * 0.3); }`,
+  });
+  const plume = new THREE.Points(plumeGeo, plumeMat);
+  plume.frustumCulled = false;
+  plume.renderOrder = 2;
+  scene.add(plume);
+  const ember = new THREE.PointLight(0xff5a1a, 0, 9, 1.6);   // Schein der Glut auf dem Tisch
+  ember.position.set(0.2, -0.3, 1.9);
+  scene.add(ember);
+  let playing = false, plumeAmt = 0, tNow = 550, tTarget = 550, lastT = 0;
+  const lerpCol = (a, b, k) => a.map((v, i) => v + (b[i] - v) * k);
+  const smoke = (T) => {          // Farbe der Schwaden je Phase: Dampf weiß → Gase gelbbraun → Teer dunkel → dünn bläulich
+    const st = (a, b, x) => Math.min(1, Math.max(0, (x - a) / (b - a)));
+    let c = [0.82, 0.86, 0.9];
+    c = lerpCol(c, [0.62, 0.52, 0.36], st(190, 250, T));
+    c = lerpCol(c, [0.3, 0.24, 0.18], st(300, 340, T));
+    return lerpCol(c, [0.5, 0.55, 0.62], st(400, 470, T));
+  };
+  // Schwindung relativ zum Zielzustand (die Geometrie zeigt die fertige Kohle bei der gewählten Temperatur)
+  const applyShrink = () => {
+    const a = pyroState(tNow), b = pyroState(tTarget);
+    const sl = (1 - a.shrinkL) / (1 - b.shrinkL), st = (1 - a.shrinkT) / (1 - b.shrinkT);
+    piece.scale.set(sl, st, st);
+    piece.position.y = floorY * (1 - st);
+  };
+
   const camera = new THREE.PerspectiveCamera(32, ctx.aspect, 0.05, 200);
   const level = {
     scene, camera,
@@ -608,10 +690,34 @@ export function create(ctx) {
     ],
     update(dt, t) {
       moveLights(t);
+      pyro.uTime.value = plumeMat.uniforms.uTime.value = t;
+      const want = playing ? pyroState(tNow).vapour : 0;
+      plumeAmt += (want - plumeAmt) * Math.min(1, dt * 3);
+      plumeMat.uniforms.uAmt.value = plumeAmt;
+      plume.visible = plumeAmt > 0.004;
       return true;
     },
     setParam(name, value) {
+      if (name === 'play') {
+        playing = !!value;
+        return;
+      }
+      if (name === 'target') {
+        tTarget = value;
+        applyShrink();
+        return;
+      }
       if (name !== 'temp') return;
+      tNow = value;
+      const st = pyroState(value);
+      pyro.uChar.value = st.char;
+      pyro.uGlow.value = st.glow * 1.7;
+      pyro.uGlowCol.value.setRGB(...glowColor(value));
+      ember.intensity = st.glow * 9;
+      level.bloom = 0.12 + st.glow * 0.45;
+      plumeMat.uniforms.uCol.value.setRGB(...smoke(value));
+      for (const f of fallout) f.visible = st.char > 0.8;
+      applyShrink();
       // niedrig verkohlt: bräunlich und matt · hoch verkohlt: neutral schwarz, seidig glänzend
       const k = clamp((value - 350) / 450, 0, 1);
       const brown = clamp((450 - value) / 100, 0, 1);   // ab ≈ 450 °C tiefschwarz
@@ -628,6 +734,7 @@ export function create(ctx) {
     },
     dispose() { disposeGroup(scene); },
   };
+  level.setParam('target', ctx.temp);
   level.setParam('temp', ctx.temp);
   return level;
 }

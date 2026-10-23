@@ -5,6 +5,7 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { createHud } from './hud.js';
+import { T_ROOM } from './science.js';
 import { NOISE_GLSL } from './sem.js';
 
 const LOADERS = [
@@ -69,7 +70,8 @@ const state = {
   index: -1, active: null, controls: null, tr: null, intro: null, focus: null, dolly: null, dragging: false,
   cine: { idle: 0, w: 0, base: null },
   post: { dof: 0, bloom: 0 },
-  temp: 550, rh: 0.8, pendingTemp: null, lastTemp: 0,
+  temp: 550, rh: 0.8,
+  pyro: { shown: 550, playing: false, tween: null },   // gezeigte Temperatur gleitet zur gewählten (Zeitraffer: ab Raumtemperatur)
   levels: new Map(), loading: new Map(), poses: new Map(), time: 0,
 };
 
@@ -407,8 +409,9 @@ function buildLevel(i) {
   const job = (async () => {
     await new Promise((r) => requestAnimationFrame(() => setTimeout(r, 0)));
     const mod = await LOADERS[i]();
-    const lv = mod.create({ env, aspect: window.innerWidth / window.innerHeight, temp: state.temp, rh: state.rh });
+    const lv = mod.create({ env, aspect: window.innerWidth / window.innerHeight, temp: state.pyro.shown, rh: state.rh });
     lv.index = i;
+    if (lv.setParam) { lv.setParam('target', state.temp); lv.setParam('play', state.pyro.playing); }
     lv.scene.background = null;
     // Farbe mit Mipmaps (Bloom, weiche Unschärfe) und Tiefe als Textur (Tiefenunschärfe)
     lv.rt = new THREE.WebGLRenderTarget(2, 2, {
@@ -687,7 +690,14 @@ const hud = createHud({
     if (dist > c.maxDistance * 1.05 && lv.index > 0) goTo(lv.index - 1);
     else if (dist < c.minDistance * 0.95) diveHotspot();
   },
-  onTemp: (v) => { state.pendingTemp = v; },
+  onTemp: (v) => {
+    const p = state.pyro;
+    state.temp = v;
+    pushParam('target', v);
+    if (p.playing) endPlay();
+    startGlide(p.shown, v, GLIDE_SECONDS, false);
+  },
+  onPlay: () => togglePlay(),
   onRh: (v) => {
     state.rh = v;
     for (const lv of state.levels.values()) if (lv.setParam) lv.setParam('rh', v);
@@ -758,6 +768,48 @@ function stepIntro(lv, real) {
   if (it.t >= 1) endIntro();
 }
 
+// ---------- Pyrolyse-Labor: gezeigte Temperatur ----------
+// Ein Reglerwechsel gleitet ≈ 1,2 s; „Pyrolyse abspielen“ fährt am Stück von Raumtemperatur zur gewählten Temperatur.
+// Alle Ebenen bekommen den laufenden Wert (setParam 'temp'), sie blenden ihre Strukturen selbst weich über.
+const GLIDE_SECONDS = 1.2, PLAY_SECONDS = +params.get('playsec') || 18;   // ?playsec=8 verkürzt den Zeitraffer (Prüfläufe)
+function pushParam(name, value) {
+  for (const lv of state.levels.values()) if (lv.setParam) lv.setParam(name, value);
+}
+function startGlide(from, to, dur, play) {
+  state.pyro.tween = reduced && !play ? { from: to, to, t: 0, dur: 0.001, play } : { from, to, t: 0, dur, play };
+}
+function endPlay() {
+  state.pyro.playing = false;
+  pushParam('play', false);
+}
+function togglePlay() {
+  const p = state.pyro;
+  if (p.playing) {
+    endPlay();
+    startGlide(p.shown, state.temp, GLIDE_SECONDS, false);
+    return;
+  }
+  p.playing = true;
+  pushParam('play', true);
+  pushParam('target', state.temp);
+  startGlide(T_ROOM, state.temp, reduced ? 1 : PLAY_SECONDS, true);
+}
+function stepPyro(real) {
+  const p = state.pyro, tw = p.tween;
+  if (!tw) return;
+  tw.t += real;
+  const k = clampf(tw.t / tw.dur, 0, 1);
+  // Zeitraffer fast linear (Phasen gleichmäßig lesbar), Reglerwechsel weich
+  const e = tw.play ? 0.75 * k + 0.25 * k * k * (3 - 2 * k) : smootherstep(k);
+  p.shown = tw.from + (tw.to - tw.from) * e;
+  pushParam('temp', p.shown);
+  if (k >= 1) {
+    p.tween = null;
+    if (p.playing) endPlay();
+  }
+  hud.setLive(p.shown, p.playing, k >= 1);
+}
+
 // ---------- Schleife ----------
 let last = performance.now();
 function frame(now) {
@@ -767,12 +819,7 @@ function frame(now) {
   const dt = Math.min(0.05, real);
   last = now;
   state.time += dt;
-  if (state.pendingTemp !== null && now - state.lastTemp > 140) {
-    state.temp = state.pendingTemp;
-    state.pendingTemp = null;
-    state.lastTemp = now;
-    for (const lv of state.levels.values()) if (lv.setParam) lv.setParam('temp', state.temp);
-  }
+  stepPyro(real);
   const { w, h } = viewSize();
   const lv = state.active;
   if (state.tr) stepTransition(real);
@@ -859,6 +906,7 @@ async function start() {
   resize();
   const m = /ebene=(\d)/.exec(location.hash);
   const first = m ? Math.min(LOADERS.length - 1, Math.max(0, +m[1] - 1)) : 0;
+  if (params.has('T')) state.temp = state.pyro.shown = Math.min(800, Math.max(T_ROOM, +params.get('T')));
   const lv = await getLevel(first);
   activate(lv);
   if (first === 0 && !reduced && freeze === null) {
@@ -871,6 +919,7 @@ async function start() {
     stepIntro(lv, 0);
   }
   document.body.classList.add('is-ready');
+  if (params.has('play')) setTimeout(togglePlay, 600);
   requestAnimationFrame(frame);
   if (freeze !== null) diveHotspot();
 }

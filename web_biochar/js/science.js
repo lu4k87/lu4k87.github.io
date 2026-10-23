@@ -5,6 +5,7 @@
 import { clamp, lerp } from './util.js';
 
 export const T_MIN = 350;
+export const T_ROOM = 25;
 export const T_MAX = 800;
 const STEPS = [350, 400, 450, 500, 550, 600, 650, 700, 750, 800];
 const TABLE = {
@@ -80,3 +81,71 @@ export function kelvinDiameterNm(rh) {
 
 const nf = (digits) => new Intl.NumberFormat('de-DE', { minimumFractionDigits: digits, maximumFractionDigits: digits });
 export const fmt = (x, digits = 0) => nf(digits).format(x);
+
+// ---------- Pyrolyse im Zeitraffer (Zeitraffer von Raumtemperatur bis zur gewählten Temperatur) ----------
+// Zersetzungsbereiche nach Yang et al. (2007, Fuel 86, 1781–1788): Hemizellulose 220–315 °C, Zellulose 315–400 °C,
+// Lignin breit 160–900 °C. Anteile am Buchenholz und Massenverluste sind Richtwerte (Modell), Schwindung und
+// Glühfarbe ebenso. Das Glühen beginnt am Draper-Punkt ≈ 525 °C (sichtbare Rotglut).
+const sstep = (a, b, x) => { const t = clamp((x - a) / (b - a), 0, 1); return t * t * (3 - 2 * t); };
+export const DRAPER = 525;
+const lossModel = (t) => 0.28 * 0.78 * sstep(220, 315, t) + 0.42 * 0.95 * sstep(315, 400, t) + 0.3 * 0.55 * sstep(160, 900, t);
+
+export const PHASES = [
+  { to: 100, name: 'Aufheizen', gas: 'Holz bleibt unverändert' },
+  { to: 200, name: 'Trocknung', gas: 'Wasserdampf H₂O' },
+  { to: 315, name: 'Hemizellulose zerfällt', gas: 'CO₂, CO, Essigsäure' },
+  { to: 400, name: 'Zellulose zerfällt', gas: 'Teer, Wasserdampf, CO₂' },
+  { to: DRAPER, name: 'Lignin verkohlt', gas: 'CH₄, H₂, CO' },
+  { to: Infinity, name: 'Aromatisierung · Rotglut', gas: 'H₂, CH₄ (wenig)' },
+];
+
+export function pyroState(t) {
+  const phase = PHASES.find((p) => t < p.to);
+  const y350 = TABLE.yield[0];
+  // Masse in % der trockenen Biomasse: unter 350 °C aus dem Zersetzungsmodell, danach aus der Tabelle
+  const mass = t >= T_MIN ? interp('yield', t) : 100 - (100 - y350) * lossModel(t) / lossModel(T_MIN);
+  return {
+    t,
+    phase: phase.name,
+    gas: phase.gas,
+    mass,
+    water: 1 - sstep(60, 200, t),                 // Restfeuchte (1 = frisch)
+    hemi: 1 - sstep(220, 315, t),                 // noch nicht zersetzter Anteil je Komponente
+    cell: 1 - sstep(315, 400, t),
+    lignin: 1 - sstep(160, 900, t) * 0.55,
+    char: sstep(180, 450, t),                     // Farbe: 0 Holz → 1 tiefschwarz
+    shrinkT: 0.28 * sstep(200, 600, t),           // lineare Schwindung quer zur Faser (Modell)
+    shrinkL: 0.1 * sstep(200, 600, t),            // längs deutlich geringer
+    glow: sstep(DRAPER, 720, t),                  // Rotglut ab dem Draper-Punkt
+    vapour: Math.max(0.6 * sstep(60, 130, t) * (1 - sstep(190, 210, t)), 0.8 * sstep(215, 270, t) * (1 - sstep(300, 330, t)),
+      sstep(310, 350, t) * (1 - sstep(390, 420, t)), 0.3 * sstep(400, 450, t) * (1 - sstep(520, 640, t))),
+  };
+}
+
+// Schwarzkörperfarbe (linear RGB, auf Sichtbarkeit skaliert) der Glut: dunkelrot bei 525 °C → orange bei 800 °C
+export function glowColor(t) {
+  const k = clamp((t - DRAPER) / (800 - DRAPER), 0, 1);
+  return [lerp(0.55, 1.0, k), lerp(0.04, 0.24, k * k), lerp(0.0, 0.03, k)];
+}
+
+// Laborwerte auch unterhalb von 350 °C (Zeitraffer): vom Holz (Richtwerte Buche) gleitend zur Tabelle bei 350 °C
+const WOOD = { carbon: 47, hc: 1.45, oc: 0.65, bet: 1, ph: 5.5 };
+export function labProps(t) {
+  if (t >= T_MIN) return { ...properties(t), wood: false };
+  const p = properties(T_MIN);
+  const q = clamp(lossModel(t) / lossModel(T_MIN), 0, 1);
+  return {
+    t,
+    yield: pyroState(t).mass,
+    carbon: lerp(WOOD.carbon, p.carbon, q),
+    hc: lerp(WOOD.hc, p.hc, q),
+    oc: lerp(WOOD.oc, p.oc, q),
+    bet: lerp(WOOD.bet, p.bet, q),
+    ph: lerp(WOOD.ph, p.ph, q),
+    fperm: null,
+    co2: null,
+    charClass: t < 200 ? 'Holz (lignozellulosisch)' : 'Übergang Holz → Kohle',
+    ebcOk: false,
+    wood: true,
+  };
+}

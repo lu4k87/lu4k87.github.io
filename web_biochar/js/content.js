@@ -12,6 +12,8 @@ export const SOURCES = [
   { id: 9, text: 'Klüpfel, L., Keiluweit, M., Kleber, M., Sander, M. (2014): Redox properties of plant biomass-derived black carbon (biochar). Environ. Sci. Technol. 48, 5601–5611.', url: 'https://doi.org/10.1021/es500906d' },
   { id: 10, text: 'Xiao, X., Chen, Z., Chen, B. (2016): H/C atomic ratio as a smart linkage between pyrolytic temperatures, aromatic clusters and sorption properties of biochars derived from diverse precursory materials. Sci. Rep. 6, 22644.', url: 'https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4778134/' },
   { id: 11, text: 'AIChE Annual Meeting 2010, Paper 490f: Physical and chemical structure of biochars produced from different feedstocks and under a variety of pyrolysis conditions (¹³C-NMR: aromatische Cluster ≈ 10 C bei 450 °C, ≈ 25 C bei 600 °C).', url: 'https://proceedings.aiche.org/conferences/aiche-annual-meeting/2010/proceeding/paper/490f-physical-and-chemical-structure-biochars-produced-different-feedstocks-and-under-variety' },
+  { id: 12, text: 'Yang, H., Yan, R., Chen, H., Lee, D. H., Zheng, C. (2007): Characteristics of hemicellulose, cellulose and lignin pyrolysis. Fuel 86, 1781–1788 (Hemizellulose 220–315 °C, Zellulose 315–400 °C, Lignin 160–900 °C).', url: 'https://doi.org/10.1016/j.fuel.2006.12.013' },
+  { id: 13, text: 'Draper-Punkt: Draper, J. W. (1847): On the production of light by heat. Phil. Mag. 30, 345–360 – Körper beginnen bei ≈ 525 °C sichtbar rot zu glühen.', url: 'https://en.wikipedia.org/wiki/Draper_point' },
 ];
 
 export const LEVELS = [

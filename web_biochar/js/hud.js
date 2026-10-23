@@ -2,7 +2,7 @@
 // Leitlinien, REM-Datenleiste, Regler. Bildsprache: Hexagon-Badge + Leitlinie zum Objekt (Infografik-Vorlage).
 
 import { LEVELS, SOURCES } from './content.js';
-import { properties, fmt, T_MIN, T_MAX } from './science.js';
+import { properties, labProps, pyroState, fmt, T_MIN, T_MAX, T_ROOM, DRAPER } from './science.js';
 import { hexBadge, LEVEL_ICONS, HOTSPOT_ICONS, FACT_ICONS } from './icons.js';
 
 const $ = (sel) => document.querySelector(sel);
@@ -115,22 +115,105 @@ export function createHud(handlers) {
       </div>`).join('')}</div>`;
   }
 
+  // Zeilen der Labortabelle: [Schlüssel, Name, Wert, Warnung] – gleiche Quelle für Aufbau und laufende Aktualisierung
+  function labRows(t) {
+    const p = labProps(t);
+    const dash = '–';
+    return [
+      ['yield', 'Masseausbeute', `${fmt(p.yield)} %`, false],
+      ['carbon', 'Kohlenstoffgehalt', `${fmt(p.carbon)} %`, false],
+      ['hc', 'H/Corg (EBC < 0,7)', `${fmt(p.hc, 2)} ${p.hc < 0.7 ? '✓' : '⚠ über Grenzwert'}`, p.hc >= 0.7],
+      ['oc', 'O/Corg (EBC < 0,4)', `${fmt(p.oc, 2)} ${p.oc < 0.4 ? '✓' : '⚠ über Grenzwert'}`, p.oc >= 0.4],
+      ['bet', 'BET-Oberfläche', `≈ ${fmt(p.bet)} m²/g`, false],
+      ['ph', 'pH-Wert', fmt(p.ph, 1), false],
+      ['fperm', 'nach 100 Jahren im Boden (IPCC)', p.fperm === null ? dash : `${fmt(p.fperm * 100)} % des C`, false],
+      ['co2', 'dauerhaft gebundenes CO₂', p.co2 === null ? dash : `${fmt(p.co2, 1)} t je t Biochar`, false],
+      ['cls', 'Strukturtyp (Keiluweit 2010)', p.charClass, false],
+    ];
+  }
+
   function labTable(t) {
-    const p = properties(t);
-    const row = (k, v, warn = false) => `<tr${warn ? ' class="warn"' : ''}><th scope="row">${k}</th><td>${v}</td></tr>`;
+    const row = ([k, name, v, warn]) => `<tr${warn ? ' class="warn"' : ''} data-f="${k}"><th scope="row">${name}</th><td>${v}</td></tr>`;
     return `
-      <table class="lab">
-        ${row('Masseausbeute', `${fmt(p.yield)} %`)}
-        ${row('Kohlenstoffgehalt', `${fmt(p.carbon)} %`)}
-        ${row('H/Corg (EBC < 0,7)', `${fmt(p.hc, 2)} ${p.hc < 0.7 ? '✓' : '⚠ über Grenzwert'}`, p.hc >= 0.7)}
-        ${row('O/Corg (EBC < 0,4)', `${fmt(p.oc, 2)} ✓`)}
-        ${row('BET-Oberfläche', `≈ ${fmt(p.bet)} m²/g`)}
-        ${row('pH-Wert', fmt(p.ph, 1))}
-        ${row('nach 100 Jahren im Boden (IPCC)', `${fmt(p.fperm * 100)} % des C`)}
-        ${row('dauerhaft gebundenes CO₂', `${fmt(p.co2, 1)} t je t Biochar`)}
-        ${row('Strukturtyp (Keiluweit 2010)', p.charClass)}
-      </table>
-      <p class="note">Richtwerte für Holz, langsame Pyrolyse – reale Kohlen streuen je Rohstoff und Verfahren. CO₂ = C-Gehalt × IPCC-Faktor × 44/12.</p>`;
+      <table class="lab">${labRows(t).map(row).join('')}</table>
+      <p class="note">Richtwerte für Holz, langsame Pyrolyse – reale Kohlen streuen je Rohstoff und Verfahren. Unter 350 °C Übergang vom Holz (Modell). CO₂ = C-Gehalt × IPCC-Faktor × 44/12.</p>`;
+  }
+
+  // Kurve H/Corg über der Temperatur mit EBC-Grenze 0,7 und Marke für die gezeigte Temperatur
+  const CH = { w: 240, h: 96, x0: 30, x1: 232, y0: 8, y1: 76 };
+  const chX = (t) => CH.x0 + ((Math.min(T_MAX, Math.max(T_MIN, t)) - T_MIN) / (T_MAX - T_MIN)) * (CH.x1 - CH.x0);
+  const chY = (hc) => CH.y1 - (Math.min(1, hc) / 1) * (CH.y1 - CH.y0);
+  function labChart(t) {
+    let d = '';
+    for (let T = T_MIN; T <= T_MAX; T += 25) d += `${d ? 'L' : 'M'}${chX(T).toFixed(1)} ${chY(properties(T).hc).toFixed(1)}`;
+    const ebc = chY(0.7);
+    return `
+      <figure class="chart">
+        <svg viewBox="0 0 ${CH.w} ${CH.h}" role="img" aria-label="H/Corg über der Pyrolysetemperatur, EBC-Grenze 0,7">
+          <line class="ax" x1="${CH.x0}" y1="${CH.y1}" x2="${CH.x1}" y2="${CH.y1}"/>
+          <line class="ax" x1="${CH.x0}" y1="${CH.y0}" x2="${CH.x0}" y2="${CH.y1}"/>
+          <line class="ebc" x1="${CH.x0}" y1="${ebc}" x2="${CH.x1}" y2="${ebc}"/>
+          <text class="lbl" x="${CH.x1}" y="${ebc - 3}" text-anchor="end">EBC-Grenze 0,7</text>
+          <path class="curve" d="${d}"/>
+          <line class="cur" id="chart-cur" x1="${chX(t)}" y1="${CH.y0}" x2="${chX(t)}" y2="${CH.y1}"/>
+          <circle class="dot" id="chart-dot" r="3.4" cx="${chX(t)}" cy="${chY(labProps(t).hc)}"/>
+          <text class="lbl" x="${CH.x0}" y="${CH.y1 + 12}" text-anchor="middle">350</text>
+          <text class="lbl" x="${CH.x1}" y="${CH.y1 + 12}" text-anchor="end">800 °C</text>
+          <text class="lbl" x="${CH.x0 - 4}" y="${chY(0.75) + 3}" text-anchor="end">0,75</text>
+          <text class="lbl" x="${CH.x0 - 4}" y="${CH.y1}" text-anchor="end">0</text>
+        </svg>
+        <figcaption class="note">H/Corg über der Temperatur – unterhalb von 0,7 erfüllt die Kohle den EBC-Grenzwert.</figcaption>
+      </figure>`;
+  }
+
+  // Zeitraffer-Anzeige: Temperatur, Phase, Gase, Thermometer
+  const BAR_MAX = 850;
+  function pyroLive(T, playing) {
+    const st = pyroState(T);
+    return `
+      <div class="pyro-live${playing ? ' is-playing' : ''}" id="pyro-live">
+        <div class="pyro-head"><output id="pyro-T">${fmt(T)} °C</output><span id="pyro-phase">${esc(st.phase)}</span></div>
+        <div class="pyro-bar" role="presentation"><i id="pyro-fill" style="width:${(Math.min(1, T / BAR_MAX) * 100).toFixed(1)}%"></i>
+          <b style="left:${(DRAPER / BAR_MAX * 100).toFixed(1)}%" title="Draper-Punkt ≈ ${DRAPER} °C: Rotglut"></b></div>
+        <p class="note" id="pyro-gas">Gase: ${esc(st.gas)}</p>
+      </div>`;
+  }
+
+  let hudTemp = 550, hudPlaying = false, lastLive = 0;
+  function setLive(T, playing, force = false) {
+    hudTemp = T;
+    hudPlaying = playing;
+    const now = performance.now();
+    if (!force && now - lastLive < 40) return;    // ≈ 25 Hz reicht für Zahlen
+    lastLive = now;
+    const live = panel.querySelector('#pyro-live');
+    if (!live) return;
+    const st = pyroState(T);
+    live.classList.toggle('is-playing', playing);
+    panel.querySelector('#pyro-T').textContent = `${fmt(T)} °C`;
+    panel.querySelector('#pyro-phase').textContent = st.phase;
+    panel.querySelector('#pyro-gas').textContent = `Gase: ${st.gas}`;
+    panel.querySelector('#pyro-fill').style.width = `${(Math.min(1, T / BAR_MAX) * 100).toFixed(1)}%`;
+    for (const [k, , v, warn] of labRows(T)) {
+      const tr = panel.querySelector(`tr[data-f="${k}"]`);
+      if (!tr) continue;
+      tr.firstElementChild.nextElementSibling.textContent = v;
+      tr.classList.toggle('warn', warn);
+    }
+    const dot = panel.querySelector('#chart-dot'), cur = panel.querySelector('#chart-cur');
+    if (dot) {
+      const x = chX(T);
+      dot.setAttribute('cx', x);
+      dot.setAttribute('cy', chY(labProps(T).hc));
+      cur.setAttribute('x1', x);
+      cur.setAttribute('x2', x);
+      dot.classList.toggle('is-off', T < T_MIN);
+    }
+    const btn = panel.querySelector('#btn-play');
+    if (btn) {
+      btn.textContent = playing ? '■ Anhalten' : '▶ Pyrolyse abspielen';
+      btn.setAttribute('aria-pressed', String(playing));
+    }
   }
 
   function render(state) {
@@ -138,6 +221,7 @@ export function createHud(handlers) {
     const dyn = level && level.facts ? level.facts() : [];
     const hsList = level ? level.hotspots : [];
     const icons = HOTSPOT_ICONS[l.id] || {};
+    const shown = state.pyro ? state.pyro.shown : state.temp, playing = !!(state.pyro && state.pyro.playing);
     const refs = l.refs.map((r) => `<a href="#quelle-${r}">[${r}]</a>`).join(' ');
     let detail = '';
     if (selected) {
@@ -165,8 +249,10 @@ export function createHud(handlers) {
       ${facts([...l.facts, ...dyn], l.id)}
       <section class="controls">
         <h2 class="sub">Pyrolyse-Labor</h2>
+        ${pyroLive(shown, playing)}
+        <button type="button" class="btn-primary" id="btn-play" aria-pressed="${playing}">${playing ? '■ Anhalten' : '▶ Pyrolyse abspielen'}</button>
         <label class="slider">
-          <span>Pyrolysetemperatur <output id="out-temp">${fmt(state.temp)} °C</output></span>
+          <span>Zieltemperatur <output id="out-temp">${fmt(state.temp)} °C</output></span>
           <input id="in-temp" type="range" min="${T_MIN}" max="${T_MAX}" step="10" value="${state.temp}">
         </label>
         ${l.id === 'meso' ? `
@@ -174,7 +260,8 @@ export function createHud(handlers) {
           <span>Relative Luftfeuchte <output id="out-rh">${fmt(state.rh * 100)} %</output></span>
           <input id="in-rh" type="range" min="0" max="0.99" step="0.01" value="${state.rh}">
         </label>` : ''}
-        <div id="lab">${labTable(state.temp)}</div>
+        <div id="lab">${labTable(shown)}</div>
+        ${labChart(shown)}
       </section>
       <section class="sources">
         <h2 class="sub">Quellen dieser Ebene ${refs}</h2>
@@ -190,9 +277,9 @@ export function createHud(handlers) {
     const temp = panel.querySelector('#in-temp');
     temp.addEventListener('input', () => {
       panel.querySelector('#out-temp').textContent = `${fmt(+temp.value)} °C`;
-      panel.querySelector('#lab').innerHTML = labTable(+temp.value);
-      handlers.onTemp(+temp.value);
+      handlers.onTemp(+temp.value);       // die Anzeige gleitet über setLive() mit der Szene
     });
+    panel.querySelector('#btn-play').addEventListener('click', () => handlers.onPlay());
     temp.addEventListener('change', () => refreshFacts());
     const rh = panel.querySelector('#in-rh');
     if (rh) {
@@ -290,6 +377,7 @@ export function createHud(handlers) {
       if (d) d.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
     },
     refreshFacts,
+    setLive,
     hideMarkers(hidden) {
       layer.classList.toggle('is-hidden', hidden);
     },

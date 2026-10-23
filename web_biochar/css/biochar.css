@@ -341,6 +341,29 @@ body.panel-collapsed .panel { display: none; }
 .lab tr.warn td { color: var(--warn); font-weight: 500; }
 .note { font-size: 13px; line-height: 1.45; color: var(--ink-soft); }
 
+/* Pyrolyse-Labor: Zeitraffer-Anzeige, Thermometer, Kurve */
+.controls .btn-primary { align-self: stretch; padding: 11px 14px; font-size: 15px; }
+.pyro-live { display: flex; flex-direction: column; gap: 8px; padding: 12px 14px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--glass); }
+.pyro-live.is-playing { border-color: var(--accent); }
+.pyro-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.pyro-head output { font: 500 26px/1 var(--mono); color: var(--accent); font-variant-numeric: tabular-nums; }
+.pyro-head span { font-size: 15px; font-weight: 500; }
+.pyro-bar { position: relative; height: 8px; border-radius: 4px; background: var(--line); overflow: visible; }
+.pyro-bar i { display: block; height: 100%; border-radius: 4px; background: linear-gradient(90deg, #6aa6ff, #ffcf5a 45%, #ff7a2e 70%, #ff3d2e); }
+.pyro-bar b { position: absolute; top: -3px; width: 2px; height: 14px; background: var(--ink); opacity: 0.7; }
+.pyro-live .note { margin: 0; }
+.chart { margin: 0; display: flex; flex-direction: column; gap: 6px; }
+.chart svg { width: 100%; height: auto; display: block; }
+.chart .ax { stroke: var(--line); stroke-width: 1; }
+.chart .ebc { stroke: var(--warn); stroke-width: 1; stroke-dasharray: 3 3; }
+.chart .curve { fill: none; stroke: var(--accent); stroke-width: 2; stroke-linejoin: round; }
+.chart .cur { stroke: var(--accent); stroke-width: 1; opacity: 0.5; }
+.chart .dot { fill: var(--accent); stroke: var(--bg); stroke-width: 1.5; }
+.chart .dot.is-off { opacity: 0; }
+.chart .lbl { font: 9px var(--mono); fill: var(--ink); }
+.chart figcaption { margin: 0; }
+@media (prefers-reduced-motion: reduce) { .pyro-live { transition: none; } }
+
 .sources details { font-size: 14px; }
 .sources summary { cursor: pointer; font-weight: 500; }
 .sources ol { padding-left: 22px; margin: 10px 0 0; display: flex; flex-direction: column; gap: 8px; }
