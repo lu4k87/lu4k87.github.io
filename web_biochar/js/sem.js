@@ -171,8 +171,9 @@ void main() {
 #ifdef SEM_WALLS
     if (vWall.w > 0.5) d = 0.0;          // Längsseite des Bruchstücks liegt frei
 #endif
-    g *= mix(0.03, 1.0, exp(-d / uDepth));
+    g *= mix(0.12, 1.0, exp(-d / uDepth));   // Hohlräume dunkeln ab, bleiben aber sichtbar (Globalbeleuchtung, User 2026-10-23)
   }
+  g = max(g, 0.08);                           // Grundhelligkeit: keine Fläche fällt auf Schwarz, auch von der Seite gesehen
   g *= 0.86 + 0.28 * vnoise(vWorld * uNoise);
   g *= 1.0 + uShade * (vnoise(vWorld * 0.0045 + 7.0) - 0.5);   // großräumige Helligkeit (Aufladung, Detektorlage)
   gl_FragColor = semOut(g, uTint);
