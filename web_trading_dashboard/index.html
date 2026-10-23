@@ -1,0 +1,43 @@
+<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Trading Dashboard</title><meta name="description" content="Swing-Trading-Dashboard mit Papierhandel – Depot, Watchlist, Chart mit Auto-Analyse und Swing-Zonen, Marktkacheln, News mit Sentiment.">
+<style>
+:root{--bg:#eef1f6;--surface:#fff;--line:#d3d9e4;--text:#141821;--accent:#0f7f7a;--accent-soft:#d8f0ee;--code-bg:#e3e8f0;--warn-soft:#fbefd5;
+ --radius-sm:4px;--radius:6px;--radius-lg:8px;--gap:24px;--max:1120px}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#151920;--surface:#1f252f;--line:#313a49;--text:#eef1f6;--accent:#4fd1c5;--accent-soft:#173b3a;--code-bg:#2a313d;--warn-soft:#3a3020}}
+:root[data-theme="dark"]{--bg:#151920;--surface:#1f252f;--line:#313a49;--text:#eef1f6;--accent:#4fd1c5;--accent-soft:#173b3a;--code-bg:#2a313d;--warn-soft:#3a3020}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:17px/1.6 system-ui,-apple-system,"Segoe UI",Ubuntu,sans-serif}
+main{max-width:var(--max);margin:0 auto;padding:48px 16px 64px;display:grid;gap:64px}
+h1{font-size:clamp(2rem,5vw,3rem);line-height:1.1;margin:0}h2{font-size:1.6rem;margin:0}h3{font-size:1.15rem;margin:0}
+p{margin:0;max-width:68ch}a{color:var(--accent)}
+code,pre{font:.92em/1.5 ui-monospace,"DejaVu Sans Mono",monospace}
+pre{background:var(--code-bg);padding:16px;border-radius:var(--radius);overflow-x:auto;margin:0}
+img{display:block;width:100%;height:auto;border-radius:var(--radius);border:1px solid var(--line)}
+section{display:grid;gap:var(--gap)}
+ul.pts{margin:0;padding-left:1.2em;display:grid;gap:4px}
+.tag{justify-self:start;background:var(--accent-soft);font-weight:600;padding:4px 12px;border-radius:var(--radius);font-size:.95rem}
+.lead{font-size:1.2rem}
+.facts{display:flex;flex-wrap:wrap;gap:12px;padding:0;margin:0;list-style:none}
+.facts li{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:8px 14px}
+.note{background:var(--warn-soft);border:1px solid var(--line);border-radius:var(--radius);padding:12px 16px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-lg);padding:16px;display:grid;gap:12px;align-content:start}
+.sub{font-weight:600;color:var(--accent)}
+:root[data-theme="light"] .shot-dark,:root:not([data-theme="dark"]) .shot-dark{display:none}
+:root[data-theme="dark"] .shot-light{display:none}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .shot-dark{display:block}:root:not([data-theme="light"]) .shot-light{display:none}}
+.top{display:flex;justify-content:flex-end;gap:12px;align-items:center}
+.top button,.tabs button{font:inherit;background:var(--surface);color:var(--text);border:1px solid var(--line);border-radius:var(--radius);padding:6px 14px;cursor:pointer}
+.tabs{display:flex;flex-wrap:wrap;gap:8px}
+.tabs button[aria-selected="true"]{background:var(--accent-soft);border-color:var(--accent);font-weight:600}
+button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.hero{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:40px;align-items:center}.hero>div{display:grid;gap:20px}.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:var(--gap)}</style></head><body><main><div class="top"><button type="button" id="theme" aria-label="Hell oder dunkel umschalten">Hell / Dunkel</button></div><section class="hero"><div><p class="tag">Dashboard · Papierhandel</p><h1>Trading Dashboard</h1>
+<p class="lead">Swing-Trading-Dashboard mit Papierhandel – Depot, Watchlist, Chart mit Auto-Analyse und Swing-Zonen, Marktkacheln, News mit Sentiment.</p>
+<ul class="facts"><li>US + Deutschland</li><li>6 Seiten</li><li>Python + Flask, läuft lokal</li><li>Code privat</li></ul>
+<p class="note"><b>Nur Papierhandel:</b> kein echtes Geld, keine Anlageberatung. Signale sind Wahrscheinlichkeiten.</p></div><div><img class="shot-light" src="img/dash-light.jpg" alt="Seite Dashboard im Trading Dashboard, hell" width="1600" height="1000"><img class="shot-dark" src="img/dash-dark.jpg" alt="Seite Dashboard im Trading Dashboard, dunkel" width="1600" height="1000"></div></section><section aria-labelledby="h-pages"><h2 id="h-pages">Die Seiten</h2><div class="grid"><article class="card"><img class="shot-light" src="img/trade-light.jpg" alt="Seite Trading im Trading Dashboard, hell" width="1600" height="1000" loading="lazy"><img class="shot-dark" src="img/trade-dark.jpg" alt="Seite Trading im Trading Dashboard, dunkel" width="1600" height="1000" loading="lazy"><h3>Trading</h3><p class="sub">Chart, Swing-Plan, Order</p><ul class="pts"><li>Auto-Analyse: Trendlinien, Dreiecke, Keile, Flaggen, Ausbruch mit Volumen</li><li>Swing-Zonen aus Tag + Woche mit Plan: Limit, Stop, Ziel, Stückzahl aus 1 % Risiko</li><li>Zeichenwerkzeuge mit Kürzeln wie TradingView, Order-Ticket</li></ul></article><article class="card"><img class="shot-light" src="img/depot-light.jpg" alt="Seite Depot im Trading Dashboard, hell" width="1600" height="1000" loading="lazy"><img class="shot-dark" src="img/depot-dark.jpg" alt="Seite Depot im Trading Dashboard, dunkel" width="1600" height="1000" loading="lazy"><h3>Depot</h3><p class="sub">Positionen, Risiko, Ergebnis</p><ul class="pts"><li>Positionen mit Einstand → Aktuell, G/V und R-Leiter (Stop → Einstieg → Ziele)</li><li>Hinweis „ohne Stop“ mit Vorschlag Zone − ¼ ATR</li><li>Offenes Risiko (max. 5 %), Depotkurve, Orders</li></ul></article><article class="card"><img class="shot-light" src="img/watch-light.jpg" alt="Seite Watchlist im Trading Dashboard, hell" width="1600" height="1000" loading="lazy"><img class="shot-dark" src="img/watch-dark.jpg" alt="Seite Watchlist im Trading Dashboard, dunkel" width="1600" height="1000" loading="lazy"><h3>Watchlist</h3><p class="sub">Werte beobachten, Zonen, Alarme</p><ul class="pts"><li>Tabelle mit 20-Tage-Kurve, Score und RSI</li><li>Heatmap, beste Setups, relative Stärke</li><li>Alarme für Zonen, Muster und Kurse</li></ul></article><article class="card"><img class="shot-light" src="img/fx-light.jpg" alt="Seite Währungsrechner im Trading Dashboard, hell" width="1600" height="1000" loading="lazy"><img class="shot-dark" src="img/fx-dark.jpg" alt="Seite Währungsrechner im Trading Dashboard, dunkel" width="1600" height="1000" loading="lazy"><h3>Währungsrechner</h3><p class="sub">EUR in USD, GBP, CHF, JPY</p><ul class="pts"><li>Rechner mit Mittelkurs, Verlauf bis 1 Jahr</li><li>Kreuzkurse und Tagesspanne</li><li>Depot nach Währung und Währungseffekt ±1–5 %</li></ul></article></div></section><section aria-labelledby="h-start"><h2 id="h-start">Starten</h2>
+<p>Das Dashboard braucht seinen Python-Server und läuft auf dem eigenen Rechner. Ohne Netz zeigt der Demo-Modus simulierte Kurse.</p>
+<pre><code>./run.sh                      # http://127.0.0.1:8100/dashboard
+TRADINGUI_DATA=demo ./run.sh  # simulierte Kurse, ohne Netz</code></pre></section><p>Bilder: Papier-Depot einer Test-Instanz.</p></main><script>(function(){var r=document.documentElement,b=document.getElementById("theme");
+function dark(){return r.dataset.theme?r.dataset.theme==="dark":matchMedia("(prefers-color-scheme: dark)").matches}
+b.addEventListener("click",function(){r.dataset.theme=dark()?"light":"dark"});
+var tabs=document.querySelectorAll(".tabs button");tabs.forEach(function(t){t.addEventListener("click",function(){
+tabs.forEach(function(o){var on=o===t;o.setAttribute("aria-selected",on);document.getElementById(o.getAttribute("aria-controls")).hidden=!on})})})})();</script></body></html>
