@@ -407,11 +407,20 @@ export function create(ctx) {
   const hyCurve = new THREE.CatmullRomCurve3(path);
   const septum = (i) => 1 + 0.05 * Math.sin(i * 0.9) - 0.16 * Math.exp(-Math.pow(((i % 34) - 17) / 2.2, 2));
   scene.add(new THREE.Mesh(modulateTube(new THREE.TubeGeometry(hyCurve, 160, 0.9, 14), hyCurve, 160, 14, septum), hyMat));
-  const branch = new THREE.CatmullRomCurve3([[-7, -2.2], [-6.2, 0.6], [-4.4, 3.2], [-2.6, 4.6]].map(([s, y]) => onWall(s, y, 0.85)));
-  const brGeo = new THREE.TubeGeometry(branch, 60, 0.8, 12);
+  // Seitenäste: dünne, leicht wellige Fäden (Ø ≈ 1 µm) mit Septen; die Spitze ist ein schmal zulaufender Hyphenapex
+  // in Wachstumsrichtung, kein Kugelkopf (User, 2026-10-23)
+  const BR = 0.5, NBR = 0.45;
+  const septaThin = (i) => 1 + 0.06 * Math.sin(i * 1.3) - 0.18 * Math.exp(-Math.pow(((i % 20) - 10) / 2, 2));
+  const setTip = (mesh, curve, u, r) => {
+    mesh.position.copy(curve.getPointAt(u));
+    mesh.quaternion.setFromUnitVectors(yAxis, curve.getTangentAt(u).normalize());
+    mesh.scale.set(r * 0.85, r * 1.7, r * 0.85);
+  };
+  const branch = new THREE.CatmullRomCurve3([[-7, -2.2], [-6.5, -0.4], [-5.4, 1.3], [-4.2, 2.8], [-2.6, 4.6]].map(([s, y]) => onWall(s, y, 0.85)));
+  const brGeo = modulateTube(new THREE.TubeGeometry(branch, 60, BR, 12), branch, 60, 12, septaThin);
   scene.add(new THREE.Mesh(brGeo, hyMat));
-  const tip = new THREE.Mesh(new THREE.SphereGeometry(0.8, 16, 12), hyMat);
-  tip.position.copy(branch.getPoint(1));
+  const tip = new THREE.Mesh(new THREE.SphereGeometry(1, 16, 12), hyMat);
+  setTip(tip, branch, 1, BR);
   scene.add(tip);
   // Sporen (Konidien, ≈ 2–3 µm): Kette am Astende, einzelne lose auf der Wand
   const spores = [];
@@ -441,7 +450,7 @@ export function create(ctx) {
   anim.push((age) => {
     const n = Math.max(1, Math.round(smooth01((age - GROW.from) / GROW.dur) * 60));
     brGeo.setDrawRange(0, n * segIdx);
-    tip.position.copy(branch.getPointAt(n / 60));
+    setTip(tip, branch, n / 60, BR);
     const sway = reduced ? 0 : 0.08 * Math.sin(age * 0.5) * smooth01((age - ROLL.from + 2) / 2);
     for (let i = 0; i < 4; i++) {
       const f = smooth01((age - SPORE.from - i * SPORE.step) / SPORE.dur);
@@ -456,9 +465,9 @@ export function create(ctx) {
   });
 
   // Klick auf „Pilzhyphe“: ein neuer Seitenast wächst aus dem Hauptfaden zum nächsten Tüpfel (erneuter Klick spielt neu ab)
-  const nb = new THREE.CatmullRomCurve3([[-12, -0.8], [-12.6, -3.4], [-12.2, -6.2], [-10.4, -8.6]].map(([bs, by]) => onWall(bs, by, 0.85)));
-  const nbGeo = new THREE.TubeGeometry(nb, 60, 0.7, 12);
-  const nbTip = new THREE.Mesh(new THREE.SphereGeometry(0.7, 16, 12), hyMat);
+  const nb = new THREE.CatmullRomCurve3([[-12, -0.8], [-12.8, -2.4], [-12.3, -4.2], [-12.9, -6.2], [-11.6, -7.6], [-10.4, -8.6]].map(([bs, by]) => onWall(bs, by, 0.85)));
+  const nbGeo = modulateTube(new THREE.TubeGeometry(nb, 60, NBR, 12), nb, 60, 12, septaThin);
+  const nbTip = new THREE.Mesh(new THREE.SphereGeometry(1, 16, 12), hyMat);
   nbGeo.setDrawRange(0, 0);
   nbTip.visible = false;
   scene.add(new THREE.Mesh(nbGeo, hyMat), nbTip);
@@ -468,7 +477,7 @@ export function create(ctx) {
     const n = Math.max(1, Math.round((reduced ? 1 : smooth01((age - sprout) / 18)) * 60));
     nbGeo.setDrawRange(0, n * segIdx);
     nbTip.visible = true;
-    nbTip.position.copy(nb.getPointAt(n / 60));
+    setTip(nbTip, nb, n / 60, NBR);
   });
 
   // Asche: sechseckige Plättchen flach auf der Wand, dazu eine Druse (strahlig verwachsene Prismen)
