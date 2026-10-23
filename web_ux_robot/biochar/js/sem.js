@@ -40,8 +40,8 @@ export const ADDITIVE = {
 const DET0 = new THREE.Vector3(-0.45, 0.75, 0.5).normalize();
 export const SEM_DET = { value: DET0.clone() };
 const _yAxis = new THREE.Vector3(0, 1, 0), _xAxis = new THREE.Vector3(1, 0, 0);
-export function semDetector(t) {
-  SEM_DET.value.copy(DET0).applyAxisAngle(_yAxis, 0.42 * Math.sin(t * 0.071)).applyAxisAngle(_xAxis, 0.14 * Math.sin(t * 0.113 + 1.0));
+export function semDetector(t, k = 1) {
+  SEM_DET.value.copy(DET0).applyAxisAngle(_yAxis, 0.42 * k * Math.sin(t * 0.071)).applyAxisAngle(_xAxis, 0.14 * k * Math.sin(t * 0.113 + 1.0));
 }
 
 const VERT = /* glsl */ `

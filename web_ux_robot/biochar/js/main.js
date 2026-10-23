@@ -662,6 +662,7 @@ const hud = createHud({
     if (fromMarker && h.kind === 'dive') { diveHotspot(id); return; }
     endIntro();
     hud.select(id, state);
+    if (state.active.onHotspot) state.active.onHotspot(id);
     const c = state.controls;
     c.autoRotate = false;
     cineCommit();

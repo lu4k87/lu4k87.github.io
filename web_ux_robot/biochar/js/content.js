@@ -77,7 +77,7 @@ export const LEVELS = [
     name: 'Zellwand',
     scale: '25 µm',
     title: 'Zellwand mit Hoftüpfeln',
-    lead: 'Blick in ein Gefäß auf seine Wand. Die runden Hoftüpfel verbanden im Baum benachbarte Zellen. Beim Verkohlen sind ihre feinen Membranen meist verschwunden – die Öffnungen führen jetzt direkt ins Nachbarlumen. Bakterien und eine Pilzhyphe haben die Oberfläche besiedelt.',
+    lead: 'Blick in ein Gefäß auf seine Wand. Die runden Hoftüpfel verbanden im Baum benachbarte Zellen. Beim Verkohlen sind ihre feinen Membranen meist verschwunden – die Öffnungen führen jetzt direkt ins Nachbarlumen. Bakterien und eine Pilzhyphe haben die Oberfläche besiedelt. Gedämpfte Falschfarben unterscheiden wie bei eingefärbten REM-Bildern Bakterien (grünlich), Pilz (ocker) und Asche (bläulich); die Wand bleibt grau.',
     facts: [
       { value: '≈ 3 µm', label: 'Porenmaximum: Hoftüpfel und Parenchymzellen' },
       { value: '≈ 0,7 µm', label: 'Porenmaximum: einfache Tüpfel' },
@@ -86,11 +86,11 @@ export const LEVELS = [
     refs: [3, 8, 6],
     hotspots: {
       fracture: { title: 'Bruchkante der Zellwand', text: 'Die Wand selbst ist kein massiver Kohlenstoff, sondern ein Schwamm aus Nanoporen. Sie entstehen, wenn Zellulose, Hemizellulosen und Lignin beim Erhitzen zerfallen und Gase entweichen.' },
-      pits: { title: 'Hoftüpfel', text: 'Ein gewölbter Hof umrahmt eine schmale Öffnung (Porus). In Buchen-Biochar bilden Hoftüpfel eines der drei Maxima der Porengrößen (≈ 3 µm). Ohne Membran sind sie offene Verbindungen zwischen den Zellen.' },
+      pits: { title: 'Hoftüpfel', text: 'Ein gewölbter Hof umrahmt eine schmale Öffnung (Porus). In Buchen-Biochar bilden Hoftüpfel eines der drei Maxima der Porengrößen (≈ 3 µm). Ohne Membran sind sie offene Verbindungen zwischen den Zellen. Die hellblauen Punkte zeigen als Sinnbild, nicht maßstäblich, wie Wasser aus dem Lumen in die Tüpfel zieht.' },
       bacteria: { title: 'Bakterien', text: 'Stäbchenförmige Bakterien (≈ 0,6–0,8 µm dick) besiedeln die Porenwände. Die Kohle bietet Halt, Feuchte und adsorbierte Nährstoffe.' },
-      hypha: { title: 'Pilzhyphe', text: 'Pilzfäden wachsen durch die Gefäße und dringen in erweiterte Tüpfel ein. Mykorrhizapilze verbinden die Kohle so mit Pflanzenwurzeln (Warnock et al. 2007).' },
-      ash: { title: 'Asche-Partikel', text: 'Mineralstoffe des Holzes – vor allem Calcium, Kalium und Magnesium – bleiben als Asche zurück, oft als kleine Kristalle. Sie machen Biochar basisch (pH 8–10) und wirken im Boden wie eine Kalkung.' },
-      crack: { title: 'Mikroriss', text: 'Auch die Zellwand schrumpft beim Verkohlen. Mikrorisse durchziehen sie und öffnen zusätzliche Wege für Wasser, Gase und Mikroorganismen.' },
+      hypha: { title: 'Pilzhyphe', text: 'Pilzfäden wachsen durch die Gefäße und dringen in erweiterte Tüpfel ein. Mykorrhizapilze verbinden die Kohle so mit Pflanzenwurzeln (Warnock et al. 2007). Im Zeitraffer wächst ein Seitenast, an seiner Spitze reifen Sporen; ein Klick hier lässt einen neuen Ast zum Tüpfel wachsen.' },
+      ash: { title: 'Asche-Partikel', text: 'Mineralstoffe des Holzes – vor allem Calcium, Kalium und Magnesium – bleiben als Asche zurück, oft als kleine Kristalle. Sie machen Biochar basisch (pH 8–10) und wirken im Boden wie eine Kalkung. Je höher die Pyrolysetemperatur, desto mehr Asche bleibt zurück.' },
+      crack: { title: 'Mikroriss', text: 'Auch die Zellwand schrumpft beim Verkohlen. Mikrorisse durchziehen sie und öffnen zusätzliche Wege für Wasser, Gase und Mikroorganismen. Bei höherer Pyrolysetemperatur schrumpft die Wand stärker, die Risse werden breiter.' },
     },
   },
   {

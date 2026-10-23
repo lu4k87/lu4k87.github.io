@@ -3,9 +3,10 @@
 // Asche als sechseckige Kristallplättchen (Calciumoxalat bzw. nach dem Verkohlen Calcit in gleicher Form).
 
 import * as THREE from 'three';
-import { SEM_GLSL, SEM_DET, semMaterial, semDetector } from '../sem.js';
+import { SEM_GLSL, SEM_DET, ADDITIVE, semMaterial, semDetector } from '../sem.js';
 import { disposeGroup } from '../walls.js';
 import { mulberry32, gauss, fbm3, vnoisef } from '../util.js';
+import { T_MIN, T_MAX } from '../science.js';
 
 const R = 16;          // Gefäßradius (Lumen Ø 32 µm)
 const TH = 1.6;        // Wanddicke
@@ -14,6 +15,14 @@ const Y0 = -17;
 const PIT = { sx: 6.0, sy: 5.8, rb: 2.5 };
 const HYPHA_PIT = new THREE.Vector2(3.0, -8.7);   // erweiterter Tüpfel (Zelle 0/−2), in den die Hyphe wächst
 const BAC = { s: 7.2, y: -3.6 };                   // Mitte der Bakterienkolonie
+// Gedämpfte Falschfarben wie bei eingefärbten REM-Bildern: Bakterien grünlich, Pilz ocker, Asche bläulich, Wand bleibt grau
+const TINT = { bac: [0.81, 0.95, 0.82], film: [0.85, 0.95, 0.86], hy: [1.0, 0.91, 0.76], sp: [1.01, 0.87, 0.72], cr: [0.89, 0.95, 1.02] };
+// Zeitraffer der Hyphe (s nach Ankunft): Seitenast wächst, danach reifen die Sporen, dann löst sich die äußerste
+const GROW = { from: 1, dur: 22 }, SPORE = { from: 23, step: 2.2, dur: 2.5 }, ROLL = { from: 34, dur: 12 };
+const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const smooth01 = (x) => { x = Math.min(1, Math.max(0, x)); return x * x * (3 - 2 * x); };
+// Temperatur → Rissbreite und Aschemenge (Modell, 550 °C = Ausgangsbild): heißer verkohlt schrumpft die Wand stärker
+const tempK = (T) => (Math.min(T_MAX, Math.max(T_MIN, T)) - 550) / (T_MAX - T_MIN);
 
 const topY = (s) => 6.5 + 4.4 * (fbm3(s * 0.12 + 4, 1.3, 0.7, 3) - 0.5) + 0.9 * (fbm3(s * 0.9, 7.1, 2.2, 2) - 0.5);
 const surf = (s, y, r) => new THREE.Vector3(r * Math.sin(s / R), y, -r * Math.cos(s / R));
@@ -28,6 +37,7 @@ uniform vec3 uDet;
 uniform vec3 uTint;
 uniform float uR;
 uniform vec2 uHyPit;
+uniform float uCrack;
 varying vec2 vUv;
 varying vec3 vWorld;
 varying vec3 vNormal;
@@ -37,9 +47,9 @@ float crack1Y(float s) { return -5.0 + 4.4 * (vnoise(vec3(s * 0.35, 1.0, 2.0)) -
 float crack2S(float y) { return 11.0 + 3.0 * (vnoise(vec3(y * 0.3, 4.0, 6.0)) - 0.5) + 0.4 * (vnoise(vec3(y * 1.9, 2.0, 8.0)) - 0.5); }
 // Risse: 0 außerhalb, sonst Abstand zur Risskante (< 0 = im Riss)
 float cracks(vec2 st, out float rim) {
-  float w1 = (0.16 + 0.14 * vnoise(vec3(st.x * 0.8, 5.0, 0.0))) * smoothstep(-15.5, -11.0, st.x) * smoothstep(3.5, -0.5, st.x);
+  float w1 = uCrack * (0.16 + 0.14 * vnoise(vec3(st.x * 0.8, 5.0, 0.0))) * smoothstep(-15.5, -11.0, st.x) * smoothstep(3.5, -0.5, st.x);
   float d1 = abs(st.y - crack1Y(st.x)) - w1;
-  float w2 = (0.12 + 0.12 * vnoise(vec3(st.y * 0.9, 1.0, 7.0))) * smoothstep(-17.0, -12.0, st.y);
+  float w2 = uCrack * (0.12 + 0.12 * vnoise(vec3(st.y * 0.9, 1.0, 7.0))) * smoothstep(-17.0, -12.0, st.y);
   float d2 = abs(st.x - crack2S(st.y)) - w2;
   rim = 0.0;
   if (w1 > 0.02) rim = max(rim, 1.0 - smoothstep(0.0, 0.25, d1));
@@ -194,8 +204,11 @@ void main() {
 }
 `;
 
+const CRACK = { value: 1 };   // Rissbreite relativ zu 550 °C, gemeinsam für alle Wandmaterialien
+
 function uniforms(extra = {}) {
   return {
+    uCrack: CRACK,
     uDet: SEM_DET,
     uTint: { value: new THREE.Color(0.93, 0.95, 0.98) },
     uR: { value: R },
@@ -285,6 +298,8 @@ function modulateTube(geo, curve, segs, radial, f) {
 export function create(ctx) {
   const rand = mulberry32(9001);
   const scene = new THREE.Scene();
+  const anim = [];   // Bewegungen je Bild: f(age) mit age = Sekunden seit Ankunft auf der Ebene
+  const tint = (mat, c) => mat.uniforms.uTint.value.setRGB(c[0], c[1], c[2]);
 
   const inner = new THREE.Mesh(cylPatch(-S, S, Y0, topY, 220, 160, () => R, 1), new THREE.ShaderMaterial({
     uniforms: uniforms({ uSide: { value: 1 } }), vertexShader: VERT, fragmentShader: SURF_FRAG,
@@ -349,6 +364,8 @@ export function create(ctx) {
   };
   placeBacteria(0);
   scene.add(bacMesh, strandMesh);
+  tint(bacMesh.material, TINT.bac);
+  tint(strandMesh.material, TINT.bac);
   const film = new THREE.Mesh(
     cylPatch(BAC.s - 5.5, BAC.s + 5.5, BAC.y - 5, () => BAC.y + 5, 70, 64, (s, y) => R - (0.78 + 0.3 * fbm3(s * 0.6, y * 0.6, 3.3, 2)), 1),
     new THREE.ShaderMaterial({
@@ -357,16 +374,19 @@ export function create(ctx) {
     }));
   film.renderOrder = 2;
   scene.add(film);
+  tint(film.material, TINT.film);
 
   // Pilzhyphe: Ø 1,8 µm, wächst über die Wand und in den erweiterten Tüpfel; ein Seitenast trägt eine Sporenkette
   const hyMat = semMaterial({ base: 0.42, noise: 2.5 });
+  tint(hyMat, TINT.hy);
   const path = [[-17, 1.5], [-12, -0.8], [-7, -2.2], [-2.5, -4.6], [1.2, -7.4]].map(([s, y]) => onWall(s, y, 0.92));
   path.push(onWall(HYPHA_PIT.x, HYPHA_PIT.y, 0.2), onWall(HYPHA_PIT.x + 0.3, HYPHA_PIT.y - 0.2, -2.6));
   const hyCurve = new THREE.CatmullRomCurve3(path);
   const septum = (i) => 1 + 0.05 * Math.sin(i * 0.9) - 0.16 * Math.exp(-Math.pow(((i % 34) - 17) / 2.2, 2));
   scene.add(new THREE.Mesh(modulateTube(new THREE.TubeGeometry(hyCurve, 160, 0.9, 14), hyCurve, 160, 14, septum), hyMat));
   const branch = new THREE.CatmullRomCurve3([[-7, -2.2], [-6.2, 0.6], [-4.4, 3.2], [-2.6, 4.6]].map(([s, y]) => onWall(s, y, 0.85)));
-  scene.add(new THREE.Mesh(new THREE.TubeGeometry(branch, 60, 0.8, 12), hyMat));
+  const brGeo = new THREE.TubeGeometry(branch, 60, 0.8, 12);
+  scene.add(new THREE.Mesh(brGeo, hyMat));
   const tip = new THREE.Mesh(new THREE.SphereGeometry(0.8, 16, 12), hyMat);
   tip.position.copy(branch.getPoint(1));
   scene.add(tip);
@@ -382,9 +402,51 @@ export function create(ctx) {
     spores.push({ p: onWall(s, y, 0.95), dir, s: [1.0, 1.35, 0.95] });
   }
   const spMesh = new THREE.InstancedMesh(new THREE.SphereGeometry(1, 22, 16), semMaterial({ base: 0.46, noise: 7 }), spores.length);
-  spores.forEach((sp, k) => spMesh.setMatrixAt(k, m.compose(sp.p, q.setFromUnitVectors(yAxis, sp.dir), sc.fromArray(sp.s))));
+  tint(spMesh.material, TINT.sp);
+  const setSpore = (k, p, f) => spMesh.setMatrixAt(k, m.compose(p, q.setFromUnitVectors(yAxis, spores[k].dir), sc.fromArray(spores[k].s).multiplyScalar(Math.max(f, 1e-4))));
+  spores.forEach((sp, k) => setSpore(k, sp.p, 1));
   spMesh.instanceMatrix.needsUpdate = true;
   scene.add(spMesh);
+
+  // Zeitraffer: der Seitenast wächst aus dem Hauptfaden, an seiner Spitze reifen die Sporen; danach wiegt sich die Kette,
+  // die äußerste Spore löst sich und rollt auf die Wand (einmal je Besuch)
+  const segIdx = 12 * 6;   // Indizes je Röhrensegment (12 Radialsegmente × 2 Dreiecke)
+  const chain = spores.slice(0, 4).map((sp) => sp.p.clone());
+  const chainBase = branch.getPoint(1), chainAxis = inward(-2.6);
+  const c3 = chain[3], land = onWall(R * Math.atan2(c3.x, -c3.z) + 0.6, c3.y - 3.5, 0.95);
+  const _p = new THREE.Vector3();
+  anim.push((age) => {
+    const n = Math.max(1, Math.round(smooth01((age - GROW.from) / GROW.dur) * 60));
+    brGeo.setDrawRange(0, n * segIdx);
+    tip.position.copy(branch.getPointAt(n / 60));
+    const sway = reduced ? 0 : 0.08 * Math.sin(age * 0.5) * smooth01((age - ROLL.from + 2) / 2);
+    for (let i = 0; i < 4; i++) {
+      const f = smooth01((age - SPORE.from - i * SPORE.step) / SPORE.dur);
+      _p.copy(chain[i]).sub(chainBase).applyAxisAngle(chainAxis, (sway * Math.min(i + 1, 3)) / 3).add(chainBase);
+      if (i === 3) {
+        const u = smooth01((age - ROLL.from) / ROLL.dur);
+        _p.lerp(land, u).addScaledVector(chainAxis, 1.6 * Math.sin(Math.PI * u));
+      }
+      setSpore(i, _p, f);
+    }
+    spMesh.instanceMatrix.needsUpdate = true;
+  });
+
+  // Klick auf „Pilzhyphe“: ein neuer Seitenast wächst aus dem Hauptfaden zum nächsten Tüpfel (erneuter Klick spielt neu ab)
+  const nb = new THREE.CatmullRomCurve3([[-12, -0.8], [-12.6, -3.4], [-12.2, -6.2], [-10.4, -8.6]].map(([bs, by]) => onWall(bs, by, 0.85)));
+  const nbGeo = new THREE.TubeGeometry(nb, 60, 0.7, 12);
+  const nbTip = new THREE.Mesh(new THREE.SphereGeometry(0.7, 16, 12), hyMat);
+  nbGeo.setDrawRange(0, 0);
+  nbTip.visible = false;
+  scene.add(new THREE.Mesh(nbGeo, hyMat), nbTip);
+  let sprout = null;   // Alter beim Klick
+  anim.push((age) => {
+    if (sprout === null) return;
+    const n = Math.max(1, Math.round((reduced ? 1 : smooth01((age - sprout) / 18)) * 60));
+    nbGeo.setDrawRange(0, n * segIdx);
+    nbTip.visible = true;
+    nbTip.position.copy(nb.getPointAt(n / 60));
+  });
 
   // Asche: sechseckige Plättchen flach auf der Wand, dazu eine Druse (strahlig verwachsene Prismen)
   const crystals = [];
@@ -395,7 +457,7 @@ export function create(ctx) {
     const tilt = new THREE.Vector3(rand() - 0.5, rand() - 0.5, rand() - 0.5).multiplyScalar(0.5);
     q.setFromUnitVectors(yAxis, n.clone().add(tilt).normalize());
     q.multiply(q2.setFromAxisAngle(yAxis, rand() * Math.PI));
-    crystals.push({ p: onWall(s, y, size * 0.14), q: q.clone(), s: [size, size * 0.26, size * (0.75 + 0.35 * rand())] });
+    crystals.push({ a: onWall(s, y, 0), o: inward(s).multiplyScalar(size * 0.14), q: q.clone(), s: [size, size * 0.26, size * (0.75 + 0.35 * rand())] });
   }
   const NEEDLE = { s: -9.5, y: -12.2 };
   const dc = onWall(NEEDLE.s, NEEDLE.y, 0.55);
@@ -404,12 +466,58 @@ export function create(ctx) {
     const dir = inward(NEEDLE.s).multiplyScalar(Math.sin(el + 0.6))
       .addScaledVector(along(NEEDLE.s), Math.cos(a) * Math.cos(el)).addScaledVector(yAxis, Math.sin(a) * Math.cos(el)).normalize();
     const len = 1.1 + rand() * 0.6;
-    crystals.push({ p: dc.clone().addScaledVector(dir, len * 0.45), q: new THREE.Quaternion().setFromUnitVectors(yAxis, dir), s: [0.32, len, 0.32] });
+    crystals.push({ a: dc, o: dir.clone().multiplyScalar(len * 0.45), q: new THREE.Quaternion().setFromUnitVectors(yAxis, dir), s: [0.32, len, 0.32] });
   }
   const crMesh = new THREE.InstancedMesh(new THREE.CylinderGeometry(1, 1, 1, 6), semMaterial({ base: 0.5, noise: 5, edge: 0.4 }), crystals.length);
-  crystals.forEach((c, k) => crMesh.setMatrixAt(k, m.compose(c.p, c.q, sc.fromArray(c.s))));
-  crMesh.instanceMatrix.needsUpdate = true;
+  tint(crMesh.material, TINT.cr);
+  const placeCrystals = (f) => {
+    crystals.forEach((c, k) => crMesh.setMatrixAt(k, m.compose(_p.copy(c.a).addScaledVector(c.o, f), c.q, sc.fromArray(c.s).multiplyScalar(f))));
+    crMesh.instanceMatrix.needsUpdate = true;
+  };
   scene.add(crMesh);
+
+  // Sinnbild (nicht maßstäblich): Wasserteilchen treiben aus dem Lumen zu den Tüpfeln und verschwinden darin
+  const pits = [];
+  for (let cy = -3; cy <= 0; cy++) for (let cx = -2; cx <= 1; cx++) {
+    const ps = (cx + 0.5 - (Math.abs(cy) % 2) * 0.5) * PIT.sx, py = (cy + 0.5) * PIT.sy;
+    if (ps > -10 && ps < 7 && py > -14 && py < 2 && Math.hypot(ps - BAC.s, py - BAC.y) > 4) pits.push([ps, py]);
+  }
+  const NP = 140, ppos = new Float32Array(NP * 3), palpha = new Float32Array(NP);
+  const parts = Array.from({ length: NP }, () => {
+    const [ps, py] = pits[Math.floor(rand() * pits.length)];
+    return { ps, py, os: (rand() - 0.5) * 7, oy: (rand() - 0.5) * 6, lift: 2 + rand() * 5, ph: rand(), sp: 0.7 + rand() * 0.6, j: rand() * 6.28 };
+  });
+  const pGeo = new THREE.BufferGeometry();
+  pGeo.setAttribute('position', new THREE.BufferAttribute(ppos, 3));
+  pGeo.setAttribute('aA', new THREE.BufferAttribute(palpha, 1));
+  const uViewH = { value: 900 };
+  const pts = new THREE.Points(pGeo, new THREE.ShaderMaterial({
+    ...ADDITIVE, uniforms: { uCol: { value: new THREE.Color(0.55, 0.85, 1.0) }, uViewH },
+    // Punktgröße 0,25 µm in Pixeln der tatsächlichen Renderhöhe
+    vertexShader: 'uniform float uViewH; attribute float aA; varying float vA; void main() { vA = aA; vec4 mv = modelViewMatrix * vec4(position, 1.0); gl_PointSize = 0.25 * projectionMatrix[1][1] * 0.5 * uViewH / -mv.z; gl_Position = projectionMatrix * mv; }',
+    fragmentShader: 'uniform vec3 uCol; varying float vA; void main() { float d = length(gl_PointCoord - 0.5); float a = vA * (1.0 - smoothstep(0.25, 0.5, d)); if (a < 0.01) discard; gl_FragColor = vec4(uCol, a); }',
+  }));
+  pts.frustumCulled = false;
+  pts.visible = !reduced;
+  pts.onBeforeRender = (renderer) => { const rt = renderer.getRenderTarget(); uViewH.value = rt ? rt.height : renderer.domElement.height; };
+  scene.add(pts);
+  if (!reduced) anim.push((age) => {
+    parts.forEach((p, k) => {
+      const u = (age * 0.07 * p.sp + p.ph) % 1, e = smooth01(u / 0.9);
+      const w = 0.35 * (1 - e);
+      const v = onWall(p.ps + p.os * (1 - e) + w * Math.sin(age * 1.3 + p.j), p.py + p.oy * (1 - e) + w * Math.sin(age * 1.1 + 2 * p.j),
+        p.lift * (1 - e) - 0.6 * smooth01((u - 0.85) / 0.15));
+      ppos[k * 3] = v.x; ppos[k * 3 + 1] = v.y; ppos[k * 3 + 2] = v.z;
+      palpha[k] = 0.85 * smooth01(u / 0.12) * (1 - smooth01((u - 0.88) / 0.12));
+    });
+    pGeo.attributes.position.needsUpdate = true;
+    pGeo.attributes.aA.needsUpdate = true;
+  });
+
+  // Temperatur: Risse öffnen sich, Asche-Kristalle wachsen – Zielwert gleitet in ≈ 1,2 s weich nach
+  const heat = { k: tempK(ctx.temp), to: tempK(ctx.temp) };
+  const applyHeat = () => { CRACK.value = 1 + heat.k; placeCrystals(1 + 0.5 * heat.k); };
+  applyHeat();
 
   // Hotspot-Stellen: Tüpfel (Gitterzelle −1/−1), Riss, Bruchkante
   const pitCell = [-1, -1];
@@ -419,10 +527,11 @@ export function create(ctx) {
   const edgeS = -2.5;
   const edgePos = surf(edgeS, topY(edgeS) + 0.15, R + TH / 2);
   const camera = new THREE.PerspectiveCamera(40, ctx.aspect, 0.1, 400);
-  return {
+  let age = 0, lastT = -1;
+  const level = {
     scene, camera,
     unit: 1e-6,
-    method: 'REM · Sekundärelektronen (Modell)',
+    method: 'REM · Sekundärelektronen (Modell, eingefärbt)',
     tone: 0,
     grain: 0.07,
     dof: 2.2,
@@ -438,10 +547,26 @@ export function create(ctx) {
       { id: 'crack', kind: 'info', pos: onWall(crackS, crack1Y(crackS), 0.2), normal: inward(crackS) },
     ],
     update(dt, t) {
-      placeBacteria(t);
-      semDetector(t);
+      // Uhr ab Ankunft: nach einer Pause (Ebene war nicht aktiv) beginnt der Zeitraffer neu
+      age = t - lastT > 0.5 ? 0 : age + t - lastT;
+      lastT = t;
+      if (heat.k !== heat.to) {
+        heat.k = reduced || Math.abs(heat.to - heat.k) < 1e-3 ? heat.to : heat.k + (heat.to - heat.k) * (1 - Math.exp(-dt / 0.35));
+        applyHeat();
+      }
+      const at = reduced ? 1e3 : age;   // ohne Bewegung: Endzustand
+      if (!reduced) placeBacteria(t);
+      semDetector(reduced ? 0 : t * 1.5, 1.9);
+      anim.forEach((f) => f(at));
       return true;
+    },
+    setParam(name, value) {
+      if (name === 'temp') heat.to = tempK(value);
+    },
+    onHotspot(id) {
+      if (id === 'hypha') sprout = age;
     },
     dispose() { disposeGroup(scene); },
   };
+  return level;
 }
