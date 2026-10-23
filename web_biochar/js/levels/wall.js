@@ -573,6 +573,7 @@ export function create(ctx) {
       { id: 'pits', kind: 'info', pos: onWall(pitS, pitY, 0.4), normal: inward(pitS) },
       { id: 'bacteria', kind: 'info', pos: onWall(BAC.s, BAC.y, 1.3), normal: inward(BAC.s) },
       { id: 'hypha', kind: 'info', pos: hyCurve.getPoint(0.3).add(inward(-9).multiplyScalar(0.9)), normal: inward(-9) },
+      { id: 'spores', kind: 'info', pos: onWall(-10.5, 2.5, 2.1), normal: inward(-10.5) },   // lose Spore auf der Wand
       { id: 'ash', kind: 'info', pos: onWall(NEEDLE.s, NEEDLE.y, 1.6), normal: inward(NEEDLE.s) },
       { id: 'crack', kind: 'info', pos: onWall(crackS, crack1Y(crackS), 0.2), normal: inward(crackS) },
     ],
