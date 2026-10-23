@@ -1,5 +1,6 @@
 // Ablauf: Ebenen laden, Kamera steuern, Ebenen im durchgehenden Flug wechseln, Bild über gemeinsamem Hintergrund zusammenführen.
 // Linse: Tiefenunschärfe (Tiefentextur je Ebene), Bloom auf Glanzlichtern, Farbsaum am Rand, Grading je Stimmung, Korn.
+// Qualität: drei Stufen aus quality.js (Auflösung, Kantenglättung, Linse, Schatten, Detailgrad der Ebenen), live umschaltbar.
 
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
@@ -7,6 +8,7 @@ import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { createHud } from './hud.js';
 import { T_ROOM } from './science.js';
 import { NOISE_GLSL } from './sem.js';
+import { quality } from './quality.js';
 
 const LOADERS = [
   () => import('./levels/piece.js'),
@@ -40,8 +42,8 @@ const MOODS = [
 // angekommen wird mit 1,3-fachem Abstand der Heimpose (Überblick zuerst, dann zoomt der Besucher selbst)
 const ZOOM = { near: 0.35, arrive: 1.3 };
 const DIVE_SECONDS = 5.0;
-// Linse: Bloom-Schwelle (linear), Farbsaum am Rand (ruhig / beim Durchtauchen), Ein-/Ausblenden der Effekte (s)
-const LENS = { thr: 0.82, ca: 0.005, caDive: 0.008, fadeOut: 0.45, fadeIn: 1.3 };
+// Linse: Bloom-Schwelle (linear), Farbsaum am Rand, Ein-/Ausblenden der Effekte (s)
+const LENS = { thr: 0.82, ca: 0.005, fadeOut: 0.45, fadeIn: 1.3 };
 // Leerlauf-Fahrt: nach `delay` s ohne Eingabe weich einblenden (`ramp` s); Ausschläge je Ebene über lv.cine
 const CINE = { delay: 2.5, ramp: 4.0, orbit: 0.10, crane: 0.045, dolly: 0.05, drift: 0.02 };
 
@@ -50,6 +52,8 @@ const params = new URLSearchParams(location.search);
 // Prüfhilfe für Screenshots: ?freeze=0.5 hält den ersten Übergang bei diesem Fortschritt an
 const freeze = params.has('freeze') ? Math.min(0.999, Math.max(0, +params.get('freeze'))) : null;
 // Tour für Ausstellungen: ?tour (optional &dwell=Sekunden) taucht selbständig durch alle Ebenen
+// Prüfhilfe für die Qualitätsstufen: ?fps schreibt alle 2 s Bildrate und Stufe in die Konsole
+const stats = params.has('fps') ? { n: 0, sum: 0 } : null;
 const tour = params.has('tour') ? { dwell: Math.max(1, +params.get('dwell') || 12), since: 0 } : null;
 
 const canvas = document.getElementById('stage');
@@ -60,9 +64,9 @@ try {
   document.body.classList.add('no-webgl');
   throw err;
 }
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, quality.get().dpr));
 renderer.setClearColor(0x000000, 0);   // Ebenen rendern transparent, der Hintergrund entsteht in der Zusammenführung
-renderer.shadowMap.enabled = true;      // nur Lichter mit castShadow kosten etwas (Ebene 7: weiche Eigenschatten)
+renderer.shadowMap.enabled = quality.get().shadows;   // nur Lichter mit castShadow kosten etwas (Ebene 7: weiche Eigenschatten)
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 const env = new THREE.PMREMGenerator(renderer).fromScene(new RoomEnvironment(), 0.04).texture;
 
@@ -93,18 +97,20 @@ const comp = new THREE.ShaderMaterial({
     uAspect: { value: 1 }, uTime: { value: 0 }, uFade: { value: 0 },
     uToneOuter: { value: 0 }, uToneInner: { value: 0 }, uGrainOuter: { value: 0 }, uGrainInner: { value: 0 },
     uCamOuter: { value: new THREE.Vector4(0.1, 100, 10, 0) }, uCamInner: { value: new THREE.Vector4(0.1, 100, 10, 0) },
-    uBloom: { value: 0 }, uCA: { value: LENS.ca }, uDive: { value: 0 }, uDiveE: { value: 0 }, uDiveDir: { value: 1 },
+    uBloom: { value: 0 }, uCA: { value: LENS.ca * quality.get().ca }, uDive: { value: 0 }, uInner: { value: new THREE.Vector2(0.5, 0.5) },
     uTopA: moodA.top, uBotA: moodA.bot, uPoolA: moodA.pool, uDustA: moodA.dust, uShA: moodA.sh, uHiA: moodA.hi, uGrA: moodA.gr,
     uTopB: moodB.top, uBotB: moodB.bot, uPoolB: moodB.pool, uDustB: moodB.dust, uShB: moodB.sh, uHiB: moodB.hi, uGrB: moodB.gr,
   },
+  // Abtastpunkte der Tiefenunschärfe und der Zoom-Unschärfe je Qualitätsstufe (Shader wird beim Umschalten neu gebaut)
+  defines: { DOF_TAPS: quality.get().dofTaps, BLUR_TAPS: quality.get().blurTaps },
   vertexShader: QUAD_VERT,
   fragmentShader: /* glsl */ `
     uniform sampler2D tOuter, tInner, dOuter, dInner, tBloom;
-    uniform vec2 uAnchor, uRes, uDustA, uDustB, uGrA, uGrB;
+    uniform vec2 uAnchor, uInner, uRes, uDustA, uDustB, uGrA, uGrB;
     uniform float uProg, uMaskR, uBlur, uAspect, uTime, uFade;
     uniform float uToneOuter, uToneInner, uGrainOuter, uGrainInner;
     uniform vec4 uCamOuter, uCamInner;      // near, far, Fokusabstand, größte Unschärfe in Pixeln (0 = aus)
-    uniform float uBloom, uCA, uDive, uDiveE, uDiveDir;
+    uniform float uBloom, uCA, uDive;
     uniform vec3 uTopA, uBotA, uTopB, uBotB, uShA, uHiA, uShB, uHiB;
     uniform vec4 uPoolA, uPoolB;
     varying vec2 vUv;
@@ -148,9 +154,9 @@ const comp = new THREE.ShaderMaterial({
       vec4 acc = c0;
       float tot = 1.0;
       float rot = hash(uv * uRes) * 6.2832;
-      for (int i = 0; i < 12; i++) {
+      for (int i = 0; i < DOF_TAPS; i++) {
         float fi = float(i) + 0.5;
-        float r = R * sqrt(fi / 12.0);
+        float r = R * sqrt(fi / float(DOF_TAPS));
         float a = fi * 2.39996 + rot;
         vec2 tc = uv + vec2(cos(a), sin(a)) * r / uRes;
         float zt = linZ(d, tc, cam);
@@ -193,11 +199,11 @@ const comp = new THREE.ShaderMaterial({
       vec4 s;
       if (blur >= 0.002) {
         s = vec4(0.0);
-        for (int i = 0; i < 12; i++) {
-          float k = (float(i) / 11.0 - 0.5) * blur;
+        for (int i = 0; i < BLUR_TAPS; i++) {
+          float k = (float(i) / float(BLUR_TAPS - 1) - 0.5) * blur;
           s += textureLod(t, c + (uv - c) * (1.0 + k), lodc);
         }
-        s /= 12.0;
+        s /= float(BLUR_TAPS);
       } else if (cam.w > 0.3) {
         s = dofTex(t, d, uv, cam, c0, zc, sc);
       } else {
@@ -216,35 +222,18 @@ const comp = new THREE.ShaderMaterial({
       col = mix(col, aces(col), tone);
       return grade(col, sh, hi, gr.x);
     }
-    // Teilchen beim Durchtauchen: Raster in (Winkel, log Abstand) um den Anker, wandert mit der Zoomrate nach außen
-    vec3 diveParticles(vec2 uv) {
-      vec2 q = (uv - uAnchor) * vec2(uAspect, 1.0);
-      float r = length(q);
-      if (r < 0.02) return vec3(0.0);
-      float ang = atan(q.y, q.x) / 6.28318 + 0.5;
-      float lr = log(r);
-      float acc = 0.0;
-      for (int L = 0; L < 2; L++) {
-        float fl = float(L);
-        float na = 20.0 + 13.0 * fl;                 // Zellen rundum
-        float nr = na / 6.28318;                      // gleich dicht je log-Einheit → runde Teilchen
-        float sp = 2.2 + 1.6 * fl;                    // Parallaxe: nahe Teilchen ziehen schneller vorbei
-        vec2 g = vec2(ang * na, (lr - uDiveE * sp * uDiveDir) * nr);
-        vec2 id = floor(g);
-        vec2 f = fract(g) - 0.5;
-        float h = hash13(vec3(id, 5.0 + fl * 9.0));
-        if (h > 0.30) continue;
-        vec2 o = vec2(hash13(vec3(id, 2.0 + fl)), hash13(vec3(id, 7.0 + fl))) - 0.5;
-        vec2 dd = f - o * 0.55;
-        dd.y /= 1.0 + 2.2 * uDive;                    // Bewegungsunschärfe in Flugrichtung
-        float dist = length(dd);
-        float rad = 0.15 + 0.14 * h;
-        float disc = smoothstep(rad, rad * 0.6, dist) * (0.55 + 0.45 * smoothstep(rad * 0.3, rad * 0.9, dist));
-        acc += disc * (0.4 + 2.0 * h) * (1.0 - 0.3 * fl);
-      }
-      float fade = smoothstep(0.03, 0.22, r) * (1.0 - smoothstep(0.8, 1.3, r));
-      vec3 tint = normalize(mix(uTopA, uTopB, uProg) + 0.03) * 0.9 + 0.1;
-      return tint * acc * fade * uDive * 0.3;
+    // Lichtschleier beim Durchtauchen (statt Teilchen): weiches Leuchten um den Anker in der Farbe der Stimmungen,
+    // mit sehr langsamem Rauschen – keine Formen, nur Licht; am stärksten in der Mitte der Fahrt (uDive)
+    vec3 veil(vec2 q, float p) {
+      float n = 0.7 + 0.3 * vnoise(vec3(q * 1.4, uTime * 0.06));
+      vec3 tint = normalize(mix(uTopA, uTopB, p) + 0.02);
+      return tint * exp(-dot(q, q) * 3.2) * n * 0.03 * uDive;
+    }
+    // mittlere Helligkeit eines Bildes um c (grobe Mip-Stufe); wo nichts gerendert ist, zählt der Hintergrund
+    float lumAt(sampler2D t, vec2 c, vec3 top, vec3 bot) {
+      const vec3 W = vec3(0.2126, 0.7152, 0.0722);
+      vec4 a = textureLod(t, c, 7.0);
+      return dot(max(a.rgb, 0.0), W) + dot(mix(bot, top, 0.5), W) * (1.0 - clamp(a.a, 0.0, 1.0));
     }
     void main() {
       vec2 uv = vUv;
@@ -260,23 +249,28 @@ const comp = new THREE.ShaderMaterial({
       } else {
         vec2 q = (uv - uAnchor) * vec2(uAspect, 1.0);
         float r = length(q);
-        // kein Blendenrand: die nächste Ebene bildet sich weich um den Anker, wächst mit dem Zoom
-        // und sättigt zum Ende das ganze Bild; ihre Struktur wird dabei scharf
-        vec3 o = level(tOuter, dOuter, uv, uAnchor, uBlur, uTopA, uBotA, uPoolA, uDustA, uToneOuter, uCamOuter, uBloom, uShA, uHiA, uGrA) * (1.0 - 0.4 * p);
-        vec2 iuv = uv - uAnchor + 0.5;                       // inneres Bild um den Anker zentriert
-        float soft = 0.22 * pow(1.0 - p, 1.5);
-        vec3 ii = level(tInner, dInner, iuv, vec2(0.5), uBlur * 0.5 + soft, uTopB, uBotB, uPoolB, uDustB, uToneInner, uCamInner, 0.0, uShB, uHiB, uGrB)
-                  * mix(0.35, 1.0, smoothstep(0.05, 0.8, p));
-        float inFrame = step(0.0, iuv.x) * step(iuv.x, 1.0) * step(0.0, iuv.y) * step(iuv.y, 1.0);
-        float radial = 1.0 - smoothstep(uMaskR * 0.5, uMaskR * 1.25, r);
-        float m = max(radial, smoothstep(0.6, 0.92, p)) * inFrame;
-        col = mix(o, ii, m) * (1.0 - 0.15 * sin(3.14159 * p));   // kurzes Abdunkeln beim Durchtauchen
+        // Durchgehender Zoom: beide Bilder tragen dieselbe radiale Zoom-Unschärfe um den Anker; das innere Bild
+        // sitzt mit seinem Blickziel (uInner) auf dem Anker und wächst mit dem Zoom, bis es das Bild füllt
+        vec3 o = level(tOuter, dOuter, uv, uAnchor, uBlur, uTopA, uBotA, uPoolA, uDustA, uToneOuter, uCamOuter, uBloom, uShA, uHiA, uGrA);
+        vec2 iuv = uv - uAnchor + uInner;
+        vec3 ii = level(tInner, dInner, iuv, uInner, uBlur, uTopB, uBotB, uPoolB, uDustB, uToneInner, uCamInner, 0.0, uShB, uHiB, uGrB);
+        // Belichtung angleichen: das innere Bild beginnt mit der Helligkeit des äußeren um den Anker und hellt erst
+        // spät auf seine eigene auf – kein Helligkeitssprung, keine sichtbare Kante zwischen den Ebenen
+        float kE = clamp(lumAt(tOuter, uAnchor, uTopA, uBotA) / max(lumAt(tInner, uInner, uTopB, uBotB), 1e-3), 0.3, 3.0);
+        ii *= mix(kE, 1.0, smoothstep(0.3, 0.95, p));
+        // Rand des inneren Bildes weich, solange der Anker noch wandert; am Ende deckt es das ganze Bild
+        vec2 fe = min(iuv, 1.0 - iuv);
+        float inFrame = mix(smoothstep(0.0, 0.06, min(fe.x, fe.y)), 1.0, smoothstep(0.85, 1.0, p));
+        // weit gefiederte Iris, wächst exponentiell mit dem Zoom
+        float radial = 1.0 - smoothstep(uMaskR * 0.25, uMaskR * 2.0, r);
+        float m = max(radial, smoothstep(0.55, 0.95, p)) * inFrame;
+        col = mix(o, ii, m);
         grain = mix(uGrainOuter, uGrainInner, m);
         con = mix(uGrA.y, uGrB.y, m);
       }
-      if (uDive > 0.001) col += diveParticles(uv);
+      if (uDive > 0.001) col += veil((uv - uAnchor) * vec2(uAspect, 1.0), p);
       vec2 d = (uv - 0.5) * vec2(uAspect, 1.0);
-      col *= mix(1.0, smoothstep(1.35, 0.25, length(d)), 0.45 + 0.12 * uDive);
+      col *= mix(1.0, smoothstep(1.35, 0.25, length(d)), 0.45);
       col = clamp(toSRGB(col), 0.0, 1.0);
       col = mix(col, col * col * (3.0 - 2.0 * col), con);       // sanfte S-Kurve je Stimmung
       col += (hash(uv * uRes + fract(uTime) * 91.7) - 0.5) * grain;
@@ -376,7 +370,7 @@ function stageShift() {
 
 function fitLevel(lv) {
   const { w, h, dpr } = viewSize();
-  const s = lv.resScale || 1;
+  const s = (lv.resScale || 1) * quality.get().res;
   lv.rt.setSize(Math.max(2, Math.round(w * dpr * s)), Math.max(2, Math.round(h * dpr * s)));
   lv.camera.aspect = w / h;
   lv.camera.setViewOffset(w, h, stageShift(), 0, w, h);
@@ -391,6 +385,28 @@ function resize() {
   bloomRT.setSize(Math.max(2, Math.round((w * dpr) / 4)), Math.max(2, Math.round((h * dpr) / 4)));
   for (const lv of state.levels.values()) fitLevel(lv);
 }
+
+// Qualitätsstufe anwenden (Start und Umschalten): Pixelverhältnis, Schatten, Farbsaum, Abtastpunkte des Shaders,
+// Kantenglättung der Ebenen-Bilder (Ziel neu anlegen) und Detailgrad der geladenen Ebenen
+function applyQuality(Q) {
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, Q.dpr));
+  renderer.shadowMap.enabled = Q.shadows;
+  comp.uniforms.uCA.value = LENS.ca * Q.ca;
+  const d = comp.defines;
+  if (d.DOF_TAPS !== Q.dofTaps || d.BLUR_TAPS !== Q.blurTaps) {
+    d.DOF_TAPS = Q.dofTaps;
+    d.BLUR_TAPS = Q.blurTaps;
+    comp.needsUpdate = true;
+  }
+  for (const lv of state.levels.values()) {
+    const samples = (lv.resScale || 1) < 1 ? 0 : Q.msaa;
+    if (lv.rt.samples !== samples) { lv.rt.samples = samples; lv.rt.dispose(); }
+    if (lv.setParam) lv.setParam('quality', Q);
+    lv.dirty = true;
+  }
+  resize();
+}
+quality.onChange(applyQuality);
 
 // ---------- Ebenen ----------
 // quiet = Vorladen im Hintergrund ohne Ladeanzeige
@@ -409,13 +425,13 @@ function buildLevel(i) {
   const job = (async () => {
     await new Promise((r) => requestAnimationFrame(() => setTimeout(r, 0)));
     const mod = await LOADERS[i]();
-    const lv = mod.create({ env, aspect: window.innerWidth / window.innerHeight, temp: state.pyro.shown, rh: state.rh });
+    const lv = mod.create({ env, aspect: window.innerWidth / window.innerHeight, temp: state.pyro.shown, rh: state.rh, quality: quality.get() });
     lv.index = i;
-    if (lv.setParam) { lv.setParam('target', state.temp); lv.setParam('play', state.pyro.playing); }
+    if (lv.setParam) { lv.setParam('target', state.temp); lv.setParam('play', state.pyro.playing); lv.setParam('quality', quality.get()); }
     lv.scene.background = null;
     // Farbe mit Mipmaps (Bloom, weiche Unschärfe) und Tiefe als Textur (Tiefenunschärfe)
     lv.rt = new THREE.WebGLRenderTarget(2, 2, {
-      type: THREE.HalfFloatType, samples: (lv.resScale || 1) < 1 ? 0 : 4,
+      type: THREE.HalfFloatType, samples: (lv.resScale || 1) < 1 ? 0 : quality.get().msaa,
       generateMipmaps: true, minFilter: THREE.LinearMipmapLinearFilter,
       depthTexture: new THREE.DepthTexture(2, 2),
     });
@@ -552,18 +568,21 @@ function stepTransition(dt) {
   }
   tr.focusOuter = tr.outer.camera.position.distanceTo(outerTgt);
   tr.focusInner = tr.inner.camera.position.distanceTo(innerTgt);
-  // Anker im äußeren Bild – wandert mit der Kamerafahrt zur Bildmitte
+  // Anker im äußeren Bild (wandert mit der Kamerafahrt zum Blickziel) und Blickziel des inneren Bildes;
+  // Matrizen vorher aktualisieren, sonst rechnet project() im ersten Bild der Fahrt mit der alten Blickrichtung
+  tr.outer.camera.updateMatrixWorld();
+  tr.inner.camera.updateMatrixWorld();
   const a = tr.anchorWorld.clone().project(tr.outer.camera);
+  const b = innerTgt.clone().project(tr.inner.camera);
   const u = comp.uniforms;
   u.uAnchor.value.set(clampf((a.x + 1) / 2, 0.08, 0.92), clampf((a.y + 1) / 2, 0.08, 0.92));
+  u.uInner.value.set((b.x + 1) / 2, (b.y + 1) / 2);
   u.uProg.value = p;
   // Iris wächst exponentiell wie der Zoom: 6 % der Bildhöhe → über die Bilddiagonale hinaus
   u.uMaskR.value = 0.06 * Math.pow(18, p) * smooth(0, 0.06, p);
   u.uBlur.value = reduced ? 0 : 0.11 * Math.sin(Math.PI * p);
-  // Teilchen ziehen mit derselben Zoomrate vorbei, am stärksten in der Mitte der Fahrt
+  // Lichtschleier: am stärksten in der Mitte der Fahrt
   u.uDive.value = reduced ? 0 : Math.pow(Math.sin(Math.PI * e), 1.5);
-  u.uDiveE.value = e;
-  u.uDiveDir.value = tr.down ? 1 : -1;
   // Zoom-Zähler in der Messleiste läuft logarithmisch mit
   const hOut = hfwOf(tr.outer, tr.focusOuter);
   const hIn = hfwOf(tr.inner, tr.focusInner);
@@ -820,6 +839,13 @@ function frame(now) {
   last = now;
   state.time += dt;
   stepPyro(real);
+  hud.tickFacts(real);
+  quality.tick(real);
+  const Q = quality.get();
+  if (stats) {
+    stats.n++; stats.sum += real;
+    if (stats.sum >= 2) { console.log(`fps ${(stats.n / stats.sum).toFixed(1)} · ${(1000 * stats.sum / stats.n).toFixed(1)} ms · Qualität ${Q.name}`); stats.n = 0; stats.sum = 0; }
+  }
   const { w, h } = viewSize();
   const lv = state.active;
   if (state.tr) stepTransition(real);
@@ -843,9 +869,9 @@ function frame(now) {
     u.uToneInner.value = tr.inner.tone;
     u.uGrainOuter.value = tr.outer.grain;
     u.uGrainInner.value = tr.inner.grain;
-    lensUniform(u.uCamOuter.value, tr.outer, tr.focusOuter, post.dof);
+    lensUniform(u.uCamOuter.value, tr.outer, tr.focusOuter, post.dof * Q.dof);
     lensUniform(u.uCamInner.value, tr.inner, tr.focusInner, 0);
-    u.uBloom.value = (tr.outer.bloom ?? 0.2) * smootherstep(post.bloom);
+    u.uBloom.value = (tr.outer.bloom ?? 0.2) * smootherstep(post.bloom) * Q.bloom;
     src = tr.outer;
   } else if (lv) {
     if (state.intro) {
@@ -880,8 +906,8 @@ function frame(now) {
     u.uGrainOuter.value = lv.grain;
     const focusTarget = state.intro ? state.intro.target : state.controls.target;
     const dist = lv.camera.position.distanceTo(focusTarget);
-    lensUniform(u.uCamOuter.value, lv, dist, smootherstep(post.dof));
-    u.uBloom.value = (lv.bloom ?? 0.2) * smootherstep(post.bloom);
+    lensUniform(u.uCamOuter.value, lv, dist, smootherstep(post.dof) * Q.dof);
+    u.uBloom.value = (lv.bloom ?? 0.2) * smootherstep(post.bloom) * Q.bloom;
     src = lv;
     hud.updateScale(hfwOf(lv, dist), w, lv);
     hud.updateMarkers(lv.camera, w, h);
@@ -894,7 +920,6 @@ function frame(now) {
     renderer.render(brightScene, compCam);
     u.tBloom.value = bloomRT.texture;
   }
-  u.uCA.value = LENS.ca + (LENS.caDive - LENS.ca) * u.uDive.value;
   u.uFade.value = Math.min(1, u.uFade.value + real / 1.4);
   u.uTime.value = state.time;
   renderer.setRenderTarget(null);

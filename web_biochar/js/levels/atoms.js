@@ -3,7 +3,7 @@
 // den Farben der Atome, weiche Elektronenwolke (van-der-Waals-Radius) und weiche Eigenschatten.
 
 import * as THREE from 'three';
-import { nanoStructure, fmt } from '../science.js';
+import { nanoStructure, fmt, T_MIN, T_MAX } from '../science.js';
 import { mulberry32 } from '../util.js';
 import { ADDITIVE } from '../sem.js';
 
@@ -39,6 +39,9 @@ void main() {
 }`;
 const SUB = '₀₁₂₃₄₅₆₇₈₉';
 const sub = (n) => String(n).split('').map((d) => SUB[+d]).join('');
+
+// feste Pseudozufallszahl 0..1 aus einer Lage (Å), stabil bei gleichem Gitterplatz
+const siteHash = (x, y) => { const v = Math.sin(Math.round(x * 50) * 12.9898 + Math.round(y * 50) * 78.233) * 43758.5453; return v - Math.floor(v); };
 
 function rot2(d, deg) {
   const a = (deg * Math.PI) / 180, c = Math.cos(a), s = Math.sin(a);
@@ -91,11 +94,16 @@ export function buildCluster(T) {
   }
   edge.sort((a, b) => a.ang - b.ang);
 
-  // Randgruppen: wenige O-Gruppen bei hoher, viele bei niedriger Temperatur; Rest Wasserstoff
+  // Randgruppen: wenige O-Gruppen bei hoher, viele bei niedriger Temperatur; Rest Wasserstoff.
+  // Die Plätze sind nach einer festen Rangfolge (Hash der Lage) geordnet: sinkt der O-Anteil, entfallen immer die hinteren
+  // Gruppen, die übrigen bleiben – so lässt sich der Übergang zwischen zwei Temperaturen als Abspalten zeigen.
   const nO = Math.max(3, Math.round(edge.length * ns.oxygenShare));
   const types = ['carboxylate', 'phenol', 'carbonyl', 'carboxyl', 'phenol', 'carbonyl', 'carboxyl', 'phenol'];
+  const rank = edge
+    .map((e, k) => ({ k, h: siteHash(atoms[e.i].p.x, atoms[e.i].p.y) }))
+    .sort((a, b) => a.h - b.h);
   const assigned = new Map();
-  for (let k = 0; k < nO; k++) assigned.set(Math.floor((k * edge.length) / nO + 1) % edge.length, types[k % types.length]);
+  for (let r = 0; r < nO && r < rank.length; r++) assigned.set(rank[r].k, types[r % types.length]);
   const marks = {};
   const tilt = (base, d, list, deg) => {
     const axis = new THREE.Vector3(d.x, d.y, 0).normalize();
@@ -105,6 +113,7 @@ export function buildCluster(T) {
   edge.forEach((e, k) => {
     const p = atoms[e.i].p, d = e.dir;
     const type = assigned.get(k) || 'H';
+    const first = atoms.length;
     if (type === 'H') {
       const h = addAtom('H', p.clone().addScaledVector(d, 1.09));
       bond(e.i, h);
@@ -137,6 +146,7 @@ export function buildCluster(T) {
       }
       tilt(p.clone(), d, group, ionic ? 22 : -28);
     }
+    for (let i = first; i < atoms.length; i++) atoms[i].dir = d;   // Abflugrichtung der Gruppe (nach außen)
   });
 
   const count = { C: 0, H: 0, O: 0, K: 0 };
@@ -148,6 +158,12 @@ export function buildCluster(T) {
     nRings: rings.length,
   };
 }
+
+const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const ease = (x) => { x = Math.min(1, Math.max(0, x)); return x * x * (3 - 2 * x); };
+const keyOfAtom = (a) => `${a.el}:${Math.round(a.p.x * 20)},${Math.round(a.p.y * 20)},${Math.round(a.p.z * 20)}`;
+const quant = (T) => Math.min(T_MAX, Math.max(T_MIN, Math.round(T / 25) * 25));   // Struktur in 25-°C-Stufen
+const GROW = 0.9, LEAVE = 1.7, FLY = 3.2;   // s Einwachsen, s bis zum Verblassen, Å/s Abflug
 
 export function create(ctx) {
   const scene = new THREE.Scene();
@@ -192,85 +208,176 @@ export function create(ctx) {
     carbonyl: { id: 'carbonyl', kind: 'info', pos: new THREE.Vector3(), normal: null },
     edgeh: { id: 'edgeh', kind: 'info', pos: new THREE.Vector3(), normal: null },
   };
-  let cluster, atomMesh, bondMesh, cloudMesh, phases;
-  const rand = mulberry32(5);
 
-  function rebuild(T) {
-    for (const c of [...group.children]) { group.remove(c); c.dispose?.(); }
-    cluster = buildCluster(T);
-    phases = cluster.atoms.map(() => [rand() * 6.28, rand() * 6.28, rand() * 6.28]);
-    atomMesh = new THREE.InstancedMesh(sphere, atomMat, cluster.atoms.length);
-    cloudMesh = new THREE.InstancedMesh(cloudGeo, cloudMat, cluster.atoms.length);
-    cluster.atoms.forEach((a, k) => {
-      atomMesh.setColorAt(k, ELEMENT[a.el].color);
-      cloudMesh.setColorAt(k, ELEMENT[a.el].color.clone().lerp(new THREE.Color(0.55, 0.7, 1.0), 0.6));
-    });
-    const nb = cluster.bonds.reduce((n, b) => n + b.order, 0) * 2;
-    bondMesh = new THREE.InstancedMesh(cyl, bondMat, nb);
-    {
-      const grey = new THREE.Color(0.62, 0.64, 0.68);
-      let n = 0;
-      for (const b of cluster.bonds) {
-        for (let o = 0; o < b.order; o++) {
-          bondMesh.setColorAt(n++, ELEMENT[cluster.atoms[b.i].el].color.clone().lerp(grey, 0.55));
-          bondMesh.setColorAt(n++, ELEMENT[cluster.atoms[b.j].el].color.clone().lerp(grey, 0.55));
-        }
+  // ---- Atome, Bindungen und Ringe als lebender Bestand: Temperaturwechsel gleitet statt neu aufzubauen ----
+  // Atom: { el, home, s (0..1 sichtbar), leaving, off (Abflug), vel, dir }. Neue Atome wachsen ein (Kondensation),
+  // entfallende Randgruppen (H, OH, COOH …) fliegen als H₂O/CO₂/H₂ nach außen und verblassen (Dehydratisierung, Decarboxylierung).
+  const CAP_A = 360, CAP_B = 900, CAP_R = 40;
+  const pool = new Map(), bondPool = new Map(), ringPool = new Map();
+  let cluster = null, builtQ = NaN, order = { atoms: [], bonds: [] }, orderDirty = true;
+  const atomMesh = new THREE.InstancedMesh(sphere, atomMat, CAP_A);
+  const cloudMesh = new THREE.InstancedMesh(cloudGeo, cloudMat, CAP_A);
+  const bondMesh = new THREE.InstancedMesh(cyl, bondMat, CAP_B);
+  const piMesh = new THREE.InstancedMesh(hex, piMat, CAP_R * 2);
+  for (const mesh of [atomMesh, bondMesh]) { mesh.castShadow = true; mesh.receiveShadow = true; }
+  for (const mesh of [atomMesh, cloudMesh, bondMesh, piMesh]) { mesh.frustumCulled = false; mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage); }
+  group.add(atomMesh, bondMesh, piMesh, cloudMesh);
+  const rand = mulberry32(5);
+  const GREY = new THREE.Color(0.62, 0.64, 0.68), BLUE = new THREE.Color(0.55, 0.7, 1.0);
+  const live = { C: 0, H: 0, O: 0, hc: 0, rings: 0 };
+
+  function retarget(Tq, instant) {
+    builtQ = Tq;
+    cluster = buildCluster(Tq);
+    const nextKeys = new Set();
+    const keys = cluster.atoms.map((a) => keyOfAtom(a));
+    cluster.atoms.forEach((a, i) => {
+      nextKeys.add(keys[i]);
+      let e = pool.get(keys[i]);
+      if (!e) {
+        e = { key: keys[i], el: a.el, home: a.p.clone(), s: instant ? 1 : 0, leaving: false, off: new THREE.Vector3(), vel: new THREE.Vector3(), ph: [rand() * 6.28, rand() * 6.28, rand() * 6.28] };
+        pool.set(keys[i], e);
       }
-    }
-    for (const mesh of [atomMesh, bondMesh]) { mesh.castShadow = true; mesh.receiveShadow = true; }
-    const pi = new THREE.InstancedMesh(hex, piMat, cluster.rings.length * 2);
-    const m = new THREE.Matrix4();
-    cluster.rings.forEach((r, k) => {
-      pi.setMatrixAt(2 * k, m.makeTranslation(r.x, r.y, 0.95));
-      pi.setMatrixAt(2 * k + 1, m.makeTranslation(r.x, r.y, -0.95));
+      e.leaving = false;
+      e.dir = a.dir;
     });
-    group.add(atomMesh, bondMesh, pi, cloudMesh);
+    for (const e of pool.values()) {
+      if (nextKeys.has(e.key) || e.leaving) continue;
+      e.leaving = true;
+      const d = e.dir || new THREE.Vector3(e.home.x, e.home.y, 0).normalize();
+      e.vel.set(d.x, d.y, (rand() - 0.5) * 0.8).normalize().multiplyScalar(FLY * (0.8 + 0.4 * rand()));
+    }
+    const nextBonds = new Set();
+    for (const b of cluster.bonds) {
+      const ka = keys[b.i], kb = keys[b.j];
+      const bk = ka < kb ? `${ka}|${kb}` : `${kb}|${ka}`;
+      nextBonds.add(bk);
+      let e = bondPool.get(bk);
+      if (!e) { e = { a: pool.get(ka), b: pool.get(kb), order: b.order, w: instant ? 1 : 0 }; bondPool.set(bk, e); }
+      e.want = 1;
+    }
+    for (const [bk, e] of bondPool) if (!nextBonds.has(bk)) e.want = e.a.leaving && e.b.leaving ? 1 : 0;   // die abziehende Gruppe bleibt zusammen
+    const nextRings = new Set();
+    for (const r of cluster.rings) {
+      const rk = `${Math.round(r.x * 10)},${Math.round(r.y * 10)}`;
+      nextRings.add(rk);
+      let e = ringPool.get(rk);
+      if (!e) { e = { x: r.x, y: r.y, s: instant ? 1 : 0 }; ringPool.set(rk, e); }
+      e.want = 1;
+    }
+    for (const [rk, e] of ringPool) if (!nextRings.has(rk)) e.want = 0;
+    orderDirty = true;
     for (const [k, id] of Object.entries(cluster.marks)) {
       hs[k].pos.copy(cluster.atoms[id].p).add(new THREE.Vector3(0, 0, k === 'carboxyl' ? 1.3 : 0.7));
     }
-    place(0);
   }
 
-  const tmp = { m: new THREE.Matrix4(), q: new THREE.Quaternion(), s: new THREE.Vector3(), p: new THREE.Vector3(), up: new THREE.Vector3(0, 1, 0) };
-  const pos = [];
-  function place(t) {
-    const { m, q, s, up } = tmp;
-    cluster.atoms.forEach((a, k) => {
-      const ph = phases[k];
-      const amp = a.el === 'K' ? 0.12 : 0.035;
-      pos[k] = (pos[k] || new THREE.Vector3()).set(
-        a.p.x + amp * Math.sin(t * 7.3 + ph[0]), a.p.y + amp * Math.sin(t * 8.1 + ph[1]), a.p.z + amp * Math.sin(t * 6.7 + ph[2]));
-      s.setScalar(ELEMENT[a.el].r);
-      atomMesh.setMatrixAt(k, m.compose(pos[k], q.identity(), s));
-      s.setScalar(ELEMENT[a.el].vdw * 0.85);
-      cloudMesh.setMatrixAt(k, m.compose(pos[k], q, s));
+  function reorder() {
+    order = { atoms: [...pool.values()].slice(0, CAP_A), bonds: [...bondPool.values()] };
+    order.atoms.forEach((a, k) => {
+      atomMesh.setColorAt(k, ELEMENT[a.el].color);
+      cloudMesh.setColorAt(k, ELEMENT[a.el].color.clone().lerp(BLUE, 0.6));
     });
+    // je Bindung 2 Halbstücke je Ordnung, jedes in der Farbe seines Atoms
     let n = 0;
-    const dir = new THREE.Vector3(), side = new THREE.Vector3(), c = new THREE.Vector3();
-    const q2 = new THREE.Quaternion();
-    for (const b of cluster.bonds) {
-      dir.subVectors(pos[b.j], pos[b.i]);
+    for (const b of order.bonds) {
+      b.slot = n;
+      for (let o = 0; o < b.order; o++) {
+        bondMesh.setColorAt(n++, ELEMENT[b.a.el].color.clone().lerp(GREY, 0.55));
+        bondMesh.setColorAt(n++, ELEMENT[b.b.el].color.clone().lerp(GREY, 0.55));
+      }
+    }
+    order.nBond = Math.min(n, CAP_B);
+    for (const m of [atomMesh, cloudMesh, bondMesh]) if (m.instanceColor) m.instanceColor.needsUpdate = true;
+    orderDirty = false;
+  }
+
+  // Bestand fortschreiben: Wachsen, Abflug, Bindungsbruch; entfernt, was ganz verblasst ist
+  function step(dt) {
+    let removed = false;
+    for (const e of pool.values()) {
+      if (e.leaving) {
+        e.s -= dt / LEAVE;
+        e.vel.multiplyScalar(1 + 0.25 * dt);
+        e.off.addScaledVector(e.vel, dt);
+        if (e.s <= 0) { pool.delete(e.key); removed = true; }
+      } else {
+        if (e.s < 1) e.s = Math.min(1, e.s + dt / GROW);
+        if (e.off.lengthSq() > 1e-6) e.off.multiplyScalar(Math.exp(-dt * 4));   // zurückgekehrte Gruppe gleitet an ihren Platz
+      }
+    }
+    for (const [bk, e] of bondPool) {
+      if (!pool.has(e.a.key) || !pool.has(e.b.key)) { bondPool.delete(bk); removed = true; continue; }
+      const k = e.want ? dt / GROW : -dt / 0.35;      // Bruch schnell, Bildung langsam
+      e.w = Math.min(1, Math.max(0, e.w + k));
+      if (!e.want && e.w <= 0) { bondPool.delete(bk); removed = true; }
+    }
+    for (const [rk, e] of ringPool) {
+      e.s = Math.min(1, Math.max(0, e.s + (e.want ? dt / GROW : -dt / GROW)));
+      if (!e.want && e.s <= 0) { ringPool.delete(rk); removed = true; }
+    }
+    if (removed) orderDirty = true;
+  }
+
+  const tmp = { m: new THREE.Matrix4(), q: new THREE.Quaternion(), s: new THREE.Vector3(), up: new THREE.Vector3(0, 1, 0) };
+  const dir = new THREE.Vector3(), side = new THREE.Vector3(), c = new THREE.Vector3(), q2 = new THREE.Quaternion();
+  function place(t) {
+    if (orderDirty) reorder();
+    const { m, q, s, up } = tmp;
+    const at = order.atoms;
+    let nC = 0, nH = 0, nO = 0;
+    at.forEach((a, k) => {
+      const amp = a.el === 'K' ? 0.12 : 0.035;
+      a.pos ??= new THREE.Vector3();
+      a.pos.set(
+        a.home.x + a.off.x + amp * Math.sin(t * 7.3 + a.ph[0]), a.home.y + a.off.y + amp * Math.sin(t * 8.1 + a.ph[1]), a.home.z + a.off.z + amp * Math.sin(t * 6.7 + a.ph[2]));
+      a.e = a.leaving ? ease(a.s) : ease(a.s);
+      s.setScalar(ELEMENT[a.el].r * a.e);
+      atomMesh.setMatrixAt(k, m.compose(a.pos, q.identity(), s));
+      s.setScalar(ELEMENT[a.el].vdw * 0.85 * a.e);
+      cloudMesh.setMatrixAt(k, m.compose(a.pos, q, s));
+      if (!a.leaving) { const w = a.s; if (a.el === 'C') nC += w; else if (a.el === 'H') nH += w; else if (a.el === 'O') nO += w; }
+    });
+    atomMesh.count = cloudMesh.count = at.length;
+    let n = 0;
+    for (const b of order.bonds) {
+      const w = b.w * Math.min(b.a.e, b.b.e) ** 0.5;
+      const pi = b.a.pos, pj = b.b.pos;
+      dir.subVectors(pj, pi);
       const len = dir.length();
-      dir.divideScalar(len);
+      dir.divideScalar(len || 1);
       q.setFromUnitVectors(up, dir);                    // Hälfte am Atom i: breit unten = bei i
       q2.setFromUnitVectors(up, dir.clone().negate());  // Hälfte am Atom j
       side.set(-dir.y, dir.x, 0).normalize();
       for (let o = 0; o < b.order; o++) {
+        if (n + 2 > CAP_B) break;
         const off = b.order === 2 ? (o === 0 ? 0.13 : -0.13) : 0;
-        const w = b.order === 2 ? 0.1 : 0.16;
-        s.set(w, len / 2, w);
-        c.copy(pos[b.i]).addScaledVector(dir, len / 4).addScaledVector(side, off);
+        const wd = (b.order === 2 ? 0.1 : 0.16) * w;
+        s.set(wd, len / 2, wd);
+        c.copy(pi).addScaledVector(dir, len / 4).addScaledVector(side, off);
         bondMesh.setMatrixAt(n++, m.compose(c, q, s));
-        c.copy(pos[b.j]).addScaledVector(dir, -len / 4).addScaledVector(side, off);
+        c.copy(pj).addScaledVector(dir, -len / 4).addScaledVector(side, off);
         bondMesh.setMatrixAt(n++, m.compose(c, q2, s));
       }
     }
-    atomMesh.instanceMatrix.needsUpdate = true;
-    bondMesh.instanceMatrix.needsUpdate = true;
-    cloudMesh.instanceMatrix.needsUpdate = true;
+    bondMesh.count = n;
+    let r = 0;
+    for (const e of ringPool.values()) {
+      if (r + 2 > CAP_R * 2) break;
+      const f = ease(e.s) + 0.001;
+      s.set(f, f, 1);
+      piMesh.setMatrixAt(r++, m.compose(c.set(e.x, e.y, 0.95), q.identity(), s));
+      piMesh.setMatrixAt(r++, m.compose(c.set(e.x, e.y, -0.95), q, s));
+    }
+    piMesh.count = r;
+    for (const mesh of [atomMesh, cloudMesh, bondMesh, piMesh]) mesh.instanceMatrix.needsUpdate = true;
+    live.C = nC; live.H = nH; live.O = nO; live.hc = nC > 0 ? nH / nC : 0;
+    live.rings = [...ringPool.values()].reduce((n, e) => n + e.s, 0);
   }
 
-  rebuild(ctx.temp);
+  retarget(quant(ctx.temp), true);
+  let shownT = ctx.temp;
+  place(0);
   const camera = new THREE.PerspectiveCamera(40, ctx.aspect, 0.1, 300);
   const level = {
     scene, camera,
@@ -283,20 +390,39 @@ export function create(ctx) {
     home: { pos: new THREE.Vector3(5, 9, 21), target: new THREE.Vector3(0, 0, 0) },
     orbit: { minDistance: 6, maxDistance: 45, enablePan: false, autoRotate: true },
     hotspots: Object.values(hs),
+    liveFacts: true,
+    // Summenformel und H/C zählen live mit (Atome, die einwachsen oder abziehen, zählen anteilig)
     facts: () => [
-      { value: cluster.formula, label: `Summenformel dieses Clusters, ${cluster.nRings} Ringe (ohne K⁺)` },
-      { value: fmt(cluster.hc, 2), label: 'molares H/C dieses Modell-Clusters' },
+      { value: `C${sub(Math.round(live.C))}H${sub(Math.round(live.H))}O${sub(Math.round(live.O))}`, label: `Summenformel dieses Clusters, ${fmt(live.rings)} Ringe (ohne K⁺)` },
+      { value: fmt(live.hc, 2), label: 'molares H/C dieses Modell-Clusters' },
     ],
     update(dt, t) {
       // Lichtführung: Hauptlicht wandert langsam um den Cluster, Gegenlicht pendelt
       key.position.set(6 * Math.cos(t * 0.08) - 8 * Math.sin(t * 0.08) * 0.4, 10, 8 * Math.cos(t * 0.06) + 6 * Math.sin(t * 0.08) * 0.4);
       rim.position.set(-8 + 3 * Math.sin(t * 0.05), -4, -6 + 3 * Math.cos(t * 0.05));
+      const q = quant(shownT);
+      if (q !== builtQ) {
+        retarget(q, reduced);
+        if (reduced) for (const [k, e] of pool) if (e.leaving) pool.delete(k);
+      }
+      step(reduced ? 10 : Math.min(dt, 0.1));
       place(t);
       return true;
     },
     setParam(name, value) {
+      if (name === 'quality') {
+        // Schatten je Stufe: aus (Leicht), 512 px (Mittel), 1024 px (Fein) – Schattenkarte neu anlegen
+        key.castShadow = value.shadows;
+        const size = value.detail >= 1 ? 1024 : 512;
+        if (key.shadow.mapSize.x !== size) {
+          key.shadow.mapSize.set(size, size);
+          if (key.shadow.map) { key.shadow.map.dispose(); key.shadow.map = null; }
+        }
+        level.dirty = true;
+        return;
+      }
       if (name !== 'temp') return;
-      rebuild(value);
+      shownT = value;
       level.dirty = true;
     },
     dispose() {

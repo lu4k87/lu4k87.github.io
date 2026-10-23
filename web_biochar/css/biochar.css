@@ -139,7 +139,28 @@ body.panel-collapsed .panel { display: none; }
 .brand-text { display: flex; flex-direction: column; line-height: 1.15; }
 .brand-text strong { font-size: 19px; font-weight: 600; letter-spacing: 0.02em; }
 .brand-text span { font-size: 14px; }
-.top-actions { display: flex; gap: 8px; }
+.top-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
+/* Qualitäts-Regler: drei Rastpunkte (Leicht · Mittel · Fein), Name daneben, gleiches Glas wie die Knöpfe */
+.quality {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: var(--glass-sheen), var(--glass);
+  color: var(--ink);
+  box-shadow: var(--glass-edge);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  font-size: 15px;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+.quality:hover, .quality:focus-within { border-color: var(--accent); }
+.quality-cap { font: 500 12.5px/1 var(--mono); letter-spacing: 0.06em; text-transform: uppercase; }
+.quality input { width: 78px; height: 18px; margin: 0; accent-color: var(--accent); cursor: pointer; }
+.quality-name { min-width: 6ch; font-weight: 500; white-space: nowrap; }
 
 .btn-ghost, .btn-primary {
   border-radius: 8px;
@@ -578,6 +599,8 @@ body.has-error .fatal, body.no-webgl .fatal { opacity: 1; background: var(--bg);
   .rail-scale { display: none; }
   .rail-name { max-height: none; opacity: 1; font-size: 12px; }
   .brand-text span { display: none; }
+  .quality { padding: 6px 10px; }
+  .quality-cap { display: none; }
   .sem-bar { gap: 12px; padding: 8px 10px; }
   .sem-bar dl div:last-child { display: none; }
   .center-hint { display: none; }

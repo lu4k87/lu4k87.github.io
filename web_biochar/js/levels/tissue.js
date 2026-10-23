@@ -3,10 +3,10 @@
 
 import * as THREE from 'three';
 import { woodTissue, ringY } from '../wood.js';
-import { buildWalls, buildInstances, flakeGeometry, disposeGroup } from '../walls.js';
+import { buildWalls, buildInstances, flakeGeometry, disposeGroup, shrinkScene } from '../walls.js';
 import { semDetector, semMaterial } from '../sem.js';
 import { mulberry32, fbm3 } from '../util.js';
-import { fmt } from '../science.js';
+import { fmt, tissueScale } from '../science.js';
 
 const DEPTH = 160;
 const OPEN_Z = -4;     // mittlere Höhe der Bruchfläche: darunter wird es im REM dunkler
@@ -44,7 +44,8 @@ export function create(ctx) {
 
   const sem = { openZ: OPEN_Z, depth: 34, base: 0.36, edge: 0.5, edgeW: 1.1, noise: 0.45 };
   const scene = new THREE.Scene();
-  scene.add(buildWalls(walls, { ...sem, pits: false }));
+  const wallGroup = buildWalls(walls, { ...sem, pits: false });
+  scene.add(wallGroup);
 
   // Durchbrechungsplatten: schräge Ringleiste (einfach) oder Sprossen (leiterförmig) in einigen Gefäßen, tief im Lumen
   const rims = [], bars = [];
@@ -97,7 +98,25 @@ export function create(ctx) {
   const dv = wood.dive;
   const porosity = wood.porosity(-400, -270, 400, 270);
   const zAt = (x, y) => surfaceZ(x, y) + 1;
-  return {
+  const hotspots = [
+      { id: 'vessels', kind: 'dive', pos: new THREE.Vector3(dv.x, dv.y, zAt(dv.x, dv.y)), normal: new THREE.Vector3(0, 0, 1) },
+      { id: 'ring', kind: 'info', pos: new THREE.Vector3(-270, ringY(-270), zAt(-270, ringY(-270))), normal: new THREE.Vector3(0, 0, 1) },
+      { id: 'ray', kind: 'info', pos: new THREE.Vector3(wood.rayX(wood.broad, -160), -160, zAt(wood.rayX(wood.broad, -160), -160)), normal: new THREE.Vector3(0, 0, 1) },
+      { id: 'porosity', kind: 'info', pos: new THREE.Vector3(300, -150, zAt(300, -150)), normal: new THREE.Vector3(0, 0, 1) },
+  ];
+  const base = hotspots.map((h) => h.pos.clone());
+  // Pyrolyse: die Gewebeprobe schwindet (quer stärker als längs), die Zellwände werden dünner – gleitet mit dem Regler
+  let shownT = ctx.temp, lastT = NaN;
+  function applyTemp() {
+    if (shownT === lastT) return;
+    lastT = shownT;
+    const k = tissueScale(shownT);
+    wallGroup.userData.setThin(k.wall / k.xy);      // die Szenenskalierung trifft die Wand mit; Nettodicke = k.wall
+    shrinkScene(scene, k.xy, k.z);
+    hotspots.forEach((h, i) => h.pos.set(base[i].x * k.xy, base[i].y * k.xy, base[i].z * k.z));
+  }
+  applyTemp();
+  const level = {
     scene, camera,
     unit: 1e-6,
     method: 'REM · Sekundärelektronen (Modell)',
@@ -107,17 +126,17 @@ export function create(ctx) {
     bloom: 0.05,
     home: { pos: new THREE.Vector3(40, -120, 760), target: new THREE.Vector3(0, 0, -20) },
     orbit: { minDistance: 220, maxDistance: 1500, minAzimuthAngle: -0.75, maxAzimuthAngle: 0.75, minPolarAngle: 0.95, maxPolarAngle: 2.2, enablePan: true },
-    hotspots: [
-      { id: 'vessels', kind: 'dive', pos: new THREE.Vector3(dv.x, dv.y, zAt(dv.x, dv.y)), normal: new THREE.Vector3(0, 0, 1) },
-      { id: 'ring', kind: 'info', pos: new THREE.Vector3(-270, ringY(-270), zAt(-270, ringY(-270))), normal: new THREE.Vector3(0, 0, 1) },
-      { id: 'ray', kind: 'info', pos: new THREE.Vector3(wood.rayX(wood.broad, -160), -160, zAt(wood.rayX(wood.broad, -160), -160)), normal: new THREE.Vector3(0, 0, 1) },
-      { id: 'porosity', kind: 'info', pos: new THREE.Vector3(300, -150, zAt(300, -150)), normal: new THREE.Vector3(0, 0, 1) },
-    ],
+    hotspots,
     facts: () => [{ value: `${fmt(porosity * 100)} %`, label: 'Porenanteil dieses Modells (Zelllumen / Fläche)' }],
     update(dt, t) {
       semDetector(t);
+      applyTemp();
       return true;
+    },
+    setParam(name, value) {
+      if (name === 'temp') { shownT = value; level.dirty = true; }
     },
     dispose() { disposeGroup(scene); },
   };
+  return level;
 }

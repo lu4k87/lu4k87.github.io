@@ -179,33 +179,66 @@ const ELEMENT = {
   H: { r: 0.05, color: new THREE.Color(0.95, 0.95, 0.97) },
 };
 
-function generate(T, seed) {
+// Feste Stammliste der Schichtstapel (Lage und Zufallswerte), unabhängig von der Temperatur: Größe, Schichtzahl,
+// Abstand, Krümmung und Ausrichtung sind Funktionen von T und gleiten mit dem Regler (Pyrolyse-Labor).
+// Die Abstände sind so gewählt, dass sich die Stapel auch in der größten Ausbildung (800 °C) nicht durchdringen.
+const sstep = (a, b, x) => { const t = clamp((x - a) / (b - a), 0, 1); return t * t * (3 - 2 * t); };
+function masterUnits(seed) {
   const rand = mulberry32(seed);
-  const ns = nanoStructure(T);
+  const big = nanoStructure(800);
   const units = [];
-  const sheets = [];
-  const target = Math.round(360 - 90 * ns.k);
-  for (let tries = 0; tries < 5000 && units.length < target; tries++) {
+  for (let tries = 0; tries < 6000 && units.length < 330; tries++) {
     const c = new THREE.Vector3((rand() * 2 - 1) * HALF.x, (rand() * 2 - 1) * HALF.y, (rand() * 2 - 1) * HALF.z);
-    const d = clamp(gauss(rand, ns.sheetNm, ns.sheetNm * 0.25), 0.45, 2.6);
-    if (units.some((u) => u.c.distanceTo(c) < 0.38 * (u.d + d) + 0.12)) continue;
-    const n = new THREE.Vector3(gauss(rand), gauss(rand), gauss(rand)).normalize();
-    // bei hoher Temperatur lokal besser ausgerichtet (Domänen)
-    if (ns.k > 0.3) n.lerp(new THREE.Vector3(0.25, 1, 0.1).normalize(), (ns.k - 0.3) * 0.35).normalize();
-    const layers = clamp(Math.round(gauss(rand, ns.layers, 0.7)), 1, 4);
-    const u = { c, d, n, layers };
-    units.push(u);
-    const q = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 0, 1), n);
-    q.multiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 1), rand() * 6.28));
-    for (let k = 0; k < layers; k++) {
-      const off = (k - (layers - 1) / 2) * ns.d002 * (1 + (rand() - 0.5) * 0.08);
-      sheets.push({
-        pos: c.clone().addScaledVector(n, off), q: q.clone().multiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 1), (rand() - 0.5) * 0.5)),
-        d: d * (0.85 + rand() * 0.3), curv: ns.curvature * (0.5 + rand()), shape: rand() < 0.5 ? -1 : 1, seed: rand(), unit: u,
+    const z = gauss(rand);
+    const dMax = clamp(big.sheetNm * (1 + 0.25 * z), 0.45, 2.6);
+    if (units.some((u) => u.c.distanceTo(c) < 0.38 * (u.dMax + dMax) + 0.12)) continue;
+    const u = {
+      c, z, dMax, n0: new THREE.Vector3(gauss(rand), gauss(rand), gauss(rand)).normalize(), spin: rand() * 6.28,
+      zl: gauss(rand), slots: [],
+    };
+    for (let k = 0; k < 4; k++) {
+      u.slots.push({
+        jit: 1 + (rand() - 0.5) * 0.08, tilt: (rand() - 0.5) * 0.5, dRand: 0.85 + rand() * 0.3,
+        curv: 0.5 + rand(), shape: rand() < 0.5 ? -1 : 1, seed: rand(),
       });
     }
+    units.push(u);
   }
-  return { ns, units, sheets };
+  return units;
+}
+
+const ALIGN = new THREE.Vector3(0.25, 1, 0.1).normalize();
+const Z_AXIS = new THREE.Vector3(0, 0, 1);
+const _q = new THREE.Quaternion(), _qs = new THREE.Quaternion(), _n = new THREE.Vector3();
+// Sichtbare Schichten bei der Temperatur T (gleitende Werte); Schichten ohne Gewicht entfallen.
+// Unter ≈ 300 °C gibt es noch keine aromatischen Schichten (Lignozellulose), sie wachsen zwischen 280 und 380 °C heran.
+function sheetsAt(units, T) {
+  const ns = nanoStructure(T);
+  const born = sstep(280, 380, T);
+  const sheets = [], vis = [];
+  if (born <= 0) return { ns, sheets, vis };
+  for (const u of units) {
+    const d = clamp(ns.sheetNm * (1 + 0.25 * u.z), 0.45, 2.6) * born;
+    _n.copy(u.n0);
+    if (ns.k > 0.3) _n.lerp(ALIGN, (ns.k - 0.3) * 0.35).normalize();
+    _q.setFromUnitVectors(Z_AXIS, _n).multiply(_qs.setFromAxisAngle(Z_AXIS, u.spin));
+    const Lf = ns.layers + 0.7 * u.zl;
+    const w = u.slots.map((_, k) => (k === 0 ? 1 : sstep(k + 0.2, k + 0.8, Lf)));
+    const leff = w.reduce((a, b) => a + b, 0);
+    let layers = 0;
+    u.slots.forEach((sl, k) => {
+      if (w[k] <= 0.01) return;
+      layers++;
+      const off = (k - (leff - 1) / 2) * ns.d002 * sl.jit;
+      sheets.push({
+        pos: u.c.clone().addScaledVector(_n, off),
+        q: _q.clone().multiply(new THREE.Quaternion().setFromAxisAngle(Z_AXIS, sl.tilt)),
+        d: d * sl.dRand * w[k], curv: ns.curvature * sl.curv, shape: sl.shape, seed: sl.seed,
+      });
+    });
+    vis.push({ c: u.c, d, n: _n.clone(), layers, ref: u });
+  }
+  return { ns, sheets, vis };
 }
 
 // Abstand eines Punktes zur nächsten Schicht (Scheibe mit Radius R); Schichten als Zahlenfelder für Tempo
@@ -273,12 +306,17 @@ export function create(ctx) {
     });
   }
   const atomCount = mols.reduce((n, m) => n + MOLECULES[m.kind].length, 0);
-  const atomMesh = new THREE.InstancedMesh(new THREE.SphereGeometry(1, 18, 12), new THREE.MeshStandardMaterial({ roughness: 0.35 }), atomCount);
+  // Abgespaltene Gase (CO₂, H₂O) verlassen beim Aufheizen das Gefüge: Pool, der hinter den Gasmolekülen im selben Mesh liegt
+  const ESC = 28, escKinds = ['co2', 'h2o'];
+  const escapes = Array.from({ length: ESC }, () => ({ kind: 'co2', life: 0, pos: new THREE.Vector3(), vel: new THREE.Vector3(), q: new THREE.Quaternion(), spin: new THREE.Vector3() }));
+  const atomMesh = new THREE.InstancedMesh(new THREE.SphereGeometry(1, 18, 12), new THREE.MeshStandardMaterial({ roughness: 0.35 }), atomCount + ESC * 3);
   {
     let i = 0;
     for (const m of mols) for (const [el] of MOLECULES[m.kind]) atomMesh.setColorAt(i++, ELEMENT[el].color);
+    for (let k = 0; k < ESC * 3; k++) atomMesh.setColorAt(i++, ELEMENT.C.color);
   }
   scene.add(atomMesh);
+  const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   const hs = {
     sheet: { id: 'sheet', kind: 'dive', pos: new THREE.Vector3(), normal: new THREE.Vector3() },
@@ -291,30 +329,45 @@ export function create(ctx) {
   const camera = new THREE.PerspectiveCamera(45, ctx.aspect, 0.05, 200);
   const homePos = new THREE.Vector3(1.2, 1.6, 13);
 
+  const units = masterUnits(1234);
+  const CAP = units.length * 4;
+  const sheetAttr = new THREE.InstancedBufferAttribute(new Float32Array(CAP * 4), 4);
+  sheetAttr.setUsage(THREE.DynamicDrawUsage);
+  geo.setAttribute('aSheet', sheetAttr);
+  const lines = new THREE.InstancedMesh(geo, lineMat, CAP);
+  const fill = new THREE.InstancedMesh(geo, fillMat, CAP);
+  fill.instanceMatrix = lines.instanceMatrix;
+  lines.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+  lines.frustumCulled = fill.frustumCulled = false;
+  group.add(lines, fill);
+  const _m = new THREE.Matrix4(), _sc = new THREE.Vector3();
+  let shownT = ctx.temp, builtT = NaN, searchedT = NaN, prevT = ctx.temp, emitCredit = 0;
+
+  // Schichten für die gezeigte Temperatur setzen; Hotspots und Mikropore nur alle ≈ 12 °C neu suchen (teuer)
   function rebuild(T) {
-    for (const c of [...group.children]) { group.remove(c); }
-    model = generate(T, 1234);
+    builtT = T;
+    model = sheetsAt(units, T);
     const { sheets } = model;
-    const data = new Float32Array(sheets.length * 4);
-    const lines = new THREE.InstancedMesh(geo, lineMat, sheets.length);
-    const m = new THREE.Matrix4();
-    sheets.forEach((s, k) => {
-      lines.setMatrixAt(k, m.compose(s.pos, s.q, new THREE.Vector3(s.d, s.d, s.d)));
-      data.set([s.curv, s.shape, s.d, s.seed], k * 4);
+    sheets.forEach((sh, k) => {
+      lines.setMatrixAt(k, _m.compose(sh.pos, sh.q, _sc.setScalar(sh.d)));
+      sheetAttr.array.set([sh.curv, sh.shape, sh.d, sh.seed], k * 4);
     });
-    geo.setAttribute('aSheet', new THREE.InstancedBufferAttribute(data, 4));
-    const fill = new THREE.InstancedMesh(geo, fillMat, sheets.length);
-    fill.instanceMatrix = lines.instanceMatrix;
-    group.add(lines, fill);
+    lines.count = fill.count = sheets.length;
+    lines.instanceMatrix.needsUpdate = true;
+    sheetAttr.needsUpdate = true;
+    if (!sheets.length) { probe.visible = false; return; }
+    if (Math.abs(T - searchedT) < 12) return;
+    searchedT = T;
+    probe.visible = true;
 
     // Hotspots: großer Cluster nahe der Mitte (Tauchziel), dicker Stapel, größte leere Kugel, ein CO2-Molekül
     const near = (u) => u.c.length() + Math.abs(u.c.z - 1.5) * 0.3;
-    const big = model.units.filter((u) => u.d >= model.ns.sheetNm).sort((a, b) => near(a) - near(b))[0] || model.units[0];
-    const nrm = big.n.clone();
-    if (nrm.dot(homePos.clone().sub(big.c)) < 0) nrm.negate();
-    hs.sheet.pos.copy(big.c).addScaledVector(nrm, 0.25);
+    const bigU = model.vis.filter((u) => u.d >= model.ns.sheetNm).sort((a, b) => near(a) - near(b))[0] || model.vis[0];
+    const nrm = bigU.n.clone();
+    if (nrm.dot(homePos.clone().sub(bigU.c)) < 0) nrm.negate();
+    hs.sheet.pos.copy(bigU.c).addScaledVector(nrm, 0.25);
     hs.sheet.normal.copy(nrm);
-    const stack = model.units.filter((u) => u.layers >= 2 && u !== big).sort((a, b) => a.c.distanceTo(new THREE.Vector3(-2.5, 1, 1)) - b.c.distanceTo(new THREE.Vector3(-2.5, 1, 1)))[0] || big;
+    const stack = model.vis.filter((u) => u.layers >= 2 && u !== bigU).sort((a, b) => a.c.distanceTo(new THREE.Vector3(-2.5, 1, 1)) - b.c.distanceTo(new THREE.Vector3(-2.5, 1, 1)))[0] || bigU;
     hs.stack.pos.copy(stack.c);
     const r = mulberry32(99);
     const table = sheetTable(sheets);
@@ -354,8 +407,48 @@ export function create(ctx) {
     hs.gas.pos.copy(mols[0].pos);
   }
 
+  // Abgespaltene Moleküle: starten am Rand einer Schicht, fliegen nach außen, blenden am Ende aus (Farben je Element)
+  const ESC_LIFE = 4.5;
+  function spawnEscape() {
+    const e = escapes.find((x) => x.life <= 0);
+    if (!e || !model.sheets.length) return;
+    const sh = model.sheets[Math.floor(rand() * model.sheets.length)];
+    e.kind = escKinds[rand() < 0.55 ? 0 : 1];
+    e.life = ESC_LIFE;
+    e.pos.copy(sh.pos).add(new THREE.Vector3(gauss(rand), gauss(rand), gauss(rand)).multiplyScalar(sh.d * 0.2));
+    e.vel.copy(e.pos).normalize().add(new THREE.Vector3(gauss(rand), gauss(rand), gauss(rand)).multiplyScalar(0.35)).multiplyScalar(0.7 + rand() * 0.7);
+    e.q.setFromEuler(new THREE.Euler(rand() * 6, rand() * 6, rand() * 6));
+    e.spin.set(gauss(rand), gauss(rand), gauss(rand)).multiplyScalar(1.5);
+  }
+  const _col = new THREE.Color();
+  function placeEscapes(dt) {
+    const m = new THREE.Matrix4(), s = new THREE.Vector3(), q = new THREE.Quaternion(), p = new THREE.Vector3();
+    let i = atomCount;
+    for (const e of escapes) {
+      const mol = MOLECULES[e.kind];
+      if (e.life > 0 && dt > 0) {
+        e.life -= dt;
+        e.pos.addScaledVector(e.vel, dt);
+        e.q.multiply(q.setFromEuler(new THREE.Euler(e.spin.x * dt, e.spin.y * dt, e.spin.z * dt)));
+      }
+      const fade = e.life > 0 ? Math.min(1, (ESC_LIFE - e.life) / 0.4, e.life / 1.2) : 0;
+      for (let k = 0; k < 3; k++) {
+        if (k < mol.length && fade > 0) {
+          const [el, x, y, z] = mol[k];
+          p.set(x, y, z).applyQuaternion(e.q).add(e.pos);
+          s.setScalar(ELEMENT[el].r * fade);
+          atomMesh.setColorAt(i, _col.copy(ELEMENT[el].color));
+        } else { p.set(0, 0, 0); s.setScalar(0); }
+        atomMesh.setMatrixAt(i++, m.compose(p, q.identity(), s));
+      }
+    }
+    atomMesh.instanceMatrix.needsUpdate = true;
+    atomMesh.instanceColor.needsUpdate = true;
+  }
+
   rebuild(ctx.temp);
   placeMolecules(0);
+  placeEscapes(0);
   const level = {
     scene, camera,
     unit: 1e-9,
@@ -367,8 +460,9 @@ export function create(ctx) {
     home: { pos: homePos, target: new THREE.Vector3(0, 0, 0) },
     orbit: { minDistance: 3, maxDistance: 26, enablePan: false, autoRotate: false },
     hotspots: [hs.sheet, hs.stack, hs.micropore, hs.gas],
+    liveFacts: true,
     facts: () => [
-      { value: `≈ ${fmt(model.ns.sheetNm, 1)} nm · ${fmt(model.ns.layers, 1)}`, label: 'mittlere Schichtgröße · Schichten je Stapel (Modell)' },
+      { value: `≈ ${fmt(model.ns.sheetNm * sstep(280, 380, shownT), 1)} nm · ${fmt(model.ns.layers, 1)}`, label: 'mittlere Schichtgröße · Schichten je Stapel (Modell)' },
       { value: `${fmt(poreD, 1)} nm`, label: 'Durchmesser der markierten Mikropore' },
     ],
     update(dt, t) {
@@ -377,12 +471,21 @@ export function create(ctx) {
       uniforms.uLight.value.set(0.4 + 0.35 * Math.sin(t * 0.09), 0.8, 0.45 + 0.35 * Math.cos(t * 0.07)).normalize();
       key.position.set(4 + 3 * Math.sin(t * 0.09), 8, 6 + 3 * Math.cos(t * 0.07));
       rimL.position.set(-6 * Math.cos(t * 0.05), -2, -7 * Math.sin(t * 0.05 + 1));
+      // Aufheizen setzt Gase frei (≈ 1 Molekül je 12 °C zwischen 150 und 800 °C)
+      const dT = shownT - prevT;
+      prevT = shownT;
+      if (shownT !== builtT) rebuild(shownT);
+      if (dT > 0 && dT < 200 && shownT > 150 && !reducedMotion) {
+        emitCredit = Math.min(emitCredit + dT / 12, 6);
+        while (emitCredit >= 1) { emitCredit--; spawnEscape(); }
+      }
       placeMolecules(dt);
+      placeEscapes(dt);
       return true;
     },
     setParam(name, value) {
       if (name !== 'temp') return;
-      rebuild(value);
+      shownT = value;
       level.dirty = true;
     },
     dispose() {

@@ -3,9 +3,10 @@
 
 import * as THREE from 'three';
 import { woodTissue } from '../wood.js';
-import { buildWalls, buildInstances, flakeGeometry, disposeGroup } from '../walls.js';
+import { buildWalls, buildInstances, flakeGeometry, disposeGroup, shrinkScene } from '../walls.js';
 import { semDetector } from '../sem.js';
 import { mulberry32, fbm3, smoothstep } from '../util.js';
+import { tissueScale } from '../science.js';
 
 const LZ = 340;
 
@@ -45,7 +46,8 @@ export function create(ctx) {
 
   const sem = { openZ: 0, openX: XC, depth: 26, base: 0.38, edge: 0.55, edgeW: 0.45, noise: 0.9 };
   const scene = new THREE.Scene();
-  scene.add(buildWalls(walls, sem));
+  const wallGroup = buildWalls(walls, sem);
+  scene.add(wallGroup);
 
   // Splitter in den längs geöffneten Röhren und in Gefäßen nahe der Bruchkante
   const flakes = [];
@@ -111,7 +113,19 @@ export function create(ctx) {
   if (ray && Math.hypot(ray.x - cx, ray.y - cy) < 150) hotspots.push({ id: 'ray', kind: 'info', pos: new THREE.Vector3(ray.x, ray.y, 0), normal: new THREE.Vector3(0, 0, 1) });
 
   const camera = new THREE.PerspectiveCamera(35, ctx.aspect, 1, 4000);
-  return {
+  const base = hotspots.map((h) => h.pos.clone());
+  // Pyrolyse: Schwindung (quer stärker als längs) und dünnere Zellwände, gleitet mit dem Regler
+  let shownT = ctx.temp, lastT = NaN;
+  function applyTemp() {
+    if (shownT === lastT) return;
+    lastT = shownT;
+    const k = tissueScale(shownT);
+    wallGroup.userData.setThin(k.wall / k.xy);
+    shrinkScene(scene, k.xy, k.z);
+    hotspots.forEach((h, i) => h.pos.set(base[i].x * k.xy, base[i].y * k.xy, base[i].z * k.z));
+  }
+  applyTemp();
+  const level = {
     scene, camera,
     unit: 1e-6,
     method: 'REM · Sekundärelektronen (Modell)',
@@ -124,8 +138,13 @@ export function create(ctx) {
     hotspots,
     update(dt, t) {
       semDetector(t);
+      applyTemp();
       return true;
+    },
+    setParam(name, value) {
+      if (name === 'temp') { shownT = value; level.dirty = true; }
     },
     dispose() { disposeGroup(scene); },
   };
+  return level;
 }

@@ -149,3 +149,15 @@ export function labProps(t) {
     wood: true,
   };
 }
+
+// Schwindung und Wanddicke für die Gewebe-Ebenen, relativ zum Ausgangsbild bei 550 °C (Modell):
+// xy quer zur Faser, z längs, wall = Wanddicke im Verhältnis (Masseverlust macht die Wand dünner, Anteil ≈ 12 %)
+const WALL_REF = (m) => 0.88 + 0.12 * (m - 23) / 77;
+export function tissueScale(t) {
+  const s = pyroState(t), r = pyroState(550);
+  return {
+    xy: (1 - s.shrinkT) / (1 - r.shrinkT),
+    z: (1 - s.shrinkL) / (1 - r.shrinkL),
+    wall: WALL_REF(s.mass) / WALL_REF(r.mass),
+  };
+}

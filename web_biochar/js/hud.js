@@ -291,6 +291,22 @@ export function createHud(handlers) {
     }
   }
 
+  // Kennzahlen mit lebenden Werten (Summenformel, Schichtgröße …) fortlaufend nachführen: nur Texte tauschen, kein Neuaufbau
+  let factsAcc = 0;
+  function tickFacts(dt) {
+    factsAcc += dt;
+    if (factsAcc < 0.2 || !level || !level.liveFacts || !lastState) return;
+    factsAcc = 0;
+    const els = panel.querySelectorAll('.facts .fact');
+    const l = LEVELS[current];
+    const list = [...l.facts, ...level.facts()];
+    list.forEach((f, i) => {
+      const v = els[i] && els[i].querySelector('.fact-value'), lab = els[i] && els[i].querySelector('.fact-label');
+      if (v && v.textContent !== f.value) v.textContent = f.value;
+      if (lab && lab.textContent !== f.label) lab.textContent = f.label;
+    });
+  }
+
   function refreshFacts() {
     if (!lastState || !level) return;
     const box = panel.querySelector('.facts');
@@ -377,6 +393,7 @@ export function createHud(handlers) {
       if (d) d.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
     },
     refreshFacts,
+    tickFacts,
     setLive,
     hideMarkers(hidden) {
       layer.classList.toggle('is-hidden', hidden);

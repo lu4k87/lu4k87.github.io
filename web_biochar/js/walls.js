@@ -18,6 +18,7 @@ export function buildWalls(walls, semOpts) {
   const z = new THREE.Vector3(0, 0, 1);
 
   const joints = new Map();
+  const geo = [];    // Lage jeder Wandplatte, damit setThin die Dicke später neu setzen kann
   walls.forEach((w, k) => {
     const dx = w.b[0] - w.a[0], dy = w.b[1] - w.a[1];
     const len = Math.hypot(dx, dy);
@@ -25,6 +26,7 @@ export function buildWalls(walls, semOpts) {
     q.setFromAxisAngle(z, Math.atan2(dy, dx));
     s.set(len, w.t, w.z1 - w.z0);
     mesh.setMatrixAt(k, m.compose(p, q, s));
+    geo.push({ p: p.clone(), q: q.clone(), s: s.clone() });
     data[k * 4] = w.kind;
     data[k * 4 + 1] = w.seed;
     data[k * 4 + 2] = w.late || 0;
@@ -45,17 +47,35 @@ export function buildWalls(walls, semOpts) {
   const jointMat = semMaterial({ ...semOpts, joint: true });
   const list = [...joints.values()];
   const jm = new THREE.InstancedMesh(prism, jointMat, list.length);
-  list.forEach((j, k) => {
-    p.set(j.p[0], j.p[1], (j.z0 + j.z1) / 2);
-    q.identity();
-    s.set(j.t * 0.56, j.t * 0.56, j.z1 - j.z0);
-    jm.setMatrixAt(k, m.compose(p, q, s));
-  });
-  jm.instanceMatrix.needsUpdate = true;
+  const jgeo = list.map((j) => ({ p: new THREE.Vector3(j.p[0], j.p[1], (j.z0 + j.z1) / 2), t: j.t * 0.56, h: j.z1 - j.z0 }));
+  const setThin = (f) => {
+    geo.forEach((g, k) => mesh.setMatrixAt(k, m.compose(g.p, g.q, s.set(g.s.x, g.s.y * f, g.s.z))));
+    jgeo.forEach((j, k) => jm.setMatrixAt(k, m.compose(j.p, q.identity(), s.set(j.t * f, j.t * f, j.h))));
+    mesh.instanceMatrix.needsUpdate = true;
+    jm.instanceMatrix.needsUpdate = true;
+  };
+  setThin(1);
   group.add(jm);
 
   group.userData.materials = [wallMat, jointMat];
+  group.userData.setThin = setThin;       // Wanddicke relativ zur Ausgangsdicke (Pyrolyse: Masseverlust)
   return group;
+}
+
+// Schwindung der ganzen REM-Szene: skaliert die Szene und führt die Welt-Ebenen der Bruchfläche (uOpenZ/uOpenX)
+// mit, damit die Tiefenabdunklung an der Fläche bleibt. xy quer zur Faser, z längs.
+export function shrinkScene(scene, xy, z) {
+  scene.scale.set(xy, xy, z);
+  scene.traverse((o) => {
+    const mats = o.material ? (Array.isArray(o.material) ? o.material : [o.material]) : [];
+    for (const mat of mats) {
+      const u = mat.uniforms;
+      if (!u || !u.uOpenZ) continue;
+      mat.userData.open ??= [u.uOpenZ.value, u.uOpenX.value];
+      u.uOpenZ.value = mat.userData.open[0] * z;
+      u.uOpenX.value = mat.userData.open[1] * xy;
+    }
+  });
 }
 
 // Beliebige Teile als Instanzen im REM-Look: list = [{ p: [x, y, z], s: [sx, sy, sz], r: [rx, ry, rz] }]

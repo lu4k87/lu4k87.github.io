@@ -22,7 +22,12 @@ const GROW = { from: 1, dur: 22 }, SPORE = { from: 23, step: 2.2, dur: 2.5 }, RO
 const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const smooth01 = (x) => { x = Math.min(1, Math.max(0, x)); return x * x * (3 - 2 * x); };
 // Temperatur → Rissbreite und Aschemenge (Modell, 550 °C = Ausgangsbild): heißer verkohlt schrumpft die Wand stärker
-const tempK = (T) => (Math.min(T_MAX, Math.max(T_MIN, T)) - 550) / (T_MAX - T_MIN);
+// Unter 350 °C (Zeitraffer) schließen sich die Risse wieder: die Wand ist noch intakt (Holz), die Asche noch nicht kristallin
+const tempK = (T) => {
+  if (T >= T_MIN) return (Math.min(T_MAX, T) - 550) / (T_MAX - T_MIN);
+  const w = Math.min(1, Math.max(0, (T - 250) / (T_MIN - 250)));
+  return -1 + (1 - (550 - T_MIN) / (T_MAX - T_MIN)) * w * w * (3 - 2 * w);
+};
 
 const topY = (s) => 6.5 + 4.4 * (fbm3(s * 0.12 + 4, 1.3, 0.7, 3) - 0.5) + 0.9 * (fbm3(s * 0.9, 7.1, 2.2, 2) - 0.5);
 const surf = (s, y, r) => new THREE.Vector3(r * Math.sin(s / R), y, -r * Math.cos(s / R));
