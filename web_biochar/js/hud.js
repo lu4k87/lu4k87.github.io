@@ -1,5 +1,5 @@
 // Bedienoberfläche über der 3D-Szene: Zoom-Schiene (vertikal, log-Skala, ziehbar), Infotafel, Hotspots mit
-// Leitlinien, REM-Datenleiste, Regler. Bildsprache: Hexagon-Badge + Leitlinie zum Objekt (Infografik-Vorlage).
+// Info-Karte, REM-Datenleiste, Regler. Bildsprache: Hexagon-Badge direkt neben dem Objekt, beim Klick eine Karte links davon.
 
 import { LEVELS, SOURCES } from './content.js';
 import { properties, labProps, pyroState, fmt, T_MIN, T_MAX, T_ROOM, DRAPER } from './science.js';
@@ -7,7 +7,6 @@ import { hexBadge, LEVEL_ICONS, HOTSPOT_ICONS, FACT_ICONS } from './icons.js';
 
 const $ = (sel) => document.querySelector(sel);
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
-const SVG_NS = 'http://www.w3.org/2000/svg';
 
 // Zoom-Schiene: Bildbreite in Metern, logarithmisch von 20 cm (oben) bis 0,5 nm (unten)
 const SCALE_M = { piece: 4e-2, tissue: 1e-3, cells: 2e-4, wall: 2.5e-5, meso: 3e-7, micro: 1e-8, atoms: 2e-9 };
@@ -20,7 +19,10 @@ export function createHud(handlers) {
   const rail = $('#ladder');
   const panel = $('#panel-body');
   const layer = $('#hotspots');
-  const leaders = $('#leaders');
+  // Info-Karte: erscheint beim Klick links neben dem gewählten Abzeichen und folgt ihm (eine Karte, je Auswahl neu gefüllt)
+  const card = document.createElement('aside');
+  card.className = 'hs-card';
+  card.setAttribute('aria-live', 'polite');
   const meter = $('#edge-meter');
   const stage = $('#pyro-stage');   // Einblendung in der 3D-Ansicht (Temperatur, Phase, Gase), Texte aus science.js
   stage.innerHTML = `${hexBadge('thermo', 'hex--hs')}<span class="ps-T" id="ps-T"></span>` +
@@ -256,21 +258,10 @@ export function createHud(handlers) {
     const icons = HOTSPOT_ICONS[l.id] || {};
     const shown = state.pyro ? state.pyro.shown : state.temp, playing = !!(state.pyro && state.pyro.playing);
     const refs = l.refs.map((r) => `<a href="#quelle-${r}">[${r}]</a>`).join(' ');
-    let detail = '';
-    if (selected) {
-      const h = l.hotspots[selected.id];
-      detail = `
-        <section class="detail" aria-live="polite">
-          <h2>${hexBadge(icons[selected.id], 'hex--mini')}${esc(h.title)}</h2>
-          <p>${esc(h.text)}</p>
-          ${selected.kind === 'dive' ? '<button type="button" class="btn-primary" id="btn-dive">Hineinzoomen ↓</button>' : ''}
-        </section>`;
-    }
     panel.innerHTML = `
-      <p class="eyebrow">Ebene ${current + 1} von ${LEVELS.length} · Größenordnung ${esc(l.scale)}</p>
+      <p class="eyebrow">Ebene ${current + 1} von ${LEVELS.length} · Buche (Fagus sylvatica) · Größenordnung ${esc(l.scale)}</p>
       <h1>${esc(l.title)}</h1>
       <p class="lead">${esc(l.lead)}</p>
-      ${detail}
       <section>
         <h2 class="sub">Entdecken</h2>
         <ul class="explore">${hsList.map((h) => `
@@ -305,8 +296,6 @@ export function createHud(handlers) {
       </section>`;
 
     panel.querySelectorAll('button[data-hs]').forEach((b) => b.addEventListener('click', () => handlers.onHotspot(b.dataset.hs)));
-    const dive = panel.querySelector('#btn-dive');
-    if (dive) dive.addEventListener('click', () => handlers.onDive(selected.id));
     const temp = panel.querySelector('#in-temp');
     temp.addEventListener('input', () => {
       panel.querySelector('#out-temp').textContent = `${fmt(+temp.value)} °C`;
@@ -347,11 +336,12 @@ export function createHud(handlers) {
     if (box) box.outerHTML = facts([...l.facts, ...(level.facts ? level.facts() : [])], l.id);
   }
 
-  // ---------- Hotspots: Punkt, Leitlinie, Abzeichen ----------
+  // ---------- Hotspots: Punkt am Objekt, Abzeichen direkt daneben, Info-Karte links vom Abzeichen ----------
   function buildMarkers() {
     const l = LEVELS[current];
     const icons = HOTSPOT_ICONS[l.id] || {};
-    for (const m of markers) { m.el.remove(); m.dot.remove(); m.path.remove(); }
+    for (const m of markers) { m.el.remove(); m.dot.remove(); }
+    if (!card.parentNode) layer.appendChild(card);
     markers = level.hotspots.map((h, i) => {
       const dot = document.createElement('button');
       dot.type = 'button';
@@ -364,17 +354,55 @@ export function createHud(handlers) {
       el.innerHTML = `${hexBadge(icons[h.id], 'hex--hs')}<span class="hsb-label">${esc(l.hotspots[h.id].title)}${h.kind === 'dive' ? '<span class="tag">tiefer</span>' : ''}</span>`;
       el.setAttribute('aria-label', `${l.hotspots[h.id].title}${h.kind === 'dive' ? ' – hineinzoomen' : ''}`);
       el.addEventListener('click', () => handlers.onHotspot(h.id, true));
-      const path = document.createElementNS(SVG_NS, 'path');
-      path.setAttribute('class', `leader${h.kind === 'dive' ? ' leader--dive' : ''}`);
-      path.setAttribute('pathLength', '1');
-      // Reihenfolge beim Erscheinen: Punkt → Linie zeichnet sich → Abzeichen, gestaffelt je Hotspot
+      // Reihenfolge beim Erscheinen: Punkt → Abzeichen, gestaffelt je Hotspot
       dot.style.transitionDelay = `${i * 90}ms`;
-      path.style.transitionDelay = `${i * 90 + 120}ms`;
-      el.style.transitionDelay = `${i * 90 + 420}ms`;
+      el.style.transitionDelay = `${i * 90 + 200}ms`;
       layer.append(dot, el);
-      leaders.appendChild(path);
-      return { h, el, dot, path, x: NaN, y: NaN, w: 0, hgt: 0 };
+      return { h, el, dot, x: NaN, y: NaN, w: 0, hgt: 0 };
     });
+  }
+
+  function closeCard() {
+    selected = null;
+    card.classList.remove('is-open');
+    markers.forEach((m) => m.el.classList.remove('is-active'));
+    panel.querySelectorAll('button[data-hs].is-active').forEach((b) => b.classList.remove('is-active'));
+  }
+
+  // Karte füllen: Titel mit Abzeichen, Text, bei Tauchzielen der Knopf zum Hineinzoomen; jede Füllung blendet neu ein
+  function fillCard() {
+    if (!selected) { card.classList.remove('is-open'); return; }
+    const l = LEVELS[current], h = l.hotspots[selected.id], icons = HOTSPOT_ICONS[l.id] || {};
+    card.innerHTML = `<div class="hs-card-in">
+      <h2>${hexBadge(icons[selected.id], 'hex--mini')}<span>${esc(h.title)}</span>${selected.kind === 'dive' ? '<span class="tag">tiefer</span>' : ''}</h2>
+      <p>${esc(h.text)}</p>
+      <div class="hs-card-foot">
+        ${selected.kind === 'dive' ? '<button type="button" class="btn-primary" id="btn-dive">Hineinzoomen ↓</button>' : ''}
+        <button type="button" class="hs-card-close">Schließen</button>
+      </div></div>`;
+    const dive = card.querySelector('#btn-dive');
+    if (dive) dive.addEventListener('click', () => handlers.onDive(selected.id));
+    card.querySelector('.hs-card-close').addEventListener('click', closeCard);
+    card.classList.remove('is-away');
+    card.classList.add('is-open');
+  }
+
+  // Karte links vom Punkt und vom gewählten Abzeichen (12 px Abstand), vertikal mittig, im freien Bereich gehalten;
+  // reicht der Platz links nicht für 220 px (schmales Fenster), steht sie unter dem Abzeichen
+  function placeCard(items, rect, width, height) {
+    if (!selected) return;
+    const m = items.find((x) => x.h.id === selected.id);
+    card.classList.toggle('is-away', !m);
+    if (!m) return;
+    const edge = Math.min(m.ax, m.x - m.w / 2) - 12;
+    const avail = edge - rect.x0;
+    const below = avail < 220;
+    card.style.width = below ? '' : `${Math.min(340, avail)}px`;
+    const cw = card.offsetWidth, ch = card.offsetHeight;
+    // im schmalen Fenster darf die Karte über die Tafel ragen (Fensterhöhe statt Bühne)
+    const x = below ? Math.min(Math.max(8, m.x - cw / 2), width - cw - 8) : edge - cw;
+    const y = below ? Math.max(8, Math.min(m.y + m.hgt / 2 + 10, height - ch - 8)) : Math.min(Math.max(m.y - ch / 2, rect.y0), Math.max(rect.y0, rect.y1 - ch));
+    card.style.transform = `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px)`;
   }
 
   // freier Bereich zwischen Schiene, Tafel, Kopf- und Fußleiste
@@ -411,6 +439,7 @@ export function createHud(handlers) {
       panel.classList.add('is-entering');
       panel.scrollTop = 0;
       buildMarkers();
+      fillCard();
     },
     setRailRange(hfwMin, hfwMax) {
       railLimits = { min: hfwMin, max: hfwMax };
@@ -419,12 +448,13 @@ export function createHud(handlers) {
       range.style.setProperty('--y1', `${(y1 * 100).toFixed(2)}%`);
     },
     select(id, state) {
-      selected = level.hotspots.find((h) => h.id === id) || null;
       lastState = state;
-      render(state);
-      markers.forEach((m) => m.el.classList.toggle('is-active', selected && m.h.id === id));
-      const d = panel.querySelector('.detail');
-      if (d) d.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+      const next = level.hotspots.find((h) => h.id === id) || null;
+      if (!next || (selected && selected.id === next.id)) { closeCard(); return; }   // zweiter Klick schließt die Karte
+      selected = next;
+      fillCard();
+      markers.forEach((m) => m.el.classList.toggle('is-active', m.h.id === id));
+      panel.querySelectorAll('button[data-hs]').forEach((b) => b.classList.toggle('is-active', b.dataset.hs === id));
     },
     refreshFacts,
     tickFacts,
@@ -433,10 +463,9 @@ export function createHud(handlers) {
       layer.classList.toggle('is-hidden', hidden);
     },
     updateMarkers(camera, width, height) {
-      leaders.setAttribute('viewBox', `0 0 ${width} ${height}`);
       const v = camera.position.clone();
       const rect = stageRect(width);
-      const reach = width <= 860 ? 64 : 112;
+      const GAP = 14;   // Abstand Punkt → Abzeichen
       const items = [];
       for (const m of markers) {
         const p = m.h.pos.clone().project(camera);
@@ -444,26 +473,20 @@ export function createHud(handlers) {
         if (visible && m.h.normal) visible = m.h.normal.dot(v.clone().sub(m.h.pos)) > 0;
         m.el.classList.toggle('is-off', !visible);
         m.dot.classList.toggle('is-off', !visible);
-        m.path.classList.toggle('is-off', !visible);
         if (!visible) continue;
         m.ax = ((p.x + 1) / 2) * width;
         m.ay = ((1 - p.y) / 2) * height;
         if (!m.w) { m.w = m.el.offsetWidth; m.hgt = m.el.offsetHeight; }
         items.push(m);
       }
-      if (!items.length) return;
-      // Abzeichen vom Schwerpunkt der Punkte weg nach außen setzen, dann sanft entzerren und im freien Bereich halten
-      const cx = items.reduce((s, m) => s + m.ax, 0) / items.length;
-      const cy = items.reduce((s, m) => s + m.ay, 0) / items.length;
-      items.forEach((m, i) => {
-        let dx = m.ax - cx, dy = m.ay - cy;
-        const len = Math.hypot(dx, dy);
-        if (len < 1) { dx = i % 2 ? -1 : 1; dy = -0.7; } else { dx /= len; dy /= len; }
-        dy -= 0.25;
-        const n = Math.hypot(dx, dy);
-        m.tx = m.ax + (dx / n) * reach;
-        m.ty = m.ay + (dy / n) * reach;
-      });
+      if (!items.length) { card.classList.add('is-away'); return; }
+      // Abzeichen direkt neben den Punkt: links davon (rechts, wenn links kein Platz), dann sanft entzerren und im freien Bereich halten
+      for (const m of items) {
+        const leftFits = m.ax - GAP - m.w >= rect.x0;
+        const right = !leftFits || (selected && m.h.id === selected.id);   // gewähltes Abzeichen rechts vom Punkt: links bleibt Platz für die Karte
+        m.tx = right ? m.ax + GAP + m.w / 2 : m.ax - GAP - m.w / 2;
+        m.ty = m.ay;
+      }
       for (let it = 0; it < 6; it++) {
         for (const m of items) {
           m.tx = Math.min(Math.max(m.tx, rect.x0 + m.w / 2), rect.x1 - m.w / 2);
@@ -475,21 +498,21 @@ export function createHud(handlers) {
             const ox = (A.w + B.w) / 2 + 10 - Math.abs(A.tx - B.tx);
             const oy = (A.hgt + B.hgt) / 2 + 8 - Math.abs(A.ty - B.ty);
             if (ox <= 0 || oy <= 0) continue;
-            if (oy < ox) { const s = (A.ty < B.ty ? -1 : 1) * oy / 2; A.ty += s; B.ty -= s; }
-            else { const s = (A.tx < B.tx ? -1 : 1) * ox / 2; A.tx += s; B.tx -= s; }
+            // das gewählte Abzeichen bleibt an seinem Platz (Karte links davon), der Nachbar weicht ganz aus
+            const sa = selected && A.h.id === selected.id, sb = selected && B.h.id === selected.id;
+            const fa = sa ? 0 : sb ? 1 : 0.5, fb = sa ? 1 : sb ? 0 : 0.5;
+            if (oy < ox) { const s = (A.ty < B.ty ? -1 : 1) * oy; A.ty += s * fa; B.ty -= s * fb; }
+            else { const s = (A.tx < B.tx ? -1 : 1) * ox; A.tx += s * fa; B.tx -= s * fb; }
           }
         }
       }
       for (const m of items) {
         if (Number.isNaN(m.x)) { m.x = m.tx; m.y = m.ty; }
         else { m.x += (m.tx - m.x) * 0.22; m.y += (m.ty - m.y) * 0.22; }
-        const left = m.x < m.ax;                       // Abzeichen links vom Punkt → Linie endet an seiner rechten Kante
-        const edgeX = left ? m.x + m.w / 2 : m.x - m.w / 2;
-        const kneeX = edgeX + (left ? 22 : -22);
         m.el.style.transform = `translate(${(m.x - m.w / 2).toFixed(1)}px, ${(m.y - m.hgt / 2).toFixed(1)}px)`;
         m.dot.style.transform = `translate(${m.ax.toFixed(1)}px, ${m.ay.toFixed(1)}px)`;
-        m.path.setAttribute('d', `M${m.ax.toFixed(1)} ${m.ay.toFixed(1)}L${kneeX.toFixed(1)} ${m.y.toFixed(1)}L${edgeX.toFixed(1)} ${m.y.toFixed(1)}`);
       }
+      placeCard(items, rect, width, height);
     },
     updateScale(hfwMeters, widthPx, lv) {
       // runde Balkenlänge 1/2/5 × 10^n, etwa ein Fünftel der Bildbreite

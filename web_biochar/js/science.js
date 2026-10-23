@@ -114,6 +114,14 @@ export function pyroState(t) {
     cell: 1 - sstep(315, 400, t),
     lignin: 1 - sstep(160, 900, t) * 0.55,
     char: sstep(180, 450, t),                     // Farbe: 0 Holz → 1 tiefschwarz
+    // Holz → Kohle in den Gewebe- und Nano-Ebenen (Modell; Fenster nach Yang et al. 2007 und Keiluweit et al. 2010)
+    starch: 1 - sstep(220, 330, t),               // Stärkekörner im Strahlparenchym verschwinden mit den Hemizellulosen
+    membrane: 1 - sstep(240, 360, t),             // Tüpfelmembranen (Zellulose/Pektin) zerfallen
+    fibril: 1 - sstep(315, 400, t),               // Zellulose-Mikrofibrillen: Riefen (Ebene 4), Fibrillen (Ebene 6)
+    matrix: 1 - sstep(220, 380, t),               // Hemizellulose-/Lignin-Matrix zwischen den Fibrillen
+    glassy: sstep(300, 450, t),                   // Bruchflächen faserig → glasig, Wand amorph
+    sheets: sstep(300, 400, t),                   // aromatische Schichten entstehen (amorphe Kohle)
+    open: sstep(260, 380, t),                     // Porennetz der Zellwand öffnet sich (Meso-/Makroporen)
     shrinkT: 0.28 * sstep(200, 600, t),           // lineare Schwindung quer zur Faser (Modell)
     shrinkL: 0.1 * sstep(200, 600, t),            // längs deutlich geringer
     glow: sstep(DRAPER, 720, t),                  // Rotglut ab dem Draper-Punkt

@@ -48,7 +48,72 @@ function rot2(d, deg) {
   return new THREE.Vector3(d.x * c - d.y * s, d.x * s + d.y * c, 0);
 }
 
+// Holz (unter 350 °C): Lignin-Bruchstück – zwei Guaiacyl-Einheiten, β-O-4-verknüpft (häufigste Bindung im Lignin, Ralph et al.
+// 2004), C₁₇H₂₀O₆: Ring A mit phenolischer OH- und Methoxygruppe, Propan-Seitenkette (Cα–OH, Cβ–O–Ring B, Cγ–OH), Ring B mit
+// Methoxygruppe. Drei Stufen (Modell): 25 °C vollständig · 200 °C Seitenketten-OH als Wasser abgespalten · 300 °C Methoxy-
+// gruppen und Ether-O weg (Methanol, CO), die Ringe rücken auf ihre Plätze im Cluster zu. Ringkohlenstoffe und Cα/Cβ tragen
+// die Schlüssel der Cluster-Atome bei 350 °C, damit sie beim Übergang gleiten statt neu zu wachsen (Kondensation der Ringe).
+function buildWood(T) {
+  const target = buildCluster(T_MIN);
+  const stage = T < 190 ? 0 : T < 290 ? 1 : 2;
+  const mix = [0, 0.12, 0.55][stage];
+  const atoms = [], bonds = [], marks = {};
+  const dir = (deg) => new THREE.Vector3(Math.cos((deg * Math.PI) / 180), Math.sin((deg * Math.PI) / 180), 0);
+  const at = (p, deg, r) => p.clone().addScaledVector(dir(deg), r);
+  const add = (el, p, tgt) => {
+    const a = { el, p: tgt === undefined ? p : p.clone().lerp(target.atoms[tgt].p, mix), key: tgt === undefined ? undefined : keyOfAtom(target.atoms[tgt]) };
+    atoms.push(a);
+    return atoms.length - 1;
+  };
+  const bond = (i, j, order = 1) => bonds.push({ i, j, order });
+  const group = (ids, outDeg) => { for (const id of ids) atoms[id].dir = dir(outDeg); };
+  const hydrogen = (id, deg) => { const h = add('H', at(atoms[id].p, deg, 1.09)); bond(id, h); atoms[h].dir = dir(deg); return h; };
+  const methoxy = (id, deg) => {                       // –O–CH₃
+    const o = add('O', at(atoms[id].p, deg, 1.36)), c = add('C', at(atoms[o].p, deg + 60, 1.43));
+    const hs = [add('H', at(atoms[c].p, deg + 60, 1.09)), add('H', atoms[c].p.clone().add(new THREE.Vector3(0, 0, 0.95))), add('H', atoms[c].p.clone().add(new THREE.Vector3(0, 0, -0.95)))];
+    bond(id, o); bond(o, c); for (const h of hs) bond(c, h);
+    group([o, c, ...hs], deg);
+  };
+  const hydroxyl = (id, deg) => { const o = add('O', at(atoms[id].p, deg, 1.4)), h = add('H', at(atoms[o].p, deg - 50, 0.96)); bond(id, o); bond(o, h); group([o, h], deg); return o; };
+  const ring = (c, tgt) => {
+    const ids = [];
+    for (let k = 0; k < 6; k++) ids.push(add('C', at(c, 30 + 60 * k, A), tgt[k]));
+    for (let k = 0; k < 6; k++) bond(ids[k], ids[(k + 1) % 6]);
+    return ids;
+  };
+  // Ring A (links), Seitenkette, Ring B (unten rechts) – Koordinaten in Å, Bindungslängen gerundet
+  const cA = new THREE.Vector3(-3.0, 0.3, 0);
+  const ra = ring(cA, [0, 1, 2, 3, 4, 5]);
+  const ca = add('C', at(atoms[ra[0]].p, 30, 1.51), 12);             // Cα
+  const cb = add('C', at(atoms[ca].p, -30, 1.53), 13);               // Cβ
+  const cg = add('C', at(atoms[cb].p, 30, 1.53));                    // Cγ (geht bei 350 °C als CO ab)
+  bond(ra[0], ca); bond(ca, cb); bond(cb, cg);
+  hydrogen(ca, 150);
+  const hb = add('H', atoms[cb].p.clone().add(new THREE.Vector3(0, 0, 1.05))); bond(cb, hb);
+  hydrogen(cg, -45); const hg = add('H', atoms[cg].p.clone().add(new THREE.Vector3(0, 0, 1.05))); bond(cg, hg);
+  const oe = add('O', at(atoms[cb].p, -90, 1.43));                   // Ether-O der β-O-4-Bindung
+  const cB = at(at(atoms[oe].p, -90, 1.36), -90, A);
+  const rb = ring(cB, [6, 7, 8, 9, 10, 11]);
+  if (stage < 2) { bond(cb, oe); bond(oe, rb[1]); atoms[oe].dir = dir(0); } else atoms.pop();   // Stufe 2: Ether gespalten, O weg
+  if (stage === 2) { for (const b of bonds) { if (b.i === oe || b.j === oe) b.i = b.j = -1; } }
+  if (stage < 1) { hydroxyl(ca, 90); hydroxyl(cg, 30); }            // Cα–OH, Cγ–OH (Wasser ab 200 °C)
+  marks.phenol = hydroxyl(ra[3], 210);                                // phenolische OH-Gruppe bleibt
+  if (stage < 2) { methoxy(ra[4], 270); methoxy(rb[2], 150); }       // Methoxygruppen (Methanol ab 300 °C)
+  else { hydrogen(ra[4], 270); hydrogen(rb[2], 150); }
+  marks.edgeh = hydrogen(ra[1], 90); hydrogen(ra[2], 150); hydrogen(ra[5], 330);
+  hydrogen(rb[0], 30); hydrogen(rb[3], 210); hydrogen(rb[4], 270); hydrogen(rb[5], 330);
+  const count = { C: 0, H: 0, O: 0, K: 0 };
+  for (const a of atoms) count[a.el]++;
+  const ringAt = (ids) => ids.reduce((v, id) => v.add(atoms[id].p), new THREE.Vector3()).multiplyScalar(1 / 6);
+  const rA = ringAt(ra), rB = ringAt(rb);
+  return {
+    ns: target.ns, rings: [{ x: rA.x, y: rA.y }, { x: rB.x, y: rB.y }], atoms, bonds: bonds.filter((b) => b.i >= 0), marks, ringAt: rA,
+    formula: `C${sub(count.C)}H${sub(count.H)}O${sub(count.O)}`, hc: count.H / count.C, nRings: 2,
+  };
+}
+
 export function buildCluster(T) {
+  if (T < T_MIN) return buildWood(T);
   const ns = nanoStructure(T);
   const cand = [];
   for (let q = -5; q <= 5; q++) {
@@ -162,7 +227,8 @@ export function buildCluster(T) {
 const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const ease = (x) => { x = Math.min(1, Math.max(0, x)); return x * x * (3 - 2 * x); };
 const keyOfAtom = (a) => `${a.el}:${Math.round(a.p.x * 20)},${Math.round(a.p.y * 20)},${Math.round(a.p.z * 20)}`;
-const quant = (T) => Math.min(T_MAX, Math.max(T_MIN, Math.round(T / 25) * 25));   // Struktur in 25-°C-Stufen
+// Struktur in 25-°C-Stufen; unter 350 °C drei Holz-Stufen (Lignin-Bruchstück → Abspaltungen → Kondensation)
+const quant = (T) => (T < T_MIN ? (T < 190 ? 25 : T < 290 ? 200 : 300) : Math.min(T_MAX, Math.round(T / 25) * 25));
 const GROW = 0.9, LEAVE = 1.7, FLY = 3.2;   // s Einwachsen, s bis zum Verblassen, Å/s Abflug
 
 export function create(ctx) {
@@ -230,13 +296,17 @@ export function create(ctx) {
     builtQ = Tq;
     cluster = buildCluster(Tq);
     const nextKeys = new Set();
-    const keys = cluster.atoms.map((a) => keyOfAtom(a));
+    const keys = cluster.atoms.map((a) => a.key || keyOfAtom(a));
     cluster.atoms.forEach((a, i) => {
       nextKeys.add(keys[i]);
       let e = pool.get(keys[i]);
       if (!e) {
         e = { key: keys[i], el: a.el, home: a.p.clone(), s: instant ? 1 : 0, leaving: false, off: new THREE.Vector3(), vel: new THREE.Vector3(), ph: [rand() * 6.28, rand() * 6.28, rand() * 6.28] };
         pool.set(keys[i], e);
+      } else if (!e.home.equals(a.p)) {
+        // gleicher Platz im Gefüge, neue Lage (Holz → Kohle): Atom gleitet von der alten Lage an die neue (off klingt ab)
+        if (!instant) e.off.add(e.home).sub(a.p);
+        e.home.copy(a.p);
       }
       e.leaving = false;
       e.dir = a.dir;
@@ -267,9 +337,12 @@ export function create(ctx) {
     }
     for (const [rk, e] of ringPool) if (!nextRings.has(rk)) e.want = 0;
     orderDirty = true;
-    for (const [k, id] of Object.entries(cluster.marks)) {
-      hs[k].pos.copy(cluster.atoms[id].p).add(new THREE.Vector3(0, 0, k === 'carboxyl' ? 1.3 : 0.7));
+    for (const k of ['carboxyl', 'phenol', 'carbonyl', 'edgeh']) {
+      const id = cluster.marks[k];
+      if (id === undefined) hs[k].pos.set(0, 0, 1e4);   // Gruppe gibt es in dieser Stufe nicht → Abzeichen außer Sicht
+      else hs[k].pos.copy(cluster.atoms[id].p).add(new THREE.Vector3(0, 0, k === 'carboxyl' ? 1.3 : 0.7));
     }
+    hs.ring.pos.set(cluster.ringAt ? cluster.ringAt.x : 0, cluster.ringAt ? cluster.ringAt.y : 0, 0.9);
   }
 
   function reorder() {

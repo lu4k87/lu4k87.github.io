@@ -1,12 +1,14 @@
 // Ebene 3: dieselben Zellen als 3D-Bruchstück (Einheit µm): Stirnfläche als Wabe, seitlich längs aufgebrochene Röhren,
 // gezahnte Bruchkante, Splitter in den Lumina, Thyllen in zwei Gefäßen, behöfte Tüpfel auf den Fasern (Shader in sem.js).
+// Pyrolyse: Stärkekörner im Strahlparenchym verschwinden (220–330 °C), die Wände werden glatter und kantiger (glasig),
+// Thyllen bleiben – in Holzkohle sind sie erhalten – und schrumpfen mit dem Gewebe (pyroState in science.js).
 
 import * as THREE from 'three';
 import { woodTissue } from '../wood.js';
 import { buildWalls, buildInstances, flakeGeometry, disposeGroup, shrinkScene } from '../walls.js';
 import { semDetector } from '../sem.js';
 import { mulberry32, fbm3, smoothstep } from '../util.js';
-import { tissueScale } from '../science.js';
+import { tissueScale, pyroState } from '../science.js';
 
 const LZ = 340;
 
@@ -84,6 +86,30 @@ export function create(ctx) {
   if (faceVessel) fill(faceVessel, -10, -140);
   scene.add(buildInstances(new THREE.SphereGeometry(1, 22, 16), tyloses, { ...sem, base: 0.4, noise: 1.2 }));
 
+  // Stärkekörner im Strahlparenchym (Buche: Ø ≈ 4–8 µm, Modell): liegen im Holz in den Lumina der Strahlzellen, an der
+  // Bruchkante auch seitlich sichtbar; im Zeitraffer verschwinden sie mit den Hemizellulosen (pyroState.starch), die Kohle
+  // behält leere Zellen
+  const grains = [];
+  for (const s of wood.sites) {
+    if (s.type !== 2 || s.x > XC - 1 || !inside(s.x, s.y) || rand() < 0.3) continue;
+    const n = 2 + Math.floor(rand() * 3);
+    for (let k = 0; k < n; k++) {
+      const r = 1.6 + rand() * 1.6;
+      const x = Math.min(s.x + (rand() - 0.5) * 2.5, XC - 1.5 - r);
+      grains.push({ p: [x, s.y + (rand() - 0.5) * 2.5, -(2.5 + k * 6.5 + rand() * 3)], s: [r, r * 0.9, r * 1.15], r: [rand() * 3, rand() * 3, rand() * 3] });
+    }
+  }
+  const grainMesh = buildInstances(new THREE.SphereGeometry(1, 14, 10), grains, { ...sem, base: 0.46, noise: 0.6 });
+  scene.add(grainMesh);
+  const grainBase = grains.map((g) => ({ p: new THREE.Vector3(...g.p), q: new THREE.Quaternion().setFromEuler(new THREE.Euler(...g.r)), s: new THREE.Vector3(...g.s) }));
+  const _m = new THREE.Matrix4(), _s = new THREE.Vector3();
+  const setGrains = (f) => {
+    grainMesh.visible = f > 0.01;
+    if (!grainMesh.visible) return;
+    grainBase.forEach((g, k) => grainMesh.setMatrixAt(k, _m.compose(g.p, g.q, _s.copy(g.s).multiplyScalar(f))));
+    grainMesh.instanceMatrix.needsUpdate = true;
+  };
+
   // Hotspots: Gefäßwand an der Bruchkante, ein ganzes Gefäß, Faser, Strahl, offener Kanal
   const pitWall = walls
     .filter((w) => w.kind === 1 && Math.abs(w.b[1] - w.a[1]) > 1.4 * Math.abs(w.b[0] - w.a[0]) && w.z1 > -20)
@@ -114,13 +140,19 @@ export function create(ctx) {
 
   const camera = new THREE.PerspectiveCamera(35, ctx.aspect, 1, 4000);
   const base = hotspots.map((h) => h.pos.clone());
-  // Pyrolyse: Schwindung (quer stärker als längs) und dünnere Zellwände, gleitet mit dem Regler
+  // Pyrolyse: Schwindung (quer stärker als längs), dünnere Zellwände, Stärke verschwindet, Bruch faserig → glasig
+  // (weniger Körnung, hellere Kanten wie bei verkohlten Wänden im REM); gleitet mit dem Regler
   let shownT = ctx.temp, lastT = NaN;
   function applyTemp() {
     if (shownT === lastT) return;
     lastT = shownT;
-    const k = tissueScale(shownT);
+    const k = tissueScale(shownT), st = pyroState(shownT);
     wallGroup.userData.setThin(k.wall / k.xy);
+    setGrains(st.starch);
+    for (const mat of wallGroup.userData.materials) {
+      mat.uniforms.uNoise.value = sem.noise * (1 - 0.55 * st.glassy);
+      mat.uniforms.uEdge.value = sem.edge + 0.25 * st.glassy;
+    }
     shrinkScene(scene, k.xy, k.z);
     hotspots.forEach((h, i) => h.pos.set(base[i].x * k.xy, base[i].y * k.xy, base[i].z * k.z));
   }

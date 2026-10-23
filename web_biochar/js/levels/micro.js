@@ -3,7 +3,7 @@
 
 import * as THREE from 'three';
 import { mulberry32, gauss, clamp } from '../util.js';
-import { nanoStructure, fmt } from '../science.js';
+import { nanoStructure, fmt, pyroState } from '../science.js';
 import { ADDITIVE } from '../sem.js';
 
 const HALF = new THREE.Vector3(5.5, 3.6, 4.2);
@@ -211,10 +211,10 @@ const ALIGN = new THREE.Vector3(0.25, 1, 0.1).normalize();
 const Z_AXIS = new THREE.Vector3(0, 0, 1);
 const _q = new THREE.Quaternion(), _qs = new THREE.Quaternion(), _n = new THREE.Vector3();
 // Sichtbare Schichten bei der Temperatur T (gleitende Werte); Schichten ohne Gewicht entfallen.
-// Unter ≈ 300 °C gibt es noch keine aromatischen Schichten (Lignozellulose), sie wachsen zwischen 280 und 380 °C heran.
+// Unter ≈ 300 °C gibt es noch keine aromatischen Schichten (Lignozellulose), sie wachsen 300–400 °C heran (pyroState.sheets).
 function sheetsAt(units, T) {
   const ns = nanoStructure(T);
-  const born = sstep(280, 380, T);
+  const born = pyroState(T).sheets;
   const sheets = [], vis = [];
   if (born <= 0) return { ns, sheets, vis };
   for (const u of units) {
@@ -293,6 +293,54 @@ export function create(ctx) {
   }));
   scene.add(probe);
 
+  // Holz (unter ≈ 400 °C): Zellulose-Mikrofibrillen (Ø ≈ 3,5 nm, Fernandes et al. 2011) als nahezu parallele, leicht wellige
+  // Stäbe, dazwischen kurze Kettenstücke der Hemizellulose-/Lignin-Matrix (Modell). Die Fibrillen werden dünner und blasser,
+  // wenn die Zellulose zerfällt (315–400 °C), die Matrix verschwindet 220–380 °C; die aromatischen Schichten wachsen derweil heran.
+  const woodMat = new THREE.MeshStandardMaterial({ color: new THREE.Color(0.86, 0.78, 0.62), roughness: 0.55, metalness: 0, transparent: true });
+  const matrixMat = new THREE.MeshStandardMaterial({ color: new THREE.Color(0.7, 0.58, 0.4), roughness: 0.7, metalness: 0, transparent: true });
+  const wr = mulberry32(321);
+  const fibrils = [];
+  const FIB_R = 1.75, FIB_LEN = HALF.y * 2 + 2;
+  for (let i = -1; i <= 1; i++) for (let j = -1; j <= 1; j++) {
+    const cx = i * 3.9 + (j % 2 ? 1.9 : 0) + (wr() - 0.5) * 0.3, cz = j * 3.6 + (wr() - 0.5) * 0.3;
+    if (Math.abs(cx) > HALF.x + 1 || Math.abs(cz) > HALF.z + 1) continue;
+    const pts = [];
+    for (let k = 0; k <= 4; k++) pts.push(new THREE.Vector3((wr() - 0.5) * 0.5, -FIB_LEN / 2 + (FIB_LEN * k) / 4, (wr() - 0.5) * 0.5));
+    const geo = new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 24, FIB_R, 12);
+    const mesh = new THREE.Mesh(geo, woodMat);
+    mesh.position.set(cx, 0, cz);
+    mesh.rotation.z = 0.12;
+    fibrils.push(mesh);
+    scene.add(mesh);
+  }
+  const matrix = [];
+  for (let tries = 0; tries < 2000 && matrix.length < 90; tries++) {
+    const p = new THREE.Vector3((wr() * 2 - 1) * HALF.x, (wr() * 2 - 1) * HALF.y, (wr() * 2 - 1) * HALF.z);
+    if (fibrils.some((f) => Math.hypot(p.x - f.position.x, p.z - f.position.z) < FIB_R + 0.35)) continue;
+    matrix.push({ p, q: new THREE.Quaternion().setFromEuler(new THREE.Euler(wr() * 6, wr() * 6, wr() * 6)), len: 0.6 + wr() * 0.8 });
+  }
+  const matrixMesh = new THREE.InstancedMesh(new THREE.CapsuleGeometry(0.17, 1, 3, 8), matrixMat, matrix.length);
+  scene.add(matrixMesh);
+  const _wm = new THREE.Matrix4(), _ws = new THREE.Vector3();
+  let woodF = NaN, matrixF = NaN;
+  function setWood(st) {
+    if (st.fibril !== woodF) {
+      woodF = st.fibril;
+      woodMat.opacity = Math.min(1, st.fibril * 1.4);
+      const vis = st.fibril > 0.01;
+      for (const f of fibrils) { f.visible = vis; f.scale.set(0.35 + 0.65 * st.fibril, 1, 0.35 + 0.65 * st.fibril); }
+    }
+    if (st.matrix !== matrixF) {
+      matrixF = st.matrix;
+      matrixMat.opacity = Math.min(1, st.matrix * 1.4);
+      matrixMesh.visible = st.matrix > 0.01;
+      if (matrixMesh.visible) {
+        matrix.forEach((m, k) => matrixMesh.setMatrixAt(k, _wm.compose(m.p, m.q, _ws.set(st.matrix, m.len * st.matrix, st.matrix))));
+        matrixMesh.instanceMatrix.needsUpdate = true;
+      }
+    }
+  }
+
   // Gasmoleküle
   const rand = mulberry32(55);
   const mols = [];
@@ -303,6 +351,7 @@ export function create(ctx) {
       vel: new THREE.Vector3(gauss(rand), gauss(rand), gauss(rand)).multiplyScalar(0.35),
       q: new THREE.Quaternion().setFromEuler(new THREE.Euler(rand() * 6, rand() * 6, rand() * 6)),
       spin: new THREE.Vector3(gauss(rand), gauss(rand), gauss(rand)).multiplyScalar(0.8),
+      bound: null, cool: 0, ph: rand() * 6.28,
     });
   }
   const atomCount = mols.reduce((n, m) => n + MOLECULES[m.kind].length, 0);
@@ -347,6 +396,7 @@ export function create(ctx) {
   function rebuild(T) {
     builtT = T;
     model = sheetsAt(units, T);
+    setWood(pyroState(T));
     const { sheets } = model;
     sheets.forEach((sh, k) => {
       lines.setMatrixAt(k, _m.compose(sh.pos, sh.q, _sc.setScalar(sh.d)));
@@ -383,29 +433,88 @@ export function create(ctx) {
     probe.scale.setScalar(Math.max(bestD - 0.05, 0.05));
   }
 
+  // Nächster Punkt auf einer Schicht (Scheibe) zu p: Abstand, Fußpunkt, Normale zur Seite von p
+  const _np = new THREE.Vector3(), _nn = new THREE.Vector3();
+  function closestSheet(table, p, out) {
+    let best = Infinity;
+    for (const [cx, cy, cz, nx, ny, nz, R] of table) {
+      const vx = p.x - cx, vy = p.y - cy, vz = p.z - cz;
+      const dist2 = vx * vx + vy * vy + vz * vz;
+      if (dist2 > (best + R) * (best + R)) continue;
+      const h = vx * nx + vy * ny + vz * nz;
+      const rx = vx - h * nx, ry = vy - h * ny, rz = vz - h * nz;
+      const radial = Math.sqrt(rx * rx + ry * ry + rz * rz);
+      const f = radial > R ? R / radial : 1;
+      const d = radial > R ? Math.hypot(radial - R, h) : Math.abs(h);
+      if (d >= best) continue;
+      best = d;
+      out.p.set(cx + rx * f, cy + ry * f, cz + rz * f);
+      out.n.set(nx, ny, nz).multiplyScalar(h < 0 ? -1 : 1);
+    }
+    return best;
+  }
+
+  // Gasmoleküle: freie Wärmebewegung in der Pore; nahe einer Schicht zieht die van-der-Waals-Kraft sie heran (Physisorption):
+  // sie legen sich ≈ 0,33 nm flach auf die Schicht, verweilen kurz und lösen sich wieder – heißer kürzer (Modell).
+  // Das markierte CO₂ (Hotspot) sitzt in der Mikropore (Sonde). Wände der Szene stoßen weich zurück.
+  const ADS = { reach: 1.0, bind: 0.4, gap: 0.33 };
+  const near = { p: new THREE.Vector3(), n: new THREE.Vector3() };
+  const xAxis = new THREE.Vector3(1, 0, 0), _t = new THREE.Vector3(), _a = new THREE.Vector3();
+  let sheetTab = [], sheetTabT = NaN;
   function placeMolecules(dt) {
     let i = 0;
     const m = new THREE.Matrix4(), s = new THREE.Vector3(), q = new THREE.Quaternion(), p = new THREE.Vector3();
-    for (const mol of mols) {
+    if (builtT !== sheetTabT) { sheetTabT = builtT; sheetTab = sheetTable(model.sheets); }
+    const k = model.ns.k, vmax = 0.4 + 0.3 * k;
+    mols.forEach((mol, idx) => {
       if (dt > 0) {
-        mol.vel.x += gauss(rand) * 0.6 * dt; mol.vel.y += gauss(rand) * 0.6 * dt; mol.vel.z += gauss(rand) * 0.6 * dt;
-        mol.vel.clampLength(0.1, 0.6);
-        mol.pos.addScaledVector(mol.vel, dt);
-        for (const ax of ['x', 'y', 'z']) {
-          if (Math.abs(mol.pos[ax]) > HALF[ax]) { mol.pos[ax] = Math.sign(mol.pos[ax]) * HALF[ax]; mol.vel[ax] *= -1; }
+        if (idx === 0 && probe.visible) {
+          // markiertes CO₂: bleibt in der Mikropore und wackelt dort (adsorbiert in der engsten Pore)
+          mol.bound = null;
+          _a.copy(probe.position).add(_t.set(Math.sin(t0 * 1.7), Math.sin(t0 * 2.3 + 1), Math.cos(t0 * 1.3)).multiplyScalar(probe.scale.x * 0.35));
+          mol.pos.lerp(_a, 1 - Math.exp(-dt * 2.5));
+          mol.q.multiply(q.setFromEuler(new THREE.Euler(mol.spin.x * dt * 0.4, mol.spin.y * dt * 0.4, mol.spin.z * dt * 0.4)));
+        } else if (mol.bound) {
+          const b = mol.bound;
+          b.until -= dt;
+          _a.copy(b.p).addScaledVector(b.n, ADS.gap + 0.03 * Math.sin(t0 * 9 + mol.ph));
+          mol.pos.lerp(_a, 1 - Math.exp(-dt * 6));
+          mol.q.slerp(b.q, 1 - Math.exp(-dt * 5));
+          if (b.until <= 0) {   // Desorption: löst sich von der Schicht, kurze Zeit ohne erneutes Anlagern
+            mol.vel.copy(b.n).multiplyScalar(0.3 + 0.3 * rand()).add(_t.set(gauss(rand), gauss(rand), gauss(rand)).multiplyScalar(0.12));
+            mol.bound = null; mol.cool = 1.5;
+          }
+        } else {
+          mol.cool = Math.max(0, (mol.cool || 0) - dt);
+          mol.vel.x += gauss(rand) * 0.5 * dt; mol.vel.y += gauss(rand) * 0.5 * dt; mol.vel.z += gauss(rand) * 0.5 * dt;
+          if (sheetTab.length && mol.cool <= 0) {
+            const d = closestSheet(sheetTab, mol.pos, near);
+            if (d < ADS.bind) {
+              _t.copy(near.n).cross(_a.set(0.3, 0.9, 0.1)).normalize();   // Molekülachse flach auf der Schicht
+              mol.bound = { p: near.p.clone(), n: near.n.clone(), q: new THREE.Quaternion().setFromUnitVectors(xAxis, _t), until: (1.5 + 3.5 * rand()) * (1 - 0.6 * k) };
+            } else if (d < ADS.reach) {
+              mol.vel.addScaledVector(_a.copy(near.p).sub(mol.pos).normalize(), 1.4 * dt);
+            }
+          }
+          mol.vel.clampLength(0.08, vmax);
+          mol.pos.addScaledVector(mol.vel, dt);
+          for (const ax of ['x', 'y', 'z']) {
+            const over = Math.abs(mol.pos[ax]) - HALF[ax];
+            if (over > 0) mol.vel[ax] -= Math.sign(mol.pos[ax]) * (2 + 6 * over) * dt;
+          }
+          mol.q.multiply(q.setFromEuler(new THREE.Euler(mol.spin.x * dt, mol.spin.y * dt, mol.spin.z * dt)));
         }
-        q.setFromEuler(new THREE.Euler(mol.spin.x * dt, mol.spin.y * dt, mol.spin.z * dt));
-        mol.q.multiply(q);
       }
       for (const [el, x, y, z] of MOLECULES[mol.kind]) {
         p.set(x, y, z).applyQuaternion(mol.q).add(mol.pos);
         s.setScalar(ELEMENT[el].r);
         atomMesh.setMatrixAt(i++, m.compose(p, q.identity(), s));
       }
-    }
+    });
     atomMesh.instanceMatrix.needsUpdate = true;
     hs.gas.pos.copy(mols[0].pos);
   }
+  let t0 = 0;
 
   // Abgespaltene Moleküle: starten am Rand einer Schicht, fliegen nach außen, blenden am Ende aus (Farben je Element)
   const ESC_LIFE = 4.5;
@@ -462,10 +571,11 @@ export function create(ctx) {
     hotspots: [hs.sheet, hs.stack, hs.micropore, hs.gas],
     liveFacts: true,
     facts: () => [
-      { value: `≈ ${fmt(model.ns.sheetNm * sstep(280, 380, shownT), 1)} nm · ${fmt(model.ns.layers, 1)}`, label: 'mittlere Schichtgröße · Schichten je Stapel (Modell)' },
+      { value: `≈ ${fmt(model.ns.sheetNm * pyroState(shownT).sheets, 1)} nm · ${fmt(model.ns.layers, 1)}`, label: 'mittlere Schichtgröße · Schichten je Stapel (Modell)' },
       { value: `${fmt(poreD, 1)} nm`, label: 'Durchmesser der markierten Mikropore' },
     ],
     update(dt, t) {
+      t0 = t;
       uniforms.uFogStart.value = camera.position.length() - 1;
       // Licht wandert langsam: Hauptlicht schwenkt, kühles Gegenlicht kreist
       uniforms.uLight.value.set(0.4 + 0.35 * Math.sin(t * 0.09), 0.8, 0.45 + 0.35 * Math.cos(t * 0.07)).normalize();
@@ -492,6 +602,8 @@ export function create(ctx) {
       geo.dispose(); lineMat.dispose(); fillMat.dispose();
       atomMesh.geometry.dispose(); atomMesh.material.dispose();
       probe.geometry.dispose(); probe.material.dispose();
+      for (const f of fibrils) f.geometry.dispose();
+      matrixMesh.geometry.dispose(); woodMat.dispose(); matrixMat.dispose();
     },
   };
   return level;

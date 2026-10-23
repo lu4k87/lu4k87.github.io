@@ -1,12 +1,14 @@
 // Ebene 4: Innenwand eines Gefäßes (Einheit µm) – Hoftüpfel mit Blick in die Kammer, Mikrofibrillen-Riefen, feine
 // Warzen-Körnung, Mikrorisse, Bruchkante, Bakterien in Ketten unter einem Biofilm-Schleier, Pilzhyphe mit Sporen,
 // Asche als sechseckige Kristallplättchen (Calciumoxalat bzw. nach dem Verkohlen Calcit in gleicher Form).
+// Pyrolyse (pyroState): im Holz schließen Tüpfelmembranen die Hoftüpfel (zerfallen 240–360 °C), die Mikrofibrillen-Riefen
+// der S3-Schicht verblassen mit der Zellulose (315–400 °C), die Bruchfläche zeigt erst ab ≈ 300 °C Nanoporen.
 
 import * as THREE from 'three';
 import { SEM_GLSL, SEM_DET, ADDITIVE, semMaterial, semDetector } from '../sem.js';
 import { disposeGroup } from '../walls.js';
 import { mulberry32, gauss, fbm3, vnoisef } from '../util.js';
-import { T_MIN, T_MAX } from '../science.js';
+import { T_MIN, T_MAX, pyroState } from '../science.js';
 
 const R = 16;          // Gefäßradius (Lumen Ø 32 µm)
 const TH = 1.6;        // Wanddicke
@@ -43,6 +45,9 @@ uniform vec3 uTint;
 uniform float uR;
 uniform vec2 uHyPit;
 uniform float uCrack;
+uniform float uMembrane;   // Tüpfelmembran 1 (Holz) … 0 (Kohle)
+uniform float uFibril;     // Mikrofibrillen-Riefen 1 … 0
+uniform float uPores;      // Nanoporen der Bruchfläche 0 … 1
 varying vec2 vUv;
 varying vec3 vWorld;
 varying vec3 vNormal;
@@ -105,10 +110,18 @@ void main() {
         if (g < 0.0) {
           vec2 qb = Rm * (f + off * TH);
           qb = vec2(-qb.y, qb.x);                    // Gegenporus der Nachbarzelle, um 90° gedreht
-          if (length(qb / sl) < 1.0) discard;         // ganz hindurch
-          g = 0.08;                                    // Rückwand der Kammer
+          if (length(qb / sl) < 1.0) {
+            if (uMembrane < 0.02) discard;           // ganz hindurch (Kohle: Membran verschwunden)
+            g = 0.1;
+          } else g = 0.08;                             // Rückwand der Kammer
         }
         g *= 0.85 + 0.3 * vnoise(vWorld * 6.0);
+        // Tüpfelmembran (Holz): feines Fibrillennetz schließt die Kammer, zerfällt beim Verkohlen (Modell)
+        if (uMembrane > 0.02) {
+          vec2 fm = f + off * TH * 0.5;
+          float web = 0.3 + 0.2 * vnoise(vec3(fm * 14.0, 2.0)) + 0.12 * abs(sin(atan(fm.y, fm.x) * 9.0 + 6.0 * vnoise(vec3(fm * 3.0, 5.0))));
+          g = mix(g, web, uMembrane);
+        }
         gl_FragColor = semOut(g, uTint);
         return;
       }
@@ -140,8 +153,9 @@ void main() {
     float across = dot(st, nrm) + 0.25 * vnoise(vec3(st * 1.3, 2.0));
     float fadeR = 1.0 - smoothstep(0.03, 0.09, aa);
     float ph = across * 31.416;
-    grad += 0.32 * fadeR * cos(ph) * nrm;
-    extra += 0.025 * fadeR * sin(ph);
+    float fib = fadeR * mix(0.3, 1.0, uFibril);   // Riefen verblassen, wenn die Zellulose zerfällt (Wand wird amorph)
+    grad += 0.32 * fib * cos(ph) * nrm;
+    extra += 0.025 * fib * sin(ph);
     // feine Körnung (Warzen Ø 0,15–0,3 µm), aus der Ferne ausgeblendet
     vec2 wq = st / 0.55;
     vec2 wc = floor(wq);
@@ -167,9 +181,9 @@ void main() {
   vec3 N = normalize(vNormal);
   vec3 V = normalize(cameraPosition - vWorld);
   float g = semShade(N, V, uDet, 0.42);
-  // Bruchfläche: Schichten der Zellwand und Nanoporen als dunkle Körnung
-  g *= 0.85 + 0.15 * sin(vUv.y * 6.2832 * 3.0 + vnoise(vWorld * 2.0) * 2.0);
-  float pore = smoothstep(0.6, 0.72, vnoise(vWorld * 11.0));
+  // Bruchfläche: Schichten der Zellwand (im Holz deutlicher) und Nanoporen als dunkle Körnung (erst in der Kohle)
+  g *= 0.85 + mix(0.3, 0.15, uPores) * sin(vUv.y * 6.2832 * 3.0 + vnoise(vWorld * 2.0) * 2.0);
+  float pore = smoothstep(0.6, 0.72, vnoise(vWorld * 11.0)) * uPores;
   g = mix(g, 0.08, 0.75 * pore) + 0.25 * smoothstep(0.52, 0.6, vnoise(vWorld * 11.0)) * (1.0 - pore);
   float rim;
   if (cracks(vec2(vUv.x, vWorld.y), rim) < 0.0) discard;
@@ -210,10 +224,14 @@ void main() {
 `;
 
 const CRACK = { value: 1 };   // Rissbreite relativ zu 550 °C, gemeinsam für alle Wandmaterialien
+const MEMBRANE = { value: 0 }, FIBRIL = { value: 0 }, PORES = { value: 1 };   // Holz → Kohle (pyroState), gemeinsam
 
 function uniforms(extra = {}) {
   return {
     uCrack: CRACK,
+    uMembrane: MEMBRANE,
+    uFibril: FIBRIL,
+    uPores: PORES,
     uDet: SEM_DET,
     uTint: { value: new THREE.Color(0.93, 0.95, 0.98) },
     uR: { value: R },
@@ -519,9 +537,16 @@ export function create(ctx) {
     pGeo.attributes.aA.needsUpdate = true;
   });
 
-  // Temperatur: Risse öffnen sich, Asche-Kristalle wachsen – Zielwert gleitet in ≈ 1,2 s weich nach
-  const heat = { k: tempK(ctx.temp), to: tempK(ctx.temp) };
-  const applyHeat = () => { CRACK.value = 1 + heat.k; placeCrystals(1 + 0.5 * heat.k); };
+  // Temperatur gleitet in ≈ 0,35 s nach: Risse und Asche (tempK), Tüpfelmembran, Fibrillen-Riefen, Nanoporen (pyroState)
+  const heat = { T: ctx.temp, to: ctx.temp };
+  const applyHeat = () => {
+    const k = tempK(heat.T), st = pyroState(heat.T);
+    CRACK.value = 1 + k;
+    placeCrystals(1 + 0.5 * k);
+    MEMBRANE.value = st.membrane;
+    FIBRIL.value = st.fibril;
+    PORES.value = st.sheets;
+  };
   applyHeat();
 
   // Hotspot-Stellen: Tüpfel (Gitterzelle −1/−1), Riss, Bruchkante
@@ -555,8 +580,8 @@ export function create(ctx) {
       // Uhr ab Ankunft: nach einer Pause (Ebene war nicht aktiv) beginnt der Zeitraffer neu
       age = t - lastT > 0.5 ? 0 : age + t - lastT;
       lastT = t;
-      if (heat.k !== heat.to) {
-        heat.k = reduced || Math.abs(heat.to - heat.k) < 1e-3 ? heat.to : heat.k + (heat.to - heat.k) * (1 - Math.exp(-dt / 0.35));
+      if (heat.T !== heat.to) {
+        heat.T = reduced || Math.abs(heat.to - heat.T) < 0.05 ? heat.to : heat.T + (heat.to - heat.T) * (1 - Math.exp(-dt / 0.35));
         applyHeat();
       }
       const at = reduced ? 1e3 : age;   // ohne Bewegung: Endzustand
@@ -566,7 +591,7 @@ export function create(ctx) {
       return true;
     },
     setParam(name, value) {
-      if (name === 'temp') heat.to = tempK(value);
+      if (name === 'temp') heat.to = value;
     },
     onHotspot(id) {
       if (id === 'hypha') sprout = age;

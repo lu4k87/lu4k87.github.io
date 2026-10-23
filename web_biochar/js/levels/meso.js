@@ -1,11 +1,13 @@
 // Ebene 5: Nanoporen in der Zellwand (Einheit 10 nm), Raymarching über ein hierarchisches 3D-Voronoi:
 // große Zellen = Makro-/große Mesoporen mit verdickten Plateau-Rändern (Streben an den Kanten, Knoten an den Ecken),
 // dünne Wände dazwischen mit feinen Mesoporen; Wasser nach Kelvin-Gleichung.
+// Pyrolyse (pyroState.open): im Holz ist die Zellwand dicht – nur das Relief der Mikrofibrillen-Bündel (≈ 20 nm) zeichnet
+// die Oberfläche; das Porennetz öffnet sich 260–380 °C (Modell), die kleinen Poren folgen danach der BET-Fläche (uTS).
 
 import * as THREE from 'three';
 import { SEM_GLSL, SEM_DET, semDetector } from '../sem.js';
 import { hash33, vnoise3 } from '../util.js';
-import { kelvinDiameterNm, fmt, labProps } from '../science.js';
+import { kelvinDiameterNm, fmt, labProps, pyroState } from '../science.js';
 
 const CELL = 6.0, THICK = 1.0, STRUT = 0.55, NODE = 0.95, CS = 0.75, TS = 0.4;
 
@@ -17,6 +19,7 @@ uniform mat4 uInvProj;
 uniform mat4 uViewProj;
 uniform float uWaterD;
 uniform float uTS;      // Wandstärke zwischen den kleinen Poren: dünner = mehr, größere Poren (BET steigt mit T)
+uniform float uOpen;    // 0 Holz (Wand dicht) … 1 Kohle (Porennetz offen)
 uniform float uTime;
 uniform vec3 uDet;
 uniform vec3 uTint;
@@ -75,7 +78,8 @@ float topY(vec2 xz) { return -0.6 + 1.1 * vn(vec3(xz * 0.09, 3.0)) + 0.45 * vn(v
 vec2 map(vec3 p) {
   float idL;
   vec4 F = worley4(p / CELL, idL);
-  float top = p.y - topY(p.xz);
+  // Holz: Relief der Mikrofibrillen-Bündel auf der Oberfläche (Modell), verschwindet mit dem Öffnen der Poren
+  float top = p.y - topY(p.xz) - (1.0 - uOpen) * 0.14 * (0.5 + 0.5 * sin(dot(p.xz, vec2(0.94, 0.34)) * 1.8 + 1.5 * vn(p * 0.5)));
   // Wände nur in der Tiefe und nicht überall: an der Oberfläche bleibt das offene Gitter aus Streben und Knoten
   float th = THICK * smoothstep(0.38, 0.55, vn(p * 0.28)) * smoothstep(0.0, 3.0, -top) * (0.75 + 0.5 * vn(p * 0.9 + 11.0));
   float dSheet = (F.y - F.x) * 0.5 * CELL - th * 0.5;                                   // Wand (Fläche)
@@ -83,14 +87,17 @@ vec2 map(vec3 p) {
                   (F.w - F.x) * 0.5 * CELL - NODE);                                       // Knoten an der Ecke
   vec3 ws = worley(p / CS + 31.0);
   float dS = (ws.y - ws.x) * 0.5 * CS - uTS * 0.5;          // > 0: in kleiner Pore (nur die dünnen Wände sind gelocht)
-  float solid = max(min(dSN, max(dSheet, dS)), top);
+  // Holz → Kohle: Wände, Streben und Knoten sind um „inflate“ aufgeblasen, bis alle Poren geschlossen sind (Abstandsfeld
+  // bleibt gültig); das Wasser füllt nur den offenen Rest der Poren
+  float inflate = (1.0 - uOpen) * 3.2;
+  float solid = max(min(dSN, max(dSheet, dS)) - inflate, top);
   float water = 1e3;
-  if (uWaterD > 0.0) {
-    float dBig = min(dSheet, dSN);                         // > 0: in großer Pore
+  if (uWaterD > 0.0 && uOpen > 0.05) {
+    float dBig = min(dSheet, dSN) - inflate;               // > 0: in großer Pore
     float sizeL = CELL * 10.0 * (0.45 + 0.5 * idL);        // nm
     float sizeS = CS * 10.0 * (0.3 + 0.55 * ws.z);
     if (sizeL < uWaterD) water = min(water, max(-dBig, top + 0.05));
-    if (sizeS < uWaterD) water = min(water, max(max(-dS, dSheet), top + 0.05));
+    if (sizeS < uWaterD) water = min(water, max(max(-dS + inflate, dSheet - inflate), top + 0.05));
   }
   return water < solid ? vec2(water, 1.0) : vec2(solid, 0.0);
 }
@@ -227,6 +234,7 @@ export function create(ctx) {
     uViewProj: { value: new THREE.Matrix4() },
     uWaterD: { value: kelvinDiameterNm(ctx.rh) },
     uTS: { value: poreWall(ctx.temp) },
+    uOpen: { value: pyroState(ctx.temp).open },
     uTime: { value: 0 },
     uDet: SEM_DET,
     uTint: { value: new THREE.Color(0.93, 0.95, 0.98) },
@@ -272,7 +280,7 @@ export function create(ctx) {
       return true;
     },
     setParam(name, value) {
-      if (name === 'temp') { uniforms.uTS.value = poreWall(value); level.dirty = true; return; }
+      if (name === 'temp') { uniforms.uTS.value = poreWall(value); uniforms.uOpen.value = pyroState(value).open; level.dirty = true; return; }
       // Qualitätsstufe: weniger, dafür längere Schritte (Leicht ≈ 63, Mittel ≈ 98, Fein 140)
       if (name === 'quality') { uniforms.uMarch.value.set(Math.round(140 * value.detail), 1 - 0.25 * value.detail); level.dirty = true; return; }
       if (name !== 'rh') return;
