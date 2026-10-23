@@ -1,1 +1,75 @@
-<!doctype html><meta charset="utf-8"><title>Projekt-Doku</title><meta http-equiv="refresh" content="0; url=../web_ux_robot/biochar/index.html"><a href="../web_ux_robot/biochar/index.html">../web_ux_robot/biochar/index.html</a>
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Biochar · Reise in die Pflanzenkohle</title>
+  <meta name="description" content="Interaktive 3D-Reise in die Struktur von Pflanzenkohle: vom Holzkohlestück über Zellen, Tüpfel und Nanoporen bis zu den Kohlenstoffatomen.">
+  <meta name="color-scheme" content="dark light">
+      <link rel="stylesheet" href="../web_ux_robot/fonts/fonts.css">
+  <link rel="stylesheet" href="css/biochar.css">
+  <script type="importmap">
+    { "imports": { "three": "./vendor/three/three.module.min.js", "three/addons/": "./vendor/three/addons/" } }
+  </script>
+</head>
+<body>
+  <canvas id="stage" aria-label="3D-Ansicht der Pflanzenkohle-Struktur"></canvas>
+  <div id="hotspots" class="hotspots">
+    <svg id="leaders" class="leaders" aria-hidden="true"></svg>
+  </div>
+
+  <div class="hud">
+    <header class="topbar">
+      <a class="brand" href="#ebene=1">
+        <svg class="hex brand-mark" viewBox="0 0 40 40" aria-hidden="true">
+          <path class="hex-shape" d="M20 2L35.59 11L35.59 29L20 38L4.41 29L4.41 11z"/>
+          <g fill="currentColor"><circle cx="15" cy="15" r="2.6"/><circle cx="24" cy="13.5" r="1.9"/><circle cx="26" cy="22" r="2.8"/><circle cx="14" cy="24" r="2.1"/><circle cx="20" cy="29" r="1.6"/></g>
+        </svg>
+        <span class="brand-text"><strong>Biochar</strong><span>Reise in die Pflanzenkohle</span></span>
+      </a>
+      <div class="top-actions">
+        <button type="button" id="btn-theme" class="btn-ghost" aria-label="Hell oder dunkel">Hell / Dunkel</button>
+        <button type="button" id="btn-panel" class="btn-ghost" aria-expanded="true" aria-controls="panel">Infotafel</button>
+      </div>
+    </header>
+
+    <nav class="ladder" aria-label="Zoom-Schiene: Ebenen und Vergrößerung">
+      <div id="ladder" class="rail"></div>
+    </nav>
+
+    <aside class="panel" id="panel" aria-label="Informationen zur Ebene">
+      <div id="panel-body" class="panel-body"></div>
+    </aside>
+
+    <footer class="bottombar">
+      <div class="sem-bar" aria-label="Messleiste">
+        <div class="scalebar"><span id="scalebar-bar" class="scalebar-bar"></span><span id="scalebar-label">1 mm</span></div>
+        <dl>
+          <div><dt>Bildbreite</dt><dd id="sb-hfw">–</dd></div>
+          <div><dt>Vergr.</dt><dd id="sb-mag">–</dd></div>
+          <div><dt>Methode</dt><dd id="sb-method">–</dd></div>
+        </dl>
+      </div>
+      <div class="center-hint">
+        <p class="hint">Ziehen dreht · Scrollen zoomt · orange Abzeichen führen tiefer</p>
+        <div id="edge-meter" class="edge-meter" aria-hidden="true"><span></span><i></i></div>
+      </div>
+      <div class="nav-buttons">
+        <button type="button" id="btn-up" class="btn-ghost">↑ Ebene zurück</button>
+        <button type="button" id="btn-down" class="btn-primary">Tiefer ↓</button>
+      </div>
+    </footer>
+  </div>
+
+  <div class="loader" role="status" aria-live="polite">
+    <div class="loader-ring" aria-hidden="true"></div>
+    <p>Struktur wird berechnet …</p>
+  </div>
+  <div class="fatal" role="alert">
+    <p>Diese Ansicht braucht WebGL 2. Bitte einen aktuellen Browser verwenden oder die Hardwarebeschleunigung einschalten.</p>
+  </div>
+
+  <script type="module" src="js/theme.js"></script>
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
