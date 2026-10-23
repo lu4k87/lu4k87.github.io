@@ -49,8 +49,8 @@ a { color: var(--accent); }
 /* ---------- Kopf mit Schritt-Leiste ---------- */
 .top { position: sticky; top: 0; z-index: 10; background: var(--bg); border-bottom: 1px solid var(--line); }
 .top .wrap { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 24px; min-height: 64px; padding-top: 8px; padding-bottom: 8px; }
-.logo { display: flex; align-items: center; gap: 10px; font: 700 21px var(--f-disp); color: var(--ink); text-decoration: none; }
-.logo svg { width: 30px; height: 30px; flex: none; }
+.brand { display: flex; align-items: center; gap: 10px; font: 700 21px var(--f-disp); color: var(--ink); text-decoration: none; }
+.brand svg { width: 30px; height: 30px; flex: none; }
 .rail { flex: 1; display: flex; align-items: center; min-width: 0; }
 .rail .st { display: flex; align-items: center; gap: 8px; border: 0; background: none; padding: 6px 2px; font-size: 15px; font-weight: 600; white-space: nowrap; border-radius: var(--r-sm); }
 .rail .st i { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; font: 600 14px var(--f-mono); font-style: normal; border: 1.5px solid var(--line-2); background: var(--surface); transition: background var(--t-base) var(--ease), border-color var(--t-base) var(--ease), box-shadow var(--t-base) var(--ease); }
@@ -67,14 +67,15 @@ a { color: var(--accent); }
 .iconbtn { width: 38px; height: 38px; display: grid; place-items: center; border: 1px solid var(--line-2); border-radius: var(--r-sm); background: var(--surface); transition: border-color var(--t-fast); }
 .iconbtn:hover { border-color: var(--accent); }
 .iconbtn svg { width: 18px; height: 18px; }
-@media (max-width: 1239px) { .rail .st:not([aria-current="step"]) .sl { display: none; } }
+.rail .st:not([aria-current="step"]) .sl { display: none; }   /* 7 Schritte: nur der aktuelle mit Namen, sonst Name als Tooltip + aria-label */
+@media (max-width: 479px) { .rail .st .sl { display: none; } }   /* Handy: nur Nummern, damit alle 7 Schritte passen */
 @media (max-width: 759px) {
   .rail { order: 3; flex-basis: 100%; }
   .rail .st { gap: 6px; font-size: 14px; }
   .rail .st i { width: 26px; height: 26px; }
   .rail .fil { min-width: 4px; margin: 0 4px; }
   .tools .bdg.demo { display: none; }
-  .logo { flex: 1; }
+  .brand { flex: 1; }
 }
 
 /* ---------- Bausteine ---------- */
@@ -526,6 +527,16 @@ td:first-child { font-weight: 600; }
 .sota { grid-column: 1 / -1; }
 .sota table { min-width: 860px; }
 .sota td:nth-child(2) { white-space: nowrap; }
+/* 7 Funktionen: Matrix Funktion × Zielgruppe (Funk:C) */
+.fmatrix table { min-width: 760px; }
+.fmatrix th.c, .fmatrix td.c { text-align: center; padding-right: 0; width: 11%; }
+.fmatrix td { vertical-align: middle; }
+.fmatrix .fn { display: flex; gap: 12px; align-items: center; }
+.fmatrix .fn > span:last-child { display: flex; flex-direction: column; gap: 2px; }
+.fmatrix .fn > span:last-child > span { font-weight: 400; color: var(--ink-2); }
+.fmatrix .hic { --bar-ink: var(--accent); color: var(--accent); }
+.fdot { display: inline-block; width: 14px; height: 14px; border-radius: 50%; border: 1.5px solid var(--line-2); vertical-align: middle; }
+.fdot.on { background: var(--accent); border-color: var(--accent); }
 .sota tr.self td { background: color-mix(in srgb, var(--accent-2) 14%, var(--surface)); }
 .sota a { font-weight: 600; }
 /* Einordnung:C: Lücke + Grenzen in einer Kachel, Trennlinie dazwischen */

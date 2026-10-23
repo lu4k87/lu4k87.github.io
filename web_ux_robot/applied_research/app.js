@@ -12,7 +12,7 @@
   const I18N = {
     de: {
       demo: 'Demo-Daten · fiktiv', railAria: 'Schritte der Seite', langAria: 'Sprache', themeDark: 'Dunkles Design', themeLight: 'Helles Design',
-      steps: ['Überblick', 'Prinzip', 'Plattform', 'Szenarien', 'Projekt', 'Einordnung'], stepOf: 'Schritt {i} von {n}',
+      steps: ['Überblick', 'Prinzip', 'Plattform', 'Szenarien', 'Projekt', 'Einordnung', 'Funktionen'], stepOf: 'Schritt {i} von {n}',
       eyebrow: 'Applied Research · Proof of Concept',
       lead: 'Was ein Betrieb übrig hat, braucht ein anderer als Rohstoff. KreiswertS vernetzt kunststoffproduzierende, verarbeitende und recycelnde Unternehmen in Kamp-Lintfort und Umgebung – mit Profilen, Sekundärmaterialien, Bedarfen und möglichen Austauschwegen auf einer Karte.',
       canTitle: 'Was kann ich hier tun?', can1: 'Den Kreislauf aus Produzieren, Verarbeiten und Recyceln verstehen',
@@ -98,11 +98,22 @@
         '<b>Ehrlich:</b> Plausibilität statt Versprechen – Preise, Prüfprotokolle und Umwelteffekte bleiben offen.'],
       limTitle: 'Grenzen des Prototyps', ctxLg: 'Zeichen', ctxLgAria: 'Legende der Zeichen', lgDoes: 'leistet der Prototyp', lgLimit: 'Grenze, offen', guideTitle: 'Replikation · Leitfaden in {n} Schritten',
       guideLead: 'Alle Daten einer Region stehen in einer Datei (daten.js) – Karte, Matching, Szenarien und Selbsttest passen sich an.',
+      fnTitle: 'Was KreiswertS kann',
+      fnLead: 'Jede Funktion, für wen sie gedacht ist und wo sie auf der Seite steht.',
+      fnTh: 'Funktion', fnWhere: 'Wo', fnCity: 'Kommune', fnLgAria: 'Legende der Matrix', fnUse: 'nutzt diese Gruppe', fnNo: 'nicht im Fokus',
+      fnRows: [['Lagekarte der Region', 'Deutschland → Land → Kreis → Gemeinde, Firmen und Wege auf echter Grundkarte'],
+        ['Suche + Filter', 'Polymer, Rolle, Angebot/Bedarf, nur Lücken'],
+        ['Firmenprofile + Börse', 'Profil je Betrieb, Angebote und Bedarfe als Liste'],
+        ['Matching mit Wert', 'Pflicht: Polymer, Form, Qualität · Wert = Qualität 30 % + Menge 35 % + Nähe 35 %'],
+        ['Austauschpotenzial', 't/Monat rechnerisch, jede Tonne nur einmal vergeben'],
+        ['3 Szenarien', 'Austauschwege Schritt für Schritt auf der Karte'],
+        ['Selbsttest', '6 Prüfungen im Browser, Ergebnis als JSON'],
+        ['Übertragbar', 'andere Region = Datendatei + Kartenausschnitt tauschen · DE/EN · hell/dunkel']],
       foot: 'Alle Unternehmen, Mengen und Wege sind fiktive Demo-Daten · Entfernungen als Luftlinie · Karte © OpenStreetMap-Mitwirkende, © GeoBasis-DE / BKG (2026) · Applied Research, Prototyp 2026',
     },
     en: {
       demo: 'Demo data · fictional', railAria: 'Steps of the page', langAria: 'Language', themeDark: 'Dark theme', themeLight: 'Light theme',
-      steps: ['Overview', 'Principle', 'Platform', 'Scenarios', 'Project', 'Context'], stepOf: 'Step {i} of {n}',
+      steps: ['Overview', 'Principle', 'Platform', 'Scenarios', 'Project', 'Context', 'Features'], stepOf: 'Step {i} of {n}',
       eyebrow: 'Applied Research · Proof of Concept',
       lead: 'What one company has left over, another needs as raw material. KreiswertS connects plastics producers, processors and recyclers in and around Kamp-Lintfort – with profiles, secondary materials, needs and possible exchange routes on one map.',
       canTitle: 'What can I do here?', can1: 'Understand the loop of producing, processing and recycling',
@@ -188,6 +199,17 @@
         '<b>Honest:</b> plausibility instead of promises – prices, test reports and environmental effects remain open.'],
       limTitle: 'Limits of the prototype', ctxLg: 'Symbols', ctxLgAria: 'Symbol legend', lgDoes: 'what the prototype does', lgLimit: 'limit, open', guideTitle: 'Replication · guide in {n} steps',
       guideLead: 'All data of a region sits in one file (daten.js) – map, matching, scenarios and self-test adapt.',
+      fnTitle: 'What KreiswertS can do',
+      fnLead: 'Every feature, who it is for and where it sits on the page.',
+      fnTh: 'Feature', fnWhere: 'Where', fnCity: 'Municipality', fnLgAria: 'Matrix legend', fnUse: 'used by this group', fnNo: 'not in focus',
+      fnRows: [['Regional map', 'Germany → state → district → municipality, companies and routes on a real base map'],
+        ['Search + filters', 'Polymer, role, offer/need, gaps only'],
+        ['Company profiles + exchange', 'Profile per company, offers and needs as a list'],
+        ['Matching with a score', 'Required: polymer, form, quality · score = quality 30 % + quantity 35 % + proximity 35 %'],
+        ['Exchange potential', 't/month calculated, each tonne allocated only once'],
+        ['3 scenarios', 'Exchange routes step by step on the map'],
+        ['Self-test', '6 checks in the browser, result as JSON'],
+        ['Transferable', 'another region = swap data file + map extract · DE/EN · light/dark']],
       foot: 'All companies, quantities and routes are fictional demo data · straight-line distances · map © OpenStreetMap contributors, © GeoBasis-DE / BKG (2026) · Applied Research, prototype 2026',
     },
   };
@@ -402,9 +424,9 @@
   const roleLegend = () => Object.keys(D.roles).map(r => `<span>${roleShape(r)}${L(D.roles[r])}</span>`).join('');
 
   /* ---------- Kopf: Schritt-Leiste, Sprache, Theme ---------- */
-  const SECTIONS = ['start', 'prinzip', 'plattform', 'szenarien', 'projekt', 'einordnung'];
+  const SECTIONS = ['start', 'prinzip', 'plattform', 'szenarien', 'projekt', 'einordnung', 'funktionen'];
   function renderRail() {
-    $('#rail').innerHTML = SECTIONS.map((id, i) => `${i ? '<span class="fil" aria-hidden="true"><i></i></span>' : ''}<button type="button" class="st" data-go="${id}"><i>${i + 1}</i><span class="sl">${T('steps')[i]}</span></button>`).join('');
+    $('#rail').innerHTML = SECTIONS.map((id, i) => `${i ? '<span class="fil" aria-hidden="true"><i></i></span>' : ''}<button type="button" class="st" data-go="${id}" title="${T('steps')[i]}" aria-label="${i + 1} · ${T('steps')[i]}"><i>${i + 1}</i><span class="sl">${T('steps')[i]}</span></button>`).join('');
     trackRail();
   }
   function trackRail() {
@@ -856,6 +878,23 @@
     $('#rsteps').innerHTML = D.project.guide.map(g => { const [a, b] = g[LANG] || g.de; return `<li><b>${esc(a)}</b><span>${esc(b)}</span></li>`; }).join('');
   }
 
+  /* ---------- 7 Funktionen: Matrix Funktion × Zielgruppe (Funk:C) ---------- */
+  // Texte in I18N.fnRows (gleiche Reihenfolge); use = Produzenten, Verarbeiter, Recycler, Kommune; go = Section der Funktion
+  const FEATURES = [
+    { ic: 'map', use: [1, 1, 1, 1], go: 'plattform' }, { ic: 'filter', use: [1, 1, 1, 0], go: 'plattform' },
+    { ic: 'users', use: [1, 1, 1, 1], go: 'plattform' }, { ic: 'link', use: [1, 1, 1, 0], go: 'plattform' },
+    { ic: 'target', use: [0, 0, 1, 1], go: 'start' }, { ic: 'run', use: [1, 1, 1, 1], go: 'szenarien' },
+    { ic: 'flask', use: [0, 0, 0, 1], go: 'projekt' }, { ic: 'book', use: [0, 0, 0, 1], go: 'einordnung' },
+  ];
+  function renderFeatures() {
+    const groups = [...['P', 'V', 'R'].map(r => L(D.roles[r].pl)), T('fnCity')];
+    const dot = on => `<span class="fdot${on ? ' on' : ''}" role="img" aria-label="${T(on ? 'fnUse' : 'fnNo')}"></span>`;
+    $('#fnHead').innerHTML = `<th>${T('fnTh')}</th>` + groups.map(g => `<th class="c">${esc(g)}</th>`).join('') + `<th>${T('fnWhere')}</th>`;
+    $('#fnRows').innerHTML = FEATURES.map((f, i) => { const [a, b] = T('fnRows')[i]; return `<tr><td><span class="fn"><span class="hic" aria-hidden="true">${ico(f.ic)}</span><span><b>${a}</b><span>${b}</span></span></span></td>`
+      + f.use.map(u => `<td class="c">${dot(u)}</td>`).join('') + `<td><a href="#${f.go}">${T('steps')[SECTIONS.indexOf(f.go)]}</a></td></tr>`; }).join('');
+    $('#fnLegend').innerHTML = `<span class="lgt">${T('ctxLg')}</span><span class="vst">${dot(1)}${T('fnUse')}</span><span class="vst">${dot(0)}${T('fnNo')}</span>`;
+  }
+
   /* ---------- Echte Grundkarte (grundkarte.js, MapLibre): je Karte erst kurz vor dem Sichtbarwerden laden ----------
      Bis dahin, ohne WebGL oder ohne Daten in geo/ bleibt die schematische Karte. Das SVG bleibt obenauf (Wege, Firmen, Tastatur, Selbsttest). */
   const queued = new Set();
@@ -1057,7 +1096,7 @@
   function renderAll() {
     applyStatic(); renderRail(); renderTheme();
     renderStart(); renderCycle(); renderVs(); renderPrinzipFx();
-    renderControls(); renderPlat(); renderScn(); renderProject(); renderContext();
+    renderControls(); renderPlat(); renderScn(); renderProject(); renderContext(); renderFeatures();
     if (GEO.mapPlat) GEO.mapPlat.relabel();
   }
   renderAll();

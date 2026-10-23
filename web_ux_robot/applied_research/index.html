@@ -6,12 +6,13 @@
 <title>KreiswertS</title>
 <meta name="description" content="KreiswertS – digitaler Plattform-Prototyp für den zirkulären Kunststoff-Materialaustausch in Kamp-Lintfort. Alle Unternehmen und Mengen sind fiktive Demo-Daten.">
 <link rel="stylesheet" href="../fonts/fonts.css">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="vendor/maplibre-gl.css">
 <link rel="stylesheet" href="kreiswerts.css">
 </head>
 <body>
 <header class="top" id="top"><div class="wrap">
-  <a class="logo" href="#start"><svg viewBox="0 0 32 32" fill="none" stroke="var(--accent)" stroke-width="3" stroke-linecap="round" aria-hidden="true"><path d="M26 16a10 10 0 0 1-17.3 6.8"/><path d="M6 16a10 10 0 0 1 17.3-6.8"/><path d="M23.6 4.6v5h-5M8.4 27.4v-5h5"/></svg>KreiswertS</a>
+  <a class="brand" href="#start"><svg viewBox="0 0 32 32" fill="none" stroke="var(--accent)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 10A6 6 0 1 0 16 16A6 6 0 1 1 10 22"/><circle cx="22" cy="10" r="2.6" fill="var(--accent)" stroke="none"/><path d="M7 24.6 10 21.2 13 24.6"/></svg>KreiswertS</a>
   <nav class="rail" id="rail" data-ta="railAria"></nav>
   <div class="tools">
     <span class="bdg demo" data-t="demo"></span>
@@ -148,6 +149,11 @@
     <div class="tile lim hd hd-tst"><h3><span class="hic" data-ic="alert" aria-hidden="true"></span><span data-t="limTitle"></span></h3><ul class="ticks" id="limList"></ul></div>
     <div class="tile guide hd hd-per"><h3><span class="hic" data-ic="book" aria-hidden="true"></span><span id="guideTitle"></span></h3><p class="lab" data-t="guideLead"></p><ol class="rsteps" id="rsteps"></ol></div>
   </div>
+</section>
+
+<section class="area" id="funktionen">
+  <div class="head"><div><span class="medal" aria-hidden="true"><b>07</b></span><span class="kicker" data-kicker="6"></span><h2 data-t="fnTitle"></h2><p data-t="fnLead"></p></div><div class="lg" id="fnLegend" role="group" data-ta="fnLgAria"></div></div>
+  <div class="tile fmatrix"><div class="tscroll"><table><thead><tr id="fnHead"></tr></thead><tbody id="fnRows"></tbody></table></div></div>
 </section>
 </main>
 <footer class="foot"><div class="wrap" data-t="foot"></div></footer>
