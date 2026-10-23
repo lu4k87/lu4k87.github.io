@@ -96,7 +96,20 @@ varying vec3 vNormal;
 varying vec3 vLocal;
 varying vec3 vScale;
 ${SEM_GLSL}
+// Gegen Flackern bei der Kamerafahrt: feine Säume, Fugen und Tüpfel nie schmaler als ≈ 2 Bildpunkte zeichnen, sondern
+// breiter und im selben Maß schwächer (gleiche Lichtmenge) – sonst springen sie von Pixel zu Pixel an und aus.
+// px = Bildpunkt auf der Fläche; Saum voll bis a, weich auslaufend bis b (Abstand d)
+float aaBand(float d, float a, float b, float px) {
+  float k = max(1.0, 2.0 * px / b);
+  return (1.0 - smoothstep(a * k, b * k, d)) / k;
+}
+// schmaler Ring um c, innen w0 und außen w1 breit
+float aaRing(float x, float c, float w0, float w1, float px) {
+  float k = max(1.0, 2.0 * px / min(w0, w1));
+  return smoothstep(c - w0 * k, c, x) * smoothstep(c + w1 * k, c, x) / k;
+}
 void main() {
+  float px = 0.71 * length(fwidth(vWorld));   // vor jedem discard/if: Ableitungen nur im gleichförmigen Ablauf
   vec3 N = normalize(vNormal);
   vec3 V = normalize(cameraPosition - vWorld);
   float g = semShade(N, V, uDet, uBase);
@@ -122,12 +135,16 @@ void main() {
       if (h < 0.8 && abs(u) + 2.4 < halfLen && v < uOpenZ - 3.0) {
         float ang = 0.6 + h * 0.8;
         vec2 rf = mat2(cos(ang), -sin(ang), sin(ang), cos(ang)) * f;
-        float slit = length(rf / vec2(0.95, h > 0.6 ? 0.8 : 0.38));
-        if (slit < 1.0) discard;
+        float minor = h > 0.6 ? 0.8 : 0.38;
+        float slit = length(rf / vec2(0.95, minor));
+        float fs = px / minor;                      // Bildpunkt in Schlitz-Einheiten
+        // großer Porus: echtes Loch; kleiner (Schlitz < ≈ 7 px): dunkel gezeichnet statt ausgestanzt, sonst flackert er
+        if (fs < 0.3 && slit < 1.0 - fs) discard;
         float r = length(f);
-        g += 0.45 * (1.0 - smoothstep(0.0, 0.4, slit - 1.0));
+        g += 0.45 * aaBand(slit - 1.0, 0.0, 0.4, fs);
         g += 0.16 * smoothstep(2.15, 1.6, r);
-        g -= 0.12 * smoothstep(1.85, 2.1, r) * smoothstep(2.4, 2.1, r);
+        g -= 0.12 * aaRing(r, 2.1, 0.25, 0.3, px);
+        g = mix(g, 0.05, 1.0 - smoothstep(1.0 - fs, 1.0 + fs, slit));
       }
     } else if (vWall.x < 0.5) {
       // Tüpfel der Fasertracheiden: kleiner Hof (Ø ≈ 2,4 µm) mit schrägem Schlitz (≈ 45°, Fibrillenwinkel)
@@ -141,10 +158,12 @@ void main() {
         float ang = 0.78 + (h - 0.2) * 0.5;
         vec2 rf = mat2(cos(ang), -sin(ang), sin(ang), cos(ang)) * f;
         float slit = length(rf / vec2(0.72, 0.2));
-        if (slit < 1.0) discard;
-        g += 0.32 * (1.0 - smoothstep(0.0, 0.5, slit - 1.0));
-        g += 0.2 * (1.0 - smoothstep(0.0, 0.22, abs(r - 1.15)));      // Hofrand
+        float fs = px / 0.2;
+        if (fs < 0.3 && slit < 1.0 - fs) discard;
+        g += 0.32 * aaBand(slit - 1.0, 0.0, 0.5, fs);
+        g += 0.2 * aaBand(abs(r - 1.15), 0.0, 0.22, px);              // Hofrand
         g -= 0.06 * (1.0 - smoothstep(0.3, 1.1, r));                   // Hof fällt zum Schlitz ab
+        g = mix(g, 0.05, 1.0 - smoothstep(1.0 - fs, 1.0 + fs, slit));
       }
     }
 #endif
@@ -152,13 +171,13 @@ void main() {
     ed = de.y;                       // Schnittfläche oben: Längskanten leuchten
     // Mittellamelle: feine helle Fuge zwischen den beiden Zellwänden (≈ 0,3 µm), daneben leicht vertieft
     float ml = abs(vLocal.y) * vScale.y;
-    g += 0.16 * (1.0 - smoothstep(0.06, 0.2, ml)) - 0.05 * smoothstep(0.2, 0.35, ml) * (1.0 - smoothstep(0.35, 0.6, ml));
+    g += 0.16 * aaBand(ml, 0.06, 0.2, px) - 0.05 * aaRing(ml, 0.35, 0.15, 0.25, px);
   }
-  g += uEdge * (1.0 - smoothstep(0.0, uEdgeW, ed));
+  g += uEdge * aaBand(ed, 0.0, uEdgeW, px);
 #endif
 #ifdef SEM_JOINT
   if (abs(vLocal.z) > 0.49) {
-    g += uEdge * (1.0 - smoothstep(0.0, uEdgeW, (1.0 - length(vLocal.xy)) * vScale.x));
+    g += uEdge * aaBand((1.0 - length(vLocal.xy)) * vScale.x, 0.0, uEdgeW, px);
     g += 0.14 * (1.0 - smoothstep(0.15, 0.4, length(vLocal.xy)));     // Zwickel der Mittellamelle
   }
 #endif
@@ -174,7 +193,7 @@ void main() {
     g *= mix(0.12, 1.0, exp(-d / uDepth));   // Hohlräume dunkeln ab, bleiben aber sichtbar (Globalbeleuchtung, User 2026-10-23)
   }
   g = max(g, 0.08);                           // Grundhelligkeit: keine Fläche fällt auf Schwarz, auch von der Seite gesehen
-  g *= 0.86 + 0.28 * vnoise(vWorld * uNoise);
+  g *= 0.86 + 0.28 * mix(0.5, vnoise(vWorld * uNoise), 1.0 - smoothstep(0.35, 0.7, px * uNoise));   // Körnung feiner als ein Bildpunkt → Mittelwert
   g *= 1.0 + uShade * (vnoise(vWorld * 0.0045 + 7.0) - 0.5);   // großräumige Helligkeit (Aufladung, Detektorlage)
   gl_FragColor = semOut(g, uTint);
 }
