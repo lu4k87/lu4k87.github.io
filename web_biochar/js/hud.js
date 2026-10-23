@@ -22,6 +22,9 @@ export function createHud(handlers) {
   const layer = $('#hotspots');
   const leaders = $('#leaders');
   const meter = $('#edge-meter');
+  const stage = $('#pyro-stage');   // Einblendung in der 3D-Ansicht (Temperatur, Phase, Gase), Texte aus science.js
+  stage.innerHTML = `${hexBadge('thermo', 'hex--hs')}<span class="ps-T" id="ps-T"></span>` +
+    `<span class="ps-text"><span class="ps-phase" id="ps-phase"></span><span class="ps-gas" id="ps-gas"></span></span>`;
   let markers = [];
   let current = -1;
   let level = null;
@@ -179,16 +182,46 @@ export function createHud(handlers) {
       </div>`;
   }
 
+  // Einblendung in der 3D-Ansicht: sichtbar, solange die Temperatur gleitet (Zeitraffer oder Reglerwechsel);
+  // nach dem Ende STAGE_HOLD ms stehen lassen, dann ausblenden. Phasentext wechselt mit kurzer Überblendung.
+  const STAGE_HOLD = 2200, SWAP_MS = 250;
+  const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let stageOff = 0, stagePhase = '', stageSwap = 0, stageFresh = true;
+  function setStage(done) {
+    clearTimeout(stageOff);
+    if (done) { stageOff = setTimeout(() => stage.classList.remove('is-on'), STAGE_HOLD); return; }
+    if (!stage.classList.contains('is-on')) stageFresh = true;   // gerade erst eingeblendet: erster Text ohne Überblendung
+    stage.classList.add('is-on');
+  }
+  function setStageText(st) {
+    const fresh = stageFresh;
+    stageFresh = false;
+    if (st.phase === stagePhase) return;
+    stagePhase = st.phase;
+    const write = () => {
+      $('#ps-phase').textContent = st.phase;
+      $('#ps-gas').textContent = `Gase: ${st.gas}`;
+      stage.classList.remove('is-swap');
+    };
+    clearTimeout(stageSwap);
+    if (reducedMotion || fresh) { write(); return; }
+    stage.classList.add('is-swap');
+    stageSwap = setTimeout(write, SWAP_MS);
+  }
+
   let hudTemp = 550, hudPlaying = false, lastLive = 0;
-  function setLive(T, playing, force = false) {
+  function setLive(T, playing, done = false) {
     hudTemp = T;
     hudPlaying = playing;
+    setStage(done);
     const now = performance.now();
-    if (!force && now - lastLive < 40) return;    // ≈ 25 Hz reicht für Zahlen
+    if (!done && now - lastLive < 40) return;    // ≈ 25 Hz reicht für Zahlen
     lastLive = now;
+    const st = pyroState(T);
+    $('#ps-T').textContent = `${fmt(T)} °C`;
+    setStageText(st);
     const live = panel.querySelector('#pyro-live');
     if (!live) return;
-    const st = pyroState(T);
     live.classList.toggle('is-playing', playing);
     panel.querySelector('#pyro-T').textContent = `${fmt(T)} °C`;
     panel.querySelector('#pyro-phase').textContent = st.phase;
@@ -349,10 +382,11 @@ export function createHud(handlers) {
     const r = (sel) => $(sel).getBoundingClientRect();
     const lad = r('.ladder'), pan = r('#panel'), top = r('.topbar'), bot = r('.bottombar');
     const narrow = width <= 860;
+    const live = stage.classList.contains('is-on') ? stage.getBoundingClientRect().bottom : 0;   // Einblendung frei halten
     return {
       x0: narrow ? 8 : lad.right + 10,
       x1: pan.width > 0 && pan.left > width * 0.5 ? pan.left - 10 : width - 8,
-      y0: (narrow ? lad.bottom : top.bottom) + 8,
+      y0: Math.max(narrow ? lad.bottom : top.bottom, live) + 8,
       y1: Math.min(narrow && pan.width > 0 ? pan.top : Infinity, bot.top) - 8,   // mobil liegt die Knopfleiste über der Tafel
     };
   }

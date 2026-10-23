@@ -45,6 +45,7 @@ const G = {
   edgeh: `<circle cx="9.5" cy="12" r="3.2"/><path d="M12.7 12h5"/><circle cx="19" cy="12" r="1.4" ${F}/>`,
   sheen: '<path d="M12 3v6M12 15v6M3 12h6M15 12h6M6.5 6.5l3 3M14.5 14.5l3 3M6.5 17.5l3-3M14.5 9.5l3-3"/>',
   area: '<path d="M4 20V4h16"/><path d="M8 16l4-5 3 3 5-6"/>',
+  thermo: '<path d="M10 14V5a2 2 0 0 1 4 0v9a3.5 3.5 0 1 1-4 0z"/><path d="M12 9.5v7.5"/>',
 };
 
 export const LEVEL_ICONS = { piece: 'cube', tissue: 'honeycomb', cells: 'tubes', wall: 'pit', meso: 'foam', micro: 'layers', atoms: 'molecule' };
