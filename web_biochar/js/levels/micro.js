@@ -63,7 +63,18 @@ vec4 hexCoords(vec2 uv) {
   vec4 h = vec4(uv - hC.xy * s, uv - (hC.zw + 0.5) * s);
   return dot(h.xy, h.xy) < dot(h.zw, h.zw) ? vec4(h.xy, hC.xy) : vec4(h.zw, hC.zw + 0.5);
 }
+// Gegen Flackern bei der Kamerafahrt (Muster wie aaBand in sem.js): Bindungen, Atome und Randsaum nie schmaler als
+// ≈ 2 Bildpunkte zeichnen, sondern um k breiter (Deckung für discard) und um k schwächer (Helligkeit).
+// k für eine Form der Breite w bei Bildpunkt fw (beides in denselben Einheiten)
+float widen(float w, float fw) { return max(1.0, 2.0 * fw / w); }
+// Deckung eines Saums: voll bis a, weich bis b (Abstand d), um k verbreitert
+float band(float d, float a, float b, float k, float aa) { return 1.0 - smoothstep(a * k - aa, b * k + aa, d); }
 void main() {
+  vec2 uv = vLocal * vSheet.z / 0.246 + vSheet.w * 13.0;   // Gitterkonstante 0,246 nm, C–C 0,142 nm
+  // Bildpunkt in Gitter-Einheiten, auch schräg gesehen (fwidth(uv.x) allein übersah die Stauchung quer dazu);
+  // vor jedem discard/if: Ableitungen nur im gleichförmigen Ablauf
+  float fw = 0.71 * length(fwidth(uv));
+  float aa = fw * 0.9;
   vec3 V = normalize(cameraPosition - vWorld);
   vec3 N = normalize(vN);
   float facing = abs(dot(N, V));
@@ -81,19 +92,19 @@ void main() {
   float r = length(vLocal);
   float ang = atan(vLocal.y, vLocal.x);
   float rim = rimR(ang, vSheet.w);
-  // Randatome als Buckel: Abstand ≈ 0,25 nm entlang des Randes
+  // Randatome als Buckel: Abstand ≈ 0,25 nm entlang des Randes, Höhe 0,05 nm ≈ 0,2 Gitter-Einheiten –
+  // unter ≈ 2 Bildpunkten Höhe gleitet der Rand zur glatten Kante (mittlere Lage bleibt)
   float nb = max(6.0, floor(6.2832 * rim * vSheet.z / 0.25));
-  float bump = 0.5 + 0.5 * cos(ang * nb + vSheet.w * 40.0);
+  float bump = mix(0.5, 0.5 + 0.5 * cos(ang * nb + vSheet.w * 40.0), smoothstep(0.2, 0.1, fw));
   float rimB = rim + (0.05 / vSheet.z) * bump;
   if (r > rimB) discard;
-  vec2 uv = vLocal * vSheet.z / 0.246 + vSheet.w * 13.0;   // Gitterkonstante 0,246 nm, C–C 0,142 nm
   vec4 hc = hexCoords(uv);
   float e = 0.5 - hexDist(hc.xy);
   vec2 q = abs(hc.xy);
   float dv = min(length(q - vec2(0.5, 0.288675)), length(q - vec2(0.0, 0.57735)));
-  float aa = fwidth(uv.x) * 0.9;
-  float bond = 1.0 - smoothstep(0.045 - aa, 0.06 + aa, e);
-  float atom = 1.0 - smoothstep(0.09 - aa, 0.12 + aa, dv);
+  float kb = widen(0.105, fw), ka = widen(0.21, fw);   // Bindung ≈ 0,105, Atom ≈ 0,21 Gitter-Einheiten breit
+  float bond = band(e, 0.045, 0.06, kb, aa);
+  float atom = band(dv, 0.09, 0.12, ka, aa);
   // Fünfring (Schale) bzw. Siebenring (Sattel) in der Mitte gekrümmter Schichten – Ursache der Krümmung (Harris-Modell)
   float warm = 0.0;
   if (vSheet.w > 0.45) {
@@ -106,20 +117,26 @@ void main() {
     float ak = floor(a0 / seg + 0.5) * seg;
     float dA = length(u0 - RN * vec2(cos(ak), sin(ak)));
     float dE = abs(rr * cos(mod(a0, seg) - seg * 0.5) - RN * cos(seg * 0.5));
-    float ringBond = (1.0 - smoothstep(0.045 - aa, 0.06 + aa, dE)) * (1.0 - smoothstep(RN * 0.6, RN * 0.75, abs(rr - RN * 0.9)));
-    float ringAtom = 1.0 - smoothstep(0.09 - aa, 0.12 + aa, dA);
+    float ringBond = band(dE, 0.045, 0.06, kb, aa) * (1.0 - smoothstep(RN * 0.6, RN * 0.75, abs(rr - RN * 0.9)));
+    float ringAtom = band(dA, 0.09, 0.12, ka, aa);
     bond = mix(bond * (1.0 - zone), ringBond, zone);
     atom = mix(atom * (1.0 - zone), ringAtom, zone);
     warm = zone * max(ringBond, ringAtom);
   }
-  float detail = smoothstep(0.55, 0.2, fwidth(uv.x));          // aus der Ferne: Fläche statt Gitter
+  // aus der Ferne und schräg: Fläche statt Gitter, bevor die Löcher zwischen den Bindungen unter 2 Bildpunkte fallen
+  float detail = smoothstep(0.3, 0.16, fw);
   float m = mix(0.55, max(bond * 0.8, atom), detail);
 #ifdef SHEET_FILL
-  gl_FragColor = vec4(uColor * (0.022 + 0.022 * (1.0 - facing)) * fog, 1.0);
+  // Löcher zwischen den Bindungen: je feiner das Gitter auf dem Bild, desto mehr füllt sie ein Schleier in Bindungsfarbe –
+  // weniger Kontrast an den harten discard-Kanten (MSAA glättet sie nicht); in der Standardansicht (fw ≈ 0,05) unverändert
+  float veil = m < 0.35 ? smoothstep(0.07, 0.2, fw) : 0.0;
+  vec3 bondCol = uColor * (0.35 + 0.35 * (1.0 - facing)) * lit * fog;
+  gl_FragColor = vec4(uColor * (0.022 + 0.022 * (1.0 - facing)) * fog + 0.5 * veil * pow(bondCol, vec3(2.2)), 1.0);
 #else
   if (m < 0.35) discard;
-  float edgeAtoms = smoothstep(rim - 0.04, rimB, r) * bump;
-  vec3 col = uColor * (0.35 + 0.55 * atom + 0.35 * (1.0 - facing) + 0.45 * edgeAtoms) * lit * fog;
+  float ke = widen(0.04, fw * 0.246 / vSheet.z);               // Randsaum 0,04 lokale Einheiten
+  float edgeAtoms = smoothstep(rim - 0.04 * ke, rimB, r) * bump / ke;
+  vec3 col = uColor * (0.35 + 0.55 * atom / ka + 0.35 * (1.0 - facing) + 0.45 * edgeAtoms) * lit * fog;
   col = mix(col, col * vec3(1.35, 1.0, 0.62), 0.6 * warm * detail);
   gl_FragColor = vec4(pow(col, vec3(2.2)), 1.0);
 #endif
