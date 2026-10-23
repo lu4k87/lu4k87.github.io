@@ -226,6 +226,15 @@ function sideTextures(rand, radialFace) {
     for (let x = x0; x < Math.min(NW - 4, x0 + len); x += 6) pts.push([x, y0 + (n(x * 0.02, k * 7) - 0.5) * 18]);
     crackPath(pts, (t) => (Math.sin(Math.PI * t) * (2 + 3 * rand())) + 0.4, [kc, '#fff']);
   }
+  // feine Querrisse zwischen den großen Schwundrissen (Würfelmuster der Holzkohle), laufen quer zur Faser aus;
+  // eigener Zufall, damit Form und Abplatzer des Stücks (gemeinsamer Zufall danach) unverändert bleiben
+  const cr = mulberry32(radialFace ? 811 : 812);
+  for (let k = 0; k < 12; k++) {
+    const x0 = (0.04 + 0.92 * cr()) * NW, y0 = cr() * 0.6 * NH, len = (0.15 + 0.35 * cr()) * NH;
+    const pts = [];
+    for (let y = y0; y < Math.min(NH - 4, y0 + len); y += 5) pts.push([x0 + (n(y * 0.03, k * 5.3) - 0.5) * 22, y]);
+    crackPath(pts, (t) => Math.sin(Math.PI * t) * (1 + 1.6 * cr()) + 0.3, [kc, '#fff']);
+  }
   return { col, rb, N: NW, NH, ck };
 }
 
@@ -403,8 +412,8 @@ export function create(ctx) {
   addChip([0.05, 0.5, 0.86], 0.62, 0).split = true;                    // Spaltfläche längs der Faser
 
   // Schwundrisse (Würfelmuster): quer zur Faser, längs entlang der Holzstrahlen vom Mark, ein Ringriss; laufen über die
-  // Kanten weiter. Öffnung/Tiefe/Versatz in cm im Kohlezustand; das Holz ist glatt, dazwischen gleitet das Morph-Ziel
-  const CRACK = { width: 0.05, depth: 0.11, lift: 0.027 };
+  // Kanten weiter. Öffnung/Tiefe/Versatz in cm bei 800 °C (550 °C: ×0,85); das Holz ist glatt, dazwischen gleitet das Morph-Ziel
+  const CRACK = { width: 0.075, depth: 0.16, lift: 0.036 };
   const vr = mulberry32(4242);
   const pithYZ = [-H * 1.5, -D * 1.4];            // Mark liegt außerhalb des Stücks
   const angs = corners.map((c) => Math.atan2(c[2] - pithYZ[1], c[1] - pithYZ[0]));
@@ -535,7 +544,7 @@ export function create(ctx) {
           float pl = dot(diffuseColor.rgb, vec3(0.3333));
           float lr = clamp(pl / 0.016, 0.0, 1.8);       // Textur ist linear ≈ 0,015 im Mittel, Poren ≈ 0
           float pd = max(1.0 - clamp(lr, 0.0, 1.0), cm);
-          vec3 wood = vec3(0.78, 0.48, 0.21) * (0.3 + 0.7 * lr);
+          vec3 wood = vec3(0.78, 0.48, 0.21) * (0.6 + 0.4 * lr);   // Holz: Gefäße/Riefen nur als feine Körnung
           vec3 brown = wood * vec3(0.5, 0.36, 0.3);
           diffuseColor.rgb = (uChar < 0.5 ? mix(wood, brown, smoothstep(0.0, 0.5, uChar)) : mix(brown, diffuseColor.rgb, smoothstep(0.5, 1.0, uChar))) * (1.0 - 0.92 * cm);`)
         .replace('#include <roughnessmap_fragment>', '#include <roughnessmap_fragment>\n          roughnessFactor = mix(roughnessFactor, 1.0, cm);')
@@ -756,8 +765,9 @@ export function create(ctx) {
       const st = pyroState(value);
       pyro.uChar.value = st.char;
       // Schwundrisse öffnen sich mit der Schwindung quer zur Faser (Modell, docs/research.md): sichtbar ab ≈ 260 °C,
-      // voll offen ab ≈ 580 °C; gleitet mit dem Regler und im Zeitraffer ohne Sprung, kein Neuaufbau
-      const open = clamp((st.shrinkT / SHRINK_T_MAX - 0.06) / 0.9, 0, 1);
+      // fast voll offen ab ≈ 580 °C, danach bis 800 °C noch etwas breiter; gleitet mit dem Regler und im Zeitraffer ohne
+      // Sprung, kein Neuaufbau
+      const open = clamp((st.shrinkT / SHRINK_T_MAX - 0.06) / 0.9, 0, 1) * (0.85 + 0.15 * clamp((value - 550) / 250, 0, 1));
       piece.morphTargetInfluences[0] = open;
       pyro.uCrack.value = open;
       cracksHs.normal.set(0, 0, open > 0.12 ? 1 : 0);
@@ -772,8 +782,11 @@ export function create(ctx) {
       const k = clamp((value - 350) / 450, 0, 1);
       const brown = clamp((450 - value) / 100, 0, 1);   // ab ≈ 450 °C tiefschwarz
       const tint = new THREE.Color(lerp(0.72, 1.9, brown), lerp(0.72, 1.3, brown), lerp(0.74, 0.95, brown));
+      // Holz nur leicht rau: Faserriefen und Gefäßrinnen der Normal-Map flach, werden mit der Schwindung tiefer
+      const relief = 1.1 * lerp(0.4, 1, clamp((value - 250) / 300, 0, 1));
       for (const m of mats) {
         m.color.copy(tint);
+        m.normalScale.setScalar(relief);
         m.metalness = m === matEnd ? lerp(0.02, 0.1, k) : lerp(0.04, 0.3, k);
         m.roughness = lerp(1.15, 0.85, k);
         m.clearcoat = m === matEnd ? 0 : lerp(0, 0.2, k);    // Seidenglanz der Längsflächen, gedämpft: rau statt glatt
