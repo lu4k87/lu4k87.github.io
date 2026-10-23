@@ -384,11 +384,13 @@ export function createHud(handlers) {
     if (dive) dive.addEventListener('click', () => handlers.onDive(selected.id));
     card.querySelector('.hs-card-close').addEventListener('click', closeCard);
     card.classList.remove('is-away');
+    cardW = 0;
     card.classList.add('is-open');
   }
 
   // Karte links vom Punkt und vom gewählten Abzeichen (12 px Abstand), vertikal mittig, im freien Bereich gehalten;
   // reicht der Platz links nicht für 220 px (schmales Fenster), steht sie unter dem Abzeichen
+  let cardW = 0;
   function placeCard(items, rect, width, height) {
     if (!selected) return;
     const m = items.find((x) => x.h.id === selected.id);
@@ -397,12 +399,16 @@ export function createHud(handlers) {
     const edge = Math.min(m.ax, m.x - m.w / 2) - 12;
     const avail = edge - rect.x0;
     const below = avail < 220;
-    card.style.width = below ? '' : `${Math.min(340, avail)}px`;
+    // Breite in 20-px-Stufen mit Hysterese: sonst folgt sie dem wandernden Abzeichen (Kamerafahrt im Leerlauf), der Blocksatz
+    // bricht in jedem Bild anders um und die Karte flackert und zittert
+    if (below) cardW = 0;
+    else if (!cardW || avail < cardW || avail > cardW + 100) cardW = Math.min(340, Math.max(220, Math.floor((avail - 30) / 20) * 20));
+    card.style.width = below ? '' : `${cardW}px`;
     const cw = card.offsetWidth, ch = card.offsetHeight;
     // im schmalen Fenster darf die Karte über die Tafel ragen (Fensterhöhe statt Bühne)
     const x = below ? Math.min(Math.max(8, m.x - cw / 2), width - cw - 8) : edge - cw;
     const y = below ? Math.max(8, Math.min(m.y + m.hgt / 2 + 10, height - ch - 8)) : Math.min(Math.max(m.y - ch / 2, rect.y0), Math.max(rect.y0, rect.y1 - ch));
-    card.style.transform = `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px)`;
+    card.style.transform = `translate(${Math.round(x)}px, ${Math.round(y)}px)`;   // ganze Pixel: kein Flimmern der Schrift
   }
 
   // freier Bereich zwischen Schiene, Tafel, Kopf- und Fußleiste
