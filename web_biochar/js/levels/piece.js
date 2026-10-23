@@ -1,6 +1,7 @@
 // Ebene 1: ein Stück Buchen-Pflanzenkohle (Einheit cm). Prozedurale Texturen: Jahrringe, Strahlen, Gefäße in echter
-// Größe (Ø 15–24 µm), Faserriefen, Schwundrisse; Relief als Normal-Map (Sobel) und als Verschiebung im feinen Netz.
-// Form: längs gespaltener Splitter mit zerfasertem Bruchende, Würfelrisse aus der Schwindung als Geometrie.
+// Größe (Ø 15–24 µm), Faserriefen; Relief als Normal-Map (Sobel) und als Verschiebung im feinen Netz.
+// Form: längs gespaltener Splitter mit zerfasertem Bruchende. Schwundrisse (Würfelmuster als Geometrie, Risslinien als
+// eigene Textur) sind im Holz geschlossen und öffnen sich mit der Schwindung (Morph-Ziel + uCrack, setParam 'temp').
 
 import * as THREE from 'three';
 import { mulberry32, fbm3, smoothstep, clamp, lerp, vnoisef, hash33 } from '../util.js';
@@ -10,6 +11,7 @@ import { pyroState, glowColor } from '../science.js';
 const W = 4.4, H = 2.4, D = 2.2;
 const END_UM_PER_PX = (2.3e4 / 2048);      // Stirnfläche ≈ 2,3 cm auf 2048 px → ≈ 11 µm je Pixel
 const VESSELS_PER_MM2 = 120;               // Modell: Größenordnung für zerstreutporige Buche (docs/research.md)
+const SHRINK_T_MAX = pyroState(700).shrinkT;   // volle Schwindung quer zur Faser (Modell in science.js, ab 600 °C)
 
 // schnelles 2D-Wertrauschen auf einem Zufallsgitter
 function noise2(rand) {
@@ -32,7 +34,7 @@ function canvas(w, h) {
   return c;
 }
 
-// Riss als gezackte Linie; zeichnet in Farbe (schwarz) und Relief (R = 0)
+// Riss als gezackte Linie; zeichnet weiß in die Riss-Maske (eigene Textur, der Shader blendet sie mit uCrack ein)
 function crackPath(points, widthAt, ...ctxs) {
   for (const [ctx, style] of ctxs) {
     ctx.fillStyle = style;
@@ -72,8 +74,10 @@ function stampPore(col, rel, N, NH, cx, cy, rx, ry, depth) {
 function endGrainTextures(rand) {
   const N = 2048;
   const n = noise2(rand);
-  const col = canvas(N, N), rb = canvas(N, N);
+  const col = canvas(N, N), rb = canvas(N, N), ck = canvas(N / 2, N / 2);
   const cc = col.getContext('2d'), rc = rb.getContext('2d', { willReadFrequently: true });
+  const kc = ck.getContext('2d', { willReadFrequently: true });
+  kc.scale(0.5, 0.5);                  // Riss-Maske in halber Auflösung, gleiche Koordinaten wie Farbe/Relief
   const img = cc.createImageData(N, N), rimg = rc.createImageData(N, N);
   const pith = [-0.6 * N, 1.4 * N];    // Mark liegt außerhalb des Stücks
   const ringW = 0.115 * N;             // Jahrring ≈ 2,6 mm
@@ -146,13 +150,13 @@ function endGrainTextures(rand) {
       pts.push([pith[0] + Math.cos(ang) * r - Math.sin(ang) * j, pith[1] + Math.sin(ang) * r + Math.cos(ang) * j]);
     }
     const w0 = 5 + 5 * rand();
-    crackPath(pts, (t) => (1 - t) * w0 + 0.8, [cc, 'rgb(2,2,2)'], [rc, 'rgb(0,230,0)']);
+    crackPath(pts, (t) => (1 - t) * w0 + 0.8, [kc, '#fff']);
     for (let b = 0; b < 2; b++) {            // feine Seitenrisse
       const at = pts[Math.floor((0.2 + 0.5 * rand()) * pts.length)];
       const side = [];
       const ba = ang + (rand() < 0.5 ? 1 : -1) * (0.5 + 0.6 * rand());
       for (let s = 0; s < 60 + rand() * 80; s += 6) side.push([at[0] + Math.cos(ba) * s, at[1] + Math.sin(ba) * s + (n(s * 0.05, b + k) - 0.5) * 6]);
-      crackPath(side, (t) => (1 - t) * 1.6 + 0.4, [cc, 'rgb(4,4,4)'], [rc, 'rgb(0,230,0)']);
+      crackPath(side, (t) => (1 - t) * 1.6 + 0.4, [kc, '#fff']);
     }
   }
   const ringR = Math.round((Math.hypot(N * 0.55 - pith[0], N * 0.45 - pith[1])) / ringW) * ringW - 2;
@@ -161,15 +165,17 @@ function endGrainTextures(rand) {
     const r = ringR + (n(a * 40, 3.3) - 0.5) * 8;
     ringPts.push([pith[0] + Math.cos(a) * r, pith[1] + Math.sin(a) * r]);
   }
-  crackPath(ringPts, (t) => 3.2 * Math.sin(Math.PI * t) + 0.6, [cc, 'rgb(3,3,3)'], [rc, 'rgb(0,230,0)']);
-  return { col, rb, N };
+  crackPath(ringPts, (t) => 3.2 * Math.sin(Math.PI * t) + 0.6, [kc, '#fff']);
+  return { col, rb, N, ck };
 }
 
 function sideTextures(rand, radialFace) {
   const NW = 2048, NH = 1024;                 // u = Faserrichtung (4,4 cm), v quer (≈ 2,3 cm) → ≈ 22 µm je Pixel
   const n = noise2(rand);
-  const col = canvas(NW, NH), rb = canvas(NW, NH);
+  const col = canvas(NW, NH), rb = canvas(NW, NH), ck = canvas(NW / 2, NH / 2);
   const cc = col.getContext('2d'), rc = rb.getContext('2d', { willReadFrequently: true });
+  const kc = ck.getContext('2d', { willReadFrequently: true });
+  kc.scale(0.5, 0.5);                  // Riss-Maske in halber Auflösung, gleiche Koordinaten wie Farbe/Relief
   const img = cc.createImageData(NW, NH), rimg = rc.createImageData(NW, NH);
   const cd = img.data, rd = rimg.data;
   const ringPx = radialFace ? 118 : 165;      // Jahrringe als Streifen: radial schmal und parallel, tangential breiter und gefladert
@@ -218,9 +224,9 @@ function sideTextures(rand, radialFace) {
     const y0 = (0.2 + 0.6 * rand()) * NH, x0 = rand() * 0.4 * NW, len = (0.35 + 0.45 * rand()) * NW;
     const pts = [];
     for (let x = x0; x < Math.min(NW - 4, x0 + len); x += 6) pts.push([x, y0 + (n(x * 0.02, k * 7) - 0.5) * 18]);
-    crackPath(pts, (t) => (Math.sin(Math.PI * t) * (2 + 3 * rand())) + 0.4, [cc, 'rgb(2,2,2)'], [rc, 'rgb(0,230,0)']);
+    crackPath(pts, (t) => (Math.sin(Math.PI * t) * (2 + 3 * rand())) + 0.4, [kc, '#fff']);
   }
-  return { col, rb, N: NW, NH };
+  return { col, rb, N: NW, NH, ck };
 }
 
 // Höhe weichzeichnen (Binomial 1-4-6-4-1 bzw. 1-2-1, getrennt in x und y): nimmt die zeilenfeinen Anteile heraus,
@@ -268,6 +274,17 @@ function sobelNormal(src, strength, taps = 3) {
       o[i + 3] = 255;
     }
   }
+  oc.putImageData(img, 0, 0);
+  return out;
+}
+
+// Risslinien als eigene Textur: R/G = Neigung der Rissränder (Rinne, wie die Normal-Map), B = Rissanteil 0–1. Die
+// Grundtexturen bleiben rissfrei (Holz); der Shader blendet Farbe, Relief und Rauheit der Risse mit uCrack ein.
+function crackTexture(mask, strength) {
+  const out = sobelNormal(mask, -strength, 3);
+  const w = out.width, h = out.height, oc = out.getContext('2d');
+  const img = oc.getImageData(0, 0, w, h), m = mask.getContext('2d').getImageData(0, 0, w, h).data;
+  for (let i = 0; i < w * h; i++) img.data[i * 4 + 2] = m[i * 4];
   oc.putImageData(img, 0, 0);
   return out;
 }
@@ -386,8 +403,8 @@ export function create(ctx) {
   addChip([0.05, 0.5, 0.86], 0.62, 0).split = true;                    // Spaltfläche längs der Faser
 
   // Schwundrisse (Würfelmuster): quer zur Faser, längs entlang der Holzstrahlen vom Mark, ein Ringriss; laufen über die
-  // Kanten weiter. CRACK.width = Öffnung in cm (Ansatz für die Pyrolyse-Animation: wächst mit der Schwindung)
-  const CRACK = { width: 0.05, depth: 0.16, lift: 0.035 };
+  // Kanten weiter. Öffnung/Tiefe/Versatz in cm im Kohlezustand; das Holz ist glatt, dazwischen gleitet das Morph-Ziel
+  const CRACK = { width: 0.05, depth: 0.11, lift: 0.027 };
   const vr = mulberry32(4242);
   const pithYZ = [-H * 1.5, -D * 1.4];            // Mark liegt außerhalb des Stücks
   const angs = corners.map((c) => Math.atan2(c[2] - pithYZ[1], c[1] - pithYZ[0]));
@@ -415,17 +432,20 @@ export function create(ctx) {
     if (wr > 0.003) open = Math.max(open, clamp(1 - Math.abs(r - ringR - 0.05 * (fbmf(p.x, ang * 6, 2) - 0.5)) / wr, 0, 1));
     // Blöcke zwischen den Rissen leicht gegeneinander versetzt
     const lift = (hash33(ix, sec, 7)[0] - 0.5) * CRACK.lift;
-    return { k: lift - CRACK.depth * open, shade: 1 - 0.8 * open };
+    return { k: lift - CRACK.depth * open, shade: 1 - 0.7 * open };
   };
 
-  const colors = new Float32Array(pos.count * 3);
+  // Holzzustand = Form ohne Schwundrisse und Blockversatz, Bruchflächen heller; Kohle = volles Relief, dunkle Bruchflächen.
+  // Unterschied (Lage, Normale, Helligkeit) als relatives Morph-Ziel, piece.morphTargetInfluences[0] = Rissöffnung 0–1
+  const colors = new Float32Array(pos.count * 3), dPos = new Float32Array(pos.count * 3), dCol = new Float32Array(pos.count * 3);
+  const crackDepth = new Float32Array(pos.count);
   const p = new THREE.Vector3();
   for (let i = 0; i < pos.count; i++) {
     const dn = nsum.get(keyOf(i));
     const n = [dn.x, dn.y, dn.z];
     p.fromBufferAttribute(pos, i);
     shape(p);
-    let shade = 1;
+    let shade = 1, shadeWood = 1;
     // Bruchende links: tiefe Terrassen quer zur Faser, lange herausstehende Faserbündel, feine Splitter
     if (p.x < -W / 2 + 0.95) {
       const step = Math.floor(fbm3(p.y * 2.2 + 7, p.z * 2.2 + 3, 0.5, 3) * 5) / 5;
@@ -445,14 +465,14 @@ export function create(ctx) {
       const fib = 1 - Math.abs(2 * fbmf(p.x * 0.5, p.y * 9, p.z * 9, 3) - 1);
       const k = 0.03 * (fib - 0.5) + 0.012 * (fbmf(p.x * 2, p.y * 30, p.z * 30, 2) - 0.5);
       p.set(p.x + hit.n[0] * k, p.y + hit.n[1] * k, p.z + hit.n[2] * k);
-      shade = 0.7;
+      shade = 0.7; shadeWood = 0.9;
     } else if (hit) {
       // frische Bruchfläche: muschelige Wellen + Rauheit entlang der Abplatzer-Normale, glänzend schwarz
       const r = fbm3(p.x * 6 + 1, p.y * 6, p.z * 6, 3);
       const shell = Math.abs(Math.sin(r * 14 + hit.ripple));        // unregelmäßige Muschelbögen, keine parallelen Wellen
       const k = -0.005 * shell - 0.02 * (r - 0.5) - 0.012 * (fbmf(p.x * 14, p.y * 14, p.z * 14, 2) - 0.5);
       p.set(p.x + hit.n[0] * k, p.y + hit.n[1] * k, p.z + hit.n[2] * k);
-      shade = 0.6;
+      shade = 0.6; shadeWood = 0.86;
     } else {
       const h = heights[f](u, v);
       const edge = smoothstep(0, 0.05, Math.min(u, 1 - u, v, 1 - v));
@@ -463,14 +483,27 @@ export function create(ctx) {
       const k = -crack * 0.13 + bump * 0.015 + relief;
       p.set(p.x + n[0] * k, p.y + n[1] * k, p.z + n[2] * k);
     }
-    const c = cracksAt(p), dir = hit ? hit.n : n;
-    p.set(p.x + dir[0] * c.k, p.y + dir[1] * c.k, p.z + dir[2] * c.k);
-    shade *= c.shade;
     pos.setXYZ(i, p.x, p.y, p.z);
-    colors[i * 3] = colors[i * 3 + 1] = colors[i * 3 + 2] = shade;
+    const c = cracksAt(p), dir = hit ? hit.n : n;
+    dPos.set([dir[0] * c.k, dir[1] * c.k, dir[2] * c.k], i * 3);
+    crackDepth[i] = c.k;
+    colors[i * 3] = colors[i * 3 + 1] = colors[i * 3 + 2] = shadeWood;
+    dCol[i * 3] = dCol[i * 3 + 1] = dCol[i * 3 + 2] = shade * c.shade - shadeWood;
   }
   geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+  // Normalen für beide Zustände: Holz als Grundlage, Kohle (verschoben) als Unterschied im Morph-Ziel
+  const wood = pos.array.slice();
   geo.computeVertexNormals();
+  const nWood = nor.array.slice();
+  for (let i = 0; i < wood.length; i++) pos.array[i] = wood[i] + dPos[i];
+  geo.computeVertexNormals();
+  const dNor = nor.array.map((v, i) => v - nWood[i]);
+  pos.array.set(wood);
+  nor.array.set(nWood);
+  geo.morphAttributes.position = [new THREE.BufferAttribute(dPos, 3)];
+  geo.morphAttributes.normal = [new THREE.BufferAttribute(dNor, 3)];
+  geo.morphAttributes.color = [new THREE.BufferAttribute(dCol, 3)];
+  geo.morphTargetsRelative = true;
   geo.computeBoundingBox();
 
   const matEnd = new THREE.MeshPhysicalMaterial({
@@ -486,19 +519,27 @@ export function create(ctx) {
 
   // Pyrolyse im Zeitraffer: Holzfarbe → braun → schwarz (Muster aus der Kohle-Textur bleibt erhalten) und Rotglut
   // ab dem Draper-Punkt; dunkle Stellen (Poren, Risse) glühen stärker. Endzustand (uChar = 1) = unveränderte Kohle.
-  const pyro = { uChar: { value: 1 }, uGlow: { value: 0 }, uGlowCol: { value: new THREE.Color() }, uTime: { value: 0 } };
+  // Risslinien (crackTexture) kommen mit uCrack dazu: dunkle Farbe, Rinnen in der Normale, rau – im Holz unsichtbar.
+  const pyro = { uChar: { value: 1 }, uGlow: { value: 0 }, uGlowCol: { value: new THREE.Color() }, uTime: { value: 0 }, uCrack: { value: 1 } };
+  const crackTex = new Map([[matEnd, texture(crackTexture(end.ck, 2.2), false)], [matA, texture(crackTexture(sideA.ck, 1.5), false)],
+    [matB, texture(crackTexture(sideB.ck, 1.5), false)]]);
   for (const m of mats) {
     m.onBeforeCompile = (sh) => {
-      Object.assign(sh.uniforms, pyro);
+      Object.assign(sh.uniforms, pyro, { uCrackMap: { value: crackTex.get(m) } });
       sh.fragmentShader = sh.fragmentShader
-        .replace('#include <common>', '#include <common>\nuniform float uChar, uGlow, uTime;\nuniform vec3 uGlowCol;')
+        .replace('#include <common>', '#include <common>\nuniform float uChar, uGlow, uTime, uCrack;\nuniform vec3 uGlowCol;\nuniform sampler2D uCrackMap;')
         .replace('#include <color_fragment>', `#include <color_fragment>
+          vec4 ck = texture2D(uCrackMap, vMapUv);
+          float cm = ck.b * uCrack;                     // Rissanteil, öffnet sich mit der Schwindung
+          vec2 cn = (ck.rg * 2.0 - 1.0) * uCrack;      // Neigung der Rissränder
           float pl = dot(diffuseColor.rgb, vec3(0.3333));
-          float lr = clamp(pl / 0.016, 0.0, 1.8);       // Textur ist linear ≈ 0,015 im Mittel, Poren/Risse ≈ 0
-          float pd = 1.0 - clamp(lr, 0.0, 1.0);
+          float lr = clamp(pl / 0.016, 0.0, 1.8);       // Textur ist linear ≈ 0,015 im Mittel, Poren ≈ 0
+          float pd = max(1.0 - clamp(lr, 0.0, 1.0), cm);
           vec3 wood = vec3(0.78, 0.48, 0.21) * (0.3 + 0.7 * lr);
           vec3 brown = wood * vec3(0.5, 0.36, 0.3);
-          diffuseColor.rgb = uChar < 0.5 ? mix(wood, brown, smoothstep(0.0, 0.5, uChar)) : mix(brown, diffuseColor.rgb, smoothstep(0.5, 1.0, uChar));`)
+          diffuseColor.rgb = (uChar < 0.5 ? mix(wood, brown, smoothstep(0.0, 0.5, uChar)) : mix(brown, diffuseColor.rgb, smoothstep(0.5, 1.0, uChar))) * (1.0 - 0.92 * cm);`)
+        .replace('#include <roughnessmap_fragment>', '#include <roughnessmap_fragment>\n          roughnessFactor = mix(roughnessFactor, 1.0, cm);')
+        .replace('#include <normal_fragment_maps>', THREE.ShaderChunk.normal_fragment_maps.replace('mapN.xy *= normalScale;', 'mapN.xy *= normalScale;\n\tmapN.xy += cn * normalScale;'))
         .replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>
           totalEmissiveRadiance += uGlowCol * uGlow * (0.1 + 0.9 * smoothstep(0.55, 1.0, pd)) * (0.9 + 0.1 * sin(uTime * 7.0 + vViewPosition.x * 3.0 + vViewPosition.y * 2.0));`);
     };
@@ -609,9 +650,12 @@ export function create(ctx) {
   const crackPos = pick(4, (i) => {
     const u = uv.getX(i), v = uv.getY(i);
     if (u < 0.3 || u > 0.85 || v < 0.2 || v > 0.8) return Infinity;
-    return heights[4](u, v) + Math.abs(u - 0.6) * 0.2;
+    return crackDepth[i] + Math.abs(u - 0.6) * 0.1;         // tiefster Schwundriss im Kohlezustand
   });
   const sheenPos = pick(2, (i) => Math.hypot(pos.getX(i) + 0.6, pos.getZ(i) - 0.25));
+  // Abzeichen „Schwundrisse“: Normale = Nullvektor, solange keine Risse offen sind → Sichtbarkeitstest in hud.js blendet
+  // nur den Marker aus (Liste in der Tafel bleibt; erklärt dort, dass die Risse erst beim Verkohlen entstehen)
+  const cracksHs = { id: 'cracks', kind: 'info', pos: crackPos.add(new THREE.Vector3(0, 0, 0.04)), normal: new THREE.Vector3(0, 0, 1) };
 
   // Schwaden (Wasserdampf, Pyrolysegase, Teer): Punktwolke, Lebenslauf vollständig im Shader
   const PLUME_N = 520;
@@ -685,7 +729,7 @@ export function create(ctx) {
     orbit: { minDistance: 3.2, maxDistance: 16, maxPolarAngle: 1.5, enablePan: false, autoRotate: true },
     hotspots: [
       { id: 'endgrain', kind: 'dive', pos: endPos.add(new THREE.Vector3(0.03, 0, 0)), normal: new THREE.Vector3(1, 0, 0) },
-      { id: 'cracks', kind: 'info', pos: crackPos.add(new THREE.Vector3(0, 0, 0.04)), normal: new THREE.Vector3(0, 0, 1) },
+      cracksHs,
       { id: 'sheen', kind: 'info', pos: sheenPos.add(new THREE.Vector3(0, 0.04, 0)), normal: new THREE.Vector3(0, 1, 0) },
     ],
     update(dt, t) {
@@ -711,6 +755,12 @@ export function create(ctx) {
       tNow = value;
       const st = pyroState(value);
       pyro.uChar.value = st.char;
+      // Schwundrisse öffnen sich mit der Schwindung quer zur Faser (Modell, docs/research.md): sichtbar ab ≈ 260 °C,
+      // voll offen ab ≈ 580 °C; gleitet mit dem Regler und im Zeitraffer ohne Sprung, kein Neuaufbau
+      const open = clamp((st.shrinkT / SHRINK_T_MAX - 0.06) / 0.9, 0, 1);
+      piece.morphTargetInfluences[0] = open;
+      pyro.uCrack.value = open;
+      cracksHs.normal.set(0, 0, open > 0.12 ? 1 : 0);
       pyro.uGlow.value = st.glow * 1.7;
       pyro.uGlowCol.value.setRGB(...glowColor(value));
       ember.intensity = st.glow * 9;
