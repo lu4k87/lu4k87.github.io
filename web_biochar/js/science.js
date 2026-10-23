@@ -78,6 +78,32 @@ export function kelvinDiameterNm(rh) {
   const r = Math.min(rh, 0.995);
   return 2 * (1.05 / Math.log(1 / r)) + 0.6;
 }
+// Luftfeuchte, bei der Poren mit Durchmesser d (nm) füllen – Umkehrung von kelvinDiameterNm
+export const kelvinRh = (d) => (d <= 0.6 ? 0 : Math.exp(-2.1 / (d - 0.6)));
+
+// Hysterese (Modell): Füllen nach der Kelvin-Gleichung, Entleeren erst bei tieferer Feuchte nach dem Verhältnis von
+// Cohan (1938) p_Entleeren = p_Füllen² (zylindrischer Meniskus beim Füllen, halbkugeliger beim Entleeren); jede Pore für
+// sich, ohne Netzwerkeffekte. Gefüllt bis d bleibt zwischen Füll- und Entleerungsast stehen.
+export const desorbDiameterNm = (rh) => kelvinDiameterNm(Math.sqrt(Math.max(0, rh)));
+export const wetDiameterNm = (prev, rh) => clamp(prev, kelvinDiameterNm(rh), desorbDiameterNm(rh));
+
+// IUPAC-Klassen (Thommes et al. 2015): Mikro < 2 nm, Meso 2–50 nm, Makro > 50 nm; '' = trocken
+export const poreClass = (d) => (d <= 0.6 ? '' : d < 2 ? 'micro' : d < 50 ? 'meso' : 'macro');
+
+// Porenvolumen der Ebene 5 (Modell): Mikroporen der Ebene 6, kleine Poren der dünnen Wände (2,25–6,4 nm) und große
+// Poren (27–57 nm) wie im Shader; Anteile am Volumen geschätzt. filledShare = gefüllter Anteil bis Durchmesser d.
+export const PORE_VOLUME = [{ from: 0.6, to: 2, share: 0.3 }, { from: 2.25, to: 6.4, share: 0.25 }, { from: 27, to: 57, share: 0.45 }];
+export const filledShare = (d) => PORE_VOLUME.reduce((s, c) => s + c.share * clamp((d - c.from) / (c.to - c.from), 0, 1), 0);
+// Isotherme (Modell): gefüllter Anteil über p/p₀, Füll- und Entleerungsast
+export function isotherm(steps = 99) {
+  const ads = [], des = [];
+  for (let i = 0; i <= steps; i++) {
+    const rh = (i / steps) * 0.99;
+    ads.push([rh, filledShare(kelvinDiameterNm(rh))]);
+    des.push([rh, filledShare(desorbDiameterNm(rh))]);
+  }
+  return { ads, des };
+}
 
 const nf = (digits) => new Intl.NumberFormat('de-DE', { minimumFractionDigits: digits, maximumFractionDigits: digits });
 export const fmt = (x, digits = 0) => nf(digits).format(x);

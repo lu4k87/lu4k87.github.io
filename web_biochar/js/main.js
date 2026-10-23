@@ -6,7 +6,7 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { createHud } from './hud.js';
-import { T_ROOM } from './science.js';
+import { T_ROOM, kelvinDiameterNm, wetDiameterNm } from './science.js';
 import { NOISE_GLSL } from './sem.js';
 import { quality } from './quality.js';
 
@@ -45,7 +45,7 @@ const DIVE_SECONDS = 5.0;
 // Linse: Bloom-Schwelle (linear), Farbsaum am Rand, Ein-/Ausblenden der Effekte (s)
 const LENS = { thr: 0.82, ca: 0.005, fadeOut: 0.45, fadeIn: 1.3, fill: 0.018, halo: 0.02 };   // fill/halo: Gegenlicht (linear)
 // Leerlauf-Fahrt: nach `delay` s ohne Eingabe weich einblenden (`ramp` s); Ausschläge je Ebene über lv.cine
-const CINE = { delay: 2.5, ramp: 4.0, orbit: 0.10, crane: 0.045, dolly: 0.05, drift: 0.02 };
+const CINE = { delay: 2.5, ramp: 4.0, orbit: 0.10, crane: 0.045, dolly: 0.05, drift: 0.02, lift: 0.6 };   // lift: Anteil der Blickdrift nach oben
 
 const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const params = new URLSearchParams(location.search);
@@ -74,7 +74,7 @@ const state = {
   index: -1, active: null, controls: null, tr: null, intro: null, focus: null, dolly: null, dragging: false,
   cine: { idle: 0, w: 0, base: null },
   post: { dof: 0, bloom: 0 },
-  temp: 550, rh: 0.8,
+  temp: 550, rh: 0.8, wet: kelvinDiameterNm(0.8),   // wet: gefüllt bis Ø (nm), mit Hysterese
   pyro: { shown: 550, playing: false, tween: null },   // gezeigte Temperatur gleitet zur gewählten (Zeitraffer: ab Raumtemperatur)
   levels: new Map(), loading: new Map(), poses: new Map(), time: 0,
 };
@@ -431,7 +431,7 @@ function buildLevel(i) {
   const job = (async () => {
     await new Promise((r) => requestAnimationFrame(() => setTimeout(r, 0)));
     const mod = await LOADERS[i]();
-    const lv = mod.create({ env, aspect: window.innerWidth / window.innerHeight, temp: state.pyro.shown, rh: state.rh, quality: quality.get() });
+    const lv = mod.create({ env, aspect: window.innerWidth / window.innerHeight, temp: state.pyro.shown, rh: state.rh, wet: state.wet, quality: quality.get() });
     lv.index = i;
     if (lv.setParam) { lv.setParam('target', state.temp); lv.setParam('play', state.pyro.playing); lv.setParam('quality', quality.get()); }
     lv.scene.background = null;
@@ -642,7 +642,7 @@ function cineApply(lv, real) {
   _right.setFromMatrixColumn(lv.camera.matrixWorld, 0);
   _up.setFromMatrixColumn(lv.camera.matrixWorld, 1);
   const drift = o.drift * _sph.radius * w;
-  c.target.addScaledVector(_right, drift * Math.sin(t * 0.13 + 1.3)).addScaledVector(_up, 0.6 * drift * Math.sin(t * 0.171 + 0.4));
+  c.target.addScaledVector(_right, drift * Math.sin(t * 0.13 + 1.3)).addScaledVector(_up, o.lift * drift * Math.sin(t * 0.171 + 0.4));
   lv.camera.position.copy(c.target).add(_v.setFromSpherical(_sph));
   lv.camera.lookAt(c.target);
 }
@@ -725,7 +725,9 @@ const hud = createHud({
   onPlay: () => togglePlay(),
   onRh: (v) => {
     state.rh = v;
-    for (const lv of state.levels.values()) if (lv.setParam) lv.setParam('rh', v);
+    state.wet = wetDiameterNm(state.wet, v);
+    for (const lv of state.levels.values()) if (lv.setParam) { lv.setParam('rh', v); lv.setParam('wet', state.wet); }
+    return state.wet;
   },
 });
 

@@ -15,6 +15,7 @@ export const SOURCES = [
   { id: 12, text: 'Yang, H., Yan, R., Chen, H., Lee, D. H., Zheng, C. (2007): Characteristics of hemicellulose, cellulose and lignin pyrolysis. Fuel 86, 1781–1788 (Hemizellulose 220–315 °C, Zellulose 315–400 °C, Lignin 160–900 °C).', url: 'https://doi.org/10.1016/j.fuel.2006.12.013' },
   { id: 14, text: 'Fernandes, A. N. et al. (2011): Nanostructure of cellulose microfibrils in spruce wood. PNAS 108, E1195–E1203 (Elementarfibrillen Ø ≈ 3 nm, Bündel ≈ 20 nm).', url: 'https://doi.org/10.1073/pnas.1108942108' },
   { id: 15, text: 'Ralph, J. et al. (2004): Lignins: Natural polymers from oxidative coupling of 4-hydroxyphenylpropanoids. Phytochem. Rev. 3, 29–60 (β-O-4 als häufigste Bindung, Guaiacyl-/Syringyl-Einheiten).', url: 'https://doi.org/10.1023/B:PHYT.0000047809.65444.a4' },
+  { id: 16, text: 'Cohan, L. H. (1938): Sorption hysteresis and the vapor pressure of concave surfaces. J. Am. Chem. Soc. 60, 433–435 (Füllen mit zylindrischem, Entleeren mit halbkugeligem Meniskus: p_Entleeren = p_Füllen²).', url: 'https://doi.org/10.1021/ja01269a058' },
   { id: 13, text: 'Draper-Punkt: Draper, J. W. (1847): On the production of light by heat. Phil. Mag. 30, 345–360 – Körper beginnen bei ≈ 525 °C sichtbar rot zu glühen.', url: 'https://en.wikipedia.org/wiki/Draper_point' },
 ];
 
@@ -103,13 +104,13 @@ export const LEVELS = [
     name: 'Nanoporen',
     scale: '300 nm',
     title: 'Nanoporen in der Zellwand',
-    lead: 'In der verkohlten Zellwand öffnet sich ein Netz aus Makroporen (> 50 nm) und Mesoporen (2–50 nm). Hier hält Biochar Wasser und gelöste Nährstoffe fest. Regler „Luftfeuchte“: Kleine Poren füllen sich zuerst mit Wasser – Kapillarkondensation. Im Zeitraffer ist die Wand unter ≈ 260 °C noch dicht – nur das Relief der Mikrofibrillen-Bündel (≈ 20 nm) zeichnet die Oberfläche; bis ≈ 380 °C öffnet sich das Porennetz (Modell).',
+    lead: 'In der verkohlten Zellwand öffnet sich ein Netz aus Makroporen (> 50 nm) und Mesoporen (2–50 nm). Hier hält Biochar Wasser und gelöste Nährstoffe fest. Regler „Luftfeuchte“: Erst legt sich ein dünner Wasserfilm auf die Wände, dann füllen sich die kleinen Poren zuerst – Kapillarkondensation. Beim Trocknen geben die Poren das Wasser erst bei tieferer Feuchte wieder ab (Hysterese, Modell). Die Messlinien zeigen den Durchmesser einzelner Poren im Modell. Im Zeitraffer ist die Wand unter ≈ 260 °C noch dicht – nur das Relief der Mikrofibrillen-Bündel (≈ 20 nm) zeichnet die Oberfläche; bis ≈ 380 °C öffnet sich das Porennetz (Modell).',
     facts: [
       { value: '> 50 nm', label: 'Makroporen (IUPAC)' },
       { value: '2–50 nm', label: 'Mesoporen (IUPAC)' },
       { value: '< 2 nm', label: 'Mikroporen – eine Ebene tiefer' },
     ],
-    refs: [1, 6, 14],
+    refs: [1, 6, 14, 16],
     hotspots: {
       wallpore: { title: 'Porenwand', text: 'Selbst diese dünnen Wände sind porös – bis hinunter zu Poren, die kleiner als 2 nm sind.' },
       macro: { title: 'Makropore', text: 'Poren über 50 nm leiten Wasser und Gase schnell ins Innere. Gemessen werden sie mit Quecksilber-Porosimetrie oder Bildanalyse (REM, Tomografie).' },

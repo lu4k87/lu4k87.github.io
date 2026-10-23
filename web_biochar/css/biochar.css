@@ -16,6 +16,10 @@
   --accent-soft: rgba(255, 154, 60, 0.18);
   --warn: #ffcf5a;
   --focus: #9cc8ff;
+  --pore-micro: #b9a6e8;                              /* Porenklassen (IUPAC) in Skala und Legende, Ebene 5 */
+  --pore-meso: #9fd3a6;
+  --pore-macro: #e8c58f;
+  --water: #5aaaff;
   --radius: 10px;
   --gap: 16px;
   --t-xfade: 900ms;                                   /* Einblenden ganzer Flächen (Skill soft-motion) */
@@ -39,6 +43,10 @@
     --accent-soft: rgba(184, 82, 12, 0.14);
     --warn: #8a5a00;
     --focus: #1f5fbf;
+    --pore-micro: #6f55c4;
+    --pore-meso: #3d8a4a;
+    --pore-macro: #a86b14;
+    --water: #1f6fc4;
     color-scheme: light;
   }
 }
@@ -55,6 +63,10 @@
   --accent-soft: rgba(184, 82, 12, 0.14);
   --warn: #8a5a00;
   --focus: #1f5fbf;
+  --pore-micro: #6f55c4;
+  --pore-meso: #3d8a4a;
+  --pore-macro: #a86b14;
+  --water: #1f6fc4;
   color-scheme: light;
 }
 :root[data-theme="dark"] { color-scheme: dark; }
@@ -305,10 +317,14 @@ body.panel-collapsed .panel { display: none; }
 .panel .sub a { color: var(--accent); text-decoration: none; letter-spacing: 0; margin-left: 2px; }
 .eyebrow { margin: 0; font: 500 13px/1.3 var(--mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--accent); }
 .lead { margin: 0; font-size: 16px; line-height: 1.5; color: var(--ink-soft); hyphens: auto; }
-/* Längere Textabschnitte im Blocksatz (Skill text-format §4); Silbentrennung über lang="de", schmal wieder linksbündig */
-.lead, .detail p { text-align: justify; text-wrap: pretty; }
-@media (max-width: 30em) { .lead, .detail p { text-align: start; } }
-.hs-card p { text-wrap: pretty; }   /* Karte 220–340 px (< 45 Zeichen): linksbündig, Blocksatz risse Lücken (text-format §4) */
+/* Fließtext im Blocksatz (Skill text-format §4, Wunsch User 2026-10-23): Tafel, Info-Karte, Hinweise, Quellen.
+   Silbentrennung über lang="de", aber sparsam: nur Wörter ab 12 Zeichen, mind. 5 vorn und 4 hinten (keine „ge-streckt“);
+   schmal (< 30 em) wieder linksbündig */
+.lead, .detail p, .hs-card p, .note, .sources li { text-align: justify; text-wrap: pretty; hyphens: auto; hyphenate-limit-chars: 12 5 4; }
+@media (max-width: 30em) { .lead, .detail p, .note, .sources li { text-align: start; } }
+/* Info-Karte: Blocksatz erst ab ≈ 290 px Textbreite – schmaler rissen ohne Trennungen breite Lücken (text-format §4) */
+.hs-card { container-type: inline-size; }
+@container (max-width: 289px) { .hs-card p { text-align: start; } }
 .panel p { margin: 0; }
 
 .detail {
@@ -361,6 +377,24 @@ body.panel-collapsed .panel { display: none; }
 .slider output { font: 500 16px var(--mono); color: var(--accent); }
 .slider input { width: 100%; accent-color: var(--accent); }
 .lab { width: 100%; border-collapse: collapse; font-size: 15px; }
+
+/* Luftfeuchte (Ebene 5): Porenklassen-Skala unter dem Regler (Daumenbreite links/rechts frei), gefüllt bis Ø, Isotherme */
+.rh { display: flex; flex-direction: column; gap: 10px; }
+.rh-scale { display: flex; height: 6px; margin: -4px 8px 0; border-radius: 3px; overflow: hidden; }
+.rh-scale i, .rh-legend i { display: block; }
+.pc-micro { background: var(--pore-micro); }
+.pc-meso { background: var(--pore-meso); }
+.pc-macro { background: var(--pore-macro); }
+.rh-legend { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 14px; font: 500 13px/1.35 var(--mono); }
+.rh-legend span { display: inline-flex; align-items: center; gap: 6px; }
+.rh-legend i { width: 10px; height: 10px; border-radius: 2px; flex: none; }
+.rh-fill { display: flex; flex-direction: column; gap: 6px; padding: 12px 14px; border: 1px solid var(--line); border-radius: var(--radius); }
+.rh-fill-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; font-size: 15px; font-weight: 500; }
+.rh-fill-head output { font: 500 18px var(--mono); color: var(--accent); font-variant-numeric: tabular-nums; }
+.rh-bar { display: block; height: 6px; border-radius: 3px; background: var(--line); overflow: hidden; }
+.rh-bar i { display: block; height: 100%; background: var(--water); transition: width 0.25s var(--ease-out); }
+.chart .curve--des { stroke: var(--water); stroke-dasharray: 4 3; }
+@media (prefers-reduced-motion: reduce) { .rh-bar i { transition: none; } }
 .lab th, .lab td { padding: 8px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
 .lab th { text-align: left; font-weight: 400; padding-right: 10px; }
 .lab td { text-align: right; font-family: var(--mono); white-space: nowrap; }
@@ -537,6 +571,36 @@ body.touched .hint { opacity: 0; }
 .hsb:hover .hex--hs, .hsb.is-active .hex--hs { color: #ff9a3c; }
 .hsb--dive:hover .hex--hs { color: #1b0e03; }
 .is-off { opacity: 0 !important; pointer-events: none !important; }
+/* Kapillarkondensation: ein weicher blauer Ring, sobald eine andere Porenklasse füllt; reduziert nur Farbwechsel */
+.hsb.is-pulse { animation: hsb-pulse 900ms var(--ease-out); }
+@keyframes hsb-pulse {
+  0% { box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3), 0 0 0 0 rgba(90, 170, 255, 0.7); border-color: #5aaaff; }
+  100% { box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3), 0 0 0 14px rgba(90, 170, 255, 0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hsb.is-pulse { animation: hsb-pulse-tint 900ms ease-out; }
+  @keyframes hsb-pulse-tint { 0%, 60% { border-color: #5aaaff; background-color: rgba(30, 70, 120, 0.6); } }
+}
+
+/* Messlinien (Ebene 5): Ø der Poren aus dem Modell, gleiche Glasoptik wie die Abzeichen */
+.ms-svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.ms-svg g { transition: opacity 0.4s; }
+.ms-line, .ms-tick { stroke: #ffb15c; stroke-width: 2; stroke-linecap: round; filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.8)); }
+.ms-lab {
+  position: absolute;
+  left: 0;
+  top: 0;
+  padding: 3px 8px;
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  border-radius: 6px;
+  background: rgba(14, 16, 20, 0.72);
+  color: #f4f1ea;
+  font: 400 13px/1.3 var(--mono);
+  white-space: nowrap;
+  transition: opacity 0.4s;
+}
+.ms-lab b { font-weight: 500; }
+.hotspots.is-hidden .ms-svg, .hotspots.is-hidden .ms-lab { opacity: 0; }
 .hotspots.is-hidden .hsb, .hotspots.is-hidden .hs-dot, .hotspots.is-hidden .hs-card { opacity: 0; pointer-events: none; }
 /* Info-Karte: links neben dem gewählten Abzeichen, blendet ein und schiebt sich leicht heran, folgt der Kamera */
 .hs-card {

@@ -3,11 +3,15 @@
 // dünne Wände dazwischen mit feinen Mesoporen; Wasser nach Kelvin-Gleichung.
 // Pyrolyse (pyroState.open): im Holz ist die Zellwand dicht – nur das Relief der Mikrofibrillen-Bündel (≈ 20 nm) zeichnet
 // die Oberfläche; das Porennetz öffnet sich 260–380 °C (Modell), die kleinen Poren folgen danach der BET-Fläche (uTS).
+// Luftfeuchte: dünner Wasserfilm auf den Porenwänden wächst mit der Feuchte (uFilm), große Poren füllen von unten mit
+// hellem Meniskus an der Wand, gefüllt bis Ø uWaterD (Kelvin-Gleichung mit Hysterese, science.js); Füllhöhe = Darstellung.
 
 import * as THREE from 'three';
 import { SEM_GLSL, SEM_DET, semDetector } from '../sem.js';
 import { hash33, vnoise3 } from '../util.js';
 import { kelvinDiameterNm, fmt, labProps, pyroState } from '../science.js';
+
+const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 const CELL = 6.0, THICK = 1.0, STRUT = 0.55, NODE = 0.95, CS = 0.75, TS = 0.4;
 
@@ -23,6 +27,8 @@ uniform float uOpen;    // 0 Holz (Wand dicht) … 1 Kohle (Porennetz offen)
 uniform float uTime;
 uniform vec3 uDet;
 uniform vec3 uTint;
+uniform float uFilm;     // Wasserfilm auf den Porenwänden: 0 trocken … 1 kurz vor der Sättigung
+uniform float uDrift;    // 1 = Glanzpunkte des Films wandern, 0 bei reduzierter Bewegung
 uniform vec2 uMarch;     // Raymarching je Qualitätsstufe: Schritte (max. 140) und Schrittfaktor
 varying vec2 vUv;
 ${SEM_GLSL}
@@ -74,6 +80,8 @@ vec3 worley(vec3 p) {
 }
 float topY(vec2 xz) { return -0.6 + 1.1 * vn(vec3(xz * 0.09, 3.0)) + 0.45 * vn(vec3(xz * 0.31, 7.0)); }
 
+// Zuletzt ausgewertete Stelle: gKind 0 Oberfläche, 1 Porenwand; gWallD = Abstand zur Wand der großen Pore
+float gKind = 0.0, gWallD = 9.0;
 // x = Abstand, y = Material (0 Kohlenstoff, 1 Wasser)
 vec2 map(vec3 p) {
   float idL;
@@ -90,13 +98,22 @@ vec2 map(vec3 p) {
   // Holz → Kohle: Wände, Streben und Knoten sind um „inflate“ aufgeblasen, bis alle Poren geschlossen sind (Abstandsfeld
   // bleibt gültig); das Wasser füllt nur den offenen Rest der Poren
   float inflate = (1.0 - uOpen) * 3.2;
-  float solid = max(min(dSN, max(dSheet, dS)) - inflate, top);
+  float sPore = min(dSN, max(dSheet, dS)) - inflate;
+  float solid = max(sPore, top);
+  gKind = step(top, sPore);
+  solid -= 0.05 * (vn(p * 8.0) - 0.5) * gKind;            // feines Wandrelief (Körnung) nur in den Poren
   float water = 1e3;
   if (uWaterD > 0.0 && uOpen > 0.05) {
     float dBig = min(dSheet, dSN) - inflate;               // > 0: in großer Pore
     float sizeL = CELL * 10.0 * (0.45 + 0.5 * idL);        // nm
     float sizeS = CS * 10.0 * (0.3 + 0.55 * ws.z);
-    if (sizeL < uWaterD) water = min(water, max(-dBig, top + 0.05));
+    gWallD = dBig;
+    // Wasser steigt von unten, sobald Ø uWaterD die Pore fast erreicht (ab 0,8 × Ø), an der Wand zieht der Meniskus hoch
+    float fillL = clamp((uWaterD - sizeL) / (0.2 * sizeL) + 1.0, 0.0, 1.0);
+    if (fillL > 0.01) {
+      float yw = topY(p.xz) - 3.2 * (1.0 - fillL) + 0.32 * exp(-max(dBig, 0.0) / 0.45);
+      water = min(water, max(max(-dBig, p.y - yw), top + 0.05));
+    }
     if (sizeS < uWaterD) water = min(water, max(max(-dS + inflate, dSheet - inflate), top + 0.05));
   }
   return water < solid ? vec2(water, 1.0) : vec2(solid, 0.0);
@@ -130,6 +147,7 @@ void main() {
     if (t > tMax) break;
   }
   if (!hit) { gl_FragDepth = 1.0; gl_FragColor = vec4(0.0); return; }
+  float kind = gKind, wallD = gWallD;   // vor Normale und AO sichern: die werten map() an Nachbarpunkten aus
   vec3 p = ro + rd * t;
   vec4 clip = uViewProj * vec4(p, 1.0);
   gl_FragDepth = clamp(clip.z / clip.w * 0.5 + 0.5, 0.0, 1.0);   // echte Tiefe für die Tiefenunschärfe
@@ -151,12 +169,25 @@ void main() {
     n = normalize(n + 0.16 * wob);
     float glint = pow(max(dot(reflect(-V, n), uDet), 0.0), 90.0);
     vec3 col = vec3(0.28, 0.66, 0.92) * (0.42 + 0.6 * fres) + vec3(0.9) * (pow(max(dot(reflect(-V, n), uDet), 0.0), 40.0) * 0.5 + glint * 1.3);
+    col *= 1.0 - 0.5 * clamp((topY(p.xz) - p.y) / 3.2, 0.0, 1.0);           // tief stehendes Wasser wirkt dunkler
+    col += vec3(0.65, 0.88, 1.0) * exp(-max(wallD, 0.0) / 0.2) * 0.75;        // Meniskus: heller Saum an der Wand
     gl_FragColor = vec4(pow(col * vis, vec3(2.2)), 1.0);
     return;
   }
+  // feine Wandstruktur auf allen Qualitätsstufen: Körnung in der Normale, Grübchen als Andeutung der Mikroporen
+  n = normalize(n + 0.28 * (vec3(vn(p * 26.0), vn(p * 26.0 + 5.0), vn(p * 26.0 + 9.0)) - 0.5));
   float g = semShade(n, V, uDet, 0.44);
   g *= 0.9 + 0.2 * vnoise(p * 7.0);
-  gl_FragColor = semOut(g * vis, uTint);
+  g *= 1.0 - 0.5 * smoothstep(0.74, 0.8, vn(p * 15.0 + 3.0));
+  vec3 tint = uTint;
+  if (uFilm > 0.0 && kind > 0.5) {
+    // Wasserfilm: Wand dunkler, bläulicher, glänzender; Glanzpunkte driften langsam (Modell, Dicke wächst mit der Feuchte)
+    float wet = uFilm * (0.75 + 0.25 * vn(p * 5.0 + vec3(uTime * 0.25, 0.0, -uTime * 0.2) * uDrift));
+    g *= 1.0 - 0.3 * wet;
+    g += wet * 1.5 * pow(max(dot(reflect(-V, n), uDet), 0.0), 30.0);
+    tint = mix(tint, vec3(0.74, 0.88, 1.06), 0.6 * wet);
+  }
+  gl_FragColor = semOut(g * vis, tint);
 }
 `;
 
@@ -220,8 +251,40 @@ function findSpots() {
   return best;
 }
 
+// Messlinien: Mitte offener großer Poren im Startbild, je Zelle des Porenmodells eine; Ø = sizeL wie im Shader (Modell).
+// Auswahl: nah am Blickziel, im Bild (Startkamera mit 16:10), Abstand zu Hotspots und untereinander, eine Makropore zuerst
+function findMeasures(home, avoid) {
+  const cam = new THREE.PerspectiveCamera(45, 1.6, 0.1, 500);
+  cam.position.copy(home.pos);
+  cam.lookAt(home.target);
+  cam.updateMatrixWorld();
+  const cells = new Map();
+  for (let x = home.target.x - 16; x <= home.target.x + 16; x += 0.4) {
+    for (let z = home.target.z - 16; z <= home.target.z + 16; z += 0.4) {
+      const ty = topY(x, z);
+      const f = fields(x, ty - 0.5, z);
+      if (f.dBig < 0.8) continue;   // ≥ 8 nm von der Wand: sicher in einer offenen großen Pore
+      const id = worley(x / CELL, (ty - 0.5) / CELL, z / CELL)[4];
+      const c = cells.get(id);
+      if (!c || f.dBig > c.d) cells.set(id, { d: f.dBig, pos: new THREE.Vector3(x, ty - 0.1, z), nm: CELL * 10 * (0.45 + 0.5 * id) });
+    }
+  }
+  const cand = [...cells.values()].filter((c) => {
+    const v = c.pos.clone().project(cam);
+    return v.x > -0.75 && v.x < 0.6 && v.y > -0.6 && v.y < 0.7 && avoid.every((a) => a.distanceTo(c.pos) > 3);
+  }).sort((a, b) => a.pos.distanceTo(home.target) - b.pos.distanceTo(home.target));
+  const out = [];
+  const take = (c) => { if (out.length < 3 && out.every((o) => o.pos.distanceTo(c.pos) > 5)) out.push(c); };
+  const macro = cand.find((c) => c.nm >= 50);
+  if (macro) take(macro);
+  cand.forEach(take);
+  return out.map((c) => ({ pos: c.pos, nm: c.nm, name: c.nm >= 50 ? 'Makropore' : 'Mesopore' }));
+}
+
 // Die kleinen Poren folgen der spezifischen Oberfläche (BET, 5 → 390 m²/g): Bei 550 °C gilt das Ausgangsbild (TS = 0,4),
 // kühler sind die Wände dichter, heißer sind mehr Poren offen (Modell, Richtwert)
+// Wasserfilm auf den Wänden (Modell, Darstellung): wächst mit der Feuchte, ab ≈ 95 % voll
+const film = (rh) => Math.pow(Math.min(1, rh / 0.95), 1.2);
 const poreWall = (T) => TS * (1 - 1.25 * (Math.min(1, labProps(T).bet / 390) - 0.56));
 
 export function create(ctx) {
@@ -232,12 +295,14 @@ export function create(ctx) {
     uCamMatrix: { value: new THREE.Matrix4() },
     uInvProj: { value: new THREE.Matrix4() },
     uViewProj: { value: new THREE.Matrix4() },
-    uWaterD: { value: kelvinDiameterNm(ctx.rh) },
+    uWaterD: { value: ctx.wet },
     uTS: { value: poreWall(ctx.temp) },
     uOpen: { value: pyroState(ctx.temp).open },
     uTime: { value: 0 },
     uDet: SEM_DET,
     uTint: { value: new THREE.Color(0.93, 0.95, 0.98) },
+    uFilm: { value: film(ctx.rh) },
+    uDrift: { value: still ? 0 : 1 },
     uMarch: { value: new THREE.Vector2(140, 0.75) },
   };
   const quad = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), new THREE.ShaderMaterial({
@@ -250,7 +315,16 @@ export function create(ctx) {
   const at = (k, fallback) => (spots[k] ? spots[k].pos : new THREE.Vector3(...fallback));
   const up = new THREE.Vector3(0, 1, 0);
   const ty0 = topY(0, 0);
-  let rh = ctx.rh;
+  // Startbild nah an der Porenwand: Wandrelief und Tiefenschärfe tragen das Bild, im Leerlauf gleitet die Kamera an der Wand
+  const wall = at('wallpore', [-3, ty0, 1.5]);
+  const home = { pos: wall.clone().add(new THREE.Vector3(3, 6, 11)), target: wall.clone() };
+  const hotspots = [
+    { id: 'wallpore', kind: 'dive', pos: wall, normal: up },
+    { id: 'macro', kind: 'info', pos: at('macro', [6, ty0 - 1, -2]), normal: up },
+    { id: 'meso', kind: 'info', pos: at('meso', [-6.5, ty0, -4.5]), normal: up },
+    { id: 'water', kind: 'info', pos: at('water', [3, ty0, 5.5]), normal: up },
+  ];
+  let rh = ctx.rh, wet = ctx.wet;
   const level = {
     scene, camera,
     unit: 1e-8,
@@ -260,17 +334,22 @@ export function create(ctx) {
     resScale: 0.8,
     dof: 2.5,
     bloom: 0.04,
-    home: { pos: new THREE.Vector3(2.5, ty0 + 15, 23), target: new THREE.Vector3(0, ty0 - 0.3, 0) },
+    home,
     orbit: { minDistance: 5, maxDistance: 70, minPolarAngle: 0.12, maxPolarAngle: 1.3, enablePan: true, screenSpacePanning: false },
-    hotspots: [
-      { id: 'wallpore', kind: 'dive', pos: at('wallpore', [-3, ty0, 1.5]), normal: up },
-      { id: 'macro', kind: 'info', pos: at('macro', [6, ty0 - 1, -2]), normal: up },
-      { id: 'meso', kind: 'info', pos: at('meso', [-6.5, ty0, -4.5]), normal: up },
-      { id: 'water', kind: 'info', pos: at('water', [3, ty0, 5.5]), normal: up },
-    ],
-    facts: () => [{ value: `≈ ${fmt(kelvinDiameterNm(rh), 0)} nm`, label: `bei ${fmt(rh * 100)} % Luftfeuchte mit Wasser gefüllte Poren (Kelvin-Gleichung)` }],
+    cine: { orbit: 0.12, crane: 0.03, dolly: 0.04, drift: 0.28, lift: 0.15 },   // Leerlauf: seitlich an der Wand entlang
+    hotspots,
+    measures: findMeasures(home, hotspots.map((h) => h.pos)),
+    measuresOn: pyroState(ctx.temp).open > 0.85,   // im Holz sind die Poren zu
+    facts: () => [{
+      value: `≈ ${fmt(wet, 0)} nm`,
+      label: `bei ${fmt(rh * 100)} % Luftfeuchte mit Wasser gefüllte Poren (Kelvin-Gleichung${wet > kelvinDiameterNm(rh) + 0.5 ? ', beim Trocknen Hysterese' : ''})`,
+    }],
     update(dt, t) {
       uniforms.uTime.value = t;
+      // Wasserstand und Film gleiten zum Reglerwert (bei reduzierter Bewegung sofort)
+      const k = still ? 1 : 1 - Math.exp(-dt * 4);
+      uniforms.uWaterD.value += (wet - uniforms.uWaterD.value) * k;
+      uniforms.uFilm.value += (film(rh) - uniforms.uFilm.value) * k;
       camera.updateMatrixWorld();
       uniforms.uCamPos.value.copy(camera.position);
       uniforms.uCamMatrix.value.copy(camera.matrixWorld);
@@ -280,13 +359,11 @@ export function create(ctx) {
       return true;
     },
     setParam(name, value) {
-      if (name === 'temp') { uniforms.uTS.value = poreWall(value); uniforms.uOpen.value = pyroState(value).open; level.dirty = true; return; }
+      if (name === 'temp') { uniforms.uTS.value = poreWall(value); uniforms.uOpen.value = pyroState(value).open; level.measuresOn = uniforms.uOpen.value > 0.85; level.dirty = true; return; }
       // Qualitätsstufe: weniger, dafür längere Schritte (Leicht ≈ 63, Mittel ≈ 98, Fein 140)
       if (name === 'quality') { uniforms.uMarch.value.set(Math.round(140 * value.detail), 1 - 0.25 * value.detail); level.dirty = true; return; }
-      if (name !== 'rh') return;
-      rh = value;
-      uniforms.uWaterD.value = kelvinDiameterNm(value);
-      level.dirty = true;
+      if (name === 'rh') rh = value;
+      else if (name === 'wet') wet = value;
     },
     dispose() {
       quad.geometry.dispose();

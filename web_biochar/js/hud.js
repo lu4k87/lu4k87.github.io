@@ -2,11 +2,12 @@
 // Info-Karte, REM-Datenleiste, Regler. Bildsprache: Hexagon-Badge direkt neben dem Objekt, beim Klick eine Karte links davon.
 
 import { LEVELS, SOURCES } from './content.js';
-import { properties, labProps, pyroState, fmt, T_MIN, T_MAX, T_ROOM, DRAPER } from './science.js';
+import { properties, labProps, pyroState, fmt, T_MIN, T_MAX, T_ROOM, DRAPER, kelvinDiameterNm, kelvinRh, filledShare, isotherm, poreClass } from './science.js';
 import { hexBadge, LEVEL_ICONS, HOTSPOT_ICONS, FACT_ICONS } from './icons.js';
 
 const $ = (sel) => document.querySelector(sel);
-const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+// Zahlenbereiche wie „2–50 nm“ nie nach dem Strich umbrechen (Wortverbinder U+2060)
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]).replace(/(\d)–(?=\d)/g, '$1–\u2060');
 
 // Zoom-Schiene: Bildbreite in Metern, logarithmisch von 20 cm (oben) bis 0,5 nm (unten)
 const SCALE_M = { piece: 4e-2, tissue: 1e-3, cells: 2e-4, wall: 2.5e-5, meso: 3e-7, micro: 1e-8, atoms: 2e-9 };
@@ -171,6 +172,66 @@ export function createHud(handlers) {
       </figure>`;
   }
 
+  // Luftfeuchte (Ebene 5): Porenklassen-Skala unter dem Regler (Füllen nach Kelvin), Anzeige „gefüllt bis Ø“, Mini-Isotherme
+  // (Modell) mit Füll- und Entleerungsast; der Punkt folgt dem Regler, beim Zurückdrehen bleibt er auf dem Entleerungsast
+  const RH_MAX = 0.99, WET_BAR_NM = 60;
+  const IS = { w: 240, h: 92, x0: 14, x1: 232, y0: 8, y1: 74 };
+  const isX = (rh) => IS.x0 + (rh / RH_MAX) * (IS.x1 - IS.x0);
+  const isY = (f) => IS.y1 - f * (IS.y1 - IS.y0);
+  const isPath = (pts) => pts.map(([x, y], i) => `${i ? 'L' : 'M'}${isX(x).toFixed(1)} ${isY(y).toFixed(1)}`).join('');
+  const hyst = (rh, d) => d > kelvinDiameterNm(rh) + 0.5;
+  const wetNote = (rh, d) => (hyst(rh, d) ? 'Beim Trocknen halten die Poren das Wasser länger: Hysterese (Modell).' : 'Kleinste Poren füllen sich zuerst (Kelvin-Gleichung).');
+  function rhBlock(rh, d) {
+    const m1 = kelvinRh(2) / RH_MAX, m2 = kelvinRh(50) / RH_MAX;
+    const iso = isotherm();
+    return `
+        <div class="rh">
+          <label class="slider">
+            <span>Relative Luftfeuchte <output id="out-rh">${fmt(rh * 100)} %</output></span>
+            <input id="in-rh" type="range" min="0" max="${RH_MAX}" step="0.01" value="${rh}">
+          </label>
+          <div class="rh-scale" aria-hidden="true"><i class="pc-micro" style="flex:${m1.toFixed(3)}"></i><i class="pc-meso" style="flex:${(m2 - m1).toFixed(3)}"></i><i class="pc-macro" style="flex:${(1 - m2).toFixed(3)}"></i></div>
+          <p class="rh-legend"><span><i class="pc-micro"></i>Mikro &lt; 2 nm · bis ${fmt(kelvinRh(2) * 100)} %</span><span><i class="pc-meso"></i>Meso 2–50 nm · bis ${fmt(kelvinRh(50) * 100)} %</span><span><i class="pc-macro"></i>Makro</span></p>
+          <div class="rh-fill">
+            <span class="rh-fill-head">Poren gefüllt bis <output id="out-wet">Ø ${fmt(d)} nm</output></span>
+            <span class="rh-bar"><i id="rh-bar" style="width:${Math.min(100, (d / WET_BAR_NM) * 100).toFixed(1)}%"></i></span>
+            <p class="note" id="rh-note">${wetNote(rh, d)}</p>
+          </div>
+          <figure class="chart">
+            <svg viewBox="0 0 ${IS.w} ${IS.h}" role="img" aria-label="Isotherme (Modell): gefüllter Porenanteil über der relativen Luftfeuchte, Füll- und Entleerungsast">
+              <line class="ax" x1="${IS.x0}" y1="${IS.y1}" x2="${IS.x1}" y2="${IS.y1}"/>
+              <line class="ax" x1="${IS.x0}" y1="${IS.y0}" x2="${IS.x0}" y2="${IS.y1}"/>
+              <path class="curve curve--des" d="${isPath(iso.des)}"/>
+              <path class="curve" d="${isPath(iso.ads)}"/>
+              <circle class="dot" id="iso-dot" r="3.4" cx="${isX(rh).toFixed(1)}" cy="${isY(filledShare(d)).toFixed(1)}"/>
+              <text class="lbl" x="${IS.x0 + 4}" y="${IS.y0 + 6}">gefüllt</text>
+              <text class="lbl" x="${IS.x0}" y="${IS.y1 + 12}" text-anchor="middle">0</text>
+              <text class="lbl" x="${(IS.x0 + IS.x1) / 2}" y="${IS.y1 + 12}" text-anchor="middle">Isotherme · Modell</text>
+              <text class="lbl" x="${IS.x1}" y="${IS.y1 + 12}" text-anchor="end">p/p₀</text>
+            </svg>
+            <figcaption class="note">Füllen (durchgezogen) und Entleeren (gestrichelt): Beim Trocknen geben die Poren das Wasser erst bei tieferer Feuchte wieder ab (Modell nach Cohan 1938).</figcaption>
+          </figure>
+        </div>`;
+  }
+  function updateRh(rh, d) {
+    panel.querySelector('#out-rh').textContent = `${fmt(rh * 100)} %`;
+    panel.querySelector('#out-wet').textContent = `Ø ${fmt(d)} nm`;
+    panel.querySelector('#rh-bar').style.width = `${Math.min(100, (d / WET_BAR_NM) * 100).toFixed(1)}%`;
+    const note = panel.querySelector('#rh-note'), txt = wetNote(rh, d);
+    if (note.textContent !== txt) note.textContent = txt;
+    const dot = panel.querySelector('#iso-dot');
+    dot.setAttribute('cx', isX(rh).toFixed(1));
+    dot.setAttribute('cy', isY(filledShare(d)).toFixed(1));
+  }
+  // Abzeichen „Kapillarkondensation“: ein weicher Ring (900 ms), sobald eine andere Porenklasse füllt oder leer läuft
+  function pulse(id) {
+    const m = markers.find((x) => x.h.id === id);
+    if (!m) return;
+    m.el.classList.remove('is-pulse');
+    void m.el.offsetWidth;
+    m.el.classList.add('is-pulse');
+  }
+
   // Zeitraffer-Anzeige: Temperatur, Phase, Gase, Thermometer
   const BAR_MAX = 850;
   function pyroLive(T, playing) {
@@ -279,11 +340,7 @@ export function createHud(handlers) {
           <span>Zieltemperatur <output id="out-temp">${fmt(state.temp)} °C</output></span>
           <input id="in-temp" type="range" min="${T_MIN}" max="${T_MAX}" step="10" value="${state.temp}">
         </label>
-        ${l.id === 'meso' ? `
-        <label class="slider">
-          <span>Relative Luftfeuchte <output id="out-rh">${fmt(state.rh * 100)} %</output></span>
-          <input id="in-rh" type="range" min="0" max="0.99" step="0.01" value="${state.rh}">
-        </label>` : ''}
+        ${l.id === 'meso' ? rhBlock(state.rh, state.wet) : ''}
         <div id="lab">${labTable(shown)}</div>
         ${labChart(shown)}
       </section>
@@ -306,8 +363,10 @@ export function createHud(handlers) {
     const rh = panel.querySelector('#in-rh');
     if (rh) {
       rh.addEventListener('input', () => {
-        panel.querySelector('#out-rh').textContent = `${fmt(+rh.value * 100)} %`;
-        handlers.onRh(+rh.value);
+        const before = poreClass(state.wet);
+        const d = handlers.onRh(+rh.value);
+        updateRh(+rh.value, d);
+        if (poreClass(d) !== before) pulse('water');
       });
       rh.addEventListener('change', () => refreshFacts());
     }
@@ -337,10 +396,65 @@ export function createHud(handlers) {
   }
 
   // ---------- Hotspots: Punkt am Objekt, Abzeichen direkt daneben, Info-Karte links vom Abzeichen ----------
+  // Messlinien (Ebene 5): Linie quer über die Pore in Bildebene, Länge = Ø aus dem Porenmodell, Beschriftung darüber
+  const msSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  msSvg.setAttribute('class', 'ms-svg');
+  msSvg.setAttribute('aria-hidden', 'true');
+  let measures = [];
+  let msRight = null;
+  function buildMeasures() {
+    for (const ms of measures) ms.lab.remove();
+    msSvg.replaceChildren();
+    measures = (level.measures || []).map((d) => {
+      const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+      g.innerHTML = '<line class="ms-line"/><line class="ms-tick"/><line class="ms-tick"/>';
+      msSvg.appendChild(g);
+      const lab = document.createElement('div');
+      lab.className = 'ms-lab';
+      lab.innerHTML = `<b>Ø ${fmt(d.nm)} nm</b> · ${esc(d.name)} · Modell`;
+      layer.appendChild(lab);
+      return { d, g, lab, lines: g.querySelectorAll('line'), w: 0, hgt: 0 };
+    });
+    if (!msSvg.parentNode) layer.prepend(msSvg);
+  }
+  function updateMeasures(camera, width, height, rect, items) {
+    if (!measures.length) return;
+    msRight = msRight || camera.position.clone();
+    msRight.setFromMatrixColumn(camera.matrixWorld, 0);
+    const cardOpen = card.classList.contains('is-open') && !card.classList.contains('is-away');
+    const cr = cardOpen ? card.getBoundingClientRect() : null;
+    const hit = (a, b) => a.l < b.r && a.r > b.l && a.t < b.b && a.b > b.t;
+    const scr = (v) => [((v.x + 1) / 2) * width, ((1 - v.y) / 2) * height];
+    for (const ms of measures) {
+      const half = ms.d.nm / 20;   // Einheit 10 nm, halber Durchmesser
+      const A = ms.d.pos.clone().addScaledVector(msRight, -half).project(camera);
+      const B = ms.d.pos.clone().addScaledVector(msRight, half).project(camera);
+      if (!ms.w) { ms.w = ms.lab.offsetWidth; ms.hgt = ms.lab.offsetHeight; }
+      const [ax, ay] = scr(A), [bx, by] = scr(B);
+      const lx = (ax + bx) / 2, ly = Math.min(ay, by) - 10;
+      const box = { l: lx - ms.w / 2, r: lx + ms.w / 2, t: ly - ms.hgt, b: Math.max(ay, by) + 8 };
+      let on = level.measuresOn && A.z < 1 && B.z < 1 && camera.position.y > ms.d.pos.y &&
+        box.l >= rect.x0 && box.r <= rect.x1 && box.t >= rect.y0 && box.b <= rect.y1 && bx - ax > 24;
+      // nichts überdecken: Abzeichen und Info-Karte haben Vorrang
+      if (on && items.some((m) => hit(box, { l: m.x - m.w / 2, r: m.x + m.w / 2, t: m.y - m.hgt / 2, b: m.y + m.hgt / 2 }))) on = false;
+      if (on && cr && hit(box, { l: cr.left, r: cr.right, t: cr.top, b: cr.bottom })) on = false;
+      ms.lab.classList.toggle('is-off', !on);
+      ms.g.classList.toggle('is-off', !on);
+      if (!on) continue;
+      const [line, t1, t2] = ms.lines;
+      const set = (el, x1, y1, x2, y2) => { el.setAttribute('x1', x1.toFixed(1)); el.setAttribute('y1', y1.toFixed(1)); el.setAttribute('x2', x2.toFixed(1)); el.setAttribute('y2', y2.toFixed(1)); };
+      set(line, ax, ay, bx, by);
+      set(t1, ax, ay - 7, ax, ay + 7);
+      set(t2, bx, by - 7, bx, by + 7);
+      ms.lab.style.transform = `translate(${Math.round(lx - ms.w / 2)}px, ${Math.round(ly - ms.hgt)}px)`;
+    }
+  }
+
   function buildMarkers() {
     const l = LEVELS[current];
     const icons = HOTSPOT_ICONS[l.id] || {};
     for (const m of markers) { m.el.remove(); m.dot.remove(); }
+    buildMeasures();
     if (!card.parentNode) layer.appendChild(card);
     markers = level.hotspots.map((h, i) => {
       const dot = document.createElement('button');
@@ -354,6 +468,7 @@ export function createHud(handlers) {
       el.innerHTML = `${hexBadge(icons[h.id], 'hex--hs')}<span class="hsb-label">${esc(l.hotspots[h.id].title)}${h.kind === 'dive' ? '<span class="tag">tiefer</span>' : ''}</span>`;
       el.setAttribute('aria-label', `${l.hotspots[h.id].title}${h.kind === 'dive' ? ' – hineinzoomen' : ''}`);
       el.addEventListener('click', () => handlers.onHotspot(h.id, true));
+      el.addEventListener('animationend', (e) => { if (e.animationName.startsWith('hsb-pulse')) el.classList.remove('is-pulse'); });
       // Reihenfolge beim Erscheinen: Punkt → Abzeichen, gestaffelt je Hotspot
       dot.style.transitionDelay = `${i * 90}ms`;
       el.style.transitionDelay = `${i * 90 + 200}ms`;
@@ -485,7 +600,7 @@ export function createHud(handlers) {
         if (!m.w) { m.w = m.el.offsetWidth; m.hgt = m.el.offsetHeight; }
         items.push(m);
       }
-      if (!items.length) { card.classList.add('is-away'); return; }
+      if (!items.length) { card.classList.add('is-away'); updateMeasures(camera, width, height, rect, items); return; }
       // Abzeichen direkt neben den Punkt: links davon (rechts, wenn links kein Platz), dann sanft entzerren und im freien Bereich halten
       for (const m of items) {
         const leftFits = m.ax - GAP - m.w >= rect.x0;
@@ -519,6 +634,7 @@ export function createHud(handlers) {
         m.dot.style.transform = `translate(${m.ax.toFixed(1)}px, ${m.ay.toFixed(1)}px)`;
       }
       placeCard(items, rect, width, height);
+      updateMeasures(camera, width, height, rect, items);
     },
     updateScale(hfwMeters, widthPx, lv) {
       // runde Balkenlänge 1/2/5 × 10^n, etwa ein Fünftel der Bildbreite
