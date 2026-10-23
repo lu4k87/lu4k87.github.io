@@ -539,6 +539,7 @@ body.touched .hint { opacity: 0; }
   position: absolute;
   left: 0;
   top: 0;
+  z-index: 3;            /* über den Abzeichen: die kommen später ins DOM und würden die Karte sonst überdecken */
   width: min(340px, calc(100vw - 32px));
   padding: 14px 16px 12px;
   border: 1px solid var(--line);

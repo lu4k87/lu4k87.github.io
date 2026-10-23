@@ -43,7 +43,7 @@ const MOODS = [
 const ZOOM = { near: 0.35, arrive: 1.3 };
 const DIVE_SECONDS = 5.0;
 // Linse: Bloom-Schwelle (linear), Farbsaum am Rand, Ein-/Ausblenden der Effekte (s)
-const LENS = { thr: 0.82, ca: 0.005, fadeOut: 0.45, fadeIn: 1.3 };
+const LENS = { thr: 0.82, ca: 0.005, fadeOut: 0.45, fadeIn: 1.3, fill: 0.018, halo: 0.02 };   // fill/halo: Gegenlicht (linear)
 // Leerlauf-Fahrt: nach `delay` s ohne Eingabe weich einblenden (`ramp` s); Ausschläge je Ebene über lv.cine
 const CINE = { delay: 2.5, ramp: 4.0, orbit: 0.10, crane: 0.045, dolly: 0.05, drift: 0.02 };
 
@@ -98,6 +98,7 @@ const comp = new THREE.ShaderMaterial({
     uToneOuter: { value: 0 }, uToneInner: { value: 0 }, uGrainOuter: { value: 0 }, uGrainInner: { value: 0 },
     uCamOuter: { value: new THREE.Vector4(0.1, 100, 10, 0) }, uCamInner: { value: new THREE.Vector4(0.1, 100, 10, 0) },
     uBloom: { value: 0 }, uCA: { value: LENS.ca * quality.get().ca }, uDive: { value: 0 }, uInner: { value: new THREE.Vector2(0.5, 0.5) },
+    uFill: { value: LENS.fill }, uHalo: { value: LENS.halo },
     uTopA: moodA.top, uBotA: moodA.bot, uPoolA: moodA.pool, uDustA: moodA.dust, uShA: moodA.sh, uHiA: moodA.hi, uGrA: moodA.gr,
     uTopB: moodB.top, uBotB: moodB.bot, uPoolB: moodB.pool, uDustB: moodB.dust, uShB: moodB.sh, uHiB: moodB.hi, uGrB: moodB.gr,
   },
@@ -108,7 +109,7 @@ const comp = new THREE.ShaderMaterial({
     uniform sampler2D tOuter, tInner, dOuter, dInner, tBloom;
     uniform vec2 uAnchor, uInner, uRes, uDustA, uDustB, uGrA, uGrB;
     uniform float uProg, uMaskR, uBlur, uAspect, uTime, uFade;
-    uniform float uToneOuter, uToneInner, uGrainOuter, uGrainInner;
+    uniform float uToneOuter, uToneInner, uGrainOuter, uGrainInner, uFill, uHalo;
     uniform vec4 uCamOuter, uCamInner;      // near, far, Fokusabstand, größte Unschärfe in Pixeln (0 = aus)
     uniform float uBloom, uCA, uDive;
     uniform vec3 uTopA, uBotA, uTopB, uBotB, uShA, uHiA, uShB, uHiB;
@@ -218,6 +219,11 @@ const comp = new THREE.ShaderMaterial({
         s.b += textureLod(t, 0.5 + e * (1.0 - ca), lodc).b - m0.b;
       }
       vec3 col = backdrop(uv, top, bot, pool, dust) * (1.0 - clamp(s.a, 0.0, 1.0)) + max(s.rgb, 0.0);
+      // Gegenlicht (User 2026-10-23): schwaches Fuell-Licht auf dem Objekt, in der Tiefe etwas staerker, und ein sanfter
+      // Lichthof hinter dem Umriss – dunkle Rueckseiten und das ferne Ende bleiben als Silhouette sichtbar (alle Ebenen)
+      float a0 = clamp(s.a, 0.0, 1.0);
+      float deep = 1.0 - exp(-linZ(d, uv, cam) / max(cam.z * 2.0, 1.0));
+      col += normalize(top + 0.05) * (uFill * (0.5 + 0.9 * deep) * a0 + uHalo * textureLod(t, uv, 5.0).a * (1.0 - a0));
       if (bloomK > 0.0005) col += bloomK * bloomAt(uv);
       col = mix(col, aces(col), tone);
       return grade(col, sh, hi, gr.x);
