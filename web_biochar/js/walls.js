@@ -31,6 +31,7 @@ export function buildWalls(walls, semOpts) {
     data[k * 4] = w.kind;
     data[k * 4 + 1] = w.seed;
     data[k * 4 + 2] = w.late || 0;
+    data[k * 4 + 3] = w.outer ? 1 : 0;      // Außenwand des Bruchstücks: keine Hohlraum-Abdunklung
     tops[k] = w.z1;
     for (const pt of [w.a, w.b]) {
       if (w.openEnd && pt === w.b) continue;

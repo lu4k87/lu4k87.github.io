@@ -168,6 +168,9 @@ void main() {
     top = mix(uOpenZ, vTopW, uTopMix);   // Terrassen: tiefer liegende Fläche bleibt hell, nur Hohlräume dunkeln ab
 #endif
     float d = max(min(top - vWorld.z, uOpenX - vWorld.x), 0.0);
+#ifdef SEM_WALLS
+    if (vWall.w > 0.5) d = 0.0;          // Längsseite des Bruchstücks liegt frei
+#endif
     g *= mix(0.03, 1.0, exp(-d / uDepth));
   }
   g *= 0.86 + 0.28 * vnoise(vWorld * uNoise);
