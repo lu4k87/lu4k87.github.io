@@ -83,16 +83,18 @@ export function buildWalls(walls, semOpts) {
 
 // Schwindung der ganzen REM-Szene: skaliert die Szene und führt die Welt-Ebenen der Bruchfläche (uOpenZ/uOpenX)
 // mit, damit die Tiefenabdunklung an der Fläche bleibt. xy quer zur Faser, z längs.
-export function shrinkScene(scene, xy, z) {
+// pivot = Punkt, der fest bleibt (sonst der Ursprung): das Stück schrumpft an Ort und Stelle statt aus dem Bild zu wandern
+export function shrinkScene(scene, xy, z, pivot) {
   scene.scale.set(xy, xy, z);
+  if (pivot) scene.position.set(pivot.x * (1 - xy), pivot.y * (1 - xy), pivot.z * (1 - z));
   scene.traverse((o) => {
     const mats = o.material ? (Array.isArray(o.material) ? o.material : [o.material]) : [];
     for (const mat of mats) {
       const u = mat.uniforms;
       if (!u || !u.uOpenZ) continue;
       mat.userData.open ??= [u.uOpenZ.value, u.uOpenX.value];
-      u.uOpenZ.value = mat.userData.open[0] * z;
-      u.uOpenX.value = mat.userData.open[1] * xy;
+      u.uOpenZ.value = mat.userData.open[0] * z + scene.position.z;
+      u.uOpenX.value = mat.userData.open[1] * xy + scene.position.x;
     }
   });
 }

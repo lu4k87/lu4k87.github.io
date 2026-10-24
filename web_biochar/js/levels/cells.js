@@ -91,15 +91,17 @@ export function create(ctx) {
   // behält leere Zellen
   const grains = [];
   for (const s of wood.sites) {
-    if (s.type !== 2 || s.x > XC - 1 || !inside(s.x, s.y) || rand() < 0.3) continue;
-    const n = 2 + Math.floor(rand() * 3);
+    if (s.type !== 2 || s.x > XC - 1 || !inside(s.x, s.y) || rand() < 0.1) continue;
+    const n = 3 + Math.floor(rand() * 3);
     for (let k = 0; k < n; k++) {
       const r = 1.6 + rand() * 1.6;
       const x = Math.min(s.x + (rand() - 0.5) * 2.5, XC - 1.5 - r);
       grains.push({ p: [x, s.y + (rand() - 0.5) * 2.5, -(2.5 + k * 6.5 + rand() * 3)], s: [r, r * 0.9, r * 1.15], r: [rand() * 3, rand() * 3, rand() * 3] });
     }
   }
-  const grainMesh = buildInstances(new THREE.SphereGeometry(1, 14, 10), grains, { ...sem, base: 0.46, noise: 0.6 });
+  // gedämpfte Falschfarbe (ocker) wie bei eingefärbten REM-Bildern (Ebene 4): sonst gehen die Körner im Grau der Wände unter
+  const grainMesh = buildInstances(new THREE.SphereGeometry(1, 14, 10), grains, { ...sem, base: 0.62, edge: 0.8, noise: 0.6 });
+  grainMesh.material.uniforms.uTint.value.setRGB(1.08, 0.86, 0.62);
   scene.add(grainMesh);
   const grainBase = grains.map((g) => ({ p: new THREE.Vector3(...g.p), q: new THREE.Quaternion().setFromEuler(new THREE.Euler(...g.r)), s: new THREE.Vector3(...g.s) }));
   const _m = new THREE.Matrix4(), _s = new THREE.Vector3();
@@ -150,13 +152,12 @@ export function create(ctx) {
     wallGroup.userData.setThin(k.wall / k.xy);
     setGrains(st.starch);
     for (const mat of wallGroup.userData.materials) {
-      mat.uniforms.uNoise.value = sem.noise * (1 - 0.55 * st.glassy);
-      mat.uniforms.uEdge.value = sem.edge + 0.25 * st.glassy;
+      mat.uniforms.uNoise.value = sem.noise * (1 - 0.8 * st.glassy);
+      mat.uniforms.uEdge.value = sem.edge + 0.45 * st.glassy;
     }
-    shrinkScene(scene, k.xy, k.z);
-    hotspots.forEach((h, i) => h.pos.set(base[i].x * k.xy, base[i].y * k.xy, base[i].z * k.z));
+    shrinkScene(scene, k.xy, k.z, level.home.target);
+    hotspots.forEach((h, i) => h.pos.copy(base[i]).multiply(scene.scale).add(scene.position));
   }
-  applyTemp();
   const level = {
     scene, camera,
     unit: 1e-6,
@@ -178,5 +179,6 @@ export function create(ctx) {
     },
     dispose() { disposeGroup(scene); },
   };
+  applyTemp();
   return level;
 }

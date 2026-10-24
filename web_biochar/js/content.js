@@ -78,7 +78,7 @@ export const LEVELS = [
     compare: '≈ 2× Haar',
     zone: 'Mikro · REM',
     title: 'Zellen: Röhren aus Kohlenstoff',
-    lead: 'Ein Bruchstück wie unter dem Rasterelektronenmikroskop: Die Zellen sind leere Röhren mit verkohlten Wänden. Seitlich hat der Bruch die Röhren der Länge nach geöffnet – so sehen REM-Aufnahmen von Holzkohle typischerweise aus. Im Zeitraffer verschwinden die Stärkekörner in den Strahlzellen (≈ 220–330 °C), das Gewebe schrumpft, die Wände werden dünner und glatt-glasig; Thyllen bleiben erhalten (Modell).',
+    lead: 'Ein Bruchstück wie unter dem Rasterelektronenmikroskop: Die Zellen sind leere Röhren mit verkohlten Wänden. Seitlich hat der Bruch die Röhren der Länge nach geöffnet – so sehen REM-Aufnahmen von Holzkohle typischerweise aus. Im Zeitraffer verschwinden die Stärkekörner in den Strahlzellen (ocker eingefärbt, ≈ 220–330 °C), das Gewebe schrumpft, die Wände werden dünner und glatt-glasig; Thyllen bleiben erhalten (Modell).',
     facts: [
       { value: '0,7 · 3 · 15 µm', label: 'häufigste Porendurchmesser in Buchen-Biochar: Tüpfel · Hoftüpfel/Parenchym · Gefäße', bar: 72 },
       { value: '0,6–0,8 µm', label: 'Durchmesser typischer Bodenbakterien', bar: 28 },
