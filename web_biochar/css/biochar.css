@@ -154,9 +154,9 @@ body.panel-collapsed .panel { display: none; }
 .brand-text strong { font-size: 19px; font-weight: 600; letter-spacing: 0.02em; }
 .brand-text span { font-size: 14px; }
 .top-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
-/* Ein Material für alle Leisten (Kopf, Messleiste, Ebenen-Wechsel) wie die Zoom-Schiene (User, 2026-10-24):
+/* Ein Material für alle Leisten (Kopf, Messleiste, Ebenen-Wechsel, Pyrolyse-Zeitleiste) wie die Zoom-Schiene (User, 2026-10-24):
    dunkles Glas, Haarlinie, Mono-Versalien in Akzent als Beschriftung, Akzent sonst nur für Zustand und Hover */
-.quality, .btn-ghost, .sem-bar, .nav-buttons {
+.quality, .btn-ghost, .sem-bar, .nav-buttons, .pyro-tl {
   border: 1px solid var(--line);
   background: var(--glass-sheen), var(--glass-strong);
   color: var(--ink);
@@ -483,14 +483,6 @@ body.panel-collapsed .panel { display: none; }
 .slider > span:first-child { display: flex; justify-content: space-between; gap: 8px; }
 .slider output { font: 500 16px var(--mono); color: var(--accent); }
 .slider input { width: 100%; accent-color: var(--accent); }
-/* Phasenleiste unter dem Regler: Abschnitte in echter Breite (Raster), Grenze Holz | Pflanzenkohle */
-.phase-scale { display: flex; flex-direction: column; gap: 4px; padding: 0 8px; font-size: 14px; }
-.phase-bar, .phase-zones { display: grid; }
-.phase-bar { gap: 2px; }
-.phase-bar i { height: 6px; border-radius: 2px; background: var(--line); }
-.phase-bar i.is-on { background: var(--accent); }
-.phase-zones span + span { border-left: 1px solid currentColor; padding-left: 6px; }
-.phase-zones .is-on { font-weight: 600; }
 .lab { width: 100%; border-collapse: collapse; font-size: 15px; }
 
 /* Luftfeuchte (Ebene 5): Porenklassen-Skala unter dem Regler (Daumenbreite links/rechts frei), gefüllt bis Ø, Isotherme */
@@ -516,17 +508,7 @@ body.panel-collapsed .panel { display: none; }
 .lab tr.warn td { color: var(--warn); font-weight: 500; }
 .note { font-size: 14px; line-height: 1.45; color: var(--ink-soft); }
 
-/* Pyrolyse-Labor: Zeitraffer-Anzeige, Thermometer, Kurve */
-.controls .btn-primary { align-self: stretch; padding: 13px 16px; font-size: 17px; }
-.pyro-live { display: flex; flex-direction: column; gap: 10px; padding: 14px 16px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--glass); }
-.pyro-live.is-playing { border-color: var(--accent); }
-.pyro-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
-.pyro-head output { font: 500 26px/1 var(--mono); color: var(--accent); font-variant-numeric: tabular-nums; }
-.pyro-head span { font-size: 15px; font-weight: 500; }
-.pyro-bar { position: relative; height: 8px; border-radius: 4px; background: var(--line); overflow: visible; }
-.pyro-bar i { display: block; height: 100%; border-radius: 4px; background: linear-gradient(90deg, #6aa6ff, #ffcf5a 45%, #ff7a2e 70%, #ff3d2e); }
-.pyro-bar b { position: absolute; top: -3px; width: 2px; height: 14px; background: var(--ink); opacity: 0.7; }
-.pyro-live .note { margin: 0; }
+/* Pyrolyse-Labor: Kurve H/Corg */
 .chart { margin: 0; display: flex; flex-direction: column; gap: 6px; }
 .chart svg { width: 100%; height: auto; display: block; }
 .chart .ax { stroke: var(--line); stroke-width: 1; }
@@ -537,7 +519,6 @@ body.panel-collapsed .panel { display: none; }
 .chart .dot.is-off { opacity: 0; }
 .chart .lbl { font: 9px var(--mono); fill: var(--ink); }
 .chart figcaption { margin: 0; }
-@media (prefers-reduced-motion: reduce) { .pyro-live { transition: none; } }
 
 .sources details { font-size: 14px; }
 .sources summary { cursor: pointer; font-weight: 500; }
@@ -798,32 +779,66 @@ body.touched .hint { opacity: 0; }
   100% { transform: scale(1.7); opacity: 0; }
 }
 
-/* ---------- Pyrolyse-Einblendung in der 3D-Ansicht: oben im freien Bereich, nur solange die Temperatur gleitet ---------- */
-.stage-hud { grid-area: stage; display: flex; justify-content: center; align-items: flex-start; min-width: 0; pointer-events: none; }
-.pyro-stage {
+/* ---------- Pyrolyse-Zeitleiste unten in der 3D-Ansicht (Vorschau Pyro:A, User 2026-10-24) ----------
+   Liegt im Raster-Feld „stage“ über der Messleiste (nie darauf), am Griff verschiebbar (hud.js, CSS translate) */
+.stage-hud { grid-area: stage; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; min-width: 0; min-height: 0; pointer-events: none; }
+.pyro-tl {
+  --tl-off: var(--line);
+  pointer-events: auto;
+  width: min(100%, 880px);
   display: flex;
   align-items: center;
-  gap: 10px;
-  max-width: 100%;
-  margin-top: 6px;
-  padding: 3px 14px 3px 3px;
-  border: 1px solid rgba(255, 255, 255, 0.24);
-  border-radius: 999px;
-  background: linear-gradient(160deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.03) 50%), rgba(18, 18, 22, 0.42);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22), 0 6px 20px rgba(0, 0, 0, 0.35);
-  backdrop-filter: blur(14px) saturate(1.5);
-  -webkit-backdrop-filter: blur(14px) saturate(1.5);
-  color: #f4f1ea;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7);
-  opacity: 0;
-  transform: translateY(-8px);
-  transition: opacity calc(var(--t-xfade) * 0.7) var(--ease-out), transform calc(var(--t-xfade) * 0.7) var(--ease-out);   /* raus ≈ 70 % der Dauer */
+  gap: 14px;
+  padding: 10px 18px 8px 4px;
+  border-radius: var(--radius);
 }
-.pyro-stage.is-on { opacity: 1; transform: none; transition-duration: var(--t-xfade); }
-.pyro-stage .ps-T { font: 500 17px/1 var(--mono); color: #ff9a3c; font-variant-numeric: tabular-nums; min-width: 6ch; text-align: right; }
-.pyro-stage .ps-text { display: flex; flex-wrap: wrap; align-items: baseline; column-gap: 12px; min-width: 0; font-size: 13.5px; font-weight: 500; line-height: 1.3; transition: opacity 0.45s var(--ease-out); }
-.pyro-stage .ps-phase { font-size: 14px; }
-.pyro-stage.is-swap .ps-text { opacity: 0; transition-duration: 0.25s; }   /* Phasenwechsel: kurz aus, neuer Text blendet ein */
+.pyro-tl.is-dragging { border-color: var(--accent); }
+.tl-move { align-self: stretch; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; }
+.tl-grip, .tl-reset { display: grid; place-items: center; width: 28px; padding: 0; border: 1px solid transparent; border-radius: 6px; background: none; color: var(--ink); transition: border-color 0.15s, background-color 0.15s, color 0.15s; }
+.tl-grip { height: 44px; cursor: grab; touch-action: none; }
+.tl-grip svg { width: 10px; height: 16px; fill: currentColor; }
+.pyro-tl.is-dragging .tl-grip { cursor: grabbing; }
+.tl-reset { height: 28px; font-size: 16px; cursor: pointer; visibility: hidden; }   /* Platz bleibt: Leiste ändert ihre Höhe nicht */
+.pyro-tl.is-moved .tl-reset { visibility: visible; }
+.tl-grip:hover, .tl-reset:hover, .pyro-tl.is-dragging .tl-grip { border-color: color-mix(in srgb, var(--accent) 55%, transparent); background: var(--accent-soft); color: var(--accent); }
+.tl-play {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-size: 18px;
+  cursor: pointer;
+  box-shadow: 0 4px 14px color-mix(in srgb, var(--accent) 35%, transparent);
+  transition: box-shadow 0.4s var(--ease-out);
+}
+.pyro-tl.is-playing .tl-play { box-shadow: 0 0 0 6px var(--accent-soft), 0 0 24px color-mix(in srgb, var(--accent) 55%, transparent); }
+.tl-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 8px; }
+.tl-head { margin: 0; display: flex; align-items: baseline; flex-wrap: wrap; column-gap: 14px; row-gap: 2px; font-size: 14px; line-height: 1.3; }
+.tl-head output { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+#tl-T { min-width: 6ch; font-size: 22px; font-weight: 500; color: var(--accent); }
+.tl-head b { font-size: 15px; font-weight: 600; }
+.tl-goal-text { margin-left: auto; font-family: var(--mono); }
+.tl-track { position: relative; display: grid; gap: 3px; height: 10px; margin-top: 12px; }   /* oben Platz für das Ziel-Dreieck */
+.tl-track i { border-radius: 2px; background: linear-gradient(90deg, var(--c) var(--f, 0%), var(--tl-off) var(--f, 0%)); }
+.tl-char, .tl-now, .tl-goal { position: absolute; pointer-events: none; }
+.tl-char { top: -6px; bottom: -6px; width: 2px; margin-left: -1px; background: var(--ink); opacity: 0.7; }
+.tl-now { top: 50%; width: 18px; height: 18px; margin: -9px 0 0 -9px; border-radius: 50%; background: #fff; box-shadow: 0 0 0 3px var(--accent), 0 0 14px color-mix(in srgb, var(--accent) 80%, transparent); }
+.tl-goal { top: -13px; width: 16px; height: 11px; margin-left: -8px; background: var(--ink); clip-path: polygon(0 0, 100% 0, 50% 100%); }
+/* Ziel: natives Range-Feld unsichtbar über Spur und Dreieck, um eine halbe Griffbreite je Seite breiter – so liegen Wert
+   und Dreieck an derselben Stelle; Klick auf die Spur setzt das Ziel dorthin */
+.tl-track input { position: absolute; left: -8px; top: -16px; width: calc(100% + 16px); height: 34px; margin: 0; opacity: 0; cursor: ew-resize; -webkit-appearance: none; appearance: none; background: none; }
+.tl-track input::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 34px; }
+.tl-track input::-moz-range-thumb { width: 16px; height: 34px; border: 0; }
+.tl-track:has(input:focus-visible) { outline: 2px solid var(--focus); outline-offset: 6px; border-radius: 4px; }
+.tl-chapters { display: grid; gap: 3px; }
+.tl-chapters button { min-width: 0; min-height: 24px; padding: 2px 0; border: 0; background: none; color: var(--ink); font: 400 13px/1.3 var(--font); text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; cursor: pointer; transition: color 0.15s; }
+.tl-chapters button:hover { color: var(--accent); }
+.tl-chapters button.is-on { font-weight: 600; color: var(--accent); }
 
 /* ---------- Laden, Fehler ---------- */
 .loader, .fatal {
@@ -896,8 +911,11 @@ body.has-error .fatal, body.no-webgl .fatal { opacity: 1; background: var(--bg);
   .hsb-label { display: none; }
   .hsb.is-active { padding-right: 10px; gap: 6px; }
   .hsb.is-active .hsb-label { display: flex; }
-  .pyro-stage { gap: 8px; padding: 2px 12px 2px 2px; }
-  .pyro-stage .ps-T { font-size: 16px; }
+  .pyro-tl { gap: 8px; padding: 6px 10px 8px 2px; }
+  .tl-play { width: 40px; height: 40px; font-size: 16px; }
+  .tl-grip { height: 36px; }
+  #tl-T { font-size: 18px; }
+  #tl-gas, .tl-chapters { display: none; }   /* knappe Bühne (≈ 170 px): die Phase steht schon in der Kopfzeile */
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -816,6 +816,7 @@ const hud = createHud({
     startGlide(p.shown, v, GLIDE_SECONDS, false);
   },
   onPlay: () => togglePlay(),
+  onSeek: (T) => seekPyro(T),
   onRh: (v) => {
     state.rh = v;
     state.wet = wetDiameterNm(state.wet, v);
@@ -889,7 +890,8 @@ function stepIntro(lv, real) {
 }
 
 // ---------- Pyrolyse-Labor: gezeigte Temperatur ----------
-// Ein Reglerwechsel gleitet ≈ 1,2 s; „Pyrolyse abspielen“ fährt am Stück von Raumtemperatur zur gewählten Temperatur.
+// Ein Zielwechsel gleitet ≈ 1,2 s; „Pyrolyse abspielen“ fährt am Stück von Raumtemperatur zur gewählten Temperatur
+// (steht die gezeigte Temperatur nach einem Kapitel-Sprung darunter, ab dort – wie ein Video ab dem Abspielpunkt).
 // Alle Ebenen bekommen den laufenden Wert (setParam 'temp'), sie blenden ihre Strukturen selbst weich über.
 const GLIDE_SECONDS = 1.2, PLAY_SECONDS = +params.get('playsec') || 18;   // ?playsec=8 verkürzt den Zeitraffer (Prüfläufe)
 function pushParam(name, value) {
@@ -912,7 +914,17 @@ function togglePlay() {
   p.playing = true;
   pushParam('play', true);
   pushParam('target', state.temp);
-  startGlide(T_ROOM, state.temp, reduced ? 1 : PLAY_SECONDS, true);
+  const from = p.shown < state.temp - 1 ? p.shown : T_ROOM;
+  startGlide(from, state.temp, reduced ? 1 : playSeconds(from), true);
+}
+const playSeconds = (from) => Math.max(0.5, PLAY_SECONDS * (state.temp - from) / Math.max(1, state.temp - T_ROOM));
+// Kapitel der Zeitleiste: gezeigte Temperatur springt an den Phasenbeginn; ein laufender Zeitraffer spielt von dort
+// bis zum Ziel weiter, sonst gleitet die Szene hin und bleibt dort stehen
+function seekPyro(T) {
+  const p = state.pyro;
+  if (p.playing && T < state.temp) { startGlide(T, state.temp, reduced ? 1 : playSeconds(T), true); return; }
+  if (p.playing) endPlay();
+  startGlide(p.shown, T, GLIDE_SECONDS, false);
 }
 function stepPyro(real) {
   const p = state.pyro, tw = p.tween;

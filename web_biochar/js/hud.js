@@ -1,8 +1,9 @@
 // Bedienoberfläche über der 3D-Szene: Zoom-Schiene (vertikal, log-Skala, ziehbar), Infotafel, Hotspots mit
-// Info-Karte, REM-Datenleiste, Regler. Bildsprache: Hexagon-Badge direkt neben dem Objekt, beim Klick eine Karte links davon.
+// Info-Karte, REM-Datenleiste, Pyrolyse-Zeitleiste im Bild. Bildsprache: Hexagon-Badge direkt neben dem Objekt, beim Klick
+// eine Karte links davon.
 
 import { LEVELS, SOURCES } from './content.js';
-import { properties, labProps, pyroState, fmt, T_MIN, T_MAX, T_ROOM, DRAPER, PHASES, fillDiameterNm, kelvinRh, filledShare, isotherm, poreClass } from './science.js';
+import { properties, labProps, pyroState, fmt, T_MIN, T_MAX, T_ROOM, PHASES, fillDiameterNm, kelvinRh, filledShare, isotherm, poreClass } from './science.js';
 import { hexBadge, HEX, LEVEL_ICONS, HOTSPOT_ICONS, FACT_ICONS } from './icons.js';
 
 const $ = (sel) => document.querySelector(sel);
@@ -25,9 +26,6 @@ export function createHud(handlers) {
   card.className = 'hs-card';
   card.setAttribute('aria-live', 'polite');
   const meter = $('#edge-meter');
-  const stage = $('#pyro-stage');   // Einblendung in der 3D-Ansicht (Temperatur, Phase, Gase), Texte aus science.js
-  stage.innerHTML = `${hexBadge('thermo', 'hex--hs')}<span class="ps-T" id="ps-T"></span>` +
-    `<span class="ps-text"><span class="ps-phase" id="ps-phase"></span><span class="ps-gas" id="ps-gas"></span></span>`;
   let markers = [];
   let current = -1;
   let level = null;
@@ -237,83 +235,116 @@ export function createHud(handlers) {
     m.el.classList.add('is-pulse');
   }
 
-  // Zeitraffer-Anzeige: Temperatur, Phase, Gase, Thermometer
-  const BAR_MAX = 850;
-  function pyroLive(T, playing) {
-    const st = pyroState(T);
-    return `
-      <div class="pyro-live${playing ? ' is-playing' : ''}" id="pyro-live">
-        <div class="pyro-head"><output id="pyro-T">${fmt(T)} °C</output><span id="pyro-phase">${esc(st.phase)}</span></div>
-        <div class="pyro-bar" role="presentation"><i id="pyro-fill" style="width:${(Math.min(1, T / BAR_MAX) * 100).toFixed(1)}%"></i>
-          <b style="left:${(DRAPER / BAR_MAX * 100).toFixed(1)}%" title="Draper-Punkt ≈ ${DRAPER} °C: Rotglut"></b></div>
-        <p class="note" id="pyro-gas">Gase: ${esc(st.gas)}</p>
-      </div>`;
-  }
-
-  // Phasenleiste unter dem Regler „Zieltemperatur“: je Phase ein Abschnitt in echter Breite (T_ROOM … T_MAX),
-  // darunter die Grenze Holz | Pflanzenkohle bei T_MIN; hervorgehoben ist die Phase des Reglerwerts
-  const PHASE_SPANS = PHASES.map((p, i) => Math.min(p.to, T_MAX) - (i ? PHASES[i - 1].to : T_ROOM));
+  // ---------- Pyrolyse-Zeitleiste unten in der 3D-Ansicht (Vorschau Pyro:A, User 2026-10-24) ----------
+  // Spur = Temperaturachse T_ROOM … T_MAX, je Phase ein Kapitel in echter Breite, durchlaufener Anteil in Phasenfarbe;
+  // Punkt = gezeigte Temperatur, Dreieck = Ziel (darüber ein unsichtbares Range-Feld: Ziehen, Klick, Tastatur,
+  // Bildschirmleser), Strich = Grenze Holz | Pflanzenkohle. Klick auf ein Kapitel springt an den Phasenbeginn.
+  const PHASE_SHORT = ['Aufheizen', 'Trocknung', 'Hemizellulose', 'Zellulose', 'Lignin', 'Aromatisierung'];
+  const PHASE_COLORS = ['#6aa6ff', '#9cc7d8', '#ffcf5a', '#ffa040', '#ff7a2e', '#ff3d2e'];
+  const PHASE_FROM = PHASES.map((p, i) => (i ? PHASES[i - 1].to : T_ROOM));
+  const PHASE_SPANS = PHASES.map((p, i) => Math.min(p.to, T_MAX) - PHASE_FROM[i]);
   const phaseIndex = (T) => PHASES.findIndex((p) => T < p.to);
-  const tempText = (T) => esc(`${fmt(T)} °C, ${pyroState(T).phase}`);
-  function phaseScale(T) {
-    const k = phaseIndex(T), on = (b) => (b ? ' class="is-on"' : '');
-    return `
-          <span class="phase-scale" aria-hidden="true">
-            <span class="phase-bar" style="grid-template-columns:${PHASE_SPANS.map((w) => `${w}fr`).join(' ')}">${PHASE_SPANS.map((_, i) => `<i${on(i === k)}></i>`).join('')}</span>
-            <span class="phase-zones" style="grid-template-columns:${T_MIN - T_ROOM}fr ${T_MAX - T_MIN}fr"><span${on(T < T_MIN)}>Holz</span><span${on(T >= T_MIN)}>Pflanzenkohle ab ${fmt(T_MIN)} °C</span></span>
-          </span>`;
+  const tempText = (T) => `${fmt(T)} °C, ${pyroState(T).phase}`;
+  const pct = (T) => `${(((T - T_ROOM) / (T_MAX - T_ROOM)) * 100).toFixed(2)}%`;
+  const cols = PHASE_SPANS.map((w) => `${w}fr`).join(' ');
+  const GRIP = `<svg viewBox="0 0 10 16" aria-hidden="true">${[3, 8, 13].map((y) => `<circle cx="2.5" cy="${y}" r="1.4"/><circle cx="7.5" cy="${y}" r="1.4"/>`).join('')}</svg>`;
+  const tl = $('#pyro-tl');
+  tl.innerHTML = `
+    <div class="tl-move">
+      <button type="button" class="tl-grip" aria-label="Zeitleiste verschieben: Pfeiltasten, Pos1 = Standardplatz" title="Ziehen verschiebt die Leiste · Doppelklick: Standardplatz">${GRIP}</button>
+      <button type="button" class="tl-reset" aria-label="Zeitleiste zurück an den Standardplatz" title="Zurück an den Standardplatz">⟲</button>
+    </div>
+    <button type="button" class="tl-play" id="btn-play" aria-pressed="false" aria-label="Pyrolyse abspielen">▶</button>
+    <div class="tl-main">
+      <p class="tl-head"><output id="tl-T"></output><b id="tl-phase"></b><span id="tl-gas"></span><span class="tl-goal-text">Ziel <output id="tl-goal-T"></output></span></p>
+      <div class="tl-track" style="grid-template-columns:${cols}">
+        ${PHASE_COLORS.map((c) => `<i style="--c:${c}"></i>`).join('')}
+        <span class="tl-char" style="left:${pct(T_MIN)}"></span>
+        <span class="tl-now"></span>
+        <span class="tl-goal"></span>
+        <input id="in-temp" type="range" min="${T_ROOM}" max="${T_MAX}" step="5" aria-label="Zieltemperatur">
+      </div>
+      <div class="tl-chapters" style="grid-template-columns:${cols}">${PHASES.map((p, i) =>
+        `<button type="button" data-k="${i}" aria-label="${esc(`${p.name}: an den Beginn bei ${fmt(PHASE_FROM[i])} °C springen`)}">${PHASE_SHORT[i]}</button>`).join('')}</div>
+    </div>`;
+  const tlEl = (sel) => tl.querySelector(sel);
+  const segs = [...tl.querySelectorAll('.tl-track i')], chapters = [...tl.querySelectorAll('.tl-chapters button')];
+  const playBtn = tlEl('#btn-play'), goalIn = tlEl('#in-temp');
+  function setGoal(T) {
+    goalIn.value = T;
+    goalIn.setAttribute('aria-valuetext', tempText(T));
+    tlEl('.tl-goal').style.left = pct(T);
+    tlEl('#tl-goal-T').textContent = `${fmt(T)} °C`;
   }
-  function markPhase(T) {
-    const k = phaseIndex(T);
-    panel.querySelectorAll('.phase-bar i').forEach((el, i) => el.classList.toggle('is-on', i === k));
-    panel.querySelectorAll('.phase-zones span').forEach((el, i) => el.classList.toggle('is-on', i === +(T >= T_MIN)));
-  }
+  goalIn.addEventListener('input', () => {
+    setGoal(+goalIn.value);
+    handlers.onTemp(+goalIn.value);       // die Anzeige gleitet über setLive() mit der Szene
+  });
+  goalIn.addEventListener('change', () => refreshFacts());
+  playBtn.addEventListener('click', () => handlers.onPlay());
+  tlEl('.tl-chapters').addEventListener('click', (e) => {
+    const b = e.target.closest('button[data-k]');
+    if (b) handlers.onSeek(PHASE_FROM[+b.dataset.k]);
+  });
 
-  // Einblendung in der 3D-Ansicht: sichtbar, solange die Temperatur gleitet (Zeitraffer oder Reglerwechsel);
-  // nach dem Ende STAGE_HOLD ms stehen lassen, dann ausblenden. Phasentext wechselt mit kurzer Überblendung.
-  const STAGE_HOLD = 2200, SWAP_MS = 250;
-  const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  let stageOff = 0, stagePhase = '', stageSwap = 0, stageFresh = true;
-  function setStage(done) {
-    clearTimeout(stageOff);
-    if (done) { stageOff = setTimeout(() => stage.classList.remove('is-on'), STAGE_HOLD); return; }
-    if (!stage.classList.contains('is-on')) stageFresh = true;   // gerade erst eingeblendet: erster Text ohne Überblendung
-    stage.classList.add('is-on');
+  // Verschieben am Griff (Pointer Events, Pfeiltasten): Versatz zum Standardplatz unten in der Bühne, immer ganz in der
+  // Bühne; Lage bleibt im Browser gespeichert. Doppelklick, ⟲ oder Pos1 = Standardplatz
+  const TL_KEY = 'biochar.timeline';
+  const grip = tlEl('.tl-grip');
+  let tlOff = { x: 0, y: 0 }, tlDrag = null;
+  try { tlOff = { ...tlOff, ...JSON.parse(localStorage.getItem(TL_KEY)) }; } catch { /* kein Speicher: Standardplatz */ }
+  function moveTl(x, y, save = false) {
+    const box = tl.parentElement.getBoundingClientRect(), r = tl.getBoundingClientRect();
+    const l = r.left - tlOff.x, t = r.top - tlOff.y;   // Standardplatz ohne Versatz
+    tlOff = { x: Math.round(Math.min(Math.max(x, box.left - l), box.right - l - r.width)),
+      y: Math.round(Math.min(Math.max(y, box.top - t), box.bottom - t - r.height)) };
+    tl.style.translate = `${tlOff.x}px ${tlOff.y}px`;
+    tl.classList.toggle('is-moved', !!(tlOff.x || tlOff.y));
+    if (save) try { localStorage.setItem(TL_KEY, JSON.stringify(tlOff)); } catch { /* gilt bis zum Neuladen */ }
   }
-  function setStageText(st) {
-    const fresh = stageFresh;
-    stageFresh = false;
-    if (st.phase === stagePhase) return;
-    stagePhase = st.phase;
-    const write = () => {
-      $('#ps-phase').textContent = st.phase;
-      $('#ps-gas').textContent = `Gase: ${st.gas}`;
-      stage.classList.remove('is-swap');
-    };
-    clearTimeout(stageSwap);
-    if (reducedMotion || fresh) { write(); return; }
-    stage.classList.add('is-swap');
-    stageSwap = setTimeout(write, SWAP_MS);
-  }
+  grip.addEventListener('pointerdown', (e) => {
+    if (e.button !== 0) return;
+    tlDrag = { x: e.clientX - tlOff.x, y: e.clientY - tlOff.y };
+    grip.setPointerCapture(e.pointerId);
+    tl.classList.add('is-dragging');
+  });
+  grip.addEventListener('pointermove', (e) => { if (tlDrag) moveTl(e.clientX - tlDrag.x, e.clientY - tlDrag.y); });
+  const tlDrop = () => {
+    if (!tlDrag) return;
+    tlDrag = null;
+    tl.classList.remove('is-dragging');
+    moveTl(tlOff.x, tlOff.y, true);
+  };
+  grip.addEventListener('pointerup', tlDrop);
+  grip.addEventListener('pointercancel', tlDrop);
+  grip.addEventListener('dblclick', () => moveTl(0, 0, true));
+  grip.addEventListener('keydown', (e) => {
+    const d = e.shiftKey ? 60 : 20;
+    const step = { ArrowLeft: [-d, 0], ArrowRight: [d, 0], ArrowUp: [0, -d], ArrowDown: [0, d], Home: [-tlOff.x, -tlOff.y] }[e.key];
+    if (!step) return;
+    e.preventDefault();
+    e.stopPropagation();
+    moveTl(tlOff.x + step[0], tlOff.y + step[1], true);
+  });
+  tlEl('.tl-reset').addEventListener('click', () => { moveTl(0, 0, true); grip.focus(); });
+  new ResizeObserver(() => moveTl(tlOff.x, tlOff.y)).observe(tl.parentElement);   // Fenster, Infotafel auf/zu: in der Bühne halten
 
-  let hudTemp = 550, hudPlaying = false, lastLive = 0;
+  let lastLive = 0;
   function setLive(T, playing, done = false) {
-    hudTemp = T;
-    hudPlaying = playing;
-    setStage(done);
     const now = performance.now();
     if (!done && now - lastLive < 40) return;    // ≈ 25 Hz reicht für Zahlen
     lastLive = now;
-    const st = pyroState(T);
-    $('#ps-T').textContent = `${fmt(T)} °C`;
-    setStageText(st);
-    const live = panel.querySelector('#pyro-live');
-    if (!live) return;
-    live.classList.toggle('is-playing', playing);
-    panel.querySelector('#pyro-T').textContent = `${fmt(T)} °C`;
-    panel.querySelector('#pyro-phase').textContent = st.phase;
-    panel.querySelector('#pyro-gas').textContent = `Gase: ${st.gas}`;
-    panel.querySelector('#pyro-fill').style.width = `${(Math.min(1, T / BAR_MAX) * 100).toFixed(1)}%`;
+    const st = pyroState(T), ph = phaseIndex(T);
+    tl.classList.toggle('is-playing', playing);
+    tlEl('#tl-T').textContent = `${fmt(T)} °C`;
+    tlEl('#tl-phase').textContent = st.phase;
+    tlEl('#tl-gas').textContent = `Gase: ${st.gas}`;
+    tlEl('.tl-now').style.left = pct(T);
+    segs.forEach((el, i) => el.style.setProperty('--f', `${(Math.min(1, Math.max(0, (T - PHASE_FROM[i]) / PHASE_SPANS[i])) * 100).toFixed(1)}%`));
+    chapters.forEach((b, i) => b.classList.toggle('is-on', i === ph));
+    playBtn.textContent = playing ? '■' : '▶';
+    playBtn.setAttribute('aria-label', playing ? 'Anhalten' : 'Pyrolyse abspielen');
+    playBtn.setAttribute('aria-pressed', String(playing));
     for (const [k, , v, warn] of labRows(T)) {
       const tr = panel.querySelector(`tr[data-f="${k}"]`);
       if (!tr) continue;
@@ -328,11 +359,6 @@ export function createHud(handlers) {
       cur.setAttribute('x1', x);
       cur.setAttribute('x2', x);
       dot.classList.toggle('is-off', T < T_MIN);
-    }
-    const btn = panel.querySelector('#btn-play');
-    if (btn) {
-      btn.textContent = playing ? '■ Anhalten' : '▶ Pyrolyse abspielen';
-      btn.setAttribute('aria-pressed', String(playing));
     }
   }
 
@@ -358,13 +384,7 @@ export function createHud(handlers) {
       ${facts([...l.facts, ...dyn], l.id)}
       <section class="controls">
         <h2 class="sub">Pyrolyse-Labor</h2>
-        ${pyroLive(shown, playing)}
-        <button type="button" class="btn-primary" id="btn-play" aria-pressed="${playing}">${playing ? '■ Anhalten' : '▶ Pyrolyse abspielen'}</button>
-        <label class="slider">
-          <span>Zieltemperatur <output id="out-temp">${fmt(state.temp)} °C</output></span>
-          <input id="in-temp" type="range" min="${T_ROOM}" max="${T_MAX}" step="5" value="${state.temp}" aria-valuetext="${tempText(state.temp)}">
-          ${phaseScale(state.temp)}
-        </label>
+        <p class="note">Werte bei der gezeigten Temperatur. Gesteuert wird mit der Zeitleiste im Bild: ▶ spielt den Zeitraffer ab, das Dreieck setzt die Zieltemperatur.</p>
         ${l.id === 'meso' ? rhBlock(state.rh, state.wet) : ''}
         <div id="lab">${labTable(shown)}</div>
         ${labChart(shown)}
@@ -378,16 +398,8 @@ export function createHud(handlers) {
       </section>`;
 
     panel.querySelectorAll('button[data-hs]').forEach((b) => b.addEventListener('click', () => handlers.onHotspot(b.dataset.hs)));
-    const temp = panel.querySelector('#in-temp');
-    temp.addEventListener('input', () => {
-      const v = +temp.value;
-      panel.querySelector('#out-temp').textContent = `${fmt(v)} °C`;
-      temp.setAttribute('aria-valuetext', tempText(v));
-      markPhase(v);
-      handlers.onTemp(v);       // die Anzeige gleitet über setLive() mit der Szene
-    });
-    panel.querySelector('#btn-play').addEventListener('click', () => handlers.onPlay());
-    temp.addEventListener('change', () => refreshFacts());
+    setGoal(state.temp);
+    setLive(shown, playing, true);
     const rh = panel.querySelector('#in-rh');
     if (rh) {
       rh.addEventListener('input', () => {
@@ -583,17 +595,20 @@ export function createHud(handlers) {
     cardBox = [x - 8, y - 8, x + cw + 8, y + ch + 8];   // die anderen Abzeichen weichen im nächsten Bild aus
   }
 
-  // freier Bereich zwischen Schiene, Tafel, Kopf- und Fußleiste
+  // freier Bereich zwischen Schiene, Tafel, Kopf- und Fußleiste; die Zeitleiste nimmt ihre Seite der Bühne weg
+  // (unten: der Bereich endet über ihr, nach oben gezogen: er beginnt unter ihr)
   function stageRect(width) {
     const r = (sel) => $(sel).getBoundingClientRect();
-    const lad = r('.ladder'), pan = r('#panel'), top = r('.topbar'), bot = r('.bottombar');
+    const lad = r('.ladder'), pan = r('#panel'), top = r('.topbar'), bot = r('.bottombar'), bar = tl.getBoundingClientRect();
     const narrow = width <= 860;
-    const live = stage.classList.contains('is-on') ? stage.getBoundingClientRect().bottom : 0;   // Einblendung frei halten
+    const y0 = (narrow ? lad.bottom : top.bottom) + 8;
+    const y1 = Math.min(narrow && pan.width > 0 ? pan.top : Infinity, bot.top) - 8;   // mobil liegt die Knopfleiste über der Tafel
+    const low = bar.top + bar.bottom > y0 + y1;
     return {
       x0: narrow ? 8 : lad.right + 10,
       x1: pan.width > 0 && pan.left > width * 0.5 ? pan.left - 10 : width - 8,
-      y0: Math.max(narrow ? lad.bottom : top.bottom, live) + 8,
-      y1: Math.min(narrow && pan.width > 0 ? pan.top : Infinity, bot.top) - 8,   // mobil liegt die Knopfleiste über der Tafel
+      y0: low ? y0 : Math.max(y0, bar.bottom + 8),
+      y1: low ? Math.min(y1, bar.top - 8) : y1,
     };
   }
 
