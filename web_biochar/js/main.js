@@ -41,7 +41,7 @@ const MOODS = [
 // Übergang: beide Kameras zoomen mit derselben Rate – außen auf 35 % des Abstands zum Anker, innen von 1/0,35 × Abstand;
 // angekommen wird mit 1,3-fachem Abstand der Heimpose (Überblick zuerst, dann zoomt der Besucher selbst)
 const ZOOM = { near: 0.35, arrive: 1.3 };
-const DIVE_SECONDS = 5.0;
+const DIVE_SECONDS = 3.5;   // Flug zwischen Ebenen (User 2026-10-24: kürzer, vorher 5 s)
 // Linse: Bloom-Schwelle (linear), Farbsaum am Rand, Ein-/Ausblenden der Effekte (s)
 const LENS = { thr: 0.82, ca: 0.005, fadeOut: 0.45, fadeIn: 1.3, fill: 0.018, halo: 0.02 };   // fill/halo: Gegenlicht (linear)
 // Leerlauf-Fahrt: nach `delay` s ohne Eingabe weich einblenden (`ramp` s); Ausschläge je Ebene über lv.cine
