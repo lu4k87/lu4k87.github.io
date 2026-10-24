@@ -408,9 +408,10 @@ export function create(ctx) {
   const septum = (i) => 1 + 0.05 * Math.sin(i * 0.9) - 0.16 * Math.exp(-Math.pow(((i % 34) - 17) / 2.2, 2));
   scene.add(new THREE.Mesh(modulateTube(new THREE.TubeGeometry(hyCurve, 160, 0.9, 14), hyCurve, 160, 14, septum), hyMat));
   // Seitenäste: dünne, leicht wellige Fäden (Ø ≈ 1 µm) mit Septen, das Ende läuft in der Röhre selbst spitz zu – kein
-  // Kugelkopf, und kein Ausfahren im Zeitraffer: der Ast ist von Anfang an komplett, nur die Sporen reifen (User, 2026-10-23)
+  // Kugelkopf, und kein Ausfahren im Zeitraffer: der Ast ist von Anfang an komplett, nur die Sporen reifen (User, 2026-10-23);
+  // das letzte Septum sitzt direkt vor dem Ende und schließt die Röhre – keine Kuppe/Pfeilspitze dahinter (User, 2026-10-24)
   const BR = 0.5, NBR = 0.45;
-  const septaThin = (i) => (1 + 0.06 * Math.sin(i * 1.3) - 0.18 * Math.exp(-Math.pow(((i % 20) - 10) / 2, 2))) * Math.min(1, 0.12 + (60 - i) / 7);
+  const septaThin = (i) => (1 + 0.06 * Math.sin(i * 1.3) - 0.18 * Math.exp(-Math.pow((((i + 13) % 20) - 10) / 2, 2))) * Math.min(1, 0.12 + (60 - i) / 3);
   const branch = new THREE.CatmullRomCurve3([[-7, -2.2], [-6.5, -0.4], [-5.4, 1.3], [-4.2, 2.8], [-2.6, 4.6]].map(([s, y]) => onWall(s, y, 0.85)));
   const brGeo = modulateTube(new THREE.TubeGeometry(branch, 60, BR, 12), branch, 60, 12, septaThin);
   scene.add(new THREE.Mesh(brGeo, hyMat));
