@@ -1012,9 +1012,10 @@ export function createHud(handlers) {
       if (!items.length) { card.classList.add('is-away'); updateMeasures(camera, width, height, rect, items); return; }
       // Abzeichen direkt neben den Punkt: links davon (rechts, wenn links kein Platz), dann sanft entzerren und im freien Bereich halten
       for (const m of items) {
-        const leftFits = m.ax - GAP - m.w >= rect.x0;
-        const right = !leftFits || (selected && m.h.id === selected.id);   // gewähltes Abzeichen rechts vom Punkt: links bleibt Platz für die Karte
-        m.tx = right ? m.ax + GAP + m.w / 2 : m.ax - GAP - m.w / 2;
+        const leftFits = m.ax - GAP - m.w >= rect.x0, rightFits = m.ax + GAP + m.w <= rect.x1;
+        // Seite bleibt, solange sie passt: sonst springt das Abzeichen in der Leerlauf-Fahrt am Rand hin und her
+        m.right = (selected && m.h.id === selected.id) || (m.right ? rightFits || !leftFits : !leftFits);   // gewähltes Abzeichen rechts vom Punkt: links bleibt Platz für die Karte
+        m.tx = m.right ? m.ax + GAP + m.w / 2 : m.ax - GAP - m.w / 2;
         m.ty = m.ay;
       }
       // flacher freier Bereich (mobil zwischen Ebenen-Leiste und Zeitleiste): nur seitlich entzerren, sonst rutschen
@@ -1037,8 +1038,12 @@ export function createHud(handlers) {
             // das gewählte Abzeichen bleibt an seinem Platz (Karte links davon), der Nachbar weicht ganz aus
             const sa = selected && A.h.id === selected.id, sb = selected && B.h.id === selected.id;
             const fa = sa ? 0 : sb ? 1 : 0.5, fb = sa ? 1 : sb ? 0 : 0.5;
-            if (oy < ox && !flat) { const s = (A.ty < B.ty ? -1 : 1) * oy; A.ty += s * fa; B.ty -= s * fb; }
-            else { const s = (A.tx < B.tx ? -1 : 1) * ox; A.tx += s * fa; B.tx -= s * fb; }
+            // Reihenfolge nach der sichtbaren Lage (nicht nach dem Ziel): kreuzen sich zwei Punkte, tauschen die
+            // Abzeichen nicht bei jedem Wackeln die Plätze
+            const ay = Number.isNaN(A.y) ? A.ty : A.y, by = Number.isNaN(B.y) ? B.ty : B.y;
+            const ax = Number.isNaN(A.x) ? A.tx : A.x, bx = Number.isNaN(B.x) ? B.tx : B.x;
+            if (oy < ox && !flat) { const s = (ay < by ? -1 : 1) * oy; A.ty += s * fa; B.ty -= s * fb; }
+            else { const s = (ax < bx ? -1 : 1) * ox; A.tx += s * fa; B.tx -= s * fb; }
           }
         }
         // offene Karte: die anderen Abzeichen weichen an die nächste Kartenseite aus, an der sie im freien Bereich Platz

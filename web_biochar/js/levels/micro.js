@@ -653,7 +653,10 @@ export function create(ctx) {
       }
     });
     atomMesh.instanceMatrix.needsUpdate = true;
-    hs.gas.pos.copy(mols[0].pos);
+    // Infopunkt am Ruheort des markierten CO₂ (über der Porenmitte), nicht am wackelnden Molekül: sonst zittert das
+    // Abzeichen und tauscht mit dem der Mikropore die Plätze
+    if (probe.visible) hs.gas.pos.copy(probe.position).add(_t.set(0, probe.scale.x * 0.35, 0));
+    else hs.gas.pos.copy(mols[0].pos);
   }
   let t0 = 0;
 
@@ -708,6 +711,7 @@ export function create(ctx) {
     dof: 3.5,
     bloom: 0.12,
     home: { pos: homePos, target: new THREE.Vector3(0, 0, 0) },
+    cine: { orbit: 0.05, crane: 0.02, dolly: 0.025, drift: 0.01 },   // Leerlauf: halbe Ausschläge, die Infopunkte liegen tief gestaffelt
     orbit: { minDistance: 3, maxDistance: 26, enablePan: false, autoRotate: false },
     hotspots: [hs.sheet, hs.stack, hs.micropore, hs.gas, hs.fibril, hs.hemi],
     liveFacts: true,
