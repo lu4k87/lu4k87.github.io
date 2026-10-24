@@ -11,7 +11,6 @@ import { pyroState, glowColor } from '../science.js';
 const W = 4.4, H = 2.4, D = 2.2;
 const END_UM_PER_PX = (2.3e4 / 2048);      // Stirnfläche ≈ 2,3 cm auf 2048 px → ≈ 11 µm je Pixel
 const VESSELS_PER_MM2 = 120;               // Modell: Größenordnung für zerstreutporige Buche (docs/research.md)
-const SHRINK_T_MAX = pyroState(700).shrinkT;   // volle Schwindung quer zur Faser (Modell in science.js, ab 600 °C)
 
 // schnelles 2D-Wertrauschen auf einem Zufallsgitter
 function noise2(rand) {
@@ -544,7 +543,7 @@ export function create(ctx) {
           float pl = dot(diffuseColor.rgb, vec3(0.3333));
           float lr = clamp(pl / 0.016, 0.0, 1.8);       // Textur ist linear ≈ 0,015 im Mittel, Poren ≈ 0
           float pd = max(1.0 - clamp(lr, 0.0, 1.0), cm);
-          vec3 wood = vec3(0.78, 0.48, 0.21) * (0.6 + 0.4 * lr);   // Holz: Gefäße/Riefen nur als feine Körnung
+          vec3 wood = vec3(0.78, 0.48, 0.21) * (0.7 + 0.3 * lr);   // Holz: Gefäße/Riefen nur als feine Körnung
           vec3 brown = wood * vec3(0.5, 0.36, 0.3);
           diffuseColor.rgb = (uChar < 0.5 ? mix(wood, brown, smoothstep(0.0, 0.5, uChar)) : mix(brown, diffuseColor.rgb, smoothstep(0.5, 1.0, uChar))) * (1.0 - 0.92 * cm);`)
         .replace('#include <roughnessmap_fragment>', '#include <roughnessmap_fragment>\n          roughnessFactor = mix(roughnessFactor, 1.0, cm);')
@@ -764,10 +763,10 @@ export function create(ctx) {
       tNow = value;
       const st = pyroState(value);
       pyro.uChar.value = st.char;
-      // Schwundrisse öffnen sich mit der Schwindung quer zur Faser (Modell, docs/research.md): sichtbar ab ≈ 260 °C,
-      // fast voll offen ab ≈ 580 °C, danach bis 800 °C noch etwas breiter; gleitet mit dem Regler und im Zeitraffer ohne
-      // Sprung, kein Neuaufbau
-      const open = clamp((st.shrinkT / SHRINK_T_MAX - 0.06) / 0.9, 0, 1) * (0.85 + 0.15 * clamp((value - 550) / 250, 0, 1));
+      // Schwundrisse (Modell, docs/research.md): Holz und gebräuntes Holz bleiben rissfrei, die Risse öffnen sich erst,
+      // wenn das Stück schwarz wird (≈ 380 °C), fast voll offen ab ≈ 580 °C, bis 800 °C noch etwas breiter; gleitet mit
+      // dem Regler und im Zeitraffer ohne Sprung, kein Neuaufbau
+      const open = smoothstep(380, 580, value) * (0.85 + 0.15 * clamp((value - 550) / 250, 0, 1));
       piece.morphTargetInfluences[0] = open;
       pyro.uCrack.value = open;
       cracksHs.normal.set(0, 0, open > 0.12 ? 1 : 0);
@@ -782,8 +781,8 @@ export function create(ctx) {
       const k = clamp((value - 350) / 450, 0, 1);
       const brown = clamp((450 - value) / 100, 0, 1);   // ab ≈ 450 °C tiefschwarz
       const tint = new THREE.Color(lerp(0.72, 1.9, brown), lerp(0.72, 1.3, brown), lerp(0.74, 0.95, brown));
-      // Holz nur leicht rau: Faserriefen und Gefäßrinnen der Normal-Map flach, werden mit der Schwindung tiefer
-      const relief = 1.1 * lerp(0.4, 1, clamp((value - 250) / 300, 0, 1));
+      // Holz (auch gebräunt) nur leicht rau: Faserriefen und Gefäßrinnen der Normal-Map flach, tiefer erst in der Kohle
+      const relief = 1.1 * lerp(0.15, 1, smoothstep(380, 560, value));
       for (const m of mats) {
         m.color.copy(tint);
         m.normalScale.setScalar(relief);
