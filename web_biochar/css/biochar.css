@@ -915,11 +915,19 @@ body.has-error .fatal, body.no-webgl .fatal { opacity: 1; background: var(--bg);
   .hsb-label { display: none; }
   .hsb.is-active { padding-right: 10px; gap: 6px; }
   .hsb.is-active .hsb-label { display: flex; }
-  .pyro-tl { gap: 8px; padding: 6px 10px 8px 2px; }
+  /* knappe Bühne (≈ 170 px): Zeitleiste einzeilig und flach, damit über ihr Platz für die Abzeichen bleibt – Ziel zeigt
+     das Dreieck, die Phase steht in der Kopfzeile */
+  .pyro-tl { gap: 8px; padding: 4px 10px 6px 2px; }
+  .tl-move { gap: 2px; }
+  .tl-grip { height: 28px; }
+  .tl-reset { height: 24px; font-size: 14px; }
   .tl-play { width: 40px; height: 40px; font-size: 16px; }
-  .tl-grip { height: 36px; }
+  .tl-main { gap: 4px; }
+  .tl-head { flex-wrap: nowrap; }
   #tl-T { font-size: 18px; }
-  #tl-gas, .tl-chapters { display: none; }   /* knappe Bühne (≈ 170 px): die Phase steht schon in der Kopfzeile */
+  #tl-phase { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .tl-track { margin-top: 10px; }
+  #tl-gas, .tl-goal-text, .tl-chapters { display: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {

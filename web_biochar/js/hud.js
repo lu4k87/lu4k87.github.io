@@ -694,11 +694,17 @@ export function createHud(handlers) {
         m.tx = right ? m.ax + GAP + m.w / 2 : m.ax - GAP - m.w / 2;
         m.ty = m.ay;
       }
-      for (let it = 0; it < 6; it++) {
+      // flacher freier Bereich (mobil zwischen Ebenen-Leiste und Zeitleiste): nur seitlich entzerren, sonst rutschen
+      // die Abzeichen auf die Leisten
+      const flat = rect.y1 - rect.y0 < 2 * Math.max(...items.map((m) => m.hgt)) + 8;
+      const clampAll = () => {
         for (const m of items) {
           m.tx = Math.min(Math.max(m.tx, rect.x0 + m.w / 2), rect.x1 - m.w / 2);
           m.ty = Math.min(Math.max(m.ty, rect.y0 + m.hgt / 2), rect.y1 - m.hgt / 2);
         }
+      };
+      for (let it = 0; it < 6; it++) {
+        clampAll();
         for (let a = 0; a < items.length; a++) {
           for (let b = a + 1; b < items.length; b++) {
             const A = items[a], B = items[b];
@@ -708,7 +714,7 @@ export function createHud(handlers) {
             // das gewählte Abzeichen bleibt an seinem Platz (Karte links davon), der Nachbar weicht ganz aus
             const sa = selected && A.h.id === selected.id, sb = selected && B.h.id === selected.id;
             const fa = sa ? 0 : sb ? 1 : 0.5, fb = sa ? 1 : sb ? 0 : 0.5;
-            if (oy < ox) { const s = (A.ty < B.ty ? -1 : 1) * oy; A.ty += s * fa; B.ty -= s * fb; }
+            if (oy < ox && !flat) { const s = (A.ty < B.ty ? -1 : 1) * oy; A.ty += s * fa; B.ty -= s * fb; }
             else { const s = (A.tx < B.tx ? -1 : 1) * ox; A.tx += s * fa; B.tx -= s * fb; }
           }
         }
@@ -727,6 +733,7 @@ export function createHud(handlers) {
           }
         }
       }
+      clampAll();   // zum Schluss ganz im freien Bereich: die Leisten haben Vorrang vor dem Entzerren
       for (const m of items) {
         if (Number.isNaN(m.x)) { m.x = m.tx; m.y = m.ty; }
         else { m.x += (m.tx - m.x) * 0.22; m.y += (m.ty - m.y) * 0.22; }
