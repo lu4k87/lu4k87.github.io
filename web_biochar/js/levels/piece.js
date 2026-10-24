@@ -341,7 +341,7 @@ export function create(ctx) {
   const rand = mulberry32(31337);
   const scene = new THREE.Scene();
   scene.environment = ctx.env;
-  scene.environmentIntensity = 0.65;
+  scene.environmentIntensity = 0.52;
 
   const end = endGrainTextures(rand);
   const sideA = sideTextures(rand, true);
@@ -551,8 +551,8 @@ export function create(ctx) {
           float pl = dot(diffuseColor.rgb, vec3(0.3333));
           float lr = clamp(pl / 0.016, 0.0, 1.8);       // Textur ist linear ≈ 0,015 im Mittel, Poren ≈ 0
           float pd = max(1.0 - clamp(lr, 0.0, 1.0), cm);
-          vec3 wood = vec3(0.78, 0.48, 0.21) * (0.7 + 0.3 * lr);   // Holz: Gefäße/Riefen nur als feine Körnung
-          vec3 brown = wood * vec3(0.5, 0.36, 0.3);
+          vec3 wood = vec3(0.56, 0.35, 0.16) * (0.7 + 0.3 * lr);   // Holz: Gefäße/Riefen nur als feine Körnung, hell ohne auszubrennen
+          vec3 brown = wood * vec3(0.7, 0.5, 0.42);
           diffuseColor.rgb = (uChar < 0.5 ? mix(wood, brown, smoothstep(0.0, 0.5, uChar)) : mix(brown, diffuseColor.rgb, smoothstep(0.5, 1.0, uChar))) * (1.0 - 0.92 * cm);`)
         .replace('#include <roughnessmap_fragment>', '#include <roughnessmap_fragment>\n          roughnessFactor = mix(roughnessFactor, 1.0, cm);')
         .replace('#include <normal_fragment_maps>', THREE.ShaderChunk.normal_fragment_maps.replace('mapN.xy *= normalScale;', 'mapN.xy *= normalScale;\n\tmapN.xy += cn * normalScale;'))
@@ -646,15 +646,15 @@ export function create(ctx) {
   scene.add(floor);
 
   // Licht: warmes Hauptlicht schwenkt langsam, kühles Gegenlicht streicht über die Längsflächen (Seidenglanz wandert)
-  const key = new THREE.DirectionalLight(0xfff0dc, 2.7);
-  const rim = new THREE.DirectionalLight(0xc4d6ff, 2.6);
+  const key = new THREE.DirectionalLight(0xfff0dc, 2.2);
+  const rim = new THREE.DirectionalLight(0xc4d6ff, 2.1);
   const fill = new THREE.HemisphereLight(0x8090a0, 0x050505, 0.35);
   const KEY0 = new THREE.Vector3(5, 7, 6), RIM0 = new THREE.Vector3(-7, 3, -6), Y = new THREE.Vector3(0, 1, 0);
   const moveLights = (t) => {
     key.position.copy(KEY0).applyAxisAngle(Y, 0.32 * Math.sin(t * 0.083));
     rim.position.copy(RIM0).applyAxisAngle(Y, 0.5 * Math.sin(t * 0.061 + 1.2));
     rim.position.y = 3 + 1.2 * Math.sin(t * 0.047);
-    rim.intensity = 2.6 * (0.85 + 0.15 * Math.sin(t * 0.13 + 0.5));
+    rim.intensity = 2.1 * (0.85 + 0.15 * Math.sin(t * 0.13 + 0.5));
   };
   moveLights(0);
   scene.add(key, rim, fill);
