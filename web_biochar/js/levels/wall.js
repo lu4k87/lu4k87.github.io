@@ -539,6 +539,8 @@ export function create(ctx) {
 
   // Temperatur gleitet in ≈ 0,35 s nach: Risse und Asche (tempK), Tüpfelmembran, Fibrillen-Riefen, Nanoporen (pyroState)
   const heat = { T: ctx.temp, to: ctx.temp };
+  const crackS = -9;
+  const crackHs = { id: 'crack', kind: 'info', pos: onWall(crackS, crack1Y(crackS), 0.2), normal: inward(crackS) };
   const applyHeat = () => {
     const k = tempK(heat.T), st = pyroState(heat.T);
     CRACK.value = 1 + k;
@@ -546,6 +548,7 @@ export function create(ctx) {
     MEMBRANE.value = st.membrane;
     FIBRIL.value = st.fibril;
     PORES.value = st.sheets;
+    crackHs.hidden = CRACK.value < 0.3;   // Abzeichen erst, wenn der Riss zu sehen ist (unter ≈ 300 °C geschlossen)
   };
   applyHeat();
 
@@ -553,7 +556,6 @@ export function create(ctx) {
   const pitCell = [-1, -1];
   const pitS = (pitCell[0] + 0.5 - (Math.abs(pitCell[1]) % 2) * 0.5) * PIT.sx;
   const pitY = (pitCell[1] + 0.5) * PIT.sy;
-  const crackS = -9;
   const waterS = 0, waterY = -0.5 * PIT.sy;   // Tüpfel der Gitterzelle 0/−1 in der Bildmitte, Wasserteilchen darüber
   const edgeS = -2.5;
   const edgePos = surf(edgeS, topY(edgeS) + 0.15, R + TH / 2);
@@ -577,7 +579,7 @@ export function create(ctx) {
       { id: 'hypha', kind: 'info', pos: hyCurve.getPoint(0.3).add(inward(-9).multiplyScalar(0.9)), normal: inward(-9) },
       { id: 'spores', kind: 'info', pos: onWall(-10.5, 2.5, 2.1), normal: inward(-10.5) },   // lose Spore auf der Wand
       { id: 'ash', kind: 'info', pos: onWall(NEEDLE.s, NEEDLE.y, 1.6), normal: inward(NEEDLE.s) },
-      { id: 'crack', kind: 'info', pos: onWall(crackS, crack1Y(crackS), 0.2), normal: inward(crackS) },
+      crackHs,
     ],
     update(dt, t) {
       // Uhr ab Ankunft: nach einer Pause (Ebene war nicht aktiv) beginnt der Zeitraffer neu

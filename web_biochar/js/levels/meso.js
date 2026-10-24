@@ -408,6 +408,9 @@ export function create(ctx) {
     { id: 'meso', kind: 'info', pos: at('meso', [-7, ty0, -1]), normal: up },
     { id: 'water', kind: 'info', pos: at('water', [2.1, ty0, 2.5]), normal: up },
   ];
+  // Riss, Schlitzpore und Kapillarwasser gibt es erst in der Kohle: im Holz ist die Wand dicht, Abzeichen bleiben aus
+  const showPores = () => { for (const h of hotspots) if (h.kind === 'info') h.hidden = uniforms.uOpen.value < 0.5; };
+  showPores();
   let rh = ctx.rh, wet = ctx.wet;
   const level = {
     scene, camera,
@@ -443,6 +446,7 @@ export function create(ctx) {
         uniforms.uMicro.value = bet(value);
         uniforms.uOpen.value = pyroState(value).open;
         level.measuresOn = uniforms.uOpen.value > 0.85;
+        showPores();
         level.dirty = true;
         return;
       }
