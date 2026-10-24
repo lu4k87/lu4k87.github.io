@@ -54,7 +54,7 @@ export const HOTSPOT_ICONS = {
   piece: { endgrain: 'endgrain', cracks: 'crack', sheen: 'sheen' },
   tissue: { vessels: 'vessel', ring: 'ring', ray: 'ray', porosity: 'porosity' },
   cells: { pitwall: 'pit', vessel: 'vessel', fiber: 'fiber', ray: 'ray', habitat: 'microbe' },
-  wall: { fracture: 'foam', pits: 'pit', bacteria: 'microbe', hypha: 'hypha', spores: 'hypha', ash: 'ash', crack: 'crack' },
+  wall: { fracture: 'foam', pits: 'pit', water: 'water', bacteria: 'microbe', hypha: 'hypha', spores: 'hypha', ash: 'ash', crack: 'crack' },
   meso: { wallpore: 'micropore', macro: 'foam', meso: 'micropore', water: 'water' },
   micro: { sheet: 'sheet', stack: 'stack', micropore: 'micropore', gas: 'gas' },
   atoms: { ring: 'sheet', carboxyl: 'carboxyl', phenol: 'phenol', carbonyl: 'carbonyl', edgeh: 'edgeh' },

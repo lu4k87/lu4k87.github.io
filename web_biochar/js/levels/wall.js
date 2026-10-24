@@ -553,6 +553,7 @@ export function create(ctx) {
   const pitS = (pitCell[0] + 0.5 - (Math.abs(pitCell[1]) % 2) * 0.5) * PIT.sx;
   const pitY = (pitCell[1] + 0.5) * PIT.sy;
   const crackS = -9;
+  const waterS = 0, waterY = -0.5 * PIT.sy;   // Tüpfel der Gitterzelle 0/−1 in der Bildmitte, Wasserteilchen darüber
   const edgeS = -2.5;
   const edgePos = surf(edgeS, topY(edgeS) + 0.15, R + TH / 2);
   const camera = new THREE.PerspectiveCamera(40, ctx.aspect, 0.1, 400);
@@ -570,6 +571,7 @@ export function create(ctx) {
     hotspots: [
       { id: 'fracture', kind: 'dive', pos: edgePos, normal: new THREE.Vector3(0, 1, 0) },
       { id: 'pits', kind: 'info', pos: onWall(pitS, pitY, 0.4), normal: inward(pitS) },
+      { id: 'water', kind: 'info', pos: onWall(waterS, waterY, 2.5), normal: inward(waterS) },
       { id: 'bacteria', kind: 'info', pos: onWall(BAC.s, BAC.y, 1.3), normal: inward(BAC.s) },
       { id: 'hypha', kind: 'info', pos: hyCurve.getPoint(0.3).add(inward(-9).multiplyScalar(0.9)), normal: inward(-9) },
       { id: 'spores', kind: 'info', pos: onWall(-10.5, 2.5, 2.1), normal: inward(-10.5) },   // lose Spore auf der Wand
