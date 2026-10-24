@@ -6,6 +6,7 @@
 import * as THREE from 'three';
 import { mulberry32, fbm3, smoothstep, clamp, lerp, vnoisef, hash33 } from '../util.js';
 import { disposeGroup } from '../walls.js';
+import { groundTextures, makeGround } from './ground.js';
 import { pyroState, glowColor } from '../science.js';
 
 const W = 4.4, H = 2.4, D = 2.2;
@@ -339,6 +340,7 @@ function crumbGeometry(seed, detail, flat) {
 
 export function create(ctx) {
   const rand = mulberry32(31337);
+  const groundTex = groundTextures();      // Worker rechnet die Bodentexturen, während das Stück entsteht
   const scene = new THREE.Scene();
   scene.environment = ctx.env;
   scene.environmentIntensity = 0.52;
@@ -580,9 +582,10 @@ export function create(ctx) {
   const piece = new THREE.Mesh(geo, [matEnd, matEnd, matA, matA, matB, matB]);
   scene.add(piece);
 
-  // Krümel, Splitter und Staub (Instanzen), gehäuft am Bruchende und unter den Abplatzern; je Krümel ein Kontaktschatten
+  // Krümel, Splitter und Staub (Instanzen), gehäuft am Bruchende und unter den Abplatzern; je Krümel ein Kontaktschatten.
+  // Dunkel und matt wie die Kohle selbst (kein Glanz, der sie vor dem Waldboden grau aufhellt)
   const floorY = geo.boundingBox.min.y;
-  const crumbMat = new THREE.MeshPhysicalMaterial({ color: 0x1b1a19, roughness: 0.92, metalness: 0.1, clearcoat: 0.08, clearcoatRoughness: 0.6 });
+  const crumbMat = new THREE.MeshStandardMaterial({ color: 0x0b0a0a, roughness: 1, metalness: 0.03 });
   const crumbGeos = [crumbGeometry(1, 2, 0.6), crumbGeometry(2, 1, 0.5), crumbGeometry(3, 0, 0.7), crumbGeometry(4, 1, 0.35)];
   const sc = canvas(128, 128), sx = sc.getContext('2d');
   const grad = sx.createRadialGradient(64, 64, 4, 64, 64, 64);
@@ -592,6 +595,8 @@ export function create(ctx) {
   sx.fillStyle = grad;
   sx.fillRect(0, 0, 128, 128);
   const shadowTex = texture(sc, true);
+  const ground = makeGround({ scene, floorY, W, D, crumbGeometry, shadowTex }, groundTex);
+  const hAt = ground.heightAt;
   const blobGeo = new THREE.PlaneGeometry(1, 1).rotateX(-Math.PI / 2);
   const blobs = [];
   const m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), s3 = new THREE.Vector3(), e3 = new THREE.Euler();
@@ -614,7 +619,7 @@ export function create(ctx) {
       const s = gi === 2 ? 0.02 + rand() * 0.05 : 0.04 + Math.pow(rand(), 2) * 0.16;
       const [x, z] = spot();
       e3.set(rand() * 3, rand() * 3, rand() * 3);
-      mesh.setMatrixAt(k, m4.compose(s3.set(x, floorY + s * 0.42, z), q.setFromEuler(e3), new THREE.Vector3(s, s, s)));
+      mesh.setMatrixAt(k, m4.compose(s3.set(x, floorY + hAt(x, z) + s * 0.42, z), q.setFromEuler(e3), new THREE.Vector3(s, s, s)));
       blobs.push([x, z, s * 2.6]);
     }
     mesh.instanceMatrix.needsUpdate = true;
@@ -627,33 +632,25 @@ export function create(ctx) {
     const [x, z] = spot();
     const s = 0.008 + Math.pow(rand(), 3) * 0.022;
     e3.set(rand() * 3, rand() * 3, rand() * 3);
-    dust.setMatrixAt(k, m4.compose(s3.set(x, floorY + s * 0.3, z), q.setFromEuler(e3), new THREE.Vector3(s, s, s)));
+    dust.setMatrixAt(k, m4.compose(s3.set(x, floorY + hAt(x, z) + s * 0.3, z), q.setFromEuler(e3), new THREE.Vector3(s, s, s)));
   }
   dust.instanceMatrix.needsUpdate = true;
   scene.add(dust);
   fallout.push(dust);
   const blobMesh = new THREE.InstancedMesh(blobGeo, new THREE.MeshBasicMaterial({ map: shadowTex, transparent: true, depthWrite: false, opacity: 0.8 }), blobs.length);
-  blobs.forEach(([x, z, s], k) => blobMesh.setMatrixAt(k, m4.compose(s3.set(x, floorY - 0.004, z), q.identity(), new THREE.Vector3(s, 1, s))));
+  blobs.forEach(([x, z, s], k) => blobMesh.setMatrixAt(k, m4.compose(s3.set(x, floorY + hAt(x, z) - 0.004, z), q.identity(), new THREE.Vector3(s, 1, s))));
   blobMesh.instanceMatrix.needsUpdate = true;
   scene.add(blobMesh);
 
-  const shadow = new THREE.Mesh(new THREE.PlaneGeometry(W * 1.7, D * 2.1),
-    new THREE.MeshBasicMaterial({ map: shadowTex, transparent: true, depthWrite: false }));
-  shadow.rotation.x = -Math.PI / 2;
+  // Schatten des Stücks: weicher Fleck, folgt dem Relief (Boden ab ground.js, Lichtpool steckt in dessen Eckfarben)
+  const shadowGeo = new THREE.PlaneGeometry(W * 1.7, D * 2.1, 24, 12).rotateX(-Math.PI / 2);
+  {
+    const sp = shadowGeo.attributes.position;
+    for (let i = 0; i < sp.count; i++) sp.setY(i, hAt(sp.getX(i), sp.getZ(i)));
+  }
+  const shadow = new THREE.Mesh(shadowGeo, new THREE.MeshBasicMaterial({ map: shadowTex, transparent: true, depthWrite: false }));
   shadow.position.y = floorY - 0.005;
   scene.add(shadow);
-  // Lichtpool auf dem Tisch: warmer Fleck, der in den Hintergrund ausläuft
-  const pc = canvas(512, 512), px = pc.getContext('2d');
-  const pg = px.createRadialGradient(256, 256, 20, 256, 256, 256);
-  pg.addColorStop(0, 'rgba(96,84,70,0.95)');
-  pg.addColorStop(0.45, 'rgba(70,62,52,0.55)');
-  pg.addColorStop(1, 'rgba(50,44,38,0)');
-  px.fillStyle = pg;
-  px.fillRect(0, 0, 512, 512);
-  const floor = new THREE.Mesh(new THREE.PlaneGeometry(26, 26), new THREE.MeshBasicMaterial({ map: texture(pc, true), transparent: true, depthWrite: false }));
-  floor.rotation.x = -Math.PI / 2;
-  floor.position.y = floorY - 0.01;
-  scene.add(floor);
 
   // Licht: warmes Hauptlicht schwenkt langsam, kühles Gegenlicht streicht über die Längsflächen (Seidenglanz wandert)
   const key = new THREE.DirectionalLight(0xfff0dc, 2.2);
@@ -767,6 +764,7 @@ export function create(ctx) {
     ],
     update(dt, t) {
       moveLights(t);
+      ground.update(dt);
       plumeMat.uniforms.uTime.value = t;
       // Glimmen ohne Bewegung (reduced-motion): ruhende Glutnester; Schein auf dem Tisch und Bloom atmen mit (wie im
       // Shader), der Tischschein flackert leicht (± 3 %, Schwebung ≈ 1 Hz)
@@ -783,6 +781,11 @@ export function create(ctx) {
     setParam(name, value) {
       if (name === 'play') {
         playing = !!value;
+        return;
+      }
+      if (name === 'quality') {
+        ground.shadows(key, piece, value.shadows);
+        shadow.material.opacity = value.shadows ? 0.85 : 1;   // echter Schatten dunkelt schon mit
         return;
       }
       if (name === 'target') {
@@ -822,10 +825,10 @@ export function create(ctx) {
         m.clearcoat = m === matEnd ? 0 : lerp(0, 0.2, k);    // Seidenglanz der Längsflächen, gedämpft: rau statt glatt
         m.clearcoatRoughness = 0.5;
       }
-      crumbMat.color.copy(tint).multiplyScalar(0.11);
+      crumbMat.color.copy(tint).multiplyScalar(0.02);
       level.dirty = true;
     },
-    dispose() { disposeGroup(scene); },
+    dispose() { ground.dispose(); disposeGroup(scene); },
   };
   level.setParam('target', ctx.temp);
   level.setParam('temp', ctx.temp);
