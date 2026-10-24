@@ -330,17 +330,19 @@ export function createHud(handlers) {
     if (b) handlers.onSeek(PHASE_FROM[+b.dataset.k]);
   });
 
-  // Verschieben am Griff (Pointer Events, Pfeiltasten): Versatz zum Standardplatz unten in der Bühne, immer ganz in der
-  // Bühne; Lage bleibt im Browser gespeichert. Doppelklick, ⟲ oder Pos1 = Standardplatz
-  const TL_KEY = 'biochar.timeline';
+  // Verschieben am Griff (Pointer Events, Pfeiltasten): Versatz zum Standardplatz in der Fußleiste, immer ganz in Bühne
+  // oder Fußleiste; Lage bleibt im Browser gespeichert. Doppelklick, ⟲ oder Pos1 = Standardplatz
+  const TL_KEY = 'biochar.timeline-dock';   // neuer Schlüssel: alte Versätze galten zum früheren Platz in der Bühne
   const grip = tlEl('.tl-grip');
   let tlOff = { x: 0, y: 0 }, tlDrag = null;
   try { tlOff = { ...tlOff, ...JSON.parse(localStorage.getItem(TL_KEY)) }; } catch { /* kein Speicher: Standardplatz */ }
   function moveTl(x, y, save = false) {
-    const box = tl.parentElement.getBoundingClientRect(), r = tl.getBoundingClientRect();
-    const l = r.left - tlOff.x, t = r.top - tlOff.y;   // Standardplatz ohne Versatz
-    tlOff = { x: Math.round(Math.min(Math.max(x, box.left - l), box.right - l - r.width)),
-      y: Math.round(Math.min(Math.max(y, box.top - t), box.bottom - t - r.height)) };
+    const a = $('.stage-hud').getBoundingClientRect(), b = tl.parentElement.getBoundingClientRect();
+    tl.style.setProperty('--stage-w', `${a.width}px`);   // nie breiter als die Bühne: passt nach oben gezogen hinein
+    const r = tl.getBoundingClientRect(), l = r.left - tlOff.x, t = r.top - tlOff.y;   // Standardplatz ohne Versatz
+    y = Math.min(Math.max(y, a.top - t), b.bottom - t - r.height);
+    const h = t + y < b.top - 1 ? a : b;   // in der Bühne seitlich nur so weit wie sie (Schiene, Tafel bleiben frei)
+    tlOff = { x: Math.round(Math.min(Math.max(x, h.left - l), h.right - l - r.width)), y: Math.round(y) };
     tl.style.translate = `${tlOff.x}px ${tlOff.y}px`;
     tl.classList.toggle('is-moved', !!(tlOff.x || tlOff.y));
     if (save) try { localStorage.setItem(TL_KEY, JSON.stringify(tlOff)); } catch { /* gilt bis zum Neuladen */ }
@@ -925,14 +927,15 @@ export function createHud(handlers) {
     cardBox = [x - 8, y - 8, x + cw + 8, y + ch + 8];   // die anderen Abzeichen weichen im nächsten Bild aus
   }
 
-  // freier Bereich zwischen Schiene, Tafel, Kopf- und Fußleiste; die Zeitleiste nimmt ihre Seite der Bühne weg
+  // freier Bereich zwischen Schiene, Tafel, Kopfleiste und Hinweis bzw. Fußleiste; die Zeitleiste nimmt ihre Seite der Bühne weg
   // (unten: der Bereich endet über ihr, nach oben gezogen: er beginnt unter ihr)
   function stageRect(width) {
     const r = (sel) => $(sel).getBoundingClientRect();
-    const lad = r('.ladder'), pan = r('#panel'), top = r('.topbar'), bot = r('.bottombar'), bar = tl.getBoundingClientRect();
+    const lad = r('.ladder'), pan = r('#panel'), top = r('.topbar'), bot = r('.bottombar'), hint = r('.center-hint'), bar = tl.getBoundingClientRect();
     const narrow = width <= 860;
     const y0 = (narrow ? lad.bottom : top.bottom) + 8;
-    const y1 = Math.min(narrow && pan.width > 0 ? pan.top : Infinity, bot.top) - 8;   // mobil liegt die Knopfleiste über der Tafel
+    const floor = hint.height && !selected ? Math.min(hint.top, bot.top) : bot.top;   // Hinweis unten in der Bühne bleibt frei; offene Karte blendet ihn aus (CSS)
+    const y1 = Math.min(narrow && pan.width > 0 ? pan.top : Infinity, floor) - 8;   // mobil liegt die Knopfleiste über der Tafel
     const low = bar.top + bar.bottom > y0 + y1;
     return {
       x0: narrow ? 8 : lad.right + 10,

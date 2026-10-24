@@ -604,7 +604,8 @@ body.panel-collapsed .panel { display: none; }
   align-items: flex-end;
   justify-content: space-between;
   gap: var(--gap);
-  flex-wrap: nowrap;   /* Messleiste · Hinweis · Ebenen-Wechsel in einer Zeile (User, 2026-10-24) */
+  flex-wrap: wrap;   /* Messleiste · Zeitleiste · Ebenen-Wechsel in einer Zeile, wenn Platz (User, 2026-10-24) */
+  container: bottom / inline-size;
   pointer-events: none;
 }
 .bottombar > * { pointer-events: auto; }
@@ -646,7 +647,7 @@ body.panel-collapsed .panel { display: none; }
 .sem-method { margin: 0; padding-top: 5px; border-top: 1px solid var(--line); font-size: 12.5px; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .sem-cap { margin-right: 6px; }
 
-.center-hint { flex: 1 1 0; min-width: 0; container-type: inline-size; display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center; }
+.center-hint { width: 100%; container-type: inline-size; transition: opacity 0.2s; display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center; }
 .hint {
   margin: 0;
   padding: 7px 14px;
@@ -656,6 +657,7 @@ body.panel-collapsed .panel { display: none; }
   transition: opacity 0.6s;
 }
 body.touched .hint { opacity: 0; }
+body:has(.hs-card.is-open) .center-hint { opacity: 0; }   /* offene Info-Karte bekommt die ganze Bühne (hud.js stageRect) */
 @container (max-width: 190px) { .hint { display: none; } }   /* zu schmal für die Zeile: Hinweis entfällt, Messleiste und Knöpfe bleiben nebeneinander */
 .edge-meter {
   display: flex;
@@ -913,13 +915,17 @@ body.card-docked .panel { visibility: hidden; }
   100% { transform: scale(1.7); opacity: 0; }
 }
 
-/* ---------- Pyrolyse-Zeitleiste unten in der 3D-Ansicht (Vorschau Pyro:A, User 2026-10-24) ----------
-   Liegt im Raster-Feld „stage“ über der Messleiste (nie darauf), am Griff verschiebbar (hud.js, CSS translate) */
+/* ---------- Pyrolyse-Zeitleiste in der Fußleiste (Vorschau Pyro:A, User 2026-10-24) ----------
+   Mittig zwischen Messleiste und Ebenen-Wechsel; reicht die Breite nicht, eigene Zeile darüber. Am Griff in die
+   Bühne verschiebbar (hud.js, CSS translate); die Bühne trägt unten den Hinweis */
 .stage-hud { grid-area: stage; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; min-width: 0; min-height: 0; pointer-events: none; }
 .pyro-tl {
   --tl-off: var(--line);
   pointer-events: auto;
-  width: min(100%, 760px);
+  order: -1;
+  flex: 1 1 100%;   /* eigene Zeile über Mess- und Knopfleiste; Breite über die Ränder, damit nichts daneben rutscht */
+  min-width: 0;
+  margin-inline: max(0px, (100% - min(760px, var(--stage-w, 100%))) / 2);   /* hud.js setzt die Breite der Bühne */
   display: flex;
   align-items: center;
   gap: 12px;
@@ -927,6 +933,10 @@ body.card-docked .panel { visibility: hidden; }
   border-radius: var(--radius);
 }
 .pyro-tl.is-dragging { border-color: var(--accent); }
+/* Messleiste + Zeitleiste (ab 520, wächst bis 760) + Ebenen-Wechsel passen nebeneinander; Umbruch zählt die Grundbreiten */
+@container bottom (min-width: 1340px) {   /* 400 + 520 + 387 + 2 × 16 */
+  .pyro-tl { order: 0; flex: 1 1 520px; max-width: 760px; margin-inline: 0; }
+}
 .tl-move { position: relative; align-self: stretch; display: flex; flex-direction: column; align-items: center; justify-content: center; }   /* Griff mittig in der Spalte (User, 2026-10-24) */
 .tl-grip, .tl-reset { display: grid; place-items: center; width: 24px; padding: 0; border: 1px solid transparent; border-radius: 6px; background: none; color: var(--ink); transition: border-color 0.15s, background-color 0.15s, color 0.15s; }
 .tl-grip { height: 32px; cursor: grab; touch-action: none; }
