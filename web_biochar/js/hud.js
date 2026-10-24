@@ -613,7 +613,7 @@ export function createHud(handlers) {
       const items = [];
       for (const m of markers) {
         const p = m.h.pos.clone().project(camera);
-        let visible = p.z < 1 && Math.abs(p.x) < 1.05 && Math.abs(p.y) < 1.05;
+        let visible = !m.h.hidden && p.z < 1 && Math.abs(p.x) < 1.05 && Math.abs(p.y) < 1.05;   // hidden: Ebene blendet je Zustand aus
         if (visible && m.h.normal) visible = m.h.normal.dot(v.clone().sub(m.h.pos)) > 0;
         m.el.classList.toggle('is-off', !visible);
         m.dot.classList.toggle('is-off', !visible);

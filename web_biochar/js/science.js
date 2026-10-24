@@ -63,7 +63,9 @@ export function nanoStructure(t) {
   return {
     k,
     rings: Math.round(lerp(3, 19, k * k * 0.55 + k * 0.45)),  // aromatische Ringe je Cluster
-    sheetNm: lerp(0.6, 1.6, k),                               // mittlerer Schichtdurchmesser
+    // mittlerer Schichtdurchmesser: Domänengröße holziger Kohlen nach Wood et al. (2023), ≈ 12 Ringe bei 400 °C, 41 bei
+    // 600 °C, 155 bei 800 °C (aus H/C) → Ringzahl n = 12·e^((T−400)·0,0064), runde Scheibe: d = 2·√(n·0,0524 nm²/π)
+    sheetNm: 0.258 * Math.sqrt(12 * Math.exp((lerp(T_MIN, T_MAX, k) - 400) * 0.0064)),
     layers: lerp(1.25, 3.0, k),                               // mittlere Schichten je Stapel
     d002: lerp(0.4, 0.36, k),                                 // Schichtabstand in nm
     curvature: lerp(0.55, 0.18, k),

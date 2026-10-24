@@ -15,9 +15,11 @@ float rimR(float ang, float seed) {
 }
 `;
 
-// Schicht als dünne Platte (Dicke ≈ 0,14 nm, Atomdurchmesser): Ober-/Unterseite mit Gitter, Randband als Schichtdicke
+// Schicht als dünne Platte (Dicke ≈ 0,14 nm, Atomdurchmesser): Ober-/Unterseite mit Gitter, Randband als Schichtdicke.
+// Form: Schale bzw. Sattel plus eine dreizählige Wellung (Fünf- und Siebenringe verstreut, Harris-Modell); Wellung je Stapel
+// gleich, damit die Schichten eines Stapels parallel bleiben.
 const SHEET_VERT = /* glsl */ `
-attribute vec4 aSheet;     // Krümmung, Sattel/Schale (−1/1), Durchmesser nm, Seed
+attribute vec4 aSheet;     // Krümmung, Sattel/Schale (Vorzeichen −/+) mit Wellungs-Seed (|y| − 1), Durchmesser nm, Seed
 attribute vec2 aPart;      // Seite (+1 oben, −1 unten), 1 = Randband
 varying vec2 vLocal;
 varying vec4 vSheet;
@@ -31,8 +33,14 @@ void main() {
   float ang = atan(p.y, p.x);
   if (aPart.y > 0.5) p.xy = vec2(cos(ang), sin(ang)) * rimR(ang, aSheet.w);
   float hw = 0.07 / aSheet.z;          // halbe Dicke in lokalen Einheiten ("half" ist in GLSL reserviert)
-  p.z = aSheet.x * (p.x * p.x + aSheet.y * p.y * p.y) + aPart.x * hw;
-  vec3 n = aPart.y > 0.5 ? normalize(vec3(p.xy, 0.0)) : aPart.x * normalize(vec3(-2.0 * aSheet.x * p.x, -2.0 * aSheet.x * aSheet.y * p.y, 1.0));
+  float s = sign(aSheet.y), ws = abs(aSheet.y) - 1.0;
+  float phi = ws * 6.2832, a3 = aSheet.x * (ws - 0.5) * 1.6;
+  vec2 cs = vec2(cos(phi), sin(phi));
+  vec2 r = vec2(cs.x * p.x + cs.y * p.y, -cs.y * p.x + cs.x * p.y);
+  float fu = 3.0 * (r.x * r.x - r.y * r.y), fv = -6.0 * r.x * r.y;
+  vec2 g = vec2(2.0 * aSheet.x * p.x, 2.0 * aSheet.x * s * p.y) + a3 * vec2(fu * cs.x - fv * cs.y, fu * cs.y + fv * cs.x);
+  p.z = aSheet.x * (p.x * p.x + s * p.y * p.y) + a3 * (r.x * r.x * r.x - 3.0 * r.x * r.y * r.y) + aPart.x * hw;
+  vec3 n = aPart.y > 0.5 ? normalize(vec3(p.xy, 0.0)) : aPart.x * normalize(vec3(-g, 1.0));
   vLocal = p.xy;
   vSheet = aSheet;
   vBand = aPart.y;
@@ -70,7 +78,9 @@ float widen(float w, float fw) { return max(1.0, 2.0 * fw / w); }
 // Deckung eines Saums: voll bis a, weich bis b (Abstand d), um k verbreitert
 float band(float d, float a, float b, float k, float aa) { return 1.0 - smoothstep(a * k - aa, b * k + aa, d); }
 void main() {
-  vec2 uv = vLocal * vSheet.z / 0.246 + vSheet.w * 13.0;   // Gitterkonstante 0,246 nm, C–C 0,142 nm
+  // Gitterkonstante 0,246 nm, C–C 0,142 nm; je Schicht verdreht und verschoben (turbostratisch: ohne ABAB-Folge)
+  float tw = vSheet.w * 6.2832;
+  vec2 uv = mat2(cos(tw), sin(tw), -sin(tw), cos(tw)) * vLocal * vSheet.z / 0.246 + vSheet.w * 13.0;
   // Bildpunkt in Gitter-Einheiten, auch schräg gesehen (fwidth(uv.x) allein übersah die Stauchung quer dazu);
   // vor jedem discard/if: Ableitungen nur im gleichförmigen Ablauf
   float fw = 0.71 * length(fwidth(uv));
@@ -105,12 +115,20 @@ void main() {
   float kb = widen(0.105, fw), ka = widen(0.21, fw);   // Bindung ≈ 0,105, Atom ≈ 0,21 Gitter-Einheiten breit
   float bond = band(e, 0.045, 0.06, kb, aa);
   float atom = band(dv, 0.09, 0.12, ka, aa);
-  // Fünfring (Schale) bzw. Siebenring (Sattel) in der Mitte gekrümmter Schichten – Ursache der Krümmung (Harris-Modell)
+  // Fünf- und Siebenringe – Ursache der Krümmung (Harris et al. 2008, Allen et al. 2022: zufällig im Sechseckgitter verteilt).
+  // In der Mitte passend zur Form (Schale: Fünfring, Sattel: Siebenring), dazu je nach Fläche bis zu zwei weitere, Fünf- zu
+  // Siebenring ≈ 2 : 1 wie im Modell von Wood et al. (2023); dort sind es mehr (≈ 1 Fünfring je 5 Sechsringe) – hier weniger,
+  // damit das Sechseckgitter lesbar bleibt.
   float warm = 0.0;
-  if (vSheet.w > 0.45) {
-    float nRing = vSheet.y > 0.0 ? 5.0 : 7.0;
+  float nDef = clamp(floor(vSheet.z * vSheet.z * 0.9), 1.0, 3.0);
+  for (int i = 0; i < 3; i++) {
+    if (float(i) >= nDef) break;
+    float fi = float(i);
+    float h1 = fract(sin(vSheet.w * 91.7 + fi * 3.1) * 4375.85), h2 = fract(sin(vSheet.w * 47.3 + fi * 1.7) * 2317.13);
+    vec2 cen = i == 0 ? vec2(0.0) : (0.27 + 0.06 * h1) * vec2(cos(h2 * 0.8 + fi * 2.094 + vSheet.w * 9.0), sin(h2 * 0.8 + fi * 2.094 + vSheet.w * 9.0));
+    float nRing = i == 0 ? (vSheet.y > 0.0 ? 5.0 : 7.0) : (h1 < 0.67 ? 5.0 : 7.0);
     float seg = 6.2832 / nRing;
-    vec2 u0 = vLocal * vSheet.z / 0.246;
+    vec2 u0 = (vLocal - cen) * vSheet.z / 0.246;
     float rr = length(u0), a0 = atan(u0.y, u0.x);
     float RN = 0.5774 / (2.0 * sin(3.14159 / nRing));
     float zone = 1.0 - smoothstep(RN + 0.25, RN + 0.5, rr);
@@ -121,7 +139,7 @@ void main() {
     float ringAtom = band(dA, 0.09, 0.12, ka, aa);
     bond = mix(bond * (1.0 - zone), ringBond, zone);
     atom = mix(atom * (1.0 - zone), ringAtom, zone);
-    warm = zone * max(ringBond, ringAtom);
+    warm = max(warm, zone * max(ringBond, ringAtom));
   }
   // aus der Ferne und schräg: Fläche statt Gitter, bevor die Löcher zwischen den Bindungen unter 2 Bildpunkte fallen
   float detail = smoothstep(0.3, 0.16, fw);
@@ -189,71 +207,98 @@ const MOLECULES = {
   n2: [['N', 0.055, 0, 0], ['N', -0.055, 0, 0]],
   h2o: [['O', 0, 0, 0], ['H', 0.0757, 0.0586, 0], ['H', -0.0757, 0.0586, 0]],
 };
+// Kalottenmodell: Kugeln mit dem van-der-Waals-Radius (Bondi 1964), damit die Größe der Moleküle zur Porenweite passt
+// (CO₂ ≈ 0,33 nm breit = kinetischer Durchmesser)
 const ELEMENT = {
-  C: { r: 0.085, color: new THREE.Color(0.32, 0.33, 0.36) },
-  O: { r: 0.08, color: new THREE.Color(0.9, 0.24, 0.22) },
-  N: { r: 0.08, color: new THREE.Color(0.3, 0.5, 0.95) },
-  H: { r: 0.05, color: new THREE.Color(0.95, 0.95, 0.97) },
+  C: { r: 0.17, color: new THREE.Color(0.32, 0.33, 0.36) },
+  O: { r: 0.152, color: new THREE.Color(0.9, 0.24, 0.22) },
+  N: { r: 0.155, color: new THREE.Color(0.3, 0.5, 0.95) },
+  H: { r: 0.12, color: new THREE.Color(0.95, 0.95, 0.97) },
 };
 
-// Feste Stammliste der Schichtstapel (Lage und Zufallswerte), unabhängig von der Temperatur: Größe, Schichtzahl,
-// Abstand, Krümmung und Ausrichtung sind Funktionen von T und gleiten mit dem Regler (Pyrolyse-Labor).
-// Die Abstände sind so gewählt, dass sich die Stapel auch in der größten Ausbildung (800 °C) nicht durchdringen.
+// Feste Stammliste (Lage und Zufallswerte), unabhängig von der Temperatur; Größe, Schichtzahl, Abstand, Krümmung und
+// Ausrichtung sind Funktionen von T und gleiten mit dem Regler (Pyrolyse-Labor). Zwei Sorten: Keime (Lage der großen
+// Schichtpakete bei 800 °C, weit auseinander) und kleine Cluster dazwischen. Die Schichten wachsen von ≈ 0,8 nm (350 °C) auf
+// ≈ 3 nm (800 °C, Wood et al. 2023); damit die Kohlenstoffmenge im Bild etwa gleich bleibt, wachsen die kleinen Cluster ab
+// ≈ 560 °C nacheinander in den nächsten Keim ein, bevor er sie berührt (Kondensation, Modell). Keine Durchdringung.
 const sstep = (a, b, x) => { const t = clamp((x - a) / (b - a), 0, 1); return t * t * (3 - 2 * t); };
+const seedSize = (u, T) => Math.min(nanoStructure(T).sheetNm * (1 + 0.25 * u.z), u.dMax);
 function masterUnits(seed) {
   const rand = mulberry32(seed);
-  const big = nanoStructure(800);
+  const big = nanoStructure(800).sheetNm, small = nanoStructure(600).sheetNm;
   const units = [];
-  for (let tries = 0; tries < 6000 && units.length < 330; tries++) {
-    const c = new THREE.Vector3((rand() * 2 - 1) * HALF.x, (rand() * 2 - 1) * HALF.y, (rand() * 2 - 1) * HALF.z);
-    const z = gauss(rand);
-    const dMax = clamp(big.sheetNm * (1 + 0.25 * z), 0.45, 2.6);
-    if (units.some((u) => u.c.distanceTo(c) < 0.38 * (u.dMax + dMax) + 0.12)) continue;
+  const make = (c, z, dMax, isSeed) => {
     const u = {
-      c, z, dMax, n0: new THREE.Vector3(gauss(rand), gauss(rand), gauss(rand)).normalize(), spin: rand() * 6.28,
-      zl: gauss(rand), slots: [],
+      c, z, dMax, isSeed, n0: new THREE.Vector3(gauss(rand), gauss(rand), gauss(rand)).normalize(), spin: rand() * 6.28,
+      zl: gauss(rand), curv: 0.6 + 0.8 * rand(), shape: rand() < 0.5 ? -1 : 1, wave: rand(), slots: [], host: null, tm: Infinity,
     };
-    for (let k = 0; k < 4; k++) {
-      u.slots.push({
-        jit: 1 + (rand() - 0.5) * 0.08, tilt: (rand() - 0.5) * 0.5, dRand: 0.85 + rand() * 0.3,
-        curv: 0.5 + rand(), shape: rand() < 0.5 ? -1 : 1, seed: rand(),
-      });
-    }
+    for (let k = 0; k < 4; k++) u.slots.push({ jit: 1 + (rand() - 0.5) * 0.08, dRand: 0.88 + rand() * 0.24, seed: rand() });
     units.push(u);
+  };
+  const rndPos = () => new THREE.Vector3((rand() * 2 - 1) * HALF.x, (rand() * 2 - 1) * HALF.y, (rand() * 2 - 1) * HALF.z);
+  for (let tries = 0; tries < 4000 && units.length < 70; tries++) {
+    const c = rndPos(), z = gauss(rand), dMax = clamp(big * (1 + 0.2 * z), 1.8, 4.2);
+    if (!units.some((u) => u.c.distanceTo(c) < 0.36 * (u.dMax + dMax) + 0.1)) make(c, z, dMax, true);
+  }
+  const seeds = units.slice();
+  // kleine Cluster: Abstand nach ihrer größten eigenständigen Ausbildung (≈ 600 °C), zu Keimen nach deren Größe bei 600 °C
+  for (let tries = 0; tries < 9000 && units.length < 360; tries++) {
+    const c = rndPos(), z = gauss(rand), dMax = clamp(small * (1 + 0.25 * z), 0.45, 2.2);
+    if (units.some((u) => u.c.distanceTo(c) < 0.38 * ((u.isSeed ? Math.min(u.dMax, small * 1.25) : u.dMax) + dMax) + 0.12)) continue;
+    make(c, z, dMax, false);
+  }
+  // Einwachsen: nächster Keim; Beginn ≈ 20 °C bevor sich Keim und Cluster berühren würden (Kugelabschätzung)
+  for (const u of units) {
+    if (u.isSeed) continue;
+    let best = Infinity;
+    for (const s of seeds) { const g = u.c.distanceTo(s.c) - 0.5 * s.dMax; if (g < best) { best = g; u.host = s; } }
+    const r = u.c.distanceTo(u.host.c);
+    for (let T = 540; T <= 800; T += 5) {
+      if (0.5 * seedSize(u.host, T) + 0.5 * seedSize(u, T) >= 0.95 * r) { u.tm = T - 20; break; }
+    }
   }
   return units;
 }
 
 const ALIGN = new THREE.Vector3(0.25, 1, 0.1).normalize();
 const Z_AXIS = new THREE.Vector3(0, 0, 1);
-const _q = new THREE.Quaternion(), _qs = new THREE.Quaternion(), _n = new THREE.Vector3();
+const _q = new THREE.Quaternion(), _qs = new THREE.Quaternion(), _n = new THREE.Vector3(), _c = new THREE.Vector3();
 // Sichtbare Schichten bei der Temperatur T (gleitende Werte); Schichten ohne Gewicht entfallen.
 // Unter ≈ 300 °C gibt es noch keine aromatischen Schichten (Lignozellulose), sie wachsen 300–400 °C heran (pyroState.sheets).
+// Krümmung als Krümmungsradius ≈ 1,6–2,4 nm (Modell, gekrümmte Fragmente nach Harris): lokale Krümmung = d / (2·R).
 function sheetsAt(units, T) {
   const ns = nanoStructure(T);
   const born = pyroState(T).sheets;
   const sheets = [], vis = [];
   if (born <= 0) return { ns, sheets, vis };
-  for (const u of units) {
-    const d = clamp(ns.sheetNm * (1 + 0.25 * u.z), 0.45, 2.6) * born;
+  const R = 1.6 + 0.8 * ns.k;
+  for (const u of units) {   // Keime stehen vorn in der Liste: ihre Lage ist bekannt, wenn die Cluster einwachsen
+    const w = u.isSeed ? 1 : 1 - sstep(u.tm - 25, u.tm + 25, T);   // noch eigenständiger Anteil
+    if (w <= 0.01) continue;
+    const d = seedSize(u, T) * born * (0.3 + 0.7 * w);
     _n.copy(u.n0);
     if (ns.k > 0.3) _n.lerp(ALIGN, (ns.k - 0.3) * 0.35).normalize();
+    if (!u.isSeed) _n.lerp(u.host.nT, 1 - w).normalize();
+    else u.nT = (u.nT || new THREE.Vector3()).copy(_n);
+    _c.copy(u.c);
+    if (!u.isSeed) _c.lerp(u.host.c, 0.6 * (1 - w));
     _q.setFromUnitVectors(Z_AXIS, _n).multiply(_qs.setFromAxisAngle(Z_AXIS, u.spin));
     const Lf = ns.layers + 0.7 * u.zl;
-    const w = u.slots.map((_, k) => (k === 0 ? 1 : sstep(k + 0.2, k + 0.8, Lf)));
-    const leff = w.reduce((a, b) => a + b, 0);
+    const lw = u.slots.map((_, k) => (k === 0 ? 1 : sstep(k + 0.2, k + 0.8, Lf)));
+    const leff = lw.reduce((a, b) => a + b, 0);
+    const curv = (d / (2 * R)) * u.curv;
     let layers = 0;
     u.slots.forEach((sl, k) => {
-      if (w[k] <= 0.01) return;
+      if (lw[k] <= 0.01) return;
       layers++;
       const off = (k - (leff - 1) / 2) * ns.d002 * sl.jit;
       sheets.push({
-        pos: u.c.clone().addScaledVector(_n, off),
-        q: _q.clone().multiply(new THREE.Quaternion().setFromAxisAngle(Z_AXIS, sl.tilt)),
-        d: d * sl.dRand * w[k], curv: ns.curvature * sl.curv, shape: sl.shape, seed: sl.seed,
+        pos: _c.clone().addScaledVector(_n, off),
+        q: _q.clone(),   // gleiche Form im Stapel; die turbostratische Verdrehung trägt das Gitter (Seed im Shader)
+        d: d * sl.dRand * lw[k], curv, shape: u.shape * (1 + u.wave * 0.999), seed: sl.seed,
       });
     });
-    vis.push({ c: u.c, d, n: _n.clone(), layers, ref: u });
+    vis.push({ c: _c.clone(), d, n: _n.clone(), layers, ref: u });
   }
   return { ns, sheets, vis };
 }
@@ -311,35 +356,95 @@ export function create(ctx) {
   scene.add(probe);
 
   // Holz (unter ≈ 400 °C): Zellulose-Mikrofibrillen (Ø ≈ 3,5 nm, Fernandes et al. 2011) als nahezu parallele, leicht wellige
-  // Stäbe, dazwischen kurze Kettenstücke der Hemizellulose-/Lignin-Matrix (Modell). Die Fibrillen werden dünner und blasser,
-  // wenn die Zellulose zerfällt (315–400 °C), die Matrix verschwindet 220–380 °C; die aromatischen Schichten wachsen derweil heran.
-  const woodMat = new THREE.MeshStandardMaterial({ color: new THREE.Color(0.86, 0.78, 0.62), roughness: 0.55, metalness: 0, transparent: true });
-  const matrixMat = new THREE.MeshStandardMaterial({ color: new THREE.Color(0.7, 0.58, 0.4), roughness: 0.7, metalness: 0, transparent: true });
+  // Stränge mit sechseckigem Querschnitt. Ihre Oberfläche zeigt die Glucanketten als Riefen (3 je Fläche, Abstand ≈ 0,58 nm;
+  // Gitterebenen 0,53/0,60 nm) und die Glucose-Ringe als Buckel: 2 Ringe je 1,04 nm (Cellobiose), abwechselnd versetzt,
+  // Nachbarketten um ¼ verschoben (Zellulose Iβ, Nishiyama et al. 2002). Dazwischen die Matrix (Modell): Hemizellulose-Ketten
+  // aus Zuckerringen (Schritt ≈ 0,52 nm), Lignin-Knäuel aus aromatischen Ringen (Ring Ø ≈ 0,28 nm). Die Fibrillen werden dünner
+  // und blasser, wenn die Zellulose zerfällt (315–400 °C), die Hemizellulose verschwindet 220–380 °C, die Lignin-Ringe gehen
+  // in die aromatischen Schichten über, während diese heranwachsen (300–400 °C).
+  const C_REP = 1.038;
+  const chainTex = (() => {
+    const W = 64, H = 48, data = new Uint8Array(W * H * 4);   // Breite: entlang der Fibrille (1 Cellobiose), Höhe: 1 Fläche
+    for (let j = 0; j < H; j++) for (let i = 0; i < W; i++) {
+      const b = ((j + 0.5) / H) * 3, ci = Math.floor(b), t = b - ci - 0.5;
+      const ridge = Math.cos(t * Math.PI) ** 2;
+      const a = (((i + 0.5) / W) * 2 + ci * 0.5) % 2, k = Math.floor(a), f = a - k - 0.5;
+      const bump = Math.exp(-(f * f) / 0.04 - ((t - (k ? 0.12 : -0.12)) ** 2) / 0.05);
+      const h = Math.round(255 * (0.45 * ridge + 0.55 * ridge * bump));
+      data.set([h, h, h, 255], (j * W + i) * 4);
+    }
+    const tex = new THREE.DataTexture(data, W, H);
+    tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+    tex.magFilter = THREE.LinearFilter;
+    tex.minFilter = THREE.LinearMipmapLinearFilter;
+    tex.generateMipmaps = true;
+    tex.needsUpdate = true;
+    return tex;
+  })();
   const wr = mulberry32(321);
   const fibrils = [];
   const FIB_R = 1.75, FIB_LEN = HALF.y * 2 + 2;
+  chainTex.repeat.set(FIB_LEN / C_REP, 6);
+  const woodMat = new THREE.MeshStandardMaterial({
+    color: new THREE.Color(0.64, 0.57, 0.44), roughness: 0.62, metalness: 0, bumpMap: chainTex, bumpScale: 10, flatShading: true, transparent: true,
+  });
   for (let i = -1; i <= 1; i++) for (let j = -1; j <= 1; j++) {
     const cx = i * 3.9 + (j % 2 ? 1.9 : 0) + (wr() - 0.5) * 0.3, cz = j * 3.6 + (wr() - 0.5) * 0.3;
     if (Math.abs(cx) > HALF.x + 1 || Math.abs(cz) > HALF.z + 1) continue;
     const pts = [];
     for (let k = 0; k <= 4; k++) pts.push(new THREE.Vector3((wr() - 0.5) * 0.5, -FIB_LEN / 2 + (FIB_LEN * k) / 4, (wr() - 0.5) * 0.5));
-    const geo = new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 24, FIB_R, 12);
+    const geo = new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 48, FIB_R, 6);
     const mesh = new THREE.Mesh(geo, woodMat);
     mesh.position.set(cx, 0, cz);
     mesh.rotation.z = 0.12;
     fibrils.push(mesh);
     scene.add(mesh);
   }
-  const matrix = [];
-  for (let tries = 0; tries < 2000 && matrix.length < 90; tries++) {
-    const p = new THREE.Vector3((wr() * 2 - 1) * HALF.x, (wr() * 2 - 1) * HALF.y, (wr() * 2 - 1) * HALF.z);
-    if (fibrils.some((f) => Math.hypot(p.x - f.position.x, p.z - f.position.z) < FIB_R + 0.35)) continue;
-    matrix.push({ p, q: new THREE.Quaternion().setFromEuler(new THREE.Euler(wr() * 6, wr() * 6, wr() * 6)), len: 0.6 + wr() * 0.8 });
+  const clearOf = (p, m) => fibrils.every((f) => Math.hypot(p.x - f.position.x, p.z - f.position.z) > FIB_R + m);
+  const inBox = (p) => Math.abs(p.x) < HALF.x && Math.abs(p.y) < HALF.y && Math.abs(p.z) < HALF.z;
+  const rndBox = () => new THREE.Vector3((wr() * 2 - 1) * HALF.x, (wr() * 2 - 1) * HALF.y, (wr() * 2 - 1) * HALF.z);
+  const Y_AXIS = new THREE.Vector3(0, 1, 0);
+  // Hemizellulose: Ketten aus 4–8 Zuckerringen, meist längs der Fibrillen; Ringe abwechselnd gekippt (zweizählige Schraube)
+  const hemi = [];
+  for (let tries = 0; tries < 3000 && hemi.length < 260; tries++) {
+    const p = rndBox();
+    if (!clearOf(p, 0.3)) continue;
+    const dir = new THREE.Vector3(gauss(wr), gauss(wr) + 2.2 * Math.sign(wr() - 0.5), gauss(wr)).normalize();
+    const side = new THREE.Vector3().crossVectors(dir, Math.abs(dir.y) > 0.99 ? Z_AXIS : Y_AXIS).normalize();
+    const n = 4 + Math.floor(wr() * 5);
+    for (let k = 0; k < n && clearOf(p, 0.22) && inBox(p); k++) {
+      const nrm = side.clone().applyAxisAngle(dir, k % 2 ? 0.6 : -0.6);
+      hemi.push({ p: p.clone(), q: new THREE.Quaternion().setFromUnitVectors(Y_AXIS, nrm), s: 0.17 });
+      dir.add(new THREE.Vector3(gauss(wr), gauss(wr), gauss(wr)).multiplyScalar(0.12)).normalize();
+      p.addScaledVector(dir, 0.52);
+    }
   }
-  const matrixMesh = new THREE.InstancedMesh(new THREE.CapsuleGeometry(0.17, 1, 3, 8), matrixMat, matrix.length);
-  scene.add(matrixMesh);
+  // Lignin: Knäuel aus 3–6 aromatischen Ringen, verknüpft im Abstand ≈ 0,6 nm (z. B. β-O-4), Lage zufällig
+  const lig = [];
+  for (let tries = 0; tries < 2000 && lig.length < 110; tries++) {
+    const p = rndBox();
+    if (!clearOf(p, 0.5)) continue;
+    const n = 3 + Math.floor(wr() * 4);
+    for (let k = 0; k < n && clearOf(p, 0.25) && inBox(p); k++) {
+      lig.push({ p: p.clone(), q: new THREE.Quaternion().setFromUnitVectors(Y_AXIS, new THREE.Vector3(gauss(wr), gauss(wr), gauss(wr)).normalize()), s: 0.15 });
+      p.add(new THREE.Vector3(gauss(wr), gauss(wr), gauss(wr)).normalize().multiplyScalar(0.6));
+    }
+  }
+  const ringGeo = new THREE.CylinderGeometry(1, 1, 0.4, 6);   // Sechsring als flaches Prisma (Höhe 0,4 · Radius)
+  const hemiMat = new THREE.MeshStandardMaterial({ color: new THREE.Color(0.74, 0.64, 0.46), roughness: 0.6, metalness: 0, transparent: true });
+  const ligMat = new THREE.MeshStandardMaterial({ color: new THREE.Color(0.56, 0.4, 0.24), roughness: 0.45, metalness: 0, transparent: true });
+  const hemiMesh = new THREE.InstancedMesh(ringGeo, hemiMat, hemi.length);
+  const ligMesh = new THREE.InstancedMesh(ringGeo, ligMat, lig.length);
+  scene.add(hemiMesh, ligMesh);
   const _wm = new THREE.Matrix4(), _ws = new THREE.Vector3();
-  let woodF = NaN, matrixF = NaN;
+  const setRings = (mesh, mat, list, f) => {
+    mat.opacity = Math.min(1, f * 1.4);
+    mesh.visible = f > 0.01;
+    if (!mesh.visible) return;
+    list.forEach((m, k) => mesh.setMatrixAt(k, _wm.compose(m.p, m.q, _ws.setScalar(m.s * (0.4 + 0.6 * f)))));
+    mesh.instanceMatrix.needsUpdate = true;
+  };
+  let woodF = NaN, hemiF = NaN, ligF = NaN;
   function setWood(st) {
     if (st.fibril !== woodF) {
       woodF = st.fibril;
@@ -347,16 +452,15 @@ export function create(ctx) {
       const vis = st.fibril > 0.01;
       for (const f of fibrils) { f.visible = vis; f.scale.set(0.35 + 0.65 * st.fibril, 1, 0.35 + 0.65 * st.fibril); }
     }
-    if (st.matrix !== matrixF) {
-      matrixF = st.matrix;
-      matrixMat.opacity = Math.min(1, st.matrix * 1.4);
-      matrixMesh.visible = st.matrix > 0.01;
-      if (matrixMesh.visible) {
-        matrix.forEach((m, k) => matrixMesh.setMatrixAt(k, _wm.compose(m.p, m.q, _ws.set(st.matrix, m.len * st.matrix, st.matrix))));
-        matrixMesh.instanceMatrix.needsUpdate = true;
-      }
-    }
+    if (st.matrix !== hemiF) setRings(hemiMesh, hemiMat, hemi, (hemiF = st.matrix));
+    if (1 - st.sheets !== ligF) setRings(ligMesh, ligMat, lig, (ligF = 1 - st.sheets));
   }
+  // Hotspots im Holz: Fibrille vorn in der Mitte, Lignin-Knäuel und Hemizellulose-Kette nahe der Bildmitte
+  const front = (p) => Math.hypot(p.x, p.y) * 0.6 - p.z;
+  const fib0 = fibrils.reduce((a, f) => (front(f.position) < front(a.position) ? f : a), fibrils[0]);
+  const fibSpot = new THREE.Vector3(fib0.position.x - 0.12, 1, fib0.position.z + FIB_R * 0.88);
+  const ligSpot = lig.reduce((a, m) => (front(m.p) < front(a) ? m.p : a), lig[0].p).clone();
+  const hemiSpot = hemi.filter((m) => m.p.distanceTo(ligSpot) > 2.5).reduce((a, m) => (front(m.p) < front(a) ? m.p : a), hemi[0].p).clone();
 
   // Gasmoleküle
   const rand = mulberry32(55);
@@ -389,7 +493,10 @@ export function create(ctx) {
     stack: { id: 'stack', kind: 'info', pos: new THREE.Vector3(), normal: null },
     micropore: { id: 'micropore', kind: 'info', pos: new THREE.Vector3(), normal: null },
     gas: { id: 'gas', kind: 'info', pos: new THREE.Vector3(), normal: null },
+    fibril: { id: 'fibril', kind: 'info', pos: fibSpot, normal: new THREE.Vector3(0, 0, 1) },
+    hemi: { id: 'hemi', kind: 'info', pos: hemiSpot, normal: null },
   };
+  const sheetSpot = { pos: new THREE.Vector3(), normal: new THREE.Vector3(0, 0, 1) };
   let model = null;
   let poreD = 0;
   const camera = new THREE.PerspectiveCamera(45, ctx.aspect, 0.05, 200);
@@ -413,7 +520,14 @@ export function create(ctx) {
   function rebuild(T) {
     builtT = T;
     model = sheetsAt(units, T);
-    setWood(pyroState(T));
+    const st = pyroState(T);
+    setWood(st);
+    // Holz zeigt Fibrille + Matrix, Kohle Stapel, Mikropore und Gas; das Tauchziel führt im Holz zum Lignin-Ring (Ebene 7
+    // zeigt dort ein Lignin-Bruchstück), in der Kohle zum großen Cluster
+    const woody = st.sheets < 0.6;
+    hs.fibril.hidden = st.fibril < 0.3;
+    hs.hemi.hidden = Math.max(st.matrix, 1 - st.sheets) < 0.3;
+    hs.stack.hidden = hs.micropore.hidden = hs.gas.hidden = woody;
     const { sheets } = model;
     sheets.forEach((sh, k) => {
       lines.setMatrixAt(k, _m.compose(sh.pos, sh.q, _sc.setScalar(sh.d)));
@@ -422,18 +536,24 @@ export function create(ctx) {
     lines.count = fill.count = sheets.length;
     lines.instanceMatrix.needsUpdate = true;
     sheetAttr.needsUpdate = true;
-    if (!sheets.length) { probe.visible = false; return; }
-    if (Math.abs(T - searchedT) < 12) return;
-    searchedT = T;
-    probe.visible = true;
+    probe.visible = !woody;
+    if (sheets.length && Math.abs(T - searchedT) >= 12) searchHotspots(T);
+    const spot = st.sheets < 0.5 || !sheets.length ? { pos: ligSpot, normal: Z_AXIS } : sheetSpot;
+    hs.sheet.pos.copy(spot.pos);
+    hs.sheet.normal.copy(spot.normal);
+  }
 
-    // Hotspots: großer Cluster nahe der Mitte (Tauchziel), dicker Stapel, größte leere Kugel, ein CO2-Molekül
+  // Hotspots der Kohle nur alle ≈ 12 °C neu suchen (teuer): großer Cluster nahe der Mitte (Tauchziel), dicker Stapel,
+  // größte leere Kugel (Mikropore), ein CO₂-Molekül
+  function searchHotspots(T) {
+    searchedT = T;
+    const { sheets } = model;
     const near = (u) => u.c.length() + Math.abs(u.c.z - 1.5) * 0.3;
     const bigU = model.vis.filter((u) => u.d >= model.ns.sheetNm).sort((a, b) => near(a) - near(b))[0] || model.vis[0];
     const nrm = bigU.n.clone();
     if (nrm.dot(homePos.clone().sub(bigU.c)) < 0) nrm.negate();
-    hs.sheet.pos.copy(bigU.c).addScaledVector(nrm, 0.25);
-    hs.sheet.normal.copy(nrm);
+    sheetSpot.pos.copy(bigU.c).addScaledVector(nrm, 0.25);
+    sheetSpot.normal.copy(nrm);
     const stack = model.vis.filter((u) => u.layers >= 2 && u !== bigU).sort((a, b) => a.c.distanceTo(new THREE.Vector3(-2.5, 1, 1)) - b.c.distanceTo(new THREE.Vector3(-2.5, 1, 1)))[0] || bigU;
     hs.stack.pos.copy(stack.c);
     const r = mulberry32(99);
@@ -444,10 +564,12 @@ export function create(ctx) {
       const d = nearestSheet(table, px, py, pz, bestD);
       if (d > bestD && d < 1.0) { bestD = d; best = new THREE.Vector3(px, py, pz); }
     }
-    poreD = 2 * bestD;
+    // Abstand zur Schicht = zur Kernebene der Atome; freie Weite wie bei Schlitzporen-Modellen: Kernabstand − 0,34 nm
+    // (zweimal der van-der-Waals-Radius von Kohlenstoff, 0,17 nm)
+    poreD = Math.max(0, 2 * bestD - 0.34);
     hs.micropore.pos.copy(best || new THREE.Vector3());
     probe.position.copy(hs.micropore.pos);
-    probe.scale.setScalar(Math.max(bestD - 0.05, 0.05));
+    probe.scale.setScalar(Math.max(bestD - 0.17, 0.05));
   }
 
   // Nächster Punkt auf einer Schicht (Scheibe) zu p: Abstand, Fußpunkt, Normale zur Seite von p
@@ -585,11 +707,11 @@ export function create(ctx) {
     bloom: 0.12,
     home: { pos: homePos, target: new THREE.Vector3(0, 0, 0) },
     orbit: { minDistance: 3, maxDistance: 26, enablePan: false, autoRotate: false },
-    hotspots: [hs.sheet, hs.stack, hs.micropore, hs.gas],
+    hotspots: [hs.sheet, hs.stack, hs.micropore, hs.gas, hs.fibril, hs.hemi],
     liveFacts: true,
     facts: () => [
-      { value: `≈ ${fmt(model.ns.sheetNm * pyroState(shownT).sheets, 1)} nm · ${fmt(model.ns.layers, 1)}`, label: 'mittlere Schichtgröße · Schichten je Stapel (Modell)' },
-      { value: `${fmt(poreD, 1)} nm`, label: 'Durchmesser der markierten Mikropore' },
+      { value: model.sheets.length ? `≈ ${fmt(model.ns.sheetNm * pyroState(shownT).sheets, 1)} nm · ${fmt(model.ns.layers, 1)}` : '–', label: 'mittlerer Schichtdurchmesser (nach Wood et al. 2023) · Schichten je Stapel (Modell)' },
+      { value: probe.visible ? `${fmt(poreD, 1)} nm` : '–', label: 'freie Weite der markierten Mikropore (Kernabstand − 0,34 nm)' },
     ],
     update(dt, t) {
       t0 = t;
@@ -620,7 +742,7 @@ export function create(ctx) {
       atomMesh.geometry.dispose(); atomMesh.material.dispose();
       probe.geometry.dispose(); probe.material.dispose();
       for (const f of fibrils) f.geometry.dispose();
-      matrixMesh.geometry.dispose(); woodMat.dispose(); matrixMat.dispose();
+      ringGeo.dispose(); woodMat.dispose(); hemiMat.dispose(); ligMat.dispose(); chainTex.dispose();
     },
   };
   return level;

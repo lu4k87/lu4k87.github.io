@@ -56,7 +56,7 @@ export const HOTSPOT_ICONS = {
   cells: { pitwall: 'pit', vessel: 'vessel', fiber: 'fiber', ray: 'ray', habitat: 'microbe' },
   wall: { fracture: 'foam', pits: 'pit', water: 'water', bacteria: 'microbe', hypha: 'hypha', spores: 'hypha', ash: 'ash', crack: 'crack' },
   meso: { wallpore: 'micropore', macro: 'foam', meso: 'micropore', water: 'water' },
-  micro: { sheet: 'sheet', stack: 'stack', micropore: 'micropore', gas: 'gas' },
+  micro: { sheet: 'sheet', stack: 'stack', micropore: 'micropore', gas: 'gas', fibril: 'fiber', hemi: 'bond' },
   atoms: { ring: 'sheet', carboxyl: 'carboxyl', phenol: 'phenol', carbonyl: 'carbonyl', edgeh: 'edgeh' },
 };
 
