@@ -14,7 +14,9 @@ const R = 16;          // Gefäßradius (Lumen Ø 32 µm)
 const TH = 1.6;        // Wanddicke
 const S = 15;          // halbe Bogenlänge des Ausschnitts
 const Y0 = -17;
-const PIT = { sx: 6.0, sy: 5.8, rb: 2.5 };
+// Hoftüpfel-Raster; lo/hi = Feld für die Tüpfel-MITTE: nur ganze Tüpfel, die auch an der gezackten Bruchkante
+// (oben ≥ 5,76, unten ≤ −16,2, links ≤ −14,4) noch ganz auf dem Wandstück liegen – kein Tüpfel wird gerade abgeschnitten
+const PIT = { sx: 6.0, sy: 5.8, rb: 2.5, lo: [-11.6, -13.5], hi: [9.0, 3.2] };
 const HYPHA_PIT = new THREE.Vector2(3.0, -8.7);   // erweiterter Tüpfel (Zelle 0/−2), in den die Hyphe wächst
 const BAC = { s: 7.2, y: -3.6 };                   // Mitte der Bakterienkolonie
 // Gedämpfte Falschfarben wie bei eingefärbten REM-Bildern: Bakterien grünlich, Pilz ocker, Asche bläulich, Wand bleibt grau
@@ -75,6 +77,32 @@ float cracks(vec2 st, out float rim) {
   if (w2 > 0.02) rim = max(rim, 1.0 - smoothstep(0.0, 0.25, d2));
   return min(w1 > 0.02 ? d1 : 1.0, w2 > 0.02 ? d2 : 1.0);
 }
+const vec2 PIT_LO = vec2(${PIT.lo[0].toFixed(1)}, ${PIT.lo[1].toFixed(1)}), PIT_HI = vec2(${PIT.hi[0].toFixed(1)}, ${PIT.hi[1].toFixed(1)});
+// Hoftüpfel der Gitterzelle von st: Abstand f zur Tüpfelmitte, Zufallswert h (≥ 0,9 = kein Tüpfel)
+vec2 pitOf(vec2 st, out float h) {
+  vec2 P = vec2(${PIT.sx.toFixed(1)}, ${PIT.sy.toFixed(1)});
+  vec2 q = st / P;
+  q.x += mod(floor(q.y), 2.0) * 0.5;
+  vec2 cell = floor(q);
+  vec2 f = (fract(q) - 0.5) * P - (hash22(cell) - 0.5) * 0.5;
+  vec2 c = st - f;
+  h = any(lessThan(c, PIT_LO)) || any(greaterThan(c, PIT_HI)) ? 1.0 : hash13(vec3(cell, 4.0));
+  return f;
+}
+// vereinzelte einfache Tüpfel außerhalb des Hoftüpfel-Felds: Ellipsen-Maß (< 1 = offen), 9 = keiner
+float simplePit(vec2 st) {
+  vec2 q = st / 4.0;
+  vec2 cell = floor(q);
+  vec2 f = (fract(q) - 0.5) * 4.0 - (hash22(cell) - 0.5) * 2.0;
+  vec2 c = st - f;
+  if (hash13(vec3(cell, 8.0)) >= 0.18 || (all(greaterThan(c, PIT_LO - 3.3)) && all(lessThan(c, PIT_HI + 3.3)))) return 9.0;
+  return length(f / vec2(0.45, 0.32));
+}
+// Löcher mit gleichem Querschnitt durch die ganze Wanddicke (einfache Tüpfel, erweiterter Tüpfel der Hyphe, Risse): < 0 = offen
+float through(vec2 st) {
+  float rim;
+  return min(min(simplePit(st) - 1.0, length(st - uHyPit) - 1.7), cracks(st, rim));
+}
 `;
 
 const SURF_FRAG = /* glsl */ `
@@ -88,73 +116,71 @@ void main() {
   vec3 V = normalize(cameraPosition - vWorld);
   float phi = st.x / uR;
   vec3 Ts = vec3(cos(phi), 0.0, sin(phi));
+  // Versatz in (s, y) je µm Tiefe, wenn der Blick in die Wand läuft (Parallaxe für Kammer und Lochwände, beide Seiten)
+  vec3 Vt = vec3(dot(V, Ts), V.y, dot(V, N));
+  vec2 off = -Vt.xy / max(Vt.z, 0.2);
   vec2 grad = vec2(0.0);
   float extra = 0.0;
   float aa = fwidth(st.x) + fwidth(st.y);          // µm je Pixel: feine Muster blenden aus, bevor sie flimmern
-  if (st.x > -12.5 && st.x < 9.0 && st.y > -15.0 && st.y < 3.5) {
-    // Hoftüpfel, versetzt angeordnet
-    vec2 q = st / vec2(${PIT.sx.toFixed(1)}, ${PIT.sy.toFixed(1)});
-    q.x += mod(floor(q.y), 2.0) * 0.5;
-    vec2 cell = floor(q);
-    vec2 f = (fract(q) - 0.5) * vec2(${PIT.sx.toFixed(1)}, ${PIT.sy.toFixed(1)}) - (hash22(cell) - 0.5) * 0.5;
-    float h = hash13(vec3(cell, 4.0));
-    float r = length(f);
-    if (h < 0.9 && r < RB) {
-      grad += -1.1 * f / (RB * RB);
-      float ang = 0.75 + (h - 0.5) * 0.6;
-      mat2 Rm = mat2(cos(ang), -sin(ang), sin(ang), cos(ang));
-      vec2 sl = vec2(0.9, h > 0.62 ? 0.7 : 0.26);
-      float slit = length((Rm * f) / sl);
-      if (slit < 1.0) {
-        if (uSide < 0.5) discard;
-        // Blick durch den Porus in die linsenförmige Kammer: Strahl schrittweise in die Wand verfolgen (Parallaxe)
-        vec3 Vt = vec3(dot(V, Ts), V.y, dot(V, N));
-        vec2 off = -Vt.xy / max(Vt.z, 0.2);
-        float g = -1.0;
-        for (int i = 1; i <= 8; i++) {
-          float d = TH * float(i) / 8.0;
-          float rch = RB * 0.92 * sin(3.14159 * (0.12 + 0.76 * d / TH));
-          if (length(f + off * d) > rch) { g = mix(0.46, 0.12, d / TH); break; }   // Kammerwand: oben heller
-        }
-        if (g < 0.0) {
-          vec2 qb = Rm * (f + off * TH);
-          qb = vec2(-qb.y, qb.x);                    // Gegenporus der Nachbarzelle, um 90° gedreht
-          if (length(qb / sl) < 1.0) {
-            if (uMembrane < 0.02) discard;           // ganz hindurch (Kohle: Membran verschwunden)
-            g = 0.1;
-          } else g = 0.08;                             // Rückwand der Kammer
-        }
-        g *= 0.85 + 0.3 * vnoise(vWorld * 6.0);
-        // Tüpfelmembran (Holz): feines Fibrillennetz schließt die Kammer, zerfällt beim Verkohlen (Modell)
-        if (uMembrane > 0.02) {
-          vec2 fm = f + off * TH * 0.5;
-          float web = 0.3 + 0.2 * vnoise(vec3(fm * 14.0, 2.0)) + 0.12 * abs(sin(atan(fm.y, fm.x) * 9.0 + 6.0 * vnoise(vec3(fm * 3.0, 5.0))));
-          g = mix(g, web, uMembrane);
-        }
-        gl_FragColor = semOut(g, uTint);
-        return;
+  // Hoftüpfel, versetzt angeordnet
+  float h;
+  vec2 f = pitOf(st, h);
+  float r = length(f);
+  if (h < 0.9 && r < RB) {
+    grad += -1.1 * f / (RB * RB);
+    float ang = 0.75 + (h - 0.5) * 0.6;
+    mat2 Rm = mat2(cos(ang), -sin(ang), sin(ang), cos(ang));
+    vec2 sl = vec2(0.9, h > 0.62 ? 0.7 : 0.26);
+    // eigene Öffnung: innen der Porus, außen der Gegenporus der Nachbarzelle (um 90° gedreht)
+    vec2 fo = Rm * f;
+    if (uSide < 0.5) fo = vec2(-fo.y, fo.x);
+    float slit = length(fo / sl);
+    if (slit < 1.0) {
+      // Blick durch die Öffnung in die linsenförmige Kammer: Strahl schrittweise in die Wand verfolgen (Parallaxe)
+      float g = -1.0;
+      for (int i = 1; i <= 8; i++) {
+        float d = TH * float(i) / 8.0;
+        float rch = RB * 0.92 * sin(3.14159 * (0.12 + 0.76 * d / TH));
+        if (length(f + off * d) > rch) { g = mix(0.46, 0.12, d / TH); break; }   // Kammerwand: zur Öffnung heller
       }
-      extra += 0.5 * (1.0 - smoothstep(0.0, 0.35, slit - 1.0));                     // Rand des Porus
-      extra += 0.34 * (1.0 - smoothstep(0.0, 0.5, abs(r - (RB - 0.35))));          // Hofrand (Wulst)
-      extra -= 0.14 * (1.0 - smoothstep(0.2, 1.9, r));                              // Kammer fällt zum Porus ab
+      if (g < 0.0) {
+        vec2 qb = Rm * (f + off * TH);
+        if (uSide > 0.5) qb = vec2(-qb.y, qb.x);   // gegenüberliegende Öffnung: von innen der Gegenporus, von außen der Porus
+        if (length(qb / sl) < 1.0) {
+          if (uMembrane < 0.02) discard;           // ganz hindurch (Kohle: Membran verschwunden)
+          g = 0.1;
+        } else g = 0.08;                             // Rückwand der Kammer
+      }
+      g *= 0.85 + 0.3 * vnoise(vWorld * 6.0);
+      // Tüpfelmembran (Holz): feines Fibrillennetz schließt die Kammer, zerfällt beim Verkohlen (Modell)
+      if (uMembrane > 0.02) {
+        vec2 fm = f + off * TH * 0.5;
+        float web = 0.3 + 0.2 * vnoise(vec3(fm * 14.0, 2.0)) + 0.12 * abs(sin(atan(fm.y, fm.x) * 9.0 + 6.0 * vnoise(vec3(fm * 3.0, 5.0))));
+        g = mix(g, web, uMembrane);
+      }
+      gl_FragColor = semOut(g, uTint);
+      return;
     }
-  } else {
-    // vereinzelte einfache Tüpfel
-    vec2 q = st / 4.0;
-    vec2 cell = floor(q);
-    vec2 f = (fract(q) - 0.5) * 4.0 - (hash22(cell) - 0.5) * 2.0;
-    if (hash13(vec3(cell, 8.0)) < 0.18) {
-      float r = length(f / vec2(0.45, 0.32));
-      if (r < 1.0) discard;
-      extra += 0.4 * (1.0 - smoothstep(0.0, 0.6, r - 1.0));
-    }
+    extra += 0.5 * (1.0 - smoothstep(0.0, 0.35, slit - 1.0));                     // Rand des Porus
+    extra += 0.34 * (1.0 - smoothstep(0.0, 0.5, abs(r - (RB - 0.35))));          // Hofrand (Wulst)
+    extra -= 0.14 * (1.0 - smoothstep(0.2, 1.9, r));                              // Kammer fällt zum Porus ab
   }
-  vec2 hf = st - uHyPit;
-  float hr = length(hf);
-  if (hr < 1.7) discard;
-  extra += 0.5 * (1.0 - smoothstep(0.0, 0.4, hr - 1.7));
+  // Löcher durch die Wand: nicht nur ausstanzen, sondern die Lochwand durch die Wanddicke zeigen (Parallaxe wie
+  // bei der Kammer); erst wenn der Blick ganz hindurch geht, bleibt das Loch offen (User, 2026-10-24)
+  if (through(st) < 0.0) {
+    float g = -1.0;
+    for (int i = 1; i <= 8; i++) {
+      float d = TH * float(i) / 8.0;
+      if (through(st + off * d) >= 0.0) { g = mix(0.8, 0.3, d / TH); break; }     // Lochwand: hell wie die Bruchkante (Kanteneffekt), zur Tiefe dunkler
+    }
+    if (g < 0.0) discard;
+    gl_FragColor = semOut(g * (0.85 + 0.3 * vnoise(vWorld * 6.0)), uTint);
+    return;
+  }
+  extra += 0.4 * (1.0 - smoothstep(0.0, 0.6, simplePit(st) - 1.0));            // Rand der einfachen Tüpfel
+  extra += 0.5 * (1.0 - smoothstep(0.0, 0.4, length(st - uHyPit) - 1.7));      // Rand des erweiterten Tüpfels
   float rim;
-  if (cracks(st, rim) < 0.0) discard;
+  cracks(st, rim);
   extra += 0.55 * rim;
   if (uSide > 0.5) {
     // Mikrofibrillen-Riefen der innersten Wandschicht (S3): flache Spirale ≈ 75° zur Zellachse, Abstand ≈ 0,2 µm
@@ -195,7 +221,8 @@ void main() {
   float pore = smoothstep(0.6, 0.72, vnoise(vWorld * 11.0)) * uPores;
   g = mix(g, 0.08, 0.75 * pore) + 0.25 * smoothstep(0.52, 0.6, vnoise(vWorld * 11.0)) * (1.0 - pore);
   float rim;
-  if (cracks(vec2(vUv.x, vWorld.y), rim) < 0.0) discard;
+  cracks(vec2(vUv.x, vWorld.y), rim);
+  if (through(vec2(vUv.x, vWorld.y)) < 0.0) discard;   // Loch an der Bruchkante: Kerbe statt Steg quer durchs Loch
   gl_FragColor = semOut(g + 0.5 * rim, uTint);
 }
 `;
@@ -422,7 +449,8 @@ export function create(ctx) {
   const path = [[-17, 1.5], [-12, -0.8], [-7, -2.2], [-2.5, -4.6], [1.2, -7.4]].map(([s, y]) => onWall(s, y, 0.92));
   path.push(onWall(HYPHA_PIT.x, HYPHA_PIT.y, 0.2), onWall(HYPHA_PIT.x + 0.3, HYPHA_PIT.y - 0.2, -2.6));
   const hyCurve = new THREE.CatmullRomCurve3(path);
-  const septum = (i) => 1 + 0.05 * Math.sin(i * 0.9) - 0.16 * Math.exp(-Math.pow(((i % 34) - 17) / 2.2, 2));
+  // erster und letzter Ring schließen die Röhre: kein offenes Ende, wo die Hyphe außen aus dem Tüpfel ragt (User, 2026-10-24)
+  const septum = (i) => (1 + 0.05 * Math.sin(i * 0.9) - 0.16 * Math.exp(-Math.pow(((i % 34) - 17) / 2.2, 2))) * Math.min(1, i, 160 - i);
   scene.add(new THREE.Mesh(modulateTube(new THREE.TubeGeometry(hyCurve, 160, 0.9, 14), hyCurve, 160, 14, septum), hyMat));
   // Seitenäste: dünne, leicht wellige Fäden (Ø ≈ 1 µm) mit Septen, kein Kugelkopf und kein Ausfahren im Zeitraffer:
   // der Ast ist von Anfang an komplett, nur die Sporen reifen (User, 2026-10-23); das Ende ist stumpf, nur der letzte
