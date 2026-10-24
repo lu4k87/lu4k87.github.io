@@ -2,7 +2,7 @@
 // Info-Karte, REM-Datenleiste, Regler. Bildsprache: Hexagon-Badge direkt neben dem Objekt, beim Klick eine Karte links davon.
 
 import { LEVELS, SOURCES } from './content.js';
-import { properties, labProps, pyroState, fmt, T_MIN, T_MAX, T_ROOM, DRAPER, kelvinDiameterNm, kelvinRh, filledShare, isotherm, poreClass } from './science.js';
+import { properties, labProps, pyroState, fmt, T_MIN, T_MAX, T_ROOM, DRAPER, PHASES, kelvinDiameterNm, kelvinRh, filledShare, isotherm, poreClass } from './science.js';
 import { hexBadge, LEVEL_ICONS, HOTSPOT_ICONS, FACT_ICONS } from './icons.js';
 
 const $ = (sel) => document.querySelector(sel);
@@ -245,6 +245,25 @@ export function createHud(handlers) {
       </div>`;
   }
 
+  // Phasenleiste unter dem Regler „Zieltemperatur“: je Phase ein Abschnitt in echter Breite (T_ROOM … T_MAX),
+  // darunter die Grenze Holz | Pflanzenkohle bei T_MIN; hervorgehoben ist die Phase des Reglerwerts
+  const PHASE_SPANS = PHASES.map((p, i) => Math.min(p.to, T_MAX) - (i ? PHASES[i - 1].to : T_ROOM));
+  const phaseIndex = (T) => PHASES.findIndex((p) => T < p.to);
+  const tempText = (T) => esc(`${fmt(T)} °C, ${pyroState(T).phase}`);
+  function phaseScale(T) {
+    const k = phaseIndex(T), on = (b) => (b ? ' class="is-on"' : '');
+    return `
+          <span class="phase-scale" aria-hidden="true">
+            <span class="phase-bar" style="grid-template-columns:${PHASE_SPANS.map((w) => `${w}fr`).join(' ')}">${PHASE_SPANS.map((_, i) => `<i${on(i === k)}></i>`).join('')}</span>
+            <span class="phase-zones" style="grid-template-columns:${T_MIN - T_ROOM}fr ${T_MAX - T_MIN}fr"><span${on(T < T_MIN)}>Holz</span><span${on(T >= T_MIN)}>Pflanzenkohle ab ${fmt(T_MIN)} °C</span></span>
+          </span>`;
+  }
+  function markPhase(T) {
+    const k = phaseIndex(T);
+    panel.querySelectorAll('.phase-bar i').forEach((el, i) => el.classList.toggle('is-on', i === k));
+    panel.querySelectorAll('.phase-zones span').forEach((el, i) => el.classList.toggle('is-on', i === +(T >= T_MIN)));
+  }
+
   // Einblendung in der 3D-Ansicht: sichtbar, solange die Temperatur gleitet (Zeitraffer oder Reglerwechsel);
   // nach dem Ende STAGE_HOLD ms stehen lassen, dann ausblenden. Phasentext wechselt mit kurzer Überblendung.
   const STAGE_HOLD = 2200, SWAP_MS = 250;
@@ -338,7 +357,8 @@ export function createHud(handlers) {
         <button type="button" class="btn-primary" id="btn-play" aria-pressed="${playing}">${playing ? '■ Anhalten' : '▶ Pyrolyse abspielen'}</button>
         <label class="slider">
           <span>Zieltemperatur <output id="out-temp">${fmt(state.temp)} °C</output></span>
-          <input id="in-temp" type="range" min="${T_MIN}" max="${T_MAX}" step="10" value="${state.temp}">
+          <input id="in-temp" type="range" min="${T_ROOM}" max="${T_MAX}" step="5" value="${state.temp}" aria-valuetext="${tempText(state.temp)}">
+          ${phaseScale(state.temp)}
         </label>
         ${l.id === 'meso' ? rhBlock(state.rh, state.wet) : ''}
         <div id="lab">${labTable(shown)}</div>
@@ -355,8 +375,11 @@ export function createHud(handlers) {
     panel.querySelectorAll('button[data-hs]').forEach((b) => b.addEventListener('click', () => handlers.onHotspot(b.dataset.hs)));
     const temp = panel.querySelector('#in-temp');
     temp.addEventListener('input', () => {
-      panel.querySelector('#out-temp').textContent = `${fmt(+temp.value)} °C`;
-      handlers.onTemp(+temp.value);       // die Anzeige gleitet über setLive() mit der Szene
+      const v = +temp.value;
+      panel.querySelector('#out-temp').textContent = `${fmt(v)} °C`;
+      temp.setAttribute('aria-valuetext', tempText(v));
+      markPhase(v);
+      handlers.onTemp(v);       // die Anzeige gleitet über setLive() mit der Szene
     });
     panel.querySelector('#btn-play').addEventListener('click', () => handlers.onPlay());
     temp.addEventListener('change', () => refreshFacts());

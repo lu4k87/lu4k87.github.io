@@ -373,9 +373,17 @@ body.panel-collapsed .panel { display: none; }
 .controls { display: flex; flex-direction: column; gap: 12px; }
 .controls .sub { margin-bottom: 0; }
 .slider { display: flex; flex-direction: column; gap: 8px; font-size: 16px; }
-.slider span { display: flex; justify-content: space-between; gap: 8px; }
+.slider > span:first-child { display: flex; justify-content: space-between; gap: 8px; }
 .slider output { font: 500 16px var(--mono); color: var(--accent); }
 .slider input { width: 100%; accent-color: var(--accent); }
+/* Phasenleiste unter dem Regler: Abschnitte in echter Breite (Raster), Grenze Holz | Pflanzenkohle */
+.phase-scale { display: flex; flex-direction: column; gap: 4px; padding: 0 8px; font-size: 14px; }
+.phase-bar, .phase-zones { display: grid; }
+.phase-bar { gap: 2px; }
+.phase-bar i { height: 6px; border-radius: 2px; background: var(--line); }
+.phase-bar i.is-on { background: var(--accent); }
+.phase-zones span + span { border-left: 1px solid currentColor; padding-left: 6px; }
+.phase-zones .is-on { font-weight: 600; }
 .lab { width: 100%; border-collapse: collapse; font-size: 15px; }
 
 /* Luftfeuchte (Ebene 5): Porenklassen-Skala unter dem Regler (Daumenbreite links/rechts frei), gefüllt bis Ø, Isotherme */
