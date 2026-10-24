@@ -322,9 +322,10 @@ body.panel-collapsed .panel { display: none; }
    schmal (< 30 em) wieder linksbündig */
 .lead, .detail p, .hs-card p, .note, .sources li { text-align: justify; text-wrap: pretty; hyphens: auto; hyphenate-limit-chars: 12 5 4; }
 @media (max-width: 30em) { .lead, .detail p, .note, .sources li { text-align: start; } }
-/* Info-Karte: Blocksatz erst ab ≈ 290 px Textbreite – schmaler rissen ohne Trennungen breite Lücken (text-format §4) */
-.hs-card { container-type: inline-size; }
-@container (max-width: 289px) { .hs-card p { text-align: start; } }
+/* Info-Karte: Blocksatz erst ab ≈ 256 px Textbreite (früher Karte ≈ 290 px) – schmaler rissen ohne Trennungen breite
+   Lücken (text-format §4); gemessen am Text, die Lupe daneben zählt nicht */
+.hs-text { container-type: inline-size; }
+@container (max-width: 255px) { .hs-card p { text-align: start; } }
 .panel p { margin: 0; }
 
 .detail {
@@ -640,6 +641,24 @@ body.touched .hint { opacity: 0; }
 .hs-card h2 .hex { color: var(--accent); flex: none; }
 .hs-card h2 .tag { font: 500 12px/1 var(--mono); color: var(--accent); }
 .hs-card p { margin: 0; font-size: 15px; line-height: 1.5; hyphens: auto; }
+/* Lupe: runder Live-Ausschnitt der Szene um den Infopunkt (main.js zeichnet ins Canvas), links neben dem Text und
+   senkrecht mittig; die Karte wächst um die Spalte (hud.js LENS_COL). Schmales Fenster und Karte unter dem Abzeichen:
+   über dem Text, mittig (Vorschau 2026-10-24) */
+.hs-body { display: flex; align-items: center; gap: 14px; }
+.hs-lens {
+  flex: none;
+  width: 112px;
+  height: 112px;
+  margin: 6px 0;
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--glass-strong);
+  box-shadow: 0 0 0 1.5px var(--accent), 0 0 0 6.5px var(--accent-soft);
+}
+.hs-lens canvas { display: block; width: 100%; height: 100%; }
+.hs-text { flex: 1; min-width: 0; }
+.hs-card.is-stacked .hs-body { flex-direction: column; }
+.hs-card.is-stacked .hs-text { align-self: stretch; }
 .hs-card-foot { display: flex; justify-content: flex-end; align-items: center; gap: 8px; }
 .hs-card-foot .btn-primary { margin-right: auto; }
 .hs-card-close { padding: 5px 12px; border: 1px solid var(--line); border-radius: 999px; background: transparent; color: var(--ink); font: 500 13px/1.2 inherit; cursor: pointer; }

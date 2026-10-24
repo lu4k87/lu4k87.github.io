@@ -507,13 +507,18 @@ export function createHud(handlers) {
     panel.querySelectorAll('button[data-hs].is-active').forEach((b) => b.classList.remove('is-active'));
   }
 
-  // Karte füllen: Titel mit Abzeichen, Text, bei Tauchzielen der Knopf zum Hineinzoomen; jede Füllung blendet neu ein
+  // Karte füllen: Titel mit Abzeichen, links neben dem Text die Lupe (Live-Ausschnitt der Szene, zeichnet main.js),
+  // bei Tauchzielen der Knopf zum Hineinzoomen; jede Füllung blendet neu ein
+  let lensCanvas = null;
   function fillCard() {
-    if (!selected) { card.classList.remove('is-open'); return; }
+    if (!selected) { card.classList.remove('is-open'); lensCanvas = null; return; }
     const l = LEVELS[current], h = l.hotspots[selected.id], icons = HOTSPOT_ICONS[l.id] || {};
     card.innerHTML = `<div class="hs-card-in">
       <h2>${hexBadge(icons[selected.id], 'hex--mini')}<span>${esc(h.title)}</span>${selected.kind === 'dive' ? '<span class="tag">tiefer</span>' : ''}</h2>
-      <p>${esc(h.text)}</p>
+      <div class="hs-body">
+        <figure class="hs-lens" aria-hidden="true"><canvas></canvas></figure>
+        <div class="hs-text"><p>${esc(h.text)}</p></div>
+      </div>
       <div class="hs-card-foot">
         ${selected.kind === 'dive' ? '<button type="button" class="btn-primary" id="btn-dive">Hineinzoomen ↓</button>' : ''}
         <button type="button" class="hs-card-close">Schließen</button>
@@ -521,13 +526,17 @@ export function createHud(handlers) {
     const dive = card.querySelector('#btn-dive');
     if (dive) dive.addEventListener('click', () => handlers.onDive(selected.id));
     card.querySelector('.hs-card-close').addEventListener('click', closeCard);
+    lensCanvas = card.querySelector('.hs-lens canvas');
     card.classList.remove('is-away');
     cardW = 0;
     card.classList.add('is-open');
   }
 
   // Karte links vom Punkt und vom gewählten Abzeichen (12 px Abstand), vertikal mittig, im freien Bereich gehalten;
-  // reicht der Platz links nicht für 220 px (schmales Fenster), steht sie unter dem Abzeichen
+  // die Lupe steht als eigene Spalte links neben dem Text (Textbreite wie ohne Lupe, die Karte wächst um die Spalte).
+  // Reicht der Platz links nicht für 220 px Text + Spalte, steht die Karte unter dem Abzeichen; im schmalen Fenster
+  // (≤ 860 px) dann mit der Lupe über dem Text
+  const LENS_COL = 112 + 14;
   let cardW = 0;
   function placeCard(items, rect, width, height) {
     if (!selected) return;
@@ -535,13 +544,16 @@ export function createHud(handlers) {
     card.classList.toggle('is-away', !m);
     if (!m) return;
     const edge = Math.min(m.ax, m.x - m.w / 2) - 12;
-    const avail = edge - rect.x0;
+    const avail = edge - rect.x0 - LENS_COL;
     const below = avail < 220;
+    const stacked = below && width <= 860;
+    card.classList.toggle('is-stacked', stacked);
     // Breite in 20-px-Stufen mit Hysterese: sonst folgt sie dem wandernden Abzeichen (Kamerafahrt im Leerlauf), der Blocksatz
     // bricht in jedem Bild anders um und die Karte flackert und zittert
-    if (below) cardW = 0;
-    else if (!cardW || avail < cardW || avail > cardW + 100) cardW = Math.min(340, Math.max(220, Math.floor((avail - 30) / 20) * 20));
-    card.style.width = below ? '' : `${cardW}px`;
+    const room = below ? width - 16 - LENS_COL : avail;
+    if (stacked) cardW = 0;
+    else if (!cardW || room < cardW || room > cardW + 100) cardW = Math.min(340, Math.max(220, Math.floor((room - 30) / 20) * 20));
+    card.style.width = stacked ? '' : `${cardW + LENS_COL}px`;
     const cw = card.offsetWidth, ch = card.offsetHeight;
     // im schmalen Fenster darf die Karte über die Tafel ragen (Fensterhöhe statt Bühne)
     const x = below ? Math.min(Math.max(8, m.x - cw / 2), width - cw - 8) : edge - cw;
@@ -605,6 +617,12 @@ export function createHud(handlers) {
     setLive,
     hideMarkers(hidden) {
       layer.classList.toggle('is-hidden', hidden);
+    },
+    // Lupe der Info-Karte (Canvas + gewählter Punkt), solange die Karte sichtbar ist; main.js zeichnet hinein
+    lens() {
+      if (!selected || !lensCanvas || !card.classList.contains('is-open') || card.classList.contains('is-away') ||
+        layer.classList.contains('is-hidden')) return null;
+      return { canvas: lensCanvas, id: selected.id };
     },
     updateMarkers(camera, width, height) {
       const v = camera.position.clone();

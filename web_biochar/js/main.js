@@ -323,6 +323,96 @@ const brightQuad = new THREE.Mesh(compQuad.geometry, bright);
 brightQuad.frustumCulled = false;
 brightScene.add(brightQuad);
 
+// ---------- Lupe der Info-Karte: Live-Ausschnitt der Szene um den gewählten Punkt (Vorschau 2026-10-24, Objekt:A) ----------
+// Eigene Kamera blickt aus der Richtung der Hauptkamera auf den Punkt und schwenkt langsam ±25° (reduced-motion: still).
+// Bildbreite und Abstand einmal bei der Auswahl: ≈ 160 px der Hauptansicht um den Punkt. Die Zusammenführung (Hintergrund,
+// Grading, Tonemapping; ohne Tiefenunschärfe, Bloom, Farbsaum) läuft per Viewport in die linke untere Ecke des Bildschirms,
+// wird sofort in die Lupe kopiert und danach vom normalen Bild übermalt. Jedes 2. Bild; Stufe „Leicht“: ein Standbild.
+const LOUPE = { viewPx: 160, swing: THREE.MathUtils.degToRad(25), period: 18 };
+const loupe = {
+  cam: new THREE.PerspectiveCamera(30, 1, 0.1, 100),
+  rt: new THREE.WebGLRenderTarget(2, 2, {
+    type: THREE.HalfFloatType, samples: quality.get().msaa,
+    generateMipmaps: true, minFilter: THREE.LinearMipmapLinearFilter,
+    depthTexture: new THREE.DepthTexture(2, 2),
+  }),
+  canvas: null, ctx: null, size: 0, dist: 1, t: 0, skip: false, done: false,
+  dir: new THREE.Vector3(), up: new THREE.Vector3(), vp: new THREE.Vector4(), res: new THREE.Vector2(), cam4: new THREE.Vector4(),
+};
+
+function renderLoupe(lv, L, real) {
+  const h = lv.hotspots.find((x) => x.id === L.id);
+  if (!h) return;
+  const c = loupe.cam, main = lv.camera;
+  if (L.canvas !== loupe.canvas) {
+    // neue Karte: Bildbreite ≈ 160 px der Hauptansicht um den Punkt, Abstand wie die Hauptkamera
+    loupe.canvas = L.canvas;
+    loupe.ctx = L.canvas.getContext('2d', { alpha: false });
+    loupe.size = 0;
+    loupe.t = 0;
+    loupe.skip = false;
+    loupe.done = false;
+    loupe.dist = main.position.distanceTo(h.pos);
+    c.fov = THREE.MathUtils.radToDeg(2 * Math.atan((LOUPE.viewPx / window.innerHeight) * Math.tan(THREE.MathUtils.degToRad(main.fov) / 2)));
+    c.near = main.near;
+    c.far = main.far;
+    c.updateProjectionMatrix();
+  } else if ((loupe.skip = !loupe.skip) || loupe.done) {
+    return;
+  }
+  const pr = renderer.getPixelRatio();
+  if (!loupe.size) {
+    const cw = L.canvas.clientWidth;
+    if (!cw) return;
+    loupe.size = Math.max(2, Math.round(cw * pr));
+    L.canvas.width = L.canvas.height = loupe.size;
+    if (loupe.rt.width !== loupe.size) loupe.rt.setSize(loupe.size, loupe.size);
+  }
+  const px = loupe.size;
+  if (!reduced) loupe.t += real;
+  // aus der Blickrichtung der Hauptkamera, um deren Bild-Hochachse geschwenkt
+  loupe.up.setFromMatrixColumn(main.matrixWorld, 1).normalize();
+  loupe.dir.subVectors(h.pos, main.position).normalize().applyAxisAngle(loupe.up, LOUPE.swing * Math.sin((loupe.t * 2 * Math.PI) / LOUPE.period));
+  c.position.copy(h.pos).addScaledVector(loupe.dir, -loupe.dist);
+  c.up.copy(loupe.up);
+  c.lookAt(h.pos);
+  c.updateMatrixWorld();
+  // Schatten hängen nicht an der Kamera: die Schattenkarte des Hauptbilds weiterverwenden (Ebene 7)
+  const shadowAuto = renderer.shadowMap.autoUpdate;
+  renderer.shadowMap.autoUpdate = false;
+  renderer.setRenderTarget(loupe.rt);
+  renderer.render(lv.scene, c);
+  renderer.shadowMap.autoUpdate = shadowAuto;
+  // Zusammenführung mit dem Lupenbild, Linse aus
+  const u = comp.uniforms;
+  const keep = { t: u.tOuter.value, d: u.dOuter.value, aspect: u.uAspect.value, bloom: u.uBloom.value, ca: u.uCA.value };
+  loupe.res.copy(u.uRes.value);
+  loupe.cam4.copy(u.uCamOuter.value);
+  u.tOuter.value = loupe.rt.texture;
+  u.dOuter.value = loupe.rt.depthTexture;
+  u.uAspect.value = 1;
+  u.uBloom.value = 0;
+  u.uCA.value = 0;
+  u.uRes.value.set(px, px);
+  u.uCamOuter.value.set(c.near, c.far, loupe.dist, 0);
+  renderer.setRenderTarget(null);
+  renderer.setViewport(0, 0, px / pr, px / pr);
+  renderer.render(compScene, compCam);
+  renderer.getCurrentViewport(loupe.vp);   // Gerätepixel nach der Rundung in three.js
+  const H = renderer.domElement.height;
+  loupe.ctx.drawImage(renderer.domElement, 0, H - loupe.vp.w, loupe.vp.z, loupe.vp.w, 0, 0, px, px);
+  const { w, h: vh } = viewSize();
+  renderer.setViewport(0, 0, w, vh);
+  u.tOuter.value = keep.t;
+  u.dOuter.value = keep.d;
+  u.uAspect.value = keep.aspect;
+  u.uBloom.value = keep.bloom;
+  u.uCA.value = keep.ca;
+  u.uRes.value.copy(loupe.res);
+  u.uCamOuter.value.copy(loupe.cam4);
+  loupe.done = quality.get().id === 'light';
+}
+
 function setMood(target, index) {
   const m = MOODS[index];
   target.top.value.fromArray(m.top);
@@ -390,6 +480,8 @@ function resize() {
   comp.uniforms.uRes.value.set(w * dpr, h * dpr);
   bloomRT.setSize(Math.max(2, Math.round((w * dpr) / 4)), Math.max(2, Math.round((h * dpr) / 4)));
   for (const lv of state.levels.values()) fitLevel(lv);
+  loupe.size = 0;      // Lupe neu vermessen und zeichnen (Pixelverhältnis, Größe im schmalen Fenster)
+  loupe.done = false;
 }
 
 // Qualitätsstufe anwenden (Start und Umschalten): Pixelverhältnis, Schatten, Farbsaum, Abtastpunkte des Shaders,
@@ -410,6 +502,7 @@ function applyQuality(Q) {
     if (lv.setParam) lv.setParam('quality', Q);
     lv.dirty = true;
   }
+  if (loupe.rt.samples !== Q.msaa) { loupe.rt.samples = Q.msaa; loupe.rt.dispose(); }
   resize();
 }
 quality.onChange(applyQuality);
@@ -930,6 +1023,9 @@ function frame(now) {
   }
   u.uFade.value = Math.min(1, u.uFade.value + real / 1.4);
   u.uTime.value = state.time;
+  // Lupe der Info-Karte vor dem Hauptbild (das übermalt die benutzte Ecke); nicht im Übergang und im Auftakt
+  const L = lv && !state.tr && !state.intro ? hud.lens() : null;
+  if (L) renderLoupe(lv, L, real);
   renderer.setRenderTarget(null);
   renderer.render(compScene, compCam);
   requestAnimationFrame(frame);

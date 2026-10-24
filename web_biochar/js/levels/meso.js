@@ -385,6 +385,13 @@ export function create(ctx) {
     uniforms, vertexShader: VERT, fragmentShader: FRAG, depthTest: true, depthWrite: true, depthFunc: THREE.AlwaysDepth,
   }));
   quad.frustumCulled = false;
+  // Strahlen aus der Kamera, mit der gerade gerendert wird: Hauptbild oder Lupe der Info-Karte
+  quad.onBeforeRender = (r, s, cam) => {
+    uniforms.uCamPos.value.setFromMatrixPosition(cam.matrixWorld);
+    uniforms.uCamMatrix.value.copy(cam.matrixWorld);
+    uniforms.uInvProj.value.copy(cam.projectionMatrixInverse);
+    uniforms.uViewProj.value.multiplyMatrices(cam.projectionMatrix, cam.matrixWorldInverse);
+  };
   scene.add(quad);
 
   const spots = findSpots();
@@ -427,11 +434,6 @@ export function create(ctx) {
       const k = still ? 1 : 1 - Math.exp(-dt * 4);
       uniforms.uWaterD.value += (wet - uniforms.uWaterD.value) * k;
       uniforms.uFilm.value += (film(rh) - uniforms.uFilm.value) * k;
-      camera.updateMatrixWorld();
-      uniforms.uCamPos.value.copy(camera.position);
-      uniforms.uCamMatrix.value.copy(camera.matrixWorld);
-      uniforms.uInvProj.value.copy(camera.projectionMatrixInverse);
-      uniforms.uViewProj.value.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse);
       semDetector(t);
       return true;
     },
