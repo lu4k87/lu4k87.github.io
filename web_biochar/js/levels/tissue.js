@@ -17,9 +17,9 @@ const LENGTH = 1100;     // Länge des Bruchstücks in Faserrichtung
 const HALF_X = 330, HALF_Y = 240;   // Stirnfläche (Superellipse)
 const OPEN_Z = -30;      // mittlere Höhe der Stirnfläche (Weltebene der Tiefenabdunklung für Teile ohne eigene Oberkante)
 const OPEN_ALL = 1e5;    // Zellöffnung „überall“: Zelle außerhalb des Umrisses oder ohne Nachbar
-const CRACK_MAX = 16;    // µm: Breite des Radialrisses am breiten Strahl bei voller Schwindung (Modell)
-const CRACK_RAY = 9;     // µm: Radialrisse an schmalen Strahlen (Modell)
-const CRACK_RING = 7;    // µm: Tangentialriss an der Jahrringgrenze (Modell)
+const CRACK_MAX = 24;    // µm: Breite des Radialrisses am breiten Strahl bei voller Schwindung (Modell)
+const CRACK_RAY = 14;    // µm: Radialrisse an schmalen Strahlen (Modell)
+const CRACK_RING = 11;   // µm: Tangentialriss an der Jahrringgrenze (Modell)
 
 // Stirnfläche: drei große Stufen (≈ 40 µm, zur −x-Seite hin tiefer, Kante unregelmäßig), darauf Terrassen von 10 µm,
 // leichte Welligkeit und wenige Mulden (eingebrochene Bereiche, 30 µm tiefer)
