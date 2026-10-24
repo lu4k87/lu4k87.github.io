@@ -32,6 +32,15 @@ const tempK = (T) => {
 };
 
 const topY = (s) => 6.5 + 4.4 * (fbm3(s * 0.12 + 4, 1.3, 0.7, 3) - 0.5) + 0.9 * (fbm3(s * 0.9, 7.1, 2.2, 2) - 0.5);
+// Auch links, rechts und unten ist das Wandstück herausgebrochen: gezackte Kanten statt gerader Schnitte (User, 2026-10-24)
+const botY = (s) => Y0 + 4.4 * (fbm3(s * 0.12 + 9, 3.7, 1.9, 3) - 0.5) + 0.9 * (fbm3(s * 0.9, 2.3, 5.1, 2) - 0.5);
+const sideS = (y, k) => k * S + 3.2 * (fbm3(y * 0.13 + 6 * k, 5.3, 0.4, 3) - 0.5) + 0.8 * (fbm3(y * 0.9, 4.1 * k, 1.3, 2) - 0.5);
+// Raster (u, v) ∈ [0, 1]² → (s, y) im Wandstück; Fläche und Bruchkante nutzen dieselbe Abbildung, damit sie schließen
+const wallAt = (u, v) => {
+  const yA = Y0 + (6.5 - Y0) * v;
+  const s = sideS(yA, -1) + (sideS(yA, 1) - sideS(yA, -1)) * u;
+  return [s, botY(s) + (topY(s) - botY(s)) * v];
+};
 const surf = (s, y, r) => new THREE.Vector3(r * Math.sin(s / R), y, -r * Math.cos(s / R));
 const inward = (s) => new THREE.Vector3(-Math.sin(s / R), 0, Math.cos(s / R));
 const along = (s) => new THREE.Vector3(Math.cos(s / R), 0, Math.sin(s / R));
@@ -240,15 +249,13 @@ function uniforms(extra = {}) {
   };
 }
 
-// Fläche auf dem Zylinder (Wand, Schleier): s, y im Raster, Radius je Punkt
-function cylPatch(s0, s1, y0, y1fn, NS, NY, radiusAt, side) {
+// Fläche auf dem Zylinder (Wand, Schleier): at(u, v) → (s, y) im Raster, Radius je Punkt
+function cylPatch(at, NS, NY, radiusAt, side) {
   const pos = [], nrm = [], uv = [], idx = [];
   for (let i = 0; i < NS; i++) {
-    const s = s0 + ((s1 - s0) * i) / (NS - 1);
-    const y1 = y1fn(s);
-    const n = inward(s).multiplyScalar(side);
     for (let j = 0; j < NY; j++) {
-      const y = y0 + ((y1 - y0) * j) / (NY - 1);
+      const [s, y] = at(i / (NS - 1), j / (NY - 1));
+      const n = inward(s).multiplyScalar(side);
       const p = surf(s, y, radiusAt(s, y));
       pos.push(p.x, p.y, p.z);
       nrm.push(n.x, n.y, n.z);
@@ -270,15 +277,25 @@ function cylPatch(s0, s1, y0, y1fn, NS, NY, radiusAt, side) {
   return g;
 }
 
+// Bruchfläche rundum (unten → rechts → oben → links), quer durch die Wanddicke; leicht nach außen gewölbt
 function fractureRibbon() {
-  const NS = 400, NT = 6;
+  const NE = 260, NT = 6;
+  const loop = [];
+  for (let i = 0; i < NE; i++) loop.push(wallAt(i / NE, 0));
+  for (let i = 0; i < NE; i++) loop.push(wallAt(1, i / NE));
+  for (let i = 0; i < NE; i++) loop.push(wallAt(1 - i / NE, 1));
+  for (let i = 0; i <= NE; i++) loop.push(wallAt(0, 1 - i / NE));
+  const NS = loop.length;
   const pos = [], uv = [], idx = [];
   for (let i = 0; i < NS; i++) {
-    const s = -S + (2 * S * i) / (NS - 1);
-    const y = topY(s);
+    const [s, y] = loop[i];
+    const [sa, ya] = loop[Math.max(0, i - 1)], [sb, yb] = loop[Math.min(NS - 1, i + 1)];
+    const len = Math.hypot(sb - sa, yb - ya) || 1;
+    const os = (yb - ya) / len, oy = -(sb - sa) / len;   // Außennormale der Kante in (s, y)
     for (let j = 0; j < NT; j++) {
       const t = j / (NT - 1);
-      const p = surf(s, y + 0.25 * Math.sin(t * Math.PI) * (fbm3(s * 2, t, 1, 2) - 0.3), R + TH * t);
+      const w = 0.25 * Math.sin(t * Math.PI) * (fbm3(s * 2 + y * 2, t, 1, 2) - 0.3);
+      const p = surf(s + os * w, y + oy * w, R + TH * t);
       pos.push(p.x, p.y, p.z);
       uv.push(s, t);
     }
@@ -294,10 +311,10 @@ function fractureRibbon() {
   g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
   g.setIndex(idx);
   g.computeVertexNormals();
+  // Dreiecke so drehen, dass die Normalen nach außen zeigen (Mitte oben: +y)
   const n = g.attributes.normal;
-  let up = 0;
-  for (let i = 0; i < n.count; i++) up += n.getY(i);
-  if (up < 0) { idx.reverse(); g.setIndex(idx); g.computeVertexNormals(); }
+  const out = n.getY(Math.floor((2.5 * NE) * NT));
+  if (out < 0) { idx.reverse(); g.setIndex(idx); g.computeVertexNormals(); }
   return g;
 }
 
@@ -324,10 +341,10 @@ export function create(ctx) {
   const anim = [];   // Bewegungen je Bild: f(age) mit age = Sekunden seit Ankunft auf der Ebene
   const tint = (mat, c) => mat.uniforms.uTint.value.setRGB(c[0], c[1], c[2]);
 
-  const inner = new THREE.Mesh(cylPatch(-S, S, Y0, topY, 220, 160, () => R, 1), new THREE.ShaderMaterial({
+  const inner = new THREE.Mesh(cylPatch(wallAt, 220, 160, () => R, 1), new THREE.ShaderMaterial({
     uniforms: uniforms({ uSide: { value: 1 } }), vertexShader: VERT, fragmentShader: SURF_FRAG,
   }));
-  const outer = new THREE.Mesh(cylPatch(-S, S, Y0, topY, 200, 150, () => R + TH, -1), new THREE.ShaderMaterial({
+  const outer = new THREE.Mesh(cylPatch(wallAt, 200, 150, () => R + TH, -1), new THREE.ShaderMaterial({
     uniforms: uniforms({ uSide: { value: 0 } }), vertexShader: VERT, fragmentShader: SURF_FRAG,
   }));
   const edge = new THREE.Mesh(fractureRibbon(), new THREE.ShaderMaterial({
@@ -359,7 +376,7 @@ export function create(ctx) {
     bacteria.push({ s, y, ang, len: 0.7 + rand() * 0.6, ph: rand() * 6.28 });
     if (k % 4 === 0) bacteria.push({ s: s + Math.cos(ang) * 1.9, y: y + Math.sin(ang) * 1.9, ang, len: 0.6, ph: rand() * 6.28 });
   }
-  const live = bacteria.filter((b) => Math.hypot(b.s - HYPHA_PIT.x, b.y - HYPHA_PIT.y) > 3 && b.s < S - 1 && b.y < topY(b.s) - 1);
+  const live = bacteria.filter((b) => Math.hypot(b.s - HYPHA_PIT.x, b.y - HYPHA_PIT.y) > 3 && b.s < sideS(b.y, 1) - 1 && b.y < topY(b.s) - 1);
   const bacMesh = new THREE.InstancedMesh(new THREE.CapsuleGeometry(0.36, 1, 4, 12), semMaterial({ base: 0.5, noise: 4 }), live.length);
   // Schleimfäden: von einigen Zellen zur Wand
   const strands = live.filter((_, k) => k % 3 === 0).map((b) => ({ b, ds: (rand() - 0.5) * 2.4, dy: (rand() - 0.5) * 2.4 }));
@@ -390,7 +407,7 @@ export function create(ctx) {
   tint(bacMesh.material, TINT.bac);
   tint(strandMesh.material, TINT.bac);
   const film = new THREE.Mesh(
-    cylPatch(BAC.s - 5.5, BAC.s + 5.5, BAC.y - 5, () => BAC.y + 5, 70, 64, (s, y) => R - (0.78 + 0.3 * fbm3(s * 0.6, y * 0.6, 3.3, 2)), 1),
+    cylPatch((u, v) => [BAC.s - 5.5 + 11 * u, BAC.y - 5 + 10 * v], 70, 64, (s, y) => R - (0.78 + 0.3 * fbm3(s * 0.6, y * 0.6, 3.3, 2)), 1),
     new THREE.ShaderMaterial({
       uniforms: uniforms({ uC: { value: new THREE.Vector2(BAC.s, BAC.y) }, uRad: { value: new THREE.Vector2(5.2, 4.6) } }),
       vertexShader: VERT, fragmentShader: FILM_FRAG, transparent: true, depthWrite: false, side: THREE.DoubleSide,
@@ -407,11 +424,11 @@ export function create(ctx) {
   const hyCurve = new THREE.CatmullRomCurve3(path);
   const septum = (i) => 1 + 0.05 * Math.sin(i * 0.9) - 0.16 * Math.exp(-Math.pow(((i % 34) - 17) / 2.2, 2));
   scene.add(new THREE.Mesh(modulateTube(new THREE.TubeGeometry(hyCurve, 160, 0.9, 14), hyCurve, 160, 14, septum), hyMat));
-  // Seitenäste: dünne, leicht wellige Fäden (Ø ≈ 1 µm) mit Septen, das Ende läuft in der Röhre selbst spitz zu – kein
-  // Kugelkopf, und kein Ausfahren im Zeitraffer: der Ast ist von Anfang an komplett, nur die Sporen reifen (User, 2026-10-23);
-  // das letzte Septum sitzt direkt vor dem Ende und schließt die Röhre – keine Kuppe/Pfeilspitze dahinter (User, 2026-10-24)
+  // Seitenäste: dünne, leicht wellige Fäden (Ø ≈ 1 µm) mit Septen, kein Kugelkopf und kein Ausfahren im Zeitraffer:
+  // der Ast ist von Anfang an komplett, nur die Sporen reifen (User, 2026-10-23); das Ende ist stumpf, nur der letzte
+  // Ring schließt die Röhre – keine Kuppe, keine Spitze (User, 2026-10-24)
   const BR = 0.5, NBR = 0.45;
-  const septaThin = (i) => (1 + 0.06 * Math.sin(i * 1.3) - 0.18 * Math.exp(-Math.pow((((i + 13) % 20) - 10) / 2, 2))) * Math.min(1, 0.12 + (60 - i) / 3);
+  const septaThin = (i) => (1 + 0.06 * Math.sin(i * 1.3) - 0.18 * Math.exp(-Math.pow((((i + 13) % 20) - 10) / 2, 2))) * Math.min(1, 60 - i);
   const branch = new THREE.CatmullRomCurve3([[-7, -2.2], [-6.5, -0.4], [-5.4, 1.3], [-4.2, 2.8], [-2.6, 4.6]].map(([s, y]) => onWall(s, y, 0.85)));
   const brGeo = modulateTube(new THREE.TubeGeometry(branch, 60, BR, 12), branch, 60, 12, septaThin);
   scene.add(new THREE.Mesh(brGeo, hyMat));
