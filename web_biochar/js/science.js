@@ -92,9 +92,10 @@ export const wetDiameterNm = (prev, rh) => clamp(prev, kelvinDiameterNm(rh), des
 // IUPAC-Klassen (Thommes et al. 2015): Mikro < 2 nm, Meso 2–50 nm, Makro > 50 nm; '' = trocken
 export const poreClass = (d) => (d <= 0.6 ? '' : d < 2 ? 'micro' : d < 50 ? 'meso' : 'macro');
 
-// Porenvolumen der Ebene 5 (Modell): Mikroporen der Ebene 6, kleine Poren der dünnen Wände (2,25–6,4 nm) und große
-// Poren (27–57 nm) wie im Shader; Anteile am Volumen geschätzt. filledShare = gefüllter Anteil bis Durchmesser d.
-export const PORE_VOLUME = [{ from: 0.6, to: 2, share: 0.3 }, { from: 2.25, to: 6.4, share: 0.25 }, { from: 27, to: 57, share: 0.45 }];
+// Porenvolumen der Ebene 5 (Modell): Mikroporen der Ebene 6, Schlitzporen 2–3,2 nm (füllen wie Ø 3,4–5,8 nm), rundliche
+// Poren 12–40 nm und Schwundriss (Keil, füllt von der Spitze her) wie im Shader; Anteile am Volumen geschätzt.
+// filledShare = gefüllter Anteil bis Durchmesser d.
+export const PORE_VOLUME = [{ from: 0.6, to: 2, share: 0.5 }, { from: 3.4, to: 5.8, share: 0.25 }, { from: 12, to: 40, share: 0.15 }, { from: 1.8, to: 99, share: 0.1 }];
 export const filledShare = (d) => PORE_VOLUME.reduce((s, c) => s + c.share * clamp((d - c.from) / (c.to - c.from), 0, 1), 0);
 // Isotherme (Modell): gefüllter Anteil über p/p₀, Füll- und Entleerungsast
 export function isotherm(steps = 99) {
@@ -149,7 +150,7 @@ export function pyroState(t) {
     matrix: 1 - sstep(220, 380, t),               // Hemizellulose-/Lignin-Matrix zwischen den Fibrillen
     glassy: sstep(300, 450, t),                   // Bruchflächen faserig → glasig, Wand amorph
     sheets: sstep(300, 400, t),                   // aromatische Schichten entstehen (amorphe Kohle)
-    open: sstep(260, 380, t),                     // Porennetz der Zellwand öffnet sich (Meso-/Makroporen)
+    open: sstep(300, 400, t),                     // Nanoporen der Zellwand entstehen nach dem Zerfall der Fasern (Paris et al. 2005)
     shrinkT: 0.28 * sstep(200, 600, t),           // lineare Schwindung quer zur Faser (Modell)
     shrinkL: 0.1 * sstep(200, 600, t),            // längs deutlich geringer
     glow: sstep(DRAPER, 720, t),                  // Rotglut ab dem Draper-Punkt

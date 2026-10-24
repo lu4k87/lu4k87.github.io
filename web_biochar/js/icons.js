@@ -55,7 +55,7 @@ export const HOTSPOT_ICONS = {
   tissue: { vessels: 'vessel', ring: 'ring', ray: 'ray', porosity: 'porosity' },
   cells: { pitwall: 'pit', vessel: 'vessel', fiber: 'fiber', ray: 'ray', habitat: 'microbe' },
   wall: { fracture: 'foam', pits: 'pit', water: 'water', bacteria: 'microbe', hypha: 'hypha', spores: 'hypha', ash: 'ash', crack: 'crack' },
-  meso: { wallpore: 'micropore', macro: 'foam', meso: 'micropore', water: 'water' },
+  meso: { wallpore: 'micropore', macro: 'crack', meso: 'micropore', water: 'water' },
   micro: { sheet: 'sheet', stack: 'stack', micropore: 'micropore', gas: 'gas', fibril: 'fiber', hemi: 'bond' },
   atoms: { ring: 'sheet', carboxyl: 'carboxyl', phenol: 'phenol', carbonyl: 'carbonyl', edgeh: 'edgeh' },
 };
@@ -66,7 +66,7 @@ export const FACT_ICONS = {
   tissue: ['porosity', 'ruler', 'ruler', 'porosity'],
   cells: ['ruler', 'microbe', 'hypha'],
   wall: ['pit', 'pit', 'ruler'],
-  meso: ['foam', 'micropore', 'micropore', 'water'],
+  meso: ['crack', 'micropore', 'ruler', 'micropore', 'water'],
   micro: ['micropore', 'stack', 'layers', 'micropore'],
   atoms: ['bond', 'molecule', 'ratio'],
 };

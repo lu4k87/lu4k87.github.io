@@ -1,19 +1,25 @@
-// Ebene 5: Nanoporen in der Zellwand (Einheit 10 nm), Raymarching über ein hierarchisches 3D-Voronoi:
-// große Zellen = Makro-/große Mesoporen mit verdickten Plateau-Rändern (Streben an den Kanten, Knoten an den Ecken),
-// dünne Wände dazwischen mit feinen Mesoporen; Wasser nach Kelvin-Gleichung.
-// Pyrolyse (pyroState.open): im Holz ist die Zellwand dicht – nur das Relief der Mikrofibrillen-Bündel (≈ 20 nm) zeichnet
-// die Oberfläche; das Porennetz öffnet sich 260–380 °C (Modell), die kleinen Poren folgen danach der BET-Fläche (uTS).
-// Luftfeuchte: dünner Wasserfilm auf den Porenwänden wächst mit der Feuchte (uFilm), große Poren füllen von unten mit
-// hellem Meniskus an der Wand, gefüllt bis Ø uWaterD (Kelvin-Gleichung mit Hysterese, science.js); Füllhöhe = Darstellung.
+// Ebene 5: Nanoporen in der Zellwand (Einheit 10 nm), Raymarching über eine Bruchfläche durch die verkohlte Zellwand.
+// Befund: Ab ≈ 350 °C ist die Wand amorph, ohne Schichtung (Kwon et al. 2009); die Faserstruktur zerfällt 307–347 °C,
+// danach entstehen Nanoporen und wachsen (Paris et al. 2005). Röntgen-Kleinwinkelstreuung an Holzkohle zeigt flache
+// Plättchen-Poren – eine Abmessung ≈ 2–3 nm, die beiden anderen deutlich größer – und Mikroporen < 2 nm; beide nehmen mit
+// der Temperatur zu (Casteel et al. 1978). Die meisten Mesoporen von Holzkohle messen 2–10 nm (Chen et al. 2018).
+// Modell: dichte Matrix mit Schlitzporen (2–3,2 nm dick, 15–30 nm lang, leicht entlang der früheren Faserachse FIB
+// ausgerichtet, Paris et al. 2005), wenige rundliche Mesoporen (Ø 16–48 nm), ein Schwundriss (Makropore, 50–70 nm breit),
+// Mikroporen nur als feine Grübchen. Holz (pyroState.open = 0): Wand dicht, Relief der Mikrofibrillen-Bündel (≈ 20 nm).
+// Luftfeuchte: Wasserfilm auf den Porenwänden (uFilm); Poren füllen nach der Kelvin-Gleichung bis Ø uWaterD (science.js):
+// Schlitze ganz, rundliche Poren von unten mit Meniskus, der Riss als Keil von der engen Spitze her.
 
 import * as THREE from 'three';
 import { SEM_GLSL, SEM_DET, semDetector } from '../sem.js';
-import { hash33, vnoise3 } from '../util.js';
+import { pcg3d, vnoise3 } from '../util.js';
 import { kelvinDiameterNm, fmt, labProps, pyroState } from '../science.js';
 
 const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-const CELL = 6.0, THICK = 1.0, STRUT = 0.55, NODE = 0.95, CS = 0.75, TS = 0.4;
+// Raster der Schlitzporen (PG, 3D) und der rundlichen Poren (VG, 2D entlang der Bruchfläche, Anteil VOID_P), Riss: Lage
+// quer zur Faser, Tiefe
+const PG = 1.6, VG = 6.0, VOID_P = 0.55, CRACK_V = -4.5, CRACK_D = 11.0;
+const FIB = [0.9404, 0, 0.3401], SIDE = [-0.3401, 0, 0.9404];
 
 const FRAG = /* glsl */ `
 precision highp float;
@@ -22,8 +28,9 @@ uniform mat4 uCamMatrix;
 uniform mat4 uInvProj;
 uniform mat4 uViewProj;
 uniform float uWaterD;
-uniform float uTS;      // Wandstärke zwischen den kleinen Poren: dünner = mehr, größere Poren (BET steigt mit T)
-uniform float uOpen;    // 0 Holz (Wand dicht) … 1 Kohle (Porennetz offen)
+uniform float uDens;     // Anteil der Rasterzellen mit Schlitzpore: wächst mit der BET-Fläche (Casteel et al. 1978)
+uniform float uMicro;    // Dichte der Mikroporen-Grübchen
+uniform float uOpen;     // 0 Holz (Wand dicht) … 1 Kohle (Poren offen)
 uniform float uTime;
 uniform vec3 uDet;
 uniform vec3 uTint;
@@ -32,12 +39,13 @@ uniform float uDrift;    // 1 = Glanzpunkte des Films wandern, 0 bei reduzierter
 uniform vec2 uMarch;     // Raymarching je Qualitätsstufe: Schritte (max. 140) und Schrittfaktor
 varying vec2 vUv;
 ${SEM_GLSL}
-const float CELL = ${CELL.toFixed(2)};
-const float THICK = ${THICK.toFixed(2)};
-const float STRUT = ${STRUT.toFixed(2)};
-const float NODE = ${NODE.toFixed(2)};
-const float CS = ${CS.toFixed(2)};
-const float TS = ${TS.toFixed(2)};
+const float PG = ${PG.toFixed(2)};
+const float VG = ${VG.toFixed(2)};
+const float VOID_P = ${VOID_P.toFixed(2)};
+const float CRACK_V = ${CRACK_V.toFixed(2)};
+const float CRACK_D = ${CRACK_D.toFixed(2)};
+const vec3 FIB = vec3(${FIB.map((v) => v.toFixed(4)).join(', ')});
+const vec3 SIDE = vec3(${SIDE.map((v) => v.toFixed(4)).join(', ')});
 
 uvec3 pcg3d(uvec3 v) {
   v = v * 1664525u + 1013904223u;
@@ -47,75 +55,111 @@ uvec3 pcg3d(uvec3 v) {
   return v;
 }
 vec3 h33(vec3 c) { return vec3(pcg3d(uvec3(ivec3(c) + 4096))) * (1.0 / 4294967296.0); }
+// neun Zufallswerte (je 10 Bit) aus einem Hash – in JavaScript bitgenau gleich (Hotspots, Messlinien)
+void rnd9(vec3 c, int salt, out vec3 r0, out vec3 r1, out vec3 r2) {
+  uvec3 v = pcg3d(uvec3(ivec3(c) + 4096 + salt));
+  r0 = vec3(v & 1023u) / 1024.0;
+  r1 = vec3((v >> 10u) & 1023u) / 1024.0;
+  r2 = vec3((v >> 20u) & 1023u) / 1024.0;
+}
 float vn(vec3 p) {
   vec3 i = floor(p), f = p - i;
   vec3 u = f * f * (3.0 - 2.0 * f);
   return mix(mix(mix(h33(i).x, h33(i + vec3(1, 0, 0)).x, u.x), mix(h33(i + vec3(0, 1, 0)).x, h33(i + vec3(1, 1, 0)).x, u.x), u.y),
              mix(mix(h33(i + vec3(0, 0, 1)).x, h33(i + vec3(1, 0, 1)).x, u.x), mix(h33(i + vec3(0, 1, 1)).x, h33(i + vec3(1, 1, 1)).x, u.x), u.y), u.z);
 }
-// F1–F4 (Abstände zu den vier nächsten Zellpunkten) und Zufallswert der nächsten Zelle:
-// F2−F1 ≈ Abstand zur Wand, F3−F1 ≈ zur Kante (drei Zellen), F4−F1 ≈ zur Ecke (vier Zellen)
-vec4 worley4(vec3 p, out float id) {
-  vec3 i = floor(p), f = p - i;
-  vec4 F = vec4(9.0);
-  id = 0.0;
-  for (int z = -1; z <= 1; z++)
-  for (int y = -1; y <= 1; y++)
-  for (int x = -1; x <= 1; x++) {
-    vec3 g = vec3(float(x), float(y), float(z));
-    vec3 o = h33(i + g);
-    vec3 r = g + 0.15 + 0.7 * o - f;
-    float d = dot(r, r);
-    if (d < F.x) { F = vec4(d, F.xyz); id = fract(o.x * 7.13 + o.y * 3.77); }
-    else if (d < F.y) { F = vec4(F.x, d, F.yz); }
-    else if (d < F.z) { F.zw = vec2(d, F.z); }
-    else if (d < F.w) { F.w = d; }
-  }
-  return sqrt(F);
-}
-vec3 worley(vec3 p) {
-  float id;
-  vec4 F = worley4(p, id);
-  return vec3(F.x, F.y, id);
+float sdEll(vec3 q, vec3 r) {
+  float k0 = length(q / r), k1 = length(q / (r * r));
+  return k0 * (k0 - 1.0) / max(k1, 1e-6);
 }
 float topY(vec2 xz) { return -0.6 + 1.1 * vn(vec3(xz * 0.09, 3.0)) + 0.45 * vn(vec3(xz * 0.31, 7.0)); }
 
-// Zuletzt ausgewertete Stelle: gKind 0 Oberfläche, 1 Porenwand; gWallD = Abstand zur Wand der großen Pore
+// Schlitzporen: je Rasterzelle höchstens eine flache Ellipsoid-Pore (halbe Länge ≤ 0,81 Zellen, Versatz ≤ 0,13: zusammen
+// < 1) → der 2×2×2-Block um den Punkt genügt. fill = Abstand zur nächsten gefüllten Pore: ein Schlitz der Weite w hat
+// einen nur einfach gekrümmten Meniskus und füllt wie eine Rundpore mit Ø 2w (Kelvin-Gleichung, Film 0,6 nm abgezogen)
+float plates(vec3 p, out float fill) {
+  vec3 q = p / PG;
+  vec3 b = floor(q) + step(0.5, fract(q)) - 1.0;
+  float d = 9.0;
+  fill = 9.0;
+  for (int k = 0; k < 8; k++) {
+    vec3 c = b + vec3(float(k & 1), float((k >> 1) & 1), float((k >> 2) & 1));
+    vec3 r0, r1, r2;
+    rnd9(c, 101, r0, r1, r2);
+    if (r1.x >= uDens) continue;
+    vec3 e = p - ((c + 0.5) * PG + (r0 - 0.5) * 0.4);
+    float a = 0.65 + 0.65 * r1.y;
+    vec3 rad = vec3(a, a * (0.45 + 0.3 * r1.z), 0.10 + 0.06 * r2.x);
+    vec3 L = normalize(FIB + SIDE * (r2.z - 0.5) * 0.8 + vec3(0.0, (fract(r2.y * 7.0) - 0.5) * 0.35, 0.0));
+    vec3 N0 = normalize(vec3(-L.z, 0.0, L.x));
+    vec3 Nt = cos(r2.y * 3.14159265) * N0 + sin(r2.y * 3.14159265) * cross(N0, L);
+    float de = sdEll(vec3(dot(e, L), dot(e, cross(Nt, L)), dot(e, Nt)), rad);
+    d = min(d, de);
+    if (rad.z * 40.0 - 0.6 < uWaterD) fill = min(fill, de);   // Schlitz: Meniskus nur einfach gekrümmt → wie Ø 2·Weite
+  }
+  return d;
+}
+// Rundliche Mesoporen (Modell, Ø 12–40 nm): abgeflachte Kugeln, von der Bruchfläche angeschnitten (Mitte 15–60 % des
+// Halbmessers unter der groben Welle von topY), Rand unregelmäßig (irr); Wasser steht von unten bis zur Füllhöhe
+float voids(vec3 p, float irr, out float wat) {
+  vec2 q = p.xz / VG;
+  vec2 b = floor(q) + step(0.5, fract(q)) - 1.0;
+  float d = 9.0;
+  wat = 9.0;
+  for (int k = 0; k < 4; k++) {
+    vec2 c = b + vec2(float(k & 1), float((k >> 1) & 1));
+    vec3 r0, r1, r2;
+    rnd9(vec3(c.x, 0.0, c.y), 7777, r0, r1, r2);
+    if (r1.x >= VOID_P) continue;
+    float R = 0.6 + 1.4 * r1.y * r1.y;
+    vec2 cxz = (c + 0.5) * VG + (r0.xz - 0.5) * 2.0;
+    vec3 ctr = vec3(cxz.x, -0.375 + 1.1 * vn(vec3(cxz * 0.09, 3.0)) - 0.8 * R * (0.15 + 0.45 * r0.y), cxz.y);
+    float dv = sdEll(p - ctr, R * vec3(1.0, 0.8, 1.0)) + irr * 0.3 * R;
+    d = min(d, dv);
+    float size = R * 20.0;
+    float f = clamp((uWaterD - size) / (0.2 * size) + 1.0, 0.0, 1.0);
+    if (f > 0.01) wat = min(wat, max(dv, p.y - (ctr.y - 0.8 * R + 1.6 * R * f + 0.3 * exp(-max(-dv, 0.0) / 0.35))));
+  }
+  return d;
+}
+// Schwundriss entlang der Faser: V-förmig, an der Bruchfläche 52–66 nm breit, CRACK_D tief; Wasser füllt den Keil von
+// der Spitze her bis zur Breite wF (Meniskus im Keil einfach gekrümmt wie im Schlitz)
+float crack(vec3 p, float ty, out float wat) {
+  float u = dot(p.xz, FIB.xz), v = dot(p.xz, SIDE.xz);
+  float v0 = CRACK_V + 1.3 * sin(u * 0.13 + 0.7) + 1.2 * (vn(vec3(u * 0.22, 0.0, 5.0)) - 0.5);
+  float hw0 = 2.6 + 0.7 * vn(vec3(u * 0.17, 2.0, 9.0));
+  float hw = hw0 * clamp(1.0 - (ty - p.y) / CRACK_D, 0.0, 1.0);
+  float dc = (abs(v - v0) - hw) * 0.7 + 0.25 * (vn(p * 1.7 + 21.0) - 0.5);
+  wat = 9.0;
+  if (uWaterD > 0.0) {
+    float depW = CRACK_D * (1.0 - (0.5 * uWaterD + 0.3) / (20.0 * hw0));
+    if (depW < CRACK_D) wat = max(dc, p.y - (ty - depW + 0.3 * exp(-max(-dc, 0.0) / 0.35)));
+  }
+  return dc;
+}
+
+// Zuletzt ausgewertete Stelle: gKind 0 Bruchfläche, 1 Porenwand; gWallD = Abstand zur Porenwand (Meniskus)
 float gKind = 0.0, gWallD = 9.0;
 // x = Abstand, y = Material (0 Kohlenstoff, 1 Wasser)
 vec2 map(vec3 p) {
-  float idL;
-  vec4 F = worley4(p / CELL, idL);
-  // Holz: Relief der Mikrofibrillen-Bündel auf der Oberfläche (Modell), verschwindet mit dem Öffnen der Poren
-  float top = p.y - topY(p.xz) - (1.0 - uOpen) * 0.14 * (0.5 + 0.5 * sin(dot(p.xz, vec2(0.94, 0.34)) * 1.8 + 1.5 * vn(p * 0.5)));
-  // Wände nur in der Tiefe und nicht überall: an der Oberfläche bleibt das offene Gitter aus Streben und Knoten
-  float th = THICK * smoothstep(0.38, 0.55, vn(p * 0.28)) * smoothstep(0.0, 3.0, -top) * (0.75 + 0.5 * vn(p * 0.9 + 11.0));
-  float dSheet = (F.y - F.x) * 0.5 * CELL - th * 0.5;                                   // Wand (Fläche)
-  float dSN = min((F.z - F.x) * 0.5 * CELL - STRUT * (0.8 + 0.4 * vn(p * 0.6 + 3.0)),   // Strebe an der Kante
-                  (F.w - F.x) * 0.5 * CELL - NODE);                                       // Knoten an der Ecke
-  vec3 ws = worley(p / CS + 31.0);
-  float dS = (ws.y - ws.x) * 0.5 * CS - uTS * 0.5;          // > 0: in kleiner Pore (nur die dünnen Wände sind gelocht)
-  // Holz → Kohle: Wände, Streben und Knoten sind um „inflate“ aufgeblasen, bis alle Poren geschlossen sind (Abstandsfeld
-  // bleibt gültig); das Wasser füllt nur den offenen Rest der Poren
-  float inflate = (1.0 - uOpen) * 3.2;
-  float sPore = min(dSN, max(dSheet, dS)) - inflate;
-  float solid = max(sPore, top);
-  gKind = step(top, sPore);
-  solid -= 0.05 * (vn(p * 8.0) - 0.5) * gKind;            // feines Wandrelief (Körnung) nur in den Poren
+  float ty = topY(p.xz);
+  // Holz: Relief der Mikrofibrillen-Bündel entlang der Faser; Welligkeit (≈ 7 nm) und Körnung der Bruchfläche (Modell)
+  float top = p.y - ty - (1.0 - uOpen) * 0.14 * (0.5 + 0.5 * sin(dot(p.xz, SIDE.xz) * 1.8 + 1.5 * vn(p * 0.5)))
+            - 0.08 * (vn(p * 1.5 + 40.0) - 0.5) - 0.03 * (vn(p * 8.0) - 0.5);
+  // Holz → Kohle: jede Porenart ist um ihre halbe Größe „aufgeblasen“, bis sie geschlossen ist (Abstandsfeld bleibt gültig)
+  float iP = (1.0 - uOpen) * 0.22, iV = (1.0 - uOpen) * 3.8, iC = (1.0 - uOpen) * 3.0;
+  float wP, wV, wC;
+  float dP = plates(p, wP) + iP;
+  float dV = voids(p, vn(p * 0.9 + 50.0) - 0.5, wV) + iV;
+  float dC = crack(p, ty, wC) + iC;
+  float dPore = min(dP, min(dV, dC));
+  float solid = max(top, -dPore);
+  gKind = step(top, -dPore);
+  gWallD = -dPore;
   float water = 1e3;
-  if (uWaterD > 0.0 && uOpen > 0.05) {
-    float dBig = min(dSheet, dSN) - inflate;               // > 0: in großer Pore
-    float sizeL = CELL * 10.0 * (0.45 + 0.5 * idL);        // nm
-    float sizeS = CS * 10.0 * (0.3 + 0.55 * ws.z);
-    gWallD = dBig;
-    // Wasser steigt von unten, sobald Ø uWaterD die Pore fast erreicht (ab 0,8 × Ø), an der Wand zieht der Meniskus hoch
-    float fillL = clamp((uWaterD - sizeL) / (0.2 * sizeL) + 1.0, 0.0, 1.0);
-    if (fillL > 0.01) {
-      float yw = topY(p.xz) - 3.2 * (1.0 - fillL) + 0.32 * exp(-max(dBig, 0.0) / 0.45);
-      water = min(water, max(max(-dBig, p.y - yw), top + 0.05));
-    }
-    if (sizeS < uWaterD) water = min(water, max(max(-dS + inflate, dSheet - inflate), top + 0.05));
-  }
+  // Wasser bleibt in seiner Pore: ein gefüllter Schlitz endet am Meniskus, wo er Riss oder rundliche Pore anschneidet
+  if (uWaterD > 0.0 && uOpen > 0.05)
+    water = max(min(max(wP + iP, -min(dV, dC)), min(max(wV + iV, -dC), wC + iC)), top + 0.05);
   return water < solid ? vec2(water, 1.0) : vec2(solid, 0.0);
 }
 vec3 calcNormal(vec3 p) {
@@ -154,13 +198,13 @@ void main() {
   vec3 n = calcNormal(p);
   float ao = 0.0, sca = 1.0;
   for (int i = 1; i <= 4; i++) {
-    float hh = 0.18 * float(i);
+    float hh = 0.12 * float(i);
     ao += (hh - map(p + n * hh).x) * sca;
     sca *= 0.7;
   }
-  ao = clamp(1.0 - 1.6 * ao, 0.0, 1.0);
+  ao = clamp(1.0 - 2.0 * ao, 0.0, 1.0);
   float depth = max(topY(p.xz) - p.y, 0.0);
-  float vis = mix(0.05, 1.0, exp(-depth / 2.8)) * mix(0.45, 1.0, ao) * exp(-max(t - 32.0, 0.0) * 0.035);
+  float vis = mix(0.04, 1.0, exp(-depth / 2.2)) * mix(0.35, 1.0, ao) * exp(-max(t - 32.0, 0.0) * 0.035);
   vec3 V = -rd;
   if (h.y > 0.5) {
     float fres = pow(1.0 - clamp(abs(dot(n, V)), 0.0, 1.0), 3.0);
@@ -169,16 +213,17 @@ void main() {
     n = normalize(n + 0.16 * wob);
     float glint = pow(max(dot(reflect(-V, n), uDet), 0.0), 90.0);
     vec3 col = vec3(0.28, 0.66, 0.92) * (0.42 + 0.6 * fres) + vec3(0.9) * (pow(max(dot(reflect(-V, n), uDet), 0.0), 40.0) * 0.5 + glint * 1.3);
-    col *= 1.0 - 0.5 * clamp((topY(p.xz) - p.y) / 3.2, 0.0, 1.0);           // tief stehendes Wasser wirkt dunkler
-    col += vec3(0.65, 0.88, 1.0) * exp(-max(wallD, 0.0) / 0.2) * 0.75;        // Meniskus: heller Saum an der Wand
-    gl_FragColor = vec4(pow(col * vis, vec3(2.2)), 1.0);
+    col *= 1.0 - 0.5 * clamp(depth / 3.2, 0.0, 1.0);                       // tief stehendes Wasser wirkt dunkler
+    col += vec3(0.65, 0.88, 1.0) * exp(-max(wallD, 0.0) / 0.12) * 0.75;      // Meniskus: heller Saum an der Wand
+    gl_FragColor = vec4(pow(col * max(vis, 0.3), vec3(2.2)), 1.0);
     return;
   }
-  // feine Wandstruktur auf allen Qualitätsstufen: Körnung in der Normale, Grübchen als Andeutung der Mikroporen
-  n = normalize(n + 0.28 * (vec3(vn(p * 26.0), vn(p * 26.0 + 5.0), vn(p * 26.0 + 9.0)) - 0.5));
-  float g = semShade(n, V, uDet, 0.44);
-  g *= 0.9 + 0.2 * vnoise(p * 7.0);
-  g *= 1.0 - 0.5 * smoothstep(0.74, 0.8, vn(p * 15.0 + 3.0));
+  // feine Körnung in der Normale; Mikroporen < 2 nm nur als dunkle Grübchen, mehr bei höherer Temperatur
+  n = normalize(n + 0.2 * (vec3(vn(p * 26.0), vn(p * 26.0 + 5.0), vn(p * 26.0 + 9.0)) - 0.5));
+  float g = semShade(n, V, uDet, 0.38);
+  g *= 0.86 + 0.28 * vnoise(p * 3.0) * (0.6 + 0.4 * vnoise(p * 11.0));
+  float pit = mix(0.9, 0.74, uMicro);
+  g *= 1.0 - 0.55 * smoothstep(pit, pit + 0.05, vn(p * 15.0 + 3.0));
   vec3 tint = uTint;
   if (uFilm > 0.0 && kind > 0.5) {
     // Wasserfilm: Wand dunkler, bläulicher, glänzender; Glanzpunkte driften langsam (Modell, Dicke wächst mit der Feuchte)
@@ -199,49 +244,75 @@ void main() {
 }
 `;
 
-// Dieselben Felder in JavaScript, um Hotspots exakt auf Wände und Poren zu setzen
-function worley(x, y, z) {
-  const ix = Math.floor(x), iy = Math.floor(y), iz = Math.floor(z);
-  const fx = x - ix, fy = y - iy, fz = z - iz;
-  const F = [9, 9, 9, 9];
-  let id = 0;
-  for (let c = -1; c <= 1; c++) for (let b = -1; b <= 1; b++) for (let a = -1; a <= 1; a++) {
-    const o = hash33(ix + a, iy + b, iz + c);
-    const rx = a + 0.15 + 0.7 * o[0] - fx, ry = b + 0.15 + 0.7 * o[1] - fy, rz = c + 0.15 + 0.7 * o[2] - fz;
-    const d = rx * rx + ry * ry + rz * rz;
-    if (d < F[0]) { F.splice(0, 0, d); F.length = 4; id = (o[0] * 7.13 + o[1] * 3.77) % 1; }
-    else if (d < F[1]) { F.splice(1, 0, d); F.length = 4; }
-    else if (d < F[2]) { F.splice(2, 0, d); F.length = 4; }
-    else if (d < F[3]) F[3] = d;
+// Dieselben Felder in JavaScript, um Hotspots und Messlinien exakt auf Poren und Wände zu setzen
+const rnd9 = (cx, cy, cz, salt) => {
+  const v = pcg3d(cx + 4096 + salt, cy + 4096 + salt, cz + 4096 + salt);
+  return [0, 10, 20].map((s) => v.map((x) => ((x >>> s) & 1023) / 1024));
+};
+const sdEll = (q, r) => {
+  const k0 = Math.hypot(q[0] / r[0], q[1] / r[1], q[2] / r[2]), k1 = Math.hypot(q[0] / (r[0] * r[0]), q[1] / (r[1] * r[1]), q[2] / (r[2] * r[2]));
+  return (k0 * (k0 - 1)) / Math.max(k1, 1e-6);
+};
+const dot = (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+const cross = (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
+const norm = (a) => { const l = Math.hypot(...a); return a.map((v) => v / l); };
+const fract = (x) => x - Math.floor(x);
+function block(p, s) {
+  const b = p.map((v) => Math.floor(v / s) + (fract(v / s) >= 0.5 ? 0 : -1));
+  return [0, 1, 2, 3, 4, 5, 6, 7].map((k) => [b[0] + (k & 1), b[1] + ((k >> 1) & 1), b[2] + ((k >> 2) & 1)]);
+}
+function plateD(p, dens) {
+  let d = 9;
+  for (const c of block(p, PG)) {
+    const [r0, r1, r2] = rnd9(...c, 101);
+    if (r1[0] >= dens) continue;
+    const e = p.map((v, i) => v - ((c[i] + 0.5) * PG + (r0[i] - 0.5) * 0.4));
+    const a = 0.65 + 0.65 * r1[1];
+    const L = norm([FIB[0] + SIDE[0] * (r2[2] - 0.5) * 0.8, (fract(r2[1] * 7) - 0.5) * 0.35, FIB[2] + SIDE[2] * (r2[2] - 0.5) * 0.8]);
+    const N0 = norm([-L[2], 0, L[0]]), M0 = cross(N0, L), th = r2[1] * Math.PI;
+    const Nt = N0.map((v, i) => Math.cos(th) * v + Math.sin(th) * M0[i]);
+    d = Math.min(d, sdEll([dot(e, L), dot(e, cross(Nt, L)), dot(e, Nt)], [a, a * (0.45 + 0.3 * r1[2]), 0.1 + 0.06 * r2[0]]));
   }
-  return [...F.map(Math.sqrt), id];
+  return d;
+}
+function voidList(p) {
+  const out = [];
+  const [bx, , bz] = block(p, VG)[0];
+  for (const c of [[bx, 0, bz], [bx + 1, 0, bz], [bx, 0, bz + 1], [bx + 1, 0, bz + 1]]) {
+    const [r0, r1] = rnd9(c[0], 0, c[2], 7777);
+    if (r1[0] >= VOID_P) continue;
+    const R = 0.6 + 1.4 * r1[1] * r1[1], x = (c[0] + 0.5) * VG + (r0[0] - 0.5) * 2, z = (c[2] + 0.5) * VG + (r0[2] - 0.5) * 2;
+    out.push({ key: c.join(','), R, ctr: [x, -0.375 + 1.1 * vnoise3(x * 0.09, z * 0.09, 3) - 0.8 * R * (0.15 + 0.45 * r0[1]), z] });
+  }
+  return out;
+}
+// Abstand zur nächsten rundlichen Pore und deren Radius
+const voidAt = (p) => voidList(p).reduce((b, v) => {
+  const d = sdEll(p.map((x, i) => x - v.ctr[i]), [v.R, 0.8 * v.R, v.R]);
+  return d < b.d ? { d, R: v.R } : b;
+}, { d: 9, R: 0 });
+function crackD(p, ty) {
+  const u = p[0] * FIB[0] + p[2] * FIB[2], v = p[0] * SIDE[0] + p[2] * SIDE[2];
+  const v0 = CRACK_V + 1.3 * Math.sin(u * 0.13 + 0.7) + 1.2 * (vnoise3(u * 0.22, 0, 5) - 0.5);
+  const hw0 = 2.6 + 0.7 * vnoise3(u * 0.17, 2, 9);
+  return (Math.abs(v - v0) - hw0 * Math.min(1, Math.max(0, 1 - (ty - p[1]) / CRACK_D))) * 0.7;
 }
 const topY = (x, z) => -0.6 + 1.1 * vnoise3(x * 0.09, z * 0.09, 3) + 0.45 * vnoise3(x * 0.31, z * 0.31, 7);
-function fields(x, y, z) {
-  const wl = worley(x / CELL, y / CELL, z / CELL);
-  const sm = (a, b, v) => { const t = Math.min(1, Math.max(0, (v - a) / (b - a))); return t * t * (3 - 2 * t); };
-  const th = THICK * sm(0.38, 0.55, vnoise3(x * 0.28, y * 0.28, z * 0.28)) * sm(0, 3, topY(x, z) - y) * (0.75 + 0.5 * vnoise3(x * 0.9 + 11, y * 0.9 + 11, z * 0.9 + 11));
-  const dSheet = (wl[1] - wl[0]) * 0.5 * CELL - th * 0.5;
-  const dSN = Math.min((wl[2] - wl[0]) * 0.5 * CELL - STRUT * (0.8 + 0.4 * vnoise3(x * 0.6 + 3, y * 0.6 + 3, z * 0.6 + 3)),
-    (wl[3] - wl[0]) * 0.5 * CELL - NODE);
-  const ws = worley(x / CS + 31, y / CS + 31, z / CS + 31);
-  const dS = (ws[1] - ws[0]) * 0.5 * CS - TS * 0.5;
-  return { dSheet, dSN, dBig: Math.min(dSheet, dSN), dS, sizeS: CS * 10 * (0.3 + 0.55 * ws[4]) };
-}
 
+// Hotspots: Wand ohne Poren (Abstieg zu den Mikroporen), Riss, Schlitzpore, rundliche Pore (Wasser steht dort sichtbar).
+// Schlitze mit Rasterwert < 0,3 gibt es ab 400 °C bei jeder Temperatur.
 function findSpots() {
-  const want = {
-    wallpore: [-3, 1.5], macro: [6, -2], meso: [-6.5, -4.5], water: [3, 5.5],
-  };
+  const want = { wallpore: [-3, 1.5], macro: [5, -3], meso: [-7, -1], water: [2.1, 2.5] };
   const best = {};
-  for (let x = -14; x <= 14; x += 0.35) {
-    for (let z = -12; z <= 12; z += 0.35) {
-      const ty = topY(x, z);
-      const f = fields(x, ty - 0.12, z);
+  for (let x = -14; x <= 14; x += 0.3) {
+    for (let z = -12; z <= 12; z += 0.3) {
+      const ty = topY(x, z), p = [x, ty - 0.12, z];
+      const dP = plateD(p, 0.3), vd = voidAt(p), dV = vd.d, dC = crackD(p, ty);
       const classes = [];
-      if (f.dSheet < -0.25 && f.dSN > 0.3 && f.dS < -0.08) classes.push(['wallpore', ty + 0.05]);
-      if (f.dBig > 1.6) classes.push(['macro', ty - 0.9]);
-      if (f.dSheet < -0.15 && f.dSN > 0.2 && f.dS > 0.08) classes.push(['meso', ty - 0.12], ['water', ty - 0.12]);
+      if (plateD(p, 1) > 0.5 && dV > 1 && dC > 1.5) classes.push(['wallpore', ty + 0.05]);
+      if (crackD([x, ty - 2.5, z], ty) < -0.9) classes.push(['macro', ty - 2.5]);
+      if (dP < -0.06 && dV > 0.6 && dC > 1) classes.push(['meso', ty - 0.12]);
+      if (dV < -0.5 && vd.R > 0.8 && dC > 1) classes.push(['water', ty - 0.6]);
       for (const [c, y] of classes) {
         const d = Math.hypot(x - want[c][0], z - want[c][1]);
         if (!best[c] || d < best[c].d) best[c] = { d, pos: new THREE.Vector3(x, y, z) };
@@ -251,41 +322,43 @@ function findSpots() {
   return best;
 }
 
-// Messlinien: Mitte offener großer Poren im Startbild, je Zelle des Porenmodells eine; Ø = sizeL wie im Shader (Modell).
-// Auswahl: nah am Blickziel, im Bild (Startkamera mit 16:10), Abstand zu Hotspots und untereinander, eine Makropore zuerst
+// Messlinien: rundliche Poren, die die Bruchfläche fast mittig schneiden (Öffnung ≈ Ø der Pore), im Startbild (16:10),
+// mit Abstand zu Hotspots, Riss und untereinander; Ø der Öffnung wie im Shader (Modell)
 function findMeasures(home, avoid) {
   const cam = new THREE.PerspectiveCamera(45, 1.6, 0.1, 500);
   cam.position.copy(home.pos);
   cam.lookAt(home.target);
   cam.updateMatrixWorld();
-  const cells = new Map();
-  for (let x = home.target.x - 16; x <= home.target.x + 16; x += 0.4) {
-    for (let z = home.target.z - 16; z <= home.target.z + 16; z += 0.4) {
-      const ty = topY(x, z);
-      const f = fields(x, ty - 0.5, z);
-      if (f.dBig < 0.8) continue;   // ≥ 8 nm von der Wand: sicher in einer offenen großen Pore
-      const id = worley(x / CELL, (ty - 0.5) / CELL, z / CELL)[4];
-      const c = cells.get(id);
-      if (!c || f.dBig > c.d) cells.set(id, { d: f.dBig, pos: new THREE.Vector3(x, ty - 0.1, z), nm: CELL * 10 * (0.45 + 0.5 * id) });
+  const seen = new Map();
+  for (let x = home.target.x - 18; x <= home.target.x + 18; x += VG / 2) {
+    for (let z = home.target.z - 18; z <= home.target.z + 18; z += VG / 2) {
+      for (const v of voidList([x, topY(x, z), z])) seen.set(v.key, v);
     }
   }
-  const cand = [...cells.values()].filter((c) => {
-    const v = c.pos.clone().project(cam);
-    return v.x > -0.75 && v.x < 0.6 && v.y > -0.6 && v.y < 0.7 && avoid.every((a) => a.distanceTo(c.pos) > 3);
-  }).sort((a, b) => a.pos.distanceTo(home.target) - b.pos.distanceTo(home.target));
+  const cand = [];
+  for (const v of seen.values()) {
+    const ty = topY(v.ctr[0], v.ctr[2]), s = (ty - v.ctr[1]) / (0.8 * v.R);
+    if (Math.abs(s) > 0.7) continue;
+    const pos = new THREE.Vector3(v.ctr[0], ty - 0.1, v.ctr[2]);
+    const sp = pos.clone().project(cam);
+    if (sp.x < -0.75 || sp.x > 0.6 || sp.y < -0.6 || sp.y > 0.7 || crackD([pos.x, ty, pos.z], ty) < 2.5) continue;
+    if (!avoid.every((a) => a.distanceTo(pos) > 3)) continue;
+    cand.push({ pos, sp, nm: Math.round(20 * v.R * Math.sqrt(1 - s * s)) });
+  }
+  cand.sort((a, b) => a.pos.distanceTo(home.target) - b.pos.distanceTo(home.target));
   const out = [];
-  const take = (c) => { if (out.length < 3 && out.every((o) => o.pos.distanceTo(c.pos) > 5)) out.push(c); };
-  const macro = cand.find((c) => c.nm >= 50);
-  if (macro) take(macro);
-  cand.forEach(take);
-  return out.map((c) => ({ pos: c.pos, nm: c.nm, name: c.nm >= 50 ? 'Makropore' : 'Mesopore' }));
+  // Beschriftungen dürfen sich im Startbild nicht berühren: Abstand im Raum und auf dem Schirm
+  const apart = (o, c) => o.pos.distanceTo(c.pos) > 5 && (Math.abs(o.sp.x - c.sp.x) > 0.5 || Math.abs(o.sp.y - c.sp.y) > 0.15);
+  for (const c of cand) if (out.length < 3 && c.nm >= 14 && out.every((o) => apart(o, c))) out.push(c);
+  return out.map((c) => ({ pos: c.pos, nm: c.nm, name: 'Mesopore' }));
 }
 
-// Die kleinen Poren folgen der spezifischen Oberfläche (BET, 5 → 390 m²/g): Bei 550 °C gilt das Ausgangsbild (TS = 0,4),
-// kühler sind die Wände dichter, heißer sind mehr Poren offen (Modell, Richtwert)
+// Schlitz- und Mikroporen nehmen mit der Temperatur zu (Casteel et al. 1978); Stärke folgt der BET-Fläche
+// (5 → 390 m²/g, science.js) – Richtung belegt, Maß Modell
+const bet = (T) => Math.min(1, labProps(T).bet / 390);
+const plateDens = (T) => 0.3 + 0.6 * bet(T);
 // Wasserfilm auf den Wänden (Modell, Darstellung): wächst mit der Feuchte, ab ≈ 95 % voll
 const film = (rh) => Math.pow(Math.min(1, rh / 0.95), 1.2);
-const poreWall = (T) => TS * (1 - 1.25 * (Math.min(1, labProps(T).bet / 390) - 0.56));
 
 export function create(ctx) {
   const scene = new THREE.Scene();
@@ -296,7 +369,8 @@ export function create(ctx) {
     uInvProj: { value: new THREE.Matrix4() },
     uViewProj: { value: new THREE.Matrix4() },
     uWaterD: { value: ctx.wet },
-    uTS: { value: poreWall(ctx.temp) },
+    uDens: { value: plateDens(ctx.temp) },
+    uMicro: { value: bet(ctx.temp) },
     uOpen: { value: pyroState(ctx.temp).open },
     uTime: { value: 0 },
     uDet: SEM_DET,
@@ -315,21 +389,21 @@ export function create(ctx) {
   const at = (k, fallback) => (spots[k] ? spots[k].pos : new THREE.Vector3(...fallback));
   const up = new THREE.Vector3(0, 1, 0);
   const ty0 = topY(0, 0);
-  // Startbild mit Überblick über das Porennetz (Bildbreite ≈ 270 nm), Wandrelief und Tiefenschärfe tragen das Bild,
-  // im Leerlauf gleitet die Kamera an der Wand
+  // Startbild mit Überblick über die Bruchfläche (Bildbreite ≈ 270 nm), Riss im Hintergrund, Tiefenschärfe trägt das
+  // Bild; im Leerlauf gleitet die Kamera an der Wand
   const wall = at('wallpore', [-3, ty0, 1.5]);
   const home = { pos: wall.clone().add(new THREE.Vector3(4.8, 9.6, 17.6)), target: wall.clone() };
   const hotspots = [
     { id: 'wallpore', kind: 'dive', pos: wall, normal: up },
-    { id: 'macro', kind: 'info', pos: at('macro', [6, ty0 - 1, -2]), normal: up },
-    { id: 'meso', kind: 'info', pos: at('meso', [-6.5, ty0, -4.5]), normal: up },
-    { id: 'water', kind: 'info', pos: at('water', [3, ty0, 5.5]), normal: up },
+    { id: 'macro', kind: 'info', pos: at('macro', [5, ty0 - 2.5, -3]), normal: up },
+    { id: 'meso', kind: 'info', pos: at('meso', [-7, ty0, -1]), normal: up },
+    { id: 'water', kind: 'info', pos: at('water', [2.1, ty0, 2.5]), normal: up },
   ];
   let rh = ctx.rh, wet = ctx.wet;
   const level = {
     scene, camera,
     unit: 1e-8,
-    method: 'Modell nach FIB-REM und Gasadsorption',
+    method: 'Modell nach Kleinwinkelstreuung und Gasadsorption',
     tone: 0,
     grain: 0.045,
     resScale: 0.8,
@@ -360,7 +434,14 @@ export function create(ctx) {
       return true;
     },
     setParam(name, value) {
-      if (name === 'temp') { uniforms.uTS.value = poreWall(value); uniforms.uOpen.value = pyroState(value).open; level.measuresOn = uniforms.uOpen.value > 0.85; level.dirty = true; return; }
+      if (name === 'temp') {
+        uniforms.uDens.value = plateDens(value);
+        uniforms.uMicro.value = bet(value);
+        uniforms.uOpen.value = pyroState(value).open;
+        level.measuresOn = uniforms.uOpen.value > 0.85;
+        level.dirty = true;
+        return;
+      }
       // Qualitätsstufe: weniger, dafür längere Schritte (Leicht ≈ 63, Mittel ≈ 98, Fein 140)
       if (name === 'quality') { uniforms.uMarch.value.set(Math.round(140 * value.detail), 1 - 0.25 * value.detail); level.dirty = true; return; }
       if (name === 'rh') rh = value;
