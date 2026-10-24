@@ -3,7 +3,7 @@
 // eine Karte links davon.
 
 import { LEVELS, SOURCES } from './content.js';
-import { properties, labProps, pyroState, fmt, T_MIN, T_MAX, T_ROOM, PHASES, fillDiameterNm, kelvinRh, filledShare, isotherm, poreClass } from './science.js';
+import { properties, labProps, pyroState, fmt, T_MIN, T_MAX, T_ROOM, PHASES, fillDiameterNm, kelvinRh, filledShare, isotherm, poreClass, nanoStructure, tissueScale } from './science.js';
 import { hexBadge, HEX, LEVEL_ICONS, HOTSPOT_ICONS, FACT_ICONS } from './icons.js';
 
 const $ = (sel) => document.querySelector(sel);
@@ -33,16 +33,23 @@ export function createHud(handlers) {
   let lastState = null;
 
   // ---------- Zoom-Schiene ----------
+  const ZONES = [
+    { label: 'MAKRO', y0: 2, y1: 18 },
+    { label: 'REM', y0: 22, y1: 54 },
+    { label: 'NANO', y0: 58, y1: 96 },
+  ];
   rail.innerHTML = `
+    <div class="rail-zones" aria-hidden="true">${ZONES.map((z) =>
+      `<span class="rail-zone" style="top:${z.y0}%;height:${z.y1 - z.y0}%"><i>${z.label}</i></span>`).join('')}</div>
     <div class="rail-track"></div>
     <div class="rail-range"></div>
     <div class="rail-scan"></div>
     <div class="rail-hit"></div>
     ${LEVELS.map((l, i) => `
       <button type="button" class="rail-level" data-level="${i}" style="--y:${(railFrac(SCALE_M[l.id]) * 100).toFixed(2)}%;--f:${railFrac(SCALE_M[l.id]).toFixed(3)};--i:${i}"
-        aria-label="Ebene ${i + 1}: ${esc(l.title)}, ${esc(l.scale)}">
+        aria-label="Ebene ${i + 1}: ${esc(l.title)}, ${esc(l.scale)} (${esc(l.compare)})">
         <span class="rail-mark">${hexBadge(LEVEL_ICONS[l.id], 'hex--rail')}<svg class="rail-ring" viewBox="0 0 40 40" aria-hidden="true"><path d="${HEX}"/></svg></span>
-        <span class="rail-text"><span class="rail-scale">${esc(l.scale)}</span><span class="rail-name">${esc(l.name)}</span></span>
+        <span class="rail-text"><span class="rail-scale">${esc(l.scale)} <i class="rail-cmp">${esc(l.compare)}</i></span><span class="rail-name">${esc(l.name)}</span></span>
       </button>`).join('')}
     <div class="rail-knob" aria-hidden="true"><span class="rail-knob-dot"></span><span class="rail-knob-label">–</span></div>
     <label class="visually-hidden">Vergrößerung<input type="range" class="rail-input" min="0" max="1000" step="1" value="0"></label>`;
@@ -104,45 +111,81 @@ export function createHud(handlers) {
   railInput.addEventListener('input', () => handlers.onRail(railMeters(+railInput.value / 1000), 'move'));
   railInput.addEventListener('change', () => handlers.onRail(railMeters(+railInput.value / 1000), 'end'));
 
-  // ---------- Infotafel ----------
-  // Ebenen-Wechsel: Hex-Marke wie an der Schiene (zurück = gedreht), darunter das Ziel als „Maßstab · Name“
+  // ---------- Infotafel & Kopf-Aktionen ----------
+  // Ebenen-Wechsel: Hex-Marke wie an der Schiene (zurück = gedreht), darunter das Ziel als „Maßstab · Name (×Faktor)“
   for (const id of ['#btn-up', '#btn-down']) $(id).insertAdjacentHTML('afterbegin', hexBadge('dive', 'hex--nav'));
-  const setNavTargets = (i) => [['#nav-up-to', LEVELS[i - 1]], ['#nav-down-to', LEVELS[i + 1]]]
-    .forEach(([id, l]) => { $(id).textContent = l ? `${l.scale} · ${l.name}` : '–'; });
+  const setNavTargets = (i) => {
+    const up = LEVELS[i - 1], down = LEVELS[i + 1], cur = LEVELS[i];
+    const fUp = up && cur ? Math.round(SCALE_M[up.id] / SCALE_M[cur.id]) : 0;
+    const fDown = down && cur ? Math.round(SCALE_M[cur.id] / SCALE_M[down.id]) : 0;
+    $('#nav-up-to').textContent = up ? `${up.scale} · ${up.name} (÷${fUp})` : '–';
+    $('#nav-down-to').textContent = down ? `${down.scale} · ${down.name} (×${fDown} ↓)` : '–';
+  };
   $('#btn-up').addEventListener('click', () => handlers.onUp());
   $('#btn-down').addEventListener('click', () => handlers.onDown());
   $('#btn-panel').addEventListener('click', () => {
     const open = document.body.classList.toggle('panel-collapsed');
     $('#btn-panel').setAttribute('aria-expanded', String(!open));
   });
+  const OV_KEY = 'biochar.overlays';
+  const ovBtn = $('#btn-overlays');
+  if (ovBtn) {
+    let ovOn = true;
+    try { const s = localStorage.getItem(OV_KEY); if (s !== null) ovOn = s !== '0'; } catch { /* Standard: an */ }
+    const applyOv = (on) => {
+      document.body.classList.toggle('overlays-off', !on);
+      ovBtn.setAttribute('aria-pressed', String(on));
+    };
+    applyOv(ovOn);
+    ovBtn.addEventListener('click', () => {
+      ovOn = !ovOn;
+      applyOv(ovOn);
+      try { localStorage.setItem(OV_KEY, ovOn ? '1' : '0'); } catch { /* ignorieren */ }
+    });
+  }
+
+  function factBarPct(f) {
+    if (typeof f.bar === 'number') return f.bar;
+    const s = String(f.value).replace(',', '.');
+    const m = s.match(/(\d+(?:\.\d+)?)/);
+    if (!m) return 52;
+    const v = parseFloat(m[1]);
+    if (s.includes('%')) return Math.min(100, Math.max(8, Math.round(v)));
+    return Math.min(92, Math.max(18, Math.round((Math.log10(Math.max(0.1, v)) + 1) * 28)));
+  }
 
   function facts(list, levelId) {
     const icons = FACT_ICONS[levelId] || [];
     return `<div class="facts">${list.map((f, i) => `
       <div class="fact">${hexBadge(icons[i] || 'info', 'hex--fact')}
-        <div class="fact-text"><span class="fact-value">${esc(f.value)}</span><span class="fact-label">${esc(f.label)}</span></div>
+        <div class="fact-text">
+          <span class="fact-value">${esc(f.value)}</span>
+          <span class="fact-label">${esc(f.label)}</span>
+          <span class="fact-bar" aria-hidden="true"><i style="width:${factBarPct(f)}%"></i></span>
+        </div>
       </div>`).join('')}</div>`;
   }
 
-  // Zeilen der Labortabelle: [Schlüssel, Name, Wert, Warnung] – gleiche Quelle für Aufbau und laufende Aktualisierung
+  // Zeilen der Labortabelle: [Schlüssel, Name, Wert, Warnung, Balken-%] – gleiche Quelle für Aufbau und laufende Aktualisierung
   function labRows(t) {
     const p = labProps(t);
     const dash = '–';
+    const cl = (v) => Math.min(100, Math.max(0, v));
     return [
-      ['yield', 'Masseausbeute', `${fmt(p.yield)} %`, false],
-      ['carbon', 'Kohlenstoffgehalt', `${fmt(p.carbon)} %`, false],
-      ['hc', 'H/Corg (EBC < 0,7)', `${fmt(p.hc, 2)} ${p.hc < 0.7 ? '✓' : '⚠ über Grenzwert'}`, p.hc >= 0.7],
-      ['oc', 'O/Corg (EBC < 0,4)', `${fmt(p.oc, 2)} ${p.oc < 0.4 ? '✓' : '⚠ über Grenzwert'}`, p.oc >= 0.4],
-      ['bet', 'BET-Oberfläche', `≈ ${fmt(p.bet)} m²/g`, false],
-      ['ph', 'pH-Wert', fmt(p.ph, 1), false],
-      ['fperm', 'nach 100 Jahren im Boden (IPCC)', p.fperm === null ? dash : `${fmt(p.fperm * 100)} % des C`, false],
-      ['co2', 'dauerhaft gebundenes CO₂', p.co2 === null ? dash : `${fmt(p.co2, 1)} t je t Biochar`, false],
-      ['cls', 'Strukturtyp (Keiluweit 2010)', p.charClass, false],
+      ['yield', 'Masseausbeute', `${fmt(p.yield)} %`, false, cl(p.yield)],
+      ['carbon', 'Kohlenstoffgehalt', `${fmt(p.carbon)} %`, false, cl(p.carbon)],
+      ['hc', 'H/Corg (EBC < 0,7)', `${fmt(p.hc, 2)} ${p.hc < 0.7 ? '✓' : '⚠ über Grenzwert'}`, p.hc >= 0.7, cl((p.hc / 1.55) * 100)],
+      ['oc', 'O/Corg (EBC < 0,4)', `${fmt(p.oc, 2)} ${p.oc < 0.4 ? '✓' : '⚠ über Grenzwert'}`, p.oc >= 0.4, cl((p.oc / 0.85) * 100)],
+      ['bet', 'BET-Oberfläche', `≈ ${fmt(p.bet)} m²/g`, false, cl(Math.max(2, (p.bet / 400) * 100))],
+      ['ph', 'pH-Wert', fmt(p.ph, 1), false, cl(((p.ph - 4) / 7) * 100)],
+      ['fperm', 'nach 100 Jahren im Boden (IPCC)', p.fperm === null ? dash : `${fmt(p.fperm * 100)} % des C`, false, p.fperm === null ? 0 : cl(p.fperm * 100)],
+      ['co2', 'dauerhaft gebundenes CO₂', p.co2 === null ? dash : `${fmt(p.co2, 1)} t je t Biochar`, false, p.co2 === null ? 0 : cl((p.co2 / 3.2) * 100)],
+      ['cls', 'Strukturtyp (Keiluweit 2010)', p.charClass, false, null],
     ];
   }
 
   function labTable(t) {
-    const row = ([k, name, v, warn]) => `<tr${warn ? ' class="warn"' : ''} data-f="${k}"><th scope="row">${name}</th><td>${v}</td></tr>`;
+    const row = ([k, name, v, warn, bar]) => `<tr${warn ? ' class="warn"' : ''} data-f="${k}"><th scope="row">${name}</th><td><span class="lab-val">${v}</span>${bar !== null ? `<span class="lab-bar" aria-hidden="true"><i style="width:${bar.toFixed(1)}%"></i></span>` : ''}</td></tr>`;
     return `
       <table class="lab">${labRows(t).map(row).join('')}</table>
       <p class="note">Richtwerte für Holz, langsame Pyrolyse – reale Kohlen streuen je Rohstoff und Verfahren. Unter 350 °C Übergang vom Holz (Modell). CO₂ = C-Gehalt × IPCC-Faktor × 44/12.</p>`;
@@ -351,10 +394,14 @@ export function createHud(handlers) {
     playBtn.textContent = playing ? '■' : '▶';
     playBtn.setAttribute('aria-label', playing ? 'Anhalten' : 'Pyrolyse abspielen');
     playBtn.setAttribute('aria-pressed', String(playing));
-    for (const [k, , v, warn] of labRows(T)) {
+    for (const [k, , v, warn, bar] of labRows(T)) {
       const tr = panel.querySelector(`tr[data-f="${k}"]`);
       if (!tr) continue;
-      tr.firstElementChild.nextElementSibling.textContent = v;
+      const valEl = tr.querySelector('.lab-val');
+      if (valEl) valEl.textContent = v;
+      else tr.firstElementChild.nextElementSibling.textContent = v;
+      const barEl = tr.querySelector('.lab-bar > i');
+      if (barEl && bar !== null) barEl.style.width = `${bar.toFixed(1)}%`;
       tr.classList.toggle('warn', warn);
     }
     const dot = panel.querySelector('#chart-dot'), cur = panel.querySelector('#chart-cur');
@@ -376,15 +423,19 @@ export function createHud(handlers) {
     const shown = state.pyro ? state.pyro.shown : state.temp, playing = !!(state.pyro && state.pyro.playing);
     const refs = l.refs.map((r) => `<a href="#quelle-${r}">[${r}]</a>`).join(' ');
     panel.innerHTML = `
-      <p class="eyebrow">Ebene ${current + 1} von ${LEVELS.length} · Buche (Fagus sylvatica) · Größenordnung ${esc(l.scale)}</p>
+      <p class="eyebrow">Ebene ${current + 1} von ${LEVELS.length} · ${esc(l.zone)} · ${esc(l.scale)} (${esc(l.compare)})</p>
       <h1>${esc(l.title)}</h1>
       <p class="lead">${esc(l.lead)}</p>
       <section>
         <h2 class="sub">Entdecken</h2>
-        <ul class="explore">${hsList.map((h) => `
+        <ul class="explore">${hsList.map((h, idx) => {
+          const hsMeta = l.hotspots[h.id];
+          const tagTxt = hsMeta.tag || (h.kind === 'dive' ? 'tiefer ↓' : '');
+          return `
           <li><button type="button" data-hs="${h.id}" class="${h.kind === 'dive' ? 'is-dive' : ''}${selected && selected.id === h.id ? ' is-active' : ''}">
-            ${hexBadge(icons[h.id], 'hex--mini')}${esc(l.hotspots[h.id].title)}${h.kind === 'dive' ? ' <span class="tag">tiefer</span>' : ''}
-          </button></li>`).join('')}
+            <span class="exp-num">0${idx + 1}</span>${hexBadge(icons[h.id], 'hex--mini')}<span class="exp-title">${esc(hsMeta.title)}</span>${tagTxt ? ` <span class="tag">${esc(tagTxt)}</span>` : ''}
+          </button></li>`;
+        }).join('')}
         </ul>
       </section>
       ${facts([...l.facts, ...dyn], l.id)}
@@ -429,8 +480,10 @@ export function createHud(handlers) {
     const list = [...l.facts, ...level.facts()];
     list.forEach((f, i) => {
       const v = els[i] && els[i].querySelector('.fact-value'), lab = els[i] && els[i].querySelector('.fact-label');
+      const bar = els[i] && els[i].querySelector('.fact-bar > i');
       if (v && v.textContent !== f.value) v.textContent = f.value;
       if (lab && lab.textContent !== f.label) lab.textContent = f.label;
+      if (bar) bar.style.width = `${factBarPct(f)}%`;
     });
   }
 
@@ -441,40 +494,241 @@ export function createHud(handlers) {
     if (box) box.outerHTML = facts([...l.facts, ...(level.facts ? level.facts() : [])], l.id);
   }
 
-  // ---------- Hotspots: Punkt am Objekt, Abzeichen direkt daneben, Info-Karte links vom Abzeichen ----------
-  // Messlinien (Ebene 5): Linie quer über die Pore in Bildebene, Länge = Ø aus dem Porenmodell, Beschriftung darüber
+  // ---------- Hotspots & 3D-Mess-Overlays (Makro:A, Nano:A, Hud:A+B+C) ----------
   const msSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
   msSvg.setAttribute('class', 'ms-svg');
   msSvg.setAttribute('aria-hidden', 'true');
   let measures = [];
+  let sceneOvs = [];
+  let reticleG = null, tourPath = null, leadsG = null;
   let msRight = null;
+
+  // Ebenen-spezifische 3D-Messhilfen (Makro:A Ebenen 1–3, Nano:A Ebenen 4–7): echte 3D-Ankerpunkte der Szene
+  function levelOverlays() {
+    if (!level || !level.hotspots || !level.hotspots.length) return [];
+    const v3 = (x, y, z) => level.hotspots[0].pos.clone().set(x, y, z);
+    const hs = (id) => level.hotspots.find((h) => h.id === id);
+    const lid = LEVELS[current].id;
+    if (lid === 'piece') {
+      const cr = hs('cracks');
+      return [
+        {
+          cls: 'ov-scale',
+          pts: () => [v3(-2.0, -1.08, 1.35), v3(2.0, -1.08, 1.35)],
+          ticks: 9,
+          text: () => '<b>0 ··· 20 ··· 40 mm</b> · Maßstabs-Objektträger',
+        },
+        ...(cr ? [{
+          cls: 'ov-crack',
+          pts: () => [cr.pos.clone().add(v3(-0.35, -0.22, 0.04)), cr.pos.clone().add(v3(0.35, 0.22, 0.04))],
+          active: () => !cr.hidden && (!cr.normal || cr.normal.lengthSq() > 0),
+          text: () => '<b>Schwundriss-Kontur</b> · Tiefe ≈ 1,6 mm',
+        }] : []),
+      ];
+    }
+    if (lid === 'tissue') {
+      const rg = hs('ring');
+      return [{
+        cls: 'ov-ring',
+        pts: () => {
+          const T = lastState && lastState.pyro ? lastState.pyro.shown : (lastState ? lastState.temp : 550);
+          const k = tissueScale(T).xy, y = rg ? rg.pos.y : 28 * k, z = rg ? rg.pos.z : 2;
+          return [v3(-210 * k, y, z), v3(210 * k, y, z)];
+        },
+        ticks: 2,
+        text: () => '<b>Jahrringgrenze</b> · Frühholz ≈ 62 % ↔ Spätholz ≈ 40 % Poren',
+      }];
+    }
+    if (lid === 'cells') {
+      const pw = hs('pitwall') || level.hotspots[0];
+      return [{
+        cls: 'ov-capillary',
+        pts: () => [pw.pos.clone().add(v3(-8, 0, 85)), pw.pos.clone().add(v3(-8, 0, -95))],
+        ticks: 3,
+        text: () => '<b>Kapillar-Leitfaden</b> · Wasser & Luft im Gefäß (Ø 15–24 µm)',
+      }];
+    }
+    if (lid === 'wall') {
+      const pt = hs('pits'), bc = hs('bacteria');
+      return [
+        ...(pt ? [{
+          cls: 'ov-pit',
+          pts: () => [pt.pos.clone().add(v3(-1.4, 0, 0)), pt.pos.clone().add(v3(1.4, 0, 0))],
+          ring: true,
+          text: () => '<b>Hoftüpfel-Kammer</b> · Hof Ø ≈ 3 µm · Porus 0,7 µm',
+        }] : []),
+        ...(bc ? [{
+          cls: 'ov-biofilm',
+          pts: () => [bc.pos.clone().add(v3(-2.3, 0, 0)), bc.pos.clone().add(v3(2.3, 0, 0))],
+          ring: true,
+          text: () => '<b>Biofilm-Saum</b> · Kolonie auf Porenwand',
+        }] : []),
+      ];
+    }
+    if (lid === 'meso') {
+      const sl = hs('meso');
+      return sl ? [{
+        cls: 'ov-meso',
+        pts: () => [sl.pos.clone().add(v3(-1.1, 0, 0)), sl.pos.clone().add(v3(1.1, 0, 0))],
+        active: () => !!level.measuresOn,
+        ticks: 2,
+        text: () => '<b>Schlitzpore</b> · Dicke ≈ 2–3 nm (IUPAC Meso)',
+      }] : [];
+    }
+    if (lid === 'micro') {
+      const st = hs('stack'), mp = hs('micropore');
+      return [
+        ...(st ? [{
+          cls: 'ov-stack',
+          pts: () => [st.pos.clone().add(v3(0, -0.58, 0)), st.pos.clone().add(v3(0, 0.58, 0))],
+          active: () => !st.hidden,
+          ticks: 2,
+          text: () => {
+            const T = lastState && lastState.pyro ? lastState.pyro.shown : (lastState ? lastState.temp : 550);
+            return `<b>d₀₀₂ ≈ ${fmt(nanoStructure(T).d002, 2)} nm</b> · Schichtabstand (Graphit: 0,335 nm)`;
+          },
+        }] : []),
+        ...(mp ? [{
+          cls: 'ov-micro',
+          pts: () => [mp.pos.clone().add(v3(-0.55, 0, 0)), mp.pos.clone().add(v3(0.55, 0, 0))],
+          active: () => !mp.hidden,
+          ring: true,
+          text: () => '<b>IUPAC Mikropore</b> · Weite &lt; 2 nm',
+        }] : []),
+      ];
+    }
+    if (lid === 'atoms') {
+      const rg = hs('ring'), cx = hs('carboxyl');
+      return [
+        ...(rg ? [{
+          cls: 'ov-pi',
+          pts: () => [rg.pos.clone().add(v3(-1.35, 0, 0)), rg.pos.clone().add(v3(1.35, 0, 0))],
+          ring: true,
+          text: () => '<b>π-Elektronenring</b> · C–C 0,142 nm (sp²)',
+        }] : []),
+        ...(cx ? [{
+          cls: 'ov-ion',
+          pts: () => [cx.pos.clone().add(v3(-1.1, -0.35, 0)), cx.pos.clone().add(v3(1.1, 0.35, 0))],
+          active: () => cx.pos.z < 100,
+          ticks: 2,
+          text: () => '<b>Ionen-Bindungsfeld</b> · –COO⁻ ··· K⁺',
+        }] : []),
+      ];
+    }
+    return [];
+  }
+
   function buildMeasures() {
     for (const ms of measures) ms.lab.remove();
+    for (const ov of sceneOvs) ov.lab.remove();
     msSvg.replaceChildren();
+    reticleG = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    reticleG.setAttribute('class', 'reticle');
+    reticleG.innerHTML = '<circle class="ret-ring"/><path class="ret-corners"/>';
+    tourPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    tourPath.setAttribute('class', 'hs-tour');
+    leadsG = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    leadsG.setAttribute('class', 'hs-leads');
+    msSvg.append(reticleG, tourPath, leadsG);
+
     measures = (level.measures || []).map((d) => {
+      const pCls = poreClass(d.nm) || 'meso';
       const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-      g.innerHTML = '<line class="ms-line"/><line class="ms-tick"/><line class="ms-tick"/>';
+      g.setAttribute('class', `ms-g ms-g--${pCls}`);
+      g.innerHTML = '<ellipse class="ms-ell"/><line class="ms-line"/><line class="ms-tick"/><line class="ms-tick"/>';
       msSvg.appendChild(g);
       const lab = document.createElement('div');
-      lab.className = 'ms-lab';
-      lab.innerHTML = `<b>Ø ${fmt(d.nm)} nm</b> · ${esc(d.name)} · Modell`;
+      lab.className = `ms-lab ms-lab--${pCls}`;
+      lab.innerHTML = `<b>Ø ${fmt(d.nm)} nm</b> · ${esc(d.name)} · <span class="ms-state">offen</span>`;
       layer.appendChild(lab);
-      return { d, g, lab, lines: g.querySelectorAll('line'), w: 0, hgt: 0 };
+      return { d, g, lab, ell: g.querySelector('ellipse'), lines: g.querySelectorAll('line'), stateEl: lab.querySelector('.ms-state'), w: 0, hgt: 0 };
     });
+
+    sceneOvs = levelOverlays().map((d) => {
+      const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+      g.setAttribute('class', `ov-g ${d.cls}`);
+      g.innerHTML = `${d.ring ? '<ellipse class="ov-ring-el"/>' : ''}<line class="ov-line"/><path class="ov-ticks"/>`;
+      msSvg.appendChild(g);
+      const lab = document.createElement('div');
+      lab.className = `ms-lab ov-lab ${d.cls}`;
+      lab.innerHTML = d.text();
+      layer.appendChild(lab);
+      return { d, g, lab, line: g.querySelector('.ov-line'), ticks: g.querySelector('.ov-ticks'), ringEl: g.querySelector('.ov-ring-el'), w: 0, hgt: 0, lastTxt: '' };
+    });
+
     if (!msSvg.parentNode) layer.prepend(msSvg);
   }
+
   function updateMeasures(camera, width, height, rect, items) {
-    if (!measures.length) return;
+    // 1. REM-Apertur-Visier im freien Bühnenzentrum (Hud:B, nur Desktop)
+    if (reticleG) {
+      const rw = rect.x1 - rect.x0, rh = rect.y1 - rect.y0;
+      const rad = Math.min(rw, rh) * 0.34;
+      const showRet = width > 860 && rad >= 85;
+      reticleG.classList.toggle('is-off', !showRet);
+      if (showRet) {
+        const cx = (rect.x0 + rect.x1) / 2, cy = (rect.y0 + rect.y1) / 2;
+        const ring = reticleG.firstElementChild, corners = reticleG.lastElementChild;
+        ring.setAttribute('cx', cx.toFixed(1));
+        ring.setAttribute('cy', cy.toFixed(1));
+        ring.setAttribute('r', rad.toFixed(1));
+        const b = rad * 1.08, c = 16;
+        corners.setAttribute('d', [
+          `M${(cx - b).toFixed(1)} ${(cy - b + c).toFixed(1)}V${(cy - b).toFixed(1)}H${(cx - b + c).toFixed(1)}`,
+          `M${(cx + b - c).toFixed(1)} ${(cy - b).toFixed(1)}H${(cx + b).toFixed(1)}V${(cy - b + c).toFixed(1)}`,
+          `M${(cx - b).toFixed(1)} ${(cy + b - c).toFixed(1)}V${(cy + b).toFixed(1)}H${(cx - b + c).toFixed(1)}`,
+          `M${(cx + b - c).toFixed(1)} ${(cy + b).toFixed(1)}H${(cx + b).toFixed(1)}V${(cy + b - c).toFixed(1)}`,
+          `M${(cx - 5).toFixed(1)} ${cy.toFixed(1)}H${(cx + 5).toFixed(1)}M${cx.toFixed(1)} ${(cy - 5).toFixed(1)}V${(cy + 5).toFixed(1)}`,
+        ].join(''));
+      }
+    }
+
+    // 2. Nummerierter Entdeckungs-Pfad (Hud:C) & gewinkelte 45°-Leitlinien (Hud:A)
+    if (tourPath && leadsG) {
+      if (items.length >= 2) {
+        tourPath.setAttribute('d', items.map((m, i) => `${i ? 'L' : 'M'}${m.ax.toFixed(1)} ${m.ay.toFixed(1)}`).join(''));
+        tourPath.classList.remove('is-off');
+      } else {
+        tourPath.classList.add('is-off');
+      }
+      while (leadsG.children.length < items.length) {
+        const p = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        leadsG.appendChild(p);
+      }
+      Array.from(leadsG.children).forEach((p, i) => {
+        const m = items[i];
+        if (!m) { p.classList.add('is-off'); return; }
+        p.setAttribute('class', `hs-lead${m.h.kind === 'dive' ? ' hs-lead--dive' : ''}`);
+        const bx = m.x < m.ax ? m.x + m.w / 2 - 2 : m.x - m.w / 2 + 2;
+        const by = m.y;
+        const dx = bx - m.ax, dy = by - m.ay;
+        const step = Math.min(Math.abs(dx) * 0.55, Math.abs(dy));
+        const kx = m.ax + Math.sign(dx || 1) * step, ky = m.ay + Math.sign(dy || 1) * step;
+        p.setAttribute('d', `M${m.ax.toFixed(1)} ${m.ay.toFixed(1)}L${kx.toFixed(1)} ${ky.toFixed(1)}L${bx.toFixed(1)} ${by.toFixed(1)}`);
+      });
+    }
+
     msRight = msRight || camera.position.clone();
     msRight.setFromMatrixColumn(camera.matrixWorld, 0);
     const cardOpen = card.classList.contains('is-open') && !card.classList.contains('is-away');
     const cr = cardOpen ? card.getBoundingClientRect() : null;
     const hit = (a, b) => a.l < b.r && a.r > b.l && a.t < b.b && a.b > b.t;
     const scr = (v) => [((v.x + 1) / 2) * width, ((1 - v.y) / 2) * height];
+    const placedBoxes = [];
+
+    // 3. Poren-Messlinien auf Ebene 5 (mit IUPAC-Porenklasse und Füllstatus)
     for (const ms of measures) {
       const half = ms.d.nm / 20;   // Einheit 10 nm, halber Durchmesser
       const A = ms.d.pos.clone().addScaledVector(msRight, -half).project(camera);
       const B = ms.d.pos.clone().addScaledVector(msRight, half).project(camera);
+      const filled = lastState && lastState.wet >= ms.d.nm;
+      const stTxt = filled ? 'gefüllt 💧' : 'offen';
+      if (ms.stateEl && ms.stateEl.textContent !== stTxt) {
+        ms.stateEl.textContent = stTxt;
+        ms.lab.classList.toggle('is-wet', !!filled);
+        ms.g.classList.toggle('is-wet', !!filled);
+        ms.w = 0;
+      }
       if (!ms.w) { ms.w = ms.lab.offsetWidth; ms.hgt = ms.lab.offsetHeight; }
       const [ax, ay] = scr(A), [bx, by] = scr(B);
       const lx = (ax + bx) / 2, ly = Math.min(ay, by) - 10;
@@ -487,12 +741,76 @@ export function createHud(handlers) {
       ms.lab.classList.toggle('is-off', !on);
       ms.g.classList.toggle('is-off', !on);
       if (!on) continue;
+      placedBoxes.push(box);
       const [line, t1, t2] = ms.lines;
       const set = (el, x1, y1, x2, y2) => { el.setAttribute('x1', x1.toFixed(1)); el.setAttribute('y1', y1.toFixed(1)); el.setAttribute('x2', x2.toFixed(1)); el.setAttribute('y2', y2.toFixed(1)); };
       set(line, ax, ay, bx, by);
       set(t1, ax, ay - 7, ax, ay + 7);
       set(t2, bx, by - 7, bx, by + 7);
+      if (ms.ell) {
+        const rx = Math.max(8, (bx - ax) / 2);
+        ms.ell.setAttribute('cx', lx.toFixed(1));
+        ms.ell.setAttribute('cy', ((ay + by) / 2).toFixed(1));
+        ms.ell.setAttribute('rx', rx.toFixed(1));
+        ms.ell.setAttribute('ry', (rx * 0.45).toFixed(1));
+      }
       ms.lab.style.transform = `translate(${Math.round(lx - ms.w / 2)}px, ${Math.round(ly - ms.hgt)}px)`;
+    }
+
+    // 4. Ebenen-spezifische 3D-Mess-Overlays (Makro:A & Nano:A)
+    for (const ov of sceneOvs) {
+      if (ov.d.active && !ov.d.active()) {
+        ov.lab.classList.add('is-off');
+        ov.g.classList.add('is-off');
+        continue;
+      }
+      const txt = ov.d.text();
+      if (txt !== ov.lastTxt) { ov.lab.innerHTML = txt; ov.lastTxt = txt; ov.w = 0; }
+      const [pA, pB] = ov.d.pts();
+      const A = pA.clone().project(camera), B = pB.clone().project(camera);
+      if (!ov.w) { ov.w = ov.lab.offsetWidth; ov.hgt = ov.lab.offsetHeight; }
+      const [rawAx, rawAy] = scr(A), [rawBx, rawBy] = scr(B);
+      const ax = Math.min(Math.max(rawAx, rect.x0 + 8), rect.x1 - 8);
+      const bx = Math.min(Math.max(rawBx, rect.x0 + 8), rect.x1 - 8);
+      const ay = Math.min(Math.max(rawAy, rect.y0 + 18), rect.y1 - 8);
+      const by = Math.min(Math.max(rawBy, rect.y0 + 18), rect.y1 - 8);
+      const span = Math.hypot(bx - ax, by - ay);
+      const lx = Math.min(Math.max((ax + bx) / 2, rect.x0 + ov.w / 2 + 4), rect.x1 - ov.w / 2 - 4);
+      const ly = Math.min(Math.max(rect.y0 + ov.hgt + 4, Math.min(ay, by) - 10), rect.y1 - 6);
+      const box = { l: lx - ov.w / 2, r: lx + ov.w / 2, t: ly - ov.hgt, b: ly + 4 };
+      let on = width > 520 && A.z < 1 && B.z < 1 && span > 26 &&
+        box.l >= rect.x0 && box.r <= rect.x1 && box.t >= rect.y0 && box.b <= rect.y1;
+      if (on && items.some((m) => hit(box, { l: m.x - m.w / 2 - 6, r: m.x + m.w / 2 + 6, t: m.y - m.hgt / 2 - 6, b: m.y + m.hgt / 2 + 6 }))) on = false;
+      if (on && cr && hit(box, { l: cr.left - 6, r: cr.right + 6, t: cr.top - 6, b: cr.bottom + 6 })) on = false;
+      if (on && placedBoxes.some((b) => hit(box, b))) on = false;
+      ov.lab.classList.toggle('is-off', !on);
+      ov.g.classList.toggle('is-off', !on);
+      if (!on) continue;
+      placedBoxes.push(box);
+      ov.line.setAttribute('x1', ax.toFixed(1));
+      ov.line.setAttribute('y1', ay.toFixed(1));
+      ov.line.setAttribute('x2', bx.toFixed(1));
+      ov.line.setAttribute('y2', by.toFixed(1));
+      if (ov.ringEl) {
+        const r = Math.min(48, Math.max(12, span / 2));
+        ov.ringEl.setAttribute('cx', ((ax + bx) / 2).toFixed(1));
+        ov.ringEl.setAttribute('cy', ((ay + by) / 2).toFixed(1));
+        ov.ringEl.setAttribute('rx', r.toFixed(1));
+        ov.ringEl.setAttribute('ry', (r * 0.65).toFixed(1));
+      }
+      if (ov.ticks && ov.d.ticks) {
+        const nx = -(by - ay) / (span || 1), ny = (bx - ax) / (span || 1);
+        const n = ov.d.ticks;
+        let dStr = '';
+        for (let i = 0; i < n; i++) {
+          const u = n === 1 ? 0.5 : i / (n - 1);
+          const tx = ax + (bx - ax) * u, ty = ay + (by - ay) * u;
+          const th = (i === 0 || i === n - 1 || i === Math.floor(n / 2)) ? 6 : 3.5;
+          dStr += `M${(tx - nx * th).toFixed(1)} ${(ty - ny * th).toFixed(1)}L${(tx + nx * th).toFixed(1)} ${(ty + ny * th).toFixed(1)}`;
+        }
+        ov.ticks.setAttribute('d', dStr);
+      }
+      ov.lab.style.transform = `translate(${Math.round(lx - ov.w / 2)}px, ${Math.round(ly - ov.hgt)}px)`;
     }
   }
 
@@ -511,7 +829,7 @@ export function createHud(handlers) {
       const el = document.createElement('button');
       el.type = 'button';
       el.className = `hsb ${h.kind === 'dive' ? 'hsb--dive' : 'hsb--info'}`;
-      el.innerHTML = `${hexBadge(icons[h.id], 'hex--hs')}<span class="hsb-label">${esc(l.hotspots[h.id].title)}${h.kind === 'dive' ? '<span class="tag">tiefer</span>' : ''}</span>`;
+      el.innerHTML = `${hexBadge(icons[h.id], 'hex--hs')}<span class="hsb-label"><span class="hsb-num">0${i + 1}</span>${esc(l.hotspots[h.id].title)}${h.kind === 'dive' ? '<span class="tag">tiefer</span>' : ''}</span>`;
       el.setAttribute('aria-label', `${l.hotspots[h.id].title}${h.kind === 'dive' ? ' – hineinzoomen' : ''}`);
       el.addEventListener('click', () => handlers.onHotspot(h.id, true));
       el.addEventListener('animationend', (e) => { if (e.animationName.startsWith('hsb-pulse')) el.classList.remove('is-pulse'); });
@@ -540,7 +858,7 @@ export function createHud(handlers) {
     card.innerHTML = `<div class="hs-card-in">
       <h2>${hexBadge(icons[selected.id], 'hex--mini')}<span>${esc(h.title)}</span>${selected.kind === 'dive' ? '<span class="tag">tiefer</span>' : ''}</h2>
       <div class="hs-body">
-        <figure class="hs-lens" aria-hidden="true"><canvas></canvas></figure>
+        <figure class="hs-lens" aria-hidden="true"><canvas></canvas><svg class="hs-lens-svg" viewBox="0 0 112 112"><circle cx="56" cy="56" r="46" stroke-dasharray="3 4"/><path d="M56 4v9M56 99v9M4 56h9M99 56h9"/></svg></figure>
         <div class="hs-text"><p>${esc(h.text)}</p></div>
       </div>
       <div class="hs-card-foot">
