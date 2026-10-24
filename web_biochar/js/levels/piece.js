@@ -557,14 +557,24 @@ export function create(ctx) {
         .replace('#include <roughnessmap_fragment>', '#include <roughnessmap_fragment>\n          roughnessFactor = mix(roughnessFactor, 1.0, cm);')
         .replace('#include <normal_fragment_maps>', THREE.ShaderChunk.normal_fragment_maps.replace('mapN.xy *= normalScale;', 'mapN.xy *= normalScale;\n\tmapN.xy += cn * normalScale;'))
         .replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>
-          // Glimmen: Glutnester atmen langsam und unregelmäßig (Luftzug), ortsfest auf der Oberfläche (UV statt Blickraum);
-          // heißer = heller und etwas gelber, kühler = tiefer rot. Tiefe Poren/Risse strahlen weniger ab → wärmer.
+          // Glimmen: Glutnester ortsfest auf der Oberfläche (UV statt Blickraum), örtliche Glut q: 0 kühl … 1 Rissgrund.
+          // Risse und Poren strahlen als Hohlräume fast wie ein schwarzer Körper → heller und gelber; flache Flächen
+          // kirschrot, unter flachem Blickwinkel etwas schwächer (Emissionsgrad sinkt) – so bleibt die Form lesbar.
+          // Helligkeit wächst steil mit q (Strahlung ∝ T⁴). Bewegung: Nester langsam, leichtes Flackern im Luftzug
+          // (nur örtlich, nie das ganze Stück), ganz dezentes Atmen des ganzen Stücks (± 6 %, 4,2 s + 6,7 s).
           float nest = 0.65 * gNoise(vec3(vMapUv * vec2(9.0, 5.0), uTime * 0.18)) + 0.35 * gNoise(vec3(vMapUv * vec2(23.0, 13.0) + 7.3, uTime * 0.29));
-          float breath = 0.6 * sin(uTime * 1.75) + 0.4 * sin(uTime * 1.19 + 1.7);   // Perioden 3,6 s + 5,3 s, nie im Gleichtakt
-          float heat = clamp(0.8 * nest + 0.2 * breath, -1.0, 1.0);
-          float core = smoothstep(0.75, 1.0, pd);
-          vec3 glowCol = uGlowCol * vec3(1.0, exp(0.4 * heat) * mix(0.8, 1.2, core), exp(0.4 * heat));
-          totalEmissiveRadiance += glowCol * uGlow * (0.1 + 0.9 * smoothstep(0.55, 1.0, pd)) * (1.0 + 0.24 * heat);`);
+          float flick = 0.6 * gNoise(vec3(vMapUv * vec2(17.0, 10.0) + vec2(uTime * 0.45, 0.0), uTime * 1.2))
+                      + 0.4 * gNoise(vec3(vMapUv * vec2(43.0, 25.0) + 3.1, uTime * 2.4));
+          float breath = 0.6 * sin(uTime * 1.496) + 0.4 * sin(uTime * 0.94 + 1.7);   // wie ember.intensity in update()
+          float ndv = clamp(dot(normal, normalize(vViewPosition)), 0.0, 1.0);
+          float q = clamp(0.36 + 0.26 * nest + 0.3 * smoothstep(0.55, 1.0, pd) + 0.24 * cm + 0.07 * flick - 0.1 * clamp(lr - 1.0, 0.0, 0.8), 0.0, 1.0);
+          vec3 glowCol = uGlowCol * vec3(1.0, exp(2.4 * (q - 0.5)), exp(3.2 * (q - 0.5)));
+          totalEmissiveRadiance += glowCol * uGlow * 1.8 * (0.05 + 2.8 * q * q * q) * (0.72 + 0.28 * ndv) * (1.0 + 0.06 * breath);`)
+        // Glühendes Stück leuchtet selbst: Studio-Licht tritt zurück, sonst mischt sich Grau-Weiß zur Glut (Lachs-Ton)
+        .replace('#include <aomap_fragment>', `#include <aomap_fragment>
+          float selfLit = 1.0 - 0.62 * uGlow;
+          reflectedLight.directDiffuse *= selfLit; reflectedLight.indirectDiffuse *= selfLit;
+          reflectedLight.directSpecular *= selfLit; reflectedLight.indirectSpecular *= selfLit;`);
     };
   }
   const piece = new THREE.Mesh(geo, [matEnd, matEnd, matA, matA, matB, matB]);
@@ -721,7 +731,7 @@ export function create(ctx) {
   const ember = new THREE.PointLight(0xff5a1a, 0, 9, 1.6);   // Schein der Glut auf dem Tisch
   ember.position.set(0.2, -0.3, 1.9);
   scene.add(ember);
-  let playing = false, plumeAmt = 0, tNow = 550, tTarget = 550, lastT = 0, emberBase = 0;
+  let playing = false, plumeAmt = 0, tNow = 550, tTarget = 550, lastT = 0, emberBase = 0, bloomBase = 0.12;
   const lerpCol = (a, b, k) => a.map((v, i) => v + (b[i] - v) * k);
   const smoke = (T) => {          // Farbe der Schwaden je Phase: Dampf weiß → Gase gelbbraun → Teer dunkel → dünn bläulich
     const st = (a, b, x) => Math.min(1, Math.max(0, (x - a) / (b - a)));
@@ -758,9 +768,12 @@ export function create(ctx) {
     update(dt, t) {
       moveLights(t);
       plumeMat.uniforms.uTime.value = t;
-      // Glimmen ohne Bewegung (reduced-motion): ruhende Glutnester; der Schein auf dem Tisch atmet mit (wie im Shader)
+      // Glimmen ohne Bewegung (reduced-motion): ruhende Glutnester; Schein auf dem Tisch und Bloom atmen mit (wie im
+      // Shader), der Tischschein flackert leicht (± 3 %, Schwebung ≈ 1 Hz)
       const tg = pyro.uTime.value = reduced ? 0 : t;
-      ember.intensity = emberBase * (1 + 0.07 * (0.6 * Math.sin(tg * 1.75) + 0.4 * Math.sin(tg * 1.19 + 1.7)));
+      const breath = 0.6 * Math.sin(tg * 1.496) + 0.4 * Math.sin(tg * 0.94 + 1.7);
+      ember.intensity = emberBase * (1 + 0.07 * breath + 0.03 * Math.sin(tg * 6.3) * Math.sin(tg * 3.7 + 0.8));
+      level.bloom = bloomBase * (1 + 0.08 * breath);
       const want = playing ? pyroState(tNow).vapour : 0;
       plumeAmt += (want - plumeAmt) * Math.min(1, dt * 3);
       plumeMat.uniforms.uAmt.value = plumeAmt;
@@ -788,10 +801,10 @@ export function create(ctx) {
       piece.morphTargetInfluences[0] = open;
       pyro.uCrack.value = open;
       cracksHs.normal.set(0, 0, open > 0.12 ? 1 : 0);
-      pyro.uGlow.value = st.glow * 1.7;
+      pyro.uGlow.value = st.glow;
       pyro.uGlowCol.value.setRGB(...glowColor(value));
-      emberBase = st.glow * 9;
-      level.bloom = 0.12 + st.glow * 0.45;
+      emberBase = st.glow * 13;
+      level.bloom = bloomBase = 0.12 + st.glow * 0.7;
       plumeMat.uniforms.uCol.value.setRGB(...smoke(value));
       for (const f of fallout) f.visible = st.char > 0.8;
       applyShrink();
