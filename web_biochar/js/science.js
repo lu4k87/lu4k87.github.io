@@ -156,10 +156,12 @@ export function pyroState(t) {
   };
 }
 
-// Schwarzkörperfarbe (linear RGB, auf Sichtbarkeit skaliert) der Glut: dunkelrot bei 525 °C → orange bei 800 °C
+// Schwarzkörperfarbe (linear RGB, auf Sichtbarkeit skaliert) der Glut: dunkelrot bei 525 °C → kirschrot bei 800 °C
+// (Glühfarben: 800 °C kirschrot, orange erst ab ≈ 1000 °C; Grün knapp über dem Planck-Wert, weil das Auge im Dunkeln
+// die Glut wärmer sieht als die reine Chromatizität)
 export function glowColor(t) {
   const k = clamp((t - DRAPER) / (800 - DRAPER), 0, 1);
-  return [lerp(0.55, 1.0, k), lerp(0.04, 0.24, k * k), lerp(0.0, 0.03, k)];
+  return [lerp(0.55, 1.0, k), lerp(0.035, 0.12, k * k), lerp(0.0, 0.012, k)];
 }
 
 // Laborwerte auch unterhalb von 350 °C (Zeitraffer): vom Holz (Richtwerte Buche) gleitend zur Tabelle bei 350 °C

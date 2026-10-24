@@ -9,6 +9,7 @@ import { disposeGroup } from '../walls.js';
 import { pyroState, glowColor } from '../science.js';
 
 const W = 4.4, H = 2.4, D = 2.2;
+const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const END_UM_PER_PX = (2.3e4 / 2048);      // Stirnfläche ≈ 2,3 cm auf 2048 px → ≈ 11 µm je Pixel
 const VESSELS_PER_MM2 = 120;               // Modell: Größenordnung für zerstreutporige Buche (docs/research.md)
 
@@ -535,7 +536,14 @@ export function create(ctx) {
     m.onBeforeCompile = (sh) => {
       Object.assign(sh.uniforms, pyro, { uCrackMap: { value: crackTex.get(m) } });
       sh.fragmentShader = sh.fragmentShader
-        .replace('#include <common>', '#include <common>\nuniform float uChar, uGlow, uTime, uCrack;\nuniform vec3 uGlowCol;\nuniform sampler2D uCrackMap;')
+        .replace('#include <common>', `#include <common>\nuniform float uChar, uGlow, uTime, uCrack;\nuniform vec3 uGlowCol;\nuniform sampler2D uCrackMap;
+          float gHash(vec3 p) { return fract(sin(dot(p, vec3(127.1, 311.7, 74.7))) * 43758.5453); }
+          float gNoise(vec3 p) {                         // Wertrauschen −1 … 1, weich interpoliert
+            vec3 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);
+            float a = mix(mix(gHash(i), gHash(i + vec3(1, 0, 0)), f.x), mix(gHash(i + vec3(0, 1, 0)), gHash(i + vec3(1, 1, 0)), f.x), f.y);
+            float b = mix(mix(gHash(i + vec3(0, 0, 1)), gHash(i + vec3(1, 0, 1)), f.x), mix(gHash(i + vec3(0, 1, 1)), gHash(i + vec3(1, 1, 1)), f.x), f.y);
+            return mix(a, b, f.z) * 2.0 - 1.0;
+          }`)
         .replace('#include <color_fragment>', `#include <color_fragment>
           vec4 ck = texture2D(uCrackMap, vMapUv);
           float cm = ck.b * uCrack;                     // Rissanteil, öffnet sich mit der Schwindung
@@ -549,7 +557,14 @@ export function create(ctx) {
         .replace('#include <roughnessmap_fragment>', '#include <roughnessmap_fragment>\n          roughnessFactor = mix(roughnessFactor, 1.0, cm);')
         .replace('#include <normal_fragment_maps>', THREE.ShaderChunk.normal_fragment_maps.replace('mapN.xy *= normalScale;', 'mapN.xy *= normalScale;\n\tmapN.xy += cn * normalScale;'))
         .replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>
-          totalEmissiveRadiance += uGlowCol * uGlow * (0.1 + 0.9 * smoothstep(0.55, 1.0, pd)) * (0.9 + 0.1 * sin(uTime * 7.0 + vViewPosition.x * 3.0 + vViewPosition.y * 2.0));`);
+          // Glimmen: Glutnester atmen langsam und unregelmäßig (Luftzug), ortsfest auf der Oberfläche (UV statt Blickraum);
+          // heißer = heller und etwas gelber, kühler = tiefer rot. Tiefe Poren/Risse strahlen weniger ab → wärmer.
+          float nest = 0.65 * gNoise(vec3(vMapUv * vec2(9.0, 5.0), uTime * 0.18)) + 0.35 * gNoise(vec3(vMapUv * vec2(23.0, 13.0) + 7.3, uTime * 0.29));
+          float breath = 0.6 * sin(uTime * 1.75) + 0.4 * sin(uTime * 1.19 + 1.7);   // Perioden 3,6 s + 5,3 s, nie im Gleichtakt
+          float heat = clamp(0.8 * nest + 0.2 * breath, -1.0, 1.0);
+          float core = smoothstep(0.75, 1.0, pd);
+          vec3 glowCol = uGlowCol * vec3(1.0, exp(0.4 * heat) * mix(0.8, 1.2, core), exp(0.4 * heat));
+          totalEmissiveRadiance += glowCol * uGlow * (0.1 + 0.9 * smoothstep(0.55, 1.0, pd)) * (1.0 + 0.24 * heat);`);
     };
   }
   const piece = new THREE.Mesh(geo, [matEnd, matEnd, matA, matA, matB, matB]);
@@ -706,7 +721,7 @@ export function create(ctx) {
   const ember = new THREE.PointLight(0xff5a1a, 0, 9, 1.6);   // Schein der Glut auf dem Tisch
   ember.position.set(0.2, -0.3, 1.9);
   scene.add(ember);
-  let playing = false, plumeAmt = 0, tNow = 550, tTarget = 550, lastT = 0;
+  let playing = false, plumeAmt = 0, tNow = 550, tTarget = 550, lastT = 0, emberBase = 0;
   const lerpCol = (a, b, k) => a.map((v, i) => v + (b[i] - v) * k);
   const smoke = (T) => {          // Farbe der Schwaden je Phase: Dampf weiß → Gase gelbbraun → Teer dunkel → dünn bläulich
     const st = (a, b, x) => Math.min(1, Math.max(0, (x - a) / (b - a)));
@@ -742,7 +757,10 @@ export function create(ctx) {
     ],
     update(dt, t) {
       moveLights(t);
-      pyro.uTime.value = plumeMat.uniforms.uTime.value = t;
+      plumeMat.uniforms.uTime.value = t;
+      // Glimmen ohne Bewegung (reduced-motion): ruhende Glutnester; der Schein auf dem Tisch atmet mit (wie im Shader)
+      const tg = pyro.uTime.value = reduced ? 0 : t;
+      ember.intensity = emberBase * (1 + 0.07 * (0.6 * Math.sin(tg * 1.75) + 0.4 * Math.sin(tg * 1.19 + 1.7)));
       const want = playing ? pyroState(tNow).vapour : 0;
       plumeAmt += (want - plumeAmt) * Math.min(1, dt * 3);
       plumeMat.uniforms.uAmt.value = plumeAmt;
@@ -772,7 +790,7 @@ export function create(ctx) {
       cracksHs.normal.set(0, 0, open > 0.12 ? 1 : 0);
       pyro.uGlow.value = st.glow * 1.7;
       pyro.uGlowCol.value.setRGB(...glowColor(value));
-      ember.intensity = st.glow * 9;
+      emberBase = st.glow * 9;
       level.bloom = 0.12 + st.glow * 0.45;
       plumeMat.uniforms.uCol.value.setRGB(...smoke(value));
       for (const f of fallout) f.visible = st.char > 0.8;
