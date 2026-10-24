@@ -893,7 +893,7 @@ function stepIntro(lv, real) {
 // Ein Zielwechsel gleitet ≈ 1,2 s; „Pyrolyse abspielen“ fährt am Stück von Raumtemperatur zur gewählten Temperatur
 // (steht die gezeigte Temperatur nach einem Kapitel-Sprung darunter, ab dort – wie ein Video ab dem Abspielpunkt).
 // Alle Ebenen bekommen den laufenden Wert (setParam 'temp'), sie blenden ihre Strukturen selbst weich über.
-const GLIDE_SECONDS = 1.2, PLAY_SECONDS = +params.get('playsec') || 18;   // ?playsec=8 verkürzt den Zeitraffer (Prüfläufe)
+const GLIDE_SECONDS = 1.2, PLAY_SECONDS = +params.get('playsec') || 8;   // ?playsec=4 verkürzt den Zeitraffer (Prüfläufe)
 function pushParam(name, value) {
   for (const lv of state.levels.values()) if (lv.setParam) lv.setParam(name, value);
 }
