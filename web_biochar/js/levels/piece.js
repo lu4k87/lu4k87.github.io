@@ -6,7 +6,7 @@
 import * as THREE from 'three';
 import { mulberry32, fbm3, smoothstep, clamp, lerp, vnoisef, hash33 } from '../util.js';
 import { disposeGroup } from '../walls.js';
-import { groundTextures, makeGround } from './ground.js';
+import { groundTextures, makeGround, LUMP_R } from './ground.js';
 import { pyroState, glowColor } from '../science.js';
 
 const W = 4.4, H = 2.4, D = 2.2;
@@ -600,40 +600,49 @@ export function create(ctx) {
   const blobGeo = new THREE.PlaneGeometry(1, 1).rotateX(-Math.PI / 2);
   const blobs = [];
   const m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), s3 = new THREE.Vector3(), e3 = new THREE.Euler();
-  const spot = () => {
-    // Ort am Boden außerhalb des Stücks; die Hälfte liegt nahe dem linken Bruchende
-    for (;;) {
+  const spot = (r, fits) => {
+    // freier Ort am Boden außerhalb des Stücks; die Hälfte liegt nahe dem linken Bruchende. Kein Platz → null
+    for (let tries = 0; tries < 80; tries++) {
       const nearEnd = rand() < 0.45;
       const x = nearEnd ? -W / 2 - 0.15 - rand() * 1.4 : (rand() - 0.5) * (W + 3.2);
       const z = (rand() - 0.5) * (D + 3.4);
       if (Math.abs(x) < W / 2 + 0.12 && Math.abs(z) < D / 2 + 0.12) continue;
       if (Math.hypot(x / 4.6, z / 3.4) > 1) continue;
-      return [x, z];
+      if (fits(x, z, r)) return [x, z];
     }
+    return null;
   };
   const fallout = [];      // Krümel und Staub entstehen erst beim Verkohlen (Zeitraffer)
   crumbGeos.forEach((g, gi) => {
     const count = [10, 12, 16, 10][gi];
     const mesh = new THREE.InstancedMesh(g, crumbMat, count);
+    let n = 0;
     for (let k = 0; k < count; k++) {
       const s = gi === 2 ? 0.02 + rand() * 0.05 : 0.04 + Math.pow(rand(), 2) * 0.16;
-      const [x, z] = spot();
+      const at = spot(s * LUMP_R, ground.claim);
+      if (!at) continue;
+      const [x, z] = at;
       e3.set(rand() * 3, rand() * 3, rand() * 3);
-      mesh.setMatrixAt(k, m4.compose(s3.set(x, floorY + hAt(x, z) + s * 0.42, z), q.setFromEuler(e3), new THREE.Vector3(s, s, s)));
+      mesh.setMatrixAt(n++, m4.compose(s3.set(x, floorY + hAt(x, z) + s * 0.42, z), q.setFromEuler(e3), new THREE.Vector3(s, s, s)));
       blobs.push([x, z, s * 2.6]);
     }
+    mesh.count = n;
     mesh.instanceMatrix.needsUpdate = true;
     scene.add(mesh);
     fallout.push(mesh);
   });
-  // feiner Staub: 80–300 µm
+  // feiner Staub: 80–300 µm; liegt nicht in anderen Gegenständen, belegt selbst keinen Platz
   const dust = new THREE.InstancedMesh(new THREE.TetrahedronGeometry(1), crumbMat, 420);
+  let nd = 0;
   for (let k = 0; k < 420; k++) {
-    const [x, z] = spot();
     const s = 0.008 + Math.pow(rand(), 3) * 0.022;
+    const at = spot(s, ground.freeAt);
+    if (!at) continue;
+    const [x, z] = at;
     e3.set(rand() * 3, rand() * 3, rand() * 3);
-    dust.setMatrixAt(k, m4.compose(s3.set(x, floorY + hAt(x, z) + s * 0.3, z), q.setFromEuler(e3), new THREE.Vector3(s, s, s)));
+    dust.setMatrixAt(nd++, m4.compose(s3.set(x, floorY + hAt(x, z) + s * 0.3, z), q.setFromEuler(e3), new THREE.Vector3(s, s, s)));
   }
+  dust.count = nd;
   dust.instanceMatrix.needsUpdate = true;
   scene.add(dust);
   fallout.push(dust);

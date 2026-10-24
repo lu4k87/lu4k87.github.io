@@ -11,6 +11,7 @@ import { pnoise, paintAll, TILE } from './ground_tex.js';
 const RMAX = 60, NR = 110, NS = 256;      // Fläche: Radius, Ringe (nach innen dichter), Teilungen je Ring
 const SHADOW_HALF = 16;                    // halbe Breite der Schattenkarte (cm)
 const FADE = 1.2;                          // s, Einblenden der fertigen Texturen
+export const LUMP_R = 1.15;                // Grundriss-Radius eines Krümels (crumbGeometry) je Einheit Größe
 const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 // Seed lesen und Texturen sofort anstoßen – vor dem Aufbau des Stücks, damit der Worker parallel rechnet
@@ -114,12 +115,29 @@ export function makeGround({ scene, floorY, W, D, crumbGeometry, shadowTex }, te
   top.receiveShadow = true;
   group.add(top);
 
-  // Platz-Verwaltung: nichts unter dem Stück, nichts ineinander
-  const occ = [];
+  // Platz-Verwaltung: nichts unter dem Stück, nichts ineinander. Jeder Gegenstand belegt Kreise (Grundriss), abgelegt
+  // in einem 1-cm-Raster, damit auch dicht abgetastete Ästchen schnell geprüft sind
+  const grid = new Map();
+  const cells = (x, z, r, fn) => {
+    for (let i = Math.floor(x - r); i <= Math.floor(x + r); i++)
+      for (let j = Math.floor(z - r); j <= Math.floor(z + r); j++) if (fn((i + 512) * 1024 + j + 512) === false) return false;
+    return true;
+  };
   const freeAt = (x, z, r) => {
     if (Math.abs(x) < W / 2 + r + 0.08 && Math.abs(z) < D / 2 + r + 0.08) return false;
-    for (const [ox, oz, orr] of occ) if (Math.hypot(x - ox, z - oz) < r + orr) return false;
-    return true;
+    return cells(x, z, r, (k) => {
+      for (const [ox, oz, orr] of grid.get(k) ?? []) if (Math.hypot(x - ox, z - oz) < r + orr) return false;
+    });
+  };
+  const occupy = (x, z, r) => cells(x, z, r, (k) => { (grid.get(k) ?? grid.set(k, []).get(k)).push([x, z, r]); });
+  // Grundriss einer Röhre: Kreise im Abstand ≤ halber Radius, sonst rutscht ein kleiner Krümel zwischen zwei Proben
+  const tubeSamples = (curve, rad, len, toWorld, pad) => {
+    const n = Math.max(8, Math.ceil(len / 0.05)), out = [];
+    for (let i = 0; i <= n; i++) {
+      const w = toWorld(curve.getPointAt(i / n));
+      out.push([w.x, w.z, rad(i / n) + pad]);
+    }
+    return out;
   };
   // Ort im Ring rmin … rmax, nahe am Stück dichter
   const ringPos = (rmin, rmax) => { const a = rand() * 6.28, r = lerp(rmin, rmax, Math.pow(rand(), 1.5)); return [Math.cos(a) * r * 1.15, Math.sin(a) * r]; };
@@ -137,29 +155,28 @@ export function makeGround({ scene, floorY, W, D, crumbGeometry, shadowTex }, te
     mesh.rotation.y = rand() * 6.28;
     mesh.position.set(x, floorY + r0 * 0.92, z);
     mesh.updateMatrix();
-    const samp = [];
-    let ok = true, hy = 0;
-    for (let i = 0; i <= 12 && ok; i++) {
-      const w = tw.curve.getPointAt(i / 12).applyMatrix4(mesh.matrix);
-      if (!freeAt(w.x, w.z, tw.rad(i / 12) + 0.06)) ok = false;
-      samp.push([w.x, w.z, tw.rad(i / 12) + 0.06]);
-      hy += heightAt(w.x, w.z) / 13;
-    }
-    if (!ok) { tw.geo.dispose(); continue; }
-    mesh.position.y += hy;
-    occ.push(...samp);
-    for (const [sx, sz, sr] of samp) blobs.push([sx, sz, sr * 4.5]);
+    const samp = tubeSamples(tw.curve, tw.rad, len, (p) => p.applyMatrix4(mesh.matrix), 0.06);
+    if (!samp.every(([sx, sz, sr]) => freeAt(sx, sz, sr))) { tw.geo.dispose(); continue; }
+    mesh.position.y += samp.reduce((h, [sx, sz]) => h + heightAt(sx, sz), 0) / samp.length;   // mittlere Höhe des Wegs
     mesh.castShadow = mesh.receiveShadow = true;
-    if (rand() < 0.55) {                                   // Seitenzweig, kurz
+    if (rand() < 0.55) {                                   // Seitenzweig, kurz; nur wo er frei liegt
       const t = 0.3 + rand() * 0.4, p0 = tw.curve.getPointAt(t), tan = tw.curve.getTangentAt(t), bl = len * (0.15 + rand() * 0.25);
       const b = twigGeometry(rand, bl, tw.rad(t) * 0.55, { bend: 0.5 });
       const br = new THREE.Mesh(b.geo, [barkMat, cutMat]);
       const yaw = Math.atan2(-tan.z, tan.x) + (rand() < 0.5 ? 1 : -1) * (0.45 + rand() * 0.4);
       br.rotation.y = yaw;
       br.position.copy(p0).add(new THREE.Vector3(Math.cos(yaw) * bl / 2, -tw.rad(t) * 0.3, -Math.sin(yaw) * bl / 2));
-      br.castShadow = br.receiveShadow = true;
-      mesh.add(br);
+      br.updateMatrix();
+      // ab dem Rand des Hauptasts geprüft (der Ansatz steckt gewollt in ihm)
+      const bs = tubeSamples(b.curve, b.rad, bl, (p) => p.applyMatrix4(br.matrix).applyMatrix4(mesh.matrix), 0.06)
+        .filter(([sx, sz]) => !samp.some(([mx, mz, mr]) => Math.hypot(sx - mx, sz - mz) < mr));
+      if (bs.every(([sx, sz, sr]) => freeAt(sx, sz, sr))) {
+        br.castShadow = br.receiveShadow = true;
+        mesh.add(br);
+        samp.push(...bs);
+      } else b.geo.dispose();
     }
+    for (const [sx, sz, sr] of samp) { occupy(sx, sz, sr); blobs.push([sx, sz, sr * 4.5]); }
     group.add(mesh);
     placed++;
   }
@@ -179,15 +196,16 @@ export function makeGround({ scene, floorY, W, D, crumbGeometry, shadowTex }, te
         const frag = kind === 'frag', len = frag ? 0.8 + rand() * 1.6 : 5 + rand() * 3;
         const [x, z] = frag ? ringPos(2.4, 26) : ringPos(3.2, 30);
         const rot = rand() * 6.28, c = Math.cos(rot), s = Math.sin(rot);
+        // Grundriss: 5 × 3 Kreise decken das Blatt (1 × 0,62) samt gewölbtem Rand
         let ok = true;
         const samp = [];
-        for (let a = -0.4; a <= 0.4 && ok; a += 0.2) for (let b = -0.2; b <= 0.2 && ok; b += 0.2) {
+        for (let a = -0.4; a <= 0.41 && ok; a += 0.2) for (let b = -0.2; b <= 0.21 && ok; b += 0.2) {
           const px = x + (a * c + b * s) * len, pz = z + (-a * s + b * c) * len;
-          if (!freeAt(px, pz, 0.12)) ok = false;
-          if (!frag) samp.push([px, pz, 0.12 * len]);
+          if (!freeAt(px, pz, 0.15 * len)) ok = false;
+          samp.push([px, pz, 0.15 * len]);
         }
         if (!ok) continue;
-        occ.push(...samp);
+        for (const sp of samp) occupy(...sp);
         q.setFromUnitVectors(up, normalAt(x, z, nv)).multiply(qy.setFromEuler(e3.set(0, rot, (rand() - 0.5) * 0.06)));
         mesh.setMatrixAt(n, m4.compose(s3.set(x, floorY + heightAt(x, z) - 0.006 + n * 0.004 + gi * 0.002, z), q, new THREE.Vector3(len, len, len)));
         mesh.setColorAt(n, new THREE.Color().setScalar(0.75 + rand() * 0.45));
@@ -210,7 +228,8 @@ export function makeGround({ scene, floorY, W, D, crumbGeometry, shadowTex }, te
     let n = 0;
     for (let tries = 0; n < count && tries < count * 20; tries++) {
       const s = sizeOf(), [x, z] = where();
-      if (!freeAt(x, z, s * 0.9)) continue;
+      if (!freeAt(x, z, s * LUMP_R)) continue;
+      occupy(x, z, s * LUMP_R);
       e3.set(rand() * 3, rand() * 3, rand() * 3);
       mesh.setMatrixAt(n, m4.compose(s3.set(x, floorY + heightAt(x, z) + s * yk - 0.01, z), q.setFromEuler(e3), new THREE.Vector3(s, s, s)));
       mesh.setColorAt(n, colorOf());
@@ -233,14 +252,19 @@ export function makeGround({ scene, floorY, W, D, crumbGeometry, shadowTex }, te
   lumps(480, crumbGeometry(6, 2, 0.8), soilMat, tint(0x2a1f17, 0.5), () => 0.025 + Math.pow(rand(), 2.6) * 0.24, () => ringPos(2.3, 24));
   lumps(120, crumbGeometry(7, 0, 0.5), charMat, () => new THREE.Color(1, 1, 1), () => 0.03 + Math.pow(rand(), 2) * 0.16, () => ringPos(2.3, 18));
   const rootMat = new THREE.MeshStandardMaterial({ color: 0x6f604d, roughness: 0.75 });
-  for (let i = 0; i < 12; i++) {                           // Feinwurzeln, halb im Boden
+  for (let placed = 0, tries = 0; placed < 12 && tries < 200; tries++) {   // Feinwurzeln, halb im Boden
     const [x, z] = ringPos(2.4, 16), len = 2 + rand() * 3;
-    const { geo: rg } = twigGeometry(rand, len, 0.012 + rand() * 0.01, { bend: 1.4 });
+    const { geo: rg, curve, rad } = twigGeometry(rand, len, 0.012 + rand() * 0.01, { bend: 1.4 });
     const mesh = new THREE.Mesh(rg, rootMat);
     mesh.position.set(x, floorY + heightAt(x, z) - 0.008, z);
     mesh.rotation.y = rand() * 6.28;
+    mesh.updateMatrix();
+    const samp = tubeSamples(curve, rad, len, (p) => p.applyMatrix4(mesh.matrix), 0.02);
+    if (!samp.every(([sx, sz, sr]) => freeAt(sx, sz, sr))) { rg.dispose(); continue; }
+    for (const sp of samp) occupy(...sp);
     mesh.castShadow = true;
     group.add(mesh);
+    placed++;
   }
 
   // Kontaktschatten (weich) unter allem, was am Boden liegt – auch ohne echte Schatten (Stufe „Leicht“)
@@ -297,6 +321,9 @@ export function makeGround({ scene, floorY, W, D, crumbGeometry, shadowTex }, te
     seed,
     heightAt,
     normalAt,
+    freeAt,
+    // Platz belegen, falls frei (Krümel des Stücks liegen so neben, nicht in den Gegenständen des Bodens)
+    claim(x, z, r) { return freeAt(x, z, r) && occupy(x, z, r); },
     // echte Schatten vom Hauptlicht nur bei quality.shadows, sonst tragen die Kontaktschatten allein
     shadows(key, piece, on) {
       key.castShadow = on;
