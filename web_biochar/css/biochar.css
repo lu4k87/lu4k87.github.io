@@ -154,26 +154,60 @@ body.panel-collapsed .panel { display: none; }
 .brand-text strong { font-size: 19px; font-weight: 600; letter-spacing: 0.02em; }
 .brand-text span { font-size: 14px; }
 .top-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
-/* Qualitäts-Regler: drei Rastpunkte (Leicht · Mittel · Fein), Name daneben, gleiches Glas wie die Knöpfe */
-.quality {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 6px 12px;
-  border-radius: 8px;
+/* Ein Material für alle Leisten (Kopf, Messleiste, Ebenen-Wechsel) wie die Zoom-Schiene (User, 2026-10-24):
+   dunkles Glas, Haarlinie, Mono-Versalien in Akzent als Beschriftung, Akzent sonst nur für Zustand und Hover */
+.quality, .btn-ghost, .sem-bar, .nav-buttons {
   border: 1px solid var(--line);
-  background: var(--glass-sheen), var(--glass);
+  background: var(--glass-sheen), var(--glass-strong);
   color: var(--ink);
   box-shadow: var(--glass-edge);
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
+}
+.quality-cap, .sem-bar dt, .nav-cap { font: 500 12.5px/1 var(--mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); }
+/* Hover aller Bedienteile: Rand und Fläche nehmen leise den Akzent an (Skill soft-motion: Hover Rand/Fläche) */
+.quality, .btn-ghost, .nav-btn { transition: border-color 0.15s, background-color 0.15s; }
+.quality:hover, .quality:focus-within, .btn-ghost:hover:not(:disabled), .nav-btn:hover:not(:disabled) {
+  border-color: color-mix(in srgb, var(--accent) 55%, transparent);
+  background-color: color-mix(in srgb, var(--accent) 9%, var(--glass-strong));
+}
+/* Qualitäts-Regler: drei Rastpunkte (Leicht · Mittel · Fein) als Haarlinie mit Strichen, Griff wie der Knopf der Zoom-Schiene */
+.quality {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 44px;
+  padding: 0 14px;
+  border-radius: var(--radius);
   font-size: 15px;
   cursor: pointer;
-  transition: border-color 0.2s;
 }
-.quality:hover, .quality:focus-within { border-color: var(--accent); }
-.quality-cap { font: 500 12.5px/1 var(--mono); letter-spacing: 0.06em; text-transform: uppercase; }
-.quality input { width: 78px; height: 18px; margin: 0; accent-color: var(--accent); cursor: pointer; }
+.quality input {
+  --tick: color-mix(in srgb, var(--ink) 45%, transparent);
+  appearance: none;
+  -webkit-appearance: none;
+  width: 84px;
+  height: 18px;
+  margin: 0;
+  cursor: pointer;
+  background:
+    linear-gradient(var(--tick), var(--tick)) 6px 50% / 1px 9px no-repeat,
+    linear-gradient(var(--tick), var(--tick)) 50% 50% / 1px 9px no-repeat,
+    linear-gradient(var(--tick), var(--tick)) calc(100% - 6px) 50% / 1px 9px no-repeat,
+    linear-gradient(var(--tick), var(--tick)) 0 50% / 100% 1px no-repeat;
+}
+.quality input::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft), 0 0 10px color-mix(in srgb, var(--accent) 55%, transparent);
+  transition: transform 0.25s var(--ease-out);
+}
+.quality input::-moz-range-thumb { width: 12px; height: 12px; border: 0; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+.quality:hover input::-webkit-slider-thumb, .quality input:focus-visible::-webkit-slider-thumb { transform: scale(1.2); }
+.quality input:focus-visible { outline: 2px solid var(--focus); outline-offset: 4px; border-radius: 4px; }
 .quality-name { min-width: 6ch; font-weight: 500; white-space: nowrap; }
 
 .btn-ghost, .btn-primary {
@@ -183,20 +217,26 @@ body.panel-collapsed .panel { display: none; }
   font-weight: 500;
   cursor: pointer;
   border: 1px solid var(--line);
-  background: var(--glass-sheen), var(--glass);
-  color: var(--ink);
-  box-shadow: var(--glass-edge);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
   transition: background 0.2s, border-color 0.2s, transform 0.15s;
 }
-.btn-ghost:hover { border-color: var(--accent); }
+.top-actions .btn-ghost { display: inline-flex; align-items: center; gap: 9px; min-height: 44px; padding: 0 16px; border-radius: var(--radius); }
+/* Infotafel offen/zu: kleines Hex-Licht wie die Marken der Schiene (Zustand zusätzlich per aria-expanded) */
+.btn-ghost[aria-expanded]::before {
+  content: "";
+  width: 9px;
+  height: 10px;
+  clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%);
+  background: color-mix(in srgb, var(--ink) 35%, transparent);
+  transition: background-color 0.25s;
+}
+.btn-ghost[aria-expanded="true"]::before { background: var(--accent); }
 .btn-primary { background: var(--accent); color: var(--accent-ink); border-color: transparent; }
 .btn-primary:hover { transform: translateY(-1px); }
 .btn-ghost:disabled, .btn-primary:disabled { opacity: 0.45; cursor: default; transform: none; }
 
 /* ---------- Zoom-Schiene: log-Skala von 20 cm bis 0,5 nm, Hex-Marken je Ebene, ziehbarer Knopf ---------- */
-.ladder { grid-area: ladder; align-self: stretch; display: flex; }
+/* Schiene liegt in beiden Themes über der dunklen Szene → helle Tinte und heller Akzent fest (wie .brand, .hint) */
+.ladder { grid-area: ladder; align-self: stretch; display: flex; --ink: #f4f1ea; --accent: #ff9a3c; --accent-ink: #1b0e03; --accent-soft: rgba(255, 154, 60, 0.18); }
 /* Hex-Marke 2× = 52 px; engstes Paar (1 mm/200 µm, 10 nm/2 nm) liegt 8,1 % der Schienenhöhe auseinander → bei niedrigem Fenster kleiner statt überlappen */
 .rail { position: relative; width: 182px; margin: 34px 0 38px; container-type: size; --rail-hex: min(52px, 8.4cqh); }
 .rail-track {
@@ -207,6 +247,7 @@ body.panel-collapsed .panel { display: none; }
   width: 1px;
   background: linear-gradient(180deg, transparent, var(--ink) 6%, var(--ink) 94%, transparent);
   opacity: 0.45;
+  transform-origin: 50% 0;
 }
 .rail-range {
   position: absolute;
@@ -219,6 +260,17 @@ body.panel-collapsed .panel { display: none; }
   opacity: 0.55;
   transition: top 0.5s, height 0.5s;
 }
+/* Abtaststrahl (Skill soft-motion: Ambient ≥ 8 s): alle 12 s gleitet ein Lichtpunkt die Schiene hinab wie der Strahl im REM,
+   jede Marke fängt ihn beim Passieren kurz auf. Linear, damit Lichtpunkt und Aufleuchten (Verzögerung ∝ --f) zusammenpassen */
+.rail-scan { position: absolute; left: 22px; top: 0; width: 1px; height: 100%; pointer-events: none; }
+.rail-scan::before, .rail-scan::after { content: ""; position: absolute; top: 0; opacity: 0; }
+.rail-scan::before { left: -5px; width: 11px; height: 90px; margin-top: -45px; background: radial-gradient(closest-side, color-mix(in srgb, var(--accent) 30%, transparent), transparent); }
+.rail-scan::after { left: 0; width: 1px; height: 64px; margin-top: -32px; background: linear-gradient(180deg, transparent, color-mix(in srgb, var(--accent) 90%, #fff), transparent); }
+@keyframes rail-scan {
+  0% { transform: translateY(0); opacity: 0; }
+  3%, 31% { opacity: 1; }
+  35%, 100% { transform: translateY(100cqh); opacity: 0; }
+}
 .rail-hit { position: absolute; left: 6px; top: -10px; bottom: -10px; width: 34px; cursor: ns-resize; touch-action: none; }
 .rail-level {
   position: absolute;
@@ -227,7 +279,7 @@ body.panel-collapsed .panel { display: none; }
   transform: translate(calc(var(--rail-hex) / -2), -50%);
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 14px;
   padding: 0;
   border: 0;
   background: none;
@@ -235,39 +287,69 @@ body.panel-collapsed .panel { display: none; }
   color: var(--ink);
   text-shadow: 0 1px 6px rgba(0, 0, 0, 0.8);
 }
-.hex--rail { width: var(--rail-hex); height: var(--rail-hex); --hex-fill: rgba(255, 255, 255, 0.08); opacity: 0.6; transition: opacity 0.25s, filter 0.25s, transform 0.25s, color 0.25s; }   /* 2× (User, 2026-10-24) */
+.rail-level:focus-visible { outline: none; }
+.rail-level:focus-visible .rail-name { outline: 2px solid var(--focus); outline-offset: 3px; border-radius: 3px; }
+@keyframes rail-draw { from { transform: scaleY(0); } }
+@keyframes rail-in { from { opacity: 0; translate: 0 10px; } }
+.rail-mark { position: relative; flex: none; display: grid; place-items: center; }
+.hex--rail { width: var(--rail-hex); height: var(--rail-hex); --hex-fill: rgba(255, 255, 255, 0.08); opacity: 0.6; transition: opacity 0.25s, filter 0.25s, transform 0.35s var(--ease-out), color 0.25s; }   /* 2× (User, 2026-10-24) */
 .rail-level:hover .hex--rail, .rail-level:focus-visible .hex--rail, .rail-level.is-current .hex--rail, .rail-level.is-pull .hex--rail { opacity: 1; }
-/* Hover/Fokus: Lichthof blendet weich ein und atmet langsam (User, 2026-10-24); aktuelle und gezogene Ebene leuchten schon selbst */
-.rail-level::before {
+/* Lichtpunkte hinter der Marke: ::after fängt den Abtaststrahl, ::before ist der ruhige Schein beim Hover */
+.rail-mark::before, .rail-mark::after {
   content: "";
   position: absolute;
-  left: calc(var(--rail-hex) / 2);
-  top: 50%;
-  width: 96px;
-  height: 96px;
-  margin: -48px 0 0 -48px;
+  inset: -24%;
   border-radius: 50%;
-  background: radial-gradient(closest-side, color-mix(in srgb, var(--accent) 34%, transparent), color-mix(in srgb, var(--accent) 12%, transparent) 60%, transparent);
-  opacity: 0;
-  pointer-events: none;
   z-index: -1;
-  transition: opacity 0.18s ease-out;
+  pointer-events: none;
+  opacity: 0;
 }
-.rail-level:not(.is-current, .is-pull):is(:hover, :focus-visible)::before {
-  opacity: 1;
-  transition-duration: 0.25s;
-  animation: rail-halo 2.6s ease-in-out infinite alternate;
+.rail-mark::after { background: radial-gradient(closest-side, color-mix(in srgb, var(--accent) 32%, transparent), transparent); }
+@keyframes rail-catch { 0% { opacity: 0; } 2% { opacity: 1; } 10%, 100% { opacity: 0; } }
+.rail-mark::before { background: radial-gradient(closest-side, color-mix(in srgb, var(--accent) 22%, transparent), transparent 75%); transition: opacity 0.18s ease-out; }
+/* Hover/Fokus (User, 2026-10-24): Marke färbt sich, ein feiner Hex-Rahmen geht auf und atmet langsam, Leitlinie zieht zum Namen */
+.rail-ring { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; opacity: 0; transition: opacity 0.18s ease-out, transform 0.18s ease-out; }
+.rail-ring path { fill: none; stroke: var(--accent); stroke-width: 1; vector-effect: non-scaling-stroke; }
+.rail-text { position: relative; display: flex; flex-direction: column; line-height: 1.15; text-align: left; white-space: nowrap; transition: translate 0.25s var(--ease-out); }
+.rail-text::before {
+  content: "";
+  position: absolute;
+  left: -16px;   /* vom Hex-Rahmen bis kurz vor den Namen (Lücke 14 px + 3 px Versatz) */
+  top: 50%;
+  width: 12px;
+  height: 1px;
+  background: var(--accent);
+  transform: scaleX(0);
+  transform-origin: 0 50%;
+  transition: transform 0.18s ease-out;
 }
-.rail-level:not(.is-current, .is-pull):is(:hover, :focus-visible) .hex--rail { color: var(--accent); --hex-stroke: var(--accent); }
-@keyframes rail-halo { from { transform: scale(0.88); } to { transform: scale(1.04); } }
+.rail-scale, .rail-name { transition: color 0.25s; }
+.rail-level:not(.is-current, .is-pull):is(:hover, :focus-visible) .hex--rail { color: var(--accent); --hex-stroke: var(--accent); --hex-fill: color-mix(in srgb, var(--accent) 14%, transparent); transform: scale(1.05); }
+.rail-level:not(.is-current, .is-pull):is(:hover, :focus-visible) .rail-mark::before { opacity: 1; transition-duration: 0.25s; }
+.rail-level:not(.is-current, .is-pull):is(:hover, :focus-visible) .rail-ring { opacity: 0.85; transform: scale(1.24); transition: opacity 0.25s var(--ease-out), transform 0.35s var(--ease-out); }
+.rail-level:not(.is-current, .is-pull):is(:hover, :focus-visible) .rail-text { translate: 3px 0; }
+.rail-level:not(.is-current, .is-pull):is(:hover, :focus-visible) .rail-text::before { transform: scaleX(1); transition: transform 0.3s var(--ease-out) 0.05s; }
+.rail-level:not(.is-current, .is-pull):is(:hover, :focus-visible) .rail-scale { color: var(--accent); }
+@keyframes rail-ring { from { opacity: 0.85; } to { opacity: 0.4; } }
 .rail-level.is-current .hex--rail {
   --hex-fill: var(--accent);
   --hex-stroke: var(--accent);
   color: var(--accent-ink);
   animation: hex-breathe 3.4s ease-in-out infinite;
 }
+@keyframes rail-ping { from { opacity: 0.8; transform: scale(1); } to { opacity: 0; transform: scale(1.7); } }
+/* Bewegung der Schiene nur ohne reduced-motion (dann ruht alles im Endzustand, Hover zeigt den Rahmen fest) */
+@media (prefers-reduced-motion: no-preference) {
+  /* Einstieg: Linie zieht sich von oben auf, danach erscheinen die Marken nacheinander (einmal je Seitenbesuch) */
+  body.is-ready .rail-track { animation: rail-draw var(--t-xfade) var(--ease-out) 0.1s both; }
+  body.is-ready .rail-level { animation: rail-in 0.45s var(--ease-out) calc(0.35s + var(--i, 0) * 70ms) both; }
+  body.is-ready .rail-scan::before, body.is-ready .rail-scan::after { animation: rail-scan 12s linear 1.6s infinite; }
+  body.is-ready .rail-mark::after { animation: rail-catch 12s linear calc(1.6s + var(--f, 0) * 4.2s) infinite; }
+  .rail-level:not(.is-current, .is-pull):is(:hover, :focus-visible) .rail-ring { animation: rail-ring 2.6s ease-in-out 0.35s infinite alternate; }
+  /* Neue Ebene erreicht: Hex-Rahmen läuft einmal nach außen aus (Ping) */
+  .rail-level.is-current .rail-ring { animation: rail-ping 1.2s var(--ease-out) both; }
+}
 .rail-level.is-pull .hex--rail { color: var(--accent); --hex-stroke: var(--accent); transform: scale(1.18); filter: drop-shadow(0 0 8px rgba(255, 154, 60, 0.7)); }
-.rail-text { display: flex; flex-direction: column; line-height: 1.15; text-align: left; white-space: nowrap; }
 .rail-scale { font: 500 12px/1.2 var(--mono); }
 .rail-name { font-size: 13px; }   /* Ebenen-Namen dauerhaft an der Schiene (User, 2026-10-23) */
 .rail-level.is-current .rail-scale { font-weight: 600; }
@@ -474,23 +556,19 @@ body.panel-collapsed .panel { display: none; }
   pointer-events: none;
 }
 .bottombar > * { pointer-events: auto; }
+/* Messleiste und Ebenen-Wechsel: gleiche Höhe, gleiches Glas, Spalten durch Haarlinien getrennt wie Marken an der Schiene */
+.sem-bar, .nav-buttons { min-height: 60px; border-radius: var(--radius); }
 .sem-bar {
   display: flex;
   align-items: center;
-  gap: 18px;
-  padding: 10px 14px;
+  gap: 16px;
+  padding: 8px 18px;
   font: 400 14px/1.3 var(--mono);
-  background: var(--glass-sheen), var(--glass-strong);
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  box-shadow: var(--glass-edge);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
 }
-.scalebar { display: flex; flex-direction: column; gap: 5px; min-width: 90px; font-size: 15px; font-weight: 500; }
+.scalebar { display: flex; flex-direction: column; gap: 7px; min-width: 90px; font-size: 15px; font-weight: 500; }
 .scalebar-bar {
   display: block;
-  height: 3px;
+  height: 2px;
   background: var(--ink);
   position: relative;
   transition: width 0.15s;
@@ -500,16 +578,16 @@ body.panel-collapsed .panel { display: none; }
   position: absolute;
   top: -4px;
   width: 1px;
-  height: 11px;
+  height: 10px;
   background: var(--ink);
 }
 .scalebar-bar::before { left: 0; }
 .scalebar-bar::after { right: 0; }
-.sem-bar dl { margin: 0 0 0 auto; display: flex; gap: 18px; }
-.sem-bar dl div { display: flex; flex-direction: column; gap: 2px; white-space: nowrap; }
-.sem-bar dl div:nth-child(1) { min-width: 9ch; }
-.sem-bar dl div:nth-child(2) { min-width: 10ch; }
-.sem-bar dt { text-transform: uppercase; letter-spacing: 0.06em; color: var(--accent); }
+.sem-bar dl { margin: 0 0 0 auto; display: flex; align-self: stretch; }
+.sem-bar dl div { display: flex; flex-direction: column; justify-content: center; gap: 6px; padding: 0 16px; border-left: 1px solid var(--line); white-space: nowrap; }
+.sem-bar dl div:last-child { padding-right: 0; }
+.sem-bar dl div:nth-child(1) { min-width: calc(9ch + 33px); }
+.sem-bar dl div:nth-child(2) { min-width: calc(10ch + 33px); }
 .sem-bar dd { margin: 0; font-size: 15px; font-variant-numeric: tabular-nums; }
 
 .center-hint { flex: 1 1 260px; display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center; }
@@ -541,7 +619,35 @@ body.touched .hint { opacity: 0; }
   background: linear-gradient(90deg, var(--accent) calc(var(--amount, 0) * 100%), rgba(255, 255, 255, 0.2) 0);
 }
 .edge-meter.is-on { opacity: 1; }
-.nav-buttons { display: flex; gap: 8px; }
+/* Ebenen-Wechsel als ein Bauteil: Hex-Marke wie an der Schiene, Versalie (Richtung) über dem Ziel (Maßstab · Name);
+   „Tiefer“ trägt wie die aktuelle Marke die gefüllte Hex-Marke */
+.nav-buttons { display: flex; gap: 4px; padding: 4px; }
+.nav-btn {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 50px;
+  padding: 0 16px 0 10px;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.nav-btn:hover:not(:disabled) { background-color: color-mix(in srgb, var(--accent) 9%, transparent); }
+.nav-btn:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.nav-btn:disabled { opacity: 0.4; cursor: default; }
+.nav-btn--down { border-color: color-mix(in srgb, var(--accent) 40%, transparent); background: color-mix(in srgb, var(--accent) 10%, transparent); }
+.nav-btn--down:hover:not(:disabled) { background-color: color-mix(in srgb, var(--accent) 18%, transparent); }
+.nav-text { display: flex; flex-direction: column; gap: 6px; }
+.nav-to { font: 400 14px/1.2 var(--mono); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.hex--nav { width: 34px; height: 34px; --hex-fill: rgba(255, 255, 255, 0.08); transition: translate 0.25s var(--ease-out), filter 0.25s; }
+.nav-btn--up .hex--nav { rotate: 180deg; }
+.nav-btn--down .hex--nav { --hex-fill: var(--accent); --hex-stroke: var(--accent); color: var(--accent-ink); }
+.nav-btn--up:hover:not(:disabled) .hex--nav { translate: 0 -2px; color: var(--accent); --hex-stroke: var(--accent); }
+.nav-btn--down:hover:not(:disabled) .hex--nav { translate: 0 2px; filter: drop-shadow(0 0 6px color-mix(in srgb, var(--accent) 60%, transparent)); }
 
 /* ---------- Hotspots: Punkt am Objekt, Hex-Abzeichen direkt daneben, Info-Karte links vom Abzeichen ---------- */
 .hotspots { position: fixed; inset: 0; pointer-events: none; overflow: hidden; }
@@ -767,7 +873,7 @@ body.has-error .fatal, body.no-webgl .fatal { opacity: 1; background: var(--bg);
   .rail { width: auto; margin: 0; display: flex; gap: 6px; padding: 4px 2px; container-type: normal; }
   .rail-track, .rail-range, .rail-hit, .rail-knob { display: none; }
   .rail-level { position: static; transform: none; flex-direction: column; gap: 2px; padding: 4px 6px; }
-  .rail-level::before { display: none; }
+  .rail-scan, .rail-mark::before, .rail-mark::after, .rail-text::before { display: none; }
   .hex--rail { width: 26px; height: 26px; }   /* Leiste ohne Linie bleibt kompakt */
   .rail-text { align-items: center; }
   .rail-scale { display: none; }
@@ -776,6 +882,12 @@ body.has-error .fatal, body.no-webgl .fatal { opacity: 1; background: var(--bg);
   .quality { padding: 6px 10px; }
   .quality-cap { display: none; }
   .sem-bar { gap: 12px; padding: 8px 10px; }
+  .sem-bar dl div { padding: 0 10px; }
+  .sem-bar, .nav-buttons { min-height: 52px; }
+  .quality, .top-actions .btn-ghost { min-height: 40px; }
+  .nav-btn { min-height: 42px; gap: 8px; padding: 0 12px 0 8px; }
+  .nav-to { display: none; }
+  .hex--nav { width: 28px; height: 28px; }
   .sem-bar dl div:last-child { display: none; }
   .center-hint { display: none; }
   .hsb { padding: 2px; gap: 0; }
@@ -789,7 +901,7 @@ body.has-error .fatal, body.no-webgl .fatal { opacity: 1; background: var(--bg);
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .hs-dot--dive, .hs-dot--dive::before, .loader-ring, .rail-level.is-current .hex--rail, .rail-level::before, .hsb--dive .hex, .hs-card-in { animation: none; }
+  .hs-dot--dive, .hs-dot--dive::before, .loader-ring, .rail-level.is-current .hex--rail, .hsb--dive .hex, .hs-card-in { animation: none; }
   .panel-body.is-entering { animation: none; }
   * { transition-duration: 0.01ms !important; }
 }

@@ -3,7 +3,7 @@
 
 import { LEVELS, SOURCES } from './content.js';
 import { properties, labProps, pyroState, fmt, T_MIN, T_MAX, T_ROOM, DRAPER, PHASES, fillDiameterNm, kelvinRh, filledShare, isotherm, poreClass } from './science.js';
-import { hexBadge, LEVEL_ICONS, HOTSPOT_ICONS, FACT_ICONS } from './icons.js';
+import { hexBadge, HEX, LEVEL_ICONS, HOTSPOT_ICONS, FACT_ICONS } from './icons.js';
 
 const $ = (sel) => document.querySelector(sel);
 // Zahlenbereiche wie „2–50 nm“ nie nach dem Strich umbrechen (Wortverbinder U+2060)
@@ -38,11 +38,12 @@ export function createHud(handlers) {
   rail.innerHTML = `
     <div class="rail-track"></div>
     <div class="rail-range"></div>
+    <div class="rail-scan"></div>
     <div class="rail-hit"></div>
     ${LEVELS.map((l, i) => `
-      <button type="button" class="rail-level" data-level="${i}" style="--y:${(railFrac(SCALE_M[l.id]) * 100).toFixed(2)}%"
+      <button type="button" class="rail-level" data-level="${i}" style="--y:${(railFrac(SCALE_M[l.id]) * 100).toFixed(2)}%;--f:${railFrac(SCALE_M[l.id]).toFixed(3)};--i:${i}"
         aria-label="Ebene ${i + 1}: ${esc(l.title)}, ${esc(l.scale)}">
-        ${hexBadge(LEVEL_ICONS[l.id], 'hex--rail')}
+        <span class="rail-mark">${hexBadge(LEVEL_ICONS[l.id], 'hex--rail')}<svg class="rail-ring" viewBox="0 0 40 40" aria-hidden="true"><path d="${HEX}"/></svg></span>
         <span class="rail-text"><span class="rail-scale">${esc(l.scale)}</span><span class="rail-name">${esc(l.name)}</span></span>
       </button>`).join('')}
     <div class="rail-knob" aria-hidden="true"><span class="rail-knob-dot"></span><span class="rail-knob-label">–</span></div>
@@ -106,6 +107,10 @@ export function createHud(handlers) {
   railInput.addEventListener('change', () => handlers.onRail(railMeters(+railInput.value / 1000), 'end'));
 
   // ---------- Infotafel ----------
+  // Ebenen-Wechsel: Hex-Marke wie an der Schiene (zurück = gedreht), darunter das Ziel als „Maßstab · Name“
+  for (const id of ['#btn-up', '#btn-down']) $(id).insertAdjacentHTML('afterbegin', hexBadge('dive', 'hex--nav'));
+  const setNavTargets = (i) => [['#nav-up-to', LEVELS[i - 1]], ['#nav-down-to', LEVELS[i + 1]]]
+    .forEach(([id, l]) => { $(id).textContent = l ? `${l.scale} · ${l.name}` : '–'; });
   $('#btn-up').addEventListener('click', () => handlers.onUp());
   $('#btn-down').addEventListener('click', () => handlers.onDown());
   $('#btn-panel').addEventListener('click', () => {
@@ -605,6 +610,7 @@ export function createHud(handlers) {
       });
       $('#btn-up').disabled = index === 0;
       $('#btn-down').disabled = !lv.hotspots.some((h) => h.kind === 'dive');
+      setNavTargets(index);
       $('#sb-method').textContent = lv.method;
       render(state);
       panel.classList.remove('is-entering');
