@@ -59,7 +59,12 @@ export function buildWalls(walls, semOpts) {
   prism.setAttribute('aTop', new THREE.InstancedBufferAttribute(Float32Array.from(list, (j) => j.z1), 1));
   if (bot) prism.setAttribute('aBot', new THREE.InstancedBufferAttribute(Float32Array.from(list.flatMap((j) => [j.bot, j.bot])), 2));
   const jm = new THREE.InstancedMesh(prism, jointMat, list.length);
-  const jgeo = list.map((j) => ({ p: new THREE.Vector3(j.p[0], j.p[1], (j.z0 + j.z1) / 2), t: j.t * 0.56, h: j.z1 - j.z0 }));
+  // Ecke ragt 0,1 Wanddicken über die höchste Wand: gleich hohe Deckflächen flackern (Z-Fighting), die Ecke deckt so
+  // auch die Überlappung der Wandenden ab
+  const jgeo = list.map((j) => {
+    const top = j.z1 + 0.1 * j.t;
+    return { p: new THREE.Vector3(j.p[0], j.p[1], (j.z0 + top) / 2), t: j.t * 0.56, h: top - j.z0 };
+  });
   // f = Wanddicke relativ zur Ausgangsdicke; offset(x, y) = Versatz [dx, dy] quer zur Faser (Risse, die sich mit der Schwindung öffnen)
   const setThin = (f, offset) => {
     const shifted = (v) => { const d = offset ? offset(v.x, v.y) : [0, 0]; return p.set(v.x + d[0], v.y + d[1], v.z); };
