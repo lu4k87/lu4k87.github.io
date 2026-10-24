@@ -532,33 +532,50 @@ export function createHud(handlers) {
     card.classList.add('is-open');
   }
 
-  // Karte links vom Punkt und vom gewählten Abzeichen (12 px Abstand), vertikal mittig, im freien Bereich gehalten;
-  // die Lupe steht als eigene Spalte links neben dem Text (Textbreite wie ohne Lupe, die Karte wächst um die Spalte).
-  // Reicht der Platz links nicht für 220 px Text + Spalte, steht die Karte unter dem Abzeichen; im schmalen Fenster
-  // (≤ 860 px) dann mit der Lupe über dem Text
+  // Karte neben dem gewählten Abzeichen (12 px Abstand zu Punkt und Abzeichen), ganz im freien Bereich (stageRect):
+  // bevorzugt links, sonst rechts, sonst darunter oder darüber; die Seite bleibt, solange sie passt (kein Springen bei
+  // der Kamerafahrt). Höher als der freie Bereich wird sie nicht (Text scrollt). Die Lupe steht als eigene Spalte links
+  // neben dem Text (Textbreite wie ohne Lupe, die Karte wächst um die Spalte). Im schmalen Fenster (≤ 860 px) steht sie
+  // ohne Platz links unter dem Abzeichen, mit der Lupe über dem Text
   const LENS_COL = 112 + 14;
-  let cardW = 0;
+  let cardW = 0, cardSide = '', cardBox = null;
   function placeCard(items, rect, width, height) {
+    cardBox = null;
     if (!selected) return;
     const m = items.find((x) => x.h.id === selected.id);
     card.classList.toggle('is-away', !m);
     if (!m) return;
-    const edge = Math.min(m.ax, m.x - m.w / 2) - 12;
-    const avail = edge - rect.x0 - LENS_COL;
-    const below = avail < 220;
-    const stacked = below && width <= 860;
+    const bx0 = Math.min(m.ax, m.x - m.w / 2) - 12, bx1 = Math.max(m.ax, m.x + m.w / 2) + 12;
+    const roomL = bx0 - rect.x0 - LENS_COL, roomR = rect.x1 - bx1 - LENS_COL;
+    const narrow = width <= 860;
+    const side = narrow ? (roomL < 220 ? 'below' : 'left')
+      : cardSide === 'right' && roomR >= 220 ? 'right' : roomL >= 220 ? 'left' : roomR >= 220 ? 'right' : 'vert';
+    const stacked = narrow && side === 'below';
     card.classList.toggle('is-stacked', stacked);
     // Breite in 20-px-Stufen mit Hysterese: sonst folgt sie dem wandernden Abzeichen (Kamerafahrt im Leerlauf), der Blocksatz
     // bricht in jedem Bild anders um und die Karte flackert und zittert
-    const room = below ? width - 16 - LENS_COL : avail;
+    const room = side === 'left' ? roomL : side === 'right' ? roomR : rect.x1 - rect.x0 - LENS_COL;
     if (stacked) cardW = 0;
-    else if (!cardW || room < cardW || room > cardW + 100) cardW = Math.min(340, Math.max(220, Math.floor((room - 30) / 20) * 20));
+    else if (!cardW || side !== cardSide || room < cardW || room > cardW + 100) cardW = Math.min(340, Math.max(220, Math.floor((room - 30) / 20) * 20));
+    cardSide = side;
     card.style.width = stacked ? '' : `${cardW + LENS_COL}px`;
+    card.style.maxHeight = narrow ? '' : `${Math.floor(rect.y1 - rect.y0)}px`;
     const cw = card.offsetWidth, ch = card.offsetHeight;
-    // im schmalen Fenster darf die Karte über die Tafel ragen (Fensterhöhe statt Bühne)
-    const x = below ? Math.min(Math.max(8, m.x - cw / 2), width - cw - 8) : edge - cw;
-    const y = below ? Math.max(8, Math.min(m.y + m.hgt / 2 + 10, height - ch - 8)) : Math.min(Math.max(m.y - ch / 2, rect.y0), Math.max(rect.y0, rect.y1 - ch));
+    const by0 = m.y - m.hgt / 2 - 10, by1 = m.y + m.hgt / 2 + 10;
+    const clampY = (y) => Math.min(Math.max(y, rect.y0), Math.max(rect.y0, rect.y1 - ch));
+    let x, y;
+    if (stacked) {   // ponytail: mobil darf die Karte noch über Leisten und Tafel ragen (Fensterhöhe), neue Anordnung folgt nach Vorschau
+      x = Math.min(Math.max(8, m.x - cw / 2), width - cw - 8);
+      y = Math.max(8, Math.min(by1, height - ch - 8));
+    } else if (side === 'vert') {   // darunter, sonst darüber, sonst dort, wo mehr Platz ist – immer im freien Bereich
+      x = Math.min(Math.max(m.x - cw / 2, rect.x0), Math.max(rect.x0, rect.x1 - cw));
+      y = clampY(by1 + ch <= rect.y1 || (by0 - ch < rect.y0 && rect.y1 - by1 >= by0 - rect.y0) ? by1 : by0 - ch);
+    } else {
+      x = side === 'left' ? bx0 - cw : bx1;
+      y = clampY(m.y - ch / 2);
+    }
     card.style.transform = `translate(${Math.round(x)}px, ${Math.round(y)}px)`;   // ganze Pixel: kein Flimmern der Schrift
+    cardBox = [x - 8, y - 8, x + cw + 8, y + ch + 8];   // die anderen Abzeichen weichen im nächsten Bild aus
   }
 
   // freier Bereich zwischen Schiene, Tafel, Kopf- und Fußleiste
@@ -665,6 +682,20 @@ export function createHud(handlers) {
             const fa = sa ? 0 : sb ? 1 : 0.5, fb = sa ? 1 : sb ? 0 : 0.5;
             if (oy < ox) { const s = (A.ty < B.ty ? -1 : 1) * oy; A.ty += s * fa; B.ty -= s * fb; }
             else { const s = (A.tx < B.tx ? -1 : 1) * ox; A.tx += s * fa; B.tx -= s * fb; }
+          }
+        }
+        // offene Karte: die anderen Abzeichen weichen an die nächste Kartenseite aus, an der sie im freien Bereich Platz
+        // haben (vor der hohen Karte am linken Rand also nach rechts), damit die Karte keins verdeckt
+        if (cardBox && selected) {
+          const [c0, c1, c2, c3] = cardBox;
+          for (const m of items) {
+            if (m.h.id === selected.id) continue;
+            const hw = m.w / 2, hh = m.hgt / 2;
+            if (m.tx + hw <= c0 || m.tx - hw >= c2 || m.ty + hh <= c1 || m.ty - hh >= c3) continue;
+            const fits = ([x, y]) => x - hw >= rect.x0 && x + hw <= rect.x1 && y - hh >= rect.y0 && y + hh <= rect.y1;
+            const cost = (p) => Math.abs(p[0] - m.tx) + Math.abs(p[1] - m.ty) + (fits(p) ? 0 : 1e6);
+            const best = [[c0 - hw, m.ty], [c2 + hw, m.ty], [m.tx, c1 - hh], [m.tx, c3 + hh]].reduce((a, b) => (cost(b) < cost(a) ? b : a));
+            [m.tx, m.ty] = best;
           }
         }
       }
