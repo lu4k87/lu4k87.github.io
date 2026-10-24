@@ -329,6 +329,12 @@ export function createHud(handlers) {
   tlEl('.tl-reset').addEventListener('click', () => { moveTl(0, 0, true); grip.focus(); });
   new ResizeObserver(() => moveTl(tlOff.x, tlOff.y)).observe(tl.parentElement);   // Fenster, Infotafel auf/zu: in der Bühne halten
 
+  // ---------- Messleiste: Lineal fester Länge ----------
+  const ruler = $('#ruler');
+  const rulerEnd = $('#ruler-end');
+  let rulerW = 240;
+  new ResizeObserver(() => { rulerW = ruler.clientWidth; }).observe(ruler);   // Länge kommt aus dem CSS (mobil kürzer)
+
   let lastLive = 0;
   function setLive(T, playing, done = false) {
     const now = performance.now();
@@ -744,12 +750,16 @@ export function createHud(handlers) {
       updateMeasures(camera, width, height, rect, items);
     },
     updateScale(hfwMeters, widthPx, lv) {
-      // runde Balkenlänge 1/2/5 × 10^n, etwa ein Fünftel der Bildbreite
-      const target = hfwMeters * 0.2;
-      const pow = Math.pow(10, Math.floor(Math.log10(target)));
-      const nice = [1, 2, 5, 10].map((k) => k * pow).reduce((a, b) => (Math.abs(b - target) < Math.abs(a - target) ? b : a));
-      $('#scalebar-bar').style.width = `${Math.round((nice / hfwMeters) * widthPx)}px`;
-      $('#scalebar-label').textContent = formatLength(nice);
+      // Teilung 1/2/5 × 10^n mit Hauptstrichen ≥ 52 px Abstand; das Lineal bleibt gleich lang, nur Striche und Endwert wandern
+      const pxPerM = widthPx / hfwMeters;
+      const minStep = 52 / pxPerM;
+      const pow = Math.pow(10, Math.floor(Math.log10(minStep)));
+      const step = [1, 2, 5, 10].map((k) => k * pow).find((s) => s >= minStep);
+      const stepPx = step * pxPerM;
+      const n = Math.max(1, Math.floor(rulerW / stepPx));
+      ruler.style.setProperty('--step', `${stepPx.toFixed(2)}px`);
+      ruler.style.setProperty('--end', `${(n * stepPx).toFixed(1)}px`);
+      rulerEnd.textContent = formatLength(n * step);
       const hfwText = formatLength(hfwMeters, true);
       $('#sb-hfw').textContent = hfwText;
       if (lv && lv.method !== $('#sb-method').textContent) $('#sb-method').textContent = lv.method;

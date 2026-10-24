@@ -53,12 +53,14 @@
 
     <footer class="bottombar">
       <div class="sem-bar" aria-label="Messleiste">
-        <div class="scalebar"><span id="scalebar-bar" class="scalebar-bar"></span><span id="scalebar-label">1 mm</span></div>
-        <dl>
-          <div><dt>Bildbreite</dt><dd id="sb-hfw">–</dd></div>
-          <div><dt>Vergr.</dt><dd id="sb-mag">–</dd></div>
-          <div><dt>Methode</dt><dd id="sb-method">–</dd></div>
-        </dl>
+        <div class="sem-top">
+          <div class="ruler" id="ruler" aria-label="Maßstab"><span class="ruler-zero" aria-hidden="true">0</span><span class="ruler-end" id="ruler-end">1 mm</span></div>
+          <dl>
+            <div><dt>Bildbreite</dt><dd id="sb-hfw">–</dd></div>
+            <div><dt>Vergr.</dt><dd id="sb-mag">–</dd></div>
+          </dl>
+        </div>
+        <p class="sem-method"><span class="sem-cap">Methode</span> <span id="sb-method">–</span></p>
       </div>
       <div class="center-hint">
         <p class="hint">Ziehen dreht · Scrollen zoomt · orange Abzeichen führen tiefer</p>
