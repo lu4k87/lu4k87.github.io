@@ -15,6 +15,7 @@ import { fmt, tissueScale } from '../science.js';
 const LENGTH = 1100;     // Länge des Bruchstücks in Faserrichtung
 const HALF_X = 330, HALF_Y = 240;   // Stirnfläche (Superellipse)
 const OPEN_Z = -30;      // mittlere Höhe der Stirnfläche (Weltebene der Tiefenabdunklung für Teile ohne eigene Oberkante)
+const OPEN_ALL = 1e5;    // Zellöffnung „überall“: Zelle außerhalb des Umrisses oder ohne Nachbar
 const CRACK_MAX = 16;    // µm: Breite des Radialrisses am breiten Strahl bei voller Schwindung (Modell)
 
 // Stirnfläche: drei große Stufen (≈ 40 µm, zur −x-Seite hin tiefer, Kante unregelmäßig), darauf Terrassen von 10 µm,
@@ -56,9 +57,10 @@ export function create(ctx) {
     broken.set(k, 12 + rand() * 28);
   }
   const walls = [];
+  const openCell = new Set();   // Zellen am Umriss, denen Wände fehlen: ihr Lumen liegt auf ganzer Länge frei
   for (const e of wood.edges) {
     const mx = (e.a[0] + e.b[0]) / 2, my = (e.a[1] + e.b[1]) / 2;
-    if (!inside(mx, my)) continue;
+    if (!inside(mx, my)) { openCell.add(e.i); if (e.j >= 0) openCell.add(e.j); continue; }
     const si = wood.sites[e.i], sj = e.j >= 0 ? wood.sites[e.j] : null;
     const outer = !sj || !inside(si.x, si.y) || !inside(sj.x, sj.y);
     let z1 = surfaceZ(mx, my) - edgeDrop(mx, my) * (0.7 + 0.3 * rand()) - rand() * 2.5;
@@ -67,7 +69,17 @@ export function create(ctx) {
     else if (rand() < 0.012) z1 -= 6 + rand() * 25;      // vereinzelt abgebrochene Wände
     let len = breakLen(mx, my) * (0.86 + 0.28 * rand()) + (rand() < 0.04 ? 180 + rand() * 220 : 0);
     len = clamp(len, 30, LENGTH + 120);
-    walls.push({ a: e.a, b: e.b, t: e.t, kind: e.kind, seed: e.seed, late: e.late, z0: Math.min(z1 - len, z1 - 15), z1, outer });
+    walls.push({ a: e.a, b: e.b, t: e.t, kind: e.kind, seed: e.seed, late: e.late, z0: Math.min(z1 - len, z1 - 15), z1, outer, i: e.i, j: e.j });
+  }
+  // Splitter-Flanken und Rückseite: unterhalb der ersten endenden Wand einer Zelle ist ihr Lumen seitlich bzw. hinten
+  // offen – dort keine Hohlraum-Abdunklung, sonst bleiben die Längsseiten und das ferne Ende schwarz (User 2026-10-24)
+  const cellBot = new Map();
+  for (const w of walls) for (const c of [w.i, w.j]) if (c >= 0) cellBot.set(c, Math.max(cellBot.get(c) ?? -Infinity, w.z0));
+  const botOf = (c) => (c < 0 || openCell.has(c) || !inside(wood.sites[c].x, wood.sites[c].y) ? OPEN_ALL : cellBot.get(c));
+  for (const w of walls) {
+    const s = wood.sites[w.i], dx = w.b[0] - w.a[0], dy = w.b[1] - w.a[1];
+    const iLeft = dx * (s.y - w.a[1]) - dy * (s.x - w.a[0]) > 0;   // Zelle i liegt auf der +y-Seite der Wandplatte
+    w.bot = iLeft ? [botOf(w.i), botOf(w.j)] : [botOf(w.j), botOf(w.i)];
   }
 
   // Tiefenabdunklung ab der eigenen Bruchkante (topMix): tiefere Stufen bleiben hell, Lumina und Gefäße dunkeln ab

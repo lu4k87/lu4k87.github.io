@@ -4,13 +4,16 @@ import * as THREE from 'three';
 import { semMaterial } from './sem.js';
 import { hash13f } from './util.js';
 
-// walls: [{a:[x,y], b:[x,y], t, kind, seed, late, z0, z1}]
+// walls: [{a:[x,y], b:[x,y], t, kind, seed, late, z0, z1, bot?}]; bot = [z +y-Seite, z −y-Seite]: unterhalb davon ist
+// die Zelle auf dieser Seite seitlich/hinten offen (keine Hohlraum-Abdunklung)
 export function buildWalls(walls, semOpts) {
   const group = new THREE.Group();
   const box = new THREE.BoxGeometry(1, 1, 1);
   const data = new Float32Array(walls.length * 4);
   const tops = new Float32Array(walls.length);
-  const wallMat = semMaterial({ ...semOpts, walls: true, pits: semOpts.pits !== false });
+  const bot = walls.some((w) => w.bot);
+  const bots = new Float32Array(walls.length * 2);
+  const wallMat = semMaterial({ ...semOpts, walls: true, pits: semOpts.pits !== false, bot });
   const mesh = new THREE.InstancedMesh(box, wallMat, walls.length);
   const m = new THREE.Matrix4();
   const q = new THREE.Quaternion();
@@ -33,24 +36,28 @@ export function buildWalls(walls, semOpts) {
     data[k * 4 + 2] = w.late || 0;
     data[k * 4 + 3] = w.outer ? 1 : 0;      // Außenwand des Bruchstücks: keine Hohlraum-Abdunklung
     tops[k] = w.z1;
+    if (bot) bots.set(w.bot, k * 2);
+    const wb = bot ? Math.max(...w.bot) : 0;   // Ecke: offen, sobald eine angrenzende Zelle offen ist
     for (const pt of [w.a, w.b]) {
       if (w.openEnd && pt === w.b) continue;
       const key = `${Math.round(pt[0] * 200)},${Math.round(pt[1] * 200)}`;
       const j = joints.get(key);
-      if (j) { j.t = Math.max(j.t, w.t); j.z0 = Math.min(j.z0, w.z0); j.z1 = Math.max(j.z1, w.z1); }
-      else joints.set(key, { p: pt, t: w.t, z0: w.z0, z1: w.z1 });
+      if (j) { j.t = Math.max(j.t, w.t); j.z0 = Math.min(j.z0, w.z0); j.z1 = Math.max(j.z1, w.z1); j.bot = Math.max(j.bot, wb); }
+      else joints.set(key, { p: pt, t: w.t, z0: w.z0, z1: w.z1, bot: wb });
     }
   });
   box.setAttribute('aWall', new THREE.InstancedBufferAttribute(data, 4));
   box.setAttribute('aTop', new THREE.InstancedBufferAttribute(tops, 1));
+  if (bot) box.setAttribute('aBot', new THREE.InstancedBufferAttribute(bots, 2));
   mesh.instanceMatrix.needsUpdate = true;
   group.add(mesh);
 
   const prism = new THREE.CylinderGeometry(1, 1, 1, 8, 1);
   prism.rotateX(Math.PI / 2);
-  const jointMat = semMaterial({ ...semOpts, joint: true });
+  const jointMat = semMaterial({ ...semOpts, joint: true, bot });
   const list = [...joints.values()];
   prism.setAttribute('aTop', new THREE.InstancedBufferAttribute(Float32Array.from(list, (j) => j.z1), 1));
+  if (bot) prism.setAttribute('aBot', new THREE.InstancedBufferAttribute(Float32Array.from(list.flatMap((j) => [j.bot, j.bot])), 2));
   const jm = new THREE.InstancedMesh(prism, jointMat, list.length);
   const jgeo = list.map((j) => ({ p: new THREE.Vector3(j.p[0], j.p[1], (j.z0 + j.z1) / 2), t: j.t * 0.56, h: j.z1 - j.z0 }));
   // f = Wanddicke relativ zur Ausgangsdicke; offset(x, y) = seitlicher Versatz in x (Risse, die sich mit der Schwindung öffnen)

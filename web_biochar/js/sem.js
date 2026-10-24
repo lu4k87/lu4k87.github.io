@@ -53,6 +53,10 @@ varying vec4 vWall;
 attribute float aTop;      // eigene Oberkante (lokal): Tiefenabdunklung ab der eigenen Bruchkante statt ab der Weltebene
 varying float vTopW;
 #endif
+#ifdef SEM_BOT
+attribute vec2 aBot;       // Tiefe (lokal), unterhalb der die Zelle auf der +y- bzw. −y-Seite seitlich/hinten offen ist
+varying vec2 vBotW;
+#endif
 varying vec3 vWorld;
 varying vec3 vNormal;
 varying vec3 vLocal;
@@ -74,6 +78,9 @@ void main() {
 #ifdef SEM_TOP
   vTopW = (modelMatrix * vec4(0.0, 0.0, aTop, 1.0)).z;
 #endif
+#ifdef SEM_BOT
+  vBotW = vec2((modelMatrix * vec4(0.0, 0.0, aBot.x, 1.0)).z, (modelMatrix * vec4(0.0, 0.0, aBot.y, 1.0)).z);
+#endif
   vNormal = normalize(mat3(modelMatrix) * n);
   vLocal = position;
   vWorld = wp.xyz;
@@ -90,6 +97,9 @@ varying vec4 vWall;
 #endif
 #ifdef SEM_TOP
 varying float vTopW;
+#endif
+#ifdef SEM_BOT
+varying vec2 vBotW;
 #endif
 varying vec3 vWorld;
 varying vec3 vNormal;
@@ -187,6 +197,13 @@ void main() {
     top = mix(uOpenZ, vTopW, uTopMix);   // Terrassen: tiefer liegende Fläche bleibt hell, nur Hohlräume dunkeln ab
 #endif
     float d = max(min(top - vWorld.z, uOpenX - vWorld.x), 0.0);
+#ifdef SEM_BOT
+    float bot = max(vBotW.x, vBotW.y);   // Stirn-, Ober-, Unterseite und Ecken: offen, sobald eine Seite offen ist
+#ifdef SEM_WALLS
+    if (a.y > a.x && a.y > a.z) bot = vLocal.y > 0.0 ? vBotW.x : vBotW.y;   // Breitseite: nur die Zelle auf dieser Seite
+#endif
+    d = min(d, max(vWorld.z - bot, 0.0));   // offenes Lumen: Abdunklung wächst erst ab der Öffnung an Flanke/Rückseite
+#endif
 #ifdef SEM_WALLS
     if (vWall.w > 0.5) d = 0.0;          // Längsseite des Bruchstücks liegt frei
 #endif
@@ -205,6 +222,7 @@ export function semMaterial(opts = {}) {
   if (opts.pits) defines.SEM_PITS = '';
   if (opts.joint) defines.SEM_JOINT = '';
   if (opts.topMix) defines.SEM_TOP = '';
+  if (opts.bot) defines.SEM_BOT = '';
   return new THREE.ShaderMaterial({
     defines,
     uniforms: {
