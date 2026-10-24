@@ -3,7 +3,8 @@
 // Terrassen, einzelne eingebrochene Zellen, Rand als abgestufte Bruchkante, Längsseiten frei liegend, Gefäße als tiefe
 // dunkle Kanäle mit Durchbrechungsplatten, Lumina dunkel (Sekundärelektronen entkommen nicht aus dem Hohlraum). Längsseiten
 // als Splitter: Faserbündel brechen außen unterschiedlich lang ab, Tüpfel auf den frei liegenden Längswänden.
-// Pyrolyse: Schwindung, dünnere Wände und ein Radialriss, der sich entlang des breiten Holzstrahls öffnet (setParam 'temp').
+// Pyrolyse: Schwindung, dünnere Wände und Schwundrisse, die sich nacheinander öffnen (setParam 'temp'): erst am breiten
+// Holzstrahl, dann an zwei schmalen Strahlen, zuletzt entlang der Jahrringgrenze – die Kohle zerfällt in Blöcke.
 
 import * as THREE from 'three';
 import { woodTissue, ringY, RAY_CELL_W } from '../wood.js';
@@ -17,6 +18,8 @@ const HALF_X = 330, HALF_Y = 240;   // Stirnfläche (Superellipse)
 const OPEN_Z = -30;      // mittlere Höhe der Stirnfläche (Weltebene der Tiefenabdunklung für Teile ohne eigene Oberkante)
 const OPEN_ALL = 1e5;    // Zellöffnung „überall“: Zelle außerhalb des Umrisses oder ohne Nachbar
 const CRACK_MAX = 16;    // µm: Breite des Radialrisses am breiten Strahl bei voller Schwindung (Modell)
+const CRACK_RAY = 9;     // µm: Radialrisse an schmalen Strahlen (Modell)
+const CRACK_RING = 7;    // µm: Tangentialriss an der Jahrringgrenze (Modell)
 
 // Stirnfläche: drei große Stufen (≈ 40 µm, zur −x-Seite hin tiefer, Kante unregelmäßig), darauf Terrassen von 10 µm,
 // leichte Welligkeit und wenige Mulden (eingebrochene Bereiche, 30 µm tiefer)
@@ -43,10 +46,25 @@ export function create(ctx) {
     const n = 0.24 * (fbm3(x * 0.011 + 1, y * 0.011 + 2, 3, 3) - 0.5);
     return LENGTH * Math.pow(clamp((1.08 + n - rim(x, y)) / 0.6, 0, 1), 1.3);
   };
-  // Risslinie: Außenkante (+x) des breiten Holzstrahls; alles rechts davon wandert mit der Rissöffnung nach +x
+  // Schwundrisse (Würfelmuster, Modell): radial an der Außenkante (+x) des breiten Strahls und zweier schmaler Strahlen
+  // im Abstand von ≈ 190 µm, tangential an der Jahrringgrenze zwischen dem linken und dem breiten Radialriss (endet an
+  // beiden). Die Blöcke dazwischen wandern starr mit der Rissöffnung: rechts eines Radialrisses nach +x, oberhalb des
+  // Ringrisses (Frühholz) nach +y
   const ray = wood.broad;
-  const crackX = (y) => wood.rayX(ray, y) + (ray.cells * RAY_CELL_W) / 2 + 1.5;
-  const side = (x, y) => (x > crackX(y) ? 1 : 0);
+  const rayEdge = (r) => (y) => wood.rayX(r, y) + (r.cells * RAY_CELL_W) / 2 + 1.5;
+  const nearRay = (x0) => wood.rays.filter((r) => !r.broad).reduce((a, r) => (Math.abs(r.x - x0) < Math.abs(a.x - x0) ? r : a));
+  const radial = [
+    { x: rayEdge(nearRay(ray.x - 380)), w: CRACK_RAY, open: 'crackRay', gap: 0 },
+    { x: rayEdge(nearRay(ray.x - 190)), w: CRACK_RAY, open: 'crackRay', gap: 0 },
+    { x: rayEdge(ray), w: CRACK_MAX, open: 'crack', gap: 0 },
+  ];
+  const ring = { y: (x) => ringY(x) + 1.5, w: CRACK_RING, open: 'crackRing', gap: 0 };
+  // Block eines Punkts: Spalte = Zahl der Radialrisse links davon, ungerade = oberhalb des Ringrisses
+  const blockOf = (x, y) => {
+    const col = radial.filter((c) => x > c.x(y)).length;
+    return col * 2 + (col >= 1 && col <= 2 && y > ring.y(x) ? 1 : 0);
+  };
+  const shiftOf = (b) => [radial.slice(0, b >> 1).reduce((sum, c) => sum + c.gap, 0), (b & 1) * ring.gap];
 
   // eingebrochene Zellen: ihre Wände enden 12–40 µm tiefer (je Wand etwas anders → zackig)
   const broken = new Map();
@@ -87,11 +105,21 @@ export function create(ctx) {
   const scene = new THREE.Scene();
   const wallGroup = buildWalls(walls, sem);     // mit Tüpfeln: die frei liegenden Längswände zeigen Struktur
   scene.add(wallGroup);
-  const left = new THREE.Group(), right = new THREE.Group();   // Teile links/rechts des Risses
-  scene.add(left, right);
+  const blocks = new Map();     // Gruppe je Block: Einbauten (Durchbrechungsplatten, Trümmer) wandern mit ihrem Block
+  const blockGroup = (b) => {
+    if (!blocks.has(b)) { const g = new THREE.Group(); blocks.set(b, g); scene.add(g); }
+    return blocks.get(b);
+  };
+  const byBlock = (list) => {
+    const parts = new Map();
+    for (const it of list) {
+      const b = blockOf(it.p[0], it.p[1]);
+      parts.set(b, [...(parts.get(b) || []), it]);
+    }
+    return parts;
+  };
   const addSplit = (geometry, list, opts) => {
-    const parts = [list.filter((it) => !side(it.p[0], it.p[1])), list.filter((it) => side(it.p[0], it.p[1]))];
-    parts.forEach((part, k) => { if (part.length) (k ? right : left).add(buildInstances(geometry.clone(), part, opts)); });
+    for (const [b, part] of byBlock(list)) blockGroup(b).add(buildInstances(geometry.clone(), part, opts));
   };
 
   // Durchbrechungsplatten: schräge Ringleiste (einfach) oder Sprossen (leiterförmig) in einigen Gefäßen, knapp unter der Fläche
@@ -114,8 +142,7 @@ export function create(ctx) {
   }
   const cavity = { ...sem, topMix: 0 };   // im Gefäß: Abdunklung ab der Weltebene (Hohlraum)
   const torus = new THREE.TorusGeometry(1, 0.075, 6, 36);
-  for (const [k, part] of [rims.filter((it) => !side(it.p[0], it.p[1])), rims.filter((it) => side(it.p[0], it.p[1]))].entries()) {
-    if (!part.length) continue;
+  for (const [b, part] of byBlock(rims)) {
     const rimMesh = new THREE.InstancedMesh(torus, semMaterial(cavity), part.length);
     const m = new THREE.Matrix4(), q = new THREE.Quaternion(), e = new THREE.Euler();
     part.forEach((it, i) => {
@@ -123,7 +150,7 @@ export function create(ctx) {
       rimMesh.setMatrixAt(i, m.compose(new THREE.Vector3(...it.p), q.setFromEuler(e), new THREE.Vector3(...it.s)));
     });
     rimMesh.instanceMatrix.needsUpdate = true;
-    (k ? right : left).add(rimMesh);
+    blockGroup(b).add(rimMesh);
   }
   addSplit(new THREE.BoxGeometry(1, 1, 1), bars, cavity);
 
@@ -150,18 +177,22 @@ export function create(ctx) {
       { id: 'porosity', kind: 'info', pos: new THREE.Vector3(250, -110, zAt(250, -110)), normal: new THREE.Vector3(0, 0, 1) },
   ];
   const base = hotspots.map((h) => h.pos.clone());
-  // Pyrolyse: die Gewebeprobe schwindet (quer stärker als längs), die Zellwände werden dünner, der Radialriss am
-  // breiten Strahl öffnet sich – alles gleitet mit dem Regler
+  const baseBlock = base.map((p) => blockOf(p.x, p.y));
+  // Pyrolyse: die Gewebeprobe schwindet (quer stärker als längs), die Zellwände werden dünner, die Schwundrisse öffnen
+  // sich nacheinander – alles gleitet mit dem Regler
   let shownT = ctx.temp, lastT = NaN;
   function applyTemp() {
     if (shownT === lastT) return;
     lastT = shownT;
     const k = tissueScale(shownT);
-    const gap = CRACK_MAX * k.crack;
-    wallGroup.userData.setThin(k.wall / k.xy, (x, y) => side(x, y) * gap);   // die Szenenskalierung trifft die Wand mit
-    right.position.x = gap;
+    for (const c of [...radial, ring]) c.gap = c.w * k[c.open];
+    wallGroup.userData.setThin(k.wall / k.xy, (x, y) => shiftOf(blockOf(x, y)));   // die Szenenskalierung trifft die Wand mit
+    for (const [b, g] of blocks) g.position.set(...shiftOf(b), 0);
     shrinkScene(scene, k.xy, k.z);
-    hotspots.forEach((h, i) => h.pos.set((base[i].x + side(base[i].x, base[i].y) * gap) * k.xy, base[i].y * k.xy, base[i].z * k.z));
+    hotspots.forEach((h, i) => {
+      const [dx, dy] = shiftOf(baseBlock[i]);
+      h.pos.set((base[i].x + dx) * k.xy, (base[i].y + dy) * k.xy, base[i].z * k.z);
+    });
   }
   applyTemp();
   const level = {

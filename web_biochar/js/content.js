@@ -62,7 +62,7 @@ export const LEVELS = [
     refs: [3, 6],
     hotspots: {
       vessels: { title: 'Gefäße und Fasern', text: 'Eine Gruppe von Gefäßen, umgeben von Holzfasern. Die Gefäße liegen oft zu zweit oder zu dritt in radialen Reihen.' },
-      ring: { title: 'Jahrringgrenze', text: 'Am Ende einer Wachstumsperiode bildet der Baum kleinere Gefäße und flache, dickwandige Fasern (Spätholz); im Frühjahr setzt das porenreiche Frühholz ein. In Buchen-Biochar sinkt der Porenanteil von ≈ 62 % im Frühholz auf ≈ 40 % im Spätholz.' },
+      ring: { title: 'Jahrringgrenze', text: 'Am Ende einer Wachstumsperiode bildet der Baum kleinere Gefäße und flache, dickwandige Fasern (Spätholz); im Frühjahr setzt das porenreiche Frühholz ein. In Buchen-Biochar sinkt der Porenanteil von ≈ 62 % im Frühholz auf ≈ 40 % im Spätholz. Weil beide verschieden stark schwinden, reißt die Kohle bei hoher Pyrolysetemperatur auch hier – quer zu den Radialrissen an den Strahlen; zusammen zerlegen sie das Stück in Blöcke (Lage und Breite der Risse: Modell).' },
       ray: { title: 'Breiter Holzstrahl', text: 'Holzstrahlen verlaufen radial vom Mark zur Rinde und speicherten Nährstoffe. Buche hat neben vielen schmalen auch breite, mit bloßem Auge sichtbare Strahlen – die „Spiegel“ im Holz. In der Kohle sind sie bevorzugte Risslinien.' },
       porosity: { title: 'Porosität', text: 'Fast die Hälfte des Querschnitts ist Hohlraum. Diese Poren im Mikrometerbereich nehmen Wasser auf und bieten Raum für Bodenleben. Die große innere Oberfläche steckt aber in viel kleineren Poren – weiter hineinzoomen.' },
     },

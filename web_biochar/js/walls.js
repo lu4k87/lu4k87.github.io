@@ -60,10 +60,11 @@ export function buildWalls(walls, semOpts) {
   if (bot) prism.setAttribute('aBot', new THREE.InstancedBufferAttribute(Float32Array.from(list.flatMap((j) => [j.bot, j.bot])), 2));
   const jm = new THREE.InstancedMesh(prism, jointMat, list.length);
   const jgeo = list.map((j) => ({ p: new THREE.Vector3(j.p[0], j.p[1], (j.z0 + j.z1) / 2), t: j.t * 0.56, h: j.z1 - j.z0 }));
-  // f = Wanddicke relativ zur Ausgangsdicke; offset(x, y) = seitlicher Versatz in x (Risse, die sich mit der Schwindung öffnen)
+  // f = Wanddicke relativ zur Ausgangsdicke; offset(x, y) = Versatz [dx, dy] quer zur Faser (Risse, die sich mit der Schwindung öffnen)
   const setThin = (f, offset) => {
-    geo.forEach((g, k) => mesh.setMatrixAt(k, m.compose(p.set(g.p.x + (offset ? offset(g.p.x, g.p.y) : 0), g.p.y, g.p.z), g.q, s.set(g.s.x, g.s.y * f, g.s.z))));
-    jgeo.forEach((j, k) => jm.setMatrixAt(k, m.compose(p.set(j.p.x + (offset ? offset(j.p.x, j.p.y) : 0), j.p.y, j.p.z), q.identity(), s.set(j.t * f, j.t * f, j.h))));
+    const shifted = (v) => { const d = offset ? offset(v.x, v.y) : [0, 0]; return p.set(v.x + d[0], v.y + d[1], v.z); };
+    geo.forEach((g, k) => mesh.setMatrixAt(k, m.compose(shifted(g.p), g.q, s.set(g.s.x, g.s.y * f, g.s.z))));
+    jgeo.forEach((j, k) => jm.setMatrixAt(k, m.compose(shifted(j.p), q.identity(), s.set(j.t * f, j.t * f, j.h))));
     mesh.instanceMatrix.needsUpdate = true;
     jm.instanceMatrix.needsUpdate = true;
   };
