@@ -515,11 +515,17 @@ body.panel-collapsed .panel { display: none; }
   white-space: nowrap;
 }
 
-/* 2×2-Kennzahlen-Bento (Vorschau Tafel:A + F4: ab 360 px 2-spaltig, ungerade letzte Karte über volle Breite) */
+/* 2×2-Kennzahlen-Bento (Vorschau Tafel:A + F4: ungerade letzte Karte über volle Breite).
+   Spalten nach Breite des Panels, nicht des Fensters; schmale Karten stellen das Icon über den Text,
+   damit Wert und längstes Wort („Gefäßdurchmesser“) in die Textspalte passen. Balken sitzen je Zeile auf einer Linie. */
+.panel-body { container: panel / inline-size; }
 .facts { display: grid; grid-template-columns: 1fr; gap: 10px; }
-@media (min-width: 360px) {
+@container panel (min-width: 300px) {
   .facts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .facts > .fact:last-child:nth-child(odd) { grid-column: 1 / -1; }
+}
+@container panel (min-width: 300px) and (max-width: 520px) {
+  .facts > .fact:not(:last-child:nth-child(odd)) { flex-direction: column; gap: 8px; }
 }
 .fact {
   display: flex;
@@ -530,11 +536,12 @@ body.panel-collapsed .panel { display: none; }
   border-radius: 8px;
   background: color-mix(in srgb, var(--ink) 2.5%, transparent);
 }
-.fact .hex--fact { width: 36px; height: 36px; margin-top: 2px; }
-.fact-text { flex: 1; display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.fact .hex--fact { flex: none; width: 36px; height: 36px; margin-top: 2px; }
+.fact-text { flex: 1; align-self: stretch; display: flex; flex-direction: column; gap: 3px; min-width: 0; }
 .fact-value { font: 500 18.5px/1.2 var(--mono); }
-.fact-label { font-size: 13.5px; line-height: 1.32; color: var(--ink-soft); }
-.fact-bar { display: block; height: 4px; margin-top: 4px; border-radius: 2px; background: var(--line); overflow: hidden; }
+.fact-value > span { white-space: nowrap; }   /* Umbruch nur an „ · “, nie zwischen Zahl, ± und Einheit */
+.fact-label { font-size: 13.5px; line-height: 1.32; color: var(--ink-soft); hyphens: auto; overflow-wrap: break-word; text-wrap: pretty; margin-bottom: 4px; }
+.fact-bar { display: block; height: 4px; margin-top: auto; border-radius: 2px; background: var(--line); overflow: hidden; }
 .fact-bar i { display: block; height: 100%; border-radius: 2px; background: var(--accent); transition: width 0.3s var(--ease-out); }
 
 .controls { display: flex; flex-direction: column; gap: 12px; }

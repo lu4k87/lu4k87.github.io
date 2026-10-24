@@ -159,7 +159,7 @@ export function createHud(handlers) {
     return `<div class="facts">${list.map((f, i) => `
       <div class="fact">${hexBadge(icons[i] || 'info', 'hex--fact')}
         <div class="fact-text">
-          <span class="fact-value">${esc(f.value)}</span>
+          <span class="fact-value">${String(f.value).split(' · ').map((s) => `<span>${esc(s)}</span>`).join(' · ')}</span>
           <span class="fact-label">${esc(f.label)}</span>
           <span class="fact-bar" aria-hidden="true"><i style="width:${factBarPct(f)}%"></i></span>
         </div>
