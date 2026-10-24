@@ -315,9 +315,10 @@ export function create(ctx) {
   const at = (k, fallback) => (spots[k] ? spots[k].pos : new THREE.Vector3(...fallback));
   const up = new THREE.Vector3(0, 1, 0);
   const ty0 = topY(0, 0);
-  // Startbild nah an der Porenwand: Wandrelief und Tiefenschärfe tragen das Bild, im Leerlauf gleitet die Kamera an der Wand
+  // Startbild mit Überblick über das Porennetz (Bildbreite ≈ 270 nm), Wandrelief und Tiefenschärfe tragen das Bild,
+  // im Leerlauf gleitet die Kamera an der Wand
   const wall = at('wallpore', [-3, ty0, 1.5]);
-  const home = { pos: wall.clone().add(new THREE.Vector3(3, 6, 11)), target: wall.clone() };
+  const home = { pos: wall.clone().add(new THREE.Vector3(4.8, 9.6, 17.6)), target: wall.clone() };
   const hotspots = [
     { id: 'wallpore', kind: 'dive', pos: wall, normal: up },
     { id: 'macro', kind: 'info', pos: at('macro', [6, ty0 - 1, -2]), normal: up },
