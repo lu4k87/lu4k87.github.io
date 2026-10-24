@@ -856,15 +856,16 @@ export function createHud(handlers) {
     if (!selected) { card.classList.remove('is-open'); lensCanvas = null; return; }
     const l = LEVELS[current], h = l.hotspots[selected.id], icons = HOTSPOT_ICONS[l.id] || {};
     card.innerHTML = `<div class="hs-card-in">
-      <h2>${hexBadge(icons[selected.id], 'hex--mini')}<span>${esc(h.title)}</span>${selected.kind === 'dive' ? '<span class="tag">tiefer</span>' : ''}</h2>
+      <div class="hs-card-head">
+        <h2>${hexBadge(icons[selected.id], 'hex--mini')}<span>${esc(h.title)}</span>${selected.kind === 'dive' ? '<span class="tag">tiefer</span>' : ''}</h2>
+        <button type="button" class="hs-card-close" aria-label="Schließen"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2 2l8 8M10 2l-8 8"/></svg></button>
+      </div>
       <div class="hs-body">
         <figure class="hs-lens" aria-hidden="true"><canvas></canvas><svg class="hs-lens-svg" viewBox="0 0 112 112"><circle cx="56" cy="56" r="46" stroke-dasharray="3 4"/><path d="M56 4v9M56 99v9M4 56h9M99 56h9"/></svg></figure>
         <div class="hs-text"><p>${esc(h.text)}</p></div>
       </div>
-      <div class="hs-card-foot">
-        ${selected.kind === 'dive' ? '<button type="button" class="btn-primary" id="btn-dive">Hineinzoomen ↓</button>' : ''}
-        <button type="button" class="hs-card-close">Schließen</button>
-      </div></div>`;
+      ${selected.kind === 'dive' ? '<div class="hs-card-foot"><button type="button" class="btn-primary" id="btn-dive">Hineinzoomen ↓</button></div>' : ''}
+      </div>`;
     const dive = card.querySelector('#btn-dive');
     if (dive) dive.addEventListener('click', () => handlers.onDive(selected.id));
     card.querySelector('.hs-card-close').addEventListener('click', closeCard);
@@ -893,13 +894,11 @@ export function createHud(handlers) {
     if (docked) {
       const p = $('#panel').getBoundingClientRect();
       card.style.width = `${p.width}px`;
-      card.style.height = `${p.height}px`;
-      card.style.maxHeight = '';
-      card.style.transform = `translate(${Math.round(p.left)}px, ${Math.round(p.top)}px)`;
+      card.style.maxHeight = `${p.height}px`;   // so hoch wie der Inhalt, höchstens wie die Tafel; unten bündig mit ihr
+      card.style.transform = `translate(${Math.round(p.left)}px, ${Math.round(p.bottom - card.offsetHeight)}px)`;
       cardW = 0;
       return;   // liegt außerhalb der Bühne: kein Abzeichen muss ausweichen
     }
-    card.style.height = '';
     if (!m) return;
     const bx0 = Math.min(m.ax, m.x - m.w / 2) - 12, bx1 = Math.max(m.ax, m.x + m.w / 2) + 12;
     const roomL = bx0 - rect.x0 - LENS_COL, roomR = rect.x1 - bx1 - LENS_COL;
