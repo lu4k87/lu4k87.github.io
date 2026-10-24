@@ -520,6 +520,7 @@ export function createHud(handlers) {
   function closeCard() {
     selected = null;
     card.classList.remove('is-open');
+    document.body.classList.remove('card-docked');
     markers.forEach((m) => m.el.classList.remove('is-active'));
     panel.querySelectorAll('button[data-hs].is-active').forEach((b) => b.classList.remove('is-active'));
   }
@@ -552,39 +553,45 @@ export function createHud(handlers) {
   // Karte neben dem gewählten Abzeichen (12 px Abstand zu Punkt und Abzeichen), ganz im freien Bereich (stageRect):
   // bevorzugt links, sonst rechts, sonst darunter oder darüber; die Seite bleibt, solange sie passt (kein Springen bei
   // der Kamerafahrt). Höher als der freie Bereich wird sie nicht (Text scrollt). Die Lupe steht als eigene Spalte links
-  // neben dem Text (Textbreite wie ohne Lupe, die Karte wächst um die Spalte). Im schmalen Fenster (≤ 860 px) steht sie
-  // ohne Platz links unter dem Abzeichen, mit der Lupe über dem Text
+  // neben dem Text (Textbreite wie ohne Lupe, die Karte wächst um die Spalte). Im schmalen Fenster (≤ 860 px) ist die
+  // Bühne dafür zu flach: dort nimmt die Karte Platz und Größe der Tafel ein, die Tafel ist so lange unsichtbar
+  // (Vorschau 2026-10-24, Ort:A); bei eingeklappter Tafel steht sie wie sonst neben dem Abzeichen
   const LENS_COL = 112 + 14;
   let cardW = 0, cardSide = '', cardBox = null;
-  function placeCard(items, rect, width, height) {
+  function placeCard(items, rect, width) {
     cardBox = null;
+    const docked = !!selected && width <= 860 && !document.body.classList.contains('panel-collapsed') && !layer.classList.contains('is-hidden');
+    document.body.classList.toggle('card-docked', docked);
+    card.classList.toggle('is-docked', docked);
     if (!selected) return;
     const m = items.find((x) => x.h.id === selected.id);
-    card.classList.toggle('is-away', !m);
+    card.classList.toggle('is-away', !m && !docked);   // im Platz der Tafel bleibt sie, auch wenn das Abzeichen kurz außer Sicht ist
+    if (docked) {
+      const p = $('#panel').getBoundingClientRect();
+      card.style.width = `${p.width}px`;
+      card.style.height = `${p.height}px`;
+      card.style.maxHeight = '';
+      card.style.transform = `translate(${Math.round(p.left)}px, ${Math.round(p.top)}px)`;
+      cardW = 0;
+      return;   // liegt außerhalb der Bühne: kein Abzeichen muss ausweichen
+    }
+    card.style.height = '';
     if (!m) return;
     const bx0 = Math.min(m.ax, m.x - m.w / 2) - 12, bx1 = Math.max(m.ax, m.x + m.w / 2) + 12;
     const roomL = bx0 - rect.x0 - LENS_COL, roomR = rect.x1 - bx1 - LENS_COL;
-    const narrow = width <= 860;
-    const side = narrow ? (roomL < 220 ? 'below' : 'left')
-      : cardSide === 'right' && roomR >= 220 ? 'right' : roomL >= 220 ? 'left' : roomR >= 220 ? 'right' : 'vert';
-    const stacked = narrow && side === 'below';
-    card.classList.toggle('is-stacked', stacked);
+    const side = cardSide === 'right' && roomR >= 220 ? 'right' : roomL >= 220 ? 'left' : roomR >= 220 ? 'right' : 'vert';
     // Breite in 20-px-Stufen mit Hysterese: sonst folgt sie dem wandernden Abzeichen (Kamerafahrt im Leerlauf), der Blocksatz
     // bricht in jedem Bild anders um und die Karte flackert und zittert
     const room = side === 'left' ? roomL : side === 'right' ? roomR : rect.x1 - rect.x0 - LENS_COL;
-    if (stacked) cardW = 0;
-    else if (!cardW || side !== cardSide || room < cardW || room > cardW + 100) cardW = Math.min(340, Math.max(220, Math.floor((room - 30) / 20) * 20));
+    if (!cardW || side !== cardSide || room < cardW || room > cardW + 100) cardW = Math.min(340, Math.max(220, Math.floor((room - 30) / 20) * 20));
     cardSide = side;
-    card.style.width = stacked ? '' : `${cardW + LENS_COL}px`;
-    card.style.maxHeight = narrow ? '' : `${Math.floor(rect.y1 - rect.y0)}px`;
+    card.style.width = `${Math.min(cardW + LENS_COL, Math.floor(rect.x1 - rect.x0))}px`;
+    card.style.maxHeight = `${Math.floor(rect.y1 - rect.y0)}px`;
     const cw = card.offsetWidth, ch = card.offsetHeight;
     const by0 = m.y - m.hgt / 2 - 10, by1 = m.y + m.hgt / 2 + 10;
     const clampY = (y) => Math.min(Math.max(y, rect.y0), Math.max(rect.y0, rect.y1 - ch));
     let x, y;
-    if (stacked) {   // ponytail: mobil darf die Karte noch über Leisten und Tafel ragen (Fensterhöhe), neue Anordnung folgt nach Vorschau
-      x = Math.min(Math.max(8, m.x - cw / 2), width - cw - 8);
-      y = Math.max(8, Math.min(by1, height - ch - 8));
-    } else if (side === 'vert') {   // darunter, sonst darüber, sonst dort, wo mehr Platz ist – immer im freien Bereich
+    if (side === 'vert') {   // darunter, sonst darüber, sonst dort, wo mehr Platz ist – immer im freien Bereich
       x = Math.min(Math.max(m.x - cw / 2, rect.x0), Math.max(rect.x0, rect.x1 - cw));
       y = clampY(by1 + ch <= rect.y1 || (by0 - ch < rect.y0 && rect.y1 - by1 >= by0 - rect.y0) ? by1 : by0 - ch);
     } else {

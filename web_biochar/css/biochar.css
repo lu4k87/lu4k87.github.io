@@ -753,8 +753,7 @@ body.touched .hint { opacity: 0; }
 .hs-card h2 .tag { font: 500 12px/1 var(--mono); color: var(--accent); }
 .hs-card p { margin: 0; font-size: 15px; line-height: 1.5; hyphens: auto; }
 /* Lupe: runder Live-Ausschnitt der Szene um den Infopunkt (main.js zeichnet ins Canvas), links neben dem Text und
-   senkrecht mittig; die Karte wächst um die Spalte (hud.js LENS_COL). Schmales Fenster und Karte unter dem Abzeichen:
-   über dem Text, mittig (Vorschau 2026-10-24) */
+   senkrecht mittig; die Karte wächst um die Spalte (hud.js LENS_COL) */
 .hs-body { display: flex; align-items: center; gap: 14px; }
 .hs-lens {
   flex: none;
@@ -768,8 +767,13 @@ body.touched .hint { opacity: 0; }
 }
 .hs-lens canvas { display: block; width: 100%; height: 100%; }
 .hs-text { flex: 1; min-width: 0; }
-.hs-card.is-stacked .hs-body { flex-direction: column; }
-.hs-card.is-stacked .hs-text { align-self: stretch; }
+/* Schmales Fenster: Karte im Platz der Tafel (hud.js placeCard, Vorschau 2026-10-24 Ort:A), Tafel so lange
+   unsichtbar; langer Text scrollt, die Knöpfe bleiben unten */
+body.card-docked .panel { visibility: hidden; }
+.hs-card.is-docked { display: flex; border-radius: var(--radius); }
+.hs-card.is-docked .hs-card-in { flex: 1; min-height: 0; }
+.hs-card.is-docked .hs-body { flex: 1; min-height: 0; align-items: flex-start; }
+.hs-card.is-docked .hs-text { align-self: stretch; overflow-y: auto; scrollbar-width: thin; }
 .hs-card-foot { display: flex; justify-content: flex-end; align-items: center; gap: 8px; }
 .hs-card-foot .btn-primary { margin-right: auto; }
 .hs-card-close { padding: 5px 12px; border: 1px solid var(--line); border-radius: 999px; background: transparent; color: var(--ink); font: 500 13px/1.2 inherit; cursor: pointer; }
@@ -907,7 +911,7 @@ body.has-error .fatal, body.no-webgl .fatal { opacity: 1; background: var(--bg);
   .center-hint { display: none; }
   .hsb { padding: 2px; gap: 0; }
   .hex--hs { width: 30px; height: 30px; }
-  .hs-card { width: min(300px, calc(100vw - 24px)); padding: 12px 14px 10px; }
+  .hs-card { padding: 12px 14px 10px; }
   .hsb-label { display: none; }
   .hsb.is-active { padding-right: 10px; gap: 6px; }
   .hsb.is-active .hsb-label { display: flex; }
