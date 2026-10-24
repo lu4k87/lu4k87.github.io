@@ -6,13 +6,14 @@
 // Modell: dichte Matrix mit Schlitzporen (2–3,2 nm dick, 15–30 nm lang, leicht entlang der früheren Faserachse FIB
 // ausgerichtet, Paris et al. 2005), wenige rundliche Mesoporen (Ø 16–48 nm), ein Schwundriss (Makropore, 50–70 nm breit),
 // Mikroporen nur als feine Grübchen. Holz (pyroState.open = 0): Wand dicht, Relief der Mikrofibrillen-Bündel (≈ 20 nm).
-// Luftfeuchte: Wasserfilm auf den Porenwänden (uFilm); Poren füllen nach der Kelvin-Gleichung bis Ø uWaterD (science.js):
-// Schlitze ganz, rundliche Poren von unten mit Meniskus, der Riss als Keil von der engen Spitze her.
+// Luftfeuchte: Wasserfilm auf den Porenwänden (uFilm); Poren füllen nach der Kelvin-Gleichung bis Ø uWaterD (science.js,
+// Füll- und Entleerungsast nach Cohan): Schlitze ganz, rundliche Poren von unten mit Meniskus, der Riss als Keil von der
+// engen Spitze her.
 
 import * as THREE from 'three';
 import { SEM_GLSL, SEM_DET, semDetector } from '../sem.js';
 import { pcg3d, vnoise3 } from '../util.js';
-import { kelvinDiameterNm, fmt, labProps, pyroState } from '../science.js';
+import { fillDiameterNm, fmt, labProps, pyroState } from '../science.js';
 
 const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -75,8 +76,9 @@ float sdEll(vec3 q, vec3 r) {
 float topY(vec2 xz) { return -0.6 + 1.1 * vn(vec3(xz * 0.09, 3.0)) + 0.45 * vn(vec3(xz * 0.31, 7.0)); }
 
 // Schlitzporen: je Rasterzelle höchstens eine flache Ellipsoid-Pore (halbe Länge ≤ 0,81 Zellen, Versatz ≤ 0,13: zusammen
-// < 1) → der 2×2×2-Block um den Punkt genügt. fill = Abstand zur nächsten gefüllten Pore: ein Schlitz der Weite w hat
-// einen nur einfach gekrümmten Meniskus und füllt wie eine Rundpore mit Ø 2w (Kelvin-Gleichung, Film 0,6 nm abgezogen)
+// < 1) → der 2×2×2-Block um den Punkt genügt. fill = Abstand zur nächsten gefüllten Pore: ein Schlitz der Weite w hat wie
+// ein füllender Zylinder mit Ø w einen einfach gekrümmten Meniskus (Radius w/2) → füllt bei uWaterD = w. Ideale Schlitze
+// leeren über denselben Meniskus, haben also keine Hysterese (Cohan 1938); dass sie hier mit uWaterD nachlaufen: Modell
 float plates(vec3 p, out float fill) {
   vec3 q = p / PG;
   vec3 b = floor(q) + step(0.5, fract(q)) - 1.0;
@@ -95,7 +97,7 @@ float plates(vec3 p, out float fill) {
     vec3 Nt = cos(r2.y * 3.14159265) * N0 + sin(r2.y * 3.14159265) * cross(N0, L);
     float de = sdEll(vec3(dot(e, L), dot(e, cross(Nt, L)), dot(e, Nt)), rad);
     d = min(d, de);
-    if (rad.z * 40.0 - 0.6 < uWaterD) fill = min(fill, de);   // Schlitz: Meniskus nur einfach gekrümmt → wie Ø 2·Weite
+    if (rad.z * 20.0 < uWaterD) fill = min(fill, de);   // Schlitz der Weite 2·rad.z (10 nm) füllt wie ein Zylinder mit Ø Weite
   }
   return d;
 }
@@ -123,7 +125,7 @@ float voids(vec3 p, float irr, out float wat) {
   return d;
 }
 // Schwundriss entlang der Faser: V-förmig, an der Bruchfläche 52–66 nm breit, CRACK_D tief; Wasser füllt den Keil von
-// der Spitze her bis zur Breite wF (Meniskus im Keil einfach gekrümmt wie im Schlitz)
+// der Spitze her bis zur Breite uWaterD (Meniskus im Keil einfach gekrümmt wie im Schlitz)
 float crack(vec3 p, float ty, out float wat) {
   float u = dot(p.xz, FIB.xz), v = dot(p.xz, SIDE.xz);
   float v0 = CRACK_V + 1.3 * sin(u * 0.13 + 0.7) + 1.2 * (vn(vec3(u * 0.22, 0.0, 5.0)) - 0.5);
@@ -132,7 +134,7 @@ float crack(vec3 p, float ty, out float wat) {
   float dc = (abs(v - v0) - hw) * 0.7 + 0.25 * (vn(p * 1.7 + 21.0) - 0.5);
   wat = 9.0;
   if (uWaterD > 0.0) {
-    float depW = CRACK_D * (1.0 - (0.5 * uWaterD + 0.3) / (20.0 * hw0));
+    float depW = CRACK_D * (1.0 - uWaterD / (20.0 * hw0));
     if (depW < CRACK_D) wat = max(dc, p.y - (ty - depW + 0.3 * exp(-max(-dc, 0.0) / 0.35)));
   }
   return dc;
@@ -417,7 +419,7 @@ export function create(ctx) {
     measuresOn: pyroState(ctx.temp).open > 0.85,   // im Holz sind die Poren zu
     facts: () => [{
       value: `≈ ${fmt(wet, 0)} nm`,
-      label: `bei ${fmt(rh * 100)} % Luftfeuchte mit Wasser gefüllte Poren (Kelvin-Gleichung${wet > kelvinDiameterNm(rh) + 0.5 ? ', beim Trocknen Hysterese' : ''})`,
+      label: `bei ${fmt(rh * 100)} % Luftfeuchte mit Wasser gefüllte Poren (Kelvin-Gleichung${wet > fillDiameterNm(rh) + 0.5 ? ', beim Trocknen Hysterese' : ''})`,
     }],
     update(dt, t) {
       uniforms.uTime.value = t;

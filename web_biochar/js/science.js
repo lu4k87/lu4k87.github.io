@@ -73,36 +73,38 @@ export function nanoStructure(t) {
   };
 }
 
-// Kelvin-Gleichung (Wasser, 25 °C): 2γVm/(RT) = 1,05 nm → Kelvin-Radius rK = 1,05 nm / ln(p0/p).
-// Gefüllt sind Poren bis zum Durchmesser 2·rK plus zweimal ein adsorbierter Wasserfilm (≈ 0,3 nm).
-export function kelvinDiameterNm(rh) {
+// Kelvin-Gleichung (Wasser, 25 °C): 2γVm/(RT) = 1,05 nm → Radius des halbkugeligen Meniskus (zwei Krümmungen)
+// rK = 1,05 nm / ln(p0/p), der zylindrische Meniskus (eine Krümmung) hat bei gleicher Feuchte den halben Radius.
+// Gefüllt sind Poren bis zum Durchmesser 2·rK plus zweimal ein adsorbierter Wasserfilm (≈ 0,3 nm); unter 5 % trocken.
+export function kelvinDiameterNm(rh, curv = 2) {
   if (rh <= 0.05) return 0;
   const r = Math.min(rh, 0.995);
-  return 2 * (1.05 / Math.log(1 / r)) + 0.6;
+  return curv * (1.05 / Math.log(1 / r)) + 0.6;
 }
-// Luftfeuchte, bei der Poren mit Durchmesser d (nm) füllen – Umkehrung von kelvinDiameterNm
-export const kelvinRh = (d) => (d <= 0.6 ? 0 : Math.exp(-2.1 / (d - 0.6)));
 
-// Hysterese (Modell): Füllen nach der Kelvin-Gleichung, Entleeren erst bei tieferer Feuchte nach dem Verhältnis von
-// Cohan (1938) p_Entleeren = p_Füllen² (zylindrischer Meniskus beim Füllen, halbkugeliger beim Entleeren); jede Pore für
-// sich, ohne Netzwerkeffekte. Gefüllt bis d bleibt zwischen Füll- und Entleerungsast stehen.
-export const desorbDiameterNm = (rh) => kelvinDiameterNm(Math.sqrt(Math.max(0, rh)));
-export const wetDiameterNm = (prev, rh) => clamp(prev, kelvinDiameterNm(rh), desorbDiameterNm(rh));
+// Hysterese nach Cohan (1938), jede Pore für sich, ohne Netzwerkeffekte (Modell): eine offene Pore füllt über den Film an
+// der Wand mit zylindrischem Meniskus und leert erst über den halbkugeligen Meniskus am Porenende → eine Pore, die bei p
+// füllt, leert bei p². Gefüllt bis d bleibt zwischen Füll- und Entleerungsast stehen.
+export const fillDiameterNm = (rh) => kelvinDiameterNm(rh, 1);
+export const desorbDiameterNm = (rh) => kelvinDiameterNm(rh, 2);
+export const wetDiameterNm = (prev, rh) => clamp(prev, fillDiameterNm(rh), desorbDiameterNm(rh));
+// Luftfeuchte, bei der Poren mit Durchmesser d (nm) füllen – Umkehrung von fillDiameterNm
+export const kelvinRh = (d) => (d <= 0.6 ? 0 : Math.exp(-1.05 / (d - 0.6)));
 
 // IUPAC-Klassen (Thommes et al. 2015): Mikro < 2 nm, Meso 2–50 nm, Makro > 50 nm; '' = trocken
 export const poreClass = (d) => (d <= 0.6 ? '' : d < 2 ? 'micro' : d < 50 ? 'meso' : 'macro');
 
-// Porenvolumen der Ebene 5 (Modell): Mikroporen der Ebene 6, Schlitzporen 2–3,2 nm (füllen wie Ø 3,4–5,8 nm), rundliche
-// Poren 12–40 nm und Schwundriss (Keil, füllt von der Spitze her) wie im Shader; Anteile am Volumen geschätzt.
-// filledShare = gefüllter Anteil bis Durchmesser d.
-export const PORE_VOLUME = [{ from: 0.6, to: 2, share: 0.5 }, { from: 3.4, to: 5.8, share: 0.25 }, { from: 12, to: 40, share: 0.15 }, { from: 1.8, to: 99, share: 0.1 }];
+// Porenvolumen der Ebene 5 (Modell): Mikroporen der Ebene 6, Schlitzporen 2–3,2 nm (füllen wie ein Zylinder mit Ø = Weite),
+// rundliche Poren 12–40 nm und Schwundriss (Keil, füllt von der Spitze her bis zur Breite 50 nm) wie im Shader; Anteile am
+// Volumen geschätzt. filledShare = gefüllter Anteil bis Durchmesser d.
+export const PORE_VOLUME = [{ from: 0.6, to: 2, share: 0.5 }, { from: 2, to: 3.2, share: 0.25 }, { from: 12, to: 40, share: 0.15 }, { from: 1.2, to: 50, share: 0.1 }];
 export const filledShare = (d) => PORE_VOLUME.reduce((s, c) => s + c.share * clamp((d - c.from) / (c.to - c.from), 0, 1), 0);
 // Isotherme (Modell): gefüllter Anteil über p/p₀, Füll- und Entleerungsast
 export function isotherm(steps = 99) {
   const ads = [], des = [];
   for (let i = 0; i <= steps; i++) {
     const rh = (i / steps) * 0.99;
-    ads.push([rh, filledShare(kelvinDiameterNm(rh))]);
+    ads.push([rh, filledShare(fillDiameterNm(rh))]);
     des.push([rh, filledShare(desorbDiameterNm(rh))]);
   }
   return { ads, des };

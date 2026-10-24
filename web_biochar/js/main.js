@@ -6,7 +6,7 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { createHud } from './hud.js';
-import { T_ROOM, kelvinDiameterNm, wetDiameterNm } from './science.js';
+import { T_ROOM, fillDiameterNm, wetDiameterNm } from './science.js';
 import { NOISE_GLSL } from './sem.js';
 import { quality } from './quality.js';
 
@@ -74,7 +74,7 @@ const state = {
   index: -1, active: null, controls: null, tr: null, intro: null, focus: null, dolly: null, dragging: false,
   cine: { idle: 0, w: 0, base: null },
   post: { dof: 0, bloom: 0 },
-  temp: 550, rh: 0.8, wet: kelvinDiameterNm(0.8),   // wet: gefüllt bis Ø (nm), mit Hysterese
+  temp: 550, rh: 0.8, wet: fillDiameterNm(0.8),   // wet: gefüllt bis Ø (nm), mit Hysterese
   pyro: { shown: 550, playing: false, tween: null },   // gezeigte Temperatur gleitet zur gewählten (Zeitraffer: ab Raumtemperatur)
   levels: new Map(), loading: new Map(), poses: new Map(), time: 0,
 };

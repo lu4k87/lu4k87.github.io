@@ -2,7 +2,7 @@
 // Info-Karte, REM-Datenleiste, Regler. Bildsprache: Hexagon-Badge direkt neben dem Objekt, beim Klick eine Karte links davon.
 
 import { LEVELS, SOURCES } from './content.js';
-import { properties, labProps, pyroState, fmt, T_MIN, T_MAX, T_ROOM, DRAPER, PHASES, kelvinDiameterNm, kelvinRh, filledShare, isotherm, poreClass } from './science.js';
+import { properties, labProps, pyroState, fmt, T_MIN, T_MAX, T_ROOM, DRAPER, PHASES, fillDiameterNm, kelvinRh, filledShare, isotherm, poreClass } from './science.js';
 import { hexBadge, LEVEL_ICONS, HOTSPOT_ICONS, FACT_ICONS } from './icons.js';
 
 const $ = (sel) => document.querySelector(sel);
@@ -179,7 +179,7 @@ export function createHud(handlers) {
   const isX = (rh) => IS.x0 + (rh / RH_MAX) * (IS.x1 - IS.x0);
   const isY = (f) => IS.y1 - f * (IS.y1 - IS.y0);
   const isPath = (pts) => pts.map(([x, y], i) => `${i ? 'L' : 'M'}${isX(x).toFixed(1)} ${isY(y).toFixed(1)}`).join('');
-  const hyst = (rh, d) => d > kelvinDiameterNm(rh) + 0.5;
+  const hyst = (rh, d) => d > fillDiameterNm(rh) + 0.5;
   const wetNote = (rh, d) => (hyst(rh, d) ? 'Beim Trocknen halten die Poren das Wasser länger: Hysterese (Modell).' : 'Kleinste Poren füllen sich zuerst (Kelvin-Gleichung).');
   function rhBlock(rh, d) {
     const m1 = kelvinRh(2) / RH_MAX, m2 = kelvinRh(50) / RH_MAX;
