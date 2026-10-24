@@ -197,7 +197,8 @@ body.panel-collapsed .panel { display: none; }
 
 /* ---------- Zoom-Schiene: log-Skala von 20 cm bis 0,5 nm, Hex-Marken je Ebene, ziehbarer Knopf ---------- */
 .ladder { grid-area: ladder; align-self: stretch; display: flex; }
-.rail { position: relative; width: 168px; margin: 26px 0 30px; }
+/* Hex-Marke 2× = 52 px; engstes Paar (1 mm/200 µm, 10 nm/2 nm) liegt 8,1 % der Schienenhöhe auseinander → bei niedrigem Fenster kleiner statt überlappen */
+.rail { position: relative; width: 182px; margin: 34px 0 38px; container-type: size; --rail-hex: min(52px, 8.4cqh); }
 .rail-track {
   position: absolute;
   left: 22px;
@@ -223,7 +224,7 @@ body.panel-collapsed .panel { display: none; }
   position: absolute;
   left: 22px;
   top: var(--y);
-  transform: translate(-13px, -50%);
+  transform: translate(calc(var(--rail-hex) / -2), -50%);
   display: flex;
   align-items: center;
   gap: 10px;
@@ -234,8 +235,31 @@ body.panel-collapsed .panel { display: none; }
   color: var(--ink);
   text-shadow: 0 1px 6px rgba(0, 0, 0, 0.8);
 }
-.hex--rail { width: 26px; height: 26px; --hex-fill: rgba(255, 255, 255, 0.08); opacity: 0.6; transition: opacity 0.25s, filter 0.25s, transform 0.25s; }
-.rail-level:hover .hex--rail, .rail-level.is-current .hex--rail, .rail-level.is-pull .hex--rail { opacity: 1; }
+.hex--rail { width: var(--rail-hex); height: var(--rail-hex); --hex-fill: rgba(255, 255, 255, 0.08); opacity: 0.6; transition: opacity 0.25s, filter 0.25s, transform 0.25s, color 0.25s; }   /* 2× (User, 2026-10-24) */
+.rail-level:hover .hex--rail, .rail-level:focus-visible .hex--rail, .rail-level.is-current .hex--rail, .rail-level.is-pull .hex--rail { opacity: 1; }
+/* Hover/Fokus: Lichthof blendet weich ein und atmet langsam (User, 2026-10-24); aktuelle und gezogene Ebene leuchten schon selbst */
+.rail-level::before {
+  content: "";
+  position: absolute;
+  left: calc(var(--rail-hex) / 2);
+  top: 50%;
+  width: 96px;
+  height: 96px;
+  margin: -48px 0 0 -48px;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, color-mix(in srgb, var(--accent) 34%, transparent), color-mix(in srgb, var(--accent) 12%, transparent) 60%, transparent);
+  opacity: 0;
+  pointer-events: none;
+  z-index: -1;
+  transition: opacity 0.18s ease-out;
+}
+.rail-level:not(.is-current, .is-pull):is(:hover, :focus-visible)::before {
+  opacity: 1;
+  transition-duration: 0.25s;
+  animation: rail-halo 2.6s ease-in-out infinite alternate;
+}
+.rail-level:not(.is-current, .is-pull):is(:hover, :focus-visible) .hex--rail { color: var(--accent); --hex-stroke: var(--accent); }
+@keyframes rail-halo { from { transform: scale(0.88); } to { transform: scale(1.04); } }
 .rail-level.is-current .hex--rail {
   --hex-fill: var(--accent);
   --hex-stroke: var(--accent);
@@ -740,9 +764,11 @@ body.has-error .fatal, body.no-webgl .fatal { opacity: 1; background: var(--bg);
   .panel-body { padding: 16px; }
   .panel h1 { font-size: 22px; }
   .ladder { align-self: stretch; overflow-x: auto; }
-  .rail { width: auto; margin: 0; display: flex; gap: 6px; padding: 4px 2px; }
+  .rail { width: auto; margin: 0; display: flex; gap: 6px; padding: 4px 2px; container-type: normal; }
   .rail-track, .rail-range, .rail-hit, .rail-knob { display: none; }
   .rail-level { position: static; transform: none; flex-direction: column; gap: 2px; padding: 4px 6px; }
+  .rail-level::before { display: none; }
+  .hex--rail { width: 26px; height: 26px; }   /* Leiste ohne Linie bleibt kompakt */
   .rail-text { align-items: center; }
   .rail-scale { display: none; }
   .rail-name { max-height: none; opacity: 1; font-size: 12px; }
@@ -763,7 +789,7 @@ body.has-error .fatal, body.no-webgl .fatal { opacity: 1; background: var(--bg);
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .hs-dot--dive, .hs-dot--dive::before, .loader-ring, .rail-level.is-current .hex--rail, .hsb--dive .hex, .hs-card-in { animation: none; }
+  .hs-dot--dive, .hs-dot--dive::before, .loader-ring, .rail-level.is-current .hex--rail, .rail-level::before, .hsb--dive .hex, .hs-card-in { animation: none; }
   .panel-body.is-entering { animation: none; }
   * { transition-duration: 0.01ms !important; }
 }
