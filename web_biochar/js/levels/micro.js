@@ -385,8 +385,10 @@ export function create(ctx) {
   const fibrils = [];
   const FIB_R = 1.75, FIB_LEN = HALF.y * 2 + 2;
   chainTex.repeat.set(FIB_LEN / C_REP, 6);
+  // Holz gedämpft (User 2026-10-24: „zu sehr überbelichtet“): dunklere Grundfarbe, wenig Umgebungslicht; envMap direkt,
+  // sonst gilt scene.environmentIntensity und envMapIntensity wirkt nicht
   const woodMat = new THREE.MeshStandardMaterial({
-    color: new THREE.Color(0.64, 0.57, 0.44), roughness: 0.62, metalness: 0, bumpMap: chainTex, bumpScale: 10, flatShading: true, transparent: true,
+    color: new THREE.Color(0.36, 0.3, 0.21), roughness: 0.75, metalness: 0, envMap: ctx.env, envMapIntensity: 0.25, bumpMap: chainTex, bumpScale: 10, flatShading: true, transparent: true,
   });
   for (let i = -1; i <= 1; i++) for (let j = -1; j <= 1; j++) {
     const cx = i * 3.9 + (j % 2 ? 1.9 : 0) + (wr() - 0.5) * 0.3, cz = j * 3.6 + (wr() - 0.5) * 0.3;
@@ -431,8 +433,8 @@ export function create(ctx) {
     }
   }
   const ringGeo = new THREE.CylinderGeometry(1, 1, 0.4, 6);   // Sechsring als flaches Prisma (Höhe 0,4 · Radius)
-  const hemiMat = new THREE.MeshStandardMaterial({ color: new THREE.Color(0.74, 0.64, 0.46), roughness: 0.6, metalness: 0, transparent: true });
-  const ligMat = new THREE.MeshStandardMaterial({ color: new THREE.Color(0.56, 0.4, 0.24), roughness: 0.45, metalness: 0, transparent: true });
+  const hemiMat = new THREE.MeshStandardMaterial({ color: new THREE.Color(0.44, 0.36, 0.25), roughness: 0.7, metalness: 0, envMap: ctx.env, envMapIntensity: 0.3, transparent: true });
+  const ligMat = new THREE.MeshStandardMaterial({ color: new THREE.Color(0.36, 0.24, 0.13), roughness: 0.55, metalness: 0, envMap: ctx.env, envMapIntensity: 0.3, transparent: true });
   const hemiMesh = new THREE.InstancedMesh(ringGeo, hemiMat, hemi.length);
   const ligMesh = new THREE.InstancedMesh(ringGeo, ligMat, lig.length);
   scene.add(hemiMesh, ligMesh);
