@@ -85,8 +85,9 @@ void main() {
   // vergrößert (Zahnrad „Satelliten und Kleinkörper“): Größe nach Abstand zum Blickziel, betrachteter Gürtel deutlich,
   // Gürtel weit hinter dem Blickziel klein; nur der Anteil uKeep bleibt sichtbar
   float k = mix(1.0, clamp(uRef / max(-mv.z, 1e-4), 0.3, 1.4), smoothstep(1.0, 2.5, uMag));
-  float on = seed.x > uKeep ? 0.0 : 1.0;
-  vPx = uPx * 1.6 * mix(1.0, uMag * (0.6 + 1.4 * seed.y * seed.y), smoothstep(1.0, 1.5, uMag)) * k;
+  // kleine Brocken (seed.y klein) bleiben beim Ausdünnen öfter stehen: viele kleine, wenige große
+  float on = seed.x > min(1.0, uKeep * (1.0 + 2.0 * (1.0 - seed.y))) ? 0.0 : 1.0;
+  vPx = uPx * 1.3 * mix(1.0, uMag * (0.4 + 1.2 * seed.y * seed.y * seed.y), smoothstep(1.0, 1.5, uMag)) * k;
   gl_PointSize = vPx * on;
   vB = bright * on * min(k, 1.0);
   vSeed = seed.y;
@@ -531,16 +532,16 @@ export function create(ctx) {
   };
   const jup = elementsAt(PLANETS[4], jd0);
   const beltMats = [
-    belt(Math.round(9000 * detail), () => ({ a: mainA(), e: ray(0.08), i: ray(0.12) }), 0xd8c8b0, 0.55),
-    belt(Math.round(700 * detail), () => ({ a: 3.97 + gauss(rand) * 0.03, e: 0.1 + ray(0.06), i: ray(0.1) }), 0xd8c8b0, 0.5),
+    belt(Math.round(20000 * detail), () => ({ a: mainA(), e: ray(0.08), i: ray(0.12) }), 0xd8c8b0, 0.55),
+    belt(Math.round(1400 * detail), () => ({ a: 3.97 + gauss(rand) * 0.03, e: 0.1 + ray(0.06), i: ray(0.1) }), 0xd8c8b0, 0.5),
     // Trojaner: mittlere Länge 60° vor bzw. hinter Jupiter, gleiche Halbachse
-    belt(Math.round(1600 * detail), (i) => {
+    belt(Math.round(3000 * detail), (i) => {
       const lead = i % 2 ? 60 : -60;
       const node = rand() * Math.PI * 2, w = rand() * Math.PI * 2;
       const L = (jup.L + lead + gauss(rand) * 12) * RAD;
       return { a: 5.2 + gauss(rand) * 0.05, e: ray(0.06), i: ray(0.2), node, w, M: L - node - w };
     }, 0xc8b8a0, 0.5),
-    belt(Math.round(4500 * detail), (i) => (i % 5 === 0
+    belt(Math.round(8000 * detail), (i) => (i % 5 === 0
       ? { a: 39.4 + gauss(rand) * 0.25, e: 0.1 + ray(0.08), i: ray(0.2) }
       : { a: 42 + rand() * 6, e: ray(0.05), i: ray(0.08) }), 0xa8c0e0, 0.5),
   ];
