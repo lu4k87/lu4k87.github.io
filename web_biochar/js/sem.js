@@ -39,8 +39,11 @@ export const ADDITIVE = {
 // Ein Detektor für alle REM-Materialien; er schwenkt langsam (Lichtführung), die Ebenen rufen semDetector(t) auf
 const DET0 = new THREE.Vector3(-0.45, 0.75, 0.5).normalize();
 export const SEM_DET = { value: DET0.clone() };
+// Schwenk an/aus (Zahnrad „REM-Detektor schwenkt“, main.js): 0 = Detektor steht in der Grundlage DET0
+export const SEM_SWING = { k: 1 };
 const _yAxis = new THREE.Vector3(0, 1, 0), _xAxis = new THREE.Vector3(1, 0, 0);
 export function semDetector(t, k = 1) {
+  k *= SEM_SWING.k;
   SEM_DET.value.copy(DET0).applyAxisAngle(_yAxis, 0.42 * k * Math.sin(t * 0.071)).applyAxisAngle(_xAxis, 0.14 * k * Math.sin(t * 0.113 + 1.0));
 }
 
