@@ -112,6 +112,7 @@ Alle Ports: [7.4 Netzwerk & Ports](de/running.html#74-netzwerk---port-architektu
 | [👁️ Vision & Greifen](de/vision_grasping.html) | 3.3 | ZED / IP-Kamera, YOLO 3D, MoveIt-Kollision, Greif-Executoren |
 | [🗣️ Sprache & Blick](de/voice_gaze.html) | 3.4 | Whisper-Pipeline, Sprach-Intents, Tobii-Blick-UI und Greifroutine |
 | [🥽 VR Quest 3](de/vr_quest3.html) | 3.5 | WebXR-Teleoperation, VR-HUD, Einrichtung und Fehlersuche |
+| [🕶 MR-Brille (Magic Leap 2)](de/mr_magicleap2.html) | 3.5b | MR-Ansicht des echten Roboters, Ausrichten, Ebenen, nur E-STOP |
 | [🖥️ UX \| Control Interface & Motion](de/robot_control_ui.html) | 3.6 | Web-UI-Funktionen, UX \| Compact Interface, Motion Handler, RViz-Overlays und -Marker |
 | [🧊 Isaac Sim](de/isaac_sim.html) | 3.7 | Digital Twin im Shadow Mode |
 | [🤖 VLA-M-Chat](de/vla.html) | 4.3 | KI-Agent (Agentic ROS): Plan → Prüfung → Ausführung → Neuplanung, Sicherheit, Roadmap |

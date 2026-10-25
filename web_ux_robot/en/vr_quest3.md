@@ -116,4 +116,4 @@
 
 ---
 
-[⬅ Previous: Voice & Gaze Control](voice_gaze.html) · [🏠 Overview](../readme-en.html) · [⬆ Top](#top) · [Next: UX | Control Interface & Motion Backend ➡](robot_control_ui.html)
+[⬅ Previous: Voice & Gaze Control](voice_gaze.html) · [🏠 Overview](../readme-en.html) · [⬆ Top](#top) · [Next: MR Headset (Magic Leap 2) ➡](mr_magicleap2.html)

@@ -116,4 +116,4 @@
 
 ---
 
-[⬅ Zurück: Sprach- & Blicksteuerung](voice_gaze.html) · [🏠 Übersicht](../readme-de.html) · [⬆ Nach oben](#top) · [Weiter: UX | Control Interface & Motion-Backend ➡](robot_control_ui.html)
+[⬅ Zurück: Sprach- & Blicksteuerung](voice_gaze.html) · [🏠 Übersicht](../readme-de.html) · [⬆ Nach oben](#top) · [Weiter: MR-Brille (Magic Leap 2) ➡](mr_magicleap2.html)

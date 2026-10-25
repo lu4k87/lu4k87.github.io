@@ -813,4 +813,4 @@
 
 ---
 
-[⬅ Zurück: VR-Teleoperation (Meta Quest 3)](vr_quest3.html) · [🏠 Übersicht](../readme-de.html) · [⬆ Nach oben](#top) · [Weiter: Digital Twin in NVIDIA Isaac Sim ➡](isaac_sim.html)
+[⬅ Zurück: MR-Brille (Magic Leap 2)](mr_magicleap2.html) · [🏠 Übersicht](../readme-de.html) · [⬆ Nach oben](#top) · [Weiter: Digital Twin in NVIDIA Isaac Sim ➡](isaac_sim.html)
