@@ -494,7 +494,7 @@ export function create(ctx) {
     sheet: { id: 'sheet', kind: 'dive', pos: new THREE.Vector3(), normal: new THREE.Vector3() },
     stack: { id: 'stack', kind: 'info', pos: new THREE.Vector3(), normal: null },
     micropore: { id: 'micropore', kind: 'info', pos: new THREE.Vector3(), normal: null },
-    gas: { id: 'gas', kind: 'info', pos: new THREE.Vector3(), normal: null },
+    gas: { id: 'gas', kind: 'info', pos: new THREE.Vector3(), normal: null, side: 'right' },   // Abzeichen rechts, das der Mikropore links
     fibril: { id: 'fibril', kind: 'info', pos: fibSpot, normal: new THREE.Vector3(0, 0, 1) },
     hemi: { id: 'hemi', kind: 'info', pos: hemiSpot, normal: null },
   };
@@ -539,14 +539,15 @@ export function create(ctx) {
     lines.instanceMatrix.needsUpdate = true;
     sheetAttr.needsUpdate = true;
     probe.visible = !woody;
-    if (sheets.length && Math.abs(T - searchedT) >= 12) searchHotspots(T);
+    if (sheets.length && !(Math.abs(T - searchedT) < 12)) searchHotspots(T);   // erste Suche: searchedT ist NaN
     const spot = st.sheets < 0.5 || !sheets.length ? { pos: ligSpot, normal: Z_AXIS } : sheetSpot;
     hs.sheet.pos.copy(spot.pos);
     hs.sheet.normal.copy(spot.normal);
   }
 
-  // Hotspots der Kohle nur alle ≈ 12 °C neu suchen (teuer): großer Cluster nahe der Mitte (Tauchziel), dicker Stapel,
-  // größte leere Kugel (Mikropore), ein CO₂-Molekül
+  // Hotspots der Kohle nur alle ≈ 12 °C neu suchen (teuer): großer Cluster nahe der Mitte (Tauchziel), dicker Stapel
+  // unten links, größte leere Kugel (Mikropore) rechts unten, ein CO₂-Molekül darin – verteilt wie auf den anderen Ebenen,
+  // sonst liegen alle Punkte in der Bildmitte und die Abzeichen stapeln sich in einer Spalte
   function searchHotspots(T) {
     searchedT = T;
     const { sheets } = model;
@@ -556,13 +557,14 @@ export function create(ctx) {
     if (nrm.dot(homePos.clone().sub(bigU.c)) < 0) nrm.negate();
     sheetSpot.pos.copy(bigU.c).addScaledVector(nrm, 0.25);
     sheetSpot.normal.copy(nrm);
-    const stack = model.vis.filter((u) => u.layers >= 2 && u !== bigU).sort((a, b) => a.c.distanceTo(new THREE.Vector3(-2.5, 1, 1)) - b.c.distanceTo(new THREE.Vector3(-2.5, 1, 1)))[0] || bigU;
+    const stackAt = new THREE.Vector3(-3, -1.2, 1.5);
+    const stack = model.vis.filter((u) => u.layers >= 2 && u !== bigU).sort((a, b) => a.c.distanceTo(stackAt) - b.c.distanceTo(stackAt))[0] || bigU;
     hs.stack.pos.copy(stack.c);
     const r = mulberry32(99);
     const table = sheetTable(sheets);
     let best = null, bestD = 0;
     for (let k = 0; k < 2500; k++) {
-      const px = (r() * 2 - 1) * 3, py = (r() * 2 - 1) * 2, pz = (r() * 2 - 1) * 2.5;
+      const px = 0.8 + r() * 2.4, py = -2 + r() * 2.2, pz = (r() * 2 - 1) * 2.5;
       const d = nearestSheet(table, px, py, pz, bestD);
       if (d > bestD && d < 1.0) { bestD = d; best = new THREE.Vector3(px, py, pz); }
     }

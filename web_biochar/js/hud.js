@@ -1031,7 +1031,9 @@ export function createHud(handlers) {
       for (const m of items) {
         const leftFits = m.ax - GAP - m.w >= rect.x0, rightFits = m.ax + GAP + m.w <= rect.x1;
         // Seite bleibt, solange sie passt: sonst springt das Abzeichen in der Leerlauf-Fahrt am Rand hin und her
-        m.right = (selected && m.h.id === selected.id) || (m.right ? rightFits || !leftFits : !leftFits);   // gewähltes Abzeichen rechts vom Punkt: links bleibt Platz für die Karte
+        // h.side = 'right': Ebene wünscht das Abzeichen rechts (zwei Punkte dicht beieinander, Ebene 6)
+        m.right = (selected && m.h.id === selected.id) || (m.h.side === 'right' && rightFits) ||
+          (m.right ? rightFits || !leftFits : !leftFits);   // gewähltes Abzeichen rechts vom Punkt: links bleibt Platz für die Karte
         m.tx = m.right ? m.ax + GAP + m.w / 2 : m.ax - GAP - m.w / 2;
         m.ty = m.ay;
       }
