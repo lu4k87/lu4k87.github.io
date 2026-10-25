@@ -1,6 +1,8 @@
 // Ebene 7: ein aromatischer Cluster (Einheit Å) mit Randgruppen – Größe und Sauerstoffanteil folgen der
-// Pyrolysetemperatur. Vereinfachtes Kugel-Stab-Modell: eben, ohne Fünf-/Siebenring-Defekte; konische Bindungen in
-// den Farben der Atome, weiche Elektronenwolke (van-der-Waals-Radius) und weiche Eigenschatten.
+// Pyrolysetemperatur. Vereinfachtes Kugel-Stab-Modell: konische Bindungen in den Farben der Atome, weiche Elektronenwolke
+// (van-der-Waals-Radius) und weiche Eigenschatten. Ab 7 Ringen trägt der Cluster einen Stone-Wales-Defekt (zwei Fünf-, zwei
+// Siebenringe aus einer um 90° gedrehten Bindung, Stone & Wales 1986) und wölbt sich (Harris 2005: gekrümmte Schichten,
+// deshalb kein Graphit); Stärke der Wölbung: Modell.
 
 import * as THREE from 'three';
 import { nanoStructure, fmt, T_MIN, T_MAX } from '../science.js';
@@ -119,7 +121,7 @@ export function buildCluster(T) {
   for (let q = -5; q <= 5; q++) {
     for (let r = -5; r <= 5; r++) {
       const x = Math.sqrt(3) * A * (q + r / 2), y = 1.5 * A * r;
-      cand.push({ x, y, d: Math.hypot(x, y) + 0.001 * Math.atan2(y, x) });
+      cand.push({ x, y, q, r, d: Math.hypot(x, y) + 0.001 * Math.atan2(y, x) });
     }
   }
   cand.sort((a, b) => a.d - b.d);
@@ -134,15 +136,49 @@ export function buildCluster(T) {
     if (!keyOf.has(k)) keyOf.set(k, addAtom('C', new THREE.Vector3(x, y, 0)));
     return keyOf.get(k);
   };
-  const bond = (i, j, order = 1) => bonds.set(i < j ? `${i}-${j}` : `${j}-${i}`, { i, j, order });
-  for (const ring of rings) {
+  const bkey = (i, j) => (i < j ? `${i}-${j}` : `${j}-${i}`);
+  const bond = (i, j, order = 1) => bonds.set(bkey(i, j), { i, j, order });
+  const ringIds = rings.map((ring) => {
     const ids = [];
     for (let k = 0; k < 6; k++) {
       const a = Math.PI / 6 + (k * Math.PI) / 3;
       ids.push(carbon(ring.x + A * Math.cos(a), ring.y + A * Math.sin(a)));
     }
     for (let k = 0; k < 6; k++) bond(ids[k], ids[(k + 1) % 6]);
+    return ids;
+  });
+  // Stone-Wales-Defekt (Stone & Wales 1986): ab 7 Ringen (erste Schale voll, ≈ 525 °C) dreht sich die Bindung zwischen dem
+  // Mittelring (0,0) und seinem Nachbarn (0,−1) um 90°. Die beiden Ringe an der Bindung verlieren je ein Atom (Fünfringe),
+  // die beiden Ringe an ihren Enden gewinnen je eins (Siebenringe); alle sechs Atome bleiben dreibindig. Die gedrehten Atome
+  // behalten den Schlüssel ihrer Gitterlage – im Übergang gleiten sie, die Bindungen brechen und schließen sich neu.
+  let sw = null;
+  if (rings.length >= 7) {
+    const idx = (q, r) => rings.findIndex((g) => g.q === q && g.r === r);
+    const iL = idx(0, 0), iR = idx(0, -1), iT = idx(1, -1), iB = idx(-1, 0);
+    if (iL >= 0 && iR >= 0 && iT >= 0 && iB >= 0) {
+      const [a, b] = ringIds[iL].filter((id) => ringIds[iR].includes(id));
+      const nbOf = (i) => [...bonds.values()].filter((bd) => bd.i === i || bd.j === i).map((bd) => (bd.i === i ? bd.j : bd.i));
+      const others = [...nbOf(a).filter((x) => x !== b), ...nbOf(b).filter((x) => x !== a)];
+      const pa = atoms[a].p, pb = atoms[b].p, mid = pa.clone().add(pb).multiplyScalar(0.5);
+      const keyA = keyOfAtom(atoms[a]), keyB = keyOfAtom(atoms[b]);
+      atoms[a].p = new THREE.Vector3(mid.x - (pa.y - mid.y), mid.y + (pa.x - mid.x), 0);
+      atoms[b].p = new THREE.Vector3(mid.x - (pb.y - mid.y), mid.y + (pb.x - mid.x), 0);
+      atoms[a].key = keyA; atoms[b].key = keyB;
+      for (const o of others) { bonds.delete(bkey(a, o)); bonds.delete(bkey(b, o)); }
+      others.sort((x, y) => atoms[x].p.distanceTo(atoms[a].p) - atoms[y].p.distanceTo(atoms[a].p));
+      bond(a, others[0]); bond(a, others[1]); bond(b, others[2]); bond(b, others[3]);
+      // Fünfring = Rest des Rings plus das gedrehte Atom, das noch an ihm hängt; Siebenring = Rest plus beide
+      const linked = (ids, id) => ids.some((x) => x !== a && x !== b && bonds.has(bkey(id, x)));
+      for (const i of [iL, iR]) { const rest = ringIds[i].filter((x) => x !== a && x !== b); ringIds[i] = [...rest, linked(rest, a) ? a : b]; }
+      for (const i of [iT, iB]) ringIds[i] = [...ringIds[i].filter((x) => x !== a && x !== b), a, b];
+      const dir = atoms[b].p.clone().sub(atoms[a].p).normalize();
+      sw = { at: mid, normal: new THREE.Vector3(-dir.y, dir.x, 0), hex: idx(1, 0) };
+    }
   }
+  const ringOut = rings.map((r, i) => {
+    const c = ringIds[i].reduce((v, id) => v.add(atoms[id].p), new THREE.Vector3()).multiplyScalar(1 / ringIds[i].length);
+    return { x: r.x, y: r.y, cx: c.x, cy: c.y, n: ringIds[i].length };
+  });
   const ringCarbons = atoms.length;
   const degree = new Array(ringCarbons).fill(0);
   const neighbors = Array.from({ length: ringCarbons }, () => []);
@@ -216,8 +252,10 @@ export function buildCluster(T) {
 
   const count = { C: 0, H: 0, O: 0, K: 0 };
   for (const a of atoms) count[a.el]++;
+  // Abzeichen „Aromatischer Ring“ auf einem unversehrten Sechsring: mit Defekt der Nachbar (1,0), sonst die Mitte
+  const hexRing = sw ? ringOut[sw.hex] : ringOut[0];
   return {
-    ns, rings, atoms, bonds: [...bonds.values()], marks,
+    ns, rings: ringOut, atoms, bonds: [...bonds.values()], marks, sw, ringAt: new THREE.Vector3(hexRing.cx, hexRing.cy, 0),
     formula: `C${sub(count.C)}H${sub(count.H)}O${sub(count.O)}`,
     hc: count.H / count.C,
     nRings: rings.length,
@@ -256,13 +294,16 @@ export function create(ctx) {
   const cloudMat = new THREE.ShaderMaterial({
     uniforms: { uStrength: { value: 0.02 } }, vertexShader: CLOUD_VERT, fragmentShader: CLOUD_FRAG, ...ADDITIVE,
   });
-  // π-Elektronen über und unter den Ringen: weiche Scheiben statt harter Sechsecke
+  // π-Elektronen über und unter den Ringen: weiche Scheiben statt harter Sechsecke; Fünf- und Siebenringe golden (wie die
+  // Markierung in Ebene 6), Scheibe skaliert mit dem Umkreis des Rings
   const piMat = new THREE.ShaderMaterial({
     uniforms: {},
-    vertexShader: /* glsl */ `varying vec2 vP; void main() { vP = position.xy; gl_Position = projectionMatrix * modelViewMatrix * instanceMatrix * vec4(position, 1.0); }`,
-    fragmentShader: /* glsl */ `varying vec2 vP; void main() { float r = length(vP) / ${(A * 1.15).toFixed(3)}; gl_FragColor = vec4(vec3(0.48, 0.64, 1.0) * 0.022 * (1.0 - smoothstep(0.2, 1.0, r)), 1.0); }`,
+    vertexShader: /* glsl */ `varying vec2 vP; varying vec3 vC; void main() { vP = position.xy; vC = instanceColor; gl_Position = projectionMatrix * modelViewMatrix * instanceMatrix * vec4(position, 1.0); }`,
+    fragmentShader: /* glsl */ `varying vec2 vP; varying vec3 vC; void main() { float r = length(vP) / ${(A * 1.15).toFixed(3)}; gl_FragColor = vec4(vC * (1.0 - smoothstep(0.2, 1.0, r)), 1.0); }`,
     ...ADDITIVE, side: THREE.DoubleSide,
   });
+  const PI_HEX = new THREE.Color(0.48, 0.64, 1.0).multiplyScalar(0.022), PI_DEFECT = new THREE.Color(1.0, 0.72, 0.28).multiplyScalar(0.07);
+  const RING_R = { 5: 1.208 / A, 6: 1, 7: 1.636 / A };   // Umkreis relativ zum Sechsring (A / (2·sin(π/n)))
   const hex = new THREE.CircleGeometry(A * 1.15, 24);
   const group = new THREE.Group();
   scene.add(group);
@@ -273,6 +314,18 @@ export function create(ctx) {
     phenol: { id: 'phenol', kind: 'info', pos: new THREE.Vector3(), normal: null },
     carbonyl: { id: 'carbonyl', kind: 'info', pos: new THREE.Vector3(), normal: null },
     edgeh: { id: 'edgeh', kind: 'info', pos: new THREE.Vector3(), normal: null },
+    sw: { id: 'sw', kind: 'info', pos: new THREE.Vector3(0, 0, 1e4), normal: null },
+  };
+  // Wölbung (Modell nach Harris 2005): mit dem Defekt wird die Schicht schalenförmig (Krümmungsradius 2 nm wie die Schichten
+  // in Ebene 6) und kippt an der gedrehten Bindung sinusförmig – die Seite des einen Fünfrings hebt sich, die andere senkt
+  // sich. swMix blendet die Wölbung ein, wenn der Defekt entsteht
+  const BOWL_R = 20, SW_AMP = 0.9, SW_SIG = 3.2;
+  let swMix = 0, swWant = 0;
+  const swC = new THREE.Vector3(), swN = new THREE.Vector3(1, 0, 0);
+  const warpZ = (x, y, mix = swMix) => {
+    if (mix <= 0) return 0;
+    const dx = x - swC.x, dy = y - swC.y;
+    return mix * (-(x * x + y * y) / (2 * BOWL_R) + SW_AMP * ((dx * swN.x + dy * swN.y) / SW_SIG) * Math.exp(-(dx * dx + dy * dy) / (2 * SW_SIG * SW_SIG)));
   };
 
   // ---- Atome, Bindungen und Ringe als lebender Bestand: Temperaturwechsel gleitet statt neu aufzubauen ----
@@ -329,20 +382,24 @@ export function create(ctx) {
     for (const [bk, e] of bondPool) if (!nextBonds.has(bk)) e.want = e.a.leaving && e.b.leaving ? 1 : 0;   // die abziehende Gruppe bleibt zusammen
     const nextRings = new Set();
     for (const r of cluster.rings) {
-      const rk = `${Math.round(r.x * 10)},${Math.round(r.y * 10)}`;
+      const rk = `${Math.round(r.x * 10)},${Math.round(r.y * 10)}`;   // Schlüssel = Gitterlage; Mitte und Ringgröße gleiten
       nextRings.add(rk);
       let e = ringPool.get(rk);
       if (!e) { e = { x: r.x, y: r.y, s: instant ? 1 : 0 }; ringPool.set(rk, e); }
-      e.want = 1;
+      e.want = 1; e.cx = r.cx; e.cy = r.cy; e.n = r.n;
     }
     for (const [rk, e] of ringPool) if (!nextRings.has(rk)) e.want = 0;
     orderDirty = true;
+    if (cluster.sw) { swC.copy(cluster.sw.at); swN.copy(cluster.sw.normal); swWant = 1; } else swWant = 0;
+    if (instant) swMix = swWant;
     for (const k of ['carboxyl', 'phenol', 'carbonyl', 'edgeh']) {
       const id = cluster.marks[k];
       if (id === undefined) hs[k].pos.set(0, 0, 1e4);   // Gruppe gibt es in dieser Stufe nicht → Abzeichen außer Sicht
-      else hs[k].pos.copy(cluster.atoms[id].p).add(new THREE.Vector3(0, 0, k === 'carboxyl' ? 1.3 : 0.7));
+      else { const p = cluster.atoms[id].p; hs[k].pos.set(p.x, p.y, p.z + warpZ(p.x, p.y, swWant) + (k === 'carboxyl' ? 1.3 : 0.7)); }
     }
-    hs.ring.pos.set(cluster.ringAt ? cluster.ringAt.x : 0, cluster.ringAt ? cluster.ringAt.y : 0, 0.9);
+    const ra = cluster.ringAt || new THREE.Vector3();
+    hs.ring.pos.set(ra.x, ra.y, 0.9 + warpZ(ra.x, ra.y, swWant));
+    if (cluster.sw) hs.sw.pos.set(swC.x, swC.y, 1.1 + warpZ(swC.x, swC.y, 1)); else hs.sw.pos.set(0, 0, 1e4);
   }
 
   function reorder() {
@@ -361,7 +418,9 @@ export function create(ctx) {
       }
     }
     order.nBond = Math.min(n, CAP_B);
-    for (const m of [atomMesh, cloudMesh, bondMesh]) if (m.instanceColor) m.instanceColor.needsUpdate = true;
+    order.rings = [...ringPool.values()].slice(0, CAP_R);
+    order.rings.forEach((e, k) => { const c = e.n === 6 || !e.n ? PI_HEX : PI_DEFECT; piMesh.setColorAt(2 * k, c); piMesh.setColorAt(2 * k + 1, c); });
+    for (const m of [atomMesh, cloudMesh, bondMesh, piMesh]) if (m.instanceColor) m.instanceColor.needsUpdate = true;
     orderDirty = false;
   }
 
@@ -402,8 +461,8 @@ export function create(ctx) {
     at.forEach((a, k) => {
       const amp = a.el === 'K' ? 0.12 : 0.035;
       a.pos ??= new THREE.Vector3();
-      a.pos.set(
-        a.home.x + a.off.x + amp * Math.sin(t * 7.3 + a.ph[0]), a.home.y + a.off.y + amp * Math.sin(t * 8.1 + a.ph[1]), a.home.z + a.off.z + amp * Math.sin(t * 6.7 + a.ph[2]));
+      const hx = a.home.x + a.off.x, hy = a.home.y + a.off.y;
+      a.pos.set(hx + amp * Math.sin(t * 7.3 + a.ph[0]), hy + amp * Math.sin(t * 8.1 + a.ph[1]), a.home.z + a.off.z + warpZ(hx, hy) + amp * Math.sin(t * 6.7 + a.ph[2]));
       a.e = a.leaving ? ease(a.s) : ease(a.s);
       s.setScalar(ELEMENT[a.el].r * a.e);
       atomMesh.setMatrixAt(k, m.compose(a.pos, q.identity(), s));
@@ -435,12 +494,11 @@ export function create(ctx) {
     }
     bondMesh.count = n;
     let r = 0;
-    for (const e of ringPool.values()) {
-      if (r + 2 > CAP_R * 2) break;
-      const f = ease(e.s) + 0.001;
+    for (const e of order.rings || []) {
+      const f = (ease(e.s) + 0.001) * (RING_R[e.n] || 1), cx = e.cx ?? e.x, cy = e.cy ?? e.y, wz = warpZ(cx, cy);
       s.set(f, f, 1);
-      piMesh.setMatrixAt(r++, m.compose(c.set(e.x, e.y, 0.95), q.identity(), s));
-      piMesh.setMatrixAt(r++, m.compose(c.set(e.x, e.y, -0.95), q, s));
+      piMesh.setMatrixAt(r++, m.compose(c.set(cx, cy, 0.95 + wz), q.identity(), s));
+      piMesh.setMatrixAt(r++, m.compose(c.set(cx, cy, -0.95 + wz), q, s));
     }
     piMesh.count = r;
     for (const mesh of [atomMesh, cloudMesh, bondMesh, piMesh]) mesh.instanceMatrix.needsUpdate = true;
@@ -466,7 +524,7 @@ export function create(ctx) {
     liveFacts: true,
     // Summenformel und H/C zählen live mit (Atome, die einwachsen oder abziehen, zählen anteilig)
     facts: () => [
-      { value: `C${sub(Math.round(live.C))}H${sub(Math.round(live.H))}O${sub(Math.round(live.O))}`, label: `Summenformel dieses Clusters, ${fmt(live.rings)} Ringe (ohne K⁺)` },
+      { value: `C${sub(Math.round(live.C))}H${sub(Math.round(live.H))}O${sub(Math.round(live.O))}`, label: `Summenformel dieses Clusters, ${fmt(live.rings)} Ringe${cluster && cluster.sw ? ', davon 2 Fünf- und 2 Siebenringe' : ''} (ohne K⁺)` },
       { value: fmt(live.hc, 2), label: 'molares H/C dieses Modell-Clusters' },
     ],
     update(dt, t) {
@@ -479,6 +537,7 @@ export function create(ctx) {
         if (reduced) for (const [k, e] of pool) if (e.leaving) pool.delete(k);
       }
       step(reduced ? 10 : Math.min(dt, 0.1));
+      swMix += (swWant - swMix) * (reduced ? 1 : 1 - Math.exp(-dt * 2.5));   // Wölbung gleitet mit dem Defekt ein/aus
       place(t);
       return true;
     },

@@ -14,6 +14,8 @@ import * as THREE from 'three';
 import { SEM_GLSL, SEM_DET, semDetector } from '../sem.js';
 import { pcg3d, vnoise3 } from '../util.js';
 import { fillDiameterNm, fmt, labProps, pyroState } from '../science.js';
+import { race as raceTable } from '../nanolab.js';
+import { settings } from '../settings.js';
 
 const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -21,6 +23,10 @@ const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
 // quer zur Faser, Tiefe
 const PG = 1.6, VG = 6.0, VOID_P = 0.55, CRACK_V = -4.5, CRACK_D = 11.0;
 const FIB = [0.9404, 0, 0.3401], SIDE = [-0.3401, 0, 0.9404];
+// Diffusions-Rennen: eine stehende Schlitzpore 24 × 12 × 6 nm (Modell; Weite 6 nm → Knudsen-Zahl ≈ 11, Rennen nur in der
+// trockenen Pore), Lage aus findSpots('race'); Moleküle (CH₄, H₂O, N₂, CO₂) laufen entlang FIB und prallen in SIDE-Richtung
+// von Wand zu Wand – Knudsen-Diffusion: Stöße mit der Wand, Geschwindigkeit ∝ 1/√M (nanolab.js)
+const RACE_RAD = [1.2, 0.6, 0.3];
 
 const FRAG = /* glsl */ `
 precision highp float;
@@ -38,8 +44,10 @@ uniform vec3 uTint;
 uniform float uFilm;     // Wasserfilm auf den Porenwänden: 0 trocken … 1 kurz vor der Sättigung
 uniform float uDrift;    // 1 = Glanzpunkte des Films wandern, 0 bei reduzierter Bewegung
 uniform vec2 uMarch;     // Raymarching je Qualitätsstufe: Schritte (max. 140) und Schrittfaktor
+uniform vec3 uRaceC;     // Mitte der Rennstrecke (Schlitzpore des Diffusions-Rennens)
 varying vec2 vUv;
 ${SEM_GLSL}
+const vec3 RACE_RAD = vec3(${RACE_RAD.map((v) => v.toFixed(2)).join(', ')});
 const float PG = ${PG.toFixed(2)};
 const float VG = ${VG.toFixed(2)};
 const float VOID_P = ${VOID_P.toFixed(2)};
@@ -101,6 +109,13 @@ float plates(vec3 p, out float fill) {
   }
   return d;
 }
+// Rennstrecke: stehender Schlitz (dünne Achse = SIDE), von der Bruchfläche angeschnitten; außerhalb der Hülle nur die
+// Kugelschranke (untere Grenze des Abstands, Raymarching bleibt sicher)
+float raceSlit(vec3 p) {
+  vec3 e = p - uRaceC;
+  if (dot(e, e) > 2.0) return length(e) - 1.2;
+  return sdEll(vec3(dot(e, FIB), e.y, dot(e, SIDE)), RACE_RAD);
+}
 // Rundliche Mesoporen (Modell, Ø 12–40 nm): abgeflachte Kugeln, von der Bruchfläche angeschnitten (Mitte 15–60 % des
 // Halbmessers unter der groben Welle von topY), Rand unregelmäßig (irr); Wasser steht von unten bis zur Füllhöhe
 float voids(vec3 p, float irr, out float wat) {
@@ -151,7 +166,9 @@ vec2 map(vec3 p) {
   // Holz → Kohle: jede Porenart ist um ihre halbe Größe „aufgeblasen“, bis sie geschlossen ist (Abstandsfeld bleibt gültig)
   float iP = (1.0 - uOpen) * 0.22, iV = (1.0 - uOpen) * 3.8, iC = (1.0 - uOpen) * 3.0;
   float wP, wV, wC;
-  float dP = plates(p, wP) + iP;
+  float dRr = raceSlit(p);
+  float dP = min(plates(p, wP), dRr) + iP;
+  if (RACE_RAD.z * 20.0 < uWaterD) wP = min(wP, dRr);   // 6-nm-Schlitz füllt wie die anderen Schlitze
   float dV = voids(p, vn(p * 0.9 + 50.0) - 0.5, wV) + iV;
   float dC = crack(p, ty, wC) + iC;
   float dPore = min(dP, min(dV, dC));
@@ -301,10 +318,11 @@ function crackD(p, ty) {
 }
 const topY = (x, z) => -0.6 + 1.1 * vnoise3(x * 0.09, z * 0.09, 3) + 0.45 * vnoise3(x * 0.31, z * 0.31, 7);
 
-// Hotspots: Wand ohne Poren (Abstieg zu den Mikroporen), Riss, Schlitzpore, rundliche Pore (Wasser steht dort sichtbar).
-// Schlitze mit Rasterwert < 0,3 gibt es ab 400 °C bei jeder Temperatur.
+// Hotspots: Wand ohne Poren (Abstieg zu den Mikroporen), Riss, Schlitzpore, rundliche Pore (Wasser steht dort sichtbar),
+// Rennstrecke (freie Wand vorn links, Riss und rundliche Poren fern). Schlitze mit Rasterwert < 0,3 gibt es ab 400 °C bei
+// jeder Temperatur.
 function findSpots() {
-  const want = { wallpore: [-3, 1.5], macro: [5, -3], meso: [-7, -1], water: [2.1, 2.5] };
+  const want = { wallpore: [-3, 1.5], macro: [5, -3], meso: [-7, -1], water: [2.1, 2.5], race: [-5, 5.5] };
   const best = {};
   for (let x = -14; x <= 14; x += 0.3) {
     for (let z = -12; z <= 12; z += 0.3) {
@@ -315,6 +333,7 @@ function findSpots() {
       if (crackD([x, ty - 2.5, z], ty) < -0.9) classes.push(['macro', ty - 2.5]);
       if (dP < -0.06 && dV > 0.6 && dC > 1) classes.push(['meso', ty - 0.12]);
       if (dV < -0.5 && vd.R > 0.8 && dC > 1) classes.push(['water', ty - 0.6]);
+      if (plateD(p, 1) > 0.3 && dV > 1.6 && dC > 3) classes.push(['race', ty]);
       for (const [c, y] of classes) {
         const d = Math.hypot(x - want[c][0], z - want[c][1]);
         if (!best[c] || d < best[c].d) best[c] = { d, pos: new THREE.Vector3(x, y, z) };
@@ -355,6 +374,21 @@ function findMeasures(home, avoid) {
   return out.map((c) => ({ pos: c.pos, nm: c.nm, name: 'Mesopore' }));
 }
 
+// Rennteilnehmer als Kalottenmodell (van-der-Waals-Radien, Bondi 1964; Koordinaten in nm wie in Ebene 6), CH₄ tetraedrisch
+const ELEMENT = { C: { r: 0.17, color: [0.32, 0.33, 0.36] }, O: { r: 0.152, color: [0.9, 0.24, 0.22] }, N: { r: 0.155, color: [0.3, 0.5, 0.95] }, H: { r: 0.12, color: [0.95, 0.95, 0.97] } };
+const TET = 0.109 / Math.sqrt(3);
+const MOLECULES = {
+  ch4: [['C', 0, 0, 0], ['H', TET, TET, TET], ['H', -TET, -TET, TET], ['H', -TET, TET, -TET], ['H', TET, -TET, -TET]],
+  h2o: [['O', 0, 0, 0], ['H', 0.0757, 0.0586, 0], ['H', -0.0757, 0.0586, 0]],
+  n2: [['N', 0.055, 0, 0], ['N', -0.055, 0, 0]],
+  co2: [['C', 0, 0, 0], ['O', 0.116, 0, 0], ['O', -0.116, 0, 0]],
+};
+// Rennen: Strecke ±U entlang FIB, CH₄ (schnellstes) mit V0 Einheiten/s (stark verlangsamt, real ≈ 630 m/s), die anderen
+// ∝ 1/√M; nach dem Einlauf des CO₂ kurze Pause, dann Neustart mit Ein-/Ausblenden
+const RACE = { U: 0.95, V0: 0.42, pause: 1.2, fade: 0.35 };
+const MIN_PX = 5;   // Mindestgröße eines CO₂-Moleküls am Bildschirm (Übersicht: maßstäblich ≈ 1,7 px); nah dran maßstäblich
+const tri = (x) => 2 * Math.abs(x - Math.floor(x + 0.5));   // Dreieckwelle 0 → 1 → 0, Periode 1
+
 // Schlitz- und Mikroporen nehmen mit der Temperatur zu (Casteel et al. 1978); Stärke folgt der BET-Fläche
 // (5 → 390 m²/g, science.js) – Richtung belegt, Maß Modell
 const bet = (T) => Math.min(1, labProps(T).bet / 390);
@@ -380,11 +414,13 @@ export function create(ctx) {
     uFilm: { value: film(ctx.rh) },
     uDrift: { value: still ? 0 : 1 },
     uMarch: { value: new THREE.Vector2(140, 0.75) },
+    uRaceC: { value: new THREE.Vector3(0, -99, 0) },
   };
   const quad = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), new THREE.ShaderMaterial({
     uniforms, vertexShader: VERT, fragmentShader: FRAG, depthTest: true, depthWrite: true, depthFunc: THREE.AlwaysDepth,
   }));
   quad.frustumCulled = false;
+  quad.renderOrder = -1;   // zuerst zeichnen (AlwaysDepth): die Moleküle des Rennens prüfen danach gegen die echte Tiefe
   // Strahlen aus der Kamera, mit der gerade gerendert wird: Hauptbild oder Lupe der Info-Karte
   quad.onBeforeRender = (r, s, cam) => {
     uniforms.uCamPos.value.setFromMatrixPosition(cam.matrixWorld);
@@ -402,10 +438,71 @@ export function create(ctx) {
   // Bild; im Leerlauf gleitet die Kamera an der Wand
   const wall = at('wallpore', [-3, ty0, 1.5]);
   const home = { pos: wall.clone().add(new THREE.Vector3(4.8, 9.6, 17.6)), target: wall.clone() };
+  // ---- Diffusions-Rennen in der 6-nm-Schlitzpore (Knudsen, nanolab.js) ----
+  const RT = raceTable(RACE_RAD[2] * 20);   // CH₄ · H₂O · N₂ · CO₂, rel = Geschwindigkeit relativ zu CH₄
+  const F = new THREE.Vector3(...FIB), SD = new THREE.Vector3(...SIDE);
+  const raceC = at('race', [-5, ty0, 5.5]).clone();
+  raceC.y -= 0.1;   // Mitte 1 nm unter der Bruchfläche: die Fläche schneidet den Schlitz als ≈ 24 × 6 nm großen Spalt an
+  uniforms.uRaceC.value.copy(raceC);
+  const surfAt = (u, lift = 0.02) => { const x = raceC.x + F.x * u, z = raceC.z + F.z * u; return new THREE.Vector3(x, topY(x, z) + lift, z); };
+  const nAtoms = RT.reduce((n, g) => n + MOLECULES[g.id].length, 0);
+  const molMesh = new THREE.InstancedMesh(new THREE.SphereGeometry(1, 16, 12), new THREE.MeshStandardMaterial({ roughness: 0.35, metalness: 0 }), nAtoms);
+  { let i = 0; for (const g of RT) for (const [el] of MOLECULES[g.id]) molMesh.setColorAt(i++, new THREE.Color(...ELEMENT[el].color)); }
+  molMesh.frustumCulled = false;
+  molMesh.renderOrder = 1;
+  molMesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+  const molLight = new THREE.DirectionalLight(0xffffff, 2.2);
+  scene.add(molMesh, molLight, new THREE.HemisphereLight(0xdde8ff, 0x3a3027, 0.8));
+  const raceLen = 2 * RACE.U, lap = raceLen / (RACE.V0 * RT[RT.length - 1].rel) + RACE.pause;
+  const mols = RT.map((g, k) => ({ g, k, pos: new THREE.Vector3(), q: new THREE.Quaternion(), ax: new THREE.Vector3(0.3 + 0.2 * k, 0.9, 0.1 - 0.15 * k).normalize(), f: 0, w: 0.1 }));
+  let raceT = 0, raceScale = 1;
+  // Lage je Molekül: entlang der Strecke nach der eigenen Geschwindigkeit, quer als Zickzack von Wand zu Wand (Knudsen:
+  // Stöße mit der Wand), knapp unter der Bruchfläche gestaffelt; der Weg liegt zur hinteren Wand hin (von der Startkamera
+  // schräg oben verdeckt die vordere Kante sonst die Moleküle); Pore voll Wasser oder Holz → ausgeblendet; „Aus“/reduced-motion → ruhend
+  function placeRace(dt) {
+    const calm = still || settings.S.motion === 'off';
+    const on = uniforms.uOpen.value > 0.85 && uniforms.uWaterD.value < RACE_RAD[2] * 20;
+    if (!calm && dt > 0) { raceT += dt; if (raceT > lap) raceT -= lap; }
+    const fade = Math.min(1, raceT / RACE.fade, Math.max(0, (lap - raceT) / RACE.fade));
+    for (const m of mols) {
+      m.w = RACE_RAD[2] * 0.82 - (raceScale * m.g.d) / 20 - 0.012;   // freier Querweg: halbe Weite minus Molekül
+      let u, s;
+      if (calm) { u = -RACE.U + 0.55 * m.k; s = -0.5 * m.w; m.f = on ? 1 : 0; }
+      else {
+        const dist = Math.min(RACE.V0 * m.g.rel * raceT, raceLen);
+        u = -RACE.U + dist;
+        s = (tri((dist * 0.85) / (4 * m.w) + 0.25 * m.k) * 1.4 - 1) * m.w;   // −w … +0,4 w
+        m.f = on ? fade : 0;
+        m.q.setFromAxisAngle(m.ax, dist * 4 + m.k);
+      }
+      const x = raceC.x + F.x * u + SD.x * s, z = raceC.z + F.z * u + SD.z * s;
+      m.pos.set(x, topY(x, z) - 0.04 - 0.012 * m.k, z);
+    }
+  }
+  // Größe je Kamera (Hauptbild, Lupe): maßstäblich, aber mindestens MIN_PX am Bildschirm – Größenverhältnis der Gase bleibt
+  const _m = new THREE.Matrix4(), _p = new THREE.Vector3(), _s = new THREE.Vector3(), _c = new THREE.Vector3(), Q0 = new THREE.Quaternion();
+  molMesh.onBeforeRender = (r, s, cam) => {
+    const rt = r.getRenderTarget(), H = rt ? rt.height : r.domElement.height;
+    const dist = Math.max(0.1, _c.setFromMatrixPosition(cam.matrixWorld).distanceTo(raceC));
+    const k = Math.max(1, MIN_PX / (0.033 * ((H / 2) * cam.projectionMatrix.elements[5]) / dist));
+    if (!rt || rt === level.rt) raceScale = k;
+    let i = 0;
+    for (const m of mols) {
+      for (const [el, x, y, z] of MOLECULES[m.g.id]) {
+        _p.set(x, y, z).multiplyScalar(k / 10).applyQuaternion(m.q).add(m.pos);
+        _s.setScalar(ELEMENT[el].r * k * 0.1 * m.f);
+        molMesh.setMatrixAt(i++, _m.compose(_p, Q0, _s));
+      }
+    }
+    molMesh.instanceMatrix.needsUpdate = true;
+  };
+  placeRace(0);
+
   const hotspots = [
     { id: 'wallpore', kind: 'dive', pos: wall, normal: up },
     { id: 'macro', kind: 'info', pos: at('macro', [5, ty0 - 2.5, -3]), normal: up },
     { id: 'meso', kind: 'info', pos: at('meso', [-7, ty0, -1]), normal: up },
+    { id: 'race', kind: 'info', pos: surfAt(-1.0), normal: up, side: 'left' },   // Abzeichen links vom Spaltanfang: der Spalt bleibt frei
     { id: 'water', kind: 'info', pos: at('water', [2.1, ty0, 2.5]), normal: up },
   ];
   // Riss, Schlitzpore und Kapillarwasser gibt es erst in der Kohle: im Holz ist die Wand dicht, Abzeichen bleiben aus
@@ -427,6 +524,8 @@ export function create(ctx) {
     hotspots,
     measures: findMeasures(home, hotspots.map((h) => h.pos)),
     measuresOn: pyroState(ctx.temp).open > 0.85,   // im Holz sind die Poren zu
+    raceLine: [surfAt(-0.9, 0.01), surfAt(0.9, 0.01)],   // Messhilfe entlang des Spalts (hud.js)
+    raceGases: RT,
     facts: () => [{
       value: `≈ ${fmt(wet, 0)} nm`,
       label: `bei ${fmt(rh * 100)} % Luftfeuchte mit Wasser gefüllte Poren (Kelvin-Gleichung${wet > fillDiameterNm(rh) + 0.5 ? ', beim Trocknen Hysterese' : ''})`,
@@ -438,6 +537,8 @@ export function create(ctx) {
       uniforms.uWaterD.value += (wet - uniforms.uWaterD.value) * k;
       uniforms.uFilm.value += (film(rh) - uniforms.uFilm.value) * k;
       semDetector(t);
+      molLight.position.copy(SEM_DET.value).multiplyScalar(10).add(raceC);   // Moleküle im Licht des „Detektors“
+      placeRace(dt);
       return true;
     },
     setParam(name, value) {
@@ -458,6 +559,8 @@ export function create(ctx) {
     dispose() {
       quad.geometry.dispose();
       quad.material.dispose();
+      molMesh.geometry.dispose();
+      molMesh.material.dispose();
     },
   };
   return level;

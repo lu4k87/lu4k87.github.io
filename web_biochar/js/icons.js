@@ -55,9 +55,9 @@ export const HOTSPOT_ICONS = {
   tissue: { vessels: 'vessel', ring: 'ring', ray: 'ray', porosity: 'porosity' },
   cells: { pitwall: 'pit', vessel: 'vessel', fiber: 'fiber', ray: 'ray', habitat: 'microbe' },
   wall: { fracture: 'foam', pits: 'pit', water: 'water', bacteria: 'microbe', hypha: 'hypha', spores: 'hypha', ash: 'ash', crack: 'crack' },
-  meso: { wallpore: 'micropore', macro: 'crack', meso: 'micropore', water: 'water' },
+  meso: { wallpore: 'micropore', macro: 'crack', meso: 'micropore', race: 'gas', water: 'water' },
   micro: { sheet: 'sheet', stack: 'stack', micropore: 'micropore', gas: 'gas', fibril: 'fiber', hemi: 'bond' },
-  atoms: { ring: 'sheet', carboxyl: 'carboxyl', phenol: 'phenol', carbonyl: 'carbonyl', edgeh: 'edgeh' },
+  atoms: { ring: 'sheet', carboxyl: 'carboxyl', phenol: 'phenol', carbonyl: 'carbonyl', edgeh: 'edgeh', sw: 'bond' },
 };
 
 export function hexBadge(icon, cls = '') {

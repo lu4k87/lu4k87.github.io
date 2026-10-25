@@ -3,6 +3,7 @@
 // eine Karte links davon.
 
 import { LEVELS, SOURCES } from './content.js';
+import { xrd, xrdCurve, raman, ramanCurve } from './nanolab.js';
 import { properties, labProps, pyroState, fmt, T_MIN, T_MAX, T_ROOM, PHASES, fillDiameterNm, kelvinRh, filledShare, isotherm, poreClass, nanoStructure, tissueScale } from './science.js';
 import { hexBadge, HEX, LEVEL_ICONS, HOTSPOT_ICONS } from './icons.js';
 
@@ -166,7 +167,7 @@ export function createHud(handlers) {
         <div class="fact-text">
           <span class="fact-value">${String(f.value).split(' · ').map((s) => `<span>${esc(s)}</span>`).join(' · ')}</span>
           <span class="fact-label">${esc(f.label)}</span>
-          <span class="fact-bar" aria-hidden="true"><i style="width:${factBarPct(f)}%"></i></span>
+          ${f.svg ? `<span class="fact-spark" data-spk="${f.spk}" aria-hidden="true">${f.svg}</span>` : `<span class="fact-bar" aria-hidden="true"><i style="width:${factBarPct(f)}%"></i></span>`}
         </div>
       </div>`).join('')}</div>`;
   }
@@ -423,12 +424,81 @@ export function createHud(handlers) {
       cur.setAttribute('x2', x);
       dot.classList.toggle('is-off', T < T_MIN);
     }
+    if (panel.querySelector('[data-spk]')) updateSpectra(T);
   }
 
   // Infotafel ohne Scrollen (Vorschau 2026-10-25, Panel:B): Einleitung zweizeilig + „Weiterlesen“, Entdecken als Chips
   // (Größen-Etikett nur in der Info-Karte), Kennzahlen ohne Icons, Labor als 3 × 3 Kacheln, Diagramm und Erläuterung
   // aufklappbar (F1); „Verlauf H/C“ bleibt über Ebenenwechsel offen, wenn einmal geöffnet
   let chartOpen = false;
+  // Virtuelle Messung (Ebene 6): Röntgenbeugung (Cu Kα) und Raman (514 nm) aus der Modellstruktur (nanolab.js), Graphit-
+  // Referenz 26,6° gestrichelt. Darstellung (Vorschau 2026-10-25): a = aufklappbar im Pyrolyse-Labor (XRD offen),
+  // b = eigener Abschnitt mit Umschalter, c = Kennzahl-Karten mit Mini-Spektrum
+  const SPK = new URLSearchParams(location.search).get('spk') || 'a';
+  const SX = { w: 240, h: 96, x0: 8, x1: 232, y0: 10, y1: 78 };
+  const sxX = (v, from, to) => SX.x0 + ((v - from) / (to - from)) * (SX.x1 - SX.x0);
+  const sxY = (I) => SX.y1 - I * (SX.y1 - SX.y0);
+  const sxPath = (pts, from, to) => pts.map(([x, I], i) => `${i ? 'L' : 'M'}${sxX(x, from, to).toFixed(1)} ${sxY(I).toFixed(1)}`).join('');
+  function xrdSvg(T) {
+    const x = xrd(T), g = sxX(x.graphite, 10, 60), p = sxX(x.p002, 10, 60);
+    return `<svg viewBox="0 0 ${SX.w} ${SX.h}" role="img" aria-label="Röntgenbeugung: (002)-Peak bei 2θ ≈ ${fmt(x.p002, 1)}°, Graphit 26,6°">
+      <line class="ax" x1="${SX.x0}" y1="${SX.y1}" x2="${SX.x1}" y2="${SX.y1}"/>
+      <line class="ref" x1="${g.toFixed(1)}" y1="${SX.y0}" x2="${g.toFixed(1)}" y2="${SX.y1}"/>
+      <text class="lbl" x="${(g + 3).toFixed(1)}" y="${SX.y0 + 8}">Graphit 26,6°</text>
+      <path class="curve" d="${sxPath(xrdCurve(T), 10, 60)}"/>
+      <line class="cur" x1="${p.toFixed(1)}" y1="${sxY(1)}" x2="${p.toFixed(1)}" y2="${SX.y1}"/>
+      <text class="lbl" x="${(p - 3).toFixed(1)}" y="${SX.y0 + 8}" text-anchor="end">(002) ${fmt(x.p002, 1)}°</text>
+      <text class="lbl" x="${sxX(x.p10, 10, 60).toFixed(1)}" y="${SX.y1 - 26}" text-anchor="middle">(10)</text>
+      <text class="lbl" x="${SX.x0}" y="${SX.y1 + 12}">10°</text><text class="lbl" x="${SX.x1}" y="${SX.y1 + 12}" text-anchor="end">60° 2θ</text>
+    </svg>`;
+  }
+  function ramanSvg(T) {
+    const r = raman(T), hD = Math.min(1, r.ratio), hG = Math.min(1, 1 / r.ratio);
+    return `<svg viewBox="0 0 ${SX.w} ${SX.h}" role="img" aria-label="Raman: D- und G-Bande, I_D/I_G ≈ ${fmt(r.ratio, 2)}">
+      <line class="ax" x1="${SX.x0}" y1="${SX.y1}" x2="${SX.x1}" y2="${SX.y1}"/>
+      <path class="curve" d="${sxPath(ramanCurve(T), 1000, 1800)}"/>
+      <text class="lbl" x="${sxX(r.D, 1000, 1800).toFixed(1)}" y="${(sxY(hD) - 4).toFixed(1)}" text-anchor="middle">D 1350</text>
+      <text class="lbl" x="${sxX(r.G, 1000, 1800).toFixed(1)}" y="${(sxY(hG) - 4).toFixed(1)}" text-anchor="middle">G ${fmt(r.G)}</text>
+      <text class="lbl" x="${SX.x0}" y="${SX.y1 + 12}">1000</text><text class="lbl" x="${SX.x1}" y="${SX.y1 + 12}" text-anchor="end">1800 cm⁻¹</text>
+    </svg>`;
+  }
+  const xrdLine = (T) => { const x = xrd(T); return `d₀₀₂ ${fmt(x.ns.d002, 2)} nm → 2θ ≈ ${fmt(x.p002, 1)}° · Lc ≈ ${fmt(x.Lc, 1)} nm (Scherrer) · Breite ≈ ${fmt(x.w002)}°`; };
+  const ramanLine = (T) => { const r = raman(T); return `I_D/I_G ≈ ${fmt(r.ratio, 2)} aus La ≈ ${fmt(r.La, 1)} nm (${r.regime})`; };
+  const SPK_NOTE = 'Virtuelle Messung aus der Modellstruktur: Lage nach Bragg und Breite nach Scherrer (Cu Kα) aus Schichtabstand und Stapelhöhe, I_D/I_G aus der Schichtgröße (Ferrari & Robertson 2000; Tuinstra & Koenig 1970); Bandbreiten und Untergrund Modell.';
+  const spkFig = (kind, T, hidden = false) => `<figure class="chart" data-spk="${kind}"${hidden ? ' hidden' : ''}>${kind === 'xrd' ? xrdSvg(T) : ramanSvg(T)}<figcaption class="note" data-spk-line>${kind === 'xrd' ? xrdLine(T) : ramanLine(T)}</figcaption></figure>`;
+  // a: zwei aufklappbare Diagramme im Pyrolyse-Labor (XRD offen) · b: eigener Abschnitt, ein Diagramm mit Umschalter
+  const spectraBlock = (T) => `<div class="spk" id="spk">
+      <details class="lab-more" open><summary>Röntgenbeugung (002) · Soll-Ist Graphit</summary>${spkFig('xrd', T)}</details>
+      <details class="lab-more"><summary>Raman D/G · Schichtgröße</summary>${spkFig('raman', T)}<p class="note">${SPK_NOTE}</p></details>
+    </div>`;
+  const spectraSection = (T) => `<section class="spk spk-b" id="spk">
+      <h2 class="sub">Virtuelle Messung <span class="sub-note">· aus der Modellstruktur</span></h2>
+      <div class="cfg-seg spk-toggle" role="group" aria-label="Messung wählen"><button type="button" data-spk-tab="xrd" aria-pressed="true">Röntgenbeugung</button><button type="button" data-spk-tab="raman" aria-pressed="false">Raman D/G</button></div>
+      ${spkFig('xrd', T)}${spkFig('raman', T, true)}
+      <p class="note">${SPK_NOTE}</p>
+    </section>`;
+  // c: Kennzahl-Karten mit Mini-Spektrum statt Balken
+  const spectraFacts = (T) => {
+    const x = xrd(T), r = raman(T);
+    return [
+      { value: `2θ ≈ ${fmt(x.p002, 1)}° · Lc ≈ ${fmt(x.Lc, 1)} nm`, label: '(002)-Peak der Röntgenbeugung (Cu Kα) und Stapelhöhe nach Scherrer – Graphit: 26,6°', svg: xrdSvg(T), spk: 'xrd' },
+      { value: `I_D/I_G ≈ ${fmt(r.ratio, 2)}`, label: `Raman D/G aus der Schichtgröße La ≈ ${fmt(r.La, 1)} nm (${r.regime})`, svg: ramanSvg(T), spk: 'raman' },
+    ];
+  };
+  function updateSpectra(T) {
+    const facts = SPK === 'c' ? spectraFacts(T) : null;
+    panel.querySelectorAll('[data-spk]').forEach((el) => {
+      const kind = el.dataset.spk, svg = el.querySelector('svg');
+      if (svg) svg.outerHTML = kind === 'xrd' ? xrdSvg(T) : ramanSvg(T);
+      const line = el.querySelector('[data-spk-line]');
+      if (line) line.textContent = kind === 'xrd' ? xrdLine(T) : ramanLine(T);
+      if (facts) {
+        const f = facts.find((q) => q.spk === kind), v = el.closest('.fact').querySelector('.fact-value');
+        if (f && v && v.textContent !== f.value) v.innerHTML = f.value.split(' · ').map((s) => `<span>${esc(s)}</span>`).join(' · ');
+      }
+    });
+  }
+
   function render(state) {
     const l = LEVELS[current];
     const dyn = level && level.facts ? level.facts() : [];
@@ -449,11 +519,13 @@ export function createHud(handlers) {
           </button></li>`).join('')}
         </ul>
       </section>
-      ${facts([...l.facts, ...dyn])}
+      ${facts([...l.facts, ...dyn, ...(l.id === 'micro' && SPK === 'c' ? spectraFacts(shown) : [])])}
+      ${l.id === 'micro' && SPK === 'b' ? spectraSection(shown) : ''}
       <section class="controls">
         <h2 class="sub">Pyrolyse-Labor <span class="sub-note">· Richtwerte Holz (Modell)</span></h2>
         ${l.id === 'meso' ? rhBlock(state.rh, state.wet) : ''}
         <div id="lab">${labTiles(shown)}</div>
+        ${l.id === 'micro' && SPK === 'a' ? spectraBlock(shown) : ''}
         <details class="lab-more"${chartOpen ? ' open' : ''}>
           <summary>Verlauf H/C · Erläuterung</summary>
           ${labChart(shown)}
@@ -474,7 +546,11 @@ export function createHud(handlers) {
       more.setAttribute('aria-expanded', String(open));
       more.textContent = open ? 'Weniger' : 'Weiterlesen';
     });
-    panel.querySelector('.lab-more').addEventListener('toggle', (e) => { chartOpen = e.target.open; });
+    panel.querySelector('.controls .lab-more:last-of-type').addEventListener('toggle', (e) => { chartOpen = e.target.open; });
+    panel.querySelectorAll('[data-spk-tab]').forEach((b) => b.addEventListener('click', () => {   // Variante b: XRD | Raman
+      panel.querySelectorAll('[data-spk-tab]').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+      panel.querySelectorAll('.spk-b [data-spk]').forEach((fig) => { fig.hidden = fig.dataset.spk !== b.dataset.spkTab; });
+    }));
     // [n] öffnet die Liste selbst und springt ohne Hash-Wechsel hin: #ebene=n bleibt, auch in Browsern ohne Auto-Aufklappen von <details>
     panel.querySelectorAll('.sources h2 a').forEach((a) => a.addEventListener('click', (e) => {
       e.preventDefault();
@@ -596,14 +672,23 @@ export function createHud(handlers) {
       ];
     }
     if (lid === 'meso') {
-      const sl = hs('meso');
-      return sl ? [{
-        cls: 'ov-meso',
-        pts: () => [sl.pos.clone().add(v3(-1.1, 0, 0)), sl.pos.clone().add(v3(1.1, 0, 0))],
-        active: () => !!level.measuresOn,
-        ticks: 2,
-        text: () => '<b>Schlitzpore</b> · Dicke ≈ 2–3 nm (IUPAC Meso)',
-      }] : [];
+      const sl = hs('meso'), rc = hs('race');
+      return [
+        ...(sl ? [{
+          cls: 'ov-meso',
+          pts: () => [sl.pos.clone().add(v3(-1.1, 0, 0)), sl.pos.clone().add(v3(1.1, 0, 0))],
+          active: () => !!level.measuresOn,
+          ticks: 2,
+          text: () => '<b>Schlitzpore</b> · Dicke ≈ 2–3 nm (IUPAC Meso)',
+        }] : []),
+        ...(rc && level.raceLine ? [{
+          cls: 'ov-race',
+          pts: () => level.raceLine,
+          active: () => !rc.hidden && !!level.measuresOn,
+          ticks: 2,
+          text: () => '<b>Knudsen-Rennen</b> · 6-nm-Schlitz · Einlauf CH₄ › H₂O › N₂ › CO₂',
+        }] : []),
+      ];
     }
     if (lid === 'micro') {
       const st = hs('stack'), mp = hs('micropore');
@@ -615,7 +700,7 @@ export function createHud(handlers) {
           ticks: 2,
           text: () => {
             const T = lastState && lastState.pyro ? lastState.pyro.shown : (lastState ? lastState.temp : 550);
-            return `<b>d₀₀₂ ≈ ${fmt(nanoStructure(T).d002, 2)} nm</b> · Schichtabstand (Graphit: 0,335 nm)`;
+            return `<b>d₀₀₂ ≈ ${fmt(nanoStructure(T).d002, 2)} nm</b> · (002) bei 2θ ≈ ${fmt(xrd(T).p002, 1)}° (Graphit 0,335 nm → 26,6°)`;
           },
         }] : []),
         ...(mp ? [{
@@ -628,8 +713,15 @@ export function createHud(handlers) {
       ];
     }
     if (lid === 'atoms') {
-      const rg = hs('ring'), cx = hs('carboxyl');
+      const rg = hs('ring'), cx = hs('carboxyl'), swh = hs('sw');
       return [
+        ...(swh ? [{
+          cls: 'ov-sw',
+          pts: () => [swh.pos.clone().add(v3(-1.7, 0, 0)), swh.pos.clone().add(v3(1.7, 0, 0))],
+          active: () => swh.pos.z < 100,
+          ring: true,
+          text: () => '<b>Stone-Wales-Defekt</b> · 5-7-7-5 · wölbt die Schicht',
+        }] : []),
         ...(rg ? [{
           cls: 'ov-pi',
           pts: () => [rg.pos.clone().add(v3(-1.35, 0, 0)), rg.pos.clone().add(v3(1.35, 0, 0))],
@@ -1053,9 +1145,10 @@ export function createHud(handlers) {
       for (const m of items) {
         const leftFits = m.ax - GAP - m.w >= rect.x0, rightFits = m.ax + GAP + m.w <= rect.x1;
         // Seite bleibt, solange sie passt: sonst springt das Abzeichen in der Leerlauf-Fahrt am Rand hin und her
-        // h.side = 'right': Ebene wünscht das Abzeichen rechts (zwei Punkte dicht beieinander, Ebene 6)
+        // h.side = 'right': Ebene wünscht das Abzeichen rechts (zwei Punkte dicht beieinander, Ebene 6); 'left': links, damit
+        // das Element rechts vom Punkt frei bleibt (Ebene 5: Rennspalt)
         m.right = (selected && m.h.id === selected.id) || (m.h.side === 'right' && rightFits) ||
-          (m.right ? rightFits || !leftFits : !leftFits);   // gewähltes Abzeichen rechts vom Punkt: links bleibt Platz für die Karte
+          (m.h.side === 'left' && leftFits ? false : m.right ? rightFits || !leftFits : !leftFits);   // gewähltes Abzeichen rechts vom Punkt: links bleibt Platz für die Karte
         m.tx = m.right ? m.ax + GAP + m.w / 2 : m.ax - GAP - m.w / 2;
         m.ty = m.ay;
       }
