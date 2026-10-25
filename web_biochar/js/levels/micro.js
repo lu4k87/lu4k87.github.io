@@ -356,52 +356,96 @@ export function create(ctx) {
   scene.add(probe);
 
   // Holz (unter ≈ 400 °C): Zellulose-Mikrofibrillen (Ø ≈ 3,5 nm, Fernandes et al. 2011) als nahezu parallele, leicht wellige
-  // Stränge mit sechseckigem Querschnitt. Ihre Oberfläche zeigt die Glucanketten als Riefen (3 je Fläche, Abstand ≈ 0,58 nm;
-  // Gitterebenen 0,53/0,60 nm) und die Glucose-Ringe als Buckel: 2 Ringe je 1,04 nm (Cellobiose), abwechselnd versetzt,
-  // Nachbarketten um ¼ verschoben (Zellulose Iβ, Nishiyama et al. 2002). Dazwischen die Matrix (Modell): Hemizellulose-Ketten
-  // aus Zuckerringen (Schritt ≈ 0,52 nm), Lignin-Knäuel aus aromatischen Ringen (Ring Ø ≈ 0,28 nm). Die Fibrillen werden dünner
-  // und blasser, wenn die Zellulose zerfällt (315–400 °C), die Hemizellulose verschwindet 220–380 °C, die Lignin-Ringe gehen
-  // in die aromatischen Schichten über, während diese heranwachsen (300–400 °C).
-  const C_REP = 1.038;
-  const chainTex = (() => {
-    const W = 64, H = 48, data = new Uint8Array(W * H * 4);   // Breite: entlang der Fibrille (1 Cellobiose), Höhe: 1 Fläche
-    for (let j = 0; j < H; j++) for (let i = 0; i < W; i++) {
-      const b = ((j + 0.5) / H) * 3, ci = Math.floor(b), t = b - ci - 0.5;
-      const ridge = Math.cos(t * Math.PI) ** 2;
-      const a = (((i + 0.5) / W) * 2 + ci * 0.5) % 2, k = Math.floor(a), f = a - k - 0.5;
-      const bump = Math.exp(-(f * f) / 0.04 - ((t - (k ? 0.12 : -0.12)) ** 2) / 0.05);
-      const h = Math.round(255 * (0.45 * ridge + 0.55 * ridge * bump));
-      data.set([h, h, h, 255], (j * W + i) * 4);
-    }
-    const tex = new THREE.DataTexture(data, W, H);
-    tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
-    tex.magFilter = THREE.LinearFilter;
-    tex.minFilter = THREE.LinearMipmapLinearFilter;
-    tex.generateMipmaps = true;
-    tex.needsUpdate = true;
-    return tex;
-  })();
+  // und leicht verdrillte Stränge (Modell), aufgebaut aus einzelnen Glucanketten: Ketten in flachen Lagen (Abstand in der Lage
+  // 0,82 nm, Lagenabstand 0,39 nm = d200), Nachbarlagen um ½ Kette seitlich und ¼ Cellobiose längs versetzt (Zellulose Iβ,
+  // Nishiyama et al. 2002). Jede Kette: Glucose-Ringe (2 je 1,04 nm, Ringebene in der Lage) mit Brücke dazwischen, die
+  // Seitengruppe (CH₂OH) wechselt von Ring zu Ring die Seite (zweizählige Schraube). Querschnitt = Gitter in einer Ellipse.
+  // Dazwischen die Matrix (Modell): Hemizellulose-Ketten aus Zuckerringen (Schritt ≈ 0,52 nm), Lignin-Knäuel aus aromatischen
+  // Ringen (Ring Ø ≈ 0,28 nm). Zerfällt die Zellulose (315–400 °C), verschwinden die Ketten von außen nach innen (Modell), die
+  // Hemizellulose verschwindet 220–380 °C, die Lignin-Ringe gehen in die aromatischen Schichten über (300–400 °C).
+  const C_REP = 1.038, SHEET_B = 0.82, SHEET_D = 0.39, GLC = C_REP / 2;
   const wr = mulberry32(321);
-  const fibrils = [];
+  const fibrils = [];   // Achsen der Fibrillen (Lage für Matrix-Abstand und Hotspot)
   const FIB_R = 1.75, FIB_LEN = HALF.y * 2 + 2;
-  chainTex.repeat.set(FIB_LEN / C_REP, 6);
-  // Holz gedämpft (User 2026-10-24: „zu sehr überbelichtet“): dunklere Grundfarbe, wenig Umgebungslicht; envMap direkt,
-  // sonst gilt scene.environmentIntensity und envMapIntensity wirkt nicht
-  const woodMat = new THREE.MeshStandardMaterial({
-    color: new THREE.Color(0.36, 0.3, 0.21), roughness: 0.75, metalness: 0, envMap: ctx.env, envMapIntensity: 0.25, bumpMap: chainTex, bumpScale: 10, flatShading: true, transparent: true,
-  });
+  const chainXs = [];   // Querschnitt: [Lage-Koordinate, Stapel-Koordinate, Lage-Index]
+  for (let r = -4; r <= 4; r++) for (let c = -3; c <= 3; c++) {
+    const u = (c + (r & 1) * 0.5) * SHEET_B, v = r * SHEET_D;
+    if ((u / FIB_R) ** 2 + (v / 1.45) ** 2 <= 1) chainXs.push([u, v, r]);
+  }
+  const nGlc = Math.round(FIB_LEN / GLC);
+  const chains = [];    // je Kette: Kurve, Querschnitt, Drehung – sortiert nach Abstand zur Achse (außen zerfällt zuerst)
+  const fr = mulberry32(77);
   for (let i = -1; i <= 1; i++) for (let j = -1; j <= 1; j++) {
     const cx = i * 3.9 + (j % 2 ? 1.9 : 0) + (wr() - 0.5) * 0.3, cz = j * 3.6 + (wr() - 0.5) * 0.3;
     if (Math.abs(cx) > HALF.x + 1 || Math.abs(cz) > HALF.z + 1) continue;
     const pts = [];
     for (let k = 0; k <= 4; k++) pts.push(new THREE.Vector3((wr() - 0.5) * 0.5, -FIB_LEN / 2 + (FIB_LEN * k) / 4, (wr() - 0.5) * 0.5));
-    const geo = new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 48, FIB_R, 6);
-    const mesh = new THREE.Mesh(geo, woodMat);
-    mesh.position.set(cx, 0, cz);
-    mesh.rotation.z = 0.12;
-    fibrils.push(mesh);
-    scene.add(mesh);
+    const curve = new THREE.CatmullRomCurve3(pts);
+    const fib = { position: new THREE.Vector3(cx, 0, cz), curve, rot: fr() * Math.PI, len: curve.getLength() };
+    fibrils.push(fib);
+    for (const x of chainXs) chains.push({ fib, x, d: Math.hypot(x[0] / FIB_R, x[1] / 1.45) + fr() * 0.15 });
   }
+  chains.sort((a, b) => a.d - b.d);
+  const TWIST = 0.025;                                   // rad/nm (Modell)
+  const FIB_TILT = new THREE.Matrix4().makeRotationZ(0.12);
+  const glcGeo = new THREE.CylinderGeometry(1, 1, 0.4, 6);
+  const bondGeo = new THREE.CylinderGeometry(1, 1, 1, 5, 1, true);
+  const sideGeo = new THREE.IcosahedronGeometry(1, 1);
+  // Holz gedämpft (User 2026-10-24: „zu sehr überbelichtet“): dunklere Grundfarbe, wenig Umgebungslicht; envMap direkt,
+  // sonst gilt scene.environmentIntensity und envMapIntensity wirkt nicht
+  const woodMat = new THREE.MeshStandardMaterial({ color: new THREE.Color(0.66, 0.6, 0.47), roughness: 0.5, metalness: 0, envMap: ctx.env, envMapIntensity: 0.3, transparent: true });
+  const bondMat = new THREE.MeshStandardMaterial({ color: new THREE.Color(0.3, 0.25, 0.18), roughness: 0.7, metalness: 0, envMap: ctx.env, envMapIntensity: 0.2, transparent: true });
+  const sideMat = new THREE.MeshStandardMaterial({ color: new THREE.Color(0.62, 0.55, 0.42), roughness: 0.45, metalness: 0, envMap: ctx.env, envMapIntensity: 0.3, transparent: true });
+  const nAll = chains.length * nGlc;
+  const glcMesh = new THREE.InstancedMesh(glcGeo, woodMat, nAll);
+  const bondMesh = new THREE.InstancedMesh(bondGeo, bondMat, nAll);
+  const sideMesh = new THREE.InstancedMesh(sideGeo, sideMat, nAll);
+  // Tiefe lesbar machen: hintere Fibrillen und Matrix dunkler, jede zweite Lage etwas dunkler (Lagen als Streifen sichtbar)
+  const depthTone = (z) => 0.42 + 0.58 * clamp((z + HALF.z) / (2 * HALF.z), 0, 1);
+  const _tone = new THREE.Color();
+  {
+    const P = new THREE.Vector3(), T = new THREE.Vector3(), U = new THREE.Vector3(), V = new THREE.Vector3(), Q = new THREE.Vector3();
+    const B = new THREE.Matrix4(), M = new THREE.Matrix4(), S = new THREE.Matrix4(), W = new THREE.Matrix4();
+    let n = 0;
+    for (const { fib, x: [cu, cv, r] } of chains) {
+      W.copy(FIB_TILT).setPosition(fib.position);
+      const off = (r & 1) * C_REP * 0.25, side0 = (r + Math.round(cu / SHEET_B)) & 1;
+      _tone.setScalar(depthTone(fib.position.z + cv) * (r & 1 ? 0.8 : 1));
+      for (let k = 0; k < nGlc; k++, n++) {
+        const s = clamp((off + (k + 0.5) * GLC * (fib.len / FIB_LEN)) / fib.len, 0, 1);
+        fib.curve.getPointAt(s, P);
+        fib.curve.getTangentAt(s, T);
+        const a = fib.rot + P.y * TWIST;
+        U.set(Math.cos(a), 0, Math.sin(a)).addScaledVector(T, -T.x * Math.cos(a) - T.z * Math.sin(a)).normalize();
+        V.crossVectors(T, U);
+        Q.copy(P).addScaledVector(U, cu).addScaledVector(V, cv);
+        // Ring samt OH-Gruppen als flache Kachel: Ebene = Lage (Zylinderachse = Lagen-Normale V), quer zur Kette breiter
+        B.makeBasis(U, V, T).setPosition(Q);
+        glcMesh.setMatrixAt(n, M.multiplyMatrices(W, B).multiply(S.makeScale(0.27, 0.15, 0.2)));
+        glcMesh.setColorAt(n, _tone);
+        bondMesh.setColorAt(n, _tone);
+        sideMesh.setColorAt(n, _tone);
+        // Brücke zum nächsten Ring (glykosidischer Sauerstoff), längs der Kette
+        B.makeBasis(V, T, U).setPosition(Q.x + T.x * GLC * 0.5, Q.y + T.y * GLC * 0.5, Q.z + T.z * GLC * 0.5);
+        bondMesh.setMatrixAt(n, M.multiplyMatrices(W, B).multiply(S.makeScale(k < nGlc - 1 ? 0.03 : 0, GLC, 0.03)));
+        // Seitengruppe wechselt die Seite
+        const sd = (k + side0) & 1 ? 1 : -1;
+        B.makeTranslation(Q.x + U.x * 0.34 * sd, Q.y + U.y * 0.34 * sd, Q.z + U.z * 0.34 * sd);
+        sideMesh.setMatrixAt(n, M.multiplyMatrices(W, B).multiply(S.makeScale(0.07, 0.07, 0.07)));
+      }
+    }
+  }
+  scene.add(glcMesh, bondMesh, sideMesh);
+  // Kern je Fibrille (dunkel, deckend): innere Ketten sind ohnehin verdeckt, so bleibt jede Fibrille als Strang lesbar und
+  // die Gitter hintereinanderliegender Fibrillen verschwimmen nicht
+  const coreMat = new THREE.MeshStandardMaterial({ color: new THREE.Color(0.24, 0.19, 0.13), roughness: 0.8, metalness: 0, envMap: ctx.env, envMapIntensity: 0.15, transparent: true });
+  const cores = fibrils.map((fib) => {
+    const mesh = new THREE.Mesh(new THREE.TubeGeometry(fib.curve, 32, 1.05, 12), coreMat);
+    mesh.position.copy(fib.position);
+    mesh.rotation.z = 0.12;
+    scene.add(mesh);
+    return mesh;
+  });
   const clearOf = (p, m) => fibrils.every((f) => Math.hypot(p.x - f.position.x, p.z - f.position.z) > FIB_R + m);
   const inBox = (p) => Math.abs(p.x) < HALF.x && Math.abs(p.y) < HALF.y && Math.abs(p.z) < HALF.z;
   const rndBox = () => new THREE.Vector3((wr() * 2 - 1) * HALF.x, (wr() * 2 - 1) * HALF.y, (wr() * 2 - 1) * HALF.z);
@@ -444,15 +488,16 @@ export function create(ctx) {
     mesh.visible = f > 0.01;
     if (!mesh.visible) return;
     list.forEach((m, k) => mesh.setMatrixAt(k, _wm.compose(m.p, m.q, _ws.setScalar(m.s * (0.4 + 0.6 * f)))));
+    if (!mesh.instanceColor) list.forEach((m, k) => mesh.setColorAt(k, _tone.setScalar(depthTone(m.p.z))));
     mesh.instanceMatrix.needsUpdate = true;
   };
   let woodF = NaN, hemiF = NaN, ligF = NaN;
   function setWood(st) {
     if (st.fibril !== woodF) {
       woodF = st.fibril;
-      woodMat.opacity = Math.min(1, st.fibril * 1.4);
-      const vis = st.fibril > 0.01;
-      for (const f of fibrils) { f.visible = vis; f.scale.set(0.35 + 0.65 * st.fibril, 1, 0.35 + 0.65 * st.fibril); }
+      woodMat.opacity = bondMat.opacity = sideMat.opacity = coreMat.opacity = Math.min(1, st.fibril * 3);
+      glcMesh.count = bondMesh.count = sideMesh.count = Math.round(chains.length * Math.min(1, st.fibril * 1.15)) * nGlc;
+      for (const c of cores) { c.visible = st.fibril > 0.01; c.scale.set(0.3 + 0.7 * st.fibril, 1, 0.3 + 0.7 * st.fibril); }
     }
     if (st.matrix !== hemiF) setRings(hemiMesh, hemiMat, hemi, (hemiF = st.matrix));
     if (1 - st.sheets !== ligF) setRings(ligMesh, ligMat, lig, (ligF = 1 - st.sheets));
@@ -749,8 +794,10 @@ export function create(ctx) {
       geo.dispose(); lineMat.dispose(); fillMat.dispose();
       atomMesh.geometry.dispose(); atomMesh.material.dispose();
       probe.geometry.dispose(); probe.material.dispose();
-      for (const f of fibrils) f.geometry.dispose();
-      ringGeo.dispose(); woodMat.dispose(); hemiMat.dispose(); ligMat.dispose(); chainTex.dispose();
+      glcGeo.dispose(); bondGeo.dispose(); sideGeo.dispose(); woodMat.dispose(); bondMat.dispose(); sideMat.dispose();
+      for (const c of cores) c.geometry.dispose();
+      coreMat.dispose();
+      ringGeo.dispose(); hemiMat.dispose(); ligMat.dispose();
     },
   };
   return level;
