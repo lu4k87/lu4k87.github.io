@@ -386,7 +386,6 @@ const MOLECULES = {
 // Rennen: Strecke ±U entlang FIB, CH₄ (schnellstes) mit V0 Einheiten/s (stark verlangsamt, real ≈ 630 m/s), die anderen
 // ∝ 1/√M; nach dem Einlauf des CO₂ kurze Pause, dann Neustart mit Ein-/Ausblenden
 const RACE = { U: 0.95, V0: 0.42, pause: 1.2, fade: 0.35 };
-const MIN_PX = 5;   // Mindestgröße eines CO₂-Moleküls am Bildschirm (Übersicht: maßstäblich ≈ 1,7 px); nah dran maßstäblich
 const tri = (x) => 2 * Math.abs(x - Math.floor(x + 0.5));   // Dreieckwelle 0 → 1 → 0, Periode 1
 
 // Schlitz- und Mikroporen nehmen mit der Temperatur zu (Casteel et al. 1978); Stärke folgt der BET-Fläche
@@ -455,7 +454,7 @@ export function create(ctx) {
   scene.add(molMesh, molLight, new THREE.HemisphereLight(0xdde8ff, 0x3a3027, 0.8));
   const raceLen = 2 * RACE.U, lap = raceLen / (RACE.V0 * RT[RT.length - 1].rel) + RACE.pause;
   const mols = RT.map((g, k) => ({ g, k, pos: new THREE.Vector3(), q: new THREE.Quaternion(), ax: new THREE.Vector3(0.3 + 0.2 * k, 0.9, 0.1 - 0.15 * k).normalize(), f: 0, w: 0.1 }));
-  let raceT = 0, raceScale = 1;
+  let raceT = 0;
   // Lage je Molekül: entlang der Strecke nach der eigenen Geschwindigkeit, quer als Zickzack von Wand zu Wand (Knudsen:
   // Stöße mit der Wand), knapp unter der Bruchfläche gestaffelt; der Weg liegt zur hinteren Wand hin (von der Startkamera
   // schräg oben verdeckt die vordere Kante sonst die Moleküle); Pore voll Wasser oder Holz → ausgeblendet; „Aus“/reduced-motion → ruhend
@@ -465,7 +464,7 @@ export function create(ctx) {
     if (!calm && dt > 0) { raceT += dt; if (raceT > lap) raceT -= lap; }
     const fade = Math.min(1, raceT / RACE.fade, Math.max(0, (lap - raceT) / RACE.fade));
     for (const m of mols) {
-      m.w = RACE_RAD[2] * 0.82 - (raceScale * m.g.d) / 20 - 0.012;   // freier Querweg: halbe Weite minus Molekül
+      m.w = RACE_RAD[2] * 0.82 - m.g.d / 20 - 0.012;   // freier Querweg: halbe Weite minus Molekül
       let u, s;
       if (calm) { u = -RACE.U + 0.55 * m.k; s = -0.5 * m.w; m.f = on ? 1 : 0; }
       else {
@@ -478,24 +477,22 @@ export function create(ctx) {
       const x = raceC.x + F.x * u + SD.x * s, z = raceC.z + F.z * u + SD.z * s;
       m.pos.set(x, topY(x, z) - 0.04 - 0.012 * m.k, z);
     }
+    writeMols();
   }
-  // Größe je Kamera (Hauptbild, Lupe): maßstäblich, aber mindestens MIN_PX am Bildschirm – Größenverhältnis der Gase bleibt
-  const _m = new THREE.Matrix4(), _p = new THREE.Vector3(), _s = new THREE.Vector3(), _c = new THREE.Vector3(), Q0 = new THREE.Quaternion();
-  molMesh.onBeforeRender = (r, s, cam) => {
-    const rt = r.getRenderTarget(), H = rt ? rt.height : r.domElement.height;
-    const dist = Math.max(0.1, _c.setFromMatrixPosition(cam.matrixWorld).distanceTo(raceC));
-    const k = Math.max(1, MIN_PX / (0.033 * ((H / 2) * cam.projectionMatrix.elements[5]) / dist));
-    if (!rt || rt === level.rt) raceScale = k;
+  // Moleküle maßstäblich (van-der-Waals-Radien in nm → Einheit 10 nm; Wahl User 2026-10-25): aus der Übersicht winzig,
+  // beim Heranzoomen und in der Lupe sichtbar
+  const _m = new THREE.Matrix4(), _p = new THREE.Vector3(), _s = new THREE.Vector3(), Q0 = new THREE.Quaternion();
+  function writeMols() {
     let i = 0;
     for (const m of mols) {
       for (const [el, x, y, z] of MOLECULES[m.g.id]) {
-        _p.set(x, y, z).multiplyScalar(k / 10).applyQuaternion(m.q).add(m.pos);
-        _s.setScalar(ELEMENT[el].r * k * 0.1 * m.f);
+        _p.set(x, y, z).multiplyScalar(0.1).applyQuaternion(m.q).add(m.pos);
+        _s.setScalar(ELEMENT[el].r * 0.1 * m.f);
         molMesh.setMatrixAt(i++, _m.compose(_p, Q0, _s));
       }
     }
     molMesh.instanceMatrix.needsUpdate = true;
-  };
+  }
   placeRace(0);
 
   const hotspots = [

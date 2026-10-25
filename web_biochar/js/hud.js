@@ -167,7 +167,7 @@ export function createHud(handlers) {
         <div class="fact-text">
           <span class="fact-value">${String(f.value).split(' · ').map((s) => `<span>${esc(s)}</span>`).join(' · ')}</span>
           <span class="fact-label">${esc(f.label)}</span>
-          ${f.svg ? `<span class="fact-spark" data-spk="${f.spk}" aria-hidden="true">${f.svg}</span>` : `<span class="fact-bar" aria-hidden="true"><i style="width:${factBarPct(f)}%"></i></span>`}
+          <span class="fact-bar" aria-hidden="true"><i style="width:${factBarPct(f)}%"></i></span>
         </div>
       </div>`).join('')}</div>`;
   }
@@ -432,9 +432,7 @@ export function createHud(handlers) {
   // aufklappbar (F1); „Verlauf H/C“ bleibt über Ebenenwechsel offen, wenn einmal geöffnet
   let chartOpen = false;
   // Virtuelle Messung (Ebene 6): Röntgenbeugung (Cu Kα) und Raman (514 nm) aus der Modellstruktur (nanolab.js), Graphit-
-  // Referenz 26,6° gestrichelt. Darstellung (Vorschau 2026-10-25): a = aufklappbar im Pyrolyse-Labor (XRD offen),
-  // b = eigener Abschnitt mit Umschalter, c = Kennzahl-Karten mit Mini-Spektrum
-  const SPK = new URLSearchParams(location.search).get('spk') || 'a';
+  // Referenz 26,6° gestrichelt; zwei aufklappbare Diagramme im Pyrolyse-Labor, XRD offen (Vorschau 2026-10-25, Spektren:A)
   const SX = { w: 240, h: 96, x0: 8, x1: 232, y0: 10, y1: 78 };
   const sxX = (v, from, to) => SX.x0 + ((v - from) / (to - from)) * (SX.x1 - SX.x0);
   const sxY = (I) => SX.y1 - I * (SX.y1 - SX.y0);
@@ -465,37 +463,17 @@ export function createHud(handlers) {
   const xrdLine = (T) => { const x = xrd(T); return `d₀₀₂ ${fmt(x.ns.d002, 2)} nm → 2θ ≈ ${fmt(x.p002, 1)}° · Lc ≈ ${fmt(x.Lc, 1)} nm (Scherrer) · Breite ≈ ${fmt(x.w002)}°`; };
   const ramanLine = (T) => { const r = raman(T); return `I_D/I_G ≈ ${fmt(r.ratio, 2)} aus La ≈ ${fmt(r.La, 1)} nm (${r.regime})`; };
   const SPK_NOTE = 'Virtuelle Messung aus der Modellstruktur: Lage nach Bragg und Breite nach Scherrer (Cu Kα) aus Schichtabstand und Stapelhöhe, I_D/I_G aus der Schichtgröße (Ferrari & Robertson 2000; Tuinstra & Koenig 1970); Bandbreiten und Untergrund Modell.';
-  const spkFig = (kind, T, hidden = false) => `<figure class="chart" data-spk="${kind}"${hidden ? ' hidden' : ''}>${kind === 'xrd' ? xrdSvg(T) : ramanSvg(T)}<figcaption class="note" data-spk-line>${kind === 'xrd' ? xrdLine(T) : ramanLine(T)}</figcaption></figure>`;
-  // a: zwei aufklappbare Diagramme im Pyrolyse-Labor (XRD offen) · b: eigener Abschnitt, ein Diagramm mit Umschalter
+  const spkFig = (kind, T) => `<figure class="chart" data-spk="${kind}">${kind === 'xrd' ? xrdSvg(T) : ramanSvg(T)}<figcaption class="note" data-spk-line>${kind === 'xrd' ? xrdLine(T) : ramanLine(T)}</figcaption></figure>`;
   const spectraBlock = (T) => `<div class="spk" id="spk">
       <details class="lab-more" open><summary>Röntgenbeugung (002) · Soll-Ist Graphit</summary>${spkFig('xrd', T)}</details>
       <details class="lab-more"><summary>Raman D/G · Schichtgröße</summary>${spkFig('raman', T)}<p class="note">${SPK_NOTE}</p></details>
     </div>`;
-  const spectraSection = (T) => `<section class="spk spk-b" id="spk">
-      <h2 class="sub">Virtuelle Messung <span class="sub-note">· aus der Modellstruktur</span></h2>
-      <div class="cfg-seg spk-toggle" role="group" aria-label="Messung wählen"><button type="button" data-spk-tab="xrd" aria-pressed="true">Röntgenbeugung</button><button type="button" data-spk-tab="raman" aria-pressed="false">Raman D/G</button></div>
-      ${spkFig('xrd', T)}${spkFig('raman', T, true)}
-      <p class="note">${SPK_NOTE}</p>
-    </section>`;
-  // c: Kennzahl-Karten mit Mini-Spektrum statt Balken
-  const spectraFacts = (T) => {
-    const x = xrd(T), r = raman(T);
-    return [
-      { value: `2θ ≈ ${fmt(x.p002, 1)}° · Lc ≈ ${fmt(x.Lc, 1)} nm`, label: '(002)-Peak der Röntgenbeugung (Cu Kα) und Stapelhöhe nach Scherrer – Graphit: 26,6°', svg: xrdSvg(T), spk: 'xrd' },
-      { value: `I_D/I_G ≈ ${fmt(r.ratio, 2)}`, label: `Raman D/G aus der Schichtgröße La ≈ ${fmt(r.La, 1)} nm (${r.regime})`, svg: ramanSvg(T), spk: 'raman' },
-    ];
-  };
   function updateSpectra(T) {
-    const facts = SPK === 'c' ? spectraFacts(T) : null;
     panel.querySelectorAll('[data-spk]').forEach((el) => {
       const kind = el.dataset.spk, svg = el.querySelector('svg');
       if (svg) svg.outerHTML = kind === 'xrd' ? xrdSvg(T) : ramanSvg(T);
       const line = el.querySelector('[data-spk-line]');
       if (line) line.textContent = kind === 'xrd' ? xrdLine(T) : ramanLine(T);
-      if (facts) {
-        const f = facts.find((q) => q.spk === kind), v = el.closest('.fact').querySelector('.fact-value');
-        if (f && v && v.textContent !== f.value) v.innerHTML = f.value.split(' · ').map((s) => `<span>${esc(s)}</span>`).join(' · ');
-      }
     });
   }
 
@@ -519,13 +497,12 @@ export function createHud(handlers) {
           </button></li>`).join('')}
         </ul>
       </section>
-      ${facts([...l.facts, ...dyn, ...(l.id === 'micro' && SPK === 'c' ? spectraFacts(shown) : [])])}
-      ${l.id === 'micro' && SPK === 'b' ? spectraSection(shown) : ''}
+      ${facts([...l.facts, ...dyn])}
       <section class="controls">
         <h2 class="sub">Pyrolyse-Labor <span class="sub-note">· Richtwerte Holz (Modell)</span></h2>
         ${l.id === 'meso' ? rhBlock(state.rh, state.wet) : ''}
         <div id="lab">${labTiles(shown)}</div>
-        ${l.id === 'micro' && SPK === 'a' ? spectraBlock(shown) : ''}
+        ${l.id === 'micro' ? spectraBlock(shown) : ''}
         <details class="lab-more"${chartOpen ? ' open' : ''}>
           <summary>Verlauf H/C · Erläuterung</summary>
           ${labChart(shown)}
@@ -547,10 +524,6 @@ export function createHud(handlers) {
       more.textContent = open ? 'Weniger' : 'Weiterlesen';
     });
     panel.querySelector('.controls .lab-more:last-of-type').addEventListener('toggle', (e) => { chartOpen = e.target.open; });
-    panel.querySelectorAll('[data-spk-tab]').forEach((b) => b.addEventListener('click', () => {   // Variante b: XRD | Raman
-      panel.querySelectorAll('[data-spk-tab]').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
-      panel.querySelectorAll('.spk-b [data-spk]').forEach((fig) => { fig.hidden = fig.dataset.spk !== b.dataset.spkTab; });
-    }));
     // [n] öffnet die Liste selbst und springt ohne Hash-Wechsel hin: #ebene=n bleibt, auch in Browsern ohne Auto-Aufklappen von <details>
     panel.querySelectorAll('.sources h2 a').forEach((a) => a.addEventListener('click', (e) => {
       e.preventDefault();

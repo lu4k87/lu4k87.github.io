@@ -1181,13 +1181,8 @@ body:not(.no-webgl) .fatal-webgl, body.no-webgl .fatal-start { display: none; }
   * { transition-duration: 0.01ms !important; }
 }
 
-/* Virtuelle Messung (Ebene 6, Vorschau 2026-10-25): Röntgenbeugung + Raman als Mini-Diagramme, Graphit-Referenz gestrichelt */
+/* Virtuelle Messung (Ebene 6, Vorschau 2026-10-25, Spektren:A): Röntgenbeugung + Raman aufklappbar, Graphit-Referenz gestrichelt */
 .spk { display: grid; gap: 8px; }
 .spk .chart .lbl { font-size: 10px; }
 .spk .chart .ref { stroke: var(--ink-soft); stroke-width: 1; stroke-dasharray: 3 3; opacity: 0.7; }
 .spk .chart .curve { stroke-width: 1.6; }
-.spk-b { display: flex; flex-direction: column; gap: 8px; }
-.spk-toggle button { flex: 1; }
-.fact-spark { display: block; margin-top: 2px; }
-.fact-spark svg { width: 100%; height: auto; display: block; }
-.fact-spark .lbl { font-size: 10px; }
