@@ -1,1 +1,96 @@
-<!doctype html><meta charset="utf-8"><title>Projekt-Doku</title><meta http-equiv="refresh" content="0; url=readme_kosmos.html"><a href="readme_kosmos.html">readme_kosmos.html</a>
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Kosmos · Reise durch das All</title>
+  <link rel="icon" href="data:,">
+  <meta name="description" content="Interaktive, wissenschaftlich belegte 3D-Reise durch das All: Erde und Mond, Sonnensystem, Milchstraße, Orion-Nebel, Krebsnebel und Pulsar, das Schwarze Loch Sagittarius A*, Lokale Gruppe, kosmisches Netz und Hintergrundstrahlung.">
+  <meta name="color-scheme" content="dark">
+      <link rel="stylesheet" href="../web_ux_robot/fonts/fonts.css">
+  <link rel="stylesheet" href="css/kosmos.css">
+  <script type="importmap">
+    { "imports": { "three": "./vendor/three/three.module.min.js", "three/addons/": "./vendor/three/addons/" } }
+  </script>
+</head>
+<body class="is-loading">
+  <canvas id="stage" aria-label="3D-Ansicht der Reise durch das All"></canvas>
+
+  <div id="hotspots" class="hotspots">
+    <svg class="hs-svg" aria-hidden="true"><g class="leads"></g></svg>
+  </div>
+
+  <div class="hud">
+    <header class="topbar">
+      <a class="brand" href="#station=earth" aria-label="Kosmos – zum Start">
+        <svg class="brand-mark" viewBox="0 0 40 40" aria-hidden="true">
+          <path class="hex-shape" d="M20 2L35.59 11L35.59 29L20 38L4.41 29L4.41 11z"/>
+          <ellipse cx="20" cy="20" rx="11" ry="4.2" transform="rotate(-24 20 20)" fill="none" stroke="currentColor" stroke-width="1.4"/>
+          <circle cx="20" cy="20" r="3.4" fill="currentColor"/>
+        </svg>
+        <span class="brand-text"><strong>Kosmos</strong><span>Reise durch das All</span></span>
+      </a>
+      <p class="flight" aria-live="polite"><span id="flight-to"></span></p>
+      <div class="top-actions">
+        <button type="button" id="btn-panel" class="icon-btn" aria-controls="panel" title="Infotafel ein- oder ausblenden" aria-label="Infotafel ein- oder ausblenden">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="4.5" width="17" height="15" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M14.5 4.5v15" stroke="currentColor" stroke-width="1.6"/></svg>
+        </button>
+        <button type="button" id="btn-cfg" class="icon-btn" aria-expanded="false" aria-controls="cfg" title="Einstellungen" aria-label="Einstellungen">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3.2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M12 2.8v3M12 18.2v3M2.8 12h3M18.2 12h3M5.5 5.5l2.1 2.1M16.4 16.4l2.1 2.1M5.5 18.5l2.1-2.1M16.4 7.6l2.1-2.1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <nav class="rail" aria-label="Größenskala: Stationen nach Bildbreite">
+      <div id="rail" class="rail-in"></div>
+    </nav>
+
+    <main class="stage" id="stage-area">
+      <div class="cfg-dock"><section class="cfg" id="cfg" hidden tabindex="-1" aria-labelledby="cfg-title"></section></div>
+      <section class="hs-card" id="hs-card" aria-live="polite">
+        <div class="hs-card-head"><h2 class="hs-card-title"></h2><button type="button" id="btn-close-card" class="icon-btn icon-btn--sm" aria-label="Info schließen"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button></div>
+        <p class="hs-card-text"></p>
+        <p class="hs-card-src"></p>
+      </section>
+      <div class="pull" id="pull" aria-hidden="true"><span></span><i></i></div>
+      <p class="hint">Ziehen dreht · Scrollen zoomt · goldene Abzeichen fliegen hinein</p>
+    </main>
+
+    <aside class="panel" id="panel" aria-label="Informationen zur Station">
+      <div id="panel-body" class="panel-body"></div>
+    </aside>
+
+    <footer class="bottombar">
+      <div class="nav-buttons" role="group" aria-label="Station wechseln">
+        <button type="button" id="btn-out" class="nav-btn nav-btn--out"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V6M6 11l6-6 6 6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="nav-text"><span class="nav-cap">Hinaus</span><span class="nav-to" id="nav-out-to">–</span></span></button>
+        <button type="button" id="btn-prev" class="nav-btn nav-btn--prev"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <button type="button" id="btn-next" class="nav-btn nav-btn--next"><span class="nav-text"><span class="nav-cap">Weiter</span><span class="nav-to" id="nav-next-to">–</span></span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      </div>
+      <ol id="route" class="route" aria-label="Reiseroute"></ol>
+      <dl class="measure">
+        <div><dt>Bildbreite</dt><dd id="m-width">–</dd></div>
+        <div><dt>Licht quer durchs Bild</dt><dd id="m-light">–</dd></div>
+        <div><dt>Entfernung zur Erde</dt><dd id="m-dist">–</dd></div>
+        <div><dt>Blick zurück</dt><dd id="m-back">–</dd></div>
+      </dl>
+    </footer>
+  </div>
+
+  <div class="caption" id="caption" aria-live="polite">
+    <p class="cap-n"></p>
+    <h2 class="cap-title"></h2>
+    <p class="cap-sub"></p>
+  </div>
+
+  <div class="loader" role="status" aria-live="polite">
+    <div class="loader-ring" aria-hidden="true"></div>
+    <p>Station wird berechnet …</p>
+  </div>
+  <div class="fatal" role="alert">
+    <p class="fatal-webgl">Diese Reise braucht WebGL 2. Bitte einen aktuellen Browser verwenden oder die Hardwarebeschleunigung einschalten.</p>
+    <p class="fatal-start">Die Reise konnte nicht starten. Bitte die Seite ohne Zusätze in der Adresse neu laden.</p>
+  </div>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
