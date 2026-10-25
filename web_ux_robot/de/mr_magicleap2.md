@@ -18,7 +18,7 @@
 3. Viewport-Leiste → Knopf **MR** (Brillen-Symbol, neben VR) oder XR-Menü → **MR Headset (Magic Leap 2)**. Immersive Sitzung erlauben.
 4. **End MR** auf der Tafel, erneut **MR** oder die Menü-Taste am Controller (System) beendet die Sitzung. Bumper oder **Panel here** holt die Tafel vor den Blick.
 
-Ohne AR-Brille (Desktop-Browser) zeigt derselbe Knopf die MR-Ebenen als **Vorschau** im 3D-Viewport.
+Ohne AR-Brille (Desktop-Browser) zeigt derselbe Knopf die MR-Ebenen als **Vorschau** im 3D-Viewport. Derselbe Knopf groß: Bereichs-Leiste → **Remote Teleop** → Seite **MR headset**.
 
 ### Ausrichten (erstes Mal, nach Verschieben des Tischs)
 
@@ -51,6 +51,20 @@ Ebenfalls sichtbar, weil in derselben Szene: Pfad-Vorschau, Ghost, virtuelle Obj
 
 **Rückmeldung E-STOP:** keine rosbridge-Verbindung → `E-STOP NOT SENT`; keine Quittung des Nodes innerhalb 1,5 s → `E-STOP NOT CONFIRMED` – dann den Hardware-Not-Aus drücken.
 
+### Desktop: Seite Remote Teleop › MR headset
+
+Bereichs-Leiste → **Remote Teleop** → Seite **MR headset** (Brillen-Symbol, neben **VR headset**). Nur Anzeige, kein Knopf dort bewegt den Roboter.
+
+| Teil | Was er zeigt |
+|---|---|
+| Statusring **MR ready** | linke Hälfte = Ausrichtung, rechte Hälfte = Brillen-Nutzer; grün = bereit, gelb = prüfen, neutral = aus. Chips darunter: `±mm` und Abstand des Brillen-Nutzers. Großer Knopf = **MR** der Viewport-Leiste (hier Vorschau, im Browser der Magic Leap 2 die Brillen-Ansicht) |
+| **What is MR?** | 3 Schritte für Neulinge; offen, bis die Ausrichtung gut ist |
+| Status | Ausrichtung (Bewertung Good ≤ 10 mm / OK ≤ 25 mm / Measure again, Quelle, Zeit) und Brillen-Nutzer (verbunden / Signal weg / nicht verbunden aus `/mr/operator`, Abstand zur Basis-Achse, Chip **Inside the reach**) |
+| Layers | Matrix **Headset** \| **PC preview**: jede Ebene hat je Ansicht einen eigenen Schalter (`localStorage rcu.mr.layers` `{headset, pc}`; eine ältere einzelne Einstellung gilt für beide). **Headset user** ist in der Spalte Headset gesperrt (der Nutzer sähe eine Kugel um den eigenen Kopf) |
+| Alignment – last 3 | Zeit, Quelle, Fehler, Bewertung (`localStorage rcu.mr.calib.hist`, auch Ausrichtungen, die vom Node zurückkommen; Feinschritte ändern den letzten Eintrag) |
+
+Die Seite **VR headset** behält den Knopf **MR Headset (Magic Leap 2)**; ihre VR-Knöpfe heißen **Enter VR (Meta Quest 3)** und **Passthrough AR (Meta Quest 3)**.
+
 ### Desktop: wer die Brille trägt
 
 Ebene **Headset user** im 3D-Viewport: Kopf + Blickrichtung aus `/mr/operator` (nur ausgerichtet und nicht älter als 3 s).
@@ -70,7 +84,8 @@ Parameter des Nodes `mr_headset_bridge`: `reach_m` 0,44, `margin_m` 0,25, `stale
 ### Dateien
 
 - `js/twin/mr_session.js` – Sitzung, Tafel, Sicherheitsleiste, Ausrichtung
-- `js/twin/mr_layers.js` – Ebenen (auch Desktop-Vorschau)
+- `js/twin/mr_layers.js` – Ebenen (auch Desktop-Vorschau), Schalter je Ansicht Brille / PC
+- `js/mr_page.js` – Seite Remote Teleop › MR headset
 - `js/twin/mr_calib.js` – 4-DoF-Ausgleich (Test `test/test_mr_calib.py`)
 - `src/mr_magicleap2/` – Node `mr_headset_bridge`, Launch `mr_magicleap2.launch.py`, Tests `test/test_core.py`
 

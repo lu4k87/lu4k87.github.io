@@ -18,7 +18,7 @@
 3. Viewport toolbar → button **MR** (glasses icon, next to VR) or XR menu → **MR Headset (Magic Leap 2)**. Allow the immersive session.
 4. **End MR** on the panel, **MR** again or the menu button on the controller (system) ends the session. Bumper or **Panel here** brings the panel in front of you.
 
-Without an AR headset (desktop browser) the same button shows the MR layers as a **preview** in the 3D viewport.
+Without an AR headset (desktop browser) the same button shows the MR layers as a **preview** in the 3D viewport. Same button as a large button: area bar → **Remote Teleop** → page **MR headset**.
 
 ### Align (first time, after moving the table)
 
@@ -51,6 +51,20 @@ Also visible because they live in the same scene: path preview, ghost, virtual o
 
 **E-STOP feedback:** no rosbridge connection → `E-STOP NOT SENT`; no confirmation from the node within 1.5 s → `E-STOP NOT CONFIRMED` – then use the hardware E-stop.
 
+### Desktop: page Remote Teleop › MR headset
+
+Area bar → **Remote Teleop** → page **MR headset** (glasses icon, next to **VR headset**). View only, no button there moves the robot.
+
+| Part | What it shows |
+|---|---|
+| Status ring **MR ready** | left half = alignment, right half = headset user; green = ready, yellow = check, neutral = off. Chips below: `±mm` and distance of the headset user. Large button = **MR** of the viewport toolbar (preview here, headset view in the Magic Leap 2 browser) |
+| **What is MR?** | 3 steps for newcomers; open until the alignment is good |
+| Status | alignment (rating Good ≤ 10 mm / OK ≤ 25 mm / Measure again, source, time) and headset user (connected / signal lost / not connected from `/mr/operator`, distance to the base axis, chip **Inside the reach**) |
+| Layers | matrix **Headset** \| **PC preview**: each layer has its own switch per view (`localStorage rcu.mr.layers` `{headset, pc}`; an older single setting applies to both). **Headset user** is locked in the headset column (the user would see a sphere around their own head) |
+| Alignment – last 3 | time, source, error, rating (`localStorage rcu.mr.calib.hist`, also alignments that come back from the node; fine steps update the last entry) |
+
+The page **VR headset** keeps the **MR Headset (Magic Leap 2)** button; its VR buttons read **Enter VR (Meta Quest 3)** and **Passthrough AR (Meta Quest 3)**.
+
 ### Desktop: who wears the headset
 
 Layer **Headset user** in the 3D viewport: head + viewing direction from `/mr/operator` (only when aligned and not older than 3 s).
@@ -70,7 +84,8 @@ Node parameters (`mr_headset_bridge`): `reach_m` 0.44, `margin_m` 0.25, `stale_s
 ### Files
 
 - `js/twin/mr_session.js` – session, panel, safety bar, alignment
-- `js/twin/mr_layers.js` – layers (also desktop preview)
+- `js/twin/mr_layers.js` – layers (also desktop preview), switches per view headset / PC
+- `js/mr_page.js` – page Remote Teleop › MR headset
 - `js/twin/mr_calib.js` – 4-DoF fit (test `test/test_mr_calib.py`)
 - `src/mr_magicleap2/` – node `mr_headset_bridge`, launch `mr_magicleap2.launch.py`, tests `test/test_core.py`
 
