@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 
-<html lang="en">
+<html lang="de">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="description" content="Look, Speak, Confirm: A Human-Factors evaluation of complementary multimodal interaction and intent safety for low-barrier robot manipulation on the UX Robot platform.">
-<title>Research · UX Robot</title>
+<title data-en="Research · UX Robot">Forschung · UX Robot</title>
 <link rel="stylesheet" href="fonts/fonts.css">
 <link rel="stylesheet" href="css/doc_path.css">
 <style>
@@ -58,6 +58,12 @@ a { color: var(--accent); }
 .top nav a:hover { color: var(--accent); }
 .theme { display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); color: var(--fg); cursor: pointer; }
 .theme .ico { width: 18px; height: 18px; }
+.tools { display: flex; align-items: center; gap: 8px; flex: none; }
+.seg { display: inline-flex; align-items: center; gap: 2px; padding: 3px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface-2); }
+.seg button { display: inline-flex; align-items: center; justify-content: center; min-height: 28px; min-width: 34px; padding: 0 10px; border: 0; border-radius: var(--radius-sm); background: transparent; color: var(--fg-2); font: 700 12px/1 var(--mono); cursor: pointer; transition: background-color .15s, color .15s; }
+.seg button:hover { background: color-mix(in srgb, var(--fg) 7%, transparent); }
+.seg button[aria-pressed="true"] { background: var(--surface); color: var(--fg); box-shadow: 0 0 0 1px var(--line-strong); }
+.seg button:focus-visible, .theme:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
 /* Title Section */
 .title { padding-block: 72px 48px; text-align: center; }
@@ -176,6 +182,8 @@ td span { color: var(--fg-2); font-size: 14px; }
   .head { margin-bottom: 24px; }
   .fig-row, .steps, .grid3, .grid2, .grid4, .two { grid-template-columns: minmax(0, 1fr); }
   .top nav { display: none; }
+  .top .wrap { gap: 12px; }
+  .tools { margin-inline-start: auto; }
 }
 @media (max-width: 560px) {
   .wrap { padding-inline: 16px; }
@@ -209,78 +217,84 @@ td span { color: var(--fg-2); font-size: 14px; }
 
 <header class="top">
   <div class="wrap">
-    <a class="brand" href="#top"><svg class="ico" aria-hidden="true"><use href="#i-flask"/></svg>UX Robot · Research</a>
-    <nav aria-label="Sections">
-      <a href="#abstract">Abstract</a>
-      <a href="#foundations">Foundations</a>
-      <a href="#architecture">Architecture</a>
-      <a href="#testbed">Measurement Suite</a>
-      <a href="#study">Study Design</a>
-      <a href="#guidelines">Guidelines</a>
-      <a href="#literature">Literature</a>
+    <a class="brand" href="#top"><svg class="ico" aria-hidden="true"><use href="#i-flask"/></svg><span data-en="UX Robot · Research">UX Robot · Forschung</span></a>
+    <nav aria-label="Abschnitte" data-en-aria="Sections">
+      <a href="#abstract" data-en="Abstract">Kurzfassung</a>
+      <a href="#foundations" data-en="Foundations">Grundlagen</a>
+      <a href="#architecture" data-en="Architecture">Architektur</a>
+      <a href="#testbed" data-en="Measurement Suite">Messinstrumentarium</a>
+      <a href="#study" data-en="Study Design">Studiendesign</a>
+      <a href="#guidelines" data-en="Guidelines">Richtlinien</a>
+      <a href="#literature" data-en="Literature">Literatur</a>
     </nav>
-    <button class="theme" type="button" id="theme" aria-label="Switch light / dark"><svg class="ico" aria-hidden="true"><use href="#i-sun"/></svg></button>
+    <div class="tools">
+      <div class="seg" role="group" aria-label="Sprache / Language">
+        <button type="button" data-lang="de" aria-pressed="true">DE</button>
+        <button type="button" data-lang="en" aria-pressed="false">EN</button>
+      </div>
+      <button class="theme" type="button" id="theme" aria-label="Hell / Dunkel umschalten" data-en-aria="Switch light / dark"><svg class="ico" aria-hidden="true"><use href="#i-sun"/></svg></button>
+    </div>
   </div>
 </header>
-<nav class="doc-path" aria-label="Path in the project docs"><a href="project_docs.html">← Project docs</a><span aria-hidden="true">›</span><a href="project_docs.html#verstehen">Understand</a><span aria-hidden="true">›</span><span aria-current="page">Research</span></nav>
+<nav class="doc-path" aria-label="Pfad in der Projekt-Doku" data-en-aria="Path in the project docs"><a href="project_docs.html" data-en="← Project docs">← Projekt-Doku</a><span aria-hidden="true">›</span><a href="project_docs.html#verstehen" data-en="Understand">Verstehen</a><span aria-hidden="true">›</span><span aria-current="page" data-en="Research">Forschung</span></nav>
 
 <main id="top">
   
   <section class="title" aria-labelledby="t">
     <div class="wrap">
-      <span class="status"><svg class="ico" aria-hidden="true"><use href="#i-clock"/></svg>Working Paper · Draft 8 · Empirical Study in Preparation</span>
-      <h1 id="t"><em>Look, Speak, Confirm:</em> A Human-Factors Evaluation of Complementary Multimodal Interaction for Robot Manipulation</h1>
-      <p class="wt">Working Title &amp; Empirical Framework · UX Lab</p>
-      <p class="authors"><b>Marius Kaul</b><span>·</span><b>HCI &amp; Usability Research Group</b></p>
-      <p class="affil">UX Lab · Rhine-Waal University of Applied Sciences</p>
+      <span class="status"><svg class="ico" aria-hidden="true"><use href="#i-clock"/></svg><span data-en="Working Paper · Draft 8 · Empirical Study in Preparation">Arbeitspapier · Entwurf 8 · Empirische Studie in Vorbereitung</span></span>
+      <h1 id="t"><em>Look, Speak, Confirm:</em> <span data-en="A Human-Factors Evaluation of Complementary Multimodal Interaction for Robot Manipulation">Eine Human-Factors-Evaluierung komplementärer multimodaler Interaktion zur Robotermanipulation</span></h1>
+      <p class="wt" data-en="Working Title &amp;amp; Empirical Framework · UX Lab">Arbeitstitel &amp; empirischer Rahmen · UX Lab</p>
+      <p class="authors"><b>Marius Kaul</b><span>·</span><b data-en="HCI &amp;amp; Usability Research Group">Forschungsgruppe HCI &amp; Usability</b></p>
+      <p class="affil" data-en="UX Lab · Rhine-Waal University of Applied Sciences">UX Lab · Hochschule Rhein-Waal</p>
       <div class="btns">
-        <span class="btn" aria-disabled="true"><svg class="ico" aria-hidden="true"><use href="#i-doc"/></svg>Paper Draft 8 <small>in preparation</small></span>
-        <span class="btn" role="img" aria-label="Code private; publication planned under Apache 2.0"><svg class="ico" aria-hidden="true"><use href="#i-lock"/></svg>Code private <small>publication planned</small></span>
-        <a class="btn" href="project_docs.html"><svg class="ico" aria-hidden="true"><use href="#i-book"/></svg>Platform UX Robot</a>
+        <span class="btn" aria-disabled="true"><svg class="ico" aria-hidden="true"><use href="#i-doc"/></svg><span data-en="Paper Draft 8">Paper-Entwurf 8</span> <small data-en="in preparation">in Vorbereitung</small></span>
+        <span class="btn" role="img" aria-label="Code nicht öffentlich; Veröffentlichung unter Apache 2.0 geplant" data-en-aria="Code private; publication planned under Apache 2.0"><svg class="ico" aria-hidden="true"><use href="#i-lock"/></svg><span data-en="Code private">Code nicht öffentlich</span> <small data-en="publication planned">Veröffentlichung geplant</small></span>
+        <a class="btn" href="project_docs.html"><svg class="ico" aria-hidden="true"><use href="#i-book"/></svg><span data-en="Platform UX Robot">Plattform UX Robot</span></a>
       </div>
     </div>
   </section>
 
   
-  <section class="teaser" aria-label="Figure 1: Conceptual Information Flow">
+  <section class="teaser" aria-label="Abbildung 1: Konzeptueller Informationsfluss" data-en-aria="Figure 1: Conceptual Information Flow">
     <div class="wrap">
       <figure class="fig">
         <div class="fig-row" role="list">
           <div class="node" role="listitem" style="--hue: var(--blue)">
-            <small>Human Operator</small>
-            <b>Gaze · Speech · Controller</b>
-            <span>Complementary functional allocation across sensory-motor channels</span>
+            <small data-en="Human Operator">Bedienperson</small>
+            <b data-en="Gaze · Speech · Controller">Blick · Sprache · Controller</b>
+            <span data-en="Complementary functional allocation across sensory-motor channels">Komplementäre Funktionszuordnung über sensomotorische Kanäle</span>
           </div>
           <div class="node" role="listitem" style="--hue: var(--violet)">
-            <small>Intent-Safety Layer</small>
+            <small data-en="Intent-Safety Layer">Intent-Safety-Schicht</small>
             <b>Attention → Candidate → Armed → Confirmed</b>
-            <span>State-based buffer meant to prevent Midas Touch errors (planned)</span>
+            <span data-en="State-based buffer meant to prevent Midas Touch errors (planned)">Zustandsbasierter Puffer zur Vermeidung von Midas-Touch-Fehlern (geplant)</span>
           </div>
           <div class="node" role="listitem" style="--hue: var(--indigo)">
-            <small>Task Planning</small>
+            <small data-en="Task Planning">Aufgabenplanung</small>
             <b>ROS 2 Humble · MoveIt 2</b>
-            <span>Deterministic skill execution &amp; collision-checked trajectory generation</span>
+            <span data-en="Deterministic skill execution &amp;amp; collision-checked trajectory generation">Deterministische Skill-Ausführung &amp; kollisionsgeprüfte Bahnplanung</span>
           </div>
           <div class="node" role="listitem" style="--hue: var(--green)">
-            <small>Robotic Hardware</small>
-            <b>xArm Lite 6 · Vacuum Gripper</b>
-            <span>Assistive manipulation in shared workspace</span>
+            <small data-en="Robotic Hardware">Roboter-Hardware</small>
+            <b data-en="xArm Lite 6 · Vacuum Gripper">xArm Lite 6 · Vakuumgreifer</b>
+            <span data-en="Assistive manipulation in shared workspace">Assistive Manipulation im gemeinsamen Arbeitsraum</span>
           </div>
         </div>
         <div class="feedback-loop">
           <svg class="ico ico-s" aria-hidden="true"><use href="#i-shield"/></svg>
-          <div><b>Closed-Loop Feedback:</b> Continuous visual bounding, dwell indicators, and audio confirmations return to the user at every state transition before any arm movement.</div>
+          <div><b data-en="Closed-Loop Feedback:">Geschlossener Rückmeldekreis:</b> <span data-en="Continuous visual bounding, dwell indicators, and audio confirmations return to the user at every state transition before any arm movement.">Bei jedem Zustandsübergang erhält die Bedienperson vor jeder Armbewegung Rückmeldung durch visuelle Markierung, Verweilanzeigen und akustische Bestätigungen.</span></div>
         </div>
         <div class="log">
-          <b>Synchronized HF Event Logger (planned):</b>
+          <b data-en="Synchronized HF Event Logger (planned):">Synchronisierter HF-Ereignislogger (geplant):</b>
           <span class="chip">Eye-Tracking (Tobii)</span>
-          <span class="chip">Sympathetic Tone (EDA) · planned</span>
-          <span class="chip">Parasympathetic Tone (HRV) · planned</span>
+          <span class="chip" data-en="Sympathetic Tone (EDA) · planned">Sympathikotonus (EDA) · geplant</span>
+          <span class="chip" data-en="Parasympathetic Tone (HRV) · planned">Parasympathikotonus (HRV) · geplant</span>
           <span class="chip">NASA-TLX</span>
           <span class="chip">SUS &amp; TAM</span>
-          <span class="chip">SDA-M (BACs) · planned</span>
+          <span class="chip" data-en="SDA-M (BACs) · planned">SDA-M (BACs) · geplant</span>
         </div>
-        <figcaption><b>Figure 1.</b> Information flow architecture: each modality is strictly dedicated to a single complementary role. Feedback returns to the operator at every transition stage, and every interaction event is timestamped to correlate system events with objective biosignals and psychometrics (event logger and biosignal sensors planned, not yet implemented).</figcaption>
+        <figcaption><b data-en="Figure 1.">Abbildung 1.</b> <span data-en="Information flow architecture: each modality is strictly dedicated to a single complementary role. Feedback returns to the operator at every transition stage, and every interaction event is timestamped to correlate system events with objective biosignals and psychometrics (event logger and biosignal sensors planned, not yet implemented).">Architektur des Informationsflusses: Jede Modalität übernimmt genau eine komplementäre Rolle. Die Bedienperson erhält bei jedem Übergang Rückmeldung; jedes Interaktionsereignis wird mit einem Zeitstempel versehen, um Systemereignisse mit objektiven Biosignalen und psychometrischen Daten zu korrelieren (Ereignislogger und Biosignal-Sensorik geplant, noch nicht umgesetzt).</span></figcaption>
       </figure>
     </div>
   </section>
@@ -289,12 +303,12 @@ td span { color: var(--fg-2); font-size: 14px; }
   <section class="sec alt abstract" id="abstract" aria-labelledby="h-abs">
     <div class="wrap narrow">
       <div class="head">
-        <span class="eyebrow" style="--hue: var(--accent)"><span class="n">01</span>Abstract</span>
-        <h2 id="h-abs">Problem and approach</h2>
-        <p class="lede">Why novices struggle to control a robot arm, and how complementary input could help.</p>
+        <span class="eyebrow" style="--hue: var(--accent)"><span class="n">01</span><span data-en="Abstract">Kurzfassung</span></span>
+        <h2 id="h-abs" data-en="Problem and approach">Problemstellung und Ansatz</h2>
+        <p class="lede" data-en="Why novices struggle to control a robot arm, and how complementary input could help.">Warum Laien die Steuerung eines Roboterarms schwerfällt und wie komplementäre Eingaben helfen könnten.</p>
       </div>
-      <p>Robot manipulation remains challenging for non-experts, who frequently stay passive steerers that trigger pre-defined scripts. Conventional teach pendants and nested menus add extraneous cognitive load and interaction cost.</p>
-      <p>We propose a complementary architecture where gaze references space, speech communicates task intent, and controllers confirm execution. The robot serves as a human-factors testbed to study this, including the gap between reported and measured strain (the "physiological paradox").</p>
+      <p data-en="Robot manipulation remains challenging for non-experts, who frequently stay passive steerers that trigger pre-defined scripts. Conventional teach pendants and nested menus add extraneous cognitive load and interaction cost.">Robotermanipulation bleibt für Laien anspruchsvoll: Sie verbleiben häufig in der Rolle passiver Bedienender, die vordefinierte Skripte auslösen. Konventionelle Teach-Pendants und verschachtelte Menüs erhöhen die extrinsische kognitive Belastung und die Interaktionskosten.</p>
+      <p data-en="We propose a complementary architecture where gaze references space, speech communicates task intent, and controllers confirm execution. The robot serves as a human-factors testbed to study this, including the gap between reported and measured strain (the &quot;physiological paradox&quot;).">Wir schlagen eine komplementäre Architektur vor, in der der Blick den Raum referenziert, die Sprache die Aufgabenintention übermittelt und der Controller die Ausführung bestätigt. Der Roboter dient dabei als Human-Factors-Testumgebung, auch für die Diskrepanz zwischen berichteter und gemessener Beanspruchung („physiologisches Paradoxon“).</p>
     </div>
   </section>
 
@@ -302,37 +316,37 @@ td span { color: var(--fg-2); font-size: 14px; }
   <section class="sec" id="foundations" aria-labelledby="h-foundations">
     <div class="wrap">
       <div class="head">
-        <span class="eyebrow" style="--hue: var(--blue)"><span class="n">02</span>Theoretical Foundations</span>
-        <h2 id="h-foundations">The Human Cost of Human-Robot Collaboration</h2>
-        <p class="lede">The theories behind the design: cognitive load, gaze interaction, physiological strain and mental models.</p>
+        <span class="eyebrow" style="--hue: var(--blue)"><span class="n">02</span><span data-en="Theoretical Foundations">Theoretische Grundlagen</span></span>
+        <h2 id="h-foundations" data-en="The Human Cost of Human-Robot Collaboration">Die menschlichen Kosten der Mensch-Roboter-Kollaboration</h2>
+        <p class="lede" data-en="The theories behind the design: cognitive load, gaze interaction, physiological strain and mental models.">Die theoretische Basis des Designs: kognitive Belastung, blickbasierte Interaktion, physiologische Beanspruchung und mentale Modelle.</p>
       </div>
       <div class="grid4">
         <div class="card" style="--hue: var(--blue)">
-          <span class="k"><svg class="ico" aria-hidden="true"><use href="#i-brain"/></svg>Cognitive Load Theory</span>
-          <b>Extraneous Load &amp; Interaction Cost</b>
-          <p>Indirect menu hierarchies overload working memory (Sweller, 1988; Nielsen, 1994). Multiple Resource Theory (Wickens, 2002) dictates distributing demands across sensory channels.</p>
+          <span class="k"><svg class="ico" aria-hidden="true"><use href="#i-brain"/></svg><span data-en="Cognitive Load Theory">Cognitive-Load-Theorie</span></span>
+          <b data-en="Extraneous Load &amp;amp; Interaction Cost">Extrinsische Belastung &amp; Interaktionskosten</b>
+          <p data-en="Indirect menu hierarchies overload working memory (Sweller, 1988; Nielsen, 1994). Multiple Resource Theory (Wickens, 2002) dictates distributing demands across sensory channels.">Indirekte Menühierarchien überlasten das Arbeitsgedächtnis (Sweller, 1988; Nielsen, 1994). Die Multiple-Resource-Theorie (Wickens, 2002) legt nahe, Anforderungen auf mehrere sensorische Kanäle zu verteilen.</p>
         </div>
         <div class="card" style="--hue: var(--gold)">
-          <span class="k"><svg class="ico" aria-hidden="true"><use href="#i-eye"/></svg>Gaze &amp; Midas Touch</span>
-          <b>Decoupling Perception from Triggering</b>
-          <p>Eye-tracking offers rapid deictic spatial referencing. Treating fixations as direct triggers causes dangerous accidental executions (Jones et al., 2018).</p>
+          <span class="k"><svg class="ico" aria-hidden="true"><use href="#i-eye"/></svg><span data-en="Gaze &amp;amp; Midas Touch">Blick &amp; Midas Touch</span></span>
+          <b data-en="Decoupling Perception from Triggering">Entkopplung von Wahrnehmung und Auslösung</b>
+          <p data-en="Eye-tracking offers rapid deictic spatial referencing. Treating fixations as direct triggers causes dangerous accidental executions (Jones et al., 2018).">Eye-Tracking ermöglicht eine schnelle deiktische Referenzierung im Raum. Werden Fixationen direkt als Auslöser gewertet, kommt es zu gefährlichen unbeabsichtigten Ausführungen (Jones et al., 2018).</p>
         </div>
         <div class="card" style="--hue: var(--pink)">
-          <span class="k"><svg class="ico" aria-hidden="true"><use href="#i-heart"/></svg>Physiological Paradox</span>
-          <b>Subjective Reports vs. Sympathetic Arousal</b>
-          <p>Collaborative operators often report low subjective stress despite high galvanic skin response arousal (Su et al., 2026). Objective biosignals reveal hidden strain.</p>
+          <span class="k"><svg class="ico" aria-hidden="true"><use href="#i-heart"/></svg><span data-en="Physiological Paradox">Physiologisches Paradoxon</span></span>
+          <b data-en="Subjective Reports vs. Sympathetic Arousal">Subjektive Angaben vs. sympathische Aktivierung</b>
+          <p data-en="Collaborative operators often report low subjective stress despite high galvanic skin response arousal (Su et al., 2026). Objective biosignals reveal hidden strain.">Bedienpersonen in kollaborativen Szenarien berichten oft geringen subjektiven Stress, obwohl die elektrodermale Aktivität eine hohe Aktivierung anzeigt (Su et al., 2026). Objektive Biosignale machen verdeckte Beanspruchung sichtbar.</p>
         </div>
         <div class="card" style="--hue: var(--green)">
-          <span class="k"><svg class="ico" aria-hidden="true"><use href="#i-layers"/></svg>Mental Models (SDA-M)</span>
-          <b>Conceptual Structure vs. Tool Shortcut</b>
-          <p>Experts possess structured cognitive action networks (Schack et al., 2014). Structural Dimensional Analysis reveals whether assistance aids understanding or bypasses learning.</p>
+          <span class="k"><svg class="ico" aria-hidden="true"><use href="#i-layers"/></svg><span data-en="Mental Models (SDA-M)">Mentale Modelle (SDA-M)</span></span>
+          <b data-en="Conceptual Structure vs. Tool Shortcut">Begriffliche Struktur vs. Abkürzung durch das Werkzeug</b>
+          <p data-en="Experts possess structured cognitive action networks (Schack et al., 2014). Structural Dimensional Analysis reveals whether assistance aids understanding or bypasses learning.">Expertinnen und Experten verfügen über strukturierte kognitive Handlungsnetzwerke (Schack et al., 2014). Die Strukturdimensionale Analyse zeigt, ob Assistenz das Verständnis fördert oder das Lernen umgeht.</p>
         </div>
       </div>
 
-      <h3>The Critical Research Gap</h3>
+      <h3 data-en="The Critical Research Gap">Die zentrale Forschungslücke</h3>
       <div class="card" style="margin-top: 16px; --hue: var(--indigo)">
-        <b>Where Engineering Fusion Meets Human Factors:</b>
-        <p>Multimodal technical fusion and human-factors evaluations rarely intersect systematically. Prior literature lacks evidence on how complementary allocation simultaneously influences performance, physiological strain, and novice mental representations.</p>
+        <b data-en="Where Engineering Fusion Meets Human Factors:">Wo technische Fusion auf Human Factors trifft:</b>
+        <p data-en="Multimodal technical fusion and human-factors evaluations rarely intersect systematically. Prior literature lacks evidence on how complementary allocation simultaneously influences performance, physiological strain, and novice mental representations.">Technische multimodale Fusion und Human-Factors-Evaluierungen werden selten systematisch zusammengeführt. Bisher fehlt Evidenz dazu, wie komplementäre Funktionszuordnung zugleich Leistung, physiologische Beanspruchung und die mentalen Repräsentationen von Laien beeinflusst.</p>
       </div>
     </div>
   </section>
@@ -341,48 +355,46 @@ td span { color: var(--fg-2); font-size: 14px; }
   <section class="sec alt" id="architecture" aria-labelledby="h-arch">
     <div class="wrap">
       <div class="head">
-        <span class="eyebrow" style="--hue: var(--violet)"><span class="n">03</span>Interaction Architecture</span>
-        <h2 id="h-arch">One Role per Modality: Look, Speak, Confirm</h2>
-        <p class="lede">Each input channel has exactly one job.</p>
+        <span class="eyebrow" style="--hue: var(--violet)"><span class="n">03</span><span data-en="Interaction Architecture">Interaktionsarchitektur</span></span>
+        <h2 id="h-arch" data-en="One Role per Modality: Look, Speak, Confirm">Eine Rolle je Modalität: Look, Speak, Confirm</h2>
+        <p class="lede" data-en="Each input channel has exactly one job.">Jeder Eingabekanal erfüllt genau eine Aufgabe.</p>
       </div>
       <div class="grid3">
         <div class="card" style="--hue: var(--blue)">
-          <span class="k"><svg class="ico" aria-hidden="true"><use href="#i-eye"/></svg>Spatial Reference (Where)</span>
-          <b>Eye Gaze · Tobii Pro Glasses 3</b>
-          <p>Identifies target objects in 3D space via raycasting (RGB-D + YOLOv8). In the planned study design, gaze only selects targets; motion starts only after a separate confirmation.</p>
+          <span class="k"><svg class="ico" aria-hidden="true"><use href="#i-eye"/></svg><span data-en="Spatial Reference (Where)">Räumliche Referenz (Wo)</span></span>
+          <b data-en="Eye Gaze · Tobii Pro Glasses 3">Blick · Tobii Pro Glasses 3</b>
+          <p data-en="Identifies target objects in 3D space via raycasting (RGB-D + YOLOv8). In the planned study design, gaze only selects targets; motion starts only after a separate confirmation.">Identifiziert Zielobjekte im 3D-Raum per Raycasting (RGB-D + YOLOv8). Im geplanten Studiendesign wählt der Blick nur Ziele aus; eine Bewegung beginnt erst nach separater Bestätigung.</p>
         </div>
         <div class="card" style="--hue: var(--violet)">
-          <span class="k"><svg class="ico" aria-hidden="true"><use href="#i-mic"/></svg>Task Intent (What)</span>
-          <b>Speech · Offline Whisper</b>
-          <p>Communicates high-level semantic intentions ("Pick", "Place") without menu traversal. Grounded by temporal lead-lag synchronization where gaze precedes speech (Khan et al., 2026).</p>
+          <span class="k"><svg class="ico" aria-hidden="true"><use href="#i-mic"/></svg><span data-en="Task Intent (What)">Aufgabenintention (Was)</span></span>
+          <b data-en="Speech · Offline Whisper">Sprache · Whisper (offline)</b>
+          <p data-en="Communicates high-level semantic intentions (&quot;Pick&quot;, &quot;Place&quot;) without menu traversal. Grounded by temporal lead-lag synchronization where gaze precedes speech (Khan et al., 2026).">Übermittelt übergeordnete semantische Intentionen („Pick“, „Place“) ohne Menünavigation. Die Verankerung erfolgt über eine zeitliche Lead-Lag-Synchronisation, bei der der Blick der Sprache vorausgeht (Khan et al., 2026).</p>
         </div>
         <div class="card" style="--hue: var(--green)">
-          <span class="k"><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg>Confirmation &amp; Override</span>
-          <b>Physical Controller &amp; Low-Latency GUI</b>
-          <p>A fixed channel for confirmation, emergency stop and error recovery, so the arm only moves on a human command.</p>
+          <span class="k"><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg><span data-en="Confirmation &amp;amp; Override">Bestätigung &amp; Eingriff</span></span>
+          <b data-en="Physical Controller &amp;amp; Low-Latency GUI">Physischer Controller &amp; latenzarme GUI</b>
+          <p data-en="A fixed channel for confirmation, emergency stop and error recovery, so the arm only moves on a human command.">Ein fester Kanal für Bestätigung, E-STOP und Fehlerbehebung: Der Arm bewegt sich nur auf Befehl des Menschen.</p>
         </div>
       </div>
 
-      <h3>Intent-Safety State Machine: The Cognitive Buffer</h3>
-      <p style="margin-top: 8px; color: var(--fg-2); max-width: 72ch; font-size: 15px;">
-        To solve the Midas Touch without introducing latency bottlenecks, the proposed Intent-Safety Layer (planned, not yet implemented) enforces a 4-stage deterministic transition:
-      </p>
-      <ol class="steps" aria-label="Intent-safety states">
+      <h3 data-en="Intent-Safety State Machine: The Cognitive Buffer">Intent-Safety-Zustandsautomat: der kognitive Puffer</h3>
+      <p style="margin-top: 8px; color: var(--fg-2); max-width: 72ch; font-size: 15px;" data-en="To solve the Midas Touch without introducing latency bottlenecks, the proposed Intent-Safety Layer (planned, not yet implemented) enforces a 4-stage deterministic transition:">Um das Midas-Touch-Problem ohne zusätzliche Latenzengpässe zu lösen, erzwingt die vorgeschlagene Intent-Safety-Schicht (geplant, noch nicht umgesetzt) einen deterministischen Übergang in vier Stufen:</p>
+      <ol class="steps" aria-label="Intent-Safety-Zustände" data-en-aria="Intent-safety states">
         <li data-k="ATTENTION">
-          <b>Visual Exploration</b>
-          <span>Continuous gaze monitoring. Looking around the workspace triggers nothing.</span>
+          <b data-en="Visual Exploration">Visuelle Exploration</b>
+          <span data-en="Continuous gaze monitoring. Looking around the workspace triggers nothing.">Kontinuierliche Blickerfassung. Das Umherblicken im Arbeitsraum löst nichts aus.</span>
         </li>
         <li data-k="CANDIDATE">
-          <b>Target Raycast</b>
-          <span>The object nearest to the 3D gaze vector is identified via YOLOv8 and highlighted with a subtle visual bounding cue.</span>
+          <b data-en="Target Raycast">Ziel-Raycast</b>
+          <span data-en="The object nearest to the 3D gaze vector is identified via YOLOv8 and highlighted with a subtle visual bounding cue.">Das dem 3D-Blickvektor nächstgelegene Objekt wird per YOLOv8 identifiziert und durch eine dezente visuelle Umrandung hervorgehoben.</span>
         </li>
         <li data-k="ARMED">
-          <b>Dwell Buffer (≈ 300 ms)</b>
-          <span>Prolonged gaze on the candidate arms the selection with clear visual feedback. Resolves gaze-shift conflicts before movement.</span>
+          <b data-en="Dwell Buffer (≈ 300 ms)">Verweilpuffer (≈ 300 ms)</b>
+          <span data-en="Prolonged gaze on the candidate arms the selection with clear visual feedback. Resolves gaze-shift conflicts before movement.">Ein anhaltender Blick auf den Kandidaten schaltet die Auswahl mit deutlicher visueller Rückmeldung scharf. Blickwechsel-Konflikte werden vor der Bewegung aufgelöst.</span>
         </li>
         <li data-k="CONFIRMED">
-          <b>Explicit Execution</b>
-          <span>The arm starts moving only on a verbal command or controller press. Cancellation remains possible at any time.</span>
+          <b data-en="Explicit Execution">Explizite Ausführung</b>
+          <span data-en="The arm starts moving only on a verbal command or controller press. Cancellation remains possible at any time.">Der Arm bewegt sich erst nach einem Sprachbefehl oder Tastendruck am Controller. Ein Abbruch ist jederzeit möglich.</span>
         </li>
       </ol>
     </div>
@@ -392,57 +404,57 @@ td span { color: var(--fg-2); font-size: 14px; }
   <section class="sec" id="testbed" aria-labelledby="h-testbed">
     <div class="wrap">
       <div class="head">
-        <span class="eyebrow" style="--hue: var(--gold)"><span class="n">04</span>Measurement Suite</span>
-        <h2 id="h-testbed">Measurement suite</h2>
-        <p class="lede">Synchronizing ROS 2 machine state with high-frequency ocular, autonomic, and psychometric metrics.</p>
+        <span class="eyebrow" style="--hue: var(--gold)"><span class="n">04</span><span data-en="Measurement Suite">Messinstrumentarium</span></span>
+        <h2 id="h-testbed" data-en="Measurement suite">Messinstrumentarium</h2>
+        <p class="lede" data-en="Synchronizing ROS 2 machine state with high-frequency ocular, autonomic, and psychometric metrics.">Synchronisation des ROS-2-Maschinenzustands mit hochfrequenten okulären, autonomen und psychometrischen Messgrößen.</p>
       </div>
 
       <div class="table-wrap">
         <table>
           <thead>
             <tr>
-              <th scope="col">Measurement Layer</th>
-              <th scope="col">Sensors &amp; Instruments</th>
-              <th scope="col">Metrics &amp; Variables</th>
-              <th scope="col">Human-Factors Construct</th>
+              <th scope="col" data-en="Measurement Layer">Messebene</th>
+              <th scope="col" data-en="Sensors &amp;amp; Instruments">Sensorik &amp; Instrumente</th>
+              <th scope="col" data-en="Metrics &amp;amp; Variables">Kennwerte &amp; Variablen</th>
+              <th scope="col" data-en="Human-Factors Construct">Human-Factors-Konstrukt</th>
             </tr>
           </thead>
           <tbody>
             <tr>
-              <td><b>Behavioral Performance</b></td>
-              <td>ROS 2 Event Logger (planned) &amp; UX | Monitoring</td>
-              <td>Task Completion Time (s), Task Success Rate (%), Wrong Target Errors, Interaction Steps</td>
-              <td>Operational efficiency, execution fluency, and error rates</td>
+              <td><b data-en="Behavioral Performance">Verhaltensleistung</b></td>
+              <td data-en="ROS 2 Event Logger (planned) &amp;amp; UX | Monitoring">ROS-2-Ereignislogger (geplant) &amp; UX | Monitoring</td>
+              <td data-en="Task Completion Time (s), Task Success Rate (%), Wrong Target Errors, Interaction Steps">Bearbeitungszeit (s), Erfolgsquote (%), Fehlauswahlen (falsches Ziel), Interaktionsschritte</td>
+              <td data-en="Operational efficiency, execution fluency, and error rates">Effizienz, Flüssigkeit der Ausführung und Fehlerraten</td>
             </tr>
             <tr>
-              <td><b>Ocular Dynamics</b></td>
-              <td>Tobii Pro Glasses 3 (50 Hz / scene camera)</td>
-              <td>Fixation Duration, Target Acquisition Latency, Candidate Transitions, Gaze-Shift Conflicts</td>
-              <td>Visual attention allocation, target searching efficiency, and Midas-Touch friction</td>
+              <td><b data-en="Ocular Dynamics">Blickdynamik</b></td>
+              <td data-en="Tobii Pro Glasses 3 (50 Hz / scene camera)">Tobii Pro Glasses 3 (50 Hz / Szenenkamera)</td>
+              <td data-en="Fixation Duration, Target Acquisition Latency, Candidate Transitions, Gaze-Shift Conflicts">Fixationsdauer, Latenz der Zielerfassung, Kandidatenwechsel, Blickwechsel-Konflikte</td>
+              <td data-en="Visual attention allocation, target searching efficiency, and Midas-Touch friction">Verteilung der visuellen Aufmerksamkeit, Effizienz der Zielsuche und Midas-Touch-Reibung</td>
             </tr>
             <tr>
-              <td><b>Sympathetic Arousal</b></td>
-              <td>EDA / Galvanic Skin Response Sensors (planned)</td>
-              <td>Tonic Skin Conductance Level (SCL), Phasic Skin Conductance Responses (SCR amplitude &amp; frequency)</td>
-              <td>Acute physiological stress, arousal spikes during errors, and internal effort</td>
+              <td><b data-en="Sympathetic Arousal">Sympathische Aktivierung</b></td>
+              <td data-en="EDA / Galvanic Skin Response Sensors (planned)">EDA-Sensorik / Hautleitfähigkeit (geplant)</td>
+              <td data-en="Tonic Skin Conductance Level (SCL), Phasic Skin Conductance Responses (SCR amplitude &amp;amp; frequency)">Tonisches Hautleitfähigkeitsniveau (SCL), phasische Hautleitfähigkeitsreaktionen (SCR: Amplitude &amp; Frequenz)</td>
+              <td data-en="Acute physiological stress, arousal spikes during errors, and internal effort">Akuter physiologischer Stress, Aktivierungsspitzen bei Fehlern und innere Anstrengung</td>
             </tr>
             <tr>
-              <td><b>Parasympathetic Tone</b></td>
-              <td>PPG / ECG Heart Rate Monitor (planned)</td>
-              <td>Heart Rate (HR), Heart Rate Variability: RMSSD (ms) &amp; SDNN baseline-normalized</td>
-              <td>Autonomic nervous system recovery, cognitive strain, and mental workload cost</td>
+              <td><b data-en="Parasympathetic Tone">Parasympathikotonus</b></td>
+              <td data-en="PPG / ECG Heart Rate Monitor (planned)">PPG-/EKG-Herzfrequenzmessung (geplant)</td>
+              <td data-en="Heart Rate (HR), Heart Rate Variability: RMSSD (ms) &amp;amp; SDNN baseline-normalized">Herzfrequenz (HR), Herzratenvariabilität: RMSSD (ms) &amp; SDNN, baseline-normalisiert</td>
+              <td data-en="Autonomic nervous system recovery, cognitive strain, and mental workload cost">Erholung des autonomen Nervensystems, kognitive Beanspruchung und Kosten mentaler Belastung</td>
             </tr>
             <tr>
-              <td><b>Psychometrics (ISO 9241-11)</b></td>
-              <td>Standardized Digital Survey Battery</td>
-              <td>NASA-TLX (6 subscales), System Usability Scale (SUS 0–100), TAM (PU &amp; PEOU), Perceived Control Scale</td>
-              <td>Subjective mental/physical workload, perceived agency, usability, and system acceptance</td>
+              <td><b data-en="Psychometrics (ISO 9241-11)">Psychometrie (ISO 9241-11)</b></td>
+              <td data-en="Standardized Digital Survey Battery">Standardisierte digitale Fragebogenbatterie</td>
+              <td data-en="NASA-TLX (6 subscales), System Usability Scale (SUS 0–100), TAM (PU &amp;amp; PEOU), Perceived Control Scale">NASA-TLX (6 Subskalen), System Usability Scale (SUS 0–100), TAM (PU &amp; PEOU), Skala wahrgenommener Kontrolle</td>
+              <td data-en="Subjective mental/physical workload, perceived agency, usability, and system acceptance">Subjektive mentale/physische Beanspruchung, wahrgenommene Handlungskontrolle (Agency), Gebrauchstauglichkeit und Systemakzeptanz</td>
             </tr>
             <tr>
-              <td><b>Cognitive Representation</b></td>
-              <td>SDA-M (Structural Dimensional Analysis, planned)</td>
-              <td>Pre- &amp; Post-experiment hierarchical clustering of 8–12 Basic Action Concepts (BACs) vs. expert network</td>
-              <td>Conceptual learning: novice structural mental model formation vs. operational shortcut</td>
+              <td><b data-en="Cognitive Representation">Kognitive Repräsentation</b></td>
+              <td data-en="SDA-M (Structural Dimensional Analysis, planned)">SDA-M (Strukturdimensionale Analyse, geplant)</td>
+              <td data-en="Pre- &amp;amp; Post-experiment hierarchical clustering of 8–12 Basic Action Concepts (BACs) vs. expert network">Hierarchische Clusteranalyse von 8–12 Basic Action Concepts (BACs) vor und nach dem Experiment im Vergleich zum Expertennetz</td>
+              <td data-en="Conceptual learning: novice structural mental model formation vs. operational shortcut">Konzeptuelles Lernen: Aufbau strukturierter mentaler Modelle bei Laien vs. operative Abkürzung</td>
             </tr>
           </tbody>
         </table>
@@ -450,14 +462,14 @@ td span { color: var(--fg-2); font-size: 14px; }
 
       <div class="grid2" style="margin-top: 24px;">
         <div class="card" style="--hue: var(--pink)">
-          <span class="k"><svg class="ico" aria-hidden="true"><use href="#i-heart"/></svg>Resolving Arousal Ambiguity</span>
-          <b>Multimodal Sensor Convergence</b>
-          <p>Neither heart rate nor skin conductance alone distinguishes between positive engagement and cognitive distress (Tesch et al., 2021). Correlating EDA peaks with armed states maps internal strain.</p>
+          <span class="k"><svg class="ico" aria-hidden="true"><use href="#i-heart"/></svg><span data-en="Resolving Arousal Ambiguity">Mehrdeutigkeit der Aktivierung auflösen</span></span>
+          <b data-en="Multimodal Sensor Convergence">Konvergenz multimodaler Sensorik</b>
+          <p data-en="Neither heart rate nor skin conductance alone distinguishes between positive engagement and cognitive distress (Tesch et al., 2021). Correlating EDA peaks with armed states maps internal strain.">Weder Herzfrequenz noch Hautleitfähigkeit allein unterscheiden zwischen positivem Engagement und kognitivem Distress (Tesch et al., 2021). Die Korrelation von EDA-Spitzen mit Armed-Zuständen bildet die innere Beanspruchung ab.</p>
         </div>
         <div class="card" style="--hue: var(--green)">
-          <span class="k"><svg class="ico" aria-hidden="true"><use href="#i-sliders"/></svg>Ability-Based Design Lens</span>
-          <b>Accessibility Beyond Robotic Expertise</b>
-          <p>Grounded in Ability-Based Design (Wobbrock et al., 2011), the testbed isolates individual sensory-motor requirements. Evaluating novice users provides empirical baselines for assistive adaptation.</p>
+          <span class="k"><svg class="ico" aria-hidden="true"><use href="#i-sliders"/></svg><span data-en="Ability-Based Design Lens">Perspektive Ability-Based Design</span></span>
+          <b data-en="Accessibility Beyond Robotic Expertise">Zugänglichkeit jenseits von Robotik-Expertise</b>
+          <p data-en="Grounded in Ability-Based Design (Wobbrock et al., 2011), the testbed isolates individual sensory-motor requirements. Evaluating novice users provides empirical baselines for assistive adaptation.">Gestützt auf Ability-Based Design (Wobbrock et al., 2011) isoliert die Testumgebung individuelle sensomotorische Anforderungen. Die Evaluierung mit Laien liefert empirische Ausgangswerte für assistive Anpassungen.</p>
         </div>
       </div>
     </div>
@@ -467,43 +479,43 @@ td span { color: var(--fg-2); font-size: 14px; }
   <section class="sec alt" id="study" aria-labelledby="h-study">
     <div class="wrap">
       <div class="head">
-        <span class="eyebrow" style="--hue: var(--green)"><span class="n">05</span>Experimental Design</span>
-        <h2 id="h-study">Controlled Within-Subjects Evaluation</h2>
-        <p class="lede">Isolating the effects of complementary allocation under identical task autonomy and increasing spatial ambiguity.</p>
+        <span class="eyebrow" style="--hue: var(--green)"><span class="n">05</span><span data-en="Experimental Design">Versuchsplan</span></span>
+        <h2 id="h-study" data-en="Controlled Within-Subjects Evaluation">Kontrollierte Evaluierung mit Messwiederholung</h2>
+        <p class="lede" data-en="Isolating the effects of complementary allocation under identical task autonomy and increasing spatial ambiguity.">Isolierung der Effekte komplementärer Funktionszuordnung bei identischer Aufgabenautonomie und zunehmender räumlicher Mehrdeutigkeit.</p>
       </div>
 
       <div class="table-wrap">
         <table>
           <thead>
             <tr>
-              <th scope="col">Condition</th>
-              <th scope="col">Spatial Reference ("Where")</th>
-              <th scope="col">Task Intent ("What")</th>
-              <th scope="col">Confirmation &amp; Fallback</th>
-              <th scope="col">Scientific Comparison</th>
+              <th scope="col" data-en="Condition">Bedingung</th>
+              <th scope="col" data-en="Spatial Reference (&quot;Where&quot;)">Räumliche Referenz („Wo“)</th>
+              <th scope="col" data-en="Task Intent (&quot;What&quot;)">Aufgabenintention („Was“)</th>
+              <th scope="col" data-en="Confirmation &amp;amp; Fallback">Bestätigung &amp; Rückfallebene</th>
+              <th scope="col" data-en="Scientific Comparison">Wissenschaftlicher Vergleich</th>
             </tr>
           </thead>
           <tbody>
             <tr>
-              <td><b>C1 Conventional</b> (Baseline)</td>
-              <td>GUI / Controller selection</td>
-              <td>GUI / Teach pendant command</td>
-              <td>Manual button confirm</td>
-              <td>Establishes industrial baseline; assesses standard extraneous menu overhead</td>
+              <td><b data-en="C1 Conventional">C1 Konventionell</b> (Baseline)</td>
+              <td data-en="GUI / Controller selection">Auswahl per GUI / Controller</td>
+              <td data-en="GUI / Teach pendant command">Befehl per GUI / Teach-Pendant</td>
+              <td data-en="Manual button confirm">Manuelle Bestätigung per Taste</td>
+              <td data-en="Establishes industrial baseline; assesses standard extraneous menu overhead">Bildet die industrielle Baseline; erfasst den üblichen extrinsischen Menüaufwand</td>
             </tr>
             <tr>
-              <td><b>C2 Gaze-Assisted</b></td>
-              <td>Gaze dwell (Armed state)</td>
-              <td>GUI / Controller command</td>
-              <td>Manual button confirm</td>
-              <td>Isolates the specific contribution of ocular target referencing (Contrast C2 vs. C1)</td>
+              <td><b data-en="C2 Gaze-Assisted">C2 Blickgestützt</b></td>
+              <td data-en="Gaze dwell (Armed state)">Blickverweilen (Armed-Zustand)</td>
+              <td data-en="GUI / Controller command">Befehl per GUI / Controller</td>
+              <td data-en="Manual button confirm">Manuelle Bestätigung per Taste</td>
+              <td data-en="Isolates the specific contribution of ocular target referencing (Contrast C2 vs. C1)">Isoliert den spezifischen Beitrag der blickbasierten Zielreferenzierung (Kontrast C2 vs. C1)</td>
             </tr>
             <tr>
-              <td><b>C3 Complementary</b></td>
-              <td>Gaze dwell (Armed state)</td>
-              <td>Spoken natural language ("Pick")</td>
-              <td>Controller confirmation &amp; fallback</td>
-              <td>Tests complete Look, Speak, Confirm paradigm (Contrasts C3 vs. C2 and C3 vs. C1)</td>
+              <td><b data-en="C3 Complementary">C3 Komplementär</b></td>
+              <td data-en="Gaze dwell (Armed state)">Blickverweilen (Armed-Zustand)</td>
+              <td data-en="Spoken natural language (&quot;Pick&quot;)">Gesprochene natürliche Sprache („Pick“)</td>
+              <td data-en="Controller confirmation &amp;amp; fallback">Bestätigung &amp; Rückfallebene per Controller</td>
+              <td data-en="Tests complete Look, Speak, Confirm paradigm (Contrasts C3 vs. C2 and C3 vs. C1)">Prüft das vollständige Paradigma Look, Speak, Confirm (Kontraste C3 vs. C2 und C3 vs. C1)</td>
             </tr>
           </tbody>
         </table>
@@ -511,28 +523,28 @@ td span { color: var(--fg-2); font-size: 14px; }
 
       <div class="two" style="margin-top: 32px;">
         <div>
-          <h3>Draft Hypotheses (not yet frozen)</h3>
+          <h3 data-en="Draft Hypotheses (not yet frozen)">Hypothesenentwurf (noch nicht festgelegt)</h3>
           <ol class="list" style="margin-top: 14px;">
-            <li><b>H1 (Efficiency):</b> Condition C3 (Complementary) will yield significantly shorter task completion times and fewer discrete interaction steps compared to C1 (Conventional).</li>
-            <li><b>H2 (Workload):</b> Condition C3 will result in significantly lower overall NASA-TLX workload scores compared to C1 and C2, while maintaining or improving task success rates.</li>
-            <li><b>H3 (Intent-Safety):</b> The multi-stage Armed state mechanism is expected to keep unintended activations (Midas Touch errors) rare across C2 and C3, reported descriptively against a pre-registered threshold (upper 95% bound).</li>
-            <li><b>H4 (Physiological Convergence):</b> Conditions exhibiting lower subjective workload will demonstrate converging reductions in autonomic physiological strain (increased HRV/RMSSD and reduced phasic EDA arousal).</li>
+            <li><b data-en="H1 (Efficiency):">H1 (Effizienz):</b> <span data-en="Condition C3 (Complementary) will yield significantly shorter task completion times and fewer discrete interaction steps compared to C1 (Conventional).">Bedingung C3 (komplementär) führt im Vergleich zu C1 (konventionell) zu signifikant kürzeren Bearbeitungszeiten und weniger diskreten Interaktionsschritten.</span></li>
+            <li><b data-en="H2 (Workload):">H2 (Beanspruchung):</b> <span data-en="Condition C3 will result in significantly lower overall NASA-TLX workload scores compared to C1 and C2, while maintaining or improving task success rates.">Bedingung C3 führt im Vergleich zu C1 und C2 zu signifikant niedrigeren NASA-TLX-Gesamtwerten bei gleichbleibender oder höherer Erfolgsquote.</span></li>
+            <li><b>H3 (Intent-Safety):</b> <span data-en="The multi-stage Armed state mechanism is expected to keep unintended activations (Midas Touch errors) rare across C2 and C3, reported descriptively against a pre-registered threshold (upper 95% bound).">Der mehrstufige Armed-Mechanismus hält unbeabsichtigte Aktivierungen (Midas-Touch-Fehler) in C2 und C3 erwartungsgemäß selten; berichtet wird deskriptiv gegenüber einem präregistrierten Schwellenwert (obere 95-%-Grenze).</span></li>
+            <li><b data-en="H4 (Physiological Convergence):">H4 (Physiologische Konvergenz):</b> <span data-en="Conditions exhibiting lower subjective workload will demonstrate converging reductions in autonomic physiological strain (increased HRV/RMSSD and reduced phasic EDA arousal).">Bedingungen mit geringerer subjektiver Beanspruchung zeigen übereinstimmend eine geringere autonome physiologische Beanspruchung (höhere HRV/RMSSD, geringere phasische EDA-Aktivierung).</span></li>
           </ol>
         </div>
         <div>
-          <h3>Methodological Rigor</h3>
+          <h3 data-en="Methodological Rigor">Methodische Strenge</h3>
           <ul class="list" style="margin-top: 14px;">
-            <li><b>Constant Autonomy:</b> Robot motion planning, collision avoidance, and trajectory speeds are held strictly identical across all conditions to prevent algorithmic confounds.</li>
-            <li><b>Task Ambiguity:</b> Novice participants perform pick-and-place trials with systematically escalating clutter, distractor objects, and spatial density.</li>
-            <li><b>Counterbalancing:</b> Condition presentation order is systematically balanced across subjects using a Balanced Latin Square design to mitigate learning and fatigue effects.</li>
-            <li><b>Planned Contrasts:</b> Hypotheses are tested using directional Wilcoxon signed-rank tests with Holm-Bonferroni correction and linear mixed-effects modeling.</li>
+            <li><b data-en="Constant Autonomy:">Konstante Autonomie:</b> <span data-en="Robot motion planning, collision avoidance, and trajectory speeds are held strictly identical across all conditions to prevent algorithmic confounds.">Bewegungsplanung, Kollisionsvermeidung und Bahngeschwindigkeiten des Roboters sind in allen Bedingungen strikt identisch, um algorithmische Konfundierungen auszuschließen.</span></li>
+            <li><b data-en="Task Ambiguity:">Aufgabenmehrdeutigkeit:</b> <span data-en="Novice participants perform pick-and-place trials with systematically escalating clutter, distractor objects, and spatial density.">Laien führen Pick-and-Place-Durchgänge mit systematisch zunehmender Unordnung, mehr Distraktorobjekten und höherer räumlicher Dichte durch.</span></li>
+            <li><b data-en="Counterbalancing:">Ausbalancierung:</b> <span data-en="Condition presentation order is systematically balanced across subjects using a Balanced Latin Square design to mitigate learning and fatigue effects.">Die Reihenfolge der Bedingungen wird über ein balanciertes lateinisches Quadrat zwischen den Versuchspersonen ausbalanciert, um Lern- und Ermüdungseffekte zu kontrollieren.</span></li>
+            <li><b data-en="Planned Contrasts:">Geplante Kontraste:</b> <span data-en="Hypotheses are tested using directional Wilcoxon signed-rank tests with Holm-Bonferroni correction and linear mixed-effects modeling.">Die Hypothesen werden mit gerichteten Wilcoxon-Vorzeichen-Rang-Tests mit Holm-Bonferroni-Korrektur sowie mit linearen gemischten Modellen geprüft.</span></li>
           </ul>
         </div>
       </div>
 
       <div class="note">
         <svg class="ico ico-s" aria-hidden="true"><use href="#i-alert"/></svg>
-        <div><b>Empirical Status Notice:</b> In line with research integrity standards, hypotheses, measurement pipelines, and condition designs are formalized prior to participant testing. No empirical conclusions are reported until ethical clearance and experimental trials have concluded.</div>
+        <div><b data-en="Empirical Status Notice:">Hinweis zum empirischen Stand:</b> <span data-en="In line with research integrity standards, hypotheses, measurement pipelines, and condition designs are formalized prior to participant testing. No empirical conclusions are reported until ethical clearance and experimental trials have concluded.">Gemäß den Standards guter wissenschaftlicher Praxis werden Hypothesen, Messpipelines und Versuchsbedingungen vor der Datenerhebung festgelegt. Empirische Schlussfolgerungen werden erst nach positivem Ethikvotum und Abschluss der Versuche berichtet.</span></div>
       </div>
     </div>
   </section>
@@ -541,51 +553,51 @@ td span { color: var(--fg-2); font-size: 14px; }
   <section class="sec" id="guidelines" aria-labelledby="h-guide">
     <div class="wrap">
       <div class="head">
-        <span class="eyebrow" style="--hue: var(--indigo)"><span class="n">06</span>Contributions &amp; Guidelines</span>
-        <h2 id="h-guide">Generalizable Design Knowledge for Low-Barrier HRI</h2>
-        <p class="lede">Proposed design principles for assistive and industrial manipulation, to be checked against the study results.</p>
+        <span class="eyebrow" style="--hue: var(--indigo)"><span class="n">06</span><span data-en="Contributions &amp;amp; Guidelines">Beiträge &amp; Richtlinien</span></span>
+        <h2 id="h-guide" data-en="Generalizable Design Knowledge for Low-Barrier HRI">Generalisierbares Gestaltungswissen für barrierearme Mensch-Roboter-Interaktion</h2>
+        <p class="lede" data-en="Proposed design principles for assistive and industrial manipulation, to be checked against the study results.">Vorgeschlagene Gestaltungsprinzipien für assistive und industrielle Manipulation, die anhand der Studienergebnisse zu prüfen sind.</p>
       </div>
 
       <div class="grid3">
         <div class="card" style="--hue: var(--blue)">
-          <span class="k"><svg class="ico" aria-hidden="true"><use href="#i-eye"/></svg>Guideline 1</span>
-          <b>Spatiality → Gaze</b>
-          <p>Reserve eye gaze strictly for spatial deictic referencing. In the study design, gaze is not coupled directly to irreversible mechanical motions without an explicit decoupling state.</p>
+          <span class="k"><svg class="ico" aria-hidden="true"><use href="#i-eye"/></svg><span data-en="Guideline 1">Richtlinie 1</span></span>
+          <b data-en="Spatiality → Gaze">Räumlichkeit → Blick</b>
+          <p data-en="Reserve eye gaze strictly for spatial deictic referencing. In the study design, gaze is not coupled directly to irreversible mechanical motions without an explicit decoupling state.">Den Blick ausschließlich für die räumlich-deiktische Referenzierung nutzen. Im Studiendesign ist der Blick ohne expliziten Entkopplungszustand nicht direkt an irreversible mechanische Bewegungen gekoppelt.</p>
         </div>
         <div class="card" style="--hue: var(--violet)">
-          <span class="k"><svg class="ico" aria-hidden="true"><use href="#i-mic"/></svg>Guideline 2</span>
-          <b>Intent → Speech</b>
-          <p>Employ spoken natural language for high-level semantic intentions ("what should happen") so users skip menu navigation and do not have to enter coordinates.</p>
+          <span class="k"><svg class="ico" aria-hidden="true"><use href="#i-mic"/></svg><span data-en="Guideline 2">Richtlinie 2</span></span>
+          <b data-en="Intent → Speech">Intention → Sprache</b>
+          <p data-en="Employ spoken natural language for high-level semantic intentions (&quot;what should happen&quot;) so users skip menu navigation and do not have to enter coordinates.">Gesprochene natürliche Sprache für übergeordnete semantische Intentionen („was geschehen soll“) einsetzen, damit Nutzende weder Menüs durchlaufen noch Koordinaten eingeben müssen.</p>
         </div>
         <div class="card" style="--hue: var(--green)">
-          <span class="k"><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg>Guideline 3</span>
-          <b>Control → Explicit</b>
-          <p>Preserve a dedicated, low-latency, deterministic channel (controller/button) for confirmation, instantaneous cancellation, and continuous override.</p>
+          <span class="k"><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg><span data-en="Guideline 3">Richtlinie 3</span></span>
+          <b data-en="Control → Explicit">Kontrolle → Explizit</b>
+          <p data-en="Preserve a dedicated, low-latency, deterministic channel (controller/button) for confirmation, instantaneous cancellation, and continuous override.">Einen dedizierten, latenzarmen und deterministischen Kanal (Controller/Taste) für Bestätigung, sofortigen Abbruch und jederzeitigen Eingriff beibehalten.</p>
         </div>
         <div class="card" style="--hue: var(--gold)">
-          <span class="k"><svg class="ico" aria-hidden="true"><use href="#i-shield"/></svg>Guideline 4</span>
-          <b>Safety → State-Based</b>
-          <p>Implement a multi-stage transition (Attention → Candidate → Armed → Confirmed). The Armed state gives the user time to correct a gaze shift before anything moves.</p>
+          <span class="k"><svg class="ico" aria-hidden="true"><use href="#i-shield"/></svg><span data-en="Guideline 4">Richtlinie 4</span></span>
+          <b data-en="Safety → State-Based">Sicherheit → Zustandsbasiert</b>
+          <p data-en="Implement a multi-stage transition (Attention → Candidate → Armed → Confirmed). The Armed state gives the user time to correct a gaze shift before anything moves.">Einen mehrstufigen Übergang umsetzen (Attention → Candidate → Armed → Confirmed). Der Armed-Zustand verschafft der Bedienperson Zeit, einen Blickwechsel zu korrigieren, bevor sich etwas bewegt.</p>
         </div>
         <div class="card" style="--hue: var(--pink)">
-          <span class="k"><svg class="ico" aria-hidden="true"><use href="#i-heart"/></svg>Guideline 5</span>
-          <b>Evaluation → Converging</b>
-          <p>Never rely on subjective surveys (NASA-TLX) alone. Synchronize objective behavioral telemetry with autonomic biomarkers (EDA/HRV) to detect hidden internal strain.</p>
+          <span class="k"><svg class="ico" aria-hidden="true"><use href="#i-heart"/></svg><span data-en="Guideline 5">Richtlinie 5</span></span>
+          <b data-en="Evaluation → Converging">Evaluierung → Konvergent</b>
+          <p data-en="Never rely on subjective surveys (NASA-TLX) alone. Synchronize objective behavioral telemetry with autonomic biomarkers (EDA/HRV) to detect hidden internal strain.">Sich nie allein auf subjektive Fragebögen (NASA-TLX) stützen. Objektive Verhaltenstelemetrie mit autonomen Biomarkern (EDA/HRV) synchronisieren, um verdeckte innere Beanspruchung zu erkennen.</p>
         </div>
         <div class="card" style="--hue: var(--accent)">
-          <span class="k"><svg class="ico" aria-hidden="true"><use href="#i-sliders"/></svg>Guideline 6</span>
-          <b>Architecture → Modular</b>
-          <p>Architect multimodal platforms modularly so individual channels can be dynamically enabled, weighted, or substituted based on operator motor abilities and acoustic environment.</p>
+          <span class="k"><svg class="ico" aria-hidden="true"><use href="#i-sliders"/></svg><span data-en="Guideline 6">Richtlinie 6</span></span>
+          <b data-en="Architecture → Modular">Architektur → Modular</b>
+          <p data-en="Architect multimodal platforms modularly so individual channels can be dynamically enabled, weighted, or substituted based on operator motor abilities and acoustic environment.">Multimodale Plattformen modular aufbauen, sodass sich einzelne Kanäle je nach motorischen Fähigkeiten der Bedienperson und akustischer Umgebung dynamisch aktivieren, gewichten oder ersetzen lassen.</p>
         </div>
       </div>
 
-      <h3>Core Academic Contributions of the Paper</h3>
+      <h3 data-en="Core Academic Contributions of the Paper">Zentrale wissenschaftliche Beiträge des Papers</h3>
       <ol class="list" style="margin-top: 16px;">
-        <li><b>Complementary Interaction Architecture:</b> A human-factors-driven HRI framework that partitions spatial reference (gaze), semantic intent (speech), and confirmation/recovery (controller) to reduce cognitive bottlenecks.</li>
-        <li><b>Intent-Safety Mechanism:</b> A deterministic state machine with calibrated dwell arming (≈300 ms) and real-time visual feedback whose evaluation will test whether it reduces unintended Midas Touch activations while keeping added interaction latency acceptable.</li>
-        <li><b>Multidimensional Evaluation Suite:</b> A testbed that synchronizes ROS 2 machine states, eye tracking, EDA, HRV and questionnaires to compare reported and measured strain (event logger and biosignal pipeline planned).</li>
-        <li><b>Cognitive Mental Model Investigation:</b> An exploratory SDA-M protocol (planned) revealing whether multimodal assistance supports novice development of structured Basic Action Concepts.</li>
-        <li><b>Design Guidelines for Adaptive HRI:</b> A set of generalizable principles for configuring low-barrier robotic interfaces across industrial and future assistive scenarios.</li>
+        <li><b data-en="Complementary Interaction Architecture:">Komplementäre Interaktionsarchitektur:</b> <span data-en="A human-factors-driven HRI framework that partitions spatial reference (gaze), semantic intent (speech), and confirmation/recovery (controller) to reduce cognitive bottlenecks.">Ein Human-Factors-basiertes Framework für die Mensch-Roboter-Interaktion, das räumliche Referenz (Blick), semantische Intention (Sprache) sowie Bestätigung und Fehlerbehebung (Controller) trennt, um kognitive Engpässe zu verringern.</span></li>
+        <li><b data-en="Intent-Safety Mechanism:">Intent-Safety-Mechanismus:</b> <span data-en="A deterministic state machine with calibrated dwell arming (≈300 ms) and real-time visual feedback whose evaluation will test whether it reduces unintended Midas Touch activations while keeping added interaction latency acceptable.">Ein deterministischer Zustandsautomat mit kalibrierter Verweil-Scharfschaltung (≈ 300 ms) und visueller Echtzeit-Rückmeldung; die Evaluierung prüft, ob er unbeabsichtigte Midas-Touch-Aktivierungen verringert und die zusätzliche Interaktionslatenz akzeptabel bleibt.</span></li>
+        <li><b data-en="Multidimensional Evaluation Suite:">Mehrdimensionales Evaluierungsinstrumentarium:</b> <span data-en="A testbed that synchronizes ROS 2 machine states, eye tracking, EDA, HRV and questionnaires to compare reported and measured strain (event logger and biosignal pipeline planned).">Eine Testumgebung, die ROS-2-Maschinenzustände, Eye-Tracking, EDA, HRV und Fragebögen synchronisiert, um berichtete und gemessene Beanspruchung zu vergleichen (Ereignislogger und Biosignal-Pipeline geplant).</span></li>
+        <li><b data-en="Cognitive Mental Model Investigation:">Untersuchung mentaler Modelle:</b> <span data-en="An exploratory SDA-M protocol (planned) revealing whether multimodal assistance supports novice development of structured Basic Action Concepts.">Ein exploratives SDA-M-Protokoll (geplant), das zeigt, ob multimodale Assistenz Laien beim Aufbau strukturierter Basic Action Concepts unterstützt.</span></li>
+        <li><b data-en="Design Guidelines for Adaptive HRI:">Gestaltungsrichtlinien für adaptive Mensch-Roboter-Interaktion:</b> <span data-en="A set of generalizable principles for configuring low-barrier robotic interfaces across industrial and future assistive scenarios.">Generalisierbare Prinzipien zur Gestaltung barrierearmer Roboterschnittstellen in industriellen und künftigen assistiven Szenarien.</span></li>
       </ol>
     </div>
   </section>
@@ -594,9 +606,9 @@ td span { color: var(--fg-2); font-size: 14px; }
   <section class="sec alt" id="literature" aria-labelledby="h-lit">
     <div class="wrap">
       <div class="head">
-        <span class="eyebrow" style="--hue: var(--accent)"><span class="n">07</span>Literature</span>
-        <h2 id="h-lit">Academic References &amp; Foundations</h2>
-        <p class="lede">Key literature grounding the theoretical framework and empirical methodology of Draft 8.</p>
+        <span class="eyebrow" style="--hue: var(--accent)"><span class="n">07</span><span data-en="Literature">Literatur</span></span>
+        <h2 id="h-lit" data-en="Academic References &amp;amp; Foundations">Wissenschaftliche Quellen &amp; Grundlagen</h2>
+        <p class="lede" data-en="Key literature grounding the theoretical framework and empirical methodology of Draft 8.">Zentrale Literatur, auf der der theoretische Rahmen und die empirische Methodik von Entwurf 8 beruhen.</p>
       </div>
 
       <div class="bib-grid">
@@ -631,7 +643,7 @@ td span { color: var(--fg-2); font-size: 14px; }
           <b>Shneiderman, B. (1983).</b> Direct Manipulation: A Step Beyond Programming Languages. <em>IEEE Computer</em>, 16(8), 57–69. <a href="https://doi.org/10.1109/MC.1983.1654471">doi:10.1109/MC.1983.1654471</a>
         </div>
         <div class="bib-item">
-          <b>Steinmetz, F. J. (2022).</b> <em>Intuitive robot programming for novice and expert users</em>. Doctoral dissertation, RWTH Aachen University.
+          <b>Steinmetz, F. J. (2022).</b> <em>Intuitive robot programming for novice and expert users</em>. <span data-en="Doctoral dissertation">Dissertation</span>, RWTH Aachen University.
         </div>
         <div class="bib-item">
           <b>Su, B., et al. (2026).</b> Exploring the integration of large language models in human-robot collaboration: Effects on performance, mental stress, and trust. <em>Applied Ergonomics</em>, 134, 104736. <a href="https://doi.org/10.1016/j.apergo.2026.104736">doi:10.1016/j.apergo.2026.104736</a>
@@ -657,16 +669,16 @@ td span { color: var(--fg-2); font-size: 14px; }
 <footer class="foot">
   <div class="wrap">
     <a class="qr-foot" href="https://lu4k87.github.io/ux_robot/present_research.html" target="_blank" rel="noopener">
-      <span class="qr-code"><svg role="img" aria-label="QR code: open this page"><use href="#qr-research"/></svg></span>
+      <span class="qr-code"><svg role="img" aria-label="QR-Code: diese Seite öffnen" data-en-aria="QR code: open this page"><use href="#qr-research"/></svg></span>
       <span class="qr-txt">
-        <b>Direct Page Access</b>
-        <span>Research · UX Robot</span>
+        <b data-en="Direct Page Access">Direkt zur Seite</b>
+        <span data-en="Research · UX Robot">Forschung · UX Robot</span>
         <small>lu4k87.github.io/ux_robot/present_research.html</small>
       </span>
     </a>
     <div class="contact">
       <b>Marius Kaul</b>
-      <span>UX Lab · Rhine-Waal University of Applied Sciences</span>
+      <span data-en="UX Lab · Rhine-Waal University of Applied Sciences">UX Lab · Hochschule Rhein-Waal</span>
       <a href="mailto:marius.kaul@hochschule-rhein-waal.de"><svg class="ico" aria-hidden="true"><use href="#i-mail"/></svg>marius.kaul@hochschule-rhein-waal.de</a>
     </div>
   </div>
@@ -675,12 +687,26 @@ td span { color: var(--fg-2); font-size: 14px; }
 <script>
 (() => {
   const root = document.documentElement, KEY = 'uxr-theme';
-  try { const t = localStorage.getItem(KEY); if (t) root.dataset.theme = t; } catch (e) { /* fallback to system preference */ }
+  const store = (k, v) => { try { if (v === undefined) return localStorage.getItem(k); localStorage.setItem(k, v); } catch (e) { return null; } };
+  const t = store(KEY); if (t) root.dataset.theme = t;
   document.getElementById('theme').addEventListener('click', () => {
     const dark = root.dataset.theme ? root.dataset.theme === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
     root.dataset.theme = dark ? 'light' : 'dark';
-    try { localStorage.setItem(KEY, root.dataset.theme); } catch (e) { /* ignore storage errors */ }
+    store(KEY, root.dataset.theme);
   });
+
+  // Sprache: deutscher Text im Element, englischer in data-en (wie die anderen Projektseiten, gemeinsamer Schlüssel project_docs_lang)
+  const keep = (el, key, val) => { if (el.dataset[key] === undefined) el.dataset[key] = val; return el.dataset[key]; };
+  const setLang = lang => {
+    root.lang = lang;
+    const en = lang === 'en';
+    document.querySelectorAll('[data-en]').forEach(el => { const de = keep(el, 'de', el.innerHTML); el.innerHTML = en ? el.dataset.en : de; });
+    document.querySelectorAll('[data-en-aria]').forEach(el => { const de = keep(el, 'deAria', el.getAttribute('aria-label')); el.setAttribute('aria-label', en ? el.dataset.enAria : de); });
+    document.querySelectorAll('[data-lang]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.lang === lang)));
+  };
+  document.querySelectorAll('[data-lang]').forEach(b => b.addEventListener('click', () => { setLang(b.dataset.lang); store('project_docs_lang', b.dataset.lang); }));
+  const qLang = new URLSearchParams(location.search).get('lang');
+  if ((qLang || store('project_docs_lang')) === 'en') setLang('en');
 })();
 </script>
 </body>
