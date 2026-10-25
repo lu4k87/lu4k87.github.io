@@ -448,10 +448,11 @@ body.panel-collapsed .panel { display: none; }
    schmal (< 30 em) wieder linksbündig */
 .lead, .detail p, .hs-card p, .note, .sources li { text-align: justify; text-wrap: pretty; hyphens: auto; hyphenate-limit-chars: 12 5 4; }
 @media (max-width: 30em) { .lead, .detail p, .note, .sources li { text-align: start; } }
-/* Info-Karte: Blocksatz erst ab ≈ 256 px Textbreite (früher Karte ≈ 290 px) – schmaler rissen ohne Trennungen breite
-   Lücken (text-format §4); gemessen am Text, die Lupe daneben zählt nicht */
-.hs-text { container-type: inline-size; }
-@container (max-width: 255px) { .hs-card p { text-align: start; } }
+/* Info-Karte: Blocksatz erst ab ≈ 256 px Textbreite neben der Lupe (früher Karte ≈ 290 px) – schmaler rissen ohne
+   Trennungen breite Lücken (text-format §4); gemessen am Kartenkörper (Lupe 112 + Rand 22 = 134 px), weil ein Container
+   auf .hs-text den Fluss um die Lupe abschneiden würde */
+.hs-body { container-type: inline-size; }
+@container (max-width: 389px) { .hs-card p { text-align: start; } }
 .panel p { margin: 0; }
 
 .detail {
@@ -833,7 +834,7 @@ body.overlays-off .ms-svg, body.overlays-off .ms-lab { opacity: 0 !important; po
   top: 0;
   z-index: 3;            /* über den Abzeichen: die kommen später ins DOM und würden die Karte sonst überdecken */
   width: min(340px, calc(100vw - 32px));
-  padding: 14px 16px 12px;
+  padding: 12px 14px;
   border: 1px solid var(--line);
   border-radius: 10px;
   background: var(--glass-sheen), var(--glass-strong);
@@ -850,21 +851,24 @@ body.overlays-off .ms-svg, body.overlays-off .ms-lab { opacity: 0 !important; po
 }
 .hs-card.is-open { opacity: 1; visibility: visible; pointer-events: auto; transition: opacity 0.3s ease; }
 .hs-card.is-open.is-away { opacity: 0; pointer-events: none; }
-.hs-card-in { display: flex; flex-direction: column; gap: 10px; animation: hs-card-in 0.32s cubic-bezier(0.2, 0.7, 0.2, 1); }
+.hs-card-in { display: flex; flex-direction: column; gap: 8px; animation: hs-card-in 0.32s cubic-bezier(0.2, 0.7, 0.2, 1); }
 @keyframes hs-card-in { from { opacity: 0; transform: translateX(14px); } }
-.hs-card h2 { display: flex; align-items: center; gap: 10px; font-size: 17px; font-weight: 600; line-height: 1.25; }
+.hs-card h2 { display: flex; align-items: center; gap: 8px; font-size: 17px; font-weight: 600; line-height: 1.3; }
 .hs-card h2 .hex { color: var(--accent); flex: none; }
-.hs-card h2 .tag { font: 500 12px/1 var(--mono); color: var(--accent); }
+/* Größen-Etikett läuft als Wort hinter dem Titel mit (Grundlinie), bricht bei langen Titeln mit um statt eine Spalte zu öffnen */
+.hs-card h2 .tag { margin-left: 4px; font: 500 12.5px/1 var(--mono); color: var(--accent); white-space: nowrap; }
 .hs-card p { margin: 0; font-size: 15px; line-height: 1.5; hyphens: auto; }
 /* Lupe: runder Live-Ausschnitt der Szene um den Infopunkt (main.js zeichnet ins Canvas), links neben dem Text und
    senkrecht mittig; die Karte wächst um die Spalte (hud.js LENS_COL) */
-.hs-body { display: flex; align-items: center; gap: 14px; }
+.hs-body { display: flow-root; }
 .hs-lens {
   position: relative;
-  flex: none;
+  float: left;
   width: 112px;
   height: 112px;
-  margin: 6px 0;
+  margin: 4px 16px 10px 6px;   /* Rand ≥ Formabstand: der Fluss endet sonst am Rand des Kastens und läuft in den Ring */
+  shape-outside: circle(50%) border-box;   /* der Text fließt rund um die Lupe und unter ihr weiter: keine leere Spalte */
+  shape-margin: 16px;   /* Ring (6,5 px) + 10 px Luft */
   border-radius: 50%;
   overflow: hidden;
   background: var(--glass-strong);
@@ -872,7 +876,7 @@ body.overlays-off .ms-svg, body.overlays-off .ms-lab { opacity: 0 !important; po
 }
 .hs-lens canvas { display: block; width: 100%; height: 100%; }
 .hs-lens-svg { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; fill: none; stroke: rgba(255, 154, 60, 0.45); stroke-width: 1.1; }
-.hs-text { flex: 1; min-width: 0; }
+.hs-text { min-width: 0; }
 /* EDX-Spektrum in der Info-Karte „Asche-Partikel“ (Vorschau 2026-10-25 EDX:C): aufklappbar unter dem Text */
 .hs-edx { margin-top: 8px; }
 .hs-edx summary { cursor: pointer; font: 500 12px/1.3 var(--mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--accent); }
@@ -887,19 +891,21 @@ body.overlays-off .ms-svg, body.overlays-off .ms-lab { opacity: 0 !important; po
 body.card-docked .panel { visibility: hidden; }
 .hs-card.is-docked { display: flex; border-radius: var(--radius); }
 .hs-card.is-docked .hs-card-in { flex: 1; min-height: 0; }
-.hs-card.is-docked .hs-body { flex: 1; min-height: 0; align-items: flex-start; }
+.hs-card.is-docked .hs-body { display: flex; flex: 1; min-height: 0; align-items: flex-start; gap: 14px; }
+.hs-card.is-docked .hs-lens { float: none; flex: none; margin: 4px 0 0 4px; }
+.hs-card.is-docked .hs-text { flex: 1; }
 .hs-card.is-docked .hs-text { align-self: stretch; overflow-y: auto; scrollbar-width: thin; }
 /* Kopf: Titel links, rundes X oben rechts (ersetzt den Knopf „Schließen“ im Fuß) */
-.hs-card-head { display: flex; align-items: flex-start; gap: 10px; }
-.hs-card-head h2 { flex: 1; min-width: 0; min-height: 30px; }
+.hs-card-head { display: flex; align-items: center; gap: 10px; }
+.hs-card-head h2 { flex: 1; min-width: 0; }
 .hs-card-foot { display: flex; align-items: center; }
 .hs-card-close {
   flex: none;
   display: grid;
   place-items: center;
-  width: 30px;
-  height: 30px;
-  margin: -2px -4px 0 0;
+  width: 28px;
+  height: 28px;
+  margin: -4px -6px -4px 0;   /* ragt in den Rand: der Knopf macht den Kopf nicht höher als den Titel */
   padding: 0;
   border: 1px solid var(--line);
   border-radius: 50%;

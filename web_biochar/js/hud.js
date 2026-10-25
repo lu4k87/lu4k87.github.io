@@ -963,7 +963,7 @@ export function createHud(handlers) {
     const tag = h.tag || (selected.kind === 'dive' ? 'tiefer' : '');   // Größen-Etikett steht seit Panel:B nur noch hier
     card.innerHTML = `<div class="hs-card-in">
       <div class="hs-card-head">
-        <h2>${hexBadge(icons[selected.id], 'hex--mini')}<span>${esc(h.title)}</span>${tag ? `<span class="tag">${esc(tag)}</span>` : ''}</h2>
+        <h2>${hexBadge(icons[selected.id], 'hex--mini')}<span>${esc(h.title)}${tag ? `<span class="tag">${esc(tag)}</span>` : ''}</span></h2>
         <button type="button" class="hs-card-close" aria-label="Schließen"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2 2l8 8M10 2l-8 8"/></svg></button>
       </div>
       <div class="hs-body">
