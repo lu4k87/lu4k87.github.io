@@ -1,0 +1,47 @@
+/* Ebenen-Einstellungen (Zahnrad „Station · …“), Zeitleiste über der Fußleiste und Tabellen in der Infotafel.
+   Ergänzt kosmos.css und nutzt dessen Tokens (--accent, --line, --glass-*, --mono). */
+.cfg-group { margin: 8px 0 -2px; padding-top: 10px; border-top: 1px solid var(--line); font: 500 11.5px var(--mono); letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-soft); }
+.cfg-group:first-child, .cfg-station > .cfg-group:first-child { border-top: 0; margin-top: 0; padding-top: 0; }
+.cfg-station { display: flex; flex-direction: column; gap: 10px; }
+.lay--sub { padding-left: 14px; border-left: 1px solid var(--line); }
+.lay--play { flex-wrap: wrap; }
+.lay--play .cfg-label { flex: 1 1 120px; min-width: 0; }
+.lay input[type=range] { flex: 1; min-width: 70px; accent-color: var(--accent); }
+.lay output { font: 500 12.5px var(--mono); min-width: 5ch; text-align: right; white-space: nowrap; }
+.lay-hint { margin: -4px 0 2px; font-size: 12px; }
+.play-btn { width: 34px; height: 34px; flex: none; display: inline-grid; place-items: center; border-radius: 50%; border: 1px solid var(--line-strong); background: rgba(255, 255, 255, 0.06); color: var(--ink); cursor: pointer; transition: border-color 0.2s, background 0.2s, color 0.2s; }
+.play-btn svg { width: 18px; height: 18px; }
+.play-btn:hover { border-color: var(--accent); color: var(--accent); }
+.play-btn[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.play-btn:focus-visible, .act-btn:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.play-btn--lg { width: 40px; height: 40px; }
+.play-btn--lg svg { width: 20px; height: 20px; }
+.act-btn { padding: 6px 12px; min-height: 32px; border-radius: 8px; border: 1px solid var(--line-strong); background: rgba(255, 255, 255, 0.06); color: var(--ink); font: 500 13px var(--font); cursor: pointer; transition: border-color 0.2s, color 0.2s; }
+.act-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+/* Zeitleiste: ▶/⏸, Ebene + Stand, Tempo-Regler; mittig über der Fußleiste, ersetzt dort den Hinweistext */
+.tl { position: absolute; left: 50%; bottom: 12px; transform: translateX(-50%); z-index: 2; display: flex; align-items: center; gap: 12px; width: min(600px, calc(100% - 24px)); padding: 7px 14px 7px 7px; border-radius: 999px; border: 1px solid var(--line); background: var(--glass-sheen), var(--glass-strong); backdrop-filter: var(--glass-blur); -webkit-backdrop-filter: var(--glass-blur); box-shadow: var(--glass-edge); transition: opacity 0.4s; }
+.tl[hidden] { display: none; }
+.tl-text { display: flex; flex-direction: column; min-width: 0; flex: 0 1 auto; line-height: 1.3; }
+.tl-label { font-size: 13px; font-weight: 500; white-space: nowrap; }
+.tl-status { font: 400 12px var(--mono); color: var(--ink-soft); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tl input[type=range] { flex: 1; min-width: 90px; accent-color: var(--accent); }
+.tl output { font: 500 12.5px var(--mono); white-space: nowrap; min-width: 7ch; text-align: right; }
+body.tl-on .hint { opacity: 0; pointer-events: none; }
+body.is-flying .tl, body.is-intro .tl { opacity: 0; pointer-events: none; }
+@media (max-width: 760px) {
+  .tl { gap: 8px; padding: 5px 10px 5px 5px; }
+  .tl-status { display: none; }
+}
+
+/* Infotafel-Widgets: Tabellen (Planetenstand, Satellitenzahlen) */
+.widget table { width: 100%; border-collapse: collapse; font: 400 12.5px/1.4 var(--font); }
+.widget th, .widget td { padding: 3px 4px; text-align: right; white-space: nowrap; }
+.widget th, .widget td:first-child { white-space: normal; }
+.widget th { font: 500 11px var(--mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-soft); border-bottom: 1px solid var(--line); }
+.widget td:first-child, .widget th:first-child { text-align: left; }
+.widget td.num { font-family: var(--mono); font-size: 12px; }
+.widget tr + tr td { border-top: 1px solid rgba(255, 255, 255, 0.06); }
+.widget tr.is-hi td { color: var(--accent); }
+.w-dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 6px; vertical-align: -1px; background: var(--c, currentColor); }
+.w-foot { margin: 6px 0 0; font-size: 11.5px; line-height: 1.45; color: var(--ink-soft); }

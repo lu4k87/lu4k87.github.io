@@ -13,10 +13,13 @@ import { createStarfield } from '../stars.js';
 import { createCatalogSky, createConstellationLines, BRIGHT, CONST_INFO } from '../catalog.js';
 import { createFlare } from '../flare.js';
 import { settings } from '../settings.js';
-import { SKY_VERTEX } from '../glsl.js';
+import { SKY_VERTEX, NOISE } from '../glsl.js';
+import { loadSats, createSats, satPos, orbitLine, namedIndex, KIND_COLOR } from '../sats.js';
+import { speedAt, RE } from '../orbit.js';
+import { registerLayers } from '../layers.js';
 
 const R_E = 6.371, R_M = 1.7374;   // NASA Fact Sheets [1.000 km]
-const R_ATM = R_E * 1.025;         // sichtbare Hülle (Dichte fällt mit ≈ 8 km Skalenhöhe; hier etwas dicker gezeichnet)
+const R_ATM = R_E * 1.04;          // sichtbare Hülle (Dichte fällt mit ≈ 8 km Skalenhöhe; hier dicker gezeichnet, damit der Saum trägt)
 const GEO = 42.164;                // geostationärer Bahnradius [1.000 km]
 const ISS = { r: R_E + 0.42, inc: 51.64 };   // ISS: ≈ 420 km Höhe, 51,64° Bahnneigung (NASA)
 const SUN_D = AU / 1e6, SUN_R = R_SUN / 1e6;  // Sonnenabstand und -radius [1.000 km]
@@ -101,7 +104,7 @@ void main() {
   float cosT = dot(rd, uSun);
   float phase = 0.8 + 0.6 * cosT * cosT + 3.0 * pow(max(cosT, 0.0), 24.0);
   // Potenz: Senkrechtblick (kurzer Weg) nur leichter Schleier – Ozeane bleiben tiefblau; am Rand (langer Weg) volle Hülle
-  vec3 out3 = col * pow(1.0 - exp(-tau * 0.35), 1.6) * phase;
+  vec3 out3 = col * pow(1.0 - exp(-tau * 0.4), 1.35) * phase;
   // Nachtleuchten (Airglow, grün 558 nm) in ≈ 90–100 km Höhe, nur am Rand der Nachtseite sichtbar
   float air = exp(-pow((alt - 0.4) / 0.14, 2.0)) * (1.0 - smoothstep(-0.35, 0.05, mu)) * smoothstep(0.3, 1.0, L / (uRa - uRp));
   out3 += vec3(0.3, 1.0, 0.45) * air * 0.045;
@@ -144,6 +147,67 @@ ${SKY_VERTEX}
 varying vec3 vDir;
 void main() { vDir = normalize(position); gl_Position = skyPosition(vDir); }
 `;
+
+// Polarlicht-Oval um den geomagnetischen Pol: äquatorwärtige Grenze nach Kp (NOAA: Kp 0 → 66,5°, Kp 9 → 48,1° geomagnetische
+// Breite), mittags ≈ 5° polwärts, Breite 4° + 0,6°·Kp; Vorhänge 100–320 km hoch, Falten und Strahlen aus Rauschen (Modell).
+// Farben nach den Emissionslinien: Sauerstoff grün 557,7 nm unten, rot 630 nm oben, N₂⁺ blau-violett an der Unterkante.
+const AURORA_VERT = /* glsl */ `
+${NOISE}
+attribute vec2 auv;
+attribute float aw, ah;
+uniform vec3 uPole, uSunL;
+uniform float uKp, uTime, uRp;
+varying float vV, vU, vW, vNight, vFold;
+void main() {
+  vec3 e3 = normalize(uPole) * ah;
+  vec3 e1 = normalize(uSunL - e3 * dot(uSunL, e3));
+  vec3 e2 = cross(e3, e1);
+  float u = auv.x, cu = cos(u);
+  float latEq = (66.5 - 2.044 * uKp) + 2.5 * (1.0 + cu);
+  float width = 4.0 + 0.6 * uKp - cu;
+  float fold = fbm(vec3(cos(u) * 2.0, sin(u) * 2.0 + aw * 2.0 + ah, uTime * 0.05), 3) * 2.4 + fbm(vec3(cos(u) * 7.0, sin(u) * 7.0 + aw * 5.0, uTime * 0.12), 2) * 0.8;
+  float lat = latEq + width * aw + fold;
+  float th = (90.0 - lat) * 0.017453292;
+  vec3 dir = sin(th) * (cu * e1 + sin(u) * e2) + cos(th) * e3;
+  vec3 pos = dir * (uRp + mix(0.1, 0.4, auv.y));
+  vV = auv.y; vU = u; vW = aw; vFold = fold;
+  vNight = 1.0 - smoothstep(-0.2, 0.05, dot(dir, uSunL));
+  gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
+}
+`;
+const AURORA_FRAG = /* glsl */ `
+${NOISE}
+uniform float uTime, uKp, uGain;
+varying float vV, vU, vW, vNight, vFold;
+void main() {
+  float ray = ridged(vec3(cos(vU) * 5.0 + vFold * 0.6, sin(vU) * 5.0, vW * 4.0 + uTime * 0.25), 3);
+  float ray2 = fbm(vec3(cos(vU) * 16.0, sin(vU) * 16.0, vV * 2.0 - uTime * 0.4 + vW * 7.0), 2) * 0.5 + 0.5;
+  float b = (0.25 + 0.75 * ray) * (0.6 + 0.4 * ray2);
+  float prof = smoothstep(0.0, 0.07, vV) * pow(max(1.0 - vV, 0.0), 1.7);
+  vec3 green = vec3(0.35, 1.0, 0.45), red = vec3(1.0, 0.25, 0.35), violet = vec3(0.55, 0.35, 1.0);
+  vec3 col = mix(green, red, smoothstep(0.3, 0.9, vV));
+  col = mix(col, violet, (1.0 - smoothstep(0.0, 0.18, vV)) * clamp((uKp - 3.0) / 6.0, 0.0, 1.0) * 0.7);
+  float mlt = 0.55 + 0.45 * (0.5 - 0.5 * cos(vU));
+  gl_FragColor = vec4(col * b * prof * mlt * vNight * (0.5 + 0.12 * uKp) * uGain, 1.0);
+}
+`;
+// Vorhang-Geometrie: je Halbkugel drei Blätter quer durch das Oval (w), 240 Segmente, zwei Höhenreihen
+function auroraGeometry() {
+  const N = 240, W = [0.08, 0.28, 0.5, 0.72, 0.92], uv = [], w = [], h = [], idx = [];
+  let base = 0;
+  for (const hemi of [1, -1]) for (const wi of W) {
+    for (let i = 0; i <= N; i++) for (const v of [0, 1]) { uv.push((i / N) * Math.PI * 2, v); w.push(wi); h.push(hemi); }
+    for (let i = 0; i < N; i++) { const a = base + i * 2; idx.push(a, a + 1, a + 2, a + 1, a + 3, a + 2); }
+    base += (N + 1) * 2;
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.BufferAttribute(new Float32Array(base * 3), 3));
+  g.setAttribute('auv', new THREE.BufferAttribute(new Float32Array(uv), 2));
+  g.setAttribute('aw', new THREE.BufferAttribute(new Float32Array(w), 1));
+  g.setAttribute('ah', new THREE.BufferAttribute(new Float32Array(h), 1));
+  g.setIndex(idx);
+  return g;
+}
 
 // Schattenkegel (Kern- und Halbschatten) eines Körpers mit Radius r in Sonnenabstand D: Kernschatten endet bei
 // L = r·D/(R☉ − r), der Halbschatten öffnet sich mit (R☉ + r)/D
@@ -239,11 +303,49 @@ export function create(ctx) {
   const atmoMat = new THREE.ShaderMaterial({
     vertexShader: `varying vec3 vP; void main() { vec4 w = modelMatrix * vec4(position, 1.0); vP = w.xyz; gl_Position = projectionMatrix * viewMatrix * w; }`,
     fragmentShader: ATMO_FRAG,
-    uniforms: { uSun: { value: sunDir }, uCenter: { value: new THREE.Vector3() }, uRp: { value: R_E }, uRa: { value: R_ATM }, uGain: { value: 1.6 } },
+    uniforms: { uSun: { value: sunDir }, uCenter: { value: new THREE.Vector3() }, uRp: { value: R_E }, uRa: { value: R_ATM }, uGain: { value: 2.0 } },
     blending: THREE.AdditiveBlending, depthWrite: false, transparent: true,
   });
   const atmo = new THREE.Mesh(new THREE.SphereGeometry(R_ATM, 128, 64), atmoMat);
   scene.add(atmo);
+
+  // ---------- Polarlichter (drehen mit der Erde; geomagnetischer Nordpol 2025: 80,8° N, 72,8° W, IGRF-14) ----------
+  const GM = [80.8 * RAD, -72.8 * RAD];
+  const poleL = new THREE.Vector3(Math.cos(GM[0]) * Math.cos(GM[1]), Math.sin(GM[0]), -Math.cos(GM[0]) * Math.sin(GM[1]));
+  const sunL = new THREE.Vector3(1, 0, 0);
+  const auroraU = { uPole: { value: poleL }, uSunL: { value: sunL }, uKp: { value: 4 }, uTime: { value: 0 }, uGain: { value: 1 }, uRp: { value: R_E } };
+  const aurora = new THREE.Mesh(auroraGeometry(), new THREE.ShaderMaterial({ vertexShader: AURORA_VERT, fragmentShader: AURORA_FRAG, uniforms: auroraU, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true, side: THREE.DoubleSide }));
+  aurora.frustumCulled = false;
+  spin.add(aurora);
+  const auroraPos = new THREE.Vector3(), poleW = new THREE.Vector3(), qSpin = new THREE.Quaternion();
+
+  // ---------- Satelliten und Trümmer (CelesTrak-Schnappschuss, sats.js) ----------
+  let satData = null, sats = null, iss = null;
+  const satLines = [], issLocal = new THREE.Vector3(), issWorld = new THREE.Vector3(), satInfo = { alt: 0, v: 0 };
+  const show = { sats: true, debris: true, orbits: true };
+  let linesT = -1;
+  const satsReady = loadSats().then((d) => {
+    satData = d;
+    sats = createSats(d);
+    sats.userData.setPixelRatio(pr);
+    tilt.add(sats);
+    for (const [name, col, op] of [['ISS (ZARYA)', 0xf3b552, 0.55], ['CSS (TIANHE)', 0xffd27a, 0.4], ['HST', 0x9cc8ff, 0.35]]) {
+      const k = namedIndex(d, name);
+      if (k < 0) continue;
+      const line = orbitLine(d.obj[k], col, op);
+      tilt.add(line);
+      satLines.push(line);
+      if (name === 'ISS (ZARYA)') iss = d.obj[k];
+    }
+    applyShow();
+  }).catch((err) => console.warn('[kosmos] Satelliten nicht geladen:', err));
+  function applyShow() {
+    if (!sats) return;
+    sats.visible = show.sats;
+    sats.userData.setShow(2, show.debris);
+    satLines.forEach((l) => { l.visible = show.sats && show.orbits; });
+    issOrbit.visible = !iss;
+  }
 
   // Bahnen in der Äquatorebene: geostationär (Ring) und ISS (51,6° geneigt, Knotenlage schematisch)
   const lineMat = (c, o) => new THREE.LineBasicMaterial({ color: c, transparent: true, opacity: o, blending: THREE.AdditiveBlending, depthWrite: false });
@@ -299,6 +401,10 @@ export function create(ctx) {
   const side = new THREE.Vector3().crossVectors(m, up).normalize();
   const d = m.clone().multiplyScalar(-1).addScaledVector(side, 0.38).addScaledVector(up, 0.12).normalize();
   const home = { pos: d.clone().multiplyScalar(36), target: new THREE.Vector3() };
+  // Screenshots: ?view=night (Nachtseite mit Polarlichtern) · ?view=moon (Mond nah)
+  const view = new URLSearchParams(location.search).get('view');
+  if (view === 'night') home.pos = sunDir.clone().negate().addScaledVector(up, 0.45).normalize().multiplyScalar(30);
+  else if (view === 'moon') { home.target = moonPos.clone(); home.pos = moonPos.clone().addScaledVector(d, R_M * 7); }
   const introDir = d.clone().applyAxisAngle(up, -1.9).addScaledVector(up, 0.25).normalize();
   const intro = { pos: introDir.multiplyScalar(13), target: new THREE.Vector3() };
 
@@ -319,9 +425,11 @@ export function create(ctx) {
   const hotspots = [
     { id: 'atmo', kind: 'info', pos: limb.clone().multiplyScalar(R_E * 1.02).addScaledVector(upL, 1.2) },
     { id: 'night', kind: 'info', pos: limb.clone().multiplyScalar(-0.62).addScaledVector(v, 0.7).normalize().multiplyScalar(R_E) },
-    { id: 'moon', kind: 'info', pos: moonPos },
+    { id: 'moon', kind: 'info', pos: moonPos, focus: () => R_M * 6 },
+    { id: 'aurora', kind: 'info', pos: auroraPos, visible: () => aurora.visible },
+    { id: 'sats', kind: 'info', pos: d.clone().multiplyScalar(R_E + 0.55), visible: () => !!sats && show.sats },
     { id: 'geo', kind: 'info', pos: orbitPoint(side.clone().negate(), GEO) },
-    { id: 'iss', kind: 'info', pos: orbitPoint(side.clone().add(upL), ISS.r, ISS.inc * RAD) },
+    { id: 'iss', kind: 'info', pos: issWorld.copy(orbitPoint(side.clone().add(upL), ISS.r, ISS.inc * RAD)) },
     { id: 'sun', kind: 'info', pos: sunDir.clone().multiplyScalar(90) },
     { id: 'umbra', kind: 'info', pos: umbraTip, visible: () => earthShadow.visible },
   ];
@@ -337,11 +445,31 @@ export function create(ctx) {
   let illum = 0;
   const tmp = new THREE.Vector3();
   const fmt = new Intl.DateTimeFormat('de-DE', { dateStyle: 'medium', timeStyle: 'short' });
+
+  // ---------- Ebenen (Zahnrad „Station · Erde & Mond“, Zeitleiste) ----------
+  const SPEEDS = [[1 / 1440, '1 min/s'], [1 / 144, '10 min/s'], [1 / 24, '1 h/s'], [0.25, '6 h/s'], [1, '1 Tag/s']];
+  let clockIdx = 1;
+  registerLayers('earth', [
+    { id: 'clock', type: 'play', label: 'Zeitraffer', hint: 'Erddrehung, Mondlauf, Satelliten und ISS im gewählten Tempo; Pause = Echtzeit.', value: 1, min: 0, max: SPEEDS.length - 1, step: 1, fmt: (i) => SPEEDS[Math.round(i)][1],
+      set: (i, playing) => { clockIdx = Math.round(i); rate = playing ? SPEEDS[clockIdx][0] : 0; if (!playing) jd = julianDate(new Date()); },
+      get: () => ({ value: clockIdx, playing: rate !== 0 }), status: () => `${fmt.format(new Date((jd - 2440587.5) * 864e5))}${rate ? '' : ' · Echtzeit'}` },
+    { id: 'atmo', type: 'toggle', label: 'Atmosphäre (Streulicht-Hülle)', value: true, set: (v) => { atmo.visible = v; } },
+    { id: 'aurora', type: 'toggle', label: 'Polarlichter', value: true, set: (v) => { aurora.visible = v; } },
+    { id: 'kp', type: 'range', label: 'Kp-Index (geomagnetische Aktivität)', value: 4, min: 0, max: 9, step: 1, sub: true, fmt: (v) => `Kp ${v}`, set: (v) => { auroraU.uKp.value = v; },
+      hint: 'Kp 0–2: nur am Polarkreis · Kp 5: Sturm, bis Norddeutschland · Kp 9: bis in den Mittelmeerraum (NOAA).' },
+    { id: 'auroraGain', type: 'range', label: 'Leuchtstärke', value: 1, min: 0.3, max: 2.5, step: 0.1, sub: true, unit: '×', set: (v) => { auroraU.uGain.value = v; } },
+    { id: 'sats', type: 'toggle', label: 'Satelliten (CelesTrak-Katalog)', value: true, set: (v) => { show.sats = v; applyShow(); } },
+    { id: 'debris', type: 'toggle', label: 'Trümmerwolken', value: true, sub: true, set: (v) => { show.debris = v; applyShow(); } },
+    { id: 'orbits', type: 'toggle', label: 'Bahnen ISS, Tiangong, Hubble', value: true, sub: true, set: (v) => { show.orbits = v; applyShow(); } },
+  ]);
+  let wT = -1;
+  const num = (x) => x.toLocaleString('de-DE');
+  const dot = (k) => `<span class="w-dot" style="--c:${KIND_COLOR[k]}"></span>`;
   const occluders = [{ center: new THREE.Vector3(), radius: R_E }, { center: moonPos, radius: R_M }];
   const sunFar = new THREE.Vector3();
 
   return {
-    scene, camera, home, intro, unit: 1e6, hotspots, controls, ready,
+    scene, camera, home, intro, unit: 1e6, hotspots, controls, ready: ready.then(() => satsReady),
     orbit: { minDistance: R_E * 1.28, maxDistance: 1000, cineSpeed: 0.8 },
     look: { exposure: 1.05, bloom: 0.05, sat: 1.06 },
     update(dt, t, cam) {
@@ -354,9 +482,46 @@ export function create(ctx) {
       sunFar.copy(sunDir).multiplyScalar(3500);
       cam.updateMatrixWorld();
       flare.userData.update(sunFar, cam, occluders, settings.S.lens, dt);
+      // Polarlichter: Sonnenrichtung in das mitdrehende Erdsystem, Abzeichen am Mitternachtsrand des Nord-Ovals
+      spin.getWorldQuaternion(qSpin);
+      sunL.copy(sunDir).applyQuaternion(qSpin.clone().invert());
+      auroraU.uTime.value = t;
+      if (aurora.visible) {
+        poleW.copy(poleL).applyQuaternion(qSpin);
+        const noon = tmp.copy(sunDir).addScaledVector(poleW, -sunDir.dot(poleW)).normalize();
+        const kp = auroraU.uKp.value, lat = (66.5 - 2.044 * kp) + (5 + 0.6 * kp) * 0.5, th = (90 - lat) * RAD;
+        auroraPos.copy(noon).multiplyScalar(-Math.sin(th)).addScaledVector(poleW, Math.cos(th)).multiplyScalar(R_E + 0.25);
+      }
+      // Satelliten: Tage seit dem Schnappschuss; Bahnlinien und ISS-Ort jede halbe Sekunde
+      if (sats) {
+        const days = jd - satData.jd;
+        sats.userData.update(days);
+        if (t - linesT > 0.5 || rate > 0.01) {
+          linesT = t;
+          satLines.forEach((l) => l.userData.update(days));
+          if (iss) {
+            satPos(iss, days, issLocal);
+            tilt.localToWorld(issWorld.copy(issLocal));
+            const rkm = issLocal.length() * 1e3;
+            satInfo.alt = rkm - RE; satInfo.v = speedAt(iss[0], rkm);
+          }
+        }
+      }
+    },
+    widget: () => `<table><thead><tr><th>Objekte um die Erde</th><th>Anzahl</th></tr></thead><tbody id="w-sats"><tr><td colspan="2">Katalog wird geladen …</td></tr></tbody></table><p class="w-foot" id="w-sats-foot"></p>`,
+    widgetTick(el, t) {
+      if (t - wT < 0.5 || !satData) return;
+      wT = t;
+      const c = satData.counts;
+      el.querySelector('#w-sats').innerHTML = `<tr><td>${dot(0)}aktive Satelliten gesamt</td><td class="num">${num(c.active)}</td></tr>
+        <tr><td>${dot(1)}davon Starlink</td><td class="num">${num(c.starlink)}</td></tr>
+        <tr><td>davon geostationär · Navigation</td><td class="num">${num(c.geo)} · ${num(c.gnss)}</td></tr>
+        <tr><td>${dot(2)}Trümmer der vier großen Wolken</td><td class="num">${num(c.debris)}</td></tr>
+        ${iss ? `<tr class="is-hi"><td>${dot(3)}ISS: Höhe · Geschwindigkeit</td><td class="num">${Math.round(satInfo.alt)} km · ${satInfo.v.toFixed(2).replace('.', ',')} km/s</td></tr>` : ''}`;
+      el.querySelector('#w-sats-foot').textContent = `Bahnelemente CelesTrak, Stand ${satData.epoch.slice(0, 10)}, Fortschreibung Kepler + J2. Dazu schätzt die ESA ≈ 1,2 Mio. Teile von 1–10 cm und über 100 Mio. von 1 mm–1 cm, zu klein für den Katalog.`;
     },
     live: () => `Stand ${fmt.format(new Date((jd - 2440587.5) * 864e5))} · Mond zu ${Math.round(illum * 100)} % beleuchtet · ${catalog && catalog.userData.count ? `${catalog.userData.count.toLocaleString('de-DE')} Katalogsterne` : 'Himmel wird geladen'}`,
-    setPixelRatio: (p) => { pr = p; if (catalog) catalog.userData.setPixelRatio(p); },
+    setPixelRatio: (p) => { pr = p; if (catalog) catalog.userData.setPixelRatio(p); if (sats) sats.userData.setPixelRatio(p); },
     dispose() {
       scene.traverse((o) => { if (o.geometry) o.geometry.dispose(); if (o.material) o.material.dispose(); });
     },

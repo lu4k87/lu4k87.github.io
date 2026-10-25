@@ -1,8 +1,11 @@
-// Einstellungen (Zahnrad oben rechts): Bewegung, Qualität, Linse, Flugdauer, Belichtung, Infotafel.
+// Einstellungen (Zahnrad oben rechts): oben die Ebenen der aktiven Station (layers.js: Schalter, Regler, ▶ je Animation),
+// darunter Allgemein (Bewegung, Qualität, Leerlauf-Fahrt, Infotafel, Zeitleiste, Flugdauer) und Bild (Belichtung, Bloom, Farbsaum, Korn).
 // Gespeichert in localStorage `kosmos.settings.v1`; clean() prüft jeden Wert, damit kaputte Einträge nichts stören.
 
+import { mountLayers, refreshLayers } from './layers.js';
+
 const KEY = 'kosmos.settings.v1';
-const DEFAULTS = { motion: 'full', quality: 'auto', cine: true, dive: 3.6, exposure: 1, bloom: true, lens: true, grain: true, fpsCap: 0, panel: true };
+const DEFAULTS = { motion: 'full', quality: 'auto', cine: true, dive: 3.6, exposure: 1, bloom: true, lens: true, grain: true, fpsCap: 0, panel: true, timeline: true };
 const CHOICES = { motion: ['full', 'calm', 'off'], quality: ['auto', '1', '2', '3'] };
 
 function clean(raw) {
@@ -49,21 +52,26 @@ const RANGE = (key, label, min, max, step, unit) => `
 export function mountSettings(root, btn) {
   root.innerHTML = `
     <h2 class="cfg-title" id="cfg-title">Einstellungen</h2>
+    <div class="cfg-station" id="cfg-station"></div>
+    <h3 class="cfg-group">Allgemein</h3>
     ${SEG('motion', 'Bewegung', [['full', 'Voll'], ['calm', 'Ruhig'], ['off', 'Aus']])}
     ${SEG('quality', 'Qualität', [['auto', 'Auto'], ['1', 'Leicht'], ['2', 'Mittel'], ['3', 'Fein']])}
     ${TOG('cine', 'Leerlauf-Fahrt der Kamera')}
     ${TOG('panel', 'Infotafel zeigen')}
+    ${TOG('timeline', 'Zeitleiste der Station zeigen')}
     ${RANGE('dive', 'Flugdauer', 1.5, 8, 0.1, 's')}
+    <h3 class="cfg-group">Bild</h3>
     ${RANGE('exposure', 'Belichtung', 0.5, 2, 0.05, '×')}
     ${TOG('bloom', 'Lichthof (Bloom)')}
-    ${TOG('lens', 'Farbsaum am Rand')}
+    ${TOG('lens', 'Farbsaum und Linsenreflex')}
     ${TOG('grain', 'Filmkorn')}
     <p class="cfg-note">„Aus“ wirkt wie die System-Einstellung „Bewegung reduzieren“: keine Fahrt von selbst, Wechsel als kurze Überblendung.</p>`;
+  mountLayers({ gear: root.querySelector('#cfg-station'), strip: document.getElementById('timeline'), stripOn: () => settings.S.timeline });
   const sync = () => {
     const S = settings.S;
     root.querySelectorAll('.seg button').forEach((b) => b.setAttribute('aria-checked', String(S[b.dataset.key] === b.dataset.val)));
-    root.querySelectorAll('input[type=checkbox]').forEach((i) => { i.checked = !!S[i.dataset.key]; });
-    root.querySelectorAll('input[type=range]').forEach((i) => {
+    root.querySelectorAll('input[type=checkbox][data-key]').forEach((i) => { i.checked = !!S[i.dataset.key]; });
+    root.querySelectorAll('input[type=range][data-key]').forEach((i) => {
       i.value = S[i.dataset.key];
       root.querySelector(`[data-out="${i.dataset.key}"]`).textContent = String(S[i.dataset.key].toFixed(i.step < 0.1 ? 2 : 1)).replace('.', ',');
     });
@@ -77,7 +85,7 @@ export function mountSettings(root, btn) {
     if (!i.dataset.key) return;
     setSetting(i.dataset.key, i.type === 'checkbox' ? i.checked : +i.value);
   });
-  onSettings(sync);
+  onSettings((keys) => { sync(); if (keys.includes('timeline')) refreshLayers(); });
   sync();
   const open = (on) => {
     root.hidden = !on;
@@ -85,6 +93,7 @@ export function mountSettings(root, btn) {
     if (on) root.focus();
   };
   btn.addEventListener('click', () => open(root.hidden));
+  if (new URLSearchParams(location.search).has('cfg')) open(true);   // Screenshots: Zahnrad offen
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !root.hidden) { open(false); btn.focus(); } });
   document.addEventListener('pointerdown', (e) => { if (!root.hidden && !root.contains(e.target) && !btn.contains(e.target)) open(false); });
 }
