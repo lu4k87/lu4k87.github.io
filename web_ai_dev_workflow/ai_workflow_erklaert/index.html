@@ -543,7 +543,7 @@ footer .wrap { display: grid; gap: 8px; }
 
     <dl class="facts">
       <div><dt>4 Rollen</dt><dd>Organizer → Fachrolle → Prüfer → Synchronizer</dd></div>
-      <div><dt>6 Hooks</dt><dd>prüfen jeden Schritt automatisch</dd></div>
+      <div><dt>6 Prüfstellen</dt><dd>Hooks prüfen jeden Schritt automatisch</dd></div>
       <div><dt>4 Prüfstufen</dt><dd>Prüftiefe nach Umfang und Risiko</dd></div>
       <div><dt>1 Regelwerk</dt><dd>für Claude, Codex und Gemini</dd></div>
     </dl>
@@ -595,7 +595,7 @@ footer .wrap { display: grid; gap: 8px; }
             <li class="msg agent bad" data-at="41.4" data-fx="msg"><span class="av"><svg class="ic"><use href="#i-bot"/></svg></span><span class="who">Agent · test-runner</span><span class="tx">❌ 11/12 · Links im Dunkelmodus zu blass</span></li>
             <li class="msg ai" data-at="42.8" data-fx="msg"><span class="av"><svg class="ic"><use href="#i-chat"/></svg></span><span class="who">Chat · Prüfer</span><span class="tx">Ursache: Linkfarbe nur für hell gesetzt → Token für dunkel + Test.</span></li>
             <li class="msg agent good" data-at="45.0" data-fx="msg"><span class="av"><svg class="ic"><use href="#i-bot"/></svg></span><span class="who">Agent · test-runner</span><span class="tx">✅ 12/12 · hell + dunkel · 1280 + 360 px</span></li>
-            <li class="msg ai" data-at="48.4" data-fx="msg"><span class="av"><svg class="ic"><use href="#i-chat"/></svg></span><span class="who">Chat · Synchronizer</span><span class="tx">Doku DE + EN nachgezogen.</span></li>
+            <li class="msg ai" data-at="48.4" data-fx="msg"><span class="av"><svg class="ic"><use href="#i-chat"/></svg></span><span class="who">Chat · Synchronizer</span><span class="tx">Nur eigene Dateien vorgemerkt: 3 von 3.</span></li>
             <li class="msg hook good" data-at="50.4" data-fx="msg"><span class="av"><svg class="ic"><use href="#i-shield"/></svg></span><span class="who">Hook · pre-commit</span><span class="tx">4 Prüfungen grün ✅</span></li>
             <li class="msg hook good" data-at="52.4" data-fx="msg"><span class="av"><svg class="ic"><use href="#i-git"/></svg></span><span class="who">Sync · Push</span><span class="tx">origin main 4f2c9e1 ✅ · Claim gelöscht</span></li>
             <li class="msg ai good" data-at="55.4" data-fx="msg"><span class="av"><svg class="ic"><use href="#i-chat"/></svg></span><span class="who">Chat · Antwort</span><span class="tx">🟩 Ergebnis: Hell/Dunkel-Schalter · geprüft ✅</span></li>
@@ -619,7 +619,7 @@ footer .wrap { display: grid; gap: 8px; }
             <div class="box" data-at="3.6"><p class="lbl"><svg class="ic" aria-hidden="true"><use href="#i-users"/></svg>Lagebild · laufende Chats</p>
               <ul class="rows">
                 <li data-at="4.0"><code class="cid">dev-ws-7a</code><span>[Doku] Abstände Startseite</span><span class="chip warn"><svg class="ic" aria-hidden="true"><use href="#i-lock"/></svg>hält docs/css/layout.css</span></li>
-                <li data-at="4.4"><code class="cid">dev-ws-bd</code><span>[Agency] Startseite</span><span class="chip">anderes Repo</span></li>
+                <li data-at="4.4"><code class="cid">codex-20da01</code><span>[Agency] Startseite</span><span class="chip">anderes Repo</span></li>
                 <li class="ok" data-at="5.0"><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg>Keine Claims auf den Dateien dieses Auftrags</li>
               </ul></div>
             <p class="why" data-at="0.6"><b>Warum so?</b> Kein Chat baut auf altem Code, keiner überschreibt fremde Arbeit. Scheitert der Pull, meldet der Chat nur den Fehler – statt auf altem Stand weiterzuarbeiten.</p>
@@ -640,7 +640,7 @@ footer .wrap { display: grid; gap: 8px; }
               <ul class="skills">
                 <li>root-cause</li><li>ros-debug</li><li>docs</li><li data-at="11.4" data-fx="cls">docs-layout</li><li>text-format</li><li>vla-motion</li><li>build-pkg</li><li data-at="11.9" data-fx="cls">preview</li><li>test-isolated</li><li>gsap</li><li>flow-graph</li><li>threejs</li><li>research</li><li>scrum</li><li>commit</li><li>blender</li><li>cad-print</li><li>humanizer</li>
               </ul>
-              <p class="st ok" data-at="12.4" data-fx="pop"><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg>2 von 51 Skills: „Projektseite“ → docs-layout · „neues Element“ → preview</p></div>
+              <p class="st ok" data-at="12.4" data-fx="pop"><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg>2 von 68 Skills: „Projektseite“ → docs-layout · „neues Element“ → preview</p></div>
             <p class="why" data-at="7.6"><b>Warum so?</b> Jeder geladene Skill füllt den Kontext – und Kontext kostet Zeit und Geld. Darum lädt der Chat nur, was die Anfrage berührt. Die Prüfstufe bestimmt, wie tief später geprüft wird.</p>
           </section>
 
@@ -669,7 +669,7 @@ footer .wrap { display: grid; gap: 8px; }
                 <li data-at="25.0"><svg class="ic" aria-hidden="true"><use href="#i-file"/></svg><code>docs/js/theme.js</code><span class="d">Schalter, Wahl merken</span><span class="chip ok">neu</span><svg class="ic lk" data-at="27.8" data-fx="pop" aria-hidden="true"><use href="#i-lock"/></svg></li>
                 <li class="foreign" data-at="25.6"><svg class="ic warn" aria-hidden="true"><use href="#i-lock"/></svg><code>docs/css/layout.css</code><span class="d">gehört dev-ws-7a – nicht anfassen</span><span class="chip warn">fremd</span><span></span></li>
               </ul></div>
-            <div class="box claim" data-at="26.8"><svg class="ic" aria-hidden="true"><use href="#i-lock"/></svg><div><p class="lbl">Claim · eigener Git-Ref</p><code>refs/claims/labor-c3</code><p>3 Dateien eingetragen · sichtbar für alle Chats und Rechner</p></div></div>
+            <div class="box claim" data-at="26.8"><svg class="ic" aria-hidden="true"><use href="#i-lock"/></svg><div><p class="lbl">Claim · eigener Git-Ref</p><code>refs/claims/labor-c3a41f9e</code><p>3 Dateien eingetragen · sichtbar für alle Chats und Rechner</p></div></div>
             <p class="why" data-at="24.1"><b>Warum so?</b> Zwei Chats an derselben Datei überschreiben sich. Der Claim zeigt, wer woran arbeitet; fremde Dateien fasst der Chat nicht an, sondern stimmt sich ab.</p>
           </section>
 
@@ -738,8 +738,9 @@ footer .wrap { display: grid; gap: 8px; }
             <div class="box answer" data-at="55.5">
               <p class="l" data-at="55.8"><b>🟩 Ergebnis:</b> Hell/Dunkel-Schalter auf der Projektseite · geprüft ✅</p>
               <p class="chips" data-at="56.2"><span class="chip">🟩 geprüft</span><span class="chip">🟦 3 Dateien</span><span class="chip">🟩 gepusht</span></p>
-              <p class="l" data-at="56.6"><b>Ablauf:</b> Pull ✅ ── Claim ✅ ── pre-commit ✅ ── Push 4f2c9e1 🚀</p>
+              <p class="l" data-at="56.6"><b>Ablauf:</b> [SYNC] Pull b0ca67b ✅ ── [GUARD] Claim ✅ ── [VERIFY] pre-commit ✅ ── [PUSH] origin 4f2c9e1 🚀</p>
               <h4 data-at="57.0">🟩 [Synchronizer] · 🏁 AUFGABE ERLEDIGT ✅</h4>
+              <p class="l" data-at="57.15">· Chat jetzt schließen ✖️</p>
               <p class="cid2" data-at="57.3">([Claude] dev-ws-c3 · gepusht 4f2c9e1)</p>
             </div>
             <div class="learn">
@@ -747,9 +748,9 @@ footer .wrap { display: grid; gap: 8px; }
               <div class="lcn2"><span class="trk"><i class="bar" data-at="59.1" data-d=".7" data-fx="bar"></i></span></div>
               <div class="ln" data-at="59.8"><svg class="ic" aria-hidden="true"><use href="#i-db"/></svg><span><code>memory/symbol-mit-text.md</code> + Zeile in MEMORY.md</span></div>
               <div class="lcn2"><span class="trk"><i class="bar" data-at="60.3" data-d=".7" data-fx="bar"></i></span></div>
-              <div class="ln" data-at="61.0"><svg class="ic" aria-hidden="true"><use href="#i-chat"/></svg><span>Jeder nächste Chat: richtig beim ersten Mal</span></div>
+              <div class="ln" data-at="61.0"><svg class="ic" aria-hidden="true"><use href="#i-chat"/></svg><span>Jeder nächste Chat kennt die Korrektur</span></div>
             </div>
-            <p class="why" data-at="55.6"><b>Warum so?</b> Ergebnis, Risiken und Git-Stand stehen immer an derselben Stelle – du musst nie suchen. Was du einmal korrigierst, korrigierst du nie wieder: Memory liegt im Git, für jeden Chat auf jedem Rechner.</p>
+            <p class="why" data-at="55.6"><b>Warum so?</b> Ergebnis, Risiken und Git-Stand stehen immer an derselben Stelle – du musst nie suchen. Was du einmal korrigierst, musst du nicht wiederholen: Memory liegt im Git, für jeden Chat auf jedem Rechner.</p>
           </section>
         </div>
       </div>
@@ -859,7 +860,7 @@ footer .wrap { display: grid; gap: 8px; }
 <footer>
   <div class="wrap">
     <p>Quellen: <code>rules/RULES.md</code>, <code>rules/ROLES.md</code>, <code>dev_ws/AGENTS.md</code>, Skill <code>answer-page</code>, Hooks in <code>hooks/</code> und <code>.claude/hooks/</code>. Das Beispiel ist gestellt; Abläufe, Hooks, Prüfungen und Regeln sind echt.</p>
-    <p>Ausführliche Referenz mit allen Kapiteln: <code>ai_dev_workflow_global/docs/ai_dev_workflow.html</code> · Stand 20.10.2026</p>
+    <p>Ausführlich in acht Kapiteln: <a href="https://lu4k87.github.io/web_ai_dev_workflow/">AI Dev Workflow</a> · Stand 25.10.2026</p>
   </div>
 </footer>
 

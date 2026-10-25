@@ -746,7 +746,7 @@ pre.cmd .c { color: var(--green); }
 
     <dl class="facts">
       <div><dt><span data-en="4 roles">4 Rollen</span></dt><dd>Organizer → <span data-en="specialist">Fachrolle</span> → <span data-en="reviewer">Prüfer</span> → Synchronizer</dd></div>
-      <div><dt><span data-en="6 hooks">6 Hooks</span></dt><dd><span data-en="check every step automatically">prüfen jeden Schritt automatisch</span></dd></div>
+      <div><dt><span data-en="6 checkpoints">6 Prüfstellen</span></dt><dd><span data-en="hooks check every step automatically">Hooks prüfen jeden Schritt automatisch</span></dd></div>
       <div><dt><span data-en="4 check levels">4 Prüfstufen</span></dt><dd><span data-en="check depth by scope and risk">Prüftiefe nach Umfang und Risiko</span></dd></div>
       <div><dt><span data-en="1 rule set">1 Regelwerk</span></dt><dd><span data-en="for Claude, Codex and Gemini">für Claude, Codex und Gemini</span></dd></div>
     </dl>
@@ -815,7 +815,7 @@ pre.cmd .c { color: var(--green); }
             <li class="msg agent bad" data-at="41.4" data-fx="msg"><span class="av"><svg class="ic"><use href="#i-bot"/></svg></span><span class="who">Agent · test-runner</span><span class="tx"><span data-en="❌ 11/12 · links too pale in dark mode">❌ 11/12 · Links im Dunkelmodus zu blass</span></span></li>
             <li class="msg ai" data-at="42.8" data-fx="msg"><span class="av"><svg class="ic"><use href="#i-chat"/></svg></span><span class="who"><span data-en="Chat · reviewer">Chat · Prüfer</span></span><span class="tx"><span data-en="Cause: link colour set for light only → token for dark + test.">Ursache: Linkfarbe nur für hell gesetzt → Token für dunkel + Test.</span></span></li>
             <li class="msg agent good" data-at="45.0" data-fx="msg"><span class="av"><svg class="ic"><use href="#i-bot"/></svg></span><span class="who">Agent · test-runner</span><span class="tx"><span data-en="✅ 12/12 · light + dark · 1280 + 360 px">✅ 12/12 · hell + dunkel · 1280 + 360 px</span></span></li>
-            <li class="msg ai" data-at="48.4" data-fx="msg"><span class="av"><svg class="ic"><use href="#i-chat"/></svg></span><span class="who">Chat · Synchronizer</span><span class="tx"><span data-en="Docs updated in DE + EN.">Doku DE + EN nachgezogen.</span></span></li>
+            <li class="msg ai" data-at="48.4" data-fx="msg"><span class="av"><svg class="ic"><use href="#i-chat"/></svg></span><span class="who">Chat · Synchronizer</span><span class="tx"><span data-en="Only own files staged: 5 of 5.">Nur eigene Dateien vorgemerkt: 5 von 5.</span></span></li>
             <li class="msg hook good" data-at="50.4" data-fx="msg"><span class="av"><svg class="ic"><use href="#i-shield"/></svg></span><span class="who">Hook · pre-commit</span><span class="tx"><span data-en="4 checks green ✅">4 Prüfungen grün ✅</span></span></li>
             <li class="msg hook good" data-at="52.4" data-fx="msg"><span class="av"><svg class="ic"><use href="#i-git"/></svg></span><span class="who">Sync · Push</span><span class="tx"><span data-en="origin main 4f2c9e1 ✅ · claim removed">origin main 4f2c9e1 ✅ · Claim gelöscht</span></span></li>
             <li class="msg ai" data-at="56.0" data-fx="msg"><span class="av"><svg class="ic"><use href="#i-chat"/></svg></span><span class="who"><span data-en="Chat · editor">Chat · Redakteur</span></span><span class="tx"><span data-en="Docs in the same commit: README.md + readme-de.md.">Doku im selben Commit: README.md + readme-de.md.</span></span></li>
@@ -866,7 +866,7 @@ pre.cmd .c { color: var(--green); }
               <ul class="skills">
                 <li>root-cause</li><li>ros-debug</li><li>docs</li><li data-at="11.4" data-fx="cls">docs-layout</li><li>text-format</li><li>vla-motion</li><li>build-pkg</li><li data-at="11.9" data-fx="cls">preview</li><li>test-isolated</li><li>gsap</li><li>flow-graph</li><li>threejs</li><li>research</li><li>scrum</li><li>commit</li><li>blender</li><li>cad-print</li><li>humanizer</li>
               </ul>
-              <p class="st ok" data-at="12.4" data-fx="pop"><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg><span data-en="2 of 66 skills: “project page” → docs-layout · “new element” → preview">2 von 66 Skills: „Projektseite“ → docs-layout · „neues Element“ → preview</span></p></div>
+              <p class="st ok" data-at="12.4" data-fx="pop"><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg><span data-en="2 of 68 skills: “project page” → docs-layout · “new element” → preview">2 von 68 Skills: „Projektseite“ → docs-layout · „neues Element“ → preview</span></p></div>
             <p class="why" data-at="7.6"><b><span data-en="Why?">Warum so?</span></b> <span data-en="Every loaded skill fills the context – and context costs time and money. So the chat loads only what the request touches. The check level decides how deeply it is checked later.">Jeder geladene Skill füllt den Kontext – und Kontext kostet Zeit und Geld. Darum lädt der Chat nur, was die Anfrage berührt. Die Prüfstufe bestimmt, wie tief später geprüft wird.</span></p>
           </section>
 
@@ -896,7 +896,7 @@ pre.cmd .c { color: var(--green); }
                 <li data-at="25.3"><svg class="ic" aria-hidden="true"><use href="#i-doc"/></svg><code>README.md · readme-de.md</code><span class="d"><span data-en="docs EN + DE">Doku EN + DE</span></span><span class="chip"><span data-en="changed">geändert</span></span><svg class="ic lk" data-at="28.0" data-fx="pop" aria-hidden="true"><use href="#i-lock"/></svg></li>
                 <li class="foreign" data-at="25.8"><svg class="ic warn" aria-hidden="true"><use href="#i-lock"/></svg><code>docs/css/layout.css</code><span class="d"><span data-en="belongs to dev-ws-7a – do not touch">gehört dev-ws-7a – nicht anfassen</span></span><span class="chip warn"><span data-en="foreign">fremd</span></span><span></span></li>
               </ul></div>
-            <div class="box claim" data-at="26.8"><svg class="ic" aria-hidden="true"><use href="#i-lock"/></svg><div><p class="lbl"><span data-en="Claim · own Git ref">Claim · eigener Git-Ref</span></p><code>refs/claims/labor-c3</code><p><span data-en="5 files registered · visible to all chats and computers">5 Dateien eingetragen · sichtbar für alle Chats und Rechner</span></p></div></div>
+            <div class="box claim" data-at="26.8"><svg class="ic" aria-hidden="true"><use href="#i-lock"/></svg><div><p class="lbl"><span data-en="Claim · own Git ref">Claim · eigener Git-Ref</span></p><code>refs/claims/labor-c3a41f9e</code><p><span data-en="5 files registered · visible to all chats and computers">5 Dateien eingetragen · sichtbar für alle Chats und Rechner</span></p></div></div>
             <p class="why" data-at="24.1"><b><span data-en="Why?">Warum so?</span></b> <span data-en="Two chats on the same file overwrite each other. The claim shows who works on what; the chat does not touch foreign files but coordinates instead.">Zwei Chats an derselben Datei überschreiben sich. Der Claim zeigt, wer woran arbeitet; fremde Dateien fasst der Chat nicht an, sondern stimmt sich ab.</span></p>
           </section>
 
@@ -999,7 +999,7 @@ pre.cmd .c { color: var(--green); }
                 <p class="note"><span data-en="Claude chats write to each other directly.">Claude-Chats schreiben sich direkt.</span></p></div>
               <div class="box" data-at="65.0"><p class="lbl"><svg class="ic" aria-hidden="true"><use href="#i-mail"/></svg><span data-en="Mailbox · other tools">Postfach · andere Werkzeuge</span></p>
                 <p class="st" data-at="67.6" data-fx="pop"><svg class="ic" aria-hidden="true"><use href="#i-mail"/></svg><code>chat_msg.py send codex-20da01</code></p>
-                <p class="note"><span data-en="SendMessage does not reach Codex and Gemini – the mailbox delivers at the next prompt.">Codex und Gemini erreicht SendMessage nicht – das Postfach stellt beim nächsten Prompt zu.</span></p></div>
+                <p class="note"><span data-en="SendMessage does not reach Codex and Gemini – the mailbox delivers at chat start and before every request.">Codex und Gemini erreicht SendMessage nicht – das Postfach stellt beim Chat-Start und vor jeder Anfrage zu.</span></p></div>
             </div>
             <div class="box" data-at="68.2"><p class="lbl"><svg class="ic" aria-hidden="true"><use href="#i-git"/></svg><span data-en="Fetch by fast-forward only">Holen nur per Fast-Forward</span></p>
               <div class="ff"><span>origin</span><span class="trk"><i class="bar" data-at="68.5" data-d=".9" data-fx="bar"></i></span><span><span data-en="local">lokal</span></span></div>
@@ -1013,8 +1013,9 @@ pre.cmd .c { color: var(--green); }
             <div class="box answer" data-at="71.5">
               <p class="l" data-at="71.8"><b><span data-en="🟩 Result:">🟩 Ergebnis:</span></b> <span data-en="Light/dark switch on the project page · checked ✅">Hell/Dunkel-Schalter auf der Projektseite · geprüft ✅</span></p>
               <p class="chips" data-at="72.2"><span class="chip"><span data-en="🟩 checked">🟩 geprüft</span></span><span class="chip"><span data-en="🟦 5 files">🟦 5 Dateien</span></span><span class="chip"><span data-en="🟩 pushed">🟩 gepusht</span></span></p>
-              <p class="l" data-at="72.6"><b><span data-en="Flow:">Ablauf:</span></b> Pull ✅ ── Claim ✅ ── pre-commit ✅ ── Push 4f2c9e1 🚀</p>
+              <p class="l" data-at="72.6"><b><span data-en="Flow:">Ablauf:</span></b> [SYNC] Pull b0ca67b ✅ ── [GUARD] Claim ✅ ── [VERIFY] pre-commit ✅ ── [PUSH] origin 4f2c9e1 🚀</p>
               <h4 data-at="73.0"><span data-en="🟩 [Synchronizer] · 🏁 TASK DONE ✅">🟩 [Synchronizer] · 🏁 AUFGABE ERLEDIGT ✅</span></h4>
+              <p class="l" data-at="73.15"><span data-en="· Close the chat now ✖️">· Chat jetzt schließen ✖️</span></p>
               <p class="cid2" data-at="73.3"><span data-en="([Claude] dev-ws-c3 · pushed 4f2c9e1)">([Claude] dev-ws-c3 · gepusht 4f2c9e1)</span></p>
             </div>
             <div class="learn">
@@ -1022,9 +1023,9 @@ pre.cmd .c { color: var(--green); }
               <div class="lcn2"><span class="trk"><i class="bar" data-at="75.1" data-d=".7" data-fx="bar"></i></span></div>
               <div class="ln" data-at="75.8"><svg class="ic" aria-hidden="true"><use href="#i-db"/></svg><span><span data-en="<code>memory/symbol-mit-text.md</code> + line in MEMORY.md"><code>memory/symbol-mit-text.md</code> + Zeile in MEMORY.md</span></span></div>
               <div class="lcn2"><span class="trk"><i class="bar" data-at="76.3" data-d=".7" data-fx="bar"></i></span></div>
-              <div class="ln" data-at="77.0"><svg class="ic" aria-hidden="true"><use href="#i-chat"/></svg><span><span data-en="Every next chat: right the first time">Jeder nächste Chat: richtig beim ersten Mal</span></span></div>
+              <div class="ln" data-at="77.0"><svg class="ic" aria-hidden="true"><use href="#i-chat"/></svg><span><span data-en="Every next chat knows the correction">Jeder nächste Chat kennt die Korrektur</span></span></div>
             </div>
-            <p class="why" data-at="71.6"><b><span data-en="Why?">Warum so?</span></b> <span data-en="Result, risks and Git state are always in the same place – you never have to search. What you correct once, you never correct again: memory lives in Git, for every chat on every computer.">Ergebnis, Risiken und Git-Stand stehen immer an derselben Stelle – du musst nie suchen. Was du einmal korrigierst, korrigierst du nie wieder: Memory liegt im Git, für jeden Chat auf jedem Rechner.</span></p>
+            <p class="why" data-at="71.6"><b><span data-en="Why?">Warum so?</span></b> <span data-en="Result, risks and Git state are always in the same place – you never have to search. What you correct once, you need not repeat: memory lives in Git, for every chat on every computer.">Ergebnis, Risiken und Git-Stand stehen immer an derselben Stelle – du musst nie suchen. Was du einmal korrigierst, musst du nicht wiederholen: Memory liegt im Git, für jeden Chat auf jedem Rechner.</span></p>
           </section>
         </div>
       </div>
@@ -1068,6 +1069,7 @@ pre.cmd .c { color: var(--green); }
         <li><span data-en="Short plan; a real decision becomes question ❓ F1 in a dialog">Kurzer Plan; eine echte Entscheidung wird zur Frage ❓ F1 im Dialog</span></li></ul></li>
     <li><div class="bh"><span class="k">D</span><b><span data-en="Every tool call">Jeder Werkzeug-Aufruf</span></b><code>PreToolUse → Tool → PostToolUse</code></div>
       <ul class="bl"><li><span data-en="<code>pre_tool_guard.py</code>: broad pkill, <code>git push --force</code>, the real <code>robot_ip</code>, protected and foreign files → asks first"><code>pre_tool_guard.py</code>: breites pkill, <code>git push --force</code>, echte <code>robot_ip</code>, geschützte und fremde Dateien → fragt vorher</span></li>
+        <li><span data-en="<code>global_hook.py pre</code>: hard blocks, the file register warns about foreign files, <code>model_hint.py</code> reminds of suitable agents"><code>global_hook.py pre</code>: harte Sperren, das Datei-Register warnt vor fremden Dateien, <code>model_hint.py</code> erinnert an passende Agenten</span></li>
         <li><span data-en="<code>todo_claim_hook.py</code> creates the claim at the first change and registers every file"><code>todo_claim_hook.py</code> legt bei der ersten Änderung den Claim an und trägt jede Datei ein</span></li>
         <li><span data-en="The tool runs: Read, Edit, Bash or an agent">Das Werkzeug läuft: Read, Edit, Bash oder ein Agent</span></li>
         <li><span data-en="<code>post_edit_check.py</code>: syntax (.py, JSON, YAML), UI rules – a finding is fixed at once"><code>post_edit_check.py</code>: Syntax (.py, JSON, YAML), UI-Regeln – ein Befund wird sofort behoben</span></li></ul></li>
@@ -1075,6 +1077,7 @@ pre.cmd .c { color: var(--green); }
       <ul class="bl"><li><span data-en="Check by level – evidence from this chat, after the last change">Prüfen nach Prüfstufe – Beleg aus diesem Chat, nach der letzten Änderung</span></li>
         <li><span data-en="<code>tools/pre-commit</code> checks only the staged files, usually under 10 s; for safety paths it reminds of the safety-reviewer"><code>tools/pre-commit</code> prüft nur die vorgemerkten Dateien, meist unter 10 s; bei Sicherheitspfaden erinnert er an den safety-reviewer</span></li>
         <li><span data-en="Answer in a fixed form; <code>format_check.py</code> blocks false statements such as “pushed” without a push">Antwort in fester Form; <code>format_check.py</code> blockt falsche Angaben wie „gepusht“ ohne Push</span></li>
+        <li><span data-en="<code>answer_page.py</code> builds the answer page for every reply"><code>answer_page.py</code> baut zu jeder Antwort die Antwort-Seite</span></li>
         <li><span data-en="At “🏁 TASK DONE” the claim is removed">Bei „🏁 AUFGABE ERLEDIGT“ wird der Claim gelöscht</span></li></ul></li>
   </ol>
   <p class="note"><span data-en="Beat D runs again for every tool call – and every call sends the whole chat to the model again. That is why the chat bundles independent steps into one call.">Takt D läuft bei jedem Werkzeug-Aufruf erneut – und jeder Aufruf schickt den ganzen Chat noch einmal ans Modell. Darum bündelt der Chat unabhängige Schritte in einem Aufruf.</span></p>
@@ -1119,8 +1122,8 @@ pre.cmd .c { color: var(--green); }
   </div>
   <div class="blk"><h3><span class="bic"><svg class="ic" aria-hidden="true"><use href="#i-gauge"/></svg></span><span data-en="The toolbox in numbers">Der Werkzeugkasten in Zahlen</span></h3>
     <div class="g5">
-      <div class="card"><span class="k">66</span><b>Skills</b><p><span data-en="45 general + 21 dev_ws; one SKILL.md per topic with scripts, loaded only when needed">45 allgemein + 21 dev_ws; je Thema ein SKILL.md mit Skripten, geladen nur bei Bedarf</span></p></div>
-      <div class="card"><span class="k">17</span><b><span data-en="Agents">Agenten</span></b><p><span data-en="6 global + 11 dev_ws; own context, return only the result">6 global + 11 dev_ws; eigener Kontext, geben nur das Ergebnis zurück</span></p></div>
+      <div class="card"><span class="k">68</span><b>Skills</b><p><span data-en="47 general + 21 dev_ws; one SKILL.md per topic with scripts, loaded only when needed">47 allgemein + 21 dev_ws; je Thema ein SKILL.md mit Skripten, geladen nur bei Bedarf</span></p></div>
+      <div class="card"><span class="k">18</span><b><span data-en="Agents">Agenten</span></b><p><span data-en="7 global + 11 dev_ws; own context, return only the result">7 global + 11 dev_ws; eigener Kontext, geben nur das Ergebnis zurück</span></p></div>
       <div class="card"><span class="k"><span data-en="5 + Git">5 + Git</span></span><b><span data-en="Hook events">Hook-Ereignisse</span></b><p><span data-en="start, prompt, before and after every tool, end of answer – plus the commit">Start, Prompt, vor und nach jedem Werkzeug, Antwortende – dazu der Commit</span></p></div>
       <div class="card"><span class="k">tools/ ·<wbr> bin/</span><b><span data-en="Scripts">Skripte</span></b><p><span data-en="deliver the evidence before “done”; one-off scripts only in the scratchpad">liefern den Beleg vor „fertig“; Einmal-Skripte nur im Scratchpad</span></p></div>
       <div class="card"><span class="k"><span data-en="1 active">1 aktiv</span></span><b><span data-en="MCP servers">MCP-Server</span></b><p><span data-en="only where no terminal command reaches, e.g. Blender live">nur wo kein Terminal-Befehl hinkommt, z. B. Blender live</span></p></div>
@@ -1144,7 +1147,7 @@ pre.cmd .c { color: var(--green); }
       <div><b><span data-en="Answer">Antwort</span></b><ol class="flow"><li>Chat</li><li><span data-en="format_check (stop hook)">format_check (Stop-Hook)</span></li><li><span data-en="on error: rewrite ending">bei Fehler: Schluss neu</span></li><li class="ok"><span data-en="answer to you">Antwort an dich</span></li></ol></div>
     </div>
     <p><span data-en="All skills, agents, hooks and scripts one by one: <a href=&quot;ai_dev_workflow_reference.html#werkzeugkasten&quot;>reference · toolbox</a>.">Alle Skills, Agenten, Hooks und Skripte einzeln: <a href="ai_dev_workflow_reference.html#werkzeugkasten">Referenz · Werkzeugkasten</a>.</span></p></div>
-  <div class="ex"><svg class="ic" aria-hidden="true"><use href="#i-sun"/></svg><b><span data-en="In the example">Im Beispiel</span></b><p><span data-en="For the switch the chat loads 2 of 66 skills (docs-layout, preview), starts one agent (test-runner) and needs no MCP server.">Für den Schalter lädt der Chat 2 von 66 Skills (docs-layout, preview), startet einen Agenten (test-runner) und braucht keinen MCP-Server.</span></p></div>
+  <div class="ex"><svg class="ic" aria-hidden="true"><use href="#i-sun"/></svg><b><span data-en="In the example">Im Beispiel</span></b><p><span data-en="For the switch the chat loads 2 of 68 skills (docs-layout, preview), starts one agent (test-runner) and needs no MCP server.">Für den Schalter lädt der Chat 2 von 68 Skills (docs-layout, preview), startet einen Agenten (test-runner) und braucht keinen MCP-Server.</span></p></div>
 </article>
 
 
@@ -1226,7 +1229,7 @@ pre.cmd .c { color: var(--green); }
         <div class="card"><b><span data-en="SendMessage + mailbox">SendMessage + Postfach</span></b><p><span data-en="Claude chats write to each other directly; the team meeting is one round to all. Codex and Gemini are reached by the mailbox <code>chat_msg.py</code>.">Claude-Chats schreiben sich direkt, die Teambesprechung ist eine Runde an alle. Codex und Gemini erreicht das Postfach <code>chat_msg.py</code>.</span></p></div></div>
       <div><p class="lbl"><span data-en="All computers via Git">Alle Rechner über Git</span></p>
         <div class="card"><b>Claims</b><p><span data-en="Own Git ref per chat (<code>refs/claims/&amp;lt;id&amp;gt;</code>) with its files – pushed at once, visible on every computer.">Eigener Git-Ref je Chat (<code>refs/claims/&lt;Kennung&gt;</code>) mit seinen Dateien – sofort gepusht, auf jedem Rechner sichtbar.</span></p></div>
-        <div class="card"><b><span data-en="Handoff">Übergabe</span></b><p><span data-en="Task and context in <code>.claude/handoff/*.md</code>; “chat weiter &amp;lt;id&amp;gt;” takes over – on another computer too.">Aufgabe und Kontext in <code>.claude/handoff/*.md</code>; „chat weiter &lt;kennung&gt;“ übernimmt – auch auf einem anderen Rechner.</span></p></div>
+        <div class="card"><b><span data-en="Handoff">Übergabe</span></b><p><span data-en="Task and context in <code>.claude/handoff/*.md</code>; <code>chat_handoff.py start</code> opens the new chat as a VS Code tab, “chat weiter &amp;lt;id&amp;gt;” takes over – on another computer too.">Aufgabe und Kontext in <code>.claude/handoff/*.md</code>; <code>chat_handoff.py start</code> öffnet den neuen Chat als VS-Code-Tab, „chat weiter &lt;kennung&gt;“ übernimmt – auch auf einem anderen Rechner.</span></p></div>
         <div class="card"><b><span data-en="Memory, rules, skills">Memory, Regeln, Skills</span></b><p><span data-en="Knowledge as files in Git; Claude, Codex and Gemini read the same files.">Wissen als Dateien in Git; Claude, Codex und Gemini lesen dieselben Dateien.</span></p></div>
         <div class="card"><b><span data-en="Syncing computers">Abgleich der Rechner</span></b><p><span data-en="<code>tools/ws_sync.sh</code> fetches the Git state and syncs; <code>chat_sync.py</code> transfers the chat histories."><code>tools/ws_sync.sh</code> holt den Git-Stand und gleicht ab; <code>chat_sync.py</code> überträgt die Chat-Verläufe.</span></p></div></div>
     </div></div>
@@ -1304,9 +1307,9 @@ pre.cmd .c { color: var(--green); }
   <div class="blk"><h3><span class="bic"><svg class="ic" aria-hidden="true"><use href="#i-db"/></svg></span><span data-en="Where the knowledge lives">Wo das Wissen liegt</span></h3>
     <div class="g5">
       <div class="card"><span class="k">RULES · AGENTS</span><b><span data-en="Rules">Regeln</span></b><p><span data-en="RULES.md for all projects, AGENTS.md per project; safety first">RULES.md für alle Projekte, AGENTS.md je Projekt; Sicherheit geht vor</span></p></div>
-      <div class="card"><span class="k">36</span><b>Memory</b><p><span data-en="one file per fact: 24 shared + 12 dev_ws; index MEMORY.md comes with every chat">eine Datei je Fakt: 24 gemeinsam + 12 dev_ws; Index MEMORY.md liegt jedem Chat bei</span></p></div>
+      <div class="card"><span class="k">39</span><b>Memory</b><p><span data-en="one file per fact: 26 shared + 13 dev_ws; index MEMORY.md comes with every chat">eine Datei je Fakt: 26 gemeinsam + 13 dev_ws; Index MEMORY.md liegt jedem Chat bei</span></p></div>
       <div class="card"><span class="k">TODOS.md</span><b>Backlog</b><p><span data-en="the chat changes status only, new items only on request">der Chat ändert nur den Status, neue Punkte nur auf Wunsch</span></p></div>
-      <div class="card"><span class="k">66</span><b>Skills</b><p><span data-en="knowledge per topic with scripts and templates">Wissen je Thema mit Skripten und Vorlagen</span></p></div>
+      <div class="card"><span class="k">68</span><b>Skills</b><p><span data-en="knowledge per topic with scripts and templates">Wissen je Thema mit Skripten und Vorlagen</span></p></div>
       <div class="card"><span class="k">.claude/<wbr>handoff/</span><b><span data-en="Handoffs">Übergaben</span></b><p><span data-en="task, state and open points for the next chat">Aufgabe, Stand und offene Punkte für den nächsten Chat</span></p></div>
     </div></div>
   <div class="blk"><h3><span class="bic"><svg class="ic" aria-hidden="true"><use href="#i-auto"/></svg></span><span data-en="Fixed rituals">Feste Rituale</span></h3>
@@ -1328,13 +1331,13 @@ pre.cmd .c { color: var(--green); }
     <p class="note" id="term-n" aria-live="polite"></p>
     <dl class="terms" id="terms"></dl></div>
   <div class="blk"><h3><span class="bic"><svg class="ic" aria-hidden="true"><use href="#i-gauge"/></svg></span><span data-en="Figures from git log">Zahlen aus git log</span></h3>
-    <p><span data-en="Commits on main in the dev_ws, as of 20 Oct 2026; inventory counted in both repos. Commits measure activity, not quality.">Commits auf main im dev_ws, Stichtag 20.10.2026; Inventar in beiden Repos gezählt. Commits messen Aktivität, nicht Qualität.</span></p>
+    <p><span data-en="Commits on main in the dev_ws, as of 20 Oct 2026; inventory counted in both repos on 25 Oct 2026. Commits measure activity, not quality.">Commits auf main im dev_ws, Stichtag 20.10.2026; Inventar in beiden Repos am 25.10.2026 gezählt. Commits messen Aktivität, nicht Qualität.</span></p>
     <div class="g5">
       <div class="card"><span class="k">4.486</span><b><span data-en="commits since March">Commits seit März</span></b></div>
       <div class="card"><span class="k">3.477</span><b><span data-en="commits in 30 days">Commits in 30 Tagen</span></b></div>
-      <div class="card"><span class="k">66</span><b><span data-en="skills: 45 general + 21 dev_ws">Skills: 45 allgemein + 21 dev_ws</span></b></div>
-      <div class="card"><span class="k">17</span><b><span data-en="agents for single jobs">Agenten für Einzelaufträge</span></b></div>
-      <div class="card"><span class="k">36</span><b><span data-en="memory: 24 shared + 12 dev_ws">Memory: 24 gemeinsam + 12 dev_ws</span></b></div>
+      <div class="card"><span class="k">68</span><b><span data-en="skills: 47 general + 21 dev_ws">Skills: 47 allgemein + 21 dev_ws</span></b></div>
+      <div class="card"><span class="k">18</span><b><span data-en="agents for single jobs">Agenten für Einzelaufträge</span></b></div>
+      <div class="card"><span class="k">39</span><b><span data-en="memory: 26 shared + 13 dev_ws">Memory: 26 gemeinsam + 13 dev_ws</span></b></div>
     </div>
     <figure class="bars-fig"><figcaption><span data-en="Commits per month 2026 · October only 1–20">Commits je Monat 2026 · Oktober nur 1.–20.</span></figcaption>
       <div class="bars" role="img" aria-label="Commits je Monat: März 105, April 0, Mai 123, Juni 341, Juli 13, August 242, September 723, Oktober bis 20. 2912" data-en-aria="Commits per month: March 105, April 0, May 123, June 341, July 13, August 242, September 723, October to 20th 2912">
@@ -1374,7 +1377,7 @@ python3 tools/claim.py list --fetch</code></pre></div>
 <footer>
   <div class="wrap">
     <p><span data-en="Sources: <code>rules/RULES.md</code>, <code>rules/ROLES.md</code>, <code>dev_ws/AGENTS.md</code>, skill <code>answer-page</code>, hooks in <code>hooks/</code> and <code>.claude/hooks/</code>, git log. The example is staged; flows, hooks, checks and rules are real.">Quellen: <code>rules/RULES.md</code>, <code>rules/ROLES.md</code>, <code>dev_ws/AGENTS.md</code>, Skill <code>answer-page</code>, Hooks in <code>hooks/</code> und <code>.claude/hooks/</code>, git log. Das Beispiel ist gestellt; Abläufe, Hooks, Prüfungen und Regeln sind echt.</span></p>
-    <p>Marius Kaul · <span data-en="UX Lab · Rhine-Waal University">UX-Labor · Hochschule Rhein-Waal</span> · <a href="https://lu4k87.github.io/">lu4k87.github.io</a> · <a href="ai_dev_workflow_reference.html"><span data-en="Reference">Referenz</span></a> · <span data-en="as of 20 Oct 2026">Stand 20.10.2026</span></p>
+    <p>Marius Kaul · <span data-en="UX Lab · Rhine-Waal University">UX Lab · Hochschule Rhein-Waal</span> · <a href="https://lu4k87.github.io/">lu4k87.github.io</a> · <a href="ai_dev_workflow_reference.html"><span data-en="Reference">Referenz</span></a> · <span data-en="as of 20 Oct 2026">Stand 20.10.2026</span></p>
   </div>
 </footer>
 
@@ -1743,11 +1746,12 @@ python3 tools/claim.py list --fetch</code></pre></div>
     [['Datei-Register', 'File register'], ['Liste, welcher Chat welche Datei uncommittet geändert hat – nur dieser Rechner, live.', 'List of which chat changed which file uncommitted – this computer only, live.']],
     [['Claim', 'Claim'], ['Eigener Git-Ref je Chat (<code>refs/claims/&lt;Kennung&gt;</code>) mit den Dateien, die er gerade ändert – auf allen Rechnern sichtbar.', 'Own Git ref per chat (<code>refs/claims/&lt;id&gt;</code>) with the files it is changing – visible on all computers.']],
     [['Übergabe', 'Handoff'], ['Datei in <code>.claude/handoff/</code>, mit der ein neuer Chat per „chat weiter &lt;kennung&gt;“ weitermacht.', 'File in <code>.claude/handoff/</code> with which a new chat continues via “chat weiter &lt;id&gt;”.']],
-    [['Postfach', 'Mailbox'], ['<code>chat_msg.py</code>: Nachrichten an Codex- und Gemini-Chats, zugestellt beim nächsten Prompt.', '<code>chat_msg.py</code>: messages to Codex and Gemini chats, delivered at the next prompt.']],
+    [['Postfach', 'Mailbox'], ['<code>chat_msg.py</code>: Nachrichten an Codex- und Gemini-Chats, zugestellt beim Chat-Start und vor jeder Anfrage, verfällt nach 3 Tagen.', '<code>chat_msg.py</code>: messages to Codex and Gemini chats, delivered at chat start and before every request, expires after 3 days.']],
     [['Scratchpad', 'Scratchpad'], ['Arbeitsordner eines Chats für Einmal-Skripte und Zwischenstände; nie im Repo.', 'A chat’s working folder for one-off scripts and intermediate results; never in the repo.']],
     [['Prüfstufe', 'Check level'], ['0 trivial bis 3 kritisch; legt fest, wie tief vor „fertig“ geprüft wird.', '0 trivial to 3 critical; sets how deeply things are checked before “done”.']],
     [['Definition of Done', 'Definition of done'], ['Was vor „fertig“ grün sein muss: Prüfung dieser Stufe, nach der letzten Änderung, mit Beleg.', 'What must be green before “done”: the check of this level, after the last change, with evidence.']],
     [['Vorschau-Seite', 'Preview page'], ['Webseite mit Varianten als echte Bilder; „An Chat senden“ schickt die Wahl zurück.', 'Web page with variants as real images; “send to chat” returns the choice.']],
+    [['Schatzkammer', 'Treasury'], ['Ordner <code>__treasury__allprojects/</code> im Werkzeug-Repo: Vorschauen und Ideen aller Projekte, im Browser über Port 8085, gesichert per <code>treasury.py save</code>.', 'Folder <code>__treasury__allprojects/</code> in the tooling repo: previews and ideas of all projects, opened in the browser on port 8085, saved via <code>treasury.py save</code>.']],
     [['Ponytail-Leiter', 'Ponytail ladder'], ['Reihenfolge vor jedem Code: Braucht es das? Gibt es das schon? Stdlib? Plattform? Erst dann neuer Code.', 'Order before any code: is it needed? Does it exist? Stdlib? Platform? Only then new code.']],
     [['Effort', 'Effort'], ['Denktiefe des Modells (low … max): höher = gründlicher, aber teurer.', 'Thinking depth of the model (low … max): higher = more thorough, but more expensive.']],
     [['vorgemerkt (staged)', 'staged'], ['Mit <code>git add</code> für den nächsten Commit ausgewählte Dateien.', 'Files selected for the next commit with <code>git add</code>.']],
