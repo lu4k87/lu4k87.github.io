@@ -159,7 +159,8 @@
     const key = new THREE.DirectionalLight(0xffffff, 2.2); key.position.set(0.8, -0.6, 1.6);
     const rim = new THREE.DirectionalLight(0x9cc8ff, 0.9); rim.position.set(-1, 0.8, 0.6);
     scene.add(hemi, key, rim);
-    let visible = false, raf = 0, last = 0, busyUntil = 0;
+    let visible = false, raf = 0, last = 0, busyUntil = 0, minGap = 12;   // minGap: Mindestabstand zweier Bilder (ms) = Bildraten-Deckel
+    const frameLog = new Float32Array(60); let frameI = 0;   // letzte 60 Bildabstände (ms) für Anzeige + Auto-Qualität (hero3d.js)
     let controls = null;
     if (opts.OrbitControls) {
       controls = new opts.OrbitControls(camera, renderer.domElement);
@@ -178,13 +179,15 @@
       controls.update();
     } else camera.lookAt(...(opts.target || [0.18, 0, 0.16]));
 
-    const api = { scene, camera, renderer, controls, reduce, render: () => renderer.render(scene, camera) };
+    const api = { scene, camera, renderer, controls, reduce, lights: { hemi, key, rim }, frameMs: 0, frameLog, render: () => renderer.render(scene, camera) };
     const frame = t => {
-      // ≤ ~75 fps auch auf 120/144-Hz-Bildschirmen
-      if (last && t - last < 12) { raf = requestAnimationFrame(frame); return; }
+      // Bildraten-Deckel (Standard ≤ ~75 fps auch auf 120/144-Hz-Bildschirmen; setFrameCap)
+      if (last && t - last < minGap) { raf = requestAnimationFrame(frame); return; }
       // -1 = Frame läuft: kick() aus onFrame/controls 'change' plant sonst eine zweite Schleife (wuchs je Frame um eine)
       raf = -1;
-      const dt = last ? Math.min(0.05, (t - last) / 1000) : 0; last = t;
+      const gap = last ? t - last : 0, dt = Math.min(0.05, gap / 1000); last = t;
+      // Bildabstand als gleitender Mittelwert (EMA, α = 0,1) + Ringpuffer; nur zusammenhängende Bilder (Lücke ≥ 250 ms = Pause)
+      if (gap && gap < 250) { api.frameMs = api.frameMs ? api.frameMs + (gap - api.frameMs) * 0.1 : gap; frameLog[frameI] = gap; frameI = (frameI + 1) % frameLog.length; }
       opts.onFrame && opts.onFrame(dt, t);
       if (controls) controls.update(dt);
       renderer.render(scene, camera);
@@ -199,12 +202,16 @@
       if (!raf && visible && !document.hidden) raf = requestAnimationFrame(frame);
     }
     api.kick = kick;
-    new IntersectionObserver(([e]) => { visible = e.isIntersecting; if (visible) kick(300); }, { rootMargin: '80px' }).observe(host);
-    document.addEventListener('visibilitychange', () => { if (!document.hidden) kick(300); });
-    new ResizeObserver(() => {
+    const resize = () => {
       const w = host.clientWidth, h = host.clientHeight; if (!w || !h) return;
       renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix(); kick(50);
-    }).observe(host);
+    };
+    // Einstellungen (hero3d.js, Zahnrad): Bildraten-Deckel in fps (0 = ohne) und Pixelratio (Renderskala; setSize rechnet sie ein)
+    api.setFrameCap = fps => { minGap = fps > 0 ? Math.max(0, 1000 / fps - 1.5) : 0; };
+    api.setPixelRatio = r => { if (Math.abs(renderer.getPixelRatio() - r) < 1e-3) return; renderer.setPixelRatio(r); resize(); };
+    new IntersectionObserver(([e]) => { visible = e.isIntersecting; if (visible) kick(300); }, { rootMargin: '80px' }).observe(host);
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) kick(300); });
+    new ResizeObserver(resize).observe(host);
     return api;
   }
 

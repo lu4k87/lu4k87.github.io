@@ -16,6 +16,9 @@
    04.10.2026), für Screenreader verborgen (die Seite nennt alle Einträge selbst). opts.onActive(i) meldet den aktiven Eintrag,
    opts.onPhase(key) die Ghost-Phase (plan, ok, run). Ohne WebGL/Netz bleibt das Bild der Seite; prefers-reduced-motion:
    Standbild. Rendert nur, solange sichtbar (Lite6.stage). Farben aus den Tokens von opts.wrap (Hero = .dark-zone).
+   Zahnrad unten links (dome, .h3d-cog → Panel .h3d-cfg, Wunsch User 25.10.2026): Leistung (Auto-Qualität nach gemessener Bildzeit,
+   Renderskala, Bildraten-Deckel, Schattenkarte), Bewegung (Grundstufe + Einzelschalter), Licht (Stärken, Farbtemperatur in K,
+   Belichtung), Ebenen (Kuppel, Missionsstand, Bodenschein, Funken, Sprechblasen); window.Hero3D.settings, localStorage hero3d.settings.v1.
    Klassisches Skript (läuft auch per file://, wo ES-Module aus Dateien gesperrt sind): window.Hero3D.init(THREE, addons, opts);
    three.js + Addons übergibt das Modul der Seite (Import-Map auf jsDelivr, Version wie src/http_robot_control_ui_p8081/lib/three). */
 (function () {
@@ -32,6 +35,154 @@ const CAM = {
   atlas: { target: [0, 0, 0.16], camPos: [1.47, -1.13, 0.87] },  // wie dome (Wunsch User 06.10.2026)
   cell: { target: [0.18, 0, 0.1], camPos: [1.38, -1.12, 0.92] },
 };
+
+
+// ── Einstellungen der Bühne (Zahnrad unten links, Wunsch User 25.10.2026) ──
+// Werte in localStorage (hero3d.settings.v1); Hero3D.settings.set({...}) wirkt auf alle Szenen der Seite (Haken applyS je Szene).
+// quality: auto (Stufe autoLvl nach gemessener Bildzeit) · high · mid · low · custom (Renderskala/Schatten von Hand geändert);
+// motion: Grundstufe, die die Einzelschalter setzt (full · calm · off) und den Lichtlauf der Missionsbögen skaliert (MOT_FX)
+const SKEY = 'hero3d.settings.v1';
+const DEF = { quality: 'auto', autoLvl: 0, scale: 1, fps: 75, shadow: 2048, key: 1, rim: 1, env: 1, kelvin: 6500, exposure: 1.05,
+  motion: 'full', idle: true, spin: true, orbit: true, cine: true, dome: true, arcs: true, halo: true, sparks: true, bubbles: true };
+const RANGE = { autoLvl: [0, 2], scale: [0.5, 1.5], fps: [30, 75], shadow: [0, 2048], key: [0, 2], rim: [0, 2], env: [0, 2], kelvin: [2700, 9000], exposure: [0.6, 1.6] };
+const ENUM = { quality: ['auto', 'high', 'mid', 'low', 'custom'], motion: ['full', 'calm', 'off'] };
+const AUTO_Q = [{ scale: 1, shadow: 2048 }, { scale: 0.75, shadow: 1024 }, { scale: 0.5, shadow: 0 }], QI = { high: 0, mid: 1, low: 2 };   // Stufen hoch · mittel · niedrig
+const MOT = { full: { idle: true, spin: true, orbit: true, cine: true, sparks: true }, calm: { idle: true, spin: false, orbit: false, cine: false, sparks: false },
+  off: { idle: false, spin: false, orbit: false, cine: false, sparks: false } };
+const MOT_FX = { full: 1, calm: 0.35, off: 0 };
+const clean = raw => {
+  const s = { ...DEF }; if (!raw || typeof raw !== 'object') return s;
+  for (const k in DEF) {
+    const v = raw[k]; if (v === undefined) continue;
+    if (k in RANGE) { if (Number.isFinite(v)) s[k] = Math.max(RANGE[k][0], Math.min(RANGE[k][1], v)); }
+    else if (k in ENUM) { if (ENUM[k].includes(v)) s[k] = v; }
+    else s[k] = v === true;
+  }
+  return s;
+};
+const settings = (() => {
+  let raw = null; try { raw = JSON.parse(localStorage.getItem(SKEY)); } catch (e) { /* privat/gesperrt: Standardwerte */ }
+  const S = clean(raw), subs = [];
+  const save = () => { try { localStorage.setItem(SKEY, JSON.stringify(S)); } catch (e) { /* ohne Merken weiter */ } };
+  // by = 'user' (Panel) oder 'auto' (Auto-Qualität); Handwerte an Renderskala/Schatten → quality 'custom'
+  const set = (patch, by = 'user') => {
+    const keys = Object.keys(patch).filter(k => k in DEF && S[k] !== patch[k]); if (!keys.length) return;
+    keys.forEach(k => { S[k] = patch[k]; });
+    if (by === 'user' && !('quality' in patch) && keys.some(k => k === 'scale' || k === 'shadow')) S.quality = 'custom';
+    save(); subs.forEach(f => f(S, keys));
+  };
+  return { S, set, on(f) { subs.push(f); f(S, null); }, reset() { set({ ...DEF }); } };
+})();
+// Farbtemperatur → RGB (Tanner Helland, Näherung an den Planck-Strahler), normiert auf D65 (6500 K = Weiß wie bisher)
+const kelvinRGB = K => {
+  const t = K / 100, c = v => Math.max(0, Math.min(255, v)) / 255;
+  return [c(t <= 66 ? 255 : 329.698727446 * (t - 60) ** -0.1332047592),
+    c(t <= 66 ? 99.4708025861 * Math.log(t) - 161.1195681661 : 288.1221695283 * (t - 60) ** -0.0755148492),
+    c(t >= 66 ? 255 : t <= 19 ? 0 : 138.5177312231 * Math.log(t - 10) - 305.0447927307)];
+};
+const K_WHITE = kelvinRGB(6500);
+const kelvinColor = K => kelvinRGB(K).map((v, i) => Math.min(1, v / K_WHITE[i]));
+const Tx = (de, en) => (document.documentElement.lang === 'en' ? en : de);
+const COG = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3h.1a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8v.1a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>';
+// Zahnrad + Panel neben dem Canvas (gleiche Rasterzelle, css/landing.css .h3d-cog/.h3d-cfg); Knopfreihen = eine Wahl, Regler mit
+// Wert + Einheit, Schalter nativ; Esc oder Klick außerhalb schließt; Messzeile alle 500 ms (Bildzeit-EMA + Ringpuffer aus Lite6.stage)
+function mountPanel(host, st, pixelRatio) {
+  const S = settings.S;
+  const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'h3d-cog'; btn.innerHTML = COG;
+  const box = document.createElement('div'); box.className = 'h3d-cfg'; box.id = 'h3d-cfg'; box.hidden = true; box.tabIndex = -1;
+  btn.setAttribute('aria-expanded', 'false'); btn.setAttribute('aria-controls', box.id);
+  host.after(btn, box);
+  const loc = () => (document.documentElement.lang === 'en' ? 'en' : 'de');
+  const num = (v, d = 0) => v.toLocaleString(loc(), { minimumFractionDigits: d, maximumFractionDigits: d });
+  // Normlichtarten der CIE als Orientierung (A = Glühlampe 2856 K, D50 … D75 = Tageslichtphasen)
+  const CIE = [[2856, 'A', 'Glühlampe', 'incandescent'], [5003, 'D50', 'Horizontlicht', 'horizon light'], [5503, 'D55', 'Vormittagssonne', 'mid-morning sun'],
+    [6504, 'D65', 'Tageslicht', 'daylight'], [7504, 'D75', 'Nordhimmel', 'north sky']];
+  const cie = K => { const c = CIE.reduce((b, x) => (Math.abs(x[0] - K) < Math.abs(b[0] - K) ? x : b)); return Math.abs(c[0] - K) <= 400 ? ` ≈ ${c[1]} ${Tx(c[2], c[3])}` : ''; };
+  const pct = v => `${num(v * 100)} %`;
+  const OUT = { scale: v => `${num(v, 2)}×`, key: pct, rim: pct, env: pct, kelvin: v => `${num(v)} K${cie(v)}`, exposure: v => num(v, 2) };
+  const seg = (k, opts, label) => `<div class="h3d-cfg-row"><span id="h3d-l-${k}">${label}</span><div class="h3d-seg" role="group" aria-labelledby="h3d-l-${k}">${
+    opts.map(([v, t]) => `<button type="button" data-k="${k}" data-v="${v}" aria-pressed="${S[k] === v}">${t}</button>`).join('')}</div></div>`;
+  const range = (k, min, max, step, label) => `<label class="h3d-cfg-row"><span>${label}</span><output>${OUT[k](S[k])}</output><input type="range" data-k="${k}" min="${min}" max="${max}" step="${step}" value="${S[k]}"></label>`;
+  const sw = (k, label) => `<label class="h3d-sw"><input type="checkbox" data-k="${k}"${S[k] ? ' checked' : ''}><span>${label}</span></label>`;
+  const title = () => { const t = Tx('Einstellungen der Bühne', 'Stage settings'); btn.setAttribute('aria-label', t); btn.title = t; box.setAttribute('aria-label', t); };
+  const paint = () => {
+    title();
+    box.innerHTML = `<div class="h3d-cfg-head"><b>${Tx('Einstellungen', 'Settings')}</b><button type="button" data-close aria-label="${Tx('Schließen', 'Close')}">×</button></div>
+<section aria-labelledby="h3d-h-perf"><h4 id="h3d-h-perf">${Tx('Leistung', 'Performance')}</h4>
+${seg('quality', [['auto', 'Auto'], ['high', Tx('Hoch', 'High')], ['mid', Tx('Mittel', 'Medium')], ['low', Tx('Niedrig', 'Low')]], Tx('Qualität', 'Quality'))}
+<div class="h3d-meter"><span data-meter></span><svg class="h3d-spark" viewBox="0 0 96 24" preserveAspectRatio="none" aria-hidden="true"><line x1="0" y1="15.3" x2="96" y2="15.3"/><polyline points=""/></svg></div>
+<p class="h3d-cfg-hint" data-qhint></p>
+${range('scale', 0.5, 1.5, 0.25, Tx('Renderskala', 'Render scale'))}
+${seg('fps', [[30, '30'], [60, '60'], [75, '75']], Tx('Bildrate max. (fps)', 'Frame rate cap (fps)'))}
+${seg('shadow', [[0, Tx('Aus', 'Off')], [1024, '1024'], [2048, '2048']], Tx('Schattenkarte (px)', 'Shadow map (px)'))}
+</section>
+<section aria-labelledby="h3d-h-mot"><h4 id="h3d-h-mot">${Tx('Bewegung', 'Motion')}</h4>
+${seg('motion', [['full', Tx('Voll', 'Full')], ['calm', Tx('Ruhig', 'Calm')], ['off', Tx('Aus', 'Off')]], Tx('Grundstufe', 'Base level'))}
+<p class="h3d-cfg-hint">${Tx('Ruhig: kein Suchlicht, Orbit, Kino, Funken · Aus: nichts bewegt sich von allein, Zeiger und Spiel bleiben', 'Calm: no scan light, orbit, cinematics, sparks · Off: nothing moves on its own; pointer and game stay')}</p>
+${sw('idle', Tx('Leerlauf-Bahn des Arms (Schlangenlinie, 24 s)', 'Idle path of the arm (snake line, 24 s)'))}
+${sw('spin', Tx('Kuppel dreht (1 Umlauf / 90 s)', 'Dome rotates (1 turn / 90 s)'))}
+${sw('orbit', Tx('Kamera-Orbit nach 4 s Ruhe', 'Camera orbit after 4 s idle'))}
+${sw('cine', Tx('Rundenende-Kino: Zeitlupe, Kamera, Wackler', 'Round-end cinematics: slow-mo, camera, shake'))}
+</section>
+<section aria-labelledby="h3d-h-light"><h4 id="h3d-h-light">${Tx('Licht', 'Light')}</h4>
+${range('key', 0, 2, 0.1, Tx('Hauptlicht', 'Key light'))}
+${range('rim', 0, 2, 0.1, Tx('Gegenlicht (Akzent)', 'Rim light (accent)'))}
+${range('env', 0, 2, 0.1, Tx('Umgebung + Reflexe', 'Ambient + reflections'))}
+${range('kelvin', 2700, 9000, 100, Tx('Farbtemperatur Hauptlicht', 'Key light colour temperature'))}
+${range('exposure', 0.6, 1.6, 0.05, Tx('Belichtung', 'Exposure'))}
+</section>
+<section aria-labelledby="h3d-h-lay"><h4 id="h3d-h-lay">${Tx('Ebenen', 'Layers')}</h4>
+${sw('dome', Tx('Punktkuppel (Arbeitsraum 440 mm)', 'Dot dome (workspace 440 mm)'))}
+${sw('arcs', Tx('Missionsstand (Bögen + Lichtschrift)', 'Mission status (arcs + light text)'))}
+${sw('halo', Tx('Bodenschein unter dem Sockel', 'Floor glow under the pedestal'))}
+${sw('sparks', Tx('Funken + Feuerwerk', 'Sparks + fireworks'))}
+${sw('bubbles', Tx('Sprechblasen', 'Speech bubbles'))}
+</section>
+<div class="h3d-cfg-foot"><button type="button" data-reset>${Tx('Zurücksetzen', 'Reset')}</button><span class="h3d-cfg-hint">${Tx('Gespeichert in diesem Browser', 'Saved in this browser')}</span></div>`;
+    sync(); meter();
+  };
+  const sync = () => {
+    box.querySelectorAll('[data-k]').forEach(el => {
+      const k = el.dataset.k;
+      if (el.tagName === 'BUTTON') el.setAttribute('aria-pressed', String(String(S[k]) === el.dataset.v));
+      else if (el.type === 'checkbox') el.checked = S[k];
+      else { el.value = S[k]; el.parentElement.querySelector('output').textContent = OUT[k](S[k]); }
+    });
+    const q = box.querySelector('[data-qhint]');
+    if (q) q.textContent = S.quality === 'auto' ? Tx(`Auto: misst die Bildzeit, Stufe ${['Hoch', 'Mittel', 'Niedrig'][S.autoLvl]}`, `Auto: measures frame time, level ${['high', 'medium', 'low'][S.autoLvl]}`)
+      : S.quality === 'custom' ? Tx('Eigene Werte (Renderskala, Schatten)', 'Custom values (render scale, shadows)') : '';
+  };
+  // Messzeile: Bildabstand ⌀ (EMA), daraus fps, gerenderte Megapixel; Kurve = letzte 60 Bildabstände (0–50 ms, Strich = 16,7 ms)
+  const meter = () => {
+    const m = box.querySelector('[data-meter]'); if (!m) return;
+    const ms = st.frameMs, pr = pixelRatio(), mp = host.clientWidth * host.clientHeight * pr * pr / 1e6;
+    m.textContent = ms ? `⌀ ${num(ms, 1)} ms · ${num(1000 / ms)} fps · ${num(mp, 1)} MP` : `– ms · ${num(mp, 1)} MP`;
+    const log = st.frameLog, pl = box.querySelector('polyline');
+    if (log && pl) pl.setAttribute('points', Array.from(log, (v, i) => `${(i / (log.length - 1) * 96).toFixed(1)},${(23 - Math.min(23, v / 50 * 23)).toFixed(1)}`).join(' '));
+  };
+  let timer = 0;
+  const open = o => {
+    if (o) { paint(); box.hidden = false; btn.setAttribute('aria-expanded', 'true'); box.focus({ preventScroll: true }); timer = setInterval(meter, 500); }
+    else { box.hidden = true; btn.setAttribute('aria-expanded', 'false'); clearInterval(timer); timer = 0; }
+  };
+  btn.addEventListener('click', () => open(box.hidden));
+  box.addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) return;
+    if (b.hasAttribute('data-close')) { open(false); btn.focus(); return; }
+    if (b.hasAttribute('data-reset')) { settings.reset(); return; }
+    const k = b.dataset.k, v = k in RANGE ? Number(b.dataset.v) : b.dataset.v;
+    if (k === 'quality') settings.set({ quality: v, ...(v === 'auto' ? AUTO_Q[S.autoLvl] : AUTO_Q[QI[v]]) });
+    else if (k === 'motion') settings.set({ motion: v, ...MOT[v] });
+    else settings.set({ [k]: v });
+  });
+  box.addEventListener('input', e => { const el = e.target; if (el.dataset.k && el.type === 'range') settings.set({ [el.dataset.k]: Number(el.value) }); });
+  box.addEventListener('change', e => { const el = e.target; if (el.dataset.k && el.type === 'checkbox') settings.set({ [el.dataset.k]: el.checked }); });
+  box.addEventListener('keydown', e => { if (e.key === 'Escape') { open(false); btn.focus(); } });
+  document.addEventListener('pointerdown', e => { if (!box.hidden && !box.contains(e.target) && !btn.contains(e.target)) open(false); });
+  settings.on(() => { if (!box.hidden) sync(); });
+  new MutationObserver(() => (box.hidden ? title() : paint())).observe(document.documentElement, { attributes: true, attributeFilter: ['lang'] });
+  title();
+}
 
 function init(three, addons, opts = {}) {
   THREE = three; ({ OrbitControls, toCreasedNormals, RoomEnvironment } = addons);
@@ -52,12 +203,10 @@ function build(L, wrap, host, o) {
   // Licht: Gegenlicht im Akzent; Studio-Umgebung (RoomEnvironment) für weiche Reflexe; Hauptlicht wirft weiche Schatten
   // dome, atlas: Licht gedämpft (LIT), damit Kuppel, Würfel und Punktbögen tragen (Wunsch User 05./06.10.2026)
   const LIT = scene === 'dome' || scene === 'atlas' ? 0.78 : 1;
-  let key = null;
-  st.scene.traverse(x => {
-    if (x.isDirectionalLight && x.color.getHex() === 0x9cc8ff) x.color.copy(ACC2);
-    else if (x.isDirectionalLight) { key = x; x.intensity *= LIT; }
-    if (x.isHemisphereLight && RoomEnvironment) x.intensity = 0.75 * LIT;
-  });
+  const { key = null, rim: rimL = null, hemi = null } = st.lights || {};
+  if (rimL) rimL.color.copy(ACC2);
+  if (key) key.intensity *= LIT;
+  if (hemi && RoomEnvironment) hemi.intensity = 0.75 * LIT;
   if (RoomEnvironment) {
     const pm = new THREE.PMREMGenerator(st.renderer);
     st.scene.environment = pm.fromScene(new RoomEnvironment(), 0.04).texture; st.scene.environmentIntensity = 0.5 * LIT;
@@ -68,6 +217,33 @@ function build(L, wrap, host, o) {
     key.castShadow = true; key.shadow.mapSize.set(2048, 2048); key.shadow.radius = 4; key.shadow.bias = -0.0003; key.shadow.normalBias = 0.002;   // 2048: feine Schatten am Arm
     Object.assign(key.shadow.camera, { left: -0.6, right: 0.6, top: 0.6, bottom: -0.6, near: 0.6, far: 3.4 });
   }
+  // ── Einstellungen anwenden (Zahnrad): M = wirksame Bewegungsschalter (lesen die Szenenteile je Frame), layers = Ebenen der
+  // dome-Szene, onApply = Haken der Szenenteile; I0/E0 = Grundwerte der Lichter, Regler sind Faktoren darauf (100 % = wie bisher)
+  const M = { arcFx: reduce ? 0 : 1, idle: true, spin: true, orbit: true, cine: true, sparks: true, bubbles: true };
+  const layers = {}, onApply = [], BASE_PR = Math.min(devicePixelRatio, 1.5);
+  const I0 = { key: key ? key.intensity : 0, rim: rimL ? rimL.intensity : 0, hemi: hemi ? hemi.intensity : 0 }, E0 = st.scene.environmentIntensity;
+  let shadowOn = !!key;
+  const applyS = S => {
+    if (st.setPixelRatio) st.setPixelRatio(BASE_PR * S.scale);
+    if (st.setFrameCap) st.setFrameCap(S.fps);
+    if (key) {
+      const on = S.shadow > 0;
+      if (on && key.shadow.mapSize.x !== S.shadow) { key.shadow.mapSize.set(S.shadow, S.shadow); if (key.shadow.map) { key.shadow.map.dispose(); key.shadow.map = null; } }
+      if (on !== shadowOn) { shadowOn = on; st.renderer.shadowMap.enabled = on; key.castShadow = on; st.scene.traverse(x => { if (x.material) x.material.needsUpdate = true; }); }
+      key.intensity = I0.key * S.key; key.color.setRGB(...kelvinColor(S.kelvin));
+    }
+    if (rimL) rimL.intensity = I0.rim * S.rim;
+    if (hemi) hemi.intensity = I0.hemi * S.env;
+    if (st.scene.environment) st.scene.environmentIntensity = E0 * S.env;
+    st.renderer.toneMappingExposure = S.exposure;
+    M.arcFx = reduce ? 0 : MOT_FX[S.motion];
+    M.idle = S.idle; M.spin = S.spin; M.orbit = S.orbit; M.cine = S.cine; M.sparks = S.sparks; M.bubbles = S.bubbles;
+    if (layers.dome) layers.dome.visible = S.dome;
+    if (layers.arcs) layers.arcs.visible = S.arcs;
+    if (layers.halo) layers.halo.visible = S.halo;
+    onApply.forEach(f => f(S));
+    st.kick(200);
+  };
   const shadowCatcher = r => { const m = new THREE.Mesh(new THREE.CircleGeometry(r, 96), new THREE.ShadowMaterial({ opacity: 0.42, depthWrite: false })); m.position.z = 0.0008; m.receiveShadow = true; return m; };
 
   // ── Bausteine: weicher Lichtpunkt, Kreise, Linien, Schein ──
@@ -105,7 +281,7 @@ function build(L, wrap, host, o) {
       new THREE.LineDashedMaterial({ color: ACC, dashSize: 0.018, gapSize: 0.014, transparent: true, opacity: 0.55 }));
     dash.computeLineDistances();
     const halo = new THREE.Mesh(new THREE.PlaneGeometry(1.15, 1.15), glowMat(0.34 * LIT));
-    halo.position.z = -0.032;
+    halo.position.z = -0.032; layers.halo = halo;
     ped.add(disc, shadowCatcher(0.398), ring(0.401, 0.0012, 0.85), ring(0.18, 0.0012, 0.16), dash, halo);
     if (scene !== 'atlas') ped.add(ring(0.29, 0.0012, 0.22));   // atlas: dort liegen die Punktbögen
     st.scene.add(ped);
@@ -233,8 +409,8 @@ function build(L, wrap, host, o) {
       for (let j = 0; j <= 40; j++) { const p = j / 40 * rim; arc.push(new THREE.Vector3(R * Math.sin(p) * Math.cos(a), R * Math.sin(p) * Math.sin(a), SH + R * Math.cos(p))); }
       dome.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(arc), lineMat(0.1 * DO)));
     }
-    st.scene.add(dome);
-    extra = dt => { dome.rotation.z += dt * Math.PI * 2 / 90; };
+    st.scene.add(dome); layers.dome = dome;
+    extra = dt => { if (M.spin) dome.rotation.z += dt * Math.PI * 2 / 90; };
   }
 
   // Steuerwege: N Lichtpunkte im Ring, Leitung zum Sockel; aktiver Punkt pulsiert zum Arm, Arm zeigt hin
@@ -635,7 +811,8 @@ function build(L, wrap, host, o) {
         idleRamp = Math.min(1, idleRamp + dt / 1.6);
         const ramp = idleRamp * idleRamp * (3 - 2 * idleRamp);
         if (idle) idle(dt * ramp);
-        else { ph += dt * Math.PI * 2 / IDLE_T * ramp; [pol.gth, pol.gr] = loop(ph); pol.gz = Math.max(clearZ, lift(ph)); pol.gyaw = turn(ph); wave = nod(ph); }
+        else if (M.idle) { ph += dt * Math.PI * 2 / IDLE_T * ramp; [pol.gth, pol.gr] = loop(ph); pol.gz = Math.max(clearZ, lift(ph)); pol.gyaw = turn(ph); wave = nod(ph); }
+        else pol.gz = Math.max(clearZ, lift(ph));   // Leerlauf aus (Einstellungen): Arm ruht an Ort und Stelle, bleibt über Türmen
       } else {
         bt += dt;
         pol.gz = ZF + 0.006 * Math.sin(1.3 * bt) + 0.003 * Math.sin(2.9 * bt + 1);
@@ -963,7 +1140,7 @@ function build(L, wrap, host, o) {
     let score = 0, roundPts = 0, mistakes = 0, stars = 0, holdAt = -1, cine = null, drag = false, countdown = 0, lastCd = 0, ledF = 0, laserK = 0;
     const slow = { k: 1, t: 9, hold: 0, D: 1, depth: 1 }, shk = { t: 9, D: 1, A: 0 }, laserC = new THREE.Color(), camDir = new THREE.Vector3(), trailP = new THREE.Vector3();
     timeK = () => slow.k;
-    const slowMo = (depth, hold, D) => { if (reduce) return; Object.assign(slow, { depth, hold, D, t: 0 }); };
+    const slowMo = (depth, hold, D) => { if (reduce || !M.cine) return; Object.assign(slow, { depth, hold, D, t: 0 }); };
     const shake3 = (A, D) => { if (reduce) return; Object.assign(shk, { A, D, t: 0 }); };
     const easeOut = u => 1 - (1 - u) ** 3;
     // Stauchen mit Stärke a (Aufprall 0,24, weiches Absetzen 0,12); Einflug-Höhe der Objekte zu Rundenbeginn
@@ -1079,7 +1256,7 @@ function build(L, wrap, host, o) {
     const headerFor = o => o.K
       ? { c: hexOf(o.K.color), name: T(o.K.de, o.K.en).toUpperCase(), val: sizeFor(o.K) }
       : { c: `#${ACC.getHexString()}`, name: 'LITE 6', val: `J1 ${Math.round(pol.th * 180 / Math.PI)}°` };
-    const bubble = (cls, still = () => false) => {
+    const bubble0 = (cls, still = () => false) => {
       const el = document.createElement('div'); el.className = `h3d-say ${cls}`.trim(); el.setAttribute('aria-hidden', 'true');
       const head = document.createElement('div'); head.className = 'h3d-head';
       const dotEl = document.createElement('i'); dotEl.className = 'h3d-dot';
@@ -1132,6 +1309,7 @@ function build(L, wrap, host, o) {
         // steady = laufender Ablauf-Schritt: steht der letzte Spruch noch keine LINE_MIN fertig da, bleibt er stehen, nur die
         // Fortschrittszeile wechselt (sonst tippte jeder Fahrschritt einen neuen Spruch → hektisch)
         show(obj, content, ms = 2600, quiet = false, swap = false, steady = false) {
+          if (!M.bubbles) return;   // Sprechblasen aus (Einstellungen)
           const live = this.busy && !wait && o === obj, now = performance.now();
           const kids = [].concat(content), first = kids[0], text = typeof first === 'string' ? first : first.textContent;
           const keep = steady && swap && live && now - typeFrom < typeText.length * TYPE_MS + LINE_MIN;
@@ -1158,6 +1336,8 @@ function build(L, wrap, host, o) {
       };
     };
     // say = Objekt spricht, say2 = zweites Objekt antwortet (wartet, bis say fertig ist → Dialog statt zwei Blasen zugleich)
+    const BUBBLES = [], bubble = (cls, still) => { const b = bubble0(cls, still); BUBBLES.push(b); return b; };
+    onApply.push(S => { if (!S.bubbles) BUBBLES.forEach(b => b.hide()); });
     const say = bubble(''), say2 = bubble('', () => say.busy);
     // Sprüche (Wunsch User 08.10.2026: raffiniert, witzig, leicht frech; nie gegen den User): jede Figur hat einen Charakter –
     // Würfel = Pedant (rechte Winkel), Quader = gemütlicher Klugscheißer, Zylinder = Draufgänger ohne Ecken, Lite 6 = trockener
@@ -1303,7 +1483,7 @@ function build(L, wrap, host, o) {
     // = Lichtwelle über den Sockel (Ping 1,2 s) + Sprechblase am Arm. Klang-Knopf frei unten rechts, Stand für Screenreader als
     // unsichtbare Zeile (nur bei Missionswechsel, nie je Zehntel); beide neben dem Canvas, nicht im role=img
     const quest = (() => {
-      const g = new THREE.Group(); st.scene.add(g);
+      const g = new THREE.Group(); st.scene.add(g); layers.arcs = g;
       const R = 0.47, Z = -0.02, W = 0.66, GAP = 0.09, FILL = 1.1, TILT = 35 * Math.PI / 180, CT = Math.cos(TILT), ST = Math.sin(TILT);
       const fg = tok('--glass-fg') || '#e8f4f2', warn = tok('--warn') || '#ffb36b', gold = '#f2c14e', acc = `#${ACC.getHexString()}`;
       const mono = tok('--mono') || 'monospace', aniso = st.renderer.capabilities.getMaxAnisotropy();
@@ -1435,7 +1615,7 @@ function build(L, wrap, host, o) {
             if (a.flT < 0.8) a.flT += dt;
             const u = a.mat.uniforms, e = eio(a.f), fl = a.flT >= 0 && a.flT < 0.8 ? (1 - a.flT / 0.8) ** 2 : 0;
             u.uLit.value = a.on ? 1 : 0; u.uFill.value = a.on ? 1.04 * e : 0; u.uHead.value = a.on && a.f < 1 ? 1 - 0.5 * e : 0;
-            u.uFlash.value = 0.9 * fl; u.uEcho.value = fl ? a.flT / 0.8 : 0; u.uT.value = tS;
+            u.uFlash.value = 0.9 * fl; u.uEcho.value = fl ? a.flT / 0.8 : 0; u.uT.value = tS; u.uMotion.value = M.arcFx;
           });
           if (waveT < 0) return;
           waveT += dt; const u = Math.min(1, waveT / 1.2), s = 0.06 + 0.34 * eo(u);
@@ -1746,7 +1926,7 @@ function build(L, wrap, host, o) {
         quest.badge(); sfx('win'); newRoundAt = clk + 6.5;
         // Kino: kurze Zeitlupe, Lichtblitz, Kamera fährt 8 % näher und zurück (cine), die drei jubeln nacheinander mit Konfetti
         // in ihren Farben, Runden-Karte zählt Zeit + Punkte hoch (0,9 s später), Countdown 3·2·1 vor der neuen Runde (extra)
-        slowMo(0.4, 0.35, 0.8); card.flash(); cine = { t: 0, d0: st.camera.position.distanceTo(st.controls.target) };
+        slowMo(0.4, 0.35, 0.8); card.flash(); cine = M.cine ? { t: 0, d0: st.camera.position.distanceTo(st.controls.target) } : null;
         OBJ.forEach((x, k) => later(0.3 + 0.14 * k, () => { x.cheer = 0; burst(x.g.position.x, x.g.position.y, x.h + 0.02, 14, 0.26, [x.glow, x.col, GOLD], 0.7, 1, 0.7); }));
         later(0.9, () => card.show()); later(5.3, () => card.hide());
         // E3 Zeit-Kommentar (Wunsch User 08.10.2026): Arm kommentiert die Rundenzeit, neue Bestzeit → Mini-Feuerwerk; alle freuen sich
@@ -2046,7 +2226,7 @@ function build(L, wrap, host, o) {
     let fxI = 0, fxLive = 0;
     // up = Anteil nach oben (0 = Kugel), g = Schwerkraft (m/s²), D = Lebensdauer (s)
     const burst = (x, y, z, n, speed, cols, up = 0.6, g = 1.2, D = 0.55) => {
-      if (reduce) return;
+      if (reduce || !M.sparks) return;
       for (let k = 0; k < n; k++) {
         const p = fxP[fxI]; fxPos.set([x, y, z], fxI * 3); fxI = (fxI + 1) % FX_N;
         const a = rnd(0, Math.PI * 2), e = rnd(-1, 1) * (1 - up) + up * rnd(0.3, 1), h = Math.sqrt(Math.max(0, 1 - e * e)), s = speed * rnd(0.45, 1);
@@ -2077,7 +2257,7 @@ function build(L, wrap, host, o) {
     // Bildwackler beim harten Zusammenstoß (F5 „krachen“): Bühne ruckt 0,34 s
     // AAA-Feinschliff: statt CSS-Translate der ganzen Bühne versetzt sich die 3D-Szene (5,5 mm, 0,45 s abklingend) + Hit-Stop
     // (Zeit 0,28× für 0,1 s, in 0,32 s zurück) – Sprechblasen und HUD stehen ruhig, nur die Welt ruckt
-    const shake = () => { shake3(0.0055, 0.45); slowMo(0.28, 0.1, 0.32); };
+    const shake = () => { if (!M.cine) return; shake3(0.0055, 0.45); slowMo(0.28, 0.1, 0.32); };
     // Sauger an: 14 Lichtpunkte strömen aus 30 mm Umkreis in den Saugnapf (0,24 s, ohne Schwerkraft)
     const suck = (x, y, z) => {
       if (reduce) return;
@@ -2655,12 +2835,25 @@ function build(L, wrap, host, o) {
 
   // Auto-Orbit läuft nach Ruhe weich an statt mit voller Geschwindigkeit zu starten
   let orbitRamp = 0;
+  // Auto-Qualität (dome): Bildabstand ⌀ (EMA aus Lite6.stage) gegen den Bildraten-Deckel – > 150 % für 2 s → eine Stufe runter,
+  // < 130 % für 12 s → eine Stufe rauf (höchstens alle 20 s); Hysterese gegen Pendeln. Stufe bleibt gespeichert (autoLvl)
+  let slowT = 0, fastT = 0, upAt = 0;
+  const autoTick = (dt, t) => {
+    const S = settings.S; if (S.quality !== 'auto' || !st.frameMs) return;
+    const r = st.frameMs * S.fps / 1000;
+    if (r > 1.5) { slowT += dt; fastT = 0; } else if (r < 1.3) { fastT += dt; slowT = 0; } else slowT = fastT = 0;
+    if (slowT > 2 && S.autoLvl < 2) { slowT = 0; settings.set({ autoLvl: S.autoLvl + 1, ...AUTO_Q[S.autoLvl + 1] }, 'auto'); }
+    else if (fastT > 12 && S.autoLvl > 0 && t - upAt > 20000) { fastT = 0; upAt = t; settings.set({ autoLvl: S.autoLvl - 1, ...AUTO_Q[S.autoLvl - 1] }, 'auto'); }
+  };
+  settings.on(applyS);
+  if (scene === 'dome') mountPanel(host, st, () => BASE_PR * settings.S.scale);
   tick = (dt, t) => {
+    if (scene === 'dome') autoTick(dt, t);
     dt *= timeK();   // Zeitlupe (dome): Arm, Objekte, Funken langsamer; Sprechblasen laufen in Echtzeit weiter
     if (!reduce) {
       if (scene === 'dome' || scene === 'cell' || scene === 'atlas') followTick(dt);
       else if (scene !== 'ghost') damp(dt, 2.5);
-      orbitRamp = st.controls.autoRotate ? Math.min(1, orbitRamp + dt / 2.5) : 0;
+      orbitRamp = st.controls.autoRotate && M.orbit ? Math.min(1, orbitRamp + dt / 2.5) : 0;
       st.controls.autoRotateSpeed = 0.3 * orbitRamp * orbitRamp * (3 - 2 * orbitRamp);
       if (dash) dash.rotation.z -= dt * Math.PI * 2 / 60;
     }
@@ -2675,5 +2868,5 @@ function build(L, wrap, host, o) {
   return { stage: st, pick: i => pick && pick(i), next: m => next && next(m), setMode: m => setMode && setMode(m), get active() { return active; }, probe: () => probe && probe() };
 }
 
-window.Hero3D = { init };
+window.Hero3D = { init, settings };
 })();
