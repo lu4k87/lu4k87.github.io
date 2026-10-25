@@ -20,12 +20,12 @@ In fünf Minuten vom Klonen bis zur ersten eigenen Folie auf der (simulierten) S
 1. **Holen und starten** (Python ≥ 3.10; beim ersten Start wird `.venv` angelegt):
 
    ```bash
-   git clone git@github.com:lu4k87/stele_hsrw.git
-   cd stele_hsrw
-   ./run.sh
+   git clone https://github.com/lu4k87/__project_hsrw_stele.git
+   cd __project_hsrw_stele
+   STELECMS_SEED_DEMO=1 ./run.sh   # mit Demo-Konten und Demo-Inhalten
    ```
 
-   **Windows:** Ordner kopieren oder klonen, `run.bat` doppelklicken → [Windows](#windows).
+   **Windows:** Ordner kopieren oder klonen, in PowerShell `$env:STELECMS_SEED_DEMO=1; .\run.bat` starten → [Windows](#windows).
 
 2. **Vorführseite öffnen:** <http://127.0.0.1:8090/admin/show-stele-index.html>
 3. **Anmelden:** auf ein Demo-Konto klicken, z. B. *Administrator* (Schnellanmeldung nur im Testbetrieb und nur auf diesem Rechner).
@@ -54,7 +54,7 @@ In fünf Minuten vom Klonen bis zur ersten eigenen Folie auf der (simulierten) S
 
 ## 1. Funktionen
 
-Alle Bilder zeigen die Demo-Daten einer frischen Installation.
+Alle Bilder zeigen die Demo-Daten einer frischen Installation (`STELECMS_SEED_DEMO=1`).
 
 ### Übersicht und Kopfleiste
 
@@ -293,8 +293,8 @@ Voraussetzungen:
 - Chrome für den Player
 
 ```bash
-git clone git@github.com:lu4k87/stele_hsrw.git
-cd stele_hsrw
+git clone https://github.com/lu4k87/__project_hsrw_stele.git
+cd __project_hsrw_stele
 ./run.sh
 ```
 
@@ -303,7 +303,7 @@ cd stele_hsrw
 - Vorführseite: <http://127.0.0.1:8090/admin/show-stele-index.html> – Rundgang durch alle Bereiche,
   Info-Folie samt Präsentation in einem Schritt anlegen (mit Live-Vorschau und Player), alle UI-Bausteine ausprobieren
 - Player-Link der Stele: steht im Startprotokoll und im CMS unter **Stelen → Verbindung**
-- Neue Datenbank erhält Demo-Inhalte (abschaltbar, siehe Konfiguration)
+- Demo-Konten und Demo-Inhalte nur mit `STELECMS_SEED_DEMO=1` bei neuer Datenbank; sonst erstes Konto per `server/manage.py create-admin`
 
 ### Windows
 

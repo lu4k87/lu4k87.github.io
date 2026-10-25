@@ -47,7 +47,7 @@ export const LEVELS = [
     hotspots: {
       endgrain: { title: 'Stirnfläche', tag: '1 mm ↓', text: 'Hier ist das Holz quer zur Faser gebrochen. Schon mit der Lupe erkennt man Jahrringe, Holzstrahlen und feinste Poren – die Gefäße, in denen der Baum Wasser leitete.' },
       cracks: { title: 'Schwundrisse', tag: '≥ 380 °C', text: 'Beim Verkohlen entweichen Wasser und Gase (CO, CO₂, CH₄, Teere). Das Holz schrumpft ungleichmäßig – quer zur Faser stärker als längs. So reißt es radial entlang der Holzstrahlen und tangential entlang der Jahrringe.' },
-      sheen: { title: 'Seidiger Glanz', tag: '≥ 600 °C', text: 'Je heißer die Pyrolyse, desto mehr ordnet sich der Kohlenstoff zu graphenartigen Schichten: Die Längsflächen glänzen, ab etwa 600–700 °C leitet die Kohle merklich elektrischen Strom. Regler „Pyrolysetemperatur“ ausprobieren: Niedrig verkohltes Holz bleibt bräunlich-matt.' },
+      sheen: { title: 'Seidiger Glanz', tag: '≥ 600 °C', text: 'Je heißer die Pyrolyse, desto mehr ordnet sich der Kohlenstoff zu graphenartigen Schichten: Die Längsflächen glänzen, ab etwa 600–700 °C leitet die Kohle merklich elektrischen Strom. Auf der Zeitleiste unten eine niedrigere Zieltemperatur wählen: Niedrig verkohltes Holz bleibt bräunlich-matt.' },
     },
   },
   {

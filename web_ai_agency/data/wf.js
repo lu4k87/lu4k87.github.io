@@ -113,7 +113,7 @@ export const SKILLS = {
 export const HOOKS = [
   { n: 1, event: 'SessionStart', file: 'session_overview.py', zone: 'doors', does: 'Lagebild fremder Dateien, Übergaben „chat weiter“, Backup fällig?, Workflow-Check fällig?', result: 'Kontext' },
   { n: 2, event: 'UserPromptSubmit', file: 'chat_length_hint.py', zone: 'po', does: 'Ab ~100k Token Hinweis „neuer Chat?“, Skill-Hinweis zum Thema der Anfrage.', result: 'Hinweis' },
-  { n: 3, event: 'PreToolUse', file: 'pre_tool_guard.py + todo_claim_hook.py', zone: 'desk', does: 'Wächter vor Bash/Edit/Agent: pkill, --force, echte robot_ip → Rückfrage; fremde/geschützte Datei → Warnung; Claim in TODOS.md.', result: 'Rückfrage · Warnung' },
+  { n: 3, event: 'PreToolUse', file: 'pre_tool_guard.py + todo_claim_hook.py', zone: 'desk', does: 'Wächter vor Bash/Edit/Agent: pkill, --force, echte robot_ip → Rückfrage; fremde/geschützte Datei → Warnung; Datei in den eigenen Claim eintragen.', result: 'Rückfrage · Warnung' },
   { n: 4, event: 'Werkzeug', file: 'Edit · Write · Bash · Agent', zone: 'desk', does: 'Die eigentliche Arbeit – n-mal je Antwort: Werkzeug → prüfen → nächstes Werkzeug.', result: 'Arbeit' },
   { n: 5, event: 'PostToolUse', file: 'post_edit_check.py', zone: 'desk', does: 'flake8, JSON/YAML, UI-Regeln (Hilfe-Cursor, Akzent-Rand, Ecken), tools/check_*; trägt die Datei ins Datei-Register ein.', result: 'Befund → sofort beheben' },
   { n: 6, event: 'Stop', file: 'format_check.py', zone: 'gate_stop', does: 'Prüft den Antwortschluss: Ergebnis-Zeile, Status, Push-Hash nur mit Commit, ❓ nur im Block „Jetzt du“.', result: 'Block → Schluss neu' },
@@ -122,7 +122,7 @@ export const HOOKS = [
 export const HOOK_EXTRA = [
   'Globale Hooks (alle Projekte): ~/ai_dev_workflow_global/hooks/global_hook.py – start · prompt · pre · post · stop',
   'Codex: .codex/hooks.json → codex_bridge.py (harte Gründe als deny) · Antigravity/Gemini: .agents/hooks.json → antigravity_bridge.py',
-  'Datei-Register paralleler Chats: chat_claims.py (in /tmp, nur dieser Rechner) → Lagebild beim Chat-Start',
+  'Datei-Register paralleler Chats: file_register.py (jedes Git-Repo, alle Werkzeuge) → Lagebild beim Chat-Start',
   'git push: pre-push lädt Chat-Verläufe hoch (chat_sync.py), Projekt-Repos veröffentlichen ihre Seiten',
 ];
 
@@ -175,7 +175,7 @@ export const SYNC = {
 export const COORD = [
   { n: 1, reach: 'dieser Rechner', name: 'Datei-Register → Lagebild', how: 'chat_claims.py · session_overview.py' },
   { n: 2, reach: 'dieser Rechner', name: 'SendMessage · Teambesprechung', how: 'direkt zwischen laufenden Chats' },
-  { n: 3, reach: 'alle Rechner', name: 'Claims „🔒 In Arbeit“ in TODOS.md', how: 'todo_claim_hook.py · sofort gepusht' },
+  { n: 3, reach: 'alle Rechner', name: 'Claims als Git-Ref je Chat (refs/claims)', how: 'todo_claim_hook.py · tools/claim.py' },
   { n: 4, reach: 'alle Rechner', name: 'Übergabe .claude/handoff/*.md', how: '„chat weiter <kennung>“' },
   { n: 5, reach: 'alle Rechner', name: 'Memory + Regeln + Skills', how: 'Repo, jedes Werkzeug' },
   { n: 6, reach: 'dieser Chat', name: 'Skills im Kontext, Annahmen, Plan', how: 'einmal je Chat geladen' },
@@ -183,7 +183,7 @@ export const COORD = [
   { n: 8, reach: 'alle Rechner', name: 'ws_sync.sh · chat_sync.py', how: 'Stand + Verläufe je Rechner' },
 ];
 export const CONFLICTS = [
-  { name: 'Claim-Konflikt', when: 'vor dem Edit', then: 'Datei steht in fremder Zeile von TODOS.md → nicht ändern, per SendMessage abstimmen.' },
+  { name: 'Claim-Konflikt', when: 'vor dem Edit', then: 'Datei steht im Claim eines anderen Chats → nicht ändern, per SendMessage abstimmen.' },
   { name: 'Datei-Konflikt', when: 'beim Edit', then: 'Uncommittete Änderungen eines anderen Chats → im Scratchpad vorbereiten, 3-Wege-Merge.' },
   { name: 'Index-Konflikt', when: 'beim Commit', then: 'Nur eigene Dateien stagen, vor dem Push git show --stat HEAD.' },
   { name: 'Git-Konflikt', when: 'beim Sync', then: 'Erst tools/ws_sync.sh, Marker auflösen, nur Fast-Forward pushen, nie --force.' },
@@ -233,7 +233,7 @@ export const ZONES = {
   lib: { name: 'Bibliothek', sub: '51 Skills', phase: 'plan', cat: 'Skills', text: 'Skills sind Handbücher je Thema mit Skripten und Vorlagen. Ein Chat holt nur, was die Anfrage berührt – einmal je Chat, dann bleibt das Buch im Kontext.' },
   mem: { name: 'Archiv', sub: 'Memory', phase: 'plan', cat: 'Memory', text: 'Gedächtnis über Chats: eine Akte je Erkenntnis, Index MEMORY.md liegt jedem Chat bei. Aus jeder Korrektur wird eine Regel.' },
   studio: { name: 'Vorschau-Studio', sub: 'Varianten A/B/C', phase: 'plan', cat: 'Orchestrierung', text: 'Neue UI-Elemente erst als Vorschau-Seite: spec.json → capture.py → build.py. Du wählst auf der Seite, „An Chat senden“ ist endgültig – der Chat baut weiter.' },
-  meet: { name: 'Besprechung', sub: 'Teamwork · Orchestrierung', phase: 'bau', cat: 'Orchestrierung', text: 'Parallele Chats stimmen sich ab: SendMessage, Teambesprechung, Claims in TODOS.md, Übergaben. Hier laufen auch Workflow-Check und Team-Briefing.' },
+  meet: { name: 'Besprechung', sub: 'Teamwork · Orchestrierung', phase: 'bau', cat: 'Orchestrierung', text: 'Parallele Chats stimmen sich ab: SendMessage, Teambesprechung, Claims (Git-Refs), Übergaben. Hier laufen auch Workflow-Check und Team-Briefing.' },
   d_design: { name: 'Design-Studio', sub: '🎨 Designer', phase: 'bau', cat: 'Rollen', role: 'designer' },
   d_dev: { name: 'Entwicklung', sub: '⚙️ Entwickler', phase: 'bau', cat: 'Rollen', role: 'dev' },
   d_docs: { name: 'Redaktion', sub: '✍️ Redakteur', phase: 'bau', cat: 'Rollen', role: 'editor' },
@@ -244,7 +244,7 @@ export const ZONES = {
   d_3d: { name: '3D-Werkstatt', sub: '🧊 3D-Designer', phase: 'bau', cat: 'Rollen', role: 'd3' },
   mcp: { name: 'MCP-Anschlüsse', sub: 'Blender · VS Code · Connectoren', phase: 'bau', cat: 'MCP', text: 'Live-Leitungen nach draußen – nur, wo kein Terminal-Befehl hinkommt.' },
   qa: { name: 'Prüfstand', sub: '🧪 Prüfer · Stufe 0–3', phase: 'pruef', cat: 'Prüfung', text: 'Fertig nur mit Beleg aus diesem Chat. Vier Bahnen = Prüfstufen 0–3; Tests laufen isoliert (eigene Domain, eigener Port, eigenes Chrome-Profil).' },
-  agents: { name: 'Agentur', sub: '16 Subagenten', phase: 'pruef', cat: 'Agenten', text: 'Spezialisten mit eigenem Kontext. Ein Chat ruft sie mit Briefing, sie liefern einen Befund und gehen zurück. Opus für Urteil und Sicherheit, Sonnet für leichte, prüfbare Arbeit.' },
+  agents: { name: 'Agentur', sub: '18 Subagenten', phase: 'pruef', cat: 'Agenten', text: 'Spezialisten mit eigenem Kontext. Ein Chat ruft sie mit Briefing, sie liefern einen Befund und gehen zurück. Opus für Urteil und Sicherheit, Sonnet für leichte, prüfbare Arbeit, Haiku nur für Mechanik.' },
   robot: { name: 'Roboterzelle', sub: 'xArm Lite 6', phase: 'pruef', cat: 'Sicherheit', text: 'Tests laufen in Robot | Digital Twin mit eigener Domain (grasp_e2e.py: 94). Robot | Hardware nur mit deiner Freigabe in diesem Chat – niemand sonst darf freigeben.' },
   docsync: { name: 'Doku-Pult', sub: 'Doku mitziehen', phase: 'pruef', cat: 'Prüfung', text: 'Neue Funktion, Name oder Port? docs/en + docs/de, README + readme-de, Handbuch und Setup-Karte ziehen mit; check_showcase.py prüft Namen und Links.' },
   post: { name: 'Poststelle', sub: '🔄 Synchronizer · Commit', phase: 'liefer', cat: 'Repos', text: 'Eigene, geprüfte Dateien sammeln (git status + Datei-Register), tools/pre-commit läuft, Commit im Repo-Stil, dann Push – nur Fast-Forward.' },

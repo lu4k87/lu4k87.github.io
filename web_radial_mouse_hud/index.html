@@ -79,8 +79,8 @@
       <ul class="facts">
         <li>8 Bereiche, Reihenfolge einstellbar</li>
         <li>Untermenüs fächern nach außen auf</li>
-        <li>Startet nach jedem Neustart von selbst</li>
-        <li>Ein Python-Skript, PyQt5</li>
+        <li>Startet nach einmaliger Einrichtung bei jeder Anmeldung</li>
+        <li>Python + PyQt5: HUD-Dienst und Einstellungs-App</li>
       </ul>
     </div>
     <img src="img/screenshot_dunkel.png" width="712" height="712"
@@ -133,7 +133,7 @@
       </figure>
       <figure>
         <img src="img/medien_dunkel.png" width="712" height="712" loading="lazy" alt="Bereich Medien mit Play/Pause, Weiter, Zurück, Lauter, Leiser, Stumm">
-        <figcaption><span class="pos">10:30 · Medien</span><span>Nur während einer Wiedergabe: Play/Pause, Titel vor und zurück, Lautstärke.</span></figcaption>
+        <figcaption><span class="pos">10:30 · Medien</span><span>Nur während einer Wiedergabe: Play/Pause, Titel vor und zurück, Lautstärke (gedrückt halten = stufenweise), Stumm.</span></figcaption>
       </figure>
     </div>
     <div class="table-wrap">
@@ -203,7 +203,7 @@
 python3 hud_settings.py        # Einstellungen öffnen
 python3 radial_hud.py --demo   # HUD einmal öffnen, ohne Maustasten-Grab</code></pre>
     <p><strong>Autostart:</strong> <code>./install_autostart.sh</code> legt einmalig <code>~/.config/autostart/radial-hud.desktop</code> an. Danach startet GNOME das HUD bei jeder Anmeldung – auch nach einem Neustart von Ubuntu. Läuft es? <code>pgrep -af radial_hud.py</code>. Abschalten: <code>rm ~/.config/autostart/radial-hud.desktop</code>.</p>
-    <p><strong>Voraussetzungen:</strong> X11-Sitzung mit Compositor (GNOME), <code>python3-pyqt5</code>, <code>python3-xlib</code>. Optional je Funktion: <code>tesseract-ocr</code> (Text aus Bild), <code>pulseaudio-utils</code> (Lautstärke, Mikro), <code>libnotify-bin</code> (Meldungen). Fehlt ein Programm, zeigt der Eintrag „nicht verfügbar“ und nennt den Installationsbefehl.</p>
+    <p><strong>Voraussetzungen:</strong> X11-Sitzung mit Compositor (GNOME), <code>python3-pyqt5</code>, <code>python3-xlib</code>. Optional je Funktion: <code>tesseract-ocr</code> + <code>tesseract-ocr-deu</code> (Text aus Bild), <code>pulseaudio-utils</code> (Lautstärke, Mikro), <code>libnotify-bin</code> (Meldungen). Fehlt ein Programm, zeigt der Eintrag „nicht verfügbar“ und nennt den Installationsbefehl.</p>
   </section>
 
   <section>
@@ -226,7 +226,7 @@ python3 hud_settings.py --snapshot /tmp/set      # Einstellungs-Fenster je Thema
   </section>
 
   <footer>
-    <p>Radial HUD · Stand 22.10.2026 · Bedienung im Detail: <code>README.md</code> im Repo</p>
+    <p>Radial HUD · Stand 22.10.2026 · Code noch nicht öffentlich</p>
   </footer>
 
 </main>

@@ -117,7 +117,7 @@ Der Fachschaftsrat begrüßt:
 - mehr Wahlfreiheit im Wahlpflichtbereich.
 
 Votum: befürwortet (5 Ja-Stimmen, 0 Nein, 0 Enthaltungen).`,
-  'DOC-08': `BESCHLUSSAUSZUG, 84. SITZUNG DES FACHBEREICHSRATS
+  'DOC-08': `BESCHLUSSAUSZUG, 84. SITZUNG DES FAKULTÄTSRATS
 Datum: 14. April 2027
 TOP 4: Neufassung der Prüfungsordnung {SG} (PO v2.0)
 

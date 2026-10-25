@@ -14,15 +14,15 @@
 
 | Projekt | Adresse | Thema | Code |
 |---|---|---|---|
-| **AI Dev Workflow** | [`/web_ai_dev_workflow`](https://lu4k87.github.io/web_ai_dev_workflow) | So entsteht jedes Projekt hier – Kreislauf, Leitplanken und Definition of Done für die Arbeit mit KI-Agenten. | – |
+| **AI Dev Workflow** | [`/web_ai_dev_workflow`](https://lu4k87.github.io/web_ai_dev_workflow) | So entsteht jedes Projekt hier – Ablauf, Leitplanken, Prüfstufen und Zusammenarbeit mit KI-Agenten, an einem Beispiel erklärt. | – |
 | **UX Robot** | [`/web_ux_robot`](https://lu4k87.github.io/web_ux_robot) | Assistive Robotik-Plattform für den xArm Lite 6 – Der Mensch führt. Die KI assistiert. | privat |
 | **Look, Speak, Confirm** | [`/web_ux_robot_research`](https://lu4k87.github.io/web_ux_robot_research) | Studie zu Blick, Sprache und Bestätigung als sich ergänzende Bedienung für Roboter-Manipulation. | – |
-| **ACCREDO** | [`/web_accredo`](https://lu4k87.github.io/web_accredo) | Scrollytelling zum Reakkreditierungs- und PO-Novellierungsprozess einer Hochschule. | [GitHub](https://github.com/lu4k87/__project_accredo) |
+| **ACCREDO** | [`/web_accredo`](https://lu4k87.github.io/web_accredo) | Scrollytelling zum Reakkreditierungs- und Prüfungsordnungs-Novellierungsprozess einer Hochschule. | [GitHub](https://github.com/lu4k87/__project_accredo) |
 | **Stele CMS** | [`/web_hsrw_stele`](https://lu4k87.github.io/web_hsrw_stele) | Web-CMS für digitale Stelen – Inhalte pflegen, Präsentationen planen, Stelen überwachen. | [GitHub](https://github.com/lu4k87/__project_hsrw_stele) |
-| **Claude Ops** | [`/web_claude_ops`](https://lu4k87.github.io/web_claude_ops) | Live-Dashboard der Claude-Code-Chats und Agenten im HUD-Look. | privat |
-| **Bohlien Immo** | [`/web_immo_bohlien`](https://lu4k87.github.io/web_immo_bohlien) | Neue Landingpage für ein Immobilienbüro – three.js-Hausmodell und fünf Entwürfe. | privat |
-| **Trading Dashboard** | [`/web_trading_dashboard`](https://lu4k87.github.io/web_trading_dashboard) | Swing-Trading-Dashboard mit Papierhandel – Depot, Watchlist, Chart mit Auto-Analyse und Swing-Zonen, Marktkacheln, News mit Sentiment. | privat |
+| **Claude Ops** | [`/web_claude_ops`](https://lu4k87.github.io/web_claude_ops) | Live-Dashboard der KI-Chats (Claude Code, Codex, Gemini) und ihrer Subagenten im HUD-Look. | privat |
+| **Bohlien Immo** | [`/web_immo_bohlien`](https://lu4k87.github.io/web_immo_bohlien) | Entwurf einer neuen Landingpage für ein Immobilienbüro – three.js-Hausmodell und fünf weitere Entwürfe. | privat |
+| **Trading Dashboard** | [`/web_trading_dashboard`](https://lu4k87.github.io/web_trading_dashboard) | Swing-Trading-Dashboard mit Papierhandel – Tagesliste „Heute zu tun“, Depot, Watchlist, Chart mit Auto-Analyse und Swing-Zonen, Marktlage, News mit Sentiment. | privat |
 | **AI Agency** | [`/web_ai_agency`](https://lu4k87.github.io/web_ai_agency) | Begehbares 3D-Agentenbüro zum AI Dev Workflow – jede Komponente des Setups anklickbar. | privat |
 | **Applied Research** | [`/web_applied_research`](https://lu4k87.github.io/web_applied_research) | KreiswertS – Plattform-Prototyp für den Austausch von Kunststoff-Resten in Kamp-Lintfort: Karte, Matching, drei Szenarien. | privat |
-| **Radial HUD** | [`/web_radial_mouse_hud`](https://lu4k87.github.io/web_radial_mouse_hud) | Rundes Menü am Mauszeiger für Linux – Mitteltaste halten: Screenshot, neue Datei, Ordner, Apps, Ablage. | privat |
+| **Radial HUD** | [`/web_radial_mouse_hud`](https://lu4k87.github.io/web_radial_mouse_hud) | Rundes Menü am Mauszeiger für Linux – Klick auf die Vor-Seitentaste: Screenshot, neue Datei, Ordner, Apps, Ablage. | privat |
 | **Biochar** | [`/web_biochar`](https://lu4k87.github.io/web_biochar) | Interaktive 3D-Reise in Pflanzenkohle – vom Kohlestück über Zellen und Nanoporen bis zu den Atomen. | privat |
