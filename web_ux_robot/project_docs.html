@@ -156,14 +156,16 @@ a.kpi:hover { background: var(--surface-2); }
 /* Hero: Steckbrief 3×2, Linkzeile ins Projekt, Autorzeile mit kleinem QR (Wunsch User 05.10.2026, Vorschau B); Icons in Bereichsfarbe (--hue) */
 .facts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); width: 100%; max-width: 620px; margin: 0; overflow: hidden;
   border: 1px solid var(--glass-bd); border-radius: var(--radius); background: var(--glass-bg); box-shadow: inset 0 1px 0 var(--glass-hi); }
-.facts > div { min-width: 0; padding: 11px 14px; text-align: center; box-shadow: 1px 0 0 var(--line), 0 1px 0 var(--line); }
+.facts > div { min-width: 0; padding: 10px 12px; text-align: center; box-shadow: 1px 0 0 var(--line), 0 1px 0 var(--line); }
 .facts dt { display: flex; align-items: center; justify-content: center; gap: 8px; font: 700 12px/1.2 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--fg-2); }
 .facts dt .ico { width: 18px; height: 18px; flex: none; color: var(--hue); }
-.facts dd { margin: 5px 0 0; font-size: 15px; font-weight: 700; line-height: 1.3; text-wrap: balance; }
-.hero-copy { justify-items: center; }  /* Steckbrief, Links, Autor mittig (Wunsch User 06.10.2026) */
+.facts dd { margin: 4px 0 0; font-size: 15px; font-weight: 700; line-height: 1.3; text-wrap: balance; }
+.facts dd small { display: flex; align-items: center; justify-content: center; gap: 6px; margin-top: 4px; font: 600 12px/1.3 var(--mono); color: var(--fg-2); }  /* Status „Code privat“ in der Lizenz-Kachel statt eigenem Kasten (Wunsch User 25.10.2026) */
+.facts dd small .ico { width: 16px; height: 16px; flex: none; color: var(--hue); }
+.hero-copy { justify-items: center; gap: 16px; }  /* Steckbrief, Links, Autor mittig (Wunsch User 06.10.2026), enger (25.10.2026) */
 :where(body *) { word-spacing: .06em; }  /* alle Texte minimal luftiger; :where() = je Element relativ zur eigenen Schriftgröße (Wunsch User 06.10.2026) */
 .hero-head .h1-claim em { word-spacing: .18em; }  /* mehr Luft um „KI“ trotz letter-spacing -.045em (Wunsch User 06.10.2026) */
-.hero-links { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 26px; }
+.hero-links { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 24px; }
 .hero-links a { display: inline-flex; align-items: center; gap: 9px; min-height: 44px; font-size: 15px; font-weight: 700; border-bottom: 1px solid var(--line-strong);
   transition: border-color var(--t-fast), color var(--t-fast); }
 .hero-links a .ico { width: 18px; height: 18px; color: var(--hue); }
@@ -171,13 +173,7 @@ a.kpi:hover { background: var(--surface-2); }
 .hero-links small { font: 700 12px/1 var(--mono); color: var(--fg-2); }
 .hero-links a:hover, .hero-links a:focus-visible { border-color: var(--hue); }
 .hero-links a:hover .go { transform: translateX(3px); }
-.repo-status { display: inline-grid; grid-template-columns: 38px minmax(0, auto); align-items: stretch; overflow: hidden; border: 1px solid var(--line-strong); border-radius: var(--radius); background: var(--surface); color: var(--fg); line-height: 1.2; }
-.repo-status .status-icon { display: grid; place-items: center; min-height: 42px; background: var(--surface-2); border-right: 1px solid var(--line-strong); }
-.repo-status .status-icon .ico { width: 18px; height: 18px; color: var(--gold); }
-.repo-status .status-copy { display: flex; flex-direction: column; justify-content: center; gap: 2px; padding: 7px 11px; text-align: left; }
-.repo-status .status-copy b { font-size: 13px; font-weight: 700; }
-.repo-status .status-copy small { font: 600 11px/1.2 var(--mono); color: var(--fg-2); }
-.author { display: flex; align-items: center; gap: 14px; }
+.author { display: flex; align-items: center; justify-content: space-between; gap: 16px; width: 100%; max-width: 620px; padding-inline: 12px; }  /* bündig mit dem Steckbrief (Wunsch User 25.10.2026) */
 .author > div { display: grid; gap: 3px; font-size: 14px; color: var(--fg-2); }
 .author b { font-size: 17px; color: var(--fg); }
 .au-links { display: grid; gap: 2px; margin-top: 3px; }
@@ -630,7 +626,7 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
    Spalten, darunter links Steckbrief, Links, Autor und Kernmerkmale (2 × 2), rechts die Bühne → Roboter im ersten Bildschirm.
    .hero-head löst sich dafür ins Raster auf (display: contents, nur breit; schmal bleibt die Reihenfolge des HTML) */
 @media (min-width: 961px) {
-  .hero-inner { grid-template-columns: minmax(0, .84fr) minmax(0, 1.26fr); column-gap: 32px; align-items: start; row-gap: 16px; padding-top: 32px; }
+  .hero-inner { grid-template-columns: minmax(0, .84fr) minmax(0, 1.26fr); grid-template-rows: repeat(4, auto) 1fr; column-gap: 32px; align-items: start; row-gap: 16px; padding-top: 32px; }  /* 1fr: Höhe der Bühne geht an Zeile 5, Kernmerkmale direkt unter dem Autor (25.10.2026) */
   .hero-head { display: contents; }
   .hero-head > .badge { grid-column: 1 / -1; grid-row: 1; justify-self: center; }
   .hero-head > h1 { grid-column: 1 / -1; grid-row: 2; justify-self: center; }
@@ -1058,15 +1054,14 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
           <div style="--hue: var(--accent)"><dt><svg class="ico" aria-hidden="true"><use href="#i-arm"/></svg><span data-en="Robot">Roboter</span></dt><dd>xArm Lite 6</dd></div>
           <div style="--hue: var(--indigo)"><dt><svg class="ico" aria-hidden="true"><use href="#i-layers"/></svg><span data-en="Base">Basis</span></dt><dd>ROS 2 Humble&nbsp;· MoveIt 2</dd></div>
           <div style="--hue: var(--violet)"><dt><svg class="ico" aria-hidden="true"><use href="#i-user"/></svg><span data-en="Purpose">Zweck</span></dt><dd data-en="Teaching and research">Lehre und Forschung</dd></div>
-          <div style="--hue: var(--blue)"><dt><svg class="ico" aria-hidden="true"><use href="#i-cube"/></svg><span data-en="Principle">Prinzip</span></dt><dd>Human-in-the-Loop</dd></div>
+          <div style="--hue: var(--blue)"><dt><svg class="ico" aria-hidden="true"><use href="#i-cube"/></svg><span data-en="Principle">Prinzip</span></dt><dd>Human&#8209;in&#8209;the&#8209;Loop</dd></div>
           <div style="--hue: var(--green)"><dt><svg class="ico" aria-hidden="true"><use href="#i-globe"/></svg><span>Client</span></dt><dd data-en="Browser, nothing to install">Browser, ohne Installation</dd></div>
-          <div style="--hue: var(--gold)"><dt><svg class="ico" aria-hidden="true"><use href="#i-code"/></svg><span data-en="License">Lizenz</span></dt><dd data-en="Publication planned (Apache 2.0)">Veröffentlichung geplant (Apache 2.0)</dd></div>
+          <div style="--hue: var(--gold)"><dt><svg class="ico" aria-hidden="true"><use href="#i-code"/></svg><span data-en="License">Lizenz</span></dt><dd><span data-en="Apache 2.0 (planned)">Apache 2.0 (geplant)</span><small><svg class="ico" aria-hidden="true"><use href="#i-lock"/></svg><span data-en="Code still private">Code noch privat</span></small></dd></div>
         </dl>
         <nav class="hero-links" aria-label="Direkt ins Projekt" data-en-aria="Straight into the project">
           <a href="present_presentation.html" target="_blank" rel="noopener" style="--hue: var(--violet)"><svg class="ico" aria-hidden="true"><use href="#i-star"/></svg><span data-en="Project presentation">Projektvorstellung</span><svg class="ico go" aria-hidden="true"><use href="#i-go"/></svg></a>
           <a href="poster/poster_a2.pdf" target="_blank" rel="noopener" style="--hue: var(--gold)"><svg class="ico" aria-hidden="true"><use href="#i-poster"/></svg><span>Poster A2 <small>PDF</small></span><svg class="ico go" aria-hidden="true"><use href="#i-go"/></svg></a>
           <a href="operate_manual.html" data-nexus-href="operate_manual.html" target="_blank" rel="noopener" style="--hue: var(--teal)"><svg class="ico" aria-hidden="true"><use href="#i-book"/></svg><span data-en="Manual">Handbuch</span><svg class="ico go" aria-hidden="true"><use href="#i-go"/></svg></a>
-          <span class="repo-status" role="img" aria-label="Code privat; Veröffentlichung geplant" data-en-aria="Code private; publication planned"><span class="status-icon" aria-hidden="true"><svg class="ico"><use href="#i-lock"/></svg></span><span class="status-copy"><b data-en="Code private">Code privat</b><small data-en="Publication planned">Veröffentlichung geplant</small></span></span>
         </nav>
         <div class="author" role="group" aria-label="Autor: Marius Kaul" data-en-aria="Author: Marius Kaul">
           <div>
