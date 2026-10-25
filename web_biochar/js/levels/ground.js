@@ -147,17 +147,21 @@ export function makeGround({ scene, floorY, W, D, crumbGeometry, shadowTex }, te
   // Ästchen (Buche, mit Flechten): verjüngte Röhren, teils mit Seitenzweig; liegen auf der mittleren Höhe ihres Wegs
   const barkMat = new THREE.MeshStandardMaterial({ color: 0x4a4038, roughness: 0.92, envMapIntensity: 0.5 });
   const cutMat = new THREE.MeshStandardMaterial({ color: 0x4a3d30, roughness: 0.95, envMapIntensity: 0.5 });
+  // folgt dem Relief Ring für Ring (Achse 0,85 · Radius über dem Boden): starr läge der Ast teils im Boden, der ihn
+  // der Länge nach aufschneidet (sieht offen aus), teils in der Luft
+  const wp = new THREE.Vector3();
+  const layOn = (tw, toWorld) => tw.drape((c, r) => { toWorld(wp.copy(c)); return floorY + heightAt(wp.x, wp.z) + r * 0.85 - wp.y; });
   for (let placed = 0, tries = 0; placed < 14 && tries < 600; tries++) {
     const len = 2.5 + rand() * 6.5, r0 = 0.05 + Math.pow(rand(), 1.5) * 0.16;
     const [x, z] = ringPos(2.6, 24);
     const tw = twigGeometry(rand, len, r0, { bend: 0.6, knot: rand() < 0.5 ? 0.3 + rand() * 0.4 : 0 });
     const mesh = new THREE.Mesh(tw.geo, [barkMat, cutMat]);
     mesh.rotation.y = rand() * 6.28;
-    mesh.position.set(x, floorY + r0 * 0.92, z);
+    mesh.position.set(x, floorY, z);
     mesh.updateMatrix();
     const samp = tubeSamples(tw.curve, tw.rad, len, (p) => p.applyMatrix4(mesh.matrix), 0.06);
     if (!samp.every(([sx, sz, sr]) => freeAt(sx, sz, sr))) { tw.geo.dispose(); continue; }
-    mesh.position.y += samp.reduce((h, [sx, sz]) => h + heightAt(sx, sz), 0) / samp.length;   // mittlere Höhe des Wegs
+    layOn(tw, (p) => p.applyMatrix4(mesh.matrix));
     mesh.castShadow = mesh.receiveShadow = true;
     if (rand() < 0.55) {                                   // Seitenzweig, kurz; nur wo er frei liegt
       const t = 0.3 + rand() * 0.4, p0 = tw.curve.getPointAt(t), tan = tw.curve.getTangentAt(t), bl = len * (0.15 + rand() * 0.25);
@@ -171,6 +175,7 @@ export function makeGround({ scene, floorY, W, D, crumbGeometry, shadowTex }, te
       const bs = tubeSamples(b.curve, b.rad, bl, (p) => p.applyMatrix4(br.matrix).applyMatrix4(mesh.matrix), 0.06)
         .filter(([sx, sz]) => !samp.some(([mx, mz, mr]) => Math.hypot(sx - mx, sz - mz) < mr));
       if (bs.every(([sx, sz, sr]) => freeAt(sx, sz, sr))) {
+        layOn(b, (p) => p.applyMatrix4(br.matrix).applyMatrix4(mesh.matrix));
         br.castShadow = br.receiveShadow = true;
         mesh.add(br);
         samp.push(...bs);
@@ -357,11 +362,12 @@ function twigGeometry(rand, len, r0, opt = {}) {
   const curve = new THREE.CatmullRomCurve3(pts);
   const segs = Math.max(16, Math.round(len * 10)), radial = 12, L = curve.getLength();
   const frames = curve.computeFrenetFrames(segs, false);
-  const pos = [], uv = [], idx = [];
+  const pos = [], uv = [], idx = [], cen = [], rr = [];
   const sd = rand() * 100;
   const rad = (t) => r0 * (1 - 0.3 * t) * (0.94 + 0.12 * pnoise(t * 6 + sd, 0.5, 64, 3)) * (opt.knot ? 1 + 0.22 * Math.exp(-Math.pow((t - opt.knot) / 0.025, 2)) : 1);
   for (let i = 0; i <= segs; i++) {
     const t = i / segs, p = curve.getPointAt(t), Nn = frames.normals[i], B = frames.binormals[i], r = rad(t);
+    cen.push(p); rr.push(r);
     for (let j = 0; j <= radial; j++) {
       // Rauschen mit Periode 6 über den Umfang: j = 0 und j = radial liegen genau aufeinander (Naht ohne Spalt)
       const a = (j / radial) * Math.PI * 2, k = r * (0.96 + 0.08 * pnoise(a * 3 / Math.PI + sd, t * L * 3, 6, 4));
@@ -388,14 +394,29 @@ function twigGeometry(rand, len, r0, opt = {}) {
   g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
   g.setIndex(idx);
   g.addGroup(0, sideCount, 0); g.addGroup(sideCount, idx.length - sideCount, 1);
-  g.computeVertexNormals();
-  const nr = g.attributes.normal, v0 = new THREE.Vector3(), v1 = new THREE.Vector3();
-  for (let i = 0; i <= segs; i++) {                        // Naht: Normalen beider Seiten mitteln, sonst Lichtkante
-    const a = i * (radial + 1), b = a + radial;
-    v0.fromBufferAttribute(nr, a).add(v1.fromBufferAttribute(nr, b)).normalize();
-    nr.setXYZ(a, v0.x, v0.y, v0.z); nr.setXYZ(b, v0.x, v0.y, v0.z);
-  }
-  return { geo: g, curve, rad };
+  const v0 = new THREE.Vector3(), v1 = new THREE.Vector3();
+  const normals = () => {
+    g.computeVertexNormals();
+    const nr = g.attributes.normal;
+    for (let i = 0; i <= segs; i++) {                      // Naht: Normalen beider Seiten mitteln, sonst Lichtkante
+      const a = i * (radial + 1), b = a + radial;
+      v0.fromBufferAttribute(nr, a).add(v1.fromBufferAttribute(nr, b)).normalize();
+      nr.setXYZ(a, v0.x, v0.y, v0.z); nr.setXYZ(b, v0.x, v0.y, v0.z);
+    }
+  };
+  normals();
+  // Ringe senkrecht verschieben (dyOf(Ringmitte, Radius) in lokalen Koordinaten), Kappen gehen mit ihrem Endring;
+  // curve beschreibt danach nur noch den Grundriss (x, z)
+  const drape = (dyOf) => {
+    const pa = g.attributes.position, R = radial + 1, cap = (segs + 1) * R;
+    const dy = cen.map((c, i) => dyOf(c, rr[i]));
+    for (let i = 0; i <= segs; i++) for (let j = 0; j < R; j++) pa.setY(i * R + j, pa.getY(i * R + j) + dy[i]);
+    [0, segs].forEach((i, k) => { for (let j = 0; j <= R; j++) { const v = cap + k * (R + 1) + j; pa.setY(v, pa.getY(v) + dy[i]); } });
+    pa.needsUpdate = true;
+    normals();
+    g.boundingSphere = g.boundingBox = null;
+  };
+  return { geo: g, curve, rad, drape };
 }
 // Blatt: Länge 1 entlang x, Breite 0,62 entlang z, gewölbt (Ränder hoch), Spitze leicht gehoben
 function leafGeometry(curlW, curlL, crinkle, seed) {
