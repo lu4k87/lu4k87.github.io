@@ -469,6 +469,15 @@ export function createHud(handlers) {
       more.textContent = open ? 'Weniger' : 'Weiterlesen';
     });
     panel.querySelector('.lab-more').addEventListener('toggle', (e) => { chartOpen = e.target.open; });
+    // [n] öffnet die Liste selbst und springt ohne Hash-Wechsel hin: #ebene=n bleibt, auch in Browsern ohne Auto-Aufklappen von <details>
+    panel.querySelectorAll('.sources h2 a').forEach((a) => a.addEventListener('click', (e) => {
+      e.preventDefault();
+      const li = panel.querySelector(a.getAttribute('href'));
+      li.closest('details').open = true;
+      panel.querySelectorAll('.sources li.is-target').forEach((x) => x.classList.remove('is-target'));
+      li.classList.add('is-target');
+      li.scrollIntoView({ block: 'nearest' });
+    }));
     panel.querySelectorAll('button[data-hs]').forEach((b) => b.addEventListener('click', () => handlers.onHotspot(b.dataset.hs)));
     setGoal(state.temp);
     setLive(shown, playing, true);

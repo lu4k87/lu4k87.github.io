@@ -607,7 +607,7 @@ body.panel-collapsed .panel { display: none; }
 .sources summary { cursor: pointer; font-weight: 500; }
 .sources ol { padding-left: 22px; margin: 10px 0 0; display: flex; flex-direction: column; gap: 8px; }
 .sources a { color: var(--ink); text-decoration-color: var(--accent); text-underline-offset: 2px; }
-.sources li:target { background: var(--accent-soft); border-radius: 6px; }
+.sources li:target, .sources li.is-target { background: var(--accent-soft); border-radius: 6px; }
 
 /* ---------- Fußleiste: REM-Datenleiste, Hinweis, Navigation ---------- */
 .bottombar {
