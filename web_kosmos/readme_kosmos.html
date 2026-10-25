@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kosmos · Reise durch das All</title>
+<meta name="description" content="Interaktive, wissenschaftlich belegte 3D-Reise durch das All in zehn Stationen – von Erde und Mond bis zum beobachtbaren Universum. Doku der Web-App.">
+<style>
+  :root {
+    --bg: #f3f1ec; --surface: #ffffff; --line: #d9d4c8;
+    --text: #17181d; --accent: #8a5a00; --accent-soft: #f4e6c4; --code-bg: #e8e4d9;
+    --radius-sm: 4px; --radius: 6px; --radius-lg: 8px;
+    --gap: 24px; --max: 1080px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0d0f16; --surface: #171a24; --line: #2b3040;
+      --text: #eceef5; --accent: #f0b84a; --accent-soft: #3a2c10; --code-bg: #232736;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0d0f16; --surface: #171a24; --line: #2b3040;
+    --text: #eceef5; --accent: #f0b84a; --accent-soft: #3a2c10; --code-bg: #232736;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font: 17px/1.6 system-ui, -apple-system, "Segoe UI", Ubuntu, sans-serif;
+  }
+  main { max-width: var(--max); margin: 0 auto; padding: 48px 16px 64px; display: grid; gap: 64px; }
+  h1 { font-size: clamp(2rem, 5vw, 3rem); line-height: 1.1; margin: 0; }
+  h2 { font-size: 1.6rem; margin: 0 0 8px; }
+  h3 { font-size: 1.1rem; margin: 0; }
+  p { margin: 0; max-width: 68ch; }
+  a { color: var(--accent); }
+  code { font: 0.92em/1.5 ui-monospace, "DejaVu Sans Mono", monospace; background: var(--code-bg); padding: 1px 6px; border-radius: var(--radius-sm); }
+  pre { font: 0.92em/1.5 ui-monospace, "DejaVu Sans Mono", monospace; background: var(--code-bg); padding: 16px; border-radius: var(--radius); overflow-x: auto; margin: 0; }
+  pre code { background: none; padding: 0; }
+  img { display: block; width: 100%; height: auto; border-radius: var(--radius-lg); }
+  section { display: grid; gap: var(--gap); }
+
+  .hero { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 40px; align-items: center; }
+  .hero-text { display: grid; gap: 20px; }
+  .lead { font-size: 1.2rem; }
+  .tag { justify-self: start; background: var(--accent-soft); color: var(--text); font-weight: 600;
+         padding: 4px 12px; border-radius: var(--radius); font-size: 0.95rem; }
+  .facts { display: flex; flex-wrap: wrap; gap: 12px; padding: 0; margin: 0; list-style: none; }
+  .facts li { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 8px 14px; }
+
+  .steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: var(--gap); padding: 0; margin: 0; list-style: none; counter-reset: step; }
+  .steps li { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 20px; display: grid; gap: 8px; align-content: start; }
+  .steps li::before { counter-increment: step; content: counter(step); font-weight: 700; font-size: 1.4rem; color: var(--accent); }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: var(--gap); }
+  .wide { grid-template-columns: repeat(auto-fit, minmax(min(100%, 460px), 1fr)); }
+  figure { margin: 0; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg);
+           padding: 12px; display: grid; gap: 12px; align-content: start; }
+  figcaption { display: grid; gap: 4px; padding: 0 4px 4px; }
+  .pos { font-weight: 600; color: var(--accent); }
+
+  /* Platzhalter, bis die Web-App fertig ist: <div class="shot"> durch <img src="img/…png" width height alt> ersetzen */
+  .shot { aspect-ratio: 16 / 9; display: grid; place-items: center; text-align: center; padding: 16px;
+          border: 2px dashed var(--line); border-radius: var(--radius-lg); background: var(--code-bg); }
+  .shot span { display: grid; gap: 4px; max-width: 32ch; }
+  .shot b { color: var(--accent); }
+
+  table { width: 100%; border-collapse: collapse; background: var(--surface); border-radius: var(--radius-lg); overflow: hidden; }
+  th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { background: var(--code-bg); }
+  .table-wrap { overflow-x: auto; }
+  ul.plain { margin: 0; padding-left: 1.2em; display: grid; gap: 6px; max-width: 75ch; }
+  .note { background: var(--accent-soft); border-radius: var(--radius); padding: 12px 16px; max-width: 75ch; }
+  footer { border-top: 1px solid var(--line); padding-top: 24px; display: grid; gap: 8px; }
+</style>
+</head>
+<body>
+<main>
+
+  <header class="hero">
+    <div class="hero-text">
+      <span class="tag">3D-Web-App · three.js · WebGL 2</span>
+      <h1>Kosmos<br>Reise durch das All</h1>
+      <p class="lead">Eine interaktive 3D-Reise in <strong>zehn Stationen</strong>: von der Erde mit ihrem Mond bis zum beobachtbaren Universum. <strong>Ein Klick auf ein goldenes Abzeichen</strong> fliegt in die nächste Ebene, „Hinaus“ zoomt in die größere zurück.</p>
+      <p>Jede Zahl der Seite hat eine Quelle (NASA, JPL, ESA, Fachartikel); was ein Modell oder eine eigene Rechnung ist, steht dabei.</p>
+      <ul class="facts">
+        <li>10 Stationen, ein durchgehender Flug</li>
+        <li>Echte Bahnen (JPL) und Sternkatalog (Yale BSC)</li>
+        <li>Schalter und Regler je Station</li>
+        <li>Kein Build, läuft offline im Browser</li>
+      </ul>
+    </div>
+    <div class="shot" role="img" aria-label="Platzhalter für das Titelbild der Web-App"><span><b>Screenshot folgt</b>Titelbild: Erde und Mond mit Infotafel und Größenskala</span></div>
+  </header>
+
+  <section>
+    <h2>So bedienst du es</h2>
+    <ol class="steps">
+      <li><h3>Schauen</h3><p>Ziehen dreht die Ansicht, Scrollen zoomt. Am Zoom-Anschlag weiterscrollen fliegt hinaus bzw. hinein.</p></li>
+      <li><h3>Hineinfliegen</h3><p>Ein goldenes Abzeichen führt eine Ebene tiefer, z. B. von der Milchstraße in den Orion-Nebel. Der Flug ist durchgehend, ohne Schnitt.</p></li>
+      <li><h3>Entdecken</h3><p>Weiße Abzeichen schwenken die Kamera hin und öffnen die Info-Karte. Die Infotafel nennt Kennzahlen, Schalter und Quellen.</p></li>
+      <li><h3>Hinausfliegen</h3><p>„Hinaus“ zoomt in die größere Station. Die Größenskala links springt direkt zu jeder Station.</p></li>
+    </ol>
+  </section>
+
+  <section>
+    <div>
+      <h2>Die Oberfläche</h2>
+      <p>Die Szene füllt das ganze Fenster. Alles Bedienende liegt als Schicht darüber und lässt sich ausblenden.</p>
+    </div>
+    <div class="grid">
+      <figure>
+        <div class="shot" role="img" aria-label="Platzhalter Größenskala"><span><b>Screenshot folgt</b>Größenskala links</span></div>
+        <figcaption><span class="pos">Größenskala</span><span>Logarithmische Skala der Bildbreite mit Einheiten von km über AE und Lj bis Mrd. Lj. Ein Klick springt zur Station.</span></figcaption>
+      </figure>
+      <figure>
+        <div class="shot" role="img" aria-label="Platzhalter Infotafel"><span><b>Screenshot folgt</b>Infotafel rechts</span></div>
+        <figcaption><span class="pos">Infotafel</span><span>Kennzahlen der Station, deren Schalter, ein Entdecken-Pfad und der Abschnitt „Darstellung und Quellen“.</span></figcaption>
+      </figure>
+      <figure>
+        <div class="shot" role="img" aria-label="Platzhalter Info-Karte"><span><b>Screenshot folgt</b>Abzeichen mit Info-Karte</span></div>
+        <figcaption><span class="pos">Abzeichen und Info-Karte</span><span>Goldene Abzeichen führen weiter, weiße erklären. Gewinkelte 45°-Leitlinien verbinden Abzeichen und Text.</span></figcaption>
+      </figure>
+      <figure>
+        <div class="shot" role="img" aria-label="Platzhalter Messleiste"><span><b>Screenshot folgt</b>Messleiste unten</span></div>
+        <figcaption><span class="pos">Messleiste</span><span>Bildbreite, Licht quer durchs Bild, Entfernung und „Blick zurück“: wie alt das Licht ist, das du gerade siehst.</span></figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section>
+    <div>
+      <h2>Die zehn Stationen</h2>
+      <p>Die Stationen bilden einen Baum: „Hinein“ führt zu einem Kind, „Hinaus“ zum Eltern. Die Milchstraße ist der Knoten mit mehreren Zielen.</p>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Nr.</th><th>Station</th><th>Thema</th><th>Schalter in der Infotafel</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>Erde &amp; Mond</td><td>Heimat</td><td>Zeit (Echtzeit bis 1 Tag/s), Sternbilder mit Namen, Schattenkegel</td></tr>
+          <tr><td>2</td><td>Sonnensystem</td><td>Planetar</td><td>Größen (anschaulich oder echt), Zeit (Jetzt bis Jahre pro Sekunde)</td></tr>
+          <tr><td>3</td><td>Milchstraße</td><td>Galaktisch</td><td>Drehung der Galaxie, Sonnenbahn mit Sichtlinien, Fermi-Blasen</td></tr>
+          <tr><td>4</td><td>Orion-Nebel</td><td>Sternentstehung</td><td>Farben: sichtbar, Hubble-Palette, Infrarot</td></tr>
+          <tr><td>5</td><td>Krebsnebel</td><td>Sternentod</td><td>Spektrum (sichtbar, Röntgen, Radio), Jahr-Regler 1054 bis 2600</td></tr>
+          <tr><td>6</td><td>Crab-Pulsar</td><td>Neutronenstern</td><td>Zeitlupe (1 : 600 bis 1 : 60), Ton mit echtem Takt – kein Blitzen über 3 Hz</td></tr>
+          <tr><td>7</td><td>Sagittarius A*</td><td>Schwarzes Loch</td><td>Ansicht (Horizont, EHT-Blick, S-Sterne), Flare als heißer Fleck</td></tr>
+          <tr><td>8</td><td>Lokale Gruppe</td><td>Galaxien</td><td>Namen der Zwerggalaxien, Regler „Zukunft“</td></tr>
+          <tr><td>9</td><td>Kosmisches Netz</td><td>Großräumige Struktur</td><td>Strömung zum Laniakea-Superhaufen</td></tr>
+          <tr><td>10</td><td>Beobachtbares Universum</td><td>Kosmologisch</td><td>Dipol abziehen, Zeitschichten (Epochen), Regler „Blick zurück“</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="grid">
+      <figure>
+        <div class="shot" role="img" aria-label="Platzhalter Station Erde und Mond"><span><b>Screenshot folgt</b>Station 1 · Erde &amp; Mond</span></div>
+        <figcaption><span class="pos">1 · Erde &amp; Mond</span><span>Atmosphärenrand, Stadtlichter der Nachtseite, Mond mit gebundener Rotation.</span></figcaption>
+      </figure>
+      <figure>
+        <div class="shot" role="img" aria-label="Platzhalter Station Sonnensystem"><span><b>Screenshot folgt</b>Station 2 · Sonnensystem</span></div>
+        <figcaption><span class="pos">2 · Sonnensystem</span><span>Planeten auf ihren echten Bahnen, Sonne mit Linsenreflex.</span></figcaption>
+      </figure>
+      <figure>
+        <div class="shot" role="img" aria-label="Platzhalter Station Milchstraße"><span><b>Screenshot folgt</b>Station 3 · Milchstraße</span></div>
+        <figcaption><span class="pos">3 · Milchstraße</span><span>Spiralarme als Knotenpunkt zu Orion-Nebel, Krebsnebel und Sagittarius A*.</span></figcaption>
+      </figure>
+      <figure>
+        <div class="shot" role="img" aria-label="Platzhalter Station Krebsnebel"><span><b>Screenshot folgt</b>Station 5 · Krebsnebel</span></div>
+        <figcaption><span class="pos">5 · Krebsnebel</span><span>Überrest der Supernova von 1054, umschaltbar zwischen sichtbarem Licht, Röntgen und Radio.</span></figcaption>
+      </figure>
+      <figure>
+        <div class="shot" role="img" aria-label="Platzhalter Station Sagittarius A*"><span><b>Screenshot folgt</b>Station 7 · Sagittarius A*</span></div>
+        <figcaption><span class="pos">7 · Sagittarius A*</span><span>Das Schwarze Loch im Zentrum der Milchstraße mit den umkreisenden S-Sternen.</span></figcaption>
+      </figure>
+      <figure>
+        <div class="shot" role="img" aria-label="Platzhalter Station Beobachtbares Universum"><span><b>Screenshot folgt</b>Station 10 · Beobachtbares Universum</span></div>
+        <figcaption><span class="pos">10 · Beobachtbares Universum</span><span>Das älteste Licht, rund 370.000 Jahre nach dem Urknall ausgesandt; der Regler „Blick zurück“ läuft durch die Zeit.</span></figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section>
+    <div>
+      <h2>Einstellungen</h2>
+      <p>Das Zahnrad oben rechts öffnet die Einstellungen. Die Auswahl bleibt im Browser gespeichert.</p>
+    </div>
+    <div class="grid wide">
+      <figure>
+        <div class="shot" role="img" aria-label="Platzhalter Einstellungen"><span><b>Screenshot folgt</b>Einstellungs-Fenster mit Bewegung, Qualität, Belichtung</span></div>
+        <figcaption><span class="pos">Zahnrad</span><span>Alles auf einen Blick, ohne die Szene zu verlassen.</span></figcaption>
+      </figure>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Einstellung</th><th>Wirkung</th></tr></thead>
+          <tbody>
+            <tr><td>Bewegung</td><td>Voll · Ruhig · Aus (für Menschen mit Bewegungsempfindlichkeit)</td></tr>
+            <tr><td>Qualität</td><td>Leicht · Mittel · Fein; ohne eigene Wahl misst die Seite die Bildrate und schaltet bei Bedarf herunter</td></tr>
+            <tr><td>Leerlauf-Fahrt</td><td>Die Kamera bewegt sich sanft, wenn nichts passiert</td></tr>
+            <tr><td>Infotafel</td><td>Rechte Tafel ein oder aus</td></tr>
+            <tr><td>Flugdauer</td><td>Wie lange ein Flug zwischen Stationen dauert</td></tr>
+            <tr><td>Belichtung, Bloom, Farbsaum, Korn</td><td>Bildlook der Szene</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Starten</h2>
+    <div class="note">Die Web-App ist noch in Arbeit und nicht online. Diese Seite beschreibt den aktuellen Stand; die Bilder kommen, sobald die Oberfläche fertig ist.</div>
+    <pre><code>git clone https://github.com/lu4k87/__project_kosmos.git
+cd __project_kosmos
+npm run serve        # http://localhost:8480/</code></pre>
+    <p>Voraussetzung ist ein Browser mit WebGL 2. three.js liegt im Projekt (<code>web/vendor/</code>), ein Build ist nicht nötig.</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Adresse</th><th>Wirkung</th></tr></thead>
+        <tbody>
+          <tr><td><code>#station=sgra</code></td><td>Direkt in eine Station springen (z. B. <code>earth</code>, <code>solar</code>, <code>galaxy</code>)</td></tr>
+          <tr><td><code>?tour</code></td><td>Die Route fliegt sich selbst ab, bis du etwas eingibst; <code>&amp;dwell=15</code> setzt die Verweildauer in Sekunden</td></tr>
+          <tr><td><code>?q=1</code> · <code>2</code> · <code>3</code></td><td>Qualitätsstufe erzwingen</td></tr>
+          <tr><td><code>?date=2026-01-01T00:00Z</code></td><td>Zeitpunkt für Erde, Mond und Planeten festlegen</td></tr>
+          <tr><td><code>?fps</code></td><td>Bildrate in die Konsole schreiben</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2>Belege und Bildnachweis</h2>
+    <ul class="plain">
+      <li>Kennzahlen, Darstellung gegenüber Wirklichkeit und Lizenzen: <code>docs/research.md</code> im Repository.</li>
+      <li>Die Quellen je Station stehen in der Infotafel unter „Darstellung und Quellen“.</li>
+      <li>Planetentexturen © <a href="https://www.solarsystemscope.com/textures/">Solar System Scope</a> / INOVE, CC BY 4.0, auf Grundlage von NASA-Daten.</li>
+      <li>Sternkatalog und Sternbildlinien aus d3-celestial (Olaf Frohn, BSD-3; Yale Bright Star Catalogue).</li>
+    </ul>
+  </section>
+
+  <footer>
+    <p>Kosmos · Reise durch das All – ein Projekt von lu4k87.</p>
+  </footer>
+
+</main>
+</body>
+</html>
