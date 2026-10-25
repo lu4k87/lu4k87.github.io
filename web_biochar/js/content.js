@@ -27,6 +27,12 @@ export const SOURCES = [
   { id: 24, text: 'Allen, C. et al. (2022): Aberration-corrected transmission electron microscopy of a non-graphitizing carbon. Proc. R. Soc. A 478, 20210580 (Aktivkohle aus Biomasse: Fünf- und Siebenringe zufällig im Sechseckgitter, gekrümmte Fragmente).', url: 'https://doi.org/10.1098/rspa.2021.0580' },
   { id: 25, text: 'Nishiyama, Y., Langan, P., Chanzy, H. (2002): Crystal structure and hydrogen-bonding system in cellulose Iβ from synchrotron X-ray and neutron fiber diffraction. J. Am. Chem. Soc. 124, 9074–9082 (Faserperiode c = 1,038 nm, Cellobiose).', url: 'https://doi.org/10.1021/ja0257319' },
   { id: 26, text: 'Bondi, A. (1964): van der Waals volumes and radii. J. Phys. Chem. 68, 441–451 (C 0,17 nm, O 0,152 nm, N 0,155 nm, H 0,12 nm).', url: 'https://doi.org/10.1021/j100785a001' },
+  { id: 27, text: 'Gabhi, R., Basile, L., Kirk, D. W., Giorcelli, M., Tagliaferro, A., Jia, C. Q. (2020): Electrical conductivity of wood biochar monoliths and its dependence on pyrolysis temperature. Biochar 2, 369–378 (Ahorn- und Kiefern-Monolithen 600–1000 °C, Vierpunktmessung: ≈ 1 S/m → ≈ 1000 bzw. 350 S/m; Leitung durch Elektronen-Hopping zwischen Graphit-Nanokristalliten).', url: 'https://doi.org/10.1007/s42773-020-00056-0' },
+  { id: 28, text: 'Hagemann, N., Schmidt, H.-P., Bucheli, T. D., Grafmüller, J., Vosswinkel, S., Herdegen, V., Meredith, W., Uguna, C. N., Snape, C. E. (2025): Proxies for use in biochar decay models: Hydropyrolysis, electric conductivity, and H/Corg molar ratio. PLoS ONE 20, e0330206 (Leitfähigkeit steigt 400–800 °C exponentiell; Holzkohle im Schüttbett 600 → 700 °C um ≈ 4 Größenordnungen).', url: 'https://doi.org/10.1371/journal.pone.0330206' },
+  { id: 29, text: 'Mochidzuki, K., Soutric, F., Tadokoro, K., Antal, M. J., Tóth, M., Zelei, B., Várhegyi, G. (2003): Electrical and physical properties of carbonized charcoals. Ind. Eng. Chem. Res. 42, 5140–5151 (spezifischer Widerstand von Holzkohle fällt 650 → 1050 °C um fünf Größenordnungen, ohne sichtbare Änderung im Röntgenbild).', url: 'https://doi.org/10.1021/ie030358e' },
+  { id: 30, text: 'Kinney, T. J., Masiello, C. A., Dugan, B., Hockaday, W. C., Dean, M. R., Zygourakis, K., Barnes, R. T. (2012): Hydrologic properties of biochars produced at different temperatures. Biomass Bioenergy 41, 34–43 (Wasserabweisung der Kohle nimmt mit der Pyrolysetemperatur ab: niedrig verkohlt hydrophob, heißer erzeugt benetzbar).', url: 'https://doi.org/10.1016/j.biombioe.2012.01.033' },
+  { id: 31, text: 'Washburn, E. W. (1921): The dynamics of capillary flow. Phys. Rev. 17, 273–283 (Lucas-Washburn-Gleichung: Eindringtiefe h = √(γ r cos θ · t / 2η), also h ∝ √t).', url: 'https://doi.org/10.1103/PhysRev.17.273' },
+  { id: 32, text: 'Byrne, C. E., Nagle, D. C. (1997): Carbonization of wood for advanced materials applications. Carbon 35, 259–266 (Schwindung beim Verkohlen anisotrop: tangential > radial > längs; Zellstruktur bleibt erhalten).', url: 'https://doi.org/10.1016/S0008-6223(96)00136-4' },
 ];
 
 export const LEVELS = [
@@ -43,7 +49,7 @@ export const LEVELS = [
       { value: '65–89 %', label: 'des Kohlenstoffs sind nach 100 Jahren noch im Boden (IPCC)', bar: 80 },
       { value: '< 0,7', label: 'H/Corg – Grenzwert für zertifizierte Pflanzenkohle (EBC)', bar: 65 },
     ],
-    refs: [4, 5, 6],
+    refs: [4, 5, 6, 27, 28, 29, 30],
     hotspots: {
       endgrain: { title: 'Stirnfläche', tag: '1 mm ↓', text: 'Hier ist das Holz quer zur Faser gebrochen. Schon mit der Lupe erkennt man Jahrringe, Holzstrahlen und feinste Poren – die Gefäße, in denen der Baum Wasser leitete.' },
       cracks: { title: 'Schwundrisse', tag: '≥ 380 °C', text: 'Beim Verkohlen entweichen Wasser und Gase (CO, CO₂, CH₄, Teere). Das Holz schrumpft ungleichmäßig – quer zur Faser stärker als längs. So reißt es radial entlang der Holzstrahlen und tangential entlang der Jahrringe.' },
@@ -63,7 +69,7 @@ export const LEVELS = [
       { value: '24 ± 12 µm', label: 'Gefäßdurchmesser im Frühholz', bar: 68 },
       { value: '15 ± 9 µm', label: 'Gefäßdurchmesser im Spätholz', bar: 42 },
     ],
-    refs: [3, 6],
+    refs: [3, 6, 31, 32],
     hotspots: {
       vessels: { title: 'Gefäße und Fasern', tag: '200 µm ↓', text: 'Eine Gruppe von Gefäßen, umgeben von Holzfasern. Die Gefäße liegen oft zu zweit oder zu dritt in radialen Reihen.' },
       ring: { title: 'Jahrringgrenze', tag: '62 → 40 %', text: 'Am Ende einer Wachstumsperiode bildet der Baum kleinere Gefäße und flache, dickwandige Fasern (Spätholz); im Frühjahr setzt das porenreiche Frühholz ein. In Buchen-Biochar sinkt der Porenanteil von ≈ 62 % im Frühholz auf ≈ 40 % im Spätholz. Weil beide verschieden stark schwinden, reißt die Kohle bei hoher Pyrolysetemperatur auch hier – quer zu den Radialrissen an den Strahlen; zusammen zerlegen sie das Stück in Blöcke (Lage und Breite der Risse: Modell).' },

@@ -119,6 +119,9 @@ export const fmt = (x, digits = 0) => nf(digits).format(x);
 // Glühfarbe ebenso. Das Glühen beginnt am Draper-Punkt ≈ 525 °C (sichtbare Rotglut).
 const sstep = (a, b, x) => { const t = clamp((x - a) / (b - a), 0, 1); return t * t * (3 - 2 * t); };
 export const DRAPER = 525;
+// Schwindung bei voller Verkohlung (≥ 600 °C), Anteil 0–1: quer im Mittel 28 %, längs 10 % (Modell); quer aufgeteilt in
+// tangential 31 % > radial 25 % (Richtwerte; Reihenfolge nach Byrne & Nagle 1997, Carbon 35)
+export const SHRINK = { mean: 0.28, tan: 0.31, rad: 0.25, lon: 0.1 };
 const lossModel = (t) => 0.28 * 0.78 * sstep(220, 315, t) + 0.42 * 0.95 * sstep(315, 400, t) + 0.3 * 0.55 * sstep(160, 900, t);
 
 export const PHASES = [
@@ -153,8 +156,10 @@ export function pyroState(t) {
     glassy: sstep(300, 450, t),                   // Bruchflächen faserig → glasig, Wand amorph
     sheets: sstep(300, 400, t),                   // aromatische Schichten entstehen (amorphe Kohle)
     open: sstep(300, 400, t),                     // Nanoporen der Zellwand entstehen nach dem Zerfall der Fasern (Paris et al. 2005)
-    shrinkT: 0.28 * sstep(200, 600, t),           // lineare Schwindung quer zur Faser (Modell)
-    shrinkL: 0.1 * sstep(200, 600, t),            // längs deutlich geringer
+    shrinkT: SHRINK.mean * sstep(200, 600, t),    // lineare Schwindung quer zur Faser, Mittel (Modell)
+    shrinkL: SHRINK.lon * sstep(200, 600, t),     // längs deutlich geringer
+    shrinkTan: SHRINK.tan * sstep(200, 600, t),   // tangential (entlang der Jahrringe) am stärksten
+    shrinkRad: SHRINK.rad * sstep(200, 600, t),   // radial (entlang der Strahlen) weniger
     glow: sstep(DRAPER, 720, t),                  // Rotglut ab dem Draper-Punkt
     vapour: Math.max(0.6 * sstep(60, 130, t) * (1 - sstep(190, 210, t)), 0.8 * sstep(215, 270, t) * (1 - sstep(300, 330, t)),
       sstep(310, 350, t) * (1 - sstep(390, 420, t)), 0.3 * sstep(400, 450, t) * (1 - sstep(520, 640, t))),
@@ -202,10 +207,64 @@ export function tissueScale(t) {
   const s = pyroState(t), r = pyroState(550);
   return {
     xy: (1 - s.shrinkT) / (1 - r.shrinkT),
+    x: (1 - s.shrinkTan) / (1 - r.shrinkTan),   // tangential (Ebene 2: x)
+    y: (1 - s.shrinkRad) / (1 - r.shrinkRad),   // radial (Ebene 2: y)
     z: (1 - s.shrinkL) / (1 - r.shrinkL),
     wall: WALL_REF(s.mass) / WALL_REF(r.mass),
     crack: sstep(320, 650, t),
     crackRay: sstep(430, 730, t),
     crackRing: sstep(520, 800, t),
   };
+}
+
+// ---------- Feinschliff Makro (2026-10-25): Leitfähigkeit, Benetzung, Kapillar-Aufstieg, Schwund-Richtungen ----------
+
+// Elektrische Leitfähigkeit σ des Kohle-Monolithen (S/m) über der Höchsttemperatur – Modell, log-linear in zwei Ästen:
+// ab 600 °C nach Gabhi et al. (2020): Ahorn-/Kiefern-Monolithen ≈ 1 S/m bei 600 °C bis ≈ 1000 bzw. 350 S/m bei 1000 °C
+// (0,75 Dekaden je 100 K); darunter fällt σ steil (2,5 Dekaden je 100 K): Hagemann et al. (2025) messen im Schüttbett
+// 600 → 700 °C vier Dekaden, Mochidzuki et al. (2003) 650 → 1050 °C fünf Dekaden. Holz (25 °C) ≈ 1e-14 S/m (Isolator).
+// k = Lage auf der log-Skala zwischen 1e-5 S/m (≈ 400 °C) und 30 S/m (800 °C), 0 … 1 – die REM-Aufladung (Ebene 3–4) nutzt k.
+export function conductivity(t) {
+  const x = clamp(t, T_ROOM, 1000);
+  const dec = x >= 600 ? 0.0075 * (x - 600) : -0.025 * (600 - x);
+  const sigma = Math.pow(10, Math.max(dec, -14));
+  return { sigma, rho: 1 / sigma, k: clamp((dec + 5) / 6.5, 0, 1), decade: dec };
+}
+// Widerstand zwischen zwei Messspitzen auf dem Stück (Modell): Engewiderstand zweier kreisrunder Kontakte mit Radius a
+// (Spitzenabdruck, m) in Reihe, R = ρ/(4a) + ρ/(4a) = ρ/(2a); der Abstand der Spitzen spielt dabei kaum eine Rolle
+export const probeResistance = (t, a = 3e-4) => conductivity(t).rho / (2 * a);
+// Anzeige wie ein Multimeter: Ω · kΩ · MΩ · GΩ, ab 2 GΩ „OL“ (Überlauf = Isolator)
+export function fmtOhm(R) {
+  if (!(R < 2e9)) return 'OL';
+  const [unit, div] = R >= 1e9 ? ['GΩ', 1e9] : R >= 1e6 ? ['MΩ', 1e6] : R >= 1e3 ? ['kΩ', 1e3] : ['Ω', 1];
+  const v = R / div;
+  return `${fmt(v, v < 10 ? 1 : 0)} ${unit}`;
+}
+
+// Benetzung (Modell): Kontaktwinkel θ von Wasser auf der Oberfläche. Holz benetzt (θ ≈ 60°), geröstetes und niedrig
+// verkohltes Holz (300–400 °C) ist wasserabweisend (aliphatische Reste, Teere: θ ≈ 110°), ab ≈ 500 °C wird die Kohle
+// benetzbar (θ ≈ 40° ab 550 °C) – Richtung nach Kinney et al. (2012), Winkel sind Richtwerte.
+export function wettability(t) {
+  const theta = lerp(lerp(60, 110, sstep(200, 320, t)), 40, sstep(400, 550, t));
+  return { theta, cos: Math.cos((theta * Math.PI) / 180), hydrophobic: theta > 90 };
+}
+
+// Kapillar-Aufstieg nach Lucas–Washburn (Washburn 1921): Eindringtiefe h(t) = √(γ r cos θ · t / 2η) in einer Kapillare mit
+// Radius r – Wasser 20 °C: γ = 72,8 mN/m, η = 1,0 mPa·s (Lehrbuchwerte), θ aus wettability(T); θ ≥ 90° → kein Aufstieg.
+// rUm in µm, tS in s → h in µm; capillaryTime = Umkehrung (s bis zur Tiefe hUm, ∞ ohne Benetzung)
+export const WATER = { gamma: 0.0728, eta: 1.0e-3 };
+export function capillaryRise(rUm, tS, T) {
+  const c = Math.max(0, wettability(T).cos);
+  return 1e6 * Math.sqrt((WATER.gamma * rUm * 1e-6 * c * Math.max(0, tS)) / (2 * WATER.eta));
+}
+export function capillaryTime(rUm, hUm, T) {
+  const c = wettability(T).cos;
+  if (c <= 0) return Infinity;
+  return ((hUm * 1e-6) ** 2 * 2 * WATER.eta) / (WATER.gamma * rUm * 1e-6 * c);
+}
+
+// Schwindung in Prozent der Holzmaße je Richtung (Richtwerte, Modell): tangential > radial > längs (Byrne & Nagle 1997)
+export function shrinkPercent(t) {
+  const s = pyroState(t);
+  return { tan: 100 * s.shrinkTan, rad: 100 * s.shrinkRad, lon: 100 * s.shrinkL };
 }
