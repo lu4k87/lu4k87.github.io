@@ -181,17 +181,6 @@ body.panel-collapsed .panel { display: none; }
   border: 1px solid var(--line);
   transition: background 0.2s, border-color 0.2s, transform 0.15s;
 }
-.top-actions .btn-ghost { display: inline-flex; align-items: center; gap: 8px; min-height: 36px; padding: 0 13px; border-radius: var(--radius); }
-/* Infotafel & Messhilfen offen/ein: kleines Hex-Licht wie die Marken der Schiene (Zustand per aria-expanded / aria-pressed) */
-.btn-ghost:is([aria-expanded], [aria-pressed])::before {
-  content: "";
-  width: 9px;
-  height: 10px;
-  clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%);
-  background: color-mix(in srgb, var(--ink) 35%, transparent);
-  transition: background-color 0.25s;
-}
-.btn-ghost:is([aria-expanded="true"], [aria-pressed="true"])::before { background: var(--accent); }
 .btn-primary { background: var(--accent); color: var(--accent-ink); border-color: transparent; }
 .btn-primary:hover { transform: translateY(-1px); }
 .btn-ghost:disabled, .btn-primary:disabled { opacity: 0.45; cursor: default; transform: none; }
@@ -924,16 +913,17 @@ body.card-docked .panel { visibility: hidden; }
 /* ---------- Pyrolyse-Zeitleiste in der Fußleiste (Vorschau Pyro:A, User 2026-10-24) ----------
    Mittig zwischen Messleiste und Ebenen-Wechsel; reicht die Breite nicht, eigene Zeile darüber. Am Griff in die
    Bühne verschiebbar (hud.js, CSS translate); die Bühne trägt unten den Hinweis */
-/* ---------- Zahnrad + Einstellungen (js/settings.js, Wunsch User 2026-10-25) ----------
-   unten links in der Bühne, gleiche Rasterzelle wie .stage-hud (Flow statt Überlagerung): Panel steht über dem Zahnrad und
-   scrollt bei wenig Höhe; schmal (≤ 860 px) als Blatt über die ganze Höhe. Zahnrad dezent (Deckkraft .72) */
+/* ---------- Zahnrad + Einstellungen (js/settings.js, Wunsch User 2026-10-25, Vorschau Zahnrad:A + Ansicht:B) ----------
+   Zahnrad oben rechts in der Kopfzeile (.top-actions), Panel oben rechts in der Bühne direkt darunter, gleiche Rasterzelle
+   wie .stage-hud (Flow statt Überlagerung), scrollt bei wenig Höhe; schmal (≤ 860 px) als Blatt unter der Kopfzeile bis
+   unten. Zahnrad dezent (Deckkraft .72) */
 .cfg-dock {
   grid-area: stage;
-  justify-self: start;
+  justify-self: end;
   display: flex;
   flex-direction: column;
-  justify-content: flex-end;
-  align-items: flex-start;
+  justify-content: flex-start;
+  align-items: flex-end;
   gap: 10px;
   width: min(340px, 100%);
   min-height: 0;
@@ -993,7 +983,7 @@ body.card-docked .panel { visibility: hidden; }
 .cfg-row > input[type="range"], .cfg-row > .cfg-seg { grid-column: 1 / -1; }
 .cfg input[type="range"] { width: 100%; margin: 0; accent-color: var(--accent); }
 .cfg-seg { display: flex; gap: 4px; }
-.cfg-seg button, .cfg-foot button, .cfg-x {
+.cfg-seg button, .cfg-foot button, .cfg-x, .cfg-quick button {
   min-height: 30px;
   padding: 4px 8px;
   border: 1px solid var(--line);
@@ -1007,10 +997,15 @@ body.card-docked .panel { visibility: hidden; }
 }
 .cfg-seg button { flex: 1; padding-inline: 4px; }
 .cfg-x { margin-left: auto; width: 30px; padding: 0; font-size: 18px; line-height: 1; }
-.cfg-seg button:hover, .cfg-foot button:hover, .cfg-x:hover { border-color: color-mix(in srgb, var(--accent) 55%, transparent); }
+.cfg-seg button:hover, .cfg-foot button:hover, .cfg-x:hover, .cfg-quick button:hover { border-color: color-mix(in srgb, var(--accent) 55%, transparent); }
 .cfg button:focus-visible, .cfg input:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
 /* gewählt: fett + Rand + Fläche (nie nur Farbe) */
-.cfg-seg button[aria-pressed="true"] { font-weight: 600; border-color: var(--accent); background: var(--accent-soft); }
+.cfg-seg button[aria-pressed="true"], .cfg-quick button[aria-pressed="true"] { font-weight: 600; border-color: var(--accent); background: var(--accent-soft); }
+/* Ansicht-Kacheln im Panel-Kopf (Hell / Dunkel · Infotafel · Messhilfen): Symbol, Name, Zustand untereinander */
+.cfg-quick { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+.cfg-quick button { display: grid; justify-items: center; align-content: center; gap: 3px; padding: 8px 4px; line-height: 1.2; text-align: center; }
+.cfg-quick svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.cfg-quick small { font: 500 12.5px/1.2 var(--mono); }
 .cfg-sw { display: flex; align-items: center; gap: 10px; min-height: 28px; cursor: pointer; }
 .cfg-sw input { width: 16px; height: 16px; margin: 0; flex: none; accent-color: var(--accent); }
 .cfg-meter { display: grid; gap: 4px; font: 500 13px/1.2 var(--mono); font-variant-numeric: tabular-nums; }
@@ -1142,23 +1137,19 @@ body:not(.no-webgl) .fatal-webgl, body.no-webgl .fatal-start { display: none; }
   .rail-scale, .rail-cmp { display: none; }
   .rail-name { max-height: none; opacity: 1; font-size: 12px; }
   .brand-text span { display: none; }
-  .top-actions { gap: 5px; }
-  .top-actions .btn-ghost { padding: 0 8px; font-size: 12.5px; gap: 5px; }
   .bottombar { flex-wrap: wrap; }
   .sem-bar { flex: 1 1 100%; min-width: 0; gap: 12px; padding: 8px 10px; }
   .sem-bar dl div { padding: 0 0 0 8px; }
   .ruler { --ruler-w: 110px; margin-right: 10px; }
   .sem-bar, .nav-buttons { min-height: 44px; }
-  .top-actions .btn-ghost { min-height: 34px; }
   .nav-btn { min-height: 36px; gap: 8px; padding: 0 10px 0 6px; }
   .nav-to { display: none; }
   .hex--nav { width: 24px; height: 24px; }
   .sem-method { display: none; }
   .center-hint { display: none; }
-  /* schmal: Zahnrad bleibt unten links in der Bühne, offenes Panel wird zum Blatt über die ganze Höhe (eigene Rasterzeilen) */
+  /* schmal: offenes Panel wird zum Blatt von unter der Kopfzeile bis unten (eigene Rasterzeilen), Zahnrad bleibt sichtbar */
   .cfg-dock { display: contents; }
-  .cog { grid-area: stage; align-self: end; justify-self: start; }
-  .cfg { grid-area: 1 / 1 / -1 / 2; align-self: end; justify-self: start; width: min(440px, 100%); max-height: 100%; z-index: 3; }
+  .cfg { grid-area: 2 / 1 / -1 / 2; align-self: start; justify-self: end; width: min(440px, 100%); max-height: 100%; z-index: 3; }
   .hsb { padding: 2px; gap: 0; }
   .hex--hs { width: 30px; height: 30px; }
   .hs-card { padding: 12px 14px 10px; }

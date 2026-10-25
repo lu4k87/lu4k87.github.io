@@ -130,26 +130,6 @@ export function createHud(handlers) {
   };
   $('#btn-up').addEventListener('click', () => handlers.onUp());
   $('#btn-down').addEventListener('click', () => handlers.onDown());
-  $('#btn-panel').addEventListener('click', () => {
-    const open = document.body.classList.toggle('panel-collapsed');
-    $('#btn-panel').setAttribute('aria-expanded', String(!open));
-  });
-  const OV_KEY = 'biochar.overlays';
-  const ovBtn = $('#btn-overlays');
-  if (ovBtn) {
-    let ovOn = true;
-    try { const s = localStorage.getItem(OV_KEY); if (s !== null) ovOn = s !== '0'; } catch { /* Standard: an */ }
-    const applyOv = (on) => {
-      document.body.classList.toggle('overlays-off', !on);
-      ovBtn.setAttribute('aria-pressed', String(on));
-    };
-    applyOv(ovOn);
-    ovBtn.addEventListener('click', () => {
-      ovOn = !ovOn;
-      applyOv(ovOn);
-      try { localStorage.setItem(OV_KEY, ovOn ? '1' : '0'); } catch { /* ignorieren */ }
-    });
-  }
 
   function factBarPct(f) {
     if (typeof f.bar === 'number') return f.bar;

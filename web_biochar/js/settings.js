@@ -1,10 +1,12 @@
-// Einstellungen hinter dem Zahnrad unten links (Wunsch User 2026-10-25): oben „Allgemein“ mit den Hauptreglern (Qualität, Detailgrad,
+// Einstellungen hinter dem Zahnrad oben rechts (Wunsch User 2026-10-25): im Kopf drei Kacheln Hell / Dunkel · Infotafel ·
+// Messhilfen (Vorschau 2026-10-25, Ansicht:B, ersetzen die Knöpfe oben rechts), darunter „Allgemein“ mit den Hauptreglern (Qualität, Detailgrad,
 // Lichtstärke, Schatten, Effekte, Bewegung), darunter die Feineinstellungen Leistung, Bewegung, Licht, Details.
 // Werte in localStorage (biochar-settings.v1, clean() prüft jeden Wert); main.js liest settings.S und hört per settings.on().
 // Die Qualitätsstufe selbst bleibt in quality.js (Knopfreihe „Qualität“ hier, Regler oben rechts entfiel 2026-10-25), die Schalter
 // hier liegen darüber (main.js eff()). Vorlage: UX-Robot-Hero (dev_ws 350901df, docs/js/hero3d.js „Einstellungen der Bühne“).
 
 import { QUALITY, quality } from './quality.js';
+import { theme, setTheme } from './theme.js';
 
 const KEY = 'biochar-settings.v1';
 // detail/light/fx: Hauptregler (Faktor auf Detailgrad der Stufe, auf alle Lichter, auf Linse + Korn); shadow: off · soft · full;
@@ -102,8 +104,14 @@ const seg = (k, opts, label) => `<div class="cfg-row"><span id="cfg-l-${k}">${la
   opts.map(([v, t]) => `<button type="button" data-k="${k}" data-v="${v}" aria-pressed="false">${t}</button>`).join('')}</div></div>`;
 const range = (k, step, label) => `<label class="cfg-row"><span>${label}</span><output></output><input type="range" data-k="${k}" min="${RANGE[k][0]}" max="${RANGE[k][1]}" step="${step}"></label>`;
 const sw = (k, label) => `<label class="cfg-sw"><input type="checkbox" data-k="${k}"><span>${label}</span></label>`;
+// Ansicht-Kachel: Symbol, Name, Zustand (data-state); Hell / Dunkel wechselt Auto → Hell → Dunkel, die anderen schalten an/aus
+const tile = (k, icon, label, extra = '') => `<button type="button" data-view="${k}"${extra}><svg viewBox="0 0 24 24" aria-hidden="true">${icon}</svg><span>${label}</span><small data-state></small></button>`;
+const SUN = '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>';
+const PANEL = '<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M14 4v16"/>';
+const RULER = '<path d="M3 17h18M6 17v-5M10 17v-3M14 17v-5M18 17v-3"/>';
 
 const HTML = `<div class="cfg-head"><h2 id="cfg-title">Einstellungen</h2><button type="button" class="cfg-x" data-close aria-label="Einstellungen schließen">×</button></div>
+<div class="cfg-quick" role="group" aria-label="Ansicht">${tile('theme', SUN, 'Hell / Dunkel')}${tile('panel', PANEL, 'Infotafel', ' aria-controls="panel"')}${tile('overlays', RULER, 'Messhilfen')}</div>
 <section aria-labelledby="cfg-h-all"><h3 id="cfg-h-all">Allgemein</h3>
 ${seg('quality', [['auto', 'Auto'], ...QUALITY.map((q, i) => [i, q.name])], 'Qualität')}
 <div class="cfg-meter"><span data-meter>–</span><svg class="cfg-spark" viewBox="0 0 96 24" preserveAspectRatio="none" aria-hidden="true"><line x1="0" y1="15.3" x2="96" y2="15.3"/><polyline points=""/></svg></div>
@@ -145,17 +153,30 @@ ${sw('dust', 'Schwebstaub im Hintergrund')}
 ${sw('veil', 'Lichtschleier beim Durchtauchen')}
 ${sw('hotspots', 'Hotspots (orange Abzeichen)')}
 ${sw('charge', 'REM-Aufladung: helle Streifen, solange die Kohle schlecht leitet (unter ≈ 700 °C)')}
-${sw('overlays', 'Messhilfen im 3D-Bild')}
 ${sw('capillary', 'Kapillar-Aufstieg (Ebene 2)')}
 </section>
 <div class="cfg-foot"><button type="button" data-reset>Zurücksetzen</button><span class="cfg-hint">Gespeichert in diesem Browser</span></div>`;
 
-// Zahnrad + Panel in .cfg-dock (index.html); Esc, × oder Klick außerhalb schließt; Messzeile alle 500 ms.
-// pixels() = gerenderte Bildpunkte des Hauptbilds (Messzeile)
-export function mountSettings(pixels) {
+// Zahnrad oben rechts (.top-actions), Panel in .cfg-dock (index.html); Esc, × oder Klick außerhalb schließt; Messzeile alle 500 ms.
+// pixels() = gerenderte Bildpunkte des Hauptbilds (Messzeile); relayout() nach Ein-/Ausblenden der Infotafel (Bühne ändert die Breite)
+const OV_KEY = 'biochar.overlays';
+const THEMES = ['auto', 'light', 'dark'], THEME_NAME = { auto: 'Auto', light: 'Hell', dark: 'Dunkel' };
+export function mountSettings(pixels, relayout) {
   const btn = document.getElementById('btn-cfg'), box = document.getElementById('cfg');
-  const ovBtn = document.getElementById('btn-overlays');
   if (!btn || !box) return;
+  // Messhilfen (Zonenbänder, Leitlinien, Visier): Zustand als body.overlays-off, gemerkt in localStorage
+  let overlays = true;
+  try { const s = localStorage.getItem(OV_KEY); if (s !== null) overlays = s !== '0'; } catch { /* Standard: an */ }
+  document.body.classList.toggle('overlays-off', !overlays);
+  const view = {
+    theme: () => setTheme(THEMES[(THEMES.indexOf(theme()) + 1) % THEMES.length]),
+    panel: () => { document.body.classList.toggle('panel-collapsed'); relayout?.(); },
+    overlays: () => {
+      overlays = !overlays;
+      document.body.classList.toggle('overlays-off', !overlays);
+      try { localStorage.setItem(OV_KEY, overlays ? '1' : '0'); } catch { /* ignorieren */ }
+    },
+  };
   btn.innerHTML = COG;
   let built = false, timer = 0;
   const sync = () => {
@@ -163,10 +184,16 @@ export function mountSettings(pixels) {
     box.querySelectorAll('[data-k]').forEach((el) => {
       const k = el.dataset.k;
       if (k === 'quality') el.setAttribute('aria-pressed', String(quality.isAuto() ? el.dataset.v === 'auto' : el.dataset.v === String(quality.index())));
-      else if (k === 'overlays') el.checked = ovBtn?.getAttribute('aria-pressed') !== 'false';
       else if (el.tagName === 'BUTTON') el.setAttribute('aria-pressed', String(String(S[k]) === el.dataset.v));
       else if (el.type === 'checkbox') el.checked = S[k];
       else { el.value = S[k]; el.parentElement.querySelector('output').textContent = OUT[k](S[k]); }
+    });
+    const on = { panel: !document.body.classList.contains('panel-collapsed'), overlays };
+    box.querySelectorAll('[data-view]').forEach((b) => {
+      const k = b.dataset.view, state = b.querySelector('[data-state]');
+      if (k === 'theme') { state.textContent = THEME_NAME[theme()]; return; }
+      b.setAttribute('aria-pressed', String(on[k]));
+      state.textContent = on[k] ? 'an' : 'aus';
     });
     box.querySelector('[data-qhint]').textContent = quality.isAuto()
       ? `Auto misst die Bildzeit und passt die Stufe an · jetzt ${quality.get().name}`
@@ -198,6 +225,7 @@ export function mountSettings(pixels) {
     if (!b) return;
     if (b.hasAttribute('data-close')) { open(false); btn.focus(); return; }
     if (b.hasAttribute('data-reset')) { settings.reset(); sync(); return; }
+    if (b.dataset.view) { view[b.dataset.view](); sync(); return; }
     const k = b.dataset.k, v = b.dataset.v;
     if (k === 'quality') { if (v === 'auto') quality.setAuto(); else quality.set(+v); sync(); }
     else if (k === 'motion') set({ motion: v, ...MOT[v] });
@@ -208,8 +236,7 @@ export function mountSettings(pixels) {
   box.addEventListener('change', (e) => {
     const el = e.target;
     if (el.type !== 'checkbox') return;
-    if (el.dataset.k === 'overlays') ovBtn?.click();   // Zustand hält hud.js (Knopf „Messhilfen“ oben rechts)
-    else set({ [el.dataset.k]: el.checked });
+    set({ [el.dataset.k]: el.checked });
   });
   // Tasten im Panel nicht an die Seite weiterreichen (Esc = Ebene zurück, 1–7 = Ebene)
   box.addEventListener('keydown', (e) => {
@@ -219,5 +246,4 @@ export function mountSettings(pixels) {
   document.addEventListener('pointerdown', (e) => { if (!box.hidden && !box.contains(e.target) && !btn.contains(e.target)) open(false); });
   subs.push(sync);
   quality.onChange(sync);
-  ovBtn?.addEventListener('click', () => queueMicrotask(sync));
 }

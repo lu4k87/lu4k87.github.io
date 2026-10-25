@@ -545,7 +545,7 @@ settings.on((S, keys) => {
   if (keys && keys.some((k) => PERF_KEYS.includes(k))) applyQuality(eff());
   for (const lv of state.levels.values()) lv.dirty = true;
 });
-mountSettings(() => renderer.domElement.width * renderer.domElement.height);
+mountSettings(() => renderer.domElement.width * renderer.domElement.height, () => requestAnimationFrame(resize));
 
 // ---------- Ebenen ----------
 // quiet = Vorladen im Hintergrund ohne Ladeanzeige; die Anzeige zählt nur sichtbar angeforderte Ebenen
@@ -948,7 +948,6 @@ window.addEventListener('hashchange', () => {
   if (m && +m[1] - 1 !== state.index) goTo(+m[1] - 1);
 });
 window.addEventListener('resize', resize);
-document.getElementById('btn-panel').addEventListener('click', () => requestAnimationFrame(resize));
 
 if (tour) ['pointerdown', 'wheel', 'keydown'].forEach((ev) => window.addEventListener(ev, () => { tour.dwell = Infinity; }, { once: true }));
 function stepTour(real) {

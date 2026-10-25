@@ -1,20 +1,20 @@
 // Hell/Dunkel der Bedienoberfläche (die 3D-Szene bleibt dunkel wie im Mikroskop); Wahl bleibt im Browser.
+// Umschalter Auto · Hell · Dunkel im Einstellungs-Panel (settings.js, Vorschau 2026-10-25); Auto = Systemeinstellung.
 
 const root = document.documentElement;
 const KEY = 'biochar-theme';
 
 function apply(theme) {
-  if (theme) root.dataset.theme = theme;
+  if (theme === 'light' || theme === 'dark') root.dataset.theme = theme;
   else delete root.dataset.theme;
 }
 
 try { apply(localStorage.getItem(KEY)); } catch { /* ohne Speicher: Systemeinstellung */ }
 
-document.getElementById('btn-theme').addEventListener('click', () => {
-  const dark = root.dataset.theme ? root.dataset.theme === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
-  const next = dark ? 'light' : 'dark';
-  apply(next);
-  try { localStorage.setItem(KEY, next); } catch { /* egal */ }
-});
+export const theme = () => root.dataset.theme || 'auto';
+export function setTheme(t) {
+  apply(t);
+  try { if (root.dataset.theme) localStorage.setItem(KEY, t); else localStorage.removeItem(KEY); } catch { /* egal */ }
+}
 
 window.addEventListener('pointerdown', () => document.body.classList.add('touched'), { once: true });
