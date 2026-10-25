@@ -1011,6 +1011,7 @@ body.card-docked .panel { visibility: hidden; }
 body.is-loading .loader, body:not(.is-ready) .loader { opacity: 1; }
 body.has-error .loader, body.no-webgl .loader { opacity: 0; }
 body.has-error .fatal, body.no-webgl .fatal { opacity: 1; background: var(--bg); pointer-events: auto; padding: 24px; text-align: center; }
+body:not(.no-webgl) .fatal-webgl, body.no-webgl .fatal-start { display: none; }
 
 /* ---------- Schmale Fenster: Leiter oben, Tafel als Blatt unten ---------- */
 @media (max-width: 860px) {

@@ -508,14 +508,17 @@ function applyQuality(Q) {
 quality.onChange(applyQuality);
 
 // ---------- Ebenen ----------
-// quiet = Vorladen im Hintergrund ohne Ladeanzeige
+// quiet = Vorladen im Hintergrund ohne Ladeanzeige; die Anzeige zählt nur sichtbar angeforderte Ebenen
+let waiting = 0;
 function getLevel(i, quiet = false) {
   if (state.levels.has(i)) return Promise.resolve(state.levels.get(i));
   let job = state.loading.get(i);
   if (!job) job = buildLevel(i);
   if (!quiet) {
+    waiting++;
     hud.setLoading(true);
-    job.finally(() => hud.setLoading(state.loading.size > 0));
+    const done = () => hud.setLoading(--waiting > 0);
+    job.then(done, done);
   }
   return job;
 }
@@ -544,6 +547,7 @@ function buildLevel(i) {
     return lv;
   })();
   state.loading.set(i, job);
+  job.catch(() => state.loading.delete(i));   // fehlgeschlagen → der nächste Aufruf baut neu
   return job;
 }
 
@@ -1047,7 +1051,8 @@ async function start() {
   resize();
   const m = /ebene=(\d)/.exec(location.hash);
   const first = m ? Math.min(LOADERS.length - 1, Math.max(0, +m[1] - 1)) : 0;
-  if (params.has('T')) state.temp = state.pyro.shown = Math.min(800, Math.max(T_ROOM, +params.get('T')));
+  const T = parseFloat(params.get('T'));   // ?T=abc oder leer → Standard behalten
+  if (Number.isFinite(T)) state.temp = state.pyro.shown = Math.min(800, Math.max(T_ROOM, T));
   const lv = await getLevel(first);
   activate(lv);
   if (first === 0 && !reduced && freeze === null) {

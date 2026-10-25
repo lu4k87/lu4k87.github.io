@@ -47,17 +47,17 @@ else if (valid(stored)) { index = stored; fixed = true; }
 show();
 input.addEventListener('input', () => set(+input.value, { byUser: true }));
 
-// Bildraten-Probe: Bildzeiten zwischen 1,5 s und 5 s nach dem Start sammeln (Hänger > 200 ms zählen nicht);
-// Median über 24 ms (unter ≈ 40 Bilder/s) → eine Stufe herunter, über 40 ms → zwei Stufen
+// Bildraten-Probe: Bildzeiten ab 1,5 s nach dem Start sammeln, auswerten ab 5 s und frühestens nach 10 Bildern
+// (bei sehr niedriger Bildrate misst sie länger). Der Median übergeht einzelne Ladehänger, anhaltend langsame
+// Bilder zählen voll. Median über 24 ms (unter ≈ 40 Bilder/s) → eine Stufe herunter, über 40 ms → zwei Stufen
 const probe = { t: 0, samples: [], done: false };
 function tick(real) {
   if (probe.done || fixed) return;
   probe.t += real;
   if (probe.t < 1.5 || document.hidden) return;
-  if (real < 0.2) probe.samples.push(real);
-  if (probe.t < 5) return;
+  probe.samples.push(real);
+  if (probe.t < 5 || probe.samples.length < 10) return;
   probe.done = true;
-  if (probe.samples.length < 30) return;
   const s = probe.samples.sort((a, b) => a - b);
   const median = s[s.length >> 1] * 1000;
   const down = median > 40 ? 2 : median > 24 ? 1 : 0;
