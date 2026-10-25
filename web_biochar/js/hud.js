@@ -1040,6 +1040,7 @@ export function createHud(handlers) {
   }
 
   return {
+    setGoal(T) { setGoal(T); refreshFacts(); },   // Zeitraffer hebt ein Ziel auf Raumtemperatur an
     setLevel(index, lv, state) {
       current = index;
       level = lv;

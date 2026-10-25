@@ -56,6 +56,11 @@
     </aside>
 
     <footer class="bottombar">
+      <div class="nav-buttons" role="group" aria-label="Ebene wechseln">
+        <button type="button" id="btn-up" class="nav-btn nav-btn--up"><span class="nav-text"><span class="nav-cap">Ebene zurück</span><span class="nav-to" id="nav-up-to">–</span></span></button>
+        <button type="button" id="btn-down" class="nav-btn nav-btn--down"><span class="nav-text"><span class="nav-cap">Tiefer</span><span class="nav-to" id="nav-down-to">–</span></span></button>
+      </div>
+      <section id="pyro-tl" class="pyro-tl" aria-label="Pyrolyse-Zeitleiste"></section>
       <div class="sem-bar" aria-label="Messleiste">
         <div class="sem-top">
           <div class="ruler" id="ruler" aria-label="Maßstab"><span class="ruler-zero" aria-hidden="true">0</span><span class="ruler-end" id="ruler-end">1 mm</span></div>
@@ -66,11 +71,6 @@
           </dl>
         </div>
         <p class="sem-method"><span class="sem-cap">Methode</span> <span id="sb-method">–</span></p>
-      </div>
-      <section id="pyro-tl" class="pyro-tl" aria-label="Pyrolyse-Zeitleiste"></section>
-      <div class="nav-buttons" role="group" aria-label="Ebene wechseln">
-        <button type="button" id="btn-up" class="nav-btn nav-btn--up"><span class="nav-text"><span class="nav-cap">Ebene zurück</span><span class="nav-to" id="nav-up-to">–</span></span></button>
-        <button type="button" id="btn-down" class="nav-btn nav-btn--down"><span class="nav-text"><span class="nav-cap">Tiefer</span><span class="nav-to" id="nav-down-to">–</span></span></button>
       </div>
     </footer>
   </div>

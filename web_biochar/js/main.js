@@ -980,7 +980,7 @@ function stepIntro(lv, real) {
 // Ein Zielwechsel gleitet ≈ 1,2 s; „Pyrolyse abspielen“ fährt am Stück von Raumtemperatur zur gewählten Temperatur
 // (steht die gezeigte Temperatur nach einem Kapitel-Sprung darunter, ab dort – wie ein Video ab dem Abspielpunkt).
 // Alle Ebenen bekommen den laufenden Wert (setParam 'temp'), sie blenden ihre Strukturen selbst weich über.
-const GLIDE_SECONDS = 1.2, PLAY_URL = +params.get('playsec');   // ?playsec=4 verkürzt den Zeitraffer (Prüfläufe), sonst Zahnrad
+const GLIDE_SECONDS = 1.2, T_PLAY_DEFAULT = 550, PLAY_URL = +params.get('playsec');   // ?playsec=4 verkürzt den Zeitraffer (Prüfläufe), sonst Zahnrad
 function pushParam(name, value) {
   for (const lv of state.levels.values()) if (lv.setParam) lv.setParam(name, value);
 }
@@ -998,10 +998,13 @@ function togglePlay() {
     startGlide(p.shown, state.temp, GLIDE_SECONDS, false);
     return;
   }
+  // Ziel auf Raumtemperatur: nichts abzuspielen → Zeitraffer bis zur Standardtemperatur, Regler zieht mit
+  if (state.temp <= T_ROOM) { state.temp = T_PLAY_DEFAULT; hud.setGoal(state.temp); }
   p.playing = true;
   pushParam('play', true);
   pushParam('target', state.temp);
-  const from = p.shown < state.temp - 1 ? p.shown : T_ROOM;
+  // ab dem Abspielpunkt nur, wenn die Szene dort steht (Kapitel-Sprung); gleitet sie noch zum Ziel, von vorn
+  const from = !p.tween && p.shown < state.temp - 1 ? p.shown : T_ROOM;
   startGlide(from, state.temp, still ? 1 : playSeconds(from), true);
 }
 const playSeconds = (from) => Math.max(0.5, (PLAY_URL || settings.S.play) * (state.temp - from) / Math.max(1, state.temp - T_ROOM));

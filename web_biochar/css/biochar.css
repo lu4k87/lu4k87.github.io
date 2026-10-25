@@ -586,9 +586,9 @@ body.panel-collapsed .panel { display: none; }
 .bottombar > * { pointer-events: auto; }
 /* Messleiste und Ebenen-Wechsel: gleiche Höhe, gleiches Glas, Spalten durch Haarlinien getrennt wie Marken an der Schiene */
 .sem-bar, .nav-buttons { min-height: 50px; border-radius: var(--radius); }
-/* Feste Breite (Vorschau Mess:B, User 2026-10-24): beim Zoomen ändern sich nur Teilung und Zahlen, nie die Leiste */
+/* Feste Breite (Vorschau Mess:B, User 2026-10-24; 460 px mit Detektor-Spalte, User 2026-10-25): beim Zoomen ändern sich nur Teilung und Zahlen, nie die Leiste */
 .sem-bar {
-  flex: 0 1 400px;
+  flex: 0 1 460px;
   min-width: 320px;   /* Lineal + beide Kennwerte ohne Abschneiden */
   box-sizing: border-box;
   display: flex;
@@ -600,7 +600,7 @@ body.panel-collapsed .panel { display: none; }
 .sem-top { display: flex; align-items: center; }
 /* Lineal fester Länge: Haupt- und Zwischenstriche als Verlauf, hud.js setzt nur --step (Abstand) und --end (letzter Hauptstrich) */
 .ruler {
-  --ruler-w: 170px;
+  --ruler-w: 190px;
   --step: 50px;
   position: relative;
   flex: 0 1 var(--ruler-w);   /* schrumpft nur mit dem Fenster, nie beim Zoomen; hud.js liest die Breite */
@@ -1031,7 +1031,7 @@ body.hotspots-off #hotspots { display: none; }
 }
 .pyro-tl.is-dragging { border-color: var(--accent); }
 /* Messleiste + Zeitleiste (ab 520, wächst bis 760) + Ebenen-Wechsel passen nebeneinander; Umbruch zählt die Grundbreiten */
-@container bottom (min-width: 1340px) {   /* 400 + 520 + 387 + 2 × 16 */
+@container bottom (min-width: 1400px) {   /* 460 + 520 + 387 + 2 × 16 */
   .pyro-tl { order: 0; flex: 1 1 520px; max-width: 760px; margin-inline: 0; }
 }
 .tl-move { position: relative; align-self: stretch; display: flex; flex-direction: column; align-items: center; justify-content: center; }   /* Griff mittig in der Spalte (User, 2026-10-24) */
