@@ -435,8 +435,12 @@ export function create(ctx) {
   ];
 
   const controls = [
-    { id: 'time', label: 'Zeit', value: 'now', options: [['now', 'Jetzt'], ['hour', '1 h/s'], ['day', '1 Tag/s']],
-      set: (val) => { rate = val === 'hour' ? 1 / 24 : val === 'day' ? 1 : 0; if (!rate) jd = julianDate(new Date()); } },
+    // Tempo wie SPEEDS der Zeitleiste, damit sie denselben Stand zeigt
+    { id: 'time', label: 'Zeit/s', value: 'now', options: [['now', 'Jetzt'], ['min', '1 min'], ['min10', '10 min'], ['hour', '1 h'], ['day', '1 Tag']],
+      set: (val) => {
+        rate = { now: 0, min: 1 / 1440, min10: 1 / 144, hour: 1 / 24, day: 1 }[val];
+        if (rate) clockIdx = SPEEDS.findIndex(([r]) => r === rate); else jd = julianDate(new Date());
+      } },
     { id: 'const', label: 'Sternbilder', value: 'off', options: [['off', 'Aus'], ['lines', 'Linien'], ['names', 'Linien + Namen']],
       set: (val) => { consMode = val; if (lines) lines.visible = val !== 'off'; } },
     { id: 'shadow', label: 'Schatten', value: 'off', options: [['off', 'Aus'], ['on', 'Kegel zeigen']],
