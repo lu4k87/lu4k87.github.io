@@ -15,6 +15,7 @@ import { NOISE } from '../glsl.js';
 import { createFlare } from '../flare.js';
 import { settings } from '../settings.js';
 import { registerLayers } from '../layers.js';
+import { keepShare } from '../sats.js';
 
 const RAD = Math.PI / 180;
 const AU_KM = AU / 1e3;
@@ -65,8 +66,10 @@ const BELT_VERT = /* glsl */ `
 attribute vec4 el;    // a [AE], e, i [rad], Ω [rad]
 attribute vec2 el2;   // ω [rad], M0 [rad]
 attribute float bright;
-uniform float uDays, uPx;
-varying float vB;
+attribute vec2 seed;  // x: Ausdünnen, y: Form und Größe des Brockens
+uniform float uDays, uPx, uMag, uKeep, uRef;
+varying float vB, vPx, vSeed;
+varying vec2 vL;
 void main() {
   float a = el.x, e = el.y;
   float M = el2.y + uDays * 0.0172021 / (a * sqrt(a));
@@ -79,16 +82,35 @@ void main() {
                   so * sI * xp + co * sI * yp);
   vec4 mv = modelViewMatrix * vec4(ecl.x, ecl.z, -ecl.y, 1.0);
   gl_Position = projectionMatrix * mv;
-  gl_PointSize = uPx * 1.6;
-  vB = bright;
+  // vergrößert (Zahnrad „Satelliten und Kleinkörper“): Größe nach Abstand zum Blickziel, betrachteter Gürtel deutlich,
+  // Gürtel weit hinter dem Blickziel klein; nur der Anteil uKeep bleibt sichtbar
+  float k = mix(1.0, clamp(uRef / max(-mv.z, 1e-4), 0.3, 1.4), smoothstep(1.0, 2.5, uMag));
+  float on = seed.x > uKeep ? 0.0 : 1.0;
+  vPx = uPx * 1.6 * mix(1.0, uMag * (0.6 + 1.4 * seed.y * seed.y), smoothstep(1.0, 1.5, uMag)) * k;
+  gl_PointSize = vPx * on;
+  vB = bright * on * min(k, 1.0);
+  vSeed = seed.y;
+  // Richtung zur Sonne (Ursprung) im Bild, für die Beleuchtung des Brockens; gl_PointCoord zählt y nach unten
+  vec4 sc = projectionMatrix * modelViewMatrix * vec4(0.0, 0.0, 0.0, 1.0);
+  vec2 dl = (sc.xy / sc.w - gl_Position.xy / gl_Position.w) * vec2(projectionMatrix[1][1] / projectionMatrix[0][0], 1.0);
+  vL = normalize(vec2(dl.x, -dl.y) * sign(sc.w) + 1e-6);
 }
 `;
 const BELT_FRAG = /* glsl */ `
 uniform vec3 uColor;
-varying float vB;
+varying float vB, vPx, vSeed;
+varying vec2 vL;
 void main() {
-  vec2 d = gl_PointCoord - 0.5;
-  gl_FragColor = vec4(uColor * vB * exp(-dot(d, d) * 14.0), 1.0);
+  if (vB <= 0.001) discard;
+  vec2 p = (gl_PointCoord - 0.5) * 2.0;
+  float r = length(p), a = atan(p.y, p.x), ph = vSeed * 40.0;
+  // ab etwa 6 Pixeln unregelmäßiger Brocken mit Tag- und Nachtseite statt Lichtpunkt
+  float edge = 0.72 + 0.1 * sin(3.0 * a + ph) + 0.06 * sin(5.0 * a + 2.3 * ph) + 0.04 * sin(9.0 * a + 0.7 * ph);
+  float aa = 3.0 / max(vPx, 1.0), inside = 1.0 - smoothstep(edge - aa, edge, r);
+  vec2 n2 = p / edge;
+  vec3 n = vec3(n2, sqrt(max(0.0, 1.0 - dot(n2, n2))));
+  float rock = inside * (0.12 + 1.1 * max(0.0, dot(n, normalize(vec3(vL, 0.35)))));
+  gl_FragColor = vec4(uColor * vB * mix(exp(-r * r * 3.5), rock * 1.4, smoothstep(4.0, 8.0, vPx)), 1.0);
 }
 `;
 
@@ -476,19 +498,21 @@ export function create(ctx) {
   const ray = (s) => Math.abs(gauss(rand)) * s;   // Rayleigh-ähnlich
   const beltObjs = [];
   function belt(n, pick, color, gain) {
-    const el = new Float32Array(n * 4), el2 = new Float32Array(n * 2), br = new Float32Array(n);
+    const el = new Float32Array(n * 4), el2 = new Float32Array(n * 2), br = new Float32Array(n), sd = new Float32Array(n * 2);
     for (let i = 0; i < n; i++) {
       const o = pick(i);
       el.set([o.a, o.e, o.i, o.node ?? rand() * Math.PI * 2], i * 4);
       el2.set([o.w ?? rand() * Math.PI * 2, o.M ?? rand() * Math.PI * 2], i * 2);
       br[i] = (0.35 + rand() * 0.65) * gain;
+      sd.set([(i * 0.6180339887) % 1, (i * 0.7548776662 + 0.5) % 1], i * 2);   // ohne rand(): Verteilung der Gürtel bleibt gleich
     }
     const g = new THREE.BufferGeometry();
     g.setAttribute('position', new THREE.BufferAttribute(new Float32Array(n * 3), 3));
     g.setAttribute('el', new THREE.BufferAttribute(el, 4));
     g.setAttribute('el2', new THREE.BufferAttribute(el2, 2));
     g.setAttribute('bright', new THREE.BufferAttribute(br, 1));
-    const m = new THREE.ShaderMaterial({ vertexShader: BELT_VERT, fragmentShader: BELT_FRAG, uniforms: { uDays: { value: 0 }, uPx: { value: 1 }, uColor: { value: new THREE.Color(color) } }, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true });
+    g.setAttribute('seed', new THREE.BufferAttribute(sd, 2));
+    const m = new THREE.ShaderMaterial({ vertexShader: BELT_VERT, fragmentShader: BELT_FRAG, uniforms: { uDays: { value: 0 }, uPx: { value: 1 }, uMag: { value: 1 }, uKeep: { value: 1 }, uRef: { value: 1 }, uColor: { value: new THREE.Color(color) } }, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true });
     const pts = new THREE.Points(g, m);
     pts.frustumCulled = false;
     scene.add(pts);
@@ -656,6 +680,8 @@ export function create(ctx) {
       dotMat.uniforms.uProj.value = (H / 2) / Math.tan((camera.fov * RAD) / 2);
       planets.forEach((x, i) => { occluders[i].radius = visR(x.b.r, real); });
       cam.updateMatrixWorld();
+      const mag = settings.S.small;
+      beltMats.forEach((m) => { m.uniforms.uRef.value = cam.position.length(); m.uniforms.uMag.value = mag; m.uniforms.uKeep.value = keepShare(mag); });
       // Linsenreflex nur aus der Ferne: nah an der Sonne wäre sein Lichthof größer als die Scheibe
       const far = cam.position.distanceTo(sunG.position) > sr * 7;
       flare.userData.update(sunWorld.set(0, 0, 0), cam, occluders, settings.S.lens && far, dt);

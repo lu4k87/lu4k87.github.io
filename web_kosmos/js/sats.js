@@ -5,6 +5,7 @@
 
 import * as THREE from 'three';
 import { propagate, periodMin } from './orbit.js';
+import { settings } from './settings.js';
 
 export const KIND = ['Nutzlast', 'Starlink', 'Trümmer', 'Station'];
 export const KIND_COLOR = ['#ffe9c4', '#8fc6ff', '#ff8a5c', '#f3b552'];
@@ -17,9 +18,10 @@ export const namedIndex = (data, name) => +(Object.entries(data.named).find(([, 
 const VERT = /* glsl */ `
 attribute vec4 el;    // a km, e, i rad, Ω rad
 attribute vec4 el2;   // ω rad, M0 rad, Δt Tage, Art
-uniform float uDays, uPx, uScale, uShow0, uShow1, uShow2, uShow3;
+attribute float seed; // 0–1 je Objekt: Ausdünnen und Drehlage des Symbols
+uniform float uDays, uPx, uScale, uMag, uKeep, uShow0, uShow1, uShow2, uShow3;
 varying vec3 vCol;
-varying float vA;
+varying float vA, vPx, vRot, vKind;
 const float MU = 398600.4418, J2 = 1.08262668e-3, RE = 6378.137;
 void main() {
   float a = el.x, e = el.y, i = el.z;
@@ -39,46 +41,73 @@ void main() {
   gl_Position = projectionMatrix * mv;
   int kind = int(el2.w + 0.5);
   float show = kind == 0 ? uShow0 : kind == 1 ? uShow1 : kind == 2 ? uShow2 : uShow3;
-  float d = max(-mv.z, 0.05), near = clamp(12.0 / d, 0.0, 1.0);
-  // Punkte klein und schwach: 19.000 additive Punkte summieren sich sonst zu einer weißen Wolke; Stationen (ISS) hell
-  float base = kind == 3 ? 7.0 : kind == 2 ? 1.4 : 1.7;
-  gl_PointSize = uPx * base * (0.75 + 1.3 * near) * show;
-  vA = show * (kind == 3 ? 1.0 : 0.07 + 0.3 * near * near);
+  // Vergrößerung uMag (Zahnrad „Satelliten und Kleinkörper“): je größer, desto kleiner der gezeigte Anteil uKeep; Stationen immer
+  if (kind != 3 && seed > uKeep) show = 0.0;
+  float d = max(-mv.z, 0.05), near = clamp(12.0 / d, 0.0, 1.0), big = smoothstep(1.0, 4.0, uMag);
+  float base = kind == 3 ? 7.0 + 3.0 * (uMag - 1.0) : (kind == 2 ? 1.4 : 1.7) * uMag * (1.0 + 0.4 * big);
+  vPx = uPx * base * (0.75 + 1.3 * near);
+  gl_PointSize = vPx * show;
+  // bei 1× klein und schwach (19.000 additive Punkte ergäben sonst eine weiße Wolke), vergrößert und ausgedünnt deutlich
+  vA = show * (kind == 3 ? 1.0 : mix(0.07 + 0.3 * near * near, 0.85 + 0.15 * near, big));
+  vRot = seed * 40.0;
+  vKind = float(kind);
   vCol = kind == 0 ? vec3(1.0, 0.91, 0.77) : kind == 1 ? vec3(0.56, 0.78, 1.0) : kind == 2 ? vec3(1.0, 0.54, 0.36) : vec3(0.95, 0.71, 0.32);
 }
 `;
 const FRAG = /* glsl */ `
 uniform float uGain;
 varying vec3 vCol;
-varying float vA;
+varying float vA, vPx, vRot, vKind;
+float box(vec2 p, vec2 b) { vec2 d = abs(p) - b; return length(max(d, 0.0)) + min(max(d.x, d.y), 0.0); }
 void main() {
   if (vA <= 0.001) discard;
-  vec2 d = gl_PointCoord - 0.5;
-  float r2 = dot(d, d);
-  if (r2 > 0.25) discard;
-  gl_FragColor = vec4(vCol * exp(-r2 * 18.0) * vA * uGain, 1.0);
+  vec2 p = (gl_PointCoord - 0.5) * 2.0;
+  float r2 = dot(p, p);
+  if (r2 > 1.0) discard;
+  // ab etwa 7 Pixeln ein Symbol statt Lichtpunkt: Satellit mit zwei Solarflügeln, Station mit Gitterträger und vier
+  // Flügelpaaren, Trümmer als Splitter – in zufälliger Drehlage
+  float c = cos(vRot), s = sin(vRot), aa = 3.0 / max(vPx, 1.0), hull, wing = 0.0;
+  vec2 q = mat2(c, -s, s, c) * p;
+  if (vKind > 2.5) {
+    hull = 1.0 - smoothstep(-aa, aa, min(box(q, vec2(0.92, 0.05)), box(q, vec2(0.13, 0.32))));
+    wing = 1.0 - smoothstep(-aa, aa, box(vec2(abs(q.x) - 0.55, abs(q.y) - 0.3), vec2(0.2, 0.17)));
+  } else if (vKind > 1.5) {
+    vec2 k = q * vec2(1.0, 1.6);
+    hull = 1.0 - smoothstep(-aa, aa, max(abs(k.x) * 0.866 + k.y * 0.5, -k.y) - 0.42);
+  } else {
+    hull = 1.0 - smoothstep(-aa, aa, min(box(q, vec2(0.2, 0.24)), box(q, vec2(0.36, 0.035))));
+    wing = 1.0 - smoothstep(-aa, aa, box(vec2(abs(q.x) - 0.66, q.y), vec2(0.3, 0.17)));
+  }
+  // deckend gemischt, damit Symbole auch vor der hellen Tagseite stehen; Lichtpunkt auf Schwarz wirkt wie additiv
+  float k = smoothstep(5.0, 9.0, vPx);
+  vec3 col = mix(vCol, mix(vec3(0.3, 0.5, 0.95), vCol * 1.15, hull), k);
+  gl_FragColor = vec4(col * uGain, mix(exp(-r2 * 4.5), max(hull, wing), k) * vA);
 }
 `;
 
 const RAD = Math.PI / 180;
+// Gezeigter Anteil bei Vergrößerung m: Fläche je Symbol wächst mit m², Anteil fällt mit m^1,5 (4× → jedes achte Objekt)
+export const keepShare = (m) => Math.min(1, m ** -1.5);
 export function createSats(data, { unit = 1e-3 } = {}) {
   const n = data.obj.length;
-  const el = new Float32Array(n * 4), el2 = new Float32Array(n * 4);
+  const el = new Float32Array(n * 4), el2 = new Float32Array(n * 4), seed = new Float32Array(n);
   data.obj.forEach((o, i) => {
     el.set([o[0], o[1], o[2] * RAD, o[3] * RAD], i * 4);
     el2.set([o[4] * RAD, o[5] * RAD, o[6], o[7]], i * 4);
+    seed[i] = (i * 0.6180339887) % 1;   // goldener Schnitt: jeder Ausschnitt gleichmäßig verteilt
   });
   const g = new THREE.BufferGeometry();
   g.setAttribute('position', new THREE.BufferAttribute(new Float32Array(n * 3), 3));
   g.setAttribute('el', new THREE.BufferAttribute(el, 4));
   g.setAttribute('el2', new THREE.BufferAttribute(el2, 4));
-  const u = { uDays: { value: 0 }, uPx: { value: 1 }, uScale: { value: unit }, uGain: { value: 0.8 }, uShow0: { value: 1 }, uShow1: { value: 1 }, uShow2: { value: 1 }, uShow3: { value: 1 } };
-  const m = new THREE.ShaderMaterial({ vertexShader: VERT, fragmentShader: FRAG, uniforms: u, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true });
+  g.setAttribute('seed', new THREE.BufferAttribute(seed, 1));
+  const u = { uDays: { value: 0 }, uPx: { value: 1 }, uScale: { value: unit }, uMag: { value: 1 }, uKeep: { value: 1 }, uGain: { value: 0.8 }, uShow0: { value: 1 }, uShow1: { value: 1 }, uShow2: { value: 1 }, uShow3: { value: 1 } };
+  const m = new THREE.ShaderMaterial({ vertexShader: VERT, fragmentShader: FRAG, uniforms: u, blending: THREE.NormalBlending, depthWrite: false, transparent: true });
   const pts = new THREE.Points(g, m);
   pts.frustumCulled = false;
   pts.userData = {
     count: n,
-    update: (days) => { u.uDays.value = days; },
+    update: (days) => { u.uDays.value = days; u.uMag.value = settings.S.small; u.uKeep.value = keepShare(settings.S.small); },
     setShow: (kind, on) => { u[`uShow${kind}`].value = on ? 1 : 0; },
     setPixelRatio: (pr) => { u.uPx.value = pr; },
   };
