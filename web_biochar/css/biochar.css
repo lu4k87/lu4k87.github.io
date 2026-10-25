@@ -155,7 +155,7 @@ body.panel-collapsed .panel { display: none; }
 .top-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
 /* Ein Material für alle Leisten (Kopf, Messleiste, Ebenen-Wechsel, Pyrolyse-Zeitleiste) wie die Zoom-Schiene (User, 2026-10-24):
    dunkles Glas, Haarlinie, Mono-Versalien in Akzent als Beschriftung, Akzent sonst nur für Zustand und Hover */
-.quality, .btn-ghost, .sem-bar, .nav-buttons, .pyro-tl {
+.btn-ghost, .sem-bar, .nav-buttons, .pyro-tl {
   border: 1px solid var(--line);
   background: var(--glass-sheen), var(--glass-strong);
   color: var(--ink);
@@ -163,51 +163,14 @@ body.panel-collapsed .panel { display: none; }
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
 }
-.quality-cap, .sem-bar dt, .sem-cap, .nav-cap { font: 500 11.5px/1 var(--mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); }
+.sem-bar dt, .sem-cap, .nav-cap { font: 500 11.5px/1 var(--mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); }
 /* Hover aller Bedienteile: Rand und Fläche nehmen leise den Akzent an (Skill soft-motion: Hover Rand/Fläche) */
-.quality, .btn-ghost, .nav-btn { transition: border-color 0.15s, background-color 0.15s; }
-.quality:hover, .quality:focus-within, .btn-ghost:hover:not(:disabled), .nav-btn:hover:not(:disabled) {
+.btn-ghost, .nav-btn { transition: border-color 0.15s, background-color 0.15s; }
+.btn-ghost:hover:not(:disabled), .nav-btn:hover:not(:disabled) {
   border-color: color-mix(in srgb, var(--accent) 55%, transparent);
   background-color: color-mix(in srgb, var(--accent) 9%, var(--glass-strong));
 }
 /* Qualitäts-Regler: drei Rastpunkte (Leicht · Mittel · Fein) als Haarlinie mit Strichen, Griff wie der Knopf der Zoom-Schiene */
-.quality {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  min-height: 36px;
-  padding: 0 11px;
-  border-radius: var(--radius);
-  font-size: 13.5px;
-  cursor: pointer;
-}
-.quality input {
-  --tick: color-mix(in srgb, var(--ink) 45%, transparent);
-  appearance: none;
-  -webkit-appearance: none;
-  width: 68px;
-  height: 18px;
-  margin: 0;
-  cursor: pointer;
-  background:
-    linear-gradient(var(--tick), var(--tick)) 6px 50% / 1px 9px no-repeat,
-    linear-gradient(var(--tick), var(--tick)) 50% 50% / 1px 9px no-repeat,
-    linear-gradient(var(--tick), var(--tick)) calc(100% - 6px) 50% / 1px 9px no-repeat,
-    linear-gradient(var(--tick), var(--tick)) 0 50% / 100% 1px no-repeat;
-}
-.quality input::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  background: var(--accent);
-  box-shadow: 0 0 0 3px var(--accent-soft), 0 0 10px color-mix(in srgb, var(--accent) 55%, transparent);
-  transition: transform 0.25s var(--ease-out);
-}
-.quality input::-moz-range-thumb { width: 12px; height: 12px; border: 0; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
-.quality:hover input::-webkit-slider-thumb, .quality input:focus-visible::-webkit-slider-thumb { transform: scale(1.2); }
-.quality input:focus-visible { outline: 2px solid var(--focus); outline-offset: 4px; border-radius: 4px; }
-.quality-name { min-width: 6ch; font-weight: 500; white-space: nowrap; }
 
 .btn-ghost, .btn-primary {
   border-radius: 8px;
@@ -1150,15 +1113,12 @@ body:not(.no-webgl) .fatal-webgl, body.no-webgl .fatal-start { display: none; }
   .brand-text span { display: none; }
   .top-actions { gap: 5px; }
   .top-actions .btn-ghost { padding: 0 8px; font-size: 12.5px; gap: 5px; }
-  .quality { padding: 2px 6px; gap: 5px; }
-  .quality input { width: 42px; }
-  .quality-cap { display: none; }
   .bottombar { flex-wrap: wrap; }
   .sem-bar { flex: 1 1 100%; min-width: 0; gap: 12px; padding: 8px 10px; }
   .sem-bar dl div { padding: 0 0 0 8px; }
   .ruler { --ruler-w: 110px; margin-right: 10px; }
   .sem-bar, .nav-buttons { min-height: 44px; }
-  .quality, .top-actions .btn-ghost { min-height: 34px; }
+  .top-actions .btn-ghost { min-height: 34px; }
   .nav-btn { min-height: 36px; gap: 8px; padding: 0 10px 0 6px; }
   .nav-to { display: none; }
   .hex--nav { width: 24px; height: 24px; }

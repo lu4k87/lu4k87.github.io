@@ -1,22 +1,25 @@
-// Einstellungen hinter dem Zahnrad unten links (Wunsch User 2026-10-25): Leistung, Bewegung, Licht, Details.
+// Einstellungen hinter dem Zahnrad unten links (Wunsch User 2026-10-25): oben „Allgemein“ mit den Hauptreglern (Qualität, Detailgrad,
+// Lichtstärke, Schatten, Effekte, Bewegung), darunter die Feineinstellungen Leistung, Bewegung, Licht, Details.
 // Werte in localStorage (biochar-settings.v1, clean() prüft jeden Wert); main.js liest settings.S und hört per settings.on().
-// Die Qualitätsstufe selbst bleibt in quality.js (Regler oben rechts + Knopfreihe hier steuern dieselbe Stufe), die Schalter
+// Die Qualitätsstufe selbst bleibt in quality.js (Knopfreihe „Qualität“ hier, Regler oben rechts entfiel 2026-10-25), die Schalter
 // hier liegen darüber (main.js eff()). Vorlage: UX-Robot-Hero (dev_ws 350901df, docs/js/hero3d.js „Einstellungen der Bühne“).
 
 import { QUALITY, quality } from './quality.js';
 
 const KEY = 'biochar-settings.v1';
+// detail/light/fx: Hauptregler (Faktor auf Detailgrad der Stufe, auf alle Lichter, auf Linse + Korn); shadow: off · soft · full;
 // dive/play: Flugdauer zwischen Ebenen und Länge des Pyrolyse-Zeitraffers (s); key/rim/env/pool: Faktoren auf die Werte der
 // Ebenen (1 = wie gebaut); kelvin 6500 = Lichtfarbe der Ebene unverändert (Normierung auf D65); fps 0 = ohne Deckel
 const DEF = {
-  scale: 1, fps: 0, shadows: true, dof: true, bloom: true, ca: true, grain: true,
+  detail: 1, light: 1, shadow: 'full', fx: 1,
+  scale: 1, fps: 0, dof: true, bloom: true, ca: true, grain: true,
   motion: 'full', intro: true, cine: true, orbit: true, sem: true, dive: 3.5, play: 8,
   key: 1, rim: 1, env: 1, kelvin: 6500, exposure: 1, pool: 1,
   dust: true, veil: true, hotspots: true,
 };
-const RANGE = { scale: [0.5, 1], fps: [0, 60], dive: [1.5, 6], play: [4, 30], key: [0, 2], rim: [0, 2], env: [0, 2],
+const RANGE = { detail: [0.5, 1], light: [0, 2], fx: [0, 1.5], scale: [0.5, 1], fps: [0, 60], dive: [1.5, 6], play: [4, 30], key: [0, 2], rim: [0, 2], env: [0, 2],
   kelvin: [2700, 9000], exposure: [0.5, 2], pool: [0, 2] };
-const ENUM = { motion: ['full', 'calm', 'off'] };
+const ENUM = { motion: ['full', 'calm', 'off'], shadow: ['off', 'soft', 'full'] };
 // Grundstufe setzt die Einzelschalter; „Aus“ wirkt wie prefers-reduced-motion (kurze Flüge ohne Zoom-Unschärfe, Sprünge statt Gleiten)
 const MOT = {
   full: { intro: true, cine: true, orbit: true, sem: true },
@@ -24,7 +27,7 @@ const MOT = {
   off: { intro: false, cine: false, orbit: false, sem: false },
 };
 // Schalter, die die Darstellungsstufe ändern (main.js applyQuality)
-export const PERF_KEYS = ['scale', 'shadows', 'dof', 'bloom', 'ca'];
+export const PERF_KEYS = ['detail', 'fx', 'shadow', 'scale', 'dof', 'bloom', 'ca'];
 
 export function clean(raw) {
   const s = { ...DEF };
@@ -92,7 +95,7 @@ const cie = (K) => {
 };
 const pct = (v) => `${num(v * 100)} %`;
 const sec = (v) => `${num(v, v % 1 ? 1 : 0)} s`;
-const OUT = { dive: sec, play: sec, key: pct, rim: pct, env: pct, pool: pct, exposure: (v) => num(v, 2), kelvin: (v) => `${Math.round(v)} K${cie(v)}` };
+const OUT = { detail: pct, light: pct, fx: pct, dive: sec, play: sec, key: pct, rim: pct, env: pct, pool: pct, exposure: (v) => num(v, 2), kelvin: (v) => `${Math.round(v)} K${cie(v)}` };
 
 const seg = (k, opts, label) => `<div class="cfg-row"><span id="cfg-l-${k}">${label}</span><div class="cfg-seg" role="group" aria-labelledby="cfg-l-${k}">${
   opts.map(([v, t]) => `<button type="button" data-k="${k}" data-v="${v}" aria-pressed="false">${t}</button>`).join('')}</div></div>`;
@@ -100,21 +103,26 @@ const range = (k, step, label) => `<label class="cfg-row"><span>${label}</span><
 const sw = (k, label) => `<label class="cfg-sw"><input type="checkbox" data-k="${k}"><span>${label}</span></label>`;
 
 const HTML = `<div class="cfg-head"><h2 id="cfg-title">Einstellungen</h2><button type="button" class="cfg-x" data-close aria-label="Einstellungen schließen">×</button></div>
-<section aria-labelledby="cfg-h-perf"><h3 id="cfg-h-perf">Leistung</h3>
+<section aria-labelledby="cfg-h-all"><h3 id="cfg-h-all">Allgemein</h3>
 ${seg('quality', [['auto', 'Auto'], ...QUALITY.map((q, i) => [i, q.name])], 'Qualität')}
 <div class="cfg-meter"><span data-meter>–</span><svg class="cfg-spark" viewBox="0 0 96 24" preserveAspectRatio="none" aria-hidden="true"><line x1="0" y1="15.3" x2="96" y2="15.3"/><polyline points=""/></svg></div>
 <p class="cfg-hint" data-qhint></p>
+${range('detail', 0.05, 'Detailgrad (Nanoporen, Atome)')}
+${range('light', 0.05, 'Lichtstärke (alle Lichter)')}
+${seg('shadow', [['off', 'Aus'], ['soft', 'Weich'], ['full', 'Voll']], 'Schatten (ab Stufe Mittel)')}
+${range('fx', 0.05, 'Effekte (Tiefenunschärfe, Bloom, Farbsaum, Korn)')}
+${seg('motion', [['full', 'Voll'], ['calm', 'Ruhig'], ['off', 'Aus']], 'Bewegung')}
+<p class="cfg-hint">Ruhig: keine Leerlauf-Fahrt, kein Orbit, Detektor steht · Aus: nichts bewegt sich von allein, Flüge kurz und ohne Zoom-Unschärfe</p>
+</section>
+<section aria-labelledby="cfg-h-perf"><h3 id="cfg-h-perf">Leistung</h3>
 ${seg('scale', [[0.5, '50 %'], [0.75, '75 %'], [1, '100 %']], 'Renderskala')}
 ${seg('fps', [[0, 'frei'], [60, '60'], [30, '30']], 'Bildrate höchstens (Bilder/s)')}
-${sw('shadows', 'Schatten (ab Stufe Mittel)')}
 ${sw('dof', 'Tiefenunschärfe')}
 ${sw('bloom', 'Bloom auf Glanzlichtern')}
 ${sw('ca', 'Farbsaum am Bildrand')}
 ${sw('grain', 'Filmkorn')}
 </section>
 <section aria-labelledby="cfg-h-mot"><h3 id="cfg-h-mot">Bewegung</h3>
-${seg('motion', [['full', 'Voll'], ['calm', 'Ruhig'], ['off', 'Aus']], 'Grundstufe')}
-<p class="cfg-hint">Ruhig: keine Leerlauf-Fahrt, kein Orbit, Detektor steht · Aus: nichts bewegt sich von allein, Flüge kurz und ohne Zoom-Unschärfe</p>
 ${sw('intro', 'Auftakt-Bogen beim Start (9 s)')}
 ${sw('cine', 'Leerlauf-Fahrt nach 2,5 s Ruhe')}
 ${sw('orbit', 'Auto-Orbit (Ebenen mit Drehteller)')}
@@ -191,6 +199,7 @@ export function mountSettings(pixels) {
     if (k === 'quality') { if (v === 'auto') quality.setAuto(); else quality.set(+v); sync(); }
     else if (k === 'motion') set({ motion: v, ...MOT[v] });
     else if (k in RANGE) set({ [k]: +v });
+    else if (k in ENUM) set({ [k]: v });
   });
   box.addEventListener('input', (e) => { const el = e.target; if (el.type === 'range') set({ [el.dataset.k]: +el.value }); });
   box.addEventListener('change', (e) => {

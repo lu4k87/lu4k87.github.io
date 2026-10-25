@@ -457,12 +457,14 @@ function lerpPose(cam, a, b, k) {
 
 const hfwOf = (lv, dist) => 2 * dist * Math.tan(THREE.MathUtils.degToRad(lv.camera.fov) / 2) * lv.camera.aspect * lv.unit;
 
-// wirksame Stufe: Qualitätsstufe (quality.js) mit den Leistungsschaltern des Zahnrads (settings.js) darüber
+// wirksame Stufe: Qualitätsstufe (quality.js) mit den Hauptreglern (Detailgrad, Schatten, Effekte) und Leistungsschaltern
+// des Zahnrads (settings.js) darüber
 function eff() {
   const Q = quality.get(), S = settings.S;
+  const dof = S.dof && S.fx > 0;
   return {
-    ...Q, shadows: Q.shadows && S.shadows,
-    dof: S.dof ? Q.dof : 0, dofTaps: S.dof ? Q.dofTaps : 0, bloom: S.bloom ? Q.bloom : 0, ca: S.ca ? Q.ca : 0,
+    ...Q, shadows: Q.shadows && S.shadow !== 'off', detail: Q.detail * S.detail,
+    dof: dof ? Q.dof * S.fx : 0, dofTaps: dof ? Q.dofTaps : 0, bloom: S.bloom ? Q.bloom * S.fx : 0, ca: S.ca ? Q.ca * S.fx : 0,
   };
 }
 // Renderskala wirkt auf das Pixelverhältnis der Stufe (auch unter 1 Gerätepixel: weiche, aber flüssige Bilder)
@@ -801,28 +803,35 @@ function render(lv, dt, force) {
 
 // Licht aus dem Zahnrad, nur für die Dauer des Renderns: die Ebenen animieren ihre Lichter selbst (Gegenlicht, Glut), deshalb
 // Faktoren auf den aktuellen Wert und danach zurück. Hauptlicht = hellstes gerichtetes Licht (bekommt auch die Farbtemperatur),
-// übrige gerichtete = Gegenlicht, Halbkugel-/Umgebungslicht + Umgebungsbild = Umgebung; Punktlichter (Glut) bleiben physikalisch
+// übrige gerichtete = Gegenlicht, Halbkugel-/Umgebungslicht + Umgebungsbild = Umgebung; Lichtstärke wirkt auf alle (auch Glut);
+// Schatten „Weich“ hellt die Schatten der Licht-Werfer auf (shadow.intensity 0,55)
 const _keyColor = new THREE.Color();
 function lightUp(lv) {
   const S = settings.S;
-  if (S.key === 1 && S.rim === 1 && S.env === 1 && S.kelvin === 6500) return false;
+  if (S.light === 1 && S.key === 1 && S.rim === 1 && S.env === 1 && S.kelvin === 6500 && S.shadow !== 'soft') return false;
   if (!lv.lights) {
     lv.lights = [];
     lv.scene.traverse((o) => { if (o.isLight) lv.lights.push(o); });
     lv.keyLight = lv.lights.filter((l) => l.isDirectionalLight).sort((a, b) => b.intensity - a.intensity)[0] || null;
     lv.lightBase = new Float32Array(lv.lights.length);
+    lv.shadowBase = new Float32Array(lv.lights.length);
   }
+  const soft = S.shadow === 'soft';
   lv.lights.forEach((l, i) => {
     lv.lightBase[i] = l.intensity;
-    l.intensity *= l === lv.keyLight ? S.key : l.isDirectionalLight || l.isSpotLight ? S.rim : l.isHemisphereLight || l.isAmbientLight ? S.env : 1;
+    if (l.shadow && 'intensity' in l.shadow) { lv.shadowBase[i] = l.shadow.intensity; if (soft) l.shadow.intensity *= 0.55; }
+    l.intensity *= S.light * (l === lv.keyLight ? S.key : l.isDirectionalLight || l.isSpotLight ? S.rim : l.isHemisphereLight || l.isAmbientLight ? S.env : 1);
   });
   if (lv.keyLight) { _keyColor.copy(lv.keyLight.color); lv.keyLight.color.multiply(keyTint); }
   lv.envBase = lv.scene.environmentIntensity;
-  lv.scene.environmentIntensity *= S.env;
+  lv.scene.environmentIntensity *= S.env * S.light;
   return true;
 }
 function lightDown(lv) {
-  lv.lights.forEach((l, i) => { l.intensity = lv.lightBase[i]; });
+  lv.lights.forEach((l, i) => {
+    l.intensity = lv.lightBase[i];
+    if (l.shadow && 'intensity' in l.shadow) l.shadow.intensity = lv.shadowBase[i];
+  });
   if (lv.keyLight) lv.keyLight.color.copy(_keyColor);
   lv.scene.environmentIntensity = lv.envBase;
 }
@@ -1033,7 +1042,7 @@ function frame(now) {
   hud.tickFacts(real);
   quality.tick(real, cap ? 1 / cap : 1 / 60);
   settings.frame(real);
-  const Q = eff(), gk = settings.S.grain ? 1 : 0;
+  const Q = eff(), gk = settings.S.grain ? settings.S.fx : 0;
   if (stats) {
     stats.n++; stats.sum += real;
     if (stats.sum >= 2) { console.log(`fps ${(stats.n / stats.sum).toFixed(1)} · ${(1000 * stats.sum / stats.n).toFixed(1)} ms · Qualität ${Q.name}`); stats.n = 0; stats.sum = 0; }

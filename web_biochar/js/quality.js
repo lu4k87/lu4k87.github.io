@@ -1,8 +1,8 @@
-// Darstellungsqualität in drei Stufen – flüssige Bilder auch auf schwächeren Rechnern.
+// Darstellungsqualität in drei Stufen – flüssige Bilder auch auf schwächeren Rechnern (Wahl im Zahnrad, settings.js).
 // Die Stufe steuert Auflösung (Pixelverhältnis, Maßstab der Ebenen-Bilder, Kantenglättung), Linse (Tiefenunschärfe,
 // Bloom, Farbsaum, Zahl der Abtastpunkte), Schatten und den Detailgrad der Ebenen (setParam 'quality').
 // Wahl bleibt im Browser; ?q=1|2|3 überschreibt sie. Ohne gespeicherte Wahl (= Auto, auch per Zahnrad wählbar) misst die Seite in
-// den ersten Sekunden die Bildrate und schaltet bei Bedarf herunter, danach wacht sie mit Hysterese weiter (steht als „auto“ am Regler).
+// den ersten Sekunden die Bildrate und schaltet bei Bedarf herunter, danach wacht sie mit Hysterese weiter.
 
 export const QUALITY = [
   { id: 'light', name: 'Leicht', dpr: 1, res: 0.75, msaa: 0, dof: 0, bloom: 0, ca: 0, dofTaps: 0, blurTaps: 6, shadows: false, detail: 0.45 },
@@ -11,18 +11,10 @@ export const QUALITY = [
 ];
 const KEY = 'biochar-quality';
 const params = new URLSearchParams(location.search);
-const input = document.getElementById('in-quality');
-const nameEl = document.getElementById('quality-name');
 const listeners = [];
 let index = QUALITY.length - 1;
 let fixed = false;        // Wahl des Users oder ?q → keine automatische Anpassung
 
-function show() {
-  const text = fixed ? QUALITY[index].name : `${QUALITY[index].name} (auto)`;
-  input.value = String(index);
-  input.setAttribute('aria-valuetext', text);
-  nameEl.textContent = text;
-}
 function set(i, { byUser = false } = {}) {
   i = Math.min(QUALITY.length - 1, Math.max(0, Math.round(i)));
   if (byUser) {
@@ -31,7 +23,6 @@ function set(i, { byUser = false } = {}) {
   }
   const changed = i !== index;
   index = i;
-  show();
   for (const fn of listeners) fn(QUALITY[index], changed);
 }
 
@@ -42,8 +33,6 @@ let stored = NaN;
 try { const s = localStorage.getItem(KEY); if (s !== null) stored = +s; } catch { /* egal */ }
 if (valid(fromUrl)) { index = fromUrl; fixed = true; }
 else if (valid(stored)) { index = stored; fixed = true; }
-show();
-input.addEventListener('input', () => set(+input.value, { byUser: true }));
 
 // Bildraten-Probe: Bildzeiten ab 1,5 s nach dem Start sammeln, auswerten ab 5 s und frühestens nach 10 Bildern
 // (bei sehr niedriger Bildrate misst sie länger). Der Median übergeht einzelne Ladehänger, anhaltend langsame
