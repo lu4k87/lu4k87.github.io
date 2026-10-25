@@ -11,7 +11,10 @@ import { woodTissue, ringY, RAY_CELL_W } from '../wood.js';
 import { buildWalls, buildInstances, flakeGeometry, disposeGroup, shrinkScene } from '../walls.js';
 import { semDetector, semMaterial } from '../sem.js';
 import { mulberry32, fbm3, smoothstep, clamp } from '../util.js';
-import { fmt, tissueScale } from '../science.js';
+import { fmt, tissueScale, capillaryRise, wettability } from '../science.js';
+import { settings } from '../settings.js';
+
+const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 const LENGTH = 1100;     // Länge des Bruchstücks in Faserrichtung
 const HALF_X = 330, HALF_Y = 240;   // Stirnfläche (Superellipse)
@@ -176,6 +179,68 @@ export function create(ctx) {
       { id: 'ray', kind: 'info', pos: new THREE.Vector3(rayX, -160, zAt(rayX, -160)), normal: new THREE.Vector3(0, 0, 1) },
       { id: 'porosity', kind: 'info', pos: new THREE.Vector3(250, -110, zAt(250, -110)), normal: new THREE.Vector3(0, 0, 1) },
   ];
+  // Kapillar-Aufstieg (Vorschau 2026-10-25, Kapil:A): Wasser berührt die Stirnfläche und dringt in jedes offene Gefäß ein, die
+  // Eindringtiefe folgt je Gefäßradius Lucas-Washburn (science.js capillaryRise, θ aus wettability), Zeitlupe 1500×. Die Gruppe am
+  // Abzeichen schimmert zusätzlich blass durch die Wände (Lage der Front, F4); wasserabweisende Kohle: kein Aufstieg, Hinweis (F5)
+  const SLOW = 1500, CAP_PERIOD = 14;
+  const stillNow = () => reduced || settings.S.motion === 'off';
+  const vesselsIn = wood.vessels.filter((v) => inside(v.x, v.y) && rim(v.x, v.y) < 0.9);
+  const capAt = [dv.x - 120, dv.y + 70];
+  const capV = vesselsIn.reduce((a, v) => (Math.hypot(v.x - capAt[0], v.y - capAt[1]) < Math.hypot(a.x - capAt[0], a.y - capAt[1]) ? v : a));
+  hotspots.push({ id: 'capillary', kind: 'info', pos: new THREE.Vector3(capV.x, capV.y, zAt(capV.x, capV.y)), normal: new THREE.Vector3(0, 0, 1) });
+  const capList = vesselsIn.map((v) => ({ v, p: [v.x, v.y], top: surfaceZ(v.x, v.y) - 1.5, len: clamp(breakLen(v.x, v.y) * 0.9, 60, LENGTH),
+    group: Math.hypot(v.x - capV.x, v.y - capV.y) < 75 }));
+  const colGeo = new THREE.CylinderGeometry(1, 1, 1, 14, 1).rotateX(Math.PI / 2);   // Achse → z, Länge 1
+  const waterMat = new THREE.MeshBasicMaterial({ color: 0x5aaaff, transparent: true, opacity: 0.62, depthWrite: false });
+  const ghostMat = new THREE.MeshBasicMaterial({ color: 0x5aaaff, transparent: true, opacity: 0.24, depthTest: false, depthWrite: false });
+  const cols = [], colMeshes = [];
+  for (const [b, part] of byBlock(capList)) {
+    const mesh = new THREE.InstancedMesh(colGeo, waterMat, part.length);
+    const ghost = new THREE.InstancedMesh(colGeo, ghostMat, part.length);
+    mesh.renderOrder = 2;
+    ghost.renderOrder = 1;
+    mesh.frustumCulled = ghost.frustumCulled = false;
+    part.forEach((c, i) => cols.push({ mesh, ghost, i, c }));
+    colMeshes.push(mesh, ghost);
+    blockGroup(b).add(mesh, ghost);
+  }
+  const capCol = cols.find((o) => o.c.v === capV);
+  const capInfo = { on: false, tMs: 0, h: 0, theta: 40 };
+  const capPts = [new THREE.Vector3(), new THREE.Vector3()];
+  const cm4 = new THREE.Matrix4(), ZERO_M = new THREE.Matrix4().makeScale(0, 0, 0);
+  const setCols = (tMs, alpha) => {
+    waterMat.opacity = 0.62 * alpha;
+    ghostMat.opacity = 0.24 * alpha;
+    const hOf = (c) => Math.min(c.len, capillaryRise(c.v.r, tMs * 1e-3, shownT));
+    for (const { mesh, ghost, i, c } of cols) {
+      const hh = hOf(c);
+      if (hh < 0.5) { mesh.setMatrixAt(i, ZERO_M); ghost.setMatrixAt(i, ZERO_M); continue; }   // trocken: keine Scheibe auf der Fläche
+      cm4.makeScale(c.v.r * 0.9, c.v.r * 0.9, hh).setPosition(c.v.x, c.v.y, c.top - hh / 2);
+      mesh.setMatrixAt(i, cm4);
+      ghost.setMatrixAt(i, c.group ? cm4 : ZERO_M);
+    }
+    for (const m of colMeshes) m.instanceMatrix.needsUpdate = true;
+    Object.assign(capInfo, { on: alpha > 0.05, tMs, theta: wettability(shownT).theta, h: capillaryRise(12, tMs * 1e-3, shownT) });
+    // Maßlinie neben der Flanke (−y): von der Stirnfläche bis zur Front des Gefäßes am Abzeichen, in Weltkoordinaten
+    const c = capCol.c, h = Math.max(hOf(c), 150), k = tissueScale(shownT), [dx, dy] = shiftOf(blockOf(c.v.x, c.v.y));
+    const x = (c.v.x + dx) * k.xy, y = (-HALF_Y - 70 + dy) * k.xy;
+    capPts[0].set(x, y, c.top * k.z);
+    capPts[1].set(x, y, (c.top - h) * k.z);
+  };
+  // Zyklus: 0,5 s trocken · 6 s Front (0 → 4 ms) · 3,5 s halten · 1 s ausblenden · Pause; Bewegung „Voll“ wiederholt, „Ruhig“ einmal
+  // + auf Klick, „Aus“/reduced-motion: ruhende Front bei 1,5 ms
+  let capT = -1, capRuns = 0, capIdle = 0;
+  const capStep = (dt) => {
+    const on = settings.S.capillary !== false;
+    for (const m of colMeshes) m.visible = on;
+    if (!on) { capInfo.on = false; return; }
+    if (stillNow()) capT = -1;
+    else if (capT >= 0) { capT += dt; if (capT >= CAP_PERIOD) capT = settings.S.motion === 'full' ? 0 : -1; }
+    else if (settings.S.motion === 'full' || capRuns === 0) { capIdle += dt; if (capIdle > 2.0) { capT = 0; capRuns++; capIdle = 0; } }
+    const c = capT;
+    const [tMs, alpha] = c < 0 ? [1.5, 1] : c < 0.5 ? [0, 1] : c < 6.5 ? [((c - 0.5) * 1000) / SLOW, 1] : c < 10 ? [4, 1] : c < 11 ? [4, 11 - c] : [0, 0];
+    setCols(tMs, alpha);
+  };
   const base = hotspots.map((h) => h.pos.clone());
   const baseBlock = base.map((p) => blockOf(p.x, p.y));
   // Pyrolyse: die Gewebeprobe schwindet (quer stärker als längs), die Zellwände werden dünner, die Schwundrisse öffnen
@@ -210,12 +275,22 @@ export function create(ctx) {
     update(dt, t) {
       semDetector(t);
       applyTemp();
+      capStep(dt);
       return true;
+    },
+    onHotspot(id) {
+      if (id === 'capillary' && !stillNow()) { capT = 0; capRuns++; }   // Klick startet den Aufstieg neu
     },
     setParam(name, value) {
       if (name === 'temp') { shownT = value; level.dirty = true; }
     },
     dispose() { disposeGroup(scene); },
   };
+  level.overlays = [{
+    cls: 'ov-capillary', pts: () => capPts, arrow: 'end', active: () => capInfo.on,
+    text: () => (capInfo.theta > 90
+      ? `<b>θ ≈ ${fmt(capInfo.theta)}°</b> · wasserabweisend: kein Kapillar-Aufstieg`
+      : `<b>t = ${fmt(capInfo.tMs, 1)} ms</b> · h ≈ ${fmt(capInfo.h / 1000, 2)} mm · Zeitlupe ${SLOW}× (Lucas-Washburn)`),
+  }];
   return level;
 }

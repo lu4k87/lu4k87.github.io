@@ -60,7 +60,7 @@ export const LEVELS = [
       { value: '65–89 %', label: 'des Kohlenstoffs sind nach 100 Jahren noch im Boden (IPCC)', bar: 80 },
       { value: '< 0,7', label: 'H/Corg – Grenzwert für zertifizierte Pflanzenkohle (EBC)', bar: 65 },
     ],
-    refs: [4, 5, 6, 27, 28, 29, 30],
+    refs: [4, 5, 6, 27, 28, 29],
     hotspots: {
       endgrain: { title: 'Stirnfläche', tag: '1 mm ↓', text: 'Hier ist das Holz quer zur Faser gebrochen. Schon mit der Lupe erkennt man Jahrringe, Holzstrahlen und feinste Poren – die Gefäße, in denen der Baum Wasser leitete.' },
       cracks: { title: 'Schwundrisse', tag: '≥ 380 °C', text: 'Beim Verkohlen entweichen Wasser und Gase (CO, CO₂, CH₄, Teere). Das Holz schrumpft ungleichmäßig – quer zur Faser stärker als längs. So reißt es radial entlang der Holzstrahlen und tangential entlang der Jahrringe.' },
@@ -80,11 +80,12 @@ export const LEVELS = [
       { value: '24 ± 12 µm', label: 'Gefäßdurchmesser im Frühholz', bar: 68 },
       { value: '15 ± 9 µm', label: 'Gefäßdurchmesser im Spätholz', bar: 42 },
     ],
-    refs: [3, 6, 31, 32],
+    refs: [3, 6, 30, 31],
     hotspots: {
       vessels: { title: 'Gefäße und Fasern', tag: '200 µm ↓', text: 'Eine Gruppe von Gefäßen, umgeben von Holzfasern. Die Gefäße liegen oft zu zweit oder zu dritt in radialen Reihen.' },
       ring: { title: 'Jahrringgrenze', tag: '62 → 40 %', text: 'Am Ende einer Wachstumsperiode bildet der Baum kleinere Gefäße und flache, dickwandige Fasern (Spätholz); im Frühjahr setzt das porenreiche Frühholz ein. In Buchen-Biochar sinkt der Porenanteil von ≈ 62 % im Frühholz auf ≈ 40 % im Spätholz. Weil beide verschieden stark schwinden, reißt die Kohle bei hoher Pyrolysetemperatur auch hier – quer zu den Radialrissen an den Strahlen; zusammen zerlegen sie das Stück in Blöcke (Lage und Breite der Risse: Modell).' },
       ray: { title: 'Breiter Holzstrahl', tag: 'Radial', text: 'Holzstrahlen verlaufen radial vom Mark zur Rinde und speicherten Nährstoffe. Buche hat neben vielen schmalen auch breite, mit bloßem Auge sichtbare Strahlen – die „Spiegel“ im Holz. In der Kohle sind sie bevorzugte Risslinien.' },
+      capillary: { title: 'Kapillar-Aufstieg', tag: 'h ∝ √t', text: 'Berührt Wasser die Kohle, zieht es in die Gefäße – Lucas-Washburn (Washburn 1921): Eindringtiefe h = √(γ r cos θ · t / 2η). In einem Gefäß von 24 µm Durchmesser schafft Wasser ≈ 0,6 mm in einer Millisekunde, weite Gefäße füllen schneller als enge; der Zeitstempel zeigt die Zeitlupe (1500×). Niedrig verkohlte Kohle ist wasserabweisend (θ > 90°, Kinney et al. 2012): Dann steigt nichts. Kontaktwinkel: Richtwerte (Modell), Oberflächenspannung und Zähigkeit: Wasser bei 20 °C. Die Luftfeuchte spielt hier keine Rolle: Flüssiges Wasser füllt die Gefäße, aus der Luft kondensiert es nur in Nanoporen (Ebene 5). Ein Klick hier startet den Aufstieg neu.' },
       porosity: { title: 'Porosität', tag: '≈ 48 %', text: 'Fast die Hälfte des Querschnitts ist Hohlraum. Diese Poren im Mikrometerbereich nehmen Wasser auf und bieten Raum für Bodenleben. Die große innere Oberfläche steckt aber in viel kleineren Poren – weiter hineinzoomen.' },
     },
   },

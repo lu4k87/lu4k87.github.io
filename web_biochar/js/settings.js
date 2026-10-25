@@ -16,6 +16,7 @@ const DEF = {
   motion: 'full', intro: true, cine: true, orbit: true, sem: true, dive: 3.5, play: 8,
   key: 1, rim: 1, env: 1, kelvin: 6500, exposure: 1, pool: 1,
   dust: true, veil: true, hotspots: true, charge: false /* Aufladung aus, bis jemand sie einschaltet (Vorschau 2026-10-25, F3) */,
+  capillary: true,
 };
 const RANGE = { detail: [0.5, 1], light: [0, 2], fx: [0, 1.5], scale: [0.5, 1], fps: [0, 60], dive: [1.5, 6], play: [4, 30], key: [0, 2], rim: [0, 2], env: [0, 2],
   kelvin: [2700, 9000], exposure: [0.5, 2], pool: [0, 2] };
@@ -145,6 +146,7 @@ ${sw('veil', 'Lichtschleier beim Durchtauchen')}
 ${sw('hotspots', 'Hotspots (orange Abzeichen)')}
 ${sw('charge', 'REM-Aufladung: helle Streifen, solange die Kohle schlecht leitet (unter ≈ 700 °C)')}
 ${sw('overlays', 'Messhilfen im 3D-Bild')}
+${sw('capillary', 'Kapillar-Aufstieg (Ebene 2)')}
 </section>
 <div class="cfg-foot"><button type="button" data-reset>Zurücksetzen</button><span class="cfg-hint">Gespeichert in diesem Browser</span></div>`;
 

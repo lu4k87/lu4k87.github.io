@@ -583,7 +583,9 @@ export function createHud(handlers) {
   let msRight = null;
 
   // Ebenen-spezifische 3D-Messhilfen (Makro:A Ebenen 1–3, Nano:A Ebenen 4–7): echte 3D-Ankerpunkte der Szene
-  function levelOverlays() {
+  // Ebenen können eigene Messhilfen mitbringen (level.overlays: {cls, pts, text, active?, ticks?, ring?, arrow?})
+  function levelOverlays() { return [...builtinOverlays(), ...(level && level.overlays ? level.overlays : [])]; }
+  function builtinOverlays() {
     if (!level || !level.hotspots || !level.hotspots.length) return [];
     const v3 = (x, y, z) => level.hotspots[0].pos.clone().set(x, y, z);
     const hs = (id) => level.hotspots.find((h) => h.id === id);
@@ -893,15 +895,23 @@ export function createHud(handlers) {
         ov.ringEl.setAttribute('rx', r.toFixed(1));
         ov.ringEl.setAttribute('ry', (r * 0.65).toFixed(1));
       }
-      if (ov.ticks && ov.d.ticks) {
+      if (ov.ticks && (ov.d.ticks || ov.d.arrow)) {
         const nx = -(by - ay) / (span || 1), ny = (bx - ax) / (span || 1);
-        const n = ov.d.ticks;
+        const n = ov.d.ticks || 0;
         let dStr = '';
         for (let i = 0; i < n; i++) {
           const u = n === 1 ? 0.5 : i / (n - 1);
           const tx = ax + (bx - ax) * u, ty = ay + (by - ay) * u;
           const th = (i === 0 || i === n - 1 || i === Math.floor(n / 2)) ? 6 : 3.5;
           dStr += `M${(tx - nx * th).toFixed(1)} ${(ty - ny * th).toFixed(1)}L${(tx + nx * th).toFixed(1)} ${(ty + ny * th).toFixed(1)}`;
+        }
+        // Pfeilspitzen: 'in' = beide Enden zeigen zur Mitte (Schwindung), 'out' = nach außen, 'end' = nur am Endpunkt
+        if (ov.d.arrow) {
+          const ux = -ny, uy = nx, s = 8;
+          const head = (x, y, px, py) => `M${(x - px * s - py * s * 0.55).toFixed(1)} ${(y - py * s + px * s * 0.55).toFixed(1)}L${x.toFixed(1)} ${y.toFixed(1)}L${(x - px * s + py * s * 0.55).toFixed(1)} ${(y - py * s - px * s * 0.55).toFixed(1)}`;
+          if (ov.d.arrow === 'in') dStr += head(ax, ay, ux, uy) + head(bx, by, -ux, -uy);
+          else if (ov.d.arrow === 'out') dStr += head(ax, ay, -ux, -uy) + head(bx, by, ux, uy);
+          else dStr += head(bx, by, ux, uy);
         }
         ov.ticks.setAttribute('d', dStr);
       }

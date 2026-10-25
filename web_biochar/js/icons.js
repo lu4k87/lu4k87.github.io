@@ -52,7 +52,7 @@ export const LEVEL_ICONS = { piece: 'cube', tissue: 'honeycomb', cells: 'tubes',
 
 export const HOTSPOT_ICONS = {
   piece: { endgrain: 'endgrain', cracks: 'crack', sheen: 'sheen' },
-  tissue: { vessels: 'vessel', ring: 'ring', ray: 'ray', porosity: 'porosity' },
+  tissue: { vessels: 'vessel', ring: 'ring', ray: 'ray', porosity: 'porosity', capillary: 'water' },
   cells: { pitwall: 'pit', vessel: 'vessel', fiber: 'fiber', ray: 'ray', habitat: 'microbe' },
   wall: { fracture: 'foam', pits: 'pit', water: 'water', bacteria: 'microbe', hypha: 'hypha', spores: 'hypha', ash: 'ash', crack: 'crack' },
   meso: { wallpore: 'micropore', macro: 'crack', meso: 'micropore', race: 'gas', water: 'water' },
