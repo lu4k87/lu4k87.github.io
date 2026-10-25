@@ -219,6 +219,7 @@ export function createHud(handlers) {
   }
 
   // Luftfeuchte (Ebene 5): Porenklassen-Skala unter dem Regler (Füllen nach Kelvin), Anzeige „gefüllt bis Ø“, Mini-Isotherme
+  // aufklappbar (User 2026-10-25, Tafel ohne Scrollen)
   // (Modell) mit Füll- und Entleerungsast; der Punkt folgt dem Regler, beim Zurückdrehen bleibt er auf dem Entleerungsast
   const RH_MAX = 0.99, WET_BAR_NM = 60;
   const IS = { w: 240, h: 92, x0: 14, x1: 232, y0: 8, y1: 74 };
@@ -243,6 +244,8 @@ export function createHud(handlers) {
             <span class="rh-bar"><i id="rh-bar" style="width:${Math.min(100, (d / WET_BAR_NM) * 100).toFixed(1)}%"></i></span>
             <p class="note" id="rh-note">${wetNote(rh, d)}</p>
           </div>
+          <details class="lab-more">
+          <summary>Isotherme · Erläuterung</summary>
           <figure class="chart">
             <svg viewBox="0 0 ${IS.w} ${IS.h}" role="img" aria-label="Isotherme (Modell): gefüllter Porenanteil über der relativen Luftfeuchte, Füll- und Entleerungsast">
               <line class="ax" x1="${IS.x0}" y1="${IS.y1}" x2="${IS.x1}" y2="${IS.y1}"/>
@@ -257,6 +260,7 @@ export function createHud(handlers) {
             </svg>
             <figcaption class="note">Füllen (durchgezogen) und Entleeren (gestrichelt): Beim Trocknen geben die Poren das Wasser erst bei tieferer Feuchte wieder ab (Modell nach Cohan 1938).</figcaption>
           </figure>
+          </details>
         </div>`;
   }
   function updateRh(rh, d) {
