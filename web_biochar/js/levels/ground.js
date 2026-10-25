@@ -355,7 +355,7 @@ function twigGeometry(rand, len, r0, opt = {}) {
     pts.push(new THREE.Vector3((i / n) * len - len / 2, Math.max(0, (rand() - 0.35)) * r0 * 1.2, z));
   }
   const curve = new THREE.CatmullRomCurve3(pts);
-  const segs = Math.max(16, Math.round(len * 10)), radial = 9, L = curve.getLength();
+  const segs = Math.max(16, Math.round(len * 10)), radial = 12, L = curve.getLength();
   const frames = curve.computeFrenetFrames(segs, false);
   const pos = [], uv = [], idx = [];
   const sd = rand() * 100;
@@ -363,14 +363,15 @@ function twigGeometry(rand, len, r0, opt = {}) {
   for (let i = 0; i <= segs; i++) {
     const t = i / segs, p = curve.getPointAt(t), Nn = frames.normals[i], B = frames.binormals[i], r = rad(t);
     for (let j = 0; j <= radial; j++) {
-      const a = (j / radial) * Math.PI * 2, k = r * (0.96 + 0.08 * pnoise(a * 0.95 + sd, t * L * 3, 6, 4));
+      // Rauschen mit Periode 6 über den Umfang: j = 0 und j = radial liegen genau aufeinander (Naht ohne Spalt)
+      const a = (j / radial) * Math.PI * 2, k = r * (0.96 + 0.08 * pnoise(a * 3 / Math.PI + sd, t * L * 3, 6, 4));
       pos.push(p.x + k * (Math.cos(a) * Nn.x + Math.sin(a) * B.x), p.y + k * (Math.cos(a) * Nn.y + Math.sin(a) * B.y), p.z + k * (Math.cos(a) * Nn.z + Math.sin(a) * B.z));
       uv.push((t * L) / 2.4, j / radial);
     }
   }
   for (let i = 0; i < segs; i++) for (let j = 0; j < radial; j++) {
     const a = i * (radial + 1) + j, b = a + radial + 1;
-    idx.push(a, b, a + 1, b, b + 1, a + 1);
+    idx.push(a, a + 1, b, b, a + 1, b + 1);              // gegen den Uhrzeigersinn von außen: Normalen zeigen nach außen
   }
   const sideCount = idx.length;
   for (const end of [0, segs]) {                          // Kappen
@@ -388,6 +389,12 @@ function twigGeometry(rand, len, r0, opt = {}) {
   g.setIndex(idx);
   g.addGroup(0, sideCount, 0); g.addGroup(sideCount, idx.length - sideCount, 1);
   g.computeVertexNormals();
+  const nr = g.attributes.normal, v0 = new THREE.Vector3(), v1 = new THREE.Vector3();
+  for (let i = 0; i <= segs; i++) {                        // Naht: Normalen beider Seiten mitteln, sonst Lichtkante
+    const a = i * (radial + 1), b = a + radial;
+    v0.fromBufferAttribute(nr, a).add(v1.fromBufferAttribute(nr, b)).normalize();
+    nr.setXYZ(a, v0.x, v0.y, v0.z); nr.setXYZ(b, v0.x, v0.y, v0.z);
+  }
   return { geo: g, curve, rad };
 }
 // Blatt: Länge 1 entlang x, Breite 0,62 entlang z, gewölbt (Ränder hoch), Spitze leicht gehoben
