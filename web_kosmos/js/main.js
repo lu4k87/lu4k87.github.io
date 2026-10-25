@@ -1,7 +1,7 @@
 // Ablauf: Stationen laden, Kamera steuern, Stationen im durchgehenden Flug wechseln, Bild zusammenführen (post.js).
 // Stationen bilden einen Baum (content.js parent): Hineinfliegen = Kind, Hinaus = Eltern; weiter entfernte Ziele fliegt
-// die Reise über die gemeinsamen Eltern an (mehrere Etappen ohne Halt). Beide Kameras zoomen mit derselben Rate,
-// logarithmisch im Abstand – so trägt derselbe Flug über 20 Größenordnungen.
+// die Reise über die gemeinsamen Eltern an – als eine Fahrt über alle Etappen (eine Zeitachse, Tempo stetig, kein Halt).
+// Beide Kameras zoomen mit derselben Rate, logarithmisch im Abstand – so trägt derselbe Flug über 20 Größenordnungen.
 
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
@@ -27,6 +27,9 @@ const LOADERS = {
 const ZOOM = 22;
 // Ankunft mit etwas mehr Abstand als die Heimpose: erst Überblick, dann zoomt der Besucher selbst
 const ARRIVE = 1.25;
+// Mehr-Etappen-Flug als eine Fahrt: Dauer = Flugdauer × (base + per × Summe der Etappen-Gewichte), höchstens cap;
+// Gewicht einer Etappe = w0 + perDecade × Zehnerpotenzen zwischen den Bildbreiten der beiden Stationen, in [lo, hi]
+const CHAIN = { base: 0.35, per: 0.55, cap: 2.8, w0: 0.6, perDecade: 0.09, lo: 0.7, hi: 1.5 };
 // Leerlauf-Fahrt: nach `delay` s ohne Eingabe weich einblenden; Bogen, Kran und Atmen des Abstands
 const CINE = { delay: 3, ramp: 5, orbit: 0.012, crane: 0.05, breathe: 0.025 };
 // Bühne kleiner als dieser Anteil der Fensterhöhe (Handy, Tablet hochkant) → Blickwinkel weiten, damit die Bühne
@@ -70,7 +73,7 @@ function tex(name, srgb = true) {
 }
 
 const state = {
-  levels: new Map(), loading: new Map(), active: null, id: null, tr: null, queue: [], controls: null,
+  levels: new Map(), loading: new Map(), active: null, id: null, tr: null, chain: null, queue: [], controls: null,
   time: 0, intro: null, follow: null, poses: new Map(), cine: { idle: 0, w: 0, base: null }, pull: 0, pullDir: 0, caption: 0,
   quality: 2, dragging: false,
 };
@@ -256,32 +259,105 @@ const easeInOut = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) 
 const smooth = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
 
 async function goTo(targetId) {
-  if (!STATIONS[targetId] || state.tr || !state.active || targetId === state.id) return;
+  if (!STATIONS[targetId] || state.tr || state.chain || !state.active || targetId === state.id) return;
   endIntro();
-  state.queue = pathTo(state.id, targetId);
+  const fromId = state.id, path = pathTo(fromId, targetId);
   hud.setRouteTarget(targetId);
   // alle Etappen gleich laden, damit die Fahrt ohne Halt durchläuft
-  await Promise.all(state.queue.map((id) => getLevel(id)));
+  const lvs = await Promise.all(path.map((id) => getLevel(id)));
+  if (state.tr || state.chain || state.id !== fromId) return;
+  state.queue = path;
+  state.chain = planChain([state.active, ...lvs]);
   hop();
 }
 
-async function hop() {
-  const toId = state.queue.shift();
-  if (!toId) return;
+// ---------- Fahrplan: alle Etappen auf einer Zeitachse, Tempo stetig, kein Halt an Zwischenstationen ----------
+const homeWidth = (lv) => lv.home.pos.distanceTo(lv.home.target) * Math.tan(THREE.MathUtils.degToRad(lv.camera.fov) / 2) * lv.unit;
+// Teilfahrt = Etappen gleicher Richtung; an einer Wende (hinaus → hinein) beginnt die nächste
+function planChain(lvs) {
+  const legs = lvs.slice(1).map((to, i) => {
+    const dec = Math.abs(Math.log10(homeWidth(lvs[i]) / homeWidth(to)));
+    return { down: to.meta.parent === lvs[i].id, w: Math.min(CHAIN.hi, Math.max(CHAIN.lo, CHAIN.w0 + CHAIN.perDecade * dec)) };
+  });
+  const n = legs.length, W = legs.reduce((s, l) => s + l.w, 0);
+  const runs = [];
+  legs.forEach((l, i) => {
+    if (i && l.down === legs[i - 1].down) runs[runs.length - 1].ws.push(l.w);
+    else runs.push({ from: i, ws: [l.w] });
+  });
+  runs.forEach((r, k) => {
+    r.dur = r.ws.reduce((s, w) => s + w, 0) / W;   // Anteil an der Gesamtzeit
+    r.ramp = Math.min(0.5, 0.9 / r.ws.length);     // Anfahren und Abbremsen dauern etwa eine Etappe
+    r.a = k ? 'turn' : 'soft';
+    r.b = k < runs.length - 1 ? 'turn' : 'soft';
+    r.cum = warpTable(r.ws);
+  });
+  const T = still() ? 1.2 * n : n === 1 ? settings.S.dive : settings.S.dive * Math.min(CHAIN.cap, CHAIN.base + CHAIN.per * W);
+  return { legs, runs, T, t: 0, end: null, turn: null };
+}
+// Tempo-Rampen (Weg bei Geschwindigkeit 0 → 1): an Start und Ziel weich, an einer Wende linear – der Zoom dreht durch null
+const RAMP = { soft: (x) => x * x * x - x * x * x * x / 2, turn: (x) => x * x / 2 };
+function runEase(u, r) {
+  const k = r.ramp, A = 1 - k;
+  if (u < k) return (k * RAMP[r.a](u / k)) / A;
+  if (u > 1 - k) return 1 - (k * RAMP[r.b]((1 - u) / k)) / A;
+  return (k / 2 + u - k) / A;
+}
+// Zeitdichte entlang der Teilfahrt: Gewicht je Etappenmitte, dazwischen linear → das Tempo wechselt stetig
+function warpTable(ws) {
+  const m = ws.length, N = 48 * m, cum = [0];
+  const rho = (s) => {
+    if (m === 1) return ws[0];
+    const x = Math.min(m - 1, Math.max(0, s - 0.5)), i = Math.min(m - 2, Math.floor(x));
+    return ws[i] + (ws[i + 1] - ws[i]) * (x - i);
+  };
+  for (let k = 1; k <= N; k++) cum.push(cum[k - 1] + rho((k - 0.5) * m / N));
+  return cum.map((c) => c / cum[N]);
+}
+function unwarp(cum, q) {
+  let k = 1;
+  while (k < cum.length - 1 && cum[k] < q) k++;
+  return (k - 1 + (q - cum[k - 1]) / (cum[k] - cum[k - 1])) / (cum.length - 1);
+}
+// Stand der Fahrt zur Zeit u ∈ [0, 1] als Etappen-Koordinate s ∈ [0, n] (ganzzahlig = Station erreicht)
+function chainPos(ch, u) {
+  const n = ch.legs.length;
+  if (still()) return u * n;
+  if (n === 1) return easeInOut(u);
+  let t0 = 0;
+  for (const [k, r] of ch.runs.entries()) {
+    if (k < ch.runs.length - 1 && u >= t0 + r.dur) { t0 += r.dur; continue; }
+    return r.from + unwarp(r.cum, runEase(Math.min(1, (u - t0) / r.dur), r)) * r.ws.length;
+  }
+  return n;
+}
+
+function hop() {
+  const ch = state.chain, toId = state.queue.shift();
+  const to = toId && state.levels.get(toId);
+  if (!to) {
+    state.chain = null;
+    state.queue = [];
+    hud.setFlight(false);
+    hud.hideMarkers(false);
+    return;
+  }
   const from = state.active;
-  const to = await getLevel(toId);
-  if (state.tr || state.active !== from) return;
   const down = to.meta.parent === from.id;
   const outer = down ? from : to;
   const inner = down ? to : from;
   const anchor = anchorOf(outer, inner.id);
   cineUndo(from);
   state.controls.enabled = false;
-  const cur = pose(from.camera.position, state.controls.target);
+  // Zwischenstation: genau an der Endpose der vorigen Etappe weiter (die Steuerung könnte sie begrenzt haben)
+  const cur = ch.end ? pose(ch.end.pos, ch.end.target) : pose(from.camera.position, state.controls.target);
   let outerFrom, outerTo, innerFrom, innerTo;
   const arrival = (lv) => poseAt(lv.home.target, lv.home.pos, lv.home.pos.distanceTo(lv.home.target) * ARRIVE);
   if (down) {
-    state.poses.set(from.id, cur);
+    // nach einer Wende die Pose ohne Schwenk auf den Anker merken (Rückflug landet im gewohnten Blick)
+    const keep = ch.turn && ch.turn.id === from.id ? ch.turn.pose : cur;
+    keep.child = to.id;
+    state.poses.set(from.id, keep);
     outerFrom = cur;
     outerTo = poseAt(anchor, cur.pos, Math.max(cur.pos.distanceTo(anchor) / ZOOM, 1e-9));
     innerTo = arrival(to);
@@ -293,11 +369,16 @@ async function hop() {
     outerFrom = poseAt(anchor, outerTo.pos, Math.max(outerTo.pos.distanceTo(anchor) / ZOOM, 1e-9));
     innerFrom = cur;
     innerTo = poseAt(cur.target, cur.pos, cur.pos.distanceTo(cur.target) * ZOOM);
+    // Wende (danach wieder hinein): der Blick schwenkt schon im Hinausflug auf den nächsten Anker
+    const next = state.queue[0];
+    if (next && STATIONS[next].parent === to.id) {
+      ch.turn = { id: to.id, pose: pose(outerTo.pos, outerTo.target) };
+      outerTo = { pos: outerTo.pos.clone(), target: anchorOf(to, next) };
+    }
   }
-  if (down) state.poses.get(from.id).child = to.id;
   const multi = state.queue.length > 0;
   state.tr = {
-    t: 0, dur: still() ? 1.2 : settings.S.dive * (multi ? 0.75 : 1), down, outer, inner, to, anchor,
+    k: ch.legs.length - state.queue.length - 1, down, outer, inner, to, anchor,
     outerFrom, outerTo, innerFrom, innerTo, prog: 0, maskR: 0, blur: 0, veil: 0,
     anchorUv: new THREE.Vector2(0.5, 0.5), innerUv: new THREE.Vector2(0.5, 0.5), captioned: false,
   };
@@ -306,9 +387,9 @@ async function hop() {
 }
 
 function stepTransition(dt) {
-  const tr = state.tr;
-  tr.t = freeze !== null ? freeze : Math.min(1, tr.t + dt / tr.dur);
-  const e = still() ? tr.t : easeInOut(tr.t);
+  const tr = state.tr, ch = state.chain;
+  ch.t = freeze !== null ? freeze : Math.min(1, ch.t + dt / ch.T);
+  const e = ch.t >= 1 ? 1 : Math.min(1, Math.max(0, chainPos(ch, ch.t) - tr.k));
   const p = tr.down ? e : 1 - e;            // 0 = nur äußeres Bild, 1 = nur inneres
   // äußeres Blickziel schwenkt früh auf den Anker (beim Hinausfliegen erst am Ende weg davon)
   const tkOuter = tr.down ? smooth(0, 0.45, e) : smooth(0.55, 1, e);
@@ -327,16 +408,19 @@ function stepTransition(dt) {
   // Maßstab in der Leiste läuft logarithmisch mit
   const wOut = fieldWidth(tr.outer), wIn = fieldWidth(tr.inner);
   hud.setScale(Math.exp(Math.log(wOut) * (1 - p) + Math.log(wIn) * p), p < 0.5 ? tr.outer : tr.inner);
-  if (!tr.captioned && tr.t > 0.62 && state.queue.length === 0) { tr.captioned = true; hud.caption(tr.to.meta); }
-  if (tr.t >= 1) {
+  if (!tr.captioned && e > 0.62 && state.queue.length === 0) { tr.captioned = true; hud.caption(tr.to.meta); }
+  if (e >= 1) {
     const to = tr.to;
     const end = tr.down ? tr.innerTo : tr.outerTo;
     to.camera.position.copy(end.pos);
     to.camera.lookAt(end.target);
     to.target = end.target.clone();
     state.tr = null;
+    ch.end = end;
     activate(to);
-    if (state.queue.length) { hop(); return; }
+    // nächste Etappe im selben Bild weiterrechnen: kein Standbild an der Zwischenstation
+    if (state.queue.length) { hop(); if (state.tr) stepTransition(0); return; }
+    state.chain = null;
     hud.setFlight(false);
     hud.hideMarkers(false);
     if (tour) tour.since = 0;
@@ -496,10 +580,12 @@ function frame(nowMs) {
   last = nowMs;
   if (settings.S.fpsCap && real < 1 / settings.S.fpsCap - 0.002) { last -= real * 1000; return; }
   state.time += real;
-  const lv = state.active;
+  let lv = state.active;
   if (!lv) return;
-  if (state.tr) stepTransition(real);
-  else if (state.intro) stepIntro(real);
+  if (state.tr) {
+    stepTransition(real);
+    lv = state.active;   // am Ende einer Etappe ist schon die Zielstation aktiv
+  } else if (state.intro) stepIntro(real);
   else {
     cineUndo(lv);
     if (state.follow) stepFollow(lv, real);
