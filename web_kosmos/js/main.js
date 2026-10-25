@@ -9,6 +9,7 @@ import { STATIONS, ROUTE, pathTo } from './content.js';
 import { createPost } from './post.js';
 import { createHud } from './hud.js';
 import { settings, onSettings } from './settings.js';
+import { createDeepSky } from './deepsky.js';
 
 const LOADERS = {
   earth: () => import('./levels/earth.js'),
@@ -113,6 +114,7 @@ function fit(lv) {
   const s = QUALITY[pickQuality()].scale * (lv.resScale || 1);
   lv.rt.setSize(Math.max(2, Math.round(W * pr * s)), Math.max(2, Math.round(H * pr * s)));
   if (lv.setPixelRatio) lv.setPixelRatio(pr * s, lv.rt.height);
+  if (lv.deep) lv.deep.userData.setPixelRatio(pr * s);
   lv.dirty = true;
 }
 function resize() {
@@ -146,6 +148,8 @@ function buildLevel(id) {
     const lv = mod.create({ renderer, tex, date: now, detail: q.detail, still: still() });
     lv.id = id;
     lv.meta = STATIONS[id];
+    lv.deep = createDeepSky(id);   // ferne Galaxien, Zirrus, Restlicht hinter den Sternen (deepsky.js)
+    if (lv.deep) lv.scene.add(lv.deep);
     lv.baseFov = lv.camera.fov;
     lv.rt = new THREE.WebGLRenderTarget(2, 2, {
       type: THREE.HalfFloatType, samples: lv.msaa === false ? 0 : q.msaa,

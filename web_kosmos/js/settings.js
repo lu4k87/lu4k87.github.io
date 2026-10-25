@@ -1,11 +1,11 @@
 // Einstellungen (Zahnrad oben rechts): oben die Ebenen der aktiven Station (layers.js: Schalter, Regler, ▶ je Animation),
-// darunter Allgemein (Bewegung, Qualität, Leerlauf-Fahrt, Infotafel, Zeitleiste, Flugdauer) und Bild (Belichtung, Bloom, Farbsaum, Korn).
+// darunter Allgemein (Bewegung, Qualität, Leerlauf-Fahrt, Infotafel, Zeitleiste, Flugdauer) und Bild (Belichtung, Tiefer Himmel, Bloom, Farbsaum, Korn).
 // Gespeichert in localStorage `kosmos.settings.v1`; clean() prüft jeden Wert, damit kaputte Einträge nichts stören.
 
 import { mountLayers, refreshLayers } from './layers.js';
 
 const KEY = 'kosmos.settings.v1';
-const DEFAULTS = { motion: 'full', quality: 'auto', cine: true, dive: 3.6, exposure: 1, bloom: true, lens: true, grain: true, fpsCap: 0, panel: true, timeline: true, small: 6 };
+const DEFAULTS = { motion: 'full', quality: 'auto', cine: true, dive: 3.6, exposure: 1, bloom: true, lens: true, grain: true, deep: 1, fpsCap: 0, panel: true, timeline: true, small: 6 };
 const CHOICES = { motion: ['full', 'calm', 'off'], quality: ['auto', '1', '2', '3'] };
 
 function clean(raw) {
@@ -20,6 +20,7 @@ function clean(raw) {
   S.dive = Math.min(8, Math.max(1.5, S.dive));
   S.exposure = Math.min(2, Math.max(0.5, S.exposure));
   S.small = Math.min(8, Math.max(1, S.small));
+  S.deep = Math.min(2, Math.max(0, S.deep));
   if (![0, 30, 60].includes(S.fpsCap)) S.fpsCap = 0;
   return S;
 }
@@ -64,11 +65,13 @@ export function mountSettings(root, btn) {
     <h3 class="cfg-group">Bild</h3>
     ${RANGE('exposure', 'Belichtung', 0.5, 2, 0.05, '×')}
     ${RANGE('small', 'Satelliten und Kleinkörper', 1, 8, 0.5, '×')}
+    ${RANGE('deep', 'Tiefer Himmel', 0, 2, 0.1, '×')}
     ${TOG('bloom', 'Lichthof (Bloom)')}
     ${TOG('lens', 'Farbsaum und Linsenreflex')}
     ${TOG('grain', 'Filmkorn')}
     <p class="cfg-note">„Aus“ wirkt wie die System-Einstellung „Bewegung reduzieren“: keine Fahrt von selbst, Wechsel als kurze Überblendung.</p>
-    <p class="cfg-note">„Satelliten und Kleinkörper“ zeigt Satelliten, Trümmer und Asteroiden vergrößert als Symbole – je größer, desto weniger Objekte (4× → jedes achte); 1× zeigt alle als Lichtpunkte.</p>`;
+    <p class="cfg-note">„Satelliten und Kleinkörper“ zeigt Satelliten, Trümmer und Asteroiden vergrößert als Symbole – je größer, desto weniger Objekte (4× → jedes achte); 1× zeigt alle als Lichtpunkte.</p>
+    <p class="cfg-note">„Tiefer Himmel“ zeigt hinter den Sternen, was eine Langzeitbelichtung sieht: ferne Galaxien und schwach leuchtenden Staub der Milchstraße (Zirrus) – statistisch verteilt und überhöht, mit bloßem Auge wären sie unsichtbar. 0× = reines Schwarz.</p>`;
   mountLayers({ gear: root.querySelector('#cfg-station'), strip: document.getElementById('timeline'), stripOn: () => settings.S.timeline });
   const sync = () => {
     const S = settings.S;
