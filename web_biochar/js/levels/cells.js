@@ -139,25 +139,26 @@ export function create(ctx) {
   const vessel = nearest(1, cx - 40, cy - 40) || v;
   const fiber = nearest(0, cx - 30, cy + 70);
   const ray = nearest(2, cx - 60, cy);
-  const hotspots = [
-    { id: 'pitwall', kind: 'dive', pos: pitPos, normal: new THREE.Vector3(1, 0, 0) },
-    { id: 'vessel', kind: 'info', pos: new THREE.Vector3(vessel.x, vessel.y, 0), normal: new THREE.Vector3(0, 0, 1) },
-    { id: 'habitat', kind: 'info', pos: new THREE.Vector3(XC, v.y + 4, -250), normal: new THREE.Vector3(1, 0, 0) },
-  ];
-  if (fiber) hotspots.push({ id: 'fiber', kind: 'info', pos: new THREE.Vector3(fiber.x, fiber.y, 0), normal: new THREE.Vector3(0, 0, 1) });
-  if (ray && Math.hypot(ray.x - cx, ray.y - cy) < 150) hotspots.push({ id: 'ray', kind: 'info', pos: new THREE.Vector3(ray.x, ray.y, 0), normal: new THREE.Vector3(0, 0, 1) });
-
   // Hyphe: von außen über die Bruchkante in das längs geöffnete Gefäß v hinab; die Röhre wächst über drawRange
   // (TubeGeometry: 6 · HY_RAD Indizes je Segment, Segmente folgen der Bogenlänge wie getPointAt), die Spitze ist eine Kugel
   const hyPath = [[XC + 14, v.y + 6, 10], [v.x + 3, v.y + 2, -22], [v.x - 3, v.y - 3, -75], [v.x + 2, v.y + 3, -135], [v.x - 2, v.y - 1, -195], [v.x + 1, v.y + 2, -232]];
   const hyCurve = new THREE.CatmullRomCurve3(hyPath.map((p) => new THREE.Vector3(...p)));
+  const hotspots = [
+    { id: 'pitwall', kind: 'dive', pos: pitPos, normal: new THREE.Vector3(1, 0, 0) },
+    { id: 'vessel', kind: 'info', pos: new THREE.Vector3(vessel.x, vessel.y, 0), normal: new THREE.Vector3(0, 0, 1) },
+    // Abzeichen am Anfang des Fadens über der Bruchkante: dort sichtbar, ab ≈ 2 s gewachsen (früher „Lebensraum“ am Ende tief im Gefäß)
+    { id: 'hypha', kind: 'info', pos: hyCurve.getPoint(0.1), normal: new THREE.Vector3(1, 0, 0) },
+  ];
+  if (fiber) hotspots.push({ id: 'fiber', kind: 'info', pos: new THREE.Vector3(fiber.x, fiber.y, 0), normal: new THREE.Vector3(0, 0, 1) });
+  if (ray && Math.hypot(ray.x - cx, ray.y - cy) < 150) hotspots.push({ id: 'ray', kind: 'info', pos: new THREE.Vector3(ray.x, ray.y, 0), normal: new THREE.Vector3(0, 0, 1) });
+
   const hyLen = hyCurve.getLength();
   const hyMat = semMaterial({ ...sem, base: 0.42, edge: 0.3, noise: 2.5, z: 0.8 });
   hyMat.uniforms.uTint.value.setRGB(1.0, 0.91, 0.76);   // Pilz ocker wie in Ebene 4
   const hyMesh = new THREE.Mesh(new THREE.TubeGeometry(hyCurve, HY_SEG, HY_R, HY_RAD), hyMat);
   const hyTip = new THREE.Mesh(new THREE.SphereGeometry(HY_R, 14, 10), hyMat);
   scene.add(hyMesh, hyTip);
-  let hyStart = 0.4, hyF = -1;   // Wachstum beginnt kurz nach der Ankunft; Klick auf „Lebensraum“ (Ende des Fadens) startet es neu
+  let hyStart = 0.4, hyF = -1;   // Wachstum beginnt kurz nach der Ankunft; Klick auf „Pilzhyphe“ startet es neu
   const growHypha = (age) => {
     const f = still() ? 1 : clamp(((age - hyStart) * HY_RATE * HY_LAPSE) / hyLen, 0, 1);
     if (f === hyF) return;
@@ -212,7 +213,7 @@ export function create(ctx) {
       if (name === 'detector') level.method = `REM · ${value === 'bse' ? 'Rückstreuelektronen' : 'Sekundärelektronen'} (Modell)`;
     },
     onHotspot(id) {
-      if (id === 'habitat') { hyStart = age; hyF = -1; }
+      if (id === 'hypha') { hyStart = age; hyF = -1; }
     },
     dispose() { disposeGroup(scene); },
   };
