@@ -1304,7 +1304,7 @@ function build(L, wrap, host, o) {
     // unsichtbare Zeile (nur bei Missionswechsel, nie je Zehntel); beide neben dem Canvas, nicht im role=img
     const quest = (() => {
       const g = new THREE.Group(); st.scene.add(g);
-      const R = 0.47, Z = -0.02, W = 0.66, GAP = 0.09, FILL = 0.9, TILT = 35 * Math.PI / 180, CT = Math.cos(TILT), ST = Math.sin(TILT);
+      const R = 0.47, Z = -0.02, W = 0.66, GAP = 0.09, FILL = 1.1, TILT = 35 * Math.PI / 180, CT = Math.cos(TILT), ST = Math.sin(TILT);
       const fg = tok('--glass-fg') || '#e8f4f2', warn = tok('--warn') || '#ffb36b', gold = '#f2c14e', acc = `#${ACC.getHexString()}`;
       const mono = tok('--mono') || 'monospace', aniso = st.renderer.capabilities.getMaxAnisotropy();
       const canvasTex = (w, h) => {
@@ -1318,25 +1318,36 @@ function build(L, wrap, host, o) {
         m.matrixAutoUpdate = false; m.matrix.makeBasis(x, y, new THREE.Vector3().crossVectors(x, y)).setPosition((r - h / 2 * CT) * c, (r - h / 2 * CT) * s, -0.03 + h / 2 * ST);
         g.add(m); return m;
       };
-      // Fortschrittsring (Wunsch User 13.10.2026, Vorschau „Robot-Hero Feinschliff“, Stand:C – hochwertig statt flacher Bänder):
-      // je Objekt ein Lichtleiter-Bogen außen am Bodenring. Offen = feine, ungeleuchtete Kernlinie; zu Hause = Licht fließt mit
-      // hellem Kopf von links nach rechts ein (FILL) und blüht kurz auf; Kernlinie + weicher Schein quer zum Band (Gauß), weiche
-      // Enden; gefüllte Bögen: ruhiger Lichtstreif alle 10 s, läuft von Bogen zu Bogen weiter; Runde geschafft = die drei leuchten
-      // nacheinander auf. Additiv ohne Tonemapping → Objektfarben bleiben klar; reduzierte Bewegung = gefüllt, ohne Streif
-      const RB = 0.485, HB = 0.034;
+      // Fortschrittsring (Wunsch User 13.10.2026, Vorschau „Robot-Hero Feinschliff“, Stand:C – hochwertig statt flacher Bänder;
+      // deutlicher + lebendiger 25.10.2026): je Objekt ein Lichtleiter-Bogen aus 16 Segmenten außen am Bodenring.
+      // Offen = Segmente leise in Objektfarbe, ein Suchlicht läuft alle 4 s darüber (von Bogen zu Bogen weiter, Einladung);
+      // zu Hause = Segmente zünden mit hellem Kopf von links nach rechts (FILL) und glühen nach, Bogen blüht auf, ein Echo-Ring
+      // löst sich nach außen; gefüllt = Segmente verschmelzen zum Band, Energie fließt, Lichtstreif alle 5 s von Bogen zu Bogen;
+      // Runde geschafft = die drei leuchten nacheinander auf. Kernlinie + weicher Schein quer zum Band (Gauß), weiche Enden.
+      // Additiv ohne Tonemapping → Objektfarben bleiben klar; reduzierte Bewegung = Stand ruhig, ohne Suchlicht/Fluss/Streif
+      const RB = 0.485, HB = 0.04;
       const beamMat = (core, halo, a0, k) => new THREE.ShaderMaterial({
-        uniforms: { uA0: { value: a0 }, uW: { value: W }, uFill: { value: 0 }, uLit: { value: 0 }, uHead: { value: 0 }, uFlash: { value: 0 },
-          uT: { value: 0 }, uOff: { value: k * 1.6 }, uSheen: { value: reduce ? 0 : 1 }, uCore: { value: new THREE.Color(core) }, uHalo: { value: new THREE.Color(halo) } },
+        uniforms: { uA0: { value: a0 }, uW: { value: W }, uFill: { value: 0 }, uLit: { value: 0 }, uHead: { value: 0 }, uFlash: { value: 0 }, uEcho: { value: 0 },
+          uT: { value: 0 }, uOff: { value: k * 1.1 }, uMotion: { value: reduce ? 0 : 1 }, uCore: { value: new THREE.Color(core) }, uHalo: { value: new THREE.Color(halo) } },
         vertexShader: 'varying vec2 vP; void main() { vP = position.xy; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
-        fragmentShader: `uniform float uA0, uW, uFill, uLit, uHead, uFlash, uT, uOff, uSheen; uniform vec3 uCore, uHalo; varying vec2 vP;
+        fragmentShader: `uniform float uA0, uW, uFill, uLit, uHead, uFlash, uEcho, uT, uOff, uMotion; uniform vec3 uCore, uHalo; varying vec2 vP;
           void main() {
             float s = (atan(vP.y, vP.x) - uA0) / uW, d = length(vP) - ${RB};
             float ends = smoothstep(0.0, 0.04, s) * (1.0 - smoothstep(0.96, 1.0, s));
-            float core = exp(-d * d / 5.0e-6), halo = exp(-d * d / 2.4e-4);
-            float lit = uLit * (1.0 - smoothstep(uFill - 0.015, uFill + 0.015, s));
-            float head = uHead * exp(-pow((s - uFill) / 0.025, 2.0));
-            float sheen = uSheen * lit * 0.35 * exp(-pow((s - mod(uT - uOff, 10.0) / 1.4 + 0.2) / 0.07, 2.0));
-            float k = (0.32 * core + 0.05 * halo) * (1.0 - lit) + (lit * (0.85 + sheen) + 1.8 * head + uFlash) * (core + 0.32 * halo), I = k * ends;
+            float core = exp(-d * d / 1.4e-5), halo = exp(-d * d / 2.8e-4);
+            float f = fract(s * 16.0), seg = smoothstep(0.0, 0.1, f) * (1.0 - smoothstep(0.72, 0.82, f));
+            float lit = uLit * (1.0 - smoothstep(uFill - 0.012, uFill + 0.012, s));
+            float head = uHead * exp(-pow((s - uFill) / 0.03, 2.0));
+            float wake = uHead * lit * exp(-(uFill - s) / 0.12);
+            float p = mod(uT + uOff, 4.0) / 4.0 * 1.6 - 0.3;
+            float scan = uMotion * (exp(-pow((s - p) / 0.05, 2.0)) + 0.45 * step(s, p) * exp(-(p - s) / 0.12));
+            float idle = (0.3 + 0.8 * scan) * seg * (1.0 - lit);
+            float flow = uMotion * 0.16 * (0.5 + 0.5 * sin((s * 9.0 - uT * 1.4) * 6.2832));
+            float sheen = uMotion * 0.7 * exp(-pow((s - mod(uT - uOff, 5.0) + 0.2) / 0.06, 2.0));
+            float band = lit * mix(seg, 1.0, 0.6) * (0.9 + flow + sheen + 1.4 * wake);
+            float k = idle * (core + 0.4 * halo) + (band + 2.0 * head + uFlash) * (core + 0.35 * halo);
+            k += 0.9 * (1.0 - uEcho) * step(0.001, uEcho) * exp(-pow(d - uEcho * 0.036, 2.0) / 1.2e-5);
+            float I = k * ends;
             // Alpha = Helligkeit: die Leinwand ist durchsichtig (alpha: true); Alpha 1 machte dunkle Stellen sonst zu schwarzen Balken
             gl_FragColor = vec4(mix(uHalo, uCore, clamp(core * 1.3, 0.0, 1.0)) * max(I, 1.0), min(I, 1.0));
             #include <colorspace_fragment>
@@ -1424,7 +1435,7 @@ function build(L, wrap, host, o) {
             if (a.flT < 0.8) a.flT += dt;
             const u = a.mat.uniforms, e = eio(a.f), fl = a.flT >= 0 && a.flT < 0.8 ? (1 - a.flT / 0.8) ** 2 : 0;
             u.uLit.value = a.on ? 1 : 0; u.uFill.value = a.on ? 1.04 * e : 0; u.uHead.value = a.on && a.f < 1 ? 1 - 0.5 * e : 0;
-            u.uFlash.value = 0.55 * fl; u.uT.value = tS;
+            u.uFlash.value = 0.9 * fl; u.uEcho.value = fl ? a.flT / 0.8 : 0; u.uT.value = tS;
           });
           if (waveT < 0) return;
           waveT += dt; const u = Math.min(1, waveT / 1.2), s = 0.06 + 0.34 * eo(u);
