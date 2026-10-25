@@ -25,3 +25,4 @@
 | **Applied Research** | [`/web_applied_research`](https://lu4k87.github.io/web_applied_research) | KreiswertS – Plattform-Prototyp für den Austausch von Kunststoff-Resten in Kamp-Lintfort: Karte, Matching, drei Szenarien. | privat |
 | **Radial HUD** | [`/web_radial_mouse_hud`](https://lu4k87.github.io/web_radial_mouse_hud) | Rundes Menü am Mauszeiger für Linux – Klick auf die Vor-Seitentaste: Screenshot, neue Datei, Ordner, Apps, Ablage. | privat |
 | **Biochar** | [`/web_biochar`](https://lu4k87.github.io/web_biochar) | Interaktive 3D-Reise in Pflanzenkohle – vom Kohlestück über Zellen und Nanoporen bis zu den Atomen. | privat |
+| **kosmos** | in Arbeit | Neues Projekt – Beschreibung folgt. | privat |
