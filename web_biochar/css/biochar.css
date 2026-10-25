@@ -102,7 +102,6 @@ button { font: inherit; color: inherit; }
 }
 .hex-shape { fill: var(--hex-fill); stroke: var(--hex-stroke); stroke-width: 1.6; transition: fill 0.25s, stroke 0.25s; }
 .hex--lad { width: 36px; height: 36px; }
-.hex--fact { width: 44px; height: 44px; color: var(--accent); }
 .hex--mini { width: 26px; height: 26px; }
 .hex--hs { width: 32px; height: 32px; --hex-fill: rgba(255, 255, 255, 0.09); }
 
@@ -434,19 +433,24 @@ body.panel-collapsed .panel { display: none; }
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
 }
+/* Ohne Scrollen bei 1440 × 900 (Vorschau 2026-10-25, Panel:B): dichter gesetzt, Abschnitte nur 4 px stärker abgesetzt;
+   overflow bleibt für kleine Fenster und aufgeklappte Teile */
 .panel-body {
   overflow-y: auto;
-  padding: 22px 22px 26px;
+  padding: 18px 20px 20px;
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 10px;
   scrollbar-width: thin;
 }
+.panel-body > * { flex-shrink: 0; }
+.panel-body > section { margin-top: 4px; }
 .panel-body.is-entering { animation: settle 0.5s ease-out both; }
 @keyframes settle { from { opacity: 0.35; } to { opacity: 1; } }
-.panel h1 { font-size: 27px; line-height: 1.15; font-weight: 600; margin: 0; letter-spacing: -0.01em; text-wrap: balance; }
+.panel h1 { font-size: 23px; line-height: 1.15; font-weight: 600; margin: 0; letter-spacing: -0.01em; text-wrap: balance; }
 .panel h2 { margin: 0; }
-.panel .sub { font-size: 15px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 10px; }
+.panel .sub { font-size: 15px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 6px; }
+.panel .sub-note { font-size: 13.5px; font-weight: 400; letter-spacing: 0; text-transform: none; color: var(--ink-soft); }
 .panel .sub a {
   display: inline-block;
   padding: 1px 6px;
@@ -460,7 +464,22 @@ body.panel-collapsed .panel { display: none; }
   margin-left: 3px;
 }
 .eyebrow { margin: 0; font: 500 13px/1.3 var(--mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--accent); }
+.eyebrow-scale { text-transform: none; }   /* sonst wird „µm“ zu „ΜM“ (großes Mü) */
 .lead { margin: 0; font-size: 16px; line-height: 1.5; color: var(--ink-soft); hyphens: auto; }
+.lead:not(.is-open) { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.lead-more {
+  align-self: flex-start;
+  margin-top: -6px;
+  padding: 4px 10px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--accent);
+  font: 500 14px/1.2 var(--mono);
+  cursor: pointer;
+  transition: border-color 0.18s, background-color 0.18s;
+}
+.lead-more:hover { border-color: var(--accent); background: var(--accent-soft); }
 /* Fließtext im Blocksatz (Skill text-format §4, Wunsch User 2026-10-23): Tafel, Info-Karte, Hinweise, Quellen.
    Silbentrennung über lang="de", aber sparsam: nur Wörter ab 12 Zeichen, mind. 5 vorn und 4 hinten (keine „ge-streckt“);
    schmal (< 30 em) wieder linksbündig */
@@ -486,71 +505,54 @@ body.panel-collapsed .panel { display: none; }
 .detail p { hyphens: auto; line-height: 1.5; }
 .detail .btn-primary { align-self: flex-start; }
 
-.explore { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.explore { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
 .explore button {
-  width: 100%;
   display: flex;
   align-items: center;
-  gap: 9px;
-  padding: 8px 12px 8px 9px;
+  gap: 6px;
+  padding: 4px 10px 4px 6px;
   border-radius: 8px;
   border: 1px solid var(--line);
   background: transparent;
   cursor: pointer;
-  font-size: 15.5px;
+  font-size: 14.5px;
   text-align: left;
   transition: border-color 0.18s, background-color 0.18s;
 }
 .explore button:hover, .explore button.is-active { border-color: var(--accent); background: var(--accent-soft); }
 .explore .is-dive .hex { --hex-fill: var(--accent); --hex-stroke: var(--accent); color: var(--accent-ink); }
 .exp-num { font: 500 12px/1 var(--mono); color: var(--accent); opacity: 0.85; min-width: 2.1ch; }
-.exp-title { flex: 1; min-width: 0; font-weight: 500; }
-.explore .tag {
-  margin-left: auto;
-  padding: 2px 7px;
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--accent) 14%, transparent);
-  font: 500 12px/1.2 var(--mono);
-  color: var(--accent);
-  white-space: nowrap;
-}
+.exp-title { min-width: 0; font-weight: 500; }
+.explore .hex--mini { width: 22px; height: 22px; }
 
-/* 2×2-Kennzahlen-Bento (Vorschau Tafel:A + F4: ungerade letzte Karte über volle Breite).
-   Spalten nach Breite des Panels, nicht des Fensters; schmale Karten stellen das Icon über den Text,
-   damit Wert und längstes Wort („Gefäßdurchmesser“) in die Textspalte passen. Balken sitzen je Zeile auf einer Linie. */
+/* Kennzahlen zweispaltig ohne Icons (Panel:B); bei ungerader Zahl steht die erste (meist längste) über volle Breite.
+   Spalten nach Breite des Panels, nicht des Fensters. Balken sitzen je Zeile auf einer Linie. */
 .panel-body { container: panel / inline-size; }
-.facts { display: grid; grid-template-columns: 1fr; gap: 10px; }
+.facts { display: grid; grid-template-columns: 1fr; gap: 6px; }
 @container panel (min-width: 300px) {
   .facts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .facts > .fact:last-child:nth-child(odd) { grid-column: 1 / -1; }
-}
-@container panel (min-width: 300px) and (max-width: 520px) {
-  .facts > .fact:not(:last-child:nth-child(odd)) { flex-direction: column; gap: 8px; }
+  .facts > .fact:first-child:nth-last-child(odd) { grid-column: 1 / -1; }
 }
 .fact {
   display: flex;
-  align-items: flex-start;
-  gap: 11px;
-  padding: 12px;
+  padding: 8px 11px;
   border: 1px solid var(--line);
   border-radius: 8px;
   background: color-mix(in srgb, var(--ink) 2.5%, transparent);
 }
-.fact .hex--fact { flex: none; width: 36px; height: 36px; margin-top: 2px; }
 .fact-text { flex: 1; align-self: stretch; display: flex; flex-direction: column; gap: 3px; min-width: 0; }
-.fact-value { font: 500 18.5px/1.2 var(--mono); }
+.fact-value { font: 500 16.5px/1.2 var(--mono); }
 .fact-value > span { white-space: nowrap; }   /* Umbruch nur an „ · “, nie zwischen Zahl, ± und Einheit */
-.fact-label { font-size: 13.5px; line-height: 1.32; color: var(--ink-soft); hyphens: auto; overflow-wrap: break-word; text-wrap: pretty; margin-bottom: 4px; }
+.fact-label { font-size: 13.5px; line-height: 1.32; color: var(--ink-soft); hyphens: auto; overflow-wrap: break-word; text-wrap: pretty; margin-bottom: 2px; }
 .fact-bar { display: block; height: 4px; margin-top: auto; border-radius: 2px; background: var(--line); overflow: hidden; }
 .fact-bar i { display: block; height: 100%; border-radius: 2px; background: var(--accent); transition: width 0.3s var(--ease-out); }
 
-.controls { display: flex; flex-direction: column; gap: 12px; }
+.controls { display: flex; flex-direction: column; gap: 8px; }
 .controls .sub { margin-bottom: 0; }
 .slider { display: flex; flex-direction: column; gap: 8px; font-size: 16px; }
 .slider > span:first-child { display: flex; justify-content: space-between; gap: 8px; }
 .slider output { font: 500 16px var(--mono); color: var(--accent); }
 .slider input { width: 100%; accent-color: var(--accent); }
-.lab { width: 100%; border-collapse: collapse; font-size: 15px; }
 
 /* Luftfeuchte (Ebene 5): Porenklassen-Skala unter dem Regler (Daumenbreite links/rechts frei), gefüllt bis Ø, Isotherme */
 .rh { display: flex; flex-direction: column; gap: 10px; }
@@ -569,14 +571,21 @@ body.panel-collapsed .panel { display: none; }
 .rh-bar i { display: block; height: 100%; background: var(--water); transition: width 0.25s var(--ease-out); }
 .chart .curve--des { stroke: var(--water); stroke-dasharray: 4 3; }
 @media (prefers-reduced-motion: reduce) { .rh-bar i { transition: none; } }
-.lab th, .lab td { padding: 8px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
-.lab th { text-align: left; font-weight: 400; padding-right: 10px; }
-.lab td { text-align: right; font-family: var(--mono); white-space: nowrap; }
-.lab-val { display: block; }
-.lab-bar { display: block; width: 92px; height: 3.5px; margin: 4px 0 0 auto; border-radius: 2px; background: var(--line); overflow: hidden; }
+/* Laborwerte als 3 × 3 Kacheln (Panel:B): Name, Wert, Balken; Balken einer Zeile auf einer Linie */
+.lab { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 5px; margin: 0; }
+.lab-cell { display: flex; flex-direction: column; gap: 2px; min-width: 0; padding: 4px 8px 5px; border: 1px solid var(--line); border-radius: 8px; }
+.lab dt { font-size: 13px; line-height: 1.2; }
+.lab dd { flex: 1; display: flex; flex-direction: column; gap: 2px; margin: 0; }
+.lab-val { font: 500 15px/1.25 var(--mono); overflow-wrap: break-word; }
+.lab-bar { display: block; height: 3.5px; margin-top: auto; border-radius: 2px; background: var(--line); overflow: hidden; }
 .lab-bar i { display: block; height: 100%; border-radius: 2px; background: var(--accent); transition: width 0.25s var(--ease-out); }
-.lab tr.warn .lab-bar i { background: var(--warn); }
-.lab tr.warn td { color: var(--warn); font-weight: 500; }
+.lab-cell.warn .lab-bar i { background: var(--warn); }
+.lab-cell.warn .lab-val { color: var(--warn); }
+/* Diagramm H/C + Erläuterung aufklappbar (F1), zu; gleiche Form wie „Alle Quellen“ */
+.lab-more { font-size: 14px; }
+.lab-more > summary { cursor: pointer; font-weight: 500; }
+.lab-more[open] > summary { margin-bottom: 8px; }
+.lab-more > .note { margin-top: 8px; }
 .note { font-size: 14px; line-height: 1.45; color: var(--ink-soft); }
 
 /* Pyrolyse-Labor: Kurve H/Corg */
@@ -591,7 +600,10 @@ body.panel-collapsed .panel { display: none; }
 .chart .lbl { font: 9px var(--mono); fill: var(--ink); }
 .chart figcaption { margin: 0; }
 
+.sources { display: flex; flex-wrap: wrap; align-items: baseline; column-gap: 14px; }
+.sources .sub { margin-bottom: 0; }
 .sources details { font-size: 14px; }
+.sources details[open] { flex-basis: 100%; }
 .sources summary { cursor: pointer; font-weight: 500; }
 .sources ol { padding-left: 22px; margin: 10px 0 0; display: flex; flex-direction: column; gap: 8px; }
 .sources a { color: var(--ink); text-decoration-color: var(--accent); text-underline-offset: 2px; }

@@ -4,7 +4,7 @@
 
 import { LEVELS, SOURCES } from './content.js';
 import { properties, labProps, pyroState, fmt, T_MIN, T_MAX, T_ROOM, PHASES, fillDiameterNm, kelvinRh, filledShare, isotherm, poreClass, nanoStructure, tissueScale } from './science.js';
-import { hexBadge, HEX, LEVEL_ICONS, HOTSPOT_ICONS, FACT_ICONS } from './icons.js';
+import { hexBadge, HEX, LEVEL_ICONS, HOTSPOT_ICONS } from './icons.js';
 
 const $ = (sel) => document.querySelector(sel);
 // Zahlenbereiche wie „2–50 nm“ nie nach dem Strich umbrechen (Wortverbinder U+2060)
@@ -154,10 +154,9 @@ export function createHud(handlers) {
     return Math.min(92, Math.max(18, Math.round((Math.log10(Math.max(0.1, v)) + 1) * 28)));
   }
 
-  function facts(list, levelId) {
-    const icons = FACT_ICONS[levelId] || [];
-    return `<div class="facts">${list.map((f, i) => `
-      <div class="fact">${hexBadge(icons[i] || 'info', 'hex--fact')}
+  function facts(list) {
+    return `<div class="facts">${list.map((f) => `
+      <div class="fact">
         <div class="fact-text">
           <span class="fact-value">${String(f.value).split(' · ').map((s) => `<span>${esc(s)}</span>`).join(' · ')}</span>
           <span class="fact-label">${esc(f.label)}</span>
@@ -166,30 +165,31 @@ export function createHud(handlers) {
       </div>`).join('')}</div>`;
   }
 
-  // Zeilen der Labortabelle: [Schlüssel, Name, Wert, Warnung, Balken-%] – gleiche Quelle für Aufbau und laufende Aktualisierung
+  // Laborwerte: [Schlüssel, Name, Wert, Warnung, Balken-%] – gleiche Quelle für Aufbau und laufende Aktualisierung;
+  // kurze Namen für die 3 × 3 Kacheln (Panel:B), Langform steht in der Erläuterung unter „Verlauf H/C“;
+  // Zahl und Einheit hängen per geschütztem Leerzeichen zusammen, umbrechen darf die Kachel nur nach „≈“
   function labRows(t) {
     const p = labProps(t);
     const dash = '–';
     const cl = (v) => Math.min(100, Math.max(0, v));
     return [
-      ['yield', 'Masseausbeute', `${fmt(p.yield)} %`, false, cl(p.yield)],
-      ['carbon', 'Kohlenstoffgehalt', `${fmt(p.carbon)} %`, false, cl(p.carbon)],
-      ['hc', 'H/Corg (EBC < 0,7)', `${fmt(p.hc, 2)} ${p.hc < 0.7 ? '✓' : '⚠ über Grenzwert'}`, p.hc >= 0.7, cl((p.hc / 1.55) * 100)],
-      ['oc', 'O/Corg (EBC < 0,4)', `${fmt(p.oc, 2)} ${p.oc < 0.4 ? '✓' : '⚠ über Grenzwert'}`, p.oc >= 0.4, cl((p.oc / 0.85) * 100)],
-      ['bet', 'BET-Oberfläche', `≈ ${fmt(p.bet)} m²/g`, false, cl(Math.max(2, (p.bet / 400) * 100))],
+      ['yield', 'Ausbeute', `${fmt(p.yield)}\u00a0%`, false, cl(p.yield)],
+      ['carbon', 'Kohlenstoff', `${fmt(p.carbon)}\u00a0%`, false, cl(p.carbon)],
+      ['hc', 'H/C < 0,7', `${fmt(p.hc, 2)} ${p.hc < 0.7 ? '✓' : '⚠'}`, p.hc >= 0.7, cl((p.hc / 1.55) * 100)],
+      ['oc', 'O/C < 0,4', `${fmt(p.oc, 2)} ${p.oc < 0.4 ? '✓' : '⚠'}`, p.oc >= 0.4, cl((p.oc / 0.85) * 100)],
+      ['bet', 'BET-Fläche', `≈ ${fmt(p.bet)}\u00a0m²/g`, false, cl(Math.max(2, (p.bet / 400) * 100))],
       ['ph', 'pH-Wert', fmt(p.ph, 1), false, cl(((p.ph - 4) / 7) * 100)],
-      ['fperm', 'nach 100 Jahren im Boden (IPCC)', p.fperm === null ? dash : `${fmt(p.fperm * 100)} % des C`, false, p.fperm === null ? 0 : cl(p.fperm * 100)],
-      ['co2', 'dauerhaft gebundenes CO₂', p.co2 === null ? dash : `${fmt(p.co2, 1)} t je t Biochar`, false, p.co2 === null ? 0 : cl((p.co2 / 3.2) * 100)],
-      ['cls', 'Strukturtyp (Keiluweit 2010)', p.charClass, false, null],
+      ['fperm', 'C nach 100 J.', p.fperm === null ? dash : `${fmt(p.fperm * 100)}\u00a0%`, false, p.fperm === null ? 0 : cl(p.fperm * 100)],
+      ['co2', 'CO₂ gebunden', p.co2 === null ? dash : `${fmt(p.co2, 1)}\u00a0t/t`, false, p.co2 === null ? 0 : cl((p.co2 / 3.2) * 100)],
+      ['cls', 'Strukturtyp', p.charClass, false, null],
     ];
   }
 
-  function labTable(t) {
-    const row = ([k, name, v, warn, bar]) => `<tr${warn ? ' class="warn"' : ''} data-f="${k}"><th scope="row">${name}</th><td><span class="lab-val">${v}</span>${bar !== null ? `<span class="lab-bar" aria-hidden="true"><i style="width:${bar.toFixed(1)}%"></i></span>` : ''}</td></tr>`;
-    return `
-      <table class="lab">${labRows(t).map(row).join('')}</table>
-      <p class="note">Richtwerte für Holz, langsame Pyrolyse – reale Kohlen streuen je Rohstoff und Verfahren. Unter 350 °C Übergang vom Holz (Modell). CO₂ = C-Gehalt × IPCC-Faktor × 44/12.</p>`;
+  function labTiles(t) {
+    const cell = ([k, name, v, warn, bar]) => `<div class="lab-cell${warn ? ' warn' : ''}" data-f="${k}"><dt>${name}</dt><dd><span class="lab-val">${v}</span>${bar !== null ? `<span class="lab-bar" aria-hidden="true"><i style="width:${bar.toFixed(1)}%"></i></span>` : ''}</dd></div>`;
+    return `<dl class="lab">${labRows(t).map(cell).join('')}</dl>`;
   }
+  const LAB_NOTE = 'Werte bei der gezeigten Temperatur, Richtwerte für Holz, langsame Pyrolyse – reale Kohlen streuen je Rohstoff und Verfahren. Unter 350 °C Übergang vom Holz (Modell). H/C und O/C: molare Verhältnisse H/Corg und O/Corg mit EBC-Grenzwerten. C nach 100 Jahren: Anteil des Kohlenstoffs, der im Boden bleibt (IPCC). CO₂ gebunden: t CO₂ je t Biochar = C-Gehalt × IPCC-Faktor × 44/12. Strukturtyp nach Keiluweit 2010.';
 
   // Kurve H/Corg über der Temperatur mit EBC-Grenze 0,7 und Marke für die gezeigte Temperatur
   const CH = { w: 240, h: 96, x0: 30, x1: 232, y0: 8, y1: 76 };
@@ -397,14 +397,12 @@ export function createHud(handlers) {
     playBtn.setAttribute('aria-label', playing ? 'Anhalten' : 'Pyrolyse abspielen');
     playBtn.setAttribute('aria-pressed', String(playing));
     for (const [k, , v, warn, bar] of labRows(T)) {
-      const tr = panel.querySelector(`tr[data-f="${k}"]`);
-      if (!tr) continue;
-      const valEl = tr.querySelector('.lab-val');
-      if (valEl) valEl.textContent = v;
-      else tr.firstElementChild.nextElementSibling.textContent = v;
-      const barEl = tr.querySelector('.lab-bar > i');
+      const cell = panel.querySelector(`.lab-cell[data-f="${k}"]`);
+      if (!cell) continue;
+      cell.querySelector('.lab-val').textContent = v;
+      const barEl = cell.querySelector('.lab-bar > i');
       if (barEl && bar !== null) barEl.style.width = `${bar.toFixed(1)}%`;
-      tr.classList.toggle('warn', warn);
+      cell.classList.toggle('warn', warn);
     }
     const dot = panel.querySelector('#chart-dot'), cur = panel.querySelector('#chart-cur');
     if (dot) {
@@ -417,6 +415,10 @@ export function createHud(handlers) {
     }
   }
 
+  // Infotafel ohne Scrollen (Vorschau 2026-10-25, Panel:B): Einleitung zweizeilig + „Weiterlesen“, Entdecken als Chips
+  // (Größen-Etikett nur in der Info-Karte), Kennzahlen ohne Icons, Labor als 3 × 3 Kacheln, Diagramm und Erläuterung
+  // aufklappbar (F1); „Verlauf H/C“ bleibt über Ebenenwechsel offen, wenn einmal geöffnet
+  let chartOpen = false;
   function render(state) {
     const l = LEVELS[current];
     const dyn = level && level.facts ? level.facts() : [];
@@ -425,37 +427,44 @@ export function createHud(handlers) {
     const shown = state.pyro ? state.pyro.shown : state.temp, playing = !!(state.pyro && state.pyro.playing);
     const refs = l.refs.map((r) => `<a href="#quelle-${r}">[${r}]</a>`).join(' ');
     panel.innerHTML = `
-      <p class="eyebrow">Ebene ${current + 1} von ${LEVELS.length} · ${esc(l.zone)} · ${esc(l.scale)} (${esc(l.compare)})</p>
+      <p class="eyebrow">Ebene ${current + 1} von ${LEVELS.length} · ${esc(l.zone)} · <span class="eyebrow-scale">${esc(l.scale)}</span> (${esc(l.compare)})</p>
       <h1>${esc(l.title)}</h1>
-      <p class="lead">${esc(l.lead)}</p>
+      <p class="lead" id="panel-lead">${esc(l.lead)}</p>
+      <button type="button" class="lead-more" aria-expanded="false" aria-controls="panel-lead">Weiterlesen</button>
       <section>
         <h2 class="sub">Entdecken</h2>
-        <ul class="explore">${hsList.map((h, idx) => {
-          const hsMeta = l.hotspots[h.id];
-          const tagTxt = hsMeta.tag || (h.kind === 'dive' ? 'tiefer ↓' : '');
-          return `
+        <ul class="explore">${hsList.map((h, idx) => `
           <li><button type="button" data-hs="${h.id}" class="${h.kind === 'dive' ? 'is-dive' : ''}${selected && selected.id === h.id ? ' is-active' : ''}">
-            <span class="exp-num">0${idx + 1}</span>${hexBadge(icons[h.id], 'hex--mini')}<span class="exp-title">${esc(hsMeta.title)}</span>${tagTxt ? ` <span class="tag">${esc(tagTxt)}</span>` : ''}
-          </button></li>`;
-        }).join('')}
+            <span class="exp-num">0${idx + 1}</span>${hexBadge(icons[h.id], 'hex--mini')}<span class="exp-title">${esc(l.hotspots[h.id].title)}</span>
+          </button></li>`).join('')}
         </ul>
       </section>
-      ${facts([...l.facts, ...dyn], l.id)}
+      ${facts([...l.facts, ...dyn])}
       <section class="controls">
-        <h2 class="sub">Pyrolyse-Labor</h2>
-        <p class="note">Werte bei der gezeigten Temperatur. Gesteuert wird mit der Zeitleiste im Bild: ▶ spielt den Zeitraffer ab, das Dreieck setzt die Zieltemperatur.</p>
+        <h2 class="sub">Pyrolyse-Labor <span class="sub-note">· Richtwerte Holz (Modell)</span></h2>
         ${l.id === 'meso' ? rhBlock(state.rh, state.wet) : ''}
-        <div id="lab">${labTable(shown)}</div>
-        ${labChart(shown)}
+        <div id="lab">${labTiles(shown)}</div>
+        <details class="lab-more"${chartOpen ? ' open' : ''}>
+          <summary>Verlauf H/C · Erläuterung</summary>
+          ${labChart(shown)}
+          <p class="note">${LAB_NOTE}</p>
+        </details>
       </section>
       <section class="sources">
-        <h2 class="sub">Quellen dieser Ebene ${refs}</h2>
+        <h2 class="sub">Quellen ${refs}</h2>
         <details>
           <summary>Alle Quellen</summary>
           <ol>${SOURCES.map((s) => `<li id="quelle-${s.id}"><a href="${s.url}" target="_blank" rel="noopener">${esc(s.text)}</a></li>`).join('')}</ol>
         </details>
       </section>`;
 
+    const more = panel.querySelector('.lead-more');
+    more.addEventListener('click', () => {
+      const open = panel.querySelector('.lead').classList.toggle('is-open');
+      more.setAttribute('aria-expanded', String(open));
+      more.textContent = open ? 'Weniger' : 'Weiterlesen';
+    });
+    panel.querySelector('.lab-more').addEventListener('toggle', (e) => { chartOpen = e.target.open; });
     panel.querySelectorAll('button[data-hs]').forEach((b) => b.addEventListener('click', () => handlers.onHotspot(b.dataset.hs)));
     setGoal(state.temp);
     setLive(shown, playing, true);
@@ -493,7 +502,7 @@ export function createHud(handlers) {
     if (!lastState || !level) return;
     const box = panel.querySelector('.facts');
     const l = LEVELS[current];
-    if (box) box.outerHTML = facts([...l.facts, ...(level.facts ? level.facts() : [])], l.id);
+    if (box) box.outerHTML = facts([...l.facts, ...(level.facts ? level.facts() : [])]);
   }
 
   // ---------- Hotspots & 3D-Mess-Overlays (Makro:A, Nano:A, Hud:A+B+C) ----------
@@ -857,9 +866,10 @@ export function createHud(handlers) {
   function fillCard() {
     if (!selected) { card.classList.remove('is-open'); lensCanvas = null; return; }
     const l = LEVELS[current], h = l.hotspots[selected.id], icons = HOTSPOT_ICONS[l.id] || {};
+    const tag = h.tag || (selected.kind === 'dive' ? 'tiefer' : '');   // Größen-Etikett steht seit Panel:B nur noch hier
     card.innerHTML = `<div class="hs-card-in">
       <div class="hs-card-head">
-        <h2>${hexBadge(icons[selected.id], 'hex--mini')}<span>${esc(h.title)}</span>${selected.kind === 'dive' ? '<span class="tag">tiefer</span>' : ''}</h2>
+        <h2>${hexBadge(icons[selected.id], 'hex--mini')}<span>${esc(h.title)}</span>${tag ? `<span class="tag">${esc(tag)}</span>` : ''}</h2>
         <button type="button" class="hs-card-close" aria-label="Schließen"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2 2l8 8M10 2l-8 8"/></svg></button>
       </div>
       <div class="hs-body">

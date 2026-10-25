@@ -60,17 +60,6 @@ export const HOTSPOT_ICONS = {
   atoms: { ring: 'sheet', carboxyl: 'carboxyl', phenol: 'phenol', carbonyl: 'carbonyl', edgeh: 'edgeh' },
 };
 
-// Kennzahlen je Ebene: erst die festen aus content.js, dann die berechneten der Szene
-export const FACT_ICONS = {
-  piece: ['carbon', 'clock', 'ratio'],
-  tissue: ['porosity', 'ruler', 'ruler', 'porosity'],
-  cells: ['ruler', 'microbe', 'hypha'],
-  wall: ['pit', 'pit', 'ruler'],
-  meso: ['crack', 'micropore', 'ruler', 'micropore', 'water'],
-  micro: ['micropore', 'stack', 'layers', 'micropore'],
-  atoms: ['bond', 'molecule', 'ratio'],
-};
-
 export function hexBadge(icon, cls = '') {
   return `<svg class="hex ${cls}" viewBox="0 0 40 40" aria-hidden="true"><path class="hex-shape" d="${HEX}"/>` +
     `<g class="hex-glyph" transform="translate(10 10) scale(0.8333)" fill="none" stroke="currentColor" stroke-width="1.8" ` +
