@@ -94,9 +94,11 @@ function endGrainTextures(rand) {
       const i = (y * N + x) * 4;
       cd[i] = v * 1.03; cd[i + 1] = v; cd[i + 2] = v * 0.97; cd[i + 3] = 255;
       // R: Relief – Spätholz dichter und höher, Frühholz schrumpft stärker ein · G: Rauheit
+      // B: Holzton (nur Holzzustand) – Spätholz-Band dunkel, Ringgrenze als feine Linie, leichte Wolken im Ton
       rd[i] = 150 + 60 * late + 40 * (grain - 0.5);
       rd[i + 1] = 205 - 25 * late;
-      rd[i + 2] = 0; rd[i + 3] = 255;
+      rd[i + 2] = 255 * clamp(0.66 - 0.4 * late - (ph > 0.965 ? 0.18 : 0) + 0.1 * (grain - 0.5) + 0.14 * (n(x * 0.0025 + 40, y * 0.0025) - 0.5), 0, 1);
+      rd[i + 3] = 255;
     }
   }
   // Gefäße in echter Größe: Frühholz Ø 24 ± 12 µm, Spätholz Ø 15 ± 9 µm (Prommer et al. 2014), teils radiale Paare
@@ -126,7 +128,7 @@ function endGrainTextures(rand) {
     const broad = k % 14 === 0;
     const ang = lerp(aLo, aHi, rand()) + (rand() - 0.5) * 0.02;
     cc.strokeStyle = broad ? 'rgba(78,76,72,0.75)' : 'rgba(58,57,55,0.32)';
-    rc.strokeStyle = broad ? 'rgba(240,150,0,0.9)' : 'rgba(215,180,0,0.45)';
+    rc.strokeStyle = broad ? 'rgba(240,150,95,0.9)' : 'rgba(215,180,120,0.45)';   // B: Strahlen rötlich-dunkler
     for (const ctx of [cc, rc]) {
       ctx.lineWidth = broad ? 4 + rand() * 3 : 1.1;
       ctx.beginPath();
@@ -186,16 +188,22 @@ function sideTextures(rand, radialFace) {
       const fine = n(x * 0.05, y * 0.9);
       // Jahrring-Phase: radial fast gerade, tangential als Flader (Bogen über die Länge)
       const flame = radialFace ? 6 * n(x * 0.004, 2.0) : 70 * Math.sin(x * 0.0021 + 1.3) * smoothstep(0.1, 0.9, n(x * 0.001, 5.0)) + 14 * n(x * 0.006, 7.0);
-      const ph = (((y + flame) / ringPx) % 1 + 1) % 1;
-      const late = smoothstep(0.78, 0.95, ph) * (1 - smoothstep(0.97, 1, ph));   // schmale Spätholz-Linie
+      // ungleich breite Jahrringe (Verzerrung der Lage) und je Ring verschieden kräftiges Spätholz – kein Dielen-Raster
+      const yw = y + flame + 10 * (n(x * 0.0015 + 20, y * 0.006) - 0.5);
+      const rpos = (yw + 34 * Math.sin(yw * 0.0061 + 0.7) + 18 * Math.sin(yw * 0.017 + 2)) / ringPx;
+      const ph = rpos - Math.floor(rpos), rv = n(Math.floor(rpos) * 1.7 + 0.5, 3.3);
+      const late = smoothstep(0.7 + 0.12 * rv, 0.95, ph) * (1 - smoothstep(0.97, 1, ph)) * (0.5 + 0.5 * rv);   // schmale Spätholz-Linie
       // Faserriefen: unregelmäßige feine Rillen längs der Faser (0,05–0,2 mm breit), kein festes Raster → kein Moiré
       const riefe = smoothstep(0.55, 0.85, n(x * 0.004, y * 0.2)) * (0.6 + 0.4 * n(x * 0.02, y * 0.3));
       const v = 30 + 13 * (streak - 0.5) + 6 * (fine - 0.5) - 3 * late - 5 * riefe;
       const i = (y * NW + x) * 4;
       cd[i] = v * 1.02; cd[i + 1] = v; cd[i + 2] = v * 0.98; cd[i + 3] = 255;
-      rd[i] = 170 + 12 * (streak - 0.5) + 2 * late - 22 * riefe;   // Längsstreifen flach, Riefen deutlich, keine Zeilen-Feinheit
+      rd[i] = 170 + 12 * (streak - 0.5) + 5 * late - 22 * riefe;   // Längsstreifen flach, Riefen deutlich, Spätholz leicht erhaben
       rd[i + 1] = 140 + 15 * (fine - 0.5) - 4 * late;    // seidig, Spätholz kaum glatter
-      rd[i + 2] = 0; rd[i + 3] = 255;
+      // B: Holzton – Frühholz hell, zum Spätholz hin dunkler, Spätholz-Linie (Flader auf der Tangentialfläche), Faserstreifen
+      const tone = 0.68 - 0.12 * smoothstep(0.3, 0.9, ph) - 0.28 * late + 0.2 * (streak - 0.5) + 0.06 * (fine - 0.5) - 0.1 * riefe +
+        0.14 * (n(x * 0.0012 + 60, y * 0.004) - 0.5);
+      rd[i + 2] = 255 * clamp(tone, 0, 1); rd[i + 3] = 255;
     }
   }
   // längs angeschnittene Gefäße: kurze dunkle Rinnen (Ø ≈ 1 px, Länge 0,3–1 mm)
@@ -217,7 +225,7 @@ function sideTextures(rand, radialFace) {
     const x = rand() * NW, y = rand() * NH;
     const len = radialFace ? 18 + rand() * 70 : 4 + rand() * 9, w = radialFace ? 1.2 + rand() * 2.6 : 0.8 + rand() * 1.2;
     cc.fillStyle = 'rgba(70,68,64,0.55)';
-    rc.fillStyle = 'rgba(205,70,0,0.8)';
+    rc.fillStyle = radialFace ? 'rgba(205,70,105,0.8)' : 'rgba(205,70,70,0.8)';   // B: Spiegel rötlich-dunkel, tangential als dunkle Striche
     for (const ctx of [cc, rc]) { ctx.beginPath(); ctx.ellipse(x, y, len, w, 0, 0, Math.PI * 2); ctx.fill(); }
   }
   // Längsrisse
@@ -456,7 +464,7 @@ export function create(ctx) {
     const n = [dn.x, dn.y, dn.z];
     p.fromBufferAttribute(pos, i);
     shape(p);
-    let shade = 1, shadeWood = 1;
+    let shade = 1, shadeWood = 1, charRelief = 0;
     // Bruchende links: tiefe Terrassen quer zur Faser, lange herausstehende Faserbündel, feine Splitter
     if (p.x < -W / 2 + 0.95) {
       const step = Math.floor(fbm3(p.y * 2.2 + 7, p.z * 2.2 + 3, 0.5, 3) * 5) / 5;
@@ -490,13 +498,16 @@ export function create(ctx) {
       const crack = clamp((0.3 - h) / 0.3, 0, 1) * edge;
       const bump = fbm3(p.x * 1.4 + 3, p.y * 1.4, p.z * 1.4, 3) - 0.5;   // nur noch leicht: keine weichen Wellen
       // Relief aus der Höhe: Jahrringe/Strahlen auf der Stirnfläche ≈ 0,1 mm, Längsflächen flacher; an den Kanten aus
+      // Holz: Stirnfläche glatt gesägt (das Relief erschiene sonst als Beulennetz aus Ringen × Strahlen), erst die Kohle
+      // schrumpft ungleich → Relief der Stirnfläche nur im Morph-Ziel
       const relief = (h - 0.7) * (f < 2 ? 0.014 : 0.004) * edge;
-      const k = -crack * 0.13 + bump * 0.015 + relief;
+      if (f < 2) charRelief = relief;
+      const k = -crack * 0.13 + bump * 0.015 + (f < 2 ? 0 : relief);
       p.set(p.x + n[0] * k, p.y + n[1] * k, p.z + n[2] * k);
     }
     pos.setXYZ(i, p.x, p.y, p.z);
     const c = cracksAt(p), dir = hit ? hit.n : n;
-    dPos.set([dir[0] * c.k, dir[1] * c.k, dir[2] * c.k], i * 3);
+    dPos.set([dir[0] * c.k + n[0] * charRelief, dir[1] * c.k + n[1] * charRelief, dir[2] * c.k + n[2] * charRelief], i * 3);
     crackDepth[i] = c.k;
     colors[i * 3] = colors[i * 3 + 1] = colors[i * 3 + 2] = shadeWood;
     dCol[i * 3] = dCol[i * 3 + 1] = dCol[i * 3 + 2] = shade * c.shade - shadeWood;
@@ -553,7 +564,10 @@ export function create(ctx) {
           float pl = dot(diffuseColor.rgb, vec3(0.3333));
           float lr = clamp(pl / 0.016, 0.0, 1.8);       // Textur ist linear ≈ 0,015 im Mittel, Poren ≈ 0
           float pd = max(1.0 - clamp(lr, 0.0, 1.0), cm);
-          vec3 wood = vec3(0.56, 0.35, 0.16) * (0.7 + 0.3 * lr);   // Holz: Gefäße/Riefen nur als feine Körnung, hell ohne auszubrennen
+          // Holz: Ton aus dem B-Kanal der Relief-Textur (Jahrringe, Flader, Strahlen), mittleres bis dunkles Braun;
+          // Gefäße und Rinnen der Kohle-Textur (lr klein) als dunkle Poren
+          float tone = texture2D(roughnessMap, vMapUv).b;
+          vec3 wood = mix(vec3(0.055, 0.024, 0.01), vec3(0.21, 0.1, 0.045), tone) * mix(0.45, 1.0, smoothstep(0.05, 0.45, lr));
           vec3 brown = wood * vec3(0.7, 0.5, 0.42);
           diffuseColor.rgb = (uChar < 0.5 ? mix(wood, brown, smoothstep(0.0, 0.5, uChar)) : mix(brown, diffuseColor.rgb, smoothstep(0.5, 1.0, uChar))) * (1.0 - 0.92 * cm);`)
         .replace('#include <roughnessmap_fragment>', '#include <roughnessmap_fragment>\n          roughnessFactor = mix(roughnessFactor, 1.0, cm);')
@@ -824,8 +838,8 @@ export function create(ctx) {
       const k = clamp((value - 350) / 450, 0, 1);
       const brown = clamp((450 - value) / 100, 0, 1);   // ab ≈ 450 °C tiefschwarz
       const tint = new THREE.Color(lerp(0.72, 1.9, brown), lerp(0.72, 1.3, brown), lerp(0.74, 0.95, brown));
-      // Holz (auch gebräunt) nur leicht rau: Faserriefen und Gefäßrinnen der Normal-Map flach, tiefer erst in der Kohle
-      const relief = 1.1 * lerp(0.15, 1, smoothstep(380, 560, value));
+      // Holz (auch gebräunt) nur mäßig rau: Faserriefen und Gefäßrinnen der Normal-Map flach, tiefer erst in der Kohle
+      const relief = 1.1 * lerp(0.35, 1, smoothstep(380, 560, value));
       for (const m of mats) {
         m.color.copy(tint);
         m.normalScale.setScalar(relief);
