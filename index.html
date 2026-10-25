@@ -30,12 +30,13 @@
   --line: rgba(222, 236, 240, .10); --line-strong: rgba(222, 236, 240, .22);
   --fg: #eef2f3; --fg-2: #d5dee1;
   --accent: #2ee6c8; --stop: #ff6b6b; --grid: rgba(222, 236, 240, .045); --halo: rgba(46, 230, 200, .10);
+  --net: rgba(46, 230, 200, .07); --net-glow: rgba(46, 230, 200, .16);
   --qr-bg: #f3f5f5; --qr-ink: #0c0e10;
   --band: #101417; --c1: #2ee6c8; --c2: #5aa9ff; --c3: #b18cff; --c4: #ffb547; --c5: #ff7ab6;
   --radius-sm: 4px; --radius: 6px; --radius-lg: 8px;
   --key: color-mix(in srgb, var(--accent) 40%, var(--fg)); --code: color-mix(in srgb, var(--c2) 70%, var(--fg));
   --ease-out: cubic-bezier(.22, 1, .36, 1); --ease-io: cubic-bezier(.65, 0, .35, 1);
-  --t-fast: 150ms; --t-base: 250ms; --t-slow: 450ms; --t-xfade: 900ms; --stagger: 60ms; --rise: 12px; --lift: 2px;
+  --t-fast: 150ms; --t-base: 250ms; --t-slow: 450ms; --t-xfade: 900ms; --t-pulse: 2.6s; --stagger: 60ms; --rise: 12px; --lift: 2px;
   --f-head: 'Space Grotesk', system-ui, sans-serif; --f-body: 'Inter', system-ui, sans-serif; --f-mono: 'JetBrains Mono', ui-monospace, monospace;
 }
 :root[data-theme="light"] {
@@ -44,6 +45,7 @@
   --line: rgba(20, 24, 26, .12); --line-strong: rgba(20, 24, 26, .26);
   --fg: #14181a; --fg-2: #263034;
   --accent: #0a7a6d; --stop: #b42318; --grid: rgba(20, 24, 26, .05); --halo: transparent;
+  --net: rgba(10, 122, 109, .08); --net-glow: transparent;
   --qr-bg: #ffffff;
   --band: #e7ecec; --c1: #0a7a6d; --c2: #1f63c6; --c3: #6f42c1; --c4: #9a5800; --c5: #b0306f;
 }
@@ -54,6 +56,7 @@
     --line: rgba(20, 24, 26, .12); --line-strong: rgba(20, 24, 26, .26);
     --fg: #14181a; --fg-2: #263034;
     --accent: #0a7a6d; --stop: #b42318; --grid: rgba(20, 24, 26, .05); --halo: transparent;
+    --net: rgba(10, 122, 109, .08); --net-glow: transparent;
     --qr-bg: #ffffff;
     --band: #e7ecec; --c1: #0a7a6d; --c2: #1f63c6; --c3: #6f42c1; --c4: #9a5800; --c5: #b0306f;
   }
@@ -68,12 +71,22 @@ code { font-family: var(--f-mono); font-size: .875rem; overflow-wrap: anywhere; 
 .i { width: 1em; height: 1em; flex: none; fill: none; stroke: currentColor; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; }
 [id] { scroll-margin-top: 16px; }
 
-/* Hintergrund: feines Raster, nach unten ausgeblendet, oben ein Lichthof (nur dunkel) */
+/* Hintergrund: feines Raster in Akzentfarbe, nach unten ausgeblendet, oben ein Lichthof (nur dunkel) */
 .backdrop { position: fixed; inset: 0; z-index: -1; pointer-events: none;
   background: radial-gradient(60% 45% at 18% 0%, var(--halo), transparent 70%),
-              linear-gradient(var(--grid) 1px, transparent 1px) 0 0 / 32px 32px,
-              linear-gradient(90deg, var(--grid) 1px, transparent 1px) 0 0 / 32px 32px;
+              linear-gradient(var(--net) 1px, transparent 1px) 0 0 / 32px 32px,
+              linear-gradient(90deg, var(--net) 1px, transparent 1px) 0 0 / 32px 32px;
   -webkit-mask-image: linear-gradient(#000 0, #000 35%, transparent 90%); mask-image: linear-gradient(#000 0, #000 35%, transparent 90%); }
+/* Glow-Puls: helleres Raster um den Lichthof, atmet nur per Deckkraft (kein Paint je Frame); hell --net-glow transparent.
+   Periode 2 × --t-pulse: ganze Fläche soll atmen, nicht pochen */
+.backdrop::after { content: ""; position: absolute; inset: 0; opacity: .35;
+  background: radial-gradient(50% 40% at 18% 0%, var(--net-glow), transparent 70%),
+              linear-gradient(var(--net-glow) 1px, transparent 1px) 0 0 / 32px 32px,
+              linear-gradient(90deg, var(--net-glow) 1px, transparent 1px) 0 0 / 32px 32px;
+  -webkit-mask-image: radial-gradient(75% 65% at 18% 0%, #000, transparent 75%); mask-image: radial-gradient(75% 65% at 18% 0%, #000, transparent 75%);
+  animation: net-breathe calc(2 * var(--t-pulse)) var(--ease-io) infinite alternate; }
+@keyframes net-breathe { to { opacity: .65; } }
+@media (prefers-reduced-motion: reduce) { .backdrop::after { animation: none; opacity: .5; } }
 
 .wrap { max-width: 1200px; margin-inline: auto; padding-inline: 16px; }
 @media (min-width: 720px) { .wrap { padding-inline: 32px; } }
