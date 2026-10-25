@@ -302,52 +302,18 @@ a.hero-card:hover { border-color: color-mix(in srgb, var(--accent) 65%, var(--gl
   background: radial-gradient(ellipse at 50% 55%, color-mix(in srgb, var(--accent) 36%, transparent), transparent 70%); }
 .h3d-flash.in { animation: h3d-flash 900ms var(--ease-out); }
 @keyframes h3d-flash { 0% { opacity: 0; } 18% { opacity: 1; } 100% { opacity: 0; } }
-/* Klang-Knopf frei unten rechts, Zahnrad unten links in der Bühne (gleiche Rasterzelle wie der Canvas, kein position: absolute);
-   Missionsstand selbst liegt in der 3D-Szene (js/hero3d.js), für Screenreader als unsichtbare Statuszeile .h3d-sr */
-.h3d-snd, .h3d-cog { align-self: end; justify-self: end; z-index: 2; display: grid; place-items: center; width: 36px; height: 36px; margin: 14px; padding: 0;
+/* Klang-Knopf frei unten rechts in der Bühne (gleiche Rasterzelle wie der Canvas, kein position: absolute); Missionsstand
+   selbst liegt in der 3D-Szene (js/hero3d.js), für Screenreader als unsichtbare Statuszeile .h3d-sr */
+.h3d-snd { align-self: end; justify-self: end; z-index: 2; display: grid; place-items: center; width: 36px; height: 36px; margin: 14px; padding: 0;
   border: 1px solid var(--glass-bd); border-radius: 50%; background: transparent; color: var(--glass-fg); cursor: pointer;
   transition: border-color var(--t-fast), background var(--t-fast); }
-.h3d-snd:hover, .h3d-snd:focus-visible, .h3d-cog:hover, .h3d-cog:focus-visible { border-color: color-mix(in srgb, var(--accent) 55%, var(--glass-bd)); background: color-mix(in srgb, var(--accent) 9%, transparent); }
-.h3d-snd svg, .h3d-cog svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.h3d-snd:hover, .h3d-snd:focus-visible { border-color: color-mix(in srgb, var(--accent) 55%, var(--glass-bd)); background: color-mix(in srgb, var(--accent) 9%, transparent); }
+.h3d-snd svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 .h3d-snd .x, .h3d-snd[aria-pressed="false"] .w { display: none; }
 .h3d-snd[aria-pressed="false"] .x { display: inline; }
 .h3d-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; margin: 0; }
-/* Zahnrad + Einstellungen (js/hero3d.js, Szene dome; Wunsch User 25.10.2026): Leistung, Bewegung, Licht, Ebenen. Panel steht in
-   derselben Rasterzelle über dem Zahnrad, scrollt bei wenig Höhe; dunkles Glas ohne backdrop-filter (CPU-Malen im Nexus-Fenster) */
-.h3d-cog { justify-self: start; opacity: .72; }
-.h3d-cog:hover, .h3d-cog:focus-visible, .h3d-cog[aria-expanded="true"] { opacity: 1; }
-.h3d-cog svg { transition: rotate var(--t-base) var(--ease-io); }
-.h3d-cog[aria-expanded="true"] svg { rotate: 60deg; }
-.h3d-cfg { align-self: end; justify-self: start; z-index: 3; box-sizing: border-box; width: min(324px, calc(100% - 28px)); max-height: calc(100% - 78px);
-  margin: 0 14px 64px; overflow: auto; overscroll-behavior: contain; display: grid; gap: 12px; padding: 14px 16px 16px;
-  border: 1px solid var(--glass-bd); border-radius: var(--radius-lg); background: color-mix(in srgb, #14181b 94%, transparent); color: var(--glass-fg);
-  font: 500 13px/1.4 var(--mono); box-shadow: 0 24px 48px -28px rgba(0, 0, 0, .9); }
-.h3d-cfg[hidden] { display: none; }
-.h3d-cfg-head { display: flex; align-items: center; gap: 10px; }
-.h3d-cfg-head b { font: 700 13px/1.2 var(--mono); letter-spacing: .08em; text-transform: uppercase; }
-.h3d-cfg section { display: grid; gap: 8px; padding-top: 10px; border-top: 1px solid var(--glass-bd); }
-.h3d-cfg h4 { margin: 0; font: 700 12px/1.2 var(--mono); letter-spacing: .14em; text-transform: uppercase; color: color-mix(in srgb, var(--accent) 60%, var(--glass-fg)); }
-.h3d-cfg-row { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 4px 10px; }
-.h3d-cfg-row > output { font-variant-numeric: tabular-nums; text-align: right; }
-.h3d-cfg-row > input[type="range"], .h3d-cfg-row > .h3d-seg { grid-column: 1 / -1; }
-.h3d-cfg input[type="range"] { width: 100%; margin: 0; accent-color: var(--accent); }
-.h3d-seg { display: flex; gap: 4px; }
-.h3d-seg button, .h3d-cfg-foot button, .h3d-cfg-head button { min-height: 30px; padding: 4px 8px; border: 1px solid var(--glass-bd); border-radius: var(--radius-sm); background: transparent;
-  color: inherit; font: inherit; cursor: pointer; transition: border-color var(--t-fast), background var(--t-fast); }
-.h3d-seg button { flex: 1; padding-inline: 6px; }
-.h3d-cfg-head button { margin-left: auto; width: 30px; padding: 0; font-size: 16px; line-height: 1; }
-.h3d-seg button:hover, .h3d-seg button:focus-visible, .h3d-cfg-foot button:hover, .h3d-cfg-foot button:focus-visible, .h3d-cfg-head button:hover, .h3d-cfg-head button:focus-visible {
-  border-color: color-mix(in srgb, var(--accent) 55%, var(--glass-bd)); }
-.h3d-seg button[aria-pressed="true"] { font-weight: 700; border-color: color-mix(in srgb, var(--accent) 60%, var(--glass-bd)); background: color-mix(in srgb, var(--accent) 16%, transparent); }
-.h3d-sw { display: flex; align-items: center; gap: 10px; min-height: 28px; cursor: pointer; }
-.h3d-sw input { width: 16px; height: 16px; margin: 0; flex: none; accent-color: var(--accent); }
-.h3d-meter { display: grid; gap: 4px; font-variant-numeric: tabular-nums; }
-.h3d-spark { width: 100%; height: 22px; fill: none; stroke: var(--accent); stroke-width: 1.5; stroke-linejoin: round; }
-.h3d-spark line { stroke: var(--glass-bd); stroke-dasharray: 2 3; }
-.h3d-cfg-hint { font: 500 12px/1.4 var(--mono); }
-.h3d-cfg-foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding-top: 10px; border-top: 1px solid var(--glass-bd); }
-@media (max-width: 520px) { .h3d-snd, .h3d-cog { margin: 10px; } .h3d-cfg { width: calc(100% - 20px); max-height: calc(100% - 66px); margin: 0 10px 56px; } }
-@media (prefers-reduced-motion: reduce) { .h3d-say, .h3d-say.in, .h3d-line, .h3d-tip, .h3d-cursor, .h3d-snd, .h3d-cog svg, .h3d-card, .h3d-card.in, .h3d-stars i, .h3d-flash { transition: none; animation: none; } }
+@media (max-width: 520px) { .h3d-snd { margin: 10px; } }
+@media (prefers-reduced-motion: reduce) { .h3d-say, .h3d-say.in, .h3d-line, .h3d-tip, .h3d-cursor, .h3d-snd, .h3d-card, .h3d-card.in, .h3d-stars i, .h3d-flash { transition: none; animation: none; } }
 /* Karten mit wechselndem Inhalt (aktiver Eintrag der Szene) und Phasen-Liste (Ghost: Plan → Freigabe → Fahrt) */
 .hc-live strong { font-size: 30px; }
 .hc-live .sub-k { font: 600 12px/1.3 var(--mono); color: var(--fg-2); }
