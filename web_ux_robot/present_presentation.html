@@ -1021,7 +1021,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: cent
   <div class="kpis" aria-label="Kennzahlen" data-en-aria="Key figures">
     <div class="wrap">
       <div class="kpi" style="--hue: var(--accent)"><strong data-count="10">10</strong><span data-en="&lt;b&gt;control modes&lt;/b&gt;, one system"><b>Steuerwege</b>, ein System</span></div>
-      <div class="kpi" style="--hue: var(--gold)"><strong data-count="5">5</strong><span data-en="&lt;b&gt;safety stages&lt;/b&gt; used according to the command path"><b>Schutzstufen</b> je nach Befehlsweg</span></div>
+      <div class="kpi" style="--hue: var(--gold)"><strong data-count="7">7</strong><span data-en="&lt;b&gt;safety-chain stages&lt;/b&gt;, active per command path"><b>Stufen</b> der Sicherheitskette, je nach Befehlsweg aktiv</span></div>
       <div class="kpi" style="--hue: var(--violet)"><strong data-count="3">3</strong><span data-en="&lt;b&gt;autonomy levels&lt;/b&gt;: manual to delegated"><b>Autonomiestufen</b>: manuell bis delegiert</span></div>
       <div class="kpi" style="--hue: var(--teal)"><strong data-count="0">0</strong><span data-en="&lt;b&gt;installation&lt;/b&gt; on the client"><b>Installation</b> am Client</span></div>
       <div class="kpi" style="--hue: var(--indigo)"><strong data-count="440">440<small>mm</small></strong><span data-en="&lt;b&gt;reach&lt;/b&gt; of the xArm&amp;nbsp;Lite&amp;nbsp;6"><b>Reichweite</b> des xArm&nbsp;Lite&nbsp;6</span></div>
@@ -1324,7 +1324,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: cent
     <div class="wrap">
       <div class="block-head">
         <div><div class="eyebrow" style="--hue: var(--gold)"><span class="n">04</span><span data-en="Full control">Volle Kontrolle</span></div><h2 data-en="No input talks to the arm directly">Keine Eingabe spricht direkt mit dem Arm</h2></div>
-        <p data-en="Every path runs through the same protective layers.">Jeder Weg läuft durch dieselben Schutzschichten.</p>
+        <p data-en="Each path uses the safeguards that fit it; E-STOP works on all of them.">Jeder Weg nutzt die Schutzstufen, die zu ihm passen; der E-STOP wirkt auf allen.</p>
       </div>
       <article class="card" style="--hue: var(--gold)">
         <div class="visual">
@@ -1357,7 +1357,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: cent
           </div>
           <p class="tagline" data-en="The state stays visible, the next action predictable. The human can step in at any time.">Der Zustand bleibt sichtbar, die nächste Aktion vorhersehbar. Der Mensch kann jederzeit eingreifen.</p>
           <div class="numbers">
-            <div class="num"><strong data-num="10" data-unit=" mm">10 mm</strong><span data-en="Gamepad stop above the table (TCP, Z Collision Level adjustable)">Gamepad-Stopp über dem Tisch (TCP, Z Collision Level einstellbar)</span></div>
+            <div class="num"><strong data-num="10" data-unit=" mm">10 mm</strong><span data-en="Gamepad stop above the table (TCP, Z Collision Level adjustable)">Gamepad-Stopp über dem Tisch (TCP, Z-Kollisionsgrenze einstellbar)</span></div>
             <div class="num"><strong data-num="0.25" data-unit=" s">0,25 s</strong><span data-en="Look-ahead of the collision pre-check">Vorausschau der Kollisionsvorprüfung</span></div>
             <div class="num"><strong data-num="0.3" data-unit=" s">0,3 s</strong><span data-en="Until stop on VR signal loss">bis Stopp bei VR-Signalverlust</span></div>
             <div class="num"><strong data-num="60" data-unit=" s">60 s</strong><span data-en="Blackbox before an incident">Blackbox vor einem Vorfall</span></div>
@@ -1419,7 +1419,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: cent
           <ul class="pts">
             <li><svg class="ico"><use href="#i-check"/></svg><span data-en="Safety zone always in the same place">Sicherheitszone immer an derselben Stelle</span></li>
             <li><svg class="ico"><use href="#i-check"/></svg><span data-en="Colour only for deviations, red only for errors and stop">Farbe nur für Abweichung, Rot nur für Fehler und Stopp</span></li>
-            <li><svg class="ico"><use href="#i-check"/></svg><span data-en="Digital Twin shows every motion before and while it happens">Digital Twin zeigt jede Bewegung vorab und live</span></li>
+            <li><svg class="ico"><use href="#i-check"/></svg><span data-en="Digital Twin previews planned paths and shows every motion live">Digital Twin zeigt geplante Bahnen vorab, jede Bewegung live</span></li>
             <li><svg class="ico"><use href="#i-check"/></svg><span data-en="Themes Dark, Light, Jarvis, Nord Blue (Alt+T) · PC, tablet, UX | Compact Interface, VR">Themes Dark, Light, Jarvis, Nord Blue (Alt+T) · PC, Tablet, UX | Compact Interface, VR</span></li>
             <li><svg class="ico"><use href="#i-check"/></svg><span data-en="One motion at a time: while the arm is busy, other motion buttons are locked (BUSY)">Eine Fahrt zur Zeit: Solange der Arm belegt ist, sind andere Fahrbefehle gesperrt (BUSY)</span></li>
           </ul>
@@ -1783,13 +1783,13 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: cent
           <ul>
             <li data-en="&lt;b&gt;High level:&lt;/b&gt; set goals by gaze, voice or AI chat"><b>High-Level:</b> Ziele per Blick, Sprache oder KI-Chat vorgeben</li>
             <li data-en="&lt;b&gt;Low level:&lt;/b&gt; fine correction by gamepad via MoveIt Servo"><b>Low-Level:</b> Feinkorrektur per Gamepad über MoveIt Servo</li>
-            <li data-en="&lt;b&gt;Assistance:&lt;/b&gt; collision-free path planning secures every execution"><b>Assistenz:</b> kollisionsfreie Bahnplanung sichert jede Ausführung ab</li>
+            <li data-en="&lt;b&gt;Assistance:&lt;/b&gt; MoveIt checks planned paths for collisions before execution"><b>Assistenz:</b> MoveIt prüft geplante Bahnen vor der Ausführung auf Kollisionen</li>
             </ul>
         </div>
         <div class="feat" style="--hue: var(--accent)">
           <span class="badge-ico"><svg class="ico"><use href="#i-rocket"/></svg></span>
           <span class="k-t" data-en="Objective · Proof of concept">Ziel · Proof of Concept</span>
-          <b data-en="Reproducible and open.">Reproduzierbar und offen.</b>
+          <b data-en="Reproducible and extensible.">Nachbaubar und erweiterbar.</b>
           <ul>
             <li data-en="&lt;b&gt;Demonstrator:&lt;/b&gt; runs on the xArm Lite 6 with direct control, Digital Twin and AI tasks"><b>Demonstrator:</b> läuft am xArm Lite 6 mit direkter Bedienung, Digital Twin und KI-Aufgaben</li>
             <li data-en="&lt;b&gt;Test bed:&lt;/b&gt; develop and test assistive systems under realistic conditions"><b>Testumgebung:</b> assistive Systeme unter realitätsnahen Bedingungen entwickeln und erproben</li>
@@ -1976,11 +1976,11 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: cent
     },
     pad: {
       d: ['Fein und latenzarm: das Gamepad-Signal passiert zwei Sicherheitsstufen, bevor MoveIt Servo den Arm bewegt.', 'Fine and low-latency: the gamepad signal passes two safety stages before MoveIt Servo moves the arm.'],
-      fail: { at: 2, de: 'Der TCP würde unter das Z Collision Level sinken: Die Abwärtsachse wird genullt, das Gamepad vibriert. Seitlich und nach oben geht es weiter.', en: 'The TCP would drop below the Z Collision Level: the downward axis is zeroed and the gamepad rumbles. Sideways and upward still work.' },
+      fail: { at: 2, de: 'Der TCP würde unter die Z-Kollisionsgrenze sinken: Die Abwärtsachse wird genullt, das Gamepad vibriert. Seitlich und nach oben geht es weiter.', en: 'The TCP would drop below the Z Collision Level: the downward axis is zeroed and the gamepad rumbles. Sideways and upward still work.' },
       steps: [
         S('in', 0, ['Stick + Trigger', 'Stick + trigger'], ['Xbox Elite Series 2 am Roboter-PC oder als Remote-Gamepad im Browser (HTTPS).', 'Xbox Elite Series 2 on the robot PC or as a remote gamepad in the browser (HTTPS).'], ['/joy', '/remote/joy']),
         S('bridge', 1, ['Watchdog', 'Watchdog'], ['Remote nur für den Besitzer der Steuerung: Heartbeat, „Gamepad aktivieren“, auf echter Roboter-Hardware höchstens 50 % Tempo.', 'Remote only for the owner of control: heartbeat, “Enable Gamepad”, at most 50 % speed on real robot hardware.'], ['remote_control_watchdog']),
-        S('motion', 1, ['Kollisionsvorprüfung', 'Pre-collision check'], ['Sagt die TCP-Höhe 0,25 s voraus: bis 19 mm über dem Z Collision Level höchstens 25 % abwärts, am Level Stopp mit Vibration.', 'Predicts the TCP height 0.25 s ahead: within 19 mm above the Z Collision Level at most 25 % downward, at the level a stop with rumble.'], ['teleop_pre_collision_checker', '/ui/eef_position']),
+        S('motion', 1, ['Kollisionsvorprüfung', 'Pre-collision check'], ['Sagt die TCP-Höhe 0,25 s voraus: bis 19 mm über der Z-Kollisionsgrenze höchstens 25 % abwärts, an der Grenze Stopp mit Vibration.', 'Predicts the TCP height 0.25 s ahead: within 19 mm above the Z Collision Level at most 25 % downward, at the level a stop with rumble.'], ['teleop_pre_collision_checker', '/ui/eef_position']),
         S('motion', 0, ['Joystick → Twist', 'Joystick → twist'], ['C++-Node glättet das Signal und rechnet Achsen in kartesische Geschwindigkeiten um.', 'C++ node smooths the signal and turns axes into Cartesian velocities.'], ['xarm_joystick_input']),
         S('motion', 0, ['MoveIt Servo', 'MoveIt Servo'], ['Echtzeitregelung mit Prüfung auf Singularitäten und Kollisionen.', 'Real-time control with singularity and collision checks.'], ['servo_server']),
         S('hw', 0, ['Arm folgt', 'Arm follows'], ['Roboter-Simulation oder echte Roboter-Hardware nutzen denselben Befehl, aber betriebsart- und wegabhängige Grenzen.', 'Robot simulation and real robot hardware use the same command, but mode- and path-specific limits.']),
