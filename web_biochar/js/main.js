@@ -899,7 +899,7 @@ const hud = createHud({
     state.temp = v;
     pushParam('target', v);
     if (p.playing) endPlay();
-    startGlide(p.shown, v, GLIDE_SECONDS, false);
+    startGlide(v, v, 0.001, false);   // Regler springt: Szene steht sofort auf dem Wert, nur ▶ spielt ab (User, 2026-10-25)
   },
   onPlay: () => togglePlay(),
   onSeek: (T) => seekPyro(T),
@@ -977,7 +977,7 @@ function stepIntro(lv, real) {
 }
 
 // ---------- Pyrolyse-Labor: gezeigte Temperatur ----------
-// Ein Zielwechsel gleitet ≈ 1,2 s; „Pyrolyse abspielen“ fährt am Stück von Raumtemperatur zur gewählten Temperatur
+// Der Ziel-Regler springt, Anhalten und Kapitel gleiten ≈ 1,2 s; „Pyrolyse abspielen“ fährt am Stück von Raumtemperatur zur gewählten Temperatur
 // (steht die gezeigte Temperatur nach einem Kapitel-Sprung darunter, ab dort – wie ein Video ab dem Abspielpunkt).
 // Alle Ebenen bekommen den laufenden Wert (setParam 'temp'), sie blenden ihre Strukturen selbst weich über.
 const GLIDE_SECONDS = 1.2, T_PLAY_DEFAULT = 550, PLAY_URL = +params.get('playsec');   // ?playsec=4 verkürzt den Zeitraffer (Prüfläufe), sonst Zahnrad
