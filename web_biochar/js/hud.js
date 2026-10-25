@@ -21,6 +21,12 @@ export function createHud(handlers) {
   const rail = $('#ladder');
   const panel = $('#panel-body');
   const layer = $('#hotspots');
+  // Detektor-Spalte der Messleiste (nur Ebenen mit lv.detector): SE | BSE → main.js onDetector, Methode-Text wechselt mit
+  const detCol = $('#sb-det');
+  detCol.querySelectorAll('button[data-det]').forEach((b) => b.addEventListener('click', () => {
+    detCol.querySelectorAll('button[data-det]').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+    handlers.onDetector(b.dataset.det);
+  }));
   // Info-Karte: erscheint beim Klick links neben dem gewählten Abzeichen und folgt ihm (eine Karte, je Auswahl neu gefüllt)
   const card = document.createElement('aside');
   card.className = 'hs-card';
@@ -887,7 +893,7 @@ export function createHud(handlers) {
       </div>
       <div class="hs-body">
         <figure class="hs-lens" aria-hidden="true"><canvas></canvas><svg class="hs-lens-svg" viewBox="0 0 112 112"><circle cx="56" cy="56" r="46" stroke-dasharray="3 4"/><path d="M56 4v9M56 99v9M4 56h9M99 56h9"/></svg></figure>
-        <div class="hs-text"><p>${esc(h.text)}</p></div>
+        <div class="hs-text"><p>${esc(h.text)}</p>${h.edx ? edxDetails(h.edx) : ''}</div>
       </div>
       ${selected.kind === 'dive' ? '<div class="hs-card-foot"><button type="button" class="btn-primary" id="btn-dive">Hineinzoomen ↓</button></div>' : ''}
       </div>`;
@@ -983,6 +989,7 @@ export function createHud(handlers) {
       $('#btn-down').disabled = !lv.hotspots.some((h) => h.kind === 'dive');
       setNavTargets(index);
       $('#sb-method').textContent = lv.method;
+      detCol.hidden = !lv.detector;
       render(state);
       panel.classList.remove('is-entering');
       void panel.offsetWidth;
@@ -1136,6 +1143,23 @@ export function createHud(handlers) {
       document.body.classList.toggle('is-loading', on);
     },
   };
+}
+
+// EDX-Spektrum (Modell) zum Hotspot „Asche-Partikel“: Linienlagen aus content.js (Bearden 1967), Höhen Modell; Untergrund =
+// Bremsstrahlung (Kramers-Form, bei kleinen Energien durch Absorption im Detektorfenster gedämpft), Linienbreite wie ein
+// Silizium-Driftdetektor (≈ 70 eV bei C, ≈ 125 eV bei Ca; Modell), Achse 0–4,6 keV; aufklappbar (Vorschau 2026-10-25, EDX:C)
+function edxDetails(peaks, w = 300, h = 90) {
+  const E0 = 4.6, n = 320, top = 16, bot = 14;
+  const bg = (E) => 0.1 * Math.exp(-E / 2.5) * (1 - Math.exp(-E / 0.4));
+  const at = (E) => peaks.reduce((y, p) => y + p.i * Math.exp(-0.5 * ((E - p.keV) / (0.03 + 0.012 * Math.sqrt(p.keV))) ** 2), bg(E));
+  const vals = Array.from({ length: n + 1 }, (_, i) => at((i / n) * E0));
+  const max = Math.max(...vals);
+  const X = (E) => ((E / E0) * w).toFixed(1), Y = (y) => h - bot - (y / max) * (h - top - bot);
+  const pts = vals.map((y, i) => `${X((i / n) * E0)},${Y(y).toFixed(1)}`).join(' ');
+  const labels = peaks.map((p) => `<text x="${X(p.keV)}" y="${(Y(p.i + bg(p.keV)) - 4).toFixed(1)}" text-anchor="middle">${esc(p.el)}</text>`).join('');
+  const ticks = [0, 1, 2, 3, 4].map((k) => `<line class="tk" x1="${X(k)}" y1="${h - bot}" x2="${X(k)}" y2="${h - bot + 3}"/><text class="ax" x="${X(k)}" y="${h - 1}" text-anchor="middle">${k}</text>`).join('');
+  const alt = peaks.map((p) => `${p.el} ${fmt(p.keV, 3)} keV`).join(', ');
+  return `<details class="hs-edx"><summary>EDX-Spektrum des Partikels</summary><svg viewBox="0 0 ${w} ${h}" role="img" aria-label="EDX-Spektrum, Linien: ${esc(alt)}"><line class="tk" x1="0" y1="${h - bot}" x2="${w}" y2="${h - bot}"/>${ticks}<polyline class="fill" points="0,${h - bot} ${pts} ${w},${h - bot}"/><polyline class="line" points="${pts}"/>${labels}</svg><span class="hs-edx-cap">keV · Linien nach Bearden 1967 · Höhen: Modell</span></details>`;
 }
 
 function formatLength(m, approx = false) {

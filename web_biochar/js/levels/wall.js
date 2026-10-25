@@ -5,7 +5,7 @@
 // der S3-Schicht verblassen mit der Zellulose (315–400 °C), die Bruchfläche zeigt erst ab ≈ 300 °C Nanoporen.
 
 import * as THREE from 'three';
-import { SEM_GLSL, SEM_DET, ADDITIVE, semMaterial, semDetector } from '../sem.js';
+import { SEM_GLSL, SEM_DET, SEM_BSE, SEM_CHARGE, SEM_T, ADDITIVE, semMaterial, semDetector, semBlend, semCharge } from '../sem.js';
 import { disposeGroup } from '../walls.js';
 import { mulberry32, gauss, fbm3, vnoisef } from '../util.js';
 import { T_MIN, T_MAX, pyroState } from '../science.js';
@@ -204,7 +204,7 @@ void main() {
     }
   }
   N = normalize(N - uSide * (grad.x * Ts + grad.y * vec3(0.0, 1.0, 0.0)));
-  float g = semShade(N, V, uDet, 0.4) + extra;
+  float g = semShade(N, V, uDet, 0.4) + extra * mix(1.0, 0.35, uBSE);   // Rückstreuelektronen: Kanten und Ränder nur schwach
   g *= 0.86 + 0.28 * vnoise(vWorld * 3.2);
   gl_FragColor = semOut(g, uTint);
 }
@@ -223,7 +223,7 @@ void main() {
   float rim;
   cracks(vec2(vUv.x, vWorld.y), rim);
   if (through(vec2(vUv.x, vWorld.y)) < 0.0) discard;   // Loch an der Bruchkante: Kerbe statt Steg quer durchs Loch
-  gl_FragColor = semOut(g + 0.5 * rim, uTint);
+  gl_FragColor = semOut(g + 0.5 * rim * mix(1.0, 0.4, uBSE), uTint);
 }
 `;
 
@@ -269,6 +269,10 @@ function uniforms(extra = {}) {
     uFibril: FIBRIL,
     uPores: PORES,
     uDet: SEM_DET,
+    uBSE: SEM_BSE,
+    uZ: { value: 0.9 },
+    uCharge: SEM_CHARGE,
+    uSemT: SEM_T,
     uTint: { value: new THREE.Color(0.93, 0.95, 0.98) },
     uR: { value: R },
     uHyPit: { value: HYPHA_PIT },
@@ -404,10 +408,10 @@ export function create(ctx) {
     if (k % 4 === 0) bacteria.push({ s: s + Math.cos(ang) * 1.9, y: y + Math.sin(ang) * 1.9, ang, len: 0.6, ph: rand() * 6.28 });
   }
   const live = bacteria.filter((b) => Math.hypot(b.s - HYPHA_PIT.x, b.y - HYPHA_PIT.y) > 3 && b.s < sideS(b.y, 1) - 1 && b.y < topY(b.s) - 1);
-  const bacMesh = new THREE.InstancedMesh(new THREE.CapsuleGeometry(0.36, 1, 4, 12), semMaterial({ base: 0.5, noise: 4 }), live.length);
+  const bacMesh = new THREE.InstancedMesh(new THREE.CapsuleGeometry(0.36, 1, 4, 12), semMaterial({ base: 0.5, noise: 4, z: 0.8, charge: true }), live.length);
   // Schleimfäden: von einigen Zellen zur Wand
   const strands = live.filter((_, k) => k % 3 === 0).map((b) => ({ b, ds: (rand() - 0.5) * 2.4, dy: (rand() - 0.5) * 2.4 }));
-  const strandMesh = new THREE.InstancedMesh(new THREE.CylinderGeometry(1, 1, 1, 5, 1, true), semMaterial({ base: 0.55, noise: 3 }), strands.length);
+  const strandMesh = new THREE.InstancedMesh(new THREE.CylinderGeometry(1, 1, 1, 5, 1, true), semMaterial({ base: 0.55, noise: 3, z: 0.8, charge: true }), strands.length);
   const centers = [];
   const placeBacteria = (t) => {
     live.forEach((b, k) => {
@@ -444,7 +448,7 @@ export function create(ctx) {
   tint(film.material, TINT.film);
 
   // Pilzhyphe: Ø 1,8 µm, wächst über die Wand und in den erweiterten Tüpfel; ein Seitenast trägt eine Sporenkette
-  const hyMat = semMaterial({ base: 0.42, noise: 2.5 });
+  const hyMat = semMaterial({ base: 0.42, noise: 2.5, z: 0.8, charge: true });
   tint(hyMat, TINT.hy);
   const path = [[-17, 1.5], [-12, -0.8], [-7, -2.2], [-2.5, -4.6], [1.2, -7.4]].map(([s, y]) => onWall(s, y, 0.92));
   path.push(onWall(HYPHA_PIT.x, HYPHA_PIT.y, 0.2), onWall(HYPHA_PIT.x + 0.3, HYPHA_PIT.y - 0.2, -2.6));
@@ -471,7 +475,7 @@ export function create(ctx) {
     const dir = along(s).applyAxisAngle(inward(s), rand() * 3);
     spores.push({ p: onWall(s, y, 0.95), dir, s: [1.0, 1.35, 0.95] });
   }
-  const spMesh = new THREE.InstancedMesh(new THREE.SphereGeometry(1, 22, 16), semMaterial({ base: 0.46, noise: 7 }), spores.length);
+  const spMesh = new THREE.InstancedMesh(new THREE.SphereGeometry(1, 22, 16), semMaterial({ base: 0.46, noise: 7, z: 0.8, charge: true }), spores.length);
   tint(spMesh.material, TINT.sp);
   const setSpore = (k, p, f) => spMesh.setMatrixAt(k, m.compose(p, q.setFromUnitVectors(yAxis, spores[k].dir), sc.fromArray(spores[k].s).multiplyScalar(Math.max(f, 1e-4))));
   spores.forEach((sp, k) => setSpore(k, sp.p, 1));
@@ -536,13 +540,21 @@ export function create(ctx) {
     const len = 1.1 + rand() * 0.6;
     crystals.push({ a: dc, o: dir.clone().multiplyScalar(len * 0.45), q: new THREE.Quaternion().setFromUnitVectors(yAxis, dir), s: [0.32, len, 0.32] });
   }
-  const crMesh = new THREE.InstancedMesh(new THREE.CylinderGeometry(1, 1, 1, 6), semMaterial({ base: 0.5, noise: 5, edge: 0.4 }), crystals.length);
+  // Asche (Ca, K, Mg): hohe mittlere Ordnungszahl → im Rückstreubild hell (z = 2,2, Goldstein et al. 2018)
+  const crMesh = new THREE.InstancedMesh(new THREE.CylinderGeometry(1, 1, 1, 6), semMaterial({ base: 0.5, noise: 5, edge: 0.4, z: 2.2, charge: true }), crystals.length);
   tint(crMesh.material, TINT.cr);
   const placeCrystals = (f) => {
     crystals.forEach((c, k) => crMesh.setMatrixAt(k, m.compose(_p.copy(c.a).addScaledVector(c.o, f), c.q, sc.fromArray(c.s).multiplyScalar(f))));
     crMesh.instanceMatrix.needsUpdate = true;
   };
   scene.add(crMesh);
+  // Klick auf „Asche-Partikel“ (EDX-Spektrum in der Info-Karte): die Kristalle leuchten kurz auf – der Strahl verweilt
+  // auf dem Partikel – und klingen in ≈ 1 s ab
+  let edxAt = null;
+  anim.push((age) => {
+    if (edxAt === null) return;
+    crMesh.material.uniforms.uBase.value = 0.5 + 0.55 * Math.exp(-(age - edxAt) / 0.45);
+  });
 
   // Sinnbild (nicht maßstäblich): Wasserteilchen treiben aus dem Lumen zu den Tüpfeln und verschwinden darin
   const pits = [];
@@ -593,6 +605,7 @@ export function create(ctx) {
     MEMBRANE.value = st.membrane;
     FIBRIL.value = st.fibril;
     PORES.value = st.sheets;
+    semCharge(heat.T);   // Aufladung: unter ≈ 700 °C leitet die Kohle schlecht (Streifen), darüber sauber
     crackHs.hidden = CRACK.value < 0.3;   // Abzeichen erst, wenn der Riss zu sehen ist (unter ≈ 300 °C geschlossen)
   };
   applyHeat();
@@ -610,6 +623,7 @@ export function create(ctx) {
     scene, camera,
     unit: 1e-6,
     method: 'REM · Sekundärelektronen (Modell, eingefärbt)',
+    detector: true,   // Umschalter SE/BSE an der Messleiste
     tone: 0,
     grain: 0.07,
     dof: 2.2,
@@ -637,14 +651,17 @@ export function create(ctx) {
       const at = reduced ? 1e3 : age;   // ohne Bewegung: Endzustand
       if (!reduced) placeBacteria(t);
       semDetector(reduced ? 0 : t * 1.5, 1.9);
+      semBlend(dt, reduced);
       anim.forEach((f) => f(at));
       return true;
     },
     setParam(name, value) {
       if (name === 'temp') heat.to = value;
+      if (name === 'detector') level.method = `REM · ${value === 'bse' ? 'Rückstreuelektronen' : 'Sekundärelektronen'} (Modell, eingefärbt)`;
     },
     onHotspot(id) {
       if (id === 'hypha') sprout = age;
+      if (id === 'ash') edxAt = age;
     },
     dispose() { disposeGroup(scene); },
   };

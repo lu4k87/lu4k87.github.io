@@ -8,7 +8,7 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { createHud } from './hud.js';
 import { T_ROOM, fillDiameterNm, wetDiameterNm } from './science.js';
-import { NOISE_GLSL, SEM_SWING } from './sem.js';
+import { NOISE_GLSL, SEM_SWING, semDetectorMode, semChargeOn } from './sem.js';
 import { quality } from './quality.js';
 import { settings, mountSettings, kelvinTint, PERF_KEYS } from './settings.js';
 
@@ -79,6 +79,7 @@ const state = {
   post: { dof: 0, bloom: 0 },
   temp: 550, rh: 0.8, wet: fillDiameterNm(0.8),   // wet: gefüllt bis Ø (nm), mit Hysterese
   pyro: { shown: 550, playing: false, tween: null },   // gezeigte Temperatur gleitet zur gewählten (Zeitraffer: ab Raumtemperatur)
+  det: 'se',   // REM-Detektor der Ebenen 3–4 (Umschalter an der Messleiste): 'se' | 'bse'
   levels: new Map(), loading: new Map(), poses: new Map(), time: 0,
 };
 
@@ -532,6 +533,7 @@ const keyTint = new THREE.Color(1, 1, 1);
 settings.on((S, keys) => {
   still = reduced || S.motion === 'off';
   SEM_SWING.k = still || !S.sem ? 0 : 1;
+  semChargeOn(S.charge);
   const u = comp.uniforms;
   u.uExposure.value = S.exposure;
   u.uPoolK.value = S.pool;
@@ -567,7 +569,7 @@ function buildLevel(i) {
     const mod = await LOADERS[i]();
     const lv = mod.create({ env, aspect: window.innerWidth / window.innerHeight, temp: state.pyro.shown, rh: state.rh, wet: state.wet, quality: eff() });
     lv.index = i;
-    if (lv.setParam) { lv.setParam('target', state.temp); lv.setParam('play', state.pyro.playing); lv.setParam('quality', eff()); }
+    if (lv.setParam) { lv.setParam('target', state.temp); lv.setParam('play', state.pyro.playing); lv.setParam('quality', eff()); lv.setParam('detector', state.det); }
     lv.scene.background = null;
     // Farbe mit Mipmaps (Bloom, weiche Unschärfe) und Tiefe als Textur (Tiefenunschärfe)
     lv.rt = new THREE.WebGLRenderTarget(2, 2, {
@@ -855,6 +857,11 @@ const hud = createHud({
   onUp: () => goTo(state.index - 1),
   onDown: () => diveHotspot(),
   onDive: (id) => diveHotspot(id),
+  onDetector: (mode) => {
+    state.det = mode;
+    semDetectorMode(mode);
+    for (const lv of state.levels.values()) if (lv.setParam) lv.setParam('detector', mode);
+  },
   onHotspot: (id, fromMarker) => {
     if (state.tr || !state.active) return;
     const h = state.active.hotspots.find((x) => x.id === id);

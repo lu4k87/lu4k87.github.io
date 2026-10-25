@@ -33,6 +33,9 @@ export const SOURCES = [
   { id: 30, text: 'Kinney, T. J., Masiello, C. A., Dugan, B., Hockaday, W. C., Dean, M. R., Zygourakis, K., Barnes, R. T. (2012): Hydrologic properties of biochars produced at different temperatures. Biomass Bioenergy 41, 34–43 (Wasserabweisung der Kohle nimmt mit der Pyrolysetemperatur ab: niedrig verkohlt hydrophob, heißer erzeugt benetzbar).', url: 'https://doi.org/10.1016/j.biombioe.2012.01.033' },
   { id: 31, text: 'Washburn, E. W. (1921): The dynamics of capillary flow. Phys. Rev. 17, 273–283 (Lucas-Washburn-Gleichung: Eindringtiefe h = √(γ r cos θ · t / 2η), also h ∝ √t).', url: 'https://doi.org/10.1103/PhysRev.17.273' },
   { id: 32, text: 'Byrne, C. E., Nagle, D. C. (1997): Carbonization of wood for advanced materials applications. Carbon 35, 259–266 (Schwindung beim Verkohlen anisotrop: tangential > radial > längs; Zellstruktur bleibt erhalten).', url: 'https://doi.org/10.1016/S0008-6223(96)00136-4' },
+  { id: 33, text: 'Riquelme, M., Aguirre, J., Bartnicki-García, S. et al. (2018): Fungal morphogenesis, from the polarized growth of hyphae to complex reproduction and infection structures. Microbiol. Mol. Biol. Rev. 82, e00068-17 (Hyphen wachsen nur an der Spitze; Neurospora bis 10× schneller als Aspergillus).', url: 'https://doi.org/10.1128/MMBR.00068-17' },
+  { id: 34, text: 'Goldstein, J. I., Newbury, D. E., Michael, J. R., Ritchie, N. W. M., Scott, J. H. J., Joy, D. C. (2018): Scanning Electron Microscopy and X-Ray Microanalysis. 4. Aufl., Springer, New York (Aufladung schlecht leitender Proben: helle Streifen, Bildversatz; Rückstreuelektronen: Ausbeute steigt mit der Ordnungszahl; energiedispersive Röntgenanalyse).', url: 'https://doi.org/10.1007/978-1-4939-6676-9' },
+  { id: 35, text: 'Bearden, J. A. (1967): X-Ray Wavelengths. Rev. Mod. Phys. 39, 78–124 (Kα-Linien: C 0,277 · O 0,525 · Mg 1,254 · K 3,314 · Ca 3,692 keV).', url: 'https://doi.org/10.1103/RevModPhys.39.78' },
 ];
 
 export const LEVELS = [
@@ -84,19 +87,19 @@ export const LEVELS = [
     compare: '≈ 2× Haar',
     zone: 'Mikro · REM',
     title: 'Zellen: Röhren aus Kohlenstoff',
-    lead: 'Ein Bruchstück wie unter dem Rasterelektronenmikroskop: Die Zellen sind leere Röhren mit verkohlten Wänden. Seitlich hat der Bruch die Röhren der Länge nach geöffnet – so sehen REM-Aufnahmen von Holzkohle typischerweise aus. Im Zeitraffer verschwinden die Stärkekörner in den Strahlzellen (ocker eingefärbt, ≈ 220–330 °C), das Gewebe schrumpft, die Wände werden dünner und glatt-glasig; Thyllen bleiben erhalten (Modell).',
+    lead: 'Ein Bruchstück wie unter dem Rasterelektronenmikroskop: Die Zellen sind leere Röhren mit verkohlten Wänden. Seitlich hat der Bruch die Röhren der Länge nach geöffnet – so sehen REM-Aufnahmen von Holzkohle typischerweise aus. Im Zeitraffer verschwinden die Stärkekörner in den Strahlzellen (ocker eingefärbt, ≈ 220–330 °C), das Gewebe schrumpft, die Wände werden dünner und glatt-glasig; Thyllen bleiben erhalten (Modell). Unter ≈ 700 °C leitet die Kohle schlecht: Der Elektronenstrahl lädt sie auf, das Bild zeigt helle Streifen entlang der Zeilen (Aufladung, Goldstein et al. 2018; Leitfähigkeit nach Gabhi et al. 2020) – Schalter „REM-Aufladung“ im Zahnrad unten links; eine höhere Temperatur auf der Zeitleiste macht das Bild wieder sauber.',
     facts: [
       { value: '0,7 · 3 · 15 µm', label: 'häufigste Porendurchmesser in Buchen-Biochar: Tüpfel · Hoftüpfel/Parenchym · Gefäße', bar: 72 },
       { value: '0,6–0,8 µm', label: 'Durchmesser typischer Bodenbakterien', bar: 28 },
       { value: '1,2–4 µm', label: 'Pilzhyphen (Mykorrhiza: 2–20 µm)', bar: 54 },
     ],
-    refs: [3, 8, 12],
+    refs: [3, 8, 12, 27, 33, 34],
     hotspots: {
       pitwall: { title: 'Gefäßwand mit Tüpfeln', tag: '25 µm ↓', text: 'Die Innenwand eines aufgebrochenen Gefäßes. Die Reihen kleiner Löcher sind Tüpfel – Durchlässe zur Nachbarzelle.' },
       vessel: { title: 'Gefäß', tag: 'Ø 15–24 µm', text: 'Gefäße bestehen aus kurzen, offenen Zellen, die zu langen Röhren verbunden sind; im Baum leiteten sie Wasser. In der Kohle bleiben sie als durchgehende Kanäle erhalten – Leitungsbahnen für Wasser und Luft im Boden.' },
       fiber: { title: 'Holzfasern', tag: 'Kapillare', text: 'Fasern geben dem Holz Festigkeit. Ihre dicken Wände machen auch die Kohle mechanisch stabil; die engen Lumen von wenigen Mikrometern halten Wasser durch Kapillarkräfte fest.' },
       ray: { title: 'Strahlparenchym', tag: '4–8 µm', text: 'Die Zellen der Holzstrahlen sind radial gestreckt. Hier lagerte der Baum Stärke und Mineralstoffe: Im Holz füllen Stärkekörner (Ø ≈ 4–8 µm) die Lumina. Beim Erhitzen zerfallen sie mit den Hemizellulosen (≈ 220–330 °C, Modell nach Yang et al. 2007) – in der Kohle bleiben leere Zellen, an diesen Stellen findet man häufig Asche-Partikel.' },
-      habitat: { title: 'Lebensraum', tag: '1–100 µm', text: 'Poren von 1–100 µm sind groß genug für Bakterien und Pilzhyphen, aber zu eng für viele ihrer Fressfeinde wie Amöben oder Nematoden. Diese „Zufluchts-Hypothese“ erklärt, warum Biochar Bodenleben fördern kann – belegt ist sie nicht in jedem Boden.' },
+      habitat: { title: 'Lebensraum', tag: '1–100 µm', text: 'Poren von 1–100 µm sind groß genug für Bakterien und Pilzhyphen, aber zu eng für viele ihrer Fressfeinde wie Amöben oder Nematoden. Diese „Zufluchts-Hypothese“ erklärt, warum Biochar Bodenleben fördern kann – belegt ist sie nicht in jedem Boden. Der ockerfarbene Pilzfaden (Ø ≈ 2,5 µm) wächst von der Bruchkante bis hierher: Hyphen wachsen nur an ihrer Spitze, dorthin liefert die Zelle ständig neues Wandmaterial (Riquelme et al. 2018). Je nach Pilz und Temperatur legt die Spitze ≈ 0,1–1 µm je Sekunde zurück (Richtwert); im Bild 0,5 µm/s, 30-fach beschleunigt – nach ≈ 17 s ist der Faden einen Viertelmillimeter tief. Ein Klick hier lässt ihn neu wachsen.' },
     },
   },
   {
@@ -106,13 +109,13 @@ export const LEVELS = [
     compare: '≈ Blutzelle',
     zone: 'Mikro · REM',
     title: 'Zellwand mit Hoftüpfeln',
-    lead: 'Blick in ein Gefäß auf seine Wand. Die runden Hoftüpfel verbanden im Baum benachbarte Zellen. Beim Verkohlen sind ihre feinen Membranen meist verschwunden – die Öffnungen führen jetzt direkt ins Nachbarlumen. Im Zeitraffer schließt im Holz noch eine feine Membran die Tüpfel, die Riefen der Mikrofibrillen zeichnen die Wand; beides zerfällt beim Verkohlen (Modell). Bakterien und eine Pilzhyphe haben die Oberfläche besiedelt. Gedämpfte Falschfarben unterscheiden wie bei eingefärbten REM-Bildern Bakterien (grünlich), Pilz (ocker) und Asche (bläulich); die Wand bleibt grau.',
+    lead: 'Blick in ein Gefäß auf seine Wand. Die runden Hoftüpfel verbanden im Baum benachbarte Zellen. Beim Verkohlen sind ihre feinen Membranen meist verschwunden – die Öffnungen führen jetzt direkt ins Nachbarlumen. Im Zeitraffer schließt im Holz noch eine feine Membran die Tüpfel, die Riefen der Mikrofibrillen zeichnen die Wand; beides zerfällt beim Verkohlen (Modell). Bakterien und eine Pilzhyphe haben die Oberfläche besiedelt. Gedämpfte Falschfarben unterscheiden wie bei eingefärbten REM-Bildern Bakterien (grünlich), Pilz (ocker) und Asche (bläulich); die Wand bleibt grau. Messleiste unten: Detektor „SE“ (Sekundärelektronen: Topografie, Kanten leuchten) oder „BSE“ (Rückstreuelektronen: Kontrast nach Ordnungszahl – Asche aus Ca, K, Mg hell, Kohlenstoff dunkel; Goldstein et al. 2018). Unter ≈ 700 °C lädt sich die schlecht leitende Kohle im Strahl auf und zeigt helle Streifen (Schalter „REM-Aufladung“ im Zahnrad; Leitfähigkeit nach Gabhi et al. 2020).',
     facts: [
       { value: '≈ 3 µm', label: 'Porenmaximum: Hoftüpfel und Parenchymzellen', bar: 65 },
       { value: '≈ 0,7 µm', label: 'Porenmaximum: einfache Tüpfel', bar: 25 },
       { value: '1–2 µm', label: 'Wanddicke eines Gefäßes (Modell)', bar: 45 },
     ],
-    refs: [3, 8, 6, 12],
+    refs: [3, 8, 6, 12, 27, 34, 35],
     hotspots: {
       fracture: { title: 'Bruchkante der Zellwand', tag: '300 nm ↓', text: 'Die Wand selbst ist kein massiver Kohlenstoff, sondern ein Schwamm aus Nanoporen. Sie entstehen, wenn Zellulose, Hemizellulosen und Lignin beim Erhitzen zerfallen und Gase entweichen. Im Holz zeigt die Bruchfläche noch die Schichten der Wand (S1–S3); Nanoporen erscheinen im Zeitraffer ab ≈ 300 °C (Modell).' },
       pits: { title: 'Hoftüpfel', tag: 'Ø ≈ 3 µm', text: 'Ein gewölbter Hof umrahmt eine schmale Öffnung (Porus). In Buchen-Biochar bilden Hoftüpfel eines der drei Maxima der Porengrößen (≈ 3 µm). Im Holz schließt eine dünne Membran aus Zellulose und Pektin die Kammer; sie zerfällt beim Erhitzen (≈ 240–360 °C, Modell). Ohne Membran sind sie offene Verbindungen zwischen den Zellen.' },
@@ -120,7 +123,8 @@ export const LEVELS = [
       bacteria: { title: 'Bakterien', tag: '0,6–0,8 µm', text: 'Stäbchenförmige Bakterien (≈ 0,6–0,8 µm dick) besiedeln die Porenwände. Die Kohle bietet Halt, Feuchte und adsorbierte Nährstoffe.' },
       hypha: { title: 'Pilzhyphe', tag: 'Ø 1,8 µm', text: 'Pilzfäden wachsen durch die Gefäße und dringen in erweiterte Tüpfel ein. Mykorrhizapilze verbinden die Kohle so mit Pflanzenwurzeln (Warnock et al. 2007). Im Zeitraffer wächst ein Seitenast, an seiner Spitze reifen Sporen; ein Klick hier lässt einen neuen Ast zum Tüpfel wachsen.' },
       spores: { title: 'Pilzsporen (Konidien)', tag: 'Ø 2–3 µm', text: 'Die eiförmigen Kugeln (≈ 2–3 µm) sind Konidien: ungeschlechtliche Sporen, die der Pilz an den Enden seiner Hyphen abschnürt. Sie lösen sich, bleiben in den Poren der Kohle hängen und keimen bei Feuchte zu neuen Hyphen aus – so besiedelt der Pilz die Kohle auch von innen. Im Zeitraffer reift eine Kette am Seitenast, die äußerste Spore löst sich und rollt auf die Wand.' },
-      ash: { title: 'Asche-Partikel', tag: 'pH 8–10', text: 'Mineralstoffe des Holzes – vor allem Calcium, Kalium und Magnesium – bleiben als Asche zurück, oft als kleine Kristalle. Sie machen Biochar basisch (pH 8–10) und wirken im Boden wie eine Kalkung. Je höher die Pyrolysetemperatur, desto mehr Asche bleibt zurück.' },
+      ash: { title: 'Asche-Partikel', tag: 'pH 8–10', text: 'Mineralstoffe des Holzes – vor allem Calcium, Kalium und Magnesium – bleiben als Asche zurück, oft als kleine Kristalle. Sie machen Biochar basisch (pH 8–10) und wirken im Boden wie eine Kalkung. Je höher die Pyrolysetemperatur, desto mehr Asche bleibt zurück. Unten in dieser Karte lässt sich das EDX-Spektrum des Partikels aufklappen (energiedispersive Röntgenanalyse): Der Strahl schlägt Elektronen aus den inneren Schalen, beim Nachrücken sendet jedes Element Röntgenlicht fester Energie – C Kα 0,277 · O 0,525 · Mg 1,254 · K 3,314 · Ca 3,692 keV (Bearden 1967); die Höhen der Linien sind Modell.',
+        edx: [{ el: 'C', keV: 0.277, i: 1 }, { el: 'O', keV: 0.525, i: 0.5 }, { el: 'Mg', keV: 1.254, i: 0.1 }, { el: 'K', keV: 3.314, i: 0.3 }, { el: 'Ca', keV: 3.692, i: 0.55 }] },
       crack: { title: 'Mikroriss', tag: 'Schwindung', text: 'Auch die Zellwand schrumpft beim Verkohlen. Mikrorisse durchziehen sie und öffnen zusätzliche Wege für Wasser, Gase und Mikroorganismen. Bei höherer Pyrolysetemperatur schrumpft die Wand stärker, die Risse werden breiter.' },
     },
   },

@@ -6,11 +6,18 @@
 import * as THREE from 'three';
 import { woodTissue } from '../wood.js';
 import { buildWalls, buildInstances, flakeGeometry, disposeGroup, shrinkScene } from '../walls.js';
-import { semDetector } from '../sem.js';
-import { mulberry32, fbm3, smoothstep } from '../util.js';
+import { semDetector, semMaterial, semBlend, semCharge } from '../sem.js';
+import { mulberry32, fbm3, smoothstep, clamp } from '../util.js';
 import { tissueScale, pyroState } from '../science.js';
+import { settings } from '../settings.js';
 
 const LZ = 340;
+const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+// keine Bewegung von selbst: System-Einstellung oder Grundstufe „Aus“ im Zahnrad → Hyphe steht fertig da
+const still = () => reduced || settings.S.motion === 'off';
+// Pilzhyphe (Ø 2,5 µm) wächst im Zeitraffer in das geöffnete Gefäß: Spitzenwachstum ≈ 0,1–1 µm/s je nach Pilz und
+// Temperatur (Richtwert; polares Wachstum nur an der Spitze: Riquelme et al. 2018), hier 0,5 µm/s und 30× beschleunigt
+const HY_R = 1.25, HY_RATE = 0.5, HY_LAPSE = 30, HY_SEG = 140, HY_RAD = 10;
 
 export function create(ctx) {
   const wood = woodTissue();
@@ -46,7 +53,7 @@ export function create(ctx) {
     walls.push({ a, b, t: e.t, kind: e.kind, seed: e.seed, late: e.late, z0, z1, openEnd });
   }
 
-  const sem = { openZ: 0, openX: XC, depth: 26, base: 0.38, edge: 0.55, edgeW: 0.45, noise: 0.9 };
+  const sem = { openZ: 0, openX: XC, depth: 26, base: 0.38, edge: 0.55, edgeW: 0.45, noise: 0.9, z: 0.9, charge: true };   // Kohle: Rückstreu-Ausbeute 0,9, Aufladung an
   const scene = new THREE.Scene();
   const wallGroup = buildWalls(walls, sem);
   scene.add(wallGroup);
@@ -140,17 +147,38 @@ export function create(ctx) {
   if (fiber) hotspots.push({ id: 'fiber', kind: 'info', pos: new THREE.Vector3(fiber.x, fiber.y, 0), normal: new THREE.Vector3(0, 0, 1) });
   if (ray && Math.hypot(ray.x - cx, ray.y - cy) < 150) hotspots.push({ id: 'ray', kind: 'info', pos: new THREE.Vector3(ray.x, ray.y, 0), normal: new THREE.Vector3(0, 0, 1) });
 
+  // Hyphe: von außen über die Bruchkante in das längs geöffnete Gefäß v hinab; die Röhre wächst über drawRange
+  // (TubeGeometry: 6 · HY_RAD Indizes je Segment, Segmente folgen der Bogenlänge wie getPointAt), die Spitze ist eine Kugel
+  const hyPath = [[XC + 14, v.y + 6, 10], [v.x + 3, v.y + 2, -22], [v.x - 3, v.y - 3, -75], [v.x + 2, v.y + 3, -135], [v.x - 2, v.y - 1, -195], [v.x + 1, v.y + 2, -232]];
+  const hyCurve = new THREE.CatmullRomCurve3(hyPath.map((p) => new THREE.Vector3(...p)));
+  const hyLen = hyCurve.getLength();
+  const hyMat = semMaterial({ ...sem, base: 0.42, edge: 0.3, noise: 2.5, z: 0.8 });
+  hyMat.uniforms.uTint.value.setRGB(1.0, 0.91, 0.76);   // Pilz ocker wie in Ebene 4
+  const hyMesh = new THREE.Mesh(new THREE.TubeGeometry(hyCurve, HY_SEG, HY_R, HY_RAD), hyMat);
+  const hyTip = new THREE.Mesh(new THREE.SphereGeometry(HY_R, 14, 10), hyMat);
+  scene.add(hyMesh, hyTip);
+  let hyStart = 0.4, hyF = -1;   // Wachstum beginnt kurz nach der Ankunft; Klick auf „Lebensraum“ (Ende des Fadens) startet es neu
+  const growHypha = (age) => {
+    const f = still() ? 1 : clamp(((age - hyStart) * HY_RATE * HY_LAPSE) / hyLen, 0, 1);
+    if (f === hyF) return;
+    hyF = f;
+    hyMesh.geometry.setDrawRange(0, Math.floor(f * HY_SEG) * HY_RAD * 6);
+    hyMesh.visible = f > 0;
+    hyCurve.getPointAt(f, hyTip.position);
+  };
+
   const camera = new THREE.PerspectiveCamera(35, ctx.aspect, 1, 4000);
   const base = hotspots.map((h) => h.pos.clone());
   // Pyrolyse: Schwindung (quer stärker als längs), dünnere Zellwände, Stärke verschwindet, Bruch faserig → glasig
   // (weniger Körnung, hellere Kanten wie bei verkohlten Wänden im REM); gleitet mit dem Regler
-  let shownT = ctx.temp, lastT = NaN;
+  let shownT = ctx.temp, lastT = NaN, age = 0, lastClock = -1;
   function applyTemp() {
     if (shownT === lastT) return;
     lastT = shownT;
     const k = tissueScale(shownT), st = pyroState(shownT);
     wallGroup.userData.setThin(k.wall / k.xy);
     setGrains(st.starch);
+    semCharge(shownT);   // Aufladung: unter ≈ 700 °C leitet die Kohle schlecht (Streifen), darüber sauber
     for (const mat of wallGroup.userData.materials) {
       mat.uniforms.uNoise.value = sem.noise * (1 - 0.8 * st.glassy);
       mat.uniforms.uEdge.value = sem.edge + 0.45 * st.glassy;
@@ -162,6 +190,7 @@ export function create(ctx) {
     scene, camera,
     unit: 1e-6,
     method: 'REM · Sekundärelektronen (Modell)',
+    detector: true,   // Umschalter SE/BSE an der Messleiste
     tone: 0,
     grain: 0.07,
     dof: 2.0,
@@ -170,12 +199,20 @@ export function create(ctx) {
     orbit: { minDistance: 60, maxDistance: 800, minPolarAngle: 0.2, maxPolarAngle: 2.9, enablePan: true },
     hotspots,
     update(dt, t) {
+      age = t - lastClock > 0.5 ? 0 : age + t - lastClock;   // Uhr ab Ankunft: nach einer Pause beginnt der Zeitraffer neu
+      lastClock = t;
       semDetector(t);
+      semBlend(dt, reduced);
       applyTemp();
+      growHypha(age);
       return true;
     },
     setParam(name, value) {
       if (name === 'temp') { shownT = value; level.dirty = true; }
+      if (name === 'detector') level.method = `REM · ${value === 'bse' ? 'Rückstreuelektronen' : 'Sekundärelektronen'} (Modell)`;
+    },
+    onHotspot(id) {
+      if (id === 'habitat') { hyStart = age; hyF = -1; }
     },
     dispose() { disposeGroup(scene); },
   };

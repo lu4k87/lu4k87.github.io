@@ -2,6 +2,8 @@
 // Ausgabe linear (Gamma 2,2), die Zusammenführung in main.js wandelt nach sRGB.
 
 import * as THREE from 'three';
+import * as sci from './science.js';
+import { clamp, smoothstep } from './util.js';
 
 export const NOISE_GLSL = /* glsl */ `
 float hash13(vec3 p3) {
@@ -20,12 +22,30 @@ float vnoise(vec3 p) {
 `;
 
 export const SEM_GLSL = NOISE_GLSL + /* glsl */ `
+uniform float uBSE, uZ, uCharge, uSemT;
 float semShade(vec3 N, vec3 V, vec3 det, float base) {
   float c = clamp(abs(dot(N, V)), 0.0, 1.0);
-  float g = base * (1.0 + 0.62 * (1.0 / max(c, 0.22) - 1.0));
-  return g + 0.13 * dot(N, det);
+  float se = base * (1.0 + 0.62 * (1.0 / max(c, 0.22) - 1.0)) + 0.13 * dot(N, det);
+  // Rückstreuelektronen (uBSE = 1): Ausbeute steigt mit der mittleren Ordnungszahl (uZ je Material: Kohlenstoff dunkel,
+  // Asche aus Ca/K/Mg hell), kaum Kanteneffekt, Topografie nur schwach über die Lage zum Detektor (Modell nach Goldstein
+  // et al. 2018)
+  float bse = base * uZ * (0.8 + 0.25 * max(dot(N, det), 0.0) + 0.15 * (1.0 - c));
+  return mix(se, bse, uBSE);
+}
+// Aufladung schlecht leitender Proben (Goldstein et al. 2018): je 4 Bildzeilen zufällig ein heller Streifen begrenzter
+// Länge in Zeilenrichtung, alle ≈ 0,7 s neu gewürfelt, dazu große hellere Flecken; Stärke uCharge aus der Leitfähigkeit
+// der Kohle (semCharge), Rückstreuelektronen sind weniger empfindlich (Modell)
+float semCharging() {
+  if (uCharge < 0.001) return 0.0;
+  float row = floor(gl_FragCoord.y / 4.0), seed = floor(uSemT * 1.4);
+  float on = smoothstep(1.0 - 0.07 * uCharge, 1.0, hash13(vec3(row, seed, 3.0)));
+  float x0 = hash13(vec3(row, seed, 7.0)) * 1600.0, len = 150.0 + 900.0 * hash13(vec3(row, seed, 9.0));
+  float along = smoothstep(x0 - 3.0, x0 + 12.0, gl_FragCoord.x) * (1.0 - smoothstep(x0 + 0.5 * len, x0 + len, gl_FragCoord.x));
+  float blotch = smoothstep(0.58, 0.85, vnoise(vec3(gl_FragCoord.xy * 0.0035, seed * 0.37)));
+  return uCharge * (1.0 - 0.5 * uBSE) * (1.4 * on * along * (0.5 + 0.5 * hash13(vec3(row, seed, 5.0))) + 0.3 * blotch);
 }
 vec4 semOut(float g, vec3 tint) {
+  g += semCharging();
   return vec4(pow(tint * clamp(g, 0.0, 1.5), vec3(2.2)), 1.0);
 }
 `;
@@ -41,8 +61,30 @@ const DET0 = new THREE.Vector3(-0.45, 0.75, 0.5).normalize();
 export const SEM_DET = { value: DET0.clone() };
 // Schwenk an/aus (Zahnrad „REM-Detektor schwenkt“, main.js): 0 = Detektor steht in der Grundlage DET0
 export const SEM_SWING = { k: 1 };
+// Detektor (Umschalter an der Messleiste, Ebenen 3–4): 0 = Sekundärelektronen (Topografie, Kanteneffekt),
+// 1 = Rückstreuelektronen (Ordnungszahl-Kontrast); gleitet in ≈ 0,3 s (semBlend), gemeinsam für alle REM-Materialien
+export const SEM_BSE = { value: 0, to: 0 };
+export const SEM_T = { value: 0 };
+export const semDetectorMode = (mode) => { SEM_BSE.to = mode === 'bse' ? 1 : 0; };
+export function semBlend(dt, instant = false) {
+  const d = SEM_BSE.to - SEM_BSE.value;
+  if (d === 0) return;
+  SEM_BSE.value = instant || Math.abs(d) < 0.01 ? SEM_BSE.to : SEM_BSE.value + d * (1 - Math.exp(-dt / 0.25));
+}
+// Aufladung: Stärke 0–1 aus der Leitfähigkeit über der Pyrolysetemperatur (science.js conductivity, Gabhi et al. 2020:
+// k = Lage auf der log-Skala: 400 °C 0 · 500 °C 0,38 · 550 °C 0,57 · 600 °C 0,77 · 700 °C 0,88 · 800 °C 1) – volle Streifen
+// bis ≈ 500 °C, bei 550 °C noch gut die Hälfte, ab ≈ 700 °C sauber; Schalter „REM-Aufladung“ im Zahnrad (main.js → semChargeOn). Fallback bis conductivity() da ist: linear 400–800 °C.
+export const SEM_CHARGE = { value: 0 };
+const charge = { on: 1, T: 550 };
+const chargeOf = (T) => {
+  const k = sci.conductivity ? sci.conductivity(T).k : clamp((T - 400) / 400, 0, 1);
+  return 1 - smoothstep(0.35, 0.88, k);
+};
+export function semCharge(T) { charge.T = T; SEM_CHARGE.value = charge.on * chargeOf(T); }
+export function semChargeOn(on) { charge.on = on ? 1 : 0; semCharge(charge.T); }
 const _yAxis = new THREE.Vector3(0, 1, 0), _xAxis = new THREE.Vector3(1, 0, 0);
 export function semDetector(t, k = 1) {
+  SEM_T.value = t;
   k *= SEM_SWING.k;
   SEM_DET.value.copy(DET0).applyAxisAngle(_yAxis, 0.42 * k * Math.sin(t * 0.071)).applyAxisAngle(_xAxis, 0.14 * k * Math.sin(t * 0.113 + 1.0));
 }
@@ -230,6 +272,10 @@ export function semMaterial(opts = {}) {
     defines,
     uniforms: {
       uDet: SEM_DET,
+      uBSE: SEM_BSE,
+      uZ: { value: opts.z ?? 1 },                         // relative Rückstreu-Ausbeute (mittlere Ordnungszahl): Kohle 0,9, Asche 2,2
+      uCharge: opts.charge ? SEM_CHARGE : { value: 0 },   // Aufladung nur in den Ebenen, die sie anfordern (3–4)
+      uSemT: SEM_T,
       uTint: { value: new THREE.Color(0.93, 0.95, 0.98) },
       uBase: { value: opts.base ?? 0.4 },
       uEdge: { value: opts.edge ?? 0.55 },
