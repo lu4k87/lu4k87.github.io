@@ -1,8 +1,9 @@
 // Station 1: Erde und Mond, maßstäblich (Einheit 1.000 km). Stand für den aktuellen Zeitpunkt: Sonnenrichtung aus den
 // JPL-Bahnelementen, Erddrehung aus der Sternzeit Greenwich, Mondort aus der Almanach-Näherung (astro.js).
-// Erde: Tagkarte mit Glanzlicht und Fresnel-Schimmer der Ozeane, Wolken mit Schattenwurf auf die Oberfläche,
-// Stadtlichter auf der Nachtseite, Atmosphäre als Strahl-Kugel-Schnitt (Weglänge durch die Hülle × Dichte, blau auf der
-// Tagseite, rot an der Dämmerungsgrenze, Vorwärtsstreuung, grünes Nachtleuchten der Hochatmosphäre am Nachtrand).
+// Erde: Tagkarte mit weichem Terminator, Glanzlicht und Fresnel-Schimmer der Ozeane, Wolken als eigene Kugelschicht mit
+// Schattenwurf auf den Boden, Stadtlichter mit warmem Hof auf der Nachtseite, Atmosphäre als Hülle mit Einfachstreuung
+// (planetfx.js: Rayleigh-Blau, rot-oranges Dämmerungsband, weicher Glanz über den Rand, grünes Nachtleuchten).
+// Polarlichter: Vorhänge mit feinen Strahlen + breite, weiche Glow-Lage im Oval.
 // Mond: gebundene Rotation, Lommel-Seeliger-Reflexion, Erdschein. Himmel: echter Sternkatalog (Yale BSC, 5.044 Sterne)
 // mit Sternbildlinien und Namen (catalog.js); Schattenkegel von Erde und Mond (Finsternis-Geometrie), Bahnen von ISS
 // und geostationären Satelliten, Linsenreflex der Sonne (flare.js).
@@ -17,9 +18,11 @@ import { SKY_VERTEX, NOISE } from '../glsl.js';
 import { loadSats, createSats, satPos, orbitLine, namedIndex, KIND_COLOR } from '../sats.js';
 import { speedAt, RE } from '../orbit.js';
 import { registerLayers } from '../layers.js';
+import { SHELL_VERT, ATMO_FRAG, CLOUD_FRAG } from '../planetfx.js';
 
 const R_E = 6.371, R_M = 1.7374;   // NASA Fact Sheets [1.000 km]
-const R_ATM = R_E * 1.04;          // sichtbare Hülle (Dichte fällt mit ≈ 8 km Skalenhöhe; hier dicker gezeichnet, damit der Saum trägt)
+const R_ATM = R_E * 1.065;         // sichtbare Hülle ≈ 410 km (echt: Dichte fällt mit ≈ 8 km Skalenhöhe, Saum ≈ 100 km; dicker gezeichnet, damit der Glanz weich ausläuft)
+const R_CLOUD = R_E * 1.006;       // Wolkenschicht ≈ 38 km (echt meist < 12 km; höher gezeichnet, damit Schicht und Schatten sichtbar werden)
 const GEO = 42.164;                // geostationärer Bahnradius [1.000 km]
 const ISS = { r: R_E + 0.42, inc: 51.64 };   // ISS: ≈ 420 km Höhe, 51,64° Bahnneigung (NASA)
 const SUN_D = AU / 1e6, SUN_R = R_SUN / 1e6;  // Sonnenabstand und -radius [1.000 km]
@@ -50,65 +53,27 @@ void main() {
   float ocean = texture2D(tSpec, vUv).r;
   vec2 cuv = vUv + vec2(uCloudU, 0.0);
   float cl = texture2D(tClouds, cuv).r;
-  float lit = smoothstep(-0.06, 0.2, ndl);
-  // Dämmerung: Licht wird an der Grenze rötlich (langer Weg durch die Luft)
-  vec3 sunCol = mix(vec3(1.0, 0.55, 0.32), vec3(1.0), smoothstep(0.0, 0.35, ndl));
-  // Wolkenschatten: Wolkenkarte in Richtung Sonne versetzt abtasten (Tangentialrichtung aus Drehachse und Normale)
+  // weicher Terminator: die Atmosphäre streut Licht ein Stück über die Schattengrenze, dort rötlich (langer Weg durch die Luft)
+  float lit = clamp((ndl + 0.06) / 1.06, 0.0, 1.0);
+  vec3 sunCol = mix(vec3(1.0, 0.5, 0.3), vec3(1.0), smoothstep(-0.02, 0.35, ndl));
+  // Wolkenschatten: die schattende Wolke liegt zwischen Boden und Sonne → Wolkenkarte zur Sonne versetzt abtasten
   vec3 east = normalize(cross(uAxis, N)), north = cross(N, east);
-  vec2 off = vec2(dot(uSun, east), dot(uSun, north)) * 0.0045;
-  float shadow = 1.0 - 0.55 * texture2D(tClouds, cuv - off).r * lit;
-  vec3 col = day * max(ndl, 0.0) * sunCol * 0.82 * shadow;
+  vec2 off = vec2(dot(uSun, east), dot(uSun, north)) * 0.004;
+  float shadow = 1.0 - 0.6 * smoothstep(0.1, 0.8, texture2D(tClouds, cuv + off).r) * lit;
+  vec3 col = day * lit * sunCol * 0.85 * shadow;
   // Glanzlicht auf dem Wasser (Blinn-Phong), unter Wolken gedämpft; flacher Blick aufs Wasser spiegelt den Himmel (Fresnel)
   vec3 H = normalize(uSun + V);
   float glint = pow(max(dot(N, H), 0.0), 420.0) * ocean * (1.0 - cl) * lit;
   float fres = pow(1.0 - max(dot(N, V), 0.0), 5.0) * ocean * lit;
-  col += vec3(1.0, 0.92, 0.8) * glint * 0.5 + vec3(0.03, 0.045, 0.065) * pow(max(dot(N, H), 0.0), 18.0) * ocean * lit + vec3(0.25, 0.4, 0.6) * fres * 0.12;
-  // Wolken mit eigener Beleuchtung, an der Dämmerungsgrenze rosa angestrahlt
-  col = mix(col, vec3(0.88) * max(ndl, 0.0) * sunCol, cl * 0.9);
-  // Stadtlichter nur auf der Nachtseite, Wolken dämpfen
-  vec3 night = texture2D(tNight, vUv).rgb;
-  col += night * night * vec3(1.0, 0.78, 0.5) * uLights * (1.0 - lit) * (1.0 - cl * 0.8);
-  // Erdschein der Atmosphäre auf die Nachtseite: sehr schwach blau, Mondlicht noch schwächer
+  col += vec3(1.0, 0.92, 0.8) * glint * 0.6 + vec3(0.03, 0.045, 0.065) * pow(max(dot(N, H), 0.0), 18.0) * ocean * lit + vec3(0.25, 0.4, 0.6) * fres * 0.12;
+  // Stadtlichter auf der Nachtseite mit warmem Hof (gröbere Mip-Stufe = Lichtglocke über Ballungsräumen); Wolken verdecken
+  // sie über die eigene Wolkenschicht
+  vec3 night = texture2D(tNight, vUv).rgb, halo = texture2D(tNight, vUv, 4.0).rgb;
+  float dark = 1.0 - smoothstep(-0.1, 0.12, ndl);
+  col += (night * night + halo * 0.45) * vec3(1.0, 0.72, 0.42) * uLights * dark;
+  // Rest-Licht der Nachtseite (Atmosphäre, Sterne): sehr schwach blau
   col += vec3(0.002, 0.004, 0.008) * (1.0 - lit);
   gl_FragColor = vec4(col, 1.0);
-}
-`;
-
-// Atmosphäre: Weglänge des Sichtstrahls durch die Hülle bis zur Oberfläche, Dichte nach Höhe, Farbe nach Sonnenstand
-const ATMO_FRAG = /* glsl */ `
-uniform vec3 uSun, uCenter;
-uniform float uRp, uRa, uGain;
-varying vec3 vP;
-void main() {
-  vec3 ro = cameraPosition, rd = normalize(vP - cameraPosition);
-  vec3 oc = ro - uCenter;
-  float b = dot(oc, rd), c = dot(oc, oc) - uRa * uRa, h = b * b - c;
-  if (h <= 0.0) discard;
-  h = sqrt(h);
-  float t0 = max(-b - h, 0.0), t1 = -b + h;
-  float hp = b * b - (dot(oc, oc) - uRp * uRp);
-  bool ground = hp > 0.0;
-  if (ground) t1 = min(t1, -b - sqrt(hp));
-  float L = max(t1 - t0, 0.0);
-  vec3 pm = ro + rd * (t0 + t1) * 0.5;
-  // tiefster Punkt des Strahls (bei Bodenkontakt die Oberfläche)
-  float tc = clamp(-b, t0, t1);
-  vec3 pc = ro + rd * tc;
-  float alt = clamp((length(pc - uCenter) - uRp) / (uRa - uRp), 0.0, 1.0);
-  float dens = exp(-alt * 5.0);
-  vec3 n = normalize(pm - uCenter);
-  float mu = dot(n, uSun);
-  float tau = L / (uRa - uRp) * dens;
-  vec3 blue = vec3(0.16, 0.42, 1.0), dusk = vec3(1.0, 0.36, 0.12);
-  vec3 col = blue * smoothstep(-0.12, 0.35, mu) + dusk * exp(-pow((mu - 0.02) / 0.13, 2.0)) * 0.85;
-  float cosT = dot(rd, uSun);
-  float phase = 0.8 + 0.6 * cosT * cosT + 3.0 * pow(max(cosT, 0.0), 24.0);
-  // Potenz: Senkrechtblick (kurzer Weg) nur leichter Schleier – Ozeane bleiben tiefblau; am Rand (langer Weg) volle Hülle
-  vec3 out3 = col * pow(1.0 - exp(-tau * 0.4), 1.35) * phase;
-  // Nachtleuchten (Airglow, grün 558 nm) in ≈ 90–100 km Höhe, nur am Rand der Nachtseite sichtbar
-  float air = exp(-pow((alt - 0.4) / 0.14, 2.0)) * (1.0 - smoothstep(-0.35, 0.05, mu)) * smoothstep(0.3, 1.0, L / (uRa - uRp));
-  out3 += vec3(0.3, 1.0, 0.45) * air * 0.045;
-  gl_FragColor = vec4(out3 * uGain, 1.0);
 }
 `;
 
@@ -165,7 +130,7 @@ void main() {
   float u = auv.x, cu = cos(u);
   float latEq = (66.5 - 2.044 * uKp) + 2.5 * (1.0 + cu);
   float width = 4.0 + 0.6 * uKp - cu;
-  float fold = fbm(vec3(cos(u) * 2.0, sin(u) * 2.0 + aw * 2.0 + ah, uTime * 0.05), 3) * 2.4 + fbm(vec3(cos(u) * 7.0, sin(u) * 7.0 + aw * 5.0, uTime * 0.12), 2) * 0.8;
+  float fold = fbm(vec3(cos(u) * 2.0, sin(u) * 2.0 + aw * 2.0 + ah, uTime * 0.08), 3) * 2.4 + fbm(vec3(cos(u) * 7.0, sin(u) * 7.0 + aw * 5.0, uTime * 0.2), 2) * 0.8;
   float lat = latEq + width * aw + fold;
   float th = (90.0 - lat) * 0.017453292;
   vec3 dir = sin(th) * (cu * e1 + sin(u) * e2) + cos(th) * e3;
@@ -180,15 +145,56 @@ ${NOISE}
 uniform float uTime, uKp, uGain;
 varying float vV, vU, vW, vNight, vFold;
 void main() {
-  float ray = ridged(vec3(cos(vU) * 5.0 + vFold * 0.6, sin(vU) * 5.0, vW * 4.0 + uTime * 0.25), 3);
-  float ray2 = fbm(vec3(cos(vU) * 16.0, sin(vU) * 16.0, vV * 2.0 - uTime * 0.4 + vW * 7.0), 2) * 0.5 + 0.5;
-  float b = (0.25 + 0.75 * ray) * (0.6 + 0.4 * ray2);
+  float ray = ridged(vec3(cos(vU) * 5.0 + vFold * 0.6, sin(vU) * 5.0, vW * 4.0 + uTime * 0.25), 2);
+  // feine senkrechte Strahlen (entlang der Feldlinien), wandern und flackern; Helligkeitswellen laufen am Vorhang entlang
+  float rays = ridged(vec3(cos(vU) * 70.0 + vFold * 2.0, sin(vU) * 70.0, uTime * 0.35 + vW * 11.0), 2);
+  float ray2 = gnoise(vec3(cos(vU) * 16.0, sin(vU) * 16.0, vV * 2.0 - uTime * 0.4 + vW * 7.0)) * 0.5 + 0.5;
+  // Bögen in Segmente mit Lücken brechen (jedes Blatt eigenes Muster), langsam wandernd
+  float seg = smoothstep(-0.15, 0.35, gnoise(vec3(cos(vU) * 3.5, sin(vU) * 3.5, vW * 6.0 + uTime * 0.04)));
+  float b = seg * (0.25 + 0.75 * ray) * (0.6 + 0.4 * ray2) * (0.45 + 1.1 * rays * rays) * (0.8 + 0.3 * sin(vU * 40.0 + vFold * 3.0 - uTime * 0.9));
   float prof = smoothstep(0.0, 0.07, vV) * pow(max(1.0 - vV, 0.0), 1.7);
   vec3 green = vec3(0.35, 1.0, 0.45), red = vec3(1.0, 0.25, 0.35), violet = vec3(0.55, 0.35, 1.0);
   vec3 col = mix(green, red, smoothstep(0.3, 0.9, vV));
   col = mix(col, violet, (1.0 - smoothstep(0.0, 0.18, vV)) * clamp((uKp - 3.0) / 6.0, 0.0, 1.0) * 0.7);
   float mlt = 0.55 + 0.45 * (0.5 - 0.5 * cos(vU));
   gl_FragColor = vec4(col * b * prof * mlt * vNight * (0.5 + 0.12 * uKp) * uGain, 1.0);
+}
+`;
+// Breite, weiche Glow-Lage des Ovals (diffuse Aurora, ≈ 110 km Höhe): gleiche Oval-Geometrie wie die Vorhänge, wandernde
+// Flecken (pulsierende Aurora), polwärts mehr Rot; am Rand der Erdscheibe heller (längerer Weg durch die Lage)
+const AURORA_GLOW_VERT = /* glsl */ `
+varying vec3 vL, vN, vP;
+void main() {
+  vL = position;
+  vN = normalize(mat3(modelMatrix) * normal);
+  vec4 w = modelMatrix * vec4(position, 1.0);
+  vP = w.xyz;
+  gl_Position = projectionMatrix * viewMatrix * w;
+}
+`;
+const AURORA_GLOW_FRAG = /* glsl */ `
+${NOISE}
+uniform vec3 uPole, uSunL;
+uniform float uKp, uTime, uGain;
+varying vec3 vL, vN, vP;
+void main() {
+  vec3 p = normalize(vL), e3 = normalize(uPole);
+  float s = dot(p, e3);
+  e3 *= s >= 0.0 ? 1.0 : -1.0;
+  vec3 e1 = normalize(uSunL - e3 * dot(uSunL, e3)), e2 = cross(e3, e1);
+  float lat = degrees(asin(abs(s)));
+  float u = atan(dot(p, e2), dot(p, e1)), cu = cos(u);
+  float latEq = (66.5 - 2.044 * uKp) + 2.5 * (1.0 + cu);
+  float width = 4.0 + 0.6 * uKp - cu;
+  float x = (lat - latEq - width * 0.45) / (width * 0.8);
+  float band = exp(-x * x);
+  if (band < 0.01) discard;
+  float spot = fbm(p * 9.0 + vec3(0.0, 0.0, uTime * 0.04), 3) * 0.5 + 0.5;
+  float night = 1.0 - smoothstep(-0.2, 0.05, dot(p, uSunL));
+  float mlt = 0.55 + 0.45 * (0.5 - 0.5 * cu);
+  float mu = max(dot(normalize(vN), normalize(cameraPosition - vP)), 0.0);
+  vec3 col = mix(vec3(0.3, 1.0, 0.5), vec3(0.95, 0.3, 0.45), 0.15 + 0.3 * smoothstep(0.0, 1.5, x));
+  gl_FragColor = vec4(col * band * (0.35 + 1.0 * spot * spot) * night * mlt / (mu + 0.35) * (0.15 + 0.07 * uKp) * uGain, 1.0);
 }
 `;
 // Vorhang-Geometrie: je Halbkugel drei Blätter quer durch das Oval (w), 240 Segmente, zwei Höhenreihen
@@ -295,18 +301,23 @@ export function create(ctx) {
     uniforms: {
       tDay: { value: ctx.tex('earth_daymap.jpg') }, tNight: { value: ctx.tex('earth_nightmap.jpg') },
       tSpec: { value: ctx.tex('earth_specular.jpg', false) }, tClouds: { value: ctx.tex('earth_clouds.jpg', false) },
-      uSun: { value: sunDir }, uAxis: { value: axis }, uCloudU: { value: 0 }, uLights: { value: 1.6 },
+      uSun: { value: sunDir }, uAxis: { value: axis }, uCloudU: { value: 0 }, uLights: { value: 2.6 },
     },
   });
   const earth = new THREE.Mesh(new THREE.SphereGeometry(R_E, 192, 96), earthMat);
   spin.add(earth);
+  // Wolken als eigene Kugelschicht (drehen mit der Erde, driften zusätzlich)
+  const cloudU = { tClouds: { value: ctx.tex('earth_clouds.jpg', false) }, uSun: { value: sunDir }, uCloudU: { value: 0 }, uTime: { value: 0 }, uGain: { value: 0.95 }, uOpacity: { value: 0.96 } };
+  const clouds = new THREE.Mesh(new THREE.SphereGeometry(R_CLOUD, 192, 96), new THREE.ShaderMaterial({ vertexShader: EARTH_VERT.replace('varying vec3 vN, vP;', 'varying vec3 vN, vP, vO;').replace('vUv = uv;', 'vUv = uv; vO = position;'),
+    fragmentShader: CLOUD_FRAG, uniforms: cloudU, transparent: true, depthWrite: false }));
+  spin.add(clouds);
   const atmoMat = new THREE.ShaderMaterial({
-    vertexShader: `varying vec3 vP; void main() { vec4 w = modelMatrix * vec4(position, 1.0); vP = w.xyz; gl_Position = projectionMatrix * viewMatrix * w; }`,
-    fragmentShader: ATMO_FRAG,
-    uniforms: { uSun: { value: sunDir }, uCenter: { value: new THREE.Vector3() }, uRp: { value: R_E }, uRa: { value: R_ATM }, uGain: { value: 2.0 } },
+    vertexShader: SHELL_VERT, fragmentShader: ATMO_FRAG,
+    uniforms: { uSun: { value: sunDir }, uCenter: { value: new THREE.Vector3() }, uBeta: { value: new THREE.Vector3(0.1, 0.26, 0.72) }, uMieCol: { value: new THREE.Vector3(1.0, 0.95, 0.9) },
+      uRp: { value: R_E }, uRa: { value: R_ATM }, uH: { value: 0.12 }, uGain: { value: 1.25 }, uMie: { value: 0.15 }, uAir: { value: 0.1 }, uAirH: { value: 0.23 } },
     blending: THREE.AdditiveBlending, depthWrite: false, transparent: true,
   });
-  const atmo = new THREE.Mesh(new THREE.SphereGeometry(R_ATM, 128, 64), atmoMat);
+  const atmo = new THREE.Mesh(new THREE.SphereGeometry(R_ATM, 160, 80), atmoMat);
   scene.add(atmo);
 
   // ---------- Polarlichter (drehen mit der Erde; geomagnetischer Nordpol 2025: 80,8° N, 72,8° W, IGRF-14) ----------
@@ -317,6 +328,8 @@ export function create(ctx) {
   const aurora = new THREE.Mesh(auroraGeometry(), new THREE.ShaderMaterial({ vertexShader: AURORA_VERT, fragmentShader: AURORA_FRAG, uniforms: auroraU, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true, side: THREE.DoubleSide }));
   aurora.frustumCulled = false;
   spin.add(aurora);
+  const auroraGlow = new THREE.Mesh(new THREE.SphereGeometry(R_E + 0.11, 160, 80), new THREE.ShaderMaterial({ vertexShader: AURORA_GLOW_VERT, fragmentShader: AURORA_GLOW_FRAG, uniforms: auroraU, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true }));
+  spin.add(auroraGlow);
   const auroraPos = new THREE.Vector3(), poleW = new THREE.Vector3(), qSpin = new THREE.Quaternion();
 
   // ---------- Satelliten und Trümmer (CelesTrak-Schnappschuss, sats.js) ----------
@@ -436,7 +449,7 @@ export function create(ctx) {
 
   const controls = [
     // Tempo wie SPEEDS der Zeitleiste, damit sie denselben Stand zeigt
-    { id: 'time', label: 'Zeit/s', value: 'now', options: [['now', 'Jetzt'], ['min', '1 min'], ['min10', '10 min'], ['hour', '1 h'], ['day', '1 Tag']],
+    { id: 'time', label: 'Zeit/s', value: 'min', options: [['now', 'Jetzt'], ['min', '1 min'], ['min10', '10 min'], ['hour', '1 h'], ['day', '1 Tag']],
       set: (val) => {
         rate = { now: 0, min: 1 / 1440, min10: 1 / 144, hour: 1 / 24, day: 1 }[val];
         if (rate) clockIdx = SPEEDS.findIndex(([r]) => r === rate); else jd = julianDate(new Date());
@@ -452,13 +465,14 @@ export function create(ctx) {
 
   // ---------- Ebenen (Zahnrad „Station · Erde & Mond“, Zeitleiste) ----------
   const SPEEDS = [[1 / 1440, '1 min/s'], [1 / 144, '10 min/s'], [1 / 24, '1 h/s'], [0.25, '6 h/s'], [1, '1 Tag/s']];
-  let clockIdx = 1;
+  let clockIdx = 0;
   registerLayers('earth', [
-    { id: 'clock', type: 'play', label: 'Zeitraffer', hint: 'Erddrehung, Mondlauf, Satelliten und ISS im gewählten Tempo; Pause = Echtzeit.', value: 1, min: 0, max: SPEEDS.length - 1, step: 1, fmt: (i) => SPEEDS[Math.round(i)][1],
+    { id: 'clock', type: 'play', label: 'Zeitraffer', hint: 'Erddrehung, Mondlauf, Satelliten und ISS im gewählten Tempo; Pause = Echtzeit.', value: 0, min: 0, max: SPEEDS.length - 1, step: 1, autoplay: true, fmt: (i) => SPEEDS[Math.round(i)][1],
       set: (i, playing) => { clockIdx = Math.round(i); rate = playing ? SPEEDS[clockIdx][0] : 0; if (!playing) jd = julianDate(new Date()); },
       get: () => ({ value: clockIdx, playing: rate !== 0 }), status: () => `${fmt.format(new Date((jd - 2440587.5) * 864e5))}${rate ? '' : ' · Echtzeit'}` },
     { id: 'atmo', type: 'toggle', label: 'Atmosphäre (Streulicht-Hülle)', value: true, set: (v) => { atmo.visible = v; } },
-    { id: 'aurora', type: 'toggle', label: 'Polarlichter', value: true, set: (v) => { aurora.visible = v; } },
+    { id: 'clouds', type: 'toggle', label: 'Wolkenschicht', value: true, set: (v) => { clouds.visible = v; } },
+    { id: 'aurora', type: 'toggle', label: 'Polarlichter', value: true, set: (v) => { aurora.visible = auroraGlow.visible = v; } },
     { id: 'kp', type: 'range', label: 'Kp-Index (geomagnetische Aktivität)', value: 4, min: 0, max: 9, step: 1, sub: true, fmt: (v) => `Kp ${v}`, set: (v) => { auroraU.uKp.value = v; },
       hint: 'Kp 0–2: nur am Polarkreis · Kp 5: Sturm, bis Norddeutschland · Kp 9: bis in den Mittelmeerraum (NOAA).' },
     { id: 'auroraGain', type: 'range', label: 'Leuchtstärke', value: 1, min: 0.3, max: 2.5, step: 0.1, sub: true, unit: '×', set: (v) => { auroraU.uGain.value = v; } },
@@ -479,7 +493,8 @@ export function create(ctx) {
     update(dt, t, cam) {
       jd += rate ? dt * rate : dt / DAY;
       place();
-      earthMat.uniforms.uCloudU.value = (jd - jd0) * 0.004;
+      earthMat.uniforms.uCloudU.value = cloudU.uCloudU.value = (jd - jd0) * 0.004;
+      cloudU.uTime.value = t * (ctx.still ? 0.2 : 1);
       // beleuchteter Anteil aus der Elongation Mond–Sonne (Phasenwinkel ≈ 180° − Elongation)
       illum = (1 - tmp.copy(moonPos).normalize().dot(sunDir)) / 2;
       umbraTip.copy(sunDir).multiplyScalar(-earthShadow.userData.Lu * 0.28);
@@ -489,7 +504,7 @@ export function create(ctx) {
       // Polarlichter: Sonnenrichtung in das mitdrehende Erdsystem, Abzeichen am Mitternachtsrand des Nord-Ovals
       spin.getWorldQuaternion(qSpin);
       sunL.copy(sunDir).applyQuaternion(qSpin.clone().invert());
-      auroraU.uTime.value = t;
+      auroraU.uTime.value = t * (ctx.still ? 0.2 : 1);
       if (aurora.visible) {
         poleW.copy(poleL).applyQuaternion(qSpin);
         const noon = tmp.copy(sunDir).addScaledVector(poleW, -sunDir.dot(poleW)).normalize();
