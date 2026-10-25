@@ -855,7 +855,8 @@ canvas.addEventListener('pointerdown', endIntro);
 
 window.addEventListener('keydown', (e) => {
   if (e.target.closest('input, textarea, select') || e.metaKey || e.ctrlKey || e.altKey) return;
-  if (e.key === 'Escape' || e.key === 'PageUp') { e.preventDefault(); goTo(state.index - 1); }
+  if (e.key === 'Escape' && hud.closeCard()) e.preventDefault();
+  else if (e.key === 'Escape' || e.key === 'PageUp') { e.preventDefault(); goTo(state.index - 1); }
   else if (e.key === 'PageDown') { e.preventDefault(); diveHotspot(); }
   else if (/^[1-7]$/.test(e.key)) goTo(+e.key - 1);
 });
@@ -949,6 +950,7 @@ function stepPyro(real) {
 // ---------- Schleife ----------
 let last = performance.now();
 function frame(now) {
+  requestAnimationFrame(frame);   // zuerst: ein Fehler in einem einzelnen Bild hält die Schleife nicht dauerhaft an
   // echte Zeit für Einblenden, Intro und Übergänge (auch bei wenigen Bildern pro Sekunde),
   // gedeckelte Zeit für Bewegungen in den Szenen
   const real = Math.min(0.25, (now - last) / 1000);
@@ -1044,7 +1046,6 @@ function frame(now) {
   if (L) renderLoupe(lv, L, real);
   renderer.setRenderTarget(null);
   renderer.render(compScene, compCam);
-  requestAnimationFrame(frame);
 }
 
 async function start() {

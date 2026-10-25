@@ -997,6 +997,12 @@ export function createHud(handlers) {
       markers.forEach((m) => m.el.classList.toggle('is-active', m.h.id === id));
       panel.querySelectorAll('button[data-hs]').forEach((b) => b.classList.toggle('is-active', b.dataset.hs === id));
     },
+    // Escape: offene Karte zuerst schließen (true), erst danach wechselt Escape die Ebene
+    closeCard() {
+      if (!selected) return false;
+      closeCard();
+      return true;
+    },
     refreshFacts,
     tickFacts,
     setLive,
