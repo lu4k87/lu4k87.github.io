@@ -47,6 +47,7 @@ const LOADERS = {
   triton: () => import('./levels/triton.js'),
   // [E5] Uranus
   uranus: () => import('./levels/uranus.js'),
+  miranda: () => import('./levels/miranda.js'),
   // [E5] Pluto
   pluto: () => import('./levels/pluto.js'),
 };

@@ -13,23 +13,24 @@ import { BODY_VERT, SHELL_VERT, PLANET_FRAG, ATMO_FRAG, RING_FRAG, ATMOS } from 
 import { registerLayers, refreshLayers } from '../layers.js';
 import { ringTexture, ringMesh, moonOrbit, tidalQuat } from '../moonsys.js';
 
-const R_U = 25559;                 // km, äquatorial (NASA Uranus Fact Sheet)
-const ROT_H = -17.24;              // h, rückläufig um den IAU-Nordpol
-const NORTH = [257.311, -15.175];  // IAU-Nordpol α/δ [°] (WGCCRE 2015); die Monde kreisen um den Gegenpol (Drehsinn des Planeten)
+export const R_U = 25559;                 // km, äquatorial (NASA Uranus Fact Sheet)
+export const ROT_H = -17.24;              // h, rückläufig um den IAU-Nordpol
+export const NORTH = [257.311, -15.175];  // IAU-Nordpol α/δ [°] (WGCCRE 2015); die Monde kreisen um den Gegenpol (Drehsinn des Planeten)
 const SPIN = [NORTH[0] - 180, -NORTH[1]];
 const UA = PLANETS.find((p) => p.id === 'uranus');
 // Schmale Ringe (NASA NSSDCA Uranian Rings Fact Sheet): Radius, Breite [km] (Mitte der Spanne), optische Tiefe τ
 // → Deckkraft 1 − e^(−τ); unter 1,5 Pixel der Textur (≈ 7 km) breiter gezeichnet
-const RINGS = [[41837, 1.5, 0.3], [42234, 2, 0.5], [42571, 2, 0.3], [44718, 7, 0.4], [45661, 8, 0.3], [47176, 1.6, 0.4],
+export const RINGS = [[41837, 1.5, 0.3], [42234, 2, 0.5], [42571, 2, 0.3], [44718, 7, 0.4], [45661, 8, 0.3], [47176, 1.6, 0.4],
   [47627, 2.5, 0.3], [48300, 5, 0.5], [50024, 2, 0.1], [51149, 58, 1.2]].map(([r, w, tau]) => ({ r, w, a: 1 - Math.exp(-tau) }));
-const RING_IN = 41000, RING_OUT = 52000, EPS = 51149;
+export const RING_IN = 41000, RING_OUT = 52000, EPS = 51149;
 // Staubringe ν (R/2003 U 2) und μ (R/2003 U 1): τ ≪ 0,01, als Schleier mit 5–6 % Deckkraft sichtbar gemacht
 const DUST = [{ r: 67300, w: 3800, a: 0.06 }, { r: 97700, w: 17000, a: 0.05 }];
 const DUST_IN = 60000, DUST_OUT = 112000;
 // Fünf große Monde: Radius [km] (NASA Uranian Satellite Fact Sheet; Miranda Mittel der Halbachsen), mittlere Elemente
-// (JPL sats/elem, URA182, Äquator des Uranus, Epoche J2000): Apsiden vorwärts, Knoten rückwärts
-const MOONS = [
-  { id: 'miranda', r: 235.7, tex: 'miranda.jpg', dot: 0xa9c4cc, el: { a: 129846, e: 0.001, w: 154.8, M: 73.0, i: 4.4, node: 100.9, P: 1.413479, Pw: 8.939, Pn: -17.787 } },
+// (JPL sats/elem, URA182, Äquator des Uranus, Epoche J2000): Apsiden vorwärts, Knoten rückwärts; dive = eigene Station
+// (Exporte für die Mond-Stationen, uranusmoon.js)
+export const MOONS = [
+  { id: 'miranda', r: 235.7, tex: 'miranda.jpg', dot: 0xa9c4cc, dive: true, el: { a: 129846, e: 0.001, w: 154.8, M: 73.0, i: 4.4, node: 100.9, P: 1.413479, Pw: 8.939, Pn: -17.787 } },
   { id: 'ariel', r: 581.1, tex: 'ariel.jpg', dot: 0x9fb4bd, el: { a: 190929, e: 0.001, w: 9.6, M: 193.5, i: 0, node: 0, P: 2.520379, Pw: 28.901, Pn: 0 } },
   { id: 'umbriel', r: 584.7, tex: 'umbriel.jpg', dot: 0x8a9aa2, el: { a: 265986, e: 0.004, w: 183.4, M: 253.0, i: 0.1, node: 174.8, P: 4.144177, Pw: 64.126, Pn: -129.945 } },
   { id: 'titania', r: 788.9, tex: 'titania.jpg', dot: 0xb7cbd2, el: { a: 436298, e: 0.002, w: 184.0, M: 68.1, i: 0.1, node: 29.5, P: 8.705869, Pw: 579.928, Pn: -1644.649 } },
@@ -144,7 +145,7 @@ export function create(ctx) {
   // ---------- Abzeichen ----------
   const ringPos = new THREE.Vector3(), polePos = north.clone().multiplyScalar(1.45);
   const hotspots = [
-    ...moons.map((m) => ({ id: m.id, kind: 'info', pos: m.pos, focus: () => Math.max(m.rv * 9, 0.3) })),
+    ...moons.map((m) => ({ id: m.id, kind: m.dive ? 'dive' : 'info', to: m.dive && m.id, pos: m.pos, focus: () => Math.max(m.rv * 9, 0.3) })),
     { id: 'rings', kind: 'info', pos: ringPos, focus: () => 3.2, visible: () => rings.visible },
     { id: 'axis', kind: 'info', pos: polePos, focus: () => 4.5 },
   ];
