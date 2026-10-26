@@ -100,10 +100,14 @@ renderer.autoClear = true;
 
 const post = createPost(renderer);
 const texLoader = new THREE.TextureLoader();
+const cubeLoader = new THREE.CubeTextureLoader();
 const texCache = new Map();
+// name mit „/“ am Ende = Ordner einer Würfelkarte (Seiten px, nx, py, ny, pz, nz)
 function tex(name, srgb = true) {
   if (texCache.has(name)) return texCache.get(name);
-  const t = texLoader.load(`tex/${name}`, () => { for (const lv of state.levels.values()) lv.dirty = true; });
+  const done = () => { for (const lv of state.levels.values()) lv.dirty = true; };
+  const t = name.endsWith('/') ? cubeLoader.setPath(`tex/${name}`).load(['px.jpg', 'nx.jpg', 'py.jpg', 'ny.jpg', 'pz.jpg', 'nz.jpg'], done)
+    : texLoader.load(`tex/${name}`, done);
   t.colorSpace = srgb ? THREE.SRGBColorSpace : THREE.NoColorSpace;
   t.anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy());
   texCache.set(name, t);

@@ -128,24 +128,18 @@ export function glintPoints(pos, col, mag, { gain = 1, limit = 1.6 } = {}) {
 }
 
 // Milchstraße als Bild (Stationen mit echter Lage im Sonnensystem): ESO-Panorama eso0932a (ESO/S. Brunier, CC BY 4.0),
-// Foto der ganzen Himmelskugel, Katalogsterne zeichnen die Punkte darüber; galaktische Plattkarte –
-// Mitte l = 0°, l wächst nach links, oben b = +90° (tools/milkyway_tex.py). Naht bei l = 180°: Mip-Stufe aus der
-// stetigen Nachbar-Koordinate, sonst zeigt die Sprungstelle von atan eine feine Linie.
-export const MILKY_TEX = 'milkyway_4k.jpg';
+// Foto der ganzen Himmelskugel, Katalogsterne zeichnen die Punkte darüber; Würfelkarte in galaktischen Achsen –
+// +x Zentrum, +y l = 90°, +z Nordpol (tools/milkyway_tex.py). Keine Plattkarte: die verzerrt an den Polen Sterne zu
+// Strichen, die auf den Pol zulaufen.
+export const MILKY_TEX = 'milkyway/';
 const PHOTO_FRAG = /* glsl */ `
-uniform sampler2D uMap;
+uniform samplerCube uMap;
 uniform vec3 uNgp, uGc, uL90;
 uniform float uGain;
 varying vec3 vDir;
 void main() {
   vec3 d = normalize(vDir);
-  float b = asin(clamp(dot(d, uNgp), -1.0, 1.0));
-  float l = atan(dot(d, uL90), dot(d, uGc));
-  vec2 uv = vec2(0.5 - l / 6.2831853, 0.5 + b / 3.1415927);
-  vec2 dx = dFdx(uv), dy = dFdy(uv);
-  vec2 dx2 = dFdx(fract(uv + 0.5)), dy2 = dFdy(fract(uv + 0.5));
-  if (abs(dx2.x) + abs(dy2.x) < abs(dx.x) + abs(dy.x)) { dx.x = dx2.x; dy.x = dy2.x; }
-  gl_FragColor = vec4(textureGrad(uMap, uv, dx, dy).rgb * uGain, 1.0);
+  gl_FragColor = vec4(textureCube(uMap, vec3(dot(d, uGc), dot(d, uL90), dot(d, uNgp))).rgb * uGain, 1.0);
 }
 `;
 
