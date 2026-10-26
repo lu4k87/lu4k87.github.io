@@ -1,14 +1,15 @@
 // Gemeinsamer Sternhimmel der stellaren Ebenen: Sterne nach Helligkeitsverteilung (mehr schwache als helle), Farben aus
-// der Planck-Temperatur, Häufung zur galaktischen Ebene und das diffuse Band der Milchstraße mit Staubbahnen und
-// hellerem Zentrum. Im All funkeln Sterne nicht (kein Luftflimmern) – deshalb ruhige Punkte.
+// der Planck-Temperatur, Häufung zur galaktischen Ebene und das diffuse Band der Milchstraße (eigenes Modell,
+// milkyway.js). Im All funkeln Sterne nicht (kein Luftflimmern) – deshalb ruhige Punkte.
 // createStarfield(): statistisch, kein Sternkatalog (Kennzeichnung in content.js); starPoints()/glintPoints() nutzen auch
 // die Katalog-Himmel (catalog.js): Punkte nach Größenklasse, dazu ein Glanzlicht (weicher Hof + vier feine Strahlen,
 // wie das Auge oder eine Kameralinse helle Sterne zeigt) nur für die hellsten Sterne.
 
 import * as THREE from 'three';
 import { blackbody, mulberry32, gauss } from './astro.js';
-import { NOISE, SKY_VERTEX } from './glsl.js';
+import { SKY_VERTEX } from './glsl.js';
 import { followStars } from './settings.js';
+import { milkyBand } from './milkyway.js';
 
 // Punktbild eines Sterns: scharfer Kern (Gauß, σ ≈ 0,5 px – stabil bei Bewegung, kein Flimmern unter 1 px) und für helle
 // Sterne ein schwacher Hof (Streulicht der Optik); Energie bleibt erhalten, helle Sterne werden breiter, nicht zu Klecksen.
@@ -72,37 +73,6 @@ void main() {
 }
 `;
 
-const BAND_VERT = /* glsl */ `
-${SKY_VERTEX}
-varying vec3 vDir;
-void main() {
-  vDir = normalize(position);
-  gl_Position = skyPosition(vDir);
-}
-`;
-const BAND_FRAG = /* glsl */ `
-${NOISE}
-uniform vec3 uNgp, uGc;
-uniform float uGain;
-varying vec3 vDir;
-void main() {
-  vec3 d = normalize(vDir);
-  float sb = dot(d, uNgp);                          // sin b
-  float gcA = acos(clamp(dot(d, uGc), -1.0, 1.0));  // Winkel zum galaktischen Zentrum
-  // schmaler heller Kern, breite schwache Flügel
-  float band = 0.7 * exp(-pow(sb / 0.11, 2.0)) + 0.3 * exp(-pow(sb / 0.26, 2.0));
-  float bulge = exp(-pow(gcA / 0.5, 2.0)) * exp(-pow(sb / 0.22, 2.0));
-  // Sternwolken: grobe Ballung + feine Körnung
-  float clump = max(0.0, 0.5 + 0.4 * fbm(d * 7.0, 5) + 0.25 * fbm(d * 26.0, 3));
-  // Staubbahnen (Great Rift): dunkle Bahn genau in der Ebene, dazu feine Staubfäden im Band
-  float dust = smoothstep(0.12, 0.0, abs(sb + 0.03 * gnoise(d * 9.0))) * smoothstep(-0.1, 0.4, fbm(d * 5.0 + 3.0, 4));
-  float fil = smoothstep(0.05, 0.3, fbm(d * 17.0 + 7.0, 4)) * exp(-pow(sb / 0.15, 2.0));
-  float I = (band * clump * (0.45 + 0.55 * exp(-gcA * 0.8)) + bulge * 1.6) * (1.0 - 0.75 * dust) * (1.0 - 0.45 * fil);
-  vec3 col = mix(vec3(0.75, 0.78, 0.92), vec3(1.0, 0.86, 0.66), bulge + 0.3);
-  gl_FragColor = vec4(col * I * uGain, 1.0);
-}
-`;
-
 function pointsOf(pos, col, mag, vert, frag, uniforms, order) {
   const g = new THREE.BufferGeometry();
   g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
@@ -127,60 +97,8 @@ export function glintPoints(pos, col, mag, { gain = 1, limit = 1.6 } = {}) {
   return pointsOf(pos, col, mag, GLINT_VERT, GLINT_FRAG, { uPx: { value: 1 }, uGain: { value: gain }, uLimit: { value: limit } }, -9);
 }
 
-// Milchstraße als Bild (Stationen mit echter Lage im Sonnensystem): ESO-Panorama eso0932a (ESO/S. Brunier, CC BY 4.0),
-// Foto der ganzen Himmelskugel, Katalogsterne zeichnen die Punkte darüber; Würfelkarte in galaktischen Achsen –
-// +x Zentrum, +y l = 90°, +z Nordpol (tools/milkyway_tex.py). Keine Plattkarte: die verzerrt an den Polen Sterne zu
-// Strichen, die auf den Pol zulaufen.
-export const MILKY_TEX = 'milkyway/';
-// Look wie ein lang belichtetes Astrofoto: Himmelsgrund des Fotos (linear ≈ 0,004) abgezogen, Sternwolken nach ihrer
-// Umgebungshelligkeit (grobe Mip-Stufe, nicht je Pixel: einzelne Feldsterne bleiben fein) angehoben, Farbe kräftiger
-// (Staubbahnen rotbraun, Kern gold), Streulicht aus zwei weichen Mip-Stufen als Glow und ein warmer Schein um den Bulge;
-// der Kern reicht über 1 und leuchtet im Bloom von post.js nach.
-const PHOTO_FRAG = /* glsl */ `
-uniform samplerCube uMap;
-uniform vec3 uNgp, uGc, uL90;
-uniform float uGain;
-varying vec3 vDir;
-const vec3 LUM = vec3(0.2126, 0.7152, 0.0722);
-void main() {
-  vec3 d = normalize(vDir);
-  vec3 g = vec3(dot(d, uGc), dot(d, uL90), dot(d, uNgp));
-  vec3 c = max(textureCube(uMap, g).rgb - 0.005, 0.0);
-  vec3 near = max(textureCube(uMap, g, 4.0).rgb - 0.005, 0.0);
-  vec3 wide = max(textureCube(uMap, g, 7.0).rgb - 0.005, 0.0);
-  float env = dot(near, LUM);
-  c *= 1.0 + 6.5 * sqrt(smoothstep(0.003, 0.25, env));   // Wurzel: auch die schwachen Außenbereiche des Bandes heben sich ab
-  c /= 1.0 + 0.35 * dot(c, LUM);   // weiche Schulter: Kern glüht, brennt nicht weiß aus
-  float y = dot(c, LUM);
-  c = max(mix(vec3(y), c, 1.45), 0.0);
-  vec3 glow = near * 1.7 + wide * 3.5;
-  float gcA = acos(clamp(g.x, -1.0, 1.0));
-  float bulge = exp(-pow(gcA / 0.32, 2.0)) * exp(-pow(g.z / 0.16, 2.0));
-  gl_FragColor = vec4((c + glow + vec3(1.0, 0.72, 0.42) * 0.22 * bulge) * uGain, 1.0);
-}
-`;
-
-// Diffuses Band der Milchstraße: ngp = galaktischer Nordpol, gc = galaktisches Zentrum (beide in der Szene der Ebene);
-// tex = Textur-Lader der Station (ctx.tex) → Bild statt Modell
-export function milkyBand(ngp, gc, gain = 1, tex = null) {
-  const n = ngp.clone().normalize();
-  const u = gc.clone().addScaledVector(n, -gc.dot(n)).normalize();
-  const photo = tex ? { fragmentShader: PHOTO_FRAG,
-    uniforms: { uMap: { value: tex(MILKY_TEX) }, uNgp: { value: n }, uGc: { value: u }, uL90: { value: new THREE.Vector3().crossVectors(n, u) },
-      uGain: { value: 0.2 * gain } } } : { fragmentShader: BAND_FRAG,
-    uniforms: { uNgp: { value: n }, uGc: { value: u }, uGain: { value: 0.035 * gain } } };
-  const bandMat = new THREE.ShaderMaterial({
-    vertexShader: BAND_VERT, ...photo,
-    side: THREE.BackSide, depthWrite: false, depthTest: true, blending: THREE.AdditiveBlending, transparent: true,
-  });
-  const sky = new THREE.Mesh(new THREE.SphereGeometry(1, 48, 24), bandMat);
-  sky.frustumCulled = false;
-  sky.renderOrder = -11;
-  return sky;
-}
-
 // ngp = Richtung galaktischer Nordpol, gc = Richtung galaktisches Zentrum (beide in der Szene der Ebene)
-// tex = ctx.tex der Station: Milchstraße als Bild (nur mit echter Lage von ngp/gc, d. h. im Sonnensystem)
+// tex = ctx.tex der Station: ESO-Foto als Vergleich im Zahnrad (nur mit echter Lage von ngp/gc, d. h. im Sonnensystem)
 export function createStarfield({ count = 26000, seed = 7, ngp = new THREE.Vector3(0, 1, 0), gc = new THREE.Vector3(1, 0, 0),
   gain = 1, band = 1, limit = 8, glint = true, tex = null } = {}) {
   const rand = mulberry32(seed);

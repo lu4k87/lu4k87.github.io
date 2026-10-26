@@ -2,7 +2,7 @@
 // Sprungleiste (layers.js, Vorschau 26.10.2026 Zahnrad:A + C): „Station“ = Ebenen der aktiven Station
 // und „Global“ = gilt an allen Stationen (Vorschau 26.10.2026 Global:A+B+C): Karten mit Icon-Plakette und
 // Mini-Grafik je Zeile, geänderte Werte mit ↺ „Standard“ am Zeilenende; Gruppen nur aus Schaltern zweispaltig. Gruppen: Look (Farblook, Belichtung, Vignette, Kinobalken),
-// Himmel, Kamera & Bewegung, Effekte, Oberfläche (inkl. Bewegung der Info-Grafiken = cards.js `kosmos.figmotion.v1`), Leistung.
+// Himmel, Milchstraße (Bild + Aufbau, milkyway.js), Kamera & Bewegung, Effekte, Oberfläche (inkl. Bewegung der Info-Grafiken = cards.js `kosmos.figmotion.v1`), Leistung.
 // `?cfg` öffnet das Zahnrad, `?cfg=global` mit dem Reiter Global.
 // Gespeichert in localStorage `kosmos.settings.v1`; clean() prüft jeden Wert, damit kaputte Einträge nichts stören.
 
@@ -20,6 +20,17 @@ export const GRADES = [['neutral', { exposure: 1, bloom: 0.12, con: 0.12, sat: 1
   ['tiefe Glut', { exposure: 0.9, bloom: 0.3, con: 0.3, sat: 1.18, sh: [0.85, 0.88, 0.98], hi: [1.12, 0.98, 0.84], vig: 0.6 }]];
 const GRADE_IDS = ['station', 'neutral', 'kino', 'hdr', 'ruhig', 'glut'];
 const CHOICES = { motion: ['full', 'calm', 'off'], quality: ['auto', '1', '2', '3'], grade: GRADE_IDS };
+// Milchstraße (milkyway.js): Bild-Regler wirken sofort, „Dicke der Scheibe“ und Nachbargalaxien backen das Modell neu
+const MW = { mw: true, mwSrc: 'model', mwGain: 1, mwCon: 1, mwBlack: 0, mwClar: 1, mwSat: 1, mwTemp: 0, mwDust: 1, mwNeb: 1, mwCore: 1, mwGlow: 1, mwGrain: 0.5, mwWidth: 1, mwNear: true };
+const MW_RANGE = { mwGain: [0, 3], mwCon: [0.5, 2], mwBlack: [0, 1], mwClar: [0, 2], mwSat: [0, 2], mwTemp: [-1, 1], mwDust: [0, 2], mwNeb: [0, 3], mwCore: [0, 3], mwGlow: [0, 3], mwGrain: [0, 1], mwWidth: [0.6, 1.8] };
+// Stil = abgestimmte Werte der Bild-Regler, danach frei einstellbar; markiert nur, solange alle Werte passen („Astrofoto“ = Standard)
+const MW_STYLES = [['auge', 'Auge', { mwGain: 0.6, mwCon: 0.9, mwBlack: 0.1, mwClar: 0.6, mwSat: 0.35, mwTemp: 0, mwDust: 0.8, mwNeb: 0.15, mwCore: 0.6, mwGlow: 0.5, mwGrain: 0.2 }],
+  ['foto', 'Astrofoto', { mwGain: 1, mwCon: 1, mwBlack: 0, mwClar: 1, mwSat: 1, mwTemp: 0, mwDust: 1, mwNeb: 1, mwCore: 1, mwGlow: 1, mwGrain: 0.5 }],
+  ['kino', 'Kino', { mwGain: 1.3, mwCon: 1.25, mwBlack: 0.1, mwClar: 1.4, mwSat: 1.3, mwTemp: 0.25, mwDust: 1.25, mwNeb: 1.6, mwCore: 1.5, mwGlow: 1.6, mwGrain: 0.5 }],
+  ['dezent', 'Dezent', { mwGain: 0.45, mwCon: 0.9, mwBlack: 0.15, mwClar: 0.8, mwSat: 0.7, mwTemp: -0.1, mwDust: 0.9, mwNeb: 0.5, mwCore: 0.6, mwGlow: 0.6, mwGrain: 0.3 }]];
+Object.assign(DEFAULTS, MW);
+CHOICES.mwSrc = ['model', 'photo'];
+const mwStyleOn = (S, id) => Object.entries(MW_STYLES.find(([k]) => k === id)[2]).every(([k, v]) => Math.abs(S[k] - v) < 1e-6);
 
 function clean(raw) {
   const S = { ...DEFAULTS };
@@ -36,6 +47,7 @@ function clean(raw) {
   S.deep = Math.min(2, Math.max(0, S.deep));
   S.vig = Math.min(1.5, Math.max(0, S.vig));
   if (![0, 30, 60].includes(S.fpsCap)) S.fpsCap = 0;
+  for (const [k, [lo, hi]] of Object.entries(MW_RANGE)) S[k] = Math.min(hi, Math.max(lo, S[k]));
   return S;
 }
 
@@ -110,6 +122,9 @@ const swatch = (g) => (g ? `background:radial-gradient(circle at 34% 62%, ${rgb(
 const LOOKS = `<div class="b-row b-stack"><span class="cfg-label" id="cfg-grade">Farblook${NEW}</span>
   <div class="b-looks" role="radiogroup" aria-labelledby="cfg-grade">${GRADE_IDS.map((id, i) => `<button type="button" role="radio" data-key="grade" data-val="${id}"><span class="b-sw" style="${swatch(i ? GRADES[i - 1][1] : null)}"></span><span>${i ? GRADES[i - 1][0] : 'Station'}</span></button>`).join('')}</div></div>`
   + NOTE('„Station“ = jede Station behält ihren eigenen Look (die Sonne hat dafür einen eigenen Farblook); die anderen gelten überall.');
+const MW_STYLE = `<div class="b-row b-stack"><span class="cfg-label" id="cfg-mwstyle">Stil</span>
+  <div class="seg b-seg" role="radiogroup" aria-labelledby="cfg-mwstyle">${MW_STYLES.map(([id, l]) => `<button type="button" role="radio" data-mwstyle="${id}">${l}</button>`).join('')}</div></div>`
+  + NOTE('Setzt alle Regler der Milchstraße auf einen abgestimmten Look, danach frei einstellbar. „Astrofoto“ ist wie die Vorlage von ESO.');
 const GROUPS = [
   { id: 'look', icon: 'look', title: 'Look', hero: true, rows: [['grade', LOOKS], ['exposure', RANGE('exposure', 'Belichtung', 0.5, 2, 0.05, '×')],
     ['vig', RANGE('vig', 'Vignette', 0, 1.5, 0.05, '×', NEW)], ['bars', TOG('bars', 'Kinobalken 2,39:1', NEW)]] },
@@ -117,6 +132,20 @@ const GROUPS = [
     ['deep', RANGE('deep', 'Tiefer Himmel', 0, 2, 0.1, '×') + NOTE('Was eine Langzeitbelichtung hinter den Sternen sieht: ferne Galaxien und schwach leuchtender Staub der Milchstraße (Zirrus) – statistisch verteilt, überhöht, mit bloßem Auge unsichtbar. 0× = reines Schwarz.')],
     ['small', RANGE('small', 'Satelliten und Kleinkörper', 1, 8, 0.5, '×') + NOTE('Satelliten, Trümmer und Asteroiden als vergrößerte Symbole – je größer, desto weniger Objekte (4× → jedes achte); 1× zeigt alle als Lichtpunkte.')],
     ['axes', TOG('axes', 'Drehachsen der Planeten und Monde', NEW) + NOTE('Linie über Nord- und Südpol jedes Planeten und Mondes, neigt und dreht sich mit dem Körper. Nordpol eisblau, Südpol grau.')]] },
+  { id: 'mw', icon: 'galaxy', title: 'Milchstraße', rows: [['mw', TOG('mw', 'Milchstraße zeigen', NEW)], ['', MW_STYLE],
+    ['mwGain', RANGE('mwGain', 'Helligkeit', 0, 3, 0.05, '×')], ['mwCon', RANGE('mwCon', 'Kontrast', 0.5, 2, 0.05, '×')],
+    ['mwBlack', RANGE('mwBlack', 'Schwarzpunkt', 0, 1, 0.05, '') + NOTE('Schneidet die schwachen Ränder des Bandes ab – der Himmel daneben wird dunkler.')],
+    ['mwClar', RANGE('mwClar', 'Struktur', 0, 2, 0.05, '×') + NOTE('Lokaler Kontrast: hebt Sternwolken und Staubkanten gegen ihre Umgebung ab.')],
+    ['mwSat', RANGE('mwSat', 'Sättigung', 0, 2, 0.05, '×')],
+    ['mwTemp', RANGE('mwTemp', 'Farbtemperatur', -1, 1, 0.05, '') + NOTE('Minus = kühler, bläulich · plus = wärmer, golden.')]] },
+  { id: 'mwparts', icon: 'layers', title: 'Aufbau der Milchstraße', rows: [
+    ['mwDust', RANGE('mwDust', 'Staubbahnen', 0, 2, 0.05, '×') + NOTE('Dunkelwolken vor dem Sternlicht: Großer Riss, Pfeifennebel, Kohlensack. 0× = Sterne ohne Staub.')],
+    ['mwNeb', RANGE('mwNeb', 'Leuchtnebel (Hα)', 0, 3, 0.05, '×') + NOTE('Rot leuchtender Wasserstoff: Carina, Lagune, Nordamerika, Barnards Loop.')],
+    ['mwCore', RANGE('mwCore', 'Kern (Bulge)', 0, 3, 0.05, '×')], ['mwGlow', RANGE('mwGlow', 'Lichthof', 0, 3, 0.05, '×')],
+    ['mwGrain', RANGE('mwGrain', 'Sternstaub', 0, 1, 0.05, '') + NOTE('Anteil des Bandes als einzelne feine Sterne statt Nebel – am deutlichsten beim Hineinzoomen.')],
+    ['mwWidth', RANGE('mwWidth', 'Dicke der Scheibe', 0.6, 1.8, 0.05, '×') + NOTE('Höhe von Sternen und Staub über der Ebene; das Modell wird neu berechnet.')],
+    ['mwNear', TOG('mwNear', 'Magellansche Wolken und Andromeda')],
+    ['mwSrc', SEG('mwSrc', 'Quelle', [['model', 'Eigenes Modell'], ['photo', 'ESO-Foto']]) + NOTE('Das Foto (ESO/S. Brunier, CC BY 4.0) war die Vorlage und dient nur zum Vergleich – nur an Stationen im Sonnensystem, wo die Lage am Himmel stimmt.')]] },
   { id: 'cam', icon: 'cam', title: 'Kamera &amp; Bewegung', rows: [['motion', SEG('motion', 'Bewegung', [['full', 'Voll'], ['calm', 'Ruhig'], ['off', 'Aus']]) + NOTE('„Aus“ wirkt wie „Bewegung reduzieren“ im System: keine Fahrt von selbst, Wechsel als kurze Überblendung.')],
     ['cine', TOG('cine', 'Leerlauf-Fahrt der Kamera')], ['dive', RANGE('dive', 'Flugdauer', 1.5, 8, 0.1, 's')]] },
   { id: 'fx', icon: 'fx', title: 'Effekte', half: true, rows: [['bloom', TOG('bloom', 'Lichthof (Bloom)')], ['lens', TOG('lens', 'Farbsaum und Linsenreflex')], ['anamorphic', TOG('anamorphic', 'Anamorphes Gegenlicht', NEW)], ['rayleigh', TOG('rayleigh', 'Rayleigh-Dämmerung', NEW)], ['grain', TOG('grain', 'Filmkorn')]] },
@@ -169,6 +198,7 @@ export function mountSettings(root, btn) {
   const sync = () => {
     const S = settings.S;
     root.querySelectorAll('[data-key][data-val]').forEach((b) => b.setAttribute('aria-checked', String(String(S[b.dataset.key]) === b.dataset.val)));
+    root.querySelectorAll('[data-mwstyle]').forEach((b) => b.setAttribute('aria-checked', String(mwStyleOn(S, b.dataset.mwstyle))));
     const f = root.querySelector('[data-figs]');
     if (f) f.checked = figsOn();
     root.querySelectorAll('input[type=checkbox][data-key]').forEach((i) => { i.checked = !!S[i.dataset.key]; });
@@ -184,6 +214,8 @@ export function mountSettings(root, btn) {
   sc.addEventListener('scroll', () => spyIn(glob, sc), { passive: true });
   root.addEventListener('click', (e) => {
     if (foldClick(glob, e, GKEY, sc)) return;
+    const ms = e.target.closest('[data-mwstyle]');
+    if (ms) for (const [k, v] of Object.entries(MW_STYLES.find(([id]) => id === ms.dataset.mwstyle)[2])) setSetting(k, v);
     const b = e.target.closest('[data-key][data-val]');
     if (b) setSetting(b.dataset.key, num(b.dataset.key, b.dataset.val));
     const r = e.target.closest('[data-reset]');
