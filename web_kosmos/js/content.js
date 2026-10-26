@@ -86,6 +86,13 @@ export const SOURCES = {
   'abell-1989': { t: 'A catalog of rich clusters of galaxies (Abell, Corwin, Olowin)', by: 'Abell et al. 1989, ApJS 70, 1', url: 'https://doi.org/10.1086/191333' },
   'madau-2014': { t: 'Cosmic Star-Formation History (Höhepunkt bei z ≈ 2)', by: 'Madau & Dickinson 2014, ARA&A 52', url: 'https://doi.org/10.1146/annurev-astro-081811-125615' },
   'bromm-2013': { t: 'Formation of the first stars', by: 'Bromm 2013, Rep. Prog. Phys. 76', url: 'https://doi.org/10.1088/0034-4885/76/11/112901' },
+  // Infografiken Ast Milchstraße und Kosmos (web/js/figs/galaxis.js)
+  'nomoto-1982': { t: 'Progenitor of the Crab Nebula (Vorläuferstern 8–10 Sonnenmassen)', by: 'Nomoto et al. 1982, Nature 299, 803', url: 'https://doi.org/10.1038/299803a0' },
+  'fesen-1997': { t: 'An optical study of the circumstellar environment around the Crab Nebula (Filamente 4,6 ± 1,8 M☉, ≈ 4 M☉ noch nicht gefunden)', by: 'Fesen, Shull & Hurford 1997, AJ 113, 354', url: 'https://ui.adsabs.harvard.edu/abs/1997AJ....113..354F' },
+  'ng-2004': { t: 'Fitting Pulsar Wind Tori (Neigung der Drehachse zur Sichtlinie, Crab ≈ 61°)', by: 'Ng & Romani 2004, ApJ 601, 479', url: 'https://ui.adsabs.harvard.edu/abs/2004ApJ...601..479N' },
+  'hahn-2019': { t: '45.5-tesla direct-current magnetic field generated with a high-temperature superconducting magnet', by: 'Hahn et al. 2019, Nature 570, 496', url: 'https://ui.adsabs.harvard.edu/abs/2019Natur.570..496H' },
+  'rc3-1991': { t: 'Third Reference Catalogue of Bright Galaxies (RC3): Durchmesser D25 von M31 189,1′ × 61,7′, M33 70,8′ × 41,7′', by: 'de Vaucouleurs et al. 1991, VizieR VII/155', url: 'https://cdsarc.cds.unistra.fr/viz-bin/cat/VII/155' },
+  'planck-2018-1': { t: 'Planck 2018 results I: Overview (Dipol: Sonne 369,82 ± 0,11 km/s gegenüber der Hintergrundstrahlung)', by: 'Planck Collaboration 2020, A&A 641, A1', url: 'https://doi.org/10.1051/0004-6361/201833880' },
   // Einfügemarken je Etappe (Plan docs/plan_ebenen.md §2): jeder Chat fügt nur direkt unter seiner Marke ein
   // [E1] Sonne
   'sdo-channels': { t: 'HMI & AIA Channels (Kanal, Ion, Schicht, log T)', by: 'NASA Solar Dynamics Observatory', url: 'https://sdo.gsfc.nasa.gov/data/channels.php' },
