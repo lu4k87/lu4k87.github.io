@@ -63,6 +63,7 @@ void main() {
   float s = aS.x, side = aS.y, k = clamp(uK, 0.0, 1.0);
   float u = s < 0.0 ? -s : max(s - 1.0, 0.0), sl = clamp(s, 0.0, 1.0);
   float I = aT.w, hot = 0.0, cut = 0.0, life = 1.0, lift = 0.0, cyc = -1.0;
+  float th = 0.0, tc = 0.5, tk = 0.0, tg = 0.0, te = 1.0, tf = 1.0;   // Riss (uMode 3): Zufall, Mitte, Fortschritt, Spalt, Abstand, Ausblenden
   gA = aA; gB = aB; gH = aL.x; gLean = aL.y; gRope = aL.z; gTwist = aS.z;
   gSway = uMove.y * (0.06 * aL.x + 0.0015);
   if (uMode < 0.5) {
@@ -96,19 +97,27 @@ void main() {
     life = smoothstep(0.1 + aE.x, 0.2 + aE.x, k) * (1.0 - smoothstep(0.78, 1.0, k));
     hot = (1.0 - smoothstep(0.14 + aE.x, 0.42 + aE.x, k)) * 0.8;
   } else {
-    // Protuberanz reißt ab: Bogen wächst und verdrillt sich, öffnet am Scheitel; das Oberteil steigt davon
+    // Protuberanz reißt ab: Bogen wächst und verdrillt sich; jeder Faden schnürt sich nahe dem Scheitel ein und reißt zu
+    // eigenem Zeitpunkt an eigener Stelle (ausgefranst statt eines glatten Schnitts), die Rissenden glühen kurz weiß auf
     gH = aL.x * mix(0.25, 1.0, smoothstep(0.0, 0.62, k));
     gTwist += 1.2 * smoothstep(0.2, 0.62, k);
     gRope *= 1.0 + 0.8 * smoothstep(0.3, 0.62, k);
-    float gap = max(k - 0.6, 0.0) * 0.75;
-    cut = abs(sl - 0.5) < gap ? 1.0 : 0.0;
-    lift = cut * pow(max(k - 0.6, 0.0) / 0.4, 1.4) * 1.1;
+    th = hash(aT.z * 91.7);
+    tc = 0.5 + 0.12 * (hash(aT.z * 57.3 + 3.1) - 0.5);
+    tk = smoothstep(0.0, 1.0, (k - 0.58 - 0.07 * th) / 0.36);
+    tg = 0.3 * tk;
+    te = abs(sl - tc) - tg;
+    float neck = smoothstep(0.5, 0.6, k - 0.07 * th);
+    cut = te < 0.0 ? 1.0 : 0.0;
+    lift = cut * pow(clamp((k - 0.6) / 0.4, 0.0, 1.0), 1.4) * 1.1 * (0.95 + 0.1 * th);
+    tf = mix(1.0, smoothstep(0.0, 0.06, abs(te)), neck);
+    hot = 0.9 * exp(-abs(te) / 0.05) * neck * (1.0 - tk) * (1.0 - tk);
     life = smoothstep(0.0, 0.06, k) * (1.0 - smoothstep(0.85, 1.0, k)) * (1.0 - 0.7 * cut * smoothstep(0.65, 0.95, k));
   }
   gN = cross(gB - gA, gA + gB);
   gN /= max(length(gN), 1e-6);
   vec3 T, p = threadAt(sl, T);
-  float w = aL.w;
+  float w = aL.w * mix(0.25, 1.0, tf);   // Rissenden laufen spitz aus
   if (u > 0.0) {
     // Wurzel: vom Fußpunkt des Fadens flach über die Oberfläche hinaus, je Faden eigener Winkel im Fächer (Strudel: spiralig)
     vec3 F = sl < 0.5 ? gA : gB, O = sl < 0.5 ? gB : gA, D = F - O;
@@ -123,7 +132,25 @@ void main() {
     T = normalize(normalize(q2) * (1.0 + hr) - p);
     w *= 1.0 - 0.55 * u;
   }
-  p += normalize(gA + gB) * lift;
+  vec3 R = normalize(gA + gB);
+  if (uMode > 2.5 && tk > 0.0 && u <= 0.0) {
+    if (cut > 0.5) {
+      // Oberteil (gemeinsamer Fortschritt kc, damit es ein Bündel bleibt): weitet sich um den Scheitel, die losen Enden biegen
+      // sich nach oben und innen (Flussseil schließt sich); nur die Rissenden fransen je Faden aus
+      float kc = clamp((k - 0.6) / 0.4, 0.0, 1.0), q = pow(min(abs(sl - 0.5) / 0.3, 1.0), 2.0);
+      vec3 ap = axisAt(0.5), lat = p - ap;
+      lat -= R * dot(lat, R);
+      p += (p - ap) * 0.6 * kc - lat * q * 0.25 * kc + R * q * aL.x * 0.35 * kc;
+      p += (gN * (th - 0.5) + R * (hash(aT.z * 23.9) - 0.5)) * q * aL.x * 0.12 * tk;
+    } else {
+      // Beine: das freie Ende schnellt zur Oberfläche zurück, biegt nach außen und schwingt gedämpft aus
+      float sn = exp(-te / 0.22) * smoothstep(0.0, 0.35, tk);
+      vec3 D = normalize((sl < tc ? gA - gB : gB - gA) + 1e-5 * gN);
+      p -= normalize(p) * (length(p) - 1.0) * 0.6 * sn;
+      p += D * aL.x * sn * (0.12 + 0.25 * sin(tk * 16.0 + th * 6.0) * exp(-3.0 * tk));
+    }
+  }
+  p += R * lift;
   vH = length(p) - 1.0;
   vec4 wp = modelMatrix * vec4(p, 1.0);
   vec4 pv = viewMatrix * wp;
@@ -135,7 +162,7 @@ void main() {
   float px = uPx * max(-pv.z, 1e-4), cw = max(w, px * 0.7);
   pv.xyz += sd * side * cw * 1.7;
   vS = s; vX = side; vSeed = aT.z; vFlow = aS.w; vHot = hot; vCut = cut; vW = wp.xyz; vRes = w / px; vU = u; vCyc = cyc;
-  vI = I * life * w / cw * smoothstep(0.05, 0.18, -pv.z) * (u > 0.0 && (uFoot < 0.5 || (uFoot > 1.5 && uFoot < 2.5)) ? 0.0 : 1.0);
+  vI = I * life * tf * (1.0 + 3.0 * hot) * w / cw * smoothstep(0.05, 0.18, -pv.z) * (u > 0.0 && (uFoot < 0.5 || (uFoot > 1.5 && uFoot < 2.5)) ? 0.0 : 1.0);
   gl_Position = projectionMatrix * pv;
 }
 `;
