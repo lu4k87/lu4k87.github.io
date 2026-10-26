@@ -108,6 +108,12 @@ export const SOURCES = {
   // [E4] Saturn + Mars
   // [E4] Mars
   // [E5] Neptun, Uranus, Pluto
+  'nep-fact': { t: 'Neptune Fact Sheet', by: 'NASA NSSDCA', url: 'https://nssdc.gsfc.nasa.gov/planetary/factsheet/neptunefact.html' },
+  'nep-ring': { t: 'Neptunian Rings Fact Sheet (Radien, Breite, optische Tiefe, Albedo, Bögen)', by: 'NASA NSSDCA', url: 'https://nssdc.gsfc.nasa.gov/planetary/factsheet/nepringfact.html' },
+  'nssdc-nepsat': { t: 'Neptunian Satellite Fact Sheet (Triton, Proteus, Nereid)', by: 'NASA NSSDCA', url: 'https://nssdc.gsfc.nasa.gov/planetary/factsheet/neptuniansatfact.html' },
+  'nep-nasa': { t: 'Neptune: Facts (Großer Dunkler Fleck, Winde, Ringbögen, Magnetfeld)', by: 'NASA Science', url: 'https://science.nasa.gov/neptune/facts/' },
+  'nep-voyager2': { t: 'Voyager 2: Vorbeiflug an Neptun am 25.08.1989', by: 'NASA Science', url: 'https://science.nasa.gov/mission/voyager/voyager-2/' },
+  'nep-jpl-sats': { t: 'Planetary Satellite Mean Elements (NEP098, NEP105)', by: 'JPL Solar System Dynamics', url: 'https://ssd.jpl.nasa.gov/sats/elem/' },
   // [E5] Triton
   // [E5] Uranus
   'ura-nasa-facts': { t: 'Uranus: Facts (Achsneigung 97,77°, 84 Jahre, 21 Jahre Winter je Pol, 13 Ringe, 28 Monde, Namen nach Shakespeare und Pope)', by: 'NASA Science', url: 'https://science.nasa.gov/uranus/facts/' },
@@ -177,7 +183,7 @@ export const STATIONS = {
       jupiter: { t: 'Jupiter', x: 'Radius 71.492 km (11,2 Erdradien) · 318 Erdmassen – mehr als doppelt so viel wie alle anderen Planeten zusammen · 5,2 AE · Umlauf 11,9 Jahre · Drehung in 9 h 56 min; die schnelle Rotation ordnet die Wolken in Bänder · −110 °C an der Wolkendecke · über 95 bekannte Monde, 2026 mehr als 100. Seine Schwerkraft erzeugt über Bahnresonanzen die Kirkwood-Lücken im Asteroidengürtel.', s: 'nasa-planets' },
       saturn: { t: 'Saturn', x: 'Radius 60.268 km · 95 Erdmassen · 9,5 AE · Umlauf 29,4 Jahre · Drehung 10 h 39 min · −140 °C · Dichte 0,69 g/cm³, geringer als Wasser · Ringe von 74.700 bis 137.000 km (C- bis A-Ring), meist nur zehn Meter bis einen Kilometer dick, vor allem Wassereis; der Planet wirft seinen Schatten auf die Ringe, die Ringe ihren auf den Planeten · 274 bestätigte Monde (2025), weitere 2026 gemeldet.', s: 'nasa-saturn' },
       uranus: { t: 'Uranus', x: 'Radius 25.559 km · 14,5 Erdmassen · 19,2 AE · Umlauf 84 Jahre · Drehung 17 h 14 min, rückläufig · −195 °C · Achse um 98° geneigt: Jeder Pol ist etwa 42 Jahre lang beleuchtet, dann 42 Jahre unbeleuchtet · Methan absorbiert rotes Licht, daher die blaugrüne Farbe · 28 bekannte Monde. Hineinfliegen: Uranus mit Ringen und den fünf großen Monden.', s: 'nasa-planets' },
-      neptune: { t: 'Neptun', x: 'Radius 24.764 km · 17,1 Erdmassen · 30,1 AE · Umlauf 165 Jahre · Drehung 16 h 7 min · −200 °C · 16 Monde; der größte, Triton, umläuft Neptun rückläufig · Sonnenlicht braucht gut 4 Stunden bis hierher.', s: 'nasa-planets' },
+      neptune: { t: 'Neptun', x: 'Radius 24.764 km · 17,1 Erdmassen · 30,1 AE · Umlauf 165 Jahre · Drehung 16 h 7 min · −200 °C · 16 Monde; der größte, Triton, umläuft Neptun rückläufig · Sonnenlicht braucht gut 4 Stunden bis hierher. Hineinfliegen: Neptun mit Ringen, Bögen und den Monden Triton, Proteus und Nereid.', s: 'nasa-planets' },
       belt: { t: 'Asteroidengürtel', x: 'Lücken bei 2,50 · 2,82 · 2,95 AE: Dort stünden die Umlaufzeiten in Resonanz mit Jupiter (3:1, 5:2, 7:3); seine wiederholten Störungen machen diese Bahnen instabil (Kirkwood-Lücken).', s: 'kirkwood' },
       asteroid: { t: 'Asteroiden aus der Nähe', x: 'Hineinfliegen: (16) Psyche, Bennu und Eros – Form und Drehung nach den Messdaten von Radar und Raumsonden, die Oberfläche als Modell.', s: 'shepard-2021' },
       kuiper: { t: 'Kuipergürtel', x: 'Jenseits von Neptun (30–50 AE) kreisen Kleinkörper aus Eis und Gestein, darunter Pluto und Arrokoth – Überreste aus der Entstehungszeit des Sonnensystems. Im Bild: statistische Verteilung. Hineinfliegen über das Abzeichen „Pluto“: Pluto und Charon als Doppelsystem.', s: 'nasa-planets' },
@@ -267,6 +273,30 @@ export const STATIONS = {
   // [E4] Saturn + Mars
   // [E4] Mars
   // [E5] Neptun, Uranus, Pluto
+  neptune: {
+    n: '02F', title: 'Neptun', kicker: 'Eisriese', parent: 'solar', width: 3e8, dist: 4.515e12, lookback: 4.515e12 / C,
+    lead: 'Der äußerste Planet aus der Nähe: ein blauer Eisriese mit Winden von mehr als 2.000 km/h, fünf schmalen, dunklen Ringen und dem großen Mond Triton, der rückwärts um ihn kreist. Voyager 2 flog im August 1989 als erste Raumsonde vorbei. Im Zahnrad: Zeitraffer, Ringe aufhellen, Bahnen der Monde.',
+    facts: [
+      { v: '24.764', u: 'km', l: 'Radius am Äquator (1 bar)', s: 'nep-fact' },
+      { v: '16,11', u: 'h', l: 'Drehung', s: 'nep-fact' },
+      { v: '> 2.000', u: 'km/h', l: 'Wind', s: 'nep-nasa' },
+      { v: '72', u: 'K', l: 'Temperatur bei 1 bar', s: 'nep-fact' },
+    ],
+    note: 'Karte von Neptun nach den Bildern von Voyager 2 (Solar System Scope) mit dem Großen Dunklen Fleck von 1989 – den Fleck gibt es heute nicht mehr. Die Bänder strömen im Zeitraffer gegeneinander, die Hülle am Rand ist dicker gezeichnet. Ringe stark aufgehellt: In Wahrheit sind sie sehr dunkel (Albedo ≈ 0,015) und fast durchsichtig (optische Tiefe 0,0001 bis 0,12); Radien und Breiten nach dem Fact Sheet, Farbe Modell. Lage und Länge der Bögen zueinander sind Richtwerte, sie laufen mit der Umlaufzeit des Adams-Rings um (eigene Rechnung nach Kepler aus Neptuns Masse). Monde in wahrer Größe und Entfernung aus den mittleren Bahnelementen der JPL zum angezeigten Datum (auf etwa ein Grad genau, keine Ephemeride); Proteus als unregelmäßiger Körper mit den Halbachsen 220 × 208 × 202 km, Krater und Feinform Modell. Sonne aus ihrer wahren Richtung, Neptunschatten auf Ringen und Monden, Mondschatten auf Neptun. Leuchtpunkte und Bahnlinien markieren die Monde.',
+    sources: ['nep-fact', 'nep-nasa', 'nep-ring', 'nssdc-nepsat', 'nep-jpl-sats', 'nep-voyager2', 'sss-tex'],
+    hotspots: {
+      gds: { t: 'Großer Dunkler Fleck', x: 'Voyager 2 sah 1989 auf der Südhalbkugel einen ovalen Sturm, so groß, dass die ganze Erde hineingepasst hätte. Inzwischen ist er verschwunden; an anderen Stellen tauchen immer wieder neue dunkle Flecken auf. Die Karte zeigt den Fleck von 1989 mit seinen hellen Begleitwolken.', s: 'nep-nasa' },
+      winds: { t: 'Stürme', x: 'So weit von der Sonne entfernt und trotzdem stürmisch: Neptuns Winde erreichen mehr als 2.000 km/h, die stärksten Winde der Erde nur rund 400 km/h. Im Bild strömen die Bänder gegeneinander, im Zeitraffer.', s: 'nep-nasa' },
+      atmo: { t: 'Blau durch Methan', x: 'Die Hülle besteht vor allem aus Wasserstoff (80 %) und Helium (19 %), dazu 1,5 % Methan. Das Methan schluckt rotes Licht – zurück bleibt das Blau. In der Höhe, in der der Druck 1 bar beträgt, herrschen 72 K (−201 °C).', s: 'nep-fact' },
+      pole: { t: 'Achse und Magnetfeld', x: 'Neptuns Drehachse ist ähnlich stark geneigt wie die der Erde; ein Tag dauert 16 Stunden. Das Magnetfeld ist dagegen um rund 47° gegen die Drehachse gekippt – sein Pol liegt weit vom Drehpol entfernt.', s: 'nep-nasa' },
+      voyager: { t: 'Voyager 2', x: 'Am 25. August 1989 flog Voyager 2 als erste Raumsonde an Neptun vorbei, rund 4.800 km über den Wolken. Dabei entdeckte sie sechs bis dahin unbekannte Monde, darunter Proteus, und vier Ringe.', s: 'nep-voyager2' },
+      rings: { t: 'Fünf schmale Ringe', x: 'Die Ringe tragen die Namen von Astronomen: Galle (41.900 km vom Mittelpunkt, rund 2.000 km breit), Le Verrier (53.200 km), Lassell (ein breites, sehr dünnes Band), Arago (57.200 km) und Adams (62.933 km). Sie sind sehr dunkel und fast durchsichtig – im Bild stark aufgehellt.', s: 'nep-ring' },
+      arcs: { t: 'Bögen im Adams-Ring', x: 'Im äußersten Ring ballt sich der Staub zu hellen Bögen: Courage, Liberté, Égalité 1 und 2 und Fraternité – Mut, Freiheit, Gleichheit, Brüderlichkeit. Dort ist der Ring dichter als im Rest (optische Tiefe 0,12 statt 0,01 bis 0,1). Lage und Länge der Bögen im Bild sind Richtwerte.', s: 'nep-ring' },
+      triton: { t: 'Triton', x: 'Der größte Mond Neptuns kreist rückwärts, gegen die Drehung des Planeten: Seine Bahn ist um 157° geneigt. Er braucht 5,9 Tage für einen Umlauf in 354.760 km Abstand und zeigt Neptun immer dieselbe Seite. Radius 1.353 km.', s: 'nssdc-nepsat' },
+      proteus: { t: 'Proteus', x: 'Ein unregelmäßig geformter Mond mit den Halbachsen 220 × 208 × 202 km. Er umläuft Neptun in 1,12 Tagen in 117.647 km Abstand, knapp außerhalb der Ringe.', s: 'nssdc-nepsat' },
+      nereid: { t: 'Nereid', x: 'Nereid läuft auf einer stark gestreckten Bahn (Exzentrizität 0,75): Ihr Abstand zu Neptun schwankt zwischen rund 1,4 und 9,7 Mio. km (eigene Rechnung), ein Umlauf dauert 360 Tage. Radius 170 km.', s: 'nssdc-nepsat' },
+    },
+  },
   // [E5] Triton
   // [E5] Uranus
   uranus: {

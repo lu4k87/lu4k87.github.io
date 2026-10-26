@@ -470,7 +470,7 @@ export function create(ctx) {
     // je Planet eine Zeile: Abstecher der Etappen E4/E5 (docs/plan_ebenen.md) ändern nur ihre eigene
     { id: 'mars', kind: 'info', pos: P.mars.pos, focus: focus(P.mars) },
     { id: 'uranus', kind: 'dive', to: 'uranus', pos: P.uranus.pos, focus: focus(P.uranus) },
-    { id: 'neptune', kind: 'info', pos: P.neptune.pos, focus: focus(P.neptune) },
+    { id: 'neptune', kind: 'dive', to: 'neptune', pos: P.neptune.pos, focus: focus(P.neptune) },
     { id: 'pluto', kind: 'dive', to: 'pluto', pos: plutoAt },
   ];
   // Screenshot-Hilfe: Heimpose nahe an einem Körper
