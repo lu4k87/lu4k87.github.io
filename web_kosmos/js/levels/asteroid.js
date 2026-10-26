@@ -151,6 +151,39 @@ function makeBody(id, sphere) {
   return { geo, marks, surf };
 }
 
+// Begleitbrocken (künstlerisch): länglicher Knollen mit Bruchflächen (Ebenen-Schnitte), fBm-Relief und wenigen Kratern
+function makeRock(seed, detail) {
+  const rand = mulberry32(seed), N = makeNoise(seed);
+  const ax = [1, 0.5 + 0.35 * rand(), 0.6 + 0.35 * rand()];
+  const randDir = () => { const z = rand() * 2 - 1, t = rand() * Math.PI * 2, s = Math.sqrt(1 - z * z); return new THREE.Vector3(s * Math.cos(t), z, s * Math.sin(t)); };
+  const cuts = Array.from({ length: 2 + Math.floor(rand() * 3) }, () => ({ n: randDir(), k: 0.45 + 0.3 * rand() }));
+  const craters = Array.from({ length: 2 + Math.floor(rand() * 4) }, () => { const r = 0.14 + 0.3 * rand(); return { c: randDir().multiply(new THREE.Vector3(...ax)), r, depth: 0.22 * r }; });
+  const geo = icoIndexed(detail), pos = geo.attributes.position, n = pos.count;
+  const aH = new Float32Array(n), aAO = new Float32Array(n), b = new THREE.Vector3();
+  for (let i = 0; i < n; i++) {
+    b.fromBufferAttribute(pos, i).normalize();
+    b.multiplyScalar(1 / Math.hypot(b.x / ax[0], b.y / ax[1], b.z / ax[2]));
+    let h = 0.13 * N.fbm(b.x * 1.4, b.y * 1.4, b.z * 1.4, 4) + 0.05 * N.fbm(b.x * 3.2 + 5, b.y * 3.2, b.z * 3.2, 3), cav = 0;
+    for (const c of craters) {
+      const q = b.distanceTo(c.c) / c.r;
+      if (q > 1.45) continue;
+      const p = craterProfile(q, -0.6);
+      h += p * c.depth;
+      if (p < 0) cav = Math.max(cav, -p);
+    }
+    const L = b.length();
+    b.multiplyScalar((L + h) / L);
+    for (const { n: cn, k } of cuts) { const s = b.dot(cn) - k; if (s > 0) b.addScaledVector(cn, -0.85 * s); }
+    pos.setXYZ(i, b.x, b.y, b.z);
+    aH[i] = h; aAO[i] = 1 - 0.5 * Math.min(1, cav * 1.3);
+  }
+  geo.setAttribute('aH', new THREE.BufferAttribute(aH, 1));
+  geo.setAttribute('aAO', new THREE.BufferAttribute(aAO, 1));
+  geo.computeVertexNormals();
+  geo.computeBoundingSphere();
+  return geo;
+}
+
 // ---------- Oberfläche (Fragment-Shader, eingehängt in MeshStandardMaterial) ----------
 const SURF = /* glsl */ `
 uniform float uKind, uFeat, uBumpH, uMarkOn;
@@ -279,6 +312,60 @@ export function create(ctx) {
   mesh.castShadow = mesh.receiveShadow = true;
   scene.add(mesh);
 
+  // ---------- Begleitbrocken ringsum (künstlerisch) ----------
+  // Mittlere als eigene Körper, kleine als Instanzen aus vier Formen; flache Schicht wie im Gürtel, jeder taumelt um eine
+  // eigene Achse, alle treiben langsam gemeinsam um den Hauptkörper. Nah an der Kamera schrumpfen sie weg (kein Durchflug).
+  const swarm = new THREE.Group();
+  scene.add(swarm);
+  const srnd = mulberry32(2026);
+  const rockMat = (bump) => { const r = makeMaterial(); r.u.uBumpH.value = bump; return r; };
+  const midMat = rockMat(0.004), smallMat = rockMat(0.0012);
+  const rocks = [];
+  function addRock(obj, idx, rMin, rMax, sMin, sMax, wMin, wMax) {
+    const r = rMin + (rMax - rMin) * srnd() ** 1.3;
+    rocks.push({
+      obj, idx, r, th: srnd() * Math.PI * 2, y: (srnd() - 0.5) * 2 * (0.2 + 0.1 * r),
+      size: sMin * (sMax / sMin) ** srnd(), drift: (0.006 + 0.008 * srnd()) * Math.sqrt(4 / r), bob: srnd() * 6.3,
+      axis: new THREE.Vector3(srnd() - 0.5, srnd() - 0.5, srnd() - 0.5).normalize(), spin: wMin + (wMax - wMin) * srnd(),
+      q0: new THREE.Quaternion().setFromEuler(new THREE.Euler(srnd() * 6.3, srnd() * 6.3, srnd() * 6.3)),
+    });
+  }
+  const midGeos = [];
+  for (let i = 0; i < 9; i++) {
+    const g = makeRock(500 + i, Math.round(8 + 8 * ctx.detail));
+    midGeos.push(g);
+    const m = new THREE.Mesh(g, midMat.m);
+    swarm.add(m);
+    addRock(m, -1, 2.4, 8, 0.08, 0.26, 0.04, 0.16);
+  }
+  const SMALL = Math.round(28 + 36 * ctx.detail), smallGeos = [], smallSets = [];
+  for (let k = 0; k < 4; k++) {
+    const g = makeRock(900 + k, 5);
+    const im = new THREE.InstancedMesh(g, smallMat.m, Math.ceil(SMALL / 4));
+    im.frustumCulled = false;
+    for (let i = 0; i < im.count; i++) {
+      im.setColorAt(i, new THREE.Color().setScalar(0.75 + 0.4 * srnd()));
+      addRock(im, i, 2.0, 10, 0.015, 0.06, 0.12, 0.55);
+    }
+    smallGeos.push(g);
+    smallSets.push(im);
+    swarm.add(im);
+  }
+  let swarmOn = true, swarmT = 0;
+  const rq = new THREE.Quaternion(), rm = new THREE.Matrix4(), rp = new THREE.Vector3(), rs = new THREE.Vector3();
+  function stepSwarm(dt, cam) {
+    swarmT += dt;
+    for (const k of rocks) {
+      const th = k.th + k.drift * swarmT;
+      rp.set(k.r * Math.cos(th), k.y + 0.04 * k.r * Math.sin(swarmT * 0.15 + k.bob), k.r * Math.sin(th));
+      rq.setFromAxisAngle(k.axis, k.spin * swarmT).multiply(k.q0);
+      const near = 0.12 + 3 * k.size, d = rp.distanceTo(cam.position);
+      const s = k.size * THREE.MathUtils.smoothstep(d, near, near + 0.5);
+      if (k.idx < 0) { k.obj.position.copy(rp); k.obj.quaternion.copy(rq); k.obj.scale.setScalar(s); } else k.obj.setMatrixAt(k.idx, rm.compose(rp, rq, rs.setScalar(s)));
+    }
+    for (const im of smallSets) im.instanceMatrix.needsUpdate = true;
+  }
+
   const sun = new THREE.DirectionalLight(0xfff4e6, 3.4);
   const ms = ctx.detail >= 0.8 ? 2048 : 1024;
   sun.castShadow = true;
@@ -376,6 +463,8 @@ export function create(ctx) {
       { id: 'sunAz', type: 'range', group: 'Licht', label: 'Sonnenstand', value: sunAz, min: 0, max: 355, step: 5, unit: '°', set: (v) => { sunAz = v; placeSun(); } },
       { id: 'shadows', type: 'toggle', label: 'Schlagschatten der Sonne', value: true, set: (v) => { sun.castShadow = v; } },
       { id: 'fill', type: 'toggle', label: 'Blaues Fülllicht (künstlerisch)', value: true, set: (v) => { fill.visible = v; } },
+      { id: 'swarm', type: 'toggle', group: 'Umgebung', label: 'Kleinere Brocken ringsum', value: swarmOn, set: (v) => { swarmOn = v; swarm.visible = v; },
+        hint: 'Künstlerisch: Im Gürtel liegen Asteroiden meist Hunderttausende Kilometer auseinander – so nah fliegt kein Brocken mit.' },
     ];
     if (id === 'psyche') L.push({ id: 'marks', type: 'toggle', group: 'Besonderheiten', label: 'Senken aus dem Radarmodell markieren', value: false, set: (v) => { mat.u.uMarkOn.value = v ? 1 : 0; } });
     if (id === 'bennu') {
@@ -397,6 +486,7 @@ export function create(ctx) {
     mat.u.uKind.value = B.kind;
     mat.u.uFeat.value = B.feat;
     mat.u.uBumpH.value = 0.45 / B.feat;
+    for (const r of [midMat, smallMat]) { r.u.uKind.value = B.kind; r.u.uFeat.value = B.feat * 0.6; }
     cur.marks.forEach((k, i) => mat.u.uMark.value[i].set(k.c.x, k.c.y, k.c.z, k.r));
     for (const h of hotspots) if (h.body === id && !h.free) h.local.copy(cur.surf(h.lat, h.lon));
     look.exposure = B.exposure;
@@ -421,6 +511,7 @@ export function create(ctx) {
       if (spinning && !ctx.still) angle += dt * SPEEDS[spinIdx][0] * 2 * Math.PI / (B.period * 3600);
       mesh.rotation.y = angle;
       for (const h of hotspots) if (h.body === bodyId && !h.free) h.pos.copy(h.local).applyAxisAngle(Y, angle);
+      if (swarmOn) stepSwarm(spinning && !ctx.still ? dt : 0, cam);
       if (bodyId === 'bennu' && ejOn) {
         if (!ctx.still) { ejTimer -= dt * ejRate; if (ejTimer <= 0) { burst(); ejTimer = 5 + rnd() * 9; } }
         stepEjecta(Math.min(dt, 0.05));
@@ -443,6 +534,8 @@ export function create(ctx) {
     dispose() {
       scene.traverse((o) => { if (o.geometry) o.geometry.dispose(); if (o.material) o.material.dispose(); });
       Object.values(cache).forEach((c) => c.geo.dispose());
+      [...midGeos, ...smallGeos].forEach((g) => g.dispose());
+      [midMat, smallMat].forEach((r) => r.m.dispose());
       sphere.dispose();
       sunTex.dispose();
       ctx.renderer.shadowMap.enabled = prevShadow;
