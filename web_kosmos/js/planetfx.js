@@ -26,17 +26,39 @@ void main() { vec4 w = modelMatrix * vec4(position, 1.0); vP = w.xyz; gl_Positio
 // und Zodiakallicht, für die Lesbarkeit stark aufgehellt; echt ≈ 10⁻⁸). Gasriesen (uBand): band-ausgerichtetes fBm-Detail
 // beim Heranzoomen (in der Breite fein, in der Länge gestreckt), die Bänder strömen gegeneinander (zonale Winde, Zeitraffer).
 // Erde: Glanzlicht der Ozeane, Wolkenschatten (Wolkenkarte zur Sonne versetzt), Stadtlichter mit warmem Hof.
-// Saturn: Ringschatten aus dem Strahl Oberfläche → Sonne durch die Ringebene. Mond (uMoon): Lommel-Seeliger + Erdschein.
+// Saturn: Ringschatten aus dem Strahl Oberfläche → Sonne durch die Ringebene. Mond (uMoon): Lommel-Seeliger + Erdschein
+// (bzw. Planetenschein: uEarthPos = Mitte des Planeten). Stationen ohne Sonne im Ursprung (Planetensysteme, Monde):
+// uSunDir = Einheitsvektor zur Sonne (paralleles Licht); nicht gesetzt (0) → Sonne im Ursprung wie im Sonnensystem.
+// Finsternisse: bis zu 4 Verdecker uOcc (xyz Mitte, w Radius; uOccN Anzahl) werfen Kern- und Halbschatten aus dem Überlapp
+// der Sonnenscheibe (Winkelradius uSunAng) mit der Scheibe des Verdeckers – Mondschatten auf Jupiter, Jupiterschatten auf Io.
 export const PLANET_FRAG = /* glsl */ `
 uniform sampler2D tMap, tNight, tClouds, tSpec, tRing;
-uniform float uHasEarth, uCloudU, uGain, uRing, uRingIn, uRingOut, uWrap, uAmb, uBand, uTime, uMoon, uEarthshine;
-uniform vec3 uTerm, uEarthPos;
+uniform float uHasEarth, uCloudU, uGain, uRing, uRingIn, uRingOut, uWrap, uAmb, uBand, uTime, uMoon, uEarthshine, uSunAng;
+uniform vec3 uTerm, uEarthPos, uSunDir;
+uniform vec4 uOcc[4];
+uniform int uOccN;
 uniform mat4 uInv;
 varying vec3 vN, vP, vO;
 varying vec2 vUv;
 ${NOISE}
+// Anteil der Sonnenscheibe, der am Punkt p hinter den Verdeckern sichtbar bleibt (Scheibenüberlapp, linear genähert)
+float eclipse(vec3 p, vec3 L) {
+  float vis = 1.0;
+  for (int i = 0; i < 4; i++) {
+    if (i >= uOccN) break;
+    vec3 d = uOcc[i].xyz - p;
+    float dist = length(d);
+    if (dot(d, L) <= 0.0 || dist <= uOcc[i].w) continue;
+    float ao = asin(uOcc[i].w / dist), as = max(uSunAng, 1e-5);
+    float sep = acos(clamp(dot(d / dist, L), -1.0, 1.0));
+    float lo = abs(ao - as), hi = ao + as;
+    float full = ao >= as ? 0.0 : 1.0 - (ao * ao) / (as * as);
+    vis *= mix(full, 1.0, smoothstep(lo, hi, sep));
+  }
+  return vis;
+}
 void main() {
-  vec3 N = normalize(vN), V = normalize(cameraPosition - vP), L = normalize(-vP);
+  vec3 N = normalize(vN), V = normalize(cameraPosition - vP), L = dot(uSunDir, uSunDir) > 0.5 ? uSunDir : normalize(-vP);
   float ndl = dot(N, L);
   vec2 uv = vUv;
   float det = 0.0;
@@ -77,6 +99,7 @@ void main() {
   } else {
     col = alb * lit * sh * sunCol;
   }
+  if (uOccN > 0) col *= eclipse(vP, L);
   if (uHasEarth > 0.5) {
     vec2 cuv = vUv + vec2(uCloudU, 0.0);
     float cl = texture2D(tClouds, cuv).r, ocean = texture2D(tSpec, vUv).r;
@@ -176,13 +199,13 @@ void main() {
 // (Staub und dünne Ringe leuchten gegen die Sonne, dichter B-Ring bleibt dunkel), Planetenschatten aus dem Strahl Ring → Sonne.
 export const RING_FRAG = /* glsl */ `
 uniform sampler2D tRing;
-uniform vec3 uCenter;
+uniform vec3 uCenter, uSunDir;
 uniform float uR, uGain;
 varying vec3 vN, vP, vO;
 varying vec2 vUv;
 void main() {
   vec4 t = texture2D(tRing, vUv);
-  vec3 L = normalize(-vP), V = normalize(cameraPosition - vP), N = normalize(vN), oc = vP - uCenter;
+  vec3 L = dot(uSunDir, uSunDir) > 0.5 ? uSunDir : normalize(-vP), V = normalize(cameraPosition - vP), N = normalize(vN), oc = vP - uCenter;
   float b = dot(oc, L), h = b * b - (dot(oc, oc) - uR * uR);
   float sh = (h > 0.0 && b < 0.0) ? 0.04 : 1.0;
   float nl = dot(N, L), nv = dot(N, V);

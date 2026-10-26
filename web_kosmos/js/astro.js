@@ -98,6 +98,44 @@ export function equToScene(ra, dec) {
   const x = Math.cos(dec * RAD) * Math.cos(ra * RAD), y = Math.cos(dec * RAD) * Math.sin(ra * RAD), z = Math.sin(dec * RAD);
   return eclToScene([x, y * Math.cos(e) + z * Math.sin(e), -y * Math.sin(e) + z * Math.cos(e)]);
 }
+
+// ---------- Monde: mittlere Bahnelemente (JPL Solar System Dynamics, „Planetary Satellite Mean Elements“) ----------
+// Eine Zeile der JPL-Tabelle sats/elem (Epoche 2000-01-01.5 TDB = J2000): a [km], e, w = ω [°], M [°], i [°], node = Ω [°],
+// P [d] (Periode der mittleren Anomalie), Pw, Pn [Jahre] = Perioden der Apsiden- und Knotendrehung, ra/dec = Pol der
+// Laplace-Ebene (ICRF). JPL gibt Beträge; hier mit Vorzeichen: > 0 vorwärts, < 0 rückwärts (Knoten prograder Monde laufen
+// rückwärts; Apsiden von Io und Europa ebenfalls, ihre Exzentrizität ist von der Resonanz erzwungen). Prüfen: mittlere
+// Länge λ = Ω + ω + M wächst um 360/P + 360/(Pw·365,25) + 360/(Pn·365,25) Grad je Tag ≈ 360 / siderische Umlaufzeit.
+// Optional n [°/d] = genaue Rate der mittleren Länge (z. B. Lieske 1998, E5): ersetzt 360/P, damit gekoppelte Monde in
+// Resonanz bleiben (die gerundeten Tabellenwerte driften sonst um einige Grad in 25 Jahren).
+// Ausgabe [x, y, z] km im Laplace-System: z = Laplace-Pol, x = aufsteigender Knoten der Laplace-Ebene auf dem ICRF-Äquator.
+// Mittlere Elemente, keine Ephemeride: Lage auf der Bahn genau auf etwa ein Grad, für die Darstellung ausreichend.
+const precRate = (p) => (p ? 360 / (p * 365.25) : 0);
+const meanRate = (el) => (el.n ? el.n - precRate(el.Pw) - precRate(el.Pn) : 360 / el.P);
+export function laplacePos(el, jd) {
+  const d = jd - J2000;
+  const w = (el.w + precRate(el.Pw) * d) * RAD, node = (el.node + precRate(el.Pn) * d) * RAD;
+  const M = ((el.M + meanRate(el) * d) % 360) * RAD;
+  const E = solveKepler(M, el.e);
+  const xp = el.a * (Math.cos(E) - el.e), yp = el.a * Math.sqrt(1 - el.e * el.e) * Math.sin(E);
+  const co = Math.cos(w), so = Math.sin(w), cO = Math.cos(node), sO = Math.sin(node), cI = Math.cos(el.i * RAD), sI = Math.sin(el.i * RAD);
+  return [
+    (co * cO - so * sO * cI) * xp + (-so * cO - co * sO * cI) * yp,
+    (co * sO + so * cO * cI) * xp + (-so * sO + co * cO * cI) * yp,
+    so * sI * xp + co * sI * yp,
+  ];
+}
+// Mittlere Länge λ = Ω + ω + M [°] in der Laplace-Ebene (z. B. für die Laplace-Resonanz λ_Io − 3 λ_Europa + 2 λ_Ganymed = 180°)
+export function laplaceLongitude(el, jd) {
+  const d = jd - J2000;
+  return (((el.node + el.w + el.M + (precRate(el.Pn) + precRate(el.Pw) + meanRate(el)) * d) % 360) + 360) % 360;
+}
+// Achsen des Laplace-Systems als Einheitsvektoren in der Ekliptik-Szene: { x, y, z } (z = Pol aus ra/dec, x = Knoten auf dem
+// ICRF-Äquator bei α = ra + 90°) → Szene = x·X + y·Y + z·Z, z. B. new THREE.Matrix4().makeBasis(X, Y, Z)
+export function laplaceAxes(ra, dec) {
+  const z = equToScene(ra, dec), x = equToScene(ra + 90, 0);
+  const y = [z[1] * x[2] - z[2] * x[1], z[2] * x[0] - z[0] * x[2], z[0] * x[1] - z[1] * x[0]];
+  return { x, y, z };
+}
 // Farbindex B−V → Temperatur [K] (Ballesteros 2012, EPL 97, 34008): T = 4600 K · (1/(0,92·BV + 1,7) + 1/(0,92·BV + 0,62))
 export const bvToTemp = (bv) => 4600 * (1 / (0.92 * bv + 1.7) + 1 / (0.92 * bv + 0.62));
 // Mittlere Sternzeit Greenwich [Grad] (Meeus, Astronomical Algorithms, Gl. 12.4, ohne T²-Glieder)
