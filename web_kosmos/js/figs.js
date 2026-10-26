@@ -6,7 +6,12 @@
 // Daten je Ast in web/js/figs/<ast>.js – so können parallele Chats getrennte Dateien füllen. Abzeichen zum
 // Hineinfliegen (kind: 'dive') öffnen keine Karte und bekommen keine Grafik.
 
+import ERDE from './figs/erde.js';
+import SONNE from './figs/sonne.js';
+import JUPITER from './figs/jupiter.js';
 import MARS from './figs/mars.js';
+import AUSSEN from './figs/aussen.js';
+import GALAXIS from './figs/galaxis.js';
 
 export const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
 export const de = (v, d = 0) => v.toLocaleString('de-DE', { minimumFractionDigits: d, maximumFractionDigits: d });
@@ -171,6 +176,6 @@ function grooves(f) {
 }
 
 const KINDS = { peaks, bars, scale, orbit, timeline, range, layers, polar, grooves };
-export const FIGS = { ...MARS };
+export const FIGS = { ...ERDE, ...SONNE, ...JUPITER, ...MARS, ...AUSSEN, ...GALAXIS };
 export const figSvg = (f) => KINDS[f.k](f);
 export const figKinds = KINDS;
