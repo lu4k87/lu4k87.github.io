@@ -13,6 +13,11 @@
 //   LOOP_VERT/_FRAG   Protuberanzen auf loopsGeometry(n, rand) (Kind der Sonnenkugel). Uniforms: uTime, uRate, uGain, uBurstT,
 //                     uBurstSeed, uSunR, uSunC; geometry.userData.meta[i] = { seed, apex, dir, foot } für Flares/Auswürfe.
 //   CME_FRAG          Massenauswurf auf BILLBOARD_VERT. Uniforms: uSize, uK (0 … 1), uGain, uSide, uTime, uDir (vec2).
+//   SDO-Kanäle (Station Sonne, additiv): uChan 0 = Weißlicht (Standard, Bild wie oben) · 1 = 171 Å · 2 = 304 Å · 3 = 193 Å in
+//                     SUN_FRAG (dazu uAct 0 … 1, uHole[HOLES] = Richtung + Winkelradius, uFil/uFilT[FILS] = Filamente; uSpot.w < 0
+//                     = Fleck ausgeblendet, aktive Region bleibt), CORONA_FRAG (dazu uPolar 0 … 1 = polare Löcher) und LOOP_FRAG.
+//   CLOOP_VERT/_FRAG  Koronaschleifen einer aktiven Region auf coronalLoopsGeometry(a, b, n, rand). Uniforms: uTime, uChan, uGain,
+//                     uDens (Anteil der Fäden), uFlareP (Weltort), uFlareT [s seit Flare].
 
 import * as THREE from 'three';
 import { NOISE } from './glsl.js';
@@ -20,6 +25,21 @@ import { NOISE } from './glsl.js';
 const RAD = Math.PI / 180;
 export const SPOTS = 12;      // Flecken (6 Gruppen × Vorläufer/Nachfolger)
 export const STREAMERS = 7;   // Helmstreamer der Korona
+export const HOLES = 4;       // koronale Löcher (SDO-Kanäle)
+export const FILS = 4;        // Filamente (SDO-Kanäle)
+
+// SDO/AIA-Falschfarben, angelehnt an die Farbtabellen der NASA-Bilder (linear, vor ACES): Helligkeit x → Farbe × x;
+// dunkel satt, hell fast weiß. ch 1 = 171 Å gold, 2 = 304 Å rot-orange, 3 = 193 Å bronze.
+const EUV_TINT = /* glsl */ `
+vec3 euvTint(float x, float ch) {
+  vec3 a, b, c;
+  if (ch < 1.5) { a = vec3(0.3, 0.13, 0.01); b = vec3(1.0, 0.62, 0.1); c = vec3(1.0, 0.92, 0.62); }
+  else if (ch < 2.5) { a = vec3(0.35, 0.03, 0.0); b = vec3(1.0, 0.22, 0.03); c = vec3(1.0, 0.66, 0.36); }
+  else { a = vec3(0.24, 0.12, 0.05); b = vec3(0.92, 0.52, 0.24); c = vec3(1.0, 0.86, 0.66); }
+  x = max(x, 0.0);
+  return (x < 0.6 ? mix(a, b, x / 0.6) : mix(b, c, min((x - 0.6) / 1.2, 1.0))) * x;
+}
+`;
 
 // Photosphäre. Ort im mitrotierenden Plasma g aus der verschobenen Texturkoordinate: differentielle Rotation
 // ω(φ) = 14,713 − 2,396 sin²φ − 1,787 sin⁴φ °/Tag (Snodgrass & Ulrich 1990, uDays = Tage seit Start).
@@ -69,6 +89,70 @@ vec3 ramp(float x) {
   if (x < 0.92) return mix(c2, c3, (x - 0.6) / 0.32);
   return mix(c3, c4, (x - 0.92) / 0.38);
 }
+// ---- SDO-Kanäle (uChan > 0): EUV ist optisch dünn → Scheibe zum Rand heller (Weglänge ≈ 1/μ, begrenzt); aktive Regionen
+// über den Fleckengruppen hell, koronale Löcher dunkel (193 Å fast schwarz), Filamente als dunkle Fäden (304 Å stark).
+// 171 Å: dunkle Scheibe mit Netzwerk und hellen Punkten · 304 Å: Chromosphären-Netzwerk an den Rändern der Supergranulen
+// (≈ 30 Mm) · 193 Å: diffuse heiße Korona. Ohne Granulation und Fleckendunkel (die stammen aus der Photosphäre).
+#define HOLES ${HOLES}
+#define FILS ${FILS}
+uniform float uChan, uAct;
+uniform vec4 uHole[HOLES], uFil[FILS], uFilT[FILS];
+${EUV_TINT}
+float holeMask(vec3 g) {
+  float m = 0.0;
+  for (int i = 0; i < HOLES; i++) {
+    vec4 h = uHole[i];
+    if (h.w <= 0.0) continue;
+    float a = acos(clamp(dot(g, h.xyz), -1.0, 1.0)) + 0.3 * h.w * gnoise(g * 5.0 + float(i) * 3.1);
+    m = max(m, 1.0 - smoothstep(h.w * 0.7, h.w * 1.08, a));
+  }
+  return m;
+}
+float filMask(vec3 g) {
+  float m = 0.0;
+  for (int i = 0; i < FILS; i++) {
+    vec4 f = uFil[i], ft = uFilT[i];
+    if (f.w <= 0.0) continue;
+    vec3 dv = g - f.xyz;
+    float a = dot(dv, ft.xyz);
+    if (abs(a) > f.w * 1.1) continue;
+    vec3 nr = normalize(cross(f.xyz, ft.xyz));
+    float p = dot(dv, nr) + 0.01 * sin(a * 38.0 + float(i) * 2.3) + 0.004 * gnoise(g * 80.0);
+    float w = max(ft.w * (1.0 - a * a / (f.w * f.w)), 1e-4);
+    m = max(m, (1.0 - smoothstep(w * 0.35, w, abs(p))) * (0.75 + 0.25 * gnoise(g * 120.0)));
+  }
+  return clamp(m, 0.0, 1.0);
+}
+vec3 euvDisc(vec3 g, float mu, float act) {
+  float hole = holeMask(g), fil = filMask(g), ar = 0.0;
+  for (int i = 0; i < SPOTS; i++) {
+    vec4 s = uSpot[i];
+    if (s.w == 0.0) continue;
+    vec3 d = g - s.xyz;
+    ar += exp(-dot(d, d) / 0.005);
+  }
+  ar = min(ar, 1.6);
+  float lb = 1.0 / max(mu, 0.2), t = uTime, I;
+  if (uChan < 1.5) {
+    float net = ridged(g * 22.0 + vec3(0.0, 0.0, t * 0.01), 3);
+    float bp = pow(fbm(g * 60.0 + vec3(t * 0.02), 2) * 0.5 + 0.5, 6.0) * 3.0;
+    I = (0.14 + 0.2 * net + 0.25 * bp) * mix(1.0, 0.3, hole) * (0.55 + 0.3 * lb) + 1.1 * ar * (0.6 + 0.4 * net) + 0.25 * act * uAct;
+    I *= 1.0 - 0.5 * fil;
+  } else if (uChan < 2.5) {
+    vec3 q = g + 0.02 * vec3(gnoise(g * 40.0), gnoise(g * 40.0 + 3.7), gnoise(g * 40.0 + 7.1));
+    vec3 c = cells(q * 30.0, t * 0.05);
+    float edge = 1.0 - smoothstep(0.0, 0.45, c.y - c.x);
+    float mott = fbm(g * 110.0 + vec3(t * 0.01), 3) * 0.5 + 0.5;
+    I = (0.42 + 0.3 * edge * (0.4 + 0.9 * mott) + 0.22 * mott) * mix(1.0, 0.75, hole) + 0.9 * ar + 0.35 * act * uAct;
+    I *= mix(1.0, 0.15, fil) * (0.85 + 0.3 * (1.0 - smoothstep(0.05, 0.35, mu)));
+  } else {
+    float diff = fbm(g * 5.0 + vec3(t * 0.003), 3) * 0.5 + 0.5;
+    float fine = ridged(g * 16.0, 2);
+    I = (0.2 + 0.18 * diff + 0.08 * fine) * (0.55 + 0.35 * lb) + 1.3 * ar * (0.7 + 0.3 * fine) + 0.2 * act * uAct;
+    I *= mix(1.0, 0.06, hole) * (1.0 - 0.45 * fil);
+  }
+  return euvTint(I, uChan);
+}
 void main() {
   vec3 N = normalize(vN), V = normalize(cameraPosition - vP);
   float mu = max(dot(N, V), 0.0), q = 1.0 - mu;
@@ -111,6 +195,7 @@ void main() {
   float fac = act * pow(q, 1.6) * (0.35 + 0.65 * net * net) * 0.55;
   float I = ld * gran * dark * (1.0 + (lum - 0.6) * 0.1) + fac * (0.4 + 0.6 * ld);
   gl_FragColor = vec4(ramp(I) * I * uGain, 1.0);
+  if (uChan > 0.5) gl_FragColor = vec4(euvDisc(g, mu, act) * uGain, 1.0);
 }
 `;
 
@@ -140,6 +225,32 @@ uniform float uTime, uExt, uGain, uLimb, uCorona, uChromo;
 uniform vec2 uPole;
 uniform vec3 uStr[STR];
 varying vec2 vQ;
+// ---- SDO-Kanäle: EUV-Korona über dem Rand, optisch dünn; Helligkeit fällt mit der Skalenhöhe der Temperatur (H ≈ 50 Mm je
+// Mio. K: 171 Å ≈ 0,045 R☉, 193 Å ≈ 0,09 R☉), hell über aktiven Regionen (uStr), dunkel über den polaren Löchern (uPolar) mit
+// feinen Plumes. 304 Å: heller Chromosphärensaum mit Spikulen („Fell“), echt ≈ 5.000–10.000 km.
+uniform float uChan, uPolar;
+${EUV_TINT}
+vec3 euvCorona(float r, float h, float pa, vec2 cp, float lr, float px, float rq) {
+  float st = 0.0;
+  for (int i = 0; i < STR; i++) {
+    vec3 s = uStr[i];
+    float da = abs(mod(pa - s.x + 3.14159265, 6.2831853) - 3.14159265);
+    st += s.z * exp(-da * da / (s.y * s.y * 0.5));
+  }
+  float rays = ridged(vec3(cp * 30.0, lr * 1.5 - uTime * 0.004), 3);
+  float plume = pow(abs(cp.x), 10.0) * (0.3 + 0.9 * (fbm(vec3(cp * 70.0, lr * 0.8), 2) * 0.5 + 0.5));
+  float I;
+  if (uChan > 1.5 && uChan < 2.5) {
+    float sp = gnoise(vec3(cp * 150.0, uTime * 0.1)) * 0.5 + 0.5;
+    float top = 0.008 + 0.022 * sp * sp;
+    I = (1.0 - smoothstep(top * 0.4, top + px, h)) * min(1.0, (top + 0.004) / (px + 0.004)) * 1.4 + 0.12 * exp(-h / 0.04);
+  } else {
+    float H = uChan < 1.5 ? 0.045 : 0.09;
+    float polar = 1.0 - 0.75 * uPolar * pow(abs(cp.x), 3.0);
+    I = (exp(-h / H) * (0.35 + 1.3 * st * (0.55 + 0.7 * rays) + 0.5 * plume) * 0.9 + 0.05 * exp(-h / (H * 6.0))) * polar;
+  }
+  return euvTint(I, uChan) * (1.0 - smoothstep(0.6, 1.0, rq));
+}
 void main() {
   float rq = length(vQ);
   float r = rq * uExt / uLimb;
@@ -175,6 +286,7 @@ void main() {
   float top = 0.005 + 0.016 * sp * sp;
   float ch = (1.0 - smoothstep(top * 0.5, top + px, h)) * min(1.0, (top + 0.004) / (px + 0.004));
   col += vec3(1.0, 0.09, 0.16) * ch * uChromo;
+  if (uChan > 0.5) col += euvCorona(r, h, pa, cp, lr, px, rq);
   gl_FragColor = vec4(col * uGain, 1.0);
 }
 `;
@@ -214,6 +326,13 @@ uniform vec3 uSunC;
 varying vec2 vUv;
 varying float vSeed, vEnv, vBurst;
 varying vec3 vN, vP;
+// SDO-Kanäle: 304 Å zeigt das kühle Plasma hell (He II), 171/193 Å kaum (zu kühl, dort eher dunkel vor der Korona)
+uniform float uChan;
+${EUV_TINT}
+vec3 promChan(vec3 col) {
+  float l = dot(col, vec3(0.45, 0.4, 0.15));
+  return uChan > 1.5 && uChan < 2.5 ? euvTint(l * 1.1, 2.0) : euvTint(l * 0.12, uChan);
+}
 void main() {
   if (vEnv < 0.003 && vBurst < 0.003) discard;
   float sp = 0.6 + 0.8 * fract(vSeed * 7.31);
@@ -236,6 +355,7 @@ void main() {
   vec3 col = ha * (core * dens * 2.0 + halo * 0.5 * dens * dens) + hot * core * dens * (0.15 + 0.5 * foot);
   col *= vEnv;
   col += vec3(1.0, 0.92, 0.88) * vBurst * core * (1.5 + 7.0 * foot);
+  if (uChan > 0.5) col = promChan(col);
   gl_FragColor = vec4(col * uGain * (1.0 - 0.95 * onDisc), 1.0);
 }
 `;
@@ -338,4 +458,99 @@ export function streamerSet(rand) {
     const lat = (rand() - 0.5) * 2 * 60 * RAD, lon = rand() * Math.PI * 2;
     return { dir: new THREE.Vector3(Math.cos(lat) * Math.cos(lon), Math.sin(lat), -Math.cos(lat) * Math.sin(lon)), w: 0.12 + rand() * 0.16, amp: 0.5 + rand() * 0.8 };
   });
+}
+
+// Bildtafel senkrecht zur Linie Kamera → Objekt-Ursprung (statt zur Blickachse): für Kameras nah an der Sonne, die neben die
+// Mitte blicken (Station Sonne, Blick über den Rand) – dort gilt die Randformel uLimb nur in dieser Ebene. Achsen vQ: u =
+// waagerecht, v = senkrecht im Bild (wie bei BILLBOARD_VERT, wenn die Kamera auf die Mitte blickt); Pol und Streamer im Bild
+// daher auf (u, v) projizieren (aimAxes in sun.js).
+export const BILLBOARD_AIM_VERT = /* glsl */ `
+uniform float uSize;
+varying vec2 vQ;
+void main() {
+  vQ = uv * 2.0 - 1.0;
+  vec4 c = modelViewMatrix * vec4(0.0, 0.0, 0.0, 1.0);
+  vec3 w = normalize(c.xyz);
+  vec3 u = normalize(cross(w, abs(w.y) < 0.999 ? vec3(0.0, 1.0, 0.0) : vec3(0.0, 0.0, 1.0)));
+  vec3 v = cross(u, w);
+  c.xyz += (u * position.x + v * position.y) * uSize;
+  gl_Position = projectionMatrix * c;
+}
+`;
+
+// Koronaschleifen (171/193 Å): heißes Plasma entlang der Feldlinien einer aktiven Region. Fäden mit weichem Rand, jeder
+// atmet langsam (25–60 s), Plasma läuft sichtbar entlang (< 0,5 Hz, kein Flackern), Fußpunkte heller („Moos“). Nach einem
+// Flare leuchten die Schleifen um uFlareP weich auf (Anstieg ≈ 1 s, Abklingen ≈ 4 s – kein Blitzen, WCAG 2.3.1).
+// In 193 Å breiter und schwächer als in 171 Å.
+export const CLOOP_VERT = /* glsl */ `
+attribute float seed;
+varying vec2 vUv;
+varying float vSeed;
+varying vec3 vN, vP;
+void main() {
+  vUv = uv; vSeed = seed;
+  vN = normalize(mat3(modelMatrix) * normal);
+  vec4 w = modelMatrix * vec4(position, 1.0);
+  vP = w.xyz;
+  gl_Position = projectionMatrix * viewMatrix * w;
+}
+`;
+export const CLOOP_FRAG = /* glsl */ `
+uniform float uTime, uChan, uGain, uDens, uFlareT;
+uniform vec3 uFlareP;
+varying vec2 vUv;
+varying float vSeed;
+varying vec3 vN, vP;
+${EUV_TINT}
+void main() {
+  if (vSeed > uDens) discard;
+  float mu = abs(dot(normalize(vN), normalize(cameraPosition - vP)));
+  float prof = mu * mu;
+  float life = smoothstep(0.15, 0.85, sin(uTime * (0.1 + 0.15 * fract(vSeed * 3.7)) + vSeed * 40.0) * 0.5 + 0.5);
+  float flow = 0.8 + 0.2 * sin((vUv.x * 7.0 - uTime * (0.2 + 0.2 * fract(vSeed * 5.3))) * 6.2831853 + vSeed * 17.0);
+  float foot = 1.0 + 1.2 * pow(abs(vUv.x - 0.5) * 2.0, 8.0);
+  float d = distance(vP, uFlareP);
+  float fl = smoothstep(0.0, 1.0, uFlareT) * exp(-uFlareT * 0.25) * exp(-d * d / 0.012);
+  float I = prof * ((0.25 + 0.75 * life) * flow * foot * (0.8 + 0.4 * fract(vSeed * 11.0)) + 3.0 * fl);
+  gl_FragColor = vec4(euvTint(I * (uChan > 2.5 ? 0.55 : 1.0), uChan) * uGain, 1.0);
+}
+`;
+
+// Fäden einer aktiven Region zwischen Vorläufer- und Nachfolgerpolarität (a, b: Einheitsvektoren im Sonnen-System, y = Pol).
+// Innen kurze, flache Bögen, außen ein Fächer bis ≈ 0,25 R☉ hoch; Ebenen leicht geschert (verdrilltes Feld). Echt 1–2 Mm
+// dick, hier ≈ 1,5–3 Mm. Attribut seed (0 … 1) je Faden – uDens blendet Fäden über seed aus.
+export function coronalLoopsGeometry(a, b, n, rand) {
+  const mid = a.clone().add(b).normalize();
+  const e1 = a.clone().sub(b);
+  e1.addScaledVector(mid, -e1.dot(mid));
+  const half = e1.length() / 2;
+  e1.normalize();
+  const e2 = new THREE.Vector3().crossVectors(mid, e1);
+  const pos = [], nrm = [], uvs = [], seeds = [], idx = [];
+  const A = new THREE.Vector3(), B = new THREE.Vector3();
+  for (let k = 0; k < n; k++) {
+    const s = 0.4 + 2.0 * Math.pow(rand(), 1.6), w = half * s;
+    const off = (rand() - 0.5) * half * (0.8 + s), shear = (rand() - 0.5) * half * 0.9;
+    const h = w * (0.7 + 0.6 * rand()), bulge = (rand() - 0.5) * w * 0.5;
+    A.copy(mid).addScaledVector(e1, w).addScaledVector(e2, off + shear).normalize();
+    B.copy(mid).addScaledVector(e1, -w).addScaledVector(e2, off - shear).normalize();
+    const pts = [];
+    for (let i = 0; i <= 16; i++) {
+      const u = i / 16, sa = Math.sin(Math.PI * u);
+      pts.push(A.clone().lerp(B, u).normalize().multiplyScalar(1 + h * sa).addScaledVector(e2, bulge * sa));
+    }
+    const tube = new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 28, 0.0022 + 0.0022 * rand(), 4, false);
+    const o = pos.length / 3, seed = rand(), at = tube.attributes;
+    pos.push(...at.position.array); nrm.push(...at.normal.array); uvs.push(...at.uv.array);
+    for (let i = 0; i < at.position.count; i++) seeds.push(seed);
+    for (const i of tube.index.array) idx.push(i + o);
+    tube.dispose();
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  g.setAttribute('normal', new THREE.Float32BufferAttribute(nrm, 3));
+  g.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
+  g.setAttribute('seed', new THREE.Float32BufferAttribute(seeds, 1));
+  g.setIndex(idx);
+  return g;
 }

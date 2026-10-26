@@ -150,6 +150,23 @@ export function createHud(h) {
     closeCard();
   }
 
+  // Schalter der Station: Segment (Standard), Schieberegler ('range'), Farbscheiben mit Erklärung ('swatch': options
+  // [wert, name, CSS-Hintergrund], detail(wert) → HTML unter den Scheiben), Knopf ('action': button, run())
+  function ctrlHtml(c) {
+    if (c.type === 'range') return `
+        <label class="cfg-row cfg-range"><span class="cfg-label">${esc(c.label)}</span>
+          <input type="range" data-rng="${c.id}" min="${c.min}" max="${c.max}" step="${c.step ?? 1}" value="${c.value}" aria-label="${esc(c.label)}"><output data-rout="${c.id}">${esc(c.fmt ? c.fmt(c.value) : c.value)}</output></label>`;
+    if (c.type === 'swatch') return `
+        <div class="cfg-box"><span class="cfg-label" id="ctl-${c.id}">${esc(c.label)}</span>
+          <div class="swatch" role="radiogroup" aria-labelledby="ctl-${c.id}">${c.options.map(([v, l, bg]) => `<button type="button" role="radio" data-sw="${c.id}" data-val="${v}" aria-checked="${String(c.value === v)}"><i class="sw-disc" style="background:${bg}" aria-hidden="true"></i><b>${esc(l)}</b></button>`).join('')}</div>
+          <div class="sw-detail" data-swd="${c.id}">${c.detail(c.value)}</div></div>`;
+    if (c.type === 'action') return `
+        <div class="cfg-row"><span class="cfg-label">${esc(c.label)}</span><button type="button" class="act-btn" data-act="${c.id}">${esc(c.button)}</button></div>`;
+    return `
+        <div class="cfg-row"><span class="cfg-label" id="ctl-${c.id}">${esc(c.label)}</span>
+          <div class="seg" role="radiogroup" aria-labelledby="ctl-${c.id}">${c.options.map(([v, l]) => `<button type="button" role="radio" data-ctl="${c.id}" data-val="${v}" aria-checked="${String(c.value === v)}">${esc(l)}</button>`).join('')}</div></div>`;
+  }
+
   function renderPanel() {
     const st = meta;
     const info = (x) => st.hotspots[x.id] || x.info;
@@ -166,11 +183,7 @@ export function createHud(h) {
       </div>
       ${lv.live ? '<p class="live" id="live" aria-live="off"></p>' : ''}
       ${lv.widget ? `<div class="widget" id="widget">${lv.widget()}</div>` : ''}
-      ${ctrls.length ? `<div class="st-ctrls">${ctrls.map((c) => c.type === 'range' ? `
-        <label class="cfg-row cfg-range"><span class="cfg-label">${esc(c.label)}</span>
-          <input type="range" data-rng="${c.id}" min="${c.min}" max="${c.max}" step="${c.step ?? 1}" value="${c.value}" aria-label="${esc(c.label)}"><output data-rout="${c.id}">${esc(c.fmt ? c.fmt(c.value) : c.value)}</output></label>` : `
-        <div class="cfg-row"><span class="cfg-label" id="ctl-${c.id}">${esc(c.label)}</span>
-          <div class="seg" role="radiogroup" aria-labelledby="ctl-${c.id}">${c.options.map(([v, l]) => `<button type="button" role="radio" data-ctl="${c.id}" data-val="${v}" aria-checked="${String(c.value === v)}">${esc(l)}</button>`).join('')}</div></div>`).join('')}</div>` : ''}
+      ${ctrls.length ? `<div class="st-ctrls">${ctrls.map(ctrlHtml).join('')}</div>` : ''}
       <h2 class="sec-h">Entdecken</h2>
       <ul class="explore">${hs.map((x, i) => `
         <li><button type="button" data-hs="${x.id}" class="${x.kind === 'dive' ? 'is-dive' : ''}">${x.kind === 'dive' ? hex('<path d="M14 17l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>', 'hex--mini') : hexNum(i + 1, 'hex--mini')}<span>${esc(info(x).t)}</span>${x.kind === 'dive' ? '<span class="tag">hineinfliegen</span>' : ''}</button></li>`).join('')}
@@ -197,6 +210,26 @@ export function createHud(h) {
       if (lv.hotspots.some((x) => x.listIf)) { renderPanel(); buildMarkers(); return; }
       panel.querySelectorAll(`[data-ctl="${c.id}"]`).forEach((o) => o.setAttribute('aria-checked', String(o.dataset.val === c.value)));
     }));
+    panel.querySelectorAll('[data-sw]').forEach((b) => b.addEventListener('click', () => {
+      const c = ctrls.find((x) => x.id === b.dataset.sw);
+      c.value = b.dataset.val;
+      c.set(c.value);
+      panel.querySelectorAll(`[data-sw="${c.id}"]`).forEach((o) => o.setAttribute('aria-checked', String(o.dataset.val === c.value)));
+      panel.querySelector(`[data-swd="${c.id}"]`).innerHTML = c.detail(c.value);
+      h.onInput();
+    }));
+    panel.querySelectorAll('[data-act]').forEach((b) => b.addEventListener('click', () => { ctrls.find((x) => x.id === b.dataset.act).run(); h.onInput(); }));
+  }
+  // Regler mit get() (z. B. Zeitraffer, auch im Zahnrad stellbar) folgen ihrem Zustand, außer während der Bedienung
+  function syncCtrls() {
+    for (const c of lv.controls || []) {
+      if (c.type !== 'range' || !c.get) continue;
+      const v = c.get(), i = panel.querySelector(`[data-rng="${c.id}"]`);
+      if (v === c.value || !i || document.activeElement === i) continue;
+      c.value = v;
+      i.value = v;
+      panel.querySelector(`[data-rout="${c.id}"]`).textContent = c.fmt ? c.fmt(v) : String(v);
+    }
   }
 
   // ---------- Abzeichen ----------
@@ -400,6 +433,7 @@ export function createHud(h) {
     if (!keepDot) m.dot.classList.add('is-off');
   }
   function tickLive(time) {
+    syncCtrls();
     if (widgetEl && lv.widgetTick) lv.widgetTick(widgetEl, time);
     if (!liveEl || !lv.live || time - liveT < 0.5) return;
     liveT = time;

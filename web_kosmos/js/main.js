@@ -25,6 +25,7 @@ const LOADERS = {
   cmb: () => import('./levels/cmb.js'),
   // Einfügemarken je Etappe (docs/plan_ebenen.md §2): jeder Chat fügt nur direkt unter seiner Marke ein
   // [E1] Sonne
+  sun: () => import('./levels/sun.js'),
   // [E2] Erde nah
   // [E3] Jupiter-System
   // [E4] Saturn + Mars

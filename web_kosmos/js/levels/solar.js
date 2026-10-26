@@ -454,7 +454,7 @@ export function create(ctx) {
   const flarePos = new THREE.Vector3(), coronaPos = new THREE.Vector3();
   const sideDir = new THREE.Vector3().crossVectors(camDir, new THREE.Vector3(0, 1, 0)).normalize();
   const hotspots = [
-    { id: 'sun', kind: 'info', pos: new THREE.Vector3(), focus: () => sr * 4 },
+    { id: 'sun', kind: 'dive', to: 'sun', pos: new THREE.Vector3(), focus: () => sr * 4 },
     { id: 'flare', kind: 'info', pos: flarePos, focus: () => sr * 4.5, visible: () => flaresOn },
     { id: 'corona', kind: 'info', pos: coronaPos, focus: () => sr * 8, visible: () => coronaOn },
     { id: 'earth', kind: 'dive', to: 'earth', pos: P.earth.pos },

@@ -2,7 +2,7 @@
 // die Reihenfolge der geführten Reise (nach Entfernung von der Erde). Jede Zahl hat eine Quelle in SOURCES
 // (Kürzel in `s`) oder ist als „Modell“ bzw. „Richtwert“ gekennzeichnet; Belege und Herleitungen: docs/research.md.
 
-import { LY, YEAR, KPC } from './astro.js';
+import { LY, YEAR, KPC, AU, C } from './astro.js';
 
 export const SOURCES = {
   'celestrak': { t: 'GP Element Sets (OMM): Gruppen active, stations, Trümmerwolken – Stand 25.10.2026', by: 'CelesTrak, T. S. Kelso', url: 'https://celestrak.org/NORAD/elements/' },
@@ -135,7 +135,7 @@ export const STATIONS = {
     note: 'Bahnen maßstäblich. Größen im Modus „Anschaulich“ vergrößert: Planeten ×800, Sonne ×25, Mondabstand verkürzt (sonst läge der Mond in der vergrößerten Erde). „Echt“ zeigt die wahren Größen – dann sind die Planeten kleiner als ein Pixel. Asteroiden, Trojaner und Kuipergürtel als vergrößerte Brocken, je nach Zahnrad-Einstellung „Satelliten und Kleinkörper“ ausgedünnt: ein Brocken steht für viele Körper. Sonne: Flecken laufen mit der differentiellen Rotation; Granulation, Protuberanzen, Flares, Massenauswürfe und Korona sind Modelle in Szenenzeit, die Korona um Größenordnungen verstärkt.',
     sources: ['jpl-elements', 'nasa-planets', 'nasa-moon', 'nasa-moons', 'nasa-sun', 'nasa-sun-facts', 'snodgrass-1990', 'nordlund-2009', 'nasa-solarmax', 'swpc-flares', 'swpc-cme', 'nasa-saturn', 'kirkwood', 'sss-tex'],
     hotspots: {
-      sun: { t: 'Sonne', x: 'Radius 695.700 km (109 Erdradien), Masse 1,989·10³⁰ kg – 99,86 % des Sonnensystems. Im Kern verschmilzt Wasserstoff bei 15,7 Mio. K zu Helium; daraus kommt die Leuchtkraft von 3,83·10²⁶ W. Die sichtbare Oberfläche (Photosphäre) hat 5.772 K und ist in Granulen von ≈ 1.000 km gegliedert, Konvektionszellen, die jeweils rund 10 Minuten bestehen. Zum Rand hin wirkt die Scheibe dunkler, weil wir dort in höhere, kühlere Schichten blicken (Randverdunkelung). Sie rotiert differentiell: am Äquator in 24,5 Tagen, in 60° Breite in rund 30 Tagen; die Flecken wandern entsprechend mit. Laut NASA und NOAA hat der Sonnenzyklus 25 im Oktober 2024 seine Maximumsphase erreicht.', s: 'nasa-sun' },
+      sun: { t: 'Sonne', x: 'Radius 695.700 km (109 Erdradien), Masse 1,989·10³⁰ kg – 99,86 % des Sonnensystems. Im Kern verschmilzt Wasserstoff bei 15,7 Mio. K zu Helium; daraus kommt die Leuchtkraft von 3,83·10²⁶ W. Die sichtbare Oberfläche (Photosphäre) hat 5.772 K und ist in Granulen von ≈ 1.000 km gegliedert, Konvektionszellen, die jeweils rund 10 Minuten bestehen. Zum Rand hin wirkt die Scheibe dunkler, weil wir dort in höhere, kühlere Schichten blicken (Randverdunkelung). Sie rotiert differentiell: am Äquator in 24,5 Tagen, in 60° Breite in rund 30 Tagen; die Flecken wandern entsprechend mit. Laut NASA und NOAA hat der Sonnenzyklus 25 im Oktober 2024 seine Maximumsphase erreicht. Hineinfliegen: die Sonne aus der Nähe, in vier Kanälen wie beim Sonnenobservatorium SDO.', s: 'nasa-sun' },
       flare: { t: 'Protuberanzen, Flares, Massenauswürfe', x: 'Protuberanzen sind Plasmabögen entlang magnetischer Feldlinien, Zehntausende Kilometer hoch, oft wochenlang stabil. Flares sind plötzliche Strahlungsausbrüche von Minuten bis Stunden Dauer, eingeteilt nach der Röntgenleistung bei 0,1–0,8 nm in Klassen A, B, C, M, X (X ab 10⁻⁴ W/m²). Koronale Massenauswürfe setzen Milliarden Tonnen Plasma mit 250 bis 3.000 km/s frei. Trifft ein Auswurf die Erde, kann er einen geomagnetischen Sturm mit Polarlichtern bis in mittlere Breiten auslösen. Im Bild: zufällige Ereignisse im Zeitraffer, Form und Häufigkeit als Modell; „Jetzt auslösen“ im Zahnrad.', s: 'swpc-flares' },
       corona: { t: 'Korona', x: 'Die äußere Atmosphäre der Sonne ist 1–3 Mio. K heiß, aber so dünn, dass sie neben der Scheibe nur bei totalen Sonnenfinsternissen oder im Koronografen sichtbar wird. Ihre Strahlen (Streamer) folgen dem Magnetfeld; im Aktivitätsmaximum erscheint sie rundum strukturiert, im Minimum vor allem am Äquator. Die Helligkeit fällt etwa mit r⁻²·⁵ – hier um Größenordnungen verstärkt.', s: 'nasa-sun-facts' },
       earth: { t: 'Erde', x: 'Dritter Planet, 1 AE von der Sonne: Äquatorradius 6.378 km, Umlauf 365,25 Tage, Drehung 23 h 56 min (Sterntag). Hineinfliegen: Erde und Mond zum aktuellen Zeitpunkt, mit Polarlichtern und Satelliten.', s: 'jpl-elements' },
@@ -175,6 +175,29 @@ export const STATIONS = {
     },
   },
   // [E1] Sonne
+  sun: {
+    n: '02B', title: 'Sonne', kicker: 'Stern', parent: 'solar', width: 1.6e9, dist: AU, lookback: AU / C,
+    lead: 'Ein Stern mittlerer Größe aus der Nähe: Plasma, Magnetfelder und Licht, das 8 Minuten 19 Sekunden bis zur Erde braucht. Vier Kanäle wie beim Sonnenobservatorium SDO zeigen verschiedene Schichten – von der Oberfläche bis zur Millionen Grad heißen Korona.',
+    facts: [
+      { v: '695.700', u: 'km', l: 'Radius', s: 'nasa-sun' },
+      { v: '5.772', u: 'K', l: 'Oberfläche', s: 'nasa-sun' },
+      { v: '1–3', u: 'Mio. K', l: 'Korona', s: 'nasa-sun-facts' },
+      { v: '8 min 19 s', u: '', l: 'Licht bis zur Erde', s: 'iau-2012' },
+    ],
+    note: 'Modell, kein Foto: Lage der aktiven Regionen, Flecken, Schleifen und Löcher ist ausgedacht, nicht die Sonne von heute. Kanäle nach SDO/AIA (Weißlicht ≈ HMI-Kontinuum; 171 Å Fe IX, log T 5,8; 304 Å He II, log T 4,7; 193 Å Fe XII, log T 6,1), Farben angelehnt an die Falschfarben der NASA-Bilder. Granulen ≈ 25-fach, Flecken etwa doppelt so groß gezeichnet; Rotation, Schleifen, Protuberanzen und Flares im Zeitraffer, Flares ohne Blitzen (WCAG 2.3.1). Schichtschnitt in der Infotafel schematisch, nicht maßstäblich.',
+    sources: ['nasa-sun', 'nasa-sun-facts', 'iau-2012', 'sdo-channels', 'nasa-sdo', 'snodgrass-1990', 'nordlund-2009', 'nasa-solarmax', 'swpc-flares', 'swpc-cme', 'nasa-psp', 'wcag-flash'],
+    hotspots: {
+      region: { t: 'Aktive Region', x: 'Über Fleckengruppen tritt gebündeltes Magnetfeld aus der Oberfläche. Darüber spannen sich Bögen aus heißem Plasma, die Koronaschleifen – im Kanal 171 Å golden, in 193 Å bronzefarben. Hier entstehen die meisten Flares. Wie viele aktive Regionen es gibt, folgt dem elfjährigen Zyklus; das Maximum von Zyklus 25 begann im Oktober 2024. Regler „Aktivität“.', s: 'nasa-solarmax' },
+      spots: { t: 'Sonnenflecken', x: 'Dunkle Flecken im Weißlicht: Das starke Magnetfeld bremst dort die Konvektion, das Gas ist kühler als die 5.772 K der Umgebung und wirkt deshalb dunkel. Kern (Umbra) und Hof (Penumbra) mit radialen Fasern; Flecken erscheinen meist paarweise mit entgegengesetzter Polarität.', s: 'nasa-sun' },
+      gran: { t: 'Granulation', x: 'Die Oberfläche brodelt: Jede Granule ist eine Konvektionszelle von rund 1.000 km, in der heißes Gas aufsteigt, abkühlt und an den dunklen Rändern wieder absinkt – nach etwa 10 Minuten ist sie verschwunden. Im Bild etwa 25-fach vergrößert und im Zeitraffer.', s: 'nordlund-2009' },
+      prom: { t: 'Protuberanz', x: 'Ein Bogen aus kühlerem, dichtem Plasma, vom Magnetfeld über den Rand gehoben, Zehntausende Kilometer hoch und oft wochenlang stabil. Im Kanal 304 Å (Helium, Chromosphäre) leuchtet er rot vor dem dunklen All.', s: 'sdo-channels' },
+      filament: { t: 'Filament', x: 'Dieselbe Struktur wie eine Protuberanz, nur von oben gesehen: Vor der hellen Scheibe schluckt das kühlere Plasma Licht und erscheint als dunkler Faden. Wird ein Filament instabil, kann es als Massenauswurf ins All gerissen werden.', s: 'nasa-sdo' },
+      hole: { t: 'Koronales Loch', x: 'Gebiete mit offenem Magnetfeld: Das Plasma strömt ungehindert ab, die Korona ist dort dünn und kühler. Im Kanal 193 Å (Eisen, ≈ 1,3 Mio. K) erscheinen koronale Löcher deshalb dunkel; aus ihnen kommt schneller Sonnenwind.', s: 'sdo-channels' },
+      flare: { t: 'Flare und Massenauswurf', x: 'Ein Flare ist ein plötzlicher Strahlungsausbruch, wenn sich verdrillte Magnetfelder neu verbinden; die Klassen A, B, C, M und X stehen jeweils für zehnfache Stärke. Oft folgt ein koronaler Massenauswurf: Milliarden Tonnen Plasma, 250 bis 3.000 km/s schnell. Knopf „Flare auslösen“ in der Infotafel.', s: 'swpc-flares' },
+      pole: { t: 'Pol und Rotation', x: 'Die Sonne ist kein fester Körper: Am Äquator dreht sie sich in 24,5 Tagen einmal, in 60° Breite erst in rund 30 Tagen (differentielle Rotation). Regler „Zeitraffer“.', s: 'snodgrass-1990' },
+      wind: { t: 'Sonnenwind', x: 'Aus der Korona strömt ständig Plasma ins All, der Sonnenwind. Parker Solar Probe fliegt durch die Korona, um zu messen, wie er beschleunigt wird.', s: 'nasa-psp' },
+    },
+  },
   // [E2] Erde nah
   // [E3] Jupiter-System
   // [E4] Saturn + Mars
@@ -365,7 +388,7 @@ export const STATIONS = {
   },
 };
 
-export const ROUTE = ['earth', 'solar', 'galaxy', 'orion', 'crab', 'pulsar', 'sgra', 'local', 'web', 'cmb'];
+export const ROUTE = ['earth', 'solar', 'sun', 'galaxy', 'orion', 'crab', 'pulsar', 'sgra', 'local', 'web', 'cmb'];
 // Äste außerhalb der Route (Kind über parent) zählen für Weiter/Zurück wie ihre nächste Elternstation auf der Route
 export function routeIndex(id) {
   for (let x = id; x; x = STATIONS[x] ? STATIONS[x].parent : null) { const i = ROUTE.indexOf(x); if (i >= 0) return i; }
