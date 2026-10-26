@@ -38,15 +38,24 @@ export function moonScene(id, jd) {
 
 // Zustand zum Zeitpunkt jd: Einheitsvektor Saturn → Sonne, Abstand [km], Winkelradius der Sonne [rad], Sonnenhöhe über
 // der Ringebene B [°] (> 0: Nordseite der Ringe beleuchtet), Orte der Monde [km]
-export function kronianState(jd) {
+export function kronianState(jd, ids = MOON_IDS) {
   const h = eclToScene(planetPosition(SAT, jd)), d = Math.hypot(...h);
   const sun = h.map((v) => -v / d);
   const sunKm = d * AU / 1e3;
   return {
     sun, sunKm, sunAng: R_SUN / sunKm,
     ringSun: Math.asin(sun[0] * POLE[0] + sun[1] * POLE[1] + sun[2] * POLE[2]) * 180 / Math.PI,
-    moons: Object.fromEntries(MOON_IDS.map((id) => [id, moonScene(id, jd)])),
+    moons: Object.fromEntries(ids.map((id) => [id, moonScene(id, jd)])),
   };
+}
+
+// Lage eines Mondes zur Linie Sonne–Saturn: s = Abstand entlang der Sonnenrichtung [km] (> 0 sonnenseitig), q = Abstand
+// von der Linie [Saturnradien]. Schatten auf Saturn: s > 0 und q < 1; Mond im Saturnschatten: s < 0 und q < 1 (Kernschatten
+// als Zylinder, Äquatorradius; die Ringe bleiben außer Acht).
+export function lineOfSun(st, id) {
+  const p = st.moons[id], s = p[0] * st.sun[0] + p[1] * st.sun[1] + p[2] * st.sun[2];
+  const q = Math.hypot(p[0] - s * st.sun[0], p[1] - s * st.sun[1], p[2] - s * st.sun[2]) / SATURN.r;
+  return { s, q };
 }
 
 // Drehwinkel des Nullmeridians [rad] zum Zeitpunkt jd

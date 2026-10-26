@@ -1,4 +1,4 @@
-// Station eines Eismondes von Jupiter (Ganymed 02C3, Kallisto 02C4): Globus aus der USGS-Karte (PLANET_FRAG, Mondpfad mit
+// Station eines Mondes von Jupiter (Ganymed 02C3, Kallisto 02C4) oder Saturn (Titan 02D1, cfg.sys = SATURN_SYS): Globus aus der USGS-Karte (PLANET_FRAG, Mondpfad mit
 // Lommel-Seeliger und Jupiterschein), Jupiter am Himmel in echter Richtung, Größe und Phase, Sonne und Sterne zum Zeitpunkt
 // (jovian.js, JPL-Mittelwerte). Bezugssystem dreht mit dem Mond: Er dreht gebunden, also stehen er und Jupiter im Bild still;
 // Sonne und Sterne ziehen einmal je Umlauf herum (ein Tag auf dem Mond), Jupiter zeigt Phasen, hinter ihm verschwindet die
@@ -7,6 +7,7 @@
 // Seite, 90° W). Karten (USGS, db3b25f): u = östliche Länge / 360, geprüft an Koordinaten des Gazetteers.
 // Modell: Libration (e = 0,001 bzw. 0,007) und Achsneigung des Mondes vernachlässigt, Jupiter ohne Atmosphärenhülle (nur Lichtsaum
 // im Gegenlicht), Jupiterschein verstärkt (SHINE_X), Feinstruktur beim Heranzoomen als Rauschen.
+// Das Planetensystem steckt im Adapter cfg.sys (JUPITER_SYS, SATURN_SYS): Bahnzeilen, Zustand, Schattenlinie, Planet am Himmel.
 
 import * as THREE from 'three';
 import { julianDate, eclDir, equToScene, laplaceAxes } from './astro.js';
@@ -14,6 +15,8 @@ import { createStarfield } from './stars.js';
 import { BODY_VERT, PLANET_FRAG, ATMOS } from './planetfx.js';
 import { NOISE } from './glsl.js';
 import { GALILEAN, JUPITER, jovianState, lineOfSun } from './jovian.js';
+import { MOONS, SATURN, kronianState, lineOfSun as satLineOfSun } from './kronian.js';
+import { createSaturn } from './levels/saturn.js';
 import { registerLayers, refreshLayers } from './layers.js';
 
 const RAD = Math.PI / 180;
@@ -21,6 +24,7 @@ const Y = new THREE.Vector3(0, 1, 0);
 // Zeitraffer [Tage je Sekunde]
 const SPEEDS = [[0, 'Stopp'], [1 / 144, '10 min/s'], [1 / 24, '1 h/s'], [0.25, '6 h/s'], [1, '1 Tag/s']];
 const P_JUP = 0.538;     // geometrische Albedo Jupiters (nasa-jupiter-fs)
+const P_SAT = 0.499;     // geometrische Albedo Saturns (NSSDCA Saturn Fact Sheet; die Ringe leuchten zusätzlich, hier außer Acht)
 const SHINE_X = 6;       // Jupiterschein verstärkt (echt ≈ 0,2 % des Sonnenlichts bei Ganymed)
 const SUN_D = 2500;      // Abstand des Sonnen-Sprites [Mondradien], nur Darstellung
 const fmtDate = (jd) => `${new Date((jd - 2440587.5) * 864e5).toLocaleString('de-DE', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'UTC' })} UT`;
@@ -119,6 +123,54 @@ const bodyU = (map, o = {}) => ({
   uOcc: { value: [0, 1, 2, 3].map(() => new THREE.Vector4()) }, uOccN: { value: 1 },
 });
 
+// ---------- Planetensysteme ----------
+// Adapter: planet {r, rp, pole}, els (Bahnzeilen), state(jd, ids) → { sun, sunKm, sunAng, moons }, line(st, id) → { s, q },
+// albedo, id/name (Hotspot, Beschriftungen), halo (Lichtsaum), build(ctx, { sunL, rP }) → { group, frame(jupL, qToMoon, jd, t, sunAng) };
+// group liegt im Mond-Bezugssystem, rP = Planetradius in Mondradien
+const JUPITER_SYS = {
+  id: 'jupiter', name: 'Jupiter', planet: JUPITER, els: GALILEAN, state: jovianState, line: lineOfSun, albedo: P_JUP, halo: true,
+  build(ctx, { sunL, rP }) {
+    const jupU = bodyU(ctx.tex('jupiter.jpg'), { band: 1, wrap: ATMOS.jupiter.wrap, term: ATMOS.jupiter.term, amb: 0.004, sunDir: sunL });
+    jupU.uOcc.value[0].set(0, 0, 0, 1);
+    const group = new THREE.Group();
+    const jup = new THREE.Mesh(new THREE.SphereGeometry(rP, 96, 64), new THREE.ShaderMaterial({ vertexShader: BODY_VERT, fragmentShader: PLANET_FRAG, uniforms: jupU }));
+    jup.scale.y = JUPITER.rp / JUPITER.r;
+    group.add(jup);
+    const qPole = new THREE.Quaternion().setFromUnitVectors(Y, new THREE.Vector3(...equToScene(...JUPITER.pole)));
+    const qSpin = new THREE.Quaternion();
+    return {
+      group, uniforms: jupU,
+      frame(pos, qToMoon, jd, t, sunAng) {
+        group.position.copy(pos);
+        group.quaternion.copy(qToMoon).multiply(qPole);
+        jup.quaternion.copy(qSpin.setFromAxisAngle(Y, 2 * Math.PI * (((jd * 24) / JUPITER.rot) % 1)));
+        jupU.uSunAng.value = sunAng;
+        jupU.uTime.value = t;
+      },
+    };
+  },
+};
+// Saturn: createSaturn (Ellipsoid, Ringe mit Schatten auf Saturn und Mond, Hexagon) im Mondmaß; der Mond (Radius 1, im Ursprung)
+// wirft seinen Schatten auf Saturn und Ringe
+export const SATURN_SYS = {
+  id: 'saturn', name: 'Saturn', planet: SATURN, els: MOONS, state: kronianState, line: satLineOfSun, albedo: P_SAT, halo: false,
+  build(ctx, { rP }) {
+    const group = new THREE.Group(), sat = createSaturn(ctx);
+    sat.group.scale.setScalar(rP);
+    group.add(sat.group);
+    const occ = [new THREE.Vector4(0, 0, 0, 1)];
+    return {
+      group, uniforms: sat.planetU,
+      frame(pos, qToMoon, jd, t, sunAng, sunL) {
+        group.position.copy(pos);
+        group.quaternion.copy(qToMoon);
+        group.updateMatrixWorld(true);
+        sat.frame(sunL, jd, occ, sunAng);
+      },
+    };
+  },
+};
+
 // Halbscheibe in der Ebene (u, Y) auf der Seite +u – Schnittfläche des Keils
 function halfDisc(u) {
   const n = 96, pos = [0, 0, 0];
@@ -138,16 +190,17 @@ function halfDisc(u) {
 export const CUT_DISCARD = 'if (uCut > 0.5 && dot(vO, uCutA) > 0.0 && dot(vO, uCutB) > 0.0) discard;';
 
 // cfg: id, tex, seed, gain, tint [dunkel, hell], split, views {grau, farbe, gelaende: Erklärzeile}, home {j, s, y, dist, t},
-// features [{ id, lat, west, focus, r? }], interior [{ r, c: [r,g,b], f? }] + oceanR, eclLead [d], horizon [d],
-// extra(ctx, api) → { layers, controls, hotspots, update(dt, t, jd, cam), live() }
+// features [{ id, lat, west, focus, r?, when? }], interior [{ r, c: [r,g,b], f? }] + oceanR, eclLead [d], horizon [d],
+// sys (JUPITER_SYS | SATURN_SYS), speeds [[Tage/s, Name]] + speed0 (Startstufe), scanDiv (Suchschritt = Umlauf / n),
+// viewKeys (Teil von grau/farbe/gelaende), extra(ctx, api) → { layers, controls, hotspots, update(dt, t, jd, cam), live() }
 export function createIcyMoon(ctx, cfg) {
-  const el = GALILEAN[cfg.id], R = el.r;
+  const sys = cfg.sys ?? JUPITER_SYS, PL = sys.planet, SPD = cfg.speeds ?? SPEEDS;
+  const el = sys.els[cfg.id], R = el.r;
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(45, 1, 0.01, 6000);
   const pole = new THREE.Vector3(...laplaceAxes(el.ra, el.dec).z);
-  const jupPole = new THREE.Vector3(...equToScene(...JUPITER.pole));
-  const jd0 = julianDate(ctx.date), rJ = JUPITER.r / R;
-  const shineBase = 1.8 * P_JUP * (JUPITER.r / el.a) ** 2 * SHINE_X;
+  const jd0 = julianDate(ctx.date), rJ = PL.r / R;
+  const shineBase = 1.8 * sys.albedo * (PL.r / el.a) ** 2 * SHINE_X;
   let days = 0;
 
   // ---------- Bezugssystem zum Zeitpunkt jd: Szene (Ekliptik) → Mond (dreht mit) ----------
@@ -156,7 +209,7 @@ export function createIcyMoon(ctx, cfg) {
   const sunL = new THREE.Vector3(), jupL = new THREE.Vector3();
   const frame = { sunAng: 0, phase: 0, shadow: false };
   function solve(jd) {
-    const st = jovianState(jd);
+    const st = sys.state(jd, [cfg.id]);
     mv.set(...st.moons[cfg.id]);                                      // Jupiter → Mond [km]
     xA.copy(mv).addScaledVector(pole, -mv.dot(pole)).normalize();     // weg von Jupiter
     zA.crossVectors(xA, pole);
@@ -167,7 +220,7 @@ export function createIcyMoon(ctx, cfg) {
     jupL.copy(mv).negate().applyMatrix4(toMoon).divideScalar(R);
     frame.sunAng = st.sunAng;
     frame.phase = (1 + mv.normalize().dot(tv)) / 2;                   // beleuchteter Anteil der Jupiterscheibe, vom Mond aus
-    const l = lineOfSun(st, cfg.id);
+    const l = sys.line(st, cfg.id);
     frame.shadow = l.s < 0 && l.q < 1;
   }
   solve(jd0);
@@ -190,18 +243,13 @@ export function createIcyMoon(ctx, cfg) {
   sunSpr.scale.setScalar(SUN_D * 0.045);
   scene.add(sunSpr);
 
-  // ---------- Jupiter: echte Richtung, Größe, Abplattung, Drehung (System III), Phase; Mondschatten auf den Wolken ----------
-  const jupU = bodyU(ctx.tex('jupiter.jpg'), { band: 1, wrap: ATMOS.jupiter.wrap, term: ATMOS.jupiter.term, amb: 0.004, sunDir: sunL });
-  jupU.uOcc.value[0].set(0, 0, 0, 1);
-  const jupG = new THREE.Group();
-  const jup = new THREE.Mesh(new THREE.SphereGeometry(rJ, 96, 64), new THREE.ShaderMaterial({ vertexShader: BODY_VERT, fragmentShader: PLANET_FRAG, uniforms: jupU }));
-  jup.scale.y = JUPITER.rp / JUPITER.r;
-  jupG.add(jup);
-  scene.add(jupG);
-  const qPole = new THREE.Quaternion().setFromUnitVectors(Y, jupPole);
+  // ---------- Planet: echte Richtung, Größe, Abplattung, Drehung, Phase; Mondschatten auf Wolken (und Ringen) ----------
+  const planet = sys.build(ctx, { sunL, rP: rJ });
+  scene.add(planet.group);
   const haloU = { uK: { value: 0 } };
   const halo = new THREE.Mesh(new THREE.PlaneGeometry(2.6 * rJ, 2.6 * rJ), new THREE.ShaderMaterial({ vertexShader: HALO_VERT, fragmentShader: HALO_FRAG, uniforms: haloU,
     blending: THREE.AdditiveBlending, depthWrite: false, transparent: true }));
+  halo.visible = sys.halo;
   scene.add(halo);
 
   // ---------- Mond ----------
@@ -240,11 +288,11 @@ export function createIcyMoon(ctx, cfg) {
   const oceanFace = dCam.dot(cutA) > dCam.dot(cutB) ? [cutA, cutB] : [cutB, cutA];
 
   // ---------- Zeit, Ereignisse ----------
-  let spdIdx = 2, dayOn = !ctx.still, note = '', noteT = 0;
+  let spdIdx = cfg.speed0 ?? 2, dayOn = !ctx.still, note = '', noteT = 0;
   const jdNow = () => jd0 + days;
   // erster Zeitpunkt ab jd, an dem pred wahr wird (Schritt P/240, Eintritt auf ≈ 1 s genau)
   function scan(pred, horizon) {
-    const jd = jdNow(), step = el.P / 240;
+    const jd = jdNow(), step = el.P / (cfg.scanDiv ?? 240);
     let was = pred(jd);
     for (let t = jd + step; t < jd + horizon; t += step) {
       const now = pred(t);
@@ -257,8 +305,8 @@ export function createIcyMoon(ctx, cfg) {
     }
     return null;
   }
-  const eclipsed = (t) => { const l = lineOfSun(jovianState(t), cfg.id); return l.s < 0 && l.q < 1; };
-  const transit = (t) => { const l = lineOfSun(jovianState(t), cfg.id); return l.s > 0 && l.q < 1; };
+  const eclipsed = (t) => { const l = sys.line(sys.state(t, [cfg.id]), cfg.id); return l.s < 0 && l.q < 1; };
+  const transit = (t) => { const l = sys.line(sys.state(t, [cfg.id]), cfg.id); return l.s > 0 && l.q < 1; };
   function jump(pred, what) {
     const t = scan(pred, cfg.horizon);
     if (t === null) note = `kein${what === 'Finsternis' ? 'e' : ''} ${what} bis ${fmtDate(jdNow() + cfg.horizon)}`;
@@ -274,26 +322,27 @@ export function createIcyMoon(ctx, cfg) {
 
   // ---------- Ebenen (Zahnrad „Station · …“, Zeitleiste) ----------
   registerLayers(cfg.id, [
-    { id: 'day', type: 'play', group: 'Zeit', label: 'Tageslauf im Zeitraffer', value: spdIdx, min: 1, max: SPEEDS.length - 1, step: 1, autoplay: !ctx.still,
-      fmt: (i) => SPEEDS[Math.round(i)][1], set: (i, playing) => { spdIdx = Math.round(i); dayOn = playing; }, get: () => ({ value: spdIdx, playing: dayOn }),
-      status: () => [dayOn ? `Zeitraffer ${SPEEDS[spdIdx][1]}` : 'angehalten', fmtDate(jdNow()), frame.shadow ? 'im Jupiterschatten' : '', note].filter(Boolean).join(' · ') },
+    { id: 'day', type: 'play', group: 'Zeit', label: 'Tageslauf im Zeitraffer', value: spdIdx, min: 1, max: SPD.length - 1, step: 1, autoplay: !ctx.still,
+      fmt: (i) => SPD[Math.round(i)][1], set: (i, playing) => { spdIdx = Math.round(i); dayOn = playing; }, get: () => ({ value: spdIdx, playing: dayOn }),
+      status: () => [dayOn ? `Zeitraffer ${SPD[spdIdx][1]}` : 'angehalten', fmtDate(jdNow()), frame.shadow ? `im ${sys.name}schatten` : '', note].filter(Boolean).join(' · ') },
     ...(ext.layers || []),
     { id: 'cut', type: 'toggle', group: 'Innerer Aufbau', label: 'Schnitt durch den Mond (schematisch)', value: false, set: (v) => { cut.visible = v; moonU.uCut.value = v ? 1 : 0; } },
-    { id: 'ecl', type: 'action', group: 'Ereignisse', label: 'Finsternis im Jupiterschatten', button: 'Zur nächsten', run: jumpEclipse },
-    { id: 'transit', type: 'action', label: 'Eigener Schatten auf Jupiter', button: 'Zum nächsten', run: jumpTransit },
+    { id: 'ecl', type: 'action', group: 'Ereignisse', label: `Finsternis im ${sys.name}schatten`, button: 'Zur nächsten', run: jumpEclipse },
+    { id: 'transit', type: 'action', label: `Eigener Schatten auf ${sys.name}`, button: 'Zum nächsten', run: jumpTransit },
   ]);
 
   // ---------- Infotafel ----------
-  const VIEWS = [
+  const VIEWS_ALL = [
     ['grau', 'Messbild', 'radial-gradient(circle, #e2e2e2 0%, #8c8c8c 55%, #2a2a2a 100%)'],
     ['farbe', 'Tönung', 'radial-gradient(circle, #eadfcd 0%, #9a8064 55%, #34271b 100%)'],
     ['gelaende', 'Gelände', 'linear-gradient(135deg, #a8642e 0%, #a8642e 49%, #9fd8f2 51%, #9fd8f2 100%)'],
   ];
+  const VIEWS = VIEWS_ALL.filter((v) => cfg.views[v[0]]);
   const controls = [
-    { id: 'view', type: 'swatch', label: 'Ansicht', value: 'grau', options: VIEWS, detail: (v) => `<p class="sw-cap">${cfg.views[v]}</p>`,
-      set: (v) => { moonU.uView.value = Math.max(0, VIEWS.findIndex((x) => x[0] === v)); } },
+    { id: 'view', type: 'swatch', label: 'Ansicht', value: VIEWS[0][0], options: VIEWS.map((v) => [v[0], cfg.viewNames?.[v[0]] ?? v[1], v[2]]), detail: (v) => `<p class="sw-cap">${cfg.views[v]}</p>`,
+      set: (v) => { moonU.uView.value = Math.max(0, VIEWS_ALL.findIndex((x) => x[0] === v)); } },
     ...(ext.controls || []),
-    { id: 'speed', type: 'range', label: 'Zeitraffer', value: spdIdx, min: 0, max: SPEEDS.length - 1, step: 1, fmt: (i) => SPEEDS[Math.round(i)][1],
+    { id: 'speed', type: 'range', label: 'Zeitraffer', value: spdIdx, min: 0, max: SPD.length - 1, step: 1, fmt: (i) => SPD[Math.round(i)][1],
       set: (v) => { if (v) { spdIdx = v; dayOn = true; } else dayOn = false; refreshLayers(); }, get: () => (dayOn ? spdIdx : 0) },
     { id: 'ecl', type: 'action', label: 'Ereignis', button: 'Nächste Finsternis', run: jumpEclipse },
   ];
@@ -316,22 +365,19 @@ export function createIcyMoon(ctx, cfg) {
     ...(ext.hotspots || []),
     { id: 'ocean', kind: 'info', pos: oceanFace[1].clone().multiplyScalar(Math.cos(20 * RAD)).addScaledVector(Y, Math.sin(20 * RAD)).multiplyScalar(cfg.oceanR),
       focus: () => 0.8, visible: (cam) => cut.visible && tmp.copy(cam.position).dot(oceanFace[0]) > 0 },
-    { id: 'jupiter', kind: 'info', pos: jupL.clone(), visible: (cam) => !hidden(jupL, cam) },
+    { id: sys.id, kind: 'info', pos: jupL.clone(), visible: (cam) => !hidden(jupL, cam) },
   ];
   const jupHs = hotspots[hotspots.length - 1];
 
   // ---------- je Bild ----------
-  const qSpin = new THREE.Quaternion(), vC = new THREE.Vector3();
+  const vC = new THREE.Vector3();
   function apply(t) {
     const jd = jdNow();
     solve(jd);
     skyRot.value.setFromMatrix4(toMoon);
     sunSpr.position.copy(sunL).multiplyScalar(SUN_D);
-    jupG.position.copy(jupL);
-    jupG.quaternion.copy(qToMoon).multiply(qPole);
-    jup.quaternion.copy(qSpin.setFromAxisAngle(Y, 2 * Math.PI * (((jd * 24) / JUPITER.rot) % 1)));
-    jupU.uSunAng.value = moonU.uSunAng.value = frame.sunAng;
-    jupU.uTime.value = t;
+    planet.frame(jupL, qToMoon, jd, t, frame.sunAng, sunL);
+    moonU.uSunAng.value = frame.sunAng;
     moonU.uOcc.value[0].set(jupL.x, jupL.y, jupL.z, rJ);
     moonU.uEarthshine.value = shineBase * frame.phase;
     jupHs.pos.copy(jupL);
@@ -344,13 +390,13 @@ export function createIcyMoon(ctx, cfg) {
     scene, camera, home, unit: R * 1e3, hotspots, controls, look,
     orbit: { minDistance: 0.05, maxDistance: 40, cineSpeed: 0.5 },
     update(dt, t, cam, flying) {
-      if (!flying && dayOn) days += dt * SPEEDS[spdIdx][0];
+      if (!flying && dayOn) days += dt * SPD[spdIdx][0];
       if (noteT > 0 && (noteT -= dt) <= 0) note = '';
       apply(t);
       // Nahebene mit dem Abstand zur Oberfläche
       const nr = THREE.MathUtils.clamp((cam.position.length() - 1) * 0.2, 0.004, 0.05);
       if (Math.abs(nr - camera.near) / camera.near > 0.05) { camera.near = nr; camera.updateProjectionMatrix(); }
-      // Lichtsaum: nur wenn die Sonne (von der Kamera aus) hinter Jupiter steht
+      // Lichtsaum: nur wenn die Sonne (von der Kamera aus) hinter dem Planeten steht
       halo.position.copy(jupL);
       halo.quaternion.copy(cam.quaternion);
       const dist = vC.copy(jupL).sub(cam.position).length(), rho = Math.asin(Math.min(1, rJ / dist));
@@ -362,7 +408,7 @@ export function createIcyMoon(ctx, cfg) {
       const r = c.object.position.length();
       if (r < 1.02) c.object.position.multiplyScalar(1.02 / r);
     },
-    live: () => [dayOn ? `Tageslauf ${SPEEDS[spdIdx][1]}` : 'Zeit angehalten', fmtDate(jdNow()), ext.live ? ext.live() : ''].filter(Boolean).join(' · '),
+    live: () => [dayOn ? `Tageslauf ${SPD[spdIdx][1]}` : 'Zeit angehalten', fmtDate(jdNow()), ext.live ? ext.live() : ''].filter(Boolean).join(' · '),
     setPixelRatio(pr) { stars.userData.setPixelRatio(pr); },
     dispose() {
       scene.traverse((o) => { if (o.geometry) o.geometry.dispose(); if (o.material) o.material.dispose(); });
