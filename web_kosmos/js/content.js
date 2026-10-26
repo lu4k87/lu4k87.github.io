@@ -95,6 +95,7 @@ export const SOURCES = {
   // [E2] Mond
   // [E3] Jupiter-System
   // [E4] Saturn + Mars
+  // [E4] Mars
   // [E5] Neptun, Uranus, Pluto
 };
 
@@ -203,6 +204,7 @@ export const STATIONS = {
   // [E2] Mond
   // [E3] Jupiter-System
   // [E4] Saturn + Mars
+  // [E4] Mars
   // [E5] Neptun, Uranus, Pluto
   galaxy: {
     n: 3, title: 'Milchstraße', kicker: 'Galaktisch', parent: 'local', width: 1.3e21, dist: 0, lookback: 0,

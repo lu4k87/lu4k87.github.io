@@ -464,7 +464,11 @@ export function create(ctx) {
     { id: 'belt', kind: 'info', pos: onBelt(2.75) },
     { id: 'asteroid', kind: 'dive', to: 'asteroid', pos: onBelt(2.95).applyAxisAngle(new THREE.Vector3(0, 1, 0), -0.22) },
     { id: 'kuiper', kind: 'info', pos: onBelt(44) },
-    ...['mercury', 'venus', 'mars', 'uranus', 'neptune'].map((id) => ({ id, kind: 'info', pos: P[id].pos, focus: focus(P[id]) })),
+    ...['mercury', 'venus'].map((id) => ({ id, kind: 'info', pos: P[id].pos, focus: focus(P[id]) })),
+    // je Planet eine Zeile: Abstecher der Etappen E4/E5 (docs/plan_ebenen.md) ändern nur ihre eigene
+    { id: 'mars', kind: 'info', pos: P.mars.pos, focus: focus(P.mars) },
+    { id: 'uranus', kind: 'info', pos: P.uranus.pos, focus: focus(P.uranus) },
+    { id: 'neptune', kind: 'info', pos: P.neptune.pos, focus: focus(P.neptune) },
   ];
   // Screenshot-Hilfe: Heimpose nahe an einem Körper
   if (view) {
