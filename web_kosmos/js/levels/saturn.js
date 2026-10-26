@@ -188,7 +188,7 @@ function glowTexture() {
 export function create(ctx) {
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(40, 1, 0.005, 800);
-  scene.add(createStarfield({ ngp: new THREE.Vector3(...eclDir(180.02, 29.81)), gc: new THREE.Vector3(...eclDir(266.84, -5.54)), gain: 0.6, seed: 47 }));
+  scene.add(createStarfield({ ngp: new THREE.Vector3(...eclDir(180.02, 29.81)), gc: new THREE.Vector3(...eclDir(266.84, -5.54)), gain: 0.6, seed: 47, tex: ctx.tex }));
   const stars = scene.children[0];
   const P = new THREE.Vector3(...POLE);
   const jd0 = julianDate(ctx.date);

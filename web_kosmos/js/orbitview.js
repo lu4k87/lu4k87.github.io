@@ -115,7 +115,7 @@ export function createOrbitView(ctx, { sat, fallback, radius = 60, color = 0xf3b
   const rot = skyRotator();
   let catalog = null, pr = 1;
   const ngp = new THREE.Vector3(...eclDir(180.02, 29.81)), gc = new THREE.Vector3(...eclDir(266.84, -5.54));
-  const band = createStarfield({ count: 1, ngp, gc, gain: 0, band: 1.2, glint: false });
+  const band = createStarfield({ count: 1, ngp, gc, gain: 0, band: 1.2, glint: false, tex: ctx.tex });
   sky.add(band);
   rot.add(band);
   const skyReady = createCatalogSky({ gain: 2.1, limit: 6.5 }).then((g) => { catalog = g; g.userData.setPixelRatio(pr); order(g, ORDER.sky); sky.add(g); rot.add(g); })

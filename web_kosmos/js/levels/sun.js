@@ -81,7 +81,7 @@ function glowTexture() {
 export function create(ctx) {
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(45, 1, 0.002, 400);
-  scene.add(createStarfield({ ngp: new THREE.Vector3(...eclDir(180.02, 29.81)), gc: new THREE.Vector3(...eclDir(266.84, -5.54)), gain: 0.7, seed: 31 }));
+  scene.add(createStarfield({ ngp: new THREE.Vector3(...eclDir(180.02, 29.81)), gc: new THREE.Vector3(...eclDir(266.84, -5.54)), gain: 0.7, seed: 31, tex: ctx.tex }));
   const stars = scene.children[0];
   // Bewegung reduziert (ctx.still): Brodeln, Schleifen, Protuberanzen mit 20 % Tempo, keine Flares von selbst
   const ta0 = ctx.still ? 0.2 : 1;

@@ -226,7 +226,7 @@ export function createIcyMoon(ctx, cfg) {
   solve(jd0);
 
   // ---------- Sterne (Fernebene) drehen mit: skyPosition() kennt keine Modellmatrix → eigene Drehung im Vertex-Shader ----------
-  const stars = createStarfield({ ngp: new THREE.Vector3(...eclDir(180.02, 29.81)), gc: new THREE.Vector3(...eclDir(266.84, -5.54)), gain: 0.8, seed: cfg.seed });
+  const stars = createStarfield({ ngp: new THREE.Vector3(...eclDir(180.02, 29.81)), gc: new THREE.Vector3(...eclDir(266.84, -5.54)), gain: 0.8, seed: cfg.seed, tex: ctx.tex });
   const skyRot = { value: new THREE.Matrix3() };
   stars.traverse((o) => {
     const m = o.material;

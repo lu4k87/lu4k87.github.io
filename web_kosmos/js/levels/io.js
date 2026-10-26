@@ -232,7 +232,7 @@ export function create(ctx) {
       catalog.userData.setPixelRatio(pr);
       sky.add(catalog);
     });
-  sky.add(createStarfield({ count: 1, ngp, gc, gain: 0, band: 1, glint: false }));
+  sky.add(createStarfield({ count: 1, ngp, gc, gain: 0, band: 1, glint: false, tex: ctx.tex }));
   const sunU = { uSun: { value: sun }, uAng: { value: 0.0009 } };
   const sunSky = new THREE.Mesh(new THREE.SphereGeometry(1, 48, 24), new THREE.ShaderMaterial({ vertexShader: SKY_VERT, fragmentShader: SUN_FRAG,
     uniforms: sunU, side: THREE.BackSide, depthWrite: false, blending: THREE.AdditiveBlending, transparent: true }));

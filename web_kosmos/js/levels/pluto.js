@@ -134,7 +134,7 @@ function helio(jd, out = new THREE.Vector3()) {
 export function create(ctx) {
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(45, 1, 0.01, 8000);
-  const stars = createStarfield({ ngp: new THREE.Vector3(...eclDir(180.02, 29.81)), gc: new THREE.Vector3(...eclDir(266.84, -5.54)), gain: 0.8, seed: 43 });
+  const stars = createStarfield({ ngp: new THREE.Vector3(...eclDir(180.02, 29.81)), gc: new THREE.Vector3(...eclDir(266.84, -5.54)), gain: 0.8, seed: 43, tex: ctx.tex });
   scene.add(stars);
   const glow = glowTexture();
 

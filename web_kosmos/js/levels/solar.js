@@ -168,7 +168,7 @@ export function create(ctx) {
   let jd = jd0, rate = 1, real = false;
   const view = new URLSearchParams(location.search).get('view');   // Screenshots: ?view=sun|saturn|moon|jupole|jupwide|<planet>
 
-  scene.add(createStarfield({ ngp: new THREE.Vector3(...eclDir(180.02, 29.81)), gc: new THREE.Vector3(...eclDir(266.84, -5.54)), gain: 0.8, seed: 23 }));
+  scene.add(createStarfield({ ngp: new THREE.Vector3(...eclDir(180.02, 29.81)), gc: new THREE.Vector3(...eclDir(266.84, -5.54)), gain: 0.8, seed: 23, tex: ctx.tex }));
   const stars = scene.children[0];
 
   // ---------- Sonne (Shader: sunfx.js) ----------

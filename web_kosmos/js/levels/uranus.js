@@ -43,7 +43,7 @@ const SUN_ANG = 695700 / (19.19 * 1.495978707e8);   // Winkelradius der Sonne be
 export function create(ctx) {
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(45, 1, 0.01, 4000);
-  scene.add(createStarfield({ ngp: new THREE.Vector3(...eclDir(180.02, 29.81)), gc: new THREE.Vector3(...eclDir(266.84, -5.54)), gain: 0.75, seed: 37 }));
+  scene.add(createStarfield({ ngp: new THREE.Vector3(...eclDir(180.02, 29.81)), gc: new THREE.Vector3(...eclDir(266.84, -5.54)), gain: 0.75, seed: 37, tex: ctx.tex }));
   const stars = scene.children[0];
   const jdNow = julianDate(ctx.date), yearNow = ctx.date.getUTCFullYear();
   let year = yearNow, days = 0, spdIdx = 2, playing = !ctx.still, big = 8;

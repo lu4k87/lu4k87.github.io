@@ -319,13 +319,13 @@ export function create(ctx) {
     hotspots.push(...conLabels, ...starLabels);
   }).catch((err) => {
     console.warn('[kosmos] Sternkatalog nicht geladen, statistischer Himmel:', err);
-    const f = createStarfield({ ngp, gc, gain: 0.9, seed: 11 });
+    const f = createStarfield({ ngp, gc, gain: 0.9, seed: 11, tex: ctx.tex });
     f.userData.setPixelRatio(pr);
     sky.add(f);
     catalog = f;
   });
   // Milchstraßenband und Sonne bleiben prozedural
-  sky.add(createStarfield({ count: 1, ngp, gc, gain: 0, band: 1, glint: false }));
+  sky.add(createStarfield({ count: 1, ngp, gc, gain: 0, band: 1, glint: false, tex: ctx.tex }));
   const sunMat = new THREE.ShaderMaterial({ vertexShader: SUN_VERT, fragmentShader: SUN_FRAG, uniforms: { uSun: { value: sunDir } }, side: THREE.BackSide, depthWrite: false, blending: THREE.AdditiveBlending, transparent: true });
   const sunSky = new THREE.Mesh(new THREE.SphereGeometry(1, 64, 32), sunMat);
   sunSky.frustumCulled = false;

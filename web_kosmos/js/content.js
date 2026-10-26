@@ -85,6 +85,7 @@ export const SOURCES = {
   'jades-2024': { t: 'A shining cosmic dawn: JADES-GS-z14-0', by: 'Carniani et al. 2024, Nature 633', url: 'https://doi.org/10.1038/s41586-024-07860-9' },
   'kim-2002': { t: 'Planck-Kurve in der Normfarbtafel (Näherung)', by: 'Kim et al. 2002, US-Patent 7024034', url: 'https://patents.google.com/patent/US7024034' },
   'sss-tex': { t: 'Planetentexturen (CC BY 4.0, auf NASA-Daten)', by: 'Solar System Scope / INOVE', url: 'https://www.solarsystemscope.com/textures/' },
+  'svs-milkyway': { t: 'Deep Star Maps 2020 – Milchstraße ohne helle Sterne (Hipparcos, Tycho-2, Gaia DR2: ESA/Gaia/DPAC)', by: 'NASA Goddard Scientific Visualization Studio', url: 'https://svs.gsfc.nasa.gov/4851' },
   'wcag-flash': { t: 'WCAG 2.2 – 2.3.1 Drei Blitze oder darunter', by: 'W3C 2023', url: 'https://www.w3.org/TR/WCAG22/#three-flashes-or-below-threshold' },
   'd3-celestial': { t: 'Sternkatalog (Yale Bright Star Catalogue, 5.044 Sterne bis 6 mag) und Sternbildlinien (BSD-3)', by: 'Olaf Frohn, d3-celestial', url: 'https://github.com/ofrohn/d3-celestial' },
   'hipparcos': { t: 'Hipparcos, the New Reduction (Entfernungen heller Sterne)', by: 'van Leeuwen 2007, A&A 474, 653', url: 'https://doi.org/10.1051/0004-6361:20078357' },

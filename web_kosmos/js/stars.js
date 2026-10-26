@@ -126,13 +126,39 @@ export function glintPoints(pos, col, mag, { gain = 1, limit = 1.6 } = {}) {
   return pointsOf(pos, col, mag, GLINT_VERT, GLINT_FRAG, { uPx: { value: 1 }, uGain: { value: gain }, uLimit: { value: limit } }, -9);
 }
 
-// Diffuses Band der Milchstraße: ngp = galaktischer Nordpol, gc = galaktisches Zentrum (beide in der Szene der Ebene)
-export function milkyBand(ngp, gc, gain = 1) {
+// Milchstraße als Bild (Stationen mit echter Lage im Sonnensystem): NASA SVS Deep Star Maps 2020, Hintergrund aus
+// Hipparcos, Tycho-2 und Gaia DR2 ohne die hellen Sterne (die zeichnen die Punkte darüber), galaktische Plattkarte –
+// Mitte l = 0°, l wächst nach links, oben b = +90° (tools/milkyway_tex.py). Naht bei l = 180°: Mip-Stufe aus der
+// stetigen Nachbar-Koordinate, sonst zeigt die Sprungstelle von atan eine feine Linie.
+export const MILKY_TEX = 'milkyway_4k.jpg';
+const PHOTO_FRAG = /* glsl */ `
+uniform sampler2D uMap;
+uniform vec3 uNgp, uGc, uL90;
+uniform float uGain;
+varying vec3 vDir;
+void main() {
+  vec3 d = normalize(vDir);
+  float b = asin(clamp(dot(d, uNgp), -1.0, 1.0));
+  float l = atan(dot(d, uL90), dot(d, uGc));
+  vec2 uv = vec2(0.5 - l / 6.2831853, 0.5 + b / 3.1415927);
+  vec2 dx = dFdx(uv), dy = dFdy(uv);
+  vec2 dx2 = dFdx(fract(uv + 0.5)), dy2 = dFdy(fract(uv + 0.5));
+  if (abs(dx2.x) + abs(dy2.x) < abs(dx.x) + abs(dy.x)) { dx.x = dx2.x; dy.x = dy2.x; }
+  gl_FragColor = vec4(textureGrad(uMap, uv, dx, dy).rgb * uGain, 1.0);
+}
+`;
+
+// Diffuses Band der Milchstraße: ngp = galaktischer Nordpol, gc = galaktisches Zentrum (beide in der Szene der Ebene);
+// tex = Textur-Lader der Station (ctx.tex) → Bild statt Modell
+export function milkyBand(ngp, gc, gain = 1, tex = null) {
   const n = ngp.clone().normalize();
   const u = gc.clone().addScaledVector(n, -gc.dot(n)).normalize();
+  const photo = tex ? { fragmentShader: PHOTO_FRAG,
+    uniforms: { uMap: { value: tex(MILKY_TEX) }, uNgp: { value: n }, uGc: { value: u }, uL90: { value: new THREE.Vector3().crossVectors(n, u) },
+      uGain: { value: 0.06 * gain } } } : { fragmentShader: BAND_FRAG,
+    uniforms: { uNgp: { value: n }, uGc: { value: u }, uGain: { value: 0.035 * gain } } };
   const bandMat = new THREE.ShaderMaterial({
-    vertexShader: BAND_VERT, fragmentShader: BAND_FRAG,
-    uniforms: { uNgp: { value: n }, uGc: { value: u }, uGain: { value: 0.035 * gain } },
+    vertexShader: BAND_VERT, ...photo,
     side: THREE.BackSide, depthWrite: false, depthTest: true, blending: THREE.AdditiveBlending, transparent: true,
   });
   const sky = new THREE.Mesh(new THREE.SphereGeometry(1, 48, 24), bandMat);
@@ -142,8 +168,9 @@ export function milkyBand(ngp, gc, gain = 1) {
 }
 
 // ngp = Richtung galaktischer Nordpol, gc = Richtung galaktisches Zentrum (beide in der Szene der Ebene)
+// tex = ctx.tex der Station: Milchstraße als Bild (nur mit echter Lage von ngp/gc, d. h. im Sonnensystem)
 export function createStarfield({ count = 26000, seed = 7, ngp = new THREE.Vector3(0, 1, 0), gc = new THREE.Vector3(1, 0, 0),
-  gain = 1, band = 1, limit = 8, glint = true } = {}) {
+  gain = 1, band = 1, limit = 8, glint = true, tex = null } = {}) {
   const rand = mulberry32(seed);
   const n = ngp.clone().normalize();
   const u = gc.clone().addScaledVector(n, -gc.dot(n)).normalize();
@@ -178,7 +205,7 @@ export function createStarfield({ count = 26000, seed = 7, ngp = new THREE.Vecto
     group.add(g);
     mats.push(g.material);
   }
-  if (band > 0) group.add(milkyBand(n, u, band));
+  if (band > 0) group.add(milkyBand(n, u, band, tex));
   group.userData.setPixelRatio = (pr) => mats.forEach((m) => { m.uniforms.uPx.value = pr; });
   group.userData.material = points.material;
   return group;

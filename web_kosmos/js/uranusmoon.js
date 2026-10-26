@@ -122,7 +122,7 @@ export function createUranusMoon(ctx, cfg) {
       catalog.userData.setPixelRatio(pr);
       sky.add(catalog);
     });
-  sky.add(createStarfield({ count: 1, ngp, gc, gain: 0, band: 1, glint: false }));
+  sky.add(createStarfield({ count: 1, ngp, gc, gain: 0, band: 1, glint: false, tex: ctx.tex }));
   const sunSky = new THREE.Mesh(new THREE.SphereGeometry(1, 64, 32), new THREE.ShaderMaterial({ vertexShader: SUN_VERT, fragmentShader: SUN_FRAG,
     uniforms: { uSun: { value: sun } }, side: THREE.BackSide, depthWrite: false, blending: THREE.AdditiveBlending, transparent: true }));
   sunSky.frustumCulled = false;

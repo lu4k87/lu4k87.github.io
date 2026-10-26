@@ -80,7 +80,7 @@ const planetU = (map, o) => ({
 export function create(ctx) {
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(45, 1, 0.01, 3000);
-  scene.add(createStarfield({ ngp: new THREE.Vector3(...eclDir(180.02, 29.81)), gc: new THREE.Vector3(...eclDir(266.84, -5.54)), gain: 0.75, seed: 41 }));
+  scene.add(createStarfield({ ngp: new THREE.Vector3(...eclDir(180.02, 29.81)), gc: new THREE.Vector3(...eclDir(266.84, -5.54)), gain: 0.75, seed: 41, tex: ctx.tex }));
   const stars = scene.children[0];
   const jd0 = julianDate(ctx.date);
   let jd = jd0;

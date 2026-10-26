@@ -95,7 +95,7 @@ void main() { float a = smoothstep(0.5, 0.12, length(gl_PointCoord - 0.5)); gl_F
 export function create(ctx) {
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(45, 1, 0.01, 5000);
-  scene.add(createStarfield({ ngp: new THREE.Vector3(...eclDir(180.02, 29.81)), gc: new THREE.Vector3(...eclDir(266.84, -5.54)), gain: 0.75, seed: 47 }));
+  scene.add(createStarfield({ ngp: new THREE.Vector3(...eclDir(180.02, 29.81)), gc: new THREE.Vector3(...eclDir(266.84, -5.54)), gain: 0.75, seed: 47, tex: ctx.tex }));
   const stars = scene.children[0];
   const rand = mulberry32(53);
   const jd0 = julianDate(ctx.date);
