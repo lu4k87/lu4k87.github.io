@@ -4,7 +4,7 @@
 
 import { LEVELS, SOURCES } from './content.js';
 import { xrd, xrdCurve, raman, ramanCurve } from './nanolab.js';
-import { properties, labProps, pyroState, fmt, T_MIN, T_MAX, T_ROOM, PHASES, fillDiameterNm, kelvinRh, filledShare, isotherm, poreClass, nanoStructure, tissueScale } from './science.js';
+import { properties, labProps, pyroState, fmt, T_MIN, T_MAX, T_ROOM, PHASES, fillDiameterNm, kelvinRh, filledShare, isotherm, poreClass, nanoStructure, tissueScale, conductivity, wettability, shrinkPercent } from './science.js';
 import { hexBadge, HEX, LEVEL_ICONS, HOTSPOT_ICONS } from './icons.js';
 
 const $ = (sel) => document.querySelector(sel);
@@ -153,31 +153,88 @@ export function createHud(handlers) {
       </div>`).join('')}</div>`;
   }
 
-  // Laborwerte: [Schlüssel, Name, Wert, Warnung, Balken-%] – gleiche Quelle für Aufbau und laufende Aktualisierung;
-  // kurze Namen für die 3 × 3 Kacheln (Panel:B), Langform steht in der Erläuterung unter „Verlauf H/C“;
+  // Temperatur-Fenster einzelner Hotspots (Vorschau 2026-10-26, Buehne:A+B+C): Badge am Entdecken-Chip, Statuskapsel und
+  // sanfter 1,2-s-Gleitsprung (F1) in der Info-Karte, wenn ein Merkmal bei der aktuellen Temperatur noch nicht / nicht mehr existiert
+  const HS_TEMP = {
+    piece: {
+      cracks: { min: 380, jump: 550, badge: 'ab 380 °C', note: 'Entsteht beim Verkohlen ab ≈ 380 °C' },
+    },
+    wall: {
+      crack: { min: 310, jump: 550, badge: 'ab 310 °C', note: 'Mikrorisse öffnen sich ab ≈ 310 °C' },
+    },
+    meso: {
+      macro: { min: 340, jump: 550, badge: 'ab 340 °C', note: 'Poren öffnen sich ab ≈ 340 °C' },
+      meso: { min: 340, jump: 550, badge: 'ab 340 °C', note: 'Schlitzporen öffnen sich ab ≈ 340 °C' },
+      race: { min: 340, jump: 550, badge: 'ab 340 °C', note: 'Knudsen-Spalt ab ≈ 340 °C offen' },
+      water: { min: 340, jump: 550, badge: 'ab 340 °C', note: 'Kapillarkondensation ab ≈ 340 °C' },
+    },
+    micro: {
+      fibril: { max: 365, jump: 25, badge: '≤ 365 °C', note: 'Nur im Rohholz bis ≈ 365 °C erhalten' },
+      hemi: { max: 365, jump: 25, badge: '≤ 365 °C', note: 'Zersetzt sich oberhalb von ≈ 365 °C' },
+      stack: { min: 345, jump: 550, badge: 'ab 345 °C', note: 'Graphen-Stapel entstehen ab ≈ 345 °C' },
+      micropore: { min: 345, jump: 550, badge: 'ab 345 °C', note: 'Mikroporen entstehen ab ≈ 345 °C' },
+      gas: { min: 345, jump: 550, badge: 'ab 345 °C', note: 'Poren für Gasmoleküle ab ≈ 345 °C' },
+    },
+    atoms: {
+      carboxyl: { max: 374, jump: 250, badge: 'bis 370 °C', note: 'Spaltet ab ≈ 375 °C als CO₂ ab' },
+      carbonyl: { max: 524, jump: 420, badge: 'bis 520 °C', note: 'Spaltet ab ≈ 525 °C als CO ab' },
+      phenol: { max: 674, jump: 550, badge: 'bis 670 °C', note: 'Spaltet ab ≈ 675 °C ab' },
+      sw: { min: 525, jump: 600, badge: 'ab 525 °C', note: '5-7-7-5-Defekt ab 7 Ringen (≈ 525 °C)' },
+    },
+  };
+  const hsMeta = (lid, hid) => (HS_TEMP[lid] && HS_TEMP[lid][hid]) || null;
+  const isHsOffAt = (lid, h, T) => {
+    const m = hsMeta(lid, h.id);
+    if (m) return (m.min !== undefined && T < m.min) || (m.max !== undefined && T > m.max);
+    return !!(h.hidden || (h.normal && h.normal.lengthSq() === 0));
+  };
+
+  // Laborwerte: [Schlüssel, Name, Wert, Warnung, Balken-%, Delta zum Holz] – gleiche Quelle für Aufbau und laufende Aktualisierung;
+  // kurze Namen für die 3 × 3 Kacheln (Panel:B) + immer offene 2er-Zeile Leitfähigkeit σ & Kontaktwinkel θ darunter (Labor:A, F3);
   // Zahl und Einheit hängen per geschütztem Leerzeichen zusammen, umbrechen darf die Kachel nur nach „≈“
+  const WOOD_REF = labProps(T_ROOM);
+  const supExp = (n) => String(n).replace('-', '⁻').replace(/\d/g, (d) => '⁰¹²³⁴⁵⁶⁷⁸⁹'[+d]);
+  function fmtSigma(t) {
+    const { sigma, decade } = conductivity(t);
+    if (decade <= -9) return `< 10${supExp(-9)}\u00a0S/m`;
+    if (decade < -2) return `≈ 10${supExp(Math.round(decade))}\u00a0S/m`;
+    return `${fmt(sigma, sigma < 1 ? 2 : sigma < 10 ? 1 : 0)}\u00a0S/m`;
+  }
   function labRows(t) {
     const p = labProps(t);
     const dash = '–';
     const cl = (v) => Math.min(100, Math.max(0, v));
+    const dY = Math.round(p.yield - WOOD_REF.yield);
+    const dC = Math.round(p.carbon - WOOD_REF.carbon);
+    const dHc = Math.round(((p.hc - WOOD_REF.hc) / WOOD_REF.hc) * 100);
+    const dOc = Math.round(((p.oc - WOOD_REF.oc) / WOOD_REF.oc) * 100);
+    const dPh = p.ph - WOOD_REF.ph;
     return [
-      ['yield', 'Ausbeute', `${fmt(p.yield)}\u00a0%`, false, cl(p.yield)],
-      ['carbon', 'Kohlenstoff', `${fmt(p.carbon)}\u00a0%`, false, cl(p.carbon)],
-      ['hc', 'H/C < 0,7', `${fmt(p.hc, 2)} ${p.hc < 0.7 ? '✓' : '⚠'}`, p.hc >= 0.7, cl((p.hc / 1.55) * 100)],
-      ['oc', 'O/C < 0,4', `${fmt(p.oc, 2)} ${p.oc < 0.4 ? '✓' : '⚠'}`, p.oc >= 0.4, cl((p.oc / 0.85) * 100)],
-      ['bet', 'BET-Fläche', `≈ ${fmt(p.bet)}\u00a0m²/g`, false, cl(Math.max(2, (p.bet / 400) * 100))],
-      ['ph', 'pH-Wert', fmt(p.ph, 1), false, cl(((p.ph - 4) / 7) * 100)],
-      ['fperm', 'C nach 100 J.', p.fperm === null ? dash : `${fmt(p.fperm * 100)}\u00a0%`, false, p.fperm === null ? 0 : cl(p.fperm * 100)],
-      ['co2', 'CO₂ gebunden', p.co2 === null ? dash : `${fmt(p.co2, 1)}\u00a0t/t`, false, p.co2 === null ? 0 : cl((p.co2 / 3.2) * 100)],
-      ['cls', 'Strukturtyp', p.charClass, false, null],
+      ['yield', 'Ausbeute', `${fmt(p.yield)}\u00a0%`, false, cl(p.yield), dY === 0 ? 'Holz' : `${dY > 0 ? '+' : '−'}${fmt(Math.abs(dY))}\u00a0%`],
+      ['carbon', 'Kohlenstoff', `${fmt(p.carbon)}\u00a0%`, false, cl(p.carbon), dC === 0 ? 'Holz' : `${dC > 0 ? '+' : '−'}${fmt(Math.abs(dC))}\u00a0%`],
+      ['hc', 'H/C < 0,7', `${fmt(p.hc, 2)} ${p.hc < 0.7 ? '✓' : '⚠'}`, p.hc >= 0.7, cl((p.hc / 1.55) * 100), dHc === 0 ? 'Holz' : `−${fmt(Math.abs(dHc))}\u00a0%`],
+      ['oc', 'O/C < 0,4', `${fmt(p.oc, 2)} ${p.oc < 0.4 ? '✓' : '⚠'}`, p.oc >= 0.4, cl((p.oc / 0.85) * 100), dOc === 0 ? 'Holz' : `−${fmt(Math.abs(dOc))}\u00a0%`],
+      ['bet', 'BET-Fläche', `≈ ${fmt(p.bet)}\u00a0m²/g`, false, cl(Math.max(2, (p.bet / 400) * 100)), p.bet <= 1 ? 'Holz 1' : `×${fmt(p.bet, 0)}`],
+      ['ph', 'pH-Wert', fmt(p.ph, 1), false, cl(((p.ph - 4) / 7) * 100), Math.abs(dPh) < 0.05 ? 'Holz' : `${dPh > 0 ? '+' : '−'}${fmt(Math.abs(dPh), 1)}`],
+      ['fperm', 'C nach 100 J.', p.fperm === null ? dash : `${fmt(p.fperm * 100)}\u00a0%`, false, p.fperm === null ? 0 : cl(p.fperm * 100), p.fperm === null ? 'ab 350 °C' : 'IPCC'],
+      ['co2', 'CO₂ gebunden', p.co2 === null ? dash : `${fmt(p.co2, 1)}\u00a0t/t`, false, p.co2 === null ? 0 : cl((p.co2 / 3.2) * 100), p.co2 === null ? 'ab 350 °C' : 'C × 3,67'],
+      ['cls', 'Strukturtyp', p.charClass, false, null, t < T_MIN ? 'Rohholz' : 'Keiluweit'],
+    ];
+  }
+  function physRows(t) {
+    const c = conductivity(t), w = wettability(t);
+    const cl = (v) => Math.min(100, Math.max(0, v));
+    return [
+      ['sigma', 'Leitfähigkeit σ', fmtSigma(t), false, cl(((c.decade + 14) / 15.5) * 100), c.decade <= -6 ? 'Isolator' : c.decade < 0 ? 'Halbleiter' : 'leitend'],
+      ['theta', 'Kontaktwinkel θ', `${fmt(w.theta, 0)}° ${w.hydrophobic ? '⚠' : '✓'}`, w.hydrophobic, cl(((120 - w.theta) / 90) * 100), w.hydrophobic ? 'hydrophob' : 'benetzbar'],
     ];
   }
 
   function labTiles(t) {
-    const cell = ([k, name, v, warn, bar]) => `<div class="lab-cell${warn ? ' warn' : ''}" data-f="${k}"><dt>${name}</dt><dd><span class="lab-val">${v}</span>${bar !== null ? `<span class="lab-bar" aria-hidden="true"><i style="width:${bar.toFixed(1)}%"></i></span>` : ''}</dd></div>`;
-    return `<dl class="lab">${labRows(t).map(cell).join('')}</dl>`;
+    const cell = ([k, name, v, warn, bar, delta]) => `<div class="lab-cell${warn ? ' warn' : ''}" data-f="${k}"><dt><span>${name}</span>${delta ? `<small class="lab-delta">${delta}</small>` : ''}</dt><dd><span class="lab-val">${v}</span>${bar !== null ? `<span class="lab-bar" aria-hidden="true"><i style="width:${bar.toFixed(1)}%"></i></span>` : ''}</dd></div>`;
+    return `<dl class="lab">${labRows(t).map(cell).join('')}</dl><dl class="lab lab--phys">${physRows(t).map(cell).join('')}</dl>`;
   }
-  const LAB_NOTE = 'Werte bei der gezeigten Temperatur, Richtwerte für Holz, langsame Pyrolyse – reale Kohlen streuen je Rohstoff und Verfahren. Unter 350 °C Übergang vom Holz (Modell). H/C und O/C: molare Verhältnisse H/Corg und O/Corg mit EBC-Grenzwerten. C nach 100 Jahren: Anteil des Kohlenstoffs, der im Boden bleibt (IPCC). CO₂ gebunden: t CO₂ je t Biochar = C-Gehalt × IPCC-Faktor × 44/12. Strukturtyp nach Keiluweit 2010.';
+  const LAB_NOTE = 'Werte bei der gezeigten Temperatur mit Differenz zum Rohholz (25 °C), Richtwerte für Holz, langsame Pyrolyse – reale Kohlen streuen je Rohstoff und Verfahren. Unter 350 °C Übergang vom Holz (Modell). H/C und O/C: molare Verhältnisse H/Corg und O/Corg mit EBC-Grenzwerten. C nach 100 Jahren: Anteil des Kohlenstoffs, der im Boden bleibt (IPCC). CO₂ gebunden: t CO₂ je t Biochar = C-Gehalt × IPCC-Faktor × 44/12. Leitfähigkeit σ nach Gabhi et al. (2020), Kontaktwinkel θ von Wasser nach Kinney et al. (2012). Strukturtyp nach Keiluweit 2010.';
 
   // Kurve H/Corg über der Temperatur mit EBC-Grenze 0,7 und Marke für die gezeigte Temperatur
   const CH = { w: 240, h: 96, x0: 30, x1: 232, y0: 8, y1: 76 };
@@ -373,6 +430,31 @@ export function createHud(handlers) {
   new ResizeObserver(() => { rulerW = ruler.clientWidth; }).observe(ruler);   // Länge kommt aus dem CSS (mobil kürzer)
 
   let lastLive = 0;
+  let lastLensScale = 'Ø –';
+  function cardStatusHtml(T) {
+    if (!selected || current < 0) return '';
+    const l = LEVELS[current], st = pyroState(T), meta = hsMeta(l.id, selected.id);
+    const off = isHsOffAt(l.id, selected, T);
+    const sh = shrinkPercent(T);
+    const extra = current <= 3 ? ` · −${fmt(sh.tan, 0)}\u00a0% quer` : current >= 5 ? ` · La ≈ ${fmt(nanoStructure(T).La, 1)}\u00a0nm` : '';
+    const phaseTxt = off
+      ? `◐ ${esc(meta ? meta.note : 'Bei anderer Temperatur sichtbar')}`
+      : `● ${esc(meta ? `Aktiv (${meta.badge})` : 'In dieser Phase sichtbar')}`;
+    return `<span class="hs-st-now"><b>${fmt(T)} °C</b> · ${esc(st.phase)}${extra}</span><span class="hs-st-phase${off ? ' is-wait' : ' is-ok'}">${phaseTxt}</span>`;
+  }
+  function updateExploreStates(T) {
+    if (!level || current < 0) return;
+    const lid = LEVELS[current].id;
+    let seenMuted = false;
+    panel.querySelectorAll('.explore button[data-hs]').forEach((b) => {
+      const h = level.hotspots.find((x) => x.id === b.dataset.hs);
+      if (!h) return;
+      const off = isHsOffAt(lid, h, T);
+      b.classList.toggle('is-muted', off);
+      b.classList.toggle('is-group-start', off && !seenMuted);
+      if (off) seenMuted = true;
+    });
+  }
   function setLive(T, playing, done = false) {
     const now = performance.now();
     if (!done && now - lastLive < 40) return;    // ≈ 25 Hz reicht für Zahlen
@@ -388,10 +470,12 @@ export function createHud(handlers) {
     playBtn.textContent = playing ? '■' : '▶';
     playBtn.setAttribute('aria-label', playing ? 'Anhalten' : 'Pyrolyse abspielen');
     playBtn.setAttribute('aria-pressed', String(playing));
-    for (const [k, , v, warn, bar] of labRows(T)) {
+    for (const [k, , v, warn, bar, delta] of [...labRows(T), ...physRows(T)]) {
       const cell = panel.querySelector(`.lab-cell[data-f="${k}"]`);
       if (!cell) continue;
       cell.querySelector('.lab-val').textContent = v;
+      const dEl = cell.querySelector('.lab-delta');
+      if (dEl && delta) dEl.textContent = delta;
       const barEl = cell.querySelector('.lab-bar > i');
       if (barEl && bar !== null) barEl.style.width = `${bar.toFixed(1)}%`;
       cell.classList.toggle('warn', warn);
@@ -406,6 +490,13 @@ export function createHud(handlers) {
       dot.classList.toggle('is-off', T < T_MIN);
     }
     if (panel.querySelector('[data-spk]')) updateSpectra(T);
+    updateExploreStates(T);
+    if (selected && card.classList.contains('is-open')) {
+      const stEl = card.querySelector('#hs-status');
+      if (stEl) stEl.innerHTML = cardStatusHtml(T);
+      const jumpBtn = card.querySelector('#btn-hs-jump');
+      if (jumpBtn) jumpBtn.hidden = !isHsOffAt(LEVELS[current].id, selected, T);
+    }
   }
 
   // Infotafel ohne Scrollen (Vorschau 2026-10-25, Panel:B): Einleitung zweizeilig + „Weiterlesen“, Entdecken als Chips
@@ -472,10 +563,13 @@ export function createHud(handlers) {
       <button type="button" class="lead-more" aria-expanded="false" aria-controls="panel-lead">Weiterlesen</button>
       <section>
         <h2 class="sub">Entdecken</h2>
-        <ul class="explore">${hsList.map((h, idx) => `
-          <li><button type="button" data-hs="${h.id}" class="${h.kind === 'dive' ? 'is-dive' : ''}${selected && selected.id === h.id ? ' is-active' : ''}">
-            <span class="exp-num">0${idx + 1}</span>${hexBadge(icons[h.id], 'hex--mini')}<span class="exp-title">${esc(l.hotspots[h.id].title)}</span>
-          </button></li>`).join('')}
+        <ul class="explore">${hsList.map((h, idx) => {
+          const meta = hsMeta(l.id, h.id);
+          return `
+          <li><button type="button" data-hs="${h.id}" class="${h.kind === 'dive' ? 'is-dive' : ''}${selected && selected.id === h.id ? ' is-active' : ''}"${meta ? ` title="${esc(meta.note)}"` : ''}>
+            <span class="exp-num">0${idx + 1}</span>${hexBadge(icons[h.id], 'hex--mini')}<span class="exp-title">${esc(l.hotspots[h.id].title)}</span>${meta ? `<span class="exp-temp">${esc(meta.badge)}</span>` : ''}
+          </button></li>`;
+        }).join('')}
         </ul>
       </section>
       ${facts([...l.facts, ...dyn])}
@@ -938,26 +1032,36 @@ export function createHud(handlers) {
     panel.querySelectorAll('button[data-hs].is-active').forEach((b) => b.classList.remove('is-active'));
   }
 
-  // Karte füllen: Titel mit Abzeichen, links neben dem Text die Lupe (Live-Ausschnitt der Szene, zeichnet main.js),
-  // bei Tauchzielen der Knopf zum Hineinzoomen; jede Füllung blendet neu ein
+  // Karte füllen: Titel mit Abzeichen, darunter Zustandskapsel & Phasen-Hinweis (Buehne:B+C), links neben dem Text die Lupe
+  // mit Maßstabs-Pille (Buehne:C), im Fuß Tauch-Knopf und bei temperaturbedingt ausgeblendetem Punkt der 1,2-s-Gleitsprung (Buehne:A, F1)
   let lensCanvas = null;
   function fillCard() {
     if (!selected) { card.classList.remove('is-open'); lensCanvas = null; return; }
     const l = LEVELS[current], h = l.hotspots[selected.id], icons = HOTSPOT_ICONS[l.id] || {};
     const tag = h.tag || (selected.kind === 'dive' ? 'tiefer' : '');   // Größen-Etikett steht seit Panel:B nur noch hier
+    const shown = lastState && lastState.pyro ? lastState.pyro.shown : (lastState ? lastState.temp : 550);
+    const meta = hsMeta(l.id, selected.id);
+    const off = isHsOffAt(l.id, selected, shown);
+    const hasFoot = selected.kind === 'dive' || !!meta;
     card.innerHTML = `<div class="hs-card-in">
       <div class="hs-card-head">
         <h2>${hexBadge(icons[selected.id], 'hex--mini')}<span>${esc(h.title)}${tag ? `<span class="tag">${esc(tag)}</span>` : ''}</span></h2>
         <button type="button" class="hs-card-close" aria-label="Schließen"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2 2l8 8M10 2l-8 8"/></svg></button>
       </div>
+      <div class="hs-status" id="hs-status">${cardStatusHtml(shown)}</div>
       <div class="hs-body">
-        <figure class="hs-lens" aria-hidden="true"><canvas></canvas><svg class="hs-lens-svg" viewBox="0 0 112 112"><circle cx="56" cy="56" r="46" stroke-dasharray="3 4"/><path d="M56 4v9M56 99v9M4 56h9M99 56h9"/></svg></figure>
+        <figure class="hs-lens" aria-hidden="true"><canvas></canvas><svg class="hs-lens-svg" viewBox="0 0 112 112"><circle cx="56" cy="56" r="46" stroke-dasharray="3 4"/><path d="M56 4v9M56 99v9M4 56h9M99 56h9"/></svg><span class="lens-scale" id="lens-scale">${esc(lastLensScale)}</span></figure>
         <div class="hs-text"><p>${esc(h.text)}</p>${h.edx ? edxDetails(h.edx) : ''}</div>
       </div>
-      ${selected.kind === 'dive' ? '<div class="hs-card-foot"><button type="button" class="btn-primary" id="btn-dive">Hineinzoomen ↓</button></div>' : ''}
+      ${hasFoot ? `<div class="hs-card-foot">
+        ${selected.kind === 'dive' ? '<button type="button" class="btn-primary" id="btn-dive">Hineinzoomen ↓</button>' : ''}
+        ${meta ? `<button type="button" class="btn-ghost hs-jump" id="btn-hs-jump"${off ? '' : ' hidden'}>Auf ${fmt(meta.jump)} °C gleiten (${esc(meta.badge)}) →</button>` : ''}
+      </div>` : ''}
       </div>`;
     const dive = card.querySelector('#btn-dive');
     if (dive) dive.addEventListener('click', () => handlers.onDive(selected.id));
+    const jump = card.querySelector('#btn-hs-jump');
+    if (jump && meta) jump.addEventListener('click', () => handlers.onSeek(meta.jump, selected.id));
     card.querySelector('.hs-card-close').addEventListener('click', closeCard);
     lensCanvas = card.querySelector('.hs-lens canvas');
     card.classList.remove('is-away');
@@ -1199,6 +1303,9 @@ export function createHud(handlers) {
       rulerEnd.textContent = formatLength(n * step);
       const hfwText = formatLength(hfwMeters, true);
       $('#sb-hfw').textContent = hfwText;
+      lastLensScale = `Ø ${formatLength(hfwMeters * 0.18, true).replace(/^≈\s*/, '')}`;
+      const lsEl = card.querySelector('#lens-scale');
+      if (lsEl && lsEl.textContent !== lastLensScale) lsEl.textContent = lastLensScale;
       if (lv && lv.method !== $('#sb-method').textContent) $('#sb-method').textContent = lv.method;
       const mag = 0.127 / hfwMeters;   // Vergrößerung bezogen auf 127 mm Bildbreite (REM-Konvention)
       $('#sb-mag').textContent = mag < 1e5 ? `${fmt(mag, mag < 10 ? 1 : 0)} ×` : `${fmt(mag / 1e6, 1)} Mio. ×`;

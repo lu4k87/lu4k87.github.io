@@ -911,7 +911,26 @@ const hud = createHud({
     startGlide(v, v, 0.001, false);   // Regler springt: Szene steht sofort auf dem Wert, nur ▶ spielt ab (User, 2026-10-25)
   },
   onPlay: () => togglePlay(),
-  onSeek: (T) => seekPyro(T),
+  onSeek: (T, hsId) => {
+    if (hsId) {
+      state.temp = T;
+      pushParam('target', T);
+      hud.setGoal(T);
+    }
+    seekPyro(T);
+    if (hsId && state.active && state.controls) {
+      const h = state.active.hotspots.find((x) => x.id === hsId);
+      if (h) {
+        const c = state.controls;
+        c.autoRotate = false;
+        cineCommit();
+        const fromP = c.object.position.clone();
+        const toT = c.target.clone().lerp(h.pos, 0.6);
+        const toP = state.active.home.pos.clone().lerp(h.pos, 0.1);
+        state.focus = { t: 0, fromT: c.target.clone(), toT, fromP, toP };
+      }
+    }
+  },
   onRh: (v) => {
     state.rh = v;
     state.wet = wetDiameterNm(state.wet, v);
@@ -1038,6 +1057,7 @@ function stepPyro(real) {
   if (k >= 1) {
     p.tween = null;
     if (p.playing) endPlay();
+    hud.refreshFacts();
   }
   hud.setLive(p.shown, p.playing, k >= 1);
 }
