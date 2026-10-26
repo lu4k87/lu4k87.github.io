@@ -65,7 +65,10 @@ const GLOWS = ['Rotglut', 'Strahlenkranz', 'Weißglut'];
 // Ablösen beim Abriss (uTear in sunstrands.js) und Stärke der Auswurf-Blase dahinter (uEA in sunlook.js)
 const TEARS = ['klassisch', 'Plasmoid', 'Peitsche', 'Zerfasern', 'Mischung', 'Spray-Schockwelle'];
 const TEAR_BUBBLE = [0, 1, 0.35, 0, 0.8, 1.2];
-const TEXS = ['Adern', 'Zellnetz', 'Plasmafell', 'SDO-Komposit', 'Magma-Brodeln'];   // Kruste im Look „Glut“ (uTex in sunlook.js)
+const TEXS = ['Adern', 'Zellnetz', 'Plasmafell', 'SDO-Komposit', 'Magma-Brodeln', 'Konvektion fein', 'Lavaplatten', 'Plasma-Relief'];   // Kruste im Look „Glut“ (uTex in sunlook.js)
+// Stil des Abrisses (uRip in sunstrands.js): Knopf „Flare auslösen“ nimmt ripMain (Standard: verglüht + verweht), andere
+// Ausbrüche und platzende Bögen wählen zufällig unter den eingeschalteten Stilen (Vorschau 26.10.2026 Abriss:A + C)
+const RIPS = ['Abschnüren', 'Riss verglüht', 'Riss verweht', 'Verglüht + verweht'];
 const OPTICS = ['Master-Optik (Referenz)', 'Klassischer Film-Halo'];
 const fmtDays = (d) => `${d.toLocaleString('de-DE', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} Tage`;
 
@@ -157,7 +160,7 @@ export function create(ctx) {
   // Look „Sonne neu“ (Glut, 304 Å): eigenes Material auf derselben Kugel, gleiche Daten (Regionen, Löcher, Filamente, Rotation)
   const sunMat = sun.material;
   const lookU = { uTime: sunU.uTime, uDays: sunU.uDays, uSpot: sunU.uSpot, uHole: sunU.uHole, uFil: sunU.uFil, uFilT: sunU.uFilT, uAct: { value: 0.75 },
-    uSurf: { value: 0 }, uGain: { value: 0.8 }, uFlK: { value: -1 }, uFlS: { value: new THREE.Vector3(0, 0, 1) }, uGlow: { value: 1 }, uHot: { value: 0 }, uTex: { value: 4 },
+    uSurf: { value: 0 }, uGain: { value: 0.8 }, uFlK: { value: -1 }, uFlS: { value: new THREE.Vector3(0, 0, 1) }, uGlow: { value: 1 }, uHot: { value: 0 }, uTex: { value: 5 },
     uRelief: { value: 1.0 }, uVisc: { value: 1.0 } };
   const lookMat = new THREE.ShaderMaterial({ vertexShader: BODY_VERT, fragmentShader: LOOK_SURF_FRAG, uniforms: lookU, defines: lookDefines(ctx.detail) });
 
@@ -240,7 +243,7 @@ export function create(ctx) {
     if (k === fieldKind) return;
     fieldKind = k;
     field.geometry.dispose();
-    field.geometry = k ? strandGeometry(loopField(k, mulberry32(211 + k), thr).filter(clearOfHome()), mulberry32(311 + k), 28) : new THREE.BufferGeometry();
+    field.geometry = k ? strandGeometry(loopField(k, mulberry32(211 + k), thr).filter(clearOfHome()), mulberry32(311 + k), 48) : new THREE.BufferGeometry();
   }
 
   // ---------- Korona + Chromosphäre als Bildtafel; Streamer über den aktiven Regionen ----------
@@ -285,7 +288,8 @@ export function create(ctx) {
   let flareTimer = 10 + rand() * 10, glowMode = 2, loopGain = 1;
   const look = { exposure: 1.0, bloom: 0.12 };
   // Farblook (Zahnrad, Vorschau „Sonne cinematic“ 26.10.2026): Grading der Station; Bloom wächst mit der Glut (applyGlow)
-  let gradeIdx = 1, tearIdx = 4;
+  let gradeIdx = 1, tearIdx = 4, ripMain = 3, ripRand = true;
+  const ripOn = RIPS.map(() => true);
   // Glut je Aktivität (ACT[i][4]): 0 Rotglut (Kruste und Adern) · 1 Strahlenkranz (Rand, Korona-Schein, Bloom) · 2 Weißglut
   // (Adern gelbweiß, alles heller); unterhalb „hoch“ kaum Unterschied
   function applyGlow() {
@@ -315,7 +319,7 @@ export function create(ctx) {
   }
   const screenScore = (p, cam) => { ndc.copy(p).project(cam); return Math.abs(ndc.x) < 0.9 && Math.abs(ndc.y) < 0.9 ? -(ndc.x * ndc.x + ndc.y * ndc.y) : -10; };
   const toG = (w, out) => { out.copy(w).normalize().applyQuaternion(qInv); return out.applyAxisAngle(Y, -omega(latOf(out)) * days * RAD); };
-  function triggerLook(cam) {
+  function triggerLook(cam, manual) {
     cam.updateMatrixWorld();
     const type = eruptIdx, cands = regions.slice(0, Math.max(nAct, 1)).map((r) => regionWorld(r, new THREE.Vector3()));
     fwd.set(0, 0, -1).transformDirection(cam.matrixWorld);
@@ -337,7 +341,7 @@ export function create(ctx) {
     erupt.k = 0;
     if (type === 1) toG(best, erupt.g); else erupt.dir.copy(best);
     cmeState.foot.copy(best).multiplyScalar(1.003);
-    buildEvent(type, best, cam);
+    buildEvent(type, best, cam, manual);
     cmeState.t = 0;
     flareTimer = ERUPT_T / Math.min(1, Math.max(flareRate * ACT[actIdx][3], 0.05));
   }
@@ -345,7 +349,7 @@ export function create(ctx) {
   // Fäden des Ausbruchs: A Filament (Modus 1) und C Protuberanz (3) zwischen zwei Fußpunkten entlang des Rands (waagerecht im
   // Bild), B Flare-Arkade (2) über den Bändern um erupt.g; alles im mitdrehenden System der Breite evLat
   const qEv = new THREE.Quaternion(), tanW = new THREE.Vector3();
-  function buildEvent(type, best, cam) {
+  function buildEvent(type, best, cam, manual) {
     const S = type === 1 ? erupt.g : toG(best, new THREE.Vector3());
     evLat = latOf(S);
     let list;
@@ -359,13 +363,15 @@ export function create(ctx) {
       list = eruptLoop(type === 0 ? 1 : 3, S, tanW.applyQuaternion(qEv), rs, type === 0 ? 8 + 3 * thr : 8 + 3 * thr);
     }
     ev.geometry.dispose();
-    ev.geometry = strandGeometry(list, mulberry32(meshSeed++), 56);
+    ev.geometry = strandGeometry(list, mulberry32(meshSeed++), 160);
     evU.uMode.value = [1, 2, 3][type];
     evU.uTear.value = tearIdx; rimU.uEA.value = TEAR_BUBBLE[tearIdx];
+    const on = RIPS.map((_, i) => i).filter((i) => ripOn[i]);
+    evU.uRip.value = manual || !ripRand || !on.length ? ripMain : on[Math.floor(rand() * on.length)];
   }
 
-  function triggerFlare(cam) {
-    if (lookOn) { triggerLook(cam); return; }
+  function triggerFlare(cam, manual = false) {
+    if (lookOn) { triggerLook(cam, manual); return; }
     // aktive Region, bevorzugt sichtbar und nahe am Rand (dort am eindrucksvollsten)
     const list = regions.slice(0, Math.max(nAct, 1));
     let best = list[0], bs = -Infinity;
@@ -431,6 +437,7 @@ export function create(ctx) {
   // Bewegung. Viele Ebenen wirken nur in einem Teil der Kanäle (Glut und 304 Å = Look aus sunlook.js/sunstrands.js, sonst
   // SDO-Shader aus sunfx.js): active() sagt, ob sie im aktuellen Bild etwas ändern, only den Grund (layers.js dunkelt ab).
   const LOOK_ONLY = 'Nur bei Glut und 304 Å (Wellenlänge in der Infotafel).';
+  const MAGMA_ONLY = 'Nur bei den Magma-Krusten (Magma-Brodeln, Konvektion fein, Lavaplatten, Plasma-Relief).';
   registerLayers('sun', [
     { id: 'rot', type: 'play', group: 'Zeit', label: 'Rotation im Zeitraffer', value: spdIdx, min: 1, max: SPEEDS.length - 1, step: 1, fmt: (i) => SPEEDS[Math.round(i)][1],
       set: (i, playing) => { spdIdx = Math.round(i); rotOn = playing; }, get: () => ({ value: spdIdx, playing: rotOn }),
@@ -439,12 +446,12 @@ export function create(ctx) {
       active: () => !globalGrade(), only: 'Ruht, solange Global → Look → Farblook nicht auf „Station“ steht.' },
     { id: 'glow', type: 'range', label: 'Glut bei starker Aktivität', value: glowMode, min: 0, max: GLOWS.length - 1, step: 1, fmt: (i) => GLOWS[Math.round(i)], set: (v) => { glowMode = Math.round(v); applyGlow(); },
       active: () => lookOn && actIdx >= 4, only: 'Nur bei Glut und 304 Å ab Aktivität „Maximum“ (Infotafel), am stärksten bei „extrem“.' },
-    { id: 'tex', type: 'range', group: 'Oberfläche', label: 'Kruste', value: 4, min: 0, max: TEXS.length - 1, step: 1, fmt: (i) => TEXS[Math.round(i)], set: (v) => { lookU.uTex.value = Math.round(v); },
+    { id: 'tex', type: 'range', group: 'Oberfläche', label: 'Kruste', value: 5, min: 0, max: TEXS.length - 1, step: 1, fmt: (i) => TEXS[Math.round(i)], set: (v) => { lookU.uTex.value = Math.round(v); },
       active: () => chan === 'glut', only: 'Nur bei Glut (Wellenlänge in der Infotafel).' },
     { id: 'magmaRelief', type: 'range', label: 'Magma-Relief (3D-Wölbung)', value: 1.0, min: 0, max: 2, step: 0.1, unit: '×', sub: true, set: (v) => { lookU.uRelief.value = v; },
-      active: () => chan === 'glut' && lookU.uTex.value === 4, only: 'Nur bei der Kruste „Magma-Brodeln“.' },
+      active: () => chan === 'glut' && lookU.uTex.value >= 4, only: MAGMA_ONLY },
     { id: 'magmaVisc', type: 'range', label: 'Viskosität der Schmelze', value: 1.0, min: 0.4, max: 2.2, step: 0.1, unit: '×', sub: true, set: (v) => { lookU.uVisc.value = v; },
-      active: () => chan === 'glut' && lookU.uTex.value === 4, only: 'Nur bei der Kruste „Magma-Brodeln“.' },
+      active: () => chan === 'glut' && lookU.uTex.value >= 4, only: MAGMA_ONLY },
     { id: 'gran', type: 'toggle', label: 'Granulation', value: true, set: (v) => { granOn = v; sunU.uGran.value = v && chan === 'wl' ? 1 : 0; },
       active: () => chan === 'wl', only: 'Nur bei Weißlicht (Wellenlänge in der Infotafel).' },
     { id: 'spots', type: 'toggle', label: 'Sonnenflecken', value: true, set: (v) => { spotsOn = v; applyRegions(); },
@@ -464,7 +471,12 @@ export function create(ctx) {
       active: () => lookOn, only: 'Nur bei Glut und 304 Å; sonst ein Flare mit Massenauswurf.' },
     { id: 'tear', type: 'range', label: 'Ablösen beim Abriss', value: tearIdx, min: 0, max: TEARS.length - 1, step: 1, fmt: (i) => TEARS[Math.round(i)], sub: true, set: (v) => { tearIdx = Math.round(v); },
       active: () => lookOn && eruptIdx === 2, only: 'Nur bei der Art „Protuberanz reißt ab“ (Glut und 304 Å).' },
-    { id: 'flareNow', type: 'action', label: 'Nächster Ausbruch', button: 'Jetzt auslösen', sub: true, run: () => { if (flaresOn) triggerFlare(camera); } },
+    { id: 'rip', type: 'range', label: 'Abriss per Knopf', value: ripMain, min: 0, max: RIPS.length - 1, step: 1, fmt: (i) => RIPS[Math.round(i)], sub: true, set: (v) => { ripMain = Math.round(v); applyRip(); },
+      active: () => lookOn && eruptIdx === 2, only: 'Nur bei der Art „Protuberanz reißt ab“ (Glut und 304 Å).' },
+    { id: 'ripRand', type: 'toggle', label: 'Andere Ausbrüche: Stil zufällig', value: ripRand, sub: true, set: (v) => { ripRand = v; applyRip(); }, active: () => lookOn, only: LOOK_ONLY },
+    ...RIPS.map((name, i) => ({ id: `rip${i}`, type: 'toggle', label: `Im Zufall: ${name}`, value: true, sub: true, set: (v) => { ripOn[i] = v; applyRip(); },
+      active: () => lookOn && ripRand, only: 'Nur wenn „Andere Ausbrüche: Stil zufällig“ an ist.' })),
+    { id: 'flareNow', type: 'action', label: 'Nächster Ausbruch', button: 'Jetzt auslösen', sub: true, run: () => { if (flaresOn) triggerFlare(camera, true); } },
     { id: 'lensOptic', type: 'range', group: 'Linsenreflex & Optik', label: 'Optik-Stil', value: opticIdx, min: 0, max: OPTICS.length - 1, step: 1, fmt: (i) => OPTICS[Math.round(i)], set: (v) => { opticIdx = Math.round(v); sunFlare.userData.setOptic(opticIdx === 0 ? 'master' : 'classic'); } },
     { id: 'lensGhost', type: 'toggle', label: 'Magenta-Sensor-Ghost', value: true, sub: true, set: (v) => { ghostOn = v; sunFlare.userData.setGhost(ghostOn, ghostMotionOn); } },
     { id: 'ghostMotion', type: 'toggle', label: 'Ghost-Parallaxe auf optischer Achse', value: true, sub: true, set: (v) => { ghostMotionOn = v; sunFlare.userData.setGhost(ghostOn, ghostMotionOn); } },
@@ -485,6 +497,12 @@ export function create(ctx) {
     { id: 'lifeRate', type: 'range', label: 'Tempo', value: 1, min: 0.3, max: 3, step: 0.1, unit: '×', sub: true, set: (v) => { strandU.uLifeR.value = v; }, active: () => lookOn, only: LOOK_ONLY },
   ]);
 
+  // Stile für platzende Bögen: eingeschaltete im Zufall, sonst nur der Stil des Knopfs
+  function applyRip() {
+    const m = RIPS.map((_, i) => +(ripRand ? ripOn[i] : i === ripMain));
+    strandU.uRipMix.value.fromArray(m); fieldU.uRipMix.value.fromArray(m);
+  }
+
   // ---------- Infotafel: Kanal, Aktivität, Zeitraffer, Flare ----------
   const LAY = (c) => `<div class="sw-cut" role="img" aria-label="Schichtschnitt, schematisch: ${c.name} zeigt ${c.shows}">${LAYERS.map((l, i) => `<span${c.on.includes(i) ? ' class="is-on"' : ''}>${l}</span>`).join('')}</div>
     <p class="sw-axis">von der Oberfläche nach außen →</p><p class="sw-cap">${c.cap}</p>`;
@@ -493,7 +511,7 @@ export function create(ctx) {
     { id: 'act', type: 'range', label: 'Aktivität', value: actIdx, min: 0, max: ACT.length - 1, step: 1, fmt: (i) => ACT[Math.round(i)][0], set: setActivity },
     { id: 'speed', type: 'range', label: 'Zeitraffer', value: rotOn ? spdIdx : 0, min: 0, max: SPEEDS.length - 1, step: 1, fmt: (i) => SPEEDS[Math.round(i)][1],
       set: (v) => { if (v) { spdIdx = v; rotOn = true; } else rotOn = false; refreshLayers(); }, get: () => (rotOn ? spdIdx : 0) },
-    { id: 'flare', type: 'action', label: 'Ereignis', button: 'Flare auslösen', run: () => { if (flaresOn) triggerFlare(camera); } },
+    { id: 'flare', type: 'action', label: 'Ereignis', button: 'Flare auslösen', run: () => { if (flaresOn) triggerFlare(camera, true); } },
   ];
   setChan('glut');
 

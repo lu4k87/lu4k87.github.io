@@ -2,7 +2,8 @@
 // feiner Fäden im Raum statt als Linien auf einer Bildtafel – Bögen der aktiven Regionen zwischen Vorläufer- und
 // Nachfolgerfleck, weitere Arkaden (Rand „Bogen-Arkaden“), Protuberanzen als verdrillte Fadenbündel und die Ausbrüche
 // (Modus 1 Filament steigt als Ω-Bogen auf, 2 Flare-Arkade über den Bändern, 3 Protuberanz schnürt sich ab: oben steigt ein
-// Plasmoid auf, unten bleibt ein neuer Bogen – ohne Schnittkante, siehe place()). Jeder Faden ist ein
+// Plasmoid auf, unten bleibt ein neuer Bogen – ohne Schnittkante, siehe place() – oder reißt am Scheitel, siehe uRip und
+// splitS). Jeder Faden ist ein
 // Band, das sich im Vertex-Shader zur Kamera dreht; aus der Ferne bleibt es mindestens einen Pixel breit und wird dafür
 // dunkler (kein Flimmern). Die Kugel verdeckt per Tiefentest, was hinter dem Rand liegt; über die ersten ≈ 4.000 km blenden die
 // Fäden in die Oberfläche aus und wurzeln so im hellen Fußpunkt (Moos im Kugel-Shader) statt an einer Kante zu enden.
@@ -23,7 +24,7 @@ import { NOISE } from './glsl.js';
 export const strandUniforms = () => ({
   uTime: { value: 0 }, uPx: { value: 0.001 }, uGain: { value: 1 }, uPal: { value: 0 }, uMode: { value: 0 }, uK: { value: 0 }, uDens: { value: 1 },
   uFoot: { value: 1 }, uMove: { value: new THREE.Vector3(1, 1, 1) }, uDisk: { value: 0.35 }, uLifeR: { value: 1 }, uScale: { value: 1 }, uTear: { value: 4 },
-  uBurst: { value: 1 }, uSpray: { value: 1 },
+  uBurst: { value: 1 }, uSpray: { value: 1 }, uRip: { value: 3 }, uRipMix: { value: new THREE.Vector4(1, 1, 1, 1) },
   uFS: { value: new THREE.Vector3(0, 0, 1) }, uFE1: { value: new THREE.Vector3(1, 0, 0) }, uFE2: { value: new THREE.Vector3(0, 1, 0) },
 });
 
@@ -36,7 +37,8 @@ export const strandUniforms = () => ({
 export const STRAND_VERT = /* glsl */ `
 attribute vec3 aA, aB;
 attribute vec4 aE, aL, aT, aS, aF;
-uniform float uTime, uPx, uMode, uK, uDens, uFoot, uLifeR, uScale, uTear, uBurst, uSpray;
+uniform float uTime, uPx, uMode, uK, uDens, uFoot, uLifeR, uScale, uTear, uBurst, uSpray, uRip;
+uniform vec4 uRipMix;
 uniform vec3 uMove, uFS, uFE1, uFE2;
 varying float vS, vX, vH, vI, vFlow, vSeed, vCut, vHot, vRes, vU, vCyc, vSh, vLen;
 varying vec3 vW;
@@ -50,6 +52,28 @@ float gH, gLean, gRope, gTwist, gSway, gBul = 0.0;
 float gG = 0.25, gPin = 0.0, gSep = 0.0, gUp = 0.0, gEx = 0.0, gCurl = 0.0, gRel = 0.0, gDn = 0.0, gWob = 0.0, gFray = 0.0;
 vec3 gFc = vec3(0.0);
 float hash(float n) { return fract(sin(n) * 43758.5453); }
+// Stil des Abrisses (uRip, Zahnrad „Abriss per Knopf“): 0 Abschnüren (Plasmoid, place()) · 1 Riss am Scheitel, Oberteil
+// verglüht · 2 Riss, Oberteil verweht zu Schlieren · 3 beides je Faden (Kern verglüht, äußere Fäden verwehen). Platzende Bögen
+// wählen je Zyklus zufällig unter den eingeschalteten Stilen (uRipMix, Zahnrad „Im Zufall: …“).
+float ripPick(float h) {
+  float n = dot(uRipMix, vec4(1.0)), t = h * n, acc = 0.0;
+  if (n < 0.5) return 3.0;
+  for (int i = 0; i < 4; i++) { acc += uRipMix[i]; if (t < acc) return float(i); }
+  return 3.0;
+}
+float ripThread(float st, float th) { return st > 2.5 ? (th < 0.5 ? 1.0 : 2.0) : st; }
+// Riss ohne Schnittkante: die Ecken eines Fadens mit |sv − 0,5| < G (G auf das Eckenraster gerundet) bilden das Oberteil und
+// laufen über s = tc ± tg, die übrigen die Beine über s < tc − tg bzw. > tc + tg. Beide Teile enden mit einer eigenen Ecke genau
+// an der Rissstelle (endV = 1); dort laufen sie spitz aus, das Stück dazwischen bleibt dunkel. cutV = 1 Oberteil.
+float splitS(float sv, float tc, float tg, out float cutV, out float endV) {
+  float G = floor(0.22 / aE.w + 0.5) * aE.w, d = abs(sv - 0.5);
+  if (d < G) {
+    cutV = 1.0; endV = step(G - 1.5 * aE.w, d);
+    return tc + clamp((sv - 0.5) / max(G - aE.w, 1e-4), -1.0, 1.0) * tg;
+  }
+  cutV = 0.0; endV = step(d, G + 0.5 * aE.w);
+  return sv < 0.5 ? sv / (0.5 - G) * (tc - tg) : 1.0 - (1.0 - sv) / (0.5 - G) * (1.0 - tc - tg);
+}
 // Mittellinie mit Scheitelhöhe h: Fußpunkte wandern mit (1 − cos)/2 → Beine an den Füßen senkrecht, Scheitel rund; gBul bläht
 // den oberen Teil seitlich auf (Ω-Form des aufsteigenden Flussseils)
 vec3 axisH(float s, float h) {
@@ -118,6 +142,8 @@ void main() {
   float s = aS.x, side = aS.y, k = clamp(uK, 0.0, 1.0);
   float u = s < 0.0 ? -s : max(s - 1.0, 0.0), sl = clamp(s, 0.0, 1.0);
   float I = aT.w, hot = 0.0, life = 1.0, cyc = -1.0, flash = 0.0, fade = 1.0, th = hash(aT.z * 91.7);
+  // Riss (rv > 0): Stil des Fadens, Ablösen Vt, Mitte tc, Fortschritt tk, halber Spalt tg, Abstand te, Verjüngung tf, Oberteil cut
+  float rv = uMode > 2.5 ? ripThread(uRip, th) : 0.0, Vt = 0.0, tc = 0.5, tk = 0.0, tg = 0.0, te = 1.0, tf = 1.0, cut = 0.0, endV = 0.0, kc = 0.0, lift = 0.0;
   gA = aA; gB = aB; gH = aL.x; gLean = aL.y; gRope = aL.z; gTwist = aS.z;
   gSway = uMove.y * (0.04 * aL.x + 0.001);
   if (uMode < 0.5) {
@@ -135,6 +161,8 @@ void main() {
       // weiches Aufleuchten der Rekonnexion, oben löst sich ein kleines Plasmoid (steigt, weitet sich, verblasst; uSpray),
       // unten sinkt der Bogen und rundet sich
       if (cyc > 0.46 && hash(floor(cn) * 17.3 + aE.y * 43.1) > 1.0 - clamp(0.38 * uBurst, 0.0, 0.95)) {
+        rv = ripThread(ripPick(hash(floor(cn) * 5.9 + aE.y * 71.3)), th);
+        if (rv < 0.5) {
         float st = 0.02 * (th - 0.5), e = clamp((cyc - 0.64 - st) / 0.3, 0.0, 1.0);
         gG = 0.15 + 0.04 * (hash(aT.z * 57.3) - 0.5);
         gPin = smoothstep(0.46, 0.64, cyc + st);
@@ -143,6 +171,17 @@ void main() {
         gEx = 0.9 * e; gCurl = smoothstep(0.0, 0.45, e); gRel = smoothstep(0.0, 0.6, e); gDn = 0.25;
         flash = 0.55 * exp(-pow((cyc - 0.645 - st) / 0.022, 2.0));
         fade = 1.0 - smoothstep(0.15, 0.85, e);
+        } else if (cyc > 0.55) {
+          // Riss am Scheitel: Oberteil steigt (Sonnenwind, uSpray) und verglüht bzw. zieht sich zu Schlieren
+          float bP = smoothstep(0.55, 0.75, cyc);
+          tg = 0.12 * bP; tk = bP;
+          sl = splitS(sl, 0.5, tg, cut, endV);
+          float dS = abs(sl - 0.5), drift = smoothstep(0.65, 1.0, cyc);
+          te = dS - tg; tf = smoothstep(0.0, 0.035, abs(te));
+          hot += 1.4 * exp(-dS / 0.07) * exp(-pow((cyc - 0.70) / 0.06, 2.0));
+          lift = cut * drift * drift * (0.35 + 0.55 * hash(aT.z * 47.1)) * uSpray * aL.x * (rv > 1.5 ? 1.0 + 1.5 * dS / max(tg, 1e-3) : 1.0);
+          life *= (1.0 - smoothstep(0.78, 1.0, cyc)) * (1.0 - cut * smoothstep(rv > 1.5 ? 0.75 : 0.66, 0.9, cyc));
+        }
       }
     }
   } else if (uMode < 1.5) {
@@ -166,6 +205,35 @@ void main() {
     gH = aL.x * sep * (1.3 - 0.3 * form);
     life = smoothstep(0.1 + aE.x, 0.2 + aE.x, k) * (1.0 - smoothstep(0.78, 1.0, k));
     hot = (1.0 - smoothstep(0.14 + aE.x, 0.42 + aE.x, k)) * 0.8;
+  } else if (rv > 0.5) {
+    // Riss am Scheitel (Vorschau 26.10.2026 Abriss:A + C): der Bogen wächst und verdrillt sich, jeder Faden reißt zu eigener
+    // Zeit an eigener Stelle nahe dem Scheitel (ausgefranst statt eines glatten Schnitts), die Rissenden glühen weiß auf und
+    // laufen spitz aus; die Beine schnellen zurück, Plasma regnet ab. rv 1: Oberteil weitet sich und verglüht beim Aufsteigen,
+    // bevor es als loses Stück wirkt · 2: Sonnenwind zieht es zu Schlieren auseinander. uTear wie beim Abschnüren (Spray zählt
+    // hier als Zerfasern).
+    Vt = uTear > 4.5 ? 3.0 : uTear > 3.5 ? (th < 0.55 ? 1.0 : 3.0) : uTear;
+    float k0 = Vt > 0.5 ? 0.5 : 0.58, sp = Vt > 2.5 ? 0.14 : 0.07;
+    float pre = Vt > 0.5 ? smoothstep(k0 - 0.14, k0, k) * (1.0 - smoothstep(k0, k0 + 0.1, k)) : 0.0;   // Hals dehnt sich, glüht
+    gH = aL.x * mix(0.25, Vt > 0.5 ? 0.68 : 1.0, smoothstep(0.0, k0 + 0.04, k)) * (1.0 + 0.12 * pre);
+    gTwist += 1.2 * smoothstep(0.2, k0 + 0.04, k) + (Vt > 0.5 && Vt < 1.5 ? 1.5 * smoothstep(k0, 1.0, k) : 0.0);
+    gRope *= 1.0 + 0.8 * smoothstep(0.3, k0 + 0.04, k);
+    tc = 0.5 + 0.12 * (hash(aT.z * 57.3 + 3.1) - 0.5);
+    tk = smoothstep(0.0, 1.0, (k - k0 - sp * th) / (Vt > 1.5 && Vt < 2.5 ? 0.22 : 0.36));
+    tg = (Vt > 0.5 ? 0.2 : 0.3) * tk;
+    if (tk > 0.0) sl = splitS(sl, tc, tg, cut, endV);
+    te = abs(sl - tc) - tg;
+    float neck = smoothstep(k0 - 0.08, k0 + 0.02, k - sp * th);
+    kc = Vt < 0.5 ? clamp((k - 0.6) / 0.4, 0.0, 1.0) : clamp((k - k0 - 0.02) / (0.98 - k0), 0.0, 1.0);
+    lift = Vt < 0.5 ? cut * pow(kc, 1.4) * 1.1 * (0.95 + 0.1 * th)
+      : Vt < 1.5 ? cut * (0.04 * kc + 0.42 * kc * kc * kc)                                                     // langsam lösen, dann beschleunigen
+      : Vt < 2.5 ? cut * (0.13 * (1.0 - exp(-kc * 6.0)) + 0.05 * sin(kc * 14.0) * exp(-kc * 4.0) + 0.1 * kc * kc)   // schnellt hoch, federt nach
+      : cut * (0.15 + 0.3 * th) * kc * kc;                                                              // je Faden eigenes Tempo
+    tf = mix(1.0, smoothstep(0.0, 0.06, abs(te)), neck);
+    hot = Vt > 1.5 && Vt < 2.5 ? 2.2 * exp(-abs(te) / 0.08) * neck * exp(-tk * 2.5) : 0.9 * exp(-abs(te) / 0.05) * neck * (1.0 - tk) * (1.0 - tk);
+    hot += 0.5 * pre * exp(-abs(sl - tc) / 0.08);
+    if (Vt > 1.5 && Vt < 2.5) I *= 1.0 + 2.5 * exp(-min(sl, 1.0 - sl) / 0.05) * smoothstep(0.0, 0.15, tk) * exp(-2.0 * tk);   // Fußpunkte leuchten auf
+    float fd = cut * (rv < 1.5 ? smoothstep(0.1, 0.55, kc + 0.15 * th) : smoothstep(0.45, 1.05, kc + 0.2 * th));
+    life = smoothstep(0.0, 0.06, k) * (1.0 - smoothstep(Vt < 0.5 ? 0.85 : 0.9, 1.0, k)) * (1.0 - fd);
   } else {
     // Protuberanz reißt ab (Standardmodell CSHKP): der Bogen wächst und verdrillt sich, die Beine schnüren sich unter dem
     // Scheitel ein, bei k ≈ 0,5 verbinden sie sich neu (weiches Aufleuchten am Hals, Fußpunkte leuchten auf); oben steigt ein
@@ -240,6 +308,32 @@ void main() {
     T = normalize(normalize(q2) * (1.0 + hr) - p);
     w *= 1.0 - 0.55 * u;
   }
+  if (rv > 0.5 && u <= 0.0) {
+    if (uMode > 2.5 && tk > 0.0) {
+      if (cut > 0.5) {
+        // Oberteil (gemeinsamer Fortschritt kc, damit es ein Bündel bleibt): weitet sich um den Scheitel, die losen Enden biegen
+        // sich nach oben und innen; nur die Rissenden fransen je Faden aus. Verwehen: die Enden steigen schneller als die Mitte
+        float q = pow(min(abs(sl - 0.5) / 0.3, 1.0), 2.0);
+        vec3 ap = axisAt(0.5), lat = p - ap;
+        lat -= gR * dot(lat, gR);
+        vec4 m = Vt < 0.5 ? vec4(0.6, 0.25, 0.35, 0.12) : Vt < 1.5 ? vec4(0.35, 0.6, 0.45, 0.1) : Vt < 2.5 ? vec4(0.25, 0.2, 0.3 + 0.5 * sin(kc * 10.0) * exp(-kc * 3.0), 0.2)
+          : vec4(0.3, 0.1, 0.4 + 0.9 * th, 0.35);   // Weiten, Einrollen der Enden, Hub der Enden, Ausfransen
+        p += (p - ap) * m.x * kc - lat * q * m.y * kc + gR * q * aL.x * m.z * kc;
+        p += (gN * (th - 0.5) + gR * (hash(aT.z * 23.9) - 0.5)) * q * aL.x * m.w * tk * (rv > 1.5 ? 2.5 : 1.0);
+        if (rv > 1.5) p += gR * aL.x * kc * (0.15 + 2.6 * q) * (0.6 + 0.8 * th) + gN * aL.x * 0.5 * kc * (hash(aT.z * 5.7) - 0.5) * q;
+      } else {
+        // Beine: das freie Ende schnellt zur Oberfläche zurück, biegt nach außen und schwingt gedämpft aus
+        float sn = exp(-te / 0.22) * smoothstep(0.0, 0.35, tk), wa = Vt > 1.5 && Vt < 2.5 ? 0.5 : Vt > 0.5 ? 0.15 : 0.25, wd = Vt > 1.5 && Vt < 2.5 ? 2.0 : 3.0;
+        vec3 D = normalize((sl < tc ? gA - gB : gB - gA) + 1e-5 * gN);
+        p -= normalize(p) * (length(p) - 1.0) * 0.6 * sn;
+        p += D * aL.x * sn * (0.12 + wa * sin(tk * 16.0 + th * 6.0) * exp(-wd * tk));
+      }
+    }
+    // Rissenden laufen spitz aus; die Endecken bleiben dunkel, so leuchtet das Stück zwischen Bein und Oberteil nie
+    w = aL.w * mix(0.25, 1.0, tf);
+    I *= tf * (endV > 0.5 && tk > 0.0 ? 0.0 : 1.0);
+  }
+  p += gR * lift;
   vH = length(p) - 1.0;
   vec4 wp = modelMatrix * vec4(p, 1.0);
   vec4 pv = viewMatrix * wp;
@@ -250,7 +344,7 @@ void main() {
   // Kamera (< 0,18 R☉) blenden die Fäden aus, damit kein unscharfes Band durchs Bild zieht.
   float px = uPx * max(-pv.z, 1e-4), cw = max(w, px * 0.7);
   pv.xyz += sd * side * cw * 1.7;
-  vS = s; vX = side; vSeed = aT.z; vFlow = aS.w; vHot = hot; vCut = W; vW = wp.xyz; vRes = w / px; vU = u; vCyc = cyc;
+  vS = rv > 0.5 && u <= 0.0 ? sl : s; vX = side; vSeed = aT.z; vFlow = aS.w; vHot = hot; vCut = max(W, cut); vW = wp.xyz; vRes = w / px; vU = u; vCyc = cyc;
   vI = I * life * (1.0 + 3.0 * hot) * w / cw * smoothstep(0.05, 0.18, -pv.z) * (u > 0.0 && (uFoot < 0.5 || (uFoot > 1.5 && uFoot < 2.5)) ? 0.0 : 1.0);
   gl_Position = projectionMatrix * pv;
 }
@@ -330,7 +424,7 @@ void main() {
 // Phase; 0 = aus dem seed) und je Faden Winkel im Wurzel-Fächer (−1 … 1) und Wurzellänge (0 … 1); aE.w = 1 / segs (Abstand der
 // Ecken in s, für das Abschnüren).
 const ROOT = 8;
-export function strandGeometry(loops, rand, segs = 40) {
+export function strandGeometry(loops, rand, segs = 64) {
   const per = segs + 1 + 2 * ROOT, nT = loops.reduce((n, L) => n + L.threads, 0), nv = nT * per * 2;
   const A = new Float32Array(nv * 3), B = new Float32Array(nv * 3), E = new Float32Array(nv * 4);
   const Lb = new Float32Array(nv * 4), T = new Float32Array(nv * 4), S = new Float32Array(nv * 4), F = new Float32Array(nv * 4);

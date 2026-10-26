@@ -64,6 +64,7 @@ ${SNOISE}
 uniform vec4 uSpot[SPOTS];
 ${SUN_MASKS}
 uniform float uTime, uDays, uSurf, uAct, uGain, uFlK, uGlow, uHot, uTex, uRelief, uVisc;
+vec3 gNs, gVs;   // Normale und Blickrichtung für das Relief-Licht (magmaC)
 uniform vec3 uFlS;
 varying vec3 vN, vP, vO;
 varying vec2 vUv;
@@ -144,6 +145,77 @@ vec3 surfSDO(vec3 q, float t, float mu, float ar, float fine) {
   col *= (1.0 - 0.8 * fil) * (1.0 - 0.55 * hole);
   col *= 0.6 + 0.4 * sqrt(mu);
   return col + vec3(1.8, 0.55, 0.06) * pow(1.0 - mu, 4.0) * 0.7;
+}
+// Weitere Magma-Krusten (Vorschau „Sonne: Abriss + Kruste“ 26.10.2026, uTex 5–7): 5 Konvektion fein – Zellen in drei Größen
+// mit verwirbelten, unterbrochenen Rändern statt gerader Polygonlinien, Granulen mit dunklen Gassen, aus der Nähe Körnung ·
+// 6 Lavaplatten – dunkle Platten, Rissnetz in drei Stufen (das feinste nur aus der Nähe) · 7 Plasma-Relief – Höhe aus Zellen,
+// Granulen und Schlieren je Pixel, streifendes Licht schattiert sie (Glanzkanten wandern beim Drehen mit). Relief und
+// Viskosität (uRelief, uVisc) wirken wie bei Magma-Brodeln.
+vec3 magWarp(vec3 q, float t, float visc, float a) {
+  vec3 w = q + a * vec3(fbm3(q * 7.0 + t * 0.015 * visc), fbm3(q * 7.0 + 3.1), fbm3(q * 7.0 - t * 0.015 * visc));
+  return w + 0.012 * vec3(snoise(q * 34.0 + t * 0.03 * visc), snoise(q * 34.0 + 7.3), snoise(q * 34.0 - t * 0.03 * visc));
+}
+vec3 magmaA(vec3 q, float t, float mu, float ar, float fine) {
+  float visc = max(uVisc, 0.2), relief = max(uRelief, 0.0);
+  vec3 w = magWarp(q, t, visc, 0.05);
+  vec2 c = cells2(w * 16.0, t * 0.18 * visc), gr = cells2(w * 58.0 + 11.0, t * 0.55 * visc);
+  float dome = 1.0 - smoothstep(0.05, 0.95, c.x), domeH = dome * dome * relief;
+  float net = (1.0 - smoothstep(0.015, 0.1, c.y - c.x)) * (0.45 + 0.55 * smoothstep(-0.4, 0.5, snoise(w * 46.0 + t * 0.02)));
+  float lane = 1.0 - smoothstep(0.02, 0.14, gr.y - gr.x), gran = 1.0 - smoothstep(0.0, 0.85, gr.x);
+  float micro = mix(0.5, 0.5 + 0.5 * snoise(w * 170.0 + t * 0.06 * visc), fine);
+  float mott = 0.5 + 0.5 * fbmL(q * 28.0 + t * 0.03 * visc);
+  float act = max(smoothstep(0.0, 0.5, fbm3(q * 1.3 + 3.0)) * (0.5 + 0.7 * uAct), 0.9 * min(ar, 1.0));
+  vec3 hotCore = mix(vec3(1.3, 0.42, 0.05), vec3(3.2, 1.7, 0.45), uHot), whiteGlow = mix(vec3(3.2, 2.1, 0.9), vec3(4.8, 4.2, 2.9), uHot);
+  vec3 col = vec3(0.08, 0.012, 0.002) * (0.4 + 0.8 * mott) * (0.7 + 0.3 * uGlow);
+  float body = dome * (0.55 + 0.45 * gran) * (1.0 - 0.6 * lane) * (0.8 + 0.4 * micro);
+  col += hotCore * body * 1.6 * (0.65 + 0.55 * domeH * (0.6 + 0.4 * mu)) * (0.4 + 0.9 * act) * (0.5 + 0.6 * mott) * uGlow;
+  col += hotCore * 0.55 * gran * (1.0 - 0.7 * lane) * (1.0 - dome) * (0.4 + 0.9 * act) * uGlow;
+  col += whiteGlow * net * 0.55 * (0.35 + 0.9 * act) * uGlow;
+  col += whiteGlow * pow(dome * gran, 3.0) * 0.6 * (0.2 + 0.8 * act) * uGlow;
+  col *= 0.58 + 0.42 * sqrt(mu);
+  return col + vec3(1.7, 0.45, 0.05) * pow(1.0 - mu, 3.5) * 0.5;
+}
+vec3 magmaB(vec3 q, float t, float mu, float ar, float fine) {
+  float visc = max(uVisc, 0.2), relief = max(uRelief, 0.0);
+  vec3 w = magWarp(q, t, visc, 0.07);
+  vec2 c1 = cells2(w * 13.0, t * 0.12 * visc), c2 = cells2(w * 37.0 + 4.0, t * 0.25 * visc);
+  float e1 = c1.y - c1.x, k1 = 1.0 - smoothstep(0.0, 0.06, e1), halo = exp(-e1 / 0.09);
+  float k2 = (1.0 - smoothstep(0.0, 0.045, c2.y - c2.x)) * smoothstep(0.15, 0.5, e1);
+  vec2 c3 = cells2(w * 96.0 + 9.0, t * 0.4 * visc);
+  float k3 = (1.0 - smoothstep(0.0, 0.05, c3.y - c3.x)) * fine * smoothstep(0.1, 0.4, e1);
+  float plate = smoothstep(0.0, 0.7, c1.x), crust = 0.5 + 0.5 * fbmL(q * 40.0 + t * 0.02);
+  float act = max(smoothstep(0.0, 0.5, fbm3(q * 1.3 + 3.0)) * (0.5 + 0.7 * uAct), 0.9 * min(ar, 1.0));
+  vec3 hotCore = mix(vec3(1.3, 0.42, 0.05), vec3(3.2, 1.7, 0.45), uHot), whiteGlow = mix(vec3(3.2, 2.1, 0.9), vec3(4.8, 4.2, 2.9), uHot);
+  vec3 col = vec3(0.11, 0.018, 0.002) * (0.3 + 1.1 * crust) * (1.0 - 0.35 * plate * relief) * (0.7 + 0.3 * uGlow);
+  col += hotCore * (1.1 * halo + 0.45 * (1.0 - plate)) * (0.4 + 0.9 * act) * uGlow;
+  col += whiteGlow * (0.9 * k1 + 0.45 * k2 + 0.25 * k3) * (0.3 + 0.9 * act) * uGlow;
+  col *= 0.58 + 0.42 * sqrt(mu);
+  return col + vec3(1.7, 0.45, 0.05) * pow(1.0 - mu, 3.5) * 0.5;
+}
+vec3 magmaC(vec3 q, float t, float mu, float ar, float fine) {
+  float visc = max(uVisc, 0.2), relief = max(uRelief, 0.0);
+  vec3 w = magWarp(q, t, visc, 0.05);
+  vec2 c = cells2(w * 16.0, t * 0.18 * visc), gr = cells2(w * 48.0 + 11.0, t * 0.45 * visc);
+  float dome = 1.0 - smoothstep(0.05, 0.95, c.x);
+  float sch = pow(ridge(snoise(w * 22.0 + vec3(0.0, t * 0.02 * visc, 0.0))), 5.0) + 0.5 * pow(ridge(snoise(w * 47.0 - t * 0.03 * visc)), 7.0);
+  float H = 0.6 * dome * dome + 0.25 * (1.0 - smoothstep(0.0, 0.9, gr.x)) + 0.12 * sch;
+  // Relief aus der Höhe je Pixel (Oberflächengradient), Licht streift tangential über die Kugel
+  vec3 dpx = dFdx(vP), dpy = dFdy(vP), r1 = cross(dpy, gNs), r2 = cross(gNs, dpx);
+  float det = dot(dpx, r1);
+  vec3 Nb = normalize(abs(det) * gNs - sign(det) * (dFdx(H) * r1 + dFdy(H) * r2) * 0.014 * relief);
+  vec3 Lt = normalize(cross(gNs, normalize(vec3(0.35, 1.0, 0.2))));
+  float shade = clamp(1.0 + 2.2 * dot(Nb - gNs, Lt), 0.25, 2.2);
+  float spec = pow(max(dot(reflect(-gVs, Nb), normalize(gNs * 0.4 + Lt)), 0.0), 14.0);
+  float mott = 0.5 + 0.5 * fbmL(q * 28.0 + t * 0.03 * visc);
+  float edge = 1.0 - smoothstep(0.015, 0.1, c.y - c.x);
+  float act = max(smoothstep(0.0, 0.5, fbm3(q * 1.3 + 3.0)) * (0.5 + 0.7 * uAct), 0.9 * min(ar, 1.0));
+  vec3 hotCore = mix(vec3(1.3, 0.42, 0.05), vec3(3.2, 1.7, 0.45), uHot), whiteGlow = mix(vec3(3.2, 2.1, 0.9), vec3(4.8, 4.2, 2.9), uHot);
+  vec3 col = vec3(0.08, 0.012, 0.002) * (0.4 + 0.8 * mott) * (0.7 + 0.3 * uGlow);
+  col += hotCore * (0.25 + H) * shade * (0.4 + 0.9 * act) * (0.5 + 0.6 * mott) * uGlow;
+  col += whiteGlow * (0.45 * sch * (0.4 + dome) + 0.35 * edge) * (0.35 + 0.9 * act) * uGlow;
+  col += whiteGlow * spec * 0.5 * (0.3 + 0.7 * act) * uGlow;
+  col *= 0.58 + 0.42 * sqrt(mu);
+  return col + vec3(1.7, 0.45, 0.05) * pow(1.0 - mu, 3.5) * 0.5;
 }
 // Magma-Brodeln (Lava:B): Hydrodynamische Konvektionswülste mit 3D-Relief-Wölbung, zäh aufwallenden Zentren und absinkenden dunkleren Kühlrändern
 vec3 surfMagma(vec3 q, float t, float mu, float ar, float fine) {
@@ -233,6 +305,7 @@ vec3 flareDisk(vec3 n, float k, float t) {
 }
 void main() {
   vec3 N = normalize(vN), V = normalize(cameraPosition - vP);
+  gNs = N; gVs = V;
   float mu = clamp(dot(N, V), 0.0, 1.0);
   float s2 = vO.y * vO.y;
   float om = 14.713 - 2.396 * s2 - 1.787 * s2 * s2;
@@ -248,7 +321,8 @@ void main() {
     ar += exp(-dot(d, d) / 0.005);
   }
   vec3 col = uSurf > 0.5 ? surfB(g, uTime, mu, ar, fine) : uTex < 0.5 ? surfA(g, uTime, mu, ar, fine) : uTex < 1.5 ? surfNet(g, uTime, mu, ar, fine)
-    : uTex < 2.5 ? surfFur(g, uTime, mu, ar, fine) : uTex < 3.5 ? surfSDO(g, uTime, mu, ar, fine) : surfMagma(g, uTime, mu, ar, fine);
+    : uTex < 2.5 ? surfFur(g, uTime, mu, ar, fine) : uTex < 3.5 ? surfSDO(g, uTime, mu, ar, fine) : uTex < 4.5 ? surfMagma(g, uTime, mu, ar, fine)
+    : uTex < 5.5 ? magmaA(g, uTime, mu, ar, fine) : uTex < 6.5 ? magmaB(g, uTime, mu, ar, fine) : magmaC(g, uTime, mu, ar, fine);
   if (uSurf < 0.5) { vec4 sp = spotsA(g, uTime, fine); col = col * (1.0 - sp.a) + sp.rgb; }
   // Moos: helle, körnige Fußpunkte der Bögen über den aktiven Regionen – dort wurzeln die Fäden (sunstrands.js)
   float mossF = 1.0 - smoothstep(0.002, 0.008, length(fwidth(vO)));
