@@ -16,7 +16,7 @@ import { createStarfield } from '../stars.js';
 import { SUN_FRAG, BILLBOARD_VERT, CORONA_FRAG, LOOP_VERT, LOOP_FRAG, CME_FRAG, loopsGeometry, spotGroups, streamerSet } from '../sunfx.js';
 import { BODY_VERT, SHELL_VERT, PLANET_FRAG, ATMO_FRAG, CLOUD_FRAG, RING_FRAG, ATMOS } from '../planetfx.js';
 import { createFlare } from '../flare.js';
-import { jupiterAurora } from '../jupiterfx.js';
+import { jupiterAurora, auroraLayers } from '../jupiterfx.js';
 import { settings } from '../settings.js';
 import { registerLayers } from '../layers.js';
 import { keepShare } from '../sats.js';
@@ -318,7 +318,6 @@ export function create(ctx) {
   const P = Object.fromEntries(planets.map((x) => [x.p.id, x]));
   const jAur = jupiterAurora(ctx.detail);
   P.jupiter.mesh.add(jAur);
-  const jP = jAur.userData.parts, jU = jAur.userData.capU;
 
   // Mond: Ort aus der Almanach-Näherung relativ zur Erde; „Anschaulich“ zieht ihn näher heran, sonst läge er in der vergrößerten Erde
   const moonMat = new THREE.ShaderMaterial({ vertexShader: BODY_VERT, fragmentShader: PLANET_FRAG, uniforms: planetU(ctx.tex('moon.jpg'), { moon: true, earthPos: P.earth.pos }) });
@@ -512,15 +511,7 @@ export function create(ctx) {
     { id: 'clouds', type: 'toggle', label: 'Wolken der Erde', value: true, sub: true, set: (v) => { P.earth.clouds.visible = v; } },
     { id: 'orbits', type: 'toggle', label: 'Bahnen mit Leuchtspur', value: true, set: (v) => setVis(planets.map((x) => x.orbit), v) },
     { id: 'belts', type: 'toggle', label: 'Kleinkörper: Asteroiden, Trojaner, Kuipergürtel', value: true, set: (v) => setVis(beltObjs, v) },
-    { id: 'jOval', type: 'toggle', group: 'Jupiter-Polarlicht', label: 'Hauptoval (UV-Falschfarbe)', value: true, set: (v) => { jP.oval.visible = jP.cap.visible = v; },
-      hint: 'Schema: Oval ≈ 14° vom Magnetpol (Dipolneigung 9,6°), Norden nierenförmig, Süden runder. Echt leuchtet es im UV; die Farbe ist Falschfarbe.' },
-    { id: 'jSwirl', type: 'toggle', label: 'Polwirbel', value: true, sub: true, set: (v) => { jU.uSwirl.value = v ? 1 : 0; } },
-    { id: 'jFlares', type: 'toggle', label: 'Polar-Flares', value: true, sub: true, set: (v) => { jU.uFlare.value = v ? 1 : 0; } },
-    { id: 'jFeet', type: 'toggle', label: 'Fußpunkte von Io, Europa, Ganymed', value: true, sub: true, set: (v) => { jU.uFoot.value = v ? 1 : 0; },
-      hint: 'Die Monde ziehen Spuren ins Polarlicht; ihr Umlauf ist hier im Zeitraffer, die Lagen sind schematisch.' },
-    { id: 'jDisk', type: 'toggle', group: 'Jupiter-Magnetosphäre', label: 'Magnetscheibe mit Spiralarmen', value: true, set: (v) => { jP.disk.visible = v; } },
-    { id: 'jLines', type: 'toggle', label: 'Gestreckte Feldlinien', value: true, set: (v) => { jP.lines.visible = v; } },
-    { id: 'jFlow', type: 'toggle', label: 'Teilchenströme ins Oval', value: true, set: (v) => { jP.flow.visible = v; } },
+    ...auroraLayers(jAur),
   ]);
 
   const occluders = planets.map((x) => ({ center: x.pos, radius: 1 }));

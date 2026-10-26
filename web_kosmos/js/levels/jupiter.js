@@ -10,6 +10,7 @@ import { julianDate, equToScene, eclDir, laplaceAxes, laplaceLongitude } from '.
 import { createStarfield } from '../stars.js';
 import { BODY_VERT, SHELL_VERT, PLANET_FRAG, ATMO_FRAG, ATMOS } from '../planetfx.js';
 import { registerLayers, refreshLayers } from '../layers.js';
+import { jupiterAurora, auroraLayers } from '../jupiterfx.js';
 import { STATIONS } from '../content.js';
 import { JUPITER, GALILEAN, MOON_IDS, jovianState, laplaceAngle, nextShadowTransit } from '../jovian.js';
 
@@ -106,6 +107,10 @@ export function create(ctx) {
   blending: THREE.AdditiveBlending, depthWrite: false, transparent: true }));
   shell.scale.set(1, FLAT, 1);
   tilt.add(shell);
+  // Polarlicht und Magnetosphäre wie in der Station Sonnensystem (Schema), dreht mit dem Planeten; die Abplattung staucht
+  // Scheibe und Feldlinien um 6,5 % – dafür liegt das Oval auf der abgeplatteten Oberfläche
+  const jAur = jupiterAurora(ctx.detail);
+  jup.add(jAur);
 
   // ---------- Sonne (Richtung echt; 5,2 AE entfernt nur ein heller Punkt mit Lichthof) ----------
   const sun = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTexture(), color: 0xfff1da, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true }));
@@ -270,6 +275,7 @@ export function create(ctx) {
     { id: 'orbits', type: 'toggle', label: 'Bahnen mit Leuchtspur', value: true, set: (v) => moons.forEach((x) => { x.orbit.visible = v; }) },
     { id: 'atmos', type: 'toggle', label: 'Dunstsaum der Atmosphäre', value: true, set: (v) => { shell.visible = v; } },
     { id: 'band', type: 'toggle', label: 'Strömende Wolkenbänder', value: true, set: (v) => { jupU.uBand.value = v ? 1 : 0; } },
+    ...auroraLayers(jAur),
   ]);
 
   // ---------- Infotafel ----------
@@ -319,6 +325,7 @@ export function create(ctx) {
       if (!flying && playing) jd += dt * SPEEDS[spdIdx][0];
       place();
       jupU.uTime.value = t * (ctx.still ? 0.2 : 1);
+      jAur.userData.update(t);
       // Nahebene mit dem Abstand zur nächsten Oberfläche
       const d = Math.min(cam.position.length() - 1, ...moons.map((x) => cam.position.distanceTo(x.pos) - x.r));
       const near = THREE.MathUtils.clamp(d * 0.2, 2e-4, 0.05);
@@ -331,7 +338,7 @@ export function create(ctx) {
       if (r < 1.03) c.object.position.multiplyScalar(1.03 / r);
     },
     live: () => `${dateStr()} · ${playing ? `Zeitraffer ${SPEEDS[spdIdx][1]}` : 'angehalten'}`,
-    setPixelRatio(pr) { stars.userData.setPixelRatio(pr); },
+    setPixelRatio(pr) { stars.userData.setPixelRatio(pr); jAur.userData.U.uPx.value = pr; },
     dispose() {
       scene.traverse((o) => { if (o.geometry) o.geometry.dispose(); if (o.material) o.material.dispose(); });
       sun.material.map.dispose();

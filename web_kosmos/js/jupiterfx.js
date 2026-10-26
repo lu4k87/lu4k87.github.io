@@ -1,7 +1,8 @@
 // Jupiter-Polarlicht und Magnetosphäre (Station Sonnensystem), Einheit = Jupiterradius, Kind des Planetenkörpers (dreht mit).
 // Schema, kein Messbild: Hauptoval ≈ 14° vom Magnetpol (Dipolneigung 9,6°, JUNO/Hubble heic1613), Polwirbel, Polar-Flares,
 // Fußpunkte von Io, Europa, Ganymed (Schweif ostwärts), Magnetscheibe mit Spiralarmen, gestreckte Feldlinien, Teilchenregen.
-// Teile einzeln schaltbar: jupiterAurora(detail) → Gruppe, g.userData.parts = { oval, cap, disk, lines, flow }, g.userData.capU = { uSwirl, uFlare, uFoot }.
+// Teile einzeln schaltbar: jupiterAurora(detail) → Gruppe, g.userData.parts = { oval, cap, disk, lines, flow }, g.userData.capU = { uSwirl, uFlare, uFoot };
+// auroraLayers(g) = Zahnrad-Ebenen dazu, gleich in den Stationen Sonnensystem und Jupiter & Monde.
 import * as THREE from 'three';
 import { NOISE } from './glsl.js';
 const TILT = 9.6 * Math.PI / 180;
@@ -192,4 +193,18 @@ void main() {
   g.userData.capU = capU;
   g.userData.parts = { oval: curtain, cap, disk, lines, flow: stream };
   return g;
+}
+export function auroraLayers(g) {
+  const P = g.userData.parts, U = g.userData.capU;
+  return [
+    { id: 'jOval', type: 'toggle', group: 'Jupiter-Polarlicht', label: 'Hauptoval (UV-Falschfarbe)', value: true, set: (v) => { P.oval.visible = P.cap.visible = v; },
+      hint: 'Schema: Oval ≈ 14° vom Magnetpol (Dipolneigung 9,6°), Norden nierenförmig, Süden runder. Echt leuchtet es im UV; die Farbe ist Falschfarbe.' },
+    { id: 'jSwirl', type: 'toggle', label: 'Polwirbel', value: true, sub: true, set: (v) => { U.uSwirl.value = v ? 1 : 0; } },
+    { id: 'jFlares', type: 'toggle', label: 'Polar-Flares', value: true, sub: true, set: (v) => { U.uFlare.value = v ? 1 : 0; } },
+    { id: 'jFeet', type: 'toggle', label: 'Fußpunkte von Io, Europa, Ganymed', value: true, sub: true, set: (v) => { U.uFoot.value = v ? 1 : 0; },
+      hint: 'Die Monde ziehen Spuren ins Polarlicht; ihr Umlauf ist hier im Zeitraffer, die Lagen sind schematisch.' },
+    { id: 'jDisk', type: 'toggle', group: 'Jupiter-Magnetosphäre', label: 'Magnetscheibe mit Spiralarmen', value: true, set: (v) => { P.disk.visible = v; } },
+    { id: 'jLines', type: 'toggle', label: 'Gestreckte Feldlinien', value: true, set: (v) => { P.lines.visible = v; } },
+    { id: 'jFlow', type: 'toggle', label: 'Teilchenströme ins Oval', value: true, set: (v) => { P.flow.visible = v; } },
+  ];
 }
