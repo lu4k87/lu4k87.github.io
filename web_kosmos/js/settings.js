@@ -11,7 +11,7 @@ import { mountLayers, refreshLayers, icon, devLine, cfgBar, markDevs, isOpenIn, 
 import { nbsp } from './figs.js';
 
 const KEY = 'kosmos.settings.v1';
-const DEFAULTS = { motion: 'full', quality: 'auto', cine: true, dive: 3.6, exposure: 1, bloom: true, lens: true, lensOptic: 'master', lensGhost: true, ghostMotion: true, anamorphic: true, rayleigh: true, grain: true, deep: 1, fpsCap: 0, panel: true, timeline: true, scaleCompare: true, small: 6, stars: true, grade: 'station', vig: 1, bars: false, axes: false };
+const DEFAULTS = { motion: 'full', quality: 'auto', cine: true, dive: 3.6, exposure: 1, bloom: true, lens: true, lensAmt: 1, lensOptic: 'master', lensGhost: true, ghostMotion: true, anamorphic: true, rayleigh: true, grain: true, deep: 1, fpsCap: 0, panel: true, timeline: true, scaleCompare: true, small: 6, stars: true, grade: 'station', vig: 1, bars: false, axes: false };
 // Farblook: Belichtung, Bloom, Kontrast, Sättigung, Tönung Schatten/Lichter, Vignette – Kino = Mischung aus HDR, Ruhig, Tiefe Glut.
 // Global (main.js über globalGrade) oder je Station „Station“ = eigener Look; die Sonne wählt bei „Station“ selbst (levels/sun.js)
 export const GRADES = [['neutral', { exposure: 1, bloom: 0.12, con: 0.12, sat: 1.04, sh: [0.96, 0.99, 1.06], hi: [1.04, 1, 0.95], vig: 0.38 }],
@@ -47,6 +47,7 @@ function clean(raw) {
   S.small = Math.min(8, Math.max(1, S.small));
   S.deep = Math.min(2, Math.max(0, S.deep));
   S.vig = Math.min(1.5, Math.max(0, S.vig));
+  S.lensAmt = Math.min(3, Math.max(0, S.lensAmt));
   if (![0, 30, 60].includes(S.fpsCap)) S.fpsCap = 0;
   for (const [k, [lo, hi]] of Object.entries(MW_RANGE)) S[k] = Math.min(hi, Math.max(lo, S[k]));
   return S;
@@ -156,6 +157,7 @@ const GROUPS = [
   { id: 'fx', icon: 'fx', title: 'Effekte', rows: [
     ['bloom', TOG('bloom', 'Lichthof (Bloom)')],
     ['lens', TOG('lens', 'Farbsaum und Linsenreflex')],
+    ['lensAmt', RANGE('lensAmt', 'Stärke Linsenreflex', 0, 3, 0.05, '×', NEW) + NOTE('Lichthof, Ring und Geister um helle Quellen wie die Sonne. 0× = aus, der Farbsaum bleibt.')],
     ['lensOptic', SEG('lensOptic', 'Optik-Stil', [['master', 'Master-Optik'], ['classic', 'Klassisch']], NEW) + NOTE('Master-Optik: Spektraler Beugungsring, Glanzbogen &amp; Magenta-Sensor-Ghost nach Referenzbild; Klassisch: Zarter Film-Halo.')],
     ['lensGhost', TOG('lensGhost', 'Magenta-Sensor-Ghost', NEW)],
     ['ghostMotion', TOG('ghostMotion', 'Ghost-Parallaxe auf optischer Achse', NEW) + NOTE('Der Magenta-Ghost wandert physikalisch entlang der optischen Achse bei Kameraschwenks.')],

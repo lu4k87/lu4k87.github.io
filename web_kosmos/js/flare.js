@@ -2,7 +2,8 @@
 // entlang der Achse Quelle–Bildmitte, wie in einer Kamera mit mehreren Linsen.
 // Look: Master-Optik (Linse:B) mit spektralem Beugungsring (Chromatische Aberration: Rot/Grün/Blau-Dispersion),
 // breitem weißem Innen-Glanzbogen und tiefrotem/magenta Sensor-Ghost auf der optischen Achse;
-// umschaltbar auf klassischen Kinofilm-Halo (Linse:A) und im Zahnrad mit „Farbsaum und Linsenreflex“ regelbar.
+// umschaltbar auf klassischen Kinofilm-Halo (Linse:A); Zahnrad › Global › Effekte: „Farbsaum und Linsenreflex“ schaltet ab,
+// „Stärke Linsenreflex“ (`lensAmt`, 0–3×) regelt alle Teile gemeinsam.
 
 import * as THREE from 'three';
 import { settings } from './settings.js';
@@ -172,7 +173,7 @@ export function createFlare({ strength = 1, tint = [1, 0.92, 0.8] } = {}) {
       for (const o of occluders) if (sphereHit(o, camera.position, light)) { vis = 0; break; }
     }
     smooth += (vis - smooth) * Math.min(1, dt * 8);
-    const v = smooth * strength * flareIntensity;
+    const v = smooth * strength * flareIntensity * settings.S.lensAmt;
     if (v < 0.002) { group.visible = false; return; }
     group.visible = true;
 
@@ -181,22 +182,22 @@ export function createFlare({ strength = 1, tint = [1, 0.92, 0.8] } = {}) {
     const moveGhost = ghostMotionOn && (settings.S.ghostMotion !== false);
 
     if (useMaster) {
-      // Linse:B – Master-Optik nach Nutzerreferenz
-      place(rainbowRing, ndc.x, ndc.y, 1.15, camera, v * 1.1);
-      place(innerArc, ndc.x, ndc.y, 0.95, camera, v * 0.95);
-      place(halo, ndc.x, ndc.y, 0.65, camera, v * 0.55);
+      // Linse:B – Master-Optik nach Nutzerreferenz; bei 1× dezent (User 26.10.2026: viel zu stark), 3× ≈ früherer Look
+      place(rainbowRing, ndc.x, ndc.y, 1.15, camera, v * 0.35);
+      place(innerArc, ndc.x, ndc.y, 0.95, camera, v * 0.22);
+      place(halo, ndc.x, ndc.y, 0.65, camera, v * 0.4);
 
       if (showGhost) {
         // Magenta-Sensor-Ghost: Wandert auf der optischen Achse mit Parallaxe
         const gx = moveGhost ? ndc.x * -0.55 + 0.12 : ndc.x + 0.28;
         const gy = moveGhost ? ndc.y * -0.55 - 0.12 : ndc.y - 0.28;
-        place(magentaGhost, gx, gy, 0.22, camera, v * 0.92);
+        place(magentaGhost, gx, gy, 0.22, camera, v * 0.3);
       } else {
         magentaGhost.visible = false;
       }
 
       if (settings.S.anamorphic !== false) {
-        place(streak, ndc.x, ndc.y, 0.10, camera, v * 0.6, 18);
+        place(streak, ndc.x, ndc.y, 0.10, camera, v * 0.45, 18);
       } else {
         streak.visible = false;
       }

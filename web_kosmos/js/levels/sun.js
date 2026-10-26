@@ -16,7 +16,7 @@ import { createStarfield } from '../stars.js';
 import { BODY_VERT } from '../planetfx.js';
 import { SUN_FRAG, BILLBOARD_VERT, BILLBOARD_AIM_VERT, CORONA_FRAG, LOOP_VERT, LOOP_FRAG, CME_FRAG, CLOOP_VERT, CLOOP_FRAG, HOLES, FILS, loopsGeometry, spotGroups, streamerSet, coronalLoopsGeometry } from '../sunfx.js';
 import { registerLayers, refreshLayers } from '../layers.js';
-import { GRADES, globalGrade, onSettings } from '../settings.js';
+import { GRADES, globalGrade, onSettings, settings } from '../settings.js';
 import { LOOK_SURF_FRAG, LOOK_ATMO_VERT, LOOK_ATMO_FRAG, LOOK_EXT, ERUPT_T, lookDefines } from '../sunlook.js';
 import { STRAND_VERT, STRAND_FRAG, strandUniforms, strandGeometry, arcadeLoops, prominenceLoops, flareArcade, eruptLoop, loopField } from '../sunstrands.js';
 import { createFlare } from '../flare.js';
@@ -619,7 +619,7 @@ export function create(ctx) {
       ev.rotation.y = omega(evLat) * days * RAD;
       cam.updateMatrixWorld();
       coronaFrame(cam);
-      sunFlare.userData.update(new THREE.Vector3(0, 0, 0), cam, [], flaresOn, dt);
+      sunFlare.userData.update(new THREE.Vector3(0, 0, 0), cam, [], settings.S.lens, dt);
       // Flares: Zufallstakt je Aktivität, Schleifen um den Fußpunkt leuchten weich auf, Massenauswurf wandert hinaus
       if (flaresOn && !ctx.still && !flying && ACT[actIdx][3] > 0) { flareTimer -= dt; if (flareTimer <= 0) triggerFlare(cam); }
       cloopU.uFlareT.value = Math.min(cloopU.uFlareT.value + dt * ta0, 1e3);
