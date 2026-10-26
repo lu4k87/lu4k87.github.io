@@ -292,7 +292,6 @@ export const CARDS = {
     { v: '100–300', u: 'km', l: 'Höhe des Leuchtens', s: 'nasa-aurora' },
     { v: '557,7', u: 'nm', l: 'Grün: Sauerstoff', s: 'nasa-aurora' },
     { v: '80,8', u: '° N', l: 'geo­magnetischer Pol (IGRF-14)', s: 'wdc-poles' }] },
-  'earth.moon': { g: 'moon', f: MOON_F },
   'earth.sats': { g: 'orbits', hl: 'leo', c: 'sats', f: [
     { v: '16.800', u: '', l: 'aktive Satelliten (Okt. 2026)', s: 'celestrak' },
     { v: '540–570', u: 'km', l: 'Bahnhöhe Starlink', s: 'celestrak' },
@@ -310,6 +309,7 @@ export const CARDS = {
     { v: '109', u: '×', l: 'Erd­durchmesser', s: 'nasa-sun' },
     { v: '24,5', u: 'Tage', l: 'Drehung am Äquator', s: 'snodgrass-1990' }] },
   'solar.moon': { g: 'moon', f: MOON_F },
+  'moon.phase': { g: 'moon', f: MOON_F },
   'solar.jupiter': { g: 'jupiter', f: [
     { v: '9,9', u: 'h', l: 'ein Jupitertag (9 h 56 min)', s: 'nasa-planets' },
     { v: '318', u: '×', l: 'Erdmasse', s: 'nasa-planets' },

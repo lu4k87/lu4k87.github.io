@@ -93,6 +93,15 @@ export const SOURCES = {
   'nasa-psp': { t: 'Parker Solar Probe: Mission', by: 'NASA Science', url: 'https://science.nasa.gov/mission/parker-solar-probe/' },
   // [E2] Erde nah
   // [E2] Mond
+  'nasa-moon-facts': { t: 'Moon Facts (Maria, Wassereis in Polkratern, gebundene Rotation)', by: 'NASA Science', url: 'https://science.nasa.gov/moon/facts/' },
+  'nasa-moon-phases': { t: 'Moon Phases (27,3 und 29,5 Tage, Libration, Erdschein)', by: 'NASA Science', url: 'https://science.nasa.gov/moon/moon-phases/' },
+  'svs-libration': { t: 'Moon Phase and Libration, 2026', by: 'NASA Scientific Visualization Studio, ID 5587', url: 'https://svs.gsfc.nasa.gov/5587' },
+  'lola-cgi': { t: 'CGI Moon Kit: LOLA-Höhenkarte, 4 Pixel je Grad (gemeinfrei)', by: 'NASA SVS, ID 4720 (LRO/LOLA)', url: 'https://svs.gsfc.nasa.gov/4720' },
+  'nssdc-apollo': { t: 'Apollo-Missionen: Start, Landung, Landegebiet', by: 'NASA NSSDCA', url: 'https://nssdc.gsfc.nasa.gov/planetary/lunar/apollo.html' },
+  'nssdc-apollo-sites': { t: 'Apollo Landing Site Coordinates (LRO, Wagner et al. 2017)', by: 'NASA NSSDCA', url: 'https://nssdc.gsfc.nasa.gov/planetary/lunar/lunar_sites.html' },
+  'usgs-tycho': { t: 'Gazetteer of Planetary Nomenclature: Tycho', by: 'USGS / IAU', url: 'https://planetarynames.wr.usgs.gov/Feature/6163' },
+  'nasa-le': { t: 'Mondfinsternisse 2021–2030', by: 'NASA GSFC, F. Espenak', url: 'https://eclipse.gsfc.nasa.gov/LEdecade/LEdecade2021.html' },
+  'mcewen-1991': { t: 'Photometric functions for photoclinometry and other applications (Lunar-Lambert)', by: 'McEwen 1991, Icarus 92, 298', url: 'https://doi.org/10.1016/0019-1035(91)90053-V' },
   // [E3] Jupiter-System
   // [E3] Io, Europa
   // [E3] Ganymed, Kallisto
@@ -121,7 +130,7 @@ export const STATIONS = {
     hotspots: {
       atmo: { t: 'Atmosphäre', x: 'Die Dichte der Luft sinkt alle 8,5 km auf gut ein Drittel (Skalenhöhe); im Bild ist die Atmosphäre daher nur ein schmaler Saum. Blaues Licht streut an Luftmolekülen stärker als rotes (Rayleigh-Streuung, ∝ 1/λ⁴); daher der blaue Saum am Tagrand und das Abendrot an der Grenze zur Nacht. Am Nachtrand leuchtet die Hochatmosphäre in 90–100 km Höhe schwach grün (Airglow, Sauerstoff 557,7 nm).', s: 'nasa-earth' },
       night: { t: 'Nachtseite', x: 'Stadtlichter nach Satellitenaufnahmen. Sie folgen Küsten, Flusstälern und Verkehrswegen, an denen ein Großteil der Bevölkerung lebt.', s: 'sss-tex' },
-      moon: { t: 'Mond', x: 'Radius 1.737 km, Masse 1/81 der Erde, Fallbeschleunigung 1,62 m/s² (ein Sechstel des Erdwerts). Umlauf und Drehung dauern gleich lang (27,3 Tage, gebundene Rotation), daher zeigt er der Erde stets dieselbe Seite. Ohne Atmosphäre schwankt die Temperatur zwischen −173 °C nachts und 127 °C mittags. Laser-Entfernungsmessungen zu den Apollo-Reflektoren ergeben: Er entfernt sich um 3,8 cm pro Jahr. Anklicken fliegt hin.', s: 'nasa-moon' },
+      moon: { t: 'Mond', x: 'Radius 1.737 km, Masse 1/81 der Erde, Fallbeschleunigung 1,62 m/s² (ein Sechstel des Erdwerts). Umlauf und Drehung dauern gleich lang (27,3 Tage, gebundene Rotation), daher zeigt er der Erde stets dieselbe Seite. Ohne Atmosphäre schwankt die Temperatur zwischen −173 °C nachts und 127 °C mittags. Laser-Entfernungsmessungen zu den Apollo-Reflektoren ergeben: Er entfernt sich um 3,8 cm pro Jahr. Hineinfliegen: der Mond aus der Nähe mit Relief, Landestellen und Erdaufgang.', s: 'nasa-moon' },
       geo: { t: 'Geostationäre Bahn', x: 'In 35.786 km Höhe dauert ein Umlauf genau einen Sterntag (23 h 56 min). Satelliten auf dieser Bahn stehen von der Erde aus gesehen still über einem Punkt des Äquators; genutzt für Rundfunk, Kommunikation und Wetterbeobachtung.', s: 'nasa-earth' },
       iss: { t: 'ISS', x: 'Die Raumstation kreist in rund 420 km Höhe, 51,6° gegen den Äquator geneigt, alle 93 Minuten einmal um die Erde (7,66 km/s). Bahn und Ort aus den CelesTrak-Bahnelementen; die Abplattung der Erde dreht die Bahnebene um gut 5° pro Tag rückwärts (Knotendrift, J2) – im Zeitraffer sichtbar. Maßstäblich liegt die Bahn knapp über der Oberfläche: 420 km sind 6,6 % des Erdradius.', s: 'nasa-iss' },
       aurora: { t: 'Polarlichter', x: 'Teilchen des Sonnenwinds, vom Erdmagnetfeld zu den Polen geleitet, regen in 100–300 km Höhe Sauerstoff (grün 557,7 nm, rot 630 nm) und Stickstoff (blau-violett) an. Das Leuchten bildet ein Oval um den geomagnetischen Pol (80,8° N, 72,8° W; IGRF-14, 2025) – nachts weiter äquatorwärts als mittags, bei ruhiger Sonne (Kp 0–2) am Polarkreis, im Sturm (Kp ≥ 7) bis Mitteleuropa. Regler „Kp“ im Zahnrad. Form der Vorhänge: Modell; nur auf der Nachtseite sichtbar.', s: 'nasa-aurora' },
@@ -207,6 +216,35 @@ export const STATIONS = {
   },
   // [E2] Erde nah
   // [E2] Mond
+  moon: {
+    n: '01C', title: 'Mond', kicker: 'Erdtrabant', parent: 'earth', width: 1.4e7, dist: 3.844e8, lookback: 1.28,
+    lead: 'Der Mond aus der Nähe: Er steht still, Sonne, Erde und Sterne ziehen über seinen Himmel. Licht, Mondphase und das leichte Taumeln (Libration) sind für den angezeigten Zeitpunkt berechnet, das Relief stammt aus Laser-Höhenmessungen der Sonde LRO.',
+    facts: [
+      { v: '1.737,4', u: 'km', l: 'mittlerer Radius', s: 'nasa-moon' },
+      { v: '1,62', u: 'm/s²', l: 'Fallbeschleunigung', s: 'nasa-moon' },
+      { v: '27,3', u: 'Tage', l: 'Umlauf = Drehung', s: 'nasa-moon-phases' },
+      { v: '29,5', u: 'Tage', l: 'von Neumond zu Neumond', s: 'nasa-moon-phases' },
+    ],
+    note: 'Mondfest gezeichnet: Der Mond ruht, Sonne, Erde und Sterne bewegen sich. Lage für den Zeitpunkt aus der Almanach-Näherung des Mondorts (≈ 0,3°) und der optischen Libration nach Meeus (Astronomical Algorithms, Kap. 53; die physische Libration ≤ 0,04° fehlt). Albedo-Karte Solar System Scope (2.048 Pixel, CC BY 4.0), Höhen der Laseraltimetrie LOLA (NASA, 4 Pixel je Grad ≈ 7,6 km, gemeinfrei) – Relief im Bild 2-fach überhöht (Regler im Zahnrad), Schlagschatten aus dem Höhenfeld. Reflexion als Lunar-Lambert-Modell (McEwen 1991) mit Oppositionseffekt. Erdschein und Kupferrot im Kernschatten stark aufgehellt (echt viele tausendmal schwächer als das Sonnenlicht). Sterne zur Orientierung sichtbar – auf Fotos der sonnenbeschienenen Oberfläche sind sie meist nicht zu sehen. Erde maßstäblich (1,9° am Himmel). Erdaufgang aus 113 km Bahnhöhe im Zeitraffer (echt ≈ 1,5 Minuten bei 2 Stunden Umlauf). Blick „Von der Erde“ aus verkürztem Abstand (14.000 km statt 384.400 km).',
+    sources: ['nasa-moon', 'nasa-moon-facts', 'nasa-moon-phases', 'svs-libration', 'lola-cgi', 'nssdc-apollo', 'nssdc-apollo-sites', 'usgs-tycho', 'llr', 'nasa-le', 'mcewen-1991', 'sss-tex', 'd3-celestial'],
+    hotspots: {
+      phase: { t: 'Schattengrenze', x: 'Die Grenze zwischen Tag und Nacht (Terminator). Ohne Atmosphäre ist sie scharf; nahe der Grenze steht die Sonne tief, Kraterwände und Berge werfen lange Schatten, Gipfel leuchten schon im Dunkeln. Ein Mondtag von Sonnenaufgang zu Sonnenaufgang dauert 29,5 Erdtage – so lange wie der Wechsel der Mondphasen.', s: 'nasa-moon-phases' },
+      earth: { t: 'Erde am Mondhimmel', x: 'Wegen der gebundenen Rotation steht die Erde von der Vorderseite aus fast still am Himmel; sie pendelt durch die Libration nur um einige Grad. Sie zeigt Phasen, gegenläufig zum Mond: Bei Neumond sieht man vom Mond aus eine volle Erde – ihr Licht ist der Erdschein auf der Nachtseite. Am Himmel misst sie 1,9°, knapp viermal so viel wie der Vollmond bei uns (eigene Rechnung aus 12.742 km und 384.400 km).', s: 'nasa-moon-phases' },
+      apollo11: { t: 'Apollo 11', x: 'Erste bemannte Landung am 20. Juli 1969 im Meer der Ruhe (Mare Tranquillitatis). Der dort aufgestellte Laser-Reflektor wird bis heute angepeilt: Aus der Lichtlaufzeit folgt, dass sich der Mond um 3,8 cm pro Jahr von der Erde entfernt.', s: 'llr' },
+      apollo12: { t: 'Apollo 12', x: 'Landung am 19. November 1969 im Ozean der Stürme (Oceanus Procellarum). Die Landestelle ist aus Aufnahmen der Sonde LRO auf wenige Meter genau bekannt.', s: 'nssdc-apollo' },
+      apollo15: { t: 'Apollo 15', x: 'Landung am 30. Juli 1971 an der Hadley-Rille am Rand des Mare Imbrium, zwischen den Apenninen.', s: 'nssdc-apollo' },
+      apollo17: { t: 'Apollo 17', x: 'Landung am 11. Dezember 1972 im Taurus-Littrow-Tal am Rand des Mare Serenitatis – die bislang letzte bemannte Mondlandung.', s: 'nssdc-apollo' },
+      tycho: { t: 'Tycho', x: 'Ein junger Einschlagkrater von 85 km Durchmesser auf der südlichen Vorderseite. Seine hellen Strahlen aus ausgeworfenem Material ziehen sich über große Teile der Vorderseite und fallen bei Vollmond auf, wenn Schatten fehlen.', s: 'usgs-tycho' },
+      copernicus: { t: 'Kopernikus', x: 'Strahlenkrater im Ozean der Stürme mit Terrassenwänden und Zentralbergen. Bei tiefer Sonne nahe der Schattengrenze ist sein Relief am deutlichsten; Höhen hier aus der Laseraltimetrie.', s: 'lola-cgi' },
+      imbrium: { t: 'Mare Imbrium', x: 'Das Regenmeer, eines der großen Einschlagbecken der Vorderseite. Die dunklen „Meere“ (Maria) sind Becken, die vor 4,2 bis 1,2 Milliarden Jahren mit Lava gefüllt wurden; die hellen Hochländer sind älteres Gestein.', s: 'nasa-moon-facts' },
+      tranquillitatis: { t: 'Mare Tranquillitatis', x: 'Das Meer der Ruhe, ein lavagefülltes Becken auf der östlichen Vorderseite. Hier landete Apollo 11.', s: 'nasa-moon-facts' },
+      procellarum: { t: 'Oceanus Procellarum', x: 'Der Ozean der Stürme ist die größte dunkle Fläche der Vorderseite: Lavaebenen, die mehrere Becken überdecken.', s: 'nasa-moon-facts' },
+      crisium: { t: 'Mare Crisium', x: 'Ein runder Lavasee nahe dem Ostrand. Durch die Libration rückt er mal näher an den Rand, mal weiter ins Bild – im Blick „Von der Erde“ mit Zeitraffer „1 Tag/s“ gut zu sehen.', s: 'svs-libration' },
+      southpole: { t: 'Südpol', x: 'Die Drehachse des Mondes steht nur 1,5° schief zur Erdbahn; an den Polen bleibt die Sonne deshalb immer knapp am Horizont. Böden tiefer Krater liegen im Dauerschatten – dort fand die Sonde LRO hohe Anteile von Wassereis. Ziel künftiger Landungen.', s: 'nasa-moon-facts' },
+      aitken: { t: 'Südpol-Aitken-Becken', x: 'Das größte und älteste bekannte Einschlagbecken des Mondes auf der südlichen Rückseite. In der Höhenkarte der Laseraltimetrie ist es eine weite, tiefe Senke; im Bild das Relief im Streiflicht.', s: 'lola-cgi' },
+      farside: { t: 'Rückseite', x: 'Von der Erde aus nie zu sehen, aber nicht dunkel: Bei Neumond ist sie voll beleuchtet. Kaum Maria, dafür dicht an dicht Krater. Menschen sahen sie erst 1959, als eine sowjetische Sonde vorbeiflog.', s: 'nasa-moon-facts' },
+    },
+  },
   // [E3] Jupiter-System
   // [E3] Io, Europa
   // [E3] Ganymed, Kallisto
@@ -402,7 +440,7 @@ export const STATIONS = {
   },
 };
 
-export const ROUTE = ['earth', 'solar', 'sun', 'galaxy', 'orion', 'crab', 'pulsar', 'sgra', 'local', 'web', 'cmb'];
+export const ROUTE = ['earth', 'moon', 'solar', 'sun', 'galaxy', 'orion', 'crab', 'pulsar', 'sgra', 'local', 'web', 'cmb'];
 // Äste außerhalb der Route (Kind über parent) zählen für Weiter/Zurück wie ihre nächste Elternstation auf der Route
 export function routeIndex(id) {
   for (let x = id; x; x = STATIONS[x] ? STATIONS[x].parent : null) { const i = ROUTE.indexOf(x); if (i >= 0) return i; }

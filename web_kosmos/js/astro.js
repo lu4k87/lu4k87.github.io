@@ -156,6 +156,20 @@ export function moonPosition(jd) {
   const cb = Math.cos(bet * RAD);
   return [d * cb * Math.cos(lam * RAD), d * cb * Math.sin(lam * RAD), d * Math.sin(bet * RAD)];
 }
+// Optische Libration des Mondes (Meeus, Astronomical Algorithms, Kap. 53, ohne die physische ≤ 0,04°): l, b = seleno-
+// graphische Länge und Breite des Erdmittelpunkts [Grad]; Ω = Knotenlänge der Mondbahn [Grad]. Nach dem Cassini-Gesetz
+// steht der Pol des Mondäquators I = 1,54242° neben dem Ekliptikpol bei der Länge Ω + 90°.
+export const MOON_I = 1.54242;
+export function moonLibration(jd) {
+  const T = (jd - J2000) / 36525, m = moonPosition(jd);
+  const lam = Math.atan2(m[1], m[0]), bet = Math.atan2(m[2], Math.hypot(m[0], m[1]));
+  const F = (93.2720950 + 483202.0175233 * T) * RAD, node = 125.0445479 - 1934.1362891 * T;
+  const W = lam - node * RAD, I = MOON_I * RAD;
+  const A = Math.atan2(Math.sin(W) * Math.cos(bet) * Math.cos(I) - Math.sin(bet) * Math.sin(I), Math.cos(W) * Math.cos(bet));
+  const l = ((((A - F) / RAD) % 360) + 540) % 360 - 180;
+  const b = Math.asin(-Math.sin(W) * Math.cos(bet) * Math.sin(I) - Math.sin(bet) * Math.cos(I)) / RAD;
+  return { l, b, node: ((node % 360) + 360) % 360 };
+}
 
 // Umlaufzeit aus der mittleren Länge: 360° / (dL/dt) in Jahren
 export function siderealYears(p) {

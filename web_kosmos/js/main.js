@@ -28,6 +28,7 @@ const LOADERS = {
   sun: () => import('./levels/sun.js'),
   // [E2] Erde nah
   // [E2] Mond
+  moon: () => import('./levels/moon.js'),
   // [E3] Jupiter-System
   // [E3] Io, Europa
   // [E3] Ganymed, Kallisto
@@ -608,7 +609,8 @@ function frame(nowMs) {
   else {
     cineUndo(lv);
     if (state.follow) stepFollow(lv, real);
-    if (lv.orbitUpdate) lv.orbitUpdate(state.controls, real);
+    // Rückgabe 'free': die Station übernimmt die Kamera (z. B. Blick-Wechsel), Folgen endet
+    if (lv.orbitUpdate && lv.orbitUpdate(state.controls, real) === 'free') state.follow = null;
     state.controls.update();
     cineApply(lv, real);
     hud.setScale(fieldWidth(lv), lv);

@@ -438,7 +438,7 @@ export function create(ctx) {
   const hotspots = [
     { id: 'atmo', kind: 'info', pos: limb.clone().multiplyScalar(R_E * 1.02).addScaledVector(upL, 1.2) },
     { id: 'night', kind: 'info', pos: limb.clone().multiplyScalar(-0.62).addScaledVector(v, 0.7).normalize().multiplyScalar(R_E) },
-    { id: 'moon', kind: 'info', pos: moonPos, focus: () => R_M * 6 },
+    { id: 'moon', kind: 'dive', to: 'moon', pos: moonPos, focus: () => R_M * 6 },
     { id: 'aurora', kind: 'info', pos: auroraPos, visible: () => aurora.visible },
     { id: 'sats', kind: 'info', pos: d.clone().multiplyScalar(R_E + 0.55), visible: () => !!sats && show.sats },
     { id: 'geo', kind: 'info', pos: orbitPoint(side.clone().negate(), GEO) },
