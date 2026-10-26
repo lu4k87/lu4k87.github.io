@@ -33,6 +33,7 @@ const LOADERS = {
   jupiter: () => import('./levels/jupiter.js'),
   // [E3] Io, Europa
   io: () => import('./levels/io.js'),
+  europa: () => import('./levels/europa.js'),
   // [E3] Ganymed, Kallisto
   ganymede: () => import('./levels/ganymede.js'),
   callisto: () => import('./levels/callisto.js'),
