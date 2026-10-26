@@ -7,6 +7,7 @@
 import * as THREE from 'three';
 import { blackbody, bvToTemp, equToScene } from './astro.js';
 import { starPoints, glintPoints } from './stars.js';
+import { followStars } from './settings.js';
 import { SKY_VERTEX } from './glsl.js';
 
 let starsP = null, consP = null;
@@ -88,6 +89,7 @@ export async function createCatalogSky({ gain = 1, limit = 6.6, glint = true } =
     return { name, mag: m, bv, dir: new THREE.Vector3(...equToScene(ra, dec)) };
   });
   group.userData.count = n;
+  followStars(group);   // Zahnrad › Global › Bild „Sterne und Milchstraße“
   return group;
 }
 

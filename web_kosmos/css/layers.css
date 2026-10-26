@@ -1,21 +1,54 @@
-/* Zahnrad (Gruppen, Ebenen der Station „Station · …“, Zeilen-Raster), Zeitleiste über der Fußleiste und Tabellen in der Infotafel.
+/* Zahnrad als Bento: Reiter Station | Global, je Thema eine Karte im 2-Spalten-Raster (halbe Karten füllen Lücken),
+   ▶-Ebene als Karte „Animation“, sub-Ebenen eingerückt unter ihrer Hauptzeile; Zeitleiste über der Fußleiste; Tabellen der Infotafel.
    Ergänzt kosmos.css und nutzt dessen Tokens (--accent, --line, --glass-*, --mono). */
-.cfg-group { margin: 8px 0 -2px; padding-top: 10px; border-top: 1px solid var(--line); font: 500 11.5px var(--mono); letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-soft); }
-.cfg-group:first-child, .cfg-station > .cfg-group:first-child { border-top: 0; margin-top: 0; padding-top: 0; }
-.cfg-station { display: flex; flex-direction: column; gap: 10px; }
-/* Zwischenüberschrift je Thema der Station; Folgezeilen (sub) als eingerückter Block unter ihrer Hauptzeile */
-.cfg-sub { margin: 4px 0 -2px; font: 600 13px var(--font); color: var(--ink); }
-.cfg-group + .cfg-sub { margin-top: 0; }
-.lay-subs { display: flex; flex-direction: column; gap: 10px; margin-left: 2px; padding-left: 14px; border-left: 1px solid var(--line); }
-/* Regler-Zeilen im Raster: Name (bricht bei Bedarf um) · Regler · Wert mit Einheit – nie auseinandergerissen */
-.cfg .cfg-range, .cfg .lay--play { display: grid; grid-template-columns: minmax(0, 1fr) minmax(96px, 1.15fr) minmax(52px, max-content); gap: 10px; }
-.cfg .lay--play { grid-template-columns: auto minmax(0, 1fr) minmax(96px, 1.15fr) minmax(52px, max-content); }
-.cfg .cfg-range input[type=range], .cfg .lay--play input[type=range] { width: 100%; min-width: 0; margin: 0; accent-color: var(--accent); }
-.cfg .cfg-toggle { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; }
-.cfg .cfg-range .cfg-label, .cfg .lay--play .cfg-label, .cfg .cfg-toggle .cfg-label { overflow-wrap: break-word; }
-.cfg-val, .lay output { font: 500 12.5px var(--mono); text-align: right; white-space: nowrap; }
+.cfg-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 4px; border-radius: var(--radius); border: 1px solid var(--line); background: rgba(255, 255, 255, 0.05); }
+.cfg-tabs button { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 36px; padding: 6px 10px; border: 0; border-radius: 7px; background: transparent; color: var(--ink); font: 500 13px var(--font); cursor: pointer; transition: background 0.2s, box-shadow 0.2s; }
+.cfg-tabs button:hover:not([aria-selected="true"]) { background: rgba(255, 255, 255, 0.06); }
+.cfg-tabs button[aria-selected="true"] { background: rgba(var(--accent-rgb), 0.16); box-shadow: inset 0 0 0 1px rgba(var(--accent-rgb), 0.45); }
+.cfg-tabs button:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.bento { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-flow: row dense; gap: 10px; align-items: start; }
+.bento[hidden] { display: none; }
+.b-wide { grid-column: 1 / -1; }
+.b-card { display: flex; flex-direction: column; gap: 10px; min-width: 0; padding: 12px; border-radius: var(--radius); border: 1px solid var(--line); background: rgba(255, 255, 255, 0.035); }
+.b-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+.b-head h4 { margin: 0; font: 600 13.5px var(--font); }
+.b-count { font: 500 12px var(--mono); padding: 1px 7px; border-radius: 6px; border: 1px solid var(--line); color: var(--ink-soft); }
+.b-chip { font: 500 12px var(--mono); padding: 1px 8px; border-radius: 6px; background: var(--accent-soft); color: var(--accent); }
+.b-item { display: flex; flex-direction: column; gap: 8px; }
+.b-item + .b-item { padding-top: 8px; border-top: 1px solid rgba(255, 255, 255, 0.07); }
+/* Zeile: Name links, Schalter/Knopf rechts; Regler und Knopfreihen zweizeilig (Name + Wert oben, Bedienung volle Breite) */
+.b-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 10px; }
+.b-row .cfg-label { line-height: 1.35; overflow-wrap: break-word; }
+.b-stack { grid-template-columns: minmax(0, 1fr); gap: 6px; }
+.b-top { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+.cfg-val, .lay output { font: 500 13px var(--mono); text-align: right; white-space: nowrap; }
 .cfg-val output { font: inherit; }
-.lay-hint { margin: -4px 0 2px; font-size: 12px; }
+.b-track { position: relative; display: block; }
+.b-track input[type=range] { display: block; width: 100%; margin: 0; accent-color: var(--accent); }
+.b-track[style*="--n"] { padding-bottom: 6px; }
+.b-track[style*="--n"]::after { content: ""; position: absolute; left: 8px; right: 8px; bottom: 0; height: 4px; pointer-events: none;
+  background: repeating-linear-gradient(90deg, var(--line-strong) 0 1px, transparent 1px calc((100% - 1px) / var(--n))); }
+.b-seg { display: flex; width: 100%; }
+.b-seg button { flex: 1 1 auto; padding: 6px 8px; }
+.lay-hint { margin: -2px 0 0; font-size: 12.5px; line-height: 1.45; }
+.b-subs { display: flex; flex-direction: column; gap: 8px; margin-left: 4px; padding-left: 12px; border-left: 1px solid var(--line-strong); transition: opacity 0.2s; }
+.b-subs.is-off { opacity: 0.45; }
+/* Animation: großer ▶/⏸, Stand, Tempo groß; Stufen als Skala unter dem Regler */
+.b-card--time { border-color: rgba(var(--accent-rgb), 0.35); background: linear-gradient(160deg, rgba(var(--accent-rgb), 0.12), rgba(var(--accent-rgb), 0.03) 60%); }
+.b-time { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 12px; }
+.b-time-text { display: flex; flex-direction: column; min-width: 0; }
+.b-strong { font-weight: 600; font-size: 14px; }
+.b-status { font: 400 12.5px var(--mono); color: var(--ink-soft); overflow-wrap: anywhere; }
+.b-time output.b-big { font: 500 15px var(--mono); color: var(--accent); white-space: nowrap; }
+.b-steps { display: flex; justify-content: space-between; gap: 6px; font: 500 12px var(--mono); color: var(--ink-soft); }
+.b-steps span { text-align: center; }
+.b-steps span:first-child { text-align: left; }
+.b-steps span:last-child { text-align: right; }
+.b-steps .is-on { color: var(--accent); }
+@media (max-width: 600px) {
+  .bento { grid-template-columns: minmax(0, 1fr); }
+  .b-steps { display: none; }
+}
 .play-btn { width: 34px; height: 34px; flex: none; display: inline-grid; place-items: center; border-radius: 50%; border: 1px solid var(--line-strong); background: rgba(255, 255, 255, 0.06); color: var(--ink); cursor: pointer; transition: border-color 0.2s, background 0.2s, color 0.2s; }
 .play-btn svg { width: 18px; height: 18px; }
 .play-btn:hover { border-color: var(--accent); color: var(--accent); }

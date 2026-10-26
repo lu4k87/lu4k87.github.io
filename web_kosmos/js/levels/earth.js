@@ -495,12 +495,6 @@ export function create(ctx) {
   ];
 
   const controls = [
-    // Tempo wie SPEEDS der Zeitleiste, damit sie denselben Stand zeigt
-    { id: 'time', label: 'Zeit/s', value: 'min', options: [['now', 'Jetzt'], ['min', '1 min'], ['min10', '10 min'], ['hour', '1 h'], ['day', '1 Tag']],
-      set: (val) => {
-        rate = { now: 0, min: 1 / 1440, min10: 1 / 144, hour: 1 / 24, day: 1 }[val];
-        if (rate) clockIdx = SPEEDS.findIndex(([r]) => r === rate); else jd = julianDate(new Date());
-      } },
     { id: 'const', label: 'Sternbilder', value: 'off', options: [['off', 'Aus'], ['lines', 'Linien'], ['names', 'Linien + Namen']],
       set: (val) => { consMode = val; if (lines) lines.visible = val !== 'off'; } },
     { id: 'shadow', label: 'Schatten', value: 'off', options: [['off', 'Aus'], ['on', 'Kegel zeigen']],
@@ -519,7 +513,7 @@ export function create(ctx) {
       get: () => ({ value: clockIdx, playing: rate !== 0 }), status: () => `${fmt.format(new Date((jd - 2440587.5) * 864e5))}${rate ? '' : ' · Echtzeit'}` },
     { id: 'atmo', type: 'toggle', group: 'Lufthülle', label: 'Atmosphäre (Streulicht-Hülle)', value: true, set: (v) => { atmo.visible = v; } },
     { id: 'clouds', type: 'toggle', label: 'Wolkenschicht', value: true, set: (v) => { clouds.visible = v; } },
-    { id: 'aurora', type: 'toggle', label: 'Polarlichter', value: true, set: (v) => { aurora.visible = auroraGlow.visible = v; } },
+    { id: 'aurora', type: 'toggle', group: 'Polarlichter', label: 'Polarlichter', value: true, set: (v) => { aurora.visible = auroraGlow.visible = v; } },
     { id: 'kp', type: 'range', label: 'Kp-Index', value: 4, min: 0, max: 9, step: 1, sub: true, fmt: (v) => `Kp ${v}`, set: (v) => { auroraU.uKp.value = v; },
       hint: 'Geomagnetische Aktivität. Kp 0–2: nur am Polarkreis · Kp 5: Sturm, bis Norddeutschland · Kp 9: bis in den Mittelmeerraum (NOAA).' },
     { id: 'auroraWaves', type: 'toggle', label: 'Wellen, Strahlen, Farbsäume', value: true, sub: true, set: (v) => { auroraU.uWaves.value = v ? 1 : 0; },

@@ -8,6 +8,7 @@
 import * as THREE from 'three';
 import { blackbody, mulberry32, gauss } from './astro.js';
 import { NOISE, SKY_VERTEX } from './glsl.js';
+import { followStars } from './settings.js';
 
 // Punktbild eines Sterns: scharfer Kern (Gauß, σ ≈ 0,5 px – stabil bei Bewegung, kein Flimmern unter 1 px) und für helle
 // Sterne ein schwacher Hof (Streulicht der Optik); Energie bleibt erhalten, helle Sterne werden breiter, nicht zu Klecksen.
@@ -208,5 +209,6 @@ export function createStarfield({ count = 26000, seed = 7, ngp = new THREE.Vecto
   if (band > 0) group.add(milkyBand(n, u, band, tex));
   group.userData.setPixelRatio = (pr) => mats.forEach((m) => { m.uniforms.uPx.value = pr; });
   group.userData.material = points.material;
+  followStars(group);   // Zahnrad › Global › Bild „Sterne und Milchstraße“
   return group;
 }

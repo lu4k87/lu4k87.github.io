@@ -1,4 +1,4 @@
-// Ebenen-Einstellungen je Station (Muster Biochar): Zahnrad-Abschnitt „Station · …“ und Zeitleiste über der Fußleiste.
+// Ebenen-Einstellungen je Station (Muster Biochar): Zahnrad-Reiter „Station · …“ (Bento-Karten je group) und Zeitleiste über der Fußleiste.
 // Eine Station registriert ihre Ebenen in create(): registerLayers(stationId, layers). Ebene = { id, label, type, value, set, … }
 //   'toggle' an/aus · 'range' (min, max, step, unit, fmt) · 'play' ▶/⏸ mit Regler: set(value, playing), get() → { value, playing },
 //   status() Text für die Zeitleiste · 'action' Knopf: run(), button. sub: true rückt ein (Folgezeilen hängen gemeinsam an der Zeile
@@ -19,7 +19,7 @@ const url = (() => {
   return o;
 })();
 const reg = new Map();
-let currentId = null, gearEl = null, stripEl = null, stripOn = () => true;
+let currentId = null, gearEl = null, headEl = null, stripEl = null, stripOn = () => true;
 
 const valid = (l, v) => (l.type === 'toggle' ? typeof v === 'boolean' : typeof v === 'number' && Number.isFinite(v) && v >= l.min && v <= l.max);
 export const fmtVal = (l, v) => (l.fmt ? l.fmt(v) : `${String(v).replace('.', ',')}${l.unit ? ` ${l.unit}` : ''}`);
@@ -56,33 +56,61 @@ function persist(l) {
   try { localStorage.setItem(KEY, JSON.stringify(store)); } catch { /* privates Fenster */ }
 }
 
+// Bento: je group eine Karte, ▶-Ebene als Karte „Animation“ oben, sub-Ebenen als eingerückter Block unter ihrer Hauptzeile.
+// Regler mit wenigen benannten Stufen (fmt ohne Ziffern, ≤ 5 Stufen) erscheinen als Knopfreihe; Zahlen-Regler zweizeilig.
+const isChoice = (l) => l.type === 'range' && l.fmt && (l.step ?? 1) === 1 && l.max - l.min <= 4 && !/\d/.test(String(l.fmt(l.min)));
+const ticks = (l) => ((l.step ?? 1) >= 1 && l.max - l.min <= 12 ? ` style="--n:${l.max - l.min}"` : '');
+const steps = (l) => Array.from({ length: l.max - l.min + 1 }, (_, i) => l.min + i);
+const range = (l, label = l.label) => `<span class="b-track"${ticks(l)}><input type="range" data-lay="${l.id}" min="${l.min}" max="${l.max}" step="${l.step ?? 1}" aria-label="${esc(label)}"></span>`;
+
 const rowHtml = (l) => {
-  const rng = (extra = '') => `<input type="range" data-lay="${l.id}" min="${l.min}" max="${l.max}" step="${l.step ?? 1}" aria-label="${esc(l.label)}"${extra}><output data-lout="${l.id}"></output>`;
   let row;
-  if (l.type === 'toggle') row = `<label class="cfg-row cfg-toggle lay"><span class="cfg-label">${esc(l.label)}</span><input type="checkbox" data-lay="${l.id}"><span class="switch" aria-hidden="true"></span></label>`;
-  else if (l.type === 'range') row = `<label class="cfg-row cfg-range lay"><span class="cfg-label">${esc(l.label)}</span>${rng()}</label>`;
-  else if (l.type === 'play') row = `<div class="cfg-row lay lay--play"><button type="button" class="play-btn" data-play="${l.id}" aria-pressed="false" aria-label="${esc(l.label)} abspielen">${PLAY}</button><span class="cfg-label">${esc(l.label)}</span>${rng()}</div>`;
-  else row = `<div class="cfg-row lay"><span class="cfg-label">${esc(l.label)}</span><button type="button" class="act-btn" data-act="${l.id}">${esc(l.button || 'Auslösen')}</button></div>`;
+  if (l.type === 'toggle') row = `<label class="b-row cfg-toggle lay"><span class="cfg-label">${esc(l.label)}</span><input type="checkbox" data-lay="${l.id}"><span class="switch" aria-hidden="true"></span></label>`;
+  else if (isChoice(l)) row = `<div class="b-row b-stack lay"><span class="cfg-label" id="lay-${l.id}">${esc(l.label)}</span><div class="seg b-seg" role="radiogroup" aria-labelledby="lay-${l.id}">${steps(l).map((v) => `<button type="button" role="radio" data-lay-seg="${l.id}" data-val="${v}">${esc(l.fmt(v))}</button>`).join('')}</div></div>`;
+  else if (l.type === 'range') row = `<label class="b-row b-stack lay"><span class="b-top"><span class="cfg-label">${esc(l.label)}</span><output data-lout="${l.id}"></output></span>${range(l)}</label>`;
+  else row = `<div class="b-row lay"><span class="cfg-label">${esc(l.label)}</span><button type="button" class="act-btn" data-act="${l.id}">${esc(l.button || 'Auslösen')}</button></div>`;
   return row + (l.hint ? `<p class="cfg-note lay-hint">${esc(l.hint)}</p>` : '');
 };
 
-// Zwischenüberschrift je group, aufeinanderfolgende sub-Ebenen in einem eingerückten Block unter ihrer Hauptzeile
-function gearHtml(layers) {
-  let html = '', subs = '', group = null;
-  const flush = () => { if (subs) html += `<div class="lay-subs">${subs}</div>`; subs = ''; };
+function groups(layers) {
+  const out = [];
   for (const l of layers) {
-    if (l.group && l.group !== group) { flush(); group = l.group; html += `<h4 class="cfg-sub">${esc(group)}</h4>`; }
-    if (l.sub) subs += rowHtml(l); else { flush(); html += rowHtml(l); }
+    if (l.group || !out.length) out.push({ title: l.group || 'Ebenen', items: [] });
+    const g = out[out.length - 1];
+    if (l.sub && g.items.length) g.items[g.items.length - 1].subs.push(l); else g.items.push({ l, subs: [] });
   }
-  flush();
-  return html;
+  return out;
+}
+const count = (g) => g.items.reduce((n, it) => n + 1 + it.subs.length, 0);
+const block = ({ l, subs }) => `<div class="b-item">${rowHtml(l)}${subs.length ? `<div class="b-subs"${l.type === 'toggle' ? ` data-subs="${l.id}"` : ''}>${subs.map(rowHtml).join('')}</div>` : ''}</div>`;
+// halbe Karte nur bei wenigen Schaltern ohne Regler
+const wide = (g) => count(g) > 4 || g.items.some((it) => [it.l, ...it.subs].some((l) => l.type !== 'toggle'));
+
+function timeCard(g) {
+  const [{ l: p, subs }, ...rest] = g.items;
+  return `<article class="b-card b-card--time b-wide" aria-label="Animation: ${esc(p.label)}">
+    <header class="b-head"><h4>Animation</h4><span class="b-chip" data-chip="${p.id}"></span></header>
+    <div class="b-time"><button type="button" class="play-btn play-btn--lg" data-play="${p.id}" aria-pressed="false" aria-label="${esc(p.label)} abspielen">${PLAY}</button>
+      <span class="b-time-text"><span class="cfg-label b-strong">${esc(p.label)}</span><span class="b-status" data-status="${p.id}"></span></span>
+      <output class="b-big" data-lout="${p.id}"></output></div>
+    ${range(p, `${p.label}: Tempo`)}
+    ${p.fmt ? `<div class="b-steps" data-steps="${p.id}" aria-hidden="true">${steps(p).map((v) => `<span>${esc(p.fmt(v))}</span>`).join('')}</div>` : ''}
+    ${p.hint ? `<p class="cfg-note lay-hint">${esc(p.hint)}</p>` : ''}
+    ${subs.map((l) => block({ l, subs: [] })).join('')}${rest.map(block).join('')}
+  </article>`;
+}
+
+function gearHtml(layers) {
+  return groups(layers).map((g) => (g.items[0].l.type === 'play' ? timeCard(g)
+    : `<article class="b-card${wide(g) ? ' b-wide' : ''}"><header class="b-head"><h4>${esc(g.title)}</h4><span class="b-count" aria-label="${count(g)} Ebenen">${count(g)}</span></header>${g.items.map(block).join('')}</article>`)).join('');
 }
 
 function render() {
   if (gearEl) {
     const layers = reg.get(currentId), st = STATIONS[currentId];
-    gearEl.innerHTML = `<h3 class="cfg-group">Station · ${esc(st ? st.title : '…')}</h3>${layers ? gearHtml(layers)
-      : '<p class="cfg-note">Diese Station hat noch keine Ebenen-Einstellungen – ihre Schalter stehen in der Infotafel.</p>'}`;
+    if (headEl) headEl.innerHTML = `Station · ${esc(st ? st.title : '…')}<span class="b-count">${layers ? layers.length : 0}</span>`;
+    gearEl.innerHTML = layers ? gearHtml(layers)
+      : '<p class="cfg-note b-wide">Diese Station hat noch keine Ebenen-Einstellungen – ihre Schalter stehen in der Infotafel.</p>';
   }
   if (stripEl) {
     const l = (reg.get(currentId) || []).find((x) => x.type === 'play');
@@ -114,6 +142,11 @@ function sync() {
       b.innerHTML = on ? PAUSE : PLAY;
     });
     root.querySelectorAll('[data-status]').forEach((s) => { const l = find(s.dataset.status); if (l && l.status) s.textContent = l.status(); });
+    root.querySelectorAll('[data-lay-seg]').forEach((b) => { const l = find(b.dataset.laySeg); if (l) b.setAttribute('aria-checked', String(l.value === +b.dataset.val)); });
+    root.querySelectorAll('[data-steps]').forEach((el) => { const l = find(el.dataset.steps); if (l) [...el.children].forEach((c, i) => c.classList.toggle('is-on', l.min + i === Math.round(l.get ? l.get().value : l.value))); });
+    root.querySelectorAll('[data-chip]').forEach((c) => { const l = find(c.dataset.chip); if (l) c.textContent = playing(l) ? 'läuft' : 'angehalten'; });
+    // Unter-Ebenen ohne Wirkung, solange ihr Hauptschalter aus ist: abgedunkelt, aber bedienbar
+    root.querySelectorAll('[data-subs]').forEach((el) => { const l = find(el.dataset.subs); if (l) el.classList.toggle('is-off', !l.value); });
   }
 }
 
@@ -126,6 +159,8 @@ function onInput(e) {
   sync();
 }
 function onClick(e) {
+  const s = e.target.closest('[data-lay-seg]'), sl = s && find(s.dataset.laySeg);
+  if (sl) { sl.value = +s.dataset.val; sl.set(sl.value); persist(sl); sync(); return; }
   const b = e.target.closest('[data-play],[data-act]');
   if (!b) return;
   const l = find(b.dataset.play || b.dataset.act);
@@ -138,8 +173,8 @@ function poll() {
   if (id !== currentId) { currentId = id; render(); }
 }
 
-export function mountLayers({ gear, strip, stripOn: on }) {
-  gearEl = gear; stripEl = strip; stripOn = on || stripOn;
+export function mountLayers({ gear, head, strip, stripOn: on }) {
+  gearEl = gear; headEl = head || null; stripEl = strip; stripOn = on || stripOn;
   for (const root of [gearEl, stripEl]) { if (!root) continue; root.addEventListener('input', onInput); root.addEventListener('click', onClick); }
   window.addEventListener('hashchange', poll);
   poll();

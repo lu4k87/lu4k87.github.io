@@ -546,7 +546,6 @@ export function create(ctx) {
       hint: '1× = echt: Der volle Jupiter beleuchtet Io mit rund 1,5 % des Sonnenlichts (eigene Rechnung aus Radius, Abstand und Albedo).', set: (v) => { shineX = v; } },
     { id: 'jupiter', type: 'toggle', group: 'Himmel', label: 'Jupiter', value: true, set: (v) => { jupG.visible = jAtmo.visible = v; } },
     { id: 'moons', type: 'toggle', label: 'Europa, Ganymed, Kallisto', value: true, set: (v) => { moons.forEach((m) => { m.visible = v; }); } },
-    { id: 'stars', type: 'toggle', label: 'Sterne und Milchstraße', value: true, set: (v) => { sky.visible = v; } },
   ]);
   place();
   Object.assign(home, homePose());
