@@ -32,7 +32,10 @@ const LOADERS = {
   // [E3] Jupiter-System
   jupiter: () => import('./levels/jupiter.js'),
   // [E3] Io, Europa
+  io: () => import('./levels/io.js'),
   // [E3] Ganymed, Kallisto
+  ganymede: () => import('./levels/ganymede.js'),
+  callisto: () => import('./levels/callisto.js'),
   // [E4] Saturn + Mars
   saturn: () => import('./levels/saturn.js'),
   // [E4] Mars
