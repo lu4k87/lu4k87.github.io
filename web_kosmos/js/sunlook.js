@@ -266,7 +266,7 @@ void main() {
 // · 3 feiner Saum.
 export const LOOK_ATMO_FRAG = /* glsl */ `
 ${SNOISE}
-uniform float uTime, uExt, uGain, uSurf, uRim, uE, uEK, uEB, uSpH, uCor;
+uniform float uTime, uExt, uGain, uSurf, uRim, uE, uEK, uEB, uSpH, uCor, uEA;
 uniform vec2 uEDir, uESp;
 uniform mat3 uSunInv;
 uniform vec4 uAR[6];
@@ -370,6 +370,7 @@ void main() {
     vec2 p = vQ * uExt;
     if (uE < 1.5) col += cmeA(p, t, uEK);
     else if (uE < 2.5) col += flashB(p, uEK) * uEB;
+    else if (uEA > 0.0) col += cmeA(p, t, clamp((uEK - 0.45) / 0.55, 0.0, 1.0)) * uEA;   // Abriss: Blase hinter dem Oberteil
   }
   gl_FragColor = vec4(col * uGain * (1.0 - smoothstep(0.85, 1.0, rq)), 1.0);
 }

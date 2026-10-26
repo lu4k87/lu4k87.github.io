@@ -60,6 +60,15 @@ const ERUPTS = ['Filament-Eruption', 'Flare mit Schockwelle', 'Protuberanz reiß
 const FIELDS = ['aus', 'feiner Kranz', 'gestaffelt', 'Nester'];
 const FEET = ['Kante', 'Fibrillen', 'Kelch', 'Strudel'];
 const GLOWS = ['Rotglut', 'Strahlenkranz', 'Weißglut'];
+// Farblook: Belichtung, Bloom (× Glut), Kontrast, Sättigung, Tönung Schatten/Lichter, Vignette – Kino = Mischung aus HDR, Ruhig, Tiefe Glut
+const GRADES = [['neutral', { exposure: 1, bloom: 0.12, con: 0.12, sat: 1.04, sh: [0.96, 0.99, 1.06], hi: [1.04, 1, 0.95], vig: 0.38 }],
+  ['Kino', { exposure: 1.05, bloom: 0.24, con: 0.25, sat: 1.12, sh: [0.88, 0.93, 1.06], hi: [1.1, 0.99, 0.86], vig: 0.55 }],
+  ['Kino-HDR', { exposure: 1.15, bloom: 0.22, con: 0.22, sat: 1.1, sh: [0.9, 0.96, 1.12], hi: [1.08, 1, 0.88], vig: 0.5 }],
+  ['ruhig', { exposure: 1, bloom: 0.16, con: 0.18, sat: 1, sh: [0.97, 0.98, 1.02], hi: [1.04, 1, 0.94], vig: 0.45 }],
+  ['tiefe Glut', { exposure: 0.9, bloom: 0.3, con: 0.3, sat: 1.18, sh: [0.85, 0.88, 0.98], hi: [1.12, 0.98, 0.84], vig: 0.6 }]];
+// Ablösen beim Abriss (uTear in sunstrands.js) und Stärke der Auswurf-Blase dahinter (uEA in sunlook.js)
+const TEARS = ['klassisch', 'Plasmoid', 'Peitsche', 'Zerfasern', 'Mischung'];
+const TEAR_BUBBLE = [0, 1, 0.35, 0, 0.8];
 const TEXS = ['Adern', 'Zellnetz', 'Plasmafell', 'SDO-Komposit'];   // Kruste im Look „Glut“ (uTex in sunlook.js)
 const fmtDays = (d) => `${d.toLocaleString('de-DE', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} Tage`;
 
@@ -249,7 +258,7 @@ export function create(ctx) {
   // Look: Atmosphäre (Chromosphäre, Spikulen, Flammen, Hecken, Korona-Schein) und 2D-Teile der Ausbrüche als Bildtafel;
   // ohne Tiefentest, weil die Tafel durch die Sonnenmitte geht – sie rechnet die Kugel selbst (Strahl je Pixel)
   const rimU = { uTime: coronaU.uTime, uSurf: lookU.uSurf, uExt: { value: LOOK_EXT }, uSize: { value: LOOK_EXT }, uGain: { value: 0.8 },
-    uRim: { value: 2 }, uSpH: { value: SPICULE_H[2] }, uCor: { value: 1 }, uE: { value: 1 }, uEK: { value: -1 }, uEB: { value: 0 }, uEDir: { value: new THREE.Vector2(0, 1) },
+    uRim: { value: 2 }, uSpH: { value: SPICULE_H[2] }, uCor: { value: 1 }, uE: { value: 1 }, uEK: { value: -1 }, uEB: { value: 0 }, uEA: { value: 0 }, uEDir: { value: new THREE.Vector2(0, 1) },
     uESp: { value: new THREE.Vector2() }, uSunInv: { value: new THREE.Matrix3() }, uAR: { value: Array.from({ length: 6 }, () => new THREE.Vector4()) } };
   const rim = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), new THREE.ShaderMaterial({ vertexShader: LOOK_ATMO_VERT, fragmentShader: LOOK_ATMO_FRAG, uniforms: rimU,
     defines: lookDefines(ctx.detail), blending: THREE.AdditiveBlending, depthWrite: false, depthTest: false, transparent: true }));
@@ -273,6 +282,8 @@ export function create(ctx) {
   let granOn = true, spotsOn = true, promOn = true, flaresOn = true, flareRate = 1, cloopsOn = true, holesOn = true, coronaOn = true;
   let flareTimer = 10 + rand() * 10, glowMode = 2, loopGain = 1;
   const look = { exposure: 1.0, bloom: 0.12 };
+  // Farblook (Zahnrad, Vorschau „Sonne cinematic“ 26.10.2026): Grading der Station; Bloom wächst mit der Glut (applyGlow)
+  let gradeIdx = 1, tearIdx = 4;
   // Glut je Aktivität (ACT[i][4]): 0 Rotglut (Kruste und Adern) · 1 Strahlenkranz (Rand, Korona-Schein, Bloom) · 2 Weißglut
   // (Adern gelbweiß, alles heller); unterhalb „hoch“ kaum Unterschied
   function applyGlow() {
@@ -280,6 +291,7 @@ export function create(ctx) {
     const [gs, ga, gb, hot] = glowMode === 0 ? [g, Math.sqrt(g), Math.sqrt(g), 0] : glowMode === 1 ? [Math.sqrt(g), g ** 1.4, g ** 1.3, 0]
       : [g, g, g, THREE.MathUtils.clamp((g - 1.1) / 1.2, 0, 1)];
     lookU.uGlow.value = gs; lookU.uHot.value = hot; rimU.uGain.value = 0.8 * ga; strandU.uGain.value = g ** 0.7 * loopGain; look.bloom = 0.12 * gb;
+    Object.assign(look, GRADES[gradeIdx][1], { bloom: GRADES[gradeIdx][1].bloom * gb });
   }
   const regionWorld = (r, out, h = 1) => out.copy(r.mid).multiplyScalar(h).applyAxisAngle(Y, omega(r.lat) * days * RAD).applyQuaternion(sunG.quaternion);
   const tmp = new THREE.Vector3(), tmp2 = new THREE.Vector3();
@@ -344,6 +356,7 @@ export function create(ctx) {
     ev.geometry.dispose();
     ev.geometry = strandGeometry(list, mulberry32(meshSeed++), 56);
     evU.uMode.value = [1, 2, 3][type];
+    evU.uTear.value = tearIdx; rimU.uEA.value = TEAR_BUBBLE[tearIdx];
   }
 
   function triggerFlare(cam) {
@@ -417,10 +430,12 @@ export function create(ctx) {
     { id: 'spots', type: 'toggle', label: 'Sonnenflecken', value: true, set: (v) => { spotsOn = v; applyRegions(); } },
     { id: 'tex', type: 'range', label: 'Kruste (Glut)', value: 1, min: 0, max: TEXS.length - 1, step: 1, fmt: (i) => TEXS[Math.round(i)], set: (v) => { lookU.uTex.value = Math.round(v); } },
     { id: 'glow', type: 'range', label: 'Glut ab „sehr hoch“', value: glowMode, min: 0, max: GLOWS.length - 1, step: 1, fmt: (i) => GLOWS[Math.round(i)], set: (v) => { glowMode = Math.round(v); applyGlow(); } },
+    { id: 'grade', type: 'range', label: 'Farblook', value: gradeIdx, min: 0, max: GRADES.length - 1, step: 1, fmt: (i) => GRADES[Math.round(i)][0], set: (v) => { gradeIdx = Math.round(v); applyGlow(); } },
     { id: 'rim', type: 'range', label: 'Rand (Glut, 304 Å)', value: rimIdx, min: 0, max: RIMS.length - 1, step: 1, fmt: (i) => RIMS[Math.round(i)], set: (v) => { rimIdx = Math.round(v); rimU.uRim.value = rimIdx; rimU.uSpH.value = SPICULE_H[rimIdx]; applyRegions(); } },
     { id: 'prom', type: 'toggle', group: 'Ausbrüche', label: 'Protuberanzen und Filamente', value: true, set: (v) => { promOn = v; applyRegions(); } },
     { id: 'flares', type: 'toggle', label: 'Flares mit Massenauswurf', value: true, set: (v) => { flaresOn = v; if (!v) { cme.visible = flash.visible = ev.visible = false; erupt.k = -1; } } },
     { id: 'erupt', type: 'range', label: 'Ausbruch (Glut, 304 Å)', value: eruptIdx, min: 0, max: ERUPTS.length - 1, step: 1, fmt: (i) => ERUPTS[Math.round(i)], sub: true, set: (v) => { eruptIdx = Math.round(v); } },
+    { id: 'tear', type: 'range', label: 'Ablösen (Protuberanz reißt ab)', value: tearIdx, min: 0, max: TEARS.length - 1, step: 1, fmt: (i) => TEARS[Math.round(i)], sub: true, set: (v) => { tearIdx = Math.round(v); } },
     { id: 'flareRate', type: 'range', label: 'Häufigkeit', value: 1, min: 0.3, max: 3, step: 0.1, unit: '×', sub: true, set: (v) => { flareRate = v; } },
     { id: 'flareNow', type: 'action', label: 'Flare mit Massenauswurf', button: 'Jetzt auslösen', sub: true, run: () => { if (flaresOn) triggerFlare(camera); } },
     { id: 'cloops', type: 'toggle', group: 'Korona', label: 'Magnetbögen und Koronaschleifen', value: true, set: (v) => { cloopsOn = v; applyRegions(); } },

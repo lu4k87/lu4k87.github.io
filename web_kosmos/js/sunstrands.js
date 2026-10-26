@@ -20,7 +20,7 @@ import { NOISE } from './glsl.js';
 
 export const strandUniforms = () => ({
   uTime: { value: 0 }, uPx: { value: 0.001 }, uGain: { value: 1 }, uPal: { value: 0 }, uMode: { value: 0 }, uK: { value: 0 }, uDens: { value: 1 },
-  uFoot: { value: 1 }, uMove: { value: new THREE.Vector3(1, 1, 1) }, uDisk: { value: 0.35 }, uLifeR: { value: 1 }, uScale: { value: 1 },
+  uFoot: { value: 1 }, uMove: { value: new THREE.Vector3(1, 1, 1) }, uDisk: { value: 0.35 }, uLifeR: { value: 1 }, uScale: { value: 1 }, uTear: { value: 4 },
   uFS: { value: new THREE.Vector3(0, 0, 1) }, uFE1: { value: new THREE.Vector3(1, 0, 0) }, uFE2: { value: new THREE.Vector3(0, 1, 0) },
 });
 
@@ -33,7 +33,7 @@ export const strandUniforms = () => ({
 export const STRAND_VERT = /* glsl */ `
 attribute vec3 aA, aB, aE;
 attribute vec4 aL, aT, aS, aF;
-uniform float uTime, uPx, uMode, uK, uDens, uFoot, uLifeR, uScale;
+uniform float uTime, uPx, uMode, uK, uDens, uFoot, uLifeR, uScale, uTear;
 uniform vec3 uMove, uFS, uFE1, uFE2;
 varying float vS, vX, vH, vI, vFlow, vSeed, vCut, vHot, vRes, vU, vCyc;
 varying vec3 vW;
@@ -98,21 +98,33 @@ void main() {
     hot = (1.0 - smoothstep(0.14 + aE.x, 0.42 + aE.x, k)) * 0.8;
   } else {
     // Protuberanz reißt ab: Bogen wächst und verdrillt sich; jeder Faden schnürt sich nahe dem Scheitel ein und reißt zu
-    // eigenem Zeitpunkt an eigener Stelle (ausgefranst statt eines glatten Schnitts), die Rissenden glühen kurz weiß auf
-    gH = aL.x * mix(0.25, 1.0, smoothstep(0.0, 0.62, k));
-    gTwist += 1.2 * smoothstep(0.2, 0.62, k);
-    gRope *= 1.0 + 0.8 * smoothstep(0.3, 0.62, k);
+    // eigenem Zeitpunkt an eigener Stelle (ausgefranst statt eines glatten Schnitts), die Rissenden glühen kurz weiß auf.
+    // uTear (Zahnrad „Ablösen“): 0 klassisch · 1 Plasmoid steigt auf · 2 Peitsche mit Lichtblitz · 3 Zerfasern im Sonnenwind ·
+    // 4 Mischung (Kern der Fäden wird Plasmoid, die äußeren zerfasern)
     th = hash(aT.z * 91.7);
+    float V = uTear > 3.5 ? (th < 0.55 ? 1.0 : 3.0) : uTear, k0 = V > 0.5 ? 0.5 : 0.58, sp = V > 2.5 ? 0.14 : 0.07;
+    float pre = V > 0.5 ? smoothstep(k0 - 0.14, k0, k) * (1.0 - smoothstep(k0, k0 + 0.1, k)) : 0.0;   // Hals dehnt sich, glüht
+    gH = aL.x * mix(0.25, V > 0.5 ? 0.68 : 1.0, smoothstep(0.0, k0 + 0.04, k)) * (1.0 + 0.12 * pre);   // Varianten: Bogen bleibt im Bild
+    gTwist += 1.2 * smoothstep(0.2, k0 + 0.04, k) + (V > 0.5 && V < 1.5 ? 1.5 * smoothstep(k0, 1.0, k) : 0.0);
+    gRope *= 1.0 + 0.8 * smoothstep(0.3, k0 + 0.04, k);
     tc = 0.5 + 0.12 * (hash(aT.z * 57.3 + 3.1) - 0.5);
-    tk = smoothstep(0.0, 1.0, (k - 0.58 - 0.07 * th) / 0.36);
-    tg = 0.3 * tk;
+    tk = smoothstep(0.0, 1.0, (k - k0 - sp * th) / (V > 1.5 && V < 2.5 ? 0.22 : 0.36));
+    tg = (V > 0.5 ? 0.2 : 0.3) * tk;
     te = abs(sl - tc) - tg;
-    float neck = smoothstep(0.5, 0.6, k - 0.07 * th);
+    float neck = smoothstep(k0 - 0.08, k0 + 0.02, k - sp * th);
     cut = te < 0.0 ? 1.0 : 0.0;
-    lift = cut * pow(clamp((k - 0.6) / 0.4, 0.0, 1.0), 1.4) * 1.1 * (0.95 + 0.1 * th);
+    float kc = V < 0.5 ? clamp((k - 0.6) / 0.4, 0.0, 1.0) : clamp((k - k0 - 0.02) / (0.98 - k0), 0.0, 1.0);
+    lift = V < 0.5 ? cut * pow(kc, 1.4) * 1.1 * (0.95 + 0.1 * th)
+      : V < 1.5 ? cut * (0.04 * kc + 0.42 * kc * kc * kc)                                                   // langsam lösen, dann beschleunigen
+      : V < 2.5 ? cut * (0.13 * (1.0 - exp(-kc * 6.0)) + 0.05 * sin(kc * 14.0) * exp(-kc * 4.0) + 0.1 * kc * kc)   // schnellt hoch, federt nach
+      : cut * (0.15 + 0.3 * th) * kc * kc;                                                          // je Faden eigenes Tempo
     tf = mix(1.0, smoothstep(0.0, 0.06, abs(te)), neck);
-    hot = 0.9 * exp(-abs(te) / 0.05) * neck * (1.0 - tk) * (1.0 - tk);
-    life = smoothstep(0.0, 0.06, k) * (1.0 - smoothstep(0.85, 1.0, k)) * (1.0 - 0.7 * cut * smoothstep(0.65, 0.95, k));
+    hot = V > 1.5 && V < 2.5 ? 2.2 * exp(-abs(te) / 0.08) * neck * exp(-tk * 2.5) : 0.9 * exp(-abs(te) / 0.05) * neck * (1.0 - tk) * (1.0 - tk);
+    hot += 0.5 * pre * exp(-abs(sl - tc) / 0.08);
+    if (V > 1.5 && V < 2.5) I *= 1.0 + 2.5 * exp(-min(sl, 1.0 - sl) / 0.05) * smoothstep(0.0, 0.15, tk) * exp(-2.0 * tk);   // Fußpunkte leuchten auf
+    float fade = V < 0.5 ? 0.7 * cut * smoothstep(0.65, 0.95, k) : V < 1.5 ? 0.85 * cut * smoothstep(0.84, 1.0, k)
+      : V < 2.5 ? 0.8 * cut * smoothstep(0.72, 0.98, k) : cut * smoothstep(0.45, 0.95, kc + 0.25 * th);
+    life = smoothstep(0.0, 0.06, k) * (1.0 - smoothstep(V < 0.5 ? 0.85 : 0.9, 1.0, k)) * (1.0 - fade);
   }
   gN = cross(gB - gA, gA + gB);
   gN /= max(length(gN), 1e-6);
@@ -137,17 +149,20 @@ void main() {
     if (cut > 0.5) {
       // Oberteil (gemeinsamer Fortschritt kc, damit es ein Bündel bleibt): weitet sich um den Scheitel, die losen Enden biegen
       // sich nach oben und innen (Flussseil schließt sich); nur die Rissenden fransen je Faden aus
-      float kc = clamp((k - 0.6) / 0.4, 0.0, 1.0), q = pow(min(abs(sl - 0.5) / 0.3, 1.0), 2.0);
+      float V = uTear > 3.5 ? (th < 0.55 ? 1.0 : 3.0) : uTear, kc = V < 0.5 ? clamp((k - 0.6) / 0.4, 0.0, 1.0) : clamp((k - 0.52) / 0.46, 0.0, 1.0), q = pow(min(abs(sl - 0.5) / 0.3, 1.0), 2.0);
       vec3 ap = axisAt(0.5), lat = p - ap;
       lat -= R * dot(lat, R);
-      p += (p - ap) * 0.6 * kc - lat * q * 0.25 * kc + R * q * aL.x * 0.35 * kc;
-      p += (gN * (th - 0.5) + R * (hash(aT.z * 23.9) - 0.5)) * q * aL.x * 0.12 * tk;
+      vec4 m = V < 0.5 ? vec4(0.6, 0.25, 0.35, 0.12) : V < 1.5 ? vec4(0.35, 0.6, 0.45, 0.1) : V < 2.5 ? vec4(0.25, 0.2, 0.3 + 0.5 * sin(kc * 10.0) * exp(-kc * 3.0), 0.2)
+        : vec4(0.3, 0.1, 0.4 + 0.9 * th, 0.35);   // Weiten, Einrollen der Enden, Hub der Enden, Ausfransen
+      p += (p - ap) * m.x * kc - lat * q * m.y * kc + R * q * aL.x * m.z * kc;
+      p += (gN * (th - 0.5) + R * (hash(aT.z * 23.9) - 0.5)) * q * aL.x * m.w * tk;
     } else {
       // Beine: das freie Ende schnellt zur Oberfläche zurück, biegt nach außen und schwingt gedämpft aus
       float sn = exp(-te / 0.22) * smoothstep(0.0, 0.35, tk);
       vec3 D = normalize((sl < tc ? gA - gB : gB - gA) + 1e-5 * gN);
       p -= normalize(p) * (length(p) - 1.0) * 0.6 * sn;
-      p += D * aL.x * sn * (0.12 + 0.25 * sin(tk * 16.0 + th * 6.0) * exp(-3.0 * tk));
+      float V = uTear > 3.5 ? (th < 0.55 ? 1.0 : 3.0) : uTear, wa = V > 1.5 && V < 2.5 ? 0.5 : V > 0.5 ? 0.15 : 0.25, wd = V > 1.5 && V < 2.5 ? 2.0 : 3.0;   // Ausschwingen der Beine
+      p += D * aL.x * sn * (0.12 + wa * sin(tk * 16.0 + th * 6.0) * exp(-wd * tk));
     }
   }
   p += R * lift;
