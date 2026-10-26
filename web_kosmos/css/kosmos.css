@@ -324,6 +324,22 @@ body.is-flying .hint, body.is-intro .hint { opacity: 0; }
 .hc-ring { fill: none; stroke: #e6d6b0; }
 .hc-grains { fill: #fff6e0; opacity: 0.8; }
 
+/* Feste Infografik (figs.js, Wunsch User 26.10.2026): ohne Bewegung, Körper neutral, Hervorhebung in Akzentfarbe */
+.hf .hf-name { fill: var(--ink); }
+.hf-body { fill: rgba(255, 255, 255, 0.1); stroke: rgba(255, 255, 255, 0.45); stroke-width: 1; }
+.hf-body.is-hl, .hf-zone.is-hl, .hf-layer.is-hl { fill: color-mix(in srgb, var(--accent) 28%, transparent); stroke: var(--accent); }
+.hf-bar { fill: rgba(255, 255, 255, 0.32); }
+.hf-bar.is-hl { fill: var(--accent); }
+.hf-crater { fill: rgba(0, 0, 0, 0.35); stroke: var(--accent); stroke-width: 1.2; }
+.hf-planet { fill: #c1663f; }
+.hf .hf-on-planet { fill: #fff; font-size: 10px; }
+.hf-zone { fill: rgba(255, 255, 255, 0.08); stroke: rgba(255, 255, 255, 0.5); stroke-width: 1; }
+.hf-layer { fill: rgba(255, 255, 255, 0.12); stroke: rgba(255, 255, 255, 0.45); stroke-width: 1; }
+.hf-base { stroke: rgba(255, 255, 255, 0.55); stroke-width: 1.2; }
+.hf-tick { fill: none; stroke: rgba(255, 255, 255, 0.4); stroke-width: 0.8; }
+.hf-groove { fill: none; stroke: rgba(255, 255, 255, 0.35); stroke-width: 1; }
+.hf-arrow { fill: none; stroke: var(--accent); stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round; }
+
 /* Bewegung (dauerhaft, Wunsch User 26.10.2026): Einblenden gestaffelt, Linien zeichnen sich, Glow atmet in zwei Takten,
    Lichtschleier wandern, Punkte kreisen im Takt der echten Umlaufzeiten; Zahnrad „Ruhig“ = nur Atmen, „Aus“ = still */
 .hs-card.is-open .hc-in { animation: hcIn 0.7s var(--ease-out) both; animation-delay: calc(var(--i, 0) * 70ms + 80ms); }

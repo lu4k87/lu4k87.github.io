@@ -171,6 +171,8 @@ export const SOURCES = {
   'nasa-dragonfly': { t: 'Dragonfly (Rotorfluggerät, Start frühestens Juli 2028, Ankunft Ende 2034, Route über Dünen und den Selk-Krater)', by: 'NASA Science', url: 'https://science.nasa.gov/mission/dragonfly/' },
   'usgs-gazetteer-titan': { t: 'Gazetteer of Planetary Nomenclature, Titan: Kraken Mare (68° N, 310° W, 1.170 km), Ligeia Mare (79,7° N, 247,9° W, 500 km); Längen nach Westen', by: 'IAU / USGS Astrogeology', url: 'https://planetarynames.wr.usgs.gov/Feature/14400' },
   // [E4] Mars
+  'usgs-hawaii': { t: 'How big are Hawaiian volcanoes? (Mauna Kea ≈ 10.211 m vom Meeresboden bis zum Gipfel, 4.205 m über dem Meer)', by: 'USGS', url: 'https://www.usgs.gov/faqs/how-big-are-hawaiian-volcanoes' },
+  'nps-grca': { t: 'Grand Canyon Park Statistics (Länge 447 km entlang des Flusses, größte Breite 28,8 km, mittlere Tiefe 1,6 km)', by: 'U.S. National Park Service', url: 'https://www.nps.gov/grca/learn/management/statistics.htm' },
   'nssdc-mars': { t: 'Mars Fact Sheet (Radien 3.396,2 / 3.376,2 km, Drehung 24,6229 h, Achse 25,19°, Nordpol, Luftdruck 6,36 mbar, Skalenhöhe 11 km; Phobos und Deimos: Halbachsen, Perioden 0,31891 / 1,26244 d, Albedo)', by: 'NASA NSSDCA', url: 'https://nssdc.gsfc.nasa.gov/planetary/factsheet/marsfact.html' },
   'jpl-mar099': { t: 'Planetary Satellite Mean Elements (MAR099, Laplace-Ebene, Epoche J2000; Brozović, Jacobson & Park 2025)', by: 'JPL Solar System Dynamics', url: 'https://ssd.jpl.nasa.gov/sats/elem/' },
   'iau-wgccre-2015': { t: 'Report of the IAU Working Group on Cartographic Coordinates and Rotational Elements: 2015 (Nullmeridian und Drehung von Mars, Phobos, Deimos)', by: 'Archinal et al. 2018, Celest. Mech. Dyn. Astr. 130, 22', url: 'https://doi.org/10.1007/s10569-017-9805-5' },

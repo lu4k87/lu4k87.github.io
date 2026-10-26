@@ -506,7 +506,7 @@ function userInput() {
 function cineApply(lv, dt) {
   const ci = state.cine;
   ci.idle += dt;
-  const on = !calm() && settings.S.cine && !state.dragging;
+  const on = !calm() && settings.S.cine && !state.dragging && !hud.reading();   // offene Info-Karte: Bild ruht
   ci.w = on ? Math.min(1, ci.w + (ci.idle > CINE.delay ? dt / CINE.ramp : -dt)) : Math.max(0, ci.w - dt);
   if (ci.w <= 0) return;
   const c = state.controls;

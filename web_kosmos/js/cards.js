@@ -6,11 +6,9 @@
 
 import { SOURCES } from './content.js';
 import { PLANETS, planetPosition, moonPosition, julianDate, mulberry32 } from './astro.js';
+import { FIGS, figSvg, esc, de, f1 } from './figs.js';
 
 const RAD = Math.PI / 180;
-const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
-const de = (v, d = 0) => v.toLocaleString('de-DE', { minimumFractionDigits: d, maximumFractionDigits: d });
-const f1 = (v) => v.toFixed(1);
 // Punkt auf dem Kreis, Winkel in Grad mathematisch (0 = rechts, gegen den Uhrzeiger), SVG-y zeigt nach unten
 const pt = (cx, cy, r, a) => [cx + r * Math.cos(a * RAD), cy - r * Math.sin(a * RAD)];
 const arc = (cx, cy, r, a0, a1) => {
@@ -336,7 +334,11 @@ function ctlHtml(l, env) {
 export function cardHtml(sid, hid, t, env) {
   const c = CARDS[`${sid}.${hid}`], notes = [];
   const fn = (s) => { if (!s) return ''; if (!notes.includes(s)) notes.push(s); return `<sup class="fn">${notes.indexOf(s) + 1}</sup>`; };
-  if (!c) { const p = `<p class="hs-card-text">${esc(t.x)}${fn(t.s)}</p>`; return p + notesHtml(notes); }
+  if (!c) {   // ohne Bento-Karte: feste Infografik (figs.js) über dem Text, sonst nur Text
+    const g = FIGS[`${sid}.${hid}`];
+    const fig = g ? `<figure class="hc-graph">${figSvg(g)}<figcaption class="hc-cap">${esc(g.cap)}${[].concat(g.s).map(fn).join('')}</figcaption></figure>` : '';
+    return `${fig}<p class="hs-card-text">${esc(t.x)}${fn(t.s)}</p>${notesHtml(notes)}`;
+  }
   const g = GRAPHS[c.g], l = c.c ? env.getLayer(sid, c.c) : null, v = l ? l.value : undefined;
   const fig = `<figure class="hc-graph hc-in" style="--i:0">${g.svg(v, c)}<figcaption class="hc-cap"><span class="hc-cap-t">${esc(g.cap(v, c))}</span>${fn(g.s || g.m)}</figcaption></figure>`;
   const tiles = `<div class="hc-tiles">${c.f.map((f, i) => `<div class="hc-tile hc-in" style="--i:${i + 1}"><b${(f.v + f.u).length > 7 ? ' class="is-long"' : ''}>`

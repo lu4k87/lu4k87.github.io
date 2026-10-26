@@ -25,7 +25,7 @@ export function createHud(h) {
   const mWidth = $('#m-width'), mLight = $('#m-light'), mDist = $('#m-dist'), mBack = $('#m-back');
   let lv = null, meta = null, markers = [], selected = null, liveEl = null, widgetEl = null, liveT = 0;
   // Info-Karte: Reihenfolge (gewähltes Abzeichen zuerst), Lage, Seite, Größe, Leitlinie
-  let ordered = [], cardPos = null, cardSide = null, cardGlide = false, cardW = 0, cardH = 0, cardMaxH = null, lastT = 0;
+  let ordered = [], dock = null, settle = null, cardW = 0, cardH = 0, cardMaxH = null, lastT = 0;
   const cardLead = document.createElementNS('http://www.w3.org/2000/svg', 'path');
   cardLead.setAttribute('class', 'hs-lead hs-lead--card is-off');
   new ResizeObserver(() => { cardW = card.offsetWidth; cardH = card.offsetHeight; }).observe(card);
@@ -292,7 +292,7 @@ export function createHud(h) {
     head.insertAdjacentHTML('afterend', cardHtml(lv.id, id, t, cardEnv));
     mountCard(card, lv.id, id, cardEnv);
     cardW = card.offsetWidth; cardH = card.offsetHeight;
-    cardPos = null; cardSide = null;
+    dock = null; settle = null;
     // unsichtbar öffnen, im nächsten Bild am Abzeichen einblenden (update → placeCard)
     card.classList.remove('is-open');
     void card.offsetWidth;
@@ -306,7 +306,7 @@ export function createHud(h) {
     unmountCard();
     card.classList.remove('is-open', 'is-away');
     cardLead.classList.add('is-off');
-    cardPos = null; cardSide = null;
+    dock = null; settle = null;
     markers.forEach((m) => m.el.classList.remove('is-active'));
     panel.querySelectorAll('[data-hs].is-active').forEach((b) => b.classList.remove('is-active'));
   }
@@ -383,13 +383,25 @@ export function createHud(h) {
   }
 
   // Karte am Abzeichen (Vorschau Lage:A): links daneben, sonst darüber, darunter, rechts – erste freie Seite in der Bühne,
-  // frei von Kapitel-Titel, Zeitleiste und Zahnrad; läuft mit dem Abzeichen mit, gleitet bei Seitenwechsel weich hinüber,
-  // wartet unsichtbar, solange das Abzeichen nicht im Bild ist
+  // frei von Kapitel-Titel, Zeitleiste und Zahnrad. Ruhig (Wunsch User 26.10.2026): erscheint erst, wenn das Abzeichen
+  // still steht (Folgen-Flug fertig), dockt einmal an und bleibt stehen – nur die Leitlinie folgt dem Abzeichen. Neu
+  // andocken (weich gleitend) nur, wenn das Abzeichen unter der Karte zur Ruhe kommt; wandert es weiter (Zeitraffer)
+  // oder hinter den Planeten, bleibt die Karte stehen. Ohne sichtbares Abzeichen (Rückseite) dockt sie an einem
+  // freien Platz in einer Ecke der Bühne.
   const SIDES = ['left', 'above', 'below', 'right'];
   const ORIGIN = { left: 'right center', right: 'left center', above: 'center bottom', below: 'center top' };
+  const SETTLE = 0.3, WAIT_MAX = 2.4, WAIT_HIDDEN = 0.6, STILL_PX = 40;   // s, s, s, px/s
   function placeCard(b, r, boxes, dt) {
-    if (!b) { card.classList.add('is-away'); cardLead.classList.add('is-off'); cardPos = null; return; }
-    const M = 8, G = 14, by = (b.t + b.b) / 2;
+    if (!settle) settle = { age: 0, still: 0, prev: null };
+    settle.age += dt;
+    const M = 8, G = 14, by = b ? (b.t + b.b) / 2 : 0, bx = b ? (b.l + b.r) / 2 : 0;
+    if (b) {
+      const v = settle.prev ? Math.hypot(bx - settle.prev[0], by - settle.prev[1]) / Math.max(dt, 1e-3) : Infinity;
+      settle.prev = [bx, by];
+      settle.still = v < STILL_PX ? settle.still + dt : 0;
+    } else { settle.prev = null; settle.still = 0; }
+    const rested = settle.still >= SETTLE;
+    if (!dock && !(b ? rested || settle.age >= WAIT_MAX : settle.age >= WAIT_HIDDEN)) return;
     // Unterkante = Zeitleiste (falls sichtbar); passt die Karte nicht in die Höhe, wird sie niedriger und scrollt
     const tl = $('#timeline'), tq = tl && !tl.hidden ? tl.getBoundingClientRect() : null;
     const yMax = (tq && tq.height ? Math.min(r.y1, tq.top) : r.y1) - M, maxH = Math.floor(yMax - r.y0 - M);
@@ -398,34 +410,48 @@ export function createHud(h) {
     const obst = [...boxes], cfg = $('#cfg');
     if (cfg && !cfg.hidden) { const q = cfg.getBoundingClientRect(); if (q.width) obst.push({ l: q.left - M, r: q.right + M, t: q.top - M, b: q.bottom + M }); }
     const cX = (x) => Math.min(r.x1 - M - w, Math.max(r.x0 + M, x)), cY = (y) => Math.min(yMax - hh, Math.max(r.y0 + M, y));
-    const at = (s) => (s === 'left' ? [b.l - G - w, cY(by - hh / 2)] : s === 'right' ? [b.r + G, cY(by - hh / 2)]
-      : s === 'above' ? [cX(b.l), b.t - G - hh] : [cX(b.l), b.b + G]);
     const clear = ([x, y], list) => !list.some((o) => hit({ l: x, r: x + w, t: y, b: y + hh }, o));
     const inStage = ([x, y]) => x >= r.x0 + M - 0.5 && x + w <= r.x1 - M + 0.5 && y >= r.y0 + M - 0.5 && y + hh <= yMax + 0.5;
-    const order = [cardSide, ...SIDES].filter((s, i, a) => s && a.indexOf(s) === i);
-    let side = order.find((s) => inStage(at(s)) && clear(at(s), obst)), pos = side && at(side);
-    if (!side) {   // nirgends ganz frei: in die Bühne schieben – das gewählte Abzeichen bleibt immer frei
-      const into = (s) => { const [x, y] = at(s); return [cX(x), cY(y)]; };
-      side = order.find((s) => clear(into(s), [b])) || order[0];
-      pos = into(side);
-    }
-    if (!cardPos) cardPos = pos;
-    else if (side !== cardSide || cardGlide) {
-      const k = 1 - Math.exp(-dt * 10);
-      cardPos = [cardPos[0] + (pos[0] - cardPos[0]) * k, cardPos[1] + (pos[1] - cardPos[1]) * k];
-      cardGlide = Math.hypot(pos[0] - cardPos[0], pos[1] - cardPos[1]) > 1;
-    } else cardPos = pos;
-    cardSide = side;
-    card.style.translate = `${(cardPos[0] - r.x0).toFixed(1)}px ${(cardPos[1] - r.y0).toFixed(1)}px`;
-    card.style.transformOrigin = ORIGIN[side];
+    // Lage behalten; neu andocken nur, wenn das Abzeichen unter der Karte zur Ruhe kommt
+    const keep = dock && [cX(dock.goal[0]), cY(dock.goal[1])];
+    if (!dock || (b && rested && !clear(keep, obst))) {
+      let side = 'left', pos;
+      if (b) {
+        const at = (s) => (s === 'left' ? [b.l - G - w, cY(by - hh / 2)] : s === 'right' ? [b.r + G, cY(by - hh / 2)]
+          : s === 'above' ? [cX(b.l), b.t - G - hh] : [cX(b.l), b.b + G]);
+        const order = [dock && dock.side, ...SIDES].filter((s, i, a) => s && a.indexOf(s) === i);
+        side = order.find((s) => inStage(at(s)) && clear(at(s), obst));
+        pos = side && at(side);
+        if (!side) {   // nirgends ganz frei: in die Bühne schieben – das gewählte Abzeichen bleibt immer frei
+          const into = (s) => { const [x, y] = at(s); return [cX(x), cY(y)]; };
+          side = order.find((s) => clear(into(s), [b])) || order[0];
+          pos = into(side);
+        }
+      } else {   // Abzeichen nicht im Bild: freier Platz in einer Ecke der Bühne
+        const spots = [[r.x0 + M + 16, r.y0 + M + 16], [r.x0 + M + 16, yMax - hh - 16], [r.x1 - M - w - 16, r.y0 + M + 16]].map(([x, y]) => [cX(x), cY(y)]);
+        pos = spots.find((p) => clear(p, obst)) || spots[0];
+      }
+      if (!dock) dock = { pos, goal: pos, side, box: null };
+      else Object.assign(dock, { goal: pos, side });
+    } else dock.goal = keep;
+    const [gx, gy] = dock.goal;
+    if (Math.hypot(gx - dock.pos[0], gy - dock.pos[1]) > 0.5) {   // neu andocken: weich hinübergleiten
+      const k = 1 - Math.exp(-dt * 6);
+      dock.pos = [dock.pos[0] + (gx - dock.pos[0]) * k, dock.pos[1] + (gy - dock.pos[1]) * k];
+    } else dock.pos = dock.goal;
+    const [px, py] = dock.pos;
+    card.style.translate = `${(px - r.x0).toFixed(1)}px ${(py - r.y0).toFixed(1)}px`;
+    card.style.transformOrigin = ORIGIN[dock.side];
     card.classList.remove('is-away');
-    const c = { l: cardPos[0], r: cardPos[0] + w, t: cardPos[1], b: cardPos[1] + hh };
-    boxes.push({ l: c.l - 8, r: c.r + 8, t: c.t - 8, b: c.b + 8 });
-    // Leitlinie in Akzentfarbe vom Abzeichen zur nächsten Kante der Karte
-    const bx = (b.l + b.r) / 2, ex = Math.min(c.r - 14, Math.max(c.l + 14, bx)), ey = Math.min(c.b - 14, Math.max(c.t + 14, by));
-    const f = (v) => v.toFixed(1);
-    cardLead.setAttribute('d', side === 'left' ? `M${f(b.l + 4)} ${f(by)}L${f(c.r)} ${f(ey)}` : side === 'right' ? `M${f(b.r - 4)} ${f(by)}L${f(c.l)} ${f(ey)}`
-      : side === 'above' ? `M${f(bx)} ${f(b.t + 4)}L${f(ex)} ${f(c.b)}` : `M${f(bx)} ${f(b.b - 4)}L${f(ex)} ${f(c.t)}`);
+    const c = { l: px, r: px + w, t: py, b: py + hh };
+    dock.box = { l: c.l - 8, r: c.r + 8, t: c.t - 8, b: c.b + 8 };
+    boxes.push(dock.box);
+    if (!b) { cardLead.classList.add('is-off'); return; }
+    // Leitlinie in Akzentfarbe vom Abzeichen zum nächsten Punkt der Karte (Abzeichen kann nach dem Andocken wandern)
+    const cl = (v, a, z) => Math.min(z, Math.max(a, v)), f = (v) => v.toFixed(1);
+    const ex = cl(bx, c.l, c.r), ey = cl(by, c.t, c.b), sx = cl(ex, b.l + 4, b.r - 4), sy = cl(ey, b.t + 4, b.b - 4);
+    if (Math.hypot(ex - sx, ey - sy) < 6) { cardLead.classList.add('is-off'); return; }
+    cardLead.setAttribute('d', `M${f(sx)} ${f(sy)}L${f(ex)} ${f(ey)}`);
     cardLead.classList.remove('is-off');
   }
   // Schmal (Handy, Vorschau F2): Karte als Leiste unten in der Bühne über der Zeitleiste, Abzeichen weichen ihr aus
@@ -507,6 +533,8 @@ export function createHud(h) {
     setLoading: (on) => body.classList.toggle('is-loading', on),
     setRouteTarget: (id) => route.querySelectorAll('button').forEach((b) => b.classList.toggle('is-target', b.dataset.id === id)),
     intro: (on) => body.classList.toggle('is-intro', on),
-    relayout: () => { layoutRail(); markers.forEach((m) => { m.w = 0; }); cardPos = null; },
+    // offene Karte: main.js hält die Leerlauf-Fahrt an, damit das Bild beim Lesen ruht
+    reading: () => card.classList.contains('is-open'),
+    relayout: () => { layoutRail(); markers.forEach((m) => { m.w = 0; }); dock = null; },
   };
 }
