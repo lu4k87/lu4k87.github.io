@@ -310,6 +310,7 @@ export function create(ctx) {
   }).then((l) => {
     lines = l;
     lines.visible = false;
+    lines.userData.show(consMode !== 'off');
     sky.add(lines);
     for (const c of lines.userData.names) {
       if (!CONST_INFO[c.id]) continue;
@@ -496,7 +497,7 @@ export function create(ctx) {
 
   const controls = [
     { id: 'const', label: 'Sternbilder', value: 'off', options: [['off', 'Aus'], ['lines', 'Linien'], ['names', 'Linien + Namen']],
-      set: (val) => { consMode = val; if (lines) lines.visible = val !== 'off'; } },
+      set: (val) => { consMode = val; if (lines) lines.userData.show(val !== 'off'); } },
     { id: 'shadow', label: 'Schatten', value: 'off', options: [['off', 'Aus'], ['on', 'Kegel zeigen']],
       set: (val) => { earthShadow.visible = moonShadow.visible = val === 'on'; } },
   ];
@@ -551,6 +552,7 @@ export function create(ctx) {
       spin.getWorldQuaternion(qSpin);
       sunL.copy(sunDir).applyQuaternion(qSpin.clone().invert());
       auroraU.uTime.value = t * (ctx.still ? 0.2 : 1);
+      if (lines) lines.userData.update(dt, t, ctx.still);
       if (aurora.visible) {
         poleW.copy(poleL).applyQuaternion(qSpin);
         const noon = tmp.copy(sunDir).addScaledVector(poleW, -sunDir.dot(poleW)).normalize();

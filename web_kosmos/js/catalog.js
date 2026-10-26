@@ -93,46 +93,80 @@ export async function createCatalogSky({ gain = 1, limit = 6.6, glint = true } =
   return group;
 }
 
+// Linien leben leise (soft-motion): Enden laufen weich in die Sterne aus, jede Figur atmet langsam mit eigener Phase
+// (Δ 0,2 · 9 s), alle 18 s gleitet ein kühler Lichtzug die Linienzüge entlang – heller Kopf, Bloom gibt den Schein.
+// Ruhig/Aus (still): fester mittlerer Schein, kein Lichtzug. Ein-/Ausblenden über uFade (0,9 s).
 const LINE_VERT = /* glsl */ `
 ${SKY_VERTEX}
-void main() { gl_Position = skyPosition(normalize(position)); }
+attribute vec4 aLine;   // x: Weg ab Stern (°), y: Länge Stern–Stern (°), z: Weg des Linienzugs bis dorthin (°), w: Phase der Figur
+varying vec4 vLine;
+void main() { vLine = aLine; gl_Position = skyPosition(normalize(position)); }
 `;
 const LINE_FRAG = /* glsl */ `
-uniform vec3 uColor;
-uniform float uGain;
-void main() { gl_FragColor = vec4(uColor * uGain, 1.0); }
+uniform vec3 uColor, uHead;
+uniform float uGain, uTime, uFade, uMove;
+varying vec4 vLine;
+void main() {
+  float ends = mix(0.3, 1.0, smoothstep(0.25, 1.4, min(vLine.x, vLine.y - vLine.x)));
+  float breath = 1.0 + 0.1 * uMove * sin(6.2832 * (uTime / 9.0 + vLine.w));
+  float head = fract(uTime / 18.0 + vLine.w) * 96.0 - 6.0;     // 5 °/s ab kurz vor dem Linienzug, dann Pause
+  float d = (vLine.z + vLine.x - head) / 3.0;
+  float sweep = uMove * exp(-d * d);
+  vec3 col = mix(uColor, uHead, 0.6 * sweep) * uGain * (breath + 1.6 * sweep);
+  gl_FragColor = vec4(col * ends * uFade, 1.0);
+}
 `;
+const FADE_S = 0.9;
 
-// Linien der Sternbilder auf der Himmelskugel (additiv, zart) + Mitten und Namen (de) für Beschriftungen
-export async function createConstellationLines({ color = 0x8fb0e0, gain = 0.28 } = {}) {
+// Linien der Sternbilder auf der Himmelskugel (additiv, zart) + Mitten und Namen (de) für Beschriftungen;
+// userData.show(an) blendet weich ein/aus, userData.update(dt, t, still) treibt Atmen und Lichtzug
+export async function createConstellationLines({ color = 0x8fb0e0, head = 0xcfefff, gain = 0.28 } = {}) {
   const con = await loadConstellations();
-  const pos = [];
+  const pos = [], line = [];
+  const wrap = (a) => ((a + 540) % 360) - 180;
+  let fig = 0;
   for (const segs of Object.values(con.lines)) {
+    const ph = (fig++ * 0.618034) % 1;   // goldener Schnitt: Nachbarn atmen nie im Gleichtakt
     for (const seg of segs) {
+      let walked = 0;
       for (let i = 1; i < seg.length; i++) {
         const [ra0, de0] = seg[i - 1], [ra1, de1] = seg[i];
+        const dRa = wrap(ra1 - ra0) * Math.cos(((de0 + de1) / 2) * Math.PI / 180), len = Math.hypot(dRa, de1 - de0);
         // lange Segmente in Teilstücke, damit sie dem Großkreis folgen
-        const steps = Math.max(1, Math.ceil(Math.hypot(((ra1 - ra0 + 540) % 360) - 180, de1 - de0) / 4));
-        let prev = equToScene(ra0, de0);
+        const steps = Math.max(1, Math.ceil(Math.hypot(wrap(ra1 - ra0), de1 - de0) / 4));
+        let prev = equToScene(ra0, de0), fPrev = 0;
         for (let k = 1; k <= steps; k++) {
           const f = k / steps;
-          const ra = ra0 + (((ra1 - ra0 + 540) % 360) - 180) * f, de = de0 + (de1 - de0) * f;
-          const cur = equToScene(ra, de);
+          const cur = equToScene(ra0 + wrap(ra1 - ra0) * f, de0 + (de1 - de0) * f);
           pos.push(...prev, ...cur);
+          for (const g of [fPrev, f]) line.push(len * g, len, walked, ph);
           prev = cur;
+          fPrev = f;
         }
+        walked += len;
       }
     }
   }
   const g = new THREE.BufferGeometry();
   g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  g.setAttribute('aLine', new THREE.Float32BufferAttribute(line, 4));
+  const u = { uColor: { value: new THREE.Color(color) }, uHead: { value: new THREE.Color(head) }, uGain: { value: gain },
+    uTime: { value: 0 }, uFade: { value: 0 }, uMove: { value: 1 } };
   const m = new THREE.ShaderMaterial({
-    vertexShader: LINE_VERT, fragmentShader: LINE_FRAG, uniforms: { uColor: { value: new THREE.Color(color) }, uGain: { value: gain } },
+    vertexShader: LINE_VERT, fragmentShader: LINE_FRAG, uniforms: u,
     blending: THREE.AdditiveBlending, depthWrite: false, depthTest: true, transparent: true,
   });
   const lines = new THREE.LineSegments(g, m);
   lines.frustumCulled = false;
   lines.renderOrder = -9;
+  let on = false;
+  lines.userData.show = (v) => { on = v; if (v) lines.visible = true; };
+  lines.userData.update = (dt, t, still) => {
+    u.uFade.value = still ? +on : Math.min(1, Math.max(0, u.uFade.value + (on ? dt : -dt / 0.7) / FADE_S));   // raus ≈ 70 %
+    if (!on && u.uFade.value === 0) lines.visible = false;
+    u.uTime.value = t;
+    u.uMove.value = still ? 0 : 1;
+  };
   lines.userData.names = Object.entries(con.names).map(([id, c]) => ({ id, de: c.de.replace(/ /g, ' '), la: c.la, dir: new THREE.Vector3(...equToScene(c.ra, c.dec)) }));
   return lines;
 }
