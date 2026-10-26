@@ -389,10 +389,10 @@ body.panel-collapsed .panel { display: none; }
    overflow bleibt für kleine Fenster und aufgeklappte Teile */
 .panel-body {
   overflow-y: auto;
-  padding: 18px 20px 20px;
+  padding: 15px 18px 16px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 9px;
   scrollbar-width: thin;
 }
 .panel-body > * { flex-shrink: 0; }
@@ -405,7 +405,7 @@ body.panel-collapsed .panel { display: none; }
 .panel .sub-note { font-size: 13.5px; font-weight: 400; letter-spacing: 0; text-transform: none; color: var(--ink-soft); }
 .panel .sub a {
   display: inline-block;
-  padding: 1px 6px;
+  padding: 1px 5px;
   border-radius: 999px;
   background: var(--accent-soft);
   border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent);
@@ -413,7 +413,7 @@ body.panel-collapsed .panel { display: none; }
   font: 500 12px/1.3 var(--mono);
   text-decoration: none;
   letter-spacing: 0;
-  margin-left: 3px;
+  margin-left: 1px;
 }
 .eyebrow { margin: 0; font: 500 13px/1.3 var(--mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--accent); }
 .eyebrow-scale { text-transform: none; }   /* sonst wird „µm“ zu „ΜM“ (großes Mü) */
@@ -553,7 +553,7 @@ body.panel-collapsed .panel { display: none; }
 .chart .lbl { font: 9px var(--mono); fill: var(--ink); }
 .chart figcaption { margin: 0; }
 
-.sources { display: flex; flex-wrap: wrap; align-items: baseline; column-gap: 14px; }
+.sources { display: flex; flex-wrap: wrap; align-items: baseline; column-gap: 10px; }
 .sources .sub { margin-bottom: 0; }
 .sources details { font-size: 14px; }
 .sources details[open] { flex-basis: 100%; }

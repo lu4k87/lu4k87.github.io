@@ -359,10 +359,6 @@ function renderLoupe(lv, L, real) {
     loupe.skip = false;
     loupe.done = false;
     loupe.dist = main.position.distanceTo(h.pos);
-    c.fov = THREE.MathUtils.radToDeg(2 * Math.atan((LOUPE.viewPx / window.innerHeight) * Math.tan(THREE.MathUtils.degToRad(main.fov) / 2)));
-    c.near = main.near;
-    c.far = main.far;
-    c.updateProjectionMatrix();
   } else if ((loupe.skip = !loupe.skip) || loupe.done) {
     return;
   }
@@ -373,6 +369,10 @@ function renderLoupe(lv, L, real) {
     loupe.size = Math.max(2, Math.round(cw * pr));
     L.canvas.width = L.canvas.height = loupe.size;
     if (loupe.rt.width !== loupe.size) loupe.rt.setSize(loupe.size, loupe.size);
+    c.fov = THREE.MathUtils.radToDeg(2 * Math.atan((LOUPE.viewPx / window.innerHeight) * Math.tan(THREE.MathUtils.degToRad(main.fov) / 2)));
+    c.near = main.near;
+    c.far = main.far;
+    c.updateProjectionMatrix();
   }
   const px = loupe.size;
   if (!still) loupe.t += real;
@@ -543,6 +543,7 @@ settings.on((S, keys) => {
   document.body.classList.toggle('hotspots-off', !S.hotspots);
   if (state.controls && (still || !S.orbit)) state.controls.autoRotate = false;
   if (keys && keys.some((k) => PERF_KEYS.includes(k))) applyQuality(eff());
+  loupe.done = false;
   for (const lv of state.levels.values()) lv.dirty = true;
 });
 mountSettings(() => renderer.domElement.width * renderer.domElement.height, () => requestAnimationFrame(resize));
@@ -860,6 +861,7 @@ const hud = createHud({
   onDetector: (mode) => {
     state.det = mode;
     semDetectorMode(mode);
+    loupe.done = false;
     for (const lv of state.levels.values()) if (lv.setParam) lv.setParam('detector', mode);
   },
   onHotspot: (id, fromMarker) => {
@@ -867,18 +869,25 @@ const hud = createHud({
     const h = state.active.hotspots.find((x) => x.id === id);
     if (!h) return;
     if (fromMarker && h.kind === 'dive') { diveHotspot(id); return; }
+    const inIntro = !!state.intro;
     endIntro();
     hud.select(id, state);
     if (state.active.onHotspot) state.active.onHotspot(id);
+    loupe.done = false;
     const c = state.controls;
     c.autoRotate = false;
     cineCommit();
-    // Blick sanft zum Punkt schwenken und ein Stück heranfahren
-    state.focus = {
-      t: 0,
-      fromT: c.target.clone(), toT: c.target.clone().lerp(h.pos, 0.6),
-      fromP: c.object.position.clone(), toP: c.object.position.clone().lerp(h.pos, 0.1),
-    };
+    // Blick sanft zum Punkt schwenken und ein Stück heranfahren (nur wenn das Merkmal bei der Temperatur sichtbar ist;
+    // steht die Kamera auf der Rückseite der Normalen – z. B. im abgebrochenen Auftakt –, führt der Schwenk auf die Vorderseite)
+    if (!h.hidden && (!h.normal || h.normal.lengthSq() > 0)) {
+      const toT = c.target.clone().lerp(h.pos, 0.6);
+      const fromP = inIntro ? state.active.home.pos.clone() : c.object.position.clone();
+      const baseP = (h.normal && h.normal.dot(_v.subVectors(fromP, h.pos)) < 0.15 * _v.length())
+        ? state.active.home.pos
+        : fromP;
+      const toP = baseP.clone().lerp(h.pos, 0.1);
+      state.focus = { t: 0, fromT: c.target.clone(), toT, fromP, toP };
+    }
   },
   // Zoom-Schiene: Bildbreite → Kameraabstand; losgelassen jenseits des Anschlags → Ebene wechseln
   onRail: (hfw, phase) => {
@@ -906,6 +915,7 @@ const hud = createHud({
   onRh: (v) => {
     state.rh = v;
     state.wet = wetDiameterNm(state.wet, v);
+    loupe.done = false;
     for (const lv of state.levels.values()) if (lv.setParam) { lv.setParam('rh', v); lv.setParam('wet', state.wet); }
     return state.wet;
   },
@@ -981,6 +991,7 @@ function stepIntro(lv, real) {
 // Alle Ebenen bekommen den laufenden Wert (setParam 'temp'), sie blenden ihre Strukturen selbst weich über.
 const GLIDE_SECONDS = 1.2, T_PLAY_DEFAULT = 550, PLAY_URL = +params.get('playsec');   // ?playsec=4 verkürzt den Zeitraffer (Prüfläufe), sonst Zahnrad
 function pushParam(name, value) {
+  loupe.done = false;
   for (const lv of state.levels.values()) if (lv.setParam) lv.setParam(name, value);
 }
 function startGlide(from, to, dur, play) {

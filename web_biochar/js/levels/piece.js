@@ -8,9 +8,11 @@ import { mulberry32, fbm3, smoothstep, clamp, lerp, vnoisef, hash33 } from '../u
 import { disposeGroup } from '../walls.js';
 import { groundTextures, makeGround, LUMP_R } from './ground.js';
 import { pyroState, glowColor } from '../science.js';
+import { settings } from '../settings.js';
 
 const W = 4.4, H = 2.4, D = 2.2;
 const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const isStill = () => reduced || settings.S.motion === 'off';
 const END_UM_PER_PX = (2.3e4 / 2048);      // Stirnfläche ≈ 2,3 cm auf 2048 px → ≈ 11 µm je Pixel
 const VESSELS_PER_MM2 = 120;               // Modell: Größenordnung für zerstreutporige Buche (docs/research.md)
 
@@ -699,16 +701,18 @@ export function create(ctx) {
     }
     return new THREE.Vector3().fromBufferAttribute(pos, best);
   };
-  const endPos = pick(0, (i) => Math.hypot(pos.getY(i) - 0.15, pos.getZ(i) - 0.1));
-  const crackPos = pick(4, (i) => {
+  const endBase = pick(0, (i) => Math.hypot(pos.getY(i) - 0.15, pos.getZ(i) - 0.1)).add(new THREE.Vector3(0.03, 0, 0));
+  const crackBase = pick(4, (i) => {
     const u = uv.getX(i), v = uv.getY(i);
     if (u < 0.3 || u > 0.85 || v < 0.2 || v > 0.8) return Infinity;
     return crackDepth[i] + Math.abs(u - 0.6) * 0.1;         // tiefster Schwundriss im Kohlezustand
-  });
-  const sheenPos = pick(2, (i) => Math.hypot(pos.getX(i) + 0.6, pos.getZ(i) - 0.25));
+  }).add(new THREE.Vector3(0, 0, 0.04));
+  const sheenBase = pick(2, (i) => Math.hypot(pos.getX(i) + 0.6, pos.getZ(i) - 0.25)).add(new THREE.Vector3(0, 0.04, 0));
+  const endHs = { id: 'endgrain', kind: 'dive', pos: endBase.clone(), normal: new THREE.Vector3(1, 0, 0) };
   // Abzeichen „Schwundrisse“: Normale = Nullvektor, solange keine Risse offen sind → Sichtbarkeitstest in hud.js blendet
   // nur den Marker aus (Liste in der Tafel bleibt; erklärt dort, dass die Risse erst beim Verkohlen entstehen)
-  const cracksHs = { id: 'cracks', kind: 'info', pos: crackPos.add(new THREE.Vector3(0, 0, 0.04)), normal: new THREE.Vector3(0, 0, 1) };
+  const cracksHs = { id: 'cracks', kind: 'info', pos: crackBase.clone(), normal: new THREE.Vector3(0, 0, 1) };
+  const sheenHs = { id: 'sheen', kind: 'info', pos: sheenBase.clone(), normal: new THREE.Vector3(0, 1, 0) };
 
   // Schwaden (Wasserdampf, Pyrolysegase, Teer): Punktwolke, Lebenslauf vollständig im Shader
   const PLUME_N = 520;
@@ -760,12 +764,18 @@ export function create(ctx) {
     c = lerpCol(c, [0.3, 0.24, 0.18], st(300, 340, T));
     return lerpCol(c, [0.5, 0.55, 0.62], st(400, 470, T));
   };
-  // Schwindung relativ zum Zielzustand (die Geometrie zeigt die fertige Kohle bei der gewählten Temperatur)
+  // Schwindung relativ zum Ausgangsbild bei 550 °C (wie tissueScale in science.js): Holz bei 25 °C ist größer,
+  // beim Verkohlen schwindet das Stück längs (≈ 12 %) und quer (≈ 25–30 %), Hotspots und Kontaktschatten ziehen mit
+  const ref550 = pyroState(550);
   const applyShrink = () => {
-    const a = pyroState(tNow), b = pyroState(tTarget);
-    const sl = (1 - a.shrinkL) / (1 - b.shrinkL), st = (1 - a.shrinkT) / (1 - b.shrinkT);
+    const a = pyroState(tNow);
+    const sl = (1 - a.shrinkL) / (1 - ref550.shrinkL), st = (1 - a.shrinkT) / (1 - ref550.shrinkT);
     piece.scale.set(sl, st, st);
     piece.position.y = floorY * (1 - st);
+    shadow.scale.set(sl, 1, st);
+    for (const [h, base] of [[endHs, endBase], [cracksHs, crackBase], [sheenHs, sheenBase]]) {
+      h.pos.set(base.x * sl, base.y * st + piece.position.y, base.z * st);
+    }
   };
 
   const camera = new THREE.PerspectiveCamera(32, ctx.aspect, 0.05, 200);
@@ -781,17 +791,17 @@ export function create(ctx) {
     home: { pos: new THREE.Vector3(7.6, 3.1, 5.4), target: new THREE.Vector3(0.5, -0.15, 0) },
     orbit: { minDistance: 3.2, maxDistance: 16, maxPolarAngle: 1.5, enablePan: false, autoRotate: true },
     hotspots: [
-      { id: 'endgrain', kind: 'dive', pos: endPos.add(new THREE.Vector3(0.03, 0, 0)), normal: new THREE.Vector3(1, 0, 0) },
+      endHs,
       cracksHs,
-      { id: 'sheen', kind: 'info', pos: sheenPos.add(new THREE.Vector3(0, 0.04, 0)), normal: new THREE.Vector3(0, 1, 0) },
+      sheenHs,
     ],
     update(dt, t) {
-      moveLights(t);
+      const tg = pyro.uTime.value = isStill() ? 0 : t;
+      moveLights(tg);
       ground.update(dt);
-      plumeMat.uniforms.uTime.value = t;
-      // Glimmen ohne Bewegung (reduced-motion): ruhende Glutnester; Schein auf dem Tisch und Bloom atmen mit (wie im
+      plumeMat.uniforms.uTime.value = tg;
+      // Glimmen ohne Bewegung (reduced-motion / Bewegung: Aus): ruhende Glutnester; Schein auf dem Tisch und Bloom atmen mit (wie im
       // Shader), der Tischschein flackert leicht (± 3 %, Schwebung ≈ 1 Hz)
-      const tg = pyro.uTime.value = reduced ? 0 : t;
       const breath = 0.6 * Math.sin(tg * 1.496) + 0.4 * Math.sin(tg * 0.94 + 1.7);
       ember.intensity = emberBase * (1 + 0.07 * breath + 0.03 * Math.sin(tg * 6.3) * Math.sin(tg * 3.7 + 0.8));
       level.bloom = bloomBase * (1 + 0.08 * breath);

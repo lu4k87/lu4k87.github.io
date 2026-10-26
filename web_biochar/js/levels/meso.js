@@ -528,12 +528,14 @@ export function create(ctx) {
       label: `bei ${fmt(rh * 100)} % Luftfeuchte mit Wasser gefüllte Poren (Kelvin-Gleichung${wet > fillDiameterNm(rh) + 0.5 ? ', beim Trocknen Hysterese' : ''})`,
     }],
     update(dt, t) {
+      const calm = still || settings.S.motion === 'off';
       uniforms.uTime.value = t;
+      uniforms.uDrift.value = calm ? 0 : 1;
       // Wasserstand und Film gleiten zum Reglerwert (bei reduzierter Bewegung sofort)
-      const k = still ? 1 : 1 - Math.exp(-dt * 4);
+      const k = calm ? 1 : 1 - Math.exp(-dt * 4);
       uniforms.uWaterD.value += (wet - uniforms.uWaterD.value) * k;
       uniforms.uFilm.value += (film(rh) - uniforms.uFilm.value) * k;
-      semDetector(t);
+      semDetector(calm ? 0 : t);
       molLight.position.copy(SEM_DET.value).multiplyScalar(10).add(raceC);   // Moleküle im Licht des „Detektors“
       placeRace(dt);
       return true;

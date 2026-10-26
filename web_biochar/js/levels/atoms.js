@@ -8,6 +8,7 @@ import * as THREE from 'three';
 import { nanoStructure, fmt, T_MIN, T_MAX } from '../science.js';
 import { mulberry32 } from '../util.js';
 import { ADDITIVE } from '../sem.js';
+import { settings } from '../settings.js';
 
 const A = 1.42;   // C–C aromatisch
 const ELEMENT = {     // r = Kugel im Modell, vdw = van-der-Waals-Radius (Å, Bondi 1964) für die Elektronenwolke
@@ -394,12 +395,14 @@ export function create(ctx) {
     if (instant) swMix = swWant;
     for (const k of ['carboxyl', 'phenol', 'carbonyl', 'edgeh']) {
       const id = cluster.marks[k];
-      if (id === undefined) hs[k].pos.set(0, 0, 1e4);   // Gruppe gibt es in dieser Stufe nicht → Abzeichen außer Sicht
+      hs[k].hidden = id === undefined;
+      if (id === undefined) hs[k].pos.set(0, 0, 0.9 + warpZ(0, 0, swWant));   // Gruppe gibt es in dieser Stufe nicht → Abzeichen außer Sicht, Lupe zeigt Cluster
       else { const p = cluster.atoms[id].p; hs[k].pos.set(p.x, p.y, p.z + warpZ(p.x, p.y, swWant) + (k === 'carboxyl' ? 1.3 : 0.7)); }
     }
     const ra = cluster.ringAt || new THREE.Vector3();
     hs.ring.pos.set(ra.x, ra.y, 0.9 + warpZ(ra.x, ra.y, swWant));
-    if (cluster.sw) hs.sw.pos.set(swC.x, swC.y, 1.1 + warpZ(swC.x, swC.y, 1)); else hs.sw.pos.set(0, 0, 1e4);
+    hs.sw.hidden = !cluster.sw;
+    if (cluster.sw) hs.sw.pos.set(swC.x, swC.y, 1.1 + warpZ(swC.x, swC.y, 1)); else hs.sw.pos.set(0, 0, 1.1);
   }
 
   function reorder() {
@@ -457,9 +460,10 @@ export function create(ctx) {
     if (orderDirty) reorder();
     const { m, q, s, up } = tmp;
     const at = order.atoms;
+    const calm = reduced || settings.S.motion === 'off';
     let nC = 0, nH = 0, nO = 0;
     at.forEach((a, k) => {
-      const amp = a.el === 'K' ? 0.12 : 0.035;
+      const amp = calm ? 0 : a.el === 'K' ? 0.12 : 0.035;
       a.pos ??= new THREE.Vector3();
       const hx = a.home.x + a.off.x, hy = a.home.y + a.off.y;
       a.pos.set(hx + amp * Math.sin(t * 7.3 + a.ph[0]), hy + amp * Math.sin(t * 8.1 + a.ph[1]), a.home.z + a.off.z + warpZ(hx, hy) + amp * Math.sin(t * 6.7 + a.ph[2]));
@@ -528,17 +532,18 @@ export function create(ctx) {
       { value: fmt(live.hc, 2), label: 'molares H/C dieses Modell-Clusters' },
     ],
     update(dt, t) {
+      const calm = reduced || settings.S.motion === 'off', tl = calm ? 0 : t;
       // Lichtführung: Hauptlicht wandert langsam um den Cluster, Gegenlicht pendelt
-      key.position.set(6 * Math.cos(t * 0.08) - 8 * Math.sin(t * 0.08) * 0.4, 10, 8 * Math.cos(t * 0.06) + 6 * Math.sin(t * 0.08) * 0.4);
-      rim.position.set(-8 + 3 * Math.sin(t * 0.05), -4, -6 + 3 * Math.cos(t * 0.05));
+      key.position.set(6 * Math.cos(tl * 0.08) - 8 * Math.sin(tl * 0.08) * 0.4, 10, 8 * Math.cos(tl * 0.06) + 6 * Math.sin(tl * 0.08) * 0.4);
+      rim.position.set(-8 + 3 * Math.sin(tl * 0.05), -4, -6 + 3 * Math.cos(tl * 0.05));
       const q = quant(shownT);
       if (q !== builtQ) {
-        retarget(q, reduced);
-        if (reduced) for (const [k, e] of pool) if (e.leaving) pool.delete(k);
+        retarget(q, calm);
+        if (calm) for (const [k, e] of pool) if (e.leaving) pool.delete(k);
       }
-      step(reduced ? 10 : Math.min(dt, 0.1));
-      swMix += (swWant - swMix) * (reduced ? 1 : 1 - Math.exp(-dt * 2.5));   // Wölbung gleitet mit dem Defekt ein/aus
-      place(t);
+      step(calm ? 10 : Math.min(dt, 0.1));
+      swMix += (swWant - swMix) * (calm ? 1 : 1 - Math.exp(-dt * 2.5));   // Wölbung gleitet mit dem Defekt ein/aus
+      place(tl);
       return true;
     },
     setParam(name, value) {

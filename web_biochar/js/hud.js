@@ -141,11 +141,12 @@ export function createHud(handlers) {
     return Math.min(92, Math.max(18, Math.round((Math.log10(Math.max(0.1, v)) + 1) * 28)));
   }
 
+  const fmtFactVal = (val) => String(val).split(' · ').map((s) => `<span>${esc(s)}</span>`).join(' · ');
   function facts(list) {
     return `<div class="facts">${list.map((f) => `
       <div class="fact">
         <div class="fact-text">
-          <span class="fact-value">${String(f.value).split(' · ').map((s) => `<span>${esc(s)}</span>`).join(' · ')}</span>
+          <span class="fact-value">${fmtFactVal(f.value)}</span>
           <span class="fact-label">${esc(f.label)}</span>
           <span class="fact-bar" aria-hidden="true"><i style="width:${factBarPct(f)}%"></i></span>
         </div>
@@ -540,8 +541,9 @@ export function createHud(handlers) {
     list.forEach((f, i) => {
       const v = els[i] && els[i].querySelector('.fact-value'), lab = els[i] && els[i].querySelector('.fact-label');
       const bar = els[i] && els[i].querySelector('.fact-bar > i');
-      if (v && v.textContent !== f.value) v.textContent = f.value;
-      if (lab && lab.textContent !== f.label) lab.textContent = f.label;
+      const vHtml = fmtFactVal(f.value), lHtml = esc(f.label);
+      if (v && v.innerHTML !== vHtml) v.innerHTML = vHtml;
+      if (lab && lab.innerHTML !== lHtml) lab.innerHTML = lHtml;
       if (bar) bar.style.width = `${factBarPct(f)}%`;
     });
   }
@@ -673,7 +675,7 @@ export function createHud(handlers) {
         ...(swh ? [{
           cls: 'ov-sw',
           pts: () => [swh.pos.clone().add(v3(-1.7, 0, 0)), swh.pos.clone().add(v3(1.7, 0, 0))],
-          active: () => swh.pos.z < 100,
+          active: () => !swh.hidden,
           ring: true,
           text: () => '<b>Stone-Wales-Defekt</b> · 5-7-7-5 · wölbt die Schicht',
         }] : []),
@@ -686,7 +688,7 @@ export function createHud(handlers) {
         ...(cx ? [{
           cls: 'ov-ion',
           pts: () => [cx.pos.clone().add(v3(-1.1, -0.35, 0)), cx.pos.clone().add(v3(1.1, 0.35, 0))],
-          active: () => cx.pos.z < 100,
+          active: () => !cx.hidden,
           ticks: 2,
           text: () => '<b>Ionen-Bindungsfeld</b> · –COO⁻ ··· K⁺',
         }] : []),
@@ -847,6 +849,8 @@ export function createHud(handlers) {
       const A = pA.clone().project(camera), B = pB.clone().project(camera);
       if (!ov.w) { ov.w = ov.lab.offsetWidth; ov.hgt = ov.lab.offsetHeight; }
       const [rawAx, rawAy] = scr(A), [rawBx, rawBy] = scr(B);
+      const midX = (rawAx + rawBx) / 2, midY = (rawAy + rawBy) / 2;
+      const inStage = midX >= rect.x0 && midX <= rect.x1 && midY >= rect.y0 && midY <= rect.y1;
       const ax = Math.min(Math.max(rawAx, rect.x0 + 8), rect.x1 - 8);
       const bx = Math.min(Math.max(rawBx, rect.x0 + 8), rect.x1 - 8);
       const ay = Math.min(Math.max(rawAy, rect.y0 + 18), rect.y1 - 8);
@@ -855,7 +859,7 @@ export function createHud(handlers) {
       const lx = Math.min(Math.max((ax + bx) / 2, rect.x0 + ov.w / 2 + 4), rect.x1 - ov.w / 2 - 4);
       const ly = Math.min(Math.max(rect.y0 + ov.hgt + 4, Math.min(ay, by) - 10), rect.y1 - 6);
       const box = { l: lx - ov.w / 2, r: lx + ov.w / 2, t: ly - ov.hgt, b: ly + 4 };
-      let on = width > 520 && A.z < 1 && B.z < 1 && span > 26 &&
+      let on = width > 520 && A.z < 1 && B.z < 1 && inStage && span > 26 &&
         box.l >= rect.x0 && box.r <= rect.x1 && box.t >= rect.y0 && box.b <= rect.y1;
       if (on && items.some((m) => hit(box, { l: m.x - m.w / 2 - 6, r: m.x + m.w / 2 + 6, t: m.y - m.hgt / 2 - 6, b: m.y + m.hgt / 2 + 6 }))) on = false;
       if (on && cr && hit(box, { l: cr.left - 6, r: cr.right + 6, t: cr.top - 6, b: cr.bottom + 6 })) on = false;
@@ -976,7 +980,8 @@ export function createHud(handlers) {
     card.classList.toggle('is-docked', docked);
     if (!selected) return;
     const m = items.find((x) => x.h.id === selected.id);
-    card.classList.toggle('is-away', !m && !docked);   // im Platz der Tafel bleibt sie, auch wenn das Abzeichen kurz außer Sicht ist
+    const tempHidden = !!(selected.hidden || (selected.normal && selected.normal.lengthSq() === 0));
+    card.classList.toggle('is-away', !m && !docked && !tempHidden);   // im Platz der Tafel oder bei temperaturbedingt ausgeblendetem Punkt bleibt sie sichtbar
     if (docked) {
       const p = $('#panel').getBoundingClientRect();
       card.style.width = `${p.width}px`;
@@ -984,6 +989,18 @@ export function createHud(handlers) {
       card.style.transform = `translate(${Math.round(p.left)}px, ${Math.round(p.bottom - card.offsetHeight)}px)`;
       cardW = 0;
       return;   // liegt außerhalb der Bühne: kein Abzeichen muss ausweichen
+    }
+    if (!m && tempHidden) {
+      const room = rect.x1 - rect.x0 - LENS_COL;
+      cardW = Math.min(340, Math.max(220, Math.floor((room - 30) / 20) * 20));
+      cardSide = 'right';
+      card.style.width = `${Math.min(cardW + LENS_COL, Math.floor(rect.x1 - rect.x0))}px`;
+      card.style.maxHeight = `${Math.floor(rect.y1 - rect.y0)}px`;
+      const cw = card.offsetWidth, ch = card.offsetHeight;
+      const x = Math.max(rect.x0, rect.x1 - cw), y = rect.y0;
+      card.style.transform = `translate(${Math.round(x)}px, ${Math.round(y)}px)`;
+      cardBox = [x - 8, y - 8, x + cw + 8, y + ch + 8];
+      return;
     }
     if (!m) return;
     const bx0 = Math.min(m.ax, m.x - m.w / 2) - 12, bx1 = Math.max(m.ax, m.x + m.w / 2) + 12;
@@ -1104,7 +1121,7 @@ export function createHud(handlers) {
         if (!m.w) { m.w = m.el.offsetWidth; m.hgt = m.el.offsetHeight; }
         items.push(m);
       }
-      if (!items.length) { card.classList.add('is-away'); updateMeasures(camera, width, height, rect, items); return; }
+      if (!items.length) { placeCard(items, rect, width, height); updateMeasures(camera, width, height, rect, items); return; }
       // Abzeichen direkt neben den Punkt: links davon (rechts, wenn links kein Platz), dann sanft entzerren und im freien Bereich halten
       for (const m of items) {
         const leftFits = m.ax - GAP - m.w >= rect.x0, rightFits = m.ax + GAP + m.w <= rect.x1;

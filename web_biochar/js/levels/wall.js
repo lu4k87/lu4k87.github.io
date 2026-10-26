@@ -9,6 +9,7 @@ import { SEM_GLSL, SEM_DET, SEM_BSE, SEM_CHARGE, SEM_T, ADDITIVE, semMaterial, s
 import { disposeGroup } from '../walls.js';
 import { mulberry32, gauss, fbm3, vnoisef } from '../util.js';
 import { T_MIN, T_MAX, pyroState } from '../science.js';
+import { settings } from '../settings.js';
 
 const R = 16;          // Gefäßradius (Lumen Ø 32 µm)
 const TH = 1.6;        // Wanddicke
@@ -487,9 +488,10 @@ export function create(ctx) {
   const chain = spores.slice(0, 4).map((sp) => sp.p.clone());
   const chainBase = branch.getPoint(1), chainAxis = inward(-2.6);
   const c3 = chain[3], land = onWall(R * Math.atan2(c3.x, -c3.z) + 0.6, c3.y - 3.5, 0.95);
+  const isStill = () => reduced || settings.S.motion === 'off';
   const _p = new THREE.Vector3();
   anim.push((age) => {
-    const sway = reduced ? 0 : 0.08 * Math.sin(age * 0.5) * smooth01((age - ROLL.from + 2) / 2);
+    const sway = isStill() ? 0 : 0.08 * Math.sin(age * 0.5) * smooth01((age - ROLL.from + 2) / 2);
     for (let i = 0; i < 4; i++) {
       const f = smooth01((age - SPORE.from - i * SPORE.step) / SPORE.dur);
       _p.copy(chain[i]).sub(chainBase).applyAxisAngle(chainAxis, (sway * Math.min(i + 1, 3)) / 3).add(chainBase);
@@ -515,7 +517,7 @@ export function create(ctx) {
   let sprout = null;   // Alter beim Klick
   anim.push((age) => {
     if (sprout === null) return;
-    const f = reduced ? 1 : smooth01((age - sprout) / 0.5);
+    const f = isStill() ? 1 : smooth01((age - sprout) / 0.5);
     nbMesh.visible = f > 0.01;
     nbMesh.scale.setScalar(0.6 + 0.4 * f);
   });
@@ -578,10 +580,12 @@ export function create(ctx) {
     fragmentShader: 'uniform vec3 uCol; varying float vA; void main() { float d = length(gl_PointCoord - 0.5); float a = vA * (1.0 - smoothstep(0.25, 0.5, d)); if (a < 0.01) discard; gl_FragColor = vec4(uCol, a); }',
   }));
   pts.frustumCulled = false;
-  pts.visible = !reduced;
+  pts.visible = !isStill();
   pts.onBeforeRender = (renderer) => { const rt = renderer.getRenderTarget(); uViewH.value = rt ? rt.height : renderer.domElement.height; };
   scene.add(pts);
-  if (!reduced) anim.push((age) => {
+  anim.push((age) => {
+    pts.visible = !isStill();
+    if (!pts.visible) return;
     parts.forEach((p, k) => {
       const u = (age * 0.07 * p.sp + p.ph) % 1, e = smooth01(u / 0.9);
       const w = 0.35 * (1 - e);
@@ -641,17 +645,18 @@ export function create(ctx) {
       crackHs,
     ],
     update(dt, t) {
+      const calm = isStill();
       // Uhr ab Ankunft: nach einer Pause (Ebene war nicht aktiv) beginnt der Zeitraffer neu
       age = t - lastT > 0.5 ? 0 : age + t - lastT;
       lastT = t;
       if (heat.T !== heat.to) {
-        heat.T = reduced || Math.abs(heat.to - heat.T) < 0.05 ? heat.to : heat.T + (heat.to - heat.T) * (1 - Math.exp(-dt / 0.35));
+        heat.T = calm || Math.abs(heat.to - heat.T) < 0.05 ? heat.to : heat.T + (heat.to - heat.T) * (1 - Math.exp(-dt / 0.35));
         applyHeat();
       }
-      const at = reduced ? 1e3 : age;   // ohne Bewegung: Endzustand
-      if (!reduced) placeBacteria(t);
-      semDetector(reduced ? 0 : t * 1.5, 1.9);
-      semBlend(dt, reduced);
+      const at = calm ? 1e3 : age;   // ohne Bewegung: Endzustand
+      if (!calm) placeBacteria(t);
+      semDetector(calm ? 0 : t * 1.5, 1.9);
+      semBlend(dt, calm);
       anim.forEach((f) => f(at));
       return true;
     },

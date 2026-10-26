@@ -5,6 +5,7 @@ import * as THREE from 'three';
 import { mulberry32, gauss, clamp } from '../util.js';
 import { nanoStructure, fmt, pyroState } from '../science.js';
 import { ADDITIVE } from '../sem.js';
+import { settings } from '../settings.js';
 
 const HALF = new THREE.Vector3(5.5, 3.6, 4.2);
 
@@ -767,22 +768,23 @@ export function create(ctx) {
       { value: probe.visible ? `${fmt(poreD, 1)} nm` : '–', label: 'freie Weite der markierten Mikropore (Kernabstand − 0,34 nm)' },
     ],
     update(dt, t) {
-      t0 = t;
+      const calm = reducedMotion || settings.S.motion === 'off', tl = calm ? 0 : t;
+      t0 = tl;
       uniforms.uFogStart.value = camera.position.length() - 1;
       // Licht wandert langsam: Hauptlicht schwenkt, kühles Gegenlicht kreist
-      uniforms.uLight.value.set(0.4 + 0.35 * Math.sin(t * 0.09), 0.8, 0.45 + 0.35 * Math.cos(t * 0.07)).normalize();
-      key.position.set(4 + 3 * Math.sin(t * 0.09), 8, 6 + 3 * Math.cos(t * 0.07));
-      rimL.position.set(-6 * Math.cos(t * 0.05), -2, -7 * Math.sin(t * 0.05 + 1));
+      uniforms.uLight.value.set(0.4 + 0.35 * Math.sin(tl * 0.09), 0.8, 0.45 + 0.35 * Math.cos(tl * 0.07)).normalize();
+      key.position.set(4 + 3 * Math.sin(tl * 0.09), 8, 6 + 3 * Math.cos(tl * 0.07));
+      rimL.position.set(-6 * Math.cos(tl * 0.05), -2, -7 * Math.sin(tl * 0.05 + 1));
       // Aufheizen setzt Gase frei (≈ 1 Molekül je 12 °C zwischen 150 und 800 °C)
       const dT = shownT - prevT;
       prevT = shownT;
       if (shownT !== builtT) rebuild(shownT);
-      if (dT > 0 && dT < 200 && shownT > 150 && !reducedMotion) {
+      if (dT > 0 && dT < 200 && shownT > 150 && !calm) {
         emitCredit = Math.min(emitCredit + dT / 12, 6);
         while (emitCredit >= 1) { emitCredit--; spawnEscape(); }
       }
-      placeMolecules(dt);
-      placeEscapes(dt);
+      placeMolecules(calm ? 0 : dt);
+      placeEscapes(calm ? 0 : dt);
       return true;
     },
     setParam(name, value) {
