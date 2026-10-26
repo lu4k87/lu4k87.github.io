@@ -47,7 +47,9 @@ export function createHud(h) {
   // Blöcke mit senkrechtem Namen, Lage aus den Zeilen (layoutRail). Abstecher (Planeten, Monde) als Knopf „+n ›“ neben ihrem Halt:
   // klappt seitlich eine Liste auf, statt die Leiste zu verlängern. Ist die aktuelle Station ein Abstecher, stehen sie und ihre
   // Vorfahren eingerückt über dem Halt. Die Linie leuchtet vom Start bis zur aktuellen Station.
-  const CHAPTERS = [['earth', 'Erdnähe'], ['solar', 'Sonnensystem'], ['galaxy', 'Milchstraße'], ['local', 'Universum']];
+  // Kapitel: Hub, Name (weiches Trennzeichen für die schmalen Reiter der Kachel-Ansicht), Zeile über den Kacheln
+  const CHAPTERS = [['earth', 'Erd­nähe', 'Erde, Mond und Raumstationen'], ['solar', 'Sonnen­system', 'Sonne, Planeten und Monde'],
+    ['galaxy', 'Milch­straße', 'Nebel, Pulsar und Zentrum'], ['local', 'Uni­versum', 'Galaxien bis zum Horizont']];
   const HUBS = CHAPTERS.map(([id]) => id);
   // Abstecher des Sonnensystems nach Abstand zur Sonne statt nach Nummer (Nummern bleiben)
   const SUN_ORDER = ['sun', 'mercury', 'venus', 'mars', 'asteroid', 'jupiter', 'saturn', 'uranus', 'neptune', 'pluto'];
@@ -153,6 +155,101 @@ export function createHud(h) {
     if (flyOf) placeFly();
   }
 
+  // ---------- Kachel-Ansicht (Vorschau 26.10.2026 Menü:A) ----------
+  // Kapitel als Reiter mit Bild + Farbpunkt, darunter Hauptort („Halt x von 13“) und Kacheln im Raster: Standbild
+  // (img/thumbs/<id>.jpg aus tools/thumbs.py), Nummer, Name, Bildbreite (aktuelle live). Kachel = Station des Kapitels,
+  // die am Hub hängt oder auf der Route liegt; alle übrigen (Monde) als Kugel an ihrer Kachel. Der Reiter folgt der Station.
+  // Schalter unten links wechselt zum Zeitstrahl, gemerkt in localStorage (Standard Kacheln); unter 760 px nur Zeitstrahl (CSS).
+  const VIEW_KEY = 'kosmos.railview.v1';
+  const nav = rail.parentElement, tiles = $('#tiles'), viewBtns = nav.querySelectorAll('[data-view]');
+  const isTile = (k) => !HUBS.includes(k) && (onRoute.has(k) || HUBS.includes(STATIONS[k].parent));
+  const tileOf = (id) => { let x = id; while (x && !isTile(x) && !HUBS.includes(x)) x = STATIONS[x].parent; return x; };
+  const members = (ch) => Object.keys(STATIONS).filter((k) => chapter(k) === ch);
+  const byRank = (a, b) => rank(a) - rank(b) || num(a).localeCompare(num(b));
+  const tileLabel = (id) => `${esc(STATIONS[id].title)} – Bildbreite ${esc(fmtLength(STATIONS[id].width))}`;
+  const thumb = (id) => `<img src="img/thumbs/${id}.jpg" alt="" loading="lazy" decoding="async">`;
+  let tabCh = null, tileLive = null, tlTabs = null, tlPanel = null, tlTip = null;
+  function buildTiles() {
+    tiles.innerHTML = `<div class="tl-tabs" role="tablist" aria-label="Kapitel">${CHAPTERS.map(([hub, name]) => `<button type="button" role="tab" class="tl-tab" id="tl-tab-${hub}" data-ch="${hub}" aria-controls="tl-panel" aria-selected="false" tabindex="-1">${thumb(hub)}<span>${esc(name)}</span></button>`).join('')}</div>
+      <div class="tl-panel" id="tl-panel" role="tabpanel"></div>`;
+    tlTabs = [...tiles.querySelectorAll('.tl-tab')];
+    tlPanel = tiles.querySelector('.tl-panel');
+    tlTip = document.createElement('div');
+    tlTip.className = 'tl-tip';
+    tlTip.hidden = true;
+    tlTip.setAttribute('aria-hidden', 'true');
+    document.body.append(tlTip);
+    tiles.addEventListener('click', (e) => {
+      const tab = e.target.closest('.tl-tab'), go = e.target.closest('[data-go]');
+      if (tab) { showChapter(tab.dataset.ch); h.onInput(); } else if (go) { tlTip.hidden = true; h.onInput(); h.onGo(go.dataset.go); }
+    });
+    // Reiter per Pfeiltaste (Muster tablist); stoppt die globalen Pfeiltasten (Station wechseln) nur hier
+    tiles.querySelector('.tl-tabs').addEventListener('keydown', (e) => {
+      const i = tlTabs.indexOf(e.target), n = tlTabs.length;
+      const j = { ArrowRight: i + 1, ArrowLeft: i - 1 + n, Home: 0, End: n - 1 }[e.key];
+      if (i < 0 || j === undefined) return;
+      e.preventDefault();
+      e.stopPropagation();
+      tlTabs[j % n].focus();
+      showChapter(tlTabs[j % n].dataset.ch);
+    });
+    // Name + Bildbreite eines Mondes beim Zeigen (Maus oder Fokus)
+    const tip = (e) => {
+      const m = e.target.closest?.('.tl-moon');
+      if (!m || e.type === 'pointerout' || e.type === 'focusout') { tlTip.hidden = true; return; }
+      const id = m.dataset.go;
+      tlTip.innerHTML = `<b>${num(id)}</b>${esc(STATIONS[id].title)} · ${esc(fmtLength(STATIONS[id].width))}`;
+      tlTip.hidden = false;
+      const b = m.getBoundingClientRect(), w = tlTip.offsetWidth;
+      tlTip.style.left = `${Math.max(8, Math.min(innerWidth - w - 8, b.left + b.width / 2 - w / 2))}px`;
+      tlTip.style.top = `${b.bottom + 6}px`;
+    };
+    for (const ev of ['pointerover', 'pointerout', 'focusin', 'focusout']) tlPanel.addEventListener(ev, tip);
+    tlPanel.addEventListener('scroll', () => { tlTip.hidden = true; }, { passive: true });
+    nav.querySelector('.rail-view').addEventListener('click', (e) => { const b = e.target.closest('[data-view]'); if (b) setView(b.dataset.view, true); });
+    let v = 'tiles';
+    try { if (localStorage.getItem(VIEW_KEY) === 'line') v = 'line'; } catch { /* privater Modus */ }
+    setView(v);
+  }
+  function setView(v, save) {
+    nav.dataset.view = v;
+    body.classList.toggle('rail-tiles', v === 'tiles');
+    viewBtns.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.view === v)));
+    tlTip.hidden = true;
+    if (!save) return;
+    try { localStorage.setItem(VIEW_KEY, v); } catch { /* privater Modus */ }
+    layoutRail();
+    h.onRelayout();
+  }
+  function showChapter(ch) {
+    tabCh = ch;
+    tlTabs.forEach((t) => { const on = t.dataset.ch === ch; t.setAttribute('aria-selected', String(on)); t.tabIndex = on ? 0 : -1; });
+    tlPanel.setAttribute('aria-labelledby', `tl-tab-${ch}`);
+    const all = members(ch), halt = ROUTE.indexOf(ch), at = halt < 0 ? '' : `Halt ${halt + 1} von ${ROUTE.length}`;
+    tlPanel.innerHTML = `<p class="tl-sum"><b>${all.length} Stationen</b> · ${esc(CHAPTERS.find(([hub]) => hub === ch)[2])}</p>
+      <button type="button" class="tl-hub" data-go="${ch}" aria-label="${tileLabel(ch)}${at && `, ${at}`}"><span class="tl-im">${thumb(ch)}</span>
+        <span class="tl-hub-txt"><span class="tl-name"><b>${num(ch)}</b> ${esc(STATIONS[ch].title)}</span><span class="tl-w">${esc(fmtLength(STATIONS[ch].width))}</span>${at && `<span class="tl-halt">${at}</span>`}</span></button>
+      <ul class="tl-grid">${all.filter(isTile).sort(byRank).map((id) => {
+        const moons = all.filter((k) => k !== ch && !isTile(k) && tileOf(k) === id).sort(byRank);
+        return `<li class="tl-tile" data-id="${id}"><button type="button" class="tl-go" data-go="${id}" aria-label="${tileLabel(id)}"><span class="tl-im">${thumb(id)}<span class="tl-no">${num(id)}</span></span><span class="tl-name">${esc(STATIONS[id].title)}</span></button>
+          <span class="tl-row"><span class="tl-w">${esc(fmtLength(STATIONS[id].width))}</span>${moons.length ? `<span class="tl-moons">${moons.map((k) => `<button type="button" class="tl-moon" data-go="${k}" aria-label="${tileLabel(k)}"><i style="background-image:url(img/thumbs/${k}-tex.jpg)"></i></button>`).join('')}</span>` : ''}</span></li>`;
+      }).join('')}</ul>`;
+    markTiles();
+  }
+  // Aktuelle Station: Kachel (bei Monden die ihres Planeten) eisblau umrandet, Mond-Kugel mit Ring, Bildbreite live
+  function markTiles() {
+    const cur = railCur, here = tileOf(cur);
+    tlPanel.querySelectorAll('[data-go]').forEach((b) => {
+      const on = b.dataset.go === cur;
+      b.classList.toggle('is-current', on);
+      if (on) b.setAttribute('aria-current', 'step'); else b.removeAttribute('aria-current');
+    });
+    tlPanel.querySelectorAll('.tl-tile, .tl-hub').forEach((el) => el.classList.toggle('is-here', (el.dataset.id || el.dataset.go) === here));
+    const box = here === cur && tlPanel.querySelector(`.is-here`);
+    tileLive = box ? box.querySelector('.tl-w') : null;
+    if (box && box.classList.contains('tl-tile')) box.scrollIntoView({ block: 'nearest' });
+  }
+
   // ---------- Reiseroute ----------
   route.innerHTML = ROUTE.map((id, i) => `<li><button type="button" data-id="${id}" aria-label="Station ${i + 1}: ${esc(STATIONS[id].title)}"><span class="rt-dot"></span><span class="rt-name">${esc(STATIONS[id].title)}</span></button></li>`).join('');
   route.querySelectorAll('button').forEach((b) => b.addEventListener('click', () => { h.onInput(); h.onGo(b.dataset.id); }));
@@ -184,6 +281,7 @@ export function createHud(h) {
     if (sub) { sub.classList.add('is-current'); sub.setAttribute('aria-current', 'step'); }
     railLive = (sub || railRows.get(id)?.querySelector('.rl-main'))?.querySelector('small') || null;
     layoutRail();
+    showChapter(chapter(id));
     route.querySelectorAll('button').forEach((b) => {
       const cur = b.dataset.id === id;
       b.classList.toggle('is-current', cur);
@@ -533,6 +631,7 @@ export function createHud(h) {
     mWidth.textContent = fmtLength(widthM);
     mLight.textContent = fmtTime(widthM / C);
     if (railLive) railLive.textContent = fmtLength(widthM);
+    if (tileLive) tileLive.textContent = fmtLength(widthM);
   }
 
   // ---------- Flug, Kapitel-Titel, Auftakt ----------
@@ -596,6 +695,7 @@ export function createHud(h) {
   }
 
   buildRail();
+  buildTiles();
   return {
     setStation, update, setScale, setPull, stageRect, setFlight,
     caption: (st, opening) => showCaption(st, opening),

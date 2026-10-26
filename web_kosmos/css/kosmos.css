@@ -87,8 +87,8 @@ body.panel-off .top-actions { padding-right: 18px; }
 .icon-btn--sm svg { width: 16px; height: 16px; }
 
 /* ---------- Stationsleiste (links): Reiseroute als Zeitstrahl (Vorschau 26.10.2026 Navi:C) ---------- */
-.rail { grid-area: rail; padding: 22px 0 22px 16px; min-height: 0; isolation: isolate; --rail-in: 450ms; --rail-out: 320ms; }
-.rail-in { position: relative; height: 100%; }
+.rail { grid-area: rail; padding: 22px 0 22px 16px; min-height: 0; isolation: isolate; display: flex; flex-direction: column; gap: 10px; --rail-in: 450ms; --rail-out: 320ms; }
+.rail-in { position: relative; flex: 1 1 auto; min-height: 0; }
 .rail-in::before {
   content: ""; position: absolute; z-index: -1; inset: -22px -40px -22px -16px; pointer-events: none;
   background: linear-gradient(90deg, rgba(3, 5, 10, 0.62), rgba(3, 5, 10, 0.32) 62%, rgba(3, 5, 10, 0));
@@ -97,10 +97,10 @@ body.panel-off .top-actions { padding-right: 18px; }
 .rail-line path { fill: none; stroke: var(--line-strong); stroke-width: 1; }
 .rail-line path.is-hot { stroke: rgba(var(--accent-rgb), 0.6); stroke-width: 2; }
 /* Kapitel: getönter Block links neben den Halten, Name senkrecht; Lage setzt layoutRail */
-.rl-ch[data-ch="earth"] { --ch: 94, 214, 170; }
-.rl-ch[data-ch="solar"] { --ch: 245, 184, 76; }
-.rl-ch[data-ch="galaxy"] { --ch: 167, 139, 250; }
-.rl-ch[data-ch="local"] { --ch: 240, 120, 154; }
+:is(.rl-ch, .tl-tab)[data-ch="earth"] { --ch: 94, 214, 170; }
+:is(.rl-ch, .tl-tab)[data-ch="solar"] { --ch: 245, 184, 76; }
+:is(.rl-ch, .tl-tab)[data-ch="galaxy"] { --ch: 167, 139, 250; }
+:is(.rl-ch, .tl-tab)[data-ch="local"] { --ch: 240, 120, 154; }
 .rl-ch {
   position: absolute; left: 0; width: 26px; display: grid; place-items: center; overflow: hidden; border-radius: 6px; pointer-events: none;
   background: rgba(var(--ch), 0.12); border: 1px solid rgba(var(--ch), 0.4); transition: opacity var(--rail-out) var(--ease-out);
@@ -177,6 +177,87 @@ body.panel-off .top-actions { padding-right: 18px; }
 @media (prefers-reduced-motion: reduce) {
   .rail *, .rail *::before { transition-duration: 1ms !important; transition-delay: 0s !important; animation: none !important; }
 }
+
+/* ---------- Stationsleiste als Kacheln (Vorschau 26.10.2026 Menü:A): Kapitel-Reiter, Hauptort, Raster mit Standbildern ----------
+   Schalter unten links (.rail-view) wechselt zwischen Zeitstrahl und Kacheln; Kacheln brauchen 332 px Tafel (Mockup) */
+body.rail-tiles { --rail-w: 348px; }
+.tiles { display: none; flex: 1 1 auto; min-height: 0; flex-direction: column; gap: 10px; padding: 12px 0 0; border-radius: var(--radius); overflow: hidden; }
+.rail[data-view="tiles"] .tiles { display: flex; }
+.rail[data-view="tiles"] .rail-in { display: none; }
+.tl-tabs { display: flex; gap: 5px; padding: 0 12px; flex: none; }
+.tl-tab {
+  flex: 1 1 auto; min-width: 0; position: relative; height: 60px; padding: 0; overflow: hidden; display: flex; align-items: flex-end; cursor: pointer;
+  border: 1px solid var(--line); border-radius: 7px; background: #05070c; color: var(--ink); text-align: left; transition: border-color 0.2s;
+}
+.tl-tab img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0.55; transition: opacity 0.2s; }
+.tl-tab span { position: relative; width: 100%; padding: 4px 5px 5px; font: 500 12.5px/1.15 var(--display); background: linear-gradient(transparent, rgba(0, 0, 0, 0.8)); }
+.tl-tab::before { content: ""; position: absolute; z-index: 1; right: 5px; top: 5px; width: 8px; height: 8px; border-radius: 50%; background: rgb(var(--ch)); box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.6); }
+.tl-tab:hover img, .tl-tab:focus-visible img, .tl-tab[aria-selected="true"] img { opacity: 0.9; }
+.tl-tab:hover { border-color: var(--line-strong); }
+.tl-tab[aria-selected="true"] { border-color: var(--accent); }
+.tl-panel {
+  flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 0 12px 12px; display: flex; flex-direction: column; gap: 10px;
+  scrollbar-width: thin; scrollbar-color: rgba(255, 255, 255, 0.22) transparent;
+}
+.tl-panel::-webkit-scrollbar { width: 6px; }
+.tl-panel::-webkit-scrollbar-track { background: transparent; }
+.tl-panel::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.22); border-radius: 3px; }
+.tl-sum { font-size: 13px; line-height: 1.35; color: var(--ink-soft); }
+.tl-sum b { font-weight: 600; color: var(--ink); }
+.tl-im { position: relative; flex: none; overflow: hidden; border-radius: 5px; background: #05070c; }
+.tl-im img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.tl-hub {
+  flex: none; display: flex; align-items: center; gap: 10px; width: 100%; padding: 6px; cursor: pointer; text-align: left; color: var(--ink);
+  border: 1px solid var(--line); border-radius: 8px; background: rgba(255, 255, 255, 0.03); transition: background 0.2s, border-color 0.2s;
+}
+.tl-hub .tl-im { width: 104px; height: 52px; }
+.tl-hub-txt { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.tl-hub .tl-name { font: 500 14px/1.25 var(--font); }
+.tl-name b { font: 500 12px var(--mono); color: var(--ink-soft); }
+.tl-halt { font: 400 12px var(--mono); color: var(--accent); white-space: nowrap; }
+.tl-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.tl-tile { position: relative; display: flex; flex-direction: column; gap: 5px; padding: 5px; border: 1px solid transparent; border-radius: 8px; transition: background 0.2s, border-color 0.2s; }
+.tl-go { display: flex; flex-direction: column; gap: 5px; padding: 0; border: 0; background: none; color: var(--ink); text-align: left; cursor: pointer; }
+/* ganze Kachel klickbar; Mond-Kugeln liegen darüber */
+.tl-go::after { content: ""; position: absolute; inset: 0; border-radius: 8px; }
+.tl-go:focus-visible { outline: none; }
+.tl-go:focus-visible::after { outline: 2px solid var(--focus); outline-offset: 1px; }
+.tl-tile .tl-im { width: 100%; height: 66px; }
+.tl-no { position: absolute; left: 4px; top: 4px; padding: 0 5px; border-radius: 4px; background: rgba(0, 0, 0, 0.65); font: 500 12px/18px var(--mono); }
+.tl-tile .tl-name { font: 500 13.5px/1.2 var(--font); }
+.tl-row { position: relative; z-index: 1; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 2px 4px; min-height: 24px; pointer-events: none; }
+.tl-w { font: 400 12px var(--mono); color: var(--ink-soft); white-space: nowrap; }
+.tl-moons { display: flex; pointer-events: auto; }
+/* Kugel: Oberflächenkarte (img/thumbs/<id>-tex.jpg, inline am <i>) halb gezeigt, Schatten innen */
+.tl-moon { width: 15px; height: 24px; padding: 0; border: 0; background: none; cursor: pointer; display: grid; place-items: center; }
+.tl-moon i {
+  width: 14px; height: 14px; border-radius: 50%; background: #605a54 30% 50% / 200% 100%; transition: transform 0.2s var(--ease-out);
+  box-shadow: inset -3px -2px 5px rgba(0, 0, 0, 0.75), inset 1px 1px 2px rgba(255, 255, 255, 0.25);
+}
+.tl-moon:hover i, .tl-moon:focus-visible i { transform: scale(1.25); }
+.tl-moon.is-current i { box-shadow: inset -3px -2px 5px rgba(0, 0, 0, 0.75), 0 0 0 1.5px var(--accent), 0 0 8px rgba(var(--accent-rgb), 0.7); }
+.tl-tile:hover, .tl-hub:hover { background: rgba(255, 255, 255, 0.06); }
+.tl-tile.is-here, .tl-hub.is-here { border-color: var(--accent); background: var(--accent-soft); }
+.is-here .tl-w { color: var(--accent); }
+.tl-tip {
+  position: fixed; z-index: 4; padding: 6px 10px; border-radius: 6px; border: 1px solid var(--line-strong); background: var(--glass-strong);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5); font: 500 12.5px var(--font); white-space: nowrap; pointer-events: none;
+}
+.tl-tip[hidden] { display: none; }
+.tl-tip b { margin-right: 6px; font: 500 12px var(--mono); color: var(--ink-soft); }
+/* Schalter Zeitstrahl | Kacheln */
+.rail-view { flex: none; align-self: flex-start; display: flex; gap: 2px; padding: 2px; border: 1px solid var(--line); border-radius: 8px; background: var(--glass); }
+.rail-view button {
+  width: 30px; height: 28px; display: grid; place-items: center; padding: 0; border: 0; border-radius: 6px; background: none; color: var(--ink-soft); cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+.rail-view svg { width: 16px; height: 16px; }
+.rail-view button:hover { color: var(--ink); background: rgba(255, 255, 255, 0.08); }
+.rail-view button[aria-pressed="true"] { color: var(--accent); background: var(--accent-soft); }
+/* Ruhe bis zur Maus wie beim Zeitstrahl: aktuelle Kachel, gewählter Reiter und Hauptort bleiben deutlich */
+.tl-tab, .tl-sum, .tl-tile, .tl-hub, .rail-view { transition: opacity var(--rail-out) var(--ease-out), background 0.2s, border-color 0.2s; }
+.rail:not(.is-awake) :is(.tl-tab[aria-selected="false"], .tl-sum, .tl-tile:not(.is-here), .rail-view) { opacity: 0.5; }
+.rail.is-awake :is(.tl-tab, .tl-sum, .tl-tile, .tl-hub, .rail-view) { transition: opacity var(--rail-in) var(--ease-out), background 0.2s, border-color 0.2s; }
 
 /* ---------- Bühne ---------- */
 .stage { grid-area: stage; position: relative; min-width: 0; min-height: 0; }
@@ -613,6 +694,7 @@ body.fatal-webgl .fatal-webgl, body.fatal-start .fatal-start { display: block; }
 /* ---------- schmal ---------- */
 @media (max-width: 1180px) {
   :root { --panel-w: 380px; --rail-w: 284px; }
+  body.rail-tiles { --rail-w: 316px; }
   .measure { grid-template-columns: repeat(2, auto); }
   .route { display: none; }
 }
@@ -629,6 +711,10 @@ body.fatal-webgl .fatal-webgl, body.fatal-start .fatal-start { display: block; }
   .panel-body { padding: 14px 14px 16px; gap: 12px; }
   .st-title { font-size: 24px; }
   .rail { padding: 16px 0 16px 8px; }
+  /* schmal: Kacheln würden die Bühne verdecken → immer Zeitstrahl als Punkte, ohne Schalter */
+  body.rail-tiles { --rail-w: 58px; }
+  .rail[data-view="tiles"] .rail-in { display: block; }
+  .rail[data-view="tiles"] .tiles, .rail-view { display: none; }
   .rl-txt, .rl-more, .rl-ch span, .rl-sub { display: none; }
   .rl-ch { width: 12px; }
   .rail-list { padding-left: 18px; }
