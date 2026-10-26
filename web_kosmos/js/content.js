@@ -101,6 +101,7 @@ export const SOURCES = {
   'abell-1989': { t: 'A catalog of rich clusters of galaxies (Abell, Corwin, Olowin)', by: 'Abell et al. 1989, ApJS 70, 1', url: 'https://doi.org/10.1086/191333' },
   'madau-2014': { t: 'Cosmic Star-Formation History (Höhepunkt bei z ≈ 2)', by: 'Madau & Dickinson 2014, ARA&A 52', url: 'https://doi.org/10.1146/annurev-astro-081811-125615' },
   'bromm-2013': { t: 'Formation of the first stars', by: 'Bromm 2013, Rep. Prog. Phys. 76', url: 'https://doi.org/10.1088/0034-4885/76/11/112901' },
+  'pdg-bbn': { t: 'Big-Bang Nucleosynthesis (erste Atomkerne in den ersten Minuten, Massenanteil Helium-4 Yp ≈ 0,245)', by: 'Fields, Molaro & Sarkar, Review of Particle Physics (PDG) 2024', url: 'https://pdg.lbl.gov/2024/reviews/rpp2024-rev-bbang-nucleosynthesis.pdf' },
   // Infografiken Ast Milchstraße und Kosmos (web/js/figs/galaxis.js)
   'nomoto-1982': { t: 'Progenitor of the Crab Nebula (Vorläuferstern 8–10 Sonnenmassen)', by: 'Nomoto et al. 1982, Nature 299, 803', url: 'https://doi.org/10.1038/299803a0' },
   'fesen-1997': { t: 'An optical study of the circumstellar environment around the Crab Nebula (Filamente 4,6 ± 1,8 M☉, ≈ 4 M☉ noch nicht gefunden)', by: 'Fesen, Shull & Hurford 1997, AJ 113, 354', url: 'https://ui.adsabs.harvard.edu/abs/1997AJ....113..354F' },
@@ -1112,7 +1113,7 @@ export const STATIONS = {
     },
   },
   cmb: {
-    n: 10, title: 'Beobachtbares Universum', kicker: 'Kosmologisch', parent: null, width: 1.1e27, dist: 45.3e9 * LY, lookback: 13.787e9 * YEAR,
+    n: 10, title: 'Beobachtbares Universum', kicker: 'Kosmologisch', parent: 'bigbang', width: 1.1e27, dist: 45.3e9 * LY, lookback: 13.787e9 * YEAR,
     lead: 'Die Hintergrundstrahlung ist das älteste beobachtbare Licht: ausgesandt rund 370.000 Jahre nach dem Urknall, als das Universum durchsichtig wurde. Durch die Ausdehnung ist sie heute auf 2,7 K abgekühlt. Die Kugel zeigt, aus welcher Entfernung sie uns erreicht; wir stehen in ihrem Mittelpunkt.',
     facts: [
       { v: '13,787 ± 0,020', u: 'Mrd. J.', l: 'Alter des Universums', s: 'planck-2018' },
@@ -1134,9 +1135,26 @@ export const STATIONS = {
       firststars: { t: 'Erste Sterne', x: 'Bei z ≈ 20 (rund 180 Mio. Jahre) entstanden in kleinen Halos aus Dunkler Materie die ersten Sterne. Nach Modellen waren sie sehr massereich und kurzlebig und bestanden fast nur aus Wasserstoff und Helium. Direkt beobachtet ist bisher keiner.', s: 'bromm-2013' },
     },
   },
+  bigbang: {
+    n: 11, title: 'Urknall', kicker: 'Anfang von Raum und Zeit', parent: null, width: 1.1e27, dist: 0, lookback: 13.787e9 * YEAR,
+    lead: 'Vor 13,8 Milliarden Jahren war das ganze Universum heiß und dicht. Der Urknall geschah nicht an einem Ort: Der Raum selbst dehnt sich seitdem überall zugleich aus. Der Film zeigt in 45 Sekunden den Blitz, das wachsende Netz der Materie und die ersten Galaxien.',
+    facts: [
+      { v: '13,787 ± 0,020', u: 'Mrd. J.', l: 'seit dem Urknall', s: 'planck-2018' },
+      { v: '≈ 25', u: '%', l: 'der Masse wurde in den ersten Minuten zu Helium', s: 'pdg-bbn' },
+      { v: '≈ 370.000', u: 'J.', l: 'bis das Universum durchsichtig wurde', s: 'planck-2018' },
+      { v: '≈ 180', u: 'Mio. J.', l: 'bis zu den ersten Sternen (Modell)', s: 'bromm-2013' },
+    ],
+    note: 'Darstellung, nicht maßstäblich: Lichtblitz mit violettem Netz nach dem Vorbild üblicher Erklärfilme. Der Mittelpunkt ist nur ein Hilfsmittel – der Raum dehnte sich überall zugleich aus, es gab keinen Ort und kein Außen der Explosion (Hinweis im Film). Das Netz ist Grat-Rauschen in mitbewegten Koordinaten und wächst mit dem Raum, ohne sein Muster zu ändern (wie das Modell in Station 9); Galaxien sind 16 gezeichnete Formen (eigenes Modell, keine Teleskopbilder), Farben nach Planck-Temperatur. Die Zeitachse des Films ist verdichtet, eine Filmsekunde entspricht keiner festen Zeitspanne. Galaxien-Flug zu Station 10: Tiefenfeld als Modell – je tiefer, desto früher (kleiner, unregelmäßiger, röter), dann das dunkle Zeitalter und die Wand der Hintergrundstrahlung (Muster simuliert wie in Station 10). Kennzahlen aus dem ΛCDM-Modell mit Planck-2018-Werten.',
+    sources: ['planck-2018', 'pdg-bbn', 'bromm-2013', 'jades-2024', 'weygaert'],
+    hotspots: {
+      cmb: { t: 'Beobachtbares Universum', x: 'Hineinfliegen: aus der Wand der Hintergrundstrahlung durch das dunkle Zeitalter und die Galaxien bis zu Station 10 – vorwärts in der Zeit, die Galaxien werden größer und blauer.', s: 'planck-2018' },
+      expansion: { t: 'Kein Ort, kein Außen', x: 'Der Urknall war keine Explosion an einem Ort: Der Raum selbst dehnte sich überall zugleich aus. Jeder Punkt des heutigen Universums war dabei; der helle Mittelpunkt im Film ist nur Darstellung. Mit dem Raum wächst das Netz aus Gasfäden – sein Muster bleibt dasselbe, nur größer.', s: 'planck-2018' },
+      galaxies: { t: 'Erste Galaxien', x: 'In den dichtesten Knoten des Netzes sammelte sich Gas zu Sternen und Galaxien. Nach Modellen leuchteten die ersten Sterne rund 180 Millionen Jahre nach dem Urknall auf; das James-Webb-Teleskop sieht Galaxien knapp 300 Millionen Jahre danach (JADES-GS-z14-0, z = 14,3).', s: 'jades-2024' },
+    },
+  },
 };
 
-export const ROUTE = ['iss', 'earth', 'moon', 'solar', 'sun', 'galaxy', 'orion', 'crab', 'pulsar', 'sgra', 'local', 'web', 'cmb'];
+export const ROUTE = ['iss', 'earth', 'moon', 'solar', 'sun', 'galaxy', 'orion', 'crab', 'pulsar', 'sgra', 'local', 'web', 'cmb', 'bigbang'];
 // Äste außerhalb der Route (Kind über parent) zählen für Weiter/Zurück wie ihre nächste Elternstation auf der Route
 export function routeIndex(id) {
   for (let x = id; x; x = STATIONS[x] ? STATIONS[x].parent : null) { const i = ROUTE.indexOf(x); if (i >= 0) return i; }

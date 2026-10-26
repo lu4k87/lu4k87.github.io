@@ -148,6 +148,7 @@ export function create(ctx) {
   const controls = [
     { id: 'dip', label: 'Dipol', value: 'off', options: [['off', 'Abgezogen'], ['on', 'Sichtbar']], set: (v) => { shellMat.uniforms.uDipOn.value = v === 'on' ? 1 : 0; } },
     { id: 'layers', label: 'Zeitschichten', value: 'off', options: [['off', 'Aus'], ['on', 'Epochen']], set: (v) => { layers.visible = v === 'on'; } },
+    { id: 'film', type: 'action', label: 'Urknall', button: 'Film vom Urknall', run: () => window.dispatchEvent(new CustomEvent('kosmos:auftakt')) },
     { id: 'back', label: 'Blick zurück', type: 'range', min: 0, max: Math.floor(AGE * 100) / 100, step: 0.01, value: 0, fmt: (v) => (v ? fmtT(v) : 'heute'),
       set: (v) => {
         back_t = v;

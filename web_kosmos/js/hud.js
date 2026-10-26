@@ -50,7 +50,7 @@ export function createHud(h) {
   // oder auf ihrem Weg). Unter 760 px (oder zu eng für die Namen) nur die Route als Punkte mit Kapitel-Streifen.
   // Kapitel: Hub, Name, Beschreibung (Name der Gruppe für Screenreader)
   const CHAPTERS = [['earth', 'Erdnähe', 'Erde, Mond und Raumstationen'], ['solar', 'Sonnensystem', 'Sonne, Planeten und Monde'],
-    ['galaxy', 'Milchstraße', 'Nebel, Pulsar und Zentrum'], ['local', 'Universum', 'Galaxien bis zum Horizont']];
+    ['galaxy', 'Milchstraße', 'Nebel, Pulsar und Zentrum'], ['local', 'Universum', 'Galaxien bis zum Urknall']];
   const HUBS = CHAPTERS.map(([id]) => id);
   // Abstecher des Sonnensystems nach Abstand zur Sonne statt nach Nummer (Nummern bleiben)
   const SUN_ORDER = ['sun', 'mercury', 'venus', 'mars', 'asteroid', 'jupiter', 'saturn', 'uranus', 'neptune', 'pluto'];
@@ -809,7 +809,7 @@ export function createHud(h) {
     caption.querySelector('.cap-n').textContent = opening ? 'Kosmos' : String(st.n).padStart(2, '0');
     caption.querySelector('.cap-title').textContent = opening ? 'Reise durch das All' : st.title;
     const parts = opening
-      ? ['Von der Erde bis an den Rand des beobachtbaren Universums']
+      ? ['Vom Urknall bis zur Erde']
       : [st.kicker, `Bildbreite ${fmtLength(st.width)}`, ...(st.dist ? [`${fmtLength(st.dist)} entfernt`] : [])];
     caption.querySelector('.cap-sub').replaceChildren(...parts.flatMap((t, i) => {
       const seg = document.createElement('span');
@@ -847,15 +847,50 @@ export function createHud(h) {
     return { x0: s.left, x1: s.right, y0: s.top, y1: s.bottom };
   }
 
+  // Film vom Urknall: Hinweis-Zeile über der Bühne und „Überspringen“ im Auftakt – beide außerhalb der Bedienung, damit sie
+  // im Auftakt (Bedienung ausgeblendet) sichtbar bleiben; die Zeile sitzt mittig über der Bühne, nie unter Leiste oder Infotafel
+  const filmHint = document.createElement('p');
+  filmHint.className = 'film-hint';
+  filmHint.setAttribute('aria-live', 'polite');
+  const skipBtn = document.createElement('button');
+  skipBtn.type = 'button';
+  skipBtn.className = 'film-skip';
+  skipBtn.hidden = true;
+  skipBtn.innerHTML = 'Überspringen <kbd>Esc</kbd>';
+  skipBtn.addEventListener('click', (e) => { e.stopPropagation(); h.onSkip(); });
+  body.append(filmHint, skipBtn);
+  // Zeile erscheint erst, wenn der Stationstitel ausgeblendet ist (nie beide übereinander), und bleibt HINT_S Sekunden
+  const HINT_S = 4.5;
+  let hintSince = 0, hintDone = '';
+  function setHint(want) {
+    if (!want) hintDone = '';
+    if (want && caption.classList.contains('is-on')) want = '';
+    if (want && hintSince && performance.now() - hintSince > HINT_S * 1000) { hintDone = want; want = ''; }
+    const text = want && want !== hintDone ? want : '';
+    if (filmHint.dataset.t === text) return;
+    filmHint.dataset.t = text;
+    hintSince = text ? performance.now() : 0;
+    if (text) {
+      const r = stageRect();
+      filmHint.textContent = text;
+      filmHint.style.left = `${(r.x0 + r.x1) / 2}px`;
+      filmHint.style.maxWidth = `${Math.max(240, Math.min(640, r.x1 - r.x0 - 32))}px`;
+    }
+    filmHint.classList.toggle('is-on', !!text);
+  }
+
   buildSearch();
   buildRail();
   return {
     setStation, update, setScale, setPull, stageRect, setFlight,
-    caption: (st, opening) => showCaption(st, opening),
+    // ohne Station: Titel sofort ausblenden (Auftakt-Film)
+    caption: (st, opening) => { if (st) showCaption(st, opening); else { caption.classList.remove('is-on'); clearTimeout(capTimer); } },
     hideMarkers: (on) => { layer.classList.toggle('is-hidden', on); if (on) closeCard(); },
     setLoading: (on) => body.classList.toggle('is-loading', on),
     setRouteTarget: (id) => route.querySelectorAll('button').forEach((b) => b.classList.toggle('is-target', b.dataset.id === id)),
     intro: (on) => body.classList.toggle('is-intro', on),
+    hint: (text) => setHint(text || ''),
+    skip: (on) => { skipBtn.hidden = !on; },
     // offene Karte: main.js hält die Leerlauf-Fahrt an, damit das Bild beim Lesen ruht
     reading: () => card.classList.contains('is-open'),
     relayout: () => { markers.forEach((m) => { m.w = 0; }); dock = null; },

@@ -11,6 +11,7 @@ import { createHud } from './hud.js';
 import { settings, onSettings, globalGrade } from './settings.js';
 import { createDeepSky } from './deepsky.js';
 import { attachSound, soundTo } from './sound.js';
+import { flightPlan } from './flightplan.js';
 import { TURN, planTurn, turnPose, turnPace } from './turn.js';
 import { createBoot } from './boot.js';
 
@@ -26,6 +27,7 @@ const LOADERS = {
   local: () => import('./levels/local.js'),
   web: () => import('./levels/web.js'),
   cmb: () => import('./levels/cmb.js'),
+  bigbang: () => import('./levels/bigbang.js'),
   // Einfügemarken je Etappe (docs/plan_ebenen.md §2): jeder Chat fügt nur direkt unter seiner Marke ein
   // [E1] Sonne
   sun: () => import('./levels/sun.js'),
@@ -418,8 +420,10 @@ function carryBend(cr) {
   };
 }
 
-async function goTo(targetId) {
+// opt.dur = feste Dauer der ganzen Fahrt (s), opt.opener = Fahrt des Auftakt-Films (sonst ist Navigation im Film gesperrt)
+async function goTo(targetId, opt = {}) {
   if (!STATIONS[targetId] || state.tr || state.chain || !state.active || targetId === state.id) return;
+  if (state.opener && !opt.opener) return;
   endIntro();
   const fromId = state.id, path = pathTo(fromId, targetId);
   hud.setRouteTarget(targetId);
@@ -427,24 +431,28 @@ async function goTo(targetId) {
   const lvs = await Promise.all(path.map((id) => getLevel(id)));
   if (state.tr || state.chain || state.id !== fromId) return;
   state.queue = path;
-  state.chain = planChain([state.active, ...lvs]);
+  state.chain = planChain([state.active, ...lvs], opt.dur);
   hop();
 }
 
 // ---------- Fahrplan: alle Etappen auf einer Zeitachse, Tempo stetig, kein Halt – auch nicht an einer Wende ----------
 const homeWidth = (lv) => lv.home.pos.distanceTo(lv.home.target) * Math.tan(THREE.MathUtils.degToRad(lv.camera.fov) / 2) * lv.unit;
 const arrival = (lv) => poseAt(lv.home.target, lv.home.pos, lv.home.pos.distanceTo(lv.home.target) * ARRIVE);
-function planChain(lvs) {
+function planChain(lvs, dur) {
   const legs = lvs.slice(1).map((to, i) => {
     const dec = Math.abs(Math.log10(homeWidth(lvs[i]) / homeWidth(to)));
     return { down: to.meta.parent === lvs[i].id, w: Math.min(CHAIN.hi, Math.max(CHAIN.lo, CHAIN.w0 + CHAIN.perDecade * dec)) };
   });
+  // Sonderetappe (Galaxien-Flug, fly der äußeren Station): eigenes Gewicht, die Fahrt wird um diesen Anteil länger
+  let extra = 0;
+  if (!still()) legs.forEach((l, k) => { const o = l.down ? lvs[k] : lvs[k + 1]; if (o.fly) { extra += o.fly.w - l.w; l.w = o.fly.w; } });
   const n = legs.length, ws = legs.map((l) => l.w), W = ws.reduce((s, w) => s + w, 0);
   // Wende (hinaus → hinein) an Station i: deren Kamera fährt einen Bogen, das Tempo folgt dort der Bildbewegung
   const i = legs.findIndex((l, k) => k && l.down && !legs[k - 1].down);
   const turn = i > 0 ? planTurnAt(lvs, i) : null;
   const { cum, gain } = warpTable(ws, turn && ((s) => turn.pace(s - turn.at)));
-  const T = still() ? 1.2 * n : n === 1 ? settings.S.dive : settings.S.dive * Math.min(CHAIN.cap, CHAIN.base + CHAIN.per * W) * gain;
+  const T = still() ? 1.2 * n : dur || (n === 1 ? settings.S.dive * (extra ? legs[0].w : 1)
+    : settings.S.dive * Math.min(CHAIN.cap + CHAIN.per * extra, CHAIN.base + CHAIN.per * W) * gain);
   // Anfahren und Abbremsen dauern etwa eine Etappe
   return { legs, turn, T, t: 0, end: null, ramp: Math.min(0.5, 0.9 / n), cum };
 }
@@ -543,6 +551,7 @@ function hop() {
     outerFrom, outerTo, innerFrom, innerTo, prog: 0, maskR: 0, blur: 0, veil: 0,
     anchorUv: new THREE.Vector2(0.5, 0.5), innerUv: new THREE.Vector2(0.5, 0.5), captioned: false,
   };
+  if (outer.fly && !still()) state.tr.fly = flyLeg(state.tr);   // Galaxien-Flug zwischen Station 10 und 11
   hud.hideMarkers(true);
   hud.setFlight(true, to.meta, multi);
 }
@@ -561,6 +570,7 @@ function stepTransition(dt) {
     : flyPose(tr.outer.camera, tr.outerFrom, tr.outerTo, e, tkOuter, tr.anchor, tr.down ? tr.carry : null);
   if (x !== null) tr.outer.target = outerTgt;   // Maßstab in der Leiste misst zum gleitenden Blickpunkt
   const innerTgt = flyPose(tr.inner.camera, tr.innerFrom, tr.innerTo, e, e, null, tr.down ? null : tr.carry);
+  if (tr.fly) flyPoses(tr, e);   // Galaxien-Flug: eigene Kameraführung (ersetzt die Posen oben)
   tr.outer.camera.updateMatrixWorld();
   tr.inner.camera.updateMatrixWorld();
   const a = tr.anchor.clone().project(tr.outer.camera);
@@ -575,6 +585,7 @@ function stepTransition(dt) {
   tr.maskR = 0.05 * Math.pow(ZOOM, p) * smooth(0, 0.08, p);
   tr.blur = still() ? 0 : 0.09 * Math.sin(Math.PI * p);
   tr.veil = still() ? 0 : Math.pow(Math.sin(Math.PI * e), 1.6);
+  if (tr.fly) flyMix(tr);   // Galaxien-Flug: Überblendung statt Iris
   // Maßstab in der Leiste läuft logarithmisch mit
   const wOut = fieldWidth(tr.outer), wIn = fieldWidth(tr.inner);
   hud.setScale(Math.exp(Math.log(wOut) * (1 - p) + Math.log(wIn) * p), p < 0.5 ? tr.outer : tr.inner);
@@ -598,6 +609,108 @@ function stepTransition(dt) {
     hud.hideMarkers(false);
     if (tour) tour.since = 0;
   }
+}
+
+// ---------- Galaxien-Flug zwischen Station 10 und 11 (galaxyflight.js, Vorschau 26.10.2026 Flug:A) ----------
+// Die äußere Station (Urknall) bringt ihn mit (lv.fly). Hinaus: die Kamera von Station 10 taucht auf uns zu, das Bild blendet
+// in den Tiefenfeld-Durchflug (tiefer = früher) bis zur Wand der Hintergrundstrahlung; sie glüht weiß auf → Schnitt in den
+// Blitz, der Film beginnt. Hinein: in den Blitz, Schnitt in die weiße Wand, vorwärts in der Zeit, zuletzt Überblendung in die
+// Anfahrt an Station 10. Alle Kameras fahren vorwärts – beim Überblenden kehrt keine Bewegung um.
+function flyLeg(tr) {
+  tr.outer.fly.phase(tr.down ? 'bang' : 'corridor', 0);
+  if (!tr.down) tr.captioned = true;   // Titel „Urknall“ erst nach dem Schnitt (flyPoses), nicht über dem Durchflug
+  return { fly: tr.outer.fly, started: false, plan: null };
+}
+// Kamera um ein Ziel: Abstand logarithmisch von der Startpose bis zum k-ten Teil, Blick vom alten Ziel weich zum neuen
+const _fv = new THREE.Vector3();
+function divePose(cam, from, target, k, x) {
+  _fv.copy(from.pos).sub(target);
+  cam.position.copy(target).addScaledVector(_fv, Math.pow(k, -x));
+  return _fv.copy(from.target).lerp(target, x);
+}
+function flyPoses(tr, e) {
+  const f = tr.fly, P = f.plan = flightPlan(e, tr.down), oc = tr.outer.camera, ic = tr.inner.camera;
+  if (P.phase === 'corridor') f.fly.corridor(oc, P.x, tr.down);
+  else if (tr.down) oc.lookAt(divePose(oc, tr.outerFrom, tr.anchor, ZOOM, P.dive));   // in den Blitz
+  else { oc.position.copy(tr.outerTo.pos); oc.lookAt(tr.outerTo.target); }             // Heimpose, der Film läuft
+  if (!tr.down) {
+    // Station 10 taucht auf uns zu; kommt die Fahrt von Station 9, setzt sie deren Bewegung erst fort (Bogen statt Knick)
+    const tgt = divePose(ic, tr.innerFrom, tr.inner.home.target, ZOOM, P.dive);
+    if (tr.carry) tr.carry(ic.position, e);
+    ic.lookAt(tgt);
+    if (P.phase === 'bang' && !f.started) { f.started = true; f.fly.start(); }
+    if (P.phase === 'bang' && P.white < 0.08 && !f.cap) { f.cap = true; hud.caption(tr.to.meta); }
+  }
+  // Schnitt unter vollem Weiß (Wand ↔ Blitz): Kamera springt gewollt; ?camlog merkt die Zeit (tests/camera.py überspringt sie)
+  if (f.last && f.last !== P.phase && window.__camlog) (window.__camcut ||= []).push(state.time);
+  f.last = P.phase;
+  // am Ende hinein: Station 11 wieder im Bild des Urknalls (der Durchflug gehört nur in den Flug)
+  f.fly.phase(tr.down && e >= 1 ? 'bang' : P.phase, e >= 1 ? 0 : P.white);
+}
+// Fluchtpunkt der Kamera im Bild (Mitte der Zoom-Unschärfe)
+const vanish = (cam, out) => { _fv.set(0, 0, -1).applyQuaternion(cam.quaternion).multiplyScalar(1e3).add(cam.position).project(cam); return out.set((_fv.x + 1) / 2, (_fv.y + 1) / 2); };
+function flyMix(tr) {
+  const P = tr.fly.plan;
+  tr.mix = tr.prog = P.mix;
+  tr.blur = P.phase === 'corridor' ? 0.06 * Math.min(1, P.x * 8, (1 - P.x) * 8) : 0;
+  tr.veil = 0;
+  vanish(tr.outer.camera, tr.anchorUv);
+  vanish(tr.inner.camera, tr.innerUv);
+}
+// ---------- Auftakt-Film (Vorschau 26.10.2026 Ort:C, Rückmeldung des Users 26.10.2026): beim ersten Besuch der Urknall ----------
+// Film in Station 11 mit Kinobalken, Bedienung ausgeblendet, dezent „Überspringen“ (Esc, Klick); danach Landung in Station 11,
+// der obersten Ebene – keine Fahrt hinunter zur ISS. Gemerkt in localStorage; der Knopf „Film vom Urknall“ (Station 10,
+// Zahnrad) spielt ihn erneut (Ereignis kosmos:auftakt). tempo = Tempo des Films, fade = Abblenden vor dem erneuten
+// Abspielen (s). ?auftakt erzwingt ihn, ?auftakt=0 schaltet ihn ab (Tests)
+const OPENER = { key: 'kosmos.auftakt.v1', tempo: 1.5, fade: 0.8 };
+state.opener = null;
+const openerSeen = () => { try { return localStorage.getItem(OPENER.key) === '1'; } catch { return false; } };
+async function startOpener(replay) {
+  if (state.opener || state.tr || state.chain || still()) return;
+  endIntro();
+  state.follow = null;
+  const a = state.opener = { phase: 'load', fade: 1, skip: false };
+  hud.intro(true);
+  hud.skip(true);
+  if (state.controls) state.controls.enabled = false;
+  const job = getLevel('bigbang');
+  while (replay && a.fade > 0 && state.opener === a) await nextFrame();   // frame() blendet ab
+  const bb = await job;
+  if (state.opener !== a) return;
+  bb.camera.position.copy(bb.home.pos);
+  bb.camera.lookAt(bb.home.target);
+  bb.target = bb.home.target.clone();
+  activate(bb);
+  resize();
+  bb.restart(0, OPENER.tempo);
+  a.phase = 'film';
+  hud.caption(null);   // kein Titel über dem Film, er kommt bei der Landung
+  if (a.skip) endOpener(); else state.controls.enabled = false;
+}
+function stepOpener(real) {
+  const a = state.opener, f = state.active.film;
+  if (a.phase === 'load') a.fade = Math.max(0, a.fade - real / OPENER.fade);
+  else if (f && f.t >= f.dur) endOpener();   // Film zu Ende: Landung in Station 11
+}
+// Landung in Station 11: Bedienung blendet ein, Titel „Kosmos“ und der Station, der Film läuft im normalen Tempo weiter
+function endOpener() {
+  if (!state.opener) return;
+  state.opener = null;
+  try { localStorage.setItem(OPENER.key, '1'); } catch { /* privat */ }
+  hud.skip(false);
+  hud.hint('');
+  hud.intro(false);
+  if (state.controls) state.controls.enabled = true;
+  const lv = state.active;
+  if (lv && lv.film) lv.film.tempo = 1;
+  if (lv) hud.caption(lv.meta, true);
+}
+// Überspringen: sofort in Station 11 landen (lädt sie noch, dann gleich nach dem Laden)
+function skipOpener() {
+  const a = state.opener;
+  if (!a) return;
+  if (a.phase === 'load') { a.skip = true; hud.skip(false); return; }
+  endOpener();
 }
 
 // ---------- Folgen: Blickziel gleitet zu einem Objekt und bleibt darauf (Planeten laufen im Zeitraffer weiter) ----------
@@ -816,6 +929,7 @@ function frame(nowMs) {
   // wirken relativ (Station bleibt so hell, wie sie gebaut ist); „Station“ = null → Look der Station
   const G = globalGrade();
   look.exposure = lookA.exposure * (G ? G.exposure : 1) * settings.S.exposure;
+  if (state.opener && state.opener.phase === 'load') look.exposure *= state.opener.fade;   // Abblenden vor dem Auftakt-Film
   look.bloom = settings.S.bloom ? lookA.bloom * (G ? G.bloom / 0.12 : 1) : 0;
   look.sat = G ? G.sat : lookA.sat; look.con = G ? G.con : lookA.con; look.vig = (G ? G.vig : lookA.vig) * settings.S.vig;
   look.ca = settings.S.lens ? lookA.ca : 0;
@@ -826,15 +940,17 @@ function frame(nowMs) {
   look.ehtA.set(ea ? ea[0] : 0, ea ? ea[1] : 0, ea ? ea[2] : 0);
   look.ehtB.set(eb ? eb[0] : 0, eb ? eb[1] : 0, eb ? eb[2] : 0);
   // Kinobalken: Auftakt fest, sonst Zahnrad „Kinobalken 2,39:1“ (Balkenhöhe je Seite aus dem Fensterformat)
-  bars += ((state.intro ? 0.11 : settings.S.bars ? Math.max(0, (1 - innerWidth / innerHeight / 2.39) / 2) : 0) - bars) * Math.min(1, real * 2.5);
+  bars += ((state.intro || state.opener ? 0.11 : settings.S.bars ? Math.max(0, (1 - innerWidth / innerHeight / 2.39) / 2) : 0) - bars) * Math.min(1, real * 2.5);
   look.bars = bars;
-  post.render(tr ? tr.outer.rt : lv.rt, tr ? tr.inner.rt : null, tr ? { prog: tr.prog, maskR: tr.maskR, blur: tr.blur, veil: tr.veil, anchor: tr.anchorUv, inner: tr.innerUv } : null, look, state.time);
+  post.render(tr ? tr.outer.rt : lv.rt, tr ? tr.inner.rt : null, tr ? { prog: tr.prog, maskR: tr.maskR, blur: tr.blur, veil: tr.veil, mix: tr.mix, anchor: tr.anchorUv, inner: tr.innerUv } : null, look, state.time);
 
   if (!tr) hud.update(lv.camera, lv, state.time);
+  hud.hint(!tr && lv.hint ? lv.hint() : '');   // Hinweis-Zeile des Films (Station 11)
   hud.setPull(state.pull, state.pullDir);
   state.pull = Math.max(0, state.pull - real * 0.6);
   stepTour(real);
   stepProbe(real);
+  if (state.opener) stepOpener(real);
   if (fps) {
     fps.n++; fps.sum += real;
     if (fps.sum > 2) { console.log(`[kosmos] ${Math.round(fps.n / fps.sum)} fps · Stufe ${pickQuality()}`); fps.n = 0; fps.sum = 0; }
@@ -871,6 +987,7 @@ const hud = createHud({
   onFocus: (h) => startFollow(h),
   onInput: () => userInput(),
   onRelayout: () => requestAnimationFrame(resize),
+  onSkip: () => skipOpener(),
 });
 
 onSettings((keys) => {
@@ -881,6 +998,11 @@ onSettings((keys) => {
 
 window.addEventListener('keydown', (ev) => {
   if (ev.target.closest && ev.target.closest('input, select, textarea')) return;
+  // im Auftakt-Film: Esc, Enter, Leertaste und die Reisetasten überspringen ihn
+  if (state.opener) {
+    if (['Escape', 'Enter', ' ', 'ArrowRight', 'ArrowLeft', 'ArrowUp', 'PageDown', 'PageUp'].includes(ev.key)) { ev.preventDefault(); skipOpener(); }
+    return;
+  }
   if (ev.key === 'ArrowRight' || ev.key === 'PageDown') { ev.preventDefault(); goTo(nextOnRoute(state.id)); }
   else if (ev.key === 'ArrowLeft' || ev.key === 'PageUp') { ev.preventDefault(); goTo(nextOnRoute(state.id, -1)); }
   else if (ev.key === 'ArrowUp' && state.active && state.active.meta.parent) { ev.preventDefault(); goTo(state.active.meta.parent); }
@@ -892,20 +1014,29 @@ window.addEventListener('hashchange', () => {
   const id = (location.hash.match(/station=(\w+)/) || [])[1];
   if (id && id !== state.id) goTo(id);
 });
-canvas.addEventListener('pointerdown', () => userInput());
+canvas.addEventListener('pointerdown', () => (state.opener ? skipOpener() : userInput()));
+window.addEventListener('kosmos:auftakt', () => startOpener(true));
 
 async function start() {
   try {
     resize();
     const id = (location.hash.match(/station=(\w+)/) || [])[1];
     const first = STATIONS[id] ? id : ROUTE[0];
-    await bootLoad(first);
-    const lv = await getLevel(first);
-    activate(lv);
-    resize();
+    // erster Besuch: Auftakt-Film vom Urknall, Landung in Station 11 (sonst Kranfahrt an der ISS)
+    const film = !id && !still() && (params.has('auftakt') ? params.get('auftakt') !== '0' : !tour && !openerSeen());
+    await bootLoad(film ? 'bigbang' : first);
+    if (film) await startOpener(false);
+    let lv = null;
+    if (!state.active && !state.opener) {
+      lv = await getLevel(first);
+      activate(lv);
+      resize();
+    }
     document.body.classList.add('is-ready');
-    hud.caption(lv.meta, first === ROUTE[0] && !id);
-    if (first === ROUTE[0] && !id) startIntro(lv);
+    if (lv) {
+      hud.caption(lv.meta, first === ROUTE[0] && !id);
+      if (first === ROUTE[0] && !id) startIntro(lv);
+    }
     requestAnimationFrame(frame);
     boot.done();
   } catch (err) {

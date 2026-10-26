@@ -8,7 +8,7 @@ import { FULLSCREEN_VERT } from './glsl.js';
 const COMP_FRAG = /* glsl */ `
 precision highp float;
 uniform sampler2D tA, tB;
-uniform float uProg, uMaskR, uBlur, uVeil, uAspect, uTrans;
+uniform float uProg, uMaskR, uBlur, uVeil, uAspect, uTrans, uMix;
 uniform vec2 uAnchor, uInner;
 uniform vec3 uEhtA, uEhtB;        // x = Anteil, y = Unschärfe (Bildhöhe), z = Verstärkung
 varying vec2 vUv;
@@ -61,6 +61,9 @@ vec3 zoomed(sampler2D t, vec2 uv, vec2 c, float amt, vec3 e) {
 
 void main() {
   if (uTrans < 0.5) { gl_FragColor = vec4(sampleLevel(tA, vUv, uEhtA), 1.0); return; }
+  // reine Überblendung (Sonderetappe Galaxien-Flug, uMix = Anteil des inneren Bildes): beide Bilder ganz, ohne Iris,
+  // Zoom-Unschärfe je um ihren Fluchtpunkt
+  if (uMix >= 0.0) { gl_FragColor = vec4(mix(zoomed(tA, vUv, uAnchor, uBlur, uEhtA), zoomed(tB, vUv, uInner, uBlur, uEhtB), uMix), 1.0); return; }
   vec2 d = (vUv - uAnchor) * vec2(uAspect, 1.0);
   float r = length(d);
   vec3 ca = zoomed(tA, vUv, uAnchor, uBlur, uEhtA);
@@ -180,7 +183,7 @@ export function createPost(renderer) {
   const mat = (frag, uniforms) => new THREE.ShaderMaterial({ vertexShader: FULLSCREEN_VERT, fragmentShader: frag, uniforms, depthTest: false, depthWrite: false });
   const compMat = mat(COMP_FRAG, {
     tA: { value: null }, tB: { value: null }, uProg: { value: 0 }, uMaskR: { value: 0 }, uBlur: { value: 0 }, uVeil: { value: 0 },
-    uAspect: { value: 1 }, uTrans: { value: 0 }, uAnchor: { value: new THREE.Vector2(0.5, 0.5) }, uInner: { value: new THREE.Vector2(0.5, 0.5) },
+    uAspect: { value: 1 }, uTrans: { value: 0 }, uMix: { value: -1 }, uAnchor: { value: new THREE.Vector2(0.5, 0.5) }, uInner: { value: new THREE.Vector2(0.5, 0.5) },
     uEhtA: { value: new THREE.Vector3() }, uEhtB: { value: new THREE.Vector3() },
   });
   const downMat = mat(DOWN_FRAG, { tSrc: { value: null }, uTexel: { value: new THREE.Vector2() }, uKaris: { value: 0 } });
@@ -226,7 +229,8 @@ export function createPost(renderer) {
     return up[0].texture;
   }
 
-  // a = einzige bzw. äußere Ebene, b = innere Ebene (nur im Flug), tr = Werte des Flugs, look = Belichtung + Grading
+  // a = einzige bzw. äußere Ebene, b = innere Ebene (nur im Flug), tr = Werte des Flugs (mix ≥ 0: Überblendung statt Iris),
+  // look = Belichtung + Grading
   function render(a, b, tr, look, time) {
     const u = compMat.uniforms;
     u.tA.value = a.texture;
@@ -237,6 +241,7 @@ export function createPost(renderer) {
       u.uMaskR.value = tr.maskR;
       u.uBlur.value = tr.blur;
       u.uVeil.value = tr.veil;
+      u.uMix.value = tr.mix ?? -1;
       u.uAnchor.value.copy(tr.anchor);
       u.uInner.value.copy(tr.inner);
     }

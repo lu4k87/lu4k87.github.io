@@ -731,3 +731,17 @@ body.fatal-webgl .fatal-webgl, body.fatal-start .fatal-start { display: block; }
   *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
   .caption > *, .caption .cap-n::after { --d: 0s; transition-delay: 0s !important; }
 }
+
+/* Film vom Urknall (Station 11, Auftakt): Hinweis-Zeile mittig über der Bühne, „Überspringen“ dezent unten rechts im Kinobalken */
+.film-hint { position: fixed; z-index: 6; bottom: 22vh; transform: translate(-50%, 8px); margin: 0; text-align: center; text-wrap: balance;
+  font: 400 17px/1.45 var(--font); color: var(--ink); text-shadow: 0 1px 12px rgba(0, 0, 0, 0.85); opacity: 0; pointer-events: none;
+  transition: opacity 1.2s var(--ease-out), transform 1.6s var(--ease-out); }
+.film-hint.is-on { opacity: 1; transform: translate(-50%, 0); }
+.film-skip { position: fixed; z-index: 7; right: 24px; bottom: max(14px, 3.2vh); display: inline-flex; align-items: center; gap: 8px; min-height: 32px; padding: 4px 6px;
+  border: 0; border-radius: 6px; background: none; color: var(--ink); font: 400 13px/1 var(--font); letter-spacing: 0.02em; cursor: pointer; transition: color 0.3s; }
+.film-skip[hidden] { display: none; }
+.film-skip:hover { color: var(--accent); }
+.film-skip:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.film-skip kbd { padding: 2px 6px; border: 1px solid var(--line-strong); border-radius: 4px; font: 500 12px/1 var(--font); }
+@media (max-width: 760px) { .film-hint { bottom: 26vh; font-size: 15px; } .film-skip { right: 16px; } }
+@media (prefers-reduced-motion: reduce) { .film-hint { transition: opacity 0.3s; transform: translate(-50%, 0); } }
