@@ -1068,6 +1068,32 @@ body:has(.cfg:not([hidden])) .center-hint { opacity: 0; }   /* offenes Panel: Be
 body.hotspots-off #hotspots { display: none; }
 
 .stage-hud { grid-area: stage; padding-inline: 46px; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; min-width: 0; min-height: 0; pointer-events: none; }
+/* Ebenen-Titel beim Wechsel (wie Kosmos, User 2026-10-26): steht ≈ 6 s groß oben in der Bühne – Nummer, Lichtlinie,
+   Name und Zeile darunter gleiten gestaffelt ein, der Name zieht seine Sperrung 6 s lang zusammen; dunkler Hof dahinter.
+   Die Szene ist in beiden Themes dunkel → feste helle Schrift und Akzent wie die Zoom-Schiene; Abzeichen weichen aus (hud.js) */
+.stage-hud { position: relative; }
+.caption {
+  position: absolute; left: 0; right: 0; top: 12%; padding: 0 24px; container-type: inline-size; pointer-events: none;
+  display: flex; flex-direction: column; align-items: center; gap: 14px; text-align: center;
+  color: #f4f1ea; --accent: #ff9a3c; opacity: 0; transition: opacity 1.4s ease;
+  text-shadow: 0 2px 22px rgba(0, 0, 0, 0.9);
+}
+.caption::before { content: ""; position: absolute; inset: -35% 4%; z-index: -1; background: radial-gradient(closest-side, rgba(0, 0, 0, 0.5), transparent); }
+.caption.is-on { opacity: 1; transition: opacity 1.8s var(--ease-out); }
+.caption > * { margin: 0; opacity: 0; transform: translateY(12px); transition: opacity 1s ease, transform 1s ease; }
+.caption.is-on > * { opacity: 1; transform: none; transition: opacity 1.8s var(--ease-out) var(--d, 0s), transform 2.4s var(--ease-out) var(--d, 0s); }
+.cap-n { font: 500 15px var(--mono); letter-spacing: 0.5em; text-transform: uppercase; color: var(--accent); padding-left: 0.5em; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+.cap-n::after { content: ""; width: 96px; height: 1px; background: linear-gradient(90deg, transparent, var(--accent), transparent); transform: scaleX(0); transition: transform 1s ease; }
+.caption.is-on .cap-n::after { transform: scaleX(1); transition: transform 2.4s var(--ease-out) 0.5s; }
+.cap-title {
+  --d: 0.3s; font: 300 clamp(36px, 8cqi, 88px)/1.04 var(--font); text-transform: uppercase; letter-spacing: 0.3em; padding-left: 0.3em;
+  text-shadow: 0 2px 22px rgba(0, 0, 0, 0.9), 0 0 34px color-mix(in srgb, var(--accent) 20%, transparent);
+}
+.caption.is-on .cap-title {
+  letter-spacing: 0.2em; padding-left: 0.2em;
+  transition: opacity 1.8s var(--ease-out) var(--d), transform 2.4s var(--ease-out) var(--d), letter-spacing 6s var(--ease-out), padding-left 6s var(--ease-out);
+}
+.cap-sub { --d: 0.8s; font-size: 17px; max-width: 52ch; }
 .pyro-tl {
   --tl-off: var(--line);
   pointer-events: auto;
@@ -1198,6 +1224,11 @@ body:not(.no-webgl) .fatal-webgl, body.no-webgl .fatal-start { display: none; }
   .hex--nav { width: 24px; height: 24px; }
   .sem-method { display: none; }
   .center-hint { display: none; }
+  .caption { top: 4px; padding: 0 8px; gap: 8px; }   /* knappe Bühne: Titel oben, ohne Zusatzzeile */
+  .cap-n { font-size: 13px; gap: 8px; }
+  .cap-title { font-size: clamp(26px, 8.5cqi, 40px); letter-spacing: 0.16em; padding-left: 0.16em; }
+  .caption.is-on .cap-title { letter-spacing: 0.1em; padding-left: 0.1em; }
+  .cap-sub { display: none; }
   /* schmal: offenes Panel wird zum Blatt von unter der Kopfzeile bis unten (eigene Rasterzeilen), Zahnrad bleibt sichtbar */
   .cfg-dock { display: contents; }
   .cfg { grid-area: 2 / 1 / -1 / 2; align-self: start; justify-self: end; width: min(440px, 100%); max-height: 100%; z-index: 3; }
@@ -1227,6 +1258,7 @@ body:not(.no-webgl) .fatal-webgl, body.no-webgl .fatal-start { display: none; }
   .hs-dot--dive, .hs-dot--dive::before, .loader-ring, .rail-level.is-current .hex--rail, .hsb--dive .hex, .hs-card-in { animation: none; }
   .panel-body.is-entering { animation: none; }
   * { transition-duration: 0.01ms !important; }
+  .caption > *, .caption .cap-n::after { --d: 0s; transition-delay: 0s !important; }
 }
 
 /* Virtuelle Messung (Ebene 6, Vorschau 2026-10-25, Spektren:A): Röntgenbeugung + Raman aufklappbar, Graphit-Referenz gestrichelt */

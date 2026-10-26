@@ -694,6 +694,7 @@ async function goTo(target, via = null) {
   setMood(moodA, outer.index);
   setMood(moodB, inner.index);
   hud.hideMarkers(true);
+  hud.hideCaption();
 }
 
 function stepTransition(dt) {
@@ -731,6 +732,8 @@ function stepTransition(dt) {
   const hOut = hfwOf(tr.outer, tr.focusOuter);
   const hIn = hfwOf(tr.inner, tr.focusInner);
   hud.updateScale(Math.exp(Math.log(hOut) * (1 - p) + Math.log(hIn) * p), window.innerWidth, p < 0.5 ? tr.outer : tr.inner);
+  // Ebenen-Titel kommt kurz vor der Ankunft, wenn das neue Bild überwiegt
+  if (!tr.cap && tr.t >= 0.55) { tr.cap = true; hud.showCaption(tr.to); }
   if (tr.t >= 1) {
     const to = tr.to;
     const end = tr.down ? tr.innerTo : tr.outerTo;

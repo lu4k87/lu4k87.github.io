@@ -886,6 +886,7 @@ export function createHud(handlers) {
     const cardOpen = card.classList.contains('is-open') && !card.classList.contains('is-away');
     const cr = cardOpen ? card.getBoundingClientRect() : null;
     const hit = (a, b) => a.l < b.r && a.r > b.l && a.t < b.b && a.b > b.t;
+    const cb = captionBox(), capR = cb && { l: cb[0], t: cb[1], r: cb[2], b: cb[3] };   // Ebenen-Titel hat Vorrang wie die Karte
     const scr = (v) => [((v.x + 1) / 2) * width, ((1 - v.y) / 2) * height];
     const placedBoxes = [];
 
@@ -911,6 +912,7 @@ export function createHud(handlers) {
       // nichts überdecken: Abzeichen und Info-Karte haben Vorrang
       if (on && items.some((m) => hit(box, { l: m.x - m.w / 2, r: m.x + m.w / 2, t: m.y - m.hgt / 2, b: m.y + m.hgt / 2 }))) on = false;
       if (on && cr && hit(box, { l: cr.left, r: cr.right, t: cr.top, b: cr.bottom })) on = false;
+      if (on && capR && hit(box, capR)) on = false;
       ms.lab.classList.toggle('is-off', !on);
       ms.g.classList.toggle('is-off', !on);
       if (!on) continue;
@@ -957,6 +959,7 @@ export function createHud(handlers) {
         box.l >= rect.x0 && box.r <= rect.x1 && box.t >= rect.y0 && box.b <= rect.y1;
       if (on && items.some((m) => hit(box, { l: m.x - m.w / 2 - 6, r: m.x + m.w / 2 + 6, t: m.y - m.hgt / 2 - 6, b: m.y + m.hgt / 2 + 6 }))) on = false;
       if (on && cr && hit(box, { l: cr.left - 6, r: cr.right + 6, t: cr.top - 6, b: cr.bottom + 6 })) on = false;
+      if (on && capR && hit(box, capR)) on = false;
       if (on && placedBoxes.some((b) => hit(box, b))) on = false;
       ov.lab.classList.toggle('is-off', !on);
       ov.g.classList.toggle('is-off', !on);
@@ -1134,6 +1137,34 @@ export function createHud(handlers) {
 
   // freier Bereich zwischen Schiene, Tafel, Kopfleiste und Hinweis bzw. Fußleiste; die Zeitleiste nimmt ihre Seite der Bühne weg
   // (unten: der Bereich endet über ihr, nach oben gezogen: er beginnt unter ihr)
+  // Ebenen-Titel beim Wechsel (wie Kosmos): main.js zeigt ihn kurz vor der Ankunft, er steht ≈ 6 s und blendet dann aus
+  const caption = $('#caption');
+  let capTimer = 0;
+  function showCaption(lv) {
+    const L = LEVELS[lv.index];
+    caption.querySelector('.cap-n').textContent = `Ebene ${String(lv.index + 1).padStart(2, '0')}`;
+    caption.querySelector('.cap-title').textContent = L.name;
+    caption.querySelector('.cap-sub').textContent = `${L.zone} · Bildbreite ${L.scale} · ${L.compare}`;
+    caption.classList.remove('is-on');
+    void caption.offsetWidth;
+    caption.classList.add('is-on');
+    clearTimeout(capTimer);
+    capTimer = setTimeout(() => caption.classList.remove('is-on'), 6000);
+  }
+  function hideCaption() { clearTimeout(capTimer); caption.classList.remove('is-on'); }
+  // Fläche des sichtbaren Titels (Vereinigung der Zeilen + Rand) – die Abzeichen weichen ihr aus
+  function captionBox() {
+    if (!caption.classList.contains('is-on')) return null;
+    let box = null;
+    for (const el of caption.children) {
+      const b = el.getBoundingClientRect();
+      if (!b.width) continue;
+      box = box ? [Math.min(box[0], b.left - 8), Math.min(box[1], b.top - 6), Math.max(box[2], b.right + 8), Math.max(box[3], b.bottom + 6)]
+        : [b.left - 8, b.top - 6, b.right + 8, b.bottom + 6];
+    }
+    return box;
+  }
+
   function stageRect(width) {
     const r = (sel) => $(sel).getBoundingClientRect();
     const lad = r('.ladder'), pan = r('#panel'), top = r('.topbar'), bot = r('.bottombar'), hint = r('.center-hint'), bar = tl.getBoundingClientRect();
@@ -1199,6 +1230,8 @@ export function createHud(handlers) {
     refreshFacts,
     tickFacts,
     setLive,
+    showCaption,
+    hideCaption,
     hideMarkers(hidden) {
       layer.classList.toggle('is-hidden', hidden);
     },
@@ -1211,6 +1244,7 @@ export function createHud(handlers) {
     updateMarkers(camera, width, height) {
       const v = camera.position.clone();
       const rect = stageRect(width);
+      const capBox = captionBox();
       const GAP = 14;   // Abstand Punkt → Abzeichen
       const items = [];
       for (const m of markers) {
@@ -1265,12 +1299,13 @@ export function createHud(handlers) {
             else { const s = (ax < bx ? -1 : 1) * ox; A.tx += s * fa; B.tx -= s * fb; }
           }
         }
-        // offene Karte: die anderen Abzeichen weichen an die nächste Kartenseite aus, an der sie im freien Bereich Platz
-        // haben (vor der hohen Karte am linken Rand also nach rechts), damit die Karte keins verdeckt
-        if (cardBox && selected) {
-          const [c0, c1, c2, c3] = cardBox;
+        // offene Karte und Ebenen-Titel: die anderen Abzeichen weichen an die nächste Seite aus, an der sie im freien
+        // Bereich Platz haben (vor der hohen Karte am linken Rand also nach rechts), damit nichts eins verdeckt
+        for (const [box, skip] of [[selected && cardBox, selected && selected.id], [capBox, null]]) {
+          if (!box) continue;
+          const [c0, c1, c2, c3] = box;
           for (const m of items) {
-            if (m.h.id === selected.id) continue;
+            if (m.h.id === skip) continue;
             const hw = m.w / 2, hh = m.hgt / 2;
             if (m.tx + hw <= c0 || m.tx - hw >= c2 || m.ty + hh <= c1 || m.ty - hh >= c3) continue;
             const fits = ([x, y]) => x - hw >= rect.x0 && x + hw <= rect.x1 && y - hh >= rect.y0 && y + hh <= rect.y1;
