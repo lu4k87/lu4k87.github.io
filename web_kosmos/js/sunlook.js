@@ -1,19 +1,22 @@
-// Look „Sonne neu“ der Station Sonne (Vorschau 26.10.2026, Vorlage = Shader-Mockup live/sonne.html in der Schatzkammer):
-// Oberfläche als Kugel-Shader – A Glutkruste (dunkle Kruste, glühende Magnetadern) und B Plasmateppich wie SDO 304 Å
-// (Netzwerk, Fackelfelder, Filamente und koronale Löcher aus denselben Daten wie die Kanalbilder, SUN_MASKS) –, Rand und
-// Ausbrüche auf einer Bildtafel um die Sonnenmitte (BILLBOARD_AIM_VERT, r in Einheiten des sichtbaren Rands): Rand
-// Flammenkranz | Bogen-Arkaden | feiner Saum mit Spikulen, Ausbruch Filament-Eruption | Flare mit Schockwelle (Bänder und
-// Moreton-Welle auf der Scheibe im Kugel-Shader) | Protuberanz reißt ab. Künstlerisch verstärkt: Höhen, Helligkeit und
-// Tempo sind überzeichnet, die Glutkruste ist kein Messbild. Ein Ausbruch dauert ERUPT_T Sekunden mit einem weichen
-// Anstieg (kein Blitzen, weit unter 3 Hz, AGENTS.md §0). Linear vor ACES (post.js), daher ohne eigenes Tonemapping.
+// Look „Sonne neu“ der Station Sonne (Vorschau 26.10.2026, Vorlage = Shader-Mockup live/sonne.html in der Schatzkammer;
+// Kino-Überarbeitung 26.10.2026): Oberfläche als Kugel-Shader – A Glutkruste (dunkle Kruste, glühende Magnetadern,
+// Flecken mit Penumbra-Fasern) und B Plasmateppich wie SDO 304 Å (Netzwerk, Fackelfelder, Filamente und koronale Löcher
+// aus denselben Daten wie die Kanalbilder, SUN_MASKS), beide mit hellem „Moos“ an den Fußpunkten der Bögen –, darüber die
+// Atmosphäre als Strahlrechnung je Pixel (LOOK_ATMO_*): Chromosphäre, Spikulen, Flammen, Hecken und Korona-Schein als
+// Schichten über der Kugel, am Rand gesehen als Säule bis zum tiefsten Punkt des Strahls, auf der Scheibe als vordere
+// Hälfte – so geht der Rand pixelweich und aus jedem Blickwinkel stimmig in die Oberfläche über. Bögen, Protuberanzen
+// und die Fäden der Ausbrüche sind 3D-Fadenbündel (sunstrands.js); auf der Tafel bleiben nur Auswurf-Blase und
+// Flare-Schein. Künstlerisch verstärkt: Höhen, Helligkeit und Tempo sind überzeichnet, die Glutkruste ist kein Messbild.
+// Ein Ausbruch dauert ERUPT_T Sekunden mit einem weichen Anstieg (kein Blitzen, weit unter 3 Hz, AGENTS.md §0). Linear vor
+// ACES (post.js), daher ohne eigenes Tonemapping.
 
 import { NOISE } from './glsl.js';
 import { SUN_MASKS, SPOTS } from './sunfx.js';
 
 export const ERUPT_T = 12;   // Sekunden je Ausbruch (Vorschau F3: alle 12 s)
-export const LOOK_EXT = 2.6; // Bildtafel reicht bis 2,6 Randradien (Eruption bis ≈ 2,3)
-// Qualitätsstufe (ctx.detail 0,55 | 0,8 | 1) → fbm-Oktaven und Bögen je Arkade
-export const lookDefines = (detail) => (detail > 0.9 ? { OCT: 5, ARC_N: 6 } : detail > 0.7 ? { OCT: 4, ARC_N: 5 } : { OCT: 3, ARC_N: 3 });
+export const LOOK_EXT = 2.6; // Bildtafel reicht bis 2,6 Randradien (Auswurf-Blase bis ≈ 2,3)
+// Qualitätsstufe (ctx.detail 0,55 | 0,8 | 1) → fbm-Oktaven, feine Flecken-/Moos-Details
+export const lookDefines = (detail) => (detail > 0.9 ? { OCT: 5, FINE: 1 } : detail > 0.7 ? { OCT: 4, FINE: 1 } : { OCT: 3, FINE: 0 });
 
 // Simplex-Rauschen 3D nach Ashima Arts/Stefan Gustavson (MIT) wie im Mockup – die Grat-Potenzen der Adern sind auf seine
 // Verteilung abgestimmt. Dazu fbm (OCT Oktaven), fbm3, Zellmuster und Hash-Hilfen.
@@ -88,7 +91,30 @@ vec3 surfA(vec3 q, float t, float mu, float ar, float fine) {
   vec3 col = mix(vec3(0.03, 0.004, 0.0), vec3(0.32, 0.06, 0.006), crust * crust * (0.35 + 0.9 * act));
   col += veins * mix(vec3(1.9, 0.42, 0.04), vec3(4.6, 2.6, 0.8), clamp(veins - 0.45, 0.0, 1.0));
   col *= 0.55 + 0.45 * sqrt(mu);
-  return col + vec3(1.6, 0.4, 0.04) * pow(1.0 - mu, 3.0) * 1.1;
+  return col + vec3(1.6, 0.4, 0.04) * pow(1.0 - mu, 3.0) * 0.4;
+}
+// Flecken in der Glutkruste: Umbra fast schwarz mit glimmenden Punkten, Penumbra aus radialen Glutfasern, in denen Knoten
+// nach außen laufen (Evershed-Strömung); Größe wie in SUN_FRAG (Umbra uSpot.w, Penumbra 2,4-fach). rgb = Leuchten, a = Abdunkeln.
+vec4 spotsA(vec3 g, float t, float fine) {
+  vec3 add = vec3(0.0); float dark = 0.0;
+  for (int i = 0; i < SPOTS; i++) {
+    vec4 s = uSpot[i];
+    if (s.w <= 0.0) continue;
+    vec3 d = g - s.xyz; float r = length(d), rp = s.w * 2.4;
+    if (r > rp * 1.25) continue;
+    vec3 e1 = normalize(cross(s.xyz, vec3(0.0, 1.0, 0.0))), e2 = cross(s.xyz, e1);
+    float ang = atan(dot(d, e2), dot(d, e1)), x = r / rp, fi = float(i);
+    vec3 ring = vec3(cos(ang), sin(ang), 0.0);
+    float edge = 0.08 * snoise(ring * 2.5 + vec3(0.0, 0.0, fi * 3.7));
+    float um = 1.0 - smoothstep(0.34, 0.44, x + edge);
+    float pen = (1.0 - smoothstep(0.86, 1.08, x + edge)) * (1.0 - um);
+    float fil = pow(0.5 + 0.5 * sin(ang * 72.0 + 2.6 * snoise(ring * 4.0 + vec3(x * 3.0, fi, t * 0.02))), 2.2);
+    float ev = 0.6 + 0.4 * sin((x * 9.0 - t * 0.5) * 3.1415 + fi + 0.5 * snoise(ring * 9.0));
+    dark = max(dark, um * 0.95 + pen * 0.7);
+    add += vec3(1.7, 0.45, 0.05) * pen * fil * ev * (0.35 + 0.65 * smoothstep(0.35, 0.95, x));
+    if (FINE > 0) add += vec3(0.5, 0.08, 0.005) * um * pow(0.5 + 0.5 * snoise(g * 1400.0 + fi), 8.0) * fine;
+  }
+  return vec4(add, min(dark, 1.0));
 }
 // B Plasmateppich (SDO 304 Å, He II ≈ 50.000 K): Netzwerk an Supergranulen-Rändern, Fackelfelder über den aktiven
 // Regionen, Filamente dunkel (filMask + feine Fäden), koronale Löcher gedämpft (holeMask)
@@ -108,7 +134,7 @@ vec3 surfB(vec3 q, float t, float mu, float ar, float fine) {
   col += vec3(2.8, 0.95, 0.18) * plage * (0.35 + 1.0 * net) * (0.6 + 0.7 * mott);
   col *= (1.0 - 0.85 * fil) * (1.0 - 0.6 * hole);
   col *= 0.75 + 0.25 * mu;
-  return col + vec3(1.3, 0.22, 0.02) * pow(1.0 - mu, 5.0) * 1.5;
+  return col + vec3(1.3, 0.22, 0.02) * pow(1.0 - mu, 5.0) * 0.6;
 }
 // Ausbruch B auf der Scheibe: zwei gebogene Flare-Bänder um uFlS, die auseinanderwandern, und die Moreton-Welle
 vec3 flareDisk(vec3 n, float k, float t) {
@@ -145,166 +171,152 @@ void main() {
     ar += exp(-dot(d, d) / 0.005);
   }
   vec3 col = uSurf < 0.5 ? surfA(g, uTime, mu, ar, fine) : surfB(g, uTime, mu, ar, fine);
+  if (uSurf < 0.5) { vec4 sp = spotsA(g, uTime, fine); col = col * (1.0 - sp.a) + sp.rgb; }
+  // Moos: helle, körnige Fußpunkte der Bögen über den aktiven Regionen – dort wurzeln die Fäden (sunstrands.js)
+  float mossF = 1.0 - smoothstep(0.002, 0.008, length(fwidth(vO)));
+  float moss = 0.5 + 0.5 * (0.6 * snoise(g * 140.0 + vec3(0.0, 0.0, uTime * 0.04)) + 0.4 * snoise(g * 330.0 - vec3(0.0, uTime * 0.05, 0.0)));
+  moss = mix(0.12, moss * moss * 0.9, mossF) * smoothstep(0.5, 1.4, ar) * (0.6 + 0.4 * mu);
+  col += (uSurf < 0.5 ? vec3(2.4, 0.9, 0.15) : vec3(2.2, 0.6, 0.08)) * moss * 0.8;
   if (uFlK >= 0.0) col += flareDisk(g, uFlK, uTime);
   gl_FragColor = vec4(col * uGain, 1.0);
 }
 `;
 
-// ---------- Bildtafel: Glühen, Rand A/B/C, Ausbruch A/B/C ----------
-// p in Randradien im Bild (Achsen u, v der Tafel), uPole = Pol im Bild; Bögen der Arkaden sitzen relativ zum Pol (uArc:
-// erste Arkade über der Hauptregion der Heimpose). Ausbruch: uEK = Fortschritt 0 … 1 (< 0 = keiner), uEDir = Richtung des
-// Randpunkts (A, C), uESp = Fußpunkt auf der Scheibe (B), uEB = Sichtbarkeit von B. Dünne Bögen werden aus der Ferne
-// mindestens einen Pixel breit (Helligkeit bleibt erhalten), sonst flimmern sie.
-export const LOOK_RIM_FRAG = /* glsl */ `
-${SNOISE}
-uniform float uTime, uExt, uGain, uSurf, uRim, uE, uEK, uEB, uArc;
-uniform vec2 uPole, uEDir, uESp;
+
+// ---------- Atmosphäre: Bildtafel um die Sonnenmitte, je Pixel ein Strahl durch die Schichten über der Kugel ----------
+// Tafel wie BILLBOARD_AIM_VERT (vQ-Achsen gleich, damit uEDir/uESp aus sun.js passen), dazu die Strahlrichtung vRd in Welt-
+// koordinaten (Sonnenmitte = Ursprung, Radius 1).
+export const LOOK_ATMO_VERT = /* glsl */ `
+uniform float uSize;
 varying vec2 vQ;
-// A Flammenkranz: Zungen, die nach außen lodern (Muster strömt nach außen, Formen im Bildraum – keine Speichen)
-vec3 rimA(vec2 p, float r, float t) {
-  vec2 d = p / r; float h = max(r - 1.0, 0.0);
-  float hmax = 0.08 + 0.42 * smoothstep(-0.25, 0.65, snoise(vec3(d * 1.7, t * 0.04)));
-  vec2 fp = p - d * (t * 0.11);
-  float n1 = fbm3(vec3(fp * 3.0, t * 0.05));
-  float n2 = fbm3(vec3(fp * 7.0 + n1 * 0.9, t * 0.08));
-  float tongue = smoothstep(0.0, 0.5, 0.45 + 0.6 * n1 + 0.35 * n2 - h / hmax);
-  float wisp = pow(ridge(snoise(vec3(fp * 8.0 + vec2(n1, n2) * 1.3, t * 0.1))), 9.0);
-  float curl = pow(ridge(snoise(vec3(fp * 15.0 + vec2(n2, -n1) * 1.8, t * 0.14))), 14.0);
-  float f = tongue * (0.4 + 0.8 * n2 + 1.1 * wisp + 0.6 * curl) * exp(-h * 2.2);
-  float inside = r < 1.0 ? smoothstep(0.88, 1.0, r) * 0.5 : 1.0;
-  vec3 col = mix(vec3(1.4, 0.38, 0.04), vec3(3.4, 1.8, 0.45), clamp(f - 0.2, 0.0, 1.0)) * f * 1.2;
-  col += vec3(1.2, 0.36, 0.04) * exp(-h * 10.0) * 0.8;
-  return col * inside;
+varying vec3 vRd;
+void main() {
+  vQ = uv * 2.0 - 1.0;
+  vec4 c = modelViewMatrix * vec4(0.0, 0.0, 0.0, 1.0);
+  vec3 w = normalize(c.xyz);
+  vec3 u = normalize(cross(w, abs(w.y) < 0.999 ? vec3(0.0, 1.0, 0.0) : vec3(0.0, 0.0, 1.0)));
+  vec3 v = cross(u, w);
+  c.xyz += (u * position.x + v * position.y) * uSize;
+  vRd = (vec4(c.xyz, 0.0) * viewMatrix).xyz;
+  gl_Position = projectionMatrix * c;
 }
-// B Bogen-Arkaden: vier Aktivgebiete am Rand, je ARC_N Magnetschleifen nebeneinander, Licht läuft entlang der Bögen
-vec3 rimB(vec2 p, float r, float t, float px) {
-  float ang = atan(p.y, p.x) - atan(uPole.y, uPole.x) - uArc; float h = r - 1.0; vec3 col = vec3(0.0);
-  float cw = max(0.0034, 0.7 * px), cg = 0.0034 / cw, mid = 0.5 * float(ARC_N - 1);
-  for (int i = 0; i < 4 * ARC_N; i++) {
-    float fi = float(i); float ci = floor(fi / float(ARC_N)); float ki = mod(fi, float(ARC_N));
-    float sd = hash1(ci * 7.13 + 1.0); float sk = hash1(fi * 3.31 + 0.7);
-    float a = ci * 1.57 + (sd - 0.5) * 0.6 * step(0.5, ci) + (ki - mid) * 0.075 + (sk - 0.5) * 0.05;
-    float ag = (1.0 - abs(ki - mid) * 0.16) * (0.45 + 0.55 * hash1(fi * 9.1));
-    float w = 0.028 + 0.06 * sk;
-    float H = (0.06 + 0.26 * pow(hash1(fi * 5.3 + 3.0), 1.4) * (0.6 + 0.4 * ag)) * (1.0 + 0.07 * sin(t * 0.35 + sk * 6.0));
-    float tilt = (sd - 0.5) * 0.8 + (sk - 0.5) * 0.6;
-    float x = wrapA(ang - a) * r; float y = h + 0.004; x -= tilt * y;
-    if (y < 0.0 || abs(x) > w * 1.8) continue;
-    for (int k = 0; k < 2; k++) {
-      float fk = float(k); float ww = w * (0.94 + 0.08 * fk); float hh = H * (0.95 + 0.07 * fk);
-      float e = length(vec2(x / ww, y / hh));
-      float dd = (e - 1.0) * e / max(length(vec2(x / (ww * ww), y / (hh * hh))), 1e-3);
-      float s = atan(y / hh, x / ww);
-      float run = 0.5 + 0.5 * sin(s * 4.0 - t * 1.3 + sd * 9.0 + fk * 1.3);
-      float foot = 0.55 + 0.45 * (1.0 - sin(s));
-      float core = exp(-pow(dd / cw, 2.0)) * cg; float halo = exp(-abs(dd) / 0.02) * 0.16;
-      col += (core * mix(vec3(1.7, 0.45, 0.05), vec3(3.6, 1.8, 0.45), run * foot) + halo * vec3(1.6, 0.4, 0.05)) * (0.35 + 0.65 * run) * foot * (0.2 + 0.8 * ag);
-    }
-  }
-  return col + vec3(1.3, 0.36, 0.04) * exp(-max(h, 0.0) * 12.0) * (r > 1.0 ? 1.0 : smoothstep(0.93, 1.0, r));
+`;
+
+// Schichten als Funktion von Richtung q (mitdrehend, uSunInv) und Höhe h: Strahl am Rand vorbei → Säule bis zum tiefsten
+// Punkt (h = Abstand − 1); q = sichtbarer Randpunkt in der Ebene Kamera–Mitte–Strahl, also auf jeder radialen Bildlinie
+// derselbe (bei naher Kamera wandert der tiefste Punkt mit der Bildhöhe, Muster würden zu Flecken) → Spikulen, Flammen
+// und Strahlen stehen radial und wurzeln am Rand. Strahl auf die Kugel →
+// vordere Hälfte der Säule (h = 0 am Auftreffpunkt), schwächer je steiler der Blick (μ); am Rand gleich, die Kante zwischen
+// beiden wird über einen Pixel gemischt. Höhen (überhöht): Chromosphäre ≈ 2.200 km Skalenhöhe, Spikulen uSpH (≈ 8–14 Mm),
+// Flammen bis ≈ 0,25 R☉, Hecken bis ≈ 0,05 R☉, Korona-Schein mit drei Skalenhöhen und Streamern über den aktiven Regionen
+// (uAR: Weltrichtung + an/aus; uCor 0 = Korona aus). uRim: 0 aus · 1 Flammenkranz · 2 Bogen-Arkaden (Bögen = sunstrands.js)
+// · 3 feiner Saum.
+export const LOOK_ATMO_FRAG = /* glsl */ `
+${SNOISE}
+uniform float uTime, uExt, uGain, uSurf, uRim, uE, uEK, uEB, uSpH, uCor;
+uniform vec2 uEDir, uESp;
+uniform mat3 uSunInv;
+uniform vec4 uAR[6];
+varying vec2 vQ;
+varying vec3 vRd;
+// Chromosphäre + Spikulen: Jets mit eigener Höhe (steigen und fallen in 4–9 s), feine Streifen nur, wenn sie ein paar
+// Pixel breit sind (fq = Winkel je Pixel)
+float chromo(vec3 q, float h, float t, float fq) {
+  float ch = exp(-h / 0.0032);
+  if (uSpH <= 0.0) return 1.4 * ch;
+  float n1 = 0.5 + 0.5 * snoise(q * 64.0 + vec3(0.0, 0.0, t * 0.11));
+  float hs = uSpH * (0.3 + 0.95 * n1 * n1);
+  float st = 0.5 + 0.5 * snoise(q * 340.0 + vec3(0.0, t * 0.02, 0.0));
+  st = mix(0.55, 1.7 * st * st, 1.0 - smoothstep(0.003, 0.009, fq));
+  return 1.4 * ch + 0.8 * st * smoothstep(hs, 0.12 * hs, h);
 }
-// C feiner SDO-Saum (Vorlage CME 4K): Spikulen-Wald als Haarsaum, niedrige Protuberanz-Hecken, schwache Korona
-vec3 rimC(vec2 p, float r, float t) {
-  float h = r - 1.0;
-  if (r < 1.0) return vec3(1.7, 0.25, 0.03) * smoothstep(0.985, 1.0, r);
-  vec2 d = p / r; float ang = atan(p.y, p.x) - atan(uPole.y, uPole.x);
-  float hs = 0.02 + 0.05 * (0.5 + 0.5 * snoise(vec3(d * 9.0, t * 0.05)));
-  float jets = pow(max(0.5 + 0.5 * snoise(vec3(d * 150.0, h * 12.0 - t * 0.5)), 0.0), 4.0);
-  vec3 col = vec3(2.6, 0.5, 0.06) * jets * smoothstep(hs, 0.0, h) * 2.2;
-  col += vec3(2.2, 0.32, 0.03) * exp(-h * 26.0);
-  float hedge = 0.0;
-  for (int i = 0; i < 6; i++) {
-    float fi = float(i); float a = fi * 1.05 + 0.3 + 0.3 * sin(fi * 4.1);
-    hedge += exp(-pow(wrapA(ang - a) / (0.06 + 0.08 * hash1(fi)), 2.0)) * (0.08 + 0.12 * hash1(fi + 5.0));
-  }
-  float cloud = max(fbm3(vec3(d * 20.0, h * 14.0 - t * 0.12)) + 0.3, 0.0);
-  float wisps = pow(ridge(snoise(vec3(d * 40.0, h * 20.0 - t * 0.2))), 6.0);
-  col += vec3(2.6, 0.5, 0.07) * (cloud + 0.8 * wisps) * smoothstep(hedge, 0.0, h) * step(0.001, hedge) * 2.0;
-  return col + vec3(1.3, 0.32, 0.05) * exp(-h * 5.0) * 0.3 * (0.7 + 0.3 * snoise(vec3(d * 5.0, t * 0.04)));
+// Flammenkranz: Zungen wachsen vom Rand aus (Höhe je Richtung in zwei Größen, lodert langsam), unten voll, nach oben weich;
+// innen radiale Schlieren (Muster in Randrichtung feiner als in der Höhe), die nach außen strömen
+float flame(vec3 q, float h, float t) {
+  float hf = 0.035 + 0.15 * smoothstep(-0.4, 0.8, snoise(q * 3.0 + vec3(0.0, 0.0, t * 0.035)));
+  float ht = hf * (0.2 + 0.8 * smoothstep(-0.6, 0.7, 0.65 * snoise(q * 16.0 + vec3(0.0, 0.0, t * 0.15)) + 0.35 * snoise(q * 47.0 + vec3(0.0, 0.0, t * 0.3))));
+  if (h > ht * 1.7) return 0.0;
+  vec3 X = q * 38.0 + vec3(0.0, 0.0, (t * 0.03 - h) * 9.0);
+  float n1 = fbm3(X), n2 = snoise(X * 2.3 + n1);
+  float tongue = 1.0 - smoothstep(0.0, ht * 1.6, h + 0.3 * ht * n1);
+  return tongue * tongue * (0.45 + 0.4 * n1 + 0.8 * pow(ridge(n2), 4.0)) * (0.5 + 0.5 * exp(-h * 12.0));
 }
-// A Filament-Eruption: verdrillter Plasmaschlauch hebt ab, Auswurf-Blase dahinter
-vec3 erA(vec2 p, float r, float t, float k) {
-  float a0 = atan(uEDir.y, uEDir.x);
-  float x = wrapA(atan(p.y, p.x) - a0) * max(r, 1.0); float y = r - 1.0;
-  float L = mix(0.04, 1.05, smoothstep(0.04, 0.8, k)); float fade = 1.0 - smoothstep(0.8, 1.0, k);
-  vec3 col = vec3(0.0);
-  if (y > -0.03 && y < L + 0.2) {
-    float yy = max(y, 0.0);
-    float xc = -0.1 * pow(yy, 1.2) + 0.035 * sin(yy * 7.0 - t * 0.7);
-    float dx = (x - xc) / (0.022 + 0.07 * yy);
-    float braid = 0.5 + 0.5 * sin(dx * 5.0 + yy * 22.0 - t * 2.2);
-    float tex = max(0.55 + 0.7 * fbm3(vec3(dx * 0.8, yy * 8.0 - t * 0.4, t * 0.1)), 0.0);
-    float I = exp(-dx * dx * 1.8) * (0.3 + pow(braid, 3.0)) * tex * (1.0 - smoothstep(L - 0.3, L, yy)) * fade * (1.0 - 0.35 * smoothstep(0.0, 1.0, yy));
-    col += mix(vec3(1.8, 0.32, 0.03), vec3(4.8, 2.9, 1.0), clamp(I * 1.3 - 0.35, 0.0, 1.0)) * I * 1.5;
-  }
-  if (k > 0.3 && y > 0.0) {
-    float e = length(vec2(x / (0.7 * L), y / (1.1 * L)));
-    float shell = exp(-pow((e - 1.0) / 0.14, 2.0)) * (0.3 + 0.9 * max(fbm3(vec3(x, y, t * 0.05) * 5.0), 0.0));
-    col += vec3(1.5, 0.6, 0.18) * shell * 0.2 * smoothstep(0.3, 0.5, k) * fade;
-  }
-  float sw = smoothstep(0.04, 0.16, k) * (1.0 - smoothstep(0.3, 0.7, k));
-  return col + vec3(4.0, 2.4, 0.9) * exp(-length(vec2(x, y + 0.02)) / 0.05) * sw * 1.2;
+vec3 flameCol(float f) {
+  vec3 lo = uSurf < 0.5 ? vec3(1.4, 0.36, 0.04) : vec3(1.3, 0.2, 0.02), hi = uSurf < 0.5 ? vec3(3.4, 1.8, 0.45) : vec3(3.0, 1.1, 0.25);
+  return mix(lo, hi, clamp(f - 0.2, 0.0, 1.0)) * f * 1.2;
 }
-// B Flare (Teil über der Scheibe): Bogen-Arkade über dem Fußpunkt, weiches Aufleuchten (≈ 0,7 s an, ≈ 1 s ab)
-vec3 erB(vec2 p, float k, float px) {
-  vec2 Sp = uESp; vec2 rd = length(Sp) > 1e-3 ? normalize(Sp) : vec2(0.0, 1.0); vec2 tg = vec2(-rd.y, rd.x);
-  vec2 lq = vec2(dot(p - Sp, tg), dot(p - Sp, rd));
-  float flash = exp(-pow((k - 0.14) / 0.06, 2.0));
-  float rib = smoothstep(0.08, 0.16, k) * (1.0 - smoothstep(0.45, 0.95, k));
-  float grow = 0.02 + 0.09 * smoothstep(0.12, 0.8, k);
-  float cw = max(0.003, 0.7 * px), cg = 0.003 / cw;
-  vec3 col = vec3(0.0);
-  if (lq.y >= 0.0) for (int j = 0; j < 7; j++) {
-    float fj = float(j); float ww = 0.02 + 0.03 * smoothstep(0.08, 0.6, k);
-    float hh = grow * (0.8 + 0.3 * hash1(fj));
-    float d = abs(length(vec2((lq.x - (fj - 3.0) * 0.022) / ww, lq.y / hh)) - 1.0) * min(ww, hh);
-    col += vec3(3.8, 2.4, 1.0) * exp(-pow(d / cw, 2.0)) * cg * rib * 0.9;
-  }
-  float ds = length(p - Sp);
-  return col + vec3(3.0, 1.9, 0.9) * exp(-ds / 0.07) * flash * 1.1 + vec3(1.2, 0.7, 0.3) * exp(-ds / 0.3) * flash * 0.3;
+// feiner Saum: niedrige Protuberanz-Hecken aus Wolken und senkrechten Fäden, nur stellenweise
+float hedge(vec3 q, float h, float t) {
+  float hh = 0.05 * smoothstep(0.1, 0.45, fbm3(q * 4.5 + 7.0));
+  if (hh < 0.003 || h > hh) return 0.0;
+  float cloud = max(fbm3(q * 24.0 + vec3(0.0, h * 30.0 - t * 0.08, 0.0)) + 0.35, 0.0);
+  float thr = pow(ridge(snoise(q * 130.0 + vec3(0.0, h * 6.0, t * 0.05))), 5.0);
+  return (cloud + 0.9 * thr) * smoothstep(hh, hh * 0.35, h);
 }
-// C Protuberanz reißt ab: Bogen wächst, verdrillt sich, öffnet am Scheitel, Material regnet zurück
-vec3 erC(vec2 p, float r, float t, float k) {
-  float a1 = atan(uEDir.y, uEDir.x);
-  float x = wrapA(atan(p.y, p.x) - a1) * max(r, 1.0); float y = r - 1.0;
-  if (y < -0.01) return vec3(0.0);
-  float w = 0.26; float H = mix(0.14, 0.72, smoothstep(0.0, 0.62, k));
-  float gap = max(k - 0.6, 0.0) * 2.6, lift = max(k - 0.62, 0.0) * 0.9;
-  vec3 col = vec3(0.0);
-  for (int j = 0; j < 5; j++) {
-    float fj = float(j);
-    float ww = w * (1.0 - 0.05 * fj); float hh = H * (1.0 - 0.06 * fj);
-    float e = length(vec2(x / ww, y / hh)); float s = atan(y / hh, x / ww);
-    float d = (e - 1.0) * e / max(length(vec2(x / (ww * ww), y / (hh * hh))), 1e-3) + 0.018 * sin(s * 9.0 + t * 1.1 + fj * 1.7);
-    float open = gap > 0.0 ? smoothstep(gap * 0.5, gap * 0.5 + 0.12, abs(s - 1.5707963)) : 1.0;
-    float tex = max(0.5 + 0.8 * fbm3(vec3(s * 3.0, fj, t * 0.15)), 0.0);
-    col += mix(vec3(2.6, 0.45, 0.08), vec3(5.0, 1.9, 0.5), tex * 0.5) * exp(-pow(d / 0.009, 2.0)) * tex * open * 0.6;
-    col += vec3(1.3, 0.2, 0.04) * exp(-abs(d) / 0.03) * 0.08 * open;
-  }
-  if (lift > 0.0) {
-    float b = length(vec2(x, y) - vec2(0.0, H + lift));
-    col += vec3(2.6, 0.6, 0.12) * exp(-pow(b / (0.06 + lift * 0.15), 2.0)) * 0.9 * (1.0 - smoothstep(0.85, 1.0, k)) * (0.6 + 0.6 * fbm3(vec3(x, y, t) * 8.0));
-    for (int m = 0; m < 14; m++) {
-      float fm = float(m); float side = mod(fm, 2.0) < 1.0 ? -1.0 : 1.0;
-      float s = 1.5707963 - side * (0.25 + fract(hash1(fm * 3.1) + t * 0.22) * 1.25);
-      vec2 dp = vec2(cos(s) * w * (1.0 - 0.05 * mod(fm, 5.0)), sin(s) * H * (1.0 - 0.06 * mod(fm, 5.0))) - vec2(x, y);
-      col += vec3(3.6, 1.0, 0.25) * exp(-dot(dp, dp) / 0.00006) * smoothstep(0.62, 0.7, k);
-    }
-  }
-  return col;
+// Korona-Schein: drei Skalenhöhen, Streamer über aktiven Regionen, feine radiale Strahlen
+float corona(vec3 qW, vec3 q, float h, float t) {
+  float s = 0.0;
+  for (int i = 0; i < 6; i++) s += uAR[i].w * exp(-(1.0 - dot(qW, uAR[i].xyz)) / 0.035);
+  s = min(s, 1.5);
+  float rays = 0.88 + 0.12 * snoise(q * 9.0 + vec3(0.0, 0.0, t * 0.006));
+  return (exp(-h / 0.03) * 0.09 + exp(-h / 0.15) * 0.025 + exp(-h / 0.7) * 0.006) * (0.6 + s) * rays + exp(-h / 0.4) * 0.02 * s * rays;
+}
+// Ausbruch A: Auswurf-Blase um das aufsteigende Filament (helle Front, davor schwach die Stoßfront; das Seil selbst sind
+// Fäden in 3D). p in Randradien auf der Tafel.
+vec3 cmeA(vec2 p, float t, float k) {
+  float r = length(p), y = r - 1.0;
+  if (y < 0.0) return vec3(0.0);
+  float x = wrapA(atan(p.y, p.x) - atan(uEDir.y, uEDir.x)) * r;
+  float L = mix(0.15, 1.7, smoothstep(0.2, 0.95, k));
+  float fade = smoothstep(0.22, 0.4, k) * (1.0 - smoothstep(0.75, 1.0, k));
+  float e = length(vec2(x / (0.8 * L), (y - 0.45 * L) / (0.85 * L)));
+  float tex = 0.35 + 0.9 * max(fbm3(vec3(x * 4.0, y * 4.0 - t * 0.1, t * 0.05)), 0.0);
+  float front = exp(-pow((e - 1.0) / 0.1, 2.0)) * tex;
+  float shock = exp(-pow((e - 1.12) / 0.025, 2.0)) * smoothstep(0.3, 0.5, k);
+  return (vec3(1.6, 0.66, 0.22) * front * 0.28 + vec3(1.2, 0.7, 0.35) * shock * 0.07) * fade * smoothstep(0.0, 0.03, y);
+}
+// Ausbruch B: weiches Aufleuchten über dem Fußpunkt (≈ 0,7 s an, ≈ 3 s ab – kein Blitzen)
+vec3 flashB(vec2 p, float k) {
+  float f = smoothstep(0.08, 0.14, k) * (1.0 - smoothstep(0.14, 0.42, k));
+  float ds = length(p - uESp);
+  return (vec3(3.0, 2.2, 1.3) * exp(-ds / 0.045) + vec3(1.5, 0.75, 0.3) * exp(-ds / 0.25) * 0.25) * f;
 }
 void main() {
   float rq = length(vQ);
   if (rq > 1.0) discard;
-  vec2 p = vQ * uExt; float r = length(p), t = uTime, px = fwidth(r);
-  vec3 gc = uSurf < 0.5 ? vec3(1.6, 0.4, 0.04) : vec3(1.5, 0.26, 0.03);
+  float t = uTime;
+  vec3 ro = cameraPosition, rd = normalize(vRd);
+  float tb = -dot(ro, rd);
+  vec3 pc = ro + rd * max(tb, 0.0);
+  float b = length(pc), pb = max(fwidth(b), 1e-5);
+  float d = length(ro);
+  vec3 w = -ro / d, e = rd - w * dot(rd, w);
+  e /= max(length(e), 1e-6);
+  vec3 qW = normalize(e * sqrt(max(1.0 - 1.0 / (d * d), 0.0)) - w / d), q = uSunInv * qW;
+  float fq = length(fwidth(q));
+  float wd = tb > 0.0 ? smoothstep(-pb, pb, 1.0 - b) : 0.0;
+  vec3 cC = uSurf < 0.5 ? vec3(2.3, 0.5, 0.05) : vec3(2.1, 0.32, 0.03), cK = uSurf < 0.5 ? vec3(1.5, 0.42, 0.07) : vec3(1.4, 0.28, 0.05);
   vec3 col = vec3(0.0);
-  if (r > 1.0) col += gc * (exp(-(r - 1.0) * 7.0) * 0.14 * (uSurf < 0.5 ? 1.0 : 0.8) + exp(-(r - 1.0) * 1.8) * 0.02);
-  if (r > 0.86 && uRim > 0.5) col += uRim < 1.5 ? rimA(p, r, t) : (uRim < 2.5 ? rimB(p, r, t, px) : rimC(p, r, t));
+  if (wd < 1.0) {
+    float h = max(b - 1.0, 0.0);
+    vec3 c = cK * corona(qW, q, h, t) * uCor;
+    if (h < 0.06) c += cC * chromo(q, h, t, fq);
+    if (uRim > 0.5 && uRim < 1.5 && h < 0.45) c += flameCol(flame(q, h, t));
+    if (uRim > 2.5 && h < 0.06) c += cC * 1.1 * hedge(q, h, t);
+    col += (1.0 - wd) * c;
+  }
+  if (wd > 0.0) {
+    float mu = sqrt(max(1.0 - b * b, 0.0));
+    vec3 P = ro + rd * (tb - mu), qD = uSunInv * P;
+    vec3 c = mu < 0.9 ? cK * corona(P, qD, 0.0, t) * exp(-mu / 0.35) * uCor : vec3(0.0);
+    if (mu < 0.3) c += cC * chromo(qD, 0.0, t, fq) * exp(-mu / 0.05);
+    if (uRim > 0.5 && uRim < 1.5 && mu < 0.4) c += flameCol(flame(qD, 0.0, t)) * exp(-mu / 0.07) * 0.7;
+    col += wd * 0.5 * c;
+  }
   if (uEK >= 0.0) {
-    if (uE < 1.5) { if (r > 0.96) col += erA(p, r, t, uEK); }
-    else if (uE < 2.5) col += erB(p, uEK, px) * uEB;
-    else if (r > 0.98) col += erC(p, r, t, uEK);
+    vec2 p = vQ * uExt;
+    if (uE < 1.5) col += cmeA(p, t, uEK);
+    else if (uE < 2.5) col += flashB(p, uEK) * uEB;
   }
   gl_FragColor = vec4(col * uGain * (1.0 - smoothstep(0.85, 1.0, rq)), 1.0);
 }
