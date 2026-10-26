@@ -298,14 +298,14 @@ export function create(ctx) {
 
   const sc = ARMS.find((a) => a.id === 'scutum'), pe = ARMS.find((a) => a.id === 'perseus'), sg = ARMS.find((a) => a.id === 'sagittarius'), no = ARMS.find((a) => a.id === 'norma'), lo = ARMS.find((a) => a.id === 'local');
   const at = (a, deg) => new THREE.Vector3(...diskPoint(armR(a, deg * RAD), deg * RAD));
-  const omega = new THREE.Vector3(...galToScene(309.10, 14.97, 5.2, R0, Z_SUN));
+  const omegaCen = new THREE.Vector3(...galToScene(309.10, 14.97, 5.2, R0, Z_SUN));
   const hotspots = [
     { id: 'sun', kind: 'dive', to: 'solar', pos: marks[0].p },
     { id: 'orion', kind: 'dive', to: 'orion', pos: marks[1].p },
     { id: 'crab', kind: 'dive', to: 'crab', pos: marks[2].p },
     { id: 'sgra', kind: 'dive', to: 'sgra', pos: marks[3].p },
     { id: 'bar', kind: 'info', pos: new THREE.Vector3(...diskPoint(BAR.half * 0.9, BAR.angle * RAD)) },
-    { id: 'omega', kind: 'info', pos: omega, focus: () => 1.2 },
+    { id: 'omega', kind: 'info', pos: omegaCen, focus: () => 1.2 },
     { id: 'halo', kind: 'info', pos: new THREE.Vector3(9, 13, -11) },
     { id: 'sunorbit', kind: 'info', pos: new THREE.Vector3(...diskPoint(R0, -0.55, Z_SUN)), visible: () => sunOrbit.visible },
     { id: 'fermi', kind: 'info', pos: new THREE.Vector3(0.5, 7.5, 1.5), visible: () => fermi.visible },
