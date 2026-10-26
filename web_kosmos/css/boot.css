@@ -1,0 +1,40 @@
+/* Ladebild beim Aufruf der Seite (boot.js): Sternhimmel, darunter der Kapitel-Titel „Kosmos · Reise durch das All“ an
+   derselben Stelle und in derselben Schrift wie der Titel jeder Station (.caption in kosmos.css) – beim Ausblenden steht
+   der Titel der Startstation schon darunter, der Text bleibt ruhig stehen. Fortschritt als Lichtlinie unter dem Titel.
+   Bewegung nur über opacity/transform: läuft weiter, während der Hauptfaden Shader und Texturen vorbereitet. */
+.boot { position: fixed; inset: 0; z-index: 6; background: #000; transition: opacity 1.2s var(--ease-out), visibility 0s linear 1.2s; }
+.boot.is-done { opacity: 0; visibility: hidden; pointer-events: none; }
+body.is-fatal .boot { display: none; }
+.boot-sky { position: absolute; inset: 0; width: 100%; height: 100%; display: block; animation: boot-in 2.4s var(--ease-out) both; }
+
+.boot-cap {
+  position: fixed; left: var(--rail-w); right: var(--panel-w); bottom: 19%; text-align: center;
+  display: flex; flex-direction: column; align-items: center; gap: 14px; padding: 0 24px; container-type: inline-size;
+  text-shadow: 0 2px 22px rgba(0, 0, 0, 0.9);
+}
+body.panel-off .boot-cap { right: 0; }
+.boot-cap > * { animation: boot-up 1.8s var(--ease-out) var(--d, 0s) both; }
+.boot .cap-n::after { animation: boot-line 2.4s var(--ease-out) 0.5s both; }
+.boot .cap-title { letter-spacing: 0.22em; padding-left: 0.22em; }
+
+/* Fortschritt: unter dem Titelblock, damit der Titel genau dort steht, wo ihn die Station danach zeigt */
+.boot-load { --d: 1.1s; position: absolute; top: calc(100% + 30px); left: 50%; width: min(340px, calc(100% - 48px)); translate: -50% 0; display: grid; gap: 10px; }
+.boot-bar { position: relative; height: 1px; background: var(--line); }
+.boot-bar i { position: absolute; inset: 0; transform-origin: left center; transform: scaleX(var(--p, 0));
+  background: linear-gradient(90deg, rgba(var(--accent-rgb), 0.15), var(--accent)); box-shadow: 0 0 10px rgba(var(--accent-rgb), 0.55); }
+.boot-bar b { position: absolute; top: -2px; left: calc(var(--p, 0) * 100%); width: 5px; height: 5px; border-radius: 50%; translate: -50% 0;
+  background: #fff; box-shadow: 0 0 10px 2px rgba(var(--accent-rgb), 0.85);
+  animation: boot-glow 2.4s ease-in-out infinite; }
+.boot-step { display: flex; justify-content: space-between; gap: 16px; font: 400 13px/1.4 var(--mono); letter-spacing: 0.06em; color: var(--ink); }
+.boot-what { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.boot-pct { flex: none; font-variant-numeric: tabular-nums; color: var(--accent); }
+
+@keyframes boot-in { from { opacity: 0; } }
+@keyframes boot-up { from { opacity: 0; transform: translateY(12px); } }
+@keyframes boot-line { from { transform: scaleX(0); } }
+@keyframes boot-glow { 50% { opacity: 0.55; } }
+
+@media (max-width: 760px) {
+  .boot-cap { left: 0; right: 0; top: 16%; bottom: auto; padding: 0 16px; }
+  .boot .cap-title { letter-spacing: 0.1em; padding-left: 0.1em; }
+}

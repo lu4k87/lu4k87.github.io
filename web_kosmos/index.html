@@ -10,11 +10,12 @@
       <link rel="stylesheet" href="../web_ux_robot/fonts/fonts.css">
   <link rel="stylesheet" href="css/kosmos.css">
   <link rel="stylesheet" href="css/layers.css">
+  <link rel="stylesheet" href="css/boot.css">
   <script type="importmap">
     { "imports": { "three": "./vendor/three/three.module.min.js", "three/addons/": "./vendor/three/addons/" } }
   </script>
 </head>
-<body class="is-loading">
+<body>
   <canvas id="stage" aria-label="3D-Ansicht der Reise durch das All"></canvas>
 
   <div id="hotspots" class="hotspots">
@@ -96,6 +97,18 @@
     <p class="cap-sub"></p>
   </div>
 
+  <div class="boot" id="boot">
+    <canvas class="boot-sky" aria-hidden="true"></canvas>
+    <div class="boot-cap">
+      <p class="cap-n">Kosmos</p>
+      <h1 class="cap-title">Reise durch das All</h1>
+      <p class="cap-sub">Vom Urknall bis zur Erde</p>
+      <div class="boot-load">
+        <div class="boot-bar" role="progressbar" aria-label="Vorladen der Reise" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><i></i><b></b></div>
+        <p class="boot-step" aria-live="polite"><span class="boot-what">Vorladen</span><span class="boot-pct">0 %</span></p>
+      </div>
+    </div>
+  </div>
   <div class="loader" role="status" aria-live="polite">
     <div class="loader-ring" aria-hidden="true"></div>
     <p>Station wird berechnet …</p>

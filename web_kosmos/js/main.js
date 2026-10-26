@@ -12,6 +12,7 @@ import { settings, onSettings, globalGrade } from './settings.js';
 import { createDeepSky } from './deepsky.js';
 import { attachSound, soundTo } from './sound.js';
 import { TURN, planTurn, turnPose, turnPace } from './turn.js';
+import { createBoot } from './boot.js';
 
 const LOADERS = {
   earth: () => import('./levels/earth.js'),
@@ -249,6 +250,36 @@ async function warmUp(lv) {
   renderer.setRenderTarget(lv.rt);
   renderer.render(lv.scene, lv.camera);
   renderer.setRenderTarget(null);
+}
+
+// ---------- Ladebild beim Aufruf: erst der Programmcode aller Stationen (spätere Flüge warten nicht mehr aufs Netz), dann
+// die Startstation samt Nachbarn bauen – genau das, was activate() behält, sonst gibt dropFar es gleich wieder frei.
+// Anteile: Code 15 %, Stationen 85 %; innerhalb einer Station zählen ihre Texturen (DefaultLoadingManager) bis 40 %,
+// dazwischen kriecht der Anteil langsam gegen 95 % (Shader binden und Hochladen in warmUp melden keinen Stand), damit
+// die Linie nie steht. Fehler einzelner Nachbarn halten den Start nicht auf.
+const boot = createBoot();
+async function bootLoad(first) {
+  const ids = [...new Set([first, ...neighbours(first), nextOnRoute(first)])].filter((id) => LOADERS[id]);
+  const mods = Object.values(LOADERS);
+  let code = 0, built = 0, part = 0;
+  const show = (label) => boot.set(0.15 * code / mods.length + 0.85 * (built + part) / ids.length, label);
+  show('Vorladen · Programmcode');
+  await Promise.all(mods.map((load) => load().catch(() => null).then(() => { code++; show(); })));
+  const mgr = THREE.DefaultLoadingManager;
+  for (const id of ids) {
+    const label = `Vorladen · ${STATIONS[id].title}`;
+    part = 0;
+    show(label);
+    const t0 = performance.now();
+    const creep = setInterval(() => { part = Math.max(part, 0.95 * (1 - Math.exp((t0 - performance.now()) / 2000))); show(); }, 120);
+    mgr.onProgress = (url, n, total) => { part = Math.max(part, 0.4 * n / Math.max(1, total)); show(); };
+    await getLevel(id, true).catch(() => null);
+    clearInterval(creep);
+    built++;
+    part = 0;
+    show();
+  }
+  mgr.onProgress = undefined;
 }
 
 function anchorOf(outer, innerId) {
@@ -864,6 +895,7 @@ async function start() {
     resize();
     const id = (location.hash.match(/station=(\w+)/) || [])[1];
     const first = STATIONS[id] ? id : ROUTE[0];
+    await bootLoad(first);
     const lv = await getLevel(first);
     activate(lv);
     resize();
@@ -871,6 +903,7 @@ async function start() {
     hud.caption(lv.meta, first === ROUTE[0] && !id);
     if (first === ROUTE[0] && !id) startIntro(lv);
     requestAnimationFrame(frame);
+    boot.done();
   } catch (err) {
     console.error(err);
     document.body.classList.add('is-fatal', 'fatal-start');
