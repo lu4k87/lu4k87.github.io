@@ -48,6 +48,8 @@ export const EARTH_FRAG = /* glsl */ `
 uniform sampler2D tDay, tNight, tRelief, tClouds;
 uniform vec3 uSun, uAxis;
 uniform float uCloudU, uLights, uRelief;
+uniform vec4 uLook;   // Zahnrad Global „Licht und Schatten“ (planetfx.js): hier nur Spiegelung uLook2.x
+uniform vec2 uLook2;
 varying vec3 vN, vP, vO;
 varying vec2 vUv;
 ${NOISE}
@@ -87,7 +89,8 @@ void main() {
   float m = mix(0.045, 0.12, smoothstep(-0.35, 0.45, wind));
   float glint = exp(-t2 / (m * m)) * (0.0048 / (m * m)) * ocean * (1.0 - cl) * lit;
   float fres = pow(1.0 - max(dot(N, V), 0.0), 5.0) * ocean * lit;
-  col += vec3(1.0, 0.92, 0.8) * glint * 0.6 + vec3(0.03, 0.045, 0.065) * pow(nh, 18.0) * ocean * lit + vec3(0.25, 0.4, 0.6) * fres * 0.12;
+  float spec = uLook.x > 0.0 ? uLook2.x : 1.0;
+  col += vec3(1.0, 0.92, 0.8) * glint * 0.6 * spec + vec3(0.03, 0.045, 0.065) * pow(nh, 18.0) * ocean * lit * spec + vec3(0.25, 0.4, 0.6) * fres * 0.12;
   // Stadtlichter auf der Nachtseite mit warmem Hof (gröbere Mip-Stufe = Lichtglocke über Ballungsräumen); Wolken verdecken
   // sie über die eigene Wolkenschicht
   vec3 night = texture2D(tNight, vUv).rgb, halo = texture2D(tNight, vUv, 4.0).rgb;
@@ -557,7 +560,7 @@ export function create(ctx) {
     { id: 'auroraSub', type: 'toggle', label: 'Teilsturm (Zyklus 22 s)', value: true, sub: true, set: (v) => { auroraU.uSub.value = v ? 1 : 0; },
       hint: 'Ausbuchtung um Mitternacht wächst polwärts und nach Westen. Echte Teilstürme dauern ein bis zwei Stunden, hier gerafft.' },
     { id: 'auroraPulse', type: 'toggle', label: 'Pulsierende Flecken (Morgensektor)', value: true, sub: true, set: (v) => { auroraU.uPulse.value = v ? 1 : 0; } },
-    { id: 'auroraGain', type: 'range', label: 'Leuchtstärke', value: 1, min: 0.3, max: 2.5, step: 0.1, sub: true, unit: '×', set: (v) => { auroraU.uGain.value = v; } },
+    { id: 'auroraGain', type: 'range', label: 'Leuchtstärke', value: 1, min: 0.3, max: 5, step: 0.1, sub: true, unit: '×', set: (v) => { auroraU.uGain.value = v; } },
     { id: 'sats', type: 'toggle', group: 'Erdumlaufbahn', label: 'Satelliten (CelesTrak-Katalog)', value: true, set: (v) => { show.sats = v; applyShow(); } },
     { id: 'debris', type: 'toggle', label: 'Trümmerwolken', value: true, sub: true, set: (v) => { show.debris = v; applyShow(); } },
     { id: 'orbits', type: 'toggle', label: 'Bahnen ISS, Tiangong, Hubble', value: true, sub: true, set: (v) => { show.orbits = v; applyShow(); } },

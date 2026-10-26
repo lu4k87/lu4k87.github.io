@@ -8,6 +8,7 @@
 // zurück“: Schale zur Rückblickzeit mit z, Alter, Temperatur und mitbewegtem Abstand.
 
 import * as THREE from 'three';
+import { registerLayers } from '../layers.js';
 import { NOISE } from '../glsl.js';
 import { pointCloud, disposeScene } from '../vol.js';
 import { galToScene, mulberry32, gauss, blackbody, GLY, YEAR, cosmo, cosmoAge, zAtLookback } from '../astro.js';
@@ -134,6 +135,16 @@ export function create(ctx) {
     ...EPOCHS.filter(([, id]) => id !== 'dawn').map(([, id]) => ({ id, kind: 'label', cls: 'hsl--faint', pos: epochPos[id], visible: () => layers.visible })),
   ];
   const fmtT = (v) => `${v.toFixed(2).replace('.', ',')} Mrd. J.`;
+  // Zahnrad: Öffnung der Schale (gemeinsam für Schale, Zeitschichten und Regler-Schale), Helligkeiten
+  const cutMats = [shellMat, probe.material, ...layers.children.map((m) => m.material)];
+  registerLayers('cmb', [
+    { id: 'cut', type: 'range', group: 'Hintergrundstrahlung', label: 'Öffnung der Schale', value: 52, min: 0, max: 85, step: 1, fmt: (v) => (v ? `${v}°` : 'geschlossen'),
+      set: (v) => cutMats.forEach((m) => { m.uniforms.uCutCos.value = v ? Math.cos(v * Math.PI / 180) : 2; }),
+      hint: 'Halber Öffnungswinkel des Fensters zur Kamera; geschlossen zeigt die ganze Kugel von außen.' },
+    { id: 'galGain', type: 'range', group: 'Galaxien', label: 'Helligkeit', value: 1, min: 0, max: 5, step: 0.25, unit: '×', set: (v) => { gal.material.uniforms.uGain.value = v; } },
+    { id: 'layerGain', type: 'range', group: 'Zeitschichten', label: 'Helligkeit', value: 1, min: 0.25, max: 6, step: 0.25, unit: '×',
+      set: (v) => layers.children.forEach((m) => { m.material.uniforms.uGain.value = 0.07 * v; }), active: () => layers.visible, only: 'Erst in der Infotafel „Zeitschichten“ einschalten.' },
+  ]);
   const controls = [
     { id: 'dip', label: 'Dipol', value: 'off', options: [['off', 'Abgezogen'], ['on', 'Sichtbar']], set: (v) => { shellMat.uniforms.uDipOn.value = v === 'on' ? 1 : 0; } },
     { id: 'layers', label: 'Zeitschichten', value: 'off', options: [['off', 'Aus'], ['on', 'Epochen']], set: (v) => { layers.visible = v === 'on'; } },

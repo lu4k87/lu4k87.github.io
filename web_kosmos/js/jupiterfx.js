@@ -1,7 +1,8 @@
 // Jupiter-Polarlicht und Magnetosphäre (Station Sonnensystem), Einheit = Jupiterradius, Kind des Planetenkörpers (dreht mit).
 // Schema, kein Messbild: Hauptoval ≈ 14° vom Magnetpol (Dipolneigung 9,6°, JUNO/Hubble heic1613), Polwirbel, Polar-Flares,
 // Fußpunkte von Io, Europa, Ganymed (Schweif ostwärts), Magnetscheibe mit Spiralarmen, gestreckte Feldlinien, Teilchenregen.
-// Teile einzeln schaltbar: jupiterAurora(detail) → Gruppe, g.userData.parts = { oval, cap, disk, lines, flow }, g.userData.capU = { uSwirl, uFlare, uFoot };
+// Teile einzeln schaltbar: jupiterAurora(detail) → Gruppe, g.userData.parts = { oval, cap, disk, lines, flow }, g.userData.capU = { uSwirl, uFlare, uFoot, uGain };
+// uGain = Leuchtkraft von Vorhang und Polkappe (Zahnrad-Regler, gemeinsames Uniform).
 // auroraLayers(g) = Zahnrad-Ebenen dazu, gleich in den Stationen Sonnensystem und Jupiter & Monde.
 import * as THREE from 'three';
 import { NOISE } from './glsl.js';
@@ -18,7 +19,7 @@ ${NOISE}
 ${OVAL}
 attribute vec3 aU;   // u, Höhe 0..1, Blatt w
 attribute float aH;  // Halbkugel
-uniform float uT;
+uniform float uT, uHeight;
 varying float vV, vU, vW, vH;
 void main() {
   float u = aU.x, w = aU.z;
@@ -26,11 +27,11 @@ void main() {
   c = radians(c);
   vec3 dir = vec3(sin(c) * cos(u), aH * cos(c), sin(c) * sin(u));
   vV = aU.y; vU = u; vW = w; vH = aH;
-  gl_Position = projectionMatrix * modelViewMatrix * vec4(dir * (1.004 + 0.04 * aU.y), 1.0);
+  gl_Position = projectionMatrix * modelViewMatrix * vec4(dir * (1.004 + 0.04 * uHeight * aU.y), 1.0);
 }`;
 const CURTAIN_FRAG = /* glsl */ `
 ${NOISE}
-uniform float uT;
+uniform float uT, uGain;
 varying float vV, vU, vW, vH;
 void main() {
   float rays = ridged(vec3(cos(vU) * 60.0, sin(vU) * 60.0, uT * 0.3 + vW * 9.0), 2);
@@ -40,16 +41,16 @@ void main() {
   float storm = exp(-pow(atan(sin(vU - 1.2), cos(vU - 1.2)) / 0.35, 2.0)) * smoothstep(0.0, 0.1, ph) * (1.0 - smoothstep(0.35, 0.9, ph));
   float up = 0.65 + 0.35 * sin(vV * 10.0 - uT * 1.8 + vU * 25.0);
   float prof = smoothstep(0.0, 0.05, vV) * pow(max(1.0 - vV, 0.0), 1.5);
-  vec3 col = mix(vec3(0.75, 0.85, 1.0), vec3(0.62, 0.38, 1.0), smoothstep(0.1, 0.8, vV));
-  float b = (0.35 + 0.9 * rays * rays) * wave * up * (1.0 + 2.2 * storm) * (vH > 0.0 ? 1.0 : 0.8);
-  gl_FragColor = vec4(col * b * prof * 0.85, 1.0);
+  vec3 col = mix(vec3(0.62, 0.84, 1.0), vec3(0.6, 0.3, 1.0), smoothstep(0.1, 0.8, vV));
+  float b = (0.55 + 1.2 * rays * rays) * wave * up * (1.0 + 2.2 * storm) * (vH > 0.0 ? 1.0 : 0.8);
+  gl_FragColor = vec4(col * b * prof * 1.7 * uGain, 1.0);
 }`;
 // Polkappe: Wirbel im Inneren des Ovals, Polar-Flares, Fußpunkte der Monde mit Schweif
 const CAP_VERT = 'varying vec3 vL; varying vec3 vN; varying vec3 vP; void main() { vL = position; vN = normalize(mat3(modelMatrix) * normal); vec4 w = modelMatrix * vec4(position, 1.0); vP = w.xyz; gl_Position = projectionMatrix * viewMatrix * w; }';
 const CAP_FRAG = /* glsl */ `
 ${NOISE}
 ${OVAL}
-uniform float uT, uSwirl, uFlare, uFoot;
+uniform float uT, uSwirl, uFlare, uFoot, uGain;
 uniform vec3 uMoons;   // Länge der Fußpunkte Io, Europa, Ganymed (Rahmen des Planeten)
 varying vec3 vL, vN, vP;
 float foot(float lon, float colat, float c0, float u, float c, float hem) {
@@ -68,7 +69,9 @@ void main() {
   // Wirbel im Polgebiet: Flecken drehen langsam gegen den Planeten, Spiralarme
   float r = c / oc;
   float sw = fbm(vec3(cos(u + uT * 0.06 + r * 2.5) * r * 3.0, sin(u + uT * 0.06 + r * 2.5) * r * 3.0, uT * 0.04 + hem), 4);
-  float swirl = smoothstep(-0.1, 0.6, sw) * smoothstep(1.0, 0.75, r) * 0.35 * uSwirl;
+  float swirl = smoothstep(-0.1, 0.6, sw) * smoothstep(1.0, 0.75, r) * 0.5 * uSwirl;
+  // Lichthof um das Oval: weicher Schein unter dem Vorhang, hält das Oval auch aus der Ferne und von der Seite sichtbar
+  float halo = exp(-pow((c - oc - 0.9) / 2.2, 2.0));
   // Polar-Flares: einzelne Flecken leuchten auf (Zyklus 7–11 s)
   float fl = 0.0;
   for (int i = 0; i < 3; i++) {
@@ -83,8 +86,8 @@ void main() {
   float eu = foot(uMoons.y, hem > 0.0 ? 18.5 : 17.5, 0.0, u, c, hem);
   float ga = foot(uMoons.z, hem > 0.0 ? 16.8 : 16.0, 0.0, u, c, hem);
   float mu = max(dot(normalize(vN), normalize(cameraPosition - vP)), 0.0);
-  vec3 col = vec3(0.55, 0.45, 1.0) * swirl + vec3(0.8, 0.75, 1.0) * fl * 0.9 + vec3(0.9, 0.85, 1.0) * (io + 0.6 * eu + 0.5 * ga) * uFoot;
-  gl_FragColor = vec4(col / (mu + 0.45) * 0.55, 1.0);
+  vec3 col = vec3(0.55, 0.45, 1.0) * swirl + vec3(0.8, 0.75, 1.0) * fl * 1.2 + vec3(0.9, 0.85, 1.0) * (io + 0.6 * eu + 0.5 * ga) * uFoot + vec3(0.45, 0.6, 1.0) * halo * 0.6;
+  gl_FragColor = vec4(col / (mu + 0.45) * 0.55 * uGain, 1.0);
 }`;
 function curtainGeo() {
   const N = 300, W = [0.1, 0.45, 0.85], a = [], h = [], idx = [];
@@ -122,8 +125,9 @@ void main() {
 }`;
 const FLOW_FRAG = /* glsl */ `
 uniform vec3 uC;
+uniform float uFlowGain;
 varying float vA, vF;
-void main() { vec2 d = gl_PointCoord - 0.5; gl_FragColor = vec4(mix(uC, vec3(0.95, 0.9, 1.0), vF * vF) * vA * exp(-dot(d, d) * 14.0), 1.0); }`;
+void main() { vec2 d = gl_PointCoord - 0.5; gl_FragColor = vec4(mix(uC, vec3(0.95, 0.9, 1.0), vF * vF) * vA * exp(-dot(d, d) * 14.0) * uFlowGain, 1.0); }`;
 function flow(rows, U, color) {
   const g = new THREE.BufferGeometry();
   g.setAttribute('position', new THREE.BufferAttribute(new Float32Array(rows.length * 3), 3));
@@ -151,7 +155,7 @@ export function jupiterAurora(detail = 1) {
   g.add(mag);
   let s = 5;
   const rnd = () => ((s = (s * 16807) % 2147483647) / 2147483647);
-  const U = { uT: { value: 0 }, uPx: { value: 1 } };
+  const U = { uT: { value: 0 }, uPx: { value: 1 }, uGain: { value: 1 }, uHeight: { value: 1 }, uDiskGain: { value: 1 }, uFlowGain: { value: 1 } };
   const curtain = new THREE.Mesh(curtainGeo(), new THREE.ShaderMaterial({ vertexShader: CURTAIN_VERT, fragmentShader: CURTAIN_FRAG, uniforms: U, side: THREE.DoubleSide, ...add }));
   curtain.frustumCulled = false;
   mag.add(curtain);
@@ -165,7 +169,7 @@ export function jupiterAurora(detail = 1) {
   const disk = new THREE.Mesh(new THREE.RingGeometry(5, 42, 256, 8), new THREE.ShaderMaterial({ uniforms: U, side: THREE.DoubleSide, ...add,
     vertexShader: 'varying vec2 vQ; void main() { vQ = position.xy; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
     fragmentShader: `${NOISE}
-uniform float uT;
+uniform float uT, uDiskGain;
 varying vec2 vQ;
 void main() {
   float r = length(vQ), a = atan(vQ.y, vQ.x);
@@ -173,7 +177,7 @@ void main() {
   float arms = pow(0.5 + 0.5 * cos(2.0 * lag), 3.0);
   float n = 0.5 + 0.5 * fbm(vec3(cos(lag) * r * 0.25, sin(lag) * r * 0.25, uT * 0.03), 3);
   float fall = smoothstep(5.0, 9.0, r) * (1.0 - smoothstep(25.0, 42.0, r));
-  gl_FragColor = vec4(vec3(0.45, 0.5, 1.0) * (0.25 + arms) * n * fall * 0.09, 1.0);
+  gl_FragColor = vec4(vec3(0.45, 0.5, 1.0) * (0.25 + arms) * n * fall * 0.09 * uDiskGain, 1.0);
 }` }));
   disk.rotation.x = -Math.PI / 2;
   mag.add(disk);
@@ -181,9 +185,12 @@ void main() {
   mag.add(lines);
   const lineMat = new THREE.LineBasicMaterial({ color: 0x7f9cff, transparent: true, opacity: 0.1, blending: THREE.AdditiveBlending, depthWrite: false });
   for (let k = 0; k < 18; k++) for (const L of [16, 26]) lines.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(fieldLine(L + (k % 3) * 3, (k / 18) * Math.PI * 2, [1]).concat(fieldLine(L + (k % 3) * 3, (k / 18) * Math.PI * 2, [-1]).reverse())), lineMat));
-  const rows = [];
-  for (let i = 0, n = Math.round(7000 * detail); i < n; i++) rows.push([rnd() * Math.PI * 2, 15 + rnd() * 25, rnd(), rnd() < 0.55 ? 1 : -1]);
-  const stream = flow(rows, { ...U, uSpeed: { value: 0.06 }, uLonRate: { value: 0 }, uLon0: { value: 0 } }, [0.5, 0.65, 1.0]);
+  // Teilchen auf Vorrat für Regler „Menge“ bis 3× (drawRange zeigt den Anteil, Standard = 7000 · detail)
+  const rows = [], nFlow = Math.round(7000 * detail);
+  for (let i = 0; i < nFlow * 3; i++) rows.push([rnd() * Math.PI * 2, 15 + rnd() * 25, rnd(), rnd() < 0.55 ? 1 : -1]);
+  const flowU = { ...U, uSpeed: { value: 0.06 }, uLonRate: { value: 0 }, uLon0: { value: 0 } };
+  const stream = flow(rows, flowU, [0.5, 0.65, 1.0]);
+  stream.geometry.setDrawRange(0, nFlow);
   mag.add(stream);
   g.userData.update = (t) => {
     U.uT.value = t;
@@ -192,19 +199,30 @@ void main() {
   g.userData.U = U;
   g.userData.capU = capU;
   g.userData.parts = { oval: curtain, cap, disk, lines, flow: stream };
+  g.userData.mag = { lineMat, flowU, flowN: (k) => stream.geometry.setDrawRange(0, Math.round(nFlow * k)) };
   return g;
 }
 export function auroraLayers(g) {
-  const P = g.userData.parts, U = g.userData.capU;
+  const P = g.userData.parts, U = g.userData.capU, M = g.userData.mag;
   return [
     { id: 'jOval', type: 'toggle', group: 'Jupiter-Polarlicht', label: 'Hauptoval (UV-Falschfarbe)', value: true, set: (v) => { P.oval.visible = P.cap.visible = v; },
       hint: 'Schema: Oval ≈ 14° vom Magnetpol (Dipolneigung 9,6°), Norden nierenförmig, Süden runder. Echt leuchtet es im UV; die Farbe ist Falschfarbe.' },
+    { id: 'jGain', type: 'range', label: 'Leuchtkraft', value: 1, min: 0.25, max: 5, step: 0.25, unit: '×', sub: true, set: (v) => { U.uGain.value = v; },
+      hint: 'Hebt Vorhang, Lichthof, Polwirbel, Flares und Fußpunkte gemeinsam an; ab etwa 2× strahlt das Oval über den Bloom.' },
+    { id: 'jHeight', type: 'range', label: 'Höhe des Vorhangs', value: 1, min: 0.5, max: 4, step: 0.25, unit: '×', sub: true, set: (v) => { U.uHeight.value = v; },
+      hint: '1× ≈ 2.800 km über den Wolken, schon überhöht; echt leuchtet das Oval in etwa 250–1.000 km Höhe.' },
     { id: 'jSwirl', type: 'toggle', label: 'Polwirbel', value: true, sub: true, set: (v) => { U.uSwirl.value = v ? 1 : 0; } },
     { id: 'jFlares', type: 'toggle', label: 'Polar-Flares', value: true, sub: true, set: (v) => { U.uFlare.value = v ? 1 : 0; } },
     { id: 'jFeet', type: 'toggle', label: 'Fußpunkte von Io, Europa, Ganymed', value: true, sub: true, set: (v) => { U.uFoot.value = v ? 1 : 0; },
       hint: 'Die Monde ziehen Spuren ins Polarlicht; ihr Umlauf ist hier im Zeitraffer, die Lagen sind schematisch.' },
     { id: 'jDisk', type: 'toggle', group: 'Jupiter-Magnetosphäre', label: 'Magnetscheibe mit Spiralarmen', value: true, set: (v) => { P.disk.visible = v; } },
+    { id: 'jDiskGain', type: 'range', label: 'Helligkeit', value: 1, min: 0, max: 6, step: 0.25, unit: '×', sub: true, set: (v) => { U.uDiskGain.value = v; } },
     { id: 'jLines', type: 'toggle', label: 'Gestreckte Feldlinien', value: true, set: (v) => { P.lines.visible = v; } },
+    { id: 'jLineGain', type: 'range', label: 'Helligkeit', value: 1, min: 0, max: 6, step: 0.25, unit: '×', sub: true, set: (v) => { M.lineMat.opacity = 0.1 * v; } },
     { id: 'jFlow', type: 'toggle', label: 'Teilchenströme ins Oval', value: true, set: (v) => { P.flow.visible = v; } },
+    { id: 'jFlowN', type: 'range', label: 'Menge', value: 1, min: 0.25, max: 3, step: 0.25, unit: '×', sub: true, set: (v) => { M.flowN(v); } },
+    { id: 'jFlowSpeed', type: 'range', label: 'Tempo', value: 1, min: 0, max: 5, step: 0.25, unit: '×', sub: true, set: (v) => { M.flowU.uSpeed.value = 0.06 * v; },
+      hint: 'Zeitraffer: echt brauchen die Elektronen von der Scheibe bis in die Atmosphäre nur Sekunden bis Minuten.' },
+    { id: 'jFlowGain', type: 'range', label: 'Helligkeit', value: 1, min: 0, max: 5, step: 0.25, unit: '×', sub: true, set: (v) => { U.uFlowGain.value = v; } },
   ];
 }

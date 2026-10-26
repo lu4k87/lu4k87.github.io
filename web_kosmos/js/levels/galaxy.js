@@ -6,6 +6,7 @@
 // Optional differentielle Rotation im Zeitraffer (flache Rotationskurve ≈ 230 km/s, innen ansteigend).
 
 import * as THREE from 'three';
+import { registerLayers } from '../layers.js';
 import { galToScene, diskPoint, spiralPhi, mulberry32, gauss, blackbody, KPC } from '../astro.js';
 import { pointCloud, volume, disposeScene } from '../vol.js';
 
@@ -333,8 +334,19 @@ export function create(ctx) {
       if (k.m) k.m.position.copy(k.p);
     }
   };
+  // Zahnrad: Teile der Galaxis, Tempo des Zeitraffers, Helligkeit der Fermi-Blasen (die Schalter dazu stehen in der Infotafel)
+  let spinK = 1;
+  const num = (v) => String(v).replace('.', ',');
+  registerLayers('galaxy', [
+    { id: 'halo', type: 'toggle', group: 'Milchstraße', label: 'Halo mit Kugelsternhaufen', value: true, set: (v) => { halo.visible = v; } },
+    { id: 'marks', type: 'toggle', label: 'Leuchtpunkte der Stationen', value: true, set: (v) => marks.forEach((k) => { k.m.visible = v; }) },
+    { id: 'spinK', type: 'range', group: 'Drehung', label: 'Tempo im Zeitraffer', value: 1, min: 0.25, max: 20, step: 0.25, fmt: (v) => `${num(v)} Mio. Jahre/s`,
+      set: (v) => { spinK = v; if (rate) rate = v; }, active: () => rate > 0, only: 'Wirkt, sobald in der Infotafel „Drehung“ auf Zeitraffer steht.' },
+    { id: 'fermiGain', type: 'range', group: 'Fermi-Blasen', label: 'Helligkeit', value: 1, min: 0.25, max: 5, step: 0.25, unit: '×',
+      set: (v) => { fermi.material.uniforms.uGain.value = 0.09 * v; }, active: () => fermi.visible, only: 'Erst in der Infotafel „Fermi-Blasen“ einschalten.' },
+  ]);
   const controls = [
-    { id: 'spin', label: 'Drehung', value: 'off', options: [['off', 'Stand heute'], ['on', '1 Mio. Jahre/s']], set: (v) => { rate = v === 'on' ? 1 : 0; } },
+    { id: 'spin', label: 'Drehung', value: 'off', options: [['off', 'Stand heute'], ['on', 'Zeitraffer']], set: (v) => { rate = v === 'on' ? spinK : 0; } },
     { id: 'lines', label: 'Linien', value: 'off', options: [['off', 'Aus'], ['on', 'Sonnenbahn + Sichtlinien']], set: (v) => { sunOrbit.visible = sight.visible = v === 'on'; } },
     { id: 'fermi', label: 'Fermi-Blasen', value: 'off', options: [['off', 'Aus'], ['on', 'Gammastrahlung']], set: (v) => { fermi.visible = v === 'on'; } },
   ];

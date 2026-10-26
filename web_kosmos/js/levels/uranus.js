@@ -137,7 +137,7 @@ export function create(ctx) {
     { id: 'rings', type: 'toggle', group: 'System', label: 'Ringe', value: true, set: (v) => { rings.visible = v; planetU.uRing.value = v ? 1 : 0; } },
     { id: 'dust', type: 'toggle', label: 'Staubringe ν und μ (stark aufgehellt)', value: true, sub: true, set: (v) => { dust.visible = v; } },
     { id: 'orbits', type: 'toggle', label: 'Mondbahnen', value: true, set: (v) => { moons.forEach((m) => { m.orbit.line.visible = v; }); } },
-    { id: 'big', type: 'range', label: 'Monde vergrößert', value: big, min: 1, max: 10, step: 1, fmt: (v) => (v === 1 ? 'maßstäblich' : `${v}×`), set: (v) => { big = Math.round(v); } },
+    { id: 'big', type: 'range', label: 'Monde vergrößert', value: big, min: 1, max: 20, step: 1, fmt: (v) => (v === 1 ? 'maßstäblich' : `${v}×`), set: (v) => { big = Math.round(v); } },
   ]);
   const controls = [
     { id: 'year', type: 'range', label: 'Jahr · Stand der Sonne', value: year, min: 1986, max: 2070, step: 1, fmt: fmtYear, set: setYear, get: () => year },

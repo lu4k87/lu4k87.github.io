@@ -8,6 +8,7 @@
 // die Strömung hier schematisch aus Punktmassen, keine gemessene Geschwindigkeitskarte.
 
 import * as THREE from 'three';
+import { registerLayers } from '../layers.js';
 import { pointCloud, disposeScene } from '../vol.js';
 import { galToScene, mulberry32, gauss, blackbody, MPC } from '../astro.js';
 
@@ -159,12 +160,20 @@ export function create(ctx) {
     { id: 'flow', kind: 'info', pos: ga.clone().multiplyScalar(0.55).add(new THREE.Vector3(0, 18, 0)), visible: () => flow.visible },
     ...['fornax', 'centaurus', 'hydra', 'hercules'].map((id) => ({ id, kind: 'label', cls: 'hsl--faint', pos: CLUSTERS.find((c) => c.id === id).p })),
   ];
+  let flowK = 1, flowG = 1;
+  const flowAlpha = () => { flowPts.material.opacity = Math.min(1, 0.4 * flowG); flowLines.material.opacity = Math.min(1, 0.14 * flowG); };
+  const flowOnly = 'Wirkt, sobald in der Infotafel „Strömung“ auf Laniakea steht.';
+  registerLayers('web', [
+    { id: 'netGain', type: 'range', group: 'Netz der Galaxien', label: 'Helligkeit', value: 1, min: 0.25, max: 5, step: 0.25, unit: '×', set: (v) => { web.material.uniforms.uGain.value = v; } },
+    { id: 'flowK', type: 'range', group: 'Strömung (Laniakea)', label: 'Tempo', value: 1, min: 0.25, max: 6, step: 0.25, unit: '×', set: (v) => { flowK = v; }, active: () => flow.visible, only: flowOnly },
+    { id: 'flowGain', type: 'range', label: 'Helligkeit', value: 1, min: 0.25, max: 6, step: 0.25, unit: '×', set: (v) => { flowG = v; flowAlpha(); }, active: () => flow.visible, only: flowOnly },
+  ]);
   const controls = [{ id: 'flow', label: 'Strömung', value: 'off', options: [['off', 'Aus'], ['on', 'Laniakea']], set: (v) => { flow.visible = v === 'on'; } }];
   return {
     scene, camera, unit: MPC, hotspots, controls, home,
     orbit: { minDistance: 8, maxDistance: 900, cineSpeed: 0.5 },
     look: { exposure: 1.2, bloom: 0.1, sat: 1.05, con: 0.12, sh: [0.93, 0.97, 1.1] },
-    update(dt) { if (flow.visible) stepFlow(dt); },
+    update(dt) { if (flow.visible) for (let i = 0, n = Math.ceil(flowK); i < n; i++) stepFlow(dt * flowK / n); },
     live: () => (flow.visible ? 'Strömung schematisch: zum Großen Attraktor und weiter zum Shapley-Superhaufen (Laniakea = Einzugsgebiet)' : 'Modell-Netz um echte Haufen: Virgo, Fornax, Centaurus, Hydra, Norma, Perseus–Pisces, Coma, Hercules, Shapley'),
     setPixelRatio(pr, H) { web.userData.setPx(pr, H, camera.fov); },
     dispose: () => disposeScene(scene),

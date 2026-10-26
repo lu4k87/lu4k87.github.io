@@ -507,7 +507,7 @@ export function create(ctx) {
       set: (i, playing) => { clockIdx = Math.round(i); rate = playing ? SPEEDS[clockIdx][0] : 0; if (!playing) jd = julianDate(new Date()); },
       get: () => ({ value: clockIdx, playing: rate !== 0 }), status: () => `Planetenstand ${fmt.format(new Date((jd - 2440587.5) * 864e5))}${rate ? '' : ' · jetzt'}` },
     { id: 'flares', type: 'toggle', group: 'Sonne', label: 'Protuberanzen und Flares', value: true, set: (v) => { flaresOn = v; loops.visible = v; if (!v) cme.visible = flash.visible = false; } },
-    { id: 'flareRate', type: 'range', label: 'Häufigkeit', value: 1, min: 0.3, max: 3, step: 0.1, unit: '×', sub: true, set: (v) => { flareRate = v; loopU.uRate.value = v; } },
+    { id: 'flareRate', type: 'range', label: 'Häufigkeit', value: 1, min: 0.3, max: 6, step: 0.1, unit: '×', sub: true, set: (v) => { flareRate = v; loopU.uRate.value = v; } },
     { id: 'flareNow', type: 'action', label: 'Flare mit Massenauswurf', button: 'Jetzt auslösen', sub: true, run: () => { if (flaresOn) triggerFlare(); } },
     { id: 'corona', type: 'toggle', label: 'Korona', value: true, set: (v) => { coronaOn = v; coronaU.uCorona.value = v ? 1 : 0; } },
     { id: 'gran', type: 'toggle', label: 'Granulation (brodelnde Oberfläche)', value: true, set: (v) => { sunMat.uniforms.uGran.value = v ? 1 : 0; } },

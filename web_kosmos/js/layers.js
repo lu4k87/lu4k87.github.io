@@ -93,6 +93,7 @@ export function registerLayers(stationId, layers) {
 }
 export const layerValue = (stationId, id) => ((reg.get(stationId) || []).find((l) => l.id === id) || {}).value;
 export const getLayer = (stationId, id) => (reg.get(stationId) || []).find((l) => l.id === id);
+export const layersOf = (stationId) => reg.get(stationId) || [];   // Prüflauf tests/settings.py
 // Info-Karte stellt eine Ebene direkt – gleiche Wirkung wie im Zahnrad (Wert setzen, speichern, Anzeigen abgleichen)
 export function setLayer(stationId, id, v) {
   const l = getLayer(stationId, id);
@@ -246,7 +247,10 @@ function render() {
   sync();
   spy();
 }
-export function refreshLayers() { render(); }
+// Stationen gleichen Infotafel und Zahnrad aus set() heraus ab: nur Werte nachziehen, nicht neu aufbauen – ein Neuaufbau ersetzt
+// den Regler, den man gerade zieht, und das Ziehen bricht ab. Neu aufbauen nur, wenn sich der Aufbau ändert (Zeitleiste an/aus).
+export function refreshLayers() { sync(); }
+export function rebuildLayers() { render(); }
 
 function sync() {
   for (const root of [gearEl, stripEl]) {

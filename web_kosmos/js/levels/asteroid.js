@@ -470,7 +470,7 @@ export function create(ctx) {
     if (id === 'bennu') {
       L.push(
         { id: 'ejecta', type: 'toggle', group: 'Besonderheiten', label: 'Steinchen-Auswürfe (beobachtet 2019)', value: true, set: (v) => { ejOn = v; ej.visible = v; } },
-        { id: 'ejRate', type: 'range', label: 'Häufigkeit', value: 1, min: 0.3, max: 3, step: 0.1, unit: '×', sub: true, set: (v) => { ejRate = v; } },
+        { id: 'ejRate', type: 'range', label: 'Häufigkeit', value: 1, min: 0.3, max: 6, step: 0.1, unit: '×', sub: true, set: (v) => { ejRate = v; } },
         { id: 'ejNow', type: 'action', label: 'Auswurf', button: 'Jetzt auslösen', sub: true, run: () => { if (ejOn) burst(); } },
       );
     }

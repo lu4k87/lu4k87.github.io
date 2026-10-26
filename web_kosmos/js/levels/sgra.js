@@ -266,7 +266,7 @@ export function create(ctx) {
   ];
   const u = mat.uniforms;
   registerLayers('sgra', [
-    { id: 'riaf', type: 'range', group: 'Gas um das Loch', label: 'Heiße Strömung', min: 0, max: 2, step: 0.1, value: 1, fmt: (v) => (v ? `×${String(v).replace('.', ',')}` : 'aus'),
+    { id: 'riaf', type: 'range', group: 'Gas um das Loch', label: 'Heiße Strömung', min: 0, max: 4, step: 0.1, value: 1, fmt: (v) => (v ? `×${String(v).replace('.', ',')}` : 'aus'),
       set: (v) => { u.uHaze.value = v; },
       hint: 'Modell: Sgr A* frisst wenig – das Gas bildet eine dünne, heiße und dicke Strömung um die Scheibe. Ihr Licht läuft auf denselben gekrümmten Wegen; Licht, das das Loch fast umrundet, sammelt sich zum hellen Ring am Schatten.' },
     { id: 'plunge', type: 'toggle', label: 'Einfallzone innerhalb 3 Rs', value: true, set: (v) => { u.uPlunge.value = v ? 1 : 0; },

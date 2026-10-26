@@ -201,14 +201,14 @@ export function create(ctx) {
     { id: 'bands', type: 'toggle', group: 'Neptun', label: 'Bänder strömen (Wolkendetail)', value: true, set: (v) => { nepU.uBand.value = v ? BAND : 0; } },
     { id: 'atmo', type: 'toggle', label: 'Methan-Hülle am Rand', value: true, set: (v) => { shell.visible = v; } },
     { id: 'rings', type: 'toggle', group: 'Ringe', label: 'Ringe mit Bögen', value: true, set: (v) => { ringsOn = v; ring.visible = v; } },
-    { id: 'ringGain', type: 'range', label: 'Aufhellung', value: 1, min: 0.3, max: 2.5, step: 0.1, unit: '×', sub: true, set: (v) => { ringGain = v; ringU.uGain.value = RING_GAIN * v; } },
+    { id: 'ringGain', type: 'range', label: 'Aufhellung', value: 1, min: 0.3, max: 5, step: 0.1, unit: '×', sub: true, set: (v) => { ringGain = v; ringU.uGain.value = RING_GAIN * v; } },
     { id: 'orbits', type: 'toggle', group: 'Monde', label: 'Bahnen von Proteus, Triton und Nereid', value: true, set: (v) => { moons.forEach((x) => { x.orbit.line.visible = v; }); } },
     { id: 'dots', type: 'toggle', label: 'Leuchtpunkte der Monde', value: true, set: (v) => { dots.visible = v; } },
   ]);
   const controls = [
     { id: 'speed', type: 'range', label: 'Zeitraffer', value: rotOn ? spdIdx : 0, min: 0, max: SPEEDS.length - 1, step: 1, fmt: (i) => SPEEDS[Math.round(i)][1],
       set: (v) => { if (v) { spdIdx = Math.round(v); rotOn = true; } else rotOn = false; refreshLayers(); }, get: () => (rotOn ? spdIdx : 0) },
-    { id: 'ring', type: 'range', label: 'Ringe aufhellen', value: ringGain, min: 0.3, max: 2.5, step: 0.1, fmt: (v) => `${num(v, 1)} ×`,
+    { id: 'ring', type: 'range', label: 'Ringe aufhellen', value: ringGain, min: 0.3, max: 5, step: 0.1, fmt: (v) => `${num(v, 1)} ×`,
       set: (v) => { ringGain = v; ringU.uGain.value = RING_GAIN * v; refreshLayers(); }, get: () => ringGain },
   ];
 

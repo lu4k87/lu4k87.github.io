@@ -2,12 +2,22 @@
 // Atmosphäre als eigene Hülle (Strahl-Kugel-Schnitt mit Einfachstreuung), Wolkenschicht, Saturnringe mit Durchlicht.
 // Darstellungs-Übertreibungen (Hüllen dicker, Nachtseite aufgehellt, Wolkenschicht höher) stehen jeweils am Shader.
 
+import * as THREE from 'three';
 import { NOISE } from './glsl.js';
 import { settings } from './settings.js';
 
 export const rayleighUniform = {
   get value() { return settings.S.rayleigh === false ? 1.0 : 0.0; }
 };
+// Zahnrad Global „Licht und Schatten“: uLook = Sonnenlicht, Nachtseite, Schatten, weiche Grenze · uLook2 = Spiegelung, Glanz.
+// Getter lesen settings.S je Bild; jedes ShaderMaterial, dessen Fragment-Shader uLook nennt (PLANET_FRAG samt Abwandlungen,
+// Erde), bekommt sie beim Kompilieren – ohne Eingriff an den rund 20 Stellen, die eigene Uniforms für PLANET_FRAG bauen.
+const look = new Float32Array(4), look2 = new Float32Array(2);
+const LOOK = {
+  uLook: { get value() { const S = settings.S; look.set([S.sunK, S.shade, S.shadow, S.soft]); return look; } },
+  uLook2: { get value() { look2.set([settings.S.spec, settings.S.gloss]); return look2; } },
+};
+THREE.ShaderMaterial.prototype.onBeforeCompile = function (sh) { if (sh.fragmentShader.includes('uLook')) Object.assign(sh.uniforms, LOOK); };
 
 export const BODY_VERT = /* glsl */ `
 varying vec3 vN, vP, vO;
@@ -43,6 +53,8 @@ uniform vec3 uTerm, uEarthPos, uSunDir;
 uniform vec4 uOcc[4];
 uniform int uOccN;
 uniform mat4 uInv;
+uniform vec4 uLook;   // Zahnrad Global: Sonnenlicht, Nachtseite, Schatten, weiche Grenze (fehlt es → Standard 1)
+uniform vec2 uLook2;  // Spiegelung (Ozean-Glanzlicht), Glanz aller Oberflächen
 varying vec3 vN, vP, vO;
 varying vec2 vUv;
 ${NOISE}
@@ -65,6 +77,9 @@ float eclipse(vec3 p, vec3 L) {
 void main() {
   vec3 N = normalize(vN), V = normalize(cameraPosition - vP), L = dot(uSunDir, uSunDir) > 0.5 ? uSunDir : normalize(-vP);
   float ndl = dot(N, L);
+  vec4 lk = uLook.x > 0.0 ? uLook : vec4(1.0);
+  vec2 lk2 = uLook.x > 0.0 ? uLook2 : vec2(1.0, 0.0);
+  float wrap = uWrap * lk.w;
   vec2 uv = vUv;
   float det = 0.0;
   if (uBand > 0.0) {
@@ -80,7 +95,7 @@ void main() {
     }
   }
   vec3 alb = texture2D(tMap, uv).rgb * (1.0 + 0.25 * det);
-  float lit = clamp((ndl + uWrap) / (1.0 + uWrap), 0.0, 1.0);
+  float lit = clamp((ndl + wrap) / (1.0 + wrap), 0.0, 1.0);
   lit = lit * lit * (3.0 - 2.0 * lit) * 0.35 + lit * 0.65;
   float sh = 1.0;
   if (uRing > 0.5) {
@@ -89,37 +104,39 @@ void main() {
       float t = -pl.y / ll.y;
       if (t > 0.0) {
         float r = length((pl + ll * t).xz);
-        if (r > uRingIn && r < uRingOut) sh = 1.0 - 0.9 * texture2D(tRing, vec2((r - uRingIn) / (uRingOut - uRingIn), 0.5)).a;
+        if (r > uRingIn && r < uRingOut) sh = 1.0 - 0.9 * lk.z * texture2D(tRing, vec2((r - uRingIn) / (uRingOut - uRingIn), 0.5)).a;
       }
     }
   }
-  vec3 sunCol = mix(uTerm, vec3(1.0), smoothstep(-uWrap, 0.3, ndl));
+  vec3 sunCol = mix(uTerm, vec3(1.0), smoothstep(-wrap, 0.3, ndl));
   vec3 col;
   if (uMoon > 0.5) {
     float mu0 = max(ndl, 0.0), mu = max(dot(N, V), 0.0);
-    col = alb * mu0 / (mu0 + mu + 1e-4) * 1.8;
+    col = alb * mu0 / (mu0 + mu + 1e-4) * 1.8 * lk.x;
     vec3 E = normalize(uEarthPos - vP);
     float e0 = max(dot(N, E), 0.0);
     col += alb * e0 / (e0 + mu + 1e-4) * uEarthshine;
   } else {
-    col = alb * lit * sh * sunCol;
+    col = alb * lit * sh * sunCol * lk.x;
   }
-  if (uOccN > 0) col *= eclipse(vP, L);
+  // Glanz (Regler, Standard aus): breites Glanzlicht auf Eis, Wolken und Gestein
+  if (lk2.y > 0.0) col += sunCol * pow(max(dot(N, normalize(L + V)), 0.0), 48.0) * 0.12 * lk2.y * lk.x * sh * smoothstep(0.0, 0.2, ndl);
+  if (uOccN > 0) col *= mix(1.0, eclipse(vP, L), lk.z);
   if (uHasEarth > 0.5) {
     vec2 cuv = vUv + vec2(uCloudU, 0.0);
     float cl = texture2D(tClouds, cuv).r, ocean = texture2D(tSpec, vUv).r;
     vec3 east = normalize(cross(vec3(0.0, 1.0, 0.0), normalize(vO)) + 1e-5), north = cross(normalize(vO), east);
     vec3 Lo = normalize((uInv * vec4(L, 0.0)).xyz);
     float csh = 1.0 - 0.5 * texture2D(tClouds, cuv + vec2(dot(Lo, east), dot(Lo, north)) * 0.004).r * lit;
-    col *= csh;
+    col *= mix(1.0, csh, lk.z);
     vec3 H = normalize(L + V);
-    col += vec3(1.0, 0.9, 0.75) * pow(max(dot(N, H), 0.0), 220.0) * ocean * (1.0 - cl) * lit * 0.9;
+    col += vec3(1.0, 0.9, 0.75) * pow(max(dot(N, H), 0.0), 220.0) * ocean * (1.0 - cl) * lit * 0.9 * lk2.x * lk.x;
     col += vec3(0.25, 0.4, 0.6) * pow(1.0 - max(dot(N, V), 0.0), 5.0) * ocean * lit * 0.1;
     vec3 night = texture2D(tNight, vUv).rgb, glow = texture2D(tNight, vUv, 3.5).rgb;
     float dark = 1.0 - smoothstep(-0.12, 0.12, ndl);
     col += (night * night * 1.6 + glow * 0.35) * vec3(1.0, 0.72, 0.42) * dark * (1.0 - cl * 0.6);
   }
-  col += alb * uAmb * (1.0 - lit);
+  col += alb * uAmb * lk.y * (1.0 - lit);
   gl_FragColor = vec4(col * uGain, 1.0);
 }
 `;

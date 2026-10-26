@@ -281,7 +281,7 @@ void main() {
         { id: 'aurora', type: 'toggle', label: 'Polarlichter', value: true, set: (v) => { aurora.visible = auroraGlow.visible = v; } },
         { id: 'kp', type: 'range', label: 'Kp-Index', value: 4, min: 0, max: 9, step: 1, sub: true, fmt: (v) => `Kp ${v}`, set: (v) => { auroraU.uKp.value = v; },
           hint: 'Geomagnetische Aktivität: je höher, desto weiter reicht das Oval zum Äquator (NOAA).' },
-        { id: 'lights', type: 'range', label: 'Stadtlichter', value: 2.6, min: 0, max: 5, step: 0.1, fmt: (v) => `${Math.round(v / 2.6 * 100)} %`, set: (v) => { earthU.uLights.value = v; } },
+        { id: 'lights', type: 'range', label: 'Stadtlichter', value: 2.6, min: 0, max: 10, step: 0.1, fmt: (v) => `${Math.round(v / 2.6 * 100)} %`, set: (v) => { earthU.uLights.value = v; } },
         { id: 'atmo', type: 'toggle', label: 'Lufthülle am Horizont', value: true, set: (v) => { atmo.visible = v; } },
       ],
     },

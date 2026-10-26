@@ -326,7 +326,7 @@ export function createMarsMoon(ctx, cfg) {
       value: spdIdx, min: 1, max: cfg.speeds.length - 1, step: 1, autoplay: true, fmt: (i) => cfg.speeds[Math.round(i)][1],
       set: (i, playing) => { spdIdx = Math.max(1, Math.round(i)); rate = playing ? cfg.speeds[spdIdx][0] : 0; },
       get: () => ({ value: spdIdx, playing: rate !== 0 }), status: () => `${fmt.format(dateOf(jd))} UTC${rate ? '' : ' · Echtzeit'}` },
-    { id: 'shine', type: 'range', group: 'Licht', label: 'Marsschein', value: 1, min: 0, max: 3, step: 0.25, unit: '×',
+    { id: 'shine', type: 'range', group: 'Licht', label: 'Marsschein', value: 1, min: 0, max: 6, step: 0.25, unit: '×',
       hint: 'Licht des Mars auf der Nachtseite, folgt seiner Phase; aus Radius, Abstand und Albedo genähert und für die Lesbarkeit 4-fach verstärkt.',
       set: (v) => { marsShine = v; } },
     { id: 'shadows', type: 'toggle', label: 'Schlagschatten der Sonne', value: true, set: (v) => { sunL.castShadow = v; } },

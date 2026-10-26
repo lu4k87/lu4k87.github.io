@@ -270,7 +270,7 @@ export function create(ctx) {
       status: () => `${fmtDate()} · ${playing ? `Zeitraffer ${SPEEDS[spdIdx][1]}` : 'angehalten'}` },
     { id: 'orbits', type: 'toggle', group: 'Ringe und Monde', label: 'Bahnen der Monde', value: true, set: (v) => { orbitsOn = v; moons.forEach((x) => { x.line.visible = v; }); } },
     { id: 'ering', type: 'toggle', label: 'E-Ring (Eisstaub von Enceladus)', value: true, set: (v) => { ering.visible = v; } },
-    { id: 'eringGain', type: 'range', label: 'Helligkeit', value: 1, min: 0.5, max: 4, step: 0.5, unit: '×', sub: true, set: (v) => { eringU.uGain.value = v; } },
+    { id: 'eringGain', type: 'range', label: 'Helligkeit', value: 1, min: 0.5, max: 8, step: 0.5, unit: '×', sub: true, set: (v) => { eringU.uGain.value = v; } },
     { id: 'hex', type: 'toggle', group: 'Planet', label: 'Hexagon am Nordpol hervorheben', value: true, set: (v) => { sat.hex.visible = v; } },
     { id: 'haze', type: 'toggle', label: 'Dunst am Planetenrand', value: true, set: (v) => { sat.haze.visible = v; } },
   ]);

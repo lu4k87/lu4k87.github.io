@@ -8,12 +8,13 @@
 // nicht 1054, sondern ≈ 1130 – der Pulsarwind hat die Hülle in den ersten Jahrzehnten beschleunigt (Nugent 1998).
 
 import * as THREE from 'three';
+import { registerLayers } from '../layers.js';
 import { volume, pointCloud, disposeScene } from '../vol.js';
 import { createStarfield } from '../stars.js';
 import { blackbody, LY } from '../astro.js';
 
 const BODY = /* glsl */ `
-uniform float uGain, uMode, uExp;
+uniform float uGain, uMode, uExp, uFil;
 uniform mat3 uAxis;   // Rahmen der Drehachse des Pulsars
 void sampleVol(vec3 p, out vec3 e, out float s) {
   vec3 q = p / (vec3(6.7, 4.4, 4.6) * uExp);
@@ -59,7 +60,7 @@ void sampleVol(vec3 p, out vec3 e, out float s) {
   }
   vec3 cSync = vec3(0.5, 0.68, 1.0);
   if (uMode < 0.5) {
-    e = (fcol * fil * 5.5 + cSync * (sync * 0.5 + inner)) * uGain;
+    e = (fcol * fil * 5.5 * uFil + cSync * (sync * 0.5 + inner)) * uGain;
     s = fil * 0.8;
   } else if (uMode < 1.5) {
     // Chandra-Blick: Torus + Jet dominieren, innerer Nebel violett-blau, Filamente unsichtbar
@@ -67,7 +68,7 @@ void sampleVol(vec3 p, out vec3 e, out float s) {
     s = 0.0;
   } else {
     // Radio-Blick (VLA): Synchrotron bis zum Rand, Filamente als schwache Fäden; Falschfarbe warm
-    e = (vec3(1.0, 0.55, 0.2) * radio * 0.9 + vec3(1.0, 0.8, 0.4) * fil * 0.8 + vec3(1.0, 0.9, 0.7) * inner * 0.5) * uGain;
+    e = (vec3(1.0, 0.55, 0.2) * radio * 0.9 + vec3(1.0, 0.8, 0.4) * fil * 0.8 * uFil + vec3(1.0, 0.9, 0.7) * inner * 0.5) * uGain;
     s = fil * 0.2;
   }
 }
@@ -84,7 +85,7 @@ export function create(ctx) {
   const axis = new THREE.Matrix4().makeRotationFromEuler(new THREE.Euler(0.45, 0, -0.6));
   const neb = volume({
     radius: 7.4, body: BODY, steps: Math.round(76 + 60 * ctx.detail),
-    uniforms: { uGain: { value: 0.2 }, uMode: { value: 0 }, uExp: { value: 1 }, uAxis: { value: new THREE.Matrix3().setFromMatrix4(axis).invert() } },
+    uniforms: { uGain: { value: 0.2 }, uFil: { value: 1 }, uMode: { value: 0 }, uExp: { value: 1 }, uAxis: { value: new THREE.Matrix3().setFromMatrix4(axis).invert() } },
   });
   neb.renderOrder = 1;
   scene.add(neb);
@@ -103,6 +104,12 @@ export function create(ctx) {
     { id: 'xray', kind: 'info', pos: new THREE.Vector3(0, 1.4, 0).applyMatrix4(axis), visible: () => mode === 'xray' },
     { id: 'radio', kind: 'info', pos: new THREE.Vector3(-2.5, -2.4, 2.0), visible: () => mode === 'radio' },
   ];
+  registerLayers('crab', [
+    { id: 'gain', type: 'range', group: 'Krebsnebel', label: 'Helligkeit', value: 1, min: 0.25, max: 5, step: 0.25, unit: '×', set: (v) => { neb.material.uniforms.uGain.value = 0.2 * v; } },
+    { id: 'fil', type: 'range', label: 'Filamente', value: 1, min: 0, max: 4, step: 0.25, unit: '×', set: (v) => { neb.material.uniforms.uFil.value = v; },
+      hint: 'Leuchtende Fäden aus Wasserstoff, Sauerstoff und Schwefel am Rand; im Röntgenbild unsichtbar.' },
+    { id: 'psr', type: 'toggle', group: 'Pulsar', label: 'Pulsar in der Mitte', value: true, set: (v) => { psr.visible = v; } },
+  ]);
   const scaleOf = (y) => Math.max(0.03, (y - T0) / (TODAY - T0));
   const controls = [
     { id: 'mode', label: 'Spektrum', value: 'vis', options: [['vis', 'Sichtbar'], ['xray', 'Röntgen'], ['radio', 'Radio']],

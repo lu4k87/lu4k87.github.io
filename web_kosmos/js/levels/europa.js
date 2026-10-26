@@ -468,7 +468,7 @@ export function create(ctx) {
     } },
     { id: 'tint', type: 'toggle', group: 'Oberfläche', label: 'Verstärkte Farben', value: false,
       hint: 'Wie die Falschfarben-Mosaiken der Sonde Galileo: Eis blauweiß, Risse und Chaos-Gebiete rotbraun (Salze, Schwefel). Beide Farbgebungen sind aus der grauen Karte abgeleitet (Modell).', set: (v) => { eu.uTint.value = v ? 1 : 0; } },
-    { id: 'shine', type: 'range', group: 'Licht', label: 'Jupiterschein', value: 3, min: 0, max: 6, step: 0.5, unit: '×',
+    { id: 'shine', type: 'range', group: 'Licht', label: 'Jupiterschein', value: 3, min: 0, max: 12, step: 0.5, unit: '×',
       hint: 'Licht von Jupiters Tagseite auf Europas Nachtseite. 1× = echt: bei voller Jupiterscheibe ≈ 0,6 % des Sonnenlichts (eigene Rechnung aus Albedo 0,538 und Abstand).', set: (v) => { shineK = 0.011 * v; } },
     { id: 'plume', type: 'toggle', group: 'Ozean', label: 'Wasserdampf-Fahne (umstritten)', value: true,
       hint: 'Hinweise aus Hubble-Aufnahmen, aber nicht sicher bestätigt. Ort, Höhe und Tempo schematisch, Teilchen verlangsamt.', set: (v) => { plumeOn = v; plume.visible = v; } },

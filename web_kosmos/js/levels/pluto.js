@@ -257,7 +257,7 @@ export function create(ctx) {
     { id: 'orbits', type: 'toggle', group: 'System', label: 'Bahnen und Schwerpunkt', value: true, set: (v) => { orbits.visible = v; } },
     { id: 'moons', type: 'toggle', label: 'Kleine Monde (vergrößert)', value: true, set: (v) => { moonPts.visible = v; } },
     { id: 'haze', type: 'toggle', group: 'Oberfläche', label: 'Dunst der Atmosphäre', value: true, set: (v) => { haze.visible = v; } },
-    { id: 'hazeGain', type: 'range', label: 'Stärke', value: 1, min: 0.3, max: 3, step: 0.1, unit: '×', sub: true, set: (v) => { hazeU.uGain.value = 3 * v; } },
+    { id: 'hazeGain', type: 'range', label: 'Stärke', value: 1, min: 0.3, max: 6, step: 0.1, unit: '×', sub: true, set: (v) => { hazeU.uGain.value = 3 * v; } },
     { id: 'grid', type: 'toggle', label: 'Gebiete ohne Karte als Gradnetz', value: true, set: (v) => { plutoU.uGrid.value = charonU.uGrid.value = v ? 1 : 0; } },
     { id: 'nh', type: 'toggle', group: 'New Horizons', label: 'Bahn beim Vorbeiflug 2015', value: true, set: (v) => { nhOn = v; nhLine.visible = v; probe.visible = v && probe.visible; } },
     { id: 'flyby', type: 'action', label: 'Vorbeiflug', button: 'Abspielen', sub: true, run: flyby },

@@ -351,9 +351,9 @@ export function create(ctx) {
       value: spdIdx, min: 1, max: SPEEDS.length - 1, step: 1, autoplay: true, fmt: (i) => SPEEDS[Math.round(i)][1],
       set: (i, playing) => { spdIdx = Math.max(1, Math.round(i)); rate = playing ? SPEEDS[spdIdx][0] : 0; if (!playing) jd = julianDate(new Date()); },
       get: () => ({ value: spdIdx, playing: rate !== 0 }), status: () => `${fmt.format(new Date((jd - 2440587.5) * 864e5))} UTC${rate ? '' : ' · Echtzeit'}` },
-    { id: 'relief', type: 'range', group: 'Oberfläche', label: 'Relief-Überhöhung', value: 2, min: 0, max: 5, step: 0.5, unit: '×',
+    { id: 'relief', type: 'range', group: 'Oberfläche', label: 'Relief-Überhöhung', value: 2, min: 0, max: 10, step: 0.5, unit: '×',
       hint: 'Höhen der Laseraltimetrie LOLA (≈ 7,6 km je Bildpunkt). 1× = maßstäblich; 0 = glatte Kugel.', set: (v) => { moonU.uRelief.value = v; } },
-    { id: 'earthshine', type: 'range', group: 'Licht', label: 'Erdschein', value: 1, min: 0, max: 3, step: 0.25, unit: '×',
+    { id: 'earthshine', type: 'range', group: 'Licht', label: 'Erdschein', value: 1, min: 0, max: 6, step: 0.25, unit: '×',
       hint: 'Licht der Erde auf der Nachtseite, am stärksten bei schmaler Mondsichel (volle Erde). Schon 1× ist mehr als hundertfach aufgehellt (eigene Abschätzung).', set: (v) => { moonU.uEarthshine.value = 0.04 * v; } },
     { id: 'earth', type: 'toggle', group: 'Himmel', label: 'Erde am Himmel', value: true, set: (v) => { showEarth = v; earth.visible = v; } },
   ]);

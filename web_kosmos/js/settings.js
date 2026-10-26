@@ -7,11 +7,12 @@
 // `?cfg` öffnet das Zahnrad, `?cfg=global` mit dem Reiter Global.
 // Gespeichert in localStorage `kosmos.settings.v1`; clean() prüft jeden Wert, damit kaputte Einträge nichts stören.
 
-import { mountLayers, refreshLayers, icon, devLine, cfgBar, markDevs, isOpenIn, spyIn, foldClick, domSummary } from './layers.js';
+import { mountLayers, rebuildLayers, refreshLayers, icon, devLine, cfgBar, markDevs, isOpenIn, spyIn, foldClick, domSummary } from './layers.js';
 import { nbsp } from './figs.js';
 
 const KEY = 'kosmos.settings.v1';
-const DEFAULTS = { motion: 'full', quality: 'auto', cine: true, dive: 3.6, exposure: 1, bloom: true, lens: true, lensAmt: 1, lensOptic: 'master', lensGhost: true, ghostMotion: true, anamorphic: true, rayleigh: true, grain: true, deep: 1, fpsCap: 0, panel: true, timeline: true, scaleCompare: true, small: 6, stars: true, grade: 'station', vig: 1, bars: false, axes: false };
+const DEFAULTS = { motion: 'full', quality: 'auto', cine: true, dive: 3.6, exposure: 1, bloom: true, lens: true, lensAmt: 1, lensOptic: 'master', lensGhost: true, ghostMotion: true, anamorphic: true, rayleigh: true, grain: true, deep: 1, fpsCap: 0, panel: true, timeline: true, scaleCompare: true, small: 6, stars: true, grade: 'station', vig: 1, bars: false, axes: false,
+  sunK: 1, shade: 1, shadow: 1, soft: 1, spec: 1, gloss: 0 };
 // Farblook: Belichtung, Bloom, Kontrast, Sättigung, Tönung Schatten/Lichter, Vignette – Kino = Mischung aus HDR, Ruhig, Tiefe Glut.
 // Global (main.js über globalGrade) oder je Station „Station“ = eigener Look; die Sonne wählt bei „Station“ selbst (levels/sun.js)
 export const GRADES = [['neutral', { exposure: 1, bloom: 0.12, con: 0.12, sat: 1.04, sh: [0.96, 0.99, 1.06], hi: [1.04, 1, 0.95], vig: 0.38 }],
@@ -20,10 +21,12 @@ export const GRADES = [['neutral', { exposure: 1, bloom: 0.12, con: 0.12, sat: 1
   ['ruhig', { exposure: 1, bloom: 0.16, con: 0.18, sat: 1, sh: [0.97, 0.98, 1.02], hi: [1.04, 1, 0.94], vig: 0.45 }],
   ['tiefe Glut', { exposure: 0.9, bloom: 0.3, con: 0.3, sat: 1.18, sh: [0.85, 0.88, 0.98], hi: [1.12, 0.98, 0.84], vig: 0.6 }]];
 const GRADE_IDS = ['station', 'neutral', 'kino', 'hdr', 'ruhig', 'glut'];
-const CHOICES = { motion: ['full', 'calm', 'off'], quality: ['auto', '1', '2', '3'], grade: GRADE_IDS };
+const CHOICES = { motion: ['full', 'calm', 'off'], quality: ['auto', '1', '2', '3'], grade: GRADE_IDS, lensOptic: ['master', 'classic'] };
 // Milchstraße (milkyway.js): Bild-Regler wirken sofort, „Dicke der Scheibe“ und Nachbargalaxien backen das Modell neu
 const MW = { mw: true, mwSrc: 'model', mwGain: 1, mwCon: 1, mwBlack: 0, mwClar: 1, mwSat: 1, mwTemp: 0, mwDust: 1, mwNeb: 1, mwCore: 1, mwGlow: 1, mwGrain: 0.5, mwWidth: 1, mwNear: true };
-const MW_RANGE = { mwGain: [0, 3], mwCon: [0.5, 2], mwBlack: [0, 1], mwClar: [0, 2], mwSat: [0, 2], mwTemp: [-1, 1], mwDust: [0, 2], mwNeb: [0, 3], mwCore: [0, 3], mwGlow: [0, 3], mwGrain: [0, 1], mwWidth: [0.6, 1.8] };
+const MW_RANGE = { mwGain: [0, 6], mwCon: [0.5, 3], mwBlack: [0, 1], mwClar: [0, 4], mwSat: [0, 3], mwTemp: [-1, 1], mwDust: [0, 4], mwNeb: [0, 6], mwCore: [0, 6], mwGlow: [0, 6], mwGrain: [0, 1], mwWidth: [0.4, 3] };
+// Licht und Schatten (planetfx.js uLook/uLook2) – Grenzen wie die Regler
+const LIGHT_RANGE = { sunK: [0.25, 4], shade: [0, 8], shadow: [0, 1], soft: [0, 4], spec: [0, 6], gloss: [0, 4] };
 // Stil = abgestimmte Werte der Bild-Regler, danach frei einstellbar; markiert nur, solange alle Werte passen („Astrofoto“ = Standard)
 const MW_STYLES = [['auge', 'Auge', { mwGain: 0.6, mwCon: 0.9, mwBlack: 0.1, mwClar: 0.6, mwSat: 0.35, mwTemp: 0, mwDust: 0.8, mwNeb: 0.15, mwCore: 0.6, mwGlow: 0.5, mwGrain: 0.2 }],
   ['foto', 'Astrofoto', { mwGain: 1, mwCon: 1, mwBlack: 0, mwClar: 1, mwSat: 1, mwTemp: 0, mwDust: 1, mwNeb: 1, mwCore: 1, mwGlow: 1, mwGrain: 0.5 }],
@@ -42,14 +45,14 @@ function clean(raw) {
     else if (typeof d === 'boolean') { if (typeof v === 'boolean') S[k] = v; }
     else if (typeof v === 'number' && Number.isFinite(v)) S[k] = v;
   }
-  S.dive = Math.min(8, Math.max(1.5, S.dive));
-  S.exposure = Math.min(2, Math.max(0.5, S.exposure));
-  S.small = Math.min(8, Math.max(1, S.small));
-  S.deep = Math.min(2, Math.max(0, S.deep));
-  S.vig = Math.min(1.5, Math.max(0, S.vig));
-  S.lensAmt = Math.min(3, Math.max(0, S.lensAmt));
+  S.dive = Math.min(15, Math.max(1, S.dive));
+  S.exposure = Math.min(4, Math.max(0.25, S.exposure));
+  S.small = Math.min(12, Math.max(1, S.small));
+  S.deep = Math.min(4, Math.max(0, S.deep));
+  S.vig = Math.min(3, Math.max(0, S.vig));
+  S.lensAmt = Math.min(5, Math.max(0, S.lensAmt));
   if (![0, 30, 60].includes(S.fpsCap)) S.fpsCap = 0;
-  for (const [k, [lo, hi]] of Object.entries(MW_RANGE)) S[k] = Math.min(hi, Math.max(lo, S[k]));
+  for (const [k, [lo, hi]] of Object.entries({ ...MW_RANGE, ...LIGHT_RANGE })) S[k] = Math.min(hi, Math.max(lo, S[k]));
   return S;
 }
 
@@ -108,9 +111,15 @@ const MINI = {
   motion: '<path d="M2 10Q10 2 18 10T34 10T50 10T66 10" fill="none" stroke="var(--accent)" stroke-width="2"/>',
   dive: '<path d="M2 18C24 18 40 2 62 2" fill="none" stroke="var(--accent)" stroke-width="2"/><circle cx="2" cy="18" r="2" fill="#c9d4ea"/><circle cx="62" cy="2" r="2" fill="#c9d4ea"/>',
   axes: '<circle cx="32" cy="10" r="6" fill="#34405a"/><path d="M33.6 4.4L35.4 0.6" stroke="var(--accent)" stroke-width="2"/><path d="M30.4 15.6L28.6 19.4" stroke="#aab4c8" stroke-width="2"/>',
+  sunK: '<circle cx="12" cy="10" r="5" fill="#ffd27a"/><circle cx="46" cy="10" r="8" fill="#34405a"/><path d="M38 10a8 8 0 0 1 16 0z" fill="#c9d4ea" transform="rotate(-90 46 10)"/>',
+  shade: '<circle cx="32" cy="10" r="8" fill="#5a6888"/><path d="M32 2a8 8 0 0 1 0 16z" fill="#c9d4ea"/>',
+  shadow: '<circle cx="32" cy="10" r="8" fill="#c9d4ea"/><circle cx="29" cy="8" r="2.4" fill="#05070c"/>',
+  soft: '<circle cx="32" cy="10" r="8" fill="url(#mgT)"/>',
+  spec: '<circle cx="32" cy="10" r="8" fill="#2c5b8f"/><ellipse cx="35" cy="7" rx="2.6" ry="1.6" fill="#fff"/>',
+  gloss: '<circle cx="32" cy="10" r="8" fill="#8a94a8"/><circle cx="35" cy="7" r="3.2" fill="#fff" opacity=".55"/>',
   fpsCap: [0, 1, 2, 3, 4, 5, 6, 7].map((i) => `<rect x="${3 + i * 7.5}" y="${i % 2 ? 6 : 3}" width="5" height="${i % 2 ? 11 : 14}" rx="1" fill="#c9d4ea" opacity="${i < 6 ? 0.85 : 0.3}"/>`).join(''),
 };
-const MINI_DEFS = '<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><linearGradient id="mgE"><stop offset="0" stop-color="#05070c"/><stop offset="1" stop-color="#f4f7ff"/></linearGradient><radialGradient id="mgV"><stop offset=".45" stop-color="#7a8cab"/><stop offset="1" stop-color="#05070c"/></radialGradient></defs></svg>';
+const MINI_DEFS = '<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><linearGradient id="mgE"><stop offset="0" stop-color="#05070c"/><stop offset="1" stop-color="#f4f7ff"/></linearGradient><radialGradient id="mgV"><stop offset=".45" stop-color="#7a8cab"/><stop offset="1" stop-color="#05070c"/></radialGradient><linearGradient id="mgT"><stop offset=".25" stop-color="#c9d4ea"/><stop offset=".75" stop-color="#1a2030"/></linearGradient></defs></svg>';
 // Zeile = Bedienung (+ Mini-Grafik daneben) + Hinweis darunter + ↺ „Standard“ am Zeilenende (nur bei geändertem Wert)
 const ROW = (key, html) => {
   const i = html.indexOf('<p class="cfg-note'), [ctl, note] = i < 0 ? [html, ''] : [html.slice(0, i), html.slice(i)];
@@ -132,32 +141,39 @@ const SUB = (t) => ['#', `<h5 class="b-subh">${t}</h5>`];
 const nRows = (g) => g.rows.filter(([k]) => k !== '#').length;
 // Reihenfolge von fern nach nah: Look, Himmel, Milchstraße, Orbit, dann Bedienung
 const GROUPS = [
-  { id: 'look', icon: 'look', title: 'Look', hero: true, rows: [['grade', LOOKS], ['exposure', RANGE('exposure', 'Belichtung', 0.5, 2, 0.05, '×')],
-    ['vig', RANGE('vig', 'Vignette', 0, 1.5, 0.05, '×', NEW)], ['bars', TOG('bars', 'Kinobalken 2,39:1', NEW)]] },
+  { id: 'look', icon: 'look', title: 'Look', hero: true, rows: [['grade', LOOKS], ['exposure', RANGE('exposure', 'Belichtung', 0.25, 4, 0.05, '×')],
+    ['vig', RANGE('vig', 'Vignette', 0, 3, 0.05, '×', NEW)], ['bars', TOG('bars', 'Kinobalken 2,39:1', NEW)]] },
   { id: 'sky', icon: 'sky', title: 'Himmel', rows: [['stars', TOG('stars', 'Sterne und Milchstraße')],
-    ['deep', RANGE('deep', 'Tiefer Himmel', 0, 2, 0.1, '×') + NOTE('Was eine Langzeitbelichtung hinter den Sternen sieht: ferne Galaxien und schwach leuchtender Staub der Milchstraße (Zirrus) – statistisch verteilt, überhöht, mit bloßem Auge unsichtbar. 0× = reines Schwarz.')]] },
+    ['deep', RANGE('deep', 'Tiefer Himmel', 0, 4, 0.1, '×') + NOTE('Was eine Langzeitbelichtung hinter den Sternen sieht: ferne Galaxien und schwach leuchtender Staub der Milchstraße (Zirrus) – statistisch verteilt, überhöht, mit bloßem Auge unsichtbar. 0× = reines Schwarz.')]] },
   { id: 'mw', icon: 'galaxy', title: 'Milchstraße', rows: [['mw', TOG('mw', 'Milchstraße zeigen', NEW)], SUB('Aussehen'), ['', MW_STYLE],
-    ['mwGain', RANGE('mwGain', 'Helligkeit', 0, 3, 0.05, '×')], ['mwCon', RANGE('mwCon', 'Kontrast', 0.5, 2, 0.05, '×')],
+    ['mwGain', RANGE('mwGain', 'Helligkeit', 0, 6, 0.05, '×')], ['mwCon', RANGE('mwCon', 'Kontrast', 0.5, 3, 0.05, '×')],
     ['mwBlack', RANGE('mwBlack', 'Schwarzpunkt', 0, 1, 0.05, '') + NOTE('Schneidet die schwachen Ränder des Bandes ab – der Himmel daneben wird dunkler.')],
-    ['mwClar', RANGE('mwClar', 'Struktur', 0, 2, 0.05, '×') + NOTE('Lokaler Kontrast: hebt Sternwolken und Staubkanten gegen ihre Umgebung ab.')],
-    ['mwSat', RANGE('mwSat', 'Sättigung', 0, 2, 0.05, '×')],
+    ['mwClar', RANGE('mwClar', 'Struktur', 0, 4, 0.05, '×') + NOTE('Lokaler Kontrast: hebt Sternwolken und Staubkanten gegen ihre Umgebung ab.')],
+    ['mwSat', RANGE('mwSat', 'Sättigung', 0, 3, 0.05, '×')],
     ['mwTemp', RANGE('mwTemp', 'Farbtemperatur', -1, 1, 0.05, '') + NOTE('Minus = kühler, bläulich · plus = wärmer, golden.')], SUB('Aufbau'),
-    ['mwDust', RANGE('mwDust', 'Staubbahnen', 0, 2, 0.05, '×') + NOTE('Dunkelwolken vor dem Sternlicht: Großer Riss, Pfeifennebel, Kohlensack. 0× = Sterne ohne Staub.')],
-    ['mwNeb', RANGE('mwNeb', 'Leuchtnebel (Hα)', 0, 3, 0.05, '×') + NOTE('Rot leuchtender Wasserstoff: Carina, Lagune, Nordamerika, Barnards Loop.')],
-    ['mwCore', RANGE('mwCore', 'Kern (Bulge)', 0, 3, 0.05, '×')], ['mwGlow', RANGE('mwGlow', 'Lichthof', 0, 3, 0.05, '×')],
+    ['mwDust', RANGE('mwDust', 'Staubbahnen', 0, 4, 0.05, '×') + NOTE('Dunkelwolken vor dem Sternlicht: Großer Riss, Pfeifennebel, Kohlensack. 0× = Sterne ohne Staub.')],
+    ['mwNeb', RANGE('mwNeb', 'Leuchtnebel (Hα)', 0, 6, 0.05, '×') + NOTE('Rot leuchtender Wasserstoff: Carina, Lagune, Nordamerika, Barnards Loop.')],
+    ['mwCore', RANGE('mwCore', 'Kern (Bulge)', 0, 6, 0.05, '×')], ['mwGlow', RANGE('mwGlow', 'Lichthof', 0, 6, 0.05, '×')],
     ['mwGrain', RANGE('mwGrain', 'Sternstaub', 0, 1, 0.05, '') + NOTE('Anteil des Bandes als einzelne feine Sterne statt Nebel – am deutlichsten beim Hineinzoomen.')],
-    ['mwWidth', RANGE('mwWidth', 'Dicke der Scheibe', 0.6, 1.8, 0.05, '×') + NOTE('Höhe von Sternen und Staub über der Ebene; das Modell wird neu berechnet.')],
+    ['mwWidth', RANGE('mwWidth', 'Dicke der Scheibe', 0.4, 3, 0.05, '×') + NOTE('Höhe von Sternen und Staub über der Ebene; das Modell wird neu berechnet.')],
     ['mwNear', TOG('mwNear', 'Magellansche Wolken und Andromeda')],
     ['mwSrc', SEG('mwSrc', 'Quelle', [['model', 'Eigenes Modell'], ['photo', 'ESO-Foto']]) + NOTE('Das Foto (ESO/S. Brunier, CC BY 4.0) war die Vorlage und dient nur zum Vergleich – nur an Stationen im Sonnensystem, wo die Lage am Himmel stimmt.')]] },
   { id: 'orbit', icon: 'orbit', title: 'Orbit', rows: [
-    ['small', RANGE('small', 'Satelliten und Kleinkörper', 1, 8, 0.5, '×') + NOTE('Satelliten, Trümmer und Asteroiden als vergrößerte Symbole – je größer, desto weniger Objekte (4× → jedes achte); 1× zeigt alle als Lichtpunkte.')],
+    ['small', RANGE('small', 'Satelliten und Kleinkörper', 1, 12, 0.5, '×') + NOTE('Satelliten, Trümmer und Asteroiden als vergrößerte Symbole – je größer, desto weniger Objekte (4× → jedes achte); 1× zeigt alle als Lichtpunkte.')],
     ['axes', TOG('axes', 'Drehachsen der Planeten und Monde', NEW) + NOTE('Linie über Nord- und Südpol jedes Planeten und Mondes, neigt und dreht sich mit dem Körper. Nordpol eisblau, Südpol grau.')]] },
+  { id: 'light', icon: 'sun', title: 'Licht und Schatten', rows: [
+    ['sunK', RANGE('sunK', 'Sonnenlicht', 0.25, 4, 0.05, '×', NEW) + NOTE('Stärke des direkten Sonnenlichts auf Planeten und Monden.')],
+    ['shade', RANGE('shade', 'Nachtseite aufhellen', 0, 8, 0.25, '×', NEW) + NOTE('Restlicht auf der Schattenseite (schon aufgehellt, echt fast schwarz). 0× = ganz dunkel.')],
+    ['shadow', RANGE('shadow', 'Schatten', 0, 1, 0.05, '×', NEW) + NOTE('Ringschatten, Wolkenschatten, Mond- und Planetenschatten bei Finsternissen. 0× = keine, 1× = volle Stärke.')],
+    ['soft', RANGE('soft', 'Weiche Schattengrenze', 0, 4, 0.1, '×', NEW) + NOTE('Wie weit die Lufthülle Licht über die Tag-Nacht-Grenze streut; 0× = harte Kante.')],
+    ['spec', RANGE('spec', 'Spiegelung der Ozeane', 0, 6, 0.1, '×', NEW) + NOTE('Glanzlicht der Sonne auf dem Meer der Erde.')],
+    ['gloss', RANGE('gloss', 'Glanz der Oberflächen', 0, 4, 0.1, '×', NEW) + NOTE('Zusätzliches Glanzlicht auf Eis, Wolken und Gestein (künstlerisch). 0× = aus wie bisher.')]] },
   { id: 'cam', icon: 'cam', title: 'Kamera &amp; Bewegung', rows: [['motion', SEG('motion', 'Bewegung', [['full', 'Voll'], ['calm', 'Ruhig'], ['off', 'Aus']]) + NOTE('„Aus“ wirkt wie „Bewegung reduzieren“ im System: keine Fahrt von selbst, Wechsel als kurze Überblendung.')],
-    ['cine', TOG('cine', 'Leerlauf-Fahrt der Kamera')], ['dive', RANGE('dive', 'Flugdauer', 1.5, 8, 0.1, 's')]] },
+    ['cine', TOG('cine', 'Leerlauf-Fahrt der Kamera')], ['dive', RANGE('dive', 'Flugdauer', 1, 15, 0.1, 's')]] },
   { id: 'fx', icon: 'fx', title: 'Effekte', rows: [
     ['bloom', TOG('bloom', 'Lichthof (Bloom)')],
     ['lens', TOG('lens', 'Farbsaum und Linsenreflex')],
-    ['lensAmt', RANGE('lensAmt', 'Stärke Linsenreflex', 0, 3, 0.05, '×', NEW) + NOTE('Lichthof, Ring und Geister um helle Quellen wie die Sonne. 0× = aus, der Farbsaum bleibt.')],
+    ['lensAmt', RANGE('lensAmt', 'Stärke Linsenreflex', 0, 5, 0.05, '×', NEW) + NOTE('Lichthof, Ring und Geister um helle Quellen wie die Sonne. 0× = aus, der Farbsaum bleibt.')],
     ['lensOptic', SEG('lensOptic', 'Optik-Stil', [['master', 'Master-Optik'], ['classic', 'Klassisch']], NEW) + NOTE('Master-Optik: Spektraler Beugungsring, Glanzbogen &amp; Magenta-Sensor-Ghost nach Referenzbild; Klassisch: Zarter Film-Halo.')],
     ['lensGhost', TOG('lensGhost', 'Magenta-Sensor-Ghost', NEW)],
     ['ghostMotion', TOG('ghostMotion', 'Ghost-Parallaxe auf optischer Achse', NEW) + NOTE('Der Magenta-Ghost wandert physikalisch entlang der optischen Achse bei Kameraschwenks.')],
@@ -199,7 +215,7 @@ export function mountSettings(root, btn) {
     t.tabIndex = on ? 0 : -1;
     root.querySelector(`#${t.getAttribute('aria-controls')}`).hidden = !on;
     if (on && focus) t.focus();
-    if (on) requestAnimationFrame(() => spyIn(root.querySelector(`#${t.getAttribute('aria-controls')}`), root));
+    if (on) { refreshLayers(); requestAnimationFrame(() => spyIn(root.querySelector(`#${t.getAttribute('aria-controls')}`), root)); }
   });
   root.querySelector('.cfg-tabs').addEventListener('click', (e) => { const t = e.target.closest('[role=tab]'); if (t) pick(t); });
   root.querySelector('.cfg-tabs').addEventListener('keydown', (e) => {
@@ -242,13 +258,13 @@ export function mountSettings(root, btn) {
     if (!i.dataset.key) return;
     setSetting(i.dataset.key, i.type === 'checkbox' ? i.checked : +i.value);
   });
-  onSettings((keys) => { sync(); if (keys.includes('timeline')) refreshLayers(); });
+  onSettings((keys) => { sync(); if (keys.includes('timeline')) rebuildLayers(); });
   sync();
   const open = (on) => {
     root.hidden = !on;
     document.body.classList.toggle('cfg-open', on);   // Kapitel-Titel weicht dem offenen Zahnrad
     btn.setAttribute('aria-expanded', String(on));
-    if (on) root.focus();
+    if (on) { refreshLayers(); root.focus(); }   // Werte, die die Infotafel inzwischen geändert hat
   };
   btn.addEventListener('click', () => open(root.hidden));
   if (new URLSearchParams(location.search).has('cfg')) open(true);   // Screenshots: Zahnrad offen

@@ -313,7 +313,7 @@ export function createUranusMoon(ctx, cfg) {
       value: spdIdx, min: 1, max: SPEEDS.length - 1, step: 1, autoplay: true, fmt: (i) => SPEEDS[Math.round(i)][1],
       set: (i, playing) => { spdIdx = Math.max(1, Math.round(i)); rate = playing ? SPEEDS[spdIdx][0] : 0; },
       get: () => ({ value: spdIdx, playing: rate !== 0 }), status: () => `${fmt.format(dateOf(jd))} UTC${rate ? '' : ' · Echtzeit'}` },
-    { id: 'ushine', type: 'range', group: 'Licht', label: 'Uranusschein', value: 1, min: 0, max: 3, step: 0.25, unit: '×',
+    { id: 'ushine', type: 'range', group: 'Licht', label: 'Uranusschein', value: 1, min: 0, max: 6, step: 0.25, unit: '×',
       hint: 'Licht des Uranus auf der Nachtseite, folgt seiner Phase. 1× entspricht ungefähr der echten Stärke (Näherung aus Radius, Abstand und Albedo).',
       set: (v) => { ushine = v; } },
     { id: 'uranus', type: 'toggle', group: 'Himmel', label: 'Uranus am Himmel', value: true, set: (v) => { showU = v; uHold.visible = v; uShell.visible = v; } },
