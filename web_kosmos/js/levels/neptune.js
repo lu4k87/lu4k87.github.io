@@ -227,7 +227,7 @@ export function create(ctx) {
     voyager: H('voyager', 2.6, (cam) => !hidden(hs.voyager.pos, cam)),
     rings: H('rings', 3.2, (cam) => ringsOn && !hidden(hs.rings.pos, cam)),
     arcs: H('arcs', 0.9, (cam) => ringsOn && !hidden(hs.arcs.pos, cam)),
-    triton: H('triton', 0.45, (cam) => !hidden(hs.triton.pos, cam)),   // [E5] Triton: auf kind 'dive', to 'triton' umstellen, sobald levels/triton.js steht
+    triton: H('triton', 0.45, (cam) => !hidden(hs.triton.pos, cam), { kind: 'dive', to: 'triton' }),   // [E5] Triton
     proteus: H('proteus', 0.08, (cam) => !hidden(hs.proteus.pos, cam)),
     nereid: H('nereid', 0.08, (cam) => !hidden(hs.nereid.pos, cam)),
   };

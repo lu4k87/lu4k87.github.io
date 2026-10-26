@@ -124,6 +124,13 @@ export const SOURCES = {
   'nep-voyager2': { t: 'Voyager 2: Vorbeiflug an Neptun am 25.08.1989', by: 'NASA Science', url: 'https://science.nasa.gov/mission/voyager/voyager-2/' },
   'nep-jpl-sats': { t: 'Planetary Satellite Mean Elements (NEP098, NEP105)', by: 'JPL Solar System Dynamics', url: 'https://ssd.jpl.nasa.gov/sats/elem/' },
   // [E5] Triton
+  'tri-nasa': { t: 'Triton (rückläufige Bahn, wohl eingefangen aus dem Kuipergürtel, −235 °C, 70 % Rückstrahlung, Voyager 2)', by: 'NASA Science', url: 'https://science.nasa.gov/neptune/moons/triton/' },
+  'tri-jpl': { t: 'Planetary Satellite Mean Elements, Neptun-System (Ephemeride NEP098)', by: 'JPL Solar System Dynamics', url: 'https://ssd.jpl.nasa.gov/sats/elem/' },
+  'tri-soderblom-1990': { t: "Triton's Geyser-Like Plumes: Discovery and Basic Characterization", by: 'Soderblom et al. 1990, Science 250, 410', url: 'https://doi.org/10.1126/science.250.4979.410' },
+  'tri-smith-1989': { t: 'Voyager 2 at Neptune: Imaging Science Results', by: 'Smith et al. 1989, Science 246, 1422', url: 'https://doi.org/10.1126/science.246.4936.1422' },
+  'tri-pia18668': { t: 'Map of Triton (Voyager-2-Farbmosaik, 600 m je Bildpunkt, P. Schenk)', by: 'NASA/JPL-Caltech/LPI, PIA18668', url: 'https://science.nasa.gov/photojournal/map-of-triton' },
+  'tri-pia00059': { t: 'Triton South Polar Terrain (rund 50 dunkle Fahnen)', by: 'NASA/JPL, PIA00059', url: 'https://science.nasa.gov/photojournal/triton-south-polar-terrain' },
+  'tri-pia00060': { t: "Triton – False Color of 'Cantaloupe' Terrain", by: 'NASA/JPL, PIA00060', url: 'https://science.nasa.gov/photojournal/triton-false-color-of-cantaloupe-terrain' },
   // [E5] Uranus
   'ura-nasa-facts': { t: 'Uranus: Facts (Achsneigung 97,77°, 84 Jahre, 21 Jahre Winter je Pol, 13 Ringe, 28 Monde, Namen nach Shakespeare und Pope)', by: 'NASA Science', url: 'https://science.nasa.gov/uranus/facts/' },
   'ura-nssdc': { t: 'Uranus Fact Sheet (Radius 25.559 km, Tag 17,24 h rückläufig)', by: 'NASA NSSDCA', url: 'https://nssdc.gsfc.nasa.gov/planetary/factsheet/uranusfact.html' },
@@ -330,6 +337,28 @@ export const STATIONS = {
     },
   },
   // [E5] Triton
+  triton: {
+    n: '02F1', title: 'Triton', kicker: 'Mond des Neptun', parent: 'neptune', width: 8e6, dist: 30.07 * AU, lookback: 30.07 * AU / C,
+    lead: 'Neptuns größter Mond läuft rückwärts um seinen Planeten – wohl ein eingefangenes Objekt aus dem Kuipergürtel. Auf der Kappe aus gefrorenem Stickstoff fand Voyager 2 im Jahr 1989 dunkle Geysirfahnen; seitdem war keine Sonde mehr dort. Neptun steht groß und unbeweglich am Himmel, Licht und Jahreszeit sind für den angezeigten Zeitpunkt berechnet.',
+    facts: [
+      { v: '1.353,4', u: 'km', l: 'Radius', s: 'nssdc-nepsat' },
+      { v: '5,88', u: 'Tage', l: 'Umlauf, rückläufig', s: 'nssdc-nepsat' },
+      { v: '−235', u: '°C', l: 'Oberfläche', s: 'tri-nasa' },
+      { v: '≈ 8', u: 'km', l: 'Geysir-Säulen', s: 'tri-soderblom-1990' },
+    ],
+    note: 'Mondfest gezeichnet: Triton ruht, Neptun steht über dem Längengrad 0 still, Sonne und Sterne ziehen über den Himmel. Lage aus den mittleren Bahnelementen von JPL (Ephemeride NEP098, auf etwa ein Grad) und Neptuns Bahn (JPL); Tritons Achse = Bahnachse (gebundene Rotation). Karte: Voyager-2-Farbmosaik von P. Schenk (NASA/JPL-Caltech/LPI, PIA18668, 600 m je Bildpunkt, gemeinfrei, auf 2.048 Bildpunkte verkleinert); Lücken im Mosaik sind interpoliert („GlobalFill“), der Norden ab etwa 45° N lag 1989 in der Polarnacht und ist mit der Mittelfarbe aufgefüllt (Modell). Reflexion nach Lommel-Seeliger, Neptunschein aufgehellt. Geysire: Orte im Gebiet der Voyager-Funde auf der Südpolkappe und Windrichtung angenommen, Säulen 5-fach überhöht (Regler im Zahnrad), Fahnen strömen im Zeitraffer – echte Ausbrüche dauern wohl ein Jahr oder länger. Dunst als Saum dicker und heller gezeichnet; Bodendruck ≈ 14 µbar (Richtwert). Neptun maßstäblich (8° am Himmel), Bänder aus der Karte (Solar System Scope) und Rauschen. Blick „Bahn“: Triton ist dort nur ein Punkt.',
+    sources: ['nssdc-nepsat', 'tri-nasa', 'tri-jpl', 'jpl-elements', 'tri-soderblom-1990', 'tri-smith-1989', 'tri-pia18668', 'tri-pia00059', 'tri-pia00060', 'sss-tex', 'd3-celestial'],
+    hotspots: {
+      neptune: { t: 'Neptun am Himmel', x: 'Triton zeigt Neptun immer dieselbe Seite. Von hier aus steht der Planet deshalb unbeweglich am Himmel und misst rund 8° – etwa fünfzehnmal so viel wie der Vollmond bei uns (eigene Rechnung aus Neptuns Radius und 354.760 km Abstand). Er zeigt Phasen, sein Licht erhellt Tritons Nachtseite.', s: 'nssdc-nepsat' },
+      orbit: { t: 'Rückläufige Bahn', x: 'Triton ist der einzige große Mond, der gegen die Drehrichtung seines Planeten umläuft: 5,9 Tage für eine Runde, 157° gegen Neptuns Äquator geneigt. So entsteht kein Mond aus der Scheibe um einen jungen Planeten – Triton war wohl ein Objekt des Kuipergürtels, das Neptun eingefangen hat.', s: 'tri-nasa' },
+      geysers: { t: 'Stickstoff-Geysire', x: 'Voyager 2 fand 1989 mindestens vier aktive Ausbrüche. Dunkle Säulen steigen rund 8 km hoch, oben treibt der Wind die Wolken über 100 km weit. Vermutlich heizt die schwache Sonne Stickstoffeis unter der Oberfläche auf: Schon weniger als 4 Grad über den 38 K der Umgebung reichen, um Gas mit dunklen Teilchen hinauszuschießen. Im Bild 5-fach überhöht.', s: 'tri-soderblom-1990' },
+      streaks: { t: 'Dunkle Streifen', x: 'Auf der Südpolkappe liegen rund 50 dunkle Fahnen, manche über 160 km lang: abgelagertes Material von Geysiren, vom Wind in eine Richtung gezogen. Die dünne Luft trägt also genug Wind, um feine Teilchen zu verwehen.', s: 'tri-pia00059' },
+      cap: { t: 'Südpolkappe', x: 'Heller Stickstoffreif, leicht rötlich getönt durch organische Verbindungen, überzieht eine starre Kruste – vermutlich aus Wassereis. Triton wirft rund 70 % des Sonnenlichts zurück, die Oberfläche hat −235 °C.', s: 'tri-smith-1989' },
+      cantaloupe: { t: 'Cantaloupe-Terrain', x: 'Dicht gedrängte Mulden und Rücken, die an die Schale einer Zuckermelone (Cantaloupe) erinnern – daher der Name. Die Landschaft ist älter als die von Bruchlinien durchzogenen Ebenen daneben. Bekannt ist sie nur aus dem Streifen, den Voyager 2 aufnahm.', s: 'tri-pia00060' },
+      north: { t: 'Unbekannter Norden', x: 'Beim Vorbeiflug 1989 lag der Norden in der Polarnacht, Voyager 2 sah dort nichts. Die Karte ist hier mit einer Mittelfarbe aufgefüllt – wie es wirklich aussieht, weiß niemand. Voyager 2 ist bis heute die einzige Sonde, die Triton besucht hat.', s: 'tri-nasa' },
+      season: { t: 'Sonne im Zenit', x: 'Hier steht die Sonne gerade senkrecht. Weil Tritons Bahn stark geneigt ist und sich langsam dreht, wandert dieser Punkt über die Jahrhunderte weit nach Süden und Norden: Beide Pole liegen abwechselnd lange im Sonnenlicht. 1989 stand die Sonne über der Südhalbkugel. Regler „Jahr“ in der Infotafel.', s: 'tri-nasa' },
+    },
+  },
   // [E5] Uranus
   uranus: {
     n: '02G', title: 'Uranus & Monde', kicker: 'Eisriese', parent: 'solar', width: 4e8, dist: 19.19 * AU, lookback: 19.19 * AU / C,

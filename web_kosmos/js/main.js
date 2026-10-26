@@ -38,6 +38,7 @@ const LOADERS = {
   // [E5] Neptun, Uranus, Pluto
   neptune: () => import('./levels/neptune.js'),
   // [E5] Triton
+  triton: () => import('./levels/triton.js'),
   // [E5] Uranus
   uranus: () => import('./levels/uranus.js'),
   // [E5] Pluto
