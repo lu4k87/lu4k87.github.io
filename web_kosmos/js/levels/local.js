@@ -123,7 +123,7 @@ export function create(ctx) {
   // Zukunft: Bahn von M31 relativ zur Milchstraße (Milchstraße bleibt im Ursprung)
   const track = futureTrack(m31pos);
   const tMax = track.length - 1;
-  const trackLine = new THREE.Line(new THREE.BufferGeometry().setFromPoints(track), new THREE.LineBasicMaterial({ color: 0xf3b552, transparent: true, opacity: 0.35, blending: THREE.AdditiveBlending, depthWrite: false }));
+  const trackLine = new THREE.Line(new THREE.BufferGeometry().setFromPoints(track), new THREE.LineBasicMaterial({ color: 0x33ccff, transparent: true, opacity: 0.35, blending: THREE.AdditiveBlending, depthWrite: false }));
   trackLine.visible = false;
   scene.add(trackLine);
   let future = 0, labelsOn = false;

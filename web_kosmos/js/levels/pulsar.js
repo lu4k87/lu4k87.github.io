@@ -437,7 +437,7 @@ export function create(ctx) {
   // zur Erde = +z zeigt)
   const W = 300, H = 64;
   const curve = Array.from({ length: 121 }, (_, i) => { const f = i / 120; return `${(f * W).toFixed(1)},${(H - 6 - profile(f) * (H - 12)).toFixed(1)}`; }).join(' ');
-  const widget = () => `<svg viewBox="0 0 ${W} ${H}" aria-label="Lichtkurve des Crab-Pulsars"><polyline points="${curve}" fill="none" stroke="#9cc8ff" stroke-width="1.6"/><line id="w-ph" x1="0" x2="0" y1="4" y2="${H - 4}" stroke="#f3b552" stroke-width="1.6"/><circle id="w-dot" cx="0" cy="${H - 6}" r="3" fill="#f3b552"/></svg><div class="w-cap"><span>Lichtkurve · Hauptpuls</span><span>Zwischenpuls bei 0,4 P</span></div>`;
+  const widget = () => `<svg viewBox="0 0 ${W} ${H}" aria-label="Lichtkurve des Crab-Pulsars"><polyline points="${curve}" fill="none" stroke="#9cc8ff" stroke-width="1.6"/><line id="w-ph" x1="0" x2="0" y1="4" y2="${H - 4}" style="stroke: var(--accent)" stroke-width="1.6"/><circle id="w-dot" cx="0" cy="${H - 6}" r="3" style="fill: var(--accent)"/></svg><div class="w-cap"><span>Lichtkurve · Hauptpuls</span><span>Zwischenpuls bei 0,4 P</span></div>`;
   let lastPh = -1;
   const controls = [
     { id: 'slow', label: 'Zeitlupe', value: '200', options: [['600', '1 : 600'], ['200', '1 : 200'], ['60', '1 : 60']], set: (v) => { slow = +v; } },

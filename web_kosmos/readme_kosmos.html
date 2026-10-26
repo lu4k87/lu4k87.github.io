@@ -8,19 +8,19 @@
 <style>
   :root {
     --bg: #f3f1ec; --surface: #ffffff; --line: #d9d4c8;
-    --text: #17181d; --accent: #8a5a00; --accent-soft: #f4e6c4; --code-bg: #e8e4d9;
+    --text: #17181d; --accent: #0a6f94; --accent-soft: #d6f1fc; --code-bg: #e8e4d9;
     --radius-sm: 4px; --radius: 6px; --radius-lg: 8px;
     --gap: 24px; --max: 1080px;
   }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
       --bg: #0d0f16; --surface: #171a24; --line: #2b3040;
-      --text: #eceef5; --accent: #f0b84a; --accent-soft: #3a2c10; --code-bg: #232736;
+      --text: #eceef5; --accent: #33ccff; --accent-soft: #0d3341; --code-bg: #232736;
     }
   }
   :root[data-theme="dark"] {
     --bg: #0d0f16; --surface: #171a24; --line: #2b3040;
-    --text: #eceef5; --accent: #f0b84a; --accent-soft: #3a2c10; --code-bg: #232736;
+    --text: #eceef5; --accent: #33ccff; --accent-soft: #0d3341; --code-bg: #232736;
   }
   * { box-sizing: border-box; }
   body {
@@ -80,7 +80,7 @@
     <div class="hero-text">
       <span class="tag">3D-Web-App · three.js · WebGL 2</span>
       <h1>Kosmos<br>Reise durch das All</h1>
-      <p class="lead">Eine interaktive 3D-Reise in <strong>zehn Stationen</strong>: von der Erde mit ihrem Mond bis zum beobachtbaren Universum. <strong>Ein Klick auf ein goldenes Abzeichen</strong> fliegt in die nächste Ebene, „Hinaus“ zoomt in die größere zurück.</p>
+      <p class="lead">Eine interaktive 3D-Reise in <strong>zehn Stationen</strong>: von der Erde mit ihrem Mond bis zum beobachtbaren Universum. <strong>Ein Klick auf ein blaues Abzeichen</strong> fliegt in die nächste Ebene, „Hinaus“ zoomt in die größere zurück.</p>
       <p>Jede Zahl der Seite hat eine Quelle (NASA, JPL, ESA, Fachartikel); was ein Modell oder eine eigene Rechnung ist, steht dabei.</p>
       <ul class="facts">
         <li>10 Stationen, ein durchgehender Flug</li>
@@ -89,16 +89,16 @@
         <li>Kein Build, läuft offline im Browser</li>
       </ul>
     </div>
-    <div class="shot" role="img" aria-label="Platzhalter für das Titelbild der Web-App"><span><b>Screenshot folgt</b>Titelbild: Erde und Mond mit Infotafel und Größenskala</span></div>
+    <div class="shot" role="img" aria-label="Platzhalter für das Titelbild der Web-App"><span><b>Screenshot folgt</b>Titelbild: Erde und Mond mit Infotafel und Stationsbaum</span></div>
   </header>
 
   <section>
     <h2>So bedienst du es</h2>
     <ol class="steps">
       <li><h3>Schauen</h3><p>Ziehen dreht die Ansicht, Scrollen zoomt. Am Zoom-Anschlag weiterscrollen fliegt hinaus bzw. hinein.</p></li>
-      <li><h3>Hineinfliegen</h3><p>Ein goldenes Abzeichen führt eine Ebene tiefer, z. B. von der Milchstraße in den Orion-Nebel. Der Flug ist durchgehend, ohne Schnitt.</p></li>
+      <li><h3>Hineinfliegen</h3><p>Ein blaues Abzeichen führt eine Ebene tiefer, z. B. von der Milchstraße in den Orion-Nebel. Der Flug ist durchgehend, ohne Schnitt.</p></li>
       <li><h3>Entdecken</h3><p>Weiße Abzeichen schwenken die Kamera hin und öffnen die Info-Karte. Die Infotafel nennt Kennzahlen, Schalter und Quellen.</p></li>
-      <li><h3>Hinausfliegen</h3><p>„Hinaus“ zoomt in die größere Station. Die Größenskala links springt direkt zu jeder Station.</p></li>
+      <li><h3>Hinausfliegen</h3><p>„Hinaus“ zoomt in die größere Station. Der Stationsbaum links springt direkt zu jeder Station.</p></li>
     </ol>
   </section>
 
@@ -109,8 +109,8 @@
     </div>
     <div class="grid">
       <figure>
-        <div class="shot" role="img" aria-label="Platzhalter Größenskala"><span><b>Screenshot folgt</b>Größenskala links</span></div>
-        <figcaption><span class="pos">Größenskala</span><span>Logarithmische Skala der Bildbreite mit Einheiten von km über AE und Lj bis Mrd. Lj. Ein Klick springt zur Station.</span></figcaption>
+        <div class="shot" role="img" aria-label="Platzhalter Stationsbaum"><span><b>Screenshot folgt</b>Stationsbaum links</span></div>
+        <figcaption><span class="pos">Stationsbaum</span><span>Alle Stationen in Reiseordnung, Abstecher in der Milchstraße eingerückt, je Station die Bildbreite von km bis Mrd. Lj. Ein Klick springt zur Station.</span></figcaption>
       </figure>
       <figure>
         <div class="shot" role="img" aria-label="Platzhalter Infotafel"><span><b>Screenshot folgt</b>Infotafel rechts</span></div>
@@ -118,7 +118,7 @@
       </figure>
       <figure>
         <div class="shot" role="img" aria-label="Platzhalter Info-Karte"><span><b>Screenshot folgt</b>Abzeichen mit Info-Karte</span></div>
-        <figcaption><span class="pos">Abzeichen und Info-Karte</span><span>Goldene Abzeichen führen weiter, weiße erklären. Gewinkelte 45°-Leitlinien verbinden Abzeichen und Text.</span></figcaption>
+        <figcaption><span class="pos">Abzeichen und Info-Karte</span><span>Blaue Abzeichen führen weiter, weiße erklären. Gewinkelte 45°-Leitlinien verbinden Abzeichen und Text.</span></figcaption>
       </figure>
       <figure>
         <div class="shot" role="img" aria-label="Platzhalter Messleiste"><span><b>Screenshot folgt</b>Messleiste unten</span></div>

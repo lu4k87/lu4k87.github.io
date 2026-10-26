@@ -96,7 +96,7 @@ export function create(ctx) {
     layers.add(m);
     epochPos[id] = back.clone().addScaledVector(sideV, -0.35 + (EPOCHS.findIndex((e) => e[1] === id) % 2) * 0.7).add(new THREE.Vector3(0, 0.25, 0)).normalize().multiplyScalar(r);
   }
-  const probe = new THREE.Mesh(new THREE.SphereGeometry(1, 96, 48), layerMat(0xf3b552, 0.16));
+  const probe = new THREE.Mesh(new THREE.SphereGeometry(1, 96, 48), layerMat(0x33ccff, 0.16));
   probe.visible = false;
   scene.add(probe);
 

@@ -1,10 +1,10 @@
-// Bedienoberfläche über der 3D-Szene: Größenskala (links, logarithmisch, Einheiten-Klammern, Marke = aktuelle
-// Bildbreite), Infotafel (rechts: Kennzahlen-Bento, Schalter der Station, Entdecken-Liste, Darstellung + Quellen),
+// Bedienoberfläche über der 3D-Szene: Stationsbaum (links, Reiseordnung von unten, Abstecher eingerückt, Bildbreite
+// je Station), Infotafel (rechts: Kennzahlen-Bento, Schalter der Station, Entdecken-Liste, Darstellung + Quellen),
 // Abzeichen mit gewinkelten 45°-Leitlinien (Sechseck wie Biochar), Info-Karte, Messleiste (Bildbreite, Lichtlaufzeit,
 // Entfernung, Blick zurück), Reiseroute, Kapitel-Titel beim Ankommen, Rand-Zug-Anzeige.
 
 import { STATIONS, ROUTE, SOURCES, routeIndex } from './content.js';
-import { fmtLength, fmtTime, C, LY } from './astro.js';
+import { fmtLength, fmtTime, C } from './astro.js';
 import { settings, setSetting, mountSettings, onSettings } from './settings.js';
 import { getLayer, setLayer, fmtVal } from './layers.js';
 import { cardHtml, mountCard, unmountCard } from './cards.js';
@@ -14,15 +14,6 @@ const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&l
 const HEX = 'M20 2L35.59 11L35.59 29L20 38L4.41 29L4.41 11z';
 const hex = (inner = '', cls = '') => `<svg class="hex ${cls}" viewBox="0 0 40 40" aria-hidden="true"><path class="hex-shape" d="${HEX}"/>${inner}</svg>`;
 const hexNum = (n, cls) => hex(`<text x="20" y="24.5" text-anchor="middle">${String(n).padStart(2, '0')}</text>`, cls);
-
-// Größenskala: 10⁶ m (unten) … 10²⁷·³ m (oben); Klammern nach der Einheit, in der die Messleiste gerade zählt
-const LOG_BOT = 6, LOG_TOP = 27.3;
-const railFrac = (m) => Math.min(1, Math.max(0, (Math.log10(m) - LOG_BOT) / (LOG_TOP - LOG_BOT)));
-const ZONES = [
-  { l: 'km', a: 6, b: 9 }, { l: 'AE', a: 9, b: Math.log10(0.05 * LY) },
-  { l: 'Lichtjahre', a: Math.log10(0.05 * LY), b: Math.log10(1e6 * LY) },
-  { l: 'Mio. Lj', a: Math.log10(1e6 * LY), b: Math.log10(1e9 * LY) }, { l: 'Mrd. Lj', a: Math.log10(1e9 * LY), b: LOG_TOP },
-];
 
 export function createHud(h) {
   const body = document.body;
@@ -46,39 +37,48 @@ export function createHud(h) {
   body.classList.toggle('panel-off', !settings.S.panel);
   $('#btn-panel').addEventListener('click', () => setSetting('panel', !settings.S.panel));
 
-  // ---------- Größenskala ----------
-  const railTicks = new Map();
+  // ---------- Stationsbaum ----------
+  // Reiseordnung von unten (01) nach oben. Stamm = erste Station der Route und alle ihre Vorfahren; was abseits liegt
+  // (Orion-Nebel, Krebsnebel → Crab-Pulsar, Sagittarius A* …), hängt eingerückt unter seiner Elternstation – wie Hinein/Hinaus.
+  const railRows = new Map(), railKids = new Map(), railTrunk = [];
+  let railSvg = null, railLive = null;
   function buildRail() {
-    const ids = Object.keys(STATIONS);
-    rail.innerHTML = `
-      <div class="rail-zones">${ZONES.map((z) => `<span class="rail-zone" style="--a:${railFrac(10 ** z.a)};--b:${railFrac(10 ** z.b)}"><i>${z.l}</i></span>`).join('')}</div>
-      <div class="rail-line"></div>
-      <div class="rail-now" id="rail-now"><span id="rail-now-v">–</span></div>
-      ${ids.map((id) => {
-        const st = STATIONS[id];
-        const side = ROUTE.indexOf(id) >= 0 && ['orion', 'crab', 'pulsar', 'sgra'].includes(id) ? 'is-branch' : '';
-        return `<button type="button" class="rail-st ${side}" data-id="${id}" style="--f:${railFrac(st.width)}" aria-label="${esc(st.title)} – Bildbreite ${esc(fmtLength(st.width))}">
-          <span class="rail-tick"></span><span class="rail-name"><b>${String(st.n).padStart(2, '0')}</b> ${esc(st.title)}</span></button>`;
-      }).join('')}`;
-    rail.querySelectorAll('.rail-st').forEach((b) => {
-      railTicks.set(b.dataset.id, b);
-      b.addEventListener('click', () => { h.onInput(); h.onGo(b.dataset.id); });
+    for (let id = ROUTE[0]; id; id = STATIONS[id].parent) railTrunk.push(id);
+    const ids = Object.keys(STATIONS), onTrunk = new Set(railTrunk);
+    const depth = (id) => (onTrunk.has(id) || !STATIONS[id].parent ? 0 : depth(STATIONS[id].parent) + 1);
+    ids.forEach((id) => railKids.set(id, ids.filter((k) => STATIONS[k].parent === id && !onTrunk.has(k)).sort((a, b) => STATIONS[a].n - STATIONS[b].n)));
+    const walk = (id) => [id, ...railKids.get(id).flatMap(walk)];
+    const order = railTrunk.flatMap(walk);
+    order.push(...ids.filter((id) => !order.includes(id)));
+    rail.innerHTML = `<svg class="rail-tree" aria-hidden="true"></svg><ol class="rail-list">${order.map((id) => {
+      const st = STATIONS[id], d = depth(id);
+      return `<li class="rl-row${d ? ' is-branch' : ''}" style="--d:${d}" data-id="${id}"><button type="button" class="rl-btn" aria-label="${esc(st.title)} – Bildbreite ${esc(fmtLength(st.width))}">
+        <span class="rl-dot"></span><span class="rl-txt"><b>${String(st.n).padStart(2, '0')}</b> ${esc(st.title)}<small>${esc(fmtLength(st.width))}</small></span></button></li>`;
+    }).join('')}</ol>`;
+    railSvg = rail.querySelector('.rail-tree');
+    rail.querySelectorAll('.rl-row').forEach((li) => {
+      railRows.set(li.dataset.id, li);
+      li.firstElementChild.addEventListener('click', () => { h.onInput(); h.onGo(li.dataset.id); });
     });
     layoutRail();
+    document.fonts?.ready.then(layoutRail);
   }
-  // Namen dürfen sich nicht überdecken: von unten nach oben mit Mindestabstand schieben (Marke bleibt am echten Ort)
+  // Linien aus den echten Punkt-Lagen (nach jedem Umbruch neu): Stamm senkrecht, Abzweig als Winkel zu den Kindern
   function layoutRail() {
-    const H = rail.clientHeight || 1;
-    const gap = 21;
-    const items = [...railTicks.values()].map((b) => ({ b, y: (1 - +b.style.getPropertyValue('--f')) * H })).sort((a, b) => b.y - a.y);
-    let last = Infinity;
-    for (const it of items) {
-      const y = Math.min(it.y, last - gap);
-      it.b.style.setProperty('--dy', `${(y - it.y).toFixed(1)}px`);
-      last = y;
-    }
+    const R = rail.getBoundingClientRect();
+    if (!R.height || !railRows.size) return;
+    const pt = (id) => { const r = railRows.get(id).querySelector('.rl-dot').getBoundingClientRect(); return [r.left + r.width / 2 - R.left, r.top + r.height / 2 - R.top]; };
+    const f = (v) => v.toFixed(1);
+    const [x0, y0] = pt(railTrunk[0]), [, y1] = pt(railTrunk[railTrunk.length - 1]);
+    let d = `M${f(x0)},${f(y0)}V${f(y1)}`;
+    railKids.forEach((ks, id) => {
+      if (!ks.length) return;
+      const [px, py] = pt(id), [kx, ky] = pt(ks[0]), [, kyEnd] = pt(ks[ks.length - 1]);
+      d += `M${f(px)},${f(py)}V${f((py + ky) / 2)}H${f(kx)}V${f(kyEnd)}`;
+    });
+    railSvg.innerHTML = `<path d="${d}"/>`;
+    rail.classList.toggle('is-tight', R.height / railRows.size < 40);
   }
-  const railNow = () => $('#rail-now');
 
   // ---------- Reiseroute ----------
   route.innerHTML = ROUTE.map((id, i) => `<li><button type="button" data-id="${id}" aria-label="Station ${i + 1}: ${esc(STATIONS[id].title)}"><span class="rt-dot"></span><span class="rt-name">${esc(STATIONS[id].title)}</span></button></li>`).join('');
@@ -94,7 +94,13 @@ export function createHud(h) {
     lv = level;
     meta = level.meta;
     const id = level.id;
-    railTicks.forEach((b, k) => b.classList.toggle('is-current', k === id));
+    railRows.forEach((li, k) => {
+      const cur = k === id, btn = li.firstElementChild;
+      li.classList.toggle('is-current', cur);
+      if (cur) btn.setAttribute('aria-current', 'step'); else btn.removeAttribute('aria-current');
+      li.querySelector('small').textContent = fmtLength(STATIONS[k].width);
+    });
+    railLive = railRows.get(id)?.querySelector('small') || null;
     route.querySelectorAll('button').forEach((b) => {
       const cur = b.dataset.id === id;
       b.classList.toggle('is-current', cur);
@@ -374,11 +380,7 @@ export function createHud(h) {
     lastW = widthM;
     mWidth.textContent = fmtLength(widthM);
     mLight.textContent = fmtTime(widthM / C);
-    const now = railNow();
-    if (now) {
-      now.style.setProperty('--f', railFrac(widthM));
-      $('#rail-now-v').textContent = fmtLength(widthM);
-    }
+    if (railLive) railLive.textContent = fmtLength(widthM);
   }
 
   // ---------- Flug, Kapitel-Titel, Auftakt ----------
