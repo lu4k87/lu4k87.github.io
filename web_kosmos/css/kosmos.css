@@ -209,18 +209,112 @@ body.is-flying .hint, body.is-intro .hint { opacity: 0; }
 .hsl--faint { color: var(--ink-soft); background: rgba(0, 0, 0, 0.25); font-size: 12px; }
 .hotspots .is-off { opacity: 0; pointer-events: none !important; }
 
-/* ---------- Info-Karte ---------- */
+/* ---------- Info-Karte: dockt am angeklickten Abzeichen an (Lage per translate aus hud.js), Bento-Aufbau aus cards.js ---------- */
 .hs-card {
-  position: absolute; top: 8px; left: 8px; width: min(340px, calc(100% - 16px)); padding: 14px 14px 14px 16px; border-radius: var(--radius);
-  background: var(--glass-sheen), var(--glass-strong); display: flex; flex-direction: column; gap: 8px;
-  opacity: 0; visibility: hidden; transform: translateY(-4px); transition: opacity 0.25s, transform 0.25s var(--ease-out), visibility 0s 0.25s;
+  position: absolute; top: 0; left: 0; width: min(368px, calc(100% - 16px)); max-height: calc(100% - 16px); overflow: hidden auto;
+  overscroll-behavior: contain; scrollbar-width: thin; scrollbar-color: var(--line-strong) transparent; container-type: inline-size;
+  padding: 14px 16px; border-radius: var(--radius); background: var(--glass-sheen), var(--glass-strong); display: flex; flex-direction: column; gap: 10px;
+  opacity: 0; visibility: hidden; scale: 0.96; transition: opacity 0.25s, scale 0.25s var(--ease-out), visibility 0s 0.25s;
 }
-.hs-card.is-open { opacity: 1; visibility: visible; transform: none; transition: opacity 0.25s, transform 0.25s var(--ease-out); }
+.hs-card.is-open { opacity: 1; visibility: visible; scale: 1; transition: opacity 0.5s var(--ease-out), scale 0.6s var(--ease-out); }
+.hs-card.is-away { opacity: 0; visibility: hidden; scale: 0.96; pointer-events: none; transition: opacity 0.2s, visibility 0s 0.2s; }
+.hs-card::-webkit-scrollbar { width: 6px; }
+.hs-card::-webkit-scrollbar-track { background: transparent; }
+.hs-card::-webkit-scrollbar-thumb { background: var(--line-strong); border-radius: 3px; }
 .hs-card-head { display: flex; align-items: flex-start; gap: 8px; }
 .hs-card-title { flex: 1; display: flex; align-items: center; gap: 8px; font-size: 16px; font-weight: 600; line-height: 1.3; }
 .hs-card-title .hex { color: var(--accent); --hex-stroke: var(--accent); }
 .hs-card-text { font-size: 14px; line-height: 1.55; hyphens: auto; text-wrap: pretty; }
-.hs-card-src { font-size: 12.5px; color: var(--ink-soft); }
+.hs-lead--card { stroke: var(--accent); stroke-width: 1.4; }
+
+.hc-graph { margin: 0 -4px; }
+.hc-svg { width: 100%; height: auto; display: block; overflow: visible; }
+.hc-svg text { font: 500 11px var(--mono); fill: var(--ink-soft); }
+.hc-svg .hc-t { letter-spacing: 0.1em; text-transform: uppercase; }
+.hc-svg .hc-acc { fill: var(--accent); }
+.hc-svg .hc-big { font: 500 26px var(--mono); fill: var(--ink); }
+.hc-cap { margin-top: 6px; padding: 0 4px; font-size: 12.5px; line-height: 1.45; color: var(--ink-soft); text-wrap: pretty; hyphens: auto; }
+.hc-tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.hc-tile { min-width: 0; display: flex; flex-direction: column; gap: 3px; padding: 8px 9px; border-radius: 8px; background: rgba(255, 255, 255, 0.05); border: 1px solid var(--line); }
+.hc-tile b { font: 500 16px/1.15 var(--mono); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.hc-tile b.is-long { font-size: 13.5px; }
+.hc-tile b i { font: 500 12px var(--mono); font-style: normal; color: var(--ink-soft); margin-left: 3px; }
+.hc-tile > span { font-size: 12px; line-height: 1.3; color: var(--ink-soft); hyphens: auto; }
+.fn { font: 500 11px var(--mono); color: var(--accent); margin-left: 2px; line-height: 0; }
+.hc-ctl { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 6px 10px; padding: 9px 12px 10px; border-radius: 8px; cursor: pointer;
+  border: 1px solid color-mix(in srgb, var(--accent) 50%, transparent); background: var(--accent-soft); }
+.hc-ctl-l { font-size: 13px; font-weight: 500; }
+.hc-ctl output { font: 500 13px var(--mono); color: var(--accent); }
+.hc-ctl input[type=range] { grid-column: 1 / -1; width: 100%; margin: 0; accent-color: var(--accent); }
+.hc-more summary { cursor: pointer; font: 500 12px var(--mono); letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-soft); }
+.hc-more .hs-card-text { margin-top: 8px; }
+@container (max-width: 300px) {   /* schmale Karte (Handy-Leiste): Kennzahlen als Zeilen, Zahl + Einheit bleiben zusammen */
+  .hc-tiles { grid-template-columns: 1fr; gap: 6px; }
+  .hc-tile { flex-direction: row; align-items: baseline; gap: 10px; padding: 6px 10px; }
+  .hc-tile b { flex: none; }
+}
+.hc-notes { display: flex; flex-wrap: wrap; gap: 2px 14px; padding-top: 8px; border-top: 1px solid var(--line); font-size: 12.5px; color: var(--ink-soft); }
+.hc-notes .fn { margin: 0 4px 0 0; }
+
+/* Grafik-Elemente: Raster, Marken, Kurven; Datenfarben = Lichtfarben (Polarlicht 557,7 nm grün, Jupiter-UV als Falschfarbe) */
+.hc-grid { fill: none; stroke: rgba(255, 255, 255, 0.18); stroke-width: 0.8; }
+.hc-path { fill: none; stroke: rgba(255, 255, 255, 0.42); stroke-width: 1; stroke-dasharray: 3 4; }
+.hc-cap-fill { fill: rgba(90, 140, 220, 0.07); }
+.hc-pole { fill: var(--ink); }
+.hc-mark { fill: var(--accent); }
+.hc-curve { fill: none; stroke: var(--ink); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.hc-cycle { fill: none; stroke: var(--accent); stroke-width: 3; stroke-linecap: round; }
+.hc-au-halo { fill: none; stroke: #5ff0a0; stroke-width: 20; --lo: 0.22; --hi: 0.72; }
+.hc-au-band { fill: none; stroke: #8ef5b4; stroke-width: 7; opacity: 0.9; }
+.hc-au-curtain { fill: none; stroke: #f0fff5; stroke-width: 2.4; stroke-dasharray: 2 8 5 13 1 11; opacity: 0.6; }
+.hc-au-curtain--2 { stroke-dasharray: 1 12 3 9 2 13; opacity: 0.35; }
+.hc-ag { fill: #5ff0a0; --lo: 0.12; --hi: 0.4; }
+.hc-ag-line { stroke: #b9ffd2; stroke-width: 1.4; stroke-dasharray: 3 9 1 7; opacity: 0.7; }
+.hc-svg .hc-ag-t { fill: #a8f5c4; }
+.hc-orbit { fill: none; stroke: rgba(255, 255, 255, 0.26); }
+.hc-orbit.is-on { stroke: var(--accent); }
+.hc-orbit-glow { fill: none; stroke: var(--accent); stroke-width: 5; --lo: 0.15; --hi: 0.55; }
+.hc-sat { fill: var(--ink); }
+.hc-sat.is-on { fill: var(--accent); }
+.hc-atm { fill: none; stroke: #8ccaff; stroke-width: 3; --lo: 0.3; --hi: 0.85; }
+.hc-moon-dark { fill: #15171d; }
+.hc-earthshine { fill: #8fa6c8; --lo: 0.04; --hi: 0.14; }
+.hc-moon-halo { fill: #e8e4da; --lo: 0.08; --hi: 0.3; }
+.hc-corona { fill: #ffb347; --lo: 0.25; --hi: 0.6; }
+.hc-scanline { stroke: #fff; stroke-width: 1.2; opacity: 0.85; }
+.hc-jband { fill: none; stroke: rgba(255, 240, 220, 0.08); stroke-width: 6; }
+.hc-ju-halo { fill: none; stroke: #9b87ff; stroke-width: 18; --lo: 0.25; --hi: 0.75; }
+.hc-ju-band { fill: none; stroke: #d3c8ff; stroke-width: 4.5; }
+.hc-ju-curtain { fill: none; stroke: #fff; stroke-width: 1.8; stroke-dasharray: 2 8 5 13 1 11; opacity: 0.55; }
+.hc-ju-blob { fill: #a796ff; --lo: 0.15; --hi: 0.55; }
+.hc-svg .hc-ju-t { fill: #d3c8ff; }
+.hc-io { fill: #ece6ff; }
+.hc-ring { fill: none; stroke: #e6d6b0; }
+.hc-grains { fill: #fff6e0; opacity: 0.8; }
+
+/* Bewegung (dauerhaft, Wunsch User 26.10.2026): Einblenden gestaffelt, Linien zeichnen sich, Glow atmet in zwei Takten,
+   Lichtschleier wandern, Punkte kreisen im Takt der echten Umlaufzeiten; Zahnrad „Ruhig“ = nur Atmen, „Aus“ = still */
+.hs-card.is-open .hc-in { animation: hcIn 0.7s var(--ease-out) both; animation-delay: calc(var(--i, 0) * 70ms + 80ms); }
+@keyframes hcIn { from { opacity: 0; translate: 0 8px; } }
+.hs-card.is-open .hc-draw { stroke-dasharray: 1; animation: hcDraw 1.6s var(--ease-out) 0.2s both; }
+@keyframes hcDraw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+.hc-breathe { animation: hcBreathe 2.8s cubic-bezier(0.45, 0, 0.55, 1) infinite alternate; }
+.hc-breathe-slow { animation: hcBreathe 4.6s cubic-bezier(0.45, 0, 0.55, 1) -1.3s infinite alternate; }
+@keyframes hcBreathe { from { opacity: var(--lo, 0.35); } to { opacity: var(--hi, 0.9); } }
+.hc-drift { animation: hcDrift 18s linear infinite; }
+.hc-drift-rev { animation: hcDrift 27s linear infinite reverse; }
+@keyframes hcDrift { to { stroke-dashoffset: -120; } }
+.hc-spin { animation: hcSpin var(--T, 20s) linear infinite; }
+@keyframes hcSpin { to { rotate: -360deg; } }
+.hc-ping { transform-box: fill-box; transform-origin: center; animation: hcPing 3.2s var(--ease-out) infinite; }
+@keyframes hcPing { from { scale: 1; opacity: 0.8; } to { scale: 2.6; opacity: 0; } }
+.hc-oval { transition: transform 0.9s var(--ease-out); }
+@property --s { syntax: "<number>"; inherits: true; initial-value: 0; }
+.hc-sun { animation: hcScan 7s cubic-bezier(0.45, 0, 0.55, 1) infinite alternate; }
+@keyframes hcScan { to { --s: 0.97; } }
+.hc-scan { translate: calc(var(--s) * 66px) 0; }
+.hc-dot { translate: calc(var(--s) * 114px) calc((1 - (2 + 3 * sqrt(1 - var(--s) * var(--s))) / 5) / 0.7 * 120px); }
+.hs-card[data-motion="calm"] :is(.hc-drift, .hc-drift-rev, .hc-spin, .hc-ping, .hc-sun), .hs-card[data-motion="off"] * { animation: none !important; }
 
 /* ---------- Fuß ---------- */
 .bottombar {
@@ -349,6 +443,7 @@ body.fatal-webgl .fatal-webgl, body.fatal-start .fatal-start { display: block; }
   .hsb { font-size: 12.5px; }
   .hsb .tag { display: none; }
   .hint { display: none; }
+  .hs-card { left: 8px; right: 8px; top: auto; bottom: var(--sheet-b, 8px); width: auto; max-height: calc(100% - var(--sheet-b, 8px) - 40px); translate: none !important; transform-origin: center bottom !important; }
 }
 
 @media (prefers-reduced-motion: reduce) {

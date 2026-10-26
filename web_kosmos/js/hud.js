@@ -6,6 +6,8 @@
 import { STATIONS, ROUTE, SOURCES, routeIndex } from './content.js';
 import { fmtLength, fmtTime, C, LY } from './astro.js';
 import { settings, setSetting, mountSettings, onSettings } from './settings.js';
+import { getLayer, setLayer, fmtVal } from './layers.js';
+import { cardHtml, mountCard, unmountCard } from './cards.js';
 
 const $ = (s) => document.querySelector(s);
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
@@ -29,9 +31,18 @@ export function createHud(h) {
   const pull = $('#pull'), btnOut = $('#btn-out'), btnNext = $('#btn-next'), btnPrev = $('#btn-prev');
   const mWidth = $('#m-width'), mLight = $('#m-light'), mDist = $('#m-dist'), mBack = $('#m-back');
   let lv = null, meta = null, markers = [], selected = null, liveEl = null, widgetEl = null, liveT = 0;
+  // Info-Karte: Reihenfolge (gewähltes Abzeichen zuerst), Lage, Seite, Größe, Leitlinie
+  let ordered = [], cardPos = null, cardSide = null, cardGlide = false, cardW = 0, cardH = 0, cardMaxH = null, lastT = 0;
+  const cardLead = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  cardLead.setAttribute('class', 'hs-lead hs-lead--card is-off');
+  new ResizeObserver(() => { cardW = card.offsetWidth; cardH = card.offsetHeight; }).observe(card);
+  const cardEnv = { getLayer, setLayer, fmt: fmtVal, motion: () => settings.S.motion, reduced: matchMedia('(prefers-reduced-motion: reduce)').matches };
 
   mountSettings($('#cfg'), $('#btn-cfg'));
-  onSettings((keys) => { if (keys.includes('panel')) { body.classList.toggle('panel-off', !settings.S.panel); h.onRelayout(); } });
+  onSettings((keys) => {
+    if (keys.includes('panel')) { body.classList.toggle('panel-off', !settings.S.panel); h.onRelayout(); }
+    if (keys.includes('motion')) card.dataset.motion = settings.S.motion;
+  });
   body.classList.toggle('panel-off', !settings.S.panel);
   $('#btn-panel').addEventListener('click', () => setSetting('panel', !settings.S.panel));
 
@@ -153,6 +164,7 @@ export function createHud(h) {
   function buildMarkers() {
     markers.forEach((m) => { m.el.remove(); m.dot.remove(); });
     leads.innerHTML = '';
+    leads.appendChild(cardLead);
     let num = 0;
     markers = lv.hotspots.filter((x) => (meta.hotspots[x.id] || x.info) && (!x.listIf || x.listIf())).map((x) => {
       const t = (meta.hotspots[x.id] || x.info).t;
@@ -177,6 +189,9 @@ export function createHud(h) {
       if (path) { path.setAttribute('class', `hs-lead${x.kind === 'dive' ? ' hs-lead--dive' : ''}`); leads.appendChild(path); }
       return { x, el, dot, path, w: 0, hgt: 0, side: null, reach: 0, label };
     });
+    // Neuaufbau bei offener Karte (Schalter mit listIf): gewähltes Abzeichen bleibt markiert und zuerst platziert
+    ordered = selected ? [...markers].sort((a, b) => (b.x.id === selected) - (a.x.id === selected)) : markers;
+    markers.forEach((m) => m.el.classList.toggle('is-active', m.x.id === selected));
   }
 
   function pick(id) {
@@ -186,55 +201,70 @@ export function createHud(h) {
     if (x.kind === 'dive') { closeCard(); h.onDive(x); return; }
     if (x.focus) h.onFocus(x);
     selected = id;
+    ordered = [...markers].sort((a, b) => (b.x.id === id) - (a.x.id === id));
     const t = meta.hotspots[id] || x.info;
     card.querySelector('.hs-card-title').innerHTML = `${hex('', 'hex--mini')}<span>${esc(t.t)}</span>`;
-    card.querySelector('.hs-card-text').textContent = t.x;
-    const src = SOURCES[t.s];
-    card.querySelector('.hs-card-src').innerHTML = src ? `Quelle: <a href="${src.url}" target="_blank" rel="noopener">${esc(src.by)}</a>` : '';
-    card.classList.add('is-open');
+    const head = card.querySelector('.hs-card-head');
+    while (head.nextSibling) head.nextSibling.remove();
+    head.insertAdjacentHTML('afterend', cardHtml(lv.id, id, t, cardEnv));
+    mountCard(card, lv.id, id, cardEnv);
+    cardW = card.offsetWidth; cardH = card.offsetHeight;
+    cardPos = null; cardSide = null;
+    // unsichtbar öffnen, im nächsten Bild am Abzeichen einblenden (update → placeCard)
+    card.classList.remove('is-open');
+    void card.offsetWidth;
+    card.classList.add('is-open', 'is-away');
     markers.forEach((m) => m.el.classList.toggle('is-active', m.x.id === id));
     panel.querySelectorAll('[data-hs]').forEach((b) => b.classList.toggle('is-active', b.dataset.hs === id));
   }
   function closeCard() {
     selected = null;
-    card.classList.remove('is-open');
+    ordered = markers;
+    unmountCard();
+    card.classList.remove('is-open', 'is-away');
+    cardLead.classList.add('is-off');
+    cardPos = null; cardSide = null;
     markers.forEach((m) => m.el.classList.remove('is-active'));
     panel.querySelectorAll('[data-hs].is-active').forEach((b) => b.classList.remove('is-active'));
   }
 
   // Lage je Bild: Punkt am Objekt, Abzeichen schräg daneben (45°-Knick), frei von Karte, Kapitel-Titel, Rändern und
-  // anderen Abzeichen; einmal gefundene Lage (Seite + Reichweite) bleibt, solange sie frei ist – kein Springen
+  // anderen Abzeichen; einmal gefundene Lage (Seite + Reichweite) bleibt, solange sie frei ist – kein Springen.
+  // Offene Karte: zuerst das gewählte Abzeichen, dann die Karte daneben, dann alle übrigen (weichen der Karte aus).
   const OFFS = [[1, -1], [-1, -1], [1, 1], [-1, 1]];
+  const hit = (a, b) => a.l < b.r && a.r > b.l && a.t < b.b && a.b > b.t;
   function update(camera, level, time) {
+    const dt = Math.min(0.1, Math.max(0, time - lastT));
+    lastT = time;
     if (!markers.length || layer.classList.contains('is-hidden')) { tickLive(time); return; }
     const W = window.innerWidth, H = window.innerHeight;
     const r = stageRect();
-    const cr = card.classList.contains('is-open') ? card.getBoundingClientRect() : null;
-    const boxes = cr ? [{ l: cr.left - 8, r: cr.right + 8, t: cr.top - 8, b: cr.bottom + 8 }] : [];
+    const open = card.classList.contains('is-open'), sheet = open && W <= 760;
+    const boxes = [];
     if (caption.classList.contains('is-on')) {
       for (const el of caption.children) {
         const b = el.getBoundingClientRect();
         if (b.width) boxes.push({ l: b.left - 6, r: b.right + 6, t: b.top - 4, b: b.bottom + 4 });
       }
     }
-    const hit = (a, b) => a.l < b.r && a.r > b.l && a.t < b.b && a.b > b.t;
+    if (sheet) boxes.push(placeSheet(r));
     const cx = (r.x0 + r.x1) / 2;
-    for (const m of markers) {
+    const place = (m) => {
       const p = m.x.pos.clone().project(camera);
       const ax = (p.x + 1) / 2 * W, ay = (1 - p.y) / 2 * H;
       const vis = p.z < 1 && ax > r.x0 + 4 && ax < r.x1 - 4 && ay > r.y0 + 4 && ay < r.y1 - 4 && (!m.x.visible || m.x.visible(camera));
-      if (!vis) { hide(m); continue; }
+      if (!vis) { hide(m); return null; }
       if (!m.w) { m.w = m.el.offsetWidth; m.hgt = m.el.offsetHeight; }
       m.dot.style.transform = `translate(${ax.toFixed(1)}px, ${ay.toFixed(1)}px)`;
       m.dot.classList.remove('is-off');
       if (m.label) {
         const bx = ax + 10, by = ay - m.hgt / 2;
         const box = { l: bx, r: bx + m.w, t: by, b: by + m.hgt };
-        if (box.r > r.x1 || boxes.some((b) => hit(box, b))) { m.el.classList.add('is-off'); continue; }
+        if (box.r > r.x1 || boxes.some((b) => hit(box, b))) { m.el.classList.add('is-off'); return null; }
         boxes.push(box);
         m.el.classList.remove('is-off');
         m.el.style.transform = `translate(${bx.toFixed(1)}px, ${by.toFixed(1)}px)`;
-        continue;
+        return box;
       }
       const prefer = ax < cx ? [-1, -1] : [1, -1];
       const cands = m.side ? [[...m.side, m.reach]] : [];
@@ -247,7 +277,7 @@ export function createHud(h) {
         placed = { bx, by, box, side: [sx, sy], reach };
         break;
       }
-      if (!placed) { hide(m, true); continue; }
+      if (!placed) { hide(m, true); return null; }
       m.side = placed.side;
       m.reach = placed.reach;
       boxes.push(placed.box);
@@ -258,8 +288,72 @@ export function createHud(h) {
       const dy = ey - ay, kx = ax + Math.sign(ex - ax) * Math.min(Math.abs(dy), Math.abs(ex - ax) * 0.7);
       m.path.setAttribute('d', `M${ax.toFixed(1)} ${ay.toFixed(1)}L${kx.toFixed(1)} ${ey.toFixed(1)}L${ex.toFixed(1)} ${ey.toFixed(1)}`);
       m.path.classList.remove('is-off');
+      return placed.box;
+    };
+    let found = false;
+    for (const m of open ? ordered : markers) {
+      const box = place(m);
+      if (open && !sheet && m.x.id === selected) { found = true; placeCard(box, r, boxes, dt); }
     }
+    if (open && !sheet && !found) placeCard(null);   // Abzeichen per Schalter ausgeblendet: Karte wartet unsichtbar
     tickLive(time);
+  }
+
+  // Karte am Abzeichen (Vorschau Lage:A): links daneben, sonst darüber, darunter, rechts – erste freie Seite in der Bühne,
+  // frei von Kapitel-Titel, Zeitleiste und Zahnrad; läuft mit dem Abzeichen mit, gleitet bei Seitenwechsel weich hinüber,
+  // wartet unsichtbar, solange das Abzeichen nicht im Bild ist
+  const SIDES = ['left', 'above', 'below', 'right'];
+  const ORIGIN = { left: 'right center', right: 'left center', above: 'center bottom', below: 'center top' };
+  function placeCard(b, r, boxes, dt) {
+    if (!b) { card.classList.add('is-away'); cardLead.classList.add('is-off'); cardPos = null; return; }
+    const M = 8, G = 14, by = (b.t + b.b) / 2;
+    // Unterkante = Zeitleiste (falls sichtbar); passt die Karte nicht in die Höhe, wird sie niedriger und scrollt
+    const tl = $('#timeline'), tq = tl && !tl.hidden ? tl.getBoundingClientRect() : null;
+    const yMax = (tq && tq.height ? Math.min(r.y1, tq.top) : r.y1) - M, maxH = Math.floor(yMax - r.y0 - M);
+    if (maxH !== cardMaxH) { cardMaxH = maxH; card.style.maxHeight = `${maxH}px`; }
+    const w = cardW, hh = Math.min(cardH, maxH);
+    const obst = [...boxes], cfg = $('#cfg');
+    if (cfg && !cfg.hidden) { const q = cfg.getBoundingClientRect(); if (q.width) obst.push({ l: q.left - M, r: q.right + M, t: q.top - M, b: q.bottom + M }); }
+    const cX = (x) => Math.min(r.x1 - M - w, Math.max(r.x0 + M, x)), cY = (y) => Math.min(yMax - hh, Math.max(r.y0 + M, y));
+    const at = (s) => (s === 'left' ? [b.l - G - w, cY(by - hh / 2)] : s === 'right' ? [b.r + G, cY(by - hh / 2)]
+      : s === 'above' ? [cX(b.l), b.t - G - hh] : [cX(b.l), b.b + G]);
+    const clear = ([x, y], list) => !list.some((o) => hit({ l: x, r: x + w, t: y, b: y + hh }, o));
+    const inStage = ([x, y]) => x >= r.x0 + M - 0.5 && x + w <= r.x1 - M + 0.5 && y >= r.y0 + M - 0.5 && y + hh <= yMax + 0.5;
+    const order = [cardSide, ...SIDES].filter((s, i, a) => s && a.indexOf(s) === i);
+    let side = order.find((s) => inStage(at(s)) && clear(at(s), obst)), pos = side && at(side);
+    if (!side) {   // nirgends ganz frei: in die Bühne schieben – das gewählte Abzeichen bleibt immer frei
+      const into = (s) => { const [x, y] = at(s); return [cX(x), cY(y)]; };
+      side = order.find((s) => clear(into(s), [b])) || order[0];
+      pos = into(side);
+    }
+    if (!cardPos) cardPos = pos;
+    else if (side !== cardSide || cardGlide) {
+      const k = 1 - Math.exp(-dt * 10);
+      cardPos = [cardPos[0] + (pos[0] - cardPos[0]) * k, cardPos[1] + (pos[1] - cardPos[1]) * k];
+      cardGlide = Math.hypot(pos[0] - cardPos[0], pos[1] - cardPos[1]) > 1;
+    } else cardPos = pos;
+    cardSide = side;
+    card.style.translate = `${(cardPos[0] - r.x0).toFixed(1)}px ${(cardPos[1] - r.y0).toFixed(1)}px`;
+    card.style.transformOrigin = ORIGIN[side];
+    card.classList.remove('is-away');
+    const c = { l: cardPos[0], r: cardPos[0] + w, t: cardPos[1], b: cardPos[1] + hh };
+    boxes.push({ l: c.l - 8, r: c.r + 8, t: c.t - 8, b: c.b + 8 });
+    // Leitlinie in Akzentfarbe vom Abzeichen zur nächsten Kante der Karte
+    const bx = (b.l + b.r) / 2, ex = Math.min(c.r - 14, Math.max(c.l + 14, bx)), ey = Math.min(c.b - 14, Math.max(c.t + 14, by));
+    const f = (v) => v.toFixed(1);
+    cardLead.setAttribute('d', side === 'left' ? `M${f(b.l + 4)} ${f(by)}L${f(c.r)} ${f(ey)}` : side === 'right' ? `M${f(b.r - 4)} ${f(by)}L${f(c.l)} ${f(ey)}`
+      : side === 'above' ? `M${f(bx)} ${f(b.t + 4)}L${f(ex)} ${f(c.b)}` : `M${f(bx)} ${f(b.b - 4)}L${f(ex)} ${f(c.t)}`);
+    cardLead.classList.remove('is-off');
+  }
+  // Schmal (Handy, Vorschau F2): Karte als Leiste unten in der Bühne über der Zeitleiste, Abzeichen weichen ihr aus
+  function placeSheet(r) {
+    const tl = $('#timeline'), q = tl && !tl.hidden ? tl.getBoundingClientRect() : null;
+    card.style.setProperty('--sheet-b', `${Math.round(q && q.height ? r.y1 - q.top + 8 : 8)}px`);
+    if (cardMaxH !== null) { cardMaxH = null; card.style.maxHeight = ''; }   // Höhe regelt hier das CSS
+    card.classList.remove('is-away');
+    cardLead.classList.add('is-off');
+    const b = card.getBoundingClientRect();
+    return { l: b.left - 6, r: b.right + 6, t: b.top - 6, b: b.bottom + 6 };
   }
   function hide(m, keepDot = false) {
     m.el.classList.add('is-off');
@@ -333,6 +427,6 @@ export function createHud(h) {
     setLoading: (on) => body.classList.toggle('is-loading', on),
     setRouteTarget: (id) => route.querySelectorAll('button').forEach((b) => b.classList.toggle('is-target', b.dataset.id === id)),
     intro: (on) => body.classList.toggle('is-intro', on),
-    relayout: () => { layoutRail(); markers.forEach((m) => { m.w = 0; }); },
+    relayout: () => { layoutRail(); markers.forEach((m) => { m.w = 0; }); cardPos = null; },
   };
 }

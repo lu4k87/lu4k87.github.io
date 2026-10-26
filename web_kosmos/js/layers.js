@@ -21,7 +21,7 @@ const reg = new Map();
 let currentId = null, gearEl = null, stripEl = null, stripOn = () => true;
 
 const valid = (l, v) => (l.type === 'toggle' ? typeof v === 'boolean' : typeof v === 'number' && Number.isFinite(v) && v >= l.min && v <= l.max);
-const fmtVal = (l, v) => (l.fmt ? l.fmt(v) : `${String(v).replace('.', ',')}${l.unit ? ` ${l.unit}` : ''}`);
+export const fmtVal = (l, v) => (l.fmt ? l.fmt(v) : `${String(v).replace('.', ',')}${l.unit ? ` ${l.unit}` : ''}`);
 const playing = (l) => (l.get ? !!l.get().playing : !!l.playing);
 const find = (id) => (reg.get(currentId) || []).find((l) => l.id === id);
 
@@ -38,6 +38,16 @@ export function registerLayers(stationId, layers) {
   if (stationId === currentId) render();
 }
 export const layerValue = (stationId, id) => ((reg.get(stationId) || []).find((l) => l.id === id) || {}).value;
+export const getLayer = (stationId, id) => (reg.get(stationId) || []).find((l) => l.id === id);
+// Info-Karte stellt eine Ebene direkt – gleiche Wirkung wie im Zahnrad (Wert setzen, speichern, Anzeigen abgleichen)
+export function setLayer(stationId, id, v) {
+  const l = getLayer(stationId, id);
+  if (!l || l.type === 'play' || l.type === 'action' || !valid(l, v)) return;
+  l.value = v;
+  l.set(v);
+  if (stationId === currentId) persist(l);
+  sync();
+}
 
 function persist(l) {
   store[currentId] = store[currentId] || {};

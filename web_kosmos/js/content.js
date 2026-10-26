@@ -22,6 +22,7 @@ export const SOURCES = {
   'nasa-sun': { t: 'Sun Fact Sheet', by: 'NASA NSSDCA', url: 'https://nssdc.gsfc.nasa.gov/planetary/factsheet/sunfact.html' },
   'nasa-planets': { t: 'Planetary Fact Sheet', by: 'NASA NSSDCA', url: 'https://nssdc.gsfc.nasa.gov/planetary/factsheet/' },
   'nasa-saturn': { t: 'Saturnian Rings Fact Sheet', by: 'NASA NSSDCA', url: 'https://nssdc.gsfc.nasa.gov/planetary/factsheet/satringfact.html' },
+  'heic1613': { t: 'Hubble captures vivid auroras in Jupiter’s atmosphere (dauerhaft, größer als die Erde, hunderte Male energiereicher)', by: 'ESA/Hubble 2016, heic1613', url: 'https://esahubble.org/news/heic1613/' },
   'jpl-elements': { t: 'Approximate Positions of the Planets (Keplerian Elements)', by: 'E. M. Standish, JPL', url: 'https://ssd.jpl.nasa.gov/planets/approx_pos.html' },
   'iau-2012': { t: 'Resolution B2: Re-definition of the astronomical unit', by: 'IAU 2012', url: 'https://www.iau.org/static/resolutions/IAU2012_English.pdf' },
   'llr': { t: 'Lunar Laser Ranging: 3,8 cm/Jahr', by: 'Williams & Boggs 2016, Celest. Mech. Dyn. Astron. 126', url: 'https://doi.org/10.1007/s10569-016-9702-3' },
