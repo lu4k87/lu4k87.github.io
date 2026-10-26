@@ -1,16 +1,17 @@
 // Linsenreflex einer hellen Quelle (Sonne): Lichthof und anamorpher Streifen an der Quelle, Geister (Scheiben, Ringe)
-// entlang der Achse Quelle–Bildmitte, wie in einer Kamera mit mehreren Linsen. Je Bild: Quelle projizieren, Sichtbarkeit
-// aus Bildrand und Verdeckung (Kugeln, z. B. die Erde) bestimmen, Sprites in der Nähe der Nahebene der Kamera ablegen.
-// Darstellung, keine Physik des Objekts – deshalb zurückhaltend und im Zahnrad mit „Farbsaum/Linse“ abschaltbar.
+// entlang der Achse Quelle–Bildmitte, wie in einer Kamera mit mehreren Linsen.
+// Look: Master-Optik (Linse:B) mit spektralem Beugungsring (Chromatische Aberration: Rot/Grün/Blau-Dispersion),
+// breitem weißem Innen-Glanzbogen und tiefrotem/magenta Sensor-Ghost auf der optischen Achse;
+// umschaltbar auf klassischen Kinofilm-Halo (Linse:A) und im Zahnrad mit „Farbsaum und Linsenreflex“ regelbar.
 
 import * as THREE from 'three';
 import { settings } from './settings.js';
 
-function canvasTex(draw) {
+function canvasTex(draw, size = 256) {
   const c = document.createElement('canvas');
-  c.width = c.height = 256;
+  c.width = c.height = size;
   const g = c.getContext('2d');
-  draw(g, 256);
+  draw(g, size);
   const t = new THREE.CanvasTexture(c);
   t.colorSpace = THREE.SRGBColorSpace;
   return t;
@@ -26,6 +27,44 @@ const ringTex = () => canvasTex((g, s) => {
   r.addColorStop(0.96, 'rgba(255,255,255,0.2)'); r.addColorStop(1, 'rgba(255,255,255,0)');
   g.fillStyle = r; g.fillRect(0, 0, s, s);
 });
+// Master-Optik (Linse:B): Haarscharfer Beugungsring mit feinem Regenbogen-Splitting (Rot außen, Grün mittig, Blau/Cyan innen)
+const rainbowRingTex = () => canvasTex((g, s) => {
+  const cx = s / 2, cy = s / 2, maxR = s / 2;
+  const r = g.createRadialGradient(cx, cy, maxR * 0.70, cx, cy, maxR * 0.98);
+  r.addColorStop(0.00, 'rgba(255,255,255,0)');
+  r.addColorStop(0.60, 'rgba(60,180,255,0.05)');
+  r.addColorStop(0.76, 'rgba(40,210,255,0.75)');  // Cyan-Blau innen
+  r.addColorStop(0.83, 'rgba(100,245,120,0.85)'); // Grün mittig
+  r.addColorStop(0.89, 'rgba(255,210,40,0.90)');  // Gelb
+  r.addColorStop(0.94, 'rgba(255,60,20,0.95)');   // Kräftiges Rot außen
+  r.addColorStop(0.98, 'rgba(200,20,10,0.15)');
+  r.addColorStop(1.00, 'rgba(255,255,255,0)');
+  g.fillStyle = r; g.fillRect(0, 0, s, s);
+}, 512);
+// Breiter weißer Innen-Glanzbogen (weicher, sichelförmig intensiver Halbmond-Halo)
+const innerArcTex = () => canvasTex((g, s) => {
+  const cx = s / 2, cy = s / 2, maxR = s / 2;
+  const r = g.createRadialGradient(cx, cy, maxR * 0.35, cx, cy, maxR * 0.85);
+  r.addColorStop(0.00, 'rgba(255,255,255,0)');
+  r.addColorStop(0.40, 'rgba(255,255,255,0.12)');
+  r.addColorStop(0.68, 'rgba(255,255,255,0.85)');
+  r.addColorStop(0.82, 'rgba(230,240,255,0.95)');
+  r.addColorStop(0.92, 'rgba(200,225,255,0.25)');
+  r.addColorStop(1.00, 'rgba(255,255,255,0)');
+  g.fillStyle = r; g.fillRect(0, 0, s, s);
+}, 512);
+// Tiefroter / magentafarbener Sensor-Ghost (defokussierte Linsen-/Sensorreflexion)
+const magentaGhostTex = () => canvasTex((g, s) => {
+  const cx = s / 2, cy = s / 2, maxR = s / 2;
+  const r = g.createRadialGradient(cx, cy, 0, cx, cy, maxR * 0.95);
+  r.addColorStop(0.00, 'rgba(255,40,110,0.92)');
+  r.addColorStop(0.35, 'rgba(220,20,90,0.70)');
+  r.addColorStop(0.68, 'rgba(170,10,70,0.38)');
+  r.addColorStop(0.88, 'rgba(120,5,50,0.12)');
+  r.addColorStop(1.00, 'rgba(0,0,0,0)');
+  g.fillStyle = r; g.fillRect(0, 0, s, s);
+}, 256);
+
 const streakTex = () => canvasTex((g, s) => {
   const r = g.createLinearGradient(0, 0, s, 0);
   r.addColorStop(0, 'rgba(51,204,255,0)');
@@ -65,7 +104,13 @@ const GHOSTS = [
 export function createFlare({ strength = 1, tint = [1, 0.92, 0.8] } = {}) {
   const group = new THREE.Group();
   group.renderOrder = 60;
-  const tex = { disc: discTex(), ring: ringTex() };
+  const tex = {
+    disc: discTex(),
+    ring: ringTex(),
+    rainbow: rainbowRingTex(),
+    innerArc: innerArcTex(),
+    magenta: magentaGhostTex(),
+  };
   const mk = (map, c, a) => {
     const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map, blending: THREE.AdditiveBlending, depthTest: false, depthWrite: false, transparent: true, color: new THREE.Color(...c), opacity: a }));
     sp.renderOrder = 60;
@@ -75,21 +120,38 @@ export function createFlare({ strength = 1, tint = [1, 0.92, 0.8] } = {}) {
   const halo = mk(haloTex(), tint, 0.45);
   const streak = mk(streakTex(), [0.35, 0.85, 1.0], 0.65);
   const ghosts = GHOSTS.map((g) => mk(tex[g.t], g.c, g.a));
+
+  // Master-Optik Komponenten (Linse:B nach Nutzerreferenz)
+  const rainbowRing = mk(tex.rainbow, [1, 1, 1], 0.88);
+  const innerArc = mk(tex.innerArc, [1, 1, 1], 0.75);
+  const magentaGhost = mk(tex.magenta, [1, 0.95, 1], 0.85);
+
   const ndc = new THREE.Vector3(), tmp = new THREE.Vector3(), dir = new THREE.Vector3();
-  const place = (sp, x, y, size, camera, vis) => {
-    // Richtung durch den Bildpunkt (x, y) in NDC, Sprite in 3 Nahebenen-Abständen vor der Kamera
+  const place = (sp, x, y, size, camera, vis, aspect = 1) => {
     tmp.set(x, y, 0.5).unproject(camera).sub(camera.position).normalize();
     const d = camera.near * 3;
     sp.position.copy(camera.position).addScaledVector(tmp, d);
     const h = 2 * d * Math.tan(THREE.MathUtils.degToRad(camera.fov) / 2);
-    sp.scale.set(size * h * (sp === streak ? 18 : 1), size * h * (sp === streak ? 0.35 : 1), 1);
+    sp.scale.set(size * h * aspect, size * h, 1);
     sp.material.opacity = sp.userData.a * vis;
     sp.visible = vis > 0.002;
   };
   halo.userData.a = 0.45; streak.userData.a = 0.65;
   ghosts.forEach((sp, i) => { sp.userData.a = GHOSTS[i].a; });
+  rainbowRing.userData.a = 0.88;
+  innerArc.userData.a = 0.75;
+  magentaGhost.userData.a = 0.85;
+
+  let opticMode = 'master'; // 'master' (Linse:B) oder 'classic' (Linse:A)
+  let ghostOn = true;
+  let ghostMotionOn = true;
+  let flareIntensity = 1.0;
+
+  group.userData.setOptic = (mode) => { opticMode = mode === 'classic' ? 'classic' : 'master'; };
+  group.userData.setGhost = (on, motion = true) => { ghostOn = Boolean(on); ghostMotionOn = Boolean(motion); };
+  group.userData.setIntensity = (val) => { flareIntensity = Math.max(0, val); };
+
   const sphereHit = (o, from, to) => {
-    // Strecke from→to gegen Kugel o {center, radius}: verdeckt, wenn der Schnitt vor der Quelle liegt
     dir.copy(to).sub(from);
     const L = dir.length();
     dir.divideScalar(L);
@@ -101,7 +163,6 @@ export function createFlare({ strength = 1, tint = [1, 0.92, 0.8] } = {}) {
     return t > 0 && t < L;
   };
   let smooth = 0;
-  // light: Weltposition der Quelle; occluders: [{center, radius}]; on: Linse laut Einstellungen
   group.userData.update = (light, camera, occluders = [], on = true, dt = 0.016) => {
     ndc.copy(light).project(camera);
     let vis = on && ndc.z < 1 ? 1 : 0;
@@ -111,17 +172,50 @@ export function createFlare({ strength = 1, tint = [1, 0.92, 0.8] } = {}) {
       for (const o of occluders) if (sphereHit(o, camera.position, light)) { vis = 0; break; }
     }
     smooth += (vis - smooth) * Math.min(1, dt * 8);
-    const v = smooth * strength;
+    const v = smooth * strength * flareIntensity;
     if (v < 0.002) { group.visible = false; return; }
     group.visible = true;
-    // Streifen und Hof an der Quelle, Geister entlang der Achse zur Mitte (Größe als Anteil der Bildhöhe)
-    place(halo, ndc.x, ndc.y, 0.9, camera, v);
-    if (settings.S.anamorphic !== false) {
-      place(streak, ndc.x, ndc.y, 0.12, camera, v * 0.8);
+
+    const useMaster = opticMode === 'master' && (settings.S.lensOptic !== 'classic');
+    const showGhost = ghostOn && (settings.S.lensGhost !== false);
+    const moveGhost = ghostMotionOn && (settings.S.ghostMotion !== false);
+
+    if (useMaster) {
+      // Linse:B – Master-Optik nach Nutzerreferenz
+      place(rainbowRing, ndc.x, ndc.y, 1.15, camera, v * 1.1);
+      place(innerArc, ndc.x, ndc.y, 0.95, camera, v * 0.95);
+      place(halo, ndc.x, ndc.y, 0.65, camera, v * 0.55);
+
+      if (showGhost) {
+        // Magenta-Sensor-Ghost: Wandert auf der optischen Achse mit Parallaxe
+        const gx = moveGhost ? ndc.x * -0.55 + 0.12 : ndc.x + 0.28;
+        const gy = moveGhost ? ndc.y * -0.55 - 0.12 : ndc.y - 0.28;
+        place(magentaGhost, gx, gy, 0.22, camera, v * 0.92);
+      } else {
+        magentaGhost.visible = false;
+      }
+
+      if (settings.S.anamorphic !== false) {
+        place(streak, ndc.x, ndc.y, 0.10, camera, v * 0.6, 18);
+      } else {
+        streak.visible = false;
+      }
+      ghosts.forEach((sp) => { sp.visible = false; });
     } else {
-      streak.visible = false;
+      // Linse:A – Klassischer Kinofilm-Halo
+      rainbowRing.visible = false;
+      innerArc.visible = false;
+      magentaGhost.visible = false;
+
+      place(halo, ndc.x, ndc.y, 0.9, camera, v);
+      if (settings.S.anamorphic !== false) {
+        place(streak, ndc.x, ndc.y, 0.12, camera, v * 0.8, 18);
+      } else {
+        streak.visible = false;
+      }
+      ghosts.forEach((sp, i) => { const g = GHOSTS[i]; place(sp, ndc.x * g.k, ndc.y * g.k, g.s, camera, v * (1 - 0.5 * Math.abs(g.k))); });
     }
-    ghosts.forEach((sp, i) => { const g = GHOSTS[i]; place(sp, ndc.x * g.k, ndc.y * g.k, g.s, camera, v * (1 - 0.5 * Math.abs(g.k))); });
   };
   return group;
 }
+

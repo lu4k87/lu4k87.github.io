@@ -63,7 +63,7 @@ ${SNOISE}
 #define SPOTS ${SPOTS}
 uniform vec4 uSpot[SPOTS];
 ${SUN_MASKS}
-uniform float uTime, uDays, uSurf, uAct, uGain, uFlK, uGlow, uHot, uTex;
+uniform float uTime, uDays, uSurf, uAct, uGain, uFlK, uGlow, uHot, uTex, uRelief, uVisc;
 uniform vec3 uFlS;
 varying vec3 vN, vP, vO;
 varying vec2 vUv;
@@ -145,6 +145,31 @@ vec3 surfSDO(vec3 q, float t, float mu, float ar, float fine) {
   col *= 0.6 + 0.4 * sqrt(mu);
   return col + vec3(1.8, 0.55, 0.06) * pow(1.0 - mu, 4.0) * 0.7;
 }
+// Magma-Brodeln (Lava:B): Hydrodynamische Konvektionswülste mit 3D-Relief-Wölbung, zäh aufwallenden Zentren und absinkenden dunkleren Kühlrändern
+vec3 surfMagma(vec3 q, float t, float mu, float ar, float fine) {
+  float visc = max(uVisc, 0.2);
+  float relief = max(uRelief, 0.0);
+  vec3 w = q + 0.04 * vec3(snoise(q * 8.0 + t * 0.02 * visc), snoise(q * 8.0 + 3.1), snoise(q * 8.0 - t * 0.02 * visc));
+  vec2 c = cells2(w * 16.0, t * 0.18 * visc);
+  float dCenter = c.x, dEdge = c.y - c.x;
+  float dome = 1.0 - smoothstep(0.05, 0.95, dCenter);
+  float domeH = dome * dome * relief;
+  float edgeCrack = 1.0 - smoothstep(0.02, 0.12, dEdge);
+  float mott = 0.5 + 0.5 * fbmL(q * 28.0 + t * 0.03 * visc);
+  if (fine > 0.001) mott = clamp(mott + 0.16 * fine * snoise(q * 80.0 + t * 0.04 * visc), 0.0, 1.0);
+  float schlieren = pow(ridge(snoise(w * 14.0 + t * 0.025 * visc)), 5.0) * 0.7 + pow(ridge(snoise(w * 28.0 - t * 0.03 * visc)), 7.0) * 0.4;
+  float act = max(smoothstep(0.0, 0.5, fbm3(q * 1.3 + 3.0)) * (0.5 + 0.7 * uAct), 0.9 * min(ar, 1.0));
+  float bumpLight = 0.65 + 0.55 * domeH * (0.6 + 0.4 * mu);
+  vec3 coldSlag = vec3(0.08, 0.012, 0.002);
+  vec3 hotCore = mix(vec3(1.3, 0.42, 0.05), vec3(3.2, 1.7, 0.45), uHot);
+  vec3 whiteGlow = mix(vec3(3.2, 2.1, 0.9), vec3(4.8, 4.2, 2.9), uHot);
+  vec3 col = coldSlag * (0.4 + 0.8 * mott) * (0.7 + 0.3 * uGlow);
+  col += hotCore * dome * bumpLight * (0.4 + 0.9 * act) * (0.5 + 0.6 * mott) * uGlow;
+  col += whiteGlow * (edgeCrack * 0.6 + schlieren * 0.5) * (0.35 + 0.9 * act) * uGlow;
+  col += whiteGlow * pow(dome, 4.0) * (0.2 + 0.8 * act) * (0.5 + 0.5 * mott) * uGlow;
+  col *= 0.58 + 0.42 * sqrt(mu);
+  return col + vec3(1.7, 0.45, 0.05) * pow(1.0 - mu, 3.5) * 0.5;
+}
 // Flecken in der Glutkruste: Umbra fast schwarz mit glimmenden Punkten, Penumbra aus radialen Glutfasern, in denen Knoten
 // nach außen laufen (Evershed-Strömung); Größe wie in SUN_FRAG (Umbra uSpot.w, Penumbra 2,4-fach). rgb = Leuchten, a = Abdunkeln.
 vec4 spotsA(vec3 g, float t, float fine) {
@@ -223,7 +248,7 @@ void main() {
     ar += exp(-dot(d, d) / 0.005);
   }
   vec3 col = uSurf > 0.5 ? surfB(g, uTime, mu, ar, fine) : uTex < 0.5 ? surfA(g, uTime, mu, ar, fine) : uTex < 1.5 ? surfNet(g, uTime, mu, ar, fine)
-    : uTex < 2.5 ? surfFur(g, uTime, mu, ar, fine) : surfSDO(g, uTime, mu, ar, fine);
+    : uTex < 2.5 ? surfFur(g, uTime, mu, ar, fine) : uTex < 3.5 ? surfSDO(g, uTime, mu, ar, fine) : surfMagma(g, uTime, mu, ar, fine);
   if (uSurf < 0.5) { vec4 sp = spotsA(g, uTime, fine); col = col * (1.0 - sp.a) + sp.rgb; }
   // Moos: helle, körnige Fußpunkte der Bögen über den aktiven Regionen – dort wurzeln die Fäden (sunstrands.js)
   float mossF = 1.0 - smoothstep(0.002, 0.008, length(fwidth(vO)));

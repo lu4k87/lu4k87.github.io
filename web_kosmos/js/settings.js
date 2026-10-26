@@ -11,7 +11,7 @@ import { mountLayers, refreshLayers, icon, devLine, cfgBar, markDevs, isOpenIn, 
 import { nbsp } from './figs.js';
 
 const KEY = 'kosmos.settings.v1';
-const DEFAULTS = { motion: 'full', quality: 'auto', cine: true, dive: 3.6, exposure: 1, bloom: true, lens: true, anamorphic: true, rayleigh: true, grain: true, deep: 1, fpsCap: 0, panel: true, timeline: true, scaleCompare: true, small: 6, stars: true, grade: 'station', vig: 1, bars: false, axes: false };
+const DEFAULTS = { motion: 'full', quality: 'auto', cine: true, dive: 3.6, exposure: 1, bloom: true, lens: true, lensOptic: 'master', lensGhost: true, ghostMotion: true, anamorphic: true, rayleigh: true, grain: true, deep: 1, fpsCap: 0, panel: true, timeline: true, scaleCompare: true, small: 6, stars: true, grade: 'station', vig: 1, bars: false, axes: false };
 // Farblook: Belichtung, Bloom, Kontrast, Sättigung, Tönung Schatten/Lichter, Vignette – Kino = Mischung aus HDR, Ruhig, Tiefe Glut.
 // Global (main.js über globalGrade) oder je Station „Station“ = eigener Look; die Sonne wählt bei „Station“ selbst (levels/sun.js)
 export const GRADES = [['neutral', { exposure: 1, bloom: 0.12, con: 0.12, sat: 1.04, sh: [0.96, 0.99, 1.06], hi: [1.04, 1, 0.95], vig: 0.38 }],
@@ -153,7 +153,15 @@ const GROUPS = [
     ['axes', TOG('axes', 'Drehachsen der Planeten und Monde', NEW) + NOTE('Linie über Nord- und Südpol jedes Planeten und Mondes, neigt und dreht sich mit dem Körper. Nordpol eisblau, Südpol grau.')]] },
   { id: 'cam', icon: 'cam', title: 'Kamera &amp; Bewegung', rows: [['motion', SEG('motion', 'Bewegung', [['full', 'Voll'], ['calm', 'Ruhig'], ['off', 'Aus']]) + NOTE('„Aus“ wirkt wie „Bewegung reduzieren“ im System: keine Fahrt von selbst, Wechsel als kurze Überblendung.')],
     ['cine', TOG('cine', 'Leerlauf-Fahrt der Kamera')], ['dive', RANGE('dive', 'Flugdauer', 1.5, 8, 0.1, 's')]] },
-  { id: 'fx', icon: 'fx', title: 'Effekte', half: true, rows: [['bloom', TOG('bloom', 'Lichthof (Bloom)')], ['lens', TOG('lens', 'Farbsaum und Linsenreflex')], ['anamorphic', TOG('anamorphic', 'Anamorphes Gegenlicht', NEW)], ['rayleigh', TOG('rayleigh', 'Rayleigh-Dämmerung', NEW)], ['grain', TOG('grain', 'Filmkorn')]] },
+  { id: 'fx', icon: 'fx', title: 'Effekte', rows: [
+    ['bloom', TOG('bloom', 'Lichthof (Bloom)')],
+    ['lens', TOG('lens', 'Farbsaum und Linsenreflex')],
+    ['lensOptic', SEG('lensOptic', 'Optik-Stil', [['master', 'Master-Optik'], ['classic', 'Klassisch']], NEW) + NOTE('Master-Optik: Spektraler Beugungsring, Glanzbogen &amp; Magenta-Sensor-Ghost nach Referenzbild; Klassisch: Zarter Film-Halo.')],
+    ['lensGhost', TOG('lensGhost', 'Magenta-Sensor-Ghost', NEW)],
+    ['ghostMotion', TOG('ghostMotion', 'Ghost-Parallaxe auf optischer Achse', NEW) + NOTE('Der Magenta-Ghost wandert physikalisch entlang der optischen Achse bei Kameraschwenks.')],
+    ['anamorphic', TOG('anamorphic', 'Anamorphes Gegenlicht', NEW)],
+    ['rayleigh', TOG('rayleigh', 'Rayleigh-Dämmerung', NEW)],
+    ['grain', TOG('grain', 'Filmkorn')]] },
   { id: 'ui', icon: 'ui', title: 'Oberfläche', half: true, rows: [['panel', TOG('panel', 'Infotafel zeigen')], ['scaleCompare', TOG('scaleCompare', 'Maßstabs-Vergleich', NEW)], ['timeline', TOG('timeline', 'Zeitleiste der Station zeigen')],
     ['', TOG('', 'Grafiken der Info-Karten bewegt', NEW, 'data-figs')]] },
   { id: 'perf', icon: 'perf', title: 'Leistung', rows: [['quality', SEG('quality', 'Qualität', [['auto', 'Auto'], ['1', 'Leicht'], ['2', 'Mittel'], ['3', 'Fein']])],

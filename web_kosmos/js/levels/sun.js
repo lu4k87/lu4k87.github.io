@@ -19,6 +19,7 @@ import { registerLayers, refreshLayers } from '../layers.js';
 import { GRADES, globalGrade, onSettings } from '../settings.js';
 import { LOOK_SURF_FRAG, LOOK_ATMO_VERT, LOOK_ATMO_FRAG, LOOK_EXT, ERUPT_T, lookDefines } from '../sunlook.js';
 import { STRAND_VERT, STRAND_FRAG, strandUniforms, strandGeometry, arcadeLoops, prominenceLoops, flareArcade, eruptLoop, loopField } from '../sunstrands.js';
+import { createFlare } from '../flare.js';
 
 const RAD = Math.PI / 180;
 const R_SUN = 6.957e8;   // m (nasa-sun: 695.700 km)
@@ -62,9 +63,10 @@ const FIELDS = ['aus', 'feiner Kranz', 'gestaffelt', 'Nester'];
 const FEET = ['Kante', 'Fibrillen', 'Kelch', 'Strudel'];
 const GLOWS = ['Rotglut', 'Strahlenkranz', 'Weißglut'];
 // Ablösen beim Abriss (uTear in sunstrands.js) und Stärke der Auswurf-Blase dahinter (uEA in sunlook.js)
-const TEARS = ['klassisch', 'Plasmoid', 'Peitsche', 'Zerfasern', 'Mischung'];
-const TEAR_BUBBLE = [0, 1, 0.35, 0, 0.8];
-const TEXS = ['Adern', 'Zellnetz', 'Plasmafell', 'SDO-Komposit'];   // Kruste im Look „Glut“ (uTex in sunlook.js)
+const TEARS = ['klassisch', 'Plasmoid', 'Peitsche', 'Zerfasern', 'Mischung', 'Spray-Schockwelle'];
+const TEAR_BUBBLE = [0, 1, 0.35, 0, 0.8, 1.2];
+const TEXS = ['Adern', 'Zellnetz', 'Plasmafell', 'SDO-Komposit', 'Magma-Brodeln'];   // Kruste im Look „Glut“ (uTex in sunlook.js)
+const OPTICS = ['Master-Optik (Referenz)', 'Klassischer Film-Halo'];
 const fmtDays = (d) => `${d.toLocaleString('de-DE', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} Tage`;
 
 function glowTexture() {
@@ -155,7 +157,8 @@ export function create(ctx) {
   // Look „Sonne neu“ (Glut, 304 Å): eigenes Material auf derselben Kugel, gleiche Daten (Regionen, Löcher, Filamente, Rotation)
   const sunMat = sun.material;
   const lookU = { uTime: sunU.uTime, uDays: sunU.uDays, uSpot: sunU.uSpot, uHole: sunU.uHole, uFil: sunU.uFil, uFilT: sunU.uFilT, uAct: { value: 0.75 },
-    uSurf: { value: 0 }, uGain: { value: 0.8 }, uFlK: { value: -1 }, uFlS: { value: new THREE.Vector3(0, 0, 1) }, uGlow: { value: 1 }, uHot: { value: 0 }, uTex: { value: 1 } };
+    uSurf: { value: 0 }, uGain: { value: 0.8 }, uFlK: { value: -1 }, uFlS: { value: new THREE.Vector3(0, 0, 1) }, uGlow: { value: 1 }, uHot: { value: 0 }, uTex: { value: 4 },
+    uRelief: { value: 1.0 }, uVisc: { value: 1.0 } };
   const lookMat = new THREE.ShaderMaterial({ vertexShader: BODY_VERT, fragmentShader: LOOK_SURF_FRAG, uniforms: lookU, defines: lookDefines(ctx.detail) });
 
   // ---------- Koronaschleifen je aktiver Region (171/193 Å), drehen mit der Rate ihrer Breite ----------
@@ -269,6 +272,10 @@ export function create(ctx) {
   const flash = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTexture(), blending: THREE.AdditiveBlending, depthWrite: false, transparent: true, opacity: 0 }));
   flash.visible = false;
   scene.add(flash);
+  const sunFlare = createFlare({ strength: 1.15 });
+  scene.add(sunFlare);
+  let opticIdx = 0, ghostOn = true, ghostMotionOn = true;
+  let burstRate = 1.0, sprayAmt = 1.0;
   const FLASH = [[1.6, 1.5, 1.4], [1.6, 1.35, 0.8], [1.6, 0.9, 0.55], [1.5, 1.2, 0.9]];
   const cmeState = { t: 1e3, dir: new THREE.Vector3(), from: new THREE.Vector3(), foot: new THREE.Vector3() };
 
@@ -432,8 +439,12 @@ export function create(ctx) {
       active: () => !globalGrade(), only: 'Ruht, solange Global → Look → Farblook nicht auf „Station“ steht.' },
     { id: 'glow', type: 'range', label: 'Glut bei starker Aktivität', value: glowMode, min: 0, max: GLOWS.length - 1, step: 1, fmt: (i) => GLOWS[Math.round(i)], set: (v) => { glowMode = Math.round(v); applyGlow(); },
       active: () => lookOn && actIdx >= 4, only: 'Nur bei Glut und 304 Å ab Aktivität „Maximum“ (Infotafel), am stärksten bei „extrem“.' },
-    { id: 'tex', type: 'range', group: 'Oberfläche', label: 'Kruste', value: 1, min: 0, max: TEXS.length - 1, step: 1, fmt: (i) => TEXS[Math.round(i)], set: (v) => { lookU.uTex.value = Math.round(v); },
+    { id: 'tex', type: 'range', group: 'Oberfläche', label: 'Kruste', value: 4, min: 0, max: TEXS.length - 1, step: 1, fmt: (i) => TEXS[Math.round(i)], set: (v) => { lookU.uTex.value = Math.round(v); },
       active: () => chan === 'glut', only: 'Nur bei Glut (Wellenlänge in der Infotafel).' },
+    { id: 'magmaRelief', type: 'range', label: 'Magma-Relief (3D-Wölbung)', value: 1.0, min: 0, max: 2, step: 0.1, unit: '×', sub: true, set: (v) => { lookU.uRelief.value = v; },
+      active: () => chan === 'glut' && lookU.uTex.value === 4, only: 'Nur bei der Kruste „Magma-Brodeln“.' },
+    { id: 'magmaVisc', type: 'range', label: 'Viskosität der Schmelze', value: 1.0, min: 0.4, max: 2.2, step: 0.1, unit: '×', sub: true, set: (v) => { lookU.uVisc.value = v; },
+      active: () => chan === 'glut' && lookU.uTex.value === 4, only: 'Nur bei der Kruste „Magma-Brodeln“.' },
     { id: 'gran', type: 'toggle', label: 'Granulation', value: true, set: (v) => { granOn = v; sunU.uGran.value = v && chan === 'wl' ? 1 : 0; },
       active: () => chan === 'wl', only: 'Nur bei Weißlicht (Wellenlänge in der Infotafel).' },
     { id: 'spots', type: 'toggle', label: 'Sonnenflecken', value: true, set: (v) => { spotsOn = v; applyRegions(); },
@@ -447,11 +458,16 @@ export function create(ctx) {
     { id: 'prom', type: 'toggle', group: 'Ausbrüche', label: 'Protuberanzen und Filamente', value: true, set: (v) => { promOn = v; applyRegions(); } },
     { id: 'flares', type: 'toggle', label: 'Flares mit Massenauswurf', value: true, set: (v) => { flaresOn = v; if (!v) { cme.visible = flash.visible = ev.visible = false; erupt.k = -1; } } },
     { id: 'flareRate', type: 'range', label: 'Häufigkeit', value: 1, min: 0.3, max: 3, step: 0.1, unit: '×', sub: true, set: (v) => { flareRate = v; } },
+    { id: 'flarePoisson', type: 'range', label: 'Taktung (Poisson 10–25 s)', value: 1, min: 0.4, max: 2.5, step: 0.1, unit: '×', sub: true, set: (v) => { burstRate = v; strandU.uBurst.value = fieldU.uBurst.value = v; } },
+    { id: 'flareSpray', type: 'range', label: 'Spray & Schockwelle', value: 1, min: 0.3, max: 2.5, step: 0.1, unit: '×', sub: true, set: (v) => { sprayAmt = v; strandU.uSpray.value = fieldU.uSpray.value = v; } },
     { id: 'erupt', type: 'range', label: 'Art des Ausbruchs', value: eruptIdx, min: 0, max: ERUPTS.length - 1, step: 1, fmt: (i) => ERUPTS[Math.round(i)], sub: true, set: (v) => { eruptIdx = Math.round(v); },
       active: () => lookOn, only: 'Nur bei Glut und 304 Å; sonst ein Flare mit Massenauswurf.' },
     { id: 'tear', type: 'range', label: 'Ablösen beim Abriss', value: tearIdx, min: 0, max: TEARS.length - 1, step: 1, fmt: (i) => TEARS[Math.round(i)], sub: true, set: (v) => { tearIdx = Math.round(v); },
       active: () => lookOn && eruptIdx === 2, only: 'Nur bei der Art „Protuberanz reißt ab“ (Glut und 304 Å).' },
     { id: 'flareNow', type: 'action', label: 'Nächster Ausbruch', button: 'Jetzt auslösen', sub: true, run: () => { if (flaresOn) triggerFlare(camera); } },
+    { id: 'lensOptic', type: 'range', group: 'Linsenreflex & Optik', label: 'Optik-Stil', value: opticIdx, min: 0, max: OPTICS.length - 1, step: 1, fmt: (i) => OPTICS[Math.round(i)], set: (v) => { opticIdx = Math.round(v); sunFlare.userData.setOptic(opticIdx === 0 ? 'master' : 'classic'); } },
+    { id: 'lensGhost', type: 'toggle', label: 'Magenta-Sensor-Ghost', value: true, sub: true, set: (v) => { ghostOn = v; sunFlare.userData.setGhost(ghostOn, ghostMotionOn); } },
+    { id: 'ghostMotion', type: 'toggle', label: 'Ghost-Parallaxe auf optischer Achse', value: true, sub: true, set: (v) => { ghostMotionOn = v; sunFlare.userData.setGhost(ghostOn, ghostMotionOn); } },
     { id: 'cloops', type: 'toggle', group: 'Magnet\u00ADbögen', label: 'Magnetbögen und Koronaschleifen', value: true, set: (v) => { cloopsOn = v; applyRegions(); },
       active: () => chan !== 'wl', only: 'Nicht bei Weißlicht: die Bögen leuchten erst im UV.' },
     { id: 'cloopDens', type: 'range', label: 'Dichte der Schleifen', value: 1, min: 0.2, max: 1, step: 0.1, fmt: (v) => `${Math.round(v * 100)} %`, sub: true, set: (v) => { cloopU.uDens.value = strandU.uDens.value = v; },
@@ -463,8 +479,8 @@ export function create(ctx) {
     { id: 'loopSize', type: 'range', label: 'Höhe der Bögen', value: 1, min: 0.5, max: 2, step: 0.1, unit: '×', sub: true, set: (v) => { strandU.uScale.value = fieldU.uScale.value = v; }, active: () => lookOn, only: LOOK_ONLY },
     { id: 'loopGain', type: 'range', label: 'Leuchtkraft der Bögen', value: 1, min: 0.3, max: 2.5, step: 0.1, unit: '×', sub: true, set: (v) => { loopGain = v; applyGlow(); }, active: () => lookOn, only: LOOK_ONLY },
     { id: 'foot', type: 'range', label: 'Fuß der Bögen', value: 1, min: 0, max: FEET.length - 1, step: 1, fmt: (i) => FEET[Math.round(i)], sub: true, set: (v) => { strandU.uFoot.value = Math.round(v); }, active: () => lookOn, only: LOOK_ONLY },
-    { id: 'flow', type: 'range', group: 'Bewegung der Bögen', label: 'Strömen', value: 0.5, min: 0, max: 2, step: 0.1, unit: '×', set: (v) => { strandU.uMove.value.x = v; }, active: () => lookOn, only: LOOK_ONLY },
-    { id: 'sway', type: 'range', label: 'Pendeln', value: 0.5, min: 0, max: 2, step: 0.1, unit: '×', set: (v) => { strandU.uMove.value.y = v; }, active: () => lookOn, only: LOOK_ONLY },
+    { id: 'flow', type: 'range', group: 'Bewegung der Bögen', label: 'Strömen', value: 0.35, min: 0, max: 2, step: 0.1, unit: '×', set: (v) => { strandU.uMove.value.x = v; }, active: () => lookOn, only: LOOK_ONLY },
+    { id: 'sway', type: 'range', label: 'Pendeln', value: 0.35, min: 0, max: 2, step: 0.1, unit: '×', set: (v) => { strandU.uMove.value.y = v; }, active: () => lookOn, only: LOOK_ONLY },
     { id: 'life', type: 'toggle', label: 'Werden und Vergehen', value: true, set: (v) => { strandU.uMove.value.z = v ? 1 : 0; }, active: () => lookOn, only: LOOK_ONLY },
     { id: 'lifeRate', type: 'range', label: 'Tempo', value: 1, min: 0.3, max: 3, step: 0.1, unit: '×', sub: true, set: (v) => { strandU.uLifeR.value = v; }, active: () => lookOn, only: LOOK_ONLY },
   ]);
@@ -603,6 +619,7 @@ export function create(ctx) {
       ev.rotation.y = omega(evLat) * days * RAD;
       cam.updateMatrixWorld();
       coronaFrame(cam);
+      sunFlare.userData.update(new THREE.Vector3(0, 0, 0), cam, [], flaresOn, dt);
       // Flares: Zufallstakt je Aktivität, Schleifen um den Fußpunkt leuchten weich auf, Massenauswurf wandert hinaus
       if (flaresOn && !ctx.still && !flying && ACT[actIdx][3] > 0) { flareTimer -= dt; if (flareTimer <= 0) triggerFlare(cam); }
       cloopU.uFlareT.value = Math.min(cloopU.uFlareT.value + dt * ta0, 1e3);
@@ -643,6 +660,7 @@ export function create(ctx) {
       flash.material.map.dispose();
       lookMat.dispose();
       sunMat.dispose();
+      scene.remove(sunFlare);
     },
   };
 }

@@ -21,6 +21,7 @@ import { NOISE } from './glsl.js';
 export const strandUniforms = () => ({
   uTime: { value: 0 }, uPx: { value: 0.001 }, uGain: { value: 1 }, uPal: { value: 0 }, uMode: { value: 0 }, uK: { value: 0 }, uDens: { value: 1 },
   uFoot: { value: 1 }, uMove: { value: new THREE.Vector3(1, 1, 1) }, uDisk: { value: 0.35 }, uLifeR: { value: 1 }, uScale: { value: 1 }, uTear: { value: 4 },
+  uBurst: { value: 1 }, uSpray: { value: 1 },
   uFS: { value: new THREE.Vector3(0, 0, 1) }, uFE1: { value: new THREE.Vector3(1, 0, 0) }, uFE2: { value: new THREE.Vector3(0, 1, 0) },
 });
 
@@ -33,7 +34,7 @@ export const strandUniforms = () => ({
 export const STRAND_VERT = /* glsl */ `
 attribute vec3 aA, aB, aE;
 attribute vec4 aL, aT, aS, aF;
-uniform float uTime, uPx, uMode, uK, uDens, uFoot, uLifeR, uScale, uTear;
+uniform float uTime, uPx, uMode, uK, uDens, uFoot, uLifeR, uScale, uTear, uBurst, uSpray;
 uniform vec3 uMove, uFS, uFE1, uFE2;
 varying float vS, vX, vH, vI, vFlow, vSeed, vCut, vHot, vRes, vU, vCyc;
 varying vec3 vW;
@@ -52,10 +53,10 @@ vec3 threadAt(float s, out vec3 T) {
   vec3 c = axisAt(s);
   T = normalize(axisAt(min(s + 0.004, 1.0)) - axisAt(max(s - 0.004, 0.0)));
   vec3 N2 = normalize(cross(T, gN)), N1 = cross(N2, T);
-  float ang = aT.x + gTwist * 6.2831853 * s + uTime * 0.05 * sign(gTwist);
+  float ang = aT.x + gTwist * 6.2831853 * s + uTime * 0.03 * sign(gTwist);
   float kel = uFoot > 1.5 && uFoot < 2.5 ? 3.5 * exp(-min(s, 1.0 - s) / 0.07) : 0.0;
   float taper = 0.3 + 0.7 * sin(PI * s) + kel;
-  c += N1 * gSway * sin(PI * s) * sin(6.2831853 * (1.1 * s - uTime * 0.11) + aE.y * 40.0);
+  c += N1 * gSway * sin(PI * s) * sin(6.2831853 * (0.65 * s - uTime * 0.06) + aE.y * 30.0);
   return c + (N1 * cos(ang) * (1.0 + 2.5 * aE.z) + N2 * sin(ang) * (1.0 - 0.5 * aE.z)) * aT.y * gRope * taper;
 }
 void main() {
@@ -65,10 +66,10 @@ void main() {
   float I = aT.w, hot = 0.0, cut = 0.0, life = 1.0, lift = 0.0, cyc = -1.0;
   float th = 0.0, tc = 0.5, tk = 0.0, tg = 0.0, te = 1.0, tf = 1.0;   // Riss (uMode 3): Zufall, Mitte, Fortschritt, Spalt, Abstand, Ausblenden
   gA = aA; gB = aB; gH = aL.x; gLean = aL.y; gRope = aL.z; gTwist = aS.z;
-  gSway = uMove.y * (0.06 * aL.x + 0.0015);
+  gSway = uMove.y * (0.04 * aL.x + 0.001);
   if (uMode < 0.5) {
-    gH *= (1.0 + 0.05 * sin(uTime * 0.21 + aE.y * 40.0)) * uScale;
-    gLean += uMove.y * 0.3 * sin(uTime * (0.12 + 0.2 * fract(aE.y * 7.1)) + aE.y * 23.0);
+    gH *= (1.0 + 0.035 * sin(uTime * 0.14 + aE.y * 30.0)) * uScale;
+    gLean += uMove.y * 0.22 * sin(uTime * (0.08 + 0.14 * fract(aE.y * 7.1)) + aE.y * 18.0);
     if (uMove.z > 0.0) {
       // Werden und Vergehen: Fluss taucht auf (Bogen wächst), Aufhellen beim Umbau, Leerlaufen, Ausblenden; je Zyklus andere Höhe
       float P = (aF.x > 0.0 ? aF.x : 22.0 + 38.0 * fract(aE.y * 13.7)) / uLifeR, cn = uTime / P + aF.y + aE.y;
@@ -77,6 +78,17 @@ void main() {
       gH *= mix(1.0, grow, uMove.z);
       life = mix(1.0, smoothstep(0.0, 0.1, cyc) * (1.0 - smoothstep(0.72, 1.0, cyc)), uMove.z);
       I *= 1.0 + uMove.z * 1.1 * exp(-pow((cyc - 0.3) / 0.07, 2.0));
+      // Spontanes Platzen kleiner & mittlerer Bögen (Pinch-Instabilität & Sonnenwind-Abstoßung)
+      float burstLoop = step(0.62, hash(floor(cn) * 17.3 + aE.y * 43.1)) * uBurst;
+      if (burstLoop > 0.5 && cyc > 0.55) {
+        float bPinch = smoothstep(0.55, 0.75, cyc);
+        float dScheitel = abs(sl - 0.5);
+        if (dScheitel < 0.12 * bPinch) cut = 1.0;
+        hot += 1.4 * exp(-dScheitel / 0.07) * exp(-pow((cyc - 0.70) / 0.06, 2.0));
+        float drift = smoothstep(0.65, 1.0, cyc);
+        lift += cut * drift * drift * (0.35 + 0.55 * hash(aT.z * 47.1)) * uSpray * aL.x;
+        life *= (1.0 - smoothstep(0.78, 1.0, cyc));
+      }
     }
   } else if (uMode < 1.5) {
     // Filament-Eruption: Aktivierung (Seil hebt sich, hellt auf), dann Beschleunigung; Bündel weitet und verdrillt sich
@@ -205,19 +217,19 @@ vec3 ramp(float x) {
 void main() {
   if (vCut > 0.02 && vCut < 0.98) discard;
   if (vI <= 0.0) discard;
-  float x = vX, t = uTime, sp = 1.0 + 2.5 * uMove.x;
+  float x = vX, t = uTime, sp = 0.7 + 1.6 * uMove.x;
   float xr = x * 1.7, tube = sqrt(max(1.0 - xr * xr, 0.0));
   float prof = tube + 0.2 * exp(-xr * xr * 1.3) * (1.0 - x * x);
   if (vU > 0.0) {
     // Wurzel: Plasma läuft auf der Oberfläche zum Fußpunkt (Knoten wandern zu u = 0), wird dorthin dichter und heller
-    float kn = smoothstep(-0.35, 0.6, gnoise(vec3(vU * 7.0 + t * 0.35 * sp, vSeed * 37.0, vSeed * 11.0)));
+    float kn = smoothstep(-0.35, 0.6, gnoise(vec3(vU * 7.0 + t * 0.25 * sp, vSeed * 37.0, vSeed * 11.0)));
     float I = vI * prof * pow(max(1.0 - vU, 0.0), 1.6) * (0.35 + 0.9 * kn) * 1.3;   // max: Spitze interpoliert knapp über 1 → NaN
     gl_FragColor = vec4(ramp(I * 0.8) * I * uGain, 1.0);
     return;
   }
-  float str = 0.55 + 0.45 * gnoise(vec3(xr * 3.5 + vSeed * 9.0, vS * 5.0 - t * vFlow * 0.25 * sp, vSeed * 23.0));
+  float str = 0.55 + 0.45 * gnoise(vec3(xr * 3.5 + vSeed * 9.0, vS * 4.5 - t * vFlow * 0.2 * sp, vSeed * 23.0));
   prof = tube * mix(1.0, str, smoothstep(2.0, 6.0, vRes)) + 0.2 * exp(-xr * xr * 1.3) * (1.0 - x * x);
-  float knots = smoothstep(-0.45, 0.55, gnoise(vec3(vS * 9.0 - t * vFlow * sp, vSeed * 37.0, vSeed * 11.0)));
+  float knots = smoothstep(-0.45, 0.55, gnoise(vec3(vS * 6.5 - t * vFlow * 0.65 * sp, vSeed * 37.0, vSeed * 11.0)));
   float fine = 0.6 + 0.4 * gnoise(vec3(vS * 46.0 + vSeed * 5.0, vSeed * 91.0, t * 0.07));
   float df = min(vS, 1.0 - vS);
   float foot = 1.0 + 1.3 * pow(abs(2.0 * vS - 1.0), 6.0);
