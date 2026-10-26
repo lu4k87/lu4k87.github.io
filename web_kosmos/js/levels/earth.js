@@ -122,7 +122,7 @@ attribute vec2 auv;
 attribute float aw, ah;
 uniform vec3 uPole, uSunL;
 uniform float uKp, uTime, uRp, uWaves, uSub;
-varying float vV, vU, vW, vNight, vFold, vSub;
+varying float vVi, vU, vW, vNight, vFold, vSub;
 void main() {
   vec3 e3 = normalize(uPole) * ah;
   vec3 e1 = normalize(uSunL - e3 * dot(uSunL, e3));
@@ -148,7 +148,7 @@ void main() {
   float th = (90.0 - lat) * 0.017453292;
   vec3 dir = sin(th) * (cu * e1 + sin(u) * e2) + cos(th) * e3;
   vec3 pos = dir * (uRp + mix(0.1, uWaves > 0.5 ? 0.52 : 0.4, auv.y));
-  vV = auv.y; vU = u; vW = aw; vFold = fold; vSub = sub;
+  vVi = auv.y; vU = u; vW = aw; vFold = fold; vSub = sub;
   vNight = 1.0 - smoothstep(-0.2, 0.05, dot(dir, uSunL));
   gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
 }
@@ -156,8 +156,11 @@ void main() {
 export const AURORA_FRAG = /* glsl */ `
 ${NOISE}
 uniform float uTime, uKp, uGain, uWaves;
-varying float vV, vU, vW, vNight, vFold, vSub;
+varying float vVi, vU, vW, vNight, vFold, vSub;
 void main() {
+  // MSAA wertet am Bildpunkt-Mittelpunkt aus, auch knapp neben flach angeschnittenen Blättern: dort läuft die Höhe weit aus
+  // [0, 1] hinaus und das Produkt unten wird NaN – der Bloom bläht das zu weißen Flecken auf (Flug Erde → ISS)
+  float vV = clamp(vVi, 0.0, 1.0);
   float ray = ridged(vec3(cos(vU) * 5.0 + vFold * 0.6, sin(vU) * 5.0, vW * 4.0 + uTime * 0.25), 2);
   // feine senkrechte Strahlen (entlang der Feldlinien), wandern und flackern; Helligkeitswellen laufen am Vorhang entlang
   float rays = ridged(vec3(cos(vU) * 70.0 + vFold * 2.0, sin(vU) * 70.0, uTime * 0.35 + vW * 11.0), 2);

@@ -28,8 +28,12 @@ vec3 eht(sampler2D t, vec2 uv, vec3 e) {
   return afmhot(1.0 - exp(-L * e.z));
 }
 
+// NaN-Bildpunkte einer Station (Shader-Fehler) als Schwarz lesen: sonst verschmiert die Zoom-Unschärfe sie zu Punktreihen und
+// der Bloom zu weißen Scheiben – auch dort, wo das Bild im Flug gar nicht gezeigt wird (NaN × 0 = NaN)
+vec3 tex(sampler2D t, vec2 uv) { vec3 c = texture(t, uv).rgb; return any(isnan(c)) ? vec3(0.0) : c; }
+
 vec3 sampleLevel(sampler2D t, vec2 uv, vec3 e) {
-  vec3 c = texture(t, uv).rgb;
+  vec3 c = tex(t, uv);
   if (e.x > 0.001) c = mix(c, eht(t, uv, e) * 1.2, e.x);
   return c;
 }
@@ -47,7 +51,7 @@ vec3 zoomed(sampler2D t, vec2 uv, vec2 c, float amt, vec3 e) {
     float k = float(i) / 9.0;
     vec2 q = mix(uv, c, k * amt);
     float wi = 1.0 - k * 0.6;
-    vec3 s = texture(t, q).rgb;
+    vec3 s = tex(t, q);
     acc += s / (1.0 + luma(s)) * wi;
     w += wi;
   }
