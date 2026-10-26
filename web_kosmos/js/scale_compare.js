@@ -431,3 +431,4 @@ export function renderScaleCompare(stationId, tabIdx = 0) {
       ${tabsHtml}
     </section>`;
 }
+
