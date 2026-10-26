@@ -3,17 +3,20 @@
    Mini-Grafik je Zeile (nur volle Karten), ↺ „Standard“ am Zeilenende und Knopf „n geändert · Alle zurücksetzen“,
    ▶-Ebene als Karte „Animation“, sub-Ebenen eingerückt unter ihrer Hauptzeile; Zeitleiste über der Fußleiste; Tabellen der Infotafel.
    Ergänzt kosmos.css und nutzt dessen Tokens (--accent, --line, --glass-*, --mono). */
-/* Titelzeile (Vorschau Zahnrad:C): „Einstellungen“ + Name der Station groß, rechts kleiner Schalter Station | Global */
-.cfg-hd { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; padding-bottom: 8px; border-bottom: 1px solid var(--line); }
-.cfg-hd-t { display: flex; flex-direction: column; gap: 1px; min-width: 0; flex: 1 1 160px; }
+/* Titelzeile (Vorschau 26.10.2026 Schalt:C): „Einstellungen“, darunter zwei breite Reiter Station | Global über die volle Breite,
+   je Mini-Bento-Icon (Station = eine Kachel gefüllt, Global = alle) + Geltung im Reiter (Name der Station bzw. „Alle Stationen“) */
+.cfg-hd { display: flex; flex-direction: column; gap: 8px; padding-bottom: 10px; border-bottom: 1px solid var(--line); }
 .cfg-hd .cfg-title { margin: 0; }
-.cfg-hd-st { font: 600 17px/1.3 var(--font); overflow-wrap: break-word; }
-.cfg-hd-st[hidden] { display: none; }
-.cfg-tabs { display: inline-grid; grid-template-columns: auto auto; gap: 2px; padding: 3px; border-radius: 9px; border: 1px solid var(--line); background: rgba(255, 255, 255, 0.05); }
-.cfg-tabs button { display: flex; align-items: center; justify-content: center; gap: 6px; min-height: 30px; padding: 4px 12px; border: 0; border-radius: 7px; background: transparent; color: var(--ink); font: 500 13px var(--font); cursor: pointer; transition: background 0.2s, box-shadow 0.2s; }
-.cfg-tabs button:hover:not([aria-selected="true"]) { background: rgba(255, 255, 255, 0.06); }
-.cfg-tabs button[aria-selected="true"] { background: rgba(var(--accent-rgb), 0.16); box-shadow: inset 0 0 0 1px rgba(var(--accent-rgb), 0.45); }
+.cfg-tabs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
+.cfg-tabs button { display: flex; align-items: center; gap: 12px; min-width: 0; min-height: 54px; padding: 8px 12px; border: 1px solid var(--line); border-radius: 10px; background: rgba(255, 255, 255, 0.04); color: var(--ink); font: 600 15px var(--font); text-align: left; cursor: pointer; transition: background 0.2s, border-color 0.2s; }
+.cfg-tabs button:hover:not([aria-selected="true"]) { background: rgba(255, 255, 255, 0.07); }
+.cfg-tabs button[aria-selected="true"] { background: rgba(var(--accent-rgb), 0.16); border-color: rgba(var(--accent-rgb), 0.6); }
 .cfg-tabs button:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.cfg-tab-ico { width: 26px; height: 26px; flex: none; }
+.cfg-tabs button[aria-selected="true"] .cfg-tab-ico { color: var(--accent); }
+.cfg-tab-t { display: flex; flex-direction: column; min-width: 0; line-height: 1.25; }
+.cfg-tab-sub { font: 400 13px var(--font); overflow-wrap: break-word; }
+.cfg-tabs .b-count { margin-left: auto; }
 .bento { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-flow: row dense; gap: 10px; align-items: start; }
 .bento > [hidden] { display: none; }
 .cfg-dock { width: min(700px, calc(100% - 16px)); }
@@ -90,6 +93,12 @@
   .b-line { grid-template-columns: minmax(0, 1fr); }
   .b-mini { display: none; }
   .b-steps { display: none; }
+  /* schmal: Icon + Name oben, Geltung darunter über die ganze Breite, Zahl entfällt */
+  .cfg-tabs button { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 4px 8px; padding: 8px 10px; }
+  .cfg-tab-ico { width: 22px; height: 22px; }
+  .cfg-tab-t { display: contents; }
+  .cfg-tab-sub { grid-column: 1 / -1; }
+  .cfg-tabs .b-count { display: none; }
 }
 .play-btn { width: 34px; height: 34px; flex: none; display: inline-grid; place-items: center; border-radius: 50%; border: 1px solid var(--line-strong); background: rgba(255, 255, 255, 0.06); color: var(--ink); cursor: pointer; transition: border-color 0.2s, background 0.2s, color 0.2s; }
 .play-btn svg { width: 18px; height: 18px; }
@@ -132,13 +141,14 @@ body.is-flying .tl, body.is-intro .tl { opacity: 0; pointer-events: none; }
    Sprungleiste + „Alle zurücksetzen“ bleibt oben stehen, Animation als eine Zeile, je Gruppe eine Klapp-Zeile mit Kurzwerten
    (mehrere offen), Einstellung als Zeile Name | Bedienung | Wert | ↺ (feste Spalte, Knopf nur bei geändertem Wert) */
 .cfg-pane { --lab: 172px; --rst: 26px; }
-.cfg-bar { position: sticky; top: -14px; z-index: 2; display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: -4px -14px 0; padding: 8px 14px 7px; background: rgba(9, 12, 20, 0.94); border-bottom: 1px solid var(--line); }
+/* Sprungleiste als Raster gleich breiter Felder (Vorschau 26.10.2026 Leiste:B, Global = 4 × 2), „Alle zurücksetzen“ rechts darunter */
+.cfg-bar { position: sticky; top: -14px; z-index: 2; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(130px, 100%), 1fr)); gap: 6px; margin: -4px -14px 0; padding: 8px 14px 7px; background: rgba(9, 12, 20, 0.94); border-bottom: 1px solid var(--line); }
 .cfg-bar--solo:not(.has-dev) { display: none; }
-.cfg-bar > .b-devbar { margin-left: auto; }
+.cfg-bar > .b-devbar { grid-column: 1 / -1; justify-self: end; }
 /* Sprungleiste ohne eigenen Kasten: Knöpfe und „Alle zurücksetzen“ umbrechen gemeinsam, der Knopf bleibt in der letzten Zeile rechts */
 .cfg-jump { display: contents; }
-.cfg-jump-btn { display: inline-flex; align-items: center; gap: 5px; min-height: 28px; padding: 2px 10px 2px 7px; border-radius: 14px; border: 1px solid var(--line); background: rgba(255, 255, 255, 0.04); color: var(--ink); font: 500 12.5px var(--font); cursor: pointer; transition: border-color 0.2s, color 0.2s, background 0.2s; }
-.cfg-jump-btn .b-ico { width: 14px; height: 14px; }
+.cfg-jump-btn { display: flex; align-items: center; gap: 6px; min-width: 0; min-height: 34px; padding: 4px 8px; border-radius: 8px; text-align: left; line-height: 1.2; border: 1px solid var(--line); background: rgba(255, 255, 255, 0.04); color: var(--ink); font: 500 12.5px var(--font); cursor: pointer; transition: border-color 0.2s, color 0.2s, background 0.2s; }
+.cfg-jump-btn .b-ico { width: 14px; height: 14px; flex: none; }
 .cfg-jump-btn:hover { border-color: var(--line-strong); }
 .cfg-jump-btn[aria-current="true"] { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
 .cfg-jump-btn:focus-visible, .b-fold .b-head:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
@@ -165,6 +175,7 @@ body.is-flying .tl, body.is-intro .tl { opacity: 0; pointer-events: none; }
 .cfg-pane .b-item { display: grid; grid-template-columns: minmax(0, 1fr) var(--rst); column-gap: 6px; row-gap: 3px; align-items: center; }
 .cfg-pane .b-item > * { grid-column: 1; }
 .cfg-pane .b-item > .b-dev { grid-column: 2; grid-row: 1; align-self: center; }
+.cfg-pane .b-subh { margin: 10px 0 0; font: 600 14px var(--font); letter-spacing: 0.02em; }
 .cfg-pane .b-item + .b-item { padding-top: 5px; margin-top: 5px; }
 .b-reset--ico { justify-content: center; width: var(--rst); min-height: var(--rst); margin: 0; padding: 0; border-color: rgba(var(--accent-rgb), 0.45); color: var(--accent); }
 .b-reset--ico .b-ico { width: 15px; height: 15px; }

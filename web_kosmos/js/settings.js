@@ -1,8 +1,9 @@
-// Einstellungen (Zahnrad oben rechts): Titelzeile mit Stationsname + Schalter Station | Global; beide Reiter als Klapp-Liste mit
+// Einstellungen (Zahnrad oben rechts): Titelzeile + zwei breite Reiter Station | Global mit Mini-Bento-Icon und Geltung
+// (Name der Station bzw. „Alle Stationen“, Vorschau 26.10.2026 Schalt:C); beide Reiter als Klapp-Liste mit
 // Sprungleiste (layers.js, Vorschau 26.10.2026 Zahnrad:A + C): „Station“ = Ebenen der aktiven Station
 // und „Global“ = gilt an allen Stationen (Vorschau 26.10.2026 Global:A+B+C): Karten mit Icon-Plakette und
 // Mini-Grafik je Zeile, geänderte Werte mit ↺ „Standard“ am Zeilenende; Gruppen nur aus Schaltern zweispaltig. Gruppen: Look (Farblook, Belichtung, Vignette, Kinobalken),
-// Himmel, Milchstraße (Bild + Aufbau, milkyway.js), Kamera & Bewegung, Effekte, Oberfläche (inkl. Bewegung der Info-Grafiken = cards.js `kosmos.figmotion.v1`), Leistung.
+// Himmel, Milchstraße (Aussehen + Aufbau, milkyway.js), Orbit (Satelliten, Drehachsen), Kamera & Bewegung, Effekte, Oberfläche (inkl. Bewegung der Info-Grafiken = cards.js `kosmos.figmotion.v1`), Leistung.
 // `?cfg` öffnet das Zahnrad, `?cfg=global` mit dem Reiter Global.
 // Gespeichert in localStorage `kosmos.settings.v1`; clean() prüft jeden Wert, damit kaputte Einträge nichts stören.
 
@@ -125,20 +126,21 @@ const LOOKS = `<div class="b-row b-stack"><span class="cfg-label" id="cfg-grade"
 const MW_STYLE = `<div class="b-row b-stack"><span class="cfg-label" id="cfg-mwstyle">Stil</span>
   <div class="seg b-seg" role="radiogroup" aria-labelledby="cfg-mwstyle">${MW_STYLES.map(([id, l]) => `<button type="button" role="radio" data-mwstyle="${id}">${l}</button>`).join('')}</div></div>`
   + NOTE('Setzt alle Regler der Milchstraße auf einen abgestimmten Look, danach frei einstellbar. „Astrofoto“ ist wie die Vorlage von ESO.');
+// Zwischenüberschrift in einer Gruppe (Milchstraße: Aussehen | Aufbau, Vorschau 26.10.2026 Gruppe:C); zählt nicht als Einstellung
+const SUB = (t) => ['#', `<h5 class="b-subh">${t}</h5>`];
+const nRows = (g) => g.rows.filter(([k]) => k !== '#').length;
+// Reihenfolge von fern nach nah: Look, Himmel, Milchstraße, Orbit, dann Bedienung
 const GROUPS = [
   { id: 'look', icon: 'look', title: 'Look', hero: true, rows: [['grade', LOOKS], ['exposure', RANGE('exposure', 'Belichtung', 0.5, 2, 0.05, '×')],
     ['vig', RANGE('vig', 'Vignette', 0, 1.5, 0.05, '×', NEW)], ['bars', TOG('bars', 'Kinobalken 2,39:1', NEW)]] },
   { id: 'sky', icon: 'sky', title: 'Himmel', rows: [['stars', TOG('stars', 'Sterne und Milchstraße')],
-    ['deep', RANGE('deep', 'Tiefer Himmel', 0, 2, 0.1, '×') + NOTE('Was eine Langzeitbelichtung hinter den Sternen sieht: ferne Galaxien und schwach leuchtender Staub der Milchstraße (Zirrus) – statistisch verteilt, überhöht, mit bloßem Auge unsichtbar. 0× = reines Schwarz.')],
-    ['small', RANGE('small', 'Satelliten und Kleinkörper', 1, 8, 0.5, '×') + NOTE('Satelliten, Trümmer und Asteroiden als vergrößerte Symbole – je größer, desto weniger Objekte (4× → jedes achte); 1× zeigt alle als Lichtpunkte.')],
-    ['axes', TOG('axes', 'Drehachsen der Planeten und Monde', NEW) + NOTE('Linie über Nord- und Südpol jedes Planeten und Mondes, neigt und dreht sich mit dem Körper. Nordpol eisblau, Südpol grau.')]] },
-  { id: 'mw', icon: 'galaxy', title: 'Milchstraße', rows: [['mw', TOG('mw', 'Milchstraße zeigen', NEW)], ['', MW_STYLE],
+    ['deep', RANGE('deep', 'Tiefer Himmel', 0, 2, 0.1, '×') + NOTE('Was eine Langzeitbelichtung hinter den Sternen sieht: ferne Galaxien und schwach leuchtender Staub der Milchstraße (Zirrus) – statistisch verteilt, überhöht, mit bloßem Auge unsichtbar. 0× = reines Schwarz.')]] },
+  { id: 'mw', icon: 'galaxy', title: 'Milchstraße', rows: [['mw', TOG('mw', 'Milchstraße zeigen', NEW)], SUB('Aussehen'), ['', MW_STYLE],
     ['mwGain', RANGE('mwGain', 'Helligkeit', 0, 3, 0.05, '×')], ['mwCon', RANGE('mwCon', 'Kontrast', 0.5, 2, 0.05, '×')],
     ['mwBlack', RANGE('mwBlack', 'Schwarzpunkt', 0, 1, 0.05, '') + NOTE('Schneidet die schwachen Ränder des Bandes ab – der Himmel daneben wird dunkler.')],
     ['mwClar', RANGE('mwClar', 'Struktur', 0, 2, 0.05, '×') + NOTE('Lokaler Kontrast: hebt Sternwolken und Staubkanten gegen ihre Umgebung ab.')],
     ['mwSat', RANGE('mwSat', 'Sättigung', 0, 2, 0.05, '×')],
-    ['mwTemp', RANGE('mwTemp', 'Farbtemperatur', -1, 1, 0.05, '') + NOTE('Minus = kühler, bläulich · plus = wärmer, golden.')]] },
-  { id: 'mwparts', icon: 'layers', title: 'Aufbau der Milchstraße', rows: [
+    ['mwTemp', RANGE('mwTemp', 'Farbtemperatur', -1, 1, 0.05, '') + NOTE('Minus = kühler, bläulich · plus = wärmer, golden.')], SUB('Aufbau'),
     ['mwDust', RANGE('mwDust', 'Staubbahnen', 0, 2, 0.05, '×') + NOTE('Dunkelwolken vor dem Sternlicht: Großer Riss, Pfeifennebel, Kohlensack. 0× = Sterne ohne Staub.')],
     ['mwNeb', RANGE('mwNeb', 'Leuchtnebel (Hα)', 0, 3, 0.05, '×') + NOTE('Rot leuchtender Wasserstoff: Carina, Lagune, Nordamerika, Barnards Loop.')],
     ['mwCore', RANGE('mwCore', 'Kern (Bulge)', 0, 3, 0.05, '×')], ['mwGlow', RANGE('mwGlow', 'Lichthof', 0, 3, 0.05, '×')],
@@ -146,6 +148,9 @@ const GROUPS = [
     ['mwWidth', RANGE('mwWidth', 'Dicke der Scheibe', 0.6, 1.8, 0.05, '×') + NOTE('Höhe von Sternen und Staub über der Ebene; das Modell wird neu berechnet.')],
     ['mwNear', TOG('mwNear', 'Magellansche Wolken und Andromeda')],
     ['mwSrc', SEG('mwSrc', 'Quelle', [['model', 'Eigenes Modell'], ['photo', 'ESO-Foto']]) + NOTE('Das Foto (ESO/S. Brunier, CC BY 4.0) war die Vorlage und dient nur zum Vergleich – nur an Stationen im Sonnensystem, wo die Lage am Himmel stimmt.')]] },
+  { id: 'orbit', icon: 'orbit', title: 'Orbit', rows: [
+    ['small', RANGE('small', 'Satelliten und Kleinkörper', 1, 8, 0.5, '×') + NOTE('Satelliten, Trümmer und Asteroiden als vergrößerte Symbole – je größer, desto weniger Objekte (4× → jedes achte); 1× zeigt alle als Lichtpunkte.')],
+    ['axes', TOG('axes', 'Drehachsen der Planeten und Monde', NEW) + NOTE('Linie über Nord- und Südpol jedes Planeten und Mondes, neigt und dreht sich mit dem Körper. Nordpol eisblau, Südpol grau.')]] },
   { id: 'cam', icon: 'cam', title: 'Kamera &amp; Bewegung', rows: [['motion', SEG('motion', 'Bewegung', [['full', 'Voll'], ['calm', 'Ruhig'], ['off', 'Aus']]) + NOTE('„Aus“ wirkt wie „Bewegung reduzieren“ im System: keine Fahrt von selbst, Wechsel als kurze Überblendung.')],
     ['cine', TOG('cine', 'Leerlauf-Fahrt der Kamera')], ['dive', RANGE('dive', 'Flugdauer', 1.5, 8, 0.1, 's')]] },
   { id: 'fx', icon: 'fx', title: 'Effekte', half: true, rows: [['bloom', TOG('bloom', 'Lichthof (Bloom)')], ['lens', TOG('lens', 'Farbsaum und Linsenreflex')], ['anamorphic', TOG('anamorphic', 'Anamorphes Gegenlicht', NEW)], ['rayleigh', TOG('rayleigh', 'Rayleigh-Dämmerung', NEW)], ['grain', TOG('grain', 'Filmkorn')]] },
@@ -154,22 +159,22 @@ const GROUPS = [
   { id: 'perf', icon: 'perf', title: 'Leistung', rows: [['quality', SEG('quality', 'Qualität', [['auto', 'Auto'], ['1', 'Leicht'], ['2', 'Mittel'], ['3', 'Fein']])],
     ['fpsCap', SEG('fpsCap', 'Bildrate', [['0', 'Frei'], ['60', '60'], ['30', '30']], NEW) + NOTE('30 Bilder/s spart am Laptop Strom und Lüfter.')]] },
 ];
-const N_GLOBAL = GROUPS.reduce((n, g) => n + g.rows.length, 0);
+const N_GLOBAL = GROUPS.reduce((n, g) => n + nRows(g), 0);
 // Reiter Global wie der Reiter Station (Vorschau 26.10.2026 Zahnrad:A + C, F3 ja): Sprungleiste, je Gruppe eine Klapp-Zeile mit Kurzwerten
 const GKEY = '_global';
 const JUMP = `<nav class="cfg-jump" aria-label="Gruppen">${GROUPS.map((g, i) => `<button type="button" class="cfg-jump-btn" data-jump="${i}">${icon(g.icon)}<span>${g.title}</span></button>`).join('')}</nav>`;
 const CARD = (g, i) => { const open = isOpenIn(GKEY, i, 0); return `<article class="b-card b-fold${open ? ' is-open' : ''}" data-g="${g.id}" data-fold="${i}">
   <h4 class="b-fold-h"><button type="button" class="b-head" aria-expanded="${open}" aria-controls="cfg-b${i}"><span class="b-plaque">${icon(g.icon)}</span><span class="b-name">${g.title}</span>
-    <span class="b-sum" data-gsum></span><span class="b-count" aria-label="${g.rows.length} Einstellungen">${g.rows.length}</span>${icon('chev', 'b-chev')}</button></h4>
-  <div class="b-body${g.half ? ' b-body--grid' : ''}" id="cfg-b${i}"${open ? '' : ' hidden'}>${g.rows.map(([k, h]) => ROW(k, h)).join('')}</div></article>`; };
+    <span class="b-sum" data-gsum></span><span class="b-count" aria-label="${nRows(g)} Einstellungen">${nRows(g)}</span>${icon('chev', 'b-chev')}</button></h4>
+  <div class="b-body${g.half ? ' b-body--grid' : ''}" id="cfg-b${i}"${open ? '' : ' hidden'}>${g.rows.map(([k, h]) => (k === '#' ? h : ROW(k, h))).join('')}</div></article>`; };
 
 export function mountSettings(root, btn) {
   root.innerHTML = `
     <div class="cfg-hd">
-      <div class="cfg-hd-t"><h2 class="cfg-title" id="cfg-title">Einstellungen</h2><span class="cfg-hd-st" data-st-name></span><span class="cfg-hd-st" data-gl-name hidden>Alle Stationen</span></div>
+      <h2 class="cfg-title" id="cfg-title">Einstellungen</h2>
       <div class="cfg-tabs" role="tablist" aria-label="Geltungsbereich">
-        <button type="button" role="tab" id="cfg-tab-st" data-tab="st" aria-controls="cfg-station"></button>
-        <button type="button" role="tab" id="cfg-tab-gl" data-tab="gl" aria-controls="cfg-global">Global<span class="b-count">${N_GLOBAL}</span></button>
+        <button type="button" role="tab" id="cfg-tab-st" data-tab="st" aria-controls="cfg-station">${icon('station', 'cfg-tab-ico')}<span class="cfg-tab-t">Station<span class="cfg-tab-sub" data-st-name></span></span><span class="b-count" data-st-n></span></button>
+        <button type="button" role="tab" id="cfg-tab-gl" data-tab="gl" aria-controls="cfg-global">${icon('global', 'cfg-tab-ico')}<span class="cfg-tab-t">Global<span class="cfg-tab-sub">Alle Stationen</span></span><span class="b-count">${N_GLOBAL}</span></button>
       </div>
     </div>
     <div class="cfg-pane" id="cfg-station" role="tabpanel" aria-labelledby="cfg-tab-st"></div>
@@ -184,7 +189,7 @@ export function mountSettings(root, btn) {
     t.tabIndex = on ? 0 : -1;
     root.querySelector(`#${t.getAttribute('aria-controls')}`).hidden = !on;
     if (on && focus) t.focus();
-    if (on) { root.querySelector('[data-st-name]').hidden = t !== tabs[0]; root.querySelector('[data-gl-name]').hidden = t === tabs[0]; requestAnimationFrame(() => spyIn(root.querySelector(`#${t.getAttribute('aria-controls')}`), root)); }
+    if (on) requestAnimationFrame(() => spyIn(root.querySelector(`#${t.getAttribute('aria-controls')}`), root));
   });
   root.querySelector('.cfg-tabs').addEventListener('click', (e) => { const t = e.target.closest('[role=tab]'); if (t) pick(t); });
   root.querySelector('.cfg-tabs').addEventListener('keydown', (e) => {
@@ -194,7 +199,7 @@ export function mountSettings(root, btn) {
     pick(tabs[e.key === 'Home' ? 0 : e.key === 'End' ? tabs.length - 1 : (i + (e.key === 'ArrowRight' ? 1 : tabs.length - 1)) % tabs.length], true);
   });
   pick(tabs[new URLSearchParams(location.search).get('cfg') === 'global' ? 1 : 0]);
-  mountLayers({ gear: root.querySelector('#cfg-station'), head: root.querySelector('#cfg-tab-st'), name: root.querySelector('[data-st-name]'), strip: document.getElementById('timeline'), stripOn: () => settings.S.timeline });
+  mountLayers({ gear: root.querySelector('#cfg-station'), head: root.querySelector('[data-st-n]'), name: root.querySelector('[data-st-name]'), strip: document.getElementById('timeline'), stripOn: () => settings.S.timeline });
   const sync = () => {
     const S = settings.S;
     root.querySelectorAll('[data-key][data-val]').forEach((b) => b.setAttribute('aria-checked', String(String(S[b.dataset.key]) === b.dataset.val)));

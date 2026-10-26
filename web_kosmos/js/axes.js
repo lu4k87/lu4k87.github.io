@@ -1,4 +1,4 @@
-// Drehachsen aller Planeten und Monde (Zahnrad Global → Himmel „Drehachsen“, URL `?axes=1`): je ein Stummel über Nord- und
+// Drehachsen aller Planeten und Monde (Zahnrad Global → Orbit „Drehachsen“, URL `?axes=1`): je ein Stummel über Nord- und
 // Südpol als Kind des Körpers, dreht und neigt sich mit ihm. Gilt, weil alle Stationen den Nordpol auf die lokale +y-Achse legen
 // (SphereGeometry, ellipsoidGeometry, moonShape, tidalQuat). Nord in Eisblau, Süd gedämpft; der Körper verdeckt den Stummel
 // hinter sich (Tiefentest). Eine Geometrie und ein Material für alle: der Schalter blendet nur das Material um – nichts zu

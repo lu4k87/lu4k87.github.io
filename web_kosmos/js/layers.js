@@ -33,6 +33,9 @@ const ICONS = {
   time: '<circle cx="12" cy="12" r="8.5"/><path d="M12 7v5l3.5 2"/>',
   reset: '<path d="M4 12a8 8 0 1 0 2.3-5.6"/><path d="M4 4v4h4"/>',
   chev: '<path d="M6 9l6 6 6-6"/>',
+  // Mini-Bento der Reiter im Zahnrad: Station = eine Kachel gefüllt (diese Station), Global = alle Kacheln (alle Stationen)
+  station: '<rect x="3" y="3" width="9" height="18" rx="2"/><rect x="14" y="3" width="7" height="8" rx="2" fill="currentColor"/><rect x="14" y="13" width="7" height="8" rx="2"/>',
+  global: '<g fill="currentColor"><rect x="3" y="3" width="9" height="18" rx="2"/><rect x="14" y="3" width="7" height="8" rx="2"/><rect x="14" y="13" width="7" height="8" rx="2"/></g>',
 };
 export const icon = (k, cls = 'b-ico') => `<svg class="${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[k] || ICONS.layers}</svg>`;
 // Icon je Gruppen-Name der Stationen (Reihenfolge zählt: „Polarlicht“ vor „Licht“)
@@ -224,7 +227,7 @@ export function domSummary(body) {
 function render() {
   if (gearEl) {
     const layers = reg.get(currentId), st = STATIONS[currentId];
-    if (headEl) headEl.innerHTML = `Station<span class="b-count">${layers ? layers.length : 0}</span>`;
+    if (headEl) headEl.textContent = layers ? layers.length : 0;
     if (nameEl) nameEl.textContent = st ? st.title : '…';
     gearEl.innerHTML = layers ? gearHtml(layers)
       : '<p class="cfg-note">Diese Station hat noch keine Ebenen-Einstellungen – ihre Schalter stehen in der Infotafel.</p>';
