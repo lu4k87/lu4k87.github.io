@@ -32,6 +32,10 @@ const LOADERS = {
   // [E2] Erde nah
   iss: () => import('./levels/iss.js'),
   tiangong: () => import('./levels/tiangong.js'),
+  hubble: () => import('./levels/hubble.js'),
+  jwst: () => import('./levels/jwst.js'),
+  euclid: () => import('./levels/euclid.js'),
+  roman: () => import('./levels/roman.js'),
   // [E2] Mond
   moon: () => import('./levels/moon.js'),
   // [E3] Jupiter-System

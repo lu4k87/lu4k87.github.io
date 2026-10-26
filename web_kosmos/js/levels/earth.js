@@ -414,9 +414,13 @@ export function create(ctx) {
   const auroraPos = new THREE.Vector3(), poleW = new THREE.Vector3(), qSpin = new THREE.Quaternion();
 
   // ---------- Satelliten und Trümmer (CelesTrak-Schnappschuss, sats.js) ----------
-  let satData = null, sats = null, iss = null, tg = null;
+  let satData = null, sats = null, iss = null, tg = null, hst = null;
   const sunSat = new THREE.Vector3(), qTiltInv = new THREE.Quaternion();
   const satLines = [], issLocal = new THREE.Vector3(), issWorld = new THREE.Vector3(), tgLocal = new THREE.Vector3(), tgWorld = new THREE.Vector3(), satInfo = { alt: 0, v: 0 };
+  const hstLocal = new THREE.Vector3(), hstWorld = new THREE.Vector3();
+  // Teleskope am Lagrange-Punkt L2: 1,5 Mio. km hinter der Erde (Gegenseite der Sonne), seitlich versetzt wie auf ihren
+  // Halo-Bahnen (Lage schematisch, Abstände nach STScI/ESA: einige 100.000 km von L2)
+  const L2 = { d: 1500, jwst: [0, 520], euclid: [500, 0], roman: [-380, -220] }, l2World = { jwst: new THREE.Vector3(), euclid: new THREE.Vector3(), roman: new THREE.Vector3() };
   const show = { sats: true, debris: true, orbits: true };
   let linesT = -1;
   const satsReady = loadSats().then((d) => {
@@ -432,6 +436,7 @@ export function create(ctx) {
       satLines.push(line);
       if (name === 'ISS (ZARYA)') iss = d.obj[k];
       if (name === 'CSS (TIANHE)') tg = d.obj[k];
+      if (name === 'HST') hst = d.obj[k];
     }
     applyShow();
   }).catch((err) => console.warn('[kosmos] Satelliten nicht geladen:', err));
@@ -515,6 +520,14 @@ export function create(ctx) {
     return local.normalize().multiplyScalar(r).applyQuaternion(q);
   }
 
+  // Orte der L2-Teleskope aus der Sonnenrichtung (jedes Bild, die Sonne wandert im Zeitraffer)
+  const l2a = new THREE.Vector3();
+  function placeL2() {
+    l2a.crossVectors(sunDir, up).normalize();
+    for (const k of ['jwst', 'euclid', 'roman']) l2World[k].copy(sunDir).multiplyScalar(-L2.d).addScaledVector(l2a, L2[k][0]).addScaledVector(up, L2[k][1]);
+  }
+  placeL2();
+
   // Abzeichen: Tagrand, Nachtseite (von der Heimpose aus), Mond, Bahnpunkte, Sonnenrichtung, Schattenspitze
   const v = d.clone();
   const limb = sunDir.clone().addScaledVector(v, -sunDir.dot(v)).normalize();
@@ -529,6 +542,10 @@ export function create(ctx) {
     { id: 'geo', kind: 'info', pos: orbitPoint(side.clone().negate(), GEO) },
     { id: 'iss', kind: 'dive', to: 'iss', focus: () => 1.2, pos: issWorld.copy(orbitPoint(side.clone().add(upL), ISS.r, ISS.inc * RAD)) },
     { id: 'tiangong', kind: 'dive', to: 'tiangong', focus: () => 1.2, pos: tgWorld.copy(orbitPoint(side.clone().negate().add(upL), R_E + 0.384, 41.47 * RAD)) },
+    { id: 'hubble', kind: 'dive', to: 'hubble', focus: () => 1.2, pos: hstWorld.copy(orbitPoint(side.clone().addScaledVector(upL, -1), R_E + 0.48, 28.47 * RAD)) },
+    { id: 'jwst', kind: 'dive', to: 'jwst', focus: () => 40, pos: l2World.jwst },
+    { id: 'euclid', kind: 'dive', to: 'euclid', focus: () => 40, pos: l2World.euclid },
+    { id: 'roman', kind: 'dive', to: 'roman', focus: () => 40, pos: l2World.roman },
     { id: 'sun', kind: 'info', pos: sunDir.clone().multiplyScalar(90) },
     { id: 'umbra', kind: 'info', pos: umbraTip, visible: () => earthShadow.visible },
   ];
@@ -617,7 +634,12 @@ export function create(ctx) {
           satPos(tg, days, tgLocal);
           tilt.localToWorld(tgWorld.copy(tgLocal));
         }
+        if (hst) {
+          satPos(hst, days, hstLocal);
+          tilt.localToWorld(hstWorld.copy(hstLocal));
+        }
       }
+      placeL2();
     },
     widget: () => `<table><thead><tr><th>Objekte um die Erde</th><th>Anzahl</th></tr></thead><tbody id="w-sats"><tr><td colspan="2">Katalog wird geladen …</td></tr></tbody></table><p class="w-foot" id="w-sats-foot"></p>`,
     widgetTick(el, t) {
