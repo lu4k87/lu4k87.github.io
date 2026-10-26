@@ -29,6 +29,8 @@ const LOADERS = {
   // [E2] Erde nah
   // [E2] Mond
   // [E3] Jupiter-System
+  // [E3] Io, Europa
+  // [E3] Ganymed, Kallisto
   // [E4] Saturn + Mars
   // [E4] Mars
   // [E5] Neptun, Uranus, Pluto
