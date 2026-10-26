@@ -30,6 +30,7 @@ const LOADERS = {
   // [E2] Mond
   moon: () => import('./levels/moon.js'),
   // [E3] Jupiter-System
+  jupiter: () => import('./levels/jupiter.js'),
   // [E3] Io, Europa
   // [E3] Ganymed, Kallisto
   // [E4] Saturn + Mars

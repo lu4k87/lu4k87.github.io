@@ -103,6 +103,15 @@ export const SOURCES = {
   'nasa-le': { t: 'Mondfinsternisse 2021–2030', by: 'NASA GSFC, F. Espenak', url: 'https://eclipse.gsfc.nasa.gov/LEdecade/LEdecade2021.html' },
   'mcewen-1991': { t: 'Photometric functions for photoclinometry and other applications (Lunar-Lambert)', by: 'McEwen 1991, Icarus 92, 298', url: 'https://doi.org/10.1016/0019-1035(91)90053-V' },
   // [E3] Jupiter-System
+  'nasa-jupiter-fs': { t: 'Jupiter Fact Sheet (Radien, Abplattung 0,06487, Drehung 9,925 h, Pol)', by: 'NASA NSSDCA', url: 'https://nssdc.gsfc.nasa.gov/planetary/factsheet/jupiterfact.html' },
+  'nasa-jupiter-facts': { t: 'Jupiter: Facts (Bänder, Winde, Großer Roter Fleck, 43 min Sonnenlicht)', by: 'NASA Science', url: 'https://science.nasa.gov/jupiter/jupiter-facts/' },
+  'nasa-jupiter-moons': { t: 'Jupiter Moons (Galileische Monde, 1610 entdeckt)', by: 'NASA Science', url: 'https://science.nasa.gov/jupiter/moons/' },
+  'nssdc-jovsat': { t: 'Jovian Satellite Fact Sheet (Bahnen, Radien, Dichten, Albedo der Galileischen Monde)', by: 'NASA NSSDCA', url: 'https://nssdc.gsfc.nasa.gov/planetary/factsheet/joviansatfact.html' },
+  'jpl-sat-elem': { t: 'Planetary Satellite Mean Elements (JUP365, Laplace-Ebene, J2000)', by: 'JPL Solar System Dynamics', url: 'https://ssd.jpl.nasa.gov/sats/elem/' },
+  'jpl-sat-phys': { t: 'Planetary Satellite Physical Parameters (Radien, GM, Dichten)', by: 'JPL Solar System Dynamics', url: 'https://ssd.jpl.nasa.gov/sats/phys_par/' },
+  'lieske-1998': { t: 'Galilean satellite ephemerides E5 (Raten der mittleren Längen, Laplace-Resonanz)', by: 'Lieske 1998, A&AS 129, 205', url: 'https://doi.org/10.1051/aas:1998182' },
+  'simon-2018': { t: 'Historical and contemporary trends in the size, drift, and color of Jupiter’s Great Red Spot', by: 'Simon et al. 2018, AJ 155, 151', url: 'https://doi.org/10.3847/1538-3881/aaae01' },
+  'usgs-astro': { t: 'Globale Mosaike der Galileischen Monde (Galileo SSI, Voyager; public domain)', by: 'USGS Astrogeology Science Center, NASA/JPL', url: 'https://astrogeology.usgs.gov/search' },
   // [E3] Io, Europa
   // [E3] Ganymed, Kallisto
   // [E4] Saturn + Mars
@@ -180,7 +189,7 @@ export const STATIONS = {
       mercury: { t: 'Merkur', x: 'Radius 2.440 km · 0,055 Erdmassen · 0,39 AE · Umlauf 88 Tage · Drehung 58,6 Tage · −173 bis 427 °C · keine Monde, nur eine sehr dünne Exosphäre. Größte Bahnexzentrizität der Planeten (0,21): Der Sonnenabstand schwankt zwischen 46 und 70 Mio. km.', s: 'nasa-planets' },
       venus: { t: 'Venus', x: 'Radius 6.052 km · 0,815 Erdmassen · 0,72 AE · Umlauf 225 Tage · rotiert rückläufig, eine Drehung dauert 243 Erdtage · Oberfläche 464 °C bei 92 bar, Atmosphäre fast nur CO₂ – Folge eines starken Treibhauseffekts; Wolken aus Schwefelsäure reflektieren gut drei Viertel des Sonnenlichts, daher der helle Saum.', s: 'nasa-planets' },
       mars: { t: 'Mars', x: 'Radius 3.396 km · 0,107 Erdmassen · 1,52 AE · Umlauf 687 Tage · Tag 24 h 37 min · im Mittel −65 °C · Druck 0,006 bar (95 % CO₂) · 2 Monde (Phobos, Deimos) · rot durch Eisenoxid im Staub, Polkappen aus Wasser- und CO₂-Eis.', s: 'nasa-planets' },
-      jupiter: { t: 'Jupiter', x: 'Radius 71.492 km (11,2 Erdradien) · 318 Erdmassen – mehr als doppelt so viel wie alle anderen Planeten zusammen · 5,2 AE · Umlauf 11,9 Jahre · Drehung in 9 h 56 min; die schnelle Rotation ordnet die Wolken in Bänder · −110 °C an der Wolkendecke · über 95 bekannte Monde, 2026 mehr als 100. Seine Schwerkraft erzeugt über Bahnresonanzen die Kirkwood-Lücken im Asteroidengürtel.', s: 'nasa-planets' },
+      jupiter: { t: 'Jupiter', x: 'Radius 71.492 km (11,2 Erdradien) · 318 Erdmassen – mehr als doppelt so viel wie alle anderen Planeten zusammen · 5,2 AE · Umlauf 11,9 Jahre · Drehung in 9 h 56 min; die schnelle Rotation ordnet die Wolken in Bänder · −110 °C an der Wolkendecke · über 95 bekannte Monde, 2026 mehr als 100. Seine Schwerkraft erzeugt über Bahnresonanzen die Kirkwood-Lücken im Asteroidengürtel. Hineinfliegen: Jupiter mit den vier Galileischen Monden auf ihren Bahnen von heute.', s: 'nasa-planets' },
       saturn: { t: 'Saturn', x: 'Radius 60.268 km · 95 Erdmassen · 9,5 AE · Umlauf 29,4 Jahre · Drehung 10 h 39 min · −140 °C · Dichte 0,69 g/cm³, geringer als Wasser · Ringe von 74.700 bis 137.000 km (C- bis A-Ring), meist nur zehn Meter bis einen Kilometer dick, vor allem Wassereis; der Planet wirft seinen Schatten auf die Ringe, die Ringe ihren auf den Planeten · 274 bestätigte Monde (2025), weitere 2026 gemeldet.', s: 'nasa-saturn' },
       uranus: { t: 'Uranus', x: 'Radius 25.559 km · 14,5 Erdmassen · 19,2 AE · Umlauf 84 Jahre · Drehung 17 h 14 min, rückläufig · −195 °C · Achse um 98° geneigt: Jeder Pol ist etwa 42 Jahre lang beleuchtet, dann 42 Jahre unbeleuchtet · Methan absorbiert rotes Licht, daher die blaugrüne Farbe · 28 bekannte Monde. Hineinfliegen: Uranus mit Ringen und den fünf großen Monden.', s: 'nasa-planets' },
       neptune: { t: 'Neptun', x: 'Radius 24.764 km · 17,1 Erdmassen · 30,1 AE · Umlauf 165 Jahre · Drehung 16 h 7 min · −200 °C · 16 Monde; der größte, Triton, umläuft Neptun rückläufig · Sonnenlicht braucht gut 4 Stunden bis hierher. Hineinfliegen: Neptun mit Ringen, Bögen und den Monden Triton, Proteus und Nereid.', s: 'nasa-planets' },
@@ -268,6 +277,29 @@ export const STATIONS = {
     },
   },
   // [E3] Jupiter-System
+  jupiter: {
+    n: '02C', title: 'Jupiter & Monde', kicker: 'Planetensystem', parent: 'solar', width: 6e8, dist: 5.2 * AU, lookback: 5.2 * AU / C,
+    lead: 'Der größte Planet mit seinen vier großen Monden, so wie sie jetzt stehen: Io, Europa und Ganymed umkreisen Jupiter im Takt 4 : 2 : 1, Kallisto zieht weiter draußen. Zieht ein Mond vor der Sonne vorbei, wandert sein Schatten als schwarzer Punkt über die Wolkenbänder.',
+    facts: [
+      { v: '71.492', u: 'km', l: 'Radius am Äquator (am Pol 66.854 km)', s: 'nasa-jupiter-fs' },
+      { v: '9,925', u: 'h', l: 'eine Drehung (System III)', s: 'nasa-jupiter-fs' },
+      { v: '4 : 2 : 1', u: '', l: 'Umläufe von Io, Europa, Ganymed', s: 'nssdc-jovsat' },
+      { v: '43', u: 'min', l: 'Sonnenlicht bis Jupiter', s: 'nasa-jupiter-facts' },
+    ],
+    note: 'Abstände und Bahnen maßstäblich. Orte der Monde aus den mittleren Bahnelementen des JPL zum angezeigten Zeitpunkt, Raten der mittleren Länge nach Lieske 1998 – genau auf etwa ein Grad, keine Ephemeride. Jupiter mit echter Abplattung und Polachse; Wolkenkarte von Solar System Scope (CC BY 4.0), feines Banddetail und die gegeneinander strömenden Bänder sind Modell. Drehung mit 9 h 55 min; der Große Rote Fleck steht, wo ihn die Karte zeigt, nicht an seiner heutigen Länge (er treibt gegenüber der Drehung), zum Start auf der Tagseite. Monde gebunden rotierend, Karten von USGS (NASA/JPL/USGS). „Anschaulich“ zeigt die Monde dreifach vergrößert, ihre Schatten entsprechend größer; „Echt“ die wahren Größen. Kern- und Halbschatten aus Sonnenrichtung, Sonnenscheibe und Radien gerechnet, Jupiter dabei als Kugel. Planetenschein auf der Nachtseite der Monde und Dunstsaum der Atmosphäre verstärkt; die Sonne ist nur in der Richtung echt.',
+    sources: ['nasa-jupiter-fs', 'nasa-jupiter-facts', 'nssdc-jovsat', 'jpl-sat-elem', 'jpl-sat-phys', 'lieske-1998', 'nasa-jupiter-moons', 'simon-2018', 'sss-tex', 'usgs-astro'],
+    hotspots: {
+      grs: { t: 'Großer Roter Fleck', x: 'Ein Wirbelsturm, größer als die Erde, seit dem 19. Jahrhundert regelmäßig vermessen. Er schrumpft stetig in der Länge, um rund 0,19 Längengrade pro Jahr, und treibt gegenüber der Drehung des Planeten nach Westen, zuletzt um rund 0,36° pro Tag. Seit 2014 ist er im blauen und grünen Licht dunkler geworden. Im Bild steht er, wo ihn die Wolkenkarte zeigt.', s: 'simon-2018' },
+      bands: { t: 'Bänder und Zonen', x: 'Jupiters Streifen sind kalte, windige Wolken aus Ammoniak und Wasser in einer Atmosphäre aus Wasserstoff und Helium: helle Zonen und dunkle, orange Bänder. Über ein Dutzend vorherrschender Winde umlaufen den Planeten, am Äquator bis 539 km/h. Ein Jupitertag dauert 9,9 Stunden – der kürzeste im Sonnensystem.', s: 'nasa-jupiter-facts' },
+      io: { t: 'Io', x: 'Radius 1.821,5 km · 421.800 km von Jupiter · Umlauf 1,77 Tage · Dichte 3,53 g/cm³. Die vulkanisch aktivste Welt des Sonnensystems. Wie alle vier Galileischen Monde dreht sich Io in einem Umlauf einmal um sich selbst und zeigt Jupiter stets dieselbe Seite.', s: 'nssdc-jovsat' },
+      europa: { t: 'Europa', x: 'Radius 1.560,8 km, etwa 90 % des Erdmonds · 671.100 km von Jupiter · Umlauf 3,55 Tage · Rückstrahlvermögen 0,68, der hellste der vier. Unter der gefrorenen Kruste liegt vermutlich ein Ozean aus flüssigem Wasser.', s: 'nssdc-jovsat' },
+      ganymede: { t: 'Ganymed', x: 'Radius 2.631,2 km – der größte Mond des Sonnensystems, größer als der Planet Merkur · 1.070.400 km von Jupiter · Umlauf 7,15 Tage · Dichte 1,94 g/cm³.', s: 'nssdc-jovsat' },
+      callisto: { t: 'Kallisto', x: 'Radius 2.410,3 km · 1.882.700 km von Jupiter · Umlauf 16,69 Tage, außerhalb der Resonanz der inneren drei · Rückstrahlvermögen 0,19, der dunkelste der vier. Helle Narben auf dunklem Grund zeugen von einer langen Geschichte von Einschlägen.', s: 'nssdc-jovsat' },
+      shadow: { t: 'Mondschatten', x: 'Zieht ein Mond zwischen Sonne und Jupiter hindurch, fällt sein Schatten als schwarzer Punkt auf die Wolken – schon mit einem kleinen Teleskop von der Erde aus zu sehen. Ios Kernschatten ist rund 3.000 km breit, umgeben von einem Halbschatten (eigene Rechnung aus Radius, Abstand und Größe der Sonnenscheibe). Auf der Nachtseite tauchen die Monde in Jupiters Schatten (Verfinsterung). „Nächster Schattendurchgang“ in der Infotafel spult zum nächsten Ereignis vor.', s: 'nssdc-jovsat' },
+      res: { t: 'Laplace-Resonanz', x: 'Während Ganymed Jupiter einmal umrundet, schafft Europa zwei und Io vier Umläufe (7,155 : 3,551 : 1,769 Tage). Die mittleren Längen sind dabei fest gekoppelt: λ(Io) − 3 λ(Europa) + 2 λ(Ganymed) = 180°. Deshalb stehen die drei nie gemeinsam auf einer Seite von Jupiter. Die Uhr in der Infotafel zeigt den Winkel zum angezeigten Zeitpunkt.', s: 'lieske-1998' },
+      sun: { t: 'Richtung Sonne', x: 'Im Mittel 778 Mio. km (5,2 AE) entfernt: Das Sonnenlicht ist 43 Minuten unterwegs und hier nur noch etwa ein Siebenundzwanzigstel so hell wie auf der Erde (eigene Rechnung, 1/5,2²).', s: 'nasa-jupiter-facts' },
+    },
+  },
   // [E3] Io, Europa
   // [E3] Ganymed, Kallisto
   // [E4] Saturn + Mars
