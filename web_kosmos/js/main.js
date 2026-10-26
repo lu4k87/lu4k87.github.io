@@ -61,6 +61,8 @@ const LOADERS = {
 
 // Flug: äußere Kamera zoomt um ZOOM auf den Anker zu, die innere kommt aus ZOOM-fachem Abstand an (gleiche Rate)
 const ZOOM = 22;
+// Mausrad: Ausrollzeit (Rate je s, ≈ 0,15 s) und größter gesammelter Rest (ln, e^1,5 ≈ 4,5-fach)
+const ZOOM_GLIDE = 7, ZOOM_MAX = 1.5;
 // Ankunft mit etwas mehr Abstand als die Heimpose: erst Überblick, dann zoomt der Besucher selbst
 const ARRIVE = 1.25;
 // Mehr-Etappen-Flug als eine Fahrt: Dauer = Flugdauer × (base + per × Summe der Etappen-Gewichte), höchstens cap;
@@ -273,6 +275,12 @@ function activate(lv) {
   c.rotateSpeed = 0.5;
   c.zoomSpeed = 0.8;
   c.enablePan = false;
+  // Mausrad weich: statt je Raste zu springen sammelt das Rad nur das Ziel (log. Abstand), stepZoom rollt es je Bild aus;
+  // gleiche Stärke wie OrbitControls (0,95^(zoomSpeed · Δ/100)), Pinch auf Touch bleibt beim Original
+  state.zoom = 0;
+  if (c._handleMouseWheel) c._handleMouseWheel = (ev) => {
+    state.zoom = THREE.MathUtils.clamp(state.zoom - Math.log(0.95) * c.zoomSpeed * ev.deltaY * 0.01, -ZOOM_MAX, ZOOM_MAX);
+  };
   Object.assign(c, lv.orbit || {});
   c.autoRotate = false;
   c.target.copy(lv.target);
@@ -601,6 +609,18 @@ function endIntro() {
   hud.intro(false);
 }
 
+// ---------- Weiches Zoomen: Rest des gesammelten Rad-Zooms exponentiell abbauen (Zeitkonstante 1/ZOOM_GLIDE s) ----------
+function stepZoom(lv, dt) {
+  const c = state.controls;
+  if (!state.zoom) return;
+  const step = Math.abs(state.zoom) < 1e-4 ? state.zoom : state.zoom * (1 - Math.exp(-dt * ZOOM_GLIDE));
+  state.zoom -= step;
+  const off = lv.camera.position.clone().sub(c.target), d = off.length();
+  const d1 = THREE.MathUtils.clamp(d * Math.exp(step), c.minDistance, c.maxDistance);
+  if (d1 === d) { state.zoom = 0; return; }   // am Anschlag Rest verwerfen – weiter scrollen übernimmt der Rand-Zug
+  lv.camera.position.copy(c.target).addScaledVector(off, d1 / d);
+}
+
 // ---------- Rand-Zug: am Zoom-Anschlag weiter scrollen → hinaus bzw. hinein ----------
 canvas.addEventListener('wheel', (ev) => {
   const c = state.controls, lv = state.active;
@@ -680,6 +700,7 @@ function frame(nowMs) {
     if (state.follow) stepFollow(lv, real);
     // Rückgabe 'free': die Station übernimmt die Kamera (z. B. Blick-Wechsel), Folgen endet
     if (lv.orbitUpdate && lv.orbitUpdate(state.controls, real) === 'free') state.follow = null;
+    stepZoom(lv, real);
     state.controls.update();
     cineApply(lv, real);
     hud.setScale(fieldWidth(lv), lv);

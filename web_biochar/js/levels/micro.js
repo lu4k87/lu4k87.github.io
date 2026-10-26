@@ -356,7 +356,7 @@ export function create(ctx) {
   }));
   scene.add(probe);
 
-  // Holz (unter ≈ 400 °C): Zellulose-Mikrofibrillen (Ø ≈ 3,5 nm, Fernandes et al. 2011) als nahezu parallele, leicht wellige
+  // Holz (unter ≈ 400 °C): Zellulose-Mikrofibrillen (Ø ≈ 3 nm, 24 Ketten, Fernandes et al. 2011; hier 23 Ketten) als nahezu parallele, leicht wellige
   // und leicht verdrillte Stränge (Modell), aufgebaut aus einzelnen Glucanketten: Ketten in flachen Lagen (Abstand in der Lage
   // 0,82 nm, Lagenabstand 0,39 nm = d200), Nachbarlagen um ½ Kette seitlich und ¼ Cellobiose längs versetzt (Zellulose Iβ,
   // Nishiyama et al. 2002). Jede Kette: Glucose-Ringe (2 je 1,04 nm, Ringebene in der Lage) mit Brücke dazwischen, die
