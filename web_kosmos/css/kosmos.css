@@ -53,7 +53,7 @@ ul, ol { padding: 0; list-style: none; }
   display: grid;
   grid-template-columns: var(--rail-w) minmax(0, 1fr) auto var(--panel-w);
   grid-template-rows: auto minmax(0, 1fr) auto;
-  grid-template-areas: "top top acts panel" "rail stage acts panel" "foot foot foot foot";
+  grid-template-areas: "top top acts panel" "rail stage stage panel" "foot foot foot foot";
   transition: opacity 1.2s ease;
 }
 .hud > :not(.stage), .stage > * { pointer-events: auto; }
@@ -74,8 +74,8 @@ body.panel-off .panel { display: none; }
 .brand-text span { font-size: 12.5px; color: var(--ink-soft); }
 .flight { flex: 1; text-align: center; font: 500 13px var(--mono); letter-spacing: 0.08em; color: var(--accent); opacity: 0; transition: opacity 0.4s; }
 body.is-flying .flight { opacity: 1; }
-/* Knöpfe links neben der Infotafel, ohne Tafel am rechten Rand */
-.top-actions { grid-area: acts; align-self: start; display: flex; flex-direction: column; gap: 8px; padding: 14px 10px 0 0; }
+/* Knöpfe in der Kopfzeile links neben der Infotafel (ohne Tafel am rechten Rand): Zahnrad, dann Infotafel ein/aus */
+.top-actions { grid-area: acts; align-self: start; display: flex; gap: 8px; padding: 14px 10px 0 0; }
 body.panel-off .top-actions { padding-right: 18px; }
 .icon-btn {
   width: 40px; height: 40px; display: grid; place-items: center; border-radius: 50%; cursor: pointer;
