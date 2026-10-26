@@ -51,14 +51,14 @@ ul, ol { padding: 0; list-style: none; }
 .hud {
   position: fixed; inset: 0; z-index: 2; pointer-events: none;
   display: grid;
-  grid-template-columns: var(--rail-w) minmax(0, 1fr) var(--panel-w);
+  grid-template-columns: var(--rail-w) minmax(0, 1fr) auto var(--panel-w);
   grid-template-rows: auto minmax(0, 1fr) auto;
-  grid-template-areas: "top top top" "rail stage panel" "foot foot foot";
+  grid-template-areas: "top top acts panel" "rail stage acts panel" "foot foot foot foot";
   transition: opacity 1.2s ease;
 }
 .hud > :not(.stage), .stage > * { pointer-events: auto; }
 .stage > .hint, .stage > .pull { pointer-events: none; }
-body.panel-off .hud { grid-template-columns: var(--rail-w) minmax(0, 1fr) 0; }
+body.panel-off .hud { grid-template-columns: var(--rail-w) minmax(0, 1fr) auto 0; }
 body.panel-off .panel { display: none; }
 
 /* ---------- Kopf ---------- */
@@ -74,7 +74,9 @@ body.panel-off .panel { display: none; }
 .brand-text span { font-size: 12.5px; color: var(--ink-soft); }
 .flight { flex: 1; text-align: center; font: 500 13px var(--mono); letter-spacing: 0.08em; color: var(--accent); opacity: 0; transition: opacity 0.4s; }
 body.is-flying .flight { opacity: 1; }
-.top-actions { display: flex; gap: 8px; margin-left: auto; }
+/* Knöpfe links neben der Infotafel, ohne Tafel am rechten Rand */
+.top-actions { grid-area: acts; align-self: start; display: flex; flex-direction: column; gap: 8px; padding: 14px 10px 0 0; }
+body.panel-off .top-actions { padding-right: 18px; }
 .icon-btn {
   width: 40px; height: 40px; display: grid; place-items: center; border-radius: 50%; cursor: pointer;
   background: var(--glass); border: 1px solid var(--line); color: var(--ink); transition: border-color 0.2s, color 0.2s;
@@ -120,7 +122,7 @@ body.is-flying .hint, body.is-intro .hint { opacity: 0; }
 .pull i { display: block; height: 3px; margin-top: 6px; border-radius: 2px; background: linear-gradient(to right, var(--accent) calc(var(--p, 0) * 100%), rgba(255, 255, 255, 0.15) 0); }
 
 /* ---------- Infotafel ---------- */
-.panel { grid-area: panel; margin: 6px 16px 12px 0; border-radius: var(--radius); overflow: auto; min-height: 0; overscroll-behavior: contain; }
+.panel { grid-area: panel; margin: 14px 16px 12px 0; border-radius: var(--radius); overflow: auto; min-height: 0; overscroll-behavior: contain; }
 /* Scrollbereiche: schmaler, dezenter Balken statt Standard-Scrollbar (RULES.md §3) */
 .panel, .cfg { scrollbar-width: thin; scrollbar-color: rgba(255, 255, 255, 0.22) transparent; }
 .panel::-webkit-scrollbar, .cfg::-webkit-scrollbar { width: 6px; height: 6px; }
@@ -405,11 +407,12 @@ body.fatal-webgl .fatal-webgl, body.fatal-start .fatal-start { display: block; }
 @media (max-width: 760px) {
   :root { --rail-w: 58px; --panel-w: 0px; }
   .hud {
-    grid-template-columns: var(--rail-w) minmax(0, 1fr);
+    grid-template-columns: var(--rail-w) minmax(0, 1fr) auto;
     grid-template-rows: auto minmax(0, 1fr) auto auto;
-    grid-template-areas: "top top" "rail stage" "panel panel" "foot foot";
+    grid-template-areas: "top top acts" "rail stage stage" "panel panel panel" "foot foot foot";
   }
-  body.panel-off .hud { grid-template-columns: var(--rail-w) minmax(0, 1fr); }
+  body.panel-off .hud { grid-template-columns: var(--rail-w) minmax(0, 1fr) auto; }
+  .top-actions, body.panel-off .top-actions { flex-direction: row; align-self: center; padding: 4px 12px 0 0; }
   .panel { margin: 0 10px 6px; max-height: 32vh; }
   .panel-body { padding: 14px 14px 16px; gap: 12px; }
   .st-title { font-size: 24px; }
