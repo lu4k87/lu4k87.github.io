@@ -10,6 +10,7 @@ import { createPost } from './post.js';
 import { createHud } from './hud.js';
 import { settings, onSettings, globalGrade } from './settings.js';
 import { createDeepSky } from './deepsky.js';
+import { TURN, planTurn, turnPose, turnPace } from './turn.js';
 
 const LOADERS = {
   earth: () => import('./levels/earth.js'),
@@ -358,6 +359,12 @@ function flyPose(cam, a, b, e, tk = e, pivot = null, bend = null) {
   cam.lookAt(target);
   return target;
 }
+function turnCam(cam, tn, x) {
+  const p = turnPose(tn, x), target = new THREE.Vector3().fromArray(p.target);
+  cam.position.fromArray(p.pos);
+  cam.lookAt(target);
+  return target;
+}
 const easeInOut = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
 const smooth = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
 // Zwischenstation ohne Knick: jede Etappe ist eine Gerade (auf den Anker zu bzw. von ihm weg), an der Station wechselt
@@ -386,48 +393,57 @@ async function goTo(targetId) {
   hop();
 }
 
-// ---------- Fahrplan: alle Etappen auf einer Zeitachse, Tempo stetig, kein Halt an Zwischenstationen ----------
+// ---------- Fahrplan: alle Etappen auf einer Zeitachse, Tempo stetig, kein Halt – auch nicht an einer Wende ----------
 const homeWidth = (lv) => lv.home.pos.distanceTo(lv.home.target) * Math.tan(THREE.MathUtils.degToRad(lv.camera.fov) / 2) * lv.unit;
-// Teilfahrt = Etappen gleicher Richtung; an einer Wende (hinaus → hinein) beginnt die nächste
+const arrival = (lv) => poseAt(lv.home.target, lv.home.pos, lv.home.pos.distanceTo(lv.home.target) * ARRIVE);
 function planChain(lvs) {
   const legs = lvs.slice(1).map((to, i) => {
     const dec = Math.abs(Math.log10(homeWidth(lvs[i]) / homeWidth(to)));
     return { down: to.meta.parent === lvs[i].id, w: Math.min(CHAIN.hi, Math.max(CHAIN.lo, CHAIN.w0 + CHAIN.perDecade * dec)) };
   });
-  const n = legs.length, W = legs.reduce((s, l) => s + l.w, 0);
-  const runs = [];
-  legs.forEach((l, i) => {
-    if (i && l.down === legs[i - 1].down) runs[runs.length - 1].ws.push(l.w);
-    else runs.push({ from: i, ws: [l.w] });
-  });
-  runs.forEach((r, k) => {
-    r.dur = r.ws.reduce((s, w) => s + w, 0) / W;   // Anteil an der Gesamtzeit
-    r.ramp = Math.min(0.5, 0.9 / r.ws.length);     // Anfahren und Abbremsen dauern etwa eine Etappe
-    r.a = k ? 'turn' : 'soft';
-    r.b = k < runs.length - 1 ? 'turn' : 'soft';
-    r.cum = warpTable(r.ws);
-  });
-  const T = still() ? 1.2 * n : n === 1 ? settings.S.dive : settings.S.dive * Math.min(CHAIN.cap, CHAIN.base + CHAIN.per * W);
-  return { legs, runs, T, t: 0, end: null, turn: null };
+  const n = legs.length, ws = legs.map((l) => l.w), W = ws.reduce((s, w) => s + w, 0);
+  // Wende (hinaus → hinein) an Station i: deren Kamera fährt einen Bogen, das Tempo folgt dort der Bildbewegung
+  const i = legs.findIndex((l, k) => k && l.down && !legs[k - 1].down);
+  const turn = i > 0 ? planTurnAt(lvs, i) : null;
+  const { cum, gain } = warpTable(ws, turn && ((s) => turn.pace(s - turn.at)));
+  const T = still() ? 1.2 * n : n === 1 ? settings.S.dive : settings.S.dive * Math.min(CHAIN.cap, CHAIN.base + CHAIN.per * W) * gain;
+  // Anfahren und Abbremsen dauern etwa eine Etappe
+  return { legs, turn, T, t: 0, end: null, ramp: Math.min(0.5, 0.9 / n), cum };
 }
-// Tempo-Rampen (Weg bei Geschwindigkeit 0 → 1): an Start und Ziel weich, an einer Wende linear – der Zoom dreht durch null
-const RAMP = { soft: (x) => x * x * x - x * x * x * x / 2, turn: (x) => x * x / 2 };
-function runEase(u, r) {
-  const k = r.ramp, A = 1 - k;
-  if (u < k) return (k * RAMP[r.a](u / k)) / A;
-  if (u > 1 - k) return 1 - (k * RAMP[r.b]((1 - u) / k)) / A;
+// Bogen in der Wendestation zwischen dem Anker des Kindes, aus dem die Fahrt kommt (E), und dem des nächsten (M);
+// Übersicht O wie bei der Ankunft dort (gemerkte Pose oder Heimpose)
+function planTurnAt(lvs, i) {
+  const st = lvs[i], saved = state.poses.get(st.id);
+  const O = saved && saved.child === lvs[i - 1].id ? saved : arrival(st);
+  const tn = planTurn(anchorOf(st, lvs[i - 1].id).toArray(), anchorOf(st, lvs[i + 1].id).toArray(), O.pos.toArray(), ZOOM);
+  const tanH = Math.tan(THREE.MathUtils.degToRad(st.camera.fov) / 2);
+  // pose = Übersicht ohne Bogen: der Rückflug landet im gewohnten Blick
+  return Object.assign(tn, { id: st.id, at: i, pose: pose(O.pos, O.target), pace: turnPace(tn, tanH, st.camera.aspect) });
+}
+// Tempo-Rampe (Weg bei Geschwindigkeit 0 → 1), an Start und Ziel weich
+const ramp = (x) => x * x * x - x * x * x * x / 2;
+function runEase(u, k) {
+  const A = 1 - k;
+  if (u < k) return (k * ramp(u / k)) / A;
+  if (u > 1 - k) return 1 - (k * ramp((1 - u) / k)) / A;
   return (k / 2 + u - k) / A;
 }
-// Zeitdichte entlang der Teilfahrt: Gewicht je Etappenmitte, dazwischen linear → das Tempo wechselt stetig
-function warpTable(ws) {
+// Zeitdichte entlang der Fahrt: Gewicht je Etappenmitte, dazwischen linear → das Tempo wechselt stetig; pace(s) =
+// Bildbewegung der Wende (sonst 1), gain = so viel länger wird die Fahrt dadurch (die Etappen behalten ihr Tempo)
+function warpTable(ws, pace) {
   const m = ws.length, N = 48 * m, cum = [0];
   const rho = (s) => {
     if (m === 1) return ws[0];
     const x = Math.min(m - 1, Math.max(0, s - 0.5)), i = Math.min(m - 2, Math.floor(x));
     return ws[i] + (ws[i + 1] - ws[i]) * (x - i);
   };
-  for (let k = 1; k <= N; k++) cum.push(cum[k - 1] + rho((k - 0.5) * m / N));
-  return cum.map((c) => c / cum[N]);
+  let plain = 0;
+  for (let k = 1; k <= N; k++) {
+    const s = (k - 0.5) * m / N, r = rho(s);
+    plain += r;
+    cum.push(cum[k - 1] + r * (pace ? pace(s) : 1));
+  }
+  return { cum: cum.map((c) => c / cum[N]), gain: Math.min(TURN.gain, cum[N] / plain) };
 }
 function unwarp(cum, q) {
   let k = 1;
@@ -439,12 +455,7 @@ function chainPos(ch, u) {
   const n = ch.legs.length;
   if (still()) return u * n;
   if (n === 1) return easeInOut(u);
-  let t0 = 0;
-  for (const [k, r] of ch.runs.entries()) {
-    if (k < ch.runs.length - 1 && u >= t0 + r.dur) { t0 += r.dur; continue; }
-    return r.from + unwarp(r.cum, runEase(Math.min(1, (u - t0) / r.dur), r)) * r.ws.length;
-  }
-  return n;
+  return unwarp(ch.cum, runEase(u, ch.ramp)) * n;
 }
 
 function hop() {
@@ -468,7 +479,6 @@ function hop() {
   // Zwischenstation: genau an der Endpose der vorigen Etappe weiter (die Steuerung könnte sie begrenzt haben)
   const cur = ch.end ? pose(ch.end.pos, ch.end.target) : pose(from.camera.position, state.controls.target);
   let outerFrom, outerTo, innerFrom, innerTo;
-  const arrival = (lv) => poseAt(lv.home.target, lv.home.pos, lv.home.pos.distanceTo(lv.home.target) * ARRIVE);
   if (down) {
     // nach einer Wende die Pose ohne Schwenk auf den Anker merken (Rückflug landet im gewohnten Blick)
     const keep = ch.turn && ch.turn.id === from.id ? ch.turn.pose : cur;
@@ -485,15 +495,9 @@ function hop() {
     outerFrom = poseAt(anchor, outerTo.pos, Math.max(outerTo.pos.distanceTo(anchor) / ZOOM, 1e-9));
     innerFrom = cur;
     innerTo = poseAt(cur.target, cur.pos, cur.pos.distanceTo(cur.target) * ZOOM);
-    // Wende (danach wieder hinein): der Blick schwenkt schon im Hinausflug auf den nächsten Anker
-    const next = state.queue[0];
-    if (next && STATIONS[next].parent === to.id) {
-      ch.turn = { id: to.id, pose: pose(outerTo.pos, outerTo.target) };
-      outerTo = { pos: outerTo.pos.clone(), target: anchorOf(to, next) };
-    }
   }
   const multi = state.queue.length > 0;
-  // gleiche Richtung wie die vorige Etappe → Bogen statt Knick; an einer Wende steht die Kamera ohnehin kurz still
+  // gleiche Richtung wie die vorige Etappe → Bogen statt Knick; an einer Wende fährt die Wendestation ihren Bogen (turn.js)
   const carry = ch.carry && ch.carry.down === down ? carryBend(ch.carry) : null;
   ch.carry = null;
   state.tr = {
@@ -512,8 +516,12 @@ function stepTransition(dt) {
   const p = tr.down ? e : 1 - e;            // 0 = nur äußeres Bild, 1 = nur inneres
   // äußeres Blickziel schwenkt früh auf den Anker (beim Hinausfliegen erst am Ende weg davon)
   const tkOuter = tr.down ? smooth(0, 0.45, e) : smooth(0.55, 1, e);
-  // weiterfahrende Kamera = die der Station, an der die vorige Etappe endete (hinein: äußere, hinaus: innere)
-  flyPose(tr.outer.camera, tr.outerFrom, tr.outerTo, e, tkOuter, tr.anchor, tr.down ? tr.carry : null);
+  // weiterfahrende Kamera = die der Station, an der die vorige Etappe endete (hinein: äußere, hinaus: innere);
+  // die Wendestation fährt Steigen, Kuppe und Sinken als einen Bogen (x = Etappen-Koordinate ab der Wende)
+  const tn = ch.turn, x = tn && tr.outer.id === tn.id ? tr.k + e - tn.at : null;
+  const outerTgt = x !== null ? turnCam(tr.outer.camera, tn, x)
+    : flyPose(tr.outer.camera, tr.outerFrom, tr.outerTo, e, tkOuter, tr.anchor, tr.down ? tr.carry : null);
+  if (x !== null) tr.outer.target = outerTgt;   // Maßstab in der Leiste misst zum gleitenden Blickpunkt
   const innerTgt = flyPose(tr.inner.camera, tr.innerFrom, tr.innerTo, e, e, null, tr.down ? null : tr.carry);
   tr.outer.camera.updateMatrixWorld();
   tr.inner.camera.updateMatrixWorld();
@@ -535,7 +543,7 @@ function stepTransition(dt) {
   if (!tr.captioned && e > 0.62 && state.queue.length === 0) { tr.captioned = true; hud.caption(tr.to.meta); }
   if (e >= 1) {
     const to = tr.to;
-    const end = tr.down ? tr.innerTo : tr.outerTo;
+    const end = tr.down ? tr.innerTo : x !== null ? pose(tr.outer.camera.position, outerTgt) : tr.outerTo;
     to.camera.position.copy(end.pos);
     to.camera.lookAt(end.target);
     to.target = end.target.clone();
