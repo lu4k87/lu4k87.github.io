@@ -420,7 +420,7 @@ body.panel-collapsed .panel { display: none; }
 }
 .eyebrow { margin: 0; font: 500 13px/1.3 var(--mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--accent); }
 .eyebrow-scale { text-transform: none; }   /* sonst wird „µm“ zu „ΜM“ (großes Mü) */
-.lead { margin: 0; font-size: 16px; line-height: 1.5; color: var(--ink-soft); hyphens: auto; }
+.lead { margin: 0; font-size: 16px; color: var(--ink-soft); }
 .lead:not(.is-open) { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .lead-more {
   align-self: flex-start;
@@ -435,14 +435,20 @@ body.panel-collapsed .panel { display: none; }
   transition: border-color 0.18s, background-color 0.18s;
 }
 .lead-more:hover { border-color: var(--accent); background: var(--accent-soft); }
-/* Fließtext im Blocksatz (Skill text-format §4, Wunsch User 2026-10-23): Tafel, Info-Karte, Hinweise, Quellen.
-   Silbentrennung über lang="de", aber sparsam: nur Wörter ab 12 Zeichen, mind. 5 vorn und 4 hinten (keine „ge-streckt“);
-   schmal (< 30 em) wieder linksbündig */
-.lead, .detail p, .hs-card p, .note, .sources li { text-align: justify; text-wrap: pretty; hyphens: auto; hyphenate-limit-chars: 12 5 4; }
-@media (max-width: 30em) { .lead, .detail p, .note, .sources li { text-align: start; } }
-/* Info-Karte: Blocksatz erst ab ≈ 256 px Textbreite neben der Lupe (früher Karte ≈ 290 px) – schmaler rissen ohne
-   Trennungen breite Lücken (text-format §4); gemessen am Kartenkörper (Lupe 112 + Rand 22 = 134 px), weil ein Container
-   auf .hs-text den Fluss um die Lupe abschneiden würde */
+/* Fließtext im Blocksatz (Skill text-format §4, Wunsch User 2026-10-23, 2026-10-26 für alle Texte): Einleitung und Erläuterung
+   der Tafel, Info-Karte, Hinweise im Zahnrad; eine Zeilenhöhe 1,5. Silbentrennung über lang="de" nur in Wörtern ab 8 Zeichen
+   mit mind. 4 Zeichen vorn, 3 hinten: lange Komposita brechen, aber kein „lie-gen“, keine „Na-vigation“. Ohne Trennung reißt der Blocksatz in
+   schmalen Spalten Gassen (tests/hs_card_check.py misst Wortlücken > 0,7 em). Zahl + Einheit, Namen und Kürzel hält
+   hud.js prose() zusammen (.nh); etwas engere Wortabstände (−0,04 em) halbieren die übrigen Gassen */
+.lead, .detail p, .hs-card p, .note, .cfg-note:not(.cfg-foot) { text-align: justify; text-wrap: pretty; hyphens: auto; hyphenate-limit-chars: 8 4 3; word-spacing: -0.04em; line-height: 1.5; }
+.nh { hyphens: manual; }
+/* Quellen: Liste mit Namen, englischen Titeln und Jahreszahlen → linksbündig, nicht getrennt (text-format §4) */
+.sources li { text-align: start; hyphens: manual; overflow-wrap: break-word; }
+/* schmal (< 30 em) wieder linksbündig: ≈ 30 Zeichen je Zeile reichen für Blocksatz nicht */
+@media (max-width: 30em) { .lead, .detail p, .note, .cfg-note:not(.cfg-foot) { text-align: start; } }
+@container panel (max-width: 380px) { .lead, .note { text-align: start; } }   /* Tafel bei 1024 px ≈ 282 px Text: Gassen bis 2,4 em */
+/* Info-Karte: Blocksatz erst ab ≈ 256 px Textbreite neben der Lupe; gemessen am Kartenkörper (Lupe 112 + Rand 22 = 134 px),
+   weil ein Container auf .hs-text den Fluss um die Lupe abschneiden würde */
 .hs-body { container-type: inline-size; }
 @container (max-width: 389px) { .hs-card p { text-align: start; } }
 .panel p { margin: 0; }
@@ -458,7 +464,6 @@ body.panel-collapsed .panel { display: none; }
 }
 .detail h2 { display: flex; align-items: center; gap: 10px; font-size: 18px; font-weight: 600; text-wrap: balance; }
 .detail h2 .hex { color: var(--accent); }
-.detail p { hyphens: auto; line-height: 1.5; }
 .detail .btn-primary { align-self: flex-start; }
 
 .explore { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 5px; }
@@ -545,7 +550,8 @@ body.panel-collapsed .panel { display: none; }
 .lab { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 5px; margin: 0; }
 .lab--phys { grid-template-columns: repeat(2, minmax(0, 1fr)); margin-top: 5px; }
 .lab-cell { display: flex; flex-direction: column; gap: 1px; min-width: 0; padding: 3px 8px 4px; border: 1px solid var(--line); border-radius: 8px; }
-.lab dt { display: flex; align-items: baseline; justify-content: space-between; gap: 4px; font-size: 12.5px; line-height: 1.2; white-space: nowrap; }
+.lab dt { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 2px 4px; font-size: 12.5px; line-height: 1.2; }
+.lab dt > * { white-space: nowrap; }   /* Differenz rutscht unter den Namen, statt in die Nachbarkachel zu laufen */
 .lab-delta { font: 500 11.5px/1 var(--mono); color: var(--accent); opacity: 0.9; }
 @container panel (max-width: 350px) { .lab:not(.lab--phys) .lab-delta { display: none; } }
 .lab dd { flex: 1; display: flex; flex-direction: column; gap: 2px; margin: 0; }
@@ -559,7 +565,7 @@ body.panel-collapsed .panel { display: none; }
 .lab-more > summary { cursor: pointer; font-weight: 500; }
 .lab-more[open] > summary { margin-bottom: 8px; }
 .lab-more > .note { margin-top: 8px; }
-.note { font-size: 14px; line-height: 1.45; color: var(--ink-soft); }
+.note { font-size: 14px; color: var(--ink-soft); }
 
 /* Pyrolyse-Labor: Kurve H/Corg */
 .chart { margin: 0; display: flex; flex-direction: column; gap: 6px; }
@@ -866,7 +872,7 @@ body.overlays-off .ms-svg, body.overlays-off .ms-lab { opacity: 0 !important; po
 .hs-card h2 .hex { color: var(--accent); flex: none; }
 /* Größen-Etikett läuft als Wort hinter dem Titel mit (Grundlinie), bricht bei langen Titeln mit um statt eine Spalte zu öffnen */
 .hs-card h2 .tag { margin-left: 4px; font: 500 12.5px/1 var(--mono); color: var(--accent); white-space: nowrap; }
-.hs-card p { margin: 0; font-size: 15px; line-height: 1.5; hyphens: auto; }
+.hs-card p { margin: 0; font-size: 15px; }
 /* Lupe: runder Live-Ausschnitt der Szene um den Infopunkt (main.js zeichnet ins Canvas), links neben dem Text und
    senkrecht mittig; die Karte wächst um die Spalte (hud.js LENS_COL) */
 .hs-body { display: flow-root; }

@@ -943,6 +943,10 @@ const hud = createHud({
   },
 });
 
+// Mausrad-Zoom selbst statt über OrbitControls: r170 zoomt je Ereignis sofort und ungedämpft, schnelles Drehen und
+// Touchpads springen. Hier setzt das Rad nur den Ziel-Abstand (log, ≈ 2,5 % je Raste, je Ereignis höchstens 150 px,
+// höchstens 1,4× vor dem aktuellen Abstand), state.dolly gleitet langsam dorthin aus. Pinch auf Touch bleibt bei OrbitControls.
+const WHEEL = { perPx: 0.00025, maxStep: 150, lead: 0.35, rate: 3.5 };
 const wheel = { acc: 0, dir: '', timer: 0 };
 canvas.addEventListener('wheel', (e) => {
   endIntro();
@@ -950,6 +954,15 @@ canvas.addEventListener('wheel', (e) => {
   const c = state.controls;
   const dist = c.object.position.distanceTo(c.target);
   const dy = e.deltaY * (e.deltaMode === 1 ? 33 : 1);
+  if (c.enabled && c.enableZoom) {
+    e.preventDefault();
+    e.stopImmediatePropagation();   // läuft vor dem Rad-Handler von OrbitControls (der kommt erst mit activate dazu)
+    cineCommit(); c.autoRotate = false; state.focus = null;
+    const step = clampf(dy * (e.ctrlKey ? 10 : 1), -WHEEL.maxStep, WHEEL.maxStep);   // Strg + Rad = Touchpad-Pinch, wie r170
+    const now = Math.log(dist), from = Math.log(state.dolly ? state.dolly.to : dist);
+    const to = Math.exp(clampf(from + step * WHEEL.perPx, now - WHEEL.lead, now + WHEEL.lead));
+    state.dolly = { to: clampf(to, c.minDistance, c.maxDistance), rate: WHEEL.rate };
+  }
   let dir = '';
   if (dy > 0 && dist >= c.maxDistance * 0.985 && state.index > 0) dir = 'up';
   if (dy < 0 && dist <= c.minDistance * 1.015 && state.active.hotspots.some((h) => h.kind === 'dive')) dir = 'down';
@@ -964,7 +977,7 @@ canvas.addEventListener('wheel', (e) => {
     hud.setEdgeMeter('', 0);
     if (dir === 'up') goTo(state.index - 1); else diveHotspot();
   }
-}, { passive: true });
+}, { passive: false });
 canvas.addEventListener('pointerdown', endIntro);
 
 window.addEventListener('keydown', (e) => {
@@ -1127,9 +1140,12 @@ function frame(now) {
         const t = state.controls.target;
         const dir = lv.camera.position.clone().sub(t);
         const d = dir.length();
-        const next = Math.exp(Math.log(d) + (Math.log(state.dolly.to) - Math.log(d)) * Math.min(1, real * 7));
+        let next = Math.exp(Math.log(d) + (Math.log(state.dolly.to) - Math.log(d)) * Math.min(1, real * (state.dolly.rate || 7)));
+        // am Ende genau aufs Ziel: sonst blieb sie bis zu 0,3 % davor stehen und Touchpad-Schritte (≈ 0,1 %) gingen verloren
+        const done = Math.abs(Math.log(next / state.dolly.to)) < 0.001;
+        if (done) next = state.dolly.to;
         lv.camera.position.copy(t).addScaledVector(dir.divideScalar(d), next);
-        if (Math.abs(Math.log(next / state.dolly.to)) < 0.003) state.dolly = null;
+        if (done) state.dolly = null;
       }
       if (state.focus) {
         const f = state.focus;

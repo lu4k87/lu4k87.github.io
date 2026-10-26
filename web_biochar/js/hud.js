@@ -10,6 +10,18 @@ import { hexBadge, HEX, LEVEL_ICONS, HOTSPOT_ICONS } from './icons.js';
 const $ = (sel) => document.querySelector(sel);
 // Zahlenbereiche wie „2–50 nm“ nie nach dem Strich umbrechen (Wortverbinder U+2060)
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]).replace(/(\d)–(?=\d)/g, '$1–\u2060');
+// Fließtext im Blocksatz (Skill text-format §3): Zahl + Einheit, ≈/Ø/× + Zahl und „et al.“ + Jahr per geschütztem
+// Leerzeichen zusammenhalten; Kürzel und Formeln (zwei Großbuchstaben: CO₂, ABAB, EBC) und Namen vor „et al.“, „&“
+// oder einer Jahreszahl nie trennen (.nh, hyphens: manual)
+const NAME_NEXT = /^(et|&amp;|\(?\d{4}[a-z]?[),;.]*)$/;
+const prose = (s) => {
+  const w = esc(s).split(' ');
+  return w.map((t, i) => ((t.match(/[A-ZÄÖÜ]/g) || []).length >= 2 || (/^\(?[A-ZÄÖÜ][a-zäöüß]{4,}$/.test(t) && NAME_NEXT.test(w[i + 1] || ''))
+    ? `<span class="nh">${t}</span>` : t)).join(' ')
+    .replace(/(\d) (?=[^\s\d<]{1,4}(?:[\s,.;:)<]|$))/g, '$1 ')
+    .replace(/(^|[\s(])([≈~<>≤≥Ø×±−]) /g, '$1$2 ')
+    .replace(/ et al\. /g, ' et al. ');
+};
 
 // Zoom-Schiene: Bildbreite in Metern, logarithmisch von 20 cm (oben) bis 0,5 nm (unten)
 const SCALE_M = { piece: 4e-2, tissue: 1e-3, cells: 2e-4, wall: 2.5e-5, meso: 3e-7, micro: 1e-8, atoms: 2e-9 };
@@ -234,7 +246,7 @@ export function createHud(handlers) {
     const cell = ([k, name, v, warn, bar, delta]) => `<div class="lab-cell${warn ? ' warn' : ''}" data-f="${k}"><dt><span>${name}</span>${delta ? `<small class="lab-delta">${delta}</small>` : ''}</dt><dd><span class="lab-val">${v}</span>${bar !== null ? `<span class="lab-bar" aria-hidden="true"><i style="width:${bar.toFixed(1)}%"></i></span>` : ''}</dd></div>`;
     return `<dl class="lab">${labRows(t).map(cell).join('')}</dl><dl class="lab lab--phys">${physRows(t).map(cell).join('')}</dl>`;
   }
-  const LAB_NOTE = 'Werte bei der gezeigten Temperatur mit Differenz zum Rohholz (25 °C), Richtwerte für Holz, langsame Pyrolyse – reale Kohlen streuen je Rohstoff und Verfahren. Unter 350 °C Übergang vom Holz (Modell). H/C und O/C: molare Verhältnisse H/Corg und O/Corg mit EBC-Grenzwerten. C nach 100 Jahren: Anteil des Kohlenstoffs, der im Boden bleibt (IPCC). CO₂ gebunden: t CO₂ je t Biochar = C-Gehalt × IPCC-Faktor × 44/12. Leitfähigkeit σ nach Gabhi et al. (2020), Kontaktwinkel θ von Wasser nach Kinney et al. (2012). Strukturtyp nach Keiluweit 2010.';
+  const LAB_NOTE = 'Werte bei der gezeigten Temperatur mit Differenz zum Rohholz (25 °C), Richtwerte für Holz, langsame Pyrolyse; reale Kohlen streuen je Rohstoff und Verfahren. Unter 350 °C Übergang vom Holz (Modell). H/C und O/C: molare Verhältnisse H/Corg und O/Corg mit EBC-Grenzwerten. C nach 100 Jahren: Anteil des Kohlenstoffs, der im Boden bleibt (IPCC). CO₂ gebunden: t CO₂ je t Biochar = C-Gehalt × IPCC-Faktor × 44/12. Leitfähigkeit σ nach Gabhi et al. (2020), Kontaktwinkel θ von Wasser nach Kinney et al. (2012). Strukturtyp nach Keiluweit 2010.';
 
   // Kurve H/Corg über der Temperatur mit EBC-Grenze 0,7 und Marke für die gezeigte Temperatur
   const CH = { w: 240, h: 96, x0: 30, x1: 232, y0: 8, y1: 76 };
@@ -559,7 +571,7 @@ export function createHud(handlers) {
     panel.innerHTML = `
       <p class="eyebrow">Ebene ${current + 1} von ${LEVELS.length} · ${esc(l.zone)} · <span class="eyebrow-scale">${esc(l.scale)}</span> (${esc(l.compare)})</p>
       <h1>${esc(l.title)}</h1>
-      <p class="lead" id="panel-lead">${esc(l.lead)}</p>
+      <p class="lead" id="panel-lead">${prose(l.lead)}</p>
       <button type="button" class="lead-more" aria-expanded="false" aria-controls="panel-lead">Weiterlesen</button>
       <section>
         <h2 class="sub">Entdecken</h2>
@@ -581,7 +593,7 @@ export function createHud(handlers) {
         <details class="lab-more"${chartOpen ? ' open' : ''}>
           <summary>Verlauf H/C · Erläuterung</summary>
           ${labChart(shown)}
-          <p class="note">${LAB_NOTE}</p>
+          <p class="note">${prose(LAB_NOTE)}</p>
         </details>
       </section>
       <section class="sources">
@@ -1054,7 +1066,7 @@ export function createHud(handlers) {
       <div class="hs-status" id="hs-status">${cardStatusHtml(shown)}</div>
       <div class="hs-body">
         <figure class="hs-lens" aria-hidden="true"><canvas></canvas><svg class="hs-lens-svg" viewBox="0 0 112 112"><circle cx="56" cy="56" r="46" stroke-dasharray="3 4"/><path d="M56 4v9M56 99v9M4 56h9M99 56h9"/></svg><span class="lens-scale" id="lens-scale">${esc(lastLensScale)}</span></figure>
-        <div class="hs-text"><p>${esc(h.text)}</p>${h.edx ? edxDetails(h.edx) : ''}</div>
+        <div class="hs-text"><p>${prose(h.text)}</p>${h.edx ? edxDetails(h.edx) : ''}</div>
       </div>
       ${hasFoot ? `<div class="hs-card-foot">
         ${selected.kind === 'dive' ? '<button type="button" class="btn-primary" id="btn-dive">Hineinzoomen ↓</button>' : ''}
@@ -1079,6 +1091,9 @@ export function createHud(handlers) {
   // Bühne dafür zu flach: dort nimmt die Karte Platz und Größe der Tafel ein, die Tafel ist so lange unsichtbar
   // (Vorschau 2026-10-24, Ort:A); bei eingeklappter Tafel steht sie wie sonst neben dem Abzeichen
   const LENS_COL = 112 + 14;
+  // Textbreite höchstens 400 px: neben der Lupe bleiben so ≈ 50 Zeichen je Zeile, genug für Blocksatz ohne Gassen
+  // (bei 340 px waren es ≈ 40 Zeichen und Wortlücken bis 1,5 em, tests/hs_card_check.py)
+  const CARD_TEXT_MAX = 400;
   let cardW = 0, cardSide = '', cardBox = null;
   function placeCard(items, rect, width) {
     cardBox = null;
@@ -1099,7 +1114,7 @@ export function createHud(handlers) {
     }
     if (!m && tempHidden) {
       const room = rect.x1 - rect.x0 - LENS_COL;
-      cardW = Math.min(340, Math.max(220, Math.floor((room - 30) / 20) * 20));
+      cardW = Math.min(CARD_TEXT_MAX, Math.max(220, Math.floor((room - 30) / 20) * 20));
       cardSide = 'right';
       card.style.width = `${Math.min(cardW + LENS_COL, Math.floor(rect.x1 - rect.x0))}px`;
       card.style.maxHeight = `${Math.floor(rect.y1 - rect.y0)}px`;
@@ -1116,7 +1131,7 @@ export function createHud(handlers) {
     // Breite in 20-px-Stufen mit Hysterese: sonst folgt sie dem wandernden Abzeichen (Kamerafahrt im Leerlauf), der Blocksatz
     // bricht in jedem Bild anders um und die Karte flackert und zittert
     const room = side === 'left' ? roomL : side === 'right' ? roomR : rect.x1 - rect.x0 - LENS_COL;
-    if (!cardW || side !== cardSide || room < cardW || room > cardW + 100) cardW = Math.min(340, Math.max(220, Math.floor((room - 30) / 20) * 20));
+    if (!cardW || side !== cardSide || room < cardW || room > cardW + 100) cardW = Math.min(CARD_TEXT_MAX, Math.max(220, Math.floor((room - 30) / 20) * 20));
     cardSide = side;
     card.style.width = `${Math.min(cardW + LENS_COL, Math.floor(rect.x1 - rect.x0))}px`;
     card.style.maxHeight = `${Math.floor(rect.y1 - rect.y0)}px`;
