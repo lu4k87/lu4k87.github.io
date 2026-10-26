@@ -26,6 +26,7 @@ const LOADERS = {
   // Einfügemarken je Etappe (docs/plan_ebenen.md §2): jeder Chat fügt nur direkt unter seiner Marke ein
   // [E1] Sonne
   sun: () => import('./levels/sun.js'),
+  iss: () => import('./levels/iss.js'),
   // [E2] Erde nah
   // [E2] Mond
   moon: () => import('./levels/moon.js'),

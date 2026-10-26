@@ -92,6 +92,10 @@ export const SOURCES = {
   'nasa-sdo': { t: 'Solar Dynamics Observatory (SDO): Mission', by: 'NASA Science', url: 'https://science.nasa.gov/mission/sdo/' },
   'nasa-psp': { t: 'Parker Solar Probe: Mission', by: 'NASA Science', url: 'https://science.nasa.gov/mission/parker-solar-probe/' },
   // [E2] Erde nah
+  'nasa-irosa-2023': { t: 'NASA Spacewalkers Complete Solar Array Installation (iROSA 18,2 × 6 m, alte Flügel 112 × 39 Fuß)', by: 'NASA Space Station Blog, 09.06.2023', url: 'https://www.nasa.gov/blogs/spacestation/2023/06/09/nasa-spacewalkers-complete-solar-array-installation/' },
+  'nasa-irosa-2026': { t: 'Astronauts Complete Spacewalk for Solar Array Modifications (Kanal 3B für ein weiteres iROSA vorbereitet)', by: 'NASA Space Station Blog, 06.08.2026', url: 'https://www.nasa.gov/blogs/spacestation/2026/08/06/astronauts-complete-spacewalk-for-solar-array-modifications/' },
+  'esa-cupola': { t: 'Cupola: sechs Trapezfenster und ein rundes Fenster von 80 cm', by: 'ESA', url: 'https://www.esa.int/Science_Exploration/Human_and_Robotic_Exploration/Node-3_Cupola/Cupola' },
+  'nasa-eatcs': { t: 'ISS Active Thermal Control Sub-System: On-Orbit Pump Performance (Ammoniak, drei Radiatoren je Seite)', by: 'Morton, Jurick & Roman 2011, NASA NTRS 20110023292', url: 'https://ntrs.nasa.gov/citations/20110023292' },
   // [E2] Mond
   'nasa-moon-facts': { t: 'Moon Facts (Maria, Wassereis in Polkratern, gebundene Rotation)', by: 'NASA Science', url: 'https://science.nasa.gov/moon/facts/' },
   'nasa-moon-phases': { t: 'Moon Phases (27,3 und 29,5 Tage, Libration, Erdschein)', by: 'NASA Science', url: 'https://science.nasa.gov/moon/moon-phases/' },
@@ -205,7 +209,7 @@ export const STATIONS = {
       night: { t: 'Nachtseite', x: 'Stadtlichter nach Satellitenaufnahmen. Sie folgen Küsten, Flusstälern und Verkehrswegen, an denen ein Großteil der Bevölkerung lebt.', s: 'sss-tex' },
       moon: { t: 'Mond', x: 'Radius 1.737 km, Masse 1/81 der Erde, Fallbeschleunigung 1,62 m/s² (ein Sechstel des Erdwerts). Umlauf und Drehung dauern gleich lang (27,3 Tage, gebundene Rotation), daher zeigt er der Erde stets dieselbe Seite. Ohne Atmosphäre schwankt die Temperatur zwischen −173 °C nachts und 127 °C mittags. Laser-Entfernungsmessungen zu den Apollo-Reflektoren ergeben: Er entfernt sich um 3,8 cm pro Jahr. Hineinfliegen: der Mond aus der Nähe mit Relief, Landestellen und Erdaufgang.', s: 'nasa-moon' },
       geo: { t: 'Geostationäre Bahn', x: 'In 35.786 km Höhe dauert ein Umlauf genau einen Sterntag (23 h 56 min). Satelliten auf dieser Bahn stehen von der Erde aus gesehen still über einem Punkt des Äquators; genutzt für Rundfunk, Kommunikation und Wetterbeobachtung.', s: 'nasa-earth' },
-      iss: { t: 'ISS', x: 'Die Raumstation kreist in rund 420 km Höhe, 51,6° gegen den Äquator geneigt, alle 93 Minuten einmal um die Erde (7,66 km/s). Bahn und Ort aus den CelesTrak-Bahnelementen; die Abplattung der Erde dreht die Bahnebene um gut 5° pro Tag rückwärts (Knotendrift, J2) – im Zeitraffer sichtbar. Maßstäblich liegt die Bahn knapp über der Oberfläche: 420 km sind 6,6 % des Erdradius.', s: 'nasa-iss' },
+      iss: { t: 'ISS', x: 'Die Raumstation kreist in rund 420 km Höhe, 51,6° gegen den Äquator geneigt, alle 93 Minuten einmal um die Erde (7,66 km/s). Bahn und Ort aus den CelesTrak-Bahnelementen; die Abplattung der Erde dreht die Bahnebene um gut 5° pro Tag rückwärts (Knotendrift, J2) – im Zeitraffer sichtbar. Maßstäblich liegt die Bahn knapp über der Oberfläche: 420 km sind 6,6 % des Erdradius. Hineinfliegen: die Station aus der Nähe, mit Sonnenauf- und -untergängen und Blick aus der Cupola.', s: 'nasa-iss' },
       aurora: { t: 'Polarlichter', x: 'Teilchen des Sonnenwinds, vom Erdmagnetfeld zu den Polen geleitet, regen in 100–300 km Höhe Sauerstoff (grün 557,7 nm, rot 630 nm) und Stickstoff (blau-violett) an. Das Leuchten bildet ein Oval um den geomagnetischen Pol (80,8° N, 72,8° W; IGRF-14, 2025) – nachts weiter äquatorwärts als mittags, bei ruhiger Sonne (Kp 0–2) am Polarkreis, im Sturm (Kp ≥ 7) bis Mitteleuropa. Regler „Kp“ im Zahnrad. Form der Vorhänge: Modell; nur auf der Nachtseite sichtbar.', s: 'nasa-aurora' },
       sats: { t: 'Satelliten und Trümmer', x: 'Rund 16.800 aktive Satelliten (Stand Okt. 2026), zwei Drittel davon Starlink in 540–570 km Höhe; Navigationssatelliten in 20.000–23.000 km, Wetter- und Fernsehsatelliten in der geostationären Bahn in 35.786 km. Punkte: 19.470 Objekte aus dem CelesTrak-Katalog einschließlich der vier großen Trümmerwolken (Fengyun-1C, Kosmos 2251, Iridium 33, Kosmos 1408), fortgeschrieben mit Kepler und J2 – Bahnebenen und Höhen stimmen, der Ort auf der Bahn driftet nach Wochen. Im Bild als vergrößerte Symbole; maßstäblich wären die Satelliten nicht zu sehen. Zahnrad „Satelliten und Kleinkörper“: je größer, desto weniger Objekte (4× → jedes achte), 1× zeigt alle als Lichtpunkte.', s: 'celestrak' },
       sun: { t: 'Richtung Sonne', x: 'Sonnenlicht ist 8 Minuten 19 Sekunden unterwegs: 1 Astronomische Einheit = 149.597.870,7 km (IAU 2012).', s: 'iau-2012' },
@@ -290,6 +294,30 @@ export const STATIONS = {
   },
   // [E2] Erde nah
   // [E2] Mond
+  iss: {
+    n: '01A', title: 'ISS', kicker: 'Raumstation', parent: 'earth', width: 150, dist: 4.2e5, lookback: 4.2e5 / C,
+    lead: 'Die Internationale Raumstation aus der Nähe, 420 km über der Erde. Bahn, Tag und Nacht, Sonnenauf- und -untergänge sind für den angezeigten Zeitpunkt aus den Bahndaten berechnet; im Zeitraffer zieht die Erde unter der Station hindurch.',
+    facts: [
+      { v: '109', u: 'm', l: 'Spannweite der Solarflügel', s: 'nasa-iss' },
+      { v: '420', u: 't', l: 'Masse', s: 'nasa-iss' },
+      { v: '93', u: 'min', l: 'ein Umlauf (aus den Bahnelementen)', s: 'celestrak' },
+      { v: '16', u: '', l: 'Sonnenaufgänge an einem Tag', s: 'nasa-iss' },
+    ],
+    note: 'Modell aus Grundkörpern: Lage und Maße von Modulen, Gitterträger (94 m), Solarflügeln (34 × 12 m) und iROSA (18,2 × 6 m) nach NASA gerundet, Details vereinfacht, ohne angedockte Raumschiffe, Roboterarm in Parkstellung vereinfacht. iROSA auf sechs Flügeln wie nach den Montagen 2021–2023; der Kanal 3B wurde im August 2026 für ein weiteres vorbereitet. Fluglage wie im Normalbetrieb (Flugrichtung vorn, Erde unten). Solarflügel folgen der Sonne über zwei Gelenke, Radiatoren zeigen ihr die Kante – vereinfachte Regel, kein Flugplan. Bahn, Ort, Tag und Nacht aus den CelesTrak-Bahnelementen (Stand 25.10.2026, Kepler + J2; der Ort auf der Bahn driftet nach Tagen). Erde: Tagkarte und Stadtlichter Solar System Scope 4k (CC BY 4.0, ≈ 10 km je Bildpunkt), feinere Struktur an Land aus Rauschen (Modell), Wolken in 12 km Höhe, Lufthülle mit echter Skalenhöhe (≈ 8,5 km), Polarlicht-Oval nach Kp wie in Station 1. Die ferne Welt wird um die Kamera verkleinert gezeichnet (gleiche Winkelgröße). Sonnenauf- und -untergang weich überblendet (mindestens 0,5 s, kein Blitzen im Zeitraffer); Erdschein und Restlicht im Erdschatten aufgehellt (abschaltbar).',
+    sources: ['nasa-iss', 'celestrak', 'nasa-irosa-2023', 'nasa-irosa-2026', 'esa-cupola', 'nasa-eatcs', 'nasa-earth', 'noaa-aurora', 'sss-tex', 'd3-celestial'],
+    hotspots: {
+      cupola: { t: 'Cupola', x: 'Die Aussichtskuppel der ESA unter dem Verbindungsmodul Tranquility: sechs trapezförmige Seitenfenster und ein rundes Fenster von 80 cm Durchmesser, das größte, das je im All geflogen ist. Von hier beobachtet die Besatzung die Erde und steuert den Roboterarm. Blick „Cupola“ in der Infotafel.', s: 'esa-cupola' },
+      labs: { t: 'Module', x: 'Vorn die Labore Destiny (USA), Columbus (Europa) und Kibo (Japan), in der Mitte die Verbindungsknoten. Die Module messen zusammen 67 m in Flugrichtung, 1.005 m³ stehen unter Druck, 388 m³ davon sind Wohnraum – meist für sieben Menschen.', s: 'nasa-iss' },
+      truss: { t: 'Gitterträger', x: 'Das Rückgrat der Station ist 94 m lang und trägt Solarflügel, Radiatoren und Ersatzteile; die Module hängen an seiner Mitte. Die äußeren Teile drehen sich auf großen Gelenken mit den Solarflügeln.', s: 'nasa-iss' },
+      arrays: { t: 'Solarflügel', x: 'Acht Flügel, jeder 34 m lang und 12 m breit, liefern zusammen 75 bis 90 kW. Von Spitze zu Spitze messen sie 109 m – mehr als die Spannweite eines Airbus A380 (80 m). Im Bild folgen sie der Sonne (Infotafel „Solarflügel“).', s: 'nasa-iss' },
+      irosa: { t: 'iROSA', x: 'Neuere, ausrollbare Solarflügel (18,2 × 6 m), schräg auf die alten Flügel gesetzt; sie beschatten gut die Hälfte der alten Fläche und gleichen deren Alterung aus. Sechs wurden 2021–2023 bei Außeneinsätzen montiert.', s: 'nasa-irosa-2023' },
+      radiators: { t: 'Radiatoren', x: 'Die weißen Platten geben die Abwärme der Station als Infrarotstrahlung ins All ab. Flüssiges Ammoniak bringt die Wärme aus den Modulen dorthin; drei Radiatoren sitzen an jeder Seite des Trägers. Im Bild zeigen sie der Sonne die Kante (vereinfacht).', s: 'nasa-eatcs' },
+      russian: { t: 'Russisches Segment', x: 'Achtern die Module Swesda, Sarja, Nauka und Poisk mit Lebenserhaltung, Triebwerken und Kopplungsstellen für Sojus und Progress. Die Station ist seit November 2000 ununterbrochen bewohnt.', s: 'nasa-iss' },
+      horizon: { t: 'Horizont', x: 'Aus 420 km Höhe ist der Horizont gut 2.300 km entfernt und liegt rund 20° unter der Waagerechten (eigene Rechnung). Die Lufthülle erscheint als dünner blauer Saum über der Kante, nachts schimmert darüber die Hochatmosphäre in 90–100 km Höhe grünlich (Nachtleuchten).', s: 'nasa-earth' },
+      below: { t: 'Unter der Station', x: 'Der Punkt unter der Station läuft in 93 Minuten einmal um die Erde, mit gut 7 km/s über den Boden (eigene Rechnung aus den Bahnelementen). Weil sich die Erde darunter dreht, liegt jeder Umlauf rund 23° weiter westlich: Die gelbe Bahnspur zeigt einen halben Umlauf zurück und anderthalb voraus.', s: 'celestrak' },
+      sun: { t: 'Sonnenaufgang', x: 'In 24 Stunden umrundet die Station die Erde 16-mal und erlebt 16 Sonnenaufgänge und -untergänge. Am Rand des Erdschattens durchquert das Licht die Lufthülle und färbt sich rot; danach ist der Himmel sofort schwarz, denn ohne Luft streut nichts. Zeitraffer in der Infotafel.', s: 'nasa-iss' },
+    },
+  },
   moon: {
     n: '01C', title: 'Mond', kicker: 'Erdtrabant', parent: 'earth', width: 1.4e7, dist: 3.844e8, lookback: 1.28,
     lead: 'Der Mond aus der Nähe: Er steht still, Sonne, Erde und Sterne ziehen über seinen Himmel. Licht, Mondphase und das leichte Taumeln (Libration) sind für den angezeigten Zeitpunkt berechnet, das Relief stammt aus Laser-Höhenmessungen der Sonde LRO.',
@@ -746,7 +774,7 @@ export const STATIONS = {
   },
 };
 
-export const ROUTE = ['earth', 'moon', 'solar', 'sun', 'galaxy', 'orion', 'crab', 'pulsar', 'sgra', 'local', 'web', 'cmb'];
+export const ROUTE = ['iss', 'earth', 'moon', 'solar', 'sun', 'galaxy', 'orion', 'crab', 'pulsar', 'sgra', 'local', 'web', 'cmb'];
 // Äste außerhalb der Route (Kind über parent) zählen für Weiter/Zurück wie ihre nächste Elternstation auf der Route
 export function routeIndex(id) {
   for (let x = id; x; x = STATIONS[x] ? STATIONS[x].parent : null) { const i = ROUTE.indexOf(x); if (i >= 0) return i; }

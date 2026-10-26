@@ -296,10 +296,10 @@ export const CARDS = {
     { v: '16.800', u: '', l: 'aktive Satelliten (Okt. 2026)', s: 'celestrak' },
     { v: '540–570', u: 'km', l: 'Bahnhöhe Starlink', s: 'celestrak' },
     { v: '19.470', u: '', l: 'Objekte im Bild mit Trümmern', s: 'celestrak' }] },
-  'earth.iss': { g: 'orbits', hl: 'iss', c: 'orbits', f: [
-    { v: '420', u: 'km', l: 'Bahnhöhe', s: 'nasa-iss' },
-    { v: '93', u: 'min', l: 'ein Umlauf', s: 'nasa-iss' },
-    { v: '7,66', u: 'km/s', l: 'Bahn­geschwindigkeit', s: 'nasa-iss' }] },
+  'iss.below': { g: 'orbits', hl: 'iss', c: 'orbit', f: [
+    { v: '420', u: 'km', l: 'Bahnhöhe', s: 'celestrak' },
+    { v: '93', u: 'min', l: 'ein Umlauf', s: 'celestrak' },
+    { v: '7,66', u: 'km/s', l: 'Bahn­geschwindigkeit', s: 'celestrak' }] },
   'earth.geo': { g: 'orbits', hl: 'geo', f: [
     { v: '35.786', u: 'km', l: 'Höhe über dem Äquator', s: 'nasa-earth' },
     { v: '23,9', u: 'h', l: 'Umlauf = Sterntag (23 h 56 min)', s: 'nasa-earth' },

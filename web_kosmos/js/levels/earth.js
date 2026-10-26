@@ -6,7 +6,7 @@
 // Polarlichter: Vorhänge mit feinen Strahlen + breite, weiche Glow-Lage im Oval.
 // Mond: gebundene Rotation, Lommel-Seeliger-Reflexion, Erdschein. Himmel: echter Sternkatalog (Yale BSC, 5.044 Sterne)
 // mit Sternbildlinien und Namen (catalog.js); Schattenkegel von Erde und Mond (Finsternis-Geometrie), Bahnen von ISS
-// und geostationären Satelliten, Linsenreflex der Sonne (flare.js).
+// und geostationären Satelliten, Linsenreflex der Sonne (flare.js). Shader der Erde exportiert für die Orbit-Stationen (orbitview.js).
 
 import * as THREE from 'three';
 import { PLANETS, julianDate, planetPosition, eclToScene, eclDir, moonPosition, gmst, OBLIQUITY, DAY, AU, R_SUN } from '../astro.js';
@@ -29,7 +29,7 @@ const SUN_D = AU / 1e6, SUN_R = R_SUN / 1e6;  // Sonnenabstand und -radius [1.00
 const RAD = Math.PI / 180;
 const SKY_R = 3000;                // Richtungen des Himmels als Punkte „weit draußen“ (für Beschriftungen)
 
-const EARTH_VERT = /* glsl */ `
+export const EARTH_VERT = /* glsl */ `
 varying vec3 vN, vP;
 varying vec2 vUv;
 void main() {
@@ -40,7 +40,7 @@ void main() {
   gl_Position = projectionMatrix * viewMatrix * w;
 }
 `;
-const EARTH_FRAG = /* glsl */ `
+export const EARTH_FRAG = /* glsl */ `
 uniform sampler2D tDay, tNight, tSpec, tClouds;
 uniform vec3 uSun, uAxis;
 uniform float uCloudU, uLights;
@@ -77,7 +77,7 @@ void main() {
 }
 `;
 
-const MOON_FRAG = /* glsl */ `
+export const MOON_FRAG = /* glsl */ `
 uniform sampler2D tMoon;
 uniform vec3 uSun, uEarth;
 uniform float uEarthshine;
@@ -96,7 +96,7 @@ void main() {
 }
 `;
 
-const SUN_FRAG = /* glsl */ `
+export const SUN_FRAG = /* glsl */ `
 uniform vec3 uSun;
 varying vec3 vDir;
 void main() {
@@ -107,7 +107,7 @@ void main() {
   gl_FragColor = vec4(vec3(1.0, 0.96, 0.9) * (disk * 900.0 + glow), 1.0);
 }
 `;
-const SUN_VERT = /* glsl */ `
+export const SUN_VERT = /* glsl */ `
 ${SKY_VERTEX}
 varying vec3 vDir;
 void main() { vDir = normalize(position); gl_Position = skyPosition(vDir); }
@@ -116,7 +116,7 @@ void main() { vDir = normalize(position); gl_Position = skyPosition(vDir); }
 // Polarlicht-Oval um den geomagnetischen Pol: äquatorwärtige Grenze nach Kp (NOAA: Kp 0 → 66,5°, Kp 9 → 48,1° geomagnetische
 // Breite), mittags ≈ 5° polwärts, Breite 4° + 0,6°·Kp; Vorhänge 100–320 km hoch, Falten und Strahlen aus Rauschen (Modell).
 // Farben nach den Emissionslinien: Sauerstoff grün 557,7 nm unten, rot 630 nm oben, N₂⁺ blau-violett an der Unterkante.
-const AURORA_VERT = /* glsl */ `
+export const AURORA_VERT = /* glsl */ `
 ${NOISE}
 attribute vec2 auv;
 attribute float aw, ah;
@@ -140,7 +140,7 @@ void main() {
   gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
 }
 `;
-const AURORA_FRAG = /* glsl */ `
+export const AURORA_FRAG = /* glsl */ `
 ${NOISE}
 uniform float uTime, uKp, uGain;
 varying float vV, vU, vW, vNight, vFold;
@@ -162,7 +162,7 @@ void main() {
 `;
 // Breite, weiche Glow-Lage des Ovals (diffuse Aurora, ≈ 110 km Höhe): gleiche Oval-Geometrie wie die Vorhänge, wandernde
 // Flecken (pulsierende Aurora), polwärts mehr Rot; am Rand der Erdscheibe heller (längerer Weg durch die Lage)
-const AURORA_GLOW_VERT = /* glsl */ `
+export const AURORA_GLOW_VERT = /* glsl */ `
 varying vec3 vL, vN, vP;
 void main() {
   vL = position;
@@ -172,7 +172,7 @@ void main() {
   gl_Position = projectionMatrix * viewMatrix * w;
 }
 `;
-const AURORA_GLOW_FRAG = /* glsl */ `
+export const AURORA_GLOW_FRAG = /* glsl */ `
 ${NOISE}
 uniform vec3 uPole, uSunL;
 uniform float uKp, uTime, uGain;
@@ -198,7 +198,7 @@ void main() {
 }
 `;
 // Vorhang-Geometrie: je Halbkugel drei Blätter quer durch das Oval (w), 240 Segmente, zwei Höhenreihen
-function auroraGeometry() {
+export function auroraGeometry() {
   const N = 240, W = [0.08, 0.28, 0.5, 0.72, 0.92], uv = [], w = [], h = [], idx = [];
   let base = 0;
   for (const hemi of [1, -1]) for (const wi of W) {
@@ -442,7 +442,7 @@ export function create(ctx) {
     { id: 'aurora', kind: 'info', pos: auroraPos, visible: () => aurora.visible },
     { id: 'sats', kind: 'info', pos: d.clone().multiplyScalar(R_E + 0.55), visible: () => !!sats && show.sats },
     { id: 'geo', kind: 'info', pos: orbitPoint(side.clone().negate(), GEO) },
-    { id: 'iss', kind: 'info', pos: issWorld.copy(orbitPoint(side.clone().add(upL), ISS.r, ISS.inc * RAD)) },
+    { id: 'iss', kind: 'dive', to: 'iss', focus: () => 1.2, pos: issWorld.copy(orbitPoint(side.clone().add(upL), ISS.r, ISS.inc * RAD)) },
     { id: 'sun', kind: 'info', pos: sunDir.clone().multiplyScalar(90) },
     { id: 'umbra', kind: 'info', pos: umbraTip, visible: () => earthShadow.visible },
   ];
