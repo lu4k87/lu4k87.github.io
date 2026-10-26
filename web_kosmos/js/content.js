@@ -246,6 +246,12 @@ export const SOURCES = {
   'nasa-newhorizons': { t: 'New Horizons: Vorbeiflug an Pluto am 14.07.2015, 11:49 UT, 12.500 km', by: 'NASA Science', url: 'https://science.nasa.gov/mission/new-horizons/' },
   'usgs-pluto': { t: 'Pluto New Horizons LORRI Global Mosaic 300 m (Juli 2017, gemeinfrei)', by: 'USGS Astrogeology Science Center', url: 'https://astrogeology.usgs.gov/search/map/pluto_new_horizons_global_mosaic_300m' },
   'usgs-charon': { t: 'Charon New Horizons LORRI Global Mosaic 300 m (Juli 2017, gemeinfrei)', by: 'USGS Astrogeology Science Center', url: 'https://astrogeology.usgs.gov/search/map/charon_new_horizons_global_mosaic_300m' },
+  // Infografiken Ast Saturn, Uranus, Neptun, Pluto (web/js/figs/aussen.js)
+  'usgs-titan-names': { t: 'Gazetteer of Planetary Nomenclature: Titan (Menrva 392 km, Selk 80 km, Sinlap 80 km, Ksa 29 km, Xanadu 3.400 km, Punga Mare 380 km)', by: 'USGS / IAU', url: 'https://planetarynames.wr.usgs.gov/SearchResults?Target=74_Titan' },
+  'noaa-ocean-depth': { t: 'How deep is the ocean? (mittlere Tiefe 3.682 m, Challenger Deep ≈ 10.935 m)', by: 'NOAA National Ocean Service', url: 'https://oceanservice.noaa.gov/facts/oceandepth.html' },
+  'nep-pia00052': { t: 'Neptune Great Dark Spot in High Resolution (PIA00052, ≈ 13.000 × 6.600 km)', by: 'NASA/JPL', url: 'https://www.jpl.nasa.gov/images/pia00052-neptune-great-dark-spot-in-high-resolution/' },
+  'nep-hubble-storms': { t: 'Hubble Tracks the Lifecycle of Giant Storms on Neptune (Großer Dunkler Fleck 1994 verschwunden)', by: 'NASA', url: 'https://science.nasa.gov/missions/hubble/hubble-tracks-the-lifecycle-of-giant-storms-on-neptune/' },
+  'nasa-cthulhu': { t: 'Pluto’s Methane Snowcaps on the Edge of Darkness, context (Cthulhu ≈ 3.000 × 750 km)', by: 'NASA/JHUAPL/SwRI', url: 'https://science.nasa.gov/photojournal/plutos-methane-snowcaps-on-the-edge-of-darkness-context/' },
 };
 
 // Abstände für Mess-Leiste und Rail: width = typische Bildbreite [m], dist = Entfernung von der Erde [m],

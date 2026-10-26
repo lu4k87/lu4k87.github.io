@@ -10,7 +10,7 @@ import ERDE from './figs/erde.js';
 import SONNE from './figs/sonne.js';
 import JUPITER from './figs/jupiter.js';
 import MARS from './figs/mars.js';
-import AUSSEN from './figs/aussen.js';
+import AUSSEN, { kinds as AUSSEN_KINDS } from './figs/aussen.js';
 import GALAXIS from './figs/galaxis.js';
 
 export const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
@@ -175,7 +175,7 @@ function grooves(f) {
     ${txt(8, cy - 46, 'Flugrichtung', 'start', 'hc-acc')}${txt(cx, 188, f.foot, 'middle')}</svg>`;
 }
 
-const KINDS = { peaks, bars, scale, orbit, timeline, range, layers, polar, grooves };
+const KINDS = { peaks, bars, scale, orbit, timeline, range, layers, polar, grooves, ...AUSSEN_KINDS };
 export const FIGS = { ...ERDE, ...SONNE, ...JUPITER, ...MARS, ...AUSSEN, ...GALAXIS };
 export const figSvg = (f) => KINDS[f.k](f);
 export const figKinds = KINDS;
