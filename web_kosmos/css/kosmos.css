@@ -106,6 +106,14 @@ body.panel-off .top-actions { padding-right: 18px; }
 .rl-row.is-current .rl-txt, .rl-row.is-current .rl-txt b, .rl-row.is-current .rl-txt small { color: var(--accent); }
 .rl-row.is-current .rl-txt { font-weight: 600; }
 .rail-in.is-tight .rl-row:not(.is-current) small { display: none; }
+/* Zugeklappter Ast: Zähler „+n“ hinter dem Namen, Klick klappt auf (aufgeklappt „−“) */
+.rl-row[hidden], .rl-more[hidden] { display: none; }
+.rl-more {
+  flex: none; min-width: 30px; min-height: 24px; margin-left: 2px; padding: 0 6px; border: 1px solid var(--line-strong); border-radius: 6px;
+  background: rgba(6, 10, 18, 0.6); color: var(--ink); font: 500 12px var(--mono); cursor: pointer; transition: border-color 0.2s, color 0.2s;
+}
+.rl-more:hover, .rl-more:focus-visible { border-color: var(--accent); color: var(--accent); }
+.rl-more[aria-expanded="true"] { color: var(--ink-soft); }
 
 /* ---------- Bühne ---------- */
 .stage { grid-area: stage; position: relative; min-width: 0; min-height: 0; }
@@ -417,7 +425,7 @@ body.fatal-webgl .fatal-webgl, body.fatal-start .fatal-start { display: block; }
   .panel-body { padding: 14px 14px 16px; gap: 12px; }
   .st-title { font-size: 24px; }
   .rail { padding: 16px 0 16px 8px; }
-  .rl-txt { display: none; }
+  .rl-txt, .rl-more { display: none; }
   .rl-row { padding-left: calc(var(--d, 0) * 9px); }
   .topbar { padding: 10px 12px 6px; gap: 10px; }
   .brand-mark { width: 32px; height: 32px; }

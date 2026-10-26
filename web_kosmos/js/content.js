@@ -86,6 +86,15 @@ export const SOURCES = {
   'abell-1989': { t: 'A catalog of rich clusters of galaxies (Abell, Corwin, Olowin)', by: 'Abell et al. 1989, ApJS 70, 1', url: 'https://doi.org/10.1086/191333' },
   'madau-2014': { t: 'Cosmic Star-Formation History (Höhepunkt bei z ≈ 2)', by: 'Madau & Dickinson 2014, ARA&A 52', url: 'https://doi.org/10.1146/annurev-astro-081811-125615' },
   'bromm-2013': { t: 'Formation of the first stars', by: 'Bromm 2013, Rep. Prog. Phys. 76', url: 'https://doi.org/10.1088/0034-4885/76/11/112901' },
+  // Einfügemarken je Etappe (Plan docs/plan_ebenen.md §2): jeder Chat fügt nur direkt unter seiner Marke ein
+  // [E1] Sonne
+  'sdo-channels': { t: 'HMI & AIA Channels (Kanal, Ion, Schicht, log T)', by: 'NASA Solar Dynamics Observatory', url: 'https://sdo.gsfc.nasa.gov/data/channels.php' },
+  'nasa-sdo': { t: 'Solar Dynamics Observatory (SDO): Mission', by: 'NASA Science', url: 'https://science.nasa.gov/mission/sdo/' },
+  'nasa-psp': { t: 'Parker Solar Probe: Mission', by: 'NASA Science', url: 'https://science.nasa.gov/mission/parker-solar-probe/' },
+  // [E2] Erde nah
+  // [E3] Jupiter-System
+  // [E4] Saturn + Mars
+  // [E5] Neptun, Uranus, Pluto
 };
 
 // Abstände für Mess-Leiste und Rail: width = typische Bildbreite [m], dist = Entfernung von der Erde [m],
@@ -165,6 +174,11 @@ export const STATIONS = {
       'eros-near': { t: 'Erste Landung', x: 'NEAR Shoemaker schwenkte am 14. Februar 2000 in eine Umlaufbahn um Eros ein und landete am 12. Februar 2001 als erste Raumsonde auf einem Asteroiden.', s: 'nasa-eros' },
     },
   },
+  // [E1] Sonne
+  // [E2] Erde nah
+  // [E3] Jupiter-System
+  // [E4] Saturn + Mars
+  // [E5] Neptun, Uranus, Pluto
   galaxy: {
     n: 3, title: 'Milchstraße', kicker: 'Galaktisch', parent: 'local', width: 1.3e21, dist: 0, lookback: 0,
     lead: 'Eine Balkenspirale mit 100 bis 400 Milliarden Sternen. Die Sonne kreist 27.000 Lichtjahre vom Zentrum entfernt mit rund 229 km/s – ein Umlauf dauert etwa 220 Millionen Jahre.',

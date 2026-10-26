@@ -13,6 +13,8 @@ const $ = (s) => document.querySelector(s);
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
 const HEX = 'M20 2L35.59 11L35.59 29L20 38L4.41 29L4.41 11z';
 const hex = (inner = '', cls = '') => `<svg class="hex ${cls}" viewBox="0 0 40 40" aria-hidden="true"><path class="hex-shape" d="${HEX}"/>${inner}</svg>`;
+// Stationsnummer: Route zweistellig (01–10), Abstecher Elternnummer + Buchstabe (02A), Monde + Ziffer (02C1)
+const num = (id) => String(STATIONS[id].n).padStart(2, '0');
 const hexNum = (n, cls) => hex(`<text x="20" y="24.5" text-anchor="middle">${String(n).padStart(2, '0')}</text>`, cls);
 
 export function createHud(h) {
@@ -40,28 +42,52 @@ export function createHud(h) {
   // ---------- Stationsbaum ----------
   // Reiseordnung von unten (01) nach oben. Stamm = erste Station der Route und alle ihre Vorfahren; was abseits liegt
   // (Orion-Nebel, Krebsnebel → Crab-Pulsar, Sagittarius A* …), hängt eingerückt unter seiner Elternstation – wie Hinein/Hinaus.
-  const railRows = new Map(), railKids = new Map(), railTrunk = [];
-  let railSvg = null, railLive = null;
+  // Halte der Route stehen immer da; Abstecher außerhalb der Route (Asteroiden, später Monde) sind zugeklappt, ihre Eltern-
+  // zeile zeigt „+n“ (Klick klappt auf). Der Ast der aktuellen Station ist immer offen.
+  const railRows = new Map(), railKids = new Map(), railTrunk = [], railOpen = new Set();
+  let railSvg = null, railLive = null, railCur = null;
+  const fixed = (id) => ROUTE.includes(id) || railTrunk.includes(id);
   function buildRail() {
     for (let id = ROUTE[0]; id; id = STATIONS[id].parent) railTrunk.push(id);
     const ids = Object.keys(STATIONS), onTrunk = new Set(railTrunk);
     const depth = (id) => (onTrunk.has(id) || !STATIONS[id].parent ? 0 : depth(STATIONS[id].parent) + 1);
-    ids.forEach((id) => railKids.set(id, ids.filter((k) => STATIONS[k].parent === id && !onTrunk.has(k)).sort((a, b) => STATIONS[a].n - STATIONS[b].n)));
+    ids.forEach((id) => railKids.set(id, ids.filter((k) => STATIONS[k].parent === id && !onTrunk.has(k)).sort((a, b) => num(a).localeCompare(num(b)))));
     const walk = (id) => [id, ...railKids.get(id).flatMap(walk)];
     const order = railTrunk.flatMap(walk);
     order.push(...ids.filter((id) => !order.includes(id)));
     rail.innerHTML = `<svg class="rail-tree" aria-hidden="true"></svg><ol class="rail-list">${order.map((id) => {
-      const st = STATIONS[id], d = depth(id);
+      const st = STATIONS[id], d = depth(id), more = railKids.get(id).filter((k) => !fixed(k)).length;
       return `<li class="rl-row${d ? ' is-branch' : ''}" style="--d:${d}" data-id="${id}"><button type="button" class="rl-btn" aria-label="${esc(st.title)} – Bildbreite ${esc(fmtLength(st.width))}">
-        <span class="rl-dot"></span><span class="rl-txt"><b>${String(st.n).padStart(2, '0')}</b> ${esc(st.title)}<small>${esc(fmtLength(st.width))}</small></span></button></li>`;
+        <span class="rl-dot"></span><span class="rl-txt"><b>${num(id)}</b> ${esc(st.title)}<small>${esc(fmtLength(st.width))}</small></span></button>${more
+        ? `<button type="button" class="rl-more" data-n="${more}" aria-expanded="false"></button>` : ''}</li>`;
     }).join('')}</ol>`;
     railSvg = rail.querySelector('.rail-tree');
     rail.querySelectorAll('.rl-row').forEach((li) => {
-      railRows.set(li.dataset.id, li);
-      li.firstElementChild.addEventListener('click', () => { h.onInput(); h.onGo(li.dataset.id); });
+      const id = li.dataset.id;
+      railRows.set(id, li);
+      li.firstElementChild.addEventListener('click', () => { h.onInput(); h.onGo(id); });
+      li.querySelector('.rl-more')?.addEventListener('click', () => { if (!railOpen.delete(id)) railOpen.add(id); showRail(); });
+    });
+    showRail();
+    document.fonts?.ready.then(layoutRail);
+  }
+  // Sichtbar: Halte der Route; Abstecher nur, wenn ihre Elternzeile sichtbar und offen ist (Pfad zur aktuellen Station oder „+n“)
+  function showRail() {
+    const path = new Set();
+    for (let x = railCur; x; x = STATIONS[x].parent) path.add(x);
+    const open = (id) => path.has(id) || railOpen.has(id);
+    const vis = (id) => fixed(id) || (vis(STATIONS[id].parent) && open(STATIONS[id].parent));
+    railRows.forEach((li, id) => {
+      li.hidden = !vis(id);
+      const b = li.querySelector('.rl-more');
+      if (!b) return;
+      const o = open(id), n = b.dataset.n, t = STATIONS[id].title;
+      b.hidden = path.has(id);
+      b.textContent = o ? '−' : `+${n}`;
+      b.setAttribute('aria-expanded', String(o));
+      b.setAttribute('aria-label', `${n} Abstecher von ${t} ${o ? 'zuklappen' : 'aufklappen'}`);
     });
     layoutRail();
-    document.fonts?.ready.then(layoutRail);
   }
   // Linien aus den echten Punkt-Lagen (nach jedem Umbruch neu): Stamm senkrecht, Abzweig als Winkel zu den Kindern
   function layoutRail() {
@@ -71,13 +97,15 @@ export function createHud(h) {
     const f = (v) => v.toFixed(1);
     const [x0, y0] = pt(railTrunk[0]), [, y1] = pt(railTrunk[railTrunk.length - 1]);
     let d = `M${f(x0)},${f(y0)}V${f(y1)}`;
-    railKids.forEach((ks, id) => {
-      if (!ks.length) return;
+    const shown = [...railRows.values()].filter((li) => !li.hidden).length;
+    railKids.forEach((all, id) => {
+      const ks = all.filter((k) => !railRows.get(k).hidden);
+      if (!ks.length || railRows.get(id).hidden) return;
       const [px, py] = pt(id), [kx, ky] = pt(ks[0]), [, kyEnd] = pt(ks[ks.length - 1]);
       d += `M${f(px)},${f(py)}V${f((py + ky) / 2)}H${f(kx)}V${f(kyEnd)}`;
     });
     railSvg.innerHTML = `<path d="${d}"/>`;
-    rail.classList.toggle('is-tight', R.height / railRows.size < 40);
+    rail.classList.toggle('is-tight', R.height / shown < 40);
   }
 
   // ---------- Reiseroute ----------
@@ -94,6 +122,8 @@ export function createHud(h) {
     lv = level;
     meta = level.meta;
     const id = level.id;
+    railCur = id;
+    railOpen.clear();
     railRows.forEach((li, k) => {
       const cur = k === id, btn = li.firstElementChild;
       li.classList.toggle('is-current', cur);
@@ -101,6 +131,7 @@ export function createHud(h) {
       li.querySelector('small').textContent = fmtLength(STATIONS[k].width);
     });
     railLive = railRows.get(id)?.querySelector('small') || null;
+    showRail();
     route.querySelectorAll('button').forEach((b) => {
       const cur = b.dataset.id === id;
       b.classList.toggle('is-current', cur);
@@ -124,8 +155,10 @@ export function createHud(h) {
     const info = (x) => st.hotspots[x.id] || x.info;
     const hs = lv.hotspots.filter((x) => info(x) && x.kind !== 'label' && (!x.listIf || x.listIf()));
     const ctrls = lv.controls || [];
+    // Abstecher (Nummer mit Buchstabe, z. B. 02A) nennen ihre Elternstation
+    const from = /^\d+$/.test(String(st.n)) || !st.parent ? '' : ` · Abstecher von ${STATIONS[st.parent].title}`;
     panel.innerHTML = `
-      <p class="kicker"><span class="kick-n">${String(st.n).padStart(2, '0')}</span>${esc(st.kicker)}</p>
+      <p class="kicker"><span class="kick-n">${num(lv.id)}</span>${esc(st.kicker + from)}</p>
       <h1 class="st-title">${esc(st.title)}</h1>
       <p class="lead">${esc(st.lead)}</p>
       <div class="bento">${st.facts.map((f) => `

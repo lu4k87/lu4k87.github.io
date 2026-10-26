@@ -23,6 +23,12 @@ const LOADERS = {
   local: () => import('./levels/local.js'),
   web: () => import('./levels/web.js'),
   cmb: () => import('./levels/cmb.js'),
+  // Einfügemarken je Etappe (docs/plan_ebenen.md §2): jeder Chat fügt nur direkt unter seiner Marke ein
+  // [E1] Sonne
+  // [E2] Erde nah
+  // [E3] Jupiter-System
+  // [E4] Saturn + Mars
+  // [E5] Neptun, Uranus, Pluto
 };
 
 // Flug: äußere Kamera zoomt um ZOOM auf den Anker zu, die innere kommt aus ZOOM-fachem Abstand an (gleiche Rate)
