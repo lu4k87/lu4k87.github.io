@@ -438,6 +438,14 @@ body.panel-off .caption { right: 0; }
 .cap-title { font: 300 clamp(34px, 5vw, 64px)/1.05 var(--display); text-transform: uppercase; letter-spacing: 0.3em; padding-left: 0.3em; transition: letter-spacing 4s var(--ease-out); }
 .caption.is-on .cap-title { letter-spacing: 0.2em; }
 .cap-sub { font-size: 14.5px; color: var(--ink-soft); max-width: 46ch; }
+/* Infotafel im Flug: Inhalt blendet beim Abflug aus (Zwischenstationen bleiben unsichtbar), bei der Ankunft gestaffelt
+   wieder ein, während der Kapitel-Titel noch steht – kein harter Wechsel */
+.panel-body > * { transition: opacity 0.8s var(--ease-out), transform 0.8s var(--ease-out); transition-delay: calc(0.2s + var(--i, 0) * 80ms); }
+.panel-body > :nth-child(n+2) { --i: 1; }
+.panel-body > :nth-child(n+3) { --i: 2; }
+.panel-body > :nth-child(n+4) { --i: 3; }
+.panel-body > :nth-child(n+5) { --i: 4; }
+body.is-flying .panel-body > * { opacity: 0; transform: translateY(6px); transition-duration: 0.45s; transition-delay: 0s; pointer-events: none; }
 
 /* ---------- Auftakt, Laden, Fehler ---------- */
 body.is-intro .hud, body.is-intro .hotspots { opacity: 0; pointer-events: none; }

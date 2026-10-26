@@ -317,15 +317,26 @@ function poseAt(target, from, dist) {
   return { pos: target.clone().addScaledVector(dir, dist), target: target.clone() };
 }
 const _d0 = new THREE.Vector3(), _d1 = new THREE.Vector3(), _q = new THREE.Quaternion();
-// Pose zwischen a und b: Blickziel linear (früher am Ziel: tk), Richtung als Kugelbogen, Abstand logarithmisch
-function flyPose(cam, a, b, e, tk = e) {
+// Pose zwischen a und b: Blickziel linear (früher am Ziel: tk), Richtung als Kugelbogen, Abstand logarithmisch.
+// pivot = Anker der äußeren Kamera: Ort um den Anker statt um das wandernde Blickziel – die Kamera fährt gerade auf
+// den Anker zu und schwenkt nur den Blick; sonst kreist sie bei nahem, seitlichem Anker (Monde) an ihm vorbei.
+function flyPose(cam, a, b, e, tk = e, pivot = null) {
   const target = a.target.clone().lerp(b.target, tk);
-  _d0.copy(a.pos).sub(a.target);
-  _d1.copy(b.pos).sub(b.target);
+  const c0 = pivot || a.target, c1 = pivot || b.target;
+  _d0.copy(a.pos).sub(c0);
+  _d1.copy(b.pos).sub(c1);
   const l0 = Math.log(Math.max(_d0.length(), 1e-9)), l1 = Math.log(Math.max(_d1.length(), 1e-9));
   _q.setFromUnitVectors(_d0.normalize(), _d1.normalize());
   const dir = _d0.clone().applyQuaternion(new THREE.Quaternion().slerp(_q, e));
-  cam.position.copy(target).addScaledVector(dir, Math.exp(l0 + (l1 - l0) * e));
+  cam.position.copy(pivot ? c0 : target).addScaledVector(dir, Math.exp(l0 + (l1 - l0) * e));
+  if (pivot) {
+    // Blick gleichmäßig im Winkel drehen statt das Blickziel linear zu schieben: liegt der Anker seitlich oder hinter
+    // der Kamera, läuft das geschobene Ziel nah an ihr vorbei und der Blick reißt herum
+    _d0.copy(a.target).sub(cam.position).normalize();
+    _d1.copy(b.target).sub(cam.position).normalize();
+    _q.setFromUnitVectors(_d0, _d1);
+    target.copy(cam.position).add(_d0.applyQuaternion(new THREE.Quaternion().slerp(_q, tk)));
+  }
   cam.lookAt(target);
   return target;
 }
@@ -467,13 +478,17 @@ function stepTransition(dt) {
   const p = tr.down ? e : 1 - e;            // 0 = nur äußeres Bild, 1 = nur inneres
   // äußeres Blickziel schwenkt früh auf den Anker (beim Hinausfliegen erst am Ende weg davon)
   const tkOuter = tr.down ? smooth(0, 0.45, e) : smooth(0.55, 1, e);
-  flyPose(tr.outer.camera, tr.outerFrom, tr.outerTo, e, tkOuter);
+  flyPose(tr.outer.camera, tr.outerFrom, tr.outerTo, e, tkOuter, tr.anchor);
   const innerTgt = flyPose(tr.inner.camera, tr.innerFrom, tr.innerTo, e);
   tr.outer.camera.updateMatrixWorld();
   tr.inner.camera.updateMatrixWorld();
   const a = tr.anchor.clone().project(tr.outer.camera);
+  // Anker hinter der Kamera: Projektion ist gespiegelt → zurückspiegeln, damit die Iris am richtigen Rand bleibt
+  if (tr.anchor.clone().applyMatrix4(tr.outer.camera.matrixWorldInverse).z > 0) a.set(-a.x * 1e3, -a.y * 1e3, a.z);
   const b = innerTgt.clone().project(tr.inner.camera);
-  tr.anchorUv.set(Math.min(0.95, Math.max(0.05, (a.x + 1) / 2)), Math.min(0.95, Math.max(0.05, (a.y + 1) / 2)));
+  // Anker außerhalb des Bildes: Iris bleibt mit ihm draußen und gleitet erst mit ihm herein (statt in einer Ecke zu kleben)
+  const uv = (v) => Math.min(1.3, Math.max(-0.3, (v + 1) / 2));
+  tr.anchorUv.set(uv(a.x), uv(a.y));
   tr.innerUv.set((b.x + 1) / 2, (b.y + 1) / 2);
   tr.prog = p;
   tr.maskR = 0.05 * Math.pow(ZOOM, p) * smooth(0, 0.08, p);

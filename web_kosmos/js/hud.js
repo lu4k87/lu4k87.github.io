@@ -507,7 +507,8 @@ export function createHud(h) {
 
   function setFlight(on, st, multi) {
     body.classList.toggle('is-flying', on);
-    if (on) pull.classList.remove('is-on');
+    // Abflug: Titel der alten Station blendet mit der Infotafel aus, der neue kommt kurz vor der Ankunft
+    if (on) { pull.classList.remove('is-on'); caption.classList.remove('is-on'); clearTimeout(capTimer); }
     if (on && st) $('#flight-to').textContent = multi ? `Kurs auf ${st.title} …` : `Flug: ${st.title}`;
   }
 
