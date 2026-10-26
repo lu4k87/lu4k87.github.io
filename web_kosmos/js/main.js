@@ -27,6 +27,7 @@ const LOADERS = {
   // [E1] Sonne
   sun: () => import('./levels/sun.js'),
   // [E2] Erde nah
+  // [E2] Mond
   // [E3] Jupiter-System
   // [E4] Saturn + Mars
   // [E5] Neptun, Uranus, Pluto

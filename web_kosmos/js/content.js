@@ -92,6 +92,7 @@ export const SOURCES = {
   'nasa-sdo': { t: 'Solar Dynamics Observatory (SDO): Mission', by: 'NASA Science', url: 'https://science.nasa.gov/mission/sdo/' },
   'nasa-psp': { t: 'Parker Solar Probe: Mission', by: 'NASA Science', url: 'https://science.nasa.gov/mission/parker-solar-probe/' },
   // [E2] Erde nah
+  // [E2] Mond
   // [E3] Jupiter-System
   // [E4] Saturn + Mars
   // [E5] Neptun, Uranus, Pluto
@@ -199,6 +200,7 @@ export const STATIONS = {
     },
   },
   // [E2] Erde nah
+  // [E2] Mond
   // [E3] Jupiter-System
   // [E4] Saturn + Mars
   // [E5] Neptun, Uranus, Pluto
