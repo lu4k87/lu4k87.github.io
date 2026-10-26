@@ -63,7 +63,7 @@ ${SNOISE}
 #define SPOTS ${SPOTS}
 uniform vec4 uSpot[SPOTS];
 ${SUN_MASKS}
-uniform float uTime, uDays, uSurf, uAct, uGain, uFlK;
+uniform float uTime, uDays, uSurf, uAct, uGain, uFlK, uGlow, uHot, uTex;
 uniform vec3 uFlS;
 varying vec3 vN, vP, vO;
 varying vec2 vUv;
@@ -76,7 +76,8 @@ vec2 cells2(vec3 p, float t) {
   }
   return sqrt(vec2(d1, d2));
 }
-// A Glutkruste (Vorlage „Star in Blender“): Adern dort heller, wo die Sonne aktiv ist (uAct, aktive Regionen ar)
+// A Glutkruste (Vorlage „Star in Blender“): Adern dort heller, wo die Sonne aktiv ist (uAct, aktive Regionen ar); über
+// „Maximum“ glüht alles stärker (uGlow) und wird bei Weißglut (uHot) gelbweiß
 vec3 surfA(vec3 q, float t, float mu, float ar, float fine) {
   vec3 w = q * 2.0 + 0.7 * vec3(fbm3(q * 1.6 + vec3(0.0, t * 0.02, 0.0)), fbm3(q * 1.6 + vec3(5.2, 1.3, t * 0.02)), fbm3(q * 1.6 + vec3(2.1, 7.7, -t * 0.02)));
   float act = max(smoothstep(0.0, 0.5, fbm3(q * 1.3 + 3.0)) * (0.5 + 0.7 * uAct), 0.9 * min(ar, 1.0));
@@ -85,13 +86,64 @@ vec3 surfA(vec3 q, float t, float mu, float ar, float fine) {
   float v2 = pow(ridge(snoise(w * 2.3 - t * 0.02)), 16.0);
   float v3 = pow(ridge(snoise(w * 5.2 + t * 0.03)), 22.0);
   float v4 = fine > 0.001 ? pow(ridge(snoise(w * 11.0 - t * 0.04)), 26.0) * fine : 0.0;
-  float veins = (v1 + 0.5 * v2 + 0.25 * v3 + 0.15 * v4) * (0.15 + 1.1 * act) * (0.6 + 0.8 * flow);
+  float veins = (v1 + 0.5 * v2 + 0.25 * v3 + 0.15 * v4) * (0.15 + 1.1 * act) * (0.6 + 0.8 * flow) * uGlow;
   float crust = 0.5 + 0.5 * fbmL(q * 7.0 + t * 0.01);
   if (fine > 0.001) crust = clamp(crust + 0.12 * fine * snoise(q * 40.0 + t * 0.02), 0.0, 1.0);
-  vec3 col = mix(vec3(0.03, 0.004, 0.0), vec3(0.32, 0.06, 0.006), crust * crust * (0.35 + 0.9 * act));
-  col += veins * mix(vec3(1.9, 0.42, 0.04), vec3(4.6, 2.6, 0.8), clamp(veins - 0.45, 0.0, 1.0));
+  vec3 col = mix(vec3(0.03, 0.004, 0.0), mix(vec3(0.32, 0.06, 0.006), vec3(0.9, 0.3, 0.05), uHot) * (0.7 + 0.3 * uGlow), crust * crust * (0.35 + 0.9 * act));
+  col += veins * mix(mix(vec3(1.9, 0.42, 0.04), vec3(3.2, 1.5, 0.35), uHot), mix(vec3(4.6, 2.6, 0.8), vec3(5.0, 4.3, 2.8), uHot), clamp(veins - 0.45, 0.0, 1.0));
   col *= 0.55 + 0.45 * sqrt(mu);
   return col + vec3(1.6, 0.4, 0.04) * pow(1.0 - mu, 3.0) * 0.4;
+}
+// Kruste je uTex (Look „Glut“): 0 Adern (surfA allein) · 1 Zellnetz – Adern ruhiger, dazu das Netzwerk der Supergranulen
+// mit hellen Rändern und glimmenden Zellen · 2 Plasmafell – viele feine, kurze Glutfasern in einem Strömungsfeld (wie die
+// fasrige Struktur in den SDO-Bildern), Zellen als Helligkeit · 3 SDO-Komposit – Plasmateppich (Netzwerk, Sprenkel,
+// Fackelfelder) in Glutfarben mit hellen Kernen der aktiven Regionen wie das Kompositbild 171/304 Å.
+vec3 surfNet(vec3 q, float t, float mu, float ar, float fine) {
+  vec3 col = surfA(q, t, mu, ar, fine) * 0.7;
+  vec3 w = q + 0.03 * vec3(snoise(q * 8.0 + t * 0.03), snoise(q * 8.0 + 3.1), snoise(q * 8.0 - t * 0.03));
+  vec2 c = cells2(w * 20.0, t * 0.35);
+  float net = 1.0 - smoothstep(0.02, 0.13, c.y - c.x), cell = 1.0 - smoothstep(0.0, 0.85, c.x);
+  float act = max(smoothstep(0.0, 0.5, fbm3(q * 1.3 + 3.0)) * (0.5 + 0.7 * uAct), 0.9 * min(ar, 1.0));
+  float mott = 0.5 + 0.5 * fbmL(q * 30.0 + t * 0.04);
+  col += mix(vec3(1.3, 0.38, 0.05), vec3(3.0, 1.6, 0.45), uHot) * net * (0.25 + 0.9 * act) * (0.5 + 0.7 * mott) * uGlow;
+  col += vec3(0.35, 0.07, 0.008) * cell * mott * (0.6 + 0.6 * act) * uGlow;
+  return col * (0.6 + 0.4 * sqrt(mu));
+}
+vec3 surfFur(vec3 q, float t, float mu, float ar, float fine) {
+  vec3 w = q * 3.0 + 0.9 * vec3(fbm3(q * 2.5 + vec3(0.0, t * 0.02, 0.0)), fbm3(q * 2.5 + vec3(5.2, 1.3, t * 0.02)), fbm3(q * 2.5 + vec3(2.1, 7.7, -t * 0.02)));
+  float act = max(smoothstep(0.0, 0.5, fbm3(q * 1.3 + 3.0)) * (0.5 + 0.7 * uAct), 0.9 * min(ar, 1.0));
+  float f1 = pow(ridge(snoise(w * 5.0 + t * 0.02)), 8.0);
+  float f2 = pow(ridge(snoise(w * 11.0 - t * 0.03)), 10.0);
+  float f3 = pow(ridge(snoise(w * 23.0 + t * 0.04)), 12.0);
+  float f4 = fine > 0.001 ? pow(ridge(snoise(w * 47.0 - t * 0.05)), 12.0) * fine : 0.0;
+  float fur = f1 + 0.85 * f2 + 0.7 * f3 + 0.5 * f4;
+  vec2 c = cells2(q * 16.0 + 0.08 * w, t * 0.3);
+  float cell = 1.0 - smoothstep(0.1, 0.95, c.x), mott = 0.5 + 0.5 * fbmL(q * 18.0 + t * 0.03);
+  vec3 col = vec3(0.14, 0.025, 0.002) * (0.4 + 1.3 * mott) * (0.7 + 0.3 * uGlow);
+  col += mix(vec3(1.0, 0.26, 0.03), vec3(2.4, 1.4, 0.5), uHot) * fur * (0.2 + 0.9 * act) * (0.35 + 0.9 * cell) * uGlow;
+  col += mix(vec3(2.6, 1.2, 0.25), vec3(4.0, 3.3, 2.1), uHot) * fur * fur * act * act * uGlow;
+  col *= 0.55 + 0.45 * sqrt(mu);
+  return col + vec3(1.6, 0.4, 0.04) * pow(1.0 - mu, 3.0) * 0.4;
+}
+vec3 surfSDO(vec3 q, float t, float mu, float ar, float fine) {
+  float lat = asin(clamp(q.y, -1.0, 1.0));
+  vec3 w = q + 0.05 * vec3(snoise(q * 9.0 + t * 0.03), snoise(q * 9.0 + 3.1), snoise(q * 9.0 - t * 0.03));
+  vec2 c = cells2(w * 18.0, t * 0.4);
+  float net = 1.0 - smoothstep(0.03, 0.2, c.y - c.x);
+  float mott = 0.5 + 0.5 * fbmL(q * 30.0 + t * 0.04);
+  if (fine > 0.001) mott = clamp(mott + 0.18 * fine * snoise(q * 120.0 + t * 0.05), 0.0, 1.0);
+  float fib = pow(ridge(snoise(w * vec3(14.0, 40.0, 14.0) + t * 0.03)), 6.0) * 0.6 + pow(ridge(snoise(w * 26.0 - t * 0.04)), 8.0);
+  float belt = exp(-pow((abs(lat) - 0.33) / 0.22, 2.0));
+  float plage = smoothstep(0.15, 0.6, fbm3(q * 2.2 + 1.7)) * (0.35 + 0.65 * belt) * (0.4 + 0.8 * uAct);
+  plage = max(plage, 0.9 * min(ar, 1.3));
+  float hole = holeMask(q), fil = filMask(q);
+  vec3 col = vec3(0.17, 0.032, 0.003) * (0.2 + 0.9 * mott + 0.8 * net) * (0.7 + 0.3 * uGlow);
+  col += mix(vec3(1.1, 0.3, 0.035), vec3(2.6, 1.5, 0.5), uHot) * fib * (0.25 + 0.75 * mott) * (0.3 + 0.8 * plage + 0.3 * uAct) * uGlow;
+  col += mix(vec3(1.9, 0.65, 0.1), vec3(3.8, 2.8, 1.4), uHot) * plage * (0.3 + 0.9 * net) * (0.45 + 0.8 * mott) * uGlow;
+  col += mix(vec3(3.0, 1.7, 0.5), vec3(4.6, 4.0, 2.8), uHot) * pow(plage, 3.0) * (0.4 + net) * uGlow;
+  col *= (1.0 - 0.8 * fil) * (1.0 - 0.55 * hole);
+  col *= 0.6 + 0.4 * sqrt(mu);
+  return col + vec3(1.8, 0.55, 0.06) * pow(1.0 - mu, 4.0) * 0.7;
 }
 // Flecken in der Glutkruste: Umbra fast schwarz mit glimmenden Punkten, Penumbra aus radialen Glutfasern, in denen Knoten
 // nach außen laufen (Evershed-Strömung); Größe wie in SUN_FRAG (Umbra uSpot.w, Penumbra 2,4-fach). rgb = Leuchten, a = Abdunkeln.
@@ -131,7 +183,7 @@ vec3 surfB(vec3 q, float t, float mu, float ar, float fine) {
   float thin = pow(ridge(snoise(q * vec3(2.6, 6.5, 2.6) + 9.0)), 28.0) * smoothstep(0.0, 0.4, fbm3(q * 1.4 + 4.0));
   float fil = max(filMask(q), 0.6 * thin), hole = holeMask(q);
   vec3 col = vec3(0.62, 0.1, 0.008) * (0.3 + 0.7 * mott + 0.65 * net);
-  col += vec3(2.8, 0.95, 0.18) * plage * (0.35 + 1.0 * net) * (0.6 + 0.7 * mott);
+  col += mix(vec3(2.8, 0.95, 0.18), vec3(3.6, 2.4, 1.0), uHot) * plage * uGlow * (0.35 + 1.0 * net) * (0.6 + 0.7 * mott);
   col *= (1.0 - 0.85 * fil) * (1.0 - 0.6 * hole);
   col *= 0.75 + 0.25 * mu;
   return col + vec3(1.3, 0.22, 0.02) * pow(1.0 - mu, 5.0) * 0.6;
@@ -170,13 +222,14 @@ void main() {
     vec3 d = g - s.xyz;
     ar += exp(-dot(d, d) / 0.005);
   }
-  vec3 col = uSurf < 0.5 ? surfA(g, uTime, mu, ar, fine) : surfB(g, uTime, mu, ar, fine);
+  vec3 col = uSurf > 0.5 ? surfB(g, uTime, mu, ar, fine) : uTex < 0.5 ? surfA(g, uTime, mu, ar, fine) : uTex < 1.5 ? surfNet(g, uTime, mu, ar, fine)
+    : uTex < 2.5 ? surfFur(g, uTime, mu, ar, fine) : surfSDO(g, uTime, mu, ar, fine);
   if (uSurf < 0.5) { vec4 sp = spotsA(g, uTime, fine); col = col * (1.0 - sp.a) + sp.rgb; }
   // Moos: helle, körnige Fußpunkte der Bögen über den aktiven Regionen – dort wurzeln die Fäden (sunstrands.js)
   float mossF = 1.0 - smoothstep(0.002, 0.008, length(fwidth(vO)));
   float moss = 0.5 + 0.5 * (0.6 * snoise(g * 140.0 + vec3(0.0, 0.0, uTime * 0.04)) + 0.4 * snoise(g * 330.0 - vec3(0.0, uTime * 0.05, 0.0)));
   moss = mix(0.12, moss * moss * 0.9, mossF) * smoothstep(0.5, 1.4, ar) * (0.6 + 0.4 * mu);
-  col += (uSurf < 0.5 ? vec3(2.4, 0.9, 0.15) : vec3(2.2, 0.6, 0.08)) * moss * 0.8;
+  col += (uSurf < 0.5 ? vec3(2.4, 0.9, 0.15) : vec3(2.2, 0.6, 0.08)) * moss * 0.8 * uGlow;
   if (uFlK >= 0.0) col += flareDisk(g, uFlK, uTime);
   gl_FragColor = vec4(col * uGain, 1.0);
 }
