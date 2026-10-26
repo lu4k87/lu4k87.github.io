@@ -127,8 +127,8 @@ export function glintPoints(pos, col, mag, { gain = 1, limit = 1.6 } = {}) {
   return pointsOf(pos, col, mag, GLINT_VERT, GLINT_FRAG, { uPx: { value: 1 }, uGain: { value: gain }, uLimit: { value: limit } }, -9);
 }
 
-// Milchstraße als Bild (Stationen mit echter Lage im Sonnensystem): NASA SVS Deep Star Maps 2020, Hintergrund aus
-// Hipparcos, Tycho-2 und Gaia DR2 ohne die hellen Sterne (die zeichnen die Punkte darüber), galaktische Plattkarte –
+// Milchstraße als Bild (Stationen mit echter Lage im Sonnensystem): ESO-Panorama eso0932a (ESO/S. Brunier, CC BY 4.0),
+// Foto der ganzen Himmelskugel, Katalogsterne zeichnen die Punkte darüber; galaktische Plattkarte –
 // Mitte l = 0°, l wächst nach links, oben b = +90° (tools/milkyway_tex.py). Naht bei l = 180°: Mip-Stufe aus der
 // stetigen Nachbar-Koordinate, sonst zeigt die Sprungstelle von atan eine feine Linie.
 export const MILKY_TEX = 'milkyway_4k.jpg';
@@ -156,7 +156,7 @@ export function milkyBand(ngp, gc, gain = 1, tex = null) {
   const u = gc.clone().addScaledVector(n, -gc.dot(n)).normalize();
   const photo = tex ? { fragmentShader: PHOTO_FRAG,
     uniforms: { uMap: { value: tex(MILKY_TEX) }, uNgp: { value: n }, uGc: { value: u }, uL90: { value: new THREE.Vector3().crossVectors(n, u) },
-      uGain: { value: 0.06 * gain } } } : { fragmentShader: BAND_FRAG,
+      uGain: { value: 0.2 * gain } } } : { fragmentShader: BAND_FRAG,
     uniforms: { uNgp: { value: n }, uGc: { value: u }, uGain: { value: 0.035 * gain } } };
   const bandMat = new THREE.ShaderMaterial({
     vertexShader: BAND_VERT, ...photo,
