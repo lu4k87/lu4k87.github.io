@@ -152,6 +152,10 @@ void main() {
     float tauS = dens * uH / (max(mu, 0.0) + 0.1);
     vec3 att = exp(-(uBeta + uMie * 0.5) * (tauV + tauS));
     sum += dens * att * vis * dn;
+    // Mehrschichtige Rayleigh-Dämmerung am Terminator (Optik:B)
+    float twRange = smoothstep(0.08, -0.04, mu) * smoothstep(-0.25, -0.05, mu);
+    vec3 twCol = mix(vec3(1.0, 0.46, 0.16), vec3(1.0, 0.22, 0.06), smoothstep(0.02, -0.12, mu));
+    sum += twCol * twRange * exp(-alt * 2.8) * vis * dn * 2.4;
     tauV += dens * dn;
     float ag = exp(-pow((alt - uAirH) / 0.05, 2.0)) * dn;
     air += ag;

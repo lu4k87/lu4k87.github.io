@@ -27,11 +27,23 @@ const ringTex = () => canvasTex((g, s) => {
 });
 const streakTex = () => canvasTex((g, s) => {
   const r = g.createLinearGradient(0, 0, s, 0);
-  r.addColorStop(0, 'rgba(255,255,255,0)'); r.addColorStop(0.5, 'rgba(255,255,255,1)'); r.addColorStop(1, 'rgba(255,255,255,0)');
-  g.fillStyle = r; g.fillRect(0, s * 0.47, s, s * 0.06);
-  const v = g.createLinearGradient(0, s * 0.4, 0, s * 0.6);
-  v.addColorStop(0, 'rgba(0,0,0,1)'); v.addColorStop(0.5, 'rgba(0,0,0,0)'); v.addColorStop(1, 'rgba(0,0,0,1)');
-  g.globalCompositeOperation = 'destination-out'; g.fillStyle = v; g.fillRect(0, 0, s, s);
+  r.addColorStop(0, 'rgba(51,204,255,0)');
+  r.addColorStop(0.2, 'rgba(51,204,255,0.15)');
+  r.addColorStop(0.48, 'rgba(160,230,255,0.85)');
+  r.addColorStop(0.5, 'rgba(255,255,255,1)');
+  r.addColorStop(0.52, 'rgba(160,230,255,0.85)');
+  r.addColorStop(0.8, 'rgba(51,204,255,0.15)');
+  r.addColorStop(1, 'rgba(51,204,255,0)');
+  g.fillStyle = r;
+  g.fillRect(0, s * 0.46, s, s * 0.08);
+  const v = g.createLinearGradient(0, s * 0.38, 0, s * 0.62);
+  v.addColorStop(0, 'rgba(0,0,0,1)');
+  v.addColorStop(0.48, 'rgba(0,0,0,0)');
+  v.addColorStop(0.52, 'rgba(0,0,0,0)');
+  v.addColorStop(1, 'rgba(0,0,0,1)');
+  g.globalCompositeOperation = 'destination-out';
+  g.fillStyle = v;
+  g.fillRect(0, 0, s, s);
 });
 const haloTex = () => canvasTex((g, s) => {
   const r = g.createRadialGradient(s / 2, s / 2, 0, s / 2, s / 2, s / 2);
@@ -60,7 +72,7 @@ export function createFlare({ strength = 1, tint = [1, 0.92, 0.8] } = {}) {
     return sp;
   };
   const halo = mk(haloTex(), tint, 0.45);
-  const streak = mk(streakTex(), [tint[0] * 0.8, tint[1] * 0.9, 1.0], 0.5);
+  const streak = mk(streakTex(), [0.35, 0.85, 1.0], 0.65);
   const ghosts = GHOSTS.map((g) => mk(tex[g.t], g.c, g.a));
   const ndc = new THREE.Vector3(), tmp = new THREE.Vector3(), dir = new THREE.Vector3();
   const place = (sp, x, y, size, camera, vis) => {
@@ -69,11 +81,11 @@ export function createFlare({ strength = 1, tint = [1, 0.92, 0.8] } = {}) {
     const d = camera.near * 3;
     sp.position.copy(camera.position).addScaledVector(tmp, d);
     const h = 2 * d * Math.tan(THREE.MathUtils.degToRad(camera.fov) / 2);
-    sp.scale.set(size * h * (sp === streak ? 7 : 1), size * h, 1);
+    sp.scale.set(size * h * (sp === streak ? 18 : 1), size * h * (sp === streak ? 0.35 : 1), 1);
     sp.material.opacity = sp.userData.a * vis;
     sp.visible = vis > 0.002;
   };
-  halo.userData.a = 0.45; streak.userData.a = 0.5;
+  halo.userData.a = 0.45; streak.userData.a = 0.65;
   ghosts.forEach((sp, i) => { sp.userData.a = GHOSTS[i].a; });
   const sphereHit = (o, from, to) => {
     // Strecke from→to gegen Kugel o {center, radius}: verdeckt, wenn der Schnitt vor der Quelle liegt

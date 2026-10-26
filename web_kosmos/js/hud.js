@@ -9,6 +9,7 @@ import { settings, setSetting, mountSettings, onSettings } from './settings.js';
 import { getLayer, setLayer, fmtVal } from './layers.js';
 import { cardHtml, mountCard, unmountCard } from './cards.js';
 import { prose } from './figs.js';
+import { renderScaleCompare } from './scale_compare.js';
 
 const $ = (s) => document.querySelector(s);
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
@@ -24,7 +25,7 @@ export function createHud(h) {
   const leads = svg.querySelector('.leads'), card = $('#hs-card'), caption = $('#caption'), route = $('#route');
   const pull = $('#pull'), btnOut = $('#btn-out'), btnNext = $('#btn-next'), btnPrev = $('#btn-prev');
   const mWidth = $('#m-width'), mLight = $('#m-light'), mDist = $('#m-dist'), mBack = $('#m-back');
-  let lv = null, meta = null, markers = [], selected = null, liveEl = null, widgetEl = null, liveT = 0;
+  let lv = null, meta = null, markers = [], selected = null, liveEl = null, widgetEl = null, liveT = 0, scaleTabIdx = 0;
   // Info-Karte: Reihenfolge (gewähltes Abzeichen zuerst), Lage, Seite, Größe, Leitlinie
   let ordered = [], dock = null, settle = null, cardW = 0, cardH = 0, cardMaxH = null, lastT = 0;
   const cardLead = document.createElementNS('http://www.w3.org/2000/svg', 'path');
@@ -196,6 +197,7 @@ export function createHud(h) {
     btnPrev.setAttribute('aria-label', `Zurück: ${STATIONS[ROUTE[(i - 1 + ROUTE.length) % ROUTE.length]].title}`);
     mDist.textContent = meta.dist ? fmtLength(meta.dist) : 'im Bild';
     mBack.textContent = meta.lookback ? fmtTime(meta.lookback) : 'Gegenwart';
+    scaleTabIdx = 0;
     renderPanel();
     buildMarkers();
     closeCard();
@@ -232,6 +234,7 @@ export function createHud(h) {
       <div class="bento">${st.facts.map((f) => `
         <div class="fact"><p class="fact-v${f.v.length > 9 ? ' is-long' : ''}">${esc(f.v)}${f.u ? `<span class="fact-u">${esc(f.u)}</span>` : ''}</p><p class="fact-l">${prose(f.l)}</p></div>`).join('')}
       </div>
+      ${renderScaleCompare(lv.id, scaleTabIdx)}
       ${lv.live ? '<p class="live" id="live" aria-live="off"></p>' : ''}
       ${lv.widget ? `<div class="widget" id="widget">${lv.widget()}</div>` : ''}
       ${ctrls.length ? `<div class="st-ctrls">${ctrls.map(ctrlHtml).join('')}</div>` : ''}
@@ -245,6 +248,11 @@ export function createHud(h) {
       </details>`;
     liveEl = panel.querySelector('#live');
     widgetEl = panel.querySelector('#widget');
+    panel.querySelectorAll('[data-sc-tab]').forEach((b) => b.addEventListener('click', () => {
+      scaleTabIdx = +b.dataset.scTab;
+      renderPanel();
+      h.onInput();
+    }));
     panel.querySelectorAll('[data-hs]').forEach((b) => b.addEventListener('click', () => pick(b.dataset.hs)));
     panel.querySelectorAll('[data-rng]').forEach((i) => i.addEventListener('input', () => {
       const c = ctrls.find((x) => x.id === i.dataset.rng);
