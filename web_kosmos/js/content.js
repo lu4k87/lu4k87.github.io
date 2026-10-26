@@ -155,6 +155,11 @@ export const SOURCES = {
   'nasa-enceladus': { t: 'Enceladus (Fontänen mit ≈ 400 m/s, Eiskruste 20–25 km, am Südpol 1–5 km, im dichtesten Teil des E-Rings)', by: 'NASA Science', url: 'https://science.nasa.gov/saturn/moons/enceladus/' },
   'usgs-titan-map': { t: 'Titan Cassini ISS Global Mosaic 4 km, Nahinfrarot (GeoTIFF, public domain)', by: 'USGS Astrogeology, NASA/JPL-Caltech/SSI', url: 'https://planetarymaps.usgs.gov/mosaic/Titan_ISS_P19658_Mosaic_Global_4km.tif' },
   'usgs-enceladus-map': { t: 'Enceladus Cassini ISS Global Mosaic 100 m, hochpassgefiltert (GeoTIFF, 125 MB, public domain)', by: 'USGS Astrogeology, NASA/JPL-Caltech/SSI', url: 'https://planetarymaps.usgs.gov/mosaic/Enceladus_Cassini_ISS_Global_Mosaic_100m_HPF.tif' },
+  // [E4] Enceladus
+  'nasa-enceladus-jets': { t: 'Bursting at the Seams: The Geyser Basin of Enceladus (vier Tigerstreifen von rund 135 km Länge, mehr als 30 einzelne Strahlen auf dem Mosaik vom November 2009)', by: 'NASA/JPL-Caltech/SSI, Photojournal', url: 'https://science.nasa.gov/photojournal/bursting-at-the-seams-the-geyser-basin-of-enceladus/' },
+  'nasa-enceladus-plume': { t: 'NASA’s Cassini Images Reveal Spectacular Evidence of an Active Moon (Strahlen aus feinen Eisteilchen, fernere Fahne bis mindestens 500 km Höhe)', by: 'NASA/JPL, Cassini-Pressemitteilung 2005', url: 'https://www.jpl.nasa.gov/news/nasas-cassini-images-reveal-spectacular-evidence-of-an-active-moon/' },
+  'hedman-2013': { t: 'An observed correlation between plume activity and tidal stresses on Enceladus (Fahne am sonnenfernen Punkt der Bahn mehr als 3-mal heller als am nächsten)', by: 'Hedman et al. 2013, Nature 500, 182–184', url: 'https://doi.org/10.1038/nature12371' },
+  'usgs-enceladus-names': { t: 'Gazetteer of Planetary Nomenclature: Enceladus (Mitte und Länge der Sulci und Rupes, planetographisch, Länge West 0–360°)', by: 'IAU / USGS Astrogeology', url: 'https://planetarynames.wr.usgs.gov/SearchResults?Target=71_Enceladus' },
   // [E4] Mars
   // [E5] Neptun, Uranus, Pluto
   'nep-fact': { t: 'Neptune Fact Sheet', by: 'NASA NSSDCA', url: 'https://nssdc.gsfc.nasa.gov/planetary/factsheet/neptunefact.html' },
@@ -488,11 +493,31 @@ export const STATIONS = {
       hexagon: { t: 'Hexagon am Nordpol', x: 'Ein sechseckiger Strahlstrom um den Nordpol, rund 30.000 km quer, mit Winden um 320 km/h. Seit der Tagundnachtgleiche 2025 ist dort Winter: Die Sonne steht tief oder gar nicht über dem Pol. Mit dem Regler „Saturnjahr“ auf 2017 steht sie im Nordsommer hoch. Im Bild über die Wolkentextur gezeichnet.', s: 'nasa-saturn-facts' },
       ering: { t: 'E-Ring', x: 'Ein weiter Schleier aus feinem Eisstaub zwischen 180.000 und 480.000 km vom Saturn, so dünn (optische Tiefe ≈ 10⁻⁶), dass man ihn am besten im Gegenlicht sieht. Enceladus kreist in seinem dichtesten Teil. Im Bild ein Modell, stark verstärkt.', s: 'nasa-saturn' },
       titan: { t: 'Titan', x: 'Der größte Saturnmond: Radius 2.575 km, 1.221.870 km vom Saturn, ein Umlauf dauert 15,945 Tage. Als einziger Mond hat er eine dichte Atmosphäre, die im sichtbaren Licht als orangener Dunst erscheint; darunter liegen Seen aus flüssigem Methan und Ethan.', s: 'nssdc-satsat' },
-      enceladus: { t: 'Enceladus', x: 'Radius 252 km, 238.020 km vom Saturn, ein Umlauf dauert 1,370 Tage. Seine Eisoberfläche reflektiert das Sonnenlicht stärker als jeder andere Körper im Sonnensystem. Am Südpol sprühen Fontänen aus einem Ozean unter dem Eis mit rund 400 m/s ins All.', s: 'nasa-enceladus' },
+      enceladus: { t: 'Enceladus', x: 'Radius 252 km, 238.020 km vom Saturn, ein Umlauf dauert 1,370 Tage. Seine Eisoberfläche reflektiert das Sonnenlicht stärker als jeder andere Körper im Sonnensystem. Am Südpol sprühen Fontänen aus einem Ozean unter dem Eis mit rund 400 m/s ins All. Hineinfliegen: die Tigerstreifen mit den Fontänen und Saturn riesig am Himmel.', s: 'nasa-enceladus' },
       mimas: { t: 'Mimas', x: 'Mittlerer Radius 198 km, 185.520 km vom Saturn, ein Umlauf dauert 0,942 Tage – zwei Umläufe, während Tethys einmal kreist (Bahnresonanz 2 : 1, eigene Rechnung aus den Umlaufzeiten).', s: 'nssdc-satsat' },
       tethys: { t: 'Tethys', x: 'Mittlerer Radius 531 km, 294.660 km vom Saturn, ein Umlauf dauert 1,888 Tage. Mit 0,98 g/cm³ hat Tethys die geringste Dichte der großen Saturnmonde.', s: 'nssdc-satsat' },
       dione: { t: 'Dione', x: 'Mittlerer Radius 561 km, 377.400 km vom Saturn, ein Umlauf dauert 2,737 Tage – so lange wie zwei Umläufe von Enceladus (Bahnresonanz 2 : 1, eigene Rechnung aus den Umlaufzeiten).', s: 'nssdc-satsat' },
       rhea: { t: 'Rhea', x: 'Mittlerer Radius 764 km, 527.040 km vom Saturn, ein Umlauf dauert 4,518 Tage: nach Titan der zweitgrößte Saturnmond.', s: 'nssdc-satsat' },
+    },
+  },
+  // [E4] Enceladus
+  enceladus: {
+    n: '02D2', title: 'Enceladus', kicker: 'Mond von Saturn', parent: 'saturn', width: 1.5e6, dist: 9.5 * AU, lookback: 9.5 * AU / C,
+    lead: 'Der weiße Eismond mit den Fontänen am Südpol: Aus vier Spalten, den Tigerstreifen, schießen Wasserdampf und Eiskörnchen mit rund 400 m/s ins All. Saturn füllt den Himmel, die Ringe stehen genau auf der Kante. Zahnrad: Fontänen, Tigerstreifen markieren, Zeitraffer, Finsternis im Saturnschatten.',
+    facts: [
+      { v: '252', u: 'km', l: 'mittlerer Radius', s: 'jpl-sat-phys' },
+      { v: '1,37', u: 'Tage', l: 'Umlauf um Saturn in 238.020 km', s: 'nssdc-satsat' },
+      { v: '≈ 400', u: 'm/s', l: 'Tempo der Fontänen', s: 'nasa-enceladus' },
+      { v: '1–5', u: 'km', l: 'Eiskruste am Südpol (sonst 20–25 km)', s: 'nasa-enceladus' },
+    ],
+    note: 'Oberfläche: USGS-Mosaik der Sonde Cassini (100 m je Bildpunkt, auf 2.048 Bildpunkte verkleinert), hochpassgefiltert – es zeigt Relief statt Helligkeit; die Helligkeit ist einheitlich, Feinstruktur beim Heranzoomen ist Rauschen (Modell). Gebundene Drehung (Länge 0° zu Saturn), Libration und Achsneigung vernachlässigt; Orte nach dem Gazetteer (planetographisch, Länge West). Tigerstreifen: Mitte und Länge nach dem Gazetteer, Richtung aus der Karte geschätzt, als Großkreise gezeichnet (Modell). Fontänen: 4 × 12 Quellen entlang der Streifen (schematisch), Teilchen auf Wurfbahnen mit Höhen bis 700 km (400 m/s bei 0,113 m/s² Fallbeschleunigung, eigene Rechnung), stark verlangsamt gezeigt; im Gegenlicht heller, im Mondschatten dunkel. Stärke nach Bahnlage als Kosinus mit Faktor 3 zwischen nächstem und fernstem Punkt (Modell nach Hedman et al. 2013). Saturn in echter Größe, Richtung und Phase; Sonne und Sterne aus den JPL-Bahnelementen. Der Schnitt zeigt die Schichten schematisch.',
+    sources: ['jpl-sat-phys', 'jpl-sat441', 'nssdc-satsat', 'nasa-enceladus', 'nasa-enceladus-jets', 'nasa-enceladus-plume', 'hedman-2013', 'usgs-enceladus-names', 'usgs-enceladus-map', 'nasa-saturnfact'],
+    hotspots: {
+      stripes: { t: 'Tigerstreifen', x: 'Vier fast parallele Gräben um den Südpol: Alexandria, Cairo, Baghdad und Damascus Sulcus, nach dem Gazetteer 111 bis 176 km lang (NASA nennt im Schnitt rund 135 km). Baghdad Sulcus liegt bei 86,9° S, 230,5° W, ganz nah am Pol. Aus diesen Spalten steigen die Fontänen. Zahnrad „Tigerstreifen markieren“ zeichnet sie ein.', s: 'usgs-enceladus-names' },
+      samaria: { t: 'Samaria Rupes', x: 'Eine rund 190 km lange Böschung bei 26,9° N, 225,1° W (Gazetteer). „Rupes“ heißt in der Nomenklatur der IAU eine Böschung oder Steilstufe.', s: 'usgs-enceladus-names' },
+      plume: { t: 'Fontänen', x: 'Aus den Tigerstreifen schießen Strahlen aus Wasserdampf und Eisteilchen; auf einem Mosaik von 2009 zählte NASA mehr als 30, die schwächere Gesamtfahne reicht mindestens 500 km hoch. Bei 400 m/s und nur 0,113 m/s² Fallbeschleunigung steigt ein Teilchen bis rund 700 km; wer schneller ist als 240 m/s, entkommt und speist den E-Ring (eigene Rechnung). Im Bild: 48 Quellen, Teilchen verlangsamt, im Gegenlicht heller. Am sonnenfernen Punkt der Bahn ist die Fontäne mehr als 3-mal heller als am nächsten (Hedman et al. 2013; Verlauf im Bild Modell) – Zahnrad „Stärke folgt der Bahnlage“.', s: 'nasa-enceladus-plume' },
+      ocean: { t: 'Ozean unter dem Eis', x: 'Die Fontänen stammen aus einem Ozean unter der Eiskruste: Sie ist 20 bis 25 km dick, am Südpol nur 1 bis 5 km. Dicke von Ozean und Gesteinskern sind im Schnitt schematisch.', s: 'nasa-enceladus' },
+      saturn: { t: 'Saturn am Himmel', x: 'Enceladus dreht sich gebunden, Saturn steht fest am Himmel: rund 29° breit, gut 55-mal so breit wie der Vollmond von der Erde aus (eigene Rechnung). Die Bahn liegt in der Ringebene, die Ringe stehen deshalb von der Kante. Solange die Sonne weniger als rund 15° über der Ringebene steht, taucht Enceladus in jedem Umlauf bis zu 2,6 Stunden in den Saturnschatten – „Nächste Finsternis“ springt hin (eigene Rechnung).', s: 'nssdc-satsat' },
     },
   },
   // [E4] Mars

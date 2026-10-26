@@ -318,7 +318,7 @@ export function createIcyMoon(ctx, cfg) {
   const jumpTransit = () => jump(transit, 'Schattendurchgang');
 
   // ---------- Erweiterungen der Station (Magnetfeld, Becken …) ----------
-  const ext = cfg.extra ? cfg.extra(ctx, { scene, moon, sunL, jupL, inWedge, jdNow, homeDir: dCam, cutU: { uCut: moonU.uCut, uCutA: moonU.uCutA, uCutB: moonU.uCutB } }) : {};
+  const ext = cfg.extra ? cfg.extra(ctx, { scene, moon, sunL, jupL, frame, inWedge, jdNow, homeDir: dCam, cutU: { uCut: moonU.uCut, uCutA: moonU.uCutA, uCutB: moonU.uCutB } }) : {};
 
   // ---------- Ebenen (Zahnrad „Station · …“, Zeitleiste) ----------
   registerLayers(cfg.id, [
