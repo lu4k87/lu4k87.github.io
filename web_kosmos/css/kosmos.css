@@ -157,7 +157,7 @@ body.is-flying .hint, body.is-intro .hint { opacity: 0; }
 .st-ctrls { display: flex; flex-direction: column; gap: 10px; }
 /* Kanal-Wahl mit Farbscheiben (Sonne: SDO-Kanäle), Schichtschnitt (schematisch) und Erklärzeile */
 .cfg-box { display: flex; flex-direction: column; gap: 10px; }
-.swatch { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.swatch { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(max-content, 1fr); gap: 6px; }
 .swatch button { display: grid; justify-items: center; gap: 6px; min-width: 0; min-height: 44px; padding: 8px 4px; border: 1px solid transparent; border-radius: 8px; background: none; cursor: pointer; touch-action: manipulation; transition: border-color 0.2s, background-color 0.2s; }
 .swatch button:hover { border-color: var(--line-strong); }
 .swatch button[aria-checked="true"] { border-color: var(--accent); background: var(--accent-soft); }

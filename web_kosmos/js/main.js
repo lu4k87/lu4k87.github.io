@@ -32,6 +32,8 @@ const LOADERS = {
   // [E4] Saturn + Mars
   // [E4] Mars
   // [E5] Neptun, Uranus, Pluto
+  // [E5] Uranus
+  // [E5] Pluto
 };
 
 // Flug: äußere Kamera zoomt um ZOOM auf den Anker zu, die innere kommt aus ZOOM-fachem Abstand an (gleiche Rate)

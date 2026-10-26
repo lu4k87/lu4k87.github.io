@@ -1,8 +1,9 @@
 // Station 02B: Sonne aus der Nähe (Einheit 1 R☉ = 695.700 km), Abstecher vom Sonnensystem. Heimpose knapp über dem
-// Sonnenrand: Scheibe unten, darüber Koronaschleifen und Protuberanzen vor dem All. Vier Kanäle wie beim Sonnenobservatorium
+// Sonnenrand: Scheibe unten, darüber Koronaschleifen und Protuberanzen vor dem All. Start mit dem Look „Glut“ (sunlook.js:
+// Glutkruste, Rand und Ausbrüche wie in der Vorschau „Sonne neu“, künstlerisch), dazu vier Kanäle wie beim Sonnenobservatorium
 // SDO (Shader in sunfx.js, uChan): Weißlicht (Photosphäre mit Granulation, Flecken, Randverdunkelung; Korona wie bei einer
 // Finsternis) · 171 Å Fe IX ≈ 0,6 Mio. K (goldene Koronaschleifen, Scheibe dunkel, Rand hell) · 304 Å He II ≈ 50.000 K
-// (Chromosphäre: Netzwerk, Protuberanzen hell, Filamente dunkel) · 193 Å Fe XII ≈ 1,3 Mio. K (heiße Korona, koronale Löcher
+// (Chromosphäre als Plasmateppich aus sunlook.js: Netzwerk, Protuberanzen hell, Filamente dunkel) · 193 Å Fe XII ≈ 1,3 Mio. K (heiße Korona, koronale Löcher
 // dunkel). Aktive Regionen = Fleckengruppen; ihre Koronaschleifen verbinden Vorläufer- und Nachfolgerfleck (Bipol) und drehen
 // mit der Rate ihrer Breite (Snodgrass & Ulrich 1990), Flecken, Löcher und Filamente wandern im Shader differentiell mit.
 // Modell, kein Foto: Lage und Zahl der Strukturen sind ausgedacht; Rotation, Schleifen, Protuberanzen und Flares im Zeitraffer.
@@ -13,6 +14,7 @@ import { createStarfield } from '../stars.js';
 import { BODY_VERT } from '../planetfx.js';
 import { SUN_FRAG, BILLBOARD_VERT, BILLBOARD_AIM_VERT, CORONA_FRAG, LOOP_VERT, LOOP_FRAG, CME_FRAG, CLOOP_VERT, CLOOP_FRAG, HOLES, FILS, loopsGeometry, spotGroups, streamerSet, coronalLoopsGeometry } from '../sunfx.js';
 import { registerLayers, refreshLayers } from '../layers.js';
+import { LOOK_SURF_FRAG, LOOK_RIM_FRAG, LOOK_EXT, ERUPT_T, lookDefines } from '../sunlook.js';
 
 const RAD = Math.PI / 180;
 const R_SUN = 6.957e8;   // m (nasa-sun: 695.700 km)
@@ -20,17 +22,21 @@ const Y = new THREE.Vector3(0, 1, 0);
 // Rotationsrate [°/Tag] in der Breite lat [rad] (Snodgrass & Ulrich 1990) – dieselbe Formel wie im Shader
 const omega = (lat) => { const s2 = Math.sin(lat) ** 2; return 14.713 - 2.396 * s2 - 1.787 * s2 * s2; };
 const latOf = (v) => Math.asin(THREE.MathUtils.clamp(v.y / v.length(), -1, 1));
-// Kanäle (Werte für ?ctl=chan:171): Shader-Nummer, Farbscheibe (SDO-Falschfarbe), Schichten im Schichtschnitt, Erklärzeile
+// Scheiben (Werte für ?ctl=chan:171): Shader-Nummer, Look-Oberfläche (sunlook.js: 0 Glut, 1 Plasmateppich), Farbscheibe
+// (SDO-Falschfarbe), Schichten im Schichtschnitt, Erklärzeile
 const CH = [
+  { v: 'glut', n: 0, look: 0, name: 'Glut', on: [], shows: 'keine einzelne Schicht, ein künstlerisches Bild',
+    disc: 'radial-gradient(circle, #5a1a04 0%, #2a0a02 46%, #b8400c 80%, #ffb24a 94%, #3a0e02 100%)',
+    cap: '<b>Glut · künstlerisch</b> – kein Messbild: Die dunkle Kruste mit glühenden Adern zeigt, wie Magnetfelder das Plasma dort bündeln, wo die Sonne aktiv ist. Rand und Ausbruch wählst du im Zahnrad.' },
   { v: 'wl', n: 0, name: 'Weißlicht', on: [0], shows: 'die Photosphäre',
     disc: 'radial-gradient(circle, #fff4d8 0%, #f6c66e 55%, #c8701e 92%, #7a3a0c 100%)',
     cap: '<b>Weißlicht · Photosphäre · 5.772 K</b> – die sichtbare Oberfläche: brodelnde Granulation, dunkle Flecken, zum Rand hin dunkler. Darum die Korona, wie sonst nur bei einer totalen Finsternis.' },
   { v: '171', n: 1, name: '171 Å', on: [2, 3], shows: 'Übergangsregion und ruhige Korona',
     disc: 'radial-gradient(circle, #fbe9a0 0%, #d9b030 50%, #7d5e0a 88%, #2a1f02 100%)',
     cap: '<b>171 Å · Eisen IX · ≈ 0,6 Mio. K</b> – goldene Koronaschleifen: heißes Plasma folgt den Magnetfeldbögen über aktiven Regionen; die Scheibe wirkt dunkel, der Rand hell.' },
-  { v: '304', n: 2, name: '304 Å', on: [1, 2], shows: 'Chromosphäre und Übergangsregion',
+  { v: '304', n: 2, look: 1, name: '304 Å', on: [1, 2], shows: 'Chromosphäre und Übergangsregion',
     disc: 'radial-gradient(circle, #ffb07a 0%, #e0582a 50%, #8a2408 88%, #2e0802 100%)',
-    cap: '<b>304 Å · Helium II · ≈ 50.000 K</b> – Chromosphäre: helles Netzwerk, Protuberanzen leuchten über dem Rand, Filamente liegen als dunkle Fäden auf der Scheibe.' },
+    cap: '<b>304 Å · Helium II · ≈ 50.000 K</b> – Chromosphäre: helles Netzwerk, Fackelfelder über aktiven Regionen, Protuberanzen leuchten über dem Rand, Filamente liegen als dunkle Fäden auf der Scheibe.' },
   { v: '193', n: 3, name: '193 Å', on: [3], shows: 'die heiße Korona',
     disc: 'radial-gradient(circle, #f0d2a0 0%, #b98545 52%, #5e3a14 88%, #1e1206 100%)',
     cap: '<b>193 Å · Eisen XII · ≈ 1,3 Mio. K</b> – heiße Korona: aktive Regionen hell, koronale Löcher als dunkle Flecken; aus ihnen strömt schneller Sonnenwind.' },
@@ -41,6 +47,9 @@ const LAYERS = ['Photo&shy;sphäre', 'Chromo&shy;sphäre', 'Über&shy;gangs&shy;
 const ACT = [['Minimum', 0, 0.55, 0], ['niedrig', 1, 0.45, 0.3], ['mittel', 2, 0.34, 0.6], ['hoch', 4, 0.22, 1], ['Maximum', 6, 0.12, 1.5]];
 // Zeitraffer der Rotation [Tage je Sekunde]
 const SPEEDS = [[0, 'Stopp'], [1 / 24, '1 h/s'], [0.25, '6 h/s'], [1, '1 Tag/s'], [3, '3 Tage/s']];
+// Look: Rand und Ausbruch (Zahnrad, Glut und 304 Å)
+const RIMS = ['aus', 'Flammenkranz', 'Bogen-Arkaden', 'feiner Saum'];
+const ERUPTS = ['Filament-Eruption', 'Flare mit Schockwelle', 'Protuberanz reißt ab'];
 const fmtDays = (d) => `${d.toLocaleString('de-DE', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} Tage`;
 
 function glowTexture() {
@@ -126,6 +135,11 @@ export function create(ctx) {
   };
   const sun = new THREE.Mesh(new THREE.SphereGeometry(1, 192, 96), new THREE.ShaderMaterial({ vertexShader: BODY_VERT, fragmentShader: SUN_FRAG, uniforms: sunU }));
   sunG.add(sun);
+  // Look „Sonne neu“ (Glut, 304 Å): eigenes Material auf derselben Kugel, gleiche Daten (Regionen, Löcher, Filamente, Rotation)
+  const sunMat = sun.material;
+  const lookU = { uTime: sunU.uTime, uDays: sunU.uDays, uSpot: sunU.uSpot, uHole: sunU.uHole, uFil: sunU.uFil, uFilT: sunU.uFilT, uAct: sunU.uAct,
+    uSurf: { value: 0 }, uGain: { value: 0.8 }, uFlK: { value: -1 }, uFlS: { value: new THREE.Vector3(0, 0, 1) } };
+  const lookMat = new THREE.ShaderMaterial({ vertexShader: BODY_VERT, fragmentShader: LOOK_SURF_FRAG, uniforms: lookU, defines: lookDefines(ctx.detail) });
 
   // ---------- Koronaschleifen je aktiver Region (171/193 Å), drehen mit der Rate ihrer Breite ----------
   const cloopU = { uTime: { value: 0 }, uChan: { value: 0 }, uGain: { value: 1 }, uDens: { value: 1 }, uFlareT: { value: 1e3 }, uFlareP: { value: new THREE.Vector3(0, 0, 1e3) } };
@@ -165,6 +179,13 @@ export function create(ctx) {
   corona.frustumCulled = false;
   corona.renderOrder = -1;
   scene.add(corona);
+  // Look: Glühen, Rand und Ausbruch als Bildtafel; ohne Tiefentest, weil Bögen und Flare auch vor der Scheibe stehen
+  const rimU = { uTime: coronaU.uTime, uPole: coronaU.uPole, uSurf: lookU.uSurf, uExt: { value: LOOK_EXT }, uSize: { value: LOOK_EXT }, uGain: { value: 0.8 },
+    uRim: { value: 2 }, uE: { value: 1 }, uEK: { value: -1 }, uEB: { value: 0 }, uArc: { value: 0 }, uEDir: { value: new THREE.Vector2(0, 1) }, uESp: { value: new THREE.Vector2() } };
+  const rim = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), new THREE.ShaderMaterial({ vertexShader: BILLBOARD_AIM_VERT, fragmentShader: LOOK_RIM_FRAG, uniforms: rimU,
+    defines: lookDefines(ctx.detail), blending: THREE.AdditiveBlending, depthWrite: false, depthTest: false, transparent: true }));
+  rim.frustumCulled = false;
+  scene.add(rim);
 
   // ---------- Flare + Massenauswurf ----------
   const cmeU = { uSize: { value: 1 }, uK: { value: 0 }, uGain: { value: 1.1 }, uSide: { value: 1 }, uTime: { value: 0 }, uDir: { value: new THREE.Vector2(1, 0) } };
@@ -179,14 +200,54 @@ export function create(ctx) {
   const cmeState = { t: 1e3, dir: new THREE.Vector3(), from: new THREE.Vector3(), foot: new THREE.Vector3() };
 
   // ---------- Zustand ----------
-  let chan = 'wl', actIdx = 3, nAct = ACT[3][1], spdIdx = 1, rotOn = false, days = 0;
+  let chan = 'glut', lookOn = true, rimIdx = 2, eruptIdx = 0, actIdx = 3, nAct = ACT[3][1], spdIdx = 1, rotOn = false, days = 0;
   let granOn = true, spotsOn = true, promOn = true, flaresOn = true, flareRate = 1, cloopsOn = true, holesOn = true, coronaOn = true;
   let flareTimer = 10 + rand() * 10;
   const regionWorld = (r, out, h = 1) => out.copy(r.mid).multiplyScalar(h).applyAxisAngle(Y, omega(r.lat) * days * RAD).applyQuaternion(sunG.quaternion);
   const tmp = new THREE.Vector3(), tmp2 = new THREE.Vector3();
   const facing = (p, cam) => tmp.copy(cam.position).sub(p).normalize().dot(tmp2.copy(p).normalize());
 
+  // Look: ein Ausbruch je ERUPT_T s. Filament (A) und Protuberanz (C) am sichtbaren Rand über einer aktiven Region oder unter
+  // der Bildmitte, Flare (B) auf der sichtbaren Scheibe nahe dem Rand – jeweils möglichst nah an der Bildmitte.
+  const erupt = { k: -1, type: 0, g: new THREE.Vector3(), dir: new THREE.Vector3() };
+  const ndc = new THREE.Vector3(), awW = new THREE.Vector3(), fwd = new THREE.Vector3();
+  function limbOf(cam, dir, out) {   // sichtbarer Randpunkt (Tangentenpunkt) in Richtung dir
+    const d = cam.position.length();
+    awW.copy(cam.position).multiplyScalar(-1 / d);
+    out.copy(dir).addScaledVector(awW, -dir.dot(awW));
+    if (out.lengthSq() < 1e-6) return null;
+    return out.normalize().multiplyScalar(Math.sqrt(Math.max(1 - 1 / (d * d), 0))).addScaledVector(awW, -1 / d);
+  }
+  const screenScore = (p, cam) => { ndc.copy(p).project(cam); return Math.abs(ndc.x) < 0.9 && Math.abs(ndc.y) < 0.9 ? -(ndc.x * ndc.x + ndc.y * ndc.y) : -10; };
+  const toG = (w, out) => { out.copy(w).normalize().applyQuaternion(qInv); return out.applyAxisAngle(Y, -omega(latOf(out)) * days * RAD); };
+  function triggerLook(cam) {
+    cam.updateMatrixWorld();
+    const type = eruptIdx, cands = regions.slice(0, Math.max(nAct, 1)).map((r) => regionWorld(r, new THREE.Vector3()));
+    fwd.set(0, 0, -1).transformDirection(cam.matrixWorld);
+    if (type !== 1) cands.push(fwd.clone());
+    else {   // Flare: dazu der Punkt der Scheibe etwas unter der Bildmitte (Heimpose: Scheibe unten)
+      const d = ndc.set(0, -0.35, 0.5).unproject(cam).sub(cam.position).normalize(), b = cam.position.dot(d), h = b * b - cam.position.lengthSq() + 1;
+      if (h > 0) cands.push(cam.position.clone().addScaledVector(d, -b - Math.sqrt(h)));
+    }
+    let best = null, bs = -Infinity;
+    for (const c of cands) {
+      const f = facing(c, cam);
+      const p = type === 1 ? (f > 0.08 ? c : null) : limbOf(cam, c.clone().normalize(), new THREE.Vector3());
+      if (!p) continue;
+      const s = screenScore(p, cam) - (type === 1 ? Math.abs(f - 0.3) : 0);
+      if (s > bs) { bs = s; best = p; }
+    }
+    if (!best) best = limbOf(cam, fwd, new THREE.Vector3()) || new THREE.Vector3(0, 1, 0);
+    erupt.type = type;
+    erupt.k = 0;
+    if (type === 1) toG(best, erupt.g); else erupt.dir.copy(best);
+    cmeState.foot.copy(best).multiplyScalar(1.003);
+    cmeState.t = 0;
+    flareTimer = ERUPT_T / Math.min(1, Math.max(flareRate * ACT[actIdx][3], 0.05));
+  }
+
   function triggerFlare(cam) {
+    if (lookOn) { triggerLook(cam); return; }
     // aktive Region, bevorzugt sichtbar und nahe am Rand (dort am eindrucksvollsten)
     const list = regions.slice(0, Math.max(nAct, 1));
     let best = list[0], bs = -Infinity;
@@ -220,9 +281,16 @@ export function create(ctx) {
     sunU.uAct.value = actIdx / 4;
   }
   function setChan(v) {
-    chan = chOf(v).v;
-    const n = chOf(v).n;
-    sunU.uChan.value = coronaU.uChan.value = loopU.uChan.value = cloopU.uChan.value = n;
+    const c = chOf(v), n = c.n;
+    chan = c.v;
+    lookOn = c.look !== undefined;
+    sun.material = lookOn ? lookMat : sunMat;
+    lookU.uSurf.value = c.look ?? 0;
+    rim.visible = lookOn;
+    corona.visible = !lookOn;
+    if (lookOn) { cme.visible = flash.visible = false; if (erupt.k < 0) flareTimer = Math.min(flareTimer, 2.5); } else erupt.k = -1;
+    sunU.uChan.value = coronaU.uChan.value = cloopU.uChan.value = n;
+    loopU.uChan.value = lookOn ? 2 : n;   // Protuberanzen im Look hell orange wie in 304 Å
     sunU.uGain.value = n ? 1 : 2.2;
     sunU.uGran.value = !n && granOn ? 1 : 0;
     coronaU.uCorona.value = !n && coronaOn ? 1 : 0;
@@ -240,8 +308,10 @@ export function create(ctx) {
       status: () => (rotOn ? `Sonnenrotation · ${fmtDays(days)} vergangen` : `Sonnenrotation angehalten · ${fmtDays(days)}`) },
     { id: 'gran', type: 'toggle', group: 'Oberfläche', label: 'Granulation (brodelnde Oberfläche)', value: true, set: (v) => { granOn = v; sunU.uGran.value = v && chan === 'wl' ? 1 : 0; } },
     { id: 'spots', type: 'toggle', label: 'Sonnenflecken', value: true, set: (v) => { spotsOn = v; applyRegions(); } },
+    { id: 'rim', type: 'range', label: 'Rand (Glut, 304 Å)', value: rimIdx, min: 0, max: RIMS.length - 1, step: 1, fmt: (i) => RIMS[Math.round(i)], set: (v) => { rimIdx = Math.round(v); rimU.uRim.value = rimIdx; } },
     { id: 'prom', type: 'toggle', group: 'Ausbrüche', label: 'Protuberanzen und Filamente', value: true, set: (v) => { promOn = v; loops.visible = v; applyRegions(); } },
-    { id: 'flares', type: 'toggle', label: 'Flares mit Massenauswurf', value: true, set: (v) => { flaresOn = v; if (!v) cme.visible = flash.visible = false; } },
+    { id: 'flares', type: 'toggle', label: 'Flares mit Massenauswurf', value: true, set: (v) => { flaresOn = v; if (!v) { cme.visible = flash.visible = false; erupt.k = -1; } } },
+    { id: 'erupt', type: 'range', label: 'Ausbruch (Glut, 304 Å)', value: eruptIdx, min: 0, max: ERUPTS.length - 1, step: 1, fmt: (i) => ERUPTS[Math.round(i)], sub: true, set: (v) => { eruptIdx = Math.round(v); } },
     { id: 'flareRate', type: 'range', label: 'Häufigkeit', value: 1, min: 0.3, max: 3, step: 0.1, unit: '×', sub: true, set: (v) => { flareRate = v; } },
     { id: 'flareNow', type: 'action', label: 'Flare mit Massenauswurf', button: 'Jetzt auslösen', sub: true, run: () => { if (flaresOn) triggerFlare(camera); } },
     { id: 'cloops', type: 'toggle', group: 'Korona', label: 'Koronaschleifen (171 Å, 193 Å)', value: true, set: (v) => { cloopsOn = v; applyRegions(); } },
@@ -254,23 +324,23 @@ export function create(ctx) {
   const LAY = (c) => `<div class="sw-cut" role="img" aria-label="Schichtschnitt, schematisch: ${c.name} zeigt ${c.shows}">${LAYERS.map((l, i) => `<span${c.on.includes(i) ? ' class="is-on"' : ''}>${l}</span>`).join('')}</div>
     <p class="sw-axis">von der Oberfläche nach außen →</p><p class="sw-cap">${c.cap}</p>`;
   const controls = [
-    { id: 'chan', type: 'swatch', label: 'Wellenlänge · Schicht', value: 'wl', options: CH.map((c) => [c.v, c.name, c.disc]), set: setChan, detail: (v) => LAY(chOf(v)) },
+    { id: 'chan', type: 'swatch', label: 'Wellenlänge · Schicht', value: 'glut', options: CH.map((c) => [c.v, c.name, c.disc]), set: setChan, detail: (v) => LAY(chOf(v)) },
     { id: 'act', type: 'range', label: 'Aktivität', value: actIdx, min: 0, max: ACT.length - 1, step: 1, fmt: (i) => ACT[Math.round(i)][0], set: setActivity },
     { id: 'speed', type: 'range', label: 'Zeitraffer', value: rotOn ? spdIdx : 0, min: 0, max: SPEEDS.length - 1, step: 1, fmt: (i) => SPEEDS[Math.round(i)][1],
       set: (v) => { if (v) { spdIdx = v; rotOn = true; } else rotOn = false; refreshLayers(); }, get: () => (rotOn ? spdIdx : 0) },
     { id: 'flare', type: 'action', label: 'Ereignis', button: 'Flare auslösen', run: () => { if (flaresOn) triggerFlare(camera); } },
   ];
-  setChan('wl');
+  setChan('glut');
 
   // ---------- Abzeichen: folgen ihren Strukturen; wechseln auf eine sichtbare, wenn sie hinter den Rand drehen ----------
   const H = (id, focus, visible) => ({ id, kind: 'info', pos: new THREE.Vector3(), focus: () => focus, visible });
   const hs = {
     region: H('region', 0.5, (cam) => nAct > 0 && facing(hs.region.pos, cam) > -0.35),
-    spots: H('spots', 0.35, (cam) => nAct > 0 && spotsOn && facing(hs.spots.pos, cam) > 0.05),
-    gran: H('gran', 0.25, (cam) => facing(hs.gran.pos, cam) > 0.05),
+    spots: H('spots', 0.35, (cam) => nAct > 0 && spotsOn && !lookOn && facing(hs.spots.pos, cam) > 0.05),
+    gran: H('gran', 0.25, (cam) => !lookOn && facing(hs.gran.pos, cam) > 0.05),
     prom: H('prom', 0.5, () => promOn),
-    filament: H('filament', 0.5, (cam) => promOn && facing(hs.filament.pos, cam) > 0.05),
-    hole: H('hole', 0.8, (cam) => holesOn && facing(hs.hole.pos, cam) > 0.05),
+    filament: H('filament', 0.5, (cam) => promOn && chan !== 'glut' && facing(hs.filament.pos, cam) > 0.05),
+    hole: H('hole', 0.8, (cam) => holesOn && chan !== 'glut' && facing(hs.hole.pos, cam) > 0.05),
     flare: H('flare', 0.6, (cam) => flaresOn && facing(hs.flare.pos, cam) > -0.3),
     pole: H('pole', 1.2, (cam) => facing(hs.pole.pos, cam) > -0.1),
     wind: H('wind', 3, () => true),
@@ -329,6 +399,37 @@ export function create(ctx) {
       const l = Math.hypot(vS.x, vS.y);
       coronaU.uStr.value[i].set(Math.atan2(-vS.x * py + vS.y * px, vS.x * px + vS.y * py), s.w, s.amp * (s.on ?? 1) * (0.3 + 0.7 * l));
     });
+    if (rim.visible) lookFrame(cam, view);
+  }
+  // Look je Bild: Tafel deckt LOOK_EXT Randradien; Ausbruch-Ort auf die Tafel (A, C: Richtung des Randpunkts; B: Fußpunkt,
+  // entlang des Sehstrahls auf die Tafelebene projiziert, in Randradien)
+  const cv = new THREE.Vector3(), wv = new THREE.Vector3();
+  function lookFrame(cam, view) {
+    const limb = coronaU.uLimb.value;
+    rimU.uSize.value = LOOK_EXT * limb;
+    if (erupt.k < 0) return;
+    if (erupt.type === 1) {
+      surfShader(erupt.g, wv);
+      rimU.uEB.value = THREE.MathUtils.smoothstep(facing(wv, cam), -0.05, 0.1);
+      cv.set(0, 0, 0).applyMatrix4(view);
+      wv.applyMatrix4(view);
+      wv.multiplyScalar(cv.dot(aw) / wv.dot(aw)).sub(cv);
+      rimU.uESp.value.set(wv.dot(au) / limb, wv.dot(av) / limb);
+      lookU.uFlS.value.copy(erupt.g);
+    } else {
+      onTile(wv.copy(erupt.dir).transformDirection(view));
+      rimU.uEDir.value.set(wv.x, wv.y).normalize();
+    }
+  }
+  // erste Arkade über der Hauptregion, so wie die Heimpose sie am oberen Rand zeigt
+  {
+    const c = new THREE.PerspectiveCamera();
+    c.position.copy(home.pos);
+    c.lookAt(home.target);
+    c.updateMatrixWorld();
+    coronaFrame(c);
+    onTile(regionWorld(regions[0], wv).normalize().transformDirection(c.matrixWorldInverse));
+    rimU.uArc.value = Math.atan2(wv.y, wv.x) - Math.atan2(coronaU.uPole.value.y, coronaU.uPole.value.x);
   }
 
   const look = { exposure: 1.0, bloom: 0.08 };
@@ -345,6 +446,10 @@ export function create(ctx) {
       // Nahebene mit dem Abstand zur Oberfläche
       const nr = THREE.MathUtils.clamp((cam.position.length() - 1) * 0.2, 5e-4, 0.05);
       if (Math.abs(nr - camera.near) / camera.near > 0.05) { camera.near = nr; camera.updateProjectionMatrix(); }
+      if (erupt.k >= 0) { erupt.k += dt * ta0 / ERUPT_T; if (erupt.k >= 1) erupt.k = -1; }
+      rimU.uEK.value = erupt.k;
+      rimU.uE.value = erupt.type + 1;
+      lookU.uFlK.value = erupt.type === 1 ? erupt.k : -1;
       cam.updateMatrixWorld();
       coronaFrame(cam);
       // Flares: Zufallstakt je Aktivität, Schleifen um den Fußpunkt leuchten weich auf, Massenauswurf wandert hinaus
@@ -381,9 +486,12 @@ export function create(ctx) {
     },
     live: () => `${chOf(chan).name} · Aktivität ${ACT[actIdx][0]} · ${rotOn ? `Zeitraffer ${SPEEDS[spdIdx][1]}` : 'Rotation angehalten'}`,
     setPixelRatio(pr) { stars.userData.setPixelRatio(pr); },
+    setDetail(d) { for (const m of [lookMat, rim.material]) { m.defines = lookDefines(d); m.needsUpdate = true; } },
     dispose() {
       scene.traverse((o) => { if (o.geometry) o.geometry.dispose(); if (o.material) o.material.dispose(); });
       flash.material.map.dispose();
+      lookMat.dispose();
+      sunMat.dispose();
     },
   };
 }

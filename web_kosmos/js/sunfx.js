@@ -41,6 +41,39 @@ vec3 euvTint(float x, float ch) {
 }
 `;
 
+// Koronale Löcher (uHole: Richtung + Winkelradius) und Filamente (uFil: Mitte + halbe Länge, uFilT: Richtung + Breite) im
+// mitrotierenden Ort g; gemeinsam für SUN_FRAG und den Look der Station Sonne (sunlook.js). Braucht NOISE (gnoise).
+export const SUN_MASKS = /* glsl */ `
+#define HOLES ${HOLES}
+#define FILS ${FILS}
+uniform vec4 uHole[HOLES], uFil[FILS], uFilT[FILS];
+float holeMask(vec3 g) {
+  float m = 0.0;
+  for (int i = 0; i < HOLES; i++) {
+    vec4 h = uHole[i];
+    if (h.w <= 0.0) continue;
+    float a = acos(clamp(dot(g, h.xyz), -1.0, 1.0)) + 0.3 * h.w * gnoise(g * 5.0 + float(i) * 3.1);
+    m = max(m, 1.0 - smoothstep(h.w * 0.7, h.w * 1.08, a));
+  }
+  return m;
+}
+float filMask(vec3 g) {
+  float m = 0.0;
+  for (int i = 0; i < FILS; i++) {
+    vec4 f = uFil[i], ft = uFilT[i];
+    if (f.w <= 0.0) continue;
+    vec3 dv = g - f.xyz;
+    float a = dot(dv, ft.xyz);
+    if (abs(a) > f.w * 1.1) continue;
+    vec3 nr = normalize(cross(f.xyz, ft.xyz));
+    float p = dot(dv, nr) + 0.01 * sin(a * 38.0 + float(i) * 2.3) + 0.004 * gnoise(g * 80.0);
+    float w = max(ft.w * (1.0 - a * a / (f.w * f.w)), 1e-4);
+    m = max(m, (1.0 - smoothstep(w * 0.35, w, abs(p))) * (0.75 + 0.25 * gnoise(g * 120.0)));
+  }
+  return clamp(m, 0.0, 1.0);
+}
+`;
+
 // Photosphäre. Ort im mitrotierenden Plasma g aus der verschobenen Texturkoordinate: differentielle Rotation
 // ω(φ) = 14,713 − 2,396 sin²φ − 1,787 sin⁴φ °/Tag (Snodgrass & Ulrich 1990, uDays = Tage seit Start).
 // Granulation als Zellmuster (Worley-Rauschen, 2 Oktaven): helle Zellen = aufsteigendes heißes Gas, dunkle Zwischenräume =
@@ -91,38 +124,10 @@ vec3 ramp(float x) {
 }
 // ---- SDO-Kanäle (uChan > 0): EUV ist optisch dünn → Scheibe zum Rand heller (Weglänge ≈ 1/μ, begrenzt); aktive Regionen
 // über den Fleckengruppen hell, koronale Löcher dunkel (193 Å fast schwarz), Filamente als dunkle Fäden (304 Å stark).
-// 171 Å: dunkle Scheibe mit Netzwerk und hellen Punkten · 304 Å: Chromosphären-Netzwerk an den Rändern der Supergranulen
-// (≈ 30 Mm) · 193 Å: diffuse heiße Korona. Ohne Granulation und Fleckendunkel (die stammen aus der Photosphäre).
-#define HOLES ${HOLES}
-#define FILS ${FILS}
+// 171 Å: dunkle Scheibe mit Netzwerk und hellen Punkten · 193 Å: diffuse heiße Korona (304 Å: Plasmateppich in sunlook.js). Ohne Granulation und Fleckendunkel (die stammen aus der Photosphäre).
 uniform float uChan, uAct;
-uniform vec4 uHole[HOLES], uFil[FILS], uFilT[FILS];
 ${EUV_TINT}
-float holeMask(vec3 g) {
-  float m = 0.0;
-  for (int i = 0; i < HOLES; i++) {
-    vec4 h = uHole[i];
-    if (h.w <= 0.0) continue;
-    float a = acos(clamp(dot(g, h.xyz), -1.0, 1.0)) + 0.3 * h.w * gnoise(g * 5.0 + float(i) * 3.1);
-    m = max(m, 1.0 - smoothstep(h.w * 0.7, h.w * 1.08, a));
-  }
-  return m;
-}
-float filMask(vec3 g) {
-  float m = 0.0;
-  for (int i = 0; i < FILS; i++) {
-    vec4 f = uFil[i], ft = uFilT[i];
-    if (f.w <= 0.0) continue;
-    vec3 dv = g - f.xyz;
-    float a = dot(dv, ft.xyz);
-    if (abs(a) > f.w * 1.1) continue;
-    vec3 nr = normalize(cross(f.xyz, ft.xyz));
-    float p = dot(dv, nr) + 0.01 * sin(a * 38.0 + float(i) * 2.3) + 0.004 * gnoise(g * 80.0);
-    float w = max(ft.w * (1.0 - a * a / (f.w * f.w)), 1e-4);
-    m = max(m, (1.0 - smoothstep(w * 0.35, w, abs(p))) * (0.75 + 0.25 * gnoise(g * 120.0)));
-  }
-  return clamp(m, 0.0, 1.0);
-}
+${SUN_MASKS}
 vec3 euvDisc(vec3 g, float mu, float act) {
   float hole = holeMask(g), fil = filMask(g), ar = 0.0;
   for (int i = 0; i < SPOTS; i++) {
@@ -138,13 +143,6 @@ vec3 euvDisc(vec3 g, float mu, float act) {
     float bp = pow(fbm(g * 60.0 + vec3(t * 0.02), 2) * 0.5 + 0.5, 6.0) * 3.0;
     I = (0.14 + 0.2 * net + 0.25 * bp) * mix(1.0, 0.3, hole) * (0.55 + 0.3 * lb) + 1.1 * ar * (0.6 + 0.4 * net) + 0.25 * act * uAct;
     I *= 1.0 - 0.5 * fil;
-  } else if (uChan < 2.5) {
-    vec3 q = g + 0.02 * vec3(gnoise(g * 40.0), gnoise(g * 40.0 + 3.7), gnoise(g * 40.0 + 7.1));
-    vec3 c = cells(q * 30.0, t * 0.05);
-    float edge = 1.0 - smoothstep(0.0, 0.45, c.y - c.x);
-    float mott = fbm(g * 110.0 + vec3(t * 0.01), 3) * 0.5 + 0.5;
-    I = (0.42 + 0.3 * edge * (0.4 + 0.9 * mott) + 0.22 * mott) * mix(1.0, 0.75, hole) + 0.9 * ar + 0.35 * act * uAct;
-    I *= mix(1.0, 0.15, fil) * (0.85 + 0.3 * (1.0 - smoothstep(0.05, 0.35, mu)));
   } else {
     float diff = fbm(g * 5.0 + vec3(t * 0.003), 3) * 0.5 + 0.5;
     float fine = ridged(g * 16.0, 2);

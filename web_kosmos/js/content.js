@@ -97,6 +97,8 @@ export const SOURCES = {
   // [E4] Saturn + Mars
   // [E4] Mars
   // [E5] Neptun, Uranus, Pluto
+  // [E5] Uranus
+  // [E5] Pluto
 };
 
 // Abstände für Mess-Leiste und Rail: width = typische Bildbreite [m], dist = Entfernung von der Erde [m],
@@ -179,14 +181,14 @@ export const STATIONS = {
   // [E1] Sonne
   sun: {
     n: '02B', title: 'Sonne', kicker: 'Stern', parent: 'solar', width: 1.6e9, dist: AU, lookback: AU / C,
-    lead: 'Ein Stern mittlerer Größe aus der Nähe: Plasma, Magnetfelder und Licht, das 8 Minuten 19 Sekunden bis zur Erde braucht. Vier Kanäle wie beim Sonnenobservatorium SDO zeigen verschiedene Schichten – von der Oberfläche bis zur Millionen Grad heißen Korona.',
+    lead: 'Ein Stern mittlerer Größe aus der Nähe: Plasma, Magnetfelder und Licht, das 8 Minuten 19 Sekunden bis zur Erde braucht. Vier Kanäle wie beim Sonnenobservatorium SDO zeigen verschiedene Schichten – von der Oberfläche bis zur Millionen Grad heißen Korona. Zum Start ein künstlerischer Look „Glut“ mit Magnetbögen und Ausbrüchen.',
     facts: [
       { v: '695.700', u: 'km', l: 'Radius', s: 'nasa-sun' },
       { v: '5.772', u: 'K', l: 'Oberfläche', s: 'nasa-sun' },
       { v: '1–3', u: 'Mio. K', l: 'Korona', s: 'nasa-sun-facts' },
       { v: '8 min 19 s', u: '', l: 'Licht bis zur Erde', s: 'iau-2012' },
     ],
-    note: 'Modell, kein Foto: Lage der aktiven Regionen, Flecken, Schleifen und Löcher ist ausgedacht, nicht die Sonne von heute. Kanäle nach SDO/AIA (Weißlicht ≈ HMI-Kontinuum; 171 Å Fe IX, log T 5,8; 304 Å He II, log T 4,7; 193 Å Fe XII, log T 6,1), Farben angelehnt an die Falschfarben der NASA-Bilder. Granulen ≈ 25-fach, Flecken etwa doppelt so groß gezeichnet; Rotation, Schleifen, Protuberanzen und Flares im Zeitraffer, Flares ohne Blitzen (WCAG 2.3.1). Schichtschnitt in der Infotafel schematisch, nicht maßstäblich.',
+    note: 'Look „Glut“ künstlerisch verstärkt, kein Messbild: Glutkruste mit Magnetadern, Rand (Flammenkranz, Bogen-Arkaden, feiner Saum mit Spikulen) und Ausbrüche (Filament-Eruption, Flare mit Schockwelle, abreißende Protuberanz) sind in Höhe, Helligkeit und Tempo überzeichnet – ein Ausbruch alle 12 s statt alle paar Stunden; 304 Å zeigt die Chromosphäre als Plasmateppich. Modell, kein Foto: Lage der aktiven Regionen, Flecken, Schleifen und Löcher ist ausgedacht, nicht die Sonne von heute. Kanäle nach SDO/AIA (Weißlicht ≈ HMI-Kontinuum; 171 Å Fe IX, log T 5,8; 304 Å He II, log T 4,7; 193 Å Fe XII, log T 6,1), Farben angelehnt an die Falschfarben der NASA-Bilder. Granulen ≈ 25-fach, Flecken etwa doppelt so groß gezeichnet; Rotation, Schleifen, Protuberanzen und Flares im Zeitraffer, Flares ohne Blitzen (WCAG 2.3.1). Schichtschnitt in der Infotafel schematisch, nicht maßstäblich.',
     sources: ['nasa-sun', 'nasa-sun-facts', 'iau-2012', 'sdo-channels', 'nasa-sdo', 'snodgrass-1990', 'nordlund-2009', 'nasa-solarmax', 'swpc-flares', 'swpc-cme', 'nasa-psp', 'wcag-flash'],
     hotspots: {
       region: { t: 'Aktive Region', x: 'Über Fleckengruppen tritt gebündeltes Magnetfeld aus der Oberfläche. Darüber spannen sich Bögen aus heißem Plasma, die Koronaschleifen – im Kanal 171 Å golden, in 193 Å bronzefarben. Hier entstehen die meisten Flares. Wie viele aktive Regionen es gibt, folgt dem elfjährigen Zyklus; das Maximum von Zyklus 25 begann im Oktober 2024. Regler „Aktivität“.', s: 'nasa-solarmax' },
@@ -206,6 +208,8 @@ export const STATIONS = {
   // [E4] Saturn + Mars
   // [E4] Mars
   // [E5] Neptun, Uranus, Pluto
+  // [E5] Uranus
+  // [E5] Pluto
   galaxy: {
     n: 3, title: 'Milchstraße', kicker: 'Galaktisch', parent: 'local', width: 1.3e21, dist: 0, lookback: 0,
     lead: 'Eine Balkenspirale mit 100 bis 400 Milliarden Sternen. Die Sonne kreist 27.000 Lichtjahre vom Zentrum entfernt mit rund 229 km/s – ein Umlauf dauert etwa 220 Millionen Jahre.',
