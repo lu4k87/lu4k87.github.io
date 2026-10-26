@@ -327,10 +327,10 @@ export function create(ctx) {
     const nOcc = Math.min(cand.length, 4);
     for (let i = 0; i < nOcc; i++) occ[i].set(cand[i][1].pos.x, cand[i][1].pos.y, cand[i][1].pos.z, cand[i][1].m.r / R);
     sat.frame(sunDir, jd(), occ.slice(0, nOcc), st.sunAng);
-    // Monde: Länge 0 zum Saturn, Pol ≈ Laplace-Pol; Licht, Schatten des Saturn
+    // Monde gebunden wie icymoon.js: −x zum Saturn (Länge 0, Karten u = östliche Länge / 360), +y ≈ Laplace-Pol, −z in Flugrichtung
     const col = dotG.attributes.color, dp = dotG.attributes.position, k = fovPx();
     moons.forEach((x, i) => {
-      bx.copy(x.pos).negate().normalize();
+      bx.copy(x.pos).normalize();
       bz.crossVectors(bx, P).normalize();
       mx.makeBasis(bx, tmp.crossVectors(bz, bx), bz);
       x.mesh.quaternion.setFromRotationMatrix(mx);
