@@ -35,25 +35,12 @@ const GROUP_ICONS = [[/Zeit|Animation/, 'time'], [/Polarlicht|Magnet|Feld/, 'fie
   [/Bahn|Mond|Monde|Ring|Planet|System|Umlauf|Jupiter|Neptun|Mars|Triton|Erde|Galaxien|Gezeiten/, 'orbit'], [/Farb|Glut/, 'look']];
 const groupIcon = (t) => (GROUP_ICONS.find(([re]) => re.test(t)) || [0, 'layers'])[1];
 const plaque = (k) => `<span class="b-plaque">${icon(k)}</span>`;
-// Themenliste links (Vorschau 26.10.2026 Global:A+B+C): „Alle“ + je Karte ein Eintrag mit Icon, Zähler, Punkt bei geänderten Werten;
-// Klick zeigt nur diese Karte. items = [{ id, title, icon, n }]
-export const navHtml = (items) => `<nav class="b-nav" aria-label="Gruppen">${[{ id: '', title: 'Alle', icon: 'ui', n: items.reduce((a, x) => a + x.n, 0) }, ...items]
-  .map((x) => `<button type="button" data-nav="${x.id}" aria-pressed="${!x.id}">${icon(x.icon)}<span class="b-nav-t">${x.title}</span><span class="b-count">${x.n}</span></button>`).join('')}</nav>`;
-export function wireNav(root) {
-  root.addEventListener('click', (e) => {
-    const b = e.target.closest('[data-nav]');
-    if (!b || !root.contains(b)) return;
-    root.querySelectorAll('[data-nav]').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
-    root.querySelectorAll('.bento > [data-g]').forEach((c) => { c.hidden = !!b.dataset.nav && c.dataset.g !== b.dataset.nav; });
-  });
-}
-// Geänderte Werte (Vorschau Global:C): Zeile mit Punkt + „Standard“, Leiste oben mit Zahl + „Alle zurücksetzen“, Punkt in der Themenliste
+// Geänderte Werte (Vorschau Global:C): Zeile mit Punkt + „Standard“, Leiste oben mit Zahl + „Alle zurücksetzen“
 export const devLine = (k) => `<div class="b-dev" data-dev-of="${k}"><span>geändert</span><button type="button" class="b-reset" data-reset="${k}">${icon('reset')}Standard</button></div>`;
 export const devBar = (what) => `<div class="b-devbar" hidden><span data-devn></span> ${what} geändert<button type="button" class="b-reset" data-reset="*">${icon('reset')}Alle zurücksetzen</button></div>`;
 export function markDevs(root, isDev) {
   let n = 0;
   root.querySelectorAll('[data-dev-of]').forEach((d) => { const on = isDev(d.dataset.devOf); d.closest('.b-item').classList.toggle('is-dev', on); n += on; });
-  root.querySelectorAll('[data-nav]').forEach((b) => { b.classList.toggle('is-dev', !!b.dataset.nav && !!root.querySelector(`[data-g="${b.dataset.nav}"] .is-dev`)); });
   const bar = root.querySelector('.b-devbar');
   if (bar) { bar.hidden = !n; bar.querySelector('[data-devn]').textContent = n; }
 }
@@ -153,8 +140,7 @@ function gearHtml(layers) {
   const gs = groups(layers);
   const cards = gs.map((g, i) => (g.items[0].l.type === 'play' ? timeCard(g)
     : `<article class="b-card${wide(g) ? ' b-wide' : ''}" data-g="g${i}"><header class="b-head">${plaque(groupIcon(g.title))}<h4>${esc(g.title)}</h4><span class="b-count" aria-label="${count(g)} Ebenen">${count(g)}</span></header>${g.items.map(block).join('')}</article>`)).join('');
-  const nav = gs.map((g, i) => ({ id: `g${i}`, title: esc(g.items[0].l.type === 'play' ? 'Animation' : g.title), icon: g.items[0].l.type === 'play' ? 'time' : groupIcon(g.title), n: count(g) }));
-  return `${navHtml(nav)}<div class="b-main">${devBar('Ebenen')}<div class="bento">${cards}</div></div>`;
+  return `<div class="b-main">${devBar('Ebenen')}<div class="bento">${cards}</div></div>`;
 }
 
 function render() {
@@ -237,7 +223,6 @@ function poll() {
 export function mountLayers({ gear, head, strip, stripOn: on }) {
   gearEl = gear; headEl = head || null; stripEl = strip; stripOn = on || stripOn;
   for (const root of [gearEl, stripEl]) { if (!root) continue; root.addEventListener('input', onInput); root.addEventListener('click', onClick); }
-  if (gearEl) wireNav(gearEl);
   window.addEventListener('hashchange', poll);
   poll();
   setInterval(() => { poll(); sync(); }, 300);

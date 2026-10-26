@@ -1,11 +1,11 @@
 // Einstellungen (Zahnrad oben rechts) mit zwei Reitern: „Station · …“ = Ebenen der aktiven Station als Bento-Karten (layers.js)
-// und „Global“ = gilt an allen Stationen (Vorschau 26.10.2026 Global:A+B+C): Themenliste links, Karten mit Icon-Plakette und
+// und „Global“ = gilt an allen Stationen (Vorschau 26.10.2026 Global:A+B+C): Karten mit Icon-Plakette und
 // Mini-Grafik je Zeile, geänderte Werte markiert mit „Standard“. Gruppen: Look (Farblook, Belichtung, Vignette, Kinobalken),
 // Himmel, Kamera & Bewegung, Effekte, Oberfläche (inkl. Bewegung der Info-Grafiken = cards.js `kosmos.figmotion.v1`), Leistung.
 // `?cfg` öffnet das Zahnrad, `?cfg=global` mit dem Reiter Global.
 // Gespeichert in localStorage `kosmos.settings.v1`; clean() prüft jeden Wert, damit kaputte Einträge nichts stören.
 
-import { mountLayers, refreshLayers, icon, navHtml, wireNav, devLine, devBar, markDevs } from './layers.js';
+import { mountLayers, refreshLayers, icon, devLine, devBar, markDevs } from './layers.js';
 
 const KEY = 'kosmos.settings.v1';
 const DEFAULTS = { motion: 'full', quality: 'auto', cine: true, dive: 3.6, exposure: 1, bloom: true, lens: true, grain: true, deep: 1, fpsCap: 0, panel: true, timeline: true, small: 6, stars: true, grade: 'station', vig: 1, bars: false, axes: false };
@@ -134,11 +134,9 @@ export function mountSettings(root, btn) {
     </div>
     <div class="cfg-pane" id="cfg-station" role="tabpanel" aria-labelledby="cfg-tab-st"></div>
     <div class="cfg-pane" id="cfg-global" role="tabpanel" aria-labelledby="cfg-tab-gl">${MINI_DEFS}
-      ${navHtml(GROUPS.map((g) => ({ id: g.id, title: g.title.replace(' &amp; Bewegung', ''), icon: g.icon, n: g.rows.length })))}
       <div class="b-main">${devBar('Einstellungen')}<div class="bento">${GROUPS.map(CARD).join('')}</div></div>
     </div>`;
   const glob = root.querySelector('#cfg-global');
-  wireNav(glob);
   const tabs = [...root.querySelectorAll('[role=tab]')];
   const pick = (tab, focus) => tabs.forEach((t) => {
     const on = t === tab;

@@ -11,17 +11,11 @@
 .bento { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-flow: row dense; gap: 10px; align-items: start; }
 .bento > [hidden] { display: none; }
 .cfg-dock { width: min(700px, calc(100% - 16px)); }
-.cfg-pane { display: grid; grid-template-columns: 158px minmax(0, 1fr); gap: 12px; align-items: start; }
+.cfg-pane { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; align-items: start; }
 .cfg-pane[hidden] { display: none; }
 .cfg-pane > .cfg-note { grid-column: 1 / -1; }
+.b-reset:focus-visible, .b-looks button:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
 .b-main { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
-.b-nav { position: sticky; top: 0; display: flex; flex-direction: column; gap: 4px; padding: 4px; border-radius: var(--radius); border: 1px solid var(--line); background: rgba(255, 255, 255, 0.035); }
-.b-nav button { position: relative; display: flex; align-items: center; gap: 8px; min-height: 36px; padding: 6px 8px; border: 0; border-radius: 7px; background: transparent; color: var(--ink); font: 500 13px var(--font); text-align: left; cursor: pointer; transition: background 0.2s, color 0.2s; }
-.b-nav-t { flex: 1; min-width: 0; overflow-wrap: break-word; hyphens: auto; }
-.b-nav button:hover:not([aria-pressed="true"]) { background: rgba(255, 255, 255, 0.06); }
-.b-nav button[aria-pressed="true"] { background: rgba(var(--accent-rgb), 0.16); box-shadow: inset 0 0 0 1px rgba(var(--accent-rgb), 0.45); color: var(--accent); }
-.b-nav button.is-dev::after { content: ""; position: absolute; left: 2px; top: 50%; width: 5px; height: 5px; margin-top: -2.5px; border-radius: 50%; background: var(--accent); }
-.b-nav button:focus-visible, .b-reset:focus-visible, .b-looks button:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
 .b-ico { width: 18px; height: 18px; flex: none; }
 .b-plaque { display: grid; place-items: center; width: 30px; height: 30px; flex: none; border-radius: 8px; border: 1px solid rgba(var(--accent-rgb), 0.35); background: rgba(var(--accent-rgb), 0.14); color: var(--accent); }
 .b-card--hero { border-color: rgba(var(--accent-rgb), 0.35); background: linear-gradient(160deg, rgba(var(--accent-rgb), 0.1), rgba(255, 255, 255, 0.03) 55%); }
@@ -85,10 +79,6 @@
 .b-steps .is-on { color: var(--accent); }
 @media (max-width: 600px) {
   .bento { grid-template-columns: minmax(0, 1fr); }
-  .cfg-pane { grid-template-columns: minmax(0, 1fr); }
-  .b-nav { position: static; flex-direction: row; flex-wrap: wrap; }
-  .b-nav button { min-height: 32px; }
-  .b-nav .b-count { display: none; }
   .b-line { grid-template-columns: minmax(0, 1fr); }
   .b-mini { display: none; }
   .b-steps { display: none; }
