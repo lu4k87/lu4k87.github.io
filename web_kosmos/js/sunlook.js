@@ -40,7 +40,8 @@ float snoise(vec3 v) {
 }
 float fbmL(vec3 p) { float a = 0.5, s = 0.0; for (int i = 0; i < OCT; i++) { s += a * snoise(p); p = p * 2.03 + 17.1; a *= 0.5; } return s; }
 float fbm3(vec3 p) { float a = 0.5, s = 0.0; for (int i = 0; i < 3; i++) { s += a * snoise(p); p = p * 2.07 + 9.3; a *= 0.5; } return s; }
-float ridge(float n) { return 1.0 - abs(n); }
+// snoise liegt knapp über ±1 → ohne max() wird ridge negativ und pow() NaN; der Bloom bläht das zu weißen Scheiben auf
+float ridge(float n) { return max(1.0 - abs(n), 0.0); }
 float hash1(float n) { return fract(sin(n) * 43758.5453); }
 vec3 hash3u(vec3 p) {
   p = vec3(dot(p, vec3(127.1, 311.7, 74.7)), dot(p, vec3(269.5, 183.3, 246.1)), dot(p, vec3(113.5, 271.9, 124.6)));
@@ -208,7 +209,7 @@ vec3 rimC(vec2 p, float r, float t) {
   if (r < 1.0) return vec3(1.7, 0.25, 0.03) * smoothstep(0.985, 1.0, r);
   vec2 d = p / r; float ang = atan(p.y, p.x) - atan(uPole.y, uPole.x);
   float hs = 0.02 + 0.05 * (0.5 + 0.5 * snoise(vec3(d * 9.0, t * 0.05)));
-  float jets = pow(0.5 + 0.5 * snoise(vec3(d * 150.0, h * 12.0 - t * 0.5)), 4.0);
+  float jets = pow(max(0.5 + 0.5 * snoise(vec3(d * 150.0, h * 12.0 - t * 0.5)), 0.0), 4.0);
   vec3 col = vec3(2.6, 0.5, 0.06) * jets * smoothstep(hs, 0.0, h) * 2.2;
   col += vec3(2.2, 0.32, 0.03) * exp(-h * 26.0);
   float hedge = 0.0;
