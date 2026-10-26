@@ -339,8 +339,9 @@ export function createIcyMoon(ctx, cfg) {
   ];
   const VIEWS = VIEWS_ALL.filter((v) => cfg.views[v[0]]);
   const controls = [
-    { id: 'view', type: 'swatch', label: 'Ansicht', value: VIEWS[0][0], options: VIEWS.map((v) => [v[0], cfg.viewNames?.[v[0]] ?? v[1], v[2]]), detail: (v) => `<p class="sw-cap">${cfg.views[v]}</p>`,
-      set: (v) => { moonU.uView.value = Math.max(0, VIEWS_ALL.findIndex((x) => x[0] === v)); } },
+    // eine einzige Ansicht (Enceladus: nur Relief) braucht keine Auswahl
+    ...(VIEWS.length < 2 ? [] : [{ id: 'view', type: 'swatch', label: 'Ansicht', value: VIEWS[0][0], options: VIEWS.map((v) => [v[0], cfg.viewNames?.[v[0]] ?? v[1], v[2]]), detail: (v) => `<p class="sw-cap">${cfg.views[v]}</p>`,
+      set: (v) => { moonU.uView.value = Math.max(0, VIEWS_ALL.findIndex((x) => x[0] === v)); } }]),
     ...(ext.controls || []),
     { id: 'speed', type: 'range', label: 'Zeitraffer', value: spdIdx, min: 0, max: SPD.length - 1, step: 1, fmt: (i) => SPD[Math.round(i)][1],
       set: (v) => { if (v) { spdIdx = v; dayOn = true; } else dayOn = false; refreshLayers(); }, get: () => (dayOn ? spdIdx : 0) },
@@ -409,7 +410,7 @@ export function createIcyMoon(ctx, cfg) {
       if (r < 1.02) c.object.position.multiplyScalar(1.02 / r);
     },
     live: () => [dayOn ? `Tageslauf ${SPD[spdIdx][1]}` : 'Zeit angehalten', fmtDate(jdNow()), ext.live ? ext.live() : ''].filter(Boolean).join(' · '),
-    setPixelRatio(pr) { stars.userData.setPixelRatio(pr); },
+    setPixelRatio(pr) { stars.userData.setPixelRatio(pr); if (ext.setPixelRatio) ext.setPixelRatio(pr); },
     dispose() {
       scene.traverse((o) => { if (o.geometry) o.geometry.dispose(); if (o.material) o.material.dispose(); });
       glow.dispose();

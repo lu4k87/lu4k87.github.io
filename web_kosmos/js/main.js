@@ -40,6 +40,7 @@ const LOADERS = {
   callisto: () => import('./levels/callisto.js'),
   // [E4] Saturn + Mars
   saturn: () => import('./levels/saturn.js'),
+  enceladus: () => import('./levels/enceladus.js'),
   // [E4] Titan
   titan: () => import('./levels/titan.js'),
   // [E4] Mars

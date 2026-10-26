@@ -304,7 +304,7 @@ export function create(ctx) {
     hexagon: { id: 'hexagon', kind: 'info', pos: new THREE.Vector3(), focus: () => 1.6, visible: (cam) => facing(hs.hexagon.pos, cam) > -0.2 },
     ering: { id: 'ering', kind: 'info', pos: ansa.clone().applyAxisAngle(P, 2.6).multiplyScalar(4.6), focus: () => 7, visible: () => ering.visible },
     titan: { id: 'titan', kind: 'dive', to: 'titan', pos: M.titan.pos, focus: moonFocus('titan') },
-    enceladus: { id: 'enceladus', kind: 'info', pos: M.enceladus.pos, focus: moonFocus('enceladus') },
+    enceladus: { id: 'enceladus', kind: 'dive', to: 'enceladus', pos: M.enceladus.pos, focus: moonFocus('enceladus') },
     ...Object.fromEntries(['mimas', 'tethys', 'dione', 'rhea'].map((id) => [id, { id, kind: 'info', pos: M[id].pos, focus: moonFocus(id) }])),
   };
   const hotspots = Object.values(hs);
