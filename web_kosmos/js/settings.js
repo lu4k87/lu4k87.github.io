@@ -1,12 +1,12 @@
-// Einstellungen (Zahnrad oben rechts): Titelzeile mit Stationsname + Schalter Station | Global; „Station“ = Ebenen der aktiven Station
-// als Klapp-Liste mit Sprungleiste (layers.js, Vorschau 26.10.2026 Zahnrad:A + C)
+// Einstellungen (Zahnrad oben rechts): Titelzeile mit Stationsname + Schalter Station | Global; beide Reiter als Klapp-Liste mit
+// Sprungleiste (layers.js, Vorschau 26.10.2026 Zahnrad:A + C): „Station“ = Ebenen der aktiven Station
 // und „Global“ = gilt an allen Stationen (Vorschau 26.10.2026 Global:A+B+C): Karten mit Icon-Plakette und
 // Mini-Grafik je Zeile, geänderte Werte markiert mit „Standard“. Gruppen: Look (Farblook, Belichtung, Vignette, Kinobalken),
 // Himmel, Kamera & Bewegung, Effekte, Oberfläche (inkl. Bewegung der Info-Grafiken = cards.js `kosmos.figmotion.v1`), Leistung.
 // `?cfg` öffnet das Zahnrad, `?cfg=global` mit dem Reiter Global.
 // Gespeichert in localStorage `kosmos.settings.v1`; clean() prüft jeden Wert, damit kaputte Einträge nichts stören.
 
-import { mountLayers, refreshLayers, icon, devLine, devBar, markDevs } from './layers.js';
+import { mountLayers, refreshLayers, icon, devLine, devBar, markDevs, isOpenIn, spyIn, foldClick, domSummary } from './layers.js';
 import { nbsp } from './figs.js';
 
 const KEY = 'kosmos.settings.v1';
@@ -125,7 +125,13 @@ const GROUPS = [
     ['fpsCap', SEG('fpsCap', 'Bildrate', [['0', 'Frei'], ['60', '60'], ['30', '30']], NEW) + NOTE('30 Bilder/s spart am Laptop Strom und Lüfter.')]] },
 ];
 const N_GLOBAL = GROUPS.reduce((n, g) => n + g.rows.length, 0);
-const CARD = (g) => `<article class="b-card${g.half ? '' : ' b-wide'}${g.hero ? ' b-card--hero' : ''}" data-g="${g.id}"><header class="b-head"><span class="b-plaque">${icon(g.icon)}</span><h4>${g.title}</h4><span class="b-count" aria-label="${g.rows.length} Einstellungen">${g.rows.length}</span></header>${g.rows.map(([k, h]) => ROW(k, h)).join('')}</article>`;
+// Reiter Global wie der Reiter Station (Vorschau 26.10.2026 Zahnrad:A + C, F3 ja): Sprungleiste, je Gruppe eine Klapp-Zeile mit Kurzwerten
+const GKEY = '_global';
+const JUMP = `<nav class="cfg-jump" aria-label="Gruppen">${GROUPS.map((g, i) => `<button type="button" class="cfg-jump-btn" data-jump="${i}">${icon(g.icon)}<span>${g.title}</span></button>`).join('')}</nav>`;
+const CARD = (g, i) => { const open = isOpenIn(GKEY, i, 0); return `<article class="b-card b-fold${open ? ' is-open' : ''}" data-g="${g.id}" data-fold="${i}">
+  <h4 class="b-fold-h"><button type="button" class="b-head" aria-expanded="${open}" aria-controls="cfg-b${i}"><span class="b-plaque">${icon(g.icon)}</span><span class="b-name">${g.title}</span>
+    <span class="b-sum" data-gsum></span><span class="b-count" aria-label="${g.rows.length} Einstellungen">${g.rows.length}</span>${icon('chev', 'b-chev')}</button></h4>
+  <div class="b-body" id="cfg-b${i}"${open ? '' : ' hidden'}>${g.rows.map(([k, h]) => ROW(k, h)).join('')}</div></article>`; };
 
 export function mountSettings(root, btn) {
   root.innerHTML = `
@@ -138,7 +144,7 @@ export function mountSettings(root, btn) {
     </div>
     <div class="cfg-pane" id="cfg-station" role="tabpanel" aria-labelledby="cfg-tab-st"></div>
     <div class="cfg-pane" id="cfg-global" role="tabpanel" aria-labelledby="cfg-tab-gl">${MINI_DEFS}
-      <div class="b-main">${devBar('Einstellungen')}<div class="bento">${GROUPS.map(CARD).join('')}</div></div>
+      <div class="b-main">${JUMP}${devBar('Einstellungen')}<div class="bento b-list">${GROUPS.map(CARD).join('')}</div></div>
     </div>`;
   const glob = root.querySelector('#cfg-global');
   const tabs = [...root.querySelectorAll('[role=tab]')];
@@ -148,7 +154,7 @@ export function mountSettings(root, btn) {
     t.tabIndex = on ? 0 : -1;
     root.querySelector(`#${t.getAttribute('aria-controls')}`).hidden = !on;
     if (on && focus) t.focus();
-    if (on) { root.querySelector('[data-st-name]').hidden = t !== tabs[0]; root.querySelector('[data-gl-name]').hidden = t === tabs[0]; }
+    if (on) { root.querySelector('[data-st-name]').hidden = t !== tabs[0]; root.querySelector('[data-gl-name]').hidden = t === tabs[0]; requestAnimationFrame(() => spyIn(root.querySelector(`#${t.getAttribute('aria-controls')}`), root)); }
   });
   root.querySelector('.cfg-tabs').addEventListener('click', (e) => { const t = e.target.closest('[role=tab]'); if (t) pick(t); });
   root.querySelector('.cfg-tabs').addEventListener('keydown', (e) => {
@@ -170,9 +176,13 @@ export function mountSettings(root, btn) {
       root.querySelector(`[data-out="${i.dataset.key}"]`).textContent = String(S[i.dataset.key].toFixed(i.step < 0.1 ? 2 : 1)).replace('.', ',');
     });
     markDevs(glob, (k) => S[k] !== DEFAULTS[k]);
+    glob.querySelectorAll('.b-fold').forEach((c) => { const t = domSummary(c.querySelector('.b-body')); const el = c.querySelector('[data-gsum]'); if (el.textContent !== t) el.textContent = t; });
   };
   const num = (k, v) => (typeof DEFAULTS[k] === 'number' ? +v : v);
+  const sc = root;
+  sc.addEventListener('scroll', () => spyIn(glob, sc), { passive: true });
   root.addEventListener('click', (e) => {
+    if (foldClick(glob, e, GKEY, sc)) return;
     const b = e.target.closest('[data-key][data-val]');
     if (b) setSetting(b.dataset.key, num(b.dataset.key, b.dataset.val));
     const r = e.target.closest('[data-reset]');

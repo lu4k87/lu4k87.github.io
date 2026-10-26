@@ -135,10 +135,10 @@ body.is-flying .tl, body.is-intro .tl { opacity: 0; pointer-events: none; }
 .cfg-jump-btn[aria-current="true"] { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
 .cfg-jump-btn:focus-visible, .b-fold .b-head:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
 .b-list { display: flex; flex-direction: column; align-items: stretch; gap: 0; }
-#cfg-station .b-card { padding: 0; gap: 0; border: 0; border-radius: 0; border-bottom: 1px solid var(--line); background: none; }
-#cfg-station .b-card--time { display: flex; flex-direction: column; gap: 8px; padding: 6px 0 12px; }
-#cfg-station .b-card--time .play-btn--lg { width: 36px; height: 36px; }
-#cfg-station .b-card--time .b-time { gap: 10px; }
+.cfg-pane .b-card { padding: 0; gap: 0; border: 0; border-radius: 0; border-bottom: 1px solid var(--line); background: none; }
+.cfg-pane .b-card--time { display: flex; flex-direction: column; gap: 8px; padding: 6px 0 12px; }
+.cfg-pane .b-card--time .play-btn--lg { width: 36px; height: 36px; }
+.cfg-pane .b-card--time .b-time { gap: 10px; }
 .b-fold { scroll-margin-top: 56px; }
 .b-fold-h { margin: 0; font: inherit; }
 .b-fold .b-head { width: 100%; min-height: 46px; padding: 6px 4px; border: 0; border-radius: 6px; background: none; color: var(--ink); font: inherit; text-align: left; cursor: pointer; transition: background 0.2s; }
@@ -153,25 +153,31 @@ body.is-flying .tl, body.is-intro .tl { opacity: 0; pointer-events: none; }
 .b-fold.is-open .b-chev { transform: rotate(180deg); color: var(--accent); }
 .b-body { display: flex; flex-direction: column; padding: 4px 4px 14px; }
 .b-body[hidden] { display: none; }
-#cfg-station .b-item { gap: 4px; }
-#cfg-station .b-item + .b-item { padding-top: 7px; margin-top: 7px; }
+.cfg-pane .b-item { gap: 4px; }
+.cfg-pane .b-item + .b-item { padding-top: 7px; margin-top: 7px; }
 /* Zeile: Name | Bedienung | Wert (Regler), Name | Bedienung (Schalter, Knopfreihen, Knöpfe); Hinweise unter der Bedienung */
-#cfg-station .b-body .b-row { grid-template-columns: minmax(0, 190px) minmax(0, 1fr); gap: 12px; }
-#cfg-station .b-body .b-row > :is(.switch, .act-btn) { justify-self: start; }
-#cfg-station .b-body .b-row.b-stack:has(.b-top) { grid-template-columns: minmax(0, 190px) minmax(0, 1fr) minmax(56px, auto); }
-#cfg-station .b-body .b-row.b-stack .b-top { display: contents; }
-#cfg-station .b-body .b-row.b-stack :is(.b-top > .cfg-label, > .cfg-label) { grid-column: 1; grid-row: 1; }
-#cfg-station .b-body .b-row.b-stack .b-top > output { grid-column: 3; grid-row: 1; }
-#cfg-station .b-body .b-row.b-stack > :is(.b-track, .b-seg) { grid-column: 2; grid-row: 1; }
-#cfg-station .b-body .b-seg button { padding: 4px 6px; min-height: 30px; font-size: 12.5px; }
-#cfg-station .b-body .b-item > :is(.lay-hint, .b-dev), #cfg-station .b-body .b-subs .b-item > :is(.lay-hint, .b-dev) { padding-left: 202px; }
-#cfg-station .b-body .b-subs { margin-left: 0; padding-left: 0; border-left: 0; }
-#cfg-station .b-body .b-subs .cfg-label { padding-left: 14px; border-left: 1px solid var(--line-strong); }
+.cfg-pane .b-body .b-row { grid-template-columns: minmax(0, 190px) minmax(0, 1fr); gap: 12px; }
+.cfg-pane .b-body .b-row > :is(.switch, .act-btn) { justify-self: start; }
+.cfg-pane .b-body .b-row.b-stack:has(.b-top) { grid-template-columns: minmax(0, 190px) minmax(0, 1fr) minmax(56px, auto); }
+.cfg-pane .b-body .b-row.b-stack .b-top { display: contents; }
+.cfg-pane .b-body .b-row.b-stack :is(.b-top > .cfg-label, > .cfg-label) { grid-column: 1; grid-row: 1; }
+.cfg-pane .b-body .b-row.b-stack .b-top > :is(output, .cfg-val) { grid-column: 3; grid-row: 1; }
+.cfg-pane .b-body .b-row.b-stack > :is(.b-track, .b-seg, .b-looks) { grid-column: 2; grid-row: 1; }
+/* Reiter Global: Mini-Grafik rechts neben der Zeile bleibt */
+.cfg-pane .b-body .b-row:has(.b-looks) { align-items: start; }
+.cfg-pane .b-fold .b-line { grid-template-columns: minmax(0, 1fr) 64px; align-items: center; }
+.cfg-pane .b-fold .b-mini { display: block; }
+.cfg-pane .b-body .b-seg button { padding: 4px 6px; min-height: 30px; font-size: 12.5px; }
+.cfg-pane .b-body .b-item > :is(.lay-hint, .b-dev), .cfg-pane .b-body .b-subs .b-item > :is(.lay-hint, .b-dev) { padding-left: 202px; }
+.cfg-pane .b-body .b-subs { margin-left: 0; padding-left: 0; border-left: 0; }
+.cfg-pane .b-body .b-subs .cfg-label { padding-left: 14px; border-left: 1px solid var(--line-strong); }
 @media (max-width: 600px) {
-  #cfg-station .b-body .b-row, #cfg-station .b-body .b-row.b-stack:has(.b-top) { grid-template-columns: minmax(0, 1fr) auto; }
-  #cfg-station .b-body .b-row.b-stack > :is(.b-track, .b-seg) { grid-column: 1 / -1; grid-row: 2; }
-  #cfg-station .b-body .b-row.b-stack .b-top > output { grid-column: 2; }
-  #cfg-station .b-body .b-item > :is(.lay-hint, .b-dev), #cfg-station .b-body .b-subs .b-item > :is(.lay-hint, .b-dev) { padding-left: 0; }
+  .cfg-pane .b-body .b-row, .cfg-pane .b-body .b-row.b-stack:has(.b-top) { grid-template-columns: minmax(0, 1fr) auto; }
+  .cfg-pane .b-body .b-row.b-stack > :is(.b-track, .b-seg, .b-looks) { grid-column: 1 / -1; grid-row: 2; }
+  .cfg-pane .b-body .b-row.b-stack .b-top > :is(output, .cfg-val) { grid-column: 2; }
+  .cfg-pane .b-fold .b-line { grid-template-columns: minmax(0, 1fr); }
+  .cfg-pane .b-fold .b-mini { display: none; }
+  .cfg-pane .b-body .b-item > :is(.lay-hint, .b-dev), .cfg-pane .b-body .b-subs .b-item > :is(.lay-hint, .b-dev) { padding-left: 0; }
   .b-sum { display: none; }
 }
 @media (prefers-reduced-motion: reduce) { .b-chev { transition: none; } }

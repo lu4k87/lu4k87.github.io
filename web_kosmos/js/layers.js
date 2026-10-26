@@ -152,8 +152,10 @@ function summary(g) {
   if (n) parts.push(`${on} von ${n} an`);
   return parts.join(' · ');
 }
-const isOpen = (i, first) => (Array.isArray(openStore[currentId]) ? openStore[currentId].includes(i) : i === first);
-const foldCard = (g, i, open) => `<article class="b-card b-fold${open ? ' is-open' : ''}" data-g="g${i}">
+// offene Gruppen je Bereich (Station-Id, Reiter Global = '_global'); ohne Eintrag ist die erste Gruppe offen
+export const isOpenIn = (key, i, first) => (Array.isArray(openStore[key]) ? openStore[key].includes(i) : i === first);
+const isOpen = (i, first) => isOpenIn(currentId, i, first);
+const foldCard = (g, i, open) => `<article class="b-card b-fold${open ? ' is-open' : ''}" data-g="g${i}" data-fold="${i}">
   <h4 class="b-fold-h"><button type="button" class="b-head" aria-expanded="${open}" aria-controls="lay-b${i}">${plaque(groupIcon(g.title))}<span class="b-name">${esc(g.title)}</span>
     <span class="b-sum" data-sum="${i}"></span><span class="b-count" aria-label="${count(g)} Ebenen">${count(g)}</span>${icon('chev', 'b-chev')}</button></h4>
   <div class="b-body" id="lay-b${i}"${open ? '' : ' hidden'}>${g.items.map(block).join('')}</div></article>`;
@@ -167,9 +169,8 @@ function gearHtml(layers) {
   return `<div class="b-main">${jump}${devBar('Ebenen')}<div class="bento b-list">${cards}</div></div>`;
 }
 
-function saveOpen() {
-  if (!gearEl) return;
-  openStore[currentId] = [...gearEl.querySelectorAll('.b-fold.is-open')].map((c) => +c.dataset.g.slice(1));
+function saveOpen(key, root) {
+  openStore[key] = [...root.querySelectorAll('.b-fold.is-open')].map((c) => +c.dataset.fold);
   try { localStorage.setItem(OPEN_KEY, JSON.stringify(openStore)); } catch { /* privates Fenster */ }
 }
 function setOpen(card, on) {
@@ -177,15 +178,44 @@ function setOpen(card, on) {
   card.querySelector('.b-head').setAttribute('aria-expanded', String(on));
   card.querySelector('.b-body').hidden = !on;
 }
-// Sprungleiste: hervorgehoben ist die Gruppe, deren Kopf zuletzt unter der Leiste durchgelaufen ist
-function spy() {
-  const bar = gearEl && !gearEl.hidden && gearEl.querySelector('.cfg-jump');
+// Sprungleiste: hervorgehoben ist die Gruppe, deren Kopf zuletzt unter der Leiste durchgelaufen ist (beide Reiter)
+export function spyIn(root, sc) {
+  const bar = root && !root.hidden && root.querySelector('.cfg-jump');
   if (!bar) return;
-  const edge = bar.getBoundingClientRect().bottom + 8;
+  const edge = bar.getBoundingClientRect().bottom + 8, folds = [...root.querySelectorAll('.b-fold')];
   let cur = null;
-  for (const c of gearEl.querySelectorAll('.b-fold')) { if (!cur || c.getBoundingClientRect().top <= edge) cur = c; }
-  if (scroller && scroller.scrollTop + scroller.clientHeight >= scroller.scrollHeight - 2) cur = [...gearEl.querySelectorAll('.b-fold')].pop() || cur;
-  bar.querySelectorAll('[data-jump]').forEach((b) => b.setAttribute('aria-current', String(!!cur && cur.dataset.g === `g${b.dataset.jump}`)));
+  for (const c of folds) { if (!cur || c.getBoundingClientRect().top <= edge) cur = c; }
+  if (sc && sc.scrollTop > 0 && sc.scrollTop + sc.clientHeight >= sc.scrollHeight - 2) cur = folds.pop() || cur;
+  bar.querySelectorAll('[data-jump]').forEach((b) => b.setAttribute('aria-current', String(!!cur && cur.dataset.fold === b.dataset.jump)));
+}
+const spy = () => spyIn(gearEl, scroller);
+// Klick auf Gruppenkopf (auf/zu) oder Sprungleiste (öffnen + hinscrollen); true = erledigt
+export function foldClick(root, e, key, sc) {
+  const h = e.target.closest('.b-fold .b-head');
+  if (h && root.contains(h)) { const c = h.closest('.b-fold'); setOpen(c, !c.classList.contains('is-open')); saveOpen(key, root); spyIn(root, sc); return true; }
+  const j = e.target.closest('[data-jump]');
+  if (!j || !root.contains(j)) return false;
+  const c = root.querySelector(`.b-fold[data-fold="${j.dataset.jump}"]`);
+  if (c) {
+    setOpen(c, true); saveOpen(key, root);
+    c.scrollIntoView({ block: 'start', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+    c.querySelector('.b-head').focus({ preventScroll: true });
+  }
+  return true;
+}
+// Kurzwerte aus der Bedienung selbst (Reiter Global): gewählte Knöpfe und Werte der Hauptzeilen, dazu „n von m an“
+export function domSummary(body) {
+  const parts = [];
+  let on = 0, n = 0;
+  body.querySelectorAll(':scope > .b-item').forEach((it) => {
+    const r = it.querySelector('[role=radio][aria-checked="true"]'), cb = it.querySelector('input[type=checkbox]'), o = it.querySelector('output');
+    if (cb && !r && !o) { n++; on += cb.checked ? 1 : 0; return; }
+    if (parts.length >= 2) return;
+    if (r) parts.push(r.textContent.trim());
+    else if (o) { const u = it.querySelector('.cfg-unit'); parts.push(`${o.textContent.trim()}${u ? ` ${u.textContent.trim()}` : ''}`); }
+  });
+  if (n) parts.push(`${on} von ${n} an`);
+  return parts.join(' · ');
 }
 
 function render() {
@@ -251,18 +281,7 @@ function onInput(e) {
   sync();
 }
 function onClick(e) {
-  const h = e.target.closest('.b-fold .b-head');
-  if (h && gearEl && gearEl.contains(h)) { const c = h.closest('.b-fold'); setOpen(c, !c.classList.contains('is-open')); saveOpen(); spy(); return; }
-  const j = e.target.closest('[data-jump]');
-  if (j && gearEl && gearEl.contains(j)) {
-    const c = gearEl.querySelector(`[data-g="g${j.dataset.jump}"]`);
-    if (c) {
-      setOpen(c, true); saveOpen();
-      c.scrollIntoView({ block: 'start', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
-      c.querySelector('.b-head').focus({ preventScroll: true });
-    }
-    return;
-  }
+  if (gearEl && foldClick(gearEl, e, currentId, scroller)) return;
   const r = e.target.closest('[data-reset]');
   if (r && gearEl && gearEl.contains(r)) {
     for (const l of reg.get(currentId) || []) if (resettable(l) && (r.dataset.reset === '*' || r.dataset.reset === l.id) && l.value !== l.def) { l.value = l.def; l.set(l.value); persist(l); }
