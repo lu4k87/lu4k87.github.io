@@ -12,7 +12,7 @@ import { settings, onSettings, globalGrade } from './settings.js';
 import { createDeepSky } from './deepsky.js';
 import { attachSound, soundTo } from './sound.js';
 import { flightPlan } from './flightplan.js';
-import { TURN, planTurn, turnPose, turnPace } from './turn.js';
+import { TURN, planTurn, turnPose, turnPace, smoother } from './turn.js';
 import { createBoot } from './boot.js';
 
 const LOADERS = {
@@ -72,15 +72,22 @@ const LOADERS = {
 const ZOOM = 22;
 // Mausrad: notch = ln-Schritt je Raste (Δ 100, ≈ 2,8 %), maxDelta = größtes Δ je Ereignis (schnelles Drehen, Touchpad-Schwung),
 // max = größter gesammelter Rest (ln, e^1 ≈ 2,7-fach), glide/ease = Ausrollen und Anlauf je s (kritisch gedämpft:
-// ease = 4 · glide, ≈ 0,8 s ohne Nachschwingen), vmax = Höchsttempo (ln/s, e^1,4 ≈ 4-fach je s)
-const WHEEL = { notch: 0.028, maxDelta: 150, max: 1, glide: 2.5, ease: 10, vmax: 1.4 };
+// ease = 4 · glide, ≈ 0,8 s ohne Nachschwingen), vmax = Höchsttempo (ln/s, e^1,4 ≈ 4-fach je s), edge = Abbremsen vor dem
+// Zoom-Anschlag (Anteil des restlichen log. Wegs je s)
+const WHEEL = { notch: 0.028, maxDelta: 150, max: 1, glide: 2.5, ease: 10, vmax: 1.4, edge: 6 };
 // Ankunft mit etwas mehr Abstand als die Heimpose: erst Überblick, dann zoomt der Besucher selbst
 const ARRIVE = 1.25;
 // Mehr-Etappen-Flug als eine Fahrt: Dauer = Flugdauer × (base + per × Summe der Etappen-Gewichte), höchstens cap;
 // Gewicht einer Etappe = w0 + perDecade × Zehnerpotenzen zwischen den Bildbreiten der beiden Stationen, in [lo, hi]
 const CHAIN = { base: 0.35, per: 0.55, cap: 2.8, w0: 0.6, perDecade: 0.09, lo: 0.7, hi: 1.5 };
-// Leerlauf-Fahrt: nach `delay` s ohne Eingabe weich einblenden; Bogen, Kran und Atmen des Abstands
-const CINE = { delay: 3, ramp: 5, orbit: 0.012, crane: 0.05, breathe: 0.025 };
+// Leerlauf-Fahrt: nach `delay` s ohne Eingabe weich einblenden; Bogen, Kran und Atmen des Abstands; nach einem Flug schon
+// `land` s nach der Landung (die Kamera kommt nie ganz zur Ruhe)
+const CINE = { delay: 3, ramp: 5, orbit: 0.012, crane: 0.05, breathe: 0.025, land: 1.2 };
+// Kino im Flug, eine Welle über die ganze Fahrt (sin² der Fahrzeit): fov = Blickwinkel weitet sich im schnellsten Teil (Warp),
+// ca/vig = Farbsaum und Vignette ziehen an; bank = Rollen in die Kurve (rad je rad/s Gieren, höchstens max, Glättung tau s)
+const FLYFX = { fov: 0.12, ca: 1.5, vig: 0.14, bank: 0.05, max: 0.06, tau: 0.35 };
+// Auftakt ohne eigene Pose der Station: aus der Nähe (near × Abstand), um yaw seitlich versetzt, in die Heimpose
+const INTRO = { dur: 9, yaw: 0.9, near: 0.5 };
 // Bühne kleiner als dieser Anteil der Fensterhöhe (Handy, Tablet hochkant) → Blickwinkel weiten, damit die Bühne
 // denselben Ausschnitt zeigt wie am Desktop (dort ≥ 0,8)
 const STAGE_REF = 0.8, FOV_MAX = 90;
@@ -94,6 +101,8 @@ const calm = () => still() || settings.S.motion === 'calm';
 const freeze = params.has('freeze') ? Math.min(0.999, Math.max(0, +params.get('freeze'))) : null;
 const tour = params.has('tour') ? { dwell: Math.max(4, +params.get('dwell') || 16), since: 0 } : null;
 const fps = params.has('fps') ? { n: 0, sum: 0 } : null;
+// ?camlog: jede gezeigte Kamera je Bild aufzeichnen (tests/camera.py sucht darin Rucke)
+const camlog = params.has('camlog') ? (window.__camlog = []) : null;
 
 const canvas = document.getElementById('stage');
 let renderer;
@@ -329,6 +338,17 @@ function activate(lv) {
     const dy = THREE.MathUtils.clamp(ev.deltaY, -WHEEL.maxDelta, WHEEL.maxDelta);
     state.zoom = THREE.MathUtils.clamp(state.zoom + WHEEL.notch * dy / 100, -WHEEL.max, WHEEL.max);
   };
+  // Ziehen gleichmäßig: OrbitControls rechnet bei jedem Zeiger-Ereignis zusätzlich einen Dämpfungsschritt – je nach Zahl der
+  // Ereignisse im Bild dreht die Kamera ein- oder zweimal so weit und bremst beim Loslassen auf die Hälfte. Hier rechnet
+  // nur die Bildschleife.
+  let quiet = false;
+  for (const k of Object.keys(OrbitControls.prototype).concat(Object.getOwnPropertyNames(OrbitControls.prototype))) {
+    if (!/^_handle(Mouse|Touch)Move/.test(k) || typeof c[k] !== 'function') continue;
+    const f = c[k];
+    c[k] = function (...a) { quiet = true; try { return f.apply(this, a); } finally { quiet = false; } };
+  }
+  const update = c.update.bind(c);
+  c.update = (...a) => (quiet ? false : update(...a));
   Object.assign(c, lv.orbit || {});
   c.autoRotate = false;
   c.target.copy(lv.target);
@@ -377,8 +397,9 @@ const _d0 = new THREE.Vector3(), _d1 = new THREE.Vector3(), _q = new THREE.Quate
 // Pose zwischen a und b: Blickziel linear (früher am Ziel: tk), Richtung als Kugelbogen, Abstand logarithmisch.
 // pivot = Anker der äußeren Kamera: Ort um den Anker statt um das wandernde Blickziel – die Kamera fährt gerade auf
 // den Anker zu und schwenkt nur den Blick; sonst kreist sie bei nahem, seitlichem Anker (Monde) an ihm vorbei.
-// bend(pos, e) = Bogen am Etappenanfang (carryBend), wirkt vor dem Blick
-function flyPose(cam, a, b, e, tk = e, pivot = null, bend = null) {
+// swing = Schwenk um das Blickziel der äußeren Station (clearSwing), bend(pos, e) = Bogen am Etappenanfang (carryBend);
+// beide wirken vor dem Blick; up(tk) = Hochachse für lookAt (upPath)
+function flyPose(cam, a, b, e, tk = e, pivot = null, bend = null, swing = null, up = null) {
   const target = a.target.clone().lerp(b.target, tk);
   const c0 = pivot || a.target, c1 = pivot || b.target;
   _d0.copy(a.pos).sub(c0);
@@ -387,25 +408,49 @@ function flyPose(cam, a, b, e, tk = e, pivot = null, bend = null) {
   _q.setFromUnitVectors(_d0.normalize(), _d1.normalize());
   const dir = _d0.clone().applyQuaternion(new THREE.Quaternion().slerp(_q, e));
   cam.position.copy(pivot ? c0 : target).addScaledVector(dir, Math.exp(l0 + (l1 - l0) * e));
+  if (swing) cam.position.sub(swing.T).applyAxisAngle(swing.axis, swing.angle(e)).add(swing.T);
   if (bend) bend(cam.position, e);
   if (pivot) {
     // Blick gleichmäßig im Winkel drehen statt das Blickziel linear zu schieben: liegt der Anker seitlich oder hinter
-    // der Kamera, läuft das geschobene Ziel nah an ihr vorbei und der Blick reißt herum
-    _d0.copy(a.target).sub(cam.position).normalize();
+    // der Kamera, läuft das geschobene Ziel nah an ihr vorbei und der Blick reißt herum. a.look = feste Startrichtung
+    // (hinein): fährt die Kamera am Blickziel vorbei, zieht es seitlich aus dem Bild, statt dass der Blick ihm nach- und
+    // dann zum Anker zurückschwingt
+    if (a.look) _d0.copy(a.look);
+    else _d0.copy(a.target).sub(cam.position).normalize();
     _d1.copy(b.target).sub(cam.position).normalize();
     _q.setFromUnitVectors(_d0, _d1);
     target.copy(cam.position).add(_d0.applyQuaternion(new THREE.Quaternion().slerp(_q, tk)));
   }
-  cam.lookAt(target);
+  aim(cam, target, up && up(tk));
   return target;
 }
 function turnCam(cam, tn, x) {
   const p = turnPose(tn, x), target = new THREE.Vector3().fromArray(p.target);
+  if (!tn.up) {
+    const ends = [-1, 1].map((k) => turnPose(tn, k)).map((q) => pose(new THREE.Vector3().fromArray(q.pos), new THREE.Vector3().fromArray(q.target)));
+    tn.up = upPath(ends[0], ends[1], cam.up);
+  }
   cam.position.fromArray(p.pos);
-  cam.lookAt(target);
+  aim(cam, target, tn.up(smoother(-1, 1, x)));
   return target;
 }
-const easeInOut = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+// Hochachse im Flug: aus der Kameralage, die vom Bild am Start zu dem am Ziel dreht (Quaternion-Slerp), statt fest die
+// Welt-Hochachse – blickt die Kamera unterwegs fast senkrecht nach oben oder unten (Übersicht von oben, Mond über dem Pol),
+// dreht lookAt das Bild sonst schlagartig um die Blickachse. An beiden Enden gleich lookAt mit der Hochachse der Kamera (w):
+// Start und Landung passen zur Steuerung.
+const _qu = new THREE.Quaternion(), _uk = new THREE.Vector3(), _m4 = new THREE.Matrix4();
+const lookQuat = (p, w) => new THREE.Quaternion().setFromRotationMatrix(_m4.lookAt(p.pos, p.target, w));
+function upPath(a, b, w) {
+  const qa = lookQuat(a, w), qb = lookQuat(b, w), out = new THREE.Vector3();
+  return (k) => out.set(0, 1, 0).applyQuaternion(_qu.copy(qa).slerp(qb, k));
+}
+function aim(cam, target, up) {
+  if (!up) { cam.lookAt(target); return; }
+  _uk.copy(cam.up);
+  cam.up.copy(up);
+  cam.lookAt(target);
+  cam.up.copy(_uk);
+}
 const smooth = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
 // Zwischenstation ohne Knick: jede Etappe ist eine Gerade (auf den Anker zu bzw. von ihm weg), an der Station wechselt
 // die Richtung. Die weiterfahrende Kamera setzt deshalb die Bewegung der vorigen Etappe fort (gleiche Mitte, gleiche
@@ -420,6 +465,59 @@ function carryBend(cr) {
   };
 }
 
+// Freie Bahn: führt die Gerade zum Anker dicht am Blickziel T der äußeren Station vorbei (Anker hinter dem Körper, z. B. Mond
+// hinter der Erde), schießt die Kamera am Körper vorbei und der Blick reißt herum. Stattdessen fährt sie die Gerade von einem
+// um T geschwenkten Punkt aus, an dem sie mindestens k × Abstand an T vorbeiführt, und schwenkt zu Beginn (hinein) bzw. am
+// Ende (hinaus) weich um T dorthin – solange sie noch im Umfeld von T ist (bis reach × Abstand, Anteil span der Etappe)
+const CLEAR = { k: 0.6, step: 0.03, max: 1.6, reach: 2.5, span: [0.15, 0.4] };
+const _cs = new THREE.Vector3(), _ct = new THREE.Vector3();
+function passBy(P, A, T) {
+  _cs.subVectors(A, P);
+  const t = THREE.MathUtils.clamp(_ct.subVectors(T, P).dot(_cs) / Math.max(_cs.lengthSq(), 1e-30), 0, 1);
+  return _ct.copy(P).addScaledVector(_cs, t).distanceTo(T);
+}
+// P = Kamera an T (hinein: Start, hinaus: Ziel), A = Anker, up = Hochachse der Kamera (Anker genau hinter T: seitlich ausweichen)
+function clearSwing(P, T, A, down, up) {
+  const r = P.distanceTo(T), c = CLEAR.k * r;
+  if (A.distanceTo(T) < 1.5 * c || passBy(P, A, T) >= c) return null;
+  const v = P.clone().sub(T), u = A.clone().sub(T);
+  const axis = new THREE.Vector3().crossVectors(v, u);   // dreht v zum Anker hin
+  if (axis.lengthSq() < 1e-6 * v.lengthSq() * u.lengthSq()) axis.copy(up).projectOnPlane(v);
+  axis.normalize();
+  const at = new THREE.Vector3();
+  let g = 0;
+  do { g += CLEAR.step; at.copy(v).applyAxisAngle(axis, g).add(T); } while (g < CLEAR.max && passBy(at, A, T) < c);
+  g = Math.min(CLEAR.max, g + CLEAR.step);
+  at.copy(v).applyAxisAngle(axis, g).add(T);
+  // Anteil der Etappe, bis die gerade Fahrt (log. auf den Anker zu) das Umfeld von T verlassen hat
+  const d = at.clone().sub(A), l0 = Math.log(d.length()), q = new THREE.Vector3();
+  d.normalize();
+  let span = CLEAR.span[1];
+  for (let k = 1; k <= 40; k++) {
+    const e = (k / 40) * CLEAR.span[1];
+    if (q.copy(A).addScaledVector(d, Math.exp(l0 - e * Math.log(ZOOM))).distanceTo(T) >= CLEAR.reach * r) { span = Math.max(CLEAR.span[0], e); break; }
+  }
+  const angle = down ? (e) => -g * (1 - smoother(0, span, e)) : (e) => -g * smoother(1 - span, 1, e);
+  return { T: T.clone(), axis, at, angle };
+}
+const upOf = (cam) => new THREE.Vector3(0, 1, 0).applyQuaternion(cam.quaternion);
+
+// Zwischenhalt einer Mehr-Etappen-Fahrt (die Fahrt hält dort nicht): statt der Übersicht eine Pose auf dem Weg – sonst fährt
+// die Kamera mit Reisetempo dicht am Ziel vorbei und der Blick reißt herum. Hinein: der nächste Anker A liegt vor der Kamera
+// (näher als die Übersicht: zwischen Kamera und Ziel, um side seitlich; weiter weg: hinter dem Ziel, um behind versetzt);
+// hinaus: die Kamera zieht sich hinter den Anker zurück (out × Abstand des Ankers), Anker und Ziel liegen beide vorn
+const PASS = { side: 0.45, behind: 0.8, out: 1.6 };
+function passPose(lv, A, down) {
+  const ov = arrival(lv), T = ov.target, r = ov.pos.distanceTo(T);
+  const u = A.clone().sub(T), rho = u.length();
+  u.normalize();
+  const axis = new THREE.Vector3().crossVectors(u, ov.pos.clone().sub(T).normalize());   // dreht u zur gewohnten Seite
+  if (axis.lengthSq() < 1e-8) axis.copy(upOf(lv.camera)).projectOnPlane(u);
+  axis.normalize();
+  const far = down && rho >= 0.8 * r;
+  const dir = far ? u.negate().applyAxisAngle(axis, -PASS.behind) : u.applyAxisAngle(axis, PASS.side);
+  return { pos: T.clone().addScaledVector(dir, down ? r : Math.max(r, PASS.out * rho)), target: T.clone() };
+}
 // opt.dur = feste Dauer der ganzen Fahrt (s), opt.opener = Fahrt des Auftakt-Films (sonst ist Navigation im Film gesperrt)
 async function goTo(targetId, opt = {}) {
   if (!STATIONS[targetId] || state.tr || state.chain || !state.active || targetId === state.id) return;
@@ -432,6 +530,9 @@ async function goTo(targetId, opt = {}) {
   if (state.tr || state.chain || state.id !== fromId) return;
   state.queue = path;
   state.chain = planChain([state.active, ...lvs], opt.dur);
+  // Blickwinkel vor der Fahrt merken (Warp rechnet relativ dazu), Rollen beginnt bei null
+  state.chain.cams = [state.active, ...lvs].map((lv) => ({ lv, fov: lv.camera.fov }));
+  for (const lv of [state.active, ...lvs]) lv.bank = null;
   hop();
 }
 
@@ -500,7 +601,7 @@ function unwarp(cum, q) {
 function chainPos(ch, u) {
   const n = ch.legs.length;
   if (still()) return u * n;
-  if (n === 1) return easeInOut(u);
+  if (n === 1) return smoother(0, 1, u);
   return unwarp(ch.cum, runEase(u, ch.ramp)) * n;
 }
 
@@ -508,13 +609,14 @@ function hop() {
   const ch = state.chain, toId = state.queue.shift();
   const to = toId && state.levels.get(toId);
   if (!to) {
+    if (ch) warp(ch, 0);
     state.chain = null;
     state.queue = [];
     hud.setFlight(false);
     hud.hideMarkers(false);
     return;
   }
-  const from = state.active;
+  const from = state.active, next = state.queue[0];
   const down = to.meta.parent === from.id;
   const outer = down ? from : to;
   const inner = down ? to : from;
@@ -524,19 +626,30 @@ function hop() {
   state.controls.enabled = false;
   // Zwischenstation: genau an der Endpose der vorigen Etappe weiter (die Steuerung könnte sie begrenzt haben)
   const cur = ch.end ? pose(ch.end.pos, ch.end.target) : pose(from.camera.position, state.controls.target);
-  let outerFrom, outerTo, innerFrom, innerTo;
+  let outerFrom, outerTo, innerFrom, innerTo, outerEnd = null, swing = null, carryC = null;
+  // die Wendestation fährt ihren eigenen Bogen (turn.js)
+  const turning = ch.turn && ch.turn.id === outer.id;
   if (down) {
     // nach einer Wende die Pose ohne Schwenk auf den Anker merken (Rückflug landet im gewohnten Blick)
     const keep = ch.turn && ch.turn.id === from.id ? ch.turn.pose : cur;
     keep.child = to.id;
     state.poses.set(from.id, keep);
-    outerFrom = cur;
-    outerTo = poseAt(anchor, cur.pos, Math.max(cur.pos.distanceTo(anchor) / ZOOM, 1e-9));
-    innerTo = arrival(to);
+    swing = turning ? null : clearSwing(cur.pos, cur.target, anchor, true, upOf(from.camera));
+    outerFrom = swing ? pose(swing.at, cur.target) : pose(cur.pos, cur.target);
+    outerFrom.look = cur.target.clone().sub(cur.pos).normalize();
+    outerTo = poseAt(anchor, outerFrom.pos, Math.max(outerFrom.pos.distanceTo(anchor) / ZOOM, 1e-9));
+    innerTo = next && STATIONS[next].parent === to.id ? passPose(to, anchorOf(to, next), true) : arrival(to);
     innerFrom = poseAt(innerTo.target, innerTo.pos, innerTo.pos.distanceTo(innerTo.target) * ZOOM);
   } else {
     const saved = state.poses.get(to.id);
-    outerTo = saved && saved.child === from.id ? saved : arrival(to);
+    outerTo = next && to.meta.parent === next ? passPose(to, anchor, false) : saved && saved.child === from.id ? saved : arrival(to);
+    swing = turning ? null : clearSwing(outerTo.pos, outerTo.target, anchor, false, upOf(to.camera));
+    if (swing) {
+      outerEnd = outerTo;
+      outerTo = pose(swing.at, outerEnd.target);
+      // Mitte der Weiterfahrt (carryBend): der Anker mit derselben Drehung wie die Kamera am Ende
+      carryC = anchor.clone().sub(swing.T).applyAxisAngle(swing.axis, swing.angle(1)).add(swing.T);
+    }
     // vom Anker aus gesehen in Richtung der Zielpose, nah dran
     outerFrom = poseAt(anchor, outerTo.pos, Math.max(outerTo.pos.distanceTo(anchor) / ZOOM, 1e-9));
     innerFrom = cur;
@@ -547,8 +660,11 @@ function hop() {
   const carry = ch.carry && ch.carry.down === down ? carryBend(ch.carry) : null;
   ch.carry = null;
   state.tr = {
-    k: ch.legs.length - state.queue.length - 1, down, outer, inner, to, anchor, carry,
-    outerFrom, outerTo, innerFrom, innerTo, prog: 0, maskR: 0, blur: 0, veil: 0,
+    k: ch.legs.length - state.queue.length - 1, down, outer, inner, to, anchor, carry, swing, carryC,
+    outerFrom, outerTo, outerEnd, innerFrom, innerTo, prog: 0,
+    // Hochachse je Kamera vom Bild am Etappenanfang (Blick der weiterfahrenden Kamera) zu dem am Ende
+    upOuter: upPath(down ? cur : pose(outerFrom.pos, anchor), down ? pose(outerTo.pos, anchor) : outerEnd || outerTo, outer.camera.up),
+    upInner: upPath(innerFrom, innerTo, inner.camera.up), maskR: 0, blur: 0, veil: 0,
     anchorUv: new THREE.Vector2(0.5, 0.5), innerUv: new THREE.Vector2(0.5, 0.5), captioned: false,
   };
   if (outer.fly && !still()) state.tr.fly = flyLeg(state.tr);   // Galaxien-Flug zwischen Station 10 und 11
@@ -556,21 +672,52 @@ function hop() {
   hud.setFlight(true, to.meta, multi);
 }
 
+// Stärke der Kino-Effekte im Flug (0 … 1): eine Welle über die ganze Fahrt, „Ruhig“ halb, „Aus“/reduzierte Bewegung nichts
+function flightFx(ch) {
+  return still() ? 0 : Math.pow(Math.sin(Math.PI * ch.t), 2) * (calm() ? 0.5 : 1);
+}
+const _fw = new THREE.Vector3(), _rt = new THREE.Vector3();
+// Rollen in die Kurve: Gierrate des Blicks (nach lookAt, ohne Rollen) geglättet → Drehung um die Blickachse; k blendet aus
+function bank(lv, dt, k) {
+  const cam = lv.camera;
+  _fw.set(0, 0, -1).applyQuaternion(cam.quaternion);
+  const b = lv.bank || (lv.bank = { f: _fw.clone(), roll: 0 });
+  const yaw = dt > 0 ? _rt.set(1, 0, 0).applyQuaternion(cam.quaternion).dot(_fw.clone().sub(b.f)) / dt : 0;
+  b.f.copy(_fw);
+  const want = THREE.MathUtils.clamp(-yaw * FLYFX.bank, -FLYFX.max, FLYFX.max) * k;
+  b.roll += (want - b.roll) * (1 - Math.exp(-dt / FLYFX.tau));
+  cam.rotateZ(b.roll * k);
+}
+function warp(ch, fx) {
+  for (const c of ch.cams) {
+    const f = c.fov * (1 + FLYFX.fov * fx);
+    if (Math.abs(c.lv.camera.fov - f) > 1e-6) { c.lv.camera.fov = f; c.lv.camera.updateProjectionMatrix(); }
+  }
+}
+
 function stepTransition(dt) {
   const tr = state.tr, ch = state.chain;
   ch.t = freeze !== null ? freeze : Math.min(1, ch.t + dt / ch.T);
+  const fx = flightFx(ch);
+  warp(ch, fx);
   const e = ch.t >= 1 ? 1 : Math.min(1, Math.max(0, chainPos(ch, ch.t) - tr.k));
   const p = tr.down ? e : 1 - e;            // 0 = nur äußeres Bild, 1 = nur inneres
   // äußeres Blickziel schwenkt früh auf den Anker (beim Hinausfliegen erst am Ende weg davon)
-  const tkOuter = tr.down ? smooth(0, 0.45, e) : smooth(0.55, 1, e);
+  const tkOuter = tr.down ? smoother(0, 0.6, e) : smoother(0.4, 1, e);
   // weiterfahrende Kamera = die der Station, an der die vorige Etappe endete (hinein: äußere, hinaus: innere);
   // die Wendestation fährt Steigen, Kuppe und Sinken als einen Bogen (x = Etappen-Koordinate ab der Wende)
   const tn = ch.turn, x = tn && tr.outer.id === tn.id ? tr.k + e - tn.at : null;
   const outerTgt = x !== null ? turnCam(tr.outer.camera, tn, x)
-    : flyPose(tr.outer.camera, tr.outerFrom, tr.outerTo, e, tkOuter, tr.anchor, tr.down ? tr.carry : null);
+    : flyPose(tr.outer.camera, tr.outerFrom, tr.outerTo, e, tkOuter, tr.anchor, tr.down ? tr.carry : null, tr.swing, tr.upOuter);
   if (x !== null) tr.outer.target = outerTgt;   // Maßstab in der Leiste misst zum gleitenden Blickpunkt
-  const innerTgt = flyPose(tr.inner.camera, tr.innerFrom, tr.innerTo, e, e, null, tr.down ? null : tr.carry);
+  const innerTgt = flyPose(tr.inner.camera, tr.innerFrom, tr.innerTo, e, e, null, tr.down ? null : tr.carry, null, tr.upInner);
+  tr.outerTgt = outerTgt;
+  tr.innerTgt = innerTgt;
   if (tr.fly) flyPoses(tr, e);   // Galaxien-Flug: eigene Kameraführung (ersetzt die Posen oben)
+  // Rollen klingt zum Ende der Fahrt sicher auf null aus (danach dreht die Steuerung ohne Rollen weiter)
+  const bk = still() ? 0 : 1 - smoother(0.8, 1, ch.t);
+  bank(tr.outer, dt, bk);
+  bank(tr.inner, dt, bk);
   tr.outer.camera.updateMatrixWorld();
   tr.inner.camera.updateMatrixWorld();
   const a = tr.anchor.clone().project(tr.outer.camera);
@@ -592,7 +739,7 @@ function stepTransition(dt) {
   if (!tr.captioned && e > 0.62 && state.queue.length === 0) { tr.captioned = true; hud.caption(tr.to.meta); }
   if (e >= 1) {
     const to = tr.to;
-    const end = tr.down ? tr.innerTo : x !== null ? pose(tr.outer.camera.position, outerTgt) : tr.outerTo;
+    const end = tr.down ? tr.innerTo : x !== null ? pose(tr.outer.camera.position, outerTgt) : tr.outerEnd || tr.outerTo;
     to.camera.position.copy(end.pos);
     to.camera.lookAt(end.target);
     to.target = end.target.clone();
@@ -600,11 +747,14 @@ function stepTransition(dt) {
     ch.end = end;
     // Bewegung am Ende dieser Etappe für den Bogen der nächsten: hinein = auf das Blickziel zu, hinaus = vom Anker weg
     ch.carry = tr.down ? { down: true, c: end.target.clone(), from: end.pos.clone(), s: -1 }
-      : { down: false, c: tr.anchor.clone(), from: end.pos.clone(), s: 1 };
+      : { down: false, c: (tr.carryC || tr.anchor).clone(), from: end.pos.clone(), s: 1 };
     activate(to);
     // nächste Etappe im selben Bild weiterrechnen: kein Standbild an der Zwischenstation
     if (state.queue.length) { hop(); if (state.tr) stepTransition(0); return; }
+    warp(ch, 0);
     state.chain = null;
+    // Leerlauf-Fahrt setzt bald nach der Landung weich ein
+    state.cine.idle = CINE.delay - CINE.land;
     hud.setFlight(false);
     hud.hideMarkers(false);
     if (tour) tour.since = 0;
@@ -732,7 +882,7 @@ function stepFollow(lv, dt) {
   if (f.t < 1) {
     const T = still() ? 0.6 : 1.8;
     f.t = Math.min(1, f.t + dt / T);
-    const e = easeInOut(f.t);
+    const e = smoother(0, 1, f.t);
     // Start läuft mit dem mitgenommenen Schwung weiter und klingt ab (Zeitkonstante FOLLOW_KEEP s)
     const keep = FOLLOW_KEEP * (1 - Math.exp(-f.t * T / FOLLOW_KEEP));
     const dir = cam.position.clone().sub(c.target).normalize();
@@ -790,24 +940,34 @@ function cineApply(lv, dt) {
 }
 
 // ---------- Auftakt: Bogen über die Nachtseite der Erde in den Sonnenaufgang, Kinobalken ----------
+// Auftaktpose: eigene der Station (lv.intro) oder aus der Nähe, seitlich versetzt – die Kamera zieht sich im Bogen in die
+// Heimpose zurück und gibt die Szene frei
+function introPose(lv) {
+  if (lv.intro) return lv.intro;
+  const T = lv.home.target, v = lv.home.pos.clone().sub(T).applyAxisAngle(lv.camera.up, INTRO.yaw).multiplyScalar(INTRO.near);
+  return { pos: T.clone().add(v), target: T.clone() };
+}
 function startIntro(lv) {
-  if (still() || !lv.intro) return;
-  state.intro = { t: 0, dur: 9, from: lv.intro, to: pose(lv.home.pos, lv.home.target) };
+  if (still()) return;
+  state.intro = { t: 0, dur: INTRO.dur, from: introPose(lv), to: pose(lv.home.pos, lv.home.target) };
   state.controls.enabled = false;
   hud.intro(true);
 }
 function stepIntro(dt) {
   const it = state.intro;
   it.t = Math.min(1, it.t + dt / it.dur);
-  const e = 1 - Math.pow(1 - it.t, 3);
+  // Anfahren aus dem Stand, langes Ausrollen: Tempo 12 t (1 − t)², am Anfang und Ende null
+  const e = 1 - Math.pow(1 - it.t, 3) * (1 + 3 * it.t);
   const lv = state.active;
-  flyPose(lv.camera, it.from, it.to, e, smooth(0, 0.8, it.t));
+  it.tgt = flyPose(lv.camera, it.from, it.to, e, smooth(0, 0.8, it.t));
   if (it.t >= 1) endIntro();
 }
 function endIntro() {
-  if (!state.intro) return;
+  const it = state.intro;
+  if (!it) return;
   state.intro = null;
-  state.controls.target.copy(state.active.home.target);
+  // abgebrochen: um den Punkt weiterdrehen, auf den die Kamera gerade blickt – der Blick springt nicht
+  state.controls.target.copy(it.tgt || state.active.home.target);
   state.controls.enabled = true;
   state.controls.update();
   hud.intro(false);
@@ -825,8 +985,12 @@ function stepZoom(lv, dt) {
     step = state.zoom;
     state.zoomV = 0;
   }
-  state.zoom -= step;
   const off = lv.camera.position.clone().sub(c.target), d = off.length();
+  // vor dem Anschlag weich abbremsen statt im letzten Bild hart zu stoppen: je Bild höchstens ein Anteil des restlichen Wegs
+  const room = Math.max(0, step > 0 ? Math.log(c.maxDistance / d) : Math.log(d / c.minDistance));
+  const lim = room * (1 - Math.exp(-dt * WHEEL.edge));
+  if (Math.abs(step) > lim) { step = Math.sign(step) * lim; state.zoomV = dt > 0 ? step / dt : 0; }
+  state.zoom -= step;
   const d1 = THREE.MathUtils.clamp(d * Math.exp(step), c.minDistance, c.maxDistance);
   if (d1 === d) { state.zoom = 0; state.zoomV = 0; return; }   // am Anschlag Rest verwerfen – weiter scrollen übernimmt der Rand-Zug
   lv.camera.position.copy(c.target).addScaledVector(off, d1 / d);
@@ -921,18 +1085,19 @@ function frame(nowMs) {
     renderLevel(tr.outer, real);
     renderLevel(tr.inner, real);
   } else renderLevel(lv, real);
+  if (camlog) logCams(real);
 
   // Grading: im Flug zwischen den Stationen überblenden
   if (tr) blendLook(lookA, tr.outer.look || {}, tr.inner.look || {}, smooth(0.3, 0.7, tr.prog));
   else blendLook(lookA, lv.look || {}, lv.look || {}, 0);
   // Farblook aus dem Zahnrad Global: Kontrast, Sättigung, Tönung, Vignette ersetzen den Look der Station, Belichtung und Bloom
   // wirken relativ (Station bleibt so hell, wie sie gebaut ist); „Station“ = null → Look der Station
-  const G = globalGrade();
+  const G = globalGrade(), fx = tr && state.chain ? flightFx(state.chain) : 0;
   look.exposure = lookA.exposure * (G ? G.exposure : 1) * settings.S.exposure;
   if (state.opener && state.opener.phase === 'load') look.exposure *= state.opener.fade;   // Abblenden vor dem Auftakt-Film
   look.bloom = settings.S.bloom ? lookA.bloom * (G ? G.bloom / 0.12 : 1) : 0;
-  look.sat = G ? G.sat : lookA.sat; look.con = G ? G.con : lookA.con; look.vig = (G ? G.vig : lookA.vig) * settings.S.vig;
-  look.ca = settings.S.lens ? lookA.ca : 0;
+  look.sat = G ? G.sat : lookA.sat; look.con = G ? G.con : lookA.con; look.vig = ((G ? G.vig : lookA.vig) + FLYFX.vig * fx) * settings.S.vig;
+  look.ca = settings.S.lens ? lookA.ca * (1 + FLYFX.ca * fx) : 0;
   look.grain = settings.S.grain ? lookA.grain : 0;
   look.sh.fromArray(G ? G.sh : lookA.sh); look.hi.fromArray(G ? G.hi : lookA.hi);
   const ehtOf = (x) => (x && x.post ? x.post.eht : null);
@@ -955,6 +1120,18 @@ function frame(nowMs) {
     fps.n++; fps.sum += real;
     if (fps.sum > 2) { console.log(`[kosmos] ${Math.round(fps.n / fps.sum)} fps · Stufe ${pickQuality()}`); fps.n = 0; fps.sum = 0; }
   }
+}
+
+// je Bild: Zeit, Bildzeit, Lage, Flugstand, je Kamera Station, Ort, Bezugspunkt (Abstand dorthin = Maß der Fahrt: Anker der
+// äußeren Kamera, sonst Blickziel), Drehung (Quaternion), Blickwinkel
+function logCams(real) {
+  const tr = state.tr, mode = tr ? 'fly' : state.intro ? 'intro' : state.follow ? 'follow' : state.cine.w > 0 ? 'cine' : 'free';
+  const turning = tr && state.chain.turn && tr.outer.id === state.chain.turn.id;
+  const cams = tr ? [[tr.outer, turning ? tr.outerTgt : tr.anchor], [tr.inner, tr.innerTgt]] : [[state.active, state.controls.target]];
+  camlog.push({
+    t: state.time, dt: real, mode, prog: tr ? tr.prog : null,
+    cams: cams.map(([l, tg]) => [l.id, ...l.camera.position.toArray(), ...tg.toArray(), ...l.camera.quaternion.toArray(), l.camera.fov]),
+  });
 }
 
 function stepTour(dt) {
