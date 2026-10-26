@@ -27,6 +27,7 @@ const LOADERS = {
   // [E1] Sonne
   sun: () => import('./levels/sun.js'),
   iss: () => import('./levels/iss.js'),
+  tiangong: () => import('./levels/tiangong.js'),
   // [E2] Erde nah
   // [E2] Mond
   moon: () => import('./levels/moon.js'),

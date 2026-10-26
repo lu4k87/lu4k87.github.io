@@ -374,8 +374,8 @@ export function create(ctx) {
   const auroraPos = new THREE.Vector3(), poleW = new THREE.Vector3(), qSpin = new THREE.Quaternion();
 
   // ---------- Satelliten und Trümmer (CelesTrak-Schnappschuss, sats.js) ----------
-  let satData = null, sats = null, iss = null;
-  const satLines = [], issLocal = new THREE.Vector3(), issWorld = new THREE.Vector3(), satInfo = { alt: 0, v: 0 };
+  let satData = null, sats = null, iss = null, tg = null;
+  const satLines = [], issLocal = new THREE.Vector3(), issWorld = new THREE.Vector3(), tgLocal = new THREE.Vector3(), tgWorld = new THREE.Vector3(), satInfo = { alt: 0, v: 0 };
   const show = { sats: true, debris: true, orbits: true };
   let linesT = -1;
   const satsReady = loadSats().then((d) => {
@@ -390,6 +390,7 @@ export function create(ctx) {
       tilt.add(line);
       satLines.push(line);
       if (name === 'ISS (ZARYA)') iss = d.obj[k];
+      if (name === 'CSS (TIANHE)') tg = d.obj[k];
     }
     applyShow();
   }).catch((err) => console.warn('[kosmos] Satelliten nicht geladen:', err));
@@ -485,6 +486,7 @@ export function create(ctx) {
     { id: 'sats', kind: 'info', pos: d.clone().multiplyScalar(R_E + 0.55), visible: () => !!sats && show.sats },
     { id: 'geo', kind: 'info', pos: orbitPoint(side.clone().negate(), GEO) },
     { id: 'iss', kind: 'dive', to: 'iss', focus: () => 1.2, pos: issWorld.copy(orbitPoint(side.clone().add(upL), ISS.r, ISS.inc * RAD)) },
+    { id: 'tiangong', kind: 'dive', to: 'tiangong', focus: () => 1.2, pos: tgWorld.copy(orbitPoint(side.clone().negate().add(upL), R_E + 0.384, 41.47 * RAD)) },
     { id: 'sun', kind: 'info', pos: sunDir.clone().multiplyScalar(90) },
     { id: 'umbra', kind: 'info', pos: umbraTip, visible: () => earthShadow.visible },
   ];
@@ -570,6 +572,10 @@ export function create(ctx) {
             tilt.localToWorld(issWorld.copy(issLocal));
             const rkm = issLocal.length() * 1e3;
             satInfo.alt = rkm - RE; satInfo.v = speedAt(iss[0], rkm);
+          }
+          if (tg) {
+            satPos(tg, days, tgLocal);
+            tilt.localToWorld(tgWorld.copy(tgLocal));
           }
         }
       }
