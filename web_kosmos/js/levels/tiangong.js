@@ -5,11 +5,14 @@
 // Laboren Wentian (+z) und Mengtian (−z) quer am Knoten (je 17,9 m, Ø 4,2 m); Wentian-Solarflügel 2 × 26,5 m (Spannweite
 // ≈ 55 m, ≈ 110 m² je Flügel), Mengtian mit Flügeln gleicher Größe angenommen, Tianhe mit zwei kleineren Flügeln (Maße
 // geschätzt). Alle Flügel folgen der Sonne über zwei Gelenke (Drehung um die Modulachse, Kippen um die Flügelachse).
-// Roboterarme in Parkstellung: Tianhe ≈ 10 m, Wentian 5 m.
+// Roboterarme in Parkstellung: Tianhe ≈ 10 m, Wentian 5 m. Details nach Fotos (Modell): lackierte Hülle mit Platten und
+// Nieten, Goldfolie, Haltegriffe und Geräte, Flügel mit Mast, Relaisantenne, Außenplattform an Mengtian; Besuchsschiffe in
+// typischer Belegung (Shenzhou vorn, Tianzhou am Heck – nicht der Flugplan). Oberflächen aus stationkit.js.
 
 import * as THREE from 'three';
 import { mulberry32 } from '../astro.js';
-import { createOrbitView, stationMat } from '../orbitview.js';
+import { createOrbitView } from '../orbitview.js';
+import { stationKit, V } from '../stationkit.js';
 import { registerLayers } from '../layers.js';
 
 const RAD = Math.PI / 180;
@@ -18,78 +21,19 @@ const LAB = { r: 2.1, z0: 2.0, len: 17.9, wing: 17.0 };    // Labormodule: Ø 4,
 const WING = { len: 26.5, w: 4.15, r0: 1.2 };              // Wentian: 2 × 26,5 m + Nabe ≈ 55 m, 26,5 × 4,15 m ≈ 110 m²
 const CORE_WING = { len: 11, w: 3.0, r0: 2.4, x: -5.2 };   // Tianhe: Maße nicht belegt, Modell
 
-function canvasTex(w, h, draw) {
-  const c = document.createElement('canvas');
-  c.width = w; c.height = h;
-  draw(c.getContext('2d'), w, h);
-  const t = new THREE.CanvasTexture(c);
-  t.colorSpace = THREE.SRGBColorSpace;
-  t.wrapS = t.wrapT = THREE.RepeatWrapping;
-  t.anisotropy = 8;
-  return t;
-}
-
-// Texturen (Modell): Rumpfplatten, goldene Isolierfolie, Solarzellen auf flexiblen Matten, Rückseite
-function textures() {
-  const rnd = mulberry32(31);
-  const hull = (base) => canvasTex(512, 512, (g, w, h) => {
-    g.fillStyle = base; g.fillRect(0, 0, w, h);
-    for (let i = 0; i < 4; i++) for (let j = 0; j < 4; j++) {
-      const k = 0.94 + rnd() * 0.08;
-      g.fillStyle = `rgba(${255 * k | 0},${255 * k | 0},${248 * k | 0},0.4)`;
-      g.fillRect(i * 128 + 3, j * 128 + 3, 122, 122);
-      g.strokeStyle = 'rgba(96,98,102,0.5)'; g.lineWidth = 2;
-      g.strokeRect(i * 128 + 3, j * 128 + 3, 122, 122);
-      g.fillStyle = 'rgba(80,82,86,0.55)';
-      for (const [u, v] of [[10, 10], [116, 10], [10, 116], [116, 116]]) g.fillRect(i * 128 + u, j * 128 + v, 3, 3);
-    }
-  });
-  const foil = canvasTex(256, 256, (g, w, h) => {
-    g.fillStyle = '#a97e34'; g.fillRect(0, 0, w, h);
-    for (let i = 0; i < 90; i++) {
-      const k = 0.7 + rnd() * 0.7;
-      g.fillStyle = `rgba(${214 * k | 0},${168 * k | 0},${78 * k | 0},0.55)`;
-      g.fillRect(rnd() * w, rnd() * h, 6 + rnd() * 26, 5 + rnd() * 18);
-    }
-  });
-  const cells = canvasTex(128, 1024, (g, w, h) => {
-    for (let y = 0; y < h; y += 8) for (let x = 0; x < w; x += 8) {
-      const k = 0.85 + rnd() * 0.28;
-      g.fillStyle = `rgb(${34 * k | 0},${42 * k | 0},${78 * k | 0})`;
-      g.fillRect(x, y, 8, 8);
-    }
-    g.fillStyle = 'rgb(86,94,128)';
-    for (let y = 0; y < h; y += 8) g.fillRect(0, y, w, 1);
-    for (let x = 0; x < w; x += 16) g.fillRect(x, 0, 1, h);
-    g.fillStyle = 'rgb(176,150,92)';
-    for (let y = 0; y < h; y += 128) g.fillRect(0, y, w, 3);   // Faltkanten der flexiblen Matte
-    g.fillRect(0, 0, 3, h); g.fillRect(w - 3, 0, 3, h);
-  });
-  const back = canvasTex(64, 256, (g, w, h) => {
-    g.fillStyle = '#b58f52'; g.fillRect(0, 0, w, h);
-    g.fillStyle = 'rgba(90,60,30,0.3)';
-    for (let y = 0; y < h; y += 16) g.fillRect(0, y, w, 1);
-  });
-  return { hull: hull('#d9dbd8'), hull2: hull('#cfd3d4'), foil, cells, back };
-}
+const TILE = 3;                                            // Kachel der Hüllenplatten [m]
 
 export function create(ctx) {
   const ov = createOrbitView(ctx, { sat: 'CSS (TIANHE)', fallback: [6762.5, 0.0003, 41.47, 250.1, 213.9, 146.16, -0.3814, 3], radius: 50 });
   const { scene, camera } = ov;
-  const T = textures();
-  T.hull.repeat.set(3, 2); T.hull2.repeat.set(3, 2); T.foil.repeat.set(2, 1);
+  const K = stationKit(ctx), mat = K.mat;
   const station = new THREE.Group();
   scene.add(station);
+  const I = K.inst(station), late = [];
 
   const M = {
-    hull: stationMat({ map: T.hull, roughness: 0.62, metalness: 0.12 }),
-    hull2: stationMat({ map: T.hull2, roughness: 0.6, metalness: 0.14 }),
-    foil: stationMat({ map: T.foil, roughness: 0.4, metalness: 0.5 }),
-    metal: stationMat({ color: 0xa9aeb5, roughness: 0.42, metalness: 0.6 }),
-    dark: stationMat({ color: 0x3d4148, roughness: 0.6, metalness: 0.5 }),
-    cells: stationMat({ map: T.cells, roughness: 0.3, metalness: 0.4 }),
-    back: stationMat({ map: T.back, roughness: 0.5, metalness: 0.2 }),
-    arm: stationMat({ color: 0xe9e9e4, roughness: 0.6, metalness: 0.05 }),
+    hull: mat('hull'), hull2: mat('hull2'), foil: mat('gold'), metal: mat('metal'), dark: mat('dark'),
+    arm: mat('box'),
   };
 
   const add = (parent, geo, mat, pos, rot) => {
@@ -101,11 +45,12 @@ export function create(ctx) {
     return m;
   };
   // Zylinder/Kegelstumpf entlang einer Achse: rTop am +Ende, rBot am −Ende
-  const tube = (parent, rTop, rBot, len, ax, pos, mat) => {
-    const g = new THREE.CylinderGeometry(rTop, rBot, len, 40, 1);
+  const tube = (parent, rTop, rBot, len, ax, pos, m) => {
+    const g = K.tubeUV(new THREE.CylinderGeometry(rTop, rBot, len, 48, 1), Math.max(rTop, rBot), len, TILE);
     if (ax === 'x') g.rotateZ(-Math.PI / 2); else if (ax === 'z') g.rotateX(Math.PI / 2);
-    return add(parent, g, mat, pos);
+    return add(parent, g, m, pos);
   };
+  const DRESS = { rail: 'railGrey', rails: 6, ends: false };
 
   // ---------- Tianhe: Stamm längs x, Heck −8,3 m, Bug +8,3 m ----------
   tube(station, 1.5, 1.0, 0.8, 'x', [-7.9, 0, 0], M.metal);       // Heck-Anlegestelle
@@ -121,8 +66,16 @@ export function create(ctx) {
   // Triebwerke am Heck
   for (let i = 0; i < 4; i++) {
     const a = (i + 0.5) * Math.PI / 2;
-    add(station, new THREE.CylinderGeometry(0.12, 0.28, 0.6, 12).rotateZ(Math.PI / 2), M.dark, [-7.4, Math.sin(a) * 1.9, Math.cos(a) * 1.9]);
+    add(station, new THREE.CylinderGeometry(0.12, 0.28, 0.6, 12).rotateZ(Math.PI / 2), mat('nozzle'), [-7.4, Math.sin(a) * 1.9, Math.cos(a) * 1.9]);
   }
+  // Haltegriffe und Geräte an Tianhe, Ringe an den Abschnitten, Relaisantenne auf einem Ausleger
+  K.dress(I, 'x', V(-2.75, 0, 0), 2.1, 10.0, { ...DRESS, gear: 6, seed: 201 });
+  K.dress(I, 'x', V(4.35, 0, 0), 1.4, 1.9, { ...DRESS, rails: 4, gear: 1, seed: 202 });
+  for (const x of [-7.5, -3.0, 2.5]) I.rod(V(x - 0.1, 0, 0), V(x + 0.1, 0, 0), 2.14, M.metal, K.U.ring);
+  I.rod(V(-6.4, 1.9, -1.2), V(-6.4, 3.1, -2.3), 0.07, M.metal);
+  const dish = add(station, new THREE.LatheGeometry(Array.from({ length: 8 }, (_, i) => new THREE.Vector2(i * 0.1, (i * 0.1) ** 2 * 0.45)), 40), mat('paint'), [-6.4, 3.15, -2.35]);
+  dish.rotation.x = -0.6;
+  dish.material.side = THREE.DoubleSide;
 
   // ---------- Labore Wentian (+z) und Mengtian (−z), quer am Knoten ----------
   // Abschnitt von z0 bis z1 (nach außen), rIn am inneren Ende, rOut am äußeren
@@ -142,7 +95,17 @@ export function create(ctx) {
     } else {
       labTube(s, LAB.r, LAB.r, 9.0, 12.0, M.hull);
       labTube(s, 2.25, 2.25, 10.2, 10.8, M.foil);
+      // Außenplattform am Ressourcenabschnitt: Rahmen mit Nutzlasten zum All (Modell)
+      const rp = mulberry32(5);
+      I.box(V(NODE_X, LAB.r + 0.2, s * 15.5), [2.6, 0.2, 5.6], M.metal);
+      for (const dz of [-2.0, -0.6, 0.8, 2.1]) {
+        const t = [0.9 + rp() * 0.6, 0.5 + rp() * 0.6, 1.0 + rp() * 0.3];
+        I.box(V(NODE_X + (rp() - 0.5) * 0.8, LAB.r + 0.3 + t[1] / 2, s * 15.5 + dz), t, rp() < 0.35 ? M.foil : mat('box'));
+      }
     }
+    K.dress(I, 'z', V(NODE_X, 0, s * (LAB.z0 + 1.0 + 4.0)), LAB.r, 8.0, { ...DRESS, gear: 4, seed: 210 + s });
+    K.dress(I, 'z', V(NODE_X, 0, s * (12.0 + (zEnd - 12.7) / 2)), LAB.r, zEnd - 12.7, { ...DRESS, rails: 4, gear: 3, seed: 220 + s });
+    for (const z of [LAB.z0 + 1.0, 9.0, 12.0]) I.rod(V(NODE_X, 0, s * z - 0.1), V(NODE_X, 0, s * z + 0.1), LAB.r + 0.04, M.metal, K.U.ring);
     labs[name] = s;
   }
 
@@ -151,13 +114,17 @@ export function create(ctx) {
   const wingMesh = (parent, sgn, d) => {
     const w = new THREE.Group();
     parent.add(w);
-    const blanket = new THREE.Mesh(new THREE.BoxGeometry(0.04, d.len, d.w), [M.cells, M.back, M.back, M.back, M.back, M.back]);
+    // flexible Matte (Zellenseite +x), dahinter der ausfahrbare Mast als Gitter, Kasten am Fuß, Balken an der Spitze
+    const blanket = new THREE.Mesh(K.boxUV(new THREE.BoxGeometry(0.03, d.len, d.w), d.w / 2, 2.6), K.panel('cellsCN'));
     blanket.position.set(0, sgn * (d.r0 + d.len / 2), 0);
     blanket.castShadow = blanket.receiveShadow = true;
     w.add(blanket);
-    add(w, new THREE.CylinderGeometry(0.16, 0.16, d.len + 0.4, 10), M.metal, [-0.12, sgn * (d.r0 + d.len / 2), 0]);
-    add(w, new THREE.BoxGeometry(0.5, 0.4, d.w + 0.4), M.metal, [-0.05, sgn * (d.r0 + d.len), 0]);
-    add(w, new THREE.BoxGeometry(0.9, d.r0 + 0.2, 1.2), M.metal, [0, sgn * (d.r0 + 0.2) / 2, 0]);
+    const J = K.inst(w);
+    K.lattice(J, V(-0.32, sgn * d.r0, 0), V(-0.32, sgn * (d.r0 + d.len), 0), { w: 0.45, bay: 0.5, r: 0.025, m: mat('strut'), side: V(0, 0, 1) });
+    J.box(V(-0.05, sgn * (d.r0 + d.len), 0), [0.5, 0.35, d.w + 0.4], M.metal);
+    J.box(V(-0.1, sgn * (d.r0 + 0.1), 0), [0.6, 0.4, d.w + 0.3], mat('gold'));
+    J.box(V(0, sgn * (d.r0 + 0.2) / 2, 0), [0.9, d.r0 + 0.2, 1.2], M.metal);
+    late.push(J);
     return w;
   };
   const labSarj = [], labWings = [];
@@ -190,6 +157,14 @@ export function create(ctx) {
   };
   boom([[5.2, 2.5, 0], [0.6, 3.2, 0], [-4.2, 2.4, 0]], 0.2);
   boom([[NODE_X, 2.3, 11.6], [NODE_X, 4.2, 10.2], [NODE_X, 2.6, 8.8]], 0.13);
+
+  // Besuchsschiffe (typische Belegung, Modell): Shenzhou am vorderen Hafen, Tianzhou am Heck
+  const ships = new THREE.Group();
+  station.add(ships);
+  K.dock(ships, K.ship.shenzhou(), V(8.3, 0, 0), V(1, 0, 0));
+  K.dock(ships, K.ship.tianzhou(), V(-8.3, 0, 0), V(-1, 0, 0));
+  I.done();
+  late.forEach((J) => J.done());
 
   // ---------- Nachführung: Drehgelenk um die Modulachse (α), Flügelgelenk um die Flügelachse (β) ----------
   let track = true, first = true;
@@ -228,6 +203,7 @@ export function create(ctx) {
     mengtian: { id: 'mengtian', kind: 'info', pos: new THREE.Vector3(NODE_X, -2.8, -12), focus: () => 36 },
     arrays: { id: 'arrays', kind: 'info', pos: new THREE.Vector3(), focus: () => 60 },
     arm: { id: 'arm', kind: 'info', pos: new THREE.Vector3(0.6, 3.6, 0), focus: () => 22 },
+    ships: { id: 'ships', kind: 'info', pos: new THREE.Vector3(12.5, 2.0, 0), focus: () => 24, visible: () => ships.visible },
     horizon: { id: 'horizon', kind: 'info', pos: ov.spots.horizon },
     below: { id: 'below', kind: 'info', pos: ov.spots.below },
     sun: { id: 'sun', kind: 'info', pos: ov.spots.sun, visible: () => ov.lit > 0.5 },
@@ -241,7 +217,8 @@ export function create(ctx) {
   // ---------- Ebenen (Zahnrad „Station · Tiangong“) und Infotafel ----------
   registerLayers('tiangong', [
     ov.layers.clock('Tiangong'),
-    { id: 'boost', type: 'toggle', group: 'Station', label: 'Im Erdschatten aufhellen', hint: 'Echt ist die Station im Schatten fast schwarz; aufgehellt bleibt sie erkennbar.', value: true, set: (v) => ov.setBoost(v) },
+    { id: 'ships', type: 'toggle', group: 'Station', label: 'Besuchsschiffe', hint: 'Shenzhou vorn, Tianzhou am Heck – typische Belegung als Modell, nicht der Flugplan am angezeigten Tag.', value: true, set: (v) => { ships.visible = v; } },
+    { id: 'boost', type: 'toggle', label: 'Im Erdschatten aufhellen', hint: 'Echt ist die Station im Schatten fast schwarz; aufgehellt bleibt sie erkennbar.', value: true, set: (v) => ov.setBoost(v) },
     { id: 'orbit', type: 'toggle', group: 'Bahn', label: 'Bahnspur am Boden', hint: 'Gelbe Linie: der Weg der Station über den Boden, ein halber Umlauf zurück und anderthalb voraus.', value: true, set: (v) => ov.setTrack(v) },
     ...ov.layers.earth(),
   ]);
@@ -254,7 +231,7 @@ export function create(ctx) {
   const look = { exposure: 1.0, bloom: 0.07, sat: 1.05 };
   return {
     scene, camera, home, unit: 1, hotspots, controls, look, orbit,
-    ready: ov.ready,
+    ready: Promise.all([ov.ready, K.ready()]),
     update(dt, t, cam, flying) {
       ov.update(dt, t, cam, flying);
       steer(flying ? 1 : dt);
@@ -268,7 +245,7 @@ export function create(ctx) {
     setPixelRatio: (p) => ov.setPixelRatio(p),
     dispose() {
       ov.dispose();
-      Object.values(T).forEach((x) => x.dispose());
+      K.dispose();
     },
   };
 }

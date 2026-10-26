@@ -1,14 +1,19 @@
 // Station 01A: Internationale Raumstation aus der Nähe (Einheit 1 m), Abstecher von Erde & Mond. Die ISS fliegt im
 // Bahnsystem (orbitview.js): Flugrichtung vorn (x), Erde unten (−y), Steuerbord z. Darunter die Erde für den angezeigten
 // Zeitpunkt, Sonnenaufgang und Sonnenuntergang alle ≈ 46 min, Erdschein von unten, Polarlichter und Stadtlichter auf der Nachtseite.
-// Modell aus Grundkörpern, Maße nach NASA gerundet: Gitterträger 94 m, Solarflügel 34 × 12 m (8 Stück, 109 m Spannweite),
-// iROSA 18,2 × 6 m auf sechs Flügeln, Radiatoren, Module von Swesda bis Harmony (67 m), Cupola mit sieben Fenstern.
+// Modell nach NASA-Maßen (gerundet) und Fotos: Gitterträger 94 m als Fachwerk mit Geräteboxen und Schienen, Solarflügel
+// 34 × 12 m (8 Stück, 109 m Spannweite) mit FAST-Mast, iROSA 18,2 × 6 m auf sechs Flügeln, Radiatoren aus je 8 Platten,
+// Module von Swesda bis Harmony (67 m) mit Isolierdecken, Haltegriffen und Geräten, Cupola mit sieben Fenstern und offenen
+// Läden, Z1 mit Ku-Band-Antenne, AMS-02, vier ELC-Plattformen, BEAM, Bishop, Canadarm2 auf der Mobilen Basis, ERA an
+// Nauka. Besuchsschiffe in typischer Belegung (Modell, nicht der Flugplan): Crew Dragon an Harmony vorn, Cargo Dragon an
+// Harmony oben, Sojus an Rasswet, Progress an Swesda hinten und an Poisk. Oberflächen aus stationkit.js.
 // Solarflügel folgen der Sonne über zwei Gelenke (großes Drehgelenk um den Träger, kleines um jeden Flügel), Radiatoren
 // zeigen ihr die Kante – vereinfachte Regel, kein Flugplan. Blick „Cupola“: Kamera in der Kuppel, Blick zur Erde.
 
 import * as THREE from 'three';
 import { mulberry32 } from '../astro.js';
 import { createOrbitView, stationMat } from '../orbitview.js';
+import { stationKit, V } from '../stationkit.js';
 import { registerLayers, refreshLayers } from '../layers.js';
 
 const RAD = Math.PI / 180;
@@ -22,60 +27,21 @@ const PVM = [
 ];
 const CUP_EYE = new THREE.Vector3(-3.0, -2.3, -6.4);       // Augenpunkt am oberen Rand der Cupola (Blick nach unten, Weitwinkel)
 const CUP_FOV = 72;
+const TILE = 3;                                            // Kachel der Isolierdecken auf den Modulen [m] (4 × 4 Felder)
+const GREYS = [0xf0efe9, 0xd5d7da, 0xa4a8ae, 0x5d6168, 0x3a3d42].map((x) => new THREE.Color(x));
 
-function canvasTex(w, h, draw, repeat) {
+function canvasTex(w, h, draw) {
   const c = document.createElement('canvas');
   c.width = w; c.height = h;
   draw(c.getContext('2d'), w, h);
   const t = new THREE.CanvasTexture(c);
   t.colorSpace = THREE.SRGBColorSpace;
-  t.wrapS = t.wrapT = THREE.RepeatWrapping;
   t.anisotropy = 8;
-  if (repeat) t.repeat.set(...repeat);
   return t;
 }
 
-// Texturen (Modell): Solarzellen, Kapton-Rückseite, Isolierdecken mit Schutzplatten, Gitter, Radiator, Fenster
-function textures() {
-  const rnd = mulberry32(17);
-  const cells = (base, line) => canvasTex(128, 1024, (g, w, h) => {
-    for (let y = 0; y < h; y += 8) for (let x = 0; x < w; x += 8) {
-      const k = 0.82 + rnd() * 0.3;
-      g.fillStyle = `rgb(${base[0] * k | 0},${base[1] * k | 0},${base[2] * k | 0})`;
-      g.fillRect(x, y, 8, 8);
-    }
-    g.fillStyle = line;
-    for (let y = 0; y < h; y += 8) g.fillRect(0, y, w, 1);
-    for (let x = 0; x < w; x += 16) g.fillRect(x, 0, 1, h);
-    g.fillStyle = 'rgb(170,176,190)';
-    for (let y = 0; y < h; y += 64) g.fillRect(0, y, w, 2);   // Faltkanten der Matte
-    g.fillRect(0, 0, 3, h); g.fillRect(w - 3, 0, 3, h);
-  });
-  const mli = (tone) => canvasTex(512, 512, (g, w, h) => {
-    g.fillStyle = tone; g.fillRect(0, 0, w, h);
-    for (let i = 0; i < 4; i++) for (let j = 0; j < 4; j++) {
-      const k = 0.9 + rnd() * 0.12;
-      g.fillStyle = `rgba(${200 * k | 0},${196 * k | 0},${186 * k | 0},0.55)`;
-      g.fillRect(i * 128 + 4, j * 128 + 4, 120, 120);
-      g.strokeStyle = 'rgba(90,88,80,0.55)'; g.lineWidth = 2;
-      g.strokeRect(i * 128 + 4, j * 128 + 4, 120, 120);
-      g.fillStyle = 'rgba(70,70,64,0.6)';
-      for (const [u, v] of [[10, 10], [118, 10], [10, 118], [118, 118]]) g.fillRect(i * 128 + u, j * 128 + v, 3, 3);
-    }
-  });
-  const lattice = canvasTex(256, 256, (g, w, h) => {
-    g.clearRect(0, 0, w, h);
-    g.strokeStyle = 'rgb(205,207,210)'; g.lineCap = 'square';
-    g.lineWidth = 14; g.strokeRect(7, 7, w - 14, h - 14);
-    g.lineWidth = 9; g.beginPath(); g.moveTo(8, 8); g.lineTo(w - 8, h - 8); g.moveTo(w - 8, 8); g.lineTo(8, h - 8); g.stroke();
-  });
-  const rad = canvasTex(64, 512, (g, w, h) => {
-    g.fillStyle = '#eef0f0'; g.fillRect(0, 0, w, h);
-    g.fillStyle = 'rgba(150,155,160,0.5)';
-    for (let x = 4; x < w; x += 8) g.fillRect(x, 0, 1, h);
-    for (let y = 0; y < h; y += 64) g.fillRect(0, y, w, 2);
-  });
-  // Cupola: sechs Trapezfenster (Seitenfläche) und ein rundes Fenster von 80 cm (Boden), Glas fast durchsichtig
+// Cupola: sechs Trapezfenster (Seitenfläche) und ein rundes Fenster von 80 cm (Boden), Glas fast durchsichtig
+function cupolaTextures() {
   const win = canvasTex(768, 128, (g, w, h) => {
     g.clearRect(0, 0, w, h);
     for (let i = 0; i < 6; i++) {
@@ -90,126 +56,180 @@ function textures() {
     g.save(); g.beginPath(); g.arc(w / 2, h / 2, w * 0.21, 0, Math.PI * 2); g.clip(); g.clearRect(0, 0, w, h);
     g.fillStyle = 'rgba(40,60,90,0.14)'; g.fillRect(0, 0, w, h); g.restore();
   });
-  return {
-    cells: cells([28, 38, 82], 'rgb(60,72,110)'), irosa: cells([22, 26, 40], 'rgb(52,58,78)'),
-    back: canvasTex(64, 256, (g, w, h) => { g.fillStyle = '#b48a4e'; g.fillRect(0, 0, w, h); g.fillStyle = 'rgba(90,60,30,0.35)'; for (let y = 0; y < h; y += 16) g.fillRect(0, y, w, 1); }),
-    mliUS: mli('#dcd8cc'), mliRU: mli('#cfd2c6'), lattice, rad, win, top,
-  };
+  return { win, top };
 }
 
 export function create(ctx) {
   const ov = createOrbitView(ctx, { sat: 'ISS (ZARYA)', fallback: [6797.6, 0.00069, 51.63, 15.24, 308.06, 51.97, -0.4267, 3], radius: 70 });
   const { scene, camera } = ov;
-  const T = textures();
+  const K = stationKit(ctx), mat = K.mat;
+  const C = cupolaTextures();
   const station = new THREE.Group();
   scene.add(station);
+  const I = K.inst(station);
 
-  // ---------- Materialien ----------
   const M = {
-    us: stationMat({ map: T.mliUS, roughness: 0.78, metalness: 0.02 }),
-    ru: stationMat({ map: T.mliRU, roughness: 0.7, metalness: 0.05 }),
-    metal: stationMat({ color: 0xa9aeb5, roughness: 0.42, metalness: 0.6 }),
-    dark: stationMat({ color: 0x3d4148, roughness: 0.6, metalness: 0.5 }),
-    lattice: stationMat({ map: T.lattice, alphaTest: 0.5, side: THREE.DoubleSide, roughness: 0.5, metalness: 0.45 }),
-    cells: stationMat({ map: T.cells, roughness: 0.32, metalness: 0.35 }),
-    irosa: stationMat({ map: T.irosa, roughness: 0.28, metalness: 0.45 }),
-    back: stationMat({ map: T.back, roughness: 0.5, metalness: 0.2 }),
-    rad: stationMat({ map: T.rad, roughness: 0.38, metalness: 0.05 }),
+    win: stationMat({ map: C.win, side: THREE.DoubleSide, roughness: 0.15, metalness: 0.3 }),
+    top: stationMat({ map: C.top, side: THREE.DoubleSide, roughness: 0.15, metalness: 0.3 }),
     arm: stationMat({ color: 0xe9e9e4, roughness: 0.6, metalness: 0.05 }),
-    win: stationMat({ map: T.win, side: THREE.DoubleSide, roughness: 0.15, metalness: 0.3 }),
-    top: stationMat({ map: T.top, side: THREE.DoubleSide, roughness: 0.15, metalness: 0.3 }),
   };
-  T.mliUS.repeat.set(3, 2); T.mliRU.repeat.set(3, 3);
 
-  const add = (parent, geo, mat, pos, rot) => {
-    const m = new THREE.Mesh(geo, mat);
-    m.position.set(...pos);
-    if (rot) m.rotation.set(...rot);
-    m.castShadow = m.receiveShadow = true;
-    parent.add(m);
-    return m;
+  const add = (parent, geo, m, pos, rot) => {
+    const o = new THREE.Mesh(geo, m);
+    o.position.set(...pos);
+    if (rot) o.rotation.set(...rot);
+    o.castShadow = o.receiveShadow = true;
+    parent.add(o);
+    return o;
   };
-  // Modul als Zylinder entlang einer Achse
-  const tube = (r, len, ax, pos, mat = M.us, r2 = r) => {
-    const g = new THREE.CylinderGeometry(r2, r, len, 40, 1);
+  // Modul als Zylinder entlang einer Achse, Muster in Metern; dress = Ringe, Haltegriffe, Geräte (false = ohne)
+  let seed = 100;
+  const tube = (r, len, ax, pos, m = mat('us'), r2 = r, dress = {}) => {
+    const g = K.tubeUV(new THREE.CylinderGeometry(r2, r, len, 48, 1), Math.max(r, r2), len, TILE);
     if (ax === 'x') g.rotateZ(-Math.PI / 2); else if (ax === 'z') g.rotateX(Math.PI / 2);
-    return add(station, g, mat, pos);
+    const o = add(station, g, m, pos);
+    if (dress) K.dress(I, ax, V(...pos), Math.max(r, r2), len, { seed: seed++, ...dress });
+    return o;
   };
+  const RU = { rail: 'railGrey', rails: 5 };
 
   // ---------- Druckmodule (vorn → achtern) ----------
-  tube(1.4, 1.6, 'x', [16.25, 0, 0], M.metal, 1.0);       // PMA-2 mit Kopplungsadapter
-  tube(2.2, 7.2, 'x', [11.85, 0, 0]);                      // Harmony
-  tube(2.25, 6.9, 'z', [11.85, 0, 5.65]);                  // Columbus (ESA)
-  tube(2.2, 11.2, 'z', [11.85, 0, -7.8]);                  // Kibo, Druckmodul (JAXA)
-  tube(2.1, 4.2, 'y', [11.85, 4.3, -8.5]);                 // Kibo, Logistikmodul
-  add(station, new THREE.BoxGeometry(4.6, 1.6, 5.6), M.metal, [11.85, -0.4, -16.2]);   // Kibo, Außenplattform
-  [[-1.2, 0.6, -15], [1.3, 0.9, -17.2], [0, 0.5, -18.2]].forEach((p) => add(station, new THREE.BoxGeometry(1.4, 1.2, 1.3), M.us, [11.85 + p[0], 0.4 + p[1], p[2]]));
-  tube(2.15, 8.5, 'x', [4.0, 0, 0]);                       // Destiny
-  tube(2.3, 5.5, 'x', [-3.0, 0, 0]);                       // Unity
-  tube(2.0, 5.5, 'z', [-3.0, 0, 5.05]);                    // Quest (Luftschleuse)
-  tube(2.25, 6.7, 'z', [-3.0, 0, -5.65]);                  // Tranquility
-  tube(2.2, 4.5, 'x', [1.5, 0, -7.0]);                     // Leonardo (vorn an Tranquility)
-  tube(1.4, 1.9, 'x', [-6.7, 0, 0], M.metal, 1.0);        // PMA-1
-  tube(2.05, 12.6, 'x', [-14.1, 0, 0], M.ru);              // Sarja
-  tube(1.15, 6.0, 'y', [-16.5, -5.0, 0], M.ru);            // Rasswet
-  add(station, new THREE.SphereGeometry(1.35, 24, 16), M.ru, [-21.3, 0, 0]);   // Kopplungsknoten Swesda
-  tube(1.45, 4.0, 'x', [-24.0, 0, 0], M.ru);               // Swesda, Arbeitsteil
-  tube(2.1, 7.5, 'x', [-29.75, 0, 0], M.ru);               // Swesda, hinten
-  tube(1.25, 4.0, 'y', [-21.3, 3.3, 0], M.ru);             // Poisk
-  tube(2.1, 13.0, 'y', [-21.3, -7.8, 0], M.ru);            // Nauka
-  add(station, new THREE.SphereGeometry(1.7, 24, 16), M.ru, [-21.3, -16.0, 0]);   // Pritschal
+  tube(1.4, 1.6, 'x', [16.25, 0, 0], mat('us'), 1.0, false);   // PMA-2 mit Kopplungsadapter IDA-2
+  I.rod(V(17.05, 0, 0), V(17.45, 0, 0), 0.95, mat('metal'), K.U.disk).rod(V(17.0, 0, 0), V(17.15, 0, 0), 1.05, mat('dark'), K.U.disk);
+  tube(2.2, 7.2, 'x', [11.85, 0, 0]);                        // Harmony
+  tube(1.4, 1.6, 'y', [11.85, 3.0, 0], mat('us'), 1.0, false); // PMA-3 oben mit IDA-3
+  I.rod(V(11.85, 3.8, 0), V(11.85, 4.2, 0), 0.95, mat('metal'), K.U.disk).rod(V(11.85, 3.75, 0), V(11.85, 3.9, 0), 1.05, mat('dark'), K.U.disk);
+  tube(2.25, 6.9, 'z', [11.85, 0, 5.65]);                    // Columbus (ESA)
+  tube(2.2, 11.2, 'z', [11.85, 0, -7.8]);                    // Kibo, Druckmodul (JAXA)
+  tube(2.1, 4.2, 'y', [11.85, 4.3, -8.5], mat('us'), 2.1, { rails: 4 });   // Kibo, Logistikmodul
+  tube(2.15, 8.5, 'x', [4.0, 0, 0]);                         // Destiny
+  tube(2.3, 5.5, 'x', [-3.0, 0, 0]);                         // Unity
+  tube(2.0, 5.5, 'z', [-3.0, 0, 5.05]);                      // Quest (Luftschleuse)
+  tube(2.25, 6.7, 'z', [-3.0, 0, -5.65]);                    // Tranquility
+  tube(2.2, 4.5, 'x', [1.5, 0, -7.0], mat('us'), 2.2, { rails: 4 });   // Leonardo (vorn an Tranquility)
+  tube(1.4, 1.9, 'x', [-6.7, 0, 0], mat('us'), 1.0, false);  // PMA-1
+  tube(2.05, 12.6, 'x', [-14.1, 0, 0], mat('ru'), 2.05, RU); // Sarja
+  tube(1.15, 6.0, 'y', [-16.5, -5.0, 0], mat('ru'), 1.15, { ...RU, rails: 3 });   // Rasswet
+  add(station, new THREE.SphereGeometry(1.35, 32, 20), mat('ru'), [-21.3, 0, 0]);  // Kopplungsknoten Swesda
+  tube(1.45, 4.0, 'x', [-24.0, 0, 0], mat('ru'), 1.45, { ...RU, rails: 4 });      // Swesda, Arbeitsteil
+  tube(2.1, 7.5, 'x', [-29.75, 0, 0], mat('ru'), 2.1, RU);   // Swesda, hinten
+  tube(1.25, 4.0, 'y', [-21.3, 3.3, 0], mat('ru'), 1.25, { ...RU, rails: 3 });    // Poisk
+  tube(2.1, 13.0, 'y', [-21.3, -7.8, 0], mat('ru'), 2.1, RU);  // Nauka
+  add(station, new THREE.SphereGeometry(1.7, 32, 20), mat('ru'), [-21.3, -16.0, 0]);  // Pritschal
+  // Swesda: Kurs-Antenne und Stabantennen am Heck
+  I.rod(V(-32.6, 2.0, 0.8), V(-32.6, 3.3, 1.4), 0.04, mat('metal')).rod(V(-31.2, -2.0, -0.6), V(-31.2, -3.4, -1.2), 0.03, mat('metal'));
+  I.rod(V(-32.6, 3.3, 1.4), V(-32.6, 3.42, 1.46), 0.42, mat('box'), K.U.disk);
+  // Quest: vier Gasdruckbehälter (Sauerstoff, Stickstoff) außen
+  for (const a of [45, 135, 225, 315]) I.ball(V(-3.0 + Math.cos(a * RAD) * 2.45, Math.sin(a * RAD) * 2.45, 6.4), 0.55, mat('us'));
+  // BEAM: aufblasbares Modul an Tranquility achtern (Stoffhülle), Bishop: Schleuse in Glockenform an Tranquility backbord
+  tube(1.6, 3.4, 'x', [-7.0, 0, -7.0], mat('beam'), 1.6, false);
+  for (const s of [-1, 1]) { const cap = add(station, new THREE.SphereGeometry(1.6, 32, 12, 0, Math.PI * 2, 0, Math.PI / 2), mat('beam'), [-7.0 + s * 1.7, 0, -7.0]); cap.rotation.z = -s * Math.PI / 2; cap.scale.y = 0.35; }
+  const bishop = add(station, new THREE.LatheGeometry([[1.0, 0], [1.05, 0.3], [1.55, 0.85], [1.82, 1.45], [1.78, 1.9], [1.2, 2.15], [0.05, 2.2]].map(([r, y]) => new THREE.Vector2(r, y)), 48), mat('us'), [-3.0, 0, -9.0]);
+  bishop.rotation.x = -Math.PI / 2;
+  I.rod(V(-3, 0, -10.35), V(-3, 0, -10.6), 1.84, mat('gold'), K.U.ring);
 
-  // Cupola: sechseckige Kuppel unter Tranquility, schmale Seite zur Erde
-  const cup = new THREE.Mesh(new THREE.CylinderGeometry(1.475, 1.0, 1.5, 6, 1), [M.win, M.us, M.top]);
+  // Kibo: Außenplattform mit Nutzlasten, Roboterarm in Parkstellung; Columbus: Nutzlasten am Ende und Bartolomeo vorn
+  const rp = mulberry32(7);
+  const payload = (pos, s) => (rp() < 0.3 ? I.box(pos, s, mat('gold')) : I.box(pos, s, mat('box'), null, GREYS[(rp() * 4) | 0]));
+  I.box(V(11.85, -0.4, -16.2), [4.4, 0.7, 5.4], mat('us'));
+  for (const [dx, dz] of [[-1.3, -14.5], [1.2, -15.4], [-1.1, -16.9], [1.3, -17.6], [0, -18.4]]) { const s = [1.3 + rp() * 0.5, 0.8 + rp() * 0.7, 1.1 + rp() * 0.4]; payload(V(11.85 + dx, -0.05 + s[1] / 2, dz), s); }
+  for (const [p, q] of [[V(11.85, 2.3, -11.0), V(11.85, 3.6, -13.4)], [V(11.85, 3.6, -13.4), V(12.6, 2.8, -15.6)]]) I.rod(p, q, 0.13, M.arm);
+  for (const dx of [-0.9, 0.9]) for (const dy of [-1, 1]) payload(V(11.85 + dx, dy * 2.65, 8.0), [1.1, 0.75, 1.2]);
+  I.box(V(14.35, 0.4, 6.4), [0.3, 2.4, 2.6], mat('metal'));
+  payload(V(14.9, 1.0, 6.0), [0.8, 1.0, 1.0]); payload(V(14.9, -0.3, 6.8), [0.8, 0.9, 1.1]);
+
+  // Cupola: sechseckige Kuppel unter Tranquility, schmale Seite zur Erde; Läden der Seitenfenster offen nach außen
+  const cup = new THREE.Mesh(new THREE.CylinderGeometry(1.475, 1.0, 1.5, 6, 1), [M.win, mat('us'), M.top]);
   cup.position.set(-3.0, -2.95, -6.4);
   cup.receiveShadow = true;
   station.add(cup);
-
-  // ---------- Gitterträger: Mittelteil fest, Außenteile drehen mit den Drehgelenken ----------
-  const SEG = 4.7;
-  const truss = (parent, z0, z1, dx = 0, dy = 0) => {
-    for (let z = z0; z < z1 - 0.1; z += SEG) {
-      const l = Math.min(SEG, z1 - z), c = z + l / 2;
-      add(parent, new THREE.BoxGeometry(4.5, 3.0, l), M.lattice, [dx, dy, c]);
-      add(parent, new THREE.BoxGeometry(2.4, 1.6, l * 0.96), M.dark, [dx, dy, c]);
+  {
+    const q = new THREE.Quaternion(), m4 = new THREE.Matrix4(), up = V(0, 1, 0);
+    for (let i = 0; i < 6; i++) {
+      const a = (i + 0.5) * Math.PI / 3, rad = V(Math.sin(a), 0, Math.cos(a)), tan = V(Math.cos(a), 0, -Math.sin(a));
+      const dir = rad.clone().multiplyScalar(Math.cos(20 * RAD)).addScaledVector(up, Math.sin(20 * RAD));
+      const hinge = V(-3.0, -2.2, -6.4).addScaledVector(rad, 1.3);
+      q.setFromRotationMatrix(m4.makeBasis(tan, dir, new THREE.Vector3().crossVectors(tan, dir)));
+      I.box(hinge.addScaledVector(dir, 0.72), [1.1, 1.4, 0.05], mat('us'), q);
     }
+  }
+
+  // Z1 auf Unity mit Ku-Band-Antenne (Schüssel auf Ausleger)
+  I.box(V(-3.0, 3.45, 0), [3.0, 2.3, 3.2], mat('us'));
+  I.rod(V(-3.0, 4.5, 1.0), V(-3.0, 6.3, 2.3), 0.09, mat('metal'));
+  const dish = add(station, new THREE.LatheGeometry(Array.from({ length: 9 }, (_, i) => new THREE.Vector2(i * 0.12, (i * 0.12) ** 2 * 0.35)), 40), mat('paint'), [-3.0, 6.35, 2.35]);
+  dish.rotation.x = 0.55;
+  dish.material.side = THREE.DoubleSide;
+
+  // ---------- Gitterträger: Fachwerk mit Geräteboxen, Schienen der Mobilen Basis, Kabelkanal; Außenteile drehen ----------
+  const truss = (J, z0, z1, cx, cy, sd) => {
+    const rnd = mulberry32(sd);
+    K.lattice(J, V(cx, cy, z0), V(cx, cy, z1), { w: 4.5, h: 3.0, bay: 2.35, r: 0.08, m: mat('strut'), side: V(1, 0, 0) });
+    const n = Math.max(1, Math.round((z1 - z0) / 2.35)), L = (z1 - z0) / n;
+    for (let i = 0; i < n; i++) {
+      const z = z0 + (i + 0.5) * L, pick = rnd(), s = [2.2 + rnd() * 1.0, 1.1 + rnd() * 0.8, L * (0.55 + rnd() * 0.35)];
+      if (pick < 0.22) J.box(V(cx, cy, z), s, mat('gold'));
+      else if (pick < 0.45) J.box(V(cx, cy, z), s, mat('us'));
+      else J.box(V(cx, cy, z), s, mat('box'), null, GREYS[(rnd() * GREYS.length) | 0]);
+      if (rnd() < 0.55) {
+        const t = [0.8 + rnd() * 0.8, 0.45 + rnd() * 0.4, 0.7 + rnd() * 0.7], sg = rnd() < 0.5 ? 1 : -1;
+        J.box(V(cx - 0.8 + rnd() * 1.6, cy + sg * (1.5 + t[1] / 2), z), t, mat('box'), null, GREYS[(rnd() * 3) | 0]);
+      }
+    }
+    for (const dy of [-1.1, 1.1]) J.rod(V(cx + 2.35, cy + dy, z0), V(cx + 2.35, cy + dy, z1), 0.06, mat('metal'));
+    J.rod(V(cx - 1.95, cy + 1.6, z0), V(cx - 1.95, cy + 1.6, z1), 0.13, mat('dark'));
   };
-  truss(station, -TRUSS.inner, TRUSS.inner, TRUSS.x, TRUSS.y);
-  const sarj = [], bga = [], rads = [], irosaMeshes = [];
+  truss(I, -TRUSS.inner, TRUSS.inner, TRUSS.x, TRUSS.y, 3);
+  const sarj = [], bga = [], rads = [], irosaMeshes = [], late = [];
   for (const side of [1, -1]) {
     const g = new THREE.Group();
     g.position.set(TRUSS.x, TRUSS.y, 0);
     station.add(g);
     sarj.push(g);
-    add(g, new THREE.CylinderGeometry(2.5, 2.5, 1.4, 32).rotateX(Math.PI / 2), M.metal, [0, 0, side * TRUSS.inner]);
-    if (side > 0) truss(g, TRUSS.inner + 0.7, TRUSS.half); else truss(g, -TRUSS.half, -TRUSS.inner - 0.7);
+    const J = K.inst(g);
+    late.push(J);
+    J.rod(V(0, 0, side * (TRUSS.inner - 0.7)), V(0, 0, side * (TRUSS.inner + 0.7)), 2.5, mat('metal'), K.U.disk);
+    for (const dz of [-0.55, 0.55]) J.rod(V(0, 0, side * TRUSS.inner + dz - 0.08), V(0, 0, side * TRUSS.inner + dz + 0.08), 2.56, mat('dark'), K.U.ring);
+    if (side > 0) truss(J, TRUSS.inner + 0.7, TRUSS.half, 0, 0, 11); else truss(J, -TRUSS.half, -TRUSS.inner - 0.7, 0, 0, 12);
   }
-  // Solarflügel: je Modul zwei Flügel (oben/unten), jede Matte 4,6 m breit, Mast in der Mitte; Zellenseite +x
+
+  // Solarflügel: je Modul zwei Flügel (oben/unten), zwei Matten je 4,6 m mit FAST-Mast dazwischen; Zellenseite +x
   const wingMesh = (parent, sgn, iro) => {
     const w = new THREE.Group();
     parent.add(w);
+    const J = K.inst(w);
     for (const dz of [-1, 1]) {
-      const m = new THREE.Mesh(new THREE.BoxGeometry(0.05, WING.len, WING.blanket), [M.cells, M.back, M.back, M.back, M.back, M.back]);
-      m.position.set(0, sgn * (2 + WING.len / 2), dz * (WING.w / 2 - WING.blanket / 2));
+      const z = dz * (WING.w / 2 - WING.blanket / 2);
+      const m = new THREE.Mesh(K.boxUV(new THREE.BoxGeometry(0.03, WING.len, WING.blanket), 2.3, 2.6), K.panel('cells'));
+      m.position.set(0, sgn * (2 + WING.len / 2), z);
       m.castShadow = m.receiveShadow = true;
       w.add(m);
+      J.box(V(0, sgn * 1.75, z), [0.45, 0.5, WING.blanket + 0.2], mat('us'));            // Deckenkasten
+      J.box(V(0, sgn * (2.1 + WING.len), z), [0.3, 0.25, WING.blanket + 0.1], mat('metal')); // Spitze
     }
-    add(w, new THREE.CylinderGeometry(0.22, 0.22, WING.len + 0.5, 10), M.metal, [0, sgn * (1.8 + WING.len / 2), 0]);
-    add(w, new THREE.BoxGeometry(0.8, 0.5, WING.w), M.metal, [0, sgn * (2 + WING.len), 0]);
-    add(w, new THREE.BoxGeometry(1.1, 1.6, 2.4), M.metal, [0, sgn * 1.2, 0]);
+    K.lattice(J, V(0, sgn * 1.6, 0), V(0, sgn * (2.15 + WING.len), 0), { w: 0.75, bay: 0.62, r: 0.035, m: mat('strut'), side: V(1, 0, 0) });
+    J.rod(V(0, sgn * 0.3, 0), V(0, sgn * 1.6, 0), 0.55, mat('gold'), K.U.disk);            // Mastkanister
+    J.box(V(0, sgn * (2.25 + WING.len), 0), [0.4, 0.3, WING.w + 0.3], mat('metal'));     // Spitzenbalken
     if (iro) {
-      // iROSA: auf einem Rahmen über der Zellenseite, schräg nach außen aufgestellt
+      // iROSA: auf einem Rahmen über der Zellenseite, schräg nach außen aufgestellt; Verbundausleger an beiden Kanten,
+      // Rolle an der Spitze
       const r = new THREE.Group();
       r.position.set(0.25, sgn * 3.0, 0);
       r.rotation.z = sgn * 9 * RAD;
-      const m = new THREE.Mesh(new THREE.BoxGeometry(0.04, IROSA.len, IROSA.w), [M.irosa, M.back, M.back, M.back, M.back, M.back]);
+      const m = new THREE.Mesh(K.boxUV(new THREE.BoxGeometry(0.03, IROSA.len, IROSA.w), 1.5), K.panel('irosa'));
       m.position.set(0, sgn * IROSA.len / 2, 0);
       m.castShadow = m.receiveShadow = true;
       r.add(m);
-      add(r, new THREE.BoxGeometry(0.3, IROSA.len, 0.25), M.metal, [-0.12, sgn * IROSA.len / 2, 0]);
+      const Jr = K.inst(r);
+      for (const dz of [-1, 1]) Jr.rod(V(-0.06, 0, dz * IROSA.w / 2), V(-0.06, sgn * IROSA.len, dz * IROSA.w / 2), 0.07, mat('strut'));
+      Jr.rod(V(-0.12, sgn * IROSA.len, -IROSA.w / 2 - 0.15), V(-0.12, sgn * IROSA.len, IROSA.w / 2 + 0.15), 0.17, mat('dark'), K.U.disk);
+      Jr.rod(V(-0.12, 0, -IROSA.w / 2 - 0.15), V(-0.12, 0, IROSA.w / 2 + 0.15), 0.2, mat('metal'), K.U.disk);
+      Jr.rod(V(-0.12, 0, 0), V(-0.4, -sgn * 1.2, 0), 0.08, mat('strut'));
+      late.push(Jr);
       w.add(r);
       irosaMeshes.push(r);
     }
+    late.push(J);
     return w;
   };
   for (const p of PVM) {
@@ -217,39 +237,91 @@ export function create(ctx) {
     const base = new THREE.Group();
     base.position.set(0, 0, p.side * p.z);
     parent.add(base);
-    add(base, new THREE.BoxGeometry(3.2, 3.2, 3.2), M.metal, [0, 0, 0]);
+    const J = K.inst(base);
+    // IEA: Kasten mit Batterien, PVR-Radiator nach achtern (Kante zur Sonne, im Schatten der Flügel)
+    J.box(V(0, 0, 0), [3.2, 3.2, 3.2], mat('us'));
+    for (const dy of [-1.1, 0, 1.1]) J.box(V(1.75, dy, 0), [0.3, 0.9, 2.6], mat('box'), null, GREYS[3]);
+    for (let k = 0; k < 6; k++) J.box(V(-2.0 - k * 2.05, 0, 0), [1.95, 0.06, 3.4], mat('rad'));
+    J.rod(V(-1.6, 0, -1.75), V(-14.3, 0, -1.75), 0.04, mat('metal')).rod(V(-1.6, 0, 1.75), V(-14.3, 0, 1.75), 0.04, mat('metal'));
+    late.push(J);
     const up = wingMesh(base, 1, p.up[1]), down = wingMesh(base, -1, p.down[1]);
     bga.push(up, down);
   }
-  // Radiatoren an S1/P1: je Seite drei Platten 23 × 3,2 m, drehbar um die Trägerachse
+  // Radiatoren an S1/P1: je Seite drei Radiatoren aus 8 Platten (23 × 3,2 m), Scherengestänge an den Kanten, drehbar
   for (const side of [1, -1]) {
     const g = new THREE.Group();
     g.position.set(TRUSS.x, TRUSS.y - 1.5, 0);
     station.add(g);
     rads.push(g);
-    for (let i = 0; i < 3; i++) add(g, new THREE.BoxGeometry(0.12, 23, 3.2), M.rad, [0, -12.3, side * (11 + i * 3.8)]);
-    add(g, new THREE.BoxGeometry(1.0, 1.4, 11.6), M.metal, [0, -0.6, side * 14.8]);
+    const J = K.inst(g);
+    for (let i = 0; i < 3; i++) {
+      const z = side * (11 + i * 3.8);
+      for (let p = 0; p < 8; p++) {
+        const y0 = -0.8 - p * 2.88, y1 = y0 - 2.76;
+        J.box(V(0, (y0 + y1) / 2, z), [0.08, 2.76, 3.2], mat('rad'));
+        for (const e of [-1, 1]) J.rod(V(p % 2 ? 0.22 : -0.22, y0, z + e * 1.66), V(p % 2 ? -0.22 : 0.22, y1, z + e * 1.66), 0.03, mat('metal'));
+      }
+    }
+    J.box(V(0, -0.6, side * 14.8), [1.0, 1.4, 11.6], mat('us'));
+    late.push(J);
   }
-  // Solarflügel von Swesda (zwei Flügel quer, drehen um ihre Längsachse)
-  const zvWings = [];
+  // Solarflügel von Swesda (zwei Flügel quer aus je 4 Feldern, drehen um ihre Längsachse)
+  const zvWings = [], zvPanel = [mat('back'), mat('back'), mat('cellsRU'), mat('back'), mat('back'), mat('back')];
   for (const side of [1, -1]) {
     const g = new THREE.Group();
     g.position.set(-31.0, 0, side * 2.4);
     station.add(g);
     zvWings.push(g);
-    const m = new THREE.Mesh(new THREE.BoxGeometry(3.4, 0.05, 13), [M.back, M.back, M.cells, M.back, M.back, M.back]);
-    m.position.set(0, 0, side * 6.9);
-    m.castShadow = m.receiveShadow = true;
-    g.add(m);
+    const J = K.inst(g);
+    J.rod(V(0, 0, 0), V(0, 0, side * 13.4), 0.07, mat('metal'));
+    for (let i = 0; i < 4; i++) {
+      const z = side * (0.45 + i * 3.2 + 1.55);
+      J.box(V(0, 0, z), [3.4, 0.04, 3.05], zvPanel);
+      for (const dx of [-1.72, 1.72]) J.rod(V(dx, 0, z - 1.52), V(dx, 0, z + 1.52), 0.03, mat('metal'));
+    }
+    late.push(J);
   }
-  // Roboterarm Canadarm2 (vereinfacht) in Parkstellung über Destiny
-  const armPts = [[5.5, 6.4, -4.0], [12.5, 9.5, -6.5], [19.0, 4.8, -5.0]];
-  for (let i = 0; i < 2; i++) {
-    const a = new THREE.Vector3(...armPts[i]), b = new THREE.Vector3(...armPts[i + 1]);
-    const m = add(station, new THREE.CylinderGeometry(0.18, 0.18, a.distanceTo(b), 12), M.arm, [(a.x + b.x) / 2, (a.y + b.y) / 2, (a.z + b.z) / 2]);
-    m.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), b.clone().sub(a).normalize());
+  // Roboterarme: Canadarm2 auf der Mobilen Basis (Parkstellung über Destiny) mit Gelenken und Greifern, ERA an Nauka
+  const arm = (pts, r, base) => {
+    for (let i = 0; i < pts.length - 1; i++) I.rod(V(...pts[i]), V(...pts[i + 1]), r, M.arm);
+    pts.forEach((p, i) => {
+      const a = V(...p), d = V(...pts[Math.max(1, i)]).sub(V(...pts[Math.max(1, i) - 1])).normalize(), n = new THREE.Vector3().crossVectors(d, V(0, 0, 1)).normalize();
+      I.rod(a.clone().addScaledVector(n, -0.5 * r / 0.18), a.clone().addScaledVector(n, 0.5 * r / 0.18), r * 1.9, M.arm, K.U.disk);
+      I.rod(a.clone().addScaledVector(n, -0.12), a.clone().addScaledVector(n, 0.12), r * 2.0, mat('dark'), K.U.ring);
+      if (i === 0 || i === pts.length - 1) {
+        const o = i === 0 ? -1 : 1, tip = a.clone().addScaledVector(d, o * 1.1 * r / 0.18);
+        I.rod(a, tip, r * 1.5, M.arm, K.U.disk).rod(tip, tip.clone().addScaledVector(d, o * 0.12), r * 1.55, mat('dark'), K.U.disk);
+      }
+    });
+    if (base) I.box(V(...base[0]), base[1], mat('us'));
+  };
+  arm([[5.5, 6.9, -4.0], [12.5, 9.5, -6.5], [19.0, 4.8, -5.0]], 0.18, [[5.3, 6.35, -4.0], [2.6, 0.5, 2.8]]);
+  arm([[-19.0, -3.8, 2.3], [-18.9, -8.8, 2.4], [-19.3, -12.6, 2.2]], 0.12);
+
+  // AMS-02 auf S3 oben: Vakuumgehäuse des Magneten in Folie, Detektor oben, Hauptradiatoren zu Bug und Heck
+  const ams = V(TRUSS.x, TRUSS.y + 1.55, 17.5);
+  I.box(ams.clone().add(V(0, 0.12, 0)), [3.8, 0.25, 3.2], mat('metal'));
+  I.rod(ams.clone().add(V(0, 0.25, 0)), ams.clone().add(V(0, 2.5, 0)), 1.4, mat('silver'), K.U.disk);
+  I.rod(ams.clone().add(V(0, 2.5, 0)), ams.clone().add(V(0, 3.3, 0)), 1.2, mat('us'), K.U.disk);
+  for (const s of [-1, 1]) I.box(ams.clone().add(V(s * 1.95, 1.7, 0)), [0.1, 2.9, 3.0], mat('rad'));
+  I.box(ams.clone().add(V(0.6, 3.6, 0.9)), [1.2, 0.6, 1.1], mat('gold'));
+  // ELC-Plattformen (Ersatzteile, Experimente) oben und unten an S3 und P3
+  for (const [z, s] of [[23.5, 1], [23.5, -1], [-23.5, 1], [-23.5, -1]]) {
+    const y = TRUSS.y + s * 1.65;
+    I.box(V(TRUSS.x, y, z), [2.8, 0.25, 4.0], mat('metal'));
+    for (const [dx, dz] of [[-0.7, -1.1], [0.7, -1.0], [-0.6, 0.6], [0.75, 1.2]]) { const t = [1.0 + rp() * 0.4, 0.5 + rp() * 0.7, 1.2 + rp() * 0.5]; payload(V(TRUSS.x + dx, y + s * (0.12 + t[1] / 2), z + dz), t); }
   }
-  armPts.forEach((p) => add(station, new THREE.SphereGeometry(0.42, 16, 12), M.arm, p));
+
+  // ---------- Besuchsschiffe (typische Belegung, Modell) ----------
+  const ships = new THREE.Group();
+  station.add(ships);
+  K.dock(ships, K.ship.dragon({ crew: true }), V(17.45, 0, 0), V(1, 0, 0));
+  K.dock(ships, K.ship.dragon({ crew: false }), V(11.85, 4.2, 0), V(0, 1, 0));
+  K.dock(ships, K.ship.soyuz(), V(-16.5, -8.0, 0), V(0, -1, 0));
+  K.dock(ships, K.ship.soyuz({ cargo: true }), V(-33.5, 0, 0), V(-1, 0, 0));
+  K.dock(ships, K.ship.soyuz({ cargo: true }), V(-21.3, 5.3, 0), V(0, 1, 0));
+  I.done();
+  late.forEach((J) => J.done());
 
   // ---------- Nachführung: Drehgelenk um den Träger (α), Flügelgelenk (β), Radiatoren mit der Kante zur Sonne ----------
   let track = true, first = true;
@@ -296,6 +368,7 @@ export function create(ctx) {
     arrays: wp(bga[2], 0, 22, 0), irosa: wp(irosaMeshes[irosaMeshes.length - 1], 0.1, -9, 0), radiators: wp(rads[0], 0, -14, 15),
   };
   const out = () => view.mode === 'out';
+  const shipsOut = () => out() && ships.visible;
   const hs = {
     cupola: { id: 'cupola', kind: 'info', pos: new THREE.Vector3(-3.0, -3.9, -6.4), focus: () => 12, visible: out },
     labs: { id: 'labs', kind: 'info', pos: new THREE.Vector3(11.85, 2.6, 3), focus: () => 30 },
@@ -304,6 +377,7 @@ export function create(ctx) {
     irosa: { id: 'irosa', kind: 'info', pos: new THREE.Vector3(), focus: () => 40 },
     radiators: { id: 'radiators', kind: 'info', pos: new THREE.Vector3(), focus: () => 35 },
     russian: { id: 'russian', kind: 'info', pos: new THREE.Vector3(-26, 2.4, 0), focus: () => 35 },
+    ships: { id: 'ships', kind: 'info', pos: new THREE.Vector3(21.0, 2.6, 0), focus: () => 26, visible: shipsOut },
     horizon: { id: 'horizon', kind: 'info', pos: ov.spots.horizon, visible: () => view.mode === 'out' },
     below: { id: 'below', kind: 'info', pos: ov.spots.below },
     sun: { id: 'sun', kind: 'info', pos: ov.spots.sun, visible: () => ov.lit > 0.5 },
@@ -319,6 +393,7 @@ export function create(ctx) {
   registerLayers('iss', [
     ov.layers.clock('ISS'),
     { id: 'irosa', type: 'toggle', group: 'Station', label: 'iROSA (neue Solarflügel)', value: true, set: (v) => { irosaMeshes.forEach((m) => { m.visible = v; }); } },
+    { id: 'ships', type: 'toggle', label: 'Besuchsschiffe', hint: 'Crew Dragon, Cargo Dragon, Sojus und zwei Progress an typischen Häfen – Modell, nicht der Flugplan am angezeigten Tag.', value: true, set: (v) => { ships.visible = v; } },
     { id: 'boost', type: 'toggle', label: 'Im Erdschatten aufhellen', hint: 'Echt ist die Station im Schatten fast schwarz; aufgehellt bleibt sie erkennbar.', value: true, set: (v) => ov.setBoost(v) },
     { id: 'orbit', type: 'toggle', group: 'Bahn', label: 'Bahnspur am Boden', hint: 'Gelbe Linie: der Weg der Station über den Boden, ein halber Umlauf zurück und anderthalb voraus (im Blick „Cupola“ aus).', value: true, set: (v) => { trackOn = v; ov.setTrack(v && view.mode === 'out'); } },
     ...ov.layers.earth(),
@@ -333,7 +408,7 @@ export function create(ctx) {
   const look = { exposure: 1.0, bloom: 0.07, sat: 1.05 };
   return {
     scene, camera, home, unit: 1, hotspots, controls, look, orbit,
-    ready: ov.ready,
+    ready: Promise.all([ov.ready, K.ready()]),
     update(dt, t, cam, flying) {
       ov.update(dt, t, cam, flying);
       steer(flying ? 1 : dt);
@@ -376,7 +451,8 @@ export function create(ctx) {
     setPixelRatio: (p) => ov.setPixelRatio(p),
     dispose() {
       ov.dispose();
-      Object.values(T).forEach((x) => x.dispose());
+      K.dispose();
+      Object.values(C).forEach((x) => x.dispose());
     },
   };
 }
