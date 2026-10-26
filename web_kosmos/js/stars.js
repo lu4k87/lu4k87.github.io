@@ -9,28 +9,37 @@ import * as THREE from 'three';
 import { blackbody, mulberry32, gauss } from './astro.js';
 import { NOISE, SKY_VERTEX } from './glsl.js';
 
+// Punktbild eines Sterns: scharfer Kern (Gauß, σ ≈ 0,5 px – stabil bei Bewegung, kein Flimmern unter 1 px) und für helle
+// Sterne ein schwacher Hof (Streulicht der Optik); Energie bleibt erhalten, helle Sterne werden breiter, nicht zu Klecksen.
+// Helligkeit gestaucht (Fluss^0,5 wie ein lang belichtetes Astrofoto) und so kalibriert, dass Sterne bis ~7 mag die
+// ACES-Kurve (drückt dunkle Werte ~5×) überstehen; schwächere bleiben feiner Staub.
 const STAR_VERT = /* glsl */ `
 ${SKY_VERTEX}
 attribute vec3 color;
 attribute float mag;
 uniform float uPx, uGain, uLimit;
 varying vec3 vCol;
+varying float vSize, vSig, vHalo, vLam;
 void main() {
   gl_Position = skyPosition(position);
-  float bright = smoothstep(uLimit, -1.5, mag);
-  float size = uPx * mix(1.6, 4.6, bright * bright);
-  gl_PointSize = size;
-  // Energie über die Fläche verteilen: größere Scheibchen werden nicht heller, nur weicher
-  float flux = pow(10.0, -0.4 * (mag - 1.0));
-  vCol = color * uGain * flux * 9.0 / (size * size) * step(mag, uLimit);
+  float bright = smoothstep(uLimit - 1.0, -1.5, mag);
+  float b2 = bright * bright;
+  vSig = uPx * (0.5 + 0.45 * b2);
+  vHalo = 0.05 * b2;
+  vLam = uPx * 1.4;
+  vSize = (6.4 * vSig + 8.0 * uPx * b2) * step(mag, uLimit);
+  gl_PointSize = vSize;
+  float flux = pow(10.0, -0.2 * (mag - 1.0));
+  vCol = color * uGain * flux * 1.5 / (vSig * vSig + vHalo * vLam * vLam);
 }
 `;
 const STAR_FRAG = /* glsl */ `
 varying vec3 vCol;
+varying float vSize, vSig, vHalo, vLam;
 void main() {
-  vec2 d = gl_PointCoord - 0.5;
-  float a = exp(-dot(d, d) * 18.0);
-  gl_FragColor = vec4(vCol * a, 1.0);
+  float q = length(gl_PointCoord - 0.5), r = q * vSize;   // r in Pixeln
+  float a = exp(-r * r / (2.0 * vSig * vSig)) + vHalo * exp(-r / vLam);
+  gl_FragColor = vec4(vCol * a * (1.0 - smoothstep(0.42, 0.5, q)), 1.0);
 }
 `;
 
@@ -79,12 +88,15 @@ void main() {
   vec3 d = normalize(vDir);
   float sb = dot(d, uNgp);                          // sin b
   float gcA = acos(clamp(dot(d, uGc), -1.0, 1.0));  // Winkel zum galaktischen Zentrum
-  float band = exp(-pow(sb / 0.16, 2.0));
+  // schmaler heller Kern, breite schwache Flügel
+  float band = 0.7 * exp(-pow(sb / 0.11, 2.0)) + 0.3 * exp(-pow(sb / 0.26, 2.0));
   float bulge = exp(-pow(gcA / 0.5, 2.0)) * exp(-pow(sb / 0.22, 2.0));
-  float clump = 0.55 + 0.45 * fbm(d * 7.0, 5);
-  // Staubbahnen (Great Rift): dunkle Fäden genau in der Ebene
+  // Sternwolken: grobe Ballung + feine Körnung
+  float clump = max(0.0, 0.5 + 0.4 * fbm(d * 7.0, 5) + 0.25 * fbm(d * 26.0, 3));
+  // Staubbahnen (Great Rift): dunkle Bahn genau in der Ebene, dazu feine Staubfäden im Band
   float dust = smoothstep(0.12, 0.0, abs(sb + 0.03 * gnoise(d * 9.0))) * smoothstep(-0.1, 0.4, fbm(d * 5.0 + 3.0, 4));
-  float I = (band * clump * (0.45 + 0.55 * exp(-gcA * 0.8)) + bulge * 1.6) * (1.0 - 0.75 * dust);
+  float fil = smoothstep(0.05, 0.3, fbm(d * 17.0 + 7.0, 4)) * exp(-pow(sb / 0.15, 2.0));
+  float I = (band * clump * (0.45 + 0.55 * exp(-gcA * 0.8)) + bulge * 1.6) * (1.0 - 0.75 * dust) * (1.0 - 0.45 * fil);
   vec3 col = mix(vec3(0.75, 0.78, 0.92), vec3(1.0, 0.86, 0.66), bulge + 0.3);
   gl_FragColor = vec4(col * I * uGain, 1.0);
 }
@@ -130,8 +142,8 @@ export function milkyBand(ngp, gc, gain = 1) {
 }
 
 // ngp = Richtung galaktischer Nordpol, gc = Richtung galaktisches Zentrum (beide in der Szene der Ebene)
-export function createStarfield({ count = 9000, seed = 7, ngp = new THREE.Vector3(0, 1, 0), gc = new THREE.Vector3(1, 0, 0),
-  gain = 1, band = 1, limit = 7.2, glint = true } = {}) {
+export function createStarfield({ count = 26000, seed = 7, ngp = new THREE.Vector3(0, 1, 0), gc = new THREE.Vector3(1, 0, 0),
+  gain = 1, band = 1, limit = 8, glint = true } = {}) {
   const rand = mulberry32(seed);
   const n = ngp.clone().normalize();
   const u = gc.clone().addScaledVector(n, -gc.dot(n)).normalize();
@@ -139,8 +151,8 @@ export function createStarfield({ count = 9000, seed = 7, ngp = new THREE.Vector
   const pos = new Float32Array(count * 3), col = new Float32Array(count * 3), mag = new Float32Array(count);
   const dir = new THREE.Vector3();
   for (let i = 0; i < count; i++) {
-    // Helligkeit: Anzahl wächst etwa ×3 je Größenklasse (Seares-Gesetz, grob)
-    const m = -1.4 + Math.log(1 + rand() * (Math.exp(1.1 * 8.6) - 1)) / 1.1;
+    // Helligkeit: Anzahl wächst etwa ×3 je Größenklasse (Seares-Gesetz, grob), bis zur Grenzgröße
+    const m = -1.4 + Math.log(1 + rand() * (Math.exp(1.1 * (limit + 1.4)) - 1)) / 1.1;
     // schwächere Sterne häufen sich zur galaktischen Ebene
     const inPlane = rand() < 0.25 + 0.35 * Math.min(1, Math.max(0, (m - 3) / 4));
     if (inPlane) {
@@ -150,10 +162,11 @@ export function createStarfield({ count = 9000, seed = 7, ngp = new THREE.Vector
       dir.set(gauss(rand), gauss(rand), gauss(rand)).normalize();
     }
     pos.set([dir.x, dir.y, dir.z], i * 3);
-    // Temperaturen: viele K-Riesen und G-Sterne, einige heiße A/B-Sterne unter den hellen
-    const r = rand();
-    const T = r < 0.3 ? 3400 + rand() * 1600 : r < 0.75 ? 5000 + rand() * 2200 : 7200 + Math.pow(rand(), 2) * 18000;
-    col.set(blackbody(T), i * 3);
+    // Temperaturen: viele K-Riesen und G-Sterne; heiße A/B-Sterne häufiger unter den hellen (leuchtkräftig, weit sichtbar)
+    const r = rand(), hot = 0.36 - 0.025 * m;
+    const T = r < 0.3 ? 3400 + rand() * 1600 : r < 1 - hot ? 5000 + rand() * 2200 : 7200 + Math.pow(rand(), 2) * 18000;
+    // Sternfarben wirken blass (das Auge sieht kleine helle Punkte kaum gesättigt): Planck-Farbe 25 % zu Weiß
+    col.set(blackbody(T).map((c) => 0.25 + 0.75 * c), i * 3);
     mag[i] = m;
   }
   const group = new THREE.Group();
