@@ -458,7 +458,7 @@ export function create(ctx) {
     { id: 'prom', type: 'toggle', group: 'Ausbrüche', label: 'Protuberanzen und Filamente', value: true, set: (v) => { promOn = v; applyRegions(); } },
     { id: 'flares', type: 'toggle', label: 'Flares mit Massenauswurf', value: true, set: (v) => { flaresOn = v; if (!v) { cme.visible = flash.visible = ev.visible = false; erupt.k = -1; } } },
     { id: 'flareRate', type: 'range', label: 'Häufigkeit', value: 1, min: 0.3, max: 3, step: 0.1, unit: '×', sub: true, set: (v) => { flareRate = v; } },
-    { id: 'flarePoisson', type: 'range', label: 'Taktung (Poisson 10–25 s)', value: 1, min: 0.4, max: 2.5, step: 0.1, unit: '×', sub: true, set: (v) => { burstRate = v; strandU.uBurst.value = fieldU.uBurst.value = v; } },
+    { id: 'flarePoisson', type: 'range', label: 'Platzen der Bögen', value: 1, min: 0.4, max: 2.5, step: 0.1, unit: '×', sub: true, set: (v) => { burstRate = v; strandU.uBurst.value = fieldU.uBurst.value = v; } },
     { id: 'flareSpray', type: 'range', label: 'Spray & Schockwelle', value: 1, min: 0.3, max: 2.5, step: 0.1, unit: '×', sub: true, set: (v) => { sprayAmt = v; strandU.uSpray.value = fieldU.uSpray.value = v; } },
     { id: 'erupt', type: 'range', label: 'Art des Ausbruchs', value: eruptIdx, min: 0, max: ERUPTS.length - 1, step: 1, fmt: (i) => ERUPTS[Math.round(i)], sub: true, set: (v) => { eruptIdx = Math.round(v); },
       active: () => lookOn, only: 'Nur bei Glut und 304 Å; sonst ein Flare mit Massenauswurf.' },

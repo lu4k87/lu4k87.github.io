@@ -340,7 +340,8 @@ float corona(vec3 qW, vec3 q, float h, float t) {
   return (exp(-h / 0.03) * 0.09 + exp(-h / 0.15) * 0.025 + exp(-h / 0.7) * 0.006) * (0.6 + s) * rays + exp(-h / 0.4) * 0.02 * s * rays;
 }
 // Ausbruch A: Auswurf-Blase um das aufsteigende Filament (helle Front, davor schwach die Stoßfront; das Seil selbst sind
-// Fäden in 3D). p in Randradien auf der Tafel.
+// Fäden in 3D). p in Randradien auf der Tafel. Die Front wird nach außen dunkler (Dichte sinkt) und ist vor dem Rand der
+// Tafel (LOOK_EXT, weich ab 0,85) schon ausgeblendet – keine Kante, wo die Tafel endet.
 vec3 cmeA(vec2 p, float t, float k) {
   float r = length(p), y = r - 1.0;
   if (y < 0.0) return vec3(0.0);
@@ -351,7 +352,7 @@ vec3 cmeA(vec2 p, float t, float k) {
   float tex = 0.35 + 0.9 * max(fbm3(vec3(x * 4.0, y * 4.0 - t * 0.1, t * 0.05)), 0.0);
   float front = exp(-pow((e - 1.0) / 0.1, 2.0)) * tex;
   float shock = exp(-pow((e - 1.12) / 0.025, 2.0)) * smoothstep(0.3, 0.5, k);
-  return (vec3(1.6, 0.66, 0.22) * front * 0.28 + vec3(1.2, 0.7, 0.35) * shock * 0.07) * fade * smoothstep(0.0, 0.03, y);
+  return (vec3(1.6, 0.66, 0.22) * front * 0.28 + vec3(1.2, 0.7, 0.35) * shock * 0.07) * fade * smoothstep(0.0, 0.03, y) * (1.0 - smoothstep(1.55, 2.2, r));
 }
 // Ausbruch B: weiches Aufleuchten über dem Fußpunkt (≈ 0,7 s an, ≈ 3 s ab – kein Blitzen)
 vec3 flashB(vec2 p, float k) {

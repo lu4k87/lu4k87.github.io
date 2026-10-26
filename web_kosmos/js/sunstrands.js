@@ -1,7 +1,8 @@
 // Plasmafäden der Sonne für den Look „Glut“ und 304 Å der Station Sonne (sunlook.js, levels/sun.js): Magnetbögen als Bündel
 // feiner Fäden im Raum statt als Linien auf einer Bildtafel – Bögen der aktiven Regionen zwischen Vorläufer- und
 // Nachfolgerfleck, weitere Arkaden (Rand „Bogen-Arkaden“), Protuberanzen als verdrillte Fadenbündel und die Ausbrüche
-// (Modus 1 Filament steigt auf, 2 Flare-Arkade über den Bändern, 3 Protuberanz reißt am Scheitel auf). Jeder Faden ist ein
+// (Modus 1 Filament steigt als Ω-Bogen auf, 2 Flare-Arkade über den Bändern, 3 Protuberanz schnürt sich ab: oben steigt ein
+// Plasmoid auf, unten bleibt ein neuer Bogen – ohne Schnittkante, siehe place()). Jeder Faden ist ein
 // Band, das sich im Vertex-Shader zur Kamera dreht; aus der Ferne bleibt es mindestens einen Pixel breit und wird dafür
 // dunkler (kein Flimmern). Die Kugel verdeckt per Tiefentest, was hinter dem Rand liegt; über die ersten ≈ 4.000 km blenden die
 // Fäden in die Oberfläche aus und wurzeln so im hellen Fußpunkt (Moos im Kugel-Shader) statt an einer Kante zu enden.
@@ -12,8 +13,9 @@
 // twist (Windungen), flow (Strömung ±), flat (0 rundes Seil … 1 Vorhang), delay, seed }; arcadeLoops, prominenceLoops,
 // flareArcade, eruptLoop und loopField (Bögen über die ganze Sonne) liefern solche Listen. Material: STRAND_VERT/STRAND_FRAG mit strandUniforms(), additiv, ohne
 // Tiefenschreiben; uMode 0 ruhig · 1 Filament-Eruption · 2 Flare-Arkade (Fußpunkte aus uFS, uFE1, uFE2 wie flareDisk in
-// sunlook.js) · 3 Protuberanz reißt ab; uK = Fortschritt des Ausbruchs 0 … 1, uPx = Pixelgröße bei Abstand 1, uDens = Anteil
-// der ruhigen Bögen (nach Bogen-seed, Zahnrad „Dichte“).
+// sunlook.js) · 3 Protuberanz schnürt sich ab (uTear Art des Ablösens); uK = Fortschritt des Ausbruchs 0 … 1, uPx = Pixelgröße
+// bei Abstand 1, uDens = Anteil der ruhigen Bögen (nach Bogen-seed, Zahnrad „Dichte“), uBurst Anteil der ruhigen Bögen, die
+// je Zyklus platzen (× 38 %), uSpray Hub ihrer Plasmoide.
 
 import * as THREE from 'three';
 import { NOISE } from './glsl.js';
@@ -32,39 +34,90 @@ export const strandUniforms = () => ({
 // Bögen neigen sich), z Werden und Vergehen (Bogen wächst aus der Oberfläche, leuchtet kurz auf, läuft leer und verblasst;
 // je Bogen 18–60 s geteilt durch uLifeR, kein Blitzen); uScale streckt die Höhe der ruhigen Bögen. Wurzeln: Geometrie läuft über s < 0 (Fuß a) und s > 1 (Fuß b) hinaus, u = Wurzel 0 … 1.
 export const STRAND_VERT = /* glsl */ `
-attribute vec3 aA, aB, aE;
-attribute vec4 aL, aT, aS, aF;
+attribute vec3 aA, aB;
+attribute vec4 aE, aL, aT, aS, aF;
 uniform float uTime, uPx, uMode, uK, uDens, uFoot, uLifeR, uScale, uTear, uBurst, uSpray;
 uniform vec3 uMove, uFS, uFE1, uFE2;
-varying float vS, vX, vH, vI, vFlow, vSeed, vCut, vHot, vRes, vU, vCyc;
+varying float vS, vX, vH, vI, vFlow, vSeed, vCut, vHot, vRes, vU, vCyc, vSh, vLen;
 varying vec3 vW;
 const float PI = 3.14159265;
-vec3 gA, gB, gN;
-float gH, gLean, gRope, gTwist, gSway;
+vec3 gA, gB, gN, gE, gR;
+float gH, gLean, gRope, gTwist, gSway, gBul = 0.0;
+// Abschnüren (Modus 0 Platzen, 3 Abriss): gG halbe Länge des Oberteils in s (Hals bei s = 0,5 ± gG), gPin Einschnürung 0 … 1,
+// gSep Trennung nach der Rekonnexion 0 … 1, gUp Hub, gEx Aufweiten und gCurl Runden des Plasmoids, gRel Übergang des
+// Unterteils in einen neuen Bogen (Höhe des Halses × (1 − gDn)), gWob Ausschwingen, gFray Auffächern je Faden in Richtung gFc
+// (Anteile gN, gE, gR)
+float gG = 0.25, gPin = 0.0, gSep = 0.0, gUp = 0.0, gEx = 0.0, gCurl = 0.0, gRel = 0.0, gDn = 0.0, gWob = 0.0, gFray = 0.0;
+vec3 gFc = vec3(0.0);
 float hash(float n) { return fract(sin(n) * 43758.5453); }
-// Mittellinie: Fußpunkte wandern mit (1 − cos)/2 → Beine an den Füßen senkrecht, Scheitel rund
-vec3 axisAt(float s) {
+// Mittellinie mit Scheitelhöhe h: Fußpunkte wandern mit (1 − cos)/2 → Beine an den Füßen senkrecht, Scheitel rund; gBul bläht
+// den oberen Teil seitlich auf (Ω-Form des aufsteigenden Flussseils)
+vec3 axisH(float s, float h) {
   vec3 m = normalize(mix(gA, gB, 0.5 - 0.5 * cos(PI * s)));
-  float lift = gH * sin(PI * s);
-  return m * (1.0 + lift) + gN * gLean * lift;
+  float sn = sin(PI * s), lift = h * sn;
+  return m * (1.0 + lift) + gN * gLean * lift + gE * gBul * h * sin(2.0 * PI * s) * sn * sn;
 }
-// Faden im Bündel: Querschnitt (aT.x Winkel, aT.y Radius), Verdrillung, Verjüngung (Kelch: unten weit), Knickwelle
-vec3 threadAt(float s, out vec3 T) {
-  vec3 c = axisAt(s);
-  T = normalize(axisAt(min(s + 0.004, 1.0)) - axisAt(max(s - 0.004, 0.0)));
+vec3 axisAt(float s) { return axisH(s, gH); }
+// Faden im Bündel relativ zur Mittellinie: Querschnitt (aT.x Winkel, aT.y Radius), Verdrillung, Verjüngung (Kelch: unten
+// weit), Knickwelle
+vec3 offAt(float s) {
+  vec3 T = normalize(axisAt(min(s + 0.004, 1.0)) - axisAt(max(s - 0.004, 0.0)));
   vec3 N2 = normalize(cross(T, gN)), N1 = cross(N2, T);
   float ang = aT.x + gTwist * 6.2831853 * s + uTime * 0.03 * sign(gTwist);
   float kel = uFoot > 1.5 && uFoot < 2.5 ? 3.5 * exp(-min(s, 1.0 - s) / 0.07) : 0.0;
   float taper = 0.3 + 0.7 * sin(PI * s) + kel;
-  c += N1 * gSway * sin(PI * s) * sin(6.2831853 * (0.65 * s - uTime * 0.06) + aE.y * 30.0);
-  return c + (N1 * cos(ang) * (1.0 + 2.5 * aE.z) + N2 * sin(ang) * (1.0 - 0.5 * aE.z)) * aT.y * gRope * taper;
+  vec3 sw = N1 * gSway * sin(PI * s) * sin(6.2831853 * (0.65 * s - uTime * 0.06) + aE.y * 30.0);
+  return sw + (N1 * cos(ang) * (1.0 + 2.5 * aE.z) + N2 * sin(ang) * (1.0 - 0.5 * aE.z)) * aT.y * gRope * taper;
+}
+// Unterteil und Oberteil teilen die Ecken des Fadens am Hals (s = 0,5 ± gG) unter sich auf: der neue Bogen läuft über
+// s < 0,5 − gG bzw. > 0,5 + gG (sp 0 … 0,5 bzw. 0,5 … 1), das Plasmoid über das Stück dazwischen (su). Beide erreichen ihr
+// Ende eine Ecke (aE.w) vor dem Hals und halten dort an – so liegt je Faden eine Ecke genau im Scheitel des neuen Bogens
+// und eine genau am Hals des Plasmoids, die Beine treffen sich ohne Lücke. gFree = 1 rechnet über das Ende hinaus weiter
+// (nur für die Richtung der Nachbarn).
+float gFree = 0.0;
+float lowS(float s) {
+  float t = (s < 0.5 ? s : 1.0 - s) / (0.5 - gG - aE.w);
+  t = gFree > 0.5 ? t : min(t, 1.0);
+  return s < 0.5 ? 0.5 * t : 1.0 - 0.5 * t;
+}
+float upS(float s) {
+  float t = abs(s - 0.5) * gG / max(gG - aE.w, 1e-3);
+  return 0.5 + sign(s - 0.5) * (gFree > 0.5 ? t : min(t, gG));
+}
+// Mittellinie + Faden mit Einschnürung am Hals: Beine laufen zur Symmetrieachse zusammen, die Fäden beider Beine legen
+// sich dort spiegelgleich übereinander (gleiche Lage bei s und 1 − s → am Hals keine Stufe)
+vec3 pinchOff(float s, float nk) { return mix(offAt(s), 0.5 * (offAt(s) + offAt(1.0 - s)), nk) * (1.0 - 0.6 * nk); }
+vec3 pinched(float s) {
+  vec3 c = axisAt(s);
+  float d = gG - abs(s - 0.5), nk = gPin * exp(-d * d / 0.008);
+  return mix(c, 0.5 * (c + axisAt(1.0 - s)), nk) + pinchOff(s, nk);
+}
+// Ort des Fadens bei s. Abschnüren wie im Standardmodell eines Flares: die Beine laufen am Hals zusammen, die Rekonnexion
+// verbindet sie dort neu – oben ein geschlossenes Plasmoid (rundet sich, weitet sich, steigt, fasert je nach Art auf), unten
+// ein neuer Bogen mit der Spitze am Hals (sinkt, rundet sich, schwingt aus). lo Unterteil, up Oberteil, W = 0 Unterteil |
+// 1 Oberteil; das einzige Stück dazwischen (Spitze → Plasmoid, die Stromschicht) blendet STRAND_FRAG je Pixel weich aus –
+// kein Faden endet an einer Kante, kein Stück fliegt lose.
+void place(float s, out vec3 lo, out vec3 up, out float W) {
+  W = 0.0;
+  if (gPin <= 0.0) { lo = up = axisAt(s) + offAt(s); return; }
+  lo = up = pinched(s);
+  if (gSep <= 0.0) return;
+  W = step(0.0, gG - abs(s - 0.5));
+  float su = mix(s, upS(s), smoothstep(0.0, 0.05, gSep)), du = gG - abs(su - 0.5), nk = gPin * exp(-du * du / 0.008);
+  vec3 cu = axisAt(su), pc = mix(cu, 0.5 * (cu + axisAt(1.0 - su)), nk), po = pinchOff(su, nk);
+  // Runden: gleichmäßig verteilt auf einen Ring in der Bogenebene (unten am Hals beginnend, über den Scheitel zurück)
+  vec3 X = 0.5 * (axisAt(0.5 - gG) + axisAt(0.5 + gG)), top = axisAt(0.5), ctr = mix(X, top, 0.5), v = pc - ctr;
+  float ang = PI * (su - 0.5 + gG) / gG, r0 = 0.45 * (length(top - X) + 0.5 * length(axisAt(0.5 - gG) - axisAt(0.5 + gG)));
+  v = mix(v, (normalize(X - ctr + 1e-6 * gR) * cos(ang) + gE * sin(ang)) * r0, gCurl);
+  up = ctr + v * (1.0 + gEx) + po * (1.0 + 0.5 * gEx) + gR * gUp + (gN * gFc.x + gE * gFc.y + gR * gFc.z) * gFray * smoothstep(0.0, gG, du);
+  float sp = lowS(s), sn = sin(PI * sp);
+  lo = mix(lo, axisH(sp, gH * sin(PI * (0.5 - gG)) * (1.0 - gDn)) + offAt(sp) * (1.0 - 0.5 * sn), gRel) + (gR * 0.7 + gE * 0.5) * gWob * sn;
 }
 void main() {
   if (uMode < 0.5 && aE.y > uDens) { gl_Position = vec4(2.0, 2.0, 2.0, 1.0); return; }   // ausgedünnt: ganzer Faden außerhalb
   float s = aS.x, side = aS.y, k = clamp(uK, 0.0, 1.0);
   float u = s < 0.0 ? -s : max(s - 1.0, 0.0), sl = clamp(s, 0.0, 1.0);
-  float I = aT.w, hot = 0.0, cut = 0.0, life = 1.0, lift = 0.0, cyc = -1.0;
-  float th = 0.0, tc = 0.5, tk = 0.0, tg = 0.0, te = 1.0, tf = 1.0;   // Riss (uMode 3): Zufall, Mitte, Fortschritt, Spalt, Abstand, Ausblenden
+  float I = aT.w, hot = 0.0, life = 1.0, cyc = -1.0, flash = 0.0, fade = 1.0, th = hash(aT.z * 91.7);
   gA = aA; gB = aB; gH = aL.x; gLean = aL.y; gRope = aL.z; gTwist = aS.z;
   gSway = uMove.y * (0.04 * aL.x + 0.001);
   if (uMode < 0.5) {
@@ -78,70 +131,101 @@ void main() {
       gH *= mix(1.0, grow, uMove.z);
       life = mix(1.0, smoothstep(0.0, 0.1, cyc) * (1.0 - smoothstep(0.72, 1.0, cyc)), uMove.z);
       I *= 1.0 + uMove.z * 1.1 * exp(-pow((cyc - 0.3) / 0.07, 2.0));
-      // Spontanes Platzen kleiner & mittlerer Bögen (Pinch-Instabilität & Sonnenwind-Abstoßung)
-      float burstLoop = step(0.62, hash(floor(cn) * 17.3 + aE.y * 43.1)) * uBurst;
-      if (burstLoop > 0.5 && cyc > 0.55) {
-        float bPinch = smoothstep(0.55, 0.75, cyc);
-        float dScheitel = abs(sl - 0.5);
-        if (dScheitel < 0.12 * bPinch) cut = 1.0;
-        hot += 1.4 * exp(-dScheitel / 0.07) * exp(-pow((cyc - 0.70) / 0.06, 2.0));
-        float drift = smoothstep(0.65, 1.0, cyc);
-        lift += cut * drift * drift * (0.35 + 0.55 * hash(aT.z * 47.1)) * uSpray * aL.x;
-        life *= (1.0 - smoothstep(0.78, 1.0, cyc));
+      // Platzen (Pinch): je Zyklus schnürt sich ein Teil der Bögen ab (Zahnrad „Taktung“: Anteil 38 % × uBurst) – Hals,
+      // weiches Aufleuchten der Rekonnexion, oben löst sich ein kleines Plasmoid (steigt, weitet sich, verblasst; uSpray),
+      // unten sinkt der Bogen und rundet sich
+      if (cyc > 0.46 && hash(floor(cn) * 17.3 + aE.y * 43.1) > 1.0 - clamp(0.38 * uBurst, 0.0, 0.95)) {
+        float st = 0.02 * (th - 0.5), e = clamp((cyc - 0.64 - st) / 0.3, 0.0, 1.0);
+        gG = 0.15 + 0.04 * (hash(aT.z * 57.3) - 0.5);
+        gPin = smoothstep(0.46, 0.64, cyc + st);
+        gSep = e;
+        gUp = aL.x * uSpray * (0.3 * e + 1.3 * e * e);
+        gEx = 0.9 * e; gCurl = smoothstep(0.0, 0.45, e); gRel = smoothstep(0.0, 0.6, e); gDn = 0.25;
+        flash = 0.55 * exp(-pow((cyc - 0.645 - st) / 0.022, 2.0));
+        fade = 1.0 - smoothstep(0.15, 0.85, e);
       }
     }
   } else if (uMode < 1.5) {
-    // Filament-Eruption: Aktivierung (Seil hebt sich, hellt auf), dann Beschleunigung; Bündel weitet und verdrillt sich
-    float rise = smoothstep(0.12, 0.85, k);
-    gH = gH * (1.0 + 0.8 * smoothstep(0.0, 0.15, k)) + 1.3 * rise * rise;
-    gLean *= 1.0 + 2.0 * rise;
-    gRope *= 1.0 + 2.5 * rise;
+    // Filament-Eruption: Aktivierung (Seil hebt sich langsam, hellt auf), dann stetige Beschleunigung ohne Anhalten; das Seil
+    // bläht sich zur Ω-Form, weitet und verdrillt sich, die Beine bleiben verankert
+    float a = max(k - 0.12, 0.0) / 0.88;
+    gH = gH * (1.0 + 0.8 * smoothstep(0.0, 0.15, k)) + 1.4 * pow(a, 2.2);
+    gBul = 0.32 * smoothstep(0.08, 0.6, k);
+    gLean *= 1.0 + 2.0 * smoothstep(0.1, 0.9, k);
+    gRope *= 1.0 + 2.5 * smoothstep(0.1, 0.9, k);
     gTwist += 1.4 * smoothstep(0.05, 0.6, k);
     life = smoothstep(0.0, 0.06, k) * (1.0 - smoothstep(0.72, 1.0, k));
-    I *= (1.0 + 0.5 * exp(-pow((k - 0.16) / 0.07, 2.0))) / (1.0 + 1.6 * rise);
+    I *= (1.0 + 0.5 * exp(-pow((k - 0.16) / 0.07, 2.0))) / (1.0 + 1.4 * a);
   } else if (uMode < 2.5) {
-    // Flare-Arkade: Fußpunkte auf den beiden Bändern, die auseinanderwandern; Bögen wachsen mit ihrem Abstand
-    float sep = 0.012 + 0.05 * smoothstep(0.08, 0.7, k);
+    // Flare-Arkade: Fußpunkte auf den beiden Bändern, die auseinanderwandern; Bögen wachsen mit ihrem Abstand. Frisch
+    // verbundene Bögen stehen höher und schrumpfen um ≈ 25 % (Kontraktion nach der Rekonnexion), heiß → kühl
+    float sep = 0.012 + 0.05 * smoothstep(0.08, 0.7, k), form = smoothstep(0.1 + aE.x, 0.45 + aE.x, k);
     float uu = aA.x, bend = 0.5 * uu * uu / 0.09;
     gA = normalize(uFS + uFE1 * uu + uFE2 * (bend + sep));
     gB = normalize(uFS + uFE1 * uu + uFE2 * (bend - sep));
-    gH = aL.x * sep;
+    gH = aL.x * sep * (1.3 - 0.3 * form);
     life = smoothstep(0.1 + aE.x, 0.2 + aE.x, k) * (1.0 - smoothstep(0.78, 1.0, k));
     hot = (1.0 - smoothstep(0.14 + aE.x, 0.42 + aE.x, k)) * 0.8;
   } else {
-    // Protuberanz reißt ab: Bogen wächst und verdrillt sich; jeder Faden schnürt sich nahe dem Scheitel ein und reißt zu
-    // eigenem Zeitpunkt an eigener Stelle (ausgefranst statt eines glatten Schnitts), die Rissenden glühen kurz weiß auf.
-    // uTear (Zahnrad „Ablösen“): 0 klassisch · 1 Plasmoid steigt auf · 2 Peitsche mit Lichtblitz · 3 Zerfasern im Sonnenwind ·
-    // 4 Mischung (Kern der Fäden wird Plasmoid, die äußeren zerfasern)
-    th = hash(aT.z * 91.7);
-    float V = uTear > 3.5 ? (th < 0.55 ? 1.0 : 3.0) : uTear, k0 = V > 0.5 ? 0.5 : 0.58, sp = V > 2.5 ? 0.14 : 0.07;
-    float pre = V > 0.5 ? smoothstep(k0 - 0.14, k0, k) * (1.0 - smoothstep(k0, k0 + 0.1, k)) : 0.0;   // Hals dehnt sich, glüht
-    gH = aL.x * mix(0.25, V > 0.5 ? 0.68 : 1.0, smoothstep(0.0, k0 + 0.04, k)) * (1.0 + 0.12 * pre);   // Varianten: Bogen bleibt im Bild
-    gTwist += 1.2 * smoothstep(0.2, k0 + 0.04, k) + (V > 0.5 && V < 1.5 ? 1.5 * smoothstep(k0, 1.0, k) : 0.0);
-    gRope *= 1.0 + 0.8 * smoothstep(0.3, k0 + 0.04, k);
-    tc = 0.5 + 0.12 * (hash(aT.z * 57.3 + 3.1) - 0.5);
-    tk = smoothstep(0.0, 1.0, (k - k0 - sp * th) / (V > 1.5 && V < 2.5 ? 0.22 : 0.36));
-    tg = (V > 0.5 ? 0.2 : 0.3) * tk;
-    te = abs(sl - tc) - tg;
-    float neck = smoothstep(k0 - 0.08, k0 + 0.02, k - sp * th);
-    cut = te < 0.0 ? 1.0 : 0.0;
-    float kc = V < 0.5 ? clamp((k - 0.6) / 0.4, 0.0, 1.0) : clamp((k - k0 - 0.02) / (0.98 - k0), 0.0, 1.0);
-    lift = V < 0.5 ? cut * pow(kc, 1.4) * 1.1 * (0.95 + 0.1 * th)
-      : V < 1.5 ? cut * (0.04 * kc + 0.42 * kc * kc * kc)                                                   // langsam lösen, dann beschleunigen
-      : V < 2.5 ? cut * (0.13 * (1.0 - exp(-kc * 6.0)) + 0.05 * sin(kc * 14.0) * exp(-kc * 4.0) + 0.1 * kc * kc)   // schnellt hoch, federt nach
-      : cut * (0.15 + 0.3 * th) * kc * kc;                                                          // je Faden eigenes Tempo
-    tf = mix(1.0, smoothstep(0.0, 0.06, abs(te)), neck);
-    hot = V > 1.5 && V < 2.5 ? 2.2 * exp(-abs(te) / 0.08) * neck * exp(-tk * 2.5) : 0.9 * exp(-abs(te) / 0.05) * neck * (1.0 - tk) * (1.0 - tk);
-    hot += 0.5 * pre * exp(-abs(sl - tc) / 0.08);
-    if (V > 1.5 && V < 2.5) I *= 1.0 + 2.5 * exp(-min(sl, 1.0 - sl) / 0.05) * smoothstep(0.0, 0.15, tk) * exp(-2.0 * tk);   // Fußpunkte leuchten auf
-    float fade = V < 0.5 ? 0.7 * cut * smoothstep(0.65, 0.95, k) : V < 1.5 ? 0.85 * cut * smoothstep(0.84, 1.0, k)
-      : V < 2.5 ? 0.8 * cut * smoothstep(0.72, 0.98, k) : cut * smoothstep(0.45, 0.95, kc + 0.25 * th);
-    life = smoothstep(0.0, 0.06, k) * (1.0 - smoothstep(V < 0.5 ? 0.85 : 0.9, 1.0, k)) * (1.0 - fade);
+    // Protuberanz reißt ab (Standardmodell CSHKP): der Bogen wächst und verdrillt sich, die Beine schnüren sich unter dem
+    // Scheitel ein, bei k ≈ 0,5 verbinden sie sich neu (weiches Aufleuchten am Hals, Fußpunkte leuchten auf); oben steigt ein
+    // geschlossenes Plasmoid auf, unten bleibt ein heißer Bogen, der sinkt, sich rundet und abkühlt. Fäden ±0,2 s versetzt.
+    // uTear (Zahnrad „Ablösen“): 0 klassisch · 1 Plasmoid (langsam lösen, dann beschleunigen, rundet sich zum Ring) ·
+    // 2 Peitsche (schnellt hoch, Bogen schwingt gedämpft nach) · 3 Zerfasern (Fäden fächern auf, je eigenes Tempo) ·
+    // 4 Mischung (Kern Plasmoid, außen Zerfasern) · 5 Spray-Schockwelle (schnell, Fäden spritzen im Kegel auseinander)
+    float V = uTear > 4.5 ? 5.0 : uTear > 3.5 ? (th < 0.55 ? 1.0 : 3.0) : uTear, st = 0.03 * (th - 0.5);
+    float g0 = smoothstep(0.0, 0.5, k), e = clamp((k - 0.5 - st) / 0.5, 0.0, 1.0);
+    vec3 h3 = vec3(hash(aT.z * 23.9), hash(aT.z * 71.3), hash(aT.z * 13.1)) - 0.5;
+    gH = aL.x * mix(0.25, V > 0.5 ? 0.8 : 1.0, g0 * g0 * (3.0 - 2.0 * g0));
+    gTwist += 1.2 * smoothstep(0.15, 0.5, k);
+    gRope *= 1.0 + 0.6 * smoothstep(0.2, 0.5, k);
+    gG = 0.24 + 0.05 * (hash(aT.z * 57.3) - 0.5);
+    gPin = smoothstep(0.32, 0.5, k + st);
+    gSep = e;
+    flash = 0.7 * exp(-pow((k - 0.505 - st) / 0.03, 2.0));
+    gDn = 0.3; gRel = smoothstep(0.0, 0.6, e);
+    if (V < 0.5) { gUp = 1.15 * pow(e, 1.5); gEx = 0.6 * e; gCurl = 0.5 * smoothstep(0.0, 0.5, e); fade = 1.0 - smoothstep(0.55, 1.0, e); }
+    else if (V < 1.5) { gUp = 0.08 * e + 0.95 * e * e * e; gEx = 0.9 * e; gCurl = smoothstep(0.0, 0.35, e); gTwist += 1.5 * e; fade = 1.0 - smoothstep(0.7, 1.0, e); }
+    else if (V < 2.5) {
+      gUp = 0.6 * (1.0 - exp(-6.0 * e)) + 0.3 * e * e; gEx = 0.5 * e; gCurl = 0.6 * smoothstep(0.0, 0.3, e); gRel = smoothstep(0.0, 0.25, e); gDn = 0.4;
+      gWob = 0.3 * aL.x * sin(e * 16.0) * exp(-3.5 * e) * smoothstep(0.0, 0.04, e); fade = 1.0 - smoothstep(0.45, 1.0, e);
+    } else if (V < 3.5) {
+      gUp = (0.45 + 0.6 * th) * e * e; gEx = 0.35 * e; gRel = smoothstep(0.0, 0.7, e); gDn = 0.25;
+      gFray = (0.6 + 0.8 * th) * e * aL.x; gFc = vec3(1.2 * h3.x, 1.4 * h3.y, 1.0 + 1.6 * (h3.z + 0.5)); fade = 1.0 - smoothstep(0.3 + 0.3 * th, 1.0, e);
+    } else {
+      gUp = (1.1 + 0.6 * th) * (0.35 * e + 0.65 * e * e); gEx = 0.6 * e; gCurl = 0.3 * smoothstep(0.0, 0.3, e); gRel = smoothstep(0.0, 0.4, e); gDn = 0.35;
+      gFray = (1.0 + 0.6 * th) * e * aL.x; gFc = vec3(2.2 * h3.x, 2.6 * h3.y, 0.8 + 1.4 * (h3.z + 0.5)); fade = 1.0 - smoothstep(0.35, 1.0, e);
+    }
+    gUp *= aL.x / 0.34;
+    I *= 1.0 + 1.5 * exp(-min(sl, 1.0 - sl) / 0.05) * exp(-3.0 * e) * smoothstep(0.0, 0.05, e);   // Fußpunkte (Flare-Bänder)
+    life = smoothstep(0.0, 0.06, k) * (1.0 - smoothstep(0.9, 1.0, k));
   }
   gN = cross(gB - gA, gA + gB);
   gN /= max(length(gN), 1e-6);
-  vec3 T, p = threadAt(sl, T);
-  float w = aL.w * mix(0.25, 1.0, tf);   // Rissenden laufen spitz aus
+  gE = normalize(gA - gB + 1e-6 * gN);
+  gR = normalize(gA + gB);
+  // Ort und Richtung: Bogen und Plasmoid je aus ihrer eigenen Kurve (Nachbarn über das Ende hinaus gerechnet)
+  float W, Wx, fl = 1.0 - abs(2.0 * lowS(sl) - 1.0);
+  vec3 L0, U0, L1, U1, L2, U2;
+  place(sl, L0, U0, W);
+  gFree = 1.0;
+  place(min(sl + 0.003, 1.0), L1, U1, Wx);
+  place(max(sl - 0.003, 0.0), L2, U2, Wx);
+  vec3 p = mix(L0, U0, W), T = normalize((W < 0.5 ? L1 - L2 : U1 - U2) + 1e-7 * gR);
+  float w = aL.w;
+  vSh = 1.0;
+  vLen = length(U0 - L0) / aL.w;   // Länge der Stromschicht in Fadenbreiten (für die Blende je Pixel)
+  if (gPin > 0.0) {
+    // Hals: Fäden laufen schmaler zusammen und glühen vor dem Riss; Rekonnexion leuchtet weich auf (≈ 0,4 s, einmal); danach
+    // glimmt die Stromschicht kurz nach (vSh), Spitze des neuen Bogens heiß → kühlt ab, Plasmoid verblasst beim
+    // Aufweiten (Dichte sinkt)
+    float d = gG - abs(sl - 0.5), nk = gPin * exp(-d * d / 0.008);
+    w *= 1.0 - 0.45 * nk;
+    vSh = 0.25 * exp(-4.0 * gSep) * (1.0 - smoothstep(0.15, 0.4, gSep));
+    hot += (0.35 * gPin * (1.0 - smoothstep(0.0, 0.2, gSep)) + flash) * exp(-abs(d) / 0.035);
+    hot += (1.0 - W) * 0.9 * fl * fl * smoothstep(0.0, 0.03, gSep) * exp(-2.5 * gSep) + W * 0.35 * exp(-4.0 * gSep) * smoothstep(0.0, 0.03, gSep);
+    I *= mix(1.0, fade / (1.0 + 1.5 * gEx), W);
+  }
   if (u > 0.0) {
     // Wurzel: vom Fußpunkt des Fadens flach über die Oberfläche hinaus, je Faden eigener Winkel im Fächer (Strudel: spiralig)
     vec3 F = sl < 0.5 ? gA : gB, O = sl < 0.5 ? gB : gA, D = F - O;
@@ -156,28 +240,6 @@ void main() {
     T = normalize(normalize(q2) * (1.0 + hr) - p);
     w *= 1.0 - 0.55 * u;
   }
-  vec3 R = normalize(gA + gB);
-  if (uMode > 2.5 && tk > 0.0 && u <= 0.0) {
-    if (cut > 0.5) {
-      // Oberteil (gemeinsamer Fortschritt kc, damit es ein Bündel bleibt): weitet sich um den Scheitel, die losen Enden biegen
-      // sich nach oben und innen (Flussseil schließt sich); nur die Rissenden fransen je Faden aus
-      float V = uTear > 3.5 ? (th < 0.55 ? 1.0 : 3.0) : uTear, kc = V < 0.5 ? clamp((k - 0.6) / 0.4, 0.0, 1.0) : clamp((k - 0.52) / 0.46, 0.0, 1.0), q = pow(min(abs(sl - 0.5) / 0.3, 1.0), 2.0);
-      vec3 ap = axisAt(0.5), lat = p - ap;
-      lat -= R * dot(lat, R);
-      vec4 m = V < 0.5 ? vec4(0.6, 0.25, 0.35, 0.12) : V < 1.5 ? vec4(0.35, 0.6, 0.45, 0.1) : V < 2.5 ? vec4(0.25, 0.2, 0.3 + 0.5 * sin(kc * 10.0) * exp(-kc * 3.0), 0.2)
-        : vec4(0.3, 0.1, 0.4 + 0.9 * th, 0.35);   // Weiten, Einrollen der Enden, Hub der Enden, Ausfransen
-      p += (p - ap) * m.x * kc - lat * q * m.y * kc + R * q * aL.x * m.z * kc;
-      p += (gN * (th - 0.5) + R * (hash(aT.z * 23.9) - 0.5)) * q * aL.x * m.w * tk;
-    } else {
-      // Beine: das freie Ende schnellt zur Oberfläche zurück, biegt nach außen und schwingt gedämpft aus
-      float sn = exp(-te / 0.22) * smoothstep(0.0, 0.35, tk);
-      vec3 D = normalize((sl < tc ? gA - gB : gB - gA) + 1e-5 * gN);
-      p -= normalize(p) * (length(p) - 1.0) * 0.6 * sn;
-      float V = uTear > 3.5 ? (th < 0.55 ? 1.0 : 3.0) : uTear, wa = V > 1.5 && V < 2.5 ? 0.5 : V > 0.5 ? 0.15 : 0.25, wd = V > 1.5 && V < 2.5 ? 2.0 : 3.0;   // Ausschwingen der Beine
-      p += D * aL.x * sn * (0.12 + wa * sin(tk * 16.0 + th * 6.0) * exp(-wd * tk));
-    }
-  }
-  p += R * lift;
   vH = length(p) - 1.0;
   vec4 wp = modelMatrix * vec4(p, 1.0);
   vec4 pv = viewMatrix * wp;
@@ -188,8 +250,8 @@ void main() {
   // Kamera (< 0,18 R☉) blenden die Fäden aus, damit kein unscharfes Band durchs Bild zieht.
   float px = uPx * max(-pv.z, 1e-4), cw = max(w, px * 0.7);
   pv.xyz += sd * side * cw * 1.7;
-  vS = s; vX = side; vSeed = aT.z; vFlow = aS.w; vHot = hot; vCut = cut; vW = wp.xyz; vRes = w / px; vU = u; vCyc = cyc;
-  vI = I * life * tf * (1.0 + 3.0 * hot) * w / cw * smoothstep(0.05, 0.18, -pv.z) * (u > 0.0 && (uFoot < 0.5 || (uFoot > 1.5 && uFoot < 2.5)) ? 0.0 : 1.0);
+  vS = s; vX = side; vSeed = aT.z; vFlow = aS.w; vHot = hot; vCut = W; vW = wp.xyz; vRes = w / px; vU = u; vCyc = cyc;
+  vI = I * life * (1.0 + 3.0 * hot) * w / cw * smoothstep(0.05, 0.18, -pv.z) * (u > 0.0 && (uFoot < 0.5 || (uFoot > 1.5 && uFoot < 2.5)) ? 0.0 : 1.0);
   gl_Position = projectionMatrix * pv;
 }
 `;
@@ -205,17 +267,16 @@ export const STRAND_FRAG = /* glsl */ `
 ${NOISE}
 uniform float uTime, uGain, uPal, uMode, uK, uFoot, uDisk;
 uniform vec3 uMove;
-varying float vS, vX, vH, vI, vFlow, vSeed, vCut, vHot, vRes, vU, vCyc;
+varying float vS, vX, vH, vI, vFlow, vSeed, vCut, vHot, vRes, vU, vCyc, vSh, vLen;
 varying vec3 vW;
 vec3 ramp(float x) {
   vec3 lo = uPal < 0.5 ? vec3(1.1, 0.15, 0.012) : vec3(1.1, 0.09, 0.008);
   vec3 mid = uPal < 0.5 ? vec3(2.4, 0.8, 0.12) : vec3(2.2, 0.5, 0.07);
   vec3 c = mix(lo, mid, smoothstep(0.1, 1.0, x));
   c = mix(c, vec3(3.4, 2.4, 1.3), smoothstep(1.0, 3.0, x) * (uPal < 0.5 ? 1.0 : 0.6));
-  return mix(c, vec3(3.0, 2.7, 2.3), vHot);
+  return mix(c, vec3(3.0, 2.7, 2.3), min(vHot, 1.0));
 }
 void main() {
-  if (vCut > 0.02 && vCut < 0.98) discard;
   if (vI <= 0.0) discard;
   float x = vX, t = uTime, sp = 0.7 + 1.6 * uMove.x;
   float xr = x * 1.7, tube = sqrt(max(1.0 - xr * xr, 0.0));
@@ -257,17 +318,21 @@ void main() {
     float rain = smoothstep(0.38, 0.62, gnoise(vec3(ds * 16.0 - t * 0.8, vSeed * 13.0, vSeed * 5.0))) * smoothstep(0.6, 0.72, uK) * (1.0 - vCut);
     I += vI * prof * rain * 1.2 * base;
   }
+  // Stromschicht zwischen Spitze und Plasmoid (vCut 0 … 1 entlang der gestreckten Strecke): je Pixel nach einer Fadenbreite
+  // Abstand von Spitze bzw. Plasmoid weich auf vSh – gleich kurz, wie weit das Plasmoid auch schon gestiegen ist
+  I *= mix(1.0, vSh, smoothstep(0.0, 1.0, vCut * vLen) * smoothstep(0.0, 1.0, (1.0 - vCut) * vLen));
   gl_FragColor = vec4(ramp(I) * I * uGain, 1.0);
 }
 `;
 
 // Bänder aller Fäden: je Faden (segs + 1 + 2 · ROOT) × 2 Ecken – Bogen s 0 … 1, davor und danach je ROOT Stücke Wurzel (s < 0,
 // s > 1) –, Dreiecksstreifen als Index. 'position' = Fußpunkt a (nur für three.js). aF: Zyklus „Werden und Vergehen“ (Dauer,
-// Phase; 0 = aus dem seed) und je Faden Winkel im Wurzel-Fächer (−1 … 1) und Wurzellänge (0 … 1).
+// Phase; 0 = aus dem seed) und je Faden Winkel im Wurzel-Fächer (−1 … 1) und Wurzellänge (0 … 1); aE.w = 1 / segs (Abstand der
+// Ecken in s, für das Abschnüren).
 const ROOT = 8;
 export function strandGeometry(loops, rand, segs = 40) {
   const per = segs + 1 + 2 * ROOT, nT = loops.reduce((n, L) => n + L.threads, 0), nv = nT * per * 2;
-  const A = new Float32Array(nv * 3), B = new Float32Array(nv * 3), E = new Float32Array(nv * 3);
+  const A = new Float32Array(nv * 3), B = new Float32Array(nv * 3), E = new Float32Array(nv * 4);
   const Lb = new Float32Array(nv * 4), T = new Float32Array(nv * 4), S = new Float32Array(nv * 4), F = new Float32Array(nv * 4);
   const idx = new Uint32Array(nT * (per - 1) * 6);
   let v = 0, ii = 0;
@@ -281,7 +346,7 @@ export function strandGeometry(loops, rand, segs = 40) {
       for (let i = -ROOT; i <= segs + ROOT; i++) {
         const s = i < 0 ? i / ROOT : i > segs ? 1 + (i - segs) / ROOT : i / segs;
         for (const side of [-1, 1]) {
-          A.set([L.a.x, L.a.y, L.a.z], v * 3); B.set([L.b.x, L.b.y, L.b.z], v * 3); E.set([L.delay || 0, L.seed, L.flat || 0], v * 3);
+          A.set([L.a.x, L.a.y, L.a.z], v * 3); B.set([L.b.x, L.b.y, L.b.z], v * 3); E.set([L.delay || 0, L.seed, L.flat || 0, 1 / segs], v * 4);
           Lb.set([L.h, L.lean, L.rope, w], v * 4); T.set([phi, rho, seed, I], v * 4); S.set([s, side, L.twist, flow], v * 4);
           F.set([L.life || 0, L.phase || 0, fan, rl], v * 4);
           v++;
@@ -296,7 +361,7 @@ export function strandGeometry(loops, rand, segs = 40) {
   }
   const g = new THREE.BufferGeometry();
   g.setAttribute('position', new THREE.BufferAttribute(A, 3));
-  for (const [k, a, n] of [['aA', A, 3], ['aB', B, 3], ['aE', E, 3], ['aL', Lb, 4], ['aT', T, 4], ['aS', S, 4], ['aF', F, 4]]) g.setAttribute(k, new THREE.BufferAttribute(a, n));
+  for (const [k, a, n] of [['aA', A, 3], ['aB', B, 3], ['aE', E, 4], ['aL', Lb, 4], ['aT', T, 4], ['aS', S, 4], ['aF', F, 4]]) g.setAttribute(k, new THREE.BufferAttribute(a, n));
   g.setIndex(new THREE.BufferAttribute(idx, 1));
   return g;
 }
