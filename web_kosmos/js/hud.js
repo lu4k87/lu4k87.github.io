@@ -79,8 +79,12 @@ export function createHud(h) {
     rail.innerHTML = `<svg class="rail-axis" aria-hidden="true"></svg><svg class="rail-tree" aria-hidden="true"></svg><ol class="rail-list">${CHAPTERS.map(([hub, name]) => {
       const mine = order.filter((id) => chOf.get(id) === hub), ws = mine.map((id) => STATIONS[id].width);
       const span = `${fmtLength(Math.min(...ws))} – ${fmtLength(Math.max(...ws))}`;
-      return `<li class="rl-ch" data-ch="${hub}"><button type="button" class="rl-head" aria-expanded="false" aria-controls="rl-${hub}" aria-label="Kapitel ${num(hub)} ${esc(name)}: ${mine.length} Stationen, Bildbreite ${esc(span)}">
-        <span class="rl-num">${num(hub)}</span><span class="rl-name">${esc(name)}</span><span class="rl-cnt" data-n="${mine.length}"></span><span class="rl-span">${esc(span)}</span></button>
+      // Kopf zeigt die Routen-Nummern des Kapitels (03–07), damit die Zählung ohne Lücke weiterläuft; Abstecher (02A) zählen nicht.
+      // Ende der Spanne klein unter der Nummer, sonst kürzt die breite Nummer die Zeile der Bildbreiten
+      const ns = mine.map((id) => STATIONS[id].n).filter(Number.isInteger), lo = Math.min(...ns), hi = Math.max(...ns);
+      const nums = lo === hi ? num(hub) : `${String(lo).padStart(2, '0')}–${String(hi).padStart(2, '0')}`, end = nums.slice(2);
+      return `<li class="rl-ch" data-ch="${hub}"><button type="button" class="rl-head" aria-expanded="false" aria-controls="rl-${hub}" aria-label="Kapitel ${nums} ${esc(name)}: ${mine.length} Stationen, Bildbreite ${esc(span)}">
+        <span class="rl-num">${num(hub)}${end ? `<small>${end}</small>` : ''}</span><span class="rl-name">${esc(name)}</span><span class="rl-cnt" data-n="${mine.length}"></span><span class="rl-span">${esc(span)}</span></button>
         <ol class="rl-rows" id="rl-${hub}">${mine.map(row).join('')}</ol></li>`;
     }).join('')}</ol>`;
     railSvg = rail.querySelector('.rail-tree');
