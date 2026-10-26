@@ -590,7 +590,8 @@ export function create(ctx) {
         const kp = auroraU.uKp.value, lat = (66.5 - 2.044 * kp) + (5 + 0.6 * kp) * 0.5, th = (90 - lat) * RAD;
         auroraPos.copy(noon).multiplyScalar(-Math.sin(th)).addScaledVector(poleW, Math.cos(th)).multiplyScalar(R_E + 0.25);
       }
-      // Satelliten: Tage seit dem Schnappschuss; Bahnlinien und ISS-Ort jede halbe Sekunde
+      // Satelliten: Tage seit dem Schnappschuss; Bahnlinien jede halbe Sekunde, ISS- und Tiangong-Ort je Bild
+      // (Abzeichen und Folgen-Kamera hängen daran – gedrosselt springen sie dem Punkt hinterher)
       if (sats) {
         const days = jd - satData.jd;
         sats.userData.update(days);
@@ -598,16 +599,16 @@ export function create(ctx) {
         if (t - linesT > 0.5 || rate > 0.01) {
           linesT = t;
           satLines.forEach((l) => l.userData.update(days));
-          if (iss) {
-            satPos(iss, days, issLocal);
-            tilt.localToWorld(issWorld.copy(issLocal));
-            const rkm = issLocal.length() * 1e3;
-            satInfo.alt = rkm - RE; satInfo.v = speedAt(iss[0], rkm);
-          }
-          if (tg) {
-            satPos(tg, days, tgLocal);
-            tilt.localToWorld(tgWorld.copy(tgLocal));
-          }
+        }
+        if (iss) {
+          satPos(iss, days, issLocal);
+          tilt.localToWorld(issWorld.copy(issLocal));
+          const rkm = issLocal.length() * 1e3;
+          satInfo.alt = rkm - RE; satInfo.v = speedAt(iss[0], rkm);
+        }
+        if (tg) {
+          satPos(tg, days, tgLocal);
+          tilt.localToWorld(tgWorld.copy(tgLocal));
         }
       }
     },
