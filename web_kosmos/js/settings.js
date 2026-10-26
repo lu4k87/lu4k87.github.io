@@ -6,6 +6,7 @@
 // Gespeichert in localStorage `kosmos.settings.v1`; clean() prüft jeden Wert, damit kaputte Einträge nichts stören.
 
 import { mountLayers, refreshLayers, icon, devLine, devBar, markDevs } from './layers.js';
+import { nbsp } from './figs.js';
 
 const KEY = 'kosmos.settings.v1';
 const DEFAULTS = { motion: 'full', quality: 'auto', cine: true, dive: 3.6, exposure: 1, bloom: true, lens: true, grain: true, deep: 1, fpsCap: 0, panel: true, timeline: true, small: 6, stars: true, grade: 'station', vig: 1, bars: false, axes: false };
@@ -80,7 +81,7 @@ const TOG = (key, label, extra = '', attr = `data-key="${key}"`) => `
 const RANGE = (key, label, min, max, step, unit, extra = '') => `
   <label class="b-row b-stack"><span class="b-top"><span class="cfg-label">${label}${extra}</span><span class="cfg-val"><output data-out="${key}"></output> <span class="cfg-unit">${unit}</span></span></span>
     <span class="b-track"><input type="range" data-key="${key}" min="${min}" max="${max}" step="${step}"></span></label>`;
-const NOTE = (text) => `<p class="cfg-note lay-hint">${text}</p>`;
+const NOTE = (text) => `<p class="cfg-note lay-hint">${nbsp(text)}</p>`;
 // Mini-Grafik neben der Zeile: zeigt, was die Einstellung bewirkt (schmal: ausgeblendet)
 const MINI = {
   exposure: '<rect x="1" y="6" width="62" height="8" rx="4" fill="url(#mgE)"/><circle cx="32" cy="10" r="5" fill="none" stroke="var(--accent)" stroke-width="2"/>',

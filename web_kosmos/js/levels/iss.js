@@ -1,6 +1,6 @@
 // Station 01A: Internationale Raumstation aus der Nähe (Einheit 1 m), Abstecher von Erde & Mond. Die ISS fliegt im
 // Bahnsystem (orbitview.js): Flugrichtung vorn (x), Erde unten (−y), Steuerbord z. Darunter die Erde für den angezeigten
-// Zeitpunkt, Sonnenauf- und -untergang alle ≈ 46 min, Erdschein von unten, Polarlichter und Stadtlichter auf der Nachtseite.
+// Zeitpunkt, Sonnenaufgang und Sonnenuntergang alle ≈ 46 min, Erdschein von unten, Polarlichter und Stadtlichter auf der Nachtseite.
 // Modell aus Grundkörpern, Maße nach NASA gerundet: Gitterträger 94 m, Solarflügel 34 × 12 m (8 Stück, 109 m Spannweite),
 // iROSA 18,2 × 6 m auf sechs Flügeln, Radiatoren, Module von Swesda bis Harmony (67 m), Cupola mit sieben Fenstern.
 // Solarflügel folgen der Sonne über zwei Gelenke (großes Drehgelenk um den Träger, kleines um jeden Flügel), Radiatoren
@@ -368,7 +368,7 @@ export function create(ctx) {
       } else if (view.mode === 'cupola' && camera.fov !== CUP_FOV) { camera.fov = CUP_FOV; camera.updateProjectionMatrix(); }
       return free;
     },
-    widget: () => `<table><thead><tr><th>ISS im Moment</th><th>Wert</th></tr></thead><tbody id="w-orb"><tr><td colspan="2">Bahn wird geladen …</td></tr></tbody></table><p class="w-foot">Bahn aus den CelesTrak-Bahnelementen (Stand 25.10.2026), fortgeschrieben mit Kepler + J2; Sonnenauf- und -untergang aus dem Erdschatten (Zylinder).</p>`,
+    widget: () => `<table><thead><tr><th>ISS im Moment</th><th>Wert</th></tr></thead><tbody id="w-orb"><tr><td colspan="2">Bahn wird geladen …</td></tr></tbody></table><p class="w-foot">Bahn aus den CelesTrak-Bahnelementen (Stand 25.10.2026), fortgeschrieben mit Kepler + J2; Sonnenaufgang und Sonnenuntergang aus dem Erdschatten (Zylinder).</p>`,
     widgetTick(el, t) {
       ov.widgetTick(el, t, () => `<tr><td>ein Umlauf · Sonne zur Bahnebene</td><td class="num">${ov.info.period.toFixed(1).replace('.', ',')} min · ${Math.round(ov.info.beta)}°</td></tr>`);
     },

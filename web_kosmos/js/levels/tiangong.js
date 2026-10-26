@@ -1,6 +1,6 @@
 // Station 01B: Chinesische Raumstation Tiangong aus der Nähe (Einheit 1 m), Abstecher von Erde & Mond. Wie die ISS fliegt sie
 // im Bahnsystem (orbitview.js): Flugrichtung vorn (x), Erde unten (−y), Steuerbord z; darunter die Erde für den
-// angezeigten Zeitpunkt mit Sonnenauf- und -untergängen alle ≈ 46 min, Erdschein, Polarlichtern und Stadtlichtern.
+// angezeigten Zeitpunkt mit Sonnenaufgängen und Sonnenuntergängen alle ≈ 46 min, Erdschein, Polarlichtern und Stadtlichtern.
 // Modell aus Grundkörpern („Modell, gerundet“): T-Form aus Tianhe (16,6 m, Stamm längs x) mit Andockknoten vorn und den
 // Laboren Wentian (+z) und Mengtian (−z) quer am Knoten (je 17,9 m, Ø 4,2 m); Wentian-Solarflügel 2 × 26,5 m (Spannweite
 // ≈ 55 m, ≈ 110 m² je Flügel), Mengtian mit Flügeln gleicher Größe angenommen, Tianhe mit zwei kleineren Flügeln (Maße
@@ -260,7 +260,7 @@ export function create(ctx) {
       steer(flying ? 1 : dt);
       placeHotspots();
     },
-    widget: () => `<table><thead><tr><th>Tiangong im Moment</th><th>Wert</th></tr></thead><tbody id="w-orb"><tr><td colspan="2">Bahn wird geladen …</td></tr></tbody></table><p class="w-foot">Bahn aus den CelesTrak-Bahnelementen (Stand 25.10.2026), fortgeschrieben mit Kepler + J2; Sonnenauf- und -untergang aus dem Erdschatten (Zylinder).</p>`,
+    widget: () => `<table><thead><tr><th>Tiangong im Moment</th><th>Wert</th></tr></thead><tbody id="w-orb"><tr><td colspan="2">Bahn wird geladen …</td></tr></tbody></table><p class="w-foot">Bahn aus den CelesTrak-Bahnelementen (Stand 25.10.2026), fortgeschrieben mit Kepler + J2; Sonnenaufgang und Sonnenuntergang aus dem Erdschatten (Zylinder).</p>`,
     widgetTick(el, t) {
       ov.widgetTick(el, t, () => `<tr><td>ein Umlauf · Sonne zur Bahnebene</td><td class="num">${ov.info.period.toFixed(1).replace('.', ',')} min · ${Math.round(ov.info.beta)}°</td></tr>`);
     },

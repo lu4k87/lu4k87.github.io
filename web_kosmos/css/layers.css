@@ -61,7 +61,7 @@
   background: repeating-linear-gradient(90deg, var(--line-strong) 0 1px, transparent 1px calc((100% - 1px) / var(--n))); }
 .b-seg { display: flex; width: 100%; }
 .b-seg button { flex: 1 1 auto; padding: 6px 8px; }
-.lay-hint { margin: -2px 0 0; font-size: 12.5px; line-height: 1.45; }
+.lay-hint { margin: -2px 0 0; font-size: 12.5px; }
 .b-subs { display: flex; flex-direction: column; gap: 8px; margin-left: 4px; padding-left: 12px; border-left: 1px solid var(--line-strong); transition: opacity 0.2s; }
 .b-subs.is-off { opacity: 0.45; }
 .b-item.is-idle > .lay { opacity: 0.45; }   /* Ebene wirkt im aktuellen Kanal nicht (layers.js active/only), bleibt bedienbar */
@@ -118,4 +118,4 @@ body.is-flying .tl, body.is-intro .tl { opacity: 0; pointer-events: none; }
 .widget tr + tr td { border-top: 1px solid rgba(255, 255, 255, 0.06); }
 .widget tr.is-hi td { color: var(--accent); }
 .w-dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 6px; vertical-align: -1px; background: var(--c, currentColor); }
-.w-foot { margin: 6px 0 0; font-size: 11.5px; line-height: 1.45; color: var(--ink-soft); }
+.w-foot { margin: 8px 0 0; font-size: 11.5px; color: var(--ink-soft); }

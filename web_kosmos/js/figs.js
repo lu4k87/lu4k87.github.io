@@ -15,6 +15,18 @@ import AUSSEN, { kinds as AUSSEN_KINDS } from './figs/aussen.js';
 import GALAXIS from './figs/galaxis.js';
 
 export const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+// Fließtext im Blocksatz (kosmos.css „Fließtext“): geschützte Leerzeichen, damit Zahl + Einheit (384 km, ≈ 90 t),
+// Kürzel (z. B.) und Namen mit Nummer (Voyager 2) nie auseinanderbrechen und kein Gedankenstrich eine Zeile beginnt.
+// Wirkt auf fertiges HTML ohne Tags mit Leerzeichen (esc-Text, Hinweise im Zahnrad)
+const NB = '\u00a0';
+export const nbsp = (s) => String(s)
+  .replace(/(\d) (?=(?:\S{1,4}|Mio\.|Mrd\.|Jahren?|Tagen?|Stunden|Minuten)(?=[\s,.;:)!?]|$))/g, `$1${NB}`)
+  .replace(/([≈≙~±≤≥<>×−]|&lt;|&gt;) (?=\d)/g, `$1${NB}`)
+  .replace(/(\b[A-Za-z]\.) (?=[A-Za-z]\.)/g, `$1${NB}`)
+  .replace(/([A-ZÄÖÜ][\wäöüß]*) (?=\d+(?:[\s,.;:)]|$))/g, `$1${NB}`)
+  .replace(/(\w-) (?=(?:und|oder|bis|sowie) )/g, `$1${NB}`)     // Kern- und Halbschatten: „Kern-“ nie allein am Zeilenende
+  .replace(/ – /g, `${NB}– `);
+export const prose = (s) => nbsp(esc(s));
 export const de = (v, d = 0) => v.toLocaleString('de-DE', { minimumFractionDigits: d, maximumFractionDigits: d });
 export const f1 = (v) => v.toFixed(1);
 const num = (v) => v.toLocaleString('de-DE', { maximumFractionDigits: Math.abs(v) < 1 ? 2 : Math.abs(v) < 100 ? 1 : 0 }).replace('-', '−');

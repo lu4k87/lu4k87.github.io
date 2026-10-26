@@ -7,7 +7,7 @@
 
 import { SOURCES } from './content.js';
 import { PLANETS, planetPosition, moonPosition, julianDate, mulberry32 } from './astro.js';
-import { FIGS, figSvg, esc, de, f1 } from './figs.js';
+import { FIGS, figSvg, esc, nbsp, prose, de, f1 } from './figs.js';
 
 const RAD = Math.PI / 180;
 // Punkt auf dem Kreis, Winkel in Grad mathematisch (0 = rechts, gegen den Uhrzeiger), SVG-y zeigt nach unten
@@ -348,15 +348,15 @@ export function cardHtml(sid, hid, t, env) {
   const fn = (s) => { if (!s) return ''; if (!notes.includes(s)) notes.push(s); return `<sup class="fn">${notes.indexOf(s) + 1}</sup>`; };
   if (!c) {   // ohne Bento-Karte: feste Infografik (figs.js) über dem Text, sonst nur Text
     const g = FIGS[`${sid}.${hid}`];
-    const fig = g ? `<figure class="hc-graph">${MT}${figSvg(g)}<figcaption class="hc-cap">${esc(g.cap)}${[].concat(g.s).map(fn).join('')}</figcaption></figure>` : '';
-    return `${fig}<p class="hs-card-text">${esc(t.x)}${fn(t.s)}</p>${notesHtml(notes)}`;
+    const fig = g ? `<figure class="hc-graph">${MT}${figSvg(g)}<figcaption class="hc-cap">${prose(g.cap)}${[].concat(g.s).map(fn).join('')}</figcaption></figure>` : '';
+    return `${fig}<p class="hs-card-text">${prose(t.x)}${fn(t.s)}</p>${notesHtml(notes)}`;
   }
   const g = GRAPHS[c.g], l = c.c ? env.getLayer(sid, c.c) : null, v = l ? l.value : undefined;
-  const fig = `<figure class="hc-graph hc-in" style="--i:0">${MT}${g.svg(v, c)}<figcaption class="hc-cap"><span class="hc-cap-t">${esc(g.cap(v, c))}</span>${fn(g.s || g.m)}</figcaption></figure>`;
+  const fig = `<figure class="hc-graph hc-in" style="--i:0">${MT}${g.svg(v, c)}<figcaption class="hc-cap"><span class="hc-cap-t">${prose(g.cap(v, c))}</span>${fn(g.s || g.m)}</figcaption></figure>`;
   const tiles = `<div class="hc-tiles">${c.f.map((f, i) => `<div class="hc-tile hc-in" style="--i:${i + 1}"><b${(f.v + f.u).length > 7 ? ' class="is-long"' : ''}>`
-    + `<span class="hc-num" data-v="${esc(f.v)}">${esc(f.v)}</span>${f.u ? `<i>${esc(f.u)}</i>` : ''}${fn(f.s)}</b><span>${esc(f.l)}</span></div>`).join('')}</div>`;
+    + `<span class="hc-num" data-v="${esc(f.v)}">${esc(f.v)}</span>${f.u ? `<i>${esc(f.u)}</i>` : ''}${fn(f.s)}</b><span>${prose(f.l)}</span></div>`).join('')}</div>`;
   const ctl = l ? ctlHtml(l, env) : '';
-  const more = `<details class="hc-more hc-in" style="--i:5"><summary>Mehr dazu</summary><p class="hs-card-text">${esc(t.x)}${fn(t.s)}</p></details>`;
+  const more = `<details class="hc-more hc-in" style="--i:5"><summary>Mehr dazu</summary><p class="hs-card-text">${prose(t.x)}${fn(t.s)}</p></details>`;
   return fig + tiles + ctl + more + notesHtml(notes);
 }
 
@@ -394,7 +394,7 @@ export function mountCard(el, sid, hid, env) {
   const show = (v) => {
     if (out) out.textContent = env.fmt(env.getLayer(sid, c.c), v);
     if (g.update) g.update(el, v);
-    cap.textContent = g.cap(v, c);
+    cap.textContent = nbsp(g.cap(v, c));
   };
   inp.addEventListener('input', () => { env.setLayer(sid, c.c, read()); show(read()); });
   timer = setInterval(() => {

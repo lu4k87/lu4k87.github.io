@@ -8,6 +8,7 @@ import { fmtLength, fmtTime, C, AU, LY } from './astro.js';
 import { settings, setSetting, mountSettings, onSettings } from './settings.js';
 import { getLayer, setLayer, fmtVal } from './layers.js';
 import { cardHtml, mountCard, unmountCard } from './cards.js';
+import { prose } from './figs.js';
 
 const $ = (s) => document.querySelector(s);
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
@@ -291,9 +292,9 @@ export function createHud(h) {
     panel.innerHTML = `
       <p class="kicker"><span class="kick-n">${num(lv.id)}</span>${esc(st.kicker + from)}</p>
       <h1 class="st-title">${esc(st.title)}</h1>
-      <p class="lead">${esc(st.lead)}</p>
+      <p class="lead">${prose(st.lead)}</p>
       <div class="bento">${st.facts.map((f) => `
-        <div class="fact"><p class="fact-v${f.v.length > 9 ? ' is-long' : ''}">${esc(f.v)}${f.u ? `<span class="fact-u">${esc(f.u)}</span>` : ''}</p><p class="fact-l">${esc(f.l)}</p></div>`).join('')}
+        <div class="fact"><p class="fact-v${f.v.length > 9 ? ' is-long' : ''}">${esc(f.v)}${f.u ? `<span class="fact-u">${esc(f.u)}</span>` : ''}</p><p class="fact-l">${prose(f.l)}</p></div>`).join('')}
       </div>
       ${lv.live ? '<p class="live" id="live" aria-live="off"></p>' : ''}
       ${lv.widget ? `<div class="widget" id="widget">${lv.widget()}</div>` : ''}
@@ -303,7 +304,7 @@ export function createHud(h) {
         <li><button type="button" data-hs="${x.id}" class="${x.kind === 'dive' ? 'is-dive' : ''}">${x.kind === 'dive' ? hex('<path d="M14 17l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>', 'hex--mini') : hexNum(i + 1, 'hex--mini')}<span>${esc(info(x).t)}</span>${x.kind === 'dive' ? '<span class="tag">hineinfliegen</span>' : ''}</button></li>`).join('')}
       </ul>
       <details class="note"><summary>Darstellung und Quellen</summary>
-        <p>${esc(st.note)}</p>
+        <p>${prose(st.note)}</p>
         <ol class="sources">${st.sources.map((s) => `<li><a href="${SOURCES[s].url}" target="_blank" rel="noopener">${esc(SOURCES[s].t)}</a><span>${esc(SOURCES[s].by)}</span></li>`).join('')}</ol>
       </details>`;
     liveEl = panel.querySelector('#live');
