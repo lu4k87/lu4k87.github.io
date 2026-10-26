@@ -97,14 +97,27 @@ body.panel-off .top-actions { padding-right: 18px; }
 .rl-dot { width: 17px; height: 17px; flex: none; display: grid; place-items: center; }
 .rl-dot::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--ink); box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.6); transition: transform 0.25s var(--ease-out), background 0.25s; }
 .rl-row.is-branch .rl-dot::before { background: transparent; border: 1.5px solid var(--ink); }
-.rl-txt { min-width: 0; font-size: 12.5px; line-height: 1.25; padding: 2px 6px; border-radius: 6px; transition: background 0.2s, color 0.2s; }
+.rl-txt {
+  min-width: 0; font-size: 12.5px; line-height: 1.25; padding: 2px 6px; border: 1px solid transparent; border-radius: 6px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9), 0 0 8px rgba(0, 0, 0, 0.7); transition: background 0.2s, color 0.2s, border-color 0.2s;
+}
 .rl-txt b { font: 500 12px var(--mono); color: var(--ink-soft); margin-right: 2px; }
 .rl-txt small { display: block; font: 400 12px var(--mono); color: var(--ink-soft); letter-spacing: 0.02em; }
 .rl-btn:hover .rl-txt, .rl-btn:focus-visible .rl-txt { background: rgba(255, 255, 255, 0.08); }
 .rl-btn:hover .rl-dot::before { transform: scale(1.35); }
 .rl-row.is-current .rl-dot::before { background: var(--accent); border-color: var(--accent); transform: scale(1.45); box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.6), 0 0 12px rgba(var(--accent-rgb), 0.8); }
-.rl-row.is-current .rl-txt, .rl-row.is-current .rl-txt b, .rl-row.is-current .rl-txt small { color: var(--accent); }
-.rl-row.is-current .rl-txt { font-weight: 600; }
+/* Aktuelle Station: Glas-Pille mit Akzent-Rahmen, Name groß und hell; Weg zur Wurzel (Punkte + Linie) im Akzent */
+.rail-tree path.is-hot { stroke: var(--accent); stroke-width: 2; }
+.rl-row.is-path .rl-dot::before { background: var(--accent); }
+.rl-row.is-branch.is-path .rl-dot::before { background: transparent; border-color: var(--accent); }
+.rl-row.is-path .rl-txt { font-weight: 500; }
+.rl-row.is-path .rl-txt b { color: var(--accent); }
+.rl-row.is-current .rl-txt {
+  padding: 5px 10px; font-size: 14px; font-weight: 600; color: var(--ink); border-color: rgba(var(--accent-rgb), 0.6);
+  background: linear-gradient(var(--accent-soft), var(--accent-soft)), rgba(6, 10, 18, 0.72); box-shadow: 0 0 14px rgba(var(--accent-rgb), 0.25);
+}
+.rl-row.is-current .rl-txt b, .rl-row.is-current .rl-txt small { color: var(--accent); }
+.rl-row.is-current .rl-btn:hover .rl-txt { background: linear-gradient(var(--accent-soft), var(--accent-soft)), rgba(6, 10, 18, 0.72); }
 .rail-in.is-tight .rl-row:not(.is-current) small { display: none; }
 /* Zugeklappter Ast: Zähler „+n“ hinter dem Namen, Klick klappt auf (aufgeklappt „−“) */
 .rl-row[hidden], .rl-more[hidden] { display: none; }

@@ -104,7 +104,15 @@ export function createHud(h) {
       const [px, py] = pt(id), [kx, ky] = pt(ks[0]), [, kyEnd] = pt(ks[ks.length - 1]);
       d += `M${f(px)},${f(py)}V${f((py + ky) / 2)}H${f(kx)}V${f(kyEnd)}`;
     });
-    railSvg.innerHTML = `<path d="${d}"/>`;
+    // Weg von der aktuellen Station zur Wurzel: gleiche Linienführung, als zweiter Pfad im Akzent darüber
+    let hot = '';
+    for (let x = railCur; x && STATIONS[x].parent; x = STATIONS[x].parent) {
+      const p = STATIONS[x].parent, [px, py] = pt(p), [kx, ky] = pt(x);
+      if (railTrunk.includes(x)) { hot += `M${f(px)},${f(py)}V${f(ky)}`; continue; }
+      const [, k0] = pt(railKids.get(p).find((k) => !railRows.get(k).hidden));
+      hot += `M${f(px)},${f(py)}V${f((py + k0) / 2)}H${f(kx)}V${f(ky)}`;
+    }
+    railSvg.innerHTML = `<path d="${d}"/>${hot ? `<path class="is-hot" d="${hot}"/>` : ''}`;
     rail.classList.toggle('is-tight', R.height / shown < 40);
   }
 
@@ -124,9 +132,12 @@ export function createHud(h) {
     const id = level.id;
     railCur = id;
     railOpen.clear();
+    const up = new Set();
+    for (let x = STATIONS[id]?.parent; x; x = STATIONS[x].parent) up.add(x);
     railRows.forEach((li, k) => {
       const cur = k === id, btn = li.firstElementChild;
       li.classList.toggle('is-current', cur);
+      li.classList.toggle('is-path', up.has(k));
       if (cur) btn.setAttribute('aria-current', 'step'); else btn.removeAttribute('aria-current');
       li.querySelector('small').textContent = fmtLength(STATIONS[k].width);
     });
