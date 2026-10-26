@@ -1,11 +1,11 @@
-// Ebenen-Einstellungen je Ebene (Muster Kosmos layers.js, Vorschau 26.10.2026 Bento:A + Global:A+B+C): Zahnrad-Reiter
-// „Ebene n · …“ mit Bento-Karten je group. Eine Ebene gibt ihre Schalter in create() als level.layers zurück, main.js
+// Ebenen-Einstellungen je Ebene (Muster Kosmos layers.js, Vorschau 26.10.2026 Zahnrad:A + Zahnrad:C): Zahnrad-Reiter
+// „Ebene n“ als Klapp-Liste mit Sprungleiste, je group eine Klapp-Zeile. Eine Ebene gibt ihre Schalter in create() als level.layers zurück, main.js
 // registriert sie (registerLayers) und meldet die aktive Ebene (showLayers). Schalter = { id, label, type, value, set, … }
 //   'toggle' an/aus · 'range' (min, max, step, unit, fmt) · 'play' ▶/⏸ mit Regler: set(value, playing), get() → { value, playing },
 //   status() Text für die Karte „Animation“ · 'action' Knopf: run(), button. sub: true rückt ein (Folgezeilen hängen gemeinsam
 //   an der Zeile davor), hint: Zusatztext unter der Zeile (Funktion = live), group: Kartentitel (gilt bis zur nächsten group).
 // Werte je Ebene in localStorage `biochar.layers.v1` (nicht der Abspielzustand); URL `?lay=drop:0,rhday.play:1` für Screenshots.
-// Die Bausteine Themenliste, „geändert · Standard“ und Icons nutzt auch der Reiter Global (settings.js).
+// Die Bausteine Themenliste, „geändert · Standard“ und Icons nutzt der Reiter Global (settings.js, Bento-Karten).
 
 import { LEVELS } from './content.js';
 
@@ -35,7 +35,6 @@ export const icon = (k, cls = 'b-ico') => `<svg class="${cls}" viewBox="0 0 24 2
 const GROUP_ICONS = [[/Zeit|Animation|Tagesgang/, 'time'], [/Wasser|Feuchte|Tropfen|Kapillar/, 'water'], [/Leben|Mikroben|Pilz|Bakter/, 'life'],
   [/Pyrolyse|Gas|Glut|Schwaden/, 'heat'], [/Schwing|Raman|Phonon/, 'wave'], [/Elektron|Atom|Molek/, 'atom'], [/REM|Detektor/, 'sem']];
 const groupIcon = (t) => (GROUP_ICONS.find(([re]) => re.test(t)) || [0, 'layers'])[1];
-const plaque = (k) => `<span class="b-plaque">${icon(k)}</span>`;
 // Themenliste links: „Alle“ + je Karte ein Eintrag mit Icon, Zähler, Punkt bei geänderten Werten; Klick zeigt nur diese Karte.
 // items = [{ id, title, icon, n }]
 export const navHtml = (items) => `<nav class="b-nav" aria-label="Gruppen">${[{ id: '', title: 'Alle', icon: 'ui', n: items.reduce((a, x) => a + x.n, 0) }, ...items]
@@ -66,7 +65,7 @@ const url = (() => {
   return o;
 })();
 const reg = new Map();
-let currentId = null, gearEl = null, headEl = null;
+let currentId = null, gearEl = null, headEl = null, nameEl = null;
 
 export const valid = (l, v) => (l.type === 'toggle' ? typeof v === 'boolean' : typeof v === 'number' && Number.isFinite(v) && v >= l.min && v <= l.max);
 export const fmtVal = (l, v) => (l.fmt ? l.fmt(v) : `${String(v).replace('.', ',')}${l.unit ? ` ${l.unit}` : ''}`);
@@ -100,20 +99,27 @@ function persist(l) {
   try { localStorage.setItem(KEY, JSON.stringify(store)); } catch { /* privates Fenster */ }
 }
 
-// Bento: je group eine Karte, ▶-Ebene als Karte „Animation“ oben, sub-Ebenen als eingerückter Block unter ihrer Hauptzeile.
-// Regler mit wenigen benannten Stufen (fmt ohne Ziffern, ≤ 5 Stufen) erscheinen als Knopfreihe; Zahlen-Regler zweizeilig.
+// Klapp-Liste (Kosmos-Vorschau 26.10.2026 Zahnrad:A + Zahnrad:C): Sprungleiste der Gruppen oben (bleibt beim Scrollen stehen,
+// hebt die sichtbare Gruppe hervor), ▶-Ebene als schlanke Zeile „Animation“ ohne Karte, je group eine Klapp-Zeile mit Kurzwerten
+// im Kopf („2 von 2 an“). Mehrere Gruppen gleichzeitig offen, offene Gruppen je Ebene gemerkt (OPEN_KEY, Standard: erste offen).
+// Einstellung = Zeile Name | Bedienung | Wert (schmal: Name + Wert, Bedienung darunter); sub-Zeilen rücken nur den Namen ein.
+// Regler mit wenigen benannten Stufen (fmt ohne Ziffern, ≤ 5 Stufen) erscheinen als Knopfreihe.
+const OPEN_KEY = 'biochar.layers.open.v1';
+const opened = (() => { try { const s = JSON.parse(localStorage.getItem(OPEN_KEY)); return s && typeof s === 'object' ? s : {}; } catch { return {}; } })();
+const CHEV = '<svg class="l-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>';
 const isChoice = (l) => l.type === 'range' && l.fmt && (l.step ?? 1) === 1 && l.max - l.min <= 4 && !/\d/.test(String(l.fmt(l.min)));
 const ticks = (l) => ((l.step ?? 1) >= 1 && l.max - l.min <= 12 ? ` style="--n:${l.max - l.min}"` : '');
 const steps = (l) => Array.from({ length: l.max - l.min + 1 }, (_, i) => l.min + i);
-const range = (l, label = l.label) => `<span class="b-track"${ticks(l)}><input type="range" data-lay="${l.id}" min="${l.min}" max="${l.max}" step="${l.step ?? 1}" aria-label="${esc(label)}"></span>`;
-const note = (l) => (l.hint ? `<p class="cfg-note lay-hint" data-hint="${l.id}">${esc(hintOf(l))}</p>` : '');
+const range = (l, label = l.label, cls = 'b-track') => `<span class="${cls}"${ticks(l)}><input type="range" data-lay="${l.id}" min="${l.min}" max="${l.max}" step="${l.step ?? 1}" aria-label="${esc(label)}"></span>`;
+const note = (l) => (l.hint ? `<p class="cfg-note lay-hint l-note" data-hint="${l.id}">${esc(hintOf(l))}</p>` : '');
 
 const rowHtml = (l) => {
+  const name = `<span class="cfg-label l-name">${esc(l.label)}</span>`;
   let row;
-  if (l.type === 'toggle') row = `<label class="b-row cfg-toggle lay"><span class="cfg-label">${esc(l.label)}</span><input type="checkbox" data-lay="${l.id}"><span class="switch" aria-hidden="true"></span></label>`;
-  else if (isChoice(l)) row = `<div class="b-row b-stack lay"><span class="cfg-label" id="lay-${l.id}">${esc(l.label)}</span><div class="seg b-seg" role="radiogroup" aria-labelledby="lay-${l.id}">${steps(l).map((v) => `<button type="button" role="radio" data-lay-seg="${l.id}" data-val="${v}">${esc(l.fmt(v))}</button>`).join('')}</div></div>`;
-  else if (l.type === 'range') row = `<label class="b-row b-stack lay"><span class="b-top"><span class="cfg-label">${esc(l.label)}</span><output data-lout="${l.id}"></output></span>${range(l)}</label>`;
-  else row = `<div class="b-row lay"><span class="cfg-label">${esc(l.label)}</span><button type="button" class="act-btn" data-act="${l.id}">${esc(l.button || 'Auslösen')}</button></div>`;
+  if (l.type === 'toggle') row = `<label class="l-row cfg-toggle lay">${name}<span class="l-ctl"><input type="checkbox" data-lay="${l.id}"><span class="switch" aria-hidden="true"></span></span></label>`;
+  else if (isChoice(l)) row = `<div class="l-row lay"><span class="cfg-label l-name" id="lay-${l.id}">${esc(l.label)}</span><div class="seg b-seg l-ctl l-wide" role="radiogroup" aria-labelledby="lay-${l.id}">${steps(l).map((v) => `<button type="button" role="radio" data-lay-seg="${l.id}" data-val="${v}">${esc(l.fmt(v))}</button>`).join('')}</div></div>`;
+  else if (l.type === 'range') row = `<label class="l-row lay">${name}${range(l, l.label, 'b-track l-ctl')}<output data-lout="${l.id}"></output></label>`;
+  else row = `<div class="l-row lay">${name}<button type="button" class="act-btn l-ctl l-wide" data-act="${l.id}">${esc(l.button || 'Auslösen')}</button></div>`;
   return row + note(l);
 };
 
@@ -129,38 +135,69 @@ function groups(layers) {
 const count = (g) => g.items.reduce((n, it) => n + 1 + it.subs.length, 0);
 const resettable = (l) => l.type === 'toggle' || l.type === 'range';
 const rowDev = (l) => rowHtml(l) + (resettable(l) ? devLine(l.id) : '');
-const block = ({ l, subs }) => `<div class="b-item">${rowDev(l)}${subs.length ? `<div class="b-subs"${l.type === 'toggle' ? ` data-subs="${l.id}"` : ''}>${subs.map((x) => `<div class="b-item">${rowDev(x)}</div>`).join('')}</div>` : ''}</div>`;
-// halbe Karte nur bei wenigen Schaltern ohne Regler und ohne Erklärtext
-const wide = (g) => count(g) > 4 || g.items.some((it) => [it.l, ...it.subs].some((l) => l.type !== 'toggle' || l.hint));
+const block = ({ l, subs }) => `<div class="b-item">${rowDev(l)}${subs.length ? `<div class="l-subs"${l.type === 'toggle' ? ` data-subs="${l.id}"` : ''}>${subs.map((x) => `<div class="b-item">${rowDev(x)}</div>`).join('')}</div>` : ''}</div>`;
+const isAnim = (g) => g.items[0].l.type === 'play';
+const titleOf = (g) => (isAnim(g) ? 'Animation' : g.title);
+const iconOf = (g) => (isAnim(g) ? 'time' : groupIcon(g.title));
+// Kurzwerte im Kopf einer Gruppe: Regler-Werte, dann Schalter („an“/„aus“ bzw. „2 von 3 an“)
+function summary(g) {
+  const ls = g.items.flatMap((it) => [it.l, ...it.subs]), tg = ls.filter((l) => l.type === 'toggle');
+  const out = ls.filter((l) => l.type === 'range').map((l) => fmtVal(l, l.value));
+  const on = tg.filter((l) => l.value).length;
+  if (tg.length) out.push(tg.length === 1 ? (on ? 'an' : 'aus') : `${on} von ${tg.length} an`);
+  return out.join(' · ');
+}
 
-function timeCard(g) {
+function animRow(g, i) {
   const [{ l: p, subs }, ...rest] = g.items;
-  return `<article class="b-card b-card--time b-wide" data-g="g0" aria-label="Animation: ${esc(p.label)}">
-    <header class="b-head">${plaque('time')}<h4>Animation</h4><span class="b-chip" data-chip="${p.id}"></span></header>
+  return `<section class="l-sec l-anim" data-sec="${i}" aria-label="Animation: ${esc(p.label)}">
     <div class="b-time"><button type="button" class="play-btn play-btn--lg" data-play="${p.id}" aria-pressed="false" aria-label="${esc(p.label)} abspielen">${PLAY}</button>
       <span class="b-time-text"><span class="cfg-label b-strong">${esc(p.label)}</span><span class="b-status" data-status="${p.id}"></span></span>
       <output class="b-big" data-lout="${p.id}"></output></div>
     ${range(p, `${p.label}: Tempo`)}
     ${note(p)}
     ${subs.map((l) => block({ l, subs: [] })).join('')}${rest.map(block).join('')}
-  </article>`;
+  </section>`;
 }
+const foldRow = (g, i, open) => `<section class="l-sec l-group" data-sec="${i}">
+    <h4 class="l-h"><button type="button" class="l-fold" data-fold="${esc(g.title)}" aria-expanded="${open}" aria-controls="lb-${i}">${icon(groupIcon(g.title))}<span class="l-t">${esc(g.title)}</span><span class="l-sum" data-sum="${i}"></span><span class="b-count" aria-label="${count(g)} Einstellungen">${count(g)}</span>${CHEV}</button></h4>
+    <div class="l-body" id="lb-${i}"${open ? '' : ' hidden'}>${g.items.map(block).join('')}</div>
+  </section>`;
 
+let gs = [];
 function gearHtml(layers) {
-  const gs = groups(layers);
-  const cards = gs.map((g, i) => (g.items[0].l.type === 'play' ? timeCard(g)
-    : `<article class="b-card${wide(g) ? ' b-wide' : ''}" data-g="g${i}"><header class="b-head">${plaque(groupIcon(g.title))}<h4>${esc(g.title)}</h4><span class="b-count" aria-label="${count(g)} Einstellungen">${count(g)}</span></header>${g.items.map(block).join('')}</article>`)).join('');
-  const nav = gs.map((g, i) => ({ id: `g${i}`, title: esc(g.items[0].l.type === 'play' ? 'Animation' : g.title), icon: g.items[0].l.type === 'play' ? 'time' : groupIcon(g.title), n: count(g) }));
-  return `${navHtml(nav)}<div class="b-main">${devBar()}<div class="bento">${cards}</div></div>`;
+  gs = groups(layers);
+  const keep = opened[currentId], first = gs.find((g) => !isAnim(g));
+  const isOpen = (g) => (keep ? keep.includes(g.title) : g === first);
+  const jump = gs.length > 1 ? `<nav class="l-jump" aria-label="Zu Gruppe springen">${gs.map((g, i) => `<button type="button" data-jump="${i}">${icon(iconOf(g))}${esc(titleOf(g))}</button>`).join('')}</nav>` : '';
+  return `${jump}${devBar()}<div class="l-list">${gs.map((g, i) => (isAnim(g) ? animRow(g, i) : foldRow(g, i, isOpen(g)))).join('')}</div>`;
 }
 
 function render() {
   if (!gearEl) return;
   const layers = reg.get(currentId), lv = LEVELS[currentId];
-  if (headEl) headEl.innerHTML = `Ebene ${currentId + 1} · ${esc(lv ? lv.name : '…')}<span class="b-count">${layers ? layers.length : 0}</span>`;
+  if (headEl) headEl.innerHTML = `Ebene ${currentId + 1}<span class="b-count">${layers ? layers.length : 0}</span>`;
+  if (nameEl) nameEl.textContent = lv ? lv.name : '…';
   gearEl.innerHTML = layers ? gearHtml(layers)
     : '<p class="cfg-note">Diese Ebene lädt noch – ihre Einstellungen erscheinen gleich hier.</p>';
   sync();
+  spy();
+}
+
+// Sprungleiste: hervorgehoben ist die letzte Gruppe, deren Anfang die Leiste erreicht hat (ganz unten: die letzte)
+function spy() {
+  const bar = gearEl && gearEl.querySelector('.l-jump'), sc = gearEl && gearEl.closest('.cfg');
+  if (!bar || !sc || gearEl.closest('[hidden]')) return;
+  const edge = bar.getBoundingClientRect().bottom + 8, secs = [...gearEl.querySelectorAll('.l-sec')];
+  let cur = secs.filter((s) => s.getBoundingClientRect().top <= edge).pop() || secs[0];
+  if (sc.scrollTop > 0 && sc.scrollTop + sc.clientHeight >= sc.scrollHeight - 2) cur = secs[secs.length - 1];
+  bar.querySelectorAll('[data-jump]').forEach((b) => { if (b.dataset.jump === cur.dataset.sec) b.setAttribute('aria-current', 'true'); else b.removeAttribute('aria-current'); });
+}
+function setOpen(btn, open) {
+  btn.setAttribute('aria-expanded', String(open));
+  gearEl.querySelector(`#${btn.getAttribute('aria-controls')}`).hidden = !open;
+  opened[currentId] = [...gearEl.querySelectorAll('[data-fold][aria-expanded="true"]')].map((b) => b.dataset.fold);
+  try { localStorage.setItem(OPEN_KEY, JSON.stringify(opened)); } catch { /* privates Fenster */ }
 }
 
 export function syncLayers() { sync(); }
@@ -184,10 +221,12 @@ function sync() {
   root.querySelectorAll('[data-status]').forEach((s) => { const l = find(s.dataset.status); if (l && l.status) { const t = l.status(); if (s.textContent !== t) s.textContent = t; } });
   root.querySelectorAll('[data-hint]').forEach((s) => { const l = find(s.dataset.hint); if (l && typeof l.hint === 'function') { const t = l.hint(); if (s.textContent !== t) s.textContent = t; } });
   root.querySelectorAll('[data-lay-seg]').forEach((b) => { const l = find(b.dataset.laySeg); if (l) b.setAttribute('aria-checked', String(l.value === +b.dataset.val)); });
-  root.querySelectorAll('[data-chip]').forEach((c) => { const l = find(c.dataset.chip); if (l) c.textContent = playing(l) ? 'läuft' : 'angehalten'; });
+  root.querySelectorAll('[data-sum]').forEach((s) => { const g = gs[s.dataset.sum]; if (g) { const t = summary(g); if (s.textContent !== t) s.textContent = t; } });
   // Unter-Ebenen ohne Wirkung, solange ihr Hauptschalter aus ist: abgedunkelt, aber bedienbar
-  root.querySelectorAll('[data-subs]').forEach((el) => { const l = find(el.dataset.subs); if (l) el.classList.toggle('is-off', !l.value); });
+  root.querySelectorAll('[data-subs]').forEach((el) => { const l = find(el.dataset.subs); if (l) el.classList.toggle('is-idle', !l.value); });
   markDevs(root, (id) => { const l = find(id); return !!l && l.value !== l.def; });
+  root.querySelectorAll('[data-jump]').forEach((b) => b.classList.toggle('is-dev', !!root.querySelector(`[data-sec="${b.dataset.jump}"] .is-dev`)));
+  root.querySelectorAll('[data-fold]').forEach((b) => b.classList.toggle('is-dev', !!b.closest('.l-sec').querySelector('.is-dev')));
 }
 
 function onInput(e) {
@@ -199,6 +238,15 @@ function onInput(e) {
   sync();
 }
 function onClick(e) {
+  const f = e.target.closest('[data-fold]');
+  if (f) { setOpen(f, f.getAttribute('aria-expanded') !== 'true'); spy(); return; }
+  const j = e.target.closest('[data-jump]');
+  if (j) {
+    const sec = gearEl.querySelector(`[data-sec="${j.dataset.jump}"]`), fb = sec.querySelector('[data-fold]');
+    if (fb && fb.getAttribute('aria-expanded') !== 'true') setOpen(fb, true);
+    sec.scrollIntoView({ block: 'start', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+    return;
+  }
   const r = e.target.closest('[data-reset]');
   if (r && gearEl.contains(r)) {
     for (const l of reg.get(currentId) || []) if (resettable(l) && (r.dataset.reset === '*' || r.dataset.reset === l.id) && l.value !== l.def) { l.value = l.def; l.set(l.value); persist(l); }
@@ -215,11 +263,14 @@ function onClick(e) {
   sync();
 }
 
-// gear = Inhalt des Reiters, head = Reiter-Knopf (Titel der aktiven Ebene); Anzeigen gleichen sich alle 300 ms ab (Abspielstand)
-export function mountLayers({ gear, head }) {
-  gearEl = gear; headEl = head || null;
+// gear = Inhalt des Reiters, head = Reiter-Knopf („Ebene n“), name = Titelzeile (Name der Ebene); Anzeigen gleichen sich alle
+// 300 ms ab (Abspielstand); Sprungleiste folgt dem Scrollen des Panels
+export function mountLayers({ gear, head, name }) {
+  gearEl = gear; headEl = head || null; nameEl = name || null;
   gearEl.addEventListener('input', onInput);
   gearEl.addEventListener('click', onClick);
-  wireNav(gearEl);
+  let raf = 0;
+  gearEl.closest('.cfg')?.addEventListener('scroll', () => { if (!raf) raf = requestAnimationFrame(() => { raf = 0; spy(); }); }, { passive: true });
   setInterval(sync, 300);
 }
+export const spyLayers = () => spy();

@@ -1,6 +1,6 @@
 // Einstellungen hinter dem Zahnrad oben rechts, aufgebaut wie in Kosmos (Vorschau 26.10.2026 Bento:A + Global:A+B+C, übernommen
-// 2026-10-26): zwei Reiter „Ebene n · …“ = Schalter der aktiven Ebene als Bento-Karten (layers.js, je Ebene level.layers) und
-// „Global · alle Ebenen“ = gilt überall. Je Reiter Themenliste links, Karten mit Icon-Plakette, Mini-Grafik je Zeile, geänderte
+// 2026-10-26): zwei Reiter „Ebene n“ = Schalter der aktiven Ebene als Klapp-Liste mit Sprungleiste (layers.js, Zahnrad:A + C) und
+// „Global“ = gilt überall, mit Themenliste links, Karten mit Icon-Plakette, Mini-Grafik je Zeile, geänderte
 // Werte mit „Standard“ + Leiste „Alle zurücksetzen“. Global: Look (Farblook, Belichtung, Vignette, Kinobalken), Licht, Kamera &
 // Bewegung, Effekte, REM (Ebenen 2–4), Oberfläche (Hell/Dunkel, Infotafel, Messhilfen, Abzeichen), Leistung (Qualität mit
 // Messzeile, Detailgrad, Schatten, Renderskala, Bildrate). `?cfg` öffnet das Zahnrad, `?cfg=global` mit dem Reiter Global.
@@ -9,7 +9,7 @@
 
 import { QUALITY, quality } from './quality.js';
 import { theme, setTheme } from './theme.js';
-import { mountLayers, icon, navHtml, wireNav, devLine, devBar, markDevs, syncLayers } from './layers.js';
+import { mountLayers, icon, navHtml, wireNav, devLine, devBar, markDevs, syncLayers, spyLayers } from './layers.js';
 
 const KEY = 'biochar-settings.v1';
 // detail/light/fx: Hauptregler (Faktor auf Detailgrad der Stufe, auf alle Lichter, auf Linse + Korn); shadow: off · soft · full;
@@ -196,12 +196,15 @@ GROUPS[4].rows[1][1] += NOTE('Helle Streifen, solange die Kohle schlecht leitet 
 const N_GLOBAL = GROUPS.reduce((n, g) => n + g.rows.length, 0);
 const CARD = (g) => `<article class="b-card${g.half ? '' : ' b-wide'}${g.hero ? ' b-card--hero' : ''}" data-g="${g.id}"><header class="b-head"><span class="b-plaque">${icon(g.icon)}</span><h4>${g.title}</h4><span class="b-count" aria-label="${g.rows.length} Einstellungen">${g.rows.length}</span></header>${g.rows.map(([k, h]) => ROW(k, h)).join('')}</article>`;
 
-const HTML = `<div class="cfg-head"><h2 class="cfg-title" id="cfg-title">Einstellungen</h2><button type="button" class="cfg-x" data-close aria-label="Einstellungen schließen">×</button></div>
+// Titelzeile (Vorschau Kosmos 26.10.2026 Zahnrad:C): „Einstellungen“ klein, darunter groß der Name der Ebene bzw. „Alle Ebenen“,
+// rechts der kleine Schalter Ebene n | Global
+const HTML = `<div class="cfg-head"><div class="cfg-titles"><h2 class="cfg-title" id="cfg-title">Einstellungen</h2>
+    <p class="cfg-name"><span data-name="lv"></span><span data-name="gl">Alle Ebenen</span></p></div>
   <div class="cfg-tabs" role="tablist" aria-label="Geltungsbereich">
     <button type="button" role="tab" id="cfg-tab-lv" data-tab="lv" aria-controls="cfg-level"></button>
-    <button type="button" role="tab" id="cfg-tab-gl" data-tab="gl" aria-controls="cfg-global">Global · alle Ebenen<span class="b-count">${N_GLOBAL}</span></button>
-  </div>
-  <div class="cfg-pane" id="cfg-level" role="tabpanel" aria-labelledby="cfg-tab-lv"></div>
+    <button type="button" role="tab" id="cfg-tab-gl" data-tab="gl" aria-controls="cfg-global">Global<span class="b-count">${N_GLOBAL}</span></button>
+  </div><button type="button" class="cfg-x" data-close aria-label="Einstellungen schließen">×</button></div>
+  <div class="cfg-pane l-pane" id="cfg-level" role="tabpanel" aria-labelledby="cfg-tab-lv"></div>
   <div class="cfg-pane" id="cfg-global" role="tabpanel" aria-labelledby="cfg-tab-gl">${MINI_DEFS}
     ${navHtml(GROUPS.map((g) => ({ id: g.id, title: g.title.replace(' &amp; Bewegung', '').replace(' · Ebenen 2–4', ''), icon: g.icon, n: g.rows.length })))}
     <div class="b-main">${devBar()}<div class="bento">${GROUPS.map(CARD).join('')}</div></div>
@@ -241,18 +244,20 @@ export function mountSettings(pixels, relayout) {
     t.setAttribute('aria-selected', String(on));
     t.tabIndex = on ? 0 : -1;
     box.querySelector(`#${t.getAttribute('aria-controls')}`).hidden = !on;
+    box.querySelector(`[data-name="${t.dataset.tab}"]`).hidden = !on;
     if (on && focus) t.focus();
   });
-  box.querySelector('.cfg-tabs').addEventListener('click', (e) => { const t = e.target.closest('[role=tab]'); if (t) { pick(t); syncLayers(); } });
+  box.querySelector('.cfg-tabs').addEventListener('click', (e) => { const t = e.target.closest('[role=tab]'); if (t) { pick(t); syncLayers(); spyLayers(); } });
   box.querySelector('.cfg-tabs').addEventListener('keydown', (e) => {
     const i = tabs.indexOf(document.activeElement);
     if (i < 0 || !['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(e.key)) return;
     e.preventDefault();
     pick(tabs[e.key === 'Home' ? 0 : e.key === 'End' ? tabs.length - 1 : (i + (e.key === 'ArrowRight' ? 1 : tabs.length - 1)) % tabs.length], true);
     syncLayers();
+    spyLayers();
   });
   pick(tabs[new URLSearchParams(location.search).get('cfg') === 'global' ? 1 : 0]);
-  mountLayers({ gear: box.querySelector('#cfg-level'), head: box.querySelector('#cfg-tab-lv') });
+  mountLayers({ gear: box.querySelector('#cfg-level'), head: box.querySelector('#cfg-tab-lv'), name: box.querySelector('[data-name="lv"]') });
 
   const sync = () => {
     glob.querySelectorAll('[data-key][data-val]').forEach((b) => {
@@ -294,7 +299,7 @@ export function mountSettings(pixels, relayout) {
     btn.setAttribute('aria-expanded', String(o));
     clearInterval(timer);
     timer = 0;
-    if (o) { sync(); syncLayers(); meter(); box.focus({ preventScroll: true }); timer = setInterval(meter, 500); }
+    if (o) { sync(); syncLayers(); spyLayers(); meter(); box.focus({ preventScroll: true }); timer = setInterval(meter, 500); }
   };
   btn.addEventListener('click', () => open(box.hidden));
   const resetAll = () => {
