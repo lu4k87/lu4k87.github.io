@@ -1,4 +1,5 @@
-// Infografik je Abzeichen (Wunsch User 26.10.2026): festes Bild ohne Bewegung in der Info-Karte, Schema mit echten
+// Infografik je Abzeichen (Wunsch User 26.10.2026) in der Info-Karte, Schema mit echten Zahlen und dezenter Bewegung
+// im Baustein (Vorschau 26.10.2026 Beweg:C, Stil in kosmos.css; Schalter „Bewegung“ in cards.js). Mit echten
 // Zahlen. Jede Zahl im Bild hat eine Quelle in SOURCES (content.js, Test tests/cards.test.js) oder steht als
 // „eigene Rechnung“/„Schema“ in der Bildunterschrift. Bausteine (k): peaks (Höhenprofil), bars (Balken in Gruppen),
 // scale (Körper, Krater oder Scheiben am Himmel maßstäblich), orbit (Bahnen von oben), timeline (Zeitleiste),
@@ -92,11 +93,14 @@ function scale(f) {
 // Bahnen von oben, maßstäblich um den Zentralkörper; Namen rechts an der Bahn
 function orbit(f) {
   const cx = 98, cy = 104, R = 94, max = Math.max(...f.orbits.map((o) => o.a)), k = R / max;
+  const a0 = Math.min(...f.orbits.filter((o) => !o.dash).map((o) => o.a));   // innerste Bahn mit Mond: 10 s je Umlauf
   let s = `<circle cx="${cx}" cy="${cy}" r="${f1(f.r * k)}" class="hf-planet"/>${txt(cx, cy + 4, f.l, 'middle', 'hf-on-planet')}`;
   f.orbits.forEach((o, i) => {
     s += `<circle cx="${cx}" cy="${cy}" r="${f1(o.a * k)}" class="${o.dash ? 'hc-path' : `hc-orbit${o.hl ? ' is-on' : ''}`}"/>`;
     const a = (-28 + i * 26) * Math.PI / 180, px = cx + o.a * k * Math.cos(a), py = cy + o.a * k * Math.sin(a);
-    if (!o.dash) s += `<circle cx="${f1(px)}" cy="${f1(py)}" r="3.4" class="hc-sat${o.hl ? ' is-on' : ''}"/>`;
+    // Punkt kreist im Takt nach Kepler (T ∝ a^1,5, gleicher Zentralkörper); die Leitlinie zum Namen bleibt am Ort
+    if (!o.dash) s += `<g class="hf-kepler" style="transform-origin:${cx}px ${cy}px;--T:${(10 * (o.a / a0) ** 1.5).toFixed(1)}s">`
+      + `<circle cx="${f1(px)}" cy="${f1(py)}" r="3.4" class="hc-sat${o.hl ? ' is-on' : ''}"/></g>`;
     const ty = 22 + i * 56;
     s += `<path d="M${f1(px + 4)} ${f1(py)}L${f1(W - 98)} ${f1(ty - 4)}" class="hf-tick"/>`;
     s += txt(W - 94, ty, o.l, 'start', o.hl ? 'hf-name hc-acc' : 'hf-name') + o.t.split(' · ').map((r, j) => txt(W - 94, ty + 13 * (j + 1), r)).join('');
@@ -116,6 +120,7 @@ function timeline(f) {
     s += `<path d="M${x + 6} ${f1(y)}L${x + 20} ${f1(y)}L${x + 30} ${f1(ly)}L${x + 36} ${f1(ly)}" class="hf-tick"/>`;
     s += txt(x + 42, ly + 4, e.t, 'start', 'hc-acc') + txt(x + 112, ly + 4, e.l, 'start', 'hf-name') + (e.l2 ? txt(x + 112, ly + 17, e.l2) : '');
   });
+  s += `<circle cx="${x}" cy="${y0}" r="3" class="hf-runner" style="--ty:${f1(y1 - y0)}px"/>`;   // Lichtpunkt läuft die Achse entlang (Zeit linear)
   return `${open(Math.max(y1, last) + 26, f.alt)}${s}</svg>`;
 }
 
@@ -124,7 +129,12 @@ function range(f) {
   const x0 = 20, x1 = W - 20, y = 84, X = (v) => x0 + ((v - f.min) / (f.max - f.min)) * (x1 - x0);
   let s = '';
   for (let v = Math.ceil(f.min / f.step) * f.step; v <= f.max; v += f.step) s += `<line x1="${f1(X(v))}" x2="${f1(X(v))}" y1="${y - 4}" y2="${y + 4}" class="hf-tick"/>${txt(X(v), y + 20, num(v), 'middle')}`;
-  if (f.span) s += `<rect x="${f1(X(f.span[0]))}" y="${y - 7}" width="${f1(X(f.span[1]) - X(f.span[0]))}" height="14" rx="3" class="hf-bar is-hl"/>${txt((X(f.span[0]) + X(f.span[1])) / 2, y + 38, f.spanL, 'middle', 'hf-name')}`;
+  if (f.span) {   // Spanne mit Glanz, der über sie wandert (Bereich statt Einzelwert)
+    const sx = X(f.span[0]), sw = X(f.span[1]) - sx, gw = Math.min(28, sw / 3);
+    s += `<rect x="${f1(sx)}" y="${y - 7}" width="${f1(sw)}" height="14" rx="3" class="hf-bar is-hl"/>`
+      + `<rect x="${f1(sx)}" y="${y - 7}" width="${f1(gw)}" height="14" rx="3" class="hf-shimmer" style="--w:${f1(sw - gw)}px"/>`
+      + txt(sx + sw / 2, y + 38, f.spanL, 'middle', 'hf-name');
+  }
   f.marks.forEach((m, i) => {
     const x = X(m.v), ty = 22 + (i % 2) * 26, a = x < 60 ? 'start' : x > W - 60 ? 'end' : 'middle';
     s += `<line x1="${f1(x)}" x2="${f1(x)}" y1="${ty + 17}" y2="${y - 8}" class="${m.ref ? 'hc-path' : 'hf-tick'}"/>`;
@@ -177,5 +187,12 @@ function grooves(f) {
 
 const KINDS = { peaks, bars, scale, orbit, timeline, range, layers, polar, grooves, ...AUSSEN_KINDS };
 export const FIGS = { ...ERDE, ...SONNE, ...JUPITER, ...MARS, ...AUSSEN, ...GALAXIS };
-export const figSvg = (f) => KINDS[f.k](f);
+// Bewegung für alle Bausteine (auch die aus figs/<ast>.js): Art als Klasse, Staffel --k für das Einwachsen, pathLength
+// zum Einzeichnen der Linien; was sich danach bewegt, steht in kosmos.css (Abschnitt Info-Karte)
+export function figSvg(f) {
+  let k = 0;
+  return KINDS[f.k](f).replace('class="hc-svg hf"', `class="hc-svg hf hf--${f.k}"`)
+    .replace(/class="(hf-bar|hf-body|hf-layer|hf-zone|hf-groove)( is-hl)?"/g, (m) => `${m} style="--k:${k++}"`)
+    .replace(/<(line|circle|path)([^>]*?) class="(hf-base|hc-orbit|hf-groove)/g, '<$1$2 pathLength="1" class="$3');
+}
 export const figKinds = KINDS;

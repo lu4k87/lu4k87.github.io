@@ -287,6 +287,14 @@ body.is-flying .hint, body.is-intro .hint { opacity: 0; }
 }
 .hc-notes { display: flex; flex-wrap: wrap; gap: 2px 14px; padding-top: 8px; border-top: 1px solid var(--line); font-size: 12.5px; color: var(--ink-soft); }
 .hc-notes .fn { margin: 0 4px 0 0; }
+/* Schalter „Bewegung“ über jeder Grafik (Vorschau 26.10.2026 Schalt:A): Bahn-Icon + Wort + kleiner Switch, gilt für alle Karten */
+.hc-mt-row { display: flex; justify-content: flex-end; margin: -2px 4px 2px; }
+.hc-mt { display: inline-flex; align-items: center; gap: 7px; min-height: 28px; font: 500 12px var(--mono); color: var(--ink-soft); }
+.hc-mi { width: 15px; height: 15px; flex: none; transition: color 0.2s; }
+.hc-mt:has(input:checked) .hc-mi { color: var(--accent); }
+.hc-mt .switch { width: 30px; height: 18px; border-radius: 9px; }
+.hc-mt .switch::after { width: 12px; height: 12px; }
+.hc-mt.cfg-toggle input:checked + .switch::after { transform: translateX(12px); }
 
 /* Grafik-Elemente: Raster, Marken, Kurven; Datenfarben = Lichtfarben (Polarlicht 557,7 nm grün, Jupiter-UV als Falschfarbe) */
 .hc-grid { fill: none; stroke: rgba(255, 255, 255, 0.18); stroke-width: 0.8; }
@@ -324,7 +332,7 @@ body.is-flying .hint, body.is-intro .hint { opacity: 0; }
 .hc-ring { fill: none; stroke: #e6d6b0; }
 .hc-grains { fill: #fff6e0; opacity: 0.8; }
 
-/* Feste Infografik (figs.js, Wunsch User 26.10.2026): ohne Bewegung, Körper neutral, Hervorhebung in Akzentfarbe */
+/* Infografik (figs.js, Wunsch User 26.10.2026): Körper neutral, Hervorhebung in Akzentfarbe; Bewegung unten */
 .hf .hf-name { fill: var(--ink); }
 .hf-body { fill: rgba(255, 255, 255, 0.1); stroke: rgba(255, 255, 255, 0.45); stroke-width: 1; }
 .hf-body.is-hl, .hf-zone.is-hl, .hf-layer.is-hl { fill: color-mix(in srgb, var(--accent) 28%, transparent); stroke: var(--accent); }
@@ -362,7 +370,35 @@ body.is-flying .hint, body.is-intro .hint { opacity: 0; }
 @keyframes hcScan { to { --s: 0.97; } }
 .hc-scan { translate: calc(var(--s) * 66px) 0; }
 .hc-dot { translate: calc(var(--s) * 114px) calc((1 - (2 + 3 * sqrt(1 - var(--s) * var(--s))) / 5) / 0.7 * 120px); }
-.hs-card[data-motion="calm"] :is(.hc-drift, .hc-drift-rev, .hc-spin, .hc-ping, .hc-sun), .hs-card[data-motion="off"] * { animation: none !important; }
+/* Infografiken (figs.js, Vorschau 26.10.2026 Beweg:C): beim Öffnen einzeichnen (Linien, Balken, Gipfel gestaffelt über --k),
+   danach je Baustein höchstens eine Bewegung mit Bedeutung – Hervorhebung atmet, Monde kreisen im Kepler-Takt (--T aus figs.js),
+   Lichtpunkt läuft die Zeitleiste entlang, Welle über die Phobos-Rillen, Glanz wandert über die Spanne */
+@keyframes hfGrowX { from { transform: scaleX(0); } }
+@keyframes hfGrowY { from { transform: scaleY(0); } }
+@keyframes hfPop { from { transform: scale(0.6); opacity: 0; } }
+@keyframes hfFade { from { opacity: 0; } }
+@keyframes hfBreathe { from { opacity: 0.62; } to { opacity: 1; } }
+.hs-card.is-open .hf [pathLength]:is(.hf-base, .hc-orbit, .hf-groove, .hc-curve) { stroke-dasharray: 1; animation: hcDraw 1.4s var(--ease-out) 0.15s both; }
+.hs-card.is-open .hf :is(.hf-bar, .hf-layer) { transform-box: fill-box; transform-origin: left center; animation: hfGrowX 0.9s var(--ease-out) calc(var(--k, 0) * 60ms + 150ms) both; }
+.hs-card.is-open .hf--peaks .hf-body { transform-box: fill-box; transform-origin: center bottom; animation: hfGrowY 1s var(--ease-out) calc(var(--k, 0) * 90ms + 150ms) both; }
+.hs-card.is-open .hf :is(.hf--scale .hf-body, .hf-zone) { transform-box: fill-box; transform-origin: center; animation: hfPop 1s var(--ease-out) calc(var(--k, 0) * 90ms + 150ms) both; }
+.hs-card.is-open .hf :is(text, .hf-tick, .hc-sat, .hc-path, .hf-crater, .hf-arrow, .hc-mark) { animation: hfFade 0.6s var(--ease-out) 0.6s both; }
+.hs-card.is-open .hf :is(.hf-body, .hf-zone).is-hl { animation: hfPop 1s var(--ease-out) 0.15s both, hfBreathe 2.8s cubic-bezier(0.45, 0, 0.55, 1) 1.4s infinite alternate; }
+.hs-card.is-open .hf--peaks .hf-body.is-hl { animation: hfGrowY 1s var(--ease-out) 0.15s both, hfBreathe 2.8s cubic-bezier(0.45, 0, 0.55, 1) 1.4s infinite alternate; }
+.hs-card.is-open .hf :is(.hf-bar, .hf-layer).is-hl { animation: hfGrowX 0.9s var(--ease-out) 0.15s both, hfBreathe 2.8s cubic-bezier(0.45, 0, 0.55, 1) 1.4s infinite alternate; }
+.hs-card.is-open .hf--range .hf-bar.is-hl { animation: hfGrowX 0.9s var(--ease-out) 0.15s both; }
+.hf-kepler { animation: hcSpin var(--T) linear 1.2s infinite; }
+.hf-runner { fill: var(--accent); stroke: var(--accent); stroke-opacity: 0.3; stroke-width: 6; animation: hfRun 14s linear 1.2s infinite both; }
+@keyframes hfRun { 0% { transform: translateY(0); opacity: 0; } 4% { opacity: 1; } 86% { transform: translateY(var(--ty)); opacity: 1; } 94%, 100% { transform: translateY(var(--ty)); opacity: 0; } }
+.hs-card.is-open .hf--grooves .hf-groove { animation: hcDraw 1.4s var(--ease-out) 0.15s both, hfWave 8s linear calc(var(--k, 0) * 0.22s + 1.6s) infinite; }
+@keyframes hfWave { 0%, 14%, 100% { stroke: rgba(255, 255, 255, 0.35); } 6% { stroke: rgba(var(--accent-rgb), 0.95); } }
+.hf-shimmer { fill: #fff; opacity: 0.32; animation: hfShim 6s cubic-bezier(0.45, 0, 0.55, 1) 1.4s infinite; }
+@keyframes hfShim { 0% { transform: translateX(0); } 45%, 100% { transform: translateX(var(--w)); } }
+/* Zahnrad „Ruhig“ = nur Einzeichnen und Atmen; Zahnrad „Aus“ = Karte still, die Grafik folgt ihrem Schalter (data-fm aus mountCard) */
+.hs-card[data-motion="calm"] :is(.hc-drift, .hc-drift-rev, .hc-spin, .hc-ping, .hc-sun, .hf-kepler) { animation: none !important; }
+.hs-card[data-motion="calm"] .hf--grooves .hf-groove { animation-name: hcDraw !important; }
+.hs-card[data-motion="off"] :not(.hc-graph, .hc-graph *), .hs-card[data-fm="off"] .hc-graph * { animation: none !important; }
+.hs-card:is([data-fm="off"], [data-motion="calm"]) :is(.hf-runner, .hf-shimmer) { display: none; }
 
 /* ---------- Fuß ---------- */
 .bottombar {
