@@ -1,12 +1,12 @@
 // Einstellungen (Zahnrad oben rechts): Titelzeile mit Stationsname + Schalter Station | Global; beide Reiter als Klapp-Liste mit
 // Sprungleiste (layers.js, Vorschau 26.10.2026 Zahnrad:A + C): „Station“ = Ebenen der aktiven Station
 // und „Global“ = gilt an allen Stationen (Vorschau 26.10.2026 Global:A+B+C): Karten mit Icon-Plakette und
-// Mini-Grafik je Zeile, geänderte Werte markiert mit „Standard“. Gruppen: Look (Farblook, Belichtung, Vignette, Kinobalken),
+// Mini-Grafik je Zeile, geänderte Werte mit ↺ „Standard“ am Zeilenende; Gruppen nur aus Schaltern zweispaltig. Gruppen: Look (Farblook, Belichtung, Vignette, Kinobalken),
 // Himmel, Kamera & Bewegung, Effekte, Oberfläche (inkl. Bewegung der Info-Grafiken = cards.js `kosmos.figmotion.v1`), Leistung.
 // `?cfg` öffnet das Zahnrad, `?cfg=global` mit dem Reiter Global.
 // Gespeichert in localStorage `kosmos.settings.v1`; clean() prüft jeden Wert, damit kaputte Einträge nichts stören.
 
-import { mountLayers, refreshLayers, icon, devLine, devBar, markDevs, isOpenIn, spyIn, foldClick, domSummary } from './layers.js';
+import { mountLayers, refreshLayers, icon, devLine, cfgBar, markDevs, isOpenIn, spyIn, foldClick, domSummary } from './layers.js';
 import { nbsp } from './figs.js';
 
 const KEY = 'kosmos.settings.v1';
@@ -97,10 +97,11 @@ const MINI = {
   fpsCap: [0, 1, 2, 3, 4, 5, 6, 7].map((i) => `<rect x="${3 + i * 7.5}" y="${i % 2 ? 6 : 3}" width="5" height="${i % 2 ? 11 : 14}" rx="1" fill="#c9d4ea" opacity="${i < 6 ? 0.85 : 0.3}"/>`).join(''),
 };
 const MINI_DEFS = '<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><linearGradient id="mgE"><stop offset="0" stop-color="#05070c"/><stop offset="1" stop-color="#f4f7ff"/></linearGradient><radialGradient id="mgV"><stop offset=".45" stop-color="#7a8cab"/><stop offset="1" stop-color="#05070c"/></radialGradient></defs></svg>';
-// Zeile = Bedienung (+ Mini-Grafik daneben) + Hinweis darunter + Zeile „geändert · Standard“
+// Zeile = Bedienung (+ Mini-Grafik daneben) + Hinweis darunter + ↺ „Standard“ am Zeilenende (nur bei geändertem Wert)
 const ROW = (key, html) => {
   const i = html.indexOf('<p class="cfg-note'), [ctl, note] = i < 0 ? [html, ''] : [html.slice(0, i), html.slice(i)];
-  return `<div class="b-item">${MINI[key] ? `<div class="b-line">${ctl}<svg class="b-mini" viewBox="0 0 64 20" aria-hidden="true">${MINI[key]}</svg></div>` : ctl}${note}${key ? devLine(key) : ''}</div>`;
+  const label = (ctl.match(/class="cfg-label"[^>]*>([^<]+)/) || [])[1] || '';
+  return `<div class="b-item">${MINI[key] ? `<div class="b-line">${ctl}<svg class="b-mini" viewBox="0 0 64 20" aria-hidden="true">${MINI[key]}</svg></div>` : ctl}${note}${key ? devLine(key, label) : ''}</div>`;
 };
 // Farblook als Bild-Kacheln: Farben aus Tönung, Belichtung und Vignette des jeweiligen Looks; „Station“ = vier Looks im Kreis
 const rgb = (b, t, e) => `rgb(${b.map((x, i) => Math.min(255, Math.round(x * t[i] * e))).join(',')})`;
@@ -131,7 +132,7 @@ const JUMP = `<nav class="cfg-jump" aria-label="Gruppen">${GROUPS.map((g, i) => 
 const CARD = (g, i) => { const open = isOpenIn(GKEY, i, 0); return `<article class="b-card b-fold${open ? ' is-open' : ''}" data-g="${g.id}" data-fold="${i}">
   <h4 class="b-fold-h"><button type="button" class="b-head" aria-expanded="${open}" aria-controls="cfg-b${i}"><span class="b-plaque">${icon(g.icon)}</span><span class="b-name">${g.title}</span>
     <span class="b-sum" data-gsum></span><span class="b-count" aria-label="${g.rows.length} Einstellungen">${g.rows.length}</span>${icon('chev', 'b-chev')}</button></h4>
-  <div class="b-body" id="cfg-b${i}"${open ? '' : ' hidden'}>${g.rows.map(([k, h]) => ROW(k, h)).join('')}</div></article>`; };
+  <div class="b-body${g.half ? ' b-body--grid' : ''}" id="cfg-b${i}"${open ? '' : ' hidden'}>${g.rows.map(([k, h]) => ROW(k, h)).join('')}</div></article>`; };
 
 export function mountSettings(root, btn) {
   root.innerHTML = `
@@ -144,7 +145,7 @@ export function mountSettings(root, btn) {
     </div>
     <div class="cfg-pane" id="cfg-station" role="tabpanel" aria-labelledby="cfg-tab-st"></div>
     <div class="cfg-pane" id="cfg-global" role="tabpanel" aria-labelledby="cfg-tab-gl">${MINI_DEFS}
-      <div class="b-main">${JUMP}${devBar('Einstellungen')}<div class="bento b-list">${GROUPS.map(CARD).join('')}</div></div>
+      <div class="b-main">${cfgBar(JUMP)}<div class="bento b-list">${GROUPS.map(CARD).join('')}</div></div>
     </div>`;
   const glob = root.querySelector('#cfg-global');
   const tabs = [...root.querySelectorAll('[role=tab]')];

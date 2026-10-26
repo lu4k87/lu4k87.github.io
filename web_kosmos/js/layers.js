@@ -40,14 +40,17 @@ const GROUP_ICONS = [[/Zeit|Animation/, 'time'], [/Polarlicht|Magnet|Feld/, 'fie
   [/Bahn|Mond|Monde|Ring|Planet|System|Umlauf|Jupiter|Neptun|Mars|Triton|Erde|Galaxien|Gezeiten/, 'orbit'], [/Farb|Glut/, 'look']];
 const groupIcon = (t) => (GROUP_ICONS.find(([re]) => re.test(t)) || [0, 'layers'])[1];
 const plaque = (k) => `<span class="b-plaque">${icon(k)}</span>`;
-// Geänderte Werte (Vorschau Global:C): Zeile mit Punkt + „Standard“, Leiste oben mit Zahl + „Alle zurücksetzen“
-export const devLine = (k) => `<div class="b-dev" data-dev-of="${k}"><span>geändert</span><button type="button" class="b-reset" data-reset="${k}">${icon('reset')}Standard</button></div>`;
-export const devBar = (what) => `<div class="b-devbar" hidden><span data-devn></span> ${what} geändert<button type="button" class="b-reset" data-reset="*">${icon('reset')}Alle zurücksetzen</button></div>`;
+// Geänderte Werte (Vorschau Global:C, verdichtet 26.10.2026): ↺-Knopf am Zeilenende in fester Spalte statt eigener Zeile
+// „geändert · Standard“; „n geändert · Alle zurücksetzen“ als kompakter Knopf rechts in der Sprungleiste
+export const devLine = (k, label = '') => `<div class="b-dev" data-dev-of="${k}"><button type="button" class="b-reset b-reset--ico" data-reset="${k}" title="Auf Standard zurücksetzen" aria-label="${label ? `${esc(label)}: ` : ''}auf Standard zurücksetzen">${icon('reset')}</button></div>`;
+export const devBar = () => `<button type="button" class="b-reset b-devbar" data-reset="*" hidden>${icon('reset')}<span><span data-devn></span> geändert · Alle zurücksetzen</span></button>`;
+// Kopfleiste eines Reiters: Sprungleiste (falls mehrere Gruppen) + Knopf „Alle zurücksetzen“; bleibt beim Scrollen stehen
+export const cfgBar = (jump) => `<div class="cfg-bar${jump ? '' : ' cfg-bar--solo'}">${jump}${devBar()}</div>`;
 export function markDevs(root, isDev) {
   let n = 0;
   root.querySelectorAll('[data-dev-of]').forEach((d) => { const on = isDev(d.dataset.devOf); d.closest('.b-item').classList.toggle('is-dev', on); n += on; });
   const bar = root.querySelector('.b-devbar');
-  if (bar) { bar.hidden = !n; bar.querySelector('[data-devn]').textContent = n; }
+  if (bar) { bar.hidden = !n; bar.querySelector('[data-devn]').textContent = n; bar.closest('.cfg-bar').classList.toggle('has-dev', !!n); }
 }
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const store = (() => { try { const s = JSON.parse(localStorage.getItem(KEY)); return s && typeof s === 'object' ? s : {}; } catch { return {}; } })();
@@ -125,18 +128,17 @@ function groups(layers) {
 }
 const count = (g) => g.items.reduce((n, it) => n + 1 + it.subs.length, 0);
 const resettable = (l) => l.type === 'toggle' || l.type === 'range';
-const rowDev = (l) => rowHtml(l) + (resettable(l) ? devLine(l.id) : '');
+const rowDev = (l) => rowHtml(l) + (resettable(l) ? devLine(l.id, l.label) : '');
 const block = ({ l, subs }) => `<div class="b-item">${rowDev(l)}${subs.length ? `<div class="b-subs"${l.type === 'toggle' ? ` data-subs="${l.id}"` : ''}>${subs.map((x) => `<div class="b-item">${rowDev(x)}</div>`).join('')}</div>` : ''}</div>`;
-// halbe Karte nur bei wenigen Schaltern ohne Regler
-const wide = (g) => count(g) > 4 || g.items.some((it) => [it.l, ...it.subs].some((l) => l.type !== 'toggle'));
+// Gruppe nur aus Schaltern ohne Unterzeilen und Hinweise → zweispaltig (b-body--grid)
+const onlyToggles = (g) => g.items.length > 1 && g.items.every(({ l, subs }) => l.type === 'toggle' && !subs.length && !l.hint && !l.only);
 
 function timeCard(g) {
   const [{ l: p, subs }, ...rest] = g.items;
   return `<article class="b-card b-card--time" data-g="g0" aria-label="Animation: ${esc(p.label)}">
     <div class="b-time"><button type="button" class="play-btn play-btn--lg" data-play="${p.id}" aria-pressed="false" aria-label="${esc(p.label)} abspielen">${PLAY}</button>
       <span class="b-time-text"><span class="cfg-label b-strong">${esc(p.label)}</span><span class="b-status" data-status="${p.id}"></span></span>
-      <output class="b-big" data-lout="${p.id}"></output></div>
-    ${range(p, `${p.label}: Tempo`)}
+      ${range(p, `${p.label}: Tempo`)}<output class="b-big" data-lout="${p.id}"></output></div>
     ${p.hint ? `<p class="cfg-note lay-hint">${esc(p.hint)}</p>` : ''}
     ${subs.map((l) => block({ l, subs: [] })).join('')}${rest.map(block).join('')}
   </article>`;
@@ -158,7 +160,7 @@ const isOpen = (i, first) => isOpenIn(currentId, i, first);
 const foldCard = (g, i, open) => `<article class="b-card b-fold${open ? ' is-open' : ''}" data-g="g${i}" data-fold="${i}">
   <h4 class="b-fold-h"><button type="button" class="b-head" aria-expanded="${open}" aria-controls="lay-b${i}">${plaque(groupIcon(g.title))}<span class="b-name">${esc(g.title)}</span>
     <span class="b-sum" data-sum="${i}"></span><span class="b-count" aria-label="${count(g)} Ebenen">${count(g)}</span>${icon('chev', 'b-chev')}</button></h4>
-  <div class="b-body" id="lay-b${i}"${open ? '' : ' hidden'}>${g.items.map(block).join('')}</div></article>`;
+  <div class="b-body${onlyToggles(g) ? ' b-body--grid' : ''}" id="lay-b${i}"${open ? '' : ' hidden'}>${g.items.map(block).join('')}</div></article>`;
 
 function gearHtml(layers) {
   gs = groups(layers);
@@ -166,7 +168,7 @@ function gearHtml(layers) {
   const folds = gs.map((g, i) => (g.items[0].l.type === 'play' ? '' : `${i}`)).filter(Boolean);
   const jump = folds.length > 1 ? `<nav class="cfg-jump" aria-label="Gruppen der Station">${folds.map((i) => `<button type="button" class="cfg-jump-btn" data-jump="${i}">${icon(groupIcon(gs[i].title))}<span>${esc(gs[i].title)}</span></button>`).join('')}</nav>` : '';
   const cards = gs.map((g, i) => (g.items[0].l.type === 'play' ? timeCard(g) : foldCard(g, i, isOpen(i, first)))).join('');
-  return `<div class="b-main">${jump}${devBar('Ebenen')}<div class="bento b-list">${cards}</div></div>`;
+  return `<div class="b-main">${cfgBar(jump)}<div class="bento b-list">${cards}</div></div>`;
 }
 
 function saveOpen(key, root) {
@@ -182,7 +184,7 @@ function setOpen(card, on) {
 export function spyIn(root, sc) {
   const bar = root && !root.hidden && root.querySelector('.cfg-jump');
   if (!bar) return;
-  const edge = bar.getBoundingClientRect().bottom + 8, folds = [...root.querySelectorAll('.b-fold')];
+  const edge = (bar.closest('.cfg-bar') || bar).getBoundingClientRect().bottom + 8, folds = [...root.querySelectorAll('.b-fold')];
   let cur = null;
   for (const c of folds) { if (!cur || c.getBoundingClientRect().top <= edge) cur = c; }
   if (sc && sc.scrollTop > 0 && sc.scrollTop + sc.clientHeight >= sc.scrollHeight - 2) cur = folds.pop() || cur;
