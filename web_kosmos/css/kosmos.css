@@ -543,7 +543,8 @@ body.cfg-open .caption { visibility: hidden; }
 /* ---------- Kapitel-Titel ---------- */
 /* Steht ≈ 6 s groß über der Szene (User 2026-10-26: mehr Geltung, langsamer, länger, größer): Nummer, Lichtlinie, Titel
    und Zeile darunter gleiten gestaffelt ein, der Titel zieht seine Sperrung 6 s lang zusammen; dunkler Hof hinter dem
-   Text trägt ihn auch vor hellen Planeten. Schriftgröße nach der Breite der Bühne (cqi), längstes Wort passt immer. */
+   Text trägt ihn auch vor hellen Planeten. Schriftgröße nach der Breite der Bühne (cqi), Titel nie umbrochen
+   (hud.js fitCaption verkleinert bei Bedarf). */
 .caption {
   position: fixed; z-index: 3; left: var(--rail-w); right: var(--panel-w); bottom: 19%; text-align: center; pointer-events: none;
   display: flex; flex-direction: column; align-items: center; gap: 14px; padding: 0 24px; container-type: inline-size;
@@ -559,14 +560,16 @@ body.panel-off .caption { right: 0; }
 .cap-n::after { content: ""; width: 96px; height: 1px; background: linear-gradient(90deg, transparent, var(--accent), transparent); transform: scaleX(0); transition: transform 1s ease; }
 .caption.is-on .cap-n::after { transform: scaleX(1); transition: transform 2.4s var(--ease-out) 0.5s; }
 .cap-title {
-  --d: 0.3s; font: 300 clamp(40px, 7.2cqi, 92px)/1.04 var(--display); text-transform: uppercase; letter-spacing: 0.34em; padding-left: 0.34em;
+  --d: 0.3s; font: 300 clamp(40px, 7.2cqi, 92px)/1.04 var(--display); text-transform: uppercase; letter-spacing: 0.34em; padding-left: 0.34em; white-space: nowrap;
   text-shadow: 0 2px 22px rgba(0, 0, 0, 0.9), 0 0 34px color-mix(in srgb, var(--accent) 20%, transparent);
 }
 .caption.is-on .cap-title {
   letter-spacing: 0.22em; padding-left: 0.22em;
   transition: opacity 1.8s var(--ease-out) var(--d), transform 2.4s var(--ease-out) var(--d), letter-spacing 6s var(--ease-out), padding-left 6s var(--ease-out);
 }
-.cap-sub { --d: 0.8s; font-size: 17px; color: var(--ink); max-width: 52ch; }
+.cap-sub { --d: 0.8s; font-size: 17px; color: var(--ink); white-space: nowrap; }
+.cap-sub.is-wrap { white-space: normal; text-wrap: balance; }
+.cap-sub span { white-space: nowrap; }
 /* Infotafel im Flug: Inhalt blendet beim Abflug aus (Zwischenstationen bleiben unsichtbar), bei der Ankunft gestaffelt
    wieder ein, während der Kapitel-Titel noch steht – kein harter Wechsel */
 .panel-body > * { transition: opacity 0.8s var(--ease-out), transform 0.8s var(--ease-out); transition-delay: calc(0.2s + var(--i, 0) * 80ms); }

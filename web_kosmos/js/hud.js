@@ -594,14 +594,35 @@ export function createHud(h) {
 
   // ---------- Flug, Kapitel-Titel, Auftakt ----------
   let capTimer = 0;
+  // Titel und Zeile darunter einzeilig: Schrift nach der Breite der Bühne verkleinern, gemessen in der breitesten
+  // Sperrung vor dem Einblenden; Zeile darunter nie unter 12 px, dann Umbruch nur an den Trennern ·
+  function fitCaption() {
+    const cs = getComputedStyle(caption);
+    const avail = (caption.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight)) * 0.98;
+    for (const [sel, min] of [['.cap-title', 0], ['.cap-sub', 12]]) {
+      const el = caption.querySelector(sel);
+      el.style.fontSize = '';
+      el.classList.remove('is-wrap');
+      if (el.scrollWidth <= avail) continue;
+      const fs = parseFloat(getComputedStyle(el).fontSize) * avail / el.scrollWidth;
+      el.style.fontSize = `${Math.max(min, fs)}px`;
+      el.classList.toggle('is-wrap', fs < min);
+    }
+  }
+
   function showCaption(st, opening = false) {
     caption.querySelector('.cap-n').textContent = opening ? 'Kosmos' : String(st.n).padStart(2, '0');
     caption.querySelector('.cap-title').textContent = opening ? 'Reise durch das All' : st.title;
-    caption.querySelector('.cap-sub').textContent = opening
-      ? 'Von der Erde bis an den Rand des beobachtbaren Universums'
-      : `${st.kicker} · Bildbreite ${fmtLength(st.width)}${st.dist ? ` · ${fmtLength(st.dist)} entfernt` : ''}`;
+    const parts = opening
+      ? ['Von der Erde bis an den Rand des beobachtbaren Universums']
+      : [st.kicker, `Bildbreite ${fmtLength(st.width)}`, ...(st.dist ? [`${fmtLength(st.dist)} entfernt`] : [])];
+    caption.querySelector('.cap-sub').replaceChildren(...parts.flatMap((t, i) => {
+      const seg = document.createElement('span');
+      seg.textContent = t;
+      return i ? [' · ', seg] : [seg];
+    }));
     caption.classList.remove('is-on');
-    void caption.offsetWidth;
+    fitCaption();
     caption.classList.add('is-on');
     clearTimeout(capTimer);
     capTimer = setTimeout(() => {
