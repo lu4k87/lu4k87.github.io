@@ -25,6 +25,14 @@ export const SOURCES = {
   'jpl-elements': { t: 'Approximate Positions of the Planets (Keplerian Elements)', by: 'E. M. Standish, JPL', url: 'https://ssd.jpl.nasa.gov/planets/approx_pos.html' },
   'iau-2012': { t: 'Resolution B2: Re-definition of the astronomical unit', by: 'IAU 2012', url: 'https://www.iau.org/static/resolutions/IAU2012_English.pdf' },
   'llr': { t: 'Lunar Laser Ranging: 3,8 cm/Jahr', by: 'Williams & Boggs 2016, Celest. Mech. Dyn. Astron. 126', url: 'https://doi.org/10.1007/s10569-016-9702-3' },
+  'shepard-2021': { t: 'Asteroid 16 Psyche: Shape, Features, and Global Map (278 × 238 × 171 km, Dichte 4,0 g/cm³, Senken)', by: 'Shepard et al. 2021, Planet. Sci. J. 2 (4)', url: 'https://doi.org/10.3847/PSJ/abfdba' },
+  'nasa-psyche': { t: '16 Psyche: Größe, Metallanteil, Start der Sonde 13.10.2023, Mission am Asteroiden ab August 2029', by: 'NASA Science', url: 'https://science.nasa.gov/solar-system/asteroids/16-psyche/' },
+  'nasa-bennu': { t: '101955 Bennu: Probennahme am 20.10.2020', by: 'NASA Science', url: 'https://science.nasa.gov/solar-system/asteroids/101955-bennu/' },
+  'nasa-osirisrex': { t: 'OSIRIS-REx: 121,6 g Probe von Bennu, Landung der Kapsel am 24.09.2023', by: 'NASA Science', url: 'https://science.nasa.gov/mission/osiris-rex/' },
+  'barnouin-2019': { t: 'Shape of (101955) Bennu indicative of a rubble pile with internal stiffness', by: 'Barnouin et al. 2019, Nature Geoscience 12, 247', url: 'https://doi.org/10.1038/s41561-019-0330-x' },
+  'lauretta-2019': { t: 'Episodes of particle ejection from the surface of the active asteroid (101955) Bennu', by: 'Lauretta et al. 2019, Science 366', url: 'https://doi.org/10.1126/science.aay3544' },
+  'nasa-eros': { t: '433 Eros: S-Typ; NEAR Shoemaker in der Umlaufbahn ab 14.02.2000, Landung 12.02.2001', by: 'NASA Science', url: 'https://science.nasa.gov/solar-system/asteroids/433-eros/' },
+  'nssdc-asteroids': { t: 'Asteroid Fact Sheet: Eros 33 × 13 × 13 km, 5,27 h; Bennu 0,49 km', by: 'NASA NSSDCA', url: 'https://nssdc.gsfc.nasa.gov/planetary/factsheet/asteroidfact.html' },
   'kirkwood': { t: 'Kirkwood-Lücken und Resonanzen', by: 'NASA JPL Solar System Dynamics', url: 'https://ssd.jpl.nasa.gov/diagrams/mb_hist.html' },
   'gravity-2019': { t: 'Geometric distance to the Galactic Centre', by: 'GRAVITY Collaboration 2019, A&A 625, L10', url: 'https://doi.org/10.1051/0004-6361/201935656' },
   'gravity-2022': { t: 'Mass distribution in the Galactic Centre (multiple stellar orbits)', by: 'GRAVITY Collaboration 2022, A&A 657, L12', url: 'https://doi.org/10.1051/0004-6361/202142465' },
@@ -130,7 +138,30 @@ export const STATIONS = {
       uranus: { t: 'Uranus', x: 'Radius 25.559 km · 14,5 Erdmassen · 19,2 AE · Umlauf 84 Jahre · Drehung 17 h 14 min, rückläufig · −195 °C · Achse um 98° geneigt: Jeder Pol ist etwa 42 Jahre lang beleuchtet, dann 42 Jahre unbeleuchtet · Methan absorbiert rotes Licht, daher die blaugrüne Farbe · 28 bekannte Monde.', s: 'nasa-planets' },
       neptune: { t: 'Neptun', x: 'Radius 24.764 km · 17,1 Erdmassen · 30,1 AE · Umlauf 165 Jahre · Drehung 16 h 7 min · −200 °C · 16 Monde; der größte, Triton, umläuft Neptun rückläufig · Sonnenlicht braucht gut 4 Stunden bis hierher.', s: 'nasa-planets' },
       belt: { t: 'Asteroidengürtel', x: 'Lücken bei 2,50 · 2,82 · 2,95 AE: Dort stünden die Umlaufzeiten in Resonanz mit Jupiter (3:1, 5:2, 7:3); seine wiederholten Störungen machen diese Bahnen instabil (Kirkwood-Lücken).', s: 'kirkwood' },
+      asteroid: { t: 'Asteroiden aus der Nähe', x: 'Hineinfliegen: (16) Psyche, Bennu und Eros – Form und Drehung nach den Messdaten von Radar und Raumsonden, die Oberfläche als Modell.', s: 'shepard-2021' },
       kuiper: { t: 'Kuipergürtel', x: 'Jenseits von Neptun (30–50 AE) kreisen Kleinkörper aus Eis und Gestein, darunter Pluto und Arrokoth – Überreste aus der Entstehungszeit des Sonnensystems. Im Bild: statistische Verteilung.', s: 'nasa-planets' },
+    },
+  },
+  asteroid: {
+    n: '02A', title: 'Asteroiden', kicker: 'Kleinkörper', parent: 'solar', width: 4e5, dist: 0, lookback: 0,
+    lead: 'Drei Asteroiden aus der Nähe, wie Radar und Raumsonden sie vermessen haben: der metallreiche Psyche, der Geröllhaufen Bennu und der längliche Eros. Im Zahnrad: Drehung, Sonnenstand und Schatten, bei Bennu die Steinchen, die er ins All wirft.',
+    facts: [
+      { v: '278 × 238 × 171', u: 'km', l: 'Psyche, Form aus Radarmessungen', s: 'shepard-2021' },
+      { v: '30–60', u: '%', l: 'Metallanteil am Volumen von Psyche', s: 'nasa-psyche' },
+      { v: '4,0', u: 'g/cm³', l: 'Dichte von Psyche', s: 'shepard-2021' },
+      { v: '121,6', u: 'g', l: 'Gestein von Bennu, 2023 zur Erde gebracht', s: 'nasa-osirisrex' },
+    ],
+    note: 'Formen nach Messdaten: Psyche mit 278 × 238 × 171 km und den drei großen Senken des Radarmodells (Breite und Größe nach Shepard 2021, Länge frei gewählt), Bennu als Kreisel mit Wulst am Äquator, Eros länglich und gebogen mit 33 × 13 × 13 km. Kleinere Krater, Felsblöcke und Feinstruktur sind Modelle mit festem Startwert. Farben: Die Blau- und Bronzetöne von Psyche folgen der Künstlerdarstellung der NASA, die echten Farben zeigt erst die Sonde ab 2029; Bennu ist in Wahrheit sehr dunkel und im Bild aufgehellt. Drehung mit den gemessenen Perioden im Zeitraffer, Drehachse senkrecht im Bild. Blaues Fülllicht und Linsenreflex sind Kamera-Effekte; die Bahnen der Steinchen bei Bennu laufen verlangsamt.',
+    sources: ['shepard-2021', 'nasa-psyche', 'nasa-bennu', 'nasa-osirisrex', 'barnouin-2019', 'lauretta-2019', 'nasa-eros', 'nssdc-asteroids'],
+    hotspots: {
+      'psyche-metal': { t: 'Metall und Gestein', x: 'Psyche besteht nach heutigem Stand zu 30–60 % seines Volumens aus Metall, gemischt mit Gestein. Ob er der freigelegte Kern eines frühen Planetenbausteins ist, soll die Sonde klären. Die Blau- und Bronzetöne im Bild folgen der Künstlerdarstellung der NASA.', s: 'nasa-psyche' },
+      'psyche-basin': { t: 'Große Senken', x: 'Das Radarmodell zeigt große Vertiefungen: nahe dem Südpol (65° S) eine 50–75 km breite und rund 4 km tiefe Senke, wahrscheinlich ein Einschlagkrater; auf der Nordhalbkugel eine flache, 80–90 km breite Mulde; am Nordpol eine Senke von etwa 50 km. Zahnrad: „Senken markieren“. Kleinere Krater im Bild sind Modell.', s: 'shepard-2021' },
+      'psyche-mission': { t: 'Raumsonde Psyche', x: 'Gestartet am 13. Oktober 2023. Ab August 2029 kreist die Sonde um den Asteroiden und vermisst Form, Schwerefeld, Magnetfeld und Zusammensetzung.', s: 'nasa-psyche' },
+      'bennu-pile': { t: 'Geröllhaufen', x: 'Bennu ist kein fester Fels, sondern ein lose gebundener Haufen aus Geröll und Blöcken. Seine Kreiselform mit dem Wulst am Äquator passt dazu: Die schnelle Drehung, eine Umdrehung in gut 4 Stunden, formt den lockeren Körper.', s: 'barnouin-2019' },
+      'bennu-sample': { t: 'Probe vom Asteroiden', x: 'Am 20. Oktober 2020 setzte OSIRIS-REx kurz auf Bennu auf und nahm Gestein und Staub auf. Am 24. September 2023 landete die Kapsel mit 121,6 g Material auf der Erde.', s: 'nasa-osirisrex' },
+      'bennu-ejecta': { t: 'Steinchen-Auswürfe', x: 'Anfang 2019 beobachtete OSIRIS-REx, dass Bennu immer wieder kleine Steinchen ins All schleudert, meist Zentimeter groß. Manche fallen zurück, andere kreisen eine Weile um den Asteroiden oder entkommen. Im Bild verlangsamt; Zahnrad: Häufigkeit und „Jetzt auslösen“.', s: 'lauretta-2019' },
+      'eros-shape': { t: 'Länglicher Asteroid', x: 'Eros misst rund 33 × 13 × 13 km und dreht sich in 5,27 Stunden einmal um sich selbst. Er gehört zu den S-Typen aus silikatischem Gestein.', s: 'nssdc-asteroids' },
+      'eros-near': { t: 'Erste Landung', x: 'NEAR Shoemaker schwenkte am 14. Februar 2000 in eine Umlaufbahn um Eros ein und landete am 12. Februar 2001 als erste Raumsonde auf einem Asteroiden.', s: 'nasa-eros' },
     },
   },
   galaxy: {
@@ -320,6 +351,11 @@ export const STATIONS = {
 };
 
 export const ROUTE = ['earth', 'solar', 'galaxy', 'orion', 'crab', 'pulsar', 'sgra', 'local', 'web', 'cmb'];
+// Äste außerhalb der Route (Kind über parent) zählen für Weiter/Zurück wie ihre nächste Elternstation auf der Route
+export function routeIndex(id) {
+  for (let x = id; x; x = STATIONS[x] ? STATIONS[x].parent : null) { const i = ROUTE.indexOf(x); if (i >= 0) return i; }
+  return 0;
+}
 
 // Weg im Baum: vom Start hinaus bis zum gemeinsamen Vorfahren, dann hinein zum Ziel (ohne den Start)
 export function pathTo(from, to) {

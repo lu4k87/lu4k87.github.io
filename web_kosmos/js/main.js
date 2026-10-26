@@ -5,7 +5,7 @@
 
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import { STATIONS, ROUTE, pathTo } from './content.js';
+import { STATIONS, ROUTE, pathTo, routeIndex } from './content.js';
 import { createPost } from './post.js';
 import { createHud } from './hud.js';
 import { settings, onSettings } from './settings.js';
@@ -14,6 +14,7 @@ import { createDeepSky } from './deepsky.js';
 const LOADERS = {
   earth: () => import('./levels/earth.js'),
   solar: () => import('./levels/solar.js'),
+  asteroid: () => import('./levels/asteroid.js'),
   galaxy: () => import('./levels/galaxy.js'),
   orion: () => import('./levels/orion.js'),
   crab: () => import('./levels/crab.js'),
@@ -236,7 +237,7 @@ function idle(fn) {
 }
 
 function nextOnRoute(id, step = 1) {
-  const i = ROUTE.indexOf(id);
+  const i = routeIndex(id);
   return ROUTE[(i + step + ROUTE.length) % ROUTE.length];
 }
 

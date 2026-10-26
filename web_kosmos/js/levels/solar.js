@@ -462,6 +462,7 @@ export function create(ctx) {
     { id: 'jupiter', kind: 'info', pos: P.jupiter.pos, focus: focus(P.jupiter) },
     { id: 'saturn', kind: 'info', pos: P.saturn.pos, focus: () => visR(P.saturn.b.r, real) * 9 },
     { id: 'belt', kind: 'info', pos: onBelt(2.75) },
+    { id: 'asteroid', kind: 'dive', to: 'asteroid', pos: onBelt(2.95).applyAxisAngle(new THREE.Vector3(0, 1, 0), -0.22) },
     { id: 'kuiper', kind: 'info', pos: onBelt(44) },
     ...['mercury', 'venus', 'mars', 'uranus', 'neptune'].map((id) => ({ id, kind: 'info', pos: P[id].pos, focus: focus(P[id]) })),
   ];

@@ -3,7 +3,7 @@
 // Abzeichen mit gewinkelten 45°-Leitlinien (Sechseck wie Biochar), Info-Karte, Messleiste (Bildbreite, Lichtlaufzeit,
 // Entfernung, Blick zurück), Reiseroute, Kapitel-Titel beim Ankommen, Rand-Zug-Anzeige.
 
-import { STATIONS, ROUTE, SOURCES } from './content.js';
+import { STATIONS, ROUTE, SOURCES, routeIndex } from './content.js';
 import { fmtLength, fmtTime, C, LY } from './astro.js';
 import { settings, setSetting, mountSettings, onSettings } from './settings.js';
 
@@ -92,7 +92,7 @@ export function createHud(h) {
     const parent = meta.parent && STATIONS[meta.parent];
     btnOut.disabled = !parent;
     $('#nav-out-to').textContent = parent ? parent.title : '–';
-    const i = ROUTE.indexOf(id);
+    const i = routeIndex(id);
     $('#nav-next-to').textContent = STATIONS[ROUTE[(i + 1) % ROUTE.length]].title;
     btnPrev.setAttribute('aria-label', `Zurück: ${STATIONS[ROUTE[(i - 1 + ROUTE.length) % ROUTE.length]].title}`);
     mDist.textContent = meta.dist ? fmtLength(meta.dist) : 'im Bild';
@@ -105,7 +105,7 @@ export function createHud(h) {
   function renderPanel() {
     const st = meta;
     const info = (x) => st.hotspots[x.id] || x.info;
-    const hs = lv.hotspots.filter((x) => info(x) && x.kind !== 'label');
+    const hs = lv.hotspots.filter((x) => info(x) && x.kind !== 'label' && (!x.listIf || x.listIf()));
     const ctrls = lv.controls || [];
     panel.innerHTML = `
       <p class="kicker"><span class="kick-n">${String(st.n).padStart(2, '0')}</span>${esc(st.kicker)}</p>
@@ -143,6 +143,8 @@ export function createHud(h) {
       const c = ctrls.find((x) => x.id === b.dataset.ctl);
       c.value = b.dataset.val;
       c.set(c.value);
+      // Abzeichen mit listIf (z. B. je Körper) hängen am Schalter: Liste und Abzeichen neu aufbauen
+      if (lv.hotspots.some((x) => x.listIf)) { renderPanel(); buildMarkers(); return; }
       panel.querySelectorAll(`[data-ctl="${c.id}"]`).forEach((o) => o.setAttribute('aria-checked', String(o.dataset.val === c.value)));
     }));
   }
@@ -152,7 +154,7 @@ export function createHud(h) {
     markers.forEach((m) => { m.el.remove(); m.dot.remove(); });
     leads.innerHTML = '';
     let num = 0;
-    markers = lv.hotspots.filter((x) => meta.hotspots[x.id] || x.info).map((x) => {
+    markers = lv.hotspots.filter((x) => (meta.hotspots[x.id] || x.info) && (!x.listIf || x.listIf())).map((x) => {
       const t = (meta.hotspots[x.id] || x.info).t;
       const label = x.kind === 'label';
       const dot = document.createElement('span');
