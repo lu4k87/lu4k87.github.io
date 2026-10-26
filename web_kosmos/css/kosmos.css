@@ -698,7 +698,7 @@ body.is-flying .hint, body.is-intro .hint { opacity: 0; }
 .measure dd { font: 500 14px/1.3 var(--mono); white-space: nowrap; font-variant-numeric: tabular-nums; }
 
 /* ---------- Einstellungen ---------- */
-.cfg-dock { position: absolute; top: 8px; right: 8px; z-index: 3; width: min(560px, calc(100% - 16px)); }
+.cfg-dock { position: absolute; top: 8px; right: 8px; z-index: 3; width: min(480px, calc(100% - 16px)); container: cfg / inline-size; }
 .cfg { padding: 14px; border-radius: var(--radius); background: var(--glass-sheen), var(--glass-strong); display: flex; flex-direction: column; gap: 10px; max-height: calc(100vh - 220px); overflow: auto; }
 .cfg[hidden] { display: none; }
 body.cfg-open .caption { visibility: hidden; }

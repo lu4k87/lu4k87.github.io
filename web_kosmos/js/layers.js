@@ -48,8 +48,12 @@ const plaque = (k) => `<span class="b-plaque">${icon(k)}</span>`;
 // „geändert · Standard“; „n geändert · Alle zurücksetzen“ als kompakter Knopf rechts in der Sprungleiste
 export const devLine = (k, label = '') => `<div class="b-dev" data-dev-of="${k}"><button type="button" class="b-reset b-reset--ico" data-reset="${k}" title="Auf Standard zurücksetzen" aria-label="${label ? `${esc(label)}: ` : ''}auf Standard zurücksetzen">${icon('reset')}</button></div>`;
 export const devBar = () => `<button type="button" class="b-reset b-devbar" data-reset="*" hidden>${icon('reset')}<span><span data-devn></span> geändert · Alle zurücksetzen</span></button>`;
-// Kopfleiste eines Reiters: Sprungleiste (falls mehrere Gruppen) + Knopf „Alle zurücksetzen“; bleibt beim Scrollen stehen
-export const cfgBar = (jump) => `<div class="cfg-bar${jump ? '' : ' cfg-bar--solo'}">${jump}${devBar()}</div>`;
+// Kopfleiste eines Reiters: Sprungleiste (falls mehrere Gruppen) + Knopf „Alle zurücksetzen“; bleibt beim Scrollen stehen.
+// Höchstens 4 Spalten, alle Zeilen gleich voll (6 Gruppen → 3 × 2, 7 → 4 + 3, 8 → 4 × 2)
+export const cfgBar = (jump) => {
+  const n = (jump.match(/data-jump=/g) || []).length;
+  return `<div class="cfg-bar${jump ? '' : ' cfg-bar--solo'}"${n ? ` style="--cols:${Math.ceil(n / Math.ceil(n / 4))}"` : ''}>${jump}${devBar()}</div>`;
+};
 export function markDevs(root, isDev) {
   let n = 0;
   root.querySelectorAll('[data-dev-of]').forEach((d) => { const on = isDev(d.dataset.devOf); d.closest('.b-item').classList.toggle('is-dev', on); n += on; });
@@ -134,8 +138,6 @@ const count = (g) => g.items.reduce((n, it) => n + 1 + it.subs.length, 0);
 const resettable = (l) => l.type === 'toggle' || l.type === 'range';
 const rowDev = (l) => rowHtml(l) + (resettable(l) ? devLine(l.id, l.label) : '');
 const block = ({ l, subs }) => `<div class="b-item">${rowDev(l)}${subs.length ? `<div class="b-subs"${l.type === 'toggle' ? ` data-subs="${l.id}"` : ''}>${subs.map((x) => `<div class="b-item">${rowDev(x)}</div>`).join('')}</div>` : ''}</div>`;
-// Gruppe nur aus Schaltern ohne Unterzeilen und Hinweise → zweispaltig (b-body--grid)
-const onlyToggles = (g) => g.items.length > 1 && g.items.every(({ l, subs }) => l.type === 'toggle' && !subs.length && !l.hint && !l.only);
 
 function timeCard(g) {
   const [{ l: p, subs }, ...rest] = g.items;
@@ -164,7 +166,7 @@ const isOpen = (i, first) => isOpenIn(currentId, i, first);
 const foldCard = (g, i, open) => `<article class="b-card b-fold${open ? ' is-open' : ''}" data-g="g${i}" data-fold="${i}">
   <h4 class="b-fold-h"><button type="button" class="b-head" aria-expanded="${open}" aria-controls="lay-b${i}">${plaque(groupIcon(g.title))}<span class="b-name">${esc(g.title)}</span>
     <span class="b-sum" data-sum="${i}"></span><span class="b-count" aria-label="${count(g)} Ebenen">${count(g)}</span>${icon('chev', 'b-chev')}</button></h4>
-  <div class="b-body${onlyToggles(g) ? ' b-body--grid' : ''}" id="lay-b${i}"${open ? '' : ' hidden'}>${g.items.map(block).join('')}</div></article>`;
+  <div class="b-body" id="lay-b${i}"${open ? '' : ' hidden'}>${g.items.map(block).join('')}</div></article>`;
 
 function gearHtml(layers) {
   gs = groups(layers);

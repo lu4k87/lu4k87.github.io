@@ -19,7 +19,6 @@
 .cfg-tabs .b-count { margin-left: auto; }
 .bento { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-flow: row dense; gap: 10px; align-items: start; }
 .bento > [hidden] { display: none; }
-.cfg-dock { width: min(700px, calc(100% - 16px)); }
 .cfg-pane { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; align-items: start; }
 .cfg-pane[hidden] { display: none; }
 .cfg-pane > .cfg-note { grid-column: 1 / -1; }
@@ -88,17 +87,7 @@
 .b-steps .is-on { color: var(--accent); }
 @media (max-width: 600px) {
   .bento { grid-template-columns: minmax(0, 1fr); }
-  .b-time { grid-template-columns: auto minmax(0, 1fr) auto; }
-  .b-time > .b-track { grid-column: 1 / -1; grid-row: 2; }
-  .b-line { grid-template-columns: minmax(0, 1fr); }
-  .b-mini { display: none; }
   .b-steps { display: none; }
-  /* schmal: Icon + Name oben, Geltung darunter über die ganze Breite, Zahl entfällt */
-  .cfg-tabs button { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 4px 8px; padding: 8px 10px; }
-  .cfg-tab-ico { width: 22px; height: 22px; }
-  .cfg-tab-t { display: contents; }
-  .cfg-tab-sub { grid-column: 1 / -1; }
-  .cfg-tabs .b-count { display: none; }
 }
 .play-btn { width: 34px; height: 34px; flex: none; display: inline-grid; place-items: center; border-radius: 50%; border: 1px solid var(--line-strong); background: rgba(255, 255, 255, 0.06); color: var(--ink); cursor: pointer; transition: border-color 0.2s, background 0.2s, color 0.2s; }
 .play-btn svg { width: 18px; height: 18px; }
@@ -138,11 +127,14 @@ body.is-flying .tl, body.is-intro .tl { opacity: 0; pointer-events: none; }
 .w-foot { margin: 8px 0 0; font-size: 11.5px; color: var(--ink-soft); }
 
 /* Reiter Station und Global als Klapp-Liste (Vorschau 26.10.2026 Zahnrad:A + Zahnrad:C, verdichtet 26.10.2026): Kopfleiste mit
-   Sprungleiste + „Alle zurücksetzen“ bleibt oben stehen, Animation als eine Zeile, je Gruppe eine Klapp-Zeile mit Kurzwerten
-   (mehrere offen), Einstellung als Zeile Name | Bedienung | Wert | ↺ (feste Spalte, Knopf nur bei geändertem Wert) */
-.cfg-pane { --lab: 172px; --rst: 26px; }
-/* Sprungleiste als Raster gleich breiter Felder (Vorschau 26.10.2026 Leiste:B, Global = 4 × 2), „Alle zurücksetzen“ rechts darunter */
-.cfg-bar { position: sticky; top: -14px; z-index: 2; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(130px, 100%), 1fr)); gap: 6px; margin: -4px -14px 0; padding: 8px 14px 7px; background: rgba(9, 12, 20, 0.94); border-bottom: 1px solid var(--line); }
+   Sprungleiste + „Alle zurücksetzen“ bleibt oben stehen, Animation als eigener Block, je Gruppe eine Klapp-Zeile mit Kurzwerten
+   (mehrere offen). Schmales Fenster (480 px, 26.10.2026): jede Einstellung hat eine Kopfzeile Name | Wert bzw. Schalter/Knopf,
+   Regler und Knopfreihen liegen darunter über die volle Breite, ↺ in fester Spalte am Ende der Kopfzeile (Knopf nur bei geändertem
+   Wert). Schmaler (Handy) richtet sich nach der Breite des Fensters (Container cfg in kosmos.css), nicht nach dem Bildschirm. */
+.cfg-pane { --rst: 26px; --row: 30px; }
+/* Sprungleiste als Raster gleich breiter Felder (Vorschau 26.10.2026 Leiste:B), Zeilen gleich voll (--cols aus cfgBar in layers.js:
+   6 Gruppen → 3 × 2, 8 → 4 × 2), „Alle zurücksetzen“ rechts darunter */
+.cfg-bar { position: sticky; top: -14px; z-index: 2; display: grid; grid-template-columns: repeat(var(--cols, 4), minmax(0, 1fr)); gap: 6px; margin: -4px -14px 0; padding: 8px 14px 7px; background: rgba(9, 12, 20, 0.94); border-bottom: 1px solid var(--line); }
 .cfg-bar--solo:not(.has-dev) { display: none; }
 .cfg-bar > .b-devbar { grid-column: 1 / -1; justify-self: end; }
 /* Sprungleiste ohne eigenen Kasten: Knöpfe und „Alle zurücksetzen“ umbrechen gemeinsam, der Knopf bleibt in der letzten Zeile rechts */
@@ -154,9 +146,13 @@ body.is-flying .tl, body.is-intro .tl { opacity: 0; pointer-events: none; }
 .cfg-jump-btn:focus-visible, .b-fold .b-head:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
 .b-list { display: flex; flex-direction: column; align-items: stretch; gap: 0; }
 .cfg-pane .b-card { padding: 0; gap: 0; border: 0; border-radius: 0; border-bottom: 1px solid var(--line); background: none; }
+/* Animation: ▶ links über beide Zeilen, daneben Name + Stand | Tempo, darunter der Regler */
 .cfg-pane .b-card--time { display: flex; flex-direction: column; gap: 6px; padding: 4px 0 10px; }
 .cfg-pane .b-card--time .play-btn--lg { width: 34px; height: 34px; }
-.cfg-pane .b-card--time .b-time { gap: 12px; }
+.cfg-pane .b-card--time .b-time { grid-template-columns: auto minmax(0, 1fr) auto; gap: 4px 12px; }
+.cfg-pane .b-time > .play-btn { grid-row: 1 / 3; }
+.cfg-pane .b-time > output { grid-column: 3; grid-row: 1; }
+.cfg-pane .b-time > .b-track { grid-column: 2 / -1; grid-row: 2; }
 .b-fold { scroll-margin-top: 48px; }
 .b-fold-h { margin: 0; font: inherit; }
 .b-fold .b-head { width: 100%; min-height: 40px; padding: 4px; border: 0; border-radius: 6px; background: none; color: var(--ink); font: inherit; text-align: left; cursor: pointer; transition: background 0.2s; }
@@ -171,49 +167,41 @@ body.is-flying .tl, body.is-intro .tl { opacity: 0; pointer-events: none; }
 .b-fold.is-open .b-chev { transform: rotate(180deg); color: var(--accent); }
 .b-body { display: flex; flex-direction: column; padding: 6px 4px 10px; }
 .b-body[hidden] { display: none; }
-/* Einstellung: Inhalt links, ↺ in eigener Spalte rechts (Zeile 1) – Spalte bleibt reserviert, damit nichts springt */
-.cfg-pane .b-item { display: grid; grid-template-columns: minmax(0, 1fr) var(--rst); column-gap: 6px; row-gap: 3px; align-items: center; }
+/* Einstellung: Inhalt links, ↺ in eigener Spalte rechts auf Höhe der Kopfzeile – Spalte bleibt reserviert, damit nichts springt */
+.cfg-pane .b-item { display: grid; grid-template-columns: minmax(0, 1fr) var(--rst); column-gap: 6px; row-gap: 3px; align-items: start; }
 .cfg-pane .b-item > * { grid-column: 1; }
-.cfg-pane .b-item > .b-dev { grid-column: 2; grid-row: 1; align-self: center; }
+.cfg-pane .b-item > .b-dev { grid-column: 2; grid-row: 1; margin-top: calc((var(--row) - var(--rst)) / 2); }
 .cfg-pane .b-subh { margin: 10px 0 0; font: 600 14px var(--font); letter-spacing: 0.02em; }
 .cfg-pane .b-item + .b-item { padding-top: 5px; margin-top: 5px; }
 .b-reset--ico { justify-content: center; width: var(--rst); min-height: var(--rst); margin: 0; padding: 0; border-color: rgba(var(--accent-rgb), 0.45); color: var(--accent); }
 .b-reset--ico .b-ico { width: 15px; height: 15px; }
-/* Unter-Ebenen: ihr ↺ steht in derselben Spalte wie das der Hauptzeile */
+/* Unter-Ebenen eingerückt mit Linie (.b-subs); ihr ↺ steht in derselben Spalte wie das der Hauptzeile */
 .cfg-pane .b-item > .b-subs { margin-right: calc(-1 * (var(--rst) + 6px)); }
-/* Zeile: Name | Bedienung | Wert (Regler), Name | Bedienung (Schalter, Knopfreihen, Knöpfe); Hinweise unter der Bedienung */
-.cfg-pane .b-body .b-row { grid-template-columns: minmax(0, var(--lab)) minmax(0, 1fr); gap: 12px; min-height: 30px; }
-.cfg-pane .b-body .b-row > :is(.switch, .act-btn) { justify-self: start; }
-.cfg-pane .b-body .b-row.b-stack:has(.b-top) { grid-template-columns: minmax(0, var(--lab)) minmax(0, 1fr) minmax(56px, auto); }
-.cfg-pane .b-body .b-row.b-stack .b-top { display: contents; }
-.cfg-pane .b-body .b-row.b-stack :is(.b-top > .cfg-label, > .cfg-label) { grid-column: 1; grid-row: 1; }
-.cfg-pane .b-body .b-row.b-stack .b-top > :is(output, .cfg-val) { grid-column: 3; grid-row: 1; }
-.cfg-pane .b-body .b-row.b-stack > :is(.b-track, .b-seg) { grid-column: 2; grid-row: 1; }
-/* Farblook: Kacheln in einer Reihe über die volle Breite, Name darüber */
-.cfg-pane .b-body .b-row.b-stack:has(.b-looks) { grid-template-columns: minmax(0, 1fr); gap: 6px; }
-.cfg-pane .b-body .b-item:has(.b-looks) > .lay-hint { padding-left: 0; }
-.cfg-pane .b-body .b-item:has(.b-looks) > .b-dev { align-self: start; }
-/* Reiter Global: Mini-Grafik rechts neben der Zeile bleibt */
-.cfg-pane .b-fold .b-line { grid-template-columns: minmax(0, 1fr) 64px; align-items: center; }
-.cfg-pane .b-fold .b-mini { display: block; }
+/* Kopfzeile gleich hoch: Name links, Wert, Schalter oder Knopf rechts; Regler und Knopfreihen darunter, Hinweise unter der Bedienung */
+.cfg-pane .b-body .b-row { min-height: var(--row); }
+.cfg-pane .b-body .b-stack { row-gap: 2px; }
+.cfg-pane .b-body :is(.b-top, .b-stack > .cfg-label) { display: flex; align-items: center; min-height: var(--row); }
 .cfg-pane .b-body .b-seg button { padding: 3px 6px; min-height: 28px; font-size: 12.5px; }
-.cfg-pane .b-body .b-item > .lay-hint { padding-left: calc(var(--lab) + 12px); }
-.cfg-pane .b-body .b-subs { margin-left: 0; padding-left: 0; border-left: 0; }
-.cfg-pane .b-body .b-subs .cfg-label { padding-left: 14px; border-left: 1px solid var(--line-strong); }
-/* Gruppe nur aus Schaltern: zwei Spalten Name | Schalter | ↺ */
-.b-body--grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px 24px; }
-.cfg-pane .b-body--grid > .b-item + .b-item { margin-top: 0; padding-top: 0; border-top: 0; }
-.cfg-pane .b-body--grid .b-row { grid-template-columns: minmax(0, 1fr) auto; }
-.cfg-pane .b-body--grid .b-line { grid-template-columns: minmax(0, 1fr); }
-.cfg-pane .b-body--grid .b-mini { display: none; }
-@media (max-width: 600px) {
-  .cfg-pane .b-body .b-row, .cfg-pane .b-body .b-row.b-stack:has(.b-top) { grid-template-columns: minmax(0, 1fr) auto; }
-  .cfg-pane .b-body .b-row.b-stack > :is(.b-track, .b-seg) { grid-column: 1 / -1; grid-row: 2; }
-  .cfg-pane .b-body .b-row.b-stack .b-top > :is(output, .cfg-val) { grid-column: 2; }
-  .cfg-pane .b-fold .b-line { grid-template-columns: minmax(0, 1fr); }
-  .cfg-pane .b-fold .b-mini { display: none; }
-  .cfg-pane .b-body .b-item > .lay-hint, .cfg-pane .b-body .b-subs .b-item > .lay-hint { padding-left: 0; }
-  .b-body--grid { grid-template-columns: minmax(0, 1fr); }
+/* Farblook: Kacheln 3 × 2 unter dem Namen */
+.cfg-pane .b-looks { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+/* Reiter Global: Mini-Grafik in der Kopfzeile vor Wert bzw. Schalter, in eigener Spalte – Werte und Schalter bleiben rechts bündig */
+.cfg-pane .b-fold .b-line { grid-template-columns: minmax(0, 1fr) 64px 56px; grid-template-rows: minmax(var(--row), auto); gap: 2px 12px; align-items: center; }
+.cfg-pane .b-fold .b-line :is(.b-row, .b-top) { display: contents; }
+.cfg-pane .b-fold .b-line .cfg-label { grid-area: 1 / 1; }
+.cfg-pane .b-fold .b-line .b-mini { display: block; grid-area: 1 / 2; }
+.cfg-pane .b-fold .b-line :is(.cfg-val, .switch) { grid-area: 1 / 3; justify-self: end; }
+.cfg-pane .b-fold .b-line :is(.b-track, .b-seg) { grid-area: 2 / 1 / auto / -1; }
+/* Handy: Reiter mit Geltung unter dem Namen ohne Zahl, Sprungleiste zweispaltig, ohne Kurzwerte und Mini-Grafiken */
+@container cfg (max-width: 420px) {
+  .cfg-tabs button { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 4px 8px; padding: 8px 10px; }
+  .cfg-tab-ico { width: 22px; height: 22px; }
+  .cfg-tab-t { display: contents; }
+  .cfg-tab-sub { grid-column: 1 / -1; }
+  .cfg-tabs .b-count { display: none; }
+  .cfg-bar { grid-template-columns: repeat(auto-fill, minmax(min(130px, 100%), 1fr)); }
+  .cfg-pane .b-fold .b-line { grid-template-columns: minmax(0, 1fr) auto; }
+  .cfg-pane .b-fold .b-line .b-mini { display: none; }
+  .cfg-pane .b-fold .b-line :is(.cfg-val, .switch) { grid-area: 1 / 2; }
   .b-sum { display: none; }
   .b-head .b-sum + .b-count { margin-left: auto; }
 }
