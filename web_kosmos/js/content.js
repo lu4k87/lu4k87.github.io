@@ -110,6 +110,14 @@ export const SOURCES = {
   // [E5] Neptun, Uranus, Pluto
   // [E5] Triton
   // [E5] Uranus
+  'ura-nasa-facts': { t: 'Uranus: Facts (Achsneigung 97,77°, 84 Jahre, 21 Jahre Winter je Pol, 13 Ringe, 28 Monde, Namen nach Shakespeare und Pope)', by: 'NASA Science', url: 'https://science.nasa.gov/uranus/facts/' },
+  'ura-nssdc': { t: 'Uranus Fact Sheet (Radius 25.559 km, Tag 17,24 h rückläufig)', by: 'NASA NSSDCA', url: 'https://nssdc.gsfc.nasa.gov/planetary/factsheet/uranusfact.html' },
+  'ura-nssdc-sat': { t: 'Uranian Satellite Fact Sheet (Radien, Massen, Dichten, Albedo, Bahnen)', by: 'NASA NSSDCA', url: 'https://nssdc.gsfc.nasa.gov/planetary/factsheet/uraniansatfact.html' },
+  'ura-nssdc-ring': { t: 'Uranian Rings Fact Sheet (Radien, Breiten, optische Tiefe, Albedo ≈ 0,015)', by: 'NASA NSSDCA', url: 'https://nssdc.gsfc.nasa.gov/planetary/factsheet/uranringfact.html' },
+  'ura-jpl-elem': { t: 'Planetary Satellite Mean Elements (URA182, Äquator des Uranus, Epoche J2000)', by: 'JPL Solar System Dynamics', url: 'https://ssd.jpl.nasa.gov/sats/elem/' },
+  'ura-nasa-miranda': { t: 'Miranda (Entdeckung 1948, Coronae, Klippen, Voyager 2 am 24.01.1986)', by: 'NASA Science', url: 'https://science.nasa.gov/uranus/moons/miranda/' },
+  'ura-nasa-titania': { t: 'Titania (größter Uranusmond, ≈ 1.600 km, Grabenbrüche bis ≈ 1.600 km, Herschel 1787)', by: 'NASA Science', url: 'https://science.nasa.gov/uranus/moons/titania/' },
+  'ura-nasa-3d': { t: 'Uranus – Miranda, Ariel, Umbriel, Titania, Oberon: Karten aus Voyager-Bildern (USGS/Tammy Becker & JPL/Caltech)', by: 'NASA 3D Resources', url: 'https://science.nasa.gov/3d-resources/uranus-titania' },
   // [E5] Pluto
   'nssdc-pluto': { t: 'Pluto Fact Sheet: Pluto, Charon und kleine Monde (Radien, Massen, Bahnen, Atmosphäre)', by: 'NASA NSSDCA', url: 'https://nssdc.gsfc.nasa.gov/planetary/factsheet/plutofact.html' },
   'jpl-sats-plu060': { t: 'Planetary Satellite Mean Elements, Pluto-System (Ephemeride PLU060)', by: 'JPL Solar System Dynamics', url: 'https://ssd.jpl.nasa.gov/sats/elem/' },
@@ -168,7 +176,7 @@ export const STATIONS = {
       mars: { t: 'Mars', x: 'Radius 3.396 km · 0,107 Erdmassen · 1,52 AE · Umlauf 687 Tage · Tag 24 h 37 min · im Mittel −65 °C · Druck 0,006 bar (95 % CO₂) · 2 Monde (Phobos, Deimos) · rot durch Eisenoxid im Staub, Polkappen aus Wasser- und CO₂-Eis.', s: 'nasa-planets' },
       jupiter: { t: 'Jupiter', x: 'Radius 71.492 km (11,2 Erdradien) · 318 Erdmassen – mehr als doppelt so viel wie alle anderen Planeten zusammen · 5,2 AE · Umlauf 11,9 Jahre · Drehung in 9 h 56 min; die schnelle Rotation ordnet die Wolken in Bänder · −110 °C an der Wolkendecke · über 95 bekannte Monde, 2026 mehr als 100. Seine Schwerkraft erzeugt über Bahnresonanzen die Kirkwood-Lücken im Asteroidengürtel.', s: 'nasa-planets' },
       saturn: { t: 'Saturn', x: 'Radius 60.268 km · 95 Erdmassen · 9,5 AE · Umlauf 29,4 Jahre · Drehung 10 h 39 min · −140 °C · Dichte 0,69 g/cm³, geringer als Wasser · Ringe von 74.700 bis 137.000 km (C- bis A-Ring), meist nur zehn Meter bis einen Kilometer dick, vor allem Wassereis; der Planet wirft seinen Schatten auf die Ringe, die Ringe ihren auf den Planeten · 274 bestätigte Monde (2025), weitere 2026 gemeldet.', s: 'nasa-saturn' },
-      uranus: { t: 'Uranus', x: 'Radius 25.559 km · 14,5 Erdmassen · 19,2 AE · Umlauf 84 Jahre · Drehung 17 h 14 min, rückläufig · −195 °C · Achse um 98° geneigt: Jeder Pol ist etwa 42 Jahre lang beleuchtet, dann 42 Jahre unbeleuchtet · Methan absorbiert rotes Licht, daher die blaugrüne Farbe · 28 bekannte Monde.', s: 'nasa-planets' },
+      uranus: { t: 'Uranus', x: 'Radius 25.559 km · 14,5 Erdmassen · 19,2 AE · Umlauf 84 Jahre · Drehung 17 h 14 min, rückläufig · −195 °C · Achse um 98° geneigt: Jeder Pol ist etwa 42 Jahre lang beleuchtet, dann 42 Jahre unbeleuchtet · Methan absorbiert rotes Licht, daher die blaugrüne Farbe · 28 bekannte Monde. Hineinfliegen: Uranus mit Ringen und den fünf großen Monden.', s: 'nasa-planets' },
       neptune: { t: 'Neptun', x: 'Radius 24.764 km · 17,1 Erdmassen · 30,1 AE · Umlauf 165 Jahre · Drehung 16 h 7 min · −200 °C · 16 Monde; der größte, Triton, umläuft Neptun rückläufig · Sonnenlicht braucht gut 4 Stunden bis hierher.', s: 'nasa-planets' },
       belt: { t: 'Asteroidengürtel', x: 'Lücken bei 2,50 · 2,82 · 2,95 AE: Dort stünden die Umlaufzeiten in Resonanz mit Jupiter (3:1, 5:2, 7:3); seine wiederholten Störungen machen diese Bahnen instabil (Kirkwood-Lücken).', s: 'kirkwood' },
       asteroid: { t: 'Asteroiden aus der Nähe', x: 'Hineinfliegen: (16) Psyche, Bennu und Eros – Form und Drehung nach den Messdaten von Radar und Raumsonden, die Oberfläche als Modell.', s: 'shepard-2021' },
@@ -261,6 +269,27 @@ export const STATIONS = {
   // [E5] Neptun, Uranus, Pluto
   // [E5] Triton
   // [E5] Uranus
+  uranus: {
+    n: '02G', title: 'Uranus & Monde', kicker: 'Eisriese', parent: 'solar', width: 4e8, dist: 19.19 * AU, lookback: 19.19 * AU / C,
+    lead: 'Ein Planet, der auf der Seite liegt: 97,77° Achsneigung. Ringe und Monde kreisen in seiner Äquatorebene, und im Lauf von 84 Jahren steht die Sonne einmal fast über dem einen, einmal fast über dem anderen Pol. Der Regler „Jahr“ zeigt die Jahreszeiten seit dem Besuch von Voyager 2 im Januar 1986.',
+    facts: [
+      { v: '97,77', u: '°', l: 'Achsneigung', s: 'ura-nasa-facts' },
+      { v: '84', u: 'Jahre', l: 'ein Umlauf um die Sonne', s: 'ura-nasa-facts' },
+      { v: '17,24', u: 'h', l: 'Tag, rückläufig', s: 'ura-nssdc' },
+      { v: '13', u: '', l: 'Ringe, schmal und dunkel', s: 'ura-nasa-facts' },
+    ],
+    note: 'Sonnenrichtung aus den JPL-Bahnelementen des Uranus, Orte der fünf großen Monde aus den mittleren JPL-Elementen (URA182) zum gewählten Zeitpunkt, auf etwa ein Grad genau. Monde wählbar vergrößert (Start 8×, „maßstäblich“ im Zahnrad); ihre Schatten auf den Wolken haben die gezeichnete Größe. Mondkarten aus Voyager-2-Bildern: Voyager sah 1986 nur die Südhälften, der Rest ist mit der mittleren Helligkeit gefüllt. Ringe: Radien, Breiten und optische Tiefen nach NASA, unter 7 km Breite verbreitert gezeichnet und heller als echt (Albedo ≈ 0,015); die Staubringe ν und μ (optische Tiefe ≪ 0,01) stark aufgehellt. Wolkenbild nach Solar System Scope, Bänder angedeutet.',
+    sources: ['ura-nasa-facts', 'ura-nssdc', 'ura-nssdc-sat', 'ura-nssdc-ring', 'ura-jpl-elem', 'ura-nasa-miranda', 'ura-nasa-titania', 'ura-nasa-3d', 'jpl-elements', 'sss-tex'],
+    hotspots: {
+      axis: { t: 'Achse und Jahreszeiten', x: 'Die Achse ist um 97,77° geneigt, Uranus dreht sich damit rückläufig. Fast ein Viertel jedes Uranusjahres steht die Sonne nahezu über einem Pol, die andere Hälfte des Planeten liegt dann 21 Jahre im Dunkeln. Aus den Bahndaten gerechnet stand die Sonne 1986, beim Vorbeiflug von Voyager 2, über 82° Süd, Ende 2007 über dem Äquator und um 2030 über 82° Nord (eigene Rechnung). Regler „Jahr“ in der Infotafel.', s: 'ura-nasa-facts' },
+      rings: { t: 'Ringe', x: 'Die inneren Ringe sind schmal und fast schwarz: Sie werfen nur rund 1,5 % des Lichts zurück. Der hellste, ε, liegt 51.149 km von der Mitte und ist je nach Stelle 20 bis 96 km breit. Weit draußen folgen zwei schwache Staubringe, R/2003 U 1 und U 2, mit einer optischen Tiefe von weit unter 1 %.', s: 'ura-nssdc-ring' },
+      miranda: { t: 'Miranda', x: 'Der kleinste und innerste der fünf großen Monde: 240 × 234 × 233 km, Umlauf 1,41 Tage. Drei „Coronae“ aus Rillen und Graten gibt es so nirgends sonst im Sonnensystem; ein Stein bräuchte von der höchsten Klippe 10 Minuten bis zum Fuß. Entdeckt 1948 von Gerard Kuiper.', s: 'ura-nasa-miranda' },
+      ariel: { t: 'Ariel', x: 'Radius 581,1 km, 190.900 km von Uranus, Umlauf 2,52 Tage, gebunden rotierend wie alle fünf großen Monde.', s: 'ura-nssdc-sat' },
+      umbriel: { t: 'Umbriel', x: 'Radius 584,7 km, 266.000 km von Uranus, Umlauf 4,14 Tage – der dunkelste der fünf großen Monde.', s: 'ura-nssdc-sat' },
+      titania: { t: 'Titania', x: 'Der größte Uranusmond, rund 1.600 km im Durchmesser, Umlauf 8,71 Tage. Grabenbrüche bis zu rund 1.600 km Länge zerreißen die Kruste in zwei Richtungen – Zeichen, dass Titania einmal geologisch aktiv war. Entdeckt 1787 von William Herschel.', s: 'ura-nasa-titania' },
+      oberon: { t: 'Oberon', x: 'Radius 761,4 km, der äußerste der fünf großen Monde: 583.500 km von Uranus, Umlauf 13,46 Tage. Die Uranusmonde tragen Namen aus Werken von Shakespeare und Alexander Pope.', s: 'ura-nssdc-sat' },
+    },
+  },
   // [E5] Pluto
   pluto: {
     n: '02H', title: 'Pluto & Charon', kicker: 'Zwergplanet', parent: 'solar', width: 3e7, dist: 35.6 * AU, lookback: 35.6 * AU / C,

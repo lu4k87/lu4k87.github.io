@@ -469,7 +469,7 @@ export function create(ctx) {
     ...['mercury', 'venus'].map((id) => ({ id, kind: 'info', pos: P[id].pos, focus: focus(P[id]) })),
     // je Planet eine Zeile: Abstecher der Etappen E4/E5 (docs/plan_ebenen.md) ändern nur ihre eigene
     { id: 'mars', kind: 'info', pos: P.mars.pos, focus: focus(P.mars) },
-    { id: 'uranus', kind: 'info', pos: P.uranus.pos, focus: focus(P.uranus) },
+    { id: 'uranus', kind: 'dive', to: 'uranus', pos: P.uranus.pos, focus: focus(P.uranus) },
     { id: 'neptune', kind: 'info', pos: P.neptune.pos, focus: focus(P.neptune) },
     { id: 'pluto', kind: 'dive', to: 'pluto', pos: plutoAt },
   ];
