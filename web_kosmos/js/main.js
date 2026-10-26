@@ -34,6 +34,7 @@ const LOADERS = {
   // [E4] Saturn + Mars
   // [E4] Mars
   // [E5] Neptun, Uranus, Pluto
+  // [E5] Triton
   // [E5] Uranus
   // [E5] Pluto
 };
