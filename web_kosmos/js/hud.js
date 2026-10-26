@@ -37,6 +37,7 @@ export function createHud(h) {
   onSettings((keys) => {
     if (keys.includes('panel')) { body.classList.toggle('panel-off', !settings.S.panel); h.onRelayout(); }
     if (keys.includes('motion')) card.dataset.motion = settings.S.motion;
+    if (keys.includes('scaleCompare') && lv) renderPanel();
   });
   body.classList.toggle('panel-off', !settings.S.panel);
   $('#btn-panel').addEventListener('click', () => setSetting('panel', !settings.S.panel));
@@ -332,7 +333,7 @@ export function createHud(h) {
       <div class="bento">${st.facts.map((f) => `
         <div class="fact"><p class="fact-v${f.v.length > 9 ? ' is-long' : ''}">${esc(f.v)}${f.u ? `<span class="fact-u">${esc(f.u)}</span>` : ''}</p><p class="fact-l">${prose(f.l)}</p></div>`).join('')}
       </div>
-      ${renderScaleCompare(lv.id, scaleTabIdx)}
+      ${settings.S.scaleCompare !== false ? renderScaleCompare(lv.id, scaleTabIdx) : ''}
       ${lv.live ? '<p class="live" id="live" aria-live="off"></p>' : ''}
       ${lv.widget ? `<div class="widget" id="widget">${lv.widget()}</div>` : ''}
       ${ctrls.length ? `<div class="st-ctrls">${ctrls.map(ctrlHtml).join('')}</div>` : ''}

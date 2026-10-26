@@ -18,7 +18,7 @@ import { createFlare } from './flare.js';
 import { settings } from './settings.js';
 import { loadSats, satPos, namedIndex } from './sats.js';
 import { speedAt, periodMin, RE } from './orbit.js';
-import { SHELL_VERT, ATMO_FRAG, CLOUD_FRAG } from './planetfx.js';
+import { SHELL_VERT, ATMO_FRAG, CLOUD_FRAG, rayleighUniform } from './planetfx.js';
 import { EARTH_VERT, EARTH_VERT_O, EARTH_FRAG, earthMaps, MOON_FRAG, SUN_VERT, SUN_FRAG, AURORA_VERT, AURORA_FRAG, AURORA_GLOW_VERT, AURORA_GLOW_FRAG, auroraGeometry } from './levels/earth.js';
 import { spinAxis } from './axes.js';
 
@@ -146,7 +146,8 @@ export function createOrbitView(ctx, { sat, fallback, radius = 60, color = 0xf3b
   // Atmosphäre: echte Skalenhöhe (≈ 8,5 km → uH 0,07 der 120-km-Hülle), Nachtleuchten in 95 km (uAirH 0,79); der Weg
   // durch die dünne Hülle ist relativ lang (∝ 1/Dicke, Leuchten quadratisch) → uAir viel kleiner als in Station 1
   const atmoU = { uSun: { value: sun }, uCenter: { value: new THREE.Vector3() }, uBeta: { value: new THREE.Vector3(0.1, 0.26, 0.72) }, uMieCol: { value: new THREE.Vector3(1.0, 0.95, 0.9) },
-    uRp: { value: R_E }, uRa: { value: R_ATM }, uH: { value: 0.07 }, uGain: { value: 1.6 }, uMie: { value: 0.18 }, uAir: { value: 0.004 }, uAirH: { value: 0.79 } };
+    uRp: { value: R_E }, uRa: { value: R_ATM }, uH: { value: 0.07 }, uGain: { value: 1.6 }, uMie: { value: 0.18 }, uAir: { value: 0.004 }, uAirH: { value: 0.79 },
+    uNoRayleigh: rayleighUniform };
   const atmo = new THREE.Mesh(new THREE.SphereGeometry(R_ATM, 256, 128), new THREE.ShaderMaterial({ vertexShader: SHELL_VERT, fragmentShader: ATMO_FRAG, uniforms: atmoU, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true }));
   far.add(atmo);
   const moonU = { tMoon: { value: ctx.tex('moon.jpg') }, uSun: { value: sun }, uEarth: { value: new THREE.Vector3() }, uEarthshine: { value: 0.0025 } };

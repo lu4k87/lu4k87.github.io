@@ -18,7 +18,7 @@ import { SKY_VERTEX, NOISE } from '../glsl.js';
 import { loadSats, createSats, satPos, orbitLine, namedIndex, KIND_COLOR } from '../sats.js';
 import { speedAt, RE } from '../orbit.js';
 import { registerLayers } from '../layers.js';
-import { SHELL_VERT, ATMO_FRAG, CLOUD_FRAG } from '../planetfx.js';
+import { SHELL_VERT, ATMO_FRAG, CLOUD_FRAG, rayleighUniform } from '../planetfx.js';
 import { spinAxis } from '../axes.js';
 
 const R_E = 6.371, R_M = 1.7374;   // NASA Fact Sheets [1.000 km]
@@ -391,7 +391,8 @@ export function create(ctx) {
   const atmoMat = new THREE.ShaderMaterial({
     vertexShader: SHELL_VERT, fragmentShader: ATMO_FRAG,
     uniforms: { uSun: { value: sunDir }, uCenter: { value: new THREE.Vector3() }, uBeta: { value: new THREE.Vector3(0.1, 0.26, 0.72) }, uMieCol: { value: new THREE.Vector3(1.0, 0.95, 0.9) },
-      uRp: { value: R_E }, uRa: { value: R_ATM }, uH: { value: 0.12 }, uGain: { value: 1.25 }, uMie: { value: 0.15 }, uAir: { value: 0.1 }, uAirH: { value: 0.23 } },
+      uRp: { value: R_E }, uRa: { value: R_ATM }, uH: { value: 0.12 }, uGain: { value: 1.25 }, uMie: { value: 0.15 }, uAir: { value: 0.1 }, uAirH: { value: 0.23 },
+      uNoRayleigh: rayleighUniform },
     blending: THREE.AdditiveBlending, depthWrite: false, transparent: true,
   });
   const atmo = new THREE.Mesh(new THREE.SphereGeometry(R_ATM, 160, 80), atmoMat);

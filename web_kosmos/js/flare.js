@@ -4,6 +4,7 @@
 // Darstellung, keine Physik des Objekts – deshalb zurückhaltend und im Zahnrad mit „Farbsaum/Linse“ abschaltbar.
 
 import * as THREE from 'three';
+import { settings } from './settings.js';
 
 function canvasTex(draw) {
   const c = document.createElement('canvas');
@@ -115,7 +116,11 @@ export function createFlare({ strength = 1, tint = [1, 0.92, 0.8] } = {}) {
     group.visible = true;
     // Streifen und Hof an der Quelle, Geister entlang der Achse zur Mitte (Größe als Anteil der Bildhöhe)
     place(halo, ndc.x, ndc.y, 0.9, camera, v);
-    place(streak, ndc.x, ndc.y, 0.12, camera, v * 0.8);
+    if (settings.S.anamorphic !== false) {
+      place(streak, ndc.x, ndc.y, 0.12, camera, v * 0.8);
+    } else {
+      streak.visible = false;
+    }
     ghosts.forEach((sp, i) => { const g = GHOSTS[i]; place(sp, ndc.x * g.k, ndc.y * g.k, g.s, camera, v * (1 - 0.5 * Math.abs(g.k))); });
   };
   return group;
