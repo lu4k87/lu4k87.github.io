@@ -115,6 +115,14 @@ export const SOURCES = {
   // [E3] Io, Europa
   // [E3] Ganymed, Kallisto
   // [E4] Saturn + Mars
+  'nasa-saturnfact': { t: 'Saturn Fact Sheet (Radien 60.268 / 54.364 km, Dichte 687 kg/m³, Drehung 10,656 h)', by: 'NASA NSSDCA', url: 'https://nssdc.gsfc.nasa.gov/planetary/factsheet/saturnfact.html' },
+  'nssdc-satsat': { t: 'Saturnian Satellite Fact Sheet (Bahnradien, Umlaufzeiten, Radien, Dichten)', by: 'NASA NSSDCA', url: 'https://nssdc.gsfc.nasa.gov/planetary/factsheet/saturniansatfact.html' },
+  'jpl-sat441': { t: 'Planetary Satellite Mean Elements (SAT441, Laplace-Ebene, J2000; Jacobson 2022)', by: 'JPL Solar System Dynamics', url: 'https://ssd.jpl.nasa.gov/sats/elem/' },
+  'nasa-saturn-facts': { t: 'Saturn: Facts (Hexagon ≈ 30.000 km, Hauptringe ≈ 10 m dick, Achse 26,73°, 274 Monde im März 2025)', by: 'NASA Science', url: 'https://science.nasa.gov/saturn/facts/' },
+  'nasa-titan': { t: 'Titan (einziger Mond mit dichter Atmosphäre, Seen aus Methan und Ethan)', by: 'NASA Science', url: 'https://science.nasa.gov/saturn/moons/titan/' },
+  'nasa-enceladus': { t: 'Enceladus (Fontänen mit ≈ 400 m/s, Eiskruste 20–25 km, am Südpol 1–5 km, im dichtesten Teil des E-Rings)', by: 'NASA Science', url: 'https://science.nasa.gov/saturn/moons/enceladus/' },
+  'usgs-titan-map': { t: 'Titan Cassini ISS Global Mosaic 4 km, Nahinfrarot (GeoTIFF, public domain)', by: 'USGS Astrogeology, NASA/JPL-Caltech/SSI', url: 'https://planetarymaps.usgs.gov/mosaic/Titan_ISS_P19658_Mosaic_Global_4km.tif' },
+  'usgs-enceladus-map': { t: 'Enceladus Cassini ISS Global Mosaic 100 m, hochpassgefiltert (GeoTIFF, 125 MB, public domain)', by: 'USGS Astrogeology, NASA/JPL-Caltech/SSI', url: 'https://planetarymaps.usgs.gov/mosaic/Enceladus_Cassini_ISS_Global_Mosaic_100m_HPF.tif' },
   // [E4] Mars
   // [E5] Neptun, Uranus, Pluto
   'nep-fact': { t: 'Neptune Fact Sheet', by: 'NASA NSSDCA', url: 'https://nssdc.gsfc.nasa.gov/planetary/factsheet/neptunefact.html' },
@@ -197,7 +205,7 @@ export const STATIONS = {
       venus: { t: 'Venus', x: 'Radius 6.052 km · 0,815 Erdmassen · 0,72 AE · Umlauf 225 Tage · rotiert rückläufig, eine Drehung dauert 243 Erdtage · Oberfläche 464 °C bei 92 bar, Atmosphäre fast nur CO₂ – Folge eines starken Treibhauseffekts; Wolken aus Schwefelsäure reflektieren gut drei Viertel des Sonnenlichts, daher der helle Saum.', s: 'nasa-planets' },
       mars: { t: 'Mars', x: 'Radius 3.396 km · 0,107 Erdmassen · 1,52 AE · Umlauf 687 Tage · Tag 24 h 37 min · im Mittel −65 °C · Druck 0,006 bar (95 % CO₂) · 2 Monde (Phobos, Deimos) · rot durch Eisenoxid im Staub, Polkappen aus Wasser- und CO₂-Eis.', s: 'nasa-planets' },
       jupiter: { t: 'Jupiter', x: 'Radius 71.492 km (11,2 Erdradien) · 318 Erdmassen – mehr als doppelt so viel wie alle anderen Planeten zusammen · 5,2 AE · Umlauf 11,9 Jahre · Drehung in 9 h 56 min; die schnelle Rotation ordnet die Wolken in Bänder · −110 °C an der Wolkendecke · über 95 bekannte Monde, 2026 mehr als 100. Seine Schwerkraft erzeugt über Bahnresonanzen die Kirkwood-Lücken im Asteroidengürtel. Hineinfliegen: Jupiter mit den vier Galileischen Monden auf ihren Bahnen von heute.', s: 'nasa-planets' },
-      saturn: { t: 'Saturn', x: 'Radius 60.268 km · 95 Erdmassen · 9,5 AE · Umlauf 29,4 Jahre · Drehung 10 h 39 min · −140 °C · Dichte 0,69 g/cm³, geringer als Wasser · Ringe von 74.700 bis 137.000 km (C- bis A-Ring), meist nur zehn Meter bis einen Kilometer dick, vor allem Wassereis; der Planet wirft seinen Schatten auf die Ringe, die Ringe ihren auf den Planeten · 274 bestätigte Monde (2025), weitere 2026 gemeldet.', s: 'nasa-saturn' },
+      saturn: { t: 'Saturn', x: 'Radius 60.268 km · 95 Erdmassen · 9,5 AE · Umlauf 29,4 Jahre · Drehung 10 h 39 min · −140 °C · Dichte 0,69 g/cm³, geringer als Wasser · Ringe von 74.700 bis 137.000 km (C- bis A-Ring), meist nur zehn Meter bis einen Kilometer dick, vor allem Wassereis; der Planet wirft seinen Schatten auf die Ringe, die Ringe ihren auf den Planeten · 274 bestätigte Monde (2025), weitere 2026 gemeldet. Hineinfliegen: Saturn aus der Nähe mit Ringschatten, Jahreszeiten und den großen Monden.', s: 'nasa-saturn' },
       uranus: { t: 'Uranus', x: 'Radius 25.559 km · 14,5 Erdmassen · 19,2 AE · Umlauf 84 Jahre · Drehung 17 h 14 min, rückläufig · −195 °C · Achse um 98° geneigt: Jeder Pol ist etwa 42 Jahre lang beleuchtet, dann 42 Jahre unbeleuchtet · Methan absorbiert rotes Licht, daher die blaugrüne Farbe · 28 bekannte Monde. Hineinfliegen: Uranus mit Ringen und den fünf großen Monden.', s: 'nasa-planets' },
       neptune: { t: 'Neptun', x: 'Radius 24.764 km · 17,1 Erdmassen · 30,1 AE · Umlauf 165 Jahre · Drehung 16 h 7 min · −200 °C · 16 Monde; der größte, Triton, umläuft Neptun rückläufig · Sonnenlicht braucht gut 4 Stunden bis hierher. Hineinfliegen: Neptun mit Ringen, Bögen und den Monden Triton, Proteus und Nereid.', s: 'nasa-planets' },
       belt: { t: 'Asteroidengürtel', x: 'Lücken bei 2,50 · 2,82 · 2,95 AE: Dort stünden die Umlaufzeiten in Resonanz mit Jupiter (3:1, 5:2, 7:3); seine wiederholten Störungen machen diese Bahnen instabil (Kirkwood-Lücken).', s: 'kirkwood' },
@@ -310,6 +318,31 @@ export const STATIONS = {
   // [E3] Io, Europa
   // [E3] Ganymed, Kallisto
   // [E4] Saturn + Mars
+  saturn: {
+    n: '02D', title: 'Saturn & Monde', kicker: 'Ringplanet', parent: 'solar', width: 5e8, dist: 9.5 * AU, lookback: 9.5 * AU / C,
+    lead: 'Der Ringplanet mit seinen großen Monden, so wie sie jetzt stehen. Die Sonne beleuchtet die Ringe von der Seite: Der Planet wirft seinen Schatten auf die Ringe, die Ringe ihren auf den Planeten. Wie hoch die Sonne über den Ringen steht, wandert im Lauf des 29-jährigen Saturnjahrs – Regler „Saturnjahr“.',
+    facts: [
+      { v: '60.268', u: 'km', l: 'Äquatorradius, am Pol 54.364 km', s: 'nasa-saturnfact' },
+      { v: '0,687', u: 'g/cm³', l: 'Dichte – geringer als Wasser', s: 'nasa-saturnfact' },
+      { v: '≈ 10', u: 'm', l: 'typische Dicke der Hauptringe', s: 'nasa-saturn-facts' },
+      { v: '274', u: '', l: 'bestätigte Monde (März 2025)', s: 'nasa-saturn-facts' },
+    ],
+    note: 'Saturn als Ellipsoid mit den Radien des Fact Sheets; Wolkentextur Solar System Scope (CC BY 4.0), Banddetail und Rand-Dunst sind Darstellung. Ringe radial maßstäblich vom C-Ring (74.658 km) bis zum A-Ring (136.780 km), Helligkeit und Lücken aus der Ring-Textur; Ring- und Planetenschatten aus Sonnenrichtung und Ringebene berechnet. Sonnenstand aus den JPL-Bahnelementen und dem IAU-Pol (eigene Rechnung, auf etwa 0,5° genau). Monde auf mittleren JPL-Bahnen (SAT441, auf etwa ein Grad genau), im Modus „Anschaulich“ 6-fach vergrößert; ihre Schatten auf Saturn mit dem echten Radius. Mimas, Tethys, Dione und Rhea als einfarbige Kugeln, Titan als orangener Dunstball, Enceladus mit dem Cassini-Mosaik (USGS). E-Ring als Modell: Ausdehnung 180.000–480.000 km nach NSSDCA, Dichte, Dicke und Helligkeit geschätzt und stark verstärkt, im Gegenlicht heller (Vorwärtsstreuung an feinem Staub). Hexagon über der Textur gezeichnet, Größe nach NASA. Zeitraffer: Drehung (10 h 39 min) und Umläufe beschleunigt.',
+    sources: ['nasa-saturnfact', 'nasa-saturn', 'nasa-saturn-facts', 'nssdc-satsat', 'jpl-sat441', 'jpl-sat-phys', 'jpl-elements', 'nasa-titan', 'nasa-enceladus', 'usgs-enceladus-map', 'sss-tex'],
+    hotspots: {
+      rings: { t: 'Ringe', x: 'Die Hauptringe reichen vom lichten C-Ring (ab 74.658 km vom Saturnmittelpunkt) über den dichten B-Ring (91.975 bis 117.507 km) bis zum A-Ring, der bei 136.780 km endet – und sind dabei nur 5 bis 30 Meter dick. Durch C-Ring und Cassini-Teilung scheint die Sonne hindurch, der dichte B-Ring bleibt im Gegenlicht dunkel. Knapp außerhalb folgt der schmale F-Ring bei 139.826 km.', s: 'nasa-saturn' },
+      cassini: { t: 'Cassini-Teilung', x: 'Die dunkle Lücke zwischen dem Außenrand des B-Rings (117.507 km) und dem Innenrand des A-Rings (122.340 km) ist gut 4.800 km breit. Leer ist sie nicht, aber dünn besetzt: optische Tiefe unter 0,1, im B-Ring bis 2,5. Weiter außen liegt die schmale Encke-Lücke bei 133.410 km.', s: 'nasa-saturn' },
+      shadow: { t: 'Schatten und Jahreszeiten', x: 'Saturns Achse ist um 26,73° geneigt. Im Lauf eines Saturnjahrs von 29,4 Erdjahren steht die Sonne bis zu 26,7° über der Nord- oder der Südseite der Ringe; dazwischen streift sie die Ringebene, zuletzt im Mai 2025 (eigene Rechnung aus den JPL-Bahnelementen). Dann werfen die Ringe nur einen hauchdünnen Schatten, sonst ein breites Band auf den Planeten. Regler „Saturnjahr“.', s: 'nasa-saturn-facts' },
+      hexagon: { t: 'Hexagon am Nordpol', x: 'Ein sechseckiger Strahlstrom um den Nordpol, rund 30.000 km quer, mit Winden um 320 km/h. Seit der Tagundnachtgleiche 2025 ist dort Winter: Die Sonne steht tief oder gar nicht über dem Pol. Mit dem Regler „Saturnjahr“ auf 2017 steht sie im Nordsommer hoch. Im Bild über die Wolkentextur gezeichnet.', s: 'nasa-saturn-facts' },
+      ering: { t: 'E-Ring', x: 'Ein weiter Schleier aus feinem Eisstaub zwischen 180.000 und 480.000 km vom Saturn, so dünn (optische Tiefe ≈ 10⁻⁶), dass man ihn am besten im Gegenlicht sieht. Enceladus kreist in seinem dichtesten Teil. Im Bild ein Modell, stark verstärkt.', s: 'nasa-saturn' },
+      titan: { t: 'Titan', x: 'Der größte Saturnmond: Radius 2.575 km, 1.221.870 km vom Saturn, ein Umlauf dauert 15,945 Tage. Als einziger Mond hat er eine dichte Atmosphäre, die im sichtbaren Licht als orangener Dunst erscheint; darunter liegen Seen aus flüssigem Methan und Ethan.', s: 'nssdc-satsat' },
+      enceladus: { t: 'Enceladus', x: 'Radius 252 km, 238.020 km vom Saturn, ein Umlauf dauert 1,370 Tage. Seine Eisoberfläche reflektiert das Sonnenlicht stärker als jeder andere Körper im Sonnensystem. Am Südpol sprühen Fontänen aus einem Ozean unter dem Eis mit rund 400 m/s ins All.', s: 'nasa-enceladus' },
+      mimas: { t: 'Mimas', x: 'Mittlerer Radius 198 km, 185.520 km vom Saturn, ein Umlauf dauert 0,942 Tage – zwei Umläufe, während Tethys einmal kreist (Bahnresonanz 2 : 1, eigene Rechnung aus den Umlaufzeiten).', s: 'nssdc-satsat' },
+      tethys: { t: 'Tethys', x: 'Mittlerer Radius 531 km, 294.660 km vom Saturn, ein Umlauf dauert 1,888 Tage. Mit 0,98 g/cm³ hat Tethys die geringste Dichte der großen Saturnmonde.', s: 'nssdc-satsat' },
+      dione: { t: 'Dione', x: 'Mittlerer Radius 561 km, 377.400 km vom Saturn, ein Umlauf dauert 2,737 Tage – so lange wie zwei Umläufe von Enceladus (Bahnresonanz 2 : 1, eigene Rechnung aus den Umlaufzeiten).', s: 'nssdc-satsat' },
+      rhea: { t: 'Rhea', x: 'Mittlerer Radius 764 km, 527.040 km vom Saturn, ein Umlauf dauert 4,518 Tage: nach Titan der zweitgrößte Saturnmond.', s: 'nssdc-satsat' },
+    },
+  },
   // [E4] Mars
   // [E5] Neptun, Uranus, Pluto
   neptune: {

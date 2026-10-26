@@ -462,7 +462,7 @@ export function create(ctx) {
     { id: 'earth', kind: 'dive', to: 'earth', pos: P.earth.pos },
     { id: 'moon', kind: 'info', pos: moonPos, focus: () => Math.max(visR(MOON_R, real) * 7, 2e-5) },
     { id: 'jupiter', kind: 'dive', to: 'jupiter', pos: P.jupiter.pos, focus: focus(P.jupiter) },
-    { id: 'saturn', kind: 'info', pos: P.saturn.pos, focus: () => visR(P.saturn.b.r, real) * 9 },
+    { id: 'saturn', kind: 'dive', to: 'saturn', pos: P.saturn.pos, focus: () => visR(P.saturn.b.r, real) * 9 },
     { id: 'belt', kind: 'info', pos: onBelt(2.75) },
     { id: 'asteroid', kind: 'dive', to: 'asteroid', pos: onBelt(2.95).applyAxisAngle(new THREE.Vector3(0, 1, 0), -0.22) },
     { id: 'kuiper', kind: 'info', pos: onBelt(44) },
