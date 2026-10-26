@@ -132,14 +132,31 @@ export function glintPoints(pos, col, mag, { gain = 1, limit = 1.6 } = {}) {
 // +x Zentrum, +y l = 90°, +z Nordpol (tools/milkyway_tex.py). Keine Plattkarte: die verzerrt an den Polen Sterne zu
 // Strichen, die auf den Pol zulaufen.
 export const MILKY_TEX = 'milkyway/';
+// Look wie ein lang belichtetes Astrofoto: Himmelsgrund des Fotos (linear ≈ 0,004) abgezogen, Sternwolken nach ihrer
+// Umgebungshelligkeit (grobe Mip-Stufe, nicht je Pixel: einzelne Feldsterne bleiben fein) angehoben, Farbe kräftiger
+// (Staubbahnen rotbraun, Kern gold), Streulicht aus zwei weichen Mip-Stufen als Glow und ein warmer Schein um den Bulge;
+// der Kern reicht über 1 und leuchtet im Bloom von post.js nach.
 const PHOTO_FRAG = /* glsl */ `
 uniform samplerCube uMap;
 uniform vec3 uNgp, uGc, uL90;
 uniform float uGain;
 varying vec3 vDir;
+const vec3 LUM = vec3(0.2126, 0.7152, 0.0722);
 void main() {
   vec3 d = normalize(vDir);
-  gl_FragColor = vec4(textureCube(uMap, vec3(dot(d, uGc), dot(d, uL90), dot(d, uNgp))).rgb * uGain, 1.0);
+  vec3 g = vec3(dot(d, uGc), dot(d, uL90), dot(d, uNgp));
+  vec3 c = max(textureCube(uMap, g).rgb - 0.005, 0.0);
+  vec3 near = max(textureCube(uMap, g, 4.0).rgb - 0.005, 0.0);
+  vec3 wide = max(textureCube(uMap, g, 7.0).rgb - 0.005, 0.0);
+  float env = dot(near, LUM);
+  c *= 1.0 + 6.5 * sqrt(smoothstep(0.003, 0.25, env));   // Wurzel: auch die schwachen Außenbereiche des Bandes heben sich ab
+  c /= 1.0 + 0.35 * dot(c, LUM);   // weiche Schulter: Kern glüht, brennt nicht weiß aus
+  float y = dot(c, LUM);
+  c = max(mix(vec3(y), c, 1.45), 0.0);
+  vec3 glow = near * 1.7 + wide * 3.5;
+  float gcA = acos(clamp(g.x, -1.0, 1.0));
+  float bulge = exp(-pow(gcA / 0.32, 2.0)) * exp(-pow(g.z / 0.16, 2.0));
+  gl_FragColor = vec4((c + glow + vec3(1.0, 0.72, 0.42) * 0.22 * bulge) * uGain, 1.0);
 }
 `;
 
