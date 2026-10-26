@@ -5,12 +5,22 @@
 :root {
   --ink: #eef2f8;
   --ink-soft: #d3dae6;
-  --glass: rgba(8, 10, 17, 0.52);
-  --glass-strong: rgba(8, 10, 17, 0.76);
-  --glass-sheen: linear-gradient(160deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.015) 45%, rgba(255, 255, 255, 0) 70%);
-  --glass-edge: inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 10px 34px rgba(0, 0, 0, 0.35);
-  --glass-blur: blur(16px) saturate(1.4);
-  --line: rgba(255, 255, 255, 0.15);
+  /* Kantenglas (Vorschau 26.10.2026 „Glas-Optik“ Glas:C): Lichtkante oben links, schräger Glanzstreif, Szene scheint gedämpft durch;
+     brightness hält über hellen Szenen (Sonne, Erde bei Tag) den Kontrast WCAG AA.
+     Große Flächen nutzen --glass/--glass-strong, Knöpfe --glass-btn, Kacheln und Reiter --glass-tile, Aktives --glass-on */
+  --glass: rgba(8, 10, 17, 0.36);
+  --glass-strong: rgba(8, 10, 17, 0.5);
+  --glass-sheen: linear-gradient(118deg, rgba(255, 255, 255, 0.2) 0, rgba(255, 255, 255, 0.06) 24%, rgba(255, 255, 255, 0) 25%, rgba(255, 255, 255, 0) 72%, rgba(255, 255, 255, 0.05) 100%);
+  --glass-edge: inset 1px 1px 0 rgba(255, 255, 255, 0.55), inset -1px -1px 0 rgba(255, 255, 255, 0.1), inset 0 0 24px rgba(255, 255, 255, 0.05), 0 12px 40px rgba(0, 0, 0, 0.4);
+  --glass-blur: blur(18px) saturate(1.6) brightness(0.6);
+  --glass-blur-sm: blur(10px);
+  --glass-btn: rgba(8, 10, 17, 0.4);
+  --glass-btn-edge: inset 1px 1px 0 rgba(255, 255, 255, 0.5), inset -1px -1px 0 rgba(255, 255, 255, 0.08);
+  --glass-tile: linear-gradient(150deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.01) 60%);
+  --glass-tile-edge: inset 1px 1px 0 rgba(255, 255, 255, 0.22);
+  --glass-on: linear-gradient(150deg, rgba(var(--accent-rgb), 0.36), rgba(var(--accent-rgb), 0.08));
+  --glass-on-edge: inset 1px 1px 0 rgba(255, 255, 255, 0.45), 0 0 16px rgba(var(--accent-rgb), 0.3);
+  --line: rgba(255, 255, 255, 0.1);
   --line-strong: rgba(255, 255, 255, 0.3);
   --accent: #33ccff;
   --accent-rgb: 51, 204, 255;
@@ -79,13 +89,14 @@ body.is-flying .flight { opacity: 1; }
 body.panel-off .top-actions { padding-right: 18px; }
 .icon-btn {
   width: 40px; height: 40px; display: grid; place-items: center; border-radius: 50%; cursor: pointer;
-  background: var(--glass); border: 1px solid var(--line); color: var(--ink); transition: border-color 0.2s, color 0.2s;
+  background: var(--glass-sheen), var(--glass-btn); box-shadow: var(--glass-btn-edge); border: 1px solid var(--line); color: var(--ink); transition: border-color 0.2s, color 0.2s;
+  -webkit-backdrop-filter: var(--glass-blur-sm); backdrop-filter: var(--glass-blur-sm);
 }
 .icon-btn svg { width: 20px; height: 20px; }
 .icon-btn:hover, .icon-btn[aria-expanded="true"] { border-color: var(--accent); color: var(--accent); }
 /* Schnell-Knöpfe links neben dem Zahnrad (quick.js): an = eisblau gefüllt, Station ohne Ton = abgedunkelt; Strich trennt vom Zahnrad */
 .quick { display: flex; gap: 8px; padding-right: 10px; border-right: 1px solid var(--line); }
-.qk[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); background: rgba(var(--accent-rgb), 0.16); }
+.qk[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); background: var(--glass-on); box-shadow: var(--glass-on-edge); }
 .qk[aria-disabled="true"] { opacity: 0.45; cursor: not-allowed; }
 .qk[aria-disabled="true"]:hover { border-color: var(--line); color: var(--ink); }
 #qk-sound .qk-off, #qk-sound.is-off .qk-on { display: none; }
@@ -329,7 +340,7 @@ body.rail-tiles { --rail-w: 348px; }
 .kb-tip b { margin-right: 6px; font: 500 12px var(--mono); color: var(--ink-soft); }
 
 /* Schalter Zeitstrahl | Kacheln */
-.rail-view { flex: none; align-self: flex-start; display: flex; gap: 2px; padding: 2px; border: 1px solid var(--line); border-radius: 8px; background: var(--glass); transition: opacity var(--rail-out) var(--ease-out); }
+.rail-view { flex: none; align-self: flex-start; display: flex; gap: 2px; padding: 2px; border: 1px solid var(--line); border-radius: 8px; background: var(--glass-sheen), var(--glass-btn); box-shadow: var(--glass-btn-edge); transition: opacity var(--rail-out) var(--ease-out); }
 .rail-view button {
   width: 30px; height: 28px; display: grid; place-items: center; padding: 0; border: 0; border-radius: 6px; background: none; color: var(--ink-soft); cursor: pointer;
   transition: background 0.2s, color 0.2s;
@@ -387,7 +398,7 @@ body.is-flying .hint, body.is-intro .hint { opacity: 0; }
 .st-title { font: 300 31px/1.08 var(--display); letter-spacing: 0.05em; text-transform: uppercase; margin-top: -6px; }
 .lead { font-size: 14.5px; }
 .bento { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-.fact { padding: 10px 12px 11px; border-radius: 8px; background: rgba(255, 255, 255, 0.05); border: 1px solid var(--line); display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.fact { padding: 10px 12px 11px; border-radius: 8px; background: var(--glass-tile); box-shadow: var(--glass-tile-edge); border: 1px solid var(--line); display: flex; flex-direction: column; gap: 4px; min-width: 0; }
 .fact-v { font: 500 18px/1.2 var(--mono); overflow-wrap: anywhere; }
 .fact-v.is-long { font-size: 15px; }
 .fact-u { font: 400 12px var(--font); margin-left: 5px; color: var(--ink-soft); white-space: nowrap; }
@@ -421,14 +432,14 @@ body.is-flying .hint, body.is-intro .hint { opacity: 0; }
 .sc-tabs { display: flex; gap: 4px; margin-top: 2px; }
 .sc-tab-btn {
   flex: 1; padding: 4px 6px; font: 500 11px var(--mono); border: 1px solid var(--line);
-  border-radius: 4px; background: rgba(255, 255, 255, 0.04); color: var(--ink-soft); cursor: pointer;
+  border-radius: 4px; background: var(--glass-tile); box-shadow: var(--glass-tile-edge); color: var(--ink-soft); cursor: pointer;
   text-align: center; transition: border-color 0.2s, background-color 0.2s, color 0.2s;
 }
 .sc-tab-btn:hover { border-color: var(--line-strong); color: var(--ink); }
-.sc-tab-btn.is-active { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+.sc-tab-btn.is-active { border-color: var(--accent); background: var(--glass-on); box-shadow: var(--glass-on-edge); color: var(--accent); font-weight: 600; }
 
 .live { font: 400 12.5px/1.45 var(--mono); color: var(--accent); }
-.widget { padding: 8px 10px 6px; border-radius: 8px; background: rgba(255, 255, 255, 0.05); border: 1px solid var(--line); }
+.widget { padding: 8px 10px 6px; border-radius: 8px; background: var(--glass-tile); box-shadow: var(--glass-tile-edge); border: 1px solid var(--line); }
 .widget svg { display: block; width: 100%; height: auto; }
 .widget .w-cap { display: flex; justify-content: space-between; gap: 12px; font: 400 11.5px var(--mono); color: var(--ink-soft); margin-top: 4px; }
 .st-ctrls .cfg-range input[type=range] { flex: 1; min-width: 80px; accent-color: var(--accent); }
@@ -455,7 +466,7 @@ body.is-flying .hint, body.is-intro .hint { opacity: 0; }
 .explore { display: flex; flex-direction: column; gap: 6px; }
 .explore button {
   width: 100%; display: flex; align-items: center; gap: 10px; padding: 6px 10px 6px 6px; border-radius: 8px; cursor: pointer; text-align: left;
-  background: rgba(255, 255, 255, 0.04); border: 1px solid var(--line); transition: border-color 0.2s, background 0.2s;
+  background: var(--glass-tile); box-shadow: var(--glass-tile-edge); border: 1px solid var(--line); transition: border-color 0.2s, background 0.2s;
 }
 .explore button:hover, .explore button.is-active { border-color: var(--line-strong); background: rgba(255, 255, 255, 0.08); }
 .explore button.is-dive { border-color: rgba(var(--accent-rgb), 0.45); }
@@ -541,7 +552,7 @@ body.is-flying .hint, body.is-intro .hint { opacity: 0; }
 .hc-svg .hc-big { font: 500 26px var(--mono); fill: var(--ink); }
 .hc-cap { margin-top: 8px; padding: 0 4px; font-size: 12.5px; color: var(--ink-soft); }
 .hc-tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
-.hc-tile { min-width: 0; display: flex; flex-direction: column; gap: 3px; padding: 8px 9px; border-radius: 8px; background: rgba(255, 255, 255, 0.05); border: 1px solid var(--line); }
+.hc-tile { min-width: 0; display: flex; flex-direction: column; gap: 3px; padding: 8px 9px; border-radius: 8px; background: var(--glass-tile); box-shadow: var(--glass-tile-edge); border: 1px solid var(--line); }
 .hc-tile b { font: 500 16px/1.15 var(--mono); white-space: nowrap; font-variant-numeric: tabular-nums; }
 .hc-tile b.is-long { font-size: 13.5px; }
 .hc-tile b i { font: 500 12px var(--mono); font-style: normal; color: var(--ink-soft); margin-left: 3px; }
