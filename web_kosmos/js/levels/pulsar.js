@@ -19,6 +19,8 @@ import { volume, disposeScene } from '../vol.js';
 import { C, lightCylinder, julianDate, mulberry32 } from '../astro.js';
 import { createStarfield } from '../stars.js';
 import { NOISE, SKY_VERTEX } from '../glsl.js';
+import { WIRBEL_CONE, CAP_GLSL, spiralParticles } from '../pulsarfx.js';
+import { registerLayers } from '../layers.js';
 
 const R_NS = 13;
 // Periode heute aus ATNF (P = 33,3924 ms bei MJD 48442,5; Ṗ = 4,2097·10⁻¹³) – eigene Rechnung ohne Bremsindex
@@ -31,8 +33,8 @@ const sheetTheta = (phi, r, ph, rlc) => Math.atan2(1, Math.tan(ALPHA) * Math.cos
 // Volumen: Strahlkegel, Polkappen, Polstrahlen. Jeder Anteil nur dort gerechnet, wo er etwas beiträgt. Das Stromblatt
 // zeigen die Teilchen: als leuchtende Fläche bildete es dort, wo man es streifend sieht, eine harte helle Kante.
 const BEAM_BODY = /* glsl */ `
-uniform vec3 uM;       // Magnetachse (Welt)
-uniform float uGain, uRlc, uWT, uJet;
+uniform vec3 uM, uE1, uE2;   // Magnetachse (Welt) + zwei Achsen senkrecht dazu (Bezug für den Drehwinkel)
+uniform float uGain, uRlc, uWT, uJet, uSwirl;
 void sampleVol(vec3 p, out vec3 e, out float s) {
   float r = length(p);
   s = 0.0;
@@ -43,11 +45,19 @@ void sampleVol(vec3 p, out vec3 e, out float s) {
   // Strahlkegel: heller Kern + hohler Rand; Hauptpol stärker als der Pol des Zwischenpulses
   float c = dot(d, uM);
   float ang = acos(min(abs(c), 1.0));
-  if (ang < 0.6) {
+  if (ang < 0.62) {
+    float sg = c > 0.0 ? 1.0 : -1.0;
     float pole = c > 0.0 ? 1.0 : 0.62;
     float fall = edge / (1.0 + pow(r / 380.0, 1.5));
-    float core = exp(-pow(ang / 0.045, 2.0)), rim = exp(-pow((ang - 0.12) / 0.045, 2.0)), halo = exp(-pow(ang / 0.3, 2.0));
-    e += (vec3(0.82, 0.97, 1.0) * core * 1.3 + vec3(0.3, 0.82, 1.0) * rim * 0.4 + vec3(0.25, 0.45, 1.0) * halo * 0.02) * fall * pole * uGain;
+    if (uSwirl > 0.5) {
+      float h = r * abs(c);
+      float lh = log(max(h, 14.0));
+      float psi = atan(dot(p, uE2) * sg, dot(p, uE1));
+${WIRBEL_CONE}
+    } else {
+      float core = exp(-pow(ang / 0.045, 2.0)), rim = exp(-pow((ang - 0.12) / 0.045, 2.0)), halo = exp(-pow(ang / 0.3, 2.0));
+      e += (vec3(0.82, 0.97, 1.0) * core * 1.3 + vec3(0.3, 0.82, 1.0) * rim * 0.4 + vec3(0.25, 0.45, 1.0) * halo * 0.02) * fall * pole * uGain;
+    }
     // Polkappen-Glühen nahe der Oberfläche
     e += vec3(0.6, 0.85, 1.0) * exp(-pow(ang / 0.25, 2.0)) * exp(-(r - 13.0) / 6.0) * 2.0 * uGain;
   }
@@ -66,6 +76,7 @@ void sampleVol(vec3 p, out vec3 e, out float s) {
 const NS_FRAG = /* glsl */ `
 ${NOISE}
 uniform vec3 uM;
+${CAP_GLSL}
 varying vec3 vN, vP, vL;
 void main() {
   vec3 N = normalize(vN), V = normalize(cameraPosition - vP);
@@ -75,6 +86,7 @@ void main() {
   float mott = 0.82 + 0.18 * fbm(vL * 0.35, 3);
   float limb = 0.85 + 0.55 * pow(1.0 - mu, 2.5);
   vec3 col = vec3(0.6, 0.76, 1.0) * 1.35 * limb * mott + vec3(0.85, 0.94, 1.0) * (cap * 7.0 + warm * 0.7);
+  col += vec3(0.55, 0.85, 1.0) * capSwirl(N, uM) * 2.2 * uCapS;
   gl_FragColor = vec4(col, 1.0);
 }
 `;
@@ -277,9 +289,9 @@ export function create(ctx) {
   const mag = new THREE.Group();
   mag.rotation.z = ALPHA;
   spin.add(mag);
-  const mWorld = new THREE.Vector3();
+  const mWorld = new THREE.Vector3(), e1W = new THREE.Vector3(1, 0, 0), e2W = new THREE.Vector3(0, 0, 1);
 
-  const nsMat = new THREE.ShaderMaterial({ vertexShader: NS_VERT, fragmentShader: NS_FRAG, uniforms: { uM: { value: mWorld } } });
+  const nsMat = new THREE.ShaderMaterial({ vertexShader: NS_VERT, fragmentShader: NS_FRAG, uniforms: { uM: { value: mWorld }, uE1: { value: e1W }, uE2: { value: e2W }, uT: { value: 0 }, uCapS: { value: 1 } } });
   spin.add(new THREE.Mesh(new THREE.SphereGeometry(R_NS, 64, 32), nsMat));
   const additive = { blending: THREE.AdditiveBlending, depthWrite: false, transparent: true };
   const glow = new THREE.Mesh(new THREE.PlaneGeometry(R_NS * 16, R_NS * 16), new THREE.ShaderMaterial({ vertexShader: BILLBOARD_VERT, fragmentShader: GLOW_FRAG, ...additive }));
@@ -349,11 +361,13 @@ export function create(ctx) {
   const beams = volume({
     radius: 6000, body: BEAM_BODY, adapt: 0.07 - 0.025 * ctx.detail, minStep: 1.5, maxSteps: 260,
     uniforms: {
-      uM: { value: mWorld }, uGain: { value: 0.09 }, uRlc: { value: RLC }, uWT: { value: 0 }, uJet: { value: 0.003 },
+      uM: { value: mWorld }, uE1: { value: e1W }, uE2: { value: e2W }, uGain: { value: 0.09 }, uRlc: { value: RLC }, uWT: { value: 0 }, uJet: { value: 0.003 }, uSwirl: { value: 1 },
     },
   });
   beams.renderOrder = 3;
   scene.add(beams);
+  const swirl = spiralParticles(Math.round(5000 * ctx.detail) + 1500, mWorld, e1W, e2W);
+  scene.add(swirl);
 
   // Lichtzylinder: Leuchtring in der Äquatorebene (Kern + weicher Hof), dazu blasse Ringe oben und unten
   const ringMat = (color, k, i) => new THREE.ShaderMaterial({ vertexShader: RING_VERT, fragmentShader: RING_FRAG, uniforms: { uColor: { value: new THREE.Color(...color) }, uK: { value: k }, uI: { value: i } }, ...additive });
@@ -444,6 +458,12 @@ export function create(ctx) {
     { id: 'sound', label: 'Ton', value: 'off', options: [['off', 'Aus'], ['on', 'Echter Takt']], set: (v) => sound(v === 'on') },
   ];
   const q = new THREE.Quaternion();
+  registerLayers('pulsar', [
+    { id: 'swirl', type: 'toggle', group: 'Strahlen', label: 'Plasmawirbel (Trichter)', value: true, set: (v) => { beams.material.uniforms.uSwirl.value = v ? 1 : 0; },
+      hint: 'Schema: die Strahlkegel als Wirbelsturm aus aufgewickelten offenen Feldlinien, innen schneller drehend. Aus = glatter Kegel mit hellem Kern.' },
+    { id: 'spiral', type: 'toggle', label: 'Spiralteilchen', value: true, sub: true, set: (v) => { swirl.visible = v; } },
+    { id: 'capswirl', type: 'toggle', label: 'Polkappen-Strudel auf der Kruste', value: true, sub: true, set: (v) => { nsMat.uniforms.uCapS.value = v ? 1 : 0; } },
+  ]);
 
   // Überblick leicht über der Äquatorebene: Leuchtring als Ellipse, Stromblatt als S, Strahlen und Polstrahlen im Bild.
   // Screenshots: ?view=top (Spirale von oben, weit draußen) · ?view=side (S von der Seite) · ?view=near (Stern und Polkappen nah)
@@ -467,6 +487,8 @@ export function create(ctx) {
       glare.material.uniforms.uI.value = THREE.MathUtils.smoothstep(dist, 400, 2000);
       spin.updateMatrixWorld();
       mWorld.set(0, 1, 0).applyQuaternion(mag.getWorldQuaternion(q));
+      e1W.set(0, 1, 0).cross(mWorld).normalize(); e2W.crossVectors(mWorld, e1W);
+      nsMat.uniforms.uT.value = swirl.userData.u.uT.value = t;
       hs.beam.pos.copy(base.beam).applyMatrix4(mag.matrixWorld);
       hs.field.pos.copy(base.field).applyMatrix4(mag.matrixWorld);
       hs.polecap.pos.copy(base.cap).applyMatrix4(mag.matrixWorld);
@@ -503,7 +525,7 @@ export function create(ctx) {
       if (ph) { ph.setAttribute('x1', x); ph.setAttribute('x2', x); }
       if (dot) { dot.setAttribute('cx', x); dot.setAttribute('cy', y); }
     },
-    setPixelRatio(pr) { stars.userData.setPixelRatio(pr); wu.uPx.value = pr; },
+    setPixelRatio(pr) { stars.userData.setPixelRatio(pr); wu.uPx.value = pr; swirl.userData.u.uPx.value = pr; },
     dispose() { sound(false); disposeScene(scene); },
   };
 }

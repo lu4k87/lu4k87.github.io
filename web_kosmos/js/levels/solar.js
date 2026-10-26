@@ -16,6 +16,7 @@ import { createStarfield } from '../stars.js';
 import { SUN_FRAG, BILLBOARD_VERT, CORONA_FRAG, LOOP_VERT, LOOP_FRAG, CME_FRAG, loopsGeometry, spotGroups, streamerSet } from '../sunfx.js';
 import { BODY_VERT, SHELL_VERT, PLANET_FRAG, ATMO_FRAG, CLOUD_FRAG, RING_FRAG, ATMOS } from '../planetfx.js';
 import { createFlare } from '../flare.js';
+import { jupiterAurora } from '../jupiterfx.js';
 import { settings } from '../settings.js';
 import { registerLayers } from '../layers.js';
 import { keepShare } from '../sats.js';
@@ -165,7 +166,7 @@ export function create(ctx) {
   const camera = new THREE.PerspectiveCamera(45, 1, 0.0005, 600);
   const jd0 = julianDate(ctx.date);
   let jd = jd0, rate = 1, real = false;
-  const view = new URLSearchParams(location.search).get('view');   // Screenshots: ?view=sun|saturn|moon|<planet>
+  const view = new URLSearchParams(location.search).get('view');   // Screenshots: ?view=sun|saturn|moon|jupole|jupwide|<planet>
 
   scene.add(createStarfield({ ngp: new THREE.Vector3(...eclDir(180.02, 29.81)), gc: new THREE.Vector3(...eclDir(266.84, -5.54)), gain: 0.8, seed: 23 }));
   const stars = scene.children[0];
@@ -315,6 +316,9 @@ export function create(ctx) {
     return { p, b, holder, tilt, mesh, mat, ring, ringMat, om, orbit, shell, clouds, earthInv, pos: new THREE.Vector3() };
   });
   const P = Object.fromEntries(planets.map((x) => [x.p.id, x]));
+  const jAur = jupiterAurora(ctx.detail);
+  P.jupiter.mesh.add(jAur);
+  const jP = jAur.userData.parts, jU = jAur.userData.capU;
 
   // Mond: Ort aus der Almanach-Näherung relativ zur Erde; „Anschaulich“ zieht ihn näher heran, sonst läge er in der vergrößerten Erde
   const moonMat = new THREE.ShaderMaterial({ vertexShader: BODY_VERT, fragmentShader: PLANET_FRAG, uniforms: planetU(ctx.tex('moon.jpg'), { moon: true, earthPos: P.earth.pos }) });
@@ -475,6 +479,11 @@ export function create(ctx) {
   ];
   // Screenshot-Hilfe: Heimpose nahe an einem Körper
   if (view) {
+    if (view === 'jupole' || view === 'jupwide') {   // Polarlicht von oben nah · Magnetosphäre weit
+      const r = visR(P.jupiter.b.r, real), pole = new THREE.Vector3(0, 1, 0).applyQuaternion(P.jupiter.tilt.quaternion), near = view === 'jupole';
+      home.target = P.jupiter.pos.clone().addScaledVector(pole, near ? r * 0.55 : 0);
+      home.pos = P.jupiter.pos.clone().add(camDir.clone().multiplyScalar(near ? 0.62 : 0.85).addScaledVector(sideDir, 0.3).addScaledVector(pole, near ? 1.05 : 0.42).normalize().multiplyScalar(r * (near ? 3.6 : 15)));
+    }
     const tgt = view === 'sun' ? new THREE.Vector3() : view === 'moon' ? moonPos : P[view] ? P[view].pos : null;
     if (tgt) { const r = view === 'sun' ? sr * 3.2 : view === 'moon' ? visR(MOON_R, real) * 7 : visR(P[view].b.r, real) * 6; home.target = tgt.clone(); home.pos = tgt.clone().addScaledVector(camDir, r).addScaledVector(sideDir, r * 0.35).add(new THREE.Vector3(0, r * 0.3, 0)); }
   }
@@ -503,6 +512,15 @@ export function create(ctx) {
     { id: 'clouds', type: 'toggle', label: 'Wolken der Erde', value: true, sub: true, set: (v) => { P.earth.clouds.visible = v; } },
     { id: 'orbits', type: 'toggle', label: 'Bahnen mit Leuchtspur', value: true, set: (v) => setVis(planets.map((x) => x.orbit), v) },
     { id: 'belts', type: 'toggle', label: 'Kleinkörper: Asteroiden, Trojaner, Kuipergürtel', value: true, set: (v) => setVis(beltObjs, v) },
+    { id: 'jOval', type: 'toggle', group: 'Jupiter-Polarlicht', label: 'Hauptoval (UV-Falschfarbe)', value: true, set: (v) => { jP.oval.visible = jP.cap.visible = v; },
+      hint: 'Schema: Oval ≈ 14° vom Magnetpol (Dipolneigung 9,6°), Norden nierenförmig, Süden runder. Echt leuchtet es im UV; die Farbe ist Falschfarbe.' },
+    { id: 'jSwirl', type: 'toggle', label: 'Polwirbel', value: true, sub: true, set: (v) => { jU.uSwirl.value = v ? 1 : 0; } },
+    { id: 'jFlares', type: 'toggle', label: 'Polar-Flares', value: true, sub: true, set: (v) => { jU.uFlare.value = v ? 1 : 0; } },
+    { id: 'jFeet', type: 'toggle', label: 'Fußpunkte von Io, Europa, Ganymed', value: true, sub: true, set: (v) => { jU.uFoot.value = v ? 1 : 0; },
+      hint: 'Die Monde ziehen Spuren ins Polarlicht; ihr Umlauf ist hier im Zeitraffer, die Lagen sind schematisch.' },
+    { id: 'jDisk', type: 'toggle', group: 'Jupiter-Magnetosphäre', label: 'Magnetscheibe mit Spiralarmen', value: true, set: (v) => { jP.disk.visible = v; } },
+    { id: 'jLines', type: 'toggle', label: 'Gestreckte Feldlinien', value: true, set: (v) => { jP.lines.visible = v; } },
+    { id: 'jFlow', type: 'toggle', label: 'Teilchenströme ins Oval', value: true, set: (v) => { jP.flow.visible = v; } },
   ]);
 
   const occluders = planets.map((x) => ({ center: x.pos, radius: 1 }));
@@ -525,6 +543,7 @@ export function create(ctx) {
       sunMat.uniforms.uTime.value = ta; coronaU.uTime.value = ta; loopU.uTime.value = ta; loopU.uSunR.value = sr;
       planets.forEach((x) => { x.mat.uniforms.uTime.value = ta; });
       P.earth.clouds.material.uniforms.uTime.value = ta;
+      jAur.userData.update(t);
       // Flares: Zufallstakt, Aufblitzen der Schleife, Massenauswurf wandert 6 Sonnenradien hinaus
       if (flaresOn && !ctx.still) { flareTimer -= dt; if (flareTimer <= 0) triggerFlare(); }
       loopU.uBurstT.value += dt * ta0;
@@ -583,7 +602,7 @@ export function create(ctx) {
     live: () => `Planetenstand ${fmt.format(new Date((jd - 2440587.5) * 864e5))}${rate ? ' · Zeitraffer' : ' · jetzt'}`,
     setPixelRatio(pr) {
       stars.userData.setPixelRatio(pr);
-      dotMat.uniforms.uPx.value = pr;
+      dotMat.uniforms.uPx.value = jAur.userData.U.uPx.value = pr;
       beltMats.forEach((m) => { m.uniforms.uPx.value = pr; });
     },
     dispose() { scene.traverse((o) => { if (o.geometry) o.geometry.dispose(); if (o.material) o.material.dispose(); }); },

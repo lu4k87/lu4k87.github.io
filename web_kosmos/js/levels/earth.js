@@ -121,8 +121,8 @@ ${NOISE}
 attribute vec2 auv;
 attribute float aw, ah;
 uniform vec3 uPole, uSunL;
-uniform float uKp, uTime, uRp;
-varying float vV, vU, vW, vNight, vFold;
+uniform float uKp, uTime, uRp, uWaves, uSub;
+varying float vV, vU, vW, vNight, vFold, vSub;
 void main() {
   vec3 e3 = normalize(uPole) * ah;
   vec3 e1 = normalize(uSunL - e3 * dot(uSunL, e3));
@@ -131,19 +131,32 @@ void main() {
   float latEq = (66.5 - 2.044 * uKp) + 2.5 * (1.0 + cu);
   float width = 4.0 + 0.6 * uKp - cu;
   float fold = fbm(vec3(cos(u) * 2.0, sin(u) * 2.0 + aw * 2.0 + ah, uTime * 0.08), 3) * 2.4 + fbm(vec3(cos(u) * 7.0, sin(u) * 7.0 + aw * 5.0, uTime * 0.2), 2) * 0.8;
+  // Wellen und Wirbel laufen am Bogen entlang (Kelvin-Helmholtz-Locken), Falten wandern
+  if (uWaves > 0.5) fold += 0.32 * sin(u * 22.0 + 1.6 * sin(u * 5.0 + uTime * 0.25) - uTime * 0.5 + aw * 2.0) + 0.14 * sin(u * 61.0 - uTime * 1.1 + aw * 5.0);
   float lat = latEq + width * aw + fold;
+  // Teilsturm: Ausbuchtung um Mitternacht wächst polwärts und nach Westen, Zyklus 22 s (in Wirklichkeit ≈ 1–2 h, hier gerafft)
+  float sub = 0.0;
+  if (uSub > 0.5) {
+    float ph = fract(uTime / 22.0);
+    float env = smoothstep(0.0, 0.07, ph) * (1.0 - smoothstep(0.5, 0.97, ph));
+    float du = atan(sin(u - 3.14159265), cos(u - 3.14159265));
+    float wdt = 0.22 + 1.4 * ph;
+    sub = env * exp(-pow(du / wdt, 2.0));
+    float surge = exp(-pow((du - wdt * 0.9) / 0.12, 2.0)) * env;   // Westwärts-Welle: Locke an der Front
+    lat += sub * (2.0 + 7.0 * ph) * aw + surge * 2.5 * sin(aw * 6.0 - uTime * 1.5);
+  }
   float th = (90.0 - lat) * 0.017453292;
   vec3 dir = sin(th) * (cu * e1 + sin(u) * e2) + cos(th) * e3;
-  vec3 pos = dir * (uRp + mix(0.1, 0.4, auv.y));
-  vV = auv.y; vU = u; vW = aw; vFold = fold;
+  vec3 pos = dir * (uRp + mix(0.1, uWaves > 0.5 ? 0.52 : 0.4, auv.y));
+  vV = auv.y; vU = u; vW = aw; vFold = fold; vSub = sub;
   vNight = 1.0 - smoothstep(-0.2, 0.05, dot(dir, uSunL));
   gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
 }
 `;
 export const AURORA_FRAG = /* glsl */ `
 ${NOISE}
-uniform float uTime, uKp, uGain;
-varying float vV, vU, vW, vNight, vFold;
+uniform float uTime, uKp, uGain, uWaves;
+varying float vV, vU, vW, vNight, vFold, vSub;
 void main() {
   float ray = ridged(vec3(cos(vU) * 5.0 + vFold * 0.6, sin(vU) * 5.0, vW * 4.0 + uTime * 0.25), 2);
   // feine senkrechte Strahlen (entlang der Feldlinien), wandern und flackern; Helligkeitswellen laufen am Vorhang entlang
@@ -157,6 +170,18 @@ void main() {
   vec3 col = mix(green, red, smoothstep(0.3, 0.9, vV));
   col = mix(col, violet, (1.0 - smoothstep(0.0, 0.18, vV)) * clamp((uKp - 3.0) / 6.0, 0.0, 1.0) * 0.7);
   float mlt = 0.55 + 0.45 * (0.5 - 0.5 * cos(vU));
+  b *= 1.0 + 1.3 * vSub;
+  if (uWaves > 0.5) {
+    // Helligkeit läuft die Strahlen hinauf, scharfe Unterkante (N₂ rosa-violett), roter Saum oben
+    float up = 0.55 + 0.45 * sin(vV * 13.0 - uTime * 2.2 + rays * 5.0 + vU * 30.0);
+    b *= mix(1.0, up, 0.65);
+    float lower = exp(-vV / 0.04) * seg;
+    col = mix(col, vec3(1.0, 0.22, 0.32), smoothstep(0.45, 0.95, vV) * 0.85);
+    col += vec3(1.0, 0.35, 0.8) * lower * (0.55 + 1.2 * vSub);
+    prof = smoothstep(0.0, 0.035, vV) * pow(max(1.0 - vV, 0.0), 1.3);
+    b *= 2.1;
+  }
+  mlt = mix(mlt, 1.0, vSub);
   gl_FragColor = vec4(col * b * prof * mlt * vNight * (0.5 + 0.12 * uKp) * uGain, 1.0);
 }
 `;
@@ -175,7 +200,7 @@ void main() {
 export const AURORA_GLOW_FRAG = /* glsl */ `
 ${NOISE}
 uniform vec3 uPole, uSunL;
-uniform float uKp, uTime, uGain;
+uniform float uKp, uTime, uGain, uWaves, uSub, uPulse;
 varying vec3 vL, vN, vP;
 void main() {
   vec3 p = normalize(vL), e3 = normalize(uPole);
@@ -194,6 +219,22 @@ void main() {
   float mlt = 0.55 + 0.45 * (0.5 - 0.5 * cu);
   float mu = max(dot(normalize(vN), normalize(cameraPosition - vP)), 0.0);
   vec3 col = mix(vec3(0.3, 1.0, 0.5), vec3(0.95, 0.3, 0.45), 0.15 + 0.3 * smoothstep(0.0, 1.5, x));
+  if (uWaves > 0.5) {
+    spot = 0.6 * spot + 0.6 * smoothstep(0.1, 0.6, fbm(p * 22.0 + vec3(uTime * 0.03, 0.0, -uTime * 0.05), 3));
+    band *= 0.8;
+  }
+  float ph = fract(uTime / 22.0);
+  float env = smoothstep(0.0, 0.07, ph) * (1.0 - smoothstep(0.5, 0.97, ph));
+  float du = atan(sin(u - 3.14159265), cos(u - 3.14159265));
+  if (uSub > 0.5) band *= 1.0 + 0.9 * env * exp(-pow(du / (0.22 + 1.4 * ph), 2.0));
+  if (uPulse > 0.5) {
+    // pulsierende Flecken im Morgensektor: an/aus mit 4–9 s (unter 3 Hz)
+    vec3 cell = floor(p * 26.0);
+    float hh = fract(sin(dot(cell, vec3(12.9898, 78.233, 37.719))) * 43758.5453);
+    float on = smoothstep(0.35, 0.5, fract(uTime / (4.0 + 5.0 * hh) + hh)) * (1.0 - smoothstep(0.75, 0.9, fract(uTime / (4.0 + 5.0 * hh) + hh)));
+    float morning = exp(-pow((du + 1.6) / 0.7, 2.0));
+    spot += morning * on * smoothstep(0.2, 0.7, gnoise(p * 60.0)) * 1.6;
+  }
   gl_FragColor = vec4(col * band * (0.35 + 1.0 * spot * spot) * night * mlt / (mu + 0.35) * (0.15 + 0.07 * uKp) * uGain, 1.0);
 }
 `;
@@ -324,7 +365,7 @@ export function create(ctx) {
   const GM = [80.8 * RAD, -72.8 * RAD];
   const poleL = new THREE.Vector3(Math.cos(GM[0]) * Math.cos(GM[1]), Math.sin(GM[0]), -Math.cos(GM[0]) * Math.sin(GM[1]));
   const sunL = new THREE.Vector3(1, 0, 0);
-  const auroraU = { uPole: { value: poleL }, uSunL: { value: sunL }, uKp: { value: 4 }, uTime: { value: 0 }, uGain: { value: 1 }, uRp: { value: R_E } };
+  const auroraU = { uPole: { value: poleL }, uSunL: { value: sunL }, uKp: { value: 4 }, uTime: { value: 0 }, uGain: { value: 1 }, uRp: { value: R_E }, uWaves: { value: 1 }, uSub: { value: 1 }, uPulse: { value: 1 } };
   const aurora = new THREE.Mesh(auroraGeometry(), new THREE.ShaderMaterial({ vertexShader: AURORA_VERT, fragmentShader: AURORA_FRAG, uniforms: auroraU, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true, side: THREE.DoubleSide }));
   aurora.frustumCulled = false;
   spin.add(aurora);
@@ -416,7 +457,8 @@ export function create(ctx) {
   const home = { pos: d.clone().multiplyScalar(36), target: new THREE.Vector3() };
   // Screenshots: ?view=night (Nachtseite mit Polarlichtern) · ?view=moon (Mond nah)
   const view = new URLSearchParams(location.search).get('view');
-  if (view === 'night') home.pos = sunDir.clone().negate().addScaledVector(up, 0.45).normalize().multiplyScalar(30);
+  if (view === 'aurora') { home.pos = sunDir.clone().negate().multiplyScalar(0.93).addScaledVector(up, 0.36).normalize().multiplyScalar(15.5); home.target = up.clone().multiplyScalar(R_E * 0.7).addScaledVector(sunDir, -R_E * 0.12); }
+  else if (view === 'night') home.pos = sunDir.clone().negate().addScaledVector(up, 0.45).normalize().multiplyScalar(30);
   else if (view === 'moon') { home.target = moonPos.clone(); home.pos = moonPos.clone().addScaledVector(d, R_M * 7); }
   const introDir = d.clone().applyAxisAngle(up, -1.9).addScaledVector(up, 0.25).normalize();
   const intro = { pos: introDir.multiplyScalar(13), target: new THREE.Vector3() };
@@ -475,6 +517,11 @@ export function create(ctx) {
     { id: 'aurora', type: 'toggle', label: 'Polarlichter', value: true, set: (v) => { aurora.visible = auroraGlow.visible = v; } },
     { id: 'kp', type: 'range', label: 'Kp-Index', value: 4, min: 0, max: 9, step: 1, sub: true, fmt: (v) => `Kp ${v}`, set: (v) => { auroraU.uKp.value = v; },
       hint: 'Geomagnetische Aktivität. Kp 0–2: nur am Polarkreis · Kp 5: Sturm, bis Norddeutschland · Kp 9: bis in den Mittelmeerraum (NOAA).' },
+    { id: 'auroraWaves', type: 'toggle', label: 'Wellen, Strahlen, Farbsäume', value: true, sub: true, set: (v) => { auroraU.uWaves.value = v ? 1 : 0; },
+      hint: 'Locken laufen am Bogen entlang, Helligkeit steigt die Strahlen hinauf, rosa Unterkante und roter Saum oben.' },
+    { id: 'auroraSub', type: 'toggle', label: 'Teilsturm (Zyklus 22 s)', value: true, sub: true, set: (v) => { auroraU.uSub.value = v ? 1 : 0; },
+      hint: 'Ausbuchtung um Mitternacht wächst polwärts und nach Westen. Echte Teilstürme dauern ein bis zwei Stunden, hier gerafft.' },
+    { id: 'auroraPulse', type: 'toggle', label: 'Pulsierende Flecken (Morgensektor)', value: true, sub: true, set: (v) => { auroraU.uPulse.value = v ? 1 : 0; } },
     { id: 'auroraGain', type: 'range', label: 'Leuchtstärke', value: 1, min: 0.3, max: 2.5, step: 0.1, sub: true, unit: '×', set: (v) => { auroraU.uGain.value = v; } },
     { id: 'sats', type: 'toggle', group: 'Erdumlaufbahn', label: 'Satelliten (CelesTrak-Katalog)', value: true, set: (v) => { show.sats = v; applyShow(); } },
     { id: 'debris', type: 'toggle', label: 'Trümmerwolken', value: true, sub: true, set: (v) => { show.debris = v; applyShow(); } },
