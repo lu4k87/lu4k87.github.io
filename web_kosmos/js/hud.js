@@ -1,5 +1,5 @@
-// Bedienoberfläche über der 3D-Szene: Stationsleiste (links: Zeitstrahl-Tabelle mit Suche oder Kacheln mit Kapitel-Spalte,
-// beim Zeigen breit über der Bühne), Infotafel (rechts: Kennzahlen-Bento, Schalter der Station, Entdecken-Liste, Darstellung + Quellen),
+// Bedienoberfläche über der 3D-Szene: Stationsleiste (Band oben über die volle Breite: Kapitel → Route, darunter beim Zeigen
+// Abstecher → Monde; Suche in der Kopfzeile), Infotafel (rechts: Kennzahlen-Bento, Schalter der Station, Entdecken-Liste, Darstellung + Quellen),
 // Abzeichen mit gewinkelten 45°-Leitlinien (Sechseck wie Biochar), Info-Karte, Messleiste (Bildbreite, Lichtlaufzeit,
 // Entfernung, Blick zurück), Reiseroute, Kapitel-Titel beim Ankommen, Rand-Zug-Anzeige.
 
@@ -44,11 +44,11 @@ export function createHud(h) {
   $('#btn-panel').addEventListener('click', () => setSetting('panel', !settings.S.panel));
 
   // ---------- Stationsleiste ----------
-  // Zwei Ansichten (Vorschau 26.10.2026 „Stationsleiste neu“), Schalter unten links: Zeitstrahl als Tabelle (Zeit:B) und
-  // Kacheln mit Kapitel-Spalte (Kachel:B). Beide schmal und kompakt in der Leiste; Maus oder Fokus klappt sie über die Bühne
-  // auf 464 bzw. 512 px aus (.rail.is-wide, Ebene über Zeitleiste und Kapitel-Titel). Touch ohne Maus bleibt schmal und wach,
-  // unter 760 px bleibt vom Zeitstrahl nur die Punkte-Leiste (CSS).
-  // Kapitel: Hub, Name, Zeile im Reiter
+  // Band oben über die volle Breite (Vorschau 26.10.2026 „Stationsleiste oben“ Leiste:C, Baum-Panorama): Zeilen Kapitel → Route →
+  // Abstecher → Monde, links die Namen der Ebenen, Linien in Kapitelfarbe, Erdnähe links. In Ruhe nur Kapitel + Route; Abstecher
+  // und Monde zeigt die Schublade darunter beim Zeigen (Maus, Fokus) oder solange ihr Parent ausgewählt ist (aktuelle Station
+  // oder auf ihrem Weg). Unter 760 px (oder zu eng für die Namen) nur die Route als Punkte mit Kapitel-Streifen.
+  // Kapitel: Hub, Name, Beschreibung (Name der Gruppe für Screenreader)
   const CHAPTERS = [['earth', 'Erdnähe', 'Erde, Mond und Raumstationen'], ['solar', 'Sonnensystem', 'Sonne, Planeten und Monde'],
     ['galaxy', 'Milchstraße', 'Nebel, Pulsar und Zentrum'], ['local', 'Universum', 'Galaxien bis zum Horizont']];
   const HUBS = CHAPTERS.map(([id]) => id);
@@ -59,7 +59,6 @@ export function createHud(h) {
   const onRoute = new Set(ROUTE);
   const chapter = (id) => { for (let x = id; x; x = STATIONS[x].parent) if (HUBS.includes(x)) return x; return HUBS[HUBS.length - 1]; };
   const kidsOf = (id) => Object.keys(STATIONS).filter((k) => STATIONS[k].parent === id && !onRoute.has(k)).sort(byRank);
-  const below = (id) => kidsOf(id).flatMap((k) => [k, ...below(k)]);
   const stopOf = (id) => { let x = id; while (x && STATIONS[x] && !onRoute.has(x)) x = STATIONS[x].parent; return STATIONS[x] ? x : null; };
   const chName = (id) => CHAPTERS.find(([hub]) => hub === chapter(id))[1];
   const members = (ch) => Object.keys(STATIONS).filter((k) => chapter(k) === ch);
@@ -72,51 +71,29 @@ export function createHud(h) {
     for (let k = STATIONS[id].parent; k; k = STATIONS[k].parent) { a.unshift(title(k)); if (HUBS.includes(k)) break; }
     return a.join(' › ') || esc(chName(id));
   };
-  const img = (file, w, hgt, lazy = true) => `<img src="img/thumbs/${file}.jpg" alt="" width="${w}" height="${hgt}"${lazy ? ' loading="lazy"' : ''} decoding="async">`;
   // Monde als Kugel (Oberflächenkarte), alle übrigen mit Standbild
   const isMoon = (id) => !onRoute.has(id) && !!STATIONS[id].parent && !onRoute.has(STATIONS[id].parent);
   const orb = (id, cls) => `<i class="${cls}" style="background-image:url(img/thumbs/${id}${isMoon(id) ? '-tex' : ''}.jpg)"></i>`;
-  const VIEW_KEY = 'kosmos.railview.v1';
-  const nav = rail.parentElement, tiles = $('#tiles'), viewBtns = nav.querySelectorAll('[data-view]');
-  let railFly = null, flyOf = null, railCur = null, liveEls = [], tileLive = null;
+  const nav = rail.parentElement, find = $('#find');
+  let railCur = null;
 
-  // ---------- Zeitstrahl als Tabelle (Zeit:B) ----------
-  // Suchfeld (alle Stationen nach Titel, Art, Nummer; Taste /, Pfeiltasten + Enter fliegt hin), Hier-Karte (Bild, Weg,
-  // Bildbreite live), Tabelle Kapitel | Nr. | Station | Bildbreite von oben (Universum) nach unten (Erdnähe). Die aktuelle
-  // Station und ihr Weg stehen eingerückt mit └ unter ihrem Halt; „+n“ öffnet die Abstecher seitlich (.rl-fly).
-  const railRows = new Map();
-  let zbInput = null, zbFound = null, zbRes = null, zbHint = null, zbHere = null, zbHits = [], zbSel = 0;
-  const zbRow = (id, d = -1) => {
-    const n = d < 0 ? kidsOf(id).length : 0;
-    return `<div class="zb-row${d < 0 ? '' : ' zb-sub'}" data-row="${id}"><button type="button" class="zb-go" data-go="${id}" aria-label="${label(id)}, Kapitel ${esc(chName(id))}"><i class="zb-st"></i><span class="n">${num(id)}</span><span class="zb-name">${d < 0 ? '' : `<span class="zb-tree" style="--d:${d}" aria-hidden="true">└</span>`}${title(id)}</span></button>${n
-      ? `<button type="button" class="zb-more" aria-expanded="false" aria-controls="rl-fly" aria-label="${n} Abstecher von ${title(id)}">+${n}</button>` : '<span></span>'}<span class="w">${width(id)}</span></div>`;
-  };
+  // ---------- Suche in der Kopfzeile ----------
+  // Alle Stationen nach Titel, Art, Nummer; Taste /, Pfeiltasten + Enter fliegt hin, Esc leert; Treffer als Liste unter dem Feld
+  let zbInput = null, zbFound = null, zbRes = null, zbHint = null, zbHits = [], zbSel = 0;
   // Treffer hervorheben, ohne die Eingabe als Suchmuster zu lesen
   const mark = (s, q) => { const i = s.toLowerCase().indexOf(q); return i < 0 ? esc(s) : `${esc(s.slice(0, i))}<mark>${esc(s.slice(i, i + q.length))}</mark>${esc(s.slice(i + q.length))}`; };
-  function buildRail() {
-    rail.innerHTML = `<label class="zb-search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5l5 5"/></svg>
+  function buildSearch() {
+    find.innerHTML = `<label class="zb-search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5l5 5"/></svg>
         <input type="search" role="combobox" placeholder="Station suchen" aria-label="Station suchen" aria-autocomplete="list" aria-controls="zb-res" aria-expanded="false" autocomplete="off" spellcheck="false"><kbd aria-hidden="true">/</kbd></label>
-      <div class="zb-found" hidden><div class="zb-res" id="zb-res" role="listbox" aria-label="Treffer"></div><p class="zb-hint" aria-live="polite"></p></div>
-      <section class="zb-here" aria-label="Aktuelle Station"></section>
-      <div class="zb-tab"><div class="zb-th" aria-hidden="true"><span>Kapitel</span><span>Nr.</span><span>Station</span><span>Bildbreite</span></div>${[...CHAPTERS].reverse().map(([hub, name]) => {
-        const ids = [...ROUTE].reverse().filter((id) => chapter(id) === hub);
-        return `<section class="zb-grp" data-ch="${hub}" style="--n:${ids.length}" aria-label="${esc(name)}"><div class="zb-chn" aria-hidden="true"><i></i><span>${esc(name)}</span><small>${members(hub).length} Stationen</small></div>
-          <div class="zb-rows">${ids.map((id) => `<div class="zb-stop" data-id="${id}">${zbRow(id)}<div class="zb-chain"></div></div>`).join('')}</div></section>`;
-      }).join('')}</div><div class="rl-fly" id="rl-fly" role="group" hidden></div>`;
-    zbInput = rail.querySelector('.zb-search input');
-    [zbFound, zbRes, zbHint, zbHere] = ['.zb-found', '.zb-res', '.zb-hint', '.zb-here'].map((s) => rail.querySelector(s));
-    // Liste am Seitenkörper: liegt so über Zeitleiste und Kapitel-Titel, die eigene Ebenen über der HUD haben
-    railFly = rail.querySelector('.rl-fly');
-    document.body.append(railFly);
-    rail.querySelectorAll('.zb-stop').forEach((el) => railRows.set(el.dataset.id, el));
-    const onClick = (e) => {
-      const go = e.target.closest('[data-go]'), more = e.target.closest('.zb-more');
-      if (more) { const id = more.closest('.zb-stop').dataset.id; if (flyOf === id) closeFly(true); else openFly(id); } else if (go) fly(go.dataset.go);
-    };
-    const onKey = (e) => { if (e.key === 'Escape' && flyOf) { e.stopPropagation(); closeFly(true); } };
-    for (const el of [rail, railFly]) { el.addEventListener('click', onClick); el.addEventListener('keydown', onKey); }
-    document.addEventListener('pointerdown', (e) => { if (flyOf && !rail.contains(e.target) && !railFly.contains(e.target)) closeFly(); });
+      <div class="zb-found" hidden><div class="zb-res" id="zb-res" role="listbox" aria-label="Treffer"></div><p class="zb-hint" aria-live="polite"></p></div>`;
+    zbInput = find.querySelector('input');
+    [zbFound, zbRes, zbHint] = ['.zb-found', '.zb-res', '.zb-hint'].map((s) => find.querySelector(s));
+    // Klick in die Liste behält den Fokus im Feld, sonst schließt sie vor dem Klick
+    zbFound.addEventListener('pointerdown', (e) => e.preventDefault());
+    zbFound.addEventListener('click', (e) => { const go = e.target.closest('[data-go]'); if (go) { fly(go.dataset.go); zbInput.blur(); } });
     zbInput.addEventListener('input', () => { zbSel = 0; renderHits(); });
+    zbInput.addEventListener('focus', () => { if (zbInput.value) renderHits(); });
+    zbInput.addEventListener('blur', () => { zbFound.hidden = true; zbInput.setAttribute('aria-expanded', 'false'); });
     zbInput.addEventListener('keydown', (e) => {
       const n = zbHits.length;
       if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); if (zbInput.value) clearSearch(); else zbInput.blur(); } else if (!zbFound.hidden && (e.key === 'ArrowDown' || e.key === 'ArrowUp')) {
@@ -124,19 +101,18 @@ export function createHud(h) {
         if (n) { zbSel = (zbSel + (e.key === 'ArrowDown' ? 1 : n - 1)) % n; markHit(); }
       } else if (e.key === 'Enter' && n && !zbFound.hidden) { e.preventDefault(); fly(zbHits[zbSel]); zbInput.blur(); }
     });
-    // Taste / sucht, solange der Zeitstrahl zu sehen ist
+    // Taste / sucht, solange das Feld zu sehen ist (unter 760 px ausgeblendet)
     document.addEventListener('keydown', (e) => {
       if (e.key !== '/' || e.ctrlKey || e.metaKey || e.altKey || e.target.closest?.('input, select, textarea, [contenteditable]')) return;
-      if (nav.dataset.view !== 'line' || !zbInput.offsetParent) return;
+      if (!zbInput.offsetParent) return;
       e.preventDefault();
       zbInput.focus();
     });
   }
-  function fly(id) { closeFly(); clearSearch(); h.onInput(); h.onGo(id); }
+  function fly(id) { hideTip(); clearSearch(); h.onInput(); h.onGo(id); }
   function renderHits() {
     const q = zbInput.value.trim().toLowerCase();
     zbFound.hidden = !q;
-    rail.classList.toggle('is-search', !!q);
     zbInput.setAttribute('aria-expanded', String(!!q));
     zbHits = q ? Object.keys(STATIONS).filter((k) => `${STATIONS[k].title} ${STATIONS[k].kicker} ${num(k)}`.toLowerCase().includes(q)).sort(byRank) : [];
     zbRes.innerHTML = zbHits.map((k) => `<div role="option" class="zb-hit" id="zb-hit-${k}" data-go="${k}" aria-selected="false">${orb(k, 'zb-orb')}<span class="zb-hit-t"><span><b class="n">${num(k)}</b> ${mark(STATIONS[k].title, q)}</span><small>${crumbs(k)} · ${mark(STATIONS[k].kicker, q)}</small></span><span class="w">${width(k)}</span></div>`).join('');
@@ -154,144 +130,283 @@ export function createHud(h) {
     zbInput.value = '';
     renderHits();
   }
-  // Abstecher-Liste seitlich am Halt: je Abstecher eine Zeile, Monde kompakt als Zeile darunter, aktuelle hervorgehoben
-  const rowHtml = (id) => `<button type="button" class="rl-btn" data-go="${id}" aria-label="${label(id)}"><span class="rl-dot"></span><span class="rl-txt"><b>${num(id)}</b> ${title(id)}</span></button>`;
-  function openFly(id) {
-    closeFly();
-    flyOf = id;
-    railFly.innerHTML = `<p class="rl-fly-cap">Abstecher von ${title(id)}</p>${kidsOf(id).map((k) => {
-      const m = below(k);
-      return rowHtml(k) + (m.length ? `<p class="rl-moons">${m.map((x) => `<button type="button" data-go="${x}" aria-label="${label(x)}">${title(x)}</button>`).join('')}</p>` : '');
-    }).join('')}`;
-    railFly.querySelector(`[data-go="${railCur}"]`)?.classList.add('is-current');
-    railFly.hidden = false;
-    railRows.get(id).querySelector('.zb-more').setAttribute('aria-expanded', 'true');
-    placeFly();
-    railFly.querySelector('[data-go]')?.focus({ preventScroll: true });
-  }
-  function closeFly(refocus) {
-    if (!flyOf) return;
-    const more = railRows.get(flyOf).querySelector('.zb-more');
-    more.setAttribute('aria-expanded', 'false');
-    if (refocus) more.focus();
-    flyOf = null;
-    railFly.hidden = true;
-    wake(false);
-  }
-  function placeFly() {
-    const R = rail.getBoundingClientRect(), b = railRows.get(flyOf).querySelector('.zb-more').getBoundingClientRect(), fh = railFly.offsetHeight;
-    railFly.style.left = `${R.right + 10}px`;
-    railFly.style.top = `${Math.max(R.top, Math.min(R.bottom - fh, b.top + b.height / 2 - fh / 2))}px`;
-  }
 
-  // ---------- Kacheln mit Kapitel-Spalte (Kachel:B) ----------
-  // Links die Kapitel als Reiter (Bild, Name, Zeile, Anzahl; Pfeil hoch/runter), rechts Hier-Karte, Hauptort („Halt x von 13“)
-  // und Kacheln in 2 Spalten: Standbild (img/thumbs/<id>.jpg aus tools/thumbs.py), Nummer, Name, Bildbreite. Kachel = Station
-  // des Kapitels, die am Hub hängt oder auf der Route liegt; alle übrigen (Monde) mit Kugel, Name und Bildbreite in der Kachel
-  // ihres Planeten (schmal nur die Kugeln, Name beim Zeigen). Der Reiter folgt der Station.
-  const isTile = (k) => !HUBS.includes(k) && (onRoute.has(k) || HUBS.includes(STATIONS[k].parent));
-  const tileOf = (id) => { let x = id; while (x && !isTile(x) && !HUBS.includes(x)) x = STATIONS[x].parent; return x; };
-  let kbTabs = null, kbCh = null, kbHere = null, kbTip = null;
-  function buildTiles() {
-    tiles.innerHTML = `<div class="kb-tabs" role="tablist" aria-orientation="vertical" aria-label="Kapitel">${CHAPTERS.map(([hub, name, desc]) => `<button type="button" role="tab" class="kb-tab" id="kb-tab-${hub}" data-ch="${hub}" aria-controls="kb-panel" aria-selected="false" tabindex="-1" aria-label="${esc(name)}, ${members(hub).length} Stationen">${img(hub, 112, 112, false)}<span class="kb-tab-t">${esc(name)}</span><span class="kb-tab-d">${esc(desc)}</span><span class="n">${members(hub).length} Stationen</span></button>`).join('')}</div>
-      <div class="kb-panel" id="kb-panel" role="tabpanel"><section class="kb-here" aria-label="Aktuelle Station"></section><div class="kb-ch"></div></div>`;
-    kbTabs = [...tiles.querySelectorAll('.kb-tab')];
-    kbCh = tiles.querySelector('.kb-ch');
-    kbHere = tiles.querySelector('.kb-here');
-    kbTip = document.createElement('div');
-    kbTip.className = 'kb-tip';
-    kbTip.hidden = true;
-    kbTip.setAttribute('aria-hidden', 'true');
-    document.body.append(kbTip);
-    tiles.addEventListener('click', (e) => {
-      const tab = e.target.closest('.kb-tab'), go = e.target.closest('[data-go]');
-      if (tab) { showChapter(tab.dataset.ch); h.onInput(); } else if (go) { kbTip.hidden = true; h.onInput(); h.onGo(go.dataset.go); }
-    });
-    // Reiter per Pfeiltaste (Muster tablist, senkrecht); stoppt die globalen Pfeiltasten (Station wechseln) nur hier
-    tiles.querySelector('.kb-tabs').addEventListener('keydown', (e) => {
-      const i = kbTabs.indexOf(e.target), n = kbTabs.length;
-      const j = { ArrowDown: i + 1, ArrowUp: i - 1 + n, Home: 0, End: n - 1 }[e.key];
-      if (i < 0 || j === undefined) return;
+  // ---------- Band: Kapitel → Route (Ruhe) und Schublade mit Abstechern → Monden ----------
+  // Lage aus der gemessenen Wortbreite (höchstens zwei Zeilen je Name, Kapitel mindestens so breit wie sein Titel), sonst
+  // kleiner; passt auch das nicht (oder unter 760 px), zeigt das Band die Route als Punkte mit Kapitel-Streifen (.is-dots).
+  // Feste Höhe in Ruhe, damit die Bühne beim Zeigen nicht springt; die Schublade liegt über der Bühne.
+  const NS = 'http://www.w3.org/2000/svg', PAD = 10, GAP = 16;
+  const BAND_H = 112, DOTS_H = 40, ROUTE_Y = 48, BUS_Y = 12, KID_Y = 30, MOONS_Y = 96, BRK_Y = 91;
+  // Stufen: Schrift, Luft je Name, Spalte der Ebenen-Namen (die letzte Stufe lässt sie weg)
+  const SIZES = [[13, 16, 92], [12, 10, 92], [12, 8, 0]];
+  const wide = matchMedia('(min-width: 761px)'), still = matchMedia('(prefers-reduced-motion: reduce)');
+  const ctx2d = document.createElement('canvas').getContext('2d');
+  const textW = (s, font) => { ctx2d.font = font; return ctx2d.measureText(s).width; };
+  const need = (id, px, pad) => {
+    const font = `600 ${px}px "IBM Plex Sans", system-ui, sans-serif`, t = STATIONS[id].title;
+    return Math.max(24, ...t.split(/[\s-]+/).map((s) => textW(s, font)), textW(t, font) / 2) + pad;
+  };
+  // Kapitel-Titel: Versalien mit 0,12em Sperrung, Punkt + Abstand, optional „n Stationen“
+  const chapW = (hub, count) => {
+    const name = CHAPTERS.find(([c]) => c === hub)[1].toUpperCase();
+    const w = textW(name, '500 12.5px "IBM Plex Sans Condensed", sans-serif') + name.length * 1.5 + 15 + 12;
+    return count ? w + 8 + textW(`${members(hub).length} Stationen`, '400 12px "IBM Plex Sans", sans-serif') : w;
+  };
+  const sum = (a) => a.reduce((x, y) => x + y, 0);
+  const node = (id, cls = '', style = '') => `<button type="button" class="bd-node${cls}"${style && ` style="${style}"`} data-go="${id}" data-ch="${chapter(id)}" aria-label="${label(id)}, Kapitel ${esc(chName(id))}"><span class="bd-dot"></span><span class="n">${num(id)}</span><span class="bd-nm">${title(id)}</span></button>`;
+  const groups = () => CHAPTERS.map(([hub]) => [hub, ROUTE.filter((r) => chapter(r) === hub)]).filter(([, rs]) => rs.length);
+  let cv = null, wires = null, drawer = null, dcv = null, dwires = null, tip = null;
+  let pos = {}, fit = null, bandH = 0, hovId = null, shown = ['', ''], sleep = 0, comet = null;
+
+  function buildRail() {
+    rail.innerHTML = `<div class="bd-lvls" aria-hidden="true"><span style="--y:17px">Kapitel</span><span style="--y:${ROUTE_Y}px">Route</span></div>
+      <div class="bd-cv"><svg class="bd-wires" aria-hidden="true"></svg>${groups().map(([hub, rs], i) => {
+        const [, name, desc] = CHAPTERS.find(([c]) => c === hub);
+        return `<div class="bd-grp" role="group" data-ch="${hub}" style="--i:${i}" aria-label="${esc(name)}: ${esc(desc)}"><p class="bd-chap" aria-hidden="true"><i></i><span>${esc(name)}</span><small>${members(hub).length} Stationen</small></p>${rs.map((id) => node(id)).join('')}</div>`;
+      }).join('')}</div>`;
+    nav.insertAdjacentHTML('beforeend', `<div class="bd-drawer" role="group" inert><div class="bd-lvls" aria-hidden="true"><span style="--y:${KID_Y}px">Abstecher</span><span class="bd-lv-moon" style="--y:${MOONS_Y + 13}px">Monde</span></div><div class="bd-cv"><svg class="bd-wires" aria-hidden="true"></svg><div class="bd-kids"></div><div class="bd-mrow"></div></div></div>`);
+    cv = rail.querySelector('.bd-cv');
+    wires = cv.querySelector('.bd-wires');
+    drawer = nav.querySelector('.bd-drawer');
+    dcv = drawer.querySelector('.bd-cv');
+    dwires = dcv.querySelector('.bd-wires');
+    tip = document.createElement('div');
+    tip.className = 'bd-tip';
+    tip.setAttribute('aria-hidden', 'true');
+    document.body.append(tip);
+
+    nav.addEventListener('click', (e) => { const b = e.target.closest('[data-go]'); if (b) fly(b.dataset.go); });
+    // Zeigen (Maus oder Fokus) öffnet den Zweig des Knotens; das Verlassen des Bands kehrt nach einer Weile zur Station zurück
+    const over = (e) => {
+      const b = e.target.closest?.('[data-go]');
+      if (!b) return;
+      clearTimeout(sleep);
+      hovId = b.dataset.go;
+      hot(hovId);
+      renderDrawer();
+      if (e.type === 'focusin' || e.pointerType === 'mouse') showTip(hovId, nav.querySelector(`[data-go="${hovId}"]`));
+    };
+    const out = (e) => { const b = e.target.closest?.('[data-go]'); if (b && !b.contains(e.relatedTarget)) { hideTip(); hot(null); } };
+    const leave = () => {
+      hideTip();
+      hot(null);
+      clearTimeout(sleep);
+      sleep = setTimeout(() => { if (nav.matches(':hover, :focus-within')) return; hovId = null; renderDrawer(); }, 700);
+    };
+    nav.addEventListener('pointerover', over);
+    nav.addEventListener('focusin', over);
+    nav.addEventListener('pointerout', out);
+    nav.addEventListener('pointerleave', leave);
+    nav.addEventListener('focusout', (e) => { if (!nav.contains(e.relatedTarget)) leave(); });
+    // Pfeiltasten im Band: links/rechts in der Zeile, runter in den Zweig, hoch zum Parent (die Reisetasten der Szene ruhen hier)
+    nav.addEventListener('keydown', (e) => {
+      const b = e.target.closest?.('[data-go]');
+      if (!b || !['ArrowLeft', 'ArrowRight', 'ArrowDown', 'ArrowUp'].includes(e.key)) return;
       e.preventDefault();
       e.stopPropagation();
-      kbTabs[j % n].focus();
-      showChapter(kbTabs[j % n].dataset.ch);
+      const id = b.dataset.go, moon = b.classList.contains('bd-moon'), kid = !moon && drawer.contains(b);
+      const row = [...(moon ? drawer.querySelectorAll('.bd-moon') : kid ? drawer.querySelectorAll('.bd-kids .bd-node') : rail.querySelectorAll('.bd-node'))];
+      let to = null;
+      if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') to = row[row.indexOf(b) + (e.key === 'ArrowRight' ? 1 : -1)];
+      else if (e.key === 'ArrowDown') to = kid ? (shown[1] === id && drawer.querySelector('.bd-moon')) : !moon && shown[0] === id && drawer.querySelector('.bd-kids .bd-node');
+      else if (moon || kid) to = nav.querySelector(`.bd-node[data-go="${STATIONS[id].parent}"]`);
+      to?.focus();
     });
-    // schmal: Name + Bildbreite eines Mondes beim Zeigen (Maus oder Fokus); breit stehen sie in der Kachel
-    const tip = (e) => {
-      const m = e.target.closest?.('.kb-moon');
-      if (!m || e.type === 'pointerout' || e.type === 'focusout' || nav.classList.contains('is-wide')) { kbTip.hidden = true; return; }
-      const id = m.dataset.go;
-      kbTip.innerHTML = `<b>${num(id)}</b>${title(id)} · ${width(id)}`;
-      kbTip.hidden = false;
-      const b = m.getBoundingClientRect(), w = kbTip.offsetWidth;
-      kbTip.style.left = `${Math.max(8, Math.min(innerWidth - w - 8, b.left + b.width / 2 - w / 2))}px`;
-      kbTip.style.top = `${b.bottom + 6}px`;
-    };
-    for (const ev of ['pointerover', 'pointerout', 'focusin', 'focusout']) kbCh.addEventListener(ev, tip);
-    kbCh.addEventListener('scroll', () => { kbTip.hidden = true; }, { passive: true, capture: true });
-    nav.querySelector('.rail-view').addEventListener('click', (e) => { const b = e.target.closest('[data-view]'); if (b) setView(b.dataset.view, true); });
-    let v = 'tiles';
-    try { if (localStorage.getItem(VIEW_KEY) === 'line') v = 'line'; } catch { /* privater Modus */ }
-    setView(v);
-  }
-  function setView(v, save) {
-    nav.dataset.view = v;
-    body.classList.toggle('rail-tiles', v === 'tiles');
-    viewBtns.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.view === v)));
-    kbTip.hidden = true;
-    closeFly();
-    if (!save) return;
-    try { localStorage.setItem(VIEW_KEY, v); } catch { /* privater Modus */ }
-    h.onRelayout();
-  }
-  function showChapter(ch) {
-    kbTabs.forEach((t) => { const on = t.dataset.ch === ch; t.setAttribute('aria-selected', String(on)); t.tabIndex = on ? 0 : -1; });
-    tiles.querySelector('.kb-panel').setAttribute('aria-labelledby', `kb-tab-${ch}`);
-    const all = members(ch), halt = ROUTE.indexOf(ch), at = halt < 0 ? '' : `Halt ${halt + 1} von ${ROUTE.length}`;
-    kbCh.innerHTML = `<button type="button" class="kb-hub" data-go="${ch}" aria-label="${label(ch)}${at && `, ${at}`}"><span class="kb-hub-t"><b class="n">${num(ch)}</b> ${title(ch)}</span><span class="kb-hub-w"><span class="w">${width(ch)}</span>${at && ` · ${at}`}</span></button>
-      <div class="kb-list"><ul class="kb-grid">${all.filter(isTile).sort(byRank).map((id) => {
-        const moons = all.filter((k) => k !== ch && !isTile(k) && tileOf(k) === id).sort(byRank);
-        return `<li class="kb-tile" data-id="${id}"><button type="button" class="kb-go" data-go="${id}" aria-label="${label(id)}"><span class="kb-im">${img(id, 160, 44)}<span class="kb-no">${num(id)}</span></span><span class="kb-name">${title(id)}</span><span class="w">${width(id)}</span></button>${moons.length
-          ? `<ul class="kb-moons">${moons.map((k) => `<li><button type="button" class="kb-moon" data-go="${k}" aria-label="${label(k)}">${orb(k, 'kb-orb')}<span class="kb-moon-t">${title(k)}</span><span class="w">${width(k)}</span></button></li>`).join('')}</ul>` : ''}</li>`;
-      }).join('')}</ul></div>`;
-    markTiles();
-  }
-  // Aktuelle Station: Kachel (bei Monden die ihres Planeten) eisblau umrandet, Station als Pille, Bildbreite live
-  function markTiles() {
-    const cur = railCur, here = tileOf(cur);
-    kbCh.querySelectorAll('[data-go]').forEach((b) => {
-      const on = b.dataset.go === cur;
-      b.classList.toggle('is-current', on);
-      if (on) b.setAttribute('aria-current', 'step'); else b.removeAttribute('aria-current');
+    let first = true;
+    const relayout = () => requestAnimationFrame(() => {
+      layoutBand();
+      if (!first) return;
+      first = false;
+      // Einzeichnen beim ersten Aufbau: Linien ziehen sich, Kapitel gestaffelt herein
+      nav.classList.add('is-intro');
+      setTimeout(() => nav.classList.remove('is-intro'), 2400);
     });
-    kbCh.querySelectorAll('.kb-tile').forEach((el) => el.classList.toggle('is-here', el.dataset.id === here));
-    tileLive = kbCh.querySelector('[data-go].is-current .w');
-    kbCh.querySelector('.kb-tile.is-here')?.scrollIntoView({ block: 'nearest' });
+    new ResizeObserver(relayout).observe(nav);
+    document.fonts?.ready.then(relayout);
+    wide.addEventListener('change', relayout);
+    // Lichtpunkt läuft alle 8 s die Route entlang bis zur aktuellen Station
+    setInterval(runComet, 8000);
   }
 
-  // Ruhe bis zur Maus (Vorschau 26.10.2026 Leiste:C) + schmal, beim Zeigen breit (Stationsleiste neu F1/F3): Maus oder Fokus
-  // in der Leiste weckt sie und klappt sie über die Bühne aus, 1,2 s nach dem Verlassen wieder schmal und still; ohne Maus
-  // (Touch) und unter 760 px immer wach und schmal
-  const calm = matchMedia('(hover: hover) and (min-width: 761px)');
-  let sleep = 0;
-  function setAwake(on, wide) {
-    nav.classList.toggle('is-awake', on);
-    nav.classList.toggle('is-wide', wide);
-    body.classList.toggle('rail-wide', wide);
-    if (flyOf) placeFly();
+  function layoutBand() {
+    const W = nav.clientWidth;
+    if (!W) return;
+    const gs = groups();
+    fit = null;
+    if (wide.matches) {
+      for (const [px, pad, lv] of SIZES) {
+        const stops = gs.map(([, rs]) => sum(rs.map((r) => need(r, px, pad))));
+        const weights = gs.map(([hub], i) => Math.max(stops[i], chapW(hub, false)));
+        const f = (W - lv - 2 * PAD - GAP * (gs.length - 1)) / sum(weights);
+        if (f >= 1) { fit = { px, pad, lv, f, stops, weights }; break; }
+      }
+    }
+    const dots = !fit, ry = dots ? DOTS_H / 2 : ROUTE_Y, cw = W - (dots ? 0 : fit.lv);
+    nav.classList.toggle('is-dots', dots);
+    nav.classList.toggle('is-compact', !!fit && fit.px < SIZES[0][0]);
+    nav.classList.toggle('no-lvls', !!fit && !fit.lv);
+    cv.style.setProperty('--ry', `${ry}px`);
+    const each = (cw - 2 * PAD - 8 * (gs.length - 1)) / ROUTE.length;
+    pos = {};
+    let x = PAD;
+    const paths = [`<defs><linearGradient id="bd-comet-g" x1="0" x2="1"><stop offset="0" stop-color="#33ccff" stop-opacity="0"/><stop offset="1" stop-color="#fff"/></linearGradient></defs>`];
+    gs.forEach(([hub, rs], i) => {
+      const g = cv.querySelector(`.bd-grp[data-ch="${hub}"]`), w = dots ? each * rs.length : fit.weights[i] * fit.f;
+      g.style.left = `${x}px`;
+      g.style.width = `${w}px`;
+      let acc = 0;
+      rs.forEach((r) => {
+        const n = dots ? each : need(r, fit.px, fit.pad) * (w / fit.stops[i]);
+        pos[r] = { x: x + acc + n / 2, w: n };
+        const b = g.querySelector(`[data-go="${r}"]`);
+        b.style.left = `${acc + n / 2}px`;
+        b.style.width = `${n - 4}px`;
+        acc += n;
+      });
+      g.querySelector('.bd-chap').classList.toggle('no-count', !dots && w < chapW(hub, true));
+      paths.push(dots
+        ? `<path class="bd-stripe" data-ch="${hub}" d="M${x + 3} ${ry} H${x + w - 3}"/>`
+        : `<path class="bd-wire bd-brk" data-ch="${hub}" pathLength="1" style="--d:${200 + i * 80}ms" d="M${x + 4} 30 v4 H${x + w - 4} v-4"/>`);
+      x += w + (dots ? 8 : GAP);
+    });
+    ROUTE.forEach((r, i) => {
+      if (!i) return;
+      const a = pos[ROUTE[i - 1]].x, b = pos[r].x, d = dots ? 5 : 8;
+      paths.push(`<path class="bd-wire bd-seg" data-ch="${chapter(r)}" data-seg="${r}" pathLength="1" style="--d:${350 + i * 55}ms" d="M${a + d} ${ry + 0.5} H${b - d}"/>`);
+    });
+    paths.push('<path class="bd-wire bd-drop" pathLength="1"/><path class="bd-comet"/>');
+    wires.innerHTML = paths.join('');
+    const H = dots ? DOTS_H : BAND_H;
+    nav.style.setProperty('--band-h', `${H}px`);
+    if (bandH && bandH !== H) h.onRelayout();
+    bandH = H;
+    markBand();
+    renderDrawer(true);
   }
-  function wake(on) {
-    clearTimeout(sleep);
-    if (on || !calm.matches) setAwake(true, on && calm.matches);
-    else sleep = setTimeout(() => { if (!nav.matches(':hover, :focus-within') && !flyOf) setAwake(false, false); }, 1200);
+
+  // Zweig einer Station: Halt mit Abstechern und Abstecher mit Monden auf ihrem Weg
+  function branchOf(id) {
+    const stop = stopOf(id);
+    if (!stop) return ['', ''];
+    let kid = id;
+    while (kid && STATIONS[kid].parent !== stop) kid = STATIONS[kid].parent;
+    return [kidsOf(stop).length ? stop : '', kid && kid !== stop && kidsOf(kid).length ? kid : ''];
   }
-  nav.addEventListener('pointerenter', () => wake(true));
-  nav.addEventListener('pointerleave', () => wake(false));
-  nav.addEventListener('focusin', () => wake(true));
-  nav.addEventListener('focusout', () => wake(false));
-  calm.addEventListener('change', () => wake(false));
-  wake(false);
+  // Gezeigter Zweig: beim Zeigen der des Knotens (Halt ohne Abstecher und Abstecher ohne Monde lassen das Offene stehen),
+  // sonst der Weg zur aktuellen Station
+  function wantBranch() {
+    if (!fit || !railCur) return ['', ''];
+    const sel = branchOf(railCur);
+    if (!hovId) return sel;
+    const [s, k] = branchOf(hovId);
+    if (!s) return shown[0] ? shown : sel;
+    return [s, k || (s === shown[0] ? shown[1] : '')];
+  }
+  function renderDrawer(force) {
+    const [s, k] = wantBranch();
+    const newStop = force || s !== shown[0];
+    if (!newStop && k === shown[1]) return;
+    shown = [s, k];
+    nav.classList.toggle('has-drawer', !!s);
+    drawer.classList.toggle('is-open', !!s);
+    drawer.inert = !s;
+    const drop = wires.querySelector('.bd-drop');
+    if (!s) { drop?.removeAttribute('d'); return; }
+    const ks = kidsOf(s), px = fit.px - 0.5, cw = nav.clientWidth - fit.lv;
+    // rechte Grenze: links der Infotafel, wenn sie zu sehen ist
+    const panelEl = $('#panel'), nr = nav.getBoundingClientRect();
+    const right = Math.min(cw - PAD, panelEl.offsetParent ? panelEl.getBoundingClientRect().left - nr.left - fit.lv - 12 : cw - PAD);
+    if (newStop) {
+      const ws = ks.map((id) => need(id, px, fit.pad) * 1.04), kn = sum(ws);
+      let x = Math.max(PAD, Math.min(Math.max(right, PAD + kn) - kn, pos[s].x - kn / 2));
+      const kpos = {};
+      ks.forEach((id, i) => { kpos[id] = x + ws[i] / 2; x += ws[i]; });
+      drawer.dataset.of = s;
+      drawer.setAttribute('aria-label', `Abstecher von ${STATIONS[s].title}`);
+      dcv.querySelector('.bd-kids').innerHTML = ks.map((id, i) => node(id, ' bd-kid', `left:${kpos[id]}px;width:${ws[i] - 4}px;--i:${Math.min(i, 8)}`)).join('')
+        + ks.filter((id) => kidsOf(id).length).map((id) => `<span class="bd-md" data-of="${id}" data-ch="${chapter(id)}" style="left:${kpos[id]}px" aria-hidden="true">${'<i></i>'.repeat(kidsOf(id).length)}</span>`).join('');
+      const moons = ks.some((id) => kidsOf(id).length);
+      drawer.classList.toggle('has-mrow', moons);
+      drawer.style.setProperty('--dr-h', `${moons ? MOONS_Y + 36 : KID_Y + 62}px`);
+      drawer.style.setProperty('--dr-w', `${fit.lv + Math.max(x, pos[s].x + 20) + PAD}px`);
+      drawer.kpos = kpos;
+      const xs = Object.values(kpos), sx = pos[s].x, c = chapter(s);
+      dwires.innerHTML = `<path class="bd-wire bd-bus" data-ch="${c}" pathLength="1" d="M${sx} -1 V${BUS_Y} M${Math.min(sx, ...xs)} ${BUS_Y} H${Math.max(sx, ...xs)}"/>`
+        + ks.map((id) => `<path class="bd-wire bd-kidw" data-ch="${c}" data-to="${id}" pathLength="1" d="M${kpos[id]} ${BUS_Y} V${KID_Y - 7}"/>`).join('')
+        + '<path class="bd-wire bd-mw" pathLength="1"/>';
+      const sb = cv.querySelector(`.bd-node[data-go="${s}"]`);
+      drop.setAttribute('d', `M${sx} ${sb.offsetTop + sb.offsetHeight + 2} V${BAND_H}`);
+      drop.dataset.ch = c;
+    }
+    // Monde des gezeigten Abstechers als Reihe unter ihm (Punkte der übrigen weichen), Klammer von seinem Fuß aus
+    const mrow = dcv.querySelector('.bd-mrow'), mw = dwires.querySelector('.bd-mw');
+    drawer.classList.toggle('has-moons', !!k);
+    if (!k) { mrow.replaceChildren(); mw.removeAttribute('d'); markBand(); return; }
+    const ms = kidsOf(k), kx = drawer.kpos[k];
+    mrow.innerHTML = `<div class="bd-moons" data-ch="${chapter(k)}">${ms.map((id) => `<button type="button" class="bd-moon" data-go="${id}" data-ch="${chapter(id)}" aria-label="${label(id)}"><span class="n">${num(id)}</span>${title(id)}</button>`).join('')}</div>`;
+    const box = mrow.firstChild, bw = box.offsetWidth, xs = Object.values(drawer.kpos);
+    const lo = Math.min(...xs) - 30, hi = Math.max(right, Math.max(...xs) + 30);
+    const left = Math.max(lo, Math.min(hi - bw, kx - bw / 2));
+    box.style.left = `${left}px`;
+    const kb = dcv.querySelector(`.bd-node[data-go="${k}"]`), cs = [...box.children].map((el) => left + el.offsetLeft + el.offsetWidth / 2);
+    mw.setAttribute('d', `M${kx} ${kb.offsetTop + kb.offsetHeight + 2} V${BRK_Y} M${Math.min(kx, ...cs)} ${BRK_Y} H${Math.max(kx, ...cs)} ${cs.map((c) => `M${c} ${BRK_Y} V${MOONS_Y}`).join(' ')}`);
+    mw.dataset.ch = chapter(k);
+    markBand();
+  }
+
+  // Aktuelle Station eisblau mit Lichthof, Halte davor gefüllt, Halt auf ihrem Weg hervorgehoben, Kapitel heller
+  function markBand() {
+    if (!railCur || !cv) return;
+    const stop = stopOf(railCur), si = ROUTE.indexOf(stop), path = new Set();
+    for (let x = railCur; x; x = STATIONS[x].parent) { path.add(x); if (x === stop) break; }
+    nav.querySelectorAll('[data-go]').forEach((b) => {
+      const id = b.dataset.go, cur = id === railCur;
+      b.classList.toggle('is-cur', cur);
+      b.classList.toggle('is-path', !cur && path.has(id));
+      b.classList.toggle('is-done', onRoute.has(id) && ROUTE.indexOf(id) < si);
+      if (cur) b.setAttribute('aria-current', 'step'); else b.removeAttribute('aria-current');
+    });
+    const ch = chapter(railCur);
+    cv.querySelectorAll('.bd-grp').forEach((g) => g.querySelector('.bd-chap').classList.toggle('is-cur', g.dataset.ch === ch));
+    wires.querySelectorAll('.bd-brk').forEach((p) => p.classList.toggle('is-cur', p.dataset.ch === ch));
+    wires.querySelectorAll('.bd-seg').forEach((p) => p.classList.toggle('is-done', ROUTE.indexOf(p.dataset.seg) <= si));
+    dwires.querySelectorAll('.bd-kidw').forEach((p) => p.classList.toggle('is-done', path.has(p.dataset.to)));
+  }
+  // Weg zum gezeigten Knoten leuchtet: Knoten bis zum Halt, Route bis dorthin, Linien des Zweigs
+  function hot(id) {
+    nav.querySelectorAll('.is-hot').forEach((el) => el.classList.remove('is-hot'));
+    if (!id) return;
+    const stop = stopOf(id), si = ROUTE.indexOf(stop), path = [];
+    for (let x = id; x; x = STATIONS[x].parent) { path.push(x); if (x === stop) break; }
+    path.forEach((x) => nav.querySelectorAll(`[data-go="${x}"], .bd-kidw[data-to="${x}"]`).forEach((el) => el.classList.add('is-hot')));
+    wires.querySelectorAll('.bd-seg').forEach((p) => { if (ROUTE.indexOf(p.dataset.seg) <= si) p.classList.add('is-hot'); });
+    if (path.length > 1 && stop === shown[0]) {
+      wires.querySelector('.bd-drop')?.classList.add('is-hot');
+      dwires.querySelector('.bd-bus')?.classList.add('is-hot');
+      if (shown[1] && STATIONS[id].parent === shown[1]) dwires.querySelector('.bd-mw')?.classList.add('is-hot');
+    }
+  }
+  // Hinweis unter dem Band (bzw. der offenen Schublade): Nummer, Name, Art, Bildbreite, Halt der Route
+  function showTip(id, b) {
+    if (!b) return;
+    const st = STATIONS[id], halt = ROUTE.indexOf(id);
+    tip.dataset.ch = chapter(id);
+    tip.innerHTML = `<span class="n">${num(id)}</span><b>${title(id)}</b><span>${esc(st.kicker)} · Bildbreite ${width(id)}</span>${halt < 0 ? '' : `<span>Halt ${halt + 1} von ${ROUTE.length}</span>`}`;
+    const r = b.getBoundingClientRect(), base = (drawer.classList.contains('is-open') ? drawer : nav).getBoundingClientRect(), w = tip.offsetWidth;
+    tip.style.left = `${Math.max(8, Math.min(innerWidth - w - 8, r.left + r.width / 2 - w / 2))}px`;
+    tip.style.top = `${base.bottom + 8}px`;
+    tip.classList.add('is-on');
+  }
+  function hideTip() { tip?.classList.remove('is-on'); }
+  function runComet() {
+    const p = wires?.querySelector('.bd-comet'), a = pos[ROUTE[0]], b = pos[stopOf(railCur)];
+    if (!p || !a || !b || !fit || still.matches || document.hidden || b.x - a.x < 40) return;
+    const L = b.x - 10 - a.x;
+    p.setAttribute('d', `M${a.x} ${ROUTE_Y + 0.5} H${b.x - 10}`);
+    p.style.strokeDasharray = `46 ${L + 60}`;
+    comet?.cancel();
+    comet = p.animate([{ strokeDashoffset: 46, opacity: 0 }, { opacity: 1, offset: 0.15 }, { opacity: 1, offset: 0.85 }, { strokeDashoffset: 4 - L, opacity: 0 }], { duration: 2600, easing: 'cubic-bezier(0.45, 0, 0.55, 1)' });
+  }
 
   // ---------- Reiseroute ----------
   route.innerHTML = ROUTE.map((id, i) => `<li><button type="button" data-id="${id}" aria-label="Station ${i + 1}: ${esc(STATIONS[id].title)}"><span class="rt-dot"></span><span class="rt-name">${esc(STATIONS[id].title)}</span></button></li>`).join('');
@@ -310,28 +425,12 @@ export function createHud(h) {
     meta = level.meta;
     const id = level.id;
     railCur = id;
-    closeFly();
-    const stop = stopOf(id), chain = [];
-    for (let x = id; x && x !== stop; x = STATIONS[x].parent) chain.unshift(x);
-    railRows.forEach((el, k) => { el.querySelector('.zb-chain').innerHTML = k === stop ? chain.map((x, i) => zbRow(x, i)).join('') : ''; });
-    const hot = new Set([stop, ...chain]);
-    rail.querySelectorAll('.zb-row').forEach((r) => {
-      const k = r.dataset.row, cur = k === id, go = r.querySelector('.zb-go');
-      r.classList.toggle('is-hot', hot.has(k));
-      r.classList.toggle('is-done', onRoute.has(k) && ROUTE.indexOf(k) < ROUTE.indexOf(stop));
-      r.classList.toggle('is-current', cur);
-      if (cur) go.setAttribute('aria-current', 'step'); else go.removeAttribute('aria-current');
-      r.querySelector('.w').textContent = fmtLength(STATIONS[k].width);
-    });
-    // Hier-Karte in beiden Ansichten: Standbild, Weg, Nummer + Name, Art und Bildbreite (live)
-    const here = (cls, w, hgt) => `${img(id, w, hgt, false)}<div class="${cls}-t"><p class="${cls}-path">${crumbs(id)}</p><h3><b class="n">${num(id)}</b> ${title(id)}</h3><p class="${cls}-kick">${esc(STATIONS[id].kicker)} · <span class="w">${width(id)}</span></p></div>`;
-    zbHere.innerHTML = here('zb-here', 112, 72);
-    kbHere.innerHTML = here('kb-here', 340, 96);
-    const row = rail.querySelector('.zb-row.is-current');
-    liveEls = [zbHere, kbHere, row].filter(Boolean).map((el) => el.querySelector('.w'));
-    row?.scrollIntoView({ block: 'nearest' });
+    // Band: Marken setzen, Zweig der neuen Station öffnen (beim Zeigen bleibt der gezeigte), Lichtpunkt bis hierher
+    if (!hovId) hot(null);
+    markBand();
+    renderDrawer();
+    runComet();
     lastW = 0;
-    showChapter(chapter(id));
     route.querySelectorAll('button').forEach((b) => {
       const cur = b.dataset.id === id;
       b.classList.toggle('is-current', cur);
@@ -686,8 +785,6 @@ export function createHud(h) {
     lastW = widthM;
     mWidth.textContent = fmtLength(widthM);
     mLight.textContent = fmtTime(widthM / C);
-    for (const el of liveEls) el.textContent = fmtLength(widthM);
-    if (tileLive) tileLive.textContent = fmtLength(widthM);
   }
 
   // ---------- Flug, Kapitel-Titel, Auftakt ----------
@@ -750,8 +847,8 @@ export function createHud(h) {
     return { x0: s.left, x1: s.right, y0: s.top, y1: s.bottom };
   }
 
+  buildSearch();
   buildRail();
-  buildTiles();
   return {
     setStation, update, setScale, setPull, stageRect, setFlight,
     caption: (st, opening) => showCaption(st, opening),
@@ -761,6 +858,6 @@ export function createHud(h) {
     intro: (on) => body.classList.toggle('is-intro', on),
     // offene Karte: main.js hält die Leerlauf-Fahrt an, damit das Bild beim Lesen ruht
     reading: () => card.classList.contains('is-open'),
-    relayout: () => { if (flyOf) placeFly(); markers.forEach((m) => { m.w = 0; }); dock = null; },
+    relayout: () => { markers.forEach((m) => { m.w = 0; }); dock = null; },
   };
 }
