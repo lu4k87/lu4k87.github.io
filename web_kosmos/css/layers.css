@@ -3,8 +3,14 @@
    Mini-Grafik je Zeile (nur volle Karten), Zeile „geändert · Standard“ und Leiste „n geändert · Alle zurücksetzen“,
    ▶-Ebene als Karte „Animation“, sub-Ebenen eingerückt unter ihrer Hauptzeile; Zeitleiste über der Fußleiste; Tabellen der Infotafel.
    Ergänzt kosmos.css und nutzt dessen Tokens (--accent, --line, --glass-*, --mono). */
-.cfg-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 4px; border-radius: var(--radius); border: 1px solid var(--line); background: rgba(255, 255, 255, 0.05); }
-.cfg-tabs button { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 36px; padding: 6px 10px; border: 0; border-radius: 7px; background: transparent; color: var(--ink); font: 500 13px var(--font); cursor: pointer; transition: background 0.2s, box-shadow 0.2s; }
+/* Titelzeile (Vorschau Zahnrad:C): „Einstellungen“ + Name der Station groß, rechts kleiner Schalter Station | Global */
+.cfg-hd { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; padding-bottom: 10px; border-bottom: 1px solid var(--line); }
+.cfg-hd-t { display: flex; flex-direction: column; gap: 1px; min-width: 0; flex: 1 1 160px; }
+.cfg-hd .cfg-title { margin: 0; }
+.cfg-hd-st { font: 600 17px/1.3 var(--font); overflow-wrap: break-word; }
+.cfg-hd-st[hidden] { display: none; }
+.cfg-tabs { display: inline-grid; grid-template-columns: auto auto; gap: 2px; padding: 3px; border-radius: 9px; border: 1px solid var(--line); background: rgba(255, 255, 255, 0.05); }
+.cfg-tabs button { display: flex; align-items: center; justify-content: center; gap: 6px; min-height: 32px; padding: 4px 12px; border: 0; border-radius: 7px; background: transparent; color: var(--ink); font: 500 13px var(--font); cursor: pointer; transition: background 0.2s, box-shadow 0.2s; }
 .cfg-tabs button:hover:not([aria-selected="true"]) { background: rgba(255, 255, 255, 0.06); }
 .cfg-tabs button[aria-selected="true"] { background: rgba(var(--accent-rgb), 0.16); box-shadow: inset 0 0 0 1px rgba(var(--accent-rgb), 0.45); }
 .cfg-tabs button:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
@@ -119,3 +125,53 @@ body.is-flying .tl, body.is-intro .tl { opacity: 0; pointer-events: none; }
 .widget tr.is-hi td { color: var(--accent); }
 .w-dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 6px; vertical-align: -1px; background: var(--c, currentColor); }
 .w-foot { margin: 8px 0 0; font-size: 11.5px; color: var(--ink-soft); }
+
+/* Reiter Station als Klapp-Liste (Vorschau 26.10.2026 Zahnrad:A + Zahnrad:C): Sprungleiste bleibt oben stehen, Animation als schlanke
+   Zeile, je Gruppe eine Klapp-Zeile mit Kurzwerten (mehrere offen), Einstellung als Zeile Name | Bedienung | Wert */
+.cfg-jump { position: sticky; top: -14px; z-index: 2; display: flex; flex-wrap: wrap; gap: 6px; margin: -4px -14px 0; padding: 10px 14px 8px; background: rgba(9, 12, 20, 0.94); border-bottom: 1px solid var(--line); }
+.cfg-jump-btn { display: inline-flex; align-items: center; gap: 6px; min-height: 30px; padding: 3px 11px 3px 8px; border-radius: 15px; border: 1px solid var(--line); background: rgba(255, 255, 255, 0.04); color: var(--ink); font: 500 12.5px var(--font); cursor: pointer; transition: border-color 0.2s, color 0.2s, background 0.2s; }
+.cfg-jump-btn .b-ico { width: 14px; height: 14px; }
+.cfg-jump-btn:hover { border-color: var(--line-strong); }
+.cfg-jump-btn[aria-current="true"] { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+.cfg-jump-btn:focus-visible, .b-fold .b-head:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.b-list { display: flex; flex-direction: column; align-items: stretch; gap: 0; }
+#cfg-station .b-card { padding: 0; gap: 0; border: 0; border-radius: 0; border-bottom: 1px solid var(--line); background: none; }
+#cfg-station .b-card--time { display: flex; flex-direction: column; gap: 8px; padding: 6px 0 12px; }
+#cfg-station .b-card--time .play-btn--lg { width: 36px; height: 36px; }
+#cfg-station .b-card--time .b-time { gap: 10px; }
+.b-fold { scroll-margin-top: 56px; }
+.b-fold-h { margin: 0; font: inherit; }
+.b-fold .b-head { width: 100%; min-height: 46px; padding: 6px 4px; border: 0; border-radius: 6px; background: none; color: var(--ink); font: inherit; text-align: left; cursor: pointer; transition: background 0.2s; }
+.b-fold .b-head:hover { background: rgba(255, 255, 255, 0.04); }
+.b-fold.is-open > .b-fold-h .b-head { background: rgba(var(--accent-rgb), 0.06); }
+.b-fold .b-plaque { width: 26px; height: 26px; border: 0; background: none; }
+.b-name { font: 600 13.5px var(--font); white-space: nowrap; }
+.b-sum { flex: 1 1 auto; min-width: 0; margin-left: auto; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: right; font: 400 12.5px var(--mono); color: var(--ink-soft); }
+.b-fold.is-open .b-sum { visibility: hidden; }
+.b-head .b-sum + .b-count { margin-left: 0; }
+.b-chev { width: 20px; height: 20px; flex: none; color: var(--ink-soft); transition: transform 0.2s var(--ease-out); }
+.b-fold.is-open .b-chev { transform: rotate(180deg); color: var(--accent); }
+.b-body { display: flex; flex-direction: column; padding: 4px 4px 14px; }
+.b-body[hidden] { display: none; }
+#cfg-station .b-item { gap: 4px; }
+#cfg-station .b-item + .b-item { padding-top: 7px; margin-top: 7px; }
+/* Zeile: Name | Bedienung | Wert (Regler), Name | Bedienung (Schalter, Knopfreihen, Knöpfe); Hinweise unter der Bedienung */
+#cfg-station .b-body .b-row { grid-template-columns: minmax(0, 190px) minmax(0, 1fr); gap: 12px; }
+#cfg-station .b-body .b-row > :is(.switch, .act-btn) { justify-self: start; }
+#cfg-station .b-body .b-row.b-stack:has(.b-top) { grid-template-columns: minmax(0, 190px) minmax(0, 1fr) minmax(56px, auto); }
+#cfg-station .b-body .b-row.b-stack .b-top { display: contents; }
+#cfg-station .b-body .b-row.b-stack :is(.b-top > .cfg-label, > .cfg-label) { grid-column: 1; grid-row: 1; }
+#cfg-station .b-body .b-row.b-stack .b-top > output { grid-column: 3; grid-row: 1; }
+#cfg-station .b-body .b-row.b-stack > :is(.b-track, .b-seg) { grid-column: 2; grid-row: 1; }
+#cfg-station .b-body .b-seg button { padding: 4px 6px; min-height: 30px; font-size: 12.5px; }
+#cfg-station .b-body .b-item > :is(.lay-hint, .b-dev), #cfg-station .b-body .b-subs .b-item > :is(.lay-hint, .b-dev) { padding-left: 202px; }
+#cfg-station .b-body .b-subs { margin-left: 0; padding-left: 0; border-left: 0; }
+#cfg-station .b-body .b-subs .cfg-label { padding-left: 14px; border-left: 1px solid var(--line-strong); }
+@media (max-width: 600px) {
+  #cfg-station .b-body .b-row, #cfg-station .b-body .b-row.b-stack:has(.b-top) { grid-template-columns: minmax(0, 1fr) auto; }
+  #cfg-station .b-body .b-row.b-stack > :is(.b-track, .b-seg) { grid-column: 1 / -1; grid-row: 2; }
+  #cfg-station .b-body .b-row.b-stack .b-top > output { grid-column: 2; }
+  #cfg-station .b-body .b-item > :is(.lay-hint, .b-dev), #cfg-station .b-body .b-subs .b-item > :is(.lay-hint, .b-dev) { padding-left: 0; }
+  .b-sum { display: none; }
+}
+@media (prefers-reduced-motion: reduce) { .b-chev { transition: none; } }

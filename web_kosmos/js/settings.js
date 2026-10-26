@@ -1,4 +1,5 @@
-// Einstellungen (Zahnrad oben rechts) mit zwei Reitern: „Station · …“ = Ebenen der aktiven Station als Bento-Karten (layers.js)
+// Einstellungen (Zahnrad oben rechts): Titelzeile mit Stationsname + Schalter Station | Global; „Station“ = Ebenen der aktiven Station
+// als Klapp-Liste mit Sprungleiste (layers.js, Vorschau 26.10.2026 Zahnrad:A + C)
 // und „Global“ = gilt an allen Stationen (Vorschau 26.10.2026 Global:A+B+C): Karten mit Icon-Plakette und
 // Mini-Grafik je Zeile, geänderte Werte markiert mit „Standard“. Gruppen: Look (Farblook, Belichtung, Vignette, Kinobalken),
 // Himmel, Kamera & Bewegung, Effekte, Oberfläche (inkl. Bewegung der Info-Grafiken = cards.js `kosmos.figmotion.v1`), Leistung.
@@ -128,10 +129,12 @@ const CARD = (g) => `<article class="b-card${g.half ? '' : ' b-wide'}${g.hero ? 
 
 export function mountSettings(root, btn) {
   root.innerHTML = `
-    <h2 class="cfg-title" id="cfg-title">Einstellungen</h2>
-    <div class="cfg-tabs" role="tablist" aria-label="Geltungsbereich">
-      <button type="button" role="tab" id="cfg-tab-st" data-tab="st" aria-controls="cfg-station"></button>
-      <button type="button" role="tab" id="cfg-tab-gl" data-tab="gl" aria-controls="cfg-global">Global · alle Stationen<span class="b-count">${N_GLOBAL}</span></button>
+    <div class="cfg-hd">
+      <div class="cfg-hd-t"><h2 class="cfg-title" id="cfg-title">Einstellungen</h2><span class="cfg-hd-st" data-st-name></span><span class="cfg-hd-st" data-gl-name hidden>Alle Stationen</span></div>
+      <div class="cfg-tabs" role="tablist" aria-label="Geltungsbereich">
+        <button type="button" role="tab" id="cfg-tab-st" data-tab="st" aria-controls="cfg-station"></button>
+        <button type="button" role="tab" id="cfg-tab-gl" data-tab="gl" aria-controls="cfg-global">Global<span class="b-count">${N_GLOBAL}</span></button>
+      </div>
     </div>
     <div class="cfg-pane" id="cfg-station" role="tabpanel" aria-labelledby="cfg-tab-st"></div>
     <div class="cfg-pane" id="cfg-global" role="tabpanel" aria-labelledby="cfg-tab-gl">${MINI_DEFS}
@@ -145,6 +148,7 @@ export function mountSettings(root, btn) {
     t.tabIndex = on ? 0 : -1;
     root.querySelector(`#${t.getAttribute('aria-controls')}`).hidden = !on;
     if (on && focus) t.focus();
+    if (on) { root.querySelector('[data-st-name]').hidden = t !== tabs[0]; root.querySelector('[data-gl-name]').hidden = t === tabs[0]; }
   });
   root.querySelector('.cfg-tabs').addEventListener('click', (e) => { const t = e.target.closest('[role=tab]'); if (t) pick(t); });
   root.querySelector('.cfg-tabs').addEventListener('keydown', (e) => {
@@ -154,7 +158,7 @@ export function mountSettings(root, btn) {
     pick(tabs[e.key === 'Home' ? 0 : e.key === 'End' ? tabs.length - 1 : (i + (e.key === 'ArrowRight' ? 1 : tabs.length - 1)) % tabs.length], true);
   });
   pick(tabs[new URLSearchParams(location.search).get('cfg') === 'global' ? 1 : 0]);
-  mountLayers({ gear: root.querySelector('#cfg-station'), head: root.querySelector('#cfg-tab-st'), strip: document.getElementById('timeline'), stripOn: () => settings.S.timeline });
+  mountLayers({ gear: root.querySelector('#cfg-station'), head: root.querySelector('#cfg-tab-st'), name: root.querySelector('[data-st-name]'), strip: document.getElementById('timeline'), stripOn: () => settings.S.timeline });
   const sync = () => {
     const S = settings.S;
     root.querySelectorAll('[data-key][data-val]').forEach((b) => b.setAttribute('aria-checked', String(String(S[b.dataset.key]) === b.dataset.val)));

@@ -1,4 +1,7 @@
-// Ebenen-Einstellungen je Station (Muster Biochar): Zahnrad-Reiter „Station · …“ (Bento-Karten je group) und Zeitleiste über der Fußleiste.
+// Ebenen-Einstellungen je Station (Muster Biochar): Zahnrad-Reiter „Station“ und Zeitleiste über der Fußleiste.
+// Aufbau (Vorschau 26.10.2026 Zahnrad:A + Zahnrad:C): Animation als schlanke Zeile, je group eine Klapp-Zeile mit Kurzwerten im Kopf
+// (mehrere offen, je Station gemerkt in `kosmos.cfgopen.v1`), Sprungleiste der Gruppen oben (bleibt stehen, hebt die sichtbare
+// Gruppe hervor), Einstellung als Zeile Name | Bedienung | Wert.
 // Eine Station registriert ihre Ebenen in create(): registerLayers(stationId, layers). Ebene = { id, label, type, value, set, … }
 //   'toggle' an/aus · 'range' (min, max, step, unit, fmt) · 'play' ▶/⏸ mit Regler: set(value, playing), get() → { value, playing },
 //   status() Text für die Zeitleiste · 'action' Knopf: run(), button. sub: true rückt ein (Folgezeilen hängen gemeinsam an der Zeile
@@ -28,6 +31,7 @@ const ICONS = {
   layers: '<path d="M12 4l9 4.5-9 4.5-9-4.5z"/><path d="M3 13l9 4.5 9-4.5"/>',
   time: '<circle cx="12" cy="12" r="8.5"/><path d="M12 7v5l3.5 2"/>',
   reset: '<path d="M4 12a8 8 0 1 0 2.3-5.6"/><path d="M4 4v4h4"/>',
+  chev: '<path d="M6 9l6 6 6-6"/>',
 };
 export const icon = (k, cls = 'b-ico') => `<svg class="${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[k] || ICONS.layers}</svg>`;
 // Icon je Gruppen-Name der Stationen (Reihenfolge zählt: „Polarlicht“ vor „Licht“)
@@ -53,7 +57,10 @@ const url = (() => {
   return o;
 })();
 const reg = new Map();
-let currentId = null, gearEl = null, headEl = null, stripEl = null, stripOn = () => true;
+let currentId = null, gearEl = null, headEl = null, nameEl = null, stripEl = null, stripOn = () => true, gs = [], scroller = null;
+// offene Gruppen je Station (Indizes der group); ohne Eintrag ist die erste Gruppe offen
+const OPEN_KEY = 'kosmos.cfgopen.v1';
+const openStore = (() => { try { const s = JSON.parse(localStorage.getItem(OPEN_KEY)); return s && typeof s === 'object' ? s : {}; } catch { return {}; } })();
 
 const valid = (l, v) => (l.type === 'toggle' ? typeof v === 'boolean' : typeof v === 'number' && Number.isFinite(v) && v >= l.min && v <= l.max);
 export const fmtVal = (l, v) => (l.fmt ? l.fmt(v) : `${String(v).replace('.', ',')}${l.unit ? ` ${l.unit}` : ''}`);
@@ -125,31 +132,70 @@ const wide = (g) => count(g) > 4 || g.items.some((it) => [it.l, ...it.subs].some
 
 function timeCard(g) {
   const [{ l: p, subs }, ...rest] = g.items;
-  return `<article class="b-card b-card--time b-wide" data-g="g0" aria-label="Animation: ${esc(p.label)}">
-    <header class="b-head">${plaque('time')}<h4>Animation</h4><span class="b-chip" data-chip="${p.id}"></span></header>
+  return `<article class="b-card b-card--time" data-g="g0" aria-label="Animation: ${esc(p.label)}">
     <div class="b-time"><button type="button" class="play-btn play-btn--lg" data-play="${p.id}" aria-pressed="false" aria-label="${esc(p.label)} abspielen">${PLAY}</button>
       <span class="b-time-text"><span class="cfg-label b-strong">${esc(p.label)}</span><span class="b-status" data-status="${p.id}"></span></span>
       <output class="b-big" data-lout="${p.id}"></output></div>
     ${range(p, `${p.label}: Tempo`)}
-    ${p.fmt ? `<div class="b-steps" data-steps="${p.id}" aria-hidden="true">${steps(p).map((v) => `<span>${esc(p.fmt(v))}</span>`).join('')}</div>` : ''}
     ${p.hint ? `<p class="cfg-note lay-hint">${esc(p.hint)}</p>` : ''}
     ${subs.map((l) => block({ l, subs: [] })).join('')}${rest.map(block).join('')}
   </article>`;
 }
 
+// Kurzwerte im Kopf einer zugeklappten Gruppe: benannte/gezählte Werte der Hauptzeilen, dazu „n von m an“
+function summary(g) {
+  const parts = [];
+  let on = 0, n = 0;
+  for (const { l } of g.items) {
+    if (l.type === 'toggle') { n++; on += l.value ? 1 : 0; } else if (l.type === 'range' && parts.length < 2) parts.push(fmtVal(l, l.value));
+  }
+  if (n) parts.push(`${on} von ${n} an`);
+  return parts.join(' · ');
+}
+const isOpen = (i, first) => (Array.isArray(openStore[currentId]) ? openStore[currentId].includes(i) : i === first);
+const foldCard = (g, i, open) => `<article class="b-card b-fold${open ? ' is-open' : ''}" data-g="g${i}">
+  <h4 class="b-fold-h"><button type="button" class="b-head" aria-expanded="${open}" aria-controls="lay-b${i}">${plaque(groupIcon(g.title))}<span class="b-name">${esc(g.title)}</span>
+    <span class="b-sum" data-sum="${i}"></span><span class="b-count" aria-label="${count(g)} Ebenen">${count(g)}</span>${icon('chev', 'b-chev')}</button></h4>
+  <div class="b-body" id="lay-b${i}"${open ? '' : ' hidden'}>${g.items.map(block).join('')}</div></article>`;
+
 function gearHtml(layers) {
-  const gs = groups(layers);
-  const cards = gs.map((g, i) => (g.items[0].l.type === 'play' ? timeCard(g)
-    : `<article class="b-card${wide(g) ? ' b-wide' : ''}" data-g="g${i}"><header class="b-head">${plaque(groupIcon(g.title))}<h4>${esc(g.title)}</h4><span class="b-count" aria-label="${count(g)} Ebenen">${count(g)}</span></header>${g.items.map(block).join('')}</article>`)).join('');
-  return `<div class="b-main">${devBar('Ebenen')}<div class="bento">${cards}</div></div>`;
+  gs = groups(layers);
+  const first = gs.findIndex((g) => g.items[0].l.type !== 'play');
+  const folds = gs.map((g, i) => (g.items[0].l.type === 'play' ? '' : `${i}`)).filter(Boolean);
+  const jump = folds.length > 1 ? `<nav class="cfg-jump" aria-label="Gruppen der Station">${folds.map((i) => `<button type="button" class="cfg-jump-btn" data-jump="${i}">${icon(groupIcon(gs[i].title))}<span>${esc(gs[i].title)}</span></button>`).join('')}</nav>` : '';
+  const cards = gs.map((g, i) => (g.items[0].l.type === 'play' ? timeCard(g) : foldCard(g, i, isOpen(i, first)))).join('');
+  return `<div class="b-main">${jump}${devBar('Ebenen')}<div class="bento b-list">${cards}</div></div>`;
+}
+
+function saveOpen() {
+  if (!gearEl) return;
+  openStore[currentId] = [...gearEl.querySelectorAll('.b-fold.is-open')].map((c) => +c.dataset.g.slice(1));
+  try { localStorage.setItem(OPEN_KEY, JSON.stringify(openStore)); } catch { /* privates Fenster */ }
+}
+function setOpen(card, on) {
+  card.classList.toggle('is-open', on);
+  card.querySelector('.b-head').setAttribute('aria-expanded', String(on));
+  card.querySelector('.b-body').hidden = !on;
+}
+// Sprungleiste: hervorgehoben ist die Gruppe, deren Kopf zuletzt unter der Leiste durchgelaufen ist
+function spy() {
+  const bar = gearEl && !gearEl.hidden && gearEl.querySelector('.cfg-jump');
+  if (!bar) return;
+  const edge = bar.getBoundingClientRect().bottom + 8;
+  let cur = null;
+  for (const c of gearEl.querySelectorAll('.b-fold')) { if (!cur || c.getBoundingClientRect().top <= edge) cur = c; }
+  if (scroller && scroller.scrollTop + scroller.clientHeight >= scroller.scrollHeight - 2) cur = [...gearEl.querySelectorAll('.b-fold')].pop() || cur;
+  bar.querySelectorAll('[data-jump]').forEach((b) => b.setAttribute('aria-current', String(!!cur && cur.dataset.g === `g${b.dataset.jump}`)));
 }
 
 function render() {
   if (gearEl) {
     const layers = reg.get(currentId), st = STATIONS[currentId];
-    if (headEl) headEl.innerHTML = `Station · ${esc(st ? st.title : '…')}<span class="b-count">${layers ? layers.length : 0}</span>`;
+    if (headEl) headEl.innerHTML = `Station<span class="b-count">${layers ? layers.length : 0}</span>`;
+    if (nameEl) nameEl.textContent = st ? st.title : '…';
     gearEl.innerHTML = layers ? gearHtml(layers)
       : '<p class="cfg-note">Diese Station hat noch keine Ebenen-Einstellungen – ihre Schalter stehen in der Infotafel.</p>';
+    if (!layers) gs = [];
   }
   if (stripEl) {
     const l = (reg.get(currentId) || []).find((x) => x.type === 'play');
@@ -160,6 +206,7 @@ function render() {
       <input type="range" data-lay="${l.id}" min="${l.min}" max="${l.max}" step="${l.step ?? 1}" aria-label="${esc(l.label)}: Tempo"><output data-lout="${l.id}"></output>`;
   }
   sync();
+  spy();
 }
 export function refreshLayers() { render(); }
 
@@ -189,7 +236,10 @@ function sync() {
     // Ebene ohne Wirkung im aktuellen Bild (active() falsch): Zeile abgedunkelt, Grund darunter
     root.querySelectorAll('[data-only]').forEach((p) => { const l = find(p.dataset.only); const idle = !!l && !!l.active && !l.active(); p.hidden = !idle; p.parentElement.classList.toggle('is-idle', idle); });
   }
-  if (gearEl && !gearEl.hidden) markDevs(gearEl, (id) => { const l = find(id); return !!l && l.value !== l.def; });
+  if (gearEl && !gearEl.hidden) {
+    markDevs(gearEl, (id) => { const l = find(id); return !!l && l.value !== l.def; });
+    gearEl.querySelectorAll('[data-sum]').forEach((el) => { const g = gs[+el.dataset.sum]; const t = g ? summary(g) : ''; if (el.textContent !== t) el.textContent = t; });
+  }
 }
 
 function onInput(e) {
@@ -201,6 +251,18 @@ function onInput(e) {
   sync();
 }
 function onClick(e) {
+  const h = e.target.closest('.b-fold .b-head');
+  if (h && gearEl && gearEl.contains(h)) { const c = h.closest('.b-fold'); setOpen(c, !c.classList.contains('is-open')); saveOpen(); spy(); return; }
+  const j = e.target.closest('[data-jump]');
+  if (j && gearEl && gearEl.contains(j)) {
+    const c = gearEl.querySelector(`[data-g="g${j.dataset.jump}"]`);
+    if (c) {
+      setOpen(c, true); saveOpen();
+      c.scrollIntoView({ block: 'start', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+      c.querySelector('.b-head').focus({ preventScroll: true });
+    }
+    return;
+  }
   const r = e.target.closest('[data-reset]');
   if (r && gearEl && gearEl.contains(r)) {
     for (const l of reg.get(currentId) || []) if (resettable(l) && (r.dataset.reset === '*' || r.dataset.reset === l.id) && l.value !== l.def) { l.value = l.def; l.set(l.value); persist(l); }
@@ -221,8 +283,10 @@ function poll() {
   if (id !== currentId) { currentId = id; render(); }
 }
 
-export function mountLayers({ gear, head, strip, stripOn: on }) {
-  gearEl = gear; headEl = head || null; stripEl = strip; stripOn = on || stripOn;
+export function mountLayers({ gear, head, name, strip, stripOn: on }) {
+  gearEl = gear; headEl = head || null; nameEl = name || null; stripEl = strip; stripOn = on || stripOn;
+  scroller = gear.closest('.cfg');
+  if (scroller) scroller.addEventListener('scroll', spy, { passive: true });
   for (const root of [gearEl, stripEl]) { if (!root) continue; root.addEventListener('input', onInput); root.addEventListener('click', onClick); }
   window.addEventListener('hashchange', poll);
   poll();
