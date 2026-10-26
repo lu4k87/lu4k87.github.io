@@ -102,7 +102,10 @@ void main() {
 // Erdkarten nach Grafikkarte: Tag und Wolken in 8k ab Qualität „mittel“ (je ≈ 180 MB Grafikspeicher), sonst 4k
 export function earthMaps(ctx) {
   const k = ctx.renderer.capabilities.maxTextureSize >= 8192 && ctx.detail >= 0.8 ? '8k' : '4k';
-  return { day: ctx.tex(`earth_daymap_${k}.jpg`), night: ctx.tex('earth_nightmap_4k.jpg'), clouds: ctx.tex(`earth_clouds_${k}.jpg`, false), relief: ctx.tex('earth_relief_4k.jpg', false) };
+  // Wolkenkarte driftet (uCloudU > 1) → waagerecht wiederholen, sonst streckt ClampToEdge die Randspalte zu Streifen
+  const clouds = ctx.tex(`earth_clouds_${k}.jpg`, false);
+  clouds.wrapS = THREE.RepeatWrapping;
+  return { day: ctx.tex(`earth_daymap_${k}.jpg`), night: ctx.tex('earth_nightmap_4k.jpg'), clouds, relief: ctx.tex('earth_relief_4k.jpg', false) };
 }
 
 export const MOON_FRAG = /* glsl */ `

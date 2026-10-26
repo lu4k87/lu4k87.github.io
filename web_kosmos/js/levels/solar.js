@@ -255,6 +255,7 @@ export function create(ctx) {
   // Stärke des Banddetails (Gasriesen; Venus: Wolkenstreifen)
   const BAND = { jupiter: 1, saturn: 0.6, uranus: 0.2, neptune: 0.45, venus: 0.35 };
   const cloudTex = ctx.tex('earth_clouds.jpg', false);
+  cloudTex.wrapS = THREE.RepeatWrapping; // driftet über u = 1 hinaus (uCloudU)
   const planets = PLANETS.map((p) => {
     const b = BODY[p.id], a = ATMOS[p.id];
     const tilt = new THREE.Group();
