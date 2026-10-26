@@ -83,6 +83,19 @@ body.panel-off .top-actions { padding-right: 18px; }
 }
 .icon-btn svg { width: 20px; height: 20px; }
 .icon-btn:hover, .icon-btn[aria-expanded="true"] { border-color: var(--accent); color: var(--accent); }
+/* Schnell-Knöpfe links neben dem Zahnrad (quick.js): an = eisblau gefüllt, Station ohne Ton = abgedunkelt; Strich trennt vom Zahnrad */
+.quick { display: flex; gap: 8px; padding-right: 10px; border-right: 1px solid var(--line); }
+.qk[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); background: rgba(var(--accent-rgb), 0.16); }
+.qk[aria-disabled="true"] { opacity: 0.45; cursor: not-allowed; }
+.qk[aria-disabled="true"]:hover { border-color: var(--line); color: var(--ink); }
+#qk-sound .qk-off, #qk-sound.is-off .qk-on { display: none; }
+#qk-sound.is-off .qk-off { display: inline; }
+/* schmal: Drehachsen und Kinobalken nur im Zahnrad, sonst überdeckt die Reihe den Schriftzug */
+@media (max-width: 760px) {
+  .quick, .top-actions { gap: 6px; }
+  .quick { padding-right: 6px; }
+  #qk-axes, #qk-bars { display: none; }
+}
 .icon-btn--sm { width: 32px; height: 32px; flex: none; }
 .icon-btn--sm svg { width: 16px; height: 16px; }
 

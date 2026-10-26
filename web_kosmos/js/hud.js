@@ -10,6 +10,7 @@ import { getLayer, setLayer, fmtVal } from './layers.js';
 import { cardHtml, mountCard, unmountCard } from './cards.js';
 import { prose } from './figs.js';
 import { renderScaleCompare } from './scale_compare.js';
+import { mountQuick } from './quick.js';
 
 const $ = (s) => document.querySelector(s);
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
@@ -302,8 +303,10 @@ export function createHud(h) {
   $('#btn-close-card').addEventListener('click', () => closeCard());
 
   // ---------- Station ----------
+  const quick = mountQuick($('.top-actions'), () => h.onInput());
   function setStation(level) {
     lv = level;
+    quick.station(level);
     meta = level.meta;
     const id = level.id;
     railCur = id;
@@ -373,7 +376,8 @@ export function createHud(h) {
     const st = meta;
     const info = (x) => st.hotspots[x.id] || x.info;
     const hs = lv.hotspots.filter((x) => info(x) && x.kind !== 'label' && (!x.listIf || x.listIf()));
-    const ctrls = lv.controls || [];
+    // Ton schaltet der Knopf in der Kopfzeile (quick.js, Vorschau 26.10.2026: aus der Infotafel entfernt)
+    const ctrls = (lv.controls || []).filter((c) => c.id !== 'sound');
     // Abstecher (Nummer mit Buchstabe, z. B. 02A) nennen ihre Elternstation
     const from = /^\d+$/.test(String(st.n)) || !st.parent ? '' : ` · Abstecher von ${STATIONS[st.parent].title}`;
     panel.innerHTML = `
