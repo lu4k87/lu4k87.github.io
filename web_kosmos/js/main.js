@@ -10,6 +10,7 @@ import { createPost } from './post.js';
 import { createHud } from './hud.js';
 import { settings, onSettings, globalGrade } from './settings.js';
 import { createDeepSky } from './deepsky.js';
+import { attachSound, soundTo } from './sound.js';
 import { TURN, planTurn, turnPose, turnPace } from './turn.js';
 
 const LOADERS = {
@@ -208,6 +209,7 @@ async function makeLevel(id) {
   lv.meta = STATIONS[id];
   lv.deep = createDeepSky(id);   // ferne Galaxien, Zirrus, Restlicht hinter den Sternen (deepsky.js)
   if (lv.deep) lv.scene.add(lv.deep);
+  attachSound(lv);   // Schalter „Ton“ mit echten Aufnahmen, wo es welche gibt (sound.js)
   lv.baseFov = lv.camera.fov;
   lv.rt = new THREE.WebGLRenderTarget(2, 2, {
     type: THREE.HalfFloatType, samples: lv.msaa === false ? 0 : q.msaa,
@@ -297,6 +299,7 @@ function activate(lv) {
   c.addEventListener('end', () => { state.dragging = false; });
   c.update();
   state.controls = c;
+  soundTo(lv);   // Ton an → überblenden auf den Ton dieser Station (vor setStation: Schalter zeigt ihn)
   hud.setStation(lv);
   // ?ctl=id:wert,id:wert setzt Schalter der Station (Screenshots, Tests), z. B. ctl=const:names,shadow:on
   if (params.get('ctl') && !lv.ctlApplied) {

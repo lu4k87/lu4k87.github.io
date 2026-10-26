@@ -348,8 +348,8 @@ export function createHud(h) {
     closeCard();
   }
 
-  // Schalter der Station: Segment (Standard), Schieberegler ('range'), Farbscheiben mit Erklärung ('swatch': options
-  // [wert, name, CSS-Hintergrund], detail(wert) → HTML unter den Scheiben), Knopf ('action': button, run())
+  // Schalter der Station: Segment (Standard; mit detail(wert) → HTML darunter, z. B. Ton), Schieberegler ('range'),
+  // Farbscheiben mit Erklärung ('swatch': options [wert, name, CSS-Hintergrund], detail(wert)), Knopf ('action': button, run())
   function ctrlHtml(c) {
     if (c.type === 'range') return `
         <label class="cfg-row cfg-range"><span class="cfg-label">${esc(c.label)}</span>
@@ -360,9 +360,13 @@ export function createHud(h) {
           <div class="sw-detail" data-swd="${c.id}">${c.detail(c.value)}</div></div>`;
     if (c.type === 'action') return `
         <div class="cfg-row"><span class="cfg-label">${esc(c.label)}</span><button type="button" class="act-btn" data-act="${c.id}">${esc(c.button)}</button></div>`;
+    const seg = `<div class="seg" role="radiogroup" aria-labelledby="ctl-${c.id}">${c.options.map(([v, l]) => `<button type="button" role="radio" data-ctl="${c.id}" data-val="${v}" aria-checked="${String(c.value === v)}">${esc(l)}</button>`).join('')}</div>`;
+    if (c.detail) return `
+        <div class="cfg-box"><span class="cfg-label" id="ctl-${c.id}">${esc(c.label)}</span>
+          ${seg}<div class="sw-detail" data-swd="${c.id}">${c.detail(c.value)}</div></div>`;
     return `
         <div class="cfg-row"><span class="cfg-label" id="ctl-${c.id}">${esc(c.label)}</span>
-          <div class="seg" role="radiogroup" aria-labelledby="ctl-${c.id}">${c.options.map(([v, l]) => `<button type="button" role="radio" data-ctl="${c.id}" data-val="${v}" aria-checked="${String(c.value === v)}">${esc(l)}</button>`).join('')}</div></div>`;
+          ${seg}</div>`;
   }
 
   function renderPanel() {
@@ -413,6 +417,7 @@ export function createHud(h) {
       // Abzeichen mit listIf (z. B. je Körper) hängen am Schalter: Liste und Abzeichen neu aufbauen
       if (lv.hotspots.some((x) => x.listIf)) { renderPanel(); buildMarkers(); return; }
       panel.querySelectorAll(`[data-ctl="${c.id}"]`).forEach((o) => o.setAttribute('aria-checked', String(o.dataset.val === c.value)));
+      if (c.detail) panel.querySelector(`[data-swd="${c.id}"]`).innerHTML = c.detail(c.value);
     }));
     panel.querySelectorAll('[data-sw]').forEach((b) => b.addEventListener('click', () => {
       const c = ctrls.find((x) => x.id === b.dataset.sw);

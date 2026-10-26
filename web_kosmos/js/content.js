@@ -263,6 +263,23 @@ export const SOURCES = {
   'nep-pia00052': { t: 'Neptune Great Dark Spot in High Resolution (PIA00052, ≈ 13.000 × 6.600 km)', by: 'NASA/JPL', url: 'https://www.jpl.nasa.gov/images/pia00052-neptune-great-dark-spot-in-high-resolution/' },
   'nep-hubble-storms': { t: 'Hubble Tracks the Lifecycle of Giant Storms on Neptune (Großer Dunkler Fleck 1994 verschwunden)', by: 'NASA', url: 'https://science.nasa.gov/missions/hubble/hubble-tracks-the-lifecycle-of-giant-storms-on-neptune/' },
   'nasa-cthulhu': { t: 'Pluto’s Methane Snowcaps on the Edge of Darkness, context (Cthulhu ≈ 3.000 × 750 km)', by: 'NASA/JHUAPL/SwRI', url: 'https://science.nasa.gov/photojournal/plutos-methane-snowcaps-on-the-edge-of-darkness-context/' },
+  // Töne der Stationen (web/js/sound.js, Dateien aus tools/fetch_sounds.py); Iowa-Audio CC BY 4.0, NASA-Audio gemeinfrei
+  'snd-sun': { t: 'Sounds of the Sun (SOHO/MDI, 40 Tage Doppler-Daten, um 3 mHz gefiltert, 42.000-fach beschleunigt)', by: 'NASA Goddard; A. Kosovichev, Stanford Experimental Physics Lab', url: 'https://www.nasa.gov/universe/sounds-of-the-sun/' },
+  'snd-type3': { t: 'Cassini Solar Type III Radio Bursts (Sonneneruptionen 28.10. und 4.11.2003, Cassini in 8,67 AE)', by: 'University of Iowa, Cassini RPWS · CC BY 4.0', url: 'https://space.physics.uiowa.edu/space-audio/typeIII.html' },
+  'snd-helio': { t: 'Voyager-1 Heliospheric Radio Emissions (2–3 kHz, 22 Jahre Messdaten)', by: 'University of Iowa, Voyager PWS · CC BY 4.0', url: 'https://space.physics.uiowa.edu/space-audio/vgr-helio.html' },
+  'snd-chorus': { t: 'Chorus Radio Waves within Earth’s Atmosphere (Van Allen Probes, EMFISIS)', by: 'NASA / University of Iowa', url: 'https://www.nasa.gov/historical-sounds/' },
+  'snd-whistler': { t: 'Earth Whistlers (Satellit Injun 3)', by: 'University of Iowa · CC BY 4.0', url: 'https://space.physics.uiowa.edu/space-audio/sounds/EarthWhistlers/EarthWhistlers.html' },
+  'snd-apollo11': { t: 'Apollo 11: Eagle Has Landed (20.07.1969)', by: 'NASA', url: 'https://www.nasa.gov/historical-sounds/' },
+  'snd-juno-bs': { t: 'Juno Records Jupiter’s Bow Shock (24.06.2016, rund zwei Stunden Messung)', by: 'NASA/JPL-Caltech/SwRI/University of Iowa · CC BY 4.0', url: 'https://space.physics.uiowa.edu/plasma-wave/juno/audio/201606/jno-bshock-16-176-0700-0900-blk.html' },
+  'snd-vgr-jupiter': { t: 'Voyager: Lightning on Jupiter', by: 'NASA', url: 'https://www.nasa.gov/historical-sounds/' },
+  'snd-juno-europa': { t: 'Juno Waves Audio from Europa Flyby (29.09.2022, 350 km Abstand, 23,6 km/s, Plasmawellen 50–150 kHz)', by: 'NASA/JPL-Caltech/SwRI/University of Iowa · CC BY 4.0', url: 'https://space.physics.uiowa.edu/plasma-wave/juno/audio/202209/jno-E45-LFRH-Europa-fuh-22-272-0836-1006-blk.html' },
+  'snd-juno-ganymede': { t: 'Audio of Juno’s Ganymede Flyby (07.06.2021)', by: 'NASA/JPL-Caltech/SwRI/University of Iowa', url: 'https://www.nasa.gov/sounds-from-beyond/' },
+  'snd-skr': { t: 'The Eerie Sounds of Saturn’s Radio Emissions (Cassini RPWS, 2003)', by: 'University of Iowa · CC BY 4.0', url: 'https://space.physics.uiowa.edu/space-audio/cassini/SKR1/' },
+  'snd-sed': { t: 'The Sounds of Lightning at Saturn (Cassini RPWS, 23.01.2006)', by: 'University of Iowa · CC BY 4.0', url: 'https://space.physics.uiowa.edu/space-audio/cassini/cas-sed-06-023-2hr/' },
+  'snd-mars-wind': { t: 'Perseverance Rover’s SuperCam Records Wind on Mars (22.02.2021, Sol 4)', by: 'NASA/JPL-Caltech/LANL/CNES/CNRS/ISAE-Supaero', url: 'https://www.nasa.gov/sounds-from-beyond/' },
+  'snd-mars-devil': { t: 'NASA’s Perseverance Records a Martian Dust Devil (27.09.2021, Sol 215)', by: 'NASA/JPL-Caltech/LANL/CNES/CNRS/INTA-CSIC/Space Science Institute/ISAE-Supaero', url: 'https://www.nasa.gov/sounds-from-beyond/' },
+  'snd-vgr-uranus': { t: 'Voyager 2 PWS, Wellenform-Daten Uranus-Vorbeiflug (24.01.1986, Rahmen 17:15 und 18:01 UT)', by: 'University of Iowa, NASA PDS VGPW_2001', url: 'https://space.physics.uiowa.edu/plasma-wave/voyager/data/VGPW_2001/EXTRAS/HTML/URANUS_ENCOUNTER/V2P3_014/V2P3_014.HTM' },
+  'snd-vgr-neptune': { t: 'Voyager 2 PWS, Wellenform-Daten Neptun-Vorbeiflug (25.08.1989, Rahmen 02:55 und 04:15 UT)', by: 'University of Iowa, NASA PDS VGPW_2001', url: 'https://space.physics.uiowa.edu/plasma-wave/voyager/data/VGPW_2001/EXTRAS/HTML/NEPTUNE_ENCOUNTER/V2P4_012/V2P4_012.HTM' },
 };
 
 // Abstände für Mess-Leiste und Rail: width = typische Bildbreite [m], dist = Entfernung von der Erde [m],
