@@ -111,6 +111,13 @@ export const SOURCES = {
   // [E5] Triton
   // [E5] Uranus
   // [E5] Pluto
+  'nssdc-pluto': { t: 'Pluto Fact Sheet: Pluto, Charon und kleine Monde (Radien, Massen, Bahnen, Atmosphäre)', by: 'NASA NSSDCA', url: 'https://nssdc.gsfc.nasa.gov/planetary/factsheet/plutofact.html' },
+  'jpl-sats-plu060': { t: 'Planetary Satellite Mean Elements, Pluto-System (Ephemeride PLU060)', by: 'JPL Solar System Dynamics', url: 'https://ssd.jpl.nasa.gov/sats/elem/' },
+  'nasa-pluto': { t: 'Pluto: Facts (Atmosphäre, Gebirge aus Wassereis, Monde)', by: 'NASA Science', url: 'https://science.nasa.gov/dwarf-planets/pluto/facts/' },
+  'nasa-charon': { t: 'Charon (halb so groß wie Pluto, rötliche Nordpolregion)', by: 'NASA Science', url: 'https://science.nasa.gov/dwarf-planets/pluto/moons/charon/' },
+  'nasa-newhorizons': { t: 'New Horizons: Vorbeiflug an Pluto am 14.07.2015, 11:49 UT, 12.500 km', by: 'NASA Science', url: 'https://science.nasa.gov/mission/new-horizons/' },
+  'usgs-pluto': { t: 'Pluto New Horizons LORRI Global Mosaic 300 m (Juli 2017, gemeinfrei)', by: 'USGS Astrogeology Science Center', url: 'https://astrogeology.usgs.gov/search/map/pluto_new_horizons_global_mosaic_300m' },
+  'usgs-charon': { t: 'Charon New Horizons LORRI Global Mosaic 300 m (Juli 2017, gemeinfrei)', by: 'USGS Astrogeology Science Center', url: 'https://astrogeology.usgs.gov/search/map/charon_new_horizons_global_mosaic_300m' },
 };
 
 // Abstände für Mess-Leiste und Rail: width = typische Bildbreite [m], dist = Entfernung von der Erde [m],
@@ -165,7 +172,8 @@ export const STATIONS = {
       neptune: { t: 'Neptun', x: 'Radius 24.764 km · 17,1 Erdmassen · 30,1 AE · Umlauf 165 Jahre · Drehung 16 h 7 min · −200 °C · 16 Monde; der größte, Triton, umläuft Neptun rückläufig · Sonnenlicht braucht gut 4 Stunden bis hierher.', s: 'nasa-planets' },
       belt: { t: 'Asteroidengürtel', x: 'Lücken bei 2,50 · 2,82 · 2,95 AE: Dort stünden die Umlaufzeiten in Resonanz mit Jupiter (3:1, 5:2, 7:3); seine wiederholten Störungen machen diese Bahnen instabil (Kirkwood-Lücken).', s: 'kirkwood' },
       asteroid: { t: 'Asteroiden aus der Nähe', x: 'Hineinfliegen: (16) Psyche, Bennu und Eros – Form und Drehung nach den Messdaten von Radar und Raumsonden, die Oberfläche als Modell.', s: 'shepard-2021' },
-      kuiper: { t: 'Kuipergürtel', x: 'Jenseits von Neptun (30–50 AE) kreisen Kleinkörper aus Eis und Gestein, darunter Pluto und Arrokoth – Überreste aus der Entstehungszeit des Sonnensystems. Im Bild: statistische Verteilung.', s: 'nasa-planets' },
+      kuiper: { t: 'Kuipergürtel', x: 'Jenseits von Neptun (30–50 AE) kreisen Kleinkörper aus Eis und Gestein, darunter Pluto und Arrokoth – Überreste aus der Entstehungszeit des Sonnensystems. Im Bild: statistische Verteilung. Hineinfliegen über das Abzeichen „Pluto“: Pluto und Charon als Doppelsystem.', s: 'nasa-planets' },
+      pluto: { t: 'Pluto', x: 'Zwergplanet im Kuipergürtel: Radius 1.188 km · mittlerer Abstand 39,5 AE · Umlauf 248 Jahre · Bahn 17° geneigt und so exzentrisch (0,25), dass Pluto im Perihel mit 29,7 AE näher an der Sonne steht als Neptun (eigene Rechnung aus den Bahnelementen) · 5 Monde, der größte ist Charon. Hineinfliegen: Pluto und Charon als Doppelsystem.', s: 'nssdc-pluto' },
     },
   },
   asteroid: {
@@ -254,6 +262,28 @@ export const STATIONS = {
   // [E5] Triton
   // [E5] Uranus
   // [E5] Pluto
+  pluto: {
+    n: '02H', title: 'Pluto & Charon', kicker: 'Zwergplanet', parent: 'solar', width: 3e7, dist: 35.6 * AU, lookback: 35.6 * AU / C,
+    lead: 'Ein Doppelsystem am Rand des Sonnensystems: Pluto und der halb so große Charon kreisen in 6,4 Tagen um einen gemeinsamen Schwerpunkt und zeigen einander stets dieselbe Seite. Die Oberflächen stammen aus den Bildern von New Horizons, die am 14. Juli 2015 vorbeiflog; der Süden lag damals im Dunkeln und ist nicht kartiert.',
+    facts: [
+      { v: '1.188', u: 'km', l: 'Radius Pluto (Charon 606 km)', s: 'nssdc-pluto' },
+      { v: '19.596', u: 'km', l: 'Abstand Pluto–Charon', s: 'nssdc-pluto' },
+      { v: '6,387', u: 'Tage', l: 'Umlauf Charons = ein Tag auf beiden', s: 'nssdc-pluto' },
+      { v: '≈ 13', u: 'µbar', l: 'Luftdruck am Boden, 99 % Stickstoff', s: 'nssdc-pluto' },
+    ],
+    note: 'Abstände, Größen und Bahnen maßstäblich; Ort von Charon und den kleinen Monden aus den mittleren Bahnelementen des JPL für den angezeigten Zeitpunkt, Sonnenrichtung aus der Bahn Plutos (mittlere Elemente, eigene Näherung). Oberflächen: USGS-Mosaike aus den LORRI-Bildern von New Horizons (Graustufen, auf 2.048 Pixel verkleinert); die der Sonde abgewandte Seite ist dort nur grob aufgelöst. Die Farbe ist ein Modell nach den MVIC-Farbbildern, die Helligkeit stammt aus der Karte („Messbild“ zeigt die Graustufen). Gebiete ohne Daten – vor allem der Süden, der beim Vorbeiflug im Dunkeln lag – erscheinen als Gradnetz statt erfunden. Sonnenlicht ist bei Pluto rund 1.000-mal schwächer als bei der Erde; das Bild ist stark aufgehellt. Dunst bis 0,2 Plutoradien hoch, Zahl und Abstand der Lagen sind Modell. Kleine Monde als vergrößerte Lichtpunkte (die größten messen nur rund 50 km). Bahn von New Horizons schematisch aus Datum, Uhrzeit und Abstand der größten Annäherung; Flugrichtung und Tempo (≈ 14 km/s) Richtwerte.',
+    sources: ['nssdc-pluto', 'jpl-sats-plu060', 'nasa-pluto', 'nasa-charon', 'nasa-newhorizons', 'usgs-pluto', 'usgs-charon'],
+    hotspots: {
+      heart: { t: 'Sputnik Planitia – das „Herz“', x: 'Die helle Fläche im herzförmigen Gebiet Tombaugh Regio ist ein riesiger Gletscher aus Stickstoffeis, Sputnik Planitia. Sie liegt fast genau auf der Charon abgewandten Seite (um 175° Länge; Länge 0° zeigt zu Charon). An ihrem Rand stehen Gebirge aus Blöcken von Wassereis, 2 bis 3 km hoch. New Horizons flog genau über diese Seite und kartierte sie bis auf wenige hundert Meter genau.', s: 'nasa-newhorizons' },
+      cthulhu: { t: 'Cthulhu', x: 'Westlich des Herzens zieht sich eine lange, dunkle Region am Äquator entlang, informell Cthulhu genannt – mit vielen Kratern und damit älter als die glatte, frische Eisfläche von Sputnik Planitia. In der Karte gehört sie zu den dunkelsten Gebieten Plutos. Die rotbraune Farbe im Bild ist ein Modell nach den Farbbildern, die Helligkeit stammt aus der Karte.', s: 'usgs-pluto' },
+      pole: { t: 'Achse auf der Seite', x: 'Plutos Achse ist um 119,5° gegen die Bahn geneigt; das System liegt wie Uranus auf der Seite und dreht sich rückläufig. Während eines Umlaufs von 248 Jahren wandert die Sonne deshalb weit nach Norden und Süden: zurzeit steht sie rund 60° über dem Äquator im Norden (eigene Rechnung aus Bahn und Pol), große Teile des Südens liegen seit Jahrzehnten im Dunkeln – deshalb fehlen sie in der Karte (Gradnetz).', s: 'nssdc-pluto' },
+      haze: { t: 'Atmosphäre und Dunst', x: 'Eine dünne Hülle aus 99 % Stickstoff mit etwas Methan und Kohlenmonoxid, am Boden rund 13 Mikrobar – etwa ein Hunderttausendstel des Luftdrucks auf der Erde – bei −233 bis −247 °C. Weil die Schwerkraft nur 6 % der Erde beträgt, reicht sie weit hinauf. Nahe der Sonne verdampft Eis von der Oberfläche, weiter draußen friert die Atmosphäre wieder aus. Dunst in Lagen streut Licht nach vorn: Im Gegenlicht leuchtet er blau um den Rand.', s: 'nssdc-pluto' },
+      charon: { t: 'Charon', x: 'Radius 606 km, halb so groß wie Pluto – im Verhältnis zu seinem Körper der größte Mond im Sonnensystem. Auffällig ist die rötliche Region um den Nordpol. Charon kreist in 6,387 Tagen um den Schwerpunkt und dreht sich in derselben Zeit einmal: Er zeigt Pluto stets dieselbe Seite, Pluto ihm ebenso.', s: 'nasa-charon' },
+      bary: { t: 'Gemeinsamer Schwerpunkt', x: 'Charon hat 12 % der Masse Plutos. Deshalb liegt der Schwerpunkt, um den beide kreisen, 2.126 km von Plutos Mitte entfernt – außerhalb Plutos, dessen Radius 1.188 km beträgt (eigene Rechnung aus Massen und Abstand). Beide sind doppelt gebunden: Ein Umlauf und eine Drehung dauern gleich lang, 153 Stunden. Mit „Kamera dreht mit“ stehen beide still, nur Sterne und Sonne ziehen vorbei. Pluto und Charon gelten oft als Doppelplanet.', s: 'nssdc-pluto' },
+      moons: { t: 'Kleine Monde', x: 'Styx, Nix, Kerberos und Hydra kreisen in 42.413, 48.690, 57.750 und 64.721 km Abstand um den Schwerpunkt, in 20,2, 24,9, 32,2 und 38,2 Tagen. Anders als Charon sind sie nicht gebunden: Sie drehen sich und zeigen Pluto keine feste Seite. Im Bild als vergrößerte Lichtpunkte.', s: 'nssdc-pluto' },
+      nh: { t: 'New Horizons', x: 'Die Raumsonde der NASA erreichte Pluto als erste: Am 14. Juli 2015 um 11:49 UT flog sie in rund 12.500 km Abstand an Pluto vorbei und durch das System. Ihre Bilder zeigten das Herz aus Stickstoffeis, Gebirge aus Wassereis und den Dunst. Bahn im Bild schematisch; „Vorbeiflug 2015“ stellt die Zeit auf den Tag des Vorbeiflugs und spielt ihn verlangsamt ab.', s: 'nasa-newhorizons' },
+    },
+  },
   galaxy: {
     n: 3, title: 'Milchstraße', kicker: 'Galaktisch', parent: 'local', width: 1.3e21, dist: 0, lookback: 0,
     lead: 'Eine Balkenspirale mit 100 bis 400 Milliarden Sternen. Die Sonne kreist 27.000 Lichtjahre vom Zentrum entfernt mit rund 229 km/s – ein Umlauf dauert etwa 220 Millionen Jahre.',

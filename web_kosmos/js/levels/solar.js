@@ -11,7 +11,7 @@
 // Größen: „Anschaulich“ = R^0,45 gestaucht (Reihenfolge stimmt, Verhältnisse nicht), „Echt“ = wahre Radien.
 
 import * as THREE from 'three';
-import { PLANETS, AU, C, julianDate, elementsAt, solveKepler, orbitToEcliptic, eclToScene, eclDir, moonPosition, OBLIQUITY, mulberry32, gauss } from '../astro.js';
+import { PLANETS, PLUTO, planetPosition, AU, C, julianDate, elementsAt, solveKepler, orbitToEcliptic, eclToScene, eclDir, moonPosition, OBLIQUITY, mulberry32, gauss } from '../astro.js';
 import { createStarfield } from '../stars.js';
 import { SUN_FRAG, BILLBOARD_VERT, CORONA_FRAG, LOOP_VERT, LOOP_FRAG, CME_FRAG, loopsGeometry, spotGroups, streamerSet } from '../sunfx.js';
 import { BODY_VERT, SHELL_VERT, PLANET_FRAG, ATMO_FRAG, CLOUD_FRAG, RING_FRAG, ATMOS } from '../planetfx.js';
@@ -444,7 +444,9 @@ export function create(ctx) {
     moon.rotateY(-Math.PI / 2);     // Länge 0 (Textur-Mitte) zur Erde (gebundene Rotation)
     loops.rotation.y = days() / 25.0 * Math.PI * 2;
     sunMat.uniforms.uDays.value = days();
+    plutoAt.set(...eclToScene(planetPosition(PLUTO, jd)));
   }
+  const plutoAt = new THREE.Vector3();
   place();
 
   const home = { pos: new THREE.Vector3(-3.2, 4.4, 7.4), target: new THREE.Vector3(0, 0, 0) };
@@ -469,6 +471,7 @@ export function create(ctx) {
     { id: 'mars', kind: 'info', pos: P.mars.pos, focus: focus(P.mars) },
     { id: 'uranus', kind: 'info', pos: P.uranus.pos, focus: focus(P.uranus) },
     { id: 'neptune', kind: 'info', pos: P.neptune.pos, focus: focus(P.neptune) },
+    { id: 'pluto', kind: 'dive', to: 'pluto', pos: plutoAt },
   ];
   // Screenshot-Hilfe: Heimpose nahe an einem Körper
   if (view) {

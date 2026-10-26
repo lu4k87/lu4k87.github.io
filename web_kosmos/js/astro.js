@@ -37,6 +37,11 @@ export const PLANETS = [
   { id: 'neptune', el: [30.06992276, 0.00859048, 1.77004347, -55.12002969, 44.96476227, 131.78422574],
     rate: [0.00026291, 0.00005105, 0.00035372, 218.45945325, -0.32241464, -0.00508664] },
 ];
+// Pluto (nicht in Tabelle 1): mittlere Elemente J2000 aus dem NSSDCA Pluto Fact Sheet, gleiche Reihenfolge wie oben; die
+// mittlere Länge läuft mit der siderischen Umlaufzeit 90.560 Tage, die übrigen Elemente bleiben fest (eigene Näherung,
+// für die Darstellung ausreichend; Test: Perihel 1989, Abstand beim Vorbeiflug von New Horizons 2015)
+export const PLUTO = { id: 'pluto', el: [39.48168677, 0.24880766, 17.14175, 238.92881, 224.06676, 110.30347],
+  rate: [0, 0, 0, 36525 * 360 / 90560, 0, 0] };
 
 const RAD = Math.PI / 180;
 const wrap180 = (d) => ((((d + 180) % 360) + 360) % 360) - 180;

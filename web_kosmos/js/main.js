@@ -38,6 +38,7 @@ const LOADERS = {
   // [E5] Triton
   // [E5] Uranus
   // [E5] Pluto
+  pluto: () => import('./levels/pluto.js'),
 };
 
 // Flug: äußere Kamera zoomt um ZOOM auf den Anker zu, die innere kommt aus ZOOM-fachem Abstand an (gleiche Rate)
