@@ -1,28 +1,42 @@
-// Einstellungen hinter dem Zahnrad oben rechts (Wunsch User 2026-10-25): im Kopf drei Kacheln Hell / Dunkel · Infotafel ·
-// Messhilfen (Vorschau 2026-10-25, Ansicht:B, ersetzen die Knöpfe oben rechts), darunter „Allgemein“ mit den Hauptreglern (Qualität, Detailgrad,
-// Lichtstärke, Schatten, Effekte, Bewegung), darunter die Feineinstellungen Leistung, Bewegung, Licht, Details.
-// Werte in localStorage (biochar-settings.v1, clean() prüft jeden Wert); main.js liest settings.S und hört per settings.on().
-// Die Qualitätsstufe selbst bleibt in quality.js (Knopfreihe „Qualität“ hier, Regler oben rechts entfiel 2026-10-25), die Schalter
-// hier liegen darüber (main.js eff()). Vorlage: UX-Robot-Hero (dev_ws 350901df, docs/js/hero3d.js „Einstellungen der Bühne“).
+// Einstellungen hinter dem Zahnrad oben rechts, aufgebaut wie in Kosmos (Vorschau 26.10.2026 Bento:A + Global:A+B+C, übernommen
+// 2026-10-26): zwei Reiter „Ebene n · …“ = Schalter der aktiven Ebene als Bento-Karten (layers.js, je Ebene level.layers) und
+// „Global · alle Ebenen“ = gilt überall. Je Reiter Themenliste links, Karten mit Icon-Plakette, Mini-Grafik je Zeile, geänderte
+// Werte mit „Standard“ + Leiste „Alle zurücksetzen“. Global: Look (Farblook, Belichtung, Vignette, Kinobalken), Licht, Kamera &
+// Bewegung, Effekte, REM (Ebenen 2–4), Oberfläche (Hell/Dunkel, Infotafel, Messhilfen, Abzeichen), Leistung (Qualität mit
+// Messzeile, Detailgrad, Schatten, Renderskala, Bildrate). `?cfg` öffnet das Zahnrad, `?cfg=global` mit dem Reiter Global.
+// Werte in localStorage `biochar-settings.v1` (clean() prüft jeden Wert); main.js liest settings.S und hört per settings.on().
+// Die Qualitätsstufe selbst bleibt in quality.js, die Schalter hier liegen darüber (main.js eff()).
 
 import { QUALITY, quality } from './quality.js';
 import { theme, setTheme } from './theme.js';
+import { mountLayers, icon, navHtml, wireNav, devLine, devBar, markDevs, syncLayers } from './layers.js';
 
 const KEY = 'biochar-settings.v1';
 // detail/light/fx: Hauptregler (Faktor auf Detailgrad der Stufe, auf alle Lichter, auf Linse + Korn); shadow: off · soft · full;
 // dive/play: Flugdauer zwischen Ebenen und Länge des Pyrolyse-Zeitraffers (s); key/rim/env/pool: Faktoren auf die Werte der
-// Ebenen (1 = wie gebaut); kelvin 6500 = Lichtfarbe der Ebene unverändert (Normierung auf D65); fps 0 = ohne Deckel
+// Ebenen (1 = wie gebaut); kelvin 6500 = Lichtfarbe der Ebene unverändert (Normierung auf D65); fps 0 = ohne Deckel;
+// grade: Farblook („ebene“ = Stimmung der Ebene), vig: Faktor auf die Vignette, bars: Kinobalken 2,39:1
 const DEF = {
   detail: 1, light: 1, shadow: 'full', fx: 1,
   scale: 1, fps: 0, dof: true, bloom: true, ca: true, grain: true,
   motion: 'full', intro: true, cine: true, orbit: true, sem: true, dive: 3.5, play: 8,
   key: 1, rim: 1, env: 1, kelvin: 6500, exposure: 1, pool: 1,
   dust: true, veil: true, hotspots: true, charge: false /* Aufladung aus, bis jemand sie einschaltet (Vorschau 2026-10-25, F3) */,
-  capillary: true,
+  grade: 'ebene', vig: 1, bars: false,
 };
 const RANGE = { detail: [0.5, 1], light: [0, 2], fx: [0, 1.5], scale: [0.5, 1], fps: [0, 60], dive: [1.5, 6], play: [4, 30], key: [0, 2], rim: [0, 2], env: [0, 2],
-  kelvin: [2700, 9000], exposure: [0.5, 2], pool: [0, 2] };
-const ENUM = { motion: ['full', 'calm', 'off'], shadow: ['off', 'soft', 'full'] };
+  kelvin: [2700, 9000], exposure: [0.5, 2], pool: [0, 2], vig: [0, 1.5] };
+// Farblook: Tönung Schatten/Lichter (linear), Sättigung, S-Kurve, Belichtung, Vignette. „Ebene“ = Stimmung der Ebene (main.js MOODS),
+// die anderen gelten auf allen Ebenen (main.js gradeOf). Labor = kühl und entsättigt wie ein Messbild, Glut = warm wie die Rotglut
+export const GRADES = [['neutral', { sh: [0.97, 0.99, 1.03], hi: [1.02, 1, 0.97], sat: 1.02, con: 0.12, exposure: 1, vig: 0.38 }],
+  ['Kino', { sh: [0.88, 0.93, 1.06], hi: [1.1, 0.99, 0.86], sat: 1.1, con: 0.22, exposure: 1.03, vig: 0.55 }],
+  ['Labor', { sh: [0.94, 0.98, 1.08], hi: [0.98, 1, 1.04], sat: 0.85, con: 0.16, exposure: 1, vig: 0.3 }],
+  ['Glut', { sh: [0.85, 0.88, 0.98], hi: [1.12, 0.98, 0.84], sat: 1.15, con: 0.26, exposure: 0.95, vig: 0.6 }],
+  ['ruhig', { sh: [0.97, 0.98, 1.02], hi: [1.04, 1, 0.94], sat: 0.95, con: 0.1, exposure: 1, vig: 0.4 }]];
+const GRADE_IDS = ['ebene', 'neutral', 'kino', 'labor', 'glut', 'ruhig'];
+const ENUM = { motion: ['full', 'calm', 'off'], shadow: ['off', 'soft', 'full'], grade: GRADE_IDS };
+// globaler Farblook oder null (= jede Ebene ihre eigene Stimmung)
+export const globalGrade = (S) => (S.grade === 'ebene' ? null : GRADES[GRADE_IDS.indexOf(S.grade) - 1][1]);
 // Grundstufe setzt die Einzelschalter; „Aus“ wirkt wie prefers-reduced-motion (kurze Flüge ohne Zoom-Unschärfe, Sprünge statt Gleiten)
 const MOT = {
   full: { intro: true, cine: true, orbit: true, sem: true },
@@ -98,69 +112,105 @@ const cie = (K) => {
 };
 const pct = (v) => `${num(v * 100)} %`;
 const sec = (v) => `${num(v, v % 1 ? 1 : 0)} s`;
-const OUT = { detail: pct, light: pct, fx: pct, dive: sec, play: sec, key: pct, rim: pct, env: pct, pool: pct, exposure: (v) => num(v, 2), kelvin: (v) => `${Math.round(v)} K${cie(v)}` };
+const OUT = { detail: pct, light: pct, fx: pct, dive: sec, play: sec, key: pct, rim: pct, env: pct, pool: pct, vig: pct,
+  exposure: (v) => `${num(v, 2)} ×`, kelvin: (v) => `${Math.round(v)} K${cie(v)}` };
 
-const seg = (k, opts, label) => `<div class="cfg-row"><span id="cfg-l-${k}">${label}</span><div class="cfg-seg" role="group" aria-labelledby="cfg-l-${k}">${
-  opts.map(([v, t]) => `<button type="button" data-k="${k}" data-v="${v}" aria-pressed="false">${t}</button>`).join('')}</div></div>`;
-const range = (k, step, label) => `<label class="cfg-row"><span>${label}</span><output></output><input type="range" data-k="${k}" min="${RANGE[k][0]}" max="${RANGE[k][1]}" step="${step}"></label>`;
-const sw = (k, label) => `<label class="cfg-sw"><input type="checkbox" data-k="${k}"><span>${label}</span></label>`;
-// Ansicht-Kachel: Symbol, Name, Zustand (data-state); Hell / Dunkel wechselt Auto → Hell → Dunkel, die anderen schalten an/aus
-const tile = (k, icon, label, extra = '') => `<button type="button" data-view="${k}"${extra}><svg viewBox="0 0 24 24" aria-hidden="true">${icon}</svg><span>${label}</span><small data-state></small></button>`;
-const SUN = '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>';
-const PANEL = '<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M14 4v16"/>';
-const RULER = '<path d="M3 17h18M6 17v-5M10 17v-3M14 17v-5M18 17v-3"/>';
+const NEW = '<span class="b-new">neu</span>';
+const SEG = (key, label, opts, extra = '') => `
+  <div class="b-row b-stack"><span class="cfg-label" id="cfg-${key}">${label}${extra}</span>
+    <div class="seg b-seg" role="radiogroup" aria-labelledby="cfg-${key}">
+      ${opts.map(([v, l]) => `<button type="button" role="radio" data-key="${key}" data-val="${v}">${l}</button>`).join('')}
+    </div></div>`;
+const TOG = (key, label, extra = '', attr = `data-key="${key}"`) => `
+  <label class="b-row cfg-toggle"><span class="cfg-label">${label}${extra}</span><input type="checkbox" ${attr}><span class="switch" aria-hidden="true"></span></label>`;
+const RNG = (key, label, step, extra = '') => `
+  <label class="b-row b-stack"><span class="b-top"><span class="cfg-label">${label}${extra}</span><output class="cfg-val" data-out="${key}"></output></span>
+    <span class="b-track"><input type="range" data-key="${key}" min="${RANGE[key][0]}" max="${RANGE[key][1]}" step="${step}"></span></label>`;
+const NOTE = (text) => `<p class="cfg-note lay-hint">${text}</p>`;
+// Mini-Grafik neben der Zeile: zeigt, was die Einstellung bewirkt (halbe Karten und schmal: ausgeblendet)
+const dots = (pts, fill) => pts.map(([x, y, r = 1]) => `<circle cx="${x}" cy="${y}" r="${r}" fill="${fill}"/>`).join('');
+const MINI = {
+  exposure: '<rect x="1" y="6" width="62" height="8" rx="4" fill="url(#mgE)"/><circle cx="32" cy="10" r="5" fill="none" stroke="var(--accent)" stroke-width="2"/>',
+  vig: '<rect x="1" y="1" width="62" height="18" rx="3" fill="url(#mgV)"/>',
+  bars: '<rect x="1" y="1" width="62" height="18" rx="3" fill="#4a3a2c"/><rect x="1" y="1" width="62" height="4" fill="#07080a"/><rect x="1" y="15" width="62" height="4" fill="#07080a"/>',
+  kelvin: '<rect x="1" y="6" width="62" height="8" rx="4" fill="url(#mgK)"/>',
+  light: '<circle cx="12" cy="10" r="5" fill="#ffd9a0"/><path d="M22 10h38" stroke="#ffd9a0" stroke-width="2" stroke-dasharray="3 3"/>',
+  pool: '<rect x="1" y="1" width="62" height="18" rx="3" fill="url(#mgP)"/>',
+  motion: '<path d="M2 10Q10 2 18 10T34 10T50 10T66 10" fill="none" stroke="var(--accent)" stroke-width="2"/>',
+  dive: '<path d="M2 18C24 18 40 2 62 2" fill="none" stroke="var(--accent)" stroke-width="2"/><circle cx="2" cy="18" r="2" fill="currentColor"/><circle cx="62" cy="2" r="2" fill="currentColor"/>',
+  play: '<path d="M2 17h12l8-6 10-2 14 3 16-6" fill="none" stroke="var(--accent)" stroke-width="2"/>',
+  dust: '<rect x="1" y="1" width="62" height="18" rx="3" fill="#07080a"/>' + dots([[8, 6], [17, 13, 1.4], [27, 7], [36, 15], [45, 5, 1.3], [55, 12], [21, 4, 0.8], [50, 16, 0.8]], '#e8d9c0'),
+  fps: [0, 1, 2, 3, 4, 5, 6, 7].map((i) => `<rect x="${3 + i * 7.5}" y="${i % 2 ? 6 : 3}" width="5" height="${i % 2 ? 11 : 14}" rx="1" fill="currentColor" opacity="${i < 6 ? 0.8 : 0.3}"/>`).join(''),
+  scale: '<rect x="2" y="3" width="26" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="1.4"/><rect x="36" y="3" width="26" height="14" rx="2" fill="currentColor" opacity=".35"/><path d="M30 10h4" stroke="var(--accent)" stroke-width="2"/>',
+};
+const MINI_DEFS = '<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><linearGradient id="mgE"><stop offset="0" stop-color="#07080a"/><stop offset="1" stop-color="#fbf6ec"/></linearGradient>'
+  + '<radialGradient id="mgV"><stop offset=".45" stop-color="#8a7a66"/><stop offset="1" stop-color="#07080a"/></radialGradient>'
+  + '<linearGradient id="mgK"><stop offset="0" stop-color="#ffa64d"/><stop offset=".5" stop-color="#fff4ea"/><stop offset="1" stop-color="#c9d9ff"/></linearGradient>'
+  + '<radialGradient id="mgP" cx=".3" cy=".4"><stop offset="0" stop-color="#7ea0c0"/><stop offset="1" stop-color="#07080a"/></radialGradient></defs></svg>';
+// Zeile = Bedienung (+ Mini-Grafik daneben) + Hinweis darunter + Zeile „geändert · Standard“
+const ROW = (key, html) => {
+  const i = html.indexOf('<p class="cfg-note'), [ctl, note] = i < 0 ? [html, ''] : [html.slice(0, i), html.slice(i)];
+  return `<div class="b-item">${MINI[key] ? `<div class="b-line">${ctl}<svg class="b-mini" viewBox="0 0 64 20" aria-hidden="true">${MINI[key]}</svg></div>` : ctl}${note}${key ? devLine(key) : ''}</div>`;
+};
+// Farblook als Bild-Kacheln: glühendes Kohlestück in den Farben des Looks; „Ebene“ = die vier Stimmungen der Ebenen im Kreis
+const rgb = (b, t, e) => `rgb(${b.map((x, i) => Math.min(255, Math.round(x * t[i] * e))).join(',')})`;
+const swatch = (g) => (g ? `background:radial-gradient(circle at 34% 62%, ${rgb([255, 214, 160], g.hi, g.exposure)} 0 8%, ${rgb([226, 92, 30], g.hi, g.exposure)} 20%, ${rgb([70, 36, 24], g.sh, g.exposure)} 44%, ${rgb([20, 20, 24], g.sh, g.exposure)} 78%);box-shadow:inset 0 0 ${Math.round(g.vig * 26)}px rgba(0,0,0,.85)`
+  : 'background:conic-gradient(from 200deg at 50% 55%, #c8874a 0 25%, #8e959e 0 50%, #4f79a8 0 75%, #3c4a9a 0)');
+const LOOKS = `<div class="b-row b-stack"><span class="cfg-label" id="cfg-grade">Farblook${NEW}</span>
+  <div class="b-looks" role="radiogroup" aria-labelledby="cfg-grade">${GRADE_IDS.map((id, i) => `<button type="button" role="radio" data-key="grade" data-val="${id}"><span class="b-sw" style="${swatch(i ? GRADES[i - 1][1] : null)}"></span><span>${i ? GRADES[i - 1][0] : 'Ebene'}</span></button>`).join('')}</div></div>`
+  + NOTE('„Ebene“ = jede Ebene behält ihre Stimmung (Studio warm, REM grau, Nano blau); die anderen gelten überall.');
+// Ansicht (Hell/Dunkel, Infotafel, Messhilfen) liegt nicht in settings.S: eigene Zeilen mit data-view
+const VIEW_THEME = `<div class="b-row b-stack"><span class="cfg-label" id="cfg-theme">Hell / Dunkel</span>
+  <div class="seg b-seg" role="radiogroup" aria-labelledby="cfg-theme">${[['auto', 'Auto'], ['light', 'Hell'], ['dark', 'Dunkel']].map(([v, l]) => `<button type="button" role="radio" data-view="theme" data-val="${v}">${l}</button>`).join('')}</div></div>`
+  + NOTE('Gilt für die Bedienung; die Szene bleibt dunkel wie im Mikroskop. Auto folgt dem System.');
+const QUALITY_ROW = SEG('quality', 'Qualität', [['auto', 'Auto'], ...QUALITY.map((q, i) => [String(i), q.name])])
+  + `<div class="cfg-meter"><span data-meter>–</span><svg class="cfg-spark" viewBox="0 0 96 24" preserveAspectRatio="none" aria-hidden="true"><line x1="0" y1="15.3" x2="96" y2="15.3"/><polyline points=""/></svg></div>`
+  + '<p class="cfg-note lay-hint" data-qhint></p>';
+const GROUPS = [
+  { id: 'look', icon: 'look', title: 'Look', hero: true, rows: [['grade', LOOKS], ['exposure', RNG('exposure', 'Belichtung', 0.05)],
+    ['vig', RNG('vig', 'Vignette', 0.05, NEW)], ['bars', TOG('bars', 'Kinobalken 2,39:1', NEW)]] },
+  { id: 'light', icon: 'light', title: 'Licht', rows: [['light', RNG('light', 'Lichtstärke (alle Lichter)', 0.05)], ['key', RNG('key', 'Hauptlicht', 0.1)],
+    ['rim', RNG('rim', 'Gegenlicht', 0.1)], ['env', RNG('env', 'Umgebung und Reflexe', 0.1)],
+    ['kelvin', RNG('kelvin', 'Farbtemperatur Hauptlicht', 100)], ['pool', RNG('pool', 'Lichtpool im Hintergrund', 0.1)
+      + NOTE('REM-Ebenen 2–4 zeigen das Signal des Elektronendetektors, kein Licht: dort wirken nur Belichtung und Lichtpool.')]] },
+  { id: 'cam', icon: 'cam', title: 'Kamera &amp; Bewegung', rows: [['motion', SEG('motion', 'Bewegung', [['full', 'Voll'], ['calm', 'Ruhig'], ['off', 'Aus']])
+    + NOTE('Ruhig: keine Leerlauf-Fahrt, kein Orbit, Detektor steht · Aus: nichts bewegt sich von allein, Flüge kurz und ohne Zoom-Unschärfe.')],
+  ['intro', TOG('intro', 'Auftakt-Bogen beim Start (9 s)')], ['cine', TOG('cine', 'Leerlauf-Fahrt nach 2,5 s Ruhe')],
+  ['orbit', TOG('orbit', 'Auto-Orbit (Ebenen mit Drehteller)')], ['dive', RNG('dive', 'Flugdauer zwischen Ebenen', 0.5)],
+  ['play', RNG('play', 'Pyrolyse-Zeitraffer (Raumtemperatur → Ziel)', 1)]] },
+  { id: 'fx', icon: 'fx', title: 'Effekte', rows: [['fx', RNG('fx', 'Stärke (Tiefenunschärfe, Bloom, Farbsaum, Korn)', 0.05)],
+    ['dof', TOG('dof', 'Tiefenunschärfe')], ['bloom', TOG('bloom', 'Bloom auf Glanzlichtern')], ['ca', TOG('ca', 'Farbsaum am Bildrand')],
+    ['grain', TOG('grain', 'Filmkorn')], ['veil', TOG('veil', 'Lichtschleier beim Durchtauchen')], ['dust', TOG('dust', 'Schwebstaub im Hintergrund')]] },
+  { id: 'sem', icon: 'sem', title: 'REM · Ebenen 2–4', half: true, rows: [['sem', TOG('sem', 'Detektor schwenkt')],
+    ['charge', TOG('charge', 'Aufladung')]] },
+  { id: 'ui', icon: 'ui', title: 'Oberfläche', rows: [['@theme', VIEW_THEME], ['@panel', TOG('', 'Infotafel zeigen', '', 'data-view="panel"')],
+    ['@overlays', TOG('', 'Messhilfen (Zonenbänder, Leitlinien, Visier)', '', 'data-view="overlays"')], ['hotspots', TOG('hotspots', 'Abzeichen (orange Hotspots)')]] },
+  { id: 'perf', icon: 'perf', title: 'Leistung', rows: [['@quality', QUALITY_ROW], ['detail', RNG('detail', 'Detailgrad (Nanoporen, Atome)', 0.05)],
+    ['shadow', SEG('shadow', 'Schatten (ab Stufe Mittel)', [['off', 'Aus'], ['soft', 'Weich'], ['full', 'Voll']])],
+    ['scale', SEG('scale', 'Renderskala', [['0.5', '50 %'], ['0.75', '75 %'], ['1', '100 %']])],
+    ['fps', SEG('fps', 'Bildrate höchstens', [['0', 'Frei'], ['60', '60'], ['30', '30']], NEW) + NOTE('30 Bilder/s spart am Laptop Strom und Lüfter.')]] },
+];
+// REM-Zeilen mit Erklärung (eigene Texte, damit die Schalter-Zeile kurz bleibt)
+GROUPS[4].rows[0][1] += NOTE('Licht wandert über die Kanten wie beim Schwenk des Probentischs.');
+GROUPS[4].rows[1][1] += NOTE('Helle Streifen, solange die Kohle schlecht leitet (unter ≈ 700 °C).');
+const N_GLOBAL = GROUPS.reduce((n, g) => n + g.rows.length, 0);
+const CARD = (g) => `<article class="b-card${g.half ? '' : ' b-wide'}${g.hero ? ' b-card--hero' : ''}" data-g="${g.id}"><header class="b-head"><span class="b-plaque">${icon(g.icon)}</span><h4>${g.title}</h4><span class="b-count" aria-label="${g.rows.length} Einstellungen">${g.rows.length}</span></header>${g.rows.map(([k, h]) => ROW(k, h)).join('')}</article>`;
 
-const HTML = `<div class="cfg-head"><h2 id="cfg-title">Einstellungen</h2><button type="button" class="cfg-x" data-close aria-label="Einstellungen schließen">×</button></div>
-<div class="cfg-quick" role="group" aria-label="Ansicht">${tile('theme', SUN, 'Hell / Dunkel')}${tile('panel', PANEL, 'Infotafel', ' aria-controls="panel"')}${tile('overlays', RULER, 'Messhilfen')}</div>
-<section aria-labelledby="cfg-h-all"><h3 id="cfg-h-all">Allgemein</h3>
-${seg('quality', [['auto', 'Auto'], ...QUALITY.map((q, i) => [i, q.name])], 'Qualität')}
-<div class="cfg-meter"><span data-meter>–</span><svg class="cfg-spark" viewBox="0 0 96 24" preserveAspectRatio="none" aria-hidden="true"><line x1="0" y1="15.3" x2="96" y2="15.3"/><polyline points=""/></svg></div>
-<p class="cfg-hint" data-qhint></p>
-${range('detail', 0.05, 'Detailgrad (Nanoporen, Atome)')}
-${range('light', 0.05, 'Lichtstärke (alle Lichter)')}
-${seg('shadow', [['off', 'Aus'], ['soft', 'Weich'], ['full', 'Voll']], 'Schatten (ab Stufe Mittel)')}
-${range('fx', 0.05, 'Effekte (Tiefenunschärfe, Bloom, Farbsaum, Korn)')}
-${seg('motion', [['full', 'Voll'], ['calm', 'Ruhig'], ['off', 'Aus']], 'Bewegung')}
-<p class="cfg-hint">Ruhig: keine Leerlauf-Fahrt, kein Orbit, Detektor steht · Aus: nichts bewegt sich von allein, Flüge kurz und ohne Zoom-Unschärfe</p>
-</section>
-<section aria-labelledby="cfg-h-perf"><h3 id="cfg-h-perf">Leistung</h3>
-${seg('scale', [[0.5, '50 %'], [0.75, '75 %'], [1, '100 %']], 'Renderskala')}
-${seg('fps', [[0, 'frei'], [60, '60'], [30, '30']], 'Bildrate höchstens (Bilder/s)')}
-${sw('dof', 'Tiefenunschärfe')}
-${sw('bloom', 'Bloom auf Glanzlichtern')}
-${sw('ca', 'Farbsaum am Bildrand')}
-${sw('grain', 'Filmkorn')}
-</section>
-<section aria-labelledby="cfg-h-mot"><h3 id="cfg-h-mot">Bewegung</h3>
-${sw('intro', 'Auftakt-Bogen beim Start (9 s)')}
-${sw('cine', 'Leerlauf-Fahrt nach 2,5 s Ruhe')}
-${sw('orbit', 'Auto-Orbit (Ebenen mit Drehteller)')}
-${sw('sem', 'REM-Detektor schwenkt (Licht wandert über die Kanten)')}
-${range('dive', 0.5, 'Flugdauer zwischen Ebenen')}
-${range('play', 1, 'Pyrolyse-Zeitraffer (Raumtemperatur → Ziel)')}
-</section>
-<section aria-labelledby="cfg-h-light"><h3 id="cfg-h-light">Licht</h3>
-${range('key', 0.1, 'Hauptlicht')}
-${range('rim', 0.1, 'Gegenlicht')}
-${range('env', 0.1, 'Umgebung + Reflexe')}
-${range('kelvin', 100, 'Farbtemperatur Hauptlicht')}
-${range('exposure', 0.05, 'Belichtung')}
-${range('pool', 0.1, 'Lichtpool im Hintergrund')}
-<p class="cfg-hint">REM-Ebenen 2–4 zeigen das Signal des Elektronendetektors, kein Licht: dort wirken nur Belichtung und Lichtpool.</p>
-</section>
-<section aria-labelledby="cfg-h-det"><h3 id="cfg-h-det">Details</h3>
-${sw('dust', 'Schwebstaub im Hintergrund')}
-${sw('veil', 'Lichtschleier beim Durchtauchen')}
-${sw('hotspots', 'Hotspots (orange Abzeichen)')}
-${sw('charge', 'REM-Aufladung: helle Streifen, solange die Kohle schlecht leitet (unter ≈ 700 °C)')}
-${sw('capillary', 'Kapillar-Aufstieg (Ebene 2)')}
-</section>
-<div class="cfg-foot"><button type="button" data-reset>Zurücksetzen</button><span class="cfg-hint">Gespeichert in diesem Browser</span></div>`;
+const HTML = `<div class="cfg-head"><h2 class="cfg-title" id="cfg-title">Einstellungen</h2><button type="button" class="cfg-x" data-close aria-label="Einstellungen schließen">×</button></div>
+  <div class="cfg-tabs" role="tablist" aria-label="Geltungsbereich">
+    <button type="button" role="tab" id="cfg-tab-lv" data-tab="lv" aria-controls="cfg-level"></button>
+    <button type="button" role="tab" id="cfg-tab-gl" data-tab="gl" aria-controls="cfg-global">Global · alle Ebenen<span class="b-count">${N_GLOBAL}</span></button>
+  </div>
+  <div class="cfg-pane" id="cfg-level" role="tabpanel" aria-labelledby="cfg-tab-lv"></div>
+  <div class="cfg-pane" id="cfg-global" role="tabpanel" aria-labelledby="cfg-tab-gl">${MINI_DEFS}
+    ${navHtml(GROUPS.map((g) => ({ id: g.id, title: g.title.replace(' &amp; Bewegung', '').replace(' · Ebenen 2–4', ''), icon: g.icon, n: g.rows.length })))}
+    <div class="b-main">${devBar()}<div class="bento">${GROUPS.map(CARD).join('')}</div></div>
+  </div>
+  <p class="cfg-note cfg-foot">Gespeichert in diesem Browser</p>`;
 
 // Zahnrad oben rechts (.top-actions), Panel in .cfg-dock (index.html); Esc, × oder Klick außerhalb schließt; Messzeile alle 500 ms.
 // pixels() = gerenderte Bildpunkte des Hauptbilds (Messzeile); relayout() nach Ein-/Ausblenden der Infotafel (Bühne ändert die Breite)
 const OV_KEY = 'biochar.overlays';
-const THEMES = ['auto', 'light', 'dark'], THEME_NAME = { auto: 'Auto', light: 'Hell', dark: 'Dunkel' };
 export function mountSettings(pixels, relayout) {
   const btn = document.getElementById('btn-cfg'), box = document.getElementById('cfg');
   if (!btn || !box) return;
@@ -168,40 +218,66 @@ export function mountSettings(pixels, relayout) {
   let overlays = true;
   try { const s = localStorage.getItem(OV_KEY); if (s !== null) overlays = s !== '0'; } catch { /* Standard: an */ }
   document.body.classList.toggle('overlays-off', !overlays);
+  const panelOn = () => !document.body.classList.contains('panel-collapsed');
   const view = {
-    theme: () => setTheme(THEMES[(THEMES.indexOf(theme()) + 1) % THEMES.length]),
-    panel: () => { document.body.classList.toggle('panel-collapsed'); relayout?.(); },
-    overlays: () => {
-      overlays = !overlays;
+    theme: (v) => setTheme(v),
+    panel: (on) => { if (on !== panelOn()) { document.body.classList.toggle('panel-collapsed', !on); relayout?.(); } },
+    overlays: (on) => {
+      overlays = on;
       document.body.classList.toggle('overlays-off', !overlays);
       try { localStorage.setItem(OV_KEY, overlays ? '1' : '0'); } catch { /* ignorieren */ }
     },
   };
+  // Abweichung vom Standard je Zeile; '@…' = Ansicht und Qualität außerhalb von settings.S
+  const isDev = (k) => (k === '@theme' ? theme() !== 'auto' : k === '@panel' ? !panelOn() : k === '@overlays' ? !overlays
+    : k === '@quality' ? !quality.isAuto() : S[k] !== DEF[k]);
   btn.innerHTML = COG;
-  let built = false, timer = 0;
+  box.innerHTML = HTML;
+  const glob = box.querySelector('#cfg-global');
+  wireNav(glob);
+  const tabs = [...box.querySelectorAll('[role=tab]')];
+  const pick = (tab, focus) => tabs.forEach((t) => {
+    const on = t === tab;
+    t.setAttribute('aria-selected', String(on));
+    t.tabIndex = on ? 0 : -1;
+    box.querySelector(`#${t.getAttribute('aria-controls')}`).hidden = !on;
+    if (on && focus) t.focus();
+  });
+  box.querySelector('.cfg-tabs').addEventListener('click', (e) => { const t = e.target.closest('[role=tab]'); if (t) { pick(t); syncLayers(); } });
+  box.querySelector('.cfg-tabs').addEventListener('keydown', (e) => {
+    const i = tabs.indexOf(document.activeElement);
+    if (i < 0 || !['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(e.key)) return;
+    e.preventDefault();
+    pick(tabs[e.key === 'Home' ? 0 : e.key === 'End' ? tabs.length - 1 : (i + (e.key === 'ArrowRight' ? 1 : tabs.length - 1)) % tabs.length], true);
+    syncLayers();
+  });
+  pick(tabs[new URLSearchParams(location.search).get('cfg') === 'global' ? 1 : 0]);
+  mountLayers({ gear: box.querySelector('#cfg-level'), head: box.querySelector('#cfg-tab-lv') });
+
   const sync = () => {
-    if (!built) return;
-    box.querySelectorAll('[data-k]').forEach((el) => {
-      const k = el.dataset.k;
-      if (k === 'quality') el.setAttribute('aria-pressed', String(quality.isAuto() ? el.dataset.v === 'auto' : el.dataset.v === String(quality.index())));
-      else if (el.tagName === 'BUTTON') el.setAttribute('aria-pressed', String(String(S[k]) === el.dataset.v));
-      else if (el.type === 'checkbox') el.checked = S[k];
-      else { el.value = S[k]; el.parentElement.querySelector('output').textContent = OUT[k](S[k]); }
+    glob.querySelectorAll('[data-key][data-val]').forEach((b) => {
+      const k = b.dataset.key;
+      const on = k === 'quality' ? (quality.isAuto() ? b.dataset.val === 'auto' : b.dataset.val === String(quality.index())) : String(S[k]) === b.dataset.val;
+      b.setAttribute('aria-checked', String(on));
     });
-    const on = { panel: !document.body.classList.contains('panel-collapsed'), overlays };
-    box.querySelectorAll('[data-view]').forEach((b) => {
-      const k = b.dataset.view, state = b.querySelector('[data-state]');
-      if (k === 'theme') { state.textContent = THEME_NAME[theme()]; return; }
-      b.setAttribute('aria-pressed', String(on[k]));
-      state.textContent = on[k] ? 'an' : 'aus';
+    glob.querySelectorAll('[data-view="theme"]').forEach((b) => b.setAttribute('aria-checked', String(theme() === b.dataset.val)));
+    glob.querySelector('input[data-view="panel"]').checked = panelOn();
+    glob.querySelector('input[data-view="overlays"]').checked = overlays;
+    glob.querySelectorAll('input[type=checkbox][data-key]').forEach((i) => { i.checked = !!S[i.dataset.key]; });
+    glob.querySelectorAll('input[type=range][data-key]').forEach((i) => {
+      const k = i.dataset.key;
+      if (document.activeElement !== i) i.value = S[k];
+      glob.querySelector(`[data-out="${k}"]`).textContent = OUT[k](S[k]);
     });
-    box.querySelector('[data-qhint]').textContent = quality.isAuto()
+    glob.querySelector('[data-qhint]').textContent = quality.isAuto()
       ? `Auto misst die Bildzeit und passt die Stufe an · jetzt ${quality.get().name}`
       : 'Feste Stufe · Auto misst selbst und schaltet bei Bedarf';
+    markDevs(glob, isDev);
   };
   // Messzeile: Bildabstand ⌀ (EMA), daraus Bilder/s, Bildpunkte; Kurve = letzte 60 Bildabstände (0–50 ms, Strich = 16,7 ms)
   const meter = () => {
-    const m = box.querySelector('[data-meter]');
+    if (glob.hidden) return;
+    const m = glob.querySelector('[data-meter]');
     const mp = pixels() / 1e6;
     m.textContent = stat.ms ? `⌀ ${num(stat.ms, 1)} ms · ${num(1000 / stat.ms)} Bilder/s · ${num(mp, 1)} MP` : `– ms · ${num(mp, 1)} MP`;
     const n = stat.log.length, pts = [];
@@ -209,34 +285,53 @@ export function mountSettings(pixels, relayout) {
       const v = stat.log[(stat.i + j) % n];
       pts.push(`${((j / (n - 1)) * 96).toFixed(1)},${(23 - Math.min(23, (v / 50) * 23)).toFixed(1)}`);
     }
-    box.querySelector('polyline').setAttribute('points', pts.join(' '));
+    glob.querySelector('polyline').setAttribute('points', pts.join(' '));
   };
+  let timer = 0;
   const open = (o) => {
-    if (o && !built) { box.innerHTML = HTML; built = true; }
     box.hidden = !o;
+    document.body.classList.toggle('cfg-open', o);   // Ebenen-Titel weicht dem offenen Zahnrad
     btn.setAttribute('aria-expanded', String(o));
     clearInterval(timer);
     timer = 0;
-    if (o) { sync(); meter(); box.focus({ preventScroll: true }); timer = setInterval(meter, 500); }
+    if (o) { sync(); syncLayers(); meter(); box.focus({ preventScroll: true }); timer = setInterval(meter, 500); }
   };
   btn.addEventListener('click', () => open(box.hidden));
+  const resetAll = () => {
+    settings.reset();
+    view.theme('auto');
+    view.panel(true);
+    view.overlays(true);
+  };
   box.addEventListener('click', (e) => {
-    const b = e.target.closest('button');
+    if (e.target.closest('[data-close]')) { open(false); btn.focus(); return; }
+    if (!glob.contains(e.target)) return;
+    const r = e.target.closest('[data-reset]');
+    if (r) {
+      const k = r.dataset.reset;
+      if (k === '*') resetAll();
+      else if (k === '@theme') view.theme('auto');
+      else if (k === '@panel') view.panel(true);
+      else if (k === '@overlays') view.overlays(true);
+      else if (k === '@quality') quality.setAuto();
+      else set({ [k]: DEF[k] });
+      sync();
+      return;
+    }
+    const v = e.target.closest('button[data-view]');
+    if (v) { view[v.dataset.view](v.dataset.val); sync(); return; }
+    const b = e.target.closest('[data-key][data-val]');
     if (!b) return;
-    if (b.hasAttribute('data-close')) { open(false); btn.focus(); return; }
-    if (b.hasAttribute('data-reset')) { settings.reset(); sync(); return; }
-    if (b.dataset.view) { view[b.dataset.view](); sync(); return; }
-    const k = b.dataset.k, v = b.dataset.v;
-    if (k === 'quality') { if (v === 'auto') quality.setAuto(); else quality.set(+v); sync(); }
-    else if (k === 'motion') set({ motion: v, ...MOT[v] });
-    else if (k in RANGE) set({ [k]: +v });
-    else if (k in ENUM) set({ [k]: v });
+    const k = b.dataset.key, val = b.dataset.val;
+    if (k === 'quality') { if (val === 'auto') quality.setAuto(); else quality.set(+val); sync(); }
+    else if (k === 'motion') set({ motion: val, ...MOT[val] });
+    else set({ [k]: typeof DEF[k] === 'number' ? +val : val });
   });
-  box.addEventListener('input', (e) => { const el = e.target; if (el.type === 'range') set({ [el.dataset.k]: +el.value }); });
-  box.addEventListener('change', (e) => {
+  glob.addEventListener('input', (e) => {
     const el = e.target;
-    if (el.type !== 'checkbox') return;
-    set({ [el.dataset.k]: el.checked });
+    if (el.matches('input[data-view]')) { view[el.dataset.view](el.checked); sync(); return; }
+    if (!el.dataset.key) return;
+    set({ [el.dataset.key]: el.type === 'checkbox' ? el.checked : +el.value });
   });
   // Tasten im Panel nicht an die Seite weiterreichen (Esc = Ebene zurück, 1–7 = Ebene)
   box.addEventListener('keydown', (e) => {
@@ -244,6 +339,7 @@ export function mountSettings(pixels, relayout) {
     if (e.key === 'Escape') { open(false); btn.focus(); }
   });
   document.addEventListener('pointerdown', (e) => { if (!box.hidden && !box.contains(e.target) && !btn.contains(e.target)) open(false); });
-  subs.push(sync);
-  quality.onChange(sync);
+  subs.push(() => { if (!box.hidden) sync(); });
+  quality.onChange(() => { if (!box.hidden) sync(); });
+  if (new URLSearchParams(location.search).has('cfg')) open(true);   // Screenshots: Zahnrad offen
 }

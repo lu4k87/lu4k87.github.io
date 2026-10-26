@@ -10,7 +10,8 @@ import { createHud } from './hud.js';
 import { T_ROOM, fillDiameterNm, wetDiameterNm } from './science.js';
 import { NOISE_GLSL, SEM_SWING, semDetectorMode, semChargeOn } from './sem.js';
 import { quality } from './quality.js';
-import { settings, mountSettings, kelvinTint, PERF_KEYS } from './settings.js';
+import { settings, mountSettings, kelvinTint, PERF_KEYS, globalGrade } from './settings.js';
+import { registerLayers, showLayers } from './layers.js';
 
 const LOADERS = [
   () => import('./levels/piece.js'),
@@ -104,6 +105,7 @@ const comp = new THREE.ShaderMaterial({
     uBloom: { value: 0 }, uCA: { value: LENS.ca * eff().ca }, uDive: { value: 0 }, uInner: { value: new THREE.Vector2(0.5, 0.5) },
     uFill: { value: LENS.fill }, uHalo: { value: LENS.halo },
     uExposure: { value: 1 }, uPoolK: { value: 1 }, uDustK: { value: 1 }, uVeilK: { value: 1 },   // Zahnrad: Licht + Details
+    uVig: { value: 0.45 }, uBars: { value: 0 },                                                    // Zahnrad: Look
     uTopA: moodA.top, uBotA: moodA.bot, uPoolA: moodA.pool, uDustA: moodA.dust, uShA: moodA.sh, uHiA: moodA.hi, uGrA: moodA.gr,
     uTopB: moodB.top, uBotB: moodB.bot, uPoolB: moodB.pool, uDustB: moodB.dust, uShB: moodB.sh, uHiB: moodB.hi, uGrB: moodB.gr,
   },
@@ -116,7 +118,7 @@ const comp = new THREE.ShaderMaterial({
     uniform float uProg, uMaskR, uBlur, uAspect, uTime, uFade;
     uniform float uToneOuter, uToneInner, uGrainOuter, uGrainInner, uFill, uHalo;
     uniform vec4 uCamOuter, uCamInner;      // near, far, Fokusabstand, größte Unschärfe in Pixeln (0 = aus)
-    uniform float uBloom, uCA, uDive, uExposure, uPoolK, uDustK, uVeilK;
+    uniform float uBloom, uCA, uDive, uExposure, uPoolK, uDustK, uVeilK, uVig, uBars;
     uniform vec3 uTopA, uBotA, uTopB, uBotB, uShA, uHiA, uShB, uHiB;
     uniform vec4 uPoolA, uPoolB;
     varying vec2 vUv;
@@ -282,10 +284,13 @@ const comp = new THREE.ShaderMaterial({
       }
       if (uDive * uVeilK > 0.001) col += veil((uv - uAnchor) * vec2(uAspect, 1.0), p);
       vec2 d = (uv - 0.5) * vec2(uAspect, 1.0);
-      col *= mix(1.0, smoothstep(1.35, 0.25, length(d)), 0.45);
+      col *= mix(1.0, smoothstep(1.35, 0.25, length(d)), uVig);
       col = clamp(toSRGB(col), 0.0, 1.0);
       col = mix(col, col * col * (3.0 - 2.0 * col), con);       // sanfte S-Kurve je Stimmung
       col += (hash(uv * uRes + fract(uTime) * 91.7) - 0.5) * grain;
+      // Kinobalken 2,39:1 (Zahnrad „Look“): schwarze Streifen oben und unten, solange das Fenster schmaler ist
+      float bh = uBars * max(0.0, 0.5 - 0.5 * uAspect / 2.39);
+      col *= step(bh, uv.y) * step(uv.y, 1.0 - bh);
       gl_FragColor = vec4(col * uFade, 1.0);
     }`,
   depthTest: false,
@@ -419,15 +424,17 @@ function renderLoupe(lv, L, real) {
   loupe.done = eff().id === 'light';
 }
 
+// Stimmung der Ebene; ein globaler Farblook (Zahnrad „Look“) ersetzt deren Grading, Hintergrund und Licht bleiben je Ebene
 function setMood(target, index) {
-  const m = MOODS[index];
+  const m = MOODS[index], g = globalGrade(settings.S) || m.grade;
+  target.index = index;
   target.top.value.fromArray(m.top);
   target.bot.value.fromArray(m.bot);
   target.pool.value.fromArray(m.pool);
   target.dust.value.fromArray(m.dust);
-  target.sh.value.fromArray(m.grade.sh);
-  target.hi.value.fromArray(m.grade.hi);
-  target.gr.value.set(m.grade.sat, m.grade.con);
+  target.sh.value.fromArray(g.sh);
+  target.hi.value.fromArray(g.hi);
+  target.gr.value.set(g.sat, g.con);
 }
 
 // ---------- Hilfen ----------
@@ -535,7 +542,11 @@ settings.on((S, keys) => {
   SEM_SWING.k = still || !S.sem ? 0 : 1;
   semChargeOn(S.charge);
   const u = comp.uniforms;
-  u.uExposure.value = S.exposure;
+  const g = globalGrade(S);
+  u.uExposure.value = S.exposure * (g ? g.exposure : 1);
+  u.uVig.value = S.vig * (g ? g.vig : 0.45);
+  u.uBars.value = S.bars ? 1 : 0;
+  if (!keys || keys.includes('grade')) for (const t of [moodA, moodB]) if (t.index !== undefined) setMood(t, t.index);
   u.uPoolK.value = S.pool;
   u.uDustK.value = S.dust ? 1 : 0;
   u.uVeilK.value = S.veil ? 1 : 0;
@@ -568,8 +579,9 @@ function buildLevel(i) {
   const job = (async () => {
     await new Promise((r) => requestAnimationFrame(() => setTimeout(r, 0)));
     const mod = await LOADERS[i]();
-    const lv = mod.create({ env, aspect: window.innerWidth / window.innerHeight, temp: state.pyro.shown, rh: state.rh, wet: state.wet, quality: eff() });
+    const lv = mod.create({ env, aspect: window.innerWidth / window.innerHeight, temp: state.pyro.shown, rh: state.rh, wet: state.wet, quality: eff(), setRh });
     lv.index = i;
+    if (lv.layers) registerLayers(i, lv.layers);   // Zahnrad-Reiter „Ebene“ (layers.js)
     if (lv.setParam) { lv.setParam('target', state.temp); lv.setParam('play', state.pyro.playing); lv.setParam('quality', eff()); lv.setParam('detector', state.det); }
     lv.scene.background = null;
     // Farbe mit Mipmaps (Bloom, weiche Unschärfe) und Tiefe als Textur (Tiefenunschärfe)
@@ -616,6 +628,7 @@ function activate(lv) {
   state.controls = c;
   setMood(moodA, lv.index);
   hud.setLevel(lv.index, lv, state);
+  showLayers(lv.index);
   hud.setRailRange(hfwOf(lv, c.minDistance), hfwOf(lv, c.maxDistance));
   history.replaceState(null, '', `#ebene=${lv.index + 1}`);
   lv.dirty = true;
@@ -856,6 +869,15 @@ function diveHotspot(id) {
   if (h && h.kind === 'dive') goTo(lv.index + 1, h);
 }
 
+// Luftfeuchte: Regler der Infotafel (Ebene 5) und Tagesgang im Zahnrad (meso.js, ctx.setRh); gefüllt bis Ø mit Hysterese
+function applyRh(v) {
+  state.rh = v;
+  state.wet = wetDiameterNm(state.wet, v);
+  loupe.done = false;
+  for (const lv of state.levels.values()) if (lv.setParam) { lv.setParam('rh', v); lv.setParam('wet', state.wet); }
+  return state.wet;
+}
+function setRh(v) { hud.setRh(v, applyRh(v)); }
 const hud = createHud({
   onJump: (i) => goTo(i),
   onUp: () => goTo(state.index - 1),
@@ -934,13 +956,7 @@ const hud = createHud({
       }
     }
   },
-  onRh: (v) => {
-    state.rh = v;
-    state.wet = wetDiameterNm(state.wet, v);
-    loupe.done = false;
-    for (const lv of state.levels.values()) if (lv.setParam) { lv.setParam('rh', v); lv.setParam('wet', state.wet); }
-    return state.wet;
-  },
+  onRh: applyRh,
 });
 
 // Mausrad-Zoom selbst statt über OrbitControls: r170 zoomt je Ereignis sofort und ungedämpft, schnelles Drehen und

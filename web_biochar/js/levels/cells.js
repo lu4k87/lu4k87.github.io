@@ -157,7 +157,9 @@ export function create(ctx) {
   hyMat.uniforms.uTint.value.setRGB(1.0, 0.91, 0.76);   // Pilz ocker wie in Ebene 4
   const hyMesh = new THREE.Mesh(new THREE.TubeGeometry(hyCurve, HY_SEG, HY_R, HY_RAD), hyMat);
   const hyTip = new THREE.Mesh(new THREE.SphereGeometry(HY_R, 14, 10), hyMat);
-  scene.add(hyMesh, hyTip);
+  const hyGroup = new THREE.Group();   // Schalter „Pilzhyphe“ im Zahnrad blendet die Gruppe, das Wachstum steuert hyMesh
+  hyGroup.add(hyMesh, hyTip);
+  scene.add(hyGroup);
   let hyStart = 0.4, hyF = -1;   // Wachstum beginnt kurz nach der Ankunft; Klick auf „Pilzhyphe“ startet es neu
   const growHypha = (age) => {
     const f = still() ? 1 : clamp(((age - hyStart) * HY_RATE * HY_LAPSE) / hyLen, 0, 1);
@@ -215,6 +217,13 @@ export function create(ctx) {
     onHotspot(id) {
       if (id === 'hypha') { hyStart = age; hyF = -1; }
     },
+    // Zahnrad-Reiter „Ebene“ (layers.js)
+    layers: [
+      { id: 'hypha', group: 'Leben im Gefäß', label: 'Pilzhyphe wächst ein', type: 'toggle', value: true,
+        set: (v) => { hyGroup.visible = v; const h = hotspots.find((x) => x.id === 'hypha'); if (h) h.hidden = !v; level.dirty = true; },
+        hint: 'Spitzenwachstum ≈ 0,5 µm/s (Richtwert), hier 30× beschleunigt – Pilze nutzen die offenen Gefäße als Wege durch die Kohle.' },
+      { id: 'hyAgain', sub: true, label: 'Wachstum neu starten', type: 'action', button: 'Starten', run: () => { hyStart = age; hyF = -1; } },
+    ],
     dispose() { disposeGroup(scene); },
   };
   applyTemp();

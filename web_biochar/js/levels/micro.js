@@ -513,6 +513,7 @@ export function create(ctx) {
   // Gasmoleküle
   const rand = mulberry32(55);
   const mols = [];
+  let gasOn = true;   // Schalter „Gasmoleküle“ im Zahnrad
   const kinds = [...Array(20).fill('co2'), ...Array(12).fill('n2'), ...Array(10).fill('h2o')];
   for (const kind of kinds) {
     mols.push({
@@ -575,7 +576,8 @@ export function create(ctx) {
     const woody = st.sheets < 0.6;
     hs.fibril.hidden = st.fibril < 0.3;
     hs.hemi.hidden = Math.max(st.matrix, 1 - st.sheets) < 0.3;
-    hs.stack.hidden = hs.micropore.hidden = hs.gas.hidden = woody;
+    hs.stack.hidden = hs.micropore.hidden = woody;
+    hs.gas.hidden = woody || !gasOn;
     const { sheets } = model;
     sheets.forEach((sh, k) => {
       lines.setMatrixAt(k, _m.compose(sh.pos, sh.q, _sc.setScalar(sh.d)));
@@ -762,6 +764,12 @@ export function create(ctx) {
     cine: { orbit: 0.05, crane: 0.02, dolly: 0.025, drift: 0.01 },   // Leerlauf: halbe Ausschläge, die Infopunkte liegen tief gestaffelt
     orbit: { minDistance: 3, maxDistance: 26, enablePan: false, autoRotate: false },
     hotspots: [hs.sheet, hs.stack, hs.micropore, hs.gas, hs.fibril, hs.hemi],
+    // Zahnrad-Reiter „Ebene“ (layers.js)
+    layers: [
+      { id: 'gas', group: 'Gase', label: 'Gasmoleküle (Physisorption)', type: 'toggle', value: true,
+        set: (v) => { gasOn = v; atomMesh.visible = v; hs.gas.hidden = !v || hs.stack.hidden; level.dirty = true; },
+        hint: 'Freie Wärmebewegung in der Pore; nahe einer Schicht zieht die van-der-Waals-Kraft sie heran: Sie legen sich ≈ 0,33 nm flach auf, verweilen kurz und lösen sich – heißer kürzer (Modell).' },
+    ],
     liveFacts: true,
     facts: () => [
       { value: model.sheets.length ? `≈ ${fmt(model.ns.sheetNm * pyroState(shownT).sheets, 1)} nm · ${fmt(model.ns.layers, 1)}` : '–', label: 'mittlerer Schichtdurchmesser (nach Wood et al. 2023) · Schichten je Stapel (Modell)' },

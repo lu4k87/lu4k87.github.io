@@ -44,6 +44,8 @@ export const SOURCES = [
   { id: 41, text: 'Tuinstra, F., Koenig, J. L. (1970): Raman spectrum of graphite. J. Chem. Phys. 53, 1126–1130 (I_D/I_G = C(λ)/La für große Kristallite, C(514 nm) ≈ 4,4 nm).', url: 'https://doi.org/10.1063/1.1674108' },
   { id: 42, text: 'Harris, P. J. F. (2005): New perspectives on the structure of graphitic carbons. Crit. Rev. Solid State Mater. Sci. 30, 235–253 (nicht-graphitierende Kohlen aus gekrümmten, fullerenartigen Fragmenten mit Fünf- und Siebenringen).', url: 'https://doi.org/10.1080/10408430500406265' },
   { id: 43, text: 'Stone, A. J., Wales, D. J. (1986): Theoretical studies of icosahedral C₆₀ and some related species. Chem. Phys. Lett. 128, 501–503 (Stone-Wales-Umlagerung: 90°-Drehung einer C–C-Bindung, 5-7-7-5-Defekt).', url: 'https://doi.org/10.1016/0009-2614(86)80661-3' },
+  { id: 44, text: 'Doerr, S. H. (1998): On standardizing the „Water Drop Penetration Time“ and the „Molarity of an Ethanol Droplet“ techniques to classify soil hydrophobicity. Earth Surf. Process. Landforms 23, 663–668 (Eindringzeit-Klassen: < 5 s benetzbar … > 3600 s extrem wasserabweisend; Tropfen im Zahnrad, Ebene 1).', url: 'https://doi.org/10.1002/(SICI)1096-9837(199807)23:7<663::AID-ESP909>3.0.CO;2-6' },
+  { id: 45, text: 'Reich, S., Thomsen, C. (2004): Raman spectroscopy of graphite. Phil. Trans. R. Soc. A 362, 2271–2288 (G-Bande = E2g-Schwingung am Γ-Punkt, D-Bande = Atmungsmode der Sechsringe am K-Punkt, defektaktiviert; Schwingungen im Zahnrad, Ebene 7).', url: 'https://doi.org/10.1098/rsta.2004.1454' },
 ];
 
 export const LEVELS = [

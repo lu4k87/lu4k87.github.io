@@ -623,6 +623,16 @@ export function create(ctx) {
   const edgePos = surf(edgeS, topY(edgeS) + 0.15, R + TH / 2);
   const camera = new THREE.PerspectiveCamera(40, ctx.aspect, 0.1, 400);
   let age = 0, lastT = -1;
+  // Bewohner in Gruppen für die Schalter im Zahnrad (Szene liegt im Ursprung: Umhängen ändert keine Lage)
+  const bacGroup = new THREE.Group(), hyGroup = new THREE.Group();
+  for (const o of [bacMesh, strandMesh, film]) bacGroup.add(o);
+  for (const o of scene.children.filter((x) => x.material === hyMat || x === spMesh)) hyGroup.add(o);
+  scene.add(bacGroup, hyGroup);
+  const show = (obj, ids, v) => {
+    obj.visible = v;
+    for (const h of level.hotspots) if (ids.includes(h.id)) h.hidden = !v;
+    level.dirty = true;
+  };
   const level = {
     scene, camera,
     unit: 1e-6,
@@ -643,6 +653,15 @@ export function create(ctx) {
       { id: 'spores', kind: 'info', pos: onWall(-10.5, 2.5, 2.1), normal: inward(-10.5) },   // lose Spore auf der Wand
       { id: 'ash', kind: 'info', pos: onWall(NEEDLE.s, NEEDLE.y, 1.6), normal: inward(NEEDLE.s) },
       crackHs,
+    ],
+    // Zahnrad-Reiter „Ebene“ (layers.js): Bewohner und Asche einzeln ein-/ausblenden, Abzeichen folgen
+    layers: [
+      { id: 'bacteria', group: 'Leben auf der Wand', label: 'Bakterien und Biofilm', type: 'toggle', value: true, set: (v) => show(bacGroup, ['bacteria'], v),
+        hint: 'Stäbchen ≈ 0,7 µm dick, in Ketten unter einem Schleier aus Zuckern und Eiweißen – Poren der Kohle sind Rückzugsorte im Boden.' },
+      { id: 'hypha', label: 'Pilzhyphe mit Sporen', type: 'toggle', value: true, set: (v) => show(hyGroup, ['hypha', 'spores'], v),
+        hint: 'Ø ≈ 1,8 µm, wächst durch erweiterte Tüpfel in die Gefäße; im Zeitraffer reifen die Sporen.' },
+      { id: 'ash', group: 'Mineralien', label: 'Asche-Kristalle', type: 'toggle', value: true, set: (v) => show(crMesh, ['ash'], v),
+        hint: 'Calciumoxalat im Holz, nach dem Verkohlen Calcit in gleicher Form; im Rückstreubild hell (hohe Ordnungszahl).' },
     ],
     update(dt, t) {
       const calm = isStill();

@@ -448,7 +448,7 @@ export function createHud(handlers) {
     const l = LEVELS[current], st = pyroState(T), meta = hsMeta(l.id, selected.id);
     const off = isHsOffAt(l.id, selected, T);
     const sh = shrinkPercent(T);
-    const extra = current <= 3 ? ` · −${fmt(sh.tan, 0)}\u00a0% quer` : current >= 5 ? ` · La ≈ ${fmt(nanoStructure(T).La, 1)}\u00a0nm` : '';
+    const extra = current <= 3 ? ` · −${fmt(sh.tan, 0)}\u00a0% quer` : current >= 5 ? ` · La ≈ ${fmt(nanoStructure(T).sheetNm, 1)}\u00a0nm` : '';
     const phaseTxt = off
       ? `◐ ${esc(meta ? meta.note : 'Bei anderer Temperatur sichtbar')}`
       : `● ${esc(meta ? `Aktiv (${meta.badge})` : 'In dieser Phase sichtbar')}`;
@@ -1198,6 +1198,16 @@ export function createHud(handlers) {
 
   return {
     setGoal(T) { setGoal(T); refreshFacts(); },   // Zeitraffer hebt ein Ziel auf Raumtemperatur an
+    // Luftfeuchte von außen (Tagesgang im Zahnrad, meso.js): Regler, Anzeige, Isotherme und Ring am Abzeichen wie beim Ziehen
+    setRh(rh, d) {
+      const el = panel.querySelector('#in-rh');
+      if (!el) return;
+      const before = poreClass(+el.dataset.wet || 0);
+      el.value = rh;
+      el.dataset.wet = d;
+      updateRh(rh, d);
+      if (poreClass(d) !== before) pulse('water');
+    },
     setLevel(index, lv, state) {
       current = index;
       level = lv;

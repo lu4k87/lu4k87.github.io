@@ -268,3 +268,34 @@ export function shrinkPercent(t) {
   const s = pyroState(t);
   return { tan: 100 * s.shrinkTan, rad: 100 * s.shrinkRad, lon: 100 * s.shrinkL };
 }
+
+// ---------- Phänomene im Zahnrad (2026-10-26): Tropfen, Tagesgang der Luftfeuchte, Raman-Moden ----------
+
+// Liegender Tropfen als Kugelkappe (Bond-Zahl ≈ 0,2 bei 10 µl: Schwerkraft flacht kaum ab) mit Volumen V (µl = mm³) und
+// Kontaktwinkel θ: V = π R³ (1 − cos θ)² (2 + cos θ) / 3 → Krümmungsradius R, Kontaktradius a = R sin θ, Höhe h = R (1 − cos θ), mm
+export function sessileDrop(volUl, thetaDeg) {
+  const c = Math.cos((thetaDeg * Math.PI) / 180), s = Math.sin((thetaDeg * Math.PI) / 180);
+  const R = Math.cbrt((3 * Math.max(0, volUl)) / (Math.PI * (1 - c) ** 2 * (2 + c)));
+  return { R, a: R * s, h: R * (1 - c) };
+}
+// Eindringzeit eines Tropfens (Water Drop Penetration Time, Klassen nach Doerr 1998): Modell log-linear über θ – ≈ 1 s bei 40°
+// (gut benetzbare Kohle), ≈ 1 h bei 90°, darüber versickert nichts (Tropfen perlt) → Infinity. Klassen: < 5 s benetzbar,
+// 5–60 s schwach, 60–600 s stark, 600–3600 s sehr stark, > 3600 s extrem wasserabweisend
+export function dropPenetration(thetaDeg) {
+  const s = thetaDeg >= 90 ? Infinity : 10 ** (3.556 * clamp((thetaDeg - 40) / 50, 0, 1));
+  const cls = s < 5 ? 'benetzbar' : s < 60 ? 'schwach wasserabweisend' : s < 600 ? 'stark wasserabweisend' : s < 3600 ? 'sehr stark wasserabweisend' : 'extrem wasserabweisend';
+  return { s, cls };
+}
+// Tagesgang der relativen Luftfeuchte (Modell, typisch Mitteleuropa bei Strahlungswetter): Maximum ≈ 95 % kurz vor
+// Sonnenaufgang (5 Uhr), Minimum ≈ 45 % am Nachmittag (15 Uhr) – die Luft erwärmt sich schneller, als sie abkühlt, deshalb
+// fällt die Feuchte am Morgen steiler, als sie am Abend steigt. hour 0 … 24 → rF 0 … 1
+export function rhDay(hour) {
+  const h = ((hour % 24) + 24) % 24;
+  const k = h >= 5 && h < 15 ? 0.5 - 0.5 * Math.cos((Math.PI * (h - 5)) / 10) : 0.5 + 0.5 * Math.cos((Math.PI * (h < 5 ? h + 9 : h - 15)) / 14);
+  return 0.95 - 0.5 * k;
+}
+// Raman-aktive Schwingungen der sp²-Schichten (Reich & Thomsen 2004): G ≈ 1580 cm⁻¹ = E2g am Γ-Punkt, die beiden Untergitter
+// schwingen in der Ebene gegeneinander; D ≈ 1350 cm⁻¹ = Atmungsmode A1g′ der Sechsringe am K-Punkt (Kekulé-Muster: jeder
+// dritte Ring atmet), sichtbar nur mit Rändern und Defekten. Frequenz ν = c · ṽ
+export const PHONON = { G: 1580, D: 1350, c: 2.998e10 };
+export const phononHz = (wavenumber) => PHONON.c * wavenumber;

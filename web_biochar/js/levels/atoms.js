@@ -5,7 +5,7 @@
 // deshalb kein Graphit); Stärke der Wölbung: Modell.
 
 import * as THREE from 'three';
-import { nanoStructure, fmt, T_MIN, T_MAX } from '../science.js';
+import { nanoStructure, fmt, T_MIN, T_MAX, PHONON, phononHz } from '../science.js';
 import { mulberry32 } from '../util.js';
 import { ADDITIVE } from '../sem.js';
 import { settings } from '../settings.js';
@@ -345,6 +345,11 @@ export function create(ctx) {
   const rand = mulberry32(5);
   const GREY = new THREE.Color(0.62, 0.64, 0.68), BLUE = new THREE.Color(0.55, 0.7, 1.0);
   const live = { C: 0, H: 0, O: 0, hc: 0, rings: 0 };
+  // Schwingungen (Zahnrad „Ebene“): 0 Wärmebewegung (Zufall), 1 G-Mode, 2 D-Mode (Reich & Thomsen 2004, science.js PHONON).
+  // G: die beiden Untergitter schwingen in der Ebene gegeneinander; D: Kekulé-Muster, jeder dritte Sechsring atmet radial.
+  // Verlangsamt um 4·10¹³ (G ≈ 1,17 Hz, D ≈ 1,0 Hz – Verhältnis wie im Spektrum), Auslenkung stark überhöht
+  const VIB = { amp: 0.17, slow: 4.05e13 };
+  let vib = 0;
 
   function retarget(Tq, instant) {
     builtQ = Tq;
@@ -421,10 +426,31 @@ export function create(ctx) {
       }
     }
     order.nBond = Math.min(n, CAP_B);
+    modeVectors();
     order.rings = [...ringPool.values()].slice(0, CAP_R);
     order.rings.forEach((e, k) => { const c = e.n === 6 || !e.n ? PI_HEX : PI_DEFECT; piMesh.setColorAt(2 * k, c); piMesh.setColorAt(2 * k + 1, c); });
     for (const m of [atomMesh, cloudMesh, bondMesh, piMesh]) if (m.instanceColor) m.instanceColor.needsUpdate = true;
     orderDirty = false;
+  }
+
+  // Auslenkung je Kohlenstoff für G und D aus der Lage zum nächsten Ringzentrum: Winkel 30° + k·60° → Untergitter (k gerade/
+  // ungerade); Ringklasse (q − r) mod 3 im Gitter der Ringzentren → nur Klasse 0 atmet (jedes Atom hat genau einen solchen Ring)
+  function modeVectors() {
+    const rings = [...ringPool.values()].map((e) => {
+      const cx = e.cx ?? e.x, cy = e.cy ?? e.y, r = Math.round(cy / (1.5 * A)), q = Math.round(cx / (Math.sqrt(3) * A) - r / 2);
+      return { cx, cy, k: (((q - r) % 3) + 3) % 3 };
+    });
+    for (const a of order.atoms) {
+      a.mg ??= new THREE.Vector3(); a.md ??= new THREE.Vector3();
+      a.mg.set(0, 0, 0); a.md.set(0, 0, 0);
+      if (a.el !== 'C' || !rings.length) continue;
+      const near = rings.map((r) => ({ r, d: Math.hypot(a.home.x - r.cx, a.home.y - r.cy) })).filter((x) => x.d < A * 1.35).sort((x, y) => x.d - y.d);
+      if (!near.length) continue;
+      const r0 = near[0].r, ang = (Math.atan2(a.home.y - r0.cy, a.home.x - r0.cx) * 180) / Math.PI;
+      a.mg.set(Math.round((ang - 30) / 60) % 2 === 0 ? 1 : -1, 0, 0);
+      const br = near.find((x) => x.r.k === 0);
+      if (br) a.md.set(a.home.x - br.r.cx, a.home.y - br.r.cy, 0).normalize();
+    }
   }
 
   // Bestand fortschreiben: Wachsen, Abflug, Bindungsbruch; entfernt, was ganz verblasst ist
@@ -461,12 +487,14 @@ export function create(ctx) {
     const { m, q, s, up } = tmp;
     const at = order.atoms;
     const calm = reduced || settings.S.motion === 'off';
+    const modeAmp = vib ? VIB.amp * Math.sin(2 * Math.PI * t * phononHz(vib === 1 ? PHONON.G : PHONON.D) / VIB.slow) : 0;
     let nC = 0, nH = 0, nO = 0;
     at.forEach((a, k) => {
-      const amp = calm ? 0 : a.el === 'K' ? 0.12 : 0.035;
+      const amp = calm || vib ? 0 : a.el === 'K' ? 0.12 : 0.035;
       a.pos ??= new THREE.Vector3();
       const hx = a.home.x + a.off.x, hy = a.home.y + a.off.y;
       a.pos.set(hx + amp * Math.sin(t * 7.3 + a.ph[0]), hy + amp * Math.sin(t * 8.1 + a.ph[1]), a.home.z + a.off.z + warpZ(hx, hy) + amp * Math.sin(t * 6.7 + a.ph[2]));
+      if (vib && !calm && a.mg) a.pos.addScaledVector(vib === 1 ? a.mg : a.md, modeAmp);
       a.e = a.leaving ? ease(a.s) : ease(a.s);
       s.setScalar(ELEMENT[a.el].r * a.e);
       atomMesh.setMatrixAt(k, m.compose(a.pos, q.identity(), s));
@@ -526,6 +554,18 @@ export function create(ctx) {
     orbit: { minDistance: 6, maxDistance: 45, enablePan: false, autoRotate: true },
     hotspots: Object.values(hs),
     liveFacts: true,
+    // Zahnrad-Reiter „Ebene“ (layers.js)
+    layers: [
+      { id: 'vib', group: 'Schwingungen', label: 'Bewegung der Atome', type: 'range', min: 0, max: 2, step: 1, value: 0,
+        fmt: (v) => ['Wärme', 'G-Mode', 'D-Mode'][v], set: (v) => { vib = v; level.dirty = true; },
+        hint: () => [
+          'Wärmebewegung: jedes Atom zittert für sich um seine Lage (Modell, überhöht).',
+          `G-Bande ≈ ${fmt(PHONON.G)} cm⁻¹ (${fmt(phononHz(PHONON.G) / 1e12)} THz): Die beiden Untergitter schwingen in der Ebene gegeneinander und strecken jede C=C-Bindung – an jeder sp²-Bindung, auch im Graphit. Verlangsamt um 4·10¹³, Auslenkung stark überhöht.`,
+          `D-Bande ≈ ${fmt(PHONON.D)} cm⁻¹ (${fmt(phononHz(PHONON.D) / 1e12)} THz): Jeder dritte Sechsring atmet (Kekulé-Muster). Im perfekten Gitter Raman-stumm – sichtbar erst mit Rändern und Defekten, daher misst I_D/I_G die Clustergröße (Infotafel Ebene 6). Verlangsamt um 4·10¹³.`,
+        ][vib] + (reduced || settings.S.motion === 'off' ? ' Bewegung ist gerade aus (Zahnrad Global oder System).' : '') },
+      { id: 'pi', group: 'Elektronen', label: 'π-Elektronen über den Ringen', type: 'toggle', value: true, set: (v) => { piMesh.visible = v; level.dirty = true; } },
+      { id: 'cloud', label: 'Elektronenwolke (van-der-Waals-Radius)', type: 'toggle', value: true, set: (v) => { cloudMesh.visible = v; level.dirty = true; } },
+    ],
     // Summenformel und H/C zählen live mit (Atome, die einwachsen oder abziehen, zählen anteilig)
     facts: () => [
       { value: `C${sub(Math.round(live.C))}H${sub(Math.round(live.H))}O${sub(Math.round(live.O))}`, label: `Summenformel dieses Clusters, ${fmt(live.rings)} Ringe${cluster && cluster.sw ? ', davon 2 Fünf- und 2 Siebenringe' : ''} (ohne K⁺)` },

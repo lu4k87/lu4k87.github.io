@@ -13,7 +13,7 @@
 import * as THREE from 'three';
 import { SEM_GLSL, SEM_DET, semDetector } from '../sem.js';
 import { pcg3d, vnoise3 } from '../util.js';
-import { fillDiameterNm, fmt, labProps, pyroState } from '../science.js';
+import { fillDiameterNm, fmt, labProps, pyroState, rhDay } from '../science.js';
 import { race as raceTable } from '../nanolab.js';
 import { settings } from '../settings.js';
 
@@ -506,6 +506,11 @@ export function create(ctx) {
   const showPores = () => { for (const h of hotspots) if (h.kind === 'info') h.hidden = uniforms.uOpen.value < 0.5; };
   showPores();
   let rh = ctx.rh, wet = ctx.wet;
+  // Tagesgang der Luftfeuchte (Zahnrad „Ebene“ → Animation): Uhr läuft mit ½–4 h je Sekunde, rF nach rhDay (Modell); die Feuchte
+  // geht über main.js an alle Ebenen und den Regler der Infotafel (ctx.setRh), die Poren füllen und leeren sich mit Hysterese
+  const SPEEDS = [0, 0.5, 1, 2, 4];
+  const day = { h: 12, speed: 2, playing: false };
+  const clock = () => `${String(Math.floor(day.h)).padStart(2, '0')}:${String(Math.floor((day.h % 1) * 60)).padStart(2, '0')} Uhr`;
   const level = {
     scene, camera,
     unit: 1e-8,
@@ -538,8 +543,21 @@ export function create(ctx) {
       semDetector(calm ? 0 : t);
       molLight.position.copy(SEM_DET.value).multiplyScalar(10).add(raceC);   // Moleküle im Licht des „Detektors“
       placeRace(dt);
+      if (day.playing && ctx.setRh) { day.h = (day.h + Math.min(dt, 0.1) * SPEEDS[day.speed]) % 24; ctx.setRh(rhDay(day.h)); }
       return true;
     },
+    // Zahnrad-Reiter „Ebene“ (layers.js)
+    layers: [
+      { id: 'rhday', group: 'Animation', label: 'Luftfeuchte über einen Tag', type: 'play', min: 1, max: 4, step: 1, value: 2,
+        fmt: (v) => `${v === 1 ? '½' : SPEEDS[v]} h/s`,
+        set: (v, p) => { day.speed = v; if (p && !day.playing && ctx.setRh) ctx.setRh(rhDay(day.h)); day.playing = !!p; },
+        get: () => ({ value: day.speed, playing: day.playing }),
+        status: () => `${clock()} · rF ${fmt(rh * 100)} % · gefüllt bis Ø ${fmt(wet, 1)} nm`,
+        hint: 'Modell eines Strahlungstags: ≈ 95 % kurz vor Sonnenaufgang, ≈ 45 % am Nachmittag. Die Poren füllen sich nach der Kelvin-Gleichung von klein nach groß und geben das Wasser beim Trocknen erst bei tieferer Feuchte wieder ab (Hysterese, Cohan 1938) – zu sehen am Regler und an der Isotherme in der Infotafel.' },
+      { id: 'race', group: 'Gase', label: 'Knudsen-Rennen im Spalt', type: 'toggle', value: true,
+        set: (v) => { molMesh.visible = v; level.dirty = true; },
+        hint: 'CH₄, H₂O, N₂ und CO₂ in der 6-nm-Schlitzpore: Die Moleküle stoßen öfter an die Wand als aneinander, leichte sind schneller (D ∝ 1/√M).' },
+    ],
     setParam(name, value) {
       if (name === 'temp') {
         uniforms.uDens.value = plateDens(value);

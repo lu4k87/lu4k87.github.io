@@ -229,9 +229,9 @@ export function create(ctx) {
   };
   // Zyklus: 0,5 s trocken · 6 s Front (0 → 4 ms) · 3,5 s halten · 1 s ausblenden · Pause; Bewegung „Voll“ wiederholt, „Ruhig“ einmal
   // + auf Klick, „Aus“/reduced-motion: ruhende Front bei 1,5 ms
-  let capT = -1, capRuns = 0, capIdle = 0;
+  let capT = -1, capRuns = 0, capIdle = 0, capOn = true;
   const capStep = (dt) => {
-    const on = settings.S.capillary !== false;
+    const on = capOn;
     for (const m of colMeshes) m.visible = on;
     if (!on) { capInfo.on = false; return; }
     if (stillNow()) capT = -1;
@@ -285,6 +285,13 @@ export function create(ctx) {
       if (name === 'temp') { shownT = value; level.dirty = true; }
     },
     dispose() { disposeGroup(scene); },
+    // Zahnrad-Reiter „Ebene“ (layers.js); früher Schalter „Kapillar-Aufstieg (Ebene 2)“ unter Global · Details
+    layers: [
+      { id: 'capillary', group: 'Wasser', label: 'Kapillar-Aufstieg in den Gefäßen', type: 'toggle', value: true,
+        set: (v) => { capOn = v; const h = hotspots.find((x) => x.id === 'capillary'); if (h) h.hidden = !v; level.dirty = true; },
+        hint: 'Lucas-Washburn: h = √(γ r cos θ · t / 2η), in Zeitlupe 1500× – weite Gefäße füllen schneller; wasserabweisende Kohle (θ > 90°) saugt nichts.' },
+      { id: 'capAgain', sub: true, label: 'Aufstieg neu starten', type: 'action', button: 'Starten', run: () => { if (!stillNow()) { capT = 0; capRuns++; } } },
+    ],
   };
   level.overlays = [{
     cls: 'ov-capillary', pts: () => capPts, arrow: 'end', active: () => capInfo.on,

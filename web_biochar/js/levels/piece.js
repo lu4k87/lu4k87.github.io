@@ -7,7 +7,7 @@ import * as THREE from 'three';
 import { mulberry32, fbm3, smoothstep, clamp, lerp, vnoisef, hash33 } from '../util.js';
 import { disposeGroup } from '../walls.js';
 import { groundTextures, makeGround, LUMP_R } from './ground.js';
-import { pyroState, glowColor } from '../science.js';
+import { pyroState, glowColor, wettability, sessileDrop, dropPenetration, fmt } from '../science.js';
 import { settings } from '../settings.js';
 
 const W = 4.4, H = 2.4, D = 2.2;
@@ -755,7 +755,40 @@ export function create(ctx) {
   const ember = new THREE.PointLight(0xff5a1a, 0, 9, 1.6);   // Schein der Glut auf dem Tisch
   ember.position.set(0.2, -0.3, 1.9);
   scene.add(ember);
-  let playing = false, plumeAmt = 0, tNow = 550, tTarget = 550, lastT = 0, emberBase = 0, bloomBase = 0.12;
+
+  // Wassertropfen (Zahnrad „Ebene“, 2026-10-26): 10 µl als Kugelkappe mit dem Kontaktwinkel der Kohle (wettability, Kinney et
+  // al. 2012) – benetzbar flach und breit, wasserabweisend als Perle. θ < 90°: versickert in der Eindringzeit (WDPT, Doerr 1998)
+  // bei festgehaltenem Rand (Kontaktlinie haftet), dabei sinkt θ. Ein Tropfen setzt eine abgekühlte Probe voraus: Glut aus,
+  // solange er liegt; im Zeitraffer (heiß) verschwindet er
+  const DROP_UL = 10;
+  const dropBase = pick(2, (i) => Math.hypot(pos.getX(i) - 1.0, pos.getZ(i) + 0.05));
+  const dropMat = new THREE.MeshPhysicalMaterial({ color: 0xffffff, roughness: 0.03, metalness: 0, transmission: 1, thickness: 0.15, ior: 1.333, envMapIntensity: 1.4, specularIntensity: 1 });
+  const dropMesh = new THREE.Mesh(new THREE.BufferGeometry(), dropMat);
+  dropMesh.visible = false;
+  scene.add(dropMesh);
+  const drop = { on: false, v: 0, a: 0, theta: 90, shownV: -1, shownA: -1 };
+  // Kappe mit Kontaktradius a (mm) und Volumen v (µl): Höhe aus V = π h (3a² + h²) / 6 (Newton), daraus Radius und θ
+  const capH = (a, v) => { let h = Math.max(0.05, a * 0.5); for (let k = 0; k < 12; k++) h -= (Math.PI * h * (3 * a * a + h * h) / 6 - v) / (Math.PI * (a * a + h * h) / 2); return Math.max(1e-4, h); };
+  const shapeDrop = () => {
+    if (Math.abs(drop.v - drop.shownV) < 0.01 && drop.a === drop.shownA) return;
+    drop.shownV = drop.v; drop.shownA = drop.a;
+    const h = capH(drop.a, drop.v), R = (drop.a * drop.a + h * h) / (2 * h);
+    drop.theta = (Math.acos(clamp((R - h) / R, -1, 1)) * 180) / Math.PI;
+    const th = (drop.theta * Math.PI) / 180, n = 28, pts = [];
+    for (let k = 0; k <= n; k++) { const f = (th * k) / n; pts.push(new THREE.Vector2(0.1 * R * Math.sin(f), 0.1 * (R * Math.cos(f) - (R - h)))); }
+    dropMesh.geometry.dispose();
+    dropMesh.geometry = new THREE.LatheGeometry(pts, 48);
+    level.dirty = true;
+  };
+  const placeDrop = () => {
+    const theta = wettability(tNow).theta;
+    drop.v = DROP_UL;
+    drop.a = sessileDrop(DROP_UL, theta).a;
+    drop.shownV = -1;
+  };
+  const dropVisible = () => drop.on && !playing && drop.v > 0.05;
+  const coolGlow = () => (dropVisible() ? 0 : 1);
+  let plumeOn = true, playing = false, plumeAmt = 0, tNow = 550, tTarget = 550, lastT = 0, emberBase = 0, bloomBase = 0.12;
   const lerpCol = (a, b, k) => a.map((v, i) => v + (b[i] - v) * k);
   const smoke = (T) => {          // Farbe der Schwaden je Phase: Dampf weiß → Gase gelbbraun → Teer dunkel → dünn bläulich
     const st = (a, b, x) => Math.min(1, Math.max(0, (x - a) / (b - a)));
@@ -776,6 +809,7 @@ export function create(ctx) {
     for (const [h, base] of [[endHs, endBase], [cracksHs, crackBase], [sheenHs, sheenBase]]) {
       h.pos.set(base.x * sl, base.y * st + piece.position.y, base.z * st);
     }
+    dropMesh.position.set(dropBase.x * sl, dropBase.y * st + piece.position.y - 0.004, dropBase.z * st);
   };
 
   const camera = new THREE.PerspectiveCamera(32, ctx.aspect, 0.05, 200);
@@ -803,9 +837,16 @@ export function create(ctx) {
       // Glimmen ohne Bewegung (reduced-motion / Bewegung: Aus): ruhende Glutnester; Schein auf dem Tisch und Bloom atmen mit (wie im
       // Shader), der Tischschein flackert leicht (± 3 %, Schwebung ≈ 1 Hz)
       const breath = 0.6 * Math.sin(tg * 1.496) + 0.4 * Math.sin(tg * 0.94 + 1.7);
-      ember.intensity = emberBase * (1 + 0.07 * breath + 0.03 * Math.sin(tg * 6.3) * Math.sin(tg * 3.7 + 0.8));
+      ember.intensity = coolGlow() * emberBase * (1 + 0.07 * breath + 0.03 * Math.sin(tg * 6.3) * Math.sin(tg * 3.7 + 0.8));
       level.bloom = bloomBase * (1 + 0.08 * breath);
-      const want = playing ? pyroState(tNow).vapour : 0;
+      const want = playing && plumeOn ? pyroState(tNow).vapour : 0;
+      const dv = dropVisible();
+      if (dv) {
+        const pen = dropPenetration(drop.theta).s;   // Eindringzeit beim aktuellen Winkel: Rand haftet, θ sinkt, es geht schneller
+        if (!isStill() && Number.isFinite(pen)) drop.v = Math.max(0, drop.v - (dt * DROP_UL) / Math.max(0.5, pen));
+        shapeDrop();
+      }
+      if (dropMesh.visible !== dv) { dropMesh.visible = dv; level.setParam('temp', tNow); }
       plumeAmt += (want - plumeAmt) * Math.min(1, dt * 3);
       plumeMat.uniforms.uAmt.value = plumeAmt;
       plume.visible = plumeAmt > 0.004;
@@ -837,10 +878,11 @@ export function create(ctx) {
       piece.morphTargetInfluences[0] = open;
       pyro.uCrack.value = open;
       cracksHs.normal.set(0, 0, open > 0.12 ? 1 : 0);
-      pyro.uGlow.value = st.glow;
+      pyro.uGlow.value = st.glow * coolGlow();
       pyro.uGlowCol.value.setRGB(...glowColor(value));
       emberBase = st.glow * 13;
-      level.bloom = bloomBase = 0.12 + st.glow * 0.7;
+      level.bloom = bloomBase = 0.12 + st.glow * 0.7 * coolGlow();
+      if (drop.on && drop.v > 0.05) { drop.a = sessileDrop(drop.v, wettability(value).theta).a; drop.shownV = -1; }
       plumeMat.uniforms.uCol.value.setRGB(...smoke(value));
       for (const f of fallout) f.visible = st.char > 0.8;
       applyShrink();
@@ -862,6 +904,19 @@ export function create(ctx) {
       level.dirty = true;
     },
     dispose() { ground.dispose(); disposeGroup(scene); },
+    // Zahnrad-Reiter „Ebene“ (layers.js)
+    layers: [
+      { id: 'drop', group: 'Wasser', label: 'Wassertropfen (10 µl)', type: 'toggle', value: false,
+        set: (v) => { drop.on = v; if (v) placeDrop(); level.setParam('temp', tNow); },
+        hint: () => {
+          const w = wettability(tNow), p = dropPenetration(w.theta);
+          const t = Number.isFinite(p.s) ? `versickert in ≈ ${p.s < 10 ? fmt(p.s, 1) : fmt(p.s)} s` : 'perlt ab, versickert nicht';
+          return `Kohle aus ${fmt(tNow)} °C: θ ≈ ${fmt(w.theta)}°, ${p.cls} – ${t} (Eindringzeit nach Doerr 1998, Modell). Gilt für die abgekühlte Kohle: Glut aus, solange der Tropfen liegt.`;
+        } },
+      { id: 'dropAgain', sub: true, label: 'Tropfen neu setzen', type: 'action', button: 'Auftropfen', run: () => { placeDrop(); level.dirty = true; } },
+      { id: 'plume', group: 'Pyrolyse', label: 'Schwaden beim Zeitraffer', type: 'toggle', value: true, set: (v) => { plumeOn = v; },
+        hint: 'Wasserdampf, dann Pyrolysegase und Teer – Farbe je Phase, Menge folgt der Zersetzung (Yang et al. 2007).' },
+    ],
   };
   level.setParam('target', ctx.temp);
   level.setParam('temp', ctx.temp);
