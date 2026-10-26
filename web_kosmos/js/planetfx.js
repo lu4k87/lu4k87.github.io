@@ -173,13 +173,14 @@ void main() {
 // Auf der Nachtseite dunkel – sie verdecken die Stadtlichter. Schichthöhe vergrößert (Parallaxe sichtbar).
 export const CLOUD_FRAG = /* glsl */ `
 uniform sampler2D tClouds;
-uniform vec3 uSun;
+uniform vec3 uSun, uAxis;
 uniform float uCloudU, uTime, uGain, uOpacity;
 varying vec3 vN, vP, vO;
 varying vec2 vUv;
 ${NOISE}
 void main() {
-  float c = texture2D(tClouds, vUv + vec2(uCloudU, 0.0)).r;
+  vec2 cu = vUv + vec2(uCloudU, 0.0);
+  float c = texture2D(tClouds, cu).r;
   float px = length(fwidth(normalize(vO)));
   float fade = 1.0 - smoothstep(0.0015, 0.008, px);
   float n = fade > 0.0 ? fbm(normalize(vO) * 70.0 + vec3(0.0, 0.0, uTime * 0.01), 3) * fade : 0.0;
@@ -190,7 +191,19 @@ void main() {
   float lit = clamp((ndl + 0.1) / 1.1, 0.0, 1.0);
   vec3 sunCol = mix(vec3(1.0, 0.42, 0.25), vec3(1.0), smoothstep(-0.03, 0.3, ndl));
   float fwd = pow(max(dot(-V, uSun), 0.0), 8.0) * (1.0 - a) * 0.8;
-  vec3 col = vec3(0.93, 0.94, 0.96) * lit * sunCol * (0.85 + 0.15 * c) + sunCol * fwd * lit + vec3(0.012, 0.018, 0.03) * lit;
+  // Wolkenrelief (Modell, Höhe ∝ Dichte): weichere Mip-Stufe (glättet Kompressionsblöcke) zur Sonne versetzt abtasten –
+  // Seiten der Türme zur Sonne hell, dahinter Eigenschatten; bei tiefer Sonne am stärksten. Nur mit Polachse uAxis (Erde).
+  float relief = 0.0;
+  if (dot(uAxis, uAxis) > 0.5) {
+    float cb = texture2D(tClouds, cu, 1.5).r;
+    vec3 e = cross(uAxis, N);
+    float cosLat = max(length(e), 0.05);
+    vec3 east = e / cosLat, north = cross(N, east);
+    vec2 sd = vec2(dot(uSun, east) / cosLat, dot(uSun, north) * 2.0);
+    relief = (cb - texture2D(tClouds, cu + sd * 0.0004, 1.5).r) * 1.6 + (cb - texture2D(tClouds, cu + sd * 0.0012, 2.5).r) * 0.9;
+  }
+  float shape = clamp(1.0 + relief * (0.5 + 1.3 * (1.0 - clamp(ndl, 0.0, 1.0))), 0.4, 1.45);
+  vec3 col = vec3(0.93, 0.94, 0.96) * lit * sunCol * (0.85 + 0.15 * c) * shape + sunCol * fwd * lit + vec3(0.012, 0.018, 0.03) * lit;
   gl_FragColor = vec4(col * uGain, a * uOpacity);
 }
 `;

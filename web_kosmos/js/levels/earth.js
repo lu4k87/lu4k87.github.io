@@ -1,6 +1,6 @@
 // Station 1: Erde und Mond, maßstäblich (Einheit 1.000 km). Stand für den aktuellen Zeitpunkt: Sonnenrichtung aus den
 // JPL-Bahnelementen, Erddrehung aus der Sternzeit Greenwich, Mondort aus der Almanach-Näherung (astro.js).
-// Erde: Tagkarte mit weichem Terminator, Glanzlicht und Fresnel-Schimmer der Ozeane, Wolken als eigene Kugelschicht mit
+// Erde: Tagkarte 8k mit Geländerelief und weichem Terminator, Sonnenglitzern mit Windfeldern und Fresnel-Schimmer der Ozeane, Wolken als eigene Kugelschicht mit
 // Schattenwurf auf den Boden, Stadtlichter mit warmem Hof auf der Nachtseite, Atmosphäre als Hülle mit Einfachstreuung
 // (planetfx.js: Rayleigh-Blau, rot-oranges Dämmerungsband, weicher Glanz über den Rand, grünes Nachtleuchten).
 // Polarlichter: Vorhänge mit feinen Strahlen + breite, weiche Glow-Lage im Oval.
@@ -40,32 +40,53 @@ void main() {
   gl_Position = projectionMatrix * viewMatrix * w;
 }
 `;
+// Erde mit Objektposition vO (Rauschen in Feinstruktur, Wellen und Wolkenrändern)
+export const EARTH_VERT_O = EARTH_VERT.replace('varying vec3 vN, vP;', 'varying vec3 vN, vP, vO;').replace('vUv = uv;', 'vUv = uv; vO = position;');
+// Tagkarte 8k (≈ 5 km je Bildpunkt) mit Feinstruktur darunter, Gelände aus der Normalenkarte, Wasser mit Windfeldern.
 export const EARTH_FRAG = /* glsl */ `
-uniform sampler2D tDay, tNight, tSpec, tClouds;
+uniform sampler2D tDay, tNight, tRelief, tClouds;
 uniform vec3 uSun, uAxis;
-uniform float uCloudU, uLights;
-varying vec3 vN, vP;
+uniform float uCloudU, uLights, uRelief;
+varying vec3 vN, vP, vO;
 varying vec2 vUv;
+${NOISE}
 void main() {
   vec3 N = normalize(vN), V = normalize(cameraPosition - vP);
+  vec3 east = normalize(cross(uAxis, N)), north = cross(N, east);
   float ndl = dot(N, uSun);
+  // Reliefkarte (Solar System Scope): rg = Geländenormale (r nach Osten, g nach Süden), b = Wassermaske
+  vec3 rel = texture2D(tRelief, vUv).rgb;
+  float ocean = smoothstep(0.3, 0.7, rel.b);
   vec3 day = texture2D(tDay, vUv).rgb;
-  float ocean = texture2D(tSpec, vUv).r;
+  // Feinstruktur (Modell): unter der Auflösung der Karte moduliert Rauschen die Helligkeit an Land in 1–6 km, blendet
+  // aus, sobald ein Bildpunkt größer ist
+  float px = length(fwidth(vO));
+  float fine = 1.0 - smoothstep(0.0008, 0.004, px);
+  if (fine > 0.0) day *= 1.0 + (fbm(vO * 240.0, 4) * 0.34 + fbm(vO * 1400.0, 2) * 0.16) * fine * (1.0 - ocean);
   vec2 cuv = vUv + vec2(uCloudU, 0.0);
   float cl = texture2D(tClouds, cuv).r;
   // weicher Terminator: die Atmosphäre streut Licht ein Stück über die Schattengrenze, dort rötlich (langer Weg durch die Luft)
   float lit = clamp((ndl + 0.06) / 1.06, 0.0, 1.0);
   vec3 sunCol = mix(vec3(1.0, 0.5, 0.3), vec3(1.0), smoothstep(-0.02, 0.35, ndl));
+  // Gelände: Hänge zur Sonne heller, abgewandte dunkler (Normale überhöht, uRelief); am Terminator am deutlichsten
+  // (kleine Abweichungen < 3/128 = Rauschen der Kompression → ignoriert)
+  vec2 g = (rel.rg - 0.5) * vec2(2.0, -2.0);
+  g = sign(g) * max(abs(g) - 0.023, 0.0) * (1.0 - ocean);
+  vec3 Ng = normalize(N + (east * g.x + north * g.y) * uRelief);
+  float hill = clamp(1.0 + (dot(Ng, uSun) - ndl) * (1.2 + 1.8 * (1.0 - lit)), 0.45, 1.6);
   // Wolkenschatten: die schattende Wolke liegt zwischen Boden und Sonne → Wolkenkarte zur Sonne versetzt abtasten
-  vec3 east = normalize(cross(uAxis, N)), north = cross(N, east);
   vec2 off = vec2(dot(uSun, east), dot(uSun, north)) * 0.004;
   float shadow = 1.0 - 0.6 * smoothstep(0.1, 0.8, texture2D(tClouds, cuv + off).r) * lit;
-  vec3 col = day * lit * sunCol * 0.85 * shadow;
-  // Glanzlicht auf dem Wasser (Blinn-Phong), unter Wolken gedämpft; flacher Blick aufs Wasser spiegelt den Himmel (Fresnel)
+  vec3 col = day * lit * hill * sunCol * 0.85 * shadow;
+  // Wasser: Sonnenglitzern mit Rauigkeit aus Windfeldern (Rauschen, Modell; Beckmann-Verteilung) – ruhige Flecken
+  // spiegeln scharf, windige streuen breit; unter Wolken gedämpft. Flacher Blick aufs Wasser spiegelt den Himmel (Fresnel).
   vec3 H = normalize(uSun + V);
-  float glint = pow(max(dot(N, H), 0.0), 420.0) * ocean * (1.0 - cl) * lit;
+  float nh = max(dot(N, H), 1e-3), t2 = (1.0 - nh * nh) / (nh * nh);
+  float wind = fbm(normalize(vO) * 22.0, 3) * 0.7 + fbm(normalize(vO) * 160.0, 2) * 0.3;
+  float m = mix(0.045, 0.12, smoothstep(-0.35, 0.45, wind));
+  float glint = exp(-t2 / (m * m)) * (0.0048 / (m * m)) * ocean * (1.0 - cl) * lit;
   float fres = pow(1.0 - max(dot(N, V), 0.0), 5.0) * ocean * lit;
-  col += vec3(1.0, 0.92, 0.8) * glint * 0.6 + vec3(0.03, 0.045, 0.065) * pow(max(dot(N, H), 0.0), 18.0) * ocean * lit + vec3(0.25, 0.4, 0.6) * fres * 0.12;
+  col += vec3(1.0, 0.92, 0.8) * glint * 0.6 + vec3(0.03, 0.045, 0.065) * pow(nh, 18.0) * ocean * lit + vec3(0.25, 0.4, 0.6) * fres * 0.12;
   // Stadtlichter auf der Nachtseite mit warmem Hof (gröbere Mip-Stufe = Lichtglocke über Ballungsräumen); Wolken verdecken
   // sie über die eigene Wolkenschicht
   vec3 night = texture2D(tNight, vUv).rgb, halo = texture2D(tNight, vUv, 4.0).rgb;
@@ -76,6 +97,12 @@ void main() {
   gl_FragColor = vec4(col, 1.0);
 }
 `;
+
+// Erdkarten nach Grafikkarte: Tag und Wolken in 8k ab Qualität „mittel“ (je ≈ 180 MB Grafikspeicher), sonst 4k
+export function earthMaps(ctx) {
+  const k = ctx.renderer.capabilities.maxTextureSize >= 8192 && ctx.detail >= 0.8 ? '8k' : '4k';
+  return { day: ctx.tex(`earth_daymap_${k}.jpg`), night: ctx.tex('earth_nightmap_4k.jpg'), clouds: ctx.tex(`earth_clouds_${k}.jpg`, false), relief: ctx.tex('earth_relief_4k.jpg', false) };
+}
 
 export const MOON_FRAG = /* glsl */ `
 uniform sampler2D tMoon;
@@ -341,19 +368,19 @@ export function create(ctx) {
   scene.add(tilt);
   const spin = new THREE.Group();
   tilt.add(spin);
+  const maps = earthMaps(ctx);
   const earthMat = new THREE.ShaderMaterial({
-    vertexShader: EARTH_VERT, fragmentShader: EARTH_FRAG,
+    vertexShader: EARTH_VERT_O, fragmentShader: EARTH_FRAG,
     uniforms: {
-      tDay: { value: ctx.tex('earth_daymap.jpg') }, tNight: { value: ctx.tex('earth_nightmap.jpg') },
-      tSpec: { value: ctx.tex('earth_specular.jpg', false) }, tClouds: { value: ctx.tex('earth_clouds.jpg', false) },
-      uSun: { value: sunDir }, uAxis: { value: axis }, uCloudU: { value: 0 }, uLights: { value: 2.6 },
+      tDay: { value: maps.day }, tNight: { value: maps.night }, tRelief: { value: maps.relief }, tClouds: { value: maps.clouds },
+      uSun: { value: sunDir }, uAxis: { value: axis }, uCloudU: { value: 0 }, uLights: { value: 2.6 }, uRelief: { value: 7 },
     },
   });
   const earth = new THREE.Mesh(new THREE.SphereGeometry(R_E, 192, 96), earthMat);
   spin.add(earth);
   // Wolken als eigene Kugelschicht (drehen mit der Erde, driften zusätzlich)
-  const cloudU = { tClouds: { value: ctx.tex('earth_clouds.jpg', false) }, uSun: { value: sunDir }, uCloudU: { value: 0 }, uTime: { value: 0 }, uGain: { value: 0.95 }, uOpacity: { value: 0.96 } };
-  const clouds = new THREE.Mesh(new THREE.SphereGeometry(R_CLOUD, 192, 96), new THREE.ShaderMaterial({ vertexShader: EARTH_VERT.replace('varying vec3 vN, vP;', 'varying vec3 vN, vP, vO;').replace('vUv = uv;', 'vUv = uv; vO = position;'),
+  const cloudU = { tClouds: { value: maps.clouds }, uSun: { value: sunDir }, uAxis: { value: axis }, uCloudU: { value: 0 }, uTime: { value: 0 }, uGain: { value: 0.95 }, uOpacity: { value: 0.96 } };
+  const clouds = new THREE.Mesh(new THREE.SphereGeometry(R_CLOUD, 192, 96), new THREE.ShaderMaterial({ vertexShader: EARTH_VERT_O,
     fragmentShader: CLOUD_FRAG, uniforms: cloudU, transparent: true, depthWrite: false }));
   spin.add(clouds);
   const atmoMat = new THREE.ShaderMaterial({
@@ -379,6 +406,7 @@ export function create(ctx) {
 
   // ---------- Satelliten und Trümmer (CelesTrak-Schnappschuss, sats.js) ----------
   let satData = null, sats = null, iss = null, tg = null;
+  const sunSat = new THREE.Vector3(), qTiltInv = new THREE.Quaternion();
   const satLines = [], issLocal = new THREE.Vector3(), issWorld = new THREE.Vector3(), tgLocal = new THREE.Vector3(), tgWorld = new THREE.Vector3(), satInfo = { alt: 0, v: 0 };
   const show = { sats: true, debris: true, orbits: true };
   let linesT = -1;
@@ -563,6 +591,7 @@ export function create(ctx) {
       if (sats) {
         const days = jd - satData.jd;
         sats.userData.update(days);
+        sats.userData.setSun(sunSat.copy(sunDir).applyQuaternion(qTiltInv.copy(tilt.quaternion).invert()));
         if (t - linesT > 0.5 || rate > 0.01) {
           linesT = t;
           satLines.forEach((l) => l.userData.update(days));

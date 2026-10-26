@@ -1,6 +1,6 @@
 // Erde aus dem Orbit – gemeinsamer Teil der Stationen ISS (01A) und Tiangong (01B). Die Szene hängt am Bahnsystem der
 // Raumstation (Meter; x Flugrichtung, y vom Erdmittelpunkt weg, z = x × y), so wie die Stationen fliegen (LVLH): die Erde
-// bleibt unten, Sonne und Sterne ziehen einmal je Umlauf herum. Erde mit den Shadern aus Station 1 (Tagkarte 4k mit
+// bleibt unten, Sonne und Sterne ziehen einmal je Umlauf herum. Erde mit den Shadern aus Station 1 (Tagkarte 8k mit
 // Feinstruktur, Stadtlichter, Wolken, Polarlichter), Atmosphäre aus planetfx.js als dünner Saum bis 120 km, Sonne, Mond
 // und echter Sternhimmel. Bahn aus dem CelesTrak-Schnappschuss (sats.json, Kepler + J2): Ort, Sonnenauf- und -untergänge,
 // Erdschatten, Erdschein und Bahnspur gelten für den angezeigten Zeitpunkt.
@@ -16,11 +16,10 @@ import { createStarfield } from './stars.js';
 import { createCatalogSky } from './catalog.js';
 import { createFlare } from './flare.js';
 import { settings } from './settings.js';
-import { NOISE } from './glsl.js';
 import { loadSats, satPos, namedIndex } from './sats.js';
 import { speedAt, periodMin, RE } from './orbit.js';
 import { SHELL_VERT, ATMO_FRAG, CLOUD_FRAG } from './planetfx.js';
-import { EARTH_VERT, EARTH_FRAG, MOON_FRAG, SUN_VERT, SUN_FRAG, AURORA_VERT, AURORA_FRAG, AURORA_GLOW_VERT, AURORA_GLOW_FRAG, auroraGeometry } from './levels/earth.js';
+import { EARTH_VERT, EARTH_VERT_O, EARTH_FRAG, earthMaps, MOON_FRAG, SUN_VERT, SUN_FRAG, AURORA_VERT, AURORA_FRAG, AURORA_GLOW_VERT, AURORA_GLOW_FRAG, auroraGeometry } from './levels/earth.js';
 
 const R_E = 6.371, R_M = 1.7374;     // [1.000 km] NASA Fact Sheets
 const R_CLOUD = R_E + 0.012;         // Wolkenobergrenze ≈ 12 km
@@ -35,16 +34,7 @@ export const SPEEDS = [[1, 'Echtzeit'], [10, '10×'], [30, '30×'], [120, '2 min
 // Material für Stationsteile: in der durchscheinenden Liste nach der fernen Welt (siehe Kopf), deckt trotzdem voll
 export const stationMat = (o) => new THREE.MeshStandardMaterial({ transparent: true, ...o });
 
-// Tagseite mit Feinstruktur: die 4k-Karte löst ≈ 10 km auf; aus 400 km Höhe fehlt darunter jede Struktur. Rauschen
-// (Modell) moduliert die Helligkeit an Land in 1–6 km, blendet aus, sobald ein Bildpunkt größer ist.
-const EARTH_VERT_O = EARTH_VERT.replace('varying vec3 vN, vP;', 'varying vec3 vN, vP, vO;').replace('vUv = uv;', 'vUv = uv; vO = position;');
-const EARTH_FRAG_O = EARTH_FRAG.replace('varying vec3 vN, vP;', `varying vec3 vN, vP, vO;\n${NOISE}`)
-  .replace('vec3 day = texture2D(tDay, vUv).rgb;', `vec3 day = texture2D(tDay, vUv).rgb;
-  float px = length(fwidth(vO));
-  float fine = 1.0 - smoothstep(0.0008, 0.004, px);
-  if (fine > 0.0) day *= 1.0 + (fbm(vO * 240.0, 4) * 0.34 + fbm(vO * 1400.0, 2) * 0.16) * fine * (1.0 - texture2D(tSpec, vUv).r);`);
-
-// Wolken: die 2k-Karte (≈ 20 km je Bildpunkt) bekommt feine Ränder aus Rauschen bis ≈ 0,5 km (Modell)
+// Wolken: die 8k-Karte (≈ 5 km je Bildpunkt) bekommt feine Ränder aus Rauschen bis ≈ 0,5 km (Modell)
 const CLOUD_FRAG_O = CLOUD_FRAG.replace('fbm(normalize(vO) * 70.0 + vec3(0.0, 0.0, uTime * 0.01), 3)', '(fbm(normalize(vO) * 70.0 + vec3(0.0, 0.0, uTime * 0.01), 3) * 0.6 + fbm(normalize(vO) * 1100.0, 4) * 0.8)')
   .replace('c + n * 0.22 *', 'c + n * 0.34 *');
 
@@ -133,14 +123,14 @@ export function createOrbitView(ctx, { sat, fallback, radius = 60, color = 0xf3b
   const spin = new THREE.Group();
   tilt.add(spin);
   const axis = new THREE.Vector3();
+  const maps = earthMaps(ctx);
   const earthU = {
-    tDay: { value: ctx.tex('earth_daymap_4k.jpg') }, tNight: { value: ctx.tex('earth_nightmap_4k.jpg') },
-    tSpec: { value: ctx.tex('earth_specular.jpg', false) }, tClouds: { value: ctx.tex('earth_clouds.jpg', false) },
-    uSun: { value: sun }, uAxis: { value: axis }, uCloudU: { value: 0 }, uLights: { value: 2.6 },
+    tDay: { value: maps.day }, tNight: { value: maps.night }, tRelief: { value: maps.relief }, tClouds: { value: maps.clouds },
+    uSun: { value: sun }, uAxis: { value: axis }, uCloudU: { value: 0 }, uLights: { value: 2.6 }, uRelief: { value: 7 },
   };
-  const earth = new THREE.Mesh(new THREE.SphereGeometry(R_E, 256, 128), new THREE.ShaderMaterial({ vertexShader: EARTH_VERT_O, fragmentShader: EARTH_FRAG_O, uniforms: earthU }));
+  const earth = new THREE.Mesh(new THREE.SphereGeometry(R_E, 256, 128), new THREE.ShaderMaterial({ vertexShader: EARTH_VERT_O, fragmentShader: EARTH_FRAG, uniforms: earthU }));
   spin.add(earth);
-  const cloudU = { tClouds: earthU.tClouds, uSun: { value: sun }, uCloudU: { value: 0 }, uTime: { value: 0 }, uGain: { value: 0.95 }, uOpacity: { value: 0.96 } };
+  const cloudU = { tClouds: earthU.tClouds, uSun: { value: sun }, uAxis: { value: axis }, uCloudU: { value: 0 }, uTime: { value: 0 }, uGain: { value: 0.95 }, uOpacity: { value: 0.96 } };
   const clouds = new THREE.Mesh(new THREE.SphereGeometry(R_CLOUD, 256, 128), new THREE.ShaderMaterial({ vertexShader: EARTH_VERT_O, fragmentShader: CLOUD_FRAG_O, uniforms: cloudU, transparent: true, depthWrite: false }));
   spin.add(clouds);
   // Polarlicht-Oval wie Station 1 (geomagnetischer Nordpol 2025: 80,8° N, 72,8° W, IGRF-14)
