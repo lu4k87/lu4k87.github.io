@@ -8,7 +8,7 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { STATIONS, ROUTE, pathTo, routeIndex } from './content.js';
 import { createPost } from './post.js';
 import { createHud } from './hud.js';
-import { settings, onSettings } from './settings.js';
+import { settings, onSettings, globalGrade } from './settings.js';
 import { createDeepSky } from './deepsky.js';
 
 const LOADERS = {
@@ -693,17 +693,21 @@ function frame(nowMs) {
   // Grading: im Flug zwischen den Stationen überblenden
   if (tr) blendLook(lookA, tr.outer.look || {}, tr.inner.look || {}, smooth(0.3, 0.7, tr.prog));
   else blendLook(lookA, lv.look || {}, lv.look || {}, 0);
-  look.exposure = lookA.exposure * settings.S.exposure;
-  look.bloom = settings.S.bloom ? lookA.bloom : 0;
-  look.sat = lookA.sat; look.con = lookA.con; look.vig = lookA.vig;
+  // Farblook aus dem Zahnrad Global: Kontrast, Sättigung, Tönung, Vignette ersetzen den Look der Station, Belichtung und Bloom
+  // wirken relativ (Station bleibt so hell, wie sie gebaut ist); „Station“ = null → Look der Station
+  const G = globalGrade();
+  look.exposure = lookA.exposure * (G ? G.exposure : 1) * settings.S.exposure;
+  look.bloom = settings.S.bloom ? lookA.bloom * (G ? G.bloom / 0.12 : 1) : 0;
+  look.sat = G ? G.sat : lookA.sat; look.con = G ? G.con : lookA.con; look.vig = (G ? G.vig : lookA.vig) * settings.S.vig;
   look.ca = settings.S.lens ? lookA.ca : 0;
   look.grain = settings.S.grain ? lookA.grain : 0;
-  look.sh.fromArray(lookA.sh); look.hi.fromArray(lookA.hi);
+  look.sh.fromArray(G ? G.sh : lookA.sh); look.hi.fromArray(G ? G.hi : lookA.hi);
   const ehtOf = (x) => (x && x.post ? x.post.eht : null);
   const ea = ehtOf(tr ? tr.outer : lv), eb = ehtOf(tr ? tr.inner : null);
   look.ehtA.set(ea ? ea[0] : 0, ea ? ea[1] : 0, ea ? ea[2] : 0);
   look.ehtB.set(eb ? eb[0] : 0, eb ? eb[1] : 0, eb ? eb[2] : 0);
-  bars += ((state.intro ? 0.11 : 0) - bars) * Math.min(1, real * 2.5);
+  // Kinobalken: Auftakt fest, sonst Zahnrad „Kinobalken 2,39:1“ (Balkenhöhe je Seite aus dem Fensterformat)
+  bars += ((state.intro ? 0.11 : settings.S.bars ? Math.max(0, (1 - innerWidth / innerHeight / 2.39) / 2) : 0) - bars) * Math.min(1, real * 2.5);
   look.bars = bars;
   post.render(tr ? tr.outer.rt : lv.rt, tr ? tr.inner.rt : null, tr ? { prog: tr.prog, maskR: tr.maskR, blur: tr.blur, veil: tr.veil, anchor: tr.anchorUv, inner: tr.innerUv } : null, look, state.time);
 

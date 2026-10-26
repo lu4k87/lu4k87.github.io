@@ -16,6 +16,7 @@ import { createStarfield } from '../stars.js';
 import { BODY_VERT } from '../planetfx.js';
 import { SUN_FRAG, BILLBOARD_VERT, BILLBOARD_AIM_VERT, CORONA_FRAG, LOOP_VERT, LOOP_FRAG, CME_FRAG, CLOOP_VERT, CLOOP_FRAG, HOLES, FILS, loopsGeometry, spotGroups, streamerSet, coronalLoopsGeometry } from '../sunfx.js';
 import { registerLayers, refreshLayers } from '../layers.js';
+import { GRADES, globalGrade, onSettings } from '../settings.js';
 import { LOOK_SURF_FRAG, LOOK_ATMO_VERT, LOOK_ATMO_FRAG, LOOK_EXT, ERUPT_T, lookDefines } from '../sunlook.js';
 import { STRAND_VERT, STRAND_FRAG, strandUniforms, strandGeometry, arcadeLoops, prominenceLoops, flareArcade, eruptLoop, loopField } from '../sunstrands.js';
 
@@ -60,12 +61,6 @@ const ERUPTS = ['Filament-Eruption', 'Flare mit Schockwelle', 'Protuberanz reiß
 const FIELDS = ['aus', 'feiner Kranz', 'gestaffelt', 'Nester'];
 const FEET = ['Kante', 'Fibrillen', 'Kelch', 'Strudel'];
 const GLOWS = ['Rotglut', 'Strahlenkranz', 'Weißglut'];
-// Farblook: Belichtung, Bloom (× Glut), Kontrast, Sättigung, Tönung Schatten/Lichter, Vignette – Kino = Mischung aus HDR, Ruhig, Tiefe Glut
-const GRADES = [['neutral', { exposure: 1, bloom: 0.12, con: 0.12, sat: 1.04, sh: [0.96, 0.99, 1.06], hi: [1.04, 1, 0.95], vig: 0.38 }],
-  ['Kino', { exposure: 1.05, bloom: 0.24, con: 0.25, sat: 1.12, sh: [0.88, 0.93, 1.06], hi: [1.1, 0.99, 0.86], vig: 0.55 }],
-  ['Kino-HDR', { exposure: 1.15, bloom: 0.22, con: 0.22, sat: 1.1, sh: [0.9, 0.96, 1.12], hi: [1.08, 1, 0.88], vig: 0.5 }],
-  ['ruhig', { exposure: 1, bloom: 0.16, con: 0.18, sat: 1, sh: [0.97, 0.98, 1.02], hi: [1.04, 1, 0.94], vig: 0.45 }],
-  ['tiefe Glut', { exposure: 0.9, bloom: 0.3, con: 0.3, sat: 1.18, sh: [0.85, 0.88, 0.98], hi: [1.12, 0.98, 0.84], vig: 0.6 }]];
 // Ablösen beim Abriss (uTear in sunstrands.js) und Stärke der Auswurf-Blase dahinter (uEA in sunlook.js)
 const TEARS = ['klassisch', 'Plasmoid', 'Peitsche', 'Zerfasern', 'Mischung'];
 const TEAR_BUBBLE = [0, 1, 0.35, 0, 0.8];
@@ -291,8 +286,11 @@ export function create(ctx) {
     const [gs, ga, gb, hot] = glowMode === 0 ? [g, Math.sqrt(g), Math.sqrt(g), 0] : glowMode === 1 ? [Math.sqrt(g), g ** 1.4, g ** 1.3, 0]
       : [g, g, g, THREE.MathUtils.clamp((g - 1.1) / 1.2, 0, 1)];
     lookU.uGlow.value = gs; lookU.uHot.value = hot; rimU.uGain.value = 0.8 * ga; strandU.uGain.value = g ** 0.7 * loopGain; look.bloom = 0.12 * gb;
-    Object.assign(look, GRADES[gradeIdx][1], { bloom: GRADES[gradeIdx][1].bloom * gb });
+    // globaler Farblook (Zahnrad Global) gewinnt: dann bleibt die Sonne neutral und main.js legt ihn darüber
+    const gr = GRADES[globalGrade() ? 0 : gradeIdx][1];
+    Object.assign(look, gr, { bloom: gr.bloom * gb });
   }
+  onSettings((keys) => { if (keys.includes('grade')) applyGlow(); });
   const regionWorld = (r, out, h = 1) => out.copy(r.mid).multiplyScalar(h).applyAxisAngle(Y, omega(r.lat) * days * RAD).applyQuaternion(sunG.quaternion);
   const tmp = new THREE.Vector3(), tmp2 = new THREE.Vector3();
   const facing = (p, cam) => tmp.copy(cam.position).sub(p).normalize().dot(tmp2.copy(p).normalize());
@@ -430,7 +428,7 @@ export function create(ctx) {
     { id: 'spots', type: 'toggle', label: 'Sonnenflecken', value: true, set: (v) => { spotsOn = v; applyRegions(); } },
     { id: 'tex', type: 'range', label: 'Kruste (Glut)', value: 1, min: 0, max: TEXS.length - 1, step: 1, fmt: (i) => TEXS[Math.round(i)], set: (v) => { lookU.uTex.value = Math.round(v); } },
     { id: 'glow', type: 'range', label: 'Glut ab „sehr hoch“', value: glowMode, min: 0, max: GLOWS.length - 1, step: 1, fmt: (i) => GLOWS[Math.round(i)], set: (v) => { glowMode = Math.round(v); applyGlow(); } },
-    { id: 'grade', type: 'range', label: 'Farblook', value: gradeIdx, min: 0, max: GRADES.length - 1, step: 1, fmt: (i) => GRADES[Math.round(i)][0], set: (v) => { gradeIdx = Math.round(v); applyGlow(); } },
+    { id: 'grade', type: 'range', label: 'Farblook', value: gradeIdx, min: 0, max: GRADES.length - 1, step: 1, fmt: (i) => GRADES[Math.round(i)][0], set: (v) => { gradeIdx = Math.round(v); applyGlow(); }, hint: 'Gilt, solange Global → Look → Farblook auf „Station“ steht.' },
     { id: 'rim', type: 'range', label: 'Rand (Glut, 304 Å)', value: rimIdx, min: 0, max: RIMS.length - 1, step: 1, fmt: (i) => RIMS[Math.round(i)], set: (v) => { rimIdx = Math.round(v); rimU.uRim.value = rimIdx; rimU.uSpH.value = SPICULE_H[rimIdx]; applyRegions(); } },
     { id: 'prom', type: 'toggle', group: 'Ausbrüche', label: 'Protuberanzen und Filamente', value: true, set: (v) => { promOn = v; applyRegions(); } },
     { id: 'flares', type: 'toggle', label: 'Flares mit Massenauswurf', value: true, set: (v) => { flaresOn = v; if (!v) { cme.visible = flash.visible = ev.visible = false; erupt.k = -1; } } },

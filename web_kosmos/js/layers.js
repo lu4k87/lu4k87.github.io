@@ -11,6 +11,51 @@ import { STATIONS } from './content.js';
 const KEY = 'kosmos.layers.v1';
 const PLAY = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l10-6.5z" fill="currentColor"/></svg>';
 const PAUSE = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5.5h3.4v13H7zM13.6 5.5H17v13h-3.4z" fill="currentColor"/></svg>';
+// Linien-Icons (24er Raster) für Karten-Plaketten und Themenliste – auch für den Reiter Global (settings.js)
+const ICONS = {
+  look: '<circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 0 0 0 16z" fill="currentColor" stroke="none"/>',
+  sky: '<path d="M12 3l1.6 4.4L18 9l-4.4 1.6L12 15l-1.6-4.4L6 9l4.4-1.6z"/><circle cx="18.5" cy="17.5" r="1"/><circle cx="6" cy="18" r="0.8"/>',
+  cam: '<rect x="3" y="7" width="13" height="10" rx="2"/><path d="M16 11l5-3v8l-5-3"/>',
+  fx: '<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M5 19l2-2M17 7l2-2"/>',
+  ui: '<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M9 9v11"/>',
+  perf: '<path d="M4 18a8 8 0 1 1 16 0"/><path d="M12 18l4-6"/>',
+  sun: '<circle cx="12" cy="12" r="4.5"/><path d="M12 2.5v2.5M12 19v2.5M2.5 12H5M19 12h2.5M5.3 5.3l1.8 1.8M16.9 16.9l1.8 1.8M5.3 18.7l1.8-1.8M16.9 7.1l1.8-1.8"/>',
+  field: '<circle cx="12" cy="12" r="2.5"/><path d="M12 9.5C6 3 2 9 12 12M12 14.5C18 21 22 15 12 12M12 9.5c6-6.5 10-.5 0 2.5M12 14.5c-6 6.5-10 .5 0-2.5"/>',
+  burst: '<path d="M4 19c1-7 5-11 9-12M8 19c1-5 4-8 8-9M12 19c.6-3 2.6-5 6-5.6"/><circle cx="17.5" cy="5.5" r="1.5"/>',
+  orbit: '<circle cx="12" cy="12" r="3"/><ellipse cx="12" cy="12" rx="9.5" ry="4" transform="rotate(-20 12 12)"/><circle cx="20.4" cy="9" r="1.2" fill="currentColor"/>',
+  layers: '<path d="M12 4l9 4.5-9 4.5-9-4.5z"/><path d="M3 13l9 4.5 9-4.5"/>',
+  time: '<circle cx="12" cy="12" r="8.5"/><path d="M12 7v5l3.5 2"/>',
+  reset: '<path d="M4 12a8 8 0 1 0 2.3-5.6"/><path d="M4 4v4h4"/>',
+};
+export const icon = (k, cls = 'b-ico') => `<svg class="${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[k] || ICONS.layers}</svg>`;
+// Icon je Gruppen-Name der Stationen (Reihenfolge zählt: „Polarlicht“ vor „Licht“)
+const GROUP_ICONS = [[/Zeit|Animation/, 'time'], [/Polarlicht|Magnet|Feld/, 'field'], [/Licht|Sonne|Korona|Strahlen/, 'sun'],
+  [/Bögen|Flare|Ausbr|Ereignis|Vulkan|Fontän/, 'burst'], [/Himmel|Stern/, 'sky'], [/Ansicht|Station|New Horizons/, 'cam'],
+  [/Bahn|Mond|Monde|Ring|Planet|System|Umlauf|Jupiter|Neptun|Mars|Triton|Erde|Galaxien|Gezeiten/, 'orbit']];
+const groupIcon = (t) => (GROUP_ICONS.find(([re]) => re.test(t)) || [0, 'layers'])[1];
+const plaque = (k) => `<span class="b-plaque">${icon(k)}</span>`;
+// Themenliste links (Vorschau 26.10.2026 Global:A+B+C): „Alle“ + je Karte ein Eintrag mit Icon, Zähler, Punkt bei geänderten Werten;
+// Klick zeigt nur diese Karte. items = [{ id, title, icon, n }]
+export const navHtml = (items) => `<nav class="b-nav" aria-label="Gruppen">${[{ id: '', title: 'Alle', icon: 'ui', n: items.reduce((a, x) => a + x.n, 0) }, ...items]
+  .map((x) => `<button type="button" data-nav="${x.id}" aria-pressed="${!x.id}">${icon(x.icon)}<span class="b-nav-t">${x.title}</span><span class="b-count">${x.n}</span></button>`).join('')}</nav>`;
+export function wireNav(root) {
+  root.addEventListener('click', (e) => {
+    const b = e.target.closest('[data-nav]');
+    if (!b || !root.contains(b)) return;
+    root.querySelectorAll('[data-nav]').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+    root.querySelectorAll('.bento > [data-g]').forEach((c) => { c.hidden = !!b.dataset.nav && c.dataset.g !== b.dataset.nav; });
+  });
+}
+// Geänderte Werte (Vorschau Global:C): Zeile mit Punkt + „Standard“, Leiste oben mit Zahl + „Alle zurücksetzen“, Punkt in der Themenliste
+export const devLine = (k) => `<div class="b-dev" data-dev-of="${k}"><span>geändert</span><button type="button" class="b-reset" data-reset="${k}">${icon('reset')}Standard</button></div>`;
+export const devBar = (what) => `<div class="b-devbar" hidden><span data-devn></span> ${what} geändert<button type="button" class="b-reset" data-reset="*">${icon('reset')}Alle zurücksetzen</button></div>`;
+export function markDevs(root, isDev) {
+  let n = 0;
+  root.querySelectorAll('[data-dev-of]').forEach((d) => { const on = isDev(d.dataset.devOf); d.closest('.b-item').classList.toggle('is-dev', on); n += on; });
+  root.querySelectorAll('[data-nav]').forEach((b) => { b.classList.toggle('is-dev', !!b.dataset.nav && !!root.querySelector(`[data-g="${b.dataset.nav}"] .is-dev`)); });
+  const bar = root.querySelector('.b-devbar');
+  if (bar) { bar.hidden = !n; bar.querySelector('[data-devn]').textContent = n; }
+}
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const store = (() => { try { const s = JSON.parse(localStorage.getItem(KEY)); return s && typeof s === 'object' ? s : {}; } catch { return {}; } })();
 const url = (() => {
@@ -30,6 +75,7 @@ export function registerLayers(stationId, layers) {
   reg.set(stationId, layers);
   const saved = store[stationId] || {};
   for (const l of layers) {
+    if (l.def === undefined) l.def = l.value;
     let v = url[l.id] !== undefined ? url[l.id] : saved[l.id];
     if (l.type === 'toggle' && typeof v === 'number') v = v !== 0;
     if (v !== undefined && valid(l, v)) l.value = v;
@@ -82,14 +128,16 @@ function groups(layers) {
   return out;
 }
 const count = (g) => g.items.reduce((n, it) => n + 1 + it.subs.length, 0);
-const block = ({ l, subs }) => `<div class="b-item">${rowHtml(l)}${subs.length ? `<div class="b-subs"${l.type === 'toggle' ? ` data-subs="${l.id}"` : ''}>${subs.map(rowHtml).join('')}</div>` : ''}</div>`;
+const resettable = (l) => l.type === 'toggle' || l.type === 'range';
+const rowDev = (l) => rowHtml(l) + (resettable(l) ? devLine(l.id) : '');
+const block = ({ l, subs }) => `<div class="b-item">${rowDev(l)}${subs.length ? `<div class="b-subs"${l.type === 'toggle' ? ` data-subs="${l.id}"` : ''}>${subs.map((x) => `<div class="b-item">${rowDev(x)}</div>`).join('')}</div>` : ''}</div>`;
 // halbe Karte nur bei wenigen Schaltern ohne Regler
 const wide = (g) => count(g) > 4 || g.items.some((it) => [it.l, ...it.subs].some((l) => l.type !== 'toggle'));
 
 function timeCard(g) {
   const [{ l: p, subs }, ...rest] = g.items;
-  return `<article class="b-card b-card--time b-wide" aria-label="Animation: ${esc(p.label)}">
-    <header class="b-head"><h4>Animation</h4><span class="b-chip" data-chip="${p.id}"></span></header>
+  return `<article class="b-card b-card--time b-wide" data-g="g0" aria-label="Animation: ${esc(p.label)}">
+    <header class="b-head">${plaque('time')}<h4>Animation</h4><span class="b-chip" data-chip="${p.id}"></span></header>
     <div class="b-time"><button type="button" class="play-btn play-btn--lg" data-play="${p.id}" aria-pressed="false" aria-label="${esc(p.label)} abspielen">${PLAY}</button>
       <span class="b-time-text"><span class="cfg-label b-strong">${esc(p.label)}</span><span class="b-status" data-status="${p.id}"></span></span>
       <output class="b-big" data-lout="${p.id}"></output></div>
@@ -101,8 +149,11 @@ function timeCard(g) {
 }
 
 function gearHtml(layers) {
-  return groups(layers).map((g) => (g.items[0].l.type === 'play' ? timeCard(g)
-    : `<article class="b-card${wide(g) ? ' b-wide' : ''}"><header class="b-head"><h4>${esc(g.title)}</h4><span class="b-count" aria-label="${count(g)} Ebenen">${count(g)}</span></header>${g.items.map(block).join('')}</article>`)).join('');
+  const gs = groups(layers);
+  const cards = gs.map((g, i) => (g.items[0].l.type === 'play' ? timeCard(g)
+    : `<article class="b-card${wide(g) ? ' b-wide' : ''}" data-g="g${i}"><header class="b-head">${plaque(groupIcon(g.title))}<h4>${esc(g.title)}</h4><span class="b-count" aria-label="${count(g)} Ebenen">${count(g)}</span></header>${g.items.map(block).join('')}</article>`)).join('');
+  const nav = gs.map((g, i) => ({ id: `g${i}`, title: esc(g.items[0].l.type === 'play' ? 'Animation' : g.title), icon: g.items[0].l.type === 'play' ? 'time' : groupIcon(g.title), n: count(g) }));
+  return `${navHtml(nav)}<div class="b-main">${devBar('Ebenen')}<div class="bento">${cards}</div></div>`;
 }
 
 function render() {
@@ -110,7 +161,7 @@ function render() {
     const layers = reg.get(currentId), st = STATIONS[currentId];
     if (headEl) headEl.innerHTML = `Station · ${esc(st ? st.title : '…')}<span class="b-count">${layers ? layers.length : 0}</span>`;
     gearEl.innerHTML = layers ? gearHtml(layers)
-      : '<p class="cfg-note b-wide">Diese Station hat noch keine Ebenen-Einstellungen – ihre Schalter stehen in der Infotafel.</p>';
+      : '<p class="cfg-note">Diese Station hat noch keine Ebenen-Einstellungen – ihre Schalter stehen in der Infotafel.</p>';
   }
   if (stripEl) {
     const l = (reg.get(currentId) || []).find((x) => x.type === 'play');
@@ -148,6 +199,7 @@ function sync() {
     // Unter-Ebenen ohne Wirkung, solange ihr Hauptschalter aus ist: abgedunkelt, aber bedienbar
     root.querySelectorAll('[data-subs]').forEach((el) => { const l = find(el.dataset.subs); if (l) el.classList.toggle('is-off', !l.value); });
   }
+  if (gearEl && !gearEl.hidden) markDevs(gearEl, (id) => { const l = find(id); return !!l && l.value !== l.def; });
 }
 
 function onInput(e) {
@@ -159,6 +211,12 @@ function onInput(e) {
   sync();
 }
 function onClick(e) {
+  const r = e.target.closest('[data-reset]');
+  if (r && gearEl && gearEl.contains(r)) {
+    for (const l of reg.get(currentId) || []) if (resettable(l) && (r.dataset.reset === '*' || r.dataset.reset === l.id) && l.value !== l.def) { l.value = l.def; l.set(l.value); persist(l); }
+    sync();
+    return;
+  }
   const s = e.target.closest('[data-lay-seg]'), sl = s && find(s.dataset.laySeg);
   if (sl) { sl.value = +s.dataset.val; sl.set(sl.value); persist(sl); sync(); return; }
   const b = e.target.closest('[data-play],[data-act]');
@@ -176,6 +234,7 @@ function poll() {
 export function mountLayers({ gear, head, strip, stripOn: on }) {
   gearEl = gear; headEl = head || null; stripEl = strip; stripOn = on || stripOn;
   for (const root of [gearEl, stripEl]) { if (!root) continue; root.addEventListener('input', onInput); root.addEventListener('click', onClick); }
+  if (gearEl) wireNav(gearEl);
   window.addEventListener('hashchange', poll);
   poll();
   setInterval(() => { poll(); sync(); }, 300);
