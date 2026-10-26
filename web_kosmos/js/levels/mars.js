@@ -17,6 +17,7 @@ import { moonOrbit, tidalQuat } from '../moonsys.js';
 import { ellipsoidGeometry, bodyUniforms, colorTexture } from './saturn.js';
 import { makeNoise, craterProfile, icoIndexed } from './asteroid.js';
 import { MARS, MOONS, MOON_IDS, POLE, NODE, marsState, marsSpin, lsToJd, seasonNorth, capEdge } from '../martian.js';
+import { spinAxis } from '../axes.js';
 
 export const R = MARS.r;
 const RAD = Math.PI / 180;
@@ -87,6 +88,7 @@ export function createMars(ctx, { seg = 160, sky = false } = {}) {
   const planetU = bodyUniforms(ctx.tex('mars.jpg'), { wrap: a.wrap, term: a.term, amb: 0.02 });
   const planet = new THREE.Mesh(ellipsoidGeometry(1, f, 1, seg, seg / 2), new THREE.ShaderMaterial({ vertexShader: BODY_VERT, fragmentShader: PLANET_FRAG, uniforms: planetU }));
   spin.add(planet);
+  spinAxis(planet);
   const capU = { uSunDir: planetU.uSunDir, uN: { value: 1 }, uS: { value: 1 }, uWrap: { value: a.wrap } };
   const caps = new THREE.Mesh(ellipsoidGeometry(1.0012, f * 1.0012, 1.0012, seg, seg / 2), new THREE.ShaderMaterial({ vertexShader: BODY_VERT, fragmentShader: CAP_FRAG, uniforms: capU, transparent: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2 }));
   spin.add(caps);
@@ -242,6 +244,7 @@ export function create(ctx) {
     const geo = moonShape(id, Math.round(16 + 12 * ctx.detail)).geo;
     const mesh = new THREE.Mesh(geo, new THREE.ShaderMaterial({ vertexShader: BODY_VERT, fragmentShader: PLANET_FRAG, uniforms: u }));
     scene.add(mesh);
+    spinAxis(mesh);
     // Bahn mit Leuchtspur; Phobos' Beschleunigung als feste Verschiebung zum Startzeitpunkt (über Stunden unmerklich)
     const orbit = moonOrbit({ ...m, M: m.M + m.acc * T0 * T0 }, laplaceAxes(m.ra, m.dec), R, ORBIT_COL[id], jd0, 0.55);
     scene.add(orbit.line);

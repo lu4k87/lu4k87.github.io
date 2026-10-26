@@ -16,6 +16,7 @@ import { createFlare } from '../flare.js';
 import { settings } from '../settings.js';
 import { SKY_VERTEX } from '../glsl.js';
 import { registerLayers, refreshLayers } from '../layers.js';
+import { spinAxis } from '../axes.js';
 
 const R_M = 1.7374, R_E = 6.371;            // NASA Fact Sheets [1.000 km]
 const H_MIN = -9, H_MAX = 10.6;             // moon_height.png: Grauwert 0…1 ↦ −9 … +10,6 km über 1.737,4 km (tools/moon_height.py)
@@ -190,11 +191,13 @@ export function create(ctx) {
   const moon = new THREE.Mesh(new THREE.SphereGeometry(R_M, 256, 128),
     new THREE.ShaderMaterial({ vertexShader: VERT, fragmentShader: moonFrag(ctx.detail > 0.7 ? 14 : 8), uniforms: moonU }));
   scene.add(moon);
+  spinAxis(moon);
 
   // ---------- Erde am Himmel (maßstäblich) ----------
   const earth = new THREE.Mesh(new THREE.SphereGeometry(R_E, 96, 48), new THREE.ShaderMaterial({ vertexShader: VERT, fragmentShader: EARTH_FRAG,
     uniforms: { tDay: { value: ctx.tex('earth_daymap.jpg') }, tNight: { value: ctx.tex('earth_nightmap.jpg') }, tClouds: { value: ctx.tex('earth_clouds.jpg', false) }, uSun: { value: sun } } }));
   scene.add(earth);
+  spinAxis(earth);
 
   const tmp = new THREE.Vector3();
   function place() {

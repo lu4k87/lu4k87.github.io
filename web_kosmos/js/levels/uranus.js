@@ -12,6 +12,7 @@ import { createStarfield } from '../stars.js';
 import { BODY_VERT, SHELL_VERT, PLANET_FRAG, ATMO_FRAG, RING_FRAG, ATMOS } from '../planetfx.js';
 import { registerLayers, refreshLayers } from '../layers.js';
 import { ringTexture, ringMesh, moonOrbit, tidalQuat } from '../moonsys.js';
+import { spinAxis } from '../axes.js';
 
 export const R_U = 25559;                 // km, äquatorial (NASA Uranus Fact Sheet)
 export const ROT_H = -17.24;              // h, rückläufig um den IAU-Nordpol
@@ -70,6 +71,7 @@ export function create(ctx) {
   };
   const planet = new THREE.Mesh(new THREE.SphereGeometry(1, 128, 64), new THREE.ShaderMaterial({ vertexShader: BODY_VERT, fragmentShader: PLANET_FRAG, uniforms: planetU }));
   tilt.add(planet);
+  spinAxis(planet);
   const a = ATMOS.uranus;
   const shell = new THREE.Mesh(new THREE.SphereGeometry(a.ra, 96, 48), new THREE.ShaderMaterial({ vertexShader: SHELL_VERT, fragmentShader: ATMO_FRAG, uniforms: {
     uSun: { value: sunDir }, uCenter: { value: new THREE.Vector3() }, uBeta: { value: new THREE.Vector3(...a.beta) }, uMieCol: { value: new THREE.Vector3(...a.mieCol) },
@@ -94,6 +96,7 @@ export function create(ctx) {
     };
     const mesh = new THREE.Mesh(new THREE.SphereGeometry(1, 64, 32), new THREE.ShaderMaterial({ vertexShader: BODY_VERT, fragmentShader: PLANET_FRAG, uniforms: u }));
     scene.add(mesh);
+    spinAxis(mesh);
     const orbit = moonOrbit(m.el, axes, R_U, m.dot, jdAt(), 0.7);
     scene.add(orbit.line);
     return { ...m, mesh, orbit, pos: mesh.position, rv: 0 };

@@ -21,6 +21,7 @@ import { SKY_VERTEX } from './glsl.js';
 import { registerLayers, refreshLayers } from './layers.js';
 import { ringTexture, ringMesh, moonOrbit, laplaceToScene, tidalQuat } from './moonsys.js';
 import { R_U, ROT_H, NORTH, RINGS, RING_IN, RING_OUT, MOONS } from './levels/uranus.js';
+import { spinAxis } from './axes.js';
 
 const RAD = Math.PI / 180, Y = new THREE.Vector3(0, 1, 0);
 const AXES = laplaceAxes(NORTH[0] - 180, -NORTH[1]);   // Laplace-Ebene = Äquator des Uranus, Drehsinn der Monde (wie uranus.js)
@@ -137,6 +138,7 @@ export function createUranusMoon(ctx, cfg) {
   const moon = new THREE.Mesh(new THREE.SphereGeometry(1, 192, 96), new THREE.ShaderMaterial({ vertexShader: BODY_VERT, fragmentShader: PLANET_FRAG, uniforms: mU }));
   moon.scale.copy(ax);
   scene.add(moon);
+  spinAxis(moon);
   const seen = new THREE.Mesh(new THREE.SphereGeometry(1.002, 192, 96), new THREE.ShaderMaterial({ vertexShader: SEEN_VERT, fragmentShader: SEEN_FRAG,
     uniforms: { tSeen: { value: ctx.tex(cfg.seen, false) }, uCol: { value: new THREE.Color(0x33ccff) } }, transparent: true, depthWrite: false }));
   seen.visible = false;
@@ -155,6 +157,7 @@ export function createUranusMoon(ctx, cfg) {
   uU.uOccN.value = 1;
   const uranus = new THREE.Mesh(new THREE.SphereGeometry(1, 128, 64), new THREE.ShaderMaterial({ vertexShader: BODY_VERT, fragmentShader: PLANET_FRAG, uniforms: uU }));
   uSpin.add(uranus);
+  spinAxis(uranus);
   const uShell = atmoShell(AT, rU, uPos, sun);
   scene.add(uShell);
   const rings = ringMesh(new THREE.ShaderMaterial({ vertexShader: BODY_VERT, fragmentShader: RING_FRAG, uniforms: {
@@ -168,6 +171,7 @@ export function createUranusMoon(ctx, cfg) {
     u.uEarthshine.value = 0.01;
     const mesh = new THREE.Mesh(new THREE.SphereGeometry(m.r / cfg.km, 48, 24), new THREE.ShaderMaterial({ vertexShader: BODY_VERT, fragmentShader: PLANET_FRAG, uniforms: u }));
     scene.add(mesh);
+    spinAxis(mesh);
     return { m, mesh, u };
   });
 

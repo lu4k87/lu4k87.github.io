@@ -19,6 +19,7 @@ import { loadSats, createSats, satPos, orbitLine, namedIndex, KIND_COLOR } from 
 import { speedAt, RE } from '../orbit.js';
 import { registerLayers } from '../layers.js';
 import { SHELL_VERT, ATMO_FRAG, CLOUD_FRAG } from '../planetfx.js';
+import { spinAxis } from '../axes.js';
 
 const R_E = 6.371, R_M = 1.7374;   // NASA Fact Sheets [1.000 km]
 const R_ATM = R_E * 1.065;         // sichtbare Hülle ≈ 410 km (echt: Dichte fällt mit ≈ 8 km Skalenhöhe, Saum ≈ 100 km; dicker gezeichnet, damit der Glanz weich ausläuft)
@@ -378,6 +379,7 @@ export function create(ctx) {
   });
   const earth = new THREE.Mesh(new THREE.SphereGeometry(R_E, 192, 96), earthMat);
   spin.add(earth);
+  spinAxis(earth);
   // Wolken als eigene Kugelschicht (drehen mit der Erde, driften zusätzlich)
   const cloudU = { tClouds: { value: maps.clouds }, uSun: { value: sunDir }, uAxis: { value: axis }, uCloudU: { value: 0 }, uTime: { value: 0 }, uGain: { value: 0.95 }, uOpacity: { value: 0.96 } };
   const clouds = new THREE.Mesh(new THREE.SphereGeometry(R_CLOUD, 192, 96), new THREE.ShaderMaterial({ vertexShader: EARTH_VERT_O,
@@ -458,6 +460,7 @@ export function create(ctx) {
   const moon = new THREE.Mesh(new THREE.SphereGeometry(R_M, 96, 48), moonMat);
   moon.rotation.y = -Math.PI / 2;               // Länge 0 (Textur-Mitte) zeigt zur Erde
   moonPivot.add(moon);
+  spinAxis(moon);
   // Mondbahn der nächsten 27,3 Tage als Linie (echter Verlauf, nicht als Kreis)
   const orbitPts = [];
   for (let i = 0; i <= 220; i++) orbitPts.push(new THREE.Vector3(...eclToScene(moonPosition(jd0 + (i / 220) * 27.32))).multiplyScalar(1e-3));

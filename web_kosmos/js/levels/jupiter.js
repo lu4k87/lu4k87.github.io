@@ -13,6 +13,7 @@ import { registerLayers, refreshLayers } from '../layers.js';
 import { jupiterAurora, auroraLayers } from '../jupiterfx.js';
 import { STATIONS } from '../content.js';
 import { JUPITER, GALILEAN, MOON_IDS, jovianState, laplaceAngle, nextShadowTransit } from '../jovian.js';
+import { spinAxis } from '../axes.js';
 
 const RJ = JUPITER.r;                         // km je Szeneneinheit
 const FLAT = JUPITER.rp / JUPITER.r;          // 0,935 (Abplattung 0,06487, NSSDCA)
@@ -101,6 +102,7 @@ export function create(ctx) {
   const jup = new THREE.Mesh(new THREE.SphereGeometry(1, 192, 96), new THREE.ShaderMaterial({ vertexShader: BODY_VERT, fragmentShader: PLANET_FRAG, uniforms: jupU }));
   jup.scale.set(1, FLAT, 1);
   tilt.add(jup);
+  spinAxis(jup);
   const shell = new THREE.Mesh(new THREE.SphereGeometry(A.ra, 128, 64), new THREE.ShaderMaterial({ vertexShader: SHELL_VERT, fragmentShader: ATMO_FRAG, uniforms: {
     uSun: { value: sunDir }, uCenter: { value: new THREE.Vector3() }, uBeta: { value: new THREE.Vector3(...A.beta) }, uMieCol: { value: new THREE.Vector3(...A.mieCol) },
     uRp: { value: 1 }, uRa: { value: A.ra }, uH: { value: A.h }, uGain: { value: A.gain }, uMie: { value: A.mie }, uAir: { value: 0 }, uAirH: { value: 0.2 } },
@@ -127,6 +129,7 @@ export function create(ctx) {
     const mesh = new THREE.Mesh(new THREE.SphereGeometry(1, 96, 48), new THREE.ShaderMaterial({ vertexShader: BODY_VERT, fragmentShader: PLANET_FRAG, uniforms: u }));
     mesh.rotation.y = (0.5 - m.u0) * TAU;    // Länge 0° nach +x (zu Jupiter)
     holder.add(mesh);
+    spinAxis(mesh);
     scene.add(holder);
     // Bahn über einen Umlauf ab Start (Umlaufzeit aus der Rate der mittleren Länge)
     const P = 360 / el.n, N = 512, pts = new Float32Array(N * 3), mf = new Float32Array(N);

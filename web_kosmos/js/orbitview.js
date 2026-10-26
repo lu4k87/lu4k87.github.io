@@ -20,6 +20,7 @@ import { loadSats, satPos, namedIndex } from './sats.js';
 import { speedAt, periodMin, RE } from './orbit.js';
 import { SHELL_VERT, ATMO_FRAG, CLOUD_FRAG } from './planetfx.js';
 import { EARTH_VERT, EARTH_VERT_O, EARTH_FRAG, earthMaps, MOON_FRAG, SUN_VERT, SUN_FRAG, AURORA_VERT, AURORA_FRAG, AURORA_GLOW_VERT, AURORA_GLOW_FRAG, auroraGeometry } from './levels/earth.js';
+import { spinAxis } from './axes.js';
 
 const R_E = 6.371, R_M = 1.7374;     // [1.000 km] NASA Fact Sheets
 const R_CLOUD = R_E + 0.012;         // Wolkenobergrenze ≈ 12 km
@@ -130,6 +131,7 @@ export function createOrbitView(ctx, { sat, fallback, radius = 60, color = 0xf3b
   };
   const earth = new THREE.Mesh(new THREE.SphereGeometry(R_E, 256, 128), new THREE.ShaderMaterial({ vertexShader: EARTH_VERT_O, fragmentShader: EARTH_FRAG, uniforms: earthU }));
   spin.add(earth);
+  spinAxis(earth);
   const cloudU = { tClouds: earthU.tClouds, uSun: { value: sun }, uAxis: { value: axis }, uCloudU: { value: 0 }, uTime: { value: 0 }, uGain: { value: 0.95 }, uOpacity: { value: 0.96 } };
   const clouds = new THREE.Mesh(new THREE.SphereGeometry(R_CLOUD, 256, 128), new THREE.ShaderMaterial({ vertexShader: EARTH_VERT_O, fragmentShader: CLOUD_FRAG_O, uniforms: cloudU, transparent: true, depthWrite: false }));
   spin.add(clouds);
@@ -150,6 +152,7 @@ export function createOrbitView(ctx, { sat, fallback, radius = 60, color = 0xf3b
   const moonU = { tMoon: { value: ctx.tex('moon.jpg') }, uSun: { value: sun }, uEarth: { value: new THREE.Vector3() }, uEarthshine: { value: 0.0025 } };
   const moon = new THREE.Mesh(new THREE.SphereGeometry(R_M, 64, 32), new THREE.ShaderMaterial({ vertexShader: EARTH_VERT, fragmentShader: MOON_FRAG, uniforms: moonU }));
   far.add(moon);
+  spinAxis(moon);
 
   // Bahnspur auf dem Boden (erdfest, spin): ein halber Umlauf zurück, anderthalb voraus
   const TN = 300, trackPos = new Float32Array((TN + 1) * 3), trackCol = new Float32Array((TN + 1) * 3);

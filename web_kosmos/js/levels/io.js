@@ -17,6 +17,7 @@ import { createFlare } from '../flare.js';
 import { settings } from '../settings.js';
 import { SKY_VERTEX } from '../glsl.js';
 import { registerLayers, refreshLayers } from '../layers.js';
+import { spinAxis } from '../axes.js';
 
 const RAD = Math.PI / 180, Y = new THREE.Vector3(0, 1, 0);
 const R_IO = GALILEAN.io.r / 1e3, R_J = JUPITER.r / 1e3, RP_J = JUPITER.rp / 1e3, A_IO = GALILEAN.io.a / 1e3;
@@ -256,6 +257,7 @@ export function create(ctx) {
   const ioU = planetU(ioMap, { moon: true, gain: 1.05, shinePos: jpos });
   const io = new THREE.Mesh(new THREE.SphereGeometry(R_IO, 256, 128), new THREE.ShaderMaterial({ vertexShader: TIDE_VERT, fragmentShader: PLANET_FRAG, uniforms: ioU }));
   scene.add(io);
+  spinAxis(io);
   const vents = VENTS.map((v) => ({ ...v, dir: sel(v.lat, v.w, 1) }));
   const glowU = {
     tMap: { value: ioMap }, uSunDir: { value: sun }, uGlow: { value: 1 }, uTime: { value: 0 }, uSunVis: { value: 1 }, uJdir: { value: jdir }, uTide: ioU.uTide,
@@ -308,6 +310,7 @@ export function create(ctx) {
   const jupiter = new THREE.Mesh(new THREE.SphereGeometry(R_J, 192, 96), new THREE.ShaderMaterial({ vertexShader: TIDE_VERT, fragmentShader: PLANET_FRAG, uniforms: jupU }));
   jupiter.scale.y = RP_J / R_J;
   jupG.add(jupiter);
+  spinAxis(jupiter);
   scene.add(jupG);
   const jAtmo = new THREE.Mesh(new THREE.SphereGeometry(R_J * at.ra, 96, 48), new THREE.ShaderMaterial({ vertexShader: SHELL_VERT, fragmentShader: ATMO_FRAG, uniforms: {
     uSun: { value: sun }, uCenter: { value: jpos }, uBeta: { value: new THREE.Vector3(...at.beta) }, uMieCol: { value: new THREE.Vector3(...at.mieCol) },
@@ -320,6 +323,7 @@ export function create(ctx) {
     const m = new THREE.Mesh(new THREE.SphereGeometry(GALILEAN[id].r / 1e3, 48, 24), new THREE.ShaderMaterial({ vertexShader: TIDE_VERT, fragmentShader: PLANET_FRAG,
       uniforms: planetU(ctx.tex(`${id}.jpg`), { moon: true, gain: 1.05 }) }));
     m.material.uniforms.uEarthPos.value = jpos;
+    spinAxis(m);
     scene.add(m);
     return m;
   });

@@ -18,6 +18,7 @@ import { settings } from '../settings.js';
 import { SKY_VERTEX } from '../glsl.js';
 import { registerLayers, refreshLayers } from '../layers.js';
 import { moonOrbit } from '../moonsys.js';
+import { spinAxis } from '../axes.js';
 
 const R_T = 1353.4;                                 // km, Einheit der Station (NSSDCA Neptunian Satellite Fact Sheet)
 const R_N = 24764 / R_T, RP_N = 24341 / 24764;     // Neptun: Äquatorradius [Triton-Radien], Polradius/Äquatorradius (NSSDCA)
@@ -158,6 +159,7 @@ export function create(ctx) {
   triU.uOccN.value = 1;
   const triton = new THREE.Mesh(new THREE.SphereGeometry(1, 192, 96), new THREE.ShaderMaterial({ vertexShader: BODY_VERT, fragmentShader: PLANET_FRAG, uniforms: triU }));
   scene.add(triton);
+  spinAxis(triton);
   // Dunst: dünne Stickstoff-Atmosphäre, Hülle 3 % (≈ 40 km) und Helligkeit überzeichnet
   const HAZE = { ra: 1.03, h: 0.3, beta: [0.32, 0.46, 0.85], mie: 0.3, mieCol: [0.9, 0.95, 1.0], gain: 0.9 };
   const haze = atmoShell(HAZE, 1, new THREE.Vector3(), sun);
@@ -172,6 +174,7 @@ export function create(ctx) {
   const neptune = new THREE.Mesh(new THREE.SphereGeometry(R_N, 128, 64), new THREE.ShaderMaterial({ vertexShader: BODY_VERT, fragmentShader: PLANET_FRAG, uniforms: nepU }));
   neptune.scale.set(1, RP_N, 1);
   nepSpin.add(neptune);
+  spinAxis(neptune);
   const nepShell = atmoShell(AN, R_N, nepPos, sun);
   scene.add(nepShell);
 

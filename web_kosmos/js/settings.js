@@ -8,7 +8,7 @@
 import { mountLayers, refreshLayers, icon, navHtml, wireNav, devLine, devBar, markDevs } from './layers.js';
 
 const KEY = 'kosmos.settings.v1';
-const DEFAULTS = { motion: 'full', quality: 'auto', cine: true, dive: 3.6, exposure: 1, bloom: true, lens: true, grain: true, deep: 1, fpsCap: 0, panel: true, timeline: true, small: 6, stars: true, grade: 'station', vig: 1, bars: false };
+const DEFAULTS = { motion: 'full', quality: 'auto', cine: true, dive: 3.6, exposure: 1, bloom: true, lens: true, grain: true, deep: 1, fpsCap: 0, panel: true, timeline: true, small: 6, stars: true, grade: 'station', vig: 1, bars: false, axes: false };
 // Farblook: Belichtung, Bloom, Kontrast, Sättigung, Tönung Schatten/Lichter, Vignette – Kino = Mischung aus HDR, Ruhig, Tiefe Glut.
 // Global (main.js über globalGrade) oder je Station „Station“ = eigener Look; die Sonne wählt bei „Station“ selbst (levels/sun.js)
 export const GRADES = [['neutral', { exposure: 1, bloom: 0.12, con: 0.12, sat: 1.04, sh: [0.96, 0.99, 1.06], hi: [1.04, 1, 0.95], vig: 0.38 }],
@@ -91,6 +91,7 @@ const MINI = {
   small: [3, 5, 7].map((r, i) => `<circle cx="${10 + i * 20}" cy="10" r="${r * 0.9}" fill="none" stroke="#c9d4ea" stroke-width="1.4"/>`).join(''),
   motion: '<path d="M2 10Q10 2 18 10T34 10T50 10T66 10" fill="none" stroke="var(--accent)" stroke-width="2"/>',
   dive: '<path d="M2 18C24 18 40 2 62 2" fill="none" stroke="var(--accent)" stroke-width="2"/><circle cx="2" cy="18" r="2" fill="#c9d4ea"/><circle cx="62" cy="2" r="2" fill="#c9d4ea"/>',
+  axes: '<circle cx="32" cy="10" r="6" fill="#34405a"/><path d="M33.6 4.4L35.4 0.6" stroke="var(--accent)" stroke-width="2"/><path d="M30.4 15.6L28.6 19.4" stroke="#aab4c8" stroke-width="2"/>',
   fpsCap: [0, 1, 2, 3, 4, 5, 6, 7].map((i) => `<rect x="${3 + i * 7.5}" y="${i % 2 ? 6 : 3}" width="5" height="${i % 2 ? 11 : 14}" rx="1" fill="#c9d4ea" opacity="${i < 6 ? 0.85 : 0.3}"/>`).join(''),
 };
 const MINI_DEFS = '<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><linearGradient id="mgE"><stop offset="0" stop-color="#05070c"/><stop offset="1" stop-color="#f4f7ff"/></linearGradient><radialGradient id="mgV"><stop offset=".45" stop-color="#7a8cab"/><stop offset="1" stop-color="#05070c"/></radialGradient></defs></svg>';
@@ -111,7 +112,8 @@ const GROUPS = [
     ['vig', RANGE('vig', 'Vignette', 0, 1.5, 0.05, '×', NEW)], ['bars', TOG('bars', 'Kinobalken 2,39:1', NEW)]] },
   { id: 'sky', icon: 'sky', title: 'Himmel', rows: [['stars', TOG('stars', 'Sterne und Milchstraße')],
     ['deep', RANGE('deep', 'Tiefer Himmel', 0, 2, 0.1, '×') + NOTE('Was eine Langzeitbelichtung hinter den Sternen sieht: ferne Galaxien und schwach leuchtender Staub der Milchstraße (Zirrus) – statistisch verteilt, überhöht, mit bloßem Auge unsichtbar. 0× = reines Schwarz.')],
-    ['small', RANGE('small', 'Satelliten und Kleinkörper', 1, 8, 0.5, '×') + NOTE('Satelliten, Trümmer und Asteroiden als vergrößerte Symbole – je größer, desto weniger Objekte (4× → jedes achte); 1× zeigt alle als Lichtpunkte.')]] },
+    ['small', RANGE('small', 'Satelliten und Kleinkörper', 1, 8, 0.5, '×') + NOTE('Satelliten, Trümmer und Asteroiden als vergrößerte Symbole – je größer, desto weniger Objekte (4× → jedes achte); 1× zeigt alle als Lichtpunkte.')],
+    ['axes', TOG('axes', 'Drehachsen der Planeten und Monde', NEW) + NOTE('Linie über Nord- und Südpol jedes Planeten und Mondes, neigt und dreht sich mit dem Körper. Nordpol eisblau, Südpol grau.')]] },
   { id: 'cam', icon: 'cam', title: 'Kamera &amp; Bewegung', rows: [['motion', SEG('motion', 'Bewegung', [['full', 'Voll'], ['calm', 'Ruhig'], ['off', 'Aus']]) + NOTE('„Aus“ wirkt wie „Bewegung reduzieren“ im System: keine Fahrt von selbst, Wechsel als kurze Überblendung.')],
     ['cine', TOG('cine', 'Leerlauf-Fahrt der Kamera')], ['dive', RANGE('dive', 'Flugdauer', 1.5, 8, 0.1, 's')]] },
   { id: 'fx', icon: 'fx', title: 'Effekte', half: true, rows: [['bloom', TOG('bloom', 'Lichthof (Bloom)')], ['lens', TOG('lens', 'Farbsaum und Linsenreflex')], ['grain', TOG('grain', 'Filmkorn')]] },

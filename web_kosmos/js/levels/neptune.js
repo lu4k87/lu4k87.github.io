@@ -13,6 +13,7 @@ import { createStarfield } from '../stars.js';
 import { BODY_VERT, SHELL_VERT, PLANET_FRAG, ATMO_FRAG, RING_FRAG, ATMOS } from '../planetfx.js';
 import { ringTexture, ringMesh, moonOrbit, tidalQuat } from '../moonsys.js';
 import { registerLayers, refreshLayers } from '../layers.js';
+import { spinAxis } from '../axes.js';
 
 const RAD = Math.PI / 180;
 const R_N = 24764;                        // km, Äquatorradius bei 1 bar (nep-fact)
@@ -130,6 +131,7 @@ export function create(ctx) {
   const nepU = bodyU(ctx.tex('neptune.jpg'), { wrap: A.wrap, term: A.term, band: BAND, amb: 0.03 });
   const nep = new THREE.Mesh(new THREE.SphereGeometry(1, 160, 80), new THREE.ShaderMaterial({ vertexShader: BODY_VERT, fragmentShader: PLANET_FRAG, uniforms: nepU }));
   tilt.add(nep);
+  spinAxis(nep);
   const shell = new THREE.Mesh(new THREE.SphereGeometry(A.ra, 96, 48), new THREE.ShaderMaterial({ vertexShader: SHELL_VERT, fragmentShader: ATMO_FRAG, uniforms: {
     uSun: { value: sunDir }, uCenter: { value: new THREE.Vector3() }, uBeta: { value: new THREE.Vector3(...A.beta) }, uMieCol: { value: new THREE.Vector3(...A.mieCol) },
     uRp: { value: 1 }, uRa: { value: A.ra }, uH: { value: A.h }, uGain: { value: A.gain }, uMie: { value: A.mie }, uAir: { value: 0 }, uAirH: { value: 0.2 } },
@@ -154,6 +156,7 @@ export function create(ctx) {
     const geo = m.id === 'proteus' ? lumpy(rand) : new THREE.SphereGeometry(1, m.tex ? 96 : 32, m.tex ? 48 : 16);
     const mesh = new THREE.Mesh(geo, new THREE.ShaderMaterial({ vertexShader: BODY_VERT, fragmentShader: PLANET_FRAG, uniforms: u }));
     mesh.scale.set(m.r[0] / R_N, m.r[1] / R_N, m.r[2] / R_N);
+    spinAxis(mesh);
     scene.add(mesh);
     const shift = m.ep ? m.ep - J2000 : 0;
     const orbit = moonOrbit(m.el, ax, R_N, new THREE.Color(...m.dot), jd0 - shift, 0.7);

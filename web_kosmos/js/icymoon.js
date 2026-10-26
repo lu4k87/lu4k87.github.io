@@ -18,6 +18,7 @@ import { GALILEAN, JUPITER, jovianState, lineOfSun } from './jovian.js';
 import { MOONS, SATURN, kronianState, lineOfSun as satLineOfSun } from './kronian.js';
 import { createSaturn } from './levels/saturn.js';
 import { registerLayers, refreshLayers } from './layers.js';
+import { spinAxis } from './axes.js';
 
 const RAD = Math.PI / 180;
 const Y = new THREE.Vector3(0, 1, 0);
@@ -136,6 +137,7 @@ const JUPITER_SYS = {
     const jup = new THREE.Mesh(new THREE.SphereGeometry(rP, 96, 64), new THREE.ShaderMaterial({ vertexShader: BODY_VERT, fragmentShader: PLANET_FRAG, uniforms: jupU }));
     jup.scale.y = JUPITER.rp / JUPITER.r;
     group.add(jup);
+    spinAxis(jup);
     const qPole = new THREE.Quaternion().setFromUnitVectors(Y, new THREE.Vector3(...equToScene(...JUPITER.pole)));
     const qSpin = new THREE.Quaternion();
     return {
@@ -259,6 +261,7 @@ export function createIcyMoon(ctx, cfg) {
   });
   const moon = new THREE.Mesh(new THREE.SphereGeometry(1, 192, 128), new THREE.ShaderMaterial({ vertexShader: BODY_VERT, fragmentShader: MOON_FRAG, uniforms: moonU }));
   scene.add(moon);
+  spinAxis(moon);
 
   // ---------- Heimpose: hinter dem Mond (von Jupiter abgewandt) und darüber, Jupiter rechts über dem Rand (frei von der
   // Infotafel); das Licht kommt so, wie die Sonne zum Zeitpunkt steht, der Tageslauf zieht die Schattengrenze weiter ----------

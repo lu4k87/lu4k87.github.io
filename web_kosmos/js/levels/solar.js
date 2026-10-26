@@ -20,6 +20,7 @@ import { jupiterAurora, auroraLayers } from '../jupiterfx.js';
 import { settings } from '../settings.js';
 import { registerLayers } from '../layers.js';
 import { keepShare } from '../sats.js';
+import { spinAxis } from '../axes.js';
 
 const RAD = Math.PI / 180;
 const AU_KM = AU / 1e3;
@@ -266,6 +267,7 @@ export function create(ctx) {
       wrap: a ? a.wrap : 0.02, term: a ? a.term : undefined, band: BAND[p.id] }) });
     const mesh = new THREE.Mesh(new THREE.SphereGeometry(1, 128, 64), mat);
     tilt.add(mesh);
+    spinAxis(mesh);
     const holder = new THREE.Group();
     holder.add(tilt);
     scene.add(holder);
@@ -322,6 +324,7 @@ export function create(ctx) {
   // Mond: Ort aus der Almanach-Näherung relativ zur Erde; „Anschaulich“ zieht ihn näher heran, sonst läge er in der vergrößerten Erde
   const moonMat = new THREE.ShaderMaterial({ vertexShader: BODY_VERT, fragmentShader: PLANET_FRAG, uniforms: planetU(ctx.tex('moon.jpg'), { moon: true, earthPos: P.earth.pos }) });
   const moon = new THREE.Mesh(new THREE.SphereGeometry(1, 96, 48), moonMat);
+  spinAxis(moon);
   scene.add(moon);
   const moonPos = moon.position, moonDir = new THREE.Vector3();
 

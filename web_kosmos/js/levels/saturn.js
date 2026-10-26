@@ -12,6 +12,7 @@ import { createStarfield } from '../stars.js';
 import { BODY_VERT, PLANET_FRAG, RING_FRAG, ATMOS } from '../planetfx.js';
 import { registerLayers, refreshLayers } from '../layers.js';
 import { SATURN, RINGS, MOONS, MOON_IDS, POLE, kronianState, moonScene, saturnSpin, yearToJd, jdToYear } from '../kronian.js';
+import { spinAxis } from '../axes.js';
 
 const R = SATURN.r;
 const Y = new THREE.Vector3(0, 1, 0);
@@ -104,6 +105,7 @@ export function createSaturn(ctx, { seg = 160 } = {}) {
   const planetU = bodyUniforms(ctx.tex('saturn.jpg'), { ring: ringTex, inv, wrap: a.wrap, term: a.term, band: 0.6 });
   const planet = new THREE.Mesh(ellipsoidGeometry(1, f, 1, seg, seg / 2), new THREE.ShaderMaterial({ vertexShader: BODY_VERT, fragmentShader: PLANET_FRAG, uniforms: planetU }));
   group.add(planet);
+  spinAxis(planet);
   const hazeU = { uSunDir: planetU.uSunDir, uGain: { value: 0.35 } };
   const haze = new THREE.Mesh(ellipsoidGeometry(1.012, f * 1.012, 1.012, seg / 2, seg / 4), new THREE.ShaderMaterial({ vertexShader: BODY_VERT, fragmentShader: HAZE_FRAG, uniforms: hazeU, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true }));
   group.add(haze);
@@ -210,6 +212,7 @@ export function create(ctx) {
     u.uOcc.value[0].set(0, 0, 0, 1);   // Saturn als Verdecker: Mond im Planetenschatten
     const mesh = new THREE.Mesh(new THREE.SphereGeometry(1, 48, 24), new THREE.ShaderMaterial({ vertexShader: BODY_VERT, fragmentShader: PLANET_FRAG, uniforms: u }));
     scene.add(mesh);
+    spinAxis(mesh);
     const line = new THREE.LineLoop(new THREE.BufferGeometry(), new THREE.LineBasicMaterial({ color: new THREE.Color(MOON_COL[id] ?? 0xdde8ff), transparent: true, opacity: 0.2, blending: THREE.AdditiveBlending, depthWrite: false }));
     scene.add(line);
     return { id, m, mesh, u, line, own: map.isDataTexture ? map : null, pos: mesh.position };

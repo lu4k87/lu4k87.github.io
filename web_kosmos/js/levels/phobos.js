@@ -19,6 +19,7 @@ import { BUMP } from './asteroid.js';
 import { createMars, moonShape, dirLL, R } from './mars.js';
 import { MARS, MOONS, marsState, moonScene } from '../martian.js';
 import { eclDir } from '../astro.js';
+import { spinAxis } from '../axes.js';
 
 const RAD = Math.PI / 180, Y = new THREE.Vector3(0, 1, 0);
 const ease = (t) => t * t * (3 - 2 * t);
@@ -178,6 +179,7 @@ export function createMarsMoon(ctx, cfg) {
   const stick = cfg.stick ? shape.surf(cfg.stick[0], cfg.stick[1]) : new THREE.Vector3(0, 0, 999);
   const body = new THREE.Mesh(shape.geo, makeMaterial(cfg, new THREE.Vector4(stick.x, stick.y, stick.z, cfg.stick ? cfg.stick[2] : 0)));
   body.castShadow = body.receiveShadow = true;
+  spinAxis(body);
   // in die Liste der transparenten Objekte (deckend, schreibt Tiefe): three.js zeichnet sie nach allen deckenden – so kommt der
   // Körper nach den Himmelsschichten des Mars (Dunst, Kappen ohne Tiefentest) und wird nicht übermalt
   body.material.transparent = true;

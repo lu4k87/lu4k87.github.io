@@ -14,6 +14,7 @@ import { PLUTO, julianDate, elementsAt, solveKepler, orbitToEcliptic, eclToScene
 import { createStarfield } from '../stars.js';
 import { BODY_VERT, SHELL_VERT } from '../planetfx.js';
 import { registerLayers, refreshLayers } from '../layers.js';
+import { spinAxis } from '../axes.js';
 
 const RAD = Math.PI / 180;
 const R_P = 1188, R_C = 606;                  // Radien [km] (nssdc-pluto)
@@ -160,6 +161,8 @@ export function create(ctx) {
   const hazeU = { uSunDir: { value: sunDir }, uCenter: { value: new THREE.Vector3() }, uRp: { value: 1 }, uRa: { value: 1.2 }, uGain: { value: 3 } };
   const haze = new THREE.Mesh(new THREE.SphereGeometry(1.2, 96, 48), new THREE.ShaderMaterial({ vertexShader: SHELL_VERT, fragmentShader: HAZE_FRAG, uniforms: hazeU, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.BackSide }));
   scene.add(pluto, charon, haze);
+  spinAxis(pluto);
+  spinAxis(charon);
 
   // ---------- Bahnen: Charon und Plutos Mitte um den Schwerpunkt, kleine Monde, Schwerpunkt-Marke ----------
   const lineMat = (opacity, color = 0x9fdcff) => new THREE.LineBasicMaterial({ color, transparent: true, opacity, depthWrite: false });

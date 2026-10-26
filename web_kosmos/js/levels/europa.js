@@ -20,6 +20,7 @@ import { BODY_VERT, SHELL_VERT, PLANET_FRAG, ATMO_FRAG, ATMOS } from '../planetf
 import { registerLayers, refreshLayers } from '../layers.js';
 import { STATIONS } from '../content.js';
 import { JUPITER, GALILEAN, jovianState, moonScene, lineOfSun } from '../jovian.js';
+import { spinAxis } from '../axes.js';
 
 const EL = GALILEAN.europa;
 const R = EL.r / 1000, RJ = JUPITER.r / 1000;   // Europa 1.560,8 km, Jupiter 71.492 km (Szene: 1.000 km)
@@ -185,6 +186,7 @@ export function create(ctx) {
   const europa = new THREE.Mesh(new THREE.SphereGeometry(R, 256, 128).rotateY(Math.PI),   // Karte: Länge 0° bei u = 0 → +x
     new THREE.ShaderMaterial({ vertexShader: BODY_VERT, fragmentShader: EUROPA_FRAG, uniforms: eu }));
   scene.add(europa);
+  spinAxis(europa);
 
   // ---------- Ozean-Schnitt: zwei Viertelscheiben (Längen 135° und 225°) + Sektor in der Äquatorebene ----------
   const cutU = { uB: { value: new THREE.Vector3(...LAYERS.exag) }, uSun: { value: sun }, uR: { value: R }, uTime: { value: 0 } };
@@ -218,6 +220,7 @@ export function create(ctx) {
   const jup = new THREE.Mesh(new THREE.SphereGeometry(1, 192, 96), new THREE.ShaderMaterial({ vertexShader: BODY_VERT, fragmentShader: PLANET_FRAG, uniforms: jupU }));
   jup.scale.set(RJ, RJ * FLAT, RJ);
   jTilt.add(jup);
+  spinAxis(jup);
   const shell = new THREE.Mesh(new THREE.SphereGeometry(RJ * A.ra, 128, 64), new THREE.ShaderMaterial({ vertexShader: SHELL_VERT, fragmentShader: ATMO_FRAG, uniforms: {
     uSun: { value: sun }, uCenter: { value: jupPos }, uBeta: { value: new THREE.Vector3(...A.beta) }, uMieCol: { value: new THREE.Vector3(...A.mieCol) },
     uRp: { value: RJ }, uRa: { value: RJ * A.ra }, uH: { value: A.h }, uGain: { value: A.gain }, uMie: { value: A.mie }, uAir: { value: 0 }, uAirH: { value: 0.2 } },
@@ -234,6 +237,7 @@ export function create(ctx) {
       new THREE.ShaderMaterial({ vertexShader: BODY_VERT, fragmentShader: PLANET_FRAG, uniforms: u }));
     mesh.rotation.y = (0.5 - OTHERS[id].u0) * TAU;
     holder.add(mesh);
+    spinAxis(mesh);
     scene.add(holder);
     return { id, u, holder, pos: holder.position };
   });
