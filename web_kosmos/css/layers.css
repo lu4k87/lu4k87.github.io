@@ -1,13 +1,20 @@
-/* Ebenen-Einstellungen (Zahnrad „Station · …“), Zeitleiste über der Fußleiste und Tabellen in der Infotafel.
+/* Zahnrad (Gruppen, Ebenen der Station „Station · …“, Zeilen-Raster), Zeitleiste über der Fußleiste und Tabellen in der Infotafel.
    Ergänzt kosmos.css und nutzt dessen Tokens (--accent, --line, --glass-*, --mono). */
 .cfg-group { margin: 8px 0 -2px; padding-top: 10px; border-top: 1px solid var(--line); font: 500 11.5px var(--mono); letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-soft); }
 .cfg-group:first-child, .cfg-station > .cfg-group:first-child { border-top: 0; margin-top: 0; padding-top: 0; }
 .cfg-station { display: flex; flex-direction: column; gap: 10px; }
-.lay--sub { padding-left: 14px; border-left: 1px solid var(--line); }
-.lay--play { flex-wrap: wrap; }
-.lay--play .cfg-label { flex: 1 1 120px; min-width: 0; }
-.lay input[type=range] { flex: 1; min-width: 70px; accent-color: var(--accent); }
-.lay output { font: 500 12.5px var(--mono); min-width: 5ch; text-align: right; white-space: nowrap; }
+/* Zwischenüberschrift je Thema der Station; Folgezeilen (sub) als eingerückter Block unter ihrer Hauptzeile */
+.cfg-sub { margin: 4px 0 -2px; font: 600 13px var(--font); color: var(--ink); }
+.cfg-group + .cfg-sub { margin-top: 0; }
+.lay-subs { display: flex; flex-direction: column; gap: 10px; margin-left: 2px; padding-left: 14px; border-left: 1px solid var(--line); }
+/* Regler-Zeilen im Raster: Name (bricht bei Bedarf um) · Regler · Wert mit Einheit – nie auseinandergerissen */
+.cfg .cfg-range, .cfg .lay--play { display: grid; grid-template-columns: minmax(0, 1fr) minmax(96px, 1.15fr) minmax(52px, max-content); gap: 10px; }
+.cfg .lay--play { grid-template-columns: auto minmax(0, 1fr) minmax(96px, 1.15fr) minmax(52px, max-content); }
+.cfg .cfg-range input[type=range], .cfg .lay--play input[type=range] { width: 100%; min-width: 0; margin: 0; accent-color: var(--accent); }
+.cfg .cfg-toggle { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; }
+.cfg .cfg-range .cfg-label, .cfg .lay--play .cfg-label, .cfg .cfg-toggle .cfg-label { overflow-wrap: break-word; }
+.cfg-val, .lay output { font: 500 12.5px var(--mono); text-align: right; white-space: nowrap; }
+.cfg-val output { font: inherit; }
 .lay-hint { margin: -4px 0 2px; font-size: 12px; }
 .play-btn { width: 34px; height: 34px; flex: none; display: inline-grid; place-items: center; border-radius: 50%; border: 1px solid var(--line-strong); background: rgba(255, 255, 255, 0.06); color: var(--ink); cursor: pointer; transition: border-color 0.2s, background 0.2s, color 0.2s; }
 .play-btn svg { width: 18px; height: 18px; }

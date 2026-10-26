@@ -1,5 +1,6 @@
 // Einstellungen (Zahnrad oben rechts): oben die Ebenen der aktiven Station (layers.js: Schalter, Regler, ▶ je Animation),
-// darunter Allgemein (Bewegung, Qualität, Leerlauf-Fahrt, Infotafel, Zeitleiste, Flugdauer) und Bild (Belichtung, Tiefer Himmel, Bloom, Farbsaum, Korn).
+// darunter Kamera & Bewegung (Bewegung, Leerlauf-Fahrt, Flugdauer), Bild (Qualität, Belichtung, Tiefer Himmel, Kleinkörper),
+// Effekte (Bloom, Farbsaum, Korn) und Oberfläche (Infotafel, Zeitleiste).
 // Gespeichert in localStorage `kosmos.settings.v1`; clean() prüft jeden Wert, damit kaputte Einträge nichts stören.
 
 import { mountLayers, refreshLayers } from './layers.js';
@@ -49,29 +50,33 @@ const SEG = (key, label, opts) => `
 const TOG = (key, label) => `
   <label class="cfg-row cfg-toggle"><span class="cfg-label">${label}</span><input type="checkbox" data-key="${key}"><span class="switch" aria-hidden="true"></span></label>`;
 const RANGE = (key, label, min, max, step, unit) => `
-  <label class="cfg-row cfg-range"><span class="cfg-label">${label}</span><input type="range" data-key="${key}" min="${min}" max="${max}" step="${step}"><output data-out="${key}"></output><span class="cfg-unit">${unit}</span></label>`;
+  <label class="cfg-row cfg-range"><span class="cfg-label">${label}</span><input type="range" data-key="${key}" min="${min}" max="${max}" step="${step}"><span class="cfg-val"><output data-out="${key}"></output> <span class="cfg-unit">${unit}</span></span></label>`;
+const NOTE = (text) => `<p class="cfg-note lay-hint">${text}</p>`;
 
+// Reihenfolge: Station (wechselt mit dem Ort) → Kamera & Bewegung → Bild → Effekte → Oberfläche; Hinweise direkt unter ihrer Zeile
 export function mountSettings(root, btn) {
   root.innerHTML = `
     <h2 class="cfg-title" id="cfg-title">Einstellungen</h2>
     <div class="cfg-station" id="cfg-station"></div>
-    <h3 class="cfg-group">Allgemein</h3>
+    <h3 class="cfg-group">Kamera &amp; Bewegung</h3>
     ${SEG('motion', 'Bewegung', [['full', 'Voll'], ['calm', 'Ruhig'], ['off', 'Aus']])}
-    ${SEG('quality', 'Qualität', [['auto', 'Auto'], ['1', 'Leicht'], ['2', 'Mittel'], ['3', 'Fein']])}
+    ${NOTE('„Aus“ wirkt wie „Bewegung reduzieren“ im System: keine Fahrt von selbst, Wechsel als kurze Überblendung.')}
     ${TOG('cine', 'Leerlauf-Fahrt der Kamera')}
-    ${TOG('panel', 'Infotafel zeigen')}
-    ${TOG('timeline', 'Zeitleiste der Station zeigen')}
     ${RANGE('dive', 'Flugdauer', 1.5, 8, 0.1, 's')}
     <h3 class="cfg-group">Bild</h3>
+    ${SEG('quality', 'Qualität', [['auto', 'Auto'], ['1', 'Leicht'], ['2', 'Mittel'], ['3', 'Fein']])}
     ${RANGE('exposure', 'Belichtung', 0.5, 2, 0.05, '×')}
-    ${RANGE('small', 'Satelliten und Kleinkörper', 1, 8, 0.5, '×')}
     ${RANGE('deep', 'Tiefer Himmel', 0, 2, 0.1, '×')}
+    ${NOTE('Was eine Langzeitbelichtung hinter den Sternen sieht: ferne Galaxien und schwach leuchtender Staub der Milchstraße (Zirrus) – statistisch verteilt, überhöht, mit bloßem Auge unsichtbar. 0× = reines Schwarz.')}
+    ${RANGE('small', 'Satelliten und Kleinkörper', 1, 8, 0.5, '×')}
+    ${NOTE('Satelliten, Trümmer und Asteroiden als vergrößerte Symbole – je größer, desto weniger Objekte (4× → jedes achte); 1× zeigt alle als Lichtpunkte.')}
+    <h3 class="cfg-group">Effekte</h3>
     ${TOG('bloom', 'Lichthof (Bloom)')}
     ${TOG('lens', 'Farbsaum und Linsenreflex')}
     ${TOG('grain', 'Filmkorn')}
-    <p class="cfg-note">„Aus“ wirkt wie die System-Einstellung „Bewegung reduzieren“: keine Fahrt von selbst, Wechsel als kurze Überblendung.</p>
-    <p class="cfg-note">„Satelliten und Kleinkörper“ zeigt Satelliten, Trümmer und Asteroiden vergrößert als Symbole – je größer, desto weniger Objekte (4× → jedes achte); 1× zeigt alle als Lichtpunkte.</p>
-    <p class="cfg-note">„Tiefer Himmel“ zeigt hinter den Sternen, was eine Langzeitbelichtung sieht: ferne Galaxien und schwach leuchtenden Staub der Milchstraße (Zirrus) – statistisch verteilt und überhöht, mit bloßem Auge wären sie unsichtbar. 0× = reines Schwarz.</p>`;
+    <h3 class="cfg-group">Oberfläche</h3>
+    ${TOG('panel', 'Infotafel zeigen')}
+    ${TOG('timeline', 'Zeitleiste der Station zeigen')}`;
   mountLayers({ gear: root.querySelector('#cfg-station'), strip: document.getElementById('timeline'), stripOn: () => settings.S.timeline });
   const sync = () => {
     const S = settings.S;

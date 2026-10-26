@@ -484,15 +484,15 @@ export function create(ctx) {
   let clockIdx = 0;
   const setVis = (list, v) => list.forEach((o) => { o.visible = v; });
   registerLayers('solar', [
-    { id: 'clock', type: 'play', label: 'Planetenlauf', value: 0, min: 0, max: SPEEDS.length - 1, step: 1, autoplay: true, fmt: (i) => SPEEDS[Math.round(i)][1],
+    { id: 'clock', type: 'play', group: 'Zeit', label: 'Planetenlauf', value: 0, min: 0, max: SPEEDS.length - 1, step: 1, autoplay: true, fmt: (i) => SPEEDS[Math.round(i)][1],
       set: (i, playing) => { clockIdx = Math.round(i); rate = playing ? SPEEDS[clockIdx][0] : 0; if (!playing) jd = julianDate(new Date()); },
       get: () => ({ value: clockIdx, playing: rate !== 0 }), status: () => `Planetenstand ${fmt.format(new Date((jd - 2440587.5) * 864e5))}${rate ? '' : ' · jetzt'}` },
-    { id: 'flares', type: 'toggle', label: 'Protuberanzen und Flares', value: true, set: (v) => { flaresOn = v; loops.visible = v; if (!v) cme.visible = flash.visible = false; } },
+    { id: 'flares', type: 'toggle', group: 'Sonne', label: 'Protuberanzen und Flares', value: true, set: (v) => { flaresOn = v; loops.visible = v; if (!v) cme.visible = flash.visible = false; } },
     { id: 'flareRate', type: 'range', label: 'Häufigkeit', value: 1, min: 0.3, max: 3, step: 0.1, unit: '×', sub: true, set: (v) => { flareRate = v; loopU.uRate.value = v; } },
     { id: 'flareNow', type: 'action', label: 'Flare mit Massenauswurf', button: 'Jetzt auslösen', sub: true, run: () => { if (flaresOn) triggerFlare(); } },
     { id: 'corona', type: 'toggle', label: 'Korona', value: true, set: (v) => { coronaOn = v; coronaU.uCorona.value = v ? 1 : 0; } },
     { id: 'gran', type: 'toggle', label: 'Granulation (brodelnde Oberfläche)', value: true, set: (v) => { sunMat.uniforms.uGran.value = v ? 1 : 0; } },
-    { id: 'atmos', type: 'toggle', label: 'Atmosphären der Planeten', value: true, set: (v) => planets.forEach((x) => { if (x.shell) x.shell.visible = v; }) },
+    { id: 'atmos', type: 'toggle', group: 'Planeten und Kleinkörper', label: 'Atmosphären der Planeten', value: true, set: (v) => planets.forEach((x) => { if (x.shell) x.shell.visible = v; }) },
     { id: 'clouds', type: 'toggle', label: 'Wolken der Erde', value: true, sub: true, set: (v) => { P.earth.clouds.visible = v; } },
     { id: 'orbits', type: 'toggle', label: 'Bahnen mit Leuchtspur', value: true, set: (v) => setVis(planets.map((x) => x.orbit), v) },
     { id: 'belts', type: 'toggle', label: 'Kleinkörper: Asteroiden, Trojaner, Kuipergürtel', value: true, set: (v) => setVis(beltObjs, v) },

@@ -467,16 +467,16 @@ export function create(ctx) {
   const SPEEDS = [[1 / 1440, '1 min/s'], [1 / 144, '10 min/s'], [1 / 24, '1 h/s'], [0.25, '6 h/s'], [1, '1 Tag/s']];
   let clockIdx = 0;
   registerLayers('earth', [
-    { id: 'clock', type: 'play', label: 'Zeitraffer', hint: 'Erddrehung, Mondlauf, Satelliten und ISS im gewählten Tempo; Pause = Echtzeit.', value: 0, min: 0, max: SPEEDS.length - 1, step: 1, autoplay: true, fmt: (i) => SPEEDS[Math.round(i)][1],
+    { id: 'clock', type: 'play', group: 'Zeit', label: 'Zeitraffer', hint: 'Erddrehung, Mondlauf, Satelliten und ISS im gewählten Tempo; Pause = Echtzeit.', value: 0, min: 0, max: SPEEDS.length - 1, step: 1, autoplay: true, fmt: (i) => SPEEDS[Math.round(i)][1],
       set: (i, playing) => { clockIdx = Math.round(i); rate = playing ? SPEEDS[clockIdx][0] : 0; if (!playing) jd = julianDate(new Date()); },
       get: () => ({ value: clockIdx, playing: rate !== 0 }), status: () => `${fmt.format(new Date((jd - 2440587.5) * 864e5))}${rate ? '' : ' · Echtzeit'}` },
-    { id: 'atmo', type: 'toggle', label: 'Atmosphäre (Streulicht-Hülle)', value: true, set: (v) => { atmo.visible = v; } },
+    { id: 'atmo', type: 'toggle', group: 'Lufthülle', label: 'Atmosphäre (Streulicht-Hülle)', value: true, set: (v) => { atmo.visible = v; } },
     { id: 'clouds', type: 'toggle', label: 'Wolkenschicht', value: true, set: (v) => { clouds.visible = v; } },
     { id: 'aurora', type: 'toggle', label: 'Polarlichter', value: true, set: (v) => { aurora.visible = auroraGlow.visible = v; } },
-    { id: 'kp', type: 'range', label: 'Kp-Index (geomagnetische Aktivität)', value: 4, min: 0, max: 9, step: 1, sub: true, fmt: (v) => `Kp ${v}`, set: (v) => { auroraU.uKp.value = v; },
-      hint: 'Kp 0–2: nur am Polarkreis · Kp 5: Sturm, bis Norddeutschland · Kp 9: bis in den Mittelmeerraum (NOAA).' },
+    { id: 'kp', type: 'range', label: 'Kp-Index', value: 4, min: 0, max: 9, step: 1, sub: true, fmt: (v) => `Kp ${v}`, set: (v) => { auroraU.uKp.value = v; },
+      hint: 'Geomagnetische Aktivität. Kp 0–2: nur am Polarkreis · Kp 5: Sturm, bis Norddeutschland · Kp 9: bis in den Mittelmeerraum (NOAA).' },
     { id: 'auroraGain', type: 'range', label: 'Leuchtstärke', value: 1, min: 0.3, max: 2.5, step: 0.1, sub: true, unit: '×', set: (v) => { auroraU.uGain.value = v; } },
-    { id: 'sats', type: 'toggle', label: 'Satelliten (CelesTrak-Katalog)', value: true, set: (v) => { show.sats = v; applyShow(); } },
+    { id: 'sats', type: 'toggle', group: 'Erdumlaufbahn', label: 'Satelliten (CelesTrak-Katalog)', value: true, set: (v) => { show.sats = v; applyShow(); } },
     { id: 'debris', type: 'toggle', label: 'Trümmerwolken', value: true, sub: true, set: (v) => { show.debris = v; applyShow(); } },
     { id: 'orbits', type: 'toggle', label: 'Bahnen ISS, Tiangong, Hubble', value: true, sub: true, set: (v) => { show.orbits = v; applyShow(); } },
   ]);

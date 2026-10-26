@@ -1,7 +1,8 @@
 // Ebenen-Einstellungen je Station (Muster Biochar): Zahnrad-Abschnitt „Station · …“ und Zeitleiste über der Fußleiste.
 // Eine Station registriert ihre Ebenen in create(): registerLayers(stationId, layers). Ebene = { id, label, type, value, set, … }
 //   'toggle' an/aus · 'range' (min, max, step, unit, fmt) · 'play' ▶/⏸ mit Regler: set(value, playing), get() → { value, playing },
-//   status() Text für die Zeitleiste · 'action' Knopf: run(), button. sub: true rückt ein, hint: Zusatztext unter der Zeile.
+//   status() Text für die Zeitleiste · 'action' Knopf: run(), button. sub: true rückt ein (Folgezeilen hängen gemeinsam an der Zeile
+//   davor), hint: Zusatztext unter der Zeile, group: Zwischenüberschrift (gilt ab dieser Ebene bis zur nächsten group).
 // Werte je Station in localStorage `kosmos.layers.v1` (nicht der Abspielzustand); URL `?lay=aurora:0,kp:7,clock.play:1` für
 // Screenshots. Aktive Station aus `#station=…` (main.js setzt den Hash per replaceState → ohne Ereignis, daher Takt 300 ms).
 
@@ -56,20 +57,31 @@ function persist(l) {
 }
 
 const rowHtml = (l) => {
-  const cls = `lay${l.sub ? ' lay--sub' : ''}`;
   const rng = (extra = '') => `<input type="range" data-lay="${l.id}" min="${l.min}" max="${l.max}" step="${l.step ?? 1}" aria-label="${esc(l.label)}"${extra}><output data-lout="${l.id}"></output>`;
   let row;
-  if (l.type === 'toggle') row = `<label class="cfg-row cfg-toggle ${cls}"><span class="cfg-label">${esc(l.label)}</span><input type="checkbox" data-lay="${l.id}"><span class="switch" aria-hidden="true"></span></label>`;
-  else if (l.type === 'range') row = `<label class="cfg-row cfg-range ${cls}"><span class="cfg-label">${esc(l.label)}</span>${rng()}</label>`;
-  else if (l.type === 'play') row = `<div class="cfg-row ${cls} lay--play"><button type="button" class="play-btn" data-play="${l.id}" aria-pressed="false" aria-label="${esc(l.label)} abspielen">${PLAY}</button><span class="cfg-label">${esc(l.label)}</span>${rng()}</div>`;
-  else row = `<div class="cfg-row ${cls}"><span class="cfg-label">${esc(l.label)}</span><button type="button" class="act-btn" data-act="${l.id}">${esc(l.button || 'Auslösen')}</button></div>`;
+  if (l.type === 'toggle') row = `<label class="cfg-row cfg-toggle lay"><span class="cfg-label">${esc(l.label)}</span><input type="checkbox" data-lay="${l.id}"><span class="switch" aria-hidden="true"></span></label>`;
+  else if (l.type === 'range') row = `<label class="cfg-row cfg-range lay"><span class="cfg-label">${esc(l.label)}</span>${rng()}</label>`;
+  else if (l.type === 'play') row = `<div class="cfg-row lay lay--play"><button type="button" class="play-btn" data-play="${l.id}" aria-pressed="false" aria-label="${esc(l.label)} abspielen">${PLAY}</button><span class="cfg-label">${esc(l.label)}</span>${rng()}</div>`;
+  else row = `<div class="cfg-row lay"><span class="cfg-label">${esc(l.label)}</span><button type="button" class="act-btn" data-act="${l.id}">${esc(l.button || 'Auslösen')}</button></div>`;
   return row + (l.hint ? `<p class="cfg-note lay-hint">${esc(l.hint)}</p>` : '');
 };
+
+// Zwischenüberschrift je group, aufeinanderfolgende sub-Ebenen in einem eingerückten Block unter ihrer Hauptzeile
+function gearHtml(layers) {
+  let html = '', subs = '', group = null;
+  const flush = () => { if (subs) html += `<div class="lay-subs">${subs}</div>`; subs = ''; };
+  for (const l of layers) {
+    if (l.group && l.group !== group) { flush(); group = l.group; html += `<h4 class="cfg-sub">${esc(group)}</h4>`; }
+    if (l.sub) subs += rowHtml(l); else { flush(); html += rowHtml(l); }
+  }
+  flush();
+  return html;
+}
 
 function render() {
   if (gearEl) {
     const layers = reg.get(currentId), st = STATIONS[currentId];
-    gearEl.innerHTML = `<h3 class="cfg-group">Station · ${esc(st ? st.title : '…')}</h3>${layers ? layers.map(rowHtml).join('')
+    gearEl.innerHTML = `<h3 class="cfg-group">Station · ${esc(st ? st.title : '…')}</h3>${layers ? gearHtml(layers)
       : '<p class="cfg-note">Diese Station hat noch keine Ebenen-Einstellungen – ihre Schalter stehen in der Infotafel.</p>'}`;
   }
   if (stripEl) {

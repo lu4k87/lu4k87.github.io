@@ -370,17 +370,17 @@ export function create(ctx) {
   }
   function layersFor(id) {
     const L = [
-      { id: 'spin', type: 'play', label: 'Drehung', value: spinIdx, min: 0, max: SPEEDS.length - 1, step: 1, autoplay: true, fmt: (i) => SPEEDS[Math.round(i)][1],
+      { id: 'spin', type: 'play', group: 'Zeit', label: 'Drehung', value: spinIdx, min: 0, max: SPEEDS.length - 1, step: 1, autoplay: true, fmt: (i) => SPEEDS[Math.round(i)][1],
         set: (i, p) => { spinIdx = Math.round(i); spinning = p; }, get: () => ({ value: spinIdx, playing: spinning }),
         status: () => `${B.name} · eine Umdrehung in ${fmtH(B.period)}` },
-      { id: 'sunAz', type: 'range', label: 'Sonnenstand', value: sunAz, min: 0, max: 355, step: 5, unit: '°', set: (v) => { sunAz = v; placeSun(); } },
+      { id: 'sunAz', type: 'range', group: 'Licht', label: 'Sonnenstand', value: sunAz, min: 0, max: 355, step: 5, unit: '°', set: (v) => { sunAz = v; placeSun(); } },
       { id: 'shadows', type: 'toggle', label: 'Schlagschatten der Sonne', value: true, set: (v) => { sun.castShadow = v; } },
       { id: 'fill', type: 'toggle', label: 'Blaues Fülllicht (künstlerisch)', value: true, set: (v) => { fill.visible = v; } },
     ];
-    if (id === 'psyche') L.push({ id: 'marks', type: 'toggle', label: 'Senken aus dem Radarmodell markieren', value: false, set: (v) => { mat.u.uMarkOn.value = v ? 1 : 0; } });
+    if (id === 'psyche') L.push({ id: 'marks', type: 'toggle', group: 'Besonderheiten', label: 'Senken aus dem Radarmodell markieren', value: false, set: (v) => { mat.u.uMarkOn.value = v ? 1 : 0; } });
     if (id === 'bennu') {
       L.push(
-        { id: 'ejecta', type: 'toggle', label: 'Steinchen-Auswürfe (beobachtet 2019)', value: true, set: (v) => { ejOn = v; ej.visible = v; } },
+        { id: 'ejecta', type: 'toggle', group: 'Besonderheiten', label: 'Steinchen-Auswürfe (beobachtet 2019)', value: true, set: (v) => { ejOn = v; ej.visible = v; } },
         { id: 'ejRate', type: 'range', label: 'Häufigkeit', value: 1, min: 0.3, max: 3, step: 0.1, unit: '×', sub: true, set: (v) => { ejRate = v; } },
         { id: 'ejNow', type: 'action', label: 'Auswurf', button: 'Jetzt auslösen', sub: true, run: () => { if (ejOn) burst(); } },
       );
