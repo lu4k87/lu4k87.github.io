@@ -164,6 +164,7 @@ function resize() {
 let waiting = 0;
 function getLevel(id, quiet = false) {
   if (state.levels.has(id)) return Promise.resolve(state.levels.get(id));
+  if (!quiet) builds.urgent.add(id);   // angefordert: überholt das Vorladen
   let job = state.loading.get(id);
   if (!job) job = buildLevel(id);
   if (!quiet) {
@@ -175,34 +176,68 @@ function getLevel(id, quiet = false) {
   return job;
 }
 
+// Vorladen baut eine Station nach der anderen: nie mehrere Shader-Schübe im selben Bild
+const builds = { busy: false, urgent: new Set() };
 function buildLevel(id) {
   const job = (async () => {
-    await new Promise((r) => requestAnimationFrame(() => setTimeout(r, 0)));
-    const mod = await LOADERS[id]();
-    const q = QUALITY[pickQuality()];
-    const lv = mod.create({ renderer, tex, date: now, detail: q.detail, still: still() });
-    lv.id = id;
-    lv.meta = STATIONS[id];
-    lv.deep = createDeepSky(id);   // ferne Galaxien, Zirrus, Restlicht hinter den Sternen (deepsky.js)
-    if (lv.deep) lv.scene.add(lv.deep);
-    lv.baseFov = lv.camera.fov;
-    lv.rt = new THREE.WebGLRenderTarget(2, 2, {
-      type: THREE.HalfFloatType, samples: lv.msaa === false ? 0 : q.msaa,
-      generateMipmaps: !!lv.mips, minFilter: lv.mips ? THREE.LinearMipmapLinearFilter : THREE.LinearFilter,
-    });
-    lv.camera.position.copy(lv.home.pos);
-    lv.camera.lookAt(lv.home.target);
-    lv.target = lv.home.target.clone();
-    fit(lv);
-    if (lv.ready) await lv.ready;
-    renderer.compile(lv.scene, lv.camera);
-    state.levels.set(id, lv);
-    state.loading.delete(id);
-    return lv;
+    do await calmFrame(); while (builds.busy && !builds.urgent.has(id));
+    const gated = !builds.urgent.has(id);
+    if (gated) builds.busy = true;
+    try { return await makeLevel(id); } finally { if (gated) builds.busy = false; builds.urgent.delete(id); }
   })();
   state.loading.set(id, job);
   job.catch((err) => { console.error(`[kosmos] Station ${id}:`, err); state.loading.delete(id); });
   return job;
+}
+
+async function makeLevel(id) {
+  const mod = await LOADERS[id]();
+  await calmFrame();
+  const q = QUALITY[pickQuality()];
+  const lv = mod.create({ renderer, tex, date: now, detail: q.detail, still: still() });
+  lv.id = id;
+  lv.meta = STATIONS[id];
+  lv.deep = createDeepSky(id);   // ferne Galaxien, Zirrus, Restlicht hinter den Sternen (deepsky.js)
+  if (lv.deep) lv.scene.add(lv.deep);
+  lv.baseFov = lv.camera.fov;
+  lv.rt = new THREE.WebGLRenderTarget(2, 2, {
+    type: THREE.HalfFloatType, samples: lv.msaa === false ? 0 : q.msaa,
+    generateMipmaps: !!lv.mips, minFilter: lv.mips ? THREE.LinearMipmapLinearFilter : THREE.LinearFilter,
+  });
+  lv.camera.position.copy(lv.home.pos);
+  lv.camera.lookAt(lv.home.target);
+  lv.target = lv.home.target.clone();
+  fit(lv);
+  if (lv.ready) await lv.ready;
+  await warmUp(lv);
+  state.levels.set(id, lv);
+  state.loading.delete(id);
+  return lv;
+}
+
+// Erstes Flugbild ohne Hänger: Shader parallel binden, Texturen einzeln je Bild hochladen, einmal ins eigene Ziel rendern.
+// Vorladen arbeitet nur zwischen Flügen (calmFrame): die für einen Flug nötigen Stationen sind vor dem Start fertig.
+const nextFrame = () => new Promise((r) => requestAnimationFrame(() => setTimeout(r, 0)));
+async function calmFrame() { do await nextFrame(); while (state.tr); }
+async function warmUp(lv) {
+  if (lv.update) lv.update(0, state.time, lv.camera, true);   // Station stellt ihren Flugzustand ein (Sichtbarkeit, Uniforms)
+  await renderer.compileAsync(lv.scene, lv.camera);
+  const texs = new Set();
+  lv.scene.traverse((o) => {
+    for (const m of [].concat(o.material || [])) {
+      for (const v of Object.values(m)) if (v && v.isTexture) texs.add(v);
+      for (const u of Object.values(m.uniforms || {})) if (u.value && u.value.isTexture) texs.add(u.value);
+    }
+  });
+  for (const t of texs) {
+    if (t.isRenderTargetTexture || !t.image) continue;
+    await calmFrame();
+    renderer.initTexture(t);
+  }
+  await calmFrame();
+  renderer.setRenderTarget(lv.rt);
+  renderer.render(lv.scene, lv.camera);
+  renderer.setRenderTarget(null);
 }
 
 function anchorOf(outer, innerId) {
