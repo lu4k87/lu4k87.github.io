@@ -66,7 +66,9 @@ void main() {
 }
 `;
 
-export function buildGalaxy({ n = 220000, seed = 9, scale = 1, gain = 1, dust = true, faceTilt = 0 } = {}) {
+// Optionen für andere Galaxien (Station Lokale Gruppe): eigene Arme/Ringe, young = false (junge Sterne und HII-Regionen
+// liefert dann galaxyfx.js mit Lebenslauf), bar/bulge/diffuse = Anteil von Balken, Bulge und diffusem Licht (1 = Milchstraße)
+export function buildGalaxy({ n = 220000, seed = 9, scale = 1, gain = 1, dust = true, faceTilt = 0, arms = ARMS, rings = [], young = true, bar = 1, bulge = 1, diffuse = 1 } = {}) {
   const rand = mulberry32(seed);
   const pos = [], col = [], size = [], om = [];
   const dpos = [], dcol = [], dsize = [], dom = [];
@@ -93,7 +95,7 @@ export function buildGalaxy({ n = 220000, seed = 9, scale = 1, gain = 1, dust = 
   };
   const armDensity = (R, phi) => {
     let d = 0;
-    for (const a of ARMS) {
+    for (const a of arms) {
       // nächster Durchgang des Arms bei diesem Radius (mehrere Windungen)
       const p0 = spiralPhi(R, a);
       let dphi = ((phi - p0) % (2 * Math.PI) + 3 * Math.PI) % (2 * Math.PI) - Math.PI;
@@ -103,6 +105,7 @@ export function buildGalaxy({ n = 220000, seed = 9, scale = 1, gain = 1, dust = 
       const dist = Math.abs(dphi) * R * Math.sin(a.pitch * RAD + 0.0001) / Math.sin(a.pitch * RAD) * Math.sin(a.pitch * RAD + Math.PI / 2 - a.pitch * RAD);
       d += a.w * inSpan * Math.exp(-((dist / (a.width * (0.7 + R / 12))) ** 2));
     }
+    for (const r of rings) d += r.w * Math.exp(-(((R - r.R) / r.width) ** 2));
     return Math.min(1.4, d);
   };
 
@@ -119,8 +122,8 @@ export function buildGalaxy({ n = 220000, seed = 9, scale = 1, gain = 1, dust = 
     add(p, old(T), 0.035 + rand() * 0.03, 0.22 + ad * 0.25);
   }
   // junge, helle Sterne entlang der Arme
-  for (let i = 0; i < N * 0.22; i++) {
-    const a = ARMS[Math.floor(rand() * ARMS.length)];
+  for (let i = 0; i < (young ? N * 0.22 : 0); i++) {
+    const a = arms[Math.floor(rand() * arms.length)];
     if (rand() > a.w) continue;
     const { phi, R, fade } = armPoint(a);
     if (R < 3 || R > 17 || rand() > fade) continue;
@@ -129,8 +132,8 @@ export function buildGalaxy({ n = 220000, seed = 9, scale = 1, gain = 1, dust = 
     add(p, old(8000 + rand() * 16000), 0.04 + rand() * 0.05, 0.6 + rand() * 0.8);
   }
   // HII-Regionen: rosa Knoten (Hα + Hβ) am Innenrand der Arme
-  for (let i = 0; i < N * 0.006; i++) {
-    const a = ARMS[Math.floor(rand() * ARMS.length)];
+  for (let i = 0; i < (young ? N * 0.006 : 0); i++) {
+    const a = arms[Math.floor(rand() * arms.length)];
     const { phi, R, fade } = armPoint(a);
     if (R < 3.2 || R > 15 || rand() > fade) continue;
     const c = diskPoint(R - a.width * 0.25, phi, gauss(rand) * 0.03);
@@ -140,28 +143,28 @@ export function buildGalaxy({ n = 220000, seed = 9, scale = 1, gain = 1, dust = 
   // Balken (dreiachsig, „Erdnuss“) und Bulge aus alten Sternen
   const ba = BAR.angle * RAD;
   const bu = diskPoint(1, ba), bv = diskPoint(1, ba + Math.PI / 2);
-  for (let i = 0; i < N * 0.16; i++) {
+  for (let i = 0; i < N * 0.16 * bar; i++) {
     const u = gauss(rand) * BAR.half * 0.42, v = gauss(rand) * 0.55, y = gauss(rand) * (0.28 + 0.25 * Math.exp(-Math.abs(u) / 1.5));
     if (Math.abs(u) > BAR.half * 1.15) continue;
     const p = [bu[0] * u + bv[0] * v, y, bu[2] * u + bv[2] * v];
     add(p, old(3800 + rand() * 1600), 0.04 + rand() * 0.03, 0.35 + 0.6 * Math.exp(-Math.hypot(u, v) / 1.2));
   }
-  for (let i = 0; i < N * 0.06; i++) {
+  for (let i = 0; i < N * 0.06 * bulge; i++) {
     const r = expR(0.45, 3);
     const d = new THREE.Vector3(gauss(rand), gauss(rand) * 0.7, gauss(rand)).normalize().multiplyScalar(r);
     add([d.x, d.y, d.z], old(4000 + rand() * 1200), 0.045, 0.6 + 0.8 * Math.exp(-r / 0.5));
   }
   // diffuses Licht der unaufgelösten Sterne
-  for (let i = 0; i < N * 0.03; i++) {
+  for (let i = 0; i < N * 0.03 * diffuse; i++) {
     const R = expR(3.0, 15), phi = rand() * Math.PI * 2;
     const ad = armDensity(R, phi);
     add(diskPoint(R, phi, gauss(rand) * 0.1), old(5200), 0.7 + rand() * 0.6, 0.009 + ad * 0.008);
   }
-  add([0, 0, 0], old(4600), 3.2, 0.06);
+  if (bulge) add([0, 0, 0], old(4600), 3.2, 0.06 * bulge);
   // Staub: Innenkante der Arme + dünne Schicht der Scheibe
   if (dust) {
     for (let i = 0; i < N * 0.09; i++) {
-      const a = ARMS[Math.floor(rand() * ARMS.length)];
+      const a = arms[Math.floor(rand() * arms.length)];
       const { phi, R, fade } = armPoint(a);
       if (R < 2.8 || R > 16 || rand() > fade) continue;
       const p = diskPoint(R - a.width * (0.45 + gauss(rand) * 0.18) * (0.7 + R / 12), phi, gauss(rand) * 0.03);
@@ -170,6 +173,10 @@ export function buildGalaxy({ n = 220000, seed = 9, scale = 1, gain = 1, dust = 
     for (let i = 0; i < N * 0.03; i++) {
       const R = expR(3.5, 14), phi = rand() * Math.PI * 2;
       addDust(diskPoint(R, phi, gauss(rand) * 0.04), 0.05 + rand() * 0.06, 0.4);
+    }
+    // Ringe: Staub am Innenrand
+    for (const r of rings) {
+      for (let i = 0; i < N * 0.03 * r.w; i++) addDust(diskPoint(r.R + (-0.75 + gauss(rand) * 0.3) * r.width, rand() * Math.PI * 2, gauss(rand) * 0.03), (0.12 + rand() * 0.18) * r.w, 0.16 + rand() * 0.18);
     }
   }
 
@@ -212,7 +219,7 @@ export const GLOBULARS = [
   ['m22', 'M22', 9.89, -7.55, 3.2], ['m4', 'M4', 350.97, 15.97, 2.2], ['m5', 'M5', 3.86, 46.80, 7.5], ['m15', 'M15', 65.01, -27.31, 10.4],
   ['m3', 'M3', 42.22, 78.71, 10.2], ['m2', 'M2', 53.37, -35.77, 11.5], ['m92', 'M92', 68.34, 34.86, 8.3],
 ];
-function buildHalo(det, rand) {
+export function buildHalo(det, rand) {
   const pos = [], col = [], size = [];
   const put = (x, y, z, T, k, s) => { pos.push(x, y, z); col.push(...blackbody(T).map((v) => v * k)); size.push(s); };
   const cluster = (c, n, r, k) => { for (let i = 0; i < n; i++) put(c.x + gauss(rand) * r, c.y + gauss(rand) * r, c.z + gauss(rand) * r, 4700 + rand() * 900, k * (0.5 + rand()), 0.06); };
