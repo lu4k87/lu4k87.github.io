@@ -27,7 +27,7 @@ export const BODIES = {
 const fmtH = (h) => `${Math.floor(h)} h ${String(Math.round((h % 1) * 60)).padStart(2, '0')} min`;
 
 // ---------- Rauschen und Kraterprofil (CPU) ----------
-function makeNoise(seed) {
+export function makeNoise(seed) {
   const r = mulberry32(seed), P = new Uint8Array(512), G = new Float32Array(768);
   for (let i = 0; i < 256; i++) {
     P[i] = i;
@@ -58,10 +58,10 @@ function makeNoise(seed) {
 const smin = (a, b, k) => { const h = Math.min(1, Math.max(0, 0.5 + 0.5 * (b - a) / k)); return b + (a - b) * h - k * h * (1 - h); };
 const smax = (a, b, k) => -smin(-a, -b, k);
 // Kraterprofil über q = Abstand/Radius: Schüssel q² − 1 mit flachem Boden, Wall bis q = 1,4 (Muster nach S. Lague)
-const craterProfile = (q, floor) => { const rx = Math.min(q - 1.4, 0); return smin(smax(q * q - 1, floor, 0.25), 2.2 * rx * rx, 0.2); };
+export const craterProfile = (q, floor) => { const rx = Math.min(q - 1.4, 0); return smin(smax(q * q - 1, floor, 0.25), 2.2 * rx * rx, 0.2); };
 
 // Ikosaederkugel mit gemeinsamen Eckpunkten (glatte Normalen nach dem Verformen)
-function icoIndexed(detail) {
+export function icoIndexed(detail) {
   const g = new THREE.IcosahedronGeometry(1, detail), p = g.attributes.position;
   const map = new Map(), verts = [], idx = new Uint32Array(p.count);
   for (let i = 0; i < p.count; i++) {
@@ -218,7 +218,7 @@ sHF *= uBumpH;
 diffuseColor.rgb = sCol;
 `;
 // Bump ohne Tangenten (Mikkelsen 2010, wie three.js perturbNormalArb), Höhe sHF in Weltmaß
-const BUMP = /* glsl */ `
+export const BUMP = /* glsl */ `
 vec3 sPos = -vViewPosition, sDx = dFdx(sPos), sDy = dFdy(sPos);
 float sHx = dFdx(sHF), sHy = dFdy(sHF);
 vec3 sR1 = cross(sDy, normal), sR2 = cross(normal, sDx);
