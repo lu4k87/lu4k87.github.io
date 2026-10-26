@@ -4,7 +4,7 @@
 // Entfernung, Blick zurück), Reiseroute, Kapitel-Titel beim Ankommen, Rand-Zug-Anzeige.
 
 import { STATIONS, ROUTE, SOURCES, routeIndex } from './content.js';
-import { fmtLength, fmtTime, C, AU, LY } from './astro.js';
+import { fmtLength, fmtTime, C } from './astro.js';
 import { settings, setSetting, mountSettings, onSettings } from './settings.js';
 import { getLayer, setLayer, fmtVal } from './layers.js';
 import { cardHtml, mountCard, unmountCard } from './cards.js';
@@ -40,72 +40,49 @@ export function createHud(h) {
   body.classList.toggle('panel-off', !settings.S.panel);
   $('#btn-panel').addEventListener('click', () => setSetting('panel', !settings.S.panel));
 
-  // ---------- Stationsbaum ----------
-  // Kapitel (Vorschau 26.10.2026 Glied:C): je Hub-Station ein Kapitel (Nummer = Hub-Nummer), von unten nach oben. Nur das
-  // Kapitel der aktuellen Station ist offen; der Kopf (Nummer, Name, Spanne der Bildbreiten, Zähler) klappt auf/zu.
-  // Im Kapitel Reiseordnung von unten: Stamm = erste Station der Route und alle ihre Vorfahren; was abseits liegt
-  // (Orion-Nebel, Krebsnebel → Crab-Pulsar, Sagittarius A* …), hängt eingerückt unter seiner Elternstation – wie Hinein/Hinaus.
-  // Halte der Route stehen immer da; Abstecher außerhalb der Route (Planeten, Monde) sind zugeklappt, ihre Elternzeile
-  // zeigt „+n“ (Klick klappt auf). Der Ast der aktuellen Station ist immer offen.
-  // Maßstabsleiter (Glied:A): Achse am linken Rand, log10 der Bildbreite; jede Station als blasser Punkt an ihrer Größe,
-  // die aktuelle als Akzent-Punkt an der Live-Bildbreite mit Kurve zur Pille; Hover/Fokus einer Zeile zeigt ihre Kurve.
+  // ---------- Stationsleiste ----------
+  // Reiseroute als Zeitstrahl (Vorschau 26.10.2026 Navi:C): die Halte der Route gleichmäßig über die volle Höhe, von unten (ISS)
+  // nach oben (Hintergrundstrahlung), je Zeile Nummer, Name, Bildbreite (bei der aktuellen live). Links die Kapitel als getönte
+  // Blöcke mit senkrechtem Namen, Lage aus den Zeilen (layoutRail). Abstecher (Planeten, Monde) als Knopf „+n ›“ neben ihrem Halt:
+  // klappt seitlich eine Liste auf, statt die Leiste zu verlängern. Ist die aktuelle Station ein Abstecher, stehen sie und ihre
+  // Vorfahren eingerückt über dem Halt. Die Linie leuchtet vom Start bis zur aktuellen Station.
   const CHAPTERS = [['earth', 'Erdnähe'], ['solar', 'Sonnensystem'], ['galaxy', 'Milchstraße'], ['local', 'Universum']];
   const HUBS = CHAPTERS.map(([id]) => id);
   // Abstecher des Sonnensystems nach Abstand zur Sonne statt nach Nummer (Nummern bleiben)
   const SUN_ORDER = ['sun', 'mercury', 'venus', 'mars', 'asteroid', 'jupiter', 'saturn', 'uranus', 'neptune', 'pluto'];
   const rank = (id) => { const i = SUN_ORDER.indexOf(id); return i < 0 ? SUN_ORDER.length : i; };
-  // Achse: log10 der Bildbreite in Metern von unten (LO) nach oben (HI), Marken in Mono
-  const AX = 50, LO = 1.7, HI = 27.4;
-  const TICKS = [[1e3, '1 km'], [1e6, '10³ km'], [AU, '1 AE'], [LY, '1 Lj'], [1e3 * LY, '10³ Lj'], [1e6 * LY, '10⁶ Lj'], [1e9 * LY, '10⁹ Lj']];
-  const flat = matchMedia('(max-width: 760px)');
-  const railRows = new Map(), railKids = new Map(), railTrunk = [], railOpen = new Set(), chOf = new Map(), chEls = new Map(), chOpen = new Set();
-  let railSvg = null, railAxis = null, railLive = null, railCur = null, railY = null, liveW = 0, hoverId = null;
-  const fixed = (id) => ROUTE.includes(id) || railTrunk.includes(id);
+  const onRoute = new Set(ROUTE);
   const chapter = (id) => { for (let x = id; x; x = STATIONS[x].parent) if (HUBS.includes(x)) return x; return HUBS[HUBS.length - 1]; };
+  const kidsOf = (id) => Object.keys(STATIONS).filter((k) => STATIONS[k].parent === id && !onRoute.has(k)).sort((a, b) => rank(a) - rank(b) || num(a).localeCompare(num(b)));
+  const below = (id) => kidsOf(id).flatMap((k) => [k, ...below(k)]);
+  const sideDepth = (id) => (onRoute.has(id) || !STATIONS[id].parent ? 0 : sideDepth(STATIONS[id].parent) + 1);
+  const stopOf = (id) => { let x = id; while (x && STATIONS[x] && !onRoute.has(x)) x = STATIONS[x].parent; return STATIONS[x] ? x : null; };
+  const chName = (id) => CHAPTERS.find(([hub]) => hub === chapter(id))[1];
+  const railRows = new Map(), railChs = new Map();
+  let railSvg = null, railFly = null, flyOf = null, railCur = null, railLive = null;
+  const rowHtml = (id, d = 0) => `<button type="button" class="rl-btn" data-go="${id}" style="--d:${d}" aria-label="${esc(STATIONS[id].title)} – Bildbreite ${esc(fmtLength(STATIONS[id].width))}, Kapitel ${esc(chName(id))}">
+    <span class="rl-dot"></span><span class="rl-txt"><b>${num(id)}</b> ${esc(STATIONS[id].title)}<small>${esc(fmtLength(STATIONS[id].width))}</small></span></button>`;
   function buildRail() {
-    for (let id = ROUTE[0]; id; id = STATIONS[id].parent) railTrunk.push(id);
-    const ids = Object.keys(STATIONS), onTrunk = new Set(railTrunk);
-    const depth = (id) => (onTrunk.has(id) || !STATIONS[id].parent ? 0 : depth(STATIONS[id].parent) + 1);
-    ids.forEach((id) => railKids.set(id, ids.filter((k) => STATIONS[k].parent === id && !onTrunk.has(k)).sort((a, b) => rank(a) - rank(b) || num(a).localeCompare(num(b)))));
-    const walk = (id) => [id, ...railKids.get(id).flatMap(walk)];
-    const order = railTrunk.flatMap(walk);
-    order.push(...ids.filter((id) => !order.includes(id)));
-    order.forEach((id) => chOf.set(id, chapter(id)));
-    const row = (id, i) => {
-      const st = STATIONS[id], d = depth(id), more = railKids.get(id).filter((k) => !fixed(k)).length;
-      return `<li class="rl-row${d ? ' is-branch' : ''}" style="--d:${d};--i:${i + 1}" data-id="${id}"><button type="button" class="rl-btn" aria-label="${esc(st.title)} – Bildbreite ${esc(fmtLength(st.width))}">
-        <span class="rl-dot"></span><span class="rl-txt"><b>${num(id)}</b> ${esc(st.title)}<small>${esc(fmtLength(st.width))}</small></span></button>${more
-        ? `<button type="button" class="rl-more" data-n="${more}" aria-expanded="false"></button>` : ''}</li>`;
+    const stops = [...ROUTE].reverse();
+    rail.innerHTML = `<svg class="rail-line" aria-hidden="true"></svg>${CHAPTERS.map(([hub, name]) => `<span class="rl-ch" data-ch="${hub}" aria-hidden="true"><span>${num(hub)} ${esc(name)}</span></span>`).join('')}
+      <ol class="rail-list">${stops.map((id, i) => {
+        const n = kidsOf(id).length;
+        return `<li class="rl-stop" data-id="${id}" data-ch="${chapter(id)}" style="--i:${i + 1}"><div class="rl-sub"></div><div class="rl-main">${rowHtml(id)}${n
+          ? `<button type="button" class="rl-more" aria-expanded="false" aria-controls="rl-fly" aria-label="${n} Abstecher von ${esc(STATIONS[id].title)}">+${n} ›</button>` : ''}</div></li>`;
+      }).join('')}</ol><div class="rl-fly" id="rl-fly" role="group" hidden></div>`;
+    railSvg = rail.querySelector('.rail-line');
+    // Liste am Seitenkörper: liegt so über Zeitleiste und Kapitel-Titel, die eigene Ebenen über der HUD haben
+    railFly = rail.querySelector('.rl-fly');
+    document.body.append(railFly);
+    rail.querySelectorAll('.rl-ch').forEach((el) => railChs.set(el.dataset.ch, el));
+    rail.querySelectorAll('.rl-stop').forEach((li) => railRows.set(li.dataset.id, li));
+    const onClick = (e) => {
+      const go = e.target.closest('[data-go]'), more = e.target.closest('.rl-more');
+      if (go) { closeFly(); h.onInput(); h.onGo(go.dataset.go); } else if (more) { const id = more.closest('.rl-stop').dataset.id; if (flyOf === id) closeFly(true); else openFly(id); }
     };
-    rail.innerHTML = `<svg class="rail-axis" aria-hidden="true"></svg><svg class="rail-tree" aria-hidden="true"></svg><ol class="rail-list">${CHAPTERS.map(([hub, name]) => {
-      const mine = order.filter((id) => chOf.get(id) === hub), ws = mine.map((id) => STATIONS[id].width);
-      const span = `${fmtLength(Math.min(...ws))} – ${fmtLength(Math.max(...ws))}`;
-      // Kopf zeigt die Routen-Nummern des Kapitels (03–07), damit die Zählung ohne Lücke weiterläuft; Abstecher (02A) zählen nicht.
-      // Ende der Spanne klein unter der Nummer, sonst kürzt die breite Nummer die Zeile der Bildbreiten
-      const ns = mine.map((id) => STATIONS[id].n).filter(Number.isInteger), lo = Math.min(...ns), hi = Math.max(...ns);
-      const nums = lo === hi ? num(hub) : `${String(lo).padStart(2, '0')}–${String(hi).padStart(2, '0')}`, end = nums.slice(2);
-      return `<li class="rl-ch" data-ch="${hub}"><button type="button" class="rl-head" aria-expanded="false" aria-controls="rl-${hub}" aria-label="Kapitel ${nums} ${esc(name)}: ${mine.length} Stationen, Bildbreite ${esc(span)}">
-        <span class="rl-num">${num(hub)}${end ? `<small>${end}</small>` : ''}</span><span class="rl-name">${esc(name)}</span><span class="rl-cnt" data-n="${mine.length}"></span><span class="rl-span">${esc(span)}</span></button>
-        <ol class="rl-rows" id="rl-${hub}">${mine.map(row).join('')}</ol></li>`;
-    }).join('')}</ol>`;
-    railSvg = rail.querySelector('.rail-tree');
-    railAxis = rail.querySelector('.rail-axis');
-    rail.querySelectorAll('.rl-ch').forEach((el) => {
-      const hub = el.dataset.ch;
-      chEls.set(hub, el);
-      el.querySelector('.rl-head').addEventListener('click', () => { if (!chOpen.delete(hub)) chOpen.add(hub); showRail(); });
-    });
-    rail.querySelectorAll('.rl-row').forEach((li) => {
-      const id = li.dataset.id;
-      railRows.set(id, li);
-      li.firstElementChild.addEventListener('click', () => { h.onInput(); h.onGo(id); });
-      li.querySelector('.rl-more')?.addEventListener('click', () => { if (!railOpen.delete(id)) railOpen.add(id); showRail(); });
-      const hover = (on) => { hoverId = on ? id : hoverId === id ? null : hoverId; drawLinks(); };
-      li.addEventListener('pointerenter', () => hover(true));
-      li.addEventListener('pointerleave', () => hover(false));
-      li.addEventListener('focusin', () => hover(true));
-      li.addEventListener('focusout', () => hover(false));
-    });
+    const onKey = (e) => { if (e.key === 'Escape' && flyOf) { e.stopPropagation(); closeFly(true); } };
+    for (const el of [rail, railFly]) { el.addEventListener('click', onClick); el.addEventListener('keydown', onKey); }
+    document.addEventListener('pointerdown', (e) => { if (flyOf && !rail.contains(e.target) && !railFly.contains(e.target)) closeFly(); });
     // Ruhe bis zur Maus (Vorschau 26.10.2026 Leiste:C): wach mit Maus oder Fokus in der Leiste, 1,2 s nach dem Verlassen wieder still;
     // ohne Maus (Touch) und in der schmalen Leiste immer wach
     const nav = rail.parentElement, calm = matchMedia('(hover: hover) and (min-width: 761px)');
@@ -113,7 +90,7 @@ export function createHud(h) {
     const wake = (on) => {
       clearTimeout(sleep);
       if (on || !calm.matches) nav.classList.add('is-awake');
-      else sleep = setTimeout(() => { if (!nav.matches(':hover, :focus-within')) nav.classList.remove('is-awake'); }, 1200);
+      else sleep = setTimeout(() => { if (!nav.matches(':hover, :focus-within') && !flyOf) nav.classList.remove('is-awake'); }, 1200);
     };
     nav.addEventListener('pointerenter', () => wake(true));
     nav.addEventListener('pointerleave', () => wake(false));
@@ -121,100 +98,58 @@ export function createHud(h) {
     nav.addEventListener('focusout', () => wake(false));
     calm.addEventListener('change', () => wake(false));
     wake(false);
-    showRail();
     document.fonts?.ready.then(layoutRail);
   }
-  // Sichtbar: Halte der Route; Abstecher nur, wenn ihre Elternzeile sichtbar und offen ist (Pfad zur aktuellen Station oder „+n“)
-  function showRail() {
-    const path = new Set();
-    for (let x = railCur; x; x = STATIONS[x].parent) path.add(x);
-    const open = (id) => path.has(id) || railOpen.has(id);
-    const vis = (id) => fixed(id) || (vis(STATIONS[id].parent) && open(STATIONS[id].parent));
-    railRows.forEach((li, id) => {
-      li.hidden = !vis(id);
-      const b = li.querySelector('.rl-more');
-      if (!b) return;
-      const o = open(id), n = b.dataset.n, t = STATIONS[id].title;
-      b.hidden = path.has(id);
-      b.textContent = o ? '−' : `+${n}`;
-      b.setAttribute('aria-expanded', String(o));
-      b.setAttribute('aria-label', `${n} Abstecher von ${t} ${o ? 'zuklappen' : 'aufklappen'}`);
-    });
-    chEls.forEach((el, hub) => {
-      const o = chOpen.has(hub), c = el.querySelector('.rl-cnt');
-      el.classList.toggle('is-open', o);
-      el.classList.toggle('is-cur', hub === chOf.get(railCur));
-      el.querySelector('.rl-head').setAttribute('aria-expanded', String(o));
-      c.textContent = o ? '−' : `${c.dataset.n} ›`;
-    });
-    layoutRail();
+  // Abstecher-Liste seitlich am Halt: je Abstecher eine Zeile, Monde kompakt als Zeile darunter, aktuelle hervorgehoben
+  function openFly(id) {
+    closeFly();
+    flyOf = id;
+    railFly.innerHTML = `<p class="rl-fly-cap">Abstecher von ${esc(STATIONS[id].title)}</p>${kidsOf(id).map((k) => {
+      const m = below(k);
+      return rowHtml(k) + (m.length ? `<p class="rl-moons">${m.map((x) => `<button type="button" data-go="${x}" aria-label="${esc(STATIONS[x].title)} – Bildbreite ${esc(fmtLength(STATIONS[x].width))}">${esc(STATIONS[x].title)}</button>`).join('')}</p>` : '');
+    }).join('')}`;
+    railFly.querySelector(`[data-go="${railCur}"]`)?.classList.add('is-current');
+    railFly.hidden = false;
+    const more = railRows.get(id).querySelector('.rl-more');
+    more.setAttribute('aria-expanded', 'true');
+    placeFly();
+    railFly.querySelector('[data-go]')?.focus({ preventScroll: true });
   }
-  // Zeile sichtbar: nicht zugeklappt und im offenen Kapitel (Handy: alle Kapitel als Punkte-Gruppen)
-  const shown = (id) => !railRows.get(id).hidden && (flat.matches || chOpen.has(chOf.get(id)));
-  // Linien aus den echten Punkt-Lagen (nach jedem Umbruch neu): Stamm senkrecht je Kapitel, Abzweig als Winkel zu den Kindern
+  function closeFly(refocus) {
+    if (!flyOf) return;
+    const more = railRows.get(flyOf).querySelector('.rl-more');
+    more.setAttribute('aria-expanded', 'false');
+    if (refocus) more.focus();
+    flyOf = null;
+    railFly.hidden = true;
+  }
+  function placeFly() {
+    const R = rail.getBoundingClientRect(), b = railRows.get(flyOf).querySelector('.rl-more').getBoundingClientRect(), fh = railFly.offsetHeight;
+    railFly.style.left = `${b.right + 10}px`;
+    railFly.style.top = `${Math.max(R.top, Math.min(R.bottom - fh, b.top + b.height / 2 - fh / 2))}px`;
+  }
   function layoutRail() {
     const R = rail.getBoundingClientRect();
     if (!R.height || !railRows.size) return;
-    const pt = (id) => { const r = railRows.get(id).querySelector('.rl-dot').getBoundingClientRect(); return [r.left + r.width / 2 - R.left, r.top + r.height / 2 - R.top]; };
-    const f = (v) => v.toFixed(1);
-    let d = '';
-    HUBS.forEach((hub) => {
-      const t = railTrunk.filter((id) => chOf.get(id) === hub && shown(id));
-      if (t.length < 2) return;
-      const [x0, y0] = pt(t[0]), [, y1] = pt(t[t.length - 1]);
-      d += `M${f(x0)},${f(y0)}V${f(y1)}`;
-    });
-    railKids.forEach((all, id) => {
-      const ks = all.filter(shown);
-      if (!ks.length || !shown(id)) return;
-      const [px, py] = pt(id), [kx, ky] = pt(ks[0]), [, kyEnd] = pt(ks[ks.length - 1]);
-      d += `M${f(px)},${f(py)}V${f((py + ky) / 2)}H${f(kx)}V${f(kyEnd)}`;
-    });
-    // Weg von der aktuellen Station zur Wurzel: gleiche Linienführung, als zweiter Pfad im Akzent darüber
+    const f = (v) => v.toFixed(1), pt = (el) => { const r = el.querySelector('.rl-dot').getBoundingClientRect(); return [r.left + r.width / 2 - R.left, r.top + r.height / 2 - R.top]; };
+    const top = pt(railRows.get(ROUTE[ROUTE.length - 1])), bot = pt(railRows.get(ROUTE[0])), stop = railCur && stopOf(railCur);
     let hot = '';
-    for (let x = railCur; x && STATIONS[x].parent; x = STATIONS[x].parent) {
-      const p = STATIONS[x].parent;
-      if (!shown(x) || !shown(p)) continue;
-      const [px, py] = pt(p), [kx, ky] = pt(x);
-      if (railTrunk.includes(x)) { hot += `M${f(px)},${f(py)}V${f(ky)}`; continue; }
-      const [, k0] = pt(railKids.get(p).find(shown));
-      hot += `M${f(px)},${f(py)}V${f((py + k0) / 2)}H${f(kx)}V${f(ky)}`;
+    if (stop) {
+      let [px, py] = pt(railRows.get(stop).querySelector('.rl-main'));
+      hot = `M${f(top[0])},${f(bot[1])}V${f(py)}`;
+      [...railRows.get(stop).querySelectorAll('.rl-sub .rl-btn')].reverse().forEach((b) => { const [x, y] = pt(b); hot += `M${f(px)},${f(py)}V${f(y)}H${f(x)}`; [px, py] = [x, y]; });
     }
-    railSvg.innerHTML = `<path d="${d}"/>${hot ? `<path class="is-hot" d="${hot}"/>` : ''}`;
-    const rows = [...railRows.values()].filter((li) => !li.hidden && !li.classList.contains('is-current') && li.offsetHeight);
-    rail.classList.toggle('is-tight', rows.some((li) => li.offsetHeight < 32));
-    drawAxis(R);
-  }
-  // Maßstabsleiter: Zehnerstriche, Marken, ein blasser Punkt je Station; Live-Punkt und Kurven setzt drawLinks
-  function drawAxis(R) {
-    if (flat.matches) { railAxis.innerHTML = ''; railY = null; return; }
-    const top = 8, h = R.height - 16, f = (v) => v.toFixed(1);
-    railY = (m) => top + (HI - Math.log10(Math.max(m, 1))) / (HI - LO) * h;
-    let s = `<path class="ax-line" d="M${AX},${f(railY(10 ** HI))}V${f(railY(10 ** LO))}"/>`;
-    for (let e = 2; e <= 27; e++) s += `<path d="M${AX - 4},${f(railY(10 ** e))}H${AX + 4}"/>`;
-    TICKS.forEach(([m, t]) => { const y = f(railY(m)); s += `<path class="ax-mark" d="M${AX - 8},${y}H${AX + 6}"/><text x="${AX - 12}" y="${y}">${t}</text>`; });
-    railRows.forEach((li, id) => { s += `<circle class="ax-st" data-id="${id}" cx="${AX}" cy="${f(railY(STATIONS[id].width))}" r="2.5"/>`; });
-    railAxis.innerHTML = `${s}<path class="ax-link is-hover"/><path class="ax-link"/><circle class="ax-live" r="5"/>`;
-    drawLinks();
-  }
-  // Kurve vom Achsenpunkt zur Zeile (bzw. zum Kapitelkopf, wenn das Kapitel zu ist)
-  function drawLinks() {
-    if (!railY || !railCur) return;
-    const R = rail.getBoundingClientRect(), f = (v) => v.toFixed(1);
-    const end = (id) => {
-      const el = shown(id) ? railRows.get(id).querySelector('.rl-dot') : chEls.get(chOf.get(id)).querySelector('.rl-num');
-      const r = el.getBoundingClientRect();
-      return [r.left - R.left - 2, r.top + r.height / 2 - R.top];
-    };
-    const curve = (y0, [x1, y1]) => { const m = (x1 - AX) / 2; return `M${AX},${f(y0)}C${f(AX + m)},${f(y0)} ${f(x1 - m)},${f(y1)} ${f(x1)},${f(y1)}`; };
-    const [hov, link] = railAxis.querySelectorAll('.ax-link'), live = railAxis.querySelector('.ax-live');
-    const y = railY(liveW || STATIONS[railCur].width);
-    live.setAttribute('cx', AX);
-    live.setAttribute('cy', f(y));
-    link.setAttribute('d', curve(y, end(railCur)));
-    const hv = hoverId && hoverId !== railCur ? hoverId : null;
-    hov.setAttribute('d', hv ? curve(railY(STATIONS[hv].width), end(hv)) : '');
-    railAxis.querySelectorAll('.ax-st').forEach((c) => c.classList.toggle('is-hover', c.dataset.id === hv));
+    railSvg.innerHTML = `<path d="M${f(top[0])},${f(top[1])}V${f(bot[1])}"/>${hot ? `<path class="is-hot" d="${hot}"/>` : ''}`;
+    railChs.forEach((el, hub) => {
+      const rs = [...railRows.values()].filter((li) => li.dataset.ch === hub).map((li) => li.getBoundingClientRect());
+      el.hidden = !rs.length;
+      if (!rs.length) return;
+      const t = Math.min(...rs.map((r) => r.top)) - R.top, b = Math.max(...rs.map((r) => r.bottom)) - R.top;
+      el.style.top = `${f(t + 3)}px`;
+      el.style.height = `${f(b - t - 6)}px`;
+    });
+    rail.classList.toggle('is-tight', [...railRows.values()].some((li) => li.offsetHeight < 34));
+    if (flyOf) placeFly();
   }
 
   // ---------- Reiseroute ----------
@@ -232,21 +167,22 @@ export function createHud(h) {
     meta = level.meta;
     const id = level.id;
     railCur = id;
-    railOpen.clear();
-    chOpen.clear();
-    chOpen.add(chOf.get(id));
-    liveW = STATIONS[id]?.width || 0;
-    const up = new Set();
-    for (let x = STATIONS[id]?.parent; x; x = STATIONS[x].parent) up.add(x);
+    closeFly();
+    const stop = stopOf(id), side = [];
+    for (let x = id; x && x !== stop; x = STATIONS[x].parent) side.push(x);
     railRows.forEach((li, k) => {
-      const cur = k === id, btn = li.firstElementChild;
+      const cur = k === id, btn = li.querySelector('.rl-main .rl-btn');
       li.classList.toggle('is-current', cur);
-      li.classList.toggle('is-path', up.has(k));
+      li.classList.toggle('is-path', k === stop && !cur);
+      li.classList.toggle('is-done', ROUTE.indexOf(k) < ROUTE.indexOf(stop));
       if (cur) btn.setAttribute('aria-current', 'step'); else btn.removeAttribute('aria-current');
-      li.querySelector('small').textContent = fmtLength(STATIONS[k].width);
+      btn.querySelector('small').textContent = fmtLength(STATIONS[k].width);
+      li.querySelector('.rl-sub').innerHTML = k === stop ? side.map((x) => rowHtml(x, sideDepth(x))).join('') : '';
     });
-    railLive = railRows.get(id)?.querySelector('small') || null;
-    showRail();
+    const sub = stop && railRows.get(stop).querySelector(`.rl-sub [data-go="${id}"]`);
+    if (sub) { sub.classList.add('is-current'); sub.setAttribute('aria-current', 'step'); }
+    railLive = (sub || railRows.get(id)?.querySelector('.rl-main'))?.querySelector('small') || null;
+    layoutRail();
     route.querySelectorAll('button').forEach((b) => {
       const cur = b.dataset.id === id;
       b.classList.toggle('is-current', cur);
@@ -589,8 +525,6 @@ export function createHud(h) {
     mWidth.textContent = fmtLength(widthM);
     mLight.textContent = fmtTime(widthM / C);
     if (railLive) railLive.textContent = fmtLength(widthM);
-    liveW = widthM;
-    drawLinks();
   }
 
   // ---------- Flug, Kapitel-Titel, Auftakt ----------
