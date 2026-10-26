@@ -70,9 +70,9 @@ export function createHud(h) {
     const order = railTrunk.flatMap(walk);
     order.push(...ids.filter((id) => !order.includes(id)));
     order.forEach((id) => chOf.set(id, chapter(id)));
-    const row = (id) => {
+    const row = (id, i) => {
       const st = STATIONS[id], d = depth(id), more = railKids.get(id).filter((k) => !fixed(k)).length;
-      return `<li class="rl-row${d ? ' is-branch' : ''}" style="--d:${d}" data-id="${id}"><button type="button" class="rl-btn" aria-label="${esc(st.title)} – Bildbreite ${esc(fmtLength(st.width))}">
+      return `<li class="rl-row${d ? ' is-branch' : ''}" style="--d:${d};--i:${i + 1}" data-id="${id}"><button type="button" class="rl-btn" aria-label="${esc(st.title)} – Bildbreite ${esc(fmtLength(st.width))}">
         <span class="rl-dot"></span><span class="rl-txt"><b>${num(id)}</b> ${esc(st.title)}<small>${esc(fmtLength(st.width))}</small></span></button>${more
         ? `<button type="button" class="rl-more" data-n="${more}" aria-expanded="false"></button>` : ''}</li>`;
     };
@@ -101,6 +101,21 @@ export function createHud(h) {
       li.addEventListener('focusin', () => hover(true));
       li.addEventListener('focusout', () => hover(false));
     });
+    // Ruhe bis zur Maus (Vorschau 26.10.2026 Leiste:C): wach mit Maus oder Fokus in der Leiste, 1,2 s nach dem Verlassen wieder still;
+    // ohne Maus (Touch) und in der schmalen Leiste immer wach
+    const nav = rail.parentElement, calm = matchMedia('(hover: hover) and (min-width: 761px)');
+    let sleep = 0;
+    const wake = (on) => {
+      clearTimeout(sleep);
+      if (on || !calm.matches) nav.classList.add('is-awake');
+      else sleep = setTimeout(() => { if (!nav.matches(':hover, :focus-within')) nav.classList.remove('is-awake'); }, 1200);
+    };
+    nav.addEventListener('pointerenter', () => wake(true));
+    nav.addEventListener('pointerleave', () => wake(false));
+    nav.addEventListener('focusin', () => wake(true));
+    nav.addEventListener('focusout', () => wake(false));
+    calm.addEventListener('change', () => wake(false));
+    wake(false);
     showRail();
     document.fonts?.ready.then(layoutRail);
   }
