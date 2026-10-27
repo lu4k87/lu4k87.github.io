@@ -181,8 +181,7 @@ const GROUPS = [
     ['rayleigh', TOG('rayleigh', 'Rayleigh-Dämmerung', NEW)],
     ['grain', TOG('grain', 'Filmkorn')]] },
   { id: 'ui', icon: 'ui', title: 'Oberfläche', half: true, rows: [['panel', TOG('panel', 'Infotafel zeigen')], ['scaleCompare', TOG('scaleCompare', 'Maßstabs-Vergleich', NEW)], ['timeline', TOG('timeline', 'Zeitleiste der Station zeigen')],
-    ['', TOG('', 'Grafiken der Info-Karten bewegt', NEW, 'data-figs')],
-    ['', `<div class="b-row"><span class="cfg-label">Film vom Urknall${NEW}</span><button type="button" class="act-btn" data-auftakt>Abspielen</button></div>`]] },
+    ['', TOG('', 'Grafiken der Info-Karten bewegt', NEW, 'data-figs')]] },
   { id: 'perf', icon: 'perf', title: 'Leistung', rows: [['quality', SEG('quality', 'Qualität', [['auto', 'Auto'], ['1', 'Leicht'], ['2', 'Mittel'], ['3', 'Fein']])],
     ['fpsCap', SEG('fpsCap', 'Bildrate', [['0', 'Frei'], ['60', '60'], ['30', '30']], NEW) + NOTE('30 Bilder/s spart am Laptop Strom und Lüfter.')]] },
 ];

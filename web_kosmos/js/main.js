@@ -27,7 +27,7 @@ const LOADERS = {
   local: () => import('./levels/local.js'),
   web: () => import('./levels/web.js'),
   cmb: () => import('./levels/cmb.js'),
-  bigbang: () => import('./levels/bigbang.js'),
+  // bigbang (Station 11 Urknall): vorerst aus der App genommen, Szene bleibt in levels/bigbang.js (TODOS K1)
   // Einfügemarken je Etappe (docs/plan_ebenen.md §2): jeder Chat fügt nur direkt unter seiner Marke ein
   // [E1] Sonne
   sun: () => import('./levels/sun.js'),
@@ -769,11 +769,12 @@ function stepTransition(dt) {
 // und Landung in ihrer Heimpose (ganze Kugel im Bild, User 27.10.2026; früher Landung in Station 11). Gemerkt in localStorage; der Knopf „Film vom Urknall“ (Station 10,
 // Zahnrad) spielt ihn erneut (Ereignis kosmos:auftakt). tempo = Tempo des Films, fade = Abblenden vor dem erneuten
 // Abspielen (s). ?auftakt erzwingt ihn, ?auftakt=0 schaltet ihn ab (Tests)
-const OPENER = { key: 'kosmos.auftakt.v1', tempo: 1.5, fade: 0.8, home: 'bigbang', land: 'cmb' };
+// on = false: Station 11 vorerst aus der App genommen (User 27.10.2026, TODOS K1) – kein Film, Start wie vorher in ROUTE[0]
+const OPENER = { on: false, key: 'kosmos.auftakt.v1', tempo: 1.5, fade: 0.8, home: 'bigbang', land: 'cmb' };
 state.opener = null;
 const openerSeen = () => { try { return localStorage.getItem(OPENER.key) === '1'; } catch { return false; } };
 async function startOpener(replay) {
-  if (state.opener || state.tr || state.chain || still()) return;
+  if (!OPENER.on || state.opener || state.tr || state.chain || still()) return;
   endIntro();
   state.follow = null;
   const a = state.opener = { phase: 'load', fade: 1, skip: false };
@@ -1155,10 +1156,10 @@ async function start() {
   try {
     resize();
     const id = (location.hash.match(/station=(\w+)/) || [])[1];
-    // ohne Stations-Link startet kosmos oben in Station 11 (User 27.10.2026); erster Besuch: Auftakt-Film vom Urknall,
-    // danach Kranfahrt in die Heimpose
-    const first = STATIONS[id] ? id : OPENER.home;
-    const film = !id && !still() && (params.has('auftakt') ? params.get('auftakt') !== '0' : !tour && !openerSeen());
+    // ohne Stations-Link: mit Station 11 startet kosmos dort (erster Besuch: Auftakt-Film vom Urknall), ohne sie wie
+    // vorher in der ersten Station der Route; danach Kranfahrt in die Heimpose
+    const first = STATIONS[id] ? id : OPENER.on ? OPENER.home : ROUTE[0];
+    const film = OPENER.on && !id && !still() && (params.has('auftakt') ? params.get('auftakt') !== '0' : !tour && !openerSeen());
     await bootLoad(first);
     if (film) await startOpener(false);
     let lv = null;

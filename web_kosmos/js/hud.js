@@ -1,4 +1,4 @@
-// Bedienoberfläche über der 3D-Szene: Stationsleiste (Band oben über die volle Breite: Kapitel → Route, darunter beim Zeigen
+// Bedienoberfläche über der 3D-Szene: Stationsleiste (Band oben über die volle Breite: Route, darunter beim Zeigen
 // Abstecher → Monde; Suche in der Kopfzeile), Infotafel (rechts: Kennzahlen-Bento, Schalter der Station, Entdecken-Liste, Darstellung + Quellen),
 // Abzeichen mit gewinkelten 45°-Leitlinien (Sechseck wie Biochar), Info-Karte, Messleiste (Bildbreite, Lichtlaufzeit,
 // Entfernung, Blick zurück), Reiseroute, Kapitel-Titel beim Ankommen, Rand-Zug-Anzeige.
@@ -44,13 +44,13 @@ export function createHud(h) {
   $('#btn-panel').addEventListener('click', () => setSetting('panel', !settings.S.panel));
 
   // ---------- Stationsleiste ----------
-  // Band oben über die volle Breite (Vorschau 26.10.2026 „Stationsleiste oben“ Leiste:C, Baum-Panorama): Zeilen Kapitel → Route →
-  // Abstecher → Monde, links die Namen der Ebenen, Linien in Kapitelfarbe, Erdnähe links. In Ruhe nur Kapitel + Route; Abstecher
+  // Band oben über die volle Breite (Vorschau 26.10.2026 „Stationsleiste oben“ Leiste:C, Baum-Panorama): Zeilen Route →
+  // Abstecher → Monde, links die Namen der Ebenen, Linien in Kapitelfarbe, Erdnähe links. In Ruhe nur die Route; Abstecher
   // und Monde zeigt die Schublade darunter beim Zeigen (Maus, Fokus) oder solange ihr Parent ausgewählt ist (aktuelle Station
   // oder auf ihrem Weg). Unter 760 px (oder zu eng für die Namen) nur die Route als Punkte mit Kapitel-Streifen.
   // Kapitel: Hub, Name, Beschreibung (Name der Gruppe für Screenreader)
   const CHAPTERS = [['earth', 'Erdnähe', 'Erde, Mond und Raumstationen'], ['solar', 'Sonnensystem', 'Sonne, Planeten und Monde'],
-    ['galaxy', 'Milchstraße', 'Nebel, Pulsar und Zentrum'], ['local', 'Universum', 'Galaxien bis zum Urknall']];
+    ['galaxy', 'Milchstraße', 'Nebel, Pulsar und Zentrum'], ['local', 'Universum', 'Galaxien bis zum Horizont']];
   const HUBS = CHAPTERS.map(([id]) => id);
   // Abstecher des Sonnensystems nach Abstand zur Sonne statt nach Nummer (Nummern bleiben)
   const SUN_ORDER = ['sun', 'mercury', 'venus', 'mars', 'asteroid', 'jupiter', 'saturn', 'uranus', 'neptune', 'pluto'];
@@ -61,7 +61,6 @@ export function createHud(h) {
   const kidsOf = (id) => Object.keys(STATIONS).filter((k) => STATIONS[k].parent === id && !onRoute.has(k)).sort(byRank);
   const stopOf = (id) => { let x = id; while (x && STATIONS[x] && !onRoute.has(x)) x = STATIONS[x].parent; return STATIONS[x] ? x : null; };
   const chName = (id) => CHAPTERS.find(([hub]) => hub === chapter(id))[1];
-  const members = (ch) => Object.keys(STATIONS).filter((k) => chapter(k) === ch);
   const title = (id) => esc(STATIONS[id].title);
   const width = (id) => esc(fmtLength(STATIONS[id].width));
   const label = (id) => `${title(id)} – Bildbreite ${width(id)}`;
@@ -131,12 +130,12 @@ export function createHud(h) {
     renderHits();
   }
 
-  // ---------- Band: Kapitel → Route (Ruhe) und Schublade mit Abstechern → Monden ----------
-  // Lage aus der gemessenen Wortbreite (höchstens zwei Zeilen je Name, Kapitel mindestens so breit wie sein Titel), sonst
+  // ---------- Band: Route (Ruhe) und Schublade mit Abstechern → Monden ----------
+  // Lage aus der gemessenen Wortbreite (höchstens zwei Zeilen je Name, Kapitel nur als Linienfarbe), sonst
   // kleiner; passt auch das nicht (oder unter 760 px), zeigt das Band die Route als Punkte mit Kapitel-Streifen (.is-dots).
   // Feste Höhe in Ruhe, damit die Bühne beim Zeigen nicht springt; die Schublade liegt über der Bühne.
-  const NS = 'http://www.w3.org/2000/svg', PAD = 10, GAP = 16;
-  const BAND_H = 112, DOTS_H = 40, ROUTE_Y = 48, BUS_Y = 12, KID_Y = 30, MOONS_Y = 96, BRK_Y = 91;
+  const NS = 'http://www.w3.org/2000/svg', PAD = 10, GAP = 0;
+  const BAND_H = 80, DOTS_H = 40, ROUTE_Y = 18, BUS_Y = 12, KID_Y = 30, MOONS_Y = 96, BRK_Y = 91;
   // Stufen: Schrift, Luft je Name, Spalte der Ebenen-Namen (die letzte Stufe lässt sie weg)
   const SIZES = [[13, 16, 92], [12, 10, 92], [12, 8, 0]];
   const wide = matchMedia('(min-width: 761px)'), still = matchMedia('(prefers-reduced-motion: reduce)');
@@ -146,12 +145,6 @@ export function createHud(h) {
     const font = `600 ${px}px "IBM Plex Sans", system-ui, sans-serif`, t = STATIONS[id].title;
     return Math.max(24, ...t.split(/[\s-]+/).map((s) => textW(s, font)), textW(t, font) / 2) + pad;
   };
-  // Kapitel-Titel: Versalien mit 0,12em Sperrung, Punkt + Abstand, optional „n Stationen“
-  const chapW = (hub, count) => {
-    const name = CHAPTERS.find(([c]) => c === hub)[1].toUpperCase();
-    const w = textW(name, '500 12.5px "IBM Plex Sans Condensed", sans-serif') + name.length * 1.5 + 15 + 12;
-    return count ? w + 8 + textW(`${members(hub).length} Stationen`, '400 12px "IBM Plex Sans", sans-serif') : w;
-  };
   const sum = (a) => a.reduce((x, y) => x + y, 0);
   const node = (id, cls = '', style = '') => `<button type="button" class="bd-node${cls}"${style && ` style="${style}"`} data-go="${id}" data-ch="${chapter(id)}" aria-label="${label(id)}, Kapitel ${esc(chName(id))}"><span class="bd-dot"></span><span class="n">${num(id)}</span><span class="bd-nm">${title(id)}</span></button>`;
   const groups = () => CHAPTERS.map(([hub]) => [hub, ROUTE.filter((r) => chapter(r) === hub)]).filter(([, rs]) => rs.length);
@@ -159,10 +152,10 @@ export function createHud(h) {
   let pos = {}, fit = null, bandH = 0, hovId = null, shown = ['', ''], sleep = 0, comet = null;
 
   function buildRail() {
-    rail.innerHTML = `<div class="bd-lvls" aria-hidden="true"><span style="--y:17px">Kapitel</span><span style="--y:${ROUTE_Y}px">Route</span></div>
+    rail.innerHTML = `<div class="bd-lvls" aria-hidden="true"><span style="--y:${ROUTE_Y}px">Route</span></div>
       <div class="bd-cv"><svg class="bd-wires" aria-hidden="true"></svg>${groups().map(([hub, rs], i) => {
         const [, name, desc] = CHAPTERS.find(([c]) => c === hub);
-        return `<div class="bd-grp" role="group" data-ch="${hub}" style="--i:${i}" aria-label="${esc(name)}: ${esc(desc)}"><p class="bd-chap" aria-hidden="true"><i></i><span>${esc(name)}</span><small>${members(hub).length} Stationen</small></p>${rs.map((id) => node(id)).join('')}</div>`;
+        return `<div class="bd-grp" role="group" data-ch="${hub}" style="--i:${i}" aria-label="${esc(name)}: ${esc(desc)}">${rs.map((id) => node(id)).join('')}</div>`;
       }).join('')}</div>`;
     nav.insertAdjacentHTML('beforeend', `<div class="bd-drawer" role="group" inert><div class="bd-lvls" aria-hidden="true"><span style="--y:${KID_Y}px">Abstecher</span><span class="bd-lv-moon" style="--y:${MOONS_Y + 13}px">Monde</span></div><div class="bd-cv"><svg class="bd-wires" aria-hidden="true"></svg><div class="bd-kids"></div><div class="bd-mrow"></div></div></div>`);
     cv = rail.querySelector('.bd-cv');
@@ -236,7 +229,7 @@ export function createHud(h) {
     if (wide.matches) {
       for (const [px, pad, lv] of SIZES) {
         const stops = gs.map(([, rs]) => sum(rs.map((r) => need(r, px, pad))));
-        const weights = gs.map(([hub], i) => Math.max(stops[i], chapW(hub, false)));
+        const weights = stops;
         const f = (W - lv - 2 * PAD - GAP * (gs.length - 1)) / sum(weights);
         if (f >= 1) { fit = { px, pad, lv, f, stops, weights }; break; }
       }
@@ -263,10 +256,7 @@ export function createHud(h) {
         b.style.width = `${n - 4}px`;
         acc += n;
       });
-      g.querySelector('.bd-chap').classList.toggle('no-count', !dots && w < chapW(hub, true));
-      paths.push(dots
-        ? `<path class="bd-stripe" data-ch="${hub}" d="M${x + 3} ${ry} H${x + w - 3}"/>`
-        : `<path class="bd-wire bd-brk" data-ch="${hub}" pathLength="1" style="--d:${200 + i * 80}ms" d="M${x + 4} 30 v4 H${x + w - 4} v-4"/>`);
+      if (dots) paths.push(`<path class="bd-stripe" data-ch="${hub}" d="M${x + 3} ${ry} H${x + w - 3}"/>`);
       x += w + (dots ? 8 : GAP);
     });
     ROUTE.forEach((r, i) => {
@@ -354,7 +344,7 @@ export function createHud(h) {
     markBand();
   }
 
-  // Aktuelle Station eisblau mit Lichthof, Halte davor gefüllt, Halt auf ihrem Weg hervorgehoben, Kapitel heller
+  // Aktuelle Station eisblau mit Lichthof, Halte davor gefüllt, Halt auf ihrem Weg hervorgehoben
   function markBand() {
     if (!railCur || !cv) return;
     const stop = stopOf(railCur), si = ROUTE.indexOf(stop), path = new Set();
@@ -366,9 +356,6 @@ export function createHud(h) {
       b.classList.toggle('is-done', onRoute.has(id) && ROUTE.indexOf(id) < si);
       if (cur) b.setAttribute('aria-current', 'step'); else b.removeAttribute('aria-current');
     });
-    const ch = chapter(railCur);
-    cv.querySelectorAll('.bd-grp').forEach((g) => g.querySelector('.bd-chap').classList.toggle('is-cur', g.dataset.ch === ch));
-    wires.querySelectorAll('.bd-brk').forEach((p) => p.classList.toggle('is-cur', p.dataset.ch === ch));
     wires.querySelectorAll('.bd-seg').forEach((p) => p.classList.toggle('is-done', ROUTE.indexOf(p.dataset.seg) <= si));
     dwires.querySelectorAll('.bd-kidw').forEach((p) => p.classList.toggle('is-done', path.has(p.dataset.to)));
   }

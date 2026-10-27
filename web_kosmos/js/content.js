@@ -1113,7 +1113,7 @@ export const STATIONS = {
     },
   },
   cmb: {
-    n: 10, title: 'Beobachtbares Universum', kicker: 'Kosmologisch', parent: 'bigbang', width: 1.1e27, dist: 45.3e9 * LY, lookback: 13.787e9 * YEAR,
+    n: 10, title: 'Beobachtbares Universum', kicker: 'Kosmologisch', parent: null, width: 1.1e27, dist: 45.3e9 * LY, lookback: 13.787e9 * YEAR,
     lead: 'Die Hintergrundstrahlung ist das älteste beobachtbare Licht: ausgesandt rund 370.000 Jahre nach dem Urknall, als das Universum durchsichtig wurde. Durch die Ausdehnung ist sie heute auf 2,7 K abgekühlt. Die Kugel zeigt, aus welcher Entfernung sie uns erreicht; wir stehen in ihrem Mittelpunkt.',
     facts: [
       { v: '13,787 ± 0,020', u: 'Mrd. J.', l: 'Alter des Universums', s: 'planck-2018' },
@@ -1135,6 +1135,11 @@ export const STATIONS = {
       firststars: { t: 'Erste Sterne', x: 'Bei z ≈ 20 (rund 180 Mio. Jahre) entstanden in kleinen Halos aus Dunkler Materie die ersten Sterne. Nach Modellen waren sie sehr massereich und kurzlebig und bestanden fast nur aus Wasserstoff und Helium. Direkt beobachtet ist bisher keiner.', s: 'bromm-2013' },
     },
   },
+};
+
+// Station 11 Urknall vorerst aus der App genommen (User 27.10.2026, TODOS K1): Daten bleiben hier, Szene in levels/bigbang.js.
+// Zurück: Eintrag nach STATIONS verschieben, cmb.parent = 'bigbang', ROUTE + LOADER (main.js) ergänzen, OPENER.on = true.
+export const PARKED = {
   bigbang: {
     n: 11, title: 'Urknall', kicker: 'Anfang von Raum und Zeit', parent: null, width: 1.1e27, dist: 0, lookback: 13.787e9 * YEAR,
     lead: 'Vor 13,8 Milliarden Jahren war das ganze Universum heiß und dicht. Der Urknall geschah nicht an einem Ort: Der Raum selbst dehnt sich seitdem überall zugleich aus. Der Film zeigt in 55 Sekunden den Blitz, das erste Licht, das dunkle Zeitalter, die ersten Sterne und Galaxien und fliegt dann durch das Netz der Galaxien bis heute.',
@@ -1154,7 +1159,7 @@ export const STATIONS = {
   },
 };
 
-export const ROUTE = ['iss', 'earth', 'moon', 'solar', 'sun', 'galaxy', 'orion', 'crab', 'pulsar', 'sgra', 'local', 'web', 'cmb', 'bigbang'];
+export const ROUTE = ['iss', 'earth', 'moon', 'solar', 'sun', 'galaxy', 'orion', 'crab', 'pulsar', 'sgra', 'local', 'web', 'cmb'];
 // Äste außerhalb der Route (Kind über parent) zählen für Weiter/Zurück wie ihre nächste Elternstation auf der Route
 export function routeIndex(id) {
   for (let x = id; x; x = STATIONS[x] ? STATIONS[x].parent : null) { const i = ROUTE.indexOf(x); if (i >= 0) return i; }
