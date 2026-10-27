@@ -26,15 +26,28 @@ const SHELL_FRAG = /* glsl */ `
 ${NOISE}
 ${CMB}
 uniform vec3 uCut, uDip;
-uniform float uDipOn, uCutCos;
-varying vec3 vP;
+uniform float uDipOn, uCutCos, uRim, uGlow, uTime;
+varying vec3 vP, vW;
 void main() {
   vec3 d = normalize(vP);
-  if (dot(d, uCut) > uCutCos) discard;
+  float c = dot(d, uCut);
+  if (c > uCutCos) discard;
   vec3 col = cmbColor(cmbValue(d, 1.0, uDipOn, uDip));
-  float inner = gl_FrontFacing ? 0.2 : 0.4;   // Außenseite dunkler, Innenseite = was wir sehen
-  float rim = 1.0 - smoothstep(uCutCos - 0.04, uCutCos, dot(d, uCut));
-  gl_FragColor = vec4(col * inner * (0.5 + 0.5 * rim) * 0.9, 1.0);
+  float rim = 1.0 - smoothstep(uCutCos - 0.04, uCutCos, c);
+  if (!gl_FrontFacing) { gl_FragColor = vec4(col * 0.4 * (0.5 + 0.5 * rim) * 0.9, 1.0); return; }   // Innenseite = was wir sehen
+  // Außenseite als dünne Glashaut: Muster entsättigt und gedimmt, kühler Saum an der Silhouette (Fresnel)
+  col = mix(vec3(dot(col, vec3(0.3, 0.55, 0.15))), col, 0.55) * 0.14 * (0.5 + 0.5 * rim);
+  float fr = pow(1.0 - abs(dot(d, normalize(cameraPosition - vW))), 3.0);
+  col += vec3(0.55, 0.78, 1.0) * fr * 0.3 * uRim;
+  // Schnittkante: schmale Wandstärke; glüht wie das 3000 K heiße Plasma der letzten Streuung (Schwarzkörperfarbe), Glut
+  // flackert sehr langsam (≈ 40 s, kein Blitzen) und läuft weich auf die Außenseite aus
+  float px = 1.5 * fwidth(c);   // Kante mindestens gut ein Pixel breit, sonst zerfällt sie aus der Ferne in Striche
+  float lip = smoothstep(uCutCos - 0.006 - px, uCutCos - 0.0015, c);
+  col = mix(col, vec3(0.62, 0.70, 0.80) * (0.55 + 0.25 * gnoise(d * 300.0)), lip * (1.0 - min(uGlow, 1.0)));
+  float fl = 0.75 + 0.25 * gnoise(d * 40.0 + vec3(uTime * 0.15));
+  float core = smoothstep(uCutCos - 0.004 - px, uCutCos - 0.0005, c);
+  col += vec3(1.0, 0.63, 0.33) * (0.9 * fl * exp(-(uCutCos - c) / (0.018 * fl)) + 2.2 * core * mix(1.0, fl, 0.3)) * uGlow;   // Kern flackert schwächer, sonst wirkt er gestrichelt
+  gl_FragColor = vec4(col, 1.0);
 }
 `;
 // Zeitschicht: dünne, zarte Kugel mit leichtem Rauschen, Ausschnitt wie die Hauptkugel
@@ -59,9 +72,9 @@ export function create(ctx) {
   const cut = home.pos.clone().normalize();
   const dip = new THREE.Vector3(...galToScene(264.02, 48.25, 1, 0)).normalize();
   const shellMat = new THREE.ShaderMaterial({
-    vertexShader: 'varying vec3 vP; void main() { vP = position; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
+    vertexShader: 'varying vec3 vP, vW; void main() { vP = position; vW = (modelMatrix * vec4(position, 1.0)).xyz; gl_Position = projectionMatrix * viewMatrix * vec4(vW, 1.0); }',
     fragmentShader: SHELL_FRAG,
-    uniforms: { uCut: { value: cut }, uCutCos: { value: 0.62 }, uDip: { value: dip }, uDipOn: { value: 0 } },
+    uniforms: { uCut: { value: cut }, uCutCos: { value: 0.62 }, uDip: { value: dip }, uDipOn: { value: 0 }, uRim: { value: 1 }, uGlow: { value: 1 }, uTime: { value: 0 } },
     side: THREE.DoubleSide,
   });
   const shell = new THREE.Mesh(new THREE.SphereGeometry(R_LSS, 192, 96), shellMat);
@@ -133,6 +146,10 @@ export function create(ctx) {
     { id: 'cut', type: 'range', group: 'Hintergrundstrahlung', label: 'Öffnung der Schale', value: 52, min: 0, max: 85, step: 1, fmt: (v) => (v ? `${v}°` : 'geschlossen'),
       set: (v) => cutMats.forEach((m) => { m.uniforms.uCutCos.value = v ? Math.cos(v * Math.PI / 180) : 2; }),
       hint: 'Halber Öffnungswinkel des Fensters zur Kamera; geschlossen zeigt die ganze Kugel von außen.' },
+    { id: 'rim', type: 'range', group: 'Hintergrundstrahlung', label: 'Randlicht der Hülle', value: 1, min: 0, max: 3, step: 0.25, unit: '×',
+      set: (v) => { shellMat.uniforms.uRim.value = v; }, hint: 'Kühler Lichtsaum am Umriss der Kugel; 0 = aus.' },
+    { id: 'glow', type: 'range', group: 'Hintergrundstrahlung', label: 'Glut der Schnittkante', value: 1, min: 0, max: 3, step: 0.25, unit: '×',
+      set: (v) => { shellMat.uniforms.uGlow.value = v; }, hint: 'Kante leuchtet in der Farbe des 3.000 K heißen Plasmas; 0 = nur die Wandstärke.' },
     { id: 'galGain', type: 'range', group: 'Galaxien', label: 'Helligkeit', value: 1, min: 0, max: 5, step: 0.25, unit: '×', set: (v) => { galBase = v; gains(); } },
     { id: 'layerGain', type: 'range', group: 'Zeitschichten', label: 'Helligkeit', value: 1, min: 0.25, max: 6, step: 0.25, unit: '×',
       set: (v) => layers.children.forEach((m) => { m.material.uniforms.uGain.value = 0.07 * v; }), active: () => layers.visible, only: 'Erst in der Infotafel „Zeitschichten“ einschalten.' },
@@ -161,7 +178,7 @@ export function create(ctx) {
     opening(k) { rise = k; gains(); },
     orbit: { minDistance: 4, maxDistance: 320, cineSpeed: 0.45 },
     look: { exposure: 1.05, bloom: 0.07, sat: 1.05, con: 0.12 },
-    update() {},
+    update(dt, t) { shellMat.uniforms.uTime.value = t; },
     live: () => (probeInfo
       ? `Vor ${fmtT(back_t)}: z = ${probeInfo.z < 10 ? probeInfo.z.toFixed(2).replace('.', ',') : Math.round(probeInfo.z)} · Alter ${probeInfo.age < 1 ? `${Math.round(probeInfo.age * 1000)} Mio. J.` : fmtT(probeInfo.age)} · ${probeInfo.T.toFixed(1).replace('.', ',')} K · heute ${probeInfo.r.toFixed(1).replace('.', ',')} Mrd. Lj entfernt`
       : `ΛCDM (Planck 2018): Alter ${fmtT(AGE)} · Horizont ${R_LSS.toFixed(1).replace('.', ',')} Mrd. Lj · letzte Streuung z = 1.090`),
