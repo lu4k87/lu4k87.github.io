@@ -114,6 +114,36 @@
     <p class="fatal-start">Die Reise konnte nicht starten. Bitte die Seite ohne Zusätze in der Adresse neu laden.</p>
   </div>
 
+  <script>
+    // Startwache: scheitert der Programmcode schon beim Laden (alter Stand im Browser-Cache, fehlende Datei, Zwischenstand
+    // beim Bearbeiten), bliebe das Ladebild stumm bei 0 % stehen. Dann einmal alle Programmdateien am Cache vorbei neu holen
+    // und neu laden; klappt es wieder nicht, die Startmeldung zeigen. Läuft main.js (Ladebild meldet einen Schritt), endet sie.
+    (function () {
+      var KEY = 'kosmos.heal', t0 = Date.now(), done = false, body = document.body;
+      var running = function () { return /·/.test((document.querySelector('.boot-what') || {}).textContent || ''); };
+      var fail = function (why) { done = true; console.error('[kosmos] Start gescheitert:', why); body.classList.add('is-fatal', 'fatal-start'); };
+      function heal(why) {
+        if (done || running() || body.classList.contains('is-ready') || body.classList.contains('is-fatal')) return;
+        var again = true;
+        try { again = sessionStorage.getItem(KEY) === '1'; sessionStorage.setItem(KEY, '1'); } catch (e) { /* privat: gleich melden */ }
+        if (again) { fail(why); return; }
+        done = true;
+        var urls = performance.getEntriesByType('resource').map(function (r) { return r.name; })
+          .filter(function (u) { return u.indexOf(location.origin) === 0 && /\.(js|css)(\?|$)/.test(u); });
+        urls.push(new URL('js/main.js', location.href).href);
+        Promise.all(urls.map(function (u) { return fetch(u, { cache: 'reload' }).catch(function () {}); })).then(function () { location.reload(); });
+      }
+      addEventListener('error', function (e) {
+        var t = e.target;
+        if ((t && t.tagName === 'SCRIPT') || e.error instanceof SyntaxError) heal(e.message || t.src);
+      }, true);
+      var iv = setInterval(function () {
+        if (body.classList.contains('is-ready')) { clearInterval(iv); try { sessionStorage.removeItem(KEY); } catch (e) { /* privat */ } }
+        else if (body.classList.contains('is-fatal') || done) clearInterval(iv);
+        else if (!running() && Date.now() - t0 > 15000) { clearInterval(iv); heal('main.js startet nicht'); }
+      }, 500);
+    })();
+  </script>
   <script type="module" src="js/main.js"></script>
 </body>
 </html>
