@@ -1078,6 +1078,7 @@ const look = {
   grain: 0.016, bars: 0, ehtA: new THREE.Vector3(), ehtB: new THREE.Vector3(),
 };
 let bars = 0;
+const KINO_BARS = 1.3;   // Kino-Modus: Balken etwas dicker als 2,39:1 (User 27.10.2026)
 
 // advanced: die Welt der Station (bewegte Objekte) wurde in diesem Bild schon vor der Kamera weitergerückt (frame)
 function renderLevel(lv, dt, advanced = false) {
@@ -1143,7 +1144,7 @@ function frame(nowMs) {
   look.ehtA.set(ea ? ea[0] : 0, ea ? ea[1] : 0, ea ? ea[2] : 0);
   look.ehtB.set(eb ? eb[0] : 0, eb ? eb[1] : 0, eb ? eb[2] : 0);
   // Kinobalken: Auftakt fest, sonst Zahnrad „Kinobalken 2,39:1“ (Balkenhöhe je Seite aus dem Fensterformat)
-  bars += ((state.opener ? 0.11 * state.opener.o.tune.bars : state.intro ? 0.11 : settings.S.bars ? Math.max(0, (1 - innerWidth / innerHeight / 2.39) / 2) : 0) - bars) * Math.min(1, real * 2.5);
+  bars += ((state.opener ? 0.11 * state.opener.o.tune.bars : state.intro ? 0.11 : settings.S.bars ? Math.max(0, (1 - innerWidth / innerHeight / 2.39) / 2) * KINO_BARS : 0) - bars) * Math.min(1, real * 2.5);
   look.bars = bars;
   const mixed = op && op.out.mix > 0;
   post.render(op ? op.rt : tr ? tr.outer.rt : lv.rt, mixed ? lv.rt : tr ? tr.inner.rt : null,
