@@ -1,4 +1,4 @@
-/* Ladebild beim Aufruf der Seite (boot.js): Sternhimmel, darauf der Kapitel-Titel „Kosmos · Reise durch das All“ in
+/* Ladebild beim Aufruf der Seite (boot.js): Sternhimmel, darauf der Kapitel-Titel (Text in index.html) in
    derselben Schrift wie der Titel jeder Station (.caption in kosmos.css); Titel und Fortschritt als ein Block genau in
    der Bildmitte (User 27.10.2026) – das Ladebild deckt die Seitenleiste zu. Fortschritt als Lichtlinie unter dem Titel.
    Bewegung nur über opacity/transform: läuft weiter, während der Hauptfaden Shader und Texturen vorbereitet. */

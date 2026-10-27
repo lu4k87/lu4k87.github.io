@@ -1,5 +1,5 @@
-// Ladebild beim Aufruf der Seite: Sternhimmel mit Nebel (drei Looks, Knopf unten rechts), Kapitel-Titel „Kosmos · Reise
-// durch das All“ und Fortschritt als Lichtlinie. main.js meldet den Stand (set), bootLoad dort lädt den Programmcode aller
+// Ladebild beim Aufruf der Seite: Sternhimmel mit Nebel (drei Looks, Knopf unten rechts), Kapitel-Titel (Text in
+// index.html) und Fortschritt als Lichtlinie. main.js meldet den Stand (set), bootLoad dort lädt den Programmcode aller
 // Stationen und baut die Startstation samt Nachbarn; done() blendet aus, sobald die Szene darunter steht. Die Anzeige läuft
 // dem gemeldeten Stand weich nach und geht nie zurück.
 // Mindestens 10 s Ladebild (User 27.10.2026), damit alles sauber geladen ist; ist die Reise früher bereit, blendet
