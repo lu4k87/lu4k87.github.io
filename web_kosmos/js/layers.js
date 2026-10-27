@@ -189,14 +189,17 @@ function setOpen(card, on) {
   card.querySelector('.b-head').setAttribute('aria-expanded', String(on));
   card.querySelector('.b-body').hidden = !on;
 }
-// Sprungleiste: hervorgehoben ist die Gruppe, deren Kopf zuletzt unter der Leiste durchgelaufen ist (beide Reiter)
+// Sprungleiste (beide Reiter): hervorgehoben ist die offene Gruppe (Akkordeon: höchstens eine); alle zu → die Gruppe, deren Kopf
+// zuletzt unter der Leiste durchgelaufen ist. Nur nach Scrollen zu markieren hielt die Hervorhebung fest, wenn der Klick nicht scrollt.
 export function spyIn(root, sc) {
   const bar = root && !root.hidden && root.querySelector('.cfg-jump');
   if (!bar) return;
   const edge = (bar.closest('.cfg-bar') || bar).getBoundingClientRect().bottom + 8, folds = [...root.querySelectorAll('.b-fold')];
-  let cur = null;
-  for (const c of folds) { if (!cur || c.getBoundingClientRect().top <= edge) cur = c; }
-  if (sc && sc.scrollTop > 0 && sc.scrollTop + sc.clientHeight >= sc.scrollHeight - 2) cur = folds.pop() || cur;
+  let cur = folds.find((c) => c.classList.contains('is-open')) || null;
+  if (!cur) {
+    for (const c of folds) { if (!cur || c.getBoundingClientRect().top <= edge) cur = c; }
+    if (sc && sc.scrollTop > 0 && sc.scrollTop + sc.clientHeight >= sc.scrollHeight - 2) cur = folds.pop() || cur;
+  }
   bar.querySelectorAll('[data-jump]').forEach((b) => b.setAttribute('aria-current', String(!!cur && cur.dataset.fold === b.dataset.jump)));
 }
 const spy = () => spyIn(gearEl, scroller);
@@ -208,7 +211,7 @@ export function foldClick(root, e, key, sc) {
   if (!j || !root.contains(j)) return false;
   const c = root.querySelector(`.b-fold[data-fold="${j.dataset.jump}"]`);
   if (c) {
-    setOpen(c, true); saveOpen(key, root);
+    setOpen(c, true); saveOpen(key, root); spyIn(root, sc);
     c.scrollIntoView({ block: 'start', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
     c.querySelector('.b-head').focus({ preventScroll: true });
   }
