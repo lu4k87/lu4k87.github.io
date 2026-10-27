@@ -1137,19 +1137,19 @@ export const STATIONS = {
   },
   bigbang: {
     n: 11, title: 'Urknall', kicker: 'Anfang von Raum und Zeit', parent: null, width: 1.1e27, dist: 0, lookback: 13.787e9 * YEAR,
-    lead: 'Vor 13,8 Milliarden Jahren war das ganze Universum heiß und dicht. Der Urknall geschah nicht an einem Ort: Der Raum selbst dehnt sich seitdem überall zugleich aus. Der Film zeigt in 45 Sekunden den Blitz, das wachsende Netz der Materie und die ersten Galaxien.',
+    lead: 'Vor 13,8 Milliarden Jahren war das ganze Universum heiß und dicht. Der Urknall geschah nicht an einem Ort: Der Raum selbst dehnt sich seitdem überall zugleich aus. Der Film zeigt in 55 Sekunden den Blitz, das erste Licht, das dunkle Zeitalter, die ersten Sterne und Galaxien und fliegt dann durch das Netz der Galaxien bis heute.',
     facts: [
       { v: '13,787 ± 0,020', u: 'Mrd. J.', l: 'seit dem Urknall', s: 'planck-2018' },
       { v: '≈ 25', u: '%', l: 'der Masse wurde in den ersten Minuten zu Helium', s: 'pdg-bbn' },
       { v: '≈ 370.000', u: 'J.', l: 'bis das Universum durchsichtig wurde', s: 'planck-2018' },
       { v: '≈ 180', u: 'Mio. J.', l: 'bis zu den ersten Sternen (Modell)', s: 'bromm-2013' },
     ],
-    note: 'Darstellung, nicht maßstäblich: Lichtblitz mit violettem Netz nach dem Vorbild üblicher Erklärfilme. Der Mittelpunkt ist nur ein Hilfsmittel – der Raum dehnte sich überall zugleich aus, es gab keinen Ort und kein Außen der Explosion (Hinweis im Film). Das Netz ist Grat-Rauschen in mitbewegten Koordinaten und wächst mit dem Raum, ohne sein Muster zu ändern (wie das Modell in Station 9); Galaxien sind 16 gezeichnete Formen (eigenes Modell, keine Teleskopbilder), Farben nach Planck-Temperatur. Die Zeitachse des Films ist verdichtet, eine Filmsekunde entspricht keiner festen Zeitspanne. Kennzahlen aus dem ΛCDM-Modell mit Planck-2018-Werten.',
+    note: 'Darstellung, nicht maßstäblich: Lichtblitz mit violettem Netz nach dem Vorbild üblicher Erklärfilme. Der Mittelpunkt ist nur ein Hilfsmittel – der Raum dehnte sich überall zugleich aus, es gab keinen Ort und kein Außen der Explosion (Hinweis im Film). Reihenfolge wie in der Kosmologie: Plasma kühlt nach Planck-Farbe, wird bei rund 370.000 Jahren durchsichtig (Flecken wie in der Hintergrundstrahlung), danach dunkles Zeitalter, erste Sterne in den dichtesten Knoten, kleine blaue Galaxien, die im Durchflug zu Spiralen und Ellipsen reifen. Fäden, Sterne und Galaxien stammen aus einem Rausch-Feld in mitbewegten Koordinaten (dicht = früh); Galaxien sind 16 gezeichnete Formen (eigenes Modell, keine Teleskopbilder), Farben nach Planck-Temperatur. Die Zeitachse ist stückweise logarithmisch, eine Filmsekunde entspricht keiner festen Zeitspanne. Kennzahlen aus dem ΛCDM-Modell mit Planck-2018-Werten.',
     sources: ['planck-2018', 'pdg-bbn', 'bromm-2013', 'jades-2024', 'weygaert'],
     hotspots: {
-      cmb: { t: 'Beobachtbares Universum', x: 'Hineinfliegen: aus der Wand der Hintergrundstrahlung durch das dunkle Zeitalter und die Galaxien bis zu Station 10 – vorwärts in der Zeit, die Galaxien werden größer und blauer.', s: 'planck-2018' },
+      cmb: { t: 'Beobachtbares Universum', x: 'Hineinfliegen in Station 10: die Kugel, die wir heute überblicken können – ihr Rand ist die Hintergrundstrahlung, das erste Licht aus dem Film.', s: 'planck-2018' },
       expansion: { t: 'Kein Ort, kein Außen', x: 'Der Urknall war keine Explosion an einem Ort: Der Raum selbst dehnte sich überall zugleich aus. Jeder Punkt des heutigen Universums war dabei; der helle Mittelpunkt im Film ist nur Darstellung. Mit dem Raum wächst das Netz aus Gasfäden – sein Muster bleibt dasselbe, nur größer.', s: 'planck-2018' },
-      galaxies: { t: 'Erste Galaxien', x: 'In den dichtesten Knoten des Netzes sammelte sich Gas zu Sternen und Galaxien. Nach Modellen leuchteten die ersten Sterne rund 180 Millionen Jahre nach dem Urknall auf; das James-Webb-Teleskop sieht Galaxien knapp 300 Millionen Jahre danach (JADES-GS-z14-0, z = 14,3).', s: 'jades-2024' },
+      galaxies: { t: 'Erste Galaxien', x: 'In den dichtesten Knoten des Netzes sammelte sich Gas zu Sternen und Galaxien. Nach Modellen leuchteten die ersten Sterne rund 180 Millionen Jahre nach dem Urknall auf; das James-Webb-Teleskop sieht Galaxien knapp 300 Millionen Jahre danach (JADES-GS-z14-0, z = 14,3). Ihr UV-Licht machte das Gas bis etwa 1 Milliarde Jahre wieder durchsichtig (Reionisation).', s: 'jades-2024' },
     },
   },
 };

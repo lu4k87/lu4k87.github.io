@@ -3,8 +3,8 @@
 // vorbei gehört auf die Fahrt vom kosmischen Netz in die Lokale Gruppe, nicht zwischen Station 10 und 11).
 // · galaxyAtlas(): 16 Formen, im Browser auf ein Canvas gemalt (Spiralen mit und ohne Balken, flockig, mit großem Bulge,
 //   blau, Ellipsen, von der Kante, unregelmäßig, Paar in Wechselwirkung) – keine Teleskopbilder, keine Lizenzfrage.
-// · galaxySprites()/glowPoints(): Galaxien als Tafeln mit Tönung und Geburtszeit (uT), ferne Galaxien/Sterne als Punkte;
-//   uS = Maßstab der Gruppe (Station 11 lässt den Raum wachsen), uPx = Pixel je Bogenmaß.
+// · galaxySprites()/glowPoints(): Galaxien als Tafeln mit Tönung, Geburt und Reifung (uT), ferne Galaxien/Sterne als
+//   Punkte mit Geburt und Ende; uS = Maßstab der Gruppe (Station 11 lässt den Raum wachsen), uPx = Pixel je Bogenmaß.
 // · createFlyby(): reife Galaxien entlang der Fahrt, beim Start an Kamera und Anker ausgerichtet (Lage: flightplan.js
 //   flybyField), nur im Flug sichtbar.
 import * as THREE from 'three';
@@ -78,7 +78,7 @@ function irregular(g, cx, cy, R, rand, clumps = 7) {
 let atlasCanvas = null;
 // Kacheln: 0–5 Spiralen (2 Arme, Balken, 3 Arme, flockig, großer Bulge, blau), 6–8 Ellipsen, 9–10 von der Kante,
 // 11–13 unregelmäßig (groß, klumpig, Zwerg), 14 Linse (S0), 15 Paar in Wechselwirkung
-export const TILES = { mature: [0, 1, 2, 3, 4, 6, 7, 8, 9, 10, 14, 15], young: [0, 1, 2, 3, 5, 11, 12, 13], first: [11, 12, 13, 13, 5], ellip: [6, 7, 8, 14, 6] };
+export const TILES = { mature: [0, 1, 2, 3, 4, 6, 7, 8, 9, 10, 14, 15], young: [0, 1, 2, 3, 5, 11, 12, 13], first: [11, 12, 13, 13, 5], ellip: [6, 7, 8, 14, 6], spiral: [0, 1, 2, 3, 4, 9, 10, 15] };
 export function galaxyAtlas() {
   if (!atlasCanvas) {
     B = { core: blob('255,214,150'), warm: blob('255,232,200'), arm: blob('190,215,255'), white: blob('235,240,255'), hii: blob('255,120,170'), blue: blob('140,180,255') };
@@ -117,46 +117,54 @@ export function galaxyAtlas() {
 }
 
 // ---------- Galaxien als Instanzen: Kachel, Tönung, Helligkeit, Geburtszeit; nah an der Kamera weich ausgeblendet ----------
+// Reifung (Urknall-Film): ab aMature wechselt die Galaxie in uMature Sekunden zu Kachel 2, Tönung 2 und aGrow-facher Größe
+// (jung klein, blau, klumpig → Spirale oder Ellipse); uFade = Dauer des Aufleuchtens nach der Geburt
 const GAL_VERT = /* glsl */ `
-attribute float aTile, aBirth, aGain, aSize; attribute vec3 aTint;
-uniform float uT, uS;
-varying vec2 vUv; varying vec3 vTint; varying float vA, vTile;
+attribute float aTile, aTile2, aBirth, aMature, aGain, aSize, aGrow; attribute vec3 aTint, aTint2;
+uniform float uT, uS, uFade, uMature;
+varying vec2 vUv; varying vec3 vTint; varying float vA, vTile, vTile2, vM;
 void main() {
-  vUv = uv; vTint = aTint; vTile = aTile;
-  vec4 mv = viewMatrix * modelMatrix * instanceMatrix * vec4(position, 1.0);
-  float near = smoothstep(0.35, 2.2, -mv.z / (aSize * uS));
-  vA = aGain * smoothstep(aBirth, aBirth + 0.1, uT) * near;
+  vUv = uv; vTile = aTile; vTile2 = aTile2;
+  vM = smoothstep(aMature, aMature + uMature, uT);
+  vTint = mix(aTint, aTint2, vM);
+  float k = mix(1.0, aGrow, vM);
+  vec4 mv = viewMatrix * modelMatrix * instanceMatrix * vec4(position * k, 1.0);
+  float near = smoothstep(0.35, 2.2, -mv.z / (aSize * k * uS));
+  vA = aGain * smoothstep(aBirth, aBirth + uFade, uT) * near;
   gl_Position = projectionMatrix * mv;
 }`;
 const GAL_FRAG = /* glsl */ `
 uniform sampler2D uAtlas; uniform float uGain;
-varying vec2 vUv; varying vec3 vTint; varying float vA, vTile;
+varying vec2 vUv; varying vec3 vTint; varying float vA, vTile, vTile2, vM;
+vec2 cell(float t) { return (vec2(mod(t, 4.0), 3.0 - floor(t / 4.0)) + clamp(vUv, 0.01, 0.99)) / 4.0; }
 void main() {
   if (vA < 0.002) discard;
-  vec2 uv = (vec2(mod(vTile, 4.0), 3.0 - floor(vTile / 4.0)) + clamp(vUv, 0.01, 0.99)) / 4.0;
-  vec3 c = pow(texture2D(uAtlas, uv).rgb, vec3(2.2));
-  gl_FragColor = vec4(c * vTint * vA * uGain, 1.0);
+  vec3 c = texture2D(uAtlas, cell(vTile)).rgb;
+  if (vM > 0.0) c = mix(c, texture2D(uAtlas, cell(vTile2)).rgb, vM);
+  gl_FragColor = vec4(pow(c, vec3(2.2)) * vTint * vA * uGain, 1.0);
 }`;
 export function galaxySprites(list, tex) {
   const n = list.length;
   const mesh = new THREE.InstancedMesh(new THREE.PlaneGeometry(1, 1), new THREE.ShaderMaterial({
-    vertexShader: GAL_VERT, fragmentShader: GAL_FRAG, uniforms: { uAtlas: { value: tex }, uT: { value: 1 }, uS: { value: 1 }, uGain: { value: 1 } },
+    vertexShader: GAL_VERT, fragmentShader: GAL_FRAG,
+    uniforms: { uAtlas: { value: tex }, uT: { value: 1 }, uS: { value: 1 }, uGain: { value: 1 }, uFade: { value: 0.1 }, uMature: { value: 1 } },
     transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, depthTest: false, side: THREE.DoubleSide,
   }), n);
-  const tile = new Float32Array(n), birth = new Float32Array(n), gain = new Float32Array(n), size = new Float32Array(n), tint = new Float32Array(n * 3);
+  const f1 = () => new Float32Array(n), tile = f1(), tile2 = f1(), birth = f1(), mature = f1(), gain = f1(), size = f1(), grow = f1();
+  const tint = new Float32Array(n * 3), tint2 = new Float32Array(n * 3);
   const m = new THREE.Matrix4(), q = new THREE.Quaternion(), s = new THREE.Vector3(), e = new THREE.Euler();
   list.forEach((g, i) => {
     q.setFromEuler(e.set(g.rx, g.ry, g.rz));
     m.compose(g.pos, q, s.set(g.size, g.size, g.size));
     mesh.setMatrixAt(i, m);
-    tile[i] = g.tile; birth[i] = g.birth ?? -1; gain[i] = g.gain; size[i] = g.size; tint.set(g.tint, i * 3);
+    tile[i] = g.tile; tile2[i] = g.tile2 ?? g.tile; birth[i] = g.birth ?? -1; mature[i] = g.mature ?? 1e9;
+    gain[i] = g.gain; size[i] = g.size; grow[i] = g.grow ?? 1;
+    tint.set(g.tint, i * 3); tint2.set(g.tint2 || g.tint, i * 3);
   });
   const geo = mesh.geometry;
-  geo.setAttribute('aTile', new THREE.InstancedBufferAttribute(tile, 1));
-  geo.setAttribute('aBirth', new THREE.InstancedBufferAttribute(birth, 1));
-  geo.setAttribute('aGain', new THREE.InstancedBufferAttribute(gain, 1));
-  geo.setAttribute('aSize', new THREE.InstancedBufferAttribute(size, 1));
-  geo.setAttribute('aTint', new THREE.InstancedBufferAttribute(tint, 3));
+  for (const [k, a, w] of [['aTile', tile, 1], ['aTile2', tile2, 1], ['aBirth', birth, 1], ['aMature', mature, 1], ['aGain', gain, 1], ['aSize', size, 1], ['aGrow', grow, 1], ['aTint', tint, 3], ['aTint2', tint2, 3]]) {
+    geo.setAttribute(k, new THREE.InstancedBufferAttribute(a, w));
+  }
   mesh.frustumCulled = false;
   mesh.renderOrder = 2;
   return mesh;
@@ -164,14 +172,16 @@ export function galaxySprites(list, tex) {
 export const randTurn = (rand) => ({ rx: rand() * 6.3, ry: rand() * 6.3, rz: rand() * 6.3 });
 
 // ---------- Punkte: ferne Galaxien und Sterne, Größe in Szeneneinheiten, unter 1,6 px dunkler statt kleiner ----------
+// aBirth/aEnd: leuchtet in uFade Sekunden auf und verlischt ab aEnd ebenso (erste Sterne, Supernova-Blitze)
 const PT_VERT = /* glsl */ `
-attribute float aSize, aBirth; attribute vec3 aCol;
-uniform float uPx, uT, uS;
+attribute float aSize, aBirth, aEnd; attribute vec3 aCol;
+uniform float uPx, uT, uS, uFade;
 varying vec3 vCol;
 void main() {
   vec4 mv = modelViewMatrix * vec4(position, 1.0);
   float px = aSize * uS * uPx / max(0.01, -mv.z);
-  vCol = aCol * smoothstep(aBirth, aBirth + 0.1, uT) * min(1.0, px / 1.6);
+  // dicht vor der Kamera weich aus statt groß und flau (Durchflug)
+  vCol = aCol * smoothstep(aBirth, aBirth + uFade, uT) * (1.0 - smoothstep(aEnd, aEnd + uFade, uT)) * min(1.0, px / 1.6) * (1.0 - smoothstep(20.0, 56.0, px));
   gl_PointSize = clamp(px, 1.6, 64.0);
   gl_Position = projectionMatrix * mv;
 }`;
@@ -180,15 +190,16 @@ uniform float uGain;
 varying vec3 vCol;
 void main() { vec2 q = gl_PointCoord - 0.5; float r = length(q) * 2.0; gl_FragColor = vec4(vCol * uGain * exp(-r * r * 5.0) * step(r, 1.0), 1.0); }`;
 export function glowPoints(list) {
-  const n = list.length, pos = new Float32Array(n * 3), col = new Float32Array(n * 3), size = new Float32Array(n), birth = new Float32Array(n);
-  list.forEach((p, i) => { pos.set([p.pos.x, p.pos.y, p.pos.z], i * 3); col.set(p.col, i * 3); size[i] = p.size; birth[i] = p.birth ?? -1; });
+  const n = list.length, pos = new Float32Array(n * 3), col = new Float32Array(n * 3), size = new Float32Array(n), birth = new Float32Array(n), end = new Float32Array(n);
+  list.forEach((p, i) => { pos.set([p.pos.x, p.pos.y, p.pos.z], i * 3); col.set(p.col, i * 3); size[i] = p.size; birth[i] = p.birth ?? -1; end[i] = p.end ?? 1e9; });
   const geo = new THREE.BufferGeometry();
   geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
   geo.setAttribute('aCol', new THREE.BufferAttribute(col, 3));
   geo.setAttribute('aSize', new THREE.BufferAttribute(size, 1));
   geo.setAttribute('aBirth', new THREE.BufferAttribute(birth, 1));
+  geo.setAttribute('aEnd', new THREE.BufferAttribute(end, 1));
   const pts = new THREE.Points(geo, new THREE.ShaderMaterial({ vertexShader: PT_VERT, fragmentShader: PT_FRAG,
-    uniforms: { uPx: { value: 1 }, uT: { value: 1 }, uS: { value: 1 }, uGain: { value: 1 } },
+    uniforms: { uPx: { value: 1 }, uT: { value: 1 }, uS: { value: 1 }, uGain: { value: 1 }, uFade: { value: 0.1 } },
     transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, depthTest: false }));
   pts.frustumCulled = false;
   pts.renderOrder = 1;
