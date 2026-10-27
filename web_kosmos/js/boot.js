@@ -3,7 +3,7 @@
 // Stationen und baut die Startstation samt Nachbarn; done() blendet aus, sobald die Szene darunter steht. Die Anzeige läuft
 // dem gemeldeten Stand weich nach und geht nie zurück.
 // Mindestens 10 s Ladebild (User 27.10.2026), damit alles sauber geladen ist; ist die Reise früher bereit, blendet
-// „Esc to skip“ ein. Automatisierte Browser (Tests, Standbilder) warten nicht.
+// unter dem Ladebalken „Reise starten · Enter“ ein. Automatisierte Browser (Tests, Standbilder) warten nicht.
 import { LOOKS, createNebula, drawGrain } from './boot_nebula.js';
 
 const MIN_MS = 10000;
@@ -16,7 +16,7 @@ export function createBoot(root = document.getElementById('boot')) {
   const bar = root.querySelector('.boot-bar');
   const what = root.querySelector('.boot-what');
   const pct = root.querySelector('.boot-pct');
-  const skipBtn = root.querySelector('.boot-skip');
+  const skipBtn = root.querySelector('.boot-go');
   let target = 0, shown = 0, raf = 0, finish = null, skipNow = null;
 
   drawSky(root.querySelector('.boot-sky'), { seed: 7, density: 2400, haze: true });
@@ -29,7 +29,7 @@ export function createBoot(root = document.getElementById('boot')) {
   function onKey(ev) {
     if (!FILM_KEYS.includes(ev.key)) return;
     ev.stopImmediatePropagation();
-    if (ev.key === 'Escape') { ev.preventDefault(); if (skipNow) skipNow(); }
+    if (ev.key === 'Enter' || ev.key === 'Escape') { ev.preventDefault(); if (skipNow) skipNow(); }
   }
   window.addEventListener('keydown', onKey, true);
   if (skipBtn) skipBtn.addEventListener('click', () => skipNow && skipNow());
@@ -60,7 +60,7 @@ export function createBoot(root = document.getElementById('boot')) {
     else { raf = 0; then = 0; if (finish && shown >= 1) finish(); }
   }
 
-  // Bis 10 s nach Seitenaufruf stehen bleiben; Esc oder Klick auf den Hinweis beendet früher
+  // Bis 10 s nach Seitenaufruf stehen bleiben; Enter (still auch Esc) oder Klick auf den Hinweis beendet früher
   function hold() {
     const rest = MIN_MS - performance.now();
     if (rest <= 0 || navigator.webdriver) return Promise.resolve();
