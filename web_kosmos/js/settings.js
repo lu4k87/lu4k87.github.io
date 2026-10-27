@@ -88,7 +88,6 @@ const reducedSys = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 const figsOn = () => { let v = null; try { v = localStorage.getItem(FM_KEY); } catch { /* privat */ } return v ? v === 'on' : !(reducedSys() || settings.S.motion === 'off'); };
 const setFigs = (on) => { try { localStorage.setItem(FM_KEY, on ? 'on' : 'off'); } catch { /* privat */ } };
 
-const NEW = '<span class="b-new">neu</span>';
 const SEG = (key, label, opts, extra = '') => `
   <div class="b-row b-stack"><span class="cfg-label" id="cfg-${key}">${label}${extra}</span>
     <div class="seg b-seg" role="radiogroup" aria-labelledby="cfg-${key}">
@@ -130,7 +129,7 @@ const ROW = (key, html) => {
 const rgb = (b, t, e) => `rgb(${b.map((x, i) => Math.min(255, Math.round(x * t[i] * e))).join(',')})`;
 const swatch = (g) => (g ? `background:radial-gradient(circle at 34% 62%, ${rgb([255, 236, 190], g.hi, g.exposure)} 0 9%, ${rgb([240, 140, 50], g.hi, g.exposure)} 22%, ${rgb([120, 40, 22], g.sh, g.exposure)} 46%, ${rgb([22, 26, 44], g.sh, g.exposure)} 78%);box-shadow:inset 0 0 ${Math.round(g.vig * 26)}px rgba(0,0,0,.85)`
   : 'background:conic-gradient(from 200deg at 50% 55%, #e88a3a 0 25%, #4e7bd6 0 50%, #9a62c9 0 75%, #3aa88a 0)');
-const LOOKS = `<div class="b-row b-stack"><span class="cfg-label" id="cfg-grade">Farblook${NEW}</span>
+const LOOKS = `<div class="b-row b-stack"><span class="cfg-label" id="cfg-grade">Farblook</span>
   <div class="b-looks" role="radiogroup" aria-labelledby="cfg-grade">${GRADE_IDS.map((id, i) => `<button type="button" role="radio" data-key="grade" data-val="${id}"><span class="b-sw" style="${swatch(i ? GRADES[i - 1][1] : null)}"></span><span>${i ? GRADES[i - 1][0] : 'Station'}</span></button>`).join('')}</div></div>`
   + NOTE('„Station“ = jede Station behält ihren eigenen Look (die Sonne hat dafür einen eigenen Farblook); die anderen gelten überall.');
 const MW_STYLE = `<div class="b-row b-stack"><span class="cfg-label" id="cfg-mwstyle">Stil</span>
@@ -142,10 +141,10 @@ const nRows = (g) => g.rows.filter(([k]) => k !== '#').length;
 // Reihenfolge von fern nach nah: Look, Himmel, Milchstraße, Orbit, dann Bedienung
 const GROUPS = [
   { id: 'look', icon: 'look', title: 'Look', hero: true, rows: [['grade', LOOKS], ['exposure', RANGE('exposure', 'Belichtung', 0.25, 4, 0.05, '×')],
-    ['vig', RANGE('vig', 'Vignette', 0, 3, 0.05, '×', NEW)], ['bars', TOG('bars', 'Kinobalken 2,39:1', NEW)]] },
+    ['vig', RANGE('vig', 'Vignette', 0, 3, 0.05, '×')], ['bars', TOG('bars', 'Kinobalken 2,39:1')]] },
   { id: 'sky', icon: 'sky', title: 'Himmel', rows: [['stars', TOG('stars', 'Sterne und Milchstraße')],
     ['deep', RANGE('deep', 'Tiefer Himmel', 0, 4, 0.1, '×') + NOTE('Was eine Langzeitbelichtung hinter den Sternen sieht: ferne Galaxien und schwach leuchtender Staub der Milchstraße (Zirrus) – statistisch verteilt, überhöht, mit bloßem Auge unsichtbar. 0× = reines Schwarz.')]] },
-  { id: 'mw', icon: 'galaxy', title: 'Milchstraße', rows: [['mw', TOG('mw', 'Milchstraße zeigen', NEW)], SUB('Aussehen'), ['', MW_STYLE],
+  { id: 'mw', icon: 'galaxy', title: 'Milchstraße', rows: [['mw', TOG('mw', 'Milchstraße zeigen')], SUB('Aussehen'), ['', MW_STYLE],
     ['mwGain', RANGE('mwGain', 'Helligkeit', 0, 6, 0.05, '×')], ['mwCon', RANGE('mwCon', 'Kontrast', 0.5, 3, 0.05, '×')],
     ['mwBlack', RANGE('mwBlack', 'Schwarzpunkt', 0, 1, 0.05, '') + NOTE('Schneidet die schwachen Ränder des Bandes ab – der Himmel daneben wird dunkler.')],
     ['mwClar', RANGE('mwClar', 'Struktur', 0, 4, 0.05, '×') + NOTE('Lokaler Kontrast: hebt Sternwolken und Staubkanten gegen ihre Umgebung ab.')],
@@ -160,30 +159,30 @@ const GROUPS = [
     ['mwSrc', SEG('mwSrc', 'Quelle', [['model', 'Eigenes Modell'], ['photo', 'ESO-Foto']]) + NOTE('Das Foto (ESO/S. Brunier, CC BY 4.0) war die Vorlage und dient nur zum Vergleich – nur an Stationen im Sonnensystem, wo die Lage am Himmel stimmt.')]] },
   { id: 'orbit', icon: 'orbit', title: 'Orbit', rows: [
     ['small', RANGE('small', 'Satelliten und Kleinkörper', 1, 12, 0.5, '×') + NOTE('Satelliten, Trümmer und Asteroiden als vergrößerte Symbole – je größer, desto weniger Objekte (4× → jedes achte); 1× zeigt alle als Lichtpunkte.')],
-    ['axes', TOG('axes', 'Drehachsen der Planeten und Monde', NEW) + NOTE('Linie über Nord- und Südpol jedes Planeten und Mondes, neigt und dreht sich mit dem Körper. Nordpol eisblau, Südpol grau.')]] },
+    ['axes', TOG('axes', 'Drehachsen der Planeten und Monde') + NOTE('Linie über Nord- und Südpol jedes Planeten und Mondes, neigt und dreht sich mit dem Körper. Nordpol eisblau, Südpol grau.')]] },
   { id: 'light', icon: 'sun', title: 'Licht und Schatten', rows: [
-    ['sunK', RANGE('sunK', 'Sonnenlicht', 0.25, 4, 0.05, '×', NEW) + NOTE('Stärke des direkten Sonnenlichts auf Planeten und Monden.')],
-    ['shade', RANGE('shade', 'Nachtseite aufhellen', 0, 8, 0.25, '×', NEW) + NOTE('Restlicht auf der Schattenseite (schon aufgehellt, echt fast schwarz). 0× = ganz dunkel.')],
-    ['shadow', RANGE('shadow', 'Schatten', 0, 1, 0.05, '×', NEW) + NOTE('Ringschatten, Wolkenschatten, Mond- und Planetenschatten bei Finsternissen. 0× = keine, 1× = volle Stärke.')],
-    ['soft', RANGE('soft', 'Weiche Schattengrenze', 0, 4, 0.1, '×', NEW) + NOTE('Wie weit die Lufthülle Licht über die Tag-Nacht-Grenze streut; 0× = harte Kante.')],
-    ['spec', RANGE('spec', 'Spiegelung der Ozeane', 0, 6, 0.1, '×', NEW) + NOTE('Glanzlicht der Sonne auf dem Meer der Erde.')],
-    ['gloss', RANGE('gloss', 'Glanz der Oberflächen', 0, 4, 0.1, '×', NEW) + NOTE('Zusätzliches Glanzlicht auf Eis, Wolken und Gestein (künstlerisch). 0× = aus wie bisher.')]] },
+    ['sunK', RANGE('sunK', 'Sonnenlicht', 0.25, 4, 0.05, '×') + NOTE('Stärke des direkten Sonnenlichts auf Planeten und Monden.')],
+    ['shade', RANGE('shade', 'Nachtseite aufhellen', 0, 8, 0.25, '×') + NOTE('Restlicht auf der Schattenseite (schon aufgehellt, echt fast schwarz). 0× = ganz dunkel.')],
+    ['shadow', RANGE('shadow', 'Schatten', 0, 1, 0.05, '×') + NOTE('Ringschatten, Wolkenschatten, Mond- und Planetenschatten bei Finsternissen. 0× = keine, 1× = volle Stärke.')],
+    ['soft', RANGE('soft', 'Weiche Schattengrenze', 0, 4, 0.1, '×') + NOTE('Wie weit die Lufthülle Licht über die Tag-Nacht-Grenze streut; 0× = harte Kante.')],
+    ['spec', RANGE('spec', 'Spiegelung der Ozeane', 0, 6, 0.1, '×') + NOTE('Glanzlicht der Sonne auf dem Meer der Erde.')],
+    ['gloss', RANGE('gloss', 'Glanz der Oberflächen', 0, 4, 0.1, '×') + NOTE('Zusätzliches Glanzlicht auf Eis, Wolken und Gestein (künstlerisch). 0× = aus wie bisher.')]] },
   { id: 'cam', icon: 'cam', title: 'Kamera &amp; Bewegung', rows: [['motion', SEG('motion', 'Bewegung', [['full', 'Voll'], ['calm', 'Ruhig'], ['off', 'Aus']]) + NOTE('„Aus“ wirkt wie „Bewegung reduzieren“ im System: keine Fahrt von selbst, Wechsel als kurze Überblendung.')],
     ['cine', TOG('cine', 'Leerlauf-Fahrt der Kamera')], ['dive', RANGE('dive', 'Flugdauer', 1, 15, 0.1, 's')]] },
   { id: 'fx', icon: 'fx', title: 'Effekte', rows: [
     ['bloom', TOG('bloom', 'Lichthof (Bloom)')],
     ['lens', TOG('lens', 'Farbsaum und Linsenreflex')],
-    ['lensAmt', RANGE('lensAmt', 'Stärke Linsenreflex', 0, 5, 0.05, '×', NEW) + NOTE('Lichthof, Ring und Geister um helle Quellen wie die Sonne. 0× = aus, der Farbsaum bleibt.')],
-    ['lensOptic', SEG('lensOptic', 'Optik-Stil', [['master', 'Master-Optik'], ['classic', 'Klassisch']], NEW) + NOTE('Master-Optik: Spektraler Beugungsring, Glanzbogen &amp; Magenta-Sensor-Ghost nach Referenzbild; Klassisch: Zarter Film-Halo.')],
-    ['lensGhost', TOG('lensGhost', 'Magenta-Sensor-Ghost', NEW)],
-    ['ghostMotion', TOG('ghostMotion', 'Ghost-Parallaxe auf optischer Achse', NEW) + NOTE('Der Magenta-Ghost wandert physikalisch entlang der optischen Achse bei Kameraschwenks.')],
-    ['anamorphic', TOG('anamorphic', 'Anamorphes Gegenlicht', NEW)],
-    ['rayleigh', TOG('rayleigh', 'Rayleigh-Dämmerung', NEW)],
+    ['lensAmt', RANGE('lensAmt', 'Stärke Linsenreflex', 0, 5, 0.05, '×') + NOTE('Lichthof, Ring und Geister um helle Quellen wie die Sonne. 0× = aus, der Farbsaum bleibt.')],
+    ['lensOptic', SEG('lensOptic', 'Optik-Stil', [['master', 'Master-Optik'], ['classic', 'Klassisch']]) + NOTE('Master-Optik: Spektraler Beugungsring, Glanzbogen &amp; Magenta-Sensor-Ghost nach Referenzbild; Klassisch: Zarter Film-Halo.')],
+    ['lensGhost', TOG('lensGhost', 'Magenta-Sensor-Ghost')],
+    ['ghostMotion', TOG('ghostMotion', 'Ghost-Parallaxe auf optischer Achse') + NOTE('Der Magenta-Ghost wandert physikalisch entlang der optischen Achse bei Kameraschwenks.')],
+    ['anamorphic', TOG('anamorphic', 'Anamorphes Gegenlicht')],
+    ['rayleigh', TOG('rayleigh', 'Rayleigh-Dämmerung')],
     ['grain', TOG('grain', 'Filmkorn')]] },
-  { id: 'ui', icon: 'ui', title: 'Oberfläche', half: true, rows: [['panel', TOG('panel', 'Infotafel zeigen')], ['scaleCompare', TOG('scaleCompare', 'Maßstabs-Vergleich', NEW)], ['timeline', TOG('timeline', 'Zeitleiste der Station zeigen')],
-    ['', TOG('', 'Grafiken der Info-Karten bewegt', NEW, 'data-figs')]] },
+  { id: 'ui', icon: 'ui', title: 'Oberfläche', half: true, rows: [['panel', TOG('panel', 'Infotafel zeigen')], ['scaleCompare', TOG('scaleCompare', 'Maßstabs-Vergleich')], ['timeline', TOG('timeline', 'Zeitleiste der Station zeigen')],
+    ['', TOG('', 'Grafiken der Info-Karten bewegt', '', 'data-figs')]] },
   { id: 'perf', icon: 'perf', title: 'Leistung', rows: [['quality', SEG('quality', 'Qualität', [['auto', 'Auto'], ['1', 'Leicht'], ['2', 'Mittel'], ['3', 'Fein']])],
-    ['fpsCap', SEG('fpsCap', 'Bildrate', [['0', 'Frei'], ['60', '60'], ['30', '30']], NEW) + NOTE('30 Bilder/s spart am Laptop Strom und Lüfter.')]] },
+    ['fpsCap', SEG('fpsCap', 'Bildrate', [['0', 'Frei'], ['60', '60'], ['30', '30']]) + NOTE('30 Bilder/s spart am Laptop Strom und Lüfter.')]] },
 ];
 const N_GLOBAL = GROUPS.reduce((n, g) => n + nRows(g), 0);
 // Reiter Global wie der Reiter Station (Vorschau 26.10.2026 Zahnrad:A + C, F3 ja): Sprungleiste, je Gruppe eine Klapp-Zeile mit Kurzwerten
