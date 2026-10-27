@@ -83,3 +83,26 @@ void main() {
   gl_Position = vec4(position.xy, 0.0, 1.0);
 }
 `;
+// Hintergrundstrahlung (Station 10 und Auftakt-Film): Muster auf der Kugel als Rauschen in Oktaven ~ ℓ ≈ 10, 25, 50, 100,
+// 220, 450, 900 mit Gewicht √D_ℓ (relativ zum ersten Peak, Planck 2018); k = Schärfe 0 … 1 blendet die feinen Oktaven
+// nacheinander ein (Plasma wird durchsichtig), k = 1 = volles Muster. Falschfarbe wie in den Planck-Karten. Braucht NOISE.
+export const CMB = /* glsl */ `
+float cmbField(vec3 d, float k) {
+  return 0.42 * gnoise(d * 5.0) + 0.42 * gnoise(d * 12.0 + 3.1) + 0.45 * gnoise(d * 25.0 + 7.3)
+       + 0.65 * smoothstep(0.0, 0.4, k) * gnoise(d * 50.0 + 1.7) + 1.0 * smoothstep(0.15, 0.6, k) * gnoise(d * 100.0 + 4.4)
+       + 0.7 * smoothstep(0.3, 0.8, k) * gnoise(d * 200.0 + 9.2) + 0.5 * smoothstep(0.5, 1.0, k) * gnoise(d * 400.0 + 2.8);
+}
+// ≈ ±300 µK auf ±1; mit Dipol (±3,36 mK ≙ ±1) wird die Anisotropie winzig
+float cmbValue(vec3 d, float k, float dipOn, vec3 dip) {
+  float x = cmbField(d, k) * 1.15;
+  return dipOn > 0.5 ? x * 0.09 + dot(d, dip) : x;
+}
+vec3 cmbColor(float x) {
+  x = clamp(x * 0.5 + 0.5, 0.0, 1.0);
+  vec3 c0 = vec3(0.0, 0.03, 0.35), c1 = vec3(0.0, 0.55, 1.0), c2 = vec3(1.0, 0.97, 0.85), c3 = vec3(1.0, 0.5, 0.0), c4 = vec3(0.6, 0.0, 0.0);
+  if (x < 0.25) return mix(c0, c1, x / 0.25);
+  if (x < 0.5) return mix(c1, c2, (x - 0.25) / 0.25);
+  if (x < 0.75) return mix(c2, c3, (x - 0.5) / 0.25);
+  return mix(c3, c4, (x - 0.75) / 0.25);
+}
+`;

@@ -9,7 +9,7 @@
 
 import * as THREE from 'three';
 import { registerLayers } from '../layers.js';
-import { NOISE } from '../glsl.js';
+import { NOISE, CMB } from '../glsl.js';
 import { pointCloud, disposeScene } from '../vol.js';
 import { galToScene, mulberry32, gauss, blackbody, GLY, YEAR, cosmo, cosmoAge, zAtLookback } from '../astro.js';
 
@@ -24,26 +24,14 @@ const EPOCHS = [[0.3, 'darkenergy'], [2, 'noon'], [6, 'reion'], [14.3, 'dawn'], 
 
 const SHELL_FRAG = /* glsl */ `
 ${NOISE}
+${CMB}
 uniform vec3 uCut, uDip;
 uniform float uDipOn, uCutCos;
 varying vec3 vP;
-vec3 planck(float x) {
-  x = clamp(x * 0.5 + 0.5, 0.0, 1.0);
-  vec3 c0 = vec3(0.0, 0.03, 0.35), c1 = vec3(0.0, 0.55, 1.0), c2 = vec3(1.0, 0.97, 0.85), c3 = vec3(1.0, 0.5, 0.0), c4 = vec3(0.6, 0.0, 0.0);
-  if (x < 0.25) return mix(c0, c1, x / 0.25);
-  if (x < 0.5) return mix(c1, c2, (x - 0.25) / 0.25);
-  if (x < 0.75) return mix(c2, c3, (x - 0.5) / 0.25);
-  return mix(c3, c4, (x - 0.75) / 0.25);
-}
 void main() {
   vec3 d = normalize(vP);
   if (dot(d, uCut) > uCutCos) discard;
-  // Oktaven ~ ℓ ≈ 10, 25, 50, 100, 220, 450, 900 mit Gewicht √D_ℓ (relativ zum ersten Peak)
-  float f = 0.42 * gnoise(d * 5.0) + 0.42 * gnoise(d * 12.0 + 3.1) + 0.45 * gnoise(d * 25.0 + 7.3) + 0.65 * gnoise(d * 50.0 + 1.7)
-          + 1.0 * gnoise(d * 100.0 + 4.4) + 0.7 * gnoise(d * 200.0 + 9.2) + 0.5 * gnoise(d * 400.0 + 2.8);
-  float x = f * 1.15;   // ≈ ±300 µK auf ±1
-  if (uDipOn > 0.5) x = x * 0.09 + dot(d, uDip) * 1.0;   // Dipol ±3,36 mK ≙ ±1, Anisotropie dann winzig
-  vec3 col = planck(x);
+  vec3 col = cmbColor(cmbValue(d, 1.0, uDipOn, uDip));
   float inner = gl_FrontFacing ? 0.2 : 0.4;   // Außenseite dunkler, Innenseite = was wir sehen
   float rim = 1.0 - smoothstep(uCutCos - 0.04, uCutCos, dot(d, uCut));
   gl_FragColor = vec4(col * inner * (0.5 + 0.5 * rim) * 0.9, 1.0);
@@ -124,6 +112,10 @@ export function create(ctx) {
   const we = pointCloud([0, 0, 0], [6, 5.5, 4.6], [0.05], { min: 3 });
   scene.add(we);
 
+  // Auftakt (opener.js): Galaxien und „Wir“ blenden beim Rückzug aus der Kugel ein (rise 0 … 1), Regler bleibt Grundwert
+  let galBase = 1, rise = 1;
+  const gains = () => { gal.material.uniforms.uGain.value = galBase * rise; we.material.uniforms.uGain.value = rise; };
+
   let back_t = 0, probeInfo = null;
   const probePos = new THREE.Vector3();
   const hotspots = [
@@ -141,7 +133,7 @@ export function create(ctx) {
     { id: 'cut', type: 'range', group: 'Hintergrundstrahlung', label: 'Öffnung der Schale', value: 52, min: 0, max: 85, step: 1, fmt: (v) => (v ? `${v}°` : 'geschlossen'),
       set: (v) => cutMats.forEach((m) => { m.uniforms.uCutCos.value = v ? Math.cos(v * Math.PI / 180) : 2; }),
       hint: 'Halber Öffnungswinkel des Fensters zur Kamera; geschlossen zeigt die ganze Kugel von außen.' },
-    { id: 'galGain', type: 'range', group: 'Galaxien', label: 'Helligkeit', value: 1, min: 0, max: 5, step: 0.25, unit: '×', set: (v) => { gal.material.uniforms.uGain.value = v; } },
+    { id: 'galGain', type: 'range', group: 'Galaxien', label: 'Helligkeit', value: 1, min: 0, max: 5, step: 0.25, unit: '×', set: (v) => { galBase = v; gains(); } },
     { id: 'layerGain', type: 'range', group: 'Zeitschichten', label: 'Helligkeit', value: 1, min: 0.25, max: 6, step: 0.25, unit: '×',
       set: (v) => layers.children.forEach((m) => { m.material.uniforms.uGain.value = 0.07 * v; }), active: () => layers.visible, only: 'Erst in der Infotafel „Zeitschichten“ einschalten.' },
   ]);
@@ -164,6 +156,9 @@ export function create(ctx) {
 
   return {
     scene, camera, unit: GLY, hotspots, controls, home,
+    // Schale für den Auftakt-Film: Radius und dieselben Uniforms (Öffnung, Dipol), damit sein letztes Bild deckungsgleich ist
+    shell: { radius: R_LSS, uniforms: shellMat.uniforms },
+    opening(k) { rise = k; gains(); },
     orbit: { minDistance: 4, maxDistance: 320, cineSpeed: 0.45 },
     look: { exposure: 1.05, bloom: 0.07, sat: 1.05, con: 0.12 },
     update() {},
