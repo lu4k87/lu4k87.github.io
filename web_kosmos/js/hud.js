@@ -1,6 +1,6 @@
 // Bedienoberfläche über der 3D-Szene: Stationsleiste (Band oben über die volle Breite: Route, darunter beim Zeigen
 // Abstecher → Monde; Suche in der Kopfzeile), Infotafel (rechts: Kennzahlen-Bento, Schalter der Station, Entdecken-Liste, Darstellung + Quellen),
-// Abzeichen mit gewinkelten 45°-Leitlinien (Sechseck wie Biochar), Info-Karte, Messleiste (Bildbreite, Lichtlaufzeit,
+// Abzeichen mit gewinkelten 45°-Leitlinien (Sechseck wie Biochar), Info-Karte, Messleiste (echtes Maß, Lichtlaufzeit,
 // Entfernung, Blick zurück), Reiseroute, Kapitel-Titel beim Ankommen, Rand-Zug-Anzeige.
 
 import { STATIONS, ROUTE, SOURCES, routeIndex } from './content.js';
@@ -25,7 +25,7 @@ export function createHud(h) {
   const rail = $('#rail'), panel = $('#panel-body'), layer = $('#hotspots'), svg = layer.querySelector('svg');
   const leads = svg.querySelector('.leads'), card = $('#hs-card'), caption = $('#caption'), route = $('#route');
   const pull = $('#pull'), btnOut = $('#btn-out'), btnNext = $('#btn-next'), btnPrev = $('#btn-prev');
-  const mWidth = $('#m-width'), mLight = $('#m-light'), mDist = $('#m-dist'), mBack = $('#m-back');
+  const mSizeL = $('#m-size-l'), mSize = $('#m-size'), mLight = $('#m-light'), mDist = $('#m-dist'), mBack = $('#m-back');
   let lv = null, meta = null, markers = [], selected = null, liveEl = null, widgetEl = null, liveT = 0, scaleTabIdx = 0;
   // Info-Karte: Reihenfolge (gewähltes Abzeichen zuerst), Lage, Seite, Größe, Leitlinie
   let ordered = [], dock = null, settle = null, cardW = 0, cardH = 0, cardMaxH = null, lastT = 0;
@@ -62,8 +62,9 @@ export function createHud(h) {
   const stopOf = (id) => { let x = id; while (x && STATIONS[x] && !onRoute.has(x)) x = STATIONS[x].parent; return STATIONS[x] ? x : null; };
   const chName = (id) => CHAPTERS.find(([hub]) => hub === chapter(id))[1];
   const title = (id) => esc(STATIONS[id].title);
-  const width = (id) => esc(fmtLength(STATIONS[id].width));
-  const label = (id) => `${title(id)} – Bildbreite ${width(id)}`;
+  // echtes Maß des Hauptobjekts: „Durchmesser 12.742 km“
+  const size = (id) => { const z = STATIONS[id].size; return z ? esc(`${z.l} ${fmtLength(z.v)}`) : ''; };
+  const label = (id) => `${title(id)} – ${size(id)}`;
   // Weg bis zur Elternstation, im Kapitel ab dessen Hub: „Sonnensystem › Jupiter & Monde“; Hubs nennen ihre Eltern
   const crumbs = (id) => {
     const a = [];
@@ -114,7 +115,7 @@ export function createHud(h) {
     zbFound.hidden = !q;
     zbInput.setAttribute('aria-expanded', String(!!q));
     zbHits = q ? Object.keys(STATIONS).filter((k) => `${STATIONS[k].title} ${STATIONS[k].kicker} ${num(k)}`.toLowerCase().includes(q)).sort(byRank) : [];
-    zbRes.innerHTML = zbHits.map((k) => `<div role="option" class="zb-hit" id="zb-hit-${k}" data-go="${k}" aria-selected="false">${orb(k, 'zb-orb')}<span class="zb-hit-t"><span><b class="n">${num(k)}</b> ${mark(STATIONS[k].title, q)}</span><small>${crumbs(k)} · ${mark(STATIONS[k].kicker, q)}</small></span><span class="w">${width(k)}</span></div>`).join('');
+    zbRes.innerHTML = zbHits.map((k) => `<div role="option" class="zb-hit" id="zb-hit-${k}" data-go="${k}" aria-selected="false">${orb(k, 'zb-orb')}<span class="zb-hit-t"><span><b class="n">${num(k)}</b> ${mark(STATIONS[k].title, q)}</span><small>${crumbs(k)} · ${mark(STATIONS[k].kicker, q)}</small></span><span class="w">${esc(fmtLength(STATIONS[k].size.v))}</span></div>`).join('');
     const all = Object.keys(STATIONS).length;
     zbHint.textContent = zbHits.length ? `${zbHits.length} Treffer aus ${all} Stationen · Pfeiltasten wählen · Enter fliegt hin` : `Keine Station gefunden · Esc leert die Suche`;
     markHit();
@@ -371,12 +372,12 @@ export function createHud(h) {
       if (shown[1] && STATIONS[id].parent === shown[1]) dwires.querySelector('.bd-mw')?.classList.add('is-hot');
     }
   }
-  // Hinweis unter dem Band (bzw. der offenen Schublade): Nummer, Name, Art, Bildbreite, Halt der Route
+  // Hinweis unter dem Band (bzw. der offenen Schublade): Nummer, Name, Art, echtes Maß, Halt der Route
   function showTip(id, b) {
     if (!b) return;
     const st = STATIONS[id], halt = ROUTE.indexOf(id);
     tip.dataset.ch = chapter(id);
-    tip.innerHTML = `<span class="n">${num(id)}</span><b>${title(id)}</b><span>${esc(st.kicker)} · Bildbreite ${width(id)}</span>${halt < 0 ? '' : `<span>Halt ${halt + 1} von ${ROUTE.length}</span>`}`;
+    tip.innerHTML = `<span class="n">${num(id)}</span><b>${title(id)}</b><span>${esc(st.kicker)} · ${size(id)}</span>${halt < 0 ? '' : `<span>Halt ${halt + 1} von ${ROUTE.length}</span>`}`;
     const r = b.getBoundingClientRect(), base = (drawer.classList.contains('is-open') ? drawer : nav).getBoundingClientRect(), w = tip.offsetWidth;
     tip.style.left = `${Math.max(8, Math.min(innerWidth - w - 8, r.left + r.width / 2 - w / 2))}px`;
     tip.style.top = `${base.bottom + 8}px`;
@@ -415,7 +416,6 @@ export function createHud(h) {
     markBand();
     renderDrawer();
     runComet();
-    lastW = 0;
     route.querySelectorAll('button').forEach((b) => {
       const cur = b.dataset.id === id;
       b.classList.toggle('is-current', cur);
@@ -427,6 +427,9 @@ export function createHud(h) {
     const i = routeIndex(id);
     $('#nav-next-to').textContent = STATIONS[ROUTE[(i + 1) % ROUTE.length]].title;
     btnPrev.setAttribute('aria-label', `Zurück: ${STATIONS[ROUTE[(i - 1 + ROUTE.length) % ROUTE.length]].title}`);
+    mSizeL.textContent = meta.size ? meta.size.l : 'Größe';
+    mSize.textContent = meta.size ? fmtLength(meta.size.v) : '–';
+    mLight.textContent = meta.size ? fmtTime(meta.size.v / C) : '–';
     mDist.textContent = meta.dist ? fmtLength(meta.dist) : 'im Bild';
     mBack.textContent = meta.lookback ? fmtTime(meta.lookback) : 'Gegenwart';
     scaleTabIdx = 0;
@@ -763,15 +766,6 @@ export function createHud(h) {
     liveEl.textContent = lv.live();
   }
 
-  // ---------- Messleiste ----------
-  let lastW = 0;
-  function setScale(widthM) {
-    if (Math.abs(widthM - lastW) / (lastW || 1) < 0.002) return;
-    lastW = widthM;
-    mWidth.textContent = fmtLength(widthM);
-    mLight.textContent = fmtTime(widthM / C);
-  }
-
   // ---------- Flug, Kapitel-Titel, Auftakt ----------
   let capTimer = 0;
   // Titel und Zeile darunter einzeilig: Schrift nach der Breite der Bühne verkleinern, gemessen in der breitesten
@@ -795,7 +789,7 @@ export function createHud(h) {
     caption.querySelector('.cap-title').textContent = opening ? 'Reise durch das All' : st.title;
     const parts = opening
       ? ['Vom Urknall bis zur Erde']
-      : [st.kicker, `Bildbreite ${fmtLength(st.width)}`, ...(st.dist ? [`${fmtLength(st.dist)} entfernt`] : [])];
+      : [st.kicker, ...(st.size ? [`${st.size.l} ${fmtLength(st.size.v)}`] : []), ...(st.dist ? [`${fmtLength(st.dist)} entfernt`] : [])];
     caption.querySelector('.cap-sub').replaceChildren(...parts.flatMap((t, i) => {
       const seg = document.createElement('span');
       seg.textContent = t;
@@ -867,7 +861,7 @@ export function createHud(h) {
   buildSearch();
   buildRail();
   return {
-    setStation, update, setScale, setPull, stageRect, setFlight,
+    setStation, update, setPull, stageRect, setFlight,
     // ohne Station: Titel sofort ausblenden (Auftakt-Film)
     caption: (st, opening) => { if (st) showCaption(st, opening); else { caption.classList.remove('is-on'); clearTimeout(capTimer); } },
     hideMarkers: (on) => { layer.classList.toggle('is-hidden', on); if (on) closeCard(); },

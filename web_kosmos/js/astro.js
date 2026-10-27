@@ -318,6 +318,8 @@ export function fmtLength(m) {
 
 // Dauer in Sekunden → lesbare Einheit bis Milliarden Jahre
 export function fmtTime(s) {
+  if (s < 1e-6) return `${sig(s * 1e9)} ns`;
+  if (s < 1e-3) return `${sig(s * 1e6)} µs`;
   if (s < 1) return `${sig(s * 1e3)} ms`;
   if (s < 120) return `${sig(s)} s`;
   if (s < 7200) return `${sig(s / 60)} min`;

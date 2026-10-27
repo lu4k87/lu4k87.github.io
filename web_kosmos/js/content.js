@@ -145,6 +145,7 @@ export const SOURCES = {
   'wiki-euclid': { t: 'Euclid (spacecraft): Korsch-Teleskop 1,2 m, Brennweite 24,5 m; VIS 36 CCDs, 600 Mio. Pixel, 530–920 nm; NISP 16 Detektoren, 65 Mio. Pixel, 920–2.020 nm; 15.000 Quadratgrad + 50 Quadratgrad tiefe Felder; 55 Mbit/s, 4 h am Tag nach Cebreros (35 m), 850 Gbit/Tag; Halo-Bahn ≈ 1 Mio. km', by: 'Wikipedia (en), abgerufen 26.10.2026', url: 'https://en.wikipedia.org/wiki/Euclid_(spacecraft)' },
   'euclid-q2': { t: 'Euclid data release Q2: the Euclid Galactic Bulge Survey (24.06.2026, 60 Mio. Sterne im Bulge der Milchstraße)', by: 'Euclid Consortium', url: 'https://www.euclid-ec.org/?p=6472' },
   'nasa-roman-launch': { t: 'Roman Launch (30.08.2026, 7:26 Uhr EDT, Falcon Heavy vom Startplatz 39A; Solarflügel-Sonnenschild aus sechs Feldern, vier klappen aus; Ziel L2, Reise ≈ 3 Monate)', by: 'NASA Science', url: 'https://science.nasa.gov/mission/roman-space-telescope/roman-launch/' },
+  'nasa-roman-faq': { t: 'Roman Frequently Asked Questions (voll ausgeklappt über 12,7 m lang und über 4,4 m breit)', by: 'NASA Science', url: 'https://science.nasa.gov/mission/roman-space-telescope/frequently-asked-questions' },
   'wiki-roman': { t: 'Nancy Grace Roman Space Telescope: Spiegel 2,4 m (von der NRO), Brennweite 19 m, f/7,9, 0,48–2,3 µm, 4,1 kW; WFI 18 H4RG-10, 300,8 Mio. Pixel, 0,28 Quadratgrad, 0,11″; Koronograph 575–825 nm, ab 01.09.2026; WFI scharfgestellt 14.10.2026 (63 nm statt 90 nm); Ankunft an L2 nach ≈ 100 Tagen erwartet; Ka-Band 290 Mbit/s; Treibstoff für mindestens 22 Jahre', by: 'Wikipedia (en), abgerufen 26.10.2026', url: 'https://en.wikipedia.org/wiki/Nancy_Grace_Roman_Space_Telescope' },
   'ipac-roman-bus': { t: 'NASA Completes Spacecraft to Transport, Support Roman Space Telescope (Bus 4 m breit, 2 m hoch, 3.800 kg)', by: 'IPAC/Caltech', url: 'https://ipac.caltech.edu/news/nasa-completes-spacecraft-to-transport-support-roman-space-telescope' },
   'spacex-dragon': { t: 'Dragon: 8,1 m hoch mit Trunk, Durchmesser 4 m', by: 'SpaceX', url: 'https://www.spacex.com/vehicles/dragon/' },
@@ -302,11 +303,12 @@ export const SOURCES = {
   'snd-vgr-neptune': { t: 'Voyager 2 PWS, Wellenform-Daten Neptun-Vorbeiflug (25.08.1989, Rahmen 02:55 und 04:15 UT)', by: 'University of Iowa, NASA PDS VGPW_2001', url: 'https://space.physics.uiowa.edu/plasma-wave/voyager/data/VGPW_2001/EXTRAS/HTML/NEPTUNE_ENCOUNTER/V2P4_012/V2P4_012.HTM' },
 };
 
-// Abstände für Mess-Leiste und Rail: width = typische Bildbreite [m], dist = Entfernung von der Erde [m],
+// Abstände für Mess-Leiste und Rail: width = typische Bildbreite [m] (nur Kamera und Flug), size = echtes Maß des
+// Hauptobjekts { v [m], l Bezeichnung, s Quelle } für Messleiste, Titel und Hinweis, dist = Entfernung von der Erde [m],
 // lookback = Lichtlaufzeit bzw. Rückblickzeit [s] (kosmologisch ≠ Abstand/c, siehe research.md)
 export const STATIONS = {
   earth: {
-    n: 1, title: 'Erde & Mond', kicker: 'Erde–Mond-System', parent: 'solar', width: 4e7, dist: 0, lookback: 0,
+    n: 1, title: 'Erde & Mond', kicker: 'Erde–Mond-System', parent: 'solar', width: 4e7, dist: 0, lookback: 0, size: { v: 1.2742e7, l: 'Durchmesser Erde', s: 'nasa-earth' },
     lead: 'Licht braucht 1,3 Sekunden vom Mond zu uns. Tag- und Nachtseite, Mondphase und Sonnenrichtung sind aus den Bahndaten für den aktuellen Zeitpunkt berechnet.',
     facts: [
       { v: '384.400', u: 'km', l: 'mittlerer Abstand Erde–Mond', s: 'nasa-moon' },
@@ -334,7 +336,7 @@ export const STATIONS = {
     },
   },
   hubble: {
-    n: '01D', title: 'Hubble', kicker: 'Weltraumteleskop', parent: 'earth', width: 30, dist: 4.8e5, lookback: 4.8e5 / C,
+    n: '01D', title: 'Hubble', kicker: 'Weltraumteleskop', parent: 'earth', width: 30, dist: 4.8e5, lookback: 4.8e5 / C, size: { v: 13, l: 'Länge', s: 'nasa-hubble-numbers' },
     lead: 'Das Hubble-Weltraumteleskop aus der Nähe, knapp 480 km über der Erde. Es zielt fest auf einen Punkt am Himmel, während es in 94 Minuten einmal um die Erde fliegt; Bahn, Tag und Nacht sind für den angezeigten Zeitpunkt aus den Bahndaten berechnet. Seit 1990 im All, fünfmal von Astronauten gewartet.',
     facts: [
       { v: '2,4', u: 'm', l: 'Hauptspiegel', s: 'nasa-hubble-numbers' },
@@ -358,7 +360,7 @@ export const STATIONS = {
     },
   },
   jwst: {
-    n: '01E', title: 'James Webb', kicker: 'Weltraumteleskop', parent: 'earth', width: 30, dist: 1.5e9, lookback: 1.5e9 / C,
+    n: '01E', title: 'James Webb', kicker: 'Weltraumteleskop', parent: 'earth', width: 30, dist: 1.5e9, lookback: 1.5e9 / C, size: { v: 21.197, l: 'Länge Sonnenschild', s: 'nasa-webb-facts' },
     lead: 'Das größte Teleskop im All, 1,5 Millionen Kilometer hinter der Erde am Lagrange-Punkt L2. Ein Sonnenschild aus fünf Lagen hält Sonne, Erde und Mond von Spiegel und Instrumenten fern, die unter 50 K kalt bleiben müssen. Erde und Mond stehen klein neben der Sonne am Himmel – an ihren echten Orten zum angezeigten Zeitpunkt.',
     facts: [
       { v: '6,5', u: 'm', l: 'Hauptspiegel aus 18 Segmenten', s: 'nasa-webb-facts' },
@@ -383,7 +385,7 @@ export const STATIONS = {
     },
   },
   euclid: {
-    n: '01F', title: 'Euclid', kicker: 'Weltraumteleskop', parent: 'earth', width: 8, dist: 1.5e9, lookback: 1.5e9 / C,
+    n: '01F', title: 'Euclid', kicker: 'Weltraumteleskop', parent: 'earth', width: 8, dist: 1.5e9, lookback: 1.5e9 / C, size: { v: 4.7, l: 'Höhe', s: 'esa-euclid' },
     lead: 'Das Weltraumteleskop der ESA für Dunkle Energie und Dunkle Materie, ebenfalls am Lagrange-Punkt L2. Euclid kartiert mehr als ein Drittel des Himmels mit einem 1,2-m-Teleskop und zwei Kameras: Milliarden Galaxien bis 10 Milliarden Lichtjahre weit. Erde und Mond stehen klein neben der Sonne am Himmel.',
     facts: [
       { v: '1,2', u: 'm', l: 'Teleskop', s: 'esa-euclid' },
@@ -408,7 +410,7 @@ export const STATIONS = {
     },
   },
   roman: {
-    n: '01G', title: 'Roman', kicker: 'Weltraumteleskop', parent: 'earth', width: 16, dist: 1.5e9, lookback: 1.5e9 / C,
+    n: '01G', title: 'Roman', kicker: 'Weltraumteleskop', parent: 'earth', width: 16, dist: 1.5e9, lookback: 1.5e9 / C, size: { v: 12.7, l: 'Länge', s: 'nasa-roman-faq' },
     lead: 'Das neueste Weltraumteleskop der NASA, gestartet am 30. August 2026. Roman hat einen Spiegel so groß wie Hubble, aber ein Weitwinkel-Instrument mit 300 Millionen Bildpunkten, das große Himmelsfelder auf einmal erfasst. Es ist auf dem Weg zum Lagrange-Punkt L2, Ankunft Anfang Dezember 2026 erwartet; die Anreise im Bild ist ein Modell.',
     facts: [
       { v: '2,4', u: 'm', l: 'Hauptspiegel', s: 'wiki-roman' },
@@ -417,7 +419,7 @@ export const STATIONS = {
       { v: '30.08.2026', u: '', l: 'Start mit Falcon Heavy', s: 'nasa-roman-launch' },
     ],
     note: 'Modell aus Grundkörpern nach Fotos: Bus (4 m breit, 2 m hoch, IPAC) mit Antenne, darüber Instrumententräger mit Weitwinkel-Instrument, Koronograph und unteren Sonnenblenden, Teleskop in der Außenröhre mit ausgeklapptem Deckel vorn, Solarflügel-Sonnenschild aus sechs Feldern; Gesamtlänge und Einzelmaße nach Fotos geschätzt. Anreise als Modell: rund 30 Tage bis zur Entfernung von L2, danach schwingt die Halo-Bahn bis zur erwarteten Ankunft nach ≈ 100 Tagen auf (keine Bahndaten). Die Seite hinter dem Schild ist aufgehellt.',
-    sources: ['nasa-roman-launch', 'wiki-roman', 'ipac-roman-bus', 'nasa-earth', 'nasa-moon', 'sss-tex', 'd3-celestial'],
+    sources: ['nasa-roman-launch', 'nasa-roman-faq', 'wiki-roman', 'ipac-roman-bus', 'nasa-earth', 'nasa-moon', 'sss-tex', 'd3-celestial'],
     hotspots: {
       telescope: { t: 'Teleskop', x: 'Der 2,4-m-Spiegel ist so groß wie der von Hubble; das Teleskop stammt vom US-Aufklärungsamt NRO, das es der NASA überließ. Brennweite 19 m (f/7,9), Licht von 0,48 bis 2,3 Mikrometer.', s: 'wiki-roman' },
       wfi: { t: 'Weitwinkel-Instrument', x: '18 Infrarot-Detektoren mit zusammen 300,8 Millionen Bildpunkten, Bildfeld 0,28 Quadratgrad bei 0,11 Bogensekunden je Bildpunkt. Am 14. Oktober 2026 war es scharfgestellt: Die Wellenfront weicht nur 63 nm ab, erwartet waren 90 nm.', s: 'wiki-roman' },
@@ -433,7 +435,7 @@ export const STATIONS = {
     },
   },
   solar: {
-    n: 2, title: 'Sonnensystem', kicker: 'Planetensystem', parent: 'galaxy', width: 2.2e12, dist: 0, lookback: 0,
+    n: 2, title: 'Sonnensystem', kicker: 'Planetensystem', parent: 'galaxy', width: 2.2e12, dist: 0, lookback: 0, size: { v: 2 * 30.07 * AU, l: 'Durchmesser Neptunbahn', s: 'jpl-elements' },
     lead: 'Die acht Planeten und der Mond auf ihren Bahnen und an ihren heutigen Positionen, berechnet aus den Bahnelementen des JPL. Die Zeitleiste spielt die Umläufe ab; ein Klick auf ein Abzeichen fliegt den Körper an.',
     facts: [
       { v: '30,1', u: 'AE', l: 'Bahnradius Neptun (4,5 Mrd. km)', s: 'jpl-elements' },
@@ -463,7 +465,7 @@ export const STATIONS = {
     },
   },
   asteroid: {
-    n: '02A', title: 'Asteroiden', kicker: 'Kleinkörper', parent: 'solar', width: 4e5, dist: 0, lookback: 0,
+    n: '02A', title: 'Asteroiden', kicker: 'Kleinkörper', parent: 'solar', width: 4e5, dist: 0, lookback: 0, size: { v: 2.78e5, l: 'Länge Psyche', s: 'shepard-2021' },
     lead: 'Drei Asteroiden aus der Nähe, wie Radar und Raumsonden sie vermessen haben: der metallreiche Psyche, der Geröllhaufen Bennu und der längliche Eros. Im Zahnrad: Drehung, Sonnenstand und Schatten, bei Bennu die Steinchen, die er ins All wirft.',
     facts: [
       { v: '278 × 238 × 171', u: 'km', l: 'Psyche, Form aus Radarmessungen', s: 'shepard-2021' },
@@ -486,7 +488,7 @@ export const STATIONS = {
   },
   // [E1] Sonne
   sun: {
-    n: '02B', title: 'Sonne', kicker: 'Stern', parent: 'solar', width: 1.6e9, dist: AU, lookback: AU / C,
+    n: '02B', title: 'Sonne', kicker: 'Stern', parent: 'solar', width: 1.6e9, dist: AU, lookback: AU / C, size: { v: 1.3914e9, l: 'Durchmesser', s: 'nasa-sun' },
     lead: 'Ein Stern mittlerer Größe aus der Nähe: Plasma, Magnetfelder und Licht, das 8 Minuten 19 Sekunden bis zur Erde braucht. Vier Kanäle wie beim Sonnenobservatorium SDO zeigen verschiedene Schichten – von der Oberfläche bis zur Millionen Grad heißen Korona. Zum Start ein künstlerischer Look „Glut“ mit Magnetbögen und Ausbrüchen.',
     facts: [
       { v: '695.700', u: 'km', l: 'Radius', s: 'nasa-sun' },
@@ -510,7 +512,7 @@ export const STATIONS = {
   },
   // [E2] Erde nah
   iss: {
-    n: '01A', title: 'ISS', kicker: 'Raumstation', parent: 'earth', width: 150, dist: 4.2e5, lookback: 4.2e5 / C,
+    n: '01A', title: 'ISS', kicker: 'Raumstation', parent: 'earth', width: 150, dist: 4.2e5, lookback: 4.2e5 / C, size: { v: 109, l: 'Spannweite', s: 'nasa-iss' },
     lead: 'Die Internationale Raumstation aus der Nähe, 420 km über der Erde. Bahn, Tag und Nacht, Sonnenaufgänge und Sonnenuntergänge sind für den angezeigten Zeitpunkt aus den Bahndaten berechnet; im Zeitraffer zieht die Erde unter der Station hindurch.',
     facts: [
       { v: '109', u: 'm', l: 'Spannweite der Solarflügel', s: 'nasa-iss' },
@@ -535,7 +537,7 @@ export const STATIONS = {
     },
   },
   tiangong: {
-    n: '01B', title: 'Tiangong', kicker: 'Raumstation', parent: 'earth', width: 100, dist: 3.84e5, lookback: 3.84e5 / C,
+    n: '01B', title: 'Tiangong', kicker: 'Raumstation', parent: 'earth', width: 100, dist: 3.84e5, lookback: 3.84e5 / C, size: { v: 55, l: 'Spannweite', s: 'space-wentian-arrays' },
     lead: 'Die chinesische Raumstation aus der Nähe, rund 384 km über der Erde: drei Module in T-Form und große Solarflügel, die der Sonne folgen. Bahn, Tag und Nacht, Sonnenaufgänge und Sonnenuntergänge sind für den angezeigten Zeitpunkt aus den Bahndaten berechnet; im Zeitraffer zieht die Erde unter der Station hindurch.',
     facts: [
       { v: '55', u: 'm', l: 'Spannweite der Wentian-Flügel', s: 'space-wentian-arrays' },
@@ -560,7 +562,7 @@ export const STATIONS = {
   },
   // [E2] Mond
   moon: {
-    n: '01C', title: 'Mond', kicker: 'Erdtrabant', parent: 'earth', width: 1.4e7, dist: 3.844e8, lookback: 1.28,
+    n: '01C', title: 'Mond', kicker: 'Erdtrabant', parent: 'earth', width: 1.4e7, dist: 3.844e8, lookback: 1.28, size: { v: 3.4748e6, l: 'Durchmesser', s: 'nasa-moon' },
     lead: 'Der Mond aus der Nähe: Er steht still, Sonne, Erde und Sterne ziehen über seinen Himmel. Licht, Mondphase und das leichte Taumeln (Libration) sind für den angezeigten Zeitpunkt berechnet, das Relief stammt aus Laser-Höhenmessungen der Sonde LRO.',
     facts: [
       { v: '1.737,4', u: 'km', l: 'mittlerer Radius', s: 'nasa-moon' },
@@ -590,7 +592,7 @@ export const STATIONS = {
   },
   // [E3] Jupiter-System
   jupiter: {
-    n: '02C', title: 'Jupiter & Monde', kicker: 'Planetensystem', parent: 'solar', width: 6e8, dist: 5.2 * AU, lookback: 5.2 * AU / C,
+    n: '02C', title: 'Jupiter & Monde', kicker: 'Planetensystem', parent: 'solar', width: 6e8, dist: 5.2 * AU, lookback: 5.2 * AU / C, size: { v: 1.42984e8, l: 'Durchmesser Jupiter', s: 'nasa-jupiter-fs' },
     lead: 'Der größte Planet mit seinen vier großen Monden, so wie sie jetzt stehen: Io, Europa und Ganymed umkreisen Jupiter im Takt 4 : 2 : 1, Kallisto zieht weiter draußen. Zieht ein Mond vor der Sonne vorbei, wandert sein Schatten als schwarzer Punkt über die Wolkenbänder.',
     facts: [
       { v: '71.492', u: 'km', l: 'Radius am Äquator (am Pol 66.854 km)', s: 'nasa-jupiter-fs' },
@@ -614,7 +616,7 @@ export const STATIONS = {
   },
   // [E3] Io, Europa
   io: {
-    n: '02C1', title: 'Io', kicker: 'Jupitermond', parent: 'jupiter', width: 1.2e7, dist: 5.2 * AU, lookback: 5.2 * AU / C,
+    n: '02C1', title: 'Io', kicker: 'Jupitermond', parent: 'jupiter', width: 1.2e7, dist: 5.2 * AU, lookback: 5.2 * AU / C, size: { v: 3.643e6, l: 'Durchmesser', s: 'nssdc-jovsat' },
     lead: 'Die vulkanisch aktivste Welt des Sonnensystems: Hunderte Vulkane, Fahnen bis 500 km hoch, Lava vermutlich heißer als auf der Erde. Jupiter hängt riesig und unbewegt am Himmel, denn Io zeigt ihm immer dieselbe Seite. Sonnenstand, Jupiterphase und Schatten sind für den angezeigten Zeitpunkt berechnet.',
     facts: [
       { v: '1.821,5', u: 'km', l: 'mittlerer Radius', s: 'nssdc-jovsat' },
@@ -637,7 +639,7 @@ export const STATIONS = {
     },
   },
   europa: {
-    n: '02C2', title: 'Europa', kicker: 'Eismond', parent: 'jupiter', width: 1.2e7, dist: 5.2 * AU, lookback: 5.2 * AU / C,
+    n: '02C2', title: 'Europa', kicker: 'Eismond', parent: 'jupiter', width: 1.2e7, dist: 5.2 * AU, lookback: 5.2 * AU / C, size: { v: 3.1216e6, l: 'Durchmesser', s: 'nssdc-jovsat' },
     lead: 'Ein Eismond mit verborgenem Ozean: Unter dem Eispanzer liegt vermutlich salziges Wasser, doppelt so viel wie in allen Ozeanen der Erde. Europa ruht, Jupiter steht riesig und fast unbewegt an ihrem Himmel, Sonne und Nachbarmonde ziehen vorbei. Licht, Schatten und Stellung sind für den angezeigten Zeitpunkt berechnet.',
     facts: [
       { v: '1.560,8', u: 'km', l: 'mittlerer Radius', s: 'nssdc-jovsat' },
@@ -668,7 +670,7 @@ export const STATIONS = {
   },
   // [E3] Ganymed, Kallisto
   ganymede: {
-    n: '02C3', title: 'Ganymed', kicker: 'Mond von Jupiter', parent: 'jupiter', width: 1e7, dist: 5.2 * AU, lookback: 5.2 * AU / C,
+    n: '02C3', title: 'Ganymed', kicker: 'Mond von Jupiter', parent: 'jupiter', width: 1e7, dist: 5.2 * AU, lookback: 5.2 * AU / C, size: { v: 5.262e6, l: 'Durchmesser', s: 'jpl-sat-phys' },
     lead: 'Der größte Mond im Sonnensystem, größer als der Planet Merkur – und der einzige mit eigenem Magnetfeld. Unter dem Eis liegt wahrscheinlich ein salziger Ozean mit mehr Wasser als alle Meere der Erde. Jupiter steht hier fest am Himmel; die Zeitleiste lässt die Sonne wandern, Jupiter Phasen zeigen und die Polarlichter schaukeln.',
     facts: [
       { v: '2.631', u: 'km', l: 'Radius – größer als Merkur', s: 'jpl-sat-phys' },
@@ -690,7 +692,7 @@ export const STATIONS = {
     },
   },
   callisto: {
-    n: '02C4', title: 'Kallisto', kicker: 'Mond von Jupiter', parent: 'jupiter', width: 1e7, dist: 5.2 * AU, lookback: 5.2 * AU / C,
+    n: '02C4', title: 'Kallisto', kicker: 'Mond von Jupiter', parent: 'jupiter', width: 1e7, dist: 5.2 * AU, lookback: 5.2 * AU / C, size: { v: 4.82e6, l: 'Durchmesser', s: 'jpl-sat-phys' },
     lead: 'Die am dichtesten verkraterte Oberfläche im Sonnensystem, darunter das 3.000 km große Ringbecken Valhalla. Messungen der Sonde Galileo deuten trotzdem auf einen salzigen Ozean unter dem Eis. Jupiter steht fest am Himmel; die Zeitleiste lässt Sonne und Sterne wandern.',
     facts: [
       { v: '2.410', u: 'km', l: 'Radius – drittgrößter Mond', s: 'jpl-sat-phys' },
@@ -711,7 +713,7 @@ export const STATIONS = {
   },
   // [E4] Saturn + Mars
   saturn: {
-    n: '02D', title: 'Saturn & Monde', kicker: 'Ringplanet', parent: 'solar', width: 5e8, dist: 9.5 * AU, lookback: 9.5 * AU / C,
+    n: '02D', title: 'Saturn & Monde', kicker: 'Ringplanet', parent: 'solar', width: 5e8, dist: 9.5 * AU, lookback: 9.5 * AU / C, size: { v: 1.20536e8, l: 'Durchmesser Saturn', s: 'nasa-saturnfact' },
     lead: 'Der Ringplanet mit seinen großen Monden, so wie sie jetzt stehen. Die Sonne beleuchtet die Ringe von der Seite: Der Planet wirft seinen Schatten auf die Ringe, die Ringe ihren auf den Planeten. Wie hoch die Sonne über den Ringen steht, wandert im Lauf des 29-jährigen Saturnjahrs – Regler „Saturnjahr“.',
     facts: [
       { v: '60.268', u: 'km', l: 'Äquatorradius, am Pol 54.364 km', s: 'nasa-saturnfact' },
@@ -737,7 +739,7 @@ export const STATIONS = {
   },
   // [E4] Titan
   titan: {
-    n: '02D1', title: 'Titan', kicker: 'Mond von Saturn', parent: 'saturn', width: 1e7, dist: 9.5 * AU, lookback: 9.5 * AU / C,
+    n: '02D1', title: 'Titan', kicker: 'Mond von Saturn', parent: 'saturn', width: 1e7, dist: 9.5 * AU, lookback: 9.5 * AU / C, size: { v: 5.15e6, l: 'Durchmesser', s: 'jpl-sat-phys' },
     lead: 'Der einzige Mond mit dichter Atmosphäre: ein orangener Dunstball, unter dem es regnet, Flüsse fließen und Seen aus flüssigem Methan und Ethan liegen. Saturn steht mit seinen Ringen fest am Himmel; die Zeitleiste lässt Sonne und Sterne wandern. „Atmosphäre“ nimmt den Dunst weg und zeigt die Oberfläche.',
     facts: [
       { v: '2.575', u: 'km', l: 'Radius – nach Ganymed der zweitgrößte Mond', s: 'jpl-sat-phys' },
@@ -760,7 +762,7 @@ export const STATIONS = {
   },
   // [E4] Enceladus
   enceladus: {
-    n: '02D2', title: 'Enceladus', kicker: 'Mond von Saturn', parent: 'saturn', width: 1.5e6, dist: 9.5 * AU, lookback: 9.5 * AU / C,
+    n: '02D2', title: 'Enceladus', kicker: 'Mond von Saturn', parent: 'saturn', width: 1.5e6, dist: 9.5 * AU, lookback: 9.5 * AU / C, size: { v: 5.04e5, l: 'Durchmesser', s: 'jpl-sat-phys' },
     lead: 'Der weiße Eismond mit den Fontänen am Südpol: Aus vier Spalten, den Tigerstreifen, schießen Wasserdampf und Eiskörnchen mit rund 400 m/s ins All. Saturn füllt den Himmel, die Ringe stehen genau auf der Kante. Zahnrad: Fontänen, Tigerstreifen markieren, Zeitraffer, Finsternis im Saturnschatten.',
     facts: [
       { v: '252', u: 'km', l: 'mittlerer Radius', s: 'jpl-sat-phys' },
@@ -780,7 +782,7 @@ export const STATIONS = {
   },
   // [E4] Mars
   mars: {
-    n: '02E', title: 'Mars & Monde', kicker: 'Roter Planet', parent: 'solar', width: 3e7, dist: 1.52 * AU, lookback: 1.52 * AU / C,
+    n: '02E', title: 'Mars & Monde', kicker: 'Roter Planet', parent: 'solar', width: 3e7, dist: 1.52 * AU, lookback: 1.52 * AU / C, size: { v: 6.7924e6, l: 'Durchmesser Mars', s: 'nssdc-mars' },
     lead: 'Der rote Planet mit seinen zwei kleinen Monden, so wie sie jetzt stehen. Mars dreht sich in 24,6 Stunden, seine Achse ist um 25,19° geneigt: Er hat Jahreszeiten wie die Erde, nur fast doppelt so lang. Regler „Jahreszeit“ lässt die Polkappen aus Reif wachsen und schwinden, „Staubsturm“ hüllt den Planeten ein wie im Sommer 2018.',
     facts: [
       { v: '3.396', u: 'km', l: 'Äquatorradius, am Pol 3.376 km', s: 'nssdc-mars' },
@@ -801,7 +803,7 @@ export const STATIONS = {
     },
   },
   phobos: {
-    n: '02E1', title: 'Phobos', kicker: 'Mond von Mars', parent: 'mars', width: 1e5, dist: 1.52 * AU, lookback: 1.52 * AU / C,
+    n: '02E1', title: 'Phobos', kicker: 'Mond von Mars', parent: 'mars', width: 1e5, dist: 1.52 * AU, lookback: 1.52 * AU / C, size: { v: 2.7e4, l: 'Länge', s: 'nasa-phobos' },
     lead: 'Ein dunkler Gesteinsbrocken, nur rund 6.000 km über dem Mars. Phobos dreht sich gebunden: Mars steht fest am Himmel und ist von hier aus rund 42° breit, Sonne und Sterne ziehen in 7 h 39 min einmal herum. „Blick“ führt auf die Oberfläche – Mars über dem Horizont.',
     facts: [
       { v: '27 × 22 × 18', u: 'km', l: 'Größe – kein runder Körper', s: 'nasa-phobos' },
@@ -820,7 +822,7 @@ export const STATIONS = {
     },
   },
   deimos: {
-    n: '02E2', title: 'Deimos', kicker: 'Mond von Mars', parent: 'mars', width: 6e4, dist: 1.52 * AU, lookback: 1.52 * AU / C,
+    n: '02E2', title: 'Deimos', kicker: 'Mond von Mars', parent: 'mars', width: 6e4, dist: 1.52 * AU, lookback: 1.52 * AU / C, size: { v: 1.5e4, l: 'Länge', s: 'nasa-deimos' },
     lead: 'Der kleinere, äußere Marsmond: glatt, von Staub bedeckt, Krater kaum sichtbar. Auch Deimos dreht sich gebunden; Mars steht fest am Himmel, rund 17° breit, Sonne und Sterne ziehen in 30 Stunden einmal herum.',
     facts: [
       { v: '15 × 12 × 11', u: 'km', l: 'Größe', s: 'nasa-deimos' },
@@ -839,7 +841,7 @@ export const STATIONS = {
   },
   // [E5] Neptun, Uranus, Pluto
   neptune: {
-    n: '02F', title: 'Neptun', kicker: 'Eisriese', parent: 'solar', width: 3e8, dist: 4.515e12, lookback: 4.515e12 / C,
+    n: '02F', title: 'Neptun', kicker: 'Eisriese', parent: 'solar', width: 3e8, dist: 4.515e12, lookback: 4.515e12 / C, size: { v: 4.9528e7, l: 'Durchmesser', s: 'nep-fact' },
     lead: 'Der äußerste Planet aus der Nähe: ein blauer Eisriese mit Winden von mehr als 2.000 km/h, fünf schmalen, dunklen Ringen und dem großen Mond Triton, der rückwärts um ihn kreist. Voyager 2 flog im August 1989 als erste Raumsonde vorbei. Im Zahnrad: Zeitraffer, Ringe aufhellen, Bahnen der Monde.',
     facts: [
       { v: '24.764', u: 'km', l: 'Radius am Äquator (1 bar)', s: 'nep-fact' },
@@ -864,7 +866,7 @@ export const STATIONS = {
   },
   // [E5] Triton
   triton: {
-    n: '02F1', title: 'Triton', kicker: 'Mond des Neptun', parent: 'neptune', width: 8e6, dist: 30.07 * AU, lookback: 30.07 * AU / C,
+    n: '02F1', title: 'Triton', kicker: 'Mond des Neptun', parent: 'neptune', width: 8e6, dist: 30.07 * AU, lookback: 30.07 * AU / C, size: { v: 2.7068e6, l: 'Durchmesser', s: 'nssdc-nepsat' },
     lead: 'Neptuns größter Mond läuft rückwärts um seinen Planeten – wohl ein eingefangenes Objekt aus dem Kuipergürtel. Auf der Kappe aus gefrorenem Stickstoff fand Voyager 2 im Jahr 1989 dunkle Geysirfahnen; seitdem war keine Sonde mehr dort. Neptun steht groß und unbeweglich am Himmel, Licht und Jahreszeit sind für den angezeigten Zeitpunkt berechnet.',
     facts: [
       { v: '1.353,4', u: 'km', l: 'Radius', s: 'nssdc-nepsat' },
@@ -887,7 +889,7 @@ export const STATIONS = {
   },
   // [E5] Uranus
   uranus: {
-    n: '02G', title: 'Uranus & Monde', kicker: 'Eisriese', parent: 'solar', width: 4e8, dist: 19.19 * AU, lookback: 19.19 * AU / C,
+    n: '02G', title: 'Uranus & Monde', kicker: 'Eisriese', parent: 'solar', width: 4e8, dist: 19.19 * AU, lookback: 19.19 * AU / C, size: { v: 5.1118e7, l: 'Durchmesser Uranus', s: 'ura-nssdc' },
     lead: 'Ein Planet, der auf der Seite liegt: 97,77° Achsneigung. Ringe und Monde kreisen in seiner Äquatorebene, und im Lauf von 84 Jahren steht die Sonne einmal fast über dem einen, einmal fast über dem anderen Pol. Der Regler „Jahr“ zeigt die Jahreszeiten seit dem Besuch von Voyager 2 im Januar 1986.',
     facts: [
       { v: '97,77', u: '°', l: 'Achsneigung', s: 'ura-nasa-facts' },
@@ -908,7 +910,7 @@ export const STATIONS = {
     },
   },
   miranda: {
-    n: '02G1', title: 'Miranda', kicker: 'Mond des Uranus', parent: 'uranus', width: 1.2e6, dist: 19.19 * AU, lookback: 19.19 * AU / C,
+    n: '02G1', title: 'Miranda', kicker: 'Mond des Uranus', parent: 'uranus', width: 1.2e6, dist: 19.19 * AU, lookback: 19.19 * AU / C, size: { v: 4.714e5, l: 'Durchmesser', s: 'ura-nssdc-sat' },
     lead: 'Der kleinste der fünf großen Uranusmonde wirkt wie aus Stücken zusammengesetzt: drei „Coronae“ aus Graten und Tälern, Bruchcanyons bis zu zwölfmal so tief wie der Grand Canyon. Uranus steht riesig und unbeweglich am Himmel. Voyager 2 sah am 24. Januar 1986 nur die Südhälfte – die Station startet mit dem Licht dieses Tages.',
     facts: [
       { v: '235,7', u: 'km', l: 'mittlerer Radius (240 × 234 × 233 km)', s: 'ura-nssdc-sat' },
@@ -930,7 +932,7 @@ export const STATIONS = {
   },
   // [E5] Pluto
   pluto: {
-    n: '02H', title: 'Pluto & Charon', kicker: 'Zwergplanet', parent: 'solar', width: 3e7, dist: 35.6 * AU, lookback: 35.6 * AU / C,
+    n: '02H', title: 'Pluto & Charon', kicker: 'Zwergplanet', parent: 'solar', width: 3e7, dist: 35.6 * AU, lookback: 35.6 * AU / C, size: { v: 2.376e6, l: 'Durchmesser Pluto', s: 'nssdc-pluto' },
     lead: 'Ein Doppelsystem am Rand des Sonnensystems: Pluto und der halb so große Charon kreisen in 6,4 Tagen um einen gemeinsamen Schwerpunkt und zeigen einander stets dieselbe Seite. Die Oberflächen stammen aus den Bildern von New Horizons, die am 14. Juli 2015 vorbeiflog; der Süden lag damals im Dunkeln und ist nicht kartiert.',
     facts: [
       { v: '1.188', u: 'km', l: 'Radius Pluto (Charon 606 km)', s: 'nssdc-pluto' },
@@ -952,7 +954,7 @@ export const STATIONS = {
     },
   },
   galaxy: {
-    n: 3, title: 'Milchstraße', kicker: 'Galaktisch', parent: 'local', width: 1.3e21, dist: 0, lookback: 0,
+    n: 3, title: 'Milchstraße', kicker: 'Galaktisch', parent: 'local', width: 1.3e21, dist: 0, lookback: 0, size: { v: 1e5 * LY, l: 'Durchmesser Scheibe', s: 'bland-2016' },
     lead: 'Eine Balkenspirale mit 100 bis 400 Milliarden Sternen. Die Sonne kreist 27.000 Lichtjahre vom Zentrum entfernt mit rund 229 km/s – ein Umlauf dauert etwa 220 Millionen Jahre.',
     facts: [
       { v: '27.000', u: 'Lj', l: 'Sonne – Zentrum (8,28 kpc)', s: 'gravity-2022' },
@@ -980,7 +982,7 @@ export const STATIONS = {
     },
   },
   orion: {
-    n: 4, title: 'Orion-Nebel', kicker: 'Sternentstehung', parent: 'galaxy', width: 3.2e17, dist: 1270 * LY, lookback: 1270 * YEAR,
+    n: 4, title: 'Orion-Nebel', kicker: 'Sternentstehung', parent: 'galaxy', width: 3.2e17, dist: 1270 * LY, lookback: 1270 * YEAR, size: { v: 24 * LY, l: 'Ausdehnung', s: 'odell-2001' },
     lead: 'Das nächstgelegene Gebiet, in dem massereiche Sterne entstehen. Die UV-Strahlung der jungen Trapez-Sterne ionisiert das Gas und regt es zum Leuchten an: innen grünlich durch Sauerstoff ([O III] 501 nm), außen rot durch Wasserstoff (Hα 656 nm).',
     facts: [
       { v: '≈ 1.270', u: 'Lj', l: 'Entfernung (390 ± 2 pc, Gaia)', s: 'maiz-2022' },
@@ -1002,7 +1004,7 @@ export const STATIONS = {
     },
   },
   crab: {
-    n: 5, title: 'Krebsnebel', kicker: 'Supernova-Überrest', parent: 'galaxy', width: 1.6e17, dist: 6200 * LY, lookback: 6200 * YEAR,
+    n: 5, title: 'Krebsnebel', kicker: 'Supernova-Überrest', parent: 'galaxy', width: 1.6e17, dist: 6200 * LY, lookback: 6200 * YEAR, size: { v: 4.1e-3 * KPC, l: 'Länge', s: 'buhler-2014' },
     lead: 'Überrest der Supernova, die chinesische Astronomen im Jahr 1054 beobachteten. Im Zentrum rotiert ein Neutronenstern rund 30-mal pro Sekunde; seine Rotationsenergie speist den bläulich leuchtenden Synchrotronnebel.',
     facts: [
       { v: '≈ 6.200', u: 'Lj', l: 'Entfernung (1,90 kpc)', s: 'lin-2023' },
@@ -1023,7 +1025,7 @@ export const STATIONS = {
     },
   },
   pulsar: {
-    n: 6, title: 'Crab-Pulsar', kicker: 'Neutronenstern', parent: 'crab', width: 3e5, dist: 6200 * LY, lookback: 6200 * YEAR,
+    n: 6, title: 'Crab-Pulsar', kicker: 'Neutronenstern', parent: 'crab', width: 3e5, dist: 6200 * LY, lookback: 6200 * YEAR, size: { v: 2.54e4, l: 'Durchmesser (≈)', s: 'nicer-2019' },
     lead: 'Etwa 1,4 Sonnenmassen in einer Kugel von gut 20 km Durchmesser. Strahlkegel entlang der Magnetachse streichen wie ein Leuchtturm über die Erde – hier in Zeitlupe.',
     facts: [
       { v: '33,8', u: 'ms', l: 'Drehperiode heute (29,5 pro Sekunde, aus P und Ṗ)', s: 'atnf' },
@@ -1045,7 +1047,7 @@ export const STATIONS = {
     },
   },
   sgra: {
-    n: 7, title: 'Sagittarius A*', kicker: 'Schwarzes Loch', parent: 'galaxy', width: 6e11, dist: 8.277 * KPC, lookback: 8.277 * KPC / 299792458,
+    n: 7, title: 'Sagittarius A*', kicker: 'Schwarzes Loch', parent: 'galaxy', width: 6e11, dist: 8.277 * KPC, lookback: 8.277 * KPC / 299792458, size: { v: 2.54e10, l: 'Durchmesser Horizont', s: 'gravity-2022' },
     lead: 'Im Zentrum der Milchstraße: 4,3 Millionen Sonnenmassen. Licht wird so stark abgelenkt, dass wir die Rückseite der Scheibe über und unter dem Schatten sehen.',
     facts: [
       { v: '4,30', u: 'Mio. M☉', l: 'Masse (aus Sternbahnen)', s: 'gravity-2022' },
@@ -1067,7 +1069,7 @@ export const STATIONS = {
     },
   },
   local: {
-    n: 8, title: 'Lokale Gruppe', kicker: 'Galaxiengruppe', parent: 'web', width: 5e22, dist: 0, lookback: 0,
+    n: 8, title: 'Lokale Gruppe', kicker: 'Galaxiengruppe', parent: 'web', width: 5e22, dist: 0, lookback: 0, size: { v: 1e7 * LY, l: 'Durchmesser', s: 'mcconnachie-2012' },
     lead: 'Über 100 bekannte Galaxien; die größten sind Andromeda und die Milchstraße. Andromeda nähert sich uns mit rund 110 km/s.',
     facts: [
       { v: '2,5', u: 'Mio. Lj', l: 'Entfernung Andromeda (761 ± 11 kpc)', s: 'li-2021' },
@@ -1087,7 +1089,7 @@ export const STATIONS = {
     },
   },
   web: {
-    n: 9, title: 'Kosmisches Netz', kicker: 'Großräumige Struktur', parent: 'cmb', width: 1.2e25, dist: 0, lookback: 0,
+    n: 9, title: 'Kosmisches Netz', kicker: 'Großräumige Struktur', parent: 'cmb', width: 1.2e25, dist: 0, lookback: 0, size: { v: 5.2e8 * LY, l: 'Durchmesser Laniakea', s: 'tully-2014' },
     lead: 'Galaxien sind in Wänden und Fäden angeordnet, die große Leerräume umschließen; an den Knotenpunkten liegen Galaxienhaufen. Die Lokale Gruppe gehört zum Superhaufen Laniakea.',
     facts: [
       { v: '≈ 520', u: 'Mio. Lj', l: 'Durchmesser Laniakea', s: 'tully-2014' },
@@ -1113,7 +1115,7 @@ export const STATIONS = {
     },
   },
   cmb: {
-    n: 10, title: 'Beobachtbares Universum', kicker: 'Kosmologisch', parent: null, width: 1.1e27, dist: 45.3e9 * LY, lookback: 13.787e9 * YEAR,
+    n: 10, title: 'Beobachtbares Universum', kicker: 'Kosmologisch', parent: null, width: 1.1e27, dist: 45.3e9 * LY, lookback: 13.787e9 * YEAR, size: { v: 9.2e10 * LY, l: 'Durchmesser', s: 'planck-2018' },
     lead: 'Die Hintergrundstrahlung ist das älteste beobachtbare Licht: ausgesandt rund 370.000 Jahre nach dem Urknall, als das Universum durchsichtig wurde. Durch die Ausdehnung ist sie heute auf 2,7 K abgekühlt. Die Kugel zeigt, aus welcher Entfernung sie uns erreicht; wir stehen in ihrem Mittelpunkt.',
     facts: [
       { v: '13,787 ± 0,020', u: 'Mrd. J.', l: 'Alter des Universums', s: 'planck-2018' },

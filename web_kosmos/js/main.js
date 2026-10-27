@@ -735,9 +735,6 @@ function stepTransition(dt) {
   tr.maskR = 0.05 * Math.pow(ZOOM, p) * smooth(0, 0.08, p);
   tr.blur = still() ? 0 : 0.09 * Math.sin(Math.PI * p);
   tr.veil = still() ? 0 : Math.pow(Math.sin(Math.PI * e), 1.6);
-  // Maßstab in der Leiste läuft logarithmisch mit
-  const wOut = fieldWidth(tr.outer), wIn = fieldWidth(tr.inner);
-  hud.setScale(Math.exp(Math.log(wOut) * (1 - p) + Math.log(wIn) * p), p < 0.5 ? tr.outer : tr.inner);
   if (!tr.captioned && e > 0.62 && state.queue.length === 0) { tr.captioned = true; hud.caption(tr.to.meta); }
   if (e >= 1) {
     const to = tr.to;
@@ -987,13 +984,6 @@ function diveCandidate() {
   return best;
 }
 
-function fieldWidth(lv) {
-  const c = lv.camera;
-  const target = state.active === lv && state.controls && !state.tr ? state.controls.target : lv.target;
-  const d = c.position.distanceTo(target);
-  return 2 * d * Math.tan(THREE.MathUtils.degToRad(c.fov) / 2) * c.aspect * lv.unit;
-}
-
 // ---------- Zeichnen ----------
 const lookA = {}, lookB = {};
 const blendLook = (out, a, b, k) => {
@@ -1036,7 +1026,6 @@ function frame(nowMs) {
     stepZoom(lv, real);
     state.controls.update();
     cineApply(lv, real);
-    hud.setScale(fieldWidth(lv), lv);
   }
   const tr = state.tr;
   if (tr) {
