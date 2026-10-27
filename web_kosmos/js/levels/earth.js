@@ -20,6 +20,7 @@ import { speedAt, RE } from '../orbit.js';
 import { registerLayers } from '../layers.js';
 import { SHELL_VERT, ATMO_FRAG, CLOUD_FRAG, rayleighUniform } from '../planetfx.js';
 import { spinAxis } from '../axes.js';
+import { loadL2, trackAt } from '../l2track.js';
 
 const R_E = 6.371, R_M = 1.7374;   // NASA Fact Sheets [1.000 km]
 const R_ATM = R_E * 1.065;         // sichtbare Hülle ≈ 410 km (echt: Dichte fällt mit ≈ 8 km Skalenhöhe, Saum ≈ 100 km; dicker gezeichnet, damit der Glanz weich ausläuft)
@@ -423,9 +424,14 @@ export function create(ctx) {
   const sunSat = new THREE.Vector3(), qTiltInv = new THREE.Quaternion();
   const satLines = [], issLocal = new THREE.Vector3(), issWorld = new THREE.Vector3(), tgLocal = new THREE.Vector3(), tgWorld = new THREE.Vector3(), satInfo = { alt: 0, v: 0 };
   const hstLocal = new THREE.Vector3(), hstWorld = new THREE.Vector3();
-  // Teleskope am Lagrange-Punkt L2: 1,5 Mio. km hinter der Erde (Gegenseite der Sonne), seitlich versetzt wie auf ihren
-  // Halo-Bahnen (Lage schematisch, Abstände nach STScI/ESA: einige 100.000 km von L2)
+  // Teleskope am Lagrange-Punkt L2: echte Orte zum Datum aus den JPL-Horizons-Bahndaten (l2track.js); bis sie geladen
+  // sind oder außerhalb ihrer Spanne 1,5 Mio. km hinter der Erde (Gegenseite der Sonne), seitlich versetzt wie auf ihren
+  // Halo-Bahnen (Modell, Abstände nach STScI/ESA: einige 100.000 km von L2); vor dem Start ohne Abzeichen
   const L2 = { d: 1500, jwst: [0, 520], euclid: [500, 0], roman: [-380, -220] }, l2World = { jwst: new THREE.Vector3(), euclid: new THREE.Vector3(), roman: new THREE.Vector3() };
+  let l2Data = null;
+  const l2Ready = loadL2().then((d) => { l2Data = d.craft; placeL2(); }).catch((err) => console.warn('[kosmos] L2-Bahndaten nicht geladen, Modell:', err));
+  const l2Pos = [0, 0, 0];
+  const launched = (k) => !l2Data || !l2Data[k] || jd >= l2Data[k].v[0][0];
   const show = { sats: true, debris: true, orbits: true };
   let linesT = -1;
   const satsReady = loadSats().then((d) => {
@@ -529,7 +535,11 @@ export function create(ctx) {
   const l2a = new THREE.Vector3();
   function placeL2() {
     l2a.crossVectors(sunDir, up).normalize();
-    for (const k of ['jwst', 'euclid', 'roman']) l2World[k].copy(sunDir).multiplyScalar(-L2.d).addScaledVector(l2a, L2[k][0]).addScaledVector(up, L2[k][1]);
+    for (const k of ['jwst', 'euclid', 'roman']) {
+      const p = l2Data && l2Data[k] && trackAt(l2Data[k], jd, l2Pos);
+      if (p) l2World[k].set(...eclToScene(p));
+      else l2World[k].copy(sunDir).multiplyScalar(-L2.d).addScaledVector(l2a, L2[k][0]).addScaledVector(up, L2[k][1]);
+    }
   }
   placeL2();
 
@@ -548,9 +558,9 @@ export function create(ctx) {
     { id: 'iss', kind: 'dive', to: 'iss', focus: () => 1.2, pos: issWorld.copy(orbitPoint(side.clone().add(upL), ISS.r, ISS.inc * RAD)) },
     { id: 'tiangong', kind: 'dive', to: 'tiangong', focus: () => 1.2, pos: tgWorld.copy(orbitPoint(side.clone().negate().add(upL), R_E + 0.384, 41.47 * RAD)) },
     { id: 'hubble', kind: 'dive', to: 'hubble', focus: () => 1.2, pos: hstWorld.copy(orbitPoint(side.clone().addScaledVector(upL, -1), R_E + 0.48, 28.47 * RAD)) },
-    { id: 'jwst', kind: 'dive', to: 'jwst', focus: () => 40, pos: l2World.jwst },
-    { id: 'euclid', kind: 'dive', to: 'euclid', focus: () => 40, pos: l2World.euclid },
-    { id: 'roman', kind: 'dive', to: 'roman', focus: () => 40, pos: l2World.roman },
+    { id: 'jwst', kind: 'dive', to: 'jwst', focus: () => 40, pos: l2World.jwst, visible: () => launched('jwst') },
+    { id: 'euclid', kind: 'dive', to: 'euclid', focus: () => 40, pos: l2World.euclid, visible: () => launched('euclid') },
+    { id: 'roman', kind: 'dive', to: 'roman', focus: () => 40, pos: l2World.roman, visible: () => launched('roman') },
     { id: 'sun', kind: 'info', pos: sunDir.clone().multiplyScalar(90) },
     { id: 'umbra', kind: 'info', pos: umbraTip, visible: () => earthShadow.visible },
   ];
@@ -594,7 +604,7 @@ export function create(ctx) {
   const sunFar = new THREE.Vector3();
 
   return {
-    scene, camera, home, intro, unit: 1e6, hotspots, controls, ready: ready.then(() => satsReady),
+    scene, camera, home, intro, unit: 1e6, hotspots, controls, ready: ready.then(() => Promise.all([satsReady, l2Ready])),
     orbit: { minDistance: R_E * 1.28, maxDistance: 1000, cineSpeed: 0.8 },
     look: { exposure: 1.05, bloom: 0.05, sat: 1.06 },
     update(dt, t, cam) {

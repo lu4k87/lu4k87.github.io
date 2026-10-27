@@ -1,7 +1,8 @@
 // Station 01G: Nancy-Grace-Roman-Weltraumteleskop (NASA) auf dem Weg nach L2 (Einheit 1 m), Abstecher von Erde & Mond.
 // Szene am Sonne-Erde-System (l2view.js): Sonne bei +x, der Solarflügel-Sonnenschild zeigt zu ihr, das Teleskop blickt
-// quer dazu nach +y. Gestartet am 30.08.2026; Anreise als Modell (l2view.js `trip`): rund 30 Tage bis in die Entfernung
-// von L2, danach schwingt die Halo-Bahn bis zur erwarteten Ankunft nach ≈ 100 Tagen auf.
+// quer dazu nach +y. Gestartet am 30.08.2026; Ort ab dem Abtrennen aus den JPL-Bahndaten (l2view.js,
+// `craft: 'roman'`), vor dem Start Modell (`trip`); der Tageszähler der Anreise rechnet bis zur erwarteten Ankunft nach
+// ≈ 100 Tagen.
 // Modell nach Fotos (Einzelmaße geschätzt): Bus als Sechskant (4 m breit, 2 m hoch, IPAC) mit Antenne (folgt der Erde),
 // Sternsensoren, Düsen; Instrumententräger mit Weitwinkel-Instrument (WFI), Koronograph (CGI) und unteren Sonnenblenden;
 // Teleskop in der Außenröhre (2,4-m-Spiegel, Sekundärspiegel auf Streben), Deckel vorn als Hutkrempe auf drei Auslegern;
@@ -21,7 +22,7 @@ const TUBE = { r: 1.6, y0: 3.4, y1: 8.9 };         // Außenröhre des Teleskops
 const EYE = new THREE.Vector3(6, -4, 3);           // Blick „Zur Erde“
 
 export function create(ctx) {
-  const ov = createL2View(ctx, { halo: { ay: 600, az: 400, days: 180, phase: 0.35 }, trip: { launch: LAUNCH, cruise: LAUNCH + 30, arrive: LAUNCH + 100 }, radius: 9 });
+  const ov = createL2View(ctx, { craft: 'roman', halo: { ay: 600, az: 400, days: 180, phase: 0.35 }, trip: { launch: LAUNCH, cruise: LAUNCH + 30, arrive: LAUNCH + 100 }, radius: 9 });
   const { scene, camera } = ov;
   const K = stationKit(ctx), mat = K.mat;
   const obs = new THREE.Group();
@@ -192,7 +193,7 @@ export function create(ctx) {
       placeHotspots();
     },
     orbitUpdate: (c, dt) => look.orbitUpdate(c, dt),
-    widget: () => '<table><thead><tr><th>Roman im Moment</th><th>Wert</th></tr></thead><tbody id="w-l2"><tr><td colspan="2">Bahn wird berechnet …</td></tr></tbody></table><p class="w-foot">Anreise und Bahn um L2 als Modell (keine Bahndaten): Start 30.08.2026, Ankunft nach ≈ 100 Tagen erwartet; Erde und Mond an ihren echten Orten zum angezeigten Zeitpunkt.</p>',
+    widget: () => '<table><thead><tr><th>Roman im Moment</th><th>Wert</th></tr></thead><tbody id="w-l2"><tr><td colspan="2">Bahn wird berechnet …</td></tr></tbody></table><p class="w-foot">Anreise und Bahn um L2 aus den JPL-Horizons-Bahndaten (ab 30.08.2026, künftige Orte als Vorhersage der Mission); Ankunft nach ≈ 100 Tagen erwartet; Erde und Mond an ihren echten Orten zum angezeigten Zeitpunkt.</p>',
     widgetTick(el, t) {
       ov.widgetTick(el, t, () => `<tr><td>seit dem Start</td><td class="num">${Math.max(0, Math.floor(ov.jd - LAUNCH))} Tage</td></tr>`);
     },

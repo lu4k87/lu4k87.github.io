@@ -1,8 +1,9 @@
 // Am Lagrange-Punkt L2 – gemeinsamer Teil der Teleskop-Stationen JWST (01E), Euclid (01F) und Roman (01G). Die Szene hängt
 // am Sonne-Erde-System, das sich einmal im Jahr mitdreht (Meter; x zur Sonne, y Ekliptik-Nord, z = x × y): Sonne und
 // Erde stehen fast fest, die Sterne ziehen in einem Jahr einmal herum. L2 liegt 1,5 Mio. km hinter der Erde auf der
-// Linie Sonne–Erde; die Teleskope kreisen darum auf einer Halo-Bahn (Modell: Ellipse quer zur Linie mit den Eckwerten
-// der Mission, ≈ 6 Monate je Umlauf). Darum steht die Erde nie vor der Sonne, sondern einige Grad daneben als schmale
+// Linie Sonne–Erde; die Teleskope kreisen darum auf einer Halo-Bahn, ≈ 6 Monate je Umlauf. Ort zum Datum aus den
+// JPL-Horizons-Bahndaten (l2track.js, web/data/l2.json); nur außerhalb ihrer Spanne als Modell: Ellipse quer zur Linie
+// mit den Eckwerten der Mission. Darum steht die Erde nie vor der Sonne, sondern einige Grad daneben als schmale
 // Sichel – wir sehen vor allem ihre Nachtseite mit den Stadtlichtern; der Mond kreist daneben (echter Ort zum Datum).
 // Tiefenpuffer wie in orbitview.js: die ferne Welt (Erde, Mond; Einheit 1.000 km) wird um die Kamera auf FAR m
 // verkleinert (gleiche Winkelgröße), zuerst gezeichnet; danach löscht ein Haken den Tiefenpuffer, dann folgt das
@@ -17,6 +18,7 @@ import { settings } from './settings.js';
 import { EARTH_VERT_O, EARTH_FRAG, earthMaps, EARTH_VERT, MOON_FRAG, SUN_VERT, SUN_FRAG } from './levels/earth.js';
 import { ORDER } from './orbitview.js';
 import { spinAxis } from './axes.js';
+import { loadL2, trackAt } from './l2track.js';
 
 const R_E = 6.371, R_M = 1.7374;    // [1.000 km] NASA Fact Sheets
 const D_L2 = 1500;                  // Erde → L2 [1.000 km], rund 1,5 Mio. km (NASA, ESA)
@@ -54,11 +56,12 @@ function skyRotator() {
   };
 }
 
+// craft: Schlüssel in l2.json (jwst, euclid, roman) – echte Orte, solange die Daten reichen; sonst Modell:
 // halo: { ay, az, days, phase } – Halbachsen quer zur Linie Sonne–Erde [1.000 km] in der Ekliptik (y) und senkrecht dazu
 // (z), Umlauf in Tagen, Phase zum JD 2461340 (Modell); trip: { launch, cruise, arrive } in JD = Anreise (Roman): bis
 // `cruise` wächst der Abstand zur Erde, bis `arrive` schwingt die Halo-Bahn auf (Modell). radius = halbe Ausdehnung des
 // Teleskops [m] (Schattenkamera, Nahebene)
-export function createL2View(ctx, { halo, trip = null, radius = 15 }) {
+export function createL2View(ctx, { craft, halo, trip = null, radius = 15 }) {
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(40, 1, 0.05, 2e5);
   let jd = julianDate(ctx.date), spd = 1, playing = true;   // Start mit 1 h/s: Halo-Bahn und Erde wandern ruhig
@@ -69,7 +72,11 @@ export function createL2View(ctx, { halo, trip = null, radius = 15 }) {
   const T = new THREE.Vector3();          // Teleskop relativ zur Erde, Ekliptik-Szene [1.000 km]
   const off = new THREE.Vector3();        // Halo-Versatz im Bezugssystem [1.000 km]
   const sun = new THREE.Vector3(1, 0, 0), earthDir = new THREE.Vector3(-1, 0, 0), moonDir = new THREE.Vector3(), moonFar = new THREE.Vector3();
-  const info = { dist: D_L2, fromL2: 0, angle: 0, phase: 0, moonDist: 0, trip: null };
+  const info = { dist: D_L2, fromL2: 0, angle: 0, phase: 0, moonDist: 0, trip: null, real: false };
+  let track = null;
+  const pos = [0, 0, 0];
+  const tracked = loadL2().then((d) => { track = d.craft[craft] || null; })
+    .catch((err) => console.warn('[kosmos] L2-Bahndaten nicht geladen, Modell:', err));
   const qTilt = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), -OBLIQUITY * RAD);
   const tmp = new THREE.Vector3();
 
@@ -81,7 +88,6 @@ export function createL2View(ctx, { halo, trip = null, radius = 15 }) {
       const s = THREE.MathUtils.clamp((j - trip.launch) / (trip.cruise - trip.launch), 0, 1);
       along = -D_L2 * (1 - (1 - s) * (1 - s));                                // abbremsend auf 1,5 Mio. km
       k = THREE.MathUtils.smoothstep(j, trip.cruise, trip.arrive);
-      info.trip = j < trip.arrive ? { day: Math.max(0, j - trip.launch), of: trip.arrive - trip.launch } : null;
     }
     out.set(trip ? along + D_L2 : 0, halo.ay * k * Math.sin(ph), halo.az * k * Math.cos(ph));
     info.phase = (((ph / (2 * Math.PI)) % 1) + 1) % 1;
@@ -94,11 +100,21 @@ export function createL2View(ctx, { halo, trip = null, radius = 15 }) {
     basis.makeBasis(X, Y, Zv);
     qS.setFromRotationMatrix(basis);
     qT.copy(qS).invert();
-    haloAt(jd, off);
-    // L2 auf der Gegenseite der Sonne; Teleskop = L2 + Versatz (im Bezugssystem gerechnet, in die Ekliptik gedreht)
-    T.set(-D_L2 + off.x, off.y, off.z);
+    const p = track && trackAt(track, jd, pos);
+    info.real = !!p;
+    if (p) {
+      // echter Ort (Ekliptik); Versatz von L2 im Bezugssystem für Kennwerte und Abzeichen
+      T.set(...eclToScene(p));
+      off.copy(T).applyQuaternion(qT);
+      off.x += D_L2;
+      info.phase = (Math.atan2(off.y, off.z) / (2 * Math.PI) + 1) % 1;
+    } else {
+      // Modell: L2 auf der Gegenseite der Sonne; Teleskop = L2 + Versatz (im Bezugssystem gerechnet, in die Ekliptik gedreht)
+      haloAt(jd, off);
+      T.set(-D_L2 + off.x, off.y, off.z).applyQuaternion(qS);
+    }
     if (T.length() < R_E * 2) T.setLength(R_E * 2);                                      // Start: nie in der Erde
-    T.applyQuaternion(qS);
+    if (trip) info.trip = jd < trip.arrive ? { day: Math.max(0, jd - trip.launch), of: trip.arrive - trip.launch } : null;
     const sunRel = tmp.copy(X).multiplyScalar(AU_K).sub(T);
     sun.copy(sunRel).normalize().applyQuaternion(qT);
     earthDir.copy(T).negate().normalize().applyQuaternion(qT);
@@ -197,7 +213,7 @@ void main() {
   const spots = { earth: new THREE.Vector3(), moon: new THREE.Vector3(), sun: new THREE.Vector3(), l2: new THREE.Vector3() };
   const occluders = [{ center: new THREE.Vector3(), radius: 1 }];
   const sunFarPt = new THREE.Vector3();
-  const ready = Promise.all([skyReady]).then(() => place());
+  const ready = Promise.all([skyReady, tracked]).then(() => place());
   place();
 
   const fmt = new Intl.DateTimeFormat('de-DE', { dateStyle: 'medium', timeStyle: 'short' });
@@ -259,11 +275,12 @@ void main() {
       if (t - wT < 0.5) return;
       wT = t;
       const tr = info.trip;
-      el.querySelector('#w-l2').innerHTML = `${tr ? `<tr class="is-hi"><td>Anreise nach L2 (Modell)</td><td class="num">Tag ${Math.floor(tr.day)} von ≈ ${Math.round(tr.of)}</td></tr>` : ''}
+      el.querySelector('#w-l2').innerHTML = `${tr ? `<tr class="is-hi"><td>Anreise nach L2${info.real ? '' : ' (Modell)'}</td><td class="num">Tag ${Math.floor(tr.day)} von ≈ ${Math.round(tr.of)}</td></tr>` : ''}
         <tr><td>Entfernung zur Erde</td><td class="num">${de(Math.round(info.dist / 1000) * 1000)} km</td></tr>
         <tr><td>Funk bis zur Erde</td><td class="num">${de(info.dist / C_KM, 1)} s</td></tr>
         <tr><td>Abstand von L2</td><td class="num">${de(Math.round(info.fromL2 / 1000) * 1000)} km</td></tr>
         <tr><td>Erde neben der Sonne</td><td class="num">${de(info.angle, 1)}°</td></tr>
+        <tr><td>Ort aus</td><td class="num">${info.real ? 'JPL-Bahndaten' : 'Modell'}</td></tr>
         ${rows ? rows() : ''}`;
     },
     setPixelRatio(p) { pr = p; band.userData.setPixelRatio(p); if (catalog) catalog.userData.setPixelRatio(p); },

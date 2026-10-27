@@ -19,7 +19,7 @@ const R = { svm: 1.6, plm: 1.25 };                // Radien (3,7 m Durchmesser m
 const EYE = new THREE.Vector3(5, -2.5, 3);        // Blick „Zur Erde“: neben dem Versorgungsmodul
 
 export function create(ctx) {
-  const ov = createL2View(ctx, { halo: { ay: 500, az: 300, days: 180, phase: 0.62 }, radius: 6 });
+  const ov = createL2View(ctx, { craft: 'euclid', halo: { ay: 500, az: 300, days: 180, phase: 0.62 }, radius: 6 });
   const { scene, camera } = ov;
   const K = stationKit(ctx), mat = K.mat;
   const obs = new THREE.Group();
@@ -177,9 +177,9 @@ export function create(ctx) {
       placeHotspots();
     },
     orbitUpdate: (c, dt) => look.orbitUpdate(c, dt),
-    widget: () => '<table><thead><tr><th>Euclid im Moment</th><th>Wert</th></tr></thead><tbody id="w-l2"><tr><td colspan="2">Bahn wird berechnet …</td></tr></tbody></table><p class="w-foot">Bahn um L2 als Modell (Ellipse, rund 1 Mio. km, ≈ 6 Monate); Erde und Mond an ihren echten Orten zum angezeigten Zeitpunkt.</p>',
+    widget: () => '<table><thead><tr><th>Euclid im Moment</th><th>Wert</th></tr></thead><tbody id="w-l2"><tr><td colspan="2">Bahn wird berechnet …</td></tr></tbody></table><p class="w-foot">Ort auf der Bahn um L2 aus den JPL-Horizons-Bahndaten (Juli 2023 – Okt. 2031, danach Modell); Erde und Mond an ihren echten Orten zum angezeigten Zeitpunkt.</p>',
     widgetTick(el, t) {
-      ov.widgetTick(el, t, () => `<tr><td>Umlauf um L2 (Modell)</td><td class="num">${Math.round(ov.info.phase * 100)} %</td></tr>`);
+      ov.widgetTick(el, t, () => `<tr><td>Umlauf um L2${ov.info.real ? '' : ' (Modell)'}</td><td class="num">${Math.round(ov.info.phase * 100)} %</td></tr>`);
     },
     live: () => `${(ov.info.dist / 1e6).toFixed(2).replace('.', ',')} Mio. km von der Erde · ${ov.speed ? `Zeitraffer ${ov.SPEEDS[ov.speed][1]}` : 'Echtzeit'}`,
     setPixelRatio: (p2) => ov.setPixelRatio(p2),

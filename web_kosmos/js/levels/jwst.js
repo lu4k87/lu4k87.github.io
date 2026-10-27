@@ -1,6 +1,6 @@
 // Station 01E: James-Webb-Weltraumteleskop am Lagrange-Punkt L2 (Einheit 1 m), Abstecher von Erde & Mond. Szene am
 // Sonne-Erde-System (l2view.js): Sonne bei +x, die warme Seite des Sonnenschilds zeigt zu ihr; Erde und Mond stehen
-// einige Grad daneben am Himmel (Halo-Bahn, Modell).
+// einige Grad daneben am Himmel (Ort auf der Halo-Bahn aus den JPL-Bahndaten).
 // Modell nach NASA-Maßen (Fact Sheet) und Fotos: Hauptspiegel 6,5 m aus 18 sechseckigen Beryllium-Segmenten mit Gold
 // (Krümmung als Paraboloid, Brennweite des Hauptspiegels geschätzt), Rückwand aus Kohlefaser, Hexapod-Stellglieder je
 // Segment, Sekundärspiegel auf drei Streben, Instrumentenmodul (ISIM) mit Radiatoren hinter dem Spiegel, ausfahrbarer Turm;
@@ -76,7 +76,7 @@ function hexGeo(flat, depth, bevel = 0.012) {
 }
 
 export function create(ctx) {
-  const ov = createL2View(ctx, { halo: { ay: 832, az: 520, days: 180, phase: 0.18 }, radius: 14 });
+  const ov = createL2View(ctx, { craft: 'jwst', halo: { ay: 832, az: 520, days: 180, phase: 0.18 }, radius: 14 });
   const { scene, camera } = ov;
   const K = stationKit(ctx), mat = K.mat;
   const obs = new THREE.Group();           // ganzes Observatorium, warme Seite zur Sonne
@@ -290,9 +290,9 @@ export function create(ctx) {
       placeHotspots();
     },
     orbitUpdate: (c, dt) => look.orbitUpdate(c, dt),
-    widget: () => '<table><thead><tr><th>JWST im Moment</th><th>Wert</th></tr></thead><tbody id="w-l2"><tr><td colspan="2">Bahn wird berechnet …</td></tr></tbody></table><p class="w-foot">Halo-Bahn als Modell mit den Eckwerten des STScI (bis 832.000 km von L2, bis 520.000 km über oder unter der Ekliptik, ≈ 6 Monate); Erde und Mond an ihren echten Orten zum angezeigten Zeitpunkt.</p>',
+    widget: () => '<table><thead><tr><th>JWST im Moment</th><th>Wert</th></tr></thead><tbody id="w-l2"><tr><td colspan="2">Bahn wird berechnet …</td></tr></tbody></table><p class="w-foot">Ort auf der Halo-Bahn aus den JPL-Horizons-Bahndaten (Dez. 2021 – Okt. 2031, danach Modell mit den Eckwerten des STScI); Erde und Mond an ihren echten Orten zum angezeigten Zeitpunkt.</p>',
     widgetTick(el, t) {
-      ov.widgetTick(el, t, () => `<tr><td>Halo-Umlauf (Modell)</td><td class="num">${Math.round(ov.info.phase * 100)} %</td></tr>`);
+      ov.widgetTick(el, t, () => `<tr><td>Halo-Umlauf${ov.info.real ? '' : ' (Modell)'}</td><td class="num">${Math.round(ov.info.phase * 100)} %</td></tr>`);
     },
     live: () => `${(ov.info.dist / 1e6).toFixed(2).replace('.', ',')} Mio. km von der Erde · ${ov.speed ? `Zeitraffer ${ov.SPEEDS[ov.speed][1]}` : 'Echtzeit'}`,
     setPixelRatio: (p) => ov.setPixelRatio(p),
