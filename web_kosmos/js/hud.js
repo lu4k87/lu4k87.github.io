@@ -788,7 +788,7 @@ export function createHud(h) {
 
   function showCaption(st, opening = false) {
     caption.querySelector('.cap-n').textContent = opening ? 'Kosmos' : String(st.n).padStart(2, '0');
-    caption.querySelector('.cap-title').textContent = opening ? 'Reise durch das All' : st.title;
+    caption.querySelector('.cap-title').textContent = opening ? 'Eine Reise durch das Universum' : st.title;
     const parts = opening
       ? ['Vom Urknall bis zur Erde']
       : [st.kicker, ...(st.size ? [`${st.size.l} ${fmtLength(st.size.v)}`] : []), ...(st.dist ? [`${fmtLength(st.dist)} entfernt`] : [])];
