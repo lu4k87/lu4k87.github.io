@@ -109,11 +109,11 @@ body.is-flying .flight { opacity: 1; }
 .icon-btn--sm svg { width: 16px; height: 16px; }
 
 /* ---------- Stationsleiste: Band oben über die volle Breite (Vorschau 26.10.2026 „Stationsleiste oben“ Leiste:C, Baum-Panorama)
-   Kapitel → Route mit fester Höhe --band-h (hud.js), darunter die Schublade mit Abstechern → Monden – beim Zeigen oder solange
+   Route mit fester Höhe --band-h (hud.js), darunter die Schublade mit Abstechern → Monden – beim Zeigen oder solange
    ihr Parent ausgewählt ist; Lage aus gemessener Wortbreite (hud.js layoutBand, nie überlappend); schmal oder zu eng:
    .is-dots = Route als Punkte mit Kapitel-Streifen. Bewegung nach soft-motion: Einzeichnen beim Laden, Lichthof atmet nur an der
    aktuellen Station, Lichtpunkt alle 8 s ---------- */
-.band { grid-area: band; position: relative; z-index: 3; height: var(--band-h, 112px); margin: 0 16px; --t-in: 450ms; --t-out: 320ms; --ease-io: cubic-bezier(0.45, 0, 0.55, 1); }
+.band { grid-area: band; position: relative; z-index: 3; height: var(--band-h, 80px); margin: 0 16px; --t-in: 450ms; --t-out: 320ms; --ease-io: cubic-bezier(0.45, 0, 0.55, 1); }
 [data-ch="earth"] { --ch: 94, 214, 170; }
 [data-ch="solar"] { --ch: 245, 184, 76; }
 [data-ch="galaxy"] { --ch: 167, 139, 250; }
@@ -130,11 +130,6 @@ body.is-flying .flight { opacity: 1; }
 .bd-cv { position: absolute; left: 92px; top: 0; right: 0; bottom: 0; }
 .bd-wires { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
 .bd-grp { position: absolute; top: 0; bottom: 0; }
-.bd-chap { position: absolute; left: 0; right: 0; top: 6px; height: 22px; display: flex; align-items: center; justify-content: center; gap: 8px; white-space: nowrap; font: 500 12.5px/1 var(--display); letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-soft); transition: color var(--t-in); }
-.bd-chap i { width: 7px; height: 7px; flex: none; border-radius: 50%; background: rgb(var(--ch)); }
-.bd-chap small { font: 400 12px var(--font); letter-spacing: 0; text-transform: none; }
-.bd-chap.no-count small { display: none; }
-.bd-chap.is-cur { color: var(--ink); }
 /* Knoten: Punkt, Nummer, Name (höchstens zwei Zeilen); Zentrierung per transform, Einblenden per eigener translate-Eigenschaft */
 .bd-node {
   position: absolute; top: calc(var(--ry, 48px) - 5.5px); transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 2px;
@@ -160,12 +155,11 @@ body.is-flying .flight { opacity: 1; }
 @keyframes bd-breathe { to { opacity: 0.65; } }
 @keyframes bd-ping { from { transform: scale(1); opacity: 0.8; } to { transform: scale(2.6); opacity: 0; } }
 .bd-wire { fill: none; stroke: rgb(var(--ch, 255, 255, 255)); stroke-opacity: 0.4; stroke-width: 1.2; stroke-linecap: round; transition: stroke 0.25s, stroke-opacity 0.25s, stroke-width 0.25s; }
-.bd-brk.is-cur { stroke-opacity: 0.75; }
 .bd-wire.is-done { stroke-opacity: 0.7; stroke-width: 1.6; }
 .bd-wire.is-hot { stroke: var(--accent); stroke-opacity: 1; stroke-width: 1.6; }
 .bd-stripe { stroke: rgb(var(--ch)); stroke-opacity: 0.35; stroke-width: 6; stroke-linecap: round; }
 .bd-comet { fill: none; stroke: url(#bd-comet-g); stroke-width: 2.4; stroke-linecap: round; opacity: 0; }
-/* Einzeichnen beim ersten Aufbau: Linien ziehen sich (pathLength 1), Kapitel gleiten gestaffelt herein */
+/* Einzeichnen beim ersten Aufbau: Linien ziehen sich (pathLength 1), Namen gleiten gestaffelt herein */
 .band.is-intro .bd-in .bd-wire { stroke-dasharray: 1; stroke-dashoffset: 1; animation: bd-draw 0.9s var(--ease-out) var(--d, 300ms) forwards; }
 .band.is-intro .bd-grp > * { animation: bd-up var(--t-in) var(--ease-out) calc(var(--i, 0) * 70ms + 250ms) both; }
 @keyframes bd-draw { to { stroke-dashoffset: 0; } }
@@ -201,7 +195,7 @@ body.is-flying .flight { opacity: 1; }
 .bd-tip b { font: 600 15px/1.25 var(--font); }
 .bd-tip .n { font: 500 12px var(--mono); color: var(--ink-soft); }
 /* Punkte: nur die Route, Kapitel als Streifen hinter den Punkten (schmal oder zu eng für die Namen) */
-.band.is-dots :is(.bd-lvls, .bd-chap, .bd-drawer), .band.is-dots .bd-node > :not(.bd-dot) { display: none; }
+.band.is-dots :is(.bd-lvls, .bd-drawer), .band.is-dots .bd-node > :not(.bd-dot) { display: none; }
 .band.is-dots .bd-cv, .band.no-lvls .bd-cv { left: 0; }
 .band.no-lvls .bd-lvls { display: none; }
 .band.is-dots .bd-node.is-path .bd-dot { transform: scale(1.36); background: var(--accent); border-color: #fff; }
