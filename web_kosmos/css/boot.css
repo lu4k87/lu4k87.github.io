@@ -1,6 +1,6 @@
-/* Ladebild beim Aufruf der Seite (boot.js): Sternhimmel, darunter der Kapitel-Titel „Kosmos · Reise durch das All“ an
-   derselben Stelle und in derselben Schrift wie der Titel jeder Station (.caption in kosmos.css) – beim Ausblenden steht
-   der Titel der Startstation schon darunter, der Text bleibt ruhig stehen. Fortschritt als Lichtlinie unter dem Titel.
+/* Ladebild beim Aufruf der Seite (boot.js): Sternhimmel, darunter der Kapitel-Titel „Kosmos · Reise durch das All“ in
+   derselben Höhe und Schrift wie der Titel jeder Station (.caption in kosmos.css), aber mittig über die volle Breite –
+   das Ladebild deckt die Seitenleiste zu. Fortschritt als Lichtlinie unter dem Titel.
    Bewegung nur über opacity/transform: läuft weiter, während der Hauptfaden Shader und Texturen vorbereitet. */
 .boot { position: fixed; inset: 0; z-index: 6; background: #000; transition: opacity 1.2s var(--ease-out), visibility 0s linear 1.2s; }
 .boot.is-done { opacity: 0; visibility: hidden; pointer-events: none; }
@@ -8,11 +8,10 @@ body.is-fatal .boot { display: none; }
 .boot-sky { position: absolute; inset: 0; width: 100%; height: 100%; display: block; animation: boot-in 2.4s var(--ease-out) both; }
 
 .boot-cap {
-  position: fixed; left: 0; right: var(--panel-w); bottom: 19%; text-align: center;
+  position: fixed; left: 0; right: 0; bottom: 19%; text-align: center;
   display: flex; flex-direction: column; align-items: center; gap: 14px; padding: 0 24px; container-type: inline-size;
   text-shadow: 0 2px 22px rgba(0, 0, 0, 0.9);
 }
-body.panel-off .boot-cap { right: 0; }
 .boot-cap > * { animation: boot-up 1.8s var(--ease-out) var(--d, 0s) both; }
 .boot .cap-n::after { animation: boot-line 2.4s var(--ease-out) 0.5s both; }
 .boot .cap-title { letter-spacing: 0.22em; padding-left: 0.22em; }
