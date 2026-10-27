@@ -21,8 +21,7 @@ export function createBoot(root = document.getElementById('boot')) {
 
   drawSky(root.querySelector('.boot-sky'), { seed: 7, density: 2400, haze: true });
   drawSky(root.querySelector('.boot-near'), { seed: 31, density: 26000, bright: true });
-  const nebula = createNebula();
-  setupLooks(root, nebula);
+  const nebula = setupLooks(root);
   const cap = root.querySelector('.boot-cap');
   fitTitle(cap);
   if (document.fonts) document.fonts.ready.then(() => fitTitle(cap));
@@ -105,26 +104,24 @@ export function createBoot(root = document.getElementById('boot')) {
   };
 }
 
-// Nebel-Look wählen (Knopf unten rechts, A → B → C), Wahl bleibt im Browser; Name blendet kurz ein
-function setupLooks(root, nebula) {
-  const glow = root.querySelector('.boot-glow'), dust = root.querySelector('.boot-dust');
+// Nebel-Look wählen (Knopf unten rechts, A → B → C), Wahl bleibt im Browser; Name blendet kurz ein. Der Volumennebel
+// rechnet in .boot-glow (boot_nebula.js); .boot-dust bleibt aus, bis index.html wieder frei ist (ponytail: alte Ebene)
+function setupLooks(root) {
+  const cv = root.querySelector('.boot-glow');
   const btn = root.querySelector('.boot-neb'), name = root.querySelector('.boot-neb-name');
-  if (!nebula || !glow || !dust) { if (btn) btn.hidden = true; return; }
-  const pr = Math.min(1.5, window.devicePixelRatio || 1);
-  for (const cv of [glow, dust]) {
-    const r = cv.getBoundingClientRect();
-    cv.width = Math.round(r.width * pr); cv.height = Math.round(r.height * pr);
-  }
-  drawGrain(root.querySelector('.boot-grain'));
   let look = 'B', hide = 0;
   try { const s = localStorage.getItem(LOOK_KEY); if (LOOKS[s]) look = s; } catch (e) { /* privat: Standard */ }
+  const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const nebula = cv && createNebula(cv, look, still);
+  if (!nebula) { if (btn) btn.hidden = true; return null; }
+  drawGrain(root.querySelector('.boot-grain'));
   const apply = (announce) => {
     root.dataset.neb = look;
-    nebula.draw(look, glow, dust);
     const label = `Nebel: ${LOOKS[look]}`;
     btn.setAttribute('aria-label', `${label} – wechseln`);
     btn.title = label;
     if (!announce) return;
+    nebula.setLook(look);
     name.textContent = label;
     name.classList.add('is-on');
     clearTimeout(hide);
@@ -137,6 +134,7 @@ function setupLooks(root, nebula) {
     try { localStorage.setItem(LOOK_KEY, look); } catch (e) { /* privat: nur für diesen Aufruf */ }
     apply(true);
   });
+  return nebula;
 }
 
 // Sterne einmal zeichnen (der Hauptfaden ist beim Laden ausgelastet): Dichte nach Fläche, wenige helle mit Hof, leichte

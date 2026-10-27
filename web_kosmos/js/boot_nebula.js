@@ -1,64 +1,110 @@
-// Nebel im Ladebild (Vorschau 27.10.2026 „Ladebild: Nebelwolken und Kamera-Idle“, alle drei Looks wählbar):
-// A Dunkelwolke vor Rotleuchten · B Emissionsnebel in der Hubble-Palette · C eisblaue Filamente.
-// Einmal je Look per WebGL 2 gerechnet (Domain-Warp-fbm, 8 Oktaven) und in zwei 2D-Ebenen kopiert: Leuchten (über die
-// Sterne geblendet) und Staub (schwarz mit Alpha, verdeckt Sterne). Die Kamera bewegt danach nur diese fertigen Ebenen
-// per CSS-transform – das läuft weiter, während der Hauptfaden Shader und Texturen der Reise vorbereitet.
+// Nebel im Ladebild (Vorschau 27.10.2026, alle drei Looks wählbar; User 27.10.2026: „schneller, mehr Details, animiert,
+// bessere 3D-Nebel, dezent mehr Effekte“): echter Volumennebel per Raymarching, jedes Bild neu gerechnet. Die Kamera fliegt
+// langsam durch das Gas, das Gas fließt, eingebettete junge Sterne leuchten (dezent funkelnd) und beleuchten ihre Umgebung.
+// A Dunkelwolke vor Rotleuchten · B Emissionsnebel (H-alpha rosa, O-III türkis) · C eisblaue Filamente.
+// Rechnet in einem Worker (OffscreenCanvas) – läuft also flüssig weiter, während der Hauptfaden Shader und Texturen der
+// Reise vorbereitet; ohne OffscreenCanvas auf dem Hauptfaden. Auflösung passt sich an: wird ein Bild zu langsam, rechnet
+// die Schleife gröber (CSS skaliert hoch, der Nebel ist weich).
 
 export const LOOKS = { A: 'Dunkelwolke', B: 'Emissionsnebel', C: 'Eisblaue Filamente' };
 
+const VS = '#version 300 es\nin vec2 p; void main() { gl_Position = vec4(p, 0, 1); }';
 const FS = `#version 300 es
 precision highp float;
-uniform vec2 uRes; uniform int uV; uniform int uPass;
+uniform vec2 uRes; uniform float uT; uniform int uV;
 out vec4 o;
-// Hash auf gewrapptem Gitter (mod 289): bleibt bei hohen Oktaven präzise, keine Dreiecks-Artefakte
-float h(vec2 p) { p = mod(p, 289.); vec3 q = fract(vec3(p.xyx) * .1031); q += dot(q, q.yzx + 33.33); return fract((q.x + q.y) * q.z); }
-float n(vec2 p) { vec2 i = floor(p), f = fract(p); vec2 u = f * f * f * (f * (f * 6. - 15.) + 10.);
-  return mix(mix(h(i), h(i + vec2(1, 0)), u.x), mix(h(i + vec2(0, 1)), h(i + vec2(1, 1)), u.x), u.y); }
-const mat2 M = mat2(1.6, 1.2, -1.2, 1.6);
-float fbm(vec2 p) { float s = 0., a = .5; for (int i = 0; i < 8; i++) { s += a * n(p); p = M * p + 17.3; a *= .5; } return s; }
-float ridge(vec2 p) { float s = 0., a = .5, w = 1.; for (int i = 0; i < 7; i++) { float r = 1. - abs(n(p) * 2. - 1.); r *= r; s += a * r * w; w = clamp(r * 1.6, 0., 1.); p = M * p + 17.3; a *= .5; } return s; }
+float hash(vec3 p) { p = fract(p * .3183099 + .1); p *= 17.; return fract(p.x * p.y * p.z * (p.x + p.y + p.z)); }
+float noise(vec3 x) {
+  vec3 i = floor(x), f = fract(x); f = f * f * (3. - 2. * f);
+  return mix(mix(mix(hash(i), hash(i + vec3(1, 0, 0)), f.x), mix(hash(i + vec3(0, 1, 0)), hash(i + vec3(1, 1, 0)), f.x), f.y),
+             mix(mix(hash(i + vec3(0, 0, 1)), hash(i + vec3(1, 0, 1)), f.x), mix(hash(i + vec3(0, 1, 1)), hash(i + vec3(1, 1, 1)), f.x), f.y), f.z);
+}
+const mat3 R = mat3(.00, .80, .60, -.80, .36, -.48, -.60, -.48, .64);
+float fbm(vec3 p) { float s = 0., a = .5; for (int i = 0; i < 5; i++) { s += a * noise(p); p = R * p * 2.03; a *= .5; } return s; }
+float fbm6(vec3 p) { float s = 0., a = .5; for (int i = 0; i < 6; i++) { s += a * noise(p); p = R * p * 2.03; a *= .5; } return s; }
+float fbm3(vec3 p) { float s = 0., a = .5; for (int i = 0; i < 3; i++) { s += a * noise(p); p = R * p * 2.03; a *= .5; } return s / .875; }
+float ridged(vec3 p) { float s = 0., a = .5; for (int i = 0; i < 5; i++) { float r = 1. - abs(noise(p) * 2. - 1.); s += a * r * r; p = R * p * 2.03; a *= .5; } return s; }
+
+// eingebettete Sterne: alle 6 Einheiten entlang der Flugbahn einer, seitlich versetzt
+vec3 S[3];
+vec3 starAt(float k) { return vec3((hash(vec3(k, 1.7, 2.3)) - .5) * 5., (hash(vec3(k, 3.1, 4.9)) - .5) * 2.6, k * 6. + 3.); }
+
+// langsam fließendes Gas: Verschiebung aus grobem Rauschen, das mit der Zeit wandert
+vec3 warp(vec3 p) {
+  float t = uT * .07;
+  return p + .9 * vec3(noise(p * .6 + vec3(0, 0, t)), noise(p * .6 + vec3(5.2, 1.3, -t)), noise(p * .6 + vec3(9.1, 4.7, t))) - .45;
+}
+
+// rgb = Eigenleuchten, a = Dichte (Absorption)
+vec4 medium(vec3 p) {
+  vec3 q = warp(p);
+  float c = smoothstep(.28, .66, noise(p * .2 + 3.7));          // große Wolkenballen und Lücken
+  float lit = 0.;
+  for (int j = 0; j < 3; j++) { vec3 d = p - S[j]; lit += 1.6 / (1. + dot(d, d) * 2.2); }
+  if (uV == 0) {
+    float f = fbm(q * 1.5);
+    float dust = smoothstep(.50, .66, f) * c;
+    float edge = smoothstep(.44, .50, f) * (1. - smoothstep(.50, .56, f)) * c;   // von hinten beleuchteter Rand
+    vec3 e = vec3(1., .62, .42) * edge * (.5 + lit * .6);
+    return vec4(e, dust * 4.5);
+  } else if (uV == 1) {
+    float f = fbm6(q * 1.8);
+    float gas = smoothstep(.44, .72, f) * c;
+    float o3 = smoothstep(.35, .70, noise(q * .9 + 11.));
+    float dust = smoothstep(.54, .70, fbm3(q * 2.4 + 7.)) * c;
+    vec3 e = mix(vec3(1., .30, .42), vec3(.25, .85, .85), o3) * gas * (.8 + lit * 1.1) + vec3(1., .9, .8) * gas * lit * .3;
+    return vec4(e, gas * .7 + dust * 3.2);
+  }
+  float r = ridged(q * 1.3);
+  float fil = pow(smoothstep(.5, .95, r), 4.) * c;
+  vec3 e = mix(vec3(.5, .38, .95), vec3(.25, .82, 1.), smoothstep(.6, .9, r)) * fil * (.8 + lit * .8);
+  return vec4(e, fil * .5);
+}
+
 void main() {
   vec2 uv = (gl_FragCoord.xy - .5 * uRes) / uRes.y;
-  float title = mix(.25, 1., smoothstep(.10, .45, length(uv * vec2(.5, 1.7))));   // Textblock in der Mitte bleibt dunkel
-  vec2 p = uv * 1.7 + (uV == 0 ? vec2(3.1, 1.7) : uV == 1 ? vec2(7.4, 2.2) : vec2(1.3, 4.6));
-  vec2 q = vec2(fbm(p), fbm(p + vec2(5.2, 1.3)));
-  vec2 r = vec2(fbm(p + 4. * q + vec2(1.7, 9.2)), fbm(p + 4. * q + vec2(8.3, 2.8)));
-  float f = fbm(p + 3.5 * r);
-  // zwei Wolkenzentren: oben rechts groß, unten links klein; außen bleibt schwarzer Himmel
-  float m = 1. - smoothstep(0., .95, length((uv - vec2(.48, .22)) * vec2(.8, 1.))) + .55 * (1. - smoothstep(0., .6, length(uv - vec2(-.72, -.34))));
-  vec3 col = vec3(0); float a = 0.;
-  if (uV == 0) {
-    float back = smoothstep(.35, .8, f) * m;
-    float dust = smoothstep(.55, .72, fbm(p * 1.2 + r * 2.2 + 3.)) * m;
-    float rim = dust * (1. - dust) * 4. * back;
-    if (uPass == 0) col = (vec3(.62, .26, .22) * back * .30 + vec3(1., .78, .6) * rim * .16 + vec3(.35, .4, .55) * pow(f, 3.) * m * .12) * title;
-    else a = clamp(dust * .9, 0., .9);
-  } else if (uV == 1) {
-    float ha = smoothstep(.38, .9, f);
-    float o3 = smoothstep(.45, .95, fbm(p * 1.3 + q * 1.8 + 7.));
-    float fr = pow(ridge(p * 1.3 + r * 1.4), 4.);
-    float dust = smoothstep(.56, .74, fbm(p * 1.1 + r * 2.4 + 3.)) * m;
-    if (uPass == 0) col = (vec3(.95, .34, .46) * ha * .42 + vec3(.25, .78, .78) * o3 * .34 + vec3(1., .88, .78) * fr * ha * .5) * m * title;
-    else a = clamp(dust * .85, 0., .85);
-  } else {
-    float rg = ridge(p * 1.15 + 1.7 * q);
-    float fil = pow(rg, 3.5), knot = pow(rg, 9.) * 1.6, haze = smoothstep(.3, .9, f) * .35;
-    vec3 ice = vec3(.20, .80, 1.), vio = vec3(.50, .38, .95);
-    if (uPass == 0) col = (mix(vio, ice, smoothstep(.35, .85, rg)) * fil * .55 + vec3(.85, .95, 1.) * knot * .5 + vio * haze * .3) * m * title;
-    else a = clamp(smoothstep(.58, .78, fbm(p * 1.3 + q * 2.)) * m * .5, 0., .6);
+  float t = uT;
+  // Kamera: fliegt vorwärts durch das Gas, pendelt seitlich und neigt sich leicht
+  vec3 ro = vec3(sin(t * .11) * .9, sin(t * .07) * .45, t * .45);
+  vec3 fw = normalize(vec3(sin(t * .05) * .22, sin(t * .041) * .12, 1.));
+  vec3 rt = normalize(cross(vec3(sin(t * .03) * .1, 1., 0.), fw)), up = cross(fw, rt);
+  vec3 rd = normalize(uv.x * rt + uv.y * up + 1.5 * fw);
+  float k0 = floor(ro.z / 6.);
+  for (int j = 0; j < 3; j++) S[j] = starAt(k0 + float(j));
+
+  vec3 col = vec3(0); float T = 1., dt = .16;
+  float s = .8 + dt * hash(vec3(gl_FragCoord.xy, 1.));             // ab 0,8 vor der Kamera (sonst riesige weiche Ballen), fester Versatz gegen Streifen
+  float Ts[3] = float[3](1., 1., 1.), ts[3];
+  for (int j = 0; j < 3; j++) ts[j] = dot(S[j] - ro, rd);
+  for (int i = 0; i < 40; i++) {
+    if (T < .03) break;
+    vec4 m = medium(ro + rd * s);
+    float fade = exp(-s * .14);                                     // Tiefe: Fernes wird schwächer
+    float a = 1. - exp(-m.a * dt);
+    col += T * m.rgb * dt * fade;
+    T *= 1. - a;
+    for (int j = 0; j < 3; j++) if (s < ts[j]) Ts[j] = T;
+    s += dt * (1. + s * .05);
   }
-  o = uPass == 0 ? vec4(col * 2.6, 1.) : vec4(0., 0., 0., a);
+  // Sterne im Nebel: heller Kern + weicher Hof, dezent funkelnd, vom Gas davor gedämpft
+  for (int j = 0; j < 3; j++) {
+    if (ts[j] <= 0.) continue;
+    float d = length(S[j] - (ro + rd * ts[j])) / max(ts[j], .5);
+    float tw = .85 + .15 * sin(t * 2.7 + float(j) * 4.1 + k0 * 1.3);
+    vec3 sc = uV == 2 ? vec3(.75, .9, 1.) : vec3(1., .92, .85);
+    col += Ts[j] * sc * (exp(-d * d * 9000.) * 1.6 + .0009 / (d * d + .0012) * .25) * tw * smoothstep(9., 4., ts[j]);
+  }
+  if (uV == 0) col += T * mix(vec3(.55, .16, .12), vec3(1., .55, .3), smoothstep(.6, .85, fbm(rd * 3. + 1.))) * smoothstep(.38, .72, fbm6(rd * 3.5 + 1.)) * 1.1;   // Glut hinter dem Staub
+  float title = mix(.3, 1., smoothstep(.10, .45, length(uv * vec2(.5, 1.7))));                    // Textblock bleibt lesbar
+  col *= title;
+  float alpha = clamp(max(1. - T, max(col.r, max(col.g, col.b))), 0., 1.) * mix(.6, 1., title);
+  o = vec4(min(col, vec3(alpha)), alpha);
 }`;
 
-// Ein GL-Kontext für alle Looks (Wechsel per Knopf), nach dem Ladebild freigeben (dispose), damit die Reise ihn nicht
-// mitträgt. Ohne WebGL 2 bleibt nur der Sternhimmel.
-export function createNebula() {
-  const cv = document.createElement('canvas');
-  const gl = cv.getContext('webgl2', { premultipliedAlpha: false, preserveDrawingBuffer: true, antialias: false });
-  if (!gl) return null;
+function createRenderer(gl) {
   const sh = (type, src) => { const s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s); return s; };
   const pg = gl.createProgram();
-  gl.attachShader(pg, sh(gl.VERTEX_SHADER, '#version 300 es\nin vec2 p; void main() { gl_Position = vec4(p, 0, 1); }'));
+  gl.attachShader(pg, sh(gl.VERTEX_SHADER, VS));
   gl.attachShader(pg, sh(gl.FRAGMENT_SHADER, FS));
   gl.linkProgram(pg);
   if (!gl.getProgramParameter(pg, gl.LINK_STATUS)) { console.warn('[kosmos] Ladebild-Nebel:', gl.getProgramInfoLog(pg)); return null; }
@@ -67,24 +113,62 @@ export function createNebula() {
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
   gl.enableVertexAttribArray(0);
   gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
-  const uRes = gl.getUniformLocation(pg, 'uRes'), uV = gl.getUniformLocation(pg, 'uV'), uPass = gl.getUniformLocation(pg, 'uPass');
+  const uRes = gl.getUniformLocation(pg, 'uRes'), uT = gl.getUniformLocation(pg, 'uT'), uV = gl.getUniformLocation(pg, 'uV');
+  return (t, look) => {
+    gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+    gl.uniform2f(uRes, gl.canvas.width, gl.canvas.height);
+    gl.uniform1f(uT, t);
+    gl.uniform1i(uV, 'ABC'.indexOf(look));
+    gl.drawArrays(gl.TRIANGLES, 0, 3);
+  };
+}
 
+// Bildschleife (Worker oder Hauptfaden): höchstens ~30 Bilder/s; dauern Bilder dauerhaft > 50 ms, wird die Auflösung in
+// Stufen gröber. still = nur ein Standbild (Bewegung reduzieren)
+export function animate(canvas, gl, look, cssW, cssH, raf, still) {
+  const draw = createRenderer(gl);
+  if (!draw) return null;
+  let scale = Math.min(1, 960 / Math.max(cssW, cssH, 1)), slow = 0, last = 0, stop = false;
+  const t0 = performance.now(), T_STILL = 8;
+  const size = () => { canvas.width = Math.max(2, Math.round(cssW * scale)); canvas.height = Math.max(2, Math.round(cssH * scale)); };
+  size();
+  function frame(now) {
+    if (stop) return;
+    if (last && now - last < 31) { raf(frame); return; }
+    const dt = last ? now - last : 33;
+    last = now;
+    if (dt > 50) { if (++slow > 6 && scale > 0.2) { scale *= 0.8; size(); slow = 0; } } else slow = Math.max(0, slow - 1);
+    draw((now - t0) / 1000 + 2, look);
+    raf(frame);
+  }
+  if (still) draw(T_STILL, look); else raf(frame);
   return {
-    // look 'A' | 'B' | 'C' in die beiden 2D-Ebenen zeichnen (Größe = Ebenen-Größe in Gerätepixeln)
-    draw(look, glow, dust) {
-      cv.width = glow.width; cv.height = glow.height;
-      gl.viewport(0, 0, cv.width, cv.height);
-      gl.uniform2f(uRes, cv.width, cv.height);
-      gl.uniform1i(uV, 'ABC'.indexOf(look));
-      [glow, dust].forEach((dst, pass) => {
-        gl.uniform1i(uPass, pass);
-        gl.drawArrays(gl.TRIANGLES, 0, 3);
-        const g = dst.getContext('2d');
-        g.clearRect(0, 0, dst.width, dst.height);
-        g.drawImage(cv, 0, 0);
-      });
-    },
-    dispose() { const x = gl.getExtension('WEBGL_lose_context'); if (x) x.loseContext(); },
+    setLook(l) { look = l; if (still) draw(T_STILL, look); },
+    stop() { stop = true; },
+  };
+}
+
+// Nebel im Ladebild starten: bevorzugt im Worker, sonst auf dem Hauptfaden. Ohne WebGL 2 null (dann nur Sterne)
+export function createNebula(cv, look, still) {
+  const r = cv.getBoundingClientRect();
+  const w = r.width || window.innerWidth, h = r.height || window.innerHeight;
+  if (cv.transferControlToOffscreen && typeof Worker !== 'undefined') {
+    try {
+      const off = cv.transferControlToOffscreen();
+      const wk = new Worker(new URL('./boot_nebula_worker.js', import.meta.url), { type: 'module' });
+      const fail = () => { wk.terminate(); cv.hidden = true; };
+      wk.onmessage = (e) => { if (e.data && e.data.failed) fail(); };
+      wk.onerror = fail;
+      wk.postMessage({ canvas: off, look, w, h, still }, [off]);
+      return { setLook: (l) => wk.postMessage({ look: l }), dispose: () => wk.terminate() };
+    } catch (e) { /* weiter auf dem Hauptfaden */ }
+  }
+  const gl = cv.getContext('webgl2', { antialias: false, premultipliedAlpha: true, alpha: true });
+  const loop = gl && animate(cv, gl, look, w, h, (f) => requestAnimationFrame(f), still);
+  if (!loop) return null;
+  return {
+    setLook: loop.setLook,
+    dispose() { loop.stop(); const x = gl.getExtension('WEBGL_lose_context'); if (x) x.loseContext(); },
   };
 }
 

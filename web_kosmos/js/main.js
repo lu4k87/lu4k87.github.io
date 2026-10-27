@@ -83,6 +83,8 @@ const LOADERS = {
 // ease = 4 · glide, ≈ 0,8 s ohne Nachschwingen), vmax = Höchsttempo (ln/s, e^1,4 ≈ 4-fach je s), edge = Abbremsen vor dem
 // Zoom-Anschlag (Anteil des restlichen log. Wegs je s)
 const WHEEL = { notch: 0.028, maxDelta: 150, max: 1, glide: 2.5, ease: 10, vmax: 1.4, edge: 6 };
+// Rand-Angebot: so viele s nach dem letzten Scrollen am Anschlag bleibt der Hinweis „Hinaus-/Hineinfliegen“ klickbar stehen
+const OFFER_HOLD = 4;
 // Ankunft mit etwas mehr Abstand als die Heimpose: erst Überblick, dann zoomt der Besucher selbst
 const ARRIVE = 1.25;
 // Mehr-Etappen-Flug als eine Fahrt: Dauer = Flugdauer × (base + per × Summe der Etappen-Gewichte), höchstens cap;
@@ -142,7 +144,7 @@ function tex(name, srgb = true) {
 
 const state = {
   levels: new Map(), loading: new Map(), active: null, id: null, tr: null, chain: null, queue: [], controls: null,
-  time: 0, intro: null, follow: null, poses: new Map(), cine: { idle: 0, w: 0, base: null }, pull: 0, pullDir: 0, caption: 0,
+  time: 0, intro: null, follow: null, poses: new Map(), cine: { idle: 0, w: 0, base: null }, offer: null, caption: 0,
   dragging: false,
 };
 const now = new Date(params.get('date') || Date.now());
@@ -359,7 +361,7 @@ function activate(lv) {
   state.id = lv.id;
   state.active = lv;
   state.cine = { idle: 0, w: 0, base: null };
-  state.pull = 0;
+  state.offer = null;
   if (state.controls) state.controls.dispose();
   const c = new OrbitControls(lv.camera, canvas);
   c.enableDamping = true;
@@ -1012,24 +1014,18 @@ function stepZoom(lv, dt) {
   lv.camera.position.copy(c.target).addScaledVector(off, d1 / d);
 }
 
-// ---------- Rand-Zug: am Zoom-Anschlag weiter scrollen → hinaus bzw. hinein ----------
+// ---------- Rand-Angebot: am Zoom-Anschlag weiter scrollen → dezenter Hinweis, erst der Klick darauf fliegt hinaus bzw. hinein
+// (User 2026-10-27: kein Ebenenwechsel allein durchs Mausrad) ----------
 canvas.addEventListener('wheel', (ev) => {
   const c = state.controls, lv = state.active;
-  if (!c || state.tr || state.intro || state.opener) return;
+  if (!c || state.tr || state.intro || state.opener || !ev.deltaY) return;
   const d = lv.camera.position.distanceTo(c.target);
   const out = ev.deltaY > 0;
   const atMax = d >= (c.maxDistance || Infinity) * 0.985;
   const atMin = d <= (c.minDistance || 0) * 1.04;
-  const dir = out && atMax && lv.meta.parent ? 1 : !out && atMin && diveCandidate() ? -1 : 0;
-  if (!dir) { state.pull = 0; return; }
-  if (dir !== state.pullDir) state.pull = 0;
-  state.pullDir = dir;
-  state.pull += Math.min(0.2, Math.abs(ev.deltaY) / 600);
-  if (state.pull >= 1) {
-    state.pull = 0;
-    if (dir > 0) goTo(lv.meta.parent);
-    else goTo(diveCandidate().to);
-  }
+  const to = out ? atMax && lv.meta.parent : atMin && diveCandidate()?.to;
+  // vom Anschlag weg scrollen oder kein Ziel mehr in der Mitte: Hinweis zurückziehen
+  state.offer = to ? { out, to, t: OFFER_HOLD } : null;
 }, { passive: true });
 
 function diveCandidate() {
@@ -1132,8 +1128,8 @@ function frame(nowMs) {
 
   if (!tr) hud.update(lv.camera, lv, state.time);
   hud.hint(!tr && lv.hint ? lv.hint() : '');   // Hinweis-Zeile des Films (Station 11)
-  hud.setPull(state.pull, state.pullDir);
-  state.pull = Math.max(0, state.pull - real * 0.6);
+  if (state.offer && (state.offer.t -= real) <= 0) state.offer = null;
+  hud.setOffer(tr ? null : state.offer);
   stepTour(real);
   stepProbe(real);
   if (fps) {
@@ -1175,6 +1171,7 @@ const hud = createHud({
   onInput: () => userInput(),
   onRelayout: () => requestAnimationFrame(resize),
   onSkip: () => skipOpener(),
+  onOffer: () => { const o = state.offer; state.offer = null; if (o) goTo(o.to); },
 });
 
 onSettings((keys) => {

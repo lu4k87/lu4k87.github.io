@@ -401,6 +401,7 @@ export function createHud(h) {
   route.querySelectorAll('button').forEach((b) => b.addEventListener('click', () => { h.onInput(); h.onGo(b.dataset.id); }));
 
   btnOut.addEventListener('click', () => { h.onInput(); h.onOut(); });
+  pull.addEventListener('click', () => { h.onInput(); h.onOffer(); });
   btnNext.addEventListener('click', () => { h.onInput(); h.onNext(1); });
   btnPrev.addEventListener('click', () => { h.onInput(); h.onNext(-1); });
   $('#btn-close-card').addEventListener('click', () => closeCard());
@@ -814,13 +815,20 @@ export function createHud(h) {
     if (on && st) $('#flight-to').textContent = multi ? `Kurs auf ${st.title} …` : `Flug: ${st.title}`;
   }
 
-  function setPull(v, dir) {
-    const on = v > 0.04 && lv;
-    pull.classList.toggle('is-on', !!on);
-    if (!on) return;
-    pull.style.setProperty('--p', Math.min(1, v).toFixed(3));
-    const tgt = dir > 0 ? STATIONS[meta.parent] : null;
-    pull.querySelector('span').textContent = dir > 0 ? `Weiter scrollen: hinaus – ${tgt ? tgt.title : ''}` : 'Weiter scrollen: hineinfliegen';
+  // Rand-Angebot: am Zoom-Anschlag weiter gescrollt → Knopf „Hinaus-/Hineinfliegen“, erst sein Klick startet den Flug
+  function setOffer(o) {
+    // Zeitraffer sichtbar: Knopf 10 px darüber statt dahinter
+    if (o && !pull.classList.contains('is-on')) {
+      const tl = $('#timeline'), q = tl && !tl.hidden ? tl.getBoundingClientRect() : null;
+      pull.style.bottom = q ? `${$('#stage-area').getBoundingClientRect().bottom - q.top + 10}px` : '';
+    }
+    pull.classList.toggle('is-on', !!o);
+    pull.tabIndex = o ? 0 : -1;
+    pull.setAttribute('aria-hidden', o ? 'false' : 'true');
+    const key = o ? `${o.out}:${o.to}` : '';
+    if (!o || pull.dataset.key === key) return;
+    pull.dataset.key = key;
+    pull.textContent = `${o.out ? 'Hinausfliegen' : 'Hineinfliegen'}: ${STATIONS[o.to].title} · klicken`;
   }
 
   function stageRect() {
@@ -863,7 +871,7 @@ export function createHud(h) {
   buildSearch();
   buildRail();
   return {
-    setStation, update, setPull, stageRect, setFlight,
+    setStation, update, setOffer, stageRect, setFlight,
     // ohne Station: Titel sofort ausblenden (Auftakt-Film)
     caption: (st, opening) => { if (st) showCaption(st, opening); else { caption.classList.remove('is-on'); clearTimeout(capTimer); } },
     hideMarkers: (on) => { layer.classList.toggle('is-hidden', on); if (on) closeCard(); },
