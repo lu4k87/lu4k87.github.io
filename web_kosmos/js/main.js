@@ -667,7 +667,7 @@ function hop() {
     upInner: upPath(innerFrom, innerTo, inner.camera.up), maskR: 0, blur: 0, veil: 0,
     anchorUv: new THREE.Vector2(0.5, 0.5), innerUv: new THREE.Vector2(0.5, 0.5), captioned: false,
   };
-  // Vorbeiflug an Galaxien auf der Fahrt hinein (Station 8 → 3): Feld entlang der Zoom-Linie der äußeren Kamera
+  // Vorbeiflug an Galaxien auf der Fahrt hinein (Station 9 → 8): Feld entlang der Zoom-Linie der äußeren Kamera
   if (down && outer.pass && !still()) { state.tr.pass = outer.pass; outer.pass.begin(outerFrom.pos, anchor); }
   // Station beginnt beim Hinausflug in sie (Urknall: Film von vorn, die Explosion kommt vor der Landung)
   if (!down && to.enter) to.enter();

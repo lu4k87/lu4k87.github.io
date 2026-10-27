@@ -1,6 +1,6 @@
-// Galaxien als eigenes Modell und Vorbeiflug an Galaxien auf der Fahrt hinein zur Milchstraße (Station 8 → 3; Vorschau
+// Galaxien als eigenes Modell und Vorbeiflug an Galaxien auf der Fahrt hinein zur Lokalen Gruppe (Station 9 → 8; Vorschau
 // 26.10.2026 „Urknall und Kamerafahrt durch die Galaxien“: F5 Modell; Rückmeldung des Users 27.10.2026: der Flug an Galaxien
-// vorbei gehört auf die Fahrt zur Milchstraße, nicht zwischen Station 10 und 11).
+// vorbei gehört auf die Fahrt vom kosmischen Netz in die Lokale Gruppe, nicht zwischen Station 10 und 11).
 // · galaxyAtlas(): 16 Formen, im Browser auf ein Canvas gemalt (Spiralen mit und ohne Balken, flockig, mit großem Bulge,
 //   blau, Ellipsen, von der Kante, unregelmäßig, Paar in Wechselwirkung) – keine Teleskopbilder, keine Lizenzfrage.
 // · galaxySprites()/glowPoints(): Galaxien als Tafeln mit Tönung und Geburtszeit (uT), ferne Galaxien/Sterne als Punkte;

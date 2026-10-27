@@ -6,11 +6,13 @@
 // Norma (= Großer Attraktor), Perseus (mit der Perseus-Pisces-Kette), Coma, Hercules, Shapley. Strömung: Galaxien
 // treiben zum Großen Attraktor und weiter zu Shapley – das Einzugsgebiet dieser Strömung ist Laniakea (Tully 2014);
 // die Strömung hier schematisch aus Punktmassen, keine gemessene Geschwindigkeitskarte.
+// Fahrt hinein zur Lokalen Gruppe (Station 8): Vorbeiflug an reifen Galaxien (pass, galaxyflight.js createFlyby) – Darstellung.
 
 import * as THREE from 'three';
 import { registerLayers } from '../layers.js';
 import { pointCloud, disposeScene } from '../vol.js';
 import { galToScene, mulberry32, gauss, blackbody, MPC } from '../astro.js';
+import { galaxyAtlas, createFlyby } from '../galaxyflight.js';
 
 const R = 250;
 const at = (l, b, d) => new THREE.Vector3(...galToScene(l, b, d, 0));
@@ -168,10 +170,16 @@ export function create(ctx) {
     { id: 'flowK', type: 'range', group: 'Strömung (Laniakea)', label: 'Tempo', value: 1, min: 0.25, max: 6, step: 0.25, unit: '×', set: (v) => { flowK = v; }, active: () => flow.visible, only: flowOnly },
     { id: 'flowGain', type: 'range', label: 'Helligkeit', value: 1, min: 0.25, max: 6, step: 0.25, unit: '×', set: (v) => { flowG = v; flowAlpha(); }, active: () => flow.visible, only: flowOnly },
   ]);
+  // Vorbeiflug an Galaxien auf der Fahrt hinein zur Lokalen Gruppe (User 27.10.2026, nur im Flug sichtbar)
+  const flyby = createFlyby(galaxyAtlas());
+  scene.add(flyby.group);
   const controls = [{ id: 'flow', label: 'Strömung', value: 'off', options: [['off', 'Aus'], ['on', 'Laniakea']], set: (v) => { flow.visible = v === 'on'; } }];
   return {
     scene, camera, unit: MPC, hotspots, controls, home,
     orbit: { minDistance: 8, maxDistance: 900, cineSpeed: 0.5 },
+    pass: flyby,
+    // Shader des Vorbeiflugs schon beim Laden binden (compileAsync übergeht Unsichtbares) – kein Hänger beim ersten Flug
+    ready: (async () => { flyby.group.visible = true; await ctx.renderer.compileAsync(scene, camera); flyby.group.visible = false; })(),
     look: { exposure: 1.2, bloom: 0.1, sat: 1.05, con: 0.12, sh: [0.93, 0.97, 1.1] },
     update(dt) { if (flow.visible) for (let i = 0, n = Math.ceil(flowK); i < n; i++) stepFlow(dt * flowK / n); },
     live: () => (flow.visible ? 'Strömung schematisch: zum Großen Attraktor und weiter zum Shapley-Superhaufen (Laniakea = Einzugsgebiet)' : 'Modell-Netz um echte Haufen: Virgo, Fornax, Centaurus, Hydra, Norma, Perseus–Pisces, Coma, Hercules, Shapley'),

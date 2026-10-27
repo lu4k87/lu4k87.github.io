@@ -7,7 +7,6 @@
 // Reibung, hier nicht gerechnet). Grenze der Gruppe: Nullgeschwindigkeitsfläche ≈ 1 Mpc. Hintergrund: ferne Galaxien 2–6 Mpc.
 // Galaxien detailreich über galaxyfx.js: diffuses Licht mit Staubbahnen, Sternentstehung im Zeitraffer (Arme stehen als
 // Dichtewelle, Sterne ziehen hindurch), Bulge als Lichthof, Halo mit Kugelsternhaufen, Gezeitenströme (Modell).
-// Fahrt hinein zur Milchstraße (Station 3): Vorbeiflug an reifen Galaxien (pass, galaxyflight.js createFlyby) – Darstellung.
 
 import * as THREE from 'three';
 import { buildGalaxy, buildHalo, ARMS, R0 } from './galaxy.js';
@@ -15,7 +14,6 @@ import { pointCloud, disposeScene } from '../vol.js';
 import { galToScene, mulberry32, gauss, blackbody, KPC } from '../astro.js';
 import { galaxyGlow, starFormation, lightBlobs, streamCloud } from '../galaxyfx.js';
 import { registerLayers } from '../layers.js';
-import { galaxyAtlas, createFlyby } from '../galaxyflight.js';
 
 const RAD = Math.PI / 180;
 // Zwerggalaxien (l, b in Grad, d in kpc, Typ), gerundet nach McConnachie 2012: S = sphäroidal (alt, rötlich, sehr
@@ -260,9 +258,6 @@ export function create(ctx) {
   const trackLine = new THREE.Line(new THREE.BufferGeometry().setFromPoints(track), new THREE.LineBasicMaterial({ color: 0x33ccff, transparent: true, opacity: 0.35, blending: THREE.AdditiveBlending, depthWrite: false }));
   trackLine.visible = false;
   scene.add(trackLine);
-  // Vorbeiflug an Galaxien auf der Fahrt hinein zur Milchstraße (nur im Flug sichtbar)
-  const flyby = createFlyby(galaxyAtlas());
-  scene.add(flyby.group);
   let future = 0, labelsOn = false, streamsOn = true;
   const m31Kids = dwarfPos.filter((d) => d.kid);
   const kidBase = m31Kids.map((d) => d.p.clone());
@@ -334,9 +329,6 @@ export function create(ctx) {
   return {
     scene, camera, unit: KPC, hotspots, controls, home,
     orbit: { minDistance: 30, maxDistance: 4500, cineSpeed: 0.5 },
-    pass: flyby,
-    // Shader des Vorbeiflugs schon beim Laden binden (compileAsync übergeht Unsichtbares) – kein Hänger beim ersten Flug
-    ready: (async () => { flyby.group.visible = true; await ctx.renderer.compileAsync(scene, camera); flyby.group.visible = false; })(),
     look: { exposure: 1.15, bloom: 0.09, sat: 1.08, con: 0.12 },
     update(dt) {
       if (playing) T += dt * SPEEDS[spdIdx][0];

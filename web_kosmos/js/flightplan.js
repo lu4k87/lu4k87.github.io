@@ -1,4 +1,4 @@
-// Rechenkern ohne three.js für den Urknall (Station 11) und den Vorbeiflug an Galaxien zur Milchstraße (galaxyflight.js),
+// Rechenkern ohne three.js für den Urknall (Station 11) und den Vorbeiflug an Galaxien zur Lokalen Gruppe (galaxyflight.js),
 // Test tests/flightplan.test.js: Stützwert-Kurven (key stückweise weich, smoothKeys glatt und monoton), Zoom der Flüge und
 // flybyField = Lage der Galaxien entlang der Fahrt.
 
@@ -40,7 +40,7 @@ export function smoothKeys(pts, { log = false, flat = false } = {}) {
 // Flug: äußere Kamera zoomt um ZOOM auf den Anker zu, die innere kommt aus ZOOM-fachem Abstand an (gleiche Rate; main.js)
 export const ZOOM = 22;
 
-// ---------- Vorbeiflug an Galaxien auf der Fahrt hinein zur Milchstraße (Station 8 → 3, galaxyflight.js createFlyby) ----------
+// ---------- Vorbeiflug an Galaxien auf der Fahrt hinein zur Lokalen Gruppe (Station 9 → 8, galaxyflight.js createFlyby) ----------
 // Feld in Einheiten des Startabstands: die Kamera fährt auf der z-Achse von 1 auf den Anker (0) zu, bis 1/ZOOM. Galaxien
 // liegen logarithmisch gleich dicht entlang der Fahrt (der Zoom durchläuft jede Dekade gleich schnell → gleichmäßiger Strom),
 // seitlich proportional zum Abstand: sie ziehen am Rand vorbei, die Mitte (Ziel) bleibt frei, die Kamera streift keine.
