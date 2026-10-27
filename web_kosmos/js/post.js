@@ -72,9 +72,14 @@ void main() {
   vec2 eb = smoothstep(vec2(0.0), vec2(0.04), uvB) * smoothstep(vec2(1.0), vec2(0.96), uvB);
   float inside = eb.x * eb.y;
   vec3 cb = zoomed(tB, clamp(uvB, 0.0, 1.0), uInner, uBlur, uEhtB);
-  float m = 1.0 - smoothstep(uMaskR * 0.45, uMaskR, r);
-  float wB = max(m * smoothstep(0.0, 0.2, uProg), smoothstep(0.72, 1.0, uProg)) * mix(inside, 1.0, smoothstep(0.9, 1.0, uProg));
-  vec3 col = mix(ca, cb, wB);
+  // Iris mit breitem, weichem Rand; Iris und flächiges Aufblenden am Ende stetig vereint (statt max: kein Knick im Verlauf)
+  float m = 1.0 - smoothstep(uMaskR * 0.3, uMaskR * 1.05, r);
+  float iris = m * smoothstep(0.0, 0.25, uProg), all = smoothstep(0.62, 1.0, uProg);
+  float wB = (1.0 - (1.0 - iris) * (1.0 - all)) * mix(inside, 1.0, smoothstep(0.9, 1.0, uProg));
+  // gemischt in gestauchten Werten wie die Zoom-Unschärfe: ein überhelles Bild (Sonne) überstrahlt das andere nicht,
+  // die Überblendung läuft für das Auge gleichmäßig
+  vec3 ta = ca / (1.0 + luma(ca)), tm = mix(ta, cb / (1.0 + luma(cb)), wB);
+  vec3 col = tm / max(1.0 - luma(tm), 0.02);
   // Lichtschleier: weicher, heller Kern um den Anker in der Mitte der Fahrt; wie „Aufhellen“ gemischt, damit helle
   // Bilder (im Nebel) nicht milchig werden
   float veil = uVeil * exp(-r * r / max(1e-4, uMaskR * uMaskR * 0.6)) * 0.35;
