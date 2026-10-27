@@ -321,6 +321,9 @@ function bake(burst) {
 function needBake(r) {
   if (B.r) return;
   B.r = r;
+  // Nach einem Absturz der GPU stellt der Browser den Kontext neu her, die gebackene Würfelkarte ist dann leer (übrig
+  // bliebe nur der verschmierte Lichthof des Zentrums) → in einem Zug neu backen
+  r.domElement.addEventListener('webglcontextrestored', () => bake(true));
   bake(false);
 }
 // Einblenden nach dem Backen (0,6 s), danach fest

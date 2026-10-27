@@ -91,7 +91,7 @@ void main() { gl_FragColor = field((vec3(vUv, uZ) * 2.0 - 1.0) * ${extent.toFixe
     uniforms: { uZ: { value: 0 } }, depthTest: false, depthWrite: false,
   });
   const scene = new THREE.Scene().add(quad(mat)), cam = new THREE.Camera();
-  const ready = renderer.compileAsync(scene, cam).then(() => {
+  const bake = () => {
     const prev = renderer.getRenderTarget();
     for (let z = 0; z < size; z++) {
       mat.uniforms.uZ.value = (z + 0.5) / size;
@@ -99,9 +99,11 @@ void main() { gl_FragColor = field((vec3(vUv, uZ) * 2.0 - 1.0) * ${extent.toFixe
       renderer.render(scene, cam);
     }
     renderer.setRenderTarget(prev);
-    disposeScene(scene);
-  });
-  return { texture: tex, ready, dispose: () => rt.dispose() };
+  };
+  const ready = renderer.compileAsync(scene, cam).then(bake);
+  // Nach einem Absturz der GPU ist das Feld leer → neu backen (Szene bleibt dafür bis dispose)
+  renderer.domElement.addEventListener('webglcontextrestored', bake);
+  return { texture: tex, ready, dispose: () => { renderer.domElement.removeEventListener('webglcontextrestored', bake); disposeScene(scene); rt.dispose(); } };
 }
 
 // Nebel sind weich: halbe Kantenlänge kostet ein Viertel, Sterne der Station bleiben scharf. Die Tafel (quad, gleiche
@@ -119,6 +121,9 @@ export function offscreen(renderer, mesh) {
   const seen = new THREE.Matrix4(), proj = new THREE.Matrix4();
   let w = 2, h = 2, scale = 0.5, dirty = true;
   const fit = () => { rt.setSize(Math.max(2, Math.round(w * scale)), Math.max(2, Math.round(h * scale))); dirty = true; };
+  // Nach einem Absturz der GPU ist das Bild leer → neu zeichnen, auch wenn die Kamera steht
+  const restore = () => { dirty = true; };
+  renderer.domElement.addEventListener('webglcontextrestored', restore);
   return {
     quad: tile, scene,
     setSize(W, H) { w = W; h = H; fit(); },
@@ -135,7 +140,7 @@ export function offscreen(renderer, mesh) {
       renderer.setClearAlpha(a);
       renderer.setRenderTarget(prev);
     },
-    dispose() { disposeScene(scene); rt.dispose(); },
+    dispose() { renderer.domElement.removeEventListener('webglcontextrestored', restore); disposeScene(scene); rt.dispose(); },
   };
 }
 
