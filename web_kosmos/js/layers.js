@@ -161,8 +161,8 @@ function summary(g) {
   if (n) parts.push(`${on} von ${n} an`);
   return parts.join(' · ');
 }
-// offene Gruppen je Bereich (Station-Id, Reiter Global = '_global'); ohne Eintrag ist die erste Gruppe offen
-export const isOpenIn = (key, i, first) => (Array.isArray(openStore[key]) ? openStore[key].includes(i) : i === first);
+// offene Gruppe je Bereich (Station-Id, Reiter Global = '_global'); ohne Eintrag ist die erste Gruppe offen; immer nur eine offen
+export const isOpenIn = (key, i, first) => (Array.isArray(openStore[key]) ? openStore[key][0] === i : i === first);
 const isOpen = (i, first) => isOpenIn(currentId, i, first);
 const foldCard = (g, i, open) => `<article class="b-card b-fold${open ? ' is-open' : ''}" data-g="g${i}" data-fold="${i}">
   <h4 class="b-fold-h"><button type="button" class="b-head" aria-expanded="${open}" aria-controls="lay-b${i}">${plaque(groupIcon(g.title))}<span class="b-name">${esc(g.title)}</span>
@@ -183,6 +183,8 @@ function saveOpen(key, root) {
   try { localStorage.setItem(OPEN_KEY, JSON.stringify(openStore)); } catch { /* privates Fenster */ }
 }
 function setOpen(card, on) {
+  // Akkordeon: öffnet eine Gruppe, klappen die anderen zu (User 27.10.2026)
+  if (on) card.parentElement.querySelectorAll(':scope > .b-fold.is-open').forEach((o) => { if (o !== card) setOpen(o, false); });
   card.classList.toggle('is-open', on);
   card.querySelector('.b-head').setAttribute('aria-expanded', String(on));
   card.querySelector('.b-body').hidden = !on;

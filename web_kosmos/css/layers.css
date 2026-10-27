@@ -156,10 +156,13 @@ body.is-flying .tl, body.is-intro .tl { opacity: 0; pointer-events: none; }
 .b-fold { scroll-margin-top: 48px; }
 .b-fold-h { margin: 0; font: inherit; }
 .b-fold .b-head { width: 100%; min-height: 40px; padding: 4px; border: 0; border-radius: 6px; background: none; color: var(--ink); font: inherit; text-align: left; cursor: pointer; transition: background 0.2s; }
-.b-fold .b-head:hover { background: rgba(255, 255, 255, 0.04); }
-.b-fold.is-open > .b-fold-h .b-head { background: rgba(var(--accent-rgb), 0.06); }
-.b-fold .b-plaque { width: 24px; height: 24px; border: 0; background: none; }
+/* Gruppen-Überschriften farbig abgesetzt (User 27.10.2026): getönte Kopfzeile, Akzent-Plakette, Name in Akzentfarbe */
+.b-fold .b-head { background: rgba(var(--accent-rgb), 0.07); }
+.b-fold .b-head:hover { background: rgba(var(--accent-rgb), 0.12); }
+.b-fold.is-open > .b-fold-h .b-head { background: rgba(var(--accent-rgb), 0.16); }
+.b-fold .b-plaque { width: 26px; height: 26px; border: 1px solid rgba(var(--accent-rgb), 0.35); border-radius: 6px; background: rgba(var(--accent-rgb), 0.16); }
 .b-name { font: 600 13.5px var(--font); white-space: nowrap; }
+.b-fold .b-name { color: var(--accent); letter-spacing: 0.01em; }
 .b-sum { flex: 1 1 auto; min-width: 0; margin-left: auto; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: right; font: 400 12.5px var(--mono); color: var(--ink-soft); }
 .b-fold.is-open .b-sum { visibility: hidden; }
 .b-head .b-sum + .b-count { margin-left: 0; }
