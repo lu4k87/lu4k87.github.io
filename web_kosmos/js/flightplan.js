@@ -55,3 +55,32 @@ export function flybyField(rand, zoom = ZOOM, n = FLYBY.n) {
     return { x: r * Math.cos(th), y: r * Math.sin(th), z, size: z * (d0 + (d1 - d0) * rand()) };
   });
 }
+
+// ---------- Auftakt-Film (opener.js): Zeitmarken und Kurven der Stationskamera ab dem weißen Bild ----------
+// Zeiten in Filmsekunden: build = Aufbau bis zum Knall, plasma = Nebel bis klar, dark = dunkles Zeitalter mit ersten
+// Sternen, galaxies = Flug durch die Galaxien, crane = Rückzug in die Heimpose; inhale/flash/hold = Luftholen, Knall, Weiß
+export function openerMarks(k, { inhale = 1.2, flash = 4.2, hold = 0.25 } = {}) {
+  const bang = k.build, white = bang + flash, cool = white + hold, clear = cool + k.plasma, dawn = clear + k.dark, gal = dawn + k.galaxies;
+  return { charge: bang * 0.5, inhale: bang - inhale, bang, white, cool, clear, dawn, gal, end: gal + k.crane };
+}
+// Kamera der Station als eine durchgehende Fahrt: d = Lage auf der Fahrachse (Heimseite positiv, Mitte 0), im Logarithmus
+// um einen Nullpunkt OPENER_D0 hinter der Mitte (Anfahrt und Rückzug gleichmäßig wie ein Zoom): nahe der Mitte durch den
+// Nebel, im dunklen Zeitalter langsam voran, Sturzflug durch die Galaxien bis tief hinter die Mitte, dort die Wende im Bogen
+// (az/el schwenken, während die Fahrt umkehrt – kein Halt im Bild) und der Rückzug rückwärts an den Galaxien vorbei aus der
+// Kugel in die Heimpose (homeDist × endDist). far = Blickziel hinter der Mitte (Flug: geradeaus; am Ende 0 = Blick auf die
+// Mitte), S = Maßstab des Galaxienfelds (der Raum dehnt sich), sway/roll = Schweben und Rollen der Handkamera (Ende 0).
+export const OPENER_D0 = 30;
+export function openerCurves(M, k, homeDist) {
+  const { white, clear, dawn, gal, end } = M, cr = end - gal, fl = gal - dawn, D = OPENER_D0;
+  const d = smoothKeys([[white, D + 0.8], [clear, D + 0.3], [dawn, D - 1.5], [dawn + 0.5 * fl, D - 12], [gal, D - 21],
+    [gal + 0.3 * cr, D - 10], [gal + 0.55 * cr, D + 22], [gal + 0.8 * cr, D + 90], [end, D + homeDist * k.endDist]], { log: true, flat: true });
+  return {
+    d: (t) => d(t) - D,
+    az: smoothKeys([[white, 0], [clear, 0], [dawn, 2], [gal - 0.3 * fl, -3], [gal + 0.35 * cr, k.arc], [end, k.endAz]], { flat: true }),
+    el: smoothKeys([[white, 0], [clear, 0], [dawn, -1], [gal, 1.5], [gal + 0.35 * cr, -k.rise], [end, k.endEl]], { flat: true }),
+    far: smoothKeys([[white, 200], [gal + 0.15 * cr, 200], [gal + 0.75 * cr, 0]], { flat: true }),
+    S: smoothKeys([[white, 10], [clear, 12], [dawn, 16], [gal, 30], [end, 34]], { flat: true }),
+    sway: smoothKeys([[white, 0.02], [clear, 0.05], [dawn, 0.25], [gal, 0.9], [gal + 0.5 * cr, 1.5], [end, 0]], { flat: true }),
+    roll: smoothKeys([[white, 0.01], [gal, 0.025], [gal + 0.6 * cr, 0.01], [end, 0]], { flat: true }),
+  };
+}
