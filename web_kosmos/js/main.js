@@ -15,6 +15,14 @@ import { ZOOM } from './flightplan.js';
 import { TURN, planTurn, turnPose, turnPace, smoother } from './turn.js';
 import { createBoot } from './boot.js';
 
+// 2D-Canvas im Arbeitsspeicher statt auf der GPU: liegt der Tab länger im Hintergrund, verwirft Chrome GPU-Ressourcen
+// (WebGL-Kontext verloren → wiederhergestellt) und leert dabei GPU-gestützte Canvas. three.js lädt die Muster dann leer
+// neu hoch – Hüllen und Zellen der Stationen (transparent: true) verschwinden. Gilt für alle Canvas, die Texturen werden.
+const getContext = HTMLCanvasElement.prototype.getContext;
+HTMLCanvasElement.prototype.getContext = function (type, opts) {
+  return getContext.call(this, type, type === '2d' ? { willReadFrequently: true, ...opts } : opts);
+};
+
 const LOADERS = {
   earth: () => import('./levels/earth.js'),
   solar: () => import('./levels/solar.js'),
