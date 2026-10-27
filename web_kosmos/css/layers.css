@@ -106,7 +106,7 @@
 .tl-label { font-size: 13px; font-weight: 500; white-space: nowrap; }
 .tl-status { font: 400 12px var(--mono); color: var(--ink-soft); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .tl input[type=range] { flex: 1; min-width: 90px; accent-color: var(--accent); }
-.tl output { font: 500 12.5px var(--mono); white-space: nowrap; min-width: 7ch; text-align: right; }
+.tl output { flex: none; font: 500 12.5px var(--mono); white-space: nowrap; min-width: 7ch; text-align: right; }   /* schrumpft nie unter den Text („5 Mio. J./s“) */
 body.tl-on .hint { opacity: 0; pointer-events: none; }
 body.is-flying .tl, body.is-intro .tl { opacity: 0; pointer-events: none; }
 @media (max-width: 760px) {
@@ -141,13 +141,15 @@ body.is-flying .tl, body.is-intro .tl { opacity: 0; pointer-events: none; }
 .cfg-jump { display: contents; }
 .cfg-jump-btn { display: flex; align-items: center; gap: 6px; min-width: 0; min-height: 34px; padding: 4px 8px; border-radius: 8px; text-align: left; line-height: 1.2; border: 1px solid var(--line); background: var(--glass-tile); box-shadow: var(--glass-tile-edge); color: var(--ink); font: 500 12.5px var(--font); cursor: pointer; transition: border-color 0.2s, color 0.2s, background 0.2s; }
 .cfg-jump-btn .b-ico { width: 14px; height: 14px; flex: none; }
+/* Lange Gruppen-Namen („Hintergrundstrahlung“) bleiben im Feld: Silbentrennung (lang="de"), notfalls Umbruch im Wort */
+.cfg-jump-btn > span { min-width: 0; overflow-wrap: break-word; hyphens: auto; text-wrap: balance; }
 .cfg-jump-btn:hover { border-color: var(--line-strong); }
 .cfg-jump-btn[aria-current="true"] { border-color: var(--accent); color: var(--accent); background: var(--glass-on); box-shadow: var(--glass-on-edge); }
 .cfg-jump-btn:focus-visible, .b-fold .b-head:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
 .b-list { display: flex; flex-direction: column; align-items: stretch; gap: 0; }
-.cfg-pane .b-card { padding: 0; gap: 0; border: 0; border-radius: 0; border-bottom: 1px solid var(--line); background: none; }
-/* Animation: ▶ links über beide Zeilen, daneben Name + Stand | Tempo, darunter der Regler */
-.cfg-pane .b-card--time { display: flex; flex-direction: column; gap: 6px; padding: 4px 0 10px; }
+.cfg-pane .b-card { padding: 0; gap: 0; border: 0; border-radius: 0; border-bottom: 1px solid var(--line); background: none; box-shadow: none; }
+/* Animation: ▶ links über beide Zeilen, daneben Name + Stand | Tempo, darunter der Regler; seitlich 4 px wie .b-body der Gruppen */
+.cfg-pane .b-card--time { display: flex; flex-direction: column; gap: 6px; padding: 4px 4px 10px; }
 .cfg-pane .b-card--time .play-btn--lg { width: 34px; height: 34px; }
 .cfg-pane .b-card--time .b-time { grid-template-columns: auto minmax(0, 1fr) auto; gap: 4px 12px; }
 .cfg-pane .b-time > .play-btn { grid-row: 1 / 3; }

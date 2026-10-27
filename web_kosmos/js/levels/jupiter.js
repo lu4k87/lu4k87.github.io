@@ -311,7 +311,10 @@ export function create(ctx) {
     for (const id of MOON_IDS) {
       const l = laplaceLongitude(GALILEAN[id], jd) * Math.PI / 180, r = RING[id];
       const g = el.querySelector(`#w-${id}`);
-      if (g) g.setAttribute('transform', `translate(${(62 + r * Math.cos(l)).toFixed(1)} ${(62 - r * Math.sin(l)).toFixed(1)})`);
+      const x = 62 + r * Math.cos(l), y = 62 - r * Math.sin(l);
+      if (!g) continue;
+      g.setAttribute('transform', `translate(${x.toFixed(1)} ${y.toFixed(1)})`);
+      g.lastChild.setAttribute('y', y < 14 ? 13 : -4);   // Buchstabe am oberen Rand unter den Punkt, sonst abgeschnitten
     }
     const sl = Math.atan2(sunDir.dot(lapY), sunDir.dot(lapX));
     const s = el.querySelector('#w-sun');

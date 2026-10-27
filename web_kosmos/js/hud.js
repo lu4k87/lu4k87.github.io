@@ -8,7 +8,7 @@ import { fmtLength, fmtTime, C } from './astro.js';
 import { settings, setSetting, mountSettings, onSettings } from './settings.js';
 import { getLayer, setLayer, fmtVal } from './layers.js';
 import { cardHtml, mountCard, unmountCard } from './cards.js';
-import { prose } from './figs.js';
+import { prose, nbsp } from './figs.js';
 import { renderScaleCompare } from './scale_compare.js';
 import { mountQuick } from './quick.js';
 
@@ -377,7 +377,9 @@ export function createHud(h) {
     if (!b) return;
     const st = STATIONS[id], halt = ROUTE.indexOf(id);
     tip.dataset.ch = chapter(id);
-    tip.innerHTML = `<span class="n">${num(id)}</span><b>${title(id)}</b><span>${esc(st.kicker)} · ${size(id)}</span>${halt < 0 ? '' : `<span>Halt ${halt + 1} von ${ROUTE.length}</span>`}`;
+    // Teile brechen nur am „ · “ um, nie mitten im Maß (wie .cap-sub)
+    const sub = [esc(st.kicker), size(id)].filter(Boolean).map((t) => `<span>${t}</span>`).join(' · ');
+    tip.innerHTML = `<span class="n">${num(id)}</span><b>${title(id)}</b><span class="bd-tip-sub">${sub}</span>${halt < 0 ? '' : `<span>Halt ${halt + 1} von ${ROUTE.length}</span>`}`;
     const r = b.getBoundingClientRect(), base = (drawer.classList.contains('is-open') ? drawer : nav).getBoundingClientRect(), w = tip.offsetWidth;
     tip.style.left = `${Math.max(8, Math.min(innerWidth - w - 8, r.left + r.width / 2 - w / 2))}px`;
     tip.style.top = `${base.bottom + 8}px`;
@@ -484,7 +486,7 @@ export function createHud(h) {
       </ul>
       <details class="note"><summary>Darstellung und Quellen</summary>
         <p>${prose(st.note)}</p>
-        <ol class="sources">${st.sources.map((s) => `<li><a href="${SOURCES[s].url}" target="_blank" rel="noopener">${esc(SOURCES[s].t)}</a><span>${esc(SOURCES[s].by)}</span></li>`).join('')}</ol>
+        <ol class="sources">${st.sources.map((s) => `<li><a href="${SOURCES[s].url}" target="_blank" rel="noopener">${prose(SOURCES[s].t)}</a><span>${prose(SOURCES[s].by)}</span></li>`).join('')}</ol>
       </details>`;
     liveEl = panel.querySelector('#live');
     widgetEl = panel.querySelector('#widget');
@@ -763,7 +765,7 @@ export function createHud(h) {
     if (widgetEl && lv.widgetTick) lv.widgetTick(widgetEl, time);
     if (!liveEl || !lv.live || time - liveT < 0.5) return;
     liveT = time;
-    liveEl.textContent = lv.live();
+    liveEl.textContent = nbsp(lv.live());   // Zahl + Einheit nie getrennt (tests/textcheck.js)
   }
 
   // ---------- Flug, Kapitel-Titel, Auftakt ----------

@@ -18,6 +18,7 @@ import { SKY_VERTEX, NOISE } from '../glsl.js';
 import { loadSats, createSats, satPos, orbitLine, namedIndex, KIND_COLOR } from '../sats.js';
 import { speedAt, RE } from '../orbit.js';
 import { registerLayers } from '../layers.js';
+import { nbsp } from '../figs.js';
 import { SHELL_VERT, ATMO_FRAG, CLOUD_FRAG, rayleighUniform } from '../planetfx.js';
 import { spinAxis } from '../axes.js';
 import { loadL2, trackAt } from '../l2track.js';
@@ -666,7 +667,7 @@ export function create(ctx) {
         <tr><td>davon geostationär · Navigation</td><td class="num">${num(c.geo)} · ${num(c.gnss)}</td></tr>
         <tr><td>${dot(2)}Trümmer der vier großen Wolken</td><td class="num">${num(c.debris)}</td></tr>
         ${iss ? `<tr class="is-hi"><td>${dot(3)}ISS: Höhe · Geschwindigkeit</td><td class="num">${Math.round(satInfo.alt)} km · ${satInfo.v.toFixed(2).replace('.', ',')} km/s</td></tr>` : ''}`;
-      el.querySelector('#w-sats-foot').textContent = `Bahnelemente CelesTrak, Stand ${satData.epoch.slice(0, 10)}, Fortschreibung Kepler + J2. Dazu schätzt die ESA ≈ 1,2 Mio. Teile von 1–10 cm und über 100 Mio. von 1 mm–1 cm, zu klein für den Katalog.`;
+      el.querySelector('#w-sats-foot').textContent = nbsp(`Bahnelemente CelesTrak, Stand ${satData.epoch.slice(0, 10)}, Fortschreibung Kepler + J2. Dazu schätzt die ESA ≈ 1,2 Mio. Teile von 1–10 cm und über 100 Mio. von 1 mm–1 cm, zu klein für den Katalog.`);
     },
     live: () => `Stand ${fmt.format(new Date((jd - 2440587.5) * 864e5))} · Mond zu ${Math.round(illum * 100)} % beleuchtet · ${catalog && catalog.userData.count ? `${catalog.userData.count.toLocaleString('de-DE')} Katalogsterne` : 'Himmel wird geladen'}`,
     setPixelRatio: (p) => { pr = p; if (catalog) catalog.userData.setPixelRatio(p); if (sats) sats.userData.setPixelRatio(p); },

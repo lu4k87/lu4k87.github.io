@@ -304,30 +304,33 @@ export function sig(v) {
   return num(v, a >= 100 ? 0 : a >= 10 ? 1 : 2);
 }
 
+// Zahl, Größenwort und Einheit bleiben in einer Zeile (geschütztes Leerzeichen; User 27.10.2026: „21,2 | m“ im Hinweis)
+const NB = ' ';
+
 // Länge in Metern → lesbare Einheit: m · km · AE · Lj · Mio. Lj · Mrd. Lj
 export function fmtLength(m) {
-  if (m < 1e3) return `${sig(m)} m`;
-  if (m < 1e9) return `${sig(m / 1e3)} km`;
-  if (m < 0.5 * AU) return `${sig(m / 1e9)} Mio. km`;
-  if (m < 0.05 * LY) return `${sig(m / AU)} AE`;
+  if (m < 1e3) return `${sig(m)}${NB}m`;
+  if (m < 1e9) return `${sig(m / 1e3)}${NB}km`;
+  if (m < 0.5 * AU) return `${sig(m / 1e9)}${NB}Mio.${NB}km`;
+  if (m < 0.05 * LY) return `${sig(m / AU)}${NB}AE`;
   const ly = m / LY;
-  if (ly < 1e6) return `${sig(ly)} Lj`;
-  if (ly < 1e9) return `${sig(ly / 1e6)} Mio. Lj`;
-  return `${sig(ly / 1e9)} Mrd. Lj`;
+  if (ly < 1e6) return `${sig(ly)}${NB}Lj`;
+  if (ly < 1e9) return `${sig(ly / 1e6)}${NB}Mio.${NB}Lj`;
+  return `${sig(ly / 1e9)}${NB}Mrd.${NB}Lj`;
 }
 
 // Dauer in Sekunden → lesbare Einheit bis Milliarden Jahre
 export function fmtTime(s) {
-  if (s < 1e-6) return `${sig(s * 1e9)} ns`;
-  if (s < 1e-3) return `${sig(s * 1e6)} µs`;
-  if (s < 1) return `${sig(s * 1e3)} ms`;
-  if (s < 120) return `${sig(s)} s`;
-  if (s < 7200) return `${sig(s / 60)} min`;
-  if (s < 3 * DAY) return `${sig(s / 3600)} h`;
-  if (s < YEAR) return `${sig(s / DAY)} Tage`;
+  if (s < 1e-6) return `${sig(s * 1e9)}${NB}ns`;
+  if (s < 1e-3) return `${sig(s * 1e6)}${NB}µs`;
+  if (s < 1) return `${sig(s * 1e3)}${NB}ms`;
+  if (s < 120) return `${sig(s)}${NB}s`;
+  if (s < 7200) return `${sig(s / 60)}${NB}min`;
+  if (s < 3 * DAY) return `${sig(s / 3600)}${NB}h`;
+  if (s < YEAR) return `${sig(s / DAY)}${NB}Tage`;
   const y = s / YEAR;
-  if (y < 1e3) return `${sig(y)} ${y < 1.995 ? 'Jahr' : 'Jahre'}`;
-  if (y < 1e6) return `${sig(y / 1e3)} Tsd. Jahre`;
-  if (y < 1e9) return `${sig(y / 1e6)} Mio. Jahre`;
-  return `${sig(y / 1e9)} Mrd. Jahre`;
+  if (y < 1e3) return `${sig(y)}${NB}${y < 1.995 ? 'Jahr' : 'Jahre'}`;
+  if (y < 1e6) return `${sig(y / 1e3)}${NB}Tsd.${NB}Jahre`;
+  if (y < 1e9) return `${sig(y / 1e6)}${NB}Mio.${NB}Jahre`;
+  return `${sig(y / 1e9)}${NB}Mrd.${NB}Jahre`;
 }

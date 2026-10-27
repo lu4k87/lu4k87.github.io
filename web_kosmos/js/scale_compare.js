@@ -2,6 +2,8 @@
 // Maßstabsgetreue Silhouetten und Vergleiche für alle 31 Stationen in Kosmos.
 // Radien nach JPL Fact Sheets, NASA NSSDCA und IAU WGCCRE 2015.
 
+import { nbsp } from './figs.js';
+
 export const SCALE_COMPARISONS = {
   iss: {
     sizeStr: '108 m Spannweite',
@@ -413,7 +415,7 @@ export function renderScaleCompare(stationId, tabIdx = 0) {
           <circle cx="16" cy="12.5" r="1.8" fill="none" stroke="currentColor" stroke-width="1.4"/>
         </svg>
         <span class="sc-title">Maßstabs-Vergleich</span>
-        <span class="sc-tag">${comp.sizeStr}</span>
+        <span class="sc-tag">${nbsp(comp.sizeStr)}</span>
       </div>
       <div class="sc-stage">
         <div class="sc-items">

@@ -11,7 +11,7 @@
 // Screenshots. Aktive Station aus `#station=…` (main.js setzt den Hash per replaceState → ohne Ereignis, daher Takt 300 ms).
 
 import { STATIONS } from './content.js';
-import { prose } from './figs.js';
+import { prose, nbsp } from './figs.js';
 
 const KEY = 'kosmos.layers.v1';
 const PLAY = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l10-6.5z" fill="currentColor"/></svg>';
@@ -264,7 +264,7 @@ function sync() {
       const l = find(i.dataset.lay);
       if (!l) return;
       if (i.type === 'checkbox') i.checked = !!l.value;
-      else { const v = l.type === 'play' && l.get ? l.get().value : l.value; if (document.activeElement !== i) i.value = v; const o = root.querySelector(`[data-lout="${l.id}"]`); if (o) o.textContent = fmtVal(l, +i.value); }
+      else { const v = l.type === 'play' && l.get ? l.get().value : l.value; if (document.activeElement !== i) i.value = v; const o = root.querySelector(`[data-lout="${l.id}"]`); if (o) o.textContent = nbsp(fmtVal(l, +i.value)); }
     });
     root.querySelectorAll('[data-play]').forEach((b) => {
       const l = find(b.dataset.play);
@@ -274,7 +274,7 @@ function sync() {
       b.setAttribute('aria-label', `${l.label} ${on ? 'anhalten' : 'abspielen'}`);
       b.innerHTML = on ? PAUSE : PLAY;
     });
-    root.querySelectorAll('[data-status]').forEach((s) => { const l = find(s.dataset.status); if (l && l.status) s.textContent = l.status(); });
+    root.querySelectorAll('[data-status]').forEach((s) => { const l = find(s.dataset.status); if (l && l.status) s.textContent = nbsp(l.status()); });
     root.querySelectorAll('[data-lay-seg]').forEach((b) => { const l = find(b.dataset.laySeg); if (l) b.setAttribute('aria-checked', String(l.value === +b.dataset.val)); });
     root.querySelectorAll('[data-steps]').forEach((el) => { const l = find(el.dataset.steps); if (l) [...el.children].forEach((c, i) => c.classList.toggle('is-on', l.min + i === Math.round(l.get ? l.get().value : l.value))); });
     root.querySelectorAll('[data-chip]').forEach((c) => { const l = find(c.dataset.chip); if (l) c.textContent = playing(l) ? 'läuft' : 'angehalten'; });
@@ -285,7 +285,7 @@ function sync() {
   }
   if (gearEl && !gearEl.hidden) {
     markDevs(gearEl, (id) => { const l = find(id); return !!l && l.value !== l.def; });
-    gearEl.querySelectorAll('[data-sum]').forEach((el) => { const g = gs[+el.dataset.sum]; const t = g ? summary(g) : ''; if (el.textContent !== t) el.textContent = t; });
+    gearEl.querySelectorAll('[data-sum]').forEach((el) => { const g = gs[+el.dataset.sum]; const t = g ? nbsp(summary(g)) : ''; if (el.textContent !== t) el.textContent = t; });
   }
 }
 
