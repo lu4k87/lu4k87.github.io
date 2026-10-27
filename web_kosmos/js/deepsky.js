@@ -10,11 +10,18 @@ import { settings, onSettings } from './settings.js';
 
 // Galaktische Lage je Station (gleiche Richtungen wie createStarfield in levels/<id>.js): ngp = Nordpol, gc = Zentrum.
 // cirrus/gal = Stärke der Ebenen; outside = Blick von außerhalb der Milchstraße (kein Zirrus, keine Vermeidungszone).
-const ECL = { ngp: eclDir(180.02, 29.81), gc: eclDir(266.84, -5.54) };
+// Im Sonnensystem überall derselbe echte Himmel (ekliptikale Lage, gleicher Seed). Ohne Eintrag (sgra, web, cmb, bigbang)
+// bleibt der Hintergrund, wie die Station ihn zeichnet – dort wirkt der Regler nicht.
+const ECL = { ngp: eclDir(180.02, 29.81), gc: eclDir(266.84, -5.54), cirrus: 1, gal: 1, seed: 3 };
+const SOLAR_SYSTEM = ['earth', 'hubble', 'jwst', 'euclid', 'roman', 'solar', 'sun', 'iss', 'tiangong', 'moon',
+  'jupiter', 'io', 'europa', 'ganymede', 'callisto', 'saturn', 'titan', 'enceladus', 'mars', 'phobos', 'deimos',
+  'neptune', 'triton', 'uranus', 'miranda', 'pluto'];
 const DEEP = {
-  earth: { ...ECL, cirrus: 1, gal: 1, seed: 3 },
-  solar: { ...ECL, cirrus: 1, gal: 1, seed: 3 },
+  ...Object.fromEntries(SOLAR_SYSTEM.map((id) => [id, ECL])),
+  orion: { ngp: [0.2, 0.9, 0.3], gc: [0.9, 0, -0.4], cirrus: 1, gal: 1, seed: 5 },
   crab: { ngp: [0.1, 0.95, -0.2], gc: [-0.2, -0.1, -1], cirrus: 1, gal: 1, seed: 7 },
+  asteroid: { cirrus: 1, gal: 1, seed: 11 },   // Sternfeld dort ohne galaktische Lage (Standard-Achsen)
+  pulsar: { cirrus: 1, gal: 1, seed: 11 },
   galaxy: { outside: true, cirrus: 0, gal: 1.4, seed: 9 },
   local: { outside: true, cirrus: 0, gal: 0.8, seed: 13 },
 };
