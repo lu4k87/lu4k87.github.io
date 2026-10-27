@@ -8,8 +8,10 @@
 // Wackeln): Zündung, zwei Nachstöße im Kern, Strahlen und Lichtfäden schießen nach außen, ein Feuerball aus turbulenter
 // Glut mit hellen Adern wächst bis in die Ecken; die Kamera weicht weich zurück, schwingt einmal nach, umkreist den
 // Feuerball im Bogen und wird gedreht hineingezogen → kurzes Weiß →
-// Durchflug durch heißes, strömendes Plasma, das nach Planck-Farbe kühlt (blauweiß → weiß → orange) → das Plasma wird
-// durchsichtig (≈ 380.000 Jahre), die Rekombination wandert als glühende Front fleckig über das Bild und lässt genau die
+// Flug durch den Nebel des jungen Plasmas (User 27.10.2026, länger und detailreich: Strahlverfolgung durch ein
+// gebackenes 3D-Feld, Wolkenkörper mit Fäden, heißen Adern und dunklen kühlen Bahnen vor glühendem Grund; der Nebel kühlt
+// nach Planck-Farbe blauweiß → weiß → orange, der Raum dehnt sich, die Wolken wachsen auf die Kamera zu) → der Nebel lichtet
+// sich, das Plasma wird durchsichtig (≈ 380.000 Jahre), die Rekombination wandert als glühende Front fleckig über das Bild und lässt genau die
 // Kugel der Hintergrundstrahlung von Station 10 zurück (gleiches Muster aus glsl.js CMB, dieselben Uniforms der Schale) –
 // die Kamera ist dabei schon auf dem Rückzug und landet ohne Halt im Bogen in der Heimpose, die Galaxien blenden ein.
 // Der Lichtpunkt vor dem Knall ist Darstellung: Es gab kein „Außen“, von dem aus man hätte zusehen können.
@@ -19,13 +21,14 @@
 import * as THREE from 'three';
 import { NOISE, CMB } from './glsl.js';
 import { LOOK } from './post.js';
+import { bakeField } from './vol.js';
 
 // Stellschrauben (Vorschau-Regler). Zeiten in Filmsekunden: build = Aufbau bis zum Knall (Spannung ab der Hälfte),
-// plasma = Abkühlen bis klar, crane = Rückzug in die Heimpose; charge = Stärke des Spannungsaufbaus, warp = Lichtfäden
-// nach dem Knall, flow = Strömung im Plasma; arc/rise = Bogen und Kranhöhe am Anfang des Rückzugs (°), end* = Endpose relativ zur
+// plasma = Nebel bis klar, crane = Rückzug in die Heimpose; charge = Stärke des Spannungsaufbaus, warp = Lichtfäden
+// nach dem Knall, flow = Drift durch den Nebel, neb/fil/hot = Dichte, Fäden, Farbspiel des Nebels; arc/rise = Bogen und Kranhöhe am Anfang des Rückzugs (°), end* = Endpose relativ zur
 // Heimpose (Abstand ×, Drehung °); Look-Werte wirken als Faktor und laufen bis zum Ende auf den Look der Station zu.
 export const TUNE = {
-  tempo: 1, build: 11.5, plasma: 6, crane: 8.5, charge: 1, warp: 1, flow: 1,
+  tempo: 1, build: 11.5, plasma: 12, crane: 8.5, charge: 1, warp: 1, flow: 1, neb: 1, fil: 1, hot: 1,
   core: 1, streak: 1, streakLen: 1, rays: 1, rayLen: 1, hue: 204, sat: 0.8,
   dust: 1, burst: 1, blur: 1, bokeh: 1, shock: 0, shake: 1,
   push: 1, drift: 1, arc: 28, rise: 12, endDist: 1, endAz: 0, endEl: 0,
@@ -56,6 +59,9 @@ uniform float uCore, uSize, uHalo, uSpread, uGlow, uStreak, uStreakW, uStreakL, 
 uniform float uWarp, uWarpT, uFill, uFillI, uRing, uStack;
 uniform vec3 uTint, uDeep;
 uniform float uPlasma, uTemp, uBright, uContrast, uFog, uDetail, uFalse, uExpand, uR, uFlow, uFlowT;
+uniform float uNeb, uFil, uHot, uThr, uAbs, uGround;
+uniform vec3 uFwd;
+uniform highp sampler3D uField;
 uniform vec3 uCut, uDip;
 uniform float uCutCos, uDipOn;
 varying vec2 vUv;
@@ -92,18 +98,26 @@ float warp(float phi, float r, float n, float seed) {
   return step(0.45, h1) * h1 * exp(-pow(perp / w, 2.0)) * along;
 }
 
-// Strömung im Plasma: drei Lagen heißen Gases ziehen von fern nach nah an der Kamera vorbei (der Raum dehnt sich),
-// je Lage verwirbeltes Rauschen auf der Sehrichtung; Ergebnis ≈ −0,5 … 0,5
-float flowField(vec3 rd) {
-  float acc = 0.0, ws = 0.0;
-  for (int i = 0; i < 3; i++) {
-    float ph = fract(uFlowT + float(i) / 3.0), w = sin(ph * 3.14159);
-    vec3 q = rd * mix(7.0, 1.2, ph) + vec3(float(i) * 17.3, float(i) * 5.1, 0.0);
-    q += 0.7 * vec3(gnoise(q * 0.6), gnoise(q * 0.6 + 5.2), gnoise(q * 0.6 + 9.7));
-    acc += w * fbm(q, 4);
-    ws += w;
-  }
-  return acc / max(ws, 1e-3);
+// Glut satt statt bräunlich
+vec3 satur(vec3 v, float k) { return max(vec3(0.0), mix(vec3(dot(v, vec3(0.2126, 0.7152, 0.0722))), v, k)); }
+
+// Nebel nach dem Knall (das Plasma als Wolkenkörper): Form, Wärmeflecken und grobe Fäden aus dem gebackenen Feld (eine
+// Texturprobe je Schritt), feine Fäden aus Grat-Rauschen; Dichte → Glut nach Planck-Farbe (Fäden heißer und heller, kühle
+// Bahnen dunkel) und Absorption (dunkle Bahnen vor hellem Grund), bis das Plasma klar wird (uThr hoch, uAbs 0)
+void nebSample(vec3 p, float s, out vec3 e, out float sig) {
+  vec4 f = texture(uField, p / NEB_EXT2 + 0.5);
+  float fine = ridged(p * 14.0 + f.a * 1.5, OCTF), fil = f.b;
+  // um die Kamera eine klare Blase: die Struktur liegt dort, wo das Bild viele Wolken überspannt; Dichte bleibt weich
+  // (feine Fäden wirken über die Glut der Adern, nicht über die Dichte – sonst Körnung zwischen den Schritten)
+  float dens = smoothstep(uThr, uThr + 0.5, 1.6 * f.r + 0.25 * gnoise(p * 3.5) + 0.2 + uFil * (fil - 0.45)) * uNeb * smoothstep(0.15, 0.7, s);
+  // Quellfunktion (Glut je Absorption) muss mit der Dichte wachsen, sonst zeigt dichter Nebel eine einfarbige Fläche:
+  // Glut ∝ Dichte², Adern dazu; kühle Bahnen glühen schwach und schlucken das Licht dahinter
+  float filv = fil * (0.6 + 0.4 * fine), vein = pow(filv, 4.0) * dens, emit = 0.15 + 0.85 * clamp(0.5 + 1.8 * f.g, 0.0, 1.0);
+  // ×0,3 … ×2,6: heiße Fäden blau, kühle dichte Bahnen orange bis rot
+  float Tl = uTemp * exp(uHot * (2.4 * f.g + 1.5 * fil * fil - 0.6)) * mix(1.0, 0.4, (1.0 - emit) * dens);
+  // feine Fäden als Filigran in der Glut aller Wolken (ohne die Dichte zu kräuseln)
+  e = ember(Tl) * (2.5 * dens * dens * (0.15 + 1.1 * emit) * (0.45 + 1.3 * fine * fine) + 6.0 * vein * dens) * uBright;
+  sig = dens * uAbs;
 }
 
 void main() {
@@ -173,20 +187,40 @@ void main() {
     float b = dot(oc, rd), h = b * b - dot(oc, oc) + uR * uR;
     vec3 d = normalize(oc + rd * (-b + sqrt(max(h, 0.0))));
     float x = cmbValue(d, uDetail, uDipOn, uDip);
-    // Glut nach Planck-Farbe, heiße Flecken heller (stark übertrieben, echt ≈ 1/100.000); Strömung mit hellen Adern, solange
-    // es trüb ist, dahinter langsame Wogen
-    float wave = fbm(rd * 1.6 / uExpand + vec3(0.0, 0.0, uTime * 0.04), 4);
-    float fl = uFlow > 0.0 ? flowField(rd) : 0.0, vein = pow(1.0 - min(1.0, abs(fl) * 2.2), 8.0);
-    vec3 glow = ember(uTemp * (1.0 + 0.12 * x * uContrast + 0.3 * uFlow * fl)) * uBright * (1.0 + 0.35 * x * uContrast)
-              * (1.0 + 0.4 * uFog * wave) * max(0.15, 1.0 + uFlow * (1.8 * fl + 0.9 * vein));
-    glow = max(vec3(0.0), mix(vec3(dot(glow, vec3(0.2126, 0.7152, 0.0722))), glow, 1.3));   // Glut satt statt bräunlich
+    // ferner Grund hinter dem Nebel: Glut nach Planck-Farbe mit langsamen Wogen, heiße Flecken des Musters heller
+    // (stark übertrieben, echt ≈ 1/100.000)
+    float wave = fbm(rd * 1.6 / uExpand + vec3(0.0, 0.0, uTime * 0.04), 3);
+    vec3 far = satur(ember(uTemp * 1.6 * (1.0 + 0.12 * x * uContrast)) * uBright * (uGround + 0.12 * x * uContrast) * (1.0 + 0.4 * uFog * wave), 1.3);
     // dieselbe Schale wie in Station 10 (Innenseite 0,4, Rand am Fenster, im Fenster nichts)
     float c = dot(d, uCut);
     vec3 shell = c > uCutCos ? vec3(0.0) : cmbColor(x) * 0.4 * (0.5 + 0.5 * (1.0 - smoothstep(uCutCos - 0.04, uCutCos, c))) * 0.9;
     // Rekombination: das Plasma wird fleckig von der Bildmitte nach außen durchsichtig, die Front glüht kurz nach
     float rs = length((vUv - 0.5) * vec2(uAspect, 1.0)), n = 0.5 * gnoise(rd * 2.5) + 0.25 * gnoise(rd * 7.0 + 3.0);
     float m = smoothstep(0.0, 1.0, uFalse * 2.0 - 0.5 - rs * 0.3 + 0.45 * n), edge = 1.0 - abs(2.0 * m - 1.0);
-    col = mix(glow, shell, m) + ember(3000.0) * pow(edge, 3.0) * 0.5 * sin(3.14159 * clamp(uFalse, 0.0, 1.0));
+    // Nebel: Strahl von der Kamera durch den Wolkenkörper in Feld-Einheiten (Würfel ±NEB_EXT; Emission + Absorption je
+    // Schritt exakt integriert wie vol.js), Schritte nah fein und fern grob, Start je Bildpunkt versetzt gegen Streifen;
+    // der Raum dehnt sich (Wolken wachsen auf die Kamera zu), die Kamera driftet durch den Nebel (uFlowT entlang der
+    // Blickrichtung) und schwenkt (rd)
+    vec3 L = vec3(0.0);
+    float T = 1.0, ex = 1.0 + 0.6 * (uExpand - 1.0);
+    if (uNeb > 0.0) {
+      float jit = 0.25 * hash12(gl_FragCoord.xy), s = NEB_S0 * pow(NEB_S1 / NEB_S0, jit / float(NSTEPS));
+      vec3 o = oc * 0.3 + uFwd * (0.35 * uFlow * uFlowT);
+      for (int i = 0; i < NSTEPS; i++) {
+        float s2 = NEB_S0 * pow(NEB_S1 / NEB_S0, (float(i) + 1.0 + jit) / float(NSTEPS)), dt = s2 - s;
+        vec3 e;
+        float sg;
+        nebSample((o + rd * s) / ex, s, e, sg);
+        float a = exp(-sg * dt);
+        L += T * e * (sg > 1e-4 ? (1.0 - a) / sg : dt);
+        T *= a;
+        if (T < 0.004) break;
+        s = s2;
+      }
+      L = satur(L, 1.6);
+    }
+    // Nebel vor dem Grund; wo die Front durch ist, liegt die Schale ohne Nebel da
+    col = L * (1.0 - m) + mix(T, 1.0, m) * mix(far, shell, m) + ember(3000.0) * pow(edge, 3.0) * 0.5 * sin(3.14159 * clamp(uFalse, 0.0, 1.0));
   }
   gl_FragColor = vec4(col, 1.0);
 }`;
@@ -265,7 +299,20 @@ function createDust(n, rand) {
   return g;
 }
 
-// ctx: { detail }, station: { home, shell: { radius, uniforms } } von Station 10 (levels/cmb.js), endLook = deren Look
+// Grobes Feld des Nebels, einmal gebacken (vol.js bakeField): r = gewarpter Wolkenkörper, g = Wärmeflecken,
+// b = grobe Fäden, a = Warp (versetzt die feinen Fäden je Schritt)
+const NEB_EXT = 2.8;
+const FIELD = /* glsl */ `
+vec4 field(vec3 p) {
+  vec3 w = vec3(fbm(p * 2.0 + vec3(1.7, 9.2, 3.1), 3), fbm(p * 2.0 + vec3(8.3, 2.8, 5.6), 3), fbm(p * 2.0 + vec3(4.1, 6.6, 0.9), 3));
+  vec3 q = p + 0.45 * w;   // kräftiger Warp: Schlieren und Wirbel statt runder Klumpen
+  return vec4(fbm(q * 5.6, 3), fbm(p * 2.4 + vec3(13.0, 4.0, 7.0), 3), ridged(q * 8.0 + vec3(3.0, 1.0, 5.0), 3), w.x);
+}`;
+// Schritte und Oktaven der feinen Fäden je Qualitätsstufe (main.js QUALITY detail 0,55 / 0,8 / 1)
+const NEB_Q = (detail) => (detail >= 0.9 ? { NSTEPS: 48, OCTF: 3 } : detail >= 0.7 ? { NSTEPS: 36, OCTF: 2 } : { NSTEPS: 26, OCTF: 2 });
+
+// ctx: { detail, renderer }, station: { home, shell: { radius, uniforms } } von Station 10 (levels/cmb.js), endLook = deren Look;
+// ready = Feld des Nebels gebacken (vor dem ersten Bild abwarten)
 export function createOpener(ctx, station, tune = { ...TUNE }) {
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(32, 1, 0.05, 4000);
@@ -277,6 +324,7 @@ export function createOpener(ctx, station, tune = { ...TUNE }) {
   let k = { ...tune }, M = marks(k);
 
   const su = station.shell.uniforms;
+  const field = bakeField(ctx.renderer, { size: 128, extent: NEB_EXT, body: FIELD });
   const bgU = {
     uInvProj: { value: new THREE.Matrix4() }, uCamWorld: { value: new THREE.Matrix4() }, uCamPos: { value: new THREE.Vector3() }, uO: { value: O },
     uC: { value: new THREE.Vector2(0.5, 0.5) }, uAspect: { value: 1 }, uTime: { value: 0 },
@@ -286,15 +334,21 @@ export function createOpener(ctx, station, tune = { ...TUNE }) {
     uTint: { value: new THREE.Color() }, uDeep: { value: new THREE.Color() },
     uPlasma: { value: 0 }, uTemp: { value: 40000 }, uBright: { value: 1 }, uContrast: { value: 0 }, uFog: { value: 1 }, uDetail: { value: 0 },
     uFalse: { value: 0 }, uExpand: { value: 1 }, uR: { value: station.shell.radius }, uFlow: { value: 0 }, uFlowT: { value: 0 },
+    uNeb: { value: 0 }, uFil: { value: 1 }, uHot: { value: 1 }, uThr: { value: 0 }, uAbs: { value: 1.6 }, uGround: { value: 0.1 }, uFwd: { value: new THREE.Vector3(0, 0, -1) },
+    uField: { value: field.texture },
     uCut: su.uCut, uCutCos: su.uCutCos, uDip: su.uDip, uDipOn: su.uDipOn,
   };
-  const bg = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), new THREE.ShaderMaterial({ vertexShader: BG_VERT, fragmentShader: BG_FRAG, uniforms: bgU, depthTest: false, depthWrite: false }));
+  const bg = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), new THREE.ShaderMaterial({
+    vertexShader: BG_VERT, fragmentShader: BG_FRAG, uniforms: bgU, depthTest: false, depthWrite: false,
+    defines: { ...NEB_Q(ctx.detail), NEB_EXT2: (2 * NEB_EXT).toFixed(2), NEB_S0: '0.08', NEB_S1: '2.10' },
+  }));
   bg.frustumCulled = false;
   bg.renderOrder = -10;
   bg.onBeforeRender = (r, s, cam) => {
     bgU.uInvProj.value.copy(cam.projectionMatrixInverse);
     bgU.uCamWorld.value.copy(cam.matrixWorld);
     bgU.uCamPos.value.copy(cam.position);
+    cam.getWorldDirection(bgU.uFwd.value);
   };
   scene.add(bg);
 
@@ -429,18 +483,25 @@ export function createOpener(ctx, station, tune = { ...TUNE }) {
     dU.uCoc.value = 9 * k.bokeh;
     dU.uPx.value = dU.uH.value / (2 * Math.tan(fov * DEG / 2));
 
-    // Plasma: kühlt nach Planck (40.000 K → 3.000 K), strömt an der Kamera vorbei (immer langsamer), Muster wird deutlich,
-    // Nebel klart auf, dann Rekombination in die Falschfarbe
-    const c = clamp01((t - M.cool) / k.plasma);
-    const T = Math.exp(lerp(Math.log(40000), Math.log(3000), sstep(0, 0.62, c)));
+    // Nebel: kühlt nach Planck (40.000 K → 3.000 K), anfangs dichter Dunst, aus dem Fäden und Adern hervortreten; die
+    // Kamera driftet hindurch (immer langsamer), der Raum dehnt sich; ab ⅔ lichtet sich der Nebel (dünner, durchsichtig),
+    // das Muster wird deutlich, dann Rekombination in die Falschfarbe
+    const c = clamp01((t - M.cool) / k.plasma), lift = sstep(0.6, 0.95, c);
+    const T = Math.exp(lerp(Math.log(22000), Math.log(3000), sstep(0, 0.7, c)));
     bgU.uTemp.value = T;
     bgU.uBright.value = lerp(1.1, 1.15, sstep(0, 0.3, c));
-    bgU.uContrast.value = lerp(0.15, 1, sstep(0.05, 0.55, c));
-    bgU.uFog.value = 1 - sstep(0.4, 0.82, c);
-    bgU.uDetail.value = sstep(0.25, 0.9, c);
-    bgU.uFalse.value = sstep(0.55, 1.0, c);
+    bgU.uContrast.value = lerp(0.15, 1, sstep(0.3, 0.75, c));
+    bgU.uFog.value = 1 - sstep(0.5, 0.9, c);
+    bgU.uDetail.value = sstep(0.35, 0.9, c);
+    bgU.uFalse.value = sstep(0.72, 1.0, c);
     bgU.uExpand.value = 1 + 2.5 * sstep(M.white, M.clear, t);
-    bgU.uFlow.value = k.flow * sstep(M.white - 0.2, M.white + 0.6, t) * (1 - sstep(0.45, 0.9, c));
+    bgU.uNeb.value = k.neb * lerp(0.7, 1, sstep(0, 0.2, c)) * (1 - lift);
+    bgU.uThr.value = lerp(0.15, 0.3, sstep(0, 0.35, c)) + 0.5 * lift;   // dichte Klumpen bleiben selten, dazwischen dünnes Gas und dunkle Leere
+    bgU.uAbs.value = 0.9 * (1 - sstep(0.55, 0.92, c));
+    bgU.uGround.value = 0.06 + 0.45 * (1 - sstep(0, 0.08, c));   // aus dem Weiß: heller Grund, der binnen 1 s in die dunkle Leere abdunkelt
+    bgU.uFil.value = k.fil * lerp(0.6, 1, sstep(0.05, 0.4, c));
+    bgU.uHot.value = k.hot * lerp(0.5, 1, sstep(0.1, 0.5, c));
+    bgU.uFlow.value = k.flow;
     bgU.uFlowT.value = 0.5 * Math.log(1 + Math.max(0, t - M.white) / 0.6);
 
     // Kamera der Station ab weiß, eine durchgehende Fahrt ohne Halt: im Plasma nahe der Mitte, leicht gedreht und langsam
@@ -469,7 +530,7 @@ export function createOpener(ctx, station, tune = { ...TUNE }) {
     }
     const flare = 1 + 0.5 * sstep(0.6, 1, f);
     look.exposure = (out.view === 'own' ? FILM.exposure * flare : Math.exp(lerp(Math.log(1.7), Math.log(endLook.exposure), sstep(-0.04, 0.2, c)))) * lerp(1, k.exposure, tl);
-    look.bloom = (out.view === 'own' ? FILM.bloom + 0.05 * cg + 0.1 * pop - 0.04 * f : lerp(0.3, endLook.bloom, a)) * lerp(1, k.bloom, tl);
+    look.bloom = (out.view === 'own' ? FILM.bloom + 0.05 * cg + 0.1 * pop - 0.04 * f : lerp(0.15, endLook.bloom, a)) * lerp(1, k.bloom, tl);
     look.grain *= lerp(1, k.grain, tl);
     look.ca *= lerp(1, k.ca, tl) * (out.view === 'own' ? 1 + 1.2 * cg + 4 * pop + 1.5 * f : 1);
     look.vig *= lerp(1, k.vig, tl) * (out.view === 'own' ? (1 + 0.25 * beat + 0.3 * inh * (1 - snap)) * (1 - 0.7 * f) : lerp(0.3, 1, a));   // im Weiß keine grauen Ecken
@@ -477,7 +538,7 @@ export function createOpener(ctx, station, tune = { ...TUNE }) {
   }
 
   return {
-    scene, camera, film, look, out, apply, setTune, get marks() { return M; }, get tune() { return k; },
+    scene, camera, film, look, out, apply, setTune, ready: field.ready, get marks() { return M; }, get tune() { return k; },
     get done() { return film.t >= M.end; },
     advance(dt) { if (film.playing) film.t = Math.min(M.end, film.t + dt * k.tempo); },
     // Größe des Bilds (Pixel des Ziels) und Seitenverhältnis des Fensters; eigene Kamera mittig im Fenster
