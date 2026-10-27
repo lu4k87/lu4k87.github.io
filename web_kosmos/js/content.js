@@ -1075,7 +1075,7 @@ export const STATIONS = {
       { v: '≈ 50 %', u: '', l: 'Chance einer Verschmelzung in 10 Mrd. Jahren', s: 'sawala-2025' },
       { v: '≈ 10', u: 'Mio. Lj', l: 'Durchmesser der Gruppe', s: 'mcconnachie-2012' },
     ],
-    note: 'Galaxien an ihren gemessenen Richtungen und Entfernungen (McConnachie 2012), Größen maßstäblich, Formen als Modell; 25 Zwerggalaxien (Auswahl). Zukunft als Zweikörper-Modell (van der Marel 2012) ohne dynamische Reibung; M33 bleibt stehen. Hintergrund-Galaxien statistisch.',
+    note: 'Galaxien an ihren gemessenen Richtungen und Entfernungen (McConnachie 2012), Größen maßstäblich, Formen als Modell; 25 Zwerggalaxien (Auswahl). Zukunft als Zweikörper-Modell (van der Marel 2012) ohne dynamische Reibung; M33 bleibt stehen. Hintergrund-Galaxien statistisch. Vorbeiflug an Galaxien auf der Fahrt zur Milchstraße: Darstellung – zwischen uns und der Milchstraße liegen in Wirklichkeit nur Zwerggalaxien.',
     sources: ['li-2021', 'mcconnachie-2012', 'vdmarel-2012', 'sawala-2025'],
     hotspots: {
       mw: { t: 'Milchstraße', x: 'Unsere Galaxie. Hineinfliegen.', s: 'bland-2016' },
@@ -1144,7 +1144,7 @@ export const STATIONS = {
       { v: '≈ 370.000', u: 'J.', l: 'bis das Universum durchsichtig wurde', s: 'planck-2018' },
       { v: '≈ 180', u: 'Mio. J.', l: 'bis zu den ersten Sternen (Modell)', s: 'bromm-2013' },
     ],
-    note: 'Darstellung, nicht maßstäblich: Lichtblitz mit violettem Netz nach dem Vorbild üblicher Erklärfilme. Der Mittelpunkt ist nur ein Hilfsmittel – der Raum dehnte sich überall zugleich aus, es gab keinen Ort und kein Außen der Explosion (Hinweis im Film). Das Netz ist Grat-Rauschen in mitbewegten Koordinaten und wächst mit dem Raum, ohne sein Muster zu ändern (wie das Modell in Station 9); Galaxien sind 16 gezeichnete Formen (eigenes Modell, keine Teleskopbilder), Farben nach Planck-Temperatur. Die Zeitachse des Films ist verdichtet, eine Filmsekunde entspricht keiner festen Zeitspanne. Galaxien-Flug zu Station 10: Tiefenfeld als Modell – je tiefer, desto früher (kleiner, unregelmäßiger, röter), dann das dunkle Zeitalter und die Wand der Hintergrundstrahlung (Muster simuliert wie in Station 10). Kennzahlen aus dem ΛCDM-Modell mit Planck-2018-Werten.',
+    note: 'Darstellung, nicht maßstäblich: Lichtblitz mit violettem Netz nach dem Vorbild üblicher Erklärfilme. Der Mittelpunkt ist nur ein Hilfsmittel – der Raum dehnte sich überall zugleich aus, es gab keinen Ort und kein Außen der Explosion (Hinweis im Film). Das Netz ist Grat-Rauschen in mitbewegten Koordinaten und wächst mit dem Raum, ohne sein Muster zu ändern (wie das Modell in Station 9); Galaxien sind 16 gezeichnete Formen (eigenes Modell, keine Teleskopbilder), Farben nach Planck-Temperatur. Die Zeitachse des Films ist verdichtet, eine Filmsekunde entspricht keiner festen Zeitspanne. Kennzahlen aus dem ΛCDM-Modell mit Planck-2018-Werten.',
     sources: ['planck-2018', 'pdg-bbn', 'bromm-2013', 'jades-2024', 'weygaert'],
     hotspots: {
       cmb: { t: 'Beobachtbares Universum', x: 'Hineinfliegen: aus der Wand der Hintergrundstrahlung durch das dunkle Zeitalter und die Galaxien bis zu Station 10 – vorwärts in der Zeit, die Galaxien werden größer und blauer.', s: 'planck-2018' },

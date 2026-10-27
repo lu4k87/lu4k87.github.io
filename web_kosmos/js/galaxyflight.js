@@ -1,20 +1,15 @@
-// Galaxien als eigenes Modell und Tiefenfeld-Durchflug zwischen Station 10 und 11 (Vorschau 26.10.2026 „Urknall und
-// Kamerafahrt durch die Galaxien“: F5 Modell, Flug:A).
+// Galaxien als eigenes Modell und Vorbeiflug an Galaxien auf der Fahrt hinein zur Milchstraße (Station 8 → 3; Vorschau
+// 26.10.2026 „Urknall und Kamerafahrt durch die Galaxien“: F5 Modell; Rückmeldung des Users 27.10.2026: der Flug an Galaxien
+// vorbei gehört auf die Fahrt zur Milchstraße, nicht zwischen Station 10 und 11).
 // · galaxyAtlas(): 16 Formen, im Browser auf ein Canvas gemalt (Spiralen mit und ohne Balken, flockig, mit großem Bulge,
 //   blau, Ellipsen, von der Kante, unregelmäßig, Paar in Wechselwirkung) – keine Teleskopbilder, keine Lizenzfrage.
 // · galaxySprites()/glowPoints(): Galaxien als Tafeln mit Tönung und Geburtszeit (uT), ferne Galaxien/Sterne als Punkte;
 //   uS = Maßstab der Gruppe (Station 11 lässt den Raum wachsen), uPx = Pixel je Bogenmaß.
-// · createCorridor(): Feld aus Galaxien entlang −z; je tiefer, desto früher: kleiner, unregelmäßiger, röter, dann das dunkle
-//   Zeitalter fast ohne Galaxien, am Ende die Wand der Hintergrundstrahlung (Fleckenmuster wie Station 10, weicher).
-// Rechenkern ohne three.js (Kurven, Fahrplan der Sonderetappe): flightplan.js.
-
+// · createFlyby(): reife Galaxien entlang der Fahrt, beim Start an Kamera und Anker ausgerichtet (Lage: flightplan.js
+//   flybyField), nur im Flug sichtbar.
 import * as THREE from 'three';
-import { NOISE } from './glsl.js';
 import { mulberry32, gauss, blackbody } from './astro.js';
-import { key } from './flightplan.js';
-
-const lerp = (a, b, x) => a + (b - a) * x;
-const clamp01 = (x) => Math.min(1, Math.max(0, x));
+import { sstep, flybyField, FLYBY } from './flightplan.js';
 
 // ---------- Atlas: 4 × 4 Kacheln je 512 px, additiv auf Schwarz gemalt (einmal je Seite, das Canvas bleibt im Speicher) ----------
 function blob(rgb) {
@@ -200,77 +195,30 @@ export function glowPoints(list) {
   return pts;
 }
 
-// ---------- Tiefenfeld: L Einheiten tief entlang −z, Wand der Hintergrundstrahlung dahinter ----------
-// OFF = Lage des Feldes in der Szene: weit abseits des Urknalls im Ursprung (Anker der Flüge) – die Kamera fährt nie dicht
-// an ihm vorbei, die Fahrt relativ zum Anker bleibt so stetig wie im Bild
-const L = 1000, WALL = -1.02 * L, FRONT = 120, Z0 = 30, Z1 = -L + 10, OFF = -6000;
-// Hintergrundstrahlung als Wand: Farbskala wie Station 10, weicher; glüht zuletzt weiß auf (uGlow)
-const WALL_FRAG = /* glsl */ `
-${NOISE}
-uniform float uGlow;
-varying vec3 vP;
-vec3 planck(float x) {
-  x = clamp(x * 0.5 + 0.5, 0.0, 1.0);
-  vec3 c0 = vec3(0.0, 0.03, 0.35), c1 = vec3(0.0, 0.55, 1.0), c2 = vec3(1.0, 0.97, 0.85), c3 = vec3(1.0, 0.5, 0.0), c4 = vec3(0.6, 0.0, 0.0);
-  if (x < 0.25) return mix(c0, c1, x / 0.25);
-  if (x < 0.5) return mix(c1, c2, (x - 0.25) / 0.25);
-  if (x < 0.75) return mix(c2, c3, (x - 0.5) / 0.25);
-  return mix(c3, c4, (x - 0.75) / 0.25);
-}
-void main() {
-  vec3 q = vP * 0.012;
-  float f = 0.5 * gnoise(q) + 0.5 * gnoise(q * 2.3 + 3.1) + 0.6 * gnoise(q * 5.0 + 7.3) + 0.8 * gnoise(q * 11.0 + 1.7) + 0.5 * gnoise(q * 23.0 + 4.4);
-  float r = length(vP.xy) / 600.0;
-  gl_FragColor = vec4(planck(f * 1.1) * uGlow * (0.6 + 1.6 * exp(-r * r * 6.0)) + vec3(1.0, 0.9, 0.8) * uGlow * 1.2 * exp(-r * r * 40.0), 1.0);
-}`;
-
-export function createCorridor(ctx, tex) {
-  const group = new THREE.Group();
-  group.position.z = OFF;
-  const rand = mulberry32(21), list = [], dots = [];
-  const nGal = Math.round(11000 * Math.max(0.6, ctx.detail)), nDot = Math.round(40000 * Math.max(0.5, ctx.detail));
-  // f = Tiefe 0 … 1 (früher): ab 0,68 dünnt das Feld aus (dunkles Zeitalter), ab 0,9 fast leer
-  const keep = (f, a, b) => f < a || rand() < Math.max(0.03, 1 - (f - a) / b);
-  for (let i = 0; i < nGal; i++) {
-    const z = FRONT - rand() * (L + FRONT), f = clamp01(-z / L);
-    if (!keep(f, 0.68, 0.22)) continue;
-    const rr = 48 * Math.sqrt(rand()), th = rand() * 6.283;
-    const set = f > 0.55 ? TILES.first : f > 0.3 ? TILES.young : TILES.mature;
-    list.push({ pos: new THREE.Vector3(rr * Math.cos(th), rr * Math.sin(th), z), size: 2.6 * (1 - 0.6 * f) * Math.exp(gauss(rand) * 0.4),
-      tile: set[Math.floor(rand() * set.length)], tint: blackbody(lerp(7200, 2100, Math.pow(f, 0.8))), gain: 1.6 + rand() * 1.4, ...randTurn(rand) });
-  }
-  for (let i = 0; i < nDot; i++) {
-    const z = FRONT - rand() * (L + FRONT), f = clamp01(-z / L);
-    if (!keep(f, 0.7, 0.2)) continue;
-    const rr = 70 * Math.sqrt(rand()), th = rand() * 6.283;
-    dots.push({ pos: new THREE.Vector3(rr * Math.cos(th), rr * Math.sin(th), z), size: 0.35, col: blackbody(lerp(7000, 2000, f)).map((v) => v * (0.5 + rand())) });
-  }
-  const gal = galaxySprites(list, tex), pts = glowPoints(dots);
-  const wall = new THREE.Mesh(new THREE.PlaneGeometry(3200, 3200), new THREE.ShaderMaterial({
-    vertexShader: 'varying vec3 vP; void main() { vP = position; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
-    fragmentShader: WALL_FRAG, uniforms: { uGlow: { value: 0 } }, depthWrite: false, depthTest: false,
-  }));
-  wall.position.z = WALL;
-  wall.renderOrder = -5;
-  group.add(wall, pts, gal);
-  const pos = new THREE.Vector3(), tgt = new THREE.Vector3();
+// ---------- Vorbeiflug: Gruppe mit Ursprung im Anker, +z zur Startpose der Kamera, Maßstab = Startabstand D ----------
+// begin() richtet das Feld an der Fahrt aus (die Kamera fährt auf der Achse auf den Anker zu), step(e) blendet über die
+// Etappe ein und aus, end() blendet es weg; w = Gewicht der Etappe für den Fahrplan (main.js planChain)
+export function createFlyby(tex) {
+  const rand = mulberry32(8);
+  const list = flybyField(rand).map((g) => ({ pos: new THREE.Vector3(g.x, g.y, g.z), size: g.size, gain: 2.6 + rand() * 1.8,
+    tile: TILES.mature[Math.floor(rand() * TILES.mature.length)], tint: blackbody(5200 + rand() * 2600), ...randTurn(rand) }));
+  const mesh = galaxySprites(list, tex), u = mesh.material.uniforms, group = new THREE.Group(), axis = new THREE.Vector3(0, 0, 1);
+  group.add(mesh);
+  group.visible = false;
+  const dir = new THREE.Vector3();
   return {
     group,
-    // x = Stand der Fahrt 0 … 1; hinaus (down = false) von heute zur Wand, Blick nach −z; hinein umgekehrt, Blick nach +z.
-    // Tiefe wächst mit x^1,12 (tief hinten etwas schneller), leichtes Schlingern wie aus der Hand
-    pose(cam, x, down) {
-      const u = down ? 1 - x : x, z = Z0 + (Z1 - Z0) * Math.pow(u, 1.12), w = u * 7;
-      pos.set(Math.sin(w) * 3, Math.cos(w * 0.72) * 2, z);
-      tgt.set(Math.sin(w + 0.4) * 2, Math.cos(w * 0.72 + 0.3) * 1.5, z + (down ? 60 : -60));
-      pos.z += OFF;
-      tgt.z += OFF;
-      cam.position.copy(pos);
-      cam.up.set(0, 1, 0);
-      cam.lookAt(tgt);
-      // Wand glüht mit der Nähe auf: zuerst kaum, dann Fleckenmuster, zuletzt fast weiß
-      wall.material.uniforms.uGlow.value = key([[0.5, 0], [0.72, 0.006], [0.86, 0.03], [0.95, 0.15], [1, 0.5]], -z / L);
-      return tgt;
+    w: FLYBY.w,
+    begin(from, anchor) {
+      const D = dir.copy(from).sub(anchor).length();
+      group.position.copy(anchor);
+      group.quaternion.setFromUnitVectors(axis, dir.divideScalar(D));
+      group.scale.setScalar(D);
+      u.uS.value = D;
+      u.uGain.value = 0;
+      group.visible = true;
     },
-    setPixelRatio(px) { pts.material.uniforms.uPx.value = px; },
+    step(e) { u.uGain.value = sstep(0, FLYBY.fade[0], e) * (1 - sstep(FLYBY.fade[1], 1, e)); },
+    end() { group.visible = false; },
   };
 }

@@ -11,7 +11,7 @@ import { createHud } from './hud.js';
 import { settings, onSettings, globalGrade } from './settings.js';
 import { createDeepSky } from './deepsky.js';
 import { attachSound, soundTo } from './sound.js';
-import { flightPlan } from './flightplan.js';
+import { ZOOM } from './flightplan.js';
 import { TURN, planTurn, turnPose, turnPace, smoother } from './turn.js';
 import { createBoot } from './boot.js';
 
@@ -68,8 +68,6 @@ const LOADERS = {
   pluto: () => import('./levels/pluto.js'),
 };
 
-// Flug: äußere Kamera zoomt um ZOOM auf den Anker zu, die innere kommt aus ZOOM-fachem Abstand an (gleiche Rate)
-const ZOOM = 22;
 // Mausrad: notch = ln-Schritt je Raste (Δ 100, ≈ 2,8 %), maxDelta = größtes Δ je Ereignis (schnelles Drehen, Touchpad-Schwung),
 // max = größter gesammelter Rest (ln, e^1 ≈ 2,7-fach), glide/ease = Ausrollen und Anlauf je s (kritisch gedämpft:
 // ease = 4 · glide, ≈ 0,8 s ohne Nachschwingen), vmax = Höchsttempo (ln/s, e^1,4 ≈ 4-fach je s), edge = Abbremsen vor dem
@@ -544,9 +542,9 @@ function planChain(lvs, dur) {
     const dec = Math.abs(Math.log10(homeWidth(lvs[i]) / homeWidth(to)));
     return { down: to.meta.parent === lvs[i].id, w: Math.min(CHAIN.hi, Math.max(CHAIN.lo, CHAIN.w0 + CHAIN.perDecade * dec)) };
   });
-  // Sonderetappe (Galaxien-Flug, fly der äußeren Station): eigenes Gewicht, die Fahrt wird um diesen Anteil länger
+  // Vorbeiflug an Galaxien (pass der äußeren Station, nur hinein): eigenes Gewicht, die Fahrt wird um diesen Anteil länger
   let extra = 0;
-  if (!still()) legs.forEach((l, k) => { const o = l.down ? lvs[k] : lvs[k + 1]; if (o.fly) { extra += o.fly.w - l.w; l.w = o.fly.w; } });
+  if (!still()) legs.forEach((l, k) => { const o = lvs[k]; if (l.down && o.pass) { extra += o.pass.w - l.w; l.w = o.pass.w; } });
   const n = legs.length, ws = legs.map((l) => l.w), W = ws.reduce((s, w) => s + w, 0);
   // Wende (hinaus → hinein) an Station i: deren Kamera fährt einen Bogen, das Tempo folgt dort der Bildbewegung
   const i = legs.findIndex((l, k) => k && l.down && !legs[k - 1].down);
@@ -667,7 +665,10 @@ function hop() {
     upInner: upPath(innerFrom, innerTo, inner.camera.up), maskR: 0, blur: 0, veil: 0,
     anchorUv: new THREE.Vector2(0.5, 0.5), innerUv: new THREE.Vector2(0.5, 0.5), captioned: false,
   };
-  if (outer.fly && !still()) state.tr.fly = flyLeg(state.tr);   // Galaxien-Flug zwischen Station 10 und 11
+  // Vorbeiflug an Galaxien auf der Fahrt hinein (Station 8 → 3): Feld entlang der Zoom-Linie der äußeren Kamera
+  if (down && outer.pass && !still()) { state.tr.pass = outer.pass; outer.pass.begin(outerFrom.pos, anchor); }
+  // Station beginnt beim Hinausflug in sie (Urknall: Film von vorn, die Explosion kommt vor der Landung)
+  if (!down && to.enter) to.enter();
   hud.hideMarkers(true);
   hud.setFlight(true, to.meta, multi);
 }
@@ -713,7 +714,7 @@ function stepTransition(dt) {
   const innerTgt = flyPose(tr.inner.camera, tr.innerFrom, tr.innerTo, e, e, null, tr.down ? null : tr.carry, null, tr.upInner);
   tr.outerTgt = outerTgt;
   tr.innerTgt = innerTgt;
-  if (tr.fly) flyPoses(tr, e);   // Galaxien-Flug: eigene Kameraführung (ersetzt die Posen oben)
+  if (tr.pass) tr.pass.step(e);
   // Rollen klingt zum Ende der Fahrt sicher auf null aus (danach dreht die Steuerung ohne Rollen weiter)
   const bk = still() ? 0 : 1 - smoother(0.8, 1, ch.t);
   bank(tr.outer, dt, bk);
@@ -732,7 +733,6 @@ function stepTransition(dt) {
   tr.maskR = 0.05 * Math.pow(ZOOM, p) * smooth(0, 0.08, p);
   tr.blur = still() ? 0 : 0.09 * Math.sin(Math.PI * p);
   tr.veil = still() ? 0 : Math.pow(Math.sin(Math.PI * e), 1.6);
-  if (tr.fly) flyMix(tr);   // Galaxien-Flug: Überblendung statt Iris
   // Maßstab in der Leiste läuft logarithmisch mit
   const wOut = fieldWidth(tr.outer), wIn = fieldWidth(tr.inner);
   hud.setScale(Math.exp(Math.log(wOut) * (1 - p) + Math.log(wIn) * p), p < 0.5 ? tr.outer : tr.inner);
@@ -743,6 +743,7 @@ function stepTransition(dt) {
     to.camera.position.copy(end.pos);
     to.camera.lookAt(end.target);
     to.target = end.target.clone();
+    if (tr.pass) tr.pass.end();
     state.tr = null;
     ch.end = end;
     // Bewegung am Ende dieser Etappe für den Bogen der nächsten: hinein = auf das Blickziel zu, hinaus = vom Anker weg
@@ -761,52 +762,6 @@ function stepTransition(dt) {
   }
 }
 
-// ---------- Galaxien-Flug zwischen Station 10 und 11 (galaxyflight.js, Vorschau 26.10.2026 Flug:A) ----------
-// Die äußere Station (Urknall) bringt ihn mit (lv.fly). Hinaus: die Kamera von Station 10 taucht auf uns zu, das Bild blendet
-// in den Tiefenfeld-Durchflug (tiefer = früher) bis zur Wand der Hintergrundstrahlung; sie glüht weiß auf → Schnitt in den
-// Blitz, der Film beginnt. Hinein: in den Blitz, Schnitt in die weiße Wand, vorwärts in der Zeit, zuletzt Überblendung in die
-// Anfahrt an Station 10. Alle Kameras fahren vorwärts – beim Überblenden kehrt keine Bewegung um.
-function flyLeg(tr) {
-  tr.outer.fly.phase(tr.down ? 'bang' : 'corridor', 0);
-  if (!tr.down) tr.captioned = true;   // Titel „Urknall“ erst nach dem Schnitt (flyPoses), nicht über dem Durchflug
-  return { fly: tr.outer.fly, started: false, plan: null };
-}
-// Kamera um ein Ziel: Abstand logarithmisch von der Startpose bis zum k-ten Teil, Blick vom alten Ziel weich zum neuen
-const _fv = new THREE.Vector3();
-function divePose(cam, from, target, k, x) {
-  _fv.copy(from.pos).sub(target);
-  cam.position.copy(target).addScaledVector(_fv, Math.pow(k, -x));
-  return _fv.copy(from.target).lerp(target, x);
-}
-function flyPoses(tr, e) {
-  const f = tr.fly, P = f.plan = flightPlan(e, tr.down), oc = tr.outer.camera, ic = tr.inner.camera;
-  if (P.phase === 'corridor') f.fly.corridor(oc, P.x, tr.down);
-  else if (tr.down) oc.lookAt(divePose(oc, tr.outerFrom, tr.anchor, ZOOM, P.dive));   // in den Blitz
-  else { oc.position.copy(tr.outerTo.pos); oc.lookAt(tr.outerTo.target); }             // Heimpose, der Film läuft
-  if (!tr.down) {
-    // Station 10 taucht auf uns zu; kommt die Fahrt von Station 9, setzt sie deren Bewegung erst fort (Bogen statt Knick)
-    const tgt = divePose(ic, tr.innerFrom, tr.inner.home.target, ZOOM, P.dive);
-    if (tr.carry) tr.carry(ic.position, e);
-    ic.lookAt(tgt);
-    if (P.phase === 'bang' && !f.started) { f.started = true; f.fly.start(); }
-    if (P.phase === 'bang' && P.white < 0.08 && !f.cap) { f.cap = true; hud.caption(tr.to.meta); }
-  }
-  // Schnitt unter vollem Weiß (Wand ↔ Blitz): Kamera springt gewollt; ?camlog merkt die Zeit (tests/camera.py überspringt sie)
-  if (f.last && f.last !== P.phase && window.__camlog) (window.__camcut ||= []).push(state.time);
-  f.last = P.phase;
-  // am Ende hinein: Station 11 wieder im Bild des Urknalls (der Durchflug gehört nur in den Flug)
-  f.fly.phase(tr.down && e >= 1 ? 'bang' : P.phase, e >= 1 ? 0 : P.white);
-}
-// Fluchtpunkt der Kamera im Bild (Mitte der Zoom-Unschärfe)
-const vanish = (cam, out) => { _fv.set(0, 0, -1).applyQuaternion(cam.quaternion).multiplyScalar(1e3).add(cam.position).project(cam); return out.set((_fv.x + 1) / 2, (_fv.y + 1) / 2); };
-function flyMix(tr) {
-  const P = tr.fly.plan;
-  tr.mix = tr.prog = P.mix;
-  tr.blur = P.phase === 'corridor' ? 0.06 * Math.min(1, P.x * 8, (1 - P.x) * 8) : 0;
-  tr.veil = 0;
-  vanish(tr.outer.camera, tr.anchorUv);
-  vanish(tr.inner.camera, tr.innerUv);
-}
 // ---------- Auftakt-Film (Vorschau 26.10.2026 Ort:C, Rückmeldung des Users 26.10.2026): beim ersten Besuch der Urknall ----------
 // Film in Station 11 mit Kinobalken, Bedienung ausgeblendet, dezent „Überspringen“ (Esc, Klick); danach Landung in Station 11,
 // der obersten Ebene – keine Fahrt hinunter zur ISS. Gemerkt in localStorage; der Knopf „Film vom Urknall“ (Station 10,
@@ -1107,7 +1062,7 @@ function frame(nowMs) {
   // Kinobalken: Auftakt fest, sonst Zahnrad „Kinobalken 2,39:1“ (Balkenhöhe je Seite aus dem Fensterformat)
   bars += ((state.intro || state.opener ? 0.11 : settings.S.bars ? Math.max(0, (1 - innerWidth / innerHeight / 2.39) / 2) : 0) - bars) * Math.min(1, real * 2.5);
   look.bars = bars;
-  post.render(tr ? tr.outer.rt : lv.rt, tr ? tr.inner.rt : null, tr ? { prog: tr.prog, maskR: tr.maskR, blur: tr.blur, veil: tr.veil, mix: tr.mix, anchor: tr.anchorUv, inner: tr.innerUv } : null, look, state.time);
+  post.render(tr ? tr.outer.rt : lv.rt, tr ? tr.inner.rt : null, tr ? { prog: tr.prog, maskR: tr.maskR, blur: tr.blur, veil: tr.veil, anchor: tr.anchorUv, inner: tr.innerUv } : null, look, state.time);
 
   if (!tr) hud.update(lv.camera, lv, state.time);
   hud.hint(!tr && lv.hint ? lv.hint() : '');   // Hinweis-Zeile des Films (Station 11)

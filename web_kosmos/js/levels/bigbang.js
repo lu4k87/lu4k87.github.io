@@ -5,7 +5,8 @@
 // Ursprung (Maßstab s = Abstand am Start / Abstand im Film) – dasselbe Bild, und Mausrad, Ziehen und Leerlauf-Fahrt gelten
 // wie in jeder Station. Das Netz ist Grat-Rauschen in mitbewegten Koordinaten (Abstand / Radius der Front), einmal in eine
 // 3D-Textur gebacken und in halber Auflösung durchstrahlt (vol.js). Der Mittelpunkt ist nur Darstellung: Der Raum dehnte sich
-// überall zugleich aus (Hinweis im Film, Feld note). Bringt den Galaxien-Flug zu Station 10 mit (fly, galaxyflight.js).
+// überall zugleich aus (Hinweis im Film, Feld note). Fahrt hinaus aus Station 10 = normaler Zoom-Flug, der Film beginnt dabei
+// von vorn (enter): erst der Blitz, dann die Landung oben.
 
 import * as THREE from 'three';
 import { registerLayers } from '../layers.js';
@@ -13,8 +14,8 @@ import { NOISE } from '../glsl.js';
 import { bakeField, offscreen, disposeScene } from '../vol.js';
 import { mulberry32, gauss, blackbody, GLY } from '../astro.js';
 import { settings } from '../settings.js';
-import { galaxyAtlas, galaxySprites, glowPoints, createCorridor, randTurn } from '../galaxyflight.js';
-import { smoothKeys, FLIGHT } from '../flightplan.js';
+import { galaxyAtlas, galaxySprites, glowPoints, randTurn } from '../galaxyflight.js';
+import { smoothKeys } from '../flightplan.js';
 
 export const DUR = 45;
 // Filmsekunde → Stand des Modells T (Stützwerte des Prototyps): Zündung in 1 s, Blitz bis 6 s, Netz bis 18 s, Galaxien bis
@@ -140,22 +141,8 @@ export function create(ctx) {
   bang.add(dust, gals);
   scene.add(bang);
 
-  // Galaxien-Flug zu Station 10 (nur im Flug sichtbar) und Weiß für den Schnitt zwischen Wand und Blitz
-  const corridor = createCorridor(ctx, tex);
-  corridor.group.visible = false;
-  scene.add(corridor.group);
-  const white = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), new THREE.ShaderMaterial({
-    vertexShader: 'void main() { gl_Position = vec4(position.xy, 0.0, 1.0); }',
-    fragmentShader: 'uniform float uW; void main() { gl_FragColor = vec4(vec3(0.96, 0.95, 1.0) * uW * 6.0, 1.0); }',
-    uniforms: { uW: { value: 0 } }, transparent: true, blending: THREE.AdditiveBlending, depthTest: false, depthWrite: false,
-  }));
-  white.frustumCulled = false;
-  white.renderOrder = 1000;
-  white.visible = false;
-  scene.add(white);
-
   // Film: Stand in Sekunden, Tempo, Abspielen; still = reduzierte Bewegung → Standbild bei 26 s, nichts läuft von selbst
-  const film = { t: ctx.still ? 26 : 0, dur: DUR, playing: !ctx.still, spd: 1, tempo: 1, phase: 'bang' };
+  const film = { t: ctx.still ? 26 : 0, dur: DUR, playing: !ctx.still, spd: 1, tempo: 1 };
   let hintOn = true, streakOn = true, webGain = 1;
   const look = { exposure: 0.5, bloom: 0.1, sat: 1.04, con: 0.1, vig: 0.45 };
   const hsExp = new THREE.Vector3(), hsGal = new THREE.Vector3();
@@ -179,16 +166,6 @@ export function create(ctx) {
     hsExp.copy(expDir).multiplyScalar(R * 0.55);
     hsGal.copy(galBase).multiplyScalar(s);
     bg.invalidate();
-  }
-  function phase(p, w = 0) {
-    film.phase = p;
-    const fly = p === 'corridor';
-    corridor.group.visible = fly;
-    bang.visible = !fly;
-    bg.quad.visible = !fly;
-    white.visible = w > 0.001;
-    white.material.uniforms.uW.value = w;
-    if (fly) { look.exposure = 1; look.bloom = 0.12; } else apply();
   }
   const section = () => SECTIONS.find(([end]) => film.t < end)[1];
 
@@ -222,39 +199,25 @@ export function create(ctx) {
   return {
     scene, camera, unit: 2.7 * GLY, hotspots, controls, home, look, film,
     orbit: { minDistance: 4, maxDistance: 140, cineSpeed: 0.5 },
-    // Shader des Durchflugs und des Weiß schon beim Laden binden (compileAsync übergeht Unsichtbares) – kein Hänger im Flug
-    ready: field.ready.then(async () => {
-      corridor.group.visible = white.visible = true;
-      await ctx.renderer.compileAsync(scene, camera);
-      corridor.group.visible = white.visible = false;
-      await ctx.renderer.compileAsync(bg.scene, camera);
-    }),
+    ready: field.ready.then(() => ctx.renderer.compileAsync(bg.scene, camera)),
     update(dt, t, cam) {
-      if (film.phase === 'bang') {
-        if (film.playing && film.t < DUR) {
-          film.t = Math.min(DUR, film.t + dt * SPEEDS[film.spd][0] * film.tempo);
-          if (film.t >= DUR) film.playing = false;
-        }
-        apply();
-        bg.render(cam);
+      if (film.playing && film.t < DUR) {
+        film.t = Math.min(DUR, film.t + dt * SPEEDS[film.spd][0] * film.tempo);
+        if (film.t >= DUR) film.playing = false;
       }
+      apply();
+      bg.render(cam);
     },
     // Hinweis-Zeile über der Bühne (main.js → hud.hint): angeboten in den ersten Sekunden des Films, die HUD zeigt sie 4,5 s,
     // sobald der Stationstitel ausgeblendet ist
-    hint: () => (hintOn && film.phase === 'bang' && film.t > HINT.from && film.t < HINT.to ? HINT.text : ''),
+    hint: () => (hintOn && film.t > HINT.from && film.t < HINT.to ? HINT.text : ''),
     restart(t0 = 0, tempo = 1) { film.t = t0; film.tempo = tempo; film.playing = true; apply(); },
     live: () => `${section()} · ${mmss(film.t)} von ${mmss(DUR)} · Darstellung, nicht maßstäblich`,
-    // Sonderetappe zu Station 10 (main.js): Bild der Station umschalten, Kamera im Tiefenfeld führen, Film beim Schnitt starten
-    fly: {
-      w: FLIGHT.w,
-      phase,
-      corridor: (cam, x, down) => corridor.pose(cam, x, down),
-      start: () => { film.t = 0.4; film.tempo = 1; film.playing = true; },
-    },
+    // Fahrt hinaus aus Station 10 beginnt (main.js hop): Film von vorn, die Explosion kommt vor der Landung
+    enter() { if (!ctx.still) { film.t = 0; film.tempo = 1; film.playing = true; apply(); } },
     setPixelRatio(pr, H) {
       const px = H / (2 * Math.tan(THREE.MathUtils.degToRad(camera.fov) / 2));
       dust.material.uniforms.uPx.value = px;
-      corridor.setPixelRatio(px);
       bg.setSize(Math.round(H * camera.aspect), H);
     },
     dispose: () => { disposeScene(scene); bg.dispose(); field.dispose(); tex.dispose(); },

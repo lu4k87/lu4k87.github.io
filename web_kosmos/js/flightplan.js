@@ -1,6 +1,6 @@
-// Rechenkern ohne three.js für den Urknall (Station 11) und den Galaxien-Flug zu Station 10 (galaxyflight.js), Test
-// tests/flightplan.test.js: Stützwert-Kurven (key stückweise weich, smoothKeys glatt und monoton) und flightPlan(e, down) =
-// Fahrplan der Sonderetappe für main.js (welches Bild, wo im Feld, Überblendung, Weiß).
+// Rechenkern ohne three.js für den Urknall (Station 11) und den Vorbeiflug an Galaxien zur Milchstraße (galaxyflight.js),
+// Test tests/flightplan.test.js: Stützwert-Kurven (key stückweise weich, smoothKeys glatt und monoton), Zoom der Flüge und
+// flybyField = Lage der Galaxien entlang der Fahrt.
 
 const lerp = (a, b, x) => a + (b - a) * x;
 const clamp01 = (x) => Math.min(1, Math.max(0, x));
@@ -37,21 +37,21 @@ export function smoothKeys(pts, { log = false, flat = false } = {}) {
   };
 }
 
-// ---------- Fahrplan der Sonderetappe (e = Stand der Etappe 0 … 1 in Fahrtrichtung) ----------
-// hinaus (Station 10 → 11): Kamera von Station 10 taucht auf uns zu (dive), Überblendung in den Durchflug (mix = Anteil des
-// Bildes von Station 10), Wand glüht weiß auf, Schnitt in den Blitz (cut), Weiß klingt ab, der Film beginnt.
-// hinein (11 → 10): in den Blitz (dive), Schnitt in die weiße Wand, vorwärts in der Zeit, Überblendung in die Anfahrt an Station 10.
-export const FLIGHT = { w: 2.8, out: { fade: [0.12, 0.28], run: [0.12, 0.935], white: [0.885, 0.935], cut: 0.935, dive: [0, 0.3] },
-  in: { cut: 0.08, white: [0.02, 0.08], run: [0.08, 0.9], fade: [0.72, 0.9], dive: [0, 0.08] } };
-export function flightPlan(e, down) {
-  const P = down ? FLIGHT.in : FLIGHT.out;
-  const bang = down ? e < P.cut : e >= P.cut;
-  const x = clamp01((e - P.run[0]) / (P.run[1] - P.run[0]));
-  // Weiß: zum Schnitt hin voll, danach weich zurück
-  const white = down
-    ? (bang ? sstep(P.white[0], P.white[1], e) : 1 - sstep(P.cut, P.cut + 0.08, e))
-    : (bang ? 1 - sstep(P.cut, 1, e) : sstep(P.white[0], P.white[1], e));
-  const mix = down ? sstep(P.fade[0], P.fade[1], e) : 1 - sstep(P.fade[0], P.fade[1], e);
-  const dive = sstep(P.dive[0], P.dive[1], e);
-  return { phase: bang ? 'bang' : 'corridor', x, white, mix, dive };
+// Flug: äußere Kamera zoomt um ZOOM auf den Anker zu, die innere kommt aus ZOOM-fachem Abstand an (gleiche Rate; main.js)
+export const ZOOM = 22;
+
+// ---------- Vorbeiflug an Galaxien auf der Fahrt hinein zur Milchstraße (Station 8 → 3, galaxyflight.js createFlyby) ----------
+// Feld in Einheiten des Startabstands: die Kamera fährt auf der z-Achse von 1 auf den Anker (0) zu, bis 1/ZOOM. Galaxien
+// liegen logarithmisch gleich dicht entlang der Fahrt (der Zoom durchläuft jede Dekade gleich schnell → gleichmäßiger Strom),
+// seitlich proportional zum Abstand: sie ziehen am Rand vorbei, die Mitte (Ziel) bleibt frei, die Kamera streift keine.
+// w = Gewicht der Etappe (länger als ein normaler Flug), z = Bereich der Abstände (unten in Vielfachen von 1/ZOOM: die
+// letzten sind vor der Ankunft vorbei), side/size = seitlicher Abstand und Durchmesser je Abstand, fade = Ein-/Ausblenden
+export const FLYBY = { w: 1.8, n: 80, z: [1.8, 0.8], side: [0.26, 0.8], size: [0.1, 0.2], fade: [0.08, 0.9] };
+export function flybyField(rand, zoom = ZOOM, n = FLYBY.n) {
+  const lo = Math.log(FLYBY.z[0] / zoom), hi = Math.log(FLYBY.z[1]), [s0, s1] = FLYBY.side, [d0, d1] = FLYBY.size;
+  return Array.from({ length: n }, (_, i) => {
+    const z = Math.exp(lo + (hi - lo) * (i + rand()) / n);   // geschichtet: keine Lücke, keine Häufung
+    const r = z * (s0 + (s1 - s0) * Math.sqrt(rand())), th = rand() * 2 * Math.PI;
+    return { x: r * Math.cos(th), y: r * Math.sin(th), z, size: z * (d0 + (d1 - d0) * rand()) };
+  });
 }
