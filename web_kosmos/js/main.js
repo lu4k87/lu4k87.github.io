@@ -11,6 +11,7 @@ import { createHud } from './hud.js';
 import { settings, onSettings, globalGrade } from './settings.js';
 import { createDeepSky } from './deepsky.js';
 import { attachSound, soundTo } from './sound.js';
+import { startQuality, createAuto, loadTexture, sceneTextures, releaseTextures } from './perf.js';
 import { ZOOM } from './flightplan.js';
 import { TURN, planTurn, turnPose, turnPace, smoother } from './turn.js';
 import { createBoot } from './boot.js';
@@ -124,15 +125,15 @@ renderer.setClearColor(0x000000, 1);
 renderer.autoClear = true;
 
 const post = createPost(renderer);
-const texLoader = new THREE.TextureLoader();
 const cubeLoader = new THREE.CubeTextureLoader();
 const texCache = new Map();
-// name mit „/“ am Ende = Ordner einer Würfelkarte (Seiten px, nx, py, ny, pz, nz)
+// name mit „/“ am Ende = Ordner einer Würfelkarte (Seiten px, nx, py, ny, pz, nz); Bilder entpackt perf.js abseits des
+// Haupt-Threads, freigegeben werden sie in dropFar
 function tex(name, srgb = true) {
   if (texCache.has(name)) return texCache.get(name);
   const done = () => { for (const lv of state.levels.values()) lv.dirty = true; };
   const t = name.endsWith('/') ? cubeLoader.setPath(`tex/${name}`).load(['px.jpg', 'nx.jpg', 'py.jpg', 'ny.jpg', 'pz.jpg', 'nz.jpg'], done)
-    : texLoader.load(`tex/${name}`, done);
+    : loadTexture(`tex/${name}`, srgb, done);
   t.colorSpace = srgb ? THREE.SRGBColorSpace : THREE.NoColorSpace;
   t.anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy());
   texCache.set(name, t);
@@ -142,25 +143,34 @@ function tex(name, srgb = true) {
 const state = {
   levels: new Map(), loading: new Map(), active: null, id: null, tr: null, chain: null, queue: [], controls: null,
   time: 0, intro: null, follow: null, poses: new Map(), cine: { idle: 0, w: 0, base: null }, pull: 0, pullDir: 0, caption: 0,
-  quality: 2, dragging: false,
+  dragging: false,
 };
 const now = new Date(params.get('date') || Date.now());
 
-// ---------- Qualität: Pixelverhältnis, Detailgrad; Auto misst in den ersten Sekunden die Bildzeit ----------
+// ---------- Qualität: Pixelverhältnis, Detailgrad; Auto schätzt die Startstufe und misst laufend die Bildzeit (perf.js) ----------
 const QUALITY = [
   null,
   { pr: 1, scale: 0.7, msaa: 0, detail: 0.55 },
   { pr: 1.25, scale: 0.85, msaa: 4, detail: 0.8 },
   { pr: 2, scale: 1, msaa: 4, detail: 1 },
 ];
+// dyn = Auflösungsfaktor der Auto-Qualität unter „Leicht“ (nur bei Auto, sonst gilt die Wahl im Zahnrad)
+const autoQ = createAuto(startQuality(renderer), () => applyQuality());
+const isAuto = () => !params.has('q') && settings.S.quality === 'auto';
 function pickQuality() {
-  const q = +params.get('q') || (settings.S.quality === 'auto' ? state.quality : +settings.S.quality);
+  const q = +params.get('q') || (settings.S.quality === 'auto' ? autoQ.q : +settings.S.quality);
   return Math.min(3, Math.max(1, q || 2));
 }
-const probe = { t: 0, n: 0, sum: 0, done: params.has('q') || settings.S.quality !== 'auto' };
+function applyQuality() {
+  resize();
+  for (const lv of state.levels.values()) if (lv.setDetail) lv.setDetail(QUALITY[pickQuality()].detail);
+}
+// schwacher Rechner („Leicht“): beim Start nur die Startstation bauen, im Leerlauf nur Eltern und nächste Station der
+// Route vorladen – Abstecher baut erst der Klick (sonst baut das Vorladen minutenlang und das Bild stockt)
+const lean = () => pickQuality() === 1;
 
 function pixelRatio() {
-  return Math.min(window.devicePixelRatio || 1, QUALITY[pickQuality()].pr);
+  return Math.min(window.devicePixelRatio || 1, QUALITY[pickQuality()].pr) * (isAuto() ? autoQ.dyn : 1);
 }
 
 // ---------- Größen ----------
@@ -222,11 +232,18 @@ function buildLevel(id) {
   return job;
 }
 
+// Welcher Schritt einer Station gerade läuft (Ladebild beim Aufruf): bootLoad setzt den Empfänger, sonst still
+let onStep = null;
+const step = (id, what) => { if (onStep) onStep(id, what); };
+
 async function makeLevel(id) {
   const mod = await LOADERS[id]();
   await calmFrame();
+  step(id, 'Szene bauen');
   const q = QUALITY[pickQuality()];
+  const t0 = performance.now();
   const lv = mod.create({ renderer, tex, date: now, detail: q.detail, still: still() });
+  if (fps) console.log(`[kosmos] Bau ${id}: ${Math.round(performance.now() - t0)} ms`);   // ?fps: Hänger beim Vorladen finden
   lv.id = id;
   lv.meta = STATIONS[id];
   lv.deep = createDeepSky(id);   // ferne Galaxien, Zirrus, Restlicht hinter den Sternen (deepsky.js)
@@ -241,6 +258,7 @@ async function makeLevel(id) {
   lv.camera.lookAt(lv.home.target);
   lv.target = lv.home.target.clone();
   fit(lv);
+  if (lv.ready) step(id, 'Modell laden');
   if (lv.ready) await lv.ready;
   await warmUp(lv);
   state.levels.set(id, lv);
@@ -254,19 +272,23 @@ const nextFrame = () => new Promise((r) => requestAnimationFrame(() => setTimeou
 async function calmFrame() { do await nextFrame(); while (state.tr); }
 async function warmUp(lv) {
   if (lv.update) lv.update(0, state.time, lv.camera, true);   // Station stellt ihren Flugzustand ein (Sichtbarkeit, Uniforms)
-  await renderer.compileAsync(lv.scene, lv.camera);
-  const texs = new Set();
-  lv.scene.traverse((o) => {
-    for (const m of [].concat(o.material || [])) {
-      for (const v of Object.values(m)) if (v && v.isTexture) texs.add(v);
-      for (const u of Object.values(m.uniforms || {})) if (u.value && u.value.isTexture) texs.add(u.value);
-    }
-  });
+  const texs = sceneTextures(lv.scene);
+  // Bilder fertig laden, bevor die Station fliegt – sonst lädt three.js sie im Flug hoch (Hänger); höchstens 30 s
+  const loaded = Promise.all([...texs].map((t) => t.userData.loaded));
+  const imgs = [...texs].map((t) => t.userData.loaded).filter(Boolean);
+  let got = 0, up = 0;   // Bilder fertig · Texturen hochgeladen (danach meldet ein spätes Bild nichts mehr)
+  const say = () => !up && step(lv.id, got < imgs.length ? `Bilder ${got}/${imgs.length} · Shader binden` : 'Shader binden');
+  for (const p of imgs) p.then(() => { got++; say(); });
+  say();
+  await Promise.all([renderer.compileAsync(lv.scene, lv.camera), Promise.race([loaded, new Promise((r) => setTimeout(r, 30000))])]);
+  const ups = [...texs].filter((t) => !t.isRenderTargetTexture && t.image).length;
   for (const t of texs) {
     if (t.isRenderTargetTexture || !t.image) continue;
+    step(lv.id, `Hochladen ${++up}/${ups}`);
     await calmFrame();
     renderer.initTexture(t);
   }
+  step(lv.id, 'Erstes Bild');
   await calmFrame();
   renderer.setRenderTarget(lv.rt);
   renderer.render(lv.scene, lv.camera);
@@ -276,11 +298,11 @@ async function warmUp(lv) {
 // ---------- Ladebild beim Aufruf: erst der Programmcode aller Stationen (spätere Flüge warten nicht mehr aufs Netz), dann
 // die Startstation samt Nachbarn bauen – genau das, was activate() behält, sonst gibt dropFar es gleich wieder frei.
 // Anteile: Code 15 %, Stationen 85 %; innerhalb einer Station zählen ihre Texturen (DefaultLoadingManager) bis 40 %,
-// dazwischen kriecht der Anteil langsam gegen 95 % (Shader binden und Hochladen in warmUp melden keinen Stand), damit
-// die Linie nie steht. Fehler einzelner Nachbarn halten den Start nicht auf.
+// dazwischen kriecht der Anteil langsam gegen 95 % (Shader binden und Hochladen in warmUp melden keinen Anteil), damit
+// die Linie nie steht. Der Text nennt den laufenden Schritt (step). Fehler einzelner Nachbarn halten den Start nicht auf.
 const boot = createBoot();
 async function bootLoad(first) {
-  const ids = [...new Set([first, ...neighbours(first), nextOnRoute(first)])].filter((id) => LOADERS[id]);
+  const ids = (lean() ? [first] : [...new Set([first, ...neighbours(first), nextOnRoute(first)])]).filter((id) => LOADERS[id]);
   const mods = Object.values(LOADERS);
   let code = 0, built = 0, part = 0;
   const show = (label) => boot.set(0.15 * code / mods.length + 0.85 * (built + part) / ids.length, label);
@@ -292,9 +314,11 @@ async function bootLoad(first) {
     part = 0;
     show(label);
     const t0 = performance.now();
+    onStep = (sid, what) => { if (sid === id) show(`${STATIONS[id].title} · ${what}`); };
     const creep = setInterval(() => { part = Math.max(part, 0.95 * (1 - Math.exp((t0 - performance.now()) / 2000))); show(); }, 120);
     mgr.onProgress = (url, n, total) => { part = Math.max(part, 0.4 * n / Math.max(1, total)); show(); };
     await getLevel(id, true).catch(() => null);
+    onStep = null;
     clearInterval(creep);
     built++;
     part = 0;
@@ -308,13 +332,20 @@ function anchorOf(outer, innerId) {
   return (h ? h.pos : outer.home.target).clone();
 }
 
+// Texturen der freigegebenen Stationen mitfreigeben (material.dispose() lässt sie liegen) und aus dem Cache nehmen:
+// sonst bleiben Grafikspeicher und entpackte Bilder aller je besuchten Stationen belegt
 function dropFar(keep) {
+  const free = new Set();
   for (const [id, lv] of state.levels) {
     if (keep.includes(id)) continue;
+    sceneTextures(lv.scene, free);
     lv.dispose();
     lv.rt.dispose();
     state.levels.delete(id);
   }
+  if (!free.size) return;
+  const gone = releaseTextures(free, state.levels.values());
+  for (const [k, t] of texCache) if (gone.has(t)) texCache.delete(k);
 }
 
 function neighbours(id) {
@@ -378,10 +409,13 @@ function activate(lv) {
   lv.dirty = true;
   // Nachbarn behalten, Rest freigeben; nächste Station der Route im Leerlauf vorladen
   dropFar([...neighbours(lv.id), nextOnRoute(lv.id), ...state.queue]);
-  setTimeout(() => idle(() => {
+  // erst nach der Kranfahrt bzw. dem Film: ein Bau mitten darin ruckelt sichtbar
+  const preload = () => {
     if (state.id !== lv.id || state.tr) return;
-    for (const n of neighbours(lv.id)) if (n !== lv.id) getLevel(n, true);
-  }), 2500);
+    if (state.intro || state.opener) { setTimeout(() => idle(preload), 1000); return; }
+    for (const n of lean() ? [lv.meta.parent, nextOnRoute(lv.id)] : neighbours(lv.id)) if (n && n !== lv.id) getLevel(n, true);
+  };
+  setTimeout(() => idle(preload), 2500);
 }
 
 function idle(fn) {
@@ -1121,19 +1155,9 @@ function stepTour(dt) {
   if (tour.since > tour.dwell) { tour.since = 0; goTo(nextOnRoute(state.id)); }
 }
 
-// Auto-Qualität: 4 s nach dem Start die mittlere Bildzeit messen und einmal eine Stufe wählen
+// Auto-Qualität (perf.js): misst nur ruhige Bilder – kein Flug, kein Auftakt-Film, keine Station im Bau
 function stepProbe(dt) {
-  if (probe.done || state.tr || state.intro === null && state.time < 1) return;
-  probe.t += dt; probe.n++; probe.sum += dt;
-  if (probe.t < 4) return;
-  probe.done = true;
-  const ms = (probe.sum / probe.n) * 1000;
-  const q = ms > 30 ? 1 : ms < 13 && (window.devicePixelRatio || 1) > 1.2 ? 3 : 2;
-  if (q !== state.quality) {
-    state.quality = q;
-    resize();
-    for (const lv of state.levels.values()) if (lv.setDetail) lv.setDetail(QUALITY[q].detail);
-  }
+  if (isAuto()) autoQ.step(dt, !state.tr && !state.opener && !state.loading.size, settings.S.fpsCap);
 }
 
 // ---------- Bedienung ----------
@@ -1149,7 +1173,7 @@ const hud = createHud({
 });
 
 onSettings((keys) => {
-  if (keys.includes('quality')) { probe.done = settings.S.quality !== 'auto'; resize(); }
+  if (keys.includes('quality')) applyQuality();
   if (keys.includes('motion') && still()) cineUndo(state.active);
   for (const lv of state.levels.values()) if (lv.setMotion) lv.setMotion(settings.S.motion, reducedSys);
 });

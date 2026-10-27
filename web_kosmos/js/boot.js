@@ -15,15 +15,20 @@ export function createBoot(root = document.getElementById('boot')) {
   fitTitle(cap);
   if (document.fonts) document.fonts.ready.then(() => fitTitle(cap));
 
-  function tick() {
-    shown += (target - shown) * 0.18;
+  // Nachlauf nach Zeit statt je Bild (τ ≈ 0,085 s ≙ 18 % je Bild bei 60 Hz): auf einem schwachen Rechner mit 4 Bildern/s
+  // hing die Linie sonst ~20 s hinter dem Stand her, bevor das Ladebild ausblendet
+  let then = 0;
+  function tick(now) {
+    const dt = then ? Math.min(0.25, (now - then) / 1000) : 1 / 60;
+    then = now;
+    shown += (target - shown) * (1 - Math.exp(-dt / 0.085));
     if (target - shown < 0.002) shown = target;
     const n = Math.floor(shown * 100);
     bar.style.setProperty('--p', shown.toFixed(4));
     bar.setAttribute('aria-valuenow', String(n));
     pct.textContent = `${n} %`;
     if (shown < target) raf = requestAnimationFrame(tick);
-    else { raf = 0; if (finish && shown >= 1) finish(); }
+    else { raf = 0; then = 0; if (finish && shown >= 1) finish(); }
   }
 
   return {
