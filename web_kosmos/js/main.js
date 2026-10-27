@@ -812,7 +812,7 @@ function flyMix(tr) {
 // der obersten Ebene – keine Fahrt hinunter zur ISS. Gemerkt in localStorage; der Knopf „Film vom Urknall“ (Station 10,
 // Zahnrad) spielt ihn erneut (Ereignis kosmos:auftakt). tempo = Tempo des Films, fade = Abblenden vor dem erneuten
 // Abspielen (s). ?auftakt erzwingt ihn, ?auftakt=0 schaltet ihn ab (Tests)
-const OPENER = { key: 'kosmos.auftakt.v1', tempo: 1.5, fade: 0.8 };
+const OPENER = { key: 'kosmos.auftakt.v1', tempo: 1.5, fade: 0.8, home: 'bigbang' };
 state.opener = null;
 const openerSeen = () => { try { return localStorage.getItem(OPENER.key) === '1'; } catch { return false; } };
 async function startOpener(replay) {
@@ -823,7 +823,7 @@ async function startOpener(replay) {
   hud.intro(true);
   hud.skip(true);
   if (state.controls) state.controls.enabled = false;
-  const job = getLevel('bigbang');
+  const job = getLevel(OPENER.home);
   while (replay && a.fade > 0 && state.opener === a) await nextFrame();   // frame() blendet ab
   const bb = await job;
   if (state.opener !== a) return;
@@ -1198,10 +1198,11 @@ async function start() {
   try {
     resize();
     const id = (location.hash.match(/station=(\w+)/) || [])[1];
-    const first = STATIONS[id] ? id : ROUTE[0];
-    // erster Besuch: Auftakt-Film vom Urknall, Landung in Station 11 (sonst Kranfahrt an der ISS)
+    // ohne Stations-Link startet kosmos oben in Station 11 (User 27.10.2026); erster Besuch: Auftakt-Film vom Urknall,
+    // danach Kranfahrt in die Heimpose
+    const first = STATIONS[id] ? id : OPENER.home;
     const film = !id && !still() && (params.has('auftakt') ? params.get('auftakt') !== '0' : !tour && !openerSeen());
-    await bootLoad(film ? 'bigbang' : first);
+    await bootLoad(first);
     if (film) await startOpener(false);
     let lv = null;
     if (!state.active && !state.opener) {
@@ -1211,8 +1212,8 @@ async function start() {
     }
     document.body.classList.add('is-ready');
     if (lv) {
-      hud.caption(lv.meta, first === ROUTE[0] && !id);
-      if (first === ROUTE[0] && !id) startIntro(lv);
+      hud.caption(lv.meta, !id);
+      if (!id) startIntro(lv);
     }
     requestAnimationFrame(frame);
     boot.done();
