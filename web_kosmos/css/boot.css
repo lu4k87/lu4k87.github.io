@@ -52,7 +52,7 @@ body.is-fatal .boot { display: none; }
 .boot-cap, .boot-look { transition: opacity 0.5s var(--ease-out); }
 .boot.is-leaving :is(.boot-cap, .boot-look) { opacity: 0; }
 
-/* Reise früher bereit als 10 s: „Reise starten · Enter“ blendet mittig mit Abstand unter dem Ladebalken ein und atmet
+/* Reise bereit: „Reise starten · Enter“ blendet mittig mit Abstand unter dem Ladebalken ein und atmet
    leise; hängt am Ladeblock (absolut), damit Titel und Balken nicht aus der Bildmitte rutschen. Klick oder Enter startet */
 .boot-go { position: absolute; top: calc(100% + 36px); left: 50%; translate: -50% 0; padding: 8px 14px; border: 0; background: none;
   font: 400 13px/1.4 var(--mono); letter-spacing: 0.08em; color: var(--ink); white-space: nowrap; cursor: pointer;

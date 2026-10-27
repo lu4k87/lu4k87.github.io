@@ -2,11 +2,11 @@
 // index.html) und Fortschritt als Lichtlinie. main.js meldet den Stand (set), bootLoad dort lädt den Programmcode aller
 // Stationen und baut die Startstation samt Nachbarn; done() blendet aus, sobald die Szene darunter steht. Die Anzeige läuft
 // dem gemeldeten Stand weich nach und geht nie zurück.
-// Mindestens 10 s Ladebild (User 27.10.2026), damit alles sauber geladen ist; ist die Reise früher bereit, blendet
-// unter dem Ladebalken „Reise starten · Enter“ ein. Automatisierte Browser (Tests, Standbilder) warten nicht.
+// Ist die Reise bereit, blendet unter dem Ladebalken „Reise starten · Enter“ ein; das Ladebild wartet auf Enter oder
+// Klick (User 27.10.2026, ersetzt die 10-s-Mindestzeit). Automatisierte und Headless-Browser (Tests, Standbilder) warten
+// nicht: Headless-Chrome über CDP meldet navigator.webdriver = false, daher zusätzlich der User-Agent.
 import { LOOKS, createNebula, drawGrain } from './boot_nebula.js';
 
-const MIN_MS = 10000;
 const LOOK_KEY = 'kosmos.bootNebula';
 // Tasten, mit denen main.js den Auftakt-Film überspringt: solange das Ladebild steht, den Film darunter nicht treffen
 const FILM_KEYS = ['Escape', 'Enter', ' ', 'ArrowRight', 'ArrowLeft', 'ArrowUp', 'PageDown', 'PageUp'];
@@ -60,15 +60,12 @@ export function createBoot(root = document.getElementById('boot')) {
     else { raf = 0; then = 0; if (finish && shown >= 1) finish(); }
   }
 
-  // Bis 10 s nach Seitenaufruf stehen bleiben; Enter (still auch Esc) oder Klick auf den Hinweis beendet früher
+  // Stehen bleiben, bis Enter (still auch Esc) oder Klick auf den Hinweis kommt
   function hold() {
-    const rest = MIN_MS - performance.now();
-    if (rest <= 0 || navigator.webdriver) return Promise.resolve();
-    if (skipBtn) { skipBtn.hidden = false; requestAnimationFrame(() => skipBtn.classList.add('is-on')); }
-    return new Promise((resolve) => {
-      const t = setTimeout(resolve, rest);
-      skipNow = () => { clearTimeout(t); resolve(); };
-    });
+    if (navigator.webdriver || /HeadlessChrome/.test(navigator.userAgent) || !skipBtn) return Promise.resolve();
+    skipBtn.hidden = false;
+    requestAnimationFrame(() => skipBtn.classList.add('is-on'));
+    return new Promise((resolve) => { skipNow = resolve; });
   }
 
   return {
@@ -77,7 +74,7 @@ export function createBoot(root = document.getElementById('boot')) {
       if (label && label !== (nextLabel !== null ? nextLabel : what.textContent)) showLabel(label);
       if (!raf) raf = requestAnimationFrame(tick);
     },
-    // Linie läuft voll, Mindestzeit abwarten, Texte blenden aus, dann das ganze Bild; danach aus dem DOM, damit es keine
+    // Linie läuft voll, auf Enter warten, Texte blenden aus, dann das ganze Bild; danach aus dem DOM, damit es keine
     // Ereignisse mehr fängt. Ergebnis: Promise, sobald das Ladebild fast ausgeblendet ist (shown s nach Beginn) – dann
     // sieht man die Bühne
     done(shown = 0.5) {
