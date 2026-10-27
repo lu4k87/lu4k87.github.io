@@ -13,19 +13,23 @@
 // - Polstrahlen (Jets) entlang der Drehachse schematisch nah am Stern; im Krebsnebel sieht man sie erst Lichtjahre draußen.
 // Zeitlupe, weil 30 Blitze pro Sekunde ein Anfallsrisiko wären (WCAG 2.3.1); der Ton spielt den echten Takt: Hauptpuls und
 // Zwischenpuls bei 0,4 der Periode. Lichtkurve: Pulsprofil des Crab mit laufender Phasenmarke – die Erde liegt in +z.
+// Kino-Ebenen (Vorschau 27.10.2026 „Pulsar detailreicher“, Pulsar:A+B+C, alle im Zahnrad schaltbar, Standard an; Bausteine
+// in pulsarfx.js): Gravitationslinse am Himmel + Einstein-Ring, Stromblatt als Glasfläche, Lichtzylinder als Wand, Außenspalt,
+// Teilchen auf den Feldlinien, Streifen-Netz des Winds, Doppler-Boost, Synchrotron-Schleier, Puls-Aufleuchten (≤ 1 Hz), Kino-Look.
 
 import * as THREE from 'three';
 import { volume, disposeScene } from '../vol.js';
 import { C, lightCylinder, julianDate, mulberry32 } from '../astro.js';
 import { createStarfield } from '../stars.js';
 import { NOISE, SKY_VERTEX } from '../glsl.js';
-import { WIRBEL_CONE, CAP_GLSL, spiralParticles } from '../pulsarfx.js';
-import { registerLayers } from '../layers.js';
+import { WIRBEL_CONE, CAP_GLSL, spiralParticles, LENS_GLSL, lensStars, currentSheet, lightCylinderWall, outerGap, fieldBeads, stripeNet } from '../pulsarfx.js';
+import { registerLayers, refreshLayers, setLayer } from '../layers.js';
 
 const R_NS = 13;
 // Periode heute aus ATNF (P = 33,3924 ms bei MJD 48442,5; Ṗ = 4,2097·10⁻¹³) – eigene Rechnung ohne Bremsindex
 const P_NOW = (date) => 0.0333924123 + 4.20972e-13 * ((julianDate(date) - 2400000.5 - 48442.5) * 86400);
 const ALPHA = 45 * Math.PI / 180;
+const R_S = 4.13;   // Schwarzschild-Radius bei 1,4 M☉ (2GM/c², eigene Rechnung) in km
 const TAU = Math.PI * 2;
 // Lage des Stromblatts (Polwinkel θ) in Richtung φ im Abstand r beim Drehwinkel ph – gleiche Formel wie in den Shadern
 const sheetTheta = (phi, r, ph, rlc) => Math.atan2(1, Math.tan(ALPHA) * Math.cos(phi + ph - r / rlc));
@@ -34,7 +38,7 @@ const sheetTheta = (phi, r, ph, rlc) => Math.atan2(1, Math.tan(ALPHA) * Math.cos
 // zeigen die Teilchen: als leuchtende Fläche bildete es dort, wo man es streifend sieht, eine harte helle Kante.
 const BEAM_BODY = /* glsl */ `
 uniform vec3 uM, uE1, uE2;   // Magnetachse (Welt) + zwei Achsen senkrecht dazu (Bezug für den Drehwinkel)
-uniform float uGain, uRlc, uWT, uJet, uSwirl;
+uniform float uGain, uRlc, uWT, uJet, uSwirl, uHaze, uPhase, uTanA;
 void sampleVol(vec3 p, out vec3 e, out float s) {
   float r = length(p);
   s = 0.0;
@@ -60,6 +64,15 @@ ${WIRBEL_CONE}
     }
     // Polkappen-Glühen nahe der Oberfläche
     e += vec3(0.6, 0.85, 1.0) * exp(-pow(ang / 0.25, 2.0)) * exp(-(r - 13.0) / 6.0) * 2.0 * uGain;
+  }
+  // Synchrotron-Schleier im gestreiften Wind (Kino-Ebene): schwaches Leuchten der Äquatorzone jenseits des Lichtzylinders,
+  // Farbe = Feldrichtung wie bei den Teilchen, am Stromblatt selbst ein goldener Saum (dort kehrt das Feld um)
+  if (uHaze > 0.0 && r > 1.05 * uRlc) {
+    float st = max(length(d.xz), 1e-3);
+    float pol = d.y / st - uTanA * cos(atan(d.z, d.x) + uPhase - r / uRlc);
+    vec3 hc = mix(vec3(1.0, 0.25, 0.65), vec3(0.2, 0.8, 1.0), step(0.0, pol));
+    float hz = pow(st, 8.0) * exp(-(r - uRlc) / (1.6 * uRlc)) * edge;
+    e += (hc * (0.25 + 0.75 * smoothstep(0.0, 0.35, abs(pol))) + vec3(1.0, 0.85, 0.5) * exp(-pow(pol / 0.08, 2.0)) * 1.5) * hz * uHaze;
   }
   // Polstrahlen entlang der Drehachse (+y); die Knoten wandern mit dem Wind hinaus
   if (abs(d.y) > 0.93 && r > 0.2 * uRlc) {
@@ -103,12 +116,15 @@ void main() {
 const BILLBOARD_VERT = 'varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }';
 // Lichthof um den Stern (zur Kamera gedreht): weicher Abfall, wird vom Stern selbst verdeckt
 const GLOW_FRAG = /* glsl */ `
+uniform float uRing;   // Einstein-Ring des Himmels hinter dem Stern: Radius √(2 R_s D) in Sternradien (Gravitationslinse an)
 varying vec2 vUv;
 void main() {
   float r = length(vUv - 0.5) * 2.0 * 8.0;   // in Sternradien (Fläche 16 R breit)
   float x = max(r - 1.0, 0.0);
   float g = 0.45 * exp(-x / 0.35) + 0.08 / (1.0 + x * x * 0.6);
-  gl_FragColor = vec4(vec3(0.62, 0.78, 1.0) * g * smoothstep(8.0, 5.0, r), 1.0);
+  vec3 col = vec3(0.62, 0.78, 1.0) * g;
+  if (uRing > 1.15) col += vec3(0.5, 0.62, 0.95) * 0.14 * exp(-pow((r - uRing) / 0.22, 2.0)) * smoothstep(1.1, 1.4, uRing);
+  gl_FragColor = vec4(col * smoothstep(8.0, 5.0, r), 1.0);
 }
 `;
 // Glanz aus der Ferne: wächst mit dem Abstand, damit der Stern im Überblick ein heller Punkt mit Strahlenkranz bleibt
@@ -127,9 +143,10 @@ void main() {
 // Himmel im Inneren des Krebsnebels: bläulicher Synchrotron-Schein, rote Filamente am Rand
 const NEB_SKY = /* glsl */ `
 ${NOISE}
+${LENS_GLSL}
 varying vec3 vDir;
 void main() {
-  vec3 d = normalize(vDir);
+  vec3 d = lensSource(normalize(vDir));
   float f = ridged(d * 3.0 + 2.0, 4);
   vec3 col = vec3(0.025, 0.04, 0.075) * (0.6 + 0.6 * fbm(d * 2.5, 4)) + vec3(0.12, 0.025, 0.012) * pow(max(f - 0.6, 0.0) * 2.5, 2.0);
   gl_FragColor = vec4(col, 1.0);
@@ -173,7 +190,8 @@ const WIND_VERT = /* glsl */ `
 attribute vec4 aP;     // φ, Wegphase 0..1, θ (Wind) bzw. Abstand zum Stromblatt (Spur, Polstrahl), Tempo
 attribute float aK;    // 0 = Spur auf dem Stromblatt, 2 = gestreifter Wind, +1/−1 = Polstrahl Nord/Süd
 attribute float aEnd;  // Striche: 0 = Kopf, 1 = Schweif
-uniform float uT, uRlc, uLen, uPhase, uTanA, uPx, uStreak, uCam;
+attribute float aSel;  // Zufallswert: Teilchen zählt nur bei aSel < uFrac (Dichte-Ebene)
+uniform float uT, uRlc, uLen, uPhase, uTanA, uPx, uStreak, uCam, uDop, uFrac;
 varying float vA;
 varying vec3 vC;
 void main() {
@@ -203,7 +221,11 @@ void main() {
     // weich über den ganzen Weg ausblenden: keine helle Außenkante der Teilchenhülle
   vA = smoothstep(0.0, 0.03, f) * pow(1.0 - f, abs(aK) == 1.0 ? 9.0 : 1.2) * w * (1.0 - aEnd);
   // dicht vor der Kamera ausblenden: sonst zögen Schweife quer durchs Bild
-  vA *= smoothstep(0.1, 0.35, -mv.z / uCam);
+  vA *= smoothstep(0.1, 0.35, -mv.z / uCam) * step(aSel, uFrac);
+  // Doppler-Boost (Kino-Ebene): Teilchen, die auf die Kamera zukommen, strahlen gebündelt heller (relativistisch, gedämpft)
+  vec3 wd = normalize(mat3(modelMatrix) * dir);
+  vec3 tc = normalize(cameraPosition - (modelMatrix * vec4(dir * rr, 1.0)).xyz);
+  vA *= mix(1.0, pow(1.0 / (1.0 - 0.45 * dot(wd, tc)), 2.0), uDop);
   gl_PointSize = uPx * (1.2 + 1.5 * w);
 }
 `;
@@ -222,9 +244,10 @@ void main() { gl_FragColor = vec4(vC * vA * 0.4, 1.0); }
 `;
 function buildWind(n, rlc) {
   const rand = mulberry32(61);
-  const P = new Float32Array(n * 4), K = new Float32Array(n);
+  const P = new Float32Array(n * 4), K = new Float32Array(n), SEL = new Float32Array(n);
   for (let i = 0; i < n; i++) {
     let o, k;
+    SEL[i] = rand();
     const u = rand();
     if (u < 0.15) { k = 0; o = (rand() * 2 - 1) * 0.04; }   // Spur auf dem Stromblatt
     else if (u < 0.97) {
@@ -238,7 +261,7 @@ function buildWind(n, rlc) {
   }
   const uniforms = {
     uT: { value: 0 }, uRlc: { value: rlc }, uLen: { value: rlc * 11 }, uPhase: { value: 0 }, uTanA: { value: Math.tan(ALPHA) },
-    uPx: { value: 1 }, uStreak: { value: rlc * 0.45 }, uCam: { value: 8000 },
+    uPx: { value: 1 }, uStreak: { value: rlc * 0.45 }, uCam: { value: 8000 }, uDop: { value: 0 }, uFrac: { value: 1 / 1.5 },
   };
   const mat = (frag) => new THREE.ShaderMaterial({ vertexShader: WIND_VERT, fragmentShader: frag, uniforms, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true });
   // Punkte: ein Eckpunkt je Teilchen · Striche: Kopf + Schweif je Teilchen
@@ -247,8 +270,10 @@ function buildWind(n, rlc) {
   dots.setAttribute('aP', new THREE.BufferAttribute(P, 4));
   dots.setAttribute('aK', new THREE.BufferAttribute(K, 1));
   dots.setAttribute('aEnd', new THREE.BufferAttribute(new Float32Array(n), 1));
-  const P2 = new Float32Array(n * 8), K2 = new Float32Array(n * 2), E2 = new Float32Array(n * 2);
+  dots.setAttribute('aSel', new THREE.BufferAttribute(SEL, 1));
+  const P2 = new Float32Array(n * 8), K2 = new Float32Array(n * 2), E2 = new Float32Array(n * 2), S2 = new Float32Array(n * 2);
   for (let i = 0; i < n; i++) {
+    S2[i * 2] = S2[i * 2 + 1] = SEL[i];
     P2.set(P.subarray(i * 4, i * 4 + 4), i * 8);
     P2.set(P.subarray(i * 4, i * 4 + 4), i * 8 + 4);
     K2[i * 2] = K2[i * 2 + 1] = K[i];
@@ -259,6 +284,7 @@ function buildWind(n, rlc) {
   lines.setAttribute('aP', new THREE.BufferAttribute(P2, 4));
   lines.setAttribute('aK', new THREE.BufferAttribute(K2, 1));
   lines.setAttribute('aEnd', new THREE.BufferAttribute(E2, 1));
+  lines.setAttribute('aSel', new THREE.BufferAttribute(S2, 1));
   const group = new THREE.Group();
   const pts = new THREE.Points(dots, mat(WIND_DOT)), seg = new THREE.LineSegments(lines, mat(WIND_LINE));
   for (const o of [pts, seg]) { o.frustumCulled = false; o.renderOrder = 4; group.add(o); }
@@ -278,7 +304,10 @@ export function create(ctx) {
 
   scene.add(createStarfield({ gain: 0.6, seed: 61, band: 0.4 }));
   const stars = scene.children[0];
-  const skyMat = new THREE.ShaderMaterial({ vertexShader: `${SKY_VERTEX}\nvarying vec3 vDir; void main() { vDir = position; gl_Position = skyPosition(normalize(position)); }`, fragmentShader: NEB_SKY, side: THREE.BackSide, depthWrite: false, blending: THREE.AdditiveBlending, transparent: true });
+  // Gravitationslinse (Kino-Ebene): Himmel und Sterne um den Stern gekrümmt, Stärke 0/1
+  const lensU = { uLens: { value: 0 }, uRs: { value: R_S } };
+  lensStars(stars, lensU);
+  const skyMat = new THREE.ShaderMaterial({ vertexShader: `${SKY_VERTEX}\nvarying vec3 vDir; void main() { vDir = position; gl_Position = skyPosition(normalize(position)); }`, fragmentShader: NEB_SKY, uniforms: lensU, side: THREE.BackSide, depthWrite: false, blending: THREE.AdditiveBlending, transparent: true });
   const neb = new THREE.Mesh(new THREE.SphereGeometry(1, 48, 24), skyMat);
   neb.frustumCulled = false;
   neb.renderOrder = -12;
@@ -294,7 +323,7 @@ export function create(ctx) {
   const nsMat = new THREE.ShaderMaterial({ vertexShader: NS_VERT, fragmentShader: NS_FRAG, uniforms: { uM: { value: mWorld }, uE1: { value: e1W }, uE2: { value: e2W }, uT: { value: 0 }, uCapS: { value: 1 } } });
   spin.add(new THREE.Mesh(new THREE.SphereGeometry(R_NS, 64, 32), nsMat));
   const additive = { blending: THREE.AdditiveBlending, depthWrite: false, transparent: true };
-  const glow = new THREE.Mesh(new THREE.PlaneGeometry(R_NS * 16, R_NS * 16), new THREE.ShaderMaterial({ vertexShader: BILLBOARD_VERT, fragmentShader: GLOW_FRAG, ...additive }));
+  const glow = new THREE.Mesh(new THREE.PlaneGeometry(R_NS * 16, R_NS * 16), new THREE.ShaderMaterial({ vertexShader: BILLBOARD_VERT, fragmentShader: GLOW_FRAG, uniforms: { uRing: { value: 0 } }, ...additive }));
   glow.renderOrder = 2;
   scene.add(glow);
   const glare = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.ShaderMaterial({ vertexShader: BILLBOARD_VERT, fragmentShader: GLARE_FRAG, uniforms: { uI: { value: 1 } }, ...additive }));
@@ -362,6 +391,7 @@ export function create(ctx) {
     radius: 6000, body: BEAM_BODY, adapt: 0.07 - 0.025 * ctx.detail, minStep: 1.5, maxSteps: 260,
     uniforms: {
       uM: { value: mWorld }, uE1: { value: e1W }, uE2: { value: e2W }, uGain: { value: 0.09 }, uRlc: { value: RLC }, uWT: { value: 0 }, uJet: { value: 0.003 }, uSwirl: { value: 1 },
+      uHaze: { value: 0 }, uPhase: { value: 0 }, uTanA: { value: Math.tan(ALPHA) },
     },
   });
   beams.renderOrder = 3;
@@ -386,6 +416,11 @@ export function create(ctx) {
   }
   scene.add(lc);
   const lcMats = lc.children.filter((o) => o.isMesh).map((o) => o.material);
+  // Kino-Ebenen (Zahnrad): Glasflächen, Feldlinien-Teilchen, Streifen-Netz – erst sichtbar, wenn eingeschaltet
+  const sheet = currentSheet(RLC, Math.tan(ALPHA)), wall = lightCylinderWall(RLC), gap = outerGap(RLC, R_NS);
+  const beads = fieldBeads(Math.round(900 * ctx.detail) + 300, Ls.slice(0, -1), R_NS), net = stripeNet(RLC, Math.tan(ALPHA));
+  spin.add(sheet, net); scene.add(wall); mag.add(gap, beads);
+  for (const o of [sheet, wall, gap, beads, net]) o.visible = true;
   // Stromblatt in der Äquatorebene: dort schneidet es die Ebene entlang zweier Archimedes-Spiralen φ = π/2 + kπ + r/R_LC
   // (im Rahmen der Drehung starr, also mitdrehend) – von oben die Spirale der Vorlage, aus der Physik gerechnet
   const spiral = lineMat(0xcdefff, 0x8fb8ff, 2 * RLC, 10 * RLC);
@@ -401,7 +436,7 @@ export function create(ctx) {
     }
   }
   // Wind bis ≈ 12 R_LC: erst dort ist die Spirale zu sehen (Streifenbreite = c·P ≈ 2π R_LC)
-  const wind = buildWind(Math.round(11000 * ctx.detail) + 3000, RLC);
+  const wind = buildWind(Math.round(1.5 * (11000 * ctx.detail + 3000)), RLC);   // 1,5× Vorrat: Ebene „Dichter Wind“ schaltet den Rest zu
   const wu = wind.userData.uniforms;
   scene.add(wind);
   let windT = 0;
@@ -453,40 +488,81 @@ export function create(ctx) {
   const curve = Array.from({ length: 121 }, (_, i) => { const f = i / 120; return `${(f * W).toFixed(1)},${(H - 6 - profile(f) * (H - 12)).toFixed(1)}`; }).join(' ');
   const widget = () => `<svg viewBox="0 0 ${W} ${H}" aria-label="Lichtkurve des Crab-Pulsars"><polyline points="${curve}" fill="none" stroke="#9cc8ff" stroke-width="1.6"/><line id="w-ph" x1="0" x2="0" y1="4" y2="${H - 4}" style="stroke: var(--accent)" stroke-width="1.6"/><circle id="w-dot" cx="0" cy="${H - 6}" r="3" style="fill: var(--accent)"/></svg><div class="w-cap"><span>Lichtkurve · Hauptpuls</span><span>Zwischenpuls bei 0,4 P</span></div>`;
   let lastPh = -1;
+  // Zeitlupe und Ton stehen in der Infotafel und im Zahnrad (Reiter Station, Wunsch 27.10.2026); beide schalten dieselben Werte
+  const SLOWS = [[600, '1 : 600'], [200, '1 : 200'], [60, '1 : 60']];
+  let spinOn = true, soundOn = false;
   const controls = [
-    { id: 'slow', label: 'Zeitlupe', value: '200', options: [['600', '1 : 600'], ['200', '1 : 200'], ['60', '1 : 60']], set: (v) => { slow = +v; } },
-    { id: 'sound', label: 'Ton', value: 'off', options: [['off', 'Aus'], ['on', 'Echter Takt']], set: (v) => sound(v === 'on') },
+    { id: 'slow', label: 'Zeitlupe', value: '200', options: SLOWS.map(([v, l]) => [String(v), l]), set: (v) => { slow = +v; refreshLayers(); } },
+    { id: 'sound', label: 'Ton', value: 'off', options: [['off', 'Aus'], ['on', 'Echter Takt']], set: (v) => { soundOn = v === 'on'; sound(soundOn); setLayer('pulsar', 'sound', soundOn); } },
   ];
+  const slowIdx = () => Math.max(0, SLOWS.findIndex(([v]) => v === slow));
   const q = new THREE.Quaternion();
+  let pulseOn = 0, pulse = 0;
+  const LOOK_BASE = { exposure: 1.0, bloom: 0.2, sat: 1.08, con: 0.14, sh: [0.94, 0.98, 1.1], hi: [1.04, 1.0, 0.95], ca: 0.006, grain: 0.016, vig: 0.38 };
+  const LOOK_CINE = { exposure: 1.0, bloom: 0.34, sat: 1.16, con: 0.2, sh: [0.9, 0.97, 1.16], hi: [1.06, 1.0, 0.94], ca: 0.013, grain: 0.022, vig: 0.44 };
+  const look = { ...LOOK_BASE };
+  const lookBase = () => (look.ca === LOOK_CINE.ca ? LOOK_CINE : LOOK_BASE);
   registerLayers('pulsar', [
+    { id: 'clock', type: 'play', group: 'Zeit', label: 'Zeitlupe', hint: 'Drehung in Zeitlupe – echt dreht der Stern 30-mal je Sekunde; Pause hält die Drehung an.', value: 1, min: 0, max: SLOWS.length - 1, step: 1, autoplay: true,
+      fmt: (i) => SLOWS[Math.round(i)][1], set: (i, playing) => { slow = SLOWS[Math.round(i)][0]; spinOn = playing; }, get: () => ({ value: slowIdx(), playing: spinOn }),
+      status: () => (spinOn ? `eine Umdrehung in ${(P * slow).toFixed(1).replace('.', ',')} s` : 'Drehung angehalten') },
+    { id: 'sound', type: 'toggle', group: 'Ton', label: 'Echter Takt (Hauptpuls + Zwischenpuls)', value: false, set: (v) => { if (v !== soundOn) { soundOn = v; sound(v); } } },
     { id: 'swirl', type: 'toggle', group: 'Strahlen', label: 'Plasmawirbel (Trichter)', value: true, set: (v) => { beams.material.uniforms.uSwirl.value = v ? 1 : 0; },
       hint: 'Schema: die Strahlkegel als Wirbelsturm aus aufgewickelten offenen Feldlinien, innen schneller drehend. Aus = glatter Kegel mit hellem Kern.' },
     { id: 'spiral', type: 'toggle', label: 'Spiralteilchen', value: true, sub: true, set: (v) => { swirl.visible = v; } },
     { id: 'capswirl', type: 'toggle', label: 'Polkappen-Strudel auf der Kruste', value: true, sub: true, set: (v) => { nsMat.uniforms.uCapS.value = v ? 1 : 0; } },
+    { id: 'lens', type: 'toggle', group: 'Stern', label: 'Gravitationslinse am Himmel', value: true, set: (v) => { lensU.uLens.value = v ? 1 : 0; },
+      hint: 'Lichtablenkung α = 2 R_s / b (R_s ≈ 4,1 km bei 1,4 Sonnenmassen): nah am Stern rücken Sterne und Nebelschein vom Stern weg, dahinter erscheint ein Einstein-Ring.' },
+    { id: 'pulse', type: 'toggle', label: 'Puls-Aufleuchten, wenn der Strahl uns trifft', value: true, set: (v) => { pulseOn = v ? 1 : 0; },
+      hint: 'Streicht ein Strahlkegel über die Kamera, schwillt der Glanz weich an – wie der Puls, den die Erde sieht (bei 1 : 60 höchstens 1-mal je Sekunde, unter der 3-Hz-Grenze WCAG 2.3.1).' },
+    { id: 'sheet', type: 'toggle', group: 'Magnetosphäre', label: 'Stromblatt als Glasfläche', value: true, set: (v) => { sheet.visible = v; },
+      hint: 'Die Fläche, an der das Feld im Wind umkehrt (ballistisch gerechnet): oben Cyan, unten Magenta – von oben die Spirale, von der Seite das S.' },
+    { id: 'wall', type: 'toggle', label: 'Lichtzylinder als Wand', value: true, set: (v) => { wall.visible = v; } },
+    { id: 'gap', type: 'toggle', label: 'Außenspalt (letzte geschlossene Feldlinie)', value: true, set: (v) => { gap.visible = v; },
+      hint: 'Fläche r = R_LC·sin²θ um die Magnetachse; in Außenspalt-Modellen entsteht dort die Gammastrahlung.' },
+    { id: 'beads', type: 'toggle', label: 'Teilchen auf den Feldlinien', value: true, set: (v) => { beads.visible = v; },
+      hint: 'Pendeln zwischen den Spiegelpunkten nahe der Oberfläche (Schema).' },
+    { id: 'net', type: 'toggle', group: 'Wind', label: 'Streifen-Netz des Winds', value: true, set: (v) => { net.visible = v; },
+      hint: 'Radiale Linien, Farbe = Feldrichtung; das Muster steht im mitdrehenden Rahmen still, eine Helligkeitswelle läuft mit c hinaus.' },
+    { id: 'doppler', type: 'toggle', label: 'Doppler-Boost (auf uns zu heller)', value: true, set: (v) => { wu.uDop.value = v ? 1 : 0; } },
+    { id: 'haze', type: 'toggle', label: 'Synchrotron-Schleier', value: true, set: (v) => { beams.material.uniforms.uHaze.value = v ? 7e-5 : 0; } },
+    { id: 'dense', type: 'toggle', label: 'Dichter Wind (+50 %)', value: true, set: (v) => { wu.uFrac.value = v ? 1 : 1 / 1.5; } },
+    { id: 'cine', type: 'toggle', group: 'Kino', label: 'Kino-Look (Bloom, Linse, Korn)', value: true, set: (v) => { Object.assign(look, v ? LOOK_CINE : LOOK_BASE); } },
   ]);
 
-  // Überblick leicht über der Äquatorebene: Leuchtring als Ellipse, Stromblatt als S, Strahlen und Polstrahlen im Bild.
-  // Screenshots: ?view=top (Spirale von oben, weit draußen) · ?view=side (S von der Seite) · ?view=near (Stern und Polkappen nah)
-  const home = { pos: new THREE.Vector3(2600, 2900, 7000), target: new THREE.Vector3(0, 0, 0) };
-  const view = new URLSearchParams(location.search).get('view');
-  if (view === 'top') home.pos.set(0, 26000, 1);
+  // Kino-Pose (Vorschau 27.10.2026, F3): 5.000 km, 30° über der Äquatorebene – Stern, Trichter, Leuchtring und Stromblatt groß im Bild.
+  // Screenshots: ?view=far (Übersicht 8.000 km wie früher) · ?view=top (Spirale von oben) · ?view=side (S von der Seite) · ?view=near (Stern nah)
+  const home = { pos: new THREE.Vector3(1300, 2500, 4100), target: new THREE.Vector3(0, 0, 0) };
+  const params = new URLSearchParams(location.search), view = params.get('view');
+  // ?spin=0&ph=1.9: Drehung anhalten und Drehwinkel setzen (Screenshots mit Strahl zur Kamera)
+  if (params.get('spin') === '0') spinOn = false;
+  if (params.has('ph')) phase = +params.get('ph') || 0;
+  if (view === 'far') home.pos.set(2600, 2900, 7000);
+  else if (view === 'top') home.pos.set(0, 26000, 1);
   else if (view === 'side') home.pos.set(0, 250, 8600);
   else if (view === 'near') home.pos.set(70, 38, 150);
 
   return {
     scene, camera, unit: 1e3, hotspots, controls, home,
     orbit: { minDistance: 30, maxDistance: 30000, cineSpeed: 0.4 },
-    look: { exposure: 1.0, bloom: 0.2, sat: 1.08, con: 0.14, sh: [0.94, 0.98, 1.1] },
+    look,
     update(dt, t, cam) {
-      phase = (phase + (dt / (P * slow)) * TAU) % TAU;
+      if (spinOn) phase = (phase + (dt / (P * slow)) * TAU) % TAU;
       spin.rotation.y = phase;
       const dist = cam.position.length();
       glow.quaternion.copy(cam.quaternion);
       glare.quaternion.copy(cam.quaternion);
-      glare.scale.setScalar(dist * 0.3);
-      glare.material.uniforms.uI.value = THREE.MathUtils.smoothstep(dist, 400, 2000);
       spin.updateMatrixWorld();
       mWorld.set(0, 1, 0).applyQuaternion(mag.getWorldQuaternion(q));
+      // Puls-Aufleuchten: Winkel zwischen Magnetachse und Blickrichtung zur Kamera; Hauptpol voll, Gegenpol 0,62
+      const cs = mWorld.dot(cam.position) / Math.max(dist, 1);
+      const ang = Math.acos(Math.min(Math.abs(cs), 1));
+      pulse = pulseOn * Math.exp(-((ang / 0.45) ** 2)) * (cs > 0 ? 1 : 0.62);
+      glare.scale.setScalar(dist * 0.3 * (1 + 0.5 * pulse));
+      glare.material.uniforms.uI.value = THREE.MathUtils.smoothstep(dist, 400, 2000) * (1 + 2.4 * pulse);
+      glow.scale.setScalar(1 + 0.6 * pulse);
+      glow.material.uniforms.uRing.value = lensU.uLens.value * Math.sqrt(2 * R_S * dist) / R_NS;
+      look.bloom = lookBase().bloom + 0.3 * pulse;
       e1W.set(0, 1, 0).cross(mWorld).normalize(); e2W.crossVectors(mWorld, e1W);
       nsMat.uniforms.uT.value = swirl.userData.u.uT.value = t;
       hs.beam.pos.copy(base.beam).applyMatrix4(mag.matrixWorld);
@@ -501,13 +577,18 @@ export function create(ctx) {
       const u = beams.material.uniforms;
       u.uTime.value = t;
       u.uWT.value = windT;
+      u.uPhase.value = phase;
+      u.uGain.value = 0.09 * (1 + 1.2 * pulse);
       wu.uT.value = windT;
       wu.uPhase.value = phase;
       wu.uCam.value = dist;
+      net.userData.u.uFlow.value = windT;
+      beads.userData.u.uT.value = t;
       // Leuchtring erst im Überblick: von innen läge er als breiter Balken quer im Bild
       const ringI = THREE.MathUtils.smoothstep(dist, 400, 2500);
       lcMats[0].uniforms.uI.value = 1.5 * ringI;
       lcMats[1].uniforms.uI.value = 0.2 * ringI;
+      wall.material.uniforms.uI.value = ringI;
       // Nahebene mit dem Abstand (Stern 13 km bis Wind ≈ 20.000 km)
       const near = Math.max(0.2, dist * 0.01);
       if (Math.abs(near - camera.near) / camera.near > 0.1) { camera.near = near; camera.updateProjectionMatrix(); }
@@ -525,7 +606,7 @@ export function create(ctx) {
       if (ph) { ph.setAttribute('x1', x); ph.setAttribute('x2', x); }
       if (dot) { dot.setAttribute('cx', x); dot.setAttribute('cy', y); }
     },
-    setPixelRatio(pr) { stars.userData.setPixelRatio(pr); wu.uPx.value = pr; swirl.userData.u.uPx.value = pr; },
+    setPixelRatio(pr) { stars.userData.setPixelRatio(pr); wu.uPx.value = pr; swirl.userData.u.uPx.value = pr; beads.userData.u.uPx.value = pr; },
     dispose() { sound(false); disposeScene(scene); },
   };
 }
