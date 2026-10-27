@@ -3,9 +3,11 @@
 // eine anamorphe Linse, Strahlenkranz, Staub tritt ins Licht. Kurz vor dem Knall zieht sich alles zusammen, dann zerreißt
 // es. Ablauf (User 27.10.2026, zweite Fassung: Anfang schneller, Knall nicht mehr schlagartig, Übergänge fließend):
 // Zünden (≈ 1 s) → Wachsen → Spannung (Licht pulsiert wie ein Herzschlag, unter 2 Hz; Strahlen wachsen, Staub wird
-// spiralig zum Punkt gesogen, Kamera fährt an, leises Grollen) → Luftholen (Licht dunkelt ab, alles zieht sich zusammen,
-// Dolly-Zoom) → Knall in Stufen (Rückstoß der Kamera, Strahlen schnellen auf volle Länge, Lichtfäden schießen nach außen,
-// die Kamera wird ins Licht gezogen und dreht sich, das Licht frisst sich von der Mitte bis in die Ecken) → Weiß →
+// spiralig zum Punkt gesogen, Kamera fährt an) → Luftholen (Licht dunkelt ab, alles zieht sich zusammen, Dolly-Zoom) →
+// Knall in Stufen über 4,2 s (User 27.10.2026, dritte Fassung: weniger weiße Fläche, mehr Detail, geführte Kamera statt
+// Wackeln): Zündung, zwei Nachstöße im Kern, Strahlen und Lichtfäden schießen nach außen, ein Feuerball aus turbulenter
+// Glut mit hellen Adern wächst bis in die Ecken; die Kamera weicht weich zurück, schwingt einmal nach, umkreist den
+// Feuerball im Bogen und wird gedreht hineingezogen → kurzes Weiß →
 // Durchflug durch heißes, strömendes Plasma, das nach Planck-Farbe kühlt (blauweiß → weiß → orange) → das Plasma wird
 // durchsichtig (≈ 380.000 Jahre), die Rekombination wandert als glühende Front fleckig über das Bild und lässt genau die
 // Kugel der Hintergrundstrahlung von Station 10 zurück (gleiches Muster aus glsl.js CMB, dieselben Uniforms der Schale) –
@@ -23,14 +25,14 @@ import { LOOK } from './post.js';
 // nach dem Knall, flow = Strömung im Plasma; arc/rise = Bogen und Kranhöhe am Anfang des Rückzugs (°), end* = Endpose relativ zur
 // Heimpose (Abstand ×, Drehung °); Look-Werte wirken als Faktor und laufen bis zum Ende auf den Look der Station zu.
 export const TUNE = {
-  tempo: 1, build: 11.5, plasma: 6.5, crane: 8.5, charge: 1, warp: 1, flow: 1,
+  tempo: 1, build: 11.5, plasma: 6, crane: 8.5, charge: 1, warp: 1, flow: 1,
   core: 1, streak: 1, streakLen: 1, rays: 1, rayLen: 1, hue: 204, sat: 0.8,
   dust: 1, burst: 1, blur: 1, bokeh: 1, shock: 0, shake: 1,
   push: 1, drift: 1, arc: 28, rise: 12, endDist: 1, endAz: 0, endEl: 0,
   exposure: 1, bloom: 1, grain: 1, ca: 1, vig: 1, bars: 1,
 };
 // Luftholen vor dem Knall, Knall → weiß, weiß halten, Überblendung in die Station (s)
-const INHALE = 1.2, FLASH = 2.8, HOLD = 0.35, FADE = 1.6;
+const INHALE = 1.2, FLASH = 4.2, HOLD = 0.25, FADE = 1.6;
 export const marks = (k) => {
   const bang = k.build, charge = bang * 0.5, inhale = bang - INHALE, white = bang + FLASH, cool = white + HOLD, clear = cool + k.plasma;
   return { charge, inhale, bang, white, cool, clear, end: clear + k.crane };
@@ -51,7 +53,7 @@ uniform vec3 uCamPos, uO;
 uniform vec2 uC;
 uniform float uAspect, uTime;
 uniform float uCore, uSize, uHalo, uSpread, uGlow, uStreak, uStreakW, uStreakL, uRays, uRayL, uRayRot, uShock, uShockR, uFlash;
-uniform float uWarp, uWarpT, uFill, uFillI, uRing;
+uniform float uWarp, uWarpT, uFill, uFillI, uRing, uStack;
 uniform vec3 uTint, uDeep;
 uniform float uPlasma, uTemp, uBright, uContrast, uFog, uDetail, uFalse, uExpand, uR, uFlow, uFlowT;
 uniform vec3 uCut, uDip;
@@ -121,6 +123,11 @@ void main() {
       float line = exp(-ay * ay / (w * w)) * (1.3 * exp(-ax / (uStreakL * 0.06)) + 0.55 * exp(-ax / (uStreakL * 0.4)) + 0.22 * exp(-ax / (uStreakL * 1.6)));
       float haze = exp(-ay * ay / (36.0 * w * w)) * (exp(-ax / (uStreakL * 0.2)) + 0.3 * exp(-ax / uStreakL));
       col += uStreak * (mix(vec3(1.0), uTint, 0.6) * line + uDeep * haze * 0.6) * wisp;
+      // gestaffelte Nebenstreifen der Linse (nur im Knall): schwächer, schmaler, etwas kürzer
+      if (uStack > 0.0) {
+        float o = 0.035 + 0.02 * uStack, l2 = exp(-ax / (uStreakL * 0.3));
+        col += uStack * mix(vec3(1.0), uTint, 0.8) * l2 * 0.35 * (exp(-pow((ay - o) / w, 2.0)) + exp(-pow((ay - 2.1 * o) / w, 2.0)) * 0.5);
+      }
     }
     if (uRays > 0.0) {
       float k = rays(phi, r, 36.0, uRayRot, 1.0, uRayL) + 0.7 * rays(phi, r, 72.0, -0.6 * uRayRot, 5.0, uRayL * 0.55)
@@ -147,7 +154,16 @@ void main() {
     if (uFillI > 0.0) {
       vec3 dq = vec3(cos(phi), sin(phi), uTime * 0.8);
       float fr = uFill * (1.0 + 0.12 * gnoise(dq * 3.0) + 0.05 * gnoise(dq * 11.0 + 4.0));
-      col += vec3(0.95, 0.97, 1.0) * uFillI * smoothstep(fr, fr * 0.45 - 0.01, r) * 9.0;
+      // Feuerball statt flacher Fläche: turbulente Glut, die mitwächst (Muster in Feuerball-Radien), helle Adern,
+      // weißer Kern, zum Rand hin blau; Helligkeit bleibt im Bereich, in dem das Tonemapping noch Zeichnung zeigt
+      vec3 fq = vec3(p / max(fr, 0.06) * 2.4, uTime * 0.3);
+      fq += 0.9 * vec3(gnoise(fq * 0.6), gnoise(fq * 0.6 + 3.7), 0.0);
+      float tb = fbm(fq, 5), vein = pow(1.0 - min(1.0, abs(tb) * 2.6), 7.0);
+      float inside = smoothstep(fr, fr * 0.5 - 0.01, r), kern = exp(-pow(r / max(fr * 0.14, 0.01), 2.0)), g = clamp(tb + 0.5, 0.0, 1.0);
+      col *= 1.0 - 0.85 * inside * uFillI;   // der Feuerball verdeckt das grelle Kernlicht hinter sich
+      // Farbtiefe: tiefes Blau in den Tälern, Cyan auf den Wölbungen, weiße Adern und ein kleiner weißer Kern
+      vec3 fire = uDeep * (0.25 + 0.6 * g) + uTint * 1.4 * g * g + vec3(0.95, 0.97, 1.0) * (1.5 * vein + 1.2 * kern);
+      col += fire * uFillI * inside;
       col += uTint * uFillI * 1.6 * exp(-pow((r - fr) / (0.05 + 0.15 * uFill), 2.0));
     }
     col += mix(vec3(0.95, 0.97, 1.0), uTint * 1.3, smoothstep(0.35, 0.95, r)) * uFlash * 9.0;   // Weiß, zu den Ecken blau
@@ -162,7 +178,7 @@ void main() {
     float wave = fbm(rd * 1.6 / uExpand + vec3(0.0, 0.0, uTime * 0.04), 4);
     float fl = uFlow > 0.0 ? flowField(rd) : 0.0, vein = pow(1.0 - min(1.0, abs(fl) * 2.2), 8.0);
     vec3 glow = ember(uTemp * (1.0 + 0.12 * x * uContrast + 0.3 * uFlow * fl)) * uBright * (1.0 + 0.35 * x * uContrast)
-              * (1.0 + 0.4 * uFog * wave) * (1.0 + uFlow * (1.2 * fl + 0.7 * vein));
+              * (1.0 + 0.4 * uFog * wave) * max(0.15, 1.0 + uFlow * (1.8 * fl + 0.9 * vein));
     glow = max(vec3(0.0), mix(vec3(dot(glow, vec3(0.2126, 0.7152, 0.0722))), glow, 1.3));   // Glut satt statt bräunlich
     // dieselbe Schale wie in Station 10 (Innenseite 0,4, Rand am Fenster, im Fenster nichts)
     float c = dot(d, uCut);
@@ -266,7 +282,7 @@ export function createOpener(ctx, station, tune = { ...TUNE }) {
     uC: { value: new THREE.Vector2(0.5, 0.5) }, uAspect: { value: 1 }, uTime: { value: 0 },
     uCore: { value: 0 }, uSize: { value: 0.001 }, uHalo: { value: 0 }, uSpread: { value: 1 }, uGlow: { value: 0 }, uStreak: { value: 0 }, uStreakW: { value: 0.002 }, uStreakL: { value: 0.1 },
     uRays: { value: 0 }, uRayL: { value: 0.1 }, uRayRot: { value: 0 }, uShock: { value: 0 }, uShockR: { value: 0 }, uFlash: { value: 0 },
-    uWarp: { value: 0 }, uWarpT: { value: 0 }, uFill: { value: 0 }, uFillI: { value: 0 }, uRing: { value: 0 },
+    uWarp: { value: 0 }, uWarpT: { value: 0 }, uFill: { value: 0 }, uFillI: { value: 0 }, uRing: { value: 0 }, uStack: { value: 0 },
     uTint: { value: new THREE.Color() }, uDeep: { value: new THREE.Color() },
     uPlasma: { value: 0 }, uTemp: { value: 40000 }, uBright: { value: 1 }, uContrast: { value: 0 }, uFog: { value: 1 }, uDetail: { value: 0 },
     uFalse: { value: 0 }, uExpand: { value: 1 }, uR: { value: station.shell.radius }, uFlow: { value: 0 }, uFlowT: { value: 0 },
@@ -348,24 +364,32 @@ export function createOpener(ctx, station, tune = { ...TUNE }) {
     const grow = (Math.exp(3 * u) - 1) / (Math.exp(3) - 1);
     const I = (0.3 * sstep(0, 0.1, u) + 0.7 * grow) * sstep(0.003, 0.05, u) * (1 + 0.35 * cg) * (1 + 0.16 * beat) * (1 - 0.55 * inh * (1 - snap));
     // Knall: kurzer Schlag, dann wächst der Kern, bis das Licht alles füllt
-    const pop = s > 0 ? sstep(0, 0.4, s) * Math.exp(-s / 0.9) : 0;
-    const boom = s > 0 ? (1 + 2.5 * pop) * (1 + 45 * Math.pow(fb, 2.4)) : 1;
-    const fov = lerp(32, 28, ease(u)) + 5 * inh * (1 - snap) + 30 * Math.pow(sstep(0.15, 1, fb), 1.4);
+    // Knall: Zündung, dann zwei Nachstöße im Kern (weich, ≥ 1 s auseinander – kein Blitzen); der Kern wächst nur mäßig,
+    // das Bild trägt der Feuerball
+    const kick = (a, w) => (s > a ? sstep(a, a + 0.25, s) * Math.exp(-(s - a) / w) : 0);
+    const pop = kick(0, 0.9) + 0.55 * kick(1.2, 0.6) + 0.35 * kick(2.4, 0.5);
+    const boom = s > 0 ? (1 + 2 * pop) * (1 + 4 * Math.pow(fb, 2.2)) : 1;
+    const fov = lerp(32, 28, ease(u)) + 5 * inh * (1 - snap) + 26 * Math.pow(sstep(0.3, 1, fb), 1.6);
 
     // eigene Kamera: Anfahrt (push), Bogen (drift), in der Spannung näher, beim Luftholen Dolly-Zoom (näher, weiter Winkel),
     // beim Knall Rückstoß, danach ins Licht gezogen und dabei gedreht
     let D = 12 * (1 - 0.3 * k.push * sstep(0, 1, u)) * (1 - 0.12 * k.push * cg) * (1 - 0.1 * inh * (1 - snap));
-    D *= 1 + 0.18 * pop;
-    D *= Math.exp(-3.2 * Math.pow(sstep(0.25, 1, fb), 1.5));
+    // Knall: weicher Rückstoß (Kamera weicht zurück und kommt zur Ruhe), dann langsamer Sog ins Licht
+    const recoil = s > 0 ? sstep(0, 0.6, s) * Math.exp(-s / 1.4) : 0;
+    D *= 1 + 0.25 * k.shake * recoil;
+    D *= Math.exp(-2.6 * Math.pow(sstep(0.35, 1, fb), 1.7));
     camera.fov = fov;
     camera.updateProjectionMatrix();
-    orbit(camera, D, k.drift * (lerp(0.12, 0.03, ease(u)) - 0.04 * cg), k.drift * lerp(0.05, 0.015, u));
-    const shake = (s > 0 ? k.shake * 0.03 * Math.exp(-s / 0.6) * sstep(0, 0.04, s) : 0) + k.shake * 0.0035 * cg * cg * (1 - 0.6 * inh);
-    const hand = 0.006 * k.drift, ss = s > 0 ? s : t;
+    // Bogen um den Punkt: im Aufbau langsam, im Knall umkreist die Kamera den Feuerball (Staub zeigt die Tiefe)
+    orbit(camera, D, k.drift * (lerp(0.12, 0.03, ease(u)) - 0.04 * cg - 0.3 * ease(fb)), k.drift * (lerp(0.05, 0.015, u) + 0.08 * sstep(0, 1, fb)));
+    // Schweben aus langsamen Sinus statt Zittern; der Druckstoß als eine gedämpfte Schwingung (≈ 1 Hz, wie eine
+    // Kamerakran-Federung), nicht als Rütteln
+    const sway = s > 0 ? k.shake * 0.012 * sstep(0, 0.3, s) * Math.exp(-s / 1.3) : 0;
+    const hand = 0.006 * k.drift * (1 + 0.5 * cg);
     _t.copy(O)
-      .addScaledVector(side, D * (hand * wob(t, 0.31, 0.53, 0.89) + shake * wob(ss, 61, 97, 139)))
-      .addScaledVector(up, D * (hand * wob(t + 7, 0.27, 0.47, 0.83) + shake * wob(ss + 3, 71, 113, 151)));
-    const roll = k.drift * 0.01 * wob(t, 0.13, 0.21, 0.37) + shake * 0.6 * wob(ss + 9, 53, 89, 127) + 0.1 * k.drift * Math.pow(sstep(0.2, 1, fb), 1.5);
+      .addScaledVector(side, D * (hand * wob(t, 0.31, 0.53, 0.89) + sway * Math.sin(2 * Math.PI * 0.9 * s)))
+      .addScaledVector(up, D * (hand * wob(t + 7, 0.27, 0.47, 0.83) + sway * 0.7 * Math.sin(2 * Math.PI * 1.15 * s + 1.1)));
+    const roll = k.drift * 0.01 * wob(t, 0.13, 0.21, 0.37) + 2.5 * sway * Math.sin(2 * Math.PI * 0.6 * s + 0.4) + 0.14 * k.drift * Math.pow(sstep(0.3, 1, fb), 1.6);
     camera.up.set(0, 1, 0).applyAxisAngle(_v.copy(axis), roll);
     camera.lookAt(_t);
     camera.updateMatrixWorld();
@@ -376,24 +400,25 @@ export function createOpener(ctx, station, tune = { ...TUNE }) {
     const pinch = 1 - 0.45 * inh * (1 - snap);
     const lit = sstep(0.003, 0.04, u);
     bgU.uSize.value = (0.0025 + 0.009 * I) * pinch * boom;
-    bgU.uCore.value = k.core * (20 + 50 * I) * (1 + 3 * f + 4 * pop) * lit;
-    bgU.uHalo.value = k.core * (0.35 + 3.6 * I) * (1 + 0.6 * f + 1.5 * pop) * lit;
-    bgU.uSpread.value = 1 + 0.15 * (boom - 1) / 46;
-    bgU.uGlow.value = k.core * (0.01 + 0.22 * I * I) * (1 + 0.8 * f + 2 * pop);
+    bgU.uCore.value = k.core * (20 + 50 * I) * (1 + 3 * pop) * (1 - 0.75 * sstep(0.25, 0.8, fb)) * lit;
+    bgU.uHalo.value = k.core * (0.35 + 3.6 * I) * (1 + 1.5 * pop) * (1 - 0.6 * f) * lit;
+    bgU.uSpread.value = 1 + 0.15 * (boom - 1) / 11;
+    bgU.uGlow.value = k.core * (0.01 + 0.22 * I * I) * (1 + 2 * pop) * (1 - 0.5 * f);
     bgU.uStreak.value = k.streak * (0.3 + 2.2 * I) * sstep(0.01, 0.08, u) * (1 + 3 * f + 3 * pop) * (1 - 0.4 * inh * (1 - snap));
     bgU.uStreakL.value = k.streakLen * (0.2 + 0.8 * sstep(0.02, 0.4, u)) * (1 + 0.4 * cg) * (1 - 0.6 * inh * (1 - snap)) * (1 + 3 * sstep(0, 1.0, s));
-    bgU.uStreakW.value = (0.0013 + 0.0025 * I) * (1 + 10 * f * f);
+    bgU.uStreakW.value = (0.0013 + 0.0025 * I) * (1 + 6 * f * f);
+    bgU.uStack.value = s > 0 ? k.streak * sstep(0, 0.5, s) * (1 - sstep(0.55, 0.9, fb)) : 0;
     bgU.uRays.value = k.rays * sstep(0.08, 0.3, u) * (0.15 + 1.8 * Math.pow(I, 1.6)) * (1 + 0.15 * cg) * (1 + 0.6 * f + 0.8 * pop);
     bgU.uRayL.value = k.rayLen * (0.03 + 0.14 * Math.pow(I, 1.5)) * (1 + 0.25 * cg) * (1 - 0.5 * inh * (1 - snap)) * (1 + 3.5 * sstep(0, 1.0, s));
     bgU.uRayRot.value = 0.018 * t + 0.08 * cg * cg + (s > 0 ? 0.05 * s : 0);
     bgU.uRing.value = (cg * (1 - inh) + 2 * pop) * k.core;
-    bgU.uWarp.value = s > 0 ? k.warp * 1.4 * sstep(0.1, 0.7, s) * (1 - sstep(0.8, 1, fb)) : 0;
+    bgU.uWarp.value = s > 0 ? k.warp * 1.4 * sstep(0.1, 0.7, s) * (1 - sstep(0.75, 0.98, fb)) : 0;
     bgU.uWarpT.value = s > 0 ? s * (0.5 + 0.35 * s) : 0;
-    bgU.uFill.value = 1.7 * Math.pow(sstep(0.3, 1, fb), 2);
-    bgU.uFillI.value = sstep(0.3, 0.45, fb);
+    bgU.uFill.value = 1.8 * Math.pow(sstep(0.2, 1, fb), 1.8);
+    bgU.uFillI.value = sstep(0.2, 0.35, fb);
     bgU.uShock.value = s > 0 ? k.shock * 0.25 * Math.exp(-s / 0.6) * sstep(0, 0.05, s) : 0;
     bgU.uShockR.value = s > 0 ? 0.02 + 1.4 * (1 - Math.exp(-s / 0.7)) : 0;
-    bgU.uFlash.value = Math.pow(sstep(0.9, 1, fb), 2);
+    bgU.uFlash.value = 0.15 * Math.pow(sstep(0.93, 1, fb), 2);   // nur ein Hauch Weiß als Brücke ins Plasma
 
     // Staub: tritt mit der Spannung ins Licht (zum Punkt gesogen, Drall), nach dem Knall alles; Schärfe auf dem Punkt
     dU.uVis.value = (s > 0 ? 0.4 + 0.7 * sstep(0, 0.9, s) : 0.4 * Math.pow(sstep(0.4, 1.0, u), 1.2)) * Math.min(1, k.dust);
@@ -409,7 +434,7 @@ export function createOpener(ctx, station, tune = { ...TUNE }) {
     const c = clamp01((t - M.cool) / k.plasma);
     const T = Math.exp(lerp(Math.log(40000), Math.log(3000), sstep(0, 0.62, c)));
     bgU.uTemp.value = T;
-    bgU.uBright.value = lerp(2.2, 1.15, sstep(0, 0.3, c));
+    bgU.uBright.value = lerp(1.1, 1.15, sstep(0, 0.3, c));
     bgU.uContrast.value = lerp(0.15, 1, sstep(0.05, 0.55, c));
     bgU.uFog.value = 1 - sstep(0.4, 0.82, c);
     bgU.uDetail.value = sstep(0.25, 0.9, c);
@@ -442,9 +467,9 @@ export function createOpener(ctx, station, tune = { ...TUNE }) {
       const x = FILM[key], y = endLook[key];
       look[key] = Array.isArray(x) ? x.map((v, i) => lerp(v, y[i], a)) : lerp(x, y, a);
     }
-    const flare = 1 + 2 * sstep(0.75, 1, f);
-    look.exposure = (out.view === 'own' ? FILM.exposure * flare : Math.exp(lerp(Math.log(3), Math.log(endLook.exposure), sstep(-0.04, 0.2, c)))) * lerp(1, k.exposure, tl);
-    look.bloom = (out.view === 'own' ? FILM.bloom + 0.05 * cg + 0.08 * f + 0.1 * pop : lerp(0.3, endLook.bloom, a)) * lerp(1, k.bloom, tl);
+    const flare = 1 + 0.5 * sstep(0.6, 1, f);
+    look.exposure = (out.view === 'own' ? FILM.exposure * flare : Math.exp(lerp(Math.log(1.7), Math.log(endLook.exposure), sstep(-0.04, 0.2, c)))) * lerp(1, k.exposure, tl);
+    look.bloom = (out.view === 'own' ? FILM.bloom + 0.05 * cg + 0.1 * pop - 0.04 * f : lerp(0.3, endLook.bloom, a)) * lerp(1, k.bloom, tl);
     look.grain *= lerp(1, k.grain, tl);
     look.ca *= lerp(1, k.ca, tl) * (out.view === 'own' ? 1 + 1.2 * cg + 4 * pop + 1.5 * f : 1);
     look.vig *= lerp(1, k.vig, tl) * (out.view === 'own' ? (1 + 0.25 * beat + 0.3 * inh * (1 - snap)) * (1 - 0.7 * f) : lerp(0.3, 1, a));   // im Weiß keine grauen Ecken
