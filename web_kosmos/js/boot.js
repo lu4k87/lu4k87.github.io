@@ -32,14 +32,18 @@ export function createBoot(root = document.getElementById('boot')) {
       if (label && what.textContent !== label) what.textContent = label;
       if (!raf) raf = requestAnimationFrame(tick);
     },
-    // Linie läuft voll, dann blendet das Bild aus; danach aus dem DOM, damit es keine Ereignisse mehr fängt
-    done() {
-      finish = () => {
-        finish = null;
-        root.classList.add('is-done');
-        setTimeout(() => root.remove(), 1400);
-      };
-      this.set(1, 'Bereit');
+    // Linie läuft voll, dann blendet das Bild aus; danach aus dem DOM, damit es keine Ereignisse mehr fängt.
+    // Ergebnis: Promise, sobald das Ladebild fast ausgeblendet ist (shown s nach Beginn) – dann sieht man die Bühne
+    done(shown = 0.5) {
+      return new Promise((resolve) => {
+        finish = () => {
+          finish = null;
+          root.classList.add('is-done');
+          setTimeout(resolve, shown * 1000);
+          setTimeout(() => root.remove(), 1400);
+        };
+        this.set(1, 'Bereit');
+      });
     },
   };
 }

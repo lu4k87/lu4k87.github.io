@@ -516,7 +516,8 @@ function passPose(lv, A, down) {
   const dir = far ? u.negate().applyAxisAngle(axis, -PASS.behind) : u.applyAxisAngle(axis, PASS.side);
   return { pos: T.clone().addScaledVector(dir, down ? r : Math.max(r, PASS.out * rho)), target: T.clone() };
 }
-// opt.dur = feste Dauer der ganzen Fahrt (s), opt.opener = Fahrt des Auftakt-Films (sonst ist Navigation im Film gesperrt)
+// opt.dur = feste Dauer der ganzen Fahrt (s), opt.opener = Fahrt des Auftakt-Films (sonst ist Navigation im Film gesperrt),
+// opt.home = Landung in der Heimpose des Ziels
 async function goTo(targetId, opt = {}) {
   if (!STATIONS[targetId] || state.tr || state.chain || !state.active || targetId === state.id) return;
   if (state.opener && !opt.opener) return;
@@ -528,6 +529,7 @@ async function goTo(targetId, opt = {}) {
   if (state.tr || state.chain || state.id !== fromId) return;
   state.queue = path;
   state.chain = planChain([state.active, ...lvs], opt.dur);
+  state.chain.home = !!opt.home;   // Landung in der Heimpose statt im etwas weiteren Ankunftsblick
   // Blickwinkel vor der Fahrt merken (Warp rechnet relativ dazu), Rollen beginnt bei null
   state.chain.cams = [state.active, ...lvs].map((lv) => ({ lv, fov: lv.camera.fov }));
   for (const lv of [state.active, ...lvs]) lv.bank = null;
@@ -636,7 +638,7 @@ function hop() {
     outerFrom = swing ? pose(swing.at, cur.target) : pose(cur.pos, cur.target);
     outerFrom.look = cur.target.clone().sub(cur.pos).normalize();
     outerTo = poseAt(anchor, outerFrom.pos, Math.max(outerFrom.pos.distanceTo(anchor) / ZOOM, 1e-9));
-    innerTo = next && STATIONS[next].parent === to.id ? passPose(to, anchorOf(to, next), true) : arrival(to);
+    innerTo = next && STATIONS[next].parent === to.id ? passPose(to, anchorOf(to, next), true) : ch.home ? pose(to.home.pos, to.home.target) : arrival(to);
     innerFrom = poseAt(innerTo.target, innerTo.pos, innerTo.pos.distanceTo(innerTo.target) * ZOOM);
   } else {
     const saved = state.poses.get(to.id);
@@ -763,11 +765,11 @@ function stepTransition(dt) {
 }
 
 // ---------- Auftakt-Film (Vorschau 26.10.2026 Ort:C, Rückmeldung des Users 26.10.2026): beim ersten Besuch der Urknall ----------
-// Film in Station 11 mit Kinobalken, Bedienung ausgeblendet, dezent „Überspringen“ (Esc, Klick); danach Landung in Station 11,
-// der obersten Ebene – keine Fahrt hinunter zur ISS. Gemerkt in localStorage; der Knopf „Film vom Urknall“ (Station 10,
+// Film in Station 11 mit Kinobalken, Bedienung ausgeblendet, dezent „Überspringen“ (Esc, Klick); danach Flug in Station 10
+// und Landung in ihrer Heimpose (ganze Kugel im Bild, User 27.10.2026; früher Landung in Station 11). Gemerkt in localStorage; der Knopf „Film vom Urknall“ (Station 10,
 // Zahnrad) spielt ihn erneut (Ereignis kosmos:auftakt). tempo = Tempo des Films, fade = Abblenden vor dem erneuten
 // Abspielen (s). ?auftakt erzwingt ihn, ?auftakt=0 schaltet ihn ab (Tests)
-const OPENER = { key: 'kosmos.auftakt.v1', tempo: 1.5, fade: 0.8, home: 'bigbang' };
+const OPENER = { key: 'kosmos.auftakt.v1', tempo: 1.5, fade: 0.8, home: 'bigbang', land: 'cmb' };
 state.opener = null;
 const openerSeen = () => { try { return localStorage.getItem(OPENER.key) === '1'; } catch { return false; } };
 async function startOpener(replay) {
@@ -795,9 +797,9 @@ async function startOpener(replay) {
 function stepOpener(real) {
   const a = state.opener, f = state.active.film;
   if (a.phase === 'load') a.fade = Math.max(0, a.fade - real / OPENER.fade);
-  else if (f && f.t >= f.dur) endOpener();   // Film zu Ende: Landung in Station 11
+  else if (f && f.t >= f.dur) endOpener();   // Film zu Ende: Flug in Station 10
 }
-// Landung in Station 11: Bedienung blendet ein, Titel „Kosmos“ und der Station, der Film läuft im normalen Tempo weiter
+// Ende des Films (oder Überspringen): Bedienung blendet ein, Flug in Station 10, Landung in deren Heimpose
 function endOpener() {
   if (!state.opener) return;
   state.opener = null;
@@ -808,7 +810,7 @@ function endOpener() {
   if (state.controls) state.controls.enabled = true;
   const lv = state.active;
   if (lv && lv.film) lv.film.tempo = 1;
-  if (lv) hud.caption(lv.meta, true);
+  goTo(OPENER.land, { home: true });
 }
 // Überspringen: sofort in Station 11 landen (lädt sie noch, dann gleich nach dem Laden)
 function skipOpener() {
@@ -1171,7 +1173,8 @@ async function start() {
       if (!id) startIntro(lv);
     }
     requestAnimationFrame(frame);
-    boot.done();
+    // Film vom Urknall erst starten, wenn das Ladebild fast weg ist – sonst ist die Explosion schon vorbei
+    boot.done().then(() => { const s = state.active; if (!id && s && s.restart && state.id === OPENER.home && !still()) s.restart(0, state.opener ? OPENER.tempo : 1); });
   } catch (err) {
     console.error(err);
     document.body.classList.add('is-fatal', 'fatal-start');
