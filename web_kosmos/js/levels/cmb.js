@@ -5,7 +5,8 @@
 // Leistungsspektrums D_ℓ (Sachs-Wolfe-Plateau, erster Peak bei ℓ ≈ 220 ≙ ≈ 0,8°, Dämpfung bei hohen ℓ; Planck 2018).
 // Der Dipol (3,36 mK, Richtung l = 264°, b = 48°) stammt von unserer Eigenbewegung und ist üblicherweise abgezogen.
 // Der der Kamera zugewandte Teil der Kugel ist ausgeschnitten. Zeitschichten: Schalen zu festen Epochen; Regler „Blick
-// zurück“: Schale zur Rückblickzeit mit z, Alter, Temperatur und mitbewegtem Abstand.
+// zurück“: Schale zur Rückblickzeit mit z, Alter, Temperatur und mitbewegtem Abstand. Fliegt die Kamera in die
+// Galaxienwolke hinein, dunkelt die Schale ab und die Galaxien funkeln leise (Darstellung, kein Messwert).
 
 import * as THREE from 'three';
 import { registerLayers } from '../layers.js';
@@ -26,7 +27,7 @@ const SHELL_FRAG = /* glsl */ `
 ${NOISE}
 ${CMB}
 uniform vec3 uCut, uDip;
-uniform float uDipOn, uCutCos, uRim, uGlow, uTime;
+uniform float uDipOn, uCutCos, uRim, uGlow, uTime, uDim;
 varying vec3 vP, vW;
 void main() {
   vec3 d = normalize(vP);
@@ -34,7 +35,7 @@ void main() {
   if (c > uCutCos) discard;
   vec3 col = cmbColor(cmbValue(d, 1.0, uDipOn, uDip));
   float rim = 1.0 - smoothstep(uCutCos - 0.04, uCutCos, c);
-  if (!gl_FrontFacing) { gl_FragColor = vec4(col * 0.4 * (0.5 + 0.5 * rim) * 0.9, 1.0); return; }   // Innenseite = was wir sehen
+  if (!gl_FrontFacing) { gl_FragColor = vec4(col * 0.4 * (0.5 + 0.5 * rim) * 0.9 * uDim, 1.0); return; }   // Innenseite = was wir sehen
   // Außenseite als dünne Glashaut: Muster entsättigt und gedimmt, kühler Saum an der Silhouette (Fresnel)
   col = mix(vec3(dot(col, vec3(0.3, 0.55, 0.15))), col, 0.55) * 0.14 * (0.5 + 0.5 * rim);
   float fr = pow(1.0 - abs(dot(d, normalize(cameraPosition - vW))), 3.0);
@@ -48,6 +49,25 @@ void main() {
   float core = smoothstep(uCutCos - 0.004 - px, uCutCos - 0.0005, c);
   col += vec3(1.0, 0.63, 0.33) * (0.9 * fl * exp(-(uCutCos - c) / (0.018 * fl)) + 2.2 * core * mix(1.0, fl, 0.3)) * uGlow;   // Kern flackert schwächer, sonst wirkt er gestrichelt
   gl_FragColor = vec4(col, 1.0);
+}
+`;
+// Galaxien: Punkt-Shader aus vol.js plus Funkeln – je Punkt eigene Phase, Periode 3–10 s (weit unter 3 Hz) und Stärke;
+// meist gedämpft, selten ein weicher Höhepunkt (w³). uTw = 0 außerhalb der Wolke
+const GAL_VERT = /* glsl */ `
+attribute vec3 color;
+attribute float size, phase;
+uniform float uPx, uScale, uMin, uMax, uFade, uGain, uTime, uTw;
+varying vec3 vCol;
+void main() {
+  vec4 mv = modelViewMatrix * vec4(position, 1.0);
+  gl_Position = projectionMatrix * mv;
+  float px = size * uScale / max(-mv.z, 1e-6);
+  float d = clamp(px, uMin * uPx, uMax * uPx);
+  gl_PointSize = d;
+  float near = 1.0 - smoothstep(uFade * uPx, uFade * 3.0 * uPx, px);
+  float w = 0.5 + 0.5 * sin(uTime * (0.6 + 1.5 * fract(phase * 7.31)) + phase * 6.2832);
+  float tw = mix(1.0, 0.55 + 1.15 * w * w * w, uTw * fract(phase * 3.17));
+  vCol = color * uGain * tw * min(1.0, (px * px) / (d * d) * 4.0) * near;
 }
 `;
 // Zeitschicht: dünne, zarte Kugel mit leichtem Rauschen, Ausschnitt wie die Hauptkugel
@@ -74,7 +94,7 @@ export function create(ctx) {
   const shellMat = new THREE.ShaderMaterial({
     vertexShader: 'varying vec3 vP, vW; void main() { vP = position; vW = (modelMatrix * vec4(position, 1.0)).xyz; gl_Position = projectionMatrix * viewMatrix * vec4(vW, 1.0); }',
     fragmentShader: SHELL_FRAG,
-    uniforms: { uCut: { value: cut }, uCutCos: { value: 0.62 }, uDip: { value: dip }, uDipOn: { value: 0 }, uRim: { value: 1 }, uGlow: { value: 1 }, uTime: { value: 0 } },
+    uniforms: { uCut: { value: cut }, uCutCos: { value: 0.62 }, uDip: { value: dip }, uDipOn: { value: 0 }, uRim: { value: 1 }, uGlow: { value: 1 }, uTime: { value: 0 }, uDim: { value: 1 } },
     side: THREE.DoubleSide,
   });
   const shell = new THREE.Mesh(new THREE.SphereGeometry(R_LSS, 192, 96), shellMat);
@@ -102,9 +122,10 @@ export function create(ctx) {
   probe.visible = false;
   scene.add(probe);
 
-  // Galaxien: gleichmäßig im Volumen mit leichter Häufung, Farbe nach Rotverschiebung, Helligkeit nach Abstand
+  // Galaxien: gleichmäßig im Volumen mit leichter Häufung, Farbe nach Rotverschiebung, Helligkeit nach Abstand; Größe
+  // gestreut (meist klein, wenige große), Phase für das Funkeln
   const rand = mulberry32(13);
-  const pos = [], col = [], size = [];
+  const pos = [], col = [], size = [], phase = [];
   const n = Math.round(160000 * ctx.detail);
   const centers = Array.from({ length: 3000 }, () => new THREE.Vector3(gauss(rand), gauss(rand), gauss(rand)).normalize().multiplyScalar(R_GAL * Math.cbrt(rand())));
   for (let i = 0; i < n; i++) {
@@ -118,9 +139,12 @@ export function create(ctx) {
     const T = 6500 / (1 + z * 0.55);
     pos.push(p.x, p.y, p.z);
     col.push(...blackbody(Math.max(1800, T)).map((v) => v * 6 * (0.25 + rand() * 0.6) * (r < 1 ? 0.3 : 1)));
-    size.push(0.05);
+    size.push(0.05 * (0.5 + 0.6 * rand() + 1.1 * rand() ** 8));
+    phase.push(rand());
   }
-  const gal = pointCloud(pos, col, size, { min: 1.05 });
+  const gal = pointCloud(pos, col, size, { min: 1.05, fade: 9, vert: GAL_VERT });   // nahe Punkte früh aus, sonst weiche Flecken
+  gal.geometry.setAttribute('phase', new THREE.Float32BufferAttribute(phase, 1));
+  Object.assign(gal.material.uniforms, { uTime: { value: 0 }, uTw: { value: 0 } });
   scene.add(gal);
   const we = pointCloud([0, 0, 0], [6, 5.5, 4.6], [0.05], { min: 3 });
   scene.add(we);
@@ -128,6 +152,9 @@ export function create(ctx) {
   // Auftakt (opener.js): Galaxien und „Wir“ blenden beim Rückzug aus der Kugel ein (rise 0 … 1), Regler bleibt Grundwert
   let galBase = 1, rise = 1;
   const gains = () => { gal.material.uniforms.uGain.value = galBase * rise; we.material.uniforms.uGain.value = rise; };
+
+  // Kamera in der Wolke (inside 0 … 1 zwischen ihrem Rand und gut halbem Radius): Schale dunkler, Galaxien funkeln
+  let dimMax = 0.7, twBase = 1;
 
   let back_t = 0, probeInfo = null;
   const probePos = new THREE.Vector3();
@@ -150,7 +177,11 @@ export function create(ctx) {
       set: (v) => { shellMat.uniforms.uRim.value = v; }, hint: 'Kühler Lichtsaum am Umriss der Kugel; 0 = aus.' },
     { id: 'glow', type: 'range', group: 'Hintergrundstrahlung', label: 'Glut der Schnittkante', value: 1, min: 0, max: 3, step: 0.25, unit: '×',
       set: (v) => { shellMat.uniforms.uGlow.value = v; }, hint: 'Kante leuchtet in der Farbe des 3.000 K heißen Plasmas; 0 = nur die Wandstärke.' },
+    { id: 'dim', type: 'range', group: 'Hintergrundstrahlung', label: 'Abdunkeln von innen', value: 70, min: 0, max: 90, step: 5, fmt: (v) => `${v} %`,
+      set: (v) => { dimMax = v / 100; }, hint: 'Wie stark die Schale dunkler wird, wenn die Kamera zwischen die Galaxien fliegt; 0 = gleich hell.' },
     { id: 'galGain', type: 'range', group: 'Galaxien', label: 'Helligkeit', value: 1, min: 0, max: 5, step: 0.25, unit: '×', set: (v) => { galBase = v; gains(); } },
+    { id: 'twinkle', type: 'range', group: 'Galaxien', label: 'Funkeln in der Wolke', value: 1, min: 0, max: 2, step: 0.25, unit: '×',
+      set: (v) => { twBase = v; }, hint: 'Galaxien leuchten einzeln langsam auf und ab, sobald die Kamera zwischen ihnen ist; 0 = ruhig.' },
     { id: 'layerGain', type: 'range', group: 'Zeitschichten', label: 'Helligkeit', value: 1, min: 0.25, max: 6, step: 0.25, unit: '×',
       set: (v) => layers.children.forEach((m) => { m.material.uniforms.uGain.value = 0.07 * v; }), active: () => layers.visible, only: 'Erst in der Infotafel „Zeitschichten“ einschalten.' },
   ]);
@@ -178,7 +209,13 @@ export function create(ctx) {
     opening(k) { rise = k; gains(); },
     orbit: { minDistance: 4, maxDistance: 320, cineSpeed: 0.45 },
     look: { exposure: 1.05, bloom: 0.07, sat: 1.05, con: 0.12 },
-    update(dt, t) { shellMat.uniforms.uTime.value = t; },
+    update(dt, t) {
+      const inside = 1 - THREE.MathUtils.smoothstep(camera.position.length(), R_GAL * 0.45, R_GAL * 1.05);
+      shellMat.uniforms.uTime.value = t;
+      shellMat.uniforms.uDim.value = 1 - dimMax * inside;
+      gal.material.uniforms.uTime.value = t;
+      gal.material.uniforms.uTw.value = twBase * inside;
+    },
     live: () => (probeInfo
       ? `Vor ${fmtT(back_t)}: z = ${probeInfo.z < 10 ? probeInfo.z.toFixed(2).replace('.', ',') : Math.round(probeInfo.z)} · Alter ${probeInfo.age < 1 ? `${Math.round(probeInfo.age * 1000)} Mio. J.` : fmtT(probeInfo.age)} · ${probeInfo.T.toFixed(1).replace('.', ',')} K · heute ${probeInfo.r.toFixed(1).replace('.', ',')} Mrd. Lj entfernt`
       : `ΛCDM (Planck 2018): Alter ${fmtT(AGE)} · Horizont ${R_LSS.toFixed(1).replace('.', ',')} Mrd. Lj · letzte Streuung z = 1.090`),

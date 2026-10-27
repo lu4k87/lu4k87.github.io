@@ -169,13 +169,13 @@ void main() {
 }
 `;
 
-export function pointCloud(pos, col, size, { min = 1.3, max = 40, fade = 24, frag = PC_FRAG, blending = THREE.AdditiveBlending } = {}) {
+export function pointCloud(pos, col, size, { min = 1.3, max = 40, fade = 24, vert = PC_VERT, frag = PC_FRAG, blending = THREE.AdditiveBlending } = {}) {
   const g = new THREE.BufferGeometry();
   g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
   g.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
   g.setAttribute('size', new THREE.Float32BufferAttribute(size, 1));
   const m = new THREE.ShaderMaterial({
-    vertexShader: PC_VERT, fragmentShader: frag,
+    vertexShader: vert, fragmentShader: frag,
     uniforms: { uPx: { value: 1 }, uScale: { value: 600 }, uMin: { value: min }, uMax: { value: max }, uFade: { value: fade }, uGain: { value: 1 } },
     blending, depthWrite: false, transparent: true,
   });
