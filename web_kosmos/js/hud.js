@@ -136,8 +136,8 @@ export function createHud(h) {
   // Feste Höhe in Ruhe, damit die Bühne beim Zeigen nicht springt; die Schublade liegt über der Bühne.
   const NS = 'http://www.w3.org/2000/svg', PAD = 10, GAP = 0;
   const BAND_H = 80, DOTS_H = 40, ROUTE_Y = 18, BUS_Y = 12, KID_Y = 30, MOONS_Y = 96, BRK_Y = 91;
-  // Stufen: Schrift, Luft je Name, Spalte der Ebenen-Namen (die letzte Stufe lässt sie weg)
-  const SIZES = [[13, 16, 92], [12, 10, 92], [12, 8, 0]];
+  // Stufen: Schrift, Luft je Name, Spalte links (0 = keine)
+  const SIZES = [[13, 16, 0], [12, 10, 0], [12, 8, 0]];
   const wide = matchMedia('(min-width: 761px)'), still = matchMedia('(prefers-reduced-motion: reduce)');
   const ctx2d = document.createElement('canvas').getContext('2d');
   const textW = (s, font) => { ctx2d.font = font; return ctx2d.measureText(s).width; };
@@ -152,12 +152,11 @@ export function createHud(h) {
   let pos = {}, fit = null, bandH = 0, hovId = null, shown = ['', ''], sleep = 0, comet = null;
 
   function buildRail() {
-    rail.innerHTML = `<div class="bd-lvls" aria-hidden="true"><span style="--y:${ROUTE_Y}px">Route</span></div>
-      <div class="bd-cv"><svg class="bd-wires" aria-hidden="true"></svg>${groups().map(([hub, rs], i) => {
+    rail.innerHTML = `<div class="bd-cv"><svg class="bd-wires" aria-hidden="true"></svg>${groups().map(([hub, rs], i) => {
         const [, name, desc] = CHAPTERS.find(([c]) => c === hub);
         return `<div class="bd-grp" role="group" data-ch="${hub}" style="--i:${i}" aria-label="${esc(name)}: ${esc(desc)}">${rs.map((id) => node(id)).join('')}</div>`;
       }).join('')}</div>`;
-    nav.insertAdjacentHTML('beforeend', `<div class="bd-drawer" role="group" inert><div class="bd-lvls" aria-hidden="true"><span style="--y:${KID_Y}px">Abstecher</span><span class="bd-lv-moon" style="--y:${MOONS_Y + 13}px">Monde</span></div><div class="bd-cv"><svg class="bd-wires" aria-hidden="true"></svg><div class="bd-kids"></div><div class="bd-mrow"></div></div></div>`);
+    nav.insertAdjacentHTML('beforeend', `<div class="bd-drawer" role="group" inert><div class="bd-cv"><svg class="bd-wires" aria-hidden="true"></svg><div class="bd-kids"></div><div class="bd-mrow"></div></div></div>`);
     cv = rail.querySelector('.bd-cv');
     wires = cv.querySelector('.bd-wires');
     drawer = nav.querySelector('.bd-drawer');
@@ -237,7 +236,6 @@ export function createHud(h) {
     const dots = !fit, ry = dots ? DOTS_H / 2 : ROUTE_Y, cw = W - (dots ? 0 : fit.lv);
     nav.classList.toggle('is-dots', dots);
     nav.classList.toggle('is-compact', !!fit && fit.px < SIZES[0][0]);
-    nav.classList.toggle('no-lvls', !!fit && !fit.lv);
     cv.style.setProperty('--ry', `${ry}px`);
     const each = (cw - 2 * PAD - 8 * (gs.length - 1)) / ROUTE.length;
     pos = {};

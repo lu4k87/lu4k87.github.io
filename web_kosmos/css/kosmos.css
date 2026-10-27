@@ -118,16 +118,10 @@ body.is-flying .flight { opacity: 1; }
 [data-ch="solar"] { --ch: 245, 184, 76; }
 [data-ch="galaxy"] { --ch: 167, 139, 250; }
 [data-ch="local"] { --ch: 240, 120, 154; }
-.bd-in, .bd-drawer {
-  background: var(--glass-sheen), var(--glass-strong); border: 1px solid var(--line); box-shadow: var(--glass-edge);
-  -webkit-backdrop-filter: var(--glass-blur); backdrop-filter: var(--glass-blur);
-}
-.bd-in { position: absolute; inset: 0; border-radius: var(--radius); }
-.band.has-drawer .bd-in { border-bottom-left-radius: 0; }
-.bd-lvls { position: absolute; left: 0; top: 0; bottom: 0; width: 92px; border-right: 1px solid var(--line); pointer-events: none; }
-.bd-lvls span { position: absolute; left: 14px; top: var(--y); transform: translateY(-50%); display: flex; align-items: center; gap: 7px; white-space: nowrap; font: 500 12px/1 var(--display); letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-soft); }
-.bd-lvls span::before { content: ""; width: 6px; height: 6px; border: 1px solid var(--line-strong); border-radius: 50%; }
-.bd-cv { position: absolute; left: 92px; top: 0; right: 0; bottom: 0; }
+.bd-in { position: absolute; inset: 0; }
+/* ohne Rahmen und Fläche: Namen und Nummern halten sich per Schatten vom Bild ab */
+.bd-node, .bd-moon { text-shadow: 0 0 3px #000, 0 0 10px rgba(0, 0, 0, 0.85); }
+.bd-cv { position: absolute; left: 0; top: 0; right: 0; bottom: 0; }
 .bd-wires { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
 .bd-grp { position: absolute; top: 0; bottom: 0; }
 /* Knoten: Punkt, Nummer, Name (höchstens zwei Zeilen); Zentrierung per transform, Einblenden per eigener translate-Eigenschaft */
@@ -166,11 +160,10 @@ body.is-flying .flight { opacity: 1; }
 @keyframes bd-up { from { opacity: 0; translate: 0 6px; } }
 /* Schublade: hängt am Band, links bündig mit der Spalte der Ebenen; Abstecher gleiten gestaffelt herein, Monde als Reihe */
 .bd-drawer {
-  position: absolute; left: 0; top: calc(100% - 1px); width: var(--dr-w, 300px); height: var(--dr-h, 92px); border-top: 0; border-radius: 0 0 var(--radius) var(--radius);
+  position: absolute; left: 0; top: calc(100% - 1px); width: var(--dr-w, 300px); height: var(--dr-h, 92px);
   visibility: hidden; opacity: 0; translate: 0 -8px; transition: opacity var(--t-out) var(--ease-out), translate var(--t-out) var(--ease-out), visibility 0s var(--t-out);
 }
 .bd-drawer.is-open { visibility: visible; opacity: 1; translate: 0 0; transition: opacity var(--t-in) var(--ease-out), translate var(--t-in) var(--ease-out); }
-.bd-drawer:not(.has-mrow) .bd-lv-moon { display: none; }
 .bd-drawer .bd-wire { stroke-dasharray: 1; stroke-dashoffset: 1; animation: bd-draw 0.6s var(--ease-out) forwards; }
 .bd-kids .bd-node { animation: bd-up var(--t-in) var(--ease-out) calc(var(--i, 0) * 50ms + 80ms) both; }
 .bd-md { position: absolute; top: 98px; transform: translateX(-50%); display: flex; gap: 5px; transition: opacity var(--t-out) var(--ease-out); }
@@ -195,9 +188,7 @@ body.is-flying .flight { opacity: 1; }
 .bd-tip b { font: 600 15px/1.25 var(--font); }
 .bd-tip .n { font: 500 12px var(--mono); color: var(--ink-soft); }
 /* Punkte: nur die Route, Kapitel als Streifen hinter den Punkten (schmal oder zu eng für die Namen) */
-.band.is-dots :is(.bd-lvls, .bd-drawer), .band.is-dots .bd-node > :not(.bd-dot) { display: none; }
-.band.is-dots .bd-cv, .band.no-lvls .bd-cv { left: 0; }
-.band.no-lvls .bd-lvls { display: none; }
+.band.is-dots .bd-drawer, .band.is-dots .bd-node > :not(.bd-dot) { display: none; }
 .band.is-dots .bd-node.is-path .bd-dot { transform: scale(1.36); background: var(--accent); border-color: #fff; }
 .band.is-dots .bd-node { top: calc(var(--ry) - 13.5px); padding: 8px 0; }
 
