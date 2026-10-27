@@ -818,11 +818,11 @@ async function startOpener(lv) {
   endIntro();
   state.follow = null;
   if (!opener) {
-    opener = createOpener({ detail: QUALITY[pickQuality()].detail }, lv);
+    opener = createOpener({ detail: QUALITY[pickQuality()].detail, renderer }, lv);
     opener.rt = new THREE.WebGLRenderTarget(2, 2, { type: THREE.HalfFloatType, depthBuffer: false });
     sizeOpener();
     opener.apply(null);
-    await renderer.compileAsync(opener.scene, opener.camera);
+    await Promise.all([renderer.compileAsync(opener.scene, opener.camera), opener.ready]);
   }
   opener.film.t = 0;
   opener.film.playing = false;
@@ -1060,7 +1060,9 @@ const look = {
 };
 let bars = 0;
 
-function renderLevel(lv, dt) {
+// advanced: die Welt der Station (bewegte Objekte) wurde in diesem Bild schon vor der Kamera weitergerückt (frame)
+function renderLevel(lv, dt, advanced = false) {
+  if (lv.advance && !advanced) lv.advance(dt, state.time, !!state.tr);
   if (lv.update) lv.update(dt, state.time, lv.camera, !!state.tr);
   renderer.setRenderTarget(lv.rt);
   renderer.render(lv.scene, lv.camera);
@@ -1073,7 +1075,7 @@ function frame(nowMs) {
   last = nowMs;
   if (settings.S.fpsCap && real < 1 / settings.S.fpsCap - 0.002) { last -= real * 1000; return; }
   state.time += real;
-  let lv = state.active;
+  let lv = state.active, advanced = false;
   if (!lv) return;
   if (state.tr) {
     stepTransition(real);
@@ -1082,6 +1084,9 @@ function frame(nowMs) {
   else if (state.intro) stepIntro(real);
   else {
     cineUndo(lv);
+    // Welt vor der Kamera: bewegte Objekte (Europa Clipper) stehen schon an der Lage dieses Bildes, bevor die Folgen-Kamera
+    // auf sie zielt – sonst hinkt die Kamera ein Bild hinterher und Objekt, Punkt und Abzeichen zittern bei ungleichen Bildzeiten
+    if (lv.advance) { lv.advance(real, state.time, false); advanced = true; }
     if (state.follow) stepFollow(lv, real);
     // Rückgabe 'free': die Station übernimmt die Kamera (z. B. Blick-Wechsel), Folgen endet
     if (lv.orbitUpdate && lv.orbitUpdate(state.controls, real) === 'free') state.follow = null;
@@ -1094,7 +1099,7 @@ function frame(nowMs) {
     renderLevel(tr.outer, real);
     renderLevel(tr.inner, real);
   } else if (op) renderOpener(op, lv, real);
-  else renderLevel(lv, real);
+  else renderLevel(lv, real, advanced);
   if (camlog) logCams(real);
 
   // Grading: im Flug zwischen den Stationen überblenden

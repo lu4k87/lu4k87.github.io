@@ -484,19 +484,23 @@ export function create(ctx) {
     scene, camera, home, unit: 1e6, hotspots, controls, ready,
     orbit: { minDistance: 0.02, maxDistance: 60, cineSpeed: 0.5 },
     look: { exposure: 1.0, bloom: 0.06, sat: 1.04 },
-    update(dt, t, cam, flying) {
+    // Welt weiterrücken (ohne Kamera): Zeit, Lage von Jupiter, Monden, Sonne und Clipper – läuft vor der Kamera (main.js
+    // frame), damit die Folgen-Kamera auf die Lage dieses Bildes zielt
+    advance(dt, t, flying) {
       if (!flying) jd += rate ? dt * rate : dt / DAY;
       place();
+      // Clipper: ein Durchgang in 40 s, Flugrichtung = Bahntangente
+      if (!ctx.still) clipT = (clipT + dt / 40) % 1;
+      clipAt(clipT * 2 - 1, clipper.position);
+      clipper.lookAt(clipAt(clipT * 2 - 1 + 0.01, cv));
+    },
+    update(dt, t, cam, flying) {
       const tt = ctx.still ? 4 : t;
       jupU.uTime.value = tt;
       cutU.uTime.value = tt;
       plumeU.uTime.value = tt;
       plumeU.uFwd.value = Math.pow(Math.max(0, cv.copy(plumePos).sub(cam.position).normalize().dot(sun)), 4);
       plumeU.uPx.value = 500 * pr;
-      // Clipper: ein Durchgang in 40 s, Flugrichtung = Bahntangente
-      if (!ctx.still) clipT = (clipT + dt / 40) % 1;
-      clipAt(clipT * 2 - 1, clipper.position);
-      clipper.lookAt(clipAt(clipT * 2 - 1 + 0.01, cv));
       sunFar.copy(sun).multiplyScalar(3500);
       cam.updateMatrixWorld();
       flare.userData.update(sunFar, cam, occluders, settings.S.lens, dt);
