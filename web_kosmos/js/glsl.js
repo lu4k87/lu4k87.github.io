@@ -87,10 +87,21 @@ void main() {
 // 220, 450, 900 mit Gewicht √D_ℓ (relativ zum ersten Peak, Planck 2018); k = Schärfe 0 … 1 blendet die feinen Oktaven
 // nacheinander ein (Plasma wird durchsichtig), k = 1 = volles Muster. Falschfarbe wie in den Planck-Karten. Braucht NOISE.
 export const CMB = /* glsl */ `
+// Oktave f mit Gewicht a; blendet aus, sobald sie kleiner als ein Pixel wird (fp = Bogenmaß je Pixel), sonst Korn und
+// Flimmern. w2 sammelt die Gewichte mit, ref ohne Ausblenden (für den Kontrast-Ausgleich)
+float cmbOct(vec3 p, float f, float a, float fp, inout float w2, inout float ref) {
+  float w = a * (1.0 - smoothstep(0.22, 0.55, f * fp));
+  w2 += w * w; ref += a * a;
+  return w > 0.0 ? w * gnoise(p) : 0.0;
+}
 float cmbField(vec3 d, float k) {
-  return 0.42 * gnoise(d * 5.0) + 0.42 * gnoise(d * 12.0 + 3.1) + 0.45 * gnoise(d * 25.0 + 7.3)
-       + 0.65 * smoothstep(0.0, 0.4, k) * gnoise(d * 50.0 + 1.7) + 1.0 * smoothstep(0.15, 0.6, k) * gnoise(d * 100.0 + 4.4)
-       + 0.7 * smoothstep(0.3, 0.8, k) * gnoise(d * 200.0 + 9.2) + 0.5 * smoothstep(0.5, 1.0, k) * gnoise(d * 400.0 + 2.8);
+  float fp = length(fwidth(d)), w2 = 0.0, ref = 0.0;
+  float s = cmbOct(d * 5.0, 5.0, 0.42, fp, w2, ref) + cmbOct(d * 12.0 + 3.1, 12.0, 0.42, fp, w2, ref) + cmbOct(d * 25.0 + 7.3, 25.0, 0.45, fp, w2, ref)
+          + cmbOct(d * 50.0 + 1.7, 50.0, 0.65 * smoothstep(0.0, 0.4, k), fp, w2, ref) + cmbOct(d * 100.0 + 4.4, 100.0, smoothstep(0.15, 0.6, k), fp, w2, ref)
+          + cmbOct(d * 200.0 + 9.2, 200.0, 0.7 * smoothstep(0.3, 0.8, k), fp, w2, ref) + cmbOct(d * 400.0 + 2.8, 400.0, 0.5 * smoothstep(0.5, 1.0, k), fp, w2, ref)
+          + cmbOct(d * 800.0 + 5.9, 800.0, 0.32 * smoothstep(0.7, 1.0, k), fp, w2, ref);   // feinste Oktave nur aus der Nähe sichtbar
+  // was an Oktaven wegfällt, halb ausgleichen, sonst wirkt die Kugel von fern flau
+  return s * pow(ref / max(w2, 0.05), 0.25);
 }
 // ≈ ±300 µK auf ±1; mit Dipol (±3,36 mK ≙ ±1) wird die Anisotropie winzig
 float cmbValue(vec3 d, float k, float dipOn, vec3 dip) {
