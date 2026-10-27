@@ -84,6 +84,7 @@ export const SOURCES = {
   'riess-2022': { t: 'A comprehensive measurement of H0 (SH0ES)', by: 'Riess et al. 2022, ApJL 934, L7', url: 'https://doi.org/10.3847/2041-8213/ac5c5b' },
   'jades-2024': { t: 'A shining cosmic dawn: JADES-GS-z14-0', by: 'Carniani et al. 2024, Nature 633', url: 'https://doi.org/10.1038/s41586-024-07860-9' },
   'kim-2002': { t: 'Planck-Kurve in der Normfarbtafel (Näherung)', by: 'Kim et al. 2002, US-Patent 7024034', url: 'https://patents.google.com/patent/US7024034' },
+  'nasa-bluemarble': { t: 'Erdkarten: Blue Marble Next Generation (Tag, Dez. 2004), Blue Marble Clouds, Black Marble 2016 (Nacht) – gemeinfrei', by: 'NASA Earth Observatory', url: 'https://science.nasa.gov/earth/earth-observatory/' },
   'sss-tex': { t: 'Planetentexturen (CC BY 4.0, auf NASA-Daten)', by: 'Solar System Scope / INOVE', url: 'https://www.solarsystemscope.com/textures/' },
   'eso-milkyway': { t: 'The Milky Way panorama (eso0932a) – 360°-Foto der Milchstraße, CC BY 4.0', by: 'ESO/S. Brunier', url: 'https://www.eso.org/public/images/eso0932a/' },
   'wcag-flash': { t: 'WCAG 2.2 – 2.3.1 Drei Blitze oder darunter', by: 'W3C 2023', url: 'https://www.w3.org/TR/WCAG22/#three-flashes-or-below-threshold' },
@@ -317,7 +318,7 @@ export const STATIONS = {
       { v: '3,8', u: 'cm/Jahr', l: 'so schnell entfernt sich der Mond', s: 'llr' },
     ],
     note: 'Abstände und Größen maßstäblich. Erde und Mond stehen wie jetzt; Beleuchtung aus der berechneten Sonnenrichtung. Sternhimmel aus dem Yale Bright Star Catalogue (5.044 Sterne bis 6 mag, Farbe aus B−V), Sternbilder nach IAU-Grenzen; Schattenkegel aus den Radien von Sonne, Erde und Mond gerechnet. Satelliten, Trümmer und ISS aus dem CelesTrak-Katalog (Stand Okt. 2026, Kepler + J2; als vergrößerte Symbole, je nach Zahnrad-Einstellung „Satelliten und Kleinkörper“ ausgedünnt); Polarlicht-Oval nach Kp (NOAA) um den geomagnetischen Pol, Vorhänge als Modell, nur auf der Nachtseite. Nachtleuchten der Hochatmosphäre (Airglow) überhöht, Linsenreflex ist ein Kamera-Effekt.',
-    sources: ['nasa-earth', 'nasa-moon', 'llr', 'd3-celestial', 'hipparcos', 'ballesteros-2012', 'nasa-iss', 'celestrak', 'esa-debris', 'noaa-aurora', 'nasa-aurora', 'wdc-poles', 'sss-tex'],
+    sources: ['nasa-earth', 'nasa-moon', 'llr', 'd3-celestial', 'hipparcos', 'ballesteros-2012', 'nasa-iss', 'celestrak', 'esa-debris', 'noaa-aurora', 'nasa-aurora', 'wdc-poles', 'nasa-bluemarble', 'sss-tex'],
     hotspots: {
       atmo: { t: 'Atmosphäre', x: 'Die Dichte der Luft sinkt alle 8,5 km auf gut ein Drittel (Skalenhöhe); im Bild ist die Atmosphäre daher nur ein schmaler Saum. Blaues Licht streut an Luftmolekülen stärker als rotes (Rayleigh-Streuung, ∝ 1/λ⁴); daher der blaue Saum am Tagrand und das Abendrot an der Grenze zur Nacht. Am Nachtrand leuchtet die Hochatmosphäre in 90–100 km Höhe schwach grün (Airglow, Sauerstoff 557,7 nm).', s: 'nasa-earth' },
       night: { t: 'Nachtseite', x: 'Stadtlichter nach Satellitenaufnahmen. Sie folgen Küsten, Flusstälern und Verkehrswegen, an denen ein Großteil der Bevölkerung lebt.', s: 'sss-tex' },

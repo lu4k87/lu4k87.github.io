@@ -1,6 +1,6 @@
 // Station 1: Erde und Mond, maßstäblich (Einheit 1.000 km). Stand für den aktuellen Zeitpunkt: Sonnenrichtung aus den
 // JPL-Bahnelementen, Erddrehung aus der Sternzeit Greenwich, Mondort aus der Almanach-Näherung (astro.js).
-// Erde: Tagkarte 8k mit Geländerelief und weichem Terminator, Sonnenglitzern mit Windfeldern und Fresnel-Schimmer der Ozeane, Wolken als eigene Kugelschicht mit
+// Erde: Tagkarte bis 16k (NASA Blue Marble) mit Geländerelief und weichem Terminator, Sonnenglitzern mit Windfeldern und Fresnel-Schimmer der Ozeane, Wolken als eigene Kugelschicht mit
 // Schattenwurf auf den Boden, Stadtlichter mit warmem Hof auf der Nachtseite, Atmosphäre als Hülle mit Einfachstreuung
 // (planetfx.js: Rayleigh-Blau, rot-oranges Dämmerungsband, weicher Glanz über den Rand, grünes Nachtleuchten).
 // Polarlichter: Vorhänge mit feinen Strahlen + breite, weiche Glow-Lage im Oval.
@@ -43,7 +43,7 @@ void main() {
 `;
 // Erde mit Objektposition vO (Rauschen in Feinstruktur, Wellen und Wolkenrändern)
 export const EARTH_VERT_O = EARTH_VERT.replace('varying vec3 vN, vP;', 'varying vec3 vN, vP, vO;').replace('vUv = uv;', 'vUv = uv; vO = position;');
-// Tagkarte 8k (≈ 5 km je Bildpunkt) mit Feinstruktur darunter, Gelände aus der Normalenkarte, Wasser mit Windfeldern.
+// Tagkarte bis 16k (≈ 2,4 km je Bildpunkt) mit Feinstruktur darunter, Gelände aus der Normalenkarte, Wasser mit Windfeldern.
 export const EARTH_FRAG = /* glsl */ `
 uniform sampler2D tDay, tNight, tRelief, tClouds;
 uniform vec3 uSun, uAxis;
@@ -102,13 +102,18 @@ void main() {
 }
 `;
 
-// Erdkarten nach Grafikkarte: Tag und Wolken in 8k ab Qualität „mittel“ (je ≈ 180 MB Grafikspeicher), sonst 4k
+// Erdkarten nach Grafikkarte (NASA Blue/Black Marble, tools/earth_tex.py): Tag und Wolken in 16k bei Qualität „hoch“
+// (Tag ≈ 710 MB Grafikspeicher, Wolken ≈ 180 MB), 8k ab „mittel“ (≈ 180 + 45 MB), sonst 4k; Nacht höchstens 8k
 export function earthMaps(ctx) {
-  const k = ctx.renderer.capabilities.maxTextureSize >= 8192 && ctx.detail >= 0.8 ? '8k' : '4k';
-  // Wolkenkarte driftet (uCloudU > 1) → waagerecht wiederholen, sonst streckt ClampToEdge die Randspalte zu Streifen
+  const max = ctx.renderer.capabilities.maxTextureSize;
+  const k = max >= 16384 && ctx.detail >= 1 ? '16k' : max >= 8192 && ctx.detail >= 0.8 ? '8k' : '4k';
+  // Wolkenkarte driftet (uCloudU > 1) → waagerecht wiederholen, sonst streckt ClampToEdge die Randspalte zu Streifen;
+  // Graustufen → ein Kanal (R8) statt RGBA
   const clouds = ctx.tex(`earth_clouds_${k}.jpg`, false);
   clouds.wrapS = THREE.RepeatWrapping;
-  return { day: ctx.tex(`earth_daymap_${k}.jpg`), night: ctx.tex('earth_nightmap_4k.jpg'), clouds, relief: ctx.tex('earth_relief_4k.jpg', false) };
+  clouds.format = THREE.RedFormat;
+  const night = ctx.tex(`earth_nightmap_${k === '4k' ? '4k' : '8k'}.jpg`);
+  return { day: ctx.tex(`earth_daymap_${k}.jpg`), night, clouds, relief: ctx.tex('earth_relief_4k.jpg', false) };
 }
 
 export const MOON_FRAG = /* glsl */ `
