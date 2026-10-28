@@ -180,7 +180,7 @@ body.is-flying .flight { opacity: 1; }
 .bd-moon.is-cur .n { color: var(--accent); }
 /* Hinweis beim Zeigen unter Band bzw. Schublade */
 .bd-tip {
-  position: fixed; z-index: 8; display: flex; flex-direction: column; gap: 1px; min-width: 190px; max-width: 300px; padding: 9px 12px; pointer-events: none;
+  position: fixed; z-index: 8; display: flex; flex-direction: column; gap: 2px; min-width: 190px; max-width: min(440px, calc(100vw - 16px)); padding: 9px 12px; pointer-events: none;
   border: 1px solid rgba(var(--ch, 51, 204, 255), 0.5); border-radius: var(--radius); background: var(--glass-sheen), rgba(6, 10, 18, 0.92); box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45);
   font-size: 13px; opacity: 0; translate: 0 6px; transition: opacity 0.25s var(--ease-out), translate 0.25s var(--ease-out);
 }
@@ -188,6 +188,8 @@ body.is-flying .flight { opacity: 1; }
 .bd-tip-sub > span { display: inline-block; }   /* Umbruch nur zwischen den Teilen, ein zu langer Teil bricht in sich */
 .bd-tip b { font: 600 15px/1.25 var(--font); }
 .bd-tip .n { font: 500 12px var(--mono); color: var(--ink-soft); }
+.bd-tip-head { display: flex; align-items: baseline; gap: 8px; }
+.bd-tip-halt { margin-left: auto; padding-left: 10px; font: 400 12.5px var(--font); color: var(--ink-soft); white-space: nowrap; }
 /* Punkte: nur die Route, Kapitel als Streifen hinter den Punkten (schmal oder zu eng für die Namen) */
 .band.is-dots .bd-drawer, .band.is-dots .bd-node > :not(.bd-dot) { display: none; }
 .band.is-dots .bd-node.is-path .bd-dot { transform: scale(1.36); background: var(--accent); border-color: #fff; }

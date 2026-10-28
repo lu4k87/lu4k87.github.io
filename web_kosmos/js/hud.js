@@ -64,6 +64,14 @@ export function createHud(h) {
   const title = (id) => esc(STATIONS[id].title);
   // echtes Maß des Hauptobjekts: „Durchmesser 12.742 km“
   const size = (id) => { const z = STATIONS[id].size; return z ? esc(`${z.l} ${fmtLength(z.v)}`) : ''; };
+  // Entfernung zur Erde: Maß, sonst „hier“ (Erde) bzw. „Erde liegt darin“ (Hülle der Erde, ohne Urknall als Wurzel)
+  const away = (id) => {
+    const st = STATIONS[id];
+    if (st.dist) return `${fmtLength(st.dist)} von der Erde`;
+    if (id === 'earth') return 'hier';
+    for (let x = STATIONS.earth.parent; x; x = STATIONS[x].parent) if (x === id && st.parent) return 'Erde liegt darin';
+    return '';
+  };
   const label = (id) => `${title(id)} – ${size(id)}`;
   // Weg bis zur Elternstation, im Kapitel ab dessen Hub: „Sonnensystem › Jupiter & Monde“; Hubs nennen ihre Eltern
   const crumbs = (id) => {
@@ -372,14 +380,14 @@ export function createHud(h) {
       if (shown[1] && STATIONS[id].parent === shown[1]) dwires.querySelector('.bd-mw')?.classList.add('is-hot');
     }
   }
-  // Hinweis unter dem Band (bzw. der offenen Schublade): Nummer, Name, Art, echtes Maß, Halt der Route
+  // Hinweis unter dem Band (bzw. der offenen Schublade), zwei Zeilen: Nummer, Name, Halt der Route · Art, echtes Maß, Entfernung zur Erde
   function showTip(id, b) {
     if (!b) return;
     const st = STATIONS[id], halt = ROUTE.indexOf(id);
     tip.dataset.ch = chapter(id);
     // Teile brechen nur am „ · “ um, nie mitten im Maß (wie .cap-sub)
-    const sub = [esc(st.kicker), size(id)].filter(Boolean).map((t) => `<span>${t}</span>`).join(' · ');
-    tip.innerHTML = `<span class="n">${num(id)}</span><b>${title(id)}</b><span class="bd-tip-sub">${sub}</span>${halt < 0 ? '' : `<span>Halt ${halt + 1} von ${ROUTE.length}</span>`}`;
+    const sub = [esc(st.kicker), size(id), away(id)].filter(Boolean).map((t) => `<span>${t}</span>`).join(' · ');
+    tip.innerHTML = `<span class="bd-tip-head"><span class="n">${num(id)}</span><b>${title(id)}</b>${halt < 0 ? '' : `<span class="bd-tip-halt">Halt ${halt + 1} von ${ROUTE.length}</span>`}</span><span class="bd-tip-sub">${sub}</span>`;
     const r = b.getBoundingClientRect(), base = (drawer.classList.contains('is-open') ? drawer : nav).getBoundingClientRect(), w = tip.offsetWidth;
     tip.style.left = `${Math.max(8, Math.min(innerWidth - w - 8, r.left + r.width / 2 - w / 2))}px`;
     tip.style.top = `${base.bottom + 8}px`;
