@@ -5,7 +5,7 @@
 
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import { STATIONS, ROUTE, pathTo, routeIndex, entry } from './content.js';
+import { STATIONS, ROUTE, pathTo, routeStep, entry } from './content.js';
 import { createPost, LOOK } from './post.js';
 import { createHud } from './hud.js';
 import { settings, onSettings, globalGrade, barsPeek } from './settings.js';
@@ -437,10 +437,7 @@ function idle(fn) {
   (window.requestIdleCallback || ((f) => setTimeout(f, 300)))(fn, { timeout: 3000 });
 }
 
-function nextOnRoute(id, step = 1) {
-  const i = routeIndex(id);
-  return entry(ROUTE[(i + step + ROUTE.length) % ROUTE.length]);
-}
+const nextOnRoute = (id, step = 1) => routeStep(id, step, true);
 
 // ---------- Flug ----------
 const pose = (pos, target) => ({ pos: pos.clone(), target: target.clone() });
@@ -1287,7 +1284,7 @@ function stepProbe(dt) {
 const hud = createHud({
   onGo: (id) => goTo(id),
   onOut: () => state.active && state.active.meta.parent && goTo(state.active.meta.parent),
-  onNext: (step = 1) => state.active && goTo(nextOnRoute(state.id, step)),
+  onNext: (step = 1) => state.active && goTo(routeStep(state.id, step)),
   onDive: (h) => { if (h.to) goTo(h.to); },
   onFocus: (h) => startFollow(h),
   onInput: () => userInput(),
@@ -1308,8 +1305,8 @@ window.addEventListener('keydown', (ev) => {
     if (['Escape', 'Enter', ' ', 'ArrowRight', 'ArrowLeft', 'ArrowUp', 'PageDown', 'PageUp'].includes(ev.key)) { ev.preventDefault(); skipOpener(); }
     return;
   }
-  if (ev.key === 'ArrowRight' || ev.key === 'PageDown') { ev.preventDefault(); goTo(nextOnRoute(state.id)); }
-  else if (ev.key === 'ArrowLeft' || ev.key === 'PageUp') { ev.preventDefault(); goTo(nextOnRoute(state.id, -1)); }
+  if (ev.key === 'ArrowRight' || ev.key === 'PageDown') { ev.preventDefault(); goTo(routeStep(state.id, 1)); }
+  else if (ev.key === 'ArrowLeft' || ev.key === 'PageUp') { ev.preventDefault(); goTo(routeStep(state.id, -1)); }
   else if (ev.key === 'ArrowUp' && state.active && state.active.meta.parent) { ev.preventDefault(); goTo(state.active.meta.parent); }
   else return;
   userInput();

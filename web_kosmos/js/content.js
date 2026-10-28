@@ -1284,6 +1284,12 @@ export function routeIndex(id) {
   for (let x = id; x; x = up(x)) { const i = ROUTE.indexOf(x); if (i >= 0) return i; }
   return 0;
 }
+// Nachbar-Halt auf der Route (step ±1); an den Enden null, nur die Tour (wrap) läuft im Kreis
+export function routeStep(id, step, wrap = false) {
+  const j = routeIndex(id) + step;
+  if (!wrap && (j < 0 || j >= ROUTE.length)) return null;
+  return entry(ROUTE[(j + ROUTE.length) % ROUTE.length]);
+}
 
 // Weg im Baum: vom Start hinaus bis zum gemeinsamen Vorfahren, dann hinein zum Ziel (ohne den Start)
 export function pathTo(from, to) {

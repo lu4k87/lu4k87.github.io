@@ -2,7 +2,7 @@
 // Leerlauf, Kinobalken, Vollbild (Drehachsen nur im Reiter Station – in der Station selbst sind keine zu sehen, User 28.10.2026) – je ein Klick statt Infotafel bzw. Zahnrad.
 // Ton: schaltet den Schalter „sound“ der Station (sound.js oder eigener Takt des Pulsars) zwischen „Aus“ und der ersten
 // Aufnahme; Station ohne Ton → Knopf ausgegraut mit Grund im Tooltip. Die übrigen folgen kosmos.settings.v1 (auch aus dem Zahnrad).
-// Kinobalken = Kino-Modus: Bedienung ausgeblendet, Vollbild (syncKino).
+// Kinobalken = Kino-Modus: Vollbild, Bedienung bleibt sichtbar (syncKino).
 
 import { settings, setSetting, onSettings } from './settings.js';
 
@@ -56,21 +56,9 @@ export function mountQuick(root, onInput) {
   document.addEventListener('fullscreenchange', syncFull);
   syncFull();
 
-  // Kino-Modus (User 27.10.2026): Kinobalken an → Bedienung aus (Abzeichen im All bleiben), Vollbild; nur „Kino beenden“
-  // unten rechts im Balken, sichtbar kurz nach Mausbewegung. Esc oder Ende des Vollbilds schaltet die Balken wieder aus.
-  const exit = document.createElement('button');
-  exit.type = 'button';
-  exit.className = 'film-skip kino-exit';
-  exit.innerHTML = 'Kino beenden <kbd>Esc</kbd>';
-  exit.addEventListener('click', () => setSetting('bars', false));
-  document.body.append(exit);
-  let kino = false, ownFull = false, idle = 0;
-  const wake = () => {
-    if (!kino) return;
-    exit.classList.add('is-on');
-    clearTimeout(idle);
-    idle = setTimeout(() => exit.classList.remove('is-on'), 2500);
-  };
+  // Kino-Modus (User 27.10.2026): Kinobalken an → Vollbild; Bedienung bleibt sichtbar (User 28.10.2026), Ausschalten
+  // über den Knopf „Kinobalken“. Esc oder Ende des Vollbilds schaltet die Balken wieder aus.
+  let kino = false, ownFull = false;
   const syncKino = () => {
     const on = !!settings.S.bars;
     if (on === kino) return;
@@ -82,7 +70,6 @@ export function mountQuick(root, onInput) {
       ownFull = false;
       document.exitFullscreen().catch(() => {});
     }
-    if (on) wake(); else exit.classList.remove('is-on');
   };
   onSettings(syncKino);
   syncKino();
@@ -90,7 +77,6 @@ export function mountQuick(root, onInput) {
     if (!document.fullscreenElement && kino) { ownFull = false; setSetting('bars', false); }
   });
   addEventListener('keydown', (e) => { if (kino && e.key === 'Escape') setSetting('bars', false); });
-  addEventListener('pointermove', wake, { passive: true });
 
   return { station(level) { lv = level; syncSound(); } };
 }

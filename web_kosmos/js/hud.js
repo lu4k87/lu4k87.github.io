@@ -3,7 +3,7 @@
 // Abzeichen mit gewinkelten 45°-Leitlinien (Sechseck wie Biochar), Info-Karte, Messleiste (echtes Maß, Lichtlaufzeit,
 // Entfernung, Blick zurück), Reiseroute, Kapitel-Titel beim Ankommen, Rand-Zug-Anzeige.
 
-import { STATIONS, GROUPS, ROUTE, SOURCES, routeIndex, up, entry } from './content.js';
+import { STATIONS, GROUPS, ROUTE, SOURCES, routeIndex, routeStep, up, entry } from './content.js';
 import { fmtLength, fmtTime, C } from './astro.js';
 import { settings, setSetting, mountSettings, onSettings } from './settings.js';
 import { getLayer, setLayer, fmtVal, paintRange, setControls } from './layers.js';
@@ -450,12 +450,15 @@ export function createHud(h) {
     markBand();
     renderDrawer();
     runComet();
-    const parent = meta.parent && STATIONS[meta.parent];
-    btnOut.disabled = !parent;
-    $('#nav-out-to').textContent = parent ? parent.title : '–';
-    const i = routeIndex(id);
-    $('#nav-next-to').textContent = STATIONS[entry(ROUTE[(i + 1) % ROUTE.length])].title;
-    $('#nav-prev-to').textContent = STATIONS[entry(ROUTE[(i - 1 + ROUTE.length) % ROUTE.length])].title;
+    // Weiter/Zurück = Reiseroute ohne Rundlauf; Hinaus nur, wenn die Elternstation kein Routen-Nachbar ist (Abstecher)
+    const next = routeStep(id, 1), prev = routeStep(id, -1);
+    btnOut.hidden = !meta.parent || meta.parent === next || meta.parent === prev;
+    if (meta.parent) $('#nav-out-to').textContent = STATIONS[meta.parent].title;
+    btnNext.disabled = !next;
+    btnPrev.disabled = !prev;
+    $('#nav-next-cap').textContent = next ? `Weiter · ${routeIndex(next) + 1}/${ROUTE.length}` : 'Weiter';
+    $('#nav-next-to').textContent = next ? STATIONS[next].title : 'Ende der Reise';
+    $('#nav-prev-to').textContent = prev ? STATIONS[prev].title : 'Anfang der Reise';
     mSizeL.textContent = meta.size ? meta.size.l : 'Größe';
     mSize.textContent = meta.size ? fmtLength(meta.size.v) : '–';
     mLight.textContent = meta.size ? fmtTime(meta.size.v / C) : '–';
