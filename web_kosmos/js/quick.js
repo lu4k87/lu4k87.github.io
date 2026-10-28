@@ -2,7 +2,7 @@
 // Leerlauf, Kinobalken, Vollbild (Drehachsen nur im Reiter Station – in der Station selbst sind keine zu sehen, User 28.10.2026) – je ein Klick statt Infotafel bzw. Zahnrad.
 // Ton: schaltet den Schalter „sound“ der Station (sound.js oder eigener Takt des Pulsars) zwischen „Aus“ und der ersten
 // Aufnahme; Station ohne Ton → Knopf ausgegraut mit Grund im Tooltip. Die übrigen folgen kosmos.settings.v1 (auch aus dem Zahnrad).
-// Kinobalken = Kino-Modus: Vollbild, Bedienung bleibt sichtbar (syncKino).
+// Kinobalken = nur die Balken, kein Vollbild (User 28.10.2026); Vollbild hat einen eigenen Knopf.
 
 import { settings, setSetting, onSettings } from './settings.js';
 
@@ -56,27 +56,11 @@ export function mountQuick(root, onInput) {
   document.addEventListener('fullscreenchange', syncFull);
   syncFull();
 
-  // Kino-Modus (User 27.10.2026): Kinobalken an → Vollbild; Bedienung bleibt sichtbar (User 28.10.2026), Ausschalten
-  // über den Knopf „Kinobalken“. Esc oder Ende des Vollbilds schaltet die Balken wieder aus.
-  let kino = false, ownFull = false;
-  const syncKino = () => {
-    const on = !!settings.S.bars;
-    if (on === kino) return;
-    kino = on;
-    document.body.classList.toggle('is-kino', on);
-    if (on && !document.fullscreenElement && document.fullscreenEnabled) {
-      document.documentElement.requestFullscreen().then(() => { ownFull = true; }, () => {});
-    } else if (!on && ownFull && document.fullscreenElement) {
-      ownFull = false;
-      document.exitFullscreen().catch(() => {});
-    }
-  };
+  // Kinobalken (User 28.10.2026): nur die Balken, kein Wechsel ins Vollbild; Esc schaltet sie aus
+  const syncKino = () => document.body.classList.toggle('is-kino', !!settings.S.bars);
   onSettings(syncKino);
   syncKino();
-  document.addEventListener('fullscreenchange', () => {
-    if (!document.fullscreenElement && kino) { ownFull = false; setSetting('bars', false); }
-  });
-  addEventListener('keydown', (e) => { if (kino && e.key === 'Escape') setSetting('bars', false); });
+  addEventListener('keydown', (e) => { if (settings.S.bars && e.key === 'Escape') setSetting('bars', false); });
 
   return { station(level) { lv = level; syncSound(); } };
 }
