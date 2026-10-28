@@ -1,11 +1,11 @@
-// Ladebild beim Aufruf der Seite: Sternhimmel mit Nebel (drei Looks, Knopf unten rechts), Kapitel-Titel (Text in
+// Ladebild beim Aufruf der Seite: Hintergrund in drei Looks (Text-Umschalter unten rechts, boot_nebula.js), Kapitel-Titel (Text in
 // index.html) und Fortschritt als Lichtlinie. main.js meldet den Stand (set), bootLoad dort lädt den Programmcode aller
 // Stationen und baut die Startstation samt Nachbarn; done() blendet aus, sobald die Szene darunter steht. Die Anzeige läuft
 // dem gemeldeten Stand weich nach und geht nie zurück.
 // Ist die Reise bereit, blendet unter dem Ladebalken „Reise starten · Enter“ ein; das Ladebild wartet auf Enter oder
 // Klick (User 27.10.2026, ersetzt die 10-s-Mindestzeit). Automatisierte und Headless-Browser (Tests, Standbilder) warten
 // nicht: Headless-Chrome über CDP meldet navigator.webdriver = false, daher zusätzlich der User-Agent.
-import { LOOKS, createNebula, drawGrain } from './boot_nebula.js';
+import { LOOKS, createNebula } from './boot_nebula.js';
 
 const LOOK_KEY = 'kosmos.bootNebula';
 // Tasten, mit denen main.js den Auftakt-Film überspringt: solange das Ladebild steht, den Film darunter nicht treffen
@@ -19,8 +19,6 @@ export function createBoot(root = document.getElementById('boot')) {
   const skipBtn = root.querySelector('.boot-go');
   let target = 0, shown = 0, raf = 0, finish = null, skipNow = null;
 
-  drawSky(root.querySelector('.boot-sky'), { seed: 7, density: 2400, haze: true });
-  drawSky(root.querySelector('.boot-near'), { seed: 31, density: 26000, bright: true });
   const nebula = setupLooks(root);
   const cap = root.querySelector('.boot-cap');
   fitTitle(cap);
@@ -71,6 +69,7 @@ export function createBoot(root = document.getElementById('boot')) {
   return {
     set(p, label) {
       target = Math.max(target, Math.min(1, p));
+      if (nebula) nebula.setP(target);
       if (label && label !== (nextLabel !== null ? nextLabel : what.textContent)) showLabel(label);
       if (!raf) raf = requestAnimationFrame(tick);
     },
@@ -101,77 +100,35 @@ export function createBoot(root = document.getElementById('boot')) {
   };
 }
 
-// Nebel-Look wählen (Knopf unten rechts, A → B → C), Wahl bleibt im Browser; Name blendet kurz ein. Der Volumennebel
-// rechnet in .boot-glow (boot_nebula.js); .boot-dust bleibt aus, bis index.html wieder frei ist (ponytail: alte Ebene)
+// Look wählen: Text-Umschalter „Nebel · Linse · Lichtpunkt“ unten rechts (Tastatur, aria-pressed), Wahl bleibt im
+// Browser; Standard C Lichtpunkt (Empfehlung der Vorschau 28.10.2026). Ohne WebGL 2 kein Hintergrund und kein Umschalter
 function setupLooks(root) {
-  const cv = root.querySelector('.boot-glow');
-  const btn = root.querySelector('.boot-neb'), name = root.querySelector('.boot-neb-name');
-  let look = 'B', hide = 0;
+  const cv = root.querySelector('.boot-fx'), bar = root.querySelector('.boot-look');
+  let look = 'C';
   try { const s = localStorage.getItem(LOOK_KEY); if (LOOKS[s]) look = s; } catch (e) { /* privat: Standard */ }
   const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const nebula = cv && createNebula(cv, look, still);
-  if (!nebula) { if (btn) btn.hidden = true; return null; }
-  drawGrain(root.querySelector('.boot-grain'));
-  const apply = (announce) => {
-    root.dataset.neb = look;
-    const label = `Nebel: ${LOOKS[look]}`;
-    btn.setAttribute('aria-label', `${label} – wechseln`);
-    btn.title = label;
-    if (!announce) return;
-    nebula.setLook(look);
-    name.textContent = label;
-    name.classList.add('is-on');
-    clearTimeout(hide);
-    hide = setTimeout(() => name.classList.remove('is-on'), 1800);
-  };
-  apply(false);
-  btn.addEventListener('click', () => {
-    const keys = Object.keys(LOOKS);
-    look = keys[(keys.indexOf(look) + 1) % keys.length];
-    try { localStorage.setItem(LOOK_KEY, look); } catch (e) { /* privat: nur für diesen Aufruf */ }
-    apply(true);
+  if (!nebula || !bar) return nebula;
+  const btns = Object.entries(LOOKS).map(([k, name]) => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.textContent = name;
+    b.setAttribute('aria-pressed', String(k === look));
+    b.addEventListener('click', () => {
+      if (k === look) return;
+      look = k;
+      btns.forEach((x, i) => x.setAttribute('aria-pressed', String(Object.keys(LOOKS)[i] === k)));
+      try { localStorage.setItem(LOOK_KEY, k); } catch (e) { /* privat: nur für diesen Aufruf */ }
+      nebula.setLook(k);
+    });
+    return b;
   });
+  btns.forEach((b, i) => {
+    if (i) bar.insertAdjacentHTML('beforeend', '<span aria-hidden="true">·</span>');
+    bar.append(b);
+  });
+  bar.hidden = false;
   return nebula;
-}
-
-// Sterne einmal zeichnen (der Hauptfaden ist beim Laden ausgelastet): Dichte nach Fläche, wenige helle mit Hof, leichte
-// Tönung zwischen warm und eisblau, dazu ein schwacher Schleier oben, der zur Milchstraße der Reise passt.
-// bright = nur helle Sterne (nahe Ebene der Parallaxe); Größe nach der Ebene, die etwas über den Rand ragt (Kamera)
-function drawSky(cv, { seed, density, bright = false, haze = false }) {
-  if (!cv) return;
-  const pr = Math.min(2, window.devicePixelRatio || 1);
-  const rect = cv.getBoundingClientRect();
-  const W = cv.width = Math.round((rect.width || window.innerWidth) * pr);
-  const H = cv.height = Math.round((rect.height || window.innerHeight) * pr);
-  const g = cv.getContext('2d');
-  if (haze) {
-    const h = g.createRadialGradient(W * 0.62, H * 0.3, 0, W * 0.62, H * 0.3, Math.max(W, H) * 0.6);
-    h.addColorStop(0, 'rgba(51, 204, 255, 0.07)');
-    h.addColorStop(0.5, 'rgba(90, 110, 200, 0.03)');
-    h.addColorStop(1, 'rgba(0, 0, 0, 0)');
-    g.fillStyle = h;
-    g.fillRect(0, 0, W, H);
-  }
-  const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
-  const tints = ['255, 244, 230', '235, 242, 255', '200, 230, 255', '255, 255, 255'];
-  const n = Math.round((W * H) / (density * pr * pr));
-  for (let i = 0; i < n; i++) {
-    const x = rnd() * W, y = rnd() * H;
-    let m = rnd() ** 3;
-    if (bright) m = 0.5 + m * 0.5;
-    const r = (0.35 + m * 1.1) * pr;
-    g.fillStyle = `rgba(${tints[i % tints.length]}, ${0.18 + m * 0.75})`;
-    g.beginPath();
-    g.arc(x, y, r, 0, Math.PI * 2);
-    g.fill();
-    if (m > 0.55) {
-      const h = g.createRadialGradient(x, y, 0, x, y, r * 6);
-      h.addColorStop(0, 'rgba(200, 230, 255, 0.22)');
-      h.addColorStop(1, 'rgba(200, 230, 255, 0)');
-      g.fillStyle = h;
-      g.fillRect(x - r * 6, y - r * 6, r * 12, r * 12);
-    }
-  }
 }
 
 // Titel einzeilig wie der Kapitel-Titel (hud.js fitCaption): Schrift nach der verfügbaren Breite verkleinern

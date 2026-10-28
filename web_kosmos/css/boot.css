@@ -1,4 +1,4 @@
-/* Ladebild beim Aufruf der Seite (boot.js): Sternhimmel, darauf der Kapitel-Titel (Text in index.html) in
+/* Ladebild beim Aufruf der Seite (boot.js): Hintergrund in drei Looks, darauf der Kapitel-Titel (Text in index.html) in
    derselben Schrift wie der Titel jeder Station (.caption in kosmos.css); Titel und Fortschritt als ein Block genau in
    der Bildmitte (User 27.10.2026) – das Ladebild deckt die Seitenleiste zu. Fortschritt als Lichtlinie unter dem Titel.
    Bewegung nur über opacity/transform: läuft weiter, während der Hauptfaden Shader und Texturen vorbereitet. */
@@ -6,25 +6,8 @@
 .boot.is-done { opacity: 0; visibility: hidden; pointer-events: none; }
 body.is-fatal .boot { display: none; }
 
-/* Kamera-Idle (Vorschau 27.10.2026, alle drei Looks wählbar): bewegt nur fertig gezeichnete Ebenen per transform. Die
-   Ebenen ragen 7 % über den Rand, damit die Bewegung keine Kante zeigt. Look über data-neb (boot.js) */
-.boot-cam { position: absolute; inset: -7%; animation: boot-in 2.4s var(--ease-out) both; }
-.boot-lyr { position: absolute; inset: 0; }
-.boot-lyr canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
-.boot-near, .boot-grain, .boot-dust { display: none; }
-
-/* Kamera-Idle ruhig (User 28.10.2026): halber Weg, längere Zeiten. A Dunkelwolke: fährt in 32 s um 3 % heran und zurück, Filmkorn darüber (die 3D-Kamera im Nebel fliegt zusätzlich) */
-.boot[data-neb="A"] .boot-cam { animation: boot-in 2.4s var(--ease-out) both, boot-camA 32s ease-in-out infinite alternate; }
-.boot[data-neb="A"] .boot-grain { display: block; position: absolute; inset: -40px; width: calc(100% + 80px); height: calc(100% + 80px);
-  opacity: 0.04; mix-blend-mode: screen; pointer-events: none; animation: boot-grain 1.2s steps(4) infinite; }
-/* B Emissionsnebel: Parallaxe in drei Tiefen (0,5 / 1,2 / 2,2 % Weg in 30 s) und Rolle ±0,2° */
-.boot[data-neb="B"] .boot-near { display: block; }
-.boot[data-neb="B"] .boot-cam { animation: boot-in 2.4s var(--ease-out) both, boot-camB 30s ease-in-out infinite alternate; }
-.boot[data-neb="B"] .is-far { animation: boot-parF 30s ease-in-out infinite alternate; }
-.boot[data-neb="B"] .is-mid { animation: boot-parM 30s ease-in-out infinite alternate; }
-.boot[data-neb="B"] .is-near { animation: boot-parN 30s ease-in-out infinite alternate; }
-/* C Filamente: Ellipsen-Bahn in 44 s */
-.boot[data-neb="C"] .boot-cam { animation: boot-in 2.4s var(--ease-out) both, boot-camC 44s linear infinite; }
+/* Hintergrund in drei Looks (boot_nebula.js, Vorschau 28.10.2026): eine Fläche in Gerätepixeln, blendet weich ein */
+.boot-fx { position: absolute; inset: 0; width: 100%; height: 100%; display: block; animation: boot-in 2.4s var(--ease-out) both; }
 
 .boot-cap {
   position: fixed; inset: 0; text-align: center;
@@ -61,32 +44,24 @@ body.is-fatal .boot { display: none; }
 .boot-go.is-on { opacity: 1; animation: boot-breathe 3.2s ease-in-out 1.2s infinite; }
 .boot-go:hover, .boot-go:focus-visible { color: var(--accent); animation: none; }
 
-/* Nebel-Look wählen: dezenter Knopf unten rechts, Name blendet kurz links daneben ein */
-.boot-look { position: absolute; right: 20px; bottom: 20px; display: flex; align-items: center; gap: 10px; animation: boot-in 2.4s var(--ease-out) 1.4s backwards; }
-.boot-neb { background: rgba(0, 0, 0, 0.35); }
-.boot-neb-name { font: 400 13px var(--mono); letter-spacing: 0.06em; color: var(--ink-soft); opacity: 0; transition: opacity 0.4s var(--ease-out); white-space: nowrap; }
-.boot-neb-name.is-on { opacity: 1; }
+/* Look wählen: dezenter Text-Umschalter unten rechts „Nebel · Linse · Lichtpunkt“, gewählter Look im Akzent */
+.boot-look { position: absolute; right: 20px; bottom: 16px; display: flex; align-items: center; gap: 2px;
+  font: 400 13px/1.4 var(--mono); letter-spacing: 0.06em; color: var(--ink); text-shadow: 0 1px 10px rgba(0, 0, 0, 0.9);
+  animation: boot-in 2.4s var(--ease-out) 1.4s backwards; }
+.boot-look[hidden] { display: none; }
+.boot-look button { padding: 6px 6px; border: 0; background: none; font: inherit; letter-spacing: inherit; color: inherit; cursor: pointer;
+  text-shadow: inherit; border-radius: 4px; transition: color 0.3s var(--ease-out); }
+.boot-look button[aria-pressed="true"], .boot-look button:hover { color: var(--accent); }
+.boot-look button:focus-visible { outline: 1px solid var(--accent); outline-offset: 1px; }
 
 @keyframes boot-in { from { opacity: 0; } }
-@keyframes boot-camA { to { transform: scale(1.03) translate(-0.5%, 0.35%); } }
-@keyframes boot-camB { from { transform: rotate(-0.2deg); } to { transform: scale(1.018) rotate(0.2deg); } }
-@keyframes boot-parF { from { transform: translateX(0.25%); } to { transform: translateX(-0.25%); } }
-@keyframes boot-parM { from { transform: translateX(0.6%); } to { transform: translateX(-0.6%); } }
-@keyframes boot-parN { from { transform: translateX(1.1%); } to { transform: translateX(-1.1%); } }
-@keyframes boot-camC {
-  0%, 100% { transform: translate(0.55%, 0) scale(1.005); }
-  25% { transform: translate(0, -0.35%) scale(1.01); }
-  50% { transform: translate(-0.55%, 0) scale(1.005); }
-  75% { transform: translate(0, 0.35%) scale(1); }
-}
-@keyframes boot-grain { 20% { transform: translate(-13px, 9px); } 40% { transform: translate(11px, -17px); } 60% { transform: translate(-7px, 21px); } 80% { transform: translate(19px, 5px); } }
 @keyframes boot-up { from { opacity: 0; transform: translateY(12px); } }
 @keyframes boot-line { from { transform: scaleX(0); } }
 @keyframes boot-glow { 50% { opacity: 0.55; } }
 @keyframes boot-breathe { 50% { opacity: 0.6; } }
 
 @media (prefers-reduced-motion: reduce) {
-  .boot[data-neb] :is(.boot-cam, .boot-lyr, .boot-glow, .boot-grain), .boot-go.is-on { animation: none; }
+  .boot-go.is-on { animation: none; }
 }
 
 @media (max-width: 760px) {
