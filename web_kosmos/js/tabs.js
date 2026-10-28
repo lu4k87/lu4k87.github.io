@@ -8,7 +8,7 @@ export const TABS = {
   'Magnet­bögen': 'Bögen', 'Bewegung der Bögen': 'Bögen',
   'Hintergrundstrahlung': 'Kugel', 'Hülle der Kugel': 'Kugel', 'Schnittkante': 'Kugel', 'Zeitschichten': 'Schichten',
   'Planeten und Kleinkörper': 'Planeten', 'Gezeitenströme (Modell)': 'Gezeiten', 'Strömung (Laniakea)': 'Strömung',
-  'Netz der Galaxien': 'Netz', 'Netz der Materie': 'Netz', 'Sterne und Galaxien': 'Sterne',
+  'Netz der Galaxien': 'Netz', 'Dunkle Materie': 'Materie', 'Netz der Materie': 'Netz', 'Sterne und Galaxien': 'Sterne',
   'Besonderheiten': 'Details', 'New Horizons': 'Sonde', 'Innerer Aufbau': 'Aufbau',
   'Magnetosphäre': 'Feld', 'Magnetfeld': 'Feld', 'Jupiter-Magnetosphäre': 'Feld',
   'Polarlichter': 'Polarlicht', 'Jupiter-Polarlicht': 'Polarlicht',
@@ -23,10 +23,10 @@ const ICON_OF = {
   globe: ['Erde', 'Mars', 'Neptun', 'Triton', 'Planet', 'Oberfläche', 'Ozean', 'Lufthülle', 'Atmosphäre', 'Kugel'],
   planet: ['Planeten', 'Ringe', 'System'], moon: ['Monde'], orbit: ['Bahn', 'Achsen', 'Drehung'],
   field: ['Feld', 'Bögen', 'Polarlicht'], burst: ['Ausbrüche', 'Fontänen', 'Vulkane', 'Strahlen', 'Keulen', 'Stoßfronten'],
-  wave: ['Ausfluss', 'Strömung', 'Wind', 'Gezeiten', 'Bewegung'], layers: ['Aufbau', 'Schichten', 'Struktur', 'Kern', 'Allgemein'],
+  wave: ['Ausfluss', 'Strömung', 'Wind', 'Gezeiten', 'Bewegung'], layers: ['Aufbau', 'Schichten', 'Struktur', 'Kern', 'Allgemein', 'Modell'],
   cloud: ['Nebel', 'Gas', 'Gaswolke', 'Krebsnebel', 'Staub', 'Flügel', 'Umgebung'],
   sky: ['Himmel', 'Sternhimmel', 'Sterne', 'Stern', 'Funkeln', 'Hintergrund', 'Strahlung'],
-  galaxy: ['Galaxien', 'Milchstraße', 'Andromeda', 'Fermi-Blasen'], net: ['Netz'], probe: ['Sonde', 'Station', 'Teleskop', 'Sonnenschild'],
+  galaxy: ['Galaxien', 'Milchstraße', 'Andromeda', 'Fermi-Blasen'], net: ['Netz', 'Materie'], probe: ['Sonde', 'Station', 'Teleskop', 'Sonnenschild'],
 };
 export const TAB_ICONS = Object.fromEntries(Object.entries(ICON_OF).flatMap(([k, names]) => names.map((n) => [n, k])));
 export const tabIcon = (title) => TAB_ICONS[title] || 'layers';

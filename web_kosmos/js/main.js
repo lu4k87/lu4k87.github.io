@@ -40,6 +40,7 @@ const LOADERS = {
   sgra: () => import('./levels/sgra.js'),
   local: () => import('./levels/local.js'),
   andromeda: () => import('./levels/andromeda.js'),
+  darkmatter: () => import('./levels/darkmatter.js'),
   web: () => import('./levels/web.js'),
   cmb: () => import('./levels/cmb.js'),
   // bigbang (Station 11 Urknall): vorerst aus der App genommen, Szene bleibt in levels/bigbang.js (TODOS K1)

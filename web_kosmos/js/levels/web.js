@@ -268,6 +268,8 @@ ${GAS_FIELD}` });
   const voidC = nuc.filter((p) => p.length() > 45 && p.length() < 90).sort((a, b) => b.clone().normalize().dot(hd) - a.clone().normalize().dot(hd))[0] || nuc[0];
   const hotspots = [
     { id: 'lg', kind: 'dive', to: 'local', pos: new THREE.Vector3() },
+    // Dunkle Materie (Station 05A): eigener Modellwürfel, Abzeichen über der Lokalen Gruppe zwischen Virgo und Großem Attraktor
+    { id: 'dm', kind: 'dive', to: 'darkmatter', pos: virgo.clone().add(ga).multiplyScalar(0.3).add(new THREE.Vector3(0, -22, 0)) },
     { id: 'virgo', kind: 'info', pos: virgo },
     { id: 'ga', kind: 'info', pos: ga },
     { id: 'void', kind: 'info', pos: voidC.clone() },
