@@ -702,7 +702,10 @@ function hop() {
   const turning = ch.turn && ch.turn.id === outer.id;
   if (down) {
     // nach einer Wende die Pose ohne Schwenk auf den Anker merken (Rückflug landet im gewohnten Blick)
-    const keep = ch.turn && ch.turn.id === from.id ? ch.turn.pose : cur;
+    // Verschieben (rechte Maustaste) gilt nur bis zum Abflug: der Rückflug behält Drehung und Zoom, blickt aber wieder auf das
+    // Ziel der Station (User 28.10.2026); ein beim Folgen gewähltes Ziel bleibt
+    const keep = ch.turn && ch.turn.id === from.id ? ch.turn.pose
+      : state.follow ? cur : pose(cur.pos.clone().sub(cur.target).add(from.target), from.target);
     keep.child = to.id;
     state.poses.set(from.id, keep);
     swing = turning ? null : clearSwing(cur.pos, cur.target, anchor, true, upOf(from.camera));
