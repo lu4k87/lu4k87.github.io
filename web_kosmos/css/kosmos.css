@@ -205,9 +205,10 @@ body.is-flying .flight { opacity: 1; }
 .bd-moon:hover, .bd-moon.is-hot { border-color: var(--ink); }
 .bd-moon.is-cur { border-color: var(--accent); color: var(--accent); font-weight: 600; }
 .bd-moon.is-cur .n { color: var(--accent); }
-/* Hinweis beim Zeigen unter Band bzw. Schublade */
+/* Hinweis beim Zeigen unter Band bzw. Schublade: höchstens zwei Zeilen (Kopf + Art · Maß · Entfernung),
+   Breite nach Inhalt statt nach Restplatz rechts vom letzten left; Umbruch erst, wenn der Bildschirm zu schmal ist */
 .bd-tip {
-  position: fixed; z-index: 8; display: flex; flex-direction: column; gap: 2px; min-width: 190px; max-width: min(440px, calc(100vw - 16px)); padding: 9px 12px; pointer-events: none;
+  position: fixed; z-index: 8; display: flex; flex-direction: column; gap: 2px; width: max-content; min-width: 190px; max-width: calc(100vw - 16px); padding: 9px 12px; pointer-events: none;
   border: 1px solid var(--line-strong); border-radius: var(--radius); background: rgba(7, 9, 14, 0.92); box-shadow: var(--pane-shadow);
   font-size: 13px; opacity: 0; translate: 0 6px; transition: opacity 0.25s var(--ease-out), translate 0.25s var(--ease-out);
 }
