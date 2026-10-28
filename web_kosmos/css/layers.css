@@ -89,18 +89,20 @@
 .act-btn { padding: 6px 12px; min-height: 34px; border-radius: 5px; border: 1px solid var(--line-strong); background: none; color: var(--ink); font: 500 13px var(--font); cursor: pointer; transition: border-color 0.2s, color 0.2s; }
 .act-btn:hover { border-color: var(--accent); color: var(--accent); }
 
-/* Zeitleiste: ▶/⏸, Ebene + Stand, Tempo-Regler; mittig über der Fußleiste, ersetzt dort den Hinweistext */
-.tl { position: absolute; left: 50%; bottom: 12px; transform: translateX(-50%); z-index: 2; display: flex; align-items: center; gap: 12px; width: min(600px, calc(100% - 24px)); padding: 7px 14px 7px 7px; border-radius: 999px; border: 1px solid var(--line); background: var(--glass-sheen), var(--glass-strong); backdrop-filter: var(--glass-blur); -webkit-backdrop-filter: var(--glass-blur); box-shadow: var(--glass-edge); transition: opacity 0.4s; }
+/* Zeitleiste als flacher Messstreifen (Player:C): unten links über der Navigation – ▶/⏸ eckig, Ebene + Stand, Schiene mit Skala,
+   Tempo in Mono; ersetzt dort den Hinweistext */
+.tl { position: absolute; left: 16px; bottom: 12px; z-index: 2; display: flex; align-items: center; gap: 12px; width: min(480px, calc(100% - 32px)); min-height: 52px; padding: 0 14px 0 8px; border-radius: var(--radius); border: 1px solid var(--line); background: var(--glass); backdrop-filter: var(--glass-blur); -webkit-backdrop-filter: var(--glass-blur); box-shadow: var(--pane-shadow); transition: opacity 0.4s; }
 .tl[hidden] { display: none; }
 .tl-text { display: flex; flex-direction: column; min-width: 0; flex: 0 1 auto; line-height: 1.3; }
-.tl-label { font-size: 13px; font-weight: 500; white-space: nowrap; }
+.tl-label { font-size: 13px; font-weight: 600; white-space: nowrap; }
+.tl .play-btn--lg { width: 36px; height: 36px; }
 .tl-status { font: 400 12px var(--mono); color: var(--ink-soft); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .tl input[type=range] { flex: 1; min-width: 90px; accent-color: var(--accent); }
-.tl output { flex: none; font: 500 12.5px var(--mono); white-space: nowrap; min-width: 7ch; text-align: right; }   /* schrumpft nie unter den Text („5 Mio. J./s“) */
+.tl output { flex: none; font: 500 13px var(--mono); white-space: nowrap; min-width: 7ch; text-align: right; }   /* schrumpft nie unter den Text („5 Mio. J./s“) */
 body.tl-on .hint { opacity: 0; pointer-events: none; }
 body.is-flying .tl, body.is-intro .tl { opacity: 0; pointer-events: none; }
 @media (max-width: 760px) {
-  .tl { gap: 8px; padding: 5px 10px 5px 5px; }
+  .tl { left: 10px; width: calc(100% - 20px); gap: 8px; padding: 0 10px 0 6px; }
   .tl-status { display: none; }
 }
 
@@ -160,6 +162,7 @@ body.is-flying .tl, body.is-intro .tl { opacity: 0; pointer-events: none; }
 .cfg-pane .b-body .b-stack { row-gap: 2px; }
 .cfg-pane .b-body :is(.b-top, .b-stack > .cfg-label) { display: flex; align-items: center; min-height: var(--row); }
 .cfg-pane .b-body .b-seg button { padding: 3px 6px; min-height: 28px; font-size: 12.5px; }
-/* Farblook: Kacheln 3 × 2 unter dem Namen */
+/* Farblook: Liste 3 × 2 unter dem Namen, schmal (Handy) 2 × 3 */
 .cfg-pane .b-looks { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+@container cfg (max-width: 420px) { .cfg-pane .b-looks { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (prefers-reduced-motion: reduce) { .lay-tab-dot { transition: none; } }

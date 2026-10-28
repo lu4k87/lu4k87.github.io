@@ -25,7 +25,7 @@ const hexNum = (n, cls) => hex(`<text x="20" y="24.5" text-anchor="middle">${Str
 export function createHud(h) {
   const body = document.body;
   const rail = $('#rail'), panel = $('#panel-body'), foot = $('#panel-foot'), layer = $('#hotspots'), svg = layer.querySelector('svg');
-  const leads = svg.querySelector('.leads'), card = $('#hs-card'), caption = $('#caption'), route = $('#route');
+  const leads = svg.querySelector('.leads'), card = $('#hs-card'), caption = $('#caption');
   const pull = $('#pull'), btnOut = $('#btn-out'), btnNext = $('#btn-next'), btnPrev = $('#btn-prev');
   const mSizeL = $('#m-size-l'), mSize = $('#m-size'), mLight = $('#m-light'), mDist = $('#m-dist'), mBack = $('#m-back');
   let lv = null, meta = null, markers = [], selected = null, liveEl = null, widgetEl = null, liveT = 0, scaleTabIdx = 0;
@@ -420,10 +420,6 @@ export function createHud(h) {
     comet = p.animate([{ strokeDashoffset: 46, opacity: 0 }, { opacity: 1, offset: 0.15 }, { opacity: 1, offset: 0.85 }, { strokeDashoffset: 4 - L, opacity: 0 }], { duration: 2600, easing: 'cubic-bezier(0.45, 0, 0.55, 1)' });
   }
 
-  // ---------- Reiseroute ----------
-  route.innerHTML = ROUTE.map((id, i) => `<li><button type="button" data-id="${id}" aria-label="Station ${i + 1}: ${esc(STATIONS[id].title)}"><span class="rt-dot"></span><span class="rt-name">${esc(STATIONS[id].title)}</span></button></li>`).join('');
-  route.querySelectorAll('button').forEach((b) => b.addEventListener('click', () => { h.onInput(); h.onGo(b.dataset.id); }));
-
   btnOut.addEventListener('click', () => { h.onInput(); h.onOut(); });
   pull.addEventListener('click', () => { h.onInput(); h.onOffer(); });
   btnNext.addEventListener('click', () => { h.onInput(); h.onNext(1); });
@@ -443,17 +439,12 @@ export function createHud(h) {
     markBand();
     renderDrawer();
     runComet();
-    route.querySelectorAll('button').forEach((b) => {
-      const cur = b.dataset.id === id;
-      b.classList.toggle('is-current', cur);
-      if (cur) b.setAttribute('aria-current', 'step'); else b.removeAttribute('aria-current');
-    });
     const parent = meta.parent && STATIONS[meta.parent];
     btnOut.disabled = !parent;
     $('#nav-out-to').textContent = parent ? parent.title : '–';
     const i = routeIndex(id);
     $('#nav-next-to').textContent = STATIONS[ROUTE[(i + 1) % ROUTE.length]].title;
-    btnPrev.setAttribute('aria-label', `Zurück: ${STATIONS[ROUTE[(i - 1 + ROUTE.length) % ROUTE.length]].title}`);
+    $('#nav-prev-to').textContent = STATIONS[ROUTE[(i - 1 + ROUTE.length) % ROUTE.length]].title;
     mSizeL.textContent = meta.size ? meta.size.l : 'Größe';
     mSize.textContent = meta.size ? fmtLength(meta.size.v) : '–';
     mLight.textContent = meta.size ? fmtTime(meta.size.v / C) : '–';
@@ -996,7 +987,8 @@ export function createHud(h) {
     caption: (st, opening) => { if (st) showCaption(st, opening); else { caption.classList.remove('is-on'); clearTimeout(capTimer); } },
     hideMarkers: (on) => { layer.classList.toggle('is-hidden', on); if (on) closeCard(); },
     setLoading: (on) => body.classList.toggle('is-loading', on),
-    setRouteTarget: (id) => route.querySelectorAll('button').forEach((b) => b.classList.toggle('is-target', b.dataset.id === id)),
+    // Punktreihe im Fuß entfällt (Fuss:C, doppelt zur Stationsleiste); das Ziel eines Flugs nennt die Flug-Zeile im Kopf
+    setRouteTarget: () => {},
     intro: (on) => body.classList.toggle('is-intro', on),
     hint: (text) => setHint(text || ''),
     // offene Karte: main.js hält die Leerlauf-Fahrt an, damit das Bild beim Lesen ruht
