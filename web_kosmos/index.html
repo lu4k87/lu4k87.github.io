@@ -43,13 +43,6 @@
       <button type="button" id="qk-bars" class="icon-btn qk" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M3.8 8h16.4M3.8 16h16.4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="ib-t">Kinobalken</span></button>
       <button type="button" id="qk-full" class="icon-btn qk" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="ib-t">Vollbild</span></button>
       </div>
-      <button type="button" id="btn-lay" class="icon-btn icon-btn--count" aria-expanded="false" aria-controls="station" title="Einstellungen dieser Station" aria-label="Einstellungen dieser Station">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4l9 4.5-9 4.5-9-4.5zM3 13l9 4.5 9-4.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="ib-t">Station <span class="icon-count" data-lay-n></span></span>
-      </button>
-      <button type="button" id="btn-cfg" class="icon-btn" aria-expanded="false" aria-controls="cfg" title="Einstellungen" aria-label="Einstellungen">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
-      <span class="ib-t">Einstellungen</span>
-      </button>
       <button type="button" id="btn-panel" class="icon-btn" aria-controls="panel" title="Infotafel ein- oder ausblenden" aria-label="Infotafel ein- oder ausblenden">
         <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="4.5" width="17" height="15" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M14.5 4.5v15" stroke="currentColor" stroke-width="1.6"/></svg>
       <span class="ib-t">Infotafel</span>
@@ -80,13 +73,25 @@
       <div class="cfg-pane st-body" id="cfg-station"></div>
     </aside>
 
-    <aside class="panel" id="panel" aria-label="Seitenleiste: Infotafel und Einstellungen">
+    
+    <aside class="station cfg" id="cfg" hidden tabindex="-1" aria-labelledby="cfg-h"></aside>
+
+    <aside class="panel" id="panel" aria-label="Seitenleiste: Infotafel">
       <div id="panel-body" class="panel-body"></div>
       <div class="panel-foot" id="panel-foot" hidden></div>
-      <section class="cfg" id="cfg" hidden tabindex="-1" aria-label="Einstellungen"></section>
     </aside>
 
     <footer class="bottombar">
+      
+      <div class="dock" role="group" aria-label="Einstellungen">
+        <button type="button" id="btn-cfg" class="icon-btn" aria-expanded="false" aria-controls="cfg" title="Allgemeine Einstellungen – gelten an allen Stationen" aria-label="Allgemeine Einstellungen">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+        <span class="ib-t">Allgemeine<br>Einstellungen</span>
+        </button>
+        <button type="button" id="btn-lay" class="icon-btn" aria-expanded="false" aria-controls="station" title="Einstellungen dieser Station" aria-label="Einstellungen dieser Station">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4l9 4.5-9 4.5-9-4.5zM3 13l9 4.5 9-4.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="ib-t">Station<br>Einstellungen</span>
+        </button>
+      </div>
       <div class="nav-buttons" role="group" aria-label="Station wechseln">
         <button type="button" id="btn-out" class="nav-btn nav-btn--out"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V6M6 11l6-6 6 6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="nav-text"><span class="nav-cap">Hinaus</span><span class="nav-to" id="nav-out-to">–</span></span></button>
         <button type="button" id="btn-prev" class="nav-btn nav-btn--prev"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="nav-text"><span class="nav-cap">Zurück</span><span class="nav-to" id="nav-prev-to">–</span></span></button>

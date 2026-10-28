@@ -40,24 +40,21 @@ export function createHud(h) {
   new ResizeObserver(() => { cardW = card.offsetWidth; cardH = card.offsetHeight; moreCard(); }).observe(card);
   const cardEnv = { getLayer, setLayer, fmt: fmtVal, motion: () => settings.S.motion, reduced: matchMedia('(prefers-reduced-motion: reduce)').matches };
 
-  const side = mountSettings($('#cfg'), $('#btn-cfg'));
+  mountSettings($('#cfg'), $('#btn-cfg'));
   onSettings((keys) => {
     if (keys.includes('panel')) { body.classList.toggle('panel-off', !settings.S.panel); h.onRelayout(); }
     if (keys.includes('motion')) card.dataset.motion = settings.S.motion;
     if (keys.includes('scaleCompare') && lv) renderPanel();
   });
   body.classList.toggle('panel-off', !settings.S.panel);
-  // Knopf „Infotafel“ (Fenster:C): steht ein Fenster in der Spalte, holt er die Tafel zurück, sonst blendet er sie ein/aus
-  $('#btn-panel').addEventListener('click', () => {
-    if (side.view()) { side.open(false); if (!settings.S.panel) setSetting('panel', true); } else setSetting('panel', !settings.S.panel);
-  });
-  const syncPanelBtn = () => $('#btn-panel').setAttribute('aria-expanded', String(!!settings.S.panel && !side.view()));
+  // Knopf „Infotafel“: blendet die Tafel rechts ein/aus (die Einstellungen stehen links am Rand, Dock:B)
+  $('#btn-panel').addEventListener('click', () => setSetting('panel', !settings.S.panel));
+  const syncPanelBtn = () => $('#btn-panel').setAttribute('aria-expanded', String(!!settings.S.panel));
   onSettings(syncPanelBtn);
   syncPanelBtn();
   addEventListener('kosmos:info', () => { if (!settings.S.panel) setSetting('panel', true); });
-  // Fenster auf/zu: bei ausgeblendeter Infotafel entsteht bzw. verschwindet die Spalte, schmal weicht die Infotafel dem Panel
-  // Station → Szene neu einpassen
-  addEventListener('kosmos:side', () => { syncPanelBtn(); h.onRelayout(); });
+  // Panel links auf/zu (schmal weicht die Infotafel dem Panel) → Szene neu einpassen
+  addEventListener('kosmos:side', () => h.onRelayout());
 
   // ---------- Stationsleiste ----------
   // Band oben über die volle Breite (Vorschau 26.10.2026 „Stationsleiste oben“ Leiste:C, Baum-Panorama): Zeilen Route →

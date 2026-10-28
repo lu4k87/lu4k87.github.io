@@ -70,9 +70,9 @@ ul, ol { padding: 0; list-style: none; }
 }
 .hud > :not(.stage), .stage > * { pointer-events: auto; }
 .stage > .hint, .stage > .pull:not(.is-on) { pointer-events: none; }
-/* Spalte zu nur, wenn die Infotafel aus ist und kein Fenster (Ebenen, Einstellungen) in ihr steht */
-body.panel-off:not(.cfg-open) .hud { grid-template-columns: minmax(0, 1fr) auto 0; }
-body.panel-off:not(.cfg-open) .panel { display: none; }
+/* Spalte zu, wenn die Infotafel aus ist (die Einstellungen stehen links am Rand, Dock:B) */
+body.panel-off .hud { grid-template-columns: minmax(0, 1fr) auto 0; }
+body.panel-off .panel { display: none; }
 .sr-only { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
 
 /* ---------- Kopf ---------- */
@@ -88,7 +88,7 @@ body.panel-off:not(.cfg-open) .panel { display: none; }
 .flight { flex: 1; text-align: center; font: 500 13px var(--mono); letter-spacing: 0.08em; color: var(--accent); opacity: 0; transition: opacity 0.4s; }
 body.is-flying .flight { opacity: 1; }
 /* Knöpfe rechts in der Kopfzeile (Kopf:C): eine feine Leiste, Symbol mit Wort darunter; an = cyan getönt, offenes Fenster
-   zusätzlich mit Rahmen; Strich trennt die Schnell-Knöpfe von den Fenster-Knöpfen */
+   zusätzlich mit Rahmen; Strich trennt die Schnell-Knöpfe vom Knopf Infotafel (Einstellungen: unten links, .dock) */
 .top-actions { grid-area: acts; justify-self: end; align-self: start; display: flex; align-items: center; height: 52px; margin: 8px 16px 0 0; padding: 0 4px; border-radius: var(--radius); }
 .icon-btn {
   width: 40px; height: 40px; display: grid; place-items: center; border-radius: 50%; cursor: pointer;
@@ -97,7 +97,7 @@ body.is-flying .flight { opacity: 1; }
 }
 .icon-btn svg { width: 20px; height: 20px; }
 .icon-btn:hover, .icon-btn[aria-expanded="true"] { border-color: var(--accent); color: var(--accent); }
-/* Schnell-Knöpfe links neben dem Zahnrad (quick.js): an = eisblau gefüllt, Station ohne Ton = abgedunkelt; Strich trennt vom Zahnrad */
+/* Schnell-Knöpfe links neben dem Zahnrad (quick.js): an = eisblau gefüllt, Station ohne Ton = abgedunkelt; Strich trennt von der Infotafel */
 .quick { display: flex; align-items: center; }
 .quick::after { content: ""; align-self: stretch; width: 1px; margin: 6px 4px; background: var(--line); }
 .top-actions .icon-btn {
@@ -110,12 +110,10 @@ body.is-flying .flight { opacity: 1; }
 .qk[aria-pressed="true"], .top-actions .qk[aria-pressed="true"]:hover { color: var(--accent); background: rgba(var(--accent-rgb), 0.1); }
 .qk[aria-disabled="true"] { opacity: 0.45; cursor: not-allowed; }
 .top-actions .qk[aria-disabled="true"]:hover { background: none; }
-.icon-count { font: 500 12px var(--mono); }
-.icon-count:empty { display: none; }
 #qk-sound .qk-off, #qk-sound.is-off .qk-on { display: none; }
 #qk-sound.is-off .qk-off { display: inline; }
 /* schmal: Drehachsen und Kinobalken nur im Zahnrad, sonst überdeckt die Reihe den Schriftzug */
-/* ohne Platz für die Wörter: nur Symbole (Zahl der Ebenen steht dann im Reiter der rechten Spalte) */
+/* ohne Platz für die Wörter: nur Symbole */
 @media (max-width: 960px) {
   .top-actions .ib-t { display: none; }
   .top-actions .icon-btn { min-width: 40px; height: 40px; padding: 0; }
@@ -297,23 +295,23 @@ body.is-opener .skip-cue { opacity: 0.75; transition: opacity 1.2s var(--ease-ou
   hyphenate-limit-chars: 16 7 7; text-wrap: pretty; line-height: 1.5;
 }
 
-/* ---------- Rechte Spalte (Fenster:C): Infotafel oder Einstellungen (Knöpfe der Kopfleiste);
+/* ---------- Rechte Spalte: Infotafel (Knopf der Kopfleiste);
    Eck-Marken oben links und unten rechts. Inhalt scrollt in sich, die Spalte steht. ---------- */
 .panel { grid-area: panel; position: relative; margin: 10px 16px 12px 0; border-radius: var(--radius); min-height: 0; display: flex; flex-direction: column; }
 .panel::before, .panel::after, .station::before, .station::after { content: ""; position: absolute; z-index: 3; width: 10px; height: 10px; border: 0 solid rgba(var(--accent-rgb), 0.8); pointer-events: none; }
 :is(.panel, .station)::before { left: -1px; top: -1px; border-width: 1px 0 0 1px; border-top-left-radius: var(--radius); }
 :is(.panel, .station)::after { right: -1px; bottom: -1px; border-width: 0 1px 1px 0; border-bottom-right-radius: var(--radius); }
-/* Panel Station links am Rand (Vorschau 28.10.2026 Menü:C): in der Bühnen-Zeile zwischen Stationsleiste (auch 2. Zeile) und
+/* Panels links am Rand – Station (Vorschau 28.10.2026 Menü:C) und Allgemeine Einstellungen (#cfg, Dock:B), nie beide zugleich: in der Bühnen-Zeile zwischen Stationsleiste (auch 2. Zeile) und
    Fußzeile, senkrecht mittig, nie darüber; Inhalt in layers.css. Abzeichen und Info-Karte weichen ihm aus (hud.js uiBoxes),
    der Kapitel-Titel rückt rechts daneben. */
 .station { grid-area: stage; justify-self: start; align-self: center; position: relative; z-index: 2; width: min(var(--st-w), calc(100% - 32px));
   height: min(640px, calc(100% - 22px - var(--band-low, 0px))); margin: calc(10px + var(--band-low, 0px)) 0 12px 16px; border-radius: var(--radius); display: flex; flex-direction: column; outline: none; }
 .station[hidden] { display: none; }
-body.st-open .caption { left: calc(var(--st-w) + 32px); }
+body:is(.st-open, .cfg-open) .caption { left: calc(var(--st-w) + 32px); }
 /* Hinweis mittig in der freien Bühne neben dem Panel, bricht um statt darunter zu laufen; Knopf „Hinausfliegen“ auf derselben
    Achse darüber (Vorschau 28.10.2026 Mitte:A) */
-body.st-open .stage > .pull { left: calc(50% + (var(--st-w) + 16px) / 2); bottom: calc(21px + var(--hint-h, 31px)); }
-body.st-open .stage > .hint { left: calc(50% + (var(--st-w) + 16px) / 2); width: max-content; max-width: calc(100% - var(--st-w) - 48px); white-space: normal; text-align: center; text-wrap: balance; }
+body:is(.st-open, .cfg-open) .stage > .pull { left: calc(50% + (var(--st-w) + 16px) / 2); bottom: calc(21px + var(--hint-h, 31px)); }
+body:is(.st-open, .cfg-open) .stage > .hint { left: calc(50% + (var(--st-w) + 16px) / 2); width: max-content; max-width: calc(100% - var(--st-w) - 48px); white-space: normal; text-align: center; text-wrap: balance; }
 /* Eck-Marken auch an der Info-Karte (Bild:C) */
 .hs-card::before, .hs-card::after { content: ""; position: absolute; z-index: 3; width: 10px; height: 10px; border: 0 solid rgba(var(--accent-rgb), 0.8); pointer-events: none; }
 .hs-card::before { left: 0; top: 0; border-width: 1px 0 0 1px; border-top-left-radius: var(--radius); }
@@ -342,7 +340,6 @@ body.st-open .stage > .hint { left: calc(50% + (var(--st-w) + 16px) / 2); width:
 :is(.panel-body, #cfg-global, .lay-scroll, .st-rail)::-webkit-scrollbar-track { background: transparent; }
 :is(.panel-body, #cfg-global, .lay-scroll, .st-rail)::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.22); border-radius: 3px; }
 :is(.panel-body, #cfg-global, .lay-scroll, .st-rail)::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.38); }
-body.cfg-open :is(.panel-body, .panel-foot) { display: none; }
 /* Fuß der Infotafel steht unter dem Scrollbereich (Tafel:C, Fehler „Fuß abgeschnitten“): Zustand der Station */
 .panel-foot { flex: none; display: flex; flex-direction: column; gap: 8px; padding: 10px 18px 14px; border-top: 1px solid var(--line); }
 .panel-foot[hidden] { display: none; }
@@ -653,6 +650,19 @@ body.cfg-open :is(.panel-body, .panel-foot) { display: none; }
    Tabelle; die Punktreihe der Route entfällt (doppelt zur Stationsleiste) */
 .bottombar { grid-area: foot; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: end; gap: 16px; padding: 8px 16px 14px; }
 .bottombar > .measure { grid-column: 3; }
+/* Knöpfe der Einstellungen unten links über der Navigation (Vorschau 28.10.2026 „Einstellungs-Knöpfe unten links“ Dock:B):
+   zwei Glas-Kacheln, Symbol über dem zweizeiligen Namen, Allgemein links, Station rechts; offenes Panel = cyan getönt mit Rahmen */
+.bottombar { grid-template-rows: auto auto; row-gap: 8px; }
+.bottombar > :not(.dock) { grid-row: 2; }
+.dock { grid-column: 1; grid-row: 1; justify-self: start; display: flex; gap: 8px; }
+.dock .icon-btn {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; width: 104px; height: 74px; padding: 6px 8px;
+  border-radius: var(--radius); background: var(--glass); box-shadow: var(--pane-shadow); -webkit-backdrop-filter: var(--glass-blur); backdrop-filter: var(--glass-blur);
+  font-size: 12px; line-height: 1.2; text-align: center; white-space: nowrap; transition: background 0.2s, color 0.2s, border-color 0.2s;
+}
+.dock .icon-btn:hover { border-color: var(--line-strong); color: var(--ink); }
+.dock .icon-btn[aria-expanded="true"] { color: var(--accent); border-color: rgba(var(--accent-rgb), 0.55); background: linear-gradient(rgba(var(--accent-rgb), 0.16), rgba(var(--accent-rgb), 0.16)), var(--glass); }
+.dock .icon-btn:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
 .nav-buttons {
   display: flex; align-items: center; height: 52px; padding: 0 4px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--glass); box-shadow: var(--pane-shadow);
   -webkit-backdrop-filter: var(--glass-blur); backdrop-filter: var(--glass-blur);
@@ -736,7 +746,7 @@ input[type=range]:focus-visible { outline: 2px solid var(--focus); outline-offse
   text-shadow: 0 2px 22px rgba(0, 0, 0, 0.9);
 }
 .caption::before { content: ""; position: absolute; inset: -35% 4%; z-index: -1; background: radial-gradient(closest-side, rgba(0, 0, 0, 0.5), transparent); }
-body.panel-off:not(.cfg-open) .caption { right: 0; }
+body.panel-off .caption { right: 0; }
 .caption.is-on { opacity: 1; transition: opacity 1.8s var(--ease-out); }
 .caption > * { opacity: 0; transform: translateY(12px); transition: opacity 1s ease, transform 1s ease; }
 .caption.is-on > * { opacity: 1; transform: none; transition: opacity 1.8s var(--ease-out) var(--d, 0s), transform 2.4s var(--ease-out) var(--d, 0s); }
@@ -790,12 +800,11 @@ body.fatal-webgl .fatal-webgl, body.fatal-start .fatal-start { display: block; }
     grid-template-rows: auto auto minmax(0, 1fr) auto auto;
     grid-template-areas: "top acts" "band band" "stage stage" "panel panel" "foot foot";
   }
-  body.panel-off:not(.cfg-open) .hud { grid-template-columns: minmax(0, 1fr) auto; }
+  body.panel-off .hud { grid-template-columns: minmax(0, 1fr) auto; }
   .top-actions, body.panel-off .top-actions { flex-direction: row; align-self: center; padding: 4px 12px 0 0; }
   .panel { margin: 0 10px 6px; max-height: 32vh; }
-  body.cfg-open .panel { max-height: 58vh; }
   .station { justify-self: stretch; width: auto; height: calc(100% - 12px); margin: 6px 10px; }
-  body.st-open .panel { display: none; }
+  body:is(.st-open, .cfg-open) .panel { display: none; }
   .panel-body { padding: 14px 14px 16px; gap: 12px; }
   .st-title { font-size: 24px; }
   .band { margin: 0 10px; }
@@ -811,17 +820,20 @@ body.fatal-webgl .fatal-webgl, body.fatal-start .fatal-start { display: block; }
   .nav-btn--next { min-width: 0; }
   .nav-to { overflow: hidden; text-overflow: ellipsis; }
   .bottombar > .measure { grid-column: 1; }
+  .bottombar > :not(.dock) { grid-row: auto; }
+  .dock { width: 100%; }
+  .dock .icon-btn { flex: 1 1 0; flex-direction: row; gap: 8px; width: auto; height: 48px; text-align: left; }
   .measure { grid-template-columns: 1fr 1fr; }
   .measure div { min-height: 44px; padding: 5px 12px; }
   .caption { left: 0; right: 0; top: 16%; bottom: auto; padding: 0 16px; }
-  body.cfg-open .caption, body.st-open .caption { visibility: hidden; }   /* Fenster in der Spalte reicht bis über die Bildmitte: Ankunftstitel weicht */
+  body.cfg-open .caption, body.st-open .caption { visibility: hidden; }   /* Panel links füllt die Bühne: Ankunftstitel weicht */
   .cap-title { font-size: clamp(30px, 9cqi, 44px); letter-spacing: 0.16em; padding-left: 0.16em; }
   .caption.is-on .cap-title { letter-spacing: 0.1em; padding-left: 0.1em; }
   .cap-sub { font-size: 15px; }
   .hsb { font-size: 12.5px; }
   .hsb .tag { display: none; }
   .hint { display: none; }
-  body.st-open .stage > .pull { left: 50%; bottom: 52px; }   /* Panel füllt die Bühne: keine freie Achse daneben */
+  body:is(.st-open, .cfg-open) .stage > .pull { left: 50%; bottom: 52px; }   /* Panel füllt die Bühne: keine freie Achse daneben */
   .hs-card { left: 8px; right: 8px; top: auto; bottom: var(--sheet-b, 8px); width: auto; max-height: calc(100% - var(--sheet-b, 8px) - 40px); translate: none !important; transform-origin: center bottom !important; }
 }
 

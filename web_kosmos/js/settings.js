@@ -1,6 +1,6 @@
-// Einstellungen = gilt an allen Stationen; Station = nur diese Station (Inhalt in layers.js). Die rechte Spalte zeigt Infotafel oder
-// Einstellungen (Vorschau 28.10.2026 Fenster:C), umgeschaltet über die Knöpfe der Kopfleiste; die Station hat ein eigenes Panel links
-// am Rand (#station, Vorschau 28.10.2026 „Station-Panel links am Rand“ Menü:C), auf/zu über #btn-lay, ✕ oder Esc. Einstellungen: die Gruppen als quadratische
+// Allgemeine Einstellungen = gilt an allen Stationen; Station = nur diese Station (Inhalt in layers.js). Beide als Panel links am
+// Rand (#cfg, #station; Vorschau 28.10.2026 „Station-Panel links am Rand“ Menü:C und „Einstellungs-Knöpfe unten links“ Dock:B),
+// immer nur eins offen, auf/zu über die Knöpfe unten links (#btn-cfg, #btn-lay), ✕ oder Esc. Allgemein: die Gruppen als quadratische
 // Kacheln mit Icon oben, darunter nur die gewählte Gruppe (User 28.10.2026); Fuß mit Geltung und „Alle zurücksetzen“.
 // Mini-Grafik je Zeile, geänderte Werte mit ↺ am Zeilenende. Regel (User 28.10.2026): hier steht jeder Wert, der für alle Stationen
 // gemeinsam gilt – auch wenn er nur an einem Teil der Stationen wirkt (Himmel, Milchstraße, Licht und Schatten, Planeten,
@@ -214,10 +214,15 @@ const JUMP = `<div class="cfg-jump" role="tablist" aria-label="Gruppen">${GROUPS
 const CARD = (g, i) => `<section class="b-card b-fold b-sec" id="cfg-s${i}" role="tabpanel" data-g="${g.id}" data-fold="${i}" aria-labelledby="cfg-h${i}" hidden>
   <h4 class="b-sec-h"><span class="b-name" id="cfg-h${i}">${g.title}</span><span class="b-count">${plural(nRows(g), 'Einstellung', 'Einstellungen')}<span data-na-n></span></span></h4>
   <div class="b-body${g.half ? ' b-body--grid' : ''}" id="cfg-b${i}">${g.rows.map(([k, h, w]) => ROW(k, h, w)).join('')}</div></section>`;
-// root = #cfg in der rechten Spalte, btn = Knopf „Einstellungen“, lay = Knopf „Station“ (Zahl der Einstellungen in der Beschriftung),
-// st = Panel Station links
+// root = #cfg links am Rand, btn = Knopf „Allgemeine Einstellungen“, lay = Knopf „Station Einstellungen“ (beide unten links,
+// Vorschau 28.10.2026 Dock:B), st = Panel Station links
 export function mountSettings(root, btn, lay = document.getElementById('btn-lay'), st = document.getElementById('station')) {
   root.innerHTML = `
+    <header class="st-head">
+      ${btn.querySelector('svg').outerHTML.replace('<svg ', '<svg class="st-ico" ')}
+      <h2 class="st-h" id="cfg-h"><span>Allgemeine Einstellungen</span><span class="st-n">gilt an allen Stationen</span></h2>
+      <button type="button" class="icon-btn icon-btn--sm" id="btn-cfg-close" aria-label="Allgemeine Einstellungen schließen"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button>
+    </header>
     <div class="cfg-view" id="cfg-v-gl">
       ${JUMP}
       <div class="cfg-pane" id="cfg-global">
@@ -232,10 +237,7 @@ export function mountSettings(root, btn, lay = document.getElementById('btn-lay'
     st.querySelectorAll('[data-st-name]').forEach((e) => { e.textContent = title; });
     st.dataset.laySum = n ? plural(n, 'Einstellung', 'Einstellungen') : 'Keine Einstellungen';   // Gruppen zeigt die Leiste
     st.querySelector('[data-st-n]').textContent = st.dataset.laySum;
-    if (lay) {
-      lay.querySelector('[data-lay-n]').textContent = n || '';
-      lay.setAttribute('aria-label', n ? `Einstellungen dieser Station: ${n}` : 'Einstellungen dieser Station');
-    }
+    if (lay) lay.setAttribute('aria-label', n ? `Einstellungen dieser Station: ${n}` : 'Einstellungen dieser Station');   // Zahl nur hier, nicht am Knopf (F1 nein)
   };
   mountLayers({ gear: st.querySelector('#cfg-station'), info, strip: document.getElementById('timeline'), stripOn: () => settings.S.timeline });
   const sync = () => {
@@ -309,42 +311,39 @@ export function mountSettings(root, btn, lay = document.getElementById('btn-lay'
   });
   onSettings((keys) => { sync(); if (keys.includes('timeline')) rebuildLayers(); });
   sync();
-  // Panel Station links: breit unabhängig von der rechten Spalte (body.st-open, kosmos.css); schmal (Handy) steht immer nur eins
-  // von beiden, die Infotafel weicht dem Panel
-  const narrow = matchMedia('(max-width: 760px)');
+  // Panel Station und Allgemeine Einstellungen stehen beide links am Rand (body.st-open / body.cfg-open, kosmos.css): immer nur
+  // eins von beiden, die Infotafel rechts bleibt, wie sie ist (schmal weicht sie dem Panel)
   let view = false;
   const station = (on) => {
     if (on === !st.hidden) return;
-    if (on && narrow.matches && view) open(false);
+    if (on && view) open(false);
     st.hidden = !on;
     document.body.classList.toggle('st-open', on);
     if (lay) lay.setAttribute('aria-expanded', String(on));
     if (on) refreshLayers();   // Werte, die die Station inzwischen geändert hat; Zeitachse braucht die sichtbare Breite
     window.dispatchEvent(new CustomEvent('kosmos:side', { detail: { view } }));   // hud.js: Szene neu einpassen
   };
-  // view = 'gl' (Einstellungen) | false (Infotafel bzw. Spalte zu, je nach Schalter „Infotafel zeigen“); 'lay' öffnet das Panel
-  // Station links und lässt die Spalte, wie sie ist. Die Spalte steht, solange die Einstellungen offen sind, auch bei
-  // ausgeblendeter Infotafel (body.cfg-open, kosmos.css).
+  // view = 'gl' (Allgemeine Einstellungen offen) | false; 'lay' öffnet stattdessen das Panel Station
   const open = (v) => {
     if (v === 'lay') { station(true); return; }
-    if (v && narrow.matches) station(false);
+    if (v) station(false);
     if (v !== view && v) glob.scrollTop = 0;
     view = v;
     root.hidden = !v;
     document.body.classList.toggle('cfg-open', !!v);
     btn.setAttribute('aria-expanded', String(v === 'gl'));
-    window.dispatchEvent(new CustomEvent('kosmos:side', { detail: { view: v } }));   // hud.js: Infotafel-Knopf, Raster bei ausgeblendeter Infotafel
+    window.dispatchEvent(new CustomEvent('kosmos:side', { detail: { view: v } }));   // hud.js: Szene neu einpassen
   };
   btn.addEventListener('click', () => open(view === 'gl' ? false : 'gl'));
   if (lay) lay.addEventListener('click', () => station(st.hidden));
   st.querySelector('#btn-st-close').addEventListener('click', () => { station(false); if (lay) lay.focus(); });
+  root.querySelector('#btn-cfg-close').addEventListener('click', () => { open(false); btn.focus(); });
   const q = new URLSearchParams(location.search).get('cfg');
   if (q !== null) open(q === 'lay' ? 'lay' : 'gl');   // Screenshots: Fenster offen
-  // Esc schließt das Fenster mit dem Fokus, sonst zuerst das Panel Station
+  // Esc schließt das offene Panel links (es steht immer nur eins)
   document.addEventListener('keydown', (e) => {
     if (e.key !== 'Escape' || e.defaultPrevented) return;
-    const inGl = view && root.contains(document.activeElement);
-    if (!st.hidden && !inGl) { station(false); if (lay) lay.focus(); } else if (view) { open(false); btn.focus(); }
+    if (!st.hidden) { station(false); if (lay) lay.focus(); } else if (view) { open(false); btn.focus(); }
   });
   return { open, view: () => view };
 }
