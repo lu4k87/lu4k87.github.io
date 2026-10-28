@@ -97,9 +97,9 @@ const ARRIVE = 1.25;
 // Mehr-Etappen-Flug als eine Fahrt: Dauer = Flugdauer × (base + per × Summe der Etappen-Gewichte), höchstens cap;
 // Gewicht einer Etappe = w0 + perDecade × Zehnerpotenzen zwischen den Bildbreiten der beiden Stationen, in [lo, hi]
 const CHAIN = { base: 0.35, per: 0.55, cap: 2.8, w0: 0.6, perDecade: 0.09, lo: 0.7, hi: 1.5 };
-// Leerlauf-Fahrt: nach `delay` s ohne Eingabe weich einblenden; Bogen, Kran und Atmen des Abstands; nach einem Flug schon
-// `land` s nach der Landung (die Kamera kommt nie ganz zur Ruhe)
-const CINE = { delay: 3, ramp: 5, orbit: 0.012, crane: 0.05, breathe: 0.025, land: 1.2 };
+// Leerlauf-Fahrt: nach „Start nach“ (Einstellung cineDelay) ohne Eingabe weich einblenden; Bogen (× cineK), Kran und Atmen des
+// Abstands; nach einem Flug schon `land` s nach der Landung (die Kamera kommt nie ganz zur Ruhe)
+const CINE = { ramp: 5, orbit: 0.012, crane: 0.05, breathe: 0.025, land: 1.2 };
 // Kino im Flug, eine Welle über die ganze Fahrt (sin² der Fahrzeit): fov = Blickwinkel weitet sich im schnellsten Teil (Warp),
 // vig = Vignette zieht an; bank = Rollen in die Kurve (rad je rad/s Gieren, höchstens max, Glättung tau s)
 // (User 28.10.2026: Kurven weicher – Rollen schwächer und träger)
@@ -197,7 +197,8 @@ function fit(lv) {
   const W = window.innerWidth, H = window.innerHeight;
   const c = stageCenter(), r = hud.stageRect();
   const k = Math.max(1, STAGE_REF / Math.max(0.1, Math.min(r.x1 - r.x0, r.y1 - r.y0) / H));
-  lv.camera.fov = Math.min(FOV_MAX, 2 * THREE.MathUtils.radToDeg(Math.atan(Math.tan(THREE.MathUtils.degToRad(lv.baseFov) / 2) * k)));
+  const fov = lv.baseFov * settings.S.fovK;   // Einstellung „Blickwinkel“
+  lv.camera.fov = Math.min(FOV_MAX, 2 * THREE.MathUtils.radToDeg(Math.atan(Math.tan(THREE.MathUtils.degToRad(fov) / 2) * k)));
   lv.camera.aspect = W / H;
   lv.camera.setViewOffset(W, H, W / 2 - c.x, H / 2 - c.y, W, H);
   lv.camera.updateProjectionMatrix();
@@ -214,6 +215,8 @@ function resize() {
   const pr = renderer.getPixelRatio();
   post.setSize(Math.round(window.innerWidth * pr), Math.round(window.innerHeight * pr));
   for (const lv of state.levels.values()) fit(lv);
+  // im Flug: Warp rechnet relativ zum Blickwinkel vor der Fahrt – neuen Grundwert übernehmen, sonst springt er bei der Landung zurück
+  if (state.chain) for (const c of state.chain.cams) c.fov = c.lv.camera.fov;
   sizeOpener();
 }
 
@@ -369,6 +372,14 @@ function neighbours(id) {
   return [id, m.parent, ...kids].filter(Boolean);
 }
 
+// Steuerung nach Einstellungen → Kamera: Dreh- und Zoomtempo (Pinch; Mausrad in _handleMouseWheel), Nachlauf beim Loslassen
+const DAMP = { short: 0.12, normal: 0.05, long: 0.025 };
+function camTune(c) {
+  c.rotateSpeed = 0.5 * settings.S.rotK;
+  c.zoomSpeed = 0.8 * settings.S.zoomK;
+  c.dampingFactor = DAMP[settings.S.inertia];
+}
+
 function activate(lv) {
   state.follow = null;
   state.id = lv.id;
@@ -378,9 +389,7 @@ function activate(lv) {
   if (state.controls) state.controls.dispose();
   const c = new OrbitControls(lv.camera, canvas);
   c.enableDamping = true;
-  c.dampingFactor = 0.05;
-  c.rotateSpeed = 0.5;
-  c.zoomSpeed = 0.8;
+  camTune(c);
   // Rechte Maustaste (Touch: zwei Finger) verschiebt das Blickziel wie im Digital Twin von UX Robot; das Tempo wächst mit dem
   // Abstand zum Ziel, passt also zur Stationsgröße. Der Versatz gilt nur hier: unten setzt target auf das Ziel der Station.
   c.enablePan = true;
@@ -392,7 +401,7 @@ function activate(lv) {
   state.zoomV = 0;
   if (c._handleMouseWheel) c._handleMouseWheel = (ev) => {
     const dy = THREE.MathUtils.clamp(ev.deltaY, -WHEEL.maxDelta, WHEEL.maxDelta);
-    state.zoom = THREE.MathUtils.clamp(state.zoom + WHEEL.notch * dy / 100, -WHEEL.max, WHEEL.max);
+    state.zoom = THREE.MathUtils.clamp(state.zoom + WHEEL.notch * settings.S.zoomK * dy / 100, -WHEEL.max, WHEEL.max);
   };
   // Ziehen gleichmäßig: OrbitControls rechnet bei jedem Zeiger-Ereignis zusätzlich einen Dämpfungsschritt – je nach Zahl der
   // Ereignisse im Bild dreht die Kamera ein- oder zweimal so weit und bremst beim Loslassen auf die Hälfte. Hier rechnet
@@ -860,7 +869,7 @@ function hop() {
 
 // Stärke der Kino-Effekte im Flug (0 … 1): eine Welle über die ganze Fahrt, „Ruhig“ halb, „Aus“/reduzierte Bewegung nichts
 function flightFx(ch) {
-  return still() ? 0 : Math.pow(Math.sin(Math.PI * ch.t), 2) * (calm() ? 0.5 : 1);
+  return still() ? 0 : Math.pow(Math.sin(Math.PI * ch.t), 2) * (calm() ? 0.5 : 1) * settings.S.flyFx;
 }
 const _fw = new THREE.Vector3(), _rt = new THREE.Vector3();
 // Rollen in die Kurve: Gierrate des Blicks (nach lookAt, ohne Rollen) geglättet → Drehung um die Blickachse; k blendet aus
@@ -870,7 +879,8 @@ function bank(lv, dt, k) {
   const b = lv.bank || (lv.bank = { f: _fw.clone(), roll: 0 });
   const yaw = dt > 0 ? _rt.set(1, 0, 0).applyQuaternion(cam.quaternion).dot(_fw.clone().sub(b.f)) / dt : 0;
   b.f.copy(_fw);
-  const want = THREE.MathUtils.clamp(-yaw * FLYFX.bank, -FLYFX.max, FLYFX.max) * k;
+  const g = settings.S.flyFx;   // Einstellung „Kino-Effekte im Flug“
+  const want = THREE.MathUtils.clamp(-yaw * FLYFX.bank * g, -FLYFX.max * g, FLYFX.max * g) * k;
   b.roll += (want - b.roll) * (1 - Math.exp(-dt / FLYFX.tau));
   cam.rotateZ(b.roll * k);
 }
@@ -961,7 +971,7 @@ function stepTransition(dt) {
     warp(ch, 0);
     state.chain = null;
     // Leerlauf-Fahrt setzt bald nach der Landung weich ein
-    state.cine.idle = CINE.delay - CINE.land;
+    state.cine.idle = settings.S.cineDelay - CINE.land;
     hud.setFlight(false);
     hud.hideMarkers(false);
     if (state.wish && state.wish !== state.id) goTo(state.wish);
@@ -1103,13 +1113,13 @@ function cineApply(lv, dt) {
   const ci = state.cine;
   ci.idle += dt;
   const on = !calm() && settings.S.cine && !state.dragging && !hud.reading();   // offene Info-Karte: Bild ruht
-  ci.w = on ? Math.min(1, Math.max(0, ci.w + (ci.idle > CINE.delay ? dt / CINE.ramp : -dt))) : Math.max(0, ci.w - dt);
+  ci.w = on ? Math.min(1, Math.max(0, ci.w + (ci.idle > settings.S.cineDelay ? dt / CINE.ramp : -dt))) : Math.max(0, ci.w - dt);
   if (ci.w <= 0) return;
   const c = state.controls;
   const k = ci.w * ci.w * (3 - 2 * ci.w);
   const t = state.time;
   // langsamer Bogen über die Steuerung (bleibt nach Eingriff erhalten), Kran und Atmen nur als Versatz
-  const sp = (lv.orbit && lv.orbit.cineSpeed) || 1;
+  const sp = ((lv.orbit && lv.orbit.cineSpeed) || 1) * settings.S.cineK;
   const off = lv.camera.position.clone().sub(c.target);
   off.applyAxisAngle(c.object.up, -CINE.orbit * sp * k * dt * 6);
   lv.camera.position.copy(c.target).add(off);
@@ -1342,6 +1352,8 @@ const hud = createHud({
 
 onSettings((keys) => {
   if (keys.includes('quality')) applyQuality();
+  if (keys.includes('fovK')) resize();
+  if (state.controls && keys.some((k) => ['rotK', 'zoomK', 'inertia'].includes(k))) camTune(state.controls);
   if (keys.includes('motion') && still()) cineUndo(state.active);
   for (const lv of state.levels.values()) if (lv.setMotion) lv.setMotion(settings.S.motion, reducedSys);
 });

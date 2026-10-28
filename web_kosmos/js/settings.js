@@ -38,6 +38,11 @@ const MW_STYLES = [['auge', 'Auge', { mwGain: 0.6, mwCon: 0.9, mwBlack: 0.1, mwC
 Object.assign(DEFAULTS, MW);
 CHOICES.mwSrc = ['model', 'photo'];
 const mwStyleOn = (S, id) => Object.entries(MW_STYLES.find(([k]) => k === id)[2]).every(([k, v]) => Math.abs(S[k] - v) < 1e-6);
+// Kamera (main.js): Blickwinkel, Dreh-/Zoomtempo und Nachlauf der Steuerung, Leerlauf-Fahrt, Kino-Effekte im Flug
+const CAM = { fovK: 1, rotK: 1, zoomK: 1, inertia: 'normal', cineDelay: 3, cineK: 1, flyFx: 1 };
+const CAM_RANGE = { fovK: [0.6, 1.6], rotK: [0.25, 3], zoomK: [0.25, 3], cineDelay: [1, 30], cineK: [0.25, 4], flyFx: [0, 2] };
+Object.assign(DEFAULTS, CAM);
+CHOICES.inertia = ['short', 'normal', 'long'];
 
 function clean(raw) {
   const S = { ...DEFAULTS };
@@ -56,7 +61,7 @@ function clean(raw) {
   S.barsH = Math.min(2, Math.max(0.5, S.barsH));
   S.lensAmt = Math.min(5, Math.max(0, S.lensAmt));
   if (![0, 30, 60].includes(S.fpsCap)) S.fpsCap = 0;
-  for (const [k, [lo, hi]] of Object.entries({ ...MW_RANGE, ...LIGHT_RANGE })) S[k] = Math.min(hi, Math.max(lo, S[k]));
+  for (const [k, [lo, hi]] of Object.entries({ ...MW_RANGE, ...LIGHT_RANGE, ...CAM_RANGE })) S[k] = Math.min(hi, Math.max(lo, S[k]));
   return S;
 }
 
@@ -190,7 +195,18 @@ const GROUPS = [
     ['axes', TOG('axes', 'Drehachsen der Planeten und Monde') + NOTE('Linie über Nord- und Südpol jedes Planeten und Mondes, neigt und dreht sich mit dem Körper. Nordpol eisblau, Südpol grau.'), 'bodies'],
     ['small', RANGE('small', 'Größe der Symbole', 1, 12, 0.5, '×') + NOTE('Satelliten, Trümmer und Asteroiden als vergrößerte Symbole – je größer, desto weniger Objekte (4× → jedes achte); 1× zeigt alle als Lichtpunkte.'), 'sym']] },
   { id: 'cam', icon: 'cam', title: 'Kamera &amp; Bewegung', rows: [['motion', SEG('motion', 'Bewegung', [['full', 'Voll'], ['calm', 'Ruhig'], ['off', 'Aus']]) + NOTE('„Aus“ wirkt wie „Bewegung reduzieren“ im System: keine Fahrt von selbst, Wechsel als kurze Überblendung.')],
-    ['cine', TOG('cine', 'Kamerafahrt im Leerlauf')], ['dive', RANGE('dive', 'Flugdauer', 1, 15, 0.1, 's')]] },
+    SUB('Steuerung'),
+    ['fovK', RANGE('fovK', 'Blickwinkel', 0.6, 1.6, 0.05, '×') + NOTE('Über 1× zeigt mehr vom Raum wie ein Weitwinkel, unter 1× rückt die Szene heran wie ein Teleobjektiv.')],
+    ['rotK', RANGE('rotK', 'Drehtempo', 0.25, 3, 0.05, '×') + NOTE('Wie weit die Kamera beim Ziehen mit Maus oder Finger dreht.')],
+    ['zoomK', RANGE('zoomK', 'Zoomtempo', 0.25, 3, 0.05, '×') + NOTE('Mausrad und Zoom mit zwei Fingern.')],
+    ['inertia', SEG('inertia', 'Nachlauf', [['short', 'Kurz'], ['normal', 'Normal'], ['long', 'Lang']]) + NOTE('Wie lange die Kamera nach dem Loslassen weitergleitet.')],
+    SUB('Leerlauf-Fahrt'),
+    ['cine', TOG('cine', 'Kamerafahrt im Leerlauf')],
+    ['cineDelay', RANGE('cineDelay', 'Start nach', 1, 30, 1, 's') + NOTE('Zeit ohne Eingabe, bis die Fahrt einsetzt.')],
+    ['cineK', RANGE('cineK', 'Tempo der Fahrt', 0.25, 4, 0.05, '×')],
+    SUB('Flug zwischen Stationen'),
+    ['dive', RANGE('dive', 'Flugdauer', 1, 15, 0.1, 's')],
+    ['flyFx', RANGE('flyFx', 'Kino-Effekte im Flug', 0, 2, 0.05, '×') + NOTE('Blickwinkel weitet sich im schnellsten Teil, die Kamera neigt sich in die Kurve, der Rand dunkelt ab. 0× = ruhige Fahrt.')]] },
   { id: 'fx', icon: 'fx', title: 'Effekte', rows: [
     ['bloom', TOG('bloom', 'Überstrahlen (Bloom)')], ['grain', TOG('grain', 'Filmkorn')],
     SUB('Linsenreflex'),
