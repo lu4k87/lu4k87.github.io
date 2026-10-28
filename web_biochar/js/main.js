@@ -1018,9 +1018,10 @@ window.addEventListener('keydown', (e) => {
 // Zurück/Vor im Browser während einer Fahrt: Wunsch merken, nach der Ankunft nachholen (stepTransition)
 window.addEventListener('hashchange', () => {
   const m = /ebene=(\d+)/.exec(location.hash);
-  if (!m) return;
-  state.wish = +m[1] - 1;
-  if (state.wish !== state.index) goTo(state.wish);
+  const i = Math.min(LOADERS.length - 1, Math.max(0, +m[1] - 1));
+  state.wish = i;
+  if (i !== state.index) goTo(i);
+  else if (!state.tr) state.wish = null;
 });
 window.addEventListener('resize', resize);
 
