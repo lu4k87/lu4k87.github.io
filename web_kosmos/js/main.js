@@ -593,13 +593,21 @@ function passPose(lv, A, down) {
 // opt.dur = feste Dauer der ganzen Fahrt (s), opt.opener = Fahrt des Auftakt-Films (sonst ist Navigation im Film gesperrt),
 // opt.home = Landung in der Heimpose des Ziels
 async function goTo(targetId, opt = {}) {
-  if (!STATIONS[targetId] || state.tr || state.chain || !state.active || targetId === state.id) return;
+  if (!Object.hasOwn(STATIONS, targetId) || state.tr || state.chain || !state.active || targetId === state.id) return;
   if (state.opener && !opt.opener) return;
   endIntro();
   const fromId = state.id, path = pathTo(fromId, targetId);
   hud.setRouteTarget(targetId);
   // alle Etappen gleich laden, damit die Fahrt ohne Halt durchläuft
-  const lvs = await Promise.all(path.map((id) => getLevel(id)));
+  const lvs = await Promise.all(path.map((id) => getLevel(id))).catch(() => null);
+  if (!lvs) {
+    // Nachladen gescheitert (Netz, Datei fehlt; buildLevel meldet den Grund): sagen statt still stehen, der nächste Klick baut neu
+    hud.setRouteTarget(null);
+    hud.notice('Station konnte nicht geladen werden – bitte noch einmal versuchen.');
+    state.wish = null;
+    history.replaceState(null, '', `${location.search}#station=${state.id}`);   // Adresse zeigt wieder die stehende Station
+    return;
+  }
   if (state.tr || state.chain || state.id !== fromId) return;
   state.queue = path;
   state.chain = planChain([state.active, ...lvs], opt.dur);
@@ -838,6 +846,8 @@ function stepTransition(dt) {
     state.cine.idle = CINE.delay - CINE.land;
     hud.setFlight(false);
     hud.hideMarkers(false);
+    if (state.wish && state.wish !== state.id) goTo(state.wish);
+    else state.wish = null;
     if (tour) tour.since = 0;
   }
 }
@@ -1231,9 +1241,13 @@ window.addEventListener('keydown', (ev) => {
   userInput();
 });
 window.addEventListener('resize', () => { hud.relayout(); resize(); });
+// Zurück/Vor im Browser während einer Fahrt: Wunsch merken, nach der Landung nachholen (stepTransition)
 window.addEventListener('hashchange', () => {
   const id = (location.hash.match(/station=(\w+)/) || [])[1];
-  if (id && id !== state.id) goTo(id);
+  if (!id || !Object.hasOwn(STATIONS, id)) return;
+  state.wish = id;
+  if (id !== state.id) goTo(id);
+  else if (!state.chain) state.wish = null;
 });
 canvas.addEventListener('pointerdown', (ev) => {
   if (state.opener) return skipOpener();
@@ -1257,8 +1271,8 @@ async function start() {
     // Auftakt-Film bei jedem Aufruf ohne Stations-Link und bei jedem Neuladen, danach steht Station 10; ohne Film wie
     // bisher: Stations-Link oder erste Station der Route, Kranfahrt in die Heimpose
     const reload = (performance.getEntriesByType('navigation')[0] || {}).type === 'reload';
-    const film = OPENER.on && !still() && (params.has('auftakt') ? params.get('auftakt') !== '0' : !tour && (!STATIONS[id] || reload));
-    const first = film ? OPENER.land : STATIONS[id] ? id : ROUTE[0];
+    const film = OPENER.on && !still() && (params.has('auftakt') ? params.get('auftakt') !== '0' : !tour && (!Object.hasOwn(STATIONS, id || '') || reload));
+    const first = film ? OPENER.land : Object.hasOwn(STATIONS, id || '') ? id : ROUTE[0];
     await bootLoad(first);
     const lv = await getLevel(first);
     activate(lv);

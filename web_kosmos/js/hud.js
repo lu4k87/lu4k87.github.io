@@ -956,7 +956,16 @@ export function createHud(h) {
 
   buildSearch();
   buildRail();
+  // Kurzmeldung in der Hinweiszeile unten in der Bühne (sichtbar auch im Flug und schmal), danach wieder der Hinweis
+  const hintEl = document.querySelector('.hint'), hintText = hintEl.textContent;
+  let noticeT = 0;
   return {
+    notice(text) {
+      clearTimeout(noticeT);
+      hintEl.textContent = text;
+      body.classList.add('is-notice');
+      noticeT = setTimeout(() => { body.classList.remove('is-notice'); hintEl.textContent = hintText; }, 6000);
+    },
     setStation, update, setOffer, stageRect, setFlight,
     // ohne Station: Titel sofort ausblenden (Auftakt-Film)
     caption: (st, opening) => { if (st) showCaption(st, opening); else { caption.classList.remove('is-on'); clearTimeout(capTimer); } },

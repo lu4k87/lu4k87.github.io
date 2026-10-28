@@ -242,6 +242,8 @@ body.is-flying .flight { opacity: 1; }
   text-shadow: 0 1px 3px #000; transition: opacity 0.6s;
 }
 body.is-flying .hint, body.is-intro .hint { opacity: 0; }
+/* Kurzmeldung (hud.notice): oben in der Bühne statt unten (dort liegt der Zeitraffer), schlägt tl-on/Flug/schmal */
+body.is-notice .stage > .hint { opacity: 1; display: block; top: 4px; bottom: auto; width: max-content; max-width: calc(100% - 32px); white-space: normal; text-align: center; text-wrap: balance; padding: 7px 14px; color: var(--ink); background: rgba(5, 8, 14, 0.72); border-radius: var(--radius); }
 /* Auftakt läuft: dezenter Hinweis unten mittig, blendet nach dem Start ein und mit dem Überspringen aus (Klick geht zum Canvas) */
 .skip-cue {
   position: fixed; left: 50%; bottom: 7vh; z-index: 2; transform: translateX(-50%); margin: 0; white-space: nowrap; pointer-events: none;
