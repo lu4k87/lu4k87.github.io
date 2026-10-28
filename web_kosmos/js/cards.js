@@ -316,7 +316,7 @@ export const CARDS = {
   'solar.saturn': { g: 'rings', f: [
     { v: '137.000', u: 'km', l: 'Außenkante A-Ring vom Mittel­punkt', s: 'nasa-saturn' },
     { v: '0,69', u: 'g/cm³', l: 'Dichte, geringer als Wasser', s: 'nasa-planets' },
-    { v: '274', u: '', l: 'bestätigte Monde (2025)', s: 'nasa-moons' }] },
+    { v: '274', u: '', l: 'bestätigte Monde (2025)', s: 'jpl-sat-discovery' }] },
 };
 
 // ---------- Aufbau der Karte ----------

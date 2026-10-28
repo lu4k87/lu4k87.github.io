@@ -35,7 +35,7 @@ export default {
       { l: 'Oberfläche', v: 0.005772, t: '0,006' },
     ] }],
     cap: 'Von innen nach außen wird die Sonne erst kühler, dann wieder heißer: Über der 5.772 K warmen Oberfläche hat die Korona Millionen Grad. Wie sie so heiß wird, misst unter anderem Parker Solar Probe.',
-    s: ['nasa-sun', 'nasa-sun-facts', 'nasa-psp'],
+    s: ['nasa-sun', 'delzanna-2018', 'fox-2016'],
   },
   'solar.belt': {
     k: 'range', min: 2.3, max: 3.4, step: 0.5, u: 'AE', alt: 'Kirkwood-Lücken im Asteroidengürtel bei 2,50, 2,82, 2,96 und 3,28 AE',
@@ -81,7 +81,7 @@ export default {
       { d: '2024-10-15', t: '15. Okt.', l: 'Maximumsphase', l2: 'verkündet', hl: true },
     ],
     cap: 'Zyklus 25 vom Minimum bis zur Maximumsphase, verkündet von NASA und NOAA. Die Fachleute erwarteten, dass sie noch etwa ein Jahr anhält.',
-    s: ['nasa-cycle25', 'nasa-solarmax'],
+    s: ['silso-2025', 'nasa-solarmax'],
   },
   'sun.spots': {
     k: 'bars', alt: 'Temperatur und Abstrahlung eines Sonnenflecks im Vergleich zur Umgebung',
@@ -110,7 +110,7 @@ export default {
       { l: 'Oberfläche', v: 5772, t: '5.772' },
     ] }],
     cap: 'Linear aufgetragen: Neben der Millionen Grad heißen Korona ist das Plasma der Protuberanz kaum zu sehen – es ist rund hundertmal kühler und hängt, vom Magnetfeld getragen, mitten in ihr.',
-    s: ['parenti-2014', 'nasa-sun-facts', 'nasa-sun'],
+    s: ['parenti-2014', 'delzanna-2018', 'nasa-sun'],
   },
   'sun.filament': {
     k: 'bars', alt: 'Typische Höhe und Breite eines Filaments im Vergleich zum Erddurchmesser',
@@ -131,7 +131,7 @@ export default {
       { v: 6.1, t: '1,3 Mio. K', l: '193 Å' },
     ],
     cap: 'Jeder SDO-Kanal zeigt Gas einer bestimmten Temperatur (logarithmische Skala). Im Kanal 193 Å sind koronale Löcher dunkel: Dort fehlt das 1,3 Mio. K heiße Plasma, weil es über offene Feldlinien als schneller Sonnenwind abströmt.',
-    s: ['sdo-channels', 'nasa-sun-facts', 'nasa-sun'],
+    s: ['sdo-channels', 'delzanna-2018', 'nasa-sun'],
   },
   'sun.flare': {
     k: 'bars', alt: 'Laufzeit zur Erde: Licht eines Flares und koronale Massenauswürfe mit 3.000 und 250 Kilometern je Sekunde',
@@ -210,14 +210,14 @@ export default {
       { l: 'Bennu', v: 121.6, t: '121,6', hl: true },
     ] }],
     cap: 'Die größte Probe, die je von einem Asteroiden zur Erde kam: doppelt so viel wie das Mindestziel der Mission und gut zwanzigmal so viel, wie die japanische Sonde Hayabusa2 von Ryugu mitbrachte.',
-    s: ['nasa-orex-mass', 'yada-2022'],
+    s: ['lauretta-2017', 'yada-2022'],
   },
   'asteroid.bennu-ejecta': {
     k: 'range', min: 0, max: 350, step: 50, u: 'cm/s', alt: 'Startgeschwindigkeit der Steinchen von Bennu, 5 bis über 300 Zentimeter je Sekunde, und Fluchtgeschwindigkeit 20 Zentimeter je Sekunde',
     span: [5, 300], spanL: 'Startgeschwindigkeit',
     marks: [{ v: V_ESC, t: `${fmt(V_ESC)} cm/s`, l: 'Fluchtgeschwindigkeit', ref: true }, { v: 300, t: 'über 3 m/s', l: 'schnellste' }],
     cap: 'Die Steinchen, unter 1 bis etwa 10 cm groß, starten mit 5 cm/s bis über 3 m/s. Bennu ist so leicht, dass rund 20 cm/s zum Entkommen reichen (eigene Rechnung aus Masse und Radius): Langsame fallen zurück oder kreisen, schnelle fliegen davon.',
-    s: ['lauretta-2019', 'scheeres-2019', 'nssdc-asteroids'],
+    s: ['lauretta-2019', 'scheeres-2019', 'veverka-2000'],
   },
   'asteroid.eros-shape': {
     k: 'scale', h: 60, alt: 'Eros, der Marsmond Phobos und Bennu maßstäblich nebeneinander',
@@ -227,7 +227,7 @@ export default {
       { l: 'Bennu', a: 0.49, t: '0,49 km' },
     ],
     cap: 'Maßstäblich nebeneinander: Eros ist etwas länger als der Marsmond Phobos, aber deutlich schlanker, und dreht sich in 5,27 Stunden einmal. Bennu wäre in diesem Maßstab nur ein Punkt.',
-    s: ['nssdc-asteroids', 'nasa-phobos'],
+    s: ['veverka-2000', 'nasa-phobos'],
   },
   'asteroid.eros-near': {
     k: 'timeline', alt: 'Zeitleiste der Raumsonde NEAR Shoemaker vom Start 1996 bis zur Landung auf Eros 2001',
@@ -239,6 +239,6 @@ export default {
       { d: '2001-02-12', t: 'Feb. 2001', l: 'Landung', l2: 'als erste Sonde', hl: true },
     ],
     cap: 'Ein abgebrochenes Bremsmanöver verzögerte die Ankunft bis zum 14. Februar 2000. Am 12. Februar 2001 setzte die Sonde im „Sattel“ von Eros auf – als erste auf einem Asteroiden.',
-    s: ['nssdc-near', 'nasa-eros'],
+    s: ['nssdc-near', 'veverka-2001'],
   },
 };

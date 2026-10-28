@@ -63,7 +63,7 @@ const ARRAYS = (on) => ({
   cap: on === 'iss'
     ? 'Acht Flügel, je 34 × 12 m, liefern zusammen 75 bis 90 kW. Von Spitze zu Spitze messen sie mehr als die Flügel des größten Passagierflugzeugs.'
     : 'Wentians zwei Flügel, je knapp 30 m lang und rund 110 m² groß, spannen über 55 m – gut halb so weit wie die Solarflügel der ISS.',
-  s: ['nasa-iss', 'space-wentian-arrays'],
+  s: ['nasa-iss', 'cast-wentian-2022'],
 });
 
 const MODULES = (on) => ({
@@ -77,7 +77,7 @@ const MODULES = (on) => ({
     ] },
   ],
   cap: 'Die beiden Labore sind etwas länger als das Kernmodul Tianhe; quer an dessen Knoten bilden sie das T der Station. Wentian ist 4,2 m dick.',
-  s: ['spacechina-wentian', 'space-mengtian', 'space-tiangong'],
+  s: ['spacechina-wentian', 'space-mengtian', 'yan-2022'],
 });
 
 // Bemannte Landungen (NSSDCA, Landedatum UT)
@@ -200,7 +200,7 @@ export default {
       { t: 'Ganze Station', u: 't', items: [{ l: 'ISS', v: 420 }, { l: 'Tiangong', v: 90, t: '≈ 90', hl: true }] },
     ],
     cap: 'Tianhe ist etwas schwerer als die russischen Grundmodule der ISS. Die ganze Tiangong wiegt ein Fünftel der ISS.',
-    s: ['space-tiangong', 'dlr-iss', 'nasa-iss'],
+    s: ['yan-2022', 'dlr-iss', 'nasa-iss'],
   },
   'tiangong.hub': {
     k: 'timeline', alt: 'Zeitleiste des Aufbaus von Tiangong: April 2021 bis November 2022',
@@ -212,7 +212,7 @@ export default {
       { d: '2022-11-05', t: 'Nov. 2022', l: 'T-Form', l2: 'komplett', hl: true },
     ],
     cap: 'Aufbau in anderthalb Jahren: erst das Kernmodul mit dem Andockknoten, dann die beiden Labore, die seitlich daran festmachen. Am Knoten legen auch Shenzhou und Tianzhou an.',
-    s: ['space-tiangong', 'globaltimes-wentian', 'space-mengtian'],
+    s: ['yan-2022', 'cast-wentian-2022', 'space-mengtian'],
   },
   'tiangong.wentian': MODULES('wentian'),
   'tiangong.mengtian': MODULES('mengtian'),
@@ -223,7 +223,7 @@ export default {
       { l: 'Canadarm2 (ISS)', v: 17.6 }, { l: 'großer Arm', v: 10, t: '≈ 10', hl: true }, { l: 'kleiner Arm', v: 5 },
     ] }],
     cap: 'Canadarm2 nach DLR. Der kleine Arm an Wentians Schleuse misst 5 m und ist halb so lang wie der große auf dem Kernmodul – der kommt damit auf rund 10 m (eigene Rechnung).',
-    s: ['dlr-iss', 'globaltimes-wentian'],
+    s: ['dlr-iss', 'cast-wentian-2022'],
   },
   'tiangong.horizon': HORIZON('tiangong'),
   'tiangong.below': {
@@ -317,7 +317,7 @@ export default {
     groups: [{ t: 'Schatten einer 1 km hohen Wand', u: 'km', items: [5, 10, 20, 45].map((e) => (
       { l: `Sonne ${e}° hoch`, v: shadow(e), hl: e === 5 })) }],
     cap: 'Eigene Rechnung: Schattenlänge = Höhe ÷ tan(Sonnenhöhe). Nahe der Schattengrenze steht die Sonne tief, Wände und Zentralberge werfen elfmal längere Schatten als bei 45° – das Relief tritt hervor.',
-    s: ['nasa-moon-phases'],
+    s: ['nasa-moon'],
   },
   'moon.imbrium': {
     k: 'range', min: 1, max: 4.5, step: 0.5, u: 'Mrd. Jahre', alt: 'Alter der Lava in den Mondmeeren: 4,2 bis 1,2 Milliarden Jahre',
@@ -348,7 +348,7 @@ export default {
     k: 'scale', alt: 'Südpol-Aitken-Becken maßstäblich zum Monddurchmesser',
     items: [{ l: 'Mond', a: 2 * R_M, c: 2600, cl: 'Südpol-Aitken 2.600 km', t: `Ø ${de0(2 * R_M)} km` }],
     cap: 'Größe maßstäblich, Lage schematisch: Das Becken liegt auf der südlichen Rückseite und ist drei Viertel so breit wie der ganze Mond – das größte Einschlagbecken des Mondes.',
-    s: ['nasa-spa', 'nasa-moon'],
+    s: ['garrick-bethell-2009', 'nasa-moon'],
   },
   'moon.farside': {
     k: 'timeline', alt: 'Zeitleiste der Mondrückseite: erste Fotos 1959, erste Menschen 1968, erste Landung 2019',

@@ -52,7 +52,7 @@ export default {
       { l: 'Mount Everest', h: 8.848, t: '8,8 km', sub: 'über dem Meer' },
     ],
     cap: 'Höhen maßstäblich, Breiten schematisch. Die Grundfläche von Olympus Mons ist so groß wie der US-Bundesstaat Arizona.',
-    s: ['nasa-mars-facts', 'usgs-hawaii'],
+    s: ['plescia-2004', 'usgs-hawaii'],
   },
   'mars.valles': {
     k: 'bars', alt: 'Valles Marineris und Grand Canyon: Länge, Breite und Tiefe im Vergleich',
@@ -62,7 +62,7 @@ export default {
       { t: 'Tiefe', u: 'km', items: [{ l: 'Valles Marineris', v: 9.3, t: '9,3 (größte)', hl: true }, { l: 'Grand Canyon', v: 1.6, t: '1,6 (mittel)' }] },
     ],
     cap: 'Grand Canyon: Länge entlang des Colorado, größte Breite von Rand zu Rand, mittlere Tiefe (National Park Service).',
-    s: ['nasa-mars-facts', 'nps-grca'],
+    s: ['plescia-2004', 'nps-grca'],
   },
   'mars.caps': {
     k: 'polar', edge: 50, grid: [80, 70, 60], alt: 'Nordpol des Mars von oben: Reifkappe aus Kohlendioxid bis 55° Breite',

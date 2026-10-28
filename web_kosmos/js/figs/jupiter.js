@@ -76,7 +76,7 @@ const OCEANS = (on) => ({
     ] },
   ],
   cap: `Wasser als Kugelschale gerechnet (eigene Rechnung): Europa mit 20 km Eis über 100 km Ozean (Mitte der NASA-Schätzungen), Ganymed mit 100 km Ozean unter 150 km Eis (Hubble). Europa hätte gut doppelt, Ganymed über fünfmal so viel Wasser wie alle Meere der Erde.`,
-  s: ['nasa-europa-poster', 'hst-ganymede-2015', 'nssdc-jovsat', 'usgs-water', 'noaa-depth'],
+  s: ['nasa-europa-poster', 'saur-2015', 'nssdc-jovsat', 'charette-2010', 'noaa-depth'],
 });
 const CHAOS = {
   k: 'range', min: 0, max: 40, step: 10, u: 'km', alt: 'Tiefe unter Europas Oberfläche: Wasserlinsen ab rund 3 km, Unterkante des Eispanzers bei 15 bis 25 km',
@@ -95,7 +95,7 @@ const LINES = (on) => ({
     { l: 'Sidon Flexus', v: 1133, hl: on === 'sidon' },
   ] }],
   cap: `Uruk Sulcus liegt auf Ganymed, Minos, Agenor und Sidon auf Europa, Valles Marineris auf Mars zum Vergleich. Für Sidon Flexus nennt das Gazetteer die Ausdehnung des Bogenzugs. Europas ganzer Umfang misst ${n(2 * Math.PI * GALILEAN.europa.r)} km (eigene Rechnung).`,
-  s: ['usgs-gazetteer', 'usgs-europa-names', 'usgs-sidon', 'nasa-mars-facts', 'nssdc-jovsat'],
+  s: ['usgs-gazetteer', 'usgs-europa-names', 'usgs-sidon', 'plescia-2004', 'nssdc-jovsat'],
 });
 const RAYS = (on) => ({
   k: 'scale', h: 80, alt: 'Drei junge Krater mit hellen Strahlen maßstäblich: Osiris auf Ganymed, Burr auf Kallisto, Pwyll auf Europa',
@@ -295,7 +295,7 @@ export default {
     span: [0, 2], spanL: 'mit Ozean',
     marks: [{ v: 2, t: '2°', l: 'gemessen (Hubble)' }, { v: 6, t: '6°', l: 'ohne Ozean (Modell)', ref: true }],
     cap: 'Ändert Jupiters Feld seine Richtung, kippen Ganymeds Polarlicht-Ovale hin und her. Ein leitender Salzwasser-Ozean bremst das: Ohne Ozean wären 6° zu erwarten, Hubble maß nur 2° – der bisher beste Beleg für den Ozean.',
-    s: ['hst-ganymede-2015'],
+    s: ['saur-2015'],
   },
   'ganymede.ocean': OCEANS('ganymede'),
   'ganymede.juice': MISSIONS('juice'),

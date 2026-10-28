@@ -19,7 +19,7 @@ const MIRRORS = (on) => ({
     { l: 'Euclid', v: 1.2, t: '1,2', hl: on === 'euclid' },
   ] }],
   cap: 'Die Sammelfläche wächst mit dem Quadrat des Durchmessers: Webb sammelt gut fünfmal so viel Licht wie Hubble (eigene Rechnung, ohne Abschattung). Roman hat einen Spiegel wie Hubble, sieht aber ein viel größeres Feld auf einmal.',
-  s: ['nasa-webb-facts', 'nasa-hubble-numbers', 'wiki-roman', 'esa-euclid'],
+  s: ['nasa-webb-facts', 'nasa-hubble-numbers', 'stsci-roman-wfi', 'esa-euclid'],
 });
 
 const SKY = (on) => ({
@@ -52,7 +52,7 @@ const SENSORS = (on) => ({
     { l: 'Euclid NISP', v: 65, hl: on === 'nisp' },
   ] }],
   cap: 'VIS misst sichtbares Licht mit CCDs, WFI und NISP messen im nahen Infrarot mit Detektoren aus Quecksilber-Cadmium-Tellurid. Mehr Bildpunkte heißen hier vor allem: mehr Himmel auf einmal.',
-  s: ['wiki-euclid', 'wiki-roman'],
+  s: ['mellier-2025', 'stsci-roman-wfi'],
 });
 
 const DATA = (on) => ({
@@ -63,7 +63,7 @@ const DATA = (on) => ({
     { l: 'Hubble', v: 1, hl: on === 'hubble' },
   ] }],
   cap: 'Wissenschaftsdaten je Sekunde. Euclid sendet täglich rund vier Stunden, zusammen 850 Gigabit; Hubble im Mittel 150 Gigabit in der Woche.',
-  s: ['wiki-roman', 'wiki-euclid', 'nasa-hubble-numbers'],
+  s: ['stsci-roman-wfi', 'mellier-2025', 'nasa-hubble-numbers'],
 });
 
 export default {
@@ -147,7 +147,7 @@ export default {
       { l: 'James Webb (MIRI)', v: 28.5, t: '28,5', hl: true }, { l: 'Roman', v: 2.3, t: '2,3' }, { l: 'Euclid (NISP)', v: 2.02, t: '2,02' },
     ] }],
     cap: 'Langwelliges Infrarot zeigt kühle Staubwolken und sehr ferne Galaxien, deren Licht durch die Ausdehnung des Alls gedehnt ist. Dafür muss das Teleskop selbst kalt sein: unter 50 K, MIRI unter 7 K.',
-    s: ['nasa-webb-facts', 'wiki-roman', 'wiki-euclid'],
+    s: ['nasa-webb-facts', 'stsci-roman-wfi', 'mellier-2025'],
   },
   'jwst.shield': {
     k: 'bars', alt: 'Größte Abmessung: Sonnenschild von Webb 21,2 m, Hubble 13 m, Euclid 4,7 m',
@@ -187,7 +187,7 @@ export default {
       { l: 'ganzer Himmel', v: 41253, t: '41.253' }, { l: 'weite Durchmusterung', v: 15000, t: '≈ 15.000', hl: true }, { l: 'drei tiefe Felder', v: 50 },
     ] }],
     cap: 'Ganzer Himmel als eigene Rechnung (4π im Bogenmaß). Die Milchstraße und die Ekliptik mit ihrem Staub bleiben ausgespart – darum reicht ein gutes Drittel.',
-    s: ['wiki-euclid', 'esa-euclid'],
+    s: ['mellier-2025', 'esa-euclid'],
   },
   'euclid.data': {
     k: 'timeline', alt: 'Zeitleiste Euclid: Start Juli 2023, Durchmusterung ab Februar 2024, Daten Q1 März 2025 und Q2 Juni 2026',
@@ -198,7 +198,7 @@ export default {
       { d: '2026-06-24', t: 'Juni 2026', l: 'Daten Q2', l2: 'Bulge der Milchstraße', hl: true },
     ],
     cap: 'Schnelldaten (Q) zeigen ausgewählte Felder vorab; die großen Datenfreigaben der Durchmusterung folgen in mehreren Stufen.',
-    s: ['esa-euclid', 'wiki-euclid', 'euclid-q2'],
+    s: ['esa-euclid', 'mellier-2025', 'euclid-q2'],
   },
   'euclid.earth': SKY('earth'),
   'euclid.moon': SKY('moon'),
@@ -217,7 +217,7 @@ export default {
       { d: '2026-10-14', t: '14.10.2026', l: 'scharfgestellt', l2: '63 nm statt 90 nm', hl: true },
     ],
     cap: 'Inbetriebnahme auf dem Weg nach L2; die Ankunft in der Bahn um L2 wird nach rund 100 Tagen erwartet, also Anfang Dezember 2026.',
-    s: ['nasa-roman-launch', 'wiki-roman'],
+    s: ['nasa-roman-launch', 'stsci-roman-wfi'],
   },
   'roman.earth': SKY('earth'),
   'roman.moon': SKY('moon'),

@@ -144,7 +144,7 @@ const OCEAN = (on) => ({
     { l: 'Marianengraben', v: 10.935, t: '10,9' },
   ] }],
   cap: 'Dicke der Eiskruste bis zum Ozean, gezeichnet bis zum oberen Wert; zum Vergleich die tiefste Stelle der Erdmeere (Challenger Deep). Am Südpol von Enceladus ist das Eis am dünnsten – dort steigen die Fontänen auf.',
-  s: ['nasa-titan-facts', 'nasa-enceladus', 'noaa-ocean-depth'],
+  s: ['fulchignoni-2005', 'cadek-2016', 'greenaway-2021'],
 });
 const ORBIT2 = (inner, outer, on) => ({
   k: 'orbit', l: 'Saturn', r: 60268, alt: `Bahnen von ${inner[0]} und ${outer[0]} um Saturn von oben, maßstäblich`,
@@ -234,7 +234,7 @@ export default {
       { v: 377400, l: 'Dione' }, { v: 527040, l: 'Rhea' },
     ],
     cap: 'Abstand vom Saturnmittelpunkt maßstäblich. Der E-Ring ist rund 300.000 km breit und so dünn (optische Tiefe 10⁻⁶), dass er nur im Gegenlicht auffällt. Enceladus kreist in seinem dichtesten Teil und speist ihn mit Eisstaub.',
-    s: ['nasa-saturn', 'nssdc-satsat', 'nasa-enceladus'],
+    s: ['nasa-saturn', 'nssdc-satsat', 'cadek-2016'],
   },
   'saturn.mimas': ORBIT2(['Mimas', 185520, '0,942'], ['Tethys', 294660, '1,888'], 'Mimas'),
   'saturn.tethys': {
@@ -266,7 +266,7 @@ export default {
       { t: 'Druck am Boden', u: 'Erde = 1', items: [{ l: 'Titan', v: 1.6, t: '1,6', hl: true }, { l: 'Erde', v: 1, t: '1,0' }] },
     ],
     cap: 'Titans Lufthülle reicht zehnmal so hoch wie die der Erde, am Boden ist der Druck 60 % höher – bei nur einem Siebtel der Schwerkraft (eigene Rechnung aus Masse und Radius).',
-    s: ['nasa-titan-facts', 'nssdc-satsat'],
+    s: ['fulchignoni-2005', 'nssdc-satsat'],
   },
   'titan.kraken': SEAS('kraken'),
   'titan.ligeia': SEAS('ligeia'),
@@ -279,7 +279,7 @@ export default {
       { d: '2034-11-01', t: 'Ende 2034', l: 'Dragonfly', l2: 'kommt an' },
     ],
     cap: 'Huygens landete drei Wochen nach der Trennung von Cassini; rund 70 Minuten kamen Daten vom Boden. Als Nächstes soll die Drohne Dragonfly über Dünen und den Krater Selk fliegen.',
-    s: ['esa-huygens-landing', 'nasa-huygens-site', 'nasa-dragonfly'],
+    s: ['lebreton-2005', 'nasa-huygens-site', 'nasa-dragonfly'],
   },
   'titan.menrva': {
     k: 'scale', h: 110, alt: 'Einschlagkrater auf Titan maßstäblich: Menrva, Selk, Sinlap, Ksa',
@@ -326,7 +326,7 @@ export default {
     span: [239, 450], spanL: 'entkommt',
     marks: [{ v: 239, t: '239 m/s', l: 'Fluchtgeschwindigkeit' }, { v: 400, t: '≈ 400 m/s', l: 'Fontäne' }],
     cap: 'Was schneller als 239 m/s aufsteigt, kehrt nicht zurück und speist den E-Ring – das Gas der Fontänen mit rund 400 m/s gehört dazu (Fluchtgeschwindigkeit eigene Rechnung aus Masse und Radius). Langsamere Eisteilchen fallen als Schnee zurück.',
-    s: ['nasa-enceladus', 'nssdc-satsat'],
+    s: ['cadek-2016', 'nssdc-satsat'],
   },
   'enceladus.ocean': OCEAN('enceladus'),
   'enceladus.saturn': SKY('enceladus'),
@@ -337,7 +337,7 @@ export default {
     pts: sample(SUN.uranus, 1940, 2070, 130),
     marks: [mark(SUN.uranus, V2_URANUS, 'Voyager 2'), mark(SUN.uranus, NOW, 'heute', undefined, true)],
     cap: 'Breite, über der die Sonne im Zenit steht (eigene Rechnung aus den JPL-Bahnelementen und dem IAU-Pol). Bei 97,77° Achsneigung wandert sie im 84-jährigen Uranusjahr bis über 82° Nord und Süd; Ende 2007 stand sie über dem Äquator.',
-    s: ['ura-nasa-facts', 'ura-nssdc', 'jpl-elements'],
+    s: ['ura-nssdc', 'ura-nssdc', 'jpl-elements'],
   },
   'uranus.rings': {
     k: 'rings', min: 0, max: 110000, step: 20000, u: 'Tsd. km', r: 25559, l: 'Uranus', alt: 'Ringe des Uranus radial maßstäblich, von den schmalen inneren Ringen bis zu ν und μ',
@@ -373,7 +373,7 @@ export default {
       { l: 'Grand Canyon', v: 447, t: '447' },
     ] }],
     cap: 'Die längsten Grabenbrüche sind etwa so lang, wie Titania breit ist. Grand Canyon: Länge entlang des Colorado.',
-    s: ['ura-nasa-titania', 'ura-nssdc-sat', 'nps-grca'],
+    s: ['herschel-1787', 'ura-nssdc-sat', 'nps-grca'],
   },
   'uranus.oberon': {
     k: 'rings', min: 0, max: 620000, step: 100000, u: 'Tsd. km', r: 25559, l: 'Uranus', alt: 'Abstand der fünf großen Uranusmonde maßstäblich mit Umlaufzeit',
@@ -406,9 +406,9 @@ export default {
       { t: 'Fall aus 10 km', u: 's', items: [{ l: 'Erde', v: 45, t: '45 s' }, { l: 'Miranda', v: 502, t: '502 s ≈ 8 min', hl: true }] },
     ],
     cap: 'Mirandas Schwerkraft ist über hundertmal schwächer als die der Erde (eigene Rechnung aus Masse und mittlerem Radius, ohne Luftwiderstand). Für 10 km bräuchte ein Stein über acht Minuten – daher die zehn Minuten von der höchsten Klippe.',
-    s: ['ura-nssdc-sat', 'nasa-earth', 'ura-nasa-miranda'],
+    s: ['ura-nssdc-sat', 'nasa-earth', 'smith-1986'],
   },
-  'miranda.north': { ...NIGHT(uraNight, '24.01.1986', 'Miranda'), s: ['ura-nasa-miranda', 'ura-nasa-3d', 'jpl-elements'] },
+  'miranda.north': { ...NIGHT(uraNight, '24.01.1986', 'Miranda'), s: ['smith-1986', 'ura-nasa-3d', 'jpl-elements'] },
 
   // ---------- 02F Neptun & Monde ----------
   'neptune.gds': {
@@ -418,7 +418,7 @@ export default {
       { l: 'Erde', a: 12756, t: '12.756 km' },
     ],
     cap: 'Der Sturm von 1989 maßstäblich neben der Erde. 1994 fand das Weltraumteleskop Hubble ihn nicht mehr.',
-    s: ['nep-pia00052', 'nasa-earth', 'nep-hubble-storms'],
+    s: ['nep-pia00052', 'nasa-earth', 'hammel-1995'],
   },
   'neptune.winds': {
     k: 'bars', alt: 'Windgeschwindigkeit auf Neptun im Vergleich zur Erde und zum Hexagon auf Saturn',
@@ -509,7 +509,7 @@ export default {
     span: [90, 180], spanL: 'rückläufig',
     marks: [{ v: 7.23, t: '7°', l: 'Nereid' }, { v: 157.35, t: '157°', l: 'Triton' }, { v: 174.8, t: '175°', l: 'Phoebe (Saturn)' }],
     cap: 'Bahnneigung gegen den Äquator des Planeten: über 90° heißt rückwärts. Unter den großen Monden läuft nur Triton so, sonst nur kleine Monde wie Phoebe am Saturn.',
-    s: ['nssdc-nepsat', 'nssdc-satsat', 'tri-nasa'],
+    s: ['nssdc-nepsat', 'nssdc-satsat', 'tryka-1993'],
   },
   'triton.geysers': {
     k: 'peaks', alt: 'Höhe der Geysir-Säulen auf Triton im Vergleich zum Mount Everest',
@@ -534,7 +534,7 @@ export default {
     span: [24, 38], spanL: 'Pluto (Boden)',
     marks: [{ v: 38, t: '38 K', l: 'Triton (−235 °C)' }, { v: 72, t: '72 K', l: 'Neptun (1 bar)', ref: true }],
     cap: 'Temperaturen in Kelvin (0 K = absoluter Nullpunkt). Tritons Oberfläche ist so kalt wie die wärmsten Stellen Plutos und über 30 Grad kälter als Neptuns Wolken.',
-    s: ['tri-nasa', 'nssdc-pluto', 'nep-fact'],
+    s: ['tryka-1993', 'nssdc-pluto', 'nep-fact'],
   },
   'triton.cantaloupe': {
     k: 'bars', alt: 'Auflösung der globalen Karten von Titan, Triton, Pluto und Enceladus',
@@ -545,13 +545,13 @@ export default {
     cap: 'Bildpunkt der globalen Karten, die Kosmos zeigt (kleiner = schärfer). Tritons Karte stammt allein vom Vorbeiflug von Voyager 2 im Jahr 1989 – das Cantaloupe-Terrain kennt man nur aus diesem einen Streifen.',
     s: ['tri-pia18668', 'usgs-titan-map', 'usgs-pluto', 'usgs-enceladus-map'],
   },
-  'triton.north': { ...NIGHT(triNight, '25.08.1989', 'Triton'), s: ['tri-nasa', 'tri-jpl', 'jpl-elements'] },
+  'triton.north': { ...NIGHT(triNight, '25.08.1989', 'Triton'), s: ['tryka-1993', 'nep-jpl-sats', 'jpl-elements'] },
   'triton.season': {
     k: 'curve', x0: 1600, x1: 2400, xstep: 200, y0: -60, y1: 60, ystep: 30, alt: 'Breite der Sonne im Zenit auf Triton von 1600 bis 2400',
     pts: sample(SUN.triton, 1600, 2400, 200),
     marks: [mark(SUN.triton, V2_NEPTUNE, 'Voyager 2', undefined, true)],
     cap: `Breite, über der die Sonne im Zenit steht (eigene Rechnung aus Tritons mittlerer Bahn und Neptuns Bahn, JPL). Weil sich Tritons Bahnebene in Jahrhunderten dreht, schwingt der Sonnenstand unregelmäßig bis rund 50° nach Süden und Norden; heute steht sie über ${ns(SUN.triton(NOW))}.`,
-    s: ['tri-nasa', 'tri-jpl', 'jpl-elements'],
+    s: ['tryka-1993', 'nep-jpl-sats', 'jpl-elements'],
   },
 
   // ---------- 02H Pluto ----------
@@ -571,7 +571,7 @@ export default {
       { l: 'Sputnik Planitia', v: 1000, t: '≈ 1.000' },
     ] }],
     cap: 'Cthulhu ist rund 3.000 km lang und 750 km breit und spannt damit zwei Fünftel des Äquators (Umfang eigene Rechnung aus dem Radius).',
-    s: ['nasa-cthulhu', 'nssdc-pluto', 'nasa-newhorizons'],
+    s: ['stern-2015', 'nssdc-pluto', 'nasa-newhorizons'],
   },
   'pluto.pole': {
     k: 'curve', x0: 1800, x1: 2100, xstep: 100, y0: -90, y1: 90, ystep: 45, alt: 'Breite der Sonne im Zenit auf Pluto von 1800 bis 2100',
