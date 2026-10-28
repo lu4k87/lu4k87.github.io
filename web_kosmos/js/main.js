@@ -31,6 +31,7 @@ const LOADERS = {
   asteroid: () => import('./levels/asteroid.js'),
   galaxy: () => import('./levels/galaxy.js'),
   orion: () => import('./levels/orion.js'),
+  butterfly: () => import('./levels/butterfly.js'),
   spider: () => import('./levels/spider.js'),
   crab: () => import('./levels/crab.js'),
   pulsar: () => import('./levels/pulsar.js'),
