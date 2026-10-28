@@ -792,6 +792,7 @@ body.fatal-webgl .fatal-webgl, body.fatal-start .fatal-start { display: block; }
   .measure { grid-template-columns: 1fr 1fr; }
   .measure div { min-height: 44px; padding: 5px 12px; }
   .caption { left: 0; right: 0; top: 16%; bottom: auto; padding: 0 16px; }
+  body.cfg-open .caption { visibility: hidden; }   /* Fenster in der Spalte reicht bis über die Bildmitte: Ankunftstitel weicht */
   .cap-title { font-size: clamp(30px, 9cqi, 44px); letter-spacing: 0.16em; padding-left: 0.16em; }
   .caption.is-on .cap-title { letter-spacing: 0.1em; padding-left: 0.1em; }
   .cap-sub { font-size: 15px; }
