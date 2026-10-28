@@ -125,12 +125,6 @@ body.is-flying .flight { opacity: 1; }
 @media (max-width: 480px) { #qk-full { display: none; } }
 .icon-btn--sm { width: 32px; height: 32px; flex: none; }
 .icon-btn--sm svg { width: 16px; height: 16px; }
-/* Schließen in Info-Karte und Station-Panel: flach wie die Kopfzeile statt runder Glas-Blase */
-:is(.hs-card-head, .st-head) .icon-btn {
-  border: 0; border-radius: 5px; background: none; box-shadow: none; -webkit-backdrop-filter: none; backdrop-filter: none;
-  color: var(--ink-soft); transition: background 0.2s, color 0.2s;
-}
-:is(.hs-card-head, .st-head) .icon-btn:hover { background: rgba(255, 255, 255, 0.06); color: var(--ink); }
 
 /* ---------- Stationsleiste: Band oben über die volle Breite (Vorschau 26.10.2026 „Stationsleiste oben“ Leiste:C, Baum-Panorama)
    Route mit fester Höhe --band-h (hud.js), darunter die Schublade mit Abstechern → Monden – beim Zeigen oder solange
