@@ -2,10 +2,10 @@
 // Einstellungen (Vorschau 28.10.2026 Fenster:C), umgeschaltet über die Knöpfe der Kopfleiste; die Station hat ein eigenes Panel links
 // am Rand (#station, Vorschau 28.10.2026 „Station-Panel links am Rand“ Menü:C), auf/zu über #btn-lay, ✕ oder Esc. Einstellungen: die Gruppen als quadratische
 // Kacheln mit Icon oben, darunter nur die gewählte Gruppe (User 28.10.2026); Fuß mit Geltung und „Alle zurücksetzen“.
-// Mini-Grafik je Zeile, geänderte Werte mit ↺ am Zeilenende. Regel (User 28.10.2026): hier steht nur, was an jeder Station wirkt –
-// Bild, Kamera & Bewegung, Effekte, Oberfläche (inkl. Bewegung der Info-Grafiken = cards.js `kosmos.figmotion.v1`), Leistung.
-// Was nur an einem Teil der Stationen wirkt (Licht und Schatten, Drehachsen, Linsenreflex, Sternhimmel, Milchstraße), steht als
-// gemeinsame Gruppe im Reiter Station (SHARED) – nur dort, wo es wirkt; der Wert gilt an allen Stationen der Gruppe.
+// Mini-Grafik je Zeile, geänderte Werte mit ↺ am Zeilenende. Regel (User 28.10.2026): hier steht jeder Wert, der für alle Stationen
+// gemeinsam gilt – auch wenn er nur an einem Teil der Stationen wirkt (Himmel, Milchstraße, Licht und Schatten, Planeten,
+// Linsenreflex). Zeilen ohne Wirkung an der aktuellen Station: ausgegraut, gesperrt, Hinweis „Wirkt hier nicht · nur …“ (WHERE,
+// applyNA). Das Panel Station zeigt nur Werte, die je Station gespeichert sind (layers.js).
 // `?cfg` (auch `?cfg=global`) zeigt die Einstellungen, `?cfg=lay` das Panel Station.
 // Gespeichert in localStorage `kosmos.settings.v1`; clean() prüft jeden Wert, damit kaputte Einträge nichts stören.
 
@@ -106,11 +106,14 @@ const RANGE = (key, label, min, max, step, unit, extra = '') => `
   <label class="b-row b-stack"><span class="b-top"><span class="cfg-label">${label}${extra}</span><span class="cfg-val"><output data-out="${key}"></output> <span class="cfg-unit">${unit}</span></span></span>
     <span class="b-track"><input type="range" data-key="${key}" min="${min}" max="${max}" step="${step}"></span></label>`;
 const NOTE = (text) => `<p class="cfg-note lay-hint">${nbsp(text)}</p>`;
-// Zeile = Bedienung + Hinweis darunter + ↺ „Standard“ am Zeilenende (nur bei geändertem Wert)
-const ROW = (key, html) => {
+// Zeile = Bedienung + Hinweis darunter + ↺ „Standard“ am Zeilenende (nur bei geändertem Wert); w = Wirkung (Schlüssel in WHERE):
+// an Stationen ohne Wirkung ausgegraut und gesperrt, darunter der Hinweis cfg-na (applyNA)
+const ROW = (key, html, w) => {
+  if (key === '#') return html;
   const i = html.indexOf('<p class="cfg-note'), [ctl, note] = i < 0 ? [html, ''] : [html.slice(0, i), html.slice(i)];
   const label = (ctl.match(/class="cfg-label"[^>]*>([^<]+)/) || [])[1] || '';
-  return `<div class="b-item">${ctl}${note}${key ? devLine(key, label) : ''}</div>`;
+  const na = w ? `<p class="cfg-na" hidden><b>Wirkt hier nicht</b> · nur ${nbsp(WHERE[w][1])}.</p>` : '';
+  return `<div class="b-item"${w ? ` data-w="${w}"` : ''}>${ctl}${note}${na}${key ? devLine(key, label) : ''}</div>`;
 };
 // Farblook als Bild-Kacheln: Farben aus Tönung, Belichtung und Vignette des jeweiligen Looks; „Station“ = vier Looks im Kreis
 const rgb = (b, t, e) => `rgb(${b.map((x, i) => Math.min(255, Math.round(x * t[i] * e))).join(',')})`;
@@ -119,27 +122,14 @@ const swatch = (g) => (g ? `background:radial-gradient(circle at 34% 62%, ${rgb(
 const LOOKS = `<div class="b-row b-stack"><span class="cfg-label" id="cfg-grade">Farblook</span>
   <div class="b-looks" role="radiogroup" aria-labelledby="cfg-grade">${GRADE_IDS.map((id, i) => `<button type="button" role="radio" data-key="grade" data-val="${id}"><span class="b-sw" style="${swatch(i ? GRADES[i - 1][1] : null)}"></span><span>${i ? GRADES[i - 1][0] : 'Je Station'}</span></button>`).join('')}</div></div>`
   + NOTE('„Je Station“ = jede Station behält ihren eigenen Look (die Sonne hat dafür einen eigenen Farblook); die anderen gelten überall.');
-const nRows = (g) => g.rows.length;
-// Reihenfolge: Bild, dann Bedienung
-const GROUPS = [
-  { id: 'look', icon: 'look', title: 'Bild', hero: true, rows: [['grade', LOOKS], ['exposure', RANGE('exposure', 'Belichtung', 0.25, 4, 0.05, '×')],
-    ['vig', RANGE('vig', 'Vignette', 0, 3, 0.05, '×')], ['bars', TOG('bars', 'Kinobalken 2,39:1')],
-    ['barsH', RANGE('barsH', 'Höhe der Kinobalken', 0.5, 2, 0.05, '×') + NOTE('1× = Kinoformat 2,39:1. Beim Ziehen sind die Balken kurz zu sehen.')],
-    ['stars', TOG('stars', 'Sternhimmel') + NOTE('Hauptschalter für Sterne, Milchstraße und Tiefen Himmel: aus = reines Schwarz. Feinheiten im Reiter Station.')]] },
-  { id: 'cam', icon: 'cam', title: 'Kamera &amp; Bewegung', rows: [['motion', SEG('motion', 'Bewegung', [['full', 'Voll'], ['calm', 'Ruhig'], ['off', 'Aus']]) + NOTE('„Aus“ wirkt wie „Bewegung reduzieren“ im System: keine Fahrt von selbst, Wechsel als kurze Überblendung.')],
-    ['cine', TOG('cine', 'Kamerafahrt im Leerlauf')], ['dive', RANGE('dive', 'Flugdauer', 1, 15, 0.1, 's')]] },
-  { id: 'fx', icon: 'fx', title: 'Effekte', rows: [
-    ['bloom', TOG('bloom', 'Überstrahlen (Bloom)')],
-    ['lens', TOG('lens', 'Linsenreflex') + NOTE('Hauptschalter. Stärke und Art des Linsenreflexes stehen im Reiter Station, wo die Sonne im Bild ist.')],
-    ['grain', TOG('grain', 'Filmkorn')]] },
-  { id: 'ui', icon: 'ui', title: 'Oberfläche', half: true, rows: [['panel', TOG('panel', 'Infotafel zeigen')], ['scaleCompare', TOG('scaleCompare', 'Maßstabs-Vergleich')], ['timeline', TOG('timeline', 'Zeitleiste der Station zeigen')],
-    ['', TOG('', 'Grafiken bewegt', '', 'data-figs')]] },
-  { id: 'perf', icon: 'perf', title: 'Leistung', rows: [['quality', SEG('quality', 'Qualität', [['auto', 'Auto'], ['1', 'Niedrig'], ['2', 'Mittel'], ['3', 'Hoch']])],
-    ['fpsCap', SEG('fpsCap', 'Bildrate', [['0', 'Frei'], ['60', '60 Bilder/s'], ['30', '30 Bilder/s']]) + NOTE('30 Bilder/s spart am Laptop Strom und Lüfter.')]] },
-];
-
-// ---------- Gemeinsame Gruppen im Reiter Station ----------
-// Zeile: k = Schlüssel in settings.S, at = Stationen der Zeile (ohne: die der Gruppe). Stationen je Wirkung (Stand 28.10.2026):
+const MW_STYLE = `<div class="b-row b-stack"><span class="cfg-label" id="cfg-mwstyle">Stil</span>
+  <div class="seg b-seg" role="radiogroup" aria-labelledby="cfg-mwstyle">${MW_STYLES.map(([id, l]) => `<button type="button" role="radio" data-mwstyle="${id}">${l}</button>`).join('')}</div></div>`
+  + NOTE('Setzt alle Regler der Milchstraße auf einen abgestimmten Look, danach frei einstellbar. „Astrofoto“ ist wie die Vorlage von ESO.');
+// Zwischenüberschrift in einer Gruppe; zählt nicht als Einstellung
+const SUB = (t) => ['#', `<h5 class="b-subh">${t}</h5>`];
+const nRows = (g) => g.rows.filter(([k]) => k !== '#').length;
+// ---------- Wirkung je Zeile ----------
+// Stationen, an denen eine Zeile etwas ändert (Stand 28.10.2026); Zeile ohne Wirkungs-Schlüssel wirkt an jeder Station
 const NEAR_EARTH = ['earth', 'iss', 'tiangong', 'hubble', 'jwst', 'euclid', 'roman'];   // Ozean + Lufthülle (EARTH_FRAG, ATMO_FRAG)
 const BODIES = SOLAR_SYSTEM.filter((id) => id !== 'sun');   // Planeten und Monde mit spinAxis (axes.js)
 const SYMBOLS = ['earth', 'solar'];   // Satelliten (sats.js), Asteroiden (levels/solar.js)
@@ -148,90 +138,82 @@ const FLARE = ['earth', 'moon', 'solar', 'sun', 'io', 'europa', 'triton', 'phobo
 const FLARE_NOSUN = FLARE.filter((id) => id !== 'sun');
 // Milchstraßenband am Himmel (createStarfield, band > 0): Sonnensystem und Stationen in der Milchstraße
 const MILKY = [...SOLAR_SYSTEM, 'asteroid', 'orion', 'crab', 'pulsar', 'pillars', 'butterfly', 'spider', 'tornado'];
-const R = (k, label, min, max, step, unit, hint, at) => ({ k, label, min, max, step, unit, hint, at });
-const T = (k, label, hint, at) => ({ k, label, toggle: true, hint, at });
-const C = (k, label, opts, hint, at) => ({ k, label, opts, hint, at });
-const SHARED = [
-  { group: 'Licht und Schatten', scope: 'Gilt an allen Stationen im Sonnensystem.', at: SOLAR_SYSTEM, rows: [
-    R('sunK', 'Sonnenlicht', 0.25, 4, 0.05, '×', 'Stärke des direkten Sonnenlichts auf Planeten und Monden.'),
-    R('shade', 'Nachtseite aufhellen', 0, 8, 0.25, '×', 'Restlicht auf der Schattenseite (schon aufgehellt, echt fast schwarz). 0× = ganz dunkel.'),
-    R('shadow', 'Schatten', 0, 1, 0.05, '×', 'Ringschatten, Wolkenschatten, Mond- und Planetenschatten bei Finsternissen. 0× = keine, 1× = volle Stärke.'),
-    R('soft', 'Weiche Schattengrenze', 0, 4, 0.1, '×', 'Wie weit die Lufthülle Licht über die Tag-Nacht-Grenze streut; 0× = harte Kante.'),
-    R('spec', 'Spiegelung der Ozeane', 0, 6, 0.1, '×', 'Glanzlicht der Sonne auf dem Meer der Erde.', NEAR_EARTH),
-    R('gloss', 'Glanz der Oberflächen', 0, 4, 0.1, '×', 'Zusätzliches Glanzlicht auf Eis, Wolken und Gestein (künstlerisch). 0× = aus.'),
-    T('rayleigh', 'Blaue Dämmerung am Erdrand (Rayleigh)', '', NEAR_EARTH)] },
-  { group: 'Bahnen und Achsen', scope: 'Gilt an allen Stationen mit Planeten und Monden.', at: BODIES, rows: [
-    T('axes', 'Drehachsen der Planeten und Monde', 'Linie über Nord- und Südpol jedes Planeten und Mondes, neigt und dreht sich mit dem Körper. Nordpol eisblau, Südpol grau.'),
-    R('small', 'Größe der Symbole', 1, 12, 0.5, '×', 'Satelliten, Trümmer und Asteroiden als vergrößerte Symbole – je größer, desto weniger Objekte (4× → jedes achte); 1× zeigt alle als Lichtpunkte.', SYMBOLS)] },
-  { group: 'Linsenreflex', scope: 'Gilt an allen Stationen mit der Sonne im Bild.', at: FLARE, rows: [
-    R('lensAmt', 'Stärke Linsenreflex', 0, 5, 0.05, '×', 'Schein, Ring und Geisterbilder um helle Quellen wie die Sonne. 0× = aus.'),
-    C('lensOptic', 'Art der Optik', [['master', 'Filmkamera'], ['classic', 'Schlicht']], 'Filmkamera: Regenbogenring, heller Bogen und ein farbiger Lichtfleck gegenüber der Sonne. Schlicht: nur ein zarter Lichtkranz.', FLARE_NOSUN),
-    T('lensGhost', 'Farbiger Lichtfleck (Geisterbild)', '', FLARE_NOSUN),
-    T('ghostMotion', 'Lichtfleck wandert beim Schwenken', 'Wie in einem echten Objektiv wandert der Fleck beim Schwenken auf der Linie durch die Bildmitte.', FLARE_NOSUN),
-    T('anamorphic', 'Waagrechter Lichtstreif (anamorph)')] },
-  { group: 'Sternhimmel', scope: 'Gilt an allen Stationen mit diesem Himmel; aus über „Sternhimmel“ in den Einstellungen.', at: () => [...MILKY, ...deepAt], rows: [
-    R('deep', 'Tiefer Himmel', 0, 4, 0.1, '×', 'Was eine Langzeitbelichtung hinter den Sternen sieht: ferne Galaxien und schwach leuchtender Staub der Milchstraße (Zirrus) – statistisch verteilt, überhöht, mit bloßem Auge unsichtbar. 0× = reines Schwarz.', () => deepAt),
-    T('mw', 'Milchstraße zeigen', 'Nur das Band der Milchstraße am Himmel.', MILKY),
-    T('mwNear', 'Magellansche Wolken und Andromeda', '', MILKY),
-    C('mwSrc', 'Quelle der Milchstraße', [['model', 'Eigenes Modell'], ['photo', 'ESO-Foto']], 'Das Foto (ESO/S. Brunier, CC BY 4.0) war die Vorlage und dient nur zum Vergleich – nur im Sonnensystem, wo die Lage am Himmel stimmt.', SOLAR_SYSTEM)] },
-  { group: 'Milchstraße · Aussehen', scope: 'Gilt an allen Stationen mit dem Band der Milchstraße am Himmel.', at: MILKY, rows: [
-    { k: 'mwStyle', label: 'Stil', style: true, hint: 'Setzt alle Regler der Milchstraße auf einen abgestimmten Look, danach frei einstellbar. „Astrofoto“ ist wie die Vorlage von ESO.' },
-    R('mwGain', 'Helligkeit', 0, 6, 0.05, '×'), R('mwCon', 'Kontrast', 0.5, 3, 0.05, '×'),
-    R('mwBlack', 'Schwarzpunkt', 0, 1, 0.05, '', 'Schneidet die schwachen Ränder des Bandes ab – der Himmel daneben wird dunkler.'),
-    R('mwClar', 'Struktur', 0, 4, 0.05, '×', 'Lokaler Kontrast: hebt Sternwolken und Staubkanten gegen ihre Umgebung ab.'),
-    R('mwSat', 'Sättigung', 0, 3, 0.05, '×'),
-    R('mwTemp', 'Farbtemperatur', -1, 1, 0.05, '', 'Minus = kühler, bläulich · plus = wärmer, golden.')] },
-  { group: 'Milchstraße · Aufbau', at: MILKY, rows: [
-    R('mwDust', 'Staubbahnen', 0, 4, 0.05, '×', 'Dunkelwolken vor dem Sternlicht: Großer Riss, Pfeifennebel, Kohlensack. 0× = Sterne ohne Staub.'),
-    R('mwNeb', 'Leuchtnebel (Hα)', 0, 6, 0.05, '×', 'Rot leuchtender Wasserstoff: Carina, Lagune, Nordamerika, Barnards Loop.'),
-    R('mwCore', 'Kern (Bulge)', 0, 6, 0.05, '×'), R('mwGlow', 'Leuchten des Bandes', 0, 6, 0.05, '×'),
-    R('mwGrain', 'Einzelsterne im Band', 0, 1, 0.05, '', 'Anteil des Bandes als einzelne feine Sterne statt Nebel – am deutlichsten beim Hineinzoomen.'),
-    R('mwWidth', 'Dicke der Scheibe', 0.4, 3, 0.05, '×', 'Höhe von Sternen und Staub über der Ebene; das Modell wird neu berechnet.')] },
-];
 // Stationen des Tiefen Himmels meldet deepsky.js (Tabelle DEEP) – kein Import von dort, sonst Kreis settings ↔ deepsky
 let deepAt = [];
-export function setDeepAt(ids) { deepAt = ids; sharedCache.clear(); }
+export function setDeepAt(ids) { deepAt = ids; }
+// [Stationen, Ort im Hinweis „Wirkt hier nicht · nur …“]
+const WHERE = {
+  solar: [SOLAR_SYSTEM, 'an Stationen im Sonnensystem'],
+  near: [NEAR_EARTH, 'an der Erde und den Stationen in ihrer Nähe (ISS, Weltraumteleskope)'],
+  bodies: [BODIES, 'an Stationen mit Planeten und Monden'],
+  sym: [SYMBOLS, 'an der Erde (Satelliten) und im Sonnensystem (Asteroiden)'],
+  flare: [FLARE, 'an Stationen mit der Sonne im Bild'],
+  flareNs: [FLARE_NOSUN, 'an Stationen mit der Sonne im Bild; die Sonne selbst hat eine eigene Optik'],
+  sky: [() => [...MILKY, ...deepAt], 'an Stationen mit Sternhimmel'],
+  deep: [() => deepAt, 'an Stationen mit Tiefem Himmel'],
+  mw: [MILKY, 'an Stationen mit dem Band der Milchstraße am Himmel'],
+};
 const atOf = (x) => (typeof x === 'function' ? x() : x);
-const dec = (v, step) => v.toFixed(step < 0.1 ? 2 : 1).replace('.', ',');
-// Zeile → Ebene für layers.js: Wert liest und schreibt settings.S (shared: layers.js speichert sie nicht je Station)
-function sharedLayer(r) {
-  const S = () => settings.S;
-  const l = { id: `cfg-${r.k}`, shared: true, label: r.label, hint: r.hint || '', set: () => {} };
-  if (r.style) {
-    const at = () => MW_STYLES.findIndex(([id]) => mwStyleOn(S(), id));
-    return Object.defineProperties({ ...l, type: 'range', min: 0, max: MW_STYLES.length - 1, step: 1, def: 1, fmt: (i) => (MW_STYLES[Math.round(i)] || ['', 'eigener'])[1] },
-      { value: { get: at, set: (i) => { for (const [k, v] of Object.entries(MW_STYLES[i][2])) setSetting(k, v); }, enumerable: true } });
-  }
-  if (r.opts) {
-    return Object.defineProperties({ ...l, type: 'range', min: 0, max: r.opts.length - 1, step: 1, def: r.opts.findIndex(([v]) => v === DEFAULTS[r.k]), fmt: (i) => r.opts[Math.round(i)][1] },
-      { value: { get: () => r.opts.findIndex(([v]) => v === S()[r.k]), set: (i) => setSetting(r.k, r.opts[i][0]), enumerable: true } });
-  }
-  const base = r.toggle ? { ...l, type: 'toggle' } : { ...l, type: 'range', min: r.min, max: r.max, step: r.step, fmt: (v) => `${dec(v, r.step)}${r.unit ? ` ${r.unit}` : ''}` };
-  return Object.defineProperties({ ...base, def: DEFAULTS[r.k] }, { value: { get: () => S()[r.k], set: (v) => setSetting(r.k, v), enumerable: true } });
-}
-// Gemeinsame Ebenen einer Station (je Station einmal gebaut, damit layers.js stabile Objekte findet); group + scope an der
-// ersten Zeile, die an dieser Station steht
-const sharedCache = new Map();
-export function sharedFor(id) {
-  if (!sharedCache.has(id)) {
-    sharedCache.set(id, SHARED.flatMap((g) => {
-      if (!atOf(g.at).includes(id)) return [];
-      const rows = g.rows.filter((r) => !r.at || atOf(r.at).includes(id)).map(sharedLayer);
-      if (rows[0]) Object.assign(rows[0], { group: g.group, scope: g.scope });
-      return rows;
-    }));
-  }
-  return sharedCache.get(id);
-}
+// Reihenfolge: was im Bild ist (Bild, Himmel, Licht, Planeten), dann Bedienung
+const GROUPS = [
+  { id: 'look', icon: 'look', title: 'Bild', hero: true, rows: [['grade', LOOKS], ['exposure', RANGE('exposure', 'Belichtung', 0.25, 4, 0.05, '×')],
+    ['vig', RANGE('vig', 'Vignette', 0, 3, 0.05, '×')], ['bars', TOG('bars', 'Kinobalken 2,39:1')],
+    ['barsH', RANGE('barsH', 'Höhe der Kinobalken', 0.5, 2, 0.05, '×') + NOTE('1× = Kinoformat 2,39:1. Beim Ziehen sind die Balken kurz zu sehen.')]] },
+  { id: 'sky', icon: 'sky', title: 'Himmel', rows: [
+    ['stars', TOG('stars', 'Sternhimmel') + NOTE('Hauptschalter für Sterne, Milchstraße und Tiefen Himmel: aus = reines Schwarz.'), 'sky'],
+    ['deep', RANGE('deep', 'Tiefer Himmel', 0, 4, 0.1, '×') + NOTE('Was eine Langzeitbelichtung hinter den Sternen sieht: ferne Galaxien und schwach leuchtender Staub der Milchstraße (Zirrus) – statistisch verteilt, überhöht, mit bloßem Auge unsichtbar. 0× = reines Schwarz.'), 'deep'],
+    SUB('Milchstraße'),
+    ['mw', TOG('mw', 'Milchstraße zeigen') + NOTE('Nur das Band der Milchstraße am Himmel.'), 'mw'],
+    ['mwNear', TOG('mwNear', 'Magellansche Wolken und Andromeda'), 'mw'],
+    ['mwSrc', SEG('mwSrc', 'Quelle der Milchstraße', [['model', 'Eigenes Modell'], ['photo', 'ESO-Foto']]) + NOTE('Das Foto (ESO/S. Brunier, CC BY 4.0) war die Vorlage und dient nur zum Vergleich – nur im Sonnensystem, wo die Lage am Himmel stimmt.'), 'solar'],
+    SUB('Milchstraße · Aussehen'), ['', MW_STYLE, 'mw'],
+    ['mwGain', RANGE('mwGain', 'Helligkeit', 0, 6, 0.05, '×'), 'mw'], ['mwCon', RANGE('mwCon', 'Kontrast', 0.5, 3, 0.05, '×'), 'mw'],
+    ['mwBlack', RANGE('mwBlack', 'Schwarzpunkt', 0, 1, 0.05, '') + NOTE('Schneidet die schwachen Ränder des Bandes ab – der Himmel daneben wird dunkler.'), 'mw'],
+    ['mwClar', RANGE('mwClar', 'Struktur', 0, 4, 0.05, '×') + NOTE('Lokaler Kontrast: hebt Sternwolken und Staubkanten gegen ihre Umgebung ab.'), 'mw'],
+    ['mwSat', RANGE('mwSat', 'Sättigung', 0, 3, 0.05, '×'), 'mw'],
+    ['mwTemp', RANGE('mwTemp', 'Farbtemperatur', -1, 1, 0.05, '') + NOTE('Minus = kühler, bläulich · plus = wärmer, golden.'), 'mw'],
+    SUB('Milchstraße · Aufbau'),
+    ['mwDust', RANGE('mwDust', 'Staubbahnen', 0, 4, 0.05, '×') + NOTE('Dunkelwolken vor dem Sternlicht: Großer Riss, Pfeifennebel, Kohlensack. 0× = Sterne ohne Staub.'), 'mw'],
+    ['mwNeb', RANGE('mwNeb', 'Leuchtnebel (Hα)', 0, 6, 0.05, '×') + NOTE('Rot leuchtender Wasserstoff: Carina, Lagune, Nordamerika, Barnards Loop.'), 'mw'],
+    ['mwCore', RANGE('mwCore', 'Kern (Bulge)', 0, 6, 0.05, '×'), 'mw'], ['mwGlow', RANGE('mwGlow', 'Leuchten des Bandes', 0, 6, 0.05, '×'), 'mw'],
+    ['mwGrain', RANGE('mwGrain', 'Einzelsterne im Band', 0, 1, 0.05, '') + NOTE('Anteil des Bandes als einzelne feine Sterne statt Nebel – am deutlichsten beim Hineinzoomen.'), 'mw'],
+    ['mwWidth', RANGE('mwWidth', 'Dicke der Scheibe', 0.4, 3, 0.05, '×') + NOTE('Höhe von Sternen und Staub über der Ebene; das Modell wird neu berechnet.'), 'mw']] },
+  { id: 'light', icon: 'sun', title: 'Licht &amp; Schatten', rows: [
+    ['sunK', RANGE('sunK', 'Sonnenlicht', 0.25, 4, 0.05, '×') + NOTE('Stärke des direkten Sonnenlichts auf Planeten und Monden.'), 'solar'],
+    ['shade', RANGE('shade', 'Nachtseite aufhellen', 0, 8, 0.25, '×') + NOTE('Restlicht auf der Schattenseite (schon aufgehellt, echt fast schwarz). 0× = ganz dunkel.'), 'solar'],
+    ['shadow', RANGE('shadow', 'Schatten', 0, 1, 0.05, '×') + NOTE('Ringschatten, Wolkenschatten, Mond- und Planetenschatten bei Finsternissen. 0× = keine, 1× = volle Stärke.'), 'solar'],
+    ['soft', RANGE('soft', 'Weiche Schattengrenze', 0, 4, 0.1, '×') + NOTE('Wie weit die Lufthülle Licht über die Tag-Nacht-Grenze streut; 0× = harte Kante.'), 'solar'],
+    ['spec', RANGE('spec', 'Spiegelung der Ozeane', 0, 6, 0.1, '×') + NOTE('Glanzlicht der Sonne auf dem Meer der Erde.'), 'near'],
+    ['gloss', RANGE('gloss', 'Glanz der Oberflächen', 0, 4, 0.1, '×') + NOTE('Zusätzliches Glanzlicht auf Eis, Wolken und Gestein (künstlerisch). 0× = aus.'), 'solar'],
+    ['rayleigh', TOG('rayleigh', 'Blaue Dämmerung am Erdrand (Rayleigh)'), 'near']] },
+  { id: 'planets', icon: 'orbit', title: 'Planeten', rows: [
+    ['axes', TOG('axes', 'Drehachsen der Planeten und Monde') + NOTE('Linie über Nord- und Südpol jedes Planeten und Mondes, neigt und dreht sich mit dem Körper. Nordpol eisblau, Südpol grau.'), 'bodies'],
+    ['small', RANGE('small', 'Größe der Symbole', 1, 12, 0.5, '×') + NOTE('Satelliten, Trümmer und Asteroiden als vergrößerte Symbole – je größer, desto weniger Objekte (4× → jedes achte); 1× zeigt alle als Lichtpunkte.'), 'sym']] },
+  { id: 'cam', icon: 'cam', title: 'Kamera &amp; Bewegung', rows: [['motion', SEG('motion', 'Bewegung', [['full', 'Voll'], ['calm', 'Ruhig'], ['off', 'Aus']]) + NOTE('„Aus“ wirkt wie „Bewegung reduzieren“ im System: keine Fahrt von selbst, Wechsel als kurze Überblendung.')],
+    ['cine', TOG('cine', 'Kamerafahrt im Leerlauf')], ['dive', RANGE('dive', 'Flugdauer', 1, 15, 0.1, 's')]] },
+  { id: 'fx', icon: 'fx', title: 'Effekte', rows: [
+    ['bloom', TOG('bloom', 'Überstrahlen (Bloom)')], ['grain', TOG('grain', 'Filmkorn')],
+    SUB('Linsenreflex'),
+    ['lens', TOG('lens', 'Linsenreflex zeigen') + NOTE('Hauptschalter für Schein, Ring und Geisterbilder um die Sonne.'), 'flare'],
+    ['lensAmt', RANGE('lensAmt', 'Stärke Linsenreflex', 0, 5, 0.05, '×') + NOTE('0× = aus.'), 'flare'],
+    ['lensOptic', SEG('lensOptic', 'Art der Optik', [['master', 'Filmkamera'], ['classic', 'Schlicht']]) + NOTE('Filmkamera: Regenbogenring, heller Bogen und ein farbiger Lichtfleck gegenüber der Sonne. Schlicht: nur ein zarter Lichtkranz.'), 'flareNs'],
+    ['lensGhost', TOG('lensGhost', 'Farbiger Lichtfleck (Geisterbild)'), 'flareNs'],
+    ['ghostMotion', TOG('ghostMotion', 'Lichtfleck wandert beim Schwenken') + NOTE('Wie in einem echten Objektiv wandert der Fleck beim Schwenken auf der Linie durch die Bildmitte.'), 'flareNs'],
+    ['anamorphic', TOG('anamorphic', 'Waagrechter Lichtstreif (anamorph)'), 'flare']] },
+  { id: 'ui', icon: 'ui', title: 'Oberfläche', half: true, rows: [['panel', TOG('panel', 'Infotafel zeigen')], ['scaleCompare', TOG('scaleCompare', 'Maßstabs-Vergleich')], ['timeline', TOG('timeline', 'Zeitleiste der Station zeigen')],
+    ['', TOG('', 'Grafiken bewegt', '', 'data-figs')]] },
+  { id: 'perf', icon: 'perf', title: 'Leistung', rows: [['quality', SEG('quality', 'Qualität', [['auto', 'Auto'], ['1', 'Niedrig'], ['2', 'Mittel'], ['3', 'Hoch']])],
+    ['fpsCap', SEG('fpsCap', 'Bildrate', [['0', 'Frei'], ['60', '60 Bilder/s'], ['30', '30 Bilder/s']]) + NOTE('30 Bilder/s spart am Laptop Strom und Lüfter.')]] },
+];
 const N_GLOBAL = GROUPS.reduce((n, g) => n + nRows(g), 0);
-// „Alle zurücksetzen“ der Einstellungen: nur, was hier steht (nicht die gemeinsamen Gruppen im Reiter Station)
-const GLOBAL_KEYS = GROUPS.flatMap((g) => g.rows.map(([k]) => k)).filter(Boolean);
+// „Alle zurücksetzen“ der Einstellungen
+const GLOBAL_KEYS = GROUPS.flatMap((g) => g.rows.map(([k]) => k)).filter((k) => k && k !== '#');
 const plural = (n, one, many) => `${n} ${n === 1 ? one : many}`;
 // Gruppen als quadratische Kacheln mit Icon (User 28.10.2026); darunter nur die gewählte Gruppe, Überschrift mit Zahl der Einstellungen
 const JUMP = `<div class="cfg-jump" role="tablist" aria-label="Gruppen">${GROUPS.map((g, i) => `<button type="button" role="tab" class="cfg-tile" id="cfg-t${i}" data-jump="${i}" aria-controls="cfg-s${i}" aria-selected="false" tabindex="-1">${icon(g.icon, 'cfg-tile-ico')}<span>${g.title}</span></button>`).join('')}</div>`;
 const CARD = (g, i) => `<section class="b-card b-fold b-sec" id="cfg-s${i}" role="tabpanel" data-g="${g.id}" data-fold="${i}" aria-labelledby="cfg-h${i}" hidden>
-  <h4 class="b-sec-h"><span class="b-name" id="cfg-h${i}">${g.title}</span><span class="b-count">${plural(nRows(g), 'Einstellung', 'Einstellungen')}</span></h4>
-  <div class="b-body${g.half ? ' b-body--grid' : ''}" id="cfg-b${i}">${g.rows.map(([k, h]) => ROW(k, h)).join('')}</div></section>`;
+  <h4 class="b-sec-h"><span class="b-name" id="cfg-h${i}">${g.title}</span><span class="b-count">${plural(nRows(g), 'Einstellung', 'Einstellungen')}<span data-na-n></span></span></h4>
+  <div class="b-body${g.half ? ' b-body--grid' : ''}" id="cfg-b${i}">${g.rows.map(([k, h, w]) => ROW(k, h, w)).join('')}</div></section>`;
 // root = #cfg in der rechten Spalte, btn = Knopf „Einstellungen“, lay = Knopf „Station“ (Zahl der Einstellungen in der Beschriftung),
 // st = Panel Station links
 export function mountSettings(root, btn, lay = document.getElementById('btn-lay'), st = document.getElementById('station')) {
@@ -244,7 +226,9 @@ export function mountSettings(root, btn, lay = document.getElementById('btn-lay'
       <div class="cfg-foot"><span class="cfg-scope">gilt an allen Stationen · ${N_GLOBAL} Einstellungen</span>${devBar()}</div>
     </div>`;
   const glob = root.querySelector('#cfg-global'), vGl = root.querySelector('#cfg-v-gl');
+  let applyNA = () => {};
   const info = ({ title, n }) => {
+    applyNA();   // Station gewechselt (layers.js render)
     st.querySelectorAll('[data-st-name]').forEach((e) => { e.textContent = title; });
     st.dataset.laySum = n ? plural(n, 'Einstellung', 'Einstellungen') : 'Keine Einstellungen';   // Gruppen zeigt die Leiste
     st.querySelector('[data-st-n]').textContent = st.dataset.laySum;
@@ -253,7 +237,7 @@ export function mountSettings(root, btn, lay = document.getElementById('btn-lay'
       lay.setAttribute('aria-label', n ? `Einstellungen dieser Station: ${n}` : 'Einstellungen dieser Station');
     }
   };
-  mountLayers({ gear: st.querySelector('#cfg-station'), info, strip: document.getElementById('timeline'), stripOn: () => settings.S.timeline, shared: sharedFor });
+  mountLayers({ gear: st.querySelector('#cfg-station'), info, strip: document.getElementById('timeline'), stripOn: () => settings.S.timeline });
   const sync = () => {
     const S = settings.S;
     root.querySelectorAll('[data-key][data-val]').forEach((b) => b.setAttribute('aria-checked', String(String(S[b.dataset.key]) === b.dataset.val)));
@@ -278,6 +262,24 @@ export function mountSettings(root, btn, lay = document.getElementById('btn-lay'
     if (focus) tiles[i].focus();
   };
   pick(0);
+  // Ausgrauen (User 28.10.2026): Zeile ohne Wirkung an der aktuellen Station gesperrt + Hinweis „Wirkt hier nicht · nur …“;
+  // Kachel abgedimmt, wenn in ihrer Gruppe nichts wirkt; Überschrift nennt die Zahl (Vorschau 28.10.2026 Grau:A)
+  applyNA = () => {
+    const id = (location.hash.match(/station=(\w+)/) || [])[1] || 'earth';
+    vGl.querySelectorAll('.b-item[data-w]').forEach((it) => {
+      const na = !atOf(WHERE[it.dataset.w][0]).includes(id);
+      it.classList.toggle('is-na', na);
+      it.querySelector('.cfg-na').hidden = !na;
+      it.querySelectorAll('input, button').forEach((el) => { el.disabled = na; });
+    });
+    GROUPS.forEach((g, i) => {
+      const sec = glob.querySelector(`#cfg-s${i}`), n = sec.querySelectorAll('.b-item.is-na').length, all = n === nRows(g);
+      sec.querySelector('[data-na-n]').textContent = !n ? '' : all ? ' · keine wirkt hier' : ` · ${n} ${n === 1 ? 'wirkt' : 'wirken'} hier nicht`;
+      tiles[i].classList.toggle('is-na', all);
+      if (all) tiles[i].setAttribute('aria-description', 'wirkt an dieser Station nicht'); else tiles[i].removeAttribute('aria-description');
+    });
+  };
+  applyNA();
   vGl.querySelector('.cfg-jump').addEventListener('keydown', (e) => {
     const t = e.target.closest('[data-jump]');
     if (!t || !['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(e.key)) return;

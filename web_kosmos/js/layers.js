@@ -15,8 +15,7 @@
 //   davor), hint: Zusatztext unter der Zeile, group: Gruppe (gilt ab dieser Ebene bis zur nächsten group; gleicher Kurzname
 //   in tabs.js = ein Reiter, der volle Name steht dann als Zwischenüberschrift im Inhalt),
 //   active() + only: Ebene wirkt gerade nicht (z. B. anderer Kanal) → Zeile abgedunkelt, bleibt bedienbar, darunter only als Grund.
-// Dazu die gemeinsamen Gruppen aus settings.js (shared: true, Wert in `kosmos.settings.v1`, gilt an allen Stationen der Gruppe;
-// scope an der ersten Zeile = Hinweis unter der Überschrift). Werte je Station in localStorage `kosmos.layers.v1` (nicht der Abspielzustand); URL `?lay=aurora:0,kp:7,clock.play:1` für
+// Werte, die an allen Stationen gemeinsam gelten, stehen nicht hier, sondern in den Einstellungen (settings.js). Werte je Station in localStorage `kosmos.layers.v1` (nicht der Abspielzustand); URL `?lay=aurora:0,kp:7,clock.play:1` für
 // Screenshots. Aktive Station aus `#station=…` (main.js setzt den Hash per replaceState → ohne Ereignis, daher Takt 300 ms).
 
 import { STATIONS } from './content.js';
@@ -485,7 +484,7 @@ function poll() {
 }
 
 // info({ title, n, groups }) nach jedem Aufbau: Name der Station, Zahl der Einstellungen und Reiter (Knopf, Fenster-Kopf);
-// shared(id) = gemeinsame Gruppen dieser Station (settings.js sharedFor)
+// shared(id) = zusätzliche Zeilen aus anderen Modulen (zurzeit keine: gemeinsame Werte stehen in den Einstellungen, settings.js)
 export function mountLayers({ gear, info, strip, stripOn: on, shared }) {
   gearEl = gear; onInfo = info || onInfo; stripEl = strip; stripOn = on || stripOn; sharedOf = shared || sharedOf;
   gearEl.addEventListener('keydown', onKey);

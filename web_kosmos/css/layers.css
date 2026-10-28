@@ -113,7 +113,7 @@ body.is-flying .tl, body.is-intro .tl { opacity: 0; pointer-events: none; }
 .cfg-pane { --rst: 26px; --row: 30px; }
 /* Gruppen der Einstellungen als quadratische Kacheln mit Icon (User 28.10.2026), gewählt = Akzentfarbe wie die Knöpfe der Kopfleiste
    (5 Gruppen, eine Reihe, schmal seitlich wischbar) */
-.cfg-jump { flex: none; display: grid; grid-template-columns: repeat(5, minmax(68px, 1fr)); gap: 6px; padding: 12px 18px; border-bottom: 1px solid var(--line);
+.cfg-jump { flex: none; display: grid; grid-template-columns: repeat(4, minmax(68px, 1fr)); gap: 6px; padding: 12px 18px; border-bottom: 1px solid var(--line);
   overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: thin; scrollbar-color: var(--line) transparent; }
 .cfg-jump::-webkit-scrollbar { height: 4px; }
 .cfg-jump::-webkit-scrollbar-track { background: transparent; }

@@ -1263,7 +1263,7 @@ export const PARKED = {
 };
 
 // Stationen im Sonnensystem (Sonne als Lichtquelle, Planetenlicht, echter Himmel von der Erde aus): Tiefer Himmel (deepsky.js)
-// und die gemeinsamen Gruppen „Licht und Schatten“, „Himmel“ im Reiter Station (settings.js SHARED)
+// und die Gruppen „Licht & Schatten“, „Himmel“ der Einstellungen (settings.js WHERE: dort ausgegraut, wo sie nicht wirken)
 export const SOLAR_SYSTEM = ['earth', 'hubble', 'jwst', 'euclid', 'roman', 'solar', 'sun', 'iss', 'tiangong', 'moon',
   'jupiter', 'io', 'europa', 'ganymede', 'callisto', 'saturn', 'titan', 'enceladus', 'mars', 'phobos', 'deimos',
   'neptune', 'triton', 'uranus', 'miranda', 'pluto'];

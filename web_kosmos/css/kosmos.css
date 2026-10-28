@@ -842,3 +842,11 @@ body.fatal-webgl .fatal-webgl, body.fatal-start .fatal-start { display: block; }
 .film-skip kbd { padding: 2px 6px; border: 1px solid var(--line-strong); border-radius: 4px; font: 500 12px/1 var(--font); }
 @media (max-width: 760px) { .film-hint { bottom: 26vh; font-size: 15px; } .film-skip { right: 16px; } }
 @media (prefers-reduced-motion: reduce) { .film-hint { transition: opacity 0.3s; transform: translate(-50%, 0); } }
+
+/* Einstellungen ohne Wirkung an dieser Station (settings.js applyNA): Bedienung abgedimmt und gesperrt, Hinweis voll lesbar */
+.b-item.is-na > :not(.cfg-na) { opacity: 0.38; }
+.b-item.is-na :disabled { cursor: default; }
+.cfg-na { margin: 0; font-size: 12.5px; line-height: 1.4; color: var(--ink); }
+.cfg-na b { font-weight: 600; }
+.cfg-tile.is-na { opacity: 0.45; }
+.cfg-tile.is-na[aria-selected="true"] { opacity: 0.75; }

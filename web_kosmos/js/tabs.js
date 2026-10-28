@@ -13,8 +13,6 @@ export const TABS = {
   'Magnetosphäre': 'Feld', 'Magnetfeld': 'Feld', 'Jupiter-Magnetosphäre': 'Feld',
   'Polarlichter': 'Polarlicht', 'Jupiter-Polarlicht': 'Polarlicht',
   'Erdumlaufbahn': 'Bahn', 'Jupiter und Monde': 'Monde', 'Ringe und Monde': 'Monde', 'Erde am Himmel': 'Himmel',
-  'Licht und Schatten': 'Licht', 'Bahnen und Achsen': 'Achsen', 'Linsenreflex': 'Optik',
-  'Milchstraße · Aussehen': 'Milchstraße', 'Milchstraße · Aufbau': 'Milchstraße',
   'Licht des Gases': 'Gas', 'Gas um das Loch': 'Gas', 'Qualität der Wolke': 'Qualität', 'Staubgürtel und Stern': 'Staub',
 };
 export const tabOf = (group) => TABS[group] || group;
