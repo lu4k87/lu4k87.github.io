@@ -371,7 +371,11 @@ function activate(lv) {
   c.dampingFactor = 0.05;
   c.rotateSpeed = 0.5;
   c.zoomSpeed = 0.8;
-  c.enablePan = false;
+  // Rechte Maustaste (Touch: zwei Finger) verschiebt das Blickziel wie im Digital Twin von UX Robot; das Tempo wächst mit dem
+  // Abstand zum Ziel, passt also zur Stationsgröße. Der Versatz gilt nur hier: unten setzt target auf das Ziel der Station.
+  c.enablePan = true;
+  c.screenSpacePanning = true;
+  c.panSpeed = 0.6;
   // Mausrad weich: statt je Raste zu springen sammelt das Rad nur das Ziel (log. Abstand), stepZoom rollt es je Bild aus;
   // Δ kommt von OrbitControls schon in Pixeln (Zeilen/Seiten umgerechnet), Pinch auf Touch bleibt beim Original
   state.zoom = 0;
@@ -1222,7 +1226,12 @@ window.addEventListener('hashchange', () => {
   const id = (location.hash.match(/station=(\w+)/) || [])[1];
   if (id && id !== state.id) goTo(id);
 });
-canvas.addEventListener('pointerdown', () => (state.opener ? skipOpener() : userInput()));
+canvas.addEventListener('pointerdown', (ev) => {
+  if (state.opener) return skipOpener();
+  // Verschieben (rechts, wie in OrbitControls auch Strg/⇧ + links) beendet das Folgen – sonst zöge es das Ziel sofort zurück
+  if (ev.button === 2 || (ev.button === 0 && (ev.ctrlKey || ev.metaKey || ev.shiftKey))) state.follow = null;
+  userInput();
+});
 // Film erneut abspielen (Ereignis kosmos:auftakt): erst in Station 10, dann von vorn
 window.addEventListener('kosmos:auftakt', async () => {
   if (state.opener || state.tr || still()) return;

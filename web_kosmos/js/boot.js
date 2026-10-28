@@ -180,6 +180,6 @@ function fitTitle(cap) {
   if (!el) return;
   el.style.fontSize = '';
   const cs = getComputedStyle(cap);
-  const avail = (cap.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight)) * 0.98;
+  const avail = (cap.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight)) * 0.84;
   if (el.scrollWidth > avail) el.style.fontSize = `${parseFloat(getComputedStyle(el).fontSize) * avail / el.scrollWidth}px`;
 }

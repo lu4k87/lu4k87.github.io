@@ -775,13 +775,13 @@ export function createHud(h) {
   // Sperrung vor dem Einblenden; Zeile darunter nie unter 12 px, dann Umbruch nur an den Trennern ·
   function fitCaption() {
     const cs = getComputedStyle(caption);
-    const avail = (caption.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight)) * 0.98;
-    for (const [sel, min] of [['.cap-title', 0], ['.cap-sub', 12]]) {
+    const avail = (caption.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight));
+    for (const [sel, min, share] of [['.cap-title', 0, 0.84], ['.cap-sub', 12, 0.98]]) {
       const el = caption.querySelector(sel);
       el.style.fontSize = '';
       el.classList.remove('is-wrap');
-      if (el.scrollWidth <= avail) continue;
-      const fs = parseFloat(getComputedStyle(el).fontSize) * avail / el.scrollWidth;
+      if (el.scrollWidth <= avail * share) continue;
+      const fs = parseFloat(getComputedStyle(el).fontSize) * avail * share / el.scrollWidth;
       el.style.fontSize = `${Math.max(min, fs)}px`;
       el.classList.toggle('is-wrap', fs < min);
     }
