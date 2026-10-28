@@ -82,11 +82,12 @@ const LOADERS = {
   pluto: () => import('./levels/pluto.js'),
 };
 
-// Mausrad: notch = ln-Schritt je Raste (Δ 100, ≈ 2,8 %), maxDelta = größtes Δ je Ereignis (schnelles Drehen, Touchpad-Schwung),
-// max = größter gesammelter Rest (ln, e^1 ≈ 2,7-fach), glide/ease = Ausrollen und Anlauf je s (kritisch gedämpft:
-// ease = 4 · glide, ≈ 0,8 s ohne Nachschwingen), vmax = Höchsttempo (ln/s, e^1,4 ≈ 4-fach je s), edge = Abbremsen vor dem
+// Mausrad: notch = ln-Schritt je Raste (Δ 100, ≈ 5,8 %; User 28.10.2026: doppelt so schnell, Ausrollen unverändert),
+// maxDelta = größtes Δ je Ereignis (schnelles Drehen, Touchpad-Schwung), max = größter gesammelter Rest (ln, e^2 ≈ 7,4-fach),
+// glide/ease = Ausrollen und Anlauf je s (kritisch gedämpft: ease = 4 · glide, ≈ 0,8 s ohne Nachschwingen),
+// vmax = Höchsttempo (ln/s, e^2,8 ≈ 16-fach je s), edge = Abbremsen vor dem
 // Zoom-Anschlag (Anteil des restlichen log. Wegs je s)
-const WHEEL = { notch: 0.028, maxDelta: 150, max: 1, glide: 2.5, ease: 10, vmax: 1.4, edge: 6 };
+const WHEEL = { notch: 0.056, maxDelta: 150, max: 2, glide: 2.5, ease: 10, vmax: 2.8, edge: 6 };
 // Rand-Angebot: so viele s nach dem letzten Scrollen am Anschlag bleibt der Hinweis „Hinaus-/Hineinfliegen“ klickbar stehen
 const OFFER_HOLD = 4;
 // Ankunft mit etwas mehr Abstand als die Heimpose: erst Überblick, dann zoomt der Besucher selbst
