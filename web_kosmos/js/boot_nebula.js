@@ -4,7 +4,8 @@
 // A Dunkelwolke vor Rotleuchten · B Emissionsnebel (H-alpha rosa, O-III türkis) · C eisblaue Filamente.
 // Rechnet in einem Worker (OffscreenCanvas) – läuft also flüssig weiter, während der Hauptfaden Shader und Texturen der
 // Reise vorbereitet; ohne OffscreenCanvas auf dem Hauptfaden. Auflösung passt sich an: wird ein Bild zu langsam, rechnet
-// die Schleife gröber (CSS skaliert hoch, der Nebel ist weich).
+// die Schleife gröber (CSS skaliert hoch, der Nebel ist weich). User 28.10.2026: „ruhiger, weniger pixelig“ → Kamera und
+// Gas langsamer, feinste Rauschstufe weg (flimmerte), Versatz der Schritte halbiert (Korn), Grundauflösung höher.
 
 export const LOOKS = { A: 'Dunkelwolke', B: 'Emissionsnebel', C: 'Eisblaue Filamente' };
 
@@ -31,7 +32,7 @@ vec3 starAt(float k) { return vec3((hash(vec3(k, 1.7, 2.3)) - .5) * 5., (hash(ve
 
 // langsam fließendes Gas: Verschiebung aus grobem Rauschen, das mit der Zeit wandert
 vec3 warp(vec3 p) {
-  float t = uT * .07;
+  float t = uT * .04;
   return p + .9 * vec3(noise(p * .6 + vec3(0, 0, t)), noise(p * .6 + vec3(5.2, 1.3, -t)), noise(p * .6 + vec3(9.1, 4.7, t))) - .45;
 }
 
@@ -48,7 +49,7 @@ vec4 medium(vec3 p) {
     vec3 e = vec3(1., .62, .42) * edge * (.5 + lit * .6);
     return vec4(e, dust * 4.5);
   } else if (uV == 1) {
-    float f = fbm6(q * 1.8);
+    float f = fbm(q * 1.8);
     float gas = smoothstep(.44, .72, f) * c;
     float o3 = smoothstep(.35, .70, noise(q * .9 + 11.));
     float dust = smoothstep(.54, .70, fbm3(q * 2.4 + 7.)) * c;
@@ -65,15 +66,15 @@ void main() {
   vec2 uv = (gl_FragCoord.xy - .5 * uRes) / uRes.y;
   float t = uT;
   // Kamera: fliegt vorwärts durch das Gas, pendelt seitlich und neigt sich leicht
-  vec3 ro = vec3(sin(t * .11) * .9, sin(t * .07) * .45, t * .45);
-  vec3 fw = normalize(vec3(sin(t * .05) * .22, sin(t * .041) * .12, 1.));
-  vec3 rt = normalize(cross(vec3(sin(t * .03) * .1, 1., 0.), fw)), up = cross(fw, rt);
+  vec3 ro = vec3(sin(t * .06) * .6, sin(t * .04) * .3, t * .26);
+  vec3 fw = normalize(vec3(sin(t * .03) * .14, sin(t * .025) * .07, 1.));
+  vec3 rt = normalize(cross(vec3(sin(t * .018) * .05, 1., 0.), fw)), up = cross(fw, rt);
   vec3 rd = normalize(uv.x * rt + uv.y * up + 1.5 * fw);
   float k0 = floor(ro.z / 6.);
   for (int j = 0; j < 3; j++) S[j] = starAt(k0 + float(j));
 
   vec3 col = vec3(0); float T = 1., dt = .16;
-  float s = .8 + dt * hash(vec3(gl_FragCoord.xy, 1.));             // ab 0,8 vor der Kamera (sonst riesige weiche Ballen), fester Versatz gegen Streifen
+  float s = .8 + dt * .5 * hash(vec3(gl_FragCoord.xy, 1.));        // ab 0,8 vor der Kamera (sonst riesige weiche Ballen), fester Versatz gegen Streifen
   float Ts[3] = float[3](1., 1., 1.), ts[3];
   for (int j = 0; j < 3; j++) ts[j] = dot(S[j] - ro, rd);
   for (int i = 0; i < 40; i++) {
@@ -90,7 +91,7 @@ void main() {
   for (int j = 0; j < 3; j++) {
     if (ts[j] <= 0.) continue;
     float d = length(S[j] - (ro + rd * ts[j])) / max(ts[j], .5);
-    float tw = .85 + .15 * sin(t * 2.7 + float(j) * 4.1 + k0 * 1.3);
+    float tw = .93 + .07 * sin(t * 1.4 + float(j) * 4.1 + k0 * 1.3);
     vec3 sc = uV == 2 ? vec3(.75, .9, 1.) : vec3(1., .92, .85);
     col += Ts[j] * sc * (exp(-d * d * 9000.) * 1.6 + .0009 / (d * d + .0012) * .25) * tw * smoothstep(9., 4., ts[j]);
   }
@@ -128,7 +129,7 @@ function createRenderer(gl) {
 export function animate(canvas, gl, look, cssW, cssH, raf, still) {
   const draw = createRenderer(gl);
   if (!draw) return null;
-  let scale = Math.min(1, 960 / Math.max(cssW, cssH, 1)), slow = 0, last = 0, stop = false;
+  let scale = Math.min(1, 1280 / Math.max(cssW, cssH, 1)), slow = 0, last = 0, stop = false;
   const t0 = performance.now(), T_STILL = 8;
   const size = () => { canvas.width = Math.max(2, Math.round(cssW * scale)); canvas.height = Math.max(2, Math.round(cssH * scale)); };
   size();
@@ -137,7 +138,7 @@ export function animate(canvas, gl, look, cssW, cssH, raf, still) {
     if (last && now - last < 31) { raf(frame); return; }
     const dt = last ? now - last : 33;
     last = now;
-    if (dt > 50) { if (++slow > 6 && scale > 0.2) { scale *= 0.8; size(); slow = 0; } } else slow = Math.max(0, slow - 1);
+    if (dt > 50) { if (++slow > 6 && scale > 0.4) { scale *= 0.85; size(); slow = 0; } } else slow = Math.max(0, slow - 1);
     draw((now - t0) / 1000 + 2, look);
     raf(frame);
   }
