@@ -8,7 +8,7 @@ import { FULLSCREEN_VERT } from './glsl.js';
 const COMP_FRAG = /* glsl */ `
 precision highp float;
 uniform sampler2D tA, tB;
-uniform float uProg, uMaskR, uBlur, uVeil, uAspect, uTrans, uMix;
+uniform float uProg, uMaskR, uBlur, uVeil, uAspect, uTrans, uMix, uFade;
 uniform vec2 uAnchor, uInner;
 uniform vec3 uEhtA, uEhtB;        // x = Anteil, y = Unschärfe (Bildhöhe), z = Verstärkung
 varying vec2 vUv;
@@ -76,6 +76,8 @@ void main() {
   float m = 1.0 - smoothstep(uMaskR * 0.3, uMaskR * 1.05, r);
   float iris = m * smoothstep(0.0, 0.25, uProg), all = smoothstep(0.62, 1.0, uProg);
   float wB = (1.0 - (1.0 - iris) * (1.0 - all)) * mix(inside, 1.0, smoothstep(0.9, 1.0, uProg));
+  // gleicher Raum (beide Bilder decken sich): flächig überblenden statt Iris
+  if (uFade >= 0.0) wB = uFade;
   // gemischt in gestauchten Werten wie die Zoom-Unschärfe: ein überhelles Bild (Sonne) überstrahlt das andere nicht,
   // die Überblendung läuft für das Auge gleichmäßig
   vec3 ta = ca / (1.0 + luma(ca)), tm = mix(ta, cb / (1.0 + luma(cb)), wB);
@@ -189,7 +191,7 @@ export function createPost(renderer) {
   const mat = (frag, uniforms) => new THREE.ShaderMaterial({ vertexShader: FULLSCREEN_VERT, fragmentShader: frag, uniforms, depthTest: false, depthWrite: false });
   const compMat = mat(COMP_FRAG, {
     tA: { value: null }, tB: { value: null }, uProg: { value: 0 }, uMaskR: { value: 0 }, uBlur: { value: 0 }, uVeil: { value: 0 },
-    uAspect: { value: 1 }, uTrans: { value: 0 }, uMix: { value: -1 }, uAnchor: { value: new THREE.Vector2(0.5, 0.5) }, uInner: { value: new THREE.Vector2(0.5, 0.5) },
+    uAspect: { value: 1 }, uTrans: { value: 0 }, uMix: { value: -1 }, uFade: { value: -1 }, uAnchor: { value: new THREE.Vector2(0.5, 0.5) }, uInner: { value: new THREE.Vector2(0.5, 0.5) },
     uEhtA: { value: new THREE.Vector3() }, uEhtB: { value: new THREE.Vector3() },
   });
   const downMat = mat(DOWN_FRAG, { tSrc: { value: null }, uTexel: { value: new THREE.Vector2() }, uKaris: { value: 0 } });
@@ -235,7 +237,7 @@ export function createPost(renderer) {
     return up[0].texture;
   }
 
-  // a = einzige bzw. äußere Ebene, b = innere Ebene (nur im Flug), tr = Werte des Flugs (tr.mix: Überblendung statt Iris),
+  // a = einzige bzw. äußere Ebene, b = innere Ebene (nur im Flug), tr = Werte des Flugs (tr.mix: Überblendung statt Iris, tr.fade: dasselbe bei deckungsgleichen Bildern),
   // look = Belichtung + Grading
   function render(a, b, tr, look, time) {
     const u = compMat.uniforms;
@@ -248,6 +250,7 @@ export function createPost(renderer) {
       u.uMaskR.value = tr.maskR;
       u.uBlur.value = tr.blur;
       u.uVeil.value = tr.veil;
+      u.uFade.value = tr.fade != null ? tr.fade : -1;
       u.uAnchor.value.copy(tr.anchor);
       u.uInner.value.copy(tr.inner);
     }

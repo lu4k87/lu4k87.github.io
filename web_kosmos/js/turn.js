@@ -11,7 +11,8 @@
 // auseinandergekippt (rad, ≈ 23°) – sonst stünde das Bild bei dicht liegenden Ankern (Orion → Krebs) fast still;
 // fit = Abstand oben mindestens fit × Weg E–M (beide gut im Bild, weiter Schwenk wird langsam);
 // pace = Grenzen der Zeitdichte relativ zur Reisefahrt; gain = höchstens so viel länger wird die ganze Fahrt dadurch
-export const TURN = { k: 0.5, sweep: 0.8, tilt: 0.4, fit: 1.5, pace: [0.5, 5], gain: 1.6 };
+// (User 28.10.2026: Schwenk über die Kuppe weicher, sweep 0,8 → 0,65, tilt 0,4 → 0,3)
+export const TURN = { k: 0.5, sweep: 0.65, tilt: 0.3, fit: 1.5, pace: [0.5, 5], gain: 1.6 };
 
 const sub = (a, b) => [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
 const add = (a, b) => [a[0] + b[0], a[1] + b[1], a[2] + b[2]];

@@ -179,7 +179,8 @@ export function create(ctx) {
     if (dw.type === 'I') for (let i = 0; i < 3; i++) star(bag, dw.p.clone().add(new THREE.Vector3(gauss(rand), gauss(rand), gauss(rand)).multiplyScalar(r * 0.4)), PINK.map((v) => v * 5), 0.14);
   }
   const cloud = (b) => { const g = new THREE.Group(); g.add(keep(pointCloud(b.pos, b.col, b.size, { min: 1.1 })), keep(lightBlobs(b.hp, b.hc, b.hs), glows)); return g; };
-  scene.add(cloud(bags.own));
+  const own = cloud(bags.own);
+  scene.add(own);
   const kids = cloud(bags.kids);
   scene.add(kids);
 
@@ -288,7 +289,8 @@ export function create(ctx) {
 
   const SGR_MARK = sgrPath(100, -1, 1.2)[8];
   const hotspots = [
-    { id: 'mw', kind: 'dive', to: 'galaxy', pos: new THREE.Vector3(0, 0, 0) },
+    // gleicher Raum: Station 3 nutzt dasselbe Achsenkreuz (Zentrum im Ursprung, kpc) – Flug als Überblendung (main.js sameSpace)
+    { id: 'mw', kind: 'dive', to: 'galaxy', pos: new THREE.Vector3(0, 0, 0), same: true },
     { id: 'm31', kind: 'info', pos: m31pos },
     { id: 'm33', kind: 'info', pos: m33pos },
     { id: 'lmc', kind: 'info', pos: lmc },
@@ -326,8 +328,21 @@ export function create(ctx) {
     home = { pos: g.position.clone().addScaledVector(n.addScaledVector(s, 0.8).normalize(), d), target: g.position.clone() };
   }
 
+  // Flug in die Milchstraße: Zwerggalaxien, SMC und LMC zögen dicht an der Kamera vorbei – sie blenden zu Beginn der Fahrt aus
+  // und beim Hinausflug erst gegen Ende wieder ein (k = Anteil des Bildes von Station 3, Darstellung)
+  const passing = [];
+  for (const g of [own, lmcG]) g.traverse((o) => { if (o.material && o.material.uniforms && o.material.uniforms.uGain) passing.push([o.material.uniforms.uGain, o.material.uniforms.uGain.value]); });
+  let passK = 1;
+  function flight(k) {
+    const g = 1 - THREE.MathUtils.smoothstep(k, 0.03, 0.3);
+    if (g === passK) return;
+    passK = g;
+    for (const [u, v] of passing) u.value = v * g;
+    own.visible = lmcG.visible = g > 0.002;
+  }
+
   return {
-    scene, camera, unit: KPC, hotspots, controls, home,
+    scene, camera, unit: KPC, hotspots, controls, home, flight,
     orbit: { minDistance: 30, maxDistance: 4500, cineSpeed: 0.5 },
     look: { exposure: 1.15, bloom: 0.09, sat: 1.08, con: 0.12 },
     update(dt) {
