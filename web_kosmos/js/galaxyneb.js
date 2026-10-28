@@ -27,8 +27,8 @@ const TIER = [{ size: 96, steps: 64, scale: 0.4 }, { size: 128, steps: 96, scale
 const v3 = (c) => `vec3(${c.map((x) => x.toFixed(3)).join(', ')})`;
 
 // r Staub, g HII-Knoten, b diffuses Gas (Platte gestreckt: y im Feld = y · EXT / H)
-const fieldBody = (arms) => /* glsl */ `
-${armConsts(arms, [])}
+const fieldBody = (arms, rings) => /* glsl */ `
+${armConsts(arms, rings)}
 vec4 field(vec3 p) {
   vec3 q = vec3(p.x, p.y * ${(H / EXT).toFixed(5)}, p.z);
   float R = length(q.xz), phi = atan(-q.z, -q.x);
@@ -48,7 +48,9 @@ vec4 field(vec3 p) {
   return vec4(dust, hii, wim, 0.0);
 }`;
 
-const VOL_FRAG = /* glsl */ `
+// bar/bulge = Anteil von Balken und Bulge am Sternlicht (1 = Milchstraße), barAng = Lage des Balkens
+const volFrag = ({ bar = 1, bulge = 1, barAng = BAR_ANG } = {}) => /* glsl */ `
+uniform vec3 uCam;
 uniform float uSteps, uTime, uT, uGain, uDust, uHii, uWim, uLight, uGlim;
 uniform highp sampler3D uField;
 varying vec3 vP;
@@ -60,7 +62,7 @@ void sampleGal(vec3 p, out vec3 e, out float s) {
   float R = length(q.xz);
   // Sternlicht: exponentielle Scheibe, Balken, Bulge (die Punkte liefern die Sterne, hier nur das unaufgelöste Licht)
   float disk = exp(-R / 2.6) * exp(-abs(q.y) / 0.3) * smoothstep(17.0, 12.0, R);
-  vec2 bu = vec2(-cos(${BAR_ANG.toFixed(5)}), -sin(${BAR_ANG.toFixed(5)})), bv = vec2(sin(${BAR_ANG.toFixed(5)}), -cos(${BAR_ANG.toFixed(5)}));
+  vec2 bu = vec2(-cos(${barAng.toFixed(5)}), -sin(${barAng.toFixed(5)})), bv = vec2(sin(${barAng.toFixed(5)}), -cos(${barAng.toFixed(5)}));
   float u = dot(q.xz, bu) / 2.1, v = dot(q.xz, bv) / 0.55, w = q.y / 0.32;
   float bar = exp(-0.5 * (u * u + v * v + w * w));
   float bulge = exp(-length(q * vec3(1.0, 1.45, 1.0)) / 0.42);
@@ -75,12 +77,13 @@ void sampleGal(vec3 p, out vec3 e, out float s) {
   // vor dem Rand der Platte auf null: sonst zeichnet der Strahl die Kanten des Kastens (Blick von der Seite)
   float fade = smoothstep(${H.toFixed(2)}, ${(0.45 * H).toFixed(2)}, abs(q.y)) * smoothstep(${EXT.toFixed(1)}, ${(EXT - 3).toFixed(1)}, R);
   hii *= fade; dust *= fade;
-  e = fade * (${v3(C_OLD)} * (disk * 0.55 + bar * 0.6 + bulge * 1.4) * uLight
+  e = fade * (${v3(C_OLD)} * (disk * 0.55 + bar * ${(0.6 * bar).toFixed(3)} + bulge * ${(1.4 * bulge).toFixed(3)}) * uLight
      + ${v3(C_HII)} * hii * uHii + ${v3(C_BLUE)} * hii * uHii * 0.12 + ${v3(C_WIM)} * f.b * uWim) * uGain;
   s = dust * uDust * 2.2;
 }
 void main() {
-  vec3 ro = cameraPosition, rd = normalize(vP - cameraPosition);
+  // im Achsenkreuz der Platte (Mesh gedreht/skaliert: andere Galaxien, levels/andromeda.js); uCam = Kamera dort
+  vec3 ro = uCam, rd = normalize(vP - uCam);
   float b = dot(ro, rd), c = dot(ro, ro) - ${(EXT * EXT).toFixed(2)}, h = b * b - c;
   if (h <= 0.0) discard;
   h = sqrt(h);
@@ -109,14 +112,16 @@ void main() {
   gl_FragColor = vec4(L, 1.0 - T);
 }`;
 
-export function nebulaVolume(renderer, { arms, detail = 1 }) {
+// Andere Galaxien (Station Andromeda): rings wie buildGalaxy, look = { bar, bulge, barAng } für das Sternlicht,
+// quat/scale legen die Platte ins Achsenkreuz der Station (Modelleinheiten × scale = kpc wie buildGalaxy)
+export function nebulaVolume(renderer, { arms, rings = [], detail = 1, look, quat = null, scale = 1 }) {
   const q = TIER[detail > 0.9 ? 2 : detail > 0.7 ? 1 : 0];
-  const field = bakeField(renderer, { size: q.size, extent: EXT, body: fieldBody(arms) });
+  const field = bakeField(renderer, { size: q.size, extent: EXT, body: fieldBody(arms, rings) });
   const mat = new THREE.ShaderMaterial({
-    vertexShader: 'varying vec3 vP; void main() { vec4 w = modelMatrix * vec4(position, 1.0); vP = w.xyz; gl_Position = projectionMatrix * viewMatrix * w; }',
-    fragmentShader: VOL_FRAG,
+    vertexShader: 'varying vec3 vP; void main() { vP = position; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
+    fragmentShader: volFrag(look),
     uniforms: {
-      uField: { value: field.texture }, uSteps: { value: q.steps }, uTime: { value: 0 }, uT: { value: 0 },
+      uCam: { value: new THREE.Vector3() }, uField: { value: field.texture }, uSteps: { value: q.steps }, uTime: { value: 0 }, uT: { value: 0 },
       uGain: { value: 1 }, uDust: { value: 1.8 }, uHii: { value: 2.2 }, uWim: { value: 0.05 }, uLight: { value: 0.1 }, uGlim: { value: 1 },
     },
     side: THREE.BackSide, transparent: true, depthWrite: false,
@@ -124,6 +129,9 @@ export function nebulaVolume(renderer, { arms, detail = 1 }) {
   });
   const mesh = new THREE.Mesh(new THREE.SphereGeometry(EXT, 48, 24), mat);
   mesh.frustumCulled = false;
+  if (quat) mesh.quaternion.copy(quat);
+  mesh.scale.setScalar(scale);
+  mesh.updateMatrixWorld(true);
   const vol = offscreen(renderer, mesh);
   vol.setScale(q.scale);
   vol.quad.renderOrder = 3;   // nach Sternen und Punkt-Staub: dämpft das Licht dahinter
@@ -135,6 +143,8 @@ export function nebulaVolume(renderer, { arms, detail = 1 }) {
     // Glimmen ist langsam: 12 neue Bilder je Sekunde reichen, dazwischen nur bei Kamerabewegung
     update(t, T, cam) {
       if (!vol.quad.visible) return;
+      u.uCam.value.copy(cam.position);
+      mesh.worldToLocal(u.uCam.value);
       const k = u.uGlim.value > 0 ? Math.floor(t * 12) : 0;
       if (k !== step || u.uT.value !== T) { step = k; u.uTime.value = k / 12; u.uT.value = T; vol.invalidate(); }
       vol.render(cam);

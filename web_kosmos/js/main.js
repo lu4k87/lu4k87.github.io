@@ -39,6 +39,7 @@ const LOADERS = {
   pulsar: () => import('./levels/pulsar.js'),
   sgra: () => import('./levels/sgra.js'),
   local: () => import('./levels/local.js'),
+  andromeda: () => import('./levels/andromeda.js'),
   web: () => import('./levels/web.js'),
   cmb: () => import('./levels/cmb.js'),
   // bigbang (Station 11 Urknall): vorerst aus der App genommen, Szene bleibt in levels/bigbang.js (TODOS K1)

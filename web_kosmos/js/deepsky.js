@@ -22,6 +22,7 @@ const DEEP = {
   pulsar: { cirrus: 1, gal: 1, seed: 11 },
   galaxy: { outside: true, cirrus: 0, gal: 1.4, seed: 9 },
   local: { outside: true, cirrus: 0, gal: 0.8, seed: 13 },
+  andromeda: { outside: true, cirrus: 0, gal: 1.2, seed: 21 },
 };
 setDeepAt(Object.keys(DEEP));   // Regler „Tiefer Himmel“ im Reiter Station nur an diesen Stationen (settings.js)
 

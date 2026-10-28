@@ -377,6 +377,20 @@ export const SCALE_COMPARISONS = {
       },
     ],
   },
+  andromeda: {
+    sizeStr: 'Ø ≈ 220.000 Lichtjahre',
+    tabs: [
+      {
+        name: 'Galaxien-Vergleich',
+        items: [
+          { name: 'Andromeda', size: '220.000 Lj', r: 50, color: 'radial-gradient(circle at 35% 35%, #fbcfe8, #4c1d95)', type: 'galaxy' },
+          { name: 'Milchstraße', size: '100.000 Lj', r: 35, color: 'radial-gradient(circle at 35% 35%, #bae6fd, #1e3a8a)', type: 'galaxy' },
+          { name: 'M32', size: '6.500 Lj', r: 6, color: 'radial-gradient(circle at 35% 35%, #fde68a, #78350f)', type: 'galaxy' },
+        ],
+        note: 'Andromedas Sternscheibe reicht mehr als doppelt so weit wie die der Milchstraße; ihr Begleiter M32 ist dagegen winzig und sehr dicht.',
+      },
+    ],
+  },
   sgra: {
     sizeStr: 'Schatten Ø ≈ 53 µas (≈ 52 Mio. km)',
     tabs: [

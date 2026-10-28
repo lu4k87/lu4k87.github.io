@@ -18,7 +18,7 @@ import { registerLayers } from '../layers.js';
 const RAD = Math.PI / 180;
 // Zwerggalaxien (l, b in Grad, d in kpc, Typ), gerundet nach McConnachie 2012: S = sphäroidal (alt, rötlich, sehr
 // lichtschwach), E = elliptisch (kompakt, hell), I = irregulär (junge blaue Sterne, HII-Regionen)
-const DWARFS = [
+export const DWARFS = [
   ['Sagittarius-Zwerg', 5.6, -14.2, 26, 'S'], ['Draco', 86.4, 34.7, 76, 'S'], ['Ursa Minor', 105.0, 44.8, 76, 'S'], ['Sculptor', 287.5, -83.2, 86, 'S'],
   ['Sextans', 243.5, 42.3, 86, 'S'], ['Carina', 260.1, -22.2, 105, 'S'], ['Fornax-Zwerg', 237.1, -65.7, 147, 'S'], ['Leo II', 220.2, 67.2, 233, 'S'],
   ['Leo I', 226.0, 49.1, 254, 'S'], ['M32', 121.2, -22.0, 785, 'E'], ['M110', 120.7, -21.1, 824, 'E'], ['NGC 185', 120.8, -14.5, 617, 'E'],
@@ -36,19 +36,19 @@ const DTYPE = {
 // Rotationskurven (Modell): Milchstraße wie Station 3, Musterdrehzahl Ωp = 28,2 km/s/kpc (Dias et al. 2019);
 // vmax Andromeda ≈ 250 km/s (Chemin et al. 2009), M33 ≈ 120 km/s (Corbelli et al. 2014), LMC ≈ 92 km/s (van der Marel &
 // Kallivayalil 2014). Deren Musterdrehzahlen sind nicht gemessen: Korotation bei ≈ ⅔ des Scheibenrands (Annahme)
-const ROT = {
+export const ROT = {
   mw: { vmax: 230, rT: 1.2, omegaP: 28.2 }, m31: { vmax: 250, rT: 1.5, omegaP: 19 },
   m33: { vmax: 120, rT: 3, omegaP: 15 }, lmc: { vmax: 92, rT: 1.5, omegaP: 20 },
 };
 // Arme in Modelleinheiten des Generators (× scale = kpc). M31: Ring bei ≈ 10 kpc und ein innerer bei ≈ 1,5 kpc (Gordon et al.
 // 2006), dazu zwei eng gewundene, schwache Arme; M33: zwei Hauptarme, flockig; LMC: ein Arm am Balken (Magellan-Typ) – Modell
 const arm = (a) => ({ ...a, phiRef: a.beta * RAD });
-const M31_ARMS = [
+export const M31_ARMS = [
   arm({ rRef: 8.5, beta: 0, pitch: 8, span: [60, -260], w: 0.45, width: 0.32 }),
   arm({ rRef: 8.5, beta: 180, pitch: 8, span: [240, -80], w: 0.45, width: 0.32 }),
 ];
-const M31_RINGS = [{ R: 10 / 1.4, width: 0.55, w: 1 }, { R: 1.5 / 1.4, width: 0.22, w: 0.3 }];
-const M33_ARMS = [
+export const M31_RINGS = [{ R: 10 / 1.4, width: 0.55, w: 1 }, { R: 1.5 / 1.4, width: 0.22, w: 0.3 }];
+export const M33_ARMS = [
   arm({ rRef: 6, beta: 30, pitch: 24, span: [120, -200], w: 1, width: 0.55 }),
   arm({ rRef: 6, beta: 210, pitch: 24, span: [300, -20], w: 1, width: 0.55 }),
   arm({ rRef: 9, beta: 110, pitch: 28, span: [140, -60], w: 0.45, width: 0.4 }),
@@ -81,13 +81,13 @@ function futureTrack(rel0) {
   return track;
 }
 
-const SUN = new THREE.Vector3(-R0, 0, 0), UP = new THREE.Vector3(0, 1, 0);
-const at = (l, b, d) => new THREE.Vector3(...galToScene(l, b, d, R0));
+export const SUN = new THREE.Vector3(-R0, 0, 0), UP = new THREE.Vector3(0, 1, 0);
+export const at = (l, b, d) => new THREE.Vector3(...galToScene(l, b, d, R0));
 // Richtung von der Sonne (galaktisch, Einheitsvektor) → Szene in Entfernung d
 const dirLB = (l, b) => new THREE.Vector3(Math.cos(b * RAD) * Math.cos(l * RAD), Math.cos(b * RAD) * Math.sin(l * RAD), Math.sin(b * RAD));
 const helio = (u, d) => new THREE.Vector3(-R0 + u.x * d, u.z * d, -u.y * d);
 // Ausrichtung einer Scheibe: Normale um `inc` gegen die Sichtlinie von der Sonne geneigt, Lage nach Positionswinkel
-function orient(group, pos, inc, pa) {
+export function orient(group, pos, inc, pa) {
   const los = pos.clone().sub(SUN).normalize();
   const e1 = new THREE.Vector3().crossVectors(los, UP).normalize();
   const e2 = new THREE.Vector3().crossVectors(e1, los).normalize();
@@ -291,7 +291,7 @@ export function create(ctx) {
   const hotspots = [
     // gleicher Raum: Station 3 nutzt dasselbe Achsenkreuz (Zentrum im Ursprung, kpc) – Flug als Überblendung (main.js sameSpace)
     { id: 'mw', kind: 'dive', to: 'galaxy', pos: new THREE.Vector3(0, 0, 0), same: true },
-    { id: 'm31', kind: 'info', pos: m31pos },
+    { id: 'm31', kind: 'dive', to: 'andromeda', pos: m31pos, same: true },
     { id: 'm33', kind: 'info', pos: m33pos },
     { id: 'lmc', kind: 'info', pos: lmc },
     { id: 'mstream', kind: 'info', pos: ms(-70, 75), visible: () => streamsOn,

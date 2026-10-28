@@ -26,7 +26,7 @@ const ICON_OF = {
   wave: ['Ausfluss', 'Strömung', 'Wind', 'Gezeiten', 'Bewegung'], layers: ['Aufbau', 'Schichten', 'Struktur', 'Kern', 'Allgemein'],
   cloud: ['Nebel', 'Gas', 'Gaswolke', 'Krebsnebel', 'Staub', 'Flügel', 'Umgebung'],
   sky: ['Himmel', 'Sternhimmel', 'Sterne', 'Stern', 'Funkeln', 'Hintergrund', 'Strahlung'],
-  galaxy: ['Galaxien', 'Milchstraße', 'Fermi-Blasen'], net: ['Netz'], probe: ['Sonde', 'Station', 'Teleskop', 'Sonnenschild'],
+  galaxy: ['Galaxien', 'Milchstraße', 'Andromeda', 'Fermi-Blasen'], net: ['Netz'], probe: ['Sonde', 'Station', 'Teleskop', 'Sonnenschild'],
 };
 export const TAB_ICONS = Object.fromEntries(Object.entries(ICON_OF).flatMap(([k, names]) => names.map((n) => [n, k])));
 export const tabIcon = (title) => TAB_ICONS[title] || 'layers';
