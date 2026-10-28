@@ -68,6 +68,9 @@ export const SOURCES = {
   'reid-2019': { t: 'Trigonometric parallaxes of high-mass star forming regions', by: 'Reid et al. 2019, ApJ 885, 131', url: 'https://doi.org/10.3847/1538-4357/ab4a11' },
   'bland-2016': { t: 'The Galaxy in context', by: 'Bland-Hawthorn & Gerhard 2016, ARA&A 54', url: 'https://doi.org/10.1146/annurev-astro-081915-023441' },
   'menten-2007': { t: 'Distance to the Orion Nebula (VLBA, 414 pc)', by: 'Menten et al. 2007, A&A 474, 515', url: 'https://doi.org/10.1051/0004-6361:20078247' },
+  'webb-2510': { t: 'Webb NIRCam: Roter Spinnennebel NGC 6537 (potm2510a)', by: 'ESA/Webb, NASA & CSA, J. H. Kastner, 28.10.2025', url: 'https://esawebb.org/images/potm2510a/' },
+  'kastner-2025': { t: 'JWST/NIRCam imaging of the bipolar planetary nebula NGC 6537: the (Infra)red Spider, revealed', by: 'Kastner et al. 2025, ApJ 993, 79', url: 'https://doi.org/10.3847/1538-4357/ae0706' },
+  'matsuura-2005': { t: 'The symmetric dust shell and the central star of the bipolar planetary nebula NGC 6537', by: 'Matsuura et al. 2005, MNRAS', url: 'https://arxiv.org/abs/astro-ph/0507641' },
   'odell-2001': { t: 'The Orion Nebula and its associated population', by: "O'Dell 2001, ARA&A 39", url: 'https://doi.org/10.1146/annurev.astro.39.1.99' },
   'hester-2008': { t: 'The Crab Nebula: an astrophysical chimera', by: 'Hester 2008, ARA&A 46', url: 'https://doi.org/10.1146/annurev.astro.45.051806.110608' },
   'atnf': { t: 'ATNF Pulsar Catalogue (PSR B0531+21)', by: 'Manchester et al. 2005, AJ 129', url: 'https://www.atnf.csiro.au/research/pulsar/psrcat/' },
@@ -969,6 +972,7 @@ export const STATIONS = {
     hotspots: {
       sun: { t: 'Sonne', x: 'Im Orion-Arm, einem kleinen Arm zwischen Perseus- und Sagittarius-Arm. Hineinfliegen: das Sonnensystem.', s: 'reid-2019' },
       orion: { t: 'Orion-Nebel', x: 'Rund 1.270 Lj von uns, im selben Arm wie die Sonne. Hineinfliegen.', s: 'maiz-2022' },
+      spider: { t: 'Roter Spinnennebel', x: 'Planetarischer Nebel im Schützen, rund 5.900 Lj entfernt, fast in der Ebene der Scheibe. Hineinfliegen.', s: 'kastner-2025' },
       crab: { t: 'Krebsnebel', x: 'Rund 6.200 Lj entfernt, Richtung Perseus-Arm. Hineinfliegen.', s: 'lin-2023' },
       sgra: { t: 'Sagittarius A*', x: 'Das Schwarze Loch im Zentrum, 27.000 Lj entfernt. Hineinfliegen.', s: 'gravity-2022' },
       bar: { t: 'Zentraler Balken', x: 'Eine längliche Struktur aus überwiegend alten, rötlichen Sternen: Halblänge 5,0 kpc (gut 16.000 Lj), 28–33° gegen die Linie Sonne–Zentrum gedreht.', s: 'wegg-2015' },
@@ -1003,6 +1007,25 @@ export const STATIONS = {
       m43: { t: 'M43 (de Mairans Nebel)', x: 'Eine eigene kleine Blase nordöstlich des Trapezes, durch eine Staubbahn vom Hauptnebel getrennt, ionisiert vom Stern NU Orionis (B0.5, ≈ 25.000 K). Entfernung wie M42, Durchmesser etwa 2 Lj.', s: 'odell-2001' },
       bnkl: { t: 'BN/KL-Region', x: 'Hinter der Ionisationsfront, tief in OMC-1, entstehen gerade massereiche Sterne (Becklin-Neugebauer-Objekt, Kleinmann-Low-Nebel). Vor etwa 500 Jahren zerfiel dort ein System junger Sterne; die Sterne flogen auseinander und lösten einen explosionsartigen Gasausfluss aus, den ALMA abbildet (Bally et al. 2017). Nur im Infrarot sichtbar.', s: 'bally-2017' },
       sho: { t: 'Hubble-Palette', x: 'Falschfarben nach Hubble-Vorbild: Schwefel ([S II] 672 nm) → rot, Wasserstoff (Hα 656 nm) → grün, Sauerstoff ([O III] 501 nm) → blau. Sie trennt die Linien, die im sichtbaren Licht fast gleich rot aussehen, und zeigt die Schichtung der Ionisation.', s: 'odell-2009' },
+    },
+  },
+  spider: {
+    n: '03B', title: 'Roter Spinnennebel', kicker: 'Planetarischer Nebel', parent: 'galaxy', width: 1e17, dist: 5900 * LY, lookback: 5900 * YEAR, size: { v: 7.2 * LY, l: 'Länge beider Keulen', s: 'kastner-2025' },
+    lead: 'Ein sterbender, sonnenähnlicher Stern hat seine äußeren Schichten abgestoßen. Schnelle Ausflüsse entlang der Polachse haben zwei Blasen aus Gas aufgeblasen – die Beine der Spinne –, eine Staubscheibe schnürt die Taille ein.',
+    facts: [
+      { v: '≈ 5.900', u: 'Lj', l: 'Entfernung (1,8 ± 0,5 kpc, unsicher)', s: 'kastner-2025' },
+      { v: '≈ 3,6', u: 'Lj', l: 'Länge jeder Keule (1,1 pc)', s: 'kastner-2025' },
+      { v: '300–400', u: 'km/s', l: 'Ausströmen entlang der Polachse', s: 'kastner-2025' },
+      { v: '≈ 160.000', u: 'K', l: 'Oberfläche des Zentralsterns', s: 'kastner-2025' },
+    ],
+    note: 'Volumen-Modell nach Kastner et al. 2025 (JWST/NIRCam, ALMA): Polachse unter 38° zur Himmelsebene, Nordost-Keule von uns weg, Keulen als geschlossene Blasen, Torus-Radius 0,13 pc, [Fe II] an gegenüberliegenden Keulenwänden. Form nach der Webb-Aufnahme potm2510a (nur Vorlage, Bild nicht eingebunden), Fäden, Klumpen und Feldsterne statistisch. Farbmodi nach den NIRCam-Filtern (H2 2,12 µm, [Fe II] 1,64 µm, PAH 3,3 µm, Brα 4,05 µm) und Hubble im sichtbaren Licht, „Schichten“ in Falschfarben je Bauteil. Entfernung in der Literatur 0,9–2,4 kpc (Matsuura 2005). Helligkeit verstärkt, Knoten stark beschleunigt.',
+    sources: ['webb-2510', 'kastner-2025', 'matsuura-2005'],
+    hotspots: {
+      star: { t: 'Zentralstern', x: 'Einer der heißesten bekannten Sterne in einem planetarischen Nebel, rund 160.000 K. Webb zeigt ihn rot: Heißer Staub (≈ 1.000 K), vermutlich in einer Scheibe, leuchtet im Infrarot. Ein unsichtbarer Begleiter könnte die schmale Taille erklären.', s: 'kastner-2025' },
+      lobene: { t: 'Nordost-Keule', x: 'Eine geschlossene Blase, deren Haut warmer molekularer Wasserstoff (H2) nachzeichnet. Sie zeigt von uns weg; ihr Gas strömt mit 300–400 km/s nach außen und ist rund 3.700 Jahre alt.', s: 'kastner-2025' },
+      lobesw: { t: 'Südwest-Keule', x: 'Das Gegenstück zeigt zu uns. Die Polachse steht etwa 38° gegen die Himmelsebene – erst die Geschwindigkeiten im Spektrum verraten, welche Keule vorn liegt.', s: 'kastner-2025' },
+      iron: { t: 'S-förmiges [Fe II]-Band', x: 'Ionisiertes Eisen leuchtet punktsymmetrisch am Südrand der einen und am Nordrand der anderen Keule: Hier schert ein schneller, gebündelter Ausfluss an früher ausgeworfenem Gas und erzeugt Stoßwellen.', s: 'kastner-2025' },
+      torus: { t: 'Staub-Torus', x: 'Kaltes Gas und Staub in der Äquatorebene, Radius rund 0,13 pc, dehnt sich mit nur ≈ 10 km/s aus. Er ist älter als die Keulen (≈ 10.000 Jahre) und lenkt den schnellen Ausfluss zu den Polen.', s: 'kastner-2025' },
     },
   },
   crab: {
