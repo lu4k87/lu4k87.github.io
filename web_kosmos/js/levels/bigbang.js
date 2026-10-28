@@ -235,7 +235,7 @@ export function create(ctx) {
     { id: 'hint', type: 'toggle', label: 'Hinweis „keine Explosion an einem Ort“', value: true, set: (v) => { hintOn = v; },
       hint: 'Kurze Zeile in den ersten Sekunden des Films.', active: () => film.t < HINT.to, only: 'Erscheint nur in den ersten Sekunden des Films.' },
     { id: 'streak', type: 'toggle', group: 'Blitz', label: 'Lichtstreifen', value: true, set: (v) => { streakOn = v; apply(); },
-      active: () => settings.S.lens, only: 'Wirkt nur mit „Farbsaum und Linsenreflex“ im Reiter Global.' },
+      active: () => settings.S.lens, only: 'Wirkt nur mit „Linsenreflex“ im Reiter Global.' },
     { id: 'web', type: 'range', group: 'Netz der Materie', label: 'Helligkeit', value: 1, min: 0, max: 3, step: 0.1, unit: '×', set: (v) => { webGain = v; apply(); } },
     { id: 'galGain', type: 'range', group: 'Sterne und Galaxien', label: 'Helligkeit', value: 1, min: 0, max: 3, step: 0.1, unit: '×',
       active: () => film.t > 15, only: 'Die ersten Sterne leuchten ab 0:15 im Film auf.',

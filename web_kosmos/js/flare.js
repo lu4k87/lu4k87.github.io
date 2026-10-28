@@ -2,7 +2,7 @@
 // entlang der Achse Quelle–Bildmitte, wie in einer Kamera mit mehreren Linsen.
 // Look: Master-Optik (Linse:B) mit spektralem Beugungsring (Chromatische Aberration: Rot/Grün/Blau-Dispersion),
 // breitem weißem Innen-Glanzbogen und tiefrotem/magenta Sensor-Ghost auf der optischen Achse;
-// umschaltbar auf klassischen Kinofilm-Halo (Linse:A); Zahnrad › Global › Effekte: „Farbsaum und Linsenreflex“ schaltet ab,
+// umschaltbar auf klassischen Kinofilm-Halo (Linse:A); Zahnrad › Global › Effekte: „Linsenreflex“ schaltet ab,
 // „Stärke Linsenreflex“ (`lensAmt`, 0–3×) regelt alle Teile gemeinsam.
 
 import * as THREE from 'three';

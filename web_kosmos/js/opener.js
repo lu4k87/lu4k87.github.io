@@ -56,7 +56,7 @@ export const TUNE = {
   core: 1, streak: 1, streakLen: 1, rays: 1, rayLen: 1, ghosts: 1, spikes: 1, hue: 204, sat: 0.8,
   dust: 1, burst: 1, blur: 1, bokeh: 1, shock: 0, shake: 1,
   push: 1, drift: 1, arc: 28, rise: 12, endDist: 1, endAz: 0, endEl: 0,
-  exposure: 1, bloom: 1, grain: 1, ca: 1, vig: 1, bars: 1,
+  exposure: 1, bloom: 1, grain: 1, vig: 1, bars: 1,
 };
 // weiß halten (s)
 const HOLD = 0.25;
@@ -625,7 +625,7 @@ export function createOpener(ctx, station, tune = { ...TUNE }) {
   const look = { ...LOOK, sh: [...LOOK.sh], hi: [...LOOK.hi] };
   const END = station.look || {};
   const endLook = Object.fromEntries(Object.keys(LOOK).map((key) => [key, END[key] ?? LOOK[key]]));
-  const FILM = { exposure: 1, bloom: 0.13, sat: 1.12, con: 0.14, sh: [0.97, 0.99, 1.04], hi: [1.0, 1.0, 1.02], vig: 0.5, ca: 0.011, grain: 0.022 };
+  const FILM = { exposure: 1, bloom: 0.13, sat: 1.12, con: 0.14, sh: [0.97, 0.99, 1.04], hi: [1.0, 1.0, 1.02], vig: 0.5, grain: 0.022 };
 
   function setTune(t) {
     k = { ...TUNE, ...t };
@@ -820,7 +820,7 @@ export function createOpener(ctx, station, tune = { ...TUNE }) {
     } else { out.mix = 0; out.rise = 0; }
     if (lv && lv.opening) lv.opening(out.view === 'level' ? out.rise : 1);
 
-    // Look: Film-Look; Spannung = mehr Farbsaum, Glühen und atmende Vignette, Knall = Farbsaum-Schlag, im Plasma Anpassung
+    // Look: Film-Look; Spannung = mehr Glühen und atmende Vignette, im Plasma Anpassung
     // des Auges, im dunklen Zeitalter dunkler, im Rückzug Übergang auf den Look der Station
     const a = sstep(M.gal, M.end - 0.5, t), tl = 1 - sstep(M.gal, M.end, t);
     for (const key of Object.keys(LOOK)) {
@@ -833,12 +833,10 @@ export function createOpener(ctx, station, tune = { ...TUNE }) {
     look.exposure = (out.view === 'own' ? FILM.exposure * flare : adapt * dark * lerp(1, endLook.exposure, a)) * lerp(1, k.exposure, tl);
     look.bloom = (out.view === 'own' ? FILM.bloom + 0.05 * cg + 0.1 * pop - 0.04 * f : lerp(lerp(0.15, 0.17, sstep(M.clear, M.gal, t)), endLook.bloom, a)) * lerp(1, k.bloom, tl);
     look.grain *= lerp(1, k.grain, tl);
-    look.ca *= lerp(1, k.ca, tl) * (out.view === 'own' ? 1 + 1.2 * cg + 4 * pop + 1.5 * f : 1);
     if (out.view === 'own') {
-      // Stille vor dem Knall: Farbe weicht, Vignette schließt, Farbsaum und Korn; mit dem Knall kehrt die Farbe satt zurück
+      // Stille vor dem Knall: Farbe weicht, Vignette schließt, Korn; mit dem Knall kehrt die Farbe satt zurück
       const hush = k.hush * inh * (1 - snap);
       look.sat *= 1 - 0.75 * hush + 0.35 * k.hush * (s > 0 ? sstep(0, 0.4, s) * Math.exp(-s / 1.5) : 0);
-      look.ca *= 1 + 3 * hush;
       look.vig *= 1 + 1.4 * hush;
       look.grain *= 1 + 1.5 * hush;
       look.exposure *= 1 - 0.25 * hush;

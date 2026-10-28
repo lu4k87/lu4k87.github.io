@@ -1,6 +1,6 @@
 // Bildpipeline: Ebenen-Bilder (HDR, linear) → Zusammenführung beim Flug (Iris um den Anker, Zoom-Unschärfe, Lichtschleier,
 // EHT-Blick) → Bloom (Mip-Kette nach Jimenez 2014: 13-Tap abwärts, Zelt-Filter aufwärts, energieerhaltend gemischt) →
-// Belichtung, Grading, ACES-Tonemapping, Vignette, Farbsaum, Kinobalken, Korn → Bildschirm (sRGB).
+// Belichtung, Grading, ACES-Tonemapping, Vignette, Kinobalken, Korn → Bildschirm (sRGB).
 
 import * as THREE from 'three';
 import { FULLSCREEN_VERT } from './glsl.js';
@@ -126,7 +126,7 @@ void main() {
 const FINAL_FRAG = /* glsl */ `
 precision highp float;
 uniform sampler2D tComp, tBloom;
-uniform float uBloom, uExposure, uSat, uCon, uVig, uCA, uBars, uGrain, uTime, uAspect, uBloomN;
+uniform float uBloom, uExposure, uSat, uCon, uVig, uBars, uGrain, uTime, uAspect, uBloomN;
 uniform vec3 uSh, uHi;
 uniform vec2 uRes;
 varying vec2 vUv;
@@ -145,9 +145,7 @@ float hash(vec2 p) { vec3 p3 = fract(vec3(p.xyx) * 0.1031); p3 += dot(p3, p3.yzx
 void main() {
   vec2 c = vUv - 0.5;
   float r2 = dot(c * vec2(uAspect, 1.0), c * vec2(uAspect, 1.0));
-  // Farbsaum: Rot und Blau minimal radial versetzt, nur zum Rand hin
-  vec2 off = c * uCA * r2;
-  vec3 col = vec3(texture(tComp, vUv + off).r, texture(tComp, vUv).g, texture(tComp, vUv - off).b);
+  vec3 col = texture(tComp, vUv).rgb;
   vec3 bl = texture(tBloom, vUv).rgb / uBloomN;
   col = mix(col, bl, uBloom);
   col *= uExposure;
@@ -168,7 +166,7 @@ void main() {
 
 const BLOOM_LEVELS = 6;
 // Grading-Grundwerte (je Station überschreibbar: lv.look); auch der Auftakt-Film läuft auf sie zu
-export const LOOK = { exposure: 1, bloom: 0.06, sat: 1.04, con: 0.12, sh: [0.96, 0.99, 1.06], hi: [1.04, 1.0, 0.95], vig: 0.38, ca: 0.006, grain: 0.016 };
+export const LOOK = { exposure: 1, bloom: 0.06, sat: 1.04, con: 0.12, sh: [0.96, 0.99, 1.06], hi: [1.04, 1.0, 0.95], vig: 0.38, grain: 0.016 };
 
 export function createPost(renderer) {
   const scene = new THREE.Scene();
@@ -198,7 +196,7 @@ export function createPost(renderer) {
   const upMat = mat(UP_FRAG, { tLow: { value: null }, tHigh: { value: null }, uTexel: { value: new THREE.Vector2() } });
   const finalMat = mat(FINAL_FRAG, {
     tComp: { value: comp.texture }, tBloom: { value: null }, uBloom: { value: 0.06 }, uExposure: { value: 1 }, uSat: { value: 1 },
-    uCon: { value: 0.1 }, uVig: { value: 0.35 }, uCA: { value: 0.006 }, uBars: { value: 0 }, uGrain: { value: 0.018 },
+    uCon: { value: 0.1 }, uVig: { value: 0.35 }, uBars: { value: 0 }, uGrain: { value: 0.018 },
     uTime: { value: 0 }, uAspect: { value: 1 }, uBloomN: { value: BLOOM_LEVELS }, uSh: { value: new THREE.Vector3(1, 1, 1) },
     uHi: { value: new THREE.Vector3(1, 1, 1) }, uRes: { value: new THREE.Vector2(1, 1) },
   });
@@ -268,7 +266,6 @@ export function createPost(renderer) {
     f.uBars.value = look.bars;
     f.uGrain.value = look.grain;
     f.uVig.value = look.vig;
-    f.uCA.value = look.ca;
     f.uTime.value = time;
     run(finalMat, null);
   }

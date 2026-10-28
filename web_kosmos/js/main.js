@@ -98,9 +98,9 @@ const CHAIN = { base: 0.35, per: 0.55, cap: 2.8, w0: 0.6, perDecade: 0.09, lo: 0
 // `land` s nach der Landung (die Kamera kommt nie ganz zur Ruhe)
 const CINE = { delay: 3, ramp: 5, orbit: 0.012, crane: 0.05, breathe: 0.025, land: 1.2 };
 // Kino im Flug, eine Welle über die ganze Fahrt (sin² der Fahrzeit): fov = Blickwinkel weitet sich im schnellsten Teil (Warp),
-// ca/vig = Farbsaum und Vignette ziehen an; bank = Rollen in die Kurve (rad je rad/s Gieren, höchstens max, Glättung tau s)
+// vig = Vignette zieht an; bank = Rollen in die Kurve (rad je rad/s Gieren, höchstens max, Glättung tau s)
 // (User 28.10.2026: Kurven weicher – Rollen schwächer und träger)
-const FLYFX = { fov: 0.12, ca: 1.5, vig: 0.14, bank: 0.035, max: 0.04, tau: 0.5 };
+const FLYFX = { fov: 0.12, vig: 0.14, bank: 0.035, max: 0.04, tau: 0.5 };
 // Bogen statt Gerade (User 27.10.2026): beide Kameras einer Etappe umkreisen ihr Zentrum (äußere den Anker, innere ihr
 // Blickziel) mit derselben Winkelrate um die Hochachse – im Bild eine sanft geschwungene Bahn; angle = ganzer Bogen (rad,
 // User 28.10.2026: 0,3 → 0,18, Kurven waren zu steil)
@@ -1172,7 +1172,7 @@ const blendLook = (out, a, b, k) => {
   return out;
 };
 const look = {
-  exposure: 1, bloom: 0.06, sat: 1, con: 0.1, sh: new THREE.Vector3(), hi: new THREE.Vector3(), vig: 0.35, ca: 0.006,
+  exposure: 1, bloom: 0.06, sat: 1, con: 0.1, sh: new THREE.Vector3(), hi: new THREE.Vector3(), vig: 0.35,
   grain: 0.016, bars: 0, ehtA: new THREE.Vector3(), ehtB: new THREE.Vector3(),
 };
 let bars = 0;
@@ -1235,7 +1235,6 @@ function frame(nowMs) {
   }
   look.bloom = settings.S.bloom ? lookA.bloom * (G ? G.bloom / 0.12 : 1) : 0;
   look.sat = G ? G.sat : lookA.sat; look.con = G ? G.con : lookA.con; look.vig = ((G ? G.vig : lookA.vig) + FLYFX.vig * fx) * settings.S.vig;
-  look.ca = settings.S.lens ? lookA.ca * (1 + FLYFX.ca * fx) : 0;
   look.grain = settings.S.grain ? lookA.grain : 0;
   look.sh.fromArray(G ? G.sh : lookA.sh); look.hi.fromArray(G ? G.hi : lookA.hi);
   const ehtOf = (x) => (x && x.post ? x.post.eht : null);

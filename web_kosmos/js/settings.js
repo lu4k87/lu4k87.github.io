@@ -125,7 +125,7 @@ const GROUPS = [
     ['cine', TOG('cine', 'Kamerafahrt im Leerlauf')], ['dive', RANGE('dive', 'Flugdauer', 1, 15, 0.1, 's')]] },
   { id: 'fx', icon: 'fx', title: 'Effekte', rows: [
     ['bloom', TOG('bloom', 'Überstrahlen (Bloom)')],
-    ['lens', TOG('lens', 'Farbsaum und Linsenreflex') + NOTE('Hauptschalter. Stärke und Art des Linsenreflexes stehen im Reiter Station, wo die Sonne im Bild ist.')],
+    ['lens', TOG('lens', 'Linsenreflex') + NOTE('Hauptschalter. Stärke und Art des Linsenreflexes stehen im Reiter Station, wo die Sonne im Bild ist.')],
     ['grain', TOG('grain', 'Filmkorn')]] },
   { id: 'ui', icon: 'ui', title: 'Oberfläche', half: true, rows: [['panel', TOG('panel', 'Infotafel zeigen')], ['scaleCompare', TOG('scaleCompare', 'Maßstabs-Vergleich')], ['timeline', TOG('timeline', 'Zeitleiste der Station zeigen')],
     ['', TOG('', 'Grafiken bewegt', '', 'data-figs')]] },
@@ -159,7 +159,7 @@ const SHARED = [
     T('axes', 'Drehachsen der Planeten und Monde', 'Linie über Nord- und Südpol jedes Planeten und Mondes, neigt und dreht sich mit dem Körper. Nordpol eisblau, Südpol grau.'),
     R('small', 'Größe der Symbole', 1, 12, 0.5, '×', 'Satelliten, Trümmer und Asteroiden als vergrößerte Symbole – je größer, desto weniger Objekte (4× → jedes achte); 1× zeigt alle als Lichtpunkte.', SYMBOLS)] },
   { group: 'Linsenreflex', scope: 'Gilt an allen Stationen mit der Sonne im Bild.', at: FLARE, rows: [
-    R('lensAmt', 'Stärke Linsenreflex', 0, 5, 0.05, '×', 'Schein, Ring und Geisterbilder um helle Quellen wie die Sonne. 0× = aus, der Farbsaum bleibt.'),
+    R('lensAmt', 'Stärke Linsenreflex', 0, 5, 0.05, '×', 'Schein, Ring und Geisterbilder um helle Quellen wie die Sonne. 0× = aus.'),
     C('lensOptic', 'Art der Optik', [['master', 'Filmkamera'], ['classic', 'Schlicht']], 'Filmkamera: Regenbogenring, heller Bogen und ein farbiger Lichtfleck gegenüber der Sonne. Schlicht: nur ein zarter Lichtkranz.', FLARE_NOSUN),
     T('lensGhost', 'Farbiger Lichtfleck (Geisterbild)', '', FLARE_NOSUN),
     T('ghostMotion', 'Lichtfleck wandert beim Schwenken', 'Wie in einem echten Objektiv wandert der Fleck beim Schwenken auf der Linie durch die Bildmitte.', FLARE_NOSUN),
