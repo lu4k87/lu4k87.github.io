@@ -86,7 +86,7 @@ uniform float uWarp, uWarpT, uFill, uFillI, uRing, uStack, uGhost, uSpike;
 uniform float uSuck, uPulseA, uFxP, uFxIn, uPulse, uGas, uGasS, uGasL, uGasHot, uGasSpin, uJW;
 uniform mat3 uGasM;
 uniform vec3 uTint, uDeep;
-uniform float uPlasma, uTemp, uBright, uContrast, uFog, uDetail, uFalse, uExpand, uR, uShellK;
+uniform float uPlasma, uTemp, uBright, uContrast, uFog, uDetail, uFalse, uExpand, uR, uShellK, uShellIn;
 uniform float uNeb, uFil, uHot, uEdge, uThr, uAbs, uGround;
 uniform vec3 uNebPos;
 uniform highp sampler3D uField;
@@ -328,7 +328,7 @@ void main() {
     vec3 far = satur(ember(uTemp * 1.6 * (1.0 + 0.12 * x * uContrast)) * uBright * (uGround + 0.12 * x * uContrast) * (1.0 + 0.4 * uFog * wave), 1.3);
     // dieselbe Schale wie in Station 10 (Innenseite 0,4, Rand am Fenster, im Fenster nichts)
     float c = dot(d, uCut);
-    vec3 shell = c > uCutCos ? vec3(0.0) : cmbColor(x) * 0.26 * (0.5 + 0.5 * (1.0 - smoothstep(uCutCos - 0.04, uCutCos, c))) * uShellK;   // wie SHELL_FRAG in levels/cmb.js
+    vec3 shell = c > uCutCos ? vec3(0.0) : cmbColor(x) * 0.26 * uShellIn * (0.5 + 0.5 * (1.0 - smoothstep(uCutCos - 0.04, uCutCos, c))) * uShellK;   // wie SHELL_FRAG in levels/cmb.js
     // Rekombination: das Plasma wird fleckig von der Bildmitte nach außen durchsichtig, die Front glüht kurz nach
     float rs = length((vUv - 0.5) * vec2(uAspect, 1.0)), n = 0.5 * gnoise(rd * 2.5) + 0.25 * gnoise(rd * 7.0 + 3.0);
     float m = smoothstep(0.0, 1.0, uFalse * 2.0 - 0.5 - rs * 0.3 + 0.45 * n), edge = 1.0 - abs(2.0 * m - 1.0);
@@ -517,7 +517,7 @@ export function createOpener(ctx, station, tune = { ...TUNE }) {
     uField: { value: field.texture },
     uWebField: { value: null }, uWebC: { value: new THREE.Vector3() }, uWebA: { value: new THREE.Vector3(0.42, 0.2, 0.95) }, uWebB: { value: new THREE.Vector3(0.95, 0.32, 0.85) },
     uWebM: { value: new THREE.Matrix3() }, uWebS: { value: 1 }, uWeb: { value: 0 }, uThin: { value: THIN },
-    uCut: su.uCut, uCutCos: su.uCutCos, uDip: su.uDip, uDipOn: su.uDipOn,
+    uCut: su.uCut, uCutCos: su.uCutCos, uDip: su.uDip, uDipOn: su.uDipOn, uShellIn: su.uIn,
   };
   const bg = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), new THREE.ShaderMaterial({
     vertexShader: BG_VERT, fragmentShader: BG_FRAG, uniforms: bgU, depthTest: false, depthWrite: false,

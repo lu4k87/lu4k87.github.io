@@ -6,7 +6,7 @@
 export const TABS = {
   'Linsenreflex & Optik': 'Optik', 'Rand und Korona': 'Korona', 'Farbe und Glut': 'Glut',
   'Magnet­bögen': 'Bögen', 'Bewegung der Bögen': 'Bögen',
-  'Hintergrundstrahlung': 'Strahlung', 'Zeitschichten': 'Schichten',
+  'Hintergrundstrahlung': 'Kugel', 'Hülle der Kugel': 'Kugel', 'Schnittkante': 'Kugel', 'Zeitschichten': 'Schichten',
   'Planeten und Kleinkörper': 'Planeten', 'Gezeitenströme (Modell)': 'Gezeiten', 'Strömung (Laniakea)': 'Strömung',
   'Netz der Galaxien': 'Netz', 'Netz der Materie': 'Netz', 'Sterne und Galaxien': 'Sterne',
   'Besonderheiten': 'Details', 'New Horizons': 'Sonde', 'Innerer Aufbau': 'Aufbau',
@@ -20,7 +20,7 @@ export const tabOf = (group) => TABS[group] || group;
 const ICON_OF = {
   time: ['Zeit', 'Ereignisse'], sound: ['Ton'], film: ['Film', 'Kino'], tune: ['Ansicht', 'Details'], perf: ['Qualität'],
   sun: ['Sonne', 'Licht'], flame: ['Glut'], corona: ['Korona'], fx: ['Optik', 'Pulsar', 'Blitz'],
-  globe: ['Erde', 'Mars', 'Neptun', 'Triton', 'Planet', 'Oberfläche', 'Ozean', 'Lufthülle', 'Atmosphäre'],
+  globe: ['Erde', 'Mars', 'Neptun', 'Triton', 'Planet', 'Oberfläche', 'Ozean', 'Lufthülle', 'Atmosphäre', 'Kugel'],
   planet: ['Planeten', 'Ringe', 'System'], moon: ['Monde'], orbit: ['Bahn', 'Achsen', 'Drehung'],
   field: ['Feld', 'Bögen', 'Polarlicht'], burst: ['Ausbrüche', 'Fontänen', 'Vulkane', 'Strahlen', 'Keulen', 'Stoßfronten'],
   wave: ['Ausfluss', 'Strömung', 'Wind', 'Gezeiten', 'Bewegung'], layers: ['Aufbau', 'Schichten', 'Struktur', 'Kern', 'Allgemein'],
