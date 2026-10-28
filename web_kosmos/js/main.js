@@ -926,15 +926,16 @@ function stepTransition(dt) {
 // ---------- Auftakt-Film beim Aufruf (User 27.10.2026): Urknall → Plasma → Hintergrundstrahlung, Landung in Station 10 ----------
 // opener.js spielt den Film; Station 10 ist von Anfang an aktiv (Bedienung ausgeblendet, Kinobalken), ab dem weißen Bild
 // führt der Film ihre Kamera und blendet am Ende in ihr Bild über. Läuft bei jedem Aufruf ohne Stations-Link und bei jedem
-// Neuladen (das #station=… setzt activate() selbst), nicht bei ?tour oder reduzierter Bewegung; ?auftakt erzwingt ihn,
-// ?auftakt=0 schaltet ihn ab (Tests). Überspringen (Esc, Enter, Leertaste, Reisetasten, Klick): kurz abblenden, Heimpose.
+// Neuladen (das #station=… setzt activate() selbst), auch bei reduzierter Bewegung (User 28.10.2026), nicht bei ?tour;
+// ?auftakt erzwingt ihn, ?auftakt=0 schaltet ihn ab (Tests). Überspringen (Esc, Enter, Leertaste, Reisetasten, Klick):
+// kurz abblenden, Heimpose.
 // skipFade = Abblenden beim Überspringen, veil = Aufblenden danach (s)
 const OPENER = { on: true, land: 'cmb', skipFade: 0.35, veil: 0.6 };
 state.opener = null;
 state.veil = 0;
 let opener = null;   // einmal gebaut, beim Wiederholen neu gestartet
 async function startOpener(lv) {
-  if (!OPENER.on || state.opener || state.tr || state.chain || still()) return;
+  if (!OPENER.on || state.opener || state.tr || state.chain) return;
   endIntro();
   state.follow = null;
   if (!opener) {
@@ -1328,7 +1329,7 @@ canvas.addEventListener('pointerdown', (ev) => {
 });
 // Film erneut abspielen (Ereignis kosmos:auftakt): erst in Station 10, dann von vorn
 window.addEventListener('kosmos:auftakt', async () => {
-  if (state.opener || state.tr || still()) return;
+  if (state.opener || state.tr) return;
   const lv = await getLevel(OPENER.land);
   if (state.active !== lv) { activate(lv); resize(); }
   await startOpener(lv);
@@ -1342,7 +1343,7 @@ async function start() {
     // Auftakt-Film bei jedem Aufruf ohne Stations-Link und bei jedem Neuladen, danach steht Station 10; ohne Film wie
     // bisher: Stations-Link oder erste Station der Route, Kranfahrt in die Heimpose
     const reload = (performance.getEntriesByType('navigation')[0] || {}).type === 'reload';
-    const film = OPENER.on && !still() && (params.has('auftakt') ? params.get('auftakt') !== '0' : !tour && (!Object.hasOwn(STATIONS, id || '') || reload));
+    const film = OPENER.on && (params.has('auftakt') ? params.get('auftakt') !== '0' : !tour && (!Object.hasOwn(STATIONS, id || '') || reload));
     const first = film ? OPENER.land : Object.hasOwn(STATIONS, id || '') ? id : entry(ROUTE[0]);
     await bootLoad(first);
     const lv = await getLevel(first);
