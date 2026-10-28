@@ -11,7 +11,7 @@
 // Oberfläche wurzeln; Rand und Korona-Schein rechnet die Atmosphären-Tafel je Pixel (LOOK_ATMO_* in sunlook.js).
 
 import * as THREE from 'three';
-import { mulberry32, eclDir } from '../astro.js';
+import { mulberry32, eclDir, hideBehind } from '../astro.js';
 import { createStarfield } from '../stars.js';
 import { BODY_VERT } from '../planetfx.js';
 import { SUN_FRAG, BILLBOARD_VERT, BILLBOARD_AIM_VERT, CORONA_FRAG, LOOP_VERT, LOOP_FRAG, CME_FRAG, CLOOP_VERT, CLOOP_FRAG, HOLES, FILS, loopsGeometry, spotGroups, streamerSet, coronalLoopsGeometry } from '../sunfx.js';
@@ -528,7 +528,7 @@ export function create(ctx) {
     pole: H('pole', 1.2, (cam) => facing(hs.pole.pos, cam) > -0.1),
     wind: H('wind', 3, () => true),
   };
-  const hotspots = Object.values(hs);
+  const hotspots = hideBehind(Object.values(hs), [{ center: { x: 0, y: 0, z: 0 }, radius: 1 }]);   // nie hinter der Sonne
   const granLocal = capPt(aL - 8 * RAD, -0.25);
   const pickState = { spots: -1, prom: -1, filament: -1, hole: -1 };
   const surfShader = (v, out) => out.copy(v).applyAxisAngle(Y, omega(latOf(v)) * days * RAD).applyQuaternion(sunG.quaternion);

@@ -10,7 +10,7 @@
 // schematischen Vorbeiflug (stark vergrößert).
 
 import * as THREE from 'three';
-import { julianDate, eclDir, equToScene, laplaceLongitude, DAY } from '../astro.js';
+import { julianDate, eclDir, equToScene, laplaceLongitude, DAY, hideBehind } from '../astro.js';
 import { createStarfield } from '../stars.js';
 import { createCatalogSky } from '../catalog.js';
 import { createFlare } from '../flare.js';
@@ -478,6 +478,7 @@ export function create(ctx) {
   ]);
 
   const occluders = [{ center: ORIGIN, radius: R }, { center: jupPos, radius: RJ }];
+  hideBehind(hotspots, occluders);   // auch Europa Clipper nie hinter Europa oder Jupiter
   const sunFar = new THREE.Vector3(), cv = new THREE.Vector3();
 
   return {

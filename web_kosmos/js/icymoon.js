@@ -10,7 +10,7 @@
 // Das Planetensystem steckt im Adapter cfg.sys (JUPITER_SYS, SATURN_SYS): Bahnzeilen, Zustand, Schattenlinie, Planet am Himmel.
 
 import * as THREE from 'three';
-import { julianDate, eclDir, equToScene, laplaceAxes } from './astro.js';
+import { julianDate, eclDir, equToScene, laplaceAxes, hideBehind } from './astro.js';
 import { createStarfield } from './stars.js';
 import { BODY_VERT, PLANET_FRAG, ATMOS } from './planetfx.js';
 import { NOISE } from './glsl.js';
@@ -366,7 +366,7 @@ export function createIcyMoon(ctx, cfg) {
       const pos = surf(f.lat, f.west, f.r ?? 1.0);
       return { id: f.id, kind: 'info', pos, focus: () => f.focus, visible: (cam) => (!f.when || f.when()) && facing(pos, cam) > 0.08 && !inWedge(pos) };
     }),
-    ...(ext.hotspots || []),
+    ...hideBehind(ext.hotspots || [], [{ center: { x: 0, y: 0, z: 0 }, radius: 1 }]),   // Zusätze der Station (Ganymed: Polarlicht, Magnetfeld)
     { id: 'ocean', kind: 'info', pos: oceanFace[1].clone().multiplyScalar(Math.cos(20 * RAD)).addScaledVector(Y, Math.sin(20 * RAD)).multiplyScalar(cfg.oceanR),
       focus: () => 0.8, visible: (cam) => cut.visible && tmp.copy(cam.position).dot(oceanFace[0]) > 0 },
     { id: sys.id, kind: 'info', pos: jupL.clone(), visible: (cam) => !hidden(jupL, cam) },

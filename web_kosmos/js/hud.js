@@ -18,6 +18,8 @@ const HEX = 'M20 2L35.59 11L35.59 29L20 38L4.41 29L4.41 11z';
 const hex = (inner = '', cls = '') => `<svg class="hex ${cls}" viewBox="0 0 40 40" aria-hidden="true"><path class="hex-shape" d="${HEX}"/>${inner}</svg>`;
 // Stationsnummer: Route zweistellig (01–10), Abstecher Elternnummer + Buchstabe (02A), Monde + Ziffer (02C1)
 const num = (id) => String(STATIONS[id].n).padStart(2, '0');
+// ?dbg: Lage der Abzeichen für tests/overlap.py freigeben (window.__ovl, je Bild neu)
+const DBG = new URLSearchParams(location.search).has('dbg');
 const hexNum = (n, cls) => hex(`<text x="20" y="24.5" text-anchor="middle">${String(n).padStart(2, '0')}</text>`, cls);
 
 export function createHud(h) {
@@ -544,8 +546,10 @@ export function createHud(h) {
   }
 
   // ---------- Abzeichen ----------
+  // Größe eines Abzeichens neu messen, sobald sie sich ändert (z. B. Webschrift nachgeladen) – sonst passt die Box nicht
+  const sizeObs = new ResizeObserver((es) => { for (const e of es) { const m = markers.find((k) => k.el === e.target); if (m) m.w = 0; } });
   function buildMarkers() {
-    markers.forEach((m) => { m.el.remove(); m.dot.remove(); });
+    markers.forEach((m) => { sizeObs.unobserve(m.el); m.el.remove(); m.dot.remove(); });
     leads.innerHTML = '';
     leads.appendChild(cardLead);
     let num = 0;
@@ -568,6 +572,7 @@ export function createHud(h) {
       }
       el.addEventListener('click', () => pick(x.id));
       layer.append(dot, el);
+      sizeObs.observe(el);
       const path = label ? null : document.createElementNS('http://www.w3.org/2000/svg', 'path');
       if (path) { path.setAttribute('class', `hs-lead${x.kind === 'dive' ? ' hs-lead--dive' : ''}`); leads.appendChild(path); }
       return { x, el, dot, path, w: 0, hgt: 0, side: null, reach: 0, label };
@@ -611,39 +616,71 @@ export function createHud(h) {
     panel.querySelectorAll('[data-hs].is-active').forEach((b) => b.classList.remove('is-active'));
   }
 
-  // Lage je Bild: Punkt am Objekt, Abzeichen schräg daneben (45°-Knick), frei von Karte, Kapitel-Titel, Rändern und
-  // anderen Abzeichen; einmal gefundene Lage (Seite + Reichweite) bleibt, solange sie frei ist – kein Springen.
+  // Lage je Bild: Punkt am Objekt, Abzeichen schräg daneben (45°-Knick), frei von Karte, Bedienung über der Bühne (Kapitel-Titel,
+  // Zahnrad, Zeitleiste, offene Schublade), Rändern, anderen Abzeichen und fremden Punkten; die Leitlinie schneidet kein fremdes
+  // Abzeichen. Einmal gefundene Lage (Seite + Reichweite) bleibt, solange sie frei ist – kein Springen.
   // Offene Karte: zuerst das gewählte Abzeichen, dann die Karte daneben, dann alle übrigen (weichen der Karte aus).
   const OFFS = [[1, -1], [-1, -1], [1, 1], [-1, 1]];
+  const DOT = 5;   // px um den Punkt (6 px) frei halten
   const hit = (a, b) => a.l < b.r && a.r > b.l && a.t < b.b && a.b > b.t;
+  // Strecke p→q schneidet Box o mehr als 1 px (Liang–Barsky)
+  const cuts = ([x1, y1], [x2, y2], o) => {
+    const dx = x2 - x1, dy = y2 - y1;
+    let t0 = 0, t1 = 1;
+    for (const [p, q] of [[-dx, x1 - o.l], [dx, o.r - x1], [-dy, y1 - o.t], [dy, o.b - y1]]) {
+      if (p === 0) { if (q < 0) return false; continue; }
+      const u = q / p;
+      if (p < 0) t0 = Math.max(t0, u); else t1 = Math.min(t1, u);
+      if (t0 > t1) return false;
+    }
+    return Math.hypot(dx, dy) * (t1 - t0) > 1;
+  };
+  // Bedienung, die über der Bühne liegt: Hindernis für Abzeichen und Karte
+  function uiBoxes() {
+    const out = [];
+    const add = (el, mx, my) => { const q = el.getBoundingClientRect(); if (q.width && q.height) out.push({ l: q.left - mx, r: q.right + mx, t: q.top - my, b: q.bottom + my }); };
+    if (caption.classList.contains('is-on')) for (const el of caption.children) add(el, 6, 4);
+    const cfg = $('#cfg'), tl = $('#timeline');
+    if (cfg && !cfg.hidden) add(cfg, 8, 8);
+    if (tl && !tl.hidden) add(tl, 6, 6);
+    if (drawer && drawer.classList.contains('is-open')) add(drawer, 6, 6);
+    return out;
+  }
   function update(camera, level, time) {
+    if (DBG) window.__ovl = { camera, level, markers, selected, card, dock, cardMaxH };
     const dt = Math.min(0.1, Math.max(0, time - lastT));
     lastT = time;
     if (!markers.length || layer.classList.contains('is-hidden')) { tickLive(time); return; }
     const W = window.innerWidth, H = window.innerHeight;
     const r = stageRect();
     const open = card.classList.contains('is-open'), sheet = open && W <= 760;
-    const boxes = [];
-    if (caption.classList.contains('is-on')) {
-      for (const el of caption.children) {
-        const b = el.getBoundingClientRect();
-        if (b.width) boxes.push({ l: b.left - 6, r: b.right + 6, t: b.top - 4, b: b.bottom + 4 });
-      }
-    }
-    if (sheet) boxes.push(placeSheet(r));
-    const cx = (r.x0 + r.x1) / 2;
-    const place = (m) => {
+    const ui = uiBoxes();
+    if (sheet) ui.push(placeSheet(r));
+    const list = open ? ordered : markers;
+    // zuerst alle Punkte: jeder ist Hindernis für fremde Abzeichen (Box mit m = eigener Punkt, zählt für die Leitlinie nicht)
+    const at = new Map(), boxes = [...ui], segs = [];
+    for (const m of list) {
       const p = m.x.pos.clone().project(camera);
       const ax = (p.x + 1) / 2 * W, ay = (1 - p.y) / 2 * H;
       const vis = p.z < 1 && ax > r.x0 + 4 && ax < r.x1 - 4 && ay > r.y0 + 4 && ay < r.y1 - 4 && (!m.x.visible || m.x.visible(camera));
-      if (!vis) { hide(m); return null; }
-      if (!m.w) { m.w = m.el.offsetWidth; m.hgt = m.el.offsetHeight; }
+      if (!vis) { hide(m); continue; }
+      at.set(m, [ax, ay]);
       m.dot.style.transform = `translate(${ax.toFixed(1)}px, ${ay.toFixed(1)}px)`;
       m.dot.classList.remove('is-off');
+      boxes.push({ l: ax - DOT, r: ax + DOT, t: ay - DOT, b: ay + DOT, m });
+    }
+    const free = (box, m) => !boxes.some((o) => o.m !== m && hit(box, o)) && !segs.some(([a, b]) => cuts(a, b, box));
+    const lineFree = (pts) => !boxes.some((o) => !o.m && pts.some((q, i) => i && cuts(pts[i - 1], q, o)));
+    const cx = (r.x0 + r.x1) / 2;
+    const place = (m) => {
+      const a = at.get(m);
+      if (!a) return null;
+      const [ax, ay] = a;
+      if (!m.w) { m.w = m.el.offsetWidth; m.hgt = m.el.offsetHeight; }
       if (m.label) {
         const bx = ax + 10, by = ay - m.hgt / 2;
-        const box = { l: bx, r: bx + m.w, t: by, b: by + m.hgt };
-        if (box.r > r.x1 || boxes.some((b) => hit(box, b))) { m.el.classList.add('is-off'); return null; }
+        const box = { l: bx - 4, r: bx + m.w + 4, t: by - 4, b: by + m.hgt + 4 };   // Rand wie beim Abzeichen (Karten-Leitlinie setzt dort an)
+        if (box.r > r.x1 || !free(box, m)) { m.el.classList.add('is-off'); return null; }
         boxes.push(box);
         m.el.classList.remove('is-off');
         m.el.style.transform = `translate(${bx.toFixed(1)}px, ${by.toFixed(1)}px)`;
@@ -656,42 +693,46 @@ export function createHud(h) {
       for (const [sx, sy, reach] of cands) {
         const bx = ax + sx * (reach + (sx > 0 ? 0 : m.w)), by = ay + sy * reach * 0.8 - m.hgt / 2;
         const box = { l: bx - 4, r: bx + m.w + 4, t: by - 4, b: by + m.hgt + 4 };
-        if (box.l < r.x0 || box.r > r.x1 || box.t < r.y0 || box.b > r.y1 || boxes.some((b) => hit(box, b))) continue;
-        placed = { bx, by, box, side: [sx, sy], reach };
+        if (box.l < r.x0 || box.r > r.x1 || box.t < r.y0 || box.b > r.y1 || !free(box, m)) continue;
+        // Leitlinie: vom Punkt 45° schräg, dann waagrecht an die Kante des Abzeichens
+        const ex = sx > 0 ? bx : bx + m.w, ey = by + m.hgt / 2;
+        const dy = ey - ay, kx = ax + Math.sign(ex - ax) * Math.min(Math.abs(dy), Math.abs(ex - ax) * 0.7);
+        const pts = [[ax, ay], [kx, ey], [ex, ey]];
+        if (!lineFree(pts)) continue;
+        placed = { bx, by, box, side: [sx, sy], reach, pts };
         break;
       }
       if (!placed) { hide(m, true); return null; }
       m.side = placed.side;
       m.reach = placed.reach;
       boxes.push(placed.box);
+      segs.push(...placed.pts.slice(1).map((q, i) => [placed.pts[i], q]));
       m.el.classList.remove('is-off');
       m.el.style.transform = `translate(${placed.bx.toFixed(1)}px, ${placed.by.toFixed(1)}px)`;
-      // Leitlinie: vom Punkt 45° schräg, dann waagrecht an die Kante des Abzeichens
-      const ex = placed.side[0] > 0 ? placed.bx : placed.bx + m.w, ey = placed.by + m.hgt / 2;
-      const dy = ey - ay, kx = ax + Math.sign(ex - ax) * Math.min(Math.abs(dy), Math.abs(ex - ax) * 0.7);
-      m.path.setAttribute('d', `M${ax.toFixed(1)} ${ay.toFixed(1)}L${kx.toFixed(1)} ${ey.toFixed(1)}L${ex.toFixed(1)} ${ey.toFixed(1)}`);
+      m.path.setAttribute('d', placed.pts.map(([x, y], i) => `${i ? 'L' : 'M'}${x.toFixed(1)} ${y.toFixed(1)}`).join(''));
       m.path.classList.remove('is-off');
       return placed.box;
     };
     let found = false;
-    for (const m of open ? ordered : markers) {
+    for (const m of list) {
       const box = place(m);
-      if (open && !sheet && m.x.id === selected) { found = true; placeCard(box, r, boxes, dt); }
+      if (open && !sheet && m.x.id === selected) { found = true; placeCard(box, r, boxes, ui, segs, dt); }
     }
-    if (open && !sheet && !found) placeCard(null);   // Abzeichen per Schalter ausgeblendet: Karte wartet unsichtbar
+    if (open && !sheet && !found) placeCard(null, r, boxes, ui, segs, dt);   // Abzeichen per Schalter ausgeblendet: Karte wartet
     tickLive(time);
   }
 
   // Karte am Abzeichen (Vorschau Lage:A): links daneben, sonst darüber, darunter, rechts – erste freie Seite in der Bühne,
-  // frei von Kapitel-Titel, Zeitleiste und Zahnrad. Ruhig (Wunsch User 26.10.2026): erscheint erst, wenn das Abzeichen
-  // still steht (Folgen-Flug fertig), dockt einmal an und bleibt stehen – nur die Leitlinie folgt dem Abzeichen. Neu
-  // andocken (weich gleitend) nur, wenn das Abzeichen unter der Karte zur Ruhe kommt; wandert es weiter (Zeitraffer)
-  // oder hinter den Planeten, bleibt die Karte stehen. Ohne sichtbares Abzeichen (Rückseite) dockt sie an einem
-  // freien Platz in einer Ecke der Bühne.
+  // frei von Bedienung (Kapitel-Titel, Zahnrad, Zeitleiste, Schublade). Ruhig (Wunsch User 26.10.2026): erscheint erst, wenn
+  // das Abzeichen still steht (Folgen-Flug fertig), dockt einmal an und bleibt stehen – nur die Leitlinie folgt dem Abzeichen.
+  // Neu andocken (weich gleitend) nur, wenn das Abzeichen unter die Karte wandert oder Bedienung ihren Platz belegt; wandert es
+  // daneben weiter (Zeitraffer) oder hinter den Planeten, bleibt die Karte stehen. Ohne sichtbares Abzeichen dockt sie an einem freien Platz in einer
+  // Ecke der Bühne. Passt sie nirgends ganz, wird sie niedriger (Inhalt scrollt) – das gewählte Abzeichen deckt sie nie.
   const SIDES = ['left', 'above', 'below', 'right'];
   const ORIGIN = { left: 'right center', right: 'left center', above: 'center bottom', below: 'center top' };
   const SETTLE = 0.3, WAIT_MAX = 2.4, WAIT_HIDDEN = 0.6, STILL_PX = 40;   // s, s, s, px/s
-  function placeCard(b, r, boxes, dt) {
+  const MIN_H = 160;   // px: niedrigste Karte neben dem gewählten Abzeichen, bevor sie über die Bedienung darf
+  function placeCard(b, r, boxes, ui, segs, dt) {
     if (!settle) settle = { age: 0, still: 0, prev: null };
     settle.age += dt;
     const M = 8, G = 14, by = b ? (b.t + b.b) / 2 : 0, bx = b ? (b.l + b.r) / 2 : 0;
@@ -705,35 +746,76 @@ export function createHud(h) {
     // Unterkante = Zeitleiste (falls sichtbar); passt die Karte nicht in die Höhe, wird sie niedriger und scrollt
     const tl = $('#timeline'), tq = tl && !tl.hidden ? tl.getBoundingClientRect() : null;
     const yMax = (tq && tq.height ? Math.min(r.y1, tq.top) : r.y1) - M, maxH = Math.floor(yMax - r.y0 - M);
-    if (maxH !== cardMaxH) { cardMaxH = maxH; card.style.maxHeight = `${maxH}px`; }
-    const w = cardW, hh = Math.min(cardH, maxH);
-    const obst = [...boxes], cfg = $('#cfg');
-    if (cfg && !cfg.hidden) { const q = cfg.getBoundingClientRect(); if (q.width) obst.push({ l: q.left - M, r: q.right + M, t: q.top - M, b: q.bottom + M }); }
-    const cX = (x) => Math.min(r.x1 - M - w, Math.max(r.x0 + M, x)), cY = (y) => Math.min(yMax - hh, Math.max(r.y0 + M, y));
-    const clear = ([x, y], list) => !list.some((o) => hit({ l: x, r: x + w, t: y, b: y + hh }, o));
-    const inStage = ([x, y]) => x >= r.x0 + M - 0.5 && x + w <= r.x1 - M + 0.5 && y >= r.y0 + M - 0.5 && y + hh <= yMax + 0.5;
-    // Lage behalten; neu andocken nur, wenn das Abzeichen unter der Karte zur Ruhe kommt
-    const keep = dock && [cX(dock.goal[0]), cY(dock.goal[1])];
-    if (!dock || (b && rested && !clear(keep, obst))) {
-      let side = 'left', pos;
-      if (b) {
-        const at = (s) => (s === 'left' ? [b.l - G - w, cY(by - hh / 2)] : s === 'right' ? [b.r + G, cY(by - hh / 2)]
-          : s === 'above' ? [cX(b.l), b.t - G - hh] : [cX(b.l), b.b + G]);
-        const order = [dock && dock.side, ...SIDES].filter((s, i, a) => s && a.indexOf(s) === i);
-        side = order.find((s) => inStage(at(s)) && clear(at(s), obst));
-        pos = side && at(side);
-        if (!side) {   // nirgends ganz frei: in die Bühne schieben – das gewählte Abzeichen bleibt immer frei
-          const into = (s) => { const [x, y] = at(s); return [cX(x), cY(y)]; };
-          side = order.find((s) => clear(into(s), [b])) || order[0];
-          pos = into(side);
-        }
-      } else {   // Abzeichen nicht im Bild: freier Platz in einer Ecke der Bühne
-        const spots = [[r.x0 + M + 16, r.y0 + M + 16], [r.x0 + M + 16, yMax - hh - 16], [r.x1 - M - w - 16, r.y0 + M + 16]].map(([x, y]) => [cX(x), cY(y)]);
-        pos = spots.find((p) => clear(p, obst)) || spots[0];
+    // Hindernisse: Bedienung + gewähltes Abzeichen; die übrigen Abzeichen weichen danach der Karte aus.
+    // ponytail: fremde Punkte zählen hier nicht – sonst dockte die Karte bei jedem vorbeiziehenden Punkt neu an (Karte ruhig)
+    const obst = b ? [...ui, b] : ui;
+    const w = cardW;
+    const cX = (x) => Math.min(r.x1 - M - w, Math.max(r.x0 + M, x)), cY = (y, h) => Math.min(yMax - h, Math.max(r.y0 + M, y));
+    const clear = ([x, y], h, list) => !list.some((o) => hit({ l: x, r: x + w, t: y, b: y + h }, o));
+    // freie Lücken (von, bis) in der Spalte der Karte ab x zwischen lo und hi, Hindernisse (Standard: Bedienung) ausgespart
+    const gaps = (x, lo, hi, list = ui) => {
+      const out = [];
+      let y = lo;
+      for (const o of list.filter((q) => q.l < x + w && q.r > x && q.t < hi && q.b > lo).sort((p, q) => p.t - q.t)) {
+        if (o.t > y) out.push([y, o.t]);
+        y = Math.max(y, o.b);
       }
-      if (!dock) dock = { pos, goal: pos, side, box: null };
-      else Object.assign(dock, { goal: pos, side });
+      if (hi > y) out.push([y, hi]);
+      return out;
+    };
+    const inStage = ([x, y], h) => x >= r.x0 + M - 0.5 && x + w <= r.x1 - M + 0.5 && y >= r.y0 + M - 0.5 && y + h <= yMax + 0.5;
+    // Lage behalten; neu andocken nur, wenn Bedienung oder das gewählte Abzeichen den Platz belegt (Schublade öffnet,
+    // Karte wächst beim Nachladen, Abzeichen wandert unter die Karte) – sonst bleibt sie stehen, auch wenn es weiterzieht
+    const hNow = Math.min(cardH, maxH, (dock && dock.lim) || Infinity);
+    const keep = dock && [cX(dock.goal[0]), cY(dock.goal[1], hNow)];
+    if (!dock || !clear(keep, hNow, obst)) {
+      const hh = Math.min(Math.max(cardH, card.scrollHeight), maxH);   // volle Höhe, auch wenn die Karte gerade verkleinert ist
+      let side = 'left', pos = null, lim = 0;
+      if (b) {
+        const at = (s) => (s === 'left' ? [b.l - G - w, cY(by - hh / 2, hh)] : s === 'right' ? [b.r + G, cY(by - hh / 2, hh)]
+          : s === 'above' ? [cX(b.l), b.t - G - hh] : [cX(b.l), b.b + G]);
+        const into = (s) => { const [x, y] = at(s); return [cX(x), cY(y, hh)]; };
+        const order = [dock && dock.side, ...SIDES].filter((s, i, a) => s && a.indexOf(s) === i);
+        // 1. ganz frei neben dem Abzeichen · 2. in die Bühne geschoben, frei von Bedienung und Abzeichen
+        side = order.find((s) => inStage(at(s), hh) && clear(at(s), hh, obst));
+        if (side) pos = at(side);
+        else if ((side = order.find((s) => clear(into(s), hh, obst)))) pos = into(side);
+        else {
+          // 3. niedriger in der größten Lücke frei von Bedienung und Abzeichen: Spalte des Abzeichens oder am Bühnenrand;
+          //    über dem Abzeichen unten in der Lücke, sonst oben
+          let best = null;
+          const near = [b.l - G, b.r + G - w, b.l - G - w, b.r + G];
+          for (const x of [...near, r.x0, r.x1].map(cX)) for (const g of gaps(x, r.y0 + M, yMax, obst)) if (!best || g[1] - g[0] > best.g[1] - best.g[0]) best = { x, g };
+          const span = best ? best.g[1] - best.g[0] : 0;
+          const fit = (h) => {
+            const up = best.g[1] <= b.t;
+            lim = Math.floor(Math.min(h, hh));
+            side = up ? 'above' : best.g[0] >= b.b ? 'below' : best.x + w <= b.l ? 'left' : 'right';
+            pos = [best.x, up ? best.g[1] - lim : best.g[0]];
+            if (lim >= hh) lim = 0;
+          };
+          if (span >= MIN_H) fit(span);
+          // 4. volle Höhe, frei vom Abzeichen (darf über die Bedienung) · 5. so niedrig wie nötig
+          else if ((side = order.find((s) => clear(into(s), hh, [b])))) pos = into(side);
+          else if (best) fit(Math.max(48, span));
+          else { side = order[0]; pos = into(side); }
+        }
+      } else {   // Abzeichen nicht im Bild: freier Platz in einer Ecke der Bühne, sonst die größte Lücke (Karte niedriger)
+        const hh0 = Math.min(cardH, maxH);
+        const spots = [[r.x0 + M + 16, r.y0 + M + 16], [r.x0 + M + 16, yMax - hh0 - 16], [r.x1 - M - w - 16, r.y0 + M + 16]].map(([x, y]) => [cX(x), cY(y, hh0)]);
+        pos = spots.find((p) => clear(p, hh0, obst));
+        if (!pos) {
+          let best = null;
+          for (const x of [cX(r.x0 + M + 16), cX(r.x1 - M - w - 16)]) for (const g of gaps(x, r.y0 + M, yMax)) if (!best || g[1] - g[0] > best.g[1] - best.g[0]) best = { x, g };
+          if (best) { lim = Math.floor(Math.min(best.g[1] - best.g[0], hh0)); pos = [best.x, best.g[0]]; } else pos = spots[0];
+        }
+      }
+      if (!dock) dock = { pos, goal: pos, side, box: null, lim };
+      else Object.assign(dock, { goal: pos, side, lim });
     } else dock.goal = keep;
+    const lim = Math.min(maxH, dock.lim || Infinity);
+    if (lim !== cardMaxH) { cardMaxH = lim; card.style.maxHeight = `${lim}px`; }
+    const hh = Math.min(cardH, lim);
     const [gx, gy] = dock.goal;
     if (Math.hypot(gx - dock.pos[0], gy - dock.pos[1]) > 0.5) {   // neu andocken: weich hinübergleiten
       const k = 1 - Math.exp(-dt * 6);
@@ -753,6 +835,7 @@ export function createHud(h) {
     if (Math.hypot(ex - sx, ey - sy) < 6) { cardLead.classList.add('is-off'); return; }
     cardLead.setAttribute('d', `M${f(sx)} ${f(sy)}L${f(ex)} ${f(ey)}`);
     cardLead.classList.remove('is-off');
+    segs.push([[sx, sy], [ex, ey]]);
   }
   // Schmal (Handy, Vorschau F2): Karte als Leiste unten in der Bühne über der Zeitleiste, Abzeichen weichen ihr aus
   function placeSheet(r) {

@@ -6,7 +6,7 @@
 // Bildrand angeschnitten, Licht von der Seite, möglichst viele innere Monde im Bild (aus den Orten zum Datum gewählt).
 
 import * as THREE from 'three';
-import { julianDate, equToScene, eclDir, laplaceAxes, laplaceLongitude } from '../astro.js';
+import { julianDate, equToScene, eclDir, laplaceAxes, laplaceLongitude, hideBehind } from '../astro.js';
 import { createStarfield } from '../stars.js';
 import { BODY_VERT, SHELL_VERT, PLANET_FRAG, ATMO_FRAG, ATMOS } from '../planetfx.js';
 import { registerLayers, refreshLayers } from '../layers.js';
@@ -238,6 +238,7 @@ export function create(ctx) {
     { id: 'res', kind: 'info', pos: resPos, focus: () => 16 },
     { id: 'sun', kind: 'info', pos: sunPos },
   ];
+  hideBehind(hotspots, [{ center: { x: 0, y: 0, z: 0 }, radius: 1 }]);   // Monde, Resonanz, Bänder nie hinter Jupiter
   // Fester Ort für das Resonanz-Abzeichen: Europabahn in Blickrichtung der Heimpose
   resPos.copy(best.f).addScaledVector(pole, -best.f.dot(pole)).normalize().multiplyScalar(GALILEAN.europa.a / RJ).addScaledVector(pole, 0.6);
   const sideV = new THREE.Vector3();

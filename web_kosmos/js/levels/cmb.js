@@ -222,9 +222,12 @@ export function create(ctx) {
 
   let back_t = 0, probeInfo = null;
   const probePos = new THREE.Vector3();
+  const hs0 = new THREE.Vector3(), hs1 = new THREE.Vector3(), cmbPos = () => hotspots[1].pos;
   const hotspots = [
     { id: 'we', kind: 'dive', to: 'web', pos: new THREE.Vector3() },
-    { id: 'cmb', kind: 'info', pos: back.clone().addScaledVector(sideV, 0.45).normalize().multiplyScalar(R_LSS) },
+    { id: 'cmb', kind: 'info', pos: back.clone().addScaledVector(sideV, 0.45).normalize().multiplyScalar(R_LSS),
+      // von außen nur auf der zugewandten Seite der Schale (sonst liegt der Punkt hinter ihr)
+      visible: (cam) => cam.position.length() < R_LSS || hs0.copy(cam.position).sub(cmbPos()).normalize().dot(hs1.copy(cmbPos()).normalize()) > 0.15 },
     { id: 'dawn', kind: 'info', pos: back.clone().addScaledVector(sideV, -0.6).add(new THREE.Vector3(0, 0.3, 0)).normalize().multiplyScalar(R_GAL) },
     { id: 'hubble', kind: 'info', pos: sideV.clone().multiplyScalar(12).add(new THREE.Vector3(0, 6, 0)) },
     { id: 'probe', kind: 'info', pos: probePos, visible: () => back_t > 0 },

@@ -7,7 +7,7 @@
 // createSaturn, ellipsoidGeometry, bodyUniforms, colorTexture nutzen auch die Mond-Stationen (Saturn am Himmel).
 
 import * as THREE from 'three';
-import { julianDate, eclDir } from '../astro.js';
+import { julianDate, eclDir, hideBehind } from '../astro.js';
 import { createStarfield } from '../stars.js';
 import { BODY_VERT, PLANET_FRAG, RING_FRAG, ATMOS } from '../planetfx.js';
 import { registerLayers, refreshLayers } from '../layers.js';
@@ -310,7 +310,7 @@ export function create(ctx) {
     enceladus: { id: 'enceladus', kind: 'dive', to: 'enceladus', pos: M.enceladus.pos, focus: moonFocus('enceladus') },
     ...Object.fromEntries(['mimas', 'tethys', 'dione', 'rhea'].map((id) => [id, { id, kind: 'info', pos: M[id].pos, focus: moonFocus(id) }])),
   };
-  const hotspots = Object.values(hs);
+  const hotspots = hideBehind(Object.values(hs), [{ center: { x: 0, y: 0, z: 0 }, radius: 1 }]);   // Ringe und Monde nie hinter Saturn
 
   // ---------- je Bild ----------
   const occ = Array.from({ length: 4 }, () => new THREE.Vector4()), cand = [];

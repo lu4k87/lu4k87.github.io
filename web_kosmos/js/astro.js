@@ -334,3 +334,31 @@ export function fmtTime(s) {
   if (y < 1e9) return `${sig(y / 1e6)}${NB}Mio.${NB}Jahre`;
   return `${sig(y / 1e9)}${NB}Mrd.${NB}Jahre`;
 }
+
+// ---------- Abzeichen auf der Rückseite ----------
+// Liegt Punkt p vom Auge aus hinter einer der Kugeln { center, radius }? Der Strahl Auge → p tritt vorher in die Kugel ein.
+// Punkte in einer Kugel (Oberfläche, knapp darunter) zählen mit ihrem Abstand zur Mitte als Radius: vorn sichtbar, hinten
+// verdeckt; Punkte tief im Körper (< 0,97 r, z. B. seine Mitte) prüft nur die übrigen Kugeln. Nur x/y/z – ohne three.js.
+export function behind(eye, p, spheres) {
+  const dx = p.x - eye.x, dy = p.y - eye.y, dz = p.z - eye.z, L = Math.hypot(dx, dy, dz);
+  if (!(L > 0)) return false;
+  for (const { center: c, radius } of spheres) {
+    const pc = Math.hypot(p.x - c.x, p.y - c.y, p.z - c.z);
+    if (pc < radius * 0.97) continue;
+    const r = Math.min(radius, pc);
+    const ox = c.x - eye.x, oy = c.y - eye.y, oz = c.z - eye.z;
+    const s = (ox * dx + oy * dy + oz * dz) / L, h2 = ox * ox + oy * oy + oz * oz - s * s;
+    if (h2 >= r * r) continue;
+    const t = s - Math.sqrt(r * r - h2);   // Eintritt in die Kugel
+    if (t > 0 && t < L * (1 - 1e-3)) return true;
+  }
+  return false;
+}
+// visible(cam) jedes Abzeichens um die Rückseiten-Prüfung ergänzen; center darf ein mitlaufender Vektor sein
+export function hideBehind(hotspots, spheres) {
+  for (const h of hotspots) {
+    const v = h.visible;
+    h.visible = (cam) => (!v || v(cam)) && !behind(cam.position, h.pos, spheres);
+  }
+  return hotspots;
+}

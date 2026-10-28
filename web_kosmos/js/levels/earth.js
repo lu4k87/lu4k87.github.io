@@ -9,7 +9,7 @@
 // und geostationären Satelliten, Linsenreflex der Sonne (flare.js). Shader der Erde exportiert für die Orbit-Stationen (orbitview.js).
 
 import * as THREE from 'three';
-import { PLANETS, julianDate, planetPosition, eclToScene, eclDir, moonPosition, gmst, OBLIQUITY, DAY, AU, R_SUN } from '../astro.js';
+import { PLANETS, julianDate, planetPosition, eclToScene, eclDir, moonPosition, gmst, OBLIQUITY, DAY, AU, R_SUN, hideBehind } from '../astro.js';
 import { createStarfield } from '../stars.js';
 import { createCatalogSky, createConstellationLines, BRIGHT, CONST_INFO } from '../catalog.js';
 import { createFlare } from '../flare.js';
@@ -565,6 +565,8 @@ export function create(ctx) {
     { id: 'sun', kind: 'info', pos: sunDir.clone().multiplyScalar(90) },
     { id: 'umbra', kind: 'info', pos: umbraTip, visible: () => earthShadow.visible },
   ];
+  // Abzeichen hinter Erde oder Mond ausblenden (Polarlicht, Nachtseite, Satelliten, Stationen, Teleskope bei L2)
+  hideBehind(hotspots, [{ center: { x: 0, y: 0, z: 0 }, radius: R_E }, { center: moonPos, radius: R_M }]);
 
   const controls = [
     { id: 'const', label: 'Sternbilder', value: 'off', options: [['off', 'Aus'], ['lines', 'Linien'], ['names', 'Linien + Namen']],

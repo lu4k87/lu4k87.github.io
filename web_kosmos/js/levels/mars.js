@@ -8,7 +8,7 @@
 // createMars und moonShape nutzen auch die Mond-Stationen phobos (02E1) und deimos (02E2) (Mars am Himmel, Körper).
 
 import * as THREE from 'three';
-import { julianDate, eclDir, laplaceAxes, mulberry32 } from '../astro.js';
+import { julianDate, eclDir, laplaceAxes, mulberry32, hideBehind } from '../astro.js';
 import { createStarfield } from '../stars.js';
 import { BODY_VERT, SHELL_VERT, PLANET_FRAG, ATMO_FRAG, ATMOS } from '../planetfx.js';
 import { NOISE } from '../glsl.js';
@@ -320,6 +320,7 @@ export function create(ctx) {
     { id: 'shadow', kind: 'info', pos: shadowPos, focus: () => 1.6, visible: (cam) => shadowOn && facing(shadowPos, cam) > 0.15 },
     ...moons.map((x) => ({ id: x.id, kind: 'dive', to: x.id, pos: x.pos, focus: () => Math.max(x.mesh.scale.x * x.m.axes[0] * 10, 0.08) })),
   ];
+  hideBehind(hs, [{ center: { x: 0, y: 0, z: 0 }, radius: 1 }]);   // Monde und Orte nie hinter Mars
 
   // ---------- je Bild ----------
   const occ = [new THREE.Vector4(), new THREE.Vector4()];

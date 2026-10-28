@@ -8,7 +8,7 @@
 // zueinander und Form von Proteus gezeichnet, Zeitraffer.
 
 import * as THREE from 'three';
-import { PLANETS, AU, R_SUN, G, julianDate, planetPosition, eclToScene, eclDir, equToScene, laplaceAxes, mulberry32, num } from '../astro.js';
+import { PLANETS, AU, R_SUN, G, julianDate, planetPosition, eclToScene, eclDir, equToScene, laplaceAxes, mulberry32, num, hideBehind } from '../astro.js';
 import { createStarfield } from '../stars.js';
 import { BODY_VERT, SHELL_VERT, PLANET_FRAG, ATMO_FRAG, RING_FRAG, ATMOS } from '../planetfx.js';
 import { ringTexture, ringMesh, moonOrbit, tidalQuat } from '../moonsys.js';
@@ -234,7 +234,7 @@ export function create(ctx) {
     proteus: H('proteus', 0.08, (cam) => !hidden(hs.proteus.pos, cam)),
     nereid: H('nereid', 0.08, (cam) => !hidden(hs.nereid.pos, cam)),
   };
-  const hotspots = Object.values(hs);
+  const hotspots = hideBehind(Object.values(hs), [{ center: { x: 0, y: 0, z: 0 }, radius: 1 }]);   // nie hinter Neptun
   // Kartenort des Flecks (Textur u 0,547, Breite −16°) auf der Kugel (Konvention SphereGeometry)
   const gdsLocal = (() => { const lon = 0.547 * Math.PI * 2, lat = -16 * RAD; return new THREE.Vector3(-Math.cos(lon) * Math.cos(lat), Math.sin(lat), Math.sin(lon) * Math.cos(lat)); })();
   const tq = new THREE.Quaternion(), tqi = new THREE.Quaternion(), cl = new THREE.Vector3();

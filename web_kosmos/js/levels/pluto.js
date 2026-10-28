@@ -10,7 +10,7 @@
 // Tagseite über das Herz, danach durch Plutos Schatten).
 
 import * as THREE from 'three';
-import { PLUTO, julianDate, elementsAt, solveKepler, orbitToEcliptic, eclToScene, eclDir, laplacePos, laplaceAxes } from '../astro.js';
+import { PLUTO, julianDate, elementsAt, solveKepler, orbitToEcliptic, eclToScene, eclDir, laplacePos, laplaceAxes, hideBehind } from '../astro.js';
 import { createStarfield } from '../stars.js';
 import { BODY_VERT, SHELL_VERT } from '../planetfx.js';
 import { registerLayers, refreshLayers } from '../layers.js';
@@ -284,7 +284,7 @@ export function create(ctx) {
     moons: { id: 'moons', kind: 'info', pos: new THREE.Vector3(), focus: () => 30, visible: () => moonPts.visible },
     nh: { id: 'nh', kind: 'info', pos: new THREE.Vector3(), focus: () => 20, visible: () => nhOn },
   };
-  const hotspots = Object.values(hs);
+  const hotspots = hideBehind(Object.values(hs), [{ center: plutoPos, radius: 1 }, { center: charonPos, radius: R_C / R_P }]);
   const view = new THREE.Vector3();
   function placeHotspots(cam) {
     pluto.updateMatrixWorld();
