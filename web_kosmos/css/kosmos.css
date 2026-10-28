@@ -244,9 +244,9 @@ body.is-flying .flight { opacity: 1; }
 body.is-flying .hint, body.is-intro .hint { opacity: 0; }
 /* Kurzmeldung (hud.notice): oben in der Bühne statt unten (dort liegt der Zeitraffer), schlägt tl-on/Flug/schmal */
 body.is-notice .stage > .hint { opacity: 1; display: block; top: 4px; bottom: auto; width: max-content; max-width: calc(100% - 32px); white-space: normal; text-align: center; text-wrap: balance; padding: 7px 14px; color: var(--ink); background: rgba(5, 8, 14, 0.72); border-radius: var(--radius); }
-/* Auftakt läuft: dezenter Hinweis unten mittig, blendet nach dem Start ein und mit dem Überspringen aus (Klick geht zum Canvas) */
+/* Auftakt läuft: dezenter Hinweis mittig im unteren Kinobalken (OPEN_BARS in main.js), blendet nach dem Start ein und mit dem Überspringen aus (Klick geht zum Canvas) */
 .skip-cue {
-  position: fixed; left: 50%; bottom: 7vh; z-index: 2; transform: translateX(-50%); margin: 0; white-space: nowrap; pointer-events: none;
+  position: fixed; left: 50%; bottom: calc(4.25vh - 0.6em); z-index: 2; transform: translateX(-50%); margin: 0; white-space: nowrap; pointer-events: none;
   font-size: 13px; letter-spacing: 0.14em; color: var(--ink-soft); text-shadow: 0 1px 4px #000; opacity: 0; transition: opacity 0.35s var(--ease-out);
 }
 body.is-opener .skip-cue { opacity: 0.75; transition: opacity 1.2s var(--ease-out) 1.5s; }
