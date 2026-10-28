@@ -31,8 +31,10 @@ export const CLUSTERS = [
 const PP_END = at(125, -27, 66);   // Perseus-Pisces-Kette: von Perseus Richtung Pisces
 
 // Gas: Feld r = Wand, g = Faden, b = Knoten, a = Faden zum Virgo-Haufen. Abstand zur Zellgrenze = Abstand zur
-// mittelsenkrechten Ebene der beiden nächsten Kerne (Faden: zwei Ebenen, Knoten: drei)
-const GAS_EXT = 75;
+// mittelsenkrechten Ebene der beiden nächsten Kerne (Faden: zwei Ebenen, Knoten: drei). Gas über das ganze Netz (User
+// 28.10.2026, Vorschau „Gas über das ganze Netz“): Breiten und Rauschen wachsen mit der Ausdehnung gegenüber den 75 Mpc
+// von vorher (WS), Fäden schwächer (WS^0,25), sonst wären sie im weiten Bild nur noch Haarlinien
+const GAS_EXT = R, WS = GAS_EXT / 75, WS2 = Math.sqrt(WS);
 const GAS_FIELD = /* glsl */ `
 float bis(vec3 p, vec3 a, vec3 b) { vec3 u = b - a; return dot(p - 0.5 * (a + b), u) / length(u); }
 vec4 field(vec3 p) {
@@ -50,12 +52,12 @@ vec4 field(vec3 p) {
   vec3 s0 = -0.3 * VIRGO, s1 = 1.3 * VIRGO;
   float t = clamp(dot(p - s0, s1 - s0) / dot(s1 - s0, s1 - s0), 0.0, 1.0);
   vec3 dv = p - mix(s0, s1, t);
-  return vec4(exp(-ab * ab / 24.0), exp(-(ab * ab + ac * ac) / 11.5), exp(-(ab * ab + ac * ac + ad * ad) / 20.0), exp(-dot(dv, dv) / 13.5));
+  return vec4(exp(-ab * ab / (24.0 * WS2)), exp(-(ab * ab + ac * ac) / (11.5 * WS2)), exp(-(ab * ab + ac * ac + ad * ad) / (20.0 * WS2)), exp(-dot(dv, dv) / 13.5));
 }
 `;
 const GAS_BODY = /* glsl */ `
 uniform highp sampler3D uField;
-uniform float uGain, uMode;
+uniform float uGain, uMode, uReach, uWidth, uCon;
 uniform vec4 uCl[6];
 uniform float uClW[6];
 // Temperatur-Rampe wie in Simulationsbildern (IllustrisTNG): kalt blau → warm violett → heiß orange → sehr heiß weiß
@@ -66,10 +68,11 @@ vec3 tRamp(float h) {
 }
 void sampleVol(vec3 p, out vec3 e, out float s) {
   s = 0.0;
-  vec4 f = texture(uField, p / (2.0 * EXT) + 0.5);
-  float edge = pow(smoothstep(EXT, EXT * 0.25, length(p)), 1.6);
-  float n = fbm(p * 0.22 + vec3(0.0, uTime * 0.012, uTime * 0.008), OCT);
-  float rid = ridged(p * 0.45 + vec3(uTime * 0.01, 0.0, 0.0), 3);
+  // Fadenbreite live: exp(-d²/k)^(1/w²) = exp(-d²/(k·w²)), ohne das Feld neu zu backen
+  vec4 f = pow(texture(uField, p / (2.0 * EXT) + 0.5), vec4(1.0 / (uWidth * uWidth)));
+  float edge = pow(smoothstep(uReach, uReach * 0.25, length(p)), 1.6);
+  float n = fbm(p * (0.22 / WS) + vec3(0.0, uTime * 0.012, uTime * 0.008), OCT);
+  float rid = ridged(p * (0.45 / WS) + vec3(uTime * 0.01, 0.0, 0.0), 3);
   float clump = clamp(0.6 + 1.8 * n, 0.0, 2.0);
   float hot = 0.0, sh = 0.0, gl = 0.0;
   for (int i = 0; i < 6; i++) {
@@ -80,13 +83,28 @@ void sampleVol(vec3 p, out vec3 e, out float s) {
     // breiter Röntgen-Halo: der Kern (rc ≈ 1 Mpc) ist kleiner als ein Rechenschritt und fiele sonst durch
     gl += uClW[i] * exp(-x2 / 30.0);
   }
+  // Kontrast: Potenz auf die Dichte – höher = Leerräume dunkler, Fäden heben sich ab
+  float g = pow((0.3 * f.r + f.g * (0.6 + 0.8 * rid) + f.a + 1.4 * f.b) * clump + 0.6 * sqrt(hot) + 0.8 * sh * clump, uCon);
   if (uMode < 1.5) {
-    float g = (0.3 * f.r + f.g * (0.6 + 0.8 * rid) + f.a + 1.4 * f.b) * clump + 0.6 * sqrt(hot) + 0.8 * sh * clump;
     float h = clamp(0.12 * f.r + 0.3 * f.g + 0.6 * f.b + 1.1 * sqrt(hot) + 0.7 * sh * (0.5 + n), 0.0, 1.0);
-    e = tRamp(h) * g * 0.02;
+    e = tRamp(h) * g * 0.02 * NORM;
+  } else if (uMode > 2.5) {
+    float h = clamp(0.1 * f.r + 0.35 * f.g + 0.7 * f.b + 1.1 * sqrt(hot), 0.0, 1.0);
+    if (uMode < 3.5) {
+      // Dichte wie Simulationsbilder (Vorlage 1): Leerraum dunkelblau, Faden hellblau-weiß, Knoten rot
+      vec3 c = mix(vec3(0.03, 0.16, 0.42), vec3(0.62, 0.80, 1.0), smoothstep(0.02, 0.3, h));
+      c = mix(c, vec3(1.0, 0.95, 0.92), smoothstep(0.3, 0.55, h));
+      c = mix(c, vec3(0.95, 0.25, 0.15), smoothstep(0.55, 0.9, h));
+      e = c * (0.0025 / uCon + g * 0.02) * NORM;
+    } else {
+      // Leuchtnetz (Vorlage 2): Leerräume dunkel, Fäden cyanblau, Knoten gelblich-weiß
+      vec3 c = mix(vec3(0.08, 0.22, 0.85), vec3(0.45, 0.80, 1.0), smoothstep(0.05, 0.4, h));
+      c = mix(c, vec3(1.0, 0.95, 0.70), smoothstep(0.5, 0.9, h));
+      e = c * pow(g, 1.4) * 0.03 * NORM;
+    }
   } else {
     // Röntgengas: nur das heiße Haufengas leuchtet, das Netz ist nur angedeutet
-    float x = (hot + 0.5 * gl) * (0.7 + 0.6 * n) + 0.08 * sh * clump + 0.06 * (f.b + f.a) * clump;
+    float x = (hot + 0.5 * gl) * (0.7 + 0.6 * n) + 0.08 * sh * clump + 0.06 * NORM * NORM * (f.b + f.a) * clump;
     e = mix(vec3(0.75, 0.25, 1.0), vec3(1.0, 0.85, 0.55), clamp(hot + 0.6 * gl, 0.0, 1.0)) * x * 0.4;
   }
   e *= uGain * edge;
@@ -211,19 +229,21 @@ export function create(ctx) {
     flowLines.geometry.attributes.position.needsUpdate = true;
   }
 
-  // Gas um die Lokale Gruppe (bis GAS_EXT): dieselben Zellkerne wie die Galaxien → Wände, Fäden, Knoten des Gases liegen
+  // Gas über das ganze Netz (bis GAS_EXT): dieselben Zellkerne wie die Galaxien → Wände, Fäden, Knoten des Gases liegen
   // genau auf dem Netz; dazu der Faden Lokale Gruppe → Virgo und das heiße Haufengas (β-Modell, Leuchten ∝ Dichte²)
-  const nearNuc = nuc.filter((p) => p.length() < GAS_EXT * 1.74 + 50);
   const v3 = (p) => `vec3(${p.x.toFixed(2)}, ${p.y.toFixed(2)}, ${p.z.toFixed(2)})`;
-  const field = bakeField(ctx.renderer, { size: 128, extent: GAS_EXT, body: `const int NN = ${nearNuc.length};
-const vec3 NUC[NN] = vec3[NN](${nearNuc.map(v3).join(', ')});
+  const field = bakeField(ctx.renderer, { size: 192, extent: GAS_EXT, body: `const int NN = ${nuc.length};
+const vec3 NUC[NN] = vec3[NN](${nuc.map(v3).join(', ')});
 const vec3 VIRGO = ${v3(virgo)};
+const float WS2 = ${WS2.toFixed(4)};
 ${GAS_FIELD}` });
   const CL = [['virgo', 1, 0.9], ['fornax', 0.5, 0.5], ['centaurus', 0.9, 0.9], ['hydra', 0.7, 0.7], ['ga', 1.1, 1.2]]
     .map(([id, w, rc]) => [CLUSTERS.find((c) => c.id === id).p, w, rc]).concat([[new THREE.Vector3(), 0.25, 0.35]]);
-  const gasMesh = volume({ radius: GAS_EXT, body: `#define OCT ${ctx.detail > 0.7 ? 4 : 3}\n#define EXT ${GAS_EXT.toFixed(1)}\n${GAS_BODY}`,
-    steps: ctx.detail > 0.9 ? 128 : 96, maxSteps: 160, uniforms: {
-      uField: { value: field.texture }, uGain: { value: 1 }, uMode: { value: 0 },
+  // NORM: der Strahl läuft WS-mal so weit durch Gas wie bei 75 Mpc → Helligkeit zurück auf das Maß von vorher (eigener
+  // Faktor, der Regler „Helligkeit“ setzt uGain beim Laden auf 1)
+  const gasMesh = volume({ radius: GAS_EXT, body: `#define OCT ${ctx.detail > 0.7 ? 4 : 3}\n#define EXT ${GAS_EXT.toFixed(1)}\n#define NORM ${(1 / WS).toFixed(4)}\nconst float WS = ${WS.toFixed(4)};\n${GAS_BODY}`,
+    steps: ctx.detail > 0.9 ? 160 : 128, maxSteps: 192, uniforms: {
+      uField: { value: field.texture }, uGain: { value: 1 }, uMode: { value: 0 }, uReach: { value: GAS_EXT }, uWidth: { value: 1 }, uCon: { value: 1 },
       uCl: { value: CL.map(([p, , rc]) => new THREE.Vector4(p.x, p.y, p.z, rc)) }, uClW: { value: CL.map((c) => c[1]) },
     } });
   const gas = offscreen(ctx.renderer, gasMesh);
@@ -234,7 +254,7 @@ ${GAS_FIELD}` });
   const tw = { pos: [], base: [], ph: [], om: [] };
   for (let i = 0; i < pos.length / 3 && tw.ph.length < 420; i++) {
     const x = pos[i * 3], y = pos[i * 3 + 1], z = pos[i * 3 + 2];
-    if (Math.hypot(x, y, z) > GAS_EXT * 0.8 || col[i * 3] + col[i * 3 + 1] + col[i * 3 + 2] < 3.2) continue;
+    if (Math.hypot(x, y, z) > 60 || col[i * 3] + col[i * 3 + 1] + col[i * 3 + 2] < 3.2) continue;
     tw.pos.push(x, y, z); tw.base.push(col[i * 3], col[i * 3 + 1], col[i * 3 + 2]); tw.ph.push(rand() * 6.28); tw.om.push(0.5 + rand() * 2);
   }
   const twinkle = pointCloud(tw.pos, tw.base, tw.ph.map(() => 0.5), { min: 2.2 });
@@ -269,6 +289,10 @@ ${GAS_FIELD}` });
     { id: 'flowGain', type: 'range', label: 'Helligkeit', value: 1, min: 0.25, max: 6, step: 0.25, unit: '×', set: (v) => { flowG = v; flowAlpha(); }, active: () => flow.visible, only: flowOnly },
     { id: 'gasGain', type: 'range', group: 'Gaswolke', label: 'Helligkeit', value: 1, min: 0.25, max: 4, step: 0.25, unit: '×', set: (v) => { gu.uGain.value = v; gas.invalidate(); }, active: () => gas.quad.visible, only: gasOnly },
     { id: 'gasK', type: 'range', label: 'Bewegung', value: 1, min: 0, max: 4, step: 0.25, fmt: (v) => (v ? `${v} ×` : 'steht'), set: (v) => { gasK = v; }, active: () => gas.quad.visible, only: gasOnly },
+    // Reichweite blendet nur aus (Feld bleibt), Fadenbreite und Kontrast wirken live im Strahl
+    { id: 'gasReach', type: 'range', label: 'Reichweite', value: GAS_EXT, min: 25, max: GAS_EXT, step: 25, unit: ' Mpc', set: (v) => { gu.uReach.value = v; gas.invalidate(); }, active: () => gas.quad.visible, only: gasOnly },
+    { id: 'gasWidth', type: 'range', label: 'Fadenbreite', value: 1, min: 0.5, max: 1.5, step: 0.25, unit: '×', set: (v) => { gu.uWidth.value = v; gas.invalidate(); }, active: () => gas.quad.visible, only: gasOnly },
+    { id: 'gasCon', type: 'range', label: 'Kontrast', value: 1, min: 0.5, max: 2.5, step: 0.25, unit: '×', set: (v) => { gu.uCon.value = v; gas.invalidate(); }, active: () => gas.quad.visible, only: gasOnly },
     { id: 'gasSteps', type: 'range', label: 'Detail (Schritte)', value: gu.uSteps.value, min: 64, max: 160, step: 32, set: (v) => { gu.uSteps.value = v; gas.invalidate(); }, active: () => gas.quad.visible, only: gasOnly },
     { id: 'twK', type: 'range', group: 'Funkeln', label: 'Tempo', value: 1, min: 0.25, max: 3, step: 0.25, unit: '×', set: (v) => { twK = v; }, active: () => twinkle.visible, only: 'Wirkt, sobald unter Ansicht „Funkeln“ an ist.' },
   ]);
@@ -277,8 +301,9 @@ ${GAS_FIELD}` });
   scene.add(flyby.group);
   const controls = [{ id: 'flow', label: 'Strömung', value: 'off', options: [['off', 'Aus'], ['on', 'Laniakea']], set: (v) => { flow.visible = v === 'on'; } },
     // Gas: Temperatur = Farben wie in IllustrisTNG, Röntgengas = nur heißes Haufengas (User 28.10.2026, Vorschau Gas:B + Gas:C)
-    { id: 'gas', label: 'Gas', value: 'off', options: [['off', 'Aus'], ['temp', 'Temperatur'], ['xray', 'Röntgengas']],
-      set: (v) => { gu.uMode.value = v === 'xray' ? 2 : 1; gas.quad.visible = v !== 'off'; gas.invalidate(); } },
+    // Dichte (blau-weiß-rot) + Leuchtnetz (cyanblau) = Vorlagen 1 + 2 (User 28.10.2026, Vorschau „Gas über das ganze Netz“ Gas:B + Gas:C)
+    { id: 'gas', label: 'Gas', value: 'off', options: [['off', 'Aus'], ['temp', 'Temperatur'], ['dens', 'Dichte'], ['glow', 'Leuchtnetz'], ['xray', 'Röntgengas']],
+      set: (v) => { gu.uMode.value = { xray: 2, dens: 3, glow: 4 }[v] || 1; gas.quad.visible = v !== 'off'; gas.invalidate(); } },
     { id: 'tw', label: 'Funkeln', value: 'off', options: [['off', 'Aus'], ['on', 'An']], set: (v) => { twinkle.visible = v === 'on'; } }];
   return {
     scene, camera, unit: MPC, hotspots, controls, home,
