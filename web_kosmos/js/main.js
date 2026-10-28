@@ -571,6 +571,9 @@ const PASS = { side: 0.45, behind: 0.8, out: 1.6 };
 function passPose(lv, A, down) {
   const ov = arrival(lv), T = ov.target, r = ov.pos.distanceTo(T);
   const u = A.clone().sub(T), rho = u.length();
+  // Anker im Zentrum (Sonne im Sonnensystem, Sgr A* in der Milchstraße): keine Richtung → Übersicht; sonst fällt die Pose
+  // in den Anker, Kamera = Blickziel, die Projektion wird NaN und das Bild der ganzen Etappe schwarz
+  if (rho < 1e-6 * r) return pose(ov.pos, T);
   u.normalize();
   const axis = new THREE.Vector3().crossVectors(u, ov.pos.clone().sub(T).normalize());   // dreht u zur gewohnten Seite
   if (axis.lengthSq() < 1e-8) axis.copy(upOf(lv.camera)).projectOnPlane(u);
