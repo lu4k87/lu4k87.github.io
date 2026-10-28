@@ -21,7 +21,7 @@
 
 import { STATIONS } from './content.js';
 import { prose, nbsp } from './figs.js';
-import { tabOf } from './tabs.js';
+import { tabOf, tabIcon } from './tabs.js';
 
 const KEY = 'kosmos.layers.v1';
 const PLAY = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l10-6.5z" fill="currentColor"/></svg>';
@@ -42,6 +42,17 @@ const ICONS = {
   galaxy: '<path d="M2.5 12c3-2.2 6.2-3 9.5-3s6.5.8 9.5 3c-3 2.2-6.2 3-9.5 3s-6.5-.8-9.5-3z"/><circle cx="12" cy="12" r="2"/>',
   time: '<circle cx="12" cy="12" r="8.5"/><path d="M12 7v5l3.5 2"/>',
   sound: '<path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path d="M15.5 9a4.2 4.2 0 0 1 0 6M18 6.5a8 8 0 0 1 0 11"/>',
+  globe: '<circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c-3 3-3 14 0 17M12 3.5c3 3 3 14 0 17"/>',
+  planet: '<circle cx="12" cy="12" r="5"/><ellipse cx="12" cy="12" rx="10" ry="3.5" transform="rotate(-18 12 12)"/>',
+  moon: '<path d="M15.5 4.5a8 8 0 1 0 4 12.5 6.5 6.5 0 0 1-4-12.5z"/>',
+  wave: '<path d="M3 9c3-2.5 6 2.5 9 0s6-2.5 9 0M3 15c3-2.5 6 2.5 9 0s6-2.5 9 0"/>',
+  cloud: '<path d="M7 18a4 4 0 0 1-.6-8 5.5 5.5 0 0 1 10.6-1.2A4.6 4.6 0 0 1 17 18z"/>',
+  net: '<circle cx="5" cy="6" r="2"/><circle cx="19" cy="7" r="2"/><circle cx="12" cy="18" r="2"/><path d="M7 6.2l10 .6M6 7.8l5 8.4M18 8.8l-5 7.4"/>',
+  probe: '<rect x="9.5" y="9.5" width="5" height="5" rx="1"/><path d="M3 7h5v10H3zM16 7h5v10h-5zM8 12h1.5M14.5 12H16"/>',
+  tune: '<path d="M4 7h9M18 7h2M4 17h3M12 17h8"/><circle cx="15.5" cy="7" r="2.5"/><circle cx="9.5" cy="17" r="2.5"/>',
+  flame: '<path d="M12 21a6 6 0 0 0 6-6c0-4-3-6-4-10-2.5 2-3.5 4-3.5 6.5C9 10.5 8.5 9.5 8.5 8 6.8 9.8 6 12.2 6 15a6 6 0 0 0 6 6z"/>',
+  corona: '<circle cx="12" cy="12" r="4"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3"/><circle cx="12" cy="12" r="7.5" stroke-dasharray="2 2.6"/>',
+  film: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 9h18M3 15h18M8 5v4M16 5v4M8 15v4M16 15v4"/>',
   reset: '<path d="M4 12a8 8 0 1 0 2.3-5.6"/><path d="M4 4v4h4"/>',
   chev: '<path d="M6 9l6 6 6-6"/>',
   // Mini-Bento der Reiter im Zahnrad: Station = eine Kachel gefüllt (diese Station), Global = alle Kacheln (alle Stationen)
@@ -214,7 +225,8 @@ const tabBody = (g) => g.segs.map((s) => {
   const scope = s.items[0] && s.items[0].l.scope;
   return `${g.segs.length > 1 || s.title !== g.title || scope ? `<h5 class="b-subh">${esc(s.title)}</h5>` : ''}${scope ? `<p class="cfg-note lay-hint">${prose(scope)}</p>` : ''}${s.items.map(block).join('')}`;
 }).join('');
-const tabBtn = (i, on) => `<button type="button" role="tab" class="u-tab lay-tab" id="lay-t${i}" data-ltab="${i}" aria-controls="lay-p${i}" aria-selected="${on}" tabindex="${on ? 0 : -1}">${esc(gs[i].title)} <span class="c" aria-hidden="true">${count(gs[i])}</span><span class="lay-tab-dot" aria-hidden="true"></span></button>`;
+// Gruppen als quadratische Kacheln mit Icon wie in den Einstellungen (User 28.10.2026); Punkt = Wert weicht vom Standard ab
+const tabBtn = (i, on) => `<button type="button" role="tab" class="cfg-tile lay-tab" id="lay-t${i}" data-ltab="${i}" aria-controls="lay-p${i}" aria-selected="${on}" tabindex="${on ? 0 : -1}">${icon(tabIcon(gs[i].title), 'cfg-tile-ico')}<span>${esc(gs[i].title)}<span class="lay-tab-dot" aria-hidden="true"></span></span></button>`;
 
 function gearHtml(layers) {
   gs = groups(layers);
@@ -222,7 +234,7 @@ function gearHtml(layers) {
   // Zeigen: Gruppe der ▶-Ebene (mit Unter-Zeilen) + alle show-Zeilen in ihrer Reihenfolge
   shows = [...gs.filter(isPlay).flatMap(itemsOf), ...layers.filter((l) => l.show)];
   const saved = (openStore[currentId] || [])[0], cur = tabs.includes(saved) ? saved : tabs[0], bar = tabs.length > 1;
-  const strip = bar ? `<div class="u-tabs u-tabs--sub lay-tabs" role="tablist" aria-label="Gruppen der Station">${tabs.map((i) => tabBtn(i, i === cur)).join('')}</div>` : '';
+  const strip = bar ? `<div class="lay-tabs" role="tablist" aria-label="Gruppen der Station">${tabs.map((i) => tabBtn(i, i === cur)).join('')}</div>` : '';
   const panels = tabs.map((i) => `<div class="lay-panel b-body" id="lay-p${i}" ${bar ? `role="tabpanel" aria-labelledby="lay-t${i}"` : `role="group" aria-label="${esc(gs[i].title)}"`}${i === cur ? '' : ' hidden'}>${tabBody(gs[i])}</div>`).join('');
   const set = tabs.length ? `<h4 class="zg-set-h">Einstellungen</h4>${strip}${panels}` : '';
   return `<div class="b-main lay-scroll">${shows.length ? showHtml(shows) : ''}${set}</div><div class="cfg-foot"><span class="cfg-scope">Diese Station · <span data-lay-sum></span></span>${devBar()}</div>`;

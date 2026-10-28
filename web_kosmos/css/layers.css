@@ -115,9 +115,9 @@ body.is-flying .tl, body.is-intro .tl { opacity: 0; pointer-events: none; }
    Regler und Knopfreihen liegen darunter über die volle Breite, ↺ in fester Spalte am Ende der Kopfzeile (Knopf nur bei geändertem
    Wert). Schmaler (Handy) richtet sich nach der Breite des Fensters (Container cfg in kosmos.css), nicht nach dem Bildschirm. */
 .cfg-pane { --rst: 26px; --row: 30px; }
-/* Reiter der Gruppen im Reiter Station (Unterstrich-Reiter in kosmos.css .u-tabs--sub) */
-.lay-tabs { flex: none; padding: 0 10px; }
-/* Gruppen der Einstellungen als quadratische Kacheln mit Icon (User 28.10.2026); gewählt = Akzentfarbe wie die Knöpfe der Kopfleiste */
+/* Gruppen als quadratische Kacheln mit Icon (User 28.10.2026), gewählt = Akzentfarbe wie die Knöpfe der Kopfleiste: Einstellungen
+   (5 Gruppen, eine Reihe, schmal seitlich wischbar), Reiter Station (beliebig viele, brechen in Reihen um) */
+.lay-tabs { display: grid; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: 6px; padding: 10px 0 12px; border-bottom: 1px solid var(--line); }
 .cfg-jump { flex: none; display: grid; grid-template-columns: repeat(5, minmax(68px, 1fr)); gap: 6px; padding: 12px 18px; border-bottom: 1px solid var(--line);
   overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: thin; scrollbar-color: var(--line) transparent; }
 .cfg-jump::-webkit-scrollbar { height: 4px; }
@@ -137,8 +137,8 @@ body.is-flying .tl, body.is-intro .tl { opacity: 0; pointer-events: none; }
 .b-sec-h .b-count { padding: 0; border: 0; font: 500 12px var(--mono); color: var(--ink-soft); }
 .b-list { display: flex; flex-direction: column; align-items: stretch; gap: 0; }
 .cfg-pane .b-card { padding: 0; gap: 0; border: 0; border-radius: 0; border-bottom: 1px solid var(--line); background: none; box-shadow: none; }
-.lay-tab-dot { width: 6px; height: 6px; margin-left: -2px; border-radius: 50%; background: var(--accent); opacity: 0; transition: opacity 0.2s; }
-.lay-tab.has-dev .lay-tab-dot { opacity: 1; }
+.lay-tab-dot { display: none; vertical-align: 0.15em; width: 6px; height: 6px; margin-left: 4px; border-radius: 50%; background: var(--accent); }
+.lay-tab.has-dev .lay-tab-dot { display: inline-block; }
 .lay-panel { padding-top: 8px; }
 
 .lay-panel > .b-subh:first-child { margin-top: 2px; }
@@ -163,7 +163,6 @@ body.is-flying .tl, body.is-intro .tl { opacity: 0; pointer-events: none; }
 /* Farblook: Liste 3 × 2 unter dem Namen, schmal (Handy) 2 × 3 */
 .cfg-pane .b-looks { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 @container cfg (max-width: 420px) { .cfg-pane .b-looks { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-@media (prefers-reduced-motion: reduce) { .lay-tab-dot { transition: none; } }
 
 /* Reiter Station (Vorschau 28.10.2026 „Regler der Infotafel in den Reiter Station“ Reiter:C): oben Block „Zeigen“ als Karte,
    darunter „Einstellungen“ mit den Gruppen-Reitern; die Reiter-Zeile bleibt beim Scrollen oben stehen (sticky im Fluss, deckend) */

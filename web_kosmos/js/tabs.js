@@ -18,3 +18,17 @@ export const TABS = {
   'Licht des Gases': 'Gas', 'Gas um das Loch': 'Gas', 'Qualität der Wolke': 'Qualität', 'Staubgürtel und Stern': 'Staub',
 };
 export const tabOf = (group) => TABS[group] || group;
+// Icon je Kurzname für die Kacheln im Reiter Station (User 28.10.2026, Linien-Icons in layers.js ICONS); Test: jeder Kurzname hat eins
+const ICON_OF = {
+  time: ['Zeit', 'Ereignisse'], sound: ['Ton'], film: ['Film', 'Kino'], tune: ['Ansicht', 'Details'], perf: ['Qualität'],
+  sun: ['Sonne', 'Licht'], flame: ['Glut'], corona: ['Korona'], fx: ['Optik', 'Pulsar', 'Blitz'],
+  globe: ['Erde', 'Mars', 'Neptun', 'Triton', 'Planet', 'Oberfläche', 'Ozean', 'Lufthülle', 'Atmosphäre'],
+  planet: ['Planeten', 'Ringe', 'System'], moon: ['Monde'], orbit: ['Bahn', 'Achsen', 'Drehung'],
+  field: ['Feld', 'Bögen', 'Polarlicht'], burst: ['Ausbrüche', 'Fontänen', 'Vulkane', 'Strahlen', 'Keulen', 'Stoßfronten'],
+  wave: ['Ausfluss', 'Strömung', 'Wind', 'Gezeiten', 'Bewegung'], layers: ['Aufbau', 'Schichten', 'Struktur', 'Kern', 'Allgemein'],
+  cloud: ['Nebel', 'Gas', 'Gaswolke', 'Krebsnebel', 'Staub', 'Flügel', 'Umgebung'],
+  sky: ['Himmel', 'Sternhimmel', 'Sterne', 'Stern', 'Funkeln', 'Hintergrund', 'Strahlung'],
+  galaxy: ['Galaxien', 'Milchstraße', 'Fermi-Blasen'], net: ['Netz'], probe: ['Sonde', 'Station', 'Teleskop', 'Sonnenschild'],
+};
+export const TAB_ICONS = Object.fromEntries(Object.entries(ICON_OF).flatMap(([k, names]) => names.map((n) => [n, k])));
+export const tabIcon = (title) => TAB_ICONS[title] || 'layers';
