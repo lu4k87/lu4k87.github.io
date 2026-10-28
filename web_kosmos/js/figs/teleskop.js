@@ -1,4 +1,4 @@
-// Infografiken der Weltraumteleskope (01D Hubble, 01E JWST, 01F Euclid, 01G Roman). Werte: NASA Hubble by the Numbers
+// Infografiken der Weltraumteleskope (01B1 Hubble, 01B2 JWST, 01B3 Euclid, 01B4 Roman). Werte: NASA Hubble by the Numbers
 // und Missions to Hubble, NASA Webb Fact Sheet, STScI JWST Orbit, ESA Euclid, Euclid Consortium (Q2), NASA Roman Launch,
 // Wikipedia (Euclid, Roman: Instrumente, Datenraten), NSSDCA (Erde, Mond); Winkelgrößen, Horizont, Erdschatten und
 // Himmelsfläche als eigene Rechnung daraus.
@@ -67,7 +67,7 @@ const DATA = (on) => ({
 });
 
 export default {
-  // ---------- 01D Hubble ----------
+  // ---------- 01B1 Hubble ----------
   'hubble.mirror': MIRRORS('hubble'),
   'hubble.arrays': {
     k: 'bars', alt: 'Strom der Solarflügel von Hubble: über 5.200 W erzeugt, rund 2.100 W verbraucht',
@@ -130,7 +130,7 @@ export default {
     };
   })(),
 
-  // ---------- 01E James Webb ----------
+  // ---------- 01B2 James Webb ----------
   'jwst.mirror': MIRRORS('jwst'),
   'jwst.secondary': {
     k: 'timeline', alt: 'Zeitleiste: Start am 25.12.2021, Ankunft an L2 am 24.01.2022',
@@ -169,7 +169,7 @@ export default {
   'jwst.moon': SKY('moon'),
   'jwst.halo': DIST('jwst'),
 
-  // ---------- 01F Euclid ----------
+  // ---------- 01B3 Euclid ----------
   'euclid.telescope': MIRRORS('euclid'),
   'euclid.vis': SENSORS('vis'),
   'euclid.nisp': SENSORS('nisp'),
@@ -204,7 +204,7 @@ export default {
   'euclid.moon': SKY('moon'),
   'euclid.halo': DIST('euclid'),
 
-  // ---------- 01G Roman ----------
+  // ---------- 01B4 Roman ----------
   'roman.telescope': MIRRORS('roman'),
   'roman.wfi': SENSORS('wfi'),
   'roman.hga': DATA('roman'),

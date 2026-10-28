@@ -3,7 +3,7 @@
 // Abzeichen mit gewinkelten 45°-Leitlinien (Sechseck wie Biochar), Info-Karte, Messleiste (echtes Maß, Lichtlaufzeit,
 // Entfernung, Blick zurück), Reiseroute, Kapitel-Titel beim Ankommen, Rand-Zug-Anzeige.
 
-import { STATIONS, ROUTE, SOURCES, routeIndex } from './content.js';
+import { STATIONS, GROUPS, ROUTE, SOURCES, routeIndex, up, entry } from './content.js';
 import { fmtLength, fmtTime, C } from './astro.js';
 import { settings, setSetting, mountSettings, onSettings } from './settings.js';
 import { getLayer, setLayer, fmtVal, paintRange } from './layers.js';
@@ -17,7 +17,7 @@ const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&l
 const HEX = 'M20 2L35.59 11L35.59 29L20 38L4.41 29L4.41 11z';
 const hex = (inner = '', cls = '') => `<svg class="hex ${cls}" viewBox="0 0 40 40" aria-hidden="true"><path class="hex-shape" d="${HEX}"/>${inner}</svg>`;
 // Stationsnummer: Route zweistellig (01–10), Abstecher Elternnummer + Buchstabe (02A), Monde + Ziffer (02C1)
-const num = (id) => String(STATIONS[id].n).padStart(2, '0');
+const num = (id) => String((STATIONS[id] || GROUPS[id]).n).padStart(2, '0');
 // ?dbg: Lage der Abzeichen für tests/overlap.py freigeben (window.__ovl, je Bild neu)
 const DBG = new URLSearchParams(location.search).has('dbg');
 const hexNum = (n, cls) => hex(`<text x="20" y="24.5" text-anchor="middle">${String(n).padStart(2, '0')}</text>`, cls);
@@ -64,7 +64,7 @@ export function createHud(h) {
   // und Monde zeigt die Schublade darunter beim Zeigen (Maus, Fokus) oder solange ihr Parent ausgewählt ist (aktuelle Station
   // oder auf ihrem Weg). Unter 760 px (oder zu eng für die Namen) nur die Route als Punkte mit Kapitel-Streifen.
   // Kapitel: Hub, Name, Beschreibung (Name der Gruppe für Screenreader)
-  const CHAPTERS = [['earth', 'Erdnähe', 'Erde, Mond und Raumstationen'], ['solar', 'Sonnensystem', 'Sonne, Planeten und Monde'],
+  const CHAPTERS = [['earth', 'Erdnähe', 'Raumstationen, Teleskope, Erde und Mond'], ['solar', 'Sonnensystem', 'Sonne, Planeten und Monde'],
     ['galaxy', 'Milchstraße', 'Nebel, Pulsar und Zentrum'], ['local', 'Universum', 'Galaxien bis zum Horizont']];
   const HUBS = CHAPTERS.map(([id]) => id);
   // Abstecher des Sonnensystems nach Abstand zur Sonne statt nach Nummer (Nummern bleiben)
@@ -72,16 +72,21 @@ export function createHud(h) {
   const rank = (id) => { const i = SUN_ORDER.indexOf(id); return i < 0 ? SUN_ORDER.length : i; };
   const byRank = (a, b) => rank(a) - rank(b) || num(a).localeCompare(num(b));
   const onRoute = new Set(ROUTE);
-  const chapter = (id) => { for (let x = id; x; x = STATIONS[x].parent) if (HUBS.includes(x)) return x; return HUBS[HUBS.length - 1]; };
-  const kidsOf = (id) => Object.keys(STATIONS).filter((k) => STATIONS[k].parent === id && !onRoute.has(k)).sort(byRank);
-  const stopOf = (id) => { let x = id; while (x && STATIONS[x] && !onRoute.has(x)) x = STATIONS[x].parent; return STATIONS[x] ? x : null; };
+  // Knoten der Leiste: Station oder Sammel-Halt (GROUPS, ohne Szene); Eltern in der Leiste über up()
+  const S = (id) => STATIONS[id] || GROUPS[id];
+  const chapter = (id) => { for (let x = id; x; x = up(x)) if (HUBS.includes(x)) return x; return HUBS[HUBS.length - 1]; };
+  const kidsOf = (id) => Object.keys(STATIONS).filter((k) => up(k) === id && !onRoute.has(k)).sort(byRank);
+  const stopOf = (id) => { let x = id; while (x && S(x) && !onRoute.has(x)) x = up(x); return S(x) ? x : null; };
   const chName = (id) => CHAPTERS.find(([hub]) => hub === chapter(id))[1];
-  const title = (id) => esc(STATIONS[id].title);
+  const title = (id) => esc(S(id).title);
   // echtes Maß des Hauptobjekts: „Durchmesser 12.742 km“
-  const size = (id) => { const z = STATIONS[id].size; return z ? esc(`${z.l} ${fmtLength(z.v)}`) : ''; };
+  const size = (id) => { const z = S(id).size; return z ? esc(`${z.l} ${fmtLength(z.v)}`) : ''; };
+  // Entfernung zur Erde als zweite Zeile unter dem Namen (User 28.10.2026); Erde und Hüllen um sie (dist 0) ohne
+  const far = (id) => (S(id).dist ? fmtLength(S(id).dist) : '');
+  const farEl = (id) => (far(id) ? `<span class="bd-far">${far(id)}</span>` : '');
   // Entfernung zur Erde: Maß, sonst „hier“ (Erde) bzw. „Erde liegt darin“ (Hülle der Erde, ohne Urknall als Wurzel)
   const away = (id) => {
-    const st = STATIONS[id];
+    const st = S(id);
     if (st.dist) return `${fmtLength(st.dist)} von der Erde`;
     if (id === 'earth') return 'hier';
     for (let x = STATIONS.earth.parent; x; x = STATIONS[x].parent) if (x === id && st.parent) return 'Erde liegt darin';
@@ -91,11 +96,11 @@ export function createHud(h) {
   // Weg bis zur Elternstation, im Kapitel ab dessen Hub: „Sonnensystem › Jupiter & Monde“; Hubs nennen ihre Eltern
   const crumbs = (id) => {
     const a = [];
-    for (let k = STATIONS[id].parent; k; k = STATIONS[k].parent) { a.unshift(title(k)); if (HUBS.includes(k)) break; }
+    for (let k = up(id); k; k = up(k)) { a.unshift(title(k)); if (HUBS.includes(k)) break; }
     return a.join(' › ') || esc(chName(id));
   };
-  // Monde als Kugel (Oberflächenkarte), alle übrigen mit Standbild
-  const isMoon = (id) => !onRoute.has(id) && !!STATIONS[id].parent && !onRoute.has(STATIONS[id].parent);
+  // Monde als Kugel (Oberflächenkarte), alle übrigen mit Standbild (Krebs-Pulsar steht in der Mond-Zeile, ist aber keiner)
+  const isMoon = (id) => chapter(id) === 'solar' && !onRoute.has(id) && !!up(id) && !onRoute.has(up(id));
   const orb = (id, cls) => `<i class="${cls}" style="background-image:url(img/thumbs/${id}${isMoon(id) ? '-tex' : ''}.jpg)"></i>`;
   const nav = rail.parentElement, find = $('#find');
   let railCur = null;
@@ -132,7 +137,7 @@ export function createHud(h) {
       zbInput.focus();
     });
   }
-  function fly(id) { hideTip(); clearSearch(); h.onInput(); h.onGo(id); }
+  function fly(id) { hideTip(); clearSearch(); h.onInput(); h.onGo(entry(id)); }
   function renderHits() {
     const q = zbInput.value.trim().toLowerCase();
     zbFound.hidden = !q;
@@ -159,19 +164,20 @@ export function createHud(h) {
   // kleiner; passt auch das nicht (oder unter 760 px), zeigt das Band die Route als Punkte mit Kapitel-Streifen (.is-dots).
   // Feste Höhe in Ruhe, damit die Bühne beim Zeigen nicht springt; die Schublade liegt über der Bühne.
   const NS = 'http://www.w3.org/2000/svg', PAD = 10, GAP = 0;
-  const BAND_H = 70, DOTS_H = 40, ROUTE_Y = 24, BUS_Y = 12, KID_Y = 42, MOONS_Y = 108, BRK_Y = 103;
+  // FAR_H: Zeile mit der Entfernung unter dem Namen (Route und Abstecher)
+  const FAR_H = 16, BAND_H = 70 + FAR_H, DOTS_H = 40, ROUTE_Y = 24, BUS_Y = 12, KID_Y = 42, MOONS_Y = 108 + FAR_H, BRK_Y = 103 + FAR_H;
   // Stufen: Schrift, Luft je Name, Spalte links (0 = keine)
   const SIZES = [[13, 16, 0], [12, 10, 0], [12, 8, 0]];
   const wide = matchMedia('(min-width: 761px)'), still = matchMedia('(prefers-reduced-motion: reduce)');
   const ctx2d = document.createElement('canvas').getContext('2d');
   const textW = (s, font) => { ctx2d.font = font; return ctx2d.measureText(s).width; };
   const need = (id, px, pad) => {
-    const font = `600 ${px}px "IBM Plex Sans", system-ui, sans-serif`, t = STATIONS[id].title;
+    const font = `600 ${px}px "IBM Plex Sans", system-ui, sans-serif`, t = S(id).title;
     // Messlineal (Route:C): Namen bis 16 Zeichen einzeilig, längere („Beobachtbares Universum“) zweizeilig
-    return Math.max(24, ...t.split(/[\s-]+/).map((s) => textW(s, font)), textW(t, font) / (t.length > 16 ? 2 : 1)) + pad;
+    return Math.max(24, ...t.split(/[\s-]+/).map((s) => textW(s, font)), textW(t, font) / (t.length > 16 ? 2 : 1), textW(far(id), `500 12px "IBM Plex Sans", system-ui, sans-serif`)) + pad;
   };
   const sum = (a) => a.reduce((x, y) => x + y, 0);
-  const node = (id, cls = '', style = '') => `<button type="button" class="bd-node${cls}"${style && ` style="${style}"`} data-go="${id}" data-ch="${chapter(id)}" aria-label="${label(id)}, Kapitel ${esc(chName(id))}"><span class="bd-dot"></span><span class="n">${num(id)}</span><span class="bd-nm">${title(id)}</span></button>`;
+  const node = (id, cls = '', style = '') => `<button type="button" class="bd-node${cls}"${style && ` style="${style}"`} data-go="${id}" data-ch="${chapter(id)}" aria-label="${label(id)}, Kapitel ${esc(chName(id))}"><span class="bd-dot"></span><span class="n">${num(id)}</span><span class="bd-nm">${title(id)}</span>${farEl(id)}</button>`;
   const groups = () => CHAPTERS.map(([hub]) => [hub, ROUTE.filter((r) => chapter(r) === hub)]).filter(([, rs]) => rs.length);
   let cv = null, wires = null, drawer = null, dcv = null, dwires = null, tip = null;
   let pos = {}, fit = null, bandH = 0, hovId = null, shown = ['', ''], sleep = 0, comet = null;
@@ -226,7 +232,7 @@ export function createHud(h) {
       let to = null;
       if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') to = row[row.indexOf(b) + (e.key === 'ArrowRight' ? 1 : -1)];
       else if (e.key === 'ArrowDown') to = kid ? (shown[1] === id && drawer.querySelector('.bd-moon')) : !moon && shown[0] === id && drawer.querySelector('.bd-kids .bd-node');
-      else if (moon || kid) to = nav.querySelector(`.bd-node[data-go="${STATIONS[id].parent}"]`);
+      else if (moon || kid) to = nav.querySelector(`.bd-node[data-go="${up(id)}"]`);
       to?.focus();
     });
     let first = true;
@@ -302,7 +308,7 @@ export function createHud(h) {
     const stop = stopOf(id);
     if (!stop) return ['', ''];
     let kid = id;
-    while (kid && STATIONS[kid].parent !== stop) kid = STATIONS[kid].parent;
+    while (kid && up(kid) !== stop) kid = up(kid);
     return [kidsOf(stop).length ? stop : '', kid && kid !== stop && kidsOf(kid).length ? kid : ''];
   }
   // Gezeigter Zweig: beim Zeigen der des Knotens (Halt ohne Abstecher und Abstecher ohne Monde lassen das Offene stehen),
@@ -335,12 +341,12 @@ export function createHud(h) {
       const kpos = {};
       ks.forEach((id, i) => { kpos[id] = x + ws[i] / 2; x += ws[i]; });
       drawer.dataset.of = s;
-      drawer.setAttribute('aria-label', `Abstecher von ${STATIONS[s].title}`);
+      drawer.setAttribute('aria-label', `Abstecher von ${S(s).title}`);
       dcv.querySelector('.bd-kids').innerHTML = ks.map((id, i) => node(id, ' bd-kid', `left:${kpos[id]}px;width:${ws[i] - 4}px;--i:${Math.min(i, 8)}`)).join('')
         + ks.filter((id) => kidsOf(id).length).map((id) => `<span class="bd-md" data-of="${id}" data-ch="${chapter(id)}" style="left:${kpos[id]}px" aria-hidden="true">${'<i></i>'.repeat(kidsOf(id).length)}</span>`).join('');
       const moons = ks.some((id) => kidsOf(id).length);
       drawer.classList.toggle('has-mrow', moons);
-      drawer.style.setProperty('--dr-h', `${moons ? MOONS_Y + 36 : KID_Y + 62}px`);
+      drawer.style.setProperty('--dr-h', `${moons ? MOONS_Y + 36 : KID_Y + 62 + FAR_H}px`);
       drawer.style.setProperty('--dr-w', `${fit.lv + Math.max(x, pos[s].x + 20) + PAD}px`);
       drawer.kpos = kpos;
       const xs = Object.values(kpos), sx = pos[s].x, c = chapter(s);
@@ -356,7 +362,7 @@ export function createHud(h) {
     drawer.classList.toggle('has-moons', !!k);
     if (!k) { mrow.replaceChildren(); mw.removeAttribute('d'); markBand(); return; }
     const ms = kidsOf(k), kx = drawer.kpos[k];
-    mrow.innerHTML = `<div class="bd-moons" data-ch="${chapter(k)}">${ms.map((id) => `<button type="button" class="bd-moon" data-go="${id}" data-ch="${chapter(id)}" aria-label="${label(id)}"><span class="n">${num(id)}</span>${title(id)}</button>`).join('')}</div>`;
+    mrow.innerHTML = `<div class="bd-moons" data-ch="${chapter(k)}">${ms.map((id) => `<button type="button" class="bd-moon" data-go="${id}" data-ch="${chapter(id)}" aria-label="${label(id)}"><span class="n">${num(id)}</span>${title(id)}${farEl(id)}</button>`).join('')}</div>`;
     const box = mrow.firstChild, bw = box.offsetWidth, xs = Object.values(drawer.kpos);
     const lo = Math.min(...xs) - 30, hi = Math.max(right, Math.max(...xs) + 30);
     const left = Math.max(lo, Math.min(hi - bw, kx - bw / 2));
@@ -371,7 +377,7 @@ export function createHud(h) {
   function markBand() {
     if (!railCur || !cv) return;
     const stop = stopOf(railCur), si = ROUTE.indexOf(stop), path = new Set();
-    for (let x = railCur; x; x = STATIONS[x].parent) { path.add(x); if (x === stop) break; }
+    for (let x = railCur; x; x = up(x)) { path.add(x); if (x === stop) break; }
     nav.querySelectorAll('[data-go]').forEach((b) => {
       const id = b.dataset.go, cur = id === railCur;
       b.classList.toggle('is-cur', cur);
@@ -387,19 +393,19 @@ export function createHud(h) {
     nav.querySelectorAll('.is-hot').forEach((el) => el.classList.remove('is-hot'));
     if (!id) return;
     const stop = stopOf(id), si = ROUTE.indexOf(stop), path = [];
-    for (let x = id; x; x = STATIONS[x].parent) { path.push(x); if (x === stop) break; }
+    for (let x = id; x; x = up(x)) { path.push(x); if (x === stop) break; }
     path.forEach((x) => nav.querySelectorAll(`[data-go="${x}"], .bd-kidw[data-to="${x}"]`).forEach((el) => el.classList.add('is-hot')));
     wires.querySelectorAll('.bd-seg').forEach((p) => { if (ROUTE.indexOf(p.dataset.seg) <= si) p.classList.add('is-hot'); });
     if (path.length > 1 && stop === shown[0]) {
       wires.querySelector('.bd-drop')?.classList.add('is-hot');
       dwires.querySelector('.bd-bus')?.classList.add('is-hot');
-      if (shown[1] && STATIONS[id].parent === shown[1]) dwires.querySelector('.bd-mw')?.classList.add('is-hot');
+      if (shown[1] && up(id) === shown[1]) dwires.querySelector('.bd-mw')?.classList.add('is-hot');
     }
   }
   // Hinweis unter dem Band (bzw. der offenen Schublade), zwei Zeilen: Nummer, Name, Halt der Route · Art, echtes Maß, Entfernung zur Erde
   function showTip(id, b) {
     if (!b) return;
-    const st = STATIONS[id], halt = ROUTE.indexOf(id);
+    const st = S(id), halt = ROUTE.indexOf(id);
     tip.dataset.ch = chapter(id);
     // Teile brechen nur am „ · “ um, nie mitten im Maß (wie .cap-sub)
     const sub = [esc(st.kicker), size(id), away(id)].filter(Boolean).map((t) => `<span>${t}</span>`).join(' · ');
@@ -443,8 +449,8 @@ export function createHud(h) {
     btnOut.disabled = !parent;
     $('#nav-out-to').textContent = parent ? parent.title : '–';
     const i = routeIndex(id);
-    $('#nav-next-to').textContent = STATIONS[ROUTE[(i + 1) % ROUTE.length]].title;
-    $('#nav-prev-to').textContent = STATIONS[ROUTE[(i - 1 + ROUTE.length) % ROUTE.length]].title;
+    $('#nav-next-to').textContent = STATIONS[entry(ROUTE[(i + 1) % ROUTE.length])].title;
+    $('#nav-prev-to').textContent = STATIONS[entry(ROUTE[(i - 1 + ROUTE.length) % ROUTE.length])].title;
     mSizeL.textContent = meta.size ? meta.size.l : 'Größe';
     mSize.textContent = meta.size ? fmtLength(meta.size.v) : '–';
     mLight.textContent = meta.size ? fmtTime(meta.size.v / C) : '–';
@@ -483,8 +489,8 @@ export function createHud(h) {
     const hs = lv.hotspots.filter((x) => info(x) && x.kind !== 'label' && (!x.listIf || x.listIf()));
     // Ton schaltet der Knopf in der Kopfzeile (quick.js, Vorschau 26.10.2026: aus der Infotafel entfernt)
     const ctrls = (lv.controls || []).filter((c) => c.id !== 'sound');
-    // Abstecher (Nummer mit Buchstabe, z. B. 02A) nennen ihre Elternstation
-    const from = /^\d+$/.test(String(st.n)) || !st.parent ? '' : ` · Abstecher von ${STATIONS[st.parent].title}`;
+    // Abstecher (Nummer mit Buchstabe, z. B. 02A) nennen ihren Halt bzw. ihre Elternstation (ISS → Raumstationen)
+    const from = /^\d+$/.test(String(st.n)) || !up(lv.id) ? '' : ` · Abstecher von ${S(up(lv.id)).title}`;
     // Infotafel als Messblatt (Tafel:C): Kopf in Satzschreibung, Kennzahlen als Wertetabelle (Zahl rechtsbündig), Maßstab auf
     // Grundlinie; Zustand (live) und Knöpfe der Station (action) im festen Fuß unter dem Scrollbereich
     const acts = ctrls.filter((c) => c.type === 'action' && !c.sub), rest = ctrls.filter((c) => !acts.includes(c));

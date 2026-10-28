@@ -149,7 +149,7 @@ export const SOURCES = {
   'space-wentian-arrays': { t: 'Wentians Solarflügel: je knapp 30 m lang, Spannweite über 55 m, rund 110 m² je Flügel (ISS: 73 m)', by: 'Space.com, A. Jones, 13.08.2022', url: 'https://www.space.com/china-tiangong-space-station-solar-array-video' },
   'space-mengtian': { t: 'Mengtian: 17,9 m lang, rund 22 t, Start 31.10.2022, Ankunft rund 13 Stunden danach, Ende der Aufbauphase', by: 'Space.com, A. Jones, 31.10.2022', url: 'https://www.space.com/china-launches-mengtian-module-tiangong-space-station' },
   'nasa-iss-8ships': { t: 'Erstmals alle acht Andockhäfen der ISS zugleich belegt (Dezember 2025)', by: 'NASA Space Station Blog, 01.12.2025', url: 'https://www.nasa.gov/blogs/spacestation/2025/12/01/space-station-first-all-docking-ports-fully-occupied-8-spacecraft-on-orbit' },
-  // Weltraumteleskope 01D–01G (Hubble im Erdorbit, JWST, Euclid und Roman am Lagrange-Punkt L2)
+  // Weltraumteleskope 01B1–01B4 (Hubble im Erdorbit, JWST, Euclid und Roman am Lagrange-Punkt L2)
   'nasa-hubble': { t: 'Hubble Space Telescope (Start 24.04.1990)', by: 'NASA Science', url: 'https://science.nasa.gov/mission/hubble/' },
   'nasa-hubble-numbers': { t: 'Hubble by the Numbers (13 m lang, 4,3 m breit, 12.200 kg; Spiegel 2,4 m und 0,3 m; über 5.200 W, ≈ 2.100 W Verbrauch; 1 Mbit/s, 150 Gbit je Woche; 6 Shuttle-Flüge, 32 Astronauten, 23 Tage Außeneinsätze, 171 h; über 1,7 Mio. Beobachtungen, 23.000 Fachartikel; Zielgenauigkeit 0,007″)', by: 'NASA Science', url: 'https://science.nasa.gov/mission/hubble/overview/about-hubble/hubble-by-the-numbers/' },
   'nasa-hubble-sm': { t: 'Missions to Hubble (Aussetzen 24.–29.04.1990; Wartung SM1 12/1993, SM2 02/1997, SM3A 12/1999, SM3B 03/2002 mit neuen Solarflügeln und ACS, SM4 05/2009)', by: 'NASA Science', url: 'https://science.nasa.gov/mission/hubble/observatory/missions-to-hubble/' },
@@ -327,7 +327,7 @@ export const SOURCES = {
 // lookback = Lichtlaufzeit bzw. Rückblickzeit [s] (kosmologisch ≠ Abstand/c, siehe research.md)
 export const STATIONS = {
   earth: {
-    n: 1, title: 'Erde & Mond', kicker: 'Erde–Mond-System', parent: 'solar', width: 4e7, dist: 0, lookback: 0, size: { v: 1.2742e7, l: 'Durchmesser Erde', s: 'nasa-earth' },
+    n: 1, title: 'Erde', kicker: 'Erde–Mond-System', parent: 'solar', width: 4e7, dist: 0, lookback: 0, size: { v: 1.2742e7, l: 'Durchmesser Erde', s: 'nasa-earth' },
     lead: 'Licht braucht 1,3 Sekunden vom Mond zu uns. Tag- und Nachtseite, Mondphase und Sonnenrichtung sind aus den Bahndaten für den aktuellen Zeitpunkt berechnet.',
     facts: [
       { v: '384.400', u: 'km', l: 'mittlerer Abstand Erde–Mond', s: 'nasa-moon' },
@@ -355,7 +355,7 @@ export const STATIONS = {
     },
   },
   hubble: {
-    n: '01D', title: 'Hubble', kicker: 'Weltraumteleskop', parent: 'earth', width: 30, dist: 4.8e5, lookback: 4.8e5 / C, size: { v: 13, l: 'Länge', s: 'nasa-hubble-numbers' },
+    n: '01B1', title: 'Hubble', kicker: 'Weltraumteleskop', parent: 'earth', width: 30, dist: 4.8e5, lookback: 4.8e5 / C, size: { v: 13, l: 'Länge', s: 'nasa-hubble-numbers' },
     lead: 'Das Hubble-Weltraumteleskop aus der Nähe, knapp 480 km über der Erde. Es zielt fest auf einen Punkt am Himmel, während es in 94 Minuten einmal um die Erde fliegt; Bahn, Tag und Nacht sind für den angezeigten Zeitpunkt aus den Bahndaten berechnet. Seit 1990 im All, fünfmal von Astronauten gewartet.',
     facts: [
       { v: '2,4', u: 'm', l: 'Hauptspiegel', s: 'nasa-hubble-numbers' },
@@ -379,7 +379,7 @@ export const STATIONS = {
     },
   },
   jwst: {
-    n: '01E', title: 'James Webb', kicker: 'Weltraumteleskop', parent: 'earth', width: 30, dist: 1.5e9, lookback: 1.5e9 / C, size: { v: 21.197, l: 'Länge Sonnenschild', s: 'nasa-webb-facts' },
+    n: '01B2', title: 'James Webb', kicker: 'Weltraumteleskop', parent: 'earth', width: 30, dist: 1.5e9, lookback: 1.5e9 / C, size: { v: 21.197, l: 'Länge Sonnenschild', s: 'nasa-webb-facts' },
     lead: 'Das größte Teleskop im All, 1,5 Millionen Kilometer hinter der Erde am Lagrange-Punkt L2. Ein Sonnenschild aus fünf Lagen hält Sonne, Erde und Mond von Spiegel und Instrumenten fern, die unter 50 K kalt bleiben müssen. Erde und Mond stehen klein neben der Sonne am Himmel – an ihren echten Orten zum angezeigten Zeitpunkt.',
     facts: [
       { v: '6,5', u: 'm', l: 'Hauptspiegel aus 18 Segmenten', s: 'nasa-webb-facts' },
@@ -404,7 +404,7 @@ export const STATIONS = {
     },
   },
   euclid: {
-    n: '01F', title: 'Euclid', kicker: 'Weltraumteleskop', parent: 'earth', width: 8, dist: 1.5e9, lookback: 1.5e9 / C, size: { v: 4.7, l: 'Höhe', s: 'esa-euclid' },
+    n: '01B3', title: 'Euclid', kicker: 'Weltraumteleskop', parent: 'earth', width: 8, dist: 1.5e9, lookback: 1.5e9 / C, size: { v: 4.7, l: 'Höhe', s: 'esa-euclid' },
     lead: 'Das Weltraumteleskop der ESA für Dunkle Energie und Dunkle Materie, ebenfalls am Lagrange-Punkt L2. Euclid kartiert mehr als ein Drittel des Himmels mit einem 1,2-m-Teleskop und zwei Kameras: Milliarden Galaxien bis 10 Milliarden Lichtjahre weit. Erde und Mond stehen klein neben der Sonne am Himmel.',
     facts: [
       { v: '1,2', u: 'm', l: 'Teleskop', s: 'esa-euclid' },
@@ -429,7 +429,7 @@ export const STATIONS = {
     },
   },
   roman: {
-    n: '01G', title: 'Roman', kicker: 'Weltraumteleskop', parent: 'earth', width: 16, dist: 1.5e9, lookback: 1.5e9 / C, size: { v: 12.7, l: 'Länge', s: 'nasa-roman-faq' },
+    n: '01B4', title: 'Roman', kicker: 'Weltraumteleskop', parent: 'earth', width: 16, dist: 1.5e9, lookback: 1.5e9 / C, size: { v: 12.7, l: 'Länge', s: 'nasa-roman-faq' },
     lead: 'Das neueste Weltraumteleskop der NASA, gestartet am 30. August 2026. Roman hat einen Spiegel so groß wie Hubble, aber ein Weitwinkel-Instrument mit 300 Millionen Bildpunkten, das große Himmelsfelder auf einmal erfasst. Es ist auf dem Weg zum Lagrange-Punkt L2, Ankunft Anfang Dezember 2026 erwartet; im Bild fliegt es auf seiner echten Bahn (JPL Horizons).',
     facts: [
       { v: '2,4', u: 'm', l: 'Hauptspiegel', s: 'wiki-roman' },
@@ -531,7 +531,7 @@ export const STATIONS = {
   },
   // [E2] Erde nah
   iss: {
-    n: '01A', title: 'ISS', kicker: 'Raumstation', parent: 'earth', width: 150, dist: 4.2e5, lookback: 4.2e5 / C, size: { v: 109, l: 'Spannweite', s: 'nasa-iss' },
+    n: '01A1', title: 'ISS', kicker: 'Raumstation', parent: 'earth', width: 150, dist: 4.2e5, lookback: 4.2e5 / C, size: { v: 109, l: 'Spannweite', s: 'nasa-iss' },
     lead: 'Die Internationale Raumstation aus der Nähe, 420 km über der Erde. Bahn, Tag und Nacht, Sonnenaufgänge und Sonnenuntergänge sind für den angezeigten Zeitpunkt aus den Bahndaten berechnet; im Zeitraffer zieht die Erde unter der Station hindurch.',
     facts: [
       { v: '109', u: 'm', l: 'Spannweite der Solarflügel', s: 'nasa-iss' },
@@ -556,7 +556,7 @@ export const STATIONS = {
     },
   },
   tiangong: {
-    n: '01B', title: 'Tiangong', kicker: 'Raumstation', parent: 'earth', width: 100, dist: 3.84e5, lookback: 3.84e5 / C, size: { v: 55, l: 'Spannweite', s: 'space-wentian-arrays' },
+    n: '01A2', title: 'Tiangong', kicker: 'Raumstation', parent: 'earth', width: 100, dist: 3.84e5, lookback: 3.84e5 / C, size: { v: 55, l: 'Spannweite', s: 'space-wentian-arrays' },
     lead: 'Die chinesische Raumstation aus der Nähe, rund 384 km über der Erde: drei Module in T-Form und große Solarflügel, die der Sonne folgen. Bahn, Tag und Nacht, Sonnenaufgänge und Sonnenuntergänge sind für den angezeigten Zeitpunkt aus den Bahndaten berechnet; im Zeitraffer zieht die Erde unter der Station hindurch.',
     facts: [
       { v: '55', u: 'm', l: 'Spannweite der Wentian-Flügel', s: 'space-wentian-arrays' },
@@ -1005,7 +1005,7 @@ export const STATIONS = {
     },
   },
   orion: {
-    n: 4, title: 'Orion-Nebel', kicker: 'Sternentstehung', parent: 'galaxy', width: 3.2e17, dist: 1270 * LY, lookback: 1270 * YEAR, size: { v: 24 * LY, l: 'Ausdehnung', s: 'odell-2001' },
+    n: '03B', title: 'Orion-Nebel', kicker: 'Sternentstehung', parent: 'galaxy', width: 3.2e17, dist: 1270 * LY, lookback: 1270 * YEAR, size: { v: 24 * LY, l: 'Ausdehnung', s: 'odell-2001' },
     lead: 'Das nächstgelegene Gebiet, in dem massereiche Sterne entstehen. Die UV-Strahlung der jungen Trapez-Sterne ionisiert das Gas und regt es zum Leuchten an: innen grünlich durch Sauerstoff ([O III] 501 nm), außen rot durch Wasserstoff (Hα 656 nm).',
     facts: [
       { v: '≈ 1.270', u: 'Lj', l: 'Entfernung (390 ± 2 pc, Gaia)', s: 'maiz-2022' },
@@ -1027,7 +1027,7 @@ export const STATIONS = {
     },
   },
   spider: {
-    n: '03B', title: 'Roter Spinnennebel', kicker: 'Planetarischer Nebel', parent: 'galaxy', width: 1e17, dist: 5900 * LY, lookback: 5900 * YEAR, size: { v: 7.2 * LY, l: 'Länge beider Keulen', s: 'kastner-2025' },
+    n: '03D', title: 'Roter Spinnennebel', kicker: 'Planetarischer Nebel', parent: 'galaxy', width: 1e17, dist: 5900 * LY, lookback: 5900 * YEAR, size: { v: 7.2 * LY, l: 'Länge beider Keulen', s: 'kastner-2025' },
     lead: 'Ein sterbender, sonnenähnlicher Stern hat seine äußeren Schichten abgestoßen. Schnelle Ausflüsse entlang der Polachse haben zwei Blasen aus Gas aufgeblasen – die Beine der Spinne –, eine Staubscheibe schnürt die Taille ein.',
     facts: [
       { v: '≈ 5.900', u: 'Lj', l: 'Entfernung (1,8 ± 0,5 kpc, unsicher)', s: 'kastner-2025' },
@@ -1046,7 +1046,7 @@ export const STATIONS = {
     },
   },
   crab: {
-    n: 5, title: 'Krebsnebel', kicker: 'Supernova-Überrest', parent: 'galaxy', width: 1.6e17, dist: 6200 * LY, lookback: 6200 * YEAR, size: { v: 4.1e-3 * KPC, l: 'Länge', s: 'buhler-2014' },
+    n: '03E', title: 'Krebsnebel', kicker: 'Supernova-Überrest', parent: 'galaxy', width: 1.6e17, dist: 6200 * LY, lookback: 6200 * YEAR, size: { v: 4.1e-3 * KPC, l: 'Länge', s: 'buhler-2014' },
     lead: 'Überrest der Supernova, die chinesische Astronomen im Jahr 1054 beobachteten. Im Zentrum rotiert ein Neutronenstern rund 30-mal pro Sekunde; seine Rotationsenergie speist den bläulich leuchtenden Synchrotronnebel.',
     facts: [
       { v: '≈ 6.200', u: 'Lj', l: 'Entfernung (1,90 kpc)', s: 'lin-2023' },
@@ -1067,7 +1067,7 @@ export const STATIONS = {
     },
   },
   butterfly: {
-    n: '03D', title: 'Schmetterlingsnebel', kicker: 'Planetarischer Nebel', parent: 'galaxy', width: 3.8e16, dist: 3800 * LY, lookback: 3800 * YEAR, size: { v: 2 * LY, l: 'Spannweite der Flügel', s: 'heic0910h' },
+    n: '03C', title: 'Schmetterlingsnebel', kicker: 'Planetarischer Nebel', parent: 'galaxy', width: 3.8e16, dist: 3800 * LY, lookback: 3800 * YEAR, size: { v: 2 * LY, l: 'Spannweite der Flügel', s: 'heic0910h' },
     lead: 'NGC 6302 im Skorpion: Ein sterbender Stern, einst etwa fünfmal so schwer wie die Sonne, hat seine äußeren Schichten abgestoßen. Ein dichter Staubgürtel schnürt die Mitte ein und lenkt das Gas in zwei Flügel, die mit über 950.000 km/h auseinanderfliegen.',
     facts: [
       { v: '≈ 3.800', u: 'Lj', l: 'Entfernung (Sternbild Skorpion; Schätzungen schwanken)', s: 'heic0910h' },
@@ -1087,7 +1087,7 @@ export const STATIONS = {
     },
   },
   pillars: {
-    n: '03A', title: 'Säulen der Schöpfung', kicker: 'Sternentstehung', parent: 'galaxy', width: 1.4e17, dist: 6500 * LY, lookback: 6500 * YEAR, size: { v: 4 * LY, l: 'Länge der linken Säule', s: 'eso-1518' },
+    n: '03F', title: 'Säulen der Schöpfung', kicker: 'Sternentstehung', parent: 'galaxy', width: 1.4e17, dist: 6500 * LY, lookback: 6500 * YEAR, size: { v: 4 * LY, l: 'Länge der linken Säule', s: 'eso-1518' },
     lead: 'Drei Säulen aus kaltem Gas und Staub im Adlernebel M16. Das UV-Licht des jungen Sternhaufens NGC 6611 verdampft sie von außen – in ihrem Inneren entstehen zugleich neue Sterne.',
     facts: [
       { v: '≈ 6.500', u: 'Lj', l: 'Entfernung (Adlernebel, Sternbild Schlange)', s: 'webb-2216' },
@@ -1107,7 +1107,7 @@ export const STATIONS = {
     },
   },
   tornado: {
-    n: '03C', title: 'Kosmischer Tornado HH 49/50', kicker: 'Herbig-Haro-Objekt', parent: 'galaxy', width: 6e15, dist: 630 * LY, lookback: 630 * YEAR, size: { v: 0.48 * LY, l: 'Höhe des Webb-Bildausschnitts', s: 'webb-2506a' },
+    n: '03A', title: 'Kosmischer Tornado HH 49/50', kicker: 'Herbig-Haro-Objekt', parent: 'galaxy', width: 6e15, dist: 630 * LY, lookback: 630 * YEAR, size: { v: 0.48 * LY, l: 'Höhe des Webb-Bildausschnitts', s: 'webb-2506a' },
     lead: 'Ein junger Stern stößt Gas aus, das mit 100 bis 300 km/s auf die umgebende Wolke prallt. An den Stoßfronten leuchten warmer Wasserstoff und angeregter Staub im Infrarot – zusammen bilden sie eine leuchtende, leicht verdrehte Säule.',
     facts: [
       { v: '≈ 630', u: 'Lj', l: 'Entfernung (Chamäleon-I-Komplex)', s: 'webb-2506' },
@@ -1126,7 +1126,7 @@ export const STATIONS = {
     },
   },
   pulsar: {
-    n: 6, title: 'Krebs-Pulsar', kicker: 'Neutronenstern', parent: 'crab', width: 3e5, dist: 6200 * LY, lookback: 6200 * YEAR, size: { v: 2.54e4, l: 'Durchmesser (≈)', s: 'nicer-2019' },
+    n: '03E1', title: 'Krebs-Pulsar', kicker: 'Neutronenstern', parent: 'crab', width: 3e5, dist: 6200 * LY, lookback: 6200 * YEAR, size: { v: 2.54e4, l: 'Durchmesser (≈)', s: 'nicer-2019' },
     lead: 'Etwa 1,4 Sonnenmassen in einer Kugel von gut 20 km Durchmesser. Strahlkegel entlang der Magnetachse streichen wie ein Leuchtturm über die Erde – hier in Zeitlupe.',
     facts: [
       { v: '33,8', u: 'ms', l: 'Drehperiode heute (29,5 pro Sekunde, aus P und Ṗ)', s: 'atnf' },
@@ -1148,7 +1148,7 @@ export const STATIONS = {
     },
   },
   sgra: {
-    n: 7, title: 'Sagittarius A*', kicker: 'Schwarzes Loch', parent: 'galaxy', width: 6e11, dist: 8.277 * KPC, lookback: 8.277 * KPC / 299792458, size: { v: 2.54e10, l: 'Durchmesser Horizont', s: 'gravity-2022' },
+    n: '03G', title: 'Sagittarius A*', kicker: 'Schwarzes Loch', parent: 'galaxy', width: 6e11, dist: 8.277 * KPC, lookback: 8.277 * KPC / 299792458, size: { v: 2.54e10, l: 'Durchmesser Horizont', s: 'gravity-2022' },
     lead: 'Im Zentrum der Milchstraße: 4,3 Millionen Sonnenmassen. Licht wird so stark abgelenkt, dass wir die Rückseite der Scheibe über und unter dem Schatten sehen.',
     facts: [
       { v: '4,30', u: 'Mio. M☉', l: 'Masse (aus Sternbahnen)', s: 'gravity-2022' },
@@ -1170,7 +1170,7 @@ export const STATIONS = {
     },
   },
   local: {
-    n: 8, title: 'Lokale Gruppe', kicker: 'Galaxiengruppe', parent: 'web', width: 5e22, dist: 0, lookback: 0, size: { v: 1e7 * LY, l: 'Durchmesser', s: 'mcconnachie-2012' },
+    n: 4, title: 'Lokale Gruppe', kicker: 'Galaxiengruppe', parent: 'web', width: 5e22, dist: 0, lookback: 0, size: { v: 1e7 * LY, l: 'Durchmesser', s: 'mcconnachie-2012' },
     lead: 'Über 100 bekannte Galaxien; die größten sind Andromeda und die Milchstraße. Andromeda nähert sich uns mit rund 110 km/s.',
     facts: [
       { v: '2,5', u: 'Mio. Lj', l: 'Entfernung Andromeda (761 ± 11 kpc)', s: 'li-2021' },
@@ -1190,7 +1190,7 @@ export const STATIONS = {
     },
   },
   web: {
-    n: 9, title: 'Kosmisches Netz', kicker: 'Großräumige Struktur', parent: 'cmb', width: 1.2e25, dist: 0, lookback: 0, size: { v: 5.2e8 * LY, l: 'Durchmesser Laniakea', s: 'tully-2014' },
+    n: 5, title: 'Kosmisches Netz', kicker: 'Großräumige Struktur', parent: 'cmb', width: 1.2e25, dist: 0, lookback: 0, size: { v: 5.2e8 * LY, l: 'Durchmesser Laniakea', s: 'tully-2014' },
     lead: 'Galaxien sind in Wänden und Fäden angeordnet, die große Leerräume umschließen; an den Knotenpunkten liegen Galaxienhaufen. Die Lokale Gruppe gehört zum Superhaufen Laniakea.',
     facts: [
       { v: '≈ 520', u: 'Mio. Lj', l: 'Durchmesser Laniakea', s: 'tully-2014' },
@@ -1216,7 +1216,7 @@ export const STATIONS = {
     },
   },
   cmb: {
-    n: 10, title: 'Beobachtbares Universum', kicker: 'Kosmologisch', parent: null, width: 1.1e27, dist: 45.3e9 * LY, lookback: 13.787e9 * YEAR, size: { v: 9.2e10 * LY, l: 'Durchmesser', s: 'planck-2018' },
+    n: 6, title: 'Beobachtbares Universum', kicker: 'Kosmologisch', parent: null, width: 1.1e27, dist: 45.3e9 * LY, lookback: 13.787e9 * YEAR, size: { v: 9.2e10 * LY, l: 'Durchmesser', s: 'planck-2018' },
     lead: 'Die Hintergrundstrahlung ist das älteste beobachtbare Licht: ausgesandt rund 370.000 Jahre nach dem Urknall, als das Universum durchsichtig wurde. Durch die Ausdehnung ist sie heute auf 2,7 K abgekühlt. Die Kugel zeigt, aus welcher Entfernung sie uns erreicht; wir stehen in ihrem Mittelpunkt.',
     facts: [
       { v: '13,787 ± 0,020', u: 'Mrd. J.', l: 'Alter des Universums', s: 'planck-2018' },
@@ -1244,7 +1244,7 @@ export const STATIONS = {
 // Zurück: Eintrag nach STATIONS verschieben, cmb.parent = 'bigbang', ROUTE + LOADER (main.js) ergänzen, OPENER.on = true.
 export const PARKED = {
   bigbang: {
-    n: 11, title: 'Urknall', kicker: 'Anfang von Raum und Zeit', parent: null, width: 1.1e27, dist: 0, lookback: 13.787e9 * YEAR,
+    n: 7, title: 'Urknall', kicker: 'Anfang von Raum und Zeit', parent: null, width: 1.1e27, dist: 0, lookback: 13.787e9 * YEAR,
     lead: 'Vor 13,8 Milliarden Jahren war das ganze Universum heiß und dicht. Der Urknall geschah nicht an einem Ort: Der Raum selbst dehnt sich seitdem überall zugleich aus. Der Film zeigt in 55 Sekunden den Blitz, das erste Licht, das dunkle Zeitalter, die ersten Sterne und Galaxien und fliegt dann durch das Netz der Galaxien bis heute.',
     facts: [
       { v: '13,787 ± 0,020', u: 'Mrd. J.', l: 'seit dem Urknall', s: 'planck-2018' },
@@ -1255,7 +1255,7 @@ export const PARKED = {
     note: 'Darstellung, nicht maßstäblich: Lichtblitz mit violettem Netz nach dem Vorbild üblicher Erklärfilme. Der Mittelpunkt ist nur ein Hilfsmittel – der Raum dehnte sich überall zugleich aus, es gab keinen Ort und kein Außen der Explosion (Hinweis im Film). Reihenfolge wie in der Kosmologie: Plasma kühlt nach Planck-Farbe, wird bei rund 370.000 Jahren durchsichtig (Flecken wie in der Hintergrundstrahlung), danach dunkles Zeitalter, erste Sterne in den dichtesten Knoten, kleine blaue Galaxien, die im Durchflug zu Spiralen und Ellipsen reifen. Fäden, Sterne und Galaxien stammen aus einem Rausch-Feld in mitbewegten Koordinaten (dicht = früh); Galaxien sind 16 gezeichnete Formen (eigenes Modell, keine Teleskopbilder), Farben nach Planck-Temperatur. Die Zeitachse ist stückweise logarithmisch, eine Filmsekunde entspricht keiner festen Zeitspanne. Kennzahlen aus dem ΛCDM-Modell mit Planck-2018-Werten.',
     sources: ['planck-2018', 'pdg-bbn', 'bromm-2013', 'jades-2024', 'weygaert'],
     hotspots: {
-      cmb: { t: 'Beobachtbares Universum', x: 'Hineinfliegen in Station 10: die Kugel, die wir heute überblicken können – ihr Rand ist die Hintergrundstrahlung, das erste Licht aus dem Film.', s: 'planck-2018' },
+      cmb: { t: 'Beobachtbares Universum', x: 'Hineinfliegen in Station 6: die Kugel, die wir heute überblicken können – ihr Rand ist die Hintergrundstrahlung, das erste Licht aus dem Film.', s: 'planck-2018' },
       expansion: { t: 'Kein Ort, kein Außen', x: 'Der Urknall war keine Explosion an einem Ort: Der Raum selbst dehnte sich überall zugleich aus. Jeder Punkt des heutigen Universums war dabei; der helle Mittelpunkt im Film ist nur Darstellung. Mit dem Raum wächst das Netz aus Gasfäden – sein Muster bleibt dasselbe, nur größer.', s: 'planck-2018' },
       galaxies: { t: 'Erste Galaxien', x: 'In den dichtesten Knoten des Netzes sammelte sich Gas zu Sternen und Galaxien. Nach Modellen leuchteten die ersten Sterne rund 180 Millionen Jahre nach dem Urknall auf; das James-Webb-Teleskop sieht Galaxien knapp 300 Millionen Jahre danach (JADES-GS-z14-0, z = 14,3). Ihr UV-Licht machte das Gas bis etwa 1 Milliarde Jahre wieder durchsichtig (Reionisation).', s: 'jades-2024' },
     },
@@ -1267,10 +1267,21 @@ export const PARKED = {
 export const SOLAR_SYSTEM = ['earth', 'hubble', 'jwst', 'euclid', 'roman', 'solar', 'sun', 'iss', 'tiangong', 'moon',
   'jupiter', 'io', 'europa', 'ganymede', 'callisto', 'saturn', 'titan', 'enceladus', 'mars', 'phobos', 'deimos',
   'neptune', 'triton', 'uranus', 'miranda', 'pluto'];
-export const ROUTE = ['iss', 'earth', 'moon', 'solar', 'sun', 'galaxy', 'orion', 'crab', 'pulsar', 'sgra', 'local', 'web', 'cmb'];
-// Äste außerhalb der Route (Kind über parent) zählen für Weiter/Zurück wie ihre nächste Elternstation auf der Route
+// Sammel-Halte der Stationsleiste ohne eigene Szene (Vorschau 28.10.2026 Erde:B): fassen Abstecher derselben Art zusammen;
+// Halt anwählen (Klick, Weiter/Zurück) fliegt zum ersten Abstecher. Der Flug-Baum (parent, pathTo) kennt sie nicht.
+export const GROUPS = {
+  stations: { n: '01A', title: 'Raumstationen', kicker: 'ISS und Tiangong', parent: 'earth', of: ['iss', 'tiangong'] },
+  telescopes: { n: '01B', title: 'Teleskope', kicker: 'Hubble, James Webb, Euclid, Roman', parent: 'earth', of: ['hubble', 'jwst', 'euclid', 'roman'] },
+};
+const GROUP_OF = Object.fromEntries(Object.entries(GROUPS).flatMap(([g, { of }]) => of.map((k) => [k, g])));
+// Eltern in der Leiste: Sammel-Halt vor parent
+export const up = (id) => GROUP_OF[id] || (STATIONS[id] || GROUPS[id] || {}).parent || null;
+// Station, die ein Halt anfliegt (Sammel-Halt → erster Abstecher)
+export const entry = (id) => (GROUPS[id] ? GROUPS[id].of[0] : id);
+export const ROUTE = ['stations', 'telescopes', 'earth', 'moon', 'solar', 'sun', 'galaxy', 'local', 'web', 'cmb'];
+// Äste außerhalb der Route (Kind über parent bzw. Sammel-Halt) zählen für Weiter/Zurück wie ihr nächster Halt auf der Route
 export function routeIndex(id) {
-  for (let x = id; x; x = STATIONS[x] ? STATIONS[x].parent : null) { const i = ROUTE.indexOf(x); if (i >= 0) return i; }
+  for (let x = id; x; x = up(x)) { const i = ROUTE.indexOf(x); if (i >= 0) return i; }
   return 0;
 }
 

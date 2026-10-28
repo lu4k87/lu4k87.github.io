@@ -5,7 +5,7 @@
 
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import { STATIONS, ROUTE, pathTo, routeIndex } from './content.js';
+import { STATIONS, ROUTE, pathTo, routeIndex, entry } from './content.js';
 import { createPost, LOOK } from './post.js';
 import { createHud } from './hud.js';
 import { settings, onSettings, globalGrade } from './settings.js';
@@ -439,7 +439,7 @@ function idle(fn) {
 
 function nextOnRoute(id, step = 1) {
   const i = routeIndex(id);
-  return ROUTE[(i + step + ROUTE.length) % ROUTE.length];
+  return entry(ROUTE[(i + step + ROUTE.length) % ROUTE.length]);
 }
 
 // ---------- Flug ----------
@@ -1347,7 +1347,7 @@ async function start() {
     // bisher: Stations-Link oder erste Station der Route, Kranfahrt in die Heimpose
     const reload = (performance.getEntriesByType('navigation')[0] || {}).type === 'reload';
     const film = OPENER.on && !still() && (params.has('auftakt') ? params.get('auftakt') !== '0' : !tour && (!Object.hasOwn(STATIONS, id || '') || reload));
-    const first = film ? OPENER.land : Object.hasOwn(STATIONS, id || '') ? id : ROUTE[0];
+    const first = film ? OPENER.land : Object.hasOwn(STATIONS, id || '') ? id : entry(ROUTE[0]);
     await bootLoad(first);
     const lv = await getLevel(first);
     activate(lv);

@@ -1,4 +1,4 @@
-// Infografiken Ast Erde nah (01A ISS, 01B Tiangong, 1 Erde & Mond, 01C Mond). Werte: NASA ISS Facts, ESA Cupola,
+// Infografiken Ast Erde nah (01A1 ISS, 01A2 Tiangong, 1 Erde, 01C Mond). Werte: NASA ISS Facts, ESA Cupola,
 // DLR-Moduldaten, NSSDCA-Faktenblätter (Erde, Mond, Sonne, Mars), Space.com/SpaceChina/Global Times (Tiangong),
 // Falchi et al. 2016 (Lichtverschmutzung), Murphy 2013 (Laserreflektoren), NASA SVS/LOLA; Horizont, Erdschatten,
 // Schattenlängen, Winkelgrößen und Erde am Mondhimmel als eigene Rechnung daraus.
@@ -120,7 +120,7 @@ const REFL = [['Apollo 11', 100], ['Apollo 14', 100], ['Apollo 15', 300], ['Luno
 const shadow = (e) => 1 / Math.tan(e * RAD);   // Schatten einer 1 km hohen Wand in km
 
 export default {
-  // ---------- 01A ISS ----------
+  // ---------- 01A1 ISS ----------
   'iss.cupola': {
     k: 'bars', alt: 'Cupola: Durchmesser 2,96 m, Höhe 1,5 m, rundes Fenster 80 cm; Masse beim Start und im Orbit',
     groups: [
@@ -190,7 +190,7 @@ export default {
   'iss.horizon': HORIZON('iss'),
   'iss.sun': SUNFIG('iss'),
 
-  // ---------- 01B Tiangong ----------
+  // ---------- 01A2 Tiangong ----------
   'tiangong.core': {
     k: 'bars', alt: 'Masse von Tianhe im Vergleich zu Sarja und Swesda; ganze Stationen ISS und Tiangong',
     groups: [
@@ -237,7 +237,7 @@ export default {
   },
   'tiangong.sun': SUNFIG('tiangong'),
 
-  // ---------- 1 Erde & Mond ----------
+  // ---------- 1 Erde ----------
   'earth.night': {
     k: 'bars', alt: 'Anteil der Menschen unter lichtverschmutztem Himmel und ohne sichtbare Milchstraße: Welt, Europa, Nordamerika',
     groups: [
