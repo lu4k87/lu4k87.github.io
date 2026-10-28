@@ -17,7 +17,8 @@ import { createStarfield } from '../stars.js';
 import { registerLayers, setLayer } from '../layers.js';
 import { mulberry32, gauss, blackbody, LY } from '../astro.js';
 
-const EXT = 4.8;                       // Feldtextur: Würfel ±4,8 Lj um die Volumenkugel (Radius 4,6)
+const VR = 4.6;                        // Volumenkugel (Lj)
+const EXT = 4.8;                       // Feldtextur: Würfel ±4,8 Lj um die Volumenkugel
 // Keule als Sanduhr-Hälfte: Querschnitt R(h) = LB · s^0,55 · √(1 − s^2,5) / 0,641 mit s = h / LT – an der Taille rasch weit,
 // größter Radius LB bei s ≈ 0,6, zur Spitze zulaufend; Spitze bei LT ≈ 3,65 Lj (1,1 pc)
 const LT = 3.65, LB = 1.25;
@@ -44,6 +45,14 @@ uniform highp sampler3D uField;
 const float LT = ${LT.toFixed(3)}, LB = ${LB.toFixed(3)};
 // Querschnitt der Keule in der Höhe ha (Ellipsoid)
 float lobeR(float ha) { float s = clamp(ha / LT, 0.0, 1.0); return LB * pow(s, 0.55) * sqrt(max(1.0 - pow(s, 2.5), 0.0)) / 0.641; }
+// R² der Keule und Ableitung nach ha: an der Spitze glatt (linear), darüber hinaus linear fortgesetzt (< 0 = jenseits der Kuppel)
+float lobeQ(float ha, out float dQ) {
+  const float C = LB * LB / (0.641 * 0.641);
+  float s = max(ha / LT, 0.0);
+  if (s >= 1.0) { dQ = -2.5 * C / LT; return dQ * (ha - LT); }
+  dQ = C / LT * (1.1 * pow(s, 0.1) - 3.6 * pow(s, 2.6));
+  return C * pow(s, 1.1) * (1.0 - pow(s, 2.5));
+}
 void sampleVol(vec3 p, out vec3 e, out float s) {
   vec3 f = texture(uField, p / ${(2 * EXT).toFixed(2)} + 0.5).rgb;
   float h = dot(p, uA);
@@ -54,14 +63,22 @@ void sampleVol(vec3 p, out vec3 e, out float s) {
   // Wand: Ellipsoid, großräumig verbeult, quer gewellt (Hubble: Wellenkämme der Wände, heic0109); zur Spitze hin zerfranst
   float tip = smoothstep(LT - 1.5, LT, ha);
   float wave = sin(ha * 7.0 + f.r * 4.0 + f.g * 2.5) * 0.05 * uRip * (0.4 + 0.6 * smoothstep(0.3, 1.4, ha));
-  float R = lobeR(ha) * (1.0 + 0.32 * f.r * uWarp) + wave;
+  float m = 1.0 + 0.32 * f.r * uWarp;
+  float R = lobeR(ha) * m + wave;
   float dR = (lobeR(ha + 0.03) - lobeR(ha - 0.03)) / 0.06;
-  float d = ha < LT ? (rp - R) / sqrt(1.0 + dR * dR) : length(vec2(rp, ha - LT));   // Abstand zur Wand (Lj), > 0 außen
+  // Abstand zur Wand (Lj), > 0 außen. Zur Spitze wird R' unendlich, (rp − R) / √(1 + R'²) fiel dort für jedes rp auf 0 und die
+  // Haut füllte eine flache Scheibe quer zur Achse (harte Kante); an der Spitze daher über R² (dort glatt) → runde Kuppel
+  float dQ, Q = lobeQ(ha, dQ) * m * m;
+  float dTip = (rp * rp - Q) / sqrt(4.0 * rp * rp + dQ * dQ * m * m * m * m) - wave;
+  float d = mix((rp - R) / sqrt(1.0 + dR * dR), dTip, smoothstep(LT - 1.2, LT - 0.4, ha))
+          - 0.1 * f.g * uWarp;                       // kleinräumig verbeult: der Umriss läuft nirgends als gerade Linie
   // H2-Haut der Keulen (Webb potm2510a): kein glatter Ballon, sondern ein Netz aus Fäden längs der Strömung; die Haut wird zur
-  // Spitze dicker und löchriger, die Kappe reißt auf (offene Enden), außen hängen Strähnen (Ausfransen)
+  // Spitze dicker und löchriger, die Kappe reißt auf (offene Enden), außen hängen Strähnen (Ausfransen). Nach außen läuft die
+  // Haut weich und ungleich breit aus, Strähnen hängen an der ganzen Wand (an der Spitze am längsten) – eine dünne, scharfe
+  // Schale zeichnete am Rand der Keule eine harte, helle Linie
   float wid = 0.045 + 0.04 * max(f.g + 0.3, 0.0) + 0.16 * tip * uFray;
-  float skin = exp(-pow(d / wid, 2.0));
-  float frin = d > 0.0 ? exp(-d / (0.03 + 0.28 * uFray)) * tip * uFray : 0.0;
+  float skin = exp(-pow(d / (d > 0.0 ? wid * (1.25 + 1.1 * max(f.r + 0.3, 0.0)) : wid), 2.0));
+  float frin = d > 0.0 ? exp(-d / (0.03 + 0.28 * uFray * (0.5 + 0.5 * tip))) * (0.25 + 0.75 * tip) * uFray : 0.0;
   float fil = 0.0, net = 0.0;
   if (skin + frin > 0.02) {
     fil = ridged(perp * 5.2 + uA2 * ha * 1.5 + vec3(1.0, 6.0, 2.0), 3);
@@ -93,7 +110,7 @@ void sampleVol(vec3 p, out vec3 e, out float s) {
   float pah = exp(-pow((r - 0.3 * (1.0 + 0.3 * f.g)) / 0.08, 2.0)) * (0.5 + 0.9 * max(f.b + 0.3, 0.0));
   vec3 col = cH2 * (h2 + veil) + cIon * inner + cFe * fe + cCore * core * uCore + cPah * pah * uPah + cTor * tor * uTorus;
   col = max(mix(vec3(dot(col, vec3(0.2126, 0.7152, 0.0722))), col, uSat), 0.0);
-  e = col * uGain;
+  e = col * uGain * smoothstep(${VR.toFixed(2)}, ${(VR - 0.5).toFixed(2)}, r);   // Fransen vor dem Rand der Volumenkugel weich aus
   s = (tor * 9.0 * uTorus + pah * 1.2 * uPah) * uDust * uDustT + (skin * 0.08 * max(open, 0.0) + veil * 0.6 + core * 0.2) * uDustT;
 }
 `;
@@ -137,7 +154,7 @@ export function create(ctx) {
   const e2 = new THREE.Vector3().crossVectors(AXIS, e1);
   const col3 = () => ({ value: new THREE.Vector3(1, 1, 1) });
   const field = bakeField(ctx.renderer, { size: 128, extent: EXT, body: FIELD });
-  const neb = volume({ radius: 4.6, body: BODY, steps: STEPS[1], maxSteps: STEPS[3], uniforms: {
+  const neb = volume({ radius: VR, body: BODY, steps: STEPS[1], maxSteps: STEPS[3], uniforms: {
     uField: { value: field.texture }, uA: { value: AXIS }, uA2: { value: A2 }, uB2: { value: B2 }, uE1: { value: e1 }, uE2: { value: e2 },
     uGain: { value: 1.4 }, uH2: { value: 1 }, uIon: { value: 1 }, uFe: { value: 1 }, uCore: { value: 1 }, uPah: { value: 1 }, uTorus: { value: 1 },
     uDust: { value: 1 }, uDustT: { value: 1 }, uFil: { value: 1 }, uSat: { value: 1 }, uWarp: { value: 1 },
