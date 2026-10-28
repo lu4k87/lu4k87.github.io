@@ -21,6 +21,12 @@
 // länger und dichter; cosmicweb.js, galaxyflight.js), die Galaxien reifen zu Spiralen und Ellipsen, der Raum dehnt sich →
 // Wende im Bogen tief hinter der Mitte → Rückzug rückwärts an den Galaxien vorbei aus der Kugel (Fahrplan flightplan.js
 // openerCurves: eine Zoom-Fahrt ohne Halt) in die Heimpose der Station 10, deren Galaxien blenden ein (cmb.opening).
+// Fünfte Fassung (Vorschau „Auftakt langsamer“, User 28.10.2026: Tempo B + C, Effekte A + B + C, Gas B + C, Blau dezenter):
+// ganzer Film 10 % langsamer; Luftholen in zwei Atemzügen (zusammen, kurz loslassen, tiefer zusammen), ab dem zweiten
+// Atemzug bis kurz nach dem Knall Zeitlupe; dabei zieht sich ein Linsenring in den Punkt, Lichtfäden stürzen hinein, die
+// Herzschläge senden Ringe aus, die beim Luftholen zurücklaufen (beim Knall eine Druckwelle), und die Farbe weicht (Stille)
+// – mit dem Knall kehrt sie zurück; eine wirbelnde Gasscheibe umkreist den Punkt, wird eingesogen und zerrissen; der
+// Nebel nach dem Knall trägt Webb-Farben (künstlerisch, Planck-Glut darunter).
 // Der Lichtpunkt vor dem Knall ist Darstellung: Es gab kein „Außen“, von dem aus man hätte zusehen können.
 // Gastgeber (main.js, Vorschau): advance(dt) → apply(station) → Szene mit `view === 'own' ? camera : station.camera` ins
 // eigene Ziel rendern, ab mix > 0 die Station dazu (post.js Überblendung); look = Belichtung + Grading des Films.
@@ -39,25 +45,33 @@ import { bakeWeb, sampleWeb, flightAxis, inTube, EXT as WEB_EXT, THIN } from './
 // die Heimpose; charge = Stärke des Spannungsaufbaus, warp = Lichtfäden nach dem Knall, flow = Weg durch den Nebel,
 // neb/fil/hot/edge = Dichte, Fäden, Farbspiel, Leuchtsaum des Nebels; web/gal/stars = Netz, Galaxien, erste Sterne;
 // ghosts/spikes = Linsenreflexe und Blendenstrahlen des Lichtpunkts; arc/rise = Bogen und Kranhöhe der Wende (°),
-// end* = Endpose relativ zur Heimpose (Abstand ×, Drehung °); Look-Werte wirken als Faktor und laufen bis zum Ende auf den
+// end* = Endpose relativ zur Heimpose (Abstand ×, Drehung °); inhale/flash = Luftholen und Knall bis weiß (s), slow =
+// Zeitlupe am Kipppunkt (Film läuft dort mit 1 − slow), suck/pulse/hush = Lichtsog, Pulswellen, Stille, disk = Gasscheibe,
+// webb = Webb-Farben im Nebel; Look-Werte wirken als Faktor und laufen bis zum Ende auf den
 // Look der Station zu.
 export const TUNE = {
-  tempo: 1, build: 11.5, plasma: 16, dark: 4.5, galaxies: 11, crane: 12, charge: 1, warp: 1, flow: 1, neb: 1, fil: 1, hot: 1, edge: 1,
+  tempo: 0.9, inhale: 3.8, flash: 5, slow: 0.55, suck: 1, pulse: 1, hush: 1, disk: 1, webb: 1,
+  build: 11.5, plasma: 16, dark: 4.5, galaxies: 11, crane: 12, charge: 1, warp: 1, flow: 1, neb: 1, fil: 1, hot: 1, edge: 1,
   web: 1, gal: 1, stars: 1,
   core: 1, streak: 1, streakLen: 1, rays: 1, rayLen: 1, ghosts: 1, spikes: 1, hue: 204, sat: 0.8,
   dust: 1, burst: 1, blur: 1, bokeh: 1, shock: 0, shake: 1,
   push: 1, drift: 1, arc: 28, rise: 12, endDist: 1, endAz: 0, endEl: 0,
   exposure: 1, bloom: 1, grain: 1, ca: 1, vig: 1, bars: 1,
 };
-// Luftholen vor dem Knall, Knall → weiß, weiß halten (s)
-const INHALE = 1.2, FLASH = 4.2, HOLD = 0.25;
-export const marks = (k) => openerMarks(k, { inhale: INHALE, flash: FLASH, hold: HOLD });
+// weiß halten (s)
+const HOLD = 0.25;
+export const marks = (k) => openerMarks(k, { inhale: k.inhale, flash: k.flash, hold: HOLD });
 
 const clamp01 = (x) => Math.min(1, Math.max(0, x));
 const sstep = (a, b, x) => { const t = clamp01((x - a) / (b - a)); return t * t * (3 - 2 * t); };
 const lerp = (a, b, k) => a + (b - a) * k;
 const ease = (e) => 1 - Math.pow(1 - e, 3) * (1 + 3 * e);   // aus dem Stand, langes Ausrollen (wie der Auftakt in main.js)
 const DEG = Math.PI / 180;
+// Abspieltempo zur Filmzeit t: Zeitlupe ab dem zweiten Atemzug bis kurz nach dem Knall, weich ein- und ausgeblendet
+function rateAt(k, M, t) {
+  const L = M.bang - 0.12 - M.inhale;
+  return k.tempo * (1 - k.slow * sstep(M.inhale + 0.45 * L, M.inhale + 0.6 * L, t) * (1 - sstep(M.bang + 1.2, M.bang + 3, t)));
+}
 
 const BG_VERT = 'varying vec2 vUv; void main() { vUv = uv; gl_Position = vec4(position.xy, 0.9999, 1.0); }';
 const BG_FRAG = /* glsl */ `
@@ -69,6 +83,8 @@ uniform vec2 uC;
 uniform float uAspect, uTime;
 uniform float uCore, uSize, uHalo, uSpread, uGlow, uStreak, uStreakW, uStreakL, uRays, uRayL, uRayRot, uShock, uShockR, uFlash;
 uniform float uWarp, uWarpT, uFill, uFillI, uRing, uStack, uGhost, uSpike;
+uniform float uSuck, uPulseA, uFxP, uFxIn, uPulse, uGas, uGasS, uGasL, uGasHot, uGasSpin, uJW;
+uniform mat3 uGasM;
 uniform vec3 uTint, uDeep;
 uniform float uPlasma, uTemp, uBright, uContrast, uFog, uDetail, uFalse, uExpand, uR, uShellK;
 uniform float uNeb, uFil, uHot, uEdge, uThr, uAbs, uGround;
@@ -121,6 +137,19 @@ float warp(float phi, float r, float n, float seed) {
   return step(0.45, h1) * h1 * exp(-pow(perp / w, 2.0)) * along;
 }
 
+// Gasscheibe vor dem Knall (Darstellung wie der Lichtpunkt): flach, mit zwei Spiralarmen, innen weißblau, außen türkis und
+// rosa (Wasserstoff, Sauerstoff wie auf den Webb-Bildern), dreht innen schneller; q = Lage in der Scheibe (Maßstab heraus)
+void gasSample(vec3 q, out float dens, out vec3 e) {
+  float rr = length(q.xz), a = atan(q.z, q.x) + uGasSpin / (0.4 + rr);
+  vec3 qr = vec3(rr * cos(a), q.y, rr * sin(a));
+  float vert = exp(-pow(q.y / (0.16 + 0.07 * rr), 2.0));
+  float arms = 0.5 + 0.5 * cos(2.0 * (a - 1.8 * log(rr + 0.3)));
+  float body = vert * smoothstep(GAS_R, GAS_R - 1.5, rr) * smoothstep(0.2, 0.8, rr) * (0.2 + 0.8 * pow(arms, 1.5)) * clamp(0.7 + 1.6 * fbm(qr * 1.3 + 2.0, 4), 0.0, 1.6);
+  vec3 c = mix(mix(mix(vec3(1.0), uTint, 0.4), vec3(0.35, 0.8, 0.95), smoothstep(0.4, 1.6, rr)), vec3(0.95, 0.35, 0.6), smoothstep(1.6, 3.4, rr));
+  dens = body * 0.3;
+  e = c * body * 1.2 + vec3(1.0, 0.75, 0.5) * uGasHot * body;
+}
+
 // Glut satt statt bräunlich
 vec3 satur(vec3 v, float k) { return max(vec3(0.0), mix(vec3(dot(v, vec3(0.2126, 0.7152, 0.0722))), v, k)); }
 
@@ -145,6 +174,13 @@ void nebSample(vec3 p, float s, out vec3 e, out float sig) {
   e = ember(Tl) * (2.5 * dens * dens * (0.15 + 1.1 * emit) * (0.45 + 1.3 * fine * fine) + 6.0 * vein * dens) * uBright
     + ember(Tl * 1.8) * edge * uEdge * (0.3 + 0.7 * fine) * 0.8 * uBright;
   sig = dens * uAbs;
+  // Webb-Farben (künstlerisch): Wolkenkörper orange-braun, Säume türkis, Adern goldweiß, dichtere dunkle Bahnen
+  if (uJW > 0.0) {
+    vec3 jw = vec3(0.95, 0.45, 0.16) * 2.2 * dens * dens * (0.3 + 0.9 * emit) * (0.45 + 1.3 * fine * fine)
+            + vec3(0.3, 0.75, 1.0) * edge * uEdge * (0.4 + 0.8 * fine) * 1.6 + vec3(1.0, 0.85, 0.55) * 6.0 * vein * dens;
+    e = mix(e, jw * uBright, uJW);
+    sig *= 1.0 + 0.8 * uJW;
+  }
 }
 
 void main() {
@@ -156,7 +192,7 @@ void main() {
     col += mix(vec3(1.0), uTint, 0.15) * uCore * exp(-q * q);
     float rh = r / uSpread;
     col += mix(vec3(1.0), uTint, 0.8) * uHalo * (0.6 * exp(-rh / 0.012) + 0.3 * exp(-rh / 0.05) + 0.1 * exp(-rh / 0.15));
-    col += uDeep * uGlow * (exp(-r / 0.35) + 0.4 * exp(-r / 1.2));
+    col += uDeep * uGlow * 0.5 * (exp(-r / 0.3) + 0.12 * exp(-r / 1.2));   // Blau dezent, Grund bleibt schwarz (User 28.10.2026)
     // feine Beugungsringe dicht um den Kern (zwei zarte Ringe), nur solange der Kern ein Punkt ist
     col += mix(vec3(1.0), uTint, 0.5) * uCore * 0.008 * (exp(-pow((q - 2.3) / 0.28, 2.0)) + 0.5 * exp(-pow((q - 3.7) / 0.35, 2.0))) * (1.0 - uFillI);
     // Lichtstreif (anamorph): heller Faden, weicher Schleier darum, leicht faserig; Rot und Blau laufen verschieden weit
@@ -198,6 +234,27 @@ void main() {
       vec3 ring = vec3(exp(-pow((r - rr * 1.03) / 0.012, 2.0)), exp(-pow((r - rr) / 0.012, 2.0)), exp(-pow((r - rr * 0.97) / 0.012, 2.0)));
       col += ring * uRing * 0.025 * (0.7 + 0.3 * sin(phi * 3.0 + uTime * 0.4));
     }
+    // Lichtsog: Ring der Gravitationslinse zieht sich mit dem Luftholen in den Punkt, Lichtfäden stürzen hinein
+    if (uSuck > 0.0) {
+      float R = mix(0.5, uSize * 2.5, uFxP), th = 0.003 + 0.012 * (1.0 - uFxP);
+      vec3 ring = vec3(exp(-pow((r - R * 1.02) / th, 2.0)), exp(-pow((r - R) / th, 2.0)), exp(-pow((r - R * 0.98) / th, 2.0)));
+      col += mix(vec3(1.0), uTint, 0.5) * ring * uSuck * (0.25 + 0.75 * uFxP) * (0.75 + 0.25 * gnoise(vec3(phi * 3.0, uTime, 0.0)));
+      float a = phi / 6.2831853 * 120.0, id = floor(a), f = fract(a) - 0.5;
+      float h1 = hash12(vec2(id, 21.0)), h2 = hash12(vec2(id, 23.7)), h3 = hash12(vec2(id, 27.1));
+      float head = (1.0 - fract(h2 + uTime * (0.25 + 0.35 * h3))) * 0.9, len = 0.06 + 0.25 * head;
+      float perp = abs(f) * 6.2831853 / 120.0 * r, w = 0.0006 + 0.0018 * r;
+      float along = smoothstep(head + len, head, r) * smoothstep(head - 0.01, head + 0.004, r);
+      col += uTint * uSuck * 1.4 * step(0.55, h1) * exp(-pow(perp / w, 2.0)) * along * smoothstep(uSize * 2.0, uSize * 6.0, r);
+    }
+    // Pulswellen: jeder Herzschlag schickt einen Ring nach außen, beim Luftholen laufen sie in den Punkt zurück
+    if (uPulseA > 0.0) {
+      for (int i = 0; i < 3; i++) {
+        float fi = float(i), age = fract(uPulse) + fi, R = mix(0.03 + 0.32 * age, (0.6 - 0.17 * fi) * (1.0 - uFxP), uFxIn);
+        float g = mix(exp(-age * 1.3), (0.25 + 0.75 * uFxP) * (1.0 - 0.25 * fi), uFxIn), th = 0.003 + 0.012 * age * (1.0 - uFxIn);
+        vec3 ring = vec3(exp(-pow((r - R * 1.015) / th, 2.0)), exp(-pow((r - R) / th, 2.0)), exp(-pow((r - R * 0.985) / th, 2.0)));
+        col += mix(vec3(1.0), uTint, 0.6) * ring * g * uPulseA * 0.45;
+      }
+    }
     // Linsenreflexe: schwache farbige Scheiben auf der Linie Lichtpunkt → Bildmitte (Spiegelungen zwischen den Linsen),
     // nur bei hellem Kern; im Knall werden sie größer
     if (uGhost > 0.0) {
@@ -236,6 +293,27 @@ void main() {
       vec3 fire = uDeep * (0.25 + 0.6 * g) + uTint * 1.4 * g * g + vec3(0.95, 0.97, 1.0) * (1.5 * vein + 1.2 * kern);
       col += fire * uFillI * inside;
       col += uTint * uFillI * 1.6 * exp(-pow((r - fr) / (0.05 + 0.15 * uFill), 2.0));
+    }
+    // Gasscheibe: Strahl durch die Kugel um den Punkt, Licht des Kerns fällt mit dem Abstand ab, das Gas schluckt etwas
+    // Licht dahinter (liegt vor dem Feuerball)
+    if (uGas > 0.0) {
+      vec3 rd = rayDir(), oc = uCamPos - uO;
+      float Rg = GAS_R * uGasS, b = dot(oc, rd), h = b * b - dot(oc, oc) + Rg * Rg;
+      if (h > 0.0 && -b + sqrt(h) > 0.0) {
+        float t0 = max(0.0, -b - sqrt(h)), t1 = -b + sqrt(h), dt = (t1 - t0) / float(NGAS), j = hash12(gl_FragCoord.xy + 3.0), T = 1.0;
+        vec3 L = vec3(0.0);
+        for (int i = 0; i < NGAS; i++) {
+          vec3 x = oc + rd * (t0 + (float(i) + j) * dt);
+          float d = length(x), dens;
+          vec3 e;
+          gasSample(uGasM * x / uGasS, dens, e);
+          float sg = dens / uGasS, a = exp(-sg * dt);
+          L += T * e * (uGasL / (1.0 + d * d * 0.35)) * (sg > 1e-4 ? (1.0 - a) / sg : dt) / uGasS;
+          T *= a;
+          if (T < 0.01) break;
+        }
+        col = col * mix(1.0, T, uGas) + L * uGas;
+      }
     }
     col += mix(vec3(0.95, 0.97, 1.0), uTint * 1.3, smoothstep(0.35, 0.95, r)) * uFlash * 9.0;   // Weiß, zu den Ecken blau
   } else {
@@ -309,7 +387,7 @@ void main() {
 // Staub und Teilchen: je Teilchen ein Viereck entlang seiner Bildbahn (Bewegungsunschärfe aus zwei Lagen im Abstand der
 // Belichtungszeit), Größe nach Tiefe plus Unschärfekreis (Bokeh: außerhalb der Schärfe große, schwache Scheiben)
 const DUST_VERT = /* glsl */ `
-uniform float uT, uBang, uShut, uPx, uAspect, uH, uFocus, uCoc, uVis, uLight, uHot, uGain, uSwirl, uIn, uA, uTau, uV, uC0, uPull, uSpin;
+uniform float uInh, uT, uBang, uShut, uPx, uAspect, uH, uFocus, uCoc, uVis, uLight, uHot, uGain, uSwirl, uIn, uA, uTau, uV, uC0, uPull, uSpin;
 uniform vec3 uTintA, uTintB;
 attribute vec3 aP;
 attribute vec4 aD;   // Größe, Auftauchen, Helligkeit, Farbe
@@ -319,7 +397,7 @@ varying float vSize, vBokeh;
 // erst schlagartig, dann stetig
 float scaleAt(float t) {
   float s = t - uBang;
-  if (s < 0.0) { float p = smoothstep(uC0, uBang, t), k = smoothstep(uBang - 1.2, uBang, t); return 1.0 - uPull * p * p - uIn * k * k; }
+  if (s < 0.0) { float p = smoothstep(uC0, uBang, t), k = smoothstep(uBang - uInh, uBang, t); return 1.0 - uPull * p * p - uIn * k * k; }
   return 1.0 - uPull - uIn + uA * (1.0 - exp(-s / uTau)) + uV * s;
 }
 // Drall: stetig, in der Spannung immer schneller (Winkel wächst kubisch), nach dem Knall wieder stetig
@@ -430,6 +508,8 @@ export function createOpener(ctx, station, tune = { ...TUNE }) {
     uCore: { value: 0 }, uSize: { value: 0.001 }, uHalo: { value: 0 }, uSpread: { value: 1 }, uGlow: { value: 0 }, uStreak: { value: 0 }, uStreakW: { value: 0.002 }, uStreakL: { value: 0.1 },
     uRays: { value: 0 }, uRayL: { value: 0.1 }, uRayRot: { value: 0 }, uShock: { value: 0 }, uShockR: { value: 0 }, uFlash: { value: 0 },
     uWarp: { value: 0 }, uWarpT: { value: 0 }, uFill: { value: 0 }, uFillI: { value: 0 }, uRing: { value: 0 }, uStack: { value: 0 }, uGhost: { value: 0 }, uSpike: { value: 1 },
+    uSuck: { value: 0 }, uPulseA: { value: 0 }, uFxP: { value: 0 }, uFxIn: { value: 0 }, uPulse: { value: 0 }, uJW: { value: 0 },
+    uGas: { value: 0 }, uGasS: { value: 1 }, uGasL: { value: 0 }, uGasHot: { value: 0 }, uGasSpin: { value: 0 }, uGasM: { value: new THREE.Matrix3() },
     uTint: { value: new THREE.Color() }, uDeep: { value: new THREE.Color() },
     uPlasma: { value: 0 }, uTemp: { value: 40000 }, uBright: { value: 1 }, uContrast: { value: 0 }, uFog: { value: 1 }, uDetail: { value: 0 },
     uFalse: { value: 0 }, uExpand: { value: 1 }, uR: { value: station.shell.radius }, uShellK: { value: 1 },
@@ -441,7 +521,7 @@ export function createOpener(ctx, station, tune = { ...TUNE }) {
   };
   const bg = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), new THREE.ShaderMaterial({
     vertexShader: BG_VERT, fragmentShader: BG_FRAG, uniforms: bgU, depthTest: false, depthWrite: false,
-    defines: { ...NEB_Q(ctx.detail), NEB_EXT1: NEB_EXT.toFixed(2), NEB_EXT2: (2 * NEB_EXT).toFixed(2), NEB_S0: '0.06', NEB_S1: '5.0', WEB_K: (1 / (2 * WEB_EXT)).toFixed(5) },
+    defines: { ...NEB_Q(ctx.detail), NEB_EXT1: NEB_EXT.toFixed(2), NEB_EXT2: (2 * NEB_EXT).toFixed(2), NEB_S0: '0.06', NEB_S1: '5.0', GAS_R: '4.2', NGAS: ctx.detail >= 0.9 ? 48 : 32, WEB_K: (1 / (2 * WEB_EXT)).toFixed(5) },
   }));
   bg.frustumCulled = false;
   bg.renderOrder = -10;
@@ -455,7 +535,7 @@ export function createOpener(ctx, station, tune = { ...TUNE }) {
   let seed = 20261027;
   const rand = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
   const dU = {
-    uT: { value: 0 }, uBang: { value: M.bang }, uShut: { value: 0.02 }, uPx: { value: 600 }, uAspect: { value: 1 }, uH: { value: 900 },
+    uInh: { value: 1.2 }, uT: { value: 0 }, uBang: { value: M.bang }, uShut: { value: 0.02 }, uPx: { value: 600 }, uAspect: { value: 1 }, uH: { value: 900 },
     uFocus: { value: 10 }, uCoc: { value: 20 }, uVis: { value: 0 }, uLight: { value: 0 }, uHot: { value: 0 }, uGain: { value: 1 },
     uSwirl: { value: 0.05 }, uIn: { value: 0.16 }, uA: { value: 1.2 }, uTau: { value: 0.6 }, uV: { value: 0.6 }, uC0: { value: 0 }, uPull: { value: 0.12 }, uSpin: { value: 18 },
     uTintA: { value: new THREE.Color() }, uTintB: { value: new THREE.Color() },
@@ -533,6 +613,8 @@ export function createOpener(ctx, station, tune = { ...TUNE }) {
 
   // Lage um O: Richtung der Heimpose um el gehoben und um az um die Hochachse gedreht, Abstand dist
   const _v = new THREE.Vector3(), _t = new THREE.Vector3(), _s = new THREE.Vector3(), _u = new THREE.Vector3();
+  // Gasscheibe schräg zur Blickachse (um die Querachse gekippt), damit man auf sie schaut
+  bgU.uGasM.value.setFromMatrix4(new THREE.Matrix4().makeRotationAxis(side, 1.15));
   const orbit = (cam, dist, az, el) => {
     _v.copy(axis).applyAxisAngle(side, el).applyAxisAngle(up, az);
     cam.position.copy(O).addScaledVector(_v, dist);
@@ -543,7 +625,7 @@ export function createOpener(ctx, station, tune = { ...TUNE }) {
   const look = { ...LOOK, sh: [...LOOK.sh], hi: [...LOOK.hi] };
   const END = station.look || {};
   const endLook = Object.fromEntries(Object.keys(LOOK).map((key) => [key, END[key] ?? LOOK[key]]));
-  const FILM = { exposure: 1, bloom: 0.13, sat: 1.12, con: 0.14, sh: [0.9, 0.97, 1.12], hi: [1.0, 1.0, 1.02], vig: 0.5, ca: 0.011, grain: 0.022 };
+  const FILM = { exposure: 1, bloom: 0.13, sat: 1.12, con: 0.14, sh: [0.97, 0.99, 1.04], hi: [1.0, 1.0, 1.02], vig: 0.5, ca: 0.011, grain: 0.022 };
 
   function setTune(t) {
     k = { ...TUNE, ...t };
@@ -555,6 +637,7 @@ export function createOpener(ctx, station, tune = { ...TUNE }) {
     dU.uTintA.value.setHSL((k.hue - 8) / 360, k.sat * 0.9, 0.6);
     dU.uTintB.value.setHSL((k.hue + 10) / 360, k.sat, 0.5);
     dU.uBang.value = M.bang;
+    dU.uInh.value = M.bang - M.inhale;
     dU.uC0.value = M.charge;
     dU.uPull.value = 0.12 * k.charge;
     dU.uSpin.value = 18 * k.charge;
@@ -566,10 +649,10 @@ export function createOpener(ctx, station, tune = { ...TUNE }) {
   // Stand zur Filmzeit t: Uniforms, eigene Kamera (bis weiß) bzw. Kamera der Station (danach), Überblendung, Look
   const out = { view: 'own', mix: 0, rise: 0 };
   function apply(lv) {
-    const t = film.t, u = clamp01(t / M.bang), s = t - M.bang, f = sstep(M.bang, M.white, t), fb = clamp01(s / FLASH);
+    const t = film.t, u = clamp01(t / M.bang), s = t - M.bang, f = sstep(M.bang, M.white, t), fb = clamp01(s / (M.white - M.bang));
     bgU.uTime.value = t;
     dU.uT.value = t;
-    dU.uShut.value = k.blur * k.tempo / 96;   // 180°-Verschluss bei 48 Bildern/s
+    dU.uShut.value = k.blur * rateAt(k, M, t) / 96;   // 180°-Verschluss bei 48 Bildern/s
     out.view = t < M.white ? 'own' : 'level';
     bgU.uPlasma.value = out.view === 'own' ? 0 : 1;
     dust.visible = out.view === 'own';
@@ -577,7 +660,10 @@ export function createOpener(ctx, station, tune = { ...TUNE }) {
     // Licht vor dem Knall: zündet schnell, wächst; in der Spannung heller und pulsierend (Herzschlag, Takt steigt von
     // 0,6 auf 1,9 Hz – sanft, kein Blitzen), beim Luftholen dunkelt es ab und zieht sich zusammen, dann der Knall
     const cg = sstep(M.charge, M.inhale, t) * k.charge;
-    const inh = s < 0 ? sstep(M.inhale, M.bang - 0.12, t) : 0, snap = sstep(M.bang - 0.12, M.bang, t);
+    // Luftholen in zwei Atemzügen: zusammenziehen, kurz loslassen, tiefer zusammen
+    const Li = M.bang - 0.12 - M.inhale, i0 = M.inhale;
+    const inh = s >= 0 ? 0 : clamp01(0.7 * sstep(i0, i0 + 0.35 * Li, t) - 0.45 * sstep(i0 + 0.35 * Li, i0 + 0.5 * Li, t) * (1 - sstep(i0 + 0.5 * Li, i0 + 0.7 * Li, t)) + 0.3 * sstep(i0 + 0.55 * Li, i0 + Li, t));
+    const snap = sstep(M.bang - 0.12, M.bang, t), inP = s >= 0 ? 1 : sstep(i0, M.bang - 0.05, t);
     const Tc = M.inhale - M.charge, xc = Math.min(Math.max(0, t - M.charge), Tc), ph = 0.6 * xc + 0.65 * xc * xc / Tc;
     const beat = Math.pow(0.5 + 0.5 * Math.cos(2 * Math.PI * ph), 6) * cg * (1 - inh);
     const grow = (Math.exp(3 * u) - 1) / (Math.exp(3) - 1);
@@ -639,6 +725,28 @@ export function createOpener(ctx, station, tune = { ...TUNE }) {
     bgU.uShock.value = s > 0 ? k.shock * 0.25 * Math.exp(-s / 0.6) * sstep(0, 0.05, s) : 0;
     bgU.uShockR.value = s > 0 ? 0.02 + 1.4 * (1 - Math.exp(-s / 0.7)) : 0;
     bgU.uFlash.value = 0.15 * Math.pow(sstep(0.93, 1, fb), 2);   // nur ein Hauch Weiß als Brücke ins Plasma
+    // Kipppunkt: Lichtsog und Pulswellen (beim Knall eine Druckwelle), Stille = Licht wird klein (Look unten)
+    const pre = s < 0 ? 1 : 1 - sstep(0, 0.4, s), hush = k.hush * inh * (1 - snap);
+    bgU.uFxP.value = inP;
+    bgU.uFxIn.value = sstep(i0 - 0.3, i0 + 0.3, t);
+    bgU.uSuck.value = k.suck * (0.35 * cg + 1.2 * inh) * pre;
+    bgU.uPulseA.value = k.pulse * (0.8 * cg + 0.8 * inh) * pre;
+    bgU.uPulse.value = ph;
+    if (s > 0) {
+      bgU.uShock.value += k.pulse * 0.3 * Math.exp(-s / 0.9) * sstep(0, 0.05, s);
+      bgU.uShockR.value = 0.02 + 1.4 * (1 - Math.exp(-s / (k.shock > 0 ? 0.7 : 0.9)));
+    }
+    bgU.uCore.value *= 1 - 0.5 * hush;
+    bgU.uRays.value *= 1 - 0.6 * hush;
+    bgU.uStreak.value *= 1 - 0.5 * hush;
+    // Gasscheibe: im Aufbau sichtbar, mit der Spannung zum Punkt gezogen und schneller gedreht, beim Luftholen eng
+    // zusammen, im Knall glühend nach außen gerissen (fliegt an der Kamera vorbei)
+    bgU.uGas.value = out.view === 'own' ? k.disk * sstep(0.15, 0.45, u) : 0;
+    bgU.uGasS.value = s < 0 ? 1 - 0.12 * cg - 0.3 * inh * (1 - snap) : (1 - 0.12 * k.charge - 0.3) + 1.6 * (1 - Math.exp(-s / 1.2)) + 0.3 * s;
+    bgU.uGasL.value = 0.5 * (0.25 + 1.6 * I) * (1 + 2 * pop) * (1 + 1.5 * f);
+    bgU.uGasHot.value = s > 0 ? 3 * sstep(0, 0.3, s) * Math.exp(-s / 2.2) : 0;
+    bgU.uGasSpin.value = 3 * (0.05 * t + 0.6 * cg * cg + 1.2 * inh + (s > 0 ? 0.3 * s : 0));
+    bgU.uJW.value = k.webb;
 
     // Staub: tritt mit der Spannung ins Licht (zum Punkt gesogen, Drall), nach dem Knall alles; Schärfe auf dem Punkt
     dU.uVis.value = (s > 0 ? 0.4 + 0.7 * sstep(0, 0.9, s) : 0.4 * Math.pow(sstep(0.4, 1.0, u), 1.2)) * Math.min(1, k.dust);
@@ -726,6 +834,15 @@ export function createOpener(ctx, station, tune = { ...TUNE }) {
     look.bloom = (out.view === 'own' ? FILM.bloom + 0.05 * cg + 0.1 * pop - 0.04 * f : lerp(lerp(0.15, 0.17, sstep(M.clear, M.gal, t)), endLook.bloom, a)) * lerp(1, k.bloom, tl);
     look.grain *= lerp(1, k.grain, tl);
     look.ca *= lerp(1, k.ca, tl) * (out.view === 'own' ? 1 + 1.2 * cg + 4 * pop + 1.5 * f : 1);
+    if (out.view === 'own') {
+      // Stille vor dem Knall: Farbe weicht, Vignette schließt, Farbsaum und Korn; mit dem Knall kehrt die Farbe satt zurück
+      const hush = k.hush * inh * (1 - snap);
+      look.sat *= 1 - 0.75 * hush + 0.35 * k.hush * (s > 0 ? sstep(0, 0.4, s) * Math.exp(-s / 1.5) : 0);
+      look.ca *= 1 + 3 * hush;
+      look.vig *= 1 + 1.4 * hush;
+      look.grain *= 1 + 1.5 * hush;
+      look.exposure *= 1 - 0.25 * hush;
+    }
     look.vig *= lerp(1, k.vig, tl) * (out.view === 'own' ? (1 + 0.25 * beat + 0.3 * inh * (1 - snap)) * (1 - 0.7 * f) : lerp(0.3, 1, sstep(M.cool, M.clear, t)));   // im Weiß keine grauen Ecken
     return out;
   }
@@ -733,7 +850,9 @@ export function createOpener(ctx, station, tune = { ...TUNE }) {
   return {
     scene, camera, film, look, out, apply, setTune, ready: Promise.all([field.ready, buildEra()]), get marks() { return M; }, get tune() { return k; },
     get done() { return film.t >= M.end; },
-    advance(dt) { if (film.playing) film.t = Math.min(M.end, film.t + dt * k.tempo); },
+    advance(dt) { if (film.playing) film.t = Math.min(M.end, film.t + dt * rateAt(k, M, film.t)); },
+    // Filmzeit nach real Sekunden Abspielen (Vorschau: Bilder in echter Zeit)
+    filmAt(real) { let t = 0; for (let x = 0; x < real; x += 1 / 240) t = Math.min(M.end, t + rateAt(k, M, t) / 240); return t; },
     // Größe des Bilds (Pixel des Ziels) und Seitenverhältnis des Fensters; eigene Kamera mittig im Fenster
     setSize(w, h) {
       camera.aspect = w / h;
