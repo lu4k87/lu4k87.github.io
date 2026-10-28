@@ -401,6 +401,13 @@ export function renderScaleCompare(stationId, tabIdx = 0) {
   if (!activeTab) return '';
 
   const items = activeTab.items || [];
+  // Maßstab in echter Größe (Tafel:C): haben alle Größen dieselbe Einheit, folgen die Radien dem echten Verhältnis zum größten
+  // Objekt (mindestens 1 px), sonst bleiben die gezeichneten Radien
+  const parsed = items.map((it) => { const m = String(it.size).match(/^([\d.,]+)\s*(.+)$/); return m ? [+m[1].replace(/\./g, '').replace(',', '.'), m[2].trim()] : null; });
+  const real = parsed.length > 1 && parsed.every((p) => p && p[0] > 0 && p[1] === parsed[0][1]);
+  const big = real ? Math.max(...parsed.map((p) => p[0])) : 0, rMax = Math.max(...items.map((it) => it.r));
+  const rTop = real ? Math.min(rMax, 36) : rMax;   // größter Körper 72 px wie im Entwurf; Höhe der Bühne = größter Durchmesser
+  const rOf = (it, i) => (real ? Math.max(0.5, rTop * parsed[i][0] / big) : it.r);
   const tabsHtml = tabs.length > 1
     ? `<div class="sc-tabs" role="tablist">${tabs.map((t, i) => `
         <button type="button" role="tab" class="sc-tab-btn${i === tabIdx ? ' is-active' : ''}" data-sc-tab="${i}" aria-selected="${i === tabIdx}">${t.name}</button>`).join('')}</div>`
@@ -414,15 +421,15 @@ export function renderScaleCompare(stationId, tabIdx = 0) {
           <circle cx="8.5" cy="12.5" r="3.5" fill="none" stroke="currentColor" stroke-width="1.4"/>
           <circle cx="16" cy="12.5" r="1.8" fill="none" stroke="currentColor" stroke-width="1.4"/>
         </svg>
-        <span class="sc-title">Maßstabs-Vergleich</span>
+        <span class="sc-title">Maßstabs-Vergleich${real ? ', echte Größe' : ''}</span>
         <span class="sc-tag">${nbsp(comp.sizeStr)}</span>
       </div>
       <div class="sc-stage">
-        <div class="sc-items">
-          ${items.map((it) => `
+        <div class="sc-items" style="--vh:${Math.ceil(rTop * 2) + 2}px">
+          ${items.map((it, i) => `
             <div class="sc-col">
               <div class="sc-vis-box">
-                <span class="sc-shape sc-shape--${it.type || 'globe'}" style="width: ${it.r * 2}px; height: ${it.r * 2}px; background: ${it.color};"></span>
+                <span class="sc-shape sc-shape--${it.type || 'globe'}" style="width: ${rOf(it, i) * 2}px; height: ${rOf(it, i) * 2}px; background: ${it.color};"></span>
               </div>
               <b class="sc-name">${it.name}</b>
               <small class="sc-val">${it.size}</small>

@@ -24,7 +24,7 @@ const hexNum = (n, cls) => hex(`<text x="20" y="24.5" text-anchor="middle">${Str
 
 export function createHud(h) {
   const body = document.body;
-  const rail = $('#rail'), panel = $('#panel-body'), layer = $('#hotspots'), svg = layer.querySelector('svg');
+  const rail = $('#rail'), panel = $('#panel-body'), foot = $('#panel-foot'), layer = $('#hotspots'), svg = layer.querySelector('svg');
   const leads = svg.querySelector('.leads'), card = $('#hs-card'), caption = $('#caption'), route = $('#route');
   const pull = $('#pull'), btnOut = $('#btn-out'), btnNext = $('#btn-next'), btnPrev = $('#btn-prev');
   const mSizeL = $('#m-size-l'), mSize = $('#m-size'), mLight = $('#m-light'), mDist = $('#m-dist'), mBack = $('#m-back');
@@ -33,7 +33,11 @@ export function createHud(h) {
   let ordered = [], dock = null, settle = null, cardW = 0, cardH = 0, cardMaxH = null, lastT = 0;
   const cardLead = document.createElementNS('http://www.w3.org/2000/svg', 'path');
   cardLead.setAttribute('class', 'hs-lead hs-lead--card is-off');
-  new ResizeObserver(() => { cardW = card.offsetWidth; cardH = card.offsetHeight; }).observe(card);
+  // Karte höher als ihr Platz: unten weich ausblenden statt mitten in der Zeile abschneiden (Fehler „Karte schneidet Text ab“),
+  // weiterlesen per Scrollen; ganz unten verschwindet die Blende
+  const moreCard = () => card.classList.toggle('is-more', card.scrollTop + card.clientHeight < card.scrollHeight - 2);
+  card.addEventListener('scroll', moreCard, { passive: true });
+  new ResizeObserver(() => { cardW = card.offsetWidth; cardH = card.offsetHeight; moreCard(); }).observe(card);
   const cardEnv = { getLayer, setLayer, fmt: fmtVal, motion: () => settings.S.motion, reduced: matchMedia('(prefers-reduced-motion: reduce)').matches };
 
   const side = mountSettings($('#cfg'), $('#btn-cfg'));
@@ -490,17 +494,19 @@ export function createHud(h) {
     const ctrls = (lv.controls || []).filter((c) => c.id !== 'sound');
     // Abstecher (Nummer mit Buchstabe, z. B. 02A) nennen ihre Elternstation
     const from = /^\d+$/.test(String(st.n)) || !st.parent ? '' : ` · Abstecher von ${STATIONS[st.parent].title}`;
+    // Infotafel als Messblatt (Tafel:C): Kopf in Satzschreibung, Kennzahlen als Wertetabelle (Zahl rechtsbündig), Maßstab auf
+    // Grundlinie; Zustand (live) und Knöpfe der Station (action) im festen Fuß unter dem Scrollbereich
+    const acts = ctrls.filter((c) => c.type === 'action' && !c.sub), rest = ctrls.filter((c) => !acts.includes(c));
     panel.innerHTML = `
-      <p class="kicker"><span class="kick-n">${num(lv.id)}</span>${esc(st.kicker + from)}</p>
+      <div class="t-head"><p class="kicker">Station <span class="kick-n">${num(lv.id)}</span> · ${esc(st.kicker + from)}</p>
       <h1 class="st-title">${esc(st.title)}</h1>
-      <p class="lead">${prose(st.lead)}</p>
-      <div class="bento">${st.facts.map((f) => `
-        <div class="fact"><p class="fact-v${f.v.length > 9 ? ' is-long' : ''}">${esc(f.v)}${f.u ? `<span class="fact-u">${esc(f.u)}</span>` : ''}</p><p class="fact-l">${prose(f.l)}</p></div>`).join('')}
-      </div>
+      <p class="lead">${prose(st.lead)}</p></div>
+      <dl class="kpi">${st.facts.map((f) => `
+        <div><dt>${prose(f.l)}</dt><dd>${esc(f.v)}${f.u ? ` <span>${esc(f.u)}</span>` : ''}</dd></div>`).join('')}
+      </dl>
       ${settings.S.scaleCompare !== false ? renderScaleCompare(lv.id, scaleTabIdx) : ''}
-      ${lv.live ? '<p class="live" id="live" aria-live="off"></p>' : ''}
       ${lv.widget ? `<div class="widget" id="widget">${lv.widget()}</div>` : ''}
-      ${ctrls.length ? `<div class="st-ctrls">${ctrls.map(ctrlHtml).join('')}</div>` : ''}
+      ${rest.length ? `<div class="st-ctrls">${rest.map(ctrlHtml).join('')}</div>` : ''}
       <h2 class="sec-h">Entdecken</h2>
       <ul class="explore">${hs.map((x, i) => `
         <li><button type="button" data-hs="${x.id}" class="${x.kind === 'dive' ? 'is-dive' : ''}">${x.kind === 'dive' ? hex('<path d="M14 17l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>', 'hex--mini') : hexNum(i + 1, 'hex--mini')}<span>${esc(info(x).t)}</span>${x.kind === 'dive' ? '<span class="tag">hineinfliegen</span>' : ''}</button></li>`).join('')}
@@ -509,7 +515,10 @@ export function createHud(h) {
         <p>${prose(st.note)}</p>
         <ol class="sources">${st.sources.map((s) => `<li><a href="${SOURCES[s].url}" target="_blank" rel="noopener">${prose(SOURCES[s].t)}</a><span>${prose(SOURCES[s].by)}</span></li>`).join('')}</ol>
       </details>`;
-    liveEl = panel.querySelector('#live');
+    foot.innerHTML = `${lv.live ? '<p class="live" id="live" aria-live="off"></p>' : ''}${acts.map((c) => `<button type="button" class="act-btn act-btn--prim" data-act="${c.id}">${esc(c.button)}</button>`).join('')}`;
+    foot.hidden = !lv.live && !acts.length;
+    foot.querySelectorAll('[data-act]').forEach((b) => b.addEventListener('click', () => { acts.find((x) => x.id === b.dataset.act).run(); h.onInput(); }));
+    liveEl = foot.querySelector('#live');
     widgetEl = panel.querySelector('#widget');
     panel.querySelectorAll('[data-sc-tab]').forEach((b) => b.addEventListener('click', () => {
       scaleTabIdx = +b.dataset.scTab;
@@ -605,7 +614,8 @@ export function createHud(h) {
     selected = id;
     ordered = [...markers].sort((a, b) => (b.x.id === id) - (a.x.id === id));
     const t = meta.hotspots[id] || x.info;
-    card.querySelector('.hs-card-title').innerHTML = `${hex('', 'hex--mini')}<span>${esc(t.t)}</span>`;
+    const n = markers.find((m) => m.x.id === id)?.el.querySelector('.hex text')?.textContent || '';
+    card.querySelector('.hs-card-title').innerHTML = `${n ? `<span class="hs-card-n">${n}</span>` : ''}<span>${esc(t.t)}</span>`;
     const head = card.querySelector('.hs-card-head');
     while (head.nextSibling) head.nextSibling.remove();
     head.insertAdjacentHTML('afterend', cardHtml(lv.id, id, t, cardEnv));
@@ -829,7 +839,7 @@ export function createHud(h) {
       else Object.assign(dock, { goal: pos, side, lim });
     } else dock.goal = keep;
     const lim = Math.min(maxH, dock.lim || Infinity);
-    if (lim !== cardMaxH) { cardMaxH = lim; card.style.maxHeight = `${lim}px`; }
+    if (lim !== cardMaxH) { cardMaxH = lim; card.style.maxHeight = `${lim}px`; requestAnimationFrame(moreCard); }
     const hh = Math.min(cardH, lim);
     const [gx, gy] = dock.goal;
     if (Math.hypot(gx - dock.pos[0], gy - dock.pos[1]) > 0.5) {   // neu andocken: weich hinübergleiten
@@ -934,7 +944,7 @@ export function createHud(h) {
     const key = o ? `${o.out}:${o.to}` : '';
     if (!o || pull.dataset.key === key) return;
     pull.dataset.key = key;
-    pull.textContent = `${o.out ? 'Hinausfliegen' : 'Hineinfliegen'}: ${STATIONS[o.to].title} · klicken`;
+    pull.innerHTML = `${o.out ? '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V6M6 11l6-6 6 6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>' : '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v13M6 13l6 6 6-6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>'}<span>${o.out ? 'Hinausfliegen' : 'Hineinfliegen'}: ${esc(STATIONS[o.to].title)}</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
   }
 
   function stageRect() {

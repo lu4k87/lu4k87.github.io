@@ -121,20 +121,21 @@ function orbit(f) {
   return `${open(212, f.alt)}${s}</svg>`;
 }
 
-// Zeitleiste senkrecht: Punkte nach Datum (Tage oder Jahre linear), Beschriftung rechts mit Mindestabstand und Knick
+// Zeitleiste als Messblatt (Bild:C): Datumsspalte rechtsbündig, Punkt-Achse, Ereignis daneben (zweite Zeile darunter); Zeilen
+// in Reihenfolge statt nach Zeitabstand, damit die Karte kurz bleibt und nichts abgeschnitten wird; hervorgehoben = cyan
 function timeline(f) {
-  const x = 22, y0 = 12, y1 = 12 + Math.max(110, f.items.length * 34), t = f.items.map((e) => (typeof e.d === 'number' ? e.d : Date.parse(e.d)));
-  const lo = Math.min(...t), hi = Math.max(...t), Y = (v) => y0 + ((v - lo) / (hi - lo || 1)) * (y1 - y0);
-  let s = `<line x1="${x}" x2="${x}" y1="${y0}" y2="${y1}" class="hf-base"/>`, last = -Infinity;
+  const ax = 104, rows = [];
+  let y = 14;
+  f.items.forEach((e) => { rows.push(y); y += e.l2 ? 40 : 26; });
+  const top = rows[0], end = rows[rows.length - 1];
+  let s = `<line x1="${ax}" x2="${ax}" y1="${top}" y2="${end}" class="hf-base"/>`;
   f.items.forEach((e, i) => {
-    const y = Y(t[i]), ly = Math.max(y, last + 34);
-    last = ly;
-    s += `<circle cx="${x}" cy="${f1(y)}" r="${e.hl ? 4.5 : 3.5}" class="hc-sat${e.hl ? ' is-on' : ''}"/>`;
-    s += `<path d="M${x + 6} ${f1(y)}L${x + 20} ${f1(y)}L${x + 30} ${f1(ly)}L${x + 36} ${f1(ly)}" class="hf-tick"/>`;
-    s += txt(x + 42, ly + 4, e.t, 'start', 'hc-acc') + txt(x + 112, ly + 4, e.l, 'start', 'hf-name') + (e.l2 ? txt(x + 112, ly + 17, e.l2) : '');
+    const r = rows[i], c = e.hl ? ' is-hlt' : '';
+    s += `<circle cx="${ax}" cy="${r}" r="${e.hl ? 4.5 : 3.5}" class="hc-sat${e.hl ? ' is-on' : ''}"/>`;
+    s += txt(ax - 12, r + 4, e.t, 'end', `hf-date${c}`) + txt(ax + 14, r + 4.5, e.l, 'start', `hf-name${c}`) + (e.l2 ? txt(ax + 14, r + 22, e.l2, 'start', `hf-name${c}`) : '');
   });
-  s += `<circle cx="${x}" cy="${y0}" r="3" class="hf-runner" style="--ty:${f1(y1 - y0)}px"/>`;   // Lichtpunkt läuft die Achse entlang (Zeit linear)
-  return `${open(Math.max(y1, last) + 26, f.alt)}${s}</svg>`;
+  s += `<circle cx="${ax}" cy="${top}" r="3" class="hf-runner" style="--ty:${end - top}px"/>`;   // Lichtpunkt läuft die Achse entlang
+  return `${open(y - 6, f.alt)}${s}</svg>`;
 }
 
 // Skala mit Spanne und Marken (z. B. Temperaturen); Bezugsmarken gestrichelt
