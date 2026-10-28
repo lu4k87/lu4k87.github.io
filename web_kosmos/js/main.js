@@ -103,8 +103,9 @@ const CINE = { delay: 3, ramp: 5, orbit: 0.012, crane: 0.05, breathe: 0.025, lan
 const FLYFX = { fov: 0.12, vig: 0.14, bank: 0.035, max: 0.04, tau: 0.5 };
 // Bogen statt Gerade (User 27.10.2026): beide Kameras einer Etappe umkreisen ihr Zentrum (äußere den Anker, innere ihr
 // Blickziel) mit derselben Winkelrate um die Hochachse – im Bild eine sanft geschwungene Bahn; angle = ganzer Bogen (rad,
-// User 28.10.2026: 0,3 → 0,18, Kurven waren zu steil)
-const ARC = { angle: 0.18 };
+// User 28.10.2026: 0,3 → 0,18, Kurven waren zu steil; danach 0,18 → 0,27, weiter ausholen, aber weich – dafür flacheres
+// Profil bei einer Etappe allein, arcPair)
+const ARC = { angle: 0.27 };
 // Auftakt ohne eigene Pose der Station: aus der Nähe (near × Abstand), um yaw seitlich versetzt, in die Heimpose
 const INTRO = { dur: 9, yaw: 0.9, near: 0.5 };
 // Bühne kleiner als dieser Anteil der Fensterhöhe (Handy, Tablet hochkant) → Blickwinkel weiten, damit die Bühne
@@ -564,9 +565,12 @@ function arcPair(ch, from, to, P, C) {
     ch.arcSign = -Math.sign(new THREE.Vector3().crossVectors(from.camera.up, d).dot(right) * C.clone().sub(P).dot(right)) || 1;
   }
   const a = ch.arcSign * ARC.angle * (calm() ? 0.5 : 1);
+  // eine Etappe allein: e läuft schon weich an und aus (chainPos) → Bogen linear in e; nochmals geglättet drehte er in der
+  // Mitte fast doppelt so schnell wie nötig. Mehrere Etappen: Halt im Bogen an jeder Zwischenstation ohne Ruck
+  const f = ch.legs.length === 1 ? (e) => e : (e) => smoother(0, 1, e);
   return {
-    from: { axis: from.camera.up.clone().normalize(), angle: (e) => a * smoother(0, 1, e) },
-    to: { axis: to.camera.up.clone().normalize(), angle: (e) => a * (smoother(0, 1, e) - 1) },
+    from: { axis: from.camera.up.clone().normalize(), angle: (e) => a * f(e) },
+    to: { axis: to.camera.up.clone().normalize(), angle: (e) => a * (f(e) - 1) },
   };
 }
 
@@ -843,9 +847,10 @@ function stepTransition(dt) {
   warp(ch, fx);
   const e = ch.t >= 1 ? 1 : Math.min(1, Math.max(0, chainPos(ch, ch.t) - tr.k));
   const p = tr.down ? e : 1 - e;            // 0 = nur äußeres Bild, 1 = nur inneres
-  // äußeres Blickziel schwenkt früh auf den Anker (beim Hinausfliegen erst am Ende weg davon) – über 85 % der Etappe,
-  // damit der Blick auch bei seitlichem Anker ruhig dreht
-  const tkOuter = tr.down ? smoother(0, 0.85, e) : smoother(0.15, 1, e);
+  // äußeres Blickziel schwenkt früh auf den Anker – über 85 % der Etappe, damit der Blick auch bei seitlichem Anker ruhig
+  // dreht; beim Hinausfliegen über die ganze Etappe (der Blick dreht dort oft weit, vom Anker hinter der Kamera nach vorn
+  // zum Ziel: ab 15 % gedrängt riss er in der Mitte herum, Mond → Erde 1,6 rad/s)
+  const tkOuter = tr.down ? smoother(0, 0.85, e) : smoother(0, 1, e);
   // weiterfahrende Kamera = die der Station, an der die vorige Etappe endete (hinein: äußere, hinaus: innere);
   // die Wendestation fährt Steigen, Kuppe und Sinken als einen Bogen (x = Etappen-Koordinate ab der Wende)
   const tn = ch.turn, x = tn && tr.outer.id === tn.id ? tr.k + e - tn.at : null;
