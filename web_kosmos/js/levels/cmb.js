@@ -6,7 +6,9 @@
 // Der Dipol (3,36 mK, Richtung l = 264°, b = 48°) stammt von unserer Eigenbewegung und ist üblicherweise abgezogen.
 // Der der Kamera zugewandte Teil der Kugel ist ausgeschnitten. Zeitschichten: Schalen zu festen Epochen; Regler „Blick
 // zurück“: Schale zur Rückblickzeit mit z, Alter, Temperatur und mitbewegtem Abstand. Fliegt die Kamera in die
-// Galaxienwolke hinein, dunkelt die Schale ab und die Galaxien funkeln leise (Darstellung, kein Messwert).
+// Galaxienwolke hinein, dunkelt die Schale ab, die Galaxien funkeln leise, ferne werden dunstig, große bekommen einen
+// feinen Lichthof, die Wolke driftet langsam (Parallaxe) und farbige Gasschleier ziehen durch (alles Darstellung, kein
+// Messwert; die Schleier stehen für das dünne, warme Gas zwischen den Galaxien).
 
 import * as THREE from 'three';
 import { registerLayers } from '../layers.js';
@@ -52,22 +54,66 @@ void main() {
 }
 `;
 // Galaxien: Punkt-Shader aus vol.js plus Funkeln – je Punkt eigene Phase, Periode 3–10 s (weit unter 3 Hz) und Stärke;
-// meist gedämpft, selten ein weicher Höhepunkt (w³). uTw = 0 außerhalb der Wolke
+// meist gedämpft, selten ein weicher Höhepunkt (w³). Tiefen-Dunst: ferne Punkte dunkler und kühler. Lichthof: große
+// Punkte werden breiter gezeichnet, der Kern bleibt gleich groß (vK), der Rest ist ein schwacher Hof. uTw, uHaze, uHalo
+// sind außerhalb der Wolke 0
 const GAL_VERT = /* glsl */ `
 attribute vec3 color;
 attribute float size, phase;
-uniform float uPx, uScale, uMin, uMax, uFade, uGain, uTime, uTw;
+uniform float uPx, uScale, uMin, uMax, uFade, uGain, uTime, uTw, uHaze, uHalo;
 varying vec3 vCol;
+varying float vK, vHalo;
 void main() {
   vec4 mv = modelViewMatrix * vec4(position, 1.0);
   gl_Position = projectionMatrix * mv;
   float px = size * uScale / max(-mv.z, 1e-6);
   float d = clamp(px, uMin * uPx, uMax * uPx);
-  gl_PointSize = d;
   float near = 1.0 - smoothstep(uFade * uPx, uFade * 3.0 * uPx, px);
   float w = 0.5 + 0.5 * sin(uTime * (0.6 + 1.5 * fract(phase * 7.31)) + phase * 6.2832);
   float tw = mix(1.0, 0.55 + 1.15 * w * w * w, uTw * fract(phase * 3.17));
-  vCol = color * uGain * tw * min(1.0, (px * px) / (d * d) * 4.0) * near;
+  vec3 haze = mix(vec3(1.0), vec3(0.35, 0.45, 0.75), clamp(uHaze * smoothstep(3.0, 28.0, -mv.z), 0.0, 1.0));
+  vCol = color * haze * uGain * tw * min(1.0, (px * px) / (d * d) * 4.0) * near;
+  vHalo = uHalo * smoothstep(0.065, 0.1, size);
+  vK = 1.0 + 1.5 * min(vHalo, 1.0);
+  gl_PointSize = d * vK;
+}
+`;
+const GAL_FRAG = /* glsl */ `
+varying vec3 vCol;
+varying float vK, vHalo;
+void main() {
+  vec2 d = gl_PointCoord - 0.5;
+  float q = dot(d, d);
+  gl_FragColor = vec4(vCol * (exp(-q * 12.8 * vK * vK) + 0.22 * vHalo * exp(-q * 14.0)), 1.0);
+}
+`;
+// Gasschleier: große, zur Kamera gedrehte Scheiben mit langsam ziehendem Rauschen; nah an einer Scheibe blendet sie aus,
+// sonst wirkt sie flach und füllt das ganze Bild
+const VEIL_VERT = /* glsl */ `
+uniform vec3 uC;
+uniform float uS;
+varying vec2 vUv;
+varying float vNear;
+void main() {
+  vec4 mv = viewMatrix * vec4(uC, 1.0);
+  mv.xy += position.xy * uS;
+  vUv = position.xy;
+  vNear = smoothstep(uS * 0.35, uS * 0.9, -mv.z);
+  gl_Position = projectionMatrix * mv;
+}
+`;
+const VEIL_FRAG = /* glsl */ `
+${NOISE}
+uniform vec3 uColor;
+uniform float uSeed, uTime, uGain;
+varying vec2 vUv;
+varying float vNear;
+void main() {
+  float r = length(vUv);
+  if (r > 1.0 || vNear < 0.001) discard;
+  vec3 p = vec3(vUv * 1.6, uSeed) + vec3(0.004, -0.003, 0.006) * uTime;
+  float m = smoothstep(0.42, 0.85, 0.5 + 0.5 * fbm(p, 3) + 0.25 * fbm(p * 2.7 + 3.1, 2));
+  gl_FragColor = vec4(uColor * m * pow(1.0 - r, 1.6) * vNear * uGain, 1.0);
 }
 `;
 // Zeitschicht: dünne, zarte Kugel mit leichtem Rauschen, Ausschnitt wie die Hauptkugel
@@ -142,10 +188,27 @@ export function create(ctx) {
     size.push(0.05 * (0.5 + 0.6 * rand() + 1.1 * rand() ** 8));
     phase.push(rand());
   }
-  const gal = pointCloud(pos, col, size, { min: 1.05, fade: 9, vert: GAL_VERT });   // nahe Punkte früh aus, sonst weiche Flecken
+  const gal = pointCloud(pos, col, size, { min: 1.05, fade: 9, vert: GAL_VERT, frag: GAL_FRAG });   // nahe Punkte früh aus, sonst weiche Flecken
   gal.geometry.setAttribute('phase', new THREE.Float32BufferAttribute(phase, 1));
-  Object.assign(gal.material.uniforms, { uTime: { value: 0 }, uTw: { value: 0 } });
+  Object.assign(gal.material.uniforms, { uTime: { value: 0 }, uTw: { value: 0 }, uHaze: { value: 0 }, uHalo: { value: 0 } });
   scene.add(gal);
+  // Gasschleier: 7 Scheiben im inneren Teil der Wolke, gedämpfte Farben (Türkis, Altrosa, Violett, Bernstein)
+  const veils = new THREE.Group();
+  const veilGeo = new THREE.PlaneGeometry(2, 2);
+  const VEIL_COL = [0x3f8f9a, 0xa0587a, 0x6a5aa8, 0xa77a45];
+  const veilAt = [];
+  for (let i = 0; i < 7; i++) {
+    const c = new THREE.Vector3(gauss(rand), gauss(rand), gauss(rand)).normalize().multiplyScalar(3 + rand() * R_GAL * 0.6);
+    veilAt.push(c);
+    const m = new THREE.Mesh(veilGeo, new THREE.ShaderMaterial({
+      vertexShader: VEIL_VERT, fragmentShader: VEIL_FRAG, blending: THREE.AdditiveBlending, depthWrite: false, depthTest: false, transparent: true,
+      uniforms: { uC: { value: c.clone() }, uS: { value: 6 + rand() * 8 }, uColor: { value: new THREE.Color(VEIL_COL[i % 4]) }, uSeed: { value: rand() * 50 }, uTime: { value: 0 }, uGain: { value: 0 } },
+    }));
+    m.frustumCulled = false;
+    veils.add(m);
+  }
+  veils.visible = false;
+  scene.add(veils);
   const we = pointCloud([0, 0, 0], [6, 5.5, 4.6], [0.05], { min: 3 });
   scene.add(we);
 
@@ -154,7 +217,8 @@ export function create(ctx) {
   const gains = () => { gal.material.uniforms.uGain.value = galBase * rise; we.material.uniforms.uGain.value = rise; };
 
   // Kamera in der Wolke (inside 0 … 1 zwischen ihrem Rand und gut halbem Radius): Schale dunkler, Galaxien funkeln
-  let dimMax = 0.7, twBase = 1;
+  let dimMax = 0.7, twBase = 1, hazeBase = 1, haloBase = 1, driftBase = 1, veilBase = 1;
+  const drift = new THREE.Vector3();
 
   let back_t = 0, probeInfo = null;
   const probePos = new THREE.Vector3();
@@ -182,6 +246,14 @@ export function create(ctx) {
     { id: 'galGain', type: 'range', group: 'Galaxien', label: 'Helligkeit', value: 1, min: 0, max: 5, step: 0.25, unit: '×', set: (v) => { galBase = v; gains(); } },
     { id: 'twinkle', type: 'range', group: 'Galaxien', label: 'Funkeln in der Wolke', value: 1, min: 0, max: 2, step: 0.25, unit: '×',
       set: (v) => { twBase = v; }, hint: 'Galaxien leuchten einzeln langsam auf und ab, sobald die Kamera zwischen ihnen ist; 0 = ruhig.' },
+    { id: 'haze', type: 'range', group: 'Galaxien', label: 'Tiefen-Dunst', value: 1, min: 0, max: 2, step: 0.25, unit: '×',
+      set: (v) => { hazeBase = v; }, hint: 'In der Wolke werden ferne Galaxien dunkler und bläulich, nahe bleiben klar; 0 = aus.' },
+    { id: 'halo', type: 'range', group: 'Galaxien', label: 'Lichthof großer Galaxien', value: 1, min: 0, max: 2, step: 0.25, unit: '×',
+      set: (v) => { haloBase = v; }, hint: 'Die wenigen großen Galaxien bekommen in der Wolke einen feinen, weichen Hof; 0 = aus.' },
+    { id: 'drift', type: 'range', group: 'Galaxien', label: 'Eigendrift', value: 1, min: 0, max: 2, step: 0.25, unit: '×',
+      set: (v) => { driftBase = v; }, hint: 'Die Wolke treibt in der Nähe ganz langsam hin und her; nahe Galaxien ziehen schneller vorbei als ferne; 0 = still.' },
+    { id: 'veils', type: 'range', group: 'Galaxien', label: 'Gasschleier', value: 1, min: 0, max: 3, step: 0.25, unit: '×',
+      set: (v) => { veilBase = v; }, hint: 'Farbige Schleier für das dünne, warme Gas zwischen den Galaxien, nur in der Wolke; 0 = aus.' },
     { id: 'layerGain', type: 'range', group: 'Zeitschichten', label: 'Helligkeit', value: 1, min: 0.25, max: 6, step: 0.25, unit: '×',
       set: (v) => layers.children.forEach((m) => { m.material.uniforms.uGain.value = 0.07 * v; }), active: () => layers.visible, only: 'Erst in der Infotafel „Zeitschichten“ einschalten.' },
   ]);
@@ -213,8 +285,17 @@ export function create(ctx) {
       const inside = 1 - THREE.MathUtils.smoothstep(camera.position.length(), R_GAL * 0.45, R_GAL * 1.05);
       shellMat.uniforms.uTime.value = t;
       shellMat.uniforms.uDim.value = 1 - dimMax * inside;
-      gal.material.uniforms.uTime.value = t;
-      gal.material.uniforms.uTw.value = twBase * inside;
+      const gu = gal.material.uniforms;
+      gu.uTime.value = t;
+      gu.uTw.value = twBase * inside;
+      gu.uHaze.value = hazeBase * inside;
+      gu.uHalo.value = haloBase * inside;
+      // Drift: Perioden 200–370 s, höchstens gut 1 Mrd. Lj Ausschlag; draußen steht die Wolke an ihrem Platz
+      drift.set(Math.sin(t * 0.031), Math.sin(t * 0.023 + 1), Math.sin(t * 0.017 + 2)).multiplyScalar(1.2 * driftBase * inside);
+      gal.position.copy(drift);
+      const vg = 0.7 * veilBase * inside;
+      veils.visible = vg > 0.001;
+      if (veils.visible) veils.children.forEach((m, i) => { const u = m.material.uniforms; u.uTime.value = t; u.uGain.value = vg; u.uC.value.copy(veilAt[i]).add(drift); });
     },
     live: () => (probeInfo
       ? `Vor ${fmtT(back_t)}: z = ${probeInfo.z < 10 ? probeInfo.z.toFixed(2).replace('.', ',') : Math.round(probeInfo.z)} · Alter ${probeInfo.age < 1 ? `${Math.round(probeInfo.age * 1000)} Mio. J.` : fmtT(probeInfo.age)} · ${probeInfo.T.toFixed(1).replace('.', ',')} K · heute ${probeInfo.r.toFixed(1).replace('.', ',')} Mrd. Lj entfernt`
