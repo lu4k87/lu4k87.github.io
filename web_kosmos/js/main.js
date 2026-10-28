@@ -709,6 +709,12 @@ function unwarp(cum, q) {
   return (k - 1 + (q - cum[k - 1]) / (cum[k] - cum[k - 1])) / (cum.length - 1);
 }
 // Stand der Fahrt zur Zeit u ∈ [0, 1] als Etappen-Koordinate s ∈ [0, n] (ganzzahlig = Station erreicht)
+// Umkehrung: Zeit u, zu der die Fahrt die Etappen-Koordinate s erreicht (chainPos steigt monoton)
+function chainTime(ch, s) {
+  let a = 0, b = 1;
+  for (let i = 0; i < 30; i++) { const m = (a + b) / 2; if (chainPos(ch, m) < s) a = m; else b = m; }
+  return (a + b) / 2;
+}
 function chainPos(ch, u) {
   const n = ch.legs.length;
   if (still()) return u * n;
@@ -801,6 +807,7 @@ function hop() {
   const arcs = turning || same || still() ? null : arcPair(ch, from, to, cur.pos, down ? anchor : cur.target);
   state.tr = {
     k: ch.legs.length - state.queue.length - 1, down, outer, inner, to, anchor, carry, swing, carryC, same,
+    u0: chainTime(ch, ch.legs.length - state.queue.length - 1), u1: chainTime(ch, ch.legs.length - state.queue.length),
     arcOuter: arcs && (down ? arcs.from : arcs.to), arcInner: arcs && (down ? arcs.to : arcs.from),
     outerFrom, outerTo, outerEnd, innerFrom, innerTo, prog: 0, fade: null,
     // Hochachse je Kamera vom Bild am Etappenanfang (Blick der weiterfahrenden Kamera) zu dem am Ende
@@ -848,9 +855,9 @@ function stepTransition(dt) {
   const e = ch.t >= 1 ? 1 : Math.min(1, Math.max(0, chainPos(ch, ch.t) - tr.k));
   const p = tr.down ? e : 1 - e;            // 0 = nur äußeres Bild, 1 = nur inneres
   // äußeres Blickziel schwenkt früh auf den Anker – über 85 % der Etappe, damit der Blick auch bei seitlichem Anker ruhig
-  // dreht; beim Hinausfliegen über die ganze Etappe (der Blick dreht dort oft weit, vom Anker hinter der Kamera nach vorn
-  // zum Ziel: ab 15 % gedrängt riss er in der Mitte herum, Mond → Erde 1,6 rad/s)
-  const tkOuter = tr.down ? smoother(0, 0.85, e) : smoother(0, 1, e);
+  // dreht; beim Hinausfliegen gleichmäßig über die Zeit der Etappe (der Blick dreht dort weit, vom Anker zum Ziel der Station):
+  // an e hängend lag die Wende in der Anfahrt (e beschleunigt) gedrängt am Etappenende, Mond → Erde bis 1,6 rad/s
+  const tkOuter = tr.down ? smoother(0, 0.85, e) : smoother(tr.u0, tr.u1, ch.t);
   // weiterfahrende Kamera = die der Station, an der die vorige Etappe endete (hinein: äußere, hinaus: innere);
   // die Wendestation fährt Steigen, Kuppe und Sinken als einen Bogen (x = Etappen-Koordinate ab der Wende)
   const tn = ch.turn, x = tn && tr.outer.id === tn.id ? tr.k + e - tn.at : null;
