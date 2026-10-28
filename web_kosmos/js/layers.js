@@ -225,7 +225,7 @@ const tabBody = (g) => g.segs.map((s) => {
   const scope = s.items[0] && s.items[0].l.scope;
   return `${g.segs.length > 1 || s.title !== g.title || scope ? `<h5 class="b-subh">${esc(s.title)}</h5>` : ''}${scope ? `<p class="cfg-note lay-hint">${prose(scope)}</p>` : ''}${s.items.map(block).join('')}`;
 }).join('');
-// Leiste links (Menü:C): Eintrag je Gruppe mit Icon, Kurzname und Zahl; „Ereignisse“ (Block „Zeigen“) als erster Eintrag mit
+// Leiste unter dem Kopf (Menü:C, als Raster User 28.10.2026): Eintrag je Gruppe mit Icon, Kurzname und Zahl; „Ereignisse“ (Block „Zeigen“) als erster Eintrag mit
 // ▶/⏸-Zustand, Zahl der Ereignisse und Punkt bei anstehendem Ereignis. Index -1 = Ereignisse; Punkt an Gruppen = Wert geändert
 const tid = (i) => (i < 0 ? 'z' : i);
 const evN = () => shows.filter((l) => l.type === 'action').length;
@@ -242,7 +242,9 @@ function gearHtml(layers) {
   shows = [...gs.filter(isPlay).flatMap(itemsOf), ...layers.filter((l) => l.show)];
   tabs = [...(shows.length ? [-1] : []), ...gs.map((g, i) => (isPlay(g) ? -1 : i)).filter((i) => i >= 0)];
   const saved = (openStore[currentId] || [])[0], cur = tabs.includes(saved) ? saved : tabs[0];
-  const rail = `<div class="st-rail" role="tablist" aria-orientation="vertical" aria-label="Gruppen der Station">${tabs.map((i) => tabBtn(i, i === cur)).join('')}</div>`;
+  // höchstens 4 Spalten (3, wenn ein Kurzname über 9 Zeichen hat – „Milchstraße 13“ passt sonst nicht), Zeilen gleichmäßig gefüllt
+  const most = tabs.some((i) => i >= 0 && gs[i].title.length > 9) ? 3 : 4, cols = Math.ceil(tabs.length / Math.ceil(tabs.length / most));
+  const rail = `<div class="st-rail" role="tablist" aria-label="Gruppen der Station" style="--cols:${cols}">${tabs.map((i) => tabBtn(i, i === cur)).join('')}</div>`;
   const panels = tabs.map((i) => `<div class="lay-panel b-body" id="lay-p${tid(i)}" role="tabpanel" aria-labelledby="lay-t${tid(i)}"${i === cur ? '' : ' hidden'}>${i < 0 ? stageHead('Ereignisse', evN()) + showHtml(shows) : stageHead(gs[i].title, count(gs[i])) + tabBody(gs[i])}</div>`).join('');
   return `${rail}<div class="st-stage lay-scroll">${panels}</div><div class="cfg-foot"><span class="cfg-scope">Diese Station · <span data-lay-sum></span></span>${devBar()}</div>`;
 }
