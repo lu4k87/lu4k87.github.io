@@ -274,15 +274,16 @@ body.is-opener .skip-cue { opacity: 0.75; transition: opacity 1.2s var(--ease-ou
 .pull.is-on { opacity: 1; }
 .pull:hover, .pull:focus-visible { border-color: var(--accent); color: var(--accent); }
 
-/* ---------- Fließtext (User 2026-10-26: saubere Trennung, eine Skala; Look „Instrument“ 28.10.2026: linksbündig statt Blocksatz,
-   weil Blocksatz in den schmalen Spalten Lücken riss – Vorschau „Fehler von heute“) ----------
+/* ---------- Fließtext (User 2026-10-26: saubere Trennung, eine Skala; User 28.10.2026 abends: wieder Blocksatz,
+   Trennstrich am Zeilenende möglichst vermeiden – ersetzt „linksbündig“ vom Vormittag) ----------
    Gilt für jeden Text ab etwa drei Zeilen: Einleitung, „Darstellung und Quellen“, Info-Karte, Bildunterschrift, Fußnote der
-   Widgets, Hinweise im Zahnrad. Getrennt werden nur lange Wörter (≥ 10 Zeichen, mindestens 4 vor und 4 nach der Fuge) – Eigennamen und Kürzel
-   wie „CelesTrak“ bleiben ganz, lange Komposita brechen an der Fuge statt Lücken zu reißen; letzte Zeile linksbündig.
-   Zahl + Einheit, Kürzel und Namen mit Nummer bindet nbsp() in figs.js. Kurze Labels, Kennzahlen, Knöpfe: linksbündig. */
-.lead, .note p, .hs-card-text, .hc-cap, .sw-cap, .cfg-note, .w-foot {
-  text-align: left; hyphens: auto; -webkit-hyphenate-limit-before: 4; -webkit-hyphenate-limit-after: 4;
-  hyphenate-limit-chars: 10 4 4; text-wrap: pretty; line-height: 1.5;
+   Widgets, Hinweise im Zahnrad. Getrennt werden nur sehr lange Wörter (≥ 16 Zeichen, mindestens 7 vor und 7 nach der Fuge,
+   z. B. „Hintergrundstrahlung“) – sonst reißt der Blocksatz in der schmalen Spalte Lücken; alles Kürzere bleibt ganz.
+   Letzte Zeile linksbündig. Zahl + Einheit, Kürzel und Namen mit Nummer bindet nbsp() in figs.js. Kurze Labels, Kennzahlen, Knöpfe
+   und die Zustandszeile .live (Werte ändern sich laufend, Blocksatz ließe die Wörter springen): linksbündig. */
+.lead, .note p, .hs-card-text, .hc-cap, .sw-cap, .cfg-note, .w-foot, .sc-note {
+  text-align: justify; hyphens: auto; -webkit-hyphenate-limit-before: 7; -webkit-hyphenate-limit-after: 7;
+  hyphenate-limit-chars: 16 7 7; text-wrap: pretty; line-height: 1.5;
 }
 
 /* ---------- Rechte Spalte (Fenster:C): Reiter Infotafel | Ebenen | Einstellungen oben, darunter genau einer der Inhalte;
