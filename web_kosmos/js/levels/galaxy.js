@@ -292,10 +292,12 @@ export function create(ctx) {
   const pillars = new THREE.Vector3(...galToScene(16.95, 0.79, 1.99, R0, Z_SUN));   // M16, 6.500 Lj (ESA/Webb)
   const butterfly = new THREE.Vector3(...galToScene(349.51, 1.06, 1.165, R0, Z_SUN));   // NGC 6302, 3.800 Lj (Hubble)
   const spider = new THREE.Vector3(...galToScene(10.10, 0.74, 1.8, R0, Z_SUN));   // NGC 6537 (Kastner 2025)
+  const tornado = new THREE.Vector3(...galToScene(297.22, -15.86, 0.193, R0, Z_SUN));   // HH 49/50, 630 Lj (ESA/Webb)
   const marks = [
     [sun, 0xffe2a8, 0.05, 6], [orion, 0xff7aa0, 0.07, 5], [crab, 0xb8d4ff, 0.06, 5], [sgra, 0xfff1dd, 0.06, 8], [spider, 0xff6a5a, 0.05, 5],
     [pillars, 0xffb070, 0.05, 5],
     [butterfly, 0xffa060, 0.05, 5],
+    [tornado, 0xff9a5a, 0.05, 5],
   ].map(([p, c, s, k]) => { const m = marker(c, s, k); m.position.copy(p); scene.add(m); return { m, p, base: p.clone() }; });
 
   // Sonnenbahn (Kreis mit R0, ≈ 220 Mio. Jahre Umlauf) und Sichtlinien Sonne → Stationen (schaltbar)
@@ -319,6 +321,7 @@ export function create(ctx) {
     { id: 'sgra', kind: 'dive', to: 'sgra', pos: marks[3].p },
     { id: 'pillars', kind: 'dive', to: 'pillars', pos: pillars },
     { id: 'spider', kind: 'dive', to: 'spider', pos: marks[4].p },
+    { id: 'tornado', kind: 'dive', to: 'tornado', pos: tornado },
     { id: 'butterfly', kind: 'dive', to: 'butterfly', pos: butterfly },
     { id: 'bar', kind: 'info', pos: new THREE.Vector3(...diskPoint(BAR.half * 0.9, BAR.angle * RAD)) },
     { id: 'omega', kind: 'info', pos: omegaCen, focus: () => 1.2 },

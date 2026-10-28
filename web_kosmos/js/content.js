@@ -316,6 +316,8 @@ export const SOURCES = {
   'snd-mars-devil': { t: 'NASA’s Perseverance Records a Martian Dust Devil (27.09.2021, Sol 215)', by: 'NASA/JPL-Caltech/LANL/CNES/CNRS/INTA-CSIC/Space Science Institute/ISAE-Supaero', url: 'https://www.nasa.gov/sounds-from-beyond/' },
   'snd-vgr-uranus': { t: 'Voyager 2 PWS, Wellenform-Daten Uranus-Vorbeiflug (24.01.1986, Rahmen 17:15 und 18:01 UT)', by: 'University of Iowa, NASA PDS VGPW_2001', url: 'https://space.physics.uiowa.edu/plasma-wave/voyager/data/VGPW_2001/EXTRAS/HTML/URANUS_ENCOUNTER/V2P3_014/V2P3_014.HTM' },
   'snd-vgr-neptune': { t: 'Voyager 2 PWS, Wellenform-Daten Neptun-Vorbeiflug (25.08.1989, Rahmen 02:55 und 04:15 UT)', by: 'University of Iowa, NASA PDS VGPW_2001', url: 'https://space.physics.uiowa.edu/plasma-wave/voyager/data/VGPW_2001/EXTRAS/HTML/NEPTUNE_ENCOUNTER/V2P4_012/V2P4_012.HTM' },
+  'webb-2506': { t: 'Webb: Kosmischer Tornado HH 49/50 (Pressemitteilung weic2506)', by: 'ESA/Webb, 24.03.2025', url: 'https://esawebb.org/news/weic2506/' },
+  'webb-2506a': { t: 'Webb NIRCam + MIRI: HH 49/50 (weic2506a, Bildausschnitt, Filter)', by: 'NASA, ESA, CSA, STScI', url: 'https://esawebb.org/images/weic2506a/' },
 };
 
 // Abstände für Mess-Leiste und Rail: width = typische Bildbreite [m] (nur Kamera und Flug), size = echtes Maß des
@@ -985,6 +987,7 @@ export const STATIONS = {
       spider: { t: 'Roter Spinnennebel', x: 'Planetarischer Nebel im Schützen, rund 5.900 Lj entfernt, fast in der Ebene der Scheibe. Hineinfliegen.', s: 'kastner-2025' },
       crab: { t: 'Krebsnebel', x: 'Rund 6.200 Lj entfernt, Richtung Perseus-Arm. Hineinfliegen.', s: 'lin-2023' },
       butterfly: { t: 'Schmetterlingsnebel', x: 'Planetarischer Nebel im Skorpion, rund 3.800 Lj entfernt, Richtung Zentrum. Hineinfliegen.', s: 'heic0910h' },
+      tornado: { t: 'Kosmischer Tornado HH 49/50', x: 'Ausfluss eines jungen Sterns im Chamäleon, rund 630 Lj entfernt, deutlich unterhalb der Scheibenebene. Hineinfliegen.', s: 'webb-2506' },
       sgra: { t: 'Sagittarius A*', x: 'Das Schwarze Loch im Zentrum, 27.000 Lj entfernt. Hineinfliegen.', s: 'gravity-2022' },
       pillars: { t: 'Säulen der Schöpfung', x: 'Im Adlernebel M16, rund 6.500 Lj entfernt im Sagittarius-Arm, fast in der Ebene der Scheibe. Hineinfliegen.', s: 'webb-2216' },
       bar: { t: 'Zentraler Balken', x: 'Eine längliche Struktur aus überwiegend alten, rötlichen Sternen: Halblänge 5,0 kpc (gut 16.000 Lj), 28–33° gegen die Linie Sonne–Zentrum gedreht.', s: 'wegg-2015' },
@@ -1099,6 +1102,26 @@ export const STATIONS = {
       ngc6611: { t: 'Sternhaufen NGC 6611', x: 'Junge, heiße O- und B-Sterne oberhalb der Säulen. Ihr UV-Licht ionisiert die Oberfläche der Säulen und treibt das Gas davon; im klassischen Bildausschnitt liegen sie außerhalb, oben rechts.', s: 'eso-1518' },
       evap: { t: 'Photoverdampfung', x: 'Wo das UV-Licht auf dichtes Gas trifft, wird es aufgeheizt und strömt zum Haufen hin ab – rund 70 Sonnenmassen je Million Jahre. Was im Schatten der dichten Köpfe liegt, bleibt stehen: So entstehen die Säulen.', s: 'hester-1996' },
       ysos: { t: 'Junge Sterne an den Spitzen', x: 'In den dichten Köpfen entstehen Sterne, nur wenige hunderttausend Jahre alt. Im mittleren Infrarot (MIRI) leuchten vor allem sie und warmer Staub, die meisten älteren Sterne verschwinden fast.', s: 'webb-2218' },
+    },
+  },
+  tornado: {
+    n: '03C', title: 'Kosmischer Tornado HH 49/50', kicker: 'Herbig-Haro-Objekt', parent: 'galaxy', width: 6e15, dist: 630 * LY, lookback: 630 * YEAR, size: { v: 0.48 * LY, l: 'Höhe des Webb-Bildausschnitts', s: 'webb-2506a' },
+    lead: 'Ein junger Stern stößt Gas aus, das mit 100 bis 300 km/s auf die umgebende Wolke prallt. An den Stoßfronten leuchten warmer Wasserstoff und angeregter Staub im Infrarot – zusammen bilden sie eine leuchtende, leicht verdrehte Säule.',
+    facts: [
+      { v: '≈ 630', u: 'Lj', l: 'Entfernung (Chamäleon-I-Komplex)', s: 'webb-2506' },
+      { v: '100–300', u: 'km/s', l: 'Ausströmen, von uns weg', s: 'webb-2506' },
+      { v: '≈ 1,5', u: 'Lj', l: 'Abstand zur vermuteten Quelle Ced 110 IRS4', s: 'webb-2506' },
+      { v: '2,15 × 2,62', u: 'Bogenmin.', l: 'Webb-Ausschnitt, bei 630 Lj ≈ 0,4 × 0,5 Lj', s: 'webb-2506a' },
+    ],
+    note: 'Volumen-Modell: Form nach der Webb-Aufnahme weic2506a (NIRCam + MIRI, nur Vorlage, Bild nicht eingebunden). Stoßfronten als gestapelte Kappen, die nach hinten in eine Röhre übergehen, Neigung der Achse gegen die Himmelsebene (30°) geschätzt – laut ESA strömt das Gas von uns weg. Fäden, Klumpen und Feldsterne statistisch, Bewegung stark beschleunigt. Farben nach den Filtern (2,0 µm blau, 3,35 µm cyan, 4,44 µm grün, 4,7 µm H₂ orange, 7,7 µm PAH rot); „Stoßfronten nach Alter“ ist eine Falschfarbe. Die Galaxie an der Spitze steht nur zufällig in derselben Blickrichtung, weit dahinter.',
+    sources: ['webb-2506', 'webb-2506a'],
+    hotspots: {
+      apex: { t: 'Spitze des Ausflusses', x: 'Hier stößt das ausströmende Gas am weitesten in die umgebende Wolke vor. Die Stoßfront heizt molekularen Wasserstoff auf; er leuchtet im Infrarot orange (4,7 µm).', s: 'webb-2506' },
+      bows: { t: 'Stoßfronten', x: 'Wo das schnelle Gas auf ruhendes trifft, entstehen Stoßwellen. Warmer Wasserstoff, Kohlenmonoxid und angeregter Staub zeichnen sie nach – gestapelt wie Becher, zusammen eine verdrehte Säule – daher der Spitzname.', s: 'webb-2506' },
+      spur: { t: 'Auswuchs am Rand', x: 'Ein seitlicher Ast der Stoßfront, wie ihn die Webb-Aufnahme rechts an der Säule zeigt. Seine Form ist hier nach dem Bild nachgebaut.', s: 'webb-2506a' },
+      ced110: { t: 'Cederblad 110 IRS4', x: 'Vermutliche Quelle des Ausflusses: ein Protostern der Klasse I, rund 1,5 Lj entfernt und außerhalb des Webb-Ausschnitts. Er ist noch in seine Hülle aus Gas und Staub eingebettet.', s: 'webb-2506' },
+      galaxy: { t: 'Ferne Spiralgalaxie', x: 'Steht zufällig genau an der Spitze: eine weit entfernte Spiralgalaxie, fast von oben gesehen, mit bläulichem Kern, möglicherweise mit Balken. Mit HH 49/50 hat sie nichts zu tun.', s: 'webb-2506' },
+      layers: { t: 'Stoßfronten nach Alter', x: 'Falschfarbe: vorderste Kappe hell, ältere, weiter zurückliegende Kappen dunkler. Im Bild überlagern sich alle Fronten; erst die Neigung im Raum trennt sie.', s: 'webb-2506a' },
     },
   },
   pulsar: {

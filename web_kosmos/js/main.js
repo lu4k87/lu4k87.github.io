@@ -34,6 +34,7 @@ const LOADERS = {
   pillars: () => import('./levels/pillars.js'),
   butterfly: () => import('./levels/butterfly.js'),
   spider: () => import('./levels/spider.js'),
+  tornado: () => import('./levels/tornado.js'),
   crab: () => import('./levels/crab.js'),
   pulsar: () => import('./levels/pulsar.js'),
   sgra: () => import('./levels/sgra.js'),
