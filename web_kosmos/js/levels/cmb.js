@@ -37,7 +37,7 @@ void main() {
   if (c > uCutCos) discard;
   vec3 col = cmbColor(cmbValue(d, 1.0, uDipOn, uDip));
   float rim = 1.0 - smoothstep(uCutCos - 0.04, uCutCos, c);
-  if (!gl_FrontFacing) { gl_FragColor = vec4(col * 0.4 * (0.5 + 0.5 * rim) * 0.9 * uDim, 1.0); return; }   // Innenseite = was wir sehen
+  if (!gl_FrontFacing) { gl_FragColor = vec4(col * 0.26 * (0.5 + 0.5 * rim) * uDim, 1.0); return; }   // Innenseite = was wir sehen, gedämpft (User 28.10.2026)
   // Außenseite als dünne Glashaut: Muster entsättigt und gedimmt, kühler Saum an der Silhouette (Fresnel)
   col = mix(vec3(dot(col, vec3(0.3, 0.55, 0.15))), col, 0.55) * 0.14 * (0.5 + 0.5 * rim);
   float fr = pow(1.0 - abs(dot(d, normalize(cameraPosition - vW))), 3.0);
@@ -217,7 +217,7 @@ export function create(ctx) {
   const gains = () => { gal.material.uniforms.uGain.value = galBase * rise; we.material.uniforms.uGain.value = rise; };
 
   // Kamera in der Wolke (inside 0 … 1 zwischen ihrem Rand und gut halbem Radius): Schale dunkler, Galaxien funkeln
-  let dimMax = 0.7, twBase = 1, hazeBase = 1, haloBase = 1, driftBase = 1, veilBase = 1;
+  let dimMax = 0.9, twBase = 1, hazeBase = 1, haloBase = 1, driftBase = 1, veilBase = 1;
   const drift = new THREE.Vector3();
 
   let back_t = 0, probeInfo = null;
@@ -241,8 +241,8 @@ export function create(ctx) {
       set: (v) => { shellMat.uniforms.uRim.value = v; }, hint: 'Kühler Lichtsaum am Umriss der Kugel; 0 = aus.' },
     { id: 'glow', type: 'range', group: 'Hintergrundstrahlung', label: 'Glut der Schnittkante', value: 1, min: 0, max: 3, step: 0.25, unit: '×',
       set: (v) => { shellMat.uniforms.uGlow.value = v; }, hint: 'Kante leuchtet in der Farbe des 3.000 K heißen Plasmas; 0 = nur die Wandstärke.' },
-    { id: 'dim', type: 'range', group: 'Hintergrundstrahlung', label: 'Abdunkeln von innen', value: 70, min: 0, max: 90, step: 5, fmt: (v) => `${v} %`,
-      set: (v) => { dimMax = v / 100; }, hint: 'Wie stark die Schale dunkler wird, wenn die Kamera zwischen die Galaxien fliegt; 0 = gleich hell.' },
+    { id: 'dim', type: 'range', group: 'Hintergrundstrahlung', label: 'Abdunkeln von innen', value: 90, min: 0, max: 95, step: 5, fmt: (v) => `${v} %`,
+      set: (v) => { dimMax = v / 100; }, hint: 'Wie stark die Schale dunkler wird, wenn die Kamera auf die Galaxien zu und zwischen sie fliegt; 0 = gleich hell.' },
     { id: 'galGain', type: 'range', group: 'Galaxien', label: 'Helligkeit', value: 1, min: 0, max: 5, step: 0.25, unit: '×', set: (v) => { galBase = v; gains(); } },
     { id: 'twinkle', type: 'range', group: 'Galaxien', label: 'Funkeln in der Wolke', value: 1, min: 0, max: 2, step: 0.25, unit: '×',
       set: (v) => { twBase = v; }, hint: 'Galaxien leuchten einzeln langsam auf und ab, sobald die Kamera zwischen ihnen ist; 0 = ruhig.' },
@@ -282,9 +282,11 @@ export function create(ctx) {
     orbit: { minDistance: 4, maxDistance: 320, cineSpeed: 0.45 },
     look: { exposure: 1.05, bloom: 0.07, sat: 1.05, con: 0.12 },
     update(dt, t) {
-      const inside = 1 - THREE.MathUtils.smoothstep(camera.position.length(), R_GAL * 0.45, R_GAL * 1.05);
+      const r = camera.position.length();
+      const inside = 1 - THREE.MathUtils.smoothstep(r, R_GAL * 0.45, R_GAL * 1.05);
       shellMat.uniforms.uTime.value = t;
-      shellMat.uniforms.uDim.value = 1 - dimMax * inside;
+      // Schale dunkelt schon beim Heranzoomen ab (ab gut 2 × Schalenradius), voll ab dem Rand der Galaxienwolke (User 28.10.2026)
+      shellMat.uniforms.uDim.value = 1 - dimMax * (1 - THREE.MathUtils.smoothstep(r, R_GAL, R_LSS * 2.2));
       const gu = gal.material.uniforms;
       gu.uTime.value = t;
       gu.uTw.value = twBase * inside;
