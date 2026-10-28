@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Kosmos · Urknall – Intro v3</title>
+  <link rel="icon" href="data:,">
+  <meta name="color-scheme" content="dark">
+  <link rel="stylesheet" href="css/fonts.css">
+  <style>
+    /* Eigenständige Seite zum Ansehen des Auftakts v3 (User 28.10.2026): 30-s-Spot als eine ununterbrochene Kamerafahrt,
+       noch nicht in der App eingebunden. Schrift und Schwarz wie das Ladebild (boot.css) und intro_v2.html, keine
+       Standard-Scrollbar (nichts scrollt). */
+    :root { --ink: #eef2f8; --ink-soft: #d3dae6; --line: rgba(255, 255, 255, 0.28); --accent: #33ccff; --ease-out: cubic-bezier(0.22, 1, 0.36, 1); }
+    html, body { margin: 0; height: 100%; background: #000; color: var(--ink); overflow: hidden; font: 400 15px/1.5 'IBM Plex Sans', system-ui, sans-serif; }
+    #stage { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
+    /* Kinobalken 2,39:1 wie im Auftakt der App; unter 2,39:1 breiten Fenstern bleibt die Bühne voll */
+    .bars::before, .bars::after { content: ""; position: fixed; left: 0; right: 0; height: max(0px, calc((100vh - 100vw / 2.39) / 2)); background: #000; z-index: 2; pointer-events: none;
+      transition: height 0.5s var(--ease-out); }
+    .bars::before { top: 0; }
+    .bars::after { bottom: 0; }
+    body.no-bars .bars::before, body.no-bars .bars::after { height: 0; }
+
+    .start { position: fixed; inset: 0; z-index: 4; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; padding: 0 24px;
+      text-align: center; background: rgba(0, 0, 0, 0.72); text-shadow: 0 2px 22px rgba(0, 0, 0, 0.9); transition: opacity 0.9s var(--ease-out), visibility 0s linear 0.9s; }
+    .start.is-hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+    .start .eyebrow { margin: 0; font: 500 13px/1.4 'IBM Plex Mono', monospace; letter-spacing: 0.3em; text-transform: uppercase; color: var(--ink-soft); }
+    .start h1 { margin: 0; font: 200 clamp(40px, 7vw, 76px)/1.05 'IBM Plex Sans Condensed', 'IBM Plex Sans', sans-serif; letter-spacing: 0.22em; padding-left: 0.22em; text-transform: uppercase; }
+    .start h1 span { display: block; font-size: 0.42em; letter-spacing: 0.34em; font-weight: 500; color: var(--accent); margin-top: 6px; }
+    .start .lead { margin: 4px 0 6px; max-width: 48ch; color: var(--ink-soft); text-wrap: pretty; }
+    /* die vier Abschnitte des Drehbuchs als eine Zeile: Zeit · Name */
+    .start .beats { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 18px; margin: 0 0 10px; padding: 0; list-style: none; font: 400 13px/1.5 'IBM Plex Mono', monospace; color: var(--ink-soft); }
+    .start .beats b { font-weight: 500; color: var(--ink); }
+    .start .actions { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+    .start button { font: 500 15px/1 'IBM Plex Sans', sans-serif; color: var(--ink); background: rgba(8, 10, 17, 0.5); border: 1px solid var(--line); border-radius: 4px;
+      padding: 13px 22px; cursor: pointer; letter-spacing: 0.04em; transition: border-color 0.15s, background 0.15s; }
+    .start button:hover { border-color: rgba(255, 255, 255, 0.6); background: rgba(255, 255, 255, 0.08); }
+    .start button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    .start button.ghost { background: transparent; }
+    .start .keys { margin: 14px 0 0; font: 400 13px/1.5 'IBM Plex Mono', monospace; color: var(--ink-soft); }
+
+    /* Zeit, Abschnitt und Tempo unten links – zum Zurückmelden („bei 14 s …“) */
+    .hud { position: fixed; left: 18px; bottom: 16px; z-index: 3; display: flex; flex-wrap: wrap; gap: 4px 14px; font: 500 13px/1.4 'IBM Plex Mono', monospace; color: var(--ink-soft);
+      text-shadow: 0 1px 8px rgba(0, 0, 0, 0.9); opacity: 0; transition: opacity 0.6s var(--ease-out); }
+    body.is-running .hud { opacity: 1; }
+    .hud b { font-weight: 500; color: var(--ink); }
+    .hud .paused { color: var(--accent); }
+    .hud .paused:empty { display: none; }
+  </style>
+  <script type="importmap">
+    { "imports": { "three": "./vendor/three/three.module.min.js" } }
+  </script>
+</head>
+<body>
+  <canvas id="stage" aria-label="Urknall-Intro v3: eine Kamerafahrt vom Lichtpunkt durch den Ausbruch ins Universum"></canvas>
+  <div class="bars" aria-hidden="true"></div>
+
+  <div id="start" class="start">
+    <p class="eyebrow">Kosmos · Auftakt · 30 s</p>
+    <h1>Urknall <span>Intro v3 · One-Shot</span></h1>
+    <p class="lead">Eine einzige Kamerafahrt ohne Schnitt: Ein Lichtpunkt zieht sich zusammen, bis er blendet, zerreißt – und die Kamera gleitet mitten hindurch ins Universum.</p>
+    <ul class="beats">
+      <li><b>0 s</b> Kontraktion</li>
+      <li><b>7 s</b> Expansion</li>
+      <li><b>12 s</b> Strudel</li>
+      <li><b>23 s</b> Ausgleiten</li>
+    </ul>
+    <div class="actions">
+      <button type="button" id="go">Starten · mit Ton</button>
+      <button type="button" id="go-mute" class="ghost">Starten · ohne Ton</button>
+    </div>
+    <p class="keys">Leertaste Pause · ← → 1 s spulen · R von vorn · M Ton · B Kinobalken</p>
+  </div>
+
+  <div class="hud" id="hud" aria-live="off"><span><b id="tc">0,0 s</b></span><span id="phase">Kontraktion</span><span id="speed">Tempo 5 %</span><span class="paused" id="paused"></span></div>
+
+  <script type="module" src="js/intro_v3.js"></script>
+</body>
+</html>
