@@ -129,7 +129,7 @@ function groups(layers) {
   let seg = null;
   for (const l of layers) {
     if (l.group || !seg) {
-      const name = l.group || 'Ebenen', title = tabOf(name);
+      const name = l.group || 'Allgemein', title = tabOf(name);
       let g = out.find((x) => x.title === title);
       if (!g) out.push(g = { title, items: [], segs: [] });
       seg = g.segs.find((s) => s.title === name);
@@ -213,7 +213,7 @@ function render() {
   if (gearEl) {
     const layers = reg.get(currentId), st = STATIONS[currentId];
     gearEl.innerHTML = layers ? gearHtml(layers)
-      : '<p class="cfg-note">Diese Station hat noch keine Ebenen-Einstellungen – ihre Schalter stehen in der Infotafel.</p>';
+      : '<p class="cfg-note">Diese Station hat hier noch keine Schalter – sie stehen in der Infotafel.</p>';
     if (!layers) { gs = []; tabs = []; }
     onInfo({ title: st ? st.title : '…', n: layers ? layers.length : 0, groups: tabs.length });
     const sum = gearEl.querySelector('[data-lay-sum]');
@@ -266,7 +266,7 @@ function sync() {
     gearEl.querySelectorAll('[data-ltab]').forEach((t) => {
       const g = gs[+t.dataset.ltab], dev = !!g && allOf(g).some(changed);
       t.classList.toggle('has-dev', dev);
-      const lab = `${g ? g.title : ''}, ${g ? count(g) : 0} Ebenen${dev ? ', geändert' : ''}`;
+      const lab = `${g ? g.title : ''}, ${g ? count(g) : 0} Schalter${dev ? ', geändert' : ''}`;
       if (t.getAttribute('aria-label') !== lab) t.setAttribute('aria-label', lab);
     });
   }

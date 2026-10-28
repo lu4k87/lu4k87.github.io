@@ -188,10 +188,10 @@ export function mountSettings(root, btn, lay = document.getElementById('btn-lay'
   const info = ({ title, n, groups }) => {
     root.querySelectorAll('[data-st-name]').forEach((e) => { e.textContent = title; });
     side.querySelectorAll('[data-lay-n]').forEach((e) => { e.textContent = n || ''; });
-    root.dataset.laySum = n ? `${plural(n, 'Ebene', 'Ebenen')}${groups > 1 ? ` in ${groups} Gruppen` : ''}` : 'Keine Ebenen';
+    root.dataset.laySum = n ? `${n} Schalter${groups > 1 ? ` in ${groups} Gruppen` : ''}` : 'Keine Schalter';
     if (lay) {
       lay.querySelector('[data-lay-n]').textContent = n || '';
-      lay.setAttribute('aria-label', n ? `Ebenen der Station: ${n}` : 'Ebenen der Station');
+      lay.setAttribute('aria-label', n ? `Schalter dieser Station: ${n}` : 'Schalter dieser Station');
     }
   };
   mountLayers({ gear: root.querySelector('#cfg-station'), info, strip: document.getElementById('timeline'), stripOn: () => settings.S.timeline });
