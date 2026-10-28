@@ -34,30 +34,14 @@ void main() {
   vN = normalize(mat3(modelMatrix) * vec3(0.0, 1.0, 0.0));
   gl_Position = projectionMatrix * viewMatrix * w;
 }`;
-const GLOW_FRAG = /* glsl */ `
+// Arme und Ringe als Felder (Uniforms aus armUniforms): young = Kern des Arms (junge Sterne), arm = breite Hülle,
+// lane = Staubbahn an der Innenkante; auch für die Nebel der Milchstraße (galaxyneb.js)
+const ARM_FN = /* glsl */ `
+#ifndef PI
 #define PI 3.14159265
-uniform float uGain, uT, uH, uRMax, uRIn, uDust, uYoung, uBar, uBarHalf, uBarAng;
-uniform vec4 uArmA[${MAX_ARMS}], uArmB[${MAX_ARMS}], uRing[${MAX_RINGS}];
-uniform int uNArms, uNRings;
-uniform vec3 uOld, uBlue, uOff;
-varying vec3 vL, vW, vN;
-${NOISE}
-${OMEGA}
-// Gasflecken ziehen differentiell mit; zwei um eine halbe Periode versetzte Lagen werden überblendet und abwechselnd
-// zurückgesetzt (Strömungskarte), damit sich die Flecken nicht endlos zu Fäden aufwickeln
-float mottle(float R, float phi) {
-  const float P = 80.0;
-  float a = fract(uT / P), b = fract(uT / P + 0.5), om = dOm(R);
-  float pa = phi - om * a * P, pb = phi - om * b * P;
-  float na = fbm(vec3(-R * cos(pa), -R * sin(pa), 0.0) * 0.9 + uOff, 4);
-  float nb = fbm(vec3(-R * cos(pb), -R * sin(pb), 5.0) * 0.9 + uOff, 4);
-  return mix(nb, na, 1.0 - abs(2.0 * a - 1.0));
-}
-void main() {
-  float R = length(vL.xz), phi = atan(-vL.z, -vL.x);
-  if (R > uRMax) discard;
-  float m = mottle(R, phi);
-  float young = 0.0, arm = 0.0, lane = 0.0;
+#endif
+void armField(float R, float phi, out float young, out float arm, out float lane) {
+  young = 0.0; arm = 0.0; lane = 0.0;
   for (int i = 0; i < ${MAX_ARMS}; i++) {
     if (i >= uNArms) break;
     vec4 A = uArmA[i], B = uArmB[i];   // A: rRef, φRef, tan ψ, Stärke · B: Breite, Spanne Anfang/Ende, sin ψ
@@ -80,6 +64,42 @@ void main() {
     arm += G.z * exp(-0.125 * d * d);
     lane += G.z * exp(-0.5 * ld * ld);
   }
+}
+`;
+const ARM_GLSL = /* glsl */ `
+uniform vec4 uArmA[${MAX_ARMS}], uArmB[${MAX_ARMS}], uRing[${MAX_RINGS}];
+uniform int uNArms, uNRings;
+${ARM_FN}`;
+// Gleiche Felder mit festen Werten (Shader ohne Uniforms, z. B. bakeField)
+export function armConsts(arms, rings) {
+  const u = armUniforms(arms, rings);
+  const arr = (n, v) => `const vec4 ${n}[${v.length}] = vec4[${v.length}](${v.map((q) => `vec4(${[q.x, q.y, q.z, q.w].map((x) => x.toFixed(6)).join(', ')})`).join(', ')});`;
+  return `${arr('uArmA', u.uArmA.value)}\n${arr('uArmB', u.uArmB.value)}\n${arr('uRing', u.uRing.value)}\nconst int uNArms = ${arms.length}, uNRings = ${rings.length};\n${ARM_FN}`;
+}
+
+const GLOW_FRAG = /* glsl */ `
+uniform float uGain, uT, uH, uRMax, uRIn, uDust, uYoung, uBar, uBarHalf, uBarAng;
+uniform vec3 uOld, uBlue, uOff;
+varying vec3 vL, vW, vN;
+${ARM_GLSL}
+${NOISE}
+${OMEGA}
+// Gasflecken ziehen differentiell mit; zwei um eine halbe Periode versetzte Lagen werden überblendet und abwechselnd
+// zurückgesetzt (Strömungskarte), damit sich die Flecken nicht endlos zu Fäden aufwickeln
+float mottle(float R, float phi) {
+  const float P = 80.0;
+  float a = fract(uT / P), b = fract(uT / P + 0.5), om = dOm(R);
+  float pa = phi - om * a * P, pb = phi - om * b * P;
+  float na = fbm(vec3(-R * cos(pa), -R * sin(pa), 0.0) * 0.9 + uOff, 4);
+  float nb = fbm(vec3(-R * cos(pb), -R * sin(pb), 5.0) * 0.9 + uOff, 4);
+  return mix(nb, na, 1.0 - abs(2.0 * a - 1.0));
+}
+void main() {
+  float R = length(vL.xz), phi = atan(-vL.z, -vL.x);
+  if (R > uRMax) discard;
+  float m = mottle(R, phi);
+  float young, arm, lane;
+  armField(R, phi, young, arm, lane);
   young *= smoothstep(uRIn * 0.75, uRIn * 1.2, R) * smoothstep(uRMax, uRMax * 0.6, R);
   float disk = exp(-R / uH) * smoothstep(uRMax, uRMax * 0.7, R);
   vec2 bu = vec2(-cos(uBarAng), -sin(uBarAng)), bv = vec2(sin(uBarAng), -cos(uBarAng));

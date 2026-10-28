@@ -9,6 +9,7 @@ import * as THREE from 'three';
 import { registerLayers } from '../layers.js';
 import { galToScene, diskPoint, spiralPhi, mulberry32, gauss, blackbody, KPC } from '../astro.js';
 import { pointCloud, volume, disposeScene } from '../vol.js';
+import { nebulaVolume } from '../galaxyneb.js';
 
 const RAD = Math.PI / 180;
 export const R0 = 8.277, Z_SUN = 0.0208;   // GRAVITY 2022; Bennett & Bovy 2019
@@ -276,8 +277,11 @@ function marker(color, s, k = 1) {
 export function create(ctx) {
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(45, 1, 0.005, 400);
-  const gal = buildGalaxy({ n: Math.round(260000 * ctx.detail) });
+  const gal = buildGalaxy({ n: Math.round(260000 * ctx.detail), dust: false });
   scene.add(gal);
+  // Gas und Staub als 3D-Nebel (Vorschau 28.10.2026 Nebel:A) statt Staub-Punkten (die machten im Zentrum einen dunklen Fleck)
+  const neb = nebulaVolume(ctx.renderer, { arms: ARMS, detail: ctx.detail });
+  scene.add(neb.object);
   const halo = buildHalo(ctx.detail, mulberry32(17));
   scene.add(halo);
   const fermi = volume({ radius: 10.5, body: FERMI_BODY, steps: Math.round(28 + 20 * ctx.detail), uniforms: { uGain: { value: 0.09 } } });
@@ -348,11 +352,17 @@ export function create(ctx) {
   // Zahnrad: Teile der Galaxis, Tempo des Zeitraffers, Helligkeit der Fermi-Blasen (die Schalter dazu stehen in der Infotafel)
   let spinK = 1;
   const num = (v) => String(v).replace('.', ',');
+  const nebOnly = { active: () => neb.object.visible, only: 'Wirkt, solange „Gas und Staub als 3D-Nebel“ an ist.' };
   registerLayers('galaxy', [
     { id: 'halo', type: 'toggle', group: 'Milchstraße', label: 'Halo mit Kugelsternhaufen', value: true, set: (v) => { halo.visible = v; } },
     { id: 'marks', type: 'toggle', label: 'Leuchtpunkte der Stationen', value: true, set: (v) => marks.forEach((k) => { k.m.visible = v; }) },
     { id: 'spinK', type: 'range', group: 'Drehung', label: 'Tempo im Zeitraffer', value: 1, min: 0.25, max: 20, step: 0.25, fmt: (v) => `${num(v)} Mio. Jahre/s`,
       set: (v) => { spinK = v; if (rate) rate = v; }, active: () => rate > 0, only: 'Wirkt, sobald in der Infotafel „Drehung“ auf Zeitraffer steht.' },
+    { id: 'neb', type: 'toggle', group: 'Nebel', label: 'Gas und Staub als 3D-Nebel', value: true,
+      set: (v) => neb.setOn(v) },
+    { id: 'nebGas', type: 'range', sub: true, label: 'Leuchten des Gases', value: 1, min: 0, max: 2, step: 0.1, unit: '×', set: (v) => neb.setGas(v), ...nebOnly },
+    { id: 'nebDust', type: 'range', sub: true, label: 'Staub', value: 1, min: 0, max: 2, step: 0.1, unit: '×', set: (v) => neb.setDust(v), ...nebOnly },
+    { id: 'nebGlim', type: 'toggle', sub: true, label: 'Glimmen der Gaswolken', value: true, set: (v) => neb.setGlim(v), ...nebOnly },
     { id: 'fermiGain', type: 'range', group: 'Fermi-Blasen', label: 'Helligkeit', value: 1, min: 0.25, max: 5, step: 0.25, unit: '×',
       set: (v) => { fermi.material.uniforms.uGain.value = 0.09 * v; }, active: () => fermi.visible, only: 'Erst in der Infotafel „Fermi-Blasen“ einschalten.' },
   ]);
@@ -364,6 +374,7 @@ export function create(ctx) {
 
   return {
     scene, camera, unit: KPC, hotspots, controls,
+    ready: neb.ready,
     home: { pos: new THREE.Vector3(-14, 21, 19), target: new THREE.Vector3(-1.2, 0, 0.6) },
     orbit: { minDistance: 0.25, maxDistance: 80, cineSpeed: 0.5 },
     look: { exposure: 1.1, bloom: 0.09, sat: 1.1, con: 0.14 },
@@ -371,13 +382,15 @@ export function create(ctx) {
       if (!flying && rate) { T += dt * rate; spinAll(); }
       for (const m of gal.userData.mats) m.uniforms.uT.value = T;
       fermi.material.uniforms.uTime.value = t;
+      neb.update(t, T, cam);
     },
     live: () => (T > 0 ? `Seit heute: ${T.toFixed(0).replace('.', ',')} Mio. Jahre · Sonne ${(omega(R0) * T / RAD).toFixed(1).replace('.', ',')}° weiter` : 'Stand heute · Sonne auf Kurs in Richtung Schwan (Cygnus) · 150 Kugelsternhaufen im Halo'),
     setPixelRatio(pr, H) {
       gal.userData.setPx(pr, H, camera.fov);
       halo.userData.setPx(pr, H, camera.fov);
+      neb.setSize(Math.round(H * camera.aspect), H);
       marks.forEach((k) => { k.m.material.uniforms.uPx.value = pr; k.m.material.uniforms.uScale.value = (H / 2) / Math.tan(camera.fov * RAD / 2); });
     },
-    dispose: () => disposeScene(scene),
+    dispose: () => { disposeScene(scene); neb.dispose(); },
   };
 }
