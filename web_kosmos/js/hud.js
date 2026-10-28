@@ -840,8 +840,20 @@ export function createHud(h) {
       el.style.fontSize = `${Math.max(min, fs)}px`;
       el.classList.toggle('is-wrap', fs < min);
     }
+    // Einstellungs-Kacheln unten links: was waagrecht über ihnen läge, hebt den Titel über sie (niedrige Fenster)
+    caption.style.bottom = '';
+    const dock = document.querySelector('.dock')?.getBoundingClientRect();
+    if (!dock?.height) return;
+    const box = caption.getBoundingClientRect();   // Lage ohne das Hineingleiten (translateY) der Kinder
+    const lift = Math.max(0, ...[...caption.children].map((el) => {
+      const l = box.left + el.offsetLeft, bottom = box.top + el.offsetTop + el.offsetHeight;
+      return l < dock.right + 16 && l + el.offsetWidth > dock.left - 16 ? bottom - dock.top + 16 : 0;
+    }));
+    if (lift > 0) caption.style.bottom = `${parseFloat(cs.bottom) + lift}px`;
   }
 
+  // Standzeit: ≈ 4,2 s Einblenden (kosmos.css .caption, Linie zuletzt) + 5 s voll sichtbar, dann 2,6 s Ausblenden
+  const CAP_MS = 9200;
   function showCaption(st, opening = false) {
     caption.querySelector('.cap-n').textContent = opening ? 'Kosmos' : String(st.n).padStart(2, '0');
     caption.querySelector('.cap-title').textContent = opening ? 'Eine Reise durch das Universum' : st.title;
@@ -859,8 +871,8 @@ export function createHud(h) {
     clearTimeout(capTimer);
     capTimer = setTimeout(() => {
       caption.classList.remove('is-on');
-      if (opening) setTimeout(() => showCaption(st), 1800);
-    }, opening ? 6200 : 6000);
+      if (opening) setTimeout(() => showCaption(st), 2600);
+    }, CAP_MS);
   }
 
   function setFlight(on, st, multi) {

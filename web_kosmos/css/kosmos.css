@@ -266,7 +266,7 @@ body.is-flying .flight { opacity: 1; }
   position: absolute; left: 50%; bottom: 12px; transform: translateX(-50%); white-space: nowrap; padding: 6px 14px; border: 1px solid var(--line); border-radius: var(--radius);
   background: var(--glass); -webkit-backdrop-filter: var(--glass-blur); backdrop-filter: var(--glass-blur); font: 400 12px/1.4 var(--mono); color: var(--ink); transition: opacity 0.6s;
 }
-body.is-flying .hint, body.is-intro .hint { opacity: 0; }
+body.is-flying .hint, body.is-intro .hint, body:has(.caption.is-on) .hint { opacity: 0; }   /* Ankunftstitel steht davor */
 /* Kurzmeldung (hud.notice): oben in der Bühne statt unten (dort liegt der Zeitraffer), schlägt tl-on/Flug/schmal */
 body.is-notice .stage > .hint { opacity: 1; display: block; top: 4px; bottom: auto; width: max-content; max-width: calc(100% - 32px); white-space: normal; text-align: center; text-wrap: balance; padding: 7px 14px; color: var(--ink); background: rgba(5, 8, 14, 0.72); border-radius: var(--radius); }
 /* Auftakt läuft: dezenter Hinweis mittig im unteren Kinobalken (OPEN_BARS in main.js), blendet nach dem Start ein und mit dem Überspringen aus (Klick geht zum Canvas) */
@@ -735,33 +735,35 @@ input[type=range]:focus-visible { outline: 2px solid var(--focus); outline-offse
 .cfg-note { font-size: 12.5px; color: var(--ink-soft); }
 
 /* ---------- Kapitel-Titel ---------- */
-/* Steht ≈ 6 s groß über der Szene (User 2026-10-26: mehr Geltung, langsamer, länger, größer): Nummer, Lichtlinie, Titel
-   und Zeile darunter gleiten gestaffelt ein, der Titel zieht seine Sperrung 6 s lang zusammen; dunkler Hof hinter dem
+/* Steht groß über der Szene (User 2026-10-26: mehr Geltung, langsamer, länger, größer; 2026-10-28: tiefer, Fade langsamer,
+   nach dem vollen Einblenden 5 s stehen → hud.js CAP_MS): Nummer, Lichtlinie, Titel und Zeile darunter gleiten gestaffelt
+   ein (fertig nach ≈ 4 s), der Titel zieht seine Sperrung 9 s lang zusammen; dunkler Hof hinter dem
    Text trägt ihn auch vor hellen Planeten. Schriftgröße nach der Breite der Bühne (cqi), Titel nie umbrochen
    (hud.js fitCaption verkleinert bei Bedarf). */
 .caption {
-  position: fixed; z-index: 3; left: 0; right: var(--panel-w); bottom: 19%; text-align: center; pointer-events: none;
+  position: fixed; z-index: 3; left: 0; right: var(--panel-w); bottom: 15%; text-align: center; pointer-events: none;
   display: flex; flex-direction: column; align-items: center; gap: 14px; padding: 0 24px; container-type: inline-size;
-  opacity: 0; transition: opacity 1.4s ease;
+  opacity: 0; transition: opacity 2.6s ease;
   text-shadow: 0 2px 22px rgba(0, 0, 0, 0.9);
 }
 .caption::before { content: ""; position: absolute; inset: -35% 4%; z-index: -1; background: radial-gradient(closest-side, rgba(0, 0, 0, 0.5), transparent); }
 body.panel-off .caption { right: 0; }
-.caption.is-on { opacity: 1; transition: opacity 1.8s var(--ease-out); }
-.caption > * { opacity: 0; transform: translateY(12px); transition: opacity 1s ease, transform 1s ease; }
-.caption.is-on > * { opacity: 1; transform: none; transition: opacity 1.8s var(--ease-out) var(--d, 0s), transform 2.4s var(--ease-out) var(--d, 0s); }
+.caption.is-on { opacity: 1; transition: opacity 3s var(--ease-out); }
+.caption > * { opacity: 0; transform: translateY(12px); transition: opacity 2.4s ease, transform 2.4s ease; }
+.caption.is-on > * { opacity: 1; transform: none; transition: opacity 3s var(--ease-out) var(--d, 0s), transform 3.4s var(--ease-out) var(--d, 0s); }
 .cap-n { font: 400 15px var(--mono); letter-spacing: 0.5em; text-transform: uppercase; color: var(--accent); padding-left: 0.5em; display: flex; flex-direction: column; align-items: center; gap: 12px; }
-.cap-n::after { content: ""; width: 96px; height: 1px; background: linear-gradient(90deg, transparent, var(--accent), transparent); transform: scaleX(0); transition: transform 1s ease; }
-.caption.is-on .cap-n::after { transform: scaleX(1); transition: transform 2.4s var(--ease-out) 0.5s; }
+/* Lichtlinie breit und haarfein (halbe Pixelhöhe per scale, User 2026-10-28) */
+.cap-n::after { content: ""; width: 150px; height: 1px; background: linear-gradient(90deg, transparent, var(--accent), transparent); transform: scale(0, 0.5); transition: transform 2.4s ease; }
+.caption.is-on .cap-n::after { transform: scale(1, 0.5); transition: transform 3.4s var(--ease-out) 0.6s; }
 .cap-title {
-  --d: 0.3s; font: 200 clamp(34px, 6.2cqi, 80px)/1.04 var(--display); text-transform: uppercase; letter-spacing: 0.34em; padding-left: 0.34em; white-space: nowrap;
+  --d: 0.4s; font: 200 clamp(34px, 6.2cqi, 80px)/1.04 var(--display); text-transform: uppercase; letter-spacing: 0.34em; padding-left: 0.34em; white-space: nowrap;
   text-shadow: 0 2px 22px rgba(0, 0, 0, 0.9), 0 0 34px color-mix(in srgb, var(--accent) 20%, transparent);
 }
 .caption.is-on .cap-title {
   letter-spacing: 0.22em; padding-left: 0.22em;
-  transition: opacity 1.8s var(--ease-out) var(--d), transform 2.4s var(--ease-out) var(--d), letter-spacing 6s var(--ease-out), padding-left 6s var(--ease-out);
+  transition: opacity 3s var(--ease-out) var(--d), transform 3.4s var(--ease-out) var(--d), letter-spacing 9s var(--ease-out), padding-left 9s var(--ease-out);
 }
-.cap-sub { --d: 0.8s; font-size: 17px; font-weight: 300; color: var(--ink); white-space: nowrap; }
+.cap-sub { --d: 1s; font-size: 17px; font-weight: 300; color: var(--ink); white-space: nowrap; }
 .cap-sub.is-wrap { white-space: normal; text-wrap: balance; }
 .cap-sub span { white-space: nowrap; }
 /* Infotafel im Flug: Inhalt blendet beim Abflug aus (Zwischenstationen bleiben unsichtbar), bei der Ankunft gestaffelt
