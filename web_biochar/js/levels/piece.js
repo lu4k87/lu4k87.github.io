@@ -815,6 +815,7 @@ export function create(ctx) {
   const camera = new THREE.PerspectiveCamera(32, ctx.aspect, 0.05, 200);
   const level = {
     scene, camera,
+    ready: groundTex.ready,   // Ladebild (main.js bootLoad) wartet auf die Bodentexturen aus dem Worker
     unit: 0.01,
     method: 'Makroaufnahme · Modell',
     tone: 1,

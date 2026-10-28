@@ -9,6 +9,7 @@
   <meta name="color-scheme" content="dark light">
   <link rel="stylesheet" href="css/fonts.css">
   <link rel="stylesheet" href="css/biochar.css">
+  <link rel="stylesheet" href="css/boot.css">
   <script type="importmap">
     { "imports": { "three": "./vendor/three/three.module.min.js", "three/addons/": "./vendor/three/addons/" } }
   </script>
@@ -84,6 +85,24 @@
   <div class="fatal" role="alert">
     <p class="fatal-webgl">Diese Ansicht braucht WebGL 2. Bitte einen aktuellen Browser verwenden oder die Hardwarebeschleunigung einschalten.</p>
     <p class="fatal-start">Die Ansicht konnte nicht starten. Bitte die Seite ohne Zusätze in der Adresse neu laden.</p>
+  </div>
+
+  <div class="boot" id="boot">
+    <div class="boot-fx" aria-hidden="true"><i class="boot-grid"></i><i class="boot-ember"></i></div>
+    <div class="boot-cap">
+      <svg class="hex brand-mark boot-mark" viewBox="0 0 40 40" aria-hidden="true">
+        <path class="hex-shape" d="M20 2L35.59 11L35.59 29L20 38L4.41 29L4.41 11z"/>
+        <g fill="currentColor"><circle cx="15" cy="15" r="2.6"/><circle cx="24" cy="13.5" r="1.9"/><circle cx="26" cy="22" r="2.8"/><circle cx="14" cy="24" r="2.1"/><circle cx="20" cy="29" r="1.6"/></g>
+      </svg>
+      <p class="cap-n">Biochar</p>
+      <h1 class="cap-title">Reise in die Pflanzenkohle</h1>
+      <p class="cap-sub">Vom Holzkohlestück bis zu den Kohlenstoffatomen</p>
+      <div class="boot-load">
+        <div class="boot-bar" role="progressbar" aria-label="Vorladen der Reise" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><i></i><b></b></div>
+        <p class="boot-step" aria-live="polite"><span class="boot-what">Vorladen</span><span class="boot-pct">0 %</span></p>
+        <button type="button" class="boot-go" hidden>Reise starten · <span>Enter</span></button>
+      </div>
+    </div>
   </div>
 
   <script>

@@ -12,6 +12,8 @@ import { NOISE_GLSL, SEM_SWING, semDetectorMode, semChargeOn } from './sem.js';
 import { quality } from './quality.js';
 import { settings, mountSettings, kelvinTint, PERF_KEYS, globalGrade } from './settings.js';
 import { registerLayers, showLayers } from './layers.js';
+import { createBoot } from './boot.js';
+import { LEVELS } from './content.js';
 
 document.body.classList.add('is-running');   // alle Module geladen: die Startwache in index.html tritt ab
 
@@ -1163,7 +1165,7 @@ function frame(now) {
     src = tr.outer;
   } else if (lv) {
     if (state.intro) {
-      stepIntro(lv, real);
+      if (!state.intro.hold) stepIntro(lv, real);
     } else {
       cineUndo(lv);
       if (state.dolly) {
@@ -1220,12 +1222,39 @@ function frame(now) {
   renderer.render(compScene, compCam);
 }
 
+// ---------- Ladebild beim Aufruf (wie Kosmos): erst der Programmcode aller Ebenen (spätere Wechsel warten nicht mehr aufs
+// Netz), dann die Startebene samt Nachbarn bauen – genau die, die activate() behält – und warten, bis ihre Texturen stehen
+// (lv.ready, z. B. Waldboden der Ebene 1 aus dem Worker). Anteile: Code 15 %, Ebenen 85 %; innerhalb einer Ebene kriecht
+// der Anteil gegen 95 % (Bauen und Shader melden keinen Stand), damit die Linie nie steht. Fehler einzelner Nachbarn
+// halten den Start nicht auf. In der Ausstellung (?tour) wartet das Ladebild nicht auf Enter.
+const boot = createBoot({ wait: !tour });
+async function bootLoad(first) {
+  const ids = [first, first + 1, first - 1].filter((i) => i >= 0 && i < LOADERS.length);
+  let code = 0, built = 0, part = 0;
+  const show = (label) => boot.set(0.15 * code / LOADERS.length + 0.85 * (built + part) / ids.length, label);
+  show('Vorladen · Programmcode');
+  await Promise.all(LOADERS.map((load) => load().catch(() => null).then(() => { code++; show(); })));
+  for (const i of ids) {
+    const t0 = performance.now();
+    part = 0;
+    show(`Ebene ${String(i + 1).padStart(2, '0')} · ${LEVELS[i].name}`);
+    const creep = setInterval(() => { part = Math.max(part, 0.95 * (1 - Math.exp((t0 - performance.now()) / 1500))); show(); }, 120);
+    const lv = await getLevel(i, true).catch(() => null);
+    if (lv && lv.ready) await Promise.race([lv.ready.catch(() => null), new Promise((r) => setTimeout(r, 8000))]);
+    clearInterval(creep);
+    built++;
+    part = 0;
+    show();
+  }
+}
+
 async function start() {
   resize();
   const m = /ebene=(\d+)/.exec(location.hash);
   const first = m ? Math.min(LOADERS.length - 1, Math.max(0, +m[1] - 1)) : 0;
   const T = parseFloat(params.get('T'));   // ?T=abc oder leer → Standard behalten
   if (Number.isFinite(T)) state.temp = state.pyro.shown = Math.min(800, Math.max(T_ROOM, T));
+  await bootLoad(first);
   const lv = await getLevel(first);
   activate(lv);
   if (first === 0 && !still && settings.S.intro && freeze === null) {
@@ -1234,13 +1263,15 @@ async function start() {
     const to = new THREE.Spherical().setFromVector3(lv.home.pos.clone().sub(target));
     const from = new THREE.Spherical(to.radius * 2.6, Math.max(0.3, to.phi - 0.6), to.theta - 1.9);
     state.controls.enabled = false;
-    state.intro = { t: 0, dur: 9.0, target, from, to };
+    state.intro = { t: 0, dur: 9.0, target, from, to, hold: true };   // hold: steht, bis das Ladebild geht
     stepIntro(lv, 0);
   }
   document.body.classList.add('is-ready');
-  if (params.has('play')) setTimeout(togglePlay, 600);
   requestAnimationFrame(frame);
   if (freeze !== null) diveHotspot();
+  await boot.done();
+  if (state.intro) state.intro.hold = false;
+  if (params.has('play')) setTimeout(togglePlay, 600);
 }
 
 start().catch((err) => {
