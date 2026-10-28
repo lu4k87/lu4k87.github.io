@@ -920,6 +920,8 @@ export function createHud(h) {
   buildRail();
   // Kurzmeldung in der Hinweiszeile unten in der Bühne (sichtbar auch im Flug und schmal), danach wieder der Hinweis
   const hintEl = document.querySelector('.hint'), hintText = hintEl.textContent;
+  // Höhe der Hinweiszeile für den Knopf „Hinausfliegen“ darüber: neben dem Panel bricht sie um (kosmos.css --hint-h)
+  new ResizeObserver(() => body.style.setProperty('--hint-h', `${hintEl.offsetHeight}px`)).observe(hintEl);
   let noticeT = 0;
   return {
     notice(text) {

@@ -309,7 +309,9 @@ body.is-opener .skip-cue { opacity: 0.75; transition: opacity 1.2s var(--ease-ou
   height: min(640px, calc(100% - 22px - var(--band-low, 0px))); margin: calc(10px + var(--band-low, 0px)) 0 12px 16px; border-radius: var(--radius); display: flex; flex-direction: column; outline: none; }
 .station[hidden] { display: none; }
 body.st-open .caption { left: calc(var(--st-w) + 32px); }
-/* Hinweis mittig in der freien Bühne neben dem Panel, bricht um statt darunter zu laufen */
+/* Hinweis mittig in der freien Bühne neben dem Panel, bricht um statt darunter zu laufen; Knopf „Hinausfliegen“ auf derselben
+   Achse darüber (Vorschau 28.10.2026 Mitte:A) */
+body.st-open .stage > .pull { left: calc(50% + (var(--st-w) + 16px) / 2); bottom: calc(21px + var(--hint-h, 31px)); }
 body.st-open .stage > .hint { left: calc(50% + (var(--st-w) + 16px) / 2); width: max-content; max-width: calc(100% - var(--st-w) - 48px); white-space: normal; text-align: center; text-wrap: balance; }
 /* Eck-Marken auch an der Info-Karte (Bild:C) */
 .hs-card::before, .hs-card::after { content: ""; position: absolute; z-index: 3; width: 10px; height: 10px; border: 0 solid rgba(var(--accent-rgb), 0.8); pointer-events: none; }
@@ -818,6 +820,7 @@ body.fatal-webgl .fatal-webgl, body.fatal-start .fatal-start { display: block; }
   .hsb { font-size: 12.5px; }
   .hsb .tag { display: none; }
   .hint { display: none; }
+  body.st-open .stage > .pull { left: 50%; bottom: 52px; }   /* Panel füllt die Bühne: keine freie Achse daneben */
   .hs-card { left: 8px; right: 8px; top: auto; bottom: var(--sheet-b, 8px); width: auto; max-height: calc(100% - var(--sheet-b, 8px) - 40px); translate: none !important; transform-origin: center bottom !important; }
 }
 
