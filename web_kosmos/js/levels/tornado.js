@@ -6,16 +6,18 @@
 // (Säule wie im Webb-Bild, leicht gegeneinander verkippt), Abstand zur Haut analytisch, Haut mit feinen Falten, Fäden
 // entlang der Achse und Klumpen; oben orange (warmes H₂), zur Quelle hin dunkelrot; ein Auswuchs rechts als eigene Kappe. Achse nach oben links und von uns weg (Ausfluss 100–300 km/s von uns weg, ESA); die Neigung
 // gegen die Himmelsebene ist nicht gemessen (Modell 30°). Bildfeld 2,15′ × 2,62′ bei 630 Lj ≈ 0,4 × 0,5 Lj (eigene Rechnung).
-// Die ferne Spiralgalaxie an der Spitze steht nur zufällig in derselben Sichtlinie: gezeichnet in sehr großer Entfernung
-// (galaxyflight.js), beim Umkreisen löst sie sich von der Spitze.
+// Die ferne Spiralgalaxie des Webb-Bilds an der Spitze ist bewusst weggelassen (User 28.10.2026), nur viele kleine ferne
+// Galaxien bleiben im Hintergrund.
+// Bewegung (Kamera folgt dem Kopf): Stoßkappen entstehen hinten, wandern nach vorn und lösen sich an der Spitze auf;
+// Wolke und Feldsterne ziehen gegen die Achse vorbei – der Tornado pflügt durch den Raum (stark beschleunigt).
 // Leistung wie orion.js/pillars.js: Wolke in eigener Auflösung (offscreen), neu gerechnet nur bei Änderung – außer
-// „Stoßfronten strömen“ ist an.
+// „Tornado zieht durch den Raum“ ist an.
 
 import * as THREE from 'three';
 import { volume, pointCloud, offscreen, disposeScene } from '../vol.js';
 import { createStarfield } from '../stars.js';
 import { registerLayers, setLayer } from '../layers.js';
-import { galaxyAtlas, galaxySprites, glowPoints } from '../galaxyflight.js';
+import { glowPoints } from '../galaxyflight.js';
 import { mulberry32, gauss, blackbody, LY } from '../astro.js';
 
 const RAD = 4.4;   // Volumenkugel um die Mitte der Säule
@@ -26,25 +28,15 @@ const E1 = new THREE.Vector3().crossVectors(D, new THREE.Vector3(0, 0, 1)).norma
 const E2 = new THREE.Vector3().crossVectors(E1, D);
 const at = (s, q = 0, w = 0) => D.clone().multiplyScalar(s).addScaledVector(E1, q).addScaledVector(E2, w);
 
-// Kappen: Lage der Spitze (entlang D, quer), Radius der Röhre W, Länge der Wand L, Helligkeit, Verkippung –
-// nach dem Webb-Bild: schmale Fingerspitze vorn, dahinter breitere Kappen, die Säule wird zur Quelle hin weiter
-const SHELLS = (() => {
-  const rnd = mulberry32(4950), out = [];
-  for (let i = 0; i < 11; i++) {
-    const k = i / 10, j = () => rnd() * 2 - 1;
-    out.push([3.0 - 4.9 * k + j() * 0.12, j() * 0.12 * (0.4 + k), 0.5 + 0.42 * Math.sqrt(k), 2.2 + 2 * Math.sin(k * 2.6), 1 - 0.55 * k, [j() * 0.08, j() * 0.08]]);
-  }
-  return out;
-})();
+const TIP = 3.0;   // vorderste Kappe entlang D; Kappen im Abstand 0,49 bis zur Quelle hin (Form im GLSL `shells`)
+const CONV = 0.15;   // Kappen je Sekunde bei Tempo ×1, die über die Spitze hinaus wandern
+const GAS_V = 0.49 * CONV;   // Rauschen wandert mit den Kappen (Szeneneinheiten je Sekunde)
+const DRIFT_V = 0.35;   // Wolke und Feldsterne ziehen so schnell gegen die Achse vorbei
+const FIELD = 40;   // Feldsterne laufen in einem Band ±FIELD entlang D um und blenden an den Enden aus
 const SPUR = { tip: at(1.9, 0.62, 0.1), dir: D.clone().addScaledVector(E1, 0.5).normalize(), R: 0.2, L: 1.6, g: 0.55 };
 const SOURCE = at(-12.5, 0.6, 0.4);   // Cederblad 110 IRS4: ≈ 1,5 Lj zurück entlang der Achse, unten rechts
 const v3 = (v) => `vec3(${v.toArray().map((x) => x.toFixed(4)).join(', ')})`;
 
-const shellCalls = () => SHELLS.map(([s, q, R, L, g, [a, b]], i) => {
-  const dir = D.clone().addScaledVector(E1, a).addScaledVector(E2, b).normalize();
-  const e1 = new THREE.Vector3().crossVectors(dir, new THREE.Vector3(0, 0, 1)).normalize(), e2 = new THREE.Vector3().crossVectors(e1, dir);
-  return `bow(p, ${v3(at(s, q))}, ${v3(dir)}, ${v3(e1)}, ${v3(e2)}, ${R.toFixed(3)}, ${L.toFixed(3)}, ${g.toFixed(3)}, ${(i * 1.7).toFixed(2)}, ${(i / (SHELLS.length - 1)).toFixed(3)}, nz, fil, wr, em, lay);`;
-}).join('\n  ');
 const spurCall = () => {
   const e1 = new THREE.Vector3().crossVectors(SPUR.dir, new THREE.Vector3(0, 0, 1)).normalize(), e2 = new THREE.Vector3().crossVectors(e1, SPUR.dir);
   return `bow(p, ${v3(SPUR.tip)}, ${v3(SPUR.dir)}, ${v3(e1)}, ${v3(e2)}, ${SPUR.R.toFixed(3)}, ${SPUR.L.toFixed(3)}, ${SPUR.g.toFixed(3)} * uSpur, 4.1, 0.35, nz, fil, wr, em, lay);`;
@@ -83,6 +75,26 @@ void bow(vec3 p, vec3 H, vec3 D, vec3 E1, vec3 E2, float W, float L, float g, fl
   em += c;
   lay += c * idx;
 }
+// Kappen als Förderband (nach dem Webb-Bild: schmale Fingerspitze vorn, dahinter breitere Kappen, die Säule wird zur
+// Quelle hin weiter): Lage k = 0 vorn … 1 hinten; Kappe Nr. n entsteht bei k = 1,1, wandert nach vorn und löst sich
+// bei k = −0,1 auf. Form und Helligkeit hängen nur von k ab, Versatz und Verkippung von n (bleiben beim Wandern gleich)
+void shells(vec3 p, float nz, float fil, float wr, inout float em, inout float lay) {
+  const vec3 AX = ${v3(D)}, Q1 = ${v3(E1)}, Q2 = ${v3(E2)};
+  float T = uTime * ${CONV.toFixed(3)}, fr = fract(T), n0 = floor(T);
+  for (int i = 0; i < 12; i++) {
+    float k = (float(i) - fr) / 10.0, n = float(i) + n0;
+    float fade = smoothstep(-0.1, 0.0, k) * (1.0 - smoothstep(1.0, 1.1, k));
+    if (fade <= 0.0) continue;
+    vec4 j = vec4(hash12(vec2(n, 1.3)), hash12(vec2(n, 7.1)), hash12(vec2(n, 3.7)), hash12(vec2(n, 5.9))) * 2.0 - 1.0;
+    float kc = clamp(k, 0.0, 1.0), L = 2.2 + 2.0 * sin(kc * 2.6);
+    vec3 H = AX * (${TIP.toFixed(2)} - 4.9 * k + j.x * 0.12) + Q1 * (j.y * 0.12 * (0.4 + kc));
+    float b0 = -dot(p - H, AX);
+    if (b0 < -0.6 || b0 > L + 0.5) continue;
+    vec3 dir = normalize(AX + Q1 * (j.z * 0.08) + Q2 * (j.w * 0.08));
+    vec3 e1 = normalize(cross(dir, vec3(0.0, 0.0, 1.0))), e2 = cross(e1, dir);
+    bow(p, H, dir, e1, e2, 0.5 + 0.42 * sqrt(kc), L, (1.0 - 0.55 * kc) * fade, mod(n, 97.0) * 1.7, kc, nz, fil, wr, em, lay);
+  }
+}
 void sampleVol(vec3 p, out vec3 e, out float s) {
   float r = length(p);
   float edge = smoothstep(${RAD.toFixed(2)}, ${(RAD - 0.8).toFixed(2)}, r);
@@ -94,7 +106,7 @@ void sampleVol(vec3 p, out vec3 e, out float s) {
   float fil = ridged(pa + vec3(1.0, 9.0, 4.0), 3);
   float wr = ridged(pf * 11.0 + vec3(7.0, 2.0, 5.0), 2);
   float em = 0.0, lay = 0.0;
-  ${shellCalls()}
+  shells(p, nz, fil, wr, em, lay);
   ${spurCall()}
   em *= edge;
   em = em * em / (em + 0.3);   // Kontrast: schwacher Grund dunkler, Falten und Ränder bleiben hell
@@ -103,8 +115,9 @@ void sampleVol(vec3 p, out vec3 e, out float s) {
   vec3 col = mix(cDeep, cShock, smoothstep(-1.2, 3.2, dot(p, ${v3(D)})));
   col = mix(col, cHot, smoothstep(0.8, 2.6, em));
   col = mix(col, mix(cOld, cNew, t), uLayers);
-  // Wolke des Chamäleon-Komplexes dahinter: schwacher PAH-Schein (7,7 µm rot), Staub wenig dicht
-  float hz = max(fbm(p * 0.55 + vec3(5.0, 2.0, 8.0), 3) + 0.15, 0.0) * smoothstep(${RAD.toFixed(2)}, 1.2, r) * mix(0.4, 1.0, smoothstep(1.5, -2.5, p.z));
+  // Wolke des Chamäleon-Komplexes dahinter: schwacher PAH-Schein (7,7 µm rot), Staub wenig dicht; zieht gegen die Achse vorbei
+  vec3 ph = p + ${v3(D)} * uTime * ${DRIFT_V.toFixed(3)};
+  float hz = max(fbm(ph * 0.55 + vec3(5.0, 2.0, 8.0), 3) + 0.15, 0.0) * smoothstep(${RAD.toFixed(2)}, 1.2, r) * mix(0.4, 1.0, smoothstep(1.5, -2.5, p.z));
   e = (col * em * 3.0 + cHaze * hz * uHaze * 0.06) * uGain;
   s = em * 0.6 + hz * uHaze * 0.08;
 }
@@ -139,7 +152,7 @@ export function create(ctx) {
   const col3 = (a) => ({ value: new THREE.Vector3(...a) });
   const neb = volume({ radius: RAD, body: `#define OCT ${ctx.detail > 0.7 ? 4 : 3}\n${BODY()}`, steps: STEPS[2], maxSteps: STEPS[3], uniforms: {
     uGain: { value: 0.6 }, uThick: { value: pre.thick }, uTwist: { value: pre.twist }, uFil: { value: pre.fil }, uRough: { value: pre.rough },
-    uHaze: { value: pre.haze }, uSpur: { value: 1 }, uLayers: { value: 0 }, uFlowV: { value: 0.05 },
+    uHaze: { value: pre.haze }, uSpur: { value: 1 }, uLayers: { value: 0 }, uFlowV: { value: GAS_V },
     cShock: col3([1, 1, 1]), cHot: col3([1, 1, 1]), cDeep: col3([1, 1, 1]), cHaze: col3([1, 1, 1]), cOld: col3([0.9, 0.2, 0.12]), cNew: col3([0.35, 0.85, 1]),
   } });
   const vol = offscreen(ctx.renderer, neb);
@@ -147,19 +160,11 @@ export function create(ctx) {
   scene.add(vol.quad);
   const u = neb.material.uniforms;
 
-  // Ferne Spiralgalaxie von oben (blauer Kern aus alten Sternen, rötliche Arme), genau hinter der Spitze vom Startblick;
-  // dahinter viele kleine ferne Galaxien. Gezeichnet vor der Wolke (renderOrder 0), damit die Wolke sie abdeckt.
+  // Viele kleine ferne Galaxien, gezeichnet vor der Wolke (renderOrder 0), damit die Wolke sie abdeckt
   const home = { pos: new THREE.Vector3(0.9, 0.5, 11.2), target: new THREE.Vector3(0.15, 0.35, 0) };
-  const tip = at(SHELLS[0][0] + 0.12);
-  const sight = tip.clone().addScaledVector(E2, 0.12).addScaledVector(E1, -0.1).sub(home.pos).normalize();   // knapp über der Spitze wie im Bild
+  const tip = at(TIP + 0.12);
   if (new URLSearchParams(location.search).get('view') === 'side') home.pos.sub(home.target).applyAxisAngle(new THREE.Vector3(0, 1, 0), 0.95).add(home.target);
-  const GD = 1500, ANG = 0.09;   // Abstand der Tafel (Szeneneinheiten) und Winkelgröße (rad) wie im Webb-Bild
-  const turn = new THREE.Object3D();
-  turn.lookAt(sight.clone().negate());
-  const atlas = galaxyAtlas();
-  const galaxy = galaxySprites([{ pos: sight.clone().multiplyScalar(GD), size: GD * ANG, tile: 1, tint: [0.75, 0.82, 1.15], gain: 1.6,
-    rx: turn.rotation.x, ry: turn.rotation.y, rz: turn.rotation.z + 0.7 }], atlas);
-  galaxy.renderOrder = 0;
+  const GD = 1500;   // Abstand der fernen Galaxien (Szeneneinheiten)
   const rand = mulberry32(4950);
   const far = [];
   for (let i = 0; i < 900; i++) {
@@ -168,10 +173,9 @@ export function create(ctx) {
   }
   const farGals = glowPoints(far);
   farGals.renderOrder = 0;
-  // Ferne: Gruppe wandert mit der Kamera (Richtung fest im Raum, wie der Sternhimmel) → Ausrichtung zerfällt beim Umkreisen;
   // Galaxien in echter Ferne: Gruppe wandert mit der Kamera (unendlich weit), dreht nicht mit
   const backdrop = new THREE.Group();
-  backdrop.add(galaxy, farGals);
+  backdrop.add(farGals);
   scene.add(backdrop);
 
   // Sterne im Feld und die vermutete Quelle Cederblad 110 IRS4 (Klasse-I-Protostern, im Infrarot rötlich)
@@ -181,12 +185,27 @@ export function create(ctx) {
     const v = new THREE.Vector3(gauss(rand), gauss(rand), gauss(rand)).normalize().multiplyScalar(4 + 36 * Math.cbrt(rand()));
     add(v, rand() < 0.2 ? 8000 + rand() * 12000 : 3200 + rand() * 2800, 0.2 + rand() * rand() * 3, 0.02);
   }
+  const nField = size.length, base = pos.slice(), baseCol = col.slice();
   add(SOURCE, 1500, 60, 0.12);
   const stars = pointCloud(pos, col, size, { min: 1.2 });
   stars.renderOrder = 2;
   scene.add(stars);
+  // Feldsterne um o gegen die Achse verschieben, im Band ±FIELD umlaufend, an den Enden ausgeblendet;
+  // ponytail: die Quelle bleibt stehen – der Ausfluss wird ja laufend von ihr gespeist
+  const drift = (o) => {
+    const P = stars.geometry.attributes.position, C = stars.geometry.attributes.color;
+    for (let i = 0; i < nField; i++) {
+      const x = base[3 * i], y = base[3 * i + 1], z = base[3 * i + 2], a = x * D.x + y * D.y + z * D.z;
+      const a2 = ((((a - o + FIELD) % (2 * FIELD)) + 2 * FIELD) % (2 * FIELD)) - FIELD, s = a2 - a;
+      const f = Math.min(1, (FIELD - Math.abs(a2)) / 6);
+      P.setXYZ(i, x + D.x * s, y + D.y * s, z + D.z * s);
+      C.setXYZ(i, baseCol[3 * i] * f, baseCol[3 * i + 1] * f, baseCol[3 * i + 2] * f);
+    }
+    P.needsUpdate = C.needsUpdate = true;
+  };
+  drift(0);
 
-  let mode = 'webb', starGain = 1, flowOn = true;
+  let mode = 'webb', starGain = 1, flowOn = true, speed = 1, clock = 0;
   const applyLook = () => {
     const k = LOOKS[mode];
     u.cShock.value.set(...k.shock); u.cHot.value.set(...k.hot); u.cDeep.value.set(...k.deep); u.cHaze.value.set(...k.haze); u.uLayers.value = k.layers;
@@ -200,7 +219,6 @@ export function create(ctx) {
     { id: 'bows', kind: 'info', pos: at(1.35, -0.7) },
     { id: 'spur', kind: 'info', pos: SPUR.tip.clone() },
     { id: 'ced110', kind: 'info', pos: SOURCE.clone() },
-    { id: 'galaxy', kind: 'info', pos: tip.clone().addScaledVector(sight, 1.2) },
     { id: 'layers', kind: 'info', pos: at(0.2, 0.9), visible: () => mode === 'layers' },
   ];
   const controls = [{
@@ -224,11 +242,12 @@ export function create(ctx) {
     { id: 'fil', type: 'range', label: 'Fäden', min: 0, max: 3, step: 0.1, value: pre.fil, fmt: times, set: to('uFil') },
     { id: 'rough', type: 'range', label: 'Wellen und Klumpen', min: 0, max: 3, step: 0.1, value: pre.rough, fmt: times, set: to('uRough') },
     { id: 'spur', type: 'toggle', label: 'Auswuchs oben rechts', value: true, set: to('uSpur', (v) => (v ? 1 : 0)) },
-    { id: 'flow', type: 'toggle', group: 'Bewegung', label: 'Stoßfronten strömen', value: true, set: (v) => { flowOn = v; u.uTime.value = 0; vol.invalidate(); },
-      hint: 'Das Gas fließt mit 100–300 km/s von der Quelle weg (ESA) – hier um ein Vielfaches beschleunigt.' },
+    { id: 'flow', type: 'toggle', group: 'Bewegung', label: 'Tornado zieht durch den Raum', value: true, set: (v) => { flowOn = v; },
+      hint: 'Stoßfronten wandern von der Quelle nach vorn, Wolke und Sterne ziehen vorbei. Das Gas strömt mit 100–300 km/s (ESA) – hier um ein Vielfaches beschleunigt.' },
+    { id: 'speed', type: 'range', label: 'Tempo', min: 0.25, max: 4, step: 0.25, value: 1, fmt: times, set: (v) => { speed = v; } },
     { id: 'stars', type: 'range', group: 'Hintergrund', label: 'Helligkeit der Sterne', min: 0, max: 4, step: 0.25, value: 1, fmt: times, set: (v) => { starGain = v; applyLook(); } },
     { id: 'gals', type: 'range', label: 'Ferne Galaxien', min: 0, max: 3, step: 0.25, value: 1, fmt: times,
-      set: (v) => { galaxy.material.uniforms.uGain.value = v; farGals.material.uniforms.uGain.value = v; } },
+      set: (v) => { farGals.material.uniforms.uGain.value = v; } },
     { id: 'res', type: 'range', group: 'Qualität der Wolke', label: 'Detailstufe', min: 0, max: 3, step: 1, value: fine ? 1 : 2, fmt: (i) => RES_N[i], set: (i) => vol.setScale(RES[i]) },
     { id: 'steps', type: 'range', label: 'Rechengenauigkeit', min: 0, max: 3, step: 1, value: fine ? 2 : 1, fmt: (i) => STEPS_N[i], set: to('uSteps', (i) => STEPS[i]) },
   ]);
@@ -242,10 +261,10 @@ export function create(ctx) {
     look: { exposure: 1.1, bloom: 0.12, sat: 1.1, con: 0.12, sh: [1.02, 0.98, 0.96] },
     update(dt, t, cam) {
       backdrop.position.copy(cam.position);
-      if (flowOn) { u.uTime.value = t; vol.invalidate(); }
+      if (flowOn && dt > 0) { clock += dt * speed; u.uTime.value = clock; drift(clock * DRIFT_V); vol.invalidate(); }
       vol.render(cam);
     },
-    live: () => ({ webb: 'Webb NIRCam + MIRI: warmer Wasserstoff, CO und Staub orange-rot, die ferne Galaxie blau-weiß',
+    live: () => ({ webb: 'Webb NIRCam + MIRI: warmer Wasserstoff, CO und Staub orange-rot',
       h2: 'Nur molekularer Wasserstoff (NIRCam 4,7 µm): die Stoßfronten allein',
       layers: 'Stoßfronten nach Alter (Modell): rot = vorn und älter, blau = näher an der Quelle und jünger' })[mode],
     setPixelRatio(pr, H) {

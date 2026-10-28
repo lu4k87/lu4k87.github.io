@@ -1115,14 +1115,13 @@ export const STATIONS = {
       { v: '≈ 1,5', u: 'Lj', l: 'Abstand zur vermuteten Quelle Ced 110 IRS4', s: 'webb-2506' },
       { v: '2,15 × 2,62', u: 'Bogenmin.', l: 'Webb-Ausschnitt, bei 630 Lj ≈ 0,4 × 0,5 Lj', s: 'webb-2506a' },
     ],
-    note: 'Volumen-Modell: Form nach der Webb-Aufnahme weic2506a (NIRCam + MIRI, nur Vorlage, Bild nicht eingebunden). Stoßfronten als gestapelte Kappen, die nach hinten in eine Röhre übergehen, Neigung der Achse gegen die Himmelsebene (30°) geschätzt – laut ESA strömt das Gas von uns weg. Fäden, Klumpen und Feldsterne statistisch, Bewegung stark beschleunigt. Farben nach den Filtern (2,0 µm blau, 3,35 µm cyan, 4,44 µm grün, 4,7 µm H₂ orange, 7,7 µm PAH rot); „Stoßfronten nach Alter“ ist eine Falschfarbe. Die Galaxie an der Spitze steht nur zufällig in derselben Blickrichtung, weit dahinter.',
+    note: 'Volumen-Modell: Form nach der Webb-Aufnahme weic2506a (NIRCam + MIRI, nur Vorlage, Bild nicht eingebunden). Stoßfronten als gestapelte Kappen, die nach hinten in eine Röhre übergehen, Neigung der Achse gegen die Himmelsebene (30°) geschätzt – laut ESA strömt das Gas von uns weg. Fäden, Klumpen und Feldsterne statistisch, Bewegung stark beschleunigt. Farben nach den Filtern (2,0 µm blau, 3,35 µm cyan, 4,44 µm grün, 4,7 µm H₂ orange, 7,7 µm PAH rot); „Stoßfronten nach Alter“ ist eine Falschfarbe. Die ferne Spiralgalaxie des Webb-Bilds an der Spitze ist weggelassen; Kamera folgt dem Kopf, Wolke und Feldsterne ziehen vorbei.',
     sources: ['webb-2506', 'webb-2506a'],
     hotspots: {
       apex: { t: 'Spitze des Ausflusses', x: 'Hier stößt das ausströmende Gas am weitesten in die umgebende Wolke vor. Die Stoßfront heizt molekularen Wasserstoff auf; er leuchtet im Infrarot orange (4,7 µm).', s: 'webb-2506' },
       bows: { t: 'Stoßfronten', x: 'Wo das schnelle Gas auf ruhendes trifft, entstehen Stoßwellen. Warmer Wasserstoff, Kohlenmonoxid und angeregter Staub zeichnen sie nach – gestapelt wie Becher, zusammen eine verdrehte Säule – daher der Spitzname.', s: 'webb-2506' },
       spur: { t: 'Auswuchs am Rand', x: 'Ein seitlicher Ast der Stoßfront, wie ihn die Webb-Aufnahme rechts an der Säule zeigt. Seine Form ist hier nach dem Bild nachgebaut.', s: 'webb-2506a' },
       ced110: { t: 'Cederblad 110 IRS4', x: 'Vermutliche Quelle des Ausflusses: ein Protostern der Klasse I, rund 1,5 Lj entfernt und außerhalb des Webb-Ausschnitts. Er ist noch in seine Hülle aus Gas und Staub eingebettet.', s: 'webb-2506' },
-      galaxy: { t: 'Ferne Spiralgalaxie', x: 'Steht zufällig genau an der Spitze: eine weit entfernte Spiralgalaxie, fast von oben gesehen, mit bläulichem Kern, möglicherweise mit Balken. Mit HH 49/50 hat sie nichts zu tun.', s: 'webb-2506' },
       layers: { t: 'Stoßfronten nach Alter', x: 'Falschfarbe: vorderste Kappe hell, ältere, weiter zurückliegende Kappen dunkler. Im Bild überlagern sich alle Fronten; erst die Neigung im Raum trennt sie.', s: 'webb-2506a' },
     },
   },
@@ -1263,6 +1262,11 @@ export const PARKED = {
   },
 };
 
+// Stationen im Sonnensystem (Sonne als Lichtquelle, Planetenlicht, echter Himmel von der Erde aus): Tiefer Himmel (deepsky.js)
+// und die gemeinsamen Gruppen „Licht und Schatten“, „Himmel“ im Reiter Station (settings.js SHARED)
+export const SOLAR_SYSTEM = ['earth', 'hubble', 'jwst', 'euclid', 'roman', 'solar', 'sun', 'iss', 'tiangong', 'moon',
+  'jupiter', 'io', 'europa', 'ganymede', 'callisto', 'saturn', 'titan', 'enceladus', 'mars', 'phobos', 'deimos',
+  'neptune', 'triton', 'uranus', 'miranda', 'pluto'];
 export const ROUTE = ['iss', 'earth', 'moon', 'solar', 'sun', 'galaxy', 'orion', 'crab', 'pulsar', 'sgra', 'local', 'web', 'cmb'];
 // Äste außerhalb der Route (Kind über parent) zählen für Weiter/Zurück wie ihre nächste Elternstation auf der Route
 export function routeIndex(id) {
