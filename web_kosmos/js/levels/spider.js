@@ -4,6 +4,8 @@
 // SW-Keule zu uns), schmale Taille mit kaltem Staub-Torus (Radius ≈ 0,13 pc, punktsymmetrisch verdichtet), ionisierter
 // Kern (Brα) in einem Kokon aus PAH-Staub. [Fe II] leuchtet punktsymmetrisch an gegenüberliegenden Keulenwänden (Südrand
 // der NO-Keule, Nordrand der SW-Keule): dort schert ein schneller Ausfluss an früher ausgeworfenem Gas → S-Form.
+// Form nach Webb potm2510a und Hubble heic0109: Keulen als Sanduhr-Hälften aus einem Netz von Fäden, Wände gewellt, Spitzen
+// ausgefranst und lückenhaft, fleckiger Schleier außen, offene Hörner an der Taille; Stärke dieser Formteile: Modell.
 // Symmetrie billig: die Gegenkeule ist die am Zentrum gespiegelte Keule (q = p · sign(h)), so wird alles punktsymmetrisch.
 // Farben je Bauteil als Uniforms (wie pillars.js), ein Farbmodus tauscht nur Werte. Leistung wie orion.js: grobe Felder in
 // einer 3D-Textur, Fäden nur nahe der Keulenhaut, Wolke offscreen und nur bei Änderung neu; Bewegung (Knoten im Ausfluss,
@@ -12,11 +14,13 @@
 import * as THREE from 'three';
 import { volume, pointCloud, bakeField, offscreen, disposeScene } from '../vol.js';
 import { createStarfield } from '../stars.js';
-import { registerLayers } from '../layers.js';
+import { registerLayers, setLayer } from '../layers.js';
 import { mulberry32, gauss, blackbody, LY } from '../astro.js';
 
 const EXT = 4.8;                       // Feldtextur: Würfel ±4,8 Lj um die Volumenkugel (Radius 4,6)
-const LA = 1.85, LC = 1.8, LB = 1.25;  // Keule: Halbachse längs, Mitte längs, Halbachse quer → Spitze bei ≈ 3,65 Lj (1,1 pc)
+// Keule als Sanduhr-Hälfte: Querschnitt R(h) = LB · s^0,55 · √(1 − s^2,5) / 0,641 mit s = h / LT – an der Taille rasch weit,
+// größter Radius LB bei s ≈ 0,6, zur Spitze zulaufend; Spitze bei LT ≈ 3,65 Lj (1,1 pc)
+const LT = 3.65, LB = 1.25;
 const TILT = 0.12;                     // Keulenachse leicht zur [Fe II]-Seite gedreht (S-Form)
 // Polachse: Positionswinkel 45° (Nordost), 38° gegen die Himmelsebene, NO-Keule von uns weg (−z)
 const I = (38 * Math.PI) / 180;
@@ -34,12 +38,12 @@ vec4 field(vec3 p) {
 
 const BODY = /* glsl */ `
 uniform vec3 uA, uA2, uB2, uE1, uE2;
-uniform float uGain, uH2, uIon, uFe, uCore, uPah, uTorus, uDust, uDustT, uFil, uSat, uWarp;
+uniform float uGain, uH2, uIon, uFe, uCore, uPah, uTorus, uDust, uDustT, uFil, uSat, uWarp, uRip, uFray, uOpen, uVeil;
 uniform vec3 cH2, cIon, cFe, cCore, cPah, cTor;
 uniform highp sampler3D uField;
-const float LA = ${LA.toFixed(3)}, LC = ${LC.toFixed(3)}, LB = ${LB.toFixed(3)};
+const float LT = ${LT.toFixed(3)}, LB = ${LB.toFixed(3)};
 // Querschnitt der Keule in der Höhe ha (Ellipsoid)
-float lobeR(float ha) { float x = (ha - LC) / LA; return LB * sqrt(max(1.0 - x * x, 0.0)); }
+float lobeR(float ha) { float s = clamp(ha / LT, 0.0, 1.0); return LB * pow(s, 0.55) * sqrt(max(1.0 - pow(s, 2.5), 0.0)) / 0.641; }
 void sampleVol(vec3 p, out vec3 e, out float s) {
   vec3 f = texture(uField, p / ${(2 * EXT).toFixed(2)} + 0.5).rgb;
   float h = dot(p, uA);
@@ -47,19 +51,36 @@ void sampleVol(vec3 p, out vec3 e, out float s) {
   float ha = dot(q, uA2);
   vec3 perp = q - uA2 * ha;
   float rp = length(perp);
-  float ell = length(vec2((ha - LC) / LA, rp / LB)) + f.r * 0.16 * uWarp;
-  // H2-Haut der Keulen: dünn, mit Fäden und Wellen (Grat-Rauschen nur nahe der Haut)
-  float skin = exp(-pow((ell - 1.0) / (0.03 + 0.025 * max(f.g + 0.3, 0.0)), 2.0));
-  float fil = 0.0;
-  if (skin > 0.02) fil = ridged(q * 3.4 + vec3(1.0, 6.0, 2.0), 3);
-  float h2 = skin * (0.07 + 2.6 * uFil * fil * fil * fil) * (0.5 + 1.0 * max(f.g + 0.25, 0.0)) * smoothstep(0.1, 0.5, ha) * uH2;
-  // ionisierte Innenränder nahe der Taille (im sichtbaren Licht die offenen „Hörner“)
-  float inner = exp(-pow((ell - 0.95) / 0.07, 2.0)) * exp(-ha / 1.1) * (0.6 + 0.8 * max(f.g + 0.2, 0.0)) * uIon;
+  // Wand: Ellipsoid, großräumig verbeult, quer gewellt (Hubble: Wellenkämme der Wände, heic0109); zur Spitze hin zerfranst
+  float tip = smoothstep(LT - 1.5, LT, ha);
+  float wave = sin(ha * 7.0 + f.r * 4.0 + f.g * 2.5) * 0.05 * uRip * (0.4 + 0.6 * smoothstep(0.3, 1.4, ha));
+  float R = lobeR(ha) * (1.0 + 0.32 * f.r * uWarp) + wave;
+  float dR = (lobeR(ha + 0.03) - lobeR(ha - 0.03)) / 0.06;
+  float d = ha < LT ? (rp - R) / sqrt(1.0 + dR * dR) : length(vec2(rp, ha - LT));   // Abstand zur Wand (Lj), > 0 außen
+  // H2-Haut der Keulen (Webb potm2510a): kein glatter Ballon, sondern ein Netz aus Fäden längs der Strömung; die Haut wird zur
+  // Spitze dicker und löchriger, die Kappe reißt auf (offene Enden), außen hängen Strähnen (Ausfransen)
+  float wid = 0.045 + 0.04 * max(f.g + 0.3, 0.0) + 0.16 * tip * uFray;
+  float skin = exp(-pow(d / wid, 2.0));
+  float frin = d > 0.0 ? exp(-d / (0.03 + 0.28 * uFray)) * tip * uFray : 0.0;
+  float fil = 0.0, net = 0.0;
+  if (skin + frin > 0.02) {
+    fil = ridged(perp * 5.2 + uA2 * ha * 1.5 + vec3(1.0, 6.0, 2.0), 3);
+    net = fil * fil * fil;
+  }
+  float open = 1.0 - tip * tip * clamp(uOpen, 0.0, 1.5) * smoothstep(-0.25, 0.25, f.g + 0.6 * f.r + 0.15);
+  float h2 = (skin * (0.035 + 3.2 * uFil * net) + frin * 1.8 * uFil * net) * (0.5 + 1.0 * max(f.g + 0.25, 0.0)) * smoothstep(0.1, 0.5, ha)
+           * max(open, 0.0) * uH2;
+  // Schleier außen: dünner, fleckiger Rest früheren Auswurfs um beide Keulen
+  float veil = exp(-pow((d - 0.3) / 0.28, 2.0)) * max(f.r + 0.05, 0.0) * max(f.g + 0.15, 0.0) * (0.3 + net) * 0.3 * uVeil;
+  // Hörner an der Taille: offene, gewellte Kegelwände um die Achse, im sichtbaren Licht die vier „Beine“ der Spinne
+  float hr = 0.06 + 0.42 * ha * (1.0 + 0.25 * f.r) + 0.015 * sin(ha * 14.0 + f.r * 7.0 + f.g * 3.0) * uRip;
+  float inner = exp(-pow((rp - hr) / (0.035 + 0.03 * ha), 2.0)) * smoothstep(1.5, 0.5, ha + 0.4 * f.r) * smoothstep(0.03, 0.12, ha)
+              * (0.6 + 0.9 * max(f.g + 0.2, 0.0)) * 1.4 * uIon;
   // [Fe II]: Ausfluss trifft auf die Keulenwand an der Seite uB2, vom Kern aus an die Wand gebogen → S-Form
   vec3 c = uB2 * lobeR(ha) * 0.86 * smoothstep(0.0, 1.5, ha);
   float dj = length(perp - c);
   float knots = 0.45 + 1.4 * max(gnoise(vec3(ha * 4.5, f.g * 2.0, 1.7)), 0.0);
-  float fe = exp(-pow(dj / (0.07 + 0.04 * ha / LA), 2.0)) * smoothstep(0.05, 0.4, ha) * smoothstep(2.0 * LA + 0.05, 1.3 * LA, ha) * knots;
+  float fe = exp(-pow(dj / (0.07 + 0.08 * ha / LT), 2.0)) * smoothstep(0.05, 0.4, ha) * smoothstep(LT + 0.1, 0.66 * LT, ha) * knots;
   fe *= 1.0 + 1.4 * exp(-pow((ha - 2.4) / 0.45, 2.0));   // hellere Stoßzone, wo der Ausfluss altes Gas trifft
   fe *= 2.2 * uFe;
   // Torus in der Äquatorebene (kalter Staub, punktsymmetrisch verdichtet), Kern und PAH-Kokon um den Stern
@@ -70,10 +91,10 @@ void sampleVol(vec3 p, out vec3 e, out float s) {
   float core = exp(-pow(r / 0.17, 2.0)) * (0.5 + 1.2 * max(f.g + 0.3, 0.0))
              + exp(-pow((r - 0.06 - 0.015 * sin(phi + r * 60.0)) / 0.018, 2.0)) * 1.5;   // unregelmäßig spiraliger Rand
   float pah = exp(-pow((r - 0.3 * (1.0 + 0.3 * f.g)) / 0.08, 2.0)) * (0.5 + 0.9 * max(f.b + 0.3, 0.0));
-  vec3 col = cH2 * h2 + cIon * inner + cFe * fe + cCore * core * uCore + cPah * pah * uPah + cTor * tor * uTorus;
+  vec3 col = cH2 * (h2 + veil) + cIon * inner + cFe * fe + cCore * core * uCore + cPah * pah * uPah + cTor * tor * uTorus;
   col = max(mix(vec3(dot(col, vec3(0.2126, 0.7152, 0.0722))), col, uSat), 0.0);
   e = col * uGain;
-  s = (tor * 9.0 * uTorus + pah * 1.2 * uPah) * uDust * uDustT + (skin * 0.08 + core * 0.2) * uDustT;
+  s = (tor * 9.0 * uTorus + pah * 1.2 * uPah) * uDust * uDustT + (skin * 0.08 * max(open, 0.0) + veil * 0.6 + core * 0.2) * uDustT;
 }
 `;
 
@@ -91,9 +112,18 @@ const LOOKS = {
 const RES = [0.35, 0.5, 0.7, 1], RES_N = ['Niedrig', 'Mittel', 'Hoch', 'Voll'];
 const STEPS = [96, 128, 176, 224], STEPS_N = ['Grob', 'Mittel', 'Fein', 'Sehr fein'];
 const times = (v) => (v ? `×${String(v).replace('.', ',')}` : 'aus');
+// Startformen der Keulen (Vorschau 28.10.2026 „echte Nebelform“: alle drei gewählt → Standard = Mischung aus A, B, C);
+// die Formwahl setzt nur die Regler, jeder bleibt einzeln verstellbar
+const FORM_N = ['Mischung', 'Fadennetz', 'Zerfranst', 'Wellen'];
+const FORMS = [
+  { fil: 1.25, rip: 1.25, warp: 1.25, fray: 1.25, open: 0.7, veil: 1.25, ion: 1.25 },
+  { fil: 2, rip: 0.5, warp: 1, fray: 0.5, open: 0.2, veil: 0.5, ion: 1 },
+  { fil: 1.25, rip: 1, warp: 1.75, fray: 2.5, open: 1.3, veil: 1, ion: 1 },
+  { fil: 0.75, rip: 2.5, warp: 1, fray: 1, open: 0.6, veil: 2, ion: 2 },
+];
 const KNOTS = 36;   // je Keule; laufen entlang der [Fe II]-Bahn nach außen
 // Bahn der Knoten in der Höhe ha (gleiche Kurve wie im Shader, Gegenkeule gespiegelt)
-const lobeR = (ha) => { const x = (ha - LC) / LA; return LB * Math.sqrt(Math.max(1 - x * x, 0)); };
+const lobeR = (ha) => { const s = Math.min(Math.max(ha / LT, 0), 1); return (LB * s ** 0.55 * Math.sqrt(Math.max(1 - s ** 2.5, 0))) / 0.641; };
 const smooth = (a, b, x) => { const t = Math.min(Math.max((x - a) / (b - a), 0), 1); return t * t * (3 - 2 * t); };
 
 export function create(ctx) {
@@ -111,6 +141,7 @@ export function create(ctx) {
     uField: { value: field.texture }, uA: { value: AXIS }, uA2: { value: A2 }, uB2: { value: B2 }, uE1: { value: e1 }, uE2: { value: e2 },
     uGain: { value: 1.4 }, uH2: { value: 1 }, uIon: { value: 1 }, uFe: { value: 1 }, uCore: { value: 1 }, uPah: { value: 1 }, uTorus: { value: 1 },
     uDust: { value: 1 }, uDustT: { value: 1 }, uFil: { value: 1 }, uSat: { value: 1 }, uWarp: { value: 1 },
+    uRip: { value: 1 }, uFray: { value: 1 }, uOpen: { value: 0.7 }, uVeil: { value: 1 },
     cH2: col3(), cIon: col3(), cFe: col3(), cCore: col3(), cPah: col3(), cTor: col3(),
   } });
   const vol = offscreen(ctx.renderer, neb);
@@ -186,15 +217,29 @@ export function create(ctx) {
 
   const to = (k, f = (v) => v) => (v) => { u[k].value = f(v); vol.invalidate(); };
   const fine = ctx.detail > 0.9;
+  let formReady = false;   // Laden stellt die gespeicherten Einzelwerte, die Formwahl wirkt erst bei Bedienung
+  const F0 = FORMS[0];
   registerLayers('spider', [
     { id: 'gain', type: 'range', group: 'Licht des Gases', label: 'Helligkeit', min: 0.25, max: 6, step: 0.25, value: 1, fmt: times, set: to('uGain', (v) => 1.4 * v) },
     { id: 'sat', type: 'range', label: 'Farbsättigung', min: 0, max: 3, step: 0.1, value: 1, fmt: (v) => (v ? `${Math.round(v * 100)} %` : 'grau'), set: to('uSat') },
-    { id: 'h2', type: 'range', group: 'Keulen', label: 'H2-Haut der Keulen', min: 0, max: 4, step: 0.25, value: 1, fmt: times, set: to('uH2'),
+    { id: 'form', type: 'range', group: 'Keulen', label: 'Form der Keulen', min: 0, max: 3, step: 1, value: 0, fmt: (i) => FORM_N[i],
+      set: (i) => { if (formReady) for (const [k, v] of Object.entries(FORMS[i])) setLayer('spider', k, v); },
+      hint: 'Fadennetz wie bei Webb, zerfranste offene Spitzen, gewellte Wände wie bei Hubble – oder die Mischung. Setzt die Regler darunter.' },
+    { id: 'h2', type: 'range', label: 'H2-Haut der Keulen', min: 0, max: 4, step: 0.25, value: 1, fmt: times, set: to('uH2'),
       hint: 'Warmer molekularer Wasserstoff (2,12 µm) umrandet beide Keulen wie eine Blase; angeregt durch Stöße des schnellen Ausflusses.' },
-    { id: 'fil', type: 'range', label: 'Fäden und Wellen', min: 0, max: 3, step: 0.25, value: 1, fmt: times, set: to('uFil') },
-    { id: 'warp', type: 'range', label: 'Unebenheit der Haut', min: 0, max: 3, step: 0.25, value: 1, fmt: times, set: to('uWarp') },
-    { id: 'ion', type: 'range', label: 'Ionisierte Innenränder', min: 0, max: 4, step: 0.25, value: 1, fmt: times, set: to('uIon'),
-      hint: 'Nahe der Taille leuchten die Innenränder im Licht des Sterns – im sichtbaren Licht die offenen „Hörner“ der Spinne.' },
+    { id: 'fil', type: 'range', label: 'Fäden in der Haut', min: 0, max: 3, step: 0.25, value: F0.fil, fmt: times, set: to('uFil'),
+      hint: 'Die Haut ist ein Netz feiner Fäden längs der Strömung; aus 0 wird eine glatte, gleichmäßig dünne Haut.' },
+    { id: 'rip', type: 'range', label: 'Wellen der Wände', min: 0, max: 3, step: 0.25, value: F0.rip, fmt: times, set: to('uRip'),
+      hint: 'Hubble sah die Wände gewellt, die Kämme rund 100 Milliarden km hoch – der Wind des Sterns treibt sie nach außen.' },
+    { id: 'warp', type: 'range', label: 'Unebenheit der Keulen', min: 0, max: 3, step: 0.25, value: F0.warp, fmt: times, set: to('uWarp') },
+    { id: 'fray', type: 'range', label: 'Ausfransen der Spitzen', min: 0, max: 3, step: 0.25, value: F0.fray, fmt: times, set: to('uFray'),
+      hint: 'Zur Spitze hin wird die Haut dicker und zerfasert in Strähnen. Stärke und Länge der Strähnen: Modell.' },
+    { id: 'open', type: 'range', label: 'Offene Enden', min: 0, max: 1.5, step: 0.1, value: F0.open, fmt: (v) => (v ? `${Math.round(v * 100)} %` : 'zu'), set: to('uOpen'),
+      hint: 'Webb zeigt die Keulen als geschlossene Blasen; ihre Kappen sind aber lückenhaft und lichtschwach. Hier reißen sie auf.' },
+    { id: 'veil', type: 'range', label: 'Schleier außen', min: 0, max: 4, step: 0.25, value: F0.veil, fmt: times, set: to('uVeil'),
+      hint: 'Dünnes, fleckiges Gas früherer Auswürfe um beide Keulen (Modell).' },
+    { id: 'ion', type: 'range', label: 'Hörner an der Taille', min: 0, max: 4, step: 0.25, value: F0.ion, fmt: times, set: to('uIon'),
+      hint: 'Offene, gewellte Innenwände nahe der Taille, im Licht des Sterns ionisiert – im sichtbaren Licht die vier „Beine“ der Spinne.' },
     { id: 'fe', type: 'range', group: 'Ausfluss', label: '[Fe II]-Band (S-Form)', min: 0, max: 4, step: 0.25, value: 1, fmt: times, set: to('uFe'),
       hint: 'Ionisiertes Eisen (1,64 µm) zeigt, wo ein schneller Ausfluss an der Keulenwand auf früher ausgeworfenes Gas trifft.' },
     { id: 'flow', type: 'toggle', label: 'Knoten strömen nach außen', value: true, set: (v) => { flowOn = v; } },
@@ -213,6 +258,7 @@ export function create(ctx) {
     { id: 'steps', type: 'range', label: 'Schritte je Bildpunkt', min: 0, max: 3, step: 1, value: fine ? 2 : 1, fmt: (i) => STEPS_N[i], set: to('uSteps', (i) => STEPS[i]),
       hint: 'Mehr Schritte zeigen die dünne Keulenhaut gleichmäßiger, kosten aber Bildrate.' },
   ]);
+  formReady = true;
 
   return {
     scene, camera, unit: LY, hotspots, controls, msaa: false,
