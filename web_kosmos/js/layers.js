@@ -1,17 +1,19 @@
-// Ebenen-Einstellungen je Station (Muster Biochar): Zahnrad-Reiter „Station“ und Zeitleiste über der Fußleiste.
-// Aufbau (Vorschau 26.10.2026 Zahnrad:A + Zahnrad:C): Animation als schlanke Zeile, je group eine Klapp-Zeile mit Kurzwerten im Kopf
-// (mehrere offen, je Station gemerkt in `kosmos.cfgopen.v1`), Sprungleiste der Gruppen oben (bleibt stehen, hebt die sichtbare
-// Gruppe hervor), Einstellung als Zeile Name | Bedienung | Wert.
+// Ebenen-Einstellungen je Station (Muster Biochar): eigenes Fenster „Ebenen“ (Knopf links neben dem Zahnrad, settings.js) und
+// Zeitleiste über der Fußleiste. Aufbau (Vorschau 27.10.2026 Ort:A + Reiter:A): Animation fest oben, darunter Reiter-Leiste der
+// Gruppen (Icon, Kurzname aus tabs.js, Zahl der Ebenen, Punkt bei geändertem Wert; ←/→ wie Reiter), genau eine Gruppe sichtbar
+// (je Station gemerkt in `kosmos.cfgopen.v1`), unten „n geändert · Alle zurücksetzen“; Einstellung als Zeile Name | Bedienung | Wert.
 // Eine Station registriert ihre Ebenen in create(): registerLayers(stationId, layers). Ebene = { id, label, type, value, set, … }
 //   'toggle' an/aus · 'range' (min, max, step, unit, fmt) · 'play' ▶/⏸ mit Regler: set(value, playing), get() → { value, playing },
 //   status() Text für die Zeitleiste · 'action' Knopf: run(), button. sub: true rückt ein (Folgezeilen hängen gemeinsam an der Zeile
-//   davor), hint: Zusatztext unter der Zeile, group: Zwischenüberschrift (gilt ab dieser Ebene bis zur nächsten group),
+//   davor), hint: Zusatztext unter der Zeile, group: Gruppe (gilt ab dieser Ebene bis zur nächsten group; gleicher Kurzname
+//   in tabs.js = ein Reiter, der volle Name steht dann als Zwischenüberschrift im Inhalt),
 //   active() + only: Ebene wirkt gerade nicht (z. B. anderer Kanal) → Zeile abgedunkelt, bleibt bedienbar, darunter only als Grund.
 // Werte je Station in localStorage `kosmos.layers.v1` (nicht der Abspielzustand); URL `?lay=aurora:0,kp:7,clock.play:1` für
 // Screenshots. Aktive Station aus `#station=…` (main.js setzt den Hash per replaceState → ohne Ereignis, daher Takt 300 ms).
 
 import { STATIONS } from './content.js';
 import { prose, nbsp } from './figs.js';
+import { tabOf } from './tabs.js';
 
 const KEY = 'kosmos.layers.v1';
 const PLAY = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l10-6.5z" fill="currentColor"/></svg>';
@@ -31,6 +33,7 @@ const ICONS = {
   layers: '<path d="M12 4l9 4.5-9 4.5-9-4.5z"/><path d="M3 13l9 4.5 9-4.5"/>',
   galaxy: '<path d="M2.5 12c3-2.2 6.2-3 9.5-3s6.5.8 9.5 3c-3 2.2-6.2 3-9.5 3s-6.5-.8-9.5-3z"/><circle cx="12" cy="12" r="2"/>',
   time: '<circle cx="12" cy="12" r="8.5"/><path d="M12 7v5l3.5 2"/>',
+  sound: '<path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path d="M15.5 9a4.2 4.2 0 0 1 0 6M18 6.5a8 8 0 0 1 0 11"/>',
   reset: '<path d="M4 12a8 8 0 1 0 2.3-5.6"/><path d="M4 4v4h4"/>',
   chev: '<path d="M6 9l6 6 6-6"/>',
   // Mini-Bento der Reiter im Zahnrad: Station = eine Kachel gefüllt (diese Station), Global = alle Kacheln (alle Stationen)
@@ -39,11 +42,12 @@ const ICONS = {
 };
 export const icon = (k, cls = 'b-ico') => `<svg class="${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[k] || ICONS.layers}</svg>`;
 // Icon je Gruppen-Name der Stationen (Reihenfolge zählt: „Polarlicht“ vor „Licht“)
-const GROUP_ICONS = [[/Zeit|Animation/, 'time'], [/Polarlicht|Magnet|Feld/, 'field'], [/Licht|Sonne|Korona|Strahlen/, 'sun'],
-  [/Bögen|Flare|Ausbr|Ereignis|Vulkan|Fontän/, 'burst'], [/Himmel|Stern/, 'sky'], [/Ansicht|Station|New Horizons/, 'cam'],
+const GROUP_ICONS = [[/Zeit|Animation/, 'time'], [/^Ton/, 'sound'], [/Optik/, 'fx'], [/Polarlicht|Magnet|Feld/, 'field'], [/Licht|Sonne|Korona|Strahlen/, 'sun'],
+  [/Bögen|Flare|Ausbr|Ereignis|Vulkan|Fontän/, 'burst'], [/Himmel|Stern/, 'sky'], [/Ansicht|Station|New Horizons|Kino/, 'cam'],
   [/Bahn|Mond|Monde|Ring|Planet|System|Umlauf|Jupiter|Neptun|Mars|Triton|Erde|Galaxien|Gezeiten/, 'orbit'], [/Farb|Glut/, 'look']];
 const groupIcon = (t) => (GROUP_ICONS.find(([re]) => re.test(t)) || [0, 'layers'])[1];
-const plaque = (k) => `<span class="b-plaque">${icon(k)}</span>`;
+// Reiter: zuerst der Kurzname, sonst der volle Name der ersten Gruppe („Bögen“ → burst, nicht field aus „Magnetbögen“)
+const tabIcon = (g) => { const k = groupIcon(g.title); return k === 'layers' ? groupIcon(g.segs[0].title) : k; };
 // Geänderte Werte (Vorschau Global:C, verdichtet 26.10.2026): ↺-Knopf am Zeilenende in fester Spalte statt eigener Zeile
 // „geändert · Standard“; „n geändert · Alle zurücksetzen“ als kompakter Knopf rechts in der Sprungleiste
 export const devLine = (k, label = '') => `<div class="b-dev" data-dev-of="${k}"><button type="button" class="b-reset b-reset--ico" data-reset="${k}" title="Auf Standard zurücksetzen" aria-label="${label ? `${esc(label)}: ` : ''}auf Standard zurücksetzen">${icon('reset')}</button></div>`;
@@ -58,7 +62,7 @@ export function markDevs(root, isDev) {
   let n = 0;
   root.querySelectorAll('[data-dev-of]').forEach((d) => { const on = isDev(d.dataset.devOf); d.closest('.b-item').classList.toggle('is-dev', on); n += on; });
   const bar = root.querySelector('.b-devbar');
-  if (bar) { bar.hidden = !n; bar.querySelector('[data-devn]').textContent = n; bar.closest('.cfg-bar').classList.toggle('has-dev', !!n); }
+  if (bar) { bar.hidden = !n; bar.querySelector('[data-devn]').textContent = n; const cb = bar.closest('.cfg-bar'); if (cb) cb.classList.toggle('has-dev', !!n); }
 }
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const store = (() => { try { const s = JSON.parse(localStorage.getItem(KEY)); return s && typeof s === 'object' ? s : {}; } catch { return {}; } })();
@@ -68,8 +72,8 @@ const url = (() => {
   return o;
 })();
 const reg = new Map();
-let currentId = null, gearEl = null, headEl = null, nameEl = null, stripEl = null, stripOn = () => true, gs = [], scroller = null;
-// offene Gruppen je Station (Indizes der group); ohne Eintrag ist die erste Gruppe offen
+let currentId = null, gearEl = null, onInfo = () => {}, stripEl = null, stripOn = () => true, gs = [], tabs = [];
+// offene Gruppe je Bereich: Station = gewählter Reiter (Index in gs), Global = offene Klapp-Gruppe; ohne Eintrag die erste
 const OPEN_KEY = 'kosmos.cfgopen.v1';
 const openStore = (() => { try { const s = JSON.parse(localStorage.getItem(OPEN_KEY)); return s && typeof s === 'object' ? s : {}; } catch { return {}; } })();
 
@@ -126,12 +130,20 @@ const rowHtml = (l) => {
   return row + (l.hint ? `<p class="cfg-note lay-hint">${prose(l.hint)}</p>` : '') + (l.only ? `<p class="cfg-note lay-hint" data-only="${l.id}" hidden>${prose(l.only)}</p>` : '');
 };
 
+// Gruppen nach Kurzname (tabs.js): gleicher Kurzname = ein Reiter, je voller Name ein Abschnitt (segs) darin
 function groups(layers) {
   const out = [];
+  let seg = null;
   for (const l of layers) {
-    if (l.group || !out.length) out.push({ title: l.group || 'Ebenen', items: [] });
-    const g = out[out.length - 1];
-    if (l.sub && g.items.length) g.items[g.items.length - 1].subs.push(l); else g.items.push({ l, subs: [] });
+    if (l.group || !seg) {
+      const name = l.group || 'Ebenen', title = tabOf(name);
+      let g = out.find((x) => x.title === title);
+      if (!g) out.push(g = { title, items: [], segs: [] });
+      seg = g.segs.find((s) => s.title === name);
+      if (!seg) g.segs.push(seg = { title: name, g, items: [] });
+    }
+    if (l.sub && seg.items.length) seg.items[seg.items.length - 1].subs.push(l);
+    else { const it = { l, subs: [] }; seg.items.push(it); seg.g.items.push(it); }
   }
   return out;
 }
@@ -151,31 +163,40 @@ function timeCard(g) {
   </article>`;
 }
 
-// Kurzwerte im Kopf einer zugeklappten Gruppe: benannte/gezählte Werte der Hauptzeilen, dazu „n von m an“
-function summary(g) {
-  const parts = [];
-  let on = 0, n = 0;
-  for (const { l } of g.items) {
-    if (l.type === 'toggle') { n++; on += l.value ? 1 : 0; } else if (l.type === 'range' && parts.length < 2) parts.push(fmtVal(l, l.value));
-  }
-  if (n) parts.push(`${on} von ${n} an`);
-  return parts.join(' · ');
-}
 // offene Gruppe je Bereich (Station-Id, Reiter Global = '_global'); ohne Eintrag ist die erste Gruppe offen; immer nur eine offen
 export const isOpenIn = (key, i, first) => (Array.isArray(openStore[key]) ? openStore[key][0] === i : i === first);
-const isOpen = (i, first) => isOpenIn(currentId, i, first);
-const foldCard = (g, i, open) => `<article class="b-card b-fold${open ? ' is-open' : ''}" data-g="g${i}" data-fold="${i}">
-  <h4 class="b-fold-h"><button type="button" class="b-head" aria-expanded="${open}" aria-controls="lay-b${i}">${plaque(groupIcon(g.title))}<span class="b-name">${esc(g.title)}</span>
-    <span class="b-sum" data-sum="${i}"></span><span class="b-count" aria-label="${count(g)} Ebenen">${count(g)}</span>${icon('chev', 'b-chev')}</button></h4>
-  <div class="b-body" id="lay-b${i}"${open ? '' : ' hidden'}>${g.items.map(block).join('')}</div></article>`;
+const isPlay = (g) => g.items[0].l.type === 'play';
+const changed = (l) => resettable(l) && l.value !== l.def;
+const allOf = (g) => g.items.flatMap(({ l, subs }) => [l, ...subs]);
+// Inhalt eines Reiters; Zwischenüberschrift je vollem Gruppen-Namen, wenn er vom Kurznamen abweicht oder mehrere zusammenliegen
+const tabBody = (g) => g.segs.map((s) => `${g.segs.length > 1 || s.title !== g.title ? `<h5 class="b-subh">${esc(s.title)}</h5>` : ''}${s.items.map(block).join('')}`).join('');
+// Reiter in gleich vollen Zeilen: breit höchstens 6 nebeneinander, schmal (Container cfg ≤ 420 px) höchstens 4
+const cols = (n, max) => Math.ceil(n / Math.ceil(n / max));
+const tabBtn = (i, on) => `<button type="button" role="tab" class="lay-tab" id="lay-t${i}" data-ltab="${i}" aria-controls="lay-p${i}" aria-selected="${on}" tabindex="${on ? 0 : -1}">
+  <span class="lay-tab-ico">${icon(tabIcon(gs[i]))}<span class="lay-tab-dot" aria-hidden="true"></span><span class="lay-tab-n" aria-hidden="true">${count(gs[i])}</span></span><span class="lay-tab-t">${esc(gs[i].title)}</span></button>`;
 
 function gearHtml(layers) {
   gs = groups(layers);
-  const first = gs.findIndex((g) => g.items[0].l.type !== 'play');
-  const folds = gs.map((g, i) => (g.items[0].l.type === 'play' ? '' : `${i}`)).filter(Boolean);
-  const jump = folds.length > 1 ? `<nav class="cfg-jump" aria-label="Gruppen der Station">${folds.map((i) => `<button type="button" class="cfg-jump-btn" data-jump="${i}">${icon(groupIcon(gs[i].title))}<span>${esc(gs[i].title)}</span></button>`).join('')}</nav>` : '';
-  const cards = gs.map((g, i) => (g.items[0].l.type === 'play' ? timeCard(g) : foldCard(g, i, isOpen(i, first)))).join('');
-  return `<div class="b-main">${cfgBar(jump)}<div class="bento b-list">${cards}</div></div>`;
+  tabs = gs.map((g, i) => (isPlay(g) ? -1 : i)).filter((i) => i >= 0);
+  const saved = (openStore[currentId] || [])[0], cur = tabs.includes(saved) ? saved : tabs[0], bar = tabs.length > 1;
+  const strip = bar ? `<div class="lay-tabs" role="tablist" aria-label="Gruppen der Station" style="--cols:${cols(tabs.length, 6)};--cols-s:${cols(tabs.length, 4)}">${tabs.map((i) => tabBtn(i, i === cur)).join('')}</div>` : '';
+  const panels = tabs.map((i) => `<div class="lay-panel b-body" id="lay-p${i}" ${bar ? `role="tabpanel" aria-labelledby="lay-t${i}"` : `role="group" aria-label="${esc(gs[i].title)}"`}${i === cur ? '' : ' hidden'}>${tabBody(gs[i])}</div>`).join('');
+  return `<div class="b-main">${gs.filter(isPlay).map(timeCard).join('')}${strip}${panels}<div class="lay-foot">${devBar()}</div></div>`;
+}
+// Reiter wählen (Klick, ←/→, Pos1/Ende) und merken
+function pickTab(i, focus) {
+  gearEl.querySelectorAll('[data-ltab]').forEach((t) => { const on = +t.dataset.ltab === i; t.setAttribute('aria-selected', String(on)); t.tabIndex = on ? 0 : -1; if (on && focus) t.focus(); });
+  gearEl.querySelectorAll('.lay-panel').forEach((p) => { p.hidden = p.id !== `lay-p${i}`; });
+  openStore[currentId] = [i];
+  try { localStorage.setItem(OPEN_KEY, JSON.stringify(openStore)); } catch { /* privates Fenster */ }
+}
+function onKey(e) {
+  const t = e.target.closest && e.target.closest('[data-ltab]');
+  if (!t || !['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(e.key)) return;
+  e.preventDefault();
+  e.stopPropagation();   // sonst fliegt main.js mit ←/→ zur Nachbarstation
+  const k = tabs.indexOf(+t.dataset.ltab), n = tabs.length;
+  pickTab(tabs[e.key === 'Home' ? 0 : e.key === 'End' ? n - 1 : (k + (e.key === 'ArrowRight' ? 1 : n - 1)) % n], true);
 }
 
 function saveOpen(key, root) {
@@ -202,7 +223,6 @@ export function spyIn(root, sc) {
   }
   bar.querySelectorAll('[data-jump]').forEach((b) => b.setAttribute('aria-current', String(!!cur && cur.dataset.fold === b.dataset.jump)));
 }
-const spy = () => spyIn(gearEl, scroller);
 // Klick auf Gruppenkopf (auf/zu) oder Sprungleiste (öffnen + hinscrollen); true = erledigt
 export function foldClick(root, e, key, sc) {
   const h = e.target.closest('.b-fold .b-head');
@@ -235,11 +255,10 @@ export function domSummary(body) {
 function render() {
   if (gearEl) {
     const layers = reg.get(currentId), st = STATIONS[currentId];
-    if (headEl) headEl.textContent = layers ? layers.length : 0;
-    if (nameEl) nameEl.textContent = st ? st.title : '…';
     gearEl.innerHTML = layers ? gearHtml(layers)
       : '<p class="cfg-note">Diese Station hat noch keine Ebenen-Einstellungen – ihre Schalter stehen in der Infotafel.</p>';
-    if (!layers) gs = [];
+    if (!layers) { gs = []; tabs = []; }
+    onInfo({ title: st ? st.title : '…', n: layers ? layers.length : 0, groups: tabs.length });
   }
   if (stripEl) {
     const l = (reg.get(currentId) || []).find((x) => x.type === 'play');
@@ -250,7 +269,6 @@ function render() {
       <input type="range" data-lay="${l.id}" min="${l.min}" max="${l.max}" step="${l.step ?? 1}" aria-label="${esc(l.label)}: Tempo"><output data-lout="${l.id}"></output>`;
   }
   sync();
-  spy();
 }
 // Stationen gleichen Infotafel und Zahnrad aus set() heraus ab: nur Werte nachziehen, nicht neu aufbauen – ein Neuaufbau ersetzt
 // den Regler, den man gerade zieht, und das Ziehen bricht ab. Neu aufbauen nur, wenn sich der Aufbau ändert (Zeitleiste an/aus).
@@ -284,8 +302,14 @@ function sync() {
     root.querySelectorAll('[data-only]').forEach((p) => { const l = find(p.dataset.only); const idle = !!l && !!l.active && !l.active(); p.hidden = !idle; p.parentElement.classList.toggle('is-idle', idle); });
   }
   if (gearEl && !gearEl.hidden) {
-    markDevs(gearEl, (id) => { const l = find(id); return !!l && l.value !== l.def; });
-    gearEl.querySelectorAll('[data-sum]').forEach((el) => { const g = gs[+el.dataset.sum]; const t = g ? nbsp(summary(g)) : ''; if (el.textContent !== t) el.textContent = t; });
+    markDevs(gearEl, (id) => { const l = find(id); return !!l && changed(l); });
+    // Punkt am Reiter: in dieser Gruppe weicht ein Wert vom Standard ab (Vorschau 27.10.2026 F3)
+    gearEl.querySelectorAll('[data-ltab]').forEach((t) => {
+      const g = gs[+t.dataset.ltab], dev = !!g && allOf(g).some(changed);
+      t.classList.toggle('has-dev', dev);
+      const lab = `${g ? g.title : ''}, ${g ? count(g) : 0} Ebenen${dev ? ', geändert' : ''}`;
+      if (t.getAttribute('aria-label') !== lab) t.setAttribute('aria-label', lab);
+    });
   }
 }
 
@@ -298,7 +322,8 @@ function onInput(e) {
   sync();
 }
 function onClick(e) {
-  if (gearEl && foldClick(gearEl, e, currentId, scroller)) return;
+  const t = e.target.closest('[data-ltab]');
+  if (t && gearEl && gearEl.contains(t)) { pickTab(+t.dataset.ltab); return; }
   const r = e.target.closest('[data-reset]');
   if (r && gearEl && gearEl.contains(r)) {
     for (const l of reg.get(currentId) || []) if (resettable(l) && (r.dataset.reset === '*' || r.dataset.reset === l.id) && l.value !== l.def) { l.value = l.def; l.set(l.value); persist(l); }
@@ -319,10 +344,10 @@ function poll() {
   if (id !== currentId) { currentId = id; render(); }
 }
 
-export function mountLayers({ gear, head, name, strip, stripOn: on }) {
-  gearEl = gear; headEl = head || null; nameEl = name || null; stripEl = strip; stripOn = on || stripOn;
-  scroller = gear.closest('.cfg');
-  if (scroller) scroller.addEventListener('scroll', spy, { passive: true });
+// info({ title, n, groups }) nach jedem Aufbau: Name der Station, Zahl der Ebenen und Reiter (Knopf, Fenster-Kopf, Verweis im Zahnrad)
+export function mountLayers({ gear, info, strip, stripOn: on }) {
+  gearEl = gear; onInfo = info || onInfo; stripEl = strip; stripOn = on || stripOn;
+  gearEl.addEventListener('keydown', onKey);
   for (const root of [gearEl, stripEl]) { if (!root) continue; root.addEventListener('input', onInput); root.addEventListener('click', onClick); }
   window.addEventListener('hashchange', poll);
   poll();
