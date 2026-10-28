@@ -867,6 +867,7 @@ async function startOpener(lv) {
   opener.film.playing = false;
   state.opener = { o: opener, lv, skip: 0 };
   hud.intro(true);
+  document.body.classList.add('is-opener');   // Hinweis „Click to skip“
   hud.caption(null);
   state.controls.enabled = false;
 }
@@ -906,6 +907,7 @@ function endOpener() {
   lv.target = lv.home.target.clone();
   hud.hint('');
   hud.intro(false);
+  document.body.classList.remove('is-opener');
   hud.caption(lv.meta, true);
   state.controls.target.copy(lv.target);
   state.controls.enabled = true;
