@@ -1,9 +1,9 @@
-// Einstellungen je Station (Muster Biochar): Reiter „Station“ der rechten Spalte (settings.js) und Zeitleiste (Player)
-// unten links. Aufbau (Vorschau 28.10.2026 Reiter:C, zweite Vorschau 28.10.2026 „Regler der Infotafel in den Reiter Station“
-// Reiter:C): oben Block „Zeigen“ (▶/⏸ + Stand, Zeitachse mit Spielkopf und Ereignismarken, Tempo, „Nächstes · Springen“,
-// Zeit-Regler und Ereignis-Knöpfe), darunter „Einstellungen“: Gruppen als Unterstrich-Reiter in einer Zeile (Kurzname aus tabs.js
-// + Zahl der Ebenen, Punkt bei geändertem Wert; ←/→ wie Reiter, seitlich schiebbar, bleibt beim Scrollen oben stehen), genau eine
-// Gruppe sichtbar (je Station gemerkt in `kosmos.cfgopen.v1`), Fuß „nur an dieser Station · Alle zurücksetzen“.
+// Einstellungen je Station (Muster Biochar): Panel „Station“ links am Rand (settings.js, Vorschau 28.10.2026 Menü:C) und
+// Zeitleiste (Player) in der Fußzeile. Panel: Leiste links (erster Eintrag „Ereignisse“ = Block „Zeigen“, darunter die Gruppen
+// mit Icon, Name und Zahl, Punkt bei geändertem Wert, ↑/↓ wie Reiter), Bühne rechts mit Titel der Gruppe + Inhalt, scrollt allein;
+// Fuß „Diese Station · n Einstellungen · Alle zurücksetzen“ steht. Genau ein Eintrag sichtbar (je Station gemerkt in
+// `kosmos.cfgopen.v1`). Block „Zeigen“ (Vorschau 28.10.2026 „Regler der Infotafel in den Reiter Station“ Reiter:C): ▶/⏸ + Stand,
+// Zeitachse mit Spielkopf und Ereignismarken, Tempo, „Nächstes · Springen“, Zeit-Regler und Ereignis-Knöpfe.
 // Die Schalter der Station (`lv.controls`, früher in der Infotafel; hud.js meldet sie mit setControls) stehen als erste Gruppe
 // „Ansicht“; Knöpfe ('action') und Regler mit show: true (Jahr, Stelle im Film …) gehören in den Block „Zeigen“, ebenso Ebenen
 // mit show: true und alles in der Gruppe der ▶-Ebene. Ihre Werte bleiben ungespeichert wie bisher (?ctl= in main.js setzt sie).
@@ -207,12 +207,12 @@ function showHtml(items) {
   const rows = items.filter((l) => l !== p && !(axis && l.at));
   const head = p
     ? `<div class="zg-head"><button type="button" class="play-btn play-btn--lg" data-play="${p.id}" aria-pressed="false" aria-label="${esc(p.label)} abspielen">${PLAY}</button>
-        <span class="zg-text"><span class="zg-title">Zeigen · <span data-status="${p.id}"></span></span><span class="zg-sub" data-chip="${p.id}"></span></span>
+        <span class="zg-text"><span class="zg-title" data-status="${p.id}"></span><span class="zg-sub" data-chip="${p.id}"></span></span>
         <output class="zg-big" data-lout="${p.id}"></output></div>
       ${axis ? `<div class="zg-axis" data-axis="${p.id}"><div class="zg-rail zg-rail--m" data-amarks></div><div class="zg-line" data-aline><span class="zg-now" aria-hidden="true"></span></div><div class="zg-rail zg-rail--t" data-aticks></div></div>` : ''}
       <label class="zg-tempo"><span class="cfg-label">Tempo</span>${range(p, `${p.label}: Tempo`)}</label>
       ${axis ? `<div class="zg-next" data-anext hidden><span class="zg-next-t"><span>Nächstes: <b data-next-name></b></span><span class="zg-sub" data-next-in></span></span><button type="button" class="act-btn" data-next>Springen</button></div>` : ''}`
-    : '<div class="zg-head"><span class="zg-title">Zeigen</span></div>';
+    : '';
   return `<section class="zg" aria-label="Zeigen">${head}${rows.map((l) => `<div class="b-item">${rowHtml(l)}</div>`).join('')}${p && p.hint ? `<p class="cfg-note lay-hint">${prose(p.hint)}</p>` : ''}</section>`;
 }
 
@@ -225,42 +225,47 @@ const tabBody = (g) => g.segs.map((s) => {
   const scope = s.items[0] && s.items[0].l.scope;
   return `${g.segs.length > 1 || s.title !== g.title || scope ? `<h5 class="b-subh">${esc(s.title)}</h5>` : ''}${scope ? `<p class="cfg-note lay-hint">${prose(scope)}</p>` : ''}${s.items.map(block).join('')}`;
 }).join('');
-// Gruppen als quadratische Kacheln mit Icon wie in den Einstellungen (User 28.10.2026); Punkt = Wert weicht vom Standard ab
-const tabBtn = (i, on) => `<button type="button" role="tab" class="cfg-tile lay-tab" id="lay-t${i}" data-ltab="${i}" aria-controls="lay-p${i}" aria-selected="${on}" tabindex="${on ? 0 : -1}">${icon(tabIcon(gs[i].title), 'cfg-tile-ico')}<span>${esc(gs[i].title)}<span class="lay-tab-dot" aria-hidden="true"></span></span></button>`;
+// Leiste links (Menü:C): Eintrag je Gruppe mit Icon, Kurzname und Zahl; „Ereignisse“ (Block „Zeigen“) als erster Eintrag mit
+// ▶/⏸-Zustand, Zahl der Ereignisse und Punkt bei anstehendem Ereignis. Index -1 = Ereignisse; Punkt an Gruppen = Wert geändert
+const tid = (i) => (i < 0 ? 'z' : i);
+const evN = () => shows.filter((l) => l.type === 'action').length;
+const tabBtn = (i, on) => {
+  const z = i < 0, name = z ? 'Ereignisse' : gs[i].title, n = z ? evN() : count(gs[i]);
+  const ico = z ? `<span class="st-play" data-rail-play aria-hidden="true">${PLAY}</span>` : icon(tabIcon(gs[i].title), 'st-tab-ico');
+  return `<button type="button" role="tab" class="st-tab lay-tab" id="lay-t${tid(i)}" data-ltab="${i}" aria-controls="lay-p${tid(i)}" aria-selected="${on}" tabindex="${on ? 0 : -1}">${ico}<span class="st-tab-name">${esc(name)}</span>${n ? `<span class="st-tab-n">${n}</span>` : ''}<span class="lay-tab-dot" aria-hidden="true"></span></button>`;
+};
+const stageHead = (name, n) => `<h3 class="st-title">${esc(name)}${n ? `<span class="st-title-n">${n}</span>` : ''}</h3>`;
 
 function gearHtml(layers) {
   gs = groups(layers);
-  tabs = gs.map((g, i) => (isPlay(g) ? -1 : i)).filter((i) => i >= 0);
-  // Zeigen: Gruppe der ▶-Ebene (mit Unter-Zeilen) + alle show-Zeilen in ihrer Reihenfolge
+  // Ereignisse: Gruppe der ▶-Ebene (mit Unter-Zeilen) + alle show-Zeilen in ihrer Reihenfolge
   shows = [...gs.filter(isPlay).flatMap(itemsOf), ...layers.filter((l) => l.show)];
-  const saved = (openStore[currentId] || [])[0], cur = tabs.includes(saved) ? saved : tabs[0], bar = tabs.length > 1;
-  const strip = bar ? `<div class="lay-tabs" role="tablist" aria-label="Gruppen der Station">${tabs.map((i) => tabBtn(i, i === cur)).join('')}</div>` : '';
-  const panels = tabs.map((i) => `<div class="lay-panel b-body" id="lay-p${i}" ${bar ? `role="tabpanel" aria-labelledby="lay-t${i}"` : `role="group" aria-label="${esc(gs[i].title)}"`}${i === cur ? '' : ' hidden'}>${tabBody(gs[i])}</div>`).join('');
-  const set = tabs.length ? `<h4 class="zg-set-h">Einstellungen</h4>${strip}${panels}` : '';
-  return `<div class="b-main lay-scroll">${shows.length ? showHtml(shows) : ''}${set}</div><div class="cfg-foot"><span class="cfg-scope">Diese Station · <span data-lay-sum></span></span>${devBar()}</div>`;
+  tabs = [...(shows.length ? [-1] : []), ...gs.map((g, i) => (isPlay(g) ? -1 : i)).filter((i) => i >= 0)];
+  const saved = (openStore[currentId] || [])[0], cur = tabs.includes(saved) ? saved : tabs[0];
+  const rail = `<div class="st-rail" role="tablist" aria-orientation="vertical" aria-label="Gruppen der Station">${tabs.map((i) => tabBtn(i, i === cur)).join('')}</div>`;
+  const panels = tabs.map((i) => `<div class="lay-panel b-body" id="lay-p${tid(i)}" role="tabpanel" aria-labelledby="lay-t${tid(i)}"${i === cur ? '' : ' hidden'}>${i < 0 ? stageHead('Ereignisse', evN()) + showHtml(shows) : stageHead(gs[i].title, count(gs[i])) + tabBody(gs[i])}</div>`).join('');
+  return `${rail}<div class="st-stage lay-scroll">${panels}</div><div class="cfg-foot"><span class="cfg-scope">Diese Station · <span data-lay-sum></span></span>${devBar()}</div>`;
 }
-// Reiter wählen (Klick, ←/→, Pos1/Ende) und merken
+// Eintrag wählen (Klick, ↑/↓, ←/→, Pos1/Ende) und merken; Bühne beginnt oben
 function pickTab(i, focus) {
-  gearEl.querySelectorAll('[data-ltab]').forEach((t) => { const on = +t.dataset.ltab === i; t.setAttribute('aria-selected', String(on)); t.tabIndex = on ? 0 : -1; if (on) { showTab(t); if (focus) t.focus(); } });
-  gearEl.querySelectorAll('.lay-panel').forEach((p) => { p.hidden = p.id !== `lay-p${i}`; });
+  gearEl.querySelectorAll('[data-ltab]').forEach((t) => { const on = +t.dataset.ltab === i; t.setAttribute('aria-selected', String(on)); t.tabIndex = on ? 0 : -1; if (on && focus) t.focus(); });
+  gearEl.querySelectorAll('.lay-panel').forEach((p) => { p.hidden = p.id !== `lay-p${tid(i)}`; });
+  const st = gearEl.querySelector('.st-stage');
+  if (st) st.scrollTop = 0;
   openStore[currentId] = [i];
   try { localStorage.setItem(OPEN_KEY, JSON.stringify(openStore)); } catch { /* privates Fenster */ }
+  sync();   // Zeitachse braucht die Breite der sichtbaren Bühne
 }
+const PREV = ['ArrowUp', 'ArrowLeft'], NEXT = ['ArrowDown', 'ArrowRight'];
 function onKey(e) {
   const t = e.target.closest && e.target.closest('[data-ltab]');
-  if (!t || !['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(e.key)) return;
+  if (!t || ![...PREV, ...NEXT, 'Home', 'End'].includes(e.key)) return;
   e.preventDefault();
   e.stopPropagation();   // sonst fliegt main.js mit ←/→ zur Nachbarstation
   const k = tabs.indexOf(+t.dataset.ltab), n = tabs.length;
-  pickTab(tabs[e.key === 'Home' ? 0 : e.key === 'End' ? n - 1 : (k + (e.key === 'ArrowRight' ? 1 : n - 1)) % n], true);
+  pickTab(tabs[e.key === 'Home' ? 0 : e.key === 'End' ? n - 1 : (k + (NEXT.includes(e.key) ? 1 : n - 1)) % n], true);
 }
 
-// Gewählten Reiter in der seitlich schiebbaren Zeile ganz sichtbar halten (ohne die Spalte selbst zu scrollen)
-function showTab(t) {
-  const row = t.parentElement, l = t.offsetLeft - row.offsetLeft, r = l + t.offsetWidth;
-  if (l < row.scrollLeft + 8) row.scrollLeft = l - 24;
-  else if (r > row.scrollLeft + row.clientWidth - 8) row.scrollLeft = r - row.clientWidth + 24;
-}
 function render() {
   evc = null;   // neue Zeilen (z. B. Knöpfe der Infotafel kommen nach den Ebenen) → Ereignisse neu suchen
   if (gearEl) {
@@ -269,7 +274,7 @@ function render() {
     if (!layers) { gs = []; tabs = []; }
     onInfo({ title: st ? st.title : '…', n: layers ? layers.length : 0, groups: tabs.length });
     const sum = gearEl.querySelector('[data-lay-sum]');
-    if (sum) sum.textContent = gearEl.closest('.cfg').dataset.laySum || '';
+    if (sum) sum.textContent = gearEl.closest('.station').dataset.laySum || '';
   }
   if (stripEl) {
     const l = (allOf(currentId) || []).find((x) => x.type === 'play');
@@ -425,13 +430,17 @@ function sync() {
     syncAxis(gearEl);
     syncYears(gearEl);
     markDevs(gearEl, (id) => { const l = find(id); return !!l && changed(l); });
-    // Punkt am Reiter: in dieser Gruppe weicht ein Wert vom Standard ab (Vorschau 27.10.2026 F3)
+    // Punkt am Eintrag: in dieser Gruppe weicht ein Wert vom Standard ab (Vorschau 27.10.2026 F3); Ereignisse: eins steht an
+    const p = shows.find((l) => l.type === 'play'), on = !!p && playing(p), soon = !!gearEl.querySelector('[data-amarks] [data-mark]');
     gearEl.querySelectorAll('[data-ltab]').forEach((t) => {
-      const g = gs[+t.dataset.ltab], dev = !!g && itemsOf(g).some(changed);
+      const i = +t.dataset.ltab, g = gs[i], z = i < 0, dev = z ? soon : !!g && itemsOf(g).some(changed);
       t.classList.toggle('has-dev', dev);
-      const lab = `${g ? g.title : ''}, ${g ? count(g) : 0} Einstellungen${dev ? ', geändert' : ''}`;
+      const lab = z ? `Ereignisse, ${evN()}${p ? `, ${on ? 'läuft' : 'angehalten'}` : ''}${soon ? ', Ereignis steht an' : ''}`
+        : `${g ? g.title : ''}, ${g ? count(g) : 0} Einstellungen${dev ? ', geändert' : ''}`;
       if (t.getAttribute('aria-label') !== lab) t.setAttribute('aria-label', lab);
     });
+    const rp = gearEl.querySelector('[data-rail-play]');
+    if (rp && rp.dataset.on !== String(on)) { rp.dataset.on = String(on); rp.innerHTML = on ? PAUSE : PLAY; }
   }
 }
 

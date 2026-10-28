@@ -32,6 +32,7 @@
   --focus: #9cc8ff;
   --radius: 6px;
   --panel-w: 440px;
+  --st-w: 460px;
   --ease-out: cubic-bezier(0.2, 0.7, 0.2, 1);
   --font: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
   --mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
@@ -50,7 +51,7 @@ ul, ol { padding: 0; list-style: none; }
 
 #stage { position: fixed; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; outline: none; }
 
-.glass, .panel, .nav-btn, .hs-card, .pull, .measure, .top-actions {
+.glass, .panel, .station, .nav-btn, .hs-card, .pull, .measure, .top-actions {
   background: var(--glass);
   border: 1px solid var(--line);
   box-shadow: var(--pane-shadow);
@@ -289,12 +290,19 @@ body.is-opener .skip-cue { opacity: 0.75; transition: opacity 1.2s var(--ease-ou
   hyphenate-limit-chars: 16 7 7; text-wrap: pretty; line-height: 1.5;
 }
 
-/* ---------- Rechte Spalte (Fenster:C): genau einer der Inhalte Infotafel | Station | Einstellungen (Knöpfe der Kopfleiste);
+/* ---------- Rechte Spalte (Fenster:C): Infotafel oder Einstellungen (Knöpfe der Kopfleiste);
    Eck-Marken oben links und unten rechts. Inhalt scrollt in sich, die Spalte steht. ---------- */
 .panel { grid-area: panel; position: relative; margin: 10px 16px 12px 0; border-radius: var(--radius); min-height: 0; display: flex; flex-direction: column; }
-.panel::before, .panel::after { content: ""; position: absolute; z-index: 3; width: 10px; height: 10px; border: 0 solid rgba(var(--accent-rgb), 0.8); pointer-events: none; }
-.panel::before { left: -1px; top: -1px; border-width: 1px 0 0 1px; border-top-left-radius: var(--radius); }
-.panel::after { right: -1px; bottom: -1px; border-width: 0 1px 1px 0; border-bottom-right-radius: var(--radius); }
+.panel::before, .panel::after, .station::before, .station::after { content: ""; position: absolute; z-index: 3; width: 10px; height: 10px; border: 0 solid rgba(var(--accent-rgb), 0.8); pointer-events: none; }
+:is(.panel, .station)::before { left: -1px; top: -1px; border-width: 1px 0 0 1px; border-top-left-radius: var(--radius); }
+:is(.panel, .station)::after { right: -1px; bottom: -1px; border-width: 0 1px 1px 0; border-bottom-right-radius: var(--radius); }
+/* Panel Station links am Rand (Vorschau 28.10.2026 Menü:C): in der Bühnen-Zeile zwischen Stationsleiste (auch 2. Zeile) und
+   Fußzeile, senkrecht mittig, nie darüber; Inhalt in layers.css. Abzeichen und Info-Karte weichen ihm aus (hud.js uiBoxes),
+   der Kapitel-Titel rückt rechts daneben. */
+.station { grid-area: stage; justify-self: start; align-self: center; position: relative; z-index: 2; width: min(var(--st-w), calc(100% - 32px));
+  height: min(640px, calc(100% - 22px - var(--band-low, 0px))); margin: calc(10px + var(--band-low, 0px)) 0 12px 16px; border-radius: var(--radius); display: flex; flex-direction: column; outline: none; }
+.station[hidden] { display: none; }
+body.st-open .caption { left: calc(var(--st-w) + 32px); }
 /* Eck-Marken auch an der Info-Karte (Bild:C) */
 .hs-card::before, .hs-card::after { content: ""; position: absolute; z-index: 3; width: 10px; height: 10px; border: 0 solid rgba(var(--accent-rgb), 0.8); pointer-events: none; }
 .hs-card::before { left: 0; top: 0; border-width: 1px 0 0 1px; border-top-left-radius: var(--radius); }
@@ -318,11 +326,11 @@ body.is-opener .skip-cue { opacity: 0.75; transition: opacity 1.2s var(--ease-ou
 .u-tab:focus-visible { outline: 2px solid var(--focus); outline-offset: -2px; }
 .u-tabs--sub .u-tab { min-height: 36px; padding: 9px 9px 8px; font-size: 12.5px; }
 /* Scrollbereiche: schmaler, dezenter Balken statt Standard-Scrollbar (RULES.md §3) */
-.panel-body, #cfg-global, .lay-scroll { scrollbar-width: thin; scrollbar-color: rgba(255, 255, 255, 0.22) transparent; }
-:is(.panel-body, #cfg-global, .lay-scroll)::-webkit-scrollbar { width: 6px; height: 6px; }
-:is(.panel-body, #cfg-global, .lay-scroll)::-webkit-scrollbar-track { background: transparent; }
-:is(.panel-body, #cfg-global, .lay-scroll)::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.22); border-radius: 3px; }
-:is(.panel-body, #cfg-global, .lay-scroll)::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.38); }
+.panel-body, #cfg-global, .lay-scroll, .st-rail { scrollbar-width: thin; scrollbar-color: rgba(255, 255, 255, 0.22) transparent; }
+:is(.panel-body, #cfg-global, .lay-scroll, .st-rail)::-webkit-scrollbar { width: 6px; height: 6px; }
+:is(.panel-body, #cfg-global, .lay-scroll, .st-rail)::-webkit-scrollbar-track { background: transparent; }
+:is(.panel-body, #cfg-global, .lay-scroll, .st-rail)::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.22); border-radius: 3px; }
+:is(.panel-body, #cfg-global, .lay-scroll, .st-rail)::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.38); }
 body.cfg-open :is(.panel-body, .panel-foot) { display: none; }
 /* Fuß der Infotafel steht unter dem Scrollbereich (Tafel:C, Fehler „Fuß abgeschnitten“): Zustand der Station */
 .panel-foot { flex: none; display: flex; flex-direction: column; gap: 8px; padding: 10px 18px 14px; border-top: 1px solid var(--line); }
@@ -756,7 +764,7 @@ body.fatal-webgl .fatal-webgl, body.fatal-start .fatal-start { display: block; }
 
 /* ---------- schmal ---------- */
 @media (max-width: 1180px) {
-  :root { --panel-w: 380px; }
+  :root { --panel-w: 380px; --st-w: 420px; }
   .measure { grid-template-columns: repeat(2, auto); }
   .measure div:nth-child(3) { border-left: 0; }
   .measure div:nth-child(n+3) { border-top: 1px solid var(--line); }
@@ -772,6 +780,8 @@ body.fatal-webgl .fatal-webgl, body.fatal-start .fatal-start { display: block; }
   .top-actions, body.panel-off .top-actions { flex-direction: row; align-self: center; padding: 4px 12px 0 0; }
   .panel { margin: 0 10px 6px; max-height: 32vh; }
   body.cfg-open .panel { max-height: 58vh; }
+  .station { justify-self: stretch; width: auto; height: calc(100% - 12px); margin: 6px 10px; }
+  body.st-open .panel { display: none; }
   .panel-body { padding: 14px 14px 16px; gap: 12px; }
   .st-title { font-size: 24px; }
   .band { margin: 0 10px; }
@@ -790,7 +800,7 @@ body.fatal-webgl .fatal-webgl, body.fatal-start .fatal-start { display: block; }
   .measure { grid-template-columns: 1fr 1fr; }
   .measure div { min-height: 44px; padding: 5px 12px; }
   .caption { left: 0; right: 0; top: 16%; bottom: auto; padding: 0 16px; }
-  body.cfg-open .caption { visibility: hidden; }   /* Fenster in der Spalte reicht bis über die Bildmitte: Ankunftstitel weicht */
+  body.cfg-open .caption, body.st-open .caption { visibility: hidden; }   /* Fenster in der Spalte reicht bis über die Bildmitte: Ankunftstitel weicht */
   .cap-title { font-size: clamp(30px, 9cqi, 44px); letter-spacing: 0.16em; padding-left: 0.16em; }
   .caption.is-on .cap-title { letter-spacing: 0.1em; padding-left: 0.1em; }
   .cap-sub { font-size: 15px; }

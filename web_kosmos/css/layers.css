@@ -8,10 +8,6 @@
 .cfg-view { display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; }
 .cfg-view[hidden] { display: none; }
 #cfg-global { flex: 1 1 auto; min-height: 0; overflow: auto; overscroll-behavior: contain; align-content: start; padding: 0 18px 12px; }
-#cfg-station { flex: 1 1 auto; min-height: 0; grid-template-rows: minmax(0, 1fr) auto; gap: 0; }
-/* feste Zeilen: Liste (Zeigen + Einstellungen) scrollt, Fuß steht – auch ohne Reiter-Leiste (Station mit nur einer Gruppe) */
-#cfg-station > .lay-scroll { grid-row: 1; align-self: stretch; }
-#cfg-station > .cfg-foot { grid-row: 2; }
 .lay-scroll { min-height: 0; overflow: auto; overscroll-behavior: contain; padding: 12px 18px; }
 .cfg-foot { flex: none; display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 10px 18px 12px; border-top: 1px solid var(--line); }
 .cfg-scope { flex: 1 1 auto; min-width: 0; margin: 0; font-size: 12.5px; line-height: 1.4; color: var(--ink-soft); }
@@ -115,9 +111,8 @@ body.is-flying .tl, body.is-intro .tl { opacity: 0; pointer-events: none; }
    Regler und Knopfreihen liegen darunter über die volle Breite, ↺ in fester Spalte am Ende der Kopfzeile (Knopf nur bei geändertem
    Wert). Schmaler (Handy) richtet sich nach der Breite des Fensters (Container cfg in kosmos.css), nicht nach dem Bildschirm. */
 .cfg-pane { --rst: 26px; --row: 30px; }
-/* Gruppen als quadratische Kacheln mit Icon (User 28.10.2026), gewählt = Akzentfarbe wie die Knöpfe der Kopfleiste: Einstellungen
-   (5 Gruppen, eine Reihe, schmal seitlich wischbar), Reiter Station (beliebig viele, brechen in Reihen um) */
-.lay-tabs { display: grid; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: 6px; padding: 10px 0 12px; border-bottom: 1px solid var(--line); }
+/* Gruppen der Einstellungen als quadratische Kacheln mit Icon (User 28.10.2026), gewählt = Akzentfarbe wie die Knöpfe der Kopfleiste
+   (5 Gruppen, eine Reihe, schmal seitlich wischbar) */
 .cfg-jump { flex: none; display: grid; grid-template-columns: repeat(5, minmax(68px, 1fr)); gap: 6px; padding: 12px 18px; border-bottom: 1px solid var(--line);
   overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: thin; scrollbar-color: var(--line) transparent; }
 .cfg-jump::-webkit-scrollbar { height: 4px; }
@@ -137,9 +132,8 @@ body.is-flying .tl, body.is-intro .tl { opacity: 0; pointer-events: none; }
 .b-sec-h .b-count { padding: 0; border: 0; font: 500 12px var(--mono); color: var(--ink-soft); }
 .b-list { display: flex; flex-direction: column; align-items: stretch; gap: 0; }
 .cfg-pane .b-card { padding: 0; gap: 0; border: 0; border-radius: 0; border-bottom: 1px solid var(--line); background: none; box-shadow: none; }
-.lay-tab-dot { display: none; vertical-align: 0.15em; width: 6px; height: 6px; margin-left: 4px; border-radius: 50%; background: var(--accent); }
-.lay-tab.has-dev .lay-tab-dot { display: inline-block; }
-.lay-panel { padding-top: 8px; }
+.lay-tab-dot { display: none; position: absolute; top: 7px; right: 9px; width: 7px; height: 7px; border-radius: 50%; background: var(--accent); }
+.lay-tab.has-dev .lay-tab-dot { display: block; }
 
 .lay-panel > .b-subh:first-child { margin-top: 2px; }
 .b-body { display: flex; flex-direction: column; padding: 6px 0 10px; }
@@ -164,9 +158,46 @@ body.is-flying .tl, body.is-intro .tl { opacity: 0; pointer-events: none; }
 .cfg-pane .b-looks { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 @container cfg (max-width: 420px) { .cfg-pane .b-looks { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 
-/* Reiter Station (Vorschau 28.10.2026 „Regler der Infotafel in den Reiter Station“ Reiter:C): oben Block „Zeigen“ als Karte,
-   darunter „Einstellungen“ mit den Gruppen-Reitern; die Reiter-Zeile bleibt beim Scrollen oben stehen (sticky im Fluss, deckend) */
-.lay-scroll { padding-top: 14px; }
+/* Panel Station links (Vorschau 28.10.2026 Menü:C): Kopf mit Icon, „Station · <Name>“, Zahl und ✕; darunter Leiste (108 px: längster
+   Kurzname aus tabs.js hat 12 Zeichen) mit
+   „Ereignisse“ und den Gruppen untereinander, rechts die Bühne mit Titel + Inhalt der gewählten Gruppe (scrollt allein), Fuß über
+   die volle Breite. Lage im Raster: kosmos.css .station */
+.st-head { flex: none; display: flex; align-items: center; gap: 12px; padding: 12px 12px 12px 18px; border-bottom: 1px solid var(--line); }
+.st-ico { width: 22px; height: 22px; flex: none; color: var(--accent); }
+.st-h { flex: 1 1 auto; min-width: 0; margin: 0; display: flex; flex-direction: column; gap: 2px; font: 600 16px/1.3 var(--font); overflow-wrap: anywhere; }
+.st-n { font: 500 12.5px/1.3 var(--mono); }
+.st-body { flex: 1 1 auto; min-height: 0; display: grid; grid-template-columns: 108px minmax(0, 1fr); grid-template-rows: minmax(0, 1fr) auto; gap: 0; align-items: stretch; }
+.st-body > .cfg-note { grid-column: 1 / -1; margin: 0; padding: 14px 18px; }
+.st-rail { display: flex; flex-direction: column; gap: 4px; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 10px 6px; border-right: 1px solid var(--line); }
+.st-tab { position: relative; flex: none; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 10px 3px 9px; border: 1px solid transparent; border-radius: var(--radius);
+  background: none; color: var(--ink); font: 500 12.5px/1.25 var(--font); text-align: center; cursor: pointer; transition: background 0.2s, border-color 0.2s, color 0.2s; }
+.st-tab:hover { background: rgba(255, 255, 255, 0.06); }
+.st-tab[aria-selected="true"] { color: var(--accent); border-color: rgba(var(--accent-rgb), 0.45); background: rgba(var(--accent-rgb), 0.12); }
+.st-tab:focus-visible { outline: 2px solid var(--focus); outline-offset: -2px; }
+.st-tab-ico { width: 20px; height: 20px; flex: none; }
+.st-tab-name { max-width: 100%; }
+.st-tab-n { font: 500 12px/1.2 var(--mono); }
+/* Ereignisse: ▶/⏸-Zustand als Rahmen-Icon, Trennlinie zu den Gruppen */
+.st-play { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 5px; border: 1px solid rgba(var(--accent-rgb), 0.6); color: var(--accent); }
+.st-play svg { width: 16px; height: 16px; }
+.st-play[data-on="true"] { background: rgba(var(--accent-rgb), 0.16); }
+.st-tab[data-ltab="-1"] { margin-bottom: 9px; }
+.st-tab[data-ltab="-1"]::after { content: ""; position: absolute; left: 4px; right: 4px; bottom: -6px; height: 1px; background: var(--line); }
+.st-stage { padding: 14px 18px 16px; }
+.st-body > .cfg-foot { grid-column: 1 / -1; }
+.st-title { display: flex; align-items: baseline; gap: 8px; margin: 0 0 6px; font: 600 16px/1.3 var(--font); }
+.st-title-n { font: 500 13px var(--mono); }
+.lay-panel { padding-top: 0; }
+/* schmal (Handy): neben der Leiste bliebe der Bühne zu wenig Breite – Leiste als waagrechte Zeile über der Bühne, seitlich wischbar */
+@media (max-width: 760px) {
+  .st-body { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr) auto; }
+  .st-rail { flex-direction: row; overflow: auto hidden; overscroll-behavior-x: contain; border-right: 0; border-bottom: 1px solid var(--line); }
+  .st-tab { min-width: 92px; }
+  .st-tab[data-ltab="-1"] { margin: 0 9px 0 0; }
+  .st-tab[data-ltab="-1"]::after { left: auto; right: -6px; top: 4px; bottom: 4px; width: 1px; height: auto; }
+  .st-stage { padding: 12px 14px 14px; }
+}
+/* Block „Zeigen“ (Vorschau 28.10.2026 „Regler der Infotafel in den Reiter Station“ Reiter:C) als Karte im Eintrag „Ereignisse“ */
 .zg { display: flex; flex-direction: column; gap: 12px; margin-bottom: 18px; padding: 14px; border-radius: var(--radius); border: 1px solid rgba(var(--accent-rgb), 0.35); background: linear-gradient(160deg, rgba(var(--accent-rgb), 0.1), rgba(var(--accent-rgb), 0.02) 60%); }
 .zg-head { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 12px; min-height: 40px; }
 .zg-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
@@ -197,6 +228,4 @@ body.is-flying .tl, body.is-intro .tl { opacity: 0; pointer-events: none; }
 .zg-next[hidden] { display: none; }
 .zg-next-t { display: flex; flex-direction: column; gap: 2px; min-width: 0; font-size: 13.5px; }
 .zg-next-t b { font-weight: 600; }
-.zg-set-h { margin: 0 0 4px; font: 600 15px var(--font); }
-.lay-scroll > .lay-tabs { position: sticky; top: 0; z-index: 1; margin: 0 -18px; padding: 0 18px; background: rgb(9, 11, 17); }
 .cfg-pane .swatch b { font-size: 12.5px; }

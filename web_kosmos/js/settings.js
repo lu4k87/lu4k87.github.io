@@ -1,12 +1,12 @@
-// Einstellungen = gilt an allen Stationen; Station = nur diese Station (Inhalt in layers.js). Ein Ort rechts (Vorschau 28.10.2026
-// Fenster:C): die rechte Spalte zeigt Infotafel, Station oder Einstellungen, umgeschaltet nur über die Knöpfe der Kopfleiste (keine
-// eigene Reiter-Zeile in der Spalte, User 28.10.2026) – nichts schwebt über der Szene. Einstellungen: die Gruppen als quadratische
+// Einstellungen = gilt an allen Stationen; Station = nur diese Station (Inhalt in layers.js). Die rechte Spalte zeigt Infotafel oder
+// Einstellungen (Vorschau 28.10.2026 Fenster:C), umgeschaltet über die Knöpfe der Kopfleiste; die Station hat ein eigenes Panel links
+// am Rand (#station, Vorschau 28.10.2026 „Station-Panel links am Rand“ Menü:C), auf/zu über #btn-lay, ✕ oder Esc. Einstellungen: die Gruppen als quadratische
 // Kacheln mit Icon oben, darunter nur die gewählte Gruppe (User 28.10.2026); Fuß mit Geltung und „Alle zurücksetzen“.
 // Mini-Grafik je Zeile, geänderte Werte mit ↺ am Zeilenende. Regel (User 28.10.2026): hier steht nur, was an jeder Station wirkt –
 // Bild, Kamera & Bewegung, Effekte, Oberfläche (inkl. Bewegung der Info-Grafiken = cards.js `kosmos.figmotion.v1`), Leistung.
 // Was nur an einem Teil der Stationen wirkt (Licht und Schatten, Drehachsen, Linsenreflex, Sternhimmel, Milchstraße), steht als
 // gemeinsame Gruppe im Reiter Station (SHARED) – nur dort, wo es wirkt; der Wert gilt an allen Stationen der Gruppe.
-// `?cfg` (auch `?cfg=global`) zeigt die Einstellungen, `?cfg=lay` den Reiter Station.
+// `?cfg` (auch `?cfg=global`) zeigt die Einstellungen, `?cfg=lay` das Panel Station.
 // Gespeichert in localStorage `kosmos.settings.v1`; clean() prüft jeden Wert, damit kaputte Einträge nichts stören.
 
 import { mountLayers, rebuildLayers, refreshLayers, devLine, devBar, markDevs, paintRange, icon } from './layers.js';
@@ -232,8 +232,9 @@ const JUMP = `<div class="cfg-jump" role="tablist" aria-label="Gruppen">${GROUPS
 const CARD = (g, i) => `<section class="b-card b-fold b-sec" id="cfg-s${i}" role="tabpanel" data-g="${g.id}" data-fold="${i}" aria-labelledby="cfg-h${i}" hidden>
   <h4 class="b-sec-h"><span class="b-name" id="cfg-h${i}">${g.title}</span><span class="b-count">${plural(nRows(g), 'Einstellung', 'Einstellungen')}</span></h4>
   <div class="b-body${g.half ? ' b-body--grid' : ''}" id="cfg-b${i}">${g.rows.map(([k, h]) => ROW(k, h)).join('')}</div></section>`;
-// root = #cfg in der rechten Spalte, btn = Knopf „Einstellungen“, lay = Knopf „Station“ (Zahl der Einstellungen in der Beschriftung)
-export function mountSettings(root, btn, lay = document.getElementById('btn-lay')) {
+// root = #cfg in der rechten Spalte, btn = Knopf „Einstellungen“, lay = Knopf „Station“ (Zahl der Einstellungen in der Beschriftung),
+// st = Panel Station links
+export function mountSettings(root, btn, lay = document.getElementById('btn-lay'), st = document.getElementById('station')) {
   root.innerHTML = `
     <div class="cfg-view" id="cfg-v-gl">
       ${JUMP}
@@ -241,20 +242,18 @@ export function mountSettings(root, btn, lay = document.getElementById('btn-lay'
         <div class="b-main"><div class="b-list">${GROUPS.map(CARD).join('')}</div></div>
       </div>
       <div class="cfg-foot"><span class="cfg-scope">gilt an allen Stationen · ${N_GLOBAL} Einstellungen</span>${devBar()}</div>
-    </div>
-    <div class="cfg-view" id="cfg-v-lay" hidden>
-      <div class="cfg-pane" id="cfg-station"></div>
     </div>`;
   const glob = root.querySelector('#cfg-global'), vGl = root.querySelector('#cfg-v-gl');
   const info = ({ title, n }) => {
-    root.querySelectorAll('[data-st-name]').forEach((e) => { e.textContent = title; });
-    root.dataset.laySum = n ? plural(n, 'Einstellung', 'Einstellungen') : 'Keine Einstellungen';   // Gruppen zeigen die Reiter
+    st.querySelectorAll('[data-st-name]').forEach((e) => { e.textContent = title; });
+    st.dataset.laySum = n ? plural(n, 'Einstellung', 'Einstellungen') : 'Keine Einstellungen';   // Gruppen zeigt die Leiste
+    st.querySelector('[data-st-n]').textContent = st.dataset.laySum;
     if (lay) {
       lay.querySelector('[data-lay-n]').textContent = n || '';
       lay.setAttribute('aria-label', n ? `Einstellungen dieser Station: ${n}` : 'Einstellungen dieser Station');
     }
   };
-  mountLayers({ gear: root.querySelector('#cfg-station'), info, strip: document.getElementById('timeline'), stripOn: () => settings.S.timeline, shared: sharedFor });
+  mountLayers({ gear: st.querySelector('#cfg-station'), info, strip: document.getElementById('timeline'), stripOn: () => settings.S.timeline, shared: sharedFor });
   const sync = () => {
     const S = settings.S;
     root.querySelectorAll('[data-key][data-val]').forEach((b) => b.setAttribute('aria-checked', String(String(S[b.dataset.key]) === b.dataset.val)));
@@ -308,27 +307,42 @@ export function mountSettings(root, btn, lay = document.getElementById('btn-lay'
   });
   onSettings((keys) => { sync(); if (keys.includes('timeline')) rebuildLayers(); });
   sync();
-  // view = 'gl' (Einstellungen) | 'lay' (Station) | false (Infotafel bzw. Spalte zu, je nach Schalter „Infotafel zeigen“).
-  // Die Spalte steht, solange ein Fenster offen ist, auch bei ausgeblendeter Infotafel (body.cfg-open, kosmos.css).
+  // Panel Station links: breit unabhängig von der rechten Spalte (body.st-open, kosmos.css); schmal (Handy) steht immer nur eins
+  // von beiden, die Infotafel weicht dem Panel
+  const narrow = matchMedia('(max-width: 760px)');
   let view = false;
+  const station = (on) => {
+    if (on === !st.hidden) return;
+    if (on && narrow.matches && view) open(false);
+    st.hidden = !on;
+    document.body.classList.toggle('st-open', on);
+    if (lay) lay.setAttribute('aria-expanded', String(on));
+    if (on) refreshLayers();   // Werte, die die Station inzwischen geändert hat; Zeitachse braucht die sichtbare Breite
+    window.dispatchEvent(new CustomEvent('kosmos:side', { detail: { view } }));   // hud.js: Szene neu einpassen
+  };
+  // view = 'gl' (Einstellungen) | false (Infotafel bzw. Spalte zu, je nach Schalter „Infotafel zeigen“); 'lay' öffnet das Panel
+  // Station links und lässt die Spalte, wie sie ist. Die Spalte steht, solange die Einstellungen offen sind, auch bei
+  // ausgeblendeter Infotafel (body.cfg-open, kosmos.css).
   const open = (v) => {
-    if (v !== view && v) root.querySelectorAll('#cfg-global, .lay-scroll').forEach((e) => { e.scrollTop = 0; });
-    const was = view;
+    if (v === 'lay') { station(true); return; }
+    if (v && narrow.matches) station(false);
+    if (v !== view && v) glob.scrollTop = 0;
     view = v;
     root.hidden = !v;
-    root.querySelector('#cfg-v-gl').hidden = v !== 'gl';
-    root.querySelector('#cfg-v-lay').hidden = v !== 'lay';
-    root.setAttribute('aria-label', v === 'lay' ? 'Einstellungen dieser Station' : 'Einstellungen');
     document.body.classList.toggle('cfg-open', !!v);
     btn.setAttribute('aria-expanded', String(v === 'gl'));
-    if (lay) lay.setAttribute('aria-expanded', String(v === 'lay'));
     window.dispatchEvent(new CustomEvent('kosmos:side', { detail: { view: v } }));   // hud.js: Infotafel-Knopf, Raster bei ausgeblendeter Infotafel
-    if (!!was !== !!v || v) refreshLayers();   // Werte, die die Infotafel inzwischen geändert hat
   };
   btn.addEventListener('click', () => open(view === 'gl' ? false : 'gl'));
-  if (lay) lay.addEventListener('click', () => open(view === 'lay' ? false : 'lay'));
+  if (lay) lay.addEventListener('click', () => station(st.hidden));
+  st.querySelector('#btn-st-close').addEventListener('click', () => { station(false); if (lay) lay.focus(); });
   const q = new URLSearchParams(location.search).get('cfg');
   if (q !== null) open(q === 'lay' ? 'lay' : 'gl');   // Screenshots: Fenster offen
-  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && view && !e.defaultPrevented) { const b = view === 'lay' && lay ? lay : btn; open(false); b.focus(); } });
+  // Esc schließt das Fenster mit dem Fokus, sonst zuerst das Panel Station
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Escape' || e.defaultPrevented) return;
+    const inGl = view && root.contains(document.activeElement);
+    if (!st.hidden && !inGl) { station(false); if (lay) lay.focus(); } else if (view) { open(false); btn.focus(); }
+  });
   return { open, view: () => view };
 }

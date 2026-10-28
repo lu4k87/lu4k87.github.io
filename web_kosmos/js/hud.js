@@ -55,8 +55,9 @@ export function createHud(h) {
   onSettings(syncPanelBtn);
   syncPanelBtn();
   addEventListener('kosmos:info', () => { if (!settings.S.panel) setSetting('panel', true); });
-  // Fenster auf/zu: bei ausgeblendeter Infotafel entsteht bzw. verschwindet die Spalte → Szene neu einpassen
-  addEventListener('kosmos:side', () => { syncPanelBtn(); if (!settings.S.panel) h.onRelayout(); });
+  // Fenster auf/zu: bei ausgeblendeter Infotafel entsteht bzw. verschwindet die Spalte, schmal weicht die Infotafel dem Panel
+  // Station → Szene neu einpassen
+  addEventListener('kosmos:side', () => { syncPanelBtn(); h.onRelayout(); });
 
   // ---------- Stationsleiste ----------
   // Band oben über die volle Breite (Vorschau 26.10.2026 „Stationsleiste oben“ Leiste:C, Baum-Panorama): Zeilen Route →
@@ -322,6 +323,10 @@ export function createHud(h) {
     return [s, k || (s === shown[0] ? shown[1] : '')];
   }
   function renderDrawer(force) {
+    // Panel Station links beginnt unter dem Zweig der aktuellen Station (Abstecher, Monde; kosmos.css --band-low) – der Zweig
+    // beim Zeigen mit der Maus legt sich nur vorübergehend darüber
+    const [rs] = fit && railCur && !nav.classList.contains('is-dots') ? branchOf(railCur) : [''];
+    body.style.setProperty('--band-low', `${rs ? (kidsOf(rs).some((id) => kidsOf(id).length) ? MOONS_Y + 36 : KID_Y + 62 + FAR_H) : 0}px`);
     const [s, k] = wantBranch();
     const newStop = force || s !== shown[0];
     if (!newStop && k === shown[1]) return;
@@ -605,8 +610,7 @@ export function createHud(h) {
     const out = [];
     const add = (el, mx, my) => { const q = el.getBoundingClientRect(); if (q.width && q.height) out.push({ l: q.left - mx, r: q.right + mx, t: q.top - my, b: q.bottom + my }); };
     if (caption.classList.contains('is-on')) for (const el of caption.children) add(el, 6, 4);
-    const cfg = $('#cfg');
-    if (cfg && !cfg.hidden) add(cfg, 8, 8);
+    for (const el of [$('#cfg'), $('#station')]) if (el && !el.hidden) add(el, 8, 8);
     if (drawer && drawer.classList.contains('is-open')) add(drawer, 6, 6);
     return out;
   }
