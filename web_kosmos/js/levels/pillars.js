@@ -82,7 +82,11 @@ float fbmTail(vec3 p) {
 void sampleVol(vec3 p, out vec3 e, out float s) {
   vec4 f = texture(uField, p / ${(2 * EXT).toFixed(1)} + 0.5) * vec4(16.0, 10.0, 2.0, 1.0) - vec4(4.0, 0.0, 1.0, 0.0);
   float r = length(p);
-  float edge = smoothstep(12.5, 9.5, r);
+  // ausgefranster Rand statt Kugel: Rauschen schiebt den Rand nur nach innen (≥ 0), Lappen + Fasern
+  float off = 2.4 * (gnoise(p * 0.17 + 7.0) + 0.75) + 1.1 * (gnoise(p * 0.5 + 1.7) + 0.7) + 0.5 * (gnoise(p * 1.3 + 4.1) + 0.7);
+  float edge = smoothstep(12.4, 8.0, r + 0.7 * off);
+  float fade = smoothstep(12.4, 6.0, r + 0.8 * off);
+  fade *= sqrt(fade);
   float sd = f.r;
   // feine Oktaven und senkrechte Furchen nur nahe der Oberfläche
   if (sd > -1.2 && sd < 1.4) sd += (fbmTail(p * 1.3) * 1.2 + (ridged(p * vec3(1.6, 0.4, 1.6) + 3.0, 3) - 0.55) * 0.45) * uRough;
@@ -98,9 +102,9 @@ void sampleVol(vec3 p, out vec3 e, out float s) {
     flow = exp(-sd / 0.5) * smoothstep(0.0, 0.12, sd) * lit * (0.3 + max(gnoise(q * 2.2) + 0.6 * gnoise(q * 4.6 + 2.0), 0.0)) * edge;
   }
   // ionisiertes Gas in der Höhle – nach hinten dichter (die „blaue Tiefe“), Schleier vor den Säulen
-  float haze = (0.35 + max(f.b + 0.25, 0.0)) * (1.0 - dens) * edge * mix(0.35, 1.0, smoothstep(3.0, -7.0, p.z));
-  float veil = exp(-pow((p.z - 3.6) / 1.6, 2.0)) * smoothstep(-0.05, 0.4, f.b) * edge;
-  float cool = smoothstep(1.5, 5.0, p.y) * (0.4 + max(f.b + 0.3, 0.0)) * exp(-pow(p.z / 3.0, 2.0)) * edge;
+  float haze = (0.35 + max(f.b + 0.25, 0.0)) * (1.0 - dens) * fade * mix(0.35, 1.0, smoothstep(3.0, -7.0, p.z));
+  float veil = exp(-pow((p.z - 3.6) / 1.6, 2.0)) * smoothstep(-0.05, 0.4, f.b) * fade;
+  float cool = smoothstep(1.5, 5.0, p.y) * (0.4 + max(f.b + 0.3, 0.0)) * exp(-pow(p.z / 3.0, 2.0)) * fade;
   e = (cSkin * skin * 2.2 + cFlow * flow * uFlow + cBody * dens * mix(0.3, 1.0, lit) * uLit * 3.0 + cHaze * haze * uHaze * 0.035
        + cVeil * veil * uVeil * 0.09 + cCool * cool * uCool * 0.03) * uGain;
   s = dens * uOpac + veil * uVeil * 0.03;
@@ -276,7 +280,7 @@ export function create(ctx) {
   ]);
 
   const view = new URLSearchParams(location.search).get('view');
-  const HOME = { side: [15, -1.6, 1.2], top: [1.2, 13, 3.5], near: [-0.6, 0.2, 4.5] }[view] || [0.6, -1.4, 14];
+  const HOME = { side: [15, -1.6, 1.2], top: [1.2, 13, 3.5], near: [-0.6, 0.2, 4.5], far: [0.6, -1.4, 30] }[view] || [0.6, -1.4, 14];
   return {
     scene, camera, unit: LY, hotspots, controls, msaa: false,
     ready: field.ready.then(() => ctx.renderer.compileAsync(vol.scene, camera)),
