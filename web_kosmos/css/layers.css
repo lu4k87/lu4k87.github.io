@@ -115,10 +115,24 @@ body.is-flying .tl, body.is-intro .tl { opacity: 0; pointer-events: none; }
    Regler und Knopfreihen liegen darunter über die volle Breite, ↺ in fester Spalte am Ende der Kopfzeile (Knopf nur bei geändertem
    Wert). Schmaler (Handy) richtet sich nach der Breite des Fensters (Container cfg in kosmos.css), nicht nach dem Bildschirm. */
 .cfg-pane { --rst: 26px; --row: 30px; }
-/* Reiter der Gruppen (Unterstrich-Reiter in kosmos.css .u-tabs--sub) */
-.cfg-jump, .lay-tabs { flex: none; padding: 0 10px; }
+/* Reiter der Gruppen im Reiter Station (Unterstrich-Reiter in kosmos.css .u-tabs--sub) */
+.lay-tabs { flex: none; padding: 0 10px; }
+/* Gruppen der Einstellungen als quadratische Kacheln mit Icon (User 28.10.2026); gewählt = Akzentfarbe wie die Knöpfe der Kopfleiste */
+.cfg-jump { flex: none; display: grid; grid-template-columns: repeat(5, minmax(68px, 1fr)); gap: 6px; padding: 12px 18px; border-bottom: 1px solid var(--line);
+  overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: thin; scrollbar-color: var(--line) transparent; }
+.cfg-jump::-webkit-scrollbar { height: 4px; }
+.cfg-jump::-webkit-scrollbar-track { background: transparent; }
+.cfg-jump::-webkit-scrollbar-thumb { background: var(--line-strong); border-radius: 2px; }
+.cfg-tile { aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; min-width: 0; padding: 6px 4px;
+  border: 1px solid var(--line); border-radius: var(--radius); background: rgba(255, 255, 255, 0.03); color: var(--ink); font: 500 12px/1.2 var(--font); text-align: center; cursor: pointer; transition: background 0.2s, border-color 0.2s, color 0.2s; }
+.cfg-tile-ico { width: 22px; height: 22px; flex: none; }
+.cfg-tile:hover { background: rgba(255, 255, 255, 0.07); }
+.cfg-tile[aria-selected="true"] { color: var(--accent); border-color: rgba(var(--accent-rgb), 0.6); background: rgba(var(--accent-rgb), 0.12); }
+.cfg-tile:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
 .b-sec { scroll-margin-top: 4px; }
-.b-sec-h { display: flex; align-items: baseline; gap: 10px; margin: 14px 0 2px; }
+.b-sec[hidden] { display: none; }
+/* Überschrift der Gruppe als dezentes Band, trennt die Bereiche (User 28.10.2026) */
+.b-sec-h { display: flex; align-items: baseline; gap: 10px; margin: 14px 0 4px; padding: 8px 10px; border-radius: var(--radius); background: rgba(var(--accent-rgb), 0.07); }
 .b-sec-h .b-name { flex: 1 1 auto; font: 600 13.5px var(--font); }
 .b-sec-h .b-count { padding: 0; border: 0; font: 500 12px var(--mono); color: var(--ink-soft); }
 .b-list { display: flex; flex-direction: column; align-items: stretch; gap: 0; }

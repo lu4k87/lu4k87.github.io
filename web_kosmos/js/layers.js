@@ -249,22 +249,6 @@ function showTab(t) {
   if (l < row.scrollLeft + 8) row.scrollLeft = l - 24;
   else if (r > row.scrollLeft + row.clientWidth - 8) row.scrollLeft = r - row.clientWidth + 24;
 }
-// Reiter der Einstellungen (Reiter:C): markiert ist die Gruppe, deren Überschrift zuletzt unter der Reiter-Zeile durchgelaufen ist;
-// ganz unten die letzte
-export function spyIn(root, sc) {
-  const bar = root && !root.hidden && root.querySelector('.cfg-jump');
-  if (!bar) return;
-  const edge = bar.getBoundingClientRect().bottom + 8, folds = [...root.querySelectorAll('.b-fold')];
-  let cur = null;
-  for (const c of folds) { if (!cur || c.getBoundingClientRect().top <= edge) cur = c; }
-  if (sc && sc.scrollTop > 0 && sc.scrollTop + sc.clientHeight >= sc.scrollHeight - 2) cur = folds.pop() || cur;
-  bar.querySelectorAll('[data-jump]').forEach((b) => {
-    const on = !!cur && cur.dataset.fold === b.dataset.jump;
-    if (on && b.getAttribute('aria-current') !== 'true') showTab(b);
-    b.setAttribute('aria-current', String(on));
-  });
-}
-
 function render() {
   evc = null;   // neue Zeilen (z. B. Knöpfe der Infotafel kommen nach den Ebenen) → Ereignisse neu suchen
   if (gearEl) {

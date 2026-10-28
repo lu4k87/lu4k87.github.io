@@ -1,7 +1,7 @@
 // Einstellungen = gilt an allen Stationen; Station = nur diese Station (Inhalt in layers.js). Ein Ort rechts (Vorschau 28.10.2026
-// Fenster:C): die rechte Spalte zeigt Infotafel, Station oder Einstellungen, umgeschaltet über die Reiter oben in der Spalte und die
-// Knöpfe der Kopfleiste – nichts schwebt über der Szene. Einstellungen als durchgehende Liste, die Gruppen als Unterstrich-Reiter
-// darüber (Reiter:C: Klick springt hin, beim Scrollen wandert die Markierung mit); Fuß mit Geltung und „Alle zurücksetzen“.
+// Fenster:C): die rechte Spalte zeigt Infotafel, Station oder Einstellungen, umgeschaltet nur über die Knöpfe der Kopfleiste (keine
+// eigene Reiter-Zeile in der Spalte, User 28.10.2026) – nichts schwebt über der Szene. Einstellungen: die Gruppen als quadratische
+// Kacheln mit Icon oben, darunter nur die gewählte Gruppe (User 28.10.2026); Fuß mit Geltung und „Alle zurücksetzen“.
 // Mini-Grafik je Zeile, geänderte Werte mit ↺ am Zeilenende. Regel (User 28.10.2026): hier steht nur, was an jeder Station wirkt –
 // Bild, Kamera & Bewegung, Effekte, Oberfläche (inkl. Bewegung der Info-Grafiken = cards.js `kosmos.figmotion.v1`), Leistung.
 // Was nur an einem Teil der Stationen wirkt (Licht und Schatten, Drehachsen, Linsenreflex, Sternhimmel, Milchstraße), steht als
@@ -9,12 +9,12 @@
 // `?cfg` (auch `?cfg=global`) zeigt die Einstellungen, `?cfg=lay` den Reiter Station.
 // Gespeichert in localStorage `kosmos.settings.v1`; clean() prüft jeden Wert, damit kaputte Einträge nichts stören.
 
-import { mountLayers, rebuildLayers, refreshLayers, devLine, devBar, markDevs, spyIn, paintRange } from './layers.js';
+import { mountLayers, rebuildLayers, refreshLayers, devLine, devBar, markDevs, paintRange, icon } from './layers.js';
 import { nbsp } from './figs.js';
 import { SOLAR_SYSTEM } from './content.js';
 
 const KEY = 'kosmos.settings.v1';
-const DEFAULTS = { motion: 'full', quality: 'auto', cine: true, dive: 3.6, exposure: 1, bloom: true, lens: true, lensAmt: 1, lensOptic: 'master', lensGhost: true, ghostMotion: true, anamorphic: true, rayleigh: true, grain: true, deep: 1, fpsCap: 0, panel: true, timeline: true, scaleCompare: true, small: 6, stars: true, grade: 'station', vig: 1, bars: false, axes: false,
+const DEFAULTS = { motion: 'full', quality: 'auto', cine: true, dive: 3.6, exposure: 1, bloom: true, lens: true, lensAmt: 1, lensOptic: 'master', lensGhost: true, ghostMotion: true, anamorphic: true, rayleigh: true, grain: true, deep: 1, fpsCap: 0, panel: true, timeline: true, scaleCompare: true, small: 6, stars: true, grade: 'station', vig: 1, bars: false, barsH: 1, axes: false,
   sunK: 1, shade: 1, shadow: 1, soft: 1, spec: 1, gloss: 0 };
 // Farblook: Belichtung, Bloom, Kontrast, Sättigung, Tönung Schatten/Lichter, Vignette – Kino = Mischung aus HDR, Ruhig, Tiefe Glut.
 // Global (main.js über globalGrade) oder je Station „Station“ = eigener Look; die Sonne wählt bei „Station“ selbst (levels/sun.js)
@@ -53,6 +53,7 @@ function clean(raw) {
   S.small = Math.min(12, Math.max(1, S.small));
   S.deep = Math.min(4, Math.max(0, S.deep));
   S.vig = Math.min(3, Math.max(0, S.vig));
+  S.barsH = Math.min(2, Math.max(0.5, S.barsH));
   S.lensAmt = Math.min(5, Math.max(0, S.lensAmt));
   if (![0, 30, 60].includes(S.fpsCap)) S.fpsCap = 0;
   for (const [k, [lo, hi]] of Object.entries({ ...MW_RANGE, ...LIGHT_RANGE })) S[k] = Math.min(hi, Math.max(lo, S[k]));
@@ -68,6 +69,9 @@ export const settings = { S: load() };
 export const globalGrade = () => (settings.S.grade === 'station' ? null : GRADES[GRADE_IDS.indexOf(settings.S.grade) - 1][1]);
 const listeners = [];
 export function onSettings(fn) { listeners.push(fn); }
+// Regler „Höhe der Kinobalken“ zeigt die Balken beim Ziehen kurz an, auch wenn der Kino-Modus aus ist (main.js)
+let peekT = -1e9;
+export const barsPeek = () => performance.now() - peekT < 1500;
 // Sternhimmel (Katalog und statistisch) folgt dem globalen Schalter „Sternhimmel“; schaltet nur die Kinder,
 // damit Stationen die Gruppe selbst weiter ein- und ausblenden können
 export function followStars(group) {
@@ -120,6 +124,7 @@ const nRows = (g) => g.rows.length;
 const GROUPS = [
   { id: 'look', icon: 'look', title: 'Bild', hero: true, rows: [['grade', LOOKS], ['exposure', RANGE('exposure', 'Belichtung', 0.25, 4, 0.05, '×')],
     ['vig', RANGE('vig', 'Vignette', 0, 3, 0.05, '×')], ['bars', TOG('bars', 'Kinobalken 2,39:1')],
+    ['barsH', RANGE('barsH', 'Höhe der Kinobalken', 0.5, 2, 0.05, '×') + NOTE('1× = Kinoformat 2,39:1. Beim Ziehen sind die Balken kurz zu sehen.')],
     ['stars', TOG('stars', 'Sternhimmel') + NOTE('Hauptschalter für Sterne, Milchstraße und Tiefen Himmel: aus = reines Schwarz. Feinheiten im Reiter Station.')]] },
   { id: 'cam', icon: 'cam', title: 'Kamera &amp; Bewegung', rows: [['motion', SEG('motion', 'Bewegung', [['full', 'Voll'], ['calm', 'Ruhig'], ['off', 'Aus']]) + NOTE('„Aus“ wirkt wie „Bewegung reduzieren“ im System: keine Fahrt von selbst, Wechsel als kurze Überblendung.')],
     ['cine', TOG('cine', 'Kamerafahrt im Leerlauf')], ['dive', RANGE('dive', 'Flugdauer', 1, 15, 0.1, 's')]] },
@@ -222,9 +227,9 @@ const N_GLOBAL = GROUPS.reduce((n, g) => n + nRows(g), 0);
 // „Alle zurücksetzen“ der Einstellungen: nur, was hier steht (nicht die gemeinsamen Gruppen im Reiter Station)
 const GLOBAL_KEYS = GROUPS.flatMap((g) => g.rows.map(([k]) => k)).filter(Boolean);
 const plural = (n, one, many) => `${n} ${n === 1 ? one : many}`;
-// Gruppen als Unterstrich-Reiter (Reiter:C) über der durchgehenden Liste; je Gruppe Name + Zahl der Einstellungen
-const JUMP = `<nav class="cfg-jump u-tabs u-tabs--sub" aria-label="Gruppen">${GROUPS.map((g, i) => `<button type="button" class="u-tab" data-jump="${i}">${g.title}</button>`).join('')}</nav>`;
-const CARD = (g, i) => `<section class="b-card b-fold b-sec" data-g="${g.id}" data-fold="${i}" aria-labelledby="cfg-h${i}">
+// Gruppen als quadratische Kacheln mit Icon (User 28.10.2026); darunter nur die gewählte Gruppe, Überschrift mit Zahl der Einstellungen
+const JUMP = `<div class="cfg-jump" role="tablist" aria-label="Gruppen">${GROUPS.map((g, i) => `<button type="button" role="tab" class="cfg-tile" id="cfg-t${i}" data-jump="${i}" aria-controls="cfg-s${i}" aria-selected="false" tabindex="-1">${icon(g.icon, 'cfg-tile-ico')}<span>${g.title}</span></button>`).join('')}</div>`;
+const CARD = (g, i) => `<section class="b-card b-fold b-sec" id="cfg-s${i}" role="tabpanel" data-g="${g.id}" data-fold="${i}" aria-labelledby="cfg-h${i}" hidden>
   <h4 class="b-sec-h"><span class="b-name" id="cfg-h${i}">${g.title}</span><span class="b-count">${plural(nRows(g), 'Einstellung', 'Einstellungen')}</span></h4>
   <div class="b-body${g.half ? ' b-body--grid' : ''}" id="cfg-b${i}">${g.rows.map(([k, h]) => ROW(k, h)).join('')}</div></section>`;
 // root = #cfg in der rechten Spalte, btn = Knopf „Einstellungen“, lay = Knopf „Station“ (Zahl der Einstellungen in der Beschriftung)
@@ -240,10 +245,9 @@ export function mountSettings(root, btn, lay = document.getElementById('btn-lay'
     <div class="cfg-view" id="cfg-v-lay" hidden>
       <div class="cfg-pane" id="cfg-station"></div>
     </div>`;
-  const glob = root.querySelector('#cfg-global'), vGl = root.querySelector('#cfg-v-gl'), side = document.getElementById('panel');
-  const info = ({ title, n, groups }) => {
+  const glob = root.querySelector('#cfg-global'), vGl = root.querySelector('#cfg-v-gl');
+  const info = ({ title, n }) => {
     root.querySelectorAll('[data-st-name]').forEach((e) => { e.textContent = title; });
-    side.querySelectorAll('[data-lay-n]').forEach((e) => { e.textContent = n || ''; });
     root.dataset.laySum = n ? plural(n, 'Einstellung', 'Einstellungen') : 'Keine Einstellungen';   // Gruppen zeigen die Reiter
     if (lay) {
       lay.querySelector('[data-lay-n]').textContent = n || '';
@@ -266,16 +270,26 @@ export function mountSettings(root, btn, lay = document.getElementById('btn-lay'
     markDevs(root.querySelector('#cfg-v-gl'), (k) => S[k] !== DEFAULTS[k]);
   };
   const num = (k, v) => (typeof DEFAULTS[k] === 'number' ? +v : v);
-  const sc = glob;   // Reiter-Zeile und Fuß stehen, nur die Liste dazwischen scrollt
-  sc.addEventListener('scroll', () => spyIn(vGl, sc), { passive: true });
+  // Kacheln der Gruppen: genau eine Gruppe sichtbar; Kacheln und Fuß stehen, nur die Gruppe dazwischen scrollt
+  const tiles = [...vGl.querySelectorAll('[data-jump]')];
+  const pick = (i, focus = false) => {
+    tiles.forEach((t, k) => { const on = k === i; t.setAttribute('aria-selected', String(on)); t.tabIndex = on ? 0 : -1; });
+    glob.querySelectorAll('.b-fold').forEach((c) => { c.hidden = +c.dataset.fold !== i; });
+    glob.scrollTop = 0;
+    if (focus) tiles[i].focus();
+  };
+  pick(0);
+  vGl.querySelector('.cfg-jump').addEventListener('keydown', (e) => {
+    const t = e.target.closest('[data-jump]');
+    if (!t || !['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(e.key)) return;
+    e.preventDefault();
+    e.stopPropagation();   // sonst fliegt main.js mit ←/→ zur Nachbarstation
+    const k = tiles.indexOf(t), n = tiles.length;
+    pick(e.key === 'Home' ? 0 : e.key === 'End' ? n - 1 : (k + (e.key === 'ArrowRight' ? 1 : n - 1)) % n, true);
+  });
   root.addEventListener('click', (e) => {
-    // Reiter der Gruppen: zur Gruppe springen (Überschrift unter die stehende Reiter-Zeile)
     const j = e.target.closest('[data-jump]');
-    if (j && vGl.contains(j)) {
-      const c = glob.querySelector(`.b-fold[data-fold="${j.dataset.jump}"]`);
-      c.scrollIntoView({ block: 'start', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
-      return;
-    }
+    if (j && vGl.contains(j)) { pick(+j.dataset.jump); return; }
     // Auftakt-Film noch einmal (main.js): Zahnrad schließt, damit der Film frei steht
     if (e.target.closest('[data-auftakt]')) { open(false); window.dispatchEvent(new CustomEvent('kosmos:auftakt')); return; }
     const ms = e.target.closest('[data-mwstyle]');
@@ -289,6 +303,7 @@ export function mountSettings(root, btn, lay = document.getElementById('btn-lay'
     const i = e.target;
     if (i.matches('[data-figs]')) { setFigs(i.checked); return; }
     if (!i.dataset.key) return;
+    if (i.dataset.key === 'barsH') peekT = performance.now();
     setSetting(i.dataset.key, i.type === 'checkbox' ? i.checked : +i.value);
   });
   onSettings((keys) => { sync(); if (keys.includes('timeline')) rebuildLayers(); });
@@ -296,7 +311,6 @@ export function mountSettings(root, btn, lay = document.getElementById('btn-lay'
   // view = 'gl' (Einstellungen) | 'lay' (Station) | false (Infotafel bzw. Spalte zu, je nach Schalter „Infotafel zeigen“).
   // Die Spalte steht, solange ein Fenster offen ist, auch bei ausgeblendeter Infotafel (body.cfg-open, kosmos.css).
   let view = false;
-  const tabs = [...side.querySelectorAll('[data-side]')];
   const open = (v) => {
     if (v !== view && v) root.querySelectorAll('#cfg-global, .lay-scroll').forEach((e) => { e.scrollTop = 0; });
     const was = view;
@@ -304,33 +318,15 @@ export function mountSettings(root, btn, lay = document.getElementById('btn-lay'
     root.hidden = !v;
     root.querySelector('#cfg-v-gl').hidden = v !== 'gl';
     root.querySelector('#cfg-v-lay').hidden = v !== 'lay';
-    root.setAttribute('aria-labelledby', v === 'lay' ? 'side-t-lay' : 'side-t-gl');
+    root.setAttribute('aria-label', v === 'lay' ? 'Einstellungen dieser Station' : 'Einstellungen');
     document.body.classList.toggle('cfg-open', !!v);
-    const cur = v || 'info';
-    tabs.forEach((t) => { const on = t.dataset.side === cur; t.setAttribute('aria-selected', String(on)); t.tabIndex = on ? 0 : -1; });
     btn.setAttribute('aria-expanded', String(v === 'gl'));
     if (lay) lay.setAttribute('aria-expanded', String(v === 'lay'));
     window.dispatchEvent(new CustomEvent('kosmos:side', { detail: { view: v } }));   // hud.js: Infotafel-Knopf, Raster bei ausgeblendeter Infotafel
     if (!!was !== !!v || v) refreshLayers();   // Werte, die die Infotafel inzwischen geändert hat
-    if (v === 'gl') requestAnimationFrame(() => spyIn(vGl, sc));
   };
   btn.addEventListener('click', () => open(view === 'gl' ? false : 'gl'));
   if (lay) lay.addEventListener('click', () => open(view === 'lay' ? false : 'lay'));
-  // Reiter der Spalte: Infotafel schließt das Fenster und zeigt die Tafel (hud.js schaltet „Infotafel zeigen“ ein); ←/→ wie Reiter
-  side.querySelector('.side-tabs').addEventListener('click', (e) => {
-    const t = e.target.closest('[data-side]');
-    if (!t) return;
-    if (t.dataset.side === 'info') { open(false); window.dispatchEvent(new CustomEvent('kosmos:info')); } else open(t.dataset.side);
-  });
-  side.querySelector('.side-tabs').addEventListener('keydown', (e) => {
-    const t = e.target.closest('[data-side]');
-    if (!t || !['ArrowLeft', 'ArrowRight'].includes(e.key)) return;
-    e.preventDefault();
-    e.stopPropagation();   // sonst fliegt main.js zur Nachbarstation
-    const to = tabs[(tabs.indexOf(t) + (e.key === 'ArrowRight' ? 1 : tabs.length - 1)) % tabs.length];
-    to.focus();
-    to.click();
-  });
   const q = new URLSearchParams(location.search).get('cfg');
   if (q !== null) open(q === 'lay' ? 'lay' : 'gl');   // Screenshots: Fenster offen
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && view && !e.defaultPrevented) { const b = view === 'lay' && lay ? lay : btn; open(false); b.focus(); } });

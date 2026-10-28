@@ -1,12 +1,12 @@
-// Schnell-Knöpfe in der Kopfzeile links neben dem Zahnrad (Vorschau 26.10.2026 Knopf:A, 5 Knöpfe): Ton der Station,
-// Kamerafahrt im Leerlauf, Drehachsen, Kinobalken, Vollbild – je ein Klick statt Infotafel bzw. Zahnrad.
+// Schnell-Knöpfe in der Kopfzeile links neben dem Zahnrad (Vorschau 26.10.2026 Knopf:A): Ton der Station, Kamerafahrt im
+// Leerlauf, Kinobalken, Vollbild (Drehachsen nur im Reiter Station – in der Station selbst sind keine zu sehen, User 28.10.2026) – je ein Klick statt Infotafel bzw. Zahnrad.
 // Ton: schaltet den Schalter „sound“ der Station (sound.js oder eigener Takt des Pulsars) zwischen „Aus“ und der ersten
 // Aufnahme; Station ohne Ton → Knopf ausgegraut mit Grund im Tooltip. Die übrigen folgen kosmos.settings.v1 (auch aus dem Zahnrad).
 // Kinobalken = Kino-Modus: Bedienung ausgeblendet, Vollbild (syncKino).
 
 import { settings, setSetting, onSettings } from './settings.js';
 
-const KEYS = { 'qk-cine': ['cine', 'Kamerafahrt im Leerlauf'], 'qk-axes': ['axes', 'Drehachsen'], 'qk-bars': ['bars', 'Kinobalken 2,39:1'] };
+const KEYS = { 'qk-cine': ['cine', 'Kamerafahrt im Leerlauf'], 'qk-bars': ['bars', 'Kinobalken 2,39:1'] };
 const NO_SOUND = 'Kein Ton: diese Station hat keine echte Aufnahme';
 
 export function mountQuick(root, onInput) {
