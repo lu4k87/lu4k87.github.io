@@ -1,5 +1,6 @@
-/* Kosmos – Bedienoberfläche über der 3D-Szene. Das All ist dunkel, daher nur ein dunkles Thema; Glas-Tafeln wie Biochar,
-   Sechseck-Abzeichen mit Leitlinien, Mono-Schrift für Messwerte, Kapitel-Titel in breiter, leichter Versalschrift.
+/* Kosmos – Bedienoberfläche über der 3D-Szene. Das All ist dunkel, daher nur ein dunkles Thema. Look „Instrument“
+   (Vorschau 28.10.2026 Redesign aller Bedienelemente, alle 9 Teile C): dunkles Glas mit feinen 1-px-Linien, Radius 6,
+   Skalenstriche, Kosmos-Cyan nur für Aktives, Mono-Schrift für Zahlen, Satzschreibung statt Versalien-Zeilen.
    Aufbau als Grid (Kopf · Skala | Bühne | Tafel · Fuß): nichts liegt absolut übereinander. */
 
 :root {
@@ -8,11 +9,11 @@
   /* Kantenglas (Vorschau 26.10.2026 „Glas-Optik“ Glas:C): Lichtkante oben links, schräger Glanzstreif, Szene scheint gedämpft durch;
      brightness hält über hellen Szenen (Sonne, Erde bei Tag) den Kontrast WCAG AA.
      Große Flächen nutzen --glass/--glass-strong, Knöpfe --glass-btn, Kacheln und Reiter --glass-tile, Aktives --glass-on */
-  --glass: rgba(8, 10, 17, 0.36);
-  --glass-strong: rgba(8, 10, 17, 0.5);
+  --glass: rgba(7, 9, 14, 0.6);
+  --glass-strong: rgba(7, 9, 14, 0.66);
   --glass-sheen: linear-gradient(118deg, rgba(255, 255, 255, 0.2) 0, rgba(255, 255, 255, 0.06) 24%, rgba(255, 255, 255, 0) 25%, rgba(255, 255, 255, 0) 72%, rgba(255, 255, 255, 0.05) 100%);
   --glass-edge: inset 1px 1px 0 rgba(255, 255, 255, 0.55), inset -1px -1px 0 rgba(255, 255, 255, 0.1), inset 0 0 24px rgba(255, 255, 255, 0.05), 0 12px 40px rgba(0, 0, 0, 0.4);
-  --glass-blur: blur(18px) saturate(1.6) brightness(0.6);
+  --glass-blur: blur(18px) saturate(1.5) brightness(0.55);
   --glass-blur-sm: blur(10px);
   --glass-btn: rgba(8, 10, 17, 0.4);
   --glass-btn-edge: inset 1px 1px 0 rgba(255, 255, 255, 0.5), inset -1px -1px 0 rgba(255, 255, 255, 0.08);
@@ -20,15 +21,16 @@
   --glass-tile-edge: inset 1px 1px 0 rgba(255, 255, 255, 0.22);
   --glass-on: linear-gradient(150deg, rgba(var(--accent-rgb), 0.36), rgba(var(--accent-rgb), 0.08));
   --glass-on-edge: inset 1px 1px 0 rgba(255, 255, 255, 0.45), 0 0 16px rgba(var(--accent-rgb), 0.3);
-  --line: rgba(255, 255, 255, 0.1);
-  --line-strong: rgba(255, 255, 255, 0.3);
+  --line: rgba(255, 255, 255, 0.14);
+  --line-strong: rgba(255, 255, 255, 0.24);
+  --pane-shadow: 0 14px 40px rgba(0, 0, 0, 0.4);
   --accent: #33ccff;
   --accent-rgb: 51, 204, 255;
   --accent-ink: #03161a;
   --accent-soft: rgba(var(--accent-rgb), 0.16);
   --link: #a9d4ff;
   --focus: #9cc8ff;
-  --radius: 10px;
+  --radius: 6px;
   --panel-w: 440px;
   --ease-out: cubic-bezier(0.2, 0.7, 0.2, 1);
   --font: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
@@ -48,10 +50,10 @@ ul, ol { padding: 0; list-style: none; }
 
 #stage { position: fixed; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; outline: none; }
 
-.glass, .panel, .nav-btn, .hs-card, .cfg, .pull, .measure {
-  background: var(--glass-sheen), var(--glass);
+.glass, .panel, .nav-btn, .hs-card, .cfg, .pull, .measure, .top-actions {
+  background: var(--glass);
   border: 1px solid var(--line);
-  box-shadow: var(--glass-edge);
+  box-shadow: var(--pane-shadow);
   -webkit-backdrop-filter: var(--glass-blur);
   backdrop-filter: var(--glass-blur);
 }
@@ -72,19 +74,19 @@ body.panel-off .panel { display: none; }
 
 /* ---------- Kopf ---------- */
 .topbar {
-  grid-area: top; position: relative; z-index: 4; display: flex; align-items: center; gap: 16px; padding: 14px 18px 10px;
-  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0));
+  grid-area: top; position: relative; z-index: 4; display: flex; align-items: center; gap: 18px; padding: 12px 18px 6px 20px;
 }
-.brand { display: flex; align-items: center; gap: 12px; color: var(--ink); text-decoration: none; }
-.brand-mark { width: 38px; height: 38px; color: var(--accent); }
-.brand-mark .hex-shape { fill: rgba(255, 255, 255, 0.05); stroke: var(--accent); stroke-width: 1.6; }
-.brand-text { display: flex; flex-direction: column; line-height: 1.15; }
-.brand-text strong { font: 500 16px/1.2 var(--display); letter-spacing: 0.32em; text-transform: uppercase; }
-.brand-text span { font-size: 12.5px; color: var(--ink-soft); }
+.brand { display: flex; align-items: center; gap: 10px; color: var(--ink); text-decoration: none; text-shadow: 0 1px 6px #000; }
+.brand-mark { width: 30px; height: 30px; color: var(--accent); }
+.brand-mark .hex-shape { fill: none; stroke: var(--accent); stroke-width: 1.4; }
+.brand-text { display: flex; flex-direction: column; gap: 3px; line-height: 1.15; }
+.brand-text strong { font: 500 14px/1 var(--font); letter-spacing: 0.22em; text-transform: uppercase; }
+.brand-text span { font-size: 12px; color: var(--ink-soft); }
 .flight { flex: 1; text-align: center; font: 500 13px var(--mono); letter-spacing: 0.08em; color: var(--accent); opacity: 0; transition: opacity 0.4s; }
 body.is-flying .flight { opacity: 1; }
-/* Knöpfe rechts in der Kopfzeile: Schnell-Knöpfe, Zahnrad, Infotafel ein/aus */
-.top-actions { grid-area: acts; justify-self: end; align-self: start; display: flex; gap: 8px; padding: 14px 18px 0 0; }
+/* Knöpfe rechts in der Kopfzeile (Kopf:C): eine feine Leiste, Symbol mit Wort darunter; an = cyan getönt, offenes Fenster
+   zusätzlich mit Rahmen; Strich trennt die Schnell-Knöpfe von den Fenster-Knöpfen */
+.top-actions { grid-area: acts; justify-self: end; align-self: start; display: flex; align-items: center; height: 52px; margin: 8px 16px 0 0; padding: 0 4px; border-radius: var(--radius); }
 .icon-btn {
   width: 40px; height: 40px; display: grid; place-items: center; border-radius: 50%; cursor: pointer;
   background: var(--glass-sheen), var(--glass-btn); box-shadow: var(--glass-btn-edge); border: 1px solid var(--line); color: var(--ink); transition: border-color 0.2s, color 0.2s;
@@ -93,18 +95,31 @@ body.is-flying .flight { opacity: 1; }
 .icon-btn svg { width: 20px; height: 20px; }
 .icon-btn:hover, .icon-btn[aria-expanded="true"] { border-color: var(--accent); color: var(--accent); }
 /* Schnell-Knöpfe links neben dem Zahnrad (quick.js): an = eisblau gefüllt, Station ohne Ton = abgedunkelt; Strich trennt vom Zahnrad */
-.quick { display: flex; gap: 8px; padding-right: 10px; border-right: 1px solid var(--line); }
-.qk[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); background: var(--glass-on); box-shadow: var(--glass-on-edge); }
+.quick { display: flex; align-items: center; }
+.quick::after { content: ""; align-self: stretch; width: 1px; margin: 6px 4px; background: var(--line); }
+.top-actions .icon-btn {
+  width: auto; min-width: 52px; height: 44px; padding: 0 8px; display: inline-flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
+  border: 0; border-radius: 5px; background: none; box-shadow: none; -webkit-backdrop-filter: none; backdrop-filter: none; font-size: 12px; line-height: 1.15; white-space: nowrap; transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+}
+.top-actions .icon-btn svg { width: 18px; height: 18px; }
+.top-actions .icon-btn:hover { background: rgba(255, 255, 255, 0.06); color: var(--ink); }
+.top-actions .icon-btn[aria-expanded="true"] { color: var(--accent); background: rgba(var(--accent-rgb), 0.16); box-shadow: inset 0 0 0 1px rgba(var(--accent-rgb), 0.55); }
+.qk[aria-pressed="true"], .top-actions .qk[aria-pressed="true"]:hover { color: var(--accent); background: rgba(var(--accent-rgb), 0.1); }
 .qk[aria-disabled="true"] { opacity: 0.45; cursor: not-allowed; }
-.qk[aria-disabled="true"]:hover { border-color: var(--line); color: var(--ink); }
+.top-actions .qk[aria-disabled="true"]:hover { background: none; }
+.icon-count { font: 500 12px var(--mono); }
+.icon-count:empty { display: none; }
 #qk-sound .qk-off, #qk-sound.is-off .qk-on { display: none; }
 #qk-sound.is-off .qk-off { display: inline; }
 /* schmal: Drehachsen und Kinobalken nur im Zahnrad, sonst überdeckt die Reihe den Schriftzug */
-@media (max-width: 760px) {
-  .quick, .top-actions { gap: 6px; }
-  .quick { padding-right: 6px; }
-  #qk-axes, #qk-bars { display: none; }
+/* ohne Platz für die Wörter: nur Symbole (Zahl der Ebenen steht dann im Reiter der rechten Spalte) */
+@media (max-width: 960px) {
+  .top-actions .ib-t { display: none; }
+  .top-actions .icon-btn { min-width: 40px; height: 40px; padding: 0; }
+  .top-actions { height: 48px; }
 }
+@media (max-width: 760px) { #qk-axes, #qk-bars { display: none; } }
+@media (max-width: 480px) { #qk-full { display: none; } }
 .icon-btn--sm { width: 32px; height: 32px; flex: none; }
 .icon-btn--sm svg { width: 16px; height: 16px; }
 
@@ -119,39 +134,39 @@ body.is-flying .flight { opacity: 1; }
 [data-ch="galaxy"] { --ch: 167, 139, 250; }
 [data-ch="local"] { --ch: 240, 120, 154; }
 .bd-in { position: absolute; inset: 0; }
-/* ohne Rahmen und Fläche: Namen und Nummern halten sich per Schatten vom Bild ab */
+/* Messlineal (Route:C): Nummer über dem Strich, Name darunter, Skalenstrich je Station; nur die aktuelle Station cyan mit Ring.
+   Ohne Rahmen und Fläche: Namen und Nummern halten sich per Schatten vom Bild ab */
 .bd-node, .bd-moon { text-shadow: 0 0 3px #000, 0 0 10px rgba(0, 0, 0, 0.85); }
 .bd-cv { position: absolute; left: 0; top: 0; right: 0; bottom: 0; }
 .bd-wires { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
 .bd-grp { position: absolute; top: 0; bottom: 0; }
 /* Knoten: Punkt, Nummer, Name (höchstens zwei Zeilen); Zentrierung per transform, Einblenden per eigener translate-Eigenschaft */
 .bd-node {
-  position: absolute; top: calc(var(--ry, 48px) - 5.5px); transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 2px;
-  padding: 0 0 2px; border: 0; border-radius: 6px; background: none; color: var(--ink); text-align: center; cursor: pointer;
+  position: absolute; top: calc(var(--ry, 24px) - 23px); transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 2px;
+  padding: 0 2px 2px; border: 0; border-radius: 4px; background: none; color: var(--ink); text-align: center; cursor: pointer; transition: background 0.2s;
 }
-.bd-kid { top: 25.5px; }
-.bd-dot { position: relative; width: 11px; height: 11px; flex: none; border-radius: 50%; background: #0a0f19; border: 1.5px solid rgba(var(--ch), 0.85); transition: transform 0.25s var(--ease-out), background 0.25s, box-shadow 0.25s; }
-.bd-kid .bd-dot { width: 9px; height: 9px; }
-.bd-node .n { font: 500 12px/1.25 var(--mono); color: var(--ink-soft); }
+.bd-node:hover { background: rgba(255, 255, 255, 0.06); }
+.bd-kid { top: 19px; }   /* KID_Y − 23 (hud.js) */
+/* Punkt = 12-px-Feld, darin der Skalenstrich (gleiche Höhe für Strich und Ring, damit nichts springt) */
+.bd-dot { position: relative; width: 12px; height: 12px; flex: none; border-radius: 50%; color: rgba(255, 255, 255, 0.6); background: linear-gradient(currentColor, currentColor) center / 1px 9px no-repeat; transition: color 0.25s, background-color 0.25s, box-shadow 0.25s; }
+.bd-node .n { order: -1; font: 500 12px/1.25 var(--mono); color: var(--ink-soft); }
 .bd-nm { font-size: 13px; line-height: 1.2; text-wrap: balance; transition: color 0.25s; }
 .band.is-compact .bd-nm, .bd-kid .bd-nm { font-size: 12.5px; }
 .band.is-compact .bd-kid .bd-nm { font-size: 12px; }
-.bd-node:hover .bd-dot, .bd-node.is-hot .bd-dot { transform: scale(1.25); background: rgb(var(--ch)); box-shadow: 0 0 12px rgba(var(--ch), 0.8); }
-.bd-node.is-done .bd-dot { background: rgba(var(--ch), 0.55); }
-.bd-node.is-path .bd-dot { background: rgb(var(--ch)); }
-.bd-node:is(.is-path, .is-cur) .n { color: var(--accent); }
+.bd-node:is(:hover, .is-hot, .is-done, .is-path) .bd-dot { color: var(--ink); }
 .bd-node.is-path .bd-nm { font-weight: 500; }
-.bd-node.is-cur .bd-dot { transform: scale(1.36); background: var(--accent); border-color: #fff; box-shadow: 0 0 14px rgba(var(--accent-rgb), 0.9); }
+.bd-node.is-cur .bd-dot { background: rgba(var(--accent-rgb), 0.35); box-shadow: inset 0 0 0 1px var(--accent), 0 0 10px rgba(var(--accent-rgb), 0.6); }
+.bd-node.is-cur :is(.n, .bd-nm) { color: var(--accent); }
 .bd-node.is-cur .bd-nm { font-weight: 600; }
 /* einziger atmender Blickfang: Lichthof der aktuellen Station; beim Ankommen einmal ein Ring */
-.bd-node.is-cur .bd-dot::after { content: ""; position: absolute; inset: -8px; border-radius: 50%; box-shadow: 0 0 20px -2px rgba(var(--accent-rgb), 0.9); opacity: 0.35; pointer-events: none; animation: bd-breathe 2.6s var(--ease-io) infinite alternate; }
+.bd-node.is-cur .bd-dot::after { content: ""; position: absolute; inset: -6px; border-radius: 50%; box-shadow: 0 0 20px -2px rgba(var(--accent-rgb), 0.9); opacity: 0.35; pointer-events: none; animation: bd-breathe 2.6s var(--ease-io) infinite alternate; }
 .bd-node.is-cur .bd-dot::before { content: ""; position: absolute; inset: -1.5px; border-radius: 50%; border: 1px solid rgba(var(--accent-rgb), 0.9); opacity: 0; pointer-events: none; animation: bd-ping 1.2s var(--ease-out) 0.6s 1 both; }
 @keyframes bd-breathe { to { opacity: 0.65; } }
 @keyframes bd-ping { from { transform: scale(1); opacity: 0.8; } to { transform: scale(2.6); opacity: 0; } }
-.bd-wire { fill: none; stroke: rgb(var(--ch, 255, 255, 255)); stroke-opacity: 0.4; stroke-width: 1.2; stroke-linecap: round; transition: stroke 0.25s, stroke-opacity 0.25s, stroke-width 0.25s; }
-.bd-wire.is-done { stroke-opacity: 0.7; stroke-width: 1.6; }
-.bd-wire.is-hot { stroke: var(--accent); stroke-opacity: 1; stroke-width: 1.6; }
-.bd-stripe { stroke: rgb(var(--ch)); stroke-opacity: 0.35; stroke-width: 6; stroke-linecap: round; }
+.bd-wire { fill: none; stroke: #fff; stroke-opacity: 0.4; stroke-width: 1; transition: stroke-opacity 0.25s, stroke-width 0.25s; }
+.bd-wire.is-done { stroke-opacity: 0.92; }
+.bd-wire.is-hot { stroke-opacity: 1; stroke-width: 1.5; }
+.bd-stripe { stroke: #fff; stroke-opacity: 0.4; stroke-width: 1; }
 .bd-comet { fill: none; stroke: url(#bd-comet-g); stroke-width: 2.4; stroke-linecap: round; opacity: 0; }
 /* Einzeichnen beim ersten Aufbau: Linien ziehen sich (pathLength 1), Namen gleiten gestaffelt herein */
 .band.is-intro .bd-in .bd-wire { stroke-dasharray: 1; stroke-dashoffset: 1; animation: bd-draw 0.9s var(--ease-out) var(--d, 300ms) forwards; }
@@ -166,22 +181,22 @@ body.is-flying .flight { opacity: 1; }
 .bd-drawer.is-open { visibility: visible; opacity: 1; translate: 0 0; transition: opacity var(--t-in) var(--ease-out), translate var(--t-in) var(--ease-out); }
 .bd-drawer .bd-wire { stroke-dasharray: 1; stroke-dashoffset: 1; animation: bd-draw 0.6s var(--ease-out) forwards; }
 .bd-kids .bd-node { animation: bd-up var(--t-in) var(--ease-out) calc(var(--i, 0) * 50ms + 80ms) both; }
-.bd-md { position: absolute; top: 98px; transform: translateX(-50%); display: flex; gap: 5px; transition: opacity var(--t-out) var(--ease-out); }
-.bd-md i { width: 4px; height: 4px; border-radius: 50%; background: rgba(var(--ch), 0.8); }
+.bd-md { position: absolute; top: 90px; transform: translateX(-50%); display: flex; gap: 5px; transition: opacity var(--t-out) var(--ease-out); }
+.bd-md i { width: 4px; height: 4px; border-radius: 50%; background: rgba(255, 255, 255, 0.6); }
 .bd-drawer.has-moons .bd-md { opacity: 0; }
-.bd-moons { position: absolute; top: 96px; display: flex; gap: 6px; animation: bd-up var(--t-in) var(--ease-out) both; }
+.bd-moons { position: absolute; top: 108px; display: flex; gap: 6px; animation: bd-up var(--t-in) var(--ease-out) both; }
 .bd-moon {
-  min-height: 26px; padding: 2px 9px; border: 1px solid rgba(var(--ch), 0.45); border-radius: 6px; background: rgba(var(--ch), 0.08); color: var(--ink);
+  min-height: 26px; padding: 2px 9px; border: 1px solid var(--line-strong); border-radius: 5px; background: rgba(7, 9, 14, 0.55); color: var(--ink);
   font: 400 12.5px/1.2 var(--font); white-space: nowrap; cursor: pointer; transition: border-color 0.2s, background 0.2s, color 0.2s;
 }
 .bd-moon .n { margin-right: 5px; font: 500 12px var(--mono); color: var(--ink-soft); }
-.bd-moon:hover, .bd-moon.is-hot { border-color: rgba(var(--accent-rgb), 0.7); background: rgba(var(--accent-rgb), 0.1); }
+.bd-moon:hover, .bd-moon.is-hot { border-color: var(--ink); }
 .bd-moon.is-cur { border-color: var(--accent); color: var(--accent); font-weight: 600; }
 .bd-moon.is-cur .n { color: var(--accent); }
 /* Hinweis beim Zeigen unter Band bzw. Schublade */
 .bd-tip {
   position: fixed; z-index: 8; display: flex; flex-direction: column; gap: 2px; min-width: 190px; max-width: min(440px, calc(100vw - 16px)); padding: 9px 12px; pointer-events: none;
-  border: 1px solid rgba(var(--ch, 51, 204, 255), 0.5); border-radius: var(--radius); background: var(--glass-sheen), rgba(6, 10, 18, 0.92); box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45);
+  border: 1px solid var(--line-strong); border-radius: var(--radius); background: rgba(7, 9, 14, 0.92); box-shadow: var(--pane-shadow);
   font-size: 13px; opacity: 0; translate: 0 6px; transition: opacity 0.25s var(--ease-out), translate 0.25s var(--ease-out);
 }
 .bd-tip.is-on { opacity: 1; translate: 0 0; }
@@ -192,14 +207,13 @@ body.is-flying .flight { opacity: 1; }
 .bd-tip-halt { margin-left: auto; padding-left: 10px; font: 400 12.5px var(--font); color: var(--ink-soft); white-space: nowrap; }
 /* Punkte: nur die Route, Kapitel als Streifen hinter den Punkten (schmal oder zu eng für die Namen) */
 .band.is-dots .bd-drawer, .band.is-dots .bd-node > :not(.bd-dot) { display: none; }
-.band.is-dots .bd-node.is-path .bd-dot { transform: scale(1.36); background: var(--accent); border-color: #fff; }
-.band.is-dots .bd-node { top: calc(var(--ry) - 13.5px); padding: 8px 0; }
+.band.is-dots .bd-node { top: calc(var(--ry) - 14px); padding: 8px 0; }
 
 /* ---------- Suche in der Kopfzeile: Feld, Treffer als Liste darunter ---------- */
-.find { position: relative; flex: 0 1 280px; min-width: 180px; }
+.find { position: relative; flex: 0 1 260px; min-width: 180px; }
 .zb-search {
-  display: flex; align-items: center; gap: 8px; height: 38px; padding: 0 10px; border: 1px solid var(--line); border-radius: 8px;
-  background: var(--glass-sheen), var(--glass-btn); box-shadow: var(--glass-btn-edge); transition: border-color 0.2s;
+  display: flex; align-items: center; gap: 8px; height: 34px; padding: 0 10px; border: 1px solid var(--line-strong); border-radius: 5px;
+  background: rgba(7, 9, 14, 0.5); transition: border-color 0.2s;
   -webkit-backdrop-filter: var(--glass-blur-sm); backdrop-filter: var(--glass-blur-sm);
 }
 .zb-search:hover { border-color: rgba(var(--accent-rgb), 0.5); }
@@ -207,7 +221,7 @@ body.is-flying .flight { opacity: 1; }
 .zb-search svg { width: 18px; height: 18px; flex: none; fill: none; stroke: var(--ink-soft); stroke-width: 1.8; stroke-linecap: round; }
 .zb-search input { flex: 1; min-width: 0; height: 100%; border: 0; outline: none; background: none; color: var(--ink); font: 400 14px var(--font); }
 .zb-search input::placeholder { color: var(--ink-soft); }
-.zb-search kbd { font: 500 12px var(--mono); padding: 1px 7px; border: 1px solid var(--line-strong); border-radius: 4px; color: var(--ink-soft); }
+.zb-search kbd { font: 500 12px var(--mono); padding: 0 6px; border: 1px solid var(--line-strong); border-radius: 3px; color: var(--ink-soft); }
 .zb-search:has(input:not(:placeholder-shown)) kbd { display: none; }
 .zb-found {
   position: absolute; left: 0; top: calc(100% + 6px); z-index: 9; width: max(100%, 380px); max-height: min(60vh, 520px); display: flex; flex-direction: column; padding: 6px;

@@ -44,6 +44,9 @@ export function createHud(h) {
   });
   body.classList.toggle('panel-off', !settings.S.panel);
   $('#btn-panel').addEventListener('click', () => setSetting('panel', !settings.S.panel));
+  const syncPanelBtn = () => $('#btn-panel').setAttribute('aria-expanded', String(!!settings.S.panel));
+  onSettings(syncPanelBtn);
+  syncPanelBtn();
 
   // ---------- Stationsleiste ----------
   // Band oben über die volle Breite (Vorschau 26.10.2026 „Stationsleiste oben“ Leiste:C, Baum-Panorama): Zeilen Route →
@@ -146,7 +149,7 @@ export function createHud(h) {
   // kleiner; passt auch das nicht (oder unter 760 px), zeigt das Band die Route als Punkte mit Kapitel-Streifen (.is-dots).
   // Feste Höhe in Ruhe, damit die Bühne beim Zeigen nicht springt; die Schublade liegt über der Bühne.
   const NS = 'http://www.w3.org/2000/svg', PAD = 10, GAP = 0;
-  const BAND_H = 80, DOTS_H = 40, ROUTE_Y = 18, BUS_Y = 12, KID_Y = 30, MOONS_Y = 96, BRK_Y = 91;
+  const BAND_H = 70, DOTS_H = 40, ROUTE_Y = 24, BUS_Y = 12, KID_Y = 42, MOONS_Y = 108, BRK_Y = 103;
   // Stufen: Schrift, Luft je Name, Spalte links (0 = keine)
   const SIZES = [[13, 16, 0], [12, 10, 0], [12, 8, 0]];
   const wide = matchMedia('(min-width: 761px)'), still = matchMedia('(prefers-reduced-motion: reduce)');
@@ -154,7 +157,8 @@ export function createHud(h) {
   const textW = (s, font) => { ctx2d.font = font; return ctx2d.measureText(s).width; };
   const need = (id, px, pad) => {
     const font = `600 ${px}px "IBM Plex Sans", system-ui, sans-serif`, t = STATIONS[id].title;
-    return Math.max(24, ...t.split(/[\s-]+/).map((s) => textW(s, font)), textW(t, font) / 2) + pad;
+    // Messlineal (Route:C): Namen bis 16 Zeichen einzeilig, längere („Beobachtbares Universum“) zweizeilig
+    return Math.max(24, ...t.split(/[\s-]+/).map((s) => textW(s, font)), textW(t, font) / (t.length > 16 ? 2 : 1)) + pad;
   };
   const sum = (a) => a.reduce((x, y) => x + y, 0);
   const node = (id, cls = '', style = '') => `<button type="button" class="bd-node${cls}"${style && ` style="${style}"`} data-go="${id}" data-ch="${chapter(id)}" aria-label="${label(id)}, Kapitel ${esc(chName(id))}"><span class="bd-dot"></span><span class="n">${num(id)}</span><span class="bd-nm">${title(id)}</span></button>`;
@@ -331,7 +335,7 @@ export function createHud(h) {
       drawer.kpos = kpos;
       const xs = Object.values(kpos), sx = pos[s].x, c = chapter(s);
       dwires.innerHTML = `<path class="bd-wire bd-bus" data-ch="${c}" pathLength="1" d="M${sx} -1 V${BUS_Y} M${Math.min(sx, ...xs)} ${BUS_Y} H${Math.max(sx, ...xs)}"/>`
-        + ks.map((id) => `<path class="bd-wire bd-kidw" data-ch="${c}" data-to="${id}" pathLength="1" d="M${kpos[id]} ${BUS_Y} V${KID_Y - 7}"/>`).join('')
+        + ks.map((id) => `<path class="bd-wire bd-kidw" data-ch="${c}" data-to="${id}" pathLength="1" d="M${kpos[id]} ${BUS_Y} V${KID_Y - 25}"/>`).join('')
         + '<path class="bd-wire bd-mw" pathLength="1"/>';
       const sb = cv.querySelector(`.bd-node[data-go="${s}"]`);
       drop.setAttribute('d', `M${sx} ${sb.offsetTop + sb.offsetHeight + 2} V${BAND_H}`);
