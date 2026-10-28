@@ -1,13 +1,13 @@
-// Einstellungen (Zahnrad oben rechts) = gilt an allen Stationen; die Ebenen der Station haben ein eigenes Fenster hinter dem
-// Knopf „Ebenen“ links daneben (Vorschau 27.10.2026 Ort:A, Ebenen-Inhalt in layers.js). Beide Fenster teilen den Kasten #cfg
-// (immer nur eines offen, Abzeichen weichen ihm aus: hud.js uiBoxes); im Zahnrad führt eine Verweis-Zeile zu den Ebenen (F1).
-// Zahnrad als Klapp-Liste mit Sprungleiste (Vorschau 26.10.2026 Zahnrad:A + C, Global:A+B+C): Karten mit Icon-Plakette und
-// Mini-Grafik je Zeile, geänderte Werte mit ↺ „Standard“ am Zeilenende; Gruppen nur aus Schaltern zweispaltig. Gruppen: Look (Farblook, Belichtung, Vignette, Kinobalken),
+// Einstellungen = gilt an allen Stationen; Ebenen = nur diese Station (Inhalt in layers.js). Ein Ort rechts (Vorschau 28.10.2026
+// Fenster:C): die rechte Spalte zeigt Infotafel, Ebenen oder Einstellungen, umgeschaltet über die Reiter oben in der Spalte und die
+// Knöpfe der Kopfleiste – nichts schwebt über der Szene. Einstellungen als durchgehende Liste, die Gruppen als Unterstrich-Reiter
+// darüber (Reiter:C: Klick springt hin, beim Scrollen wandert die Markierung mit); Fuß mit Geltung und „Alle zurücksetzen“.
+// Mini-Grafik je Zeile, geänderte Werte mit ↺ am Zeilenende. Gruppen: Look (Farblook, Belichtung, Vignette, Kinobalken),
 // Himmel, Milchstraße (Aussehen + Aufbau, milkyway.js), Orbit (Satelliten, Drehachsen), Kamera & Bewegung, Effekte, Oberfläche (inkl. Bewegung der Info-Grafiken = cards.js `kosmos.figmotion.v1`), Leistung.
-// `?cfg` (auch `?cfg=global`) öffnet das Zahnrad, `?cfg=lay` das Ebenen-Fenster.
+// `?cfg` (auch `?cfg=global`) zeigt die Einstellungen, `?cfg=lay` die Ebenen.
 // Gespeichert in localStorage `kosmos.settings.v1`; clean() prüft jeden Wert, damit kaputte Einträge nichts stören.
 
-import { mountLayers, rebuildLayers, refreshLayers, icon, devLine, cfgBar, markDevs, isOpenIn, spyIn, foldClick, domSummary } from './layers.js';
+import { mountLayers, rebuildLayers, refreshLayers, devLine, devBar, markDevs, spyIn } from './layers.js';
 import { nbsp } from './figs.js';
 
 const KEY = 'kosmos.settings.v1';
@@ -185,42 +185,30 @@ const GROUPS = [
     ['fpsCap', SEG('fpsCap', 'Bildrate', [['0', 'Frei'], ['60', '60'], ['30', '30']]) + NOTE('30 Bilder/s spart am Laptop Strom und Lüfter.')]] },
 ];
 const N_GLOBAL = GROUPS.reduce((n, g) => n + nRows(g), 0);
-// Zahnrad (Vorschau 26.10.2026 Zahnrad:A + C, F3 ja): Sprungleiste, je Gruppe eine Klapp-Zeile mit Kurzwerten
-const GKEY = '_global';
-const JUMP = `<nav class="cfg-jump" aria-label="Gruppen">${GROUPS.map((g, i) => `<button type="button" class="cfg-jump-btn" data-jump="${i}">${icon(g.icon)}<span>${g.title}</span></button>`).join('')}</nav>`;
-const CARD = (g, i) => { const open = isOpenIn(GKEY, i, 0); return `<article class="b-card b-fold${open ? ' is-open' : ''}" data-g="${g.id}" data-fold="${i}">
-  <h4 class="b-fold-h"><button type="button" class="b-head" aria-expanded="${open}" aria-controls="cfg-b${i}"><span class="b-plaque">${icon(g.icon)}</span><span class="b-name">${g.title}</span>
-    <span class="b-sum" data-gsum></span><span class="b-count" aria-label="${nRows(g)} Einstellungen">${nRows(g)}</span>${icon('chev', 'b-chev')}</button></h4>
-  <div class="b-body${g.half ? ' b-body--grid' : ''}" id="cfg-b${i}"${open ? '' : ' hidden'}>${g.rows.map(([k, h]) => (k === '#' ? h : ROW(k, h))).join('')}</div></article>`; };
-
 const plural = (n, one, many) => `${n} ${n === 1 ? one : many}`;
-// root = Kasten #cfg, btn = Zahnrad, lay = Knopf „Ebenen“ (Zahl der Ebenen als Plakette)
+// Gruppen als Unterstrich-Reiter (Reiter:C) über der durchgehenden Liste; je Gruppe Name + Zahl der Einstellungen
+const JUMP = `<nav class="cfg-jump u-tabs u-tabs--sub" aria-label="Gruppen">${GROUPS.map((g, i) => `<button type="button" class="u-tab" data-jump="${i}">${g.title}</button>`).join('')}</nav>`;
+const CARD = (g, i) => `<section class="b-card b-fold b-sec" data-g="${g.id}" data-fold="${i}" aria-labelledby="cfg-h${i}">
+  <h4 class="b-sec-h"><span class="b-name" id="cfg-h${i}">${g.title}</span><span class="b-count">${plural(nRows(g), 'Einstellung', 'Einstellungen')}</span></h4>
+  <div class="b-body${g.half ? ' b-body--grid' : ''}" id="cfg-b${i}">${g.rows.map(([k, h]) => (k === '#' ? h : ROW(k, h))).join('')}</div></section>`;
+// root = #cfg in der rechten Spalte, btn = Knopf „Einstellungen“, lay = Knopf „Ebenen“ (Zahl der Ebenen in der Beschriftung)
 export function mountSettings(root, btn, lay = document.getElementById('btn-lay')) {
   root.innerHTML = `
     <div class="cfg-view" id="cfg-v-gl">
-      <div class="cfg-hd">
-        <h2 class="cfg-title" id="cfg-title">Einstellungen</h2>
-        <p class="cfg-scope">Global · gilt an allen Stationen · ${N_GLOBAL} Einstellungen</p>
-        <button type="button" class="cfg-link" data-open-lay>${icon('layers')}<span class="cfg-link-t">Ebenen der Station <b data-st-name></b><span data-st-link></span> · öffnen</span>${icon('chev', 'cfg-link-chev')}</button>
-      </div>
+      ${JUMP}
       <div class="cfg-pane" id="cfg-global">${MINI_DEFS}
-        <div class="b-main">${cfgBar(JUMP)}<div class="bento b-list">${GROUPS.map(CARD).join('')}</div></div>
+        <div class="b-main"><div class="b-list">${GROUPS.map(CARD).join('')}</div></div>
       </div>
+      <div class="cfg-foot"><span class="cfg-scope">gilt an allen Stationen · ${N_GLOBAL} Einstellungen</span>${devBar()}</div>
     </div>
     <div class="cfg-view" id="cfg-v-lay" hidden>
-      <div class="cfg-hd">
-        <div class="cfg-hd-row"><h2 class="cfg-title" id="lay-title">Ebenen · <span data-st-name></span></h2><span class="b-count" data-st-n></span></div>
-        <p class="cfg-scope"><span data-st-sum></span> · nur an dieser Station</p>
-      </div>
       <div class="cfg-pane" id="cfg-station"></div>
     </div>`;
-  const glob = root.querySelector('#cfg-global');
+  const glob = root.querySelector('#cfg-global'), vGl = root.querySelector('#cfg-v-gl'), side = document.getElementById('panel');
   const info = ({ title, n, groups }) => {
     root.querySelectorAll('[data-st-name]').forEach((e) => { e.textContent = title; });
-    root.querySelector('[data-st-n]').textContent = n;
-    root.querySelector('[data-st-n]').hidden = !n;
-    root.querySelector('[data-st-link]').textContent = n ? ` · ${n}` : '';
-    root.querySelector('[data-st-sum]').textContent = n ? `${plural(n, 'Ebene', 'Ebenen')}${groups > 1 ? ` in ${groups} Gruppen` : ''}` : 'Keine Ebenen';
+    side.querySelectorAll('[data-lay-n]').forEach((e) => { e.textContent = n || ''; });
+    root.dataset.laySum = n ? `${plural(n, 'Ebene', 'Ebenen')}${groups > 1 ? ` in ${groups} Gruppen` : ''}` : 'Keine Ebenen';
     if (lay) {
       lay.querySelector('[data-lay-n]').textContent = n || '';
       lay.setAttribute('aria-label', n ? `Ebenen der Station: ${n}` : 'Ebenen der Station');
@@ -238,15 +226,19 @@ export function mountSettings(root, btn, lay = document.getElementById('btn-lay'
       i.value = S[i.dataset.key];
       root.querySelector(`[data-out="${i.dataset.key}"]`).textContent = String(S[i.dataset.key].toFixed(i.step < 0.1 ? 2 : 1)).replace('.', ',');
     });
-    markDevs(glob, (k) => S[k] !== DEFAULTS[k]);
-    glob.querySelectorAll('.b-fold').forEach((c) => { const t = domSummary(c.querySelector('.b-body')); const el = c.querySelector('[data-gsum]'); if (el.textContent !== t) el.textContent = t; });
+    markDevs(root.querySelector('#cfg-v-gl'), (k) => S[k] !== DEFAULTS[k]);
   };
   const num = (k, v) => (typeof DEFAULTS[k] === 'number' ? +v : v);
-  const sc = root;
-  sc.addEventListener('scroll', () => spyIn(glob, sc), { passive: true });
+  const sc = glob;   // Reiter-Zeile und Fuß stehen, nur die Liste dazwischen scrollt
+  sc.addEventListener('scroll', () => spyIn(vGl, sc), { passive: true });
   root.addEventListener('click', (e) => {
-    if (foldClick(glob, e, GKEY, sc)) return;
-    if (e.target.closest('[data-open-lay]')) { open('lay'); return; }
+    // Reiter der Gruppen: zur Gruppe springen (Überschrift unter die stehende Reiter-Zeile)
+    const j = e.target.closest('[data-jump]');
+    if (j && vGl.contains(j)) {
+      const c = glob.querySelector(`.b-fold[data-fold="${j.dataset.jump}"]`);
+      c.scrollIntoView({ block: 'start', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+      return;
+    }
     // Auftakt-Film noch einmal (main.js): Zahnrad schließt, damit der Film frei steht
     if (e.target.closest('[data-auftakt]')) { open(false); window.dispatchEvent(new CustomEvent('kosmos:auftakt')); return; }
     const ms = e.target.closest('[data-mwstyle]');
@@ -254,7 +246,7 @@ export function mountSettings(root, btn, lay = document.getElementById('btn-lay'
     const b = e.target.closest('[data-key][data-val]');
     if (b) setSetting(b.dataset.key, num(b.dataset.key, b.dataset.val));
     const r = e.target.closest('[data-reset]');
-    if (r && glob.contains(r)) for (const k of r.dataset.reset === '*' ? Object.keys(DEFAULTS) : [r.dataset.reset]) setSetting(k, DEFAULTS[k]);
+    if (r && vGl.contains(r)) for (const k of r.dataset.reset === '*' ? Object.keys(DEFAULTS) : [r.dataset.reset]) setSetting(k, DEFAULTS[k]);
   });
   root.addEventListener('input', (e) => {
     const i = e.target;
@@ -264,24 +256,46 @@ export function mountSettings(root, btn, lay = document.getElementById('btn-lay'
   });
   onSettings((keys) => { sync(); if (keys.includes('timeline')) rebuildLayers(); });
   sync();
-  // view = 'gl' (Zahnrad) | 'lay' (Ebenen) | false (zu); nur eines offen, der andere Knopf wechselt das Fenster
+  // view = 'gl' (Einstellungen) | 'lay' (Ebenen) | false (Infotafel bzw. Spalte zu, je nach Schalter „Infotafel zeigen“).
+  // Die Spalte steht, solange ein Fenster offen ist, auch bei ausgeblendeter Infotafel (body.cfg-open, kosmos.css).
   let view = false;
+  const tabs = [...side.querySelectorAll('[data-side]')];
   const open = (v) => {
-    if (v !== view && v) root.scrollTop = 0;
+    if (v !== view && v) root.querySelectorAll('#cfg-global, .lay-scroll').forEach((e) => { e.scrollTop = 0; });
+    const was = view;
     view = v;
     root.hidden = !v;
     root.querySelector('#cfg-v-gl').hidden = v !== 'gl';
     root.querySelector('#cfg-v-lay').hidden = v !== 'lay';
-    if (v) root.setAttribute('aria-labelledby', v === 'gl' ? 'cfg-title' : 'lay-title');
-    document.body.classList.toggle('cfg-open', !!v);   // Kapitel-Titel weicht dem offenen Fenster
+    root.setAttribute('aria-labelledby', v === 'lay' ? 'side-t-lay' : 'side-t-gl');
+    document.body.classList.toggle('cfg-open', !!v);
+    const cur = v || 'info';
+    tabs.forEach((t) => { const on = t.dataset.side === cur; t.setAttribute('aria-selected', String(on)); t.tabIndex = on ? 0 : -1; });
     btn.setAttribute('aria-expanded', String(v === 'gl'));
     if (lay) lay.setAttribute('aria-expanded', String(v === 'lay'));
-    if (v) { refreshLayers(); root.focus(); if (v === 'gl') requestAnimationFrame(() => spyIn(glob, sc)); }   // Werte, die die Infotafel inzwischen geändert hat
+    window.dispatchEvent(new CustomEvent('kosmos:side', { detail: { view: v } }));   // hud.js: Infotafel-Knopf, Raster bei ausgeblendeter Infotafel
+    if (!!was !== !!v || v) refreshLayers();   // Werte, die die Infotafel inzwischen geändert hat
+    if (v === 'gl') requestAnimationFrame(() => spyIn(vGl, sc));
   };
   btn.addEventListener('click', () => open(view === 'gl' ? false : 'gl'));
   if (lay) lay.addEventListener('click', () => open(view === 'lay' ? false : 'lay'));
+  // Reiter der Spalte: Infotafel schließt das Fenster und zeigt die Tafel (hud.js schaltet „Infotafel zeigen“ ein); ←/→ wie Reiter
+  side.querySelector('.side-tabs').addEventListener('click', (e) => {
+    const t = e.target.closest('[data-side]');
+    if (!t) return;
+    if (t.dataset.side === 'info') { open(false); window.dispatchEvent(new CustomEvent('kosmos:info')); } else open(t.dataset.side);
+  });
+  side.querySelector('.side-tabs').addEventListener('keydown', (e) => {
+    const t = e.target.closest('[data-side]');
+    if (!t || !['ArrowLeft', 'ArrowRight'].includes(e.key)) return;
+    e.preventDefault();
+    e.stopPropagation();   // sonst fliegt main.js zur Nachbarstation
+    const to = tabs[(tabs.indexOf(t) + (e.key === 'ArrowRight' ? 1 : tabs.length - 1)) % tabs.length];
+    to.focus();
+    to.click();
+  });
   const q = new URLSearchParams(location.search).get('cfg');
   if (q !== null) open(q === 'lay' ? 'lay' : 'gl');   // Screenshots: Fenster offen
-  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && view) { const b = view === 'lay' && lay ? lay : btn; open(false); b.focus(); } });
-  document.addEventListener('pointerdown', (e) => { if (view && !root.contains(e.target) && !btn.contains(e.target) && !(lay && lay.contains(e.target))) open(false); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && view && !e.defaultPrevented) { const b = view === 'lay' && lay ? lay : btn; open(false); b.focus(); } });
+  return { open, view: () => view };
 }

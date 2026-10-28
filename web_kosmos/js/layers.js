@@ -1,7 +1,7 @@
-// Ebenen-Einstellungen je Station (Muster Biochar): eigenes Fenster „Ebenen“ (Knopf links neben dem Zahnrad, settings.js) und
-// Zeitleiste über der Fußleiste. Aufbau (Vorschau 27.10.2026 Ort:A + Reiter:A): Animation fest oben, darunter Reiter-Leiste der
-// Gruppen (Icon, Kurzname aus tabs.js, Zahl der Ebenen, Punkt bei geändertem Wert; ←/→ wie Reiter), genau eine Gruppe sichtbar
-// (je Station gemerkt in `kosmos.cfgopen.v1`), unten „n geändert · Alle zurücksetzen“; Einstellung als Zeile Name | Bedienung | Wert.
+// Ebenen-Einstellungen je Station (Muster Biochar): Reiter „Ebenen“ der rechten Spalte (settings.js) und Zeitleiste (Player)
+// unten links. Aufbau (Vorschau 28.10.2026 Reiter:C): Gruppen als Unterstrich-Reiter in einer Zeile (Kurzname aus tabs.js + Zahl
+// der Ebenen, Punkt bei geändertem Wert; ←/→ wie Reiter, seitlich schiebbar), darunter die Animation, genau eine Gruppe sichtbar
+// (je Station gemerkt in `kosmos.cfgopen.v1`), Fuß „nur an dieser Station · Alle zurücksetzen“; Zeile Name | Bedienung | Wert.
 // Eine Station registriert ihre Ebenen in create(): registerLayers(stationId, layers). Ebene = { id, label, type, value, set, … }
 //   'toggle' an/aus · 'range' (min, max, step, unit, fmt) · 'play' ▶/⏸ mit Regler: set(value, playing), get() → { value, playing },
 //   status() Text für die Zeitleiste · 'action' Knopf: run(), button. sub: true rückt ein (Folgezeilen hängen gemeinsam an der Zeile
@@ -41,28 +41,15 @@ const ICONS = {
   global: '<g fill="currentColor"><rect x="3" y="3" width="9" height="18" rx="2"/><rect x="14" y="3" width="7" height="8" rx="2"/><rect x="14" y="13" width="7" height="8" rx="2"/></g>',
 };
 export const icon = (k, cls = 'b-ico') => `<svg class="${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[k] || ICONS.layers}</svg>`;
-// Icon je Gruppen-Name der Stationen (Reihenfolge zählt: „Polarlicht“ vor „Licht“)
-const GROUP_ICONS = [[/Zeit|Animation/, 'time'], [/^Ton/, 'sound'], [/Optik/, 'fx'], [/Polarlicht|Magnet|Feld/, 'field'], [/Licht|Sonne|Korona|Strahlen/, 'sun'],
-  [/Bögen|Flare|Ausbr|Ereignis|Vulkan|Fontän/, 'burst'], [/Himmel|Stern/, 'sky'], [/Ansicht|Station|New Horizons|Kino/, 'cam'],
-  [/Bahn|Mond|Monde|Ring|Planet|System|Umlauf|Jupiter|Neptun|Mars|Triton|Erde|Galaxien|Gezeiten/, 'orbit'], [/Farb|Glut/, 'look']];
-const groupIcon = (t) => (GROUP_ICONS.find(([re]) => re.test(t)) || [0, 'layers'])[1];
-// Reiter: zuerst der Kurzname, sonst der volle Name der ersten Gruppe („Bögen“ → burst, nicht field aus „Magnetbögen“)
-const tabIcon = (g) => { const k = groupIcon(g.title); return k === 'layers' ? groupIcon(g.segs[0].title) : k; };
 // Geänderte Werte (Vorschau Global:C, verdichtet 26.10.2026): ↺-Knopf am Zeilenende in fester Spalte statt eigener Zeile
 // „geändert · Standard“; „n geändert · Alle zurücksetzen“ als kompakter Knopf rechts in der Sprungleiste
 export const devLine = (k, label = '') => `<div class="b-dev" data-dev-of="${k}"><button type="button" class="b-reset b-reset--ico" data-reset="${k}" title="Auf Standard zurücksetzen" aria-label="${label ? `${esc(label)}: ` : ''}auf Standard zurücksetzen">${icon('reset')}</button></div>`;
 export const devBar = () => `<button type="button" class="b-reset b-devbar" data-reset="*" hidden>${icon('reset')}<span><span data-devn></span> geändert · Alle zurücksetzen</span></button>`;
-// Kopfleiste eines Reiters: Sprungleiste (falls mehrere Gruppen) + Knopf „Alle zurücksetzen“; bleibt beim Scrollen stehen.
-// Höchstens 4 Spalten, alle Zeilen gleich voll (6 Gruppen → 3 × 2, 7 → 4 + 3, 8 → 4 × 2)
-export const cfgBar = (jump) => {
-  const n = (jump.match(/data-jump=/g) || []).length;
-  return `<div class="cfg-bar${jump ? '' : ' cfg-bar--solo'}"${n ? ` style="--cols:${Math.ceil(n / Math.ceil(n / 4))}"` : ''}>${jump}${devBar()}</div>`;
-};
 export function markDevs(root, isDev) {
   let n = 0;
   root.querySelectorAll('[data-dev-of]').forEach((d) => { const on = isDev(d.dataset.devOf); d.closest('.b-item').classList.toggle('is-dev', on); n += on; });
   const bar = root.querySelector('.b-devbar');
-  if (bar) { bar.hidden = !n; bar.querySelector('[data-devn]').textContent = n; const cb = bar.closest('.cfg-bar'); if (cb) cb.classList.toggle('has-dev', !!n); }
+  if (bar) { bar.hidden = !n; bar.querySelector('[data-devn]').textContent = n; }
 }
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const store = (() => { try { const s = JSON.parse(localStorage.getItem(KEY)); return s && typeof s === 'object' ? s : {}; } catch { return {}; } })();
@@ -73,7 +60,7 @@ const url = (() => {
 })();
 const reg = new Map();
 let currentId = null, gearEl = null, onInfo = () => {}, stripEl = null, stripOn = () => true, gs = [], tabs = [];
-// offene Gruppe je Bereich: Station = gewählter Reiter (Index in gs), Global = offene Klapp-Gruppe; ohne Eintrag die erste
+// gewählter Reiter je Station (Index in gs); ohne Eintrag der erste
 const OPEN_KEY = 'kosmos.cfgopen.v1';
 const openStore = (() => { try { const s = JSON.parse(localStorage.getItem(OPEN_KEY)); return s && typeof s === 'object' ? s : {}; } catch { return {}; } })();
 
@@ -163,29 +150,24 @@ function timeCard(g) {
   </article>`;
 }
 
-// offene Gruppe je Bereich (Station-Id, Reiter Global = '_global'); ohne Eintrag ist die erste Gruppe offen; immer nur eine offen
-export const isOpenIn = (key, i, first) => (Array.isArray(openStore[key]) ? openStore[key][0] === i : i === first);
 const isPlay = (g) => g.items[0].l.type === 'play';
 const changed = (l) => resettable(l) && l.value !== l.def;
 const allOf = (g) => g.items.flatMap(({ l, subs }) => [l, ...subs]);
 // Inhalt eines Reiters; Zwischenüberschrift je vollem Gruppen-Namen, wenn er vom Kurznamen abweicht oder mehrere zusammenliegen
 const tabBody = (g) => g.segs.map((s) => `${g.segs.length > 1 || s.title !== g.title ? `<h5 class="b-subh">${esc(s.title)}</h5>` : ''}${s.items.map(block).join('')}`).join('');
-// Reiter in gleich vollen Zeilen: breit höchstens 6 nebeneinander, schmal (Container cfg ≤ 420 px) höchstens 4
-const cols = (n, max) => Math.ceil(n / Math.ceil(n / max));
-const tabBtn = (i, on) => `<button type="button" role="tab" class="lay-tab" id="lay-t${i}" data-ltab="${i}" aria-controls="lay-p${i}" aria-selected="${on}" tabindex="${on ? 0 : -1}">
-  <span class="lay-tab-ico">${icon(tabIcon(gs[i]))}<span class="lay-tab-dot" aria-hidden="true"></span><span class="lay-tab-n" aria-hidden="true">${count(gs[i])}</span></span><span class="lay-tab-t">${esc(gs[i].title)}</span></button>`;
+const tabBtn = (i, on) => `<button type="button" role="tab" class="u-tab lay-tab" id="lay-t${i}" data-ltab="${i}" aria-controls="lay-p${i}" aria-selected="${on}" tabindex="${on ? 0 : -1}">${esc(gs[i].title)} <span class="c" aria-hidden="true">${count(gs[i])}</span><span class="lay-tab-dot" aria-hidden="true"></span></button>`;
 
 function gearHtml(layers) {
   gs = groups(layers);
   tabs = gs.map((g, i) => (isPlay(g) ? -1 : i)).filter((i) => i >= 0);
   const saved = (openStore[currentId] || [])[0], cur = tabs.includes(saved) ? saved : tabs[0], bar = tabs.length > 1;
-  const strip = bar ? `<div class="lay-tabs" role="tablist" aria-label="Gruppen der Station" style="--cols:${cols(tabs.length, 6)};--cols-s:${cols(tabs.length, 4)}">${tabs.map((i) => tabBtn(i, i === cur)).join('')}</div>` : '';
+  const strip = bar ? `<div class="u-tabs u-tabs--sub lay-tabs" role="tablist" aria-label="Gruppen der Station">${tabs.map((i) => tabBtn(i, i === cur)).join('')}</div>` : '';
   const panels = tabs.map((i) => `<div class="lay-panel b-body" id="lay-p${i}" ${bar ? `role="tabpanel" aria-labelledby="lay-t${i}"` : `role="group" aria-label="${esc(gs[i].title)}"`}${i === cur ? '' : ' hidden'}>${tabBody(gs[i])}</div>`).join('');
-  return `<div class="b-main">${gs.filter(isPlay).map(timeCard).join('')}${strip}${panels}<div class="lay-foot">${devBar()}</div></div>`;
+  return `${strip}<div class="b-main lay-scroll">${gs.filter(isPlay).map(timeCard).join('')}${panels}</div><div class="cfg-foot"><span class="cfg-scope">nur an dieser Station · <span data-lay-sum></span></span>${devBar()}</div>`;
 }
 // Reiter wählen (Klick, ←/→, Pos1/Ende) und merken
 function pickTab(i, focus) {
-  gearEl.querySelectorAll('[data-ltab]').forEach((t) => { const on = +t.dataset.ltab === i; t.setAttribute('aria-selected', String(on)); t.tabIndex = on ? 0 : -1; if (on && focus) t.focus(); });
+  gearEl.querySelectorAll('[data-ltab]').forEach((t) => { const on = +t.dataset.ltab === i; t.setAttribute('aria-selected', String(on)); t.tabIndex = on ? 0 : -1; if (on) { showTab(t); if (focus) t.focus(); } });
   gearEl.querySelectorAll('.lay-panel').forEach((p) => { p.hidden = p.id !== `lay-p${i}`; });
   openStore[currentId] = [i];
   try { localStorage.setItem(OPEN_KEY, JSON.stringify(openStore)); } catch { /* privates Fenster */ }
@@ -199,57 +181,26 @@ function onKey(e) {
   pickTab(tabs[e.key === 'Home' ? 0 : e.key === 'End' ? n - 1 : (k + (e.key === 'ArrowRight' ? 1 : n - 1)) % n], true);
 }
 
-function saveOpen(key, root) {
-  openStore[key] = [...root.querySelectorAll('.b-fold.is-open')].map((c) => +c.dataset.fold);
-  try { localStorage.setItem(OPEN_KEY, JSON.stringify(openStore)); } catch { /* privates Fenster */ }
+// Gewählten Reiter in der seitlich schiebbaren Zeile ganz sichtbar halten (ohne die Spalte selbst zu scrollen)
+function showTab(t) {
+  const row = t.parentElement, l = t.offsetLeft - row.offsetLeft, r = l + t.offsetWidth;
+  if (l < row.scrollLeft + 8) row.scrollLeft = l - 24;
+  else if (r > row.scrollLeft + row.clientWidth - 8) row.scrollLeft = r - row.clientWidth + 24;
 }
-function setOpen(card, on) {
-  // Akkordeon: öffnet eine Gruppe, klappen die anderen zu (User 27.10.2026)
-  if (on) card.parentElement.querySelectorAll(':scope > .b-fold.is-open').forEach((o) => { if (o !== card) setOpen(o, false); });
-  card.classList.toggle('is-open', on);
-  card.querySelector('.b-head').setAttribute('aria-expanded', String(on));
-  card.querySelector('.b-body').hidden = !on;
-}
-// Sprungleiste (beide Reiter): hervorgehoben ist die offene Gruppe (Akkordeon: höchstens eine); alle zu → die Gruppe, deren Kopf
-// zuletzt unter der Leiste durchgelaufen ist. Nur nach Scrollen zu markieren hielt die Hervorhebung fest, wenn der Klick nicht scrollt.
+// Reiter der Einstellungen (Reiter:C): markiert ist die Gruppe, deren Überschrift zuletzt unter der Reiter-Zeile durchgelaufen ist;
+// ganz unten die letzte
 export function spyIn(root, sc) {
   const bar = root && !root.hidden && root.querySelector('.cfg-jump');
   if (!bar) return;
-  const edge = (bar.closest('.cfg-bar') || bar).getBoundingClientRect().bottom + 8, folds = [...root.querySelectorAll('.b-fold')];
-  let cur = folds.find((c) => c.classList.contains('is-open')) || null;
-  if (!cur) {
-    for (const c of folds) { if (!cur || c.getBoundingClientRect().top <= edge) cur = c; }
-    if (sc && sc.scrollTop > 0 && sc.scrollTop + sc.clientHeight >= sc.scrollHeight - 2) cur = folds.pop() || cur;
-  }
-  bar.querySelectorAll('[data-jump]').forEach((b) => b.setAttribute('aria-current', String(!!cur && cur.dataset.fold === b.dataset.jump)));
-}
-// Klick auf Gruppenkopf (auf/zu) oder Sprungleiste (öffnen + hinscrollen); true = erledigt
-export function foldClick(root, e, key, sc) {
-  const h = e.target.closest('.b-fold .b-head');
-  if (h && root.contains(h)) { const c = h.closest('.b-fold'); setOpen(c, !c.classList.contains('is-open')); saveOpen(key, root); spyIn(root, sc); return true; }
-  const j = e.target.closest('[data-jump]');
-  if (!j || !root.contains(j)) return false;
-  const c = root.querySelector(`.b-fold[data-fold="${j.dataset.jump}"]`);
-  if (c) {
-    setOpen(c, true); saveOpen(key, root); spyIn(root, sc);
-    c.scrollIntoView({ block: 'start', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
-    c.querySelector('.b-head').focus({ preventScroll: true });
-  }
-  return true;
-}
-// Kurzwerte aus der Bedienung selbst (Reiter Global): gewählte Knöpfe und Werte der Hauptzeilen, dazu „n von m an“
-export function domSummary(body) {
-  const parts = [];
-  let on = 0, n = 0;
-  body.querySelectorAll(':scope > .b-item').forEach((it) => {
-    const r = it.querySelector('[role=radio][aria-checked="true"]'), cb = it.querySelector('input[type=checkbox]'), o = it.querySelector('output');
-    if (cb && !r && !o) { n++; on += cb.checked ? 1 : 0; return; }
-    if (parts.length >= 2) return;
-    if (r) parts.push(r.textContent.trim());
-    else if (o) { const u = it.querySelector('.cfg-unit'); parts.push(`${o.textContent.trim()}${u ? ` ${u.textContent.trim()}` : ''}`); }
+  const edge = bar.getBoundingClientRect().bottom + 8, folds = [...root.querySelectorAll('.b-fold')];
+  let cur = null;
+  for (const c of folds) { if (!cur || c.getBoundingClientRect().top <= edge) cur = c; }
+  if (sc && sc.scrollTop > 0 && sc.scrollTop + sc.clientHeight >= sc.scrollHeight - 2) cur = folds.pop() || cur;
+  bar.querySelectorAll('[data-jump]').forEach((b) => {
+    const on = !!cur && cur.dataset.fold === b.dataset.jump;
+    if (on && b.getAttribute('aria-current') !== 'true') showTab(b);
+    b.setAttribute('aria-current', String(on));
   });
-  if (n) parts.push(`${on} von ${n} an`);
-  return parts.join(' · ');
 }
 
 function render() {
@@ -259,6 +210,8 @@ function render() {
       : '<p class="cfg-note">Diese Station hat noch keine Ebenen-Einstellungen – ihre Schalter stehen in der Infotafel.</p>';
     if (!layers) { gs = []; tabs = []; }
     onInfo({ title: st ? st.title : '…', n: layers ? layers.length : 0, groups: tabs.length });
+    const sum = gearEl.querySelector('[data-lay-sum]');
+    if (sum) sum.textContent = gearEl.closest('.cfg').dataset.laySum || '';
   }
   if (stripEl) {
     const l = (reg.get(currentId) || []).find((x) => x.type === 'play');
