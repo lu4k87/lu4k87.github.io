@@ -1,4 +1,4 @@
-// Ebenen-Einstellungen je Station (Muster Biochar): Reiter „Ebenen“ der rechten Spalte (settings.js) und Zeitleiste (Player)
+// Einstellungen je Station (Muster Biochar): Reiter „Station“ der rechten Spalte (settings.js) und Zeitleiste (Player)
 // unten links. Aufbau (Vorschau 28.10.2026 Reiter:C): Gruppen als Unterstrich-Reiter in einer Zeile (Kurzname aus tabs.js + Zahl
 // der Ebenen, Punkt bei geändertem Wert; ←/→ wie Reiter, seitlich schiebbar), darunter die Animation, genau eine Gruppe sichtbar
 // (je Station gemerkt in `kosmos.cfgopen.v1`), Fuß „nur an dieser Station · Alle zurücksetzen“; Zeile Name | Bedienung | Wert.
@@ -8,7 +8,8 @@
 //   davor), hint: Zusatztext unter der Zeile, group: Gruppe (gilt ab dieser Ebene bis zur nächsten group; gleicher Kurzname
 //   in tabs.js = ein Reiter, der volle Name steht dann als Zwischenüberschrift im Inhalt),
 //   active() + only: Ebene wirkt gerade nicht (z. B. anderer Kanal) → Zeile abgedunkelt, bleibt bedienbar, darunter only als Grund.
-// Werte je Station in localStorage `kosmos.layers.v1` (nicht der Abspielzustand); URL `?lay=aurora:0,kp:7,clock.play:1` für
+// Dazu die gemeinsamen Gruppen aus settings.js (shared: true, Wert in `kosmos.settings.v1`, gilt an allen Stationen der Gruppe;
+// scope an der ersten Zeile = Hinweis unter der Überschrift). Werte je Station in localStorage `kosmos.layers.v1` (nicht der Abspielzustand); URL `?lay=aurora:0,kp:7,clock.play:1` für
 // Screenshots. Aktive Station aus `#station=…` (main.js setzt den Hash per replaceState → ohne Ereignis, daher Takt 300 ms).
 
 import { STATIONS } from './content.js';
@@ -65,7 +66,9 @@ const url = (() => {
   return o;
 })();
 const reg = new Map();
-let currentId = null, gearEl = null, onInfo = () => {}, stripEl = null, stripOn = () => true, gs = [], tabs = [];
+let currentId = null, gearEl = null, onInfo = () => {}, stripEl = null, stripOn = () => true, gs = [], tabs = [], sharedOf = () => [];
+// Ebenen der Station + gemeinsame Gruppen (settings.js); null = keine von beiden
+const allOf = (id) => { const own = reg.get(id) || [], ex = sharedOf(id); return own.length || ex.length ? [...own, ...ex] : null; };
 // gewählter Reiter je Station (Index in gs); ohne Eintrag der erste
 const OPEN_KEY = 'kosmos.cfgopen.v1';
 const openStore = (() => { try { const s = JSON.parse(localStorage.getItem(OPEN_KEY)); return s && typeof s === 'object' ? s : {}; } catch { return {}; } })();
@@ -73,7 +76,7 @@ const openStore = (() => { try { const s = JSON.parse(localStorage.getItem(OPEN_
 const valid = (l, v) => (l.type === 'toggle' ? typeof v === 'boolean' : typeof v === 'number' && Number.isFinite(v) && v >= l.min && v <= l.max);
 export const fmtVal = (l, v) => (l.fmt ? l.fmt(v) : `${String(v).replace('.', ',')}${l.unit ? ` ${l.unit}` : ''}`);
 const playing = (l) => (l.get ? !!l.get().playing : !!l.playing);
-const find = (id) => (reg.get(currentId) || []).find((l) => l.id === id);
+const find = (id) => (allOf(currentId) || []).find((l) => l.id === id);
 
 export function registerLayers(stationId, layers) {
   reg.set(stationId, layers);
@@ -90,7 +93,8 @@ export function registerLayers(stationId, layers) {
 }
 export const layerValue = (stationId, id) => ((reg.get(stationId) || []).find((l) => l.id === id) || {}).value;
 export const getLayer = (stationId, id) => (reg.get(stationId) || []).find((l) => l.id === id);
-export const layersOf = (stationId) => reg.get(stationId) || [];   // Prüflauf tests/settings.py
+// Prüflauf tests/settings.py: alle Zeilen im Reiter Station (eigene + gemeinsame), leer bis die Station registriert ist
+export const layersOf = (stationId) => (reg.has(stationId) ? allOf(stationId) : []);
 // Info-Karte stellt eine Ebene direkt – gleiche Wirkung wie im Zahnrad (Wert setzen, speichern, Anzeigen abgleichen)
 export function setLayer(stationId, id, v) {
   const l = getLayer(stationId, id);
@@ -102,6 +106,7 @@ export function setLayer(stationId, id, v) {
 }
 
 function persist(l) {
+  if (l.shared) return;   // gemeinsame Gruppe: setSetting hat schon gespeichert
   store[currentId] = store[currentId] || {};
   store[currentId][l.id] = l.value;
   try { localStorage.setItem(KEY, JSON.stringify(store)); } catch { /* privates Fenster */ }
@@ -158,9 +163,13 @@ function timeCard(g) {
 
 const isPlay = (g) => g.items[0].l.type === 'play';
 const changed = (l) => resettable(l) && l.value !== l.def;
-const allOf = (g) => g.items.flatMap(({ l, subs }) => [l, ...subs]);
+const itemsOf = (g) => g.items.flatMap(({ l, subs }) => [l, ...subs]);
 // Inhalt eines Reiters; Zwischenüberschrift je vollem Gruppen-Namen, wenn er vom Kurznamen abweicht oder mehrere zusammenliegen
-const tabBody = (g) => g.segs.map((s) => `${g.segs.length > 1 || s.title !== g.title ? `<h5 class="b-subh">${esc(s.title)}</h5>` : ''}${s.items.map(block).join('')}`).join('');
+// Gemeinsame Gruppe: Überschrift immer, darunter ihre Geltung (scope)
+const tabBody = (g) => g.segs.map((s) => {
+  const scope = s.items[0] && s.items[0].l.scope;
+  return `${g.segs.length > 1 || s.title !== g.title || scope ? `<h5 class="b-subh">${esc(s.title)}</h5>` : ''}${scope ? `<p class="cfg-note lay-hint">${prose(scope)}</p>` : ''}${s.items.map(block).join('')}`;
+}).join('');
 const tabBtn = (i, on) => `<button type="button" role="tab" class="u-tab lay-tab" id="lay-t${i}" data-ltab="${i}" aria-controls="lay-p${i}" aria-selected="${on}" tabindex="${on ? 0 : -1}">${esc(gs[i].title)} <span class="c" aria-hidden="true">${count(gs[i])}</span><span class="lay-tab-dot" aria-hidden="true"></span></button>`;
 
 function gearHtml(layers) {
@@ -169,7 +178,7 @@ function gearHtml(layers) {
   const saved = (openStore[currentId] || [])[0], cur = tabs.includes(saved) ? saved : tabs[0], bar = tabs.length > 1;
   const strip = bar ? `<div class="u-tabs u-tabs--sub lay-tabs" role="tablist" aria-label="Gruppen der Station">${tabs.map((i) => tabBtn(i, i === cur)).join('')}</div>` : '';
   const panels = tabs.map((i) => `<div class="lay-panel b-body" id="lay-p${i}" ${bar ? `role="tabpanel" aria-labelledby="lay-t${i}"` : `role="group" aria-label="${esc(gs[i].title)}"`}${i === cur ? '' : ' hidden'}>${tabBody(gs[i])}</div>`).join('');
-  return `${strip}<div class="b-main lay-scroll">${gs.filter(isPlay).map(timeCard).join('')}${panels}</div><div class="cfg-foot"><span class="cfg-scope">nur an dieser Station · <span data-lay-sum></span></span>${devBar()}</div>`;
+  return `${strip}<div class="b-main lay-scroll">${gs.filter(isPlay).map(timeCard).join('')}${panels}</div><div class="cfg-foot"><span class="cfg-scope">Diese Station · <span data-lay-sum></span></span>${devBar()}</div>`;
 }
 // Reiter wählen (Klick, ←/→, Pos1/Ende) und merken
 function pickTab(i, focus) {
@@ -211,16 +220,15 @@ export function spyIn(root, sc) {
 
 function render() {
   if (gearEl) {
-    const layers = reg.get(currentId), st = STATIONS[currentId];
-    gearEl.innerHTML = layers ? gearHtml(layers)
-      : '<p class="cfg-note">Diese Station hat hier noch keine Schalter – sie stehen in der Infotafel.</p>';
+    const layers = allOf(currentId), st = STATIONS[currentId];
+    gearEl.innerHTML = layers ? gearHtml(layers) : '<p class="cfg-note">Diese Station hat keine eigenen Einstellungen.</p>';
     if (!layers) { gs = []; tabs = []; }
     onInfo({ title: st ? st.title : '…', n: layers ? layers.length : 0, groups: tabs.length });
     const sum = gearEl.querySelector('[data-lay-sum]');
     if (sum) sum.textContent = gearEl.closest('.cfg').dataset.laySum || '';
   }
   if (stripEl) {
-    const l = (reg.get(currentId) || []).find((x) => x.type === 'play');
+    const l = (allOf(currentId) || []).find((x) => x.type === 'play');
     stripEl.hidden = !l || !stripOn();
     document.body.classList.toggle('tl-on', !stripEl.hidden);
     if (l) stripEl.innerHTML = `<button type="button" class="play-btn play-btn--lg" data-play="${l.id}" aria-pressed="false" aria-label="${esc(l.label)} abspielen">${PLAY}</button>
@@ -264,9 +272,9 @@ function sync() {
     markDevs(gearEl, (id) => { const l = find(id); return !!l && changed(l); });
     // Punkt am Reiter: in dieser Gruppe weicht ein Wert vom Standard ab (Vorschau 27.10.2026 F3)
     gearEl.querySelectorAll('[data-ltab]').forEach((t) => {
-      const g = gs[+t.dataset.ltab], dev = !!g && allOf(g).some(changed);
+      const g = gs[+t.dataset.ltab], dev = !!g && itemsOf(g).some(changed);
       t.classList.toggle('has-dev', dev);
-      const lab = `${g ? g.title : ''}, ${g ? count(g) : 0} Schalter${dev ? ', geändert' : ''}`;
+      const lab = `${g ? g.title : ''}, ${g ? count(g) : 0} Einstellungen${dev ? ', geändert' : ''}`;
       if (t.getAttribute('aria-label') !== lab) t.setAttribute('aria-label', lab);
     });
   }
@@ -285,7 +293,7 @@ function onClick(e) {
   if (t && gearEl && gearEl.contains(t)) { pickTab(+t.dataset.ltab); return; }
   const r = e.target.closest('[data-reset]');
   if (r && gearEl && gearEl.contains(r)) {
-    for (const l of reg.get(currentId) || []) if (resettable(l) && (r.dataset.reset === '*' || r.dataset.reset === l.id) && l.value !== l.def) { l.value = l.def; l.set(l.value); persist(l); }
+    for (const l of allOf(currentId) || []) if (resettable(l) && (r.dataset.reset === '*' || r.dataset.reset === l.id) && l.value !== l.def) { l.value = l.def; l.set(l.value); persist(l); }
     sync();
     return;
   }
@@ -303,9 +311,10 @@ function poll() {
   if (id !== currentId) { currentId = id; render(); }
 }
 
-// info({ title, n, groups }) nach jedem Aufbau: Name der Station, Zahl der Ebenen und Reiter (Knopf, Fenster-Kopf, Verweis im Zahnrad)
-export function mountLayers({ gear, info, strip, stripOn: on }) {
-  gearEl = gear; onInfo = info || onInfo; stripEl = strip; stripOn = on || stripOn;
+// info({ title, n, groups }) nach jedem Aufbau: Name der Station, Zahl der Einstellungen und Reiter (Knopf, Fenster-Kopf);
+// shared(id) = gemeinsame Gruppen dieser Station (settings.js sharedFor)
+export function mountLayers({ gear, info, strip, stripOn: on, shared }) {
+  gearEl = gear; onInfo = info || onInfo; stripEl = strip; stripOn = on || stripOn; sharedOf = shared || sharedOf;
   gearEl.addEventListener('keydown', onKey);
   for (const root of [gearEl, stripEl]) { if (!root) continue; root.addEventListener('input', onInput); root.addEventListener('click', onClick); }
   window.addEventListener('hashchange', poll);
