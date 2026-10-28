@@ -7,7 +7,7 @@
 // zur Polachse hinaus (punktsymmetrisch → leichte S-Form). Neigung der Achse, Biegung der Flügel und Ausfransung: Modell.
 // Farben je Bauteil als Uniforms (wie pillars.js, spider.js), ein Farbmodus tauscht nur Werte. Leistung: grobe Felder einmal
 // in einer 3D-Textur, feine Schlieren prozedural nur innerhalb der Flügel, Wolke offscreen; neu gerechnet nur bei Änderung –
-// außer „Gas strömt“ ist an.
+// außer der Zeitraffer läuft.
 
 import * as THREE from 'three';
 import { volume, pointCloud, bakeField, offscreen, disposeScene } from '../vol.js';
@@ -93,6 +93,8 @@ const LOOKS = {
 
 const RES = [0.35, 0.5, 0.7, 1], RES_N = ['Niedrig', 'Mittel', 'Hoch', 'Voll'];
 const STEPS = [96, 128, 176, 224], STEPS_N = ['Grob', 'Mittel', 'Fein', 'Sehr fein'];
+// Zeitraffer der Strömung: Stufen als Vielfaches des Grundtempos
+const SPD = [0.25, 0.5, 1, 2, 3];
 const times = (v) => (v ? `×${String(v).replace('.', ',')}` : 'aus');
 
 export function create(ctx) {
@@ -131,7 +133,7 @@ export function create(ctx) {
   stars.renderOrder = 2;
   scene.add(stars);
 
-  let mode = 'hubble', starGain = 1, dustMul = 1, flowOn = true, speed = 1, breathe = true, flowT = 0;
+  let mode = 'hubble', starGain = 1, dustMul = 1, flowOn = true, speed = 1, breathe = true, flowT = 0, spdIdx = 2;
   const applyLook = () => {
     const k = LOOKS[mode];
     for (const [n, key] of [['cHot', 'hot'], ['cMid', 'mid'], ['cEdge', 'edge'], ['cFe', 'fe'], ['cCore', 'core'], ['cTor', 'tor']]) u[n].value.set(...k[key]);
@@ -160,6 +162,10 @@ export function create(ctx) {
   const to = (k, f = (v) => v) => (v) => { u[k].value = f(v); vol.invalidate(); };
   const fine = ctx.detail > 0.9;
   registerLayers('butterfly', [
+    { id: 'clock', type: 'play', group: 'Zeit', label: 'Zeitraffer', value: spdIdx, min: 0, max: SPD.length - 1, step: 1, autoplay: !ctx.still, fmt: (i) => times(SPD[Math.round(i)]),
+      hint: 'Das Gas strömt nach außen, in Wirklichkeit mit über 950.000 km/h – für eine Flügellänge braucht es trotzdem gut tausend Jahre. Hier stark beschleunigt.',
+      set: (i, playing) => { spdIdx = Math.round(i); speed = SPD[spdIdx]; flowOn = playing; vol.invalidate(); },
+      get: () => ({ value: spdIdx, playing: flowOn }), status: () => (flowOn ? 'Gas strömt' : 'angehalten') },
     { id: 'gain', type: 'range', group: 'Licht des Gases', label: 'Helligkeit', min: 0.25, max: 6, step: 0.25, value: 1, fmt: times, set: to('uGain', (v) => 1.5 * v) },
     { id: 'sat', type: 'range', label: 'Farbsättigung', min: 0, max: 3, step: 0.1, value: 1, fmt: (v) => (v ? `${Math.round(v * 100)} %` : 'grau'), set: to('uSat') },
     { id: 'hot', type: 'range', label: 'Heißes Gas am Stern', min: 0, max: 4, step: 0.25, value: 1, fmt: times, set: to('uHot'),
@@ -173,10 +179,6 @@ export function create(ctx) {
     { id: 'rag', type: 'range', label: 'Zerfranste Ränder', min: 0, max: 3, step: 0.25, value: 1, fmt: times, set: to('uRag') },
     { id: 'fe', type: 'range', group: 'Ausfluss', label: 'Jets aus Eisen und Nickel', min: 0, max: 4, step: 0.25, value: 1, fmt: times, set: to('uFe'),
       hint: 'Webb zeigt ein Paar Jets in Eisen- und Nickellinien, die in entgegengesetzte Richtungen aus der Mitte schießen.' },
-    { id: 'flow', type: 'toggle', label: 'Gas strömt nach außen', value: true, set: (v) => { flowOn = v; vol.invalidate(); } },
-    { id: 'speed', type: 'range', label: 'Tempo der Strömung', min: 0.25, max: 3, step: 0.25, value: 1, fmt: times, set: (v) => { speed = v; },
-      active: () => flowOn, only: 'Wirkt nur, wenn das Gas strömt.',
-      hint: 'In Wirklichkeit über 950.000 km/h – für eine Flügellänge braucht das Gas trotzdem gut tausend Jahre. Hier stark beschleunigt.' },
     { id: 'torus', type: 'range', group: 'Staubgürtel und Stern', label: 'Staub-Torus', min: 0, max: 4, step: 0.25, value: 1, fmt: times, set: to('uTorus'),
       hint: 'Ein dichter Ring aus Staub schnürt die Taille ein und lenkt das Gas in zwei Flügel. Wir sehen ihn von der Seite.' },
     { id: 'dust', type: 'range', label: 'Abdunkeln durch Staub', min: 0, max: 4, step: 0.25, value: 1, fmt: times, set: (v) => { dustMul = v; applyLook(); } },

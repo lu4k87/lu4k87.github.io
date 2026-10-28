@@ -167,6 +167,8 @@ void main() {
 
 const RES = [0.35, 0.5, 0.7, 1], RES_N = ['Niedrig', 'Mittel', 'Hoch', 'Voll'];
 const STEPS = [64, 96, 128, 160], STEPS_N = ['Grob', 'Mittel', 'Fein', 'Sehr fein'];
+// Zeitraffer des Strömens: Stufen als Vielfaches des Grundtempos
+const SPD = [0.25, 0.5, 1, 2, 4];
 const times = (v) => (v ? `×${String(v).replace('.', ',')}` : 'aus');
 
 export function create(ctx) {
@@ -229,7 +231,7 @@ export function create(ctx) {
   ysos.renderOrder = 2;
   scene.add(ysos);
 
-  let mode = 'mix', starGain = 1, hazeMul = 1, opacMul = 1, veilMul = 1, flowOn = true;
+  let mode = 'mix', starGain = 1, hazeMul = 1, opacMul = 1, veilMul = 1, flowOn = true, speed = 1, spdIdx = 2, flowT = 0;
   const applyLook = () => {
     const k = LOOKS[mode];
     for (const [n, key] of [['cSkin', 'skin'], ['cFlow', 'flow'], ['cBody', 'body'], ['cHaze', 'haze'], ['cVeil', 'veil'], ['cCool', 'cool']]) u[n].value.set(...k[key]);
@@ -257,6 +259,10 @@ export function create(ctx) {
   const to = (k, f = (v) => v) => (v) => { u[k].value = f(v); vol.invalidate(); };
   const fine = ctx.detail > 0.9;
   registerLayers('pillars', [
+    { id: 'clock', type: 'play', group: 'Zeit', label: 'Zeitraffer', value: spdIdx, min: 0, max: SPD.length - 1, step: 1, autoplay: !ctx.still, fmt: (i) => times(SPD[Math.round(i)]),
+      hint: 'Verdampfendes Gas strömt zum Sternhaufen: rund 70 Sonnenmassen je Million Jahre lösen sich von den Säulen (ESO 2015) – hier stark beschleunigt.',
+      set: (i, playing) => { spdIdx = Math.round(i); speed = SPD[spdIdx]; flowOn = playing; },
+      get: () => ({ value: spdIdx, playing: flowOn }), status: () => (flowOn ? 'Gas verdampft' : 'angehalten') },
     { id: 'gain', type: 'range', group: 'Licht des Gases', label: 'Helligkeit', min: 0.25, max: 6, step: 0.25, value: 1, fmt: times, set: to('uGain', (v) => 0.5 * v) },
     { id: 'skin', type: 'range', label: 'Leuchtende Kante', min: 0.5, max: 3, step: 0.25, value: 1, fmt: times, set: to('uSkin'),
       hint: 'Ionisationsfront: Hier trifft das UV-Licht von NGC 6611 auf die Säulen und bringt eine dünne Gasschicht zum Leuchten.' },
@@ -268,11 +274,7 @@ export function create(ctx) {
       hint: 'Was im UV-Schatten der Köpfe liegt, wird nicht verdampft – so entstehen die Säulen überhaupt.' },
     { id: 'rough', type: 'range', label: 'Furchen und Klumpen', min: 0, max: 3, step: 0.25, value: 1, fmt: times, set: to('uRough') },
     { id: 'opac', type: 'range', label: 'Dichte der Säulen', min: 0.25, max: 3, step: 0.25, value: 1, fmt: times, set: (v) => { opacMul = v; applyLook(); } },
-    { id: 'flow', type: 'toggle', group: 'Bewegung', label: 'Verdampfendes Gas strömt', value: true, set: (v) => { flowOn = v; u.uTime.value = 0; vol.invalidate(); },
-      hint: 'Rund 70 Sonnenmassen je Million Jahre lösen sich von den Säulen (ESO 2015) – hier stark beschleunigt.' },
-    { id: 'flowv', type: 'range', label: 'Tempo des Strömens', min: 0.25, max: 4, step: 0.25, value: 1, fmt: times, set: to('uFlowV'),
-      active: () => flowOn, only: 'Wirkt, wenn „Verdampfendes Gas strömt“ an ist.' },
-    { id: 'flick', type: 'toggle', label: 'Junge Sterne atmen', value: true, set: (v) => { ysos.material.uniforms.uFlick.value = v ? 1 : 0; } },
+    { id: 'flick', type: 'toggle', group: 'Bewegung', label: 'Junge Sterne atmen', value: true, set: (v) => { ysos.material.uniforms.uFlick.value = v ? 1 : 0; } },
     { id: 'spikes', type: 'toggle', group: 'Sterne', label: 'Webb-Sternspitzen', value: true, set: (v) => { spikes.visible = v; applyLook(); } },
     { id: 'stars', type: 'range', label: 'Helligkeit der Sterne', min: 0, max: 4, step: 0.25, value: 1, fmt: times, set: (v) => { starGain = v; applyLook(); } },
     { id: 'res', type: 'range', group: 'Qualität der Wolke', label: 'Detailstufe', min: 0, max: 3, step: 1, value: fine ? 1 : 2, fmt: (i) => RES_N[i], set: (i) => vol.setScale(RES[i]) },
@@ -289,7 +291,7 @@ export function create(ctx) {
     look: { exposure: 1.1, bloom: 0.1, sat: 1.1, con: 0.12, sh: [0.96, 0.98, 1.06] },
     update(dt, t, cam) {
       ysos.material.uniforms.uTime.value = t;
-      if (flowOn) { u.uTime.value = t; vol.invalidate(); }
+      if (flowOn) { flowT += Math.min(dt, 0.1) * speed; u.uTime.value = flowT; vol.invalidate(); }
       vol.render(cam);
     },
     live: () => ({ mix: 'Webb NIRCam + MIRI: Staub der Säulen grau-braun, oranger Schleier, ionisiertes Gas blau',

@@ -139,6 +139,8 @@ const PRESET_N = ['Ausgewogen', 'Klare Fronten', 'Wolkig'];
 
 const RES = [0.35, 0.5, 0.7, 1], RES_N = ['Niedrig', 'Mittel', 'Hoch', 'Voll'];
 const STEPS = [64, 96, 128, 160], STEPS_N = ['Grob', 'Mittel', 'Fein', 'Sehr fein'];
+// Zeitraffer: Stufen als Vielfaches des Grundtempos
+const SPD = [0.25, 0.5, 1, 2, 4];
 const times = (v) => (v ? `×${String(v).replace('.', ',')}` : 'aus');
 
 export function create(ctx) {
@@ -205,7 +207,7 @@ export function create(ctx) {
   };
   drift(0);
 
-  let mode = 'webb', starGain = 1, flowOn = true, speed = 1, clock = 0;
+  let mode = 'webb', starGain = 1, flowOn = true, speed = 1, clock = 0, spdIdx = 2;
   const applyLook = () => {
     const k = LOOKS[mode];
     u.cShock.value.set(...k.shock); u.cHot.value.set(...k.hot); u.cDeep.value.set(...k.deep); u.cHaze.value.set(...k.haze); u.uLayers.value = k.layers;
@@ -230,6 +232,10 @@ export function create(ctx) {
   const fine = ctx.detail > 0.9;
   let lookReady = false;   // Laden stellt die gespeicherten Einzelwerte, die Wahl des Looks wirkt erst bei Bedienung
   registerLayers('tornado', [
+    { id: 'clock', type: 'play', group: 'Zeit', label: 'Zeitraffer', value: spdIdx, min: 0, max: SPD.length - 1, step: 1, autoplay: !ctx.still, fmt: (i) => times(SPD[Math.round(i)]),
+      hint: 'Stoßfronten wandern von der Quelle nach vorn, Wolke und Sterne ziehen vorbei. Das Gas strömt mit 100–300 km/s (ESA) – hier um ein Vielfaches beschleunigt.',
+      set: (i, playing) => { spdIdx = Math.round(i); speed = SPD[spdIdx]; flowOn = playing; },
+      get: () => ({ value: spdIdx, playing: flowOn }), status: () => (flowOn ? 'Tornado zieht' : 'angehalten') },
     { id: 'gain', type: 'range', group: 'Licht des Gases', label: 'Helligkeit', min: 0.25, max: 6, step: 0.25, value: 1, fmt: times, set: to('uGain', (v) => 0.6 * v) },
     { id: 'haze', type: 'range', label: 'Schein der Wolke dahinter', min: 0, max: 4, step: 0.25, value: pre.haze, fmt: times, set: to('uHaze'),
       hint: 'Schwacher Schein von Staub und PAH-Molekülen im Chamäleon-Komplex (MIRI 7,7 µm, im Bild rot).' },
@@ -242,9 +248,6 @@ export function create(ctx) {
     { id: 'fil', type: 'range', label: 'Fäden', min: 0, max: 3, step: 0.1, value: pre.fil, fmt: times, set: to('uFil') },
     { id: 'rough', type: 'range', label: 'Wellen und Klumpen', min: 0, max: 3, step: 0.1, value: pre.rough, fmt: times, set: to('uRough') },
     { id: 'spur', type: 'toggle', label: 'Auswuchs oben rechts', value: true, set: to('uSpur', (v) => (v ? 1 : 0)) },
-    { id: 'flow', type: 'toggle', group: 'Bewegung', label: 'Tornado zieht durch den Raum', value: true, set: (v) => { flowOn = v; },
-      hint: 'Stoßfronten wandern von der Quelle nach vorn, Wolke und Sterne ziehen vorbei. Das Gas strömt mit 100–300 km/s (ESA) – hier um ein Vielfaches beschleunigt.' },
-    { id: 'speed', type: 'range', label: 'Tempo', min: 0.25, max: 4, step: 0.25, value: 1, fmt: times, set: (v) => { speed = v; } },
     { id: 'stars', type: 'range', group: 'Hintergrund', label: 'Helligkeit der Sterne', min: 0, max: 4, step: 0.25, value: 1, fmt: times, set: (v) => { starGain = v; applyLook(); } },
     { id: 'gals', type: 'range', label: 'Ferne Galaxien', min: 0, max: 3, step: 0.25, value: 1, fmt: times,
       set: (v) => { farGals.material.uniforms.uGain.value = v; } },

@@ -23,7 +23,8 @@ import { registerLayers } from '../layers.js';
 
 const M_SGR = 4.297e6;            // GRAVITY 2022
 const RS = schwarzschildRadius(M_SGR);
-const LAPSE = 200;                // Zeitraffer
+// Zeitraffer der Scheibe [s je s]; Pause = Echtzeit
+const LAPSES = [50, 100, 200, 500];
 const RS_C = RS / C;              // Lichtlaufzeit über Rs [s] ≈ 42 s
 const D_GC = 8.277 * KPC;
 // S2 (GRAVITY 2020): a = 0,125058″, e = 0,884649, i = 134,567°, Ω = 228,171°, ω = 66,263°, P = 16,0455 a, T₀ = 2018,379
@@ -244,7 +245,7 @@ export function create(ctx) {
   periDot.material.depthTest = false;
   sgroup.add(periDot);
 
-  let eht = 0, ehtOn = false, simT = 0, view = 'cam', hot = 0, hotOn = false, wantDist = 0;
+  let eht = 0, ehtOn = false, simT = 0, lapseIdx = 2, lapseOn = true, view = 'cam', hot = 0, hotOn = false, wantDist = 0;
   const post = { eht: [0, 0, 1.6] };
   const hotspots = [
     { id: 'shadow', kind: 'info', pos: new THREE.Vector3(0, 0, 0) },
@@ -265,7 +266,12 @@ export function create(ctx) {
     { id: 'hot', label: 'Flare', show: true, value: 'off', options: [['off', 'Aus'], ['on', 'Heißer Fleck']], set: (v) => { hotOn = v === 'on'; } },
   ];
   const u = mat.uniforms;
+  const lapse = () => (lapseOn ? LAPSES[lapseIdx] : 1);
   registerLayers('sgra', [
+    { id: 'clock', type: 'play', group: 'Zeit', label: 'Zeitraffer', value: lapseIdx, min: 0, max: LAPSES.length - 1, step: 1, autoplay: !ctx.still, fmt: (i) => `×${LAPSES[Math.round(i)]}`,
+      hint: 'Die Scheibe dreht innen schneller als außen (Kepler); ein Umlauf an der innersten stabilen Bahn dauert echt gut eine halbe Stunde. Pause = Echtzeit.',
+      set: (i, playing) => { lapseIdx = Math.round(i); lapseOn = playing; },
+      get: () => ({ value: lapseIdx, playing: lapseOn }), status: () => (lapseOn ? `Scheibe ×${LAPSES[lapseIdx]}` : 'Echtzeit') },
     { id: 'riaf', type: 'range', group: 'Gas um das Loch', label: 'Heiße Strömung', min: 0, max: 4, step: 0.1, value: 1, fmt: (v) => (v ? `×${String(v).replace('.', ',')}` : 'aus'),
       set: (v) => { u.uHaze.value = v; },
       hint: 'Modell: Sgr A* frisst wenig – das Gas bildet eine dünne, heiße und dicke Strömung um die Scheibe. Ihr Licht läuft auf denselben gekrümmten Wegen; Licht, das das Loch fast umrundet, sammelt sich zum hellen Ring am Schatten.' },
@@ -296,7 +302,7 @@ export function create(ctx) {
       if (Math.abs(Math.log(nd / wantDist)) < 0.01 && c.target.distanceTo(wantTarget) < wantDist * 0.01) wantDist = 0;
     },
     update(dt, t, cam) {
-      simT += dt * LAPSE / RS_C;   // Zeit in Rs/c
+      simT += dt * lapse() / RS_C;   // Zeit in Rs/c
       cam.updateMatrixWorld();
       u.uCam.value.copy(cam.position);
       u.uCamWorld.value.copy(cam.matrixWorld);
@@ -322,7 +328,7 @@ export function create(ctx) {
     },
     live: () => (view === 'stars'
       ? `S2 heute ${fmtAU(s2pos.length())} vom Loch · Perizentrum ${fmtAU(peri.length())} (Mai 2018, 7.650 km/s) · Umlauf 16,05 Jahre`
-      : `Zeitraffer ×${LAPSE} · innerste stabile Bahn: Umlauf echt ${Math.round(TAU / OM_ISCO * RS_C / 60)} min${hotOn ? ` · Flare: Umlauf auf 3,5 Rs echt ≈ ${Math.round(TAU / OM_HOT * RS_C / 60)} min` : ''}`),
+      : `${lapseOn ? `Zeitraffer ×${lapse()}` : 'Echtzeit'} · innerste stabile Bahn: Umlauf echt ${Math.round(TAU / OM_ISCO * RS_C / 60)} min${hotOn ? ` · Flare: Umlauf auf 3,5 Rs echt ≈ ${Math.round(TAU / OM_HOT * RS_C / 60)} min` : ''}`),
     setDetail(d) { u.uSteps.value = steps(d); u.uOct.value = d > 0.7 ? 4 : 3; },
     setPixelRatio(pr, H) { s2.userData.setPx(pr, H, camera.fov); periDot.userData.setPx(pr, H, camera.fov); },
     dispose: () => disposeScene(scene),

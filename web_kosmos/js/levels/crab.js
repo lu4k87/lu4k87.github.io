@@ -156,7 +156,15 @@ export function create(ctx) {
     { id: 'xray', kind: 'info', pos: new THREE.Vector3(0, 1.4, 0).applyMatrix4(axis), visible: () => mode === 'xray' },
     { id: 'radio', kind: 'info', pos: new THREE.Vector3(-2.5, -2.4, 2.0), visible: () => mode === 'radio' },
   ];
+  // Zeitraffer der Wisps: Stufen als Vielfaches des Grundtempos (ein Wisp ≈ 20 s vom Ring zum Torus)
+  const SPD = [0.25, 0.5, 1, 2, 4];
+  let spdIdx = 2, wispOn = true, wispT = 0;
   registerLayers('crab', [
+    { id: 'clock', type: 'play', group: 'Zeit', label: 'Zeitraffer', value: spdIdx, min: 0, max: SPD.length - 1, step: 1, autoplay: !ctx.still,
+      fmt: (i) => `×${String(SPD[Math.round(i)]).replace('.', ',')}`,
+      hint: 'Die „Wisps“, Wellen im Wind des Pulsars, laufen vom Ring nach außen zum Torus. Echt dauert das Wochen bis Monate – hier stark beschleunigt.',
+      set: (i, playing) => { spdIdx = Math.round(i); wispOn = playing; },
+      get: () => ({ value: spdIdx, playing: wispOn }), status: () => (wispOn ? 'Wisps laufen' : 'angehalten') },
     { id: 'gain', type: 'range', group: 'Krebsnebel', label: 'Helligkeit', value: 1, min: 0.25, max: 5, step: 0.25, unit: '×', set: (v) => { neb.material.uniforms.uGain.value = 0.2 * v; } },
     { id: 'fil', type: 'range', label: 'Filamente', value: 1, min: 0, max: 4, step: 0.25, unit: '×', set: (v) => { neb.material.uniforms.uFil.value = v; },
       hint: 'Leuchtende Fäden aus Wasserstoff, Sauerstoff und Schwefel am Rand; im Röntgenbild unsichtbar.' },
@@ -187,7 +195,7 @@ export function create(ctx) {
     home: { pos: new THREE.Vector3(1.5, 2.5, 19), target: new THREE.Vector3(0, 0, 0) },
     orbit: { minDistance: 1.0, maxDistance: 60, cineSpeed: 0.7 },
     look: { exposure: 1.1, bloom: 0.08, sat: 1.1, con: 0.13 },
-    update(dt, t) { neb.material.uniforms.uTime.value = t; },
+    update(dt) { if (wispOn) wispT += Math.min(dt, 0.1) * SPD[spdIdx]; neb.material.uniforms.uTime.value = wispT; },
     live: () => {
       const k = scaleOf(year);
       const size = `${(13.4 * k).toFixed(1).replace('.', ',')} × ${(8.8 * k).toFixed(1).replace('.', ',')} Lj`;

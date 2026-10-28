@@ -128,6 +128,8 @@ const LOOKS = {
 
 const RES = [0.35, 0.5, 0.7, 1], RES_N = ['Niedrig', 'Mittel', 'Hoch', 'Voll'];
 const STEPS = [96, 128, 176, 224], STEPS_N = ['Grob', 'Mittel', 'Fein', 'Sehr fein'];
+// Zeitraffer der Knoten: Stufen als Vielfaches des Grundtempos
+const SPD = [0.25, 0.5, 1, 2, 3];
 const times = (v) => (v ? `×${String(v).replace('.', ',')}` : 'aus');
 // Startformen der Keulen (Vorschau 28.10.2026 „echte Nebelform“: alle drei gewählt → Standard = Mischung aus A, B, C);
 // die Formwahl setzt nur die Regler, jeder bleibt einzeln verstellbar
@@ -205,7 +207,7 @@ export function create(ctx) {
     kPos.needsUpdate = true; kCol.needsUpdate = true;
   };
 
-  let mode = 'nircam', starGain = 1, dustMul = 1, flowOn = true, breathe = true;
+  let mode = 'nircam', starGain = 1, dustMul = 1, flowOn = true, breathe = true, spdIdx = 2;
   const applyLook = () => {
     const k = LOOKS[mode];
     for (const [n, key] of [['cH2', 'h2'], ['cIon', 'ion'], ['cFe', 'fe'], ['cCore', 'core'], ['cPah', 'pah'], ['cTor', 'tor']]) u[n].value.set(...k[key]);
@@ -237,6 +239,10 @@ export function create(ctx) {
   let formReady = false;   // Laden stellt die gespeicherten Einzelwerte, die Formwahl wirkt erst bei Bedienung
   const F0 = FORMS[0];
   registerLayers('spider', [
+    { id: 'clock', type: 'play', group: 'Zeit', label: 'Zeitraffer', value: spdIdx, min: 0, max: SPD.length - 1, step: 1, autoplay: !ctx.still, fmt: (i) => times(SPD[Math.round(i)]),
+      hint: 'Knoten strömen nach außen, in Wirklichkeit mit 300–400 km/s – für eine Keulenlänge brauchen sie rund 3.700 Jahre. Hier stark beschleunigt.',
+      set: (i, playing) => { spdIdx = Math.round(i); speed = SPD[spdIdx]; flowOn = playing; },
+      get: () => ({ value: spdIdx, playing: flowOn }), status: () => (flowOn ? 'Knoten strömen' : 'angehalten') },
     { id: 'gain', type: 'range', group: 'Licht des Gases', label: 'Helligkeit', min: 0.25, max: 6, step: 0.25, value: 1, fmt: times, set: to('uGain', (v) => 1.4 * v) },
     { id: 'sat', type: 'range', label: 'Farbsättigung', min: 0, max: 3, step: 0.1, value: 1, fmt: (v) => (v ? `${Math.round(v * 100)} %` : 'grau'), set: to('uSat') },
     { id: 'form', type: 'range', group: 'Keulen', label: 'Form der Keulen', min: 0, max: 3, step: 1, value: 0, fmt: (i) => FORM_N[i],
@@ -259,10 +265,6 @@ export function create(ctx) {
       hint: 'Offene, gewellte Innenwände nahe der Taille, im Licht des Sterns ionisiert – im sichtbaren Licht die vier „Beine“ der Spinne.' },
     { id: 'fe', type: 'range', group: 'Ausfluss', label: '[Fe II]-Band (S-Form)', min: 0, max: 4, step: 0.25, value: 1, fmt: times, set: to('uFe'),
       hint: 'Ionisiertes Eisen (1,64 µm) zeigt, wo ein schneller Ausfluss an der Keulenwand auf früher ausgeworfenes Gas trifft.' },
-    { id: 'flow', type: 'toggle', label: 'Knoten strömen nach außen', value: true, set: (v) => { flowOn = v; } },
-    { id: 'speed', type: 'range', label: 'Tempo der Knoten', min: 0.25, max: 3, step: 0.25, value: 1, fmt: times, set: (v) => { speed = v; },
-      active: () => flowOn, only: 'Wirkt nur, wenn die Knoten strömen.',
-      hint: 'In Wirklichkeit 300–400 km/s – für eine Keulenlänge brauchen sie rund 3.700 Jahre. Hier stark beschleunigt.' },
     { id: 'core', type: 'range', group: 'Kern', label: 'Ionisierter Kern', min: 0, max: 4, step: 0.25, value: 1, fmt: times, set: to('uCore') },
     { id: 'pah', type: 'range', label: 'Staubkokon (PAH)', min: 0, max: 4, step: 0.25, value: 1, fmt: times, set: to('uPah') },
     { id: 'torus', type: 'range', label: 'Staub-Torus', min: 0, max: 4, step: 0.25, value: 1, fmt: times, set: to('uTorus'),
