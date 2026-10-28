@@ -1196,7 +1196,17 @@ export function createHud(handlers) {
     };
   }
 
+  // Kurzmeldung in der Hinweiszeile unten in der Bühne (sichtbar auch nach der ersten Eingabe), danach wieder der Hinweis
+  const hintEl = document.querySelector('.hint');
+  const hintText = hintEl.textContent;
+  let noticeT = 0;
   return {
+    notice(text) {
+      clearTimeout(noticeT);
+      hintEl.textContent = text;
+      document.body.classList.add('is-notice');
+      noticeT = setTimeout(() => { document.body.classList.remove('is-notice'); hintEl.textContent = hintText; }, 6000);
+    },
     setGoal(T) { setGoal(T); refreshFacts(); },   // Zeitraffer hebt ein Ziel auf Raumtemperatur an
     // Luftfeuchte von außen (Tagesgang im Zahnrad, meso.js): Regler, Anzeige, Isotherme und Ring am Abzeichen wie beim Ziehen
     setRh(rh, d) {

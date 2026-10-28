@@ -7,7 +7,7 @@
   <link rel="icon" href="data:,">
   <meta name="description" content="Interaktive 3D-Reise in die Struktur von Pflanzenkohle: vom Holzkohlestück über Zellen, Tüpfel und Nanoporen bis zu den Kohlenstoffatomen.">
   <meta name="color-scheme" content="dark light">
-      <link rel="stylesheet" href="../web_ux_robot/fonts/fonts.css">
+  <link rel="stylesheet" href="css/fonts.css">
   <link rel="stylesheet" href="css/biochar.css">
   <script type="importmap">
     { "imports": { "three": "./vendor/three/three.module.min.js", "three/addons/": "./vendor/three/addons/" } }
@@ -43,7 +43,7 @@
         <p class="cap-sub"></p>
       </div>
       <div class="center-hint">
-        <p class="hint">Ziehen dreht · Scrollen zoomt · orange Abzeichen führen tiefer</p>
+        <p class="hint" aria-live="polite">Ziehen dreht · Scrollen zoomt · orange Abzeichen führen tiefer</p>
         <div id="edge-meter" class="edge-meter" aria-hidden="true"><span></span><i></i></div>
       </div>
     </div>
@@ -86,6 +86,36 @@
     <p class="fatal-start">Die Ansicht konnte nicht starten. Bitte die Seite ohne Zusätze in der Adresse neu laden.</p>
   </div>
 
+  <script>
+    // Startwache (wie kosmos): scheitert der Programmcode schon beim Laden (alter Stand im Browser-Cache, fehlende Datei),
+    // bliebe der Lader endlos stehen. Dann einmal alle Programmdateien am Cache vorbei neu holen und neu laden; klappt es
+    // wieder nicht, die Startmeldung zeigen. Sobald main.js läuft (body.is-running), übernimmt dessen eigene Fehlerbehandlung.
+    (function () {
+      var KEY = 'biochar.heal', t0 = Date.now(), done = false, body = document.body;
+      var settled = function () { return /\b(is-running|is-ready|has-error|no-webgl)\b/.test(body.className); };
+      var fail = function (why) { done = true; console.error('[biochar] Start gescheitert:', why); body.classList.add('has-error'); };
+      function heal(why) {
+        if (done || settled()) return;
+        var again = true;
+        try { again = sessionStorage.getItem(KEY) === '1'; sessionStorage.setItem(KEY, '1'); } catch (e) { /* privat: gleich melden */ }
+        if (again) { fail(why); return; }
+        done = true;
+        var urls = performance.getEntriesByType('resource').map(function (r) { return r.name; })
+          .filter(function (u) { return u.indexOf(location.origin) === 0 && /\.(js|css)(\?|$)/.test(u); });
+        urls.push(new URL('js/main.js', location.href).href);
+        Promise.all(urls.map(function (u) { return fetch(u, { cache: 'reload' }).catch(function () {}); })).then(function () { location.reload(); });
+      }
+      addEventListener('error', function (e) {
+        var t = e.target;
+        if ((t && t.tagName === 'SCRIPT') || e.error instanceof SyntaxError) heal(e.message || t.src);
+      }, true);
+      var iv = setInterval(function () {
+        if (body.classList.contains('is-ready')) { clearInterval(iv); try { sessionStorage.removeItem(KEY); } catch (e) { /* privat */ } }
+        else if (done || settled()) { if (/has-error|no-webgl/.test(body.className)) clearInterval(iv); }
+        else if (Date.now() - t0 > 15000) { clearInterval(iv); heal('main.js startet nicht'); }
+      }, 500);
+    })();
+  </script>
   <script type="module" src="js/theme.js"></script>
   <script type="module" src="js/main.js"></script>
 </body>

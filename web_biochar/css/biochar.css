@@ -665,6 +665,8 @@ body.panel-collapsed .panel { display: none; }
 }
 body.touched .hint { opacity: 0; }
 body:has(.hs-card.is-open) .center-hint { opacity: 0; }   /* offene Info-Karte bekommt die ganze Bühne (hud.js stageRect) */
+body.is-notice .hint, body.is-notice .center-hint { opacity: 1; }   /* Kurzmeldung (hud.notice) schlägt beides */
+body.is-notice .hint { background: rgba(16, 17, 21, 0.66); border-radius: var(--radius); }   /* helle Tinte fest → dunkler Grund in beiden Themes */
 @container (max-width: 190px) { .hint { display: none; } }   /* zu schmal für die Zeile: Hinweis entfällt, Messleiste und Knöpfe bleiben nebeneinander */
 .edge-meter {
   display: flex;
@@ -1363,7 +1365,7 @@ body:not(.no-webgl) .fatal-webgl, body.no-webgl .fatal-start { display: none; }
   .nav-to { display: none; }
   .hex--nav { width: 24px; height: 24px; }
   .sem-method { display: none; }
-  .center-hint { display: none; }
+  body:not(.is-notice) .center-hint { display: none; }   /* nur die Kurzmeldung bekommt die Zeile */
   .caption { top: 4px; padding: 0 8px; gap: 8px; }   /* knappe Bühne: Titel oben, ohne Zusatzzeile */
   .cap-n { font-size: 13px; gap: 8px; }
   .cap-title { font-size: clamp(26px, 8.5cqi, 40px); letter-spacing: 0.16em; padding-left: 0.16em; }

@@ -13,6 +13,8 @@ import { quality } from './quality.js';
 import { settings, mountSettings, kelvinTint, PERF_KEYS, globalGrade } from './settings.js';
 import { registerLayers, showLayers } from './layers.js';
 
+document.body.classList.add('is-running');   // alle Module geladen: die Startwache in index.html tritt ab
+
 const LOADERS = [
   () => import('./levels/piece.js'),
   () => import('./levels/tissue.js'),
@@ -640,7 +642,7 @@ function activate(lv) {
     }
   }
   setTimeout(() => idle(() => {
-    if (lv.index + 1 < LOADERS.length && state.index === lv.index && !state.tr) getLevel(lv.index + 1, true);
+    if (lv.index + 1 < LOADERS.length && state.index === lv.index && !state.tr) getLevel(lv.index + 1, true).catch(() => {});   // Vorladen: Fehler meldet goTo beim echten Wechsel
   }), 3000);
 }
 
@@ -658,8 +660,15 @@ async function goTo(target, via = null) {
   if (state.tr || !state.active || target === state.index || target < 0 || target >= LOADERS.length) return;
   endIntro();
   const from = state.active;
-  const to = await getLevel(target);
-  if (state.tr || state.active !== from) return;
+  const to = await getLevel(target).catch((err) => {
+    // Nachladen gescheitert (Netz, Datei fehlt): sagen statt still stehen; der nächste Klick baut neu (buildLevel)
+    console.error(err);
+    hud.notice('Ebene konnte nicht geladen werden – bitte noch einmal versuchen.');
+    state.wish = null;
+    history.replaceState(null, '', `#ebene=${state.index + 1}`);   // Adresse zeigt wieder die stehende Ebene
+    return null;
+  });
+  if (!to || state.tr || state.active !== from) return;
   const down = target > from.index;
   const adjacent = Math.abs(target - from.index) === 1;
   const outer = down ? from : to;
@@ -759,6 +768,8 @@ function stepTransition(dt) {
     u.uDive.value = 0;
     activate(to);
     hud.hideMarkers(false);
+    if (state.wish != null && state.wish !== to.index) goTo(state.wish);
+    else state.wish = null;
   }
 }
 
@@ -1004,9 +1015,12 @@ window.addEventListener('keydown', (e) => {
   else if (/^[1-7]$/.test(e.key)) goTo(+e.key - 1);
 });
 
+// Zurück/Vor im Browser während einer Fahrt: Wunsch merken, nach der Ankunft nachholen (stepTransition)
 window.addEventListener('hashchange', () => {
-  const m = /ebene=(\d)/.exec(location.hash);
-  if (m && +m[1] - 1 !== state.index) goTo(+m[1] - 1);
+  const m = /ebene=(\d+)/.exec(location.hash);
+  if (!m) return;
+  state.wish = +m[1] - 1;
+  if (state.wish !== state.index) goTo(state.wish);
 });
 window.addEventListener('resize', resize);
 
@@ -1207,7 +1221,7 @@ function frame(now) {
 
 async function start() {
   resize();
-  const m = /ebene=(\d)/.exec(location.hash);
+  const m = /ebene=(\d+)/.exec(location.hash);
   const first = m ? Math.min(LOADERS.length - 1, Math.max(0, +m[1] - 1)) : 0;
   const T = parseFloat(params.get('T'));   // ?T=abc oder leer → Standard behalten
   if (Number.isFinite(T)) state.temp = state.pyro.shown = Math.min(800, Math.max(T_ROOM, T));
