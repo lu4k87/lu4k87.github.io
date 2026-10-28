@@ -10,7 +10,7 @@
 
 import * as THREE from 'three';
 import { registerLayers } from '../layers.js';
-import { pointCloud, disposeScene } from '../vol.js';
+import { pointCloud, disposeScene, volume, bakeField, offscreen } from '../vol.js';
 import { galToScene, mulberry32, gauss, blackbody, MPC } from '../astro.js';
 import { galaxyAtlas, createFlyby } from '../galaxyflight.js';
 
@@ -29,6 +29,69 @@ export const CLUSTERS = [
   { id: 'shapley', l: 312.0, b: 30.7, d: 206, n: 2200, s: 3.2, m: 1.6 },
 ].map((c) => ({ ...c, p: at(c.l, c.b, c.d) }));
 const PP_END = at(125, -27, 66);   // Perseus-Pisces-Kette: von Perseus Richtung Pisces
+
+// Gas: Feld r = Wand, g = Faden, b = Knoten, a = Faden zum Virgo-Haufen. Abstand zur Zellgrenze = Abstand zur
+// mittelsenkrechten Ebene der beiden nächsten Kerne (Faden: zwei Ebenen, Knoten: drei)
+const GAS_EXT = 75;
+const GAS_FIELD = /* glsl */ `
+float bis(vec3 p, vec3 a, vec3 b) { vec3 u = b - a; return dot(p - 0.5 * (a + b), u) / length(u); }
+vec4 field(vec3 p) {
+  float d1 = 1e12, d2 = 1e12, d3 = 1e12, d4 = 1e12;
+  vec3 a = vec3(0.0), b = a, c = a, d = a;
+  for (int i = 0; i < NN; i++) {
+    vec3 q = NUC[i];
+    float e = dot(p - q, p - q);
+    if (e < d1) { d4 = d3; d = c; d3 = d2; c = b; d2 = d1; b = a; d1 = e; a = q; }
+    else if (e < d2) { d4 = d3; d = c; d3 = d2; c = b; d2 = e; b = q; }
+    else if (e < d3) { d4 = d3; d = c; d3 = e; c = q; }
+    else if (e < d4) { d4 = e; d = q; }
+  }
+  float ab = bis(p, a, b), ac = bis(p, a, c), ad = bis(p, a, d);
+  vec3 s0 = -0.3 * VIRGO, s1 = 1.3 * VIRGO;
+  float t = clamp(dot(p - s0, s1 - s0) / dot(s1 - s0, s1 - s0), 0.0, 1.0);
+  vec3 dv = p - mix(s0, s1, t);
+  return vec4(exp(-ab * ab / 24.0), exp(-(ab * ab + ac * ac) / 11.5), exp(-(ab * ab + ac * ac + ad * ad) / 20.0), exp(-dot(dv, dv) / 13.5));
+}
+`;
+const GAS_BODY = /* glsl */ `
+uniform highp sampler3D uField;
+uniform float uGain, uMode;
+uniform vec4 uCl[6];
+uniform float uClW[6];
+// Temperatur-Rampe wie in Simulationsbildern (IllustrisTNG): kalt blau → warm violett → heiß orange → sehr heiß weiß
+vec3 tRamp(float h) {
+  vec3 c = mix(vec3(0.10, 0.20, 0.95), vec3(0.62, 0.28, 0.95), smoothstep(0.0, 0.4, h));
+  c = mix(c, vec3(1.0, 0.52, 0.18), smoothstep(0.35, 0.75, h));
+  return mix(c, vec3(1.0, 0.93, 0.80), smoothstep(0.75, 1.0, h));
+}
+void sampleVol(vec3 p, out vec3 e, out float s) {
+  s = 0.0;
+  vec4 f = texture(uField, p / (2.0 * EXT) + 0.5);
+  float edge = pow(smoothstep(EXT, EXT * 0.25, length(p)), 1.6);
+  float n = fbm(p * 0.22 + vec3(0.0, uTime * 0.012, uTime * 0.008), OCT);
+  float rid = ridged(p * 0.45 + vec3(uTime * 0.01, 0.0, 0.0), 3);
+  float clump = clamp(0.6 + 1.8 * n, 0.0, 2.0);
+  float hot = 0.0, sh = 0.0, gl = 0.0;
+  for (int i = 0; i < 6; i++) {
+    vec3 d = p - uCl[i].xyz;
+    float x2 = dot(d, d) / (uCl[i].w * uCl[i].w), rho = uClW[i] / (1.0 + x2);
+    hot += rho * rho * smoothstep(144.0, 16.0, x2) + 0.04 * rho * smoothstep(400.0, 36.0, x2);
+    sh += uClW[i] * exp(-pow((sqrt(x2) - 4.5) / 0.7, 2.0));
+    // breiter Röntgen-Halo: der Kern (rc ≈ 1 Mpc) ist kleiner als ein Rechenschritt und fiele sonst durch
+    gl += uClW[i] * exp(-x2 / 30.0);
+  }
+  if (uMode < 1.5) {
+    float g = (0.3 * f.r + f.g * (0.6 + 0.8 * rid) + f.a + 1.4 * f.b) * clump + 0.6 * sqrt(hot) + 0.8 * sh * clump;
+    float h = clamp(0.12 * f.r + 0.3 * f.g + 0.6 * f.b + 1.1 * sqrt(hot) + 0.7 * sh * (0.5 + n), 0.0, 1.0);
+    e = tRamp(h) * g * 0.02;
+  } else {
+    // Röntgengas: nur das heiße Haufengas leuchtet, das Netz ist nur angedeutet
+    float x = (hot + 0.5 * gl) * (0.7 + 0.6 * n) + 0.08 * sh * clump + 0.06 * (f.b + f.a) * clump;
+    e = mix(vec3(0.75, 0.25, 1.0), vec3(1.0, 0.85, 0.55), clamp(hot + 0.6 * gl, 0.0, 1.0)) * x * 0.4;
+  }
+  e *= uGain * edge;
+}
+`;
 
 export function create(ctx) {
   const scene = new THREE.Scene();
@@ -148,6 +211,38 @@ export function create(ctx) {
     flowLines.geometry.attributes.position.needsUpdate = true;
   }
 
+  // Gas um die Lokale Gruppe (bis GAS_EXT): dieselben Zellkerne wie die Galaxien → Wände, Fäden, Knoten des Gases liegen
+  // genau auf dem Netz; dazu der Faden Lokale Gruppe → Virgo und das heiße Haufengas (β-Modell, Leuchten ∝ Dichte²)
+  const nearNuc = nuc.filter((p) => p.length() < GAS_EXT * 1.74 + 50);
+  const v3 = (p) => `vec3(${p.x.toFixed(2)}, ${p.y.toFixed(2)}, ${p.z.toFixed(2)})`;
+  const field = bakeField(ctx.renderer, { size: 128, extent: GAS_EXT, body: `const int NN = ${nearNuc.length};
+const vec3 NUC[NN] = vec3[NN](${nearNuc.map(v3).join(', ')});
+const vec3 VIRGO = ${v3(virgo)};
+${GAS_FIELD}` });
+  const CL = [['virgo', 1, 0.9], ['fornax', 0.5, 0.5], ['centaurus', 0.9, 0.9], ['hydra', 0.7, 0.7], ['ga', 1.1, 1.2]]
+    .map(([id, w, rc]) => [CLUSTERS.find((c) => c.id === id).p, w, rc]).concat([[new THREE.Vector3(), 0.25, 0.35]]);
+  const gasMesh = volume({ radius: GAS_EXT, body: `#define OCT ${ctx.detail > 0.7 ? 4 : 3}\n#define EXT ${GAS_EXT.toFixed(1)}\n${GAS_BODY}`,
+    steps: ctx.detail > 0.9 ? 128 : 96, maxSteps: 160, uniforms: {
+      uField: { value: field.texture }, uGain: { value: 1 }, uMode: { value: 0 },
+      uCl: { value: CL.map(([p, , rc]) => new THREE.Vector4(p.x, p.y, p.z, rc)) }, uClW: { value: CL.map((c) => c[1]) },
+    } });
+  const gas = offscreen(ctx.renderer, gasMesh);
+  gas.quad.renderOrder = 1;
+  gas.quad.visible = false;
+  scene.add(gas.quad);
+  // funkelnde Galaxien: hellste Punkte nahe der Lokalen Gruppe, Helligkeit schwankt langsam (unter 0,5 Hz) – Darstellung
+  const tw = { pos: [], base: [], ph: [], om: [] };
+  for (let i = 0; i < pos.length / 3 && tw.ph.length < 420; i++) {
+    const x = pos[i * 3], y = pos[i * 3 + 1], z = pos[i * 3 + 2];
+    if (Math.hypot(x, y, z) > GAS_EXT * 0.8 || col[i * 3] + col[i * 3 + 1] + col[i * 3 + 2] < 3.2) continue;
+    tw.pos.push(x, y, z); tw.base.push(col[i * 3], col[i * 3 + 1], col[i * 3 + 2]); tw.ph.push(rand() * 6.28); tw.om.push(0.5 + rand() * 2);
+  }
+  const twinkle = pointCloud(tw.pos, tw.base, tw.ph.map(() => 0.5), { min: 2.2 });
+  twinkle.visible = false;
+  scene.add(twinkle);
+  const twCol = twinkle.geometry.attributes.color;
+  let gasT = 0;
+
   const home = { pos: new THREE.Vector3(100, 120, 250), target: new THREE.Vector3(0, 0, 0) };
   const hd = home.pos.clone().normalize();
   const voidC = nuc.filter((p) => p.length() > 45 && p.length() < 90).sort((a, b) => b.clone().normalize().dot(hd) - a.clone().normalize().dot(hd))[0] || nuc[0];
@@ -165,25 +260,51 @@ export function create(ctx) {
   let flowK = 1, flowG = 1;
   const flowAlpha = () => { flowPts.material.opacity = Math.min(1, 0.4 * flowG); flowLines.material.opacity = Math.min(1, 0.14 * flowG); };
   const flowOnly = 'Wirkt, sobald in der Infotafel „Strömung“ auf Laniakea steht.';
+  const gasOnly = 'Wirkt, sobald in der Infotafel „Gas“ eingeschaltet ist.';
+  const gu = gasMesh.material.uniforms;
+  let gasK = 1, twK = 1, twT = 0;
   registerLayers('web', [
     { id: 'netGain', type: 'range', group: 'Netz der Galaxien', label: 'Helligkeit', value: 1, min: 0.25, max: 5, step: 0.25, unit: '×', set: (v) => { web.material.uniforms.uGain.value = v; } },
     { id: 'flowK', type: 'range', group: 'Strömung (Laniakea)', label: 'Tempo', value: 1, min: 0.25, max: 6, step: 0.25, unit: '×', set: (v) => { flowK = v; }, active: () => flow.visible, only: flowOnly },
     { id: 'flowGain', type: 'range', label: 'Helligkeit', value: 1, min: 0.25, max: 6, step: 0.25, unit: '×', set: (v) => { flowG = v; flowAlpha(); }, active: () => flow.visible, only: flowOnly },
+    { id: 'gasGain', type: 'range', group: 'Gaswolke', label: 'Helligkeit', value: 1, min: 0.25, max: 4, step: 0.25, unit: '×', set: (v) => { gu.uGain.value = v; gas.invalidate(); }, active: () => gas.quad.visible, only: gasOnly },
+    { id: 'gasK', type: 'range', label: 'Bewegung', value: 1, min: 0, max: 4, step: 0.25, fmt: (v) => (v ? `${v} ×` : 'steht'), set: (v) => { gasK = v; }, active: () => gas.quad.visible, only: gasOnly },
+    { id: 'gasSteps', type: 'range', label: 'Detail (Schritte)', value: gu.uSteps.value, min: 64, max: 160, step: 32, set: (v) => { gu.uSteps.value = v; gas.invalidate(); }, active: () => gas.quad.visible, only: gasOnly },
+    { id: 'twK', type: 'range', group: 'Funkeln', label: 'Tempo', value: 1, min: 0.25, max: 3, step: 0.25, unit: '×', set: (v) => { twK = v; }, active: () => twinkle.visible, only: 'Wirkt, sobald in der Infotafel „Funkeln“ an ist.' },
   ]);
   // Vorbeiflug an Galaxien auf der Fahrt hinein zur Lokalen Gruppe (User 27.10.2026, nur im Flug sichtbar)
   const flyby = createFlyby(galaxyAtlas());
   scene.add(flyby.group);
-  const controls = [{ id: 'flow', label: 'Strömung', value: 'off', options: [['off', 'Aus'], ['on', 'Laniakea']], set: (v) => { flow.visible = v === 'on'; } }];
+  const controls = [{ id: 'flow', label: 'Strömung', value: 'off', options: [['off', 'Aus'], ['on', 'Laniakea']], set: (v) => { flow.visible = v === 'on'; } },
+    // Gas: Temperatur = Farben wie in IllustrisTNG, Röntgengas = nur heißes Haufengas (User 28.10.2026, Vorschau Gas:B + Gas:C)
+    { id: 'gas', label: 'Gas', value: 'off', options: [['off', 'Aus'], ['temp', 'Temperatur'], ['xray', 'Röntgengas']],
+      set: (v) => { gu.uMode.value = v === 'xray' ? 2 : 1; gas.quad.visible = v !== 'off'; gas.invalidate(); } },
+    { id: 'tw', label: 'Funkeln', value: 'off', options: [['off', 'Aus'], ['on', 'An']], set: (v) => { twinkle.visible = v === 'on'; } }];
   return {
     scene, camera, unit: MPC, hotspots, controls, home,
     orbit: { minDistance: 8, maxDistance: 900, cineSpeed: 0.5 },
     pass: flyby,
     // Shader des Vorbeiflugs schon beim Laden binden (compileAsync übergeht Unsichtbares) – kein Hänger beim ersten Flug
-    ready: (async () => { flyby.group.visible = true; await ctx.renderer.compileAsync(scene, camera); flyby.group.visible = false; })(),
+    ready: (async () => {
+      flyby.group.visible = true; await ctx.renderer.compileAsync(scene, camera); flyby.group.visible = false;
+      await field.ready; await ctx.renderer.compileAsync(gas.scene, camera);
+    })(),
     look: { exposure: 1.2, bloom: 0.1, sat: 1.05, con: 0.12, sh: [0.93, 0.97, 1.1] },
-    update(dt) { if (flow.visible) for (let i = 0, n = Math.ceil(flowK); i < n; i++) stepFlow(dt * flowK / n); },
+    update(dt, t, cam) {
+      if (flow.visible) for (let i = 0, n = Math.ceil(flowK); i < n; i++) stepFlow(dt * flowK / n);
+      gasT += dt * gasK;
+      twT += dt * twK;
+      if (gas.quad.visible) { gu.uTime.value = gasT; gas.invalidate(); gas.render(cam); }
+      if (twinkle.visible) {
+        for (let i = 0; i < tw.ph.length; i++) {
+          const k = 0.25 + 2.2 * Math.pow(0.5 + 0.5 * Math.sin(twT * tw.om[i] + tw.ph[i]), 4);
+          twCol.setXYZ(i, tw.base[i * 3] * k, tw.base[i * 3 + 1] * k, tw.base[i * 3 + 2] * k);
+        }
+        twCol.needsUpdate = true;
+      }
+    },
     live: () => (flow.visible ? 'Strömung schematisch: zum Großen Attraktor und weiter zum Shapley-Superhaufen (Laniakea = Einzugsgebiet)' : 'Modell-Netz um echte Haufen: Virgo, Fornax, Centaurus, Hydra, Norma, Perseus–Pisces, Coma, Hercules, Shapley'),
-    setPixelRatio(pr, H) { web.userData.setPx(pr, H, camera.fov); },
-    dispose: () => disposeScene(scene),
+    setPixelRatio(pr, H) { web.userData.setPx(pr, H, camera.fov); twinkle.userData.setPx(pr, H, camera.fov); gas.setSize(Math.round(H * camera.aspect), H); },
+    dispose: () => { disposeScene(scene); gas.dispose(); field.dispose(); },
   };
 }
