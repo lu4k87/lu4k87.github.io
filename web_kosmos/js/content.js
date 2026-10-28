@@ -977,6 +977,7 @@ export const STATIONS = {
       orion: { t: 'Orion-Nebel', x: 'Rund 1.270 Lj von uns, im selben Arm wie die Sonne. Hineinfliegen.', s: 'maiz-2022' },
       spider: { t: 'Roter Spinnennebel', x: 'Planetarischer Nebel im Schützen, rund 5.900 Lj entfernt, fast in der Ebene der Scheibe. Hineinfliegen.', s: 'kastner-2025' },
       crab: { t: 'Krebsnebel', x: 'Rund 6.200 Lj entfernt, Richtung Perseus-Arm. Hineinfliegen.', s: 'lin-2023' },
+      butterfly: { t: 'Schmetterlingsnebel', x: 'Planetarischer Nebel im Skorpion, rund 3.800 Lj entfernt, Richtung Zentrum. Hineinfliegen.', s: 'heic0910h' },
       sgra: { t: 'Sagittarius A*', x: 'Das Schwarze Loch im Zentrum, 27.000 Lj entfernt. Hineinfliegen.', s: 'gravity-2022' },
       bar: { t: 'Zentraler Balken', x: 'Eine längliche Struktur aus überwiegend alten, rötlichen Sternen: Halblänge 5,0 kpc (gut 16.000 Lj), 28–33° gegen die Linie Sonne–Zentrum gedreht.', s: 'wegg-2015' },
       omega: { t: 'ω Centauri', x: 'Der größte Kugelsternhaufen der Milchstraße: rund 10 Millionen Sterne, 17.000 Lj entfernt, vermutlich der Kern einer von der Milchstraße aufgenommenen Zwerggalaxie. Rund 150 Kugelsternhaufen umkreisen die Galaxis im Halo; ihre Sterne sind 10–13 Milliarden Jahre alt.', s: 'harris-2010' },

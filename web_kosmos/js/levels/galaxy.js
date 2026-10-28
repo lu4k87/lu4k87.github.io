@@ -289,9 +289,11 @@ export function create(ctx) {
   const orion = new THREE.Vector3(...galToScene(209.01, -19.38, 0.390, R0, Z_SUN));
   const crab = new THREE.Vector3(...galToScene(184.56, -5.78, 1.90, R0, Z_SUN));
   const sgra = new THREE.Vector3(...galToScene(359.944, -0.046, R0, R0, Z_SUN));
+  const butterfly = new THREE.Vector3(...galToScene(349.51, 1.06, 1.165, R0, Z_SUN));   // NGC 6302, 3.800 Lj (Hubble)
   const spider = new THREE.Vector3(...galToScene(10.10, 0.74, 1.8, R0, Z_SUN));   // NGC 6537 (Kastner 2025)
   const marks = [
     [sun, 0xffe2a8, 0.05, 6], [orion, 0xff7aa0, 0.07, 5], [crab, 0xb8d4ff, 0.06, 5], [sgra, 0xfff1dd, 0.06, 8], [spider, 0xff6a5a, 0.05, 5],
+    [butterfly, 0xffa060, 0.05, 5],
   ].map(([p, c, s, k]) => { const m = marker(c, s, k); m.position.copy(p); scene.add(m); return { m, p, base: p.clone() }; });
 
   // Sonnenbahn (Kreis mit R0, ≈ 220 Mio. Jahre Umlauf) und Sichtlinien Sonne → Stationen (schaltbar)
@@ -314,6 +316,7 @@ export function create(ctx) {
     { id: 'crab', kind: 'dive', to: 'crab', pos: marks[2].p },
     { id: 'sgra', kind: 'dive', to: 'sgra', pos: marks[3].p },
     { id: 'spider', kind: 'dive', to: 'spider', pos: marks[4].p },
+    { id: 'butterfly', kind: 'dive', to: 'butterfly', pos: butterfly },
     { id: 'bar', kind: 'info', pos: new THREE.Vector3(...diskPoint(BAR.half * 0.9, BAR.angle * RAD)) },
     { id: 'omega', kind: 'info', pos: omegaCen, focus: () => 1.2 },
     { id: 'halo', kind: 'info', pos: new THREE.Vector3(9, 13, -11) },
