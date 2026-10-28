@@ -17,9 +17,10 @@ import { BODY_VERT } from '../planetfx.js';
 import { SUN_FRAG, BILLBOARD_VERT, BILLBOARD_AIM_VERT, CORONA_FRAG, LOOP_VERT, LOOP_FRAG, CME_FRAG, CLOOP_VERT, CLOOP_FRAG, HOLES, FILS, loopsGeometry, spotGroups, streamerSet, coronalLoopsGeometry } from '../sunfx.js';
 import { registerLayers, refreshLayers } from '../layers.js';
 import { GRADES, globalGrade, onSettings, settings } from '../settings.js';
-import { LOOK_SURF_FRAG, LOOK_ATMO_VERT, LOOK_ATMO_FRAG, LOOK_EXT, ERUPT_T, lookDefines } from '../sunlook.js';
+import { LOOK_SURF_FRAG, LOOK_ATMO_VERT, LOOK_ATMO_FRAG, LOOK_EXT, ERUPT_T, LIGHTS, lookDefines } from '../sunlook.js';
 import { STRAND_VERT, STRAND_FRAG, strandUniforms, strandGeometry, arcadeLoops, prominenceLoops, flareArcade, eruptLoop, loopField } from '../sunstrands.js';
 import { createFlare } from '../flare.js';
+import { createComet } from '../suncomet.js';
 
 const RAD = Math.PI / 180;
 const R_SUN = 6.957e8;   // m (nasa-sun: 695.700 km)
@@ -161,7 +162,8 @@ export function create(ctx) {
   const sunMat = sun.material;
   const lookU = { uTime: sunU.uTime, uDays: sunU.uDays, uSpot: sunU.uSpot, uHole: sunU.uHole, uFil: sunU.uFil, uFilT: sunU.uFilT, uAct: { value: 0.75 },
     uSurf: { value: 0 }, uGain: { value: 0.8 }, uFlK: { value: -1 }, uFlS: { value: new THREE.Vector3(0, 0, 1) }, uGlow: { value: 1 }, uHot: { value: 0 }, uTex: { value: 5 },
-    uRelief: { value: 1.0 }, uVisc: { value: 1.0 } };
+    uRelief: { value: 1.0 }, uVisc: { value: 1.0 }, uNest: { value: 1 }, uLL: { value: 1 }, uQk: { value: new THREE.Vector4(0, 0, 1, -1) },
+    uLA: { value: Array.from({ length: LIGHTS }, () => new THREE.Vector4(0, 0, 0, 0)) }, uLB: { value: Array.from({ length: LIGHTS }, () => new THREE.Vector4(0, 0, 0, 0)) } };   // w = 0: Platz frei
   const lookMat = new THREE.ShaderMaterial({ vertexShader: BODY_VERT, fragmentShader: LOOK_SURF_FRAG, uniforms: lookU, defines: lookDefines(ctx.detail) });
 
   // ---------- Koronaschleifen je aktiver Region (171/193 Å), drehen mit der Rate ihrer Breite ----------
@@ -201,8 +203,10 @@ export function create(ctx) {
     const lat = (8 + rs() * 24) * RAD * (rs() < 0.5 ? 1 : -1), lon = rs() * Math.PI * 2;
     arcSites.push(new THREE.Vector3(-Math.cos(lon) * Math.cos(lat), Math.sin(lat), Math.sin(lon) * Math.cos(lat)));
   }
+  const arcLit = [];   // Fußpunkte je Arkade für das Licht auf der Kruste (lookU.uLA/uLB)
   const arcX = strandMesh(arcSites.flatMap((c) => {
     const e = new THREE.Vector3().crossVectors(Y, c).normalize().applyAxisAngle(c, (rs() - 0.5) * 0.6), sep = (2.5 + rs() * 3) * RAD;
+    arcLit.push({ a: c.clone().addScaledVector(e, sep).normalize(), b: c.clone().addScaledVector(e, -sep).normalize(), h: sep * 0.85, lat: latOf(c) });
     return arcadeLoops(c.clone().addScaledVector(e, sep).normalize(), c.clone().addScaledVector(e, -sep).normalize(), 10, rs, { size: 0.85, I: 0.8, threads: thr });
   }).filter(clearOfHome()));
 
@@ -221,7 +225,7 @@ export function create(ctx) {
   const PROM_RATE = omega(15 * RAD);
   // Protuberanzen und Ausbruch mit eigenem Material (Zahnrad „Dichte“ dünnt nur die Bögen aus); Zeit, Pixel, Farbe gemeinsam
   const strandMat2 = (u) => { Object.assign(u, { uTime: strandU.uTime, uPx: strandU.uPx, uPal: strandU.uPal, uGain: strandU.uGain, uFoot: strandU.uFoot, uMove: strandU.uMove,
-    uLifeR: strandU.uLifeR });
+    uLifeR: strandU.uLifeR, uRain: strandU.uRain });
     return new THREE.ShaderMaterial({ vertexShader: STRAND_VERT, fragmentShader: STRAND_FRAG, uniforms: u, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true }); };
   const promLook = strandMesh(prominenceLoops(promMeta, rs, 5 + 2 * thr).filter(clearOfHome(promOff)), strandMat2(strandUniforms()));
   // Ausbruch im Look: Fadenbündel, bei jedem Auslösen neu gebaut (Fußpunkte mitdrehend wie erupt.g, Breite evLat)
@@ -260,7 +264,7 @@ export function create(ctx) {
   // ohne Tiefentest, weil die Tafel durch die Sonnenmitte geht – sie rechnet die Kugel selbst (Strahl je Pixel)
   const rimU = { uTime: coronaU.uTime, uSurf: lookU.uSurf, uExt: { value: LOOK_EXT }, uSize: { value: LOOK_EXT }, uGain: { value: 0.8 },
     uRim: { value: 2 }, uSpH: { value: SPICULE_H[2] }, uCor: { value: 1 }, uE: { value: 1 }, uEK: { value: -1 }, uEB: { value: 0 }, uEA: { value: 0 }, uEDir: { value: new THREE.Vector2(0, 1) },
-    uESp: { value: new THREE.Vector2() }, uSunInv: { value: new THREE.Matrix3() }, uAR: { value: Array.from({ length: 6 }, () => new THREE.Vector4()) } };
+    uESp: { value: new THREE.Vector2() }, uSunInv: { value: new THREE.Matrix3() }, uAR: { value: Array.from({ length: 6 }, () => new THREE.Vector4()) }, uHaze: { value: 1 } };
   const rim = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), new THREE.ShaderMaterial({ vertexShader: LOOK_ATMO_VERT, fragmentShader: LOOK_ATMO_FRAG, uniforms: rimU,
     defines: lookDefines(ctx.detail), blending: THREE.AdditiveBlending, depthWrite: false, depthTest: false, transparent: true }));
   rim.frustumCulled = false;
@@ -281,6 +285,15 @@ export function create(ctx) {
   let burstRate = 1.0, sprayAmt = 1.0;
   const FLASH = [[1.6, 1.5, 1.4], [1.6, 1.35, 0.8], [1.6, 0.9, 0.55], [1.5, 1.2, 0.9]];
   const cmeState = { t: 1e3, dir: new THREE.Vector3(), from: new THREE.Vector3(), foot: new THREE.Vector3() };
+  // Neue Ereignisse (Vorschau „Sonne optimieren“ 28.10.2026): Sonnenbeben nach dem Flare (Ereig:A, Ringe im Kruste-Shader,
+  // uQk) und seltener Sonnenstreifer-Komet im Leerlauf (Ereig:B, suncomet.js; eigener Zufall, damit alles andere bleibt)
+  const cr = mulberry32(97);
+  const comet = createComet(cr);
+  scene.add(comet.group);
+  let quakeOn = true, quakeT = 1e3, cometOn = true, cometTimer = 45 + cr() * 45;
+  // Bögen werfen Licht (Bogen:A), koronaler Regen (Bogen:B), Hitzeflimmern (Bogen:C): Schalter × Stärke
+  const fx = { light: true, lightAmt: 1, rain: true, rainAmt: 1, haze: true, hazeAmt: 1 };
+  const applyFx = () => { lookU.uLL.value = fx.light ? fx.lightAmt : 0; strandU.uRain.value = fx.rain ? fx.rainAmt : 0; rimU.uHaze.value = fx.haze ? fx.hazeAmt : 0; };
 
   // ---------- Zustand ----------
   let chan = 'glut', lookOn = true, rimIdx = 2, eruptIdx = 0, actIdx = 3, nAct = ACT[3][1], spdIdx = 1, rotOn = false, days = 0;
@@ -342,6 +355,11 @@ export function create(ctx) {
     if (type === 1) toG(best, erupt.g); else erupt.dir.copy(best);
     cmeState.foot.copy(best).multiplyScalar(1.003);
     buildEvent(type, best, cam, manual);
+    if (quakeOn) {   // Ort des Bebens: Fußpunkt des Flares; am Rand etwas zur Kamera hin, damit die Ringe auf der Scheibe laufen
+      if (type === 1) lookU.uQk.value.set(erupt.g.x, erupt.g.y, erupt.g.z, -1);
+      else { toG(tmp2.copy(best).normalize().lerp(tmp.copy(cam.position).normalize(), 0.35), tmp2); lookU.uQk.value.set(tmp2.x, tmp2.y, tmp2.z, -1); }
+      quakeT = -1.2;   // Ringe ab dem Höhepunkt des Flares
+    }
     cmeState.t = 0;
     flareTimer = ERUPT_T / Math.min(1, Math.max(flareRate * ACT[actIdx][3], 0.05));
   }
@@ -456,10 +474,15 @@ export function create(ctx) {
       active: () => chan === 'wl', only: 'Nur bei Weißlicht (Wellenlänge in der Infotafel).' },
     { id: 'spots', type: 'toggle', label: 'Sonnenflecken', value: true, set: (v) => { spotsOn = v; applyRegions(); },
       active: () => chan === 'wl' || chan === 'glut', only: 'Nur bei Weißlicht und Glut (Wellenlänge in der Infotafel).' },
+    { id: 'nest', type: 'range', label: 'Aktive Regionen aus der Ferne', value: 1, min: 0, max: 2, step: 0.1, unit: '×', set: (v) => { lookU.uNest.value = v; },
+      active: () => lookOn && nAct > 0, only: 'Nur bei Glut und 304 Å mit aktiven Regionen (Aktivität ab „niedrig“); wirkt ab ≈ 2 Sonnenradien Abstand.' },
     { id: 'rim', type: 'range', group: 'Rand und Korona', label: 'Rand', value: rimIdx, min: 0, max: RIMS.length - 1, step: 1, fmt: (i) => RIMS[Math.round(i)], set: (v) => { rimIdx = Math.round(v); rimU.uRim.value = rimIdx; rimU.uSpH.value = SPICULE_H[rimIdx]; applyRegions(); },
       active: () => lookOn, only: LOOK_ONLY },
     { id: 'corona', type: 'toggle', label: 'Korona und Streamer', value: true, set: (v) => { coronaOn = v; coronaU.uCorona.value = v && chan === 'wl' ? 1 : 0; rimU.uCor.value = v ? 1 : 0; },
       active: () => chan !== '171' && chan !== '193', only: 'Nicht bei 171 Å und 193 Å: dort zeigt das Kanalbild die Korona selbst.' },
+    { id: 'haze', type: 'toggle', label: 'Hitzeflimmern und Dunst (künstlerisch)', value: true, set: (v) => { fx.haze = v; applyFx(); }, active: () => lookOn, only: LOOK_ONLY },
+    { id: 'hazeAmt', type: 'range', label: 'Stärke', value: 1, min: 0.2, max: 2.5, step: 0.1, unit: '×', sub: true, set: (v) => { fx.hazeAmt = v; applyFx(); },
+      active: () => lookOn && fx.haze, only: 'Nur bei Glut und 304 Å, solange „Hitzeflimmern und Dunst“ an ist.' },
     { id: 'holes', type: 'toggle', label: 'Koronale Löcher', value: true, set: (v) => { holesOn = v; applyRegions(); },
       active: () => chan !== 'wl' && (chan !== 'glut' || lookU.uTex.value === 3), only: 'Nicht bei Weißlicht; bei Glut nur mit der Kruste „SDO-Komposit“.' },
     { id: 'prom', type: 'toggle', group: 'Ausbrüche', label: 'Protuberanzen und Filamente', value: true, set: (v) => { promOn = v; applyRegions(); } },
@@ -490,11 +513,21 @@ export function create(ctx) {
       active: () => lookOn && fieldKind > 0, only: 'Nur bei Glut und 304 Å, solange „Bögen über die ganze Sonne“ nicht aus ist.' },
     { id: 'loopSize', type: 'range', label: 'Höhe der Bögen', value: 1, min: 0.5, max: 2, step: 0.1, unit: '×', sub: true, set: (v) => { strandU.uScale.value = fieldU.uScale.value = v; }, active: () => lookOn, only: LOOK_ONLY },
     { id: 'loopGain', type: 'range', label: 'Leuchtkraft der Bögen', value: 1, min: 0.3, max: 2.5, step: 0.1, unit: '×', sub: true, set: (v) => { loopGain = v; applyGlow(); }, active: () => lookOn, only: LOOK_ONLY },
+    { id: 'loopLight', type: 'toggle', label: 'Bögen werfen Licht auf die Kruste', value: true, set: (v) => { fx.light = v; applyFx(); }, active: () => lookOn, only: LOOK_ONLY },
+    { id: 'loopLightAmt', type: 'range', label: 'Stärke des Lichts', value: 1, min: 0.2, max: 2.5, step: 0.1, unit: '×', sub: true, set: (v) => { fx.lightAmt = v; applyFx(); },
+      active: () => lookOn && fx.light, only: 'Nur bei Glut und 304 Å, solange „Bögen werfen Licht“ an ist.' },
     { id: 'foot', type: 'range', label: 'Fuß der Bögen', value: 1, min: 0, max: FEET.length - 1, step: 1, fmt: (i) => FEET[Math.round(i)], sub: true, set: (v) => { strandU.uFoot.value = Math.round(v); }, active: () => lookOn, only: LOOK_ONLY },
     { id: 'flow', type: 'range', group: 'Bewegung der Bögen', label: 'Strömen', value: 0.35, min: 0, max: 2, step: 0.1, unit: '×', set: (v) => { strandU.uMove.value.x = v; }, active: () => lookOn, only: LOOK_ONLY },
     { id: 'sway', type: 'range', label: 'Pendeln', value: 0.35, min: 0, max: 2, step: 0.1, unit: '×', set: (v) => { strandU.uMove.value.y = v; }, active: () => lookOn, only: LOOK_ONLY },
     { id: 'life', type: 'toggle', label: 'Werden und Vergehen', value: true, set: (v) => { strandU.uMove.value.z = v ? 1 : 0; }, active: () => lookOn, only: LOOK_ONLY },
     { id: 'lifeRate', type: 'range', label: 'Tempo', value: 1, min: 0.3, max: 3, step: 0.1, unit: '×', sub: true, set: (v) => { strandU.uLifeR.value = v; }, active: () => lookOn, only: LOOK_ONLY },
+    { id: 'rain', type: 'toggle', label: 'Koronaler Regen', value: true, set: (v) => { fx.rain = v; applyFx(); }, active: () => lookOn, only: LOOK_ONLY },
+    { id: 'rainAmt', type: 'range', label: 'Menge', value: 1, min: 0.2, max: 2, step: 0.1, unit: '×', sub: true, set: (v) => { fx.rainAmt = v; applyFx(); },
+      active: () => lookOn && fx.rain, only: 'Nur bei Glut und 304 Å, solange „Koronaler Regen“ an ist.' },
+    { id: 'quake', type: 'toggle', group: 'Ereignisse', label: 'Sonnenbeben nach dem Flare', value: true, set: (v) => { quakeOn = v; },
+      active: () => lookOn && flaresOn, only: 'Nur bei Glut und 304 Å, solange „Flares mit Massenauswurf“ an ist.' },
+    { id: 'comet', type: 'toggle', label: 'Sonnenstreifer-Komet (selten)', value: true, set: (v) => { cometOn = v; if (!v) comet.stop(); } },
+    { id: 'cometNow', type: 'action', label: 'Nächster Komet', button: 'Komet jetzt', sub: true, run: () => { comet.start(camera); } },
   ]);
 
   // Stile für platzende Bögen: eingeschaltete im Zufall, sonst nur der Stil des Knopfs
@@ -612,6 +645,23 @@ export function create(ctx) {
     regions.forEach((r, k) => { const a = rimU.uAR.value[k]; regionWorld(r, tmp); a.set(tmp.x, tmp.y, tmp.z, k < nAct ? 1 : 0); });
   }
 
+  // Licht der Bögen je Bild (Kruste-Shader, mitdrehende Koordinaten g): Bögen der aktiven Regionen stehen dort fest, die
+  // weiteren Arkaden drehen mit der Rate bei 15° Breite und wandern gegen die Kruste ihrer Breite
+  function loopLights() {
+    const on = lookOn && cloopsOn;
+    regions.forEach((r, k) => {
+      lookU.uLA.value[k].set(r.a.x, r.a.y, r.a.z, on && k < nAct ? (k === 0 ? 1.3 : 1) : 0);
+      lookU.uLB.value[k].set(r.b.x, r.b.y, r.b.z, 0.85 * r.a.distanceTo(r.b) / 2);
+    });
+    arcLit.forEach((L, i) => {
+      const k = regions.length + i;
+      if (k >= LIGHTS) return;
+      const ang = (PROM_RATE - omega(L.lat)) * days * RAD;
+      tmp.copy(L.a).applyAxisAngle(Y, ang); lookU.uLA.value[k].set(tmp.x, tmp.y, tmp.z, on && arcX.visible ? 0.7 : 0);
+      tmp.copy(L.b).applyAxisAngle(Y, ang); lookU.uLB.value[k].set(tmp.x, tmp.y, tmp.z, L.h);
+    });
+  }
+
   return {
     scene, camera, home, unit: R_SUN, hotspots, controls, look,
     orbit: { minDistance: 0.12, maxDistance: 40, cineSpeed: 0.4 },
@@ -637,6 +687,11 @@ export function create(ctx) {
       ev.rotation.y = omega(evLat) * days * RAD;
       cam.updateMatrixWorld();
       coronaFrame(cam);
+      loopLights();
+      quakeT = Math.min(quakeT + dt * ta0, 1e3);
+      lookU.uQk.value.w = quakeOn && quakeT < 10 ? quakeT : -1;
+      if (cometOn && !ctx.still && !flying && !comet.active) { cometTimer -= dt; if (cometTimer <= 0) { comet.start(cam); cometTimer = 70 + cr() * 80; } }
+      comet.update(dt * ta0, cam, strandU.uPx.value);
       sunFlare.userData.update(new THREE.Vector3(0, 0, 0), cam, [], settings.S.lens, dt);
       // Flares: Zufallstakt je Aktivität, Schleifen um den Fußpunkt leuchten weich auf, Massenauswurf wandert hinaus
       if (flaresOn && !ctx.still && !flying && ACT[actIdx][3] > 0) { flareTimer -= dt; if (flareTimer <= 0) triggerFlare(cam); }
@@ -676,6 +731,7 @@ export function create(ctx) {
     dispose() {
       scene.traverse((o) => { if (o.geometry) o.geometry.dispose(); if (o.material) o.material.dispose(); });
       flash.material.map.dispose();
+      comet.dispose();
       lookMat.dispose();
       sunMat.dispose();
       scene.remove(sunFlare);

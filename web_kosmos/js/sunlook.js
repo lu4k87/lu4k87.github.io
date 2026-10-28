@@ -17,6 +17,7 @@ export const ERUPT_T = 12;   // Sekunden je Ausbruch (Vorschau F3: alle 12 s)
 export const LOOK_EXT = 2.6; // Bildtafel reicht bis 2,6 Randradien (Auswurf-Blase bis ≈ 2,3)
 // Qualitätsstufe (ctx.detail 0,55 | 0,8 | 1) → fbm-Oktaven, feine Flecken-/Moos-Details
 export const lookDefines = (detail) => (detail > 0.9 ? { OCT: 5, FINE: 1 } : detail > 0.7 ? { OCT: 4, FINE: 1 } : { OCT: 3, FINE: 0 });
+export const LIGHTS = 16;    // Bögen mit Licht auf der Kruste (uLA/uLB: aktive Regionen + weitere Arkaden)
 
 // Simplex-Rauschen 3D nach Ashima Arts/Stefan Gustavson (MIT) wie im Mockup – die Grat-Potenzen der Adern sind auf seine
 // Verteilung abgestimmt. Dazu fbm (OCT Oktaven), fbm3, Zellmuster und Hash-Hilfen.
@@ -63,9 +64,11 @@ ${SNOISE}
 #define SPOTS ${SPOTS}
 uniform vec4 uSpot[SPOTS];
 ${SUN_MASKS}
-uniform float uTime, uDays, uSurf, uAct, uGain, uFlK, uGlow, uHot, uTex, uRelief, uVisc;
+uniform float uTime, uDays, uSurf, uAct, uGain, uFlK, uGlow, uHot, uTex, uRelief, uVisc, uNest, uLL;
 vec3 gNs, gVs;   // Normale und Blickrichtung für das Relief-Licht (magmaC)
 uniform vec3 uFlS;
+#define LIGHTS ${LIGHTS}
+uniform vec4 uLA[LIGHTS], uLB[LIGHTS], uQk;
 varying vec3 vN, vP, vO;
 varying vec2 vUv;
 vec2 cells2(vec3 p, float t) {
@@ -303,6 +306,35 @@ vec3 flareDisk(vec3 n, float k, float t) {
   col += vec3(2.2, 0.75, 0.12) * exp(-pow((gg - front) / 0.03, 2.0)) * 0.35 * broken * smoothstep(0.16, 0.3, k) * (1.0 - smoothstep(0.55, 0.85, k));
   return col;
 }
+// Bögen werfen Licht (Vorschau „Sonne optimieren“ 28.10.2026, Bogen:A): je Bogenbündel ein Punktlicht über dem Scheitel
+// (uLA = Fuß a + Stärke, uLB = Fuß b + Höhe), ohne Schatten, fällt mit dem Abstand ab; dazu glühen die Fußpunkte.
+// x = Licht auf der Kruste, y = Glut der Fußpunkte
+vec2 loopLight(vec3 g) {
+  vec2 L = vec2(0.0);
+  for (int i = 0; i < LIGHTS; i++) {
+    vec4 a = uLA[i], b = uLB[i];
+    if (a.w <= 0.0) continue;
+    float h = b.w;
+    vec3 d = normalize(a.xyz + b.xyz) * (1.0 + h) - g, da = g - a.xyz, db = g - b.xyz;
+    float d2 = dot(d, d), fs = 0.08 * h * h + 2e-5;
+    L.x += a.w * max(dot(g, d), 0.0) * inversesqrt(d2) * h * h / (d2 + 0.3 * h * h);
+    L.y += a.w * (exp(-dot(da, da) / fs) + exp(-dot(db, db) / fs));
+  }
+  return L * uLL;
+}
+// Sonnenbeben (Ereig:A, Kosovichev & Zharkova 1998): drei Ringwellen um den Flare-Ort uQk.xyz, uQk.w Sekunden nach dem
+// Flare; jede läuft schneller nach außen (wie die beobachteten Wellen, ≈ 10 → 100 km/s), wird breiter und schwächer –
+// helle Front, dunkles Tal dahinter
+float quake(vec3 g) {
+  float gg = acos(clamp(dot(g, uQk.xyz), -1.0, 1.0)), q = 0.0;
+  for (int i = 0; i < 3; i++) {
+    float t = uQk.w - 0.9 * float(i);
+    if (t <= 0.0) continue;
+    float x = (gg - 0.02 - 0.06 * t - 0.01 * t * t) / (0.01 + 0.006 * t);
+    q += x * exp(-x * x) * exp(-t / 3.5) * (1.0 - 0.25 * float(i));
+  }
+  return q;
+}
 void main() {
   vec3 N = normalize(vN), V = normalize(cameraPosition - vP);
   gNs = N; gVs = V;
@@ -329,6 +361,25 @@ void main() {
   float moss = 0.5 + 0.5 * (0.6 * snoise(g * 140.0 + vec3(0.0, 0.0, uTime * 0.04)) + 0.4 * snoise(g * 330.0 - vec3(0.0, uTime * 0.05, 0.0)));
   moss = mix(0.12, moss * moss * 0.9, mossF) * smoothstep(0.5, 1.4, ar) * (0.6 + 0.4 * mu);
   col += (uSurf < 0.5 ? vec3(2.4, 0.9, 0.15) : vec3(2.2, 0.6, 0.08)) * moss * 0.8 * uGlow;
+  // Aktive Regionen aus der Ferne als helle Nester (Fern:C): breiter Hof um die Flecken hellt die Kruste auf, erst ab ≈ 2 R☉
+  // Abstand (Nahansicht bleibt unverändert)
+  float far = smoothstep(1.6, 2.6, length(cameraPosition));
+  if (uNest > 0.0 && far > 0.0) {
+    float nest = 0.0;
+    for (int i = 0; i < SPOTS; i++) {
+      vec4 s = uSpot[i];
+      if (s.w == 0.0) continue;
+      vec3 d = g - s.xyz;
+      nest += exp(-dot(d, d) / 0.01);
+    }
+    nest = min(nest, 1.4) * far * uNest;
+    col = col * (1.0 + 1.6 * nest) + (uSurf < 0.5 ? vec3(2.2, 0.85, 0.16) : vec3(2.0, 0.55, 0.08)) * nest * 0.3 * uGlow;
+  }
+  if (uLL > 0.0) {
+    vec2 L = loopLight(g);
+    col = col * (1.0 + 1.5 * L.x) + vec3(1.4, 0.5, 0.09) * L.x * 0.35 + vec3(3.0, 1.5, 0.45) * min(L.y, 2.0) * 0.8;
+  }
+  if (uQk.w > 0.0) { float q = quake(g); col = col * max(1.0 + 2.2 * q, 0.0) + vec3(2.4, 1.1, 0.25) * max(q, 0.0) * 1.2; }
   if (uFlK >= 0.0) col += flareDisk(g, uFlK, uTime);
   gl_FragColor = vec4(col * uGain, 1.0);
 }
@@ -365,7 +416,7 @@ void main() {
 // · 3 feiner Saum.
 export const LOOK_ATMO_FRAG = /* glsl */ `
 ${SNOISE}
-uniform float uTime, uExt, uGain, uSurf, uRim, uE, uEK, uEB, uSpH, uCor, uEA;
+uniform float uTime, uExt, uGain, uSurf, uRim, uE, uEK, uEB, uSpH, uCor, uEA, uHaze;
 uniform vec2 uEDir, uESp;
 uniform mat3 uSunInv;
 uniform vec4 uAR[6];
@@ -450,8 +501,16 @@ void main() {
   float wd = tb > 0.0 ? smoothstep(-pb, pb, 1.0 - b) : 0.0;
   vec3 cC = uSurf < 0.5 ? vec3(2.3, 0.5, 0.05) : vec3(2.1, 0.32, 0.03), cK = uSurf < 0.5 ? vec3(1.5, 0.42, 0.07) : vec3(1.4, 0.28, 0.05);
   vec3 col = vec3(0.0);
+  // Hitzeflimmern + Dunst (Bogen:C, künstlerisch – im All flimmert keine Luft): nur in der Nahansicht; Schlieren steigen
+  // langsam auf, versetzen die Höhe der unteren Schichten um Bruchteile (der Horizont wabert) und legen warmen Dunst darüber
+  float hz = uHaze * (1.0 - smoothstep(1.35, 2.1, d));
   if (wd < 1.0) {
     float h = max(b - 1.0, 0.0);
+    if (hz > 0.0 && h < 0.25) {
+      float sh = snoise(vec3(q.x * 70.0 + q.z * 40.0, h * 260.0 - t * 1.1, q.y * 70.0 + t * 0.15));
+      h = max(h + 0.003 * hz * sh * exp(-h / 0.03), 0.0);
+      col += vec3(1.3, 0.48, 0.08) * hz * (exp(-h / 0.06) * 0.45 + exp(-h / 0.012) * 0.4) * (0.75 + 0.25 * sh) * (1.0 - wd);
+    }
     vec3 c = cK * corona(qW, q, h, t) * uCor;
     if (h < 0.06) c += cC * chromo(q, h, t, fq);
     if (uRim > 0.5 && uRim < 1.5 && h < 0.45) c += flameCol(flame(q, h, t));
@@ -464,6 +523,7 @@ void main() {
     vec3 c = mu < 0.9 ? cK * corona(P, qD, 0.0, t) * exp(-mu / 0.35) * uCor : vec3(0.0);
     if (mu < 0.3) c += cC * chromo(qD, 0.0, t, fq) * exp(-mu / 0.05);
     if (uRim > 0.5 && uRim < 1.5 && mu < 0.4) c += flameCol(flame(qD, 0.0, t)) * exp(-mu / 0.07) * 0.7;
+    if (hz > 0.0) c += vec3(1.3, 0.48, 0.08) * hz * 0.5 * exp(-mu / 0.12);
     col += wd * 0.5 * c;
   }
   if (uEK >= 0.0) {

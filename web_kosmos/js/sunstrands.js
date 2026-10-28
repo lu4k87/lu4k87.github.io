@@ -16,7 +16,7 @@
 // Tiefenschreiben; uMode 0 ruhig · 1 Filament-Eruption · 2 Flare-Arkade (Fußpunkte aus uFS, uFE1, uFE2 wie flareDisk in
 // sunlook.js) · 3 Protuberanz schnürt sich ab (uTear Art des Ablösens); uK = Fortschritt des Ausbruchs 0 … 1, uPx = Pixelgröße
 // bei Abstand 1, uDens = Anteil der ruhigen Bögen (nach Bogen-seed, Zahnrad „Dichte“), uBurst Anteil der ruhigen Bögen, die
-// je Zyklus platzen (× 38 %), uSpray Hub ihrer Plasmoide.
+// je Zyklus platzen (× 38 %), uSpray Hub ihrer Plasmoide, uRain Menge des koronalen Regens in großen ruhigen Bögen.
 
 import * as THREE from 'three';
 import { NOISE } from './glsl.js';
@@ -24,7 +24,7 @@ import { NOISE } from './glsl.js';
 export const strandUniforms = () => ({
   uTime: { value: 0 }, uPx: { value: 0.001 }, uGain: { value: 1 }, uPal: { value: 0 }, uMode: { value: 0 }, uK: { value: 0 }, uDens: { value: 1 },
   uFoot: { value: 1 }, uMove: { value: new THREE.Vector3(1, 1, 1) }, uDisk: { value: 0.35 }, uLifeR: { value: 1 }, uScale: { value: 1 }, uTear: { value: 4 },
-  uBurst: { value: 1 }, uSpray: { value: 1 }, uRip: { value: 3 }, uRipMix: { value: new THREE.Vector4(1, 1, 1, 1) },
+  uBurst: { value: 1 }, uSpray: { value: 1 }, uRip: { value: 3 }, uRipMix: { value: new THREE.Vector4(1, 1, 1, 1) }, uRain: { value: 1 },
   uFS: { value: new THREE.Vector3(0, 0, 1) }, uFE1: { value: new THREE.Vector3(1, 0, 0) }, uFE2: { value: new THREE.Vector3(0, 1, 0) },
 });
 
@@ -40,7 +40,7 @@ attribute vec4 aE, aL, aT, aS, aF;
 uniform float uTime, uPx, uMode, uK, uDens, uFoot, uLifeR, uScale, uTear, uBurst, uSpray, uRip;
 uniform vec4 uRipMix;
 uniform vec3 uMove, uFS, uFE1, uFE2;
-varying float vS, vX, vH, vI, vFlow, vSeed, vCut, vHot, vRes, vU, vCyc, vSh, vLen;
+varying float vS, vX, vH, vI, vFlow, vSeed, vCut, vHot, vRes, vU, vCyc, vSh, vLen, vLH;
 varying vec3 vW;
 const float PI = 3.14159265;
 vec3 gA, gB, gN, gE, gR;
@@ -344,7 +344,7 @@ void main() {
   // Kamera (< 0,18 R☉) blenden die Fäden aus, damit kein unscharfes Band durchs Bild zieht.
   float px = uPx * max(-pv.z, 1e-4), cw = max(w, px * 0.7);
   pv.xyz += sd * side * cw * 1.7;
-  vS = rv > 0.5 && u <= 0.0 ? sl : s; vX = side; vSeed = aT.z; vFlow = aS.w; vHot = hot; vCut = max(W, cut); vW = wp.xyz; vRes = w / px; vU = u; vCyc = cyc;
+  vS = rv > 0.5 && u <= 0.0 ? sl : s; vX = side; vSeed = aT.z; vFlow = aS.w; vHot = hot; vCut = max(W, cut); vW = wp.xyz; vRes = w / px; vU = u; vCyc = cyc; vLH = gH;
   vI = I * life * (1.0 + 3.0 * hot) * w / cw * smoothstep(0.05, 0.18, -pv.z) * (u > 0.0 && (uFoot < 0.5 || (uFoot > 1.5 && uFoot < 2.5)) ? 0.0 : 1.0);
   gl_Position = projectionMatrix * pv;
 }
@@ -359,9 +359,9 @@ void main() {
 // Flare-Schleife (weißglühend, kühlt ab); vCyc = Phase im Zyklus „Werden und Vergehen“ (am Ende regnet Plasma ab).
 export const STRAND_FRAG = /* glsl */ `
 ${NOISE}
-uniform float uTime, uGain, uPal, uMode, uK, uFoot, uDisk;
+uniform float uTime, uGain, uPal, uMode, uK, uFoot, uDisk, uRain;
 uniform vec3 uMove;
-varying float vS, vX, vH, vI, vFlow, vSeed, vCut, vHot, vRes, vU, vCyc, vSh, vLen;
+varying float vS, vX, vH, vI, vFlow, vSeed, vCut, vHot, vRes, vU, vCyc, vSh, vLen, vLH;
 varying vec3 vW;
 vec3 ramp(float x) {
   vec3 lo = uPal < 0.5 ? vec3(1.1, 0.15, 0.012) : vec3(1.1, 0.09, 0.008);
@@ -402,6 +402,16 @@ void main() {
       // leerlaufender Bogen: Material regnet die Beine hinab
       float rain = smoothstep(0.5, 0.8, gnoise(vec3(df * 20.0 + t * 0.9, vSeed * 13.0, vSeed * 5.0)));
       I = I * 0.6 + vI * prof * rain * 0.9 * base * smoothstep(0.7, 0.8, vCyc);
+    }
+    if (uRain > 0.0 && vLH > 0.03) {
+      // Koronaler Regen (Vorschau „Sonne optimieren“ 28.10.2026, Bogen:B): in großen Bögen kühlt Plasma ab und gleitet als
+      // helle Tropfen die Beine hinab – vom Scheitel (tau 0) zum Fuß (1) wie im freien Fall immer schneller, je Bein und
+      // Faden eigene Tropfen; am Fuß verlöschen sie. uRain = Menge (Anteil der Tropfen und Helligkeit)
+      float tau = sqrt(max(1.0 - 2.0 * df, 0.0)), leg = step(0.5, vS);
+      float ru = tau * 6.0 - t * 0.28 * (0.7 + 0.6 * fract(vSeed * 7.3)) + vSeed * 13.0 + leg * 0.37;
+      float on = step(1.0 - 0.4 * min(uRain, 2.0), fract(sin(floor(ru) * 12.9898 + vSeed * 78.233 + leg * 17.0) * 43758.5453));
+      float drop = exp(-pow((fract(ru) - 0.5) / 0.07, 2.0)) * on * smoothstep(0.03, 0.09, vLH) * smoothstep(0.0, 0.07, df) * smoothstep(0.05, 0.25, tau);
+      I += vI * (tube + 0.3 * exp(-xr * xr)) * drop * (1.6 + 0.6 * uRain) * base;
     }
     vec3 rd = normalize(vW - cameraPosition);
     float tb = -dot(cameraPosition, rd), b2 = dot(cameraPosition, cameraPosition) - tb * tb;
