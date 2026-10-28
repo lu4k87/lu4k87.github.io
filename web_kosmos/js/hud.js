@@ -836,18 +836,13 @@ export function createHud(h) {
     return { x0: s.left, x1: s.right, y0: s.top, y1: s.bottom };
   }
 
-  // Film vom Urknall: Hinweis-Zeile über der Bühne und „Überspringen“ im Auftakt – beide außerhalb der Bedienung, damit sie
-  // im Auftakt (Bedienung ausgeblendet) sichtbar bleiben; die Zeile sitzt mittig über der Bühne, nie unter Leiste oder Infotafel
+  // Film vom Urknall: Hinweis-Zeile über der Bühne – außerhalb der Bedienung, damit sie im Auftakt (Bedienung ausgeblendet)
+  // sichtbar bleibt; sitzt mittig über der Bühne, nie unter Leiste oder Infotafel. Kein „Überspringen“-Knopf mehr (User
+  // 27.10.2026), Esc und die Film-Tasten in main.js überspringen weiter
   const filmHint = document.createElement('p');
   filmHint.className = 'film-hint';
   filmHint.setAttribute('aria-live', 'polite');
-  const skipBtn = document.createElement('button');
-  skipBtn.type = 'button';
-  skipBtn.className = 'film-skip';
-  skipBtn.hidden = true;
-  skipBtn.innerHTML = 'Überspringen <kbd>Esc</kbd>';
-  skipBtn.addEventListener('click', (e) => { e.stopPropagation(); h.onSkip(); });
-  body.append(filmHint, skipBtn);
+  body.append(filmHint);
   // Zeile erscheint erst, wenn der Stationstitel ausgeblendet ist (nie beide übereinander), und bleibt HINT_S Sekunden
   const HINT_S = 4.5;
   let hintSince = 0, hintDone = '';
@@ -879,7 +874,6 @@ export function createHud(h) {
     setRouteTarget: (id) => route.querySelectorAll('button').forEach((b) => b.classList.toggle('is-target', b.dataset.id === id)),
     intro: (on) => body.classList.toggle('is-intro', on),
     hint: (text) => setHint(text || ''),
-    skip: (on) => { skipBtn.hidden = !on; },
     // offene Karte: main.js hält die Leerlauf-Fahrt an, damit das Bild beim Lesen ruht
     reading: () => card.classList.contains('is-open'),
     relayout: () => { markers.forEach((m) => { m.w = 0; }); dock = null; },

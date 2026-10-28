@@ -856,7 +856,6 @@ async function startOpener(lv) {
   opener.film.playing = false;
   state.opener = { o: opener, lv, skip: 0 };
   hud.intro(true);
-  hud.skip(true);
   hud.caption(null);
   state.controls.enabled = false;
 }
@@ -894,7 +893,6 @@ function endOpener() {
   }
   if (lv.opening) lv.opening(1);
   lv.target = lv.home.target.clone();
-  hud.skip(false);
   hud.hint('');
   hud.intro(false);
   hud.caption(lv.meta, true);
@@ -1197,7 +1195,6 @@ const hud = createHud({
   onFocus: (h) => startFollow(h),
   onInput: () => userInput(),
   onRelayout: () => requestAnimationFrame(resize),
-  onSkip: () => skipOpener(),
   onOffer: () => { const o = state.offer; state.offer = null; if (o) goTo(o.to); },
 });
 
