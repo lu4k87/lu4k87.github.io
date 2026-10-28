@@ -345,5 +345,6 @@ export function mountSettings(root, btn, lay = document.getElementById('btn-lay'
     if (e.key !== 'Escape' || e.defaultPrevented) return;
     if (!st.hidden) { station(false); if (lay) lay.focus(); } else if (view) { open(false); btn.focus(); }
   });
-  return { open, view: () => view };
+  // close: Stationswechsel klappt das offene Panel links ein (User 28.10.2026), der Ankunftstitel steht dann frei
+  return { open, view: () => view, close: () => { station(false); if (view) open(false); } };
 }

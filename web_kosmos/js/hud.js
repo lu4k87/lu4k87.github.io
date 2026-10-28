@@ -40,7 +40,7 @@ export function createHud(h) {
   new ResizeObserver(() => { cardW = card.offsetWidth; cardH = card.offsetHeight; moreCard(); }).observe(card);
   const cardEnv = { getLayer, setLayer, fmt: fmtVal, motion: () => settings.S.motion, reduced: matchMedia('(prefers-reduced-motion: reduce)').matches };
 
-  mountSettings($('#cfg'), $('#btn-cfg'));
+  const side = mountSettings($('#cfg'), $('#btn-cfg'));
   onSettings((keys) => {
     if (keys.includes('panel')) { body.classList.toggle('panel-off', !settings.S.panel); h.onRelayout(); }
     if (keys.includes('motion')) card.dataset.motion = settings.S.motion;
@@ -866,7 +866,7 @@ export function createHud(h) {
   function setFlight(on, st, multi) {
     body.classList.toggle('is-flying', on);
     // Abflug: Titel der alten Station blendet mit der Infotafel aus, der neue kommt kurz vor der Ankunft
-    if (on) { pull.classList.remove('is-on'); caption.classList.remove('is-on'); clearTimeout(capTimer); }
+    if (on) { pull.classList.remove('is-on'); caption.classList.remove('is-on'); clearTimeout(capTimer); side.close(); }
     if (on && st) $('#flight-to').textContent = multi ? `Kurs auf ${st.title} …` : `Flug: ${st.title}`;
   }
 
