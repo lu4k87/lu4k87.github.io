@@ -7,7 +7,7 @@
 // `?cfg` (auch `?cfg=global`) zeigt die Einstellungen, `?cfg=lay` die Ebenen.
 // Gespeichert in localStorage `kosmos.settings.v1`; clean() prüft jeden Wert, damit kaputte Einträge nichts stören.
 
-import { mountLayers, rebuildLayers, refreshLayers, devLine, devBar, markDevs, spyIn } from './layers.js';
+import { mountLayers, rebuildLayers, refreshLayers, devLine, devBar, markDevs, spyIn, paintRange } from './layers.js';
 import { nbsp } from './figs.js';
 
 const KEY = 'kosmos.settings.v1';
@@ -99,31 +99,11 @@ const RANGE = (key, label, min, max, step, unit, extra = '') => `
   <label class="b-row b-stack"><span class="b-top"><span class="cfg-label">${label}${extra}</span><span class="cfg-val"><output data-out="${key}"></output> <span class="cfg-unit">${unit}</span></span></span>
     <span class="b-track"><input type="range" data-key="${key}" min="${min}" max="${max}" step="${step}"></span></label>`;
 const NOTE = (text) => `<p class="cfg-note lay-hint">${nbsp(text)}</p>`;
-// Mini-Grafik neben der Zeile: zeigt, was die Einstellung bewirkt (schmal: ausgeblendet)
-const MINI = {
-  exposure: '<rect x="1" y="6" width="62" height="8" rx="4" fill="url(#mgE)"/><circle cx="32" cy="10" r="5" fill="none" stroke="var(--accent)" stroke-width="2"/>',
-  vig: '<rect x="1" y="1" width="62" height="18" rx="3" fill="url(#mgV)"/>',
-  bars: '<rect x="1" y="1" width="62" height="18" rx="3" fill="#34405a"/><rect x="1" y="1" width="62" height="4" fill="#05070c"/><rect x="1" y="15" width="62" height="4" fill="#05070c"/>',
-  stars: '<path d="M1 15C20 8 44 8 63 4" stroke="#7d8fb6" stroke-width="5" opacity=".45" fill="none"/>' + [[6, 5], [18, 16], [30, 4], [44, 15], [58, 11], [36, 10]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="1" fill="#fff"/>`).join(''),
-  deep: '<rect x="1" y="1" width="62" height="18" rx="3" fill="#070a12"/>' + [[8, 6], [15, 13], [24, 8], [31, 15], [40, 5], [47, 12], [56, 8], [20, 4], [52, 15]].map(([x, y], i) => `<ellipse cx="${x}" cy="${y}" rx="${1 + (i % 3) * 0.6}" ry="0.8" fill="#a9b8d8" opacity="${0.35 + (i % 3) * 0.2}"/>`).join(''),
-  small: [3, 5, 7].map((r, i) => `<circle cx="${10 + i * 20}" cy="10" r="${r * 0.9}" fill="none" stroke="#c9d4ea" stroke-width="1.4"/>`).join(''),
-  motion: '<path d="M2 10Q10 2 18 10T34 10T50 10T66 10" fill="none" stroke="var(--accent)" stroke-width="2"/>',
-  dive: '<path d="M2 18C24 18 40 2 62 2" fill="none" stroke="var(--accent)" stroke-width="2"/><circle cx="2" cy="18" r="2" fill="#c9d4ea"/><circle cx="62" cy="2" r="2" fill="#c9d4ea"/>',
-  axes: '<circle cx="32" cy="10" r="6" fill="#34405a"/><path d="M33.6 4.4L35.4 0.6" stroke="var(--accent)" stroke-width="2"/><path d="M30.4 15.6L28.6 19.4" stroke="#aab4c8" stroke-width="2"/>',
-  sunK: '<circle cx="12" cy="10" r="5" fill="#ffd27a"/><circle cx="46" cy="10" r="8" fill="#34405a"/><path d="M38 10a8 8 0 0 1 16 0z" fill="#c9d4ea" transform="rotate(-90 46 10)"/>',
-  shade: '<circle cx="32" cy="10" r="8" fill="#5a6888"/><path d="M32 2a8 8 0 0 1 0 16z" fill="#c9d4ea"/>',
-  shadow: '<circle cx="32" cy="10" r="8" fill="#c9d4ea"/><circle cx="29" cy="8" r="2.4" fill="#05070c"/>',
-  soft: '<circle cx="32" cy="10" r="8" fill="url(#mgT)"/>',
-  spec: '<circle cx="32" cy="10" r="8" fill="#2c5b8f"/><ellipse cx="35" cy="7" rx="2.6" ry="1.6" fill="#fff"/>',
-  gloss: '<circle cx="32" cy="10" r="8" fill="#8a94a8"/><circle cx="35" cy="7" r="3.2" fill="#fff" opacity=".55"/>',
-  fpsCap: [0, 1, 2, 3, 4, 5, 6, 7].map((i) => `<rect x="${3 + i * 7.5}" y="${i % 2 ? 6 : 3}" width="5" height="${i % 2 ? 11 : 14}" rx="1" fill="#c9d4ea" opacity="${i < 6 ? 0.85 : 0.3}"/>`).join(''),
-};
-const MINI_DEFS = '<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><linearGradient id="mgE"><stop offset="0" stop-color="#05070c"/><stop offset="1" stop-color="#f4f7ff"/></linearGradient><radialGradient id="mgV"><stop offset=".45" stop-color="#7a8cab"/><stop offset="1" stop-color="#05070c"/></radialGradient><linearGradient id="mgT"><stop offset=".25" stop-color="#c9d4ea"/><stop offset=".75" stop-color="#1a2030"/></linearGradient></defs></svg>';
-// Zeile = Bedienung (+ Mini-Grafik daneben) + Hinweis darunter + ↺ „Standard“ am Zeilenende (nur bei geändertem Wert)
+// Zeile = Bedienung + Hinweis darunter + ↺ „Standard“ am Zeilenende (nur bei geändertem Wert)
 const ROW = (key, html) => {
   const i = html.indexOf('<p class="cfg-note'), [ctl, note] = i < 0 ? [html, ''] : [html.slice(0, i), html.slice(i)];
   const label = (ctl.match(/class="cfg-label"[^>]*>([^<]+)/) || [])[1] || '';
-  return `<div class="b-item">${MINI[key] ? `<div class="b-line">${ctl}<svg class="b-mini" viewBox="0 0 64 20" aria-hidden="true">${MINI[key]}</svg></div>` : ctl}${note}${key ? devLine(key, label) : ''}</div>`;
+  return `<div class="b-item">${ctl}${note}${key ? devLine(key, label) : ''}</div>`;
 };
 // Farblook als Bild-Kacheln: Farben aus Tönung, Belichtung und Vignette des jeweiligen Looks; „Station“ = vier Looks im Kreis
 const rgb = (b, t, e) => `rgb(${b.map((x, i) => Math.min(255, Math.round(x * t[i] * e))).join(',')})`;
@@ -196,7 +176,7 @@ export function mountSettings(root, btn, lay = document.getElementById('btn-lay'
   root.innerHTML = `
     <div class="cfg-view" id="cfg-v-gl">
       ${JUMP}
-      <div class="cfg-pane" id="cfg-global">${MINI_DEFS}
+      <div class="cfg-pane" id="cfg-global">
         <div class="b-main"><div class="b-list">${GROUPS.map(CARD).join('')}</div></div>
       </div>
       <div class="cfg-foot"><span class="cfg-scope">gilt an allen Stationen · ${N_GLOBAL} Einstellungen</span>${devBar()}</div>
@@ -225,6 +205,7 @@ export function mountSettings(root, btn, lay = document.getElementById('btn-lay'
     root.querySelectorAll('input[type=range][data-key]').forEach((i) => {
       i.value = S[i.dataset.key];
       root.querySelector(`[data-out="${i.dataset.key}"]`).textContent = String(S[i.dataset.key].toFixed(i.step < 0.1 ? 2 : 1)).replace('.', ',');
+      paintRange(i, DEFAULTS[i.dataset.key]);
     });
     markDevs(root.querySelector('#cfg-v-gl'), (k) => S[k] !== DEFAULTS[k]);
   };

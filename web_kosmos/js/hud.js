@@ -6,7 +6,7 @@
 import { STATIONS, ROUTE, SOURCES, routeIndex } from './content.js';
 import { fmtLength, fmtTime, C } from './astro.js';
 import { settings, setSetting, mountSettings, onSettings } from './settings.js';
-import { getLayer, setLayer, fmtVal } from './layers.js';
+import { getLayer, setLayer, fmtVal, paintRange } from './layers.js';
 import { cardHtml, mountCard, unmountCard } from './cards.js';
 import { prose, nbsp } from './figs.js';
 import { renderScaleCompare } from './scale_compare.js';
@@ -542,6 +542,7 @@ export function createHud(h) {
       h.onInput();
     }));
     panel.querySelectorAll('[data-act]').forEach((b) => b.addEventListener('click', () => { ctrls.find((x) => x.id === b.dataset.act).run(); h.onInput(); }));
+    panel.querySelectorAll('input[type=range]').forEach((i) => paintRange(i));
   }
   // Regler mit get() (z. B. Zeitraffer, auch im Zahnrad stellbar) folgen ihrem Zustand, außer während der Bedienung
   function syncCtrls() {
@@ -551,9 +552,12 @@ export function createHud(h) {
       if (v === c.value || !i || document.activeElement === i) continue;
       c.value = v;
       i.value = v;
+      paintRange(i);
       panel.querySelector(`[data-rout="${c.id}"]`).textContent = c.fmt ? c.fmt(v) : String(v);
     }
   }
+  // Füllung jedes Reglers folgt der Bedienung (Infotafel, Info-Karte; Fenster malen in ihrem sync)
+  addEventListener('input', (e) => { if (e.target.type === 'range') paintRange(e.target); }, true);
 
   // ---------- Abzeichen ----------
   // Größe eines Abzeichens neu messen, sobald sie sich ändert (z. B. Webschrift nachgeladen) – sonst passt die Box nicht
@@ -606,6 +610,7 @@ export function createHud(h) {
     while (head.nextSibling) head.nextSibling.remove();
     head.insertAdjacentHTML('afterend', cardHtml(lv.id, id, t, cardEnv));
     mountCard(card, lv.id, id, cardEnv);
+    card.querySelectorAll('input[type=range]').forEach((i) => paintRange(i));
     cardW = card.offsetWidth; cardH = card.offsetHeight;
     dock = null; settle = null;
     // unsichtbar öffnen, im nächsten Bild am Abzeichen einblenden (update → placeCard)

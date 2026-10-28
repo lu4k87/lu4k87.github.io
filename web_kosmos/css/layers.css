@@ -22,21 +22,18 @@
 .b-ico { width: 18px; height: 18px; flex: none; }
 .b-plaque { display: grid; place-items: center; width: 30px; height: 30px; flex: none; border-radius: 8px; border: 1px solid rgba(var(--accent-rgb), 0.35); background: rgba(var(--accent-rgb), 0.14); color: var(--accent); }
 .b-card--hero { border-color: rgba(var(--accent-rgb), 0.35); background: linear-gradient(160deg, rgba(var(--accent-rgb), 0.1), rgba(255, 255, 255, 0.03) 55%); }
-.b-line { display: grid; grid-template-columns: minmax(0, 1fr) 64px; gap: 12px; align-items: end; }
-.b-mini { width: 64px; height: 20px; }
-.b-card:not(.b-wide) .b-line { grid-template-columns: minmax(0, 1fr); }
-.b-card:not(.b-wide) .b-mini { display: none; }
-.b-looks { display: grid; grid-template-columns: repeat(auto-fit, minmax(76px, 1fr)); gap: 6px; }
-.b-looks button { display: flex; flex-direction: column; gap: 4px; padding: 4px 4px 5px; border-radius: 8px; border: 1px solid var(--line); background: var(--glass-tile); box-shadow: var(--glass-tile-edge); color: var(--ink); font: 500 13px var(--font); text-align: left; cursor: pointer; transition: border-color 0.2s, background 0.2s; }
+/* Farblook als Liste 3 × 2 (Regler:C): Farbpunkt + Name, gewählt cyan umrandet */
+.b-looks { display: grid; grid-template-columns: repeat(auto-fit, minmax(96px, 1fr)); gap: 6px; }
+.b-looks button { display: flex; align-items: center; gap: 8px; min-width: 0; height: 34px; padding: 0 8px; border-radius: 5px; border: 1px solid var(--line); background: none; color: var(--ink); font: 400 12.5px var(--font); text-align: left; white-space: nowrap; cursor: pointer; transition: border-color 0.2s, background 0.2s; }
 .b-looks button:hover { border-color: var(--line-strong); }
-.b-looks button[aria-checked="true"] { border-color: var(--accent); background: rgba(var(--accent-rgb), 0.1); box-shadow: inset 0 0 0 1px var(--accent); }
-.b-sw { display: block; height: 30px; border-radius: 5px; }
+.b-looks button[aria-checked="true"] { border-color: var(--accent); background: rgba(var(--accent-rgb), 0.1); color: var(--accent); font-weight: 600; }
+.b-sw { display: block; width: 18px; height: 18px; flex: none; border-radius: 50%; box-shadow: none !important; }
 .b-dev { display: none; }
 .b-item.is-dev > .b-dev { display: block; }
-.b-reset { display: inline-flex; align-items: center; gap: 6px; margin-left: auto; min-height: 28px; padding: 3px 9px; border-radius: 7px; border: 1px solid var(--line-strong); background: rgba(255, 255, 255, 0.04); color: var(--ink); font: 500 12.5px var(--font); cursor: pointer; transition: border-color 0.2s, color 0.2s; }
+.b-reset { display: inline-flex; align-items: center; gap: 8px; margin-left: auto; min-height: 34px; padding: 0 12px; border-radius: 5px; border: 1px solid var(--line-strong); background: none; color: var(--ink); font: 500 13px var(--font); white-space: nowrap; cursor: pointer; transition: border-color 0.2s, color 0.2s; }
 .b-reset:hover { border-color: var(--accent); color: var(--accent); }
 .b-reset .b-ico { width: 14px; height: 14px; }
-.b-devbar { border-color: rgba(var(--accent-rgb), 0.45); background: rgba(var(--accent-rgb), 0.08); white-space: nowrap; }
+.b-devbar { flex: none; }
 .b-devbar[hidden] { display: none; }
 .b-devbar [data-devn] { font-family: var(--mono); }
 .b-subs > .b-item + .b-item { padding-top: 0; border-top: 0; }
@@ -57,16 +54,15 @@
 .cfg-val, .lay output { font: 500 13px var(--mono); text-align: right; white-space: nowrap; }
 .cfg-val output { font: inherit; }
 .b-track { position: relative; display: block; }
-.b-track input[type=range] { display: block; width: 100%; margin: 0; accent-color: var(--accent); }
-.b-track[style*="--n"] { padding-bottom: 6px; }
-.b-track[style*="--n"]::after { content: ""; position: absolute; left: 8px; right: 8px; bottom: 0; height: 4px; pointer-events: none;
-  background: repeating-linear-gradient(90deg, var(--line-strong) 0 1px, transparent 1px calc((100% - 1px) / var(--n))); }
+.b-track input[type=range] { display: block; width: 100%; }
 .b-seg { display: flex; width: 100%; }
 .b-seg button { flex: 1 1 auto; padding: 6px 8px; }
 .lay-hint { margin: -2px 0 0; font-size: 12.5px; }
 .b-subs { display: flex; flex-direction: column; gap: 8px; margin-left: 4px; padding-left: 12px; border-left: 1px solid var(--line-strong); transition: opacity 0.2s; }
-.b-subs.is-off { opacity: 0.45; }
-.b-item.is-idle > .lay { opacity: 0.45; }   /* Ebene wirkt im aktuellen Kanal nicht (layers.js active/only), bleibt bedienbar */
+/* Ebene ohne Wirkung (Hauptschalter aus bzw. anderer Kanal, layers.js active/only): normale Schrift mit Schloss, nie grau;
+   der Grund steht darunter, die Zeile bleibt bedienbar */
+:is(.b-subs.is-off, .b-item.is-idle > .lay) .cfg-label::after { content: ""; display: inline-block; width: 13px; height: 13px; margin-left: 6px; vertical-align: -2px; background: currentColor;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.8' stroke-linecap='round'%3E%3Crect x='5' y='11' width='14' height='9' rx='2'/%3E%3Cpath d='M8 11V8a4 4 0 0 1 8 0v3'/%3E%3C/svg%3E") center / contain no-repeat; mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.8' stroke-linecap='round'%3E%3Crect x='5' y='11' width='14' height='9' rx='2'/%3E%3Cpath d='M8 11V8a4 4 0 0 1 8 0v3'/%3E%3C/svg%3E") center / contain no-repeat; }
 /* Animation: großer ▶/⏸, Stand, Tempo groß; Stufen als Skala unter dem Regler */
 .b-card--time { border-color: rgba(var(--accent-rgb), 0.35); background: linear-gradient(160deg, rgba(var(--accent-rgb), 0.12), rgba(var(--accent-rgb), 0.03) 60%); }
 .b-time { display: grid; grid-template-columns: auto minmax(0, max-content) minmax(100px, 1fr) auto; align-items: center; gap: 12px; }
@@ -83,14 +79,14 @@
   .bento { grid-template-columns: minmax(0, 1fr); }
   .b-steps { display: none; }
 }
-.play-btn { width: 34px; height: 34px; flex: none; display: inline-grid; place-items: center; border-radius: 50%; border: 1px solid var(--line-strong); background: var(--glass-sheen), var(--glass-btn); box-shadow: var(--glass-btn-edge); color: var(--ink); cursor: pointer; transition: border-color 0.2s, background 0.2s, color 0.2s; }
+.play-btn { width: 34px; height: 34px; flex: none; display: inline-grid; place-items: center; border-radius: 5px; border: 1px solid var(--line-strong); background: none; color: var(--accent); cursor: pointer; transition: border-color 0.2s, background 0.2s, color 0.2s; }
 .play-btn svg { width: 18px; height: 18px; }
 .play-btn:hover { border-color: var(--accent); color: var(--accent); }
-.play-btn[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.play-btn[aria-pressed="true"] { background: rgba(var(--accent-rgb), 0.16); border-color: var(--accent); color: var(--accent); }
 .play-btn:focus-visible, .act-btn:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
 .play-btn--lg { width: 40px; height: 40px; }
 .play-btn--lg svg { width: 20px; height: 20px; }
-.act-btn { padding: 6px 12px; min-height: 32px; border-radius: 8px; border: 1px solid var(--line-strong); background: var(--glass-sheen), var(--glass-btn); box-shadow: var(--glass-btn-edge); color: var(--ink); font: 500 13px var(--font); cursor: pointer; transition: border-color 0.2s, color 0.2s; }
+.act-btn { padding: 6px 12px; min-height: 34px; border-radius: 5px; border: 1px solid var(--line-strong); background: none; color: var(--ink); font: 500 13px var(--font); cursor: pointer; transition: border-color 0.2s, color 0.2s; }
 .act-btn:hover { border-color: var(--accent); color: var(--accent); }
 
 /* Zeitleiste: ▶/⏸, Ebene + Stand, Tempo-Regler; mittig über der Fußleiste, ersetzt dort den Hinweistext */
@@ -154,7 +150,8 @@ body.is-flying .tl, body.is-intro .tl { opacity: 0; pointer-events: none; }
 .cfg-pane .b-item > .b-dev { grid-column: 2; grid-row: 1; margin-top: calc((var(--row) - var(--rst)) / 2); }
 .cfg-pane .b-subh { margin: 10px 0 0; font: 600 14px var(--font); letter-spacing: 0.02em; }
 .cfg-pane .b-item + .b-item { padding-top: 5px; margin-top: 5px; }
-.b-reset--ico { justify-content: center; width: var(--rst); min-height: var(--rst); margin: 0; padding: 0; border-color: rgba(var(--accent-rgb), 0.45); color: var(--accent); }
+.b-reset--ico { justify-content: center; width: var(--rst); min-height: var(--rst); margin: 0; padding: 0; border: 0; border-radius: 4px; color: var(--accent); }
+.b-reset--ico:hover { background: rgba(var(--accent-rgb), 0.12); }
 .b-reset--ico .b-ico { width: 15px; height: 15px; }
 /* Unter-Ebenen eingerückt mit Linie (.b-subs); ihr ↺ steht in derselben Spalte wie das der Hauptzeile */
 .cfg-pane .b-item > .b-subs { margin-right: calc(-1 * (var(--rst) + 6px)); }
@@ -165,17 +162,4 @@ body.is-flying .tl, body.is-intro .tl { opacity: 0; pointer-events: none; }
 .cfg-pane .b-body .b-seg button { padding: 3px 6px; min-height: 28px; font-size: 12.5px; }
 /* Farblook: Kacheln 3 × 2 unter dem Namen */
 .cfg-pane .b-looks { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-/* Reiter Global: Mini-Grafik in der Kopfzeile vor Wert bzw. Schalter, in eigener Spalte – Werte und Schalter bleiben rechts bündig */
-.cfg-pane .b-fold .b-line { grid-template-columns: minmax(0, 1fr) 64px 56px; grid-template-rows: minmax(var(--row), auto); gap: 2px 12px; align-items: center; }
-.cfg-pane .b-fold .b-line :is(.b-row, .b-top) { display: contents; }
-.cfg-pane .b-fold .b-line .cfg-label { grid-area: 1 / 1; }
-.cfg-pane .b-fold .b-line .b-mini { display: block; grid-area: 1 / 2; }
-.cfg-pane .b-fold .b-line :is(.cfg-val, .switch) { grid-area: 1 / 3; justify-self: end; }
-.cfg-pane .b-fold .b-line :is(.b-track, .b-seg) { grid-area: 2 / 1 / auto / -1; }
-/* Handy: Reiter mit Geltung unter dem Namen ohne Zahl, Sprungleiste zweispaltig, ohne Kurzwerte und Mini-Grafiken */
-@container cfg (max-width: 420px) {
-  .cfg-pane .b-fold .b-line { grid-template-columns: minmax(0, 1fr) auto; }
-  .cfg-pane .b-fold .b-line .b-mini { display: none; }
-  .cfg-pane .b-fold .b-line :is(.cfg-val, .switch) { grid-area: 1 / 2; }
-}
 @media (prefers-reduced-motion: reduce) { .lay-tab-dot { transition: none; } }

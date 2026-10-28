@@ -44,6 +44,12 @@ export const icon = (k, cls = 'b-ico') => `<svg class="${cls}" viewBox="0 0 24 2
 // Geänderte Werte (Vorschau Global:C, verdichtet 26.10.2026): ↺-Knopf am Zeilenende in fester Spalte statt eigener Zeile
 // „geändert · Standard“; „n geändert · Alle zurücksetzen“ als kompakter Knopf rechts in der Sprungleiste
 export const devLine = (k, label = '') => `<div class="b-dev" data-dev-of="${k}"><button type="button" class="b-reset b-reset--ico" data-reset="${k}" title="Auf Standard zurücksetzen" aria-label="${label ? `${esc(label)}: ` : ''}auf Standard zurücksetzen">${icon('reset')}</button></div>`;
+// Regler (Regler:C): Füllung bis zum Wert (--p) und Strich am Standardwert (--d, 0…1) für die Skala in kosmos.css
+export const paintRange = (i, def) => {
+  const lo = +i.min, k = +i.max > lo ? 1 / (+i.max - lo) : 0;
+  i.style.setProperty('--p', ((+i.value - lo) * k).toFixed(4));
+  if (def !== undefined) i.style.setProperty('--d', ((def - lo) * k).toFixed(4));
+};
 export const devBar = () => `<button type="button" class="b-reset b-devbar" data-reset="*" hidden>${icon('reset')}<span><span data-devn></span> geändert · Alle zurücksetzen</span></button>`;
 export function markDevs(root, isDev) {
   let n = 0;
@@ -235,7 +241,7 @@ function sync() {
       const l = find(i.dataset.lay);
       if (!l) return;
       if (i.type === 'checkbox') i.checked = !!l.value;
-      else { const v = l.type === 'play' && l.get ? l.get().value : l.value; if (document.activeElement !== i) i.value = v; const o = root.querySelector(`[data-lout="${l.id}"]`); if (o) o.textContent = nbsp(fmtVal(l, +i.value)); }
+      else { const v = l.type === 'play' && l.get ? l.get().value : l.value; if (document.activeElement !== i) i.value = v; const o = root.querySelector(`[data-lout="${l.id}"]`); if (o) o.textContent = nbsp(fmtVal(l, +i.value)); paintRange(i, l.type === 'play' ? undefined : l.def); }
     });
     root.querySelectorAll('[data-play]').forEach((b) => {
       const l = find(b.dataset.play);
