@@ -531,11 +531,10 @@ body:is(.st-open, .cfg-open) .stage > .hint { left: calc(50% + (var(--st-w) + 16
 }
 .hc-notes { display: flex; flex-wrap: wrap; gap: 2px 14px; padding-top: 8px; border-top: 1px solid var(--line); font-size: 12.5px; color: var(--ink-soft); }
 .hc-notes .fn { margin: 0 4px 0 0; }
-/* Schalter „Bewegung“ über jeder Grafik (Vorschau 26.10.2026 Schalt:A): Bahn-Icon + Wort + kleiner Switch, gilt für alle Karten */
-.hc-mt-row { display: flex; justify-content: flex-end; margin: -2px 4px 2px; }
-.hc-mt { display: inline-flex; align-items: center; gap: 7px; min-height: 28px; font: 500 12px var(--mono); color: var(--ink-soft); }
-.hc-mi { width: 15px; height: 15px; flex: none; transition: color 0.2s; }
-.hc-mt:has(input:checked) .hc-mi { color: var(--accent); }
+/* Szenenbild als Kopfkachel (Vorschau 28.10.2026 „Szenenbild in Info-Karten“ Bild:B): Ausschnitt der Station, 16:10 wie die Aufnahme */
+.hc-shot { position: relative; flex: none; margin: 0; aspect-ratio: 16 / 10; border-radius: 8px; overflow: hidden; border: 1px solid var(--line); box-shadow: var(--glass-tile-edge); background: #000; }
+.hc-shot img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.hc-shot figcaption { position: absolute; left: 8px; bottom: 8px; padding: 3px 8px; border-radius: 4px; font: 500 12px var(--mono); color: var(--ink); background: rgba(5, 8, 14, 0.72); }
 
 /* Grafik-Elemente: Raster, Marken, Kurven; Datenfarben = Lichtfarben (Polarlicht 557,7 nm grün, Jupiter-UV als Falschfarbe) */
 .hc-grid { fill: none; stroke: rgba(255, 255, 255, 0.18); stroke-width: 0.8; }
@@ -638,7 +637,7 @@ body:is(.st-open, .cfg-open) .stage > .hint { left: calc(50% + (var(--st-w) + 16
 @keyframes hfWave { 0%, 14%, 100% { stroke: rgba(255, 255, 255, 0.35); } 6% { stroke: rgba(var(--accent-rgb), 0.95); } }
 .hf-shimmer { fill: #fff; opacity: 0.32; animation: hfShim 6s cubic-bezier(0.45, 0, 0.55, 1) 1.4s infinite; }
 @keyframes hfShim { 0% { transform: translateX(0); } 45%, 100% { transform: translateX(var(--w)); } }
-/* Zahnrad „Ruhig“ = nur Einzeichnen und Atmen; Zahnrad „Aus“ = Karte still, die Grafik folgt ihrem Schalter (data-fm aus mountCard) */
+/* Zahnrad „Ruhig“ = nur Einzeichnen und Atmen; Zahnrad „Aus“ = Karte still, die Grafik folgt „Bewegung der Info-Grafiken“ (data-fm aus mountCard) */
 .hs-card[data-motion="calm"] :is(.hc-drift, .hc-drift-rev, .hc-spin, .hc-ping, .hc-sun, .hf-kepler) { animation: none !important; }
 .hs-card[data-motion="calm"] .hf--grooves .hf-groove { animation-name: hcDraw !important; }
 .hs-card[data-motion="off"] :not(.hc-graph, .hc-graph *), .hs-card[data-fm="off"] .hc-graph * { animation: none !important; }

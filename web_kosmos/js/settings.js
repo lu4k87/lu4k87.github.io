@@ -93,7 +93,7 @@ export function setSetting(key, value) {
   listeners.forEach((fn) => fn([key]));
 }
 
-// Bewegung der Info-Grafiken: gleicher Speicher wie der Schalter „Bewegung“ in jeder Info-Karte (cards.js); ohne gemerkten Wert
+// Bewegung der Info-Grafiken: gleicher Speicher wie cards.js figMotion (der Schalter in jeder Karte ist seit 28.10.2026 weg); ohne gemerkten Wert
 // folgt sie „Bewegung“ und dem System
 const FM_KEY = 'kosmos.figmotion.v1';
 const reducedSys = () => matchMedia('(prefers-reduced-motion: reduce)').matches;

@@ -1,13 +1,14 @@
 // Info-Karte am Abzeichen (Vorschau 26.10.2026: Lage:A, Aufbau:A): große Grafik mit dauerhafter, ruhiger Bewegung
 // (Glow-Atmen, Lichtschleier, Bahnpunkte im Takt der echten Umlaufzeiten), drei Kennzahl-Kacheln mit Fußnote je Quelle,
 // Regler der zugehörigen Ebene, Erklärtext aus content.js unter „Mehr dazu“. Abzeichen ohne Eintrag in CARDS zeigen
-// Text + Fußnote. Über jeder Grafik der Schalter „Bewegung“ (Vorschau 26.10.2026 Schalt:A), gilt für alle Karten.
+// Text + Fußnote. Über allem das Szenenbild der Station (tools/card_shots.py), Bewegung der Grafiken nur noch im Zahnrad.
 // Grafiken sind Schemata mit echten Zahlen; Modelle stehen in der Bildunterschrift. Beim Import keine
 // DOM-Globals (Test tests/cards.test.js) – Ebenen, Format und Bewegung reicht hud.js als env herein.
 
 import { SOURCES } from './content.js';
 import { PLANETS, planetPosition, moonPosition, julianDate, mulberry32 } from './astro.js';
 import { FIGS, figSvg, esc, nbsp, prose, de, f1 } from './figs.js';
+import { SHOTS } from './cardshots.js';
 
 const RAD = Math.PI / 180;
 // Punkt auf dem Kreis, Winkel in Grad mathematisch (0 = rechts, gegen den Uhrzeiger), SVG-y zeigt nach unten
@@ -331,28 +332,29 @@ function ctlHtml(l, env) {
   return '';
 }
 
-// Schalter „Bewegung“ über jeder Grafik (Bahn-Icon + Wort + kleiner Switch); Zustand setzt mountCard
-const MT = '<div class="hc-mt-row"><label class="hc-mt cfg-toggle"><svg class="hc-mi" viewBox="0 0 16 16" aria-hidden="true">'
-  + '<ellipse cx="8" cy="8.6" rx="6.6" ry="3.1" transform="rotate(-22 8 8.6)" fill="none" stroke="currentColor" stroke-width="1.3"/>'
-  + '<circle cx="12.9" cy="5.6" r="1.7" fill="currentColor"/></svg><span>Bewegung</span>'
-  + '<input type="checkbox" role="switch" data-fm aria-label="Bewegung der Grafik"><span class="switch" aria-hidden="true"></span></label></div>';
-// Bewegung der Grafiken: der gemerkte Schalter gewinnt (Vorschau F1), ohne gemerkten Wert aus bei Zahnrad „Aus“
-// oder System „Bewegung reduzieren“
+// Bewegung der Grafiken: der gemerkte Wert aus dem Zahnrad gewinnt (settings.js, „Bewegung der Info-Grafiken“), ohne gemerkten
+// Wert aus bei Zahnrad „Aus“ oder System „Bewegung reduzieren“; der Schalter in jeder Karte ist weg (Vorschau 28.10.2026)
 const FM_KEY = 'kosmos.figmotion.v1';
 const storedMotion = () => { try { return localStorage.getItem(FM_KEY); } catch { return null; } };
 export const figMotion = (env, stored = storedMotion()) => (stored ? stored === 'on' : !(env.reduced || env.motion() === 'off'));
 
 // HTML unter dem Kopf der Karte; t = Hotspot-Text { t, x, s } aus content.js oder der Station
+// Szenenbild als Kopfkachel (Vorschau 28.10.2026 „Szenenbild in Info-Karten“ Bild:B, ohne Ring): Ausschnitt der Station um das
+// Abzeichen, aufgenommen von tools/card_shots.py; Liste der vorhandenen Bilder in cardshots.js
+const shotHtml = (key, t) => (SHOTS.has(key) ? `<figure class="hc-shot hc-in" style="--i:0"><img src="img/cards/${key}.webp" alt="${esc(`Blick in der Szene: ${t.t}`)}"`
+  + ' width="640" height="400" decoding="async"><figcaption>Blick in der Szene</figcaption></figure>' : '');
+
 export function cardHtml(sid, hid, t, env) {
   const c = CARDS[`${sid}.${hid}`], notes = [];
+  const shot = shotHtml(`${sid}.${hid}`, t);
   const fn = (s) => { if (!s) return ''; if (!notes.includes(s)) notes.push(s); return `<sup class="fn">${notes.indexOf(s) + 1}</sup>`; };
   if (!c) {   // ohne Bento-Karte: feste Infografik (figs.js) über dem Text, sonst nur Text
     const g = FIGS[`${sid}.${hid}`];
-    const fig = g ? `<figure class="hc-graph">${MT}${figSvg(g)}<figcaption class="hc-cap">${prose(g.cap)}${[].concat(g.s).map(fn).join('')}</figcaption></figure>` : '';
-    return `${fig}<p class="hs-card-text">${prose(t.x)}${fn(t.s)}</p>${notesHtml(notes)}`;
+    const fig = g ? `<figure class="hc-graph">${figSvg(g)}<figcaption class="hc-cap">${prose(g.cap)}${[].concat(g.s).map(fn).join('')}</figcaption></figure>` : '';
+    return `${shot}${fig}<p class="hs-card-text">${prose(t.x)}${fn(t.s)}</p>${notesHtml(notes)}`;
   }
   const g = GRAPHS[c.g], l = c.c ? env.getLayer(sid, c.c) : null, v = l ? l.value : undefined;
-  const fig = `<figure class="hc-graph hc-in" style="--i:0">${MT}${g.svg(v, c)}<figcaption class="hc-cap"><span class="hc-cap-t">${prose(g.cap(v, c))}</span>${fn(g.s || g.m)}</figcaption></figure>`;
+  const fig = `${shot}<figure class="hc-graph hc-in" style="--i:0">${g.svg(v, c)}<figcaption class="hc-cap"><span class="hc-cap-t">${prose(g.cap(v, c))}</span>${fn(g.s || g.m)}</figcaption></figure>`;
   const tiles = `<div class="hc-tiles">${c.f.map((f, i) => `<div class="hc-tile hc-in" style="--i:${i + 1}"><b${(f.v + f.u).length > 7 ? ' class="is-long"' : ''}>`
     + `<span class="hc-num" data-v="${esc(f.v)}">${esc(f.v)}</span>${f.u ? `<i>${esc(f.u)}</i>` : ''}${fn(f.s)}</b><span>${prose(f.l)}</span></div>`).join('')}</div>`;
   const ctl = l ? ctlHtml(l, env) : '';
@@ -381,12 +383,7 @@ export function mountCard(el, sid, hid, env) {
   unmountCard();
   el.dataset.motion = env.motion();
   if (env.motion() !== 'off' && !env.reduced) countUp(el);
-  const fm = el.querySelector('input[data-fm]');
-  if (fm) {
-    const set = (on) => { el.dataset.fm = on ? 'on' : 'off'; fm.checked = on; };
-    set(figMotion(env));
-    fm.addEventListener('change', () => { set(fm.checked); try { localStorage.setItem(FM_KEY, fm.checked ? 'on' : 'off'); } catch { /* privates Fenster */ } });
-  }
+  el.dataset.fm = figMotion(env) ? 'on' : 'off';
   const c = CARDS[`${sid}.${hid}`], inp = el.querySelector('[data-hc]');
   if (!c || !inp) return;
   const g = GRAPHS[c.g], out = el.querySelector('[data-hco]'), cap = el.querySelector('.hc-cap-t');

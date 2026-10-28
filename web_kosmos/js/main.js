@@ -124,6 +124,8 @@ const tour = params.has('tour') ? { dwell: Math.max(4, +params.get('dwell') || 1
 const fps = params.has('fps') ? { n: 0, sum: 0 } : null;
 // ?camlog: jede gezeigte Kamera je Bild aufzeichnen (tests/camera.py sucht darin Rucke)
 const camlog = params.has('camlog') ? (window.__camlog = []) : null;
+// ?capture: Zustand für tools/card_shots.py (Bild je Info-Karte aus der Szene)
+const capture = params.has('capture');
 
 const canvas = document.getElementById('stage');
 let renderer;
@@ -160,6 +162,7 @@ const state = {
   time: 0, intro: null, follow: null, poses: new Map(), cine: { idle: 0, w: 0, base: null }, offer: null, caption: 0,
   dragging: false,
 };
+if (capture) window.__kosmos = { state, THREE };
 const now = new Date(params.get('date') || Date.now());
 
 // ---------- Qualität: Pixelverhältnis, Detailgrad; Auto schätzt die Startstufe und misst laufend die Bildzeit (perf.js) ----------
