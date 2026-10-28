@@ -462,7 +462,7 @@ function flyPose(cam, a, b, e, tk = e, pivot = null, bend = null, swing = null, 
   const dir = _d0.clone().applyQuaternion(new THREE.Quaternion().slerp(_q, e));
   cam.position.copy(pivot ? c0 : target).addScaledVector(dir, Math.exp(l0 + (l1 - l0) * e));
   if (arc) { const c = pivot || target; cam.position.sub(c).applyAxisAngle(arc.axis, arc.angle(e)).add(c); }
-  if (swing) cam.position.sub(swing.T).applyAxisAngle(swing.axis, swing.angle(e)).add(swing.T);
+  if (swing) cam.position.sub(swing.T).applyAxisAngle(swing.axis, swing.angle(e, swing.w, cam.position)).add(swing.T);
   if (bend) bend(cam.position, e);
   if (pivot) {
     // Blick gleichmäßig im Winkel drehen statt das Blickziel linear zu schieben: liegt der Anker seitlich oder hinter
@@ -472,11 +472,33 @@ function flyPose(cam, a, b, e, tk = e, pivot = null, bend = null, swing = null, 
     if (a.look) _d0.copy(a.look);
     else _d0.copy(a.target).sub(cam.position).normalize();
     _d1.copy(b.target).sub(cam.position).normalize();
-    _q.setFromUnitVectors(_d0, _d1);
-    target.copy(cam.position).add(_d0.applyQuaternion(new THREE.Quaternion().slerp(_q, tk)));
+    if (a.look || !up || !yawLook(_d0, _d1, up(tk), tk, a)) {
+      _q.setFromUnitVectors(_d0, _d1);
+      _d0.applyQuaternion(new THREE.Quaternion().slerp(_q, tk));
+    }
+    target.copy(cam.position).add(_d0);
   }
   aim(cam, target, up && up(tk));
   return target;
+}
+// Blickwende hinaus (Anker hinten, Ziel vorn, z. B. Mond → Erde ~170°): als Gieren um die Hochachse U und Nicken, statt
+// Slerp auf kürzestem Weg – nahe 180° ist dessen Drehebene unbestimmt, fährt die Kamera dicht an der Linie Anker–Ziel
+// entlang, kippt sie und der Blick reißt herum (7,8 rad/s, Rollen 48 rad/s). Drehsinn einmal je Etappe (a.yaw), danach
+// stetig über ±180° hinweg; d0 = Richtung zum Anker, wird zur Blickrichtung. false = Blick zu nah an U (dann Slerp)
+const _yx = new THREE.Vector3(), _yy = new THREE.Vector3(), _yh = new THREE.Vector3();
+function yawLook(d0, d1, U, tk, a) {
+  const e0 = d0.dot(U), e1 = d1.dot(U);
+  _yx.copy(d0).addScaledVector(U, -e0);
+  _yh.copy(d1).addScaledVector(U, -e1);
+  if (_yx.lengthSq() < 1e-4 || _yh.lengthSq() < 1e-4) return false;
+  _yx.normalize();
+  _yy.crossVectors(U, _yx);
+  let az = Math.atan2(_yh.dot(_yy), _yh.dot(_yx));
+  if (a.yaw === undefined) a.yaw = Math.sign(az) || 1;
+  if (az * a.yaw < 0) az += 2 * Math.PI * a.yaw;
+  const el = Math.asin(THREE.MathUtils.clamp(e0 + (e1 - e0) * tk, -1, 1)), c = Math.cos(el);
+  d0.copy(_yx).multiplyScalar(c * Math.cos(az * tk)).addScaledVector(_yy, c * Math.sin(az * tk)).addScaledVector(U, Math.sin(el));
+  return true;
 }
 function turnCam(cam, tn, x) {
   const p = turnPose(tn, x), target = new THREE.Vector3().fromArray(p.target);
@@ -522,8 +544,11 @@ function carryBend(cr) {
 // Freie Bahn: führt die Gerade zum Anker dicht am Blickziel T der äußeren Station vorbei (Anker hinter dem Körper, z. B. Mond
 // hinter der Erde), schießt die Kamera am Körper vorbei und der Blick reißt herum. Stattdessen fährt sie die Gerade von einem
 // um T geschwenkten Punkt aus, an dem sie mindestens k × Abstand an T vorbeiführt, und schwenkt zu Beginn (hinein) bzw. am
-// Ende (hinaus) weich um T dorthin – solange sie noch im Umfeld von T ist (bis reach × Abstand, Anteil span der Etappe)
-const CLEAR = { k: 0.6, step: 0.03, max: 1.6, reach: 2.5, span: [0.15, 0.4] };
+// Ende (hinaus) weich um T dorthin – solange sie noch im Umfeld von T ist (bis reach × Abstand, Anteil span der Etappe).
+// Hinaus (out): Abstand k × Abstand, die Kamera hält vor T an statt mit voller Fahrt vorbeizuziehen (Mond → Erde lief in
+// 0,6 × Abstand an der Erde vorbei, Blick bis 6,5 rad/s); der Schwenk läuft über den letzten Anteil time der Etappenzeit –
+// über e gelegt fiel er in dessen Auslauf und drängte sich ans Ende (4,6 rad/s)
+const CLEAR = { k: 0.6, step: 0.03, max: 1.6, reach: 2.5, span: [0.15, 0.4], out: { k: 1, time: 0.6 } };
 const _cs = new THREE.Vector3(), _ct = new THREE.Vector3();
 function passBy(P, A, T) {
   _cs.subVectors(A, P);
@@ -532,7 +557,7 @@ function passBy(P, A, T) {
 }
 // P = Kamera an T (hinein: Start, hinaus: Ziel), A = Anker, up = Hochachse der Kamera (Anker genau hinter T: seitlich ausweichen)
 function clearSwing(P, T, A, down, up) {
-  const r = P.distanceTo(T), c = CLEAR.k * r;
+  const r = P.distanceTo(T), c = (down ? CLEAR.k : CLEAR.out.k) * r;
   if (A.distanceTo(T) < 1.5 * c || passBy(P, A, T) >= c) return null;
   const v = P.clone().sub(T), u = A.clone().sub(T);
   const axis = new THREE.Vector3().crossVectors(v, u);   // dreht v zum Anker hin
@@ -551,8 +576,14 @@ function clearSwing(P, T, A, down, up) {
     const e = (k / 40) * CLEAR.span[1];
     if (q.copy(A).addScaledVector(d, Math.exp(l0 - e * Math.log(ZOOM))).distanceTo(T) >= CLEAR.reach * r) { span = Math.max(CLEAR.span[0], e); break; }
   }
-  const angle = down ? (e) => -g * (1 - smoother(0, span, e)) : (e) => -g * smoother(1 - span, 1, e);
-  return { T: T.clone(), axis, at, angle };
+  // hinaus: Winkel um T = (1 − s) × Winkel der Bahn p (vom Ziel v aus um axis, an at = g), s weich über den letzten Anteil
+  // time der Etappenzeit w (stepTransition setzt swing.w). Ein fester Schwenk um g kam zum Bahnwinkel hinzu, der am Ende
+  // rasch wächst (die Gerade vom fernen Anker trifft T fast tangential) – so klingt auch er mit aus; ohne p/w Endlage (carryC)
+  const vn = v.clone().normalize(), side = new THREE.Vector3().crossVectors(axis, vn), pt = new THREE.Vector3();
+  const bearing = (p) => { pt.copy(p).sub(T); return Math.atan2(pt.dot(side), pt.dot(vn)); };
+  const angle = down ? (e) => -g * (1 - smoother(0, span, e))
+    : (e, w = e, p = null) => -smoother(1 - CLEAR.out.time, 1, w) * (p ? bearing(p) : g);
+  return { T: T.clone(), axis, at, angle, w: undefined };
 }
 const upOf = (cam) => new THREE.Vector3(0, 1, 0).applyQuaternion(cam.quaternion);
 // Bogen (ARC) je Etappe: die Kamera der Startstation (from) beginnt ohne Versatz, die der Zielstation (to) landet ohne –
@@ -858,6 +889,7 @@ function stepTransition(dt) {
   // dreht; beim Hinausfliegen gleichmäßig über die Zeit der Etappe (der Blick dreht dort weit, vom Anker zum Ziel der Station):
   // an e hängend lag die Wende in der Anfahrt (e beschleunigt) gedrängt am Etappenende, Mond → Erde bis 1,6 rad/s
   const tkOuter = tr.down ? smoother(0, 0.85, e) : smoother(tr.u0, tr.u1, ch.t);
+  if (tr.swing && !tr.down) tr.swing.w = ch.t >= 1 ? 1 : THREE.MathUtils.clamp((ch.t - tr.u0) / (tr.u1 - tr.u0), 0, 1);
   // weiterfahrende Kamera = die der Station, an der die vorige Etappe endete (hinein: äußere, hinaus: innere);
   // die Wendestation fährt Steigen, Kuppe und Sinken als einen Bogen (x = Etappen-Koordinate ab der Wende)
   const tn = ch.turn, x = tn && tr.outer.id === tn.id ? tr.k + e - tn.at : null;
