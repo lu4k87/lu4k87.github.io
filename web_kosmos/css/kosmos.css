@@ -651,15 +651,16 @@ body:is(.st-open, .cfg-open) .stage > .hint { left: calc(50% + (var(--st-w) + 16
 .bottombar { grid-area: foot; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: end; gap: 16px; padding: 8px 16px 14px; }
 .bottombar > .measure { grid-column: 3; }
 /* Knöpfe der Einstellungen unten links über der Navigation (Vorschau 28.10.2026 „Einstellungs-Knöpfe unten links“ Dock:B):
-   zwei Glas-Kacheln, Symbol über dem zweizeiligen Namen, Allgemein links, Station rechts; offenes Panel = cyan getönt mit Rahmen */
+   zwei Glas-Kacheln (96 px hoch, User 28.10.2026 „höher“), Symbol über dem zweizeiligen Namen, Allgemein links, Station rechts; offenes Panel = cyan getönt mit Rahmen */
 .bottombar { grid-template-rows: auto auto; row-gap: 8px; }
 .bottombar > :not(.dock) { grid-row: 2; }
 .dock { grid-column: 1; grid-row: 1; justify-self: start; display: flex; gap: 8px; }
 .dock .icon-btn {
-  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; width: 104px; height: 74px; padding: 6px 8px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; width: 112px; height: 96px; padding: 8px;
   border-radius: var(--radius); background: var(--glass); box-shadow: var(--pane-shadow); -webkit-backdrop-filter: var(--glass-blur); backdrop-filter: var(--glass-blur);
-  font-size: 12px; line-height: 1.2; text-align: center; white-space: nowrap; transition: background 0.2s, color 0.2s, border-color 0.2s;
+  font-size: 13px; line-height: 1.25; text-align: center; white-space: nowrap; transition: background 0.2s, color 0.2s, border-color 0.2s;
 }
+.dock .icon-btn svg { width: 24px; height: 24px; }
 .dock .icon-btn:hover { border-color: var(--line-strong); color: var(--ink); }
 .dock .icon-btn[aria-expanded="true"] { color: var(--accent); border-color: rgba(var(--accent-rgb), 0.55); background: linear-gradient(rgba(var(--accent-rgb), 0.16), rgba(var(--accent-rgb), 0.16)), var(--glass); }
 .dock .icon-btn:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
