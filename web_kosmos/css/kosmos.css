@@ -302,10 +302,10 @@ body.is-opener .skip-cue { opacity: 0.75; transition: opacity 1.2s var(--ease-ou
 :is(.panel, .station)::before { left: -1px; top: -1px; border-width: 1px 0 0 1px; border-top-left-radius: var(--radius); }
 :is(.panel, .station)::after { right: -1px; bottom: -1px; border-width: 0 1px 1px 0; border-bottom-right-radius: var(--radius); }
 /* Panels links am Rand – Station (Vorschau 28.10.2026 Menü:C) und Allgemeine Einstellungen (#cfg, Dock:B), nie beide zugleich: in der Bühnen-Zeile zwischen Stationsleiste (auch 2. Zeile) und
-   Fußzeile, senkrecht mittig, nie darüber; Inhalt in layers.css. Abzeichen und Info-Karte weichen ihm aus (hud.js uiBoxes),
+   Fußzeile, unten mit 8 px Abstand über den Einstellungs-Kacheln (User 28.10.2026), nie darüber; Inhalt in layers.css. Abzeichen und Info-Karte weichen ihm aus (hud.js uiBoxes),
    der Kapitel-Titel rückt rechts daneben. */
-.station { grid-area: stage; justify-self: start; align-self: center; position: relative; z-index: 2; width: min(var(--st-w), calc(100% - 32px));
-  height: min(640px, calc(100% - 22px - var(--band-low, 0px))); margin: calc(10px + var(--band-low, 0px)) 0 12px 16px; border-radius: var(--radius); display: flex; flex-direction: column; outline: none; }
+.station { grid-area: stage; justify-self: start; align-self: end; position: relative; z-index: 2; width: min(var(--st-w), calc(100% - 32px));
+  height: min(640px, calc(100% - 10px - var(--band-low, 0px))); margin: calc(10px + var(--band-low, 0px)) 0 0 16px; border-radius: var(--radius); display: flex; flex-direction: column; outline: none; }
 .station[hidden] { display: none; }
 body:is(.st-open, .cfg-open) .caption { left: calc(var(--st-w) + 32px); }
 /* Hinweis mittig in der freien Bühne neben dem Panel, bricht um statt darunter zu laufen; Knopf „Hinausfliegen“ auf derselben
