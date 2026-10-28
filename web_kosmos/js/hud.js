@@ -662,9 +662,8 @@ export function createHud(h) {
     const out = [];
     const add = (el, mx, my) => { const q = el.getBoundingClientRect(); if (q.width && q.height) out.push({ l: q.left - mx, r: q.right + mx, t: q.top - my, b: q.bottom + my }); };
     if (caption.classList.contains('is-on')) for (const el of caption.children) add(el, 6, 4);
-    const cfg = $('#cfg'), tl = $('#timeline');
+    const cfg = $('#cfg');
     if (cfg && !cfg.hidden) add(cfg, 8, 8);
-    if (tl && !tl.hidden) add(tl, 6, 6);
     if (drawer && drawer.classList.contains('is-open')) add(drawer, 6, 6);
     return out;
   }
@@ -677,7 +676,7 @@ export function createHud(h) {
     const r = stageRect();
     const open = card.classList.contains('is-open'), sheet = open && W <= 760;
     const ui = uiBoxes();
-    if (sheet) ui.push(placeSheet(r));
+    if (sheet) ui.push(placeSheet());
     const list = open ? ordered : markers;
     // zuerst alle Punkte: jeder ist Hindernis für fremde Abzeichen (Box mit m = eigener Punkt, zählt für die Leitlinie nicht)
     const at = new Map(), boxes = [...ui], segs = [];
@@ -765,9 +764,8 @@ export function createHud(h) {
     } else { settle.prev = null; settle.still = 0; }
     const rested = settle.still >= SETTLE;
     if (!dock && !(b ? rested || settle.age >= WAIT_MAX : settle.age >= WAIT_HIDDEN)) return;
-    // Unterkante = Zeitleiste (falls sichtbar); passt die Karte nicht in die Höhe, wird sie niedriger und scrollt
-    const tl = $('#timeline'), tq = tl && !tl.hidden ? tl.getBoundingClientRect() : null;
-    const yMax = (tq && tq.height ? Math.min(r.y1, tq.top) : r.y1) - M, maxH = Math.floor(yMax - r.y0 - M);
+    // Passt die Karte nicht in die Höhe, wird sie niedriger und scrollt
+    const yMax = r.y1 - M, maxH = Math.floor(yMax - r.y0 - M);
     // Hindernisse: Bedienung + gewähltes Abzeichen; die übrigen Abzeichen weichen danach der Karte aus.
     // ponytail: fremde Punkte zählen hier nicht – sonst dockte die Karte bei jedem vorbeiziehenden Punkt neu an (Karte ruhig)
     const obst = b ? [...ui, b] : ui;
@@ -859,10 +857,8 @@ export function createHud(h) {
     cardLead.classList.remove('is-off');
     segs.push([[sx, sy], [ex, ey]]);
   }
-  // Schmal (Handy, Vorschau F2): Karte als Leiste unten in der Bühne über der Zeitleiste, Abzeichen weichen ihr aus
-  function placeSheet(r) {
-    const tl = $('#timeline'), q = tl && !tl.hidden ? tl.getBoundingClientRect() : null;
-    card.style.setProperty('--sheet-b', `${Math.round(q && q.height ? r.y1 - q.top + 8 : 8)}px`);
+  // Schmal (Handy, Vorschau F2): Karte als Leiste unten in der Bühne, Abzeichen weichen ihr aus
+  function placeSheet() {
     if (cardMaxH !== null) { cardMaxH = null; card.style.maxHeight = ''; }   // Höhe regelt hier das CSS
     card.classList.remove('is-away');
     cardLead.classList.add('is-off');
@@ -930,11 +926,6 @@ export function createHud(h) {
 
   // Rand-Angebot: am Zoom-Anschlag weiter gescrollt → Knopf „Hinaus-/Hineinfliegen“, erst sein Klick startet den Flug
   function setOffer(o) {
-    // Zeitraffer sichtbar: Knopf 10 px darüber statt dahinter
-    if (o && !pull.classList.contains('is-on')) {
-      const tl = $('#timeline'), q = tl && !tl.hidden ? tl.getBoundingClientRect() : null;
-      pull.style.bottom = q ? `${$('#stage-area').getBoundingClientRect().bottom - q.top + 10}px` : '';
-    }
     pull.classList.toggle('is-on', !!o);
     pull.tabIndex = o ? 0 : -1;
     pull.setAttribute('aria-hidden', o ? 'false' : 'true');
