@@ -120,7 +120,7 @@ const SUB = (t) => ['#', `<h5 class="b-subh">${t}</h5>`];
 const nRows = (g) => g.rows.filter(([k]) => k !== '#').length;
 // Reihenfolge von fern nach nah: Look, Himmel, Milchstraße, Bahnen und Achsen, dann Bedienung
 const GROUPS = [
-  { id: 'look', icon: 'look', title: 'Look', hero: true, rows: [['grade', LOOKS], ['exposure', RANGE('exposure', 'Belichtung', 0.25, 4, 0.05, '×')],
+  { id: 'look', icon: 'look', title: 'Bild', hero: true, rows: [['grade', LOOKS], ['exposure', RANGE('exposure', 'Belichtung', 0.25, 4, 0.05, '×')],
     ['vig', RANGE('vig', 'Vignette', 0, 3, 0.05, '×')], ['bars', TOG('bars', 'Kinobalken 2,39:1')]] },
   { id: 'sky', icon: 'sky', title: 'Himmel', rows: [['stars', TOG('stars', 'Sterne und Milchstraße') + NOTE('Hauptschalter des Himmels: aus = reines Schwarz, auch ohne Milchstraße.')],
     ['deep', RANGE('deep', 'Tiefer Himmel', 0, 4, 0.1, '×') + NOTE('Was eine Langzeitbelichtung hinter den Sternen sieht: ferne Galaxien und schwach leuchtender Staub der Milchstraße (Zirrus) – statistisch verteilt, überhöht, mit bloßem Auge unsichtbar. 0× = reines Schwarz.')]] },
@@ -133,7 +133,7 @@ const GROUPS = [
     ['mwDust', RANGE('mwDust', 'Staubbahnen', 0, 4, 0.05, '×') + NOTE('Dunkelwolken vor dem Sternlicht: Großer Riss, Pfeifennebel, Kohlensack. 0× = Sterne ohne Staub.')],
     ['mwNeb', RANGE('mwNeb', 'Leuchtnebel (Hα)', 0, 6, 0.05, '×') + NOTE('Rot leuchtender Wasserstoff: Carina, Lagune, Nordamerika, Barnards Loop.')],
     ['mwCore', RANGE('mwCore', 'Kern (Bulge)', 0, 6, 0.05, '×')], ['mwGlow', RANGE('mwGlow', 'Leuchten des Bandes', 0, 6, 0.05, '×')],
-    ['mwGrain', RANGE('mwGrain', 'Sternstaub', 0, 1, 0.05, '') + NOTE('Anteil des Bandes als einzelne feine Sterne statt Nebel – am deutlichsten beim Hineinzoomen.')],
+    ['mwGrain', RANGE('mwGrain', 'Einzelsterne im Band', 0, 1, 0.05, '') + NOTE('Anteil des Bandes als einzelne feine Sterne statt Nebel – am deutlichsten beim Hineinzoomen.')],
     ['mwWidth', RANGE('mwWidth', 'Dicke der Scheibe', 0.4, 3, 0.05, '×') + NOTE('Höhe von Sternen und Staub über der Ebene; das Modell wird neu berechnet.')],
     ['mwNear', TOG('mwNear', 'Magellansche Wolken und Andromeda')],
     ['mwSrc', SEG('mwSrc', 'Quelle', [['model', 'Eigenes Modell'], ['photo', 'ESO-Foto']]) + NOTE('Das Foto (ESO/S. Brunier, CC BY 4.0) war die Vorlage und dient nur zum Vergleich – nur an Stationen im Sonnensystem, wo die Lage am Himmel stimmt.')]] },
@@ -152,15 +152,15 @@ const GROUPS = [
   { id: 'fx', icon: 'fx', title: 'Effekte', rows: [
     ['bloom', TOG('bloom', 'Überstrahlen (Bloom)')],
     ['lens', TOG('lens', 'Farbsaum und Linsenreflex')],
-    ['lensAmt', RANGE('lensAmt', 'Stärke Linsenreflex', 0, 5, 0.05, '×') + NOTE('Schein, Ring und Geister um helle Quellen wie die Sonne. 0× = aus, der Farbsaum bleibt.')],
-    ['lensOptic', SEG('lensOptic', 'Optik-Stil', [['master', 'Master-Optik'], ['classic', 'Klassisch']]) + NOTE('Master-Optik: Spektraler Beugungsring, Glanzbogen &amp; Magenta-Sensor-Ghost nach Referenzbild; Klassisch: Zarter Film-Halo.')],
-    ['lensGhost', TOG('lensGhost', 'Magenta-Sensor-Ghost')],
-    ['ghostMotion', TOG('ghostMotion', 'Ghost-Parallaxe auf optischer Achse') + NOTE('Der Magenta-Ghost wandert physikalisch entlang der optischen Achse bei Kameraschwenks.')],
-    ['anamorphic', TOG('anamorphic', 'Anamorphes Gegenlicht')],
-    ['rayleigh', TOG('rayleigh', 'Rayleigh-Dämmerung')],
+    ['lensAmt', RANGE('lensAmt', 'Stärke Linsenreflex', 0, 5, 0.05, '×') + NOTE('Schein, Ring und Geisterbilder um helle Quellen wie die Sonne. 0× = aus, der Farbsaum bleibt.')],
+    ['lensOptic', SEG('lensOptic', 'Art der Optik', [['master', 'Filmkamera'], ['classic', 'Schlicht']]) + NOTE('Filmkamera: Regenbogenring, heller Bogen und ein farbiger Lichtfleck gegenüber der Sonne. Schlicht: nur ein zarter Lichtkranz.')],
+    ['lensGhost', TOG('lensGhost', 'Farbiger Lichtfleck (Geisterbild)')],
+    ['ghostMotion', TOG('ghostMotion', 'Lichtfleck wandert beim Schwenken') + NOTE('Wie in einem echten Objektiv wandert der Fleck beim Schwenken auf der Linie durch die Bildmitte.')],
+    ['anamorphic', TOG('anamorphic', 'Waagrechter Lichtstreif (anamorph)')],
+    ['rayleigh', TOG('rayleigh', 'Blaue Dämmerung am Planetenrand (Rayleigh)')],
     ['grain', TOG('grain', 'Filmkorn')]] },
   { id: 'ui', icon: 'ui', title: 'Oberfläche', half: true, rows: [['panel', TOG('panel', 'Infotafel zeigen')], ['scaleCompare', TOG('scaleCompare', 'Maßstabs-Vergleich')], ['timeline', TOG('timeline', 'Zeitleiste der Station zeigen')],
-    ['', TOG('', 'Grafiken der Info-Karten bewegt', '', 'data-figs')]] },
+    ['', TOG('', 'Grafiken bewegt', '', 'data-figs')]] },
   { id: 'perf', icon: 'perf', title: 'Leistung', rows: [['quality', SEG('quality', 'Qualität', [['auto', 'Auto'], ['1', 'Niedrig'], ['2', 'Mittel'], ['3', 'Hoch']])],
     ['fpsCap', SEG('fpsCap', 'Bildrate', [['0', 'Frei'], ['60', '60 Bilder/s'], ['30', '30 Bilder/s']]) + NOTE('30 Bilder/s spart am Laptop Strom und Lüfter.')]] },
 ];

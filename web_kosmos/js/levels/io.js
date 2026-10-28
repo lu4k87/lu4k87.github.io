@@ -512,7 +512,7 @@ export function create(ctx) {
     { id: 'view', label: 'Blick', value: 'io', options: [['io', 'Io'], ['pele', 'Fahne Pele'], ['tvashtar', 'Fahne Tvashtar'], ['sky', 'Jupiterhimmel']], set: setView },
     { id: 'speed', type: 'range', label: 'Zeitraffer', value: spdIdx, min: 0, max: SPEEDS.length - 1, step: 1, fmt: (i) => SPEEDS[Math.round(i)][1],
       set: (v) => setSpeed(Math.round(v)), get: () => (rate ? spdIdx : 0) },
-    { id: 'marks', label: 'Abzeichen', value: group, options: [['volcano', 'Vulkane'], ['space', 'Jupiter & Torus']], set: (v) => { group = v; } },
+    { id: 'marks', label: 'Markierungen', value: group, options: [['volcano', 'Vulkane'], ['space', 'Jupiter & Torus']], set: (v) => { group = v; } },
     { id: 'eclipse', type: 'action', label: 'Ereignis', button: 'Io im Jupiterschatten', run: () => {
       // nächster Eintritt in den Kernschatten (Schritt 5 min), 10 min vorher starten, Zeitraffer 1 min/s
       for (let t = jd + 1 / 288, was = true; t < jd + 2; t += 1 / 288) {
@@ -548,7 +548,7 @@ export function create(ctx) {
     { id: 'flux', type: 'toggle', label: 'Flussröhre zu Jupiters Polen', value: false, set: (v) => { fluxG.visible = v; } },
     { id: 'jshine', type: 'range', group: 'Licht', label: 'Jupiterschein', value: shineX, min: 0, max: 10, step: 0.5, unit: '×',
       hint: '1× = echt: Der volle Jupiter beleuchtet Io mit rund 1,5 % des Sonnenlichts (eigene Rechnung aus Radius, Abstand und Albedo).', set: (v) => { shineX = v; } },
-    { id: 'jupiter', type: 'toggle', group: 'Himmel', label: 'Jupiter', value: true, set: (v) => { jupG.visible = jAtmo.visible = v; } },
+    { id: 'jupiter', type: 'toggle', group: 'Himmel', label: 'Jupiter zeigen', value: true, set: (v) => { jupG.visible = jAtmo.visible = v; } },
     { id: 'moons', type: 'toggle', label: 'Europa, Ganymed, Kallisto', value: true, set: (v) => { moons.forEach((m) => { m.visible = v; }); } },
   ]);
   place();

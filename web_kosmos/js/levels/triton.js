@@ -356,7 +356,7 @@ export function create(ctx) {
     { id: 'nshine', type: 'range', group: 'Licht', label: 'Neptunschein', value: 1, min: 0, max: 6, step: 0.25, unit: '×',
       hint: 'Licht Neptuns auf Tritons Nachtseite, folgt Neptuns Phase. Für die Lesbarkeit aufgehellt.', set: (v) => { nshine = v; } },
     { id: 'neptune', type: 'toggle', group: 'Himmel', label: 'Neptun am Himmel', value: true, set: (v) => { showNep = v; nepHold.visible = v; nepShell.visible = v; } },
-    { id: 'orbit', type: 'toggle', label: 'Bahn', value: true, set: (v) => { orbitLine.visible = v; } },
+    { id: 'orbit', type: 'toggle', label: 'Bahn zeigen', value: true, set: (v) => { orbitLine.visible = v; } },
   ]);
 
   const occluders = [{ center: new THREE.Vector3(), radius: 1 }, { center: nepPos, radius: R_N }];

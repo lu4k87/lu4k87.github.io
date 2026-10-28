@@ -544,7 +544,7 @@ export function create(ctx) {
     { id: 'act', type: 'range', label: 'Aktivität', value: actIdx, min: 0, max: ACT.length - 1, step: 1, fmt: (i) => ACT[Math.round(i)][0], set: setActivity },
     { id: 'speed', type: 'range', label: 'Zeitraffer', value: rotOn ? spdIdx : 0, min: 0, max: SPEEDS.length - 1, step: 1, fmt: (i) => SPEEDS[Math.round(i)][1],
       set: (v) => { if (v) { spdIdx = v; rotOn = true; } else rotOn = false; refreshLayers(); }, get: () => (rotOn ? spdIdx : 0) },
-    { id: 'flare', type: 'action', label: 'Ereignis', button: 'Flare auslösen', run: () => { if (flaresOn) triggerFlare(camera, true); } },
+    { id: 'flare', type: 'action', label: 'Ereignis', button: 'Sonneneruption auslösen', run: () => { if (flaresOn) triggerFlare(camera, true); } },
   ];
   setChan('glut');
 

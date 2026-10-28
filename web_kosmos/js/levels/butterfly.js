@@ -183,9 +183,9 @@ export function create(ctx) {
     { id: 'core', type: 'range', label: 'Glut der Mitte', min: 0, max: 4, step: 0.25, value: 1, fmt: times, set: to('uCore') },
     { id: 'breathe', type: 'toggle', label: 'Zentralstern atmet', value: true, set: (v) => { breathe = v; } },
     { id: 'stars', type: 'range', group: 'Sterne', label: 'Helligkeit der Sterne', min: 0, max: 4, step: 0.25, value: 1, fmt: times, set: (v) => { starGain = v; applyLook(); } },
-    { id: 'res', type: 'range', group: 'Qualität der Wolke', label: 'Auflösung', min: 0, max: 3, step: 1, value: fine ? 1 : 2, fmt: (i) => RES_N[i], set: (i) => vol.setScale(RES[i]),
+    { id: 'res', type: 'range', group: 'Qualität der Wolke', label: 'Detailstufe', min: 0, max: 3, step: 1, value: fine ? 1 : 2, fmt: (i) => RES_N[i], set: (i) => vol.setScale(RES[i]),
       hint: 'Die Wolke wird in eigener Auflösung gerechnet und weich vergrößert, Sterne bleiben scharf. Niedriger = schneller.' },
-    { id: 'steps', type: 'range', label: 'Schritte je Bildpunkt', min: 0, max: 3, step: 1, value: fine ? 2 : 1, fmt: (i) => STEPS_N[i], set: to('uSteps', (i) => STEPS[i]),
+    { id: 'steps', type: 'range', label: 'Rechengenauigkeit', min: 0, max: 3, step: 1, value: fine ? 2 : 1, fmt: (i) => STEPS_N[i], set: to('uSteps', (i) => STEPS[i]),
       hint: 'Mehr Schritte zeigen die feinen Schlieren gleichmäßiger, kosten aber Bildrate.' },
   ]);
 

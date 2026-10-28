@@ -438,7 +438,7 @@ export function create(ctx) {
     { id: 'view', label: 'Blick', value: 'europa', options: [['europa', 'Europa'], ['sky', 'Jupiter am Himmel']], set: setView },
     { id: 'speed', type: 'range', label: 'Zeitraffer', value: spdIdx, min: 0, max: SPEEDS.length - 1, step: 1, fmt: (i) => SPEEDS[Math.round(i)][1],
       set: (v) => setSpeed(Math.round(v)), get: () => (rate ? spdIdx : 0) },
-    { id: 'marks', label: 'Abzeichen', value: group, options: [['geo', 'Risse & Chaos'], ['impact', 'Krater']], set: (v) => { group = v; } },
+    { id: 'marks', label: 'Markierungen', value: group, options: [['geo', 'Risse & Chaos'], ['impact', 'Krater']], set: (v) => { group = v; } },
     { id: 'cut', label: 'Ozean-Schnitt', value: 'off', options: [['off', 'Aus'], ['true', 'Maßstäblich'], ['exag', 'Überhöht']], set: setCut },
     { id: 'eclipse', type: 'action', label: 'Ereignis', button: 'Nächste Jupiterfinsternis', run: () => {
       const t = nextEclipse(jd);
@@ -472,7 +472,7 @@ export function create(ctx) {
       hint: 'Licht von Jupiters Tagseite auf Europas Nachtseite. 1× = echt: bei voller Jupiterscheibe ≈ 0,6 % des Sonnenlichts (eigene Rechnung aus Albedo 0,538 und Abstand).', set: (v) => { shineK = 0.011 * v; } },
     { id: 'plume', type: 'toggle', group: 'Ozean', label: 'Wasserdampf-Fahne (umstritten)', value: true,
       hint: 'Hinweise aus Hubble-Aufnahmen, aber nicht sicher bestätigt. Ort, Höhe und Tempo schematisch, Teilchen verlangsamt.', set: (v) => { plumeOn = v; plume.visible = v; } },
-    { id: 'jupiter', type: 'toggle', group: 'Himmel', label: 'Jupiter', value: true, set: (v) => { showJup = v; jTilt.visible = v; shell.visible = v; } },
+    { id: 'jupiter', type: 'toggle', group: 'Himmel', label: 'Jupiter zeigen', value: true, set: (v) => { showJup = v; jTilt.visible = v; shell.visible = v; } },
     { id: 'moons', type: 'toggle', label: 'Io, Ganymed, Kallisto', value: true, set: (v) => { showMoons = v; others.forEach((o) => { o.holder.visible = v; }); } },
     { id: 'clipper', type: 'toggle', label: 'Europa Clipper (Vorbeiflug schematisch)', value: true, set: (v) => { showClipper = v; clipper.visible = v; path.visible = v; } },
   ]);

@@ -455,7 +455,7 @@ export const STATIONS = {
   },
   solar: {
     n: 2, title: 'Sonnensystem', kicker: 'Planetensystem', parent: 'galaxy', width: 2.2e12, dist: 0, lookback: 0, size: { v: 2 * 30.07 * AU, l: 'Durchmesser Neptunbahn', s: 'jpl-elements' },
-    lead: 'Die acht Planeten und der Mond auf ihren Bahnen und an ihren heutigen Positionen, berechnet aus den Bahnelementen des JPL. Die Zeitleiste spielt die Umläufe ab; ein Klick auf ein Abzeichen fliegt den Körper an.',
+    lead: 'Die acht Planeten und der Mond auf ihren Bahnen und an ihren heutigen Positionen, berechnet aus den Bahnelementen des JPL. Die Zeitleiste spielt die Umläufe ab; ein Klick auf eine Markierung fliegt den Körper an.',
     facts: [
       { v: '30,1', u: 'AE', l: 'Bahnradius Neptun (4,5 Mrd. km)', s: 'jpl-elements' },
       { v: '8 min 19 s', u: '', l: 'Licht von der Sonne zur Erde', s: 'iau-2012' },
@@ -479,7 +479,7 @@ export const STATIONS = {
       neptune: { t: 'Neptun', x: 'Radius 24.764 km · 17,1 Erdmassen · 30,1 AE · Umlauf 165 Jahre · Drehung 16 h 7 min · −200 °C · 16 Monde; der größte, Triton, umläuft Neptun rückläufig · Sonnenlicht braucht gut 4 Stunden bis hierher. Hineinfliegen: Neptun mit Ringen, Bögen und den Monden Triton, Proteus und Nereid.', s: 'nasa-planets' },
       belt: { t: 'Asteroidengürtel', x: 'Lücken bei 2,50 · 2,82 · 2,95 AE: Dort stünden die Umlaufzeiten in Resonanz mit Jupiter (3:1, 5:2, 7:3); seine wiederholten Störungen machen diese Bahnen instabil (Kirkwood-Lücken).', s: 'kirkwood' },
       asteroid: { t: 'Asteroiden aus der Nähe', x: 'Hineinfliegen: (16) Psyche, Bennu und Eros – Form und Drehung nach den Messdaten von Radar und Raumsonden, die Oberfläche als Modell.', s: 'shepard-2021' },
-      kuiper: { t: 'Kuipergürtel', x: 'Jenseits von Neptun (30–50 AE) kreisen Kleinkörper aus Eis und Gestein, darunter Pluto und Arrokoth – Überreste aus der Entstehungszeit des Sonnensystems. Im Bild: statistische Verteilung. Hineinfliegen über das Abzeichen „Pluto“: Pluto und Charon als Doppelsystem.', s: 'nasa-planets' },
+      kuiper: { t: 'Kuipergürtel', x: 'Jenseits von Neptun (30–50 AE) kreisen Kleinkörper aus Eis und Gestein, darunter Pluto und Arrokoth – Überreste aus der Entstehungszeit des Sonnensystems. Im Bild: statistische Verteilung. Hineinfliegen über die Markierung „Pluto“: Pluto und Charon als Doppelsystem.', s: 'nasa-planets' },
       pluto: { t: 'Pluto', x: 'Zwergplanet im Kuipergürtel: Radius 1.188 km · mittlerer Abstand 39,5 AE · Umlauf 248 Jahre · Bahn 17° geneigt und so exzentrisch (0,25), dass Pluto im Perihel mit 29,7 AE näher an der Sonne steht als Neptun (eigene Rechnung aus den Bahnelementen) · 5 Monde, der größte ist Charon. Hineinfliegen: Pluto und Charon als Doppelsystem.', s: 'nssdc-pluto' },
     },
   },
@@ -937,7 +937,7 @@ export const STATIONS = {
       { v: '3', u: '', l: 'Coronae aus Graten und Tälern', s: 'ura-nasa-miranda' },
       { v: '10', u: 'min', l: 'fällt ein Stein von der höchsten Klippe', s: 'ura-nasa-miranda' },
     ],
-    note: 'Mondfest gezeichnet: Miranda ruht, Uranus steht über dem Längengrad 0 still, Sonne und Sterne ziehen über den Himmel. Lage aus den mittleren Bahnelementen von JPL (URA182, auf etwa ein Grad) und der Uranusbahn (JPL); Mirandas Achse = Bahnachse (gebundene Rotation), Libration vernachlässigt. Körper als Ellipsoid 240 × 234,2 × 232,9 km, die lange Achse zeigt zu Uranus. Karte: NASA 3D Resources aus Voyager-2-Bildern (USGS/Tammy Becker & JPL/Caltech, 1.440 × 720 Bildpunkte, rund 1 km je Bildpunkt am Äquator); Voyager 2 sah 1986 nur die Südhälfte, der Rest ist mit der mittleren Helligkeit gefüllt – „Voyager-2-Abdeckung“ zeigt ihn als Gradnetz (Maske aus der Karte abgeleitet). Licht zum Start vom 24.01.1986 (Uhrzeit gerundet): Die Sonne stand nahe dem Südpol, die kartierte Seite lag im Licht. „Heute“ zeigt den Zeitpunkt der Seite; 2026 steht die Sonne über dem Norden, die kartierte Seite liegt im Dunkeln. Reflexion nach Lommel-Seeliger; Uranusschein aus Radius, Abstand und Albedo des Uranus, nach seiner Phase (eigene Näherung). Uranus maßstäblich (rund 23° am Himmel) mit Ringen: Radien und optische Tiefen nach NASA, schmale Ringe verbreitert und heller als echt. Die anderen vier großen Monde maßstäblich an ihren Orten. Orte der Abzeichen nach dem USGS-Gazetteer.',
+    note: 'Mondfest gezeichnet: Miranda ruht, Uranus steht über dem Längengrad 0 still, Sonne und Sterne ziehen über den Himmel. Lage aus den mittleren Bahnelementen von JPL (URA182, auf etwa ein Grad) und der Uranusbahn (JPL); Mirandas Achse = Bahnachse (gebundene Rotation), Libration vernachlässigt. Körper als Ellipsoid 240 × 234,2 × 232,9 km, die lange Achse zeigt zu Uranus. Karte: NASA 3D Resources aus Voyager-2-Bildern (USGS/Tammy Becker & JPL/Caltech, 1.440 × 720 Bildpunkte, rund 1 km je Bildpunkt am Äquator); Voyager 2 sah 1986 nur die Südhälfte, der Rest ist mit der mittleren Helligkeit gefüllt – „Voyager-2-Abdeckung“ zeigt ihn als Gradnetz (Maske aus der Karte abgeleitet). Licht zum Start vom 24.01.1986 (Uhrzeit gerundet): Die Sonne stand nahe dem Südpol, die kartierte Seite lag im Licht. „Heute“ zeigt den Zeitpunkt der Seite; 2026 steht die Sonne über dem Norden, die kartierte Seite liegt im Dunkeln. Reflexion nach Lommel-Seeliger; Uranusschein aus Radius, Abstand und Albedo des Uranus, nach seiner Phase (eigene Näherung). Uranus maßstäblich (rund 23° am Himmel) mit Ringen: Radien und optische Tiefen nach NASA, schmale Ringe verbreitert und heller als echt. Die anderen vier großen Monde maßstäblich an ihren Orten. Orte der Markierungen nach dem USGS-Gazetteer.',
     sources: ['ura-nssdc-sat', 'ura-jpl-elem', 'ura-nasa-miranda', 'ura-usgs-miranda', 'ura-nasa-3d', 'ura-nssdc', 'ura-nssdc-ring', 'jpl-elements', 'sss-tex', 'd3-celestial'],
     hotspots: {
       uranus: { t: 'Uranus am Himmel', x: 'Miranda zeigt Uranus immer dieselbe Seite. Von hier steht der Planet deshalb unbeweglich am Himmel und misst rund 23° – über vierzigmal so viel wie der Vollmond bei uns (eigene Rechnung aus 25.559 km Radius und 129.900 km Abstand). Weil Mirandas Bahn nur 4,4° gegen seinen Äquator geneigt ist, sieht man die Ringe fast von der Kante. Sein Licht erhellt Mirandas Nachtseite.', s: 'ura-nssdc-sat' },
@@ -1057,7 +1057,7 @@ export const STATIONS = {
     note: 'Volumen-Modell nach Hester 2008: rote Wasserstoff-Filamente als Hülle, innen bläuliches Synchrotronlicht. Farben nach Emission, Helligkeit verstärkt. Röntgen- und Radio-Blick als Falschfarben nach Chandra- und VLA-Vorbild (Ausdehnung der Komponenten qualitativ). Expansion: gleichmäßig ab dem Konvergenzjahr 1130 (Nugent 1998) – die echte Hülle wurde in den ersten Jahrzehnten beschleunigt und wird sich einmal abbremsen.',
     sources: ['hester-2008', 'lin-2023', 'buhler-2014', 'atnf', 'nugent-1998', 'weisskopf-2000'],
     hotspots: {
-      pulsar: { t: 'Crab-Pulsar', x: 'Der Neutronenstern im Zentrum. Hineinfliegen: 20 km Durchmesser, 30 Umdrehungen pro Sekunde.', s: 'atnf' },
+      pulsar: { t: 'Krebs-Pulsar', x: 'Der Neutronenstern im Zentrum. Hineinfliegen: 20 km Durchmesser, 30 Umdrehungen pro Sekunde.', s: 'atnf' },
       filaments: { t: 'Filamente', x: 'Ausgeworfene Sternmaterie: Wasserstoff, Helium, Sauerstoff, Schwefel. Sie leuchten in Emissionslinien, vor allem rot (Hα).', s: 'hester-2008' },
       sync: { t: 'Synchrotronnebel', x: 'Elektronen mit nahezu Lichtgeschwindigkeit bewegen sich auf Spiralbahnen im Magnetfeld und strahlen dabei bläulich-weißes Licht ab. Die Energie dafür liefert der Pulsar.', s: 'hester-2008' },
       wisps: { t: 'Torus und Jet', x: 'Nahe am Pulsar zeigt Hubble einen Ring (Torus) und einen Strahl entlang der Drehachse; die „Wisps“ wandern mit etwa halber Lichtgeschwindigkeit nach außen.', s: 'hester-2008' },
@@ -1127,7 +1127,7 @@ export const STATIONS = {
     },
   },
   pulsar: {
-    n: 6, title: 'Crab-Pulsar', kicker: 'Neutronenstern', parent: 'crab', width: 3e5, dist: 6200 * LY, lookback: 6200 * YEAR, size: { v: 2.54e4, l: 'Durchmesser (≈)', s: 'nicer-2019' },
+    n: 6, title: 'Krebs-Pulsar', kicker: 'Neutronenstern', parent: 'crab', width: 3e5, dist: 6200 * LY, lookback: 6200 * YEAR, size: { v: 2.54e4, l: 'Durchmesser (≈)', s: 'nicer-2019' },
     lead: 'Etwa 1,4 Sonnenmassen in einer Kugel von gut 20 km Durchmesser. Strahlkegel entlang der Magnetachse streichen wie ein Leuchtturm über die Erde – hier in Zeitlupe.',
     facts: [
       { v: '33,8', u: 'ms', l: 'Drehperiode heute (29,5 pro Sekunde, aus P und Ṗ)', s: 'atnf' },

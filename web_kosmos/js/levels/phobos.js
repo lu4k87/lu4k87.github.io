@@ -332,7 +332,7 @@ export function createMarsMoon(ctx, cfg) {
     { id: 'shadows', type: 'toggle', label: 'Schlagschatten der Sonne', value: true, set: (v) => { sunL.castShadow = v; } },
     { id: 'mars', type: 'toggle', group: 'Himmel', label: 'Mars am Himmel', value: true, set: (v) => { showMars = v; hold.visible = v; } },
     { id: 'storm', type: 'range', label: 'Staubsturm auf Mars', value: 0, min: 0, max: 1, step: 0.05, sub: true, fmt: (v) => (v < 0.02 ? 'klar' : `${Math.round(v * 100)} %`), set: (v) => mars.setStorm(v) },
-    { id: 'orbit', type: 'toggle', label: 'Bahn', value: true, set: (v) => { orbitLine.visible = v; } },
+    { id: 'orbit', type: 'toggle', label: 'Bahn zeigen', value: true, set: (v) => { orbitLine.visible = v; } },
   ]);
 
   const occluders = [{ center: origin, radius: m.r }, { center: uPos, radius: R }];
