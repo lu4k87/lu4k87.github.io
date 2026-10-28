@@ -133,17 +133,12 @@ export function create(ctx) {
     { id: 'clock', type: 'play', group: 'Zeit', label: 'Monde im Zeitraffer', value: spdIdx, min: 1, max: SPEEDS.length - 1, step: 1, fmt: (i) => SPEEDS[Math.round(i)][1],
       set: (i, p) => { spdIdx = Math.round(i); playing = p; }, get: () => ({ value: spdIdx, playing }),
       status: () => `${playing ? 'Zeitraffer' : 'Angehalten'} · ${fmtDays(days)} seit Start` },
-    { id: 'year', type: 'range', label: 'Jahr (Stand der Sonne)', value: year, min: 1986, max: 2070, step: 1, fmt: fmtYear, set: setYear, get: () => year },
+    { id: 'year', type: 'range', label: 'Jahr (Stand der Sonne)', marks: [[1986, 'Voyager 2'], [2007, 'Tagundnachtgleiche'], [2030, 'Sonne über dem Nordpol'], [2050, 'Tagundnachtgleiche']], value: year, min: 1986, max: 2070, step: 1, fmt: fmtYear, set: setYear, get: () => year },
     { id: 'rings', type: 'toggle', group: 'System', label: 'Ringe', value: true, set: (v) => { rings.visible = v; planetU.uRing.value = v ? 1 : 0; } },
     { id: 'dust', type: 'toggle', label: 'Staubringe ν und μ (stark aufgehellt)', value: true, sub: true, set: (v) => { dust.visible = v; } },
     { id: 'orbits', type: 'toggle', label: 'Mondbahnen', value: true, set: (v) => { moons.forEach((m) => { m.orbit.line.visible = v; }); } },
     { id: 'big', type: 'range', label: 'Monde vergrößert', value: big, min: 1, max: 20, step: 1, fmt: (v) => (v === 1 ? 'maßstäblich' : `${v}×`), set: (v) => { big = Math.round(v); } },
   ]);
-  const controls = [
-    { id: 'year', type: 'range', label: 'Jahr · Stand der Sonne', value: year, min: 1986, max: 2070, step: 1, fmt: fmtYear, set: setYear, get: () => year },
-    { id: 'speed', type: 'range', label: 'Zeitraffer', value: playing ? spdIdx : 0, min: 0, max: SPEEDS.length - 1, step: 1, fmt: (i) => SPEEDS[Math.round(i)][1],
-      set: (v) => { if (v) { spdIdx = v; playing = true; } else playing = false; refreshLayers(); }, get: () => (playing ? spdIdx : 0) },
-  ];
 
   // ---------- Abzeichen ----------
   const ringPos = new THREE.Vector3(), polePos = north.clone().multiplyScalar(1.45);
@@ -164,7 +159,7 @@ export function create(ctx) {
   const subsolar = () => Math.asin(THREE.MathUtils.clamp(sunDir.dot(north), -1, 1)) * 180 / Math.PI;
   const look = { exposure: 1.05, bloom: 0.07 };
   return {
-    scene, camera, home, unit: R_U * 1e3, hotspots, controls, look,
+    scene, camera, home, unit: R_U * 1e3, hotspots, look,
     orbit: { minDistance: 1.2, maxDistance: 160, cineSpeed: 0.5 },
     update(dt, t, cam, flying) {
       if (!flying && playing) days += dt * SPEEDS[spdIdx][0];

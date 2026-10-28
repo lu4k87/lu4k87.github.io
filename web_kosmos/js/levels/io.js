@@ -510,20 +510,19 @@ export function create(ctx) {
   // ---------- Schalter der Infotafel ----------
   const controls = [
     { id: 'view', label: 'Blick', value: 'io', options: [['io', 'Io'], ['pele', 'Fahne Pele'], ['tvashtar', 'Fahne Tvashtar'], ['sky', 'Jupiterhimmel']], set: setView },
-    { id: 'speed', type: 'range', label: 'Zeitraffer', value: spdIdx, min: 0, max: SPEEDS.length - 1, step: 1, fmt: (i) => SPEEDS[Math.round(i)][1],
-      set: (v) => setSpeed(Math.round(v)), get: () => (rate ? spdIdx : 0) },
     { id: 'marks', label: 'Markierungen', value: group, options: [['volcano', 'Vulkane'], ['space', 'Jupiter & Torus']], set: (v) => { group = v; } },
-    { id: 'eclipse', type: 'action', label: 'Ereignis', button: 'Io im Jupiterschatten', run: () => {
-      // nächster Eintritt in den Kernschatten (Schritt 5 min), 10 min vorher starten, Zeitraffer 1 min/s
-      for (let t = jd + 1 / 288, was = true; t < jd + 2; t += 1 / 288) {
-        const l = lineOfSun(jovianState(t), 'io'), inside = l.s < 0 && l.q < 1;
-        if (inside && !was) { jd = t - 10 / 1440; break; }
-        was = inside;
-      }
-      setSpeed(1);
-      setView('io');
-    } },
+    { id: 'eclipse', type: 'action', label: 'Ereignis', button: 'Io im Jupiterschatten', mark: 'Finsternis', at: nextEclipse, go: goEclipse,
+      run: () => { const t = nextEclipse(jd, jd + 2); if (t !== null) goEclipse(t); } },
   ];
+  // Nächster Eintritt in den Kernschatten zwischen from und until (Schritt 5 min) → Zeitpunkt oder null; Sprung 10 min vorher,
+  // Zeitraffer 1 min/s
+  function nextEclipse(from, until) {
+    const inside = (t) => { const l = lineOfSun(jovianState(t), 'io'); return l.s < 0 && l.q < 1; };
+    let was = inside(from);
+    for (let t = from + 1 / 288; t < until; t += 1 / 288) { const now = inside(t); if (now && !was) return t; was = now; }
+    return null;
+  }
+  function goEclipse(t) { jd = t - 10 / 1440; setSpeed(1); setView('io'); }
   function setSpeed(i) {
     if (i > 0) { spdIdx = i; rate = SPEEDS[i][0]; } else { rate = 0; jd = julianDate(new Date()); }
     refreshLayers();
@@ -533,7 +532,7 @@ export function create(ctx) {
   const fmt = new Intl.DateTimeFormat('de-DE', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'UTC' });
   registerLayers('io', [
     { id: 'clock', type: 'play', group: 'Zeit', label: 'Zeitraffer', hint: 'Ios Umlauf (1,77 Tage), Sonnenstand, Jupiterphase und Nachbarmonde im gewählten Tempo; Pause = Echtzeit.',
-      value: spdIdx, min: 1, max: SPEEDS.length - 1, step: 1, autoplay: true, fmt: (i) => SPEEDS[Math.round(i)][1],
+      value: spdIdx, min: 1, max: SPEEDS.length - 1, step: 1, autoplay: true, fmt: (i) => SPEEDS[Math.round(i)][1], now: () => jd, span: 3,
       set: (i, playing) => { spdIdx = Math.max(1, Math.round(i)); rate = playing ? SPEEDS[spdIdx][0] : 0; if (!playing) jd = julianDate(new Date()); },
       get: () => ({ value: spdIdx, playing: rate !== 0 }), status: () => `${fmt.format(new Date((jd - 2440587.5) * 864e5))} UTC${rate ? '' : ' · Echtzeit'}` },
     { id: 'plumes', type: 'toggle', group: 'Vulkane', label: 'Fahnen (Pele, Tvashtar, Prometheus)', value: true,

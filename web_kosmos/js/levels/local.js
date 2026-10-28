@@ -311,7 +311,7 @@ export function create(ctx) {
   ];
   const controls = [
     { id: 'labels', label: 'Namen', value: 'off', options: [['off', 'Aus'], ['on', 'Zwerggalaxien + Grenze']], set: (v) => { labelsOn = v === 'on'; bound.visible = labelsOn; } },
-    { id: 'future', label: 'Zukunft', type: 'range', min: 0, max: Math.floor(tMax / 100) * 100, step: 20, value: 0, fmt: (v) => (v ? `+${(v / 1000).toFixed(1).replace('.', ',')} Mrd. J.` : 'heute'), set: (v) => setFuture(v) },
+    { id: 'future', label: 'Zukunft', type: 'range', show: true, min: 0, max: Math.floor(tMax / 100) * 100, step: 20, value: 0, fmt: (v) => (v ? `+${(v / 1000).toFixed(1).replace('.', ',')} Mrd. J.` : 'heute'), set: (v) => setFuture(v) },
   ];
   // Blick über die Milchstraße hinweg auf Andromeda: beide auf einer Linie, die Kamera darüber (Abstand oben/unten
   // statt links/rechts, damit das Bild auch im Hochformat trägt)

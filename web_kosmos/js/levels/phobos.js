@@ -302,28 +302,28 @@ export function createMarsMoon(ctx, cfg) {
     ...cfg.spots.map(([id, lat, lon, f]) => surf(id, lat, lon, f)),
   ];
 
-  // ---------- Schalter der Infotafel ----------
-  const setSpeed = (i) => { if (i > 0) { spdIdx = i; rate = cfg.speeds[i][0]; } else rate = 0; refreshLayers(); };
+  // ---------- Schalter der Station (Reiter Station) ----------
   const controls = [
     { id: 'view', label: 'Blick', value: 'home', options: [['home', cfg.name], ['mars', 'Mars über dem Horizont'], ['orbit', 'Bahn']], set: setView },
-    { id: 'speed', type: 'range', label: 'Zeitraffer', value: spdIdx, min: 0, max: cfg.speeds.length - 1, step: 1, fmt: (i) => cfg.speeds[Math.round(i)][1],
-      set: (v) => setSpeed(Math.round(v)), get: () => (rate ? spdIdx : 0) },
-    { id: 'now', type: 'action', label: 'Finsternis', button: 'Nächste Finsternis', run: () => { jd = nextEclipse(jd); refreshLayers(); } },
+    { id: 'now', type: 'action', label: 'Finsternis', button: 'Nächste Finsternis', mark: 'Finsternis', horizon: 1374,
+      at: eclipseAt, go: goEclipse, run: () => { const t = eclipseAt(jd, jd + 1374); if (t !== null) goEclipse(t); } },
   ];
-  // Nächste Finsternis: in Schritten von 1/200 Umlauf vorwärts, bis Mars die Sonne zur Hälfte verdeckt (höchstens 2 Marsjahre)
-  function nextEclipse(j0) {
+  // Finsternis = Mars verdeckt die Sonne zur Hälfte. Erster Eintritt zwischen from und until in Schritten von 1/200 Umlauf →
+  // Zeitpunkt oder null (Deimos: nur um die Tagundnachtgleichen des Mars, daher sucht der Knopf bis zu 2 Marsjahre voraus)
+  function eclipseAt(from, until) {
     const step = m.P / 200;
-    let j = j0 + step * 20;
-    const was = (jj) => { const s = new THREE.Vector3(...marsState(jj).sun), p = tmp2.set(...moonScene(cfg.id, jj)); return s.dot(p) < 0 && p.clone().addScaledVector(s, -s.dot(p)).length() < MARS.rm; };
-    for (let k = 0; k < 1374 / step && !was(j); k++) j += step;
-    return j - step * 3;
+    const dark = (jj) => { const s = new THREE.Vector3(...marsState(jj).sun), p = tmp2.set(...moonScene(cfg.id, jj)); return s.dot(p) < 0 && p.clone().addScaledVector(s, -s.dot(p)).length() < MARS.rm; };
+    let was = dark(from);
+    for (let j = from + step; j < until; j += step) { const now = dark(j); if (now && !was) return j; was = now; }
+    return null;
   }
+  function goEclipse(t) { jd = t - (m.P / 200) * 3; refreshLayers(); }
 
   // ---------- Ebenen (Zahnrad „Station · <Mond>“, Zeitleiste) ----------
   const dayH = (m.P * 24).toLocaleString('de-DE', { maximumFractionDigits: 1 });
   registerLayers(cfg.id, [
     { id: 'clock', type: 'play', group: 'Zeit', label: 'Zeitraffer', hint: `Sonne, Sterne und die Drehung des Mars im gewählten Tempo; ein Tag auf ${cfg.name} dauert so lange wie ein Umlauf, ${dayH} Stunden. Pause = Echtzeit.`,
-      value: spdIdx, min: 1, max: cfg.speeds.length - 1, step: 1, autoplay: true, fmt: (i) => cfg.speeds[Math.round(i)][1],
+      value: spdIdx, min: 1, max: cfg.speeds.length - 1, step: 1, autoplay: true, fmt: (i) => cfg.speeds[Math.round(i)][1], now: () => jd, span: Math.max(1, m.P * 3),
       set: (i, playing) => { spdIdx = Math.max(1, Math.round(i)); rate = playing ? cfg.speeds[spdIdx][0] : 0; },
       get: () => ({ value: spdIdx, playing: rate !== 0 }), status: () => `${fmt.format(dateOf(jd))} UTC${rate ? '' : ' · Echtzeit'}` },
     { id: 'shine', type: 'range', group: 'Licht', label: 'Marsschein', value: 1, min: 0, max: 6, step: 0.25, unit: '×',

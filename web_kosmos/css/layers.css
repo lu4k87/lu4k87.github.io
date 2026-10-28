@@ -8,11 +8,10 @@
 .cfg-view { display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; }
 .cfg-view[hidden] { display: none; }
 #cfg-global { flex: 1 1 auto; min-height: 0; overflow: auto; overscroll-behavior: contain; align-content: start; padding: 0 18px 12px; }
-#cfg-station { flex: 1 1 auto; min-height: 0; grid-template-rows: auto minmax(0, 1fr) auto; gap: 0; }
-/* feste Zeilen: ohne Reiter-Leiste (Station mit nur einer Gruppe, z. B. sgra) rutschte die Liste sonst in die auto-Zeile, wuchs auf
-   volle Höhe und schob den Fuß unter das Fenster */
-#cfg-station > .lay-scroll { grid-row: 2; }
-#cfg-station > .cfg-foot { grid-row: 3; }
+#cfg-station { flex: 1 1 auto; min-height: 0; grid-template-rows: minmax(0, 1fr) auto; gap: 0; }
+/* feste Zeilen: Liste (Zeigen + Einstellungen) scrollt, Fuß steht – auch ohne Reiter-Leiste (Station mit nur einer Gruppe) */
+#cfg-station > .lay-scroll { grid-row: 1; align-self: stretch; }
+#cfg-station > .cfg-foot { grid-row: 2; }
 .lay-scroll { min-height: 0; overflow: auto; overscroll-behavior: contain; padding: 12px 18px; }
 .cfg-foot { flex: none; display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 10px 18px 12px; border-top: 1px solid var(--line); }
 .cfg-scope { flex: 1 1 auto; min-width: 0; margin: 0; font-size: 12.5px; line-height: 1.4; color: var(--ink-soft); }
@@ -67,21 +66,8 @@
    der Grund steht darunter, die Zeile bleibt bedienbar */
 :is(.b-subs.is-off, .b-item.is-idle > .lay) .cfg-label::after { content: ""; display: inline-block; width: 13px; height: 13px; margin-left: 6px; vertical-align: -2px; background: currentColor;
   -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.8' stroke-linecap='round'%3E%3Crect x='5' y='11' width='14' height='9' rx='2'/%3E%3Cpath d='M8 11V8a4 4 0 0 1 8 0v3'/%3E%3C/svg%3E") center / contain no-repeat; mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.8' stroke-linecap='round'%3E%3Crect x='5' y='11' width='14' height='9' rx='2'/%3E%3Cpath d='M8 11V8a4 4 0 0 1 8 0v3'/%3E%3C/svg%3E") center / contain no-repeat; }
-/* Animation: großer ▶/⏸, Stand, Tempo groß; Stufen als Skala unter dem Regler */
-.b-card--time { border-color: rgba(var(--accent-rgb), 0.35); background: linear-gradient(160deg, rgba(var(--accent-rgb), 0.12), rgba(var(--accent-rgb), 0.03) 60%); }
-.b-time { display: grid; grid-template-columns: auto minmax(0, max-content) minmax(100px, 1fr) auto; align-items: center; gap: 12px; }
-.b-time-text { display: flex; flex-direction: column; min-width: 0; }
-.b-strong { font-weight: 600; font-size: 14px; }
-.b-status { font: 400 12.5px var(--mono); color: var(--ink-soft); overflow-wrap: anywhere; }
-.b-time output.b-big { font: 500 15px var(--mono); color: var(--accent); white-space: nowrap; }
-.b-steps { display: flex; justify-content: space-between; gap: 6px; font: 500 12px var(--mono); color: var(--ink-soft); }
-.b-steps span { text-align: center; }
-.b-steps span:first-child { text-align: left; }
-.b-steps span:last-child { text-align: right; }
-.b-steps .is-on { color: var(--accent); }
 @media (max-width: 600px) {
   .bento { grid-template-columns: minmax(0, 1fr); }
-  .b-steps { display: none; }
 }
 .play-btn { width: 34px; height: 34px; flex: none; display: inline-grid; place-items: center; border-radius: 5px; border: 1px solid var(--line-strong); background: none; color: var(--accent); cursor: pointer; transition: border-color 0.2s, background 0.2s, color 0.2s; }
 .play-btn svg { width: 18px; height: 18px; }
@@ -142,13 +128,6 @@ body.is-flying .tl, body.is-intro .tl { opacity: 0; pointer-events: none; }
 .lay-panel { padding-top: 8px; }
 
 .lay-panel > .b-subh:first-child { margin-top: 2px; }
-/* Animation: ▶ links über beide Zeilen, daneben Name + Stand | Tempo, darunter der Regler; seitlich 4 px wie .b-body der Gruppen */
-.cfg-pane .b-card--time { display: flex; flex-direction: column; gap: 6px; padding: 4px 4px 10px; }
-.cfg-pane .b-card--time .play-btn--lg { width: 34px; height: 34px; }
-.cfg-pane .b-card--time .b-time { grid-template-columns: auto minmax(0, 1fr) auto; gap: 4px 12px; }
-.cfg-pane .b-time > .play-btn { grid-row: 1 / 3; }
-.cfg-pane .b-time > output { grid-column: 3; grid-row: 1; }
-.cfg-pane .b-time > .b-track { grid-column: 2 / -1; grid-row: 2; }
 .b-body { display: flex; flex-direction: column; padding: 6px 0 10px; }
 .b-body[hidden] { display: none; }
 /* Einstellung: Inhalt links, ↺ in eigener Spalte rechts auf Höhe der Kopfzeile – Spalte bleibt reserviert, damit nichts springt */
@@ -171,3 +150,40 @@ body.is-flying .tl, body.is-intro .tl { opacity: 0; pointer-events: none; }
 .cfg-pane .b-looks { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 @container cfg (max-width: 420px) { .cfg-pane .b-looks { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (prefers-reduced-motion: reduce) { .lay-tab-dot { transition: none; } }
+
+/* Reiter Station (Vorschau 28.10.2026 „Regler der Infotafel in den Reiter Station“ Reiter:C): oben Block „Zeigen“ als Karte,
+   darunter „Einstellungen“ mit den Gruppen-Reitern; die Reiter-Zeile bleibt beim Scrollen oben stehen (sticky im Fluss, deckend) */
+.lay-scroll { padding-top: 14px; }
+.zg { display: flex; flex-direction: column; gap: 12px; margin-bottom: 18px; padding: 14px; border-radius: var(--radius); border: 1px solid rgba(var(--accent-rgb), 0.35); background: linear-gradient(160deg, rgba(var(--accent-rgb), 0.1), rgba(var(--accent-rgb), 0.02) 60%); }
+.zg-head { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 12px; min-height: 40px; }
+.zg-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.zg-title { font: 600 14px/1.35 var(--font); overflow-wrap: anywhere; }
+.zg-sub { font: 400 12.5px/1.4 var(--mono); color: var(--ink-soft); overflow-wrap: anywhere; }
+.zg-big { font: 500 15px var(--mono); color: var(--accent); white-space: nowrap; }
+.zg-tempo { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 14px; }
+.zg > .b-item { padding-top: 10px; border-top: 1px solid var(--line); }
+.zg > .lay-hint { margin: 0; }
+/* Zeitachse: Marken-Namen | Linie mit Spielkopf „jetzt“, Skala und Rauten | Skalen-Namen; Lage je Wert (--x, 0…1), die Namen
+   legt layers.js placeLabels ohne Überlappung in höchstens zwei Zeilen */
+.zg-axis { display: flex; flex-direction: column; gap: 2px; }
+.zg-rail { position: relative; min-height: 24px; }
+.zg-line { position: relative; height: 22px; }
+.zg-line::before { content: ""; position: absolute; left: 0; right: 0; top: 50%; height: 1px; background: var(--line-strong); }
+.zg-now { position: absolute; left: 0; top: 0; bottom: 0; width: 2px; background: var(--accent); box-shadow: 0 0 8px rgba(var(--accent-rgb), 0.6); }
+.zg-tick { position: absolute; left: calc(var(--x) * 100%); top: 6px; bottom: 6px; width: 1px; background: var(--line-strong); }
+.zg-dia { position: absolute; left: calc(var(--x) * 100% - 11px); top: 0; width: 22px; height: 22px; cursor: pointer; }
+.zg-dia::before { content: ""; position: absolute; inset: 5px; transform: rotate(45deg); border: 1.5px solid var(--warn, #f2c14e); background: rgba(242, 193, 78, 0.18); }
+.zg-dia:hover::before { background: rgba(242, 193, 78, 0.4); }
+.zg-tl { position: absolute; top: 0; font: 400 12.5px var(--mono); white-space: nowrap; color: var(--ink-soft); }
+.zg-mark { position: absolute; top: 0; height: 26px; padding: 0 8px; border-radius: 5px; border: 1px solid var(--line-strong); background: rgba(7, 9, 14, 0.7); color: var(--ink); font: 500 12.5px var(--font); white-space: nowrap; cursor: pointer; transition: border-color 0.2s, color 0.2s; }
+.zg-mark:hover, .zg-mark[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); }
+.zg-mark:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+/* Jahres-Marken unter dem Regler: Daumen des Reglers läuft 8 px innerhalb der Kanten */
+.zg-rail--y { margin: 0 8px; }
+.zg-next { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 12px; padding-top: 10px; border-top: 1px solid var(--line); }
+.zg-next[hidden] { display: none; }
+.zg-next-t { display: flex; flex-direction: column; gap: 2px; min-width: 0; font-size: 13.5px; }
+.zg-next-t b { font-weight: 600; }
+.zg-set-h { margin: 0 0 4px; font: 600 15px var(--font); }
+.lay-scroll > .lay-tabs { position: sticky; top: 0; z-index: 1; margin: 0 -18px; padding: 0 18px; background: rgb(9, 11, 17); }
+.cfg-pane .swatch b { font-size: 12.5px; }

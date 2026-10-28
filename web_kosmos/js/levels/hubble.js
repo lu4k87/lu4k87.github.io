@@ -198,8 +198,6 @@ export function create(ctx) {
   ]);
   const controls = [
     { id: 'target', label: 'Ziel', value: 'udf', options: Object.entries(TARGETS).map(([k, v]) => [k, v[2]]), set: setTarget },
-    { id: 'speed', type: 'range', label: 'Zeitraffer', value: ov.speed, min: 0, max: ov.SPEEDS.length - 1, step: 1, fmt: (i) => (i ? ov.SPEEDS[Math.round(i)][1] : 'Echtzeit'),
-      set: (v) => { ov.setSpeed(Math.round(v)); refreshLayers(); }, get: () => ov.speed },
   ];
 
   return {

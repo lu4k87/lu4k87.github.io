@@ -329,8 +329,6 @@ export function create(ctx) {
   // ---------- Schalter der Infotafel ----------
   const controls = [
     { id: 'view', label: 'Blick', value: 'moon', options: [['moon', 'Mond'], ['earth', 'Von der Erde'], ['rise', 'Erdaufgang']], set: setView },
-    { id: 'speed', type: 'range', label: 'Zeitraffer', value: spdIdx, min: 0, max: SPEEDS.length - 1, step: 1, fmt: (i) => SPEEDS[Math.round(i)][1],
-      set: (v) => setSpeed(Math.round(v)), get: () => (rate ? spdIdx : 0) },
     { id: 'marks', label: 'Markierungen', value: group, options: [['apollo', 'Apollo'], ['geo', 'Krater & Meere'], ['poles', 'Pole & Rückseite']], set: (v) => { group = v; } },
     { id: 'eclipse', type: 'action', label: 'Ereignis', button: 'Mondfinsternis 26.06.2029', run: () => {
       jd = julianDate(new Date(ECLIPSE)) - 1.9 / 24;

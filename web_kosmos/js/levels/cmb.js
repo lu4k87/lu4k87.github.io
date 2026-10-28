@@ -258,12 +258,12 @@ export function create(ctx) {
     { id: 'veils', type: 'range', group: 'Galaxien', label: 'Gasschleier', value: 1, min: 0, max: 3, step: 0.25, unit: '×',
       set: (v) => { veilBase = v; }, hint: 'Farbige Schleier für das dünne, warme Gas zwischen den Galaxien, nur in der Wolke; 0 = aus.' },
     { id: 'layerGain', type: 'range', group: 'Zeitschichten', label: 'Helligkeit', value: 1, min: 0.25, max: 6, step: 0.25, unit: '×',
-      set: (v) => layers.children.forEach((m) => { m.material.uniforms.uGain.value = 0.07 * v; }), active: () => layers.visible, only: 'Erst in der Infotafel „Zeitschichten“ einschalten.' },
+      set: (v) => layers.children.forEach((m) => { m.material.uniforms.uGain.value = 0.07 * v; }), active: () => layers.visible, only: 'Erst im Reiter Station unter Ansicht „Zeitschichten“ einschalten.' },
   ]);
   const controls = [
     { id: 'dip', label: 'Dipol', value: 'off', options: [['off', 'Abgezogen'], ['on', 'Sichtbar']], set: (v) => { shellMat.uniforms.uDipOn.value = v === 'on' ? 1 : 0; } },
     { id: 'layers', label: 'Zeitschichten', value: 'off', options: [['off', 'Aus'], ['on', 'Epochen']], set: (v) => { layers.visible = v === 'on'; } },
-    { id: 'back', label: 'Blick zurück', type: 'range', min: 0, max: Math.floor(AGE * 100) / 100, step: 0.01, value: 0, fmt: (v) => (v ? fmtT(v) : 'heute'),
+    { id: 'back', label: 'Blick zurück', type: 'range', show: true, min: 0, max: Math.floor(AGE * 100) / 100, step: 0.01, value: 0, fmt: (v) => (v ? fmtT(v) : 'heute'),
       set: (v) => {
         back_t = v;
         if (!v) { probe.visible = false; probeInfo = null; return; }

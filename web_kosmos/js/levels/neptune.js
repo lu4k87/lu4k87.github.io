@@ -206,8 +206,6 @@ export function create(ctx) {
     { id: 'dots', type: 'toggle', label: 'Leuchtpunkte der Monde', value: true, set: (v) => { dots.visible = v; } },
   ]);
   const controls = [
-    { id: 'speed', type: 'range', label: 'Zeitraffer', value: rotOn ? spdIdx : 0, min: 0, max: SPEEDS.length - 1, step: 1, fmt: (i) => SPEEDS[Math.round(i)][1],
-      set: (v) => { if (v) { spdIdx = Math.round(v); rotOn = true; } else rotOn = false; refreshLayers(); }, get: () => (rotOn ? spdIdx : 0) },
     { id: 'ring', type: 'range', label: 'Ringe aufhellen', value: ringGain, min: 0.3, max: 5, step: 0.1, fmt: (v) => `${num(v, 1)} ×`,
       set: (v) => { ringGain = v; ringU.uGain.value = RING_GAIN * v; refreshLayers(); }, get: () => ringGain },
   ];

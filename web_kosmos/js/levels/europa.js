@@ -423,30 +423,25 @@ export function create(ctx) {
     surf('manannan', 'impact', 3.1, 120.3, 0.5),
   ];
 
-  // ---------- Schalter der Infotafel ----------
-  // Nächster Eintritt in den Jupiterschatten (Schritt 10 min, höchstens 5 Tage voraus)
-  function nextEclipse(from) {
-    let was = state.eclipse;
-    for (let t = from + 1 / 144; t < from + 5; t += 1 / 144) {
-      const l = lineOfSun(jovianState(t), 'europa'), now = l.s < 0 && l.q < 1;
-      if (now && !was) return t;
-      was = now;
-    }
+  // ---------- Schalter der Station (Reiter Station) und Ereignisse auf der Zeitachse ----------
+  // Erster Eintritt zwischen from und until (Schritt 10 min) → Zeitpunkt oder null: Europa im Jupiterschatten bzw. Europas
+  // Schatten auf Jupiter
+  function nextEdge(pred, from, until) {
+    let was = pred(from);
+    for (let t = from + 1 / 144; t < until; t += 1 / 144) { const now = pred(t); if (now && !was) return t; was = now; }
     return null;
   }
+  const inShadow = (t) => { const l = lineOfSun(jovianState(t), 'europa'); return l.s < 0 && l.q < 1; };
+  const onJupiter = (t) => { const l = lineOfSun(jovianState(t), 'europa'); return l.s > 0 && l.q < 0.9; };
+  // Sprung kurz vor das Ereignis, Zeitraffer 1 min/s, Blick zum Himmel
+  const goTo = (lead) => (t) => { jd = t - lead / 1440; setSpeed(1); setView('sky'); };
+  const goEclipse = goTo(25), goTransit = goTo(20);
   const controls = [
     { id: 'view', label: 'Blick', value: 'europa', options: [['europa', 'Europa'], ['sky', 'Jupiter am Himmel']], set: setView },
-    { id: 'speed', type: 'range', label: 'Zeitraffer', value: spdIdx, min: 0, max: SPEEDS.length - 1, step: 1, fmt: (i) => SPEEDS[Math.round(i)][1],
-      set: (v) => setSpeed(Math.round(v)), get: () => (rate ? spdIdx : 0) },
     { id: 'marks', label: 'Markierungen', value: group, options: [['geo', 'Risse & Chaos'], ['impact', 'Krater']], set: (v) => { group = v; } },
     { id: 'cut', label: 'Ozean-Schnitt', value: 'off', options: [['off', 'Aus'], ['true', 'Maßstäblich'], ['exag', 'Überhöht']], set: setCut },
-    { id: 'eclipse', type: 'action', label: 'Ereignis', button: 'Nächste Jupiterfinsternis', run: () => {
-      const t = nextEclipse(jd);
-      if (t === null) return;
-      jd = t - 25 / 1440;
-      setSpeed(1);
-      setView('sky');
-    } },
+    { id: 'eclipse', type: 'action', label: 'Ereignis', button: 'Nächste Jupiterfinsternis', mark: 'Finsternis',
+      at: (a, b) => nextEdge(inShadow, a, b), go: goEclipse, run: () => { const t = nextEdge(inShadow, jd, jd + 5); if (t !== null) goEclipse(t); } },
   ];
   function setSpeed(i) {
     if (i > 0) { spdIdx = i; rate = SPEEDS[i][0]; } else { rate = 0; jd = julianDate(new Date()); }
@@ -457,15 +452,11 @@ export function create(ctx) {
   const fmt = new Intl.DateTimeFormat('de-DE', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'UTC' });
   registerLayers('europa', [
     { id: 'clock', type: 'play', group: 'Zeit', label: 'Zeitraffer', hint: 'Sonne, Jupiter und die anderen Monde ziehen über Europas Himmel; ein Umlauf dauert 3,55 Tage. Pause = Echtzeit.',
-      value: spdIdx, min: 1, max: SPEEDS.length - 1, step: 1, autoplay: true, fmt: (i) => SPEEDS[Math.round(i)][1],
+      value: spdIdx, min: 1, max: SPEEDS.length - 1, step: 1, autoplay: true, fmt: (i) => SPEEDS[Math.round(i)][1], now: () => jd, span: 4,
       set: (i, playing) => { spdIdx = Math.max(1, Math.round(i)); rate = playing ? SPEEDS[spdIdx][0] : 0; if (!playing) jd = julianDate(new Date()); },
       get: () => ({ value: spdIdx, playing: rate !== 0 }), status: () => `${fmt.format(new Date((jd - 2440587.5) * 864e5))} UTC${rate ? '' : ' · Echtzeit'}` },
-    { id: 'transit', type: 'action', label: 'Europas Schatten auf Jupiter', button: 'Vorspulen', sub: true, run: () => {
-      for (let t = jd + 1 / 144; t < jd + 5; t += 1 / 144) {
-        const l = lineOfSun(jovianState(t), 'europa');
-        if (l.s > 0 && l.q < 0.9) { jd = t - 20 / 1440; setSpeed(1); setView('sky'); return; }
-      }
-    } },
+    { id: 'transit', type: 'action', label: 'Europas Schatten auf Jupiter', button: 'Vorspulen', sub: true, mark: 'Schatten auf Jupiter',
+      at: (a, b) => nextEdge(onJupiter, a, b), go: goTransit, run: () => { const t = nextEdge(onJupiter, jd, jd + 5); if (t !== null) goTransit(t); } },
     { id: 'tint', type: 'toggle', group: 'Oberfläche', label: 'Verstärkte Farben', value: false,
       hint: 'Wie die Falschfarben-Mosaiken der Sonde Galileo: Eis blauweiß, Risse und Chaos-Gebiete rotbraun (Salze, Schwefel). Beide Farbgebungen sind aus der grauen Karte abgeleitet (Modell).', set: (v) => { eu.uTint.value = v ? 1 : 0; } },
     { id: 'shine', type: 'range', group: 'Licht', label: 'Jupiterschein', value: 3, min: 0, max: 12, step: 0.5, unit: '×',

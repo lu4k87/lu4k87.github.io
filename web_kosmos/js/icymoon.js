@@ -294,8 +294,8 @@ export function createIcyMoon(ctx, cfg) {
   let spdIdx = cfg.speed0 ?? 2, dayOn = !ctx.still, note = '', noteT = 0;
   const jdNow = () => jd0 + days;
   // erster Zeitpunkt ab jd, an dem pred wahr wird (Schritt P/240, Eintritt auf ≈ 1 s genau)
-  function scan(pred, horizon) {
-    const jd = jdNow(), step = el.P / (cfg.scanDiv ?? 240);
+  function scan(pred, horizon, jd = jdNow()) {
+    const step = el.P / (cfg.scanDiv ?? 240);
     let was = pred(jd);
     for (let t = jd + step; t < jd + horizon; t += step) {
       const now = pred(t);
@@ -310,15 +310,18 @@ export function createIcyMoon(ctx, cfg) {
   }
   const eclipsed = (t) => { const l = sys.line(sys.state(t, [cfg.id]), cfg.id); return l.s < 0 && l.q < 1; };
   const transit = (t) => { const l = sys.line(sys.state(t, [cfg.id]), cfg.id); return l.s > 0 && l.q < 1; };
+  const goTo = (what) => (t) => { days = t - cfg.eclLead - jd0; spdIdx = 1; dayOn = true; note = `${what} ab ${fmtDate(t)}`; noteT = 12; refreshLayers(); };
   function jump(pred, what) {
     const t = scan(pred, cfg.horizon);
-    if (t === null) note = `kein${what === 'Finsternis' ? 'e' : ''} ${what} bis ${fmtDate(jdNow() + cfg.horizon)}`;
-    else { days = t - cfg.eclLead - jd0; spdIdx = 1; dayOn = true; note = `${what} ab ${fmtDate(t)}`; }
+    if (t !== null) { goTo(what)(t); return; }
+    note = `kein${what === 'Finsternis' ? 'e' : ''} ${what} bis ${fmtDate(jdNow() + cfg.horizon)}`;
     noteT = 12;
     refreshLayers();
   }
   const jumpEclipse = () => jump(eclipsed, 'Finsternis');
   const jumpTransit = () => jump(transit, 'Schattendurchgang');
+  // Zeitachse im Reiter Station: Eintritte zwischen a und b
+  const between = (pred) => (a, b) => scan(pred, b - a, a);
 
   // ---------- Erweiterungen der Station (Magnetfeld, Becken …) ----------
   const ext = cfg.extra ? cfg.extra(ctx, { scene, moon, sunL, jupL, frame, inWedge, jdNow, homeDir: dCam, cutU: { uCut: moonU.uCut, uCutA: moonU.uCutA, uCutB: moonU.uCutB } }) : {};
@@ -327,11 +330,14 @@ export function createIcyMoon(ctx, cfg) {
   registerLayers(cfg.id, [
     { id: 'day', type: 'play', group: 'Zeit', label: 'Tageslauf im Zeitraffer', value: spdIdx, min: 1, max: SPD.length - 1, step: 1, autoplay: !ctx.still,
       fmt: (i) => SPD[Math.round(i)][1], set: (i, playing) => { spdIdx = Math.round(i); dayOn = playing; }, get: () => ({ value: spdIdx, playing: dayOn }),
+      now: jdNow, span: Math.max(4, el.P * 1.2),
       status: () => [dayOn ? `Zeitraffer ${SPD[spdIdx][1]}` : 'angehalten', fmtDate(jdNow()), frame.shadow ? `im ${sys.name}schatten` : '', note].filter(Boolean).join(' · ') },
     ...(ext.layers || []),
     { id: 'cut', type: 'toggle', group: 'Innerer Aufbau', label: 'Schnitt durch den Mond (schematisch)', value: false, set: (v) => { cut.visible = v; moonU.uCut.value = v ? 1 : 0; } },
-    { id: 'ecl', type: 'action', group: 'Ereignisse', label: `Finsternis im ${sys.name}schatten`, button: 'Zur nächsten', run: jumpEclipse },
-    { id: 'transit', type: 'action', label: `Eigener Schatten auf ${sys.name}`, button: 'Zum nächsten', run: jumpTransit },
+    { id: 'ecl', type: 'action', show: true, label: `Finsternis im ${sys.name}schatten`, button: 'Zur nächsten', run: jumpEclipse,
+      mark: 'Finsternis', at: between(eclipsed), go: goTo('Finsternis'), horizon: cfg.horizon },
+    { id: 'transit', type: 'action', show: true, label: `Eigener Schatten auf ${sys.name}`, button: 'Zum nächsten', run: jumpTransit,
+      mark: `Schatten auf ${sys.name}`, at: between(transit), go: goTo('Schattendurchgang'), horizon: cfg.horizon },
   ]);
 
   // ---------- Infotafel ----------
@@ -346,9 +352,6 @@ export function createIcyMoon(ctx, cfg) {
     ...(VIEWS.length < 2 ? [] : [{ id: 'view', type: 'swatch', label: 'Ansicht', value: VIEWS[0][0], options: VIEWS.map((v) => [v[0], cfg.viewNames?.[v[0]] ?? v[1], v[2]]), detail: (v) => `<p class="sw-cap">${cfg.views[v]}</p>`,
       set: (v) => { moonU.uView.value = Math.max(0, VIEWS_ALL.findIndex((x) => x[0] === v)); } }]),
     ...(ext.controls || []),
-    { id: 'speed', type: 'range', label: 'Zeitraffer', value: spdIdx, min: 0, max: SPD.length - 1, step: 1, fmt: (i) => SPD[Math.round(i)][1],
-      set: (v) => { if (v) { spdIdx = v; dayOn = true; } else dayOn = false; refreshLayers(); }, get: () => (dayOn ? spdIdx : 0) },
-    { id: 'ecl', type: 'action', label: 'Ereignis', button: 'Nächste Finsternis', run: jumpEclipse },
   ];
 
   // ---------- Abzeichen ----------

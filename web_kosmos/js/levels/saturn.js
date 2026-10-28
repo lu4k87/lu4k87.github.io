@@ -291,9 +291,7 @@ export function create(ctx) {
 
   // ---------- Infotafel ----------
   const controls = [
-    { id: 'year', type: 'range', label: 'Saturnjahr · Sonnenstand', value: Math.round(jdToYear(jd0) * 4) / 4, min: 2009, max: 2039, step: 0.25, fmt: fmtYear, set: setYear, get: () => Math.round(jdToYear(jd()) * 4) / 4 },
-    { id: 'speed', type: 'range', label: 'Zeitraffer', value: playing ? spdIdx : 0, min: 0, max: SPEEDS.length - 1, step: 1, fmt: (i) => SPEEDS[Math.round(i)][1],
-      set: (v) => { if (v) { spdIdx = v; playing = true; } else playing = false; refreshLayers(); }, get: () => (playing ? spdIdx : 0) },
+    { id: 'year', type: 'range', show: true, label: 'Saturnjahr · Sonnenstand', value: Math.round(jdToYear(jd0) * 4) / 4, min: 2009, max: 2039, step: 0.25, fmt: fmtYear, set: setYear, get: () => Math.round(jdToYear(jd()) * 4) / 4 },
     { id: 'size', label: 'Größe der Monde', value: 'vis', options: [['vis', 'Anschaulich'], ['real', 'Echt']], set: (v) => { real = v === 'real'; applySizes(); } },
   ];
 

@@ -282,7 +282,6 @@ export function create(ctx) {
     turn = new THREE.Quaternion().setFromUnitVectors(s0, s1);
     refreshLayers();
   }
-  const setStorm = (v) => { mars.setStorm(v); refreshLayers(); };
   registerLayers('mars', [
     { id: 'clock', type: 'play', group: 'Zeit', label: 'Drehung und Umläufe im Zeitraffer', value: spdIdx, min: 1, max: SPEEDS.length - 1, step: 1, autoplay: !ctx.still, fmt: (i) => SPEEDS[Math.round(i)][1],
       set: (i, p) => { spdIdx = Math.round(i); playing = p; }, get: () => ({ value: spdIdx, playing }),
@@ -297,10 +296,7 @@ export function create(ctx) {
 
   // ---------- Infotafel ----------
   const controls = [
-    { id: 'season', type: 'range', label: 'Jahreszeit · Sonnenstand', value: Math.round(st.ls / 5) * 5 % 360, min: 0, max: 355, step: 5, fmt: fmtLs, set: setLs, get: () => Math.round(st.ls / 5) * 5 % 360 },
-    { id: 'storm', type: 'range', label: 'Staubsturm', value: 0, min: 0, max: 1, step: 0.05, fmt: fmtStorm, set: setStorm, get: () => mars.storm },
-    { id: 'speed', type: 'range', label: 'Zeitraffer', value: playing ? spdIdx : 0, min: 0, max: SPEEDS.length - 1, step: 1, fmt: (i) => SPEEDS[Math.round(i)][1],
-      set: (v) => { if (v) { spdIdx = v; playing = true; } else playing = false; refreshLayers(); }, get: () => (playing ? spdIdx : 0) },
+    { id: 'season', type: 'range', show: true, label: 'Jahreszeit · Sonnenstand', value: Math.round(st.ls / 5) * 5 % 360, min: 0, max: 355, step: 5, fmt: fmtLs, set: setLs, get: () => Math.round(st.ls / 5) * 5 % 360 },
     { id: 'size', label: 'Größe der Monde', value: 'vis', options: [['vis', 'Anschaulich'], ['real', 'Echt']], set: (v) => { real = v === 'real'; applySizes(); } },
   ];
 

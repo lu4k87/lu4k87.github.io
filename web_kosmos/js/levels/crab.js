@@ -171,7 +171,7 @@ export function create(ctx) {
     { id: 'mode', label: 'Spektrum', value: 'vis', options: [['vis', 'Sichtbar'], ['xray', 'Röntgen'], ['radio', 'Radio']],
       set: (v) => { mode = v; neb.material.uniforms.uMode.value = v === 'vis' ? 0 : v === 'xray' ? 1 : 2; } },
     // Kugel wächst mit: kein Abschneiden in der Zukunft, und in der Vergangenheit dichtere Schritte im kleinen Nebel
-    { id: 'year', label: 'Jahr', type: 'range', min: 1054, max: 2600, step: 1, value: TODAY, fmt: (v) => `${v} n. Chr.`,
+    { id: 'year', label: 'Jahr', type: 'range', show: true, marks: [[1054, 'Supernova']], min: 1054, max: 2600, step: 1, value: TODAY, fmt: (v) => `${v} n. Chr.`,
       set: (v) => {
         year = v;
         const k = scaleOf(v);

@@ -259,8 +259,8 @@ ${GAS_FIELD}` });
   ];
   let flowK = 1, flowG = 1;
   const flowAlpha = () => { flowPts.material.opacity = Math.min(1, 0.4 * flowG); flowLines.material.opacity = Math.min(1, 0.14 * flowG); };
-  const flowOnly = 'Wirkt, sobald in der Infotafel „Strömung“ auf Laniakea steht.';
-  const gasOnly = 'Wirkt, sobald in der Infotafel „Gas“ eingeschaltet ist.';
+  const flowOnly = 'Wirkt, sobald unter Ansicht „Strömung“ auf Laniakea steht.';
+  const gasOnly = 'Wirkt, sobald unter Ansicht „Gas“ eingeschaltet ist.';
   const gu = gasMesh.material.uniforms;
   let gasK = 1, twK = 1, twT = 0;
   registerLayers('web', [
@@ -270,7 +270,7 @@ ${GAS_FIELD}` });
     { id: 'gasGain', type: 'range', group: 'Gaswolke', label: 'Helligkeit', value: 1, min: 0.25, max: 4, step: 0.25, unit: '×', set: (v) => { gu.uGain.value = v; gas.invalidate(); }, active: () => gas.quad.visible, only: gasOnly },
     { id: 'gasK', type: 'range', label: 'Bewegung', value: 1, min: 0, max: 4, step: 0.25, fmt: (v) => (v ? `${v} ×` : 'steht'), set: (v) => { gasK = v; }, active: () => gas.quad.visible, only: gasOnly },
     { id: 'gasSteps', type: 'range', label: 'Detail (Schritte)', value: gu.uSteps.value, min: 64, max: 160, step: 32, set: (v) => { gu.uSteps.value = v; gas.invalidate(); }, active: () => gas.quad.visible, only: gasOnly },
-    { id: 'twK', type: 'range', group: 'Funkeln', label: 'Tempo', value: 1, min: 0.25, max: 3, step: 0.25, unit: '×', set: (v) => { twK = v; }, active: () => twinkle.visible, only: 'Wirkt, sobald in der Infotafel „Funkeln“ an ist.' },
+    { id: 'twK', type: 'range', group: 'Funkeln', label: 'Tempo', value: 1, min: 0.25, max: 3, step: 0.25, unit: '×', set: (v) => { twK = v; }, active: () => twinkle.visible, only: 'Wirkt, sobald unter Ansicht „Funkeln“ an ist.' },
   ]);
   // Vorbeiflug an Galaxien auf der Fahrt hinein zur Lokalen Gruppe (User 27.10.2026, nur im Flug sichtbar)
   const flyby = createFlyby(galaxyAtlas());

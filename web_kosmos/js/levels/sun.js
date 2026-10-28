@@ -454,7 +454,7 @@ export function create(ctx) {
   // Gruppen von innen nach außen: Farbe → Oberfläche → Rand und Korona → Ausbrüche (mit Protuberanzen) → Magnetbögen → deren
   // Bewegung. Viele Ebenen wirken nur in einem Teil der Kanäle (Glut und 304 Å = Look aus sunlook.js/sunstrands.js, sonst
   // SDO-Shader aus sunfx.js): active() sagt, ob sie im aktuellen Bild etwas ändern, only den Grund (layers.js dunkelt ab).
-  const LOOK_ONLY = 'Nur bei Glut und 304 Å (Wellenlänge in der Infotafel).';
+  const LOOK_ONLY = 'Nur bei Glut und 304 Å (Wellenlänge unter Ansicht).';
   const MAGMA_ONLY = 'Nur bei den Magma-Krusten (Magma-Brodeln, Konvektion fein, Lavaplatten, Plasma-Relief).';
   registerLayers('sun', [
     { id: 'rot', type: 'play', group: 'Zeit', label: 'Rotation im Zeitraffer', value: spdIdx, min: 1, max: SPEEDS.length - 1, step: 1, fmt: (i) => SPEEDS[Math.round(i)][1],
@@ -465,15 +465,15 @@ export function create(ctx) {
     { id: 'glow', type: 'range', label: 'Glut bei starker Aktivität', value: glowMode, min: 0, max: GLOWS.length - 1, step: 1, fmt: (i) => GLOWS[Math.round(i)], set: (v) => { glowMode = Math.round(v); applyGlow(); },
       active: () => lookOn && actIdx >= 4, only: 'Nur bei Glut und 304 Å ab Aktivität „Maximum“ (Infotafel), am stärksten bei „extrem“.' },
     { id: 'tex', type: 'range', group: 'Oberfläche', label: 'Kruste', value: 5, min: 0, max: TEXS.length - 1, step: 1, fmt: (i) => TEXS[Math.round(i)], set: (v) => { lookU.uTex.value = Math.round(v); },
-      active: () => chan === 'glut', only: 'Nur bei Glut (Wellenlänge in der Infotafel).' },
+      active: () => chan === 'glut', only: 'Nur bei Glut (Wellenlänge unter Ansicht).' },
     { id: 'magmaRelief', type: 'range', label: 'Magma-Relief (3D-Wölbung)', value: 1.0, min: 0, max: 2, step: 0.1, unit: '×', sub: true, set: (v) => { lookU.uRelief.value = v; },
       active: () => chan === 'glut' && lookU.uTex.value >= 4, only: MAGMA_ONLY },
     { id: 'magmaVisc', type: 'range', label: 'Viskosität der Schmelze', value: 1.0, min: 0.4, max: 2.2, step: 0.1, unit: '×', sub: true, set: (v) => { lookU.uVisc.value = v; },
       active: () => chan === 'glut' && lookU.uTex.value >= 4, only: MAGMA_ONLY },
     { id: 'gran', type: 'toggle', label: 'Granulation', value: true, set: (v) => { granOn = v; sunU.uGran.value = v && chan === 'wl' ? 1 : 0; },
-      active: () => chan === 'wl', only: 'Nur bei Weißlicht (Wellenlänge in der Infotafel).' },
+      active: () => chan === 'wl', only: 'Nur bei Weißlicht (Wellenlänge unter Ansicht).' },
     { id: 'spots', type: 'toggle', label: 'Sonnenflecken', value: true, set: (v) => { spotsOn = v; applyRegions(); },
-      active: () => chan === 'wl' || chan === 'glut', only: 'Nur bei Weißlicht und Glut (Wellenlänge in der Infotafel).' },
+      active: () => chan === 'wl' || chan === 'glut', only: 'Nur bei Weißlicht und Glut (Wellenlänge unter Ansicht).' },
     { id: 'nest', type: 'range', label: 'Aktive Regionen aus der Ferne', value: 1, min: 0, max: 2, step: 0.1, unit: '×', set: (v) => { lookU.uNest.value = v; },
       active: () => lookOn && nAct > 0, only: 'Nur bei Glut und 304 Å mit aktiven Regionen (Aktivität ab „niedrig“); wirkt ab ≈ 2 Sonnenradien Abstand.' },
     { id: 'rim', type: 'range', group: 'Rand und Korona', label: 'Rand', value: rimIdx, min: 0, max: RIMS.length - 1, step: 1, fmt: (i) => RIMS[Math.round(i)], set: (v) => { rimIdx = Math.round(v); rimU.uRim.value = rimIdx; rimU.uSpH.value = SPICULE_H[rimIdx]; applyRegions(); },
@@ -499,7 +499,7 @@ export function create(ctx) {
     { id: 'ripRand', type: 'toggle', label: 'Andere Ausbrüche: Stil zufällig', value: ripRand, sub: true, set: (v) => { ripRand = v; applyRip(); }, active: () => lookOn, only: LOOK_ONLY },
     ...RIPS.map((name, i) => ({ id: `rip${i}`, type: 'toggle', label: `Im Zufall: ${name}`, value: true, sub: true, set: (v) => { ripOn[i] = v; applyRip(); },
       active: () => lookOn && ripRand, only: 'Nur wenn „Andere Ausbrüche: Stil zufällig“ an ist.' })),
-    { id: 'flareNow', type: 'action', label: 'Nächster Ausbruch', button: 'Jetzt auslösen', sub: true, run: () => { if (flaresOn) triggerFlare(camera, true); } },
+    { id: 'flareNow', type: 'action', show: true, active: () => flaresOn, only: 'Wirkt nur mit eingeschalteten Ausbrüchen.', label: 'Nächster Ausbruch', button: 'Jetzt auslösen', sub: true, run: () => { if (flaresOn) triggerFlare(camera, true); } },
     { id: 'lensOptic', type: 'range', group: 'Linsenreflex & Optik', label: 'Optik-Stil', value: opticIdx, min: 0, max: OPTICS.length - 1, step: 1, fmt: (i) => OPTICS[Math.round(i)], set: (v) => { opticIdx = Math.round(v); sunFlare.userData.setOptic(opticIdx === 0 ? 'master' : 'classic'); } },
     { id: 'lensGhost', type: 'toggle', label: 'Magenta-Sensor-Ghost', value: true, sub: true, set: (v) => { ghostOn = v; sunFlare.userData.setGhost(ghostOn, ghostMotionOn); } },
     { id: 'ghostMotion', type: 'toggle', label: 'Ghost-Parallaxe auf optischer Achse', value: true, sub: true, set: (v) => { ghostMotionOn = v; sunFlare.userData.setGhost(ghostOn, ghostMotionOn); } },
@@ -527,7 +527,7 @@ export function create(ctx) {
     { id: 'quake', type: 'toggle', group: 'Ereignisse', label: 'Sonnenbeben nach dem Flare', value: true, set: (v) => { quakeOn = v; },
       active: () => lookOn && flaresOn, only: 'Nur bei Glut und 304 Å, solange „Flares mit Massenauswurf“ an ist.' },
     { id: 'comet', type: 'toggle', label: 'Sonnenstreifer-Komet (selten)', value: true, set: (v) => { cometOn = v; if (!v) comet.stop(); } },
-    { id: 'cometNow', type: 'action', label: 'Nächster Komet', button: 'Komet jetzt', sub: true, run: () => { comet.start(camera); } },
+    { id: 'cometNow', type: 'action', show: true, label: 'Nächster Komet', button: 'Komet jetzt', sub: true, run: () => { comet.start(camera); } },
   ]);
 
   // Stile für platzende Bögen: eingeschaltete im Zufall, sonst nur der Stil des Knopfs
@@ -542,9 +542,6 @@ export function create(ctx) {
   const controls = [
     { id: 'chan', type: 'swatch', label: 'Wellenlänge · Schicht', value: 'glut', options: CH.map((c) => [c.v, c.name, c.disc]), set: setChan, detail: (v) => LAY(chOf(v)) },
     { id: 'act', type: 'range', label: 'Aktivität', value: actIdx, min: 0, max: ACT.length - 1, step: 1, fmt: (i) => ACT[Math.round(i)][0], set: setActivity },
-    { id: 'speed', type: 'range', label: 'Zeitraffer', value: rotOn ? spdIdx : 0, min: 0, max: SPEEDS.length - 1, step: 1, fmt: (i) => SPEEDS[Math.round(i)][1],
-      set: (v) => { if (v) { spdIdx = v; rotOn = true; } else rotOn = false; refreshLayers(); }, get: () => (rotOn ? spdIdx : 0) },
-    { id: 'flare', type: 'action', label: 'Ereignis', button: 'Sonneneruption auslösen', run: () => { if (flaresOn) triggerFlare(camera, true); } },
   ];
   setChan('glut');
 

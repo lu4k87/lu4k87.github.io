@@ -263,10 +263,7 @@ export function create(ctx) {
     { id: 'flyby', type: 'action', label: 'Vorbeiflug', button: 'Abspielen', sub: true, run: flyby },
   ]);
   const controls = [
-    { id: 'speed', type: 'range', label: 'Zeitraffer', value: playing ? spdIdx : 0, min: 0, max: SPEEDS.length - 1, step: 1, fmt: (i) => SPEEDS[Math.round(i)][1],
-      set: (v) => { if (v) { spdIdx = v; playing = true; } else playing = false; refreshLayers(); }, get: () => (playing ? spdIdx : 0) },
     { id: 'color', label: 'Farbe', value: 'model', options: [['model', 'Modell (MVIC)'], ['gray', 'Messbild (LORRI)']], set: setColor },
-    { id: 'flyby', type: 'action', label: 'New Horizons', button: 'Vorbeiflug 2015', run: flyby },
   ];
 
   // ---------- Abzeichen ----------

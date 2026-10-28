@@ -1,4 +1,4 @@
-// Echte Töne je Station (Schalter „Ton“ in der Infotafel): Mikrofon-Aufnahmen vom Mars und vom Mond-Funk, sonst Messdaten
+// Echte Töne je Station (Knopf „Ton“ in der Kopfzeile): Mikrofon-Aufnahmen vom Mars und vom Mond-Funk, sonst Messdaten
 // von Raumsonden – Plasma- und Radiowellen, die Antennen auffangen, und Schwingungen der Sonne –, hörbar gemacht.
 // Dateien aus tools/fetch_sounds.py (web/audio/<file>.mp3: Schleife ab PAD mit der Länge len), Quellen in SOURCES (snd-*).
 // Einmal eingeschaltet bleibt der Ton beim Weiterfliegen an: Stationswechsel blendet über, Stationen ohne Ton werden still.

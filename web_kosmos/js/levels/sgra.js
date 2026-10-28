@@ -262,7 +262,7 @@ export function create(ctx) {
   const controls = [
     { id: 'view', label: 'Ansicht', value: 'cam', options: [['cam', 'Horizont'], ['eht', 'EHT-Blick'], ['stars', 'S-Sterne']],
       set: (v) => { view = v; ehtOn = v === 'eht'; sgroup.visible = v === 'stars'; wantDist = v === 'stars' ? STARS_D : HOME_D; wantTarget.copy(v === 'stars' ? orbitCenter : new THREE.Vector3()); } },
-    { id: 'hot', label: 'Flare', value: 'off', options: [['off', 'Aus'], ['on', 'Heißer Fleck']], set: (v) => { hotOn = v === 'on'; } },
+    { id: 'hot', label: 'Flare', show: true, value: 'off', options: [['off', 'Aus'], ['on', 'Heißer Fleck']], set: (v) => { hotOn = v === 'on'; } },
   ];
   const u = mat.uniforms;
   registerLayers('sgra', [

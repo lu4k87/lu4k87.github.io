@@ -323,9 +323,7 @@ export function create(ctx) {
   const yearOf = () => new Date((jd - 2440587.5) * 864e5).getUTCFullYear();
   const controls = [
     { id: 'view', label: 'Blick', value: 'triton', options: [['triton', 'Triton'], ['neptune', 'Neptun am Horizont'], ['geysers', 'Geysire'], ['orbit', 'Bahn']], set: setView },
-    { id: 'speed', type: 'range', label: 'Zeitraffer', value: spdIdx, min: 0, max: SPEEDS.length - 1, step: 1, fmt: (i) => SPEEDS[Math.round(i)][1],
-      set: (v) => setSpeed(Math.round(v)), get: () => (rate ? spdIdx : 0) },
-    { id: 'year', type: 'range', label: 'Jahr', value: yearOf(), min: 1900, max: 2150, step: 1, fmt: (y) => String(Math.round(y)),
+    { id: 'year', type: 'range', show: true, marks: [[1989, 'Voyager 2']], label: 'Jahr', value: yearOf(), min: 1900, max: 2150, step: 1, fmt: (y) => String(Math.round(y)),
       set: (y) => { jd += (Math.round(y) - yearOf()) * 365.25; }, get: yearOf },
     { id: 'voyager', type: 'action', label: 'Ereignis', button: 'Voyager 2 · 25.08.1989', run: () => {
       jd = julianDate(new Date(VOYAGER));

@@ -6,7 +6,7 @@
 import { STATIONS, GROUPS, ROUTE, SOURCES, routeIndex, up, entry } from './content.js';
 import { fmtLength, fmtTime, C } from './astro.js';
 import { settings, setSetting, mountSettings, onSettings } from './settings.js';
-import { getLayer, setLayer, fmtVal, paintRange } from './layers.js';
+import { getLayer, setLayer, fmtVal, paintRange, setControls } from './layers.js';
 import { cardHtml, mountCard, unmountCard } from './cards.js';
 import { prose, nbsp } from './figs.js';
 import { renderScaleCompare } from './scale_compare.js';
@@ -457,43 +457,25 @@ export function createHud(h) {
     mDist.textContent = meta.dist ? fmtLength(meta.dist) : 'im Bild';
     mBack.textContent = meta.lookback ? fmtTime(meta.lookback) : 'Gegenwart';
     scaleTabIdx = 0;
+    setControls(id, level.controls);   // Schalter der Station stehen im Reiter Station (layers.js), nicht mehr in der Infotafel
     renderPanel();
     buildMarkers();
     closeCard();
   }
-
-  // Schalter der Station: Segment (Standard; mit detail(wert) → HTML darunter, z. B. Ton), Schieberegler ('range'),
-  // Farbscheiben mit Erklärung ('swatch': options [wert, name, CSS-Hintergrund], detail(wert)), Knopf ('action': button, run())
-  function ctrlHtml(c) {
-    if (c.type === 'range') return `
-        <label class="cfg-row cfg-range"><span class="cfg-label">${esc(c.label)}</span>
-          <input type="range" data-rng="${c.id}" min="${c.min}" max="${c.max}" step="${c.step ?? 1}" value="${c.value}" aria-label="${esc(c.label)}"><output data-rout="${c.id}">${esc(c.fmt ? c.fmt(c.value) : c.value)}</output></label>`;
-    if (c.type === 'swatch') return `
-        <div class="cfg-box"><span class="cfg-label" id="ctl-${c.id}">${esc(c.label)}</span>
-          <div class="swatch" role="radiogroup" aria-labelledby="ctl-${c.id}">${c.options.map(([v, l, bg]) => `<button type="button" role="radio" data-sw="${c.id}" data-val="${v}" aria-checked="${String(c.value === v)}"><i class="sw-disc" style="background:${bg}" aria-hidden="true"></i><b>${esc(l)}</b></button>`).join('')}</div>
-          <div class="sw-detail" data-swd="${c.id}">${c.detail(c.value)}</div></div>`;
-    if (c.type === 'action') return `
-        <div class="cfg-row"><span class="cfg-label">${esc(c.label)}</span><button type="button" class="act-btn" data-act="${c.id}">${esc(c.button)}</button></div>`;
-    const seg = `<div class="seg" role="radiogroup" aria-labelledby="ctl-${c.id}">${c.options.map(([v, l]) => `<button type="button" role="radio" data-ctl="${c.id}" data-val="${v}" aria-checked="${String(c.value === v)}">${esc(l)}</button>`).join('')}</div>`;
-    if (c.detail) return `
-        <div class="cfg-box"><span class="cfg-label" id="ctl-${c.id}">${esc(c.label)}</span>
-          ${seg}<div class="sw-detail" data-swd="${c.id}">${c.detail(c.value)}</div></div>`;
-    return `
-        <div class="cfg-row"><span class="cfg-label" id="ctl-${c.id}">${esc(c.label)}</span>
-          ${seg}</div>`;
-  }
+  // Schalter der Station geändert (Reiter Station): Abzeichen mit listIf (z. B. je Körper) hängen daran → Liste und Abzeichen neu
+  addEventListener('kosmos:ctl', () => {
+    if (lv && lv.hotspots.some((x) => x.listIf)) { renderPanel(); buildMarkers(); }
+    h.onInput();
+  });
 
   function renderPanel() {
     const st = meta;
     const info = (x) => st.hotspots[x.id] || x.info;
     const hs = lv.hotspots.filter((x) => info(x) && x.kind !== 'label' && (!x.listIf || x.listIf()));
-    // Ton schaltet der Knopf in der Kopfzeile (quick.js, Vorschau 26.10.2026: aus der Infotafel entfernt)
-    const ctrls = (lv.controls || []).filter((c) => c.id !== 'sound');
     // Abstecher (Nummer mit Buchstabe, z. B. 02A) nennen ihren Halt bzw. ihre Elternstation (ISS → Raumstationen)
     const from = /^\d+$/.test(String(st.n)) || !up(lv.id) ? '' : ` · Abstecher von ${S(up(lv.id)).title}`;
     // Infotafel als Messblatt (Tafel:C): Kopf in Satzschreibung, Kennzahlen als Wertetabelle (Zahl rechtsbündig), Maßstab auf
-    // Grundlinie; Zustand (live) und Knöpfe der Station (action) im festen Fuß unter dem Scrollbereich
-    const acts = ctrls.filter((c) => c.type === 'action' && !c.sub), rest = ctrls.filter((c) => !acts.includes(c));
+    // Grundlinie; Zustand (live) im festen Fuß unter dem Scrollbereich. Schalter und Ereignis-Knöpfe: Reiter Station (layers.js)
     panel.innerHTML = `
       <div class="t-head"><p class="kicker">Station <span class="kick-n">${num(lv.id)}</span> · ${esc(st.kicker + from)}</p>
       <h1 class="st-title">${esc(st.title)}</h1>
@@ -503,7 +485,6 @@ export function createHud(h) {
       </dl>
       ${settings.S.scaleCompare !== false ? renderScaleCompare(lv.id, scaleTabIdx) : ''}
       ${lv.widget ? `<div class="widget" id="widget">${lv.widget()}</div>` : ''}
-      ${rest.length ? `<div class="st-ctrls">${rest.map(ctrlHtml).join('')}</div>` : ''}
       <h2 class="sec-h">Entdecken</h2>
       <ul class="explore">${hs.map((x, i) => `
         <li><button type="button" data-hs="${x.id}" class="${x.kind === 'dive' ? 'is-dive' : ''}">${x.kind === 'dive' ? hex('<path d="M14 17l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>', 'hex--mini') : hexNum(i + 1, 'hex--mini')}<span>${esc(info(x).t)}</span>${x.kind === 'dive' ? '<span class="tag">hineinfliegen</span>' : ''}</button></li>`).join('')}
@@ -512,9 +493,8 @@ export function createHud(h) {
         <p>${prose(st.note)}</p>
         <ol class="sources">${st.sources.map((s) => `<li><a href="${SOURCES[s].url}" target="_blank" rel="noopener">${prose(SOURCES[s].t)}</a><span>${prose(SOURCES[s].by)}</span></li>`).join('')}</ol>
       </details>`;
-    foot.innerHTML = `${lv.live ? '<p class="live" id="live" aria-live="off"></p>' : ''}${acts.map((c) => `<button type="button" class="act-btn act-btn--prim" data-act="${c.id}">${esc(c.button)}</button>`).join('')}`;
-    foot.hidden = !lv.live && !acts.length;
-    foot.querySelectorAll('[data-act]').forEach((b) => b.addEventListener('click', () => { acts.find((x) => x.id === b.dataset.act).run(); h.onInput(); }));
+    foot.innerHTML = lv.live ? '<p class="live" id="live" aria-live="off"></p>' : '';
+    foot.hidden = !lv.live;
     liveEl = foot.querySelector('#live');
     widgetEl = panel.querySelector('#widget');
     panel.querySelectorAll('[data-sc-tab]').forEach((b) => b.addEventListener('click', () => {
@@ -523,44 +503,7 @@ export function createHud(h) {
       h.onInput();
     }));
     panel.querySelectorAll('[data-hs]').forEach((b) => b.addEventListener('click', () => pick(b.dataset.hs)));
-    panel.querySelectorAll('[data-rng]').forEach((i) => i.addEventListener('input', () => {
-      const c = ctrls.find((x) => x.id === i.dataset.rng);
-      c.value = +i.value;
-      c.set(c.value);
-      panel.querySelector(`[data-rout="${c.id}"]`).textContent = c.fmt ? c.fmt(c.value) : String(c.value);
-      h.onInput();
-    }));
-    panel.querySelectorAll('[data-ctl]').forEach((b) => b.addEventListener('click', () => {
-      const c = ctrls.find((x) => x.id === b.dataset.ctl);
-      c.value = b.dataset.val;
-      c.set(c.value);
-      // Abzeichen mit listIf (z. B. je Körper) hängen am Schalter: Liste und Abzeichen neu aufbauen
-      if (lv.hotspots.some((x) => x.listIf)) { renderPanel(); buildMarkers(); return; }
-      panel.querySelectorAll(`[data-ctl="${c.id}"]`).forEach((o) => o.setAttribute('aria-checked', String(o.dataset.val === c.value)));
-      if (c.detail) panel.querySelector(`[data-swd="${c.id}"]`).innerHTML = c.detail(c.value);
-    }));
-    panel.querySelectorAll('[data-sw]').forEach((b) => b.addEventListener('click', () => {
-      const c = ctrls.find((x) => x.id === b.dataset.sw);
-      c.value = b.dataset.val;
-      c.set(c.value);
-      panel.querySelectorAll(`[data-sw="${c.id}"]`).forEach((o) => o.setAttribute('aria-checked', String(o.dataset.val === c.value)));
-      panel.querySelector(`[data-swd="${c.id}"]`).innerHTML = c.detail(c.value);
-      h.onInput();
-    }));
-    panel.querySelectorAll('[data-act]').forEach((b) => b.addEventListener('click', () => { ctrls.find((x) => x.id === b.dataset.act).run(); h.onInput(); }));
     panel.querySelectorAll('input[type=range]').forEach((i) => paintRange(i));
-  }
-  // Regler mit get() (z. B. Zeitraffer, auch im Zahnrad stellbar) folgen ihrem Zustand, außer während der Bedienung
-  function syncCtrls() {
-    for (const c of lv.controls || []) {
-      if (c.type !== 'range' || !c.get) continue;
-      const v = c.get(), i = panel.querySelector(`[data-rng="${c.id}"]`);
-      if (v === c.value || !i || document.activeElement === i) continue;
-      c.value = v;
-      i.value = v;
-      paintRange(i);
-      panel.querySelector(`[data-rout="${c.id}"]`).textContent = c.fmt ? c.fmt(v) : String(v);
-    }
   }
   // Füllung jedes Reglers folgt der Bedienung (Infotafel, Info-Karte; Fenster malen in ihrem sync)
   addEventListener('input', (e) => { if (e.target.type === 'range') paintRange(e.target); }, true);
@@ -871,7 +814,6 @@ export function createHud(h) {
     if (!keepDot) m.dot.classList.add('is-off');
   }
   function tickLive(time) {
-    syncCtrls();
     if (widgetEl && lv.widgetTick) lv.widgetTick(widgetEl, time);
     if (!liveEl || !lv.live || time - liveT < 0.5) return;
     liveT = time;

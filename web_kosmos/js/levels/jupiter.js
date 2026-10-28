@@ -261,19 +261,19 @@ export function create(ctx) {
   // ---------- Ebenen (Zahnrad „Station · Jupiter & Monde“, Zeitleiste) ----------
   const fmt = new Intl.DateTimeFormat('de-DE', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'UTC' });
   const dateStr = () => `${fmt.format(new Date((jd - 2440587.5) * 864e5))} UT`;
-  function jumpToShadow() {
-    const ev = nextShadowTransit(jd);
-    if (!ev) return;
-    jd = ev.jd + 0.025;   // ≈ 35 min nach dem Eintritt: der Schatten liegt ganz auf der Scheibe
+  function goShadow(t) {
+    jd = t + 0.025;   // ≈ 35 min nach dem Eintritt: der Schatten liegt ganz auf der Scheibe
     spdIdx = 1;
     place();
     refreshLayers();
   }
+  function jumpToShadow() { const ev = nextShadowTransit(jd); if (ev) goShadow(ev.jd); }
   registerLayers('jupiter', [
     { id: 'clock', type: 'play', group: 'Zeit', label: 'Mondlauf', value: spdIdx, min: 1, max: SPEEDS.length - 1, step: 1, autoplay: !ctx.still,
-      fmt: (i) => SPEEDS[Math.round(i)][1], set: (i, on) => { spdIdx = Math.round(i); playing = on; }, get: () => ({ value: spdIdx, playing }),
+      fmt: (i) => SPEEDS[Math.round(i)][1], set: (i, on) => { spdIdx = Math.round(i); playing = on; }, get: () => ({ value: spdIdx, playing }), now: () => jd, span: 3,
       status: () => `Stand ${dateStr()}${playing ? '' : ' · angehalten'}` },
-    { id: 'transit', type: 'action', label: 'Nächster Schattendurchgang', button: 'Vorspulen', sub: true, run: jumpToShadow },
+    { id: 'transit', type: 'action', label: 'Nächster Schattendurchgang', button: 'Vorspulen', sub: true, run: jumpToShadow,
+      at: (a, b) => { const ev = nextShadowTransit(a, MOON_IDS, b - a); return ev && { t: ev.jd, mark: `Schatten ${MOON[ev.id].name}` }; }, go: goShadow },
     { id: 'now', type: 'action', label: 'Zeitpunkt der Station', button: 'Zurück', sub: true, run: () => { jd = jd0; place(); } },
     { id: 'shadows', type: 'toggle', group: 'Jupiter und Monde', label: 'Schatten und Finsternisse', value: true, set: (v) => { shadowsOn = v; place(); } },
     { id: 'orbits', type: 'toggle', label: 'Bahnen mit Leuchtspur', value: true, set: (v) => moons.forEach((x) => { x.orbit.visible = v; }) },
@@ -285,9 +285,6 @@ export function create(ctx) {
   // ---------- Infotafel ----------
   const controls = [
     { id: 'size', label: 'Größe der Monde', value: 'vis', options: [['vis', 'Anschaulich'], ['real', 'Echt']], set: (v) => { real = v === 'real'; applySizes(); place(); } },
-    { id: 'speed', type: 'range', label: 'Zeitraffer', value: playing ? spdIdx : 0, min: 0, max: SPEEDS.length - 1, step: 1, fmt: (i) => SPEEDS[Math.round(i)][1],
-      set: (v) => { if (v) { spdIdx = Math.round(v); playing = true; } else playing = false; refreshLayers(); }, get: () => (playing ? spdIdx : 0) },
-    { id: 'transit', type: 'action', label: 'Ereignis', button: 'Nächster Schattendurchgang', run: jumpToShadow },
   ];
 
   // Widget: Resonanz-Uhr von Norden gesehen (mittlere Längen in der Laplace-Ebene, Sonne als Strich am Rand)

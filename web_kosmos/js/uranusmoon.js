@@ -297,13 +297,7 @@ export function createUranusMoon(ctx, cfg) {
       refreshLayers();
     } },
     { id: 'seen', label: 'Voyager-2-Abdeckung', value: 'off', options: [['off', 'Aus'], ['on', 'Gradnetz']], set: (v) => { seen.visible = v === 'on'; } },
-    { id: 'speed', type: 'range', label: 'Zeitraffer', value: spdIdx, min: 0, max: SPEEDS.length - 1, step: 1, fmt: (i) => SPEEDS[Math.round(i)][1],
-      set: (v) => setSpeed(Math.round(v)), get: () => (rate ? spdIdx : 0) },
   ];
-  function setSpeed(i) {
-    if (i > 0) { spdIdx = i; rate = SPEEDS[i][0]; } else rate = 0;
-    refreshLayers();
-  }
 
   // ---------- Ebenen (Zahnrad „Station · <Mond>“, Zeitleiste) ----------
   let ushine = 1;

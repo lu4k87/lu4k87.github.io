@@ -349,7 +349,7 @@ export function create(ctx) {
       if (k.m) k.m.position.copy(k.p);
     }
   };
-  // Zahnrad: Teile der Galaxis, Tempo des Zeitraffers, Helligkeit der Fermi-Blasen (die Schalter dazu stehen in der Infotafel)
+  // Zahnrad: Teile der Galaxis, Tempo des Zeitraffers, Helligkeit der Fermi-Blasen (die Schalter dazu stehen im Reiter Station unter Ansicht)
   let spinK = 1;
   const num = (v) => String(v).replace('.', ',');
   const nebOnly = { active: () => neb.object.visible, only: 'Wirkt, solange „Gas und Staub als 3D-Nebel“ an ist.' };
@@ -357,17 +357,17 @@ export function create(ctx) {
     { id: 'halo', type: 'toggle', group: 'Milchstraße', label: 'Halo mit Kugelsternhaufen', value: true, set: (v) => { halo.visible = v; } },
     { id: 'marks', type: 'toggle', label: 'Leuchtpunkte der Stationen', value: true, set: (v) => marks.forEach((k) => { k.m.visible = v; }) },
     { id: 'spinK', type: 'range', group: 'Drehung', label: 'Tempo im Zeitraffer', value: 1, min: 0.25, max: 20, step: 0.25, fmt: (v) => `${num(v)} Mio. Jahre/s`,
-      set: (v) => { spinK = v; if (rate) rate = v; }, active: () => rate > 0, only: 'Wirkt, sobald in der Infotafel „Drehung“ auf Zeitraffer steht.' },
+      set: (v) => { spinK = v; if (rate) rate = v; }, active: () => rate > 0, only: 'Wirkt, sobald unter Zeigen „Drehung“ auf Zeitraffer steht.' },
     { id: 'neb', type: 'toggle', group: 'Nebel', label: 'Gas und Staub als 3D-Nebel', value: true,
       set: (v) => neb.setOn(v) },
     { id: 'nebGas', type: 'range', sub: true, label: 'Leuchten des Gases', value: 1, min: 0, max: 2, step: 0.1, unit: '×', set: (v) => neb.setGas(v), ...nebOnly },
     { id: 'nebDust', type: 'range', sub: true, label: 'Staub', value: 1, min: 0, max: 2, step: 0.1, unit: '×', set: (v) => neb.setDust(v), ...nebOnly },
     { id: 'nebGlim', type: 'toggle', sub: true, label: 'Glimmen der Gaswolken', value: true, set: (v) => neb.setGlim(v), ...nebOnly },
     { id: 'fermiGain', type: 'range', group: 'Fermi-Blasen', label: 'Helligkeit', value: 1, min: 0.25, max: 5, step: 0.25, unit: '×',
-      set: (v) => { fermi.material.uniforms.uGain.value = 0.09 * v; }, active: () => fermi.visible, only: 'Erst in der Infotafel „Fermi-Blasen“ einschalten.' },
+      set: (v) => { fermi.material.uniforms.uGain.value = 0.09 * v; }, active: () => fermi.visible, only: 'Erst im Reiter Station unter Ansicht „Fermi-Blasen“ einschalten.' },
   ]);
   const controls = [
-    { id: 'spin', label: 'Drehung', value: 'off', options: [['off', 'Stand heute'], ['on', 'Zeitraffer']], set: (v) => { rate = v === 'on' ? spinK : 0; } },
+    { id: 'spin', label: 'Drehung', show: true, value: 'off', options: [['off', 'Stand heute'], ['on', 'Zeitraffer']], set: (v) => { rate = v === 'on' ? spinK : 0; } },
     { id: 'lines', label: 'Linien', value: 'off', options: [['off', 'Aus'], ['on', 'Sonnenbahn + Sichtlinien']], set: (v) => { sunOrbit.visible = sight.visible = v === 'on'; } },
     { id: 'fermi', label: 'Fermi-Blasen', value: 'off', options: [['off', 'Aus'], ['on', 'Gammastrahlung']], set: (v) => { fermi.visible = v === 'on'; } },
   ];

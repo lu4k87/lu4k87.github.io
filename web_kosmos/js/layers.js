@@ -1,7 +1,14 @@
 // Einstellungen je Station (Muster Biochar): Reiter „Station“ der rechten Spalte (settings.js) und Zeitleiste (Player)
-// unten links. Aufbau (Vorschau 28.10.2026 Reiter:C): Gruppen als Unterstrich-Reiter in einer Zeile (Kurzname aus tabs.js + Zahl
-// der Ebenen, Punkt bei geändertem Wert; ←/→ wie Reiter, seitlich schiebbar), darunter die Animation, genau eine Gruppe sichtbar
-// (je Station gemerkt in `kosmos.cfgopen.v1`), Fuß „nur an dieser Station · Alle zurücksetzen“; Zeile Name | Bedienung | Wert.
+// unten links. Aufbau (Vorschau 28.10.2026 Reiter:C, zweite Vorschau 28.10.2026 „Regler der Infotafel in den Reiter Station“
+// Reiter:C): oben Block „Zeigen“ (▶/⏸ + Stand, Zeitachse mit Spielkopf und Ereignismarken, Tempo, „Nächstes · Springen“,
+// Zeit-Regler und Ereignis-Knöpfe), darunter „Einstellungen“: Gruppen als Unterstrich-Reiter in einer Zeile (Kurzname aus tabs.js
+// + Zahl der Ebenen, Punkt bei geändertem Wert; ←/→ wie Reiter, seitlich schiebbar, bleibt beim Scrollen oben stehen), genau eine
+// Gruppe sichtbar (je Station gemerkt in `kosmos.cfgopen.v1`), Fuß „nur an dieser Station · Alle zurücksetzen“.
+// Die Schalter der Station (`lv.controls`, früher in der Infotafel; hud.js meldet sie mit setControls) stehen als erste Gruppe
+// „Ansicht“; Knöpfe ('action') und Regler mit show: true (Jahr, Stelle im Film …) gehören in den Block „Zeigen“, ebenso Ebenen
+// mit show: true und alles in der Gruppe der ▶-Ebene. Ihre Werte bleiben ungespeichert wie bisher (?ctl= in main.js setzt sie).
+// Ereignisachse: ▶-Ebene mit now() (Zeit der Station, Julianisches Datum) und span (Tage); Knöpfe mit at(von, bis) → Zeitpunkt
+// (oder { t, mark }) bzw. null, go(t) springt hin, mark = Name an der Marke.
 // Eine Station registriert ihre Ebenen in create(): registerLayers(stationId, layers). Ebene = { id, label, type, value, set, … }
 //   'toggle' an/aus · 'range' (min, max, step, unit, fmt) · 'play' ▶/⏸ mit Regler: set(value, playing), get() → { value, playing },
 //   status() Text für die Zeitleiste · 'action' Knopf: run(), button. sub: true rückt ein (Folgezeilen hängen gemeinsam an der Zeile
@@ -65,10 +72,32 @@ const url = (() => {
   if (q) for (const kv of q.split(',')) { const [k, v] = kv.split(':'); if (k && v !== undefined && Number.isFinite(+v)) o[k] = +v; }
   return o;
 })();
-const reg = new Map();
-let currentId = null, gearEl = null, onInfo = () => {}, stripEl = null, stripOn = () => true, gs = [], tabs = [], sharedOf = () => [];
-// Ebenen der Station + gemeinsame Gruppen (settings.js); null = keine von beiden
-const allOf = (id) => { const own = reg.get(id) || [], ex = sharedOf(id); return own.length || ex.length ? [...own, ...ex] : null; };
+const reg = new Map(), ctlReg = new Map();
+let currentId = null, gearEl = null, onInfo = () => {}, stripEl = null, stripOn = () => true, gs = [], tabs = [], shows = [], sharedOf = () => [];
+// Schalter der Station + Ebenen der Station + gemeinsame Gruppen (settings.js); null = keine davon
+const allOf = (id) => {
+  const ctl = (ctlReg.get(id) || {}).layers || [], own = reg.get(id) || [], ex = sharedOf(id);
+  return ctl.length || own.length || ex.length ? [...ctl, ...own, ...ex] : null;
+};
+// Schalter der Infotafel → Zeilen: Segment (options [wert, name], Wert als Text), 'swatch' (Farbscheiben, detail), 'range',
+// 'action'. Ton schaltet der Knopf der Kopfzeile (quick.js). Id mit Vorsatz c-, damit sie nie mit einer Ebene zusammenfällt.
+const ctlLayer = (c) => {
+  const show = c.type === 'action' || !!c.show;
+  const l = { ...c, id: `c-${c.id}`, ctl: c, type: c.type || 'seg', show, group: show ? undefined : 'Ansicht', sub: false, def: c.value };
+  delete l.get;
+  l.set = (v) => { c.value = v; c.set(v); };
+  return l;
+};
+export function setControls(stationId, controls = []) {
+  const had = ctlReg.get(stationId);
+  if (had && had.src === controls && had.n === controls.length) return;
+  ctlReg.set(stationId, { src: controls, n: controls.length, layers: controls.filter((c) => c.id !== 'sound').map(ctlLayer) });
+  if (stationId === currentId) render();
+}
+// Schalter mit get() folgen ihrem Zustand (z. B. Jahr läuft mit der Zeit), sonst gilt c.value (auch nach ?ctl=)
+const pull = (l) => { if (l.ctl) l.value = l.ctl.get ? l.ctl.get() : l.ctl.value; };
+// Schalter der Infotafel geändert: hud.js baut Abzeichen mit listIf neu auf und meldet die Bedienung an main.js
+const tell = (l) => { if (l && l.ctl) window.dispatchEvent(new CustomEvent('kosmos:ctl', { detail: l.ctl.id })); };
 // gewählter Reiter je Station (Index in gs); ohne Eintrag der erste
 const OPEN_KEY = 'kosmos.cfgopen.v1';
 const openStore = (() => { try { const s = JSON.parse(localStorage.getItem(OPEN_KEY)); return s && typeof s === 'object' ? s : {}; } catch { return {}; } })();
@@ -106,7 +135,7 @@ export function setLayer(stationId, id, v) {
 }
 
 function persist(l) {
-  if (l.shared) return;   // gemeinsame Gruppe: setSetting hat schon gespeichert
+  if (l.shared || l.ctl) return;   // gemeinsame Gruppe: setSetting hat schon gespeichert; Schalter der Infotafel: nie gespeichert
   store[currentId] = store[currentId] || {};
   store[currentId][l.id] = l.value;
   try { localStorage.setItem(KEY, JSON.stringify(store)); } catch { /* privates Fenster */ }
@@ -123,18 +152,27 @@ const rowHtml = (l) => {
   let row;
   if (l.type === 'toggle') row = `<label class="b-row cfg-toggle lay"><span class="cfg-label">${esc(l.label)}</span><input type="checkbox" data-lay="${l.id}"><span class="switch" aria-hidden="true"></span></label>`;
   else if (isChoice(l)) row = `<div class="b-row b-stack lay"><span class="cfg-label" id="lay-${l.id}">${esc(l.label)}</span><div class="seg b-seg" role="radiogroup" aria-labelledby="lay-${l.id}">${steps(l).map((v) => `<button type="button" role="radio" data-lay-seg="${l.id}" data-val="${v}">${esc(l.fmt(v))}</button>`).join('')}</div></div>`;
+  else if (l.type === 'seg') row = `<div class="b-row b-stack lay"><span class="cfg-label" id="lay-${l.id}">${esc(l.label)}</span><div class="seg b-seg" role="radiogroup" aria-labelledby="lay-${l.id}">${l.options.map(([v, n]) => `<button type="button" role="radio" data-lay-seg="${l.id}" data-val="${esc(v)}">${esc(n)}</button>`).join('')}</div></div>`;
+  else if (l.type === 'swatch') row = `<div class="b-row b-stack lay"><span class="cfg-label" id="lay-${l.id}">${esc(l.label)}</span><div class="swatch" role="radiogroup" aria-labelledby="lay-${l.id}">${l.options.map(([v, n, bg]) => `<button type="button" role="radio" data-lay-seg="${l.id}" data-val="${esc(v)}"><i class="sw-disc" style="background:${bg}" aria-hidden="true"></i><b>${esc(n)}</b></button>`).join('')}</div></div>`;
   else if (l.type === 'range') row = `<label class="b-row b-stack lay"><span class="b-top"><span class="cfg-label">${esc(l.label)}</span><output data-lout="${l.id}"></output></span>${range(l)}</label>`;
   else row = `<div class="b-row lay"><span class="cfg-label">${esc(l.label)}</span><button type="button" class="act-btn" data-act="${l.id}">${esc(l.button || 'Auslösen')}</button></div>`;
-  return row + (l.hint ? `<p class="cfg-note lay-hint">${prose(l.hint)}</p>` : '') + (l.only ? `<p class="cfg-note lay-hint" data-only="${l.id}" hidden>${prose(l.only)}</p>` : '');
+  return row + (l.marks ? `<div class="zg-rail zg-rail--y" data-ymarks="${l.id}">${l.marks.map(([v, n]) => `<button type="button" class="zg-mark" data-ymark="${l.id}" data-val="${v}" style="--x:${((v - l.min) / (l.max - l.min)).toFixed(4)}">${esc(n)}</button>`).join('')}</div>` : '')
+    + (l.detail ? `<div class="sw-detail" data-swd="${l.id}"></div>` : '')
+    + (l.hint ? `<p class="cfg-note lay-hint">${prose(l.hint)}</p>` : '') + (l.only ? `<p class="cfg-note lay-hint" data-only="${l.id}" hidden>${prose(l.only)}</p>` : '');
 };
 
-// Gruppen nach Kurzname (tabs.js): gleicher Kurzname = ein Reiter, je voller Name ein Abschnitt (segs) darin
+// Gruppen nach Kurzname (tabs.js): gleicher Kurzname = ein Reiter, je voller Name ein Abschnitt (segs) darin. Zeilen für den
+// Block „Zeigen“ (show) fehlen hier; ihr group gilt trotzdem für die folgenden Zeilen. Nach den Schaltern der Infotafel beginnt
+// immer eine neue Gruppe.
 function groups(layers) {
   const out = [];
-  let seg = null;
+  let seg = null, name = null, ctl = false;
   for (const l of layers) {
-    if (l.group || !seg) {
-      const name = l.group || 'Allgemein', title = tabOf(name);
+    if (l.group || !!l.ctl !== ctl) { name = l.group || 'Allgemein'; seg = null; ctl = !!l.ctl; }
+    if (l.show) continue;
+    if (!seg) {
+      name = name || 'Allgemein';
+      const title = tabOf(name);
       let g = out.find((x) => x.title === title);
       if (!g) out.push(g = { title, items: [], segs: [] });
       seg = g.segs.find((s) => s.title === name);
@@ -146,19 +184,25 @@ function groups(layers) {
   return out;
 }
 const count = (g) => g.items.reduce((n, it) => n + 1 + it.subs.length, 0);
-const resettable = (l) => l.type === 'toggle' || l.type === 'range';
+// Zeit-Regler im Block „Zeigen“ laufen mit der Station mit – kein ↺, zählen nicht als geändert
+const resettable = (l) => ['toggle', 'range', 'seg', 'swatch'].includes(l.type) && !shows.includes(l);
 const rowDev = (l) => rowHtml(l) + (resettable(l) ? devLine(l.id, l.label) : '');
 const block = ({ l, subs }) => `<div class="b-item">${rowDev(l)}${subs.length ? `<div class="b-subs"${l.type === 'toggle' ? ` data-subs="${l.id}"` : ''}>${subs.map((x) => `<div class="b-item">${rowDev(x)}</div>`).join('')}</div>` : ''}</div>`;
 
-function timeCard(g) {
-  const [{ l: p, subs }, ...rest] = g.items;
-  return `<article class="b-card b-card--time" data-g="g0" aria-label="Animation: ${esc(p.label)}">
-    <div class="b-time"><button type="button" class="play-btn play-btn--lg" data-play="${p.id}" aria-pressed="false" aria-label="${esc(p.label)} abspielen">${PLAY}</button>
-      <span class="b-time-text"><span class="cfg-label b-strong">${esc(p.label)}</span><span class="b-status" data-status="${p.id}"></span></span>
-      ${range(p, `${p.label}: Tempo`)}<output class="b-big" data-lout="${p.id}"></output></div>
-    ${p.hint ? `<p class="cfg-note lay-hint">${esc(p.hint)}</p>` : ''}
-    ${subs.map((l) => block({ l, subs: [] })).join('')}${rest.map(block).join('')}
-  </article>`;
+// Block „Zeigen“: ▶-Ebene (Kopf, Achse, Tempo), dann Zeit-Regler und Knöpfe ohne Marke auf der Achse
+const axisOf = (p, evs) => !!(p && p.now && evs.some((e) => e.at));
+function showHtml(items) {
+  const p = items.find((l) => l.type === 'play'), evs = items.filter((l) => l.type === 'action'), axis = axisOf(p, evs);
+  const rows = items.filter((l) => l !== p && !(axis && l.at));
+  const head = p
+    ? `<div class="zg-head"><button type="button" class="play-btn play-btn--lg" data-play="${p.id}" aria-pressed="false" aria-label="${esc(p.label)} abspielen">${PLAY}</button>
+        <span class="zg-text"><span class="zg-title">Zeigen · <span data-status="${p.id}"></span></span><span class="zg-sub" data-chip="${p.id}"></span></span>
+        <output class="zg-big" data-lout="${p.id}"></output></div>
+      ${axis ? `<div class="zg-axis" data-axis="${p.id}"><div class="zg-rail zg-rail--m" data-amarks></div><div class="zg-line" data-aline><span class="zg-now" aria-hidden="true"></span></div><div class="zg-rail zg-rail--t" data-aticks></div></div>` : ''}
+      <label class="zg-tempo"><span class="cfg-label">Tempo</span>${range(p, `${p.label}: Tempo`)}</label>
+      ${axis ? `<div class="zg-next" data-anext hidden><span class="zg-next-t"><span>Nächstes: <b data-next-name></b></span><span class="zg-sub" data-next-in></span></span><button type="button" class="act-btn" data-next>Springen</button></div>` : ''}`
+    : '<div class="zg-head"><span class="zg-title">Zeigen</span></div>';
+  return `<section class="zg" aria-label="Zeigen">${head}${rows.map((l) => `<div class="b-item">${rowHtml(l)}</div>`).join('')}${p && p.hint ? `<p class="cfg-note lay-hint">${prose(p.hint)}</p>` : ''}</section>`;
 }
 
 const isPlay = (g) => g.items[0].l.type === 'play';
@@ -175,10 +219,13 @@ const tabBtn = (i, on) => `<button type="button" role="tab" class="u-tab lay-tab
 function gearHtml(layers) {
   gs = groups(layers);
   tabs = gs.map((g, i) => (isPlay(g) ? -1 : i)).filter((i) => i >= 0);
+  // Zeigen: Gruppe der ▶-Ebene (mit Unter-Zeilen) + alle show-Zeilen in ihrer Reihenfolge
+  shows = [...gs.filter(isPlay).flatMap(itemsOf), ...layers.filter((l) => l.show)];
   const saved = (openStore[currentId] || [])[0], cur = tabs.includes(saved) ? saved : tabs[0], bar = tabs.length > 1;
   const strip = bar ? `<div class="u-tabs u-tabs--sub lay-tabs" role="tablist" aria-label="Gruppen der Station">${tabs.map((i) => tabBtn(i, i === cur)).join('')}</div>` : '';
   const panels = tabs.map((i) => `<div class="lay-panel b-body" id="lay-p${i}" ${bar ? `role="tabpanel" aria-labelledby="lay-t${i}"` : `role="group" aria-label="${esc(gs[i].title)}"`}${i === cur ? '' : ' hidden'}>${tabBody(gs[i])}</div>`).join('');
-  return `${strip}<div class="b-main lay-scroll">${gs.filter(isPlay).map(timeCard).join('')}${panels}</div><div class="cfg-foot"><span class="cfg-scope">Diese Station · <span data-lay-sum></span></span>${devBar()}</div>`;
+  const set = tabs.length ? `<h4 class="zg-set-h">Einstellungen</h4>${strip}${panels}` : '';
+  return `<div class="b-main lay-scroll">${shows.length ? showHtml(shows) : ''}${set}</div><div class="cfg-foot"><span class="cfg-scope">Diese Station · <span data-lay-sum></span></span>${devBar()}</div>`;
 }
 // Reiter wählen (Klick, ←/→, Pos1/Ende) und merken
 function pickTab(i, focus) {
@@ -219,6 +266,7 @@ export function spyIn(root, sc) {
 }
 
 function render() {
+  evc = null;   // neue Zeilen (z. B. Knöpfe der Infotafel kommen nach den Ebenen) → Ereignisse neu suchen
   if (gearEl) {
     const layers = allOf(currentId), st = STATIONS[currentId];
     gearEl.innerHTML = layers ? gearHtml(layers) : '<p class="cfg-note">Diese Station hat keine eigenen Einstellungen.</p>';
@@ -242,7 +290,116 @@ function render() {
 export function refreshLayers() { sync(); }
 export function rebuildLayers() { render(); }
 
+// ---------- Zeitachse im Block „Zeigen“ ----------
+const DAY_FMT = new Intl.DateTimeFormat('de-DE', { weekday: 'short', day: 'numeric', timeZone: 'UTC' });
+const dateOf = (jd) => new Date((jd - 2440587.5) * 864e5);
+const dayLabel = (jd) => { const p = Object.fromEntries(DAY_FMT.formatToParts(dateOf(jd)).map((x) => [x.type, x.value])); return `${p.weekday.replace('.', '')} ${p.day}.`; };
+const inTime = (d) => {
+  const m = Math.round(d * 1440), dd = Math.floor(m / 1440), h = Math.floor((m % 1440) / 60), mm = m % 60;
+  if (dd) return `in ${dd} ${dd === 1 ? 'Tag' : 'Tagen'}${h ? ` ${h} h` : ''}`;
+  return h ? `in ${h} h${mm ? ` ${mm} min` : ''}` : `in ${Math.max(1, mm)} min`;
+};
+// Ereignisse zwischen from und to (je Knopf höchstens 12), nach Zeit sortiert
+function eventsIn(evs, from, to) {
+  const out = [];
+  for (const e of evs) {
+    if (!e.at) continue;
+    for (let t = from, k = 0; k < 12; k++) {
+      const r = e.at(t, to), tt = r === null || r === undefined ? null : typeof r === 'number' ? r : r.t;
+      if (tt === null || tt > to) break;
+      out.push({ e, t: tt, mark: (r && r.mark) || e.mark || e.label });
+      t = tt + 1 / 48;   // halbe Stunde nach dem Eintritt weitersuchen: sonst findet der Knopf denselben Eintritt
+    }
+  }
+  return out.sort((a, b) => a.t - b.t);
+}
+// Zwischenspeicher: Marken für [now, now + 1,5 Spannen], neu erst nach einer halben Spanne oder nach einem Sprung zurück;
+// „Nächstes“ jenseits davon (Deimos: Finsternisse nur um die Tagundnachtgleichen) einmal bis zum Horizont
+let evc = null;
+function axisEvents(p, evs) {
+  const now = p.now(), span = p.span || 4;
+  if (!evc || evc.sid !== currentId || evc.p !== p || now < evc.from || now > evc.from + span / 2) {
+    evc = { sid: currentId, p, from: now, to: now + span * 1.5, list: eventsIn(evs, now, now + span * 1.5), next: undefined };
+  }
+  let next = evc.list.find((x) => x.t >= now);
+  if (!next) {
+    if (evc.next === undefined || (evc.next && evc.next.t < now)) {
+      const far = Math.max(...evs.filter((e) => e.at).map((e) => e.horizon || 60));
+      evc.next = eventsIn(evs.map((e) => ({ ...e, at: e.at && ((a, b) => e.at(a, Math.min(b, now + (e.horizon || 60)))) })), evc.to, now + far)[0] || null;
+    }
+    next = evc.next;
+  }
+  return { now, span, list: evc.list.filter((x) => x.t >= now && x.t <= now + span), next };
+}
+// Beschriftungen nebeneinander ohne Überlappung: je Name die erste freie Zeile (höchstens rows), sonst ausgeblendet
+function placeLabels(els, W, rows, pad = 6) {
+  const ends = Array(rows).fill(-Infinity);
+  for (const el of els) {
+    const w = el.offsetWidth, x = +el.style.getPropertyValue('--x') * W, left = Math.min(Math.max(0, x - w / 2), W - w);
+    const r = ends.findIndex((e) => e + pad <= left);
+    el.hidden = false;
+    if (r < 0) { el.style.visibility = 'hidden'; continue; }
+    el.style.visibility = '';
+    el.style.left = `${left}px`;
+    el.style.top = `${r * 30}px`;
+    ends[r] = left + w;
+  }
+  return ends.filter((e) => e > -Infinity).length;
+}
+// Kinder eines Behälters nach Schlüssel abgleichen: bestehende behalten (Hover, Fokus, laufender Klick), neue anlegen, alte entfernen
+// (pre = Vorsatz der Schlüssel: Skala und Rauten teilen sich die Linie)
+function keyed(box, items, make, pre = '') {
+  const old = new Map([...box.querySelectorAll(':scope > [data-k]')].filter((el) => el.dataset.k.startsWith(pre)).map((el) => [el.dataset.k, el]));
+  const out = items.map((it) => { let el = old.get(it.k); if (el) old.delete(it.k); else { el = make(it); el.dataset.k = it.k; box.appendChild(el); } return el; });
+  old.forEach((el) => el.remove());
+  return out;
+}
+const node = (html) => { const t = document.createElement('template'); t.innerHTML = html.trim(); return t.content.firstChild; };
+function syncAxis(root) {
+  const ax = root.querySelector('[data-axis]');
+  if (!ax) return;
+  const p = find(ax.dataset.axis), evs = shows.filter((l) => l.type === 'action');
+  const { now, span, list, next } = axisEvents(p, evs), x = (t) => ((t - now) / span).toFixed(4);
+  // Skala: Mitternacht (UTC) mit Wochentag, bei kurzer Spanne dazwischen alle 6 h
+  const step = span <= 1.5 ? 0.25 : span <= 12 ? 1 : 7, ticks = [];
+  for (let t = Math.ceil((now - 0.5) / step) * step + 0.5; t <= now + span; t += step) {
+    const mid = Math.abs(((t - 0.5) % 1 + 1) % 1) < 1e-6;
+    ticks.push({ k: String(Math.round(t * 96)), t, label: mid ? dayLabel(t) : `${Math.round((((t - 0.5) % 1 + 1) % 1) * 24)} h` });
+  }
+  const line = ax.querySelector('[data-aline]'), tbox = ax.querySelector('[data-aticks]'), mbox = ax.querySelector('[data-amarks]');
+  keyed(line, ticks.map((tk) => ({ ...tk, k: `s${tk.k}` })), () => node('<span class="zg-tick" aria-hidden="true"></span>'), 's').forEach((el, i) => el.style.setProperty('--x', x(ticks[i].t)));
+  const labs = keyed(tbox, [{ k: 'now', label: 'jetzt', t: now }, ...ticks], (tk) => node(`<span class="zg-tl">${esc(tk.label)}</span>`));
+  labs.forEach((el, i) => el.style.setProperty('--x', i ? x(ticks[i - 1].t) : '0'));
+  const keyOf = (ev) => `${ev.e.id}@${Math.round(ev.t * 1440)}`;
+  keyed(line, list.map((ev) => ({ ...ev, k: `d${keyOf(ev)}` })), (ev) => node(`<span class="zg-dia" data-mark="${keyOf(ev)}" aria-hidden="true"></span>`), 'd').forEach((el, i) => el.style.setProperty('--x', x(list[i].t)));
+  const marks = keyed(mbox, list.map((ev) => ({ ...ev, k: keyOf(ev) })), (ev) => node(`<button type="button" class="zg-mark" data-mark="${keyOf(ev)}">${esc(ev.mark)}</button>`));
+  marks.forEach((el, i) => { el.style.setProperty('--x', x(list[i].t)); el.setAttribute('aria-label', `${list[i].mark}, ${inTime(list[i].t - now)} – springen`); });
+  ax.hidden = false;
+  const W = line.clientWidth;
+  placeLabels(labs, W, 1, 14);
+  mbox.style.height = `${Math.max(1, placeLabels(marks, W, 2)) * 30}px`;
+  axMarks = new Map([...list, ...(next ? [next] : [])].map((ev) => [keyOf(ev), ev]));
+  const nx = root.querySelector('[data-anext]');
+  nx.hidden = !next;
+  if (next) {
+    nx.querySelector('[data-next-name]').textContent = next.mark;
+    nx.querySelector('[data-next-in]').textContent = nbsp(inTime(next.t - now));
+    nx.querySelector('[data-next]').dataset.go = keyOf(next);
+  }
+}
+let axMarks = new Map();
+// Jahres-Marken unter einem Regler (Jahr): Namen ohne Überlappung, gewählte Marke hervorgehoben
+function syncYears(root) {
+  root.querySelectorAll('[data-ymarks]').forEach((box) => {
+    const l = find(box.dataset.ymarks), els = [...box.children];
+    if (!l) return;
+    els.forEach((b) => b.setAttribute('aria-pressed', String(Math.round(l.value) === +b.dataset.val)));
+    box.style.height = `${Math.max(1, placeLabels(els, box.clientWidth, 2)) * 30}px`;
+  });
+}
+
 function sync() {
+  for (const l of allOf(currentId) || []) pull(l);
   for (const root of [gearEl, stripEl]) {
     if (!root || root.hidden) continue;
     root.querySelectorAll('[data-lay]').forEach((i) => {
@@ -260,15 +417,17 @@ function sync() {
       b.innerHTML = on ? PAUSE : PLAY;
     });
     root.querySelectorAll('[data-status]').forEach((s) => { const l = find(s.dataset.status); if (l && l.status) s.textContent = nbsp(l.status()); });
-    root.querySelectorAll('[data-lay-seg]').forEach((b) => { const l = find(b.dataset.laySeg); if (l) b.setAttribute('aria-checked', String(l.value === +b.dataset.val)); });
-    root.querySelectorAll('[data-steps]').forEach((el) => { const l = find(el.dataset.steps); if (l) [...el.children].forEach((c, i) => c.classList.toggle('is-on', l.min + i === Math.round(l.get ? l.get().value : l.value))); });
-    root.querySelectorAll('[data-chip]').forEach((c) => { const l = find(c.dataset.chip); if (l) c.textContent = playing(l) ? 'läuft' : 'angehalten'; });
+    root.querySelectorAll('[data-lay-seg]').forEach((b) => { const l = find(b.dataset.laySeg); if (l) b.setAttribute('aria-checked', String(String(l.value) === b.dataset.val)); });
+    root.querySelectorAll('[data-swd]').forEach((d) => { const l = find(d.dataset.swd); if (l && d.dataset.v !== String(l.value)) { d.dataset.v = String(l.value); d.innerHTML = l.detail(l.value); } });
+    root.querySelectorAll('[data-chip]').forEach((c) => { const l = find(c.dataset.chip); if (l) c.textContent = `${playing(l) ? 'läuft' : 'angehalten'} · ${l.label}`; });
     // Unter-Ebenen ohne Wirkung, solange ihr Hauptschalter aus ist: abgedunkelt, aber bedienbar
     root.querySelectorAll('[data-subs]').forEach((el) => { const l = find(el.dataset.subs); if (l) el.classList.toggle('is-off', !l.value); });
     // Ebene ohne Wirkung im aktuellen Bild (active() falsch): Zeile abgedunkelt, Grund darunter
     root.querySelectorAll('[data-only]').forEach((p) => { const l = find(p.dataset.only); const idle = !!l && !!l.active && !l.active(); p.hidden = !idle; p.parentElement.classList.toggle('is-idle', idle); });
   }
   if (gearEl && !gearEl.hidden) {
+    syncAxis(gearEl);
+    syncYears(gearEl);
     markDevs(gearEl, (id) => { const l = find(id); return !!l && changed(l); });
     // Punkt am Reiter: in dieser Gruppe weicht ein Wert vom Standard ab (Vorschau 27.10.2026 F3)
     gearEl.querySelectorAll('[data-ltab]').forEach((t) => {
@@ -286,6 +445,7 @@ function onInput(e) {
   if (l.type === 'toggle') l.value = i.checked; else l.value = +i.value;
   if (l.type === 'play') l.set(l.value, playing(l)); else l.set(l.value);
   persist(l);
+  tell(l);
   sync();
 }
 function onClick(e) {
@@ -293,17 +453,23 @@ function onClick(e) {
   if (t && gearEl && gearEl.contains(t)) { pickTab(+t.dataset.ltab); return; }
   const r = e.target.closest('[data-reset]');
   if (r && gearEl && gearEl.contains(r)) {
-    for (const l of allOf(currentId) || []) if (resettable(l) && (r.dataset.reset === '*' || r.dataset.reset === l.id) && l.value !== l.def) { l.value = l.def; l.set(l.value); persist(l); }
+    for (const l of allOf(currentId) || []) if (resettable(l) && (r.dataset.reset === '*' || r.dataset.reset === l.id) && l.value !== l.def) { l.value = l.def; l.set(l.value); persist(l); tell(l); }
     sync();
     return;
   }
+  // Marke auf der Zeitachse oder „Nächstes · Springen“: zum Ereignis springen; Jahres-Marke: Regler auf das Jahr
+  const m = e.target.closest('[data-mark],[data-go]'), ev = m && axMarks.get(m.dataset.mark || m.dataset.go);
+  if (ev) { ev.e.go(ev.t); tell(ev.e); sync(); return; }
+  const y = e.target.closest('[data-ymark]'), yl = y && find(y.dataset.ymark);
+  if (yl) { yl.value = +y.dataset.val; yl.set(yl.value); persist(yl); tell(yl); sync(); return; }
   const s = e.target.closest('[data-lay-seg]'), sl = s && find(s.dataset.laySeg);
-  if (sl) { sl.value = +s.dataset.val; sl.set(sl.value); persist(sl); sync(); return; }
+  if (sl) { sl.value = sl.type === 'range' ? +s.dataset.val : s.dataset.val; sl.set(sl.value); persist(sl); tell(sl); sync(); return; }
   const b = e.target.closest('[data-play],[data-act]');
   if (!b) return;
   const l = find(b.dataset.play || b.dataset.act);
   if (!l) return;
   if (l.type === 'play') { l.playing = !playing(l); l.set(l.value, l.playing); } else if (l.run) l.run();
+  tell(l);
   sync();
 }
 function poll() {

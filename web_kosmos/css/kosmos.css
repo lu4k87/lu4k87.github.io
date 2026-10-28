@@ -325,10 +325,9 @@ body.is-opener .skip-cue { opacity: 0.75; transition: opacity 1.2s var(--ease-ou
 :is(.panel-body, #cfg-global, .lay-scroll)::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.22); border-radius: 3px; }
 :is(.panel-body, #cfg-global, .lay-scroll)::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.38); }
 body.cfg-open :is(.panel-body, .panel-foot) { display: none; }
-/* Fuß der Infotafel steht unter dem Scrollbereich (Tafel:C, Fehler „Fuß abgeschnitten“): Zustand der Station + Knöpfe */
+/* Fuß der Infotafel steht unter dem Scrollbereich (Tafel:C, Fehler „Fuß abgeschnitten“): Zustand der Station */
 .panel-foot { flex: none; display: flex; flex-direction: column; gap: 8px; padding: 10px 18px 14px; border-top: 1px solid var(--line); }
 .panel-foot[hidden] { display: none; }
-.panel-foot .act-btn--prim { width: 100%; border-color: rgba(var(--accent-rgb), 0.7); background: rgba(var(--accent-rgb), 0.08); color: var(--accent); }
 /* ---------- Infotafel ---------- */
 .panel-body { flex: 1 1 auto; min-height: 0; overflow: auto; overscroll-behavior: contain; padding: 16px 18px 22px; display: flex; flex-direction: column; gap: 14px; container-type: inline-size; }
 .kicker { font-size: 12.5px; line-height: 1.4; color: var(--ink-soft); }
@@ -378,11 +377,7 @@ body.cfg-open :is(.panel-body, .panel-foot) { display: none; }
 .widget { padding-top: 14px; border-top: 1px solid var(--line); }
 .widget svg { display: block; width: 100%; height: auto; }
 .widget .w-cap { display: flex; justify-content: space-between; gap: 12px; font: 400 11.5px var(--mono); color: var(--ink-soft); margin-top: 4px; }
-.st-ctrls .cfg-range input[type=range] { flex: 1; min-width: 80px; accent-color: var(--accent); }
-.st-ctrls .cfg-range output { font: 500 12.5px var(--mono); min-width: 7ch; text-align: right; white-space: nowrap; }
-.st-ctrls { display: flex; flex-direction: column; gap: 10px; }
-/* Kanal-Wahl mit Farbscheiben (Sonne: SDO-Kanäle), Schichtschnitt (schematisch) und Erklärzeile */
-.cfg-box { display: flex; flex-direction: column; gap: 10px; }
+/* Kanal-Wahl mit Farbscheiben (Sonne: SDO-Kanäle; Reiter Station › Ansicht), Schichtschnitt (schematisch) und Erklärzeile */
 .swatch { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(max-content, 1fr); gap: 6px; }
 .swatch button { display: grid; justify-items: center; gap: 6px; min-width: 0; min-height: 44px; padding: 8px 4px; border: 1px solid transparent; border-radius: 8px; background: none; cursor: pointer; touch-action: manipulation; transition: border-color 0.2s, background-color 0.2s; }
 .swatch button:hover { border-color: var(--line-strong); }

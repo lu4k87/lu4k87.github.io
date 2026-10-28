@@ -242,7 +242,7 @@ export function create(ctx) {
       set: (v) => { galGain = v; if (pop) for (const m of pop.all) m.material.uniforms.uGain.value = v; } },
   ]);
   const controls = [
-    { id: 'pos', label: 'Stelle im Film', type: 'range', min: 0, max: DUR, step: 0.5, value: film.t, fmt: (v) => `${mmss(v)} · ${sectionAt(v)}`,
+    { id: 'pos', label: 'Stelle im Film', type: 'range', show: true, min: 0, max: DUR, step: 0.5, value: film.t, fmt: (v) => `${mmss(v)} · ${sectionAt(v)}`,
       get: () => film.t, set: (v) => { film.t = v; apply(); } },
     { id: 'again', type: 'action', label: 'Film', button: 'Von vorn abspielen', run: () => { film.t = 0; film.playing = true; apply(); } },
   ];

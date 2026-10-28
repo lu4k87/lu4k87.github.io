@@ -223,8 +223,6 @@ export function create(ctx) {
     ...ov.layers.earth(),
   ]);
   const controls = [
-    { id: 'speed', type: 'range', label: 'Zeitraffer', value: ov.speed, min: 0, max: ov.SPEEDS.length - 1, step: 1, fmt: (i) => (i ? ov.SPEEDS[Math.round(i)][1] : 'Echtzeit'),
-      set: (v) => { ov.setSpeed(Math.round(v)); }, get: () => ov.speed },
     { id: 'wings', label: 'Solarflügel', value: 'track', options: [['track', 'Der Sonne nach'], ['fixed', 'Fest']], set: (v) => { track = v === 'track'; } },
   ];
 

@@ -471,7 +471,7 @@ export function create(ctx) {
       L.push(
         { id: 'ejecta', type: 'toggle', group: 'Besonderheiten', label: 'Steinchen-Auswürfe (beobachtet 2019)', value: true, set: (v) => { ejOn = v; ej.visible = v; } },
         { id: 'ejRate', type: 'range', label: 'Häufigkeit', value: 1, min: 0.3, max: 6, step: 0.1, unit: '×', sub: true, set: (v) => { ejRate = v; } },
-        { id: 'ejNow', type: 'action', label: 'Auswurf', button: 'Jetzt auslösen', sub: true, run: () => { if (ejOn) burst(); } },
+        { id: 'ejNow', type: 'action', show: true, active: () => ejOn, only: 'Wirkt nur mit eingeschaltetem Auswurf.', label: 'Auswurf', button: 'Jetzt auslösen', sub: true, run: () => { if (ejOn) burst(); } },
       );
     }
     return L;
