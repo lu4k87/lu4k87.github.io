@@ -57,11 +57,11 @@ export function flybyField(rand, zoom = ZOOM, n = FLYBY.n) {
 }
 
 // ---------- Auftakt-Film (opener.js): Zeitmarken und Kurven der Stationskamera ab dem weißen Bild ----------
-// Zeiten in Filmsekunden: build = Aufbau bis zum Knall, plasma = Nebel bis klar, dark = dunkles Zeitalter mit ersten
+// Zeiten in Filmsekunden: pre = Vorspann (Schwarz, ferner Lichtpunkt wächst; start = sein Ende), build = Aufbau bis zum Knall, plasma = Nebel bis klar, dark = dunkles Zeitalter mit ersten
 // Sternen, galaxies = Flug durch die Galaxien, crane = Rückzug in die Heimpose; inhale/flash/hold = Luftholen, Knall, Weiß
 export function openerMarks(k, { inhale = 1.2, flash = 4.2, hold = 0.25 } = {}) {
-  const bang = k.build, white = bang + flash, cool = white + hold, clear = cool + k.plasma, dawn = clear + k.dark, gal = dawn + k.galaxies;
-  return { charge: bang * 0.5, inhale: bang - inhale, bang, white, cool, clear, dawn, gal, end: gal + k.crane };
+  const start = k.pre || 0, bang = start + k.build, white = bang + flash, cool = white + hold, clear = cool + k.plasma, dawn = clear + k.dark, gal = dawn + k.galaxies;
+  return { start, charge: start + k.build * 0.5, inhale: bang - inhale, bang, white, cool, clear, dawn, gal, end: gal + k.crane };
 }
 // Kamera der Station als eine durchgehende Fahrt: d = Lage auf der Fahrachse (Heimseite positiv, Mitte 0), im Logarithmus
 // um einen Nullpunkt OPENER_D0 hinter der Mitte (Anfahrt und Rückzug gleichmäßig wie ein Zoom): nahe der Mitte durch den
