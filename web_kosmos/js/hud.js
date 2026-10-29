@@ -845,9 +845,12 @@ export function createHud(h) {
     }
     // Einstellungs-Kacheln unten links: was waagrecht über ihnen läge, hebt den Titel über sie (niedrige Fenster)
     caption.style.bottom = '';
+    const box = caption.getBoundingClientRect();   // Lage ohne das Hineingleiten (translateY) der Kinder
+    // Panel links am Rand (16 px + --st-w): ragt der Titel in seine Spalte, weicht er, solange es offen ist (kosmos.css .is-crowded)
+    const panelR = 32 + parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--st-w'));
+    caption.classList.toggle('is-crowded', [...caption.children].some((el) => box.left + el.offsetLeft < panelR));
     const dock = document.querySelector('.dock')?.getBoundingClientRect();
     if (!dock?.height) return;
-    const box = caption.getBoundingClientRect();   // Lage ohne das Hineingleiten (translateY) der Kinder
     const lift = Math.max(0, ...[...caption.children].map((el) => {
       const l = box.left + el.offsetLeft, bottom = box.top + el.offsetTop + el.offsetHeight;
       return l < dock.right + 16 && l + el.offsetWidth > dock.left - 16 ? bottom - dock.top + 16 : 0;

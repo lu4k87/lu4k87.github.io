@@ -124,6 +124,13 @@ body.is-flying .tl, body.is-intro .tl { opacity: 0; pointer-events: none; }
 .cfg-tile:hover { background: rgba(255, 255, 255, 0.07); }
 .cfg-tile[aria-selected="true"] { color: var(--accent); border-color: rgba(var(--accent-rgb), 0.6); background: rgba(var(--accent-rgb), 0.12); }
 .cfg-tile:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+/* Wenig Höhe (Fenster ≈ 900 px mit Schublade unter der Stationsleiste): Kacheln bleiben quadratisch, nur kleiner – 6 statt 4 Spalten
+   wie die Reiter im Panel Station (29.10.2026), damit die Liste der Gruppe Platz behält; schmaler als 500 px bleibt es bei 4 (Platz für „Oberfläche“) */
+@container cfg (max-height: 600px) and (min-width: 500px) {
+  .cfg-jump { grid-template-columns: repeat(6, minmax(0, 1fr)); padding: 10px 18px; }
+  .cfg-tile { gap: 3px; padding: 4px 2px; }
+  .cfg-tile-ico { width: 18px; height: 18px; }
+}
 .b-sec { scroll-margin-top: 4px; }
 .b-sec[hidden] { display: none; }
 /* Überschrift der Gruppe als dezentes Band, trennt die Bereiche (User 28.10.2026) */

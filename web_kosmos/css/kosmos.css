@@ -693,7 +693,7 @@ body:is(.st-open, .cfg-open) .stage > .hint { left: calc(50% + (var(--st-w) + 16
 .measure dd { font: 500 13px/1.35 var(--mono); white-space: nowrap; font-variant-numeric: tabular-nums; }
 
 /* ---------- Einstellungen ---------- */
-.cfg { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; container: cfg / inline-size; outline: none; }
+.cfg { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; container: cfg / size; outline: none; }   /* size: Kacheln richten sich auch nach der Höhe (layers.css .cfg-jump) */
 .cfg[hidden] { display: none; }
 .cfg-title { font: 500 12px var(--mono); letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-soft); }
 .cfg-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: space-between; }
@@ -748,6 +748,8 @@ input[type=range]:focus-visible { outline: 2px solid var(--focus); outline-offse
 }
 .caption::before { content: ""; position: absolute; inset: -35% 4%; z-index: -1; background: radial-gradient(closest-side, rgba(0, 0, 0, 0.5), transparent); }
 body.panel-off .caption { right: 0; }
+/* Panel links offen (Station, Allgemeine Einstellungen) und der Titel ragt in seine Spalte (hud.js fitCaption): Titel weicht, statt darüber zu liegen */
+body:is(.st-open, .cfg-open) .caption.is-crowded { visibility: hidden; }
 .caption.is-on { opacity: 1; transition: opacity 3s var(--ease-out); }
 .caption > * { opacity: 0; transform: translateY(12px); transition: opacity 2.4s ease, transform 2.4s ease; }
 .caption.is-on > * { opacity: 1; transform: none; transition: opacity 3s var(--ease-out) var(--d, 0s), transform 3.4s var(--ease-out) var(--d, 0s); }
