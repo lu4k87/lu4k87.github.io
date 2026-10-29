@@ -2,7 +2,7 @@
 // die Reihenfolge der geführten Reise (nach Entfernung von der Erde). Jede Zahl hat eine Quelle in SOURCES
 // (Kürzel in `s`) oder ist als „Modell“ bzw. „Richtwert“ gekennzeichnet; Belege und Herleitungen: docs/research.md.
 
-import { LY, YEAR, KPC, AU, C } from './astro.js';
+import { LY, YEAR, KPC, MPC, AU, C } from './astro.js';
 
 export const SOURCES = {
   'jpl-sbdb-eros': { t: '433 Eros: Rotationsperiode 5,27 h, Spektraltyp S', by: 'JPL Small-Body Database', url: 'https://ssd.jpl.nasa.gov/tools/sbdb_lookup.html#/?sstr=433' },
@@ -1341,7 +1341,7 @@ export const STATIONS = {
     },
   },
   darkmatter: {
-    n: '05A', title: 'Dunkle Materie', kicker: 'Unsichtbares Gerüst', parent: 'web', width: 7.4e24, dist: 0, lookback: 0, size: { v: 5.2e8 * LY, l: 'Durchmesser der Kugel (≈ Laniakea)', s: 'tully-2014' },
+    n: '05A', title: 'Dunkle Materie', kicker: 'Unsichtbares Gerüst', parent: 'web', width: 7.4e24, dist: 80 * MPC, lookback: 0, size: { v: 5.2e8 * LY, l: 'Durchmesser der Kugel (≈ Laniakea)', s: 'tully-2014' },
     lead: 'Rund fünf Sechstel aller Materie leuchten nicht: Dunkle Materie verrät sich nur durch ihre Schwerkraft. Sie bildet das Gerüst des kosmischen Netzes – Fäden, Wände und Knoten, in deren Halos die Galaxien entstehen. Woraus sie besteht, weiß bis heute niemand.',
     facts: [
       { v: '26,2', u: '%', l: 'der Energiedichte heute (normale Materie 4,9 %)', s: 'planck-2018' },
