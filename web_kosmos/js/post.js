@@ -72,20 +72,24 @@ void main() {
   vec2 eb = smoothstep(vec2(0.0), vec2(0.04), uvB) * smoothstep(vec2(1.0), vec2(0.96), uvB);
   float inside = eb.x * eb.y;
   vec3 cb = zoomed(tB, clamp(uvB, 0.0, 1.0), uInner, uBlur, uEhtB);
-  // Iris mit breitem, weichem Rand; Iris und flächiges Aufblenden am Ende stetig vereint (statt max: kein Knick im Verlauf)
-  float m = 1.0 - smoothstep(uMaskR * 0.3, uMaskR * 1.05, r);
-  float iris = m * smoothstep(0.0, 0.25, uProg), all = smoothstep(0.62, 1.0, uProg);
-  float wB = (1.0 - (1.0 - iris) * (1.0 - all)) * mix(inside, 1.0, smoothstep(0.9, 1.0, uProg));
+  // Iris mit weichem, natuerlichem Verlauf; Iris und flächiges Aufblenden am Ende stetig vereint
+  float m = 1.0 - smoothstep(max(0.01, uMaskR * 0.15), max(0.08, uMaskR * 1.25), r);
+  float iris = m * smoothstep(0.0, 0.22, uProg), all = smoothstep(0.58, 1.0, uProg);
+  float wB = (1.0 - (1.0 - iris) * (1.0 - all)) * mix(inside, 1.0, smoothstep(0.88, 1.0, uProg));
   // gleicher Raum (beide Bilder decken sich): flächig überblenden statt Iris
   if (uFade >= 0.0) wB = uFade;
   // gemischt in gestauchten Werten wie die Zoom-Unschärfe: ein überhelles Bild (Sonne) überstrahlt das andere nicht,
   // die Überblendung läuft für das Auge gleichmäßig
   vec3 ta = ca / (1.0 + luma(ca)), tm = mix(ta, cb / (1.0 + luma(cb)), wB);
   vec3 col = tm / max(1.0 - luma(tm), 0.02);
-  // Lichtschleier: weicher, heller Kern um den Anker in der Mitte der Fahrt; wie „Aufhellen“ gemischt, damit helle
-  // Bilder (im Nebel) nicht milchig werden
-  float veil = uVeil * exp(-r * r / max(1e-4, uMaskR * uMaskR * 0.6)) * 0.35;
-  col += vec3(0.55, 0.62, 0.75) * veil / (1.0 + luma(col) * 2.0);
+  // Lichtschleier: dezenter, realistischer optischer Vorwärts-Glow um den Zielanker
+  // Weicher Kern + weit auslaufender Halo statt scharfer Kreisfläche, kein Vergrauen des Raums
+  float coreGlow = exp(-r * r / 0.025);
+  float softHalo = exp(-r * 3.2);
+  float starStreak = exp(-abs(d.y) * 45.0) * exp(-abs(d.x) * 3.0) * 0.4;
+  float veil = uVeil * (coreGlow * 0.55 + softHalo * 0.45 + starStreak) * 0.065;
+  vec3 veilColor = mix(vec3(0.75, 0.88, 1.0), vec3(1.0, 0.96, 0.88), coreGlow);
+  col += veilColor * veil / (1.0 + luma(col) * 1.5);
   gl_FragColor = vec4(col, 1.0);
 }
 `;
