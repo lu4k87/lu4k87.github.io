@@ -572,6 +572,7 @@ export function createHud(h) {
     card.classList.remove('is-open');
     void card.offsetWidth;
     card.classList.add('is-open', 'is-away');
+    body.classList.add('card-open');   // schmal (≤ 760 px) weicht die Infotafel (kosmos.css)
     markers.forEach((m) => m.el.classList.toggle('is-active', m.x.id === id));
     panel.querySelectorAll('[data-hs]').forEach((b) => b.classList.toggle('is-active', b.dataset.hs === id));
   }
@@ -580,6 +581,7 @@ export function createHud(h) {
     ordered = markers;
     unmountCard();
     card.classList.remove('is-open', 'is-away');
+    body.classList.remove('card-open');
     cardLead.classList.add('is-off');
     dock = null; settle = null;
     markers.forEach((m) => m.el.classList.remove('is-active'));

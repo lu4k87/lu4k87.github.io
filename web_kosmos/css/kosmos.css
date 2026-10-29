@@ -805,7 +805,7 @@ body.fatal-webgl .fatal-webgl, body.fatal-start .fatal-start { display: block; }
   .top-actions, body.panel-off .top-actions { flex-direction: row; align-self: center; padding: 4px 12px 0 0; }
   .panel { margin: 0 10px 6px; max-height: 32vh; }
   .station { justify-self: stretch; width: auto; height: calc(100% - 12px); margin: 6px 10px; }
-  body:is(.st-open, .cfg-open) .panel { display: none; }
+  body:is(.st-open, .cfg-open, .card-open) .panel { display: none; }   /* offene Info-Karte: Infotafel weicht, Bühne wird hoch genug */
   .panel-body { padding: 14px 14px 16px; gap: 12px; }
   .st-title { font-size: 24px; }
   .band { margin: 0 10px; }
@@ -827,7 +827,7 @@ body.fatal-webgl .fatal-webgl, body.fatal-start .fatal-start { display: block; }
   .measure { grid-template-columns: 1fr 1fr; }
   .measure div { min-height: 44px; padding: 5px 12px; }
   .caption { left: 0; right: 0; top: 16%; bottom: auto; padding: 0 16px; }
-  body.cfg-open .caption, body.st-open .caption { visibility: hidden; }   /* Panel links füllt die Bühne: Ankunftstitel weicht */
+  body:is(.cfg-open, .st-open, .card-open) .caption { visibility: hidden; }   /* Panel links bzw. Info-Karte füllt die Bühne: Ankunftstitel weicht */
   .cap-title { font-size: clamp(30px, 9cqi, 44px); letter-spacing: 0.16em; padding-left: 0.16em; }
   .caption.is-on .cap-title { letter-spacing: 0.1em; padding-left: 0.1em; }
   .cap-sub { font-size: 15px; }
@@ -836,6 +836,7 @@ body.fatal-webgl .fatal-webgl, body.fatal-start .fatal-start { display: block; }
   .hint { display: none; }
   body:is(.st-open, .cfg-open) .stage > .pull { left: 50%; bottom: 52px; }   /* Panel füllt die Bühne: keine freie Achse daneben */
   .hs-card { left: 8px; right: 8px; top: auto; bottom: var(--sheet-b, 8px); width: auto; max-height: calc(100% - var(--sheet-b, 8px) - 40px); translate: none !important; transform-origin: center bottom !important; }
+  .hc-shot { max-height: max(112px, calc(100dvh - 520px)); }   /* Szenenbild ganz in der Karte: Fenster minus Kopf, Band, Bedienung unten, Kartenkopf */
 }
 
 @media (prefers-reduced-motion: reduce) {
