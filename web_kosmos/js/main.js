@@ -452,7 +452,7 @@ function activate(lv) {
   const preload = () => {
     if (state.id !== lv.id || state.tr) return;
     if (state.intro || state.opener) { setTimeout(() => idle(preload), 1000); return; }
-    for (const n of lean() ? [lv.meta.parent, nextOnRoute(lv.id)] : neighbours(lv.id)) if (n && n !== lv.id) getLevel(n, true);
+    for (const n of lean() ? [lv.meta.parent, nextOnRoute(lv.id)] : [...neighbours(lv.id), nextOnRoute(lv.id)]) if (n && n !== lv.id) getLevel(n, true);   // „Weiter“ ohne Ladeanzeige (Erde → Sonne ist kein Nachbar)
   };
   setTimeout(() => idle(preload), 2500);
 }
