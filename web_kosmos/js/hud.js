@@ -172,10 +172,11 @@ export function createHud(h) {
   const need = (id, px, pad) => {
     const font = `600 ${px}px "IBM Plex Sans", system-ui, sans-serif`, t = S(id).title;
     // Messlineal (Route:C): Namen bis 16 Zeichen einzeilig, längere („Beobachtbares Universum“) zweizeilig
-    return Math.max(24, ...t.split(/[\s-]+/).map((s) => textW(s, font)), textW(t, font) / (t.length > 16 ? 2 : 1), textW(far(id), `500 12px "IBM Plex Sans", system-ui, sans-serif`)) + pad;
+    // Bindestrich-Namen („Andromeda-Galaxie“) bleiben in einer Zeile (User 29.10.2026): gebrochen wird nur an Leerzeichen
+    return Math.max(24, ...t.split(/\s+/).map((s) => textW(s, font)), textW(t, font) / (t.length > 16 && /\s/.test(t) ? 2 : 1), textW(far(id), `500 12px "IBM Plex Sans", system-ui, sans-serif`)) + pad;
   };
   const sum = (a) => a.reduce((x, y) => x + y, 0);
-  const node = (id, cls = '', style = '') => `<button type="button" class="bd-node${cls}"${style && ` style="${style}"`} data-go="${id}" data-ch="${chapter(id)}" aria-label="${label(id)}, Kapitel ${esc(chName(id))}"><span class="bd-dot"></span><span class="n">${num(id)}</span><span class="bd-nm">${title(id)}</span>${farEl(id)}</button>`;
+  const node = (id, cls = '', style = '') => `<button type="button" class="bd-node${cls}"${style && ` style="${style}"`} data-go="${id}" data-ch="${chapter(id)}" aria-label="${label(id)}, Kapitel ${esc(chName(id))}"><span class="bd-dot"></span><span class="n">${num(id)}</span><span class="bd-nm">${title(id).replace(/\S+-\S+/g, '<span class="nw">$&</span>')}</span>${farEl(id)}</button>`;
   const groups = () => CHAPTERS.map(([hub]) => [hub, ROUTE.filter((r) => chapter(r) === hub)]).filter(([, rs]) => rs.length);
   let cv = null, wires = null, drawer = null, dcv = null, dwires = null, tip = null;
   let pos = {}, fit = null, bandH = 0, hovId = null, shown = ['', ''], sleep = 0, comet = null;
