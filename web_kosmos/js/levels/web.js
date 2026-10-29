@@ -290,7 +290,7 @@ ${GAS_FIELD}` });
     { id: 'flowK', type: 'range', group: 'Strömung (Laniakea)', label: 'Tempo', value: 1, min: 0.25, max: 6, step: 0.25, unit: '×', set: (v) => { flowK = v; }, active: () => flow.visible, only: flowOnly },
     { id: 'flowGain', type: 'range', label: 'Helligkeit', value: 1, min: 0.25, max: 6, step: 0.25, unit: '×', set: (v) => { flowG = v; flowAlpha(); }, active: () => flow.visible, only: flowOnly },
     { id: 'gasGain', type: 'range', group: 'Gaswolke', label: 'Helligkeit', value: 1, min: 0.25, max: 4, step: 0.25, unit: '×', set: (v) => { gu.uGain.value = v; gas.invalidate(); }, active: () => gas.quad.visible, only: gasOnly },
-    { id: 'gasK', type: 'range', label: 'Bewegung', value: 1, min: 0, max: 4, step: 0.25, fmt: (v) => (v ? `${v} ×` : 'steht'), set: (v) => { gasK = v; }, active: () => gas.quad.visible, only: gasOnly },
+    { id: 'gasK', type: 'range', label: 'Bewegung des Gases', value: 1, min: 0, max: 4, step: 0.25, fmt: (v) => (v ? `${v} ×` : 'steht'), set: (v) => { gasK = v; }, active: () => gas.quad.visible, only: gasOnly },
     // Reichweite blendet nur aus (Feld bleibt), Fadenbreite und Kontrast wirken live im Strahl
     { id: 'gasReach', type: 'range', label: 'Reichweite', value: GAS_EXT, min: 25, max: GAS_EXT, step: 25, unit: ' Mpc', set: (v) => { gu.uReach.value = v; gas.invalidate(); }, active: () => gas.quad.visible, only: gasOnly },
     { id: 'gasWidth', type: 'range', label: 'Fadenbreite', value: 1, min: 0.5, max: 1.5, step: 0.25, unit: '×', set: (v) => { gu.uWidth.value = v; gas.invalidate(); }, active: () => gas.quad.visible, only: gasOnly },

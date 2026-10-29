@@ -571,7 +571,7 @@ export function create(ctx) {
   const controls = [
     { id: 'const', label: 'Sternbilder', value: 'off', options: [['off', 'Aus'], ['lines', 'Linien'], ['names', 'Linien + Namen']],
       set: (val) => { consMode = val; if (lines) lines.userData.show(val !== 'off'); } },
-    { id: 'shadow', label: 'Schatten', value: 'off', options: [['off', 'Aus'], ['on', 'Kegel zeigen']],
+    { id: 'shadow', label: 'Erdschatten', value: 'off', options: [['off', 'Aus'], ['on', 'Kegel zeigen']],
       set: (val) => { earthShadow.visible = moonShadow.visible = val === 'on'; } },
   ];
   let illum = 0;

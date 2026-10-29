@@ -715,13 +715,16 @@ body:is(.st-open, .cfg-open) .stage > .hint { left: calc(50% + (var(--st-w) + 16
 .cfg-toggle input:checked + .switch::after { transform: translateX(14px); background: var(--accent); }
 .cfg-toggle input:checked + .switch::before { content: "an"; }
 .cfg-toggle input:focus-visible + .switch { outline: 2px solid var(--focus); outline-offset: 2px; }
+/* Schalter einer Auswahl mit 2 Werten (layers.js pickHtml): das Wort des Werts steht als eigenes Element davor */
+.switch--word { margin-left: 0; }
+.switch--word::before, .cfg-toggle input:checked + .switch--word::before { content: none; }
 input[type=range] {
   --p: 0; --d: -1; -webkit-appearance: none; appearance: none; height: 24px; margin: 0; padding: 0; border: 0; cursor: pointer;
   background:
     linear-gradient(var(--accent), var(--accent)) 0 10px / calc(7px + var(--p) * (100% - 14px)) 3px no-repeat,
     linear-gradient(var(--ink), var(--ink)) calc(6.5px + var(--d) * (100% - 13px)) 14px / 1px 8px no-repeat,
     linear-gradient(var(--line-strong), var(--line-strong)) 0 11px / 100% 1px no-repeat,
-    linear-gradient(90deg, var(--line-strong) 1px, transparent 1px) 6.5px 16px / calc((100% - 13px) / 4) 5px repeat-x;
+    linear-gradient(90deg, var(--line-strong) 1px, transparent 1px) 6.5px 16px / calc((100% - 13px) / var(--steps, 4)) 5px repeat-x;
 }
 input[type=range]::-webkit-slider-runnable-track { height: 24px; background: none; border: 0; }
 input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; margin-top: 4.5px; border: 0; border-radius: 50%; background: var(--ink); box-shadow: 0 0 0 3px rgba(7, 9, 14, 0.8); transition: box-shadow 0.2s; }

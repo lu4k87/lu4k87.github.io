@@ -197,10 +197,10 @@ export function create(ctx) {
       hint: 'OMC-1 hinter der Front ist in Wirklichkeit undurchsichtig; weniger Dichte lässt Hintergrundsterne durchscheinen.' },
     { id: 'stars', type: 'range', group: 'Sterne', label: 'Orionnebel-Haufen', min: 0, max: 5, step: 0.25, value: 1, fmt: times,
       set: (v) => { starGain = v; cluster.material.uniforms.uGain.value = v; embedded.material.uniforms.uGain.value = v; showStars(); } },
-    { id: 'res', type: 'range', group: 'Qualität der Wolke', label: 'Detailstufe', min: 0, max: 3, step: 1, value: fine ? 1 : 2, fmt: (i) => RES_N[i],
+    { id: 'res', type: 'range', group: 'Qualität der Wolke', label: 'Detailstufe', ordered: true, min: 0, max: 3, step: 1, value: fine ? 1 : 2, fmt: (i) => RES_N[i],
       set: (i) => vol.setScale(RES[i]),
       hint: 'Die Wolke wird in eigener Auflösung gerechnet und weich vergrößert, Sterne bleiben scharf. Niedriger = schneller.' },
-    { id: 'steps', type: 'range', label: 'Rechengenauigkeit', min: 0, max: 3, step: 1, value: fine ? 2 : 1, fmt: (i) => STEPS_N[i], set: to('uSteps', (i) => STEPS[i]),
+    { id: 'steps', type: 'range', label: 'Rechengenauigkeit', ordered: true, min: 0, max: 3, step: 1, value: fine ? 2 : 1, fmt: (i) => STEPS_N[i], set: to('uSteps', (i) => STEPS[i]),
       hint: 'Mehr Schritte zeigen feinere Fäden und weniger Körnung, kosten aber Bildrate.' },
   ]);
 

@@ -234,3 +234,29 @@ body.is-flying .tl, body.is-intro .tl { opacity: 0; pointer-events: none; }
 .zg-next-t { display: flex; flex-direction: column; gap: 2px; min-width: 0; font-size: 13.5px; }
 .zg-next-t b { font-weight: 600; }
 .cfg-pane .swatch b { font-size: 12.5px; }
+/* Auswahl statt Knopf-Leiste (layers.js pickHtml, Vorschau 29.10.2026): Name links behält mindestens 40 %, rechts Schalter mit Wort
+   (Zwei:A) bzw. Auswahlfeld (Name:A), lange Werte brechen um statt den Namen zu quetschen */
+.b-pick { grid-template-columns: minmax(40%, 1fr) auto; }
+.b-pair { display: inline-flex; align-items: center; justify-content: flex-end; gap: 10px; min-width: 0; }
+.b-word { font: 500 12px/1.3 var(--mono); color: var(--ink); text-align: right; }
+.b-select { -webkit-appearance: none; appearance: none; min-width: 0; max-width: 100%; height: 30px; padding: 0 28px 0 10px; border-radius: 5px; border: 1px solid var(--line-strong); color-scheme: dark;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23d3dae6' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M7 10l5 5 5-5'/%3E%3C/svg%3E") right 8px center / 14px no-repeat, transparent;
+  color: var(--ink); font: 500 12.5px var(--font); text-overflow: ellipsis; cursor: pointer; transition: border-color 0.2s; }
+.b-select:hover:not(:disabled) { border-color: var(--accent); }
+.b-select:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.b-select option { background: #0c111c; color: var(--ink); }
+/* Rast-Regler (Stufe:B): Wert rechts oben in Cyan, Namen unter den Rasten – erste und letzte bündig, die übrigen mittig unter
+   ihrem Strich (Spalten 1 : 2 : … : 2 : 1) */
+.b-rast output { font: 500 13px var(--mono); color: var(--accent); white-space: nowrap; }
+.b-stops { display: flex; font: 500 12px/1.3 var(--mono); color: var(--ink-soft); }
+.b-stops > span { flex: 2 1 0; min-width: 0; text-align: center; }
+.b-stops > span:first-child, .b-stops > span:last-child { flex-grow: 1; }
+.b-stops > span:first-child { text-align: left; }
+.b-stops > span:last-child { text-align: right; }
+/* Aktion als Chip mit Symbol + Verb (Akt:C); Angaben wie „z ≈ 20“ oder ein Datum unter dem Namen */
+.b-lab { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.b-meta { font: 500 12px/1.3 var(--mono); color: var(--ink-soft); overflow-wrap: anywhere; }
+.act-chip { display: inline-flex; align-items: center; gap: 6px; min-height: 30px; padding: 0 12px 0 9px; border-radius: 15px; border: 1px solid var(--line-strong); background: none; color: var(--ink); font: 500 12.5px var(--font); white-space: nowrap; cursor: pointer; transition: border-color 0.2s, color 0.2s; }
+.act-chip:hover { border-color: var(--accent); color: var(--accent); }
+.act-chip:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.act-ico { width: 14px; height: 14px; flex: none; color: var(--accent); }

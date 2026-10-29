@@ -277,8 +277,8 @@ export function create(ctx) {
     { id: 'flick', type: 'toggle', group: 'Bewegung', label: 'Junge Sterne atmen', value: true, set: (v) => { ysos.material.uniforms.uFlick.value = v ? 1 : 0; } },
     { id: 'spikes', type: 'toggle', group: 'Sterne', label: 'Webb-Sternspitzen', value: true, set: (v) => { spikes.visible = v; applyLook(); } },
     { id: 'stars', type: 'range', label: 'Helligkeit der Sterne', min: 0, max: 4, step: 0.25, value: 1, fmt: times, set: (v) => { starGain = v; applyLook(); } },
-    { id: 'res', type: 'range', group: 'Qualität der Wolke', label: 'Detailstufe', min: 0, max: 3, step: 1, value: fine ? 1 : 2, fmt: (i) => RES_N[i], set: (i) => vol.setScale(RES[i]) },
-    { id: 'steps', type: 'range', label: 'Rechengenauigkeit', min: 0, max: 3, step: 1, value: fine ? 2 : 1, fmt: (i) => STEPS_N[i], set: to('uSteps', (i) => STEPS[i]) },
+    { id: 'res', type: 'range', group: 'Qualität der Wolke', label: 'Detailstufe', ordered: true, min: 0, max: 3, step: 1, value: fine ? 1 : 2, fmt: (i) => RES_N[i], set: (i) => vol.setScale(RES[i]) },
+    { id: 'steps', type: 'range', label: 'Rechengenauigkeit', ordered: true, min: 0, max: 3, step: 1, value: fine ? 2 : 1, fmt: (i) => STEPS_N[i], set: to('uSteps', (i) => STEPS[i]) },
   ]);
 
   const view = new URLSearchParams(location.search).get('view');

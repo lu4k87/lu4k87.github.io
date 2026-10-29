@@ -460,7 +460,7 @@ export function create(ctx) {
     { id: 'rot', type: 'play', group: 'Zeit', label: 'Rotation im Zeitraffer', value: spdIdx, min: 1, max: SPEEDS.length - 1, step: 1, fmt: (i) => SPEEDS[Math.round(i)][1],
       set: (i, playing) => { spdIdx = Math.round(i); rotOn = playing; }, get: () => ({ value: spdIdx, playing: rotOn }),
       status: () => (rotOn ? `Sonnenrotation · ${fmtDays(days)} vergangen` : `Sonnenrotation angehalten · ${fmtDays(days)}`) },
-    { id: 'grade', type: 'range', group: 'Farbe und Glut', label: 'Farblook', value: gradeIdx, min: 0, max: GRADES.length - 1, step: 1, fmt: (i) => GRADES[Math.round(i)][0], set: (v) => { gradeIdx = Math.round(v); applyGlow(); },
+    { id: 'grade', type: 'range', group: 'Farbe und Glut', label: 'Farblook', buttons: true, value: gradeIdx, min: 0, max: GRADES.length - 1, step: 1, fmt: (i) => GRADES[Math.round(i)][0], set: (v) => { gradeIdx = Math.round(v); applyGlow(); },
       active: () => !globalGrade(), only: 'Ruht, solange Global → Look → Farblook nicht auf „Station“ steht.' },
     { id: 'glow', type: 'range', label: 'Glut bei starker Aktivität', value: glowMode, min: 0, max: GLOWS.length - 1, step: 1, fmt: (i) => GLOWS[Math.round(i)], set: (v) => { glowMode = Math.round(v); applyGlow(); },
       active: () => lookOn && actIdx >= 4, only: 'Nur bei Glut und 304 Å ab Aktivität „Maximum“ (Infotafel), am stärksten bei „extrem“.' },

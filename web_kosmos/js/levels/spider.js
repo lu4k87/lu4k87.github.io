@@ -272,9 +272,9 @@ export function create(ctx) {
     { id: 'dust', type: 'range', label: 'Abdunkeln durch Staub', min: 0, max: 4, step: 0.25, value: 1, fmt: times, set: (v) => { dustMul = v; applyLook(); } },
     { id: 'breathe', type: 'toggle', group: 'Sterne', label: 'Zentralstern atmet', value: true, set: (v) => { breathe = v; } },
     { id: 'stars', type: 'range', label: 'Helligkeit der Sterne', min: 0, max: 4, step: 0.25, value: 1, fmt: times, set: (v) => { starGain = v; applyLook(); } },
-    { id: 'res', type: 'range', group: 'Qualität der Wolke', label: 'Detailstufe', min: 0, max: 3, step: 1, value: fine ? 1 : 2, fmt: (i) => RES_N[i], set: (i) => vol.setScale(RES[i]),
+    { id: 'res', type: 'range', group: 'Qualität der Wolke', label: 'Detailstufe', ordered: true, min: 0, max: 3, step: 1, value: fine ? 1 : 2, fmt: (i) => RES_N[i], set: (i) => vol.setScale(RES[i]),
       hint: 'Die Wolke wird in eigener Auflösung gerechnet und weich vergrößert, Sterne bleiben scharf. Niedriger = schneller.' },
-    { id: 'steps', type: 'range', label: 'Rechengenauigkeit', min: 0, max: 3, step: 1, value: fine ? 2 : 1, fmt: (i) => STEPS_N[i], set: to('uSteps', (i) => STEPS[i]),
+    { id: 'steps', type: 'range', label: 'Rechengenauigkeit', ordered: true, min: 0, max: 3, step: 1, value: fine ? 2 : 1, fmt: (i) => STEPS_N[i], set: to('uSteps', (i) => STEPS[i]),
       hint: 'Mehr Schritte zeigen die dünne Keulenhaut gleichmäßiger, kosten aber Bildrate.' },
   ]);
   formReady = true;

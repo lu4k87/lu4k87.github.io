@@ -15,6 +15,8 @@
 //   davor), hint: Zusatztext unter der Zeile, group: Gruppe (gilt ab dieser Ebene bis zur nächsten group; gleicher Kurzname
 //   in tabs.js = ein Reiter, der volle Name steht dann als Zwischenüberschrift im Inhalt),
 //   active() + only: Ebene wirkt gerade nicht (z. B. anderer Kanal) → Zeile abgedunkelt, bleibt bedienbar, darunter only als Grund.
+//   Auswahl ('seg' oder Regler mit benannten Stufen) erscheint als Schalter (2 Werte), Auswahlfeld oder mit ordered: true als
+//   Rast-Regler (geordnete Stufen wie Detailstufe); buttons: true behält die Knopfreihe (Farb-Wahl wie Farblook).
 // Werte, die an allen Stationen gemeinsam gelten, stehen nicht hier, sondern in den Einstellungen (settings.js). Werte je Station in localStorage `kosmos.layers.v1` (nicht der Abspielzustand); URL `?lay=aurora:0,kp:7,clock.play:1` für
 // Screenshots. Aktive Station aus `#station=…` (main.js setzt den Hash per replaceState → ohne Ereignis, daher Takt 300 ms).
 
@@ -54,6 +56,13 @@ const ICONS = {
   film: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 9h18M3 15h18M8 5v4M16 5v4M8 15v4M16 15v4"/>',
   reset: '<path d="M4 12a8 8 0 1 0 2.3-5.6"/><path d="M4 4v4h4"/>',
   chev: '<path d="M6 9l6 6 6-6"/>',
+  // Aktions-Chips (Akt:C)
+  bolt: '<path d="M13 3L5 14h6l-1 7 8-11h-6z"/>',
+  jump: '<path d="M5 12h11M12 7l5 5-5 5M20 5v14"/>',
+  back: '<path d="M9 7L4 12l5 5M4 12h11a5 5 0 0 1 0 10"/>',
+  play: '<path d="M8 5l11 7-11 7z"/>',
+  dice: '<rect x="4" y="4" width="16" height="16" rx="3"/><circle cx="9" cy="9" r="1"/><circle cx="15" cy="15" r="1"/><circle cx="15" cy="9" r="1"/><circle cx="9" cy="15" r="1"/>',
+  comet: '<circle cx="16" cy="8" r="3"/><path d="M13.5 10.5L4 20M11 8L5 14M16 13l-6 6"/>',
   // Mini-Bento der Reiter im Zahnrad: Station = eine Kachel gefüllt (diese Station), Global = alle Kacheln (alle Stationen)
   station: '<rect x="3" y="3" width="9" height="18" rx="2"/><rect x="14" y="3" width="7" height="8" rx="2" fill="currentColor"/><rect x="14" y="13" width="7" height="8" rx="2"/>',
   global: '<g fill="currentColor"><rect x="3" y="3" width="9" height="18" rx="2"/><rect x="14" y="3" width="7" height="8" rx="2"/><rect x="14" y="13" width="7" height="8" rx="2"/></g>',
@@ -76,6 +85,52 @@ export function markDevs(root, isDev) {
   if (bar) { bar.hidden = !n; bar.querySelector('[data-devn]').textContent = n; }
 }
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+// Auswahl statt breiter Knopf-Leiste (Vorschau 29.10.2026 „Einstellungs-Panels: breite Knopf-Leisten ersetzen“), auch für settings.js:
+// 2 Werte → Schalter mit dem Wort des aktuellen Werts (Zwei:A; bei „Aus | X“ ist an = X), geordnete Stufen → Rast-Regler mit den
+// Namen unter den Rasten und dem Wert rechts oben (Stufe:B), sonst Auswahlfeld rechts in der Zeile (Name:A).
+// opts = [[wert, name]], lid = Id des Namens; data-pick = Schlüssel bzw. Ebene, Werte im DOM als Text (pickOf liest, showPick zeigt)
+const OFF = /^aus$/i;
+export function pickHtml(key, label, opts, { ordered = false, lid, cls = '' } = {}) {
+  const vals = opts.map(([v]) => String(v)), names = opts.map(([, n]) => String(n));
+  const data = `data-pick="${esc(key)}" data-vals="${esc(JSON.stringify(vals))}" data-names="${esc(JSON.stringify(names))}"`;
+  if (opts.length === 2) {
+    const on = OFF.test(names[1]) && !OFF.test(names[0]) ? 0 : 1;
+    return `<label class="b-row b-pick cfg-toggle${cls}"><span class="cfg-label">${esc(label)}</span><span class="b-pair"><span class="b-word" data-word></span><input type="checkbox" role="switch" ${data} data-on="${esc(vals[on])}" data-off="${esc(vals[1 - on])}"><span class="switch switch--word" aria-hidden="true"></span></span></label>`;
+  }
+  if (ordered) {
+    return `<div class="b-row b-stack b-rast${cls}"><span class="b-top"><span class="cfg-label" id="${lid}">${esc(label)}</span><output data-word></output></span>`
+      + `<span class="b-track" style="--steps:${opts.length - 1}"><input type="range" min="0" max="${opts.length - 1}" step="1" aria-labelledby="${lid}" ${data}></span>`
+      + `<span class="b-stops" aria-hidden="true">${names.map((n) => `<span>${esc(n)}</span>`).join('')}</span></div>`;
+  }
+  return `<div class="b-row b-pick${cls}"><span class="cfg-label" id="${lid}">${esc(label)}</span><select class="b-select" aria-labelledby="${lid}" ${data}>${opts.map(([v, n]) => `<option value="${esc(v)}">${esc(n)}</option>`).join('')}</select></div>`;
+}
+const pickMeta = new WeakMap();
+const metaOf = (el) => { let m = pickMeta.get(el); if (!m) pickMeta.set(el, m = { vals: JSON.parse(el.dataset.vals), names: JSON.parse(el.dataset.names) }); return m; };
+export const pickOf = (el) => (el.type === 'checkbox' ? (el.checked ? el.dataset.on : el.dataset.off) : el.type === 'range' ? metaOf(el).vals[+el.value] : el.value);
+// Wert v zeigen; def = Standardwert (Strich auf der Schiene des Rast-Reglers)
+export function showPick(el, v, def) {
+  const { vals, names } = metaOf(el), i = vals.indexOf(String(v));
+  if (i < 0) return;
+  const word = el.closest('.b-row').querySelector('[data-word]'), name = el.type === 'checkbox' && /^(an|aus)$/i.test(names[i]) ? names[i].toLowerCase() : names[i];
+  if (word && word.textContent !== name) word.textContent = name;
+  if (el.type === 'checkbox') el.checked = vals[i] === el.dataset.on;
+  else if (el.type === 'range') {
+    if (+el.value !== i) el.value = i;
+    if (el.getAttribute('aria-valuetext') !== name) el.setAttribute('aria-valuetext', name);
+    const d = vals.indexOf(String(def));
+    paintRange(el, d < 0 ? undefined : d);
+  } else if (el.value !== vals[i]) el.value = vals[i];
+}
+// Aktion als kleiner Chip mit Symbol + Verb (Akt:C); sagt der Knopf mehr als das Verb (z ≈ 20, ein Datum, ein Ereignis), steht das
+// unter dem Namen (actMeta)
+const ACTS = [[/komet/i, 'comet', 'Komet'], [/auslösen/i, 'bolt', 'Auslösen'], [/würfeln/i, 'dice', 'Würfeln'], [/^zurück$/i, 'back', 'Zurück'],
+  [/^heute$/i, 'back', 'Heute'], [/abspielen|voyager|mondfinsternis/i, 'play', 'Abspielen']];
+const VERBS = /^(jetzt auslösen|komet jetzt|springen|zurück|heute|abspielen|von vorn abspielen|neu würfeln|vorspulen|zum nächsten|zur nächsten|nächste finsternis)$/i;
+const actMeta = (text) => (VERBS.test(text) ? '' : text);
+const actChip = (attr, text, label) => {
+  const [, ico, verb] = ACTS.find(([re]) => re.test(text)) || [0, 'jump', 'Springen'], meta = actMeta(text);
+  return `<button type="button" class="act-chip" ${attr} aria-label="${esc(verb)}: ${esc(label)}${meta ? ` (${esc(meta)})` : ''}">${icon(ico, 'act-ico')}${verb}</button>`;
+};
 const store = (() => { try { const s = JSON.parse(localStorage.getItem(KEY)); return s && typeof s === 'object' ? s : {}; } catch { return {}; } })();
 const url = (() => {
   const o = {}, q = new URLSearchParams(location.search).get('lay');
@@ -152,20 +207,27 @@ function persist(l) {
 }
 
 // Bento: je group eine Karte, ▶-Ebene als Karte „Animation“ oben, sub-Ebenen als eingerückter Block unter ihrer Hauptzeile.
-// Regler mit wenigen benannten Stufen (fmt ohne Ziffern, ≤ 5 Stufen) erscheinen als Knopfreihe; Zahlen-Regler zweizeilig.
+// Regler mit wenigen benannten Stufen (fmt ohne Ziffern, ≤ 5 Stufen) sind eine Auswahl wie 'seg': Schalter, Rast-Regler oder
+// Auswahlfeld (pickHtml), mit buttons: true eine Knopfreihe; Zahlen-Regler zweizeilig.
 const isChoice = (l) => l.type === 'range' && l.fmt && (l.step ?? 1) === 1 && l.max - l.min <= 4 && !/\d/.test(String(l.fmt(l.min)));
 const ticks = (l) => ((l.step ?? 1) >= 1 && l.max - l.min <= 12 ? ` style="--n:${l.max - l.min}"` : '');
 const steps = (l) => Array.from({ length: l.max - l.min + 1 }, (_, i) => l.min + i);
+const isPick = (l) => !l.buttons && (l.type === 'seg' || isChoice(l));
+const choicesOf = (l) => (l.type === 'seg' ? l.options : steps(l).map((v) => [v, l.fmt(v)]));
 const range = (l, label = l.label) => `<span class="b-track"${ticks(l)}><input type="range" data-lay="${l.id}" min="${l.min}" max="${l.max}" step="${l.step ?? 1}" aria-label="${esc(label)}"></span>`;
 
 const rowHtml = (l) => {
   let row;
   if (l.type === 'toggle') row = `<label class="b-row cfg-toggle lay"><span class="cfg-label">${esc(l.label)}</span><input type="checkbox" data-lay="${l.id}"><span class="switch" aria-hidden="true"></span></label>`;
+  else if (isPick(l)) row = pickHtml(l.id, l.label, choicesOf(l), { ordered: l.ordered, lid: `lay-${l.id}`, cls: ' lay' });
   else if (isChoice(l)) row = `<div class="b-row b-stack lay"><span class="cfg-label" id="lay-${l.id}">${esc(l.label)}</span><div class="seg b-seg" role="radiogroup" aria-labelledby="lay-${l.id}">${steps(l).map((v) => `<button type="button" role="radio" data-lay-seg="${l.id}" data-val="${v}">${esc(l.fmt(v))}</button>`).join('')}</div></div>`;
   else if (l.type === 'seg') row = `<div class="b-row b-stack lay"><span class="cfg-label" id="lay-${l.id}">${esc(l.label)}</span><div class="seg b-seg" role="radiogroup" aria-labelledby="lay-${l.id}">${l.options.map(([v, n]) => `<button type="button" role="radio" data-lay-seg="${l.id}" data-val="${esc(v)}">${esc(n)}</button>`).join('')}</div></div>`;
   else if (l.type === 'swatch') row = `<div class="b-row b-stack lay"><span class="cfg-label" id="lay-${l.id}">${esc(l.label)}</span><div class="swatch" role="radiogroup" aria-labelledby="lay-${l.id}">${l.options.map(([v, n, bg]) => `<button type="button" role="radio" data-lay-seg="${l.id}" data-val="${esc(v)}"><i class="sw-disc" style="background:${bg}" aria-hidden="true"></i><b>${esc(n)}</b></button>`).join('')}</div></div>`;
   else if (l.type === 'range') row = `<label class="b-row b-stack lay"><span class="b-top"><span class="cfg-label">${esc(l.label)}</span><output data-lout="${l.id}"></output></span>${range(l)}</label>`;
-  else row = `<div class="b-row lay"><span class="cfg-label">${esc(l.label)}</span><button type="button" class="act-btn" data-act="${l.id}">${esc(l.button || 'Auslösen')}</button></div>`;
+  else {
+    const t = l.button || 'Auslösen', meta = actMeta(t);
+    row = `<div class="b-row lay"><span class="b-lab"><span class="cfg-label">${esc(l.label)}</span>${meta ? `<span class="b-meta">${esc(meta)}</span>` : ''}</span>${actChip(`data-act="${l.id}"`, t, l.label)}</div>`;
+  }
   return row + (l.marks ? `<div class="zg-rail zg-rail--y" data-ymarks="${l.id}">${l.marks.map(([v, n]) => `<button type="button" class="zg-mark" data-ymark="${l.id}" data-val="${v}" style="--x:${((v - l.min) / (l.max - l.min)).toFixed(4)}">${esc(n)}</button>`).join('')}</div>` : '')
     + (l.detail ? `<div class="sw-detail" data-swd="${l.id}"></div>` : '')
     + (l.hint ? `<p class="cfg-note lay-hint">${prose(l.hint)}</p>` : '') + (l.only ? `<p class="cfg-note lay-hint" data-only="${l.id}" hidden>${prose(l.only)}</p>` : '');
@@ -210,7 +272,7 @@ function showHtml(items) {
         <output class="zg-big" data-lout="${p.id}"></output></div>
       ${axis ? `<div class="zg-axis" data-axis="${p.id}"><div class="zg-rail zg-rail--m" data-amarks></div><div class="zg-line" data-aline><span class="zg-now" aria-hidden="true"></span></div><div class="zg-rail zg-rail--t" data-aticks></div></div>` : ''}
       <label class="zg-tempo"><span class="cfg-label">Tempo</span>${range(p, `${p.label}: Tempo`)}</label>
-      ${axis ? `<div class="zg-next" data-anext hidden><span class="zg-next-t"><span>Nächstes: <b data-next-name></b></span><span class="zg-sub" data-next-in></span></span><button type="button" class="act-btn" data-next>Springen</button></div>` : ''}`
+      ${axis ? `<div class="zg-next" data-anext hidden><span class="zg-next-t"><span>Nächstes: <b data-next-name></b></span><span class="zg-sub" data-next-in></span></span>${actChip('data-next', 'Springen', 'nächstes Ereignis')}</div>` : ''}`
     : '';
   return `<section class="zg" aria-label="Zeigen">${head}${rows.map((l) => `<div class="b-item">${rowHtml(l)}</div>`).join('')}${p && p.hint ? `<p class="cfg-note lay-hint">${prose(p.hint)}</p>` : ''}</section>`;
 }
@@ -419,6 +481,7 @@ function sync() {
     });
     root.querySelectorAll('[data-status]').forEach((s) => { const l = find(s.dataset.status); if (l && l.status) s.textContent = nbsp(l.status()); });
     root.querySelectorAll('[data-lay-seg]').forEach((b) => { const l = find(b.dataset.laySeg); if (l) b.setAttribute('aria-checked', String(String(l.value) === b.dataset.val)); });
+    root.querySelectorAll('[data-pick]').forEach((el) => { const l = find(el.dataset.pick); if (l) showPick(el, l.value, l.def); });
     root.querySelectorAll('[data-swd]').forEach((d) => { const l = find(d.dataset.swd); if (l && d.dataset.v !== String(l.value)) { d.dataset.v = String(l.value); d.innerHTML = l.detail(l.value); } });
     root.querySelectorAll('[data-chip]').forEach((c) => { const l = find(c.dataset.chip); if (l) c.textContent = `${playing(l) ? 'läuft' : 'angehalten'} · ${l.label}`; });
     // Unter-Ebenen ohne Wirkung, solange ihr Hauptschalter aus ist: abgedunkelt, aber bedienbar
@@ -445,7 +508,15 @@ function sync() {
 }
 
 function onInput(e) {
-  const i = e.target, l = i.dataset && i.dataset.lay ? find(i.dataset.lay) : null;
+  const i = e.target;
+  if (i.dataset && i.dataset.pick) {
+    // Auswahl: Text aus dem DOM zurück in den Wert der Ebene (Zahl beim Regler, sonst wie in options)
+    const l = find(i.dataset.pick), o = l && choicesOf(l).find(([v]) => String(v) === pickOf(i));
+    if (!o) return;
+    l.value = o[0]; l.set(l.value); persist(l); tell(l); sync();
+    return;
+  }
+  const l = i.dataset && i.dataset.lay ? find(i.dataset.lay) : null;
   if (!l) return;
   if (l.type === 'toggle') l.value = i.checked; else l.value = +i.value;
   if (l.type === 'play') l.set(l.value, playing(l)); else l.set(l.value);

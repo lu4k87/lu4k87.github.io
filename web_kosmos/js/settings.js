@@ -9,7 +9,7 @@
 // `?cfg` (auch `?cfg=global`) zeigt die Einstellungen, `?cfg=lay` das Panel Station.
 // Gespeichert in localStorage `kosmos.settings.v1`; clean() prüft jeden Wert, damit kaputte Einträge nichts stören.
 
-import { mountLayers, rebuildLayers, refreshLayers, devLine, devBar, markDevs, paintRange, icon } from './layers.js';
+import { mountLayers, rebuildLayers, refreshLayers, devLine, devBar, markDevs, paintRange, icon, pickHtml, pickOf, showPick } from './layers.js';
 import { nbsp } from './figs.js';
 import { SOLAR_SYSTEM } from './content.js';
 
@@ -100,11 +100,8 @@ const reducedSys = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 const figsOn = () => { let v = null; try { v = localStorage.getItem(FM_KEY); } catch { /* privat */ } return v ? v === 'on' : !(reducedSys() || settings.S.motion === 'off'); };
 const setFigs = (on) => { try { localStorage.setItem(FM_KEY, on ? 'on' : 'off'); } catch { /* privat */ } };
 
-const SEG = (key, label, opts, extra = '') => `
-  <div class="b-row b-stack"><span class="cfg-label" id="cfg-${key}">${label}${extra}</span>
-    <div class="seg b-seg" role="radiogroup" aria-labelledby="cfg-${key}">
-      ${opts.map(([v, l]) => `<button type="button" role="radio" data-key="${key}" data-val="${v}">${l}</button>`).join('')}
-    </div></div>`;
+// Auswahl (layers.js pickHtml): 2 Werte als Schalter, geordnete Stufen (ordered) als Rast-Regler, sonst Auswahlfeld
+const PICK = (key, label, opts, ordered = false) => pickHtml(key, label, opts, { ordered, lid: `cfg-${key}` });
 const TOG = (key, label, extra = '', attr = `data-key="${key}"`) => `
   <label class="b-row cfg-toggle"><span class="cfg-label">${label}${extra}</span><input type="checkbox" ${attr}><span class="switch" aria-hidden="true"></span></label>`;
 const RANGE = (key, label, min, max, step, unit, extra = '') => `
@@ -127,8 +124,9 @@ const swatch = (g) => (g ? `background:radial-gradient(circle at 34% 62%, ${rgb(
 const LOOKS = `<div class="b-row b-stack"><span class="cfg-label" id="cfg-grade">Farblook</span>
   <div class="b-looks" role="radiogroup" aria-labelledby="cfg-grade">${GRADE_IDS.map((id, i) => `<button type="button" role="radio" data-key="grade" data-val="${id}"><span class="b-sw" style="${swatch(i ? GRADES[i - 1][1] : null)}"></span><span>${i ? GRADES[i - 1][0] : 'Je Station'}</span></button>`).join('')}</div></div>`
   + NOTE('„Je Station“ = jede Station behält ihren eigenen Look (die Sonne hat dafür einen eigenen Farblook); die anderen gelten überall.');
-const MW_STYLE = `<div class="b-row b-stack"><span class="cfg-label" id="cfg-mwstyle">Stil</span>
-  <div class="seg b-seg" role="radiogroup" aria-labelledby="cfg-mwstyle">${MW_STYLES.map(([id, l]) => `<button type="button" role="radio" data-mwstyle="${id}">${l}</button>`).join('')}</div></div>`
+// Auswahlfeld wie PICK; passt kein Stil mehr zu den Reglern, steht „Eigene Werte“ darin
+const MW_STYLE = `<div class="b-row b-pick"><span class="cfg-label" id="cfg-mwstyle">Stil</span><select class="b-select" data-mwstyle aria-labelledby="cfg-mwstyle">
+  <option value="" hidden>Eigene Werte</option>${MW_STYLES.map(([id, l]) => `<option value="${id}">${l}</option>`).join('')}</select></div>`
   + NOTE('Setzt alle Regler der Milchstraße auf einen abgestimmten Look, danach frei einstellbar. „Astrofoto“ ist wie die Vorlage von ESO.');
 // Zwischenüberschrift in einer Gruppe; zählt nicht als Einstellung
 const SUB = (t) => ['#', `<h5 class="b-subh">${t}</h5>`];
@@ -170,7 +168,7 @@ const GROUPS = [
     SUB('Milchstraße'),
     ['mw', TOG('mw', 'Milchstraße zeigen') + NOTE('Nur das Band der Milchstraße am Himmel.'), 'mw'],
     ['mwNear', TOG('mwNear', 'Magellansche Wolken und Andromeda'), 'mw'],
-    ['mwSrc', SEG('mwSrc', 'Quelle der Milchstraße', [['model', 'Eigenes Modell'], ['photo', 'ESO-Foto']]) + NOTE('Das Foto (ESO/S. Brunier, CC BY 4.0) war die Vorlage und dient nur zum Vergleich – nur im Sonnensystem, wo die Lage am Himmel stimmt.'), 'solar'],
+    ['mwSrc', PICK('mwSrc', 'Quelle der Milchstraße', [['model', 'Eigenes Modell'], ['photo', 'ESO-Foto']]) + NOTE('Das Foto (ESO/S. Brunier, CC BY 4.0) war die Vorlage und dient nur zum Vergleich – nur im Sonnensystem, wo die Lage am Himmel stimmt.'), 'solar'],
     SUB('Milchstraße · Aussehen'), ['', MW_STYLE, 'mw'],
     ['mwGain', RANGE('mwGain', 'Helligkeit', 0, 6, 0.05, '×'), 'mw'], ['mwCon', RANGE('mwCon', 'Kontrast', 0.5, 3, 0.05, '×'), 'mw'],
     ['mwBlack', RANGE('mwBlack', 'Schwarzpunkt', 0, 1, 0.05, '') + NOTE('Schneidet die schwachen Ränder des Bandes ab – der Himmel daneben wird dunkler.'), 'mw'],
@@ -194,12 +192,12 @@ const GROUPS = [
   { id: 'planets', icon: 'orbit', title: 'Planeten', rows: [
     ['axes', TOG('axes', 'Drehachsen der Planeten und Monde') + NOTE('Linie über Nord- und Südpol jedes Planeten und Mondes, neigt und dreht sich mit dem Körper. Nordpol eisblau, Südpol grau.'), 'bodies'],
     ['small', RANGE('small', 'Größe der Symbole', 1, 12, 0.5, '×') + NOTE('Satelliten, Trümmer und Asteroiden als vergrößerte Symbole – je größer, desto weniger Objekte (4× → jedes achte); 1× zeigt alle als Lichtpunkte.'), 'sym']] },
-  { id: 'cam', icon: 'cam', title: 'Kamera &amp; Bewegung', rows: [['motion', SEG('motion', 'Bewegung', [['full', 'Voll'], ['calm', 'Ruhig'], ['off', 'Aus']]) + NOTE('„Aus“ wirkt wie „Bewegung reduzieren“ im System: keine Fahrt von selbst, Wechsel als kurze Überblendung.')],
+  { id: 'cam', icon: 'cam', title: 'Kamera &amp; Bewegung', rows: [['motion', PICK('motion', 'Bewegung', [['full', 'Voll'], ['calm', 'Ruhig'], ['off', 'Aus']], true) + NOTE('„Aus“ wirkt wie „Bewegung reduzieren“ im System: keine Fahrt von selbst, Wechsel als kurze Überblendung.')],
     SUB('Steuerung'),
     ['fovK', RANGE('fovK', 'Blickwinkel', 0.6, 1.6, 0.05, '×') + NOTE('Über 1× zeigt mehr vom Raum wie ein Weitwinkel, unter 1× rückt die Szene heran wie ein Teleobjektiv.')],
     ['rotK', RANGE('rotK', 'Drehtempo', 0.25, 3, 0.05, '×') + NOTE('Wie weit die Kamera beim Ziehen mit Maus oder Finger dreht.')],
     ['zoomK', RANGE('zoomK', 'Zoomtempo', 0.25, 3, 0.05, '×') + NOTE('Mausrad und Zoom mit zwei Fingern.')],
-    ['inertia', SEG('inertia', 'Nachlauf', [['short', 'Kurz'], ['normal', 'Normal'], ['long', 'Lang']]) + NOTE('Wie lange die Kamera nach dem Loslassen weitergleitet.')],
+    ['inertia', PICK('inertia', 'Nachlauf', [['short', 'Kurz'], ['normal', 'Normal'], ['long', 'Lang']], true) + NOTE('Wie lange die Kamera nach dem Loslassen weitergleitet.')],
     SUB('Leerlauf-Fahrt'),
     ['cine', TOG('cine', 'Kamerafahrt im Leerlauf')],
     ['cineDelay', RANGE('cineDelay', 'Start nach', 1, 30, 1, 's') + NOTE('Zeit ohne Eingabe, bis die Fahrt einsetzt.')],
@@ -212,14 +210,14 @@ const GROUPS = [
     SUB('Linsenreflex'),
     ['lens', TOG('lens', 'Linsenreflex zeigen') + NOTE('Hauptschalter für Schein, Ring und Geisterbilder um die Sonne.'), 'flare'],
     ['lensAmt', RANGE('lensAmt', 'Stärke Linsenreflex', 0, 5, 0.05, '×') + NOTE('0× = aus.'), 'flare'],
-    ['lensOptic', SEG('lensOptic', 'Art der Optik', [['master', 'Filmkamera'], ['classic', 'Schlicht']]) + NOTE('Filmkamera: Regenbogenring, heller Bogen und ein farbiger Lichtfleck gegenüber der Sonne. Schlicht: nur ein zarter Lichtkranz.'), 'flareNs'],
+    ['lensOptic', PICK('lensOptic', 'Art der Optik', [['master', 'Filmkamera'], ['classic', 'Schlicht']]) + NOTE('Filmkamera: Regenbogenring, heller Bogen und ein farbiger Lichtfleck gegenüber der Sonne. Schlicht: nur ein zarter Lichtkranz.'), 'flareNs'],
     ['lensGhost', TOG('lensGhost', 'Farbiger Lichtfleck (Geisterbild)'), 'flareNs'],
     ['ghostMotion', TOG('ghostMotion', 'Lichtfleck wandert beim Schwenken') + NOTE('Wie in einem echten Objektiv wandert der Fleck beim Schwenken auf der Linie durch die Bildmitte.'), 'flareNs'],
     ['anamorphic', TOG('anamorphic', 'Waagrechter Lichtstreif (anamorph)'), 'flare']] },
   { id: 'ui', icon: 'ui', title: 'Oberfläche', half: true, rows: [['panel', TOG('panel', 'Infotafel zeigen')], ['scaleCompare', TOG('scaleCompare', 'Maßstabs-Vergleich')], ['timeline', TOG('timeline', 'Zeitleiste der Station zeigen')],
     ['', TOG('', 'Grafiken bewegt', '', 'data-figs')]] },
-  { id: 'perf', icon: 'perf', title: 'Leistung', rows: [['quality', SEG('quality', 'Qualität', [['auto', 'Auto'], ['1', 'Niedrig'], ['2', 'Mittel'], ['3', 'Hoch']])],
-    ['fpsCap', SEG('fpsCap', 'Bildrate', [['0', 'Frei'], ['60', '60 Bilder/s'], ['30', '30 Bilder/s']]) + NOTE('30 Bilder/s spart am Laptop Strom und Lüfter.')]] },
+  { id: 'perf', icon: 'perf', title: 'Leistung', rows: [['quality', PICK('quality', 'Qualität', [['auto', 'Auto'], ['1', 'Niedrig'], ['2', 'Mittel'], ['3', 'Hoch']], true)],
+    ['fpsCap', PICK('fpsCap', 'Bildrate', [['0', 'Frei'], ['60', '60 Bilder/s'], ['30', '30 Bilder/s']], true) + NOTE('30 Bilder/s spart am Laptop Strom und Lüfter.')]] },
 ];
 const N_GLOBAL = GROUPS.reduce((n, g) => n + nRows(g), 0);
 // „Alle zurücksetzen“ der Einstellungen
@@ -259,7 +257,9 @@ export function mountSettings(root, btn, lay = document.getElementById('btn-lay'
   const sync = () => {
     const S = settings.S;
     root.querySelectorAll('[data-key][data-val]').forEach((b) => b.setAttribute('aria-checked', String(String(S[b.dataset.key]) === b.dataset.val)));
-    root.querySelectorAll('[data-mwstyle]').forEach((b) => b.setAttribute('aria-checked', String(mwStyleOn(S, b.dataset.mwstyle))));
+    root.querySelectorAll('[data-pick]').forEach((el) => showPick(el, S[el.dataset.pick], DEFAULTS[el.dataset.pick]));
+    const ms = root.querySelector('[data-mwstyle]');
+    if (ms) ms.value = (MW_STYLES.find(([id]) => mwStyleOn(S, id)) || [''])[0];
     const f = root.querySelector('[data-figs]');
     if (f) f.checked = figsOn();
     root.querySelectorAll('input[type=checkbox][data-key]').forEach((i) => { i.checked = !!S[i.dataset.key]; });
@@ -288,7 +288,7 @@ export function mountSettings(root, btn, lay = document.getElementById('btn-lay'
       const na = !atOf(WHERE[it.dataset.w][0]).includes(id);
       it.classList.toggle('is-na', na);
       it.querySelector('.cfg-na').hidden = !na;
-      it.querySelectorAll('input, button').forEach((el) => { el.disabled = na; });
+      it.querySelectorAll('input, button, select').forEach((el) => { el.disabled = na; });
     });
     GROUPS.forEach((g, i) => {
       const sec = glob.querySelector(`#cfg-s${i}`), n = sec.querySelectorAll('.b-item.is-na').length, all = n === nRows(g);
@@ -311,8 +311,6 @@ export function mountSettings(root, btn, lay = document.getElementById('btn-lay'
     if (j && vGl.contains(j)) { pick(+j.dataset.jump); return; }
     // Auftakt-Film noch einmal (main.js): Zahnrad schließt, damit der Film frei steht
     if (e.target.closest('[data-auftakt]')) { open(false); window.dispatchEvent(new CustomEvent('kosmos:auftakt')); return; }
-    const ms = e.target.closest('[data-mwstyle]');
-    if (ms) for (const [k, v] of Object.entries(MW_STYLES.find(([id]) => id === ms.dataset.mwstyle)[2])) setSetting(k, v);
     const b = e.target.closest('[data-key][data-val]');
     if (b) setSetting(b.dataset.key, num(b.dataset.key, b.dataset.val));
     const r = e.target.closest('[data-reset]');
@@ -321,6 +319,8 @@ export function mountSettings(root, btn, lay = document.getElementById('btn-lay'
   root.addEventListener('input', (e) => {
     const i = e.target;
     if (i.matches('[data-figs]')) { setFigs(i.checked); return; }
+    if (i.dataset.pick) { setSetting(i.dataset.pick, num(i.dataset.pick, pickOf(i))); return; }
+    if (i.matches('[data-mwstyle]')) { if (i.value) for (const [k, v] of Object.entries(MW_STYLES.find(([id]) => id === i.value)[2])) setSetting(k, v); return; }
     if (!i.dataset.key) return;
     if (i.dataset.key === 'barsH') peekT = performance.now();
     setSetting(i.dataset.key, i.type === 'checkbox' ? i.checked : +i.value);

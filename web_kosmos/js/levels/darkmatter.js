@@ -324,7 +324,7 @@ export function create(ctx) {
     { id: 'galGain', type: 'range', group: 'Galaxien', label: 'Helligkeit', value: 1.4, min: 0, max: 3, step: 0.1, unit: '×', set: (v) => { gu.uGain.value = v; pu.uGain.value = v; } },
     { id: 'galSize', type: 'range', label: 'Größe', value: 1, min: 0.4, max: 2.5, step: 0.1, unit: '×', set: (v) => { gu.uSize.value = v; } },
     { id: 'galCut', type: 'range', label: 'Nur schwere Halos', value: 0, min: 0, max: 0.9, step: 0.1, fmt: (v) => (v ? `oberste ${Math.round((1 - v) * 100)} %` : 'alle'), set: (v) => { gu.uCut.value = v ? 0.25 + 0.75 * v : 0; } },
-    { id: 'smooth', type: 'range', group: 'Modell', label: 'Kleinste Strukturen', value: rsIdx, min: 0, max: SMOOTH.length - 1, step: 1, fmt: (i) => SMOOTH[Math.round(i)][1],
+    { id: 'smooth', type: 'range', group: 'Modell', label: 'Kleinste Strukturen', ordered: true, value: rsIdx, min: 0, max: SMOOTH.length - 1, step: 1, fmt: (i) => SMOOTH[Math.round(i)][1],
       hint: 'Glättung des Anfangsfelds (1,25 Mpc = eine Zelle, Standard). „Fein“ zeigt mehr Kaustiken, verschmiert aber Knoten stärker – eine Grenze der Zeldovich-Näherung. Rechnet neu (≈ 2 s).',
       set: (i) => { const k = Math.round(i); if (k !== rsIdx) { rsIdx = k; rs = SMOOTH[k][0]; compute(); } } },
   ]);
