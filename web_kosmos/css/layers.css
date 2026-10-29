@@ -171,8 +171,8 @@ body.is-flying .tl, body.is-intro .tl { opacity: 0; pointer-events: none; }
    Fuß unten. Lage im Raster: kosmos.css .station (Breite --st-w) */
 #station { container: st / size; }
 /* wenig Höhe (Fenster ≈ 900 px, Panel unter 600 px): Kacheln bleiben quadratisch, nur kleiner – 6 statt 4 Spalten, damit die Bühne
-   lesbar bleibt (User 29.10.2026: nie flache Knöpfe); schmal (Handy) bleibt es bei 4 Spalten */
-@container st (max-height: 600px) and (min-width: 421px) {
+   lesbar bleibt (User 29.10.2026: nie flache Knöpfe); erst ab 500 px Breite wie in #cfg, schmaler zu eng für „Oberfläche“ */
+@container st (max-height: 600px) and (min-width: 500px) {
   .st-rail { grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 5px; padding: 10px 18px; }
   .st-rail .cfg-tile { gap: 4px; padding: 4px 3px; }
   .st-rail .cfg-tile-ico { width: 20px; height: 20px; }
