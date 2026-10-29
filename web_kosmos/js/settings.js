@@ -283,7 +283,7 @@ export function mountSettings(root, btn, lay = document.getElementById('btn-lay'
   // Ausgrauen (User 28.10.2026): Zeile ohne Wirkung an der aktuellen Station gesperrt + Hinweis „Wirkt hier nicht · nur …“;
   // Kachel abgedimmt, wenn in ihrer Gruppe nichts wirkt; Überschrift nennt die Zahl (Vorschau 28.10.2026 Grau:A)
   applyNA = () => {
-    const id = (location.hash.match(/station=(\w+)/) || [])[1] || 'earth';
+    const id = document.documentElement.dataset.station || 'earth';   // aktive Station (main.js activate), nicht der Hash
     vGl.querySelectorAll('.b-item[data-w]').forEach((it) => {
       const na = !atOf(WHERE[it.dataset.w][0]).includes(id);
       it.classList.toggle('is-na', na);

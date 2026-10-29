@@ -2,7 +2,8 @@
 // von Raumsonden – Plasma- und Radiowellen, die Antennen auffangen, und Schwingungen der Sonne –, hörbar gemacht.
 // Dateien aus tools/fetch_sounds.py (web/audio/<file>.mp3: Schleife ab PAD mit der Länge len), Quellen in SOURCES (snd-*).
 // Einmal eingeschaltet bleibt der Ton beim Weiterfliegen an: Stationswechsel blendet über, Stationen ohne Ton werden still.
-// Pulsar hat seinen eigenen Ton (echter Takt, levels/pulsar.js) und steht deshalb nicht in der Tabelle.
+// Pulsar hat seinen eigenen Ton (echter Takt, levels/pulsar.js) und steht deshalb nicht in der Tabelle; er folgt aber
+// demselben Schalter (soundIsOn/setSoundOn): an bleibt an beim Weiterfliegen, nichts wird über die Sitzung hinaus gespeichert.
 
 import { SOURCES } from './content.js';
 
@@ -158,6 +159,9 @@ const detail = (list) => (v) => {
   const src = SOURCES[snd.s];
   return `<p class="sw-cap">${snd.x}</p><p class="sw-cap">Quelle: <a href="${src.url}" target="_blank" rel="noopener">${src.by}</a></p>`;
 };
+
+export const soundIsOn = () => on;
+export function setSoundOn(v) { on = v; if (!v) stop(0.4); }
 
 // Schalter „Ton“ an die Schalter der Station hängen (makeLevel) – ohne Eingriff in levels/<id>.js
 export function attachSound(lv) {

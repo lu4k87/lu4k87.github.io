@@ -444,6 +444,7 @@ function activate(lv) {
     hud.setStation(lv);
   }
   history.replaceState(null, '', `${location.search}#station=${lv.id}`);
+  document.documentElement.dataset.station = lv.id;   // Panels (layers.js, settings.js) lesen die aktive Station hier
   lv.dirty = true;
   // Nachbarn behalten, Rest freigeben; nächste Station der Route im Leerlauf vorladen
   dropFar([...neighbours(lv.id), nextOnRoute(lv.id), ...state.queue]);
@@ -1006,8 +1007,11 @@ async function startOpener(lv) {
   if (!OPENER.on || state.opener || state.tr || state.chain) return;
   endIntro();
   state.follow = null;
+  // cmb wurde inzwischen freigegeben und neu gebaut: der Film hängt an den Uniforms der alten Instanz → neu bauen
+  if (opener && opener.lv !== lv) { opener.dispose(); opener.rt.dispose(); opener = null; }
   if (!opener) {
     opener = createOpener({ detail: QUALITY[pickQuality()].detail, renderer }, lv);
+    opener.lv = lv;
     opener.rt = new THREE.WebGLRenderTarget(2, 2, { type: THREE.HalfFloatType, depthBuffer: false });
     sizeOpener();
     opener.apply(null);

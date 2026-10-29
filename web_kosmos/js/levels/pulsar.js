@@ -24,6 +24,7 @@ import { createStarfield } from '../stars.js';
 import { NOISE, SKY_VERTEX } from '../glsl.js';
 import { WIRBEL_CONE, CAP_GLSL, spiralParticles, LENS_GLSL, lensStars, currentSheet, lightCylinderWall, outerGap, fieldBeads, stripeNet } from '../pulsarfx.js';
 import { registerLayers, refreshLayers, setLayer } from '../layers.js';
+import { soundIsOn, setSoundOn } from '../sound.js';
 
 const R_NS = 13;
 // Periode heute aus ATNF (P = 33,3924 ms bei MJD 48442,5; Ṗ = 4,2097·10⁻¹³) – eigene Rechnung ohne Bremsindex
@@ -446,6 +447,12 @@ export function create(ctx) {
   function sound(on) {
     if (audio) { audio.close(); audio = null; }
     if (!on) return;
+    // wie sound.js later(): ohne erste Bedienung darf kein AudioContext starten → mit dem ersten Klick/Tastendruck nachholen
+    if (navigator.userActivation && !navigator.userActivation.hasBeenActive) {
+      const go = () => { removeEventListener('pointerup', go, true); removeEventListener('keydown', go, true); if (soundOn && isActive && !audio) sound(true); };
+      addEventListener('pointerup', go, true); addEventListener('keydown', go, true);
+      return;
+    }
     const ac = new (window.AudioContext || window.webkitAudioContext)();
     const n = Math.round(P * ac.sampleRate);
     const buf = ac.createBuffer(1, n, ac.sampleRate);
@@ -492,8 +499,16 @@ export function create(ctx) {
   const SLOWS = [[600, '1 : 600'], [200, '1 : 200'], [60, '1 : 60']];
   let spinOn = true, soundOn = false;
   const controls = [
-    { id: 'sound', label: 'Ton', value: 'off', options: [['off', 'Aus'], ['on', 'Echter Takt']], set: (v) => { soundOn = v === 'on'; sound(soundOn); setLayer('pulsar', 'sound', soundOn); } },
+    { id: 'sound', label: 'Ton', value: 'off', options: [['off', 'Aus'], ['on', 'Echter Takt']], set: (v) => setTick(v === 'on') },
   ];
+  // Takt wie die übrigen Töne: gemeinsamer Ton-Schalter (sound.js), Schalter der Kopfzeile und Reiter zeigen dasselbe
+  function setTick(v) {
+    soundOn = v;
+    controls[0].value = v ? 'on' : 'off';
+    setLayer('pulsar', 'sound', v);
+    setSoundOn(v);
+    sound(v && isActive);
+  }
   const slowIdx = () => Math.max(0, SLOWS.findIndex(([v]) => v === slow));
   const q = new THREE.Quaternion();
   let pulseOn = 0, pulse = 0;
@@ -505,7 +520,7 @@ export function create(ctx) {
     { id: 'clock', type: 'play', group: 'Zeit', label: 'Zeitlupe', hint: 'Drehung in Zeitlupe – echt dreht der Stern 30-mal je Sekunde; Pause hält die Drehung an.', value: 1, min: 0, max: SLOWS.length - 1, step: 1, autoplay: true,
       fmt: (i) => SLOWS[Math.round(i)][1], set: (i, playing) => { slow = SLOWS[Math.round(i)][0]; spinOn = playing; }, get: () => ({ value: slowIdx(), playing: spinOn }),
       status: () => (spinOn ? `eine Umdrehung in ${(P * slow).toFixed(1).replace('.', ',')} s` : 'Drehung angehalten') },
-    { id: 'sound', type: 'toggle', group: 'Ton', label: 'Echter Takt (Hauptpuls + Zwischenpuls)', value: false, set: (v) => { if (v !== soundOn) { soundOn = v; sound(v && isActive); } } },
+    { id: 'sound', type: 'toggle', group: 'Ton', label: 'Echter Takt (Hauptpuls + Zwischenpuls)', value: false, session: true, set: (v) => { if (v !== soundOn) setTick(v); } },
     { id: 'swirl', type: 'toggle', group: 'Strahlen', label: 'Plasmawirbel (Trichter)', value: true, set: (v) => { beams.material.uniforms.uSwirl.value = v ? 1 : 0; },
       hint: 'Schema: die Strahlkegel als Wirbelsturm aus aufgewickelten offenen Feldlinien, innen schneller drehend. Aus = glatter Kegel mit hellem Kern.' },
     { id: 'spiral', type: 'toggle', label: 'Spiralteilchen', value: true, sub: true, set: (v) => { swirl.visible = v; } },
@@ -606,7 +621,11 @@ export function create(ctx) {
       if (dot) { dot.setAttribute('cx', x); dot.setAttribute('cy', y); }
     },
     setPixelRatio(pr) { stars.userData.setPixelRatio(pr); wu.uPx.value = pr; swirl.userData.u.uPx.value = pr; beads.userData.u.uPx.value = pr; },
-    onActive(on) { isActive = on; sound(on && soundOn); },
+    onActive(on) {
+      isActive = on;
+      if (on && soundIsOn() !== soundOn) setTick(soundIsOn());   // Ton beim Anflug an/aus übernehmen
+      else sound(on && soundOn);
+    },
     dispose() { sound(false); disposeScene(scene); },
   };
 }

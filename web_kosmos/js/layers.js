@@ -177,7 +177,7 @@ export function registerLayers(stationId, layers) {
   const saved = store[stationId] || {};
   for (const l of layers) {
     if (l.def === undefined) l.def = l.value;
-    let v = url[l.id] !== undefined ? url[l.id] : saved[l.id];
+    let v = url[l.id] !== undefined ? url[l.id] : l.session ? undefined : saved[l.id];
     if (l.type === 'toggle' && typeof v === 'number') v = v !== 0;
     if (v !== undefined && valid(l, v)) l.value = v;
     if (l.type === 'toggle' || l.type === 'range') l.set(l.value);
@@ -200,7 +200,7 @@ export function setLayer(stationId, id, v) {
 }
 
 function persist(l) {
-  if (l.shared || l.ctl) return;   // gemeinsame Gruppe: setSetting hat schon gespeichert; Schalter der Infotafel: nie gespeichert
+  if (l.shared || l.ctl || l.session) return;   // gemeinsame Gruppe: setSetting hat schon gespeichert; Schalter der Infotafel, session (Ton): nie gespeichert
   store[currentId] = store[currentId] || {};
   store[currentId][l.id] = l.value;
   try { localStorage.setItem(KEY, JSON.stringify(store)); } catch { /* privates Fenster */ }
@@ -549,7 +549,7 @@ function onClick(e) {
   sync();
 }
 function poll() {
-  const id = (location.hash.match(/station=(\w+)/) || [])[1] || 'earth';
+  const id = document.documentElement.dataset.station || 'earth';   // aktive Station (main.js activate), nicht der Hash
   if (id !== currentId) { currentId = id; render(); }
 }
 
