@@ -90,19 +90,20 @@ const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&l
 // Namen unter den Rasten und dem Wert rechts oben (Stufe:B), sonst Auswahlfeld rechts in der Zeile (Name:A).
 // opts = [[wert, name]], lid = Id des Namens; data-pick = Schlüssel bzw. Ebene, Werte im DOM als Text (pickOf liest, showPick zeigt)
 const OFF = /^aus$/i;
-export function pickHtml(key, label, opts, { ordered = false, lid, cls = '' } = {}) {
+export function pickHtml(key, label, opts, { ordered = false, lid, cls = '', ico = '' } = {}) {
   const vals = opts.map(([v]) => String(v)), names = opts.map(([, n]) => String(n));
   const data = `data-pick="${esc(key)}" data-vals="${esc(JSON.stringify(vals))}" data-names="${esc(JSON.stringify(names))}"`;
+  const lab = `${ico}${prose(label)}`;
   if (opts.length === 2) {
     const on = OFF.test(names[1]) && !OFF.test(names[0]) ? 0 : 1;
-    return `<label class="b-row b-pick cfg-toggle${cls}"><span class="cfg-label">${esc(label)}</span><span class="b-pair"><span class="b-word" data-word></span><input type="checkbox" role="switch" ${data} data-on="${esc(vals[on])}" data-off="${esc(vals[1 - on])}"><span class="switch switch--word" aria-hidden="true"></span></span></label>`;
+    return `<label class="b-row b-pick cfg-toggle${cls}"><span class="cfg-label">${lab}</span><span class="b-pair"><span class="b-word" data-word></span><input type="checkbox" role="switch" ${data} data-on="${esc(vals[on])}" data-off="${esc(vals[1 - on])}"><span class="switch switch--word" aria-hidden="true"></span></span></label>`;
   }
   if (ordered) {
-    return `<div class="b-row b-stack b-rast${cls}"><span class="b-top"><span class="cfg-label" id="${lid}">${esc(label)}</span><output data-word></output></span>`
+    return `<div class="b-row b-stack b-rast${cls}"><span class="b-top"><span class="cfg-label" id="${lid}">${lab}</span><output data-word></output></span>`
       + `<span class="b-track" style="--steps:${opts.length - 1}"><input type="range" min="0" max="${opts.length - 1}" step="1" aria-labelledby="${lid}" ${data}></span>`
       + `<span class="b-stops" aria-hidden="true">${names.map((n) => `<span>${esc(n)}</span>`).join('')}</span></div>`;
   }
-  return `<div class="b-row b-pick${cls}"><span class="cfg-label" id="${lid}">${esc(label)}</span><select class="b-select" aria-labelledby="${lid}" ${data}>${opts.map(([v, n]) => `<option value="${esc(v)}">${esc(n)}</option>`).join('')}</select></div>`;
+  return `<div class="b-row b-pick${cls}"><span class="cfg-label" id="${lid}">${lab}</span><select class="b-select" aria-labelledby="${lid}" ${data}>${opts.map(([v, n]) => `<option value="${esc(v)}">${esc(n)}</option>`).join('')}</select></div>`;
 }
 const pickMeta = new WeakMap();
 const metaOf = (el) => { let m = pickMeta.get(el); if (!m) pickMeta.set(el, m = { vals: JSON.parse(el.dataset.vals), names: JSON.parse(el.dataset.names) }); return m; };
@@ -216,17 +217,39 @@ const isPick = (l) => !l.buttons && (l.type === 'seg' || isChoice(l));
 const choicesOf = (l) => (l.type === 'seg' ? l.options : steps(l).map((v) => [v, l.fmt(v)]));
 const range = (l, label = l.label) => `<span class="b-track"${ticks(l)}><input type="range" data-lay="${l.id}" min="${l.min}" max="${l.max}" step="${l.step ?? 1}" aria-label="${esc(label)}"></span>`;
 
+const paramIconKey = (l) => {
+  const t = (l.label || '').toLowerCase();
+  if (/temp|hitze|wärme|glut/i.test(t)) return 'flame';
+  if (/sonne|corona|flecken|strahlung|licht/i.test(t)) return 'sun';
+  if (/magnet|feld/i.test(t)) return 'field';
+  if (/protuberanz|flare|eruption|ausbruch/i.test(t)) return 'burst';
+  if (/wind|welle|partikel|plasma/i.test(t)) return 'wave';
+  if (/polarlicht|aurora|himmel/i.test(t)) return 'sky';
+  if (/wolke|nebel|gas|staub/i.test(t)) return 'cloud';
+  if (/orbit|bahn|linie|ring/i.test(t)) return 'orbit';
+  if (/dreh|frequenz|puls|takt|zeit|periode/i.test(t)) return 'time';
+  if (/erde|planet|globus/i.test(t)) return 'planet';
+  if (/mond/i.test(t)) return 'moon';
+  if (/ton|sound|audio/i.test(t)) return 'sound';
+  if (/optik|kamera|zoom|blick/i.test(t)) return 'cam';
+  if (/netz|koordinat/i.test(t)) return 'net';
+  return l.type === 'toggle' ? 'tune' : 'layers';
+};
+const paramIcon = (l) => icon(paramIconKey(l), 'lay-param-ico');
+
 const rowHtml = (l) => {
+  const ico = paramIcon(l);
+  const lab = `${ico}${prose(l.label)}`;
   let row;
-  if (l.type === 'toggle') row = `<label class="b-row cfg-toggle lay"><span class="cfg-label">${esc(l.label)}</span><input type="checkbox" data-lay="${l.id}"><span class="switch" aria-hidden="true"></span></label>`;
-  else if (isPick(l)) row = pickHtml(l.id, l.label, choicesOf(l), { ordered: l.ordered, lid: `lay-${l.id}`, cls: ' lay' });
-  else if (isChoice(l)) row = `<div class="b-row b-stack lay"><span class="cfg-label" id="lay-${l.id}">${esc(l.label)}</span><div class="seg b-seg" role="radiogroup" aria-labelledby="lay-${l.id}">${steps(l).map((v) => `<button type="button" role="radio" data-lay-seg="${l.id}" data-val="${v}">${esc(l.fmt(v))}</button>`).join('')}</div></div>`;
-  else if (l.type === 'seg') row = `<div class="b-row b-stack lay"><span class="cfg-label" id="lay-${l.id}">${esc(l.label)}</span><div class="seg b-seg" role="radiogroup" aria-labelledby="lay-${l.id}">${l.options.map(([v, n]) => `<button type="button" role="radio" data-lay-seg="${l.id}" data-val="${esc(v)}">${esc(n)}</button>`).join('')}</div></div>`;
-  else if (l.type === 'swatch') row = `<div class="b-row b-stack lay"><span class="cfg-label" id="lay-${l.id}">${esc(l.label)}</span><div class="swatch" role="radiogroup" aria-labelledby="lay-${l.id}">${l.options.map(([v, n, bg]) => `<button type="button" role="radio" data-lay-seg="${l.id}" data-val="${esc(v)}"><i class="sw-disc" style="background:${bg}" aria-hidden="true"></i><b>${esc(n)}</b></button>`).join('')}</div></div>`;
-  else if (l.type === 'range') row = `<label class="b-row b-stack lay"><span class="b-top"><span class="cfg-label">${esc(l.label)}</span><output data-lout="${l.id}"></output></span>${range(l)}</label>`;
+  if (l.type === 'toggle') row = `<label class="b-row cfg-toggle lay"><span class="cfg-label">${lab}</span><input type="checkbox" data-lay="${l.id}"><span class="switch" aria-hidden="true"></span></label>`;
+  else if (isPick(l)) row = pickHtml(l.id, l.label, choicesOf(l), { ordered: l.ordered, lid: `lay-${l.id}`, cls: ' lay', ico });
+  else if (isChoice(l)) row = `<div class="b-row b-stack lay"><span class="cfg-label" id="lay-${l.id}">${lab}</span><div class="seg b-seg" role="radiogroup" aria-labelledby="lay-${l.id}">${steps(l).map((v) => `<button type="button" role="radio" data-lay-seg="${l.id}" data-val="${v}">${esc(l.fmt(v))}</button>`).join('')}</div></div>`;
+  else if (l.type === 'seg') row = `<div class="b-row b-stack lay"><span class="cfg-label" id="lay-${l.id}">${lab}</span><div class="seg b-seg" role="radiogroup" aria-labelledby="lay-${l.id}">${l.options.map(([v, n]) => `<button type="button" role="radio" data-lay-seg="${l.id}" data-val="${esc(v)}">${esc(n)}</button>`).join('')}</div></div>`;
+  else if (l.type === 'swatch') row = `<div class="b-row b-stack lay"><span class="cfg-label" id="lay-${l.id}">${lab}</span><div class="swatch" role="radiogroup" aria-labelledby="lay-${l.id}">${l.options.map(([v, n, bg]) => `<button type="button" role="radio" data-lay-seg="${l.id}" data-val="${esc(v)}"><i class="sw-disc" style="background:${bg}" aria-hidden="true"></i><b>${esc(n)}</b></button>`).join('')}</div></div>`;
+  else if (l.type === 'range') row = `<label class="b-row b-stack lay"><span class="b-top"><span class="cfg-label">${lab}</span><output data-lout="${l.id}"></output></span>${range(l)}</label>`;
   else {
     const t = l.button || 'Auslösen', meta = actMeta(t);
-    row = `<div class="b-row lay"><span class="b-lab"><span class="cfg-label">${esc(l.label)}</span>${meta ? `<span class="b-meta">${esc(meta)}</span>` : ''}</span>${actChip(`data-act="${l.id}"`, t, l.label)}</div>`;
+    row = `<div class="b-row lay"><span class="b-lab"><span class="cfg-label">${lab}</span>${meta ? `<span class="b-meta">${esc(meta)}</span>` : ''}</span>${actChip(`data-act="${l.id}"`, t, l.label)}</div>`;
   }
   return row + (l.marks ? `<div class="zg-rail zg-rail--y" data-ymarks="${l.id}">${l.marks.map(([v, n]) => `<button type="button" class="zg-mark" data-ymark="${l.id}" data-val="${v}" style="--x:${((v - l.min) / (l.max - l.min)).toFixed(4)}">${esc(n)}</button>`).join('')}</div>` : '')
     + (l.detail ? `<div class="sw-detail" data-swd="${l.id}"></div>` : '')
@@ -259,7 +282,8 @@ const count = (g) => g.items.reduce((n, it) => n + 1 + it.subs.length, 0);
 // Zeit-Regler im Block „Zeigen“ laufen mit der Station mit – kein ↺, zählen nicht als geändert
 const resettable = (l) => ['toggle', 'range', 'seg', 'swatch'].includes(l.type) && !shows.includes(l);
 const rowDev = (l) => rowHtml(l) + (resettable(l) ? devLine(l.id, l.label) : '');
-const block = ({ l, subs }) => `<div class="b-item">${rowDev(l)}${subs.length ? `<div class="b-subs"${l.type === 'toggle' ? ` data-subs="${l.id}"` : ''}>${subs.map((x) => `<div class="b-item">${rowDev(x)}</div>`).join('')}</div>` : ''}</div>`;
+const isWide = (l, subs) => subs.length > 0 || l.type === 'swatch' || l.type === 'seg' || l.marks || (l.fmt && choicesOf(l).length > 2 && !isPick(l));
+const block = ({ l, subs }) => `<div class="b-item${isWide(l, subs) ? ' b-wide' : ''}">${rowDev(l)}${subs.length ? `<div class="b-subs"${l.type === 'toggle' ? ` data-subs="${l.id}"` : ''}>${subs.map((x) => `<div class="b-item">${rowDev(x)}</div>`).join('')}</div>` : ''}</div>`;
 
 // Block „Zeigen“: ▶-Ebene (Kopf, Achse, Tempo), dann Zeit-Regler und Knöpfe ohne Marke auf der Achse
 const axisOf = (p, evs) => !!(p && p.now && evs.some((e) => e.at));
