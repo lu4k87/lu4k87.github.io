@@ -56,42 +56,68 @@ float tfbm(vec3 p, int oct) { float s = 0., a = .5; for (int i = 0; i < 6; i++) 
 vec4 tfbm4(vec3 p, int oct, float gain) { vec4 s = vec4(0); float a = .5; for (int i = 0; i < 6; i++) { if (i >= oct) break; s += a * tn(p); p = RM * p * 2.03; a *= gain; } return s; }
 `;
 
-// A Nebel in Kinoqualität: Volumen-Emissionsnebel (H-alpha rosa, O-III türkis), feine leuchtende Fäden, Staubbahnen mit
-// Lichtsaum zum Stern hin (Schatten: Staub ein Stück Richtung Stern hält das Licht ab), dunkle Bok-Globulen, nahe am Stern
-// heißeres, weißeres Gas und blauer Reflexionsnebel. Der junge Stern rechts oben fliegt mit und beleuchtet das Gas;
-// a = Durchlässigkeit zum Stern hin (Lichtstrahlen in der Ausgabe)
+// A Nebel in Kinoqualität: Volumen-Emissionsnebel (H-alpha rosa, O-III türkis, S-II bernstein), feine leuchtende Fäden,
+// PDR-Ionisationskanten mit warmem Lichtsaum zum Stern hin (Schatten: Staub hält UV-Licht ab), dunkle Bok-Globulen,
+// eingebettete Protosterne, nahe am Stern heißeres Gas und blauer Reflexionsnebel. Der junge Stern rechts oben fliegt mit und
+// beleuchtet das Gas; a = Durchlässigkeit zum Stern hin (Lichtstrahlen in der Ausgabe)
 const SCENE_A = `
 vec4 mediumA(vec3 p, vec3 S, int oct) {
   float t = uT * .025;
-  vec3 q = p * .5;
-  vec3 w = tn(q * .6 + vec3(0, 0, t)).xyz + .5 * tn(RM * q * 1.3 + vec3(5.1, 0, -t)).xyz;
-  q += .5 * w;
+  vec3 q = p * .48;
+  vec3 w1 = tn(q * .55 + vec3(0, 0, t * .8)).xyz;
+  vec3 w2 = tn(RM * q * 1.25 + vec3(4.3, t * .5, -t * .6)).xyz;
+  q += .45 * w1 + .22 * w2;
   float mask = smoothstep(-.45, .05, tn(p * .09 + vec3(1.3, 4., 2.)).w + .5 * tn(RM * p * .2 + 3.).w);
   if (mask < .01) return vec4(0);
-  vec4 G = tfbm4(q * 2.6, oct, .6);   // feine Oktaven stärker (0,6 statt 0,5): sonst bleibt nahes Gas glatt
-  // Maske verschiebt die Schwelle statt die Dichte zu verdünnen: am Rand dichte Klumpen mit Kanten statt glattem Dunst
+  vec4 G = tfbm4(q * 2.8, oct, .6);   // feine Oktaven stärker (0,6 statt 0,5): sonst bleibt nahes Gas glatt
   float cov = (1. - mask) * .45;
-  float gas = smoothstep(-.12 + cov, .26 + cov * .7, G.x);
-  float dust = smoothstep(.1 + cov, .2 + cov, G.y) + .45 * smoothstep(.14 + cov, .3 + cov, G.w);
+  float gas = smoothstep(-.10 + cov, .28 + cov * .7, G.x);
+  float dust = smoothstep(.08 + cov, .22 + cov, G.y) + .4 * smoothstep(.12 + cov, .32 + cov, G.w);
   float mott = .35 + 1.3 * smoothstep(-.2, .25, G.z);
+  
   vec3 ls = normalize(S - p);
-  float light = exp(-2. * smoothstep(.1, .2, tfbm4(q * 2.6 + ls * .2, 3, .6).y) * mask);
-  float rid = 1. - abs(tn(q * 5.5 + w * .8 + 3.).y + .5 * tn(RM * q * 11. + 7.).y);
-  float fil = pow(clamp(rid, 0., 1.), 14.) * smoothstep(-.2 + cov, .15 + cov, G.x);
-  fil += pow(1. - abs(tn(RM * q * 13. + w * 1.5 + 9.).z), 18.) * gas * .7;
+  // PDR (Photodissociation Region) Ionisationskante: Lichtsaum an den Kanten der Staubwolken zum Stern
+  vec4 S_samp = tfbm4(q * 2.8 + ls * .24, 3, .55);
+  float shadow = smoothstep(.06, .22, S_samp.y) * mask;
+  float light = exp(-2.2 * shadow);
+  vec3 d = S - p;
+  float lit = 3.8 / (1. + dot(d, d) * .25) * light;
+  float rim = smoothstep(.04, .24, dust) * smoothstep(.32, .04, shadow) * lit;
+  
+  // Feine Filament-Struktur aus drei Rausch-Ebenen
+  float r1 = 1. - abs(tn(q * 5.2 + w1 * .7 + 3.1).y);
+  float r2 = 1. - abs(tn(RM * q * 10.4 + w2 * .9 + 7.4).z);
+  float r3 = 1. - abs(tn(RM * RM * q * 20.5 + 13.7).w);
+  float fil = (pow(clamp(r1, 0., 1.), 8.) * .65 + pow(clamp(r2, 0., 1.), 12.) * .5 + pow(clamp(r3, 0., 1.), 16.) * .35) * gas;
+  
   vec4 M = tfbm4(q * 1.2 + 11., 3, .5);
   float glob = smoothstep(.36, .44, M.y) * mask;
   float lane = pow(clamp(1. - abs(M.x * 2.4), 0., 1.), 7.) * mask;
-  vec3 d = S - p;
-  float lit = 3.6 / (1. + dot(d, d) * .25) * light;
-  float o3 = smoothstep(.02, .4, M.z * 1.6);
-  vec3 em = mix(vec3(1., .24, .34), vec3(1., .52, .28), smoothstep(.15, .6, w.z) * .4);
-  em = mix(em, vec3(.18, .78, .85), o3 * .85);
-  em = mix(em, vec3(.75, .88, 1.), smoothstep(1.2, 3., lit) * .35);
-  vec3 c = em * (gas * mott * (.35 + lit) + fil * (1.4 + 2.6 * lit))
-         + vec3(1., .85, .7) * gas * lit * lit * .07
-         + vec3(1., .78, .6) * dust * lit * .22
-         + vec3(.4, .58, 1.) * dust * lit * lit * .035;
+  
+  // Eingebettete Protosterne in dichten Dunkelwolken
+  vec3 pcell = p / .85; vec3 pid = floor(pcell);
+  float phash = hash21(pid.xy + pid.z * 19.3);
+  float proto = 0.;
+  if (phash > .965 && dust > .18) {
+    vec3 poff = fract(pcell) - .5;
+    proto = exp(-dot(poff, poff) * 160.) * (phash - .965) * 40.;
+  }
+  
+  // Astrofotografische Spektralfarben (Hubble SHO/HOO Palette)
+  vec3 hAlpha = vec3(1., .22, .36);   // H-alpha rot-rosa (656 nm)
+  vec3 oIII = vec3(.12, .84, .92);     // O-III türkis-blau (501 nm)
+  vec3 sII = vec3(1., .56, .20);      // S-II warmes Bernstein-Gold (672 nm)
+  float o3Frac = smoothstep(.04, .42, M.z * 1.5) * smoothstep(.4, 1.8, lit);
+  vec3 em = mix(hAlpha, sII, smoothstep(.1, .5, w1.z) * .45);
+  em = mix(em, oIII, o3Frac * .85);
+  em = mix(em, vec3(.85, .93, 1.), smoothstep(1.4, 3.2, lit) * .38);
+  
+  vec3 c = em * (gas * mott * (.32 + lit * .9) + fil * (1.6 + 3.0 * lit))
+         + vec3(1., .88, .62) * rim * 1.8               // PDR Kanten-Leuchten zum Stern
+         + vec3(1., .65, .32) * proto                   // Protosterne
+         + vec3(1., .86, .72) * gas * lit * lit * .06
+         + vec3(1., .76, .58) * dust * lit * .24
+         + vec3(.42, .64, 1.) * dust * lit * lit * .035; // blauer Reflexionsnebel
   return vec4(c * .8, gas * .45 + dust * 2.4 + lane * 2.6 + glob * 14.);
 }
 vec4 scene(vec2 uv) {
@@ -104,12 +130,16 @@ vec4 scene(vec2 uv) {
   float ts = dot(S - ro, rd), Ts = 1.;
   vec3 col = vec3(0); float T = 1., dt = .1;
   float s = .5 + dt * fract(hash21(gl_FragCoord.xy) + uFrame * .618034);
+  // Anisotrope Henyey-Greenstein Streuung des kosmischen Staubs
+  vec3 ls0 = normalize(S - (ro + rd * 3.5));
+  float cosTheta = dot(rd, ls0);
+  float hgPhase = (1. - .25) / pow(1. + .25 - 2. * .5 * cosTheta, 1.5) * .28;
   for (int i = 0; i < 64; i++) {
     if (T < .02) break;
     vec4 m = mediumA(ro + rd * s, S, s < 4.5 ? 6 : 4);
     float ds = dt * (1. + s * .12);
     float a = 1. - exp(-m.a * ds);
-    col += T * m.rgb * ds * exp(-s * .07);
+    col += T * m.rgb * (1. + hgPhase) * ds * exp(-s * .07);
     T *= 1. - a;
     if (s < ts) Ts = T;
     s += ds;
@@ -118,65 +148,108 @@ vec4 scene(vec2 uv) {
   return vec4(col * titleMask(uv, .3), Ts);
 }`;
 
-// B Gravitationslinse wie im ersten Webb-Tiefenfeld: tiefes Feld voller ferner Galaxien (Spiralen mit Armen, rosa
-// Sternentstehung und gelbem Kern, Ellipsen gold, Scheiben von der Kante mit Staubband, ganz ferne rote), davor ein
-// Galaxienhaufen (hellste Haufengalaxie, goldene Mitglieder, Haufenlicht). Seine Masse (isotherme Kugel, leicht
-// elliptisch, dazu zwei Haufengalaxien) biegt das Licht dahinter zu Bögen und Einsteinringen. Der Haufen wandert langsam
-// quer durch die Bildmitte, auch hinter dem Titel durch (User 29.10.2026)
+// B Gravitationslinse wie im ersten Webb-Tiefenfeld (SMACS 0723): tiefes Feld voller Galaxien (Spiralen mit Armen,
+// Balkenspiralen, Staubkanten, rote hochrotverschobene Galaxien), spektakuläre Gravitationslinsen-Bögen mit vergrößerten
+// Sternentstehungsknoten, davor ein massereicher Galaxienhaufen mit hellster Haufengalaxie (BCG), goldenen Mitgliedern
+// und diffusem Haufenlicht (ICL). Der Haufen wandert langsam quer durch die Bildmitte hinter der Schrift.
 const SCENE_B = `
 vec3 galaxy(vec2 f, vec2 id, float seed, float sz) {
   float h0 = hash21(id + seed + 3.), h1 = hash21(id + seed + 4.), ty = hash21(id + seed + 7.), h3 = hash21(id + seed + 8.);
   vec2 d = rot(h0 * 6.2832) * f;
+  // Elliptische Galaxien (de Vaucouleurs Profil)
   if (ty < .22) {
     d.y /= .45 + .55 * h1;
     float r = length(d) / sz;
-    return vec3(1., .78, .52) * (exp(-r * r * 2.5) + .3 * exp(-sqrt(r) * 3.2));
+    return vec3(1., .78, .52) * (exp(-r * r * 2.5) + .35 * exp(-sqrt(r) * 3.2));
   }
-  if (ty < .3) { float r = length(d) / (sz * .55); return vec3(1., .42, .26) * exp(-r * r * 2.); }
-  float e = ty < .4 ? .13 + .07 * h1 : .3 + .7 * h1;
+  // Rote kompakte Zwerge / hohe Rotverschiebung
+  if (ty < .32) { float r = length(d) / (sz * .52); return vec3(1., .38, .22) * exp(-r * r * 2.2); }
+  // Spiralgalaxien & Balkenspiralen
+  float e = ty < .44 ? .12 + .08 * h1 : .3 + .7 * h1;
   d.y /= e;
   float r = length(d) / sz;
-  if (r > 2.4) return vec3(0);
-  float arm = pow(.5 + .5 * cos(2. * atan(d.y, d.x) - (4. + 3. * h3) * log(r + .05) + h0 * 9.), 2.);
-  float disk = exp(-r * 1.7) * smoothstep(2.3, .4, r);
-  float knots = smoothstep(.45, .85, snoise(vec3(d / sz * 3.4, h3 * 50.))) * arm;
-  float lane = 1. - (e < .5 ? .75 : 0.) * exp(-pow(d.y * e / sz / .07, 2.)) * smoothstep(.15, .6, r);
-  vec3 c = vec3(.45, .62, 1.) * disk * (.3 + .95 * arm) + vec3(1., .48, .75) * knots * disk * 1.8;
-  return c * lane + vec3(1., .86, .62) * exp(-r * r * 22.) * 1.1;
+  if (r > 2.5) return vec3(0);
+  float phi = atan(d.y, d.x);
+  // Balkenstruktur bei Balkenspiralen
+  float bar = (ty > .65) ? exp(-abs(d.y / sz) * 8.) * smoothstep(1.2, .2, abs(d.x / sz)) * .85 : 0.;
+  // Spiralarme (logarithmische Spirale)
+  float arm = pow(.5 + .5 * cos(2. * phi - (3.8 + 2.8 * h3) * log(r + .05) + h0 * 9.), 2.2);
+  float disk = exp(-r * 1.6) * smoothstep(2.4, .35, r);
+  // Sternentstehungsknoten (H-II Regionen) entlang der Arme
+  float knots = smoothstep(.42, .82, snoise(vec3(d / sz * 3.6, h3 * 50.))) * arm;
+  // Dunkle Staubbahnen
+  float lane = 1. - (e < .5 ? .78 : .4 * smoothstep(.4, .8, arm)) * exp(-pow(d.y * e / sz / .07, 2.)) * smoothstep(.15, .6, r);
+  vec3 c = vec3(.42, .65, 1.) * disk * (.28 + .95 * arm + bar * .3) + vec3(1., .45, .78) * knots * disk * 2.2;
+  return c * lane + vec3(1., .86, .60) * (exp(-r * r * 20.) * 1.2 + bar * vec3(1., .8, .5));
 }
 vec3 galaxies(vec2 b, float cell, float seed, float w, float thr) {
   vec2 g = b / cell, id = floor(g), f = fract(g) - .5;
   float h = hash21(id + seed);
   if (h < thr) return vec3(0);
-  vec2 off = (vec2(hash21(id + seed + 1.), hash21(id + seed + 2.)) - .5) * .3;
-  float sz = .06 + .1 * pow(hash21(id + seed + 5.), 2.);
+  vec2 off = (vec2(hash21(id + seed + 1.), hash21(id + seed + 2.)) - .5) * .32;
+  float sz = .06 + .11 * pow(hash21(id + seed + 5.), 2.);
   float br = (.12 + .88 * pow(hash21(id + seed + 6.), 3.)) * w;
   return galaxy(f - off, id, seed, sz) * br;
 }
 // ganz ferne Galaxien: kleine rote und orange Punkte, sehr dicht
 vec3 farField(vec2 b) {
-  vec2 g = b / .014, id = floor(g), f = fract(g) - .5;
+  vec2 g = b / .013, id = floor(g), f = fract(g) - .5;
   float h = hash21(id + 63.);
-  if (h < .76) return vec3(0);
-  vec2 q = f - (vec2(hash21(id + 64.), hash21(id + 65.)) - .5) * .5;
-  float k = mix(160., 40., pow(hash21(id + 67.), 3.));
-  return mix(vec3(1., .4, .25), vec3(1., .72, .5), hash21(id + 66.)) * exp(-dot(q, q) * k) * pow((h - .76) / .24, 2.) * .8;
+  if (h < .74) return vec3(0);
+  vec2 q = f - (vec2(hash21(id + 64.), hash21(id + 65.)) - .5) * .55;
+  float k = mix(170., 35., pow(hash21(id + 67.), 3.));
+  return mix(vec3(1., .38, .22), vec3(1., .74, .48), hash21(id + 66.)) * exp(-dot(q, q) * k) * pow((h - .74) / .26, 2.) * .85;
+}
+// Spektakuläre Gravitationslinsen-Bögen entlang der kritischen Kurve des Haufens
+vec3 lensedArcs(vec2 de, float tE) {
+  float r = length(de);
+  float phi = atan(de.y, de.x);
+  vec3 arcs = vec3(0);
+  // Riesenbogen 1: Blauer Sternentstehungsbogen mit multiplen H-II Knoten
+  float dr1 = abs(r - tE * 1.02);
+  float span1 = smoothstep(-.8, -.3, phi) * smoothstep(1.35, .9, phi);
+  if (span1 > .01) {
+    float arcProfile1 = exp(-pow(dr1 / .0042, 2.)) * span1;
+    float knot1 = pow(.5 + .5 * cos(phi * 22. - 1.5), 7.) * 2.5;
+    vec3 colArc1 = (vec3(.35, .72, 1.) * (1. + knot1 * 1.2) + vec3(1., .42, .76) * knot1 * .8) * arcProfile1;
+    arcs += colArc1 * 1.4;
+  }
+  // Bogen 2: Goldener Gegenbogen auf der gegenüberliegenden Seite
+  float dr2 = abs(r - tE * .88);
+  float span2 = smoothstep(-2.8, -2.3, phi) * smoothstep(-.9, -1.4, phi);
+  if (span2 > .01) {
+    float arcProfile2 = exp(-pow(dr2 / .005, 2.)) * span2;
+    float knot2 = pow(.5 + .5 * cos(phi * 16. + 2.1), 5.) * 1.8;
+    arcs += vec3(1., .76, .45) * (1. + knot2) * arcProfile2 * 1.1;
+  }
+  // Bogen 3: Tiefroter Bogenabschnitt (hohe Rotverschiebung z ~ 8)
+  float dr3 = abs(r - tE * 1.28);
+  float span3 = smoothstep(1.8, 2.2, phi) * smoothstep(2.9, 2.5, phi);
+  if (span3 > .01) {
+    arcs += vec3(1., .35, .18) * exp(-pow(dr3 / .0038, 2.)) * span3 * .95;
+  }
+  return arcs;
 }
 // Haufen im Vordergrund (nicht gebeugt), d in Achsen der Linse
 vec3 cluster(vec2 d) {
-  float r = length(d * vec2(1., 1.25));
-  vec3 gold = vec3(1., .8, .56);
-  vec3 c = gold * (exp(-r * r * 3000.) * 1.05 + exp(-sqrt(r) * 9.5) * .5 + exp(-r * 6.) * .03);
+  float r = length(d * vec2(1., 1.22));
+  vec3 gold = vec3(1., .82, .56);
+  // Hellste Haufengalaxie (BCG) de Vaucouleurs Profil
+  vec3 c = gold * (exp(-r * r * 3200.) * 1.1 + exp(-sqrt(r) * 9.2) * .55 + exp(-r * 5.8) * .035);
+  // Diffuses Haufenlicht (Intracluster Light - ICL)
+  float icl = exp(-pow(length(d * vec2(.85, 1.1)) / .28, .65)) * .042;
+  c += vec3(1., .84, .60) * icl;
+  // Begleitgalaxien im Haufenzentrum
   vec2 s1 = d - vec2(.12, .045), s2 = d - vec2(-.085, -.065);
-  c += gold * (exp(-dot(s1, s1) * 9000.) + exp(-sqrt(length(s1)) * 16.) * .5) * .8;
-  c += gold * (exp(-dot(s2, s2) * 11000.) + exp(-sqrt(length(s2)) * 17.) * .5) * .65;
-  vec2 g = d / .045, id = floor(g), f = fract(g) - .5;
+  c += gold * (exp(-dot(s1, s1) * 9500.) + exp(-sqrt(length(s1)) * 16.) * .52) * .8;
+  c += gold * (exp(-dot(s2, s2) * 11500.) + exp(-sqrt(length(s2)) * 17.) * .52) * .65;
+  vec2 g = d / .042, id = floor(g), f = fract(g) - .5;
   float h = hash21(id + 77.);
-  if (h < .55 * exp(-length((id + .5) * .045) * 6.)) {
+  if (h < .56 * exp(-length((id + .5) * .042) * 5.8)) {
     vec2 q = rot(hash21(id + 78.) * 6.2832) * (f - (vec2(hash21(id + 79.), hash21(id + 80.)) - .5) * .4);
     q.y /= .55 + .45 * hash21(id + 81.);
-    float rr = length(q) / (.06 + .07 * hash21(id + 82.));
-    c += gold * (exp(-rr * rr * 3.) + .25 * exp(-rr * 1.5)) * (.35 + .65 * hash21(id + 83.)) * .7;
+    float rr = length(q) / (.058 + .068 * hash21(id + 82.));
+    c += gold * (exp(-rr * rr * 3.2) + .28 * exp(-rr * 1.4)) * (.35 + .65 * hash21(id + 83.)) * .72;
   }
   return c;
 }
@@ -191,17 +264,19 @@ vec4 scene(vec2 uv) {
   vec2 s1 = d - vec2(.12, .045), s2 = d - vec2(-.085, -.065);
   al += .0016 * s1 / (dot(s1, s1) + .00015) + .0011 * s2 / (dot(s2, s2) + .00012);
   vec2 b = uv - al * R + vec2(t * .004, t * .0015);
-  vec3 c = vec3(.02, .015, .04) * smoothstep(-.2, .8, snoise(vec3(b * 1.8, 3.)))
-         + vec3(0., .025, .035) * smoothstep(0., .9, snoise(vec3(b * 3.1, 7.)));
+  // Kosmisches Netz & Fernglimmen
+  vec3 c = vec3(.022, .016, .042) * smoothstep(-.2, .8, snoise(vec3(b * 1.8, 3.)))
+         + vec3(0., .026, .038) * smoothstep(0., .9, snoise(vec3(b * 3.1, 7.)));
   c += galaxies(b, .24, 91., 1.5, .7) + galaxies(b, .11, 0., 1.15, .6) + galaxies(b, .055, 17., .75, .55)
      + galaxies(b, .03, 41., .45, .5) + farField(b);
+  c += lensedArcs(de, tE);
   c += cluster(d);
   return vec4(c * titleMask(uv, .6), 1.);
 }`;
 
-// C Verdichtung zum Lichtpunkt: Gas und Lichtteilchen strömen spiralig zur Bildmitte; je weiter das Laden, desto enger
-// die Spirale, desto heißer das Gas – bei 100 % bleibt der blaue Lichtpunkt, mit dem der Auftakt-Film beginnt. Feine
-// Stromfäden entlang der Spirale, dunkle Staubbahnen dazwischen, drei Lagen Lichtteilchen
+// C Verdichtung zum Lichtpunkt: Relativistischer Akkretionswirbel und Gravitationskollaps; Gas und Lichtteilchen strömen
+// mit relativistischem Doppler-Beaming (anfliegende Seite heller und blauverschoben) spiralig zur Bildmitte.
+// Mehrskalige magnetische Plasmafäden, Staubabsorptionsbänder, tangentiale Teilchenspuren, am Ziel der blaue Lichtpunkt
 const SCENE_C = `
 vec4 scene(vec2 uv) {
   float t = uT, P = uP;
@@ -209,28 +284,47 @@ vec4 scene(vec2 uv) {
   float flow = t * (.12 + .3 * P);
   float a2 = a + mix(.6, 2.6, P) * lr + t * .05;
   vec2 cs = vec2(cos(a2), sin(a2));
+  
+  // Relativistisches Doppler-Beaming: anfliegende Seite (uv.x < 0) wird strahlend blau und heller
+  float doppler = 1. - .38 * (cs.y * uv.x - cs.x * uv.y) / r;
+  doppler = clamp(doppler, .4, 2.2);
+  
   float g = tfbm(vec3(cs * 1.4, lr * 1.7 + flow), 6) + .3 * tn(vec3(cs * 3., lr * 3.5 + flow * 1.3) + 9.).x;
   float gas = smoothstep(-.1, .4, g);
-  float fil = pow(1. - abs(tn(vec3(cs * 5., lr * 7. + flow * 1.7) + 3.).y), 9.);
-  float dust = smoothstep(.05, .35, tfbm(vec3(cs * 2.2, lr * 2.6 + flow * 1.1) + 17., 4));
+  
+  // Mehrskalige geflochtene Plasmafäden
+  float streamFil1 = pow(1. - abs(tn(vec3(cs * 4.8, lr * 7.6 + flow * 1.8) + 4.1).y), 9.);
+  float streamFil2 = pow(1. - abs(tn(vec3(cs * 9.2, lr * 15.2 + flow * 2.8) + 8.3).z), 14.);
+  float fil = (streamFil1 * .65 + streamFil2 * .48) * gas;
+  
+  float dust = smoothstep(.04, .32, tfbm(vec3(cs * 2.4, lr * 2.8 + flow * 1.1) + 17., 4));
   float env = mix(.35, 1., P) * exp(-r * mix(1.1, 2.6, P));
   float heat = clamp(env * 1.6, 0., 1.);
-  vec3 gc = mix(vec3(.26, .18, .55), vec3(.15, .55, .85), smoothstep(.1, .5, heat));
-  gc = mix(gc, vec3(.75, .92, 1.), smoothstep(.55, 1., heat));
-  vec3 col = gc * (gas * 1.15 + fil * (.45 + gas)) * env * (1. - .6 * dust);
+  
+  // Farbgradient: kühles violettes Außengas -> strahlendes Cyan -> glühender Kern
+  vec3 gc = mix(vec3(.24, .16, .52), vec3(.14, .58, .88), smoothstep(.08, .48, heat));
+  gc = mix(gc, vec3(.76, .94, 1.), smoothstep(.52, 1., heat));
+  gc *= doppler;
+  
+  vec3 col = gc * (gas * 1.18 + fil * (.48 + gas)) * env * (1. - .65 * dust);
   float fl = .5 + .5 * tn(vec3(uv * 3.5, t * .03) + 40.).z;
   col += (vec3(.08, .03, .06) * fl + vec3(.02, .04, .08) * (1. - fl)) * (1. - P) * .6;
-  col += vec3(.15, .55, .85) * pow(.5 + .5 * sin(lr * 6. + t * .8), 12.) * .14 * P * exp(-r * 1.5);
+  col += vec3(.15, .58, .88) * pow(.5 + .5 * sin(lr * 6. + t * .8), 12.) * .14 * P * exp(-r * 1.5) * doppler;
+  
+  // Tangential beschleunigte relativistische Teilchenspuren
   for (int k = 0; k < 3; k++) {
-    float N = k == 0 ? 70. : k == 1 ? 110. : 170.;
+    float N = k == 0 ? 70. : k == 1 ? 115. : 180.;
     vec2 gg = vec2(a / 6.2832 * N, lr * 3. + t * (.25 + .9 * P) * (1. + float(k) * .4));
     vec2 id = floor(gg), f = fract(gg) - .5;
     id.x = mod(id.x, N);
     float h = hash21(id + float(k) * 31.);
-    if (h < .78) continue;
+    if (h < .76) continue;
     vec2 off = (vec2(hash21(id + 5.), hash21(id + 9.)) - .5) * .6;
     vec2 q = f - off;
-    col += vec3(.7, .85, 1.) * exp(-(q.x * q.x * 260. + q.y * q.y * mix(60., 14., P))) * (h - .78) * 3.5 * smoothstep(.02, .15, r) * (.4 + .6 * P) * (k == 2 ? .6 : 1.);
+    // Streak entlang der Flussrichtung gestreckt (q.y = Flussachse)
+    float streak = q.x * q.x * 320. + q.y * q.y * mix(45., 10., P);
+    col += mix(vec3(.65, .82, 1.), vec3(1., .95, .8), hash21(id + 13.))
+         * exp(-streak) * (h - .76) * 3.8 * smoothstep(.015, .15, r) * (.4 + .6 * P) * (k == 2 ? .6 : 1.) * doppler;
   }
   float tm = titleMask(uv, .3);
   return vec4(col * tm * tm, 1.);
@@ -320,7 +414,7 @@ void main() {
       float tr = texture(uTex, pp * vec2(uRes.y / uRes.x, 1.) + .5).a;
       acc += tr * exp(-length(pp - uSun) * 7.) * (1. - k);
     }
-    c += vec3(1., .82, .66) * acc / 32. * .9 * exp(-length(dir) * 1.1) * (.7 + .3 * br + .8 * fl);
+    c += vec3(1., .85, .68) * acc / 32. * .95 * exp(-length(dir) * 1.05) * (.7 + .3 * br + .8 * fl);
     float d = length(sv) * px;
     vec2 ds = abs(sv) * px;
     float sl = .012 / (.72 + .42 * br + .2 * fk + 1.2 * fl);
@@ -337,7 +431,13 @@ void main() {
   } else {
     float k = smoothstep(.55, 1., uP) * (uP > .99 ? .85 + .15 * sin(uT * 5.) : 1.);
     float d = length(uv) * px;
-    c += vec3(.6, .85, 1.) * k * (exp(-d * d * .08) * 2.5 + exp(-d * .05) * .3 + exp(-abs(uv.y) * px * .5) * exp(-abs(uv.x) * 3.5) * .7);
+    // Photon-Ring & Ereignishorizont-Aura
+    float ring = exp(-pow((d - 13.5) / 2.2, 2.)) * smoothstep(.7, 1., uP) * .75;
+    // Anamorpher Linsenstreif (horizontaler blauer Lichtstreif wie im Intro)
+    vec3 flare = vec3(.35, .65, 1.) * exp(-abs(uv.y) * px * .38) * exp(-abs(uv.x) * 4.2) * smoothstep(.6, 1., uP) * 1.1;
+    // Bipolare relativistische Mikro-Jets entlang der Achse
+    vec3 jets = vec3(.38, .75, 1.) * exp(-abs(uv.x) * px * 1.2) * exp(-abs(uv.y) * 12.) * smoothstep(.8, 1., uP) * .55;
+    c += vec3(.72, .92, 1.) * k * (exp(-d * d * .08) * 3. + exp(-d * .045) * .35) + flare + jets + vec3(.48, .85, 1.) * ring;
     c += (starLayer(uv, .02, 5., .9) + starLayer(uv, .011, 15., .7) * .7) * (1. - uP * .6) * titleMask(uv, .3);
   }
   c = aces(c * 1.5);
