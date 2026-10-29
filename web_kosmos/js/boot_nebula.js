@@ -300,17 +300,15 @@ void main() {
   vec3 c = sc.rgb;
   float px = uRes.y / uDpr;
   if (uMode == 0) {
-    // Junger Stern (User 29.10.2026 „Glow, Puls, Fade, etwas Flackern“): atmet (3,8 s), flackert leise (Szintillation aus
-    // drei unregelmäßigen Frequenzen, jede Strebe für sich), alle 11 s ein Aufleuchten mit langsamem Ausklingen in
-    // wechselnder Stärke – Hof weitet sich, ein feiner Ring läuft nach außen, Lichtstrahlen und angestrahltes Gas
-    // leuchten mit. Kleine Fläche, Helligkeit schwankt im Flackern nur um ±10 %, das Aufleuchten kommt einmal je 11 s
+    // Junger Stern (User 29.10.2026 / 30.10.2026): kleiner feiner Dot, atmet, flackert leise und fadet schneller aus,
+    // kein Ausstoß-Ring; Hof und feine Spikes bleiben zentriert und zart
     vec2 sv = uv - uSun;
     float br = .5 - .5 * cos(uT * 1.6535);
-    float fk = .55 * snoise(vec3(uT * 2.1, 1.7, 0.)) + .3 * snoise(vec3(uT * 5.3, 5.3, 2.)) + .15 * snoise(vec3(uT * 11.7, 9.1, 4.));
+    float fk = .55 * snoise(vec3(uT * 3.5, 1.7, 0.)) + .3 * snoise(vec3(uT * 8.2, 5.3, 2.)) + .15 * snoise(vec3(uT * 16.5, 9.1, 4.));
     float cy = uT / 11., ph = fract(cy);
-    float fl = (.55 + .45 * hash21(vec2(floor(cy), 3.))) * smoothstep(0., .035, ph) * exp(-ph * 8.);
+    float fl = (.55 + .45 * hash21(vec2(floor(cy), 3.))) * smoothstep(0., .025, ph) * exp(-ph * 20.);
     float I = .8 + .26 * br + .14 * fk + .85 * fl;
-    c *= 1. + (.3 * br + .8 * fl + .06 * fk) * exp(-length(sv) * 3.);
+    c *= 1. + (.3 * br + .8 * fl + .06 * fk) * exp(-length(sv) * 5.);
     vec2 drift = vec2(-uT * .0015, uT * .0006);
     c += sc.a * (starLayer(uv + drift, .009, 11., 1.1) + starLayer(uv + drift, .014, 1., 1.6) + starLayer(uv + drift * 1.6, .03, 7., 2.4)) * titleMask(uv, .3);
     vec2 dir = uv - uSun; float acc = 0.;
@@ -324,13 +322,12 @@ void main() {
     float d = length(sv) * px;
     vec2 ds = abs(sv) * px;
     float sl = .012 / (.72 + .42 * br + .2 * fk + 1.2 * fl);
-    float sx = 1. + .2 * snoise(vec3(uT * 3.7, sign(sv.x) * 4., 1.)), sy = 1. + .2 * snoise(vec3(uT * 3.3, sign(sv.y) * 4. + 9., 1.));
-    vec3 spikes = (exp(-ds.y * .9) * exp(-ds.x * sl) * sx * spec(ds.x) + exp(-ds.x * .9) * exp(-ds.y * sl * 1.5) * sy * spec(ds.y)) * .38 * I;
+    float sx = 1. + .22 * snoise(vec3(uT * 5.5, sign(sv.x) * 4., 1.)), sy = 1. + .22 * snoise(vec3(uT * 5.0, sign(sv.y) * 4. + 9., 1.));
+    vec3 spikes = (exp(-ds.y * 1.3) * exp(-ds.x * sl) * sx * spec(ds.x) + exp(-ds.x * 1.3) * exp(-ds.y * sl * 1.5) * sy * spec(ds.y)) * .36 * I;
     vec2 dr = abs(rot(.7854) * sv) * px;
-    float glint = (exp(-dr.y * 1.3) * exp(-dr.x * .05) + exp(-dr.x * 1.3) * exp(-dr.y * .05)) * (.1 + .24 * max(fk, 0.) + .35 * fl);
-    float halo = exp(-d * .045 / (.8 + .38 * br + .6 * fl)) * .42;
-    float ring = exp(-pow((d - 16. - 80. * ph) / (2.5 + 12. * ph), 2.)) * fl * .3;
-    c += vec3(1., .93, .85) * (exp(-d * d * .05) * 3. * I + halo * I + glint) + spikes + vec3(.72, .84, 1.) * ring;
+    float glint = (exp(-dr.y * 1.7) * exp(-dr.x * .07) + exp(-dr.x * 1.7) * exp(-dr.y * .07)) * (.09 + .26 * max(fk, 0.) + .35 * fl);
+    float halo = exp(-d * .095 / (.8 + .38 * br + .6 * fl)) * .35;
+    c += vec3(1., .93, .85) * (exp(-d * d * .25) * 3. * I + halo * I + glint) + spikes;
   } else if (uMode == 1) {
     vec2 sd = uv + vec2(uT * .0008, 0.);
     c += (starLayer(sd, .016, 3., 1.) * .8 + starLayer(sd, .009, 13., .7) * .6) * titleMask(uv, .6) + spiky(sd, px);
