@@ -124,6 +124,10 @@ body.is-flying .tl, body.is-intro .tl { opacity: 0; pointer-events: none; }
 .cfg-tile:hover { background: rgba(255, 255, 255, 0.07); }
 .cfg-tile[aria-selected="true"] { color: var(--accent); border-color: rgba(var(--accent-rgb), 0.6); background: rgba(var(--accent-rgb), 0.12); }
 .cfg-tile:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+/* 5 Spalten × 2 Zeilen statt 4 × 2 (User 29.10.2026): Kacheln etwas kleiner, Platz für bis zu 10 Gruppen – in Einstellungen (cfg) und
+   Panel Station (st); schmaler als 440 px bleibt es bei 4 (Platz für „Oberfläche“) */
+@container cfg (min-width: 440px) { .cfg-jump { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 5px; } .cfg-tile { gap: 5px; } .cfg-tile-ico { width: 20px; height: 20px; } }
+@container st (min-width: 440px) { .st-rail { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 5px; } .st-rail .cfg-tile { gap: 5px; } .st-rail .cfg-tile-ico { width: 20px; height: 20px; } }
 /* Wenig Höhe (Fenster ≈ 900 px mit Schublade unter der Stationsleiste): Kacheln bleiben quadratisch, nur kleiner – 6 statt 4 Spalten
    wie die Reiter im Panel Station (29.10.2026), damit die Liste der Gruppe Platz behält; schmaler als 500 px bleibt es bei 4 (Platz für „Oberfläche“) */
 @container cfg (max-height: 600px) and (min-width: 500px) {
