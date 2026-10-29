@@ -58,7 +58,8 @@ const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
 let still = reduced;
 const params = new URLSearchParams(location.search);
 // Prüfhilfe für Screenshots: ?freeze=0.5 hält den ersten Übergang bei diesem Fortschritt an
-const freeze = params.has('freeze') ? Math.min(0.999, Math.max(0, +params.get('freeze'))) : null;
+const freezeP = parseFloat(params.get('freeze'));   // ?freeze=abc → kein Halt (sonst NaN im Übergang)
+const freeze = Number.isFinite(freezeP) ? Math.min(0.999, Math.max(0, freezeP)) : null;
 // Tour für Ausstellungen: ?tour (optional &dwell=Sekunden) taucht selbständig durch alle Ebenen
 // Prüfhilfe für die Qualitätsstufen: ?fps schreibt alle 2 s Bildrate und Stufe in die Konsole
 const stats = params.has('fps') ? { n: 0, sum: 0 } : null;
@@ -400,12 +401,13 @@ function renderLoupe(lv, L, real) {
   renderer.shadowMap.autoUpdate = shadowAuto;
   // Zusammenführung mit dem Lupenbild, Linse aus
   const u = comp.uniforms;
-  const keep = { t: u.tOuter.value, d: u.dOuter.value, aspect: u.uAspect.value, bloom: u.uBloom.value, ca: u.uCA.value };
+  const keep = { t: u.tOuter.value, d: u.dOuter.value, aspect: u.uAspect.value, bars: u.uBars.value, bloom: u.uBloom.value, ca: u.uCA.value };
   loupe.res.copy(u.uRes.value);
   loupe.cam4.copy(u.uCamOuter.value);
   u.tOuter.value = loupe.rt.texture;
   u.dOuter.value = loupe.rt.depthTexture;
   u.uAspect.value = 1;
+  u.uBars.value = 0;   // quadratische Lupe: Balken gelten nur für das Breitbild
   u.uBloom.value = 0;
   u.uCA.value = 0;
   u.uRes.value.set(px, px);
@@ -421,6 +423,7 @@ function renderLoupe(lv, L, real) {
   u.tOuter.value = keep.t;
   u.dOuter.value = keep.d;
   u.uAspect.value = keep.aspect;
+  u.uBars.value = keep.bars;
   u.uBloom.value = keep.bloom;
   u.uCA.value = keep.ca;
   u.uRes.value.copy(loupe.res);
@@ -616,6 +619,8 @@ function activate(lv) {
   state.index = lv.index;
   state.active = lv;
   state.cine = { idle: 0, w: 0, base: null };
+  state.dolly = null;      // Zielabstand stammt aus der alten Ebene (Rad/Zoom-Schiene lösen den Wechsel aus)
+  state.dragging = false;  // 'end' der alten Steuerung kommt nach dispose() nie an
   if (state.controls) state.controls.dispose();
   const c = new OrbitControls(lv.camera, canvas);
   c.enableDamping = true;
@@ -670,7 +675,14 @@ async function goTo(target, via = null) {
     history.replaceState(null, '', `#ebene=${state.index + 1}`);   // Adresse zeigt wieder die stehende Ebene
     return null;
   });
-  if (!to || state.tr || state.active !== from) return;
+  if (!to || state.tr || state.active !== from) {
+    // Fahrt inzwischen abgebrochen/umgelenkt: ferne Ebene nicht bis zur nächsten Ankunft im Grafikspeicher halten
+    const inUse = state.tr && (state.tr.outer === to || state.tr.inner === to);
+    if (to && !inUse && Math.abs(target - state.index) > 1 && state.levels.get(target) === to) {
+      to.dispose(); to.rt.dispose(); state.levels.delete(target);
+    }
+    return;
+  }
   const down = target > from.index;
   const adjacent = Math.abs(target - from.index) === 1;
   const outer = down ? from : to;
@@ -1020,6 +1032,7 @@ window.addEventListener('keydown', (e) => {
 // Zurück/Vor im Browser während einer Fahrt: Wunsch merken, nach der Ankunft nachholen (stepTransition)
 window.addEventListener('hashchange', () => {
   const m = /ebene=(\d+)/.exec(location.hash);
+  if (!m) { history.replaceState(null, '', `#ebene=${state.index + 1}`); return; }   // fremder Hash: stehende Ebene zeigen
   const i = Math.min(LOADERS.length - 1, Math.max(0, +m[1] - 1));
   state.wish = i;
   if (i !== state.index) goTo(i);
@@ -1137,9 +1150,9 @@ function frame(now) {
     if (stats.sum >= 2) { console.log(`fps ${(stats.n / stats.sum).toFixed(1)} · ${(1000 * stats.sum / stats.n).toFixed(1)} ms · Qualität ${Q.name}`); stats.n = 0; stats.sum = 0; }
   }
   const { w, h } = viewSize();
-  const lv = state.active;
   if (state.tr) stepTransition(real);
   else stepTour(real);
+  const lv = state.active;   // erst nach dem Schritt lesen: die Ankunft aktiviert die neue Ebene
   // Linse: während der Fahrt weg, nach der Ankunft zieht die Schärfe weich nach (Fokus-Zug)
   const post = state.post, on = state.tr ? 0 : 1;
   const rate = on ? real / LENS.fadeIn : real / LENS.fadeOut;

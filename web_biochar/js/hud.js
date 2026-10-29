@@ -590,7 +590,7 @@ export function createHud(handlers) {
         ${l.id === 'meso' ? rhBlock(state.rh, state.wet) : ''}
         <div id="lab">${labTiles(shown)}</div>
         ${l.id === 'micro' ? spectraBlock(shown) : ''}
-        <details class="lab-more"${chartOpen ? ' open' : ''}>
+        <details class="lab-more lab-hc"${chartOpen ? ' open' : ''}>
           <summary>Verlauf H/C · Erläuterung</summary>
           ${labChart(shown)}
           <p class="note">${prose(LAB_NOTE)}</p>
@@ -610,7 +610,7 @@ export function createHud(handlers) {
       more.setAttribute('aria-expanded', String(open));
       more.textContent = open ? 'Weniger' : 'Weiterlesen';
     });
-    panel.querySelector('.controls .lab-more:last-of-type').addEventListener('toggle', (e) => { chartOpen = e.target.open; });
+    panel.querySelector('.controls .lab-hc').addEventListener('toggle', (e) => { chartOpen = e.target.open; });
     // [n] öffnet die Liste selbst und springt ohne Hash-Wechsel hin: #ebene=n bleibt, auch in Browsern ohne Auto-Aufklappen von <details>
     panel.querySelectorAll('.sources h2 a').forEach((a) => a.addEventListener('click', (e) => {
       e.preventDefault();
@@ -625,9 +625,11 @@ export function createHud(handlers) {
     setLive(shown, playing, true);
     const rh = panel.querySelector('#in-rh');
     if (rh) {
+      rh.dataset.wet = state.wet;   // Vergleichswert für setRh (Tagesgang)
       rh.addEventListener('input', () => {
         const before = poreClass(state.wet);
         const d = handlers.onRh(+rh.value);
+        rh.dataset.wet = d;
         updateRh(+rh.value, d);
         if (poreClass(d) !== before) pulse('water');
       });
@@ -728,6 +730,7 @@ export function createHud(handlers) {
         }] : []),
         ...(bc ? [{
           cls: 'ov-biofilm',
+          active: () => !bc.hidden,
           pts: () => [bc.pos.clone().add(v3(-2.3, 0, 0)), bc.pos.clone().add(v3(2.3, 0, 0))],
           ring: true,
           text: () => '<b>Biofilm-Saum</b> · Kolonie auf Porenwand',

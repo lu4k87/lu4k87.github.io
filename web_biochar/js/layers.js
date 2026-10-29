@@ -167,7 +167,7 @@ const foldRow = (g, i, open) => `<section class="l-sec l-group" data-sec="${i}">
 let gs = [];
 function gearHtml(layers) {
   gs = groups(layers);
-  const keep = opened[currentId], first = gs.find((g) => !isAnim(g));
+  const keep = Array.isArray(opened[currentId]) ? opened[currentId] : null, first = gs.find((g) => !isAnim(g));
   const isOpen = (g) => (keep ? keep.includes(g.title) : g === first);
   const jump = gs.length > 1 ? `<nav class="l-jump" aria-label="Zu Gruppe springen">${gs.map((g, i) => `<button type="button" data-jump="${i}">${icon(iconOf(g))}${esc(titleOf(g))}</button>`).join('')}</nav>` : '';
   return `${jump}${devBar()}<div class="l-list">${gs.map((g, i) => (isAnim(g) ? animRow(g, i) : foldRow(g, i, isOpen(g)))).join('')}</div>`;

@@ -634,6 +634,7 @@ body.panel-collapsed .panel { display: none; }
 .ruler-zero { left: 0; }
 .ruler-end { left: var(--end, 100%); transform: translateX(-50%); }
 .sem-bar dl { margin: 0; flex: 1; display: flex; align-self: stretch; }
+.sem-bar dl div[hidden] { display: none; }   /* Detektor-Spalte nur auf REM-Ebenen (hud.js) */
 .sem-bar dl div { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 4px; padding: 0 0 0 12px; border-left: 1px solid var(--line); white-space: nowrap; }
 .sem-bar dd { margin: 0; font-size: 13.5px; font-variant-numeric: tabular-nums; }
 .sem-method { margin: 0; padding-top: 5px; border-top: 1px solid var(--line); font-size: 12.5px; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
