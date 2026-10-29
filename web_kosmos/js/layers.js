@@ -224,14 +224,15 @@ const tabBody = (g) => g.segs.map((s) => {
   const scope = s.items[0] && s.items[0].l.scope;
   return `${g.segs.length > 1 || s.title !== g.title || scope ? `<h5 class="b-subh">${esc(s.title)}</h5>` : ''}${scope ? `<p class="cfg-note lay-hint">${prose(scope)}</p>` : ''}${s.items.map(block).join('')}`;
 }).join('');
-// Leiste unter dem Kopf (Menü:C, als Raster User 28.10.2026): Eintrag je Gruppe mit Icon, Kurzname und Zahl; „Ereignisse“ (Block „Zeigen“) als erster Eintrag mit
+// Leiste unter dem Kopf (Menü:C): quadratische Kacheln im selben Raster wie Allgemeine Einstellungen (cfg-jump/cfg-tile, User 29.10.2026),
+// je Gruppe Icon, Kurzname und Zahl; „Ereignisse“ (Block „Zeigen“) als erster Eintrag mit
 // ▶/⏸-Zustand, Zahl der Ereignisse und Punkt bei anstehendem Ereignis. Index -1 = Ereignisse; Punkt an Gruppen = Wert geändert
 const tid = (i) => (i < 0 ? 'z' : i);
 const evN = () => shows.filter((l) => l.type === 'action').length;
 const tabBtn = (i, on) => {
   const z = i < 0, name = z ? 'Ereignisse' : gs[i].title, n = z ? evN() : count(gs[i]);
-  const ico = z ? `<span class="st-play" data-rail-play aria-hidden="true">${PLAY}</span>` : icon(tabIcon(gs[i].title), 'st-tab-ico');
-  return `<button type="button" role="tab" class="st-tab lay-tab" id="lay-t${tid(i)}" data-ltab="${i}" aria-controls="lay-p${tid(i)}" aria-selected="${on}" tabindex="${on ? 0 : -1}">${ico}<span class="st-tab-name">${esc(name)}</span>${n ? `<span class="st-tab-n">${n}</span>` : ''}<span class="lay-tab-dot" aria-hidden="true"></span></button>`;
+  const ico = z ? `<span class="st-play" data-rail-play aria-hidden="true">${PLAY}</span>` : icon(tabIcon(gs[i].title), 'cfg-tile-ico');
+  return `<button type="button" role="tab" class="cfg-tile st-tab lay-tab" id="lay-t${tid(i)}" data-ltab="${i}" aria-controls="lay-p${tid(i)}" aria-selected="${on}" tabindex="${on ? 0 : -1}">${ico}<span class="st-tab-name">${esc(name)}</span>${n ? `<span class="st-tab-n">${n}</span>` : ''}<span class="lay-tab-dot" aria-hidden="true"></span></button>`;
 };
 const stageHead = (name, n) => `<h3 class="st-title">${esc(name)}${n ? `<span class="st-title-n">${n}</span>` : ''}</h3>`;
 
@@ -241,9 +242,7 @@ function gearHtml(layers) {
   shows = [...gs.filter(isPlay).flatMap(itemsOf), ...layers.filter((l) => l.show)];
   tabs = [...(shows.length ? [-1] : []), ...gs.map((g, i) => (isPlay(g) ? -1 : i)).filter((i) => i >= 0)];
   const saved = (openStore[currentId] || [])[0], cur = tabs.includes(saved) ? saved : tabs[0];
-  // höchstens 4 Spalten (3, wenn ein Kurzname über 9 Zeichen hat – „Milchstraße 13“ passt sonst nicht), Zeilen gleichmäßig gefüllt
-  const most = tabs.some((i) => i >= 0 && gs[i].title.length > 9) ? 3 : 4, cols = Math.ceil(tabs.length / Math.ceil(tabs.length / most));
-  const rail = `<div class="st-rail" role="tablist" aria-label="Gruppen der Station" style="--cols:${cols}">${tabs.map((i) => tabBtn(i, i === cur)).join('')}</div>`;
+  const rail = `<div class="cfg-jump st-rail" role="tablist" aria-label="Gruppen der Station">${tabs.map((i) => tabBtn(i, i === cur)).join('')}</div>`;
   const panels = tabs.map((i) => `<div class="lay-panel b-body" id="lay-p${tid(i)}" role="tabpanel" aria-labelledby="lay-t${tid(i)}"${i === cur ? '' : ' hidden'}>${i < 0 ? stageHead('Ereignisse', evN()) + showHtml(shows) : stageHead(gs[i].title, count(gs[i])) + tabBody(gs[i])}</div>`).join('');
   return `${rail}<div class="st-stage lay-scroll">${panels}</div><div class="cfg-foot"><span class="cfg-scope">Diese Station · <span data-lay-sum></span></span>${devBar()}</div>`;
 }
