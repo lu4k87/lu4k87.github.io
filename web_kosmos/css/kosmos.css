@@ -520,14 +520,93 @@ body:is(.st-open, .cfg-open) .stage > .hint { left: calc(50% + (var(--st-w) + 16
 .sw-cap { margin: 0; font-size: 13px; }
 .sw-cap b { color: var(--accent); font-weight: 600; }
 .sec-h { margin-top: 2px; padding-top: 14px; border-top: 1px solid var(--line); font: 600 13px var(--font); }
-.explore { display: flex; flex-direction: column; gap: 6px; }
-.explore button {
-  width: 100%; display: flex; align-items: center; gap: 10px; min-height: 40px; padding: 6px 10px 6px 6px; border-radius: 5px; cursor: pointer; text-align: left;
-  background: none; border: 1px solid var(--line); color: var(--ink); transition: border-color 0.2s, background 0.2s;
+/* Editorial Bento-Karten Raster für Entdecken (Raster:C, Wunsch des Users 30.10.2026) */
+.explore {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
 }
-.explore button:hover, .explore button.is-active { border-color: var(--line-strong); background: rgba(255, 255, 255, 0.06); }
-.explore button.is-dive:hover { border-color: rgba(var(--accent-rgb), 0.6); }
-.explore span:first-of-type { flex: 1; }
+.explore > li {
+  min-width: 0;
+  display: flex;
+}
+.explore > li.is-dive-item {
+  grid-column: 1 / -1;
+}
+.explore button {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 10px 12px;
+  min-height: 72px;
+  border-radius: 7px;
+  background: rgba(14, 18, 28, 0.65);
+  border: 1px solid var(--line);
+  color: var(--ink);
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 0.2s, background 0.2s, transform 0.2s, box-shadow 0.2s;
+  position: relative;
+  box-sizing: border-box;
+}
+.explore button:hover, .explore button.is-active {
+  border-color: var(--line-strong);
+  background: rgba(24, 30, 46, 0.8);
+  transform: translateY(-1.5px);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+}
+.explore button.is-dive {
+  background: linear-gradient(135deg, rgba(var(--accent-rgb), 0.14) 0%, rgba(10, 15, 24, 0.85) 100%);
+  border-color: rgba(var(--accent-rgb), 0.45);
+  min-height: 64px;
+}
+.explore button.is-dive:hover {
+  border-color: var(--accent);
+  background: linear-gradient(135deg, rgba(var(--accent-rgb), 0.22) 0%, rgba(14, 20, 32, 0.9) 100%);
+  box-shadow: 0 4px 18px rgba(var(--accent-rgb), 0.25);
+}
+.explore .card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  margin-bottom: 6px;
+  gap: 8px;
+}
+.explore .badge-cat {
+  font: 700 9.5px/1 var(--mono);
+  color: var(--ink-muted);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.explore .is-dive .badge-cat {
+  color: var(--accent);
+}
+.explore .card-title {
+  font-size: 13.5px;
+  font-weight: 600;
+  line-height: 1.25;
+  color: var(--ink);
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+.explore .dive-action-tag {
+  font: 600 11px/1 var(--mono);
+  color: var(--accent);
+  background: rgba(var(--accent-rgb), 0.16);
+  padding: 3px 8px;
+  border-radius: 10px;
+  border: 1px solid rgba(var(--accent-rgb), 0.3);
+  white-space: nowrap;
+  flex: none;
+}
 .tag { font: 500 12px var(--mono); color: var(--accent); letter-spacing: 0.04em; white-space: nowrap; }
 .note { border-top: 1px solid var(--line); padding-top: 10px; }
 .note summary { cursor: pointer; font: 600 13px var(--font); }
@@ -1019,6 +1098,25 @@ body.fatal-webgl .fatal-webgl, body.fatal-start .fatal-start { display: block; }
 :root[data-theme="light"] .b-select option { background: #f6f8fc; }
 :root[data-theme="light"] input[type=range]::-webkit-slider-thumb { box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.9); }
 :root[data-theme="light"] input[type=range]::-moz-range-thumb { box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.9); }
+:root[data-theme="light"] .explore button {
+  background: rgba(var(--ink-rgb), 0.035);
+  border-color: var(--line);
+}
+:root[data-theme="light"] .explore button:hover,
+:root[data-theme="light"] .explore button.is-active {
+  background: rgba(var(--ink-rgb), 0.07);
+  border-color: var(--line-strong);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+}
+:root[data-theme="light"] .explore button.is-dive {
+  background: linear-gradient(135deg, rgba(var(--accent-rgb), 0.12) 0%, rgba(255, 255, 255, 0.9) 100%);
+  border-color: rgba(var(--accent-rgb), 0.45);
+}
+:root[data-theme="light"] .explore button.is-dive:hover {
+  background: linear-gradient(135deg, rgba(var(--accent-rgb), 0.18) 0%, rgba(255, 255, 255, 1) 100%);
+  border-color: var(--accent);
+  box-shadow: 0 4px 18px rgba(var(--accent-rgb), 0.18);
+}
 /* Schalter Hell/Dunkel ganz rechts, Strich trennt von der Infotafel */
 #qk-theme { position: relative; margin-left: 9px; }
 #qk-theme::before { content: ""; position: absolute; left: -5px; top: 6px; bottom: 6px; width: 1px; background: var(--line); }

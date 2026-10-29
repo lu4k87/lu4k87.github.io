@@ -486,6 +486,23 @@ export function createHud(h) {
     return 'Kennwert';
   }
 
+  // Typ-Kategorie eines Hotspots für das redaktionelle Bento-Karten-Raster (Raster:C, Wunsch des Users 30.10.2026)
+  function hsCat(x, inf) {
+    if (x.kind === 'dive') return 'Reise · Nächste Ebene';
+    if (inf && inf.cat) return inf.cat;
+    const t = ((inf && inf.t) || '').toLowerCase(), txt = ((inf && inf.x) || '').toLowerCase();
+    if (t.includes('strahlung') || t.includes('licht') || t.includes('cmb') || txt.includes('wellen') || txt.includes('spektrum')) return 'Strahlung';
+    if (t.includes('galaxie') || t.includes('epoche') || t.includes('urknall') || txt.includes('rotverschiebung') || txt.includes('z ≈')) return 'Epoche';
+    if (t.includes('spannung') || t.includes('expansion') || t.includes('hubble') || txt.includes('h₀')) return 'Expansion';
+    if (t.includes('blick') || t.includes('rückblick') || t.includes('zeit') || t.includes('alter') || t.includes('sonde') || txt.includes('temperatur')) return 'Messung';
+    if (t.includes('atmo') || t.includes('luft') || t.includes('gas') || t.includes('nebel') || t.includes('wolke') || t.includes('staub')) return 'Atmosphäre';
+    if (t.includes('polarlicht') || t.includes('magnet') || t.includes('aurora') || t.includes('feld')) return 'Magnetfeld';
+    if (t.includes('mond') || t.includes('planet') || t.includes('gestein') || t.includes('krater')) return 'Himmelskörper';
+    if (t.includes('bahn') || t.includes('satellit') || t.includes('orbit') || t.includes('trümmer') || t.includes('station') || t.includes('teleskop') || t.includes('iss') || t.includes('spiegel') || t.includes('antenne')) return 'Mission · Orbit';
+    if (t.includes('pulsar') || t.includes('flare') || t.includes('schwarz') || t.includes('loch')) return 'Objekt';
+    return 'Thema';
+  }
+
   function renderPanel() {
     const st = meta;
     const info = (x) => st.hotspots[x.id] || x.info;
@@ -520,8 +537,19 @@ export function createHud(h) {
       ${settings.S.scaleCompare !== false ? renderScaleCompare(lv.id, scaleTabIdx) : ''}
       ${lv.widget ? `<div class="widget" id="widget">${lv.widget()}</div>` : ''}
       <h2 class="sec-h">Entdecken</h2>
-      <ul class="explore">${hs.map((x, i) => `
-        <li><button type="button" data-hs="${x.id}" class="${x.kind === 'dive' ? 'is-dive' : ''}">${x.kind === 'dive' ? hex('<path d="M14 17l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>', 'hex--mini') : hexNum(i + 1, 'hex--mini')}<span>${esc(info(x).t)}</span>${x.kind === 'dive' ? '<span class="tag">hineinfliegen</span>' : ''}</button></li>`).join('')}
+      <ul class="explore">${hs.map((x, i) => {
+        const inf = info(x);
+        const isDive = x.kind === 'dive';
+        return `
+        <li class="${isDive ? 'is-dive-item' : ''}"><button type="button" data-hs="${x.id}" class="${isDive ? 'is-dive' : ''}">
+          <div class="card-top">
+            ${isDive ? hex('<path d="M14 17l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>', 'hex--mini') : hexNum(i + 1, 'hex--mini')}
+            <span class="badge-cat">${esc(hsCat(x, inf))}</span>
+            ${isDive ? '<span class="dive-action-tag">hineinfliegen →</span>' : ''}
+          </div>
+          <span class="card-title">${esc(inf.t)}</span>
+        </button></li>`;
+      }).join('')}
       </ul>
       <details class="note"><summary>Darstellung und Quellen</summary>
         <p>${prose(st.note)}</p>
