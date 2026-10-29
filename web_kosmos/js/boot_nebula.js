@@ -56,69 +56,72 @@ float tfbm(vec3 p, int oct) { float s = 0., a = .5; for (int i = 0; i < 6; i++) 
 vec4 tfbm4(vec3 p, int oct, float gain) { vec4 s = vec4(0); float a = .5; for (int i = 0; i < 6; i++) { if (i >= oct) break; s += a * tn(p); p = RM * p * 2.03; a *= gain; } return s; }
 `;
 
-// A Nebel in Kinoqualität: Volumen-Emissionsnebel (H-alpha rosa, O-III türkis, S-II bernstein), feine leuchtende Fäden,
-// PDR-Ionisationskanten mit warmem Lichtsaum zum Stern hin (Schatten: Staub hält UV-Licht ab), dunkle Bok-Globulen,
-// eingebettete Protosterne, nahe am Stern heißeres Gas und blauer Reflexionsnebel. Der junge Stern rechts oben fliegt mit und
-// beleuchtet das Gas; a = Durchlässigkeit zum Stern hin (Lichtstrahlen in der Ausgabe)
+// A Echte voluminöse Nebelwolken (Orion / Carina Look): bauschige, dichte Wolkenberge und
+// kumulusartige Gas- und Staubtürme mit weicher Selbstbeschattung und sanftem Tiefenvolumen
+// statt harter Schlieren oder dünner Schleier. Der junge Stern rechts oben beleuchtet die Wolkenkuppen.
 const SCENE_A = `
 vec4 mediumA(vec3 p, vec3 S, int oct) {
-  float t = uT * .025;
-  vec3 q = p * .48;
-  vec3 w1 = tn(q * .55 + vec3(0, 0, t * .8)).xyz;
-  vec3 w2 = tn(RM * q * 1.25 + vec3(4.3, t * .5, -t * .6)).xyz;
-  q += .45 * w1 + .22 * w2;
-  float mask = smoothstep(-.45, .05, tn(p * .09 + vec3(1.3, 4., 2.)).w + .5 * tn(RM * p * .2 + 3.).w);
-  if (mask < .01) return vec4(0);
-  vec4 G = tfbm4(q * 2.8, oct, .6);   // feine Oktaven stärker (0,6 statt 0,5): sonst bleibt nahes Gas glatt
-  float cov = (1. - mask) * .45;
-  float gas = smoothstep(-.10 + cov, .28 + cov * .7, G.x);
-  float dust = smoothstep(.08 + cov, .22 + cov, G.y) + .4 * smoothstep(.12 + cov, .32 + cov, G.w);
-  float mott = .35 + 1.3 * smoothstep(-.2, .25, G.z);
+  float t = uT * .02;
+  vec3 q = p * .45;
   
+  // Großräumige Raummaske: definiert WO Wolkentürme im All stehen (Inseln statt Vollnebel)
+  float cloudMask = tn(p * .08 + vec3(1.4, 4.2, 1.8)).w + .55 * tn(RM * p * .18 + 3.2).w;
+  float coverage = smoothstep(-.15, .45, cloudMask);
+  if (coverage < .01) return vec4(0);
+  
+  // Sanfte Verwirbelung (Advektion)
+  vec3 turb = .28 * tn(q * .55 + vec3(0, 0, t * .5)).xyz;
+  vec3 pos = q + turb;
+  
+  // Kumulus-artige Bausch-Struktur: Fractal fBm mit abgerundeten Kissen (Billow Noise)
+  vec4 macro = tfbm4(pos * 1.1 + vec3(2.3, 1.1, 0.), 3, .55);
+  // Bauschige Wolkenlappen (cauliflower-artige Wölbung)
+  float billows = .65 * (1. - abs(macro.x)) + .35 * macro.y;
+  
+  // Wolkenkanten-Erosion durch feinere Oktaven
+  vec4 detail = tfbm4(pos * 2.4 + vec3(7.1, 0., -t * .25), oct, .5);
+  float micro = .55 * (1. - abs(detail.x)) + .45 * detail.y;
+  
+  // Dichtefunktion: Dichter Wolkenkern, nach außen weich abgerundet
+  float rawDensity = (billows * .65 + micro * .35) * coverage - (1. - coverage) * .35;
+  float density = smoothstep(.08, .55, rawDensity);
+  if (density < .005) return vec4(0);
+  
+  // Selbstbeschattung und Beleuchtung durch den jungen Stern S
   vec3 ls = normalize(S - p);
-  // PDR (Photodissociation Region) Ionisationskante: Lichtsaum an den Kanten der Staubwolken zum Stern
-  vec4 S_samp = tfbm4(q * 2.8 + ls * .24, 3, .55);
-  float shadow = smoothstep(.06, .22, S_samp.y) * mask;
-  float light = exp(-2.2 * shadow);
   vec3 d = S - p;
-  float lit = 3.8 / (1. + dot(d, d) * .25) * light;
-  float rim = smoothstep(.04, .24, dust) * smoothstep(.32, .04, shadow) * lit;
+  float distS = length(d);
   
-  // Feine Filament-Struktur aus drei Rausch-Ebenen
-  float r1 = 1. - abs(tn(q * 5.2 + w1 * .7 + 3.1).y);
-  float r2 = 1. - abs(tn(RM * q * 10.4 + w2 * .9 + 7.4).z);
-  float r3 = 1. - abs(tn(RM * RM * q * 20.5 + 13.7).w);
-  float fil = (pow(clamp(r1, 0., 1.), 8.) * .65 + pow(clamp(r2, 0., 1.), 12.) * .5 + pow(clamp(r3, 0., 1.), 16.) * .35) * gas;
+  // Schattenprobe ins Wolkeninnere
+  vec4 shadowSample = tfbm4((pos + ls * .22) * 1.8, 3, .52);
+  float inCloudShadow = smoothstep(.1, .6, (1. - abs(shadowSample.x)) * coverage);
+  float light = exp(-2.2 * inCloudShadow) * (4.0 / (1. + distS * distS * .25));
   
-  vec4 M = tfbm4(q * 1.2 + 11., 3, .5);
-  float glob = smoothstep(.36, .44, M.y) * mask;
-  float lane = pow(clamp(1. - abs(M.x * 2.4), 0., 1.), 7.) * mask;
+  // Sanfte Vorwärtsstreuung an den dem Stern zugewandten Wolkenköpfen
+  float sunFacing = clamp(dot(normalize(turb + detail.xyz * .3 + ls * .5), ls), 0., 1.);
+  float highlight = pow(sunFacing, 2.5) * light;
   
-  // Eingebettete Protosterne in dichten Dunkelwolken
-  vec3 pcell = p / .85; vec3 pid = floor(pcell);
-  float phash = hash21(pid.xy + pid.z * 19.3);
-  float proto = 0.;
-  if (phash > .965 && dust > .18) {
-    vec3 poff = fract(pcell) - .5;
-    proto = exp(-dot(poff, poff) * 160.) * (phash - .965) * 40.;
-  }
+  // Reiche, echte Nebelfarben:
+  // Dichtes Purpur/Karmin im Wolkeninneren (H-Alpha),
+  // Leuchtendes warmes Pfirsich/Gold an den beleuchteten Wolkenkuppen,
+  // Zartes O-III Türkis in der Sternennähe
+  vec3 colCore = vec3(.70, .14, .28);    // H-Alpha Tiefrot
+  vec3 colBody = vec3(.95, .32, .40);    // H-Alpha leuchtend
+  vec3 colLit  = vec3(1.0, .82, .60);    // Warmes Sonnenlicht auf Wolkenkuppe
+  vec3 colO3   = vec3(.14, .82, .88);    // O-III Türkis
   
-  // Astrofotografische Spektralfarben (Hubble SHO/HOO Palette)
-  vec3 hAlpha = vec3(1., .22, .36);   // H-alpha rot-rosa (656 nm)
-  vec3 oIII = vec3(.12, .84, .92);     // O-III türkis-blau (501 nm)
-  vec3 sII = vec3(1., .56, .20);      // S-II warmes Bernstein-Gold (672 nm)
-  float o3Frac = smoothstep(.04, .42, M.z * 1.5) * smoothstep(.4, 1.8, lit);
-  vec3 em = mix(hAlpha, sII, smoothstep(.1, .5, w1.z) * .45);
-  em = mix(em, oIII, o3Frac * .85);
-  em = mix(em, vec3(.85, .93, 1.), smoothstep(1.4, 3.2, lit) * .38);
+  float o3Factor = smoothstep(.2, 1.2, macro.z * 1.5) * smoothstep(.4, 2.5, light);
+  vec3 c = mix(colCore, colBody, smoothstep(.15, .6, density));
+  c = mix(c, colO3, o3Factor * .75);
+  c = mix(c, colLit, smoothstep(.9, 2.6, light) * .55);
   
-  vec3 c = em * (gas * mott * (.32 + lit * .9) + fil * (1.6 + 3.0 * lit))
-         + vec3(1., .88, .62) * rim * 1.8               // PDR Kanten-Leuchten zum Stern
-         + vec3(1., .65, .32) * proto                   // Protosterne
-         + vec3(1., .86, .72) * gas * lit * lit * .06
-         + vec3(1., .76, .58) * dust * lit * .24
-         + vec3(.42, .64, 1.) * dust * lit * lit * .035; // blauer Reflexionsnebel
-  return vec4(c * .8, gas * .45 + dust * 2.4 + lane * 2.6 + glob * 14.);
+  // Sanftes Streulicht auf den Kämmen der Wolkenberge
+  c += vec3(1.0, .88, .68) * highlight * .4;
+  c += vec3(.35, .55, .95) * density * light * .06;
+  
+  // Dichte für Raymarching (absorbiert Sternenlicht und Hintergrund)
+  float optDensity = density * 2.2;
+  return vec4(c * density, optDensity);
 }
 vec4 scene(vec2 uv) {
   float t = uT;
@@ -292,10 +295,10 @@ vec4 scene(vec2 uv) {
   float g = tfbm(vec3(cs * 1.4, lr * 1.7 + flow), 6) + .3 * tn(vec3(cs * 3., lr * 3.5 + flow * 1.3) + 9.).x;
   float gas = smoothstep(-.1, .4, g);
   
-  // Mehrskalige geflochtene Plasmafäden
-  float streamFil1 = pow(1. - abs(tn(vec3(cs * 4.8, lr * 7.6 + flow * 1.8) + 4.1).y), 9.);
-  float streamFil2 = pow(1. - abs(tn(vec3(cs * 9.2, lr * 15.2 + flow * 2.8) + 8.3).z), 14.);
-  float fil = (streamFil1 * .65 + streamFil2 * .48) * gas;
+  // Weiche spiralige Wolkenbänder und Gaswirbel (bauschige Wolkenarme statt dünner Schlieren)
+  float streamCloud = smoothstep(-.15, .45, tn(vec3(cs * 3.5, lr * 4.2 + flow * 1.5) + 4.1).y);
+  float streamDetail = smoothstep(-.2, .5, tn(vec3(cs * 6.5, lr * 8.5 + flow * 2.2) + 8.3).z);
+  float cloudArms = (streamCloud * .65 + streamDetail * .45) * gas;
   
   float dust = smoothstep(.04, .32, tfbm(vec3(cs * 2.4, lr * 2.8 + flow * 1.1) + 17., 4));
   float env = mix(.35, 1., P) * exp(-r * mix(1.1, 2.6, P));
@@ -306,7 +309,7 @@ vec4 scene(vec2 uv) {
   gc = mix(gc, vec3(.76, .94, 1.), smoothstep(.52, 1., heat));
   gc *= doppler;
   
-  vec3 col = gc * (gas * 1.18 + fil * (.48 + gas)) * env * (1. - .65 * dust);
+  vec3 col = gc * (gas * 1.05 + cloudArms * .75) * env * (1. - .55 * dust);
   float fl = .5 + .5 * tn(vec3(uv * 3.5, t * .03) + 40.).z;
   col += (vec3(.08, .03, .06) * fl + vec3(.02, .04, .08) * (1. - fl)) * (1. - P) * .6;
   col += vec3(.15, .58, .88) * pow(.5 + .5 * sin(lr * 6. + t * .8), 12.) * .14 * P * exp(-r * 1.5) * doppler;
