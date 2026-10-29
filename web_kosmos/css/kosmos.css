@@ -110,8 +110,23 @@ body.is-flying .flight { opacity: 1; }
 .qk[aria-pressed="true"], .top-actions .qk[aria-pressed="true"]:hover { color: var(--accent); background: rgba(var(--accent-rgb), 0.1); }
 .qk[aria-disabled="true"] { opacity: 0.45; cursor: not-allowed; }
 .top-actions .qk[aria-disabled="true"]:hover { background: none; }
-#qk-sound .qk-off, #qk-sound.is-off .qk-on { display: none; }
-#qk-sound.is-off .qk-off { display: inline; }
+#qk-sound .qk-off, #qk-sound.is-off .qk-on,
+#qk-ui .qk-off, #qk-ui.is-off .qk-on { display: none; }
+#qk-sound.is-off .qk-off,
+#qk-ui.is-off .qk-off { display: inline; }
+/* UI-Elemente ein-/ausblenden (User 29.10.2026): Alle HUD-Elemente verbergen, nur der Schalter oben rechts bleibt sichtbar */
+.topbar, .band, .bottombar, #hotspots, .stage > .hint, .stage > .pull, .hs-card, .caption {
+  transition: opacity 0.25s ease, visibility 0.25s ease;
+}
+body.ui-off :is(.topbar, .band, .bottombar, #station, #cfg, #panel, #hotspots, .stage > .hint, .stage > .pull, .hs-card, .caption) {
+  opacity: 0 !important;
+  pointer-events: none !important;
+  visibility: hidden !important;
+}
+body.ui-off .hud { grid-template-columns: minmax(0, 1fr) auto 0; }
+body.ui-off .top-actions > :not(.quick) { display: none !important; }
+body.ui-off .quick > :not(#qk-ui) { display: none !important; }
+body.ui-off .quick::after { display: none !important; }
 /* schmal: Drehachsen und Kinobalken nur im Zahnrad, sonst überdeckt die Reihe den Schriftzug */
 /* ohne Platz für die Wörter: nur Symbole */
 @media (max-width: 960px) {

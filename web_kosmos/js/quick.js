@@ -62,6 +62,36 @@ export function mountQuick(root, onInput) {
   syncKino();
   addEventListener('keydown', (e) => { if (settings.S.bars && e.key === 'Escape') setSetting('bars', false); });
 
+  // UI-Elemente ein-/ausblenden (User 29.10.2026): verbergen aller HUD-Elemente, Schalter bleibt sichtbar
+  const uiBtn = $('qk-ui');
+  let uiOff = false;
+  const syncUi = () => {
+    document.body.classList.toggle('ui-off', uiOff);
+    if (uiBtn) {
+      uiBtn.setAttribute('aria-pressed', String(uiOff));
+      uiBtn.classList.toggle('is-off', uiOff);
+      label(uiBtn, uiOff ? 'UI-Elemente einblenden' : 'UI-Elemente ausblenden');
+    }
+  };
+  if (uiBtn) {
+    uiBtn.addEventListener('click', () => {
+      uiOff = !uiOff;
+      syncUi();
+      onInput();
+      window.dispatchEvent(new CustomEvent('kosmos:side'));
+    });
+  }
+  syncUi();
+  addEventListener('keydown', (e) => {
+    if (e.target.closest && e.target.closest('input, select, textarea, [role="tab"], [role="radio"]')) return;
+    if (uiOff && e.key === 'Escape') {
+      uiOff = false;
+      syncUi();
+      onInput();
+      window.dispatchEvent(new CustomEvent('kosmos:side'));
+    }
+  });
+
   // Helles Theme (Vorschau 29.10.2026 Schalter:A): nur Bedienflächen, gespeichert in kosmos.theme, gesetzt schon im <head>
   const theme = $('qk-theme'), html = document.documentElement;
   const syncTheme = () => {
