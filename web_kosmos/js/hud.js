@@ -474,21 +474,49 @@ export function createHud(h) {
     h.onInput();
   });
 
+  // Kategorie einer Kennzahl für die redaktionelle Infotafel (Tafel:C)
+  function factCat(f) {
+    const l = (f.l || '').toLowerCase(), u = (f.u || '').trim(), ul = u.toLowerCase();
+    if (l.includes('abstand') || l.includes('entfernung') || l.includes('distanz') || l.includes('von der erde') || ul.includes('ae') || ul.includes('lj') || ul.includes('kpc') || ul.includes('mpc')) return 'Distanz';
+    if (l.includes('radius') || l.includes('durchmesser') || l.includes('länge') || l.includes('breite') || l.includes('höhe') || l.includes('spiegel') || l.includes('schild') || l.includes('spannweite')) return 'Dimension';
+    if (l.includes('licht') || l.includes('laufzeit') || l.includes('zeit') || l.includes('umlauf') || l.includes('drehung') || l.includes('periode') || l.includes('alter') || ul.includes('min') || ul.includes('tage') || ul.includes('jahre') || ul.includes('ms') || ul.includes('ns') || ul.includes('mrd. j.')) return 'Zeit & Dynamik';
+    if (l.includes('masse') || l.includes('gewicht') || l.includes('dichte') || ul.includes('kg') || ul.includes('t') || ul.includes('m☉') || ul.includes('g/cm³')) return 'Masse & Dichte';
+    if (l.includes('temp') || l.includes('oberfläche') || l.includes('korona') || u === 'K' || ul.includes('°c')) return 'Temperatur';
+    if (l.includes('drift') || l.includes('schnell') || l.includes('tempo') || l.includes('geschwindig') || l.includes('frequenz') || ul.includes('km/s') || ul.includes('cm/jahr') || ul.includes('hz')) return 'Dynamik';
+    return 'Kennwert';
+  }
+
   function renderPanel() {
     const st = meta;
     const info = (x) => st.hotspots[x.id] || x.info;
     const hs = lv.hotspots.filter((x) => info(x) && x.kind !== 'label' && (!x.listIf || x.listIf()));
     // Abstecher (Nummer mit Buchstabe, z. B. 02A) nennen ihren Halt bzw. ihre Elternstation (ISS → Raumstationen)
     const from = /^\d+$/.test(String(st.n)) || !up(lv.id) ? '' : ` · Abstecher von ${S(up(lv.id)).title}`;
-    // Infotafel als Messblatt (Tafel:C): Kopf in Satzschreibung, Kennzahlen als Wertetabelle (Zahl rechtsbündig), Maßstab auf
-    // Grundlinie; Zustand (live) im festen Fuß unter dem Scrollbereich. Schalter und Ereignis-Knöpfe: Reiter Station (layers.js)
+    // Editorial Cosmos (Tafel:C, Wunsch des Users 29.10.2026): Monumentale 44 px Hero-Zahl für den Schlüsselwert, 3-spaltige Miniatur-Matrix für Begleitwerte
+    const f0 = (st.facts || [])[0];
+    const restFacts = (st.facts || []).slice(1);
+    const kpiHtml = f0 ? `
+      <dl class="ed-wrap" aria-label="Wissenschaftliche Kennzahlen">
+        <div class="ed-hero">
+          <span class="ed-hero-kicker">${esc(factCat(f0))}</span>
+          <dd class="ed-hero-num">${esc(f0.v)}${f0.u ? ` <span>${esc(f0.u)}</span>` : ''}</dd>
+          <dt class="ed-hero-caption">${prose(f0.l)}</dt>
+        </div>
+        ${restFacts.length ? `
+        <div class="ed-columns" style="--cols: ${Math.min(restFacts.length, 3)};">
+          ${restFacts.map((f) => `
+          <div class="ed-col">
+            <span class="ed-col-cat">${esc(factCat(f))}</span>
+            <dd class="ed-col-val">${esc(f.v)}${f.u ? ` <span>${esc(f.u)}</span>` : ''}</dd>
+            <dt class="ed-col-lbl">${prose(f.l)}</dt>
+          </div>`).join('')}
+        </div>` : ''}
+      </dl>` : '';
     panel.innerHTML = `
       <div class="t-head"><p class="kicker">Station <span class="kick-n">${num(lv.id)}</span> · ${esc(st.kicker + from)}</p>
       <h1 class="st-title">${esc(st.title)}</h1>
       <p class="lead">${prose(st.lead)}</p></div>
-      <dl class="kpi">${st.facts.map((f) => `
-        <div><dt>${prose(f.l)}</dt><dd>${esc(f.v)}${f.u ? ` <span>${esc(f.u)}</span>` : ''}</dd></div>`).join('')}
-      </dl>
+      ${kpiHtml}
       ${settings.S.scaleCompare !== false ? renderScaleCompare(lv.id, scaleTabIdx) : ''}
       ${lv.widget ? `<div class="widget" id="widget">${lv.widget()}</div>` : ''}
       <h2 class="sec-h">Entdecken</h2>
