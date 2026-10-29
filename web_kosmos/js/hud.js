@@ -73,8 +73,7 @@ export function createHud(h) {
   // Knoten der Leiste: Station oder Sammel-Halt (GROUPS, ohne Szene); Eltern in der Leiste über up()
   const S = (id) => STATIONS[id] || GROUPS[id];
   const chapter = (id) => { for (let x = id; x; x = up(x)) if (HUBS.includes(x)) return x; return HUBS[HUBS.length - 1]; };
-  const inMenu = (k) => STATIONS[k].menu !== false;   // vorerst ohne Platz in der Leiste (Vorschau Merkur/Venus offen)
-  const kidsOf = (id) => Object.keys(STATIONS).filter((k) => up(k) === id && !onRoute.has(k) && inMenu(k)).sort(byRank);
+  const kidsOf = (id) => Object.keys(STATIONS).filter((k) => up(k) === id && !onRoute.has(k)).sort(byRank);
   const stopOf = (id) => { let x = id; while (x && S(x) && !onRoute.has(x)) x = up(x); return S(x) ? x : null; };
   const chName = (id) => CHAPTERS.find(([hub]) => hub === chapter(id))[1];
   const title = (id) => esc(S(id).title);
@@ -141,7 +140,7 @@ export function createHud(h) {
     const q = zbInput.value.trim().toLowerCase();
     zbFound.hidden = !q;
     zbInput.setAttribute('aria-expanded', String(!!q));
-    zbHits = q ? Object.keys(STATIONS).filter((k) => inMenu(k) && `${STATIONS[k].title} ${STATIONS[k].kicker} ${num(k)}`.toLowerCase().includes(q)).sort(byRank) : [];
+    zbHits = q ? Object.keys(STATIONS).filter((k) => `${STATIONS[k].title} ${STATIONS[k].kicker} ${num(k)}`.toLowerCase().includes(q)).sort(byRank) : [];
     zbRes.innerHTML = zbHits.map((k) => `<div role="option" class="zb-hit" id="zb-hit-${k}" data-go="${k}" aria-selected="false">${orb(k, 'zb-orb')}<span class="zb-hit-t"><span><b class="n">${num(k)}</b> ${mark(STATIONS[k].title, q)}</span><small>${crumbs(k)} · ${mark(STATIONS[k].kicker, q)}</small></span><span class="w">${esc(fmtLength(STATIONS[k].size.v))}</span></div>`).join('');
     const all = Object.keys(STATIONS).length;
     zbHint.textContent = zbHits.length ? `${zbHits.length} Treffer aus ${all} Stationen · Pfeiltasten wählen · Enter fliegt hin` : `Keine Station gefunden · Esc leert die Suche`;

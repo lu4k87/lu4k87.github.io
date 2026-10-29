@@ -1007,7 +1007,7 @@ export const STATIONS = {
   },
   // [E6] Merkur, Venus
   mercury: {
-    n: '02I', title: 'Merkur', kicker: 'Innerster Planet', parent: 'solar', menu: false, width: 2.2e7, dist: 1.04 * AU, lookback: 1.04 * AU / C, size: { v: 4.8794e6, l: 'Durchmesser', s: 'nssdc-mercury' },
+    n: '02I', title: 'Merkur', kicker: 'Innerster Planet', parent: 'solar', width: 2.2e7, dist: 1.04 * AU, lookback: 1.04 * AU / C, size: { v: 4.8794e6, l: 'Durchmesser', s: 'nssdc-mercury' },
     lead: 'Der kleinste Planet, so wie er jetzt zur Sonne steht. Merkur dreht sich in 58,6 Tagen einmal und umläuft die Sonne in 88 Tagen: drei Drehungen auf zwei Umläufe, ein Sonnentag dauert 176 Erdtage. „Wärmebild“ zeigt, wie heiß die Tagseite wird; im Zeitraffer läuft die Sonne am Perihel kurz rückwärts über den Boden.',
     facts: [
       { v: '2.440', u: 'km', l: 'Radius – gut ein Drittel der Erde', s: 'nssdc-mercury' },
@@ -1029,7 +1029,7 @@ export const STATIONS = {
     },
   },
   venus: {
-    n: '02J', title: 'Venus', kicker: 'Wolkenplanet', parent: 'solar', menu: false, width: 5.4e7, dist: 1.14 * AU, lookback: 1.14 * AU / C, size: { v: 1.21036e7, l: 'Durchmesser', s: 'nssdc-venus' },
+    n: '02J', title: 'Venus', kicker: 'Wolkenplanet', parent: 'solar', width: 5.4e7, dist: 1.14 * AU, lookback: 1.14 * AU / C, size: { v: 1.21036e7, l: 'Durchmesser', s: 'nssdc-venus' },
     lead: 'Der heißeste Planet, unter einer geschlossenen Decke aus Wolken. Der Boden dreht sich in 243 Tagen einmal, rückwärts, die Wolken umrunden den Planeten in nur 4 Tagen. „Ansicht“ wechselt wie die Kameras der Raumsonden: sichtbares Licht, Ultraviolett, Infrarot und Radar, das den Boden zeigt.',
     facts: [
       { v: '6.052', u: 'km', l: 'Radius – fast so groß wie die Erde', s: 'nssdc-venus' },
