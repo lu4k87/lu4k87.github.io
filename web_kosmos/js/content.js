@@ -1454,7 +1454,7 @@ const GROUP_OF = Object.fromEntries(Object.entries(GROUPS).flatMap(([g, { of }])
 export const up = (id) => GROUP_OF[id] || (STATIONS[id] || GROUPS[id] || {}).parent || null;
 // Station, die ein Halt anfliegt (Sammel-Halt → erster Abstecher)
 export const entry = (id) => (GROUPS[id] ? GROUPS[id].of[0] : id);
-export const ROUTE = ['stations', 'telescopes', 'earth', 'moon', 'solar', 'sun', 'galaxy', 'local', 'web', 'cmb'];
+export const ROUTE = ['stations', 'telescopes', 'earth', 'solar', 'sun', 'galaxy', 'local', 'web', 'cmb'];
 // Äste außerhalb der Route (Kind über parent bzw. Sammel-Halt) zählen für Weiter/Zurück wie ihr nächster Halt auf der Route
 export function routeIndex(id) {
   for (let x = id; x; x = up(x)) { const i = ROUTE.indexOf(x); if (i >= 0) return i; }
