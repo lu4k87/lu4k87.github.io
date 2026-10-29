@@ -442,7 +442,7 @@ export function create(ctx) {
   let windT = 0;
 
   // ---------- Ton: echter Takt (Hauptpuls + Zwischenpuls bei 0,4 P) ----------
-  let audio = null;
+  let audio = null, isActive = false;   // Takt nur an der aktiven Station (onActive aus main.js activate)
   function sound(on) {
     if (audio) { audio.close(); audio = null; }
     if (!on) return;
@@ -505,7 +505,7 @@ export function create(ctx) {
     { id: 'clock', type: 'play', group: 'Zeit', label: 'Zeitlupe', hint: 'Drehung in Zeitlupe – echt dreht der Stern 30-mal je Sekunde; Pause hält die Drehung an.', value: 1, min: 0, max: SLOWS.length - 1, step: 1, autoplay: true,
       fmt: (i) => SLOWS[Math.round(i)][1], set: (i, playing) => { slow = SLOWS[Math.round(i)][0]; spinOn = playing; }, get: () => ({ value: slowIdx(), playing: spinOn }),
       status: () => (spinOn ? `eine Umdrehung in ${(P * slow).toFixed(1).replace('.', ',')} s` : 'Drehung angehalten') },
-    { id: 'sound', type: 'toggle', group: 'Ton', label: 'Echter Takt (Hauptpuls + Zwischenpuls)', value: false, set: (v) => { if (v !== soundOn) { soundOn = v; sound(v); } } },
+    { id: 'sound', type: 'toggle', group: 'Ton', label: 'Echter Takt (Hauptpuls + Zwischenpuls)', value: false, set: (v) => { if (v !== soundOn) { soundOn = v; sound(v && isActive); } } },
     { id: 'swirl', type: 'toggle', group: 'Strahlen', label: 'Plasmawirbel (Trichter)', value: true, set: (v) => { beams.material.uniforms.uSwirl.value = v ? 1 : 0; },
       hint: 'Schema: die Strahlkegel als Wirbelsturm aus aufgewickelten offenen Feldlinien, innen schneller drehend. Aus = glatter Kegel mit hellem Kern.' },
     { id: 'spiral', type: 'toggle', label: 'Spiralteilchen', value: true, sub: true, set: (v) => { swirl.visible = v; } },
@@ -606,6 +606,7 @@ export function create(ctx) {
       if (dot) { dot.setAttribute('cx', x); dot.setAttribute('cy', y); }
     },
     setPixelRatio(pr) { stars.userData.setPixelRatio(pr); wu.uPx.value = pr; swirl.userData.u.uPx.value = pr; beads.userData.u.uPx.value = pr; },
+    onActive(on) { isActive = on; sound(on && soundOn); },
     dispose() { sound(false); disposeScene(scene); },
   };
 }

@@ -11,7 +11,9 @@ export const KIND = ['Nutzlast', 'Starlink', 'Trümmer', 'Station'];
 export const KIND_COLOR = ['#ffe9c4', '#8fc6ff', '#ff8a5c', '#f3b552'];
 let dataP = null;
 export function loadSats() {
-  return (dataP ||= fetch('data/sats.json').then((r) => { if (!r.ok) throw new Error(`sats.json: HTTP ${r.status}`); return r.json(); }));
+  dataP ||= fetch('data/sats.json').then((r) => { if (!r.ok) throw new Error(`sats.json: HTTP ${r.status}`); return r.json(); });
+  dataP.catch(() => { dataP = null; });   // Netzfehler: nächster Aufruf lädt neu
+  return dataP;
 }
 export const namedIndex = (data, name) => +(Object.entries(data.named).find(([, n]) => n === name) || [-1])[0];
 

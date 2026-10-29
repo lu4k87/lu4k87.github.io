@@ -69,7 +69,7 @@ export const SOUNDS = {
   ],
 };
 
-let ac = null, out = null, cur = null, on = false;
+let ac = null, out = null, cur = null, on = false, curCtl = null;
 const pick = {};               // gewählter Ton je Station (diese Sitzung)
 const buffers = new Map();     // Datei → Promise<AudioBuffer>
 
@@ -144,7 +144,12 @@ async function play(snd) {
   src.connect(g).connect(out);
   src.start(t, snd.once ? 0 : PAD);
   Object.assign(cur, { src, g });
-  if (snd.once) src.onended = () => { if (cur && cur.src === src) cur = null; };
+  if (snd.once) src.onended = () => {
+    if (!cur || cur.src !== src) return;
+    cur = null; on = false;   // einmaliger Ton zu Ende: Schalter wieder „Aus“ (quick.js)
+    if (curCtl) curCtl.value = 'off';
+    window.dispatchEvent(new CustomEvent('kosmos:sound'));
+  };
 }
 
 const detail = (list) => (v) => {
@@ -164,6 +169,7 @@ export function attachSound(lv) {
       on = v !== 'off';
       if (!on) { stop(0.4); return; }
       pick[lv.id] = v;
+      curCtl = c;
       play(list.find((x) => x.id === v));
     },
   };
@@ -177,5 +183,6 @@ export function soundTo(lv) {
   if (!on) return;
   if (!c) { stop(); return; }
   pick[lv.id] = c.value;
+  curCtl = c;
   play(list.find((x) => x.id === c.value));
 }

@@ -877,7 +877,7 @@ export function createHud(h) {
     clearTimeout(capTimer);
     capTimer = setTimeout(() => {
       caption.classList.remove('is-on');
-      if (opening) setTimeout(() => showCaption(st), 2600);
+      if (opening) capTimer = setTimeout(() => showCaption(st), 2600);   // gleicher Timer: setFlight/caption(null) löschen ihn mit
     }, CAP_MS);
   }
 

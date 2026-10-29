@@ -6,6 +6,7 @@ let dataP = null;
 export function loadL2() {
   // ohne ||=: das Modul läuft auch im Test unter älterem Node (tests/astro.test.js)
   if (!dataP) dataP = fetch('data/l2.json').then((r) => { if (!r.ok) throw new Error(`l2.json: HTTP ${r.status}`); return r.json(); });
+  dataP.catch(() => { dataP = null; });   // Netzfehler: nächster Aufruf lädt neu
   return dataP;
 }
 

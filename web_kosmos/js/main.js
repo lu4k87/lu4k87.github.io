@@ -122,7 +122,8 @@ const params = new URLSearchParams(location.search);
 const reducedSys = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const still = () => reducedSys || settings.S.motion === 'off';
 const calm = () => still() || settings.S.motion === 'calm';
-const freeze = params.has('freeze') ? Math.min(0.999, Math.max(0, +params.get('freeze'))) : null;
+const freezeP = parseFloat(params.get('freeze'));   // ?freeze=abc → kein Halt (sonst NaN im Flug)
+const freeze = Number.isFinite(freezeP) ? Math.min(0.999, Math.max(0, freezeP)) : null;
 const tour = params.has('tour') ? { dwell: Math.max(4, +params.get('dwell') || 16), since: 0 } : null;
 const fps = params.has('fps') ? { n: 0, sum: 0 } : null;
 // ?camlog: jede gezeigte Kamera je Bild aufzeichnen (tests/camera.py sucht darin Rucke)
@@ -166,7 +167,8 @@ const state = {
   dragging: false,
 };
 if (capture) window.__kosmos = { state, THREE };
-const now = new Date(params.get('date') || Date.now());
+const dateP = new Date(params.get('date') || Date.now());
+const now = Number.isNaN(dateP.getTime()) ? new Date() : dateP;   // ?date=foo → heute statt NaN-Bahnen
 
 // ---------- Qualität: Pixelverhältnis, Detailgrad; Auto schätzt die Startstufe und misst laufend die Bildzeit (perf.js) ----------
 const QUALITY = [
@@ -387,6 +389,8 @@ function camTune(c) {
 }
 
 function activate(lv) {
+  if (state.active && state.active !== lv) { state.active.onActive?.(false); lv.onActive?.(true); }
+  else if (!state.active) lv.onActive?.(true);
   state.follow = null;
   state.id = lv.id;
   state.active = lv;
@@ -948,11 +952,12 @@ function stepTransition(dt) {
   tr.innerUv.set((b.x + 1) / 2, (b.y + 1) / 2);
   // gleicher Raum: Bilder decken sich (kein Versatz), flächige Überblendung statt Iris; Lichtschleier und Zoom-Unschärfe müssen
   // keine Naht verdecken und bleiben nur angedeutet (voll verschmieren sie den hellen Kern als Dunst über die ganze Galaxie)
-  if (tr.same) { tr.innerUv.copy(tr.anchorUv); tr.fade = smoother(SAME.fade[0], SAME.fade[1], p); tr.veil *= SAME.veil; tr.blur *= SAME.veil; }
+  if (tr.same) { tr.innerUv.copy(tr.anchorUv); tr.fade = smoother(SAME.fade[0], SAME.fade[1], p); }
   tr.prog = p;
   tr.maskR = 0.05 * Math.pow(ZOOM, p) * smooth(0, 0.08, p);
   tr.blur = still() ? 0 : 0.09 * Math.sin(Math.PI * p);
   tr.veil = still() ? 0 : Math.pow(Math.sin(Math.PI * e), 1.6);
+  if (tr.same) { tr.veil *= SAME.veil; tr.blur *= SAME.veil; }   // erst nach dem Setzen dämpfen
   if (!tr.captioned && e > 0.62 && state.queue.length === 0) { tr.captioned = true; hud.caption(tr.to.meta); }
   if (e >= 1) {
     const to = tr.to;
@@ -1007,6 +1012,7 @@ async function startOpener(lv) {
     sizeOpener();
     opener.apply(null);
     await Promise.all([renderer.compileAsync(opener.scene, opener.camera), opener.ready]);
+    if (state.opener || state.tr || state.chain || state.active !== lv) return;   // während des Baus losgeflogen
   }
   opener.film.t = 0;
   opener.film.playing = false;
@@ -1365,7 +1371,7 @@ onSettings((keys) => {
 });
 
 window.addEventListener('keydown', (ev) => {
-  if (ev.target.closest && ev.target.closest('input, select, textarea')) return;
+  if (ev.target.closest && ev.target.closest('input, select, textarea, [role="tab"], [role="radio"]')) return;
   // im Auftakt-Film: Esc, Enter, Leertaste und die Reisetasten überspringen ihn
   if (state.opener) {
     if (['Escape', 'Enter', ' ', 'ArrowRight', 'ArrowLeft', 'ArrowUp', 'PageDown', 'PageUp'].includes(ev.key)) { ev.preventDefault(); skipOpener(); }
@@ -1381,7 +1387,8 @@ window.addEventListener('resize', () => { hud.relayout(); resize(); });
 // Zurück/Vor im Browser während einer Fahrt: Wunsch merken, nach der Landung nachholen (stepTransition)
 window.addEventListener('hashchange', () => {
   const id = (location.hash.match(/station=(\w+)/) || [])[1];
-  if (!id || !Object.hasOwn(STATIONS, id)) return;
+  // unbekannte Station oder Film läuft (goTo lehnt ab): Adresse zeigt wieder die stehende Station, kein Wunsch bleibt hängen
+  if (!id || !Object.hasOwn(STATIONS, id) || state.opener) { history.replaceState(null, '', `${location.search}#station=${state.id}`); return; }
   state.wish = id;
   if (id !== state.id) goTo(id);
   else if (!state.chain) state.wish = null;
@@ -1396,6 +1403,7 @@ canvas.addEventListener('pointerdown', (ev) => {
 window.addEventListener('kosmos:auftakt', async () => {
   if (state.opener || state.tr) return;
   const lv = await getLevel(OPENER.land);
+  if (state.opener || state.tr || state.chain) return;   // während des Ladens losgeflogen
   if (state.active !== lv) { activate(lv); resize(); }
   await startOpener(lv);
   if (state.opener) state.opener.o.film.playing = true;

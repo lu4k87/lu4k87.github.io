@@ -77,5 +77,6 @@ export function mountQuick(root, onInput) {
   });
   syncTheme();
 
+  addEventListener('kosmos:sound', syncSound);   // einmaliger Ton (Apollo 11) zu Ende
   return { station(level) { lv = level; syncSound(); } };
 }

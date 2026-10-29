@@ -11,9 +11,14 @@ import { followStars } from './settings.js';
 import { SKY_VERTEX } from './glsl.js';
 
 let starsP = null, consP = null;
-const fetchJson = (url) => fetch(url).then((r) => { if (!r.ok) throw new Error(`${url}: HTTP ${r.status}`); return r.json(); });
-export function loadStars() { return (starsP ||= fetchJson('data/stars.json')); }
-export function loadConstellations() { return (consP ||= fetchJson('data/constellations.json')); }
+// abgelehnte Ladung nicht cachen: reset() leert den Speicher, der nächste Aufruf lädt neu
+const fetchJson = (url, reset) => {
+  const p = fetch(url).then((r) => { if (!r.ok) throw new Error(`${url}: HTTP ${r.status}`); return r.json(); });
+  p.catch(reset);
+  return p;
+};
+export function loadStars() { return (starsP ||= fetchJson('data/stars.json', () => { starsP = null; })); }
+export function loadConstellations() { return (consP ||= fetchJson('data/constellations.json', () => { consP = null; })); }
 
 // Die bekanntesten Sterne mit Entfernung (Hipparcos/Gaia, gerundet) – für Beschriftungen und Info-Karten
 export const BRIGHT = {
