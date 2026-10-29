@@ -2,7 +2,7 @@
 // Leerlauf, Kinobalken, Vollbild (Drehachsen nur im Reiter Station – in der Station selbst sind keine zu sehen, User 28.10.2026) – je ein Klick statt Infotafel bzw. Zahnrad.
 // Ton: schaltet den Schalter „sound“ der Station (sound.js oder eigener Takt des Pulsars) zwischen „Aus“ und der ersten
 // Aufnahme; Station ohne Ton → Knopf ausgegraut mit Grund im Tooltip. Die übrigen folgen kosmos.settings.v1 (auch aus dem Zahnrad).
-// Kinobalken = nur die Balken, kein Vollbild (User 28.10.2026); Vollbild hat einen eigenen Knopf.
+// Kinobalken = nur die Balken, kein Vollbild (User 28.10.2026); Vollbild hat einen eigenen Knopf. Ganz rechts: helles Theme.
 
 import { settings, setSetting, onSettings } from './settings.js';
 
@@ -61,6 +61,21 @@ export function mountQuick(root, onInput) {
   onSettings(syncKino);
   syncKino();
   addEventListener('keydown', (e) => { if (settings.S.bars && e.key === 'Escape') setSetting('bars', false); });
+
+  // Helles Theme (Vorschau 29.10.2026 Schalter:A): nur Bedienflächen, gespeichert in kosmos.theme, gesetzt schon im <head>
+  const theme = $('qk-theme'), html = document.documentElement;
+  const syncTheme = () => {
+    const on = html.dataset.theme === 'light';
+    theme.setAttribute('aria-pressed', String(on));
+    label(theme, on ? 'Dunkles Theme' : 'Helles Theme');
+  };
+  theme.addEventListener('click', () => {
+    const on = html.dataset.theme !== 'light';
+    if (on) html.dataset.theme = 'light'; else delete html.dataset.theme;
+    try { localStorage.setItem('kosmos.theme', on ? 'light' : 'dark'); } catch {}
+    syncTheme();
+  });
+  syncTheme();
 
   return { station(level) { lv = level; syncSound(); } };
 }

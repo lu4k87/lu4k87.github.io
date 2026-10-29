@@ -1,4 +1,4 @@
-/* Kosmos – Bedienoberfläche über der 3D-Szene. Das All ist dunkel, daher nur ein dunkles Thema. Look „Instrument“
+/* Kosmos – Bedienoberfläche über der 3D-Szene. Das All ist dunkel; helles Theme nur für die Bedienflächen (ganz unten). Look „Instrument“
    (Vorschau 28.10.2026 Redesign aller Bedienelemente, alle 9 Teile C): dunkles Glas mit feinen 1-px-Linien, Radius 6,
    Skalenstriche, Kosmos-Cyan nur für Aktives, Mono-Schrift für Zahlen, Satzschreibung statt Versalien-Zeilen.
    Aufbau als Grid (Kopf · Skala | Bühne | Tafel · Fuß): nichts liegt absolut übereinander. */
@@ -871,3 +871,43 @@ body.fatal-webgl .fatal-webgl, body.fatal-start .fatal-start { display: block; }
 .cfg-na b { font-weight: 600; }
 .cfg-tile.is-na { opacity: 0.45; }
 .cfg-tile.is-na[aria-selected="true"] { opacity: 0.75; }
+
+/* ---------- Helles Theme (Vorschau 29.10.2026 „Helles Theme“ Licht:C, Schalter:A) ----------
+   Helles Milchglas für alle Bedienflächen, dunkle Schrift; die 3D-Szene, Stationsleiste und Beschriftungen im All bleiben
+   dunkel. Die Tokens gelten nur auf den Flächen (Custom Properties erben) → Elemente in der Szene behalten Cyan.
+   Schalter in quick.js (`kosmos.theme`), gesetzt vor dem ersten Bild per Inline-Skript in index.html. */
+:root[data-theme="light"] :is(.panel, .hs-card, .station, .top-actions, .nav-buttons, .measure, .tl, .dock .icon-btn, .zb-search, .zb-found, .pull) {
+  --ink: #10141c; --ink-soft: #3d4656; --ink-rgb: 16, 20, 28;
+  --line: rgba(var(--ink-rgb), 0.14); --line-strong: rgba(var(--ink-rgb), 0.28);
+  --accent: #0072a3; --accent-rgb: 0, 114, 163; --link: #0072a3; --focus: #0072a3;
+  --glass: rgba(246, 248, 252, 0.86); --glass-strong: rgba(246, 248, 252, 0.9); --glass-btn: rgba(246, 248, 252, 0.86);
+  --glass-sheen: linear-gradient(118deg, rgba(255, 255, 255, 0.55) 0, rgba(255, 255, 255, 0.15) 24%, rgba(255, 255, 255, 0) 25%);
+  --glass-edge: inset 1px 1px 0 rgba(255, 255, 255, 0.95), inset -1px -1px 0 rgba(255, 255, 255, 0.4), 0 12px 40px rgba(0, 0, 0, 0.45);
+  --glass-blur: blur(20px) saturate(1.4) brightness(1.8);
+  --pane-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
+  --glass-tile: linear-gradient(150deg, rgba(var(--ink-rgb), 0.05), rgba(var(--ink-rgb), 0.01) 60%);
+  --glass-tile-edge: inset 0 0 0 1px rgba(var(--ink-rgb), 0.08);
+  color: var(--ink); text-shadow: none; color-scheme: light;
+}
+:root[data-theme="light"] :is(.zb-search, .zb-found, .dock .icon-btn:not([aria-expanded="true"])) { background: var(--glass); }
+:root[data-theme="light"] :is(.icon-btn, .nav-btn, .u-tab, .zb-hit, .explore button, .seg button, .cfg-tile):hover:not([aria-checked="true"], [aria-selected="true"]) { background: rgba(var(--ink-rgb), 0.06); }
+:root[data-theme="light"] .zb-hit[aria-selected="true"] { background: rgba(var(--ink-rgb), 0.08); }
+:root[data-theme="light"] :is(.panel-body, #cfg-global, .lay-scroll, .st-rail, .zb-res) { scrollbar-color: rgba(var(--ink-rgb), 0.25) transparent; }
+:root[data-theme="light"] :is(.panel-body, #cfg-global, .lay-scroll, .st-rail, .zb-res)::-webkit-scrollbar-thumb { background: rgba(var(--ink-rgb), 0.25); }
+/* Infografiken und Kartengrafiken: weiße Linien → Tinte */
+:root[data-theme="light"] .hf-body { fill: rgba(var(--ink-rgb), 0.06); stroke: rgba(var(--ink-rgb), 0.5); }
+:root[data-theme="light"] :is(.hf-zone, .hf-layer) { fill: rgba(var(--ink-rgb), 0.07); stroke: rgba(var(--ink-rgb), 0.45); }
+:root[data-theme="light"] :is(.hf-base, .hf-tick, .hf-groove, .hc-grid, .hc-path, .hc-orbit) { stroke: rgba(var(--ink-rgb), 0.4); }
+:root[data-theme="light"] .hf-bar { fill: rgba(var(--ink-rgb), 0.3); }
+:root[data-theme="light"] .hc-shot figcaption { color: #eef2f8; }
+:root[data-theme="light"] .sw-disc { box-shadow: inset 0 0 0 1px rgba(var(--ink-rgb), 0.2); }
+:root[data-theme="light"] :is(.b-item + .b-item, .widget tr + tr td) { border-color: rgba(var(--ink-rgb), 0.1); }
+:root[data-theme="light"] .cfg-tile { background: rgba(var(--ink-rgb), 0.03); }
+:root[data-theme="light"] .zg-mark { background: rgba(246, 248, 252, 0.9); }
+:root[data-theme="light"] .b-select { color-scheme: light; }
+:root[data-theme="light"] .b-select option { background: #f6f8fc; }
+:root[data-theme="light"] input[type=range]::-webkit-slider-thumb { box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.9); }
+:root[data-theme="light"] input[type=range]::-moz-range-thumb { box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.9); }
+/* Schalter Hell/Dunkel ganz rechts, Strich trennt von der Infotafel */
+#qk-theme { position: relative; margin-left: 9px; }
+#qk-theme::before { content: ""; position: absolute; left: -5px; top: 6px; bottom: 6px; width: 1px; background: var(--line); }

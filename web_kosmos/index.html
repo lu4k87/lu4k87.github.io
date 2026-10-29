@@ -11,6 +11,8 @@
   <link rel="stylesheet" href="css/kosmos.css">
   <link rel="stylesheet" href="css/layers.css">
   <link rel="stylesheet" href="css/boot.css">
+  
+  <script>try { if (localStorage.getItem('kosmos.theme') === 'light') document.documentElement.dataset.theme = 'light'; } catch {}</script>
   <script type="importmap">
     { "imports": { "three": "./vendor/three/three.module.min.js", "three/addons/": "./vendor/three/addons/" } }
   </script>
@@ -47,6 +49,7 @@
         <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="4.5" width="17" height="15" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M14.5 4.5v15" stroke="currentColor" stroke-width="1.6"/></svg>
       <span class="ib-t">Infotafel</span>
       </button>
+      <button type="button" id="qk-theme" class="icon-btn qk" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M5.6 18.4L7 17M17 7l1.4-1.4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg><span class="ib-t">Hell</span></button>
     </div>
 
     <nav class="band" aria-label="Stationen">
