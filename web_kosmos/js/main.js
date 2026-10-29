@@ -82,6 +82,9 @@ const LOADERS = {
   miranda: () => import('./levels/miranda.js'),
   // [E5] Pluto
   pluto: () => import('./levels/pluto.js'),
+  // [E6] Merkur, Venus
+  mercury: () => import('./levels/mercury.js'),
+  venus: () => import('./levels/venus.js'),
 };
 
 // Mausrad: notch = ln-Schritt je Raste (Δ 100, ≈ 5,8 %; User 28.10.2026: doppelt so schnell, Ausrollen unverändert),

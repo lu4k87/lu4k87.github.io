@@ -5,7 +5,6 @@
 const DEG = 180 / Math.PI, AU = 149597870.7, R_SUN = 695700;   // km (IAU 2012, NSSDCA Sun Fact Sheet)
 const fmt = (v, d = 0) => v.toLocaleString('de-DE', { minimumFractionDigits: d, maximumFractionDigits: d });
 const disc = (r, d) => 2 * Math.asin(r / d) * DEG;   // Winkeldurchmesser in Grad
-const SUN_SKY = { peri: disc(R_SUN, 46.0e6), aph: disc(R_SUN, 69.818e6), earth: disc(R_SUN, AU) };
 // Kirkwood-Lücken: Umlaufzeit im Verhältnis zu Jupiter (a = 5,2029 AE, JPL) → Bahnradius nach Kepler III
 const A_JUP = 5.2028870, gap = (n, m) => A_JUP * (m / n) ** (2 / 3);
 // Drehung nach Breite (Snodgrass & Ulrich 1990, Doppler, gegen die Sterne): ω = A + B sin²φ + C sin⁴φ in °/Tag
@@ -53,24 +52,6 @@ export default {
     cap: 'Mittlere Bahnradien maßstäblich. Der Hauptteil des Kuipergürtels reicht von Neptuns Bahn bis etwa 50 AE, dahinter setzt sich die Streuscheibe bis fast 1.000 AE fort. Pluto umläuft die Sonne zweimal, während Neptun dreimal herumkommt.',
     s: ['nasa-kuiper', 'jpl-elements', 'nssdc-pluto'],
   },
-  'solar.mercury': {
-    k: 'scale', h: 90, alt: 'Die Sonne am Himmel von Merkur im Perihel und Aphel und von der Erde, Winkelgröße maßstäblich',
-    items: [
-      { l: 'Merkur, Perihel', a: SUN_SKY.peri, t: deg(SUN_SKY.peri), hl: true },
-      { l: 'Merkur, Aphel', a: SUN_SKY.aph, t: deg(SUN_SKY.aph) },
-      { l: 'von der Erde', a: SUN_SKY.earth, t: deg(SUN_SKY.earth) },
-    ],
-    cap: 'Die Sonne am Himmel, Winkelgröße maßstäblich (eigene Rechnung aus Sonnenradius und Abstand). Merkurs Abstand schwankt zwischen 46,0 und 69,8 Mio. km – im Perihel erscheint die Sonne mehr als dreimal so breit wie von der Erde.',
-    s: ['nssdc-mercury', 'nasa-sun'],
-  },
-  'solar.venus': {
-    k: 'range', min: 0, max: 600, step: 100, u: '°C', alt: 'Oberflächentemperatur: Venus 464 Grad, Merkur auf der Tagseite 317 bis 452 Grad, Erde im Mittel 15 Grad Celsius',
-    span: [317, 452], spanL: 'Merkur, Tagseite',
-    marks: [{ v: 15, t: '15 °C', l: 'Erde, Mittel', ref: true }, { v: 464, t: '464 °C', l: 'Venus' }],
-    cap: 'Venus ist überall heißer als Merkurs Tagseite, obwohl sie fast doppelt so weit von der Sonne entfernt ist: Die dichte CO₂-Hülle hält die Wärme fest. Merkur aus 590–725 K umgerechnet.',
-    s: ['nasa-planets', 'nssdc-mercury'],
-  },
-
   // ---------- 02B Sonne ----------
   'sun.region': {
     k: 'timeline', alt: 'Zeitleiste des Sonnenzyklus 25 vom Minimum im Dezember 2019 bis zur Maximumsphase im Oktober 2024',

@@ -352,6 +352,29 @@ export const SOURCES = {
   'usgs-stickney': { t: 'Gazetteer of Planetary Nomenclature: Stickney (Phobos; 1° N, 49° W, 9 km)', by: 'IAU / USGS Astrogeology', url: 'https://planetarynames.wr.usgs.gov/Feature/5707' },
   'murray-2006': { t: 'New evidence on the origin of Phobos’ parallel grooves from HRSC Mars Express (Muster um die vordere Spitze der Bahn, nicht um Stickney)', by: 'Murray et al. 2006, ESA Mars Express', url: 'https://www.lpi.usra.edu/meetings/lpsc2006/pdf/2195.pdf' },
   'murray-heggie-2014': { t: 'Rillen auf Phobos: Ketten von Sekundärkratern aus Auswurf von Einschlägen auf Mars', by: 'Murray & Heggie 2014, PSS 102, 119', url: 'https://doi.org/10.1016/j.pss.2014.03.001' },
+  // [E6] Merkur, Venus
+  'nssdc-venus': { t: 'Venus Fact Sheet (Radius 6.051,8 km, Drehung −5.832,6 h, Sonnentag 2.802 h, 92 bar, 737 K, 96,5 % CO₂)', by: 'NASA NSSDCA', url: 'https://nssdc.gsfc.nasa.gov/planetary/factsheet/venusfact.html' },
+  'usgs-gazetteer-mercury': { t: 'Gazetteer of Planetary Nomenclature: Mercury (Caloris Planitia 31,7° N 162,0° O, 1.500 km; Prokofiev 85,8° N 62,9° O, 112 km; Raditladi 27,2° N 119,1° O, 258 km; Enterprise Rupes 36,5° S 76,5° O, 822 km; Borealis Planitia 67,3° N 32,6° O)', by: 'IAU / USGS Astrogeology', url: 'https://planetarynames.wr.usgs.gov/Page/MERCURY/target' },
+  'usgs-gazetteer-venus': { t: 'Gazetteer of Planetary Nomenclature: Venus (Maxwell Montes 65,2° N 3,3° O; Maat Mons 0,5° N 194,6° O; Sif Mons 22,0° N 352,4° O; Mead 12,5° N 57,2° O, 270 km; Niobe Planitia 21,0° N 112,3° O)', by: 'IAU / USGS Astrogeology', url: 'https://planetarynames.wr.usgs.gov/Page/VENUS/target' },
+  'margot-2007': { t: 'Large longitude libration of Mercury reveals a molten core (3:2-Kopplung von Drehung und Umlauf)', by: 'Margot et al. 2007, Science 316, 710', url: 'https://doi.org/10.1126/science.1140514' },
+  'vasavada-1999': { t: 'Near-surface temperatures on Mercury and the Moon and the stability of polar ice deposits (≈ 100 bis 700 K)', by: 'Vasavada, Paige & Wood 1999, Icarus 141, 179', url: 'https://doi.org/10.1006/icar.1999.6175' },
+  'murchie-2008': { t: 'Geology of the Caloris basin, Mercury: a view from MESSENGER (jüngstes großes Becken, vulkanische Ebenen)', by: 'Murchie et al. 2008, Science 321, 73', url: 'https://doi.org/10.1126/science.1159261' },
+  'lawrence-2013': { t: 'Evidence for water ice near Mercury’s north pole from MESSENGER neutron spectrometer measurements', by: 'Lawrence et al. 2013, Science 339, 292', url: 'https://doi.org/10.1126/science.1229953' },
+  'blewett-2011': { t: 'Hollows on Mercury: MESSENGER evidence for geologically recent volatile-related activity', by: 'Blewett et al. 2011, Science 333, 1856', url: 'https://doi.org/10.1126/science.1211681' },
+  'byrne-2014': { t: 'Mercury’s global contraction much greater than earlier estimates (Radius bis zu 7 km kleiner)', by: 'Byrne et al. 2014, Nature Geoscience 7, 301', url: 'https://doi.org/10.1038/ngeo2097' },
+  'head-2011': { t: 'Flood volcanism in the northern high latitudes of Mercury revealed by MESSENGER (mehr als 6 % der Oberfläche)', by: 'Head et al. 2011, Science 333, 1853', url: 'https://doi.org/10.1126/science.1211997' },
+  'baumgardner-2008': { t: 'Imaging the sources and full extent of the sodium tail of the planet Mercury (≈ 1.400 Merkurradien)', by: 'Baumgardner et al. 2008, Geophys. Res. Lett. 35, L03201', url: 'https://doi.org/10.1029/2007GL032337' },
+  'anderson-2011': { t: 'The global magnetic field of Mercury from MESSENGER orbital observations (Dipol 484 km nach Norden versetzt)', by: 'Anderson et al. 2011, Science 333, 1859', url: 'https://doi.org/10.1126/science.1211001' },
+  'hauck-2013': { t: 'The curious case of Mercury’s internal structure (Oberkante des flüssigen Kerns bei 2.020 km Radius)', by: 'Hauck et al. 2013, J. Geophys. Res. Planets 118, 1204', url: 'https://doi.org/10.1002/jgre.20091' },
+  'margot-2021': { t: 'Spin state and moment of inertia of Venus (Drehung 243,0226 Tage)', by: 'Margot et al. 2021, Nature Astronomy 5, 676', url: 'https://doi.org/10.1038/s41550-021-01339-7' },
+  'horinouchi-2020': { t: 'How waves and turbulence maintain the super-rotation of Venus’ atmosphere (Boden 243 Tage, Atmosphäre 4 Tage)', by: 'Horinouchi et al. 2020, Science 368, 405', url: 'https://doi.org/10.1126/science.aaz4439' },
+  'piccioni-2007': { t: 'South-polar features on Venus similar to those near the north pole (Doppelwirbel am Südpol)', by: 'Piccioni et al. 2007, Nature 450, 637', url: 'https://doi.org/10.1038/nature06209' },
+  'ford-1992': { t: 'Venus topography and kilometer-scale slopes (über 80 % der Oberfläche innerhalb 1 km um 6.051,84 km)', by: 'Ford & Pettengill 1992, J. Geophys. Res. 97, 13103', url: 'https://doi.org/10.1029/92JE01085' },
+  'schaber-1992': { t: 'Geology and distribution of impact craters on Venus (842 Krater auf 89 % der Oberfläche, 1,5 bis 280 km)', by: 'Schaber et al. 1992, J. Geophys. Res. 97, 13257', url: 'https://doi.org/10.1029/92JE01246' },
+  'herrick-2023': { t: 'Surface changes observed on a Venusian volcano during the Magellan mission (Schlot ≈ 2,2 km², acht Monate)', by: 'Herrick & Hensley 2023, Science 379, 1205', url: 'https://doi.org/10.1126/science.abm7735' },
+  'sulcanese-2024': { t: 'Evidence of ongoing volcanic activity on Venus revealed by Magellan radar (Sif Mons, Niobe Planitia)', by: 'Sulcanese et al. 2024, Nature Astronomy 8, 973', url: 'https://doi.org/10.1038/s41550-024-02272-1' },
+  'pia00106': { t: 'Maat Mons in 3-D Perspective (Gipfel 8 km über dem mittleren Boden, knapp 5 km über der Umgebung)', by: 'NASA/JPL Photojournal PIA00106 (Magellan)', url: 'https://photojournal.jpl.nasa.gov/catalog/PIA00106' },
+  'pia00241': { t: 'Lakshmi Planum and Maxwell Montes (Ostrand von Lakshmi, Westrand von Maxwell, 65° N 0° O)', by: 'NASA/JPL Photojournal PIA00241 (Magellan)', url: 'https://photojournal.jpl.nasa.gov/catalog/PIA00241' },
   // [E5] Neptun, Uranus, Pluto
   'nep-fact': { t: 'Neptune Fact Sheet', by: 'NASA NSSDCA', url: 'https://nssdc.gsfc.nasa.gov/planetary/factsheet/neptunefact.html' },
   'warwick-1989': { t: 'Rotationsperiode Neptuns aus Radiopulsen (16,11 h)', by: 'Warwick et al. 1989, Science 246, 1498', url: 'https://doi.org/10.1126/science.246.4936.1498' },
@@ -594,8 +617,8 @@ export const STATIONS = {
       corona: { t: 'Korona', x: 'Die äußere Atmosphäre der Sonne ist 1–3 Mio. K heiß, aber so dünn, dass sie neben der Scheibe nur bei totalen Sonnenfinsternissen oder im Koronografen sichtbar wird. Ihre Strahlen (Streamer) folgen dem Magnetfeld; im Aktivitätsmaximum erscheint sie rundum strukturiert, im Minimum vor allem am Äquator. Die Helligkeit fällt etwa mit r⁻²·⁵ – hier um Größenordnungen verstärkt.', s: 'delzanna-2018' },
       earth: { t: 'Erde', x: 'Dritter Planet, 1 AE von der Sonne: Äquatorradius 6.378 km, Umlauf 365,25 Tage, Drehung 23 h 56 min (Sterntag). Hineinfliegen: Erde und Mond zum aktuellen Zeitpunkt, mit Polarlichtern und Satelliten.', s: 'jpl-elements' },
       moon: { t: 'Mond', x: 'Radius 1.737 km · 0,0123 Erdmassen · mittlerer Abstand 384.400 km (30 Erddurchmesser; im Modus „Anschaulich“ näher gezeichnet) · Umlauf und Drehung 27,3 Tage (gebundene Rotation) · −173 bis 127 °C · entfernt sich 3,8 cm pro Jahr. Richtung zur Erde aus der Almanach-Rechnung für den angezeigten Zeitpunkt.', s: 'nasa-moon' },
-      mercury: { t: 'Merkur', x: 'Radius 2.440 km · 0,055 Erdmassen · 0,39 AE · Umlauf 88 Tage · Drehung 58,6 Tage · −173 bis 427 °C · keine Monde, nur eine sehr dünne Exosphäre. Größte Bahnexzentrizität der Planeten (0,21): Der Sonnenabstand schwankt zwischen 46 und 70 Mio. km.', s: 'nasa-planets' },
-      venus: { t: 'Venus', x: 'Radius 6.052 km · 0,815 Erdmassen · 0,72 AE · Umlauf 225 Tage · rotiert rückläufig, eine Drehung dauert 243 Erdtage · Oberfläche 464 °C bei 92 bar, Atmosphäre fast nur CO₂ – Folge eines starken Treibhauseffekts; Wolken aus Schwefelsäure reflektieren gut drei Viertel des Sonnenlichts, daher der helle Saum.', s: 'nasa-planets' },
+      mercury: { t: 'Merkur', x: 'Radius 2.440 km · 0,055 Erdmassen · 0,39 AE · Umlauf 88 Tage · Drehung 58,6 Tage · −173 bis 427 °C · keine Monde, nur eine sehr dünne Exosphäre. Größte Bahnexzentrizität der Planeten (0,21): Der Sonnenabstand schwankt zwischen 46 und 70 Mio. km. Hineinfliegen: Merkur mit Wärmebild und Natriumschweif, die Sonne läuft am Perihel kurz rückwärts.', s: 'nasa-planets' },
+      venus: { t: 'Venus', x: 'Radius 6.052 km · 0,815 Erdmassen · 0,72 AE · Umlauf 225 Tage · rotiert rückläufig, eine Drehung dauert 243 Erdtage · Oberfläche 464 °C bei 92 bar, Atmosphäre fast nur CO₂ – Folge eines starken Treibhauseffekts; Wolken aus Schwefelsäure reflektieren gut drei Viertel des Sonnenlichts, daher der helle Saum. Hineinfliegen: Wolken im Zeitraffer, der Boden im Radarbild.', s: 'nasa-planets' },
       mars: { t: 'Mars', x: 'Radius 3.396 km · 0,107 Erdmassen · 1,52 AE · Umlauf 687 Tage · Tag 24 h 37 min · im Mittel −65 °C · Druck 0,006 bar (95 % CO₂) · 2 Monde (Phobos, Deimos) · rot durch Eisenoxid im Staub, Polkappen aus Wasser- und CO₂-Eis. Hineinfliegen: Mars mit Jahreszeiten, Polkappen und Staubsturm, dazu Phobos und Deimos.', s: 'nasa-planets' },
       jupiter: { t: 'Jupiter', x: 'Radius 71.492 km (11,2 Erdradien) · 318 Erdmassen – mehr als doppelt so viel wie alle anderen Planeten zusammen · 5,2 AE · Umlauf 11,9 Jahre · Drehung in 9 h 56 min; die schnelle Rotation ordnet die Wolken in Bänder · −110 °C an der Wolkendecke · über 95 bekannte Monde, 2026 mehr als 100. Seine Schwerkraft erzeugt über Bahnresonanzen die Kirkwood-Lücken im Asteroidengürtel. Hineinfliegen: Jupiter mit den vier Galileischen Monden auf ihren Bahnen von heute. Polarlicht-Oval, Polwirbel, Fußpunkte der Monde und Magnetscheibe sind ein Schema (Modell; Oval ≈ 14° vom Magnetpol bei 9,6° Dipolneigung nach Hubble-UV-Bildern, heic1613); im Zahnrad einzeln schaltbar.', s: 'nasa-planets' },
       saturn: { t: 'Saturn', x: 'Radius 60.268 km · 95 Erdmassen · 9,5 AE · Umlauf 29,4 Jahre · Drehung 10 h 39 min · −140 °C · Dichte 0,69 g/cm³, geringer als Wasser · Ringe von 74.700 bis 137.000 km (C- bis A-Ring), meist nur zehn Meter bis einen Kilometer dick, vor allem Wassereis; der Planet wirft seinen Schatten auf die Ringe, die Ringe ihren auf den Planeten · 274 bestätigte Monde (2025), weitere 2026 gemeldet. Hineinfliegen: Saturn aus der Nähe mit Ringschatten, Jahreszeiten und den großen Monden.', s: 'nasa-saturn' },
@@ -980,6 +1003,50 @@ export const STATIONS = {
       craters: { t: 'Krater', x: 'Die meisten Krater sind kleiner als 2,5 km, der größte misst rund 2,3 km. Auf einem Körper von 15 km Länge wirken sie wie flache Mulden.', s: 'nasa-deimos' },
       mars: { t: 'Mars am Himmel', x: 'Mars steht fest am Himmel und ist rund 17° breit, gut 30-mal so breit wie der Vollmond von der Erde aus (eigene Rechnung). Deimos kreist nur wenig langsamer, als Mars sich dreht: Vom Marsboden aus zieht er rund 5,5 Tage von einem Höchststand zum nächsten (eigene Rechnung aus Umlauf und Drehung).', s: 'nssdc-mars' },
       orbit: { t: 'Bahn', x: 'Deimos kreist 23.459 km vom Marsmittelpunkt, ein Umlauf dauert 1,26244 Tage, gut 30 Stunden. Die Bahn ist fast kreisrund (Exzentrizität 0,0005).', s: 'nssdc-mars' },
+    },
+  },
+  // [E6] Merkur, Venus
+  mercury: {
+    n: '02I', title: 'Merkur', kicker: 'Innerster Planet', parent: 'solar', menu: false, width: 2.2e7, dist: 1.04 * AU, lookback: 1.04 * AU / C, size: { v: 4.8794e6, l: 'Durchmesser', s: 'nssdc-mercury' },
+    lead: 'Der kleinste Planet, so wie er jetzt zur Sonne steht. Merkur dreht sich in 58,6 Tagen einmal und umläuft die Sonne in 88 Tagen: drei Drehungen auf zwei Umläufe, ein Sonnentag dauert 176 Erdtage. „Wärmebild“ zeigt, wie heiß die Tagseite wird; im Zeitraffer läuft die Sonne am Perihel kurz rückwärts über den Boden.',
+    facts: [
+      { v: '2.440', u: 'km', l: 'Radius – gut ein Drittel der Erde', s: 'nssdc-mercury' },
+      { v: '58,6', u: 'Tage', l: 'eine Drehung, ein Sonnentag dauert 176 Tage', s: 'nssdc-mercury' },
+      { v: '46–70', u: 'Mio. km', l: 'von der Sonne, ein Umlauf in 88 Tagen', s: 'nssdc-mercury' },
+      { v: '590–725', u: 'K', l: 'auf der Tagseite, bis 452 °C', s: 'nssdc-mercury' },
+    ],
+    note: 'Merkur als Kugel mit dem mittleren Radius des Fact Sheets; Karte Solar System Scope (CC BY 4.0) aus MESSENGER-Bildern, Relief nur als Helligkeit, Feinstruktur beim Heranzoomen als Rauschen. Drehung nach dem Nullmeridian der IAU (Archinal et al. 2018) ohne die kleinen Librationsglieder; Sonnenrichtung und Abstand aus den JPL-Bahnelementen (eigene Rechnung: im Perihel steht die Sonne damit auf 0,1° genau über 0° bzw. 180° Länge). Die Sonne steht im Bild fest, Planet und Sterne drehen um die Bahnachse. Sonne als Scheibe in echter Winkelgröße, Lichthof gezeichnet. Wärmebild als Modell: Tagseite 700 K · cos^¼ des Zenitwinkels im Perihel, mit dem Sonnenabstand ∝ r^−½, Nachtseite kühlt auf ≈ 100 K (Werte nach Vasavada et al. 1999), Farbskala 80 bis 720 K. Natriumschweif als Modell: Teilchen strömen von der Sonne weg, im Bild 40 statt ≈ 1.400 Merkurradien lang und stark aufgehellt; Stärke folgt der Radialgeschwindigkeit (Dopplerverschiebung der Natriumlinien). Feldlinien als Schema eines Dipols, 484 km nach Norden versetzt, ohne Sonnenwind. Entfernung zur Erde im Mittel über die Bahnen (eigene Rechnung mit Kreisbahnen).',
+    sources: ['nssdc-mercury', 'iau-wgccre-2015', 'jpl-elements', 'usgs-gazetteer-mercury', 'margot-2007', 'vasavada-1999', 'murchie-2008', 'lawrence-2013', 'blewett-2011', 'byrne-2014', 'head-2011', 'baumgardner-2008', 'anderson-2011', 'hauck-2013', 'nasa-sun', 'sss-tex'],
+    hotspots: {
+      caloris: { t: 'Caloris Planitia', x: 'Das jüngste große Einschlagbecken des Merkur, rund 1.500 km breit, bei 31,7° N, 162° O. Lava hat seinen Boden später aufgefüllt; anders als die Mare des Mondes sind diese Ebenen heller als ihre Umgebung. Der Name heißt „heiße Ebene“: Nahe dieser Stelle wird es am heißesten.', s: 'murchie-2008' },
+      hotpole: { t: 'Heißer Pol', x: 'Merkur dreht sich dreimal, während er zweimal um die Sonne läuft. Deshalb steht die Sonne im Perihel immer über 0° oder 180° Länge: Dort wird der Boden mit rund 700 K am heißesten, in der Nacht kühlt er auf rund 100 K ab. Die Sonne erscheint dann mehr als dreimal so breit wie von der Erde (eigene Rechnung).', s: 'vasavada-1999' },
+      ice: { t: 'Eis im Krater Prokofiev', x: 'Nahe dem Nordpol liegen Kraterböden, die nie ein Sonnenstrahl trifft. Radarbilder von der Erde ließen dort seit den 1990er-Jahren Eis vermuten; MESSENGER fand Wasserstoff im Boden und bestätigte: Es ist Wassereis. Prokofiev, 112 km breit, liegt bei 85,8° N.', s: 'lawrence-2013' },
+      hollows: { t: 'Senken im Becken Raditladi', x: 'Flache, helle Senken ohne Rand, oft mit hellem Hof, sogenannte Hollows. Sie entstehen, wenn flüchtige Stoffe aus dem Gestein entweichen, und gehören zu den jüngsten Formen auf Merkur. Auch im Becken Raditladi (258 km) liegen solche Senken.', s: 'blewett-2011' },
+      scarp: { t: 'Enterprise Rupes', x: 'Eine Bruchstufe von 822 km Länge: Hier hat sich die Kruste übereinandergeschoben, als der Planet abkühlte und schrumpfte. Solche Stufen ziehen sich über ganz Merkur; zusammen zeigen sie, dass sein Radius um bis zu 7 km kleiner geworden ist.', s: 'byrne-2014' },
+      borealis: { t: 'Borealis Planitia', x: 'Die Ebenen des hohen Nordens: Flutbasalte, die in gewaltigen Ergüssen mehr als 6 % der Oberfläche bedeckten. Unter der Lava zeichnen sich die Umrisse begrabener Krater ab.', s: 'head-2011' },
+      tail: { t: 'Natriumschweif', x: 'Statt einer Lufthülle hat Merkur nur eine hauchdünne Exosphäre. Natriumatome aus dem Boden werden vom Druck des Sonnenlichts fortgeschoben und bilden einen Schweif von rund 1.400 Merkurradien, gut 3 Mio. km (eigene Rechnung). Im Bild verkürzt und aufgehellt.', s: 'baumgardner-2008' },
+      field: { t: 'Magnetfeld', x: 'Merkur hat ein globales Magnetfeld. Seine Mitte liegt 484 km nördlich der Planetenmitte, das Feld ist deshalb im Norden stärker als im Süden. Es entsteht im flüssigen Teil des großen Eisenkerns. Zahnrad: Feldlinien als Schema einblenden.', s: 'anderson-2011' },
+    },
+  },
+  venus: {
+    n: '02J', title: 'Venus', kicker: 'Wolkenplanet', parent: 'solar', menu: false, width: 5.4e7, dist: 1.14 * AU, lookback: 1.14 * AU / C, size: { v: 1.21036e7, l: 'Durchmesser', s: 'nssdc-venus' },
+    lead: 'Der heißeste Planet, unter einer geschlossenen Decke aus Wolken. Der Boden dreht sich in 243 Tagen einmal, rückwärts, die Wolken umrunden den Planeten in nur 4 Tagen. „Ansicht“ wechselt wie die Kameras der Raumsonden: sichtbares Licht, Ultraviolett, Infrarot und Radar, das den Boden zeigt.',
+    facts: [
+      { v: '6.052', u: 'km', l: 'Radius – fast so groß wie die Erde', s: 'nssdc-venus' },
+      { v: '243', u: 'Tage', l: 'eine Drehung, rückläufig; ein Sonnentag dauert 117 Tage', s: 'nssdc-venus' },
+      { v: '464', u: '°C', l: 'am Boden, Tag und Nacht', s: 'nssdc-venus' },
+      { v: '92', u: 'bar', l: 'Luftdruck am Boden, 96,5 % Kohlendioxid', s: 'nssdc-venus' },
+    ],
+    note: 'Boden als Kugel mit dem Radius des Fact Sheets; Radarkarte Solar System Scope (CC BY 4.0) aus Magellan-Daten – die Vorlage steht mit Süden oben und ist für Kosmos gespiegelt (abgeglichen an Maxwell Montes, Aphrodite Terra und Artemis), Höhen nur als Helligkeit. Drehung nach dem Nullmeridian der IAU (Archinal et al. 2018), Sonnenrichtung aus den JPL-Bahnelementen; die Sonne steht im Bild fest, Planet und Sterne drehen um die Bahnachse. Wolken als eine Schale in 70 km Höhe (Richtwert) mit der Wolkenkarte von Solar System Scope, Umlauf in 4 Tagen als starre Drehung ohne Unterschiede nach Breite; Strömen, Polarwirbel, UV-Kontrast und Lücken im Infrarot sind ein Modell. Dunst über den Wolken stark verdickt. Radar-Ansicht gleichmäßig aufgehellt (Schaubild). Entfernung zur Erde im Mittel über die Bahnen (eigene Rechnung mit Kreisbahnen).',
+    sources: ['nssdc-venus', 'iau-wgccre-2015', 'margot-2021', 'jpl-elements', 'usgs-gazetteer-venus', 'horinouchi-2020', 'piccioni-2007', 'ford-1992', 'pia00241', 'pia00106', 'herrick-2023', 'sulcanese-2024', 'schaber-1992', 'vasavada-1999', 'sss-tex'],
+    hotspots: {
+      maxwell: { t: 'Maxwell Montes', x: 'Das Gebirge am Ostrand der Hochebene Lakshmi Planum, bei 65° N, 3° O. Im Radarbild leuchtet es hell: Seine Flanken sind steil und rau, die Südwestseite gehört zu den steilsten Hängen der Venus.', s: 'ford-1992' },
+      maat: { t: 'Maat Mons', x: 'Ein Schildvulkan bei 0,5° N, 194,6° O; sein Gipfel liegt 8 km über dem mittleren Boden. An einem Schlot dieses Vulkans fanden Forscher 2023 in Magellan-Bildern im Abstand von acht Monaten eine Veränderung: Der Schlot von rund 2,2 km² hatte seine Form geändert, ein Zeichen für aktiven Vulkanismus.', s: 'herrick-2023' },
+      sif: { t: 'Sif Mons', x: 'Ein Vulkan bei 22° N, 352,4° O. Vergleiche von Magellan-Radarbildern aus verschiedenen Umläufen zeigen hier und in Niobe Planitia neue Lavaströme – ein weiterer Hinweis, dass Venus heute vulkanisch aktiv ist.', s: 'sulcanese-2024' },
+      mead: { t: 'Mead', x: 'Mit 270 km der größte Einschlagkrater der Venus. Magellan fand auf 89 % der Oberfläche nur 842 Krater, zwischen 1,5 und 280 km groß – so wenige, weil die Oberfläche geologisch jung ist.', s: 'schaber-1992' },
+      niobe: { t: 'Am Boden', x: 'Tiefland wie Niobe Planitia bedeckt große Teile der Venus: Über 80 % der Oberfläche liegen höchstens 1 km über oder unter dem mittleren Radius. Am Boden herrschen 464 °C und 92 bar, Tag und Nacht; der Wind weht mit 0,3 bis 1 m/s.', s: 'nssdc-venus' },
+      clouds: { t: 'Superrotation', x: 'Der Boden dreht sich in 243 Tagen einmal, die dichte Atmosphäre umrundet den Planeten in nur 4 Tagen – rund 60-mal so schnell (eigene Rechnung). Messungen der Sonde Akatsuki zeigen: Gezeiten der Sonnenheizung halten diesen Wind in Gang.', s: 'horinouchi-2020' },
+      vortex: { t: 'Polarwirbel', x: 'Über den Polen kreist ein riesiger Wirbel. Venus Express sah am Südpol einen Doppelwirbel, ähnlich dem schon bekannten am Nordpol. Im Bild als Modell.', s: 'piccioni-2007' },
     },
   },
   // [E5] Neptun, Uranus, Pluto
@@ -1442,7 +1509,7 @@ export const PARKED = {
 // und die Gruppen „Licht & Schatten“, „Himmel“ der Einstellungen (settings.js WHERE: dort ausgegraut, wo sie nicht wirken)
 export const SOLAR_SYSTEM = ['earth', 'hubble', 'jwst', 'euclid', 'roman', 'solar', 'sun', 'iss', 'tiangong', 'moon',
   'jupiter', 'io', 'europa', 'ganymede', 'callisto', 'saturn', 'titan', 'enceladus', 'mars', 'phobos', 'deimos',
-  'neptune', 'triton', 'uranus', 'miranda', 'pluto'];
+  'neptune', 'triton', 'uranus', 'miranda', 'pluto', 'mercury', 'venus'];
 // Sammel-Halte der Stationsleiste ohne eigene Szene (Vorschau 28.10.2026 Erde:B): fassen Abstecher derselben Art zusammen;
 // Halt anwählen (Klick, Weiter/Zurück) fliegt zum ersten Abstecher. Der Flug-Baum (parent, pathTo) kennt sie nicht.
 export const GROUPS = {
@@ -1454,7 +1521,7 @@ const GROUP_OF = Object.fromEntries(Object.entries(GROUPS).flatMap(([g, { of }])
 export const up = (id) => GROUP_OF[id] || (STATIONS[id] || GROUPS[id] || {}).parent || null;
 // Station, die ein Halt anfliegt (Sammel-Halt → erster Abstecher)
 export const entry = (id) => (GROUPS[id] ? GROUPS[id].of[0] : id);
-export const ROUTE = ['stations', 'telescopes', 'earth', 'solar', 'sun', 'galaxy', 'local', 'web', 'cmb'];
+export const ROUTE = ['stations', 'telescopes', 'earth', 'sun', 'solar', 'galaxy', 'local', 'web', 'cmb'];
 // Äste außerhalb der Route (Kind über parent bzw. Sammel-Halt) zählen für Weiter/Zurück wie ihr nächster Halt auf der Route
 export function routeIndex(id) {
   for (let x = id; x; x = up(x)) { const i = ROUTE.indexOf(x); if (i >= 0) return i; }

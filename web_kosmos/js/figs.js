@@ -11,6 +11,7 @@ import ERDE from './figs/erde.js';
 import SONNE from './figs/sonne.js';
 import JUPITER from './figs/jupiter.js';
 import MARS from './figs/mars.js';
+import INNEN from './figs/innen.js';
 import AUSSEN, { kinds as AUSSEN_KINDS } from './figs/aussen.js';
 import GALAXIS from './figs/galaxis.js';
 import TELESKOP from './figs/teleskop.js';
@@ -201,7 +202,7 @@ function grooves(f) {
 }
 
 const KINDS = { peaks, bars, scale, orbit, timeline, range, layers, polar, grooves, ...AUSSEN_KINDS };
-export const FIGS = { ...ERDE, ...SONNE, ...JUPITER, ...MARS, ...AUSSEN, ...GALAXIS, ...TELESKOP, ...DUNKEL };
+export const FIGS = { ...ERDE, ...SONNE, ...JUPITER, ...MARS, ...INNEN, ...AUSSEN, ...GALAXIS, ...TELESKOP, ...DUNKEL };
 // Bewegung für alle Bausteine (auch die aus figs/<ast>.js): Art als Klasse, Staffel --k für das Einwachsen, pathLength
 // zum Einzeichnen der Linien; was sich danach bewegt, steht in kosmos.css (Abschnitt Info-Karte)
 export function figSvg(f) {
