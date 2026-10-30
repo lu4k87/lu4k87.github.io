@@ -1,7 +1,7 @@
-// Ast der Milchstraße 03A: Säulen der Schöpfung im Adlernebel M16 (Einheit 1 Lj), Blick von der Erde = −z, oben = +y.
+// Ast der Milchstraße 03A: Säulen der Schöpfung im Adlernebel M16 (Einheit U = 0,55 Lj), Blick von der Erde = −z, oben = +y.
 // Drei Säulen aus kaltem Gas und Staub, von oben rechts angestrahlt vom jungen Haufen NGC 6611. Lage nach MUSE (ESO 2015,
 // McLeod et al.): die Spitze der linken Säule zeigt zu uns, die Säule steht hinter NGC 6611; die übrigen Spitzen zeigen
-// von uns weg. Linke Säule ≈ 4 Lj, etwa doppelt so hoch wie die rechte.
+// von uns weg. Linke Säule ≈ 4 Lj (Wolkenbank y ≈ −6,6 bis Kopf ≈ 0,85: 7,45 U), etwa doppelt so hoch wie die rechte (3,8 U).
 // Licht: die UV-Strahlung des Haufens trifft nur die ihm zugewandten Flächen (optische Tiefe zum Haufen einmal gebacken,
 // Kanal g) → dünne leuchtende Ionisationsfront, davor strömt verdampfendes Gas zum Haufen hin (Photoverdampfung, Hester
 // 1996). Farbmodi nach den Webb-Aufnahmen (NIRCam, MIRI, beide gemischt) und Hubble im sichtbaren Licht; Farben je
@@ -15,7 +15,8 @@ import { createStarfield } from '../stars.js';
 import { registerLayers } from '../layers.js';
 import { mulberry32, gauss, blackbody, LY } from '../astro.js';
 
-const EXT = 13;   // Feldtextur: Würfel ±13 Lj um die Volumenkugel (Radius 12,5)
+const U = 0.55 * LY;   // Modelleinheit: die Form ist in U gebaut, damit die linke Säule ≈ 4 Lj lang ist (eso-1518)
+const EXT = 13;   // Feldtextur: Würfel ±13 U um die Volumenkugel (Radius 12,5)
 
 // Säule = quadratische Bézier-Achse Fuß → Spitze; Radius Fuß, Hals, Kopf (Globule an der Spitze)
 // Lage nach MUSE: linke Säule hinten, Spitze zu uns; mittlere und rechte vorn, Spitzen von uns weg; NGC 6611 dazwischen
@@ -24,13 +25,13 @@ const LAYOUT = {
   pillars: [
     [[-2.4, -7.4, -2.3], [-2.1, -1.6, -2.1], [-1.0, 0.25, -0.8], 1.05, 0.5, 0.6],
     [[0.5, -7.4, 1.3], [0.75, -3.2, 1.25], [0.95, -1.35, 0.45], 1.0, 0.62, 0.7],
-    [[2.75, -7.4, 1.5], [2.6, -3.8, 1.4], [2.4, -2.35, 0.65], 0.8, 0.46, 0.5],
+    [[2.75, -7.4, 1.5], [2.6, -4.7, 1.4], [2.45, -3.3, 0.65], 0.8, 0.46, 0.5],
   ],
 };
 const v3 = (a) => `vec3(${a.map((x) => x.toFixed(3)).join(', ')})`;
 
 // r Abstand zur Oberfläche (< 0 innen), g optische Tiefe zum Haufen, b Turbulenz für das Gas in der Höhle – alle in 0…1
-// kodiert (Abstand −4…12 Lj, Tiefe 0…10), weil das Feld je nach Gerät auf 0…1 gekappt wird
+// kodiert (Abstand −4…12 U, Tiefe 0…10), weil das Feld je nach Gerät auf 0…1 gekappt wird
 const fieldBody = (L) => /* glsl */ `
 vec3 bez(vec3 a, vec3 b, vec3 c, float s) { return mix(mix(a, b, s), mix(b, c, s), s); }
 float pil(vec3 p, vec3 a, vec3 b, vec3 c, float ra, float rt, float rh) {
@@ -284,7 +285,7 @@ export function create(ctx) {
   const view = new URLSearchParams(location.search).get('view');
   const HOME = { side: [15, -1.6, 1.2], top: [1.2, 13, 3.5], near: [-0.6, 0.2, 4.5], far: [0.6, -1.4, 30] }[view] || [0.6, -1.4, 14];
   return {
-    scene, camera, unit: LY, hotspots, controls, msaa: false,
+    scene, camera, unit: U, hotspots, controls, msaa: false,
     ready: field.ready.then(() => ctx.renderer.compileAsync(vol.scene, camera)),
     home: { pos: new THREE.Vector3(...HOME), target: new THREE.Vector3(0.3, -2.6, 0) },
     orbit: { minDistance: 1.2, maxDistance: 40, cineSpeed: 0.6 },

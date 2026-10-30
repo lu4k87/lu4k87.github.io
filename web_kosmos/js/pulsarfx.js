@@ -21,21 +21,36 @@ export const WIRBEL_CONE = /* glsl */ `
     e += col * fall * pole * uGain;
 `;
 
+// Zwei Pole: Hauptpol uM, Gegenpol uM2 (nicht genau gegenüber, sondern um 0,1 P versetzt, siehe pulsar.js), je Pol
+// zwei Achsen senkrecht dazu als Bezug für den Drehwinkel. nearPole gibt den Kosinus zum näheren Pol, sg = +1 Haupt-, −1 Gegenpol.
+export const POLES_GLSL = /* glsl */ `
+uniform vec3 uM, uM2, uE1, uE2, uF1, uF2;
+float nearPole(vec3 d, out float sg, out vec3 E1, out vec3 E2) {
+  float c1 = dot(d, uM), c2 = dot(d, uM2);
+  sg = c1 >= c2 ? 1.0 : -1.0;
+  E1 = sg > 0.0 ? uE1 : uF1;
+  E2 = sg > 0.0 ? uE2 : uF2;
+  return max(c1, c2);
+}
+`;
+
 // Polkappen-Strudel auf der Kruste (alle Varianten): Spiralarme um die Magnetachse, drehen ein
 export const CAP_GLSL = /* glsl */ `
-uniform vec3 uE1, uE2;
+${POLES_GLSL}
 uniform float uT, uCapS;
-float capSwirl(vec3 N, vec3 M) {
-  float c = dot(N, M), sg = c > 0.0 ? 1.0 : -1.0;
-  float ang = acos(clamp(abs(c), 0.0, 1.0));
-  float psi = atan(dot(N, uE2) * sg, dot(N, uE1));
+float capSwirl(vec3 N) {
+  float sg;
+  vec3 E1, E2;
+  float ang = acos(clamp(nearPole(N, sg, E1, E2), 0.0, 1.0));
+  float psi = atan(dot(N, E2) * sg, dot(N, E1));
   float arm = pow(0.5 + 0.5 * cos(4.0 * (psi + 2.6 * log(ang + 0.03)) + uT * 2.2), 3.0);
   return arm * exp(-pow(ang / 0.5, 2.0)) * smoothstep(0.03, 0.12, ang);
 }
 `;
 
-// Teilchen auf Spiralbahnen um beide Strahlachsen, Abstand wächst logarithmisch (beschleunigt hinaus)
-export function spiralParticles(n, uM, uE1, uE2) {
+// Teilchen auf Spiralbahnen um beide Strahlachsen, Abstand wächst logarithmisch (beschleunigt hinaus); poles = Uniforms
+// von POLES_GLSL (geteilt mit dem Strahl-Shader)
+export function spiralParticles(n, poles) {
   const g = new THREE.BufferGeometry();
   const a = new Float32Array(n * 4);
   let s = 7;
@@ -43,12 +58,12 @@ export function spiralParticles(n, uM, uE1, uE2) {
   for (let i = 0; i < n; i++) a.set([rnd(), rnd() * Math.PI * 2, 0.35 + rnd() * 0.9, rnd() < 0.62 ? 1 : -1], i * 4);
   g.setAttribute('position', new THREE.BufferAttribute(new Float32Array(n * 3), 3));
   g.setAttribute('aS', new THREE.BufferAttribute(a, 4));
-  const u = { uM: { value: uM }, uE1: { value: uE1 }, uE2: { value: uE2 }, uT: { value: 0 }, uPx: { value: 1 }, uCone: { value: 0.2 } };
+  const u = { ...poles, uT: { value: 0 }, uPx: { value: 1 }, uCone: { value: 0.2 } };
   const m = new THREE.ShaderMaterial({
     uniforms: u, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true,
     vertexShader: /* glsl */ `
 attribute vec4 aS;   // Startphase, Winkel, Radiusfaktor, Pol
-uniform vec3 uM, uE1, uE2;
+uniform vec3 uM, uM2, uE1, uE2, uF1, uF2;
 uniform float uT, uPx, uCone;
 varying float vA, vF;
 void main() {
@@ -58,7 +73,8 @@ void main() {
   float a = aS.z;
   float psi = aS.y + 2.4 * lh + uT * (0.7 + 1.5 / (a + 0.35));
   float rho = h * tan(uCone * a);
-  vec3 P = uM * aS.w * h + (uE1 * cos(-psi) + uE2 * sin(-psi) * aS.w) * rho;
+  bool hp = aS.w > 0.0;
+  vec3 P = (hp ? uM : uM2) * h + ((hp ? uE1 : uF1) * cos(-psi) + (hp ? uE2 : uF2) * sin(-psi) * aS.w) * rho;
   vec4 mv = modelViewMatrix * vec4(P, 1.0);
   gl_Position = projectionMatrix * mv;
   vF = f;

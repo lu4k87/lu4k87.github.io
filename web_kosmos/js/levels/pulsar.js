@@ -2,6 +2,9 @@
 // (Modellwert, umstritten). Bildaufbau nach drei Vorlagen (Leuchtturm-Strahlen, wirbelnde Feldlinien, Wind-Spirale mit
 // Leuchtring), jedes Element aus der Physik abgeleitet:
 // - Strahlkegel entlang der Magnetachse: heller Kern, hohler Rand wie im Radio; der zweite Kegel gibt den Zwischenpuls.
+//   Er sitzt nicht genau gegenüber, sondern um 0,1 P versetzt (Gegenpol um die Drehachse gedreht, OFF_IP), damit Bild,
+//   Lichtkurve und Ton den Zwischenpuls des Crab bei 0,4 P zeigen; Feldlinien und Polkappe des Gegenpols ziehen mit,
+//   nur die geschlossenen Dipol-Linien bleiben symmetrisch (Schema).
 // - Geschlossene Feldlinien des Dipols r = L·sin²θ bis an den Lichtzylinder R_LC = c·P/2π (innen Cyan, außen Violett).
 // - Offene Feldlinien verlassen die Polkappen und wickeln sich jenseits von R_LC zur nachlaufenden Spirale auf:
 //   φ wächst um r/R_LC, weil das Feld außen der Drehung nicht nachkommt.
@@ -22,7 +25,7 @@ import { volume, disposeScene } from '../vol.js';
 import { C, lightCylinder, julianDate, mulberry32 } from '../astro.js';
 import { createStarfield } from '../stars.js';
 import { NOISE, SKY_VERTEX } from '../glsl.js';
-import { WIRBEL_CONE, CAP_GLSL, spiralParticles, LENS_GLSL, lensStars, currentSheet, lightCylinderWall, outerGap, fieldBeads, stripeNet } from '../pulsarfx.js';
+import { WIRBEL_CONE, POLES_GLSL, CAP_GLSL, spiralParticles, LENS_GLSL, lensStars, currentSheet, lightCylinderWall, outerGap, fieldBeads, stripeNet } from '../pulsarfx.js';
 import { registerLayers, refreshLayers, setLayer } from '../layers.js';
 import { soundIsOn, setSoundOn } from '../sound.js';
 
@@ -33,12 +36,13 @@ const ALPHA = 45 * Math.PI / 180;
 const R_S = 4.13;   // Schwarzschild-Radius bei 1,4 M☉ (2GM/c², eigene Rechnung) in km
 const TAU = Math.PI * 2;
 // Lage des Stromblatts (Polwinkel θ) in Richtung φ im Abstand r beim Drehwinkel ph – gleiche Formel wie in den Shadern
+const OFF_IP = 0.1 * TAU;   // Versatz des Gegenpols: Zwischenpuls bei 0,4 P statt 0,5 P
 const sheetTheta = (phi, r, ph, rlc) => Math.atan2(1, Math.tan(ALPHA) * Math.cos(phi + ph - r / rlc));
 
 // Volumen: Strahlkegel, Polkappen, Polstrahlen. Jeder Anteil nur dort gerechnet, wo er etwas beiträgt. Das Stromblatt
 // zeigen die Teilchen: als leuchtende Fläche bildete es dort, wo man es streifend sieht, eine harte helle Kante.
 const BEAM_BODY = /* glsl */ `
-uniform vec3 uM, uE1, uE2;   // Magnetachse (Welt) + zwei Achsen senkrecht dazu (Bezug für den Drehwinkel)
+${POLES_GLSL}
 uniform float uGain, uRlc, uWT, uJet, uSwirl, uHaze, uPhase, uTanA;
 void sampleVol(vec3 p, out vec3 e, out float s) {
   float r = length(p);
@@ -48,16 +52,17 @@ void sampleVol(vec3 p, out vec3 e, out float s) {
   vec3 d = p / r;
   float edge = 1.0 - smoothstep(0.45 * uR, uR, r);
   // Strahlkegel: heller Kern + hohler Rand; Hauptpol stärker als der Pol des Zwischenpulses
-  float c = dot(d, uM);
-  float ang = acos(min(abs(c), 1.0));
+  float sg;
+  vec3 E1, E2;
+  float c = nearPole(d, sg, E1, E2);
+  float ang = acos(min(c, 1.0));
   if (ang < 0.62) {
-    float sg = c > 0.0 ? 1.0 : -1.0;
-    float pole = c > 0.0 ? 1.0 : 0.62;
+    float pole = sg > 0.0 ? 1.0 : 0.62;
     float fall = edge / (1.0 + pow(r / 380.0, 1.5));
     if (uSwirl > 0.5) {
-      float h = r * abs(c);
+      float h = r * c;
       float lh = log(max(h, 14.0));
-      float psi = atan(dot(p, uE2) * sg, dot(p, uE1));
+      float psi = atan(dot(p, E2) * sg, dot(p, E1));
 ${WIRBEL_CONE}
     } else {
       float core = exp(-pow(ang / 0.045, 2.0)), rim = exp(-pow((ang - 0.12) / 0.045, 2.0)), halo = exp(-pow(ang / 0.3, 2.0));
@@ -89,18 +94,19 @@ ${WIRBEL_CONE}
 // Randverdunkelung. Heiße Polkappen an der Magnetachse, leichte Fleckung der Kruste (dreht mit).
 const NS_FRAG = /* glsl */ `
 ${NOISE}
-uniform vec3 uM;
 ${CAP_GLSL}
 varying vec3 vN, vP, vL;
 void main() {
   vec3 N = normalize(vN), V = normalize(cameraPosition - vP);
   float mu = max(dot(N, V), 0.0);
-  float pa = acos(clamp(abs(dot(N, uM)), 0.0, 1.0));
+  float sg;
+  vec3 E1, E2;
+  float pa = acos(clamp(nearPole(N, sg, E1, E2), 0.0, 1.0));
   float cap = exp(-pow(pa / 0.16, 2.0)), warm = exp(-pow(pa / 0.55, 2.0));
   float mott = 0.82 + 0.18 * fbm(vL * 0.35, 3);
   float limb = 0.85 + 0.55 * pow(1.0 - mu, 2.5);
   vec3 col = vec3(0.6, 0.76, 1.0) * 1.35 * limb * mott + vec3(0.85, 0.94, 1.0) * (cap * 7.0 + warm * 0.7);
-  col += vec3(0.55, 0.85, 1.0) * capSwirl(N, uM) * 2.2 * uCapS;
+  col += vec3(0.55, 0.85, 1.0) * capSwirl(N) * 2.2 * uCapS;
   gl_FragColor = vec4(col, 1.0);
 }
 `;
@@ -320,8 +326,12 @@ export function create(ctx) {
   mag.rotation.z = ALPHA;
   spin.add(mag);
   const mWorld = new THREE.Vector3(), e1W = new THREE.Vector3(1, 0, 0), e2W = new THREE.Vector3(0, 0, 1);
+  // Gegenpol: −m um +0,1 P um die Drehachse gedreht → zeigt bei Phase f = 0,9 (0,4 P nach dem Hauptpuls) zur Erde
+  const qIP = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), OFF_IP);
+  const m2W = new THREE.Vector3(), f1W = new THREE.Vector3(), f2W = new THREE.Vector3();
+  const poles = { uM: { value: mWorld }, uM2: { value: m2W }, uE1: { value: e1W }, uE2: { value: e2W }, uF1: { value: f1W }, uF2: { value: f2W } };
 
-  const nsMat = new THREE.ShaderMaterial({ vertexShader: NS_VERT, fragmentShader: NS_FRAG, uniforms: { uM: { value: mWorld }, uE1: { value: e1W }, uE2: { value: e2W }, uT: { value: 0 }, uCapS: { value: 1 } } });
+  const nsMat = new THREE.ShaderMaterial({ vertexShader: NS_VERT, fragmentShader: NS_FRAG, uniforms: { ...poles, uT: { value: 0 }, uCapS: { value: 1 } } });
   spin.add(new THREE.Mesh(new THREE.SphereGeometry(R_NS, 64, 32), nsMat));
   const additive = { blending: THREE.AdditiveBlending, depthWrite: false, transparent: true };
   const glow = new THREE.Mesh(new THREE.PlaneGeometry(R_NS * 16, R_NS * 16), new THREE.ShaderMaterial({ vertexShader: BILLBOARD_VERT, fragmentShader: GLOW_FRAG, uniforms: { uRing: { value: 0 } }, ...additive }));
@@ -361,7 +371,7 @@ export function create(ctx) {
   // Offene Feldlinien: vom Polkappenrand dem Dipol folgend bis 0,9 R_LC, dann radial hinaus und um die Drehachse
   // nachlaufend aufgewickelt (φ + Δr/R_LC) – im Rahmen der Drehung, damit die Spirale starr mitdreht wie das Feld
   const open = lineMat(0x9fb4ff, 0xc070ff, 600, 6000);
-  const ca = Math.cos(ALPHA), sa = Math.sin(ALPHA);
+  const ca = Math.cos(ALPHA), sa = Math.sin(ALPHA), ci = Math.cos(OFF_IP), si = Math.sin(OFF_IP);
   for (const pole of [1, -1]) {
     for (let k = 0; k < 12; k++) {
       const phi = (k / 12) * TAU;
@@ -374,6 +384,7 @@ export function create(ctx) {
         const r = L * Math.sin(th) ** 2;
         const x = r * Math.sin(th) * Math.cos(phi), y = pole * r * Math.cos(th), z = r * Math.sin(th) * Math.sin(phi);
         end = [x * ca - y * sa, x * sa + y * ca, z];   // Magnetrahmen → Drehrahmen (Rz(α))
+        if (pole < 0) end = [end[0] * ci + end[2] * si, end[1], end[2] * ci - end[0] * si];   // Gegenpol versetzt (Ry(OFF_IP))
         pts.push(...end);
         al.push(0.4);
       }
@@ -391,13 +402,13 @@ export function create(ctx) {
   const beams = volume({
     radius: 6000, body: BEAM_BODY, adapt: 0.07 - 0.025 * ctx.detail, minStep: 1.5, maxSteps: 260,
     uniforms: {
-      uM: { value: mWorld }, uE1: { value: e1W }, uE2: { value: e2W }, uGain: { value: 0.09 }, uRlc: { value: RLC }, uWT: { value: 0 }, uJet: { value: 0.003 }, uSwirl: { value: 1 },
+      ...poles, uGain: { value: 0.09 }, uRlc: { value: RLC }, uWT: { value: 0 }, uJet: { value: 0.003 }, uSwirl: { value: 1 },
       uHaze: { value: 0 }, uPhase: { value: 0 }, uTanA: { value: Math.tan(ALPHA) },
     },
   });
   beams.renderOrder = 3;
   scene.add(beams);
-  const swirl = spiralParticles(Math.round(5000 * ctx.detail) + 1500, mWorld, e1W, e2W);
+  const swirl = spiralParticles(Math.round(5000 * ctx.detail) + 1500, poles);
   scene.add(swirl);
 
   // Lichtzylinder: Leuchtring in der Äquatorebene (Kern + weicher Hof), dazu blasse Ringe oben und unten
@@ -471,10 +482,10 @@ export function create(ctx) {
   }
 
   // Abzeichen: Lage im Magnetrahmen (drehen mit) bzw. auf dem Stromblatt (läuft mit der Drehung um)
-  const L_F = 1050;
+  const L_F = 1050, IP_R = 1700;   // IP_R: Abzeichen Zwischenpuls auf der Achse des Gegenpols
   const base = {
     beam: new THREE.Vector3(0, 2000, 0), field: new THREE.Vector3(L_F * Math.sin(1) ** 3, L_F * Math.sin(1) ** 2 * Math.cos(1), 0),
-    cap: new THREE.Vector3(0, R_NS * 1.02, 0), inter: new THREE.Vector3(0, -1700, 0),
+    cap: new THREE.Vector3(0, R_NS * 1.02, 0),
   };
   const WIND_AT = { phi: 0.5, r: 2.6 * RLC };
   const hs = {
@@ -569,21 +580,22 @@ export function create(ctx) {
       glare.quaternion.copy(cam.quaternion);
       spin.updateMatrixWorld();
       mWorld.set(0, 1, 0).applyQuaternion(mag.getWorldQuaternion(q));
-      // Puls-Aufleuchten: Winkel zwischen Magnetachse und Blickrichtung zur Kamera; Hauptpol voll, Gegenpol 0,62
-      const cs = mWorld.dot(cam.position) / Math.max(dist, 1);
-      const ang = Math.acos(Math.min(Math.abs(cs), 1));
-      pulse = pulseOn * Math.exp(-((ang / 0.45) ** 2)) * (cs > 0 ? 1 : 0.62);
+      e1W.set(0, 1, 0).cross(mWorld).normalize(); e2W.crossVectors(mWorld, e1W);
+      m2W.copy(mWorld).negate().applyQuaternion(qIP); f1W.copy(e1W).applyQuaternion(qIP); f2W.copy(e2W).applyQuaternion(qIP);
+      // Puls-Aufleuchten: Winkel zwischen der näheren Strahlachse und der Blickrichtung zur Kamera; Hauptpol voll, Gegenpol 0,62
+      const cs = mWorld.dot(cam.position) / Math.max(dist, 1), cs2 = m2W.dot(cam.position) / Math.max(dist, 1);
+      const ang = Math.acos(Math.min(Math.max(cs, cs2), 1));
+      pulse = pulseOn * Math.exp(-((ang / 0.45) ** 2)) * (cs >= cs2 ? 1 : 0.62);
       glare.scale.setScalar(dist * 0.3 * (1 + 0.5 * pulse));
       glare.material.uniforms.uI.value = THREE.MathUtils.smoothstep(dist, 400, 2000) * (1 + 2.4 * pulse);
       glow.scale.setScalar(1 + 0.6 * pulse);
       glow.material.uniforms.uRing.value = lensU.uLens.value * Math.sqrt(2 * R_S * dist) / R_NS;
       look.bloom = lookBase().bloom + 0.3 * pulse;
-      e1W.set(0, 1, 0).cross(mWorld).normalize(); e2W.crossVectors(mWorld, e1W);
       nsMat.uniforms.uT.value = swirl.userData.u.uT.value = t;
       hs.beam.pos.copy(base.beam).applyMatrix4(mag.matrixWorld);
       hs.field.pos.copy(base.field).applyMatrix4(mag.matrixWorld);
       hs.polecap.pos.copy(base.cap).applyMatrix4(mag.matrixWorld);
-      hs.interpulse.pos.copy(base.inter).applyMatrix4(mag.matrixWorld);
+      hs.interpulse.pos.copy(m2W).multiplyScalar(IP_R);
       // Abzeichen des Winds sitzt knapp über dem Stromblatt (Cyan-Seite) und läuft mit
       const th = sheetTheta(WIND_AT.phi, WIND_AT.r, phase, RLC) - 0.08;
       hs.wind.pos.set(Math.sin(th) * Math.cos(WIND_AT.phi), Math.cos(th), Math.sin(th) * Math.sin(WIND_AT.phi)).multiplyScalar(WIND_AT.r);

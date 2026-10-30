@@ -1278,7 +1278,7 @@ export const STATIONS = {
     },
   },
   pillars: {
-    n: '03F', title: 'Säulen der Schöpfung', kicker: 'Sternentstehung', parent: 'galaxy', width: 1.4e17, dist: 6500 * LY, lookback: 6500 * YEAR, size: { v: 4 * LY, l: 'Länge der linken Säule', s: 'eso-1518' },
+    n: '03F', title: 'Säulen der Schöpfung', kicker: 'Sternentstehung', parent: 'galaxy', width: 7.7e16, dist: 6500 * LY, lookback: 6500 * YEAR, size: { v: 4 * LY, l: 'Länge der linken Säule', s: 'eso-1518' },
     lead: 'Drei Säulen aus kaltem Gas und Staub im Adlernebel M16. Das UV-Licht des jungen Sternhaufens NGC 6611 verdampft sie von außen – in ihrem Inneren entstehen zugleich neue Sterne.',
     facts: [
       { v: '≈ 6.500', u: 'Lj', l: 'Entfernung (Adlernebel, Sternbild Schlange)', s: 'webb-2216' },
