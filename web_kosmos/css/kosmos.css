@@ -662,9 +662,12 @@ body:is(.st-open, .cfg-open) .stage > .hint { left: calc(50% + (var(--st-w) + 16
 .hsb--info:is(:hover, :focus-visible) .hex { background: rgba(var(--accent-rgb), 0.18); }
 @keyframes hsb-breathe { from { scale: 0.92; } to { scale: 1.22; } }
 @media (prefers-reduced-motion: reduce) { .hsb--info::before { animation: none; } }
-.hsb--dive .hsb-label { color: var(--accent); }
-.hsb--dive:hover .hsb-label { color: var(--ink); }
 .hsb-label { display: flex; align-items: baseline; gap: 8px; padding: 4px 9px; border-radius: 4px; background: rgba(7, 9, 14, 0.62); -webkit-backdrop-filter: var(--glass-blur); backdrop-filter: var(--glass-blur); text-shadow: none; }
+/* Ziele als Akzent-Schild, Infopunkte als leiser Text (Vorschau 31.10.2026 Marke:A+C): Pfeil + Schild sagen „hineinfliegen“,
+   Infotext ohne Kasten, Schatten hält ihn über hellen Wolken lesbar */
+.hsb--dive .hsb-label { color: var(--accent); font-weight: 600; border: 1px solid rgba(var(--accent-rgb), 0.6); background: linear-gradient(rgba(var(--accent-rgb), 0.18), rgba(var(--accent-rgb), 0.18)), rgba(7, 9, 14, 0.62); }
+.hsb--dive:hover .hsb-label { color: var(--ink); }
+.hsb--info .hsb-label { font-weight: 400; background: none; -webkit-backdrop-filter: none; backdrop-filter: none; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.95), 0 0 8px rgba(0, 0, 0, 0.8); }
 .hsl {
   position: absolute; left: 0; top: 0; padding: 2px 6px; border: 0; border-radius: 6px; background: rgba(0, 0, 0, 0.35); cursor: pointer; pointer-events: auto;
   font-size: 12.5px; color: var(--ink); white-space: nowrap; transition: opacity 0.3s, background 0.2s;
@@ -840,17 +843,23 @@ body:is(.st-open, .cfg-open) .stage > .hint { left: calc(50% + (var(--st-w) + 16
    Tabelle; die Punktreihe der Route entfällt (doppelt zur Stationsleiste) */
 .bottombar { grid-area: foot; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: end; gap: 16px; padding: 8px 16px 14px; }
 .bottombar > .measure { grid-column: 3; }
-/* Knöpfe der Einstellungen unten links über der Navigation (Vorschau 28.10.2026 „Einstellungs-Knöpfe unten links“ Dock:B):
-   zwei Glas-Kacheln (96 px hoch, User 28.10.2026 „höher“), Symbol über dem zweizeiligen Namen, Allgemein links, Station rechts; offenes Panel = cyan getönt mit Rahmen */
-.bottombar { grid-template-rows: auto auto; row-gap: 8px; }
-.bottombar > :not(.dock) { grid-row: 2; }
-.dock { grid-column: 1; grid-row: 1; justify-self: start; display: flex; gap: 8px; }
+/* Fuß in einer Zeile (Vorschau 31.10.2026 „Kosmos: mehr Bühne für das All“ Fuss:C): Einstellungen als Symbolknöpfe links
+   neben der Navigation, Zeitraffer füllt den Rest; Messleiste rechts über dem Zeitraffer (User 31.10.2026), ohne Zeitraffer
+   rutscht sie in die Zeile. Name der Knöpfe aus aria-label/title, sichtbar erst schmal (≤ 760 px) */
+.bottombar { grid-template-columns: auto auto minmax(0, 1fr); grid-template-rows: auto auto; row-gap: 8px; }
+.bottombar > * { grid-row: 2; }
+.bottombar > .nav-buttons { grid-column: 2; }
+.bottombar > .tl { grid-column: 3; justify-self: stretch; width: auto; }
+.bottombar > .measure { grid-column: 3; grid-row: 1; justify-self: end; }
+.bottombar:has(> .tl[hidden]) > .measure { grid-row: 2; }
+.dock { grid-column: 1; justify-self: start; display: flex; gap: 8px; }
 .dock .icon-btn {
-  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; width: 112px; height: 96px; padding: 8px;
+  display: flex; align-items: center; justify-content: center; gap: 8px; width: 52px; height: 52px; padding: 0;
   border-radius: var(--radius); background: var(--glass); box-shadow: var(--pane-shadow); -webkit-backdrop-filter: var(--glass-blur); backdrop-filter: var(--glass-blur);
-  font-size: 13px; line-height: 1.25; text-align: center; white-space: nowrap; transition: background 0.2s, color 0.2s, border-color 0.2s;
+  font-size: 13px; line-height: 1.25; white-space: nowrap; transition: background 0.2s, color 0.2s, border-color 0.2s;
 }
-.dock .icon-btn svg { width: 24px; height: 24px; }
+.dock .ib-t { display: none; }
+.dock .icon-btn svg { width: 22px; height: 22px; }
 .dock .icon-btn:hover { border-color: var(--line-strong); color: var(--ink); }
 .dock .icon-btn[aria-expanded="true"] { color: var(--accent); border-color: rgba(var(--accent-rgb), 0.55); background: linear-gradient(rgba(var(--accent-rgb), 0.16), rgba(var(--accent-rgb), 0.16)), var(--glass); }
 .dock .icon-btn:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
@@ -1017,10 +1026,10 @@ body.fatal-webgl .fatal-webgl, body.fatal-start .fatal-start { display: block; }
   .nav-text { min-width: 0; }
   .nav-btn--next { min-width: 0; }
   .nav-to { overflow: hidden; text-overflow: ellipsis; }
-  .bottombar > .measure { grid-column: 1; }
-  .bottombar > :not(.dock) { grid-row: auto; }
+  .bottombar > :is(*, .nav-buttons, .tl, .measure) { grid-column: 1; grid-row: auto; justify-self: stretch; }
   .dock { width: 100%; }
-  .dock .icon-btn { flex: 1 1 0; flex-direction: row; gap: 8px; width: auto; height: 48px; text-align: left; }
+  .dock .icon-btn { flex: 1 1 0; justify-content: flex-start; width: auto; height: 48px; padding: 0 12px; text-align: left; }
+  .dock .ib-t { display: inline; }
   .measure { grid-template-columns: 1fr 1fr; }
   .measure div { min-height: 44px; padding: 5px 12px; }
   .caption { left: 0; right: 0; top: 16%; bottom: auto; padding: 0 16px; }
@@ -1029,7 +1038,6 @@ body.fatal-webgl .fatal-webgl, body.fatal-start .fatal-start { display: block; }
   .caption.is-on .cap-title { letter-spacing: 0.1em; padding-left: 0.1em; }
   .cap-sub { font-size: 15px; }
   .hsb { font-size: 12.5px; }
-  .hsb .tag { display: none; }
   .hint { display: none; }
   body:is(.st-open, .cfg-open) .stage > .pull { left: 50%; bottom: 52px; }   /* Panel füllt die Bühne: keine freie Achse daneben */
   .hs-card { left: 8px; right: 8px; top: auto; bottom: var(--sheet-b, 8px); width: auto; max-height: calc(100% - var(--sheet-b, 8px) - 40px); translate: none !important; transform-origin: center bottom !important; }
