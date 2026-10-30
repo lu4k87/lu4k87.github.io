@@ -97,7 +97,6 @@ export function create(ctx) {
       const limb = side.clone().multiplyScalar(0.85).addScaledVector(new THREE.Vector3(0, 1, 0), 0.5).normalize().multiplyScalar(R_H * 0.97);
       const setHaze = (v) => { hazeOn = v; };
       return {
-        layers: [{ id: 'haze', type: 'toggle', group: 'Atmosphäre', label: 'Dunst sichtbar', value: true, set: setHaze, get: () => hazeOn }],
         controls: [{
           id: 'haze', type: 'swatch', label: 'Atmosphäre', value: 'dunst',
           options: [['dunst', 'Dunst', 'radial-gradient(circle, #f3a24a 0%, #b4561c 60%, #3b1a08 100%)'], ['klar', 'Dunst entfernt', 'radial-gradient(circle, #d8d8d8 0%, #7e7e7e 55%, #262626 100%)']],

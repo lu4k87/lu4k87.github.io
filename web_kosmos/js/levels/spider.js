@@ -104,7 +104,7 @@ void sampleVol(vec3 p, out vec3 e, out float s) {
   float r = length(p);
   float rr = length(p - uA * h);
   float phi = atan(dot(p, uE2), dot(p, uE1));
-  float tor = exp(-pow(h / 0.1, 2.0)) * exp(-pow((rr - 0.27) / 0.13, 2.0)) * (0.45 + 0.55 * cos(2.0 * phi)) * (0.6 + max(f.b + 0.4, 0.0));
+  float tor = exp(-pow(h / 0.15, 2.0)) * exp(-pow((rr - 0.42) / 0.2, 2.0))   /* 0,13 pc = 0,42 Lj (Einheit 1 Lj) */ * (0.45 + 0.55 * cos(2.0 * phi)) * (0.6 + max(f.b + 0.4, 0.0));
   float core = exp(-pow(r / 0.17, 2.0)) * (0.5 + 1.2 * max(f.g + 0.3, 0.0))
              + exp(-pow((r - 0.06 - 0.015 * sin(phi + r * 60.0)) / 0.018, 2.0)) * 1.5;   // unregelmäßig spiraliger Rand
   float pah = exp(-pow((r - 0.3 * (1.0 + 0.3 * f.g)) / 0.08, 2.0)) * (0.5 + 0.9 * max(f.b + 0.3, 0.0));
