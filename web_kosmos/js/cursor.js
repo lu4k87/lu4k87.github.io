@@ -1,7 +1,8 @@
 // Eigener Mauszeiger über der 3D-Ansicht (Vorschau 30.10.2026 „5 Ideen für einen eigenen Maus-Cursor“, Standard A Orbit-Ring):
 // Orbit-Ring · Peil-Sucher · Komet · Hex-Sonde · Aktions-Etikett, Wahl in den Allgemeinen Einstellungen → Oberfläche „Mauszeiger“
 // (settings.S.cursor, „System“ = aus). Gilt nur mit Maus oder Touchpad über der Szene (#stage) und den Abzeichen
-// (.hsb, .hsl); über Panels, Suche und Textfeldern bleibt der System-Zeiger, Touch und Stift sind unverändert (Geräte mit
+// (.hsb, .hsl); über Panels und Suche bleibt der System-Zeiger – außer mit „Mauszeiger gilt: Überall“ (settings.S.cursorAll),
+// dann auch dort (Bedienelemente = Zustand „link“), nur Textfelder behalten die Schreibmarke. Touch und Stift sind unverändert (Geräte mit
 // Finger als Hauptzeiger, pointer: coarse, ganz aus; sonst entscheidet pointerType jedes Ereignisses).
 // Bewegung „Ruhig“/„Aus“ (settings.S.motion) oder „Bewegung reduzieren“ im System: kein Umlauf, kein Schweif, kein Nachziehen.
 // Leistung: ein rAF-Takt nur solange der Zeiger sichtbar ist, nur transform/opacity; das Ziel kommt aus pointerover (kein
@@ -12,6 +13,9 @@ import { settings, onSettings } from './settings.js';
 // Kapitel wie hud.js CHAPTERS → Ebenen-Farbe --ch über [data-ch] (kosmos.css)
 const HUBS = ['earth', 'solar', 'galaxy', 'local'];
 const chapter = (id) => { for (let x = id; x; x = up(x)) if (HUBS.includes(x)) return x; return HUBS[HUBS.length - 1]; };
+// „Überall“: Schreibmarke bleibt in Textfeldern; Bedienelemente zeigen den Zustand „link“ (wie Info, ohne Etikett)
+const TEXT = 'input:not([type=range], [type=checkbox], [type=radio], [type=button]), textarea, [contenteditable="true"]';
+const LINK = 'button, a[href], select, summary, label, input, [role=tab], [role=button], [role=radio], [role=option]';
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
 const HEX = 'M20 2L35.59 11L35.59 29L20 38L4.41 29L4.41 11z';   // Form der .hex in hud.js
@@ -42,13 +46,14 @@ export function mountCursor(canvas = document.getElementById('stage')) {
   el.setAttribute('aria-hidden', 'true');
   document.body.append(el);
   // zone: none (außerhalb) · ui (Panels, System-Zeiger) · space (Szene) · dive/info (Abzeichen)
-  const st = { x: 0, y: 0, seen: false, mouse: false, zone: 'none', hs: null, name: '', press: false, drag: false,
+  const st = { x: 0, y: 0, seen: false, mouse: false, zone: 'none', hs: null, link: false, name: '', press: false, drag: false,
     vx: 0, vy: 0, ang: 0, rot: 0, still: 0, hist: [], box: null, lock: null, chip: '', chipW: 0, chipH: 0 };
   let kind = null, raf = 0, last = 0;
   const $ = (s) => el.querySelector(s);
   const calm = () => settings.S.motion !== 'full' || reduced.matches;
   const on = () => kind !== 'system' && !coarse.matches && st.mouse;
-  const shown = () => on() && st.seen && (st.drag || st.zone === 'space' || st.zone === 'dive' || st.zone === 'info');
+  const all = () => settings.S.cursorAll === 'all';
+  const shown = () => on() && st.seen && (st.drag || ['space', 'dive', 'info'].includes(st.zone) || (st.zone === 'ui' && all()));
 
   const build = () => {
     kind = settings.S.cursor;
@@ -64,7 +69,8 @@ export function mountCursor(canvas = document.getElementById('stage')) {
     if (t === canvas) return { zone: 'space', hs: null };
     const hs = t.closest('#hotspots .hsb, #hotspots .hsl');
     if (hs) return { zone: hs.classList.contains('hsb--dive') ? 'dive' : 'info', hs };
-    return { zone: 'ui', hs: null };
+    if (t.closest(TEXT)) return { zone: 'text', hs: null };
+    return { zone: 'ui', hs: null, link: !!t.closest(LINK) };
   };
   const setZone = (t) => {
     const z = zoneOf(t);
@@ -81,6 +87,7 @@ export function mountCursor(canvas = document.getElementById('stage')) {
   };
   const update = () => {
     root.classList.toggle('kc-on', on());
+    root.classList.toggle('kc-all', all());
     el.classList.toggle('is-calm', calm());
     const vis = shown();
     el.classList.toggle('is-on', vis);
@@ -90,7 +97,7 @@ export function mountCursor(canvas = document.getElementById('stage')) {
   const T = (n, x, y, extra = '') => { if (n) n.style.transform = `translate(${x}px, ${y}px)${extra ? ` ${extra}` : ''}`; };
   function render(dt) {
     const { x, y } = st, still = calm();
-    const state = st.drag ? 'drag' : st.zone === 'dive' || st.zone === 'info' ? st.zone : 'rest';
+    const state = st.drag ? 'drag' : st.zone === 'dive' || st.zone === 'info' ? st.zone : st.zone === 'ui' && st.link ? 'link' : 'rest';
     if (el.dataset.state !== state) el.dataset.state = state;
     el.classList.toggle('is-down', st.press);
     if (kind === 'orbit') {
@@ -122,7 +129,7 @@ export function mountCursor(canvas = document.getElementById('stage')) {
     } else if (kind === 'label') {
       T($('.kc-arrow'), x, y);
       const chip = $('.kc-chip'), key = state === 'rest' ? (st.zone === 'space' && st.still > 0.6 ? 'space' : '') : state;
-      const html = key ? LABEL[key](st.name) : '';
+      const html = LABEL[key] ? LABEL[key](st.name) : '';   // Bedienelemente (link) ohne Etikett
       if (html !== st.chip) {
         st.chip = html;
         if (html) { chip.innerHTML = html; st.chipW = chip.offsetWidth; st.chipH = chip.offsetHeight; }   // Maß nur beim Wechsel
@@ -173,7 +180,7 @@ export function mountCursor(canvas = document.getElementById('stage')) {
   addEventListener('blur', () => { st.press = st.drag = false; st.zone = 'none'; update(); });
   coarse.addEventListener('change', update);
   reduced.addEventListener('change', update);
-  onSettings((keys) => { if (keys.includes('cursor')) build(); else if (keys.includes('motion')) update(); });
+  onSettings((keys) => { if (keys.includes('cursor')) build(); else if (keys.includes('motion') || keys.includes('cursorAll')) update(); });
   new MutationObserver(tint).observe(root, { attributes: true, attributeFilter: ['data-station'] });
   tint();
   build();
