@@ -397,7 +397,9 @@ function renderLoupe(lv, L, real) {
   const shadowAuto = renderer.shadowMap.autoUpdate;
   renderer.shadowMap.autoUpdate = false;
   renderer.setRenderTarget(loupe.rt);
+  const lit = lightUp(lv);   // Licht des Zahnrads wie im Hauptbild
   renderer.render(lv.scene, c);
+  if (lit) lightDown(lv);
   renderer.shadowMap.autoUpdate = shadowAuto;
   // Zusammenführung mit dem Lupenbild, Linse aus
   const u = comp.uniforms;
@@ -560,6 +562,9 @@ settings.on((S, keys) => {
   keyTint.setRGB(...kelvinTint(S.kelvin), THREE.SRGBColorSpace);
   document.body.classList.toggle('hotspots-off', !S.hotspots);
   if (state.controls && (still || !S.orbit)) state.controls.autoRotate = false;
+  else if (state.controls && state.active && keys && (keys.includes('orbit') || keys.includes('motion'))) {
+    state.controls.autoRotate = !!state.active.orbit.autoRotate;   // Schalter wieder an: sofort drehen, nicht erst nach dem Ebenenwechsel
+  }
   if (keys && keys.some((k) => PERF_KEYS.includes(k))) applyQuality(eff());
   loupe.done = false;
   for (const lv of state.levels.values()) lv.dirty = true;
@@ -615,6 +620,14 @@ function idle(fn) {
   (window.requestIdleCallback || ((f) => setTimeout(f, 400)))(fn, { timeout: 2500 });
 }
 
+// Ebene freigeben: eigene dispose() plus, was sie nicht erfasst – Instanzpuffer (nur InstancedMesh.dispose löscht
+// instanceMatrix/instanceColor auf der GPU) und Schattenkarten der Lichter (Light.dispose → shadow.map)
+function unload(lv) {
+  lv.dispose();
+  lv.rt.dispose();
+  lv.scene.traverse((o) => { if (o.isInstancedMesh || o.isLight) o.dispose(); });
+}
+
 function activate(lv) {
   state.index = lv.index;
   state.active = lv;
@@ -643,8 +656,7 @@ function activate(lv) {
   lv.dirty = true;
   for (const [k, other] of state.levels) {
     if (Math.abs(k - lv.index) > 1) {
-      other.dispose();
-      other.rt.dispose();
+      unload(other);
       state.levels.delete(k);
     }
   }
@@ -679,7 +691,7 @@ async function goTo(target, via = null) {
     // Fahrt inzwischen abgebrochen/umgelenkt: ferne Ebene nicht bis zur nächsten Ankunft im Grafikspeicher halten
     const inUse = state.tr && (state.tr.outer === to || state.tr.inner === to);
     if (to && !inUse && Math.abs(target - state.index) > 1 && state.levels.get(target) === to) {
-      to.dispose(); to.rt.dispose(); state.levels.delete(target);
+      unload(to); state.levels.delete(target);
     }
     return;
   }
@@ -1031,6 +1043,7 @@ window.addEventListener('keydown', (e) => {
 
 // Zurück/Vor im Browser während einer Fahrt: Wunsch merken, nach der Ankunft nachholen (stepTransition)
 window.addEventListener('hashchange', () => {
+  if (!state.active) return;   // Ladebild: activate() schreibt die Startebene in die Adresse, kein Wunsch für später
   const m = /ebene=(\d+)/.exec(location.hash);
   if (!m) { history.replaceState(null, '', `#ebene=${state.index + 1}`); return; }   // fremder Hash: stehende Ebene zeigen
   const i = Math.min(LOADERS.length - 1, Math.max(0, +m[1] - 1));

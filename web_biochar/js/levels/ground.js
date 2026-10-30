@@ -7,6 +7,7 @@
 import * as THREE from 'three';
 import { mulberry32, lerp, smoothstep } from '../util.js';
 import { pnoise, paintAll, TILE } from './ground_tex.js';
+import { settings } from '../settings.js';
 
 const RMAX = 60, NR = 110, NS = 256;      // Fläche: Radius, Ringe (nach innen dichter), Teilungen je Ring
 const SHADOW_HALF = 16;                    // halbe Breite der Schattenkarte (cm)
@@ -14,10 +15,15 @@ const FADE = 1.2;                          // s, Einblenden der fertigen Texture
 export const LUMP_R = 1.15;                // Grundriss-Radius eines Krümels (crumbGeometry) je Einheit Größe
 const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-// Seed lesen und Texturen sofort anstoßen – vor dem Aufbau des Stücks, damit der Worker parallel rechnet
-export function groundTextures() {
+// Seed einmal je Seitenladung: Rückkehr zu Ebene 1 zeigt denselben Boden
+const SEED = (() => {
   const p = new URLSearchParams(location.search);
-  const seed = p.has('seed') ? parseInt(p.get('seed'), 10) >>> 0 : (Math.random() * 2 ** 32) >>> 0;
+  return p.has('seed') ? parseInt(p.get('seed'), 10) >>> 0 : (Math.random() * 2 ** 32) >>> 0;
+})();
+
+// Texturen sofort anstoßen – vor dem Aufbau des Stücks, damit der Worker parallel rechnet
+export function groundTextures() {
+  const seed = SEED;
   let worker = null, cancelled = false;
   const ready = new Promise((resolve, reject) => {
     const local = () => setTimeout(() => paintAll(seed).then(resolve, reject), 0);   // Ersatz ohne Modul-Worker
@@ -318,7 +324,7 @@ export function makeGround({ scene, floorY, W, D, crumbGeometry, shadowTex }, te
       Object.assign(depth, { map: col, needsUpdate: true });
     }
     group.traverse((o) => { if (o.isInstancedMesh && o.customDepthMaterial) o.visible = true; });
-    fade = reduced ? 1 : 0;
+    fade = reduced || settings.S.motion === 'off' ? 1 : 0;   // Grundstufe „Aus“ wirkt wie reduced-motion
     setFade(fade);
   }, (err) => console.warn('[boden] Texturen fehlen:', err));
 

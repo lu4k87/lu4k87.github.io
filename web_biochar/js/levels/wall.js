@@ -555,7 +555,7 @@ export function create(ctx) {
   let edxAt = null;
   anim.push((age) => {
     if (edxAt === null) return;
-    crMesh.material.uniforms.uBase.value = 0.5 + 0.55 * Math.exp(-(age - edxAt) / 0.45);
+    crMesh.material.uniforms.uBase.value = 0.5 + 0.55 * Math.exp(-Math.max(0, age - edxAt) / 0.45);
   });
 
   // Sinnbild (nicht maßstäblich): Wasserteilchen treiben aus dem Lumen zu den Tüpfeln und verschwinden darin
@@ -630,7 +630,7 @@ export function create(ctx) {
   scene.add(bacGroup, hyGroup);
   const show = (obj, ids, v) => {
     obj.visible = v;
-    for (const h of level.hotspots) if (ids.includes(h.id)) h.hidden = !v;
+    for (const h of level.hotspots) if (ids.includes(h.id)) h.hidden = h.off = !v;   // off: per Schalter, nicht durch die Temperatur
     level.dirty = true;
   };
   const level = {
@@ -666,7 +666,12 @@ export function create(ctx) {
     update(dt, t) {
       const calm = isStill();
       // Uhr ab Ankunft: nach einer Pause (Ebene war nicht aktiv) beginnt der Zeitraffer neu
-      age = t - lastT > 0.5 ? 0 : age + t - lastT;
+      if (t - lastT > 0.5) {
+        age = 0;   // Klick-Zeiten stammen aus der alten Uhr
+        sprout = edxAt = null;
+        nbMesh.visible = false;
+        crMesh.material.uniforms.uBase.value = 0.5;
+      } else age += t - lastT;
       lastT = t;
       if (heat.T !== heat.to) {
         heat.T = calm || Math.abs(heat.to - heat.T) < 0.05 ? heat.to : heat.T + (heat.to - heat.T) * (1 - Math.exp(-dt / 0.35));

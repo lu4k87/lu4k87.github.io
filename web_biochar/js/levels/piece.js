@@ -666,6 +666,7 @@ export function create(ctx) {
   blobs.forEach(([x, z, s], k) => blobMesh.setMatrixAt(k, m4.compose(s3.set(x, floorY + hAt(x, z) - 0.004, z), q.identity(), new THREE.Vector3(s, 1, s))));
   blobMesh.instanceMatrix.needsUpdate = true;
   scene.add(blobMesh);
+  fallout.push(blobMesh);   // Kontaktschatten nur zusammen mit den Krümeln
 
   // Schatten des Stücks: weicher Fleck, folgt dem Relief (Boden ab ground.js, Lichtpool steckt in dessen Eckfarben)
   const shadowGeo = new THREE.PlaneGeometry(W * 1.7, D * 2.1, 24, 12).rotateX(-Math.PI / 2);
@@ -766,7 +767,7 @@ export function create(ctx) {
   const dropMesh = new THREE.Mesh(new THREE.BufferGeometry(), dropMat);
   dropMesh.visible = false;
   scene.add(dropMesh);
-  const drop = { on: false, v: 0, a: 0, theta: 90, shownV: -1, shownA: -1 };
+  const drop = { on: false, v: 0, a: 0, theta: 90, pen0: Infinity, shownV: -1, shownA: -1 };
   // Kappe mit Kontaktradius a (mm) und Volumen v (µl): Höhe aus V = π h (3a² + h²) / 6 (Newton), daraus Radius und θ
   const capH = (a, v) => { let h = Math.max(0.05, a * 0.5); for (let k = 0; k < 12; k++) h -= (Math.PI * h * (3 * a * a + h * h) / 6 - v) / (Math.PI * (a * a + h * h) / 2); return Math.max(1e-4, h); };
   const shapeDrop = () => {
@@ -784,6 +785,7 @@ export function create(ctx) {
     const theta = wettability(tNow).theta;
     drop.v = DROP_UL;
     drop.a = sessileDrop(DROP_UL, theta).a;
+    drop.pen0 = dropPenetration(theta).s;
     drop.shownV = -1;
   };
   const dropVisible = () => drop.on && !playing && drop.v > 0.05;
@@ -843,7 +845,8 @@ export function create(ctx) {
       const want = playing && plumeOn ? pyroState(tNow).vapour : 0;
       const dv = dropVisible();
       if (dv) {
-        const pen = dropPenetration(drop.theta).s;   // Eindringzeit beim aktuellen Winkel: Rand haftet, θ sinkt, es geht schneller
+        // WDPT (Doerr 1998) gilt für den ganzen Tropfen beim Startwinkel: gleichmäßige Rate, θ sinkt nur optisch mit
+        const pen = drop.pen0;
         if (!isStill() && Number.isFinite(pen)) drop.v = Math.max(0, drop.v - (dt * DROP_UL) / Math.max(0.5, pen));
         shapeDrop();
       }
@@ -883,7 +886,10 @@ export function create(ctx) {
       pyro.uGlowCol.value.setRGB(...glowColor(value));
       emberBase = st.glow * 13;
       level.bloom = bloomBase = 0.12 + st.glow * 0.7 * coolGlow();
-      if (drop.on && drop.v > 0.05) { drop.a = sessileDrop(drop.v, wettability(value).theta).a; drop.shownV = -1; }
+      if (drop.on && drop.v > 0.05) {
+        const theta = wettability(value).theta;
+        drop.a = sessileDrop(drop.v, theta).a; drop.pen0 = dropPenetration(theta).s; drop.shownV = -1;
+      }
       plumeMat.uniforms.uCol.value.setRGB(...smoke(value));
       for (const f of fallout) f.visible = st.char > 0.8;
       applyShrink();
@@ -904,7 +910,7 @@ export function create(ctx) {
       crumbMat.color.copy(tint).multiplyScalar(0.02);
       level.dirty = true;
     },
-    dispose() { ground.dispose(); disposeGroup(scene); },
+    dispose() { ground.dispose(); disposeGroup(scene); for (const t of crackTex.values()) t.dispose(); },   // Risskarten hängen nur in Uniforms
     // Zahnrad-Reiter „Ebene“ (layers.js)
     layers: [
       { id: 'drop', group: 'Wasser', label: 'Wassertropfen (10 µl)', type: 'toggle', value: false,

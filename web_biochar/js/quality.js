@@ -38,10 +38,12 @@ else if (valid(stored)) { index = stored; fixed = true; }
 // (bei sehr niedriger Bildrate misst sie länger). Der Median übergeht einzelne Ladehänger, anhaltend langsame
 // Bilder zählen voll. Schwellen relativ zum Bildbudget (budget = 1/60 s, mit Bildraten-Deckel 1/Deckel):
 // Median über 1,44 × Budget (bei 60: 24 ms, unter ≈ 40 Bilder/s) → eine Stufe herunter, über 2,4 × (40 ms) → zwei Stufen.
-// Danach Wache (nur Auto): Bildzeit-EMA über 2 × Budget für 3 s → eine Stufe herunter, unter 0,85 × Budget für 15 s →
-// eine herauf, frühestens 30 s nach der letzten Änderung (Hysterese gegen Pendeln)
+// Danach Wache (nur Auto): Bildzeit-EMA über 2 × Budget für 3 s → eine Stufe herunter. Herauf: Der Bildschirm gibt höchstens
+// das Budget aus, Luft heißt deshalb „im Takt“ (EMA unter 1,15 × Budget) für 15 s, frühestens `wait` s (anfangs 30) nach der
+// letzten Änderung. Danach Probezeit 6 s: hält die neue Stufe die Schwelle der Probe (1,44 × Budget) nicht, geht sie zurück
+// und die Wartezeit verdoppelt sich (bis 8 min) – kein Pendeln zwischen zwei Stufen
 const probe = { t: 0, samples: [], done: false };
-const watch = { ema: 0, slow: 0, fast: 0, since: 0 };
+const watch = { ema: 0, slow: 0, fast: 0, since: 0, wait: 30, trial: 0, trialSlow: 0 };
 function tick(real, budget = 1 / 60) {
   if (fixed || document.hidden) return;
   if (!probe.done) {
@@ -61,9 +63,14 @@ function tick(real, budget = 1 / 60) {
   w.since += real;
   w.ema = w.ema ? w.ema + (real - w.ema) * 0.1 : real;
   const r = w.ema / budget;
-  if (r > 2) { w.slow += real; w.fast = 0; } else if (r < 0.85) { w.fast += real; w.slow = 0; } else w.slow = w.fast = 0;
-  const step = w.slow > 3 && index > 0 ? -1 : w.fast > 15 && w.since > 30 && index < QUALITY.length - 1 ? 1 : 0;
-  if (step) { w.slow = w.fast = w.since = 0; set(index + step); }
+  if (r > 2) { w.slow += real; w.fast = 0; } else if (r < 1.15) { w.fast += real; w.slow = 0; } else w.slow = w.fast = 0;
+  if (w.trial > 0) {
+    w.trial -= real;
+    if (w.trial < 5 && r > 1.44) w.trialSlow += real;   // erste Sekunde (Shader übersetzen) zählt nicht
+    if (w.trial <= 0 && w.trialSlow > 2) { w.wait = Math.min(480, w.wait * 2); w.slow = w.fast = w.since = 0; set(index - 1); return; }
+  }
+  const step = w.slow > 3 && index > 0 ? -1 : w.fast > 15 && w.since > w.wait && index < QUALITY.length - 1 ? 1 : 0;
+  if (step) { w.slow = w.fast = w.since = 0; w.trial = step > 0 ? 6 : 0; w.trialSlow = 0; set(index + step); }
 }
 
 // Auto wählen (Zahnrad): gespeicherte Wahl löschen, ab der aktuellen Stufe neu messen
@@ -71,7 +78,7 @@ function setAuto() {
   fixed = false;
   try { localStorage.removeItem(KEY); } catch { /* egal */ }
   Object.assign(probe, { t: 0, samples: [], done: false });
-  Object.assign(watch, { ema: 0, slow: 0, fast: 0, since: 0 });
+  Object.assign(watch, { ema: 0, slow: 0, fast: 0, since: 0, wait: 30, trial: 0, trialSlow: 0 });
   set(index);
 }
 

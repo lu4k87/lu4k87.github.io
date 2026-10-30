@@ -94,11 +94,11 @@ function buildWood(T) {
   hydrogen(ca, 150);
   const hb = add('H', atoms[cb].p.clone().add(new THREE.Vector3(0, 0, 1.05))); bond(cb, hb);
   hydrogen(cg, -45); const hg = add('H', atoms[cg].p.clone().add(new THREE.Vector3(0, 0, 1.05))); bond(cg, hg);
-  const oe = add('O', at(atoms[cb].p, -90, 1.43));                   // Ether-O der β-O-4-Bindung
-  const cB = at(at(atoms[oe].p, -90, 1.36), -90, A);
+  const pOe = at(atoms[cb].p, -90, 1.43);                            // Ether-O der β-O-4-Bindung
+  const oe = stage < 2 ? add('O', pOe) : -1;                         // Stufe 2: Ether gespalten, O weg
+  const cB = at(at(pOe, -90, 1.36), -90, A);
   const rb = ring(cB, [6, 7, 8, 9, 10, 11]);
-  if (stage < 2) { bond(cb, oe); bond(oe, rb[1]); atoms[oe].dir = dir(0); } else atoms.pop();   // Stufe 2: Ether gespalten, O weg
-  if (stage === 2) { for (const b of bonds) { if (b.i === oe || b.j === oe) b.i = b.j = -1; } }
+  if (stage < 2) { bond(cb, oe); bond(oe, rb[1]); atoms[oe].dir = dir(0); }
   if (stage < 1) { hydroxyl(ca, 90); hydroxyl(cg, 30); }            // Cα–OH, Cγ–OH (Wasser ab 200 °C)
   marks.phenol = hydroxyl(ra[3], 210);                                // phenolische OH-Gruppe bleibt
   if (stage < 2) { methoxy(ra[4], 270); methoxy(rb[2], 150); }       // Methoxygruppen (Methanol ab 300 °C)

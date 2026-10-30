@@ -129,6 +129,7 @@ export function flakeGeometry(seed = 1) {
 
 export function disposeGroup(obj) {
   obj.traverse((o) => {
+    if (o.isInstancedMesh) o.dispose();   // Instanzpuffer auf der GPU (geometry.dispose erfasst sie nicht)
     if (o.geometry) o.geometry.dispose();
     if (o.material) (Array.isArray(o.material) ? o.material : [o.material]).forEach((mat) => {
       for (const v of Object.values(mat)) if (v && v.isTexture) v.dispose();

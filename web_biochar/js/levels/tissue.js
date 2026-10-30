@@ -288,7 +288,7 @@ export function create(ctx) {
     // Zahnrad-Reiter „Ebene“ (layers.js); früher Schalter „Kapillar-Aufstieg (Ebene 2)“ unter Global · Details
     layers: [
       { id: 'capillary', group: 'Wasser', label: 'Kapillar-Aufstieg in den Gefäßen', type: 'toggle', value: true,
-        set: (v) => { capOn = v; const h = hotspots.find((x) => x.id === 'capillary'); if (h) h.hidden = !v; level.dirty = true; },
+        set: (v) => { capOn = v; const h = hotspots.find((x) => x.id === 'capillary'); if (h) h.hidden = h.off = !v; level.dirty = true; },
         hint: 'Lucas-Washburn: h = √(γ r cos θ · t / 2η), in Zeitlupe 1500× – weite Gefäße füllen schneller; wasserabweisende Kohle (θ > 90°) saugt nichts.' },
       { id: 'capAgain', sub: true, label: 'Aufstieg neu starten', type: 'action', button: 'Starten', run: () => { if (!stillNow()) { capT = 0; capRuns++; } } },
     ],

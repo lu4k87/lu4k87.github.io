@@ -202,7 +202,8 @@ export function create(ctx) {
     orbit: { minDistance: 60, maxDistance: 800, minPolarAngle: 0.2, maxPolarAngle: 2.9, enablePan: true },
     hotspots,
     update(dt, t) {
-      age = t - lastClock > 0.5 ? 0 : age + t - lastClock;   // Uhr ab Ankunft: nach einer Pause beginnt der Zeitraffer neu
+      // Uhr ab Ankunft: nach einer Pause beginnt der Zeitraffer neu, das Wachstum der Hyphe auch (Klick-Zeit aus der alten Uhr)
+      if (t - lastClock > 0.5) { age = 0; hyStart = 0.4; hyF = -1; } else age += t - lastClock;
       lastClock = t;
       semDetector(t);
       semBlend(dt, reduced);
@@ -220,7 +221,7 @@ export function create(ctx) {
     // Zahnrad-Reiter „Ebene“ (layers.js)
     layers: [
       { id: 'hypha', group: 'Leben im Gefäß', label: 'Pilzhyphe wächst ein', type: 'toggle', value: true,
-        set: (v) => { hyGroup.visible = v; const h = hotspots.find((x) => x.id === 'hypha'); if (h) h.hidden = !v; level.dirty = true; },
+        set: (v) => { hyGroup.visible = v; const h = hotspots.find((x) => x.id === 'hypha'); if (h) h.hidden = h.off = !v; level.dirty = true; },
         hint: 'Spitzenwachstum ≈ 0,5 µm/s (Richtwert), hier 30× beschleunigt – Pilze nutzen die offenen Gefäße als Wege durch die Kohle.' },
       { id: 'hyAgain', sub: true, label: 'Wachstum neu starten', type: 'action', button: 'Starten', run: () => { hyStart = age; hyF = -1; } },
     ],

@@ -167,25 +167,28 @@ export function createHud(handlers) {
 
   // Temperatur-Fenster einzelner Hotspots (Vorschau 2026-10-26, Buehne:A+B+C): Badge am Entdecken-Chip, Statuskapsel und
   // sanfter 1,2-s-Gleitsprung (F1) in der Info-Karte, wenn ein Merkmal bei der aktuellen Temperatur noch nicht / nicht mehr existiert
+  // Grenzen = Schwellen der Ebenen selbst (piece: Risse ab open > 0,12 ≈ 428 °C, wall: CRACK ≥ 0,3 ≈ 303 °C, meso: open ≥ 0,5
+  // = 350 °C, micro: sheets ≥ 0,6 ≈ 357 °C, fibril ≥ 0,3 bis ≈ 369 °C, Matrix bis ≈ 363 °C), sonst meldet die Karte ein
+  // aktives Merkmal ohne Abzeichen in der Szene
   const HS_TEMP = {
     piece: {
-      cracks: { min: 380, jump: 550, badge: 'ab 380 °C', note: 'Entsteht beim Verkohlen ab ≈ 380 °C' },
+      cracks: { min: 428, jump: 550, badge: 'ab 430 °C', note: 'Entsteht beim Verkohlen ab ≈ 430 °C' },
     },
     wall: {
-      crack: { min: 310, jump: 550, badge: 'ab 310 °C', note: 'Mikrorisse öffnen sich ab ≈ 310 °C' },
+      crack: { min: 303, jump: 550, badge: 'ab 305 °C', note: 'Mikrorisse öffnen sich ab ≈ 305 °C' },
     },
     meso: {
-      macro: { min: 340, jump: 550, badge: 'ab 340 °C', note: 'Poren öffnen sich ab ≈ 340 °C' },
-      meso: { min: 340, jump: 550, badge: 'ab 340 °C', note: 'Schlitzporen öffnen sich ab ≈ 340 °C' },
-      race: { min: 340, jump: 550, badge: 'ab 340 °C', note: 'Knudsen-Spalt ab ≈ 340 °C offen' },
-      water: { min: 340, jump: 550, badge: 'ab 340 °C', note: 'Kapillarkondensation ab ≈ 340 °C' },
+      macro: { min: 350, jump: 550, badge: 'ab 350 °C', note: 'Poren öffnen sich ab ≈ 350 °C' },
+      meso: { min: 350, jump: 550, badge: 'ab 350 °C', note: 'Schlitzporen öffnen sich ab ≈ 350 °C' },
+      race: { min: 350, jump: 550, badge: 'ab 350 °C', note: 'Knudsen-Spalt ab ≈ 350 °C offen' },
+      water: { min: 350, jump: 550, badge: 'ab 350 °C', note: 'Kapillarkondensation ab ≈ 350 °C' },
     },
     micro: {
-      fibril: { max: 365, jump: 25, badge: '≤ 365 °C', note: 'Nur im Rohholz bis ≈ 365 °C erhalten' },
-      hemi: { max: 365, jump: 25, badge: '≤ 365 °C', note: 'Zersetzt sich oberhalb von ≈ 365 °C' },
-      stack: { min: 345, jump: 550, badge: 'ab 345 °C', note: 'Graphen-Stapel entstehen ab ≈ 345 °C' },
-      micropore: { min: 345, jump: 550, badge: 'ab 345 °C', note: 'Mikroporen entstehen ab ≈ 345 °C' },
-      gas: { min: 345, jump: 550, badge: 'ab 345 °C', note: 'Poren für Gasmoleküle ab ≈ 345 °C' },
+      fibril: { max: 369, jump: 25, badge: '≤ 370 °C', note: 'Nur im Rohholz bis ≈ 370 °C erhalten' },
+      hemi: { max: 363, jump: 25, badge: '≤ 365 °C', note: 'Zersetzt sich oberhalb von ≈ 365 °C' },
+      stack: { min: 357, jump: 550, badge: 'ab 360 °C', note: 'Graphen-Stapel entstehen ab ≈ 360 °C' },
+      micropore: { min: 357, jump: 550, badge: 'ab 360 °C', note: 'Mikroporen entstehen ab ≈ 360 °C' },
+      gas: { min: 357, jump: 550, badge: 'ab 360 °C', note: 'Poren für Gasmoleküle ab ≈ 360 °C' },
     },
     atoms: {
       carboxyl: { max: 374, jump: 250, badge: 'bis 370 °C', note: 'Spaltet ab ≈ 375 °C als CO₂ ab' },
@@ -229,7 +232,7 @@ export function createHud(handlers) {
       ['bet', 'BET-Fläche', `≈ ${fmt(p.bet)}\u00a0m²/g`, false, cl(Math.max(2, (p.bet / 400) * 100)), p.bet <= 1 ? 'Holz 1' : `×${fmt(p.bet, 0)}`],
       ['ph', 'pH-Wert', fmt(p.ph, 1), false, cl(((p.ph - 4) / 7) * 100), Math.abs(dPh) < 0.05 ? 'Holz' : `${dPh > 0 ? '+' : '−'}${fmt(Math.abs(dPh), 1)}`],
       ['fperm', 'C nach 100 J.', p.fperm === null ? dash : `${fmt(p.fperm * 100)}\u00a0%`, false, p.fperm === null ? 0 : cl(p.fperm * 100), p.fperm === null ? 'ab 350 °C' : 'IPCC'],
-      ['co2', 'CO₂ gebunden', p.co2 === null ? dash : `${fmt(p.co2, 1)}\u00a0t/t`, false, p.co2 === null ? 0 : cl((p.co2 / 3.2) * 100), p.co2 === null ? 'ab 350 °C' : 'C × 3,67'],
+      ['co2', 'CO₂ gebunden', p.co2 === null ? dash : `${fmt(p.co2, 1)}\u00a0t/t`, false, p.co2 === null ? 0 : cl((p.co2 / 3.2) * 100), p.co2 === null ? 'ab 350 °C' : 'C × Fperm × 3,67'],
       ['cls', 'Strukturtyp', p.charClass, false, null, t < T_MIN ? 'Rohholz' : 'Keiluweit'],
     ];
   }
@@ -396,15 +399,20 @@ export function createHud(handlers) {
   const TL_KEY = 'biochar.timeline-dock';   // neuer Schlüssel: alte Versätze galten zum früheren Platz in der Bühne
   const grip = tlEl('.tl-grip');
   let tlOff = { x: 0, y: 0 }, tlDrag = null;
-  try { tlOff = { ...tlOff, ...JSON.parse(localStorage.getItem(TL_KEY)) }; } catch { /* kein Speicher: Standardplatz */ }
+  let tlApplied = { x: 0, y: 0 };   // Versatz, der gerade in tl.style.translate steht (anfangs keiner)
+  try {
+    const v = JSON.parse(localStorage.getItem(TL_KEY));
+    if (v && Number.isFinite(v.x) && Number.isFinite(v.y)) tlOff = { x: v.x, y: v.y };
+  } catch { /* kein Speicher: Standardplatz */ }
   function moveTl(x, y, save = false) {
     const a = $('.stage-hud').getBoundingClientRect(), b = tl.parentElement.getBoundingClientRect();
     tl.style.setProperty('--stage-w', `${a.width}px`);   // nie breiter als die Bühne: passt nach oben gezogen hinein
-    const r = tl.getBoundingClientRect(), l = r.left - tlOff.x, t = r.top - tlOff.y;   // Standardplatz ohne Versatz
+    const r = tl.getBoundingClientRect(), l = r.left - tlApplied.x, t = r.top - tlApplied.y;   // Standardplatz ohne Versatz
     y = Math.min(Math.max(y, a.top - t), b.bottom - t - r.height);
     const h = t + y < b.top - 1 ? a : b;   // in der Bühne seitlich nur so weit wie sie (Schiene, Tafel bleiben frei)
     tlOff = { x: Math.round(Math.min(Math.max(x, h.left - l), h.right - l - r.width)), y: Math.round(y) };
     tl.style.translate = `${tlOff.x}px ${tlOff.y}px`;
+    tlApplied = tlOff;
     tl.classList.toggle('is-moved', !!(tlOff.x || tlOff.y));
     if (save) try { localStorage.setItem(TL_KEY, JSON.stringify(tlOff)); } catch { /* gilt bis zum Neuladen */ }
   }
@@ -448,8 +456,9 @@ export function createHud(handlers) {
     const l = LEVELS[current], st = pyroState(T), meta = hsMeta(l.id, selected.id);
     const off = isHsOffAt(l.id, selected, T);
     const sh = shrinkPercent(T);
-    const extra = current <= 3 ? ` · −${fmt(sh.tan, 0)}\u00a0% quer` : current >= 5 ? ` · La ≈ ${fmt(nanoStructure(T).sheetNm, 1)}\u00a0nm` : '';
-    const phaseTxt = off
+    const extra = current <= 3 ? ` · −${fmt(sh.tan, 0)}\u00a0% quer` : current >= 5 && T >= T_MIN ? ` · La ≈ ${fmt(nanoStructure(T).sheetNm, 1)}\u00a0nm` : '';
+    const phaseTxt = selected.off ? '○ Im Zahnrad ausgeschaltet'   // Ebenen-Schalter (h.off), keine Temperaturfrage
+      : off
       ? `◐ ${esc(meta ? meta.note : 'Bei anderer Temperatur sichtbar')}`
       : `● ${esc(meta ? `Aktiv (${meta.badge})` : 'In dieser Phase sichtbar')}`;
     return `<span class="hs-st-now"><b>${fmt(T)} °C</b> · ${esc(st.phase)}${extra}</span><span class="hs-st-phase${off ? ' is-wait' : ' is-ok'}">${phaseTxt}</span>`;
@@ -501,7 +510,7 @@ export function createHud(handlers) {
       cur.setAttribute('x2', x);
       dot.classList.toggle('is-off', T < T_MIN);
     }
-    if (panel.querySelector('[data-spk]')) updateSpectra(T);
+    updateSpectra(T);
     updateExploreStates(T);
     if (selected && card.classList.contains('is-open')) {
       const stEl = card.querySelector('#hs-status');
@@ -548,12 +557,17 @@ export function createHud(handlers) {
   const ramanLine = (T) => { const r = raman(T); return `I_D/I_G ≈ ${fmt(r.ratio, 2)} aus La ≈ ${fmt(r.La, 1)} nm (${r.regime})`; };
   const SPK_NOTE = 'Virtuelle Messung aus der Modellstruktur: Lage nach Bragg und Breite nach Scherrer (Cu Kα) aus Schichtabstand und Stapelhöhe, I_D/I_G aus der Schichtgröße (Ferrari & Robertson 2000; Tuinstra & Koenig 1970); Bandbreiten und Untergrund Modell.';
   const spkFig = (kind, T) => `<figure class="chart" data-spk="${kind}">${kind === 'xrd' ? xrdSvg(T) : ramanSvg(T)}<figcaption class="note" data-spk-line>${kind === 'xrd' ? xrdLine(T) : ramanLine(T)}</figcaption></figure>`;
-  const spectraBlock = (T) => `<div class="spk" id="spk">
+  // Holz unter T_MIN hat noch keine Graphenstapel: kein (002)-Signal der Kohle, keine D-Bande → Hinweis statt Spektren
+  const SPK_WOOD = 'Holz unter 350 °C: noch keine Graphenschichten, deshalb kein (002)-Signal der Kohle und keine D-Bande. Die virtuelle Messung beginnt ab 350 °C.';
+  const spkBody = (T) => T < T_MIN ? `<p class="note" data-spk-wood>${prose(SPK_WOOD)}</p>` : `
       <details class="lab-more" open><summary>Röntgenbeugung (002) · Soll-Ist Graphit</summary>${spkFig('xrd', T)}</details>
-      <details class="lab-more"><summary>Raman D/G · Schichtgröße</summary>${spkFig('raman', T)}<p class="note">${SPK_NOTE}</p></details>
-    </div>`;
+      <details class="lab-more"><summary>Raman D/G · Schichtgröße</summary>${spkFig('raman', T)}<p class="note">${SPK_NOTE}</p></details>`;
+  const spectraBlock = (T) => `<div class="spk" id="spk">${spkBody(T)}</div>`;
   function updateSpectra(T) {
-    panel.querySelectorAll('[data-spk]').forEach((el) => {
+    const box = panel.querySelector('#spk');
+    if (!box) return;
+    if ((T < T_MIN) !== !!box.querySelector('[data-spk-wood]')) { box.innerHTML = spkBody(T); return; }   // Holz ↔ Kohle
+    box.querySelectorAll('[data-spk]').forEach((el) => {
       const kind = el.dataset.spk, svg = el.querySelector('svg');
       if (svg) svg.outerHTML = kind === 'xrd' ? xrdSvg(T) : ramanSvg(T);
       const line = el.querySelector('[data-spk-line]');
@@ -1272,6 +1286,7 @@ export function createHud(handlers) {
     hideCaption,
     hideMarkers(hidden) {
       layer.classList.toggle('is-hidden', hidden);
+      layer.toggleAttribute('inert', hidden);
     },
     // Lupe der Info-Karte (Canvas + gewählter Punkt), solange die Karte sichtbar ist; main.js zeichnet hinein
     lens() {
@@ -1291,6 +1306,8 @@ export function createHud(handlers) {
         if (visible && m.h.normal) visible = m.h.normal.dot(v.clone().sub(m.h.pos)) > 0;
         m.el.classList.toggle('is-off', !visible);
         m.dot.classList.toggle('is-off', !visible);
+        m.el.toggleAttribute('inert', !visible);    // unsichtbar: kein Tab-Halt, kein Vorlesen
+        m.dot.toggleAttribute('inert', !visible);
         if (!visible) continue;
         m.ax = ((p.x + 1) / 2) * width;
         m.ay = ((1 - p.y) / 2) * height;
@@ -1421,7 +1438,9 @@ function formatLength(m, approx = false) {
   for (const [u, name] of units) {
     if (m >= u * 0.999) {
       const v = m / u;
-      return `${approx ? '≈ ' : ''}${fmt(v, v < 10 && approx ? 1 : 0)} ${name}`;
+      // genau (Lineal): 1,5 µm bleibt 1,5 statt gerundet 2 · ungefähr: unter 10 eine Stelle
+      const digits = approx ? (v < 10 ? 1 : 0) : Number.isInteger(Math.round(v * 10) / 10) ? 0 : 1;
+      return `${approx ? '≈ ' : ''}${fmt(v, digits)} ${name}`;
     }
   }
   return `${approx ? '≈ ' : ''}${fmt(m / 1e-9, 1)} nm`;
