@@ -1121,3 +1121,75 @@ body.fatal-webgl .fatal-webgl, body.fatal-start .fatal-start { display: block; }
 /* Schalter Hell/Dunkel ganz rechts, Strich trennt von der Infotafel */
 #qk-theme { position: relative; margin-left: 9px; }
 #qk-theme::before { content: ""; position: absolute; left: -5px; top: 6px; bottom: 6px; width: 1px; background: var(--line); }
+
+/* ---------- Eigener Mauszeiger (js/cursor.js; Vorschau 30.10.2026 „5 Ideen für einen eigenen Maus-Cursor“) ----------
+   nur über der Szene und den Abzeichen, html.kc-on blendet dort den System-Zeiger aus; Größe je Zustand nur über transform */
+html.kc-on #stage, html.kc-on #hotspots :is(.hsb, .hsl) { cursor: none; }
+.kc { position: fixed; inset: 0; z-index: 60; overflow: hidden; pointer-events: none; opacity: 0; transition: opacity 0.15s; }
+.kc.is-on { opacity: 1; }
+.kc > * { position: absolute; left: 0; top: 0; will-change: transform; }
+@media (pointer: coarse) { .kc { display: none; } }
+/* A Orbit-Ring: Punkt + Ring; Mond umkreist „hineinfliegen“, Ring streckt sich beim Ziehen (JS) */
+.kc-rim { position: absolute; left: -13px; top: -13px; width: 26px; height: 26px; border: 1px solid rgba(255, 255, 255, 0.62); border-radius: 50%;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.25); transition: transform 0.18s var(--ease-out), border-color 0.18s; }
+.kc-orbit { position: absolute; inset: -1px; border-radius: 50%; opacity: 0; animation: kc-spin 2.4s linear infinite; transition: opacity 0.2s; }
+.kc-moon { position: absolute; left: 50%; top: -3px; width: 6px; height: 6px; margin-left: -3px; border-radius: 50%; background: rgb(var(--ch)); box-shadow: 0 0 8px rgba(var(--ch), 0.8); }
+.kc-core { width: 4px; height: 4px; margin: -2px; border-radius: 50%; background: #fff; box-shadow: 0 0 0 1px rgba(3, 22, 26, 0.6), 0 0 6px rgba(255, 255, 255, 0.7); transition: background 0.18s; }
+.kc[data-state="dive"] .kc-rim { transform: scale(1.46); border-color: var(--accent); }
+.kc[data-state="dive"] .kc-orbit { opacity: 1; }
+.kc[data-state="dive"] .kc-core { background: var(--accent); }
+.kc[data-state="info"] .kc-rim { transform: scale(1.3); border-color: rgba(255, 255, 255, 0.9); }
+.kc[data-state="drag"] .kc-rim { border-color: rgba(var(--ch), 0.9); }
+.kc.is-down .kc-rim { transform: scale(0.7); }
+@keyframes kc-spin { to { transform: rotate(360deg); } }
+/* B Peil-Sucher: Eckklammern rasten auf das Abzeichen ein, Mono-Etikett darüber */
+.kc-box { width: 26px; height: 26px; margin: -13px; }
+.kc-box i { position: absolute; width: 7px; height: 7px; border: 0 solid rgba(255, 255, 255, 0.85); filter: drop-shadow(0 0 1px rgba(0, 0, 0, 0.8)); transition: border-color 0.16s; }
+.kc-box i:nth-child(1) { left: 0; top: 0; border-width: 1.5px 0 0 1.5px; }
+.kc-box i:nth-child(2) { right: 0; top: 0; border-width: 1.5px 1.5px 0 0; }
+.kc-box i:nth-child(3) { left: 0; bottom: 0; border-width: 0 0 1.5px 1.5px; }
+.kc-box i:nth-child(4) { right: 0; bottom: 0; border-width: 0 1.5px 1.5px 0; }
+.kc-dot { width: 3px; height: 3px; margin: -1.5px; border-radius: 50%; background: #fff; box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.45); }
+.kc-tag { margin: 0; padding: 4px 6px; border-radius: 4px; background: rgba(7, 9, 14, 0.82); color: var(--accent); font: 500 13px/1 var(--mono); letter-spacing: 0.06em;
+  white-space: nowrap; opacity: 0; transition: opacity 0.16s; }
+.kc[data-state="dive"] .kc-box i { border-color: var(--accent); }
+.kc[data-state="info"] .kc-box i { border-color: #fff; }
+.kc[data-state="drag"] .kc-box i { border-color: rgb(var(--ch)); }
+.kc:not([data-state="rest"]) .kc-tag { opacity: 1; }
+.kc[data-state="info"] .kc-tag { color: #eef2f8; }
+.kc[data-state="drag"] .kc-tag { color: rgb(var(--ch)); }
+/* C Komet: Schweif in der Ebenen-Farbe; dunkler Rand am Kopf hält ihn auch über der hellen Erde sichtbar */
+.kc-t { width: 6px; height: 6px; margin: -3px; border-radius: 50%; background: rgb(var(--ch)); box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.3); opacity: 0; }
+.kc-head > i, .kc-halo > i { position: absolute; border-radius: 50%; transition: transform 0.16s var(--ease-out), background 0.16s, opacity 0.18s; }
+.kc-head > i { left: -4px; top: -4px; width: 8px; height: 8px; background: #fff; box-shadow: 0 0 0 1.5px rgba(3, 22, 26, 0.85), 0 0 10px 2px rgba(var(--ch), 0.6); }
+.kc-halo > i { left: -12px; top: -12px; width: 24px; height: 24px; border: 1px solid rgba(var(--accent-rgb), 0.75); box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.3); opacity: 0; }
+.kc[data-state="dive"] .kc-head > i { transform: scale(1.2); background: var(--accent); box-shadow: 0 0 0 1.5px rgba(3, 22, 26, 0.85), 0 0 12px 3px rgba(var(--accent-rgb), 0.6); }
+.kc[data-state="dive"] .kc-halo > i { opacity: 1; }
+.kc[data-state="info"] .kc-halo > i { opacity: 1; border-color: rgba(255, 255, 255, 0.85); }
+.kc[data-state="drag"] .kc-head > i { background: rgb(var(--ch)); }
+.kc.is-down .kc-head > i { transform: scale(0.75); }
+/* D Hex-Sonde: Form wie die Abzeichen, Pfeil bzw. „i“ je Ziel, dreht sich beim Ziehen (JS) */
+.kc-hex { position: absolute; left: -13px; top: -13px; width: 26px; height: 26px; overflow: visible; transition: transform 0.16s var(--ease-out); }
+.kc-hx { fill: rgba(255, 255, 255, 0.08); stroke: rgba(255, 255, 255, 0.85); stroke-width: 2.2; paint-order: stroke; transition: fill 0.16s, stroke 0.16s; }
+.kc-hex { filter: drop-shadow(0 0 1.5px rgba(0, 0, 0, 0.8)); }
+.kc-g { opacity: 0; transition: opacity 0.16s; }
+.kc-g-dot { opacity: 1; fill: #fff; }
+.kc:is([data-state="dive"], [data-state="info"]) .kc-hex { transform: scale(1.23); }
+.kc[data-state="dive"] .kc-hx { fill: var(--accent); stroke: var(--accent); }
+.kc[data-state="dive"] .kc-g-dive { opacity: 1; stroke: var(--accent-ink); }
+.kc[data-state="info"] .kc-hx { stroke: var(--accent); fill: rgba(7, 9, 14, 0.6); }
+.kc[data-state="info"] .kc-g-info { opacity: 1; fill: #fff; }
+.kc:is([data-state="dive"], [data-state="info"]) .kc-g-dot { opacity: 0; }
+.kc[data-state="drag"] .kc-hx { stroke: rgb(var(--ch)); fill: rgba(var(--ch), 0.16); }
+.kc.is-down .kc-hex { transform: scale(0.77); }
+/* E Aktions-Etikett: Pfeil + Glas-Hinweis zur nächsten Aktion */
+.kc-arrow { width: 20px; height: 22px; margin: -1px 0 0 -1px; overflow: visible; filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.7)); }
+.kc-chip { display: flex; gap: 8px; align-items: baseline; padding: 6px 10px; border: 1px solid rgba(255, 255, 255, 0.24); border-radius: var(--radius);
+  background: rgba(7, 9, 14, 0.72); box-shadow: inset 1px 1px 0 rgba(255, 255, 255, 0.3), 0 8px 24px rgba(0, 0, 0, 0.4);
+  color: #eef2f8; font: 400 14px/1.2 var(--font); white-space: nowrap; opacity: 0; transition: opacity 0.18s var(--ease-out); }
+.kc-chip kbd { color: var(--accent); font: 500 13px/1 var(--mono); }
+.kc-chip.on { opacity: 1; }
+.kc[data-state="drag"] .kc-chip kbd { color: rgb(var(--ch)); }
+/* Bewegung „Ruhig“/„Aus“ oder reduziert: kein Umlauf (Mond steht schräg oben), kein Schweif */
+.kc.is-calm .kc-orbit { animation: none; transform: rotate(40deg); }
+.kc.is-calm .kc-t { display: none; }

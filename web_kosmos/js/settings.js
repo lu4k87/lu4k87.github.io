@@ -15,7 +15,7 @@ import { SOLAR_SYSTEM } from './content.js';
 
 const KEY = 'kosmos.settings.v1';
 const DEFAULTS = { motion: 'full', quality: 'auto', cine: true, dive: 3.6, exposure: 1, bloom: true, lens: true, lensAmt: 1, lensOptic: 'master', lensGhost: true, ghostMotion: true, anamorphic: true, rayleigh: true, grain: true, deep: 1, fpsCap: 0, panel: true, timeline: true, scaleCompare: true, small: 6, stars: true, grade: 'station', vig: 1, bars: false, barsH: 1, axes: false,
-  sunK: 1, shade: 1, shadow: 1, soft: 1, spec: 1, gloss: 0 };
+  sunK: 1, shade: 1, shadow: 1, soft: 1, spec: 1, gloss: 0, cursor: 'orbit' };
 // Farblook: Belichtung, Bloom, Kontrast, Sättigung, Tönung Schatten/Lichter, Vignette – Kino = Mischung aus HDR, Ruhig, Tiefe Glut.
 // Global (main.js über globalGrade) oder je Station „Station“ = eigener Look; die Sonne wählt bei „Station“ selbst (levels/sun.js)
 export const GRADES = [['Neutral', { exposure: 1, bloom: 0.12, con: 0.12, sat: 1.04, sh: [0.96, 0.99, 1.06], hi: [1.04, 1, 0.95], vig: 0.38 }],
@@ -24,7 +24,9 @@ export const GRADES = [['Neutral', { exposure: 1, bloom: 0.12, con: 0.12, sat: 1
   ['Ruhig', { exposure: 1, bloom: 0.16, con: 0.18, sat: 1, sh: [0.97, 0.98, 1.02], hi: [1.04, 1, 0.94], vig: 0.45 }],
   ['Tiefe Glut', { exposure: 0.9, bloom: 0.3, con: 0.3, sat: 1.18, sh: [0.85, 0.88, 0.98], hi: [1.12, 0.98, 0.84], vig: 0.6 }]];
 const GRADE_IDS = ['station', 'neutral', 'kino', 'hdr', 'ruhig', 'glut'];
-const CHOICES = { motion: ['full', 'calm', 'off'], quality: ['auto', '1', '2', '3'], grade: GRADE_IDS, lensOptic: ['master', 'classic'] };
+// Mauszeiger über der Szene (cursor.js), „System“ = eigener Zeiger aus
+const CURSORS = [['system', 'System'], ['orbit', 'Orbit-Ring'], ['seeker', 'Peil-Sucher'], ['comet', 'Komet'], ['hex', 'Hex-Sonde'], ['label', 'Aktions-Etikett']];
+const CHOICES = { motion: ['full', 'calm', 'off'], quality: ['auto', '1', '2', '3'], grade: GRADE_IDS, lensOptic: ['master', 'classic'], cursor: CURSORS.map(([id]) => id) };
 // Milchstraße (milkyway.js): Bild-Regler wirken sofort, „Dicke der Scheibe“ und Nachbargalaxien backen das Modell neu
 const MW = { mw: true, mwSrc: 'model', mwGain: 1, mwCon: 1, mwBlack: 0, mwClar: 1, mwSat: 1, mwTemp: 0, mwDust: 1, mwNeb: 1, mwCore: 1, mwGlow: 1, mwGrain: 0.5, mwWidth: 1, mwNear: true };
 const MW_RANGE = { mwGain: [0, 6], mwCon: [0.5, 3], mwBlack: [0, 1], mwClar: [0, 4], mwSat: [0, 3], mwTemp: [-1, 1], mwDust: [0, 4], mwNeb: [0, 6], mwCore: [0, 6], mwGlow: [0, 6], mwGrain: [0, 1], mwWidth: [0.4, 3] };
@@ -221,7 +223,8 @@ const GROUPS = [
     ['ghostMotion', TOG('ghostMotion', 'Lichtfleck wandert beim Schwenken') + NOTE('Wie in einem echten Objektiv wandert der Fleck beim Schwenken auf der Linie durch die Bildmitte.'), 'flareNs'],
     ['anamorphic', TOG('anamorphic', 'Waagrechter Lichtstreif (anamorph)'), 'flare']] },
   { id: 'ui', icon: 'ui', title: 'Oberfläche', half: true, rows: [['panel', TOG('panel', 'Infotafel zeigen')], ['scaleCompare', TOG('scaleCompare', 'Maßstabs-Vergleich')], ['timeline', TOG('timeline', 'Zeitleiste der Station zeigen')],
-    ['', TOG('', 'Grafiken bewegt', '', 'data-figs')]] },
+    ['', TOG('', 'Grafiken bewegt', '', 'data-figs')],
+    ['cursor', PICK('cursor', 'Mauszeiger', CURSORS) + NOTE('Nur mit Maus oder Touchpad über der 3D-Ansicht und den Abzeichen; über Panels, Suche und Textfeldern bleibt der Zeiger des Systems. Bei Bewegung „Ruhig“ oder „Aus“ ohne Umlauf und Schweif.')]] },
   { id: 'perf', icon: 'perf', title: 'Leistung', rows: [['quality', PICK('quality', 'Qualität', [['auto', 'Auto'], ['1', 'Niedrig'], ['2', 'Mittel'], ['3', 'Hoch']], true)],
     ['fpsCap', PICK('fpsCap', 'Bildrate', [['0', 'Frei'], ['60', '60 Bilder/s'], ['30', '30 Bilder/s']], true) + NOTE('30 Bilder/s spart am Laptop Strom und Lüfter.')]] },
 ];

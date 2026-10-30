@@ -16,6 +16,7 @@ import { ZOOM } from './flightplan.js';
 import { TURN, planTurn, turnPose, turnPace, smoother } from './turn.js';
 import { createBoot } from './boot.js';
 import { createOpener } from './opener.js';
+import { mountCursor } from './cursor.js';
 
 // 2D-Canvas im Arbeitsspeicher statt auf der GPU: liegt der Tab länger im Hintergrund, verwirft Chrome GPU-Ressourcen
 // (WebGL-Kontext verloren → wiederhergestellt) und leert dabei GPU-gestützte Canvas. three.js lädt die Muster dann leer
@@ -1366,6 +1367,7 @@ const hud = createHud({
   onRelayout: () => requestAnimationFrame(resize),
   onOffer: () => { const o = state.offer; state.offer = null; if (o) goTo(o.to); },
 });
+mountCursor(canvas);   // eigener Mauszeiger über der Szene (Allgemeine Einstellungen → Oberfläche)
 
 onSettings((keys) => {
   if (keys.includes('quality')) applyQuality();
