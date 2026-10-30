@@ -155,7 +155,7 @@ export function createComet(rand) {
     } else st.br += dt;
     const r = p.length();
     rad.copy(p).normalize();
-    const near = THREE.MathUtils.smoothstep(2.6 * st.q, 1.05 * st.q, r);
+    const near = THREE.MathUtils.smoothstep(-r, -2.6 * st.q, -1.05 * st.q);   // three: (x, min, max) – wächst zur Sonne hin
     const fadeIn = THREE.MathUtils.smoothstep(st.t, 0, 1.5);
     const gone = st.br < 0 ? 1 : Math.max(0, 1 - st.br / 1.2);
     const camD = cam.position.distanceTo(p), w = 0.004 + 0.004 * camD;

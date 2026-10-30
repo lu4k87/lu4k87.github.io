@@ -146,7 +146,7 @@ export function create(ctx) {
   scene.add(psr);
 
   let mode = 'vis', year = TODAY;
-  const edge = new THREE.Vector3(-4.6, 2.2, 2.2), edgeBase = edge.clone();
+  const edge = new THREE.Vector3(-4.6, 2.2, 2.2);
   const hotspots = [
     { id: 'pulsar', kind: 'dive', to: 'pulsar', pos: new THREE.Vector3(0, 0, 0) },
     { id: 'filaments', kind: 'info', pos: edge },
@@ -156,6 +156,8 @@ export function create(ctx) {
     { id: 'xray', kind: 'info', pos: new THREE.Vector3(0, 1.4, 0).applyMatrix4(axis), visible: () => mode === 'xray' },
     { id: 'radio', kind: 'info', pos: new THREE.Vector3(-2.5, -2.4, 2.0), visible: () => mode === 'radio' },
   ];
+  // Regler „Jahr“: alle Abzeichen außer dem Pulsar (Ursprung) wachsen mit dem Nebel (Lage heute als Grundlage)
+  const spotBase = hotspots.map((h) => h.pos.clone());
   // Zeitraffer der Wisps: Stufen als Vielfaches des Grundtempos (ein Wisp ≈ 20 s vom Ring zum Torus)
   const SPD = [0.25, 0.5, 1, 2, 4];
   let spdIdx = 2, wispOn = true, wispT = 0;
@@ -186,7 +188,7 @@ export function create(ctx) {
         neb.material.uniforms.uExp.value = k;
         neb.material.uniforms.uR.value = R * k;
         neb.scale.setScalar(k);
-        edge.copy(edgeBase).multiplyScalar(k);
+        hotspots.forEach((h, i) => h.pos.copy(spotBase[i]).multiplyScalar(k));
       } },
   ];
 

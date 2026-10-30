@@ -348,6 +348,11 @@ export function create(ctx) {
       k.p.copy(k.base).applyAxisAngle(new THREE.Vector3(0, 1, 0), -omega(R) * T);
       if (k.m) k.m.position.copy(k.p);
     }
+    // Sichtlinien Sonne → Orion, Krebs, Sgr A* wandern mit den Leuchtpunkten
+    const sp = sight.geometry.attributes.position;
+    [0, 1, 0, 2, 0, 3].forEach((j, i) => sp.setXYZ(i, marks[j].p.x, marks[j].p.y, marks[j].p.z));
+    sp.needsUpdate = true;
+    sight.geometry.computeBoundingSphere();
   };
   // Zahnrad: Zeitraffer der Drehung (▶-Ebene → Zeitleiste), Teile der Galaxis, Helligkeit der Fermi-Blasen (die Schalter dazu stehen im Reiter Station unter Ansicht)
   // Tempo [Mio. Jahre je s]; Pause = Stand bleibt

@@ -12,7 +12,7 @@ import { PLANETS, AU, R_SUN, G, julianDate, planetPosition, eclToScene, eclDir, 
 import { createStarfield } from '../stars.js';
 import { BODY_VERT, SHELL_VERT, PLANET_FRAG, ATMO_FRAG, RING_FRAG, ATMOS } from '../planetfx.js';
 import { ringTexture, ringMesh, moonOrbit, tidalQuat } from '../moonsys.js';
-import { registerLayers, refreshLayers } from '../layers.js';
+import { registerLayers, refreshLayers, getLayer } from '../layers.js';
 import { spinAxis } from '../axes.js';
 
 const RAD = Math.PI / 180;
@@ -207,7 +207,7 @@ export function create(ctx) {
   ]);
   const controls = [
     { id: 'ring', type: 'range', label: 'Ringe aufhellen', value: ringGain, min: 0.3, max: 5, step: 0.1, fmt: (v) => `${num(v, 1)} ×`,
-      set: (v) => { ringGain = v; ringU.uGain.value = RING_GAIN * v; refreshLayers(); }, get: () => ringGain },
+      set: (v) => { ringGain = v; ringU.uGain.value = RING_GAIN * v; const l = getLayer('neptune', 'ringGain'); if (l) l.value = v; refreshLayers(); }, get: () => ringGain },   // Ebene „Aufhellung“ zeigt denselben Wert
   ];
 
   // ---------- Abzeichen ----------

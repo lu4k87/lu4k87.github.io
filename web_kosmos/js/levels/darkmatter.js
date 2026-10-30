@@ -285,13 +285,17 @@ export function create(ctx) {
     dirty = true;
   }
   // Rechnen im Worker (sonst im Hauptfaden), neue Saat oder Glättung rechnet neu
-  let seed = 7, rs = 1.25, job = 0;
+  let seed = 7, rs = 1.25, job = 0, run = null;
+  // laufende Rechnung abbrechen (neuer Auftrag, Station freigegeben): Worker beenden, wartenden Aufrufer freigeben
+  const abort = () => { if (run) { run.wk.terminate(); run.res(); run = null; } };
   function compute() {
+    abort();
     const id = ++job, args = { N, L, Rs: rs, seed };
     return new Promise((res) => {
       let wk = null;
       try { wk = new Worker(new URL('../darkmatter_worker.js', import.meta.url), { type: 'module' }); } catch (e) { wk = null; }
-      const done = (f) => { if (wk) wk.terminate(); if (id === job) upload(f); res(); };
+      if (wk) run = { wk, res };
+      const done = (f) => { if (wk) wk.terminate(); if (run && run.wk === wk) run = null; if (id === job) upload(f); res(); };
       if (!wk) { done(makeField(args)); return; }
       wk.onmessage = (e) => done(e.data);
       wk.onerror = () => { wk.terminate(); wk = null; done(makeField(args)); };
@@ -384,6 +388,6 @@ export function create(ctx) {
       W = Math.round(H * camera.aspect); Hh = H; fit();
       gu.uPx.value = pr; gu.uScale.value = (H / 2) / Math.tan((camera.fov * Math.PI) / 360) / pr;
     },
-    dispose: () => { job++; disposeScene(scene); dmGeo.dispose(); dmMat.dispose(); rt.dispose(); },
+    dispose: () => { job++; abort(); disposeScene(scene); dmGeo.dispose(); dmMat.dispose(); rt.dispose(); },
   };
 }

@@ -271,7 +271,7 @@ export function mountSettings(root, btn, lay = document.getElementById('btn-lay'
     root.querySelectorAll('input[type=checkbox][data-key]').forEach((i) => { i.checked = !!S[i.dataset.key]; });
     root.querySelectorAll('input[type=range][data-key]').forEach((i) => {
       i.value = S[i.dataset.key];
-      root.querySelector(`[data-out="${i.dataset.key}"]`).textContent = String(S[i.dataset.key].toFixed(i.step < 0.1 ? 2 : 1)).replace('.', ',');
+      root.querySelector(`[data-out="${i.dataset.key}"]`).textContent = String(S[i.dataset.key].toFixed((String(i.step).split('.')[1] || '').length || 1)).replace('.', ',');   // Stellen aus dem Schritt (0,25 → 2)
       paintRange(i, DEFAULTS[i.dataset.key]);
     });
     markDevs(root.querySelector('#cfg-v-gl'), (k) => S[k] !== DEFAULTS[k]);
@@ -324,7 +324,7 @@ export function mountSettings(root, btn, lay = document.getElementById('btn-lay'
   });
   root.addEventListener('input', (e) => {
     const i = e.target;
-    if (i.matches('[data-figs]')) { setFigs(i.checked); return; }
+    if (i.matches('[data-figs]')) { setFigs(i.checked); window.dispatchEvent(new CustomEvent('kosmos:figs')); return; }   // hud.js: offene Karte
     if (i.dataset.pick) { setSetting(i.dataset.pick, num(i.dataset.pick, pickOf(i))); return; }
     if (i.matches('[data-mwstyle]')) { if (i.value) for (const [k, v] of Object.entries(MW_STYLES.find(([id]) => id === i.value)[2])) setSetting(k, v); return; }
     if (!i.dataset.key) return;
@@ -365,7 +365,7 @@ export function mountSettings(root, btn, lay = document.getElementById('btn-lay'
   // Esc schließt das offene Panel links (es steht immer nur eins)
   document.addEventListener('keydown', (e) => {
     if (e.key !== 'Escape' || e.defaultPrevented) return;
-    if (!st.hidden) { station(false); if (lay) lay.focus(); } else if (view) { open(false); btn.focus(); }
+    if (!st.hidden) { e.preventDefault(); station(false); if (lay) lay.focus(); } else if (view) { e.preventDefault(); open(false); btn.focus(); }
   });
   // close: Stationswechsel klappt das offene Panel links ein (User 28.10.2026), der Ankunftstitel steht dann frei
   return { open, view: () => view, close: () => { station(false); if (view) open(false); } };

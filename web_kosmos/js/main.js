@@ -1393,6 +1393,7 @@ window.addEventListener('keydown', (ev) => {
 window.addEventListener('resize', () => { hud.relayout(); resize(); });
 // Zurück/Vor im Browser während einer Fahrt: Wunsch merken, nach der Landung nachholen (stepTransition)
 window.addEventListener('hashchange', () => {
+  if (!state.active) return;   // noch beim Laden: start() hat den Hash schon gelesen, kein Wunsch bleibt hängen
   const id = (location.hash.match(/station=(\w+)/) || [])[1];
   // unbekannte Station oder Film läuft (goTo lehnt ab): Adresse zeigt wieder die stehende Station, kein Wunsch bleibt hängen
   if (!id || !Object.hasOwn(STATIONS, id) || state.opener) { history.replaceState(null, '', `${location.search}#station=${state.id}`); return; }

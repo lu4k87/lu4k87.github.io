@@ -7,7 +7,7 @@ import { STATIONS, GROUPS, ROUTE, SOURCES, routeIndex, routeStep, up, entry } fr
 import { fmtLength, fmtTime, C } from './astro.js';
 import { settings, setSetting, mountSettings, onSettings } from './settings.js';
 import { getLayer, setLayer, fmtVal, paintRange, setControls } from './layers.js';
-import { cardHtml, mountCard, unmountCard } from './cards.js';
+import { cardHtml, mountCard, unmountCard, figMotion } from './cards.js';
 import { prose, nbsp } from './figs.js';
 import { renderScaleCompare } from './scale_compare.js';
 import { mountQuick } from './quick.js';
@@ -39,11 +39,14 @@ export function createHud(h) {
   card.addEventListener('scroll', moreCard, { passive: true });
   new ResizeObserver(() => { cardW = card.offsetWidth; cardH = card.offsetHeight; moreCard(); }).observe(card);
   const cardEnv = { getLayer, setLayer, fmt: fmtVal, motion: () => settings.S.motion, reduced: matchMedia('(prefers-reduced-motion: reduce)').matches };
+  // Zahnrad „Bewegung der Info-Grafiken“ bzw. „Bewegung“ geändert: offene Karte sofort nachziehen (sonst erst beim nächsten Öffnen)
+  const syncFm = () => { if (card.dataset.fm) card.dataset.fm = figMotion(cardEnv) ? 'on' : 'off'; };
+  addEventListener('kosmos:figs', syncFm);
 
   const side = mountSettings($('#cfg'), $('#btn-cfg'));
   onSettings((keys) => {
     if (keys.includes('panel')) { body.classList.toggle('panel-off', !settings.S.panel); h.onRelayout(); }
-    if (keys.includes('motion')) card.dataset.motion = settings.S.motion;
+    if (keys.includes('motion')) { card.dataset.motion = settings.S.motion; syncFm(); }
     if (keys.includes('scaleCompare') && lv) renderPanel();
   });
   body.classList.toggle('panel-off', !settings.S.panel);

@@ -11,7 +11,7 @@
 // Größen: „Anschaulich“ = R^0,45 gestaucht (Reihenfolge stimmt, Verhältnisse nicht), „Echt“ = wahre Radien.
 
 import * as THREE from 'three';
-import { PLANETS, PLUTO, planetPosition, AU, C, julianDate, elementsAt, solveKepler, orbitToEcliptic, eclToScene, eclDir, moonPosition, OBLIQUITY, mulberry32, gauss } from '../astro.js';
+import { PLANETS, PLUTO, planetPosition, AU, C, julianDate, elementsAt, solveKepler, orbitToEcliptic, eclToScene, eclDir, moonPosition, OBLIQUITY, mulberry32, gauss, gmst } from '../astro.js';
 import { createStarfield } from '../stars.js';
 import { SUN_FRAG, BILLBOARD_VERT, CORONA_FRAG, LOOP_VERT, LOOP_FRAG, CME_FRAG, loopsGeometry, spotGroups, streamerSet } from '../sunfx.js';
 import { BODY_VERT, SHELL_VERT, PLANET_FRAG, ATMO_FRAG, CLOUD_FRAG, RING_FRAG, ATMOS } from '../planetfx.js';
@@ -419,7 +419,8 @@ export function create(ctx) {
       const E = solveKepler(el.M * RAD, el.e);
       x.pos.set(...eclToScene(orbitToEcliptic(el, E)));
       x.holder.position.copy(x.pos);
-      x.mesh.rotation.y = ((jd - 2451545) * 24 / x.b.rot) % 1 * Math.PI * 2;
+      // Erde nach Sternzeit wie earth.js (sonst ≈ 200° falsch gedreht: Nullmeridian fehlt, 23,934 h driftet)
+      x.mesh.rotation.y = x.p.id === 'earth' ? gmst(jd) * RAD : ((jd - 2451545) * 24 / x.b.rot) % 1 * Math.PI * 2;
       x.om.uniforms.uPhase.value = ((el.M / 360) % 1 + 1) % 1;
       dp.setXYZ(i, x.pos.x, x.pos.y, x.pos.z);
     });

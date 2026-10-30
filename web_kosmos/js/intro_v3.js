@@ -819,9 +819,15 @@ if (q.has('t')) {
 }
 window.__intro = film;   // Tests: Uhr und Bildzähler
 
+// Tab versteckt: rAF steht, der Ton liefe weiter → anhalten und beim Zurückkehren an der Filmzeit neu ansetzen
+document.addEventListener('visibilitychange', () => {
+  if (!film.playing || film.muted) return;
+  if (document.hidden) sound.stop(); else { last = performance.now(); sound.play(film.t); }
+});
 let last = performance.now();
 function loop(now) {
-  const dt = Math.min(0.05, (now - last) / 1000); last = now;
+  // mit Ton läuft die Filmuhr ungedeckelt mit (der Ton ist auf der AudioContext-Uhr vorgeplant), sonst höchstens 0,05 s je Bild
+  const raw = (now - last) / 1000, dt = film.playing && !film.muted ? raw : Math.min(0.05, raw); last = now;
   if (film.playing) {
     film.t += dt;
     if (film.t >= T.end) {   // das letzte Bild bleibt stehen, die Startkarte kommt zurück

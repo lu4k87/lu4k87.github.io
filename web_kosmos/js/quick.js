@@ -44,7 +44,7 @@ export function mountQuick(root, onInput) {
   syncKeys();
 
   // Vollbild: nur, wo der Browser es erlaubt (z. B. nicht in jedem eingebetteten Rahmen)
-  full.hidden = !document.fullscreenEnabled;
+  full.hidden = !document.fullscreenEnabled || !document.documentElement.requestFullscreen;
   const syncFull = () => {
     const on = !!document.fullscreenElement;
     full.setAttribute('aria-pressed', String(on));
@@ -60,7 +60,10 @@ export function mountQuick(root, onInput) {
   const syncKino = () => document.body.classList.toggle('is-kino', !!settings.S.bars);
   onSettings(syncKino);
   syncKino();
-  addEventListener('keydown', (e) => { if (settings.S.bars && e.key === 'Escape') setSetting('bars', false); });
+  // Esc tut nur eine Sache: hat es schon ein Panel geschlossen (settings.js, document – läuft vor window) oder läuft der
+  // Auftakt-Film (main.js überspringt ihn), bleiben die Balken
+  const escFree = (e) => !e.defaultPrevented && !document.body.classList.contains('is-opener');
+  addEventListener('keydown', (e) => { if (settings.S.bars && e.key === 'Escape' && escFree(e)) setSetting('bars', false); });
 
   // UI-Elemente ein-/ausblenden (User 29.10.2026): verbergen aller HUD-Elemente, Schalter bleibt sichtbar
   const uiBtn = $('qk-ui');
@@ -84,7 +87,7 @@ export function mountQuick(root, onInput) {
   syncUi();
   addEventListener('keydown', (e) => {
     if (e.target.closest && e.target.closest('input, select, textarea, [role="tab"], [role="radio"]')) return;
-    if (uiOff && e.key === 'Escape') {
+    if (uiOff && e.key === 'Escape' && escFree(e)) {
       uiOff = false;
       syncUi();
       onInput();

@@ -106,7 +106,8 @@ export function create(ctx) {
         }],
         hotspots: [{ id: 'haze', kind: 'info', pos: limb, focus: () => 0.9, visible: hazy }],
         update(dt, t, jd, cam) {
-          const k = hazeOn ? K_HAZE : K_CLEAR;
+          // Schnitt an (icymoon.js): Dunst weicht, sonst deckt er den Keil fast ganz zu (Weg 0,17 × K_HAZE ≈ 99 %)
+          const k = hazeOn && !api.cutU.uCut.value ? K_HAZE : K_CLEAR;
           haze.u.uK.value += (k - haze.u.uK.value) * Math.min(1, dt * 4);
           haze.u.uLit.value += ((api.frame.shadow ? 0 : 1) - haze.u.uLit.value) * Math.min(1, dt * 3);
           haze.mesh.material.side = cam.position.length() < R_H ? THREE.BackSide : THREE.FrontSide;

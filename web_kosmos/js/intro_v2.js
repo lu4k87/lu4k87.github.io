@@ -596,9 +596,15 @@ if (q.has('t')) {
   document.body.classList.add('is-running');
 }
 
+// Tab versteckt: rAF steht, der Ton liefe weiter → anhalten und beim Zurückkehren an der Filmzeit neu ansetzen
+document.addEventListener('visibilitychange', () => {
+  if (!film.playing || film.muted) return;
+  if (document.hidden) sound.stop(); else { last = performance.now(); sound.play(film.t); }
+});
 let last = performance.now(), frames = 0;
 function loop(now) {
-  const dt = Math.min(0.05, (now - last) / 1000); last = now;
+  // mit Ton läuft die Filmuhr ungedeckelt mit (der Ton ist auf der AudioContext-Uhr vorgeplant), sonst höchstens 0,05 s je Bild
+  const raw = (now - last) / 1000, dt = film.playing && !film.muted ? raw : Math.min(0.05, raw); last = now;
   if (film.playing) {
     film.t += dt;
     if (film.t >= T.end) { film.t = T.end; film.playing = false; el.start.classList.remove('is-hidden'); document.getElementById('go').textContent = 'Noch einmal · mit Ton'; document.getElementById('go-mute').textContent = 'Noch einmal · ohne Ton'; film.started = false; }

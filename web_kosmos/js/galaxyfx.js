@@ -178,7 +178,7 @@ export function starFormation({ arms = [], rings = [], n, scale = 1, rot, seed =
   const rand = mulberry32(seed);
   const pos = [], col = [], size = [], flow = [];
   const put = (R, phi, y, c, s, life, ph) => {
-    pos.push(0, y * scale, 0);
+    pos.push(0, y, 0);   // SF_VERT skaliert den ganzen Ort mit uSc
     col.push(c[0] * gain, c[1] * gain, c[2] * gain);
     size.push(s * scale);
     flow.push(R, phi, life, ph);

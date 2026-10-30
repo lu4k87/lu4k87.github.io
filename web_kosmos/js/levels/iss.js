@@ -406,6 +406,16 @@ export function create(ctx) {
   const look = { exposure: 1.0, bloom: 0.07, sat: 1.05 };
   return {
     scene, camera, home, unit: 1, hotspots, controls, look, orbit,
+    // Station verlassen im Blick „Cupola“: zurück auf „Außen“ (Weitwinkel, Abzeichen, Bahnspur), sonst landet man außen damit
+    onActive(on) {
+      if (on || view.mode !== 'cupola') return;
+      Object.assign(view, { mode: 'out', t: 1, from: null });
+      ov.setTrack(trackOn);
+      camera.fov = view.fov0;
+      camera.updateProjectionMatrix();
+      const c = controls.find((x) => x.id === 'view');
+      if (c) c.value = 'out';
+    },
     ready: Promise.all([ov.ready, K.ready()]),
     update(dt, t, cam, flying) {
       ov.update(dt, t, cam, flying);
