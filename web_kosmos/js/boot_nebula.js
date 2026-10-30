@@ -464,15 +464,28 @@ export function animate(canvas, gl, { look, w, h, dpr, still }, raf) {
   };
 }
 
-// Ladebild-Hintergrund starten: bevorzugt im Worker, sonst auf dem Hauptfaden. Ohne WebGL 2 null (dann bleibt es schwarz)
-export function createNebula(cv, look, still) {
+// Kann eine OffscreenCanvas WebGL 2? Erst dann lohnt die Übergabe an den Worker – danach gibt es keinen Rückweg mehr
+function offscreenGl2() {
+  try {
+    const gl = new OffscreenCanvas(1, 1).getContext('webgl2');
+    if (!gl) return false;
+    const x = gl.getExtension('WEBGL_lose_context');
+    if (x) x.loseContext();
+    return true;
+  } catch (e) { return false; }
+}
+
+// Ladebild-Hintergrund starten: bevorzugt im Worker, sonst auf dem Hauptfaden. Ohne WebGL 2 null (dann bleibt es schwarz);
+// onFail: Worker meldet später doch einen Fehler → Aufrufer blendet den Look-Umschalter aus
+export function createNebula(cv, look, still, onFail = () => {}) {
   const opts = { look, still, w: window.innerWidth, h: window.innerHeight, dpr: Math.min(2, window.devicePixelRatio || 1) };
   let ctl = null;
-  if (cv.transferControlToOffscreen && typeof Worker !== 'undefined') {
+  if (cv.transferControlToOffscreen && typeof Worker !== 'undefined' && typeof OffscreenCanvas !== 'undefined' && offscreenGl2()) {
     try {
-      const off = cv.transferControlToOffscreen();
+      // Worker zuerst: scheitert er, gehört die Canvas noch dem Hauptfaden
       const wk = new Worker(new URL('./boot_nebula_worker.js', import.meta.url), { type: 'module' });
-      const fail = () => { wk.terminate(); cv.hidden = true; };
+      const off = cv.transferControlToOffscreen();
+      const fail = () => { wk.terminate(); cv.hidden = true; onFail(); };
       wk.onmessage = (e) => { if (e.data && e.data.failed) fail(); };
       wk.onerror = fail;
       wk.postMessage({ canvas: off, ...opts }, [off]);
@@ -485,7 +498,8 @@ export function createNebula(cv, look, still) {
     } catch (e) { /* weiter auf dem Hauptfaden */ }
   }
   if (!ctl) {
-    const gl = cv.getContext('webgl2', { antialias: false, alpha: false });
+    let gl = null;
+    try { gl = cv.getContext('webgl2', { antialias: false, alpha: false }); } catch (e) { /* Canvas schon übergeben */ }
     const loop = gl && animate(cv, gl, opts, (f) => requestAnimationFrame(f));
     if (!loop) return null;
     ctl = { ...loop, stop() { loop.stop(); const x = gl.getExtension('WEBGL_lose_context'); if (x) x.loseContext(); } };

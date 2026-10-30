@@ -279,7 +279,7 @@ export function create(ctx) {
   const flash = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTexture(), blending: THREE.AdditiveBlending, depthWrite: false, transparent: true, opacity: 0 }));
   flash.visible = false;
   scene.add(flash);
-  const sunFlare = createFlare({ strength: 1.15 });
+  const sunFlare = createFlare({ strength: 1.15, own: true });
   scene.add(sunFlare);
   let opticIdx = 0, ghostOn = true, ghostMotionOn = true;
   let burstRate = 1.0, sprayAmt = 1.0;
@@ -314,7 +314,7 @@ export function create(ctx) {
     const gr = GRADES[globalGrade() ? 0 : gradeIdx][1];
     Object.assign(look, gr, { bloom: gr.bloom * gb });
   }
-  onSettings((keys) => { if (keys.includes('grade')) applyGlow(); });
+  const offGrade = onSettings((keys) => { if (keys.includes('grade')) applyGlow(); });
   const regionWorld = (r, out, h = 1) => out.copy(r.mid).multiplyScalar(h).applyAxisAngle(Y, omega(r.lat) * days * RAD).applyQuaternion(sunG.quaternion);
   const tmp = new THREE.Vector3(), tmp2 = new THREE.Vector3();
   const facing = (p, cam) => tmp.copy(cam.position).sub(p).normalize().dot(tmp2.copy(p).normalize());
@@ -726,6 +726,7 @@ export function create(ctx) {
     setPixelRatio(pr) { stars.userData.setPixelRatio(pr); },
     setDetail(d) { for (const m of [lookMat, rim.material]) { m.defines = lookDefines(d); m.needsUpdate = true; } },
     dispose() {
+      offGrade();
       scene.traverse((o) => { if (o.geometry) o.geometry.dispose(); if (o.material) o.material.dispose(); });
       flash.material.map.dispose();
       comet.dispose();

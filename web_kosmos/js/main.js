@@ -164,7 +164,7 @@ function tex(name, srgb = true) {
 const state = {
   levels: new Map(), loading: new Map(), active: null, id: null, tr: null, chain: null, queue: [], controls: null,
   time: 0, intro: null, follow: null, poses: new Map(), cine: { idle: 0, w: 0, base: null }, offer: null, caption: 0,
-  dragging: false,
+  dragging: false, booted: false,
 };
 if (capture) window.__kosmos = { state, THREE };
 const dateP = new Date(params.get('date') || Date.now());
@@ -287,6 +287,7 @@ async function makeLevel(id) {
   if (lv.ready) step(id, 'Modell laden');
   if (lv.ready) await lv.ready;
   await warmUp(lv);
+  fit(lv);   // Fenster kann sich beim Bau geändert haben – resize() erreicht nur fertige Stationen
   state.levels.set(id, lv);
   state.loading.delete(id);
   return lv;
@@ -415,12 +416,12 @@ function activate(lv) {
   };
   // Ziehen gleichmäßig: OrbitControls rechnet bei jedem Zeiger-Ereignis zusätzlich einen Dämpfungsschritt – je nach Zahl der
   // Ereignisse im Bild dreht die Kamera ein- oder zweimal so weit und bremst beim Loslassen auf die Hälfte. Hier rechnet
-  // nur die Bildschleife.
+  // nur die Bildschleife. Touch ruft update() erst nach dem _handle*-Aufruf im selben Ereignis → still bis Ereignis-Ende.
   let quiet = false;
   for (const k of Object.keys(OrbitControls.prototype).concat(Object.getOwnPropertyNames(OrbitControls.prototype))) {
     if (!/^_handle(Mouse|Touch)Move/.test(k) || typeof c[k] !== 'function') continue;
     const f = c[k];
-    c[k] = function (...a) { quiet = true; try { return f.apply(this, a); } finally { quiet = false; } };
+    c[k] = function (...a) { quiet = true; try { return f.apply(this, a); } finally { queueMicrotask(() => { quiet = false; }); } };
   }
   const update = c.update.bind(c);
   c.update = (...a) => (quiet ? false : update(...a));
@@ -1344,7 +1345,7 @@ function logCams(real) {
 }
 
 function stepTour(dt) {
-  if (!tour || state.tr || state.intro) return;
+  if (!tour || !state.booted || state.tr || state.intro) return;
   tour.since += dt;
   if (tour.since > tour.dwell) { tour.since = 0; goTo(nextOnRoute(state.id)); }
 }
@@ -1381,6 +1382,8 @@ window.addEventListener('keydown', (ev) => {
     if (['Escape', 'Enter', ' ', 'ArrowRight', 'ArrowLeft', 'ArrowUp', 'PageDown', 'PageUp'].includes(ev.key)) { ev.preventDefault(); skipOpener(); }
     return;
   }
+  // Fokus in scrollbarer Tafel oder Bedienleiste: Tasten scrollen bzw. bedienen dort, die Kamera bleibt
+  if (ev.target.closest && ev.target.closest('.panel, .cfg-pane, .lay-scroll, [role="toolbar"]')) return;
   if (ev.key === 'ArrowRight' || ev.key === 'PageDown') { ev.preventDefault(); goTo(routeStep(state.id, 1)); }
   else if (ev.key === 'ArrowLeft' || ev.key === 'PageUp') { ev.preventDefault(); goTo(routeStep(state.id, -1)); }
   else if (ev.key === 'ArrowUp' && state.active && state.active.meta.parent) { ev.preventDefault(); goTo(state.active.meta.parent); }
@@ -1428,13 +1431,16 @@ async function start() {
     resize();
     if (film) await startOpener(lv);
     document.body.classList.add('is-ready');
-    if (!state.opener) {
+    requestAnimationFrame(frame);
+    // Film, Ankunftstitel, Kranfahrt und Tour erst starten, wenn das Ladebild fast weg ist – sonst laufen sie darunter ab
+    // (done() wartet auf Enter bzw. „Reise starten“)
+    await boot.done();
+    state.booted = true;
+    if (state.opener) state.opener.o.film.playing = true;
+    else if (state.active === lv && !state.tr) {
       hud.caption(lv.meta, !id);
       if (!id) startIntro(lv);
     }
-    requestAnimationFrame(frame);
-    // Film erst starten, wenn das Ladebild fast weg ist – sonst läuft der Anfang unter dem Ladebild
-    boot.done().then(() => { if (state.opener) state.opener.o.film.playing = true; });
   } catch (err) {
     console.error(err);
     document.body.classList.add('is-fatal', 'fatal-start');

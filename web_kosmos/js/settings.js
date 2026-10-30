@@ -73,7 +73,11 @@ export const settings = { S: load() };
 // globaler Farblook oder null (= jede Station ihr eigener Look)
 export const globalGrade = () => (settings.S.grade === 'station' ? null : GRADES[GRADE_IDS.indexOf(settings.S.grade) - 1][1]);
 const listeners = [];
-export function onSettings(fn) { listeners.push(fn); }
+// Ergebnis: Abmeldung – Stationen rufen sie beim Freigeben, sonst hält der Listener die alte Szene im Speicher
+export function onSettings(fn) {
+  listeners.push(fn);
+  return () => { const i = listeners.indexOf(fn); if (i >= 0) listeners.splice(i, 1); };
+}
 // Regler „Höhe der Kinobalken“ zeigt die Balken beim Ziehen kurz an, auch wenn der Kino-Modus aus ist (main.js)
 let peekT = -1e9;
 export const barsPeek = () => performance.now() - peekT < 1500;
@@ -82,7 +86,9 @@ export const barsPeek = () => performance.now() - peekT < 1500;
 export function followStars(group) {
   const apply = () => group.children.forEach((c) => { c.visible = settings.S.stars; });
   apply();
-  onSettings((keys) => { if (keys.includes('stars')) apply(); });
+  const off = onSettings((keys) => { if (keys.includes('stars')) apply(); });
+  const first = group.children[0];   // Station gibt frei (traverse + dispose) → abmelden, wie deepsky.js
+  if (first && first.geometry) first.geometry.addEventListener('dispose', off);
 }
 
 export function setSetting(key, value) {

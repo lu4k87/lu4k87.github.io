@@ -385,6 +385,7 @@ export function milkyBand(ngp, gc, gain = 1, tex = null) {
   holder.add(mesh);
   holder.userData = { mesh, model, tex };
   bands.add(holder);
+  mesh.geometry.addEventListener('dispose', () => bands.delete(holder));   // Station freigegeben (traverse + dispose)
   applyMode(holder);
   return holder;
 }

@@ -12,7 +12,7 @@ const LOOK_KEY = 'kosmos.bootNebula';
 const FILM_KEYS = ['Escape', 'Enter', ' ', 'ArrowRight', 'ArrowLeft', 'ArrowUp', 'PageDown', 'PageUp'];
 
 export function createBoot(root = document.getElementById('boot')) {
-  if (!root) return { set() {}, done() {} };
+  if (!root) return { set() {}, done: () => Promise.resolve() };
   const bar = root.querySelector('.boot-bar');
   const what = root.querySelector('.boot-what');
   const pct = root.querySelector('.boot-pct');
@@ -107,7 +107,7 @@ function setupLooks(root) {
   let look = 'C';
   try { const s = localStorage.getItem(LOOK_KEY); if (LOOKS[s]) look = s; } catch (e) { /* privat: Standard */ }
   const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const nebula = cv && createNebula(cv, look, still);
+  const nebula = cv && createNebula(cv, look, still, () => { if (bar) bar.hidden = true; });
   if (!nebula || !bar) return nebula;
   const btns = Object.entries(LOOKS).map(([k, name]) => {
     const b = document.createElement('button');

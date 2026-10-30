@@ -102,7 +102,8 @@ const GHOSTS = [
   { k: -0.7, s: 0.05, c: [1.0, 0.6, 0.5], a: 0.07, t: 'disc' },
 ];
 
-export function createFlare({ strength = 1, tint = [1, 0.92, 0.8] } = {}) {
+// own: Station hat eigene Schalter für Optik und Ghost (Sonne) – die globalen Zeilen im Zahnrad wirken dort nicht
+export function createFlare({ strength = 1, tint = [1, 0.92, 0.8], own = false } = {}) {
   const group = new THREE.Group();
   group.renderOrder = 60;
   const tex = {
@@ -177,9 +178,9 @@ export function createFlare({ strength = 1, tint = [1, 0.92, 0.8] } = {}) {
     if (v < 0.002) { group.visible = false; return; }
     group.visible = true;
 
-    const useMaster = opticMode === 'master' && (settings.S.lensOptic !== 'classic');
-    const showGhost = ghostOn && (settings.S.lensGhost !== false);
-    const moveGhost = ghostMotionOn && (settings.S.ghostMotion !== false);
+    const useMaster = opticMode === 'master' && (own || settings.S.lensOptic !== 'classic');
+    const showGhost = ghostOn && (own || settings.S.lensGhost !== false);
+    const moveGhost = ghostMotionOn && (own || settings.S.ghostMotion !== false);
 
     if (useMaster) {
       // Linse:B – Master-Optik nach Nutzerreferenz; bei 1× dezent (User 26.10.2026: viel zu stark), 3× ≈ früherer Look
@@ -214,7 +215,9 @@ export function createFlare({ strength = 1, tint = [1, 0.92, 0.8] } = {}) {
       } else {
         streak.visible = false;
       }
-      ghosts.forEach((sp, i) => { const g = GHOSTS[i]; place(sp, ndc.x * g.k, ndc.y * g.k, g.s, camera, v * (1 - 0.5 * Math.abs(g.k))); });
+      // Geisterbilder auf der Achse Sonne–Bildmitte folgen dem Schalter „Geisterbild“ wie der Magenta-Ghost oben
+      if (showGhost) ghosts.forEach((sp, i) => { const g = GHOSTS[i]; place(sp, ndc.x * g.k, ndc.y * g.k, g.s, camera, v * (1 - 0.5 * Math.abs(g.k))); });
+      else ghosts.forEach((sp) => { sp.visible = false; });
     }
   };
   return group;

@@ -508,6 +508,7 @@ export function create(ctx) {
     setLayer('pulsar', 'sound', v);
     setSoundOn(v);
     sound(v && isActive);
+    window.dispatchEvent(new CustomEvent('kosmos:sound'));   // Knopf der Kopfzeile (quick.js) nachziehen
   }
   const slowIdx = () => Math.max(0, SLOWS.findIndex(([v]) => v === slow));
   const q = new THREE.Quaternion();

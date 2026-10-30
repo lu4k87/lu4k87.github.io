@@ -169,7 +169,7 @@ export default {
       { t: 'Kernschatten', u: 'km', items: IDS.map((id) => ({ l: NAME[id], v: SHADOW[id].umbra, t: n(Math.round(SHADOW[id].umbra / 10) * 10), hl: id === 'io' })) },
       { t: 'Halbschatten außen', u: 'km', items: IDS.map((id) => ({ l: NAME[id], v: SHADOW[id].pen, t: n(Math.round(SHADOW[id].pen / 10) * 10), hl: id === 'io' })) },
     ],
-    cap: 'Durchmesser der Schatten auf Jupiters Wolken (eigene Rechnung aus Mondradius, Bahnradius und Größe der Sonnenscheibe bei mittlerem Sonnenabstand). Je weiter draußen ein Mond kreist, desto kleiner sein Kernschatten: Kallisto wirft trotz ihrer Größe den kleinsten.',
+    cap: 'Durchmesser der Schatten auf Jupiters Wolken (eigene Rechnung aus Mondradius, Bahnradius und Größe der Sonnenscheibe bei mittlerem Sonnenabstand). Je weiter draußen ein Mond kreist, desto stärker schrumpft sein Kernschatten gegenüber seinem Durchmesser: Kallisto wirft trotz ihrer Größe den kleinsten.',
     s: ['nssdc-jovsat', 'nasa-jupiter-fs', 'nasa-sun', 'nasa-planets'],
   },
   'jupiter.res': {

@@ -6,7 +6,7 @@
 // · Fontänen: Teilchen auf Wurfbahnen aus Quellen entlang der Streifen. Höhe aus der Ballistik (400 m/s, Fallbeschleunigung
 //   0,113 m/s² – eigene Rechnung), Teilchen verlangsamt; im Gegenlicht (Vorwärtsstreuung) heller; im Mondschatten dunkel, so
 //   ragen sie in der Polarnacht aus dem Schatten ins Licht;
-// · Stärke nach Bahnlage: Hedman et al. 2013 fanden die Fontäne am sonnenfernen Punkt der Bahn (Apozentrum) etwa 3-mal heller als
+// · Stärke nach Bahnlage: Hedman et al. 2013 fanden die Fontäne am saturnfernen Punkt der Bahn (Apozentrum) etwa 3-mal heller als
 //   am nächsten. Hier als Kosinus über der mittleren Anomalie (Modell: Verlauf und Phase vereinfacht).
 
 import * as THREE from 'three';
@@ -167,7 +167,7 @@ export function create(ctx) {
         layers: [
           { id: 'jets', type: 'toggle', group: 'Fontänen', label: 'Fontänen am Südpol', value: true, set: (v) => { on = v; jet.visible = v; } },
           { id: 'tide', type: 'toggle', label: 'Stärke folgt der Bahnlage (Hedman 2013)', value: true, sub: true,
-            hint: 'Am sonnenfernen Punkt der Bahn etwa 3-mal heller als am nächsten; Verlauf als Kosinus (Modell). Aus: konstante Stärke.',
+            hint: 'Am saturnfernen Punkt der Bahn (Apozentrum) etwa 3-mal heller als am nächsten; Verlauf als Kosinus (Modell). Aus: konstante Stärke.',
             set: (v) => { tide = v; } },
           { id: 'jetGain', type: 'range', label: 'Helligkeit', value: gain, min: 0.5, max: 8, step: 0.5, unit: '×', sub: true, set: (v) => { gain = v; } },
           { id: 'stripes', type: 'toggle', group: 'Oberfläche', label: 'Tigerstreifen markieren', value: false, set: (v) => { lines.visible = v; } },

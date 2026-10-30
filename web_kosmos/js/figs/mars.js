@@ -29,7 +29,7 @@ const CRATERS = (on) => ({
     { l: 'Phobos', a: 27, b: 22, c: 9, cl: 'Stickney 9 km', t: '27 × 22 × 18 km', hl: on === 'phobos' },
     { l: 'Deimos', a: 15, b: 12, c: 2.3, cl: '2,3 km', t: '15 × 12 × 11 km', hl: on === 'deimos' },
   ],
-  cap: 'Beide Monde im selben Maßstab, je mit dem größten Krater. Stickney ist ein Drittel so breit wie Phobos lang ist; der größte Krater auf Deimos misst ein Fünftel davon.',
+  cap: 'Beide Monde im selben Maßstab, je mit dem größten Krater. Stickney ist ein Drittel so breit wie Phobos lang ist; der größte Krater auf Deimos ist mit 2,3 km nur ein Viertel so breit wie Stickney.',
   s: ['nasa-phobos', 'nasa-deimos'],
 });
 const MARS_SKY = (on) => ({

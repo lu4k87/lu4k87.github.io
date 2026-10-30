@@ -172,7 +172,6 @@ export function createMarsMoon(ctx, cfg) {
   const marsOcc = [new THREE.Vector4(0, 0, 0, m.r)];
 
   // ---------- Körper: Modell mit Schlagschatten der Sonne ----------
-  const prevShadow = ctx.renderer.shadowMap.enabled, prevType = ctx.renderer.shadowMap.type;
   ctx.renderer.shadowMap.enabled = true;
   ctx.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   const shape = moonShape(cfg.id, Math.round(60 + 60 * ctx.detail));
@@ -340,6 +339,8 @@ export function createMarsMoon(ctx, cfg) {
   const kMin = 0.02;   // mindestens 20 m über dem Boden
 
   return {
+    // Station verlassen: gewählten Blick lösen, sonst springt die Kamera nach der nächsten Landung hart auf die alte Pose
+    onActive(on) { if (!on) { releaseView(); controls[0].value = 'home'; } },
     scene, camera, home, unit: 1e3, hotspots, controls, ready,
     orbit: { minDistance: 0.02, maxDistance: Math.ceil(state.dist * 4), cineSpeed: 0.5 },
     look: { exposure: cfg.exposure, bloom: 0.06, sat: 1.02 },
@@ -383,8 +384,7 @@ export function createMarsMoon(ctx, cfg) {
       canvas.removeEventListener('pointerdown', releaseView);
       canvas.removeEventListener('wheel', releaseView);
       scene.traverse((x) => { if (x.geometry) x.geometry.dispose(); if (x.material) x.material.dispose(); });
-      ctx.renderer.shadowMap.enabled = prevShadow;
-      ctx.renderer.shadowMap.type = prevType;
+      if (sunL.shadow.map) sunL.shadow.map.dispose();   // Schattenkarte (Render-Target) gibt perf.js nicht frei
     },
   };
 }

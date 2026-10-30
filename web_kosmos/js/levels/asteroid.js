@@ -301,8 +301,8 @@ export function create(ctx) {
   const stars = createStarfield({ gain: 0.7, seed: 29 });
   scene.add(stars);
 
-  // Schattenwurf: nur diese Station nutzt Lichter mit Schatten; beim Verlassen wieder aus
-  const prevShadow = ctx.renderer.shadowMap.enabled, prevType = ctx.renderer.shadowMap.type;
+  // Schattenwurf: Schattenkarte bleibt an – andere Stationen (Marsmonde, orbitview.js, l2view.js) brauchen sie gleichzeitig,
+  // gebaut wird schon beim Vorladen; Stationen ohne castShadow-Licht zeichnen keine Karte
   ctx.renderer.shadowMap.enabled = true;
   ctx.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
@@ -538,8 +538,7 @@ export function create(ctx) {
       [midMat, smallMat].forEach((r) => r.m.dispose());
       sphere.dispose();
       sunTex.dispose();
-      ctx.renderer.shadowMap.enabled = prevShadow;
-      ctx.renderer.shadowMap.type = prevType;
+      if (sun.shadow.map) sun.shadow.map.dispose();   // Schattenkarte (Render-Target) gibt perf.js nicht frei
     },
   };
 }

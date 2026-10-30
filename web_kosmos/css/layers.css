@@ -200,6 +200,8 @@ body.is-flying .tl, body.is-intro .tl { opacity: 0; pointer-events: none; }
 .st-title-n { font: 600 13px var(--mono); padding: 2px 8px; border-radius: 12px; background: var(--accent-soft); color: var(--accent); }
 
 /* Bento:A – 2-Spalten-Raster für Station-Settings links mit Bento-Kacheln, 26 px Kennzahlen & größeren Überschriften */
+/* hidden-Attribut der nicht gewählten Gruppen (layers.js pickTab) gilt trotz display: grid */
+#station .lay-panel[hidden] { display: none; }
 #station .lay-panel {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -253,7 +255,8 @@ body.is-flying .tl, body.is-intro .tl { opacity: 0; pointer-events: none; }
   text-shadow: 0 0 16px rgba(var(--accent-rgb), 0.25);
   margin: 2px 0 4px;
 }
-#station .b-item > .b-dev {
+/* nur das ↺ der Kachel selbst in die Ecke; Unter-Zeilen behalten ihre Spalte (.cfg-pane-Raster oben) */
+#station .lay-panel > .b-item > .b-dev {
   position: absolute;
   top: 8px;
   right: 8px;

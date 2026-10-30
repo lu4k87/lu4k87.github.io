@@ -360,6 +360,8 @@ export function create(ctx) {
   const sunFar = new THREE.Vector3();
 
   return {
+    // Station verlassen: gewählten Blick lösen, sonst springt die Kamera nach der nächsten Landung hart auf die alte Pose
+    onActive(on) { if (!on) { releaseView(); controls[0].value = 'moon'; } },
     scene, camera, home, unit: 1e6, hotspots, controls, ready,
     orbit: { minDistance: 0.02, maxDistance: 120, cineSpeed: 0.5 },
     look: { exposure: 1.0, bloom: 0.05, sat: 1.04 },

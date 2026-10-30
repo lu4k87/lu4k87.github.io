@@ -6,12 +6,12 @@ import { nbsp } from './figs.js';
 
 export const SCALE_COMPARISONS = {
   iss: {
-    sizeStr: '108 m Spannweite',
+    sizeStr: '109 m Gitterträger',
     tabs: [
       {
         name: 'Mensch & Bauten',
         items: [
-          { name: 'ISS', size: '108 m', r: 42, color: 'linear-gradient(135deg, #33ccff, #1a7599)', type: 'iss' },
+          { name: 'ISS', size: '109 m', r: 42, color: 'linear-gradient(135deg, #33ccff, #1a7599)', type: 'iss' },
           { name: 'Fußballfeld', size: '105 m', r: 41, color: 'linear-gradient(135deg, #38bdf8, #0369a1)', type: 'field' },
           { name: 'Boeing 747', size: '71 m', r: 28, color: 'linear-gradient(135deg, #94a3b8, #475569)', type: 'plane' },
         ],
@@ -20,7 +20,7 @@ export const SCALE_COMPARISONS = {
       {
         name: 'vs. Tiangong',
         items: [
-          { name: 'ISS', size: '108 m (450 t)', r: 44, color: 'linear-gradient(135deg, #33ccff, #1a7599)', type: 'iss' },
+          { name: 'ISS', size: '109 m (420 t)', r: 44, color: 'linear-gradient(135deg, #33ccff, #1a7599)', type: 'iss' },
           { name: 'Tiangong', size: '55 m (90 t)', r: 24, color: 'linear-gradient(135deg, #fbbf24, #b45309)', type: 'tg' },
         ],
         note: 'Die chinesische Station Tiangong hat etwa die halbe Spannweite und ein Fünftel der Masse der ISS.',
@@ -35,7 +35,7 @@ export const SCALE_COMPARISONS = {
         items: [
           { name: 'Tiangong', size: '55 m', r: 30, color: 'linear-gradient(135deg, #fbbf24, #b45309)', type: 'tg' },
           { name: 'Boeing 737', size: '36 m', r: 20, color: 'linear-gradient(135deg, #94a3b8, #475569)', type: 'plane' },
-          { name: 'ISS', size: '108 m', r: 52, color: 'linear-gradient(135deg, #33ccff, #1a7599)', type: 'iss' },
+          { name: 'ISS', size: '109 m', r: 52, color: 'linear-gradient(135deg, #33ccff, #1a7599)', type: 'iss' },
         ],
         note: 'Wentians Solarflügel überspannen 55 Meter – mehr als die Spannweite eines Passagierflugzeugs.',
       },
@@ -134,12 +134,12 @@ export const SCALE_COMPARISONS = {
     ],
   },
   asteroid: {
-    sizeStr: 'Psyche: 279 × 232 × 189 km',
+    sizeStr: 'Psyche: 278 × 238 × 171 km',
     tabs: [
       {
         name: 'Asteroiden-Vergleich',
         items: [
-          { name: 'Psyche', size: '226 km Ø', r: 40, color: 'radial-gradient(circle at 35% 35%, #cbd5e1, #1e293b)', type: 'rock' },
+          { name: 'Psyche', size: '222 km Ø', r: 40, color: 'radial-gradient(circle at 35% 35%, #cbd5e1, #1e293b)', type: 'rock' },
           { name: 'Bennu', size: '490 m', r: 5, color: 'radial-gradient(circle at 35% 35%, #94a3b8, #0f172a)', type: 'rock' },
         ],
         note: 'Psyche ist einer der massereichsten Metall-Asteroiden – Bennu dagegen nur ein winziger Geröllhaufen.',
@@ -392,15 +392,15 @@ export const SCALE_COMPARISONS = {
     ],
   },
   sgra: {
-    sizeStr: 'Schatten Ø ≈ 53 µas (≈ 52 Mio. km)',
+    sizeStr: 'Schatten Ø ≈ 53 µas (≈ 66 Mio. km)',
     tabs: [
       {
         name: 'vs. Sonnensystem',
         items: [
-          { name: 'Schatten Sgr A*', size: '52 Mio. km', r: 35, color: 'radial-gradient(circle at 50% 50%, #000 60%, #ea580c 90%)', type: 'hole' },
-          { name: 'Merkurbahn', size: '58 Mio. km', r: 42, color: 'none', type: 'orbit' },
+          { name: 'Schatten Sgr A*', size: '66 Mio. km Ø', r: 24, color: 'radial-gradient(circle at 50% 50%, #000 60%, #ea580c 90%)', type: 'hole' },
+          { name: 'Merkurbahn', size: '116 Mio. km Ø', r: 42, color: 'none', type: 'orbit' },
         ],
-        note: 'Der Schatten von Sagittarius A* würde fast die gesamte Merkurbahn (58 Mio. km Sonnenabstand) ausfüllen.',
+        note: 'Der Schatten von Sagittarius A* (66 Mio. km) ist gut halb so breit wie die Merkurbahn (116 Mio. km Durchmesser, eigene Rechnung).',
       },
     ],
   },

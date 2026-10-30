@@ -18,7 +18,7 @@ const MIRRORS = (on) => ({
     { l: 'Roman', v: 2.4, t: '2,4', hl: on === 'roman' },
     { l: 'Euclid', v: 1.2, t: '1,2', hl: on === 'euclid' },
   ] }],
-  cap: 'Die Sammelfläche wächst mit dem Quadrat des Durchmessers: Webb sammelt gut fünfmal so viel Licht wie Hubble (eigene Rechnung, ohne Abschattung). Roman hat einen Spiegel wie Hubble, sieht aber ein viel größeres Feld auf einmal.',
+  cap: 'Die Sammelfläche wächst mit dem Quadrat des Durchmessers: Als voller Kreis von 6,5 m würde Webb über siebenmal so viel Licht sammeln wie Hubble; die echten Flächen (25,4 m² gegen 4,5 m², Sechsecke mit Lücken) ergeben gut fünfmal so viel (eigene Rechnung). Roman hat einen Spiegel wie Hubble, sieht aber ein viel größeres Feld auf einmal.',
   s: ['nasa-webb-facts', 'nasa-hubble-numbers', 'stsci-roman-wfi', 'esa-euclid'],
 });
 

@@ -249,10 +249,10 @@ export function create(ctx) {
     sideV.copy(cam.position).normalize().add(sunDir).addScaledVector(pole, -sideV.dot(pole)).normalize();
     bandPos.copy(sideV).multiplyScalar(Math.cos(0.21)).addScaledVector(pole, Math.sin(0.21) * FLAT);
     sunPos.copy(sunDir).multiplyScalar(60);
-    // Mondschatten: Schnitt der Linie Mond → von der Sonne weg mit Jupiter (Kugel), nur auf der Tagseite
+    // Mondschatten: Schnitt der Linie Mond → von der Sonne weg mit Jupiter (Kugel), nur auf der Tagseite (Mond auf der Sonnenseite: b > 0)
     shadowOn = false;
     for (const x of moons) {
-      const b = -x.pos.dot(sunDir), c = x.pos.lengthSq() - 1, h = b * b - c;
+      const b = x.pos.dot(sunDir), c = x.pos.lengthSq() - 1, h = b * b - c;
       if (b > 0 && h > 0) { shadowPos.copy(x.pos).addScaledVector(sunDir, -(b - Math.sqrt(h))); shadowOn = shadowsOn; break; }
     }
   }

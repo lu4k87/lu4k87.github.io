@@ -291,7 +291,8 @@ export function create(ctx) {
   const hotspots = [
     // gleicher Raum: Station 3 nutzt dasselbe Achsenkreuz (Zentrum im Ursprung, kpc) – Flug als Überblendung (main.js sameSpace)
     { id: 'mw', kind: 'dive', to: 'galaxy', pos: new THREE.Vector3(0, 0, 0), same: true },
-    { id: 'm31', kind: 'dive', to: 'andromeda', pos: m31pos, same: true },
+    // Zukunft gesetzt: Andromeda (Station) zeigt die heutige Lage – dann kein gleicher Raum, sondern normaler Flug
+    { id: 'm31', kind: 'dive', to: 'andromeda', pos: m31pos, get same() { return future === 0; } },
     { id: 'm33', kind: 'info', pos: m33pos },
     { id: 'lmc', kind: 'info', pos: lmc },
     { id: 'mstream', kind: 'info', pos: ms(-70, 75), visible: () => streamsOn,
@@ -311,7 +312,7 @@ export function create(ctx) {
   ];
   const controls = [
     { id: 'labels', label: 'Namen', value: 'off', options: [['off', 'Aus'], ['on', 'Zwerggalaxien + Grenze']], set: (v) => { labelsOn = v === 'on'; bound.visible = labelsOn; } },
-    { id: 'future', label: 'Zukunft', type: 'range', show: true, min: 0, max: Math.floor(tMax / 100) * 100, step: 20, value: 0, fmt: (v) => (v ? `+${(v / 1000).toFixed(1).replace('.', ',')} Mrd. J.` : 'heute'), set: (v) => setFuture(v) },
+    { id: 'future', label: 'Zukunft', type: 'range', show: true, min: 0, max: Math.ceil(tMax / 20) * 20, step: 20, value: 0, fmt: (v) => (v ? `+${(v / 1000).toFixed(1).replace('.', ',')} Mrd. J.` : 'heute'), set: (v) => setFuture(v) },
   ];
   // Blick über die Milchstraße hinweg auf Andromeda: beide auf einer Linie, die Kamera darüber (Abstand oben/unten
   // statt links/rechts, damit das Bild auch im Hochformat trägt)
@@ -351,7 +352,7 @@ export function create(ctx) {
     },
     live: () => (future > 0
       ? `In ${(future / 1000).toFixed(1).replace('.', ',')} Mrd. Jahren: Andromeda ${Math.round(m31pos.length() * 3.2616).toLocaleString('de-DE')} Tsd. Lj entfernt${future >= tMax ? ' · erster Vorbeiflug, danach Verschmelzung (Modellende)' : ''}`
-      : `Heute: Andromeda ${Math.round(m31pos.length() * 3.2616 / 10) / 100} Mio. Lj entfernt, nähert sich mit 109 km/s · Modell: nächste Begegnung in ≈ ${(tMax / 1000).toFixed(1).replace('.', ',')} Mrd. Jahren`),
+      : `Heute: Andromeda ${(m31pos.length() * 3.2616 / 1000).toFixed(1).replace('.', ',')} Mio. Lj entfernt, nähert sich mit 109 km/s · Modell: nächste Begegnung in ≈ ${(tMax / 1000).toFixed(1).replace('.', ',')} Mrd. Jahren`),
     setPixelRatio(pr, H) {
       for (const o of px) o.userData.setPx(pr, H, camera.fov);
     },
