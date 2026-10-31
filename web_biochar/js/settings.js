@@ -18,7 +18,7 @@ const KEY = 'biochar-settings.v1';
 // Ebenen (1 = wie gebaut); kelvin 6500 = Lichtfarbe der Ebene unverändert (Normierung auf D65); fps 0 = ohne Deckel;
 // grade: Farblook („ebene“ = Stimmung der Ebene), vig: Faktor auf die Vignette, bars: Kinobalken 2,39:1;
 // Material & Optik (Vorschau 31.10.2026 Kohle:A, REM:A, Atome:A, Linse:A): coat Klarlack der Kohle (Ebene 1), edgeLight Faktor auf
-// ihr Gegenlicht, semEdge/semGrain Kantenleuchten und Körnung der REM-Ebenen (sem.js semLook), atomCoat Klarlack der Atome
+// ihr Gegenlicht (Höchstwerte 31.10.2026 gesenkt: Spiegelung war zu stark), semEdge/semGrain Kantenleuchten und Körnung der REM-Ebenen (sem.js semLook), atomCoat Klarlack der Atome
 // (Ebenen 6–7), bloomThr Helligkeit, ab der Bloom einsetzt
 const DEF = {
   detail: 1, light: 1, shadow: 'full', fx: 1,
@@ -27,11 +27,11 @@ const DEF = {
   key: 1, rim: 1, env: 1, kelvin: 6500, exposure: 1, pool: 1,
   dust: true, veil: true, hotspots: true, charge: false /* Aufladung aus, bis jemand sie einschaltet (Vorschau 2026-10-25, F3) */,
   grade: 'ebene', vig: 1, bars: false,
-  coat: 0.6, edgeLight: 2, semEdge: 0.95, semGrain: 0.55, atomCoat: 1, bloomThr: 0.6,
+  coat: 0.3, edgeLight: 1.5, semEdge: 0.95, semGrain: 0.55, atomCoat: 1, bloomThr: 0.6,
 };
 const RANGE = { detail: [0.5, 1], light: [0, 2], fx: [0, 1.5], scale: [0.5, 1], fps: [0, 60], dive: [1.5, 6], play: [4, 30], key: [0, 2], rim: [0, 2], env: [0, 2],
   kelvin: [2700, 9000], exposure: [0.5, 2], pool: [0, 2], vig: [0, 1.5],
-  coat: [0, 1], edgeLight: [1, 3], semEdge: [0.3, 1.2], semGrain: [0.3, 1.3], atomCoat: [0, 1], bloomThr: [0.4, 1] };
+  coat: [0, 0.6], edgeLight: [0.5, 2], semEdge: [0.3, 1.2], semGrain: [0.3, 1.3], atomCoat: [0, 1], bloomThr: [0.4, 1] };
 // Farblook: Tönung Schatten/Lichter (linear), Sättigung, S-Kurve, Belichtung, Vignette. „Ebene“ = Stimmung der Ebene (main.js MOODS),
 // die anderen gelten auf allen Ebenen (main.js gradeOf). Labor = kühl und entsättigt wie ein Messbild, Glut = warm wie die Rotglut
 export const GRADES = [['neutral', { sh: [0.97, 0.99, 1.03], hi: [1.02, 1, 0.97], sat: 1.02, con: 0.12, exposure: 1, vig: 0.38 }],

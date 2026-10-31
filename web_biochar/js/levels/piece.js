@@ -681,7 +681,7 @@ export function create(ctx) {
 
   // Licht: warmes Hauptlicht schwenkt langsam, kühles Gegenlicht streicht über die Längsflächen (Seidenglanz wandert)
   const key = new THREE.DirectionalLight(0xfff0dc, 2.2);
-  const RIM = 2.1;   // × look.rim (Zahnrad „Kantenlicht“, Standard 2 = Vorschau 31.10.2026 Kohle:A)
+  const RIM = 1.5;   // × look.rim (Zahnrad „Kantenlicht“, Standard 1,5; 31.10.2026 gesenkt, Spiegelung war zu stark)
   const rim = new THREE.DirectionalLight(0xc4d6ff, RIM * look.rim);
   const fill = new THREE.HemisphereLight(0x8090a0, 0x050505, 0.35);
   const KEY0 = new THREE.Vector3(5, 7, 6), RIM0 = new THREE.Vector3(-7, 3, -6), Y = new THREE.Vector3(0, 1, 0);
@@ -903,7 +903,7 @@ export function create(ctx) {
       for (const f of fallout) f.visible = st.char > 0.8;
       applyShrink();
       // niedrig verkohlt: bräunlich und matt · ab 550 °C neutral schwarz mit Seidenglanz und Klarlack (Vorschau 31.10.2026
-      // Kohle:A, Glanz = Zahnrad „Kohle-Glanz“)
+      // Kohle:A, Glanz = Zahnrad „Kohle-Glanz“; Höchstwerte 31.10.2026 gesenkt, die Spiegelung überstrahlte die Oberseite)
       const silk = smoothstep(350, 550, value);
       const brown = clamp((450 - value) / 100, 0, 1);   // ab ≈ 450 °C tiefschwarz
       const tint = new THREE.Color(lerp(0.72, 1.9, brown), lerp(0.72, 1.3, brown), lerp(0.74, 0.95, brown));
@@ -912,11 +912,11 @@ export function create(ctx) {
       for (const m of mats) {
         m.color.copy(tint);
         m.normalScale.setScalar(relief);
-        m.metalness = lerp(m === matEnd ? 0.02 : 0.04, 0.3, silk);
-        m.roughness = lerp(1.15, 0.7, silk);
+        m.metalness = lerp(m === matEnd ? 0.02 : 0.04, 0.15, silk);
+        m.roughness = lerp(1.15, 0.85, silk);
         m.clearcoat = lerp(0, look.coat, silk);
-        m.clearcoatRoughness = 0.35;
-        m.envMapIntensity = lerp(1, 1.8, silk);
+        m.clearcoatRoughness = 0.5;
+        m.envMapIntensity = lerp(1, 1.2, silk);
       }
       crumbMat.color.copy(tint).multiplyScalar(0.02);
       level.dirty = true;
