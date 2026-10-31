@@ -5,7 +5,7 @@
 import { mulberry32, clamp, lerp, smoothstep } from '../util.js';
 
 export const TILE = 8.5;          // cm je Kachel
-const PX = 2048;
+const PX = 2048;                  // Bodenkachel; Stufe Sparsam: 1024 (quality.js soilPx)
 
 // ---------- Rauschen ----------
 function hash2(a, b, s) {
@@ -55,7 +55,8 @@ const makeCanvas = (w, h) => new OffscreenCanvas(w, h || w);
 // Grund pixelweise (base(u, v) → [r, g, b, h]), danach Zeichnen mit Umbruch über die Kachelränder.
 // k > 1: Grund in 1/k Auflösung rechnen und weich hochskalieren (k = 2 spart ¾ der Rechenzeit; die gezeichneten
 // Körner, Laubstücke und Wurzeln bleiben in voller Auflösung scharf)
-function paint(W, H, base, draw, rand, k = 1) {
+// D = Zeichenraum der Formen (Standard: Bildpunkte); kleinere Kachel (Sparsam) zeichnet dieselben Formen verkleinert
+function paint(W, H, base, draw, rand, k = 1, D = W) {
   const col = makeCanvas(W, H), hgt = makeCanvas(W, H);
   const cx = col.getContext('2d'), hx = hgt.getContext('2d', { willReadFrequently: true });
   const w = W / k, h = H / k, sc = makeCanvas(w, h), sh = makeCanvas(w, h);
@@ -71,12 +72,14 @@ function paint(W, H, base, draw, rand, k = 1) {
     dst.imageSmoothingQuality = 'high';
     dst.drawImage(src, 0, 0, W, H);
   }
+  const DH = (D * H) / W;
+  for (const c of [cx, hx]) c.setTransform(W / D, 0, 0, W / D, 0, 0);
   const wrap = (x, y, r, f) => {
-    for (const ox of [-W, 0, W]) for (const oy of [-H, 0, H]) {
-      if (x + ox > -r && x + ox < W + r && y + oy > -r && y + oy < H + r) f(x + ox, y + oy);
+    for (const ox of [-D, 0, D]) for (const oy of [-DH, 0, DH]) {
+      if (x + ox > -r && x + ox < D + r && y + oy > -r && y + oy < DH + r) f(x + ox, y + oy);
     }
   };
-  draw && draw({ cx, hx, W, H, rand, wrap });
+  draw && draw({ cx, hx, W: D, H: DH, rand, wrap });
   return { col, hgt };
 }
 // unregelmäßiges Korn: Farbe + Höhe (h > 0 hebt, < 0 senkt)
@@ -140,11 +143,11 @@ function normalFrom(hgt, strength, blur = 1.2) {
 // Albedo bewusst dunkel und entsättigt (Humus ≈ 5–8 %): das Kohlestück bleibt das Hellste im Bild.
 // Großflächige Maske m: 0 = Waldboden-Fleck (Humus, Laubreste, Moosschimmer), 1 = Terra-preta-Fleck (Krümel mit
 // Porenrändern, Kohle); gezeichnete Teile folgen der Maske (Laub eher im Humus, Kohle eher in der Terra preta).
-function soilTex(rand, S) {
+function soilTex(rand, S, px = PX) {
   const wa = worley(40, 5 + S), wb = worley(110, 8 + S);
   const dark = hex(0x16110d), mid = hex(0x271d16), moss = hex(0x26261a), c0 = hex(0x18120e), c1 = hex(0x2f241b);
   const mask = (u, v) => smoothstep(0.42, 0.6, pfbm(u, v, 3, 4, 51 + S));
-  const { col, hgt } = paint(PX, PX, (u, v) => {
+  const { col, hgt } = paint(px, px, (u, v) => {
     const m = mask(u, v);
     let a = [0, 0, 0, 0], b = a;
     if (m < 0.999) {
@@ -201,8 +204,8 @@ function soilTex(rand, S) {
       const x = rand() * W, y = rand() * W, r = 1.5 + rand() * 5, pore = rand() < 0.5;
       wrap(x, y, r * 2, (X, Y) => blob(cx, hx, X, Y, r, pore ? css([0.03, 0.025, 0.02], 0.6) : shade([0.12, 0.09, 0.065], rand, 0.3), pore ? -0.4 : 0.35, rand));
     }
-  }, rand, 2);
-  return { col, nor: normalFrom(hgt, 1.25) };
+  }, rand, 2, PX);
+  return { col, nor: normalFrom(hgt, (1.25 * px) / PX) };
 }
 
 // ---------- Rinde, Blatt ----------
@@ -284,13 +287,13 @@ function leafTex(kind, rand) {
 // ---------- alle Texturen eines Seeds ----------
 // Ergebnis: { soil, bark, leaf: { plain, holes, frag } } je { col, nor } als ImageBitmap (Zeilen schon gespiegelt wie
 // bei flipY, Alpha nicht vormultipliziert), ms = Rechenzeit
-export async function paintAll(seed) {
+export async function paintAll(seed, px = PX) {
   const t0 = performance.now();
   const rand = mulberry32(seed ^ 0x5bd1e995), S = seed % 997;
   const bmp = (c) => createImageBitmap(c, { imageOrientation: 'flipY', premultiplyAlpha: 'none' });
   const pair = async ({ col, nor }) => ({ col: await bmp(col), nor: await bmp(nor) });
   const out = {
-    soil: await pair(soilTex(rand, S)),
+    soil: await pair(soilTex(rand, S, px)),
     bark: await pair(barkTex(rand)),
     leaf: {},
   };
@@ -305,7 +308,7 @@ export const bitmapsOf = (o) => [o.soil, o.bark, ...Object.values(o.leaf)].flatM
 if (typeof WorkerGlobalScope !== 'undefined' && self instanceof WorkerGlobalScope) {
   self.onmessage = async (e) => {
     try {
-      const out = await paintAll(e.data.seed);
+      const out = await paintAll(e.data.seed, e.data.px);
       self.postMessage(out, bitmapsOf(out));
     } catch (err) {
       self.postMessage({ error: String(err) });

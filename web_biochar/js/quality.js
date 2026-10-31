@@ -1,15 +1,18 @@
-// Darstellungsqualität in drei Stufen – flüssige Bilder auch auf schwächeren Rechnern (Wahl im Zahnrad, settings.js).
+// Darstellungsqualität in vier Stufen – flüssige Bilder auch auf schwachen Rechnern ohne Grafikkarte (Wahl im Zahnrad, settings.js).
 // Die Stufe steuert Auflösung (Pixelverhältnis, Maßstab der Ebenen-Bilder, Kantenglättung), Linse (Tiefenunschärfe,
-// Bloom, Farbsaum, Zahl der Abtastpunkte), Schatten und den Detailgrad der Ebenen (setParam 'quality').
-// Wahl bleibt im Browser; ?q=1|2|3 überschreibt sie. Ohne gespeicherte Wahl (= Auto, auch per Zahnrad wählbar) misst die Seite in
-// den ersten Sekunden die Bildrate und schaltet bei Bedarf herunter, danach wacht sie mit Hysterese weiter.
+// Bloom, Farbsaum, Zahl der Abtastpunkte), Schatten und den Detailgrad der Ebenen (setParam 'quality'); Sparsam rechnet
+// zusätzlich die Waldboden-Texturen kleiner (soilPx) und zeichnet die Lupe nur einmal (still).
+// Wahl bleibt im Browser; ?q=0|1|2|3 überschreibt sie. Ohne gespeicherte Wahl (= Auto, auch per Zahnrad wählbar) startet die Seite
+// auf schwachen Geräten (Software-Renderer, ≤ 2 GB Speicher oder ≤ 2 Kerne) in Sparsam, sonst in Fein, misst in den ersten
+// Sekunden die Bildrate und schaltet bei Bedarf herunter, danach wacht sie mit Hysterese weiter.
 
 export const QUALITY = [
-  { id: 'light', name: 'Leicht', dpr: 1, res: 0.75, msaa: 0, dof: 0, bloom: 0, ca: 0, dofTaps: 0, blurTaps: 6, shadows: false, detail: 0.45 },
+  { id: 'eco', name: 'Sparsam', dpr: 1, res: 0.5, msaa: 0, dof: 0, bloom: 0, ca: 0, dofTaps: 0, blurTaps: 6, shadows: false, detail: 0.3, soilPx: 1024, still: true },
+  { id: 'light', name: 'Leicht', dpr: 1, res: 0.75, msaa: 0, dof: 0, bloom: 0, ca: 0, dofTaps: 0, blurTaps: 6, shadows: false, detail: 0.45, still: true },
   { id: 'medium', name: 'Mittel', dpr: 1.5, res: 0.9, msaa: 2, dof: 0.7, bloom: 0.8, ca: 0.6, dofTaps: 8, blurTaps: 10, shadows: true, detail: 0.7 },
   { id: 'fine', name: 'Fein', dpr: 2, res: 1, msaa: 4, dof: 1, bloom: 1, ca: 1, dofTaps: 12, blurTaps: 12, shadows: true, detail: 1 },
 ];
-const KEY = 'biochar-quality';
+const KEY = 'biochar-quality.v2';   // Id der Stufe; der alte Schlüssel 'biochar-quality' hielt den Index 0–2 ohne Sparsam
 const params = new URLSearchParams(location.search);
 const listeners = [];
 let index = QUALITY.length - 1;
@@ -19,25 +22,48 @@ function set(i, { byUser = false } = {}) {
   i = Math.min(QUALITY.length - 1, Math.max(0, Math.round(i)));
   if (byUser) {
     fixed = true;
-    try { localStorage.setItem(KEY, String(i)); } catch { /* ohne Speicher: gilt nur für diesen Besuch */ }
+    try { localStorage.setItem(KEY, QUALITY[i].id); } catch { /* ohne Speicher: gilt nur für diesen Besuch */ }
   }
   const changed = i !== index;
   index = i;
   for (const fn of listeners) fn(QUALITY[index], changed);
 }
 
-// Startwert: ?q=1|2|3 → gespeicherte Wahl → Fein
+// Startwert: ?q=0|1|2|3 → gespeicherte Wahl (alter Index 0–2 = Leicht…Fein) → Fein bzw. Sparsam (detect)
 const valid = (i) => Number.isInteger(i) && i >= 0 && i < QUALITY.length;
-const fromUrl = params.has('q') ? +params.get('q') - 1 : NaN;
+const fromUrl = params.has('q') ? +params.get('q') : NaN;
 let stored = NaN;
-try { const s = localStorage.getItem(KEY); if (s !== null) stored = +s; } catch { /* egal */ }
+try {
+  const s = localStorage.getItem(KEY), old = localStorage.getItem('biochar-quality');
+  if (s !== null) stored = QUALITY.findIndex((q) => q.id === s);
+  else if (old !== null && valid(+old + 1)) stored = +old + 1;
+} catch { /* egal */ }
 if (valid(fromUrl)) { index = fromUrl; fixed = true; }
 else if (valid(stored)) { index = stored; fixed = true; }
+
+// Schwaches Gerät (nur Auto, vor dem ersten Bild): Software-Renderer statt Grafikkarte (SwiftShader, llvmpipe, Microsoft Basic
+// Render), ≤ 2 GB Arbeitsspeicher oder ≤ 2 Kerne → gleich Sparsam, die Wache schaltet bei Luft herauf
+const SOFT = /swiftshader|llvmpipe|softpipe|software|basic render/i;
+export function weakDevice({ renderer = '', memory, cores } = {}) {
+  return SOFT.test(renderer) || (memory > 0 && memory <= 2) || (cores > 0 && cores <= 2);
+}
+function detect(gl) {
+  if (fixed) return;
+  let renderer = '';
+  try {
+    const ext = gl.getExtension('WEBGL_debug_renderer_info');
+    renderer = String(gl.getParameter(ext ? ext.UNMASKED_RENDERER_WEBGL : gl.RENDERER));
+  } catch { /* ohne Angabe: nur Speicher und Kerne */ }
+  const weak = weakDevice({ renderer, memory: navigator.deviceMemory, cores: navigator.hardwareConcurrency });
+  if (weak) set(0);
+  return weak;
+}
 
 // Bildraten-Probe: Bildzeiten ab 1,5 s nach dem Start sammeln, auswerten ab 5 s und frühestens nach 10 Bildern
 // (bei sehr niedriger Bildrate misst sie länger). Der Median übergeht einzelne Ladehänger, anhaltend langsame
 // Bilder zählen voll. Schwellen relativ zum Bildbudget (budget = 1/60 s, mit Bildraten-Deckel 1/Deckel):
-// Median über 1,44 × Budget (bei 60: 24 ms, unter ≈ 40 Bilder/s) → eine Stufe herunter, über 2,4 × (40 ms) → zwei Stufen.
+// Median über 1,44 × Budget (bei 60: 24 ms, unter ≈ 40 Bilder/s) → eine Stufe herunter, über 2,4 × (40 ms) → zwei Stufen,
+// über 4,8 × (80 ms, unter ≈ 12 Bilder/s) → drei Stufen (von Fein gleich Sparsam).
 // Danach Wache (nur Auto): Bildzeit-EMA über 2 × Budget für 3 s → eine Stufe herunter. Herauf: Der Bildschirm gibt höchstens
 // das Budget aus, Luft heißt deshalb „im Takt“ (EMA unter 1,15 × Budget) für 15 s, frühestens `wait` s (anfangs 30) nach der
 // letzten Änderung. Danach Probezeit 6 s: hält die neue Stufe die Schwelle der Probe (1,44 × Budget) nicht, geht sie zurück
@@ -54,7 +80,7 @@ function tick(real, budget = 1 / 60) {
     probe.done = true;
     const s = probe.samples.sort((a, b) => a - b);
     const median = s[s.length >> 1] / budget;
-    const down = median > 2.4 ? 2 : median > 1.44 ? 1 : 0;
+    const down = median > 4.8 ? 3 : median > 2.4 ? 2 : median > 1.44 ? 1 : 0;
     if (down) set(index - down);
     watch.ema = 0; watch.since = 0;
     return;
@@ -88,6 +114,7 @@ export const quality = {
   isAuto: () => !fixed,
   set: (i) => set(i, { byUser: true }),
   setAuto,
+  detect,
   // fn(stufe, geändert): bei jeder Wahl, geändert = andere Stufe als vorher
   onChange: (fn) => { listeners.push(fn); },
   tick,

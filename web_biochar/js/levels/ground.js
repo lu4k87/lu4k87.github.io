@@ -21,17 +21,17 @@ const SEED = (() => {
   return p.has('seed') ? parseInt(p.get('seed'), 10) >>> 0 : (Math.random() * 2 ** 32) >>> 0;
 })();
 
-// Texturen sofort anstoßen – vor dem Aufbau des Stücks, damit der Worker parallel rechnet
-export function groundTextures() {
+// Texturen sofort anstoßen – vor dem Aufbau des Stücks, damit der Worker parallel rechnet; px = Kantenlänge der Bodenkachel
+export function groundTextures(px) {
   const seed = SEED;
   let worker = null, cancelled = false;
   const ready = new Promise((resolve, reject) => {
-    const local = () => setTimeout(() => paintAll(seed).then(resolve, reject), 0);   // Ersatz ohne Modul-Worker
+    const local = () => setTimeout(() => paintAll(seed, px).then(resolve, reject), 0);   // Ersatz ohne Modul-Worker
     try {
       worker = new Worker(new URL('./ground_tex.js', import.meta.url), { type: 'module' });
       worker.onmessage = (e) => { worker.terminate(); worker = null; e.data.error ? local() : resolve(e.data); };
       worker.onerror = (e) => { e.preventDefault(); worker.terminate(); worker = null; local(); };
-      worker.postMessage({ seed });
+      worker.postMessage({ seed, px });
     } catch {
       local();
     }

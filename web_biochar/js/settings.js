@@ -1,9 +1,10 @@
 // Einstellungen hinter dem Zahnrad oben rechts, aufgebaut wie in Kosmos (Vorschau 26.10.2026 Bento:A + Global:A+B+C, übernommen
-// 2026-10-26): zwei Reiter „Ebene n“ = Schalter der aktiven Ebene als Klapp-Liste mit Sprungleiste (layers.js, Zahnrad:A + C) und
+// 2026-10-26): drei Reiter „Ebene n“ = Schalter der aktiven Ebene als Klapp-Liste mit Sprungleiste (layers.js, Zahnrad:A + C),
 // „Global“ = gilt überall, mit Themenliste links, Karten mit Icon-Plakette, Mini-Grafik je Zeile, geänderte
 // Werte mit „Standard“ + Leiste „Alle zurücksetzen“. Global: Look (Farblook, Belichtung, Vignette, Kinobalken), Licht, Kamera &
-// Bewegung, Effekte, REM (Ebenen 2–4), Material & Optik, Oberfläche (Hell/Dunkel, Infotafel, Messhilfen, Abzeichen), Leistung (Qualität mit
-// Messzeile, Detailgrad, Schatten, Renderskala, Bildrate). `?cfg` öffnet das Zahnrad, `?cfg=global` mit dem Reiter Global.
+// Bewegung, Effekte, REM (Ebenen 2–4), Material & Optik, Oberfläche (Hell/Dunkel, Infotafel, Messhilfen, Abzeichen), und „Qualität“
+// (Vorschau 31.10.2026 Reiter:B): Stufen als Kacheln mit Zielgerät und Rechenlast, darunter Messzeile, Detailgrad, Schatten,
+// Renderskala, Bildrate. `?cfg` öffnet das Zahnrad, `?cfg=global` bzw. `?cfg=quality` mit diesem Reiter.
 // Werte in localStorage `biochar-settings.v1` (clean() prüft jeden Wert); main.js liest settings.S und hört per settings.on().
 // Die Qualitätsstufe selbst bleibt in quality.js, die Schalter hier liegen darüber (main.js eff()).
 
@@ -177,9 +178,22 @@ const LOOKS = `<div class="b-row b-stack"><span class="cfg-label" id="cfg-grade"
 const VIEW_THEME = `<div class="b-row b-stack"><span class="cfg-label" id="cfg-theme">Hell / Dunkel</span>
   <div class="seg b-seg" role="radiogroup" aria-labelledby="cfg-theme">${[['auto', 'Auto'], ['light', 'Hell'], ['dark', 'Dunkel']].map(([v, l]) => `<button type="button" role="radio" data-view="theme" data-val="${v}">${l}</button>`).join('')}</div></div>`
   + NOTE('Gilt für die Bedienung; die Szene bleibt dunkel wie im Mikroskop. Auto folgt dem System.');
-const QUALITY_ROW = SEG('quality', 'Qualität', [['auto', 'Auto'], ...QUALITY.map((q, i) => [String(i), q.name])])
-  + `<div class="cfg-meter"><span data-meter>–</span><svg class="cfg-spark" viewBox="0 0 96 24" preserveAspectRatio="none" aria-hidden="true"><line x1="0" y1="15.3" x2="96" y2="15.3"/><polyline points=""/></svg></div>`
+// Stufen als Kacheln (Reiter Qualität): Zielgerät, was die Stufe weglässt, Balken = Rechenlast; Auto zeigt die gerade gewählte Stufe
+const TIER = { eco: ['ohne Grafikkarte', 'Auflösung 50&nbsp;%<br>Effekte aus'], light: ['ältere Laptops', 'Auflösung 75&nbsp;%<br>ohne Linse'],
+  medium: ['Laptop mit Grafik', 'Linse, Schatten'], fine: ['Grafikkarte', 'volle Auflösung<br>alle Effekte'] };
+const tile = (val, name, who, what, cost) => `<button type="button" role="radio" class="q-tile" data-key="quality" data-val="${val}">
+  <b>${name}</b><span>${who}</span><span class="q-what">${what}</span>${cost ? `<span class="q-cost" aria-label="Rechenlast ${cost} von ${QUALITY.length}">${QUALITY.map((_, i) => `<i${i < cost ? ' class="on"' : ''}></i>`).join('')}</span>` : ''}</button>`;
+const TILES = `<div class="q-tiles" role="radiogroup" aria-label="Qualitätsstufe">${tile('auto', 'Auto', 'misst und passt an', 'jetzt: <span data-qnow></span>', 0)}`
+  + `${QUALITY.map((q, i) => tile(String(i), q.name, ...TIER[q.id], i + 1)).join('')}</div>`;
+const METER = `<div class="cfg-meter"><span data-meter>–</span><svg class="cfg-spark" viewBox="0 0 96 24" preserveAspectRatio="none" aria-hidden="true"><line x1="0" y1="15.3" x2="96" y2="15.3"/><polyline points=""/></svg></div>`
   + '<p class="cfg-note lay-hint" data-qhint></p>';
+const Q_GROUPS = [
+  { id: 'tier', icon: 'perf', title: 'Stufe wählen', rows: [['@quality', TILES]] },
+  { id: 'perf', icon: 'perf', title: 'Messung und Feinregler', rows: [['', METER], ['detail', RNG('detail', 'Detailgrad (Nanoporen, Atome)', 0.05)],
+    ['shadow', SEG('shadow', 'Schatten (ab Stufe Mittel)', [['off', 'Aus'], ['soft', 'Weich'], ['full', 'Voll']])],
+    ['scale', SEG('scale', 'Renderskala', [['0.5', '50 %'], ['0.75', '75 %'], ['1', '100 %']])],
+    ['fps', SEG('fps', 'Bildrate höchstens', [['0', 'Frei'], ['60', '60'], ['30', '30']]) + NOTE('30 Bilder/s spart am Laptop Strom und Lüfter.')]] },
+];
 const GROUPS = [
   { id: 'look', icon: 'look', title: 'Look', hero: true, rows: [['grade', LOOKS], ['exposure', RNG('exposure', 'Belichtung', 0.05)],
     ['vig', RNG('vig', 'Vignette', 0.05, NEW)], ['bars', TOG('bars', 'Kinobalken 2,39:1', NEW)]] },
@@ -205,29 +219,29 @@ const GROUPS = [
       + NOTE('Niedriger = mehr helle Stellen leuchten nach; höher = nur Glanzlichter und Glut.')]] },
   { id: 'ui', icon: 'ui', title: 'Oberfläche', rows: [['@theme', VIEW_THEME], ['@panel', TOG('', 'Infotafel zeigen', '', 'data-view="panel"')],
     ['@overlays', TOG('', 'Messhilfen (Zonenbänder, Leitlinien, Visier)', '', 'data-view="overlays"')], ['hotspots', TOG('hotspots', 'Abzeichen (orange Hotspots)')]] },
-  { id: 'perf', icon: 'perf', title: 'Leistung', rows: [['@quality', QUALITY_ROW], ['detail', RNG('detail', 'Detailgrad (Nanoporen, Atome)', 0.05)],
-    ['shadow', SEG('shadow', 'Schatten (ab Stufe Mittel)', [['off', 'Aus'], ['soft', 'Weich'], ['full', 'Voll']])],
-    ['scale', SEG('scale', 'Renderskala', [['0.5', '50 %'], ['0.75', '75 %'], ['1', '100 %']])],
-    ['fps', SEG('fps', 'Bildrate höchstens', [['0', 'Frei'], ['60', '60'], ['30', '30']], NEW) + NOTE('30 Bilder/s spart am Laptop Strom und Lüfter.')]] },
 ];
 // REM-Zeilen mit Erklärung (eigene Texte, damit die Schalter-Zeile kurz bleibt)
 GROUPS[4].rows[0][1] += NOTE('Licht wandert über die Kanten wie beim Schwenk des Probentischs.');
 GROUPS[4].rows[1][1] += NOTE('Helle Streifen, solange die Kohle schlecht leitet (unter ≈ 700 °C).');
-const N_GLOBAL = GROUPS.reduce((n, g) => n + g.rows.length, 0);
-const CARD = (g) => `<article class="b-card${g.half ? '' : ' b-wide'}${g.hero ? ' b-card--hero' : ''}" data-g="${g.id}"><header class="b-head"><span class="b-plaque">${icon(g.icon)}</span><h4>${g.title}</h4><span class="b-count" aria-label="${g.rows.length} Einstellungen">${g.rows.length}</span></header>${g.rows.map(([k, h]) => ROW(k, h)).join('')}</article>`;
+const N_GLOBAL = GROUPS.reduce((n, g) => n + g.rows.length, 0), N_QUALITY = 5;   // Stufe + 4 Feinregler (Messzeile zählt nicht)
+const CARD = (g) => { const n = g.rows.filter(([k]) => k).length; return `<article class="b-card${g.half ? '' : ' b-wide'}${g.hero ? ' b-card--hero' : ''}" data-g="${g.id}"><header class="b-head"><span class="b-plaque">${icon(g.icon)}</span><h4>${g.title}</h4><span class="b-count" aria-label="${n} Einstellungen">${n}</span></header>${g.rows.map(([k, h]) => ROW(k, h)).join('')}</article>`; };
 
 // Titelzeile (Vorschau Kosmos 26.10.2026 Zahnrad:C): „Einstellungen“ klein, darunter groß der Name der Ebene bzw. „Alle Ebenen“,
 // rechts der kleine Schalter Ebene n | Global
 const HTML = `<div class="cfg-head"><div class="cfg-titles"><h2 class="cfg-title" id="cfg-title">Einstellungen</h2>
-    <p class="cfg-name"><span data-name="lv"></span><span data-name="gl">Alle Ebenen</span></p></div>
+    <p class="cfg-name"><span data-name="lv"></span><span data-name="gl">Alle Ebenen</span><span data-name="q">Darstellung &amp; Leistung</span></p></div>
   <div class="cfg-tabs" role="tablist" aria-label="Geltungsbereich">
     <button type="button" role="tab" id="cfg-tab-lv" data-tab="lv" aria-controls="cfg-level"></button>
     <button type="button" role="tab" id="cfg-tab-gl" data-tab="gl" aria-controls="cfg-global">Global<span class="b-count">${N_GLOBAL}</span></button>
+    <button type="button" role="tab" id="cfg-tab-q" data-tab="q" aria-controls="cfg-quality">Qualität<span class="b-count">${N_QUALITY}</span></button>
   </div><button type="button" class="cfg-x" data-close aria-label="Einstellungen schließen">×</button></div>
   <div class="cfg-pane l-pane" id="cfg-level" role="tabpanel" aria-labelledby="cfg-tab-lv"></div>
   <div class="cfg-pane" id="cfg-global" role="tabpanel" aria-labelledby="cfg-tab-gl">${MINI_DEFS}
     ${navHtml(GROUPS.map((g) => ({ id: g.id, title: g.title.replace(' &amp; Bewegung', '').replace(' &amp; Optik', '').replace(' · Ebenen 2–4', ''), icon: g.icon, n: g.rows.length })))}
     <div class="b-main">${devBar()}<div class="bento">${GROUPS.map(CARD).join('')}</div></div>
+  </div>
+  <div class="cfg-pane q-pane" id="cfg-quality" role="tabpanel" aria-labelledby="cfg-tab-q">
+    <div class="b-main">${Q_GROUPS.map(CARD).join('')}</div>
   </div>
   <p class="cfg-note cfg-foot">Gespeichert in diesem Browser</p>`;
 
@@ -256,7 +270,8 @@ export function mountSettings(pixels, relayout) {
     : k === '@quality' ? !quality.isAuto() : S[k] !== DEF[k]);
   btn.innerHTML = COG;
   box.innerHTML = HTML;
-  const glob = box.querySelector('#cfg-global');
+  const glob = box.querySelector('#cfg-global'), qual = box.querySelector('#cfg-quality');
+  const panes = [glob, qual], all = (sel) => panes.flatMap((p) => [...p.querySelectorAll(sel)]);
   wireNav(glob);
   const tabs = [...box.querySelectorAll('[role=tab]')];
   const pick = (tab, focus) => tabs.forEach((t) => {
@@ -276,11 +291,11 @@ export function mountSettings(pixels, relayout) {
     syncLayers();
     spyLayers();
   });
-  pick(tabs[new URLSearchParams(location.search).get('cfg') === 'global' ? 1 : 0]);
+  pick(tabs[Math.max(0, ['level', 'global', 'quality'].indexOf(new URLSearchParams(location.search).get('cfg')))]);
   mountLayers({ gear: box.querySelector('#cfg-level'), head: box.querySelector('#cfg-tab-lv'), name: box.querySelector('[data-name="lv"]') });
 
   const sync = () => {
-    glob.querySelectorAll('[data-key][data-val]').forEach((b) => {
+    all('[data-key][data-val]').forEach((b) => {
       const k = b.dataset.key;
       const on = k === 'quality' ? (quality.isAuto() ? b.dataset.val === 'auto' : b.dataset.val === String(quality.index())) : String(S[k]) === b.dataset.val;
       b.setAttribute('aria-checked', String(on));
@@ -288,21 +303,22 @@ export function mountSettings(pixels, relayout) {
     glob.querySelectorAll('[data-view="theme"]').forEach((b) => b.setAttribute('aria-checked', String(theme() === b.dataset.val)));
     glob.querySelector('input[data-view="panel"]').checked = panelOn();
     glob.querySelector('input[data-view="overlays"]').checked = overlays;
-    glob.querySelectorAll('input[type=checkbox][data-key]').forEach((i) => { i.checked = !!S[i.dataset.key]; });
-    glob.querySelectorAll('input[type=range][data-key]').forEach((i) => {
+    all('input[type=checkbox][data-key]').forEach((i) => { i.checked = !!S[i.dataset.key]; });
+    all('input[type=range][data-key]').forEach((i) => {
       const k = i.dataset.key;
       if (document.activeElement !== i) i.value = S[k];
-      glob.querySelector(`[data-out="${k}"]`).textContent = OUT[k](S[k]);
+      box.querySelector(`[data-out="${k}"]`).textContent = OUT[k](S[k]);
     });
-    glob.querySelector('[data-qhint]').textContent = quality.isAuto()
+    qual.querySelector('[data-qnow]').textContent = quality.get().name;
+    qual.querySelector('[data-qhint]').textContent = quality.isAuto()
       ? `Auto misst die Bildzeit und passt die Stufe an · jetzt ${quality.get().name}`
       : 'Feste Stufe · Auto misst selbst und schaltet bei Bedarf';
-    markDevs(glob, isDev);
+    panes.forEach((p) => markDevs(p, isDev));
   };
   // Messzeile: Bildabstand ⌀ (EMA), daraus Bilder/s, Bildpunkte; Kurve = letzte 60 Bildabstände (0–50 ms, Strich = 16,7 ms)
   const meter = () => {
-    if (glob.hidden) return;
-    const m = glob.querySelector('[data-meter]');
+    if (qual.hidden) return;
+    const m = qual.querySelector('[data-meter]');
     const mp = pixels() / 1e6;
     m.textContent = stat.ms ? `⌀ ${num(stat.ms, 1)} ms · ${num(1000 / stat.ms)} Bilder/s · ${num(mp, 1)} MP` : `– ms · ${num(mp, 1)} MP`;
     const n = stat.log.length, pts = [];
@@ -310,7 +326,7 @@ export function mountSettings(pixels, relayout) {
       const v = stat.log[(stat.i + j) % n];
       pts.push(`${((j / (n - 1)) * 96).toFixed(1)},${(23 - Math.min(23, (v / 50) * 23)).toFixed(1)}`);
     }
-    glob.querySelector('polyline').setAttribute('points', pts.join(' '));
+    qual.querySelector('polyline').setAttribute('points', pts.join(' '));
   };
   let timer = 0;
   const open = (o) => {
@@ -330,7 +346,7 @@ export function mountSettings(pixels, relayout) {
   };
   box.addEventListener('click', (e) => {
     if (e.target.closest('[data-close]')) { open(false); btn.focus(); return; }
-    if (!glob.contains(e.target)) return;
+    if (!panes.some((p) => p.contains(e.target))) return;
     const r = e.target.closest('[data-reset]');
     if (r) {
       const k = r.dataset.reset;
@@ -352,12 +368,13 @@ export function mountSettings(pixels, relayout) {
     else if (k === 'motion') set({ motion: val, ...MOT[val] });
     else set({ [k]: typeof DEF[k] === 'number' ? +val : val });
   });
-  glob.addEventListener('input', (e) => {
+  const onInput = (e) => {
     const el = e.target;
     if (el.matches('input[data-view]')) { view[el.dataset.view](el.checked); sync(); return; }
     if (!el.dataset.key) return;
     set({ [el.dataset.key]: el.type === 'checkbox' ? el.checked : +el.value });
-  });
+  };
+  panes.forEach((p) => p.addEventListener('input', onInput));
   // Tasten im Panel nicht an die Seite weiterreichen (Esc = Ebene zurück, 1–7 = Ebene)
   box.addEventListener('keydown', (e) => {
     e.stopPropagation();

@@ -350,7 +350,7 @@ function crumbGeometry(seed, detail, flat) {
 
 export function create(ctx) {
   const rand = mulberry32(31337);
-  const groundTex = groundTextures();      // Worker rechnet die Bodentexturen, während das Stück entsteht
+  const groundTex = groundTextures(ctx.quality?.soilPx);   // Worker rechnet die Bodentexturen, während das Stück entsteht (Sparsam: 1024 px)
   const scene = new THREE.Scene();
   const look = { coat: settings.S.coat, rim: settings.S.edgeLight };   // Zahnrad Global → „Material & Optik“ (setParam 'look')
   scene.environment = ctx.env;

@@ -1,6 +1,6 @@
 // Ablauf: Ebenen laden, Kamera steuern, Ebenen im durchgehenden Flug wechseln, Bild über gemeinsamem Hintergrund zusammenführen.
 // Linse: Tiefenunschärfe (Tiefentextur je Ebene), Bloom auf Glanzlichtern, Farbsaum am Rand, Grading je Stimmung, Korn.
-// Qualität: drei Stufen aus quality.js (Auflösung, Kantenglättung, Linse, Schatten, Detailgrad der Ebenen), live umschaltbar;
+// Qualität: vier Stufen aus quality.js (Auflösung, Kantenglättung, Linse, Schatten, Detailgrad der Ebenen), live umschaltbar;
 // darüber die Schalter des Zahnrads (settings.js: Renderskala, Bildraten-Deckel, Linse einzeln, Bewegung, Licht, Details).
 
 import * as THREE from 'three';
@@ -73,6 +73,7 @@ try {
   document.body.classList.add('no-webgl');
   throw err;
 }
+quality.detect(renderer.getContext());   // Auto: schwaches Gerät (Software-Renderer, wenig Speicher) startet in Sparsam
 renderer.setPixelRatio(pixelRatio(eff()));
 renderer.setClearColor(0x000000, 0);   // Ebenen rendern transparent, der Hintergrund entsteht in der Zusammenführung
 renderer.shadowMap.enabled = eff().shadows;   // nur Lichter mit castShadow kosten etwas (Ebene 7: weiche Eigenschatten)
@@ -430,7 +431,7 @@ function renderLoupe(lv, L, real) {
   u.uCA.value = keep.ca;
   u.uRes.value.copy(loupe.res);
   u.uCamOuter.value.copy(loupe.cam4);
-  loupe.done = eff().id === 'light';
+  loupe.done = !!eff().still;
 }
 
 // Stimmung der Ebene; ein globaler Farblook (Zahnrad „Look“) ersetzt deren Grading, Hintergrund und Licht bleiben je Ebene
