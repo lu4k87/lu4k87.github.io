@@ -268,13 +268,17 @@ const ease = (x) => { x = Math.min(1, Math.max(0, x)); return x * x * (3 - 2 * x
 const keyOfAtom = (a) => `${a.el}:${Math.round(a.p.x * 20)},${Math.round(a.p.y * 20)},${Math.round(a.p.z * 20)}`;
 // Struktur in 25-°C-Stufen; unter 350 °C drei Holz-Stufen (Lignin-Bruchstück → Abspaltungen → Kondensation)
 const quant = (T) => (T < T_MIN ? (T < 190 ? 25 : T < 290 ? 200 : 300) : Math.min(T_MAX, Math.round(T / 25) * 25));
+// Atom- und Bindungsmaterial der Nano-Ebenen 6 und 7: glatt, Klarlack, kräftige Reflexe der Laborumgebung
+export const atomMaterial = (envMap) => new THREE.MeshPhysicalMaterial({
+  roughness: 0.22, metalness: 0, clearcoat: settings.S.atomCoat, clearcoatRoughness: 0.12, envMap, envMapIntensity: 1.4,
+});
 const GROW = 0.9, LEAVE = 1.7, FLY = 3.2;   // s Einwachsen, s bis zum Verblassen, Å/s Abflug
 
 export function create(ctx) {
   const scene = new THREE.Scene();
   scene.environment = ctx.env;
   scene.environmentIntensity = 0.9;
-  const key = new THREE.DirectionalLight(0xfff4e8, 1.8);
+  const key = new THREE.DirectionalLight(0xfff4e8, 2.16);
   key.position.set(6, 10, 8);
   key.castShadow = true;                        // weiche Eigenschatten (PCF, Rand weich)
   key.shadow.mapSize.set(1024, 1024);
@@ -289,8 +293,9 @@ export function create(ctx) {
   const sphere = new THREE.SphereGeometry(1, 28, 18);
   // Halbbindung als Kegelstumpf: breit am Atom (unten), schmal zur Mitte (oben)
   const cyl = new THREE.CylinderGeometry(0.62, 1, 1, 14, 1, true);
-  const atomMat = new THREE.MeshStandardMaterial({ roughness: 0.32, metalness: 0 });
-  const bondMat = new THREE.MeshStandardMaterial({ roughness: 0.42, metalness: 0.05 });
+  // Klarlack-Kugeln im Laborlicht (Vorschau 31.10.2026 Atome:A), Klarlack = Zahnrad „Atome-Klarlack“ (setParam 'look')
+  const atomMat = atomMaterial(scene.environment);
+  const bondMat = atomMaterial(scene.environment);
   const cloudGeo = new THREE.SphereGeometry(1, 24, 16);
   const cloudMat = new THREE.ShaderMaterial({
     uniforms: { uStrength: { value: 0.02 } }, vertexShader: CLOUD_VERT, fragmentShader: CLOUD_FRAG, ...ADDITIVE,
@@ -547,8 +552,8 @@ export function create(ctx) {
     unit: 1e-10,
     method: 'Molekülmodell (vereinfacht)',
     tone: 1,
-    grain: 0.018,
-    dof: 2.5,
+    grain: 0.012,
+    dof: 4.5,
     bloom: 0.18,
     home: { pos: new THREE.Vector3(5, 9, 21), target: new THREE.Vector3(0, 0, 0) },
     orbit: { minDistance: 6, maxDistance: 45, enablePan: false, autoRotate: true },
@@ -587,6 +592,11 @@ export function create(ctx) {
       return true;
     },
     setParam(name, value) {
+      if (name === 'look') {
+        atomMat.clearcoat = bondMat.clearcoat = value.atomCoat;
+        level.dirty = true;
+        return;
+      }
       if (name === 'quality') {
         // Schatten je Stufe: aus (Leicht), 512 px (Mittel), 1024 px (Fein) – Schattenkarte neu anlegen
         key.castShadow = value.shadows;

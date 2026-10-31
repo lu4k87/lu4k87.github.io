@@ -2,7 +2,7 @@
 // 2026-10-26): zwei Reiter „Ebene n“ = Schalter der aktiven Ebene als Klapp-Liste mit Sprungleiste (layers.js, Zahnrad:A + C) und
 // „Global“ = gilt überall, mit Themenliste links, Karten mit Icon-Plakette, Mini-Grafik je Zeile, geänderte
 // Werte mit „Standard“ + Leiste „Alle zurücksetzen“. Global: Look (Farblook, Belichtung, Vignette, Kinobalken), Licht, Kamera &
-// Bewegung, Effekte, REM (Ebenen 2–4), Oberfläche (Hell/Dunkel, Infotafel, Messhilfen, Abzeichen), Leistung (Qualität mit
+// Bewegung, Effekte, REM (Ebenen 2–4), Material & Optik, Oberfläche (Hell/Dunkel, Infotafel, Messhilfen, Abzeichen), Leistung (Qualität mit
 // Messzeile, Detailgrad, Schatten, Renderskala, Bildrate). `?cfg` öffnet das Zahnrad, `?cfg=global` mit dem Reiter Global.
 // Werte in localStorage `biochar-settings.v1` (clean() prüft jeden Wert); main.js liest settings.S und hört per settings.on().
 // Die Qualitätsstufe selbst bleibt in quality.js, die Schalter hier liegen darüber (main.js eff()).
@@ -15,7 +15,10 @@ const KEY = 'biochar-settings.v1';
 // detail/light/fx: Hauptregler (Faktor auf Detailgrad der Stufe, auf alle Lichter, auf Linse + Korn); shadow: off · soft · full;
 // dive/play: Flugdauer zwischen Ebenen und Länge des Pyrolyse-Zeitraffers (s); key/rim/env/pool: Faktoren auf die Werte der
 // Ebenen (1 = wie gebaut); kelvin 6500 = Lichtfarbe der Ebene unverändert (Normierung auf D65); fps 0 = ohne Deckel;
-// grade: Farblook („ebene“ = Stimmung der Ebene), vig: Faktor auf die Vignette, bars: Kinobalken 2,39:1
+// grade: Farblook („ebene“ = Stimmung der Ebene), vig: Faktor auf die Vignette, bars: Kinobalken 2,39:1;
+// Material & Optik (Vorschau 31.10.2026 Kohle:A, REM:A, Atome:A, Linse:A): coat Klarlack der Kohle (Ebene 1), edgeLight Faktor auf
+// ihr Gegenlicht, semEdge/semGrain Kantenleuchten und Körnung der REM-Ebenen (sem.js semLook), atomCoat Klarlack der Atome
+// (Ebenen 6–7), bloomThr Helligkeit, ab der Bloom einsetzt
 const DEF = {
   detail: 1, light: 1, shadow: 'full', fx: 1,
   scale: 1, fps: 0, dof: true, bloom: true, ca: true, grain: true,
@@ -23,9 +26,11 @@ const DEF = {
   key: 1, rim: 1, env: 1, kelvin: 6500, exposure: 1, pool: 1,
   dust: true, veil: true, hotspots: true, charge: false /* Aufladung aus, bis jemand sie einschaltet (Vorschau 2026-10-25, F3) */,
   grade: 'ebene', vig: 1, bars: false,
+  coat: 0.6, edgeLight: 2, semEdge: 0.95, semGrain: 0.55, atomCoat: 1, bloomThr: 0.6,
 };
 const RANGE = { detail: [0.5, 1], light: [0, 2], fx: [0, 1.5], scale: [0.5, 1], fps: [0, 60], dive: [1.5, 6], play: [4, 30], key: [0, 2], rim: [0, 2], env: [0, 2],
-  kelvin: [2700, 9000], exposure: [0.5, 2], pool: [0, 2], vig: [0, 1.5] };
+  kelvin: [2700, 9000], exposure: [0.5, 2], pool: [0, 2], vig: [0, 1.5],
+  coat: [0, 1], edgeLight: [1, 3], semEdge: [0.3, 1.2], semGrain: [0.3, 1.3], atomCoat: [0, 1], bloomThr: [0.4, 1] };
 // Farblook: Tönung Schatten/Lichter (linear), Sättigung, S-Kurve, Belichtung, Vignette. „Ebene“ = Stimmung der Ebene (main.js MOODS),
 // die anderen gelten auf allen Ebenen (main.js gradeOf). Labor = kühl und entsättigt wie ein Messbild, Glut = warm wie die Rotglut
 export const GRADES = [['neutral', { sh: [0.97, 0.99, 1.03], hi: [1.02, 1, 0.97], sat: 1.02, con: 0.12, exposure: 1, vig: 0.38 }],
@@ -113,7 +118,8 @@ const cie = (K) => {
 const pct = (v) => `${num(v * 100)} %`;
 const sec = (v) => `${num(v, v % 1 ? 1 : 0)} s`;
 const OUT = { detail: pct, light: pct, fx: pct, dive: sec, play: sec, key: pct, rim: pct, env: pct, pool: pct, vig: pct,
-  exposure: (v) => `${num(v, 2)} ×`, kelvin: (v) => `${Math.round(v)} K${cie(v)}` };
+  exposure: (v) => `${num(v, 2)} ×`, kelvin: (v) => `${Math.round(v)} K${cie(v)}`,
+  coat: pct, atomCoat: pct, edgeLight: (v) => `${num(v, 1)} ×`, semEdge: (v) => num(v, 2), semGrain: (v) => num(v, 2), bloomThr: (v) => num(v, 2) };
 
 const NEW = '<span class="b-new">neu</span>';
 const SEG = (key, label, opts, extra = '') => `
@@ -142,11 +148,19 @@ const MINI = {
   dust: '<rect x="1" y="1" width="62" height="18" rx="3" fill="#07080a"/>' + dots([[8, 6], [17, 13, 1.4], [27, 7], [36, 15], [45, 5, 1.3], [55, 12], [21, 4, 0.8], [50, 16, 0.8]], '#e8d9c0'),
   fps: [0, 1, 2, 3, 4, 5, 6, 7].map((i) => `<rect x="${3 + i * 7.5}" y="${i % 2 ? 6 : 3}" width="5" height="${i % 2 ? 11 : 14}" rx="1" fill="currentColor" opacity="${i < 6 ? 0.8 : 0.3}"/>`).join(''),
   scale: '<rect x="2" y="3" width="26" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="1.4"/><rect x="36" y="3" width="26" height="14" rx="2" fill="currentColor" opacity=".35"/><path d="M30 10h4" stroke="var(--accent)" stroke-width="2"/>',
+  coat: '<rect x="1" y="1" width="62" height="18" rx="3" fill="#15161a"/><ellipse cx="24" cy="7" rx="14" ry="2.6" fill="#dfe6f0" opacity=".75"/>',
+  edgeLight: '<rect x="1" y="1" width="62" height="18" rx="3" fill="#15161a"/><path d="M8 17L22 4h34" fill="none" stroke="#c4d6ff" stroke-width="2"/>',
+  semEdge: '<rect x="1" y="1" width="62" height="18" rx="3" fill="#55585e"/><rect x="8" y="5" width="18" height="10" rx="1" fill="#3a3c41" stroke="#f2f4f8" stroke-width="1.6"/><rect x="34" y="5" width="22" height="10" rx="1" fill="#3a3c41" stroke="#f2f4f8" stroke-width="1.6"/>',
+  semGrain: '<rect x="1" y="1" width="62" height="18" rx="3" fill="#55585e"/>' + dots([[7, 5, 0.9], [14, 12, 1.1], [21, 7, 0.8], [28, 15, 1], [34, 4, 0.9], [41, 11, 1.2], [48, 6, 0.8], [55, 14, 1], [11, 16, 0.8], [38, 17, 0.7], [58, 5, 0.9]], '#c9ccd2'),
+  atomCoat: '<rect x="1" y="1" width="62" height="18" rx="3" fill="#0b1020"/><circle cx="22" cy="10" r="7" fill="url(#mgA)"/><circle cx="42" cy="10" r="7" fill="url(#mgA)"/><path d="M29 10h6" stroke="#8a93a6" stroke-width="2.4"/>',
+  bloomThr: '<rect x="1" y="1" width="62" height="18" rx="3" fill="#07080a"/><circle cx="32" cy="10" r="8" fill="url(#mgB)"/><circle cx="32" cy="10" r="2.2" fill="#fff4e0"/>',
 };
 const MINI_DEFS = '<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><linearGradient id="mgE"><stop offset="0" stop-color="#07080a"/><stop offset="1" stop-color="#fbf6ec"/></linearGradient>'
   + '<radialGradient id="mgV"><stop offset=".45" stop-color="#8a7a66"/><stop offset="1" stop-color="#07080a"/></radialGradient>'
   + '<linearGradient id="mgK"><stop offset="0" stop-color="#ffa64d"/><stop offset=".5" stop-color="#fff4ea"/><stop offset="1" stop-color="#c9d9ff"/></linearGradient>'
-  + '<radialGradient id="mgP" cx=".3" cy=".4"><stop offset="0" stop-color="#7ea0c0"/><stop offset="1" stop-color="#07080a"/></radialGradient></defs></svg>';
+  + '<radialGradient id="mgP" cx=".3" cy=".4"><stop offset="0" stop-color="#7ea0c0"/><stop offset="1" stop-color="#07080a"/></radialGradient>'
+  + '<radialGradient id="mgA" cx=".35" cy=".3"><stop offset="0" stop-color="#ffffff"/><stop offset=".25" stop-color="#9aa3b4"/><stop offset="1" stop-color="#2b3040"/></radialGradient>'
+  + '<radialGradient id="mgB"><stop offset="0" stop-color="#ffd9a0"/><stop offset="1" stop-color="#ffd9a0" stop-opacity="0"/></radialGradient></defs></svg>';
 // Zeile = Bedienung (+ Mini-Grafik daneben) + Hinweis darunter + Zeile „geändert · Standard“
 const ROW = (key, html) => {
   const i = html.indexOf('<p class="cfg-note'), [ctl, note] = i < 0 ? [html, ''] : [html.slice(0, i), html.slice(i)];
@@ -183,6 +197,12 @@ const GROUPS = [
     ['grain', TOG('grain', 'Filmkorn')], ['veil', TOG('veil', 'Lichtschleier beim Durchtauchen')], ['dust', TOG('dust', 'Schwebstaub im Hintergrund')]] },
   { id: 'sem', icon: 'sem', title: 'REM · Ebenen 2–4', half: true, rows: [['sem', TOG('sem', 'Detektor schwenkt')],
     ['charge', TOG('charge', 'Aufladung')]] },
+  { id: 'mat', icon: 'mat', title: 'Material &amp; Optik', rows: [['coat', RNG('coat', 'Kohle-Glanz (Klarlack, Ebene 1)', 0.05, NEW)],
+    ['edgeLight', RNG('edgeLight', 'Kantenlicht am Kohlestück', 0.1, NEW)], ['semEdge', RNG('semEdge', 'REM-Kanten (Ebenen 2–4)', 0.05, NEW)],
+    ['semGrain', RNG('semGrain', 'REM-Korn (Ebenen 2–4)', 0.05, NEW)
+      + NOTE('Höher = feineres Rauschen auf den Flächen, wie bei kurzer Belichtung im Mikroskop.')],
+    ['atomCoat', RNG('atomCoat', 'Klarlack der Atome (Ebenen 6–7)', 0.05, NEW)], ['bloomThr', RNG('bloomThr', 'Bloom-Schwelle', 0.02, NEW)
+      + NOTE('Niedriger = mehr helle Stellen leuchten nach; höher = nur Glanzlichter und Glut.')]] },
   { id: 'ui', icon: 'ui', title: 'Oberfläche', rows: [['@theme', VIEW_THEME], ['@panel', TOG('', 'Infotafel zeigen', '', 'data-view="panel"')],
     ['@overlays', TOG('', 'Messhilfen (Zonenbänder, Leitlinien, Visier)', '', 'data-view="overlays"')], ['hotspots', TOG('hotspots', 'Abzeichen (orange Hotspots)')]] },
   { id: 'perf', icon: 'perf', title: 'Leistung', rows: [['@quality', QUALITY_ROW], ['detail', RNG('detail', 'Detailgrad (Nanoporen, Atome)', 0.05)],
@@ -206,7 +226,7 @@ const HTML = `<div class="cfg-head"><div class="cfg-titles"><h2 class="cfg-title
   </div><button type="button" class="cfg-x" data-close aria-label="Einstellungen schließen">×</button></div>
   <div class="cfg-pane l-pane" id="cfg-level" role="tabpanel" aria-labelledby="cfg-tab-lv"></div>
   <div class="cfg-pane" id="cfg-global" role="tabpanel" aria-labelledby="cfg-tab-gl">${MINI_DEFS}
-    ${navHtml(GROUPS.map((g) => ({ id: g.id, title: g.title.replace(' &amp; Bewegung', '').replace(' · Ebenen 2–4', ''), icon: g.icon, n: g.rows.length })))}
+    ${navHtml(GROUPS.map((g) => ({ id: g.id, title: g.title.replace(' &amp; Bewegung', '').replace(' &amp; Optik', '').replace(' · Ebenen 2–4', ''), icon: g.icon, n: g.rows.length })))}
     <div class="b-main">${devBar()}<div class="bento">${GROUPS.map(CARD).join('')}</div></div>
   </div>
   <p class="cfg-note cfg-foot">Gespeichert in diesem Browser</p>`;

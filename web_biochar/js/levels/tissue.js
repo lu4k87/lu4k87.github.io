@@ -265,8 +265,8 @@ export function create(ctx) {
     unit: 1e-6,
     method: 'REM · Sekundärelektronen (Modell)',
     tone: 0,
-    grain: 0.065,
-    dof: 1.2,         // REM: große Schärfentiefe, nur der Rand weich
+    grain: 0.044,
+    dof: 2.16,        // REM: große Schärfentiefe, nur der Rand weich
     bloom: 0.05,
     home: { pos: new THREE.Vector3(470, -560, 820), target: new THREE.Vector3(-30, -40, -150) },
     orbit: { minDistance: 220, maxDistance: 1800, minAzimuthAngle: -1.2, maxAzimuthAngle: 1.2, minPolarAngle: 0.8, maxPolarAngle: 2.75, enablePan: true },

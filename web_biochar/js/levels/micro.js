@@ -6,6 +6,7 @@ import { mulberry32, gauss, clamp } from '../util.js';
 import { nanoStructure, fmt, pyroState } from '../science.js';
 import { ADDITIVE } from '../sem.js';
 import { settings } from '../settings.js';
+import { atomMaterial } from './atoms.js';
 
 const HALF = new THREE.Vector3(5.5, 3.6, 4.2);
 
@@ -528,7 +529,7 @@ export function create(ctx) {
   // Abgespaltene Gase (CO₂, H₂O) verlassen beim Aufheizen das Gefüge: Pool, der hinter den Gasmolekülen im selben Mesh liegt
   const ESC = 28, escKinds = ['co2', 'h2o'];
   const escapes = Array.from({ length: ESC }, () => ({ kind: 'co2', life: 0, pos: new THREE.Vector3(), vel: new THREE.Vector3(), q: new THREE.Quaternion(), spin: new THREE.Vector3() }));
-  const atomMesh = new THREE.InstancedMesh(new THREE.SphereGeometry(1, 18, 12), new THREE.MeshStandardMaterial({ roughness: 0.35 }), atomCount + ESC * 3);
+  const atomMesh = new THREE.InstancedMesh(new THREE.SphereGeometry(1, 18, 12), atomMaterial(ctx.env), atomCount + ESC * 3);   // wie Ebene 7
   {
     let i = 0;
     for (const m of mols) for (const [el] of MOLECULES[m.kind]) atomMesh.setColorAt(i++, ELEMENT[el].color);
@@ -757,8 +758,8 @@ export function create(ctx) {
     unit: 1e-9,
     method: 'Modell nach XRD und HRTEM',
     tone: 1,
-    grain: 0.025,
-    dof: 3.5,
+    grain: 0.017,
+    dof: 6.3,
     bloom: 0.12,
     home: { pos: homePos, target: new THREE.Vector3(0, 0, 0) },
     cine: { orbit: 0.05, crane: 0.02, dolly: 0.025, drift: 0.01 },   // Leerlauf: halbe Ausschläge, die Infopunkte liegen tief gestaffelt
@@ -796,6 +797,7 @@ export function create(ctx) {
       return true;
     },
     setParam(name, value) {
+      if (name === 'look') { atomMesh.material.clearcoat = value.atomCoat; level.dirty = true; return; }
       if (name !== 'temp') return;
       shownT = value;
       level.dirty = true;

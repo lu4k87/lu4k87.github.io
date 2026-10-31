@@ -352,6 +352,7 @@ export function create(ctx) {
   const rand = mulberry32(31337);
   const groundTex = groundTextures();      // Worker rechnet die Bodentexturen, während das Stück entsteht
   const scene = new THREE.Scene();
+  const look = { coat: settings.S.coat, rim: settings.S.edgeLight };   // Zahnrad Global → „Material & Optik“ (setParam 'look')
   scene.environment = ctx.env;
   scene.environmentIntensity = 0.52;
 
@@ -680,14 +681,15 @@ export function create(ctx) {
 
   // Licht: warmes Hauptlicht schwenkt langsam, kühles Gegenlicht streicht über die Längsflächen (Seidenglanz wandert)
   const key = new THREE.DirectionalLight(0xfff0dc, 2.2);
-  const rim = new THREE.DirectionalLight(0xc4d6ff, 2.1);
+  const RIM = 2.1;   // × look.rim (Zahnrad „Kantenlicht“, Standard 2 = Vorschau 31.10.2026 Kohle:A)
+  const rim = new THREE.DirectionalLight(0xc4d6ff, RIM * look.rim);
   const fill = new THREE.HemisphereLight(0x8090a0, 0x050505, 0.35);
   const KEY0 = new THREE.Vector3(5, 7, 6), RIM0 = new THREE.Vector3(-7, 3, -6), Y = new THREE.Vector3(0, 1, 0);
   const moveLights = (t) => {
     key.position.copy(KEY0).applyAxisAngle(Y, 0.32 * Math.sin(t * 0.083));
     rim.position.copy(RIM0).applyAxisAngle(Y, 0.5 * Math.sin(t * 0.061 + 1.2));
     rim.position.y = 3 + 1.2 * Math.sin(t * 0.047);
-    rim.intensity = 2.1 * (0.85 + 0.15 * Math.sin(t * 0.13 + 0.5));
+    rim.intensity = RIM * look.rim * (0.85 + 0.15 * Math.sin(t * 0.13 + 0.5));
   };
   moveLights(0);
   scene.add(key, rim, fill);
@@ -790,7 +792,7 @@ export function create(ctx) {
   };
   const dropVisible = () => drop.on && !playing && drop.v > 0.05;
   const coolGlow = () => (dropVisible() ? 0 : 1);
-  let plumeOn = true, playing = false, plumeAmt = 0, tNow = 550, tTarget = 550, lastT = 0, emberBase = 0, bloomBase = 0.12;
+  let plumeOn = true, playing = false, plumeAmt = 0, tNow = 550, tTarget = 550, lastT = 0, emberBase = 0, bloomBase = 0.2;
   const lerpCol = (a, b, k) => a.map((v, i) => v + (b[i] - v) * k);
   const smoke = (T) => {          // Farbe der Schwaden je Phase: Dampf weiß → Gase gelbbraun → Teer dunkel → dünn bläulich
     const st = (a, b, x) => Math.min(1, Math.max(0, (x - a) / (b - a)));
@@ -821,9 +823,9 @@ export function create(ctx) {
     unit: 0.01,
     method: 'Makroaufnahme · Modell',
     tone: 1,
-    grain: 0.018,
-    dof: 5,          // Makro: Tisch und Krümel im Hintergrund weich
-    bloom: 0.12,
+    grain: 0.012,
+    dof: 9,          // Makro-Kino (Vorschau 31.10.2026 Linse:A): Tisch und Krümel im Hintergrund deutlich weich
+    bloom: 0.2,
     cine: { orbit: 0.06, crane: 0.04, dolly: 0.05 },
     home: { pos: new THREE.Vector3(7.6, 3.1, 5.4), target: new THREE.Vector3(0.5, -0.15, 0) },
     orbit: { minDistance: 3.2, maxDistance: 16, maxPolarAngle: 1.5, enablePan: false, autoRotate: true },
@@ -857,6 +859,13 @@ export function create(ctx) {
       return true;
     },
     setParam(name, value) {
+      if (name === 'look') {   // Zahnrad Global → „Material & Optik“
+        look.coat = value.coat;
+        look.rim = value.edgeLight;
+        moveLights(isStill() ? 0 : pyro.uTime.value);
+        level.setParam('temp', tNow);
+        return;
+      }
       if (name === 'play') {
         playing = !!value;
         return;
@@ -885,7 +894,7 @@ export function create(ctx) {
       pyro.uGlow.value = st.glow * coolGlow();
       pyro.uGlowCol.value.setRGB(...glowColor(value));
       emberBase = st.glow * 13;
-      level.bloom = bloomBase = 0.12 + st.glow * 0.7 * coolGlow();
+      level.bloom = bloomBase = 0.2 + st.glow * 0.7 * coolGlow();
       if (drop.on && drop.v > 0.05) {
         const theta = wettability(value).theta;
         drop.a = sessileDrop(drop.v, theta).a; drop.pen0 = dropPenetration(theta).s; drop.shownV = -1;
@@ -893,19 +902,21 @@ export function create(ctx) {
       plumeMat.uniforms.uCol.value.setRGB(...smoke(value));
       for (const f of fallout) f.visible = st.char > 0.8;
       applyShrink();
-      // niedrig verkohlt: bräunlich und matt · hoch verkohlt: neutral schwarz, seidig glänzend
-      const k = clamp((value - 350) / 450, 0, 1);
+      // niedrig verkohlt: bräunlich und matt · ab 550 °C neutral schwarz mit Seidenglanz und Klarlack (Vorschau 31.10.2026
+      // Kohle:A, Glanz = Zahnrad „Kohle-Glanz“)
+      const silk = smoothstep(350, 550, value);
       const brown = clamp((450 - value) / 100, 0, 1);   // ab ≈ 450 °C tiefschwarz
       const tint = new THREE.Color(lerp(0.72, 1.9, brown), lerp(0.72, 1.3, brown), lerp(0.74, 0.95, brown));
       // Holz (auch gebräunt) nur mäßig rau: Faserriefen und Gefäßrinnen der Normal-Map flach, tiefer erst in der Kohle
-      const relief = 1.1 * lerp(0.35, 1, smoothstep(380, 560, value));
+      const relief = 1.5 * lerp(0.35, 1, smoothstep(380, 560, value));
       for (const m of mats) {
         m.color.copy(tint);
         m.normalScale.setScalar(relief);
-        m.metalness = m === matEnd ? lerp(0.02, 0.1, k) : lerp(0.04, 0.3, k);
-        m.roughness = lerp(1.15, 0.85, k);
-        m.clearcoat = m === matEnd ? 0 : lerp(0, 0.2, k);    // Seidenglanz der Längsflächen, gedämpft: rau statt glatt
-        m.clearcoatRoughness = 0.5;
+        m.metalness = lerp(m === matEnd ? 0.02 : 0.04, 0.3, silk);
+        m.roughness = lerp(1.15, 0.7, silk);
+        m.clearcoat = lerp(0, look.coat, silk);
+        m.clearcoatRoughness = 0.35;
+        m.envMapIntensity = lerp(1, 1.8, silk);
       }
       crumbMat.color.copy(tint).multiplyScalar(0.02);
       level.dirty = true;

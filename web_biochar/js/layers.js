@@ -24,6 +24,7 @@ const ICONS = {
   water: '<path d="M12 3c3.5 4.6 6 7.8 6 11a6 6 0 0 1-12 0c0-3.2 2.5-6.4 6-11z"/>',
   life: '<path d="M5 19c2-6 6-9 14-11"/><path d="M9 15c-2-1-3-3-2.5-5M13 12.5c0-2 1-3.6 3-4.5"/><circle cx="19" cy="8" r="1.4"/>',
   heat: '<path d="M12 21a5 5 0 0 1-3-9c1-1 1.5-3 1-6 3 2 6 5 6 9.5a4 4 0 0 1-4 5.5z"/>',
+  mat: '<circle cx="12" cy="12" r="8"/><path d="M8 9.5a4.5 4.5 0 0 1 4-2.5"/>',
   atom: '<circle cx="12" cy="12" r="1.8" fill="currentColor"/><ellipse cx="12" cy="12" rx="9" ry="3.6"/><ellipse cx="12" cy="12" rx="9" ry="3.6" transform="rotate(60 12 12)"/><ellipse cx="12" cy="12" rx="9" ry="3.6" transform="rotate(120 12 12)"/>',
   wave: '<path d="M2 12c2.5-6 5-6 7.5 0s5 6 7.5 0 3.5-4.5 5-3"/>',
   layers: '<path d="M12 4l9 4.5-9 4.5-9-4.5z"/><path d="M3 13l9 4.5 9-4.5"/>',

@@ -8,7 +8,7 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { createHud } from './hud.js';
 import { T_ROOM, fillDiameterNm, wetDiameterNm } from './science.js';
-import { NOISE_GLSL, SEM_SWING, semDetectorMode, semChargeOn } from './sem.js';
+import { NOISE_GLSL, SEM_SWING, semDetectorMode, semChargeOn, semLook } from './sem.js';
 import { quality } from './quality.js';
 import { settings, mountSettings, kelvinTint, PERF_KEYS, globalGrade } from './settings.js';
 import { registerLayers, showLayers } from './layers.js';
@@ -49,7 +49,7 @@ const MOODS = [
 // angekommen wird mit 1,3-fachem Abstand der Heimpose (Überblick zuerst, dann zoomt der Besucher selbst)
 const ZOOM = { near: 0.35, arrive: 1.3 };
 // Linse: Bloom-Schwelle (linear), Farbsaum am Rand, Ein-/Ausblenden der Effekte (s)
-const LENS = { thr: 0.82, ca: 0.005, fadeOut: 0.45, fadeIn: 1.3, fill: 0.018, halo: 0.02 };   // fill/halo: Gegenlicht (linear)
+const LENS = { ca: 0.005, fadeOut: 0.45, fadeIn: 1.3, fill: 0.018, halo: 0.02 };   // fill/halo: Gegenlicht (linear)
 // Leerlauf-Fahrt: nach `delay` s ohne Eingabe weich einblenden (`ramp` s); Ausschläge je Ebene über lv.cine
 const CINE = { delay: 2.5, ramp: 4.0, orbit: 0.10, crane: 0.045, dolly: 0.05, drift: 0.02, lift: 0.6 };   // lift: Anteil der Blickdrift nach oben
 
@@ -110,7 +110,7 @@ const comp = new THREE.ShaderMaterial({
     uBloom: { value: 0 }, uCA: { value: LENS.ca * eff().ca }, uDive: { value: 0 }, uInner: { value: new THREE.Vector2(0.5, 0.5) },
     uFill: { value: LENS.fill }, uHalo: { value: LENS.halo },
     uExposure: { value: 1 }, uPoolK: { value: 1 }, uDustK: { value: 1 }, uVeilK: { value: 1 },   // Zahnrad: Licht + Details
-    uVig: { value: 0.45 }, uBars: { value: 0 },                                                    // Zahnrad: Look
+    uVig: { value: 0.6 }, uBars: { value: 0 },                                                    // Zahnrad: Look
     uTopA: moodA.top, uBotA: moodA.bot, uPoolA: moodA.pool, uDustA: moodA.dust, uShA: moodA.sh, uHiA: moodA.hi, uGrA: moodA.gr,
     uTopB: moodB.top, uBotB: moodB.bot, uPoolB: moodB.pool, uDustB: moodB.dust, uShB: moodB.sh, uHiB: moodB.hi, uGrB: moodB.gr,
   },
@@ -312,7 +312,7 @@ const bloomRT = new THREE.WebGLRenderTarget(2, 2, {
   type: THREE.HalfFloatType, depthBuffer: false, generateMipmaps: true, minFilter: THREE.LinearMipmapLinearFilter,
 });
 const bright = new THREE.ShaderMaterial({
-  uniforms: { tSrc: { value: null }, uTexel: { value: new THREE.Vector2(1, 1) }, uThr: { value: LENS.thr } },
+  uniforms: { tSrc: { value: null }, uTexel: { value: new THREE.Vector2(1, 1) }, uThr: { value: settings.S.bloomThr } },   // Bloom-Schwelle: Zahnrad „Material & Optik“
   vertexShader: QUAD_VERT,
   fragmentShader: /* glsl */ `
     uniform sampler2D tSrc;
@@ -550,10 +550,12 @@ settings.on((S, keys) => {
   still = reduced || S.motion === 'off';
   SEM_SWING.k = still || !S.sem ? 0 : 1;
   semChargeOn(S.charge);
+  semLook({ edge: S.semEdge, noise: S.semGrain });
+  bright.uniforms.uThr.value = S.bloomThr;
   const u = comp.uniforms;
   const g = globalGrade(S);
   u.uExposure.value = S.exposure * (g ? g.exposure : 1);
-  u.uVig.value = S.vig * (g ? g.vig : 0.45);
+  u.uVig.value = S.vig * (g ? g.vig : 0.6);   // Standard 0,6 = Vorschau 31.10.2026 Linse:A
   u.uBars.value = S.bars ? 1 : 0;
   if (!keys || keys.includes('grade')) for (const t of [moodA, moodB]) if (t.index !== undefined) setMood(t, t.index);
   u.uPoolK.value = S.pool;
@@ -567,7 +569,7 @@ settings.on((S, keys) => {
   }
   if (keys && keys.some((k) => PERF_KEYS.includes(k))) applyQuality(eff());
   loupe.done = false;
-  for (const lv of state.levels.values()) lv.dirty = true;
+  for (const lv of state.levels.values()) { if (lv.setParam) lv.setParam('look', S); lv.dirty = true; }
 });
 mountSettings(() => renderer.domElement.width * renderer.domElement.height, () => requestAnimationFrame(resize));
 
@@ -594,7 +596,7 @@ function buildLevel(i) {
     const lv = mod.create({ env, aspect: window.innerWidth / window.innerHeight, temp: state.pyro.shown, rh: state.rh, wet: state.wet, quality: eff(), setRh });
     lv.index = i;
     if (lv.layers) registerLayers(i, lv.layers);   // Zahnrad-Reiter „Ebene“ (layers.js)
-    if (lv.setParam) { lv.setParam('target', state.temp); lv.setParam('play', state.pyro.playing); lv.setParam('quality', eff()); lv.setParam('detector', state.det); }
+    if (lv.setParam) { lv.setParam('target', state.temp); lv.setParam('play', state.pyro.playing); lv.setParam('quality', eff()); lv.setParam('detector', state.det); lv.setParam('look', settings.S); }
     lv.scene.background = null;
     // Farbe mit Mipmaps (Bloom, weiche Unschärfe) und Tiefe als Textur (Tiefenunschärfe)
     lv.rt = new THREE.WebGLRenderTarget(2, 2, {

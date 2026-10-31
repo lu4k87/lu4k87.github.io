@@ -639,8 +639,8 @@ export function create(ctx) {
     method: 'REM · Sekundärelektronen (Modell, eingefärbt)',
     detector: true,   // Umschalter SE/BSE an der Messleiste
     tone: 0,
-    grain: 0.07,
-    dof: 2.2,
+    grain: 0.047,
+    dof: 3.96,
     bloom: 0.06,
     home: { pos: new THREE.Vector3(3, 12, 6), target: surf(0, -3, R) },
     orbit: { minDistance: 5, maxDistance: 38, minAzimuthAngle: -0.9, maxAzimuthAngle: 1.1, minPolarAngle: 0.35, maxPolarAngle: 1.75, enablePan: false },

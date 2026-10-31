@@ -66,6 +66,16 @@ export const SEM_SWING = { k: 1 };
 export const SEM_BSE = { value: 0, to: 0 };
 export const SEM_T = { value: 0 };
 export const semDetectorMode = (mode) => { SEM_BSE.to = mode === 'bse' ? 1 : 0; };
+// REM-Bildcharakter aller REM-Ebenen (Vorschau 31.10.2026 REM:A): Werte des Standard-Materials. Materialien mit eigenen Werten
+// folgen im Verhältnis zum Bezug SEM_REF (gemeinsame Faktoren uLook im Shader); Zahnrad „REM-Kanten“/„REM-Korn“ → semLook, live
+const SEM_REF = { base: 0.4, edge: 0.55, edgeW: 0.6, noise: 0.8 };
+export const SEM_LOOK = { base: 0.36, edge: 0.95, edgeW: 0.4, noise: 0.55 };
+const SEM_K = { value: new THREE.Vector4() };
+export function semLook(look = {}) {
+  Object.assign(SEM_LOOK, look);
+  SEM_K.value.set(SEM_LOOK.base / SEM_REF.base, SEM_LOOK.edge / SEM_REF.edge, SEM_LOOK.edgeW / SEM_REF.edgeW, SEM_LOOK.noise / SEM_REF.noise);
+}
+semLook();
 export function semBlend(dt, instant = false) {
   const d = SEM_BSE.to - SEM_BSE.value;
   if (d === 0) return;
@@ -137,6 +147,7 @@ const FRAG = /* glsl */ `
 uniform vec3 uDet;
 uniform vec3 uTint;
 uniform float uBase, uEdge, uEdgeW, uDepth, uUseDepth, uOpenZ, uOpenX, uNoise, uShade, uTopMix;
+uniform vec4 uLook;   // Faktoren base, edge, edgeW, noise (semLook)
 #ifdef SEM_WALLS
 varying vec4 vWall;
 #endif
@@ -167,7 +178,7 @@ void main() {
   float px = 0.71 * length(fwidth(vWorld));   // vor jedem discard/if: Ableitungen nur im gleichförmigen Ablauf
   vec3 N = normalize(vNormal);
   vec3 V = normalize(cameraPosition - vWorld);
-  float g = semShade(N, V, uDet, uBase);
+  float g = semShade(N, V, uDet, uBase * uLook.x);
 #ifdef SEM_WALLS
   vec3 a = abs(vLocal);
   vec3 de = (0.5 - a) * vScale;
@@ -228,11 +239,11 @@ void main() {
     float ml = abs(vLocal.y) * vScale.y;
     g += 0.16 * aaBand(ml, 0.06, 0.2, px) - 0.05 * aaRing(ml, 0.35, 0.15, 0.25, px);
   }
-  g += uEdge * aaBand(ed, 0.0, uEdgeW, px);
+  g += uEdge * uLook.y * aaBand(ed, 0.0, uEdgeW * uLook.z, px);
 #endif
 #ifdef SEM_JOINT
   if (abs(vLocal.z) > 0.49) {
-    g += uEdge * aaBand((1.0 - length(vLocal.xy)) * vScale.x, 0.0, uEdgeW, px);
+    g += uEdge * uLook.y * aaBand((1.0 - length(vLocal.xy)) * vScale.x, 0.0, uEdgeW * uLook.z, px);
     g += 0.14 * (1.0 - smoothstep(0.15, 0.4, length(vLocal.xy)));     // Zwickel der Mittellamelle
   }
 #endif
@@ -255,7 +266,8 @@ void main() {
     g *= mix(0.12, 1.0, exp(-d / uDepth));   // Hohlräume dunkeln ab, bleiben aber sichtbar (Globalbeleuchtung, User 2026-10-23)
   }
   g = max(g, 0.08);                           // Grundhelligkeit: keine Fläche fällt auf Schwarz, auch von der Seite gesehen
-  g *= 0.86 + 0.28 * mix(0.5, vnoise(vWorld * uNoise), 1.0 - smoothstep(0.35, 0.7, px * uNoise));   // Körnung feiner als ein Bildpunkt → Mittelwert
+  float nz = uNoise * uLook.w;
+  g *= 0.86 + 0.28 * mix(0.5, vnoise(vWorld * nz), 1.0 - smoothstep(0.35, 0.7, px * nz));   // Körnung feiner als ein Bildpunkt → Mittelwert
   g *= 1.0 + uShade * (vnoise(vWorld * 0.0045 + 7.0) - 0.5);   // großräumige Helligkeit (Aufladung, Detektorlage)
   gl_FragColor = semOut(g, uTint);
 }
@@ -277,14 +289,15 @@ export function semMaterial(opts = {}) {
       uCharge: opts.charge ? SEM_CHARGE : { value: 0 },   // Aufladung nur in den Ebenen, die sie anfordern (3–4)
       uSemT: SEM_T,
       uTint: { value: new THREE.Color(0.93, 0.95, 0.98) },
-      uBase: { value: opts.base ?? 0.4 },
-      uEdge: { value: opts.edge ?? 0.55 },
-      uEdgeW: { value: opts.edgeW ?? 0.6 },
+      uLook: SEM_K,
+      uBase: { value: opts.base ?? SEM_REF.base },
+      uEdge: { value: opts.edge ?? SEM_REF.edge },
+      uEdgeW: { value: opts.edgeW ?? SEM_REF.edgeW },
       uDepth: { value: opts.depth ?? 30 },
       uUseDepth: { value: opts.openZ !== undefined || opts.openX !== undefined ? 1 : 0 },
       uOpenZ: { value: opts.openZ ?? 1e6 },
       uOpenX: { value: opts.openX ?? 1e6 },
-      uNoise: { value: opts.noise ?? 0.8 },
+      uNoise: { value: opts.noise ?? SEM_REF.noise },
       uShade: { value: opts.shade ?? 0 },
       uTopMix: { value: opts.topMix ?? 0 },
     },
