@@ -6,7 +6,11 @@
 // Segment, Sekundärspiegel auf drei Streben, Instrumentenmodul (ISIM) mit Radiatoren hinter dem Spiegel, ausfahrbarer Turm;
 // Sonnenschild 21,2 × 14,2 m aus fünf Lagen Kapton E, Lagen zum Rand hin aufgefächert (Wärme entweicht seitlich), Sonnenseite
 // rosa-silbern (dotiertes Silizium), Mittelausleger, Paletten vorn und hinten, Trimmklappe; Raumfahrzeug auf der warmen
-// Seite mit Solarflügel, Antenne (folgt der Erde) und Sternsensoren. Ausrichtung: Sonnenschild zur Sonne, Blick quer dazu;
+// Seite mit Solarflügel, Antenne (folgt der Erde) und Sternsensoren. Details nach Fotos: Ränder der Lagen hängen zwischen
+// den Aufhängepunkten als Kettenlinie durch, Membran mit Ripstop-Gitter (stationkit.js `membrane`), drei Goldtöne und
+// Mikro-Verkippung je Segment (Reflexe wie auf Fotos), Flügel-Scharniere hinter der Rückwand, Knie-Gelenke der oberen
+// Streben, Kegel der hinteren Optik, zweiteiliger Turm, Elektronik (IEC) mit Lamellen, Paletten-Fachwerk auf der warmen
+// Seite, Kabelbäume, Mittelgewinn- und Stabantennen. Ausrichtung: Sonnenschild zur Sonne, Blick quer dazu;
 // Schalter „Wechselnde Ziele“ dreht das Teleskop langsam um die Sonnenlinie (Modell, kein Beobachtungsplan).
 
 import * as THREE from 'three';
@@ -24,16 +28,20 @@ const SM_DIST = 7.2;                              // Hauptspiegel → Sekundärs
 const SHIELD = [[10.6, 1.4], [2.2, 7.08], [-2.2, 7.08], [-10.6, 1.4], [-10.6, -1.4], [-2.2, -7.08], [2.2, -7.08], [10.6, -1.4]];
 const LAYER_GAP = [0.08, 0.26];                   // Abstand der Lagen in der Mitte und am Rand [m] (Modell)
 const EYE = new THREE.Vector3(9, -3, 6);          // Blick „Zur Erde“: neben dem Raumfahrzeug auf der warmen Seite
+const SAG = 0.045;                                // Durchhang der Ränder zwischen den Aufhängepunkten (Anteil der Kantenlänge, nach Fotos)
 
-// Umriss gleichmäßig abtasten (n Punkte)
-function resample(poly, n) {
-  const P = poly.map(([z, y]) => new THREE.Vector2(z, y)), L = [], out = [];
+// Umriss gleichmäßig abtasten (n Punkte); jede Kante hängt zwischen ihren Aufhängepunkten als Kettenlinie nach innen durch
+function resample(poly, n, sag = SAG) {
+  const P = poly.map(([z, y]) => new THREE.Vector2(z, y)), L = [], out = [], nrm = new THREE.Vector2();
   let tot = 0;
   for (let i = 0; i < P.length; i++) { const d = P[i].distanceTo(P[(i + 1) % P.length]); L.push(d); tot += d; }
   for (let k = 0; k < n; k++) {
     let s = (k / n) * tot, i = 0;
     while (s > L[i]) { s -= L[i]; i++; }
-    out.push(P[i].clone().lerp(P[(i + 1) % P.length], s / L[i]));
+    const a = P[i], b = P[(i + 1) % P.length], f = s / L[i], q = a.clone().lerp(b, f);
+    nrm.set(a.y - b.y, b.x - a.x).normalize();
+    if (nrm.dot(q) > 0) nrm.negate();                 // Normale der Kante nach innen (Umriss um den Ursprung)
+    out.push(q.addScaledVector(nrm, sag * L[i] * Math.sin(Math.PI * f)));
   }
   return out;
 }
@@ -85,14 +93,15 @@ export function create(ctx) {
   obs.add(body);
   const I = K.inst(body), late = [];
 
+  // Gold in drei Tönen je Segment-Art (A innen, B Ecken, C Kanten), Segmente minimal verkippt → Reflexe wie auf Fotos
+  const golds = [[0xf6c35c, 0.12], [0xffd072, 0.1], [0xeab54e, 0.14]].map(([c, r]) => stationMat({ color: c, metalness: 1, roughness: r, envMapIntensity: 1.7 }));
   const M = {
-    gold: stationMat({ color: 0xf6c35c, metalness: 1, roughness: 0.13, envMapIntensity: 1.7 }),
+    gold: golds[0],
     back: stationMat({ color: 0x1d1f24, metalness: 0.35, roughness: 0.6 }),
     composite: stationMat({ color: 0x26282d, metalness: 0.2, roughness: 0.7 }),
     strut: stationMat({ color: 0x3c3f45, metalness: 0.5, roughness: 0.45 }),
   };
-  const pink = mat('silver').clone(); pink.color.set(0xe0b9dc); pink.side = THREE.DoubleSide;
-  const silver = mat('silver').clone(); silver.color.set(0xd9dce2); silver.side = THREE.DoubleSide;
+  const pink = mat('shieldSun'), silver = mat('shieldBack');
   const add = (parent, geo, m, pos, rot) => {
     const o = new THREE.Mesh(geo, m);
     o.position.set(...pos);
@@ -120,19 +129,28 @@ export function create(ctx) {
   };
   buildShield(1);
   // Mittelausleger quer, Spreizstangen an den Ecken (durch alle Lagen), Saum an den Spitzen, Paletten vorn und hinten
-  for (const s of [1, -1]) I.rod(V(0.18, 0, 0), V(0.18, s * 7.0, s * 0), 0.06, mat('strut'));
-  for (const [z, y] of SHIELD) I.rod(V(0.12, y, z), V(-1.2, y * 0.985, z * 0.985), 0.035, mat('strut'));
+  for (const s of [1, -1]) {                                                       // Mittelausleger: zwei Teleskopstufen mit Hülsen
+    I.rod(V(0.18, 0, 0), V(0.18, s * 3.6, 0), 0.075, mat('strut')).rod(V(0.18, s * 3.5, 0), V(0.18, s * 7.0, 0), 0.06, mat('strut'));
+    for (const y of [1.2, 3.55, 5.3]) I.rod(V(0.18, s * (y - 0.09), 0), V(0.18, s * (y + 0.09), 0), 0.1, mat('dark'), K.U.disk);
+  }
+  for (const [z, y] of SHIELD) {                                                   // Spreizstangen an den Ecken mit Fuß und Kopf
+    I.rod(V(0.12, y, z), V(-1.2, y * 0.985, z * 0.985), 0.035, mat('strut'));
+    I.rod(V(0.16, y, z), V(0.26, y, z), 0.09, mat('dark'), K.U.disk).rod(V(-1.2, y * 0.985, z * 0.985), V(-1.28, y * 0.985, z * 0.985), 0.07, mat('dark'), K.U.disk);
+  }
   for (const s of [1, -1]) {
-    I.box(V(0.45, 0, s * 9.9), [0.6, 2.6, 1.0], mat('gold'));                    // Palette (Halter der gefalteten Lagen)
+    // Paletten (UPS): Fachwerk-Rückgrat vom Bus bis zu den Enden, dort der Halter der gefalteten Lagen
+    K.lattice(I, V(0.55, 0, s * 2.0), V(0.55, 0, s * 9.3), { w: 2.2, h: 0.5, bay: 1.3, r: 0.04, m: mat('strut'), side: V(0, 1, 0) });
+    I.box(V(0.45, 0, s * 9.9), [0.6, 2.6, 1.0], mat('gold'));
     I.box(V(0.2, 0, s * 9.1), [0.25, 1.8, 0.5], mat('box'), null, new THREE.Color(0x3a3d42));
   }
-  // Trimmklappe am hinteren Ende (gleicht den Lichtdruck aus)
+  // Trimmklappe am hinteren Ende (gleicht den Lichtdruck aus) mit Scharnier und zwei Hülsen
   const flap = new THREE.Group();
   flap.position.set(0.3, 0, -10.7);
   flap.rotation.y = 0.5;
   body.add(flap);
   add(flap, K.boxUV(new THREE.BoxGeometry(0.03, 2.2, 1.3), 1.2), mat('back'), [0, 0, -0.65]);
   I.rod(V(0.3, -1.0, -10.7), V(0.3, 1.0, -10.7), 0.05, mat('metal'));
+  for (const y of [-0.6, 0.6]) I.rod(V(0.3, y - 0.1, -10.7), V(0.3, y + 0.1, -10.7), 0.08, mat('dark'), K.U.disk);
 
   // ---------- Raumfahrzeug (warme Seite): Bus, Solarflügel, Antenne, Sternsensoren, Triebwerke ----------
   add(body, K.boxUV(new THREE.BoxGeometry(1.4, 2.0, 3.0), 2.2), mat('gold'), [1.15, 0, -0.4]);
@@ -157,11 +175,16 @@ export function create(ctx) {
   const dish = add(hga, new THREE.LatheGeometry(Array.from({ length: 9 }, (_, i) => new THREE.Vector2(i * 0.075, (i * 0.075) ** 2 * 0.9)), 32), mat('paint'), [0, 0, 0]);
   dish.rotation.z = -Math.PI / 2;
   dish.material.side = THREE.DoubleSide;
-  I.rod(V(1.85, -0.7, 0.9), V(1.7, -0.7, 0.9), 0.06, mat('metal'));
+  const mga = add(hga, new THREE.LatheGeometry(Array.from({ length: 7 }, (_, i) => new THREE.Vector2(i * 0.04, (i * 0.04) ** 2 * 1.6)), 24), mat('paint'), [0.05, 0.55, 0.3]);   // Mittelgewinn-Antenne
+  mga.rotation.z = -Math.PI / 2;
+  I.rod(V(1.85, -0.7, 0.9), V(1.7, -0.7, 0.9), 0.06, mat('metal')).rod(V(1.78, -0.7, 0.9), V(1.9, -0.7, 0.9), 0.11, mat('dark'), K.U.disk);
+  K.whip(I, V(1.85, 0.98, -1.5), V(1, 0.4, 0), 0.9);                             // Stabantennen (Rundstrahler)
+  K.whip(I, V(1.85, -0.98, -1.5), V(1, -0.4, 0), 0.9);
 
   // ---------- Turm und Teleskop (kalte Seite) ----------
-  I.rod(V(0.45, 0, -0.4), V(-2.6, 0, -2.4), 0.3, mat('silver'), K.U.disk);         // ausfahrbarer Turm (DTA)
-  I.rod(V(-1.0, 0, -1.4), V(-1.15, 0, -1.5), 0.42, mat('dark'), K.U.ring);
+  const dta0 = V(0.45, 0, -0.4), dta1 = V(-2.6, 0, -2.4), dtaM = dta0.clone().lerp(dta1, 0.5);   // ausfahrbarer Turm (DTA): zwei Stufen
+  I.rod(dta0, dtaM, 0.34, mat('silver'), K.U.disk).rod(dtaM, dta1, 0.27, mat('silver'), K.U.disk);
+  I.rod(dta0.clone().lerp(dta1, 0.47), dta0.clone().lerp(dta1, 0.53), 0.38, mat('dark'), K.U.ring).rod(dta0, dta0.clone().lerp(dta1, 0.06), 0.4, mat('dark'), K.U.ring);
   // Hauptspiegel: Gruppe mit u = +y (quer), v = −x (weg vom Schild), Normale +z (Blickrichtung)
   const pm = new THREE.Group();
   pm.position.set(PM.x, 0, PM.z);
@@ -174,14 +197,16 @@ export function create(ctx) {
   for (let k = 0; k < 6; k++) cells.push(dir(k).map((v) => v * s));
   for (let k = 0; k < 6; k++) { const a = dir(k), b = dir((k + 1) % 6); cells.push([2 * s * a[0], 2 * s * a[1]], [s * (a[0] + b[0]), s * (a[1] + b[1])]); }
   const segGeo = hexGeo(SEG.flat, 0.05), backGeo = hexGeo(SEG.flat * 1.02, 0.34, 0);
-  const qn = new THREE.Quaternion(), zAx = V(0, 0, 1);
+  const qn = new THREE.Quaternion(), qt = new THREE.Quaternion(), zAx = V(0, 0, 1), rs = mulberry32(7);
   const segments = [];
-  for (const [u, v] of cells) {
+  cells.forEach(([u, v], i) => {
     const w = (u * u + v * v) / (4 * PM.f), n = V(-u, -v, 2 * PM.f).normalize();
     qn.setFromUnitVectors(zAx, n);
-    const seg = new THREE.Mesh(segGeo, M.gold);
+    const seg = new THREE.Mesh(segGeo, golds[i < 6 ? 0 : 1 + (i - 6) % 2]);
     seg.position.set(u, v, w);
-    seg.quaternion.copy(qn);
+    // Mikro-Verkippung ≤ 0,15° (im Betrieb sind die Segmente auf Nanometer ausgerichtet – hier nur für wechselnde Reflexe)
+    qt.setFromEuler(new THREE.Euler((rs() - 0.5) * 0.005, (rs() - 0.5) * 0.005, 0));
+    seg.quaternion.copy(qn).multiply(qt);
     seg.castShadow = seg.receiveShadow = true;
     pm.add(seg);
     segments.push(seg);
@@ -196,29 +221,43 @@ export function create(ctx) {
       J.rod(p, q, 0.022, mat('metal'));
     }
     J.rod(V(u, v, w - 0.4), V(u, v, w - 0.75), 0.05, mat('dark'), K.U.disk);
-  }
+  });
   // Rückwand (Kohlefaser-Fachwerk) hinter der Mitte und den Flügeln
   K.lattice(J, V(0, -3.4, -0.85), V(0, 3.4, -0.85), { w: 2.2, h: 0.6, bay: 0.85, r: 0.05, m: M.composite, side: V(1, 0, 0) });
   for (const sx of [-1, 1]) K.lattice(J, V(sx * 1.3, -2.3, -0.85), V(sx * 3.4, -2.3 + 0.0, -0.85), { w: 0.5, h: 0.5, bay: 0.7, r: 0.04, m: M.composite, side: V(0, 1, 0) });
-  // Mitte: Hinterer Optik-Aufbau (Tertiär- und Feinsteuerspiegel) ragt durch die Lücke, mit Blende
-  J.rod(V(0, 0, -0.2), V(0, 0, 0.75), 0.42, M.back, K.U.disk);
-  J.rod(V(0, 0, 0.75), V(0, 0, 0.9), 0.5, M.back, K.U.ring);
+  // Flügel-Scharniere: die äußeren drei Segmente je Seite klappen um eine senkrechte Achse hinter der Rückwand (zwei Gelenke)
+  for (const sx of [-1, 1]) {
+    J.rod(V(sx * 1.3 * s, -1.9 * s, -1.25), V(sx * 1.3 * s, 1.9 * s, -1.25), 0.03, mat('metal'));
+    for (const v of [-1.3 * s, 1.3 * s]) J.rod(V(sx * 1.3 * s, v - 0.14, -1.25), V(sx * 1.3 * s, v + 0.14, -1.25), 0.1, mat('dark'), K.U.disk).rod(V(sx * 1.3 * s, v, -1.25), V(sx * 1.3 * s, v, -0.95), 0.05, mat('metal'));
+  }
+  // Mitte: Hinterer Optik-Aufbau (Tertiär- und Feinsteuerspiegel) ragt als Kegel durch die Lücke, mit Blende und Sockel
+  J.rod(V(0, 0, -0.2), V(0, 0, 1.05), 0.46, M.back, K.U.cone);
+  J.rod(V(0, 0, 0.85), V(0, 0, 0.95), 0.36, M.back, K.U.ring).rod(V(0, 0, -0.35), V(0, 0, -0.2), 0.5, mat('dark'), K.U.disk);
   // Sekundärspiegel (0,74 m, konvex, Gold) auf drei Streben: unten senkrecht, oben links und rechts
   // Kugelkappe (Ø 0,74 m) mit dem Scheitel zum Hauptspiegel, dahinter Halter und Stellglieder
   add(pm, new THREE.SphereGeometry(0.9, 40, 12, 0, Math.PI * 2, 0, 0.42), M.gold, [0, 0, SM_DIST + 0.9], [-Math.PI / 2, 0, 0]);
   J.rod(V(0, 0, SM_DIST + 0.1), V(0, 0, SM_DIST + 0.36), 0.44, M.back, K.U.disk);
   const smAt = V(0, 0, SM_DIST + 0.3);
   for (const [u, v] of [[0, -3.75], [3.35, 1.95], [-3.35, 1.95]]) {
-    const foot = V(u, v, (u * u + v * v) / (4 * PM.f) - 0.1);
-    J.rod(foot, smAt.clone().add(V(u * 0.06, v * 0.06, 0)), 0.055, M.strut);
-    J.rod(foot, foot.clone().add(V(0, 0, -0.3)), 0.11, mat('dark'), K.U.disk);
+    const foot = V(u, v, (u * u + v * v) / (4 * PM.f) - 0.1), top = smAt.clone().add(V(u * 0.06, v * 0.06, 0)), d = top.clone().sub(foot).normalize();
+    J.rod(foot, top, 0.075, M.strut);
+    J.rod(foot, foot.clone().add(V(0, 0, -0.3)), 0.13, mat('dark'), K.U.disk).rod(foot.clone().addScaledVector(d, 0.1), foot.clone().addScaledVector(d, 0.45), 0.11, mat('dark'), K.U.disk);
+    // obere Streben mit Knie-Gelenk in der Mitte (klappen beim Entfalten), untere gerade
+    if (v > 0) { const mid = foot.clone().lerp(top, 0.5); J.rod(mid.clone().addScaledVector(d, -0.18), mid.clone().addScaledVector(d, 0.18), 0.12, mat('dark'), K.U.disk); }
+    J.rod(top.clone().addScaledVector(d, -0.3), top.clone().addScaledVector(d, 0.02), 0.1, mat('dark'), K.U.disk);
   }
+  for (let k = 0; k < 3; k++) { const a = k * 2 * Math.PI / 3 + Math.PI / 2; J.rod(V(Math.cos(a) * 0.2, Math.sin(a) * 0.2, SM_DIST + 0.05), V(Math.cos(a) * 0.3, Math.sin(a) * 0.3, SM_DIST + 0.36), 0.02, mat('metal')); }   // Stellglieder des Sekundärspiegels
   // ISIM hinter dem Spiegel (Instrumente in Goldfolie), Radiatoren nach achtern, Kabelbündel
   I.box(V(PM.x + 0.4, 0, PM.z - 2.0), [2.2, 2.4, 1.6], mat('gold'));
   I.box(V(PM.x + 0.4, 0, PM.z - 2.85), [2.6, 2.8, 0.08], mat('rad'));
   for (const dy of [-1.45, 1.45]) I.box(V(PM.x + 0.2, dy, PM.z - 2.0), [2.0, 0.06, 1.4], mat('rad'));
   I.box(V(PM.x - 1.4, 0, PM.z - 1.6), [0.8, 1.6, 0.9], mat('silver'));
-  I.rod(V(PM.x + 1.6, 0.3, PM.z - 1.8), V(-0.9, 0.3, -1.4), 0.08, mat('dark'));
+  // Elektronik der Instrumente (IEC) unter dem ISIM mit Kühllamellen zur kalten Seite
+  I.box(V(PM.x + 1.6, -1.1, PM.z - 1.3), [1.1, 0.8, 1.2], mat('gold'));
+  for (let k = 0; k < 4; k++) I.box(V(PM.x + 1.6, -1.6, PM.z - 1.0 - k * 0.22), [1.0, 0.45, 0.03], mat('rad'));
+  // Kabelbäume: Bus → Turm → ISIM und ISIM → Rückwand
+  K.harness(I, [V(1.2, 0.55, 0.9), V(0.5, 0.5, -0.1), V(-0.9, 0.46, -1.1), V(-2.3, 0.42, -2.1), V(PM.x + 1.6, 0.3, PM.z - 1.8)], 0.05);
+  K.harness(I, [V(PM.x + 1.5, -0.6, PM.z - 2.5), V(PM.x + 0.2, -1.3, PM.z - 2.4), V(PM.x - 0.9, -1.4, PM.z - 1.2)], 0.035);
   I.done();
   late.forEach((x) => x.done());
 
@@ -297,8 +336,7 @@ export function create(ctx) {
     dispose() {
       ov.dispose();
       K.dispose();
-      pink.dispose(); silver.dispose();
-      Object.values(M).forEach((m) => m.dispose());
+      [...golds, M.back, M.composite, M.strut].forEach((m) => m.dispose());
     },
   };
 }

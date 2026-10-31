@@ -127,6 +127,9 @@ const freezeP = parseFloat(params.get('freeze'));   // ?freeze=abc → kein Halt
 const freeze = Number.isFinite(freezeP) ? Math.min(0.999, Math.max(0, freezeP)) : null;
 const tour = params.has('tour') ? { dwell: Math.max(4, +params.get('dwell') || 16), since: 0 } : null;
 const fps = params.has('fps') ? { n: 0, sum: 0 } : null;
+// ?pose=x,y,z,tx,ty,tz: Heimpose der ersten Station überschreiben – Detailbilder der Modelle (tests/shots.py)
+const poseP = (params.get('pose') || '').split(',').map(Number);
+let poseUsed = false;
 // ?camlog: jede gezeigte Kamera je Bild aufzeichnen (tests/camera.py sucht darin Rucke)
 const camlog = params.has('camlog') ? (window.__camlog = []) : null;
 // ?capture: Zustand für tools/card_shots.py (Bild je Info-Karte aus der Szene)
@@ -277,6 +280,7 @@ async function makeLevel(id) {
   if (lv.deep) lv.scene.add(lv.deep);
   attachSound(lv);   // Schalter „Ton“ mit echten Aufnahmen, wo es welche gibt (sound.js)
   lv.baseFov = lv.camera.fov;
+  if (!poseUsed && poseP.length === 6 && poseP.every(Number.isFinite)) { poseUsed = true; lv.home = { pos: new THREE.Vector3(...poseP.slice(0, 3)), target: new THREE.Vector3(...poseP.slice(3)) }; }
   lv.rt = new THREE.WebGLRenderTarget(2, 2, {
     type: THREE.HalfFloatType, samples: lv.msaa === false ? 0 : q.msaa,
     generateMipmaps: !!lv.mips, minFilter: lv.mips ? THREE.LinearMipmapLinearFilter : THREE.LinearFilter,

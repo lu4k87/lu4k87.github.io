@@ -4,7 +4,9 @@
 // Isolierdecken, Antenne (folgt der Erde), Sternsensoren und Kaltgas-Düsen; Nutzlastmodul mit dem Teleskop in einer
 // schräg geschnittenen Blende (innen schwarz, Hauptspiegel 1,2 m und Sekundärspiegel auf drei Streben sichtbar),
 // Radiatoren der Instrumente auf der Schattenseite; Sonnenschild aus drei Feldern mit Solarzellen. Schwenks von Feld zu
-// Feld als langsames Drehen um die Sonnenlinie (Modell, kein Beobachtungsplan).
+// Feld als langsames Drehen um die Sonnenlinie (Modell, kein Beobachtungsplan). Details nach Fotos: drei Zweibeine
+// zwischen Versorgungs- und Nutzlastmodul (thermische Entkopplung), Prallblenden im Rohr, Hohlspiegel mit Loch,
+// Rahmen und Scharniere auf der Rückseite des Sonnenschilds, Sonnensensoren, Trennring, Stabantennen, Kabelbäume.
 
 import * as THREE from 'three';
 import { mulberry32 } from '../astro.js';
@@ -67,6 +69,15 @@ export function create(ctx) {
   dish.castShadow = true;
   hga.add(dish);
   I.rod(V(0.6, 0, 0), V(0.6, -0.35, 0), 0.05, mat('metal')).rod(V(0.1, -0.02, 0.4), V(0.1, -0.25, 0.4), 0.06, mat('metal'));
+  I.rod(V(0, -0.03, 0), V(0, 0.03, 0), R.svm * 0.96, mat('metal'), K.U.ring);                                  // Trennring zur Rakete
+  K.whip(I, V(-0.5, -0.02, -0.9), V(0, -1, 0), 0.5);                                                          // X-Band-Stabantennen
+  K.whip(I, V(-0.5, -0.02, 0.9), V(0, -1, 0), 0.5);
+  for (const z of [-0.5, 0.5]) I.box(V(R.svm * 0.95, H.svm + 0.1, z), [0.14, 0.14, 0.14], mat('dark'));         // Sonnensensoren
+  // Drei Zweibeine tragen das Nutzlastmodul thermisch entkoppelt über dem Versorgungsmodul
+  for (let k = 0; k < 3; k++) {
+    const a = k * 2 * Math.PI / 3 + Math.PI / 2;
+    K.bipod(I, V(Math.cos(a - 0.5) * R.svm * 0.9, H.svm + 0.03, Math.sin(a - 0.5) * R.svm * 0.9), V(Math.cos(a + 0.5) * R.svm * 0.9, H.svm + 0.03, Math.sin(a + 0.5) * R.svm * 0.9), V(Math.cos(a) * (R.plm + 0.06), H.svm + 0.38, Math.sin(a) * (R.plm + 0.06)), 0.035, mat('strut'));
+  }
 
   // ---------- Nutzlastmodul: Blende schräg geschnitten (vorn zur Sonne höher), innen schwarz ----------
   const baffle = new THREE.CylinderGeometry(R.plm, R.plm, 1, 64, 6, true);
@@ -86,7 +97,9 @@ export function create(ctx) {
   for (let k = 0; k < 48; k++) I.rod(rim[k], rim[k + 1], 0.035, mat('metal'));
   for (let k = 0; k < 8; k++) { const a = k * Math.PI / 4 + 0.2; I.rod(V(Math.cos(a) * R.plm * 1.01, H.svm + 0.25, Math.sin(a) * R.plm * 1.01), V(Math.cos(a) * R.plm * 1.01, H.svm + 2.4, Math.sin(a) * R.plm * 1.01), 0.025, mat('rail')); }
   // Teleskop im Inneren: Hauptspiegel (1,2 m, Loch in der Mitte), Sekundärspiegel auf drei Streben, Lichtfalle
-  add(new THREE.CylinderGeometry(0.6, 0.6, 0.12, 48), M.mirror, [0, H.svm + 0.45, 0]);
+  add(new THREE.LatheGeometry(Array.from({ length: 8 }, (_, i) => { const r = 0.6 - i * 0.065; return new THREE.Vector2(r, r * r / (4 * 1.5)); }), 48), M.mirror, [0, H.svm + 0.47, 0]);   // Hohlspiegel mit Loch
+  add(new THREE.CylinderGeometry(0.6, 0.6, 0.12, 48), M.spider, [0, H.svm + 0.43, 0]);
+  K.vanes(I, V(0, 0, 0), V(0, 1, 0), R.plm * 0.96, H.svm + 0.9, H.svm + 2.0, 3, M.spider);                 // Prallblenden
   add(new THREE.CylinderGeometry(0.12, 0.12, 0.14, 24), M.spider, [0, H.svm + 0.46, 0]);
   add(new THREE.CylinderGeometry(R.plm * 0.98, R.plm * 0.98, 0.04, 48, 1, false), M.spider, [0, H.svm + 0.35, 0]);
   const smY = H.svm + 2.35;
@@ -96,6 +109,8 @@ export function create(ctx) {
   // Radiatoren der Instrumente auf der Schattenseite (−x), Kasten der Instrumente unten seitlich
   for (const z of [-0.55, 0.55]) I.box(V(-R.plm - 0.12, H.svm + 1.2, z), [0.06, 1.6, 0.95], mat('rad'));
   I.box(V(-R.plm - 0.25, H.svm + 0.35, 0), [0.4, 0.5, 1.6], mat('silver'));
+  I.box(V(-R.plm - 0.22, H.svm + 1.05, 0), [0.34, 0.6, 0.5], mat('gold'));                                   // Elektronik der Instrumente
+  K.harness(I, [V(-R.svm * 0.8, H.svm + 0.02, 0.5), V(-R.plm - 0.15, H.svm + 0.3, 0.45), V(-R.plm - 0.3, H.svm + 0.75, 0.2)], 0.03);
 
   // ---------- Sonnenschild: drei Felder mit Solarzellen auf der Sonnenseite, Rahmen und Streben ----------
   const SH = { h: 3.55, w: 2.1, x: R.svm + 0.12, y0: 0.9 };
@@ -110,6 +125,10 @@ export function create(ctx) {
     const J = K.inst(g);
     for (const dy of [-SH.h / 2, SH.h / 2]) J.rod(V(-0.04, dy, -SH.w / 2), V(-0.04, dy, SH.w / 2), 0.03, mat('metal'));
     for (const dz of [-SH.w / 2, SH.w / 2]) J.rod(V(-0.04, -SH.h / 2, dz), V(-0.04, SH.h / 2, dz), 0.03, mat('metal'));
+    // Rahmen auf der Rückseite: Mittelholm und zwei Diagonalen (Modell nach Fotos der Schattenseite)
+    J.rod(V(-0.07, 0, -SH.w / 2), V(-0.07, 0, SH.w / 2), 0.025, mat('strut'));
+    J.rod(V(-0.07, -SH.h / 2, -SH.w / 2), V(-0.07, SH.h / 2, SH.w / 2), 0.02, mat('strut')).rod(V(-0.07, -SH.h / 2, SH.w / 2), V(-0.07, SH.h / 2, -SH.w / 2), 0.02, mat('strut'));
+    if (z) for (const y of [-SH.h / 2 + 0.4, SH.h / 2 - 0.4]) J.rod(V(-0.05, y - 0.1, -Math.sign(z) * SH.w / 2), V(-0.05, y + 0.1, -Math.sign(z) * SH.w / 2), 0.07, mat('dark'), K.U.disk);   // Scharniere
     J.done();
   }
   for (const y of [1.4, 2.6, 3.8]) for (const z of [-0.7, 0.7]) I.rod(V(R.plm, y, z * 0.8), V(SH.x - 0.04, y, z), 0.03, mat('strut'));

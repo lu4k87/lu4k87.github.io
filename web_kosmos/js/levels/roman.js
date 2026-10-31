@@ -6,7 +6,9 @@
 // Modell nach Fotos (Einzelmaße geschätzt): Bus als Sechskant (4 m breit, 2 m hoch, IPAC) mit Antenne (folgt der Erde),
 // Sternsensoren, Düsen; Instrumententräger mit Weitwinkel-Instrument (WFI), Koronograph (CGI) und unteren Sonnenblenden;
 // Teleskop in der Außenröhre (2,4-m-Spiegel, Sekundärspiegel auf Streben), Deckel vorn als Hutkrempe auf drei Auslegern;
-// Solarflügel-Sonnenschild aus sechs Feldern (2 fest an der Röhre, 4 ausgeklappt).
+// Solarflügel-Sonnenschild aus sechs Feldern (2 fest an der Röhre, 4 ausgeklappt). Details nach Fotos: Spantringe der
+// Außenröhre, Prallblenden innen, Hohlspiegel mit Loch, Streben zu den äußeren Flügeln und Rippen der Felder,
+// Scharnier-Hülsen des Deckels, Stabantennen, Kabelbäume Bus → Instrumententräger → Röhre.
 
 import * as THREE from 'three';
 import { mulberry32 } from '../astro.js';
@@ -92,7 +94,11 @@ export function create(ctx) {
   add(body, K.tubeUV(new THREE.CylinderGeometry(TUBE.r, TUBE.r, tubeLen, 64, 1, true), TUBE.r, tubeLen, 2.2), dark, [0, (TUBE.y0 + TUBE.y1) / 2, 0]);
   add(body, new THREE.CylinderGeometry(TUBE.r * 0.99, TUBE.r * 0.99, tubeLen, 64, 1, true), M.inside, [0, (TUBE.y0 + TUBE.y1) / 2, 0]);
   K.dress(I, 'y', V(0, (TUBE.y0 + TUBE.y1) / 2, 0), TUBE.r, tubeLen, { rails: 4, rail: 'railGrey', gear: 4, seed: 61 });
-  add(body, new THREE.CylinderGeometry(1.2, 1.2, 0.14, 64), M.mirror, [0, TUBE.y0 + 0.5, 0]);
+  K.ribs(I, V(0, 0, 0), V(0, 1, 0), TUBE.r + 0.03, TUBE.y0 + 0.6, TUBE.y1 - 0.5, 4, mat('dark'), 0.14);   // Spantringe
+  K.vanes(I, V(0, 0, 0), V(0, 1, 0), TUBE.r * 0.97, TUBE.y0 + 1.3, TUBE.y1 - 1.8, 4, M.black);          // Prallblenden
+  // Hohlspiegel 2,4 m (schnell, f ≈ 2,9 m) mit Loch, Profil von außen nach innen → Fläche zeigt zur Öffnung
+  add(body, new THREE.LatheGeometry(Array.from({ length: 10 }, (_, i) => { const r = 1.2 - i * 0.1; return new THREE.Vector2(r, r * r / (4 * 2.9)); }), 64), M.mirror, [0, TUBE.y0 + 0.44, 0]);
+  add(body, new THREE.CylinderGeometry(1.2, 1.2, 0.14, 64), M.black, [0, TUBE.y0 + 0.36, 0]);
   add(body, new THREE.CylinderGeometry(0.2, 0.2, 0.18, 24), M.black, [0, TUBE.y0 + 0.52, 0]);
   const smY = TUBE.y0 + 3.4;
   add(body, new THREE.CylinderGeometry(0.15, 0.2, 0.12, 32), M.mirror, [0, smY, 0]);
@@ -108,6 +114,12 @@ export function create(ctx) {
   add(dac, brim, mat('silver'), [0.25, 0.75, 0]).material.side = THREE.DoubleSide;
   for (const a of [-0.55, 0, 0.55]) { const x = Math.cos(a) * (TUBE.r + 0.05), z = Math.sin(a) * (TUBE.r + 0.05); I.rod(V(x, TUBE.y1 - 0.2, z), V(x * 1.35 + 0.25, TUBE.y1 + 1.55, z * 1.35), 0.04, mat('strut')); }
   I.rod(V(0, TUBE.y1 - 0.05, 0), V(0, TUBE.y1 + 0.05, 0), TUBE.r + 0.06, mat('metal'), K.U.ring);
+  for (const a of [-0.55, 0, 0.55]) { const x = Math.cos(a) * (TUBE.r + 0.05), z = Math.sin(a) * (TUBE.r + 0.05); I.rod(V(x, TUBE.y1 - 0.34, z), V(x, TUBE.y1 - 0.06, z), 0.09, mat('dark'), K.U.disk); }   // Scharnier-Hülsen der Ausleger
+  K.whip(I, V(-1.0, BUS.h, -1.4), V(-0.3, 1, 0), 0.8);                                                       // Stabantennen
+  K.whip(I, V(0.8, 0, 1.3), V(0.3, -1, 0), 0.8);
+  // Kabelbäume: Bus → Instrumententräger → Außenröhre, Träger → WFI-Radiator
+  K.harness(I, [V(-1.4, BUS.h - 0.1, 1.2), V(-1.5, 2.3, 1.3), V(-1.3, 3.6, 0.9), V(-1.2, 5.0, 0.6)], 0.04);
+  K.harness(I, [V(-1.2, BUS.h - 0.1, -1.3), V(-1.6, 2.4, -1.1), V(-1.75, 2.9, -1.0)], 0.03);
 
   // ---------- Solarflügel-Sonnenschild: 3 Spalten × 2 Reihen, Mitte fest, Seiten ausgeklappt ----------
   const SA = { w: 2.15, h: 2.55, x: TUBE.r + 0.55, y0: TUBE.y0 + 0.1 };
@@ -125,10 +137,15 @@ export function create(ctx) {
       for (const dy of [-SA.h / 2, SA.h / 2]) J.rod(V(-0.04, y + dy, -SA.w / 2), V(-0.04, y + dy, SA.w / 2), 0.03, mat('metal'));
       for (const dz of [-SA.w / 2, SA.w / 2]) J.rod(V(-0.04, y - SA.h / 2, dz), V(-0.04, y + SA.h / 2, dz), 0.03, mat('metal'));
     }
-    if (col) J.rod(V(-0.05, SA.y0 + 0.4, -col * SA.w / 2), V(-0.05, SA.y0 + 2 * SA.h - 0.4, -col * SA.w / 2), 0.05, mat('metal'));   // Scharnier
+    if (col) {
+      J.rod(V(-0.05, SA.y0 + 0.4, -col * SA.w / 2), V(-0.05, SA.y0 + 2 * SA.h - 0.4, -col * SA.w / 2), 0.05, mat('metal'));   // Scharnier
+      for (const y of [SA.y0 + 0.6, SA.y0 + SA.h + 0.03, SA.y0 + 2 * SA.h - 0.6]) J.rod(V(-0.05, y - 0.1, -col * SA.w / 2), V(-0.05, y + 0.1, -col * SA.w / 2), 0.08, mat('dark'), K.U.disk);
+    }
+    for (let row = 0; row < 2; row++) { const y = SA.y0 + SA.h / 2 + row * (SA.h + 0.06); J.rod(V(-0.04, y, -SA.w / 2), V(-0.04, y, SA.w / 2), 0.025, mat('metal')).rod(V(-0.04, y - SA.h / 2, 0), V(-0.04, y + SA.h / 2, 0), 0.025, mat('metal')); }   // Rippen
     J.done();
   }
   for (const y of [TUBE.y0 + 1, TUBE.y0 + 4.2]) I.rod(V(TUBE.r, y, 0), V(SA.x - 0.05, y, 0), 0.05, mat('strut'));
+  for (const col of [1, -1]) for (const y of [TUBE.y0 + 1.2, TUBE.y0 + 4.0]) I.rod(V(TUBE.r * 0.7, y, col * TUBE.r * 0.7), V(SA.x - 0.5, y, col * SA.w * 1.35), 0.035, mat('strut'));   // Streben zu den äußeren Flügeln
   I.done();
 
   // ---------- Ausrichtung: Schild zur Sonne, Inbetriebnahme mit langsamen Schwenks (Modell) ----------

@@ -7,6 +7,9 @@
 // Läden, Z1 mit Ku-Band-Antenne, AMS-02, vier ELC-Plattformen, BEAM, Bishop, Canadarm2 auf der Mobilen Basis, ERA an
 // Nauka. Besuchsschiffe in typischer Belegung (Modell, nicht der Flugplan): Crew Dragon an Harmony vorn, Cargo Dragon an
 // Harmony oben, Sojus an Rasswet, Progress an Swesda hinten und an Poisk. Oberflächen aus stationkit.js.
+// Weitere Details nach Fotos (Modell): Luken an den freien Stutzen (Unity und Harmony unten, Pritschal), Fenster an Destiny
+// und Swesda, Radiator von Nauka, Haupttriebwerke und Lagedüsen von Swesda, Ammoniaktanks auf S1/P1, Dextre an der
+// Mobilen Basis, S-Band- und GPS-Antennen auf dem Träger, UHF-Stabantennen, ICS-Antenne auf der Kibo-Plattform.
 // Solarflügel folgen der Sonne über zwei Gelenke (großes Drehgelenk um den Träger, kleines um jeden Flügel), Radiatoren
 // zeigen ihr die Kante – vereinfachte Regel, kein Flugplan. Blick „Cupola“: Kamera in der Kuppel, Blick zur Erde.
 
@@ -311,6 +314,36 @@ export function create(ctx) {
     I.box(V(TRUSS.x, y, z), [2.8, 0.25, 4.0], mat('metal'));
     for (const [dx, dz] of [[-0.7, -1.1], [0.7, -1.0], [-0.6, 0.6], [0.75, 1.2]]) { const t = [1.0 + rp() * 0.4, 0.5 + rp() * 0.7, 1.2 + rp() * 0.5]; payload(V(TRUSS.x + dx, y + s * (0.12 + t[1] / 2), z + dz), t); }
   }
+
+  // ---------- Kleinteile: Luken, Fenster, Radiator, Triebwerke, Tanks, Dextre, Antennen ----------
+  K.hatch(I, V(-3.0, -2.3, 0), V(0, -1, 0), 0.95);                                  // Unity unten (CBM, frei)
+  K.hatch(I, V(11.85, -2.2, 0), V(0, -1, 0), 0.95);                                 // Harmony unten (CBM, frei)
+  K.hatch(I, V(-21.3, -17.7, 0), V(0, -1, 0), 0.65, { latches: 6 });                // Pritschal unten
+  for (const d of [V(1, 0, 0), V(-1, 0, 0), V(0, 0, 1), V(0, 0, -1)]) K.hatch(I, V(-21.3, -16.0, 0).addScaledVector(d, 1.7), d, 0.6, { latches: 6 });   // Pritschal seitlich
+  I.rod(V(4.0, -2.14, 0), V(4.0, -2.22, 0), 0.4, mat('metal'), K.U.ring).rod(V(4.0, -2.16, 0), V(4.0, -2.2, 0), 0.32, mat('glass'), K.U.disk);   // Fenster an Destiny (unten)
+  for (const [x, a] of [[-27.5, 0.9], [-29.5, -1.2], [-24.0, 2.4]]) { const p = V(x, Math.cos(a) * 2.08, Math.sin(a) * 2.08), d = V(0, Math.cos(a), Math.sin(a)); I.rod(p, p.clone().addScaledVector(d, 0.06), 0.2, mat('metal'), K.U.disk).rod(p.clone().addScaledVector(d, 0.045), p.clone().addScaledVector(d, 0.07), 0.15, mat('glass'), K.U.disk); }   // Fenster an Swesda
+  I.box(V(-21.3, -8.6, 2.25), [1.6, 6.0, 0.06], mat('rad'));                        // Radiator von Nauka
+  for (const s of [1, -1]) K.nozzle(I, V(-33.95, s * 1.3, 0), V(-1, 0, 0), 0.3, 0.45);   // Haupttriebwerke von Swesda
+  for (const a of [45, 135, 225, 315]) { const r = V(0, Math.cos(a * RAD), Math.sin(a * RAD)); for (const x of [-32.8, -32.3]) K.nozzle(I, V(x, 0, 0).addScaledVector(r, 2.3), r, 0.07, 0.25); }   // Lagedüsen
+  for (const s of [1, -1]) {                                                         // Ammoniaktanks (ATA) auf S1/P1
+    I.rod(V(TRUSS.x - 0.9, TRUSS.y + 2.1, s * 14.5), V(TRUSS.x + 1.3, TRUSS.y + 2.1, s * 14.5), 0.55, mat('us'), K.U.disk);
+    for (const x of [TRUSS.x - 0.6, TRUSS.x + 1.0]) I.box(V(x, TRUSS.y + 1.7, s * 14.5), [0.2, 0.4, 1.3], mat('metal'));
+    I.box(V(TRUSS.x + 0.5, TRUSS.y + 2.1, s * 21.0), [0.6, 0.8, 0.6], mat('box'), null, GREYS[2]);   // S-Band-Antennen (SASA)
+    K.whip(I, V(TRUSS.x + 0.5, TRUSS.y + 2.5, s * 21.0), V(0, 1, 0), 1.2);
+  }
+  for (const [dx, dz] of [[-1.2, -5.5], [1.2, -5.5], [-1.2, 5.5], [1.2, 5.5]]) I.rod(V(TRUSS.x + dx, TRUSS.y + 1.5, dz), V(TRUSS.x + dx, TRUSS.y + 1.6, dz), 0.15, mat('box'), K.U.disk);   // GPS-Antennen auf S0
+  K.whip(I, V(-3.0, 4.6, -1.3), V(0, 1, 0), 1.3);                                   // UHF-Stabantennen an Z1
+  K.whip(I, V(-2.0, 4.6, 1.2), V(0.2, 1, 0), 1.3);
+  K.whip(I, V(-9.5, 2.0, 0.8), V(0, 1, 0.3), 0.9);                                  // Stabantenne an Sarja
+  // Dextre in Parkstellung an der Mobilen Basis: Körper mit zwei Armen
+  I.box(V(5.3, 7.4, -1.5), [1.0, 1.8, 1.0], mat('us'));
+  I.rod(V(5.3, 8.2, -1.5), V(6.6, 9.4, -0.6), 0.1, M.arm).rod(V(5.3, 8.2, -1.5), V(4.0, 9.5, -0.9), 0.1, M.arm);
+  for (const p of [[6.6, 9.4, -0.6], [4.0, 9.5, -0.9]]) I.ball(V(...p), 0.18, mat('dark'));
+  // ICS-Antenne auf der Kibo-Außenplattform (Schüssel zu den Relais-Satelliten)
+  I.rod(V(11.85, 0.0, -18.6), V(11.85, 1.1, -18.6), 0.06, mat('metal'));
+  const ics = add(station, new THREE.LatheGeometry(Array.from({ length: 7 }, (_, i) => new THREE.Vector2(i * 0.08, (i * 0.08) ** 2 * 0.6)), 32), mat('paint'), [11.85, 1.15, -18.6]);
+  ics.rotation.x = -0.3;
+  ics.material.side = THREE.DoubleSide;
 
   // ---------- Besuchsschiffe (typische Belegung, Modell) ----------
   const ships = new THREE.Group();

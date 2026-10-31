@@ -7,7 +7,9 @@
 // geschätzt). Alle Flügel folgen der Sonne über zwei Gelenke (Drehung um die Modulachse, Kippen um die Flügelachse).
 // Roboterarme in Parkstellung: Tianhe ≈ 10 m, Wentian 5 m. Details nach Fotos (Modell): lackierte Hülle mit Platten und
 // Nieten, Goldfolie, Haltegriffe und Geräte, Flügel mit Mast, Relaisantenne, Außenplattform an Mengtian; Besuchsschiffe in
-// typischer Belegung (Shenzhou vorn, Tianzhou am Heck – nicht der Flugplan). Oberflächen aus stationkit.js.
+// typischer Belegung (Shenzhou vorn, Tianzhou am Heck – nicht der Flugplan). Oberflächen aus stationkit.js. Weitere Details
+// nach Fotos (Modell): Luken an den freien Stutzen, Bullaugen und Radiatorstreifen auf den Hüllen, Lagedüsen, Greifpunkte
+// für den Arm, Navigationsantennen, Ausstiegsluke der Wentian-Schleuse, zweite Relaisantenne an Mengtian.
 
 import * as THREE from 'three';
 import { mulberry32 } from '../astro.js';
@@ -107,6 +109,44 @@ export function create(ctx) {
     K.dress(I, 'z', V(NODE_X, 0, s * (12.0 + (zEnd - 12.7) / 2)), LAB.r, zEnd - 12.7, { ...DRESS, rails: 4, gear: 3, seed: 220 + s });
     for (const z of [LAB.z0 + 1.0, 9.0, 12.0]) I.rod(V(NODE_X, 0, s * z - 0.1), V(NODE_X, 0, s * z + 0.1), LAB.r + 0.04, M.metal, K.U.ring);
     labs[name] = s;
+  }
+
+  // ---------- Kleinteile: Luken, Bullaugen, Radiatoren, Düsen, Greifpunkte, Antennen ----------
+  {
+    const up = V(0, 1, 0), rad = new THREE.Vector3(), q = new THREE.Quaternion();
+    const onHull = (x, ang, r) => rad.set(0, Math.cos(ang), Math.sin(ang)).clone().multiplyScalar(r).add(V(x, 0, 0));
+    K.hatch(I, V(NODE_X, 2.3, 0), V(0, 1, 0), 0.9);                                  // freie Stutzen des Knotens oben und unten
+    K.hatch(I, V(NODE_X, -2.3, 0), V(0, -1, 0), 0.9);
+    for (const s of [1, -1]) K.hatch(I, V(NODE_X, 0, s * zEnd), V(0, 0, s), 1.0);      // äußere Enden der Labore
+    K.hatch(I, V(NODE_X, 1.95, 10.5), V(0, 1, 0), 0.5, { latches: 6 });                // Ausstiegsluke der Wentian-Schleuse
+    for (const [x, a] of [[-0.6, 0.5], [1.4, -0.6], [-2.2, 2.4]]) {                     // Bullaugen am Arbeitsabschnitt
+      const p = onHull(x, a, 2.08), d = rad.clone();
+      I.rod(p, p.clone().addScaledVector(d, 0.07), 0.24, M.metal, K.U.disk).rod(p.clone().addScaledVector(d, 0.05), p.clone().addScaledVector(d, 0.08), 0.18, mat('glass'), K.U.disk);
+    }
+    for (const a of [55, 125, 235, 305]) {                                             // Radiatorstreifen auf dem Ressourcenabschnitt
+      rad.set(0, Math.cos(a * RAD), Math.sin(a * RAD));
+      q.setFromUnitVectors(up, rad);
+      I.box(rad.clone().multiplyScalar(2.13).add(V(-5.25, 0, 0)), [3.8, 0.05, 0.9], mat('rad'), q);
+    }
+    for (const s of [1, -1]) for (const sx of [1, -1]) I.box(V(NODE_X + sx * (LAB.r + 0.03), 0, s * 15.6), [0.05, 1.1, 5.6], mat('rad'));   // Radiatoren der Labore
+    for (const a of [45, 135, 225, 315]) {                                             // Lagedüsen am Heck und an den Laborenden
+      const p = onHull(-7.0, a * RAD, 2.05);
+      K.nozzle(I, p.clone().addScaledVector(rad, 0.3), rad, 0.08, 0.3);
+      K.nozzle(I, p.clone().add(V(-0.4, 0, 0)), V(-1, 0, 0), 0.07, 0.25);
+    }
+    for (const s of [1, -1]) for (const a of [45, 225]) { const r = V(0, Math.cos(a * RAD), Math.sin(a * RAD)); K.nozzle(I, V(NODE_X, 0, s * (zEnd - 0.5)).addScaledVector(r, 1.25), r, 0.06, 0.22); }
+    for (const [x, a] of [[-5.5, 1.1], [0.4, 2.3], [3.2, -1.2]]) {                      // Greifpunkte für den Roboterarm
+      const p = onHull(x, a, 2.1), d = rad.clone();
+      I.rod(p, p.clone().addScaledVector(d, 0.12), 0.2, M.metal, K.U.disk).rod(p.clone().addScaledVector(d, 0.12), p.clone().addScaledVector(d, 0.32), 0.05, M.dark);
+    }
+    for (const z of [-0.6, 0.6]) I.rod(V(4.6, 1.38, z), V(4.6, 1.48, z), 0.16, mat('box'), K.U.disk);   // Navigationsantennen (GNSS)
+    K.whip(I, V(7.2, 0.9, 0.5), V(0.3, 1, 0), 0.6);                                   // Stabantennen der Anlegestelle vorn
+    K.whip(I, V(7.2, -0.9, -0.5), V(0.3, -1, 0), 0.6);
+    // zweite Relaisantenne am Ende von Mengtian
+    I.rod(V(NODE_X + 1.2, 1.9, -17.2), V(NODE_X + 2.0, 3.0, -17.6), 0.06, M.metal);
+    const dish2 = add(station, new THREE.LatheGeometry(Array.from({ length: 7 }, (_, i) => new THREE.Vector2(i * 0.09, (i * 0.09) ** 2 * 0.5)), 32), mat('paint'), [NODE_X + 2.05, 3.05, -17.65]);
+    dish2.rotation.set(-0.5, 0, 0.6);
+    dish2.material.side = THREE.DoubleSide;
   }
 
   // ---------- Solarflügel ----------

@@ -1,6 +1,7 @@
 // Bausteine der Raumstationen 01A (ISS) und 01B (Tiangong): Oberflächen mit Struktur (Farbe, Normalen und Rauheit aus
 // Canvas), Kleinteile als Instanzen (ein Zeichenaufruf je Form und Material), Gitter, Ausstattung der Module und die
-// Besuchsschiffe Sojus, Progress, Dragon, Shenzhou und Tianzhou. Alles Modell nach Fotos, Maße gerundet (Quellen in
+// Besuchsschiffe Sojus, Progress, Dragon, Shenzhou und Tianzhou; Kleinteile für alle Stationen und Teleskope (Luken,
+// Prallblenden, Spantringe, Kabelbäume, Stabantennen, Zweibeine, Düsen) und die Membran des JWST-Sonnenschilds. Alles Modell nach Fotos, Maße gerundet (Quellen in
 // content.js: esa-soyuz, spacex-dragon, sf101-shenzhou, sf101-tianzhou).
 // Oberflächen: Isolierdecken mit Beta-Stoff außen (Kissen, Nähte mit Stichen, Klebeband, Knitter, vergilbte Felder),
 // zerknitterte Folie (Facetten → Glitzern im Sonnenlicht), Solarzellen unter Deckglas (jede Zelle leicht verkippt, Felder
@@ -235,6 +236,38 @@ function paint(S, { tone, cols = 4, rows = 3, seed = 13, rivets = true }) {
   return { map: c, normal: normalsFromHeight(hc, 5 * u), rough: rc };
 }
 
+// Membran des Sonnenschilds (JWST): glatte, aluminisierte Folie mit Gitter aus Nähten (Ripstop, Zellen ≈ 1,2 m, Ösen an
+// den Kreuzungen), lange weiche Falten aus der Spannung zwischen den Aufhängepunkten; Glanz streifig entlang der Falten
+function membrane(S, { tone = [224, 224, 228], seed = 23, grid = 2 }) {
+  const rnd = mulberry32(seed), u = S / 512, cw = S / grid;
+  const c = canvas(S, S), hc = canvas(S, S), rc = canvas(S, S);
+  const g = c.getContext('2d'), h = hc.getContext('2d'), r = rc.getContext('2d');
+  h.fillStyle = '#808080'; h.fillRect(0, 0, S, S);
+  for (let i = 0; i < grid; i++) for (let j = 0; j < grid; j++) {
+    const k = 0.985 + rnd() * 0.03;
+    g.fillStyle = rgb(tone[0] * k, tone[1] * k, tone[2] * k); g.fillRect(i * cw, j * cw, cw, cw);
+    const q = 84 + rnd() * 30;
+    r.fillStyle = rgb(q, q, q); r.fillRect(i * cw, j * cw, cw, cw);
+  }
+  const wc = canvas(S, S), w = wc.getContext('2d');
+  w.lineWidth = 3 * u;
+  for (let n = 0; n < 14; n++) {
+    const x = rnd() * S, y = rnd() * S, a = rnd() * Math.PI, L = (120 + rnd() * 300) * u, bend = (rnd() - 0.5) * L * 0.25;
+    const ex = x + Math.cos(a) * L, ey = y + Math.sin(a) * L, mx = (x + ex) / 2 - Math.sin(a) * bend, my = (y + ey) / 2 + Math.cos(a) * bend;
+    for (const [col, o] of [['rgba(255,255,255,0.22)', 0], ['rgba(0,0,0,0.22)', 2.5 * u]]) {
+      w.strokeStyle = col;
+      w.beginPath(); w.moveTo(x - Math.sin(a) * o, y + Math.cos(a) * o); w.quadraticCurveTo(mx - Math.sin(a) * o, my + Math.cos(a) * o, ex - Math.sin(a) * o, ey + Math.cos(a) * o); w.stroke();
+    }
+  }
+  h.filter = `blur(${Math.max(1, Math.round(4 * u))}px)`; h.drawImage(wc, 0, 0); h.filter = 'none';
+  // Nähte als Gitter (am Kachelrand dieselbe Naht wie innen → nahtlos gekachelt), Ösen an den Kreuzungen
+  g.fillStyle = 'rgba(70,66,74,0.2)'; h.fillStyle = '#6e6e6e'; r.fillStyle = rgb(104, 104, 104);
+  for (let i = 0; i <= grid; i++) for (const [x, y, ww, hh] of [[i * cw - 0.8 * u, 0, 1.6 * u, S], [0, i * cw - 0.8 * u, S, 1.6 * u]]) { g.fillRect(x, y, ww, hh); h.fillRect(x, y, ww, hh); r.fillRect(x, y, ww, hh); }
+  g.fillStyle = 'rgba(60,58,64,0.4)'; h.fillStyle = '#585858';
+  for (let i = 0; i <= grid; i++) for (let j = 0; j <= grid; j++) { g.beginPath(); g.arc(i * cw, j * cw, 2.5 * u, 0, Math.PI * 2); g.fill(); h.beginPath(); h.arc(i * cw, j * cw, 2.5 * u, 0, Math.PI * 2); h.fill(); }
+  return { map: c, normal: normalsFromHeight(hc, 5 * u), rough: rc };
+}
+
 // Gebürstetes Metall: Rauheit mit feinen Längsstreifen
 function brushed(N) {
   const rnd = mulberry32(19), c = canvas(N, N), g = c.getContext('2d');
@@ -280,6 +313,7 @@ export function stationKit(ctx) {
   const FOIL = () => once('foil', () => foil(256, { tone: [236, 236, 236], seed: 3 }), [2, 2], 'nr');
   const PAINT = () => once('paint', () => paint(S / 2, { tone: [244, 244, 244], seed: 16 }), null, 'n');
   const BLUE = () => once('blue', () => cells(S / 2, S, { cell: [26, 36, 90], seed: 5 }), null, 'n');
+  const MEMBRANE = () => once('membrane', () => membrane(S / 2, {}), null, 'nr');
   const DARK = () => once('dark', () => cells(S / 2, S, { cell: [16, 19, 32], bus: [150, 132, 96], gap: [130, 104, 62], nx: 12, ny: 24, panel: 6, seed: 6, fold: 0.03 }), null, 'n');
   const fabric = (color) => stationMat({ ...QUILT(), color, roughness: 0.86, metalness: 0 });
   const film = (color) => stationMat({ ...FOIL(), color, roughness: 1, metalness: 0.9 });
@@ -290,6 +324,9 @@ export function stationKit(ctx) {
   const LIB = {
     us: () => fabric(0xf7f4eb), ru: () => fabric(0xe1e5d8), beam: () => fabric(0xfffbf0), green: () => fabric(0x7b8960), grey: () => fabric(0xd6d8d0),
     gold: () => film(0xdcaa50), silver: () => film(0xd3d6db),
+    // Sonnenschild-Lagen (JWST): Sonnenseite rosa-silbern (dotiertes Silizium), übrige Lagen Aluminium; beide Seiten sichtbar
+    shieldSun: () => stationMat({ ...MEMBRANE(), color: 0xeec3e4, roughness: 1, metalness: 0.78, side: THREE.DoubleSide }),
+    shieldBack: () => stationMat({ ...MEMBRANE(), color: 0xd6d9e0, roughness: 1, metalness: 0.78, side: THREE.DoubleSide }),
     cells: () => pv(BLUE, 0xffffff, 0.6), cellsRU: () => pv(BLUE, 0xe4ecff, 0.5),
     irosa: () => pv(DARK, 0xffffff, 0.4), cellsCN: () => pv(DARK, 0xfff2dc, 0.5), cellsDragon: () => pv(DARK, 0xb4b8c4, 0.3),
     back: () => stationMat({ ...set(() => kapton(S / 2, {}), null, 'n'), roughness: 0.42, metalness: 0.35 }),
@@ -316,6 +353,8 @@ export function stationKit(ctx) {
     disk: new THREE.CylinderGeometry(1, 1, 1, 24, 1),        // Gelenke, Düsen, runde Kästen
     ball: new THREE.SphereGeometry(1, 16, 10),
     box: new THREE.BoxGeometry(1, 1, 1),
+    vane: new THREE.RingGeometry(0.72, 1, 48).rotateX(-Math.PI / 2),   // Prallblende: flacher Ring, Normale +y (= Richtung a → b in rod)
+    cone: new THREE.CylinderGeometry(0.5, 1, 1, 24, 1),               // Kegelstumpf: Radius r am Anfang a, r/2 am Ende b
   };
 
   // Sammler für Kleinteile an einem Elternteil: je Form und Material eine InstancedMesh
@@ -396,6 +435,37 @@ export function stationKit(ctx) {
       else I.box(pt(t, ang, r + s[1] / 2), s, mat('box'), q, GEAR[(rnd() * GEAR.length) | 0]);
     }
   }
+
+  // ---------- Kleinteile (alle als Instanzen über I) ----------
+  const qAlong = (d) => new THREE.Quaternion().setFromUnitVectors(Y, d);
+  // Luke an einem freien Stutzen: Ring, zurückgesetzte dunkle Scheibe, heller Deckel, Riegel rundum
+  function hatch(I, at, dir, r, { ring = 'metal', latches = 8 } = {}) {
+    const d = dir.clone().normalize(), p = (t) => at.clone().addScaledVector(d, t);
+    I.rod(p(-0.08), p(0.12), r, mat(ring), U.ring).rod(p(-0.06), p(0.0), r * 0.98, mat('dark'), U.disk).rod(p(0.0), p(0.05), r * 0.55, mat('box'), U.disk, GEAR[1]);
+    const e1 = (Math.abs(d.y) < 0.9 ? Y.clone() : V(1, 0, 0)).cross(d).normalize(), e2 = d.clone().cross(e1), q = qAlong(d);
+    for (let k = 0; k < latches; k++) { const a = k * 2 * Math.PI / latches; I.box(p(0.1).addScaledVector(e1, Math.cos(a) * r * 0.88).addScaledVector(e2, Math.sin(a) * r * 0.88), [0.14, 0.1, 0.14], mat('dark'), q); }
+  }
+  // Prallblenden innen in einer Röhre: n flache Ringe zwischen t0 und t1 entlang `axis` (Achse zeigt zur Öffnung)
+  function vanes(I, c, axis, r, t0, t1, n, m) {
+    for (let i = 0; i < n; i++) { const p = c.clone().addScaledVector(axis, t0 + (t1 - t0) * (i + 0.5) / n); I.rod(p, p.clone().addScaledVector(axis, 0.02), r, m, U.vane); }
+  }
+  // Spantringe außen auf einer Röhre (n Felder → n + 1 Ringe)
+  function ribs(I, c, axis, r, t0, t1, n, m, w = 0.12) {
+    for (let i = 0; i <= n; i++) { const p = c.clone().addScaledVector(axis, t0 + (t1 - t0) * i / n); I.rod(p.clone().addScaledVector(axis, -w / 2), p.clone().addScaledVector(axis, w / 2), r, m, U.ring); }
+  }
+  // Kabelbaum entlang Stützpunkten, Schellen an den Knicken
+  function harness(I, pts, r, m = mat('dark')) {
+    for (let i = 0; i < pts.length - 1; i++) { I.rod(pts[i], pts[i + 1], r, m); if (i) I.ball(pts[i], r * 1.4, mat('metal')); }
+  }
+  // Stabantenne (niedriger Gewinn) mit Fuß
+  function whip(I, at, dir, len, r = 0.012) {
+    const d = dir.clone().normalize();
+    I.rod(at, at.clone().addScaledVector(d, 0.08), r * 6, mat('dark'), U.disk).rod(at, at.clone().addScaledVector(d, len), r, mat('metal')).ball(at.clone().addScaledVector(d, len), r * 2.2, mat('metal'));
+  }
+  // Zweibein: zwei Streben von a und b zum Scheitel s mit Gelenk
+  function bipod(I, a, b, s, r, m) { I.rod(a, s, r, m).rod(b, s, r, m).ball(s, r * 1.9, mat('dark')); }
+  // Düse als Kegel: Austritt `at` (Radius r), Richtung `dir` nach außen, Länge len
+  function nozzle(I, at, dir, r, len) { const d = dir.clone().normalize(); I.rod(at, at.clone().addScaledVector(d, -len), r, mat('nozzle'), U.cone); }
 
   // UV in Metern / Kachel: Zylinder (Mantel 2πr × Länge, Deckel 2r × 2r) und Kasten (je Fläche ihre Maße)
   function tubeUV(geo, r, len, tile) {
@@ -520,5 +590,5 @@ export function stationKit(ctx) {
   async function ready() {
     while (jobs.length) { jobs.shift()(); await new Promise((r) => setTimeout(r, 0)); }
   }
-  return { S, U, mat, panel, inst, lattice, dress, tubeUV, boxUV, ship, dock, ready, dispose() { jobs.length = 0; textures.forEach((t) => t.dispose()); } };
+  return { S, U, mat, panel, inst, lattice, dress, hatch, vanes, ribs, harness, whip, bipod, nozzle, tubeUV, boxUV, ship, dock, ready, dispose() { jobs.length = 0; textures.forEach((t) => t.dispose()); } };
 }

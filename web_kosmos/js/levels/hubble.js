@@ -7,6 +7,9 @@
 // Generation (Maße nach Fotos geschätzt) auf Masten quer, zwei Hochgewinn-Antennen auf Masten.
 // Ausrichtung: Achse V1 (Blickrichtung) fest zum gewählten Ziel am Himmel, Sonne in der Ebene V1–V3 (Rollen), Flügel
 // drehen um ihre Masten zur Sonne, Antennen zeigen nach oben (zu den Relais-Satelliten) – vereinfachte Regeln.
+// Details nach Fotos: Spantringe der Lichtschutzröhre, vier Magnet-Drehmomentstäbe, Stabantennen, Prallblenden im Rohr,
+// Hauptspiegel als Hohlspiegel mit Loch, Fächer des Geräteteils in Stahlblech (NOBL) und Isolierdecke, Radiatoren am Heck,
+// Scharnier-Hülsen an Deckel, Flügelmasten und Antennenmasten.
 
 import * as THREE from 'three';
 import { mulberry32, equToScene } from '../astro.js';
@@ -58,7 +61,15 @@ export function create(ctx) {
   I.rod(V(HST.aft - 0.35, 0, 0), V(HST.aft, 0, 0), 1.1, mat('dark'), K.U.ring).rod(V(HST.aft - 0.4, 0, 0), V(HST.aft - 0.33, 0, 0), 1.15, mat('metal'), K.U.ring);
   for (let k = 0; k < 3; k++) { const a = k * 2 * Math.PI / 3; I.box(V(HST.aft - 0.2, Math.cos(a) * 0.95, Math.sin(a) * 0.95), [0.4, 0.25, 0.25], mat('box'), null, GREYS[1]); }
   for (const x of [HST.aft + 0.05, HST.aft + 2.4, HST.ssm - 0.05]) I.rod(V(x - 0.08, 0, 0), V(x + 0.08, 0, 0), HST.r1 + 0.04, mat('metal'), K.U.ring);
-  for (const x of [1.6, 4.1, HST.front - 0.05]) I.rod(V(x - 0.06, 0, 0), V(x + 0.06, 0, 0), HST.r2 + 0.03, mat('metal'), K.U.ring);
+  I.rod(V(HST.front - 0.11, 0, 0), V(HST.front + 0.01, 0, 0), HST.r2 + 0.03, mat('metal'), K.U.ring);
+  K.ribs(I, V(0, 0, 0), V(1, 0, 0), HST.r2 + 0.025, HST.ssm + 1.0, HST.front - 0.6, 7, mat('metal'), 0.1);   // Spantringe der Lichtschutzröhre
+  for (const a of [45, 135, 225, 315]) {                                                                   // Magnet-Drehmomentstäbe
+    const y = Math.cos(a * RAD) * (HST.r2 + 0.11), z = Math.sin(a * RAD) * (HST.r2 + 0.11);
+    I.rod(V(1.3, y, z), V(4.2, y, z), 0.07, mat('dark'));
+    for (const x of [1.45, 4.05]) I.rod(V(x, y * 0.92, z * 0.92), V(x, y, z), 0.05, mat('metal'));
+  }
+  K.whip(I, V(HST.aft + 0.4, -HST.r1 + 0.02, 0.3), V(0, -1, 0), 0.9);                                       // Stabantennen (niedriger Gewinn)
+  K.whip(I, V(HST.front - 0.7, 0.2, HST.r2 - 0.02), V(0, 0, 1), 0.7);
   // Ersatzdecken (hell) und Fachtüren auf dem Geräteteil, gelbe Haltegriffe längs
   const rp = mulberry32(31), q = new THREE.Quaternion(), up = V(0, 1, 0), rad = new THREE.Vector3();
   for (let k = 0; k < 10; k++) {
@@ -66,7 +77,9 @@ export function create(ctx) {
     rad.set(0, Math.cos(a), Math.sin(a));
     q.setFromUnitVectors(up, rad);
     const x = HST.aft + 2.4 + (HST.ssm - HST.aft - 2.4) / 2;
-    if (rp() < 0.55) I.box(rad.clone().multiplyScalar(HST.r1 + 0.02).add(V(x + (rp() - 0.5) * 0.8, 0, 0)), [2.2 + rp() * 1.2, 0.03, 1.0], mat('us'), q);
+    const pick = rp();   // Fächer: Isolierdecke, Stahlblech (NOBL, seit 1999) oder nur Folie
+    if (pick < 0.4) I.box(rad.clone().multiplyScalar(HST.r1 + 0.02).add(V(x + (rp() - 0.5) * 0.8, 0, 0)), [2.2 + rp() * 1.2, 0.03, 1.0], mat('us'), q);
+    else if (pick < 0.75) I.box(rad.clone().multiplyScalar(HST.r1 + 0.02).add(V(x + (rp() - 0.5) * 0.6, 0, 0)), [2.6 + rp() * 0.8, 0.03, 1.05], mat('metal'), q);
     I.box(rad.clone().multiplyScalar(HST.r1 + 0.012).add(V(x, 0, 0)), [3.5, 0.02, 0.05], mat('dark'), q);
   }
   for (let k = 0; k < 4; k++) {
@@ -74,6 +87,10 @@ export function create(ctx) {
     rad.set(0, Math.cos(a), Math.sin(a));
     q.setFromUnitVectors(up, rad);
     I.box(rad.clone().multiplyScalar(HST.r1 + 0.012).add(V(HST.aft + 1.2, 0, 0)), [1.6, 0.02, 1.4], mat('us'), q);   // Instrumententüren
+  }
+  for (const s of [1, -1]) {                                                                               // Radiatoren der Instrumente am Heck
+    q.setFromUnitVectors(up, rad.set(0, 0, s));
+    I.box(V(HST.aft + 1.2, 0, s * (HST.r1 + 0.03)), [1.9, 0.04, 1.3], mat('rad'), q);
   }
   K.dress(I, 'x', V((HST.aft + HST.ssm) / 2, 0, 0), HST.r1, HST.ssm - HST.aft, { rails: 8, rail: 'rail', gear: 5, seed: 33, ends: false });
   K.dress(I, 'x', V((HST.ssm + HST.front) / 2, 0, 0), HST.r2, HST.front - HST.ssm, { rails: 4, rail: 'rail', gear: 3, seed: 34, ends: false });
@@ -84,15 +101,18 @@ export function create(ctx) {
   hst.add(door);
   add(door, new THREE.CylinderGeometry(HST.r2 * 1.02, HST.r2 * 1.02, 0.12, 48), mat('silver'), [0, -HST.r2, 0], [0, 0, Math.PI / 2]);
   I.rod(V(HST.front - 0.1, HST.r2 + 0.05, -0.5), V(HST.front - 0.1, HST.r2 + 0.05, 0.5), 0.09, mat('metal'));
+  for (const z of [-0.45, 0.45]) I.rod(V(HST.front - 0.1, HST.r2 + 0.05, z - 0.08), V(HST.front - 0.1, HST.r2 + 0.05, z + 0.08), 0.13, mat('dark'), K.U.disk);   // Scharnier-Hülsen
   // Optik im Rumpf: Hauptspiegel 2,4 m mit Loch, Prallblenden, Sekundärspiegel 0,3 m auf vier Streben
   const pmX = HST.ssm + 0.6;
-  add(hst, new THREE.CylinderGeometry(1.2, 1.2, 0.18, 64), M.mirror, [pmX, 0, 0], [0, 0, Math.PI / 2]);
+  // Hohlspiegel f/2,3 (Pfeilhöhe r²/4f) mit Loch, Profil von außen nach innen → Spiegelfläche zeigt zur Öffnung
+  add(hst, new THREE.LatheGeometry(Array.from({ length: 10 }, (_, i) => { const r = 1.2 - i * 0.1; return new THREE.Vector2(r, r * r / (4 * 5.52)); }), 64), M.mirror, [pmX + 0.09, 0, 0], [0, 0, -Math.PI / 2]);
+  add(hst, new THREE.CylinderGeometry(1.2, 1.2, 0.18, 64), M.black, [pmX, 0, 0], [0, 0, Math.PI / 2]);
   add(hst, new THREE.CylinderGeometry(0.3, 0.3, 0.6, 32), M.black, [pmX + 0.3, 0, 0], [0, 0, Math.PI / 2]);
   const smX = pmX + 4.9;
   add(hst, new THREE.CylinderGeometry(0.15, 0.15, 0.08, 32), M.mirror, [smX, 0, 0], [0, 0, Math.PI / 2]);
   add(hst, new THREE.CylinderGeometry(0.22, 0.26, 0.6, 32), M.black, [smX + 0.34, 0, 0], [0, 0, Math.PI / 2]);
   for (let k = 0; k < 4; k++) { const a = k * Math.PI / 2 + Math.PI / 4; I.rod(V(smX + 0.3, 0, 0), V(smX + 0.3, Math.cos(a) * HST.r2 * 0.98, Math.sin(a) * HST.r2 * 0.98), 0.02, M.black); }
-  for (const x of [pmX + 1.4, pmX + 2.6, pmX + 3.8]) I.rod(V(x - 0.02, 0, 0), V(x + 0.02, 0, 0), HST.r2 * 0.97, M.black, K.U.ring);
+  K.vanes(I, V(0, 0, 0), V(1, 0, 0), HST.r2 * 0.97, pmX + 1.0, smX - 0.7, 4, M.black);   // Prallblenden im Rohr
 
   // ---------- Solarflügel: Masten quer (±z = V2), Felder drehen um den Mast zur Sonne ----------
   const wings = [];
@@ -104,7 +124,8 @@ export function create(ctx) {
     const J = K.inst(g);
     late.push(J);
     J.rod(V(0, 0, 0), V(0, 0, s * (WING.base + WING.len + 0.2)), 0.07, mat('metal'));
-    J.rod(V(0, 0, s * 0.05), V(0, 0, s * 0.45), 0.2, mat('metal'), K.U.disk);
+    J.rod(V(0, 0, s * 0.05), V(0, 0, s * 0.45), 0.2, mat('metal'), K.U.disk).rod(V(0, 0, s * 0.5), V(0, 0, s * 0.72), 0.14, mat('dark'), K.U.disk);   // Antrieb und Gelenk
+    J.box(V(0, -0.2, s * (WING.base - 0.5)), [0.5, 0.3, 0.5], mat('box'), null, GREYS[2]);                                                     // Diodenkasten
     const m = new THREE.Mesh(K.boxUV(new THREE.BoxGeometry(WING.w, 0.03, WING.len), 1.3, 1.4), [mat('back'), mat('back'), mat('cells'), mat('back'), mat('back'), mat('back')]);
     m.position.set(0, 0, s * (WING.base + WING.len / 2));
     m.castShadow = m.receiveShadow = true;
@@ -116,6 +137,7 @@ export function create(ctx) {
   const dishes = [];
   for (const s of [1, -1]) {
     I.rod(V(HST.ssm - 1.6, s * HST.r1, 0), V(HST.ssm - 1.6, s * (HST.r1 + 3.6), 0), 0.06, mat('metal'));
+    for (const y of [HST.r1 + 0.15, HST.r1 + 2.0]) I.rod(V(HST.ssm - 1.6, s * (y - 0.12), 0), V(HST.ssm - 1.6, s * (y + 0.12), 0), 0.12, mat('dark'), K.U.disk);   // Gelenk-Hülsen am Mast
     const g = new THREE.Group();
     g.position.set(HST.ssm - 1.6, s * (HST.r1 + 3.7), 0);
     hst.add(g);
