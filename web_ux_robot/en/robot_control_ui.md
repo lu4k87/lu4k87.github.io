@@ -98,7 +98,7 @@
 >> | `approach_descent_scaling` | `0.15` | *Speed of the vertical descent.* |
 >> | `approach_object_match_radius` | `0.03` | *Max. XY distance [m] between target and grasp sphere to identify the object.* |
 >> | `moveit_controller_status_topic` | `/lite6_traj_controller/follow_joint_trajectory/_action/status` | *Status topic used to detect the start of execution.* |
->> | `auto_initial_pose` | `true` | *Move to the home pose at startup – planned collision-free via MoveIt (waits up to 30 s for `/move_action`, with path preview it waits for confirmation); `false` keeps the arm still. Skipped after any E-STOP since the start (latched from before a restart or already reset before MoveIt Servo was ready) – then move Home by hand.* |
+>> | `auto_initial_pose` | `true` | *Move to the home pose at startup – planned collision-free via MoveIt (waits up to 30 s for `/move_action`, with path preview it waits for confirmation); on Robot | Hardware (xArm driver seen) it always waits for *Execute* in the MoveIt popup, even with the path preview off – *Discard* or no click within `moveto_preview_timeout` (15 s) = no motion, note in the log; Robot | Digital Twin moves without confirmation as before; `false` keeps the arm still. Skipped after any E-STOP since the start (latched from before a restart or already reset before MoveIt Servo was ready) – then move Home by hand.* |
 >
 >
 > ![Subscribes](https://img.shields.io/badge/Subscribes-orange?style=flat-square)
