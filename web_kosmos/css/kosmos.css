@@ -844,14 +844,20 @@ body:is(.st-open, .cfg-open) .stage > .hint { left: calc(50% + (var(--st-w) + 16
 .bottombar { grid-area: foot; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: end; gap: 16px; padding: 8px 16px 14px; }
 .bottombar > .measure { grid-column: 3; }
 /* Fuß in einer Zeile (Vorschau 31.10.2026 „Kosmos: mehr Bühne für das All“ Fuss:C): Einstellungen als Symbolknöpfe links
-   neben der Navigation, Zeitraffer füllt den Rest; Messleiste rechts über dem Zeitraffer (User 31.10.2026), ohne Zeitraffer
-   rutscht sie in die Zeile. Name der Knöpfe aus aria-label/title, sichtbar erst schmal (≤ 760 px) */
-.bottombar { grid-template-columns: auto auto minmax(0, 1fr); grid-template-rows: auto auto; row-gap: 8px; }
-.bottombar > * { grid-row: 2; }
+   neben der Navigation, Zeitraffer füllt den Rest; Messleiste rechts daneben in derselben Zeile (User 31.10.2026), der
+   Zeitraffer wird dadurch kürzer. Reicht die Breite nicht (≤ 1599 px), liegt die Messleiste über dem Zeitraffer.
+   Name der Knöpfe aus aria-label/title, sichtbar erst schmal (≤ 760 px) */
+.bottombar { grid-template-columns: auto auto minmax(0, 1fr) auto; grid-template-rows: auto; row-gap: 8px; }
+.bottombar > * { grid-row: 1; }
 .bottombar > .nav-buttons { grid-column: 2; }
 .bottombar > .tl { grid-column: 3; justify-self: stretch; width: auto; }
-.bottombar > .measure { grid-column: 3; grid-row: 1; justify-self: end; }
-.bottombar:has(> .tl[hidden]) > .measure { grid-row: 2; }
+.bottombar > .measure { grid-column: 4; justify-self: end; }
+@media (max-width: 1599px) {
+  .bottombar { grid-template-columns: auto auto minmax(0, 1fr); grid-template-rows: auto auto; }
+  .bottombar > * { grid-row: 2; }
+  .bottombar > .measure { grid-column: 3; grid-row: 1; }
+  .bottombar:has(> .tl[hidden]) > .measure { grid-row: 2; }
+}
 .dock { grid-column: 1; justify-self: start; display: flex; gap: 8px; }
 .dock .icon-btn {
   display: flex; align-items: center; justify-content: center; gap: 8px; width: 52px; height: 52px; padding: 0;
