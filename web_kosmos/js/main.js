@@ -113,6 +113,8 @@ const FLYFX = { fov: 0.12, vig: 0.14, bank: 0.035, max: 0.04, tau: 0.5 };
 // User 28.10.2026: 0,3 → 0,18, Kurven waren zu steil; danach 0,18 → 0,27, weiter ausholen, aber weich – dafür flacheres
 // Profil bei einer Etappe allein, arcPair)
 const ARC = { angle: 0.27 };
+// Hinein: Anteil der Etappe, in dem der Blick auf den Anker dreht (stepTransition)
+const LOOK_IN = 0.3;
 // Auftakt ohne eigene Pose der Station: aus der Nähe (near × Abstand), um yaw seitlich versetzt, in die Heimpose
 const INTRO = { dur: 9, yaw: 0.9, near: 0.5 };
 // Bühne kleiner als dieser Anteil der Fensterhöhe (Handy, Tablet hochkant) → Blickwinkel weiten, damit die Bühne
@@ -915,10 +917,11 @@ function stepTransition(dt) {
   warp(ch, fx);
   const e = ch.t >= 1 ? 1 : Math.min(1, Math.max(0, chainPos(ch, ch.t) - tr.k));
   const p = tr.down ? e : 1 - e;            // 0 = nur äußeres Bild, 1 = nur inneres
-  // äußeres Blickziel schwenkt früh auf den Anker – über 85 % der Etappe, damit der Blick auch bei seitlichem Anker ruhig
-  // dreht; beim Hinausfliegen gleichmäßig über die Zeit der Etappe (der Blick dreht dort weit, vom Anker zum Ziel der Station):
-  // an e hängend lag die Wende in der Anfahrt (e beschleunigt) gedrängt am Etappenende, Mond → Erde bis 1,6 rad/s
-  const tkOuter = tr.down ? smoother(0, 0.85, e) : smoother(tr.u0, tr.u1, ch.t);
+  // äußeres Blickziel schwenkt hinein gleich zu Beginn auf den Anker, solange die Kamera noch langsam ist, danach bleibt das
+  // Ziel ruhig in der Mitte (User 31.10.2026: über 85 % der Etappe kippte der Blick mitten im Flug nach, Lokale Gruppe →
+  // Milchstraße 12°); beim Hinausfliegen gleichmäßig über die Zeit der Etappe (der Blick dreht dort weit, vom Anker zum Ziel
+  // der Station): an e hängend lag die Wende in der Anfahrt (e beschleunigt) gedrängt am Etappenende, Mond → Erde bis 1,6 rad/s
+  const tkOuter = tr.down ? smoother(0, LOOK_IN, e) : smoother(tr.u0, tr.u1, ch.t);
   if (tr.swing && !tr.down) tr.swing.w = ch.t >= 1 ? 1 : THREE.MathUtils.clamp((ch.t - tr.u0) / (tr.u1 - tr.u0), 0, 1);
   // weiterfahrende Kamera = die der Station, an der die vorige Etappe endete (hinein: äußere, hinaus: innere);
   // die Wendestation fährt Steigen, Kuppe und Sinken als einen Bogen (x = Etappen-Koordinate ab der Wende)
