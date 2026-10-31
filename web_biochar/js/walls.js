@@ -21,7 +21,24 @@ export function buildWalls(walls, semOpts) {
   const p = new THREE.Vector3();
   const z = new THREE.Vector3(0, 0, 1);
 
-  const joints = new Map();
+  // Ecken: Treffen sich vier Zellen fast in einem Punkt, liefert die Zerlegung zwei Ecken im Abstand ≈ 0 – zwei versetzte,
+  // gleich hohe Prismen flackern als Doppelkreis (User 2026-10-31). Ecken, deren Mitte im Kreis der anderen liegt, werden
+  // ein Prisma, das beide umschließt (Raster 8 µm > größte Reichweite zweier Ecken, Wand ≤ 4,2 µm)
+  const JOINT_R = 0.56, CELL = 8;
+  const joints = [], grid = new Map();
+  const cellOf = (pt) => [Math.floor(pt[0] / CELL), Math.floor(pt[1] / CELL)];
+  const near = (pt, reach) => {
+    const [gx, gy] = cellOf(pt), out = [];
+    for (let dx = -1; dx <= 1; dx++) for (let dy = -1; dy <= 1; dy++) {
+      for (const j of grid.get(`${gx + dx},${gy + dy}`) || []) if (Math.hypot(j.p[0] - pt[0], j.p[1] - pt[1]) < reach(j)) out.push(j);
+    }
+    return out;
+  };
+  const jointAt = (pt, t) => near(pt, (j) => 0.5 * JOINT_R * (j.t + t))[0];
+  const index = (j) => {
+    const key = cellOf(j.p).join(',');
+    grid.set(key, [...(grid.get(key) || []), j]);
+  };
   const geo = [];    // Lage jeder Wandplatte, damit setThin die Dicke später neu setzen kann
   walls.forEach((w, k) => {
     const dx = w.b[0] - w.a[0], dy = w.b[1] - w.a[1];
@@ -40,10 +57,9 @@ export function buildWalls(walls, semOpts) {
     const wb = bot ? Math.max(...w.bot) : 0;   // Ecke: offen, sobald eine angrenzende Zelle offen ist
     for (const pt of [w.a, w.b]) {
       if (w.openEnd && pt === w.b) continue;
-      const key = `${Math.round(pt[0] * 200)},${Math.round(pt[1] * 200)}`;
-      const j = joints.get(key);
-      if (j) { j.t = Math.max(j.t, w.t); j.z0 = Math.min(j.z0, w.z0); j.z1 = Math.max(j.z1, w.z1); j.bot = Math.max(j.bot, wb); }
-      else joints.set(key, { p: pt, t: w.t, z0: w.z0, z1: w.z1, bot: wb });
+      const j = jointAt(pt, w.t);
+      if (j) { j.pts.push([pt, w.t]); j.t = Math.max(j.t, w.t); j.z0 = Math.min(j.z0, w.z0); j.z1 = Math.max(j.z1, w.z1); j.bot = Math.max(j.bot, wb); }
+      else { joints.push({ p: pt, pts: [[pt, w.t]], t: w.t, z0: w.z0, z1: w.z1, bot: wb }); index(joints.at(-1)); }
     }
   });
   box.setAttribute('aWall', new THREE.InstancedBufferAttribute(data, 4));
@@ -55,16 +71,37 @@ export function buildWalls(walls, semOpts) {
   const prism = new THREE.CylinderGeometry(1, 1, 1, 8, 1);
   prism.rotateX(Math.PI / 2);
   const jointMat = semMaterial({ ...semOpts, joint: true, bot });
-  const list = [...joints.values()];
+  for (const j of joints) {     // zusammengelegte Ecke: Mitte der Punkte, Radius umschließt jeden Einzelkreis
+    const c = [0, 1].map((i) => j.pts.reduce((sum, [pt]) => sum + pt[i], 0) / j.pts.length);
+    j.r = Math.max(...j.pts.map(([pt, t]) => Math.hypot(pt[0] - c[0], pt[1] - c[1]) + JOINT_R * t));
+    j.p = c;
+  }
+  // zweiter Durchgang: liegt eine Mitte nun im (gewachsenen) Kreis einer Nachbarecke, geht sie darin auf – sonst bliebe ein
+  // kleiner Kreis im großen stehen
+  const list = [];
+  grid.clear();
+  for (const j of [...joints].sort((a, b) => b.r - a.r)) {
+    const o = near(j.p, (o) => o.r)[0];
+    if (!o) { list.push(j); index(j); continue; }
+    o.r = Math.max(o.r, Math.hypot(j.p[0] - o.p[0], j.p[1] - o.p[1]) + j.r);
+    o.t = Math.max(o.t, j.t); o.z0 = Math.min(o.z0, j.z0); o.z1 = Math.max(o.z1, j.z1); o.bot = Math.max(o.bot, j.bot);
+  }
+  // Ecke ragt 0,1 Wanddicken über die höchste Wand: gleich hohe Deckflächen flackern (Z-Fighting), die Ecke deckt so
+  // auch die Überlappung der Wandenden ab. Überlappt sie eine Nachbarecke mit (fast) gleicher Deckhöhe, liegt sie
+  // 0,08 Wanddicken darüber
+  for (const j of list) {
+    j.top = j.z1 + 0.1 * j.t;
+    const others = near(j.p, (o) => (o === j || o.top === undefined ? 0 : o.r + j.r));
+    for (let k = 0; k < 3; k++) {
+      const hit = others.find((o) => Math.abs(o.top - j.top) < 0.08 * j.t);
+      if (!hit) break;
+      j.top = hit.top + 0.08 * j.t;
+    }
+  }
   prism.setAttribute('aTop', new THREE.InstancedBufferAttribute(Float32Array.from(list, (j) => j.z1), 1));
   if (bot) prism.setAttribute('aBot', new THREE.InstancedBufferAttribute(Float32Array.from(list.flatMap((j) => [j.bot, j.bot])), 2));
   const jm = new THREE.InstancedMesh(prism, jointMat, list.length);
-  // Ecke ragt 0,1 Wanddicken über die höchste Wand: gleich hohe Deckflächen flackern (Z-Fighting), die Ecke deckt so
-  // auch die Überlappung der Wandenden ab
-  const jgeo = list.map((j) => {
-    const top = j.z1 + 0.1 * j.t;
-    return { p: new THREE.Vector3(j.p[0], j.p[1], (j.z0 + top) / 2), t: j.t * 0.56, h: top - j.z0 };
-  });
+  const jgeo = list.map((j) => ({ p: new THREE.Vector3(j.p[0], j.p[1], (j.z0 + j.top) / 2), t: j.r, h: j.top - j.z0 }));
   // f = Wanddicke relativ zur Ausgangsdicke; offset(x, y) = Versatz [dx, dy] quer zur Faser (Risse, die sich mit der Schwindung öffnen)
   const setThin = (f, offset) => {
     const shifted = (v) => { const d = offset ? offset(v.x, v.y) : [0, 0]; return p.set(v.x + d[0], v.y + d[1], v.z); };
