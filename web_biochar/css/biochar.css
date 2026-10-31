@@ -20,6 +20,10 @@
   --pore-meso: #9fd3a6;
   --pore-macro: #e8c58f;
   --water: #5aaaff;
+  --ok: #7fd49b;                                      /* Grenzwert erfüllt (EBC-Prüfstreifen), Vorschau 31.10.2026 Labor:C */
+  --ok-soft: rgba(127, 212, 155, 0.12);
+  --climate: #6cc7d9;                                 /* Klimabilanz: CO₂ gebunden, C nach 100 Jahren */
+  --climate-soft: rgba(108, 199, 217, 0.12);
   --radius: 10px;
   --gap: 16px;
   --t-xfade: 900ms;                                   /* Einblenden ganzer Flächen (Skill soft-motion) */
@@ -47,6 +51,14 @@
     --pore-meso: #3d8a4a;
     --pore-macro: #a86b14;
     --water: #1f6fc4;
+  --ok: #2e7d4a;
+  --ok-soft: rgba(46, 125, 74, 0.1);
+  --climate: #12768a;
+  --climate-soft: rgba(18, 118, 138, 0.1);
+    --ok: #2e7d4a;
+    --ok-soft: rgba(46, 125, 74, 0.1);
+    --climate: #12768a;
+    --climate-soft: rgba(18, 118, 138, 0.1);
     color-scheme: light;
   }
 }
@@ -67,6 +79,10 @@
   --pore-meso: #3d8a4a;
   --pore-macro: #a86b14;
   --water: #1f6fc4;
+  --ok: #2e7d4a;
+  --ok-soft: rgba(46, 125, 74, 0.1);
+  --climate: #12768a;
+  --climate-soft: rgba(18, 118, 138, 0.1);
   color-scheme: light;
 }
 :root[data-theme="dark"] { color-scheme: dark; }
@@ -438,10 +454,12 @@ body.panel-collapsed .panel { display: none; }
 .lead-more:hover { border-color: var(--accent); background: var(--accent-soft); }
 /* Fließtext im Blocksatz (Skill text-format §4, Wunsch User 2026-10-23, 2026-10-26 für alle Texte): Einleitung und Erläuterung
    der Tafel, Info-Karte, Hinweise im Zahnrad; eine Zeilenhöhe 1,5. Silbentrennung über lang="de" nur in Wörtern ab 8 Zeichen
-   mit mind. 4 Zeichen vorn, 3 hinten: lange Komposita brechen, aber kein „lie-gen“, keine „Na-vigation“. Ohne Trennung reißt der Blocksatz in
+   mit mind. 5 Zeichen vorn und hinten, Wörter ab 12 Zeichen (User 2026-10-31: Bindestrich nur, wenn nötig): lange Komposita brechen,
+   kurze Wörter nie. Ohne Trennung reißt der Blocksatz in
    schmalen Spalten Gassen (tests/hs_card_check.py misst Wortlücken > 0,7 em). Zahl + Einheit, Namen und Kürzel hält
    hud.js prose() zusammen (.nh); etwas engere Wortabstände (−0,04 em) halbieren die übrigen Gassen */
-.lead, .detail p, .hs-card p, .note, .cfg-note:not(.cfg-foot) { text-align: justify; text-wrap: pretty; hyphens: auto; hyphenate-limit-chars: 8 4 3; word-spacing: -0.04em; line-height: 1.5; }
+.lead, .detail p, .hs-card p, .note, .cfg-note:not(.cfg-foot), .fact-head,
+.facts > .fact:first-child:nth-last-child(odd) .fact-label { text-align: justify; text-wrap: pretty; hyphens: auto; hyphenate-limit-chars: 12 5 5; word-spacing: -0.04em; line-height: 1.5; }
 .nh { hyphens: manual; }
 /* Quellen: Liste mit Namen, englischen Titeln und Jahreszahlen → linksbündig, nicht getrennt (text-format §4) */
 .sources li { text-align: start; hyphens: manual; overflow-wrap: break-word; }
@@ -519,7 +537,17 @@ body.panel-collapsed .panel { display: none; }
 .fact-text { flex: 1; align-self: stretch; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .fact-value { font: 500 16.5px/1.2 var(--mono); }
 .fact-value > span { white-space: nowrap; }   /* Umbruch nur an „ · “, nie zwischen Zahl, ± und Einheit */
-.fact-label { font-size: 13.5px; line-height: 1.32; color: var(--ink-soft); hyphens: auto; overflow-wrap: break-word; text-wrap: pretty; margin-bottom: 1px; }
+.fact-label { font-size: 13.5px; line-height: 1.32; color: var(--ink-soft); overflow-wrap: break-word; margin-bottom: 1px; }
+/* Blocksatz nur in Karten über die volle Breite (≥ 30 Zeichen je Zeile), schmale Karten linksbündig: sonst Gassen */
+.fact-label, .fact-head { line-height: 1.32; }
+/* Sammelwert geteilt (Vorschau 31.10.2026 Kennz:A): Kopf über voller Breite, je Teilwert Wert über Name, ohne Balken */
+.facts > .fact--split { grid-column: 1 / -1; }
+.fact-head { font-size: 13.5px; color: var(--ink-soft); }
+.fact-cols { display: grid; grid-template-columns: repeat(3, auto); justify-content: start; gap: 14px; margin-top: 2px; }
+.fact-cols > div { display: flex; flex-direction: column; gap: 1px; min-width: 0; padding-left: 10px; border-left: 1px solid var(--line); }
+.fact-cols > div:first-child { padding-left: 0; border-left: 0; }
+.fact-cols .fact-label { text-align: start; color: var(--ink); }
+.fact-sub { font-size: 13px; line-height: 1.3; color: var(--ink-soft); margin-top: -2px; }
 .fact-bar { display: block; height: 4px; margin-top: auto; border-radius: 2px; background: var(--line); overflow: hidden; }
 .fact-bar i { display: block; height: 100%; border-radius: 2px; background: var(--accent); transition: width 0.3s var(--ease-out); }
 
@@ -546,15 +574,44 @@ body.panel-collapsed .panel { display: none; }
 .rh-bar { display: block; height: 6px; border-radius: 3px; background: var(--line); overflow: hidden; }
 .rh-bar i { display: block; height: 100%; background: var(--water); transition: width 0.25s var(--ease-out); }
 .chart .curve--des { stroke: var(--water); stroke-dasharray: 4 3; }
-@media (prefers-reduced-motion: reduce) { .rh-bar i { transition: none; } }
-/* Laborwerte als 3 × 3 Kacheln (Panel:B) + immer offene 2er-Zeile Leitfähigkeit σ & Kontaktwinkel θ darunter (Labor:A, F3) */
+@media (prefers-reduced-motion: reduce) { .rh-bar i, .ebc-bar i { transition: none; } }
+/* Labor (Vorschau 31.10.2026 Labor:A + Labor:C): Prüfstreifen EBC, Klimabilanz, Kacheln in Gruppen Kohle (orange) und Boden */
+.ebc { display: flex; flex-direction: column; gap: 3px; padding: 6px 10px 7px; border: 1px solid color-mix(in srgb, var(--ok) 55%, var(--line)); border-radius: 8px; background: var(--ok-soft); }
+.ebc.is-warn { border-color: color-mix(in srgb, var(--warn) 55%, var(--line)); background: color-mix(in srgb, var(--warn) 12%, transparent); }
+.panel .ebc-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 2px 8px; }
+.ebc-head b { font-size: 14.5px; font-weight: 600; color: var(--ok); }
+.ebc.is-warn .ebc-head b { color: var(--warn); }
+.ebc-head span { font-size: 12.5px; color: var(--ink-soft); }
+/* H/C und O/C nebeneinander, erst unter 380 px Tafelbreite untereinander (Tafel ohne Scrollen, so weit es geht) */
+.ebc-ms { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 3px 14px; }
+@container panel (max-width: 380px) { .ebc-ms { grid-template-columns: 1fr; } }
+.ebc-m { display: grid; grid-template-columns: 3.4ch minmax(0, 1fr) auto; gap: 8px; align-items: center; font-size: 13px; }
+.ebc-bar { position: relative; height: 6px; border-radius: 3px; background: var(--line); }
+.ebc-bar i { display: block; height: 100%; border-radius: 3px; background: var(--ok); transition: width 0.25s var(--ease-out); }
+.ebc-bar b { position: absolute; top: -4px; bottom: -4px; width: 2px; margin-left: -1px; border-radius: 1px; background: var(--ink); opacity: 0.75; }   /* Grenzwert */
+.ebc-val { font: 500 14px var(--mono); white-space: nowrap; }
+.ebc-val small { font-size: 12px; color: var(--ink-soft); }
+.ebc-m.warn .ebc-bar i { background: var(--warn); }
+.ebc-m.warn .ebc-val { color: var(--warn); }
+.clim { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; padding: 6px 10px 7px; border: 1px solid color-mix(in srgb, var(--climate) 50%, var(--line)); border-radius: 8px; background: var(--climate-soft); }
+.clim > div { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.clim > div + div { padding-left: 10px; border-left: 1px solid color-mix(in srgb, var(--climate) 35%, var(--line)); }
+.clim-val { font: 500 19px/1.2 var(--mono); color: var(--climate); white-space: nowrap; }
+.clim-sub { font-size: 13px; color: var(--ink-soft); }
+.panel .lab-gh { display: flex; align-items: center; gap: 6px; margin: 2px 0 -2px; font-size: 13px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; }
+.lab-gh i { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+.lab-gh span { margin-left: auto; font: 500 12px var(--mono); letter-spacing: 0; text-transform: none; color: var(--ink-soft); }
+.lab-gh--n i { background: var(--ink-soft); }
 .lab { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 5px; margin: 0; }
-.lab--phys { grid-template-columns: repeat(2, minmax(0, 1fr)); margin-top: 5px; }
+.lab--2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.lab--2 .lab-bar i { background: color-mix(in srgb, var(--ink) 55%, transparent); }
+.lab-tag { font-size: 12px; line-height: 1; color: var(--ink-soft); }
+.lab-cell--txt .lab-val { font: 500 14.5px/1.25 var(--font); }
 .lab-cell { display: flex; flex-direction: column; gap: 1px; min-width: 0; padding: 3px 8px 4px; border: 1px solid var(--line); border-radius: 8px; }
 .lab dt { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 2px 4px; font-size: 12.5px; line-height: 1.2; }
 .lab dt > * { white-space: nowrap; }   /* Differenz rutscht unter den Namen, statt in die Nachbarkachel zu laufen */
-.lab-delta { font: 500 11.5px/1 var(--mono); color: var(--accent); opacity: 0.9; }
-@container panel (max-width: 350px) { .lab:not(.lab--phys) .lab-delta { display: none; } }
+.lab-delta { font: 500 11.5px/1 var(--mono); color: var(--ink-soft); }
+@container panel (max-width: 350px) { .lab:not(.lab--2) .lab-delta { display: none; } }
 .lab dd { flex: 1; display: flex; flex-direction: column; gap: 2px; margin: 0; }
 .lab-val { font: 500 15px/1.25 var(--mono); overflow-wrap: break-word; }
 .lab-bar { display: block; height: 3.5px; margin-top: auto; border-radius: 2px; background: var(--line); overflow: hidden; }

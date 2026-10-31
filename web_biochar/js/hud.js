@@ -166,14 +166,31 @@ export function createHud(handlers) {
   }
 
   const fmtFactVal = (val) => String(val).split(' · ').map((s) => `<span>${esc(s)}</span>`).join(' · ');
+  // Sammelwert „0,7 · 3 · 15 µm“ mit Name „Kopf: A · B · C“ → Teilwerte mit eigener Beschriftung (Vorschau 31.10.2026 Kennz:A);
+  // Klammer am Ende des Namens („Pilzhyphen (Mykorrhiza: 2–20 µm)“) steht als eigene, ruhigere Zeile
+  function splitFact(f) {
+    const parts = String(f.value).split(' · '), ci = f.label.indexOf(': ');
+    if (parts.length < 2 || ci < 0) return null;
+    const subs = f.label.slice(ci + 2).split(' · ');
+    if (subs.length !== parts.length) return null;
+    const unit = (parts[parts.length - 1].match(/\s(\S+)$/) || [])[1] || '';
+    return { head: f.label.slice(0, ci), items: parts.map((v, i) => [unit && !v.endsWith(unit) ? `${v}\u00a0${unit}` : v, subs[i]]) };
+  }
+  const parenSplit = (label) => { const m = /^(.*\S)\s*\(([^()]*)\)$/.exec(label); return m ? [m[1], m[2]] : [label, '']; };
+  function factInner(f) {
+    const s = splitFact(f);
+    if (s) {
+      return `<span class="fact-head">${esc(s.head)}</span><div class="fact-cols">${s.items.map(([v, n]) =>
+        `<div><span class="fact-value"><span>${esc(v)}</span></span><span class="fact-label">${esc(n).replace('/', '/<wbr>')}</span></div>`).join('')}</div>`;
+    }
+    const [main, sub] = parenSplit(f.label);
+    return `<span class="fact-value">${fmtFactVal(f.value)}</span><span class="fact-label">${esc(main)}</span>${sub ? `<span class="fact-sub">${esc(sub)}</span>` : ''}
+          <span class="fact-bar" aria-hidden="true"><i style="width:${factBarPct(f)}%"></i></span>`;
+  }
   function facts(list) {
     return `<div class="facts">${list.map((f) => `
-      <div class="fact">
-        <div class="fact-text">
-          <span class="fact-value">${fmtFactVal(f.value)}</span>
-          <span class="fact-label">${esc(f.label)}</span>
-          <span class="fact-bar" aria-hidden="true"><i style="width:${factBarPct(f)}%"></i></span>
-        </div>
+      <div class="fact${splitFact(f) ? ' fact--split' : ''}" data-k="${esc(`${f.value}|${f.label}`)}">
+        <div class="fact-text">${factInner(f)}</div>
       </div>`).join('')}</div>`;
   }
 
@@ -257,9 +274,50 @@ export function createHud(handlers) {
     ];
   }
 
+  // Labor (Vorschau 31.10.2026 Labor:A + Labor:C): oben Prüfstreifen EBC (grün, gelb wenn nicht erfüllt) und Klimabilanz
+  // (türkis), darunter Kacheln in Gruppen Kohle (orange) und Boden (neutral); Differenz zum Holz bzw. Einordnung (Halbleiter,
+  // Keiluweit …) neutral oben rechts, die Formel des CO₂-Werts steht nur in der Erläuterung
+  const isDelta = (d) => /^([−+×]|Holz)/.test(d);
+  const EBC = { hc: [0.7, 1.2], oc: [0.4, 0.8] };   // Grenzwert, Skalenende des Messbalkens
+  function ebcState(t) {
+    const p = labProps(t);
+    return {
+      ok: p.hc < EBC.hc[0] && p.oc < EBC.oc[0],
+      m: ['hc', 'oc'].map((k) => ({ k, v: p[k], ok: p[k] < EBC[k][0], w: Math.min(100, (p[k] / EBC[k][1]) * 100) })),
+    };
+  }
+  const ebcHead = (ok) => (ok ? '✓ EBC-Grenzwerte erfüllt' : '⚠ EBC-Grenzwerte nicht erfüllt');
+  const climVals = (t) => { const p = labProps(t); return { co2: p.co2 === null ? '–' : `${fmt(p.co2, 1)}\u00a0t\u00a0CO₂`, fperm: p.fperm === null ? '–' : `${fmt(p.fperm * 100)}\u00a0%` }; };
   function labTiles(t) {
-    const cell = ([k, name, v, warn, bar, delta]) => `<div class="lab-cell${warn ? ' warn' : ''}" data-f="${k}"><dt><span>${name}</span>${delta ? `<small class="lab-delta">${delta}</small>` : ''}</dt><dd><span class="lab-val">${v}</span>${bar !== null ? `<span class="lab-bar" aria-hidden="true"><i style="width:${bar.toFixed(1)}%"></i></span>` : ''}</dd></div>`;
-    return `<dl class="lab">${labRows(t).map(cell).join('')}</dl><dl class="lab lab--phys">${physRows(t).map(cell).join('')}</dl>`;
+    const rows = Object.fromEntries([...labRows(t), ...physRows(t)].map((r) => [r[0], r]));
+    const cell = ([k, name, v, warn, bar, delta], txt = false) => `<div class="lab-cell${warn ? ' warn' : ''}${txt ? ' lab-cell--txt' : ''}" data-f="${k}"><dt><span>${name}</span>${delta ? `<small class="${isDelta(delta) ? 'lab-delta' : 'lab-tag'}">${delta}</small>` : ''}</dt><dd><span class="lab-val">${v}</span>${bar !== null ? `<span class="lab-bar" aria-hidden="true"><i style="width:${bar.toFixed(1)}%"></i></span>` : ''}</dd></div>`;
+    const e = ebcState(t), c = climVals(t);
+    return `<div class="ebc${e.ok ? '' : ' is-warn'}" id="lab-ebc">
+        <p class="ebc-head"><b id="ebc-head">${ebcHead(e.ok)}</b><span>molar · H/Corg · O/Corg</span></p>
+        <div class="ebc-ms">${e.m.map((m) => `<div class="ebc-m${m.ok ? '' : ' warn'}" data-m="${m.k}"><span>${m.k === 'hc' ? 'H/C' : 'O/C'}</span><span class="ebc-bar" aria-hidden="true"><i style="width:${m.w.toFixed(1)}%"></i><b style="left:${((EBC[m.k][0] / EBC[m.k][1]) * 100).toFixed(1)}%"></b></span><span class="ebc-val">${fmt(m.v, 2)} <small>&lt; ${fmt(EBC[m.k][0], 1)}</small></span></div>`).join('')}</div>
+      </div>
+      <div class="clim">
+        <div><span class="clim-val" data-c="co2">${c.co2}</span><span class="clim-sub">je t Kohle gebunden</span></div>
+        <div><span class="clim-val" data-c="fperm">${c.fperm}</span><span class="clim-sub">bleiben 100 Jahre (IPCC)</span></div>
+      </div>
+      <h3 class="lab-gh lab-gh--c"><i></i>Kohle<span>Δ zu Rohholz</span></h3>
+      <dl class="lab">${cell(rows.yield)}${cell(rows.carbon)}${cell(rows.cls, true)}</dl>
+      <h3 class="lab-gh lab-gh--n"><i></i>Boden</h3>
+      <dl class="lab lab--2">${cell(rows.bet)}${cell(rows.ph)}${cell(rows.sigma)}${cell(rows.theta)}</dl>`;
+  }
+  function updateLabTop(T) {
+    const box = panel.querySelector('#lab-ebc');
+    if (!box) return;
+    const e = ebcState(T), c = climVals(T);
+    box.classList.toggle('is-warn', !e.ok);
+    box.querySelector('#ebc-head').textContent = ebcHead(e.ok);
+    e.m.forEach((m) => {
+      const row = box.querySelector(`[data-m="${m.k}"]`);
+      row.classList.toggle('warn', !m.ok);
+      row.querySelector('.ebc-bar > i').style.width = `${m.w.toFixed(1)}%`;
+      row.querySelector('.ebc-val').firstChild.textContent = `${fmt(m.v, 2)} `;
+    });
+    panel.querySelectorAll('.clim-val').forEach((el) => { el.textContent = c[el.dataset.c]; });
   }
   const LAB_NOTE = 'Werte bei der gezeigten Temperatur mit Differenz zum Rohholz (25 °C), Richtwerte für Holz, langsame Pyrolyse; reale Kohlen streuen je Rohstoff und Verfahren. Unter 350 °C Übergang vom Holz (Modell). H/C und O/C: molare Verhältnisse H/Corg und O/Corg mit EBC-Grenzwerten. C nach 100 Jahren: Anteil des Kohlenstoffs, der im Boden bleibt (IPCC). CO₂ gebunden: t CO₂ je t Biochar = C-Gehalt × IPCC-Faktor × 44/12. Leitfähigkeit σ nach Gabhi et al. (2020), Kontaktwinkel θ von Wasser nach Kinney et al. (2012). Strukturtyp nach Keiluweit 2010.';
 
@@ -514,12 +572,13 @@ export function createHud(handlers) {
       const cell = panel.querySelector(`.lab-cell[data-f="${k}"]`);
       if (!cell) continue;
       cell.querySelector('.lab-val').textContent = v;
-      const dEl = cell.querySelector('.lab-delta');
+      const dEl = cell.querySelector(isDelta(delta) ? '.lab-delta' : '.lab-tag');
       if (dEl && delta) dEl.textContent = delta;
       const barEl = cell.querySelector('.lab-bar > i');
       if (barEl && bar !== null) barEl.style.width = `${bar.toFixed(1)}%`;
       cell.classList.toggle('warn', warn);
     }
+    updateLabTop(T);
     const dot = panel.querySelector('#chart-dot'), cur = panel.querySelector('#chart-cur');
     if (dot) {
       const x = chX(T);
@@ -602,7 +661,7 @@ export function createHud(handlers) {
     const shown = state.pyro ? state.pyro.shown : state.temp, playing = !!(state.pyro && state.pyro.playing);
     const refs = l.refs.map((r) => `<a href="#quelle-${r}">[${r}]</a>`).join(' ');
     panel.innerHTML = `
-      <p class="eyebrow">Ebene ${current + 1} von ${LEVELS.length} · ${esc(l.zone)} · <span class="eyebrow-scale">${esc(l.scale)}</span> (${esc(l.compare)})</p>
+      <p class="eyebrow">Ebene ${current + 1} von ${LEVELS.length} · ${esc(l.zone)} · <span class="eyebrow-scale">${esc(l.scale)} (${esc(l.compare)})</span></p>
       <h1>${esc(l.title)}</h1>
       <p class="lead" id="panel-lead">${prose(l.lead)}</p>
       <button type="button" class="lead-more" aria-expanded="false" aria-controls="panel-lead">Weiterlesen</button>
@@ -680,11 +739,15 @@ export function createHud(handlers) {
     const l = LEVELS[current];
     const list = [...l.facts, ...level.facts()];
     list.forEach((f, i) => {
-      const v = els[i] && els[i].querySelector('.fact-value'), lab = els[i] && els[i].querySelector('.fact-label');
-      const bar = els[i] && els[i].querySelector('.fact-bar > i');
-      const vHtml = fmtFactVal(f.value), lHtml = esc(f.label);
-      if (v && v.innerHTML !== vHtml) v.innerHTML = vHtml;
-      if (lab && lab.innerHTML !== lHtml) lab.innerHTML = lHtml;
+      const el = els[i];
+      if (!el) return;
+      const k = `${f.value}|${f.label}`;
+      if (el.dataset.k !== k) {
+        el.dataset.k = k;
+        el.classList.toggle('fact--split', !!splitFact(f));
+        el.querySelector('.fact-text').innerHTML = factInner(f);
+      }
+      const bar = el.querySelector('.fact-bar > i');
       if (bar) bar.style.width = `${factBarPct(f)}%`;
     });
   }
