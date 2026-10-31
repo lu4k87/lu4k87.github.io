@@ -23,12 +23,24 @@ const prose = (s) => {
     .replace(/ et al\. /g, ' et al. ');
 };
 
-// Zoom-Schiene: Bildbreite in Metern, logarithmisch von 20 cm (oben) bis 0,5 nm (unten)
+// Zoom-Schiene: Bildbreite in Metern von 20 cm (oben) bis 0,5 nm (unten). Ebenen-Marken stehen in gleichen Abständen
+// (rein logarithmisch lägen 1 mm · 200 µm · 25 µm und 10 nm · 2 nm zu eng), zwischen zwei Stützstellen logarithmisch
 const SCALE_M = { piece: 4e-2, tissue: 1e-3, cells: 2e-4, wall: 2.5e-5, meso: 3e-7, micro: 1e-8, atoms: 2e-9 };
-const LOG_TOP = Math.log10(0.2);
-const LOG_BOT = Math.log10(5e-10);
-const railFrac = (m) => Math.min(1, Math.max(0, (Math.log10(m) - LOG_TOP) / (LOG_BOT - LOG_TOP)));
-const railMeters = (f) => Math.pow(10, LOG_TOP + (LOG_BOT - LOG_TOP) * f);
+const RAIL_TOP = 0.07, RAIL_BOT = 0.93;   // Lage der ersten und letzten Marke
+const RAIL_STOPS = [[0, Math.log10(0.2)],
+  ...LEVELS.map((l, i) => [RAIL_TOP + (RAIL_BOT - RAIL_TOP) * i / (LEVELS.length - 1), Math.log10(SCALE_M[l.id])]),
+  [1, Math.log10(5e-10)]];
+const lerpStops = (v, from, to) => {   // stückweise linear zwischen den Stützstellen, Spalte from → Spalte to
+  const s = RAIL_STOPS, asc = s[1][from] > s[0][from];
+  for (let i = 1; i < s.length; i++) {
+    if (i === s.length - 1 || (asc ? v <= s[i][from] : v >= s[i][from])) {
+      const t = (v - s[i - 1][from]) / (s[i][from] - s[i - 1][from]);
+      return s[i - 1][to] + (s[i][to] - s[i - 1][to]) * t;
+    }
+  }
+};
+const railFrac = (m) => Math.min(1, Math.max(0, lerpStops(Math.log10(m), 1, 0)));
+const railMeters = (f) => Math.pow(10, lerpStops(Math.min(1, Math.max(0, f)), 0, 1));
 
 export function createHud(handlers) {
   const rail = $('#ladder');
@@ -52,11 +64,11 @@ export function createHud(handlers) {
   let lastState = null;
 
   // ---------- Zoom-Schiene ----------
-  const ZONES = [
-    { label: 'MAKRO', y0: 2, y1: 18 },
-    { label: 'REM', y0: 22, y1: 54 },
-    { label: 'NANO', y0: 58, y1: 96 },
-  ];
+  // Welten-Klammern aus den Marken: von Mitte zu Mitte der Nachbar-Abstände, 2 % Luft zwischen zwei Klammern
+  const markY = (i) => (RAIL_TOP + (RAIL_BOT - RAIL_TOP) * i / (LEVELS.length - 1)) * 100;
+  const zoneEdge = (a, b) => b < 0 ? 2 : b >= LEVELS.length ? 97 : (markY(a) + markY(b)) / 2 + (b > a ? -2 : 2);
+  const ZONES = [['MAKRO', 0, 0], ['REM', 1, 3], ['NANO', 4, 6]]
+    .map(([label, a, b]) => ({ label, y0: zoneEdge(a, a - 1), y1: zoneEdge(b, b + 1) }));
   rail.innerHTML = `
     <div class="rail-zones" aria-hidden="true">${ZONES.map((z) =>
       `<span class="rail-zone" style="top:${z.y0}%;height:${z.y1 - z.y0}%"><i>${z.label}</i></span>`).join('')}</div>
@@ -404,6 +416,7 @@ export function createHud(handlers) {
     const v = JSON.parse(localStorage.getItem(TL_KEY));
     if (v && Number.isFinite(v.x) && Number.isFinite(v.y)) tlOff = { x: v.x, y: v.y };
   } catch { /* kein Speicher: Standardplatz */ }
+  let tlWant = tlOff;   // zuletzt gewählter Versatz: Größenänderungen klemmen von ihm aus, nie vom schon geklemmten
   function moveTl(x, y, save = false) {
     const a = $('.stage-hud').getBoundingClientRect(), b = tl.parentElement.getBoundingClientRect();
     tl.style.setProperty('--stage-w', `${a.width}px`);   // nie breiter als die Bühne: passt nach oben gezogen hinein
@@ -414,7 +427,9 @@ export function createHud(handlers) {
     tl.style.translate = `${tlOff.x}px ${tlOff.y}px`;
     tlApplied = tlOff;
     tl.classList.toggle('is-moved', !!(tlOff.x || tlOff.y));
-    if (save) try { localStorage.setItem(TL_KEY, JSON.stringify(tlOff)); } catch { /* gilt bis zum Neuladen */ }
+    if (!save) return;
+    tlWant = tlOff;
+    try { localStorage.setItem(TL_KEY, JSON.stringify(tlOff)); } catch { /* gilt bis zum Neuladen */ }
   }
   grip.addEventListener('pointerdown', (e) => {
     if (e.button !== 0) return;
@@ -441,7 +456,11 @@ export function createHud(handlers) {
     moveTl(tlOff.x + step[0], tlOff.y + step[1], true);
   });
   tlEl('.tl-reset').addEventListener('click', () => { moveTl(0, 0, true); grip.focus(); });
-  new ResizeObserver(() => moveTl(tlOff.x, tlOff.y)).observe(tl.parentElement);   // Fenster, Infotafel auf/zu: in der Bühne halten
+  // Fenster, Infotafel auf/zu, Breite der Leiste (in einer Zeile mit den Ebenen-Knöpfen, deren Ziel erst nach dem Laden
+  // steht): in der Bühne halten
+  const tlRo = new ResizeObserver(() => { if (!tlDrag) moveTl(tlWant.x, tlWant.y); });
+  tlRo.observe(tl.parentElement);
+  tlRo.observe(tl);
 
   // ---------- Messleiste: Lineal fester Länge ----------
   const ruler = $('#ruler');

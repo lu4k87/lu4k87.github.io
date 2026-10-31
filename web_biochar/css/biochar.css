@@ -118,7 +118,7 @@ button { font: inherit; color: inherit; }
   grid-template-areas:
     "top top panel"
     "ladder stage panel"
-    "bottom bottom panel";
+    "bottom bottom bottom";   /* Fußleiste über die volle Breite, Tafel endet darüber (User 2026-10-31) */
   gap: var(--gap);
   padding: var(--gap);
   pointer-events: none;
@@ -693,17 +693,6 @@ body.is-notice .hint { background: rgba(16, 17, 21, 0.66); border-radius: var(--
    „Tiefer“ trägt wie die aktuelle Marke die gefüllte Hex-Marke */
 .nav-buttons { flex: none; display: flex; gap: 4px; padding: 4px; }
 .nav-cap { white-space: nowrap; }
-/* mittlere Fenster mit Tafel: Ziele der Knöpfe entfallen, damit die Fußzeile einzeilig bleibt */
-@media (min-width: 861px) and (max-width: 1180px) {
-  .nav-to { display: none; }
-  .ruler { margin-right: 12px; }
-  .sem-bar dl div { padding-left: 10px; }
-}
-/* unter 1000 px reicht die Breite neben der Tafel nicht: lieber zwei saubere Zeilen als Überlappung */
-@media (min-width: 861px) and (max-width: 1000px) {
-  .bottombar { flex-wrap: wrap; }
-  .sem-bar { flex: 1 1 100%; }
-}
 .nav-btn {
   display: flex;
   align-items: center;
@@ -1263,9 +1252,10 @@ body.hotspots-off #hotspots { display: none; }
   border-radius: var(--radius);
 }
 .pyro-tl.is-dragging { border-color: var(--accent); }
-/* Messleiste + Zeitleiste (ab 520, wächst bis 760) + Ebenen-Wechsel passen nebeneinander; Umbruch zählt die Grundbreiten */
-@container bottom (min-width: 1400px) {   /* 460 + 520 + 387 + 2 × 16 */
-  .pyro-tl { order: 0; flex: 1 1 520px; max-width: 760px; margin-inline: 0; }
+/* Messleiste + Zeitleiste (ab 400, wächst bis 900) + Ebenen-Wechsel in einer Zeile; Basis 0, damit der Umbruch nur die
+   Mindestbreite zählt (Ebenen-Wechsel je nach Ziel bis ≈ 480 px) */
+@container bottom (min-width: 1400px) {   /* 460 + 400 + 480 + 2 × 16 */
+  .pyro-tl { order: 0; flex: 1 1 0; min-width: 400px; max-width: 900px; margin-inline: 0; }
 }
 .tl-move { position: relative; align-self: stretch; display: flex; flex-direction: column; align-items: center; justify-content: center; }   /* Griff mittig in der Spalte (User, 2026-10-24) */
 .tl-grip, .tl-reset { display: grid; place-items: center; width: 24px; padding: 0; border: 1px solid transparent; border-radius: 6px; background: none; color: var(--ink); transition: border-color 0.15s, background-color 0.15s, color 0.15s; }
