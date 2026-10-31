@@ -5,7 +5,7 @@
 // der S3-Schicht verblassen mit der Zellulose (315–400 °C), die Bruchfläche zeigt erst ab ≈ 300 °C Nanoporen.
 
 import * as THREE from 'three';
-import { SEM_GLSL, SEM_DET, SEM_BSE, SEM_CHARGE, SEM_T, ADDITIVE, semMaterial, semDetector, semBlend, semCharge } from '../sem.js';
+import { SEM_GLSL, SEM_DET, SEM_BSE, SEM_T, ADDITIVE, semMaterial, semDetector, semBlend } from '../sem.js';
 import { disposeGroup } from '../walls.js';
 import { mulberry32, gauss, fbm3, vnoisef } from '../util.js';
 import { T_MIN, T_MAX, pyroState } from '../science.js';
@@ -272,7 +272,7 @@ function uniforms(extra = {}) {
     uDet: SEM_DET,
     uBSE: SEM_BSE,
     uZ: { value: 0.9 },
-    uCharge: SEM_CHARGE,
+    uCharge: { value: 0 },   // keine Aufladungsstreifen auf der Zellwand-Ebene (User, 2026-10-31)
     uSemT: SEM_T,
     uTint: { value: new THREE.Color(0.93, 0.95, 0.98) },
     uR: { value: R },
@@ -409,10 +409,10 @@ export function create(ctx) {
     if (k % 4 === 0) bacteria.push({ s: s + Math.cos(ang) * 1.9, y: y + Math.sin(ang) * 1.9, ang, len: 0.6, ph: rand() * 6.28 });
   }
   const live = bacteria.filter((b) => Math.hypot(b.s - HYPHA_PIT.x, b.y - HYPHA_PIT.y) > 3 && b.s < sideS(b.y, 1) - 1 && b.y < topY(b.s) - 1);
-  const bacMesh = new THREE.InstancedMesh(new THREE.CapsuleGeometry(0.36, 1, 4, 12), semMaterial({ base: 0.5, noise: 4, z: 0.8, charge: true }), live.length);
+  const bacMesh = new THREE.InstancedMesh(new THREE.CapsuleGeometry(0.36, 1, 4, 12), semMaterial({ base: 0.5, noise: 4, z: 0.8 }), live.length);
   // Schleimfäden: von einigen Zellen zur Wand
   const strands = live.filter((_, k) => k % 3 === 0).map((b) => ({ b, ds: (rand() - 0.5) * 2.4, dy: (rand() - 0.5) * 2.4 }));
-  const strandMesh = new THREE.InstancedMesh(new THREE.CylinderGeometry(1, 1, 1, 5, 1, true), semMaterial({ base: 0.55, noise: 3, z: 0.8, charge: true }), strands.length);
+  const strandMesh = new THREE.InstancedMesh(new THREE.CylinderGeometry(1, 1, 1, 5, 1, true), semMaterial({ base: 0.55, noise: 3, z: 0.8 }), strands.length);
   const centers = [];
   const placeBacteria = (t) => {
     live.forEach((b, k) => {
@@ -449,7 +449,7 @@ export function create(ctx) {
   tint(film.material, TINT.film);
 
   // Pilzhyphe: Ø 1,8 µm, wächst über die Wand und in den erweiterten Tüpfel; ein Seitenast trägt eine Sporenkette
-  const hyMat = semMaterial({ base: 0.42, noise: 2.5, z: 0.8, charge: true });
+  const hyMat = semMaterial({ base: 0.42, noise: 2.5, z: 0.8 });
   tint(hyMat, TINT.hy);
   const path = [[-17, 1.5], [-12, -0.8], [-7, -2.2], [-2.5, -4.6], [1.2, -7.4]].map(([s, y]) => onWall(s, y, 0.92));
   path.push(onWall(HYPHA_PIT.x, HYPHA_PIT.y, 0.2), onWall(HYPHA_PIT.x + 0.3, HYPHA_PIT.y - 0.2, -2.6));
@@ -476,7 +476,7 @@ export function create(ctx) {
     const dir = along(s).applyAxisAngle(inward(s), rand() * 3);
     spores.push({ p: onWall(s, y, 0.95), dir, s: [1.0, 1.35, 0.95] });
   }
-  const spMesh = new THREE.InstancedMesh(new THREE.SphereGeometry(1, 22, 16), semMaterial({ base: 0.46, noise: 7, z: 0.8, charge: true }), spores.length);
+  const spMesh = new THREE.InstancedMesh(new THREE.SphereGeometry(1, 22, 16), semMaterial({ base: 0.46, noise: 7, z: 0.8 }), spores.length);
   tint(spMesh.material, TINT.sp);
   const setSpore = (k, p, f) => spMesh.setMatrixAt(k, m.compose(p, q.setFromUnitVectors(yAxis, spores[k].dir), sc.fromArray(spores[k].s).multiplyScalar(Math.max(f, 1e-4))));
   spores.forEach((sp, k) => setSpore(k, sp.p, 1));
@@ -543,7 +543,7 @@ export function create(ctx) {
     crystals.push({ a: dc, o: dir.clone().multiplyScalar(len * 0.45), q: new THREE.Quaternion().setFromUnitVectors(yAxis, dir), s: [0.32, len, 0.32] });
   }
   // Asche (Ca, K, Mg): hohe mittlere Ordnungszahl → im Rückstreubild hell (z = 2,2, Goldstein et al. 2018)
-  const crMesh = new THREE.InstancedMesh(new THREE.CylinderGeometry(1, 1, 1, 6), semMaterial({ base: 0.5, noise: 5, edge: 0.4, z: 2.2, charge: true }), crystals.length);
+  const crMesh = new THREE.InstancedMesh(new THREE.CylinderGeometry(1, 1, 1, 6), semMaterial({ base: 0.5, noise: 5, edge: 0.4, z: 2.2 }), crystals.length);
   tint(crMesh.material, TINT.cr);
   const placeCrystals = (f) => {
     crystals.forEach((c, k) => crMesh.setMatrixAt(k, m.compose(_p.copy(c.a).addScaledVector(c.o, f), c.q, sc.fromArray(c.s).multiplyScalar(f))));
@@ -609,7 +609,6 @@ export function create(ctx) {
     MEMBRANE.value = st.membrane;
     FIBRIL.value = st.fibril;
     PORES.value = st.sheets;
-    semCharge(heat.T);   // Aufladung: unter ≈ 700 °C leitet die Kohle schlecht (Streifen), darüber sauber
     crackHs.hidden = CRACK.value < 0.3;   // Abzeichen erst, wenn der Riss zu sehen ist (unter ≈ 300 °C geschlossen)
   };
   applyHeat();

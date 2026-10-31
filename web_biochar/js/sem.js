@@ -286,7 +286,7 @@ export function semMaterial(opts = {}) {
       uDet: SEM_DET,
       uBSE: SEM_BSE,
       uZ: { value: opts.z ?? 1 },                         // relative Rückstreu-Ausbeute (mittlere Ordnungszahl): Kohle 0,9, Asche 2,2
-      uCharge: opts.charge ? SEM_CHARGE : { value: 0 },   // Aufladung nur in den Ebenen, die sie anfordern (3–4)
+      uCharge: opts.charge ? SEM_CHARGE : { value: 0 },   // Aufladung nur in den Ebenen, die sie anfordern (Ebene 3)
       uSemT: SEM_T,
       uTint: { value: new THREE.Color(0.93, 0.95, 0.98) },
       uLook: SEM_K,
