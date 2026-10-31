@@ -1300,6 +1300,9 @@ async function start() {
   if (params.has('play')) setTimeout(togglePlay, 600);
 }
 
+// Prüfhilfe für Aufnahmen und Vorschauen (?dev): Zugriff auf Ebenen, Linse und Zusammenführung, nur mit dem Parameter
+if (params.has('dev')) window.__bc = { THREE, state, comp, bright, LENS, MOODS, settings, renderer: () => renderer };
+
 start().catch((err) => {
   console.error(err);
   document.body.classList.add('has-error');
