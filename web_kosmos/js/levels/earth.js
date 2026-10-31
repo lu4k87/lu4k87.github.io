@@ -57,6 +57,7 @@ varying vec2 vUv;
 ${NOISE}
 void main() {
   vec3 N = normalize(vN), V = normalize(cameraPosition - vP);
+  float nv = max(dot(N, V), 0.0);
   vec3 east = normalize(cross(uAxis, N)), north = cross(N, east);
   float ndl = dot(N, uSun);
   // Reliefkarte (Solar System Scope): rg = Geländenormale (r nach Osten, g nach Süden), b = Wassermaske
@@ -83,6 +84,9 @@ void main() {
   vec2 off = vec2(dot(uSun, east), dot(uSun, north)) * 0.004;
   float shadow = 1.0 - 0.6 * smoothstep(0.1, 0.8, texture2D(tClouds, cuv + off).r) * lit;
   vec3 col = day * lit * hill * sunCol * 0.85 * shadow;
+  // Kino-Licht (Vorschau 31.10.2026 Planet:B, Darstellung): Sonnenseite kräftiger, blauer Luft-Schimmer am beleuchteten Rand
+  col *= 1.0 + 0.15 * smoothstep(0.15, 0.9, ndl);
+  col += vec3(0.55, 0.75, 1.0) * pow(1.0 - nv, 3.0) * smoothstep(-0.15, 0.35, ndl) * 0.5;
   // Wasser: Sonnenglitzern mit Rauigkeit aus Windfeldern (Rauschen, Modell; Beckmann-Verteilung) – ruhige Flecken
   // spiegeln scharf, windige streuen breit; unter Wolken gedämpft. Flacher Blick aufs Wasser spiegelt den Himmel (Fresnel).
   vec3 H = normalize(uSun + V);
@@ -92,14 +96,14 @@ void main() {
   float glint = exp(-t2 / (m * m)) * (0.0048 / (m * m)) * ocean * (1.0 - cl) * lit;
   float fres = pow(1.0 - max(dot(N, V), 0.0), 5.0) * ocean * lit;
   float spec = uLook.x > 0.0 ? uLook2.x : 1.0;
-  col += vec3(1.0, 0.92, 0.8) * glint * 0.6 * spec + vec3(0.03, 0.045, 0.065) * pow(nh, 18.0) * ocean * lit * spec + vec3(0.25, 0.4, 0.6) * fres * 0.12;
+  col += vec3(1.0, 0.92, 0.8) * glint * 0.9 * spec + vec3(0.03, 0.045, 0.065) * pow(nh, 18.0) * ocean * lit * spec + vec3(0.25, 0.4, 0.6) * fres * 0.12;
   // Stadtlichter auf der Nachtseite mit warmem Hof (gröbere Mip-Stufe = Lichtglocke über Ballungsräumen); Wolken verdecken
   // sie über die eigene Wolkenschicht
   vec3 night = texture2D(tNight, vUv).rgb, halo = texture2D(tNight, vUv, 4.0).rgb;
   float dark = 1.0 - smoothstep(-0.1, 0.12, ndl);
-  col += (night * night + halo * 0.45) * vec3(1.0, 0.72, 0.42) * uLights * dark;
+  col += (night * night + halo * 0.45) * vec3(1.0, 0.72, 0.42) * uLights * 1.8 * dark;   // Stadtlichter ×1,8 (Vorschau 31.10.2026 F1)
   // Rest-Licht der Nachtseite (Atmosphäre, Sterne): sehr schwach blau
-  col += vec3(0.002, 0.004, 0.008) * (1.0 - lit);
+  col += vec3(0.001, 0.002, 0.004) * (1.0 - lit);
   gl_FragColor = vec4(col, 1.0);
 }
 `;

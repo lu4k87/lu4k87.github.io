@@ -1,5 +1,6 @@
 // Bildpipeline: Ebenen-Bilder (HDR, linear) → Zusammenführung beim Flug (Iris um den Anker, Zoom-Unschärfe, Lichtschleier,
-// EHT-Blick) → Bloom (Mip-Kette nach Jimenez 2014: 13-Tap abwärts, Zelt-Filter aufwärts, energieerhaltend gemischt) →
+// EHT-Blick) → Bloom (Mip-Kette nach Jimenez 2014: 13-Tap abwärts, Zelt-Filter aufwärts; nur Lichter über der Schwelle 0,5 mit
+// weichem Knie, additiv – kein Schleier über Schwarz, Vorschau 31.10.2026 Bild:A) →
 // Belichtung, Grading, ACES-Tonemapping, Vignette, Kinobalken, Korn → Bildschirm (sRGB).
 
 import * as THREE from 'three';
@@ -98,9 +99,9 @@ const DOWN_FRAG = /* glsl */ `
 precision highp float;
 uniform sampler2D tSrc;
 uniform vec2 uTexel;
-uniform float uKaris;
+uniform float uKaris, uThr;   // uThr > 0 nur in der ersten Stufe: Schwelle der Leuchtdichte (weiches Knie 0,6–1,6 × uThr)
 varying vec2 vUv;
-vec3 s(vec2 o) { return texture(tSrc, vUv + o * uTexel).rgb; }
+vec3 s(vec2 o) { vec3 c = texture(tSrc, vUv + o * uTexel).rgb; if (uThr > 0.0) c *= smoothstep(uThr * 0.6, uThr * 1.6, dot(c, vec3(0.2126, 0.7152, 0.0722))); return c; }
 float w(vec3 c) { return mix(1.0, 1.0 / (1.0 + dot(c, vec3(0.2126, 0.7152, 0.0722)) * 0.25), uKaris); }
 void main() {
   vec3 a = s(vec2(-2, 2)), b = s(vec2(0, 2)), c = s(vec2(2, 2));
@@ -151,7 +152,7 @@ void main() {
   float r2 = dot(c * vec2(uAspect, 1.0), c * vec2(uAspect, 1.0));
   vec3 col = texture(tComp, vUv).rgb;
   vec3 bl = texture(tBloom, vUv).rgb / uBloomN;
-  col = mix(col, bl, uBloom);
+  col += bl * uBloom * 3.0;   // Lichthöfe additiv (nur Lichter über der Schwelle), Schwarz bleibt schwarz
   col *= uExposure;
   // Grading: Schatten und Lichter getrennt tönen, Sättigung
   float L = dot(col, vec3(0.2126, 0.7152, 0.0722));
@@ -169,8 +170,9 @@ void main() {
 `;
 
 const BLOOM_LEVELS = 6;
+const BLOOM_THR = 0.5;   // Leuchtdichte, ab der ein Bildpunkt zum Bloom beiträgt (Bild:A)
 // Grading-Grundwerte (je Station überschreibbar: lv.look); auch der Auftakt-Film läuft auf sie zu
-export const LOOK = { exposure: 1, bloom: 0.06, sat: 1.04, con: 0.12, sh: [0.96, 0.99, 1.06], hi: [1.04, 1.0, 0.95], vig: 0.38, grain: 0.016 };
+export const LOOK = { exposure: 1, bloom: 0.06, sat: 1.04, con: 0.12, sh: [0.96, 0.99, 1.06], hi: [1.04, 1.0, 0.95], vig: 0.38, grain: 0.01 };
 
 export function createPost(renderer) {
   const scene = new THREE.Scene();
@@ -196,7 +198,7 @@ export function createPost(renderer) {
     uAspect: { value: 1 }, uTrans: { value: 0 }, uMix: { value: -1 }, uFade: { value: -1 }, uAnchor: { value: new THREE.Vector2(0.5, 0.5) }, uInner: { value: new THREE.Vector2(0.5, 0.5) },
     uEhtA: { value: new THREE.Vector3() }, uEhtB: { value: new THREE.Vector3() },
   });
-  const downMat = mat(DOWN_FRAG, { tSrc: { value: null }, uTexel: { value: new THREE.Vector2() }, uKaris: { value: 0 } });
+  const downMat = mat(DOWN_FRAG, { tSrc: { value: null }, uTexel: { value: new THREE.Vector2() }, uKaris: { value: 0 }, uThr: { value: 0 } });
   const upMat = mat(UP_FRAG, { tLow: { value: null }, tHigh: { value: null }, uTexel: { value: new THREE.Vector2() } });
   const finalMat = mat(FINAL_FRAG, {
     tComp: { value: comp.texture }, tBloom: { value: null }, uBloom: { value: 0.06 }, uExposure: { value: 1 }, uSat: { value: 1 },
@@ -225,6 +227,7 @@ export function createPost(renderer) {
       downMat.uniforms.tSrc.value = src.texture;
       downMat.uniforms.uTexel.value.set(1 / src.width, 1 / src.height);
       downMat.uniforms.uKaris.value = i === 0 ? 1 : 0;
+      downMat.uniforms.uThr.value = i === 0 ? BLOOM_THR : 0;
       run(downMat, down[i]);
       src = down[i];
     }

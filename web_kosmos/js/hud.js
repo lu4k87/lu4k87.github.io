@@ -920,15 +920,20 @@ export function createHud(h) {
   // Standzeit: ≈ 4,2 s Einblenden (kosmos.css .caption, Linie zuletzt) + 5 s voll sichtbar, dann 2,6 s Ausblenden
   const CAP_MS = 9200;
   function showCaption(st, opening = false) {
-    caption.querySelector('.cap-n').textContent = opening ? 'Kosmos' : String(st.n).padStart(2, '0');
+    // Zeile „Station 01“ (Titel:A): Wort in Weiß, Nummer in Cyan; Auftakt behält „Kosmos“
+    const capN = caption.querySelector('.cap-n'), capW = Object.assign(document.createElement('span'), { className: 'cap-w', textContent: 'Station' });
+    capN.replaceChildren(...(opening ? ['Kosmos'] : [capW, String(st.n).padStart(2, '0')]));
     caption.querySelector('.cap-title').textContent = opening ? 'Eine Reise durch das Universum' : st.title;
     const parts = opening
       ? ['Vom Urknall bis zur Erde']
       : [st.kicker, ...(st.size ? [`${st.size.l} ${fmtLength(st.size.v)}`] : []), ...(st.dist ? [`${fmtLength(st.dist)} entfernt`] : [])];
-    caption.querySelector('.cap-sub').replaceChildren(...parts.flatMap((t, i) => {
+    // Stationen: Teile als Felder mit Trennstrichen (kosmos.css .is-fields), Auftakt als Satz
+    const capSub = caption.querySelector('.cap-sub');
+    capSub.classList.toggle('is-fields', !opening);
+    capSub.replaceChildren(...parts.flatMap((t, i) => {
       const seg = document.createElement('span');
       seg.textContent = t;
-      return i ? [' · ', seg] : [seg];
+      return i && opening ? [' · ', seg] : [seg];
     }));
     caption.classList.remove('is-on');
     fitCaption();

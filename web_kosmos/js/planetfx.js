@@ -77,6 +77,8 @@ float eclipse(vec3 p, vec3 L) {
 void main() {
   vec3 N = normalize(vN), V = normalize(cameraPosition - vP), L = dot(uSunDir, uSunDir) > 0.5 ? uSunDir : normalize(-vP);
   float ndl = dot(N, L);
+  // Blickwinkel zur Normalen und Dicke der Lufthülle (aus uWrap): steuern Randabdunklung und Rim-Licht (Vorschau 31.10.2026 Planet:B)
+  float nv = max(dot(N, V), 0.0), kAtm = clamp(uWrap * 4.0, 0.0, 0.5);
   vec4 lk = uLook.x > 0.0 ? uLook : vec4(1.0);
   vec2 lk2 = uLook.x > 0.0 ? uLook2 : vec2(1.0, 0.0);
   float wrap = uWrap * lk.w;
@@ -108,7 +110,7 @@ void main() {
       }
     }
   }
-  vec3 sunCol = mix(uTerm, vec3(1.0), smoothstep(-wrap, 0.3, ndl));
+  vec3 sunCol = mix(uTerm, vec3(1.0), smoothstep(-wrap, 0.22, ndl));
   vec3 col;
   if (uMoon > 0.5) {
     float mu0 = max(ndl, 0.0), mu = max(dot(N, V), 0.0);
@@ -118,6 +120,12 @@ void main() {
     col += alb * e0 / (e0 + mu + 1e-4) * uEarthshine;
   } else {
     col = alb * lit * sh * sunCol * lk.x;
+    // Kino-Licht (Vorschau 31.10.2026 Planet:B, Darstellung): Sonnenseite kräftiger, leichte Randabdunklung, warmer Lichtsaum
+    // (Rim) am beleuchteten Rand in Dämmerungsfarbe, weiches Glanzlicht auf Wolkendecken – nur auf der Tagseite, Ringschatten dämpft
+    col *= 1.0 + 0.22 * smoothstep(0.15, 0.9, ndl);
+    col *= 1.0 - (0.08 + kAtm * 0.4) * pow(1.0 - nv, 2.0);
+    col += mix(vec3(1.0), uTerm, 0.4) * pow(1.0 - nv, 3.5) * smoothstep(-0.15, 0.35, ndl) * (0.3 + kAtm * 0.6) * lk.x;
+    col += sunCol * pow(max(dot(N, normalize(L + V)), 0.0), 20.0) * 0.07 * sh * smoothstep(0.0, 0.2, ndl) * lk.x;
   }
   // Glanz (Regler, Standard aus): breites Glanzlicht auf Eis, Wolken und Gestein
   if (lk2.y > 0.0) col += sunCol * pow(max(dot(N, normalize(L + V)), 0.0), 48.0) * 0.12 * lk2.y * lk.x * sh * smoothstep(0.0, 0.2, ndl);
@@ -136,7 +144,7 @@ void main() {
     float dark = 1.0 - smoothstep(-0.12, 0.12, ndl);
     col += (night * night * 1.6 + glow * 0.35) * vec3(1.0, 0.72, 0.42) * dark * (1.0 - cl * 0.6);
   }
-  col += alb * uAmb * lk.y * (1.0 - lit);
+  col += alb * uAmb * 0.6 * lk.y * (1.0 - lit);   // Nachtseite tiefer (Planet:B)
   gl_FragColor = vec4(col * uGain, 1.0);
 }
 `;
@@ -174,11 +182,13 @@ void main() {
     float tauS = dens * uH / (max(mu, 0.0) + 0.1);
     vec3 att = exp(-(uBeta + uMie * 0.5) * (tauV + tauS));
     sum += dens * att * vis * dn;
-    // Mehrschichtige Rayleigh-Dämmerung am Terminator (Optik:B)
+    // Mehrschichtige Rayleigh-Dämmerung am Terminator (Optik:B) – nur bei streifendem Blick auf die Hülle (Rand der Kugel), sonst
+    // zeichnete sie sich als Balken quer über die Scheibe ab (Vorschau 31.10.2026 Planet:B)
     if (uNoRayleigh < 0.5) {
       float twRange = smoothstep(0.08, -0.04, mu) * smoothstep(-0.25, -0.05, mu);
+      float graze = pow(1.0 - abs(dot(rd, n)), 2.0);
       vec3 twCol = mix(vec3(1.0, 0.46, 0.16), vec3(1.0, 0.22, 0.06), smoothstep(0.02, -0.12, mu));
-      sum += twCol * twRange * exp(-alt * 2.8) * vis * dn * 2.4;
+      sum += twCol * twRange * exp(-alt * 2.8) * vis * dn * 3.0 * graze;
     }
     tauV += dens * dn;
     float ag = exp(-pow((alt - uAirH) / 0.05, 2.0)) * dn;
