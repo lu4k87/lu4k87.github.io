@@ -545,12 +545,12 @@ export function createHud(h) {
         const isDive = x.kind === 'dive';
         return `
         <li class="${isDive ? 'is-dive-item' : ''}"><button type="button" data-hs="${x.id}" class="${isDive ? 'is-dive' : ''}">
-          <div class="card-top">
-            ${isDive ? hex('<path d="M14 17l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>', 'hex--mini') : hexNum(i + 1, 'hex--mini')}
+          ${isDive ? hex('<path d="M14 17l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>', 'hex--card') : hexNum(i + 1, 'hex--card')}
+          <span class="card-body">
             <span class="badge-cat">${esc(hsCat(x, inf))}</span>
-            ${isDive ? '<span class="dive-action-tag">hineinfliegen →</span>' : ''}
-          </div>
-          <span class="card-title">${esc(inf.t)}</span>
+            <span class="card-title">${esc(inf.t)}</span>
+          </span>
+          ${isDive ? '<span class="dive-action-tag">hineinfliegen →</span>' : ''}
         </button></li>`;
       }).join('')}
       </ul>
