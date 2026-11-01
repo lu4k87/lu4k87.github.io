@@ -67,6 +67,8 @@ a { color: var(--accent); }
 .iconbtn { width: 38px; height: 38px; display: grid; place-items: center; border: 1px solid var(--line-2); border-radius: var(--r-sm); background: var(--surface); transition: border-color var(--t-fast); }
 .iconbtn:hover { border-color: var(--accent); }
 .iconbtn svg { width: 18px; height: 18px; }
+.acct { padding: 8px 14px; }
+@media (max-width: 479px) { .acct { padding: 10px; } .acct span { display: none; } }   /* Handy: nur Symbol, Name bleibt als aria-label */
 .rail .st:not([aria-current="step"]) .sl { display: none; }   /* 7 Schritte: nur der aktuelle mit Namen, sonst Name als Tooltip + aria-label */
 @media (max-width: 479px) { .rail .st .sl { display: none; } }   /* Handy: nur Nummern, damit alle 7 Schritte passen */
 @media (max-width: 759px) {

@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KreiswertS · Konto</title>
+<meta name="description" content="KreiswertS – Anmeldung, Firmenbereich und Verwaltung. Prototyp: Anmeldung, E-Mail und Datenbank sind simuliert, alle Firmen und Mengen fiktive Demo-Daten.">
+<link rel="stylesheet" href="../web_ux_robot/fonts/fonts.css">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="kreiswerts.css">
+<link rel="stylesheet" href="konto.css">
+</head>
+<body class="acc-page">
+<header class="top" id="top"><div class="wrap">
+  <a class="brand" href="index.html" data-ta="toMap"><svg viewBox="0 0 32 32" fill="none" stroke="var(--accent)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 10A6 6 0 1 0 16 16A6 6 0 1 1 10 22"/><circle cx="22" cy="10" r="2.6" fill="var(--accent)" stroke="none"/><path d="M7 24.6 10 21.2 13 24.6"/></svg>KreiswertS</a>
+  <span class="bdg" id="areaBdg" hidden></span>
+  <nav class="anav" id="anav" hidden></nav>
+  <div class="tools">
+    <span class="bdg demo" data-t="demo"></span>
+    <div class="seg" role="group" data-ta="langAria">
+      <button type="button" data-lang="de" lang="de">DE</button>
+      <button type="button" data-lang="en" lang="en">EN</button>
+    </div>
+    <button type="button" class="iconbtn" id="themeBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path id="themeIc" d=""/></svg></button>
+    <div class="who" id="who"></div>
+  </div>
+</div></header>
+<main class="wrap acc-main" id="app"><p data-t="loading"></p></main>
+<p class="toast" id="toast" role="status" aria-live="polite" hidden></p>
+<dialog class="dlg" id="dlg"></dialog>
+<footer class="foot"><div class="wrap" data-t="foot"></div></footer>
+<script src="daten.js"></script>
+<script src="matching.js"></script>
+<script src="api.js"></script>
+<script src="konto.js"></script>
+</body>
+</html>

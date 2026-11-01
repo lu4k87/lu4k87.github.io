@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KreiswertS · Test der Mock-API</title>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="kreiswerts.css">
+<style>
+  main { padding: 24px 16px; display: flex; flex-direction: column; gap: 12px; }
+  ol { margin: 0; padding-left: 24px; display: grid; gap: 4px; }
+  .pass::marker { content: "✓  "; color: var(--ok); }
+  .fail { color: var(--alert); font-weight: 600; }
+  .fail::marker { content: "✗  "; }
+</style>
+</head>
+<body>
+<main class="wrap">
+  <h1>Test der Mock-API (api.js)</h1>
+  <p>Prüft Rechte („Wer darf was“), Anmeldung, Anonymität der Treffer (F3), Prüfung neuer Firmen (F1) und Eingabeprüfung. Setzt die Demo-Daten dieses Browsers zurück.</p>
+  <p id="sum" aria-live="polite">läuft …</p>
+  <ol id="out"></ol>
+</main>
+<script src="daten.js"></script>
+<script src="matching.js"></script>
+<script src="api.js"></script>
+<script>
+(async () => {
+  'use strict';
+  const A = window.KW_API, D = window.KW_DATA, out = document.getElementById('out'), res = [];
+  const status = async p => { try { await p; return 200; } catch (e) { if (!(e instanceof A.ApiError)) throw e; return e.status; } };
+  async function t(name, fn) {
+    let ok = false, msg = '';
+    try { ok = await fn(); } catch (e) { msg = String(e && e.message || e); }
+    res.push(ok);
+    const li = document.createElement('li'); li.className = ok ? 'pass' : 'fail'; li.textContent = name + (msg ? ` – ${msg}` : ''); out.appendChild(li);
+  }
+  const as = id => A.loginPasskey(id);
+  await A.reset();
+
+  await t('Gast: nicht angemeldet, Firmenbereich + Verwaltung gesperrt (401)', async () =>
+    (await A.me()) === null && await status(A.matches()) === 401 && await status(A.adminOverview()) === 401 && await status(A.saveItem({})) === 401);
+  await t('Gast: Inserate nur grob – Polymer, gerundete Menge, Gemeinde, keine Firmennamen', async () => {
+    const ls = await A.listings();
+    return ls.length > 0 && ls.every(x => !('party' in x) && !('id' in x) && x.town && (x.t.lt === 5 || x.t.about % 5 === 0) && !JSON.stringify(x).includes('Recycling'));
+  });
+  await t('Firmen-Mitglied: Treffer nach Wert, Wert = matching.js', async () => {
+    await as('u2');
+    const ms = await A.matches(), m = ms[0], rules = await A.rules();
+    const o = m.mine.kind === 'o' ? m.mine : m.other, n = m.mine.kind === 'o' ? m.other : m.mine;
+    const F = id => D.firms.find(f => f.id === id), direct = window.KW_MATCH.match(o, n, F(D.firms.find(f => f.o.some(x => x.id === o.id)).id), F(D.firms.find(f => f.n.some(x => x.id === n.id)).id), rules, m.mine.kind === 'o' ? 'offer' : 'need');
+    return ms.length > 1 && ms.every((x, i) => !i || ms[i - 1].score >= x.score) && direct.score === m.score;
+  });
+  await t('F3: Gegenüber nur Rolle, Gemeinde, Entfernung – Name nur nach angenommener Anfrage', async () => {
+    const ms = await A.matches();
+    const vel = ms.filter(m => m.party.town === 'Rheinberg' && m.party.name === 'Velufol Folienwerk');   // r3 angenommen
+    const anon = ms.filter(m => m.party.role && m.party.town && m.party.km > 0 && !m.party.name);
+    return vel.length > 0 && anon.length > 0;
+  });
+  await t('Firmen-Mitglied: kein Team einladen, keine Verwaltung (403)', async () =>
+    await status(A.invite('neu@demo.de', 'member')) === 403 && await status(A.adminOverview()) === 403 && await status(A.saveRules(D.rules)) === 403);
+  await t('Anfrage annehmen: danach sieht die anfragende Firma den Namen', async () => {
+    const r1 = (await A.requests()).find(q => q.id === 'r1');
+    if (!r1 || !r1.incoming || r1.party.name) return false;
+    await A.answer('r1', true);
+    const again = await status(A.answer('r1', false));
+    await as('u1');
+    const m = (await A.matches()).find(x => x.other.id === 'o4');
+    return again === 409 && m && m.party.name === 'Regrana Recycling' && m.request.status === 'accepted';
+  });
+  await t('Firmen-Admin: einladen ja, doppelte E-Mail 409, sich selbst entfernen 409', async () =>
+    await status(A.invite('neu@lintra-demo.de', 'member')) === 200 && await status(A.invite('neu@lintra-demo.de', 'member')) === 409 && await status(A.removeMember('u1')) === 409);
+  await t('Inserate: Eingaben geprüft (422), fremde Inserate gesperrt, neues Inserat findet Treffer', async () => {
+    const bad = await status(A.saveItem({ kind: 'o', poly: 'XX', form: 'Mahlgut', q: 'natur', t: 2, until: Date.now() + 864e5 }));
+    const neg = await status(A.saveItem({ kind: 'o', poly: 'PP', form: 'Mahlgut', q: 'natur', t: -1, until: Date.now() + 864e5 }));
+    const foreign = await status(A.saveItem({ id: 'o4', kind: 'o', poly: 'PP', form: 'Mahlgut', q: 'natur', t: 2, until: Date.now() + 864e5 }));
+    const del = await status(A.deleteItem('o4'));
+    const { id } = await A.saveItem({ kind: 'o', poly: 'PP', form: 'Mahlgut', q: 'farbig', t: 2, until: Date.now() + 30 * 864e5 });
+    const hits = (await A.myItems()).find(x => x.id === id).hits;
+    return bad === 422 && neg === 422 && foreign === 403 && del === 404 && hits > 0;
+  });
+  await t('Anmeldelink: neue Adresse → Registrierung, Firma sofort aktiv, Link nur einmal (F1)', async () => {
+    await A.logout();
+    const r = await A.requestLink('anna@neu-demo.de'), tok = r.demoMail.token;
+    const o = await A.openLink(tok);
+    const reused = await status(A.openLink(tok));
+    const me = await A.register(o.register.ticket, { name: 'Anna Neu', firm: 'Neu Kunststoffe', role: 'V', town: 'Moers' });
+    const pub = (await A.overview()).firms;
+    await as('u9');
+    const q = (await A.adminOverview()).queue.find(f => f.name === 'Neu Kunststoffe');
+    return !r.demoMail.known && reused === 410 && me.person.role === 'admin' && pub === D.firms.length + 1 && q && q.status === 'active';
+  });
+  await t('Anmeldelink: nach 15 Minuten abgelaufen (410), ungültige E-Mail 422', async () => {
+    const r = await A.requestLink('m.kranz@lintra-demo.de'), now = Date.now, at = now();
+    Date.now = () => at + 16 * 60e3;
+    try { return await status(A.openLink(r.demoMail.token)) === 410 && await status(A.requestLink('kein-mail')) === 422; } finally { Date.now = now; }
+  });
+  await t('Plattform-Team: prüfen, sperren (Anmeldung + Inserate weg), Regeln nur mit Summe 100 %', async () => {
+    await as('u9');
+    const before = (await A.overview()).offersT;
+    await A.reviewFirm('velufol', 'ok');
+    await A.reviewFirm('regrana', 'block');
+    const blockedLogin = await status(A.loginPasskey('u2'));
+    await as('u9');
+    const after = (await A.overview()).offersT, queue = (await A.adminOverview()).queue.map(f => f.id);
+    const badRules = await status(A.saveRules({ wq: .5, wm: .5, wd: .5, dmax: 25 }));
+    const okRules = await status(A.saveRules({ wq: .4, wm: .3, wd: .3, dmax: 30 }));
+    await A.reviewFirm('regrana', 'unblock');
+    const log = (await A.log()).map(e => e.kind);
+    return blockedLogin === 403 && after < before && !queue.includes('velufol') && badRules === 422 && okRules === 200 && log.includes('firm.block') && log.includes('rules');
+  });
+  await t('Meldung: gemeldetes Inserat ausblenden wirkt in der Börse', async () => {
+    const o = await A.adminOverview(), m = o.reports[0];
+    await A.resolveReport(m.id, 'hide');
+    await A.logout();
+    const ls = await A.listings();
+    await as('u9');
+    return (await A.allItems()).find(x => x.id === m.item.id).hidden && !(await A.adminOverview()).reports.length && ls.length > 0;
+  });
+  await A.reset();
+  const n = res.filter(Boolean).length;
+  document.getElementById('sum').textContent = `${n}/${res.length} bestanden`;
+  document.body.dataset.result = `${n}/${res.length}`;
+})();
+</script>
+</body>
+</html>

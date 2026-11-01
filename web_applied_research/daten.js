@@ -147,6 +147,37 @@ window.KW_DATA = {
       n: [{ id: 'n12', poly: ['PET'], forms: ['Stanzgitter', 'Mahlgut'], q: ['klar'], t: 20 }] },
   ],
 
+  // Konten (Demo, simuliertes Backend api.js): Personen je Rolle, Prüfangaben der Firmen, Startzustand von Anfragen und Meldungen
+  // role: member = Firmen-Mitglied, admin = Firmen-Admin, platform = Plattform-Team · Gast = ohne Konto
+  accounts: {
+    people: [
+      { id: 'u1', email: 'm.kranz@lintra-demo.de', name: 'Mara Kranz', firm: 'lintra', role: 'admin', passkey: true },
+      { id: 'u2', email: 'p.hoffmann@regrana-demo.de', name: 'Paul Hoffmann', firm: 'regrana', role: 'member', passkey: true },
+      { id: 'u3', email: 'j.otten@velufol-demo.de', name: 'Jana Otten', firm: 'velufol', role: 'admin', passkey: false },
+      { id: 'u4', email: 's.yilmaz@lintra-demo.de', name: 'Selin Yilmaz', firm: 'lintra', role: 'member', passkey: false },
+      { id: 'u6', email: 'info@formaris-demo.de', name: 'Ole Brink', firm: 'formaris', role: 'admin', passkey: false },
+      { id: 'u5', email: 'a.berger@regrana-demo.de', name: 'Anton Berger', firm: 'regrana', role: 'admin', passkey: false },
+      { id: 'u9', email: 'l.brandt@kreiswerts-demo.de', name: 'Lena Brandt', firm: null, role: 'platform', passkey: true },
+    ],
+    demo: [   // Schnellwahl auf der Anmeldeseite, je Rolle ein Konto
+      { role: 'guest' }, { role: 'member', person: 'u2' }, { role: 'admin', person: 'u1' }, { role: 'platform', person: 'u9' },
+    ],
+    goalFirms: 10,   // Ziel des Auftrags: ≥ 10 regionale Unternehmen
+    // F1 nein (2026-11-01): neue Firmen sind sofort aktiv, das Team prüft nachträglich → review = noch nicht geprüft
+    checks: {
+      velufol: { review: true, hrb: 'HRB 1234 (Demo)', imprint: true, since: 2 },
+      formaris: { review: true, hrb: '', imprint: false, since: 3 },
+    },
+    // Startzustand: Anfragen (from = anfragende Firma) und Meldungen zu Inseraten · days = vor wie vielen Tagen
+    requests: [
+      { id: 'r1', o: 'o4', n: 'n2', from: 'lintra', status: 'open', days: 1 },
+      { id: 'r2', o: 'o2', n: 'n3', from: 'regrana', status: 'open', days: 3 },
+      { id: 'r3', o: 'o6', n: 'n3', from: 'regrana', status: 'accepted', days: 6 },
+    ],
+    reports: [{ id: 'm1', item: 'o8', reason: { de: 'Menge unrealistisch', en: 'Quantity unrealistic' }, days: 0 }],
+    validDays: { o2: 5 },   // Inserate mit kurzer Restlaufzeit (sonst 120 Tage)
+  },
+
   // Szenarien: path = beteiligte Firmen, legs = [Angebot, Bedarf] je Weg · Platzhalter {t1} {n2} {d1} {d2} {pct} rechnet app.js aus den Daten
   scenarios: [
     { id: 's1', poly: 'PP', path: ['lintra', 'regrana', 'lintra'], legs: [['o2', 'n3'], ['o4', 'n2']],

@@ -11,7 +11,7 @@
   /* ---------- Texte ---------- */
   const I18N = {
     de: {
-      demo: 'Demo-Daten · fiktiv', railAria: 'Schritte der Seite', langAria: 'Sprache', themeDark: 'Dunkles Design', themeLight: 'Helles Design',
+      demo: 'Demo-Daten · fiktiv', signIn: 'Anmelden', railAria: 'Schritte der Seite', langAria: 'Sprache', themeDark: 'Dunkles Design', themeLight: 'Helles Design',
       steps: ['Überblick', 'Prinzip', 'Plattform', 'Szenarien', 'Projekt', 'Einordnung', 'Funktionen'], stepOf: 'Schritt {i} von {n}',
       eyebrow: 'Applied Research · Proof of Concept',
       lead: 'Was ein Betrieb übrig hat, braucht ein anderer als Rohstoff. KreiswertS vernetzt kunststoffproduzierende, -verarbeitende und -recycelnde Unternehmen in Kamp-Lintfort und Umgebung – mit Profilen, Sekundärmaterialien, Bedarfen und möglichen Austauschwegen auf einer Karte.',
@@ -112,7 +112,7 @@
       foot: 'Alle Unternehmen, Mengen und Wege sind fiktive Demo-Daten · Entfernungen als Luftlinie · Karte © OpenStreetMap-Mitwirkende, © GeoBasis-DE / BKG (2026) · Applied Research, Prototyp 2026',
     },
     en: {
-      demo: 'Demo data · fictional', railAria: 'Steps of the page', langAria: 'Language', themeDark: 'Dark theme', themeLight: 'Light theme',
+      demo: 'Demo data · fictional', signIn: 'Sign in', railAria: 'Steps of the page', langAria: 'Language', themeDark: 'Dark theme', themeLight: 'Light theme',
       steps: ['Overview', 'Principle', 'Platform', 'Scenarios', 'Project', 'Context', 'Features'], stepOf: 'Step {i} of {n}',
       eyebrow: 'Applied Research · Proof of Concept',
       lead: 'What one company has left over, another needs as raw material. KreiswertS connects plastics producers, processors and recyclers in and around Kamp-Lintfort – with profiles, secondary materials, needs and possible exchange routes on one map.',
@@ -231,20 +231,12 @@
   const NEEDS = D.firms.flatMap(f => f.n.map(n => ({ ...n, firm: f.id, kind: 'n' })));
   const ITEM = Object.fromEntries([...OFFERS, ...NEEDS].map(x => [x.id, x]));
   const B = D.region.box, R = D.rules;
-  const KX = 111.32 * Math.cos((B.lat0 + B.lat1) / 2 * Math.PI / 180), KY = 111.2, U = 40;   // km je Grad · SVG-Einheiten je km
+  const { KX, KY } = window.KW_MATCH, U = 40;   // km je Grad · SVG-Einheiten je km
   const W = (B.lon1 - B.lon0) * KX * U, H = (B.lat1 - B.lat0) * KY * U;
   const proj = (lat, lon) => [(lon - B.lon0) * KX * U, (B.lat1 - lat) * KY * U];
-  const km = (a, b) => Math.hypot((a.lon - b.lon) * KX, (a.lat - b.lat) * KY);
 
-  // Pflicht = Polymer, Form, Qualität · Wert = Qualität + Menge (Anteil, der beim Gegenüber Platz findet) + Nähe
-  function match(o, n, view = 'offer') {
-    if (o.firm === n.firm || !n.poly.includes(o.poly) || !n.forms.includes(o.form) || !n.q.includes(o.q)) return null;
-    const d = km(F[o.firm], F[n.firm]);
-    const qfit = n.q[0] === o.q ? 1 : R.q2;
-    const cover = view === 'offer' ? Math.min(1, n.t / o.t) : Math.min(1, o.t / n.t);
-    const near = Math.max(0, 1 - d / R.dmax);
-    return { o, n, d, qfit, cover, near, score: Math.round(100 * (R.wq * qfit + R.wm * cover + R.wd * near)) };
-  }
+  // Regel in matching.js (gemeinsam mit dem simulierten Backend api.js)
+  const match = (o, n, view = 'offer') => window.KW_MATCH.match(o, n, F[o.firm], F[n.firm], R, view);
   const byScore = (a, b) => b.score - a.score;
   const matchesFor = x => (x.kind === 'o' ? NEEDS.map(n => match(x, n, 'offer')) : OFFERS.map(o => match(o, x, 'need'))).filter(Boolean).sort(byScore);
   const MX = Object.fromEntries(Object.values(ITEM).map(x => [x.id, matchesFor(x)]));
