@@ -1,6 +1,7 @@
 /* Ladebild beim Aufruf der Seite (boot.js): Hintergrund in drei Looks, darauf der Kapitel-Titel (Text in index.html) in
-   derselben Schrift wie der Titel jeder Station (.caption in kosmos.css); Titel und Fortschritt als ein Block genau in
-   der Bildmitte (User 27.10.2026) – das Ladebild deckt die Seitenleiste zu. Fortschritt als Lichtlinie unter dem Titel.
+   derselben Schrift wie der Titel jeder Station (.caption in kosmos.css); Titel genau in
+   der Bildmitte (User 27.10.2026), Fortschritt seit 01.11.2026 tiefer im unteren Drittel – das Ladebild deckt die
+   Seitenleiste zu. Fortschritt als Lichtlinie.
    Bewegung nur über opacity/transform: läuft weiter, während der Hauptfaden Shader und Texturen vorbereitet. */
 .boot { position: fixed; inset: 0; z-index: 6; background: #000; transition: opacity 1.2s var(--ease-out), visibility 0s linear 1.2s; }
 .boot.is-done { opacity: 0; visibility: hidden; pointer-events: none; }
@@ -18,8 +19,10 @@ body.is-fatal .boot { display: none; }
 .boot .cap-n::after { animation: boot-line 2.4s var(--ease-out) 0.5s both; }
 .boot .cap-title { letter-spacing: 0.22em; padding-left: 0.22em; }
 
-/* Fortschritt im selben Block unter dem Titel: Titel, Untertitel und Lichtlinie stehen zusammen mittig */
-.boot-load { --d: 1.1s; position: relative; width: min(340px, 100%); margin-top: 16px; display: grid; gap: 10px; }
+/* Fortschritt tiefer im unteren Drittel (User 01.11.2026): der Titel bleibt allein in der Bildmitte, Lichtlinie,
+   Stand und „Reise starten“ hängen frei darunter und schieben ihn nicht */
+.boot-load { --d: 1.1s; position: absolute; top: 70%; left: 50%; translate: -50% 0; width: min(340px, calc(100% - 48px));
+  display: grid; gap: 10px; }
 .boot-bar { position: relative; height: 1px; background: var(--line); }
 .boot-bar i { position: absolute; inset: 0; transform-origin: left center; transform: scaleX(var(--p, 0));
   background: linear-gradient(90deg, rgba(var(--accent-rgb), 0.15), var(--accent)); box-shadow: 0 0 10px rgba(var(--accent-rgb), 0.55); }
