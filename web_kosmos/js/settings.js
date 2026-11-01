@@ -118,12 +118,12 @@ const RANGE = (key, label, min, max, step, unit, extra = '') => `
 const NOTE = (text) => `<p class="cfg-note lay-hint">${nbsp(text)}</p>`;
 // Zeile = Bedienung + Hinweis darunter + ↺ „Standard“ am Zeilenende (nur bei geändertem Wert); w = Wirkung (Schlüssel in WHERE):
 // an Stationen ohne Wirkung ausgegraut und gesperrt, darunter der Hinweis cfg-na (applyNA)
-const ROW = (key, html, w) => {
+const ROW = (key, html, w, half) => {
   if (key === '#') return html;
   const i = html.indexOf('<p class="cfg-note'), [ctl, note] = i < 0 ? [html, ''] : [html.slice(0, i), html.slice(i)];
   const label = (ctl.match(/class="cfg-label"[^>]*>([^<]+)/) || [])[1] || '';
   const na = w ? `<p class="cfg-na" hidden><b>Wirkt hier nicht</b> · nur ${nbsp(WHERE[w][1])}.</p>` : '';
-  return `<div class="b-item"${w ? ` data-w="${w}"` : ''}>${ctl}${note}${na}${key ? devLine(key, label) : ''}</div>`;
+  return `<div class="b-item${half ? ' b-half' : ''}"${w ? ` data-w="${w}"` : ''}>${ctl}${note}${na}${key ? devLine(key, label) : ''}</div>`;
 };
 // Farblook als Bild-Kacheln: Farben aus Tönung, Belichtung und Vignette des jeweiligen Looks; „Station“ = vier Looks im Kreis
 const rgb = (b, t, e) => `rgb(${b.map((x, i) => Math.min(255, Math.round(x * t[i] * e))).join(',')})`;
@@ -136,6 +136,8 @@ const LOOKS = `<div class="b-row b-stack"><span class="cfg-label" id="cfg-grade"
 const MW_STYLE = `<div class="b-row b-pick"><span class="cfg-label" id="cfg-mwstyle">Stil</span><select class="b-select" data-mwstyle aria-labelledby="cfg-mwstyle">
   <option value="" hidden>Eigene Werte</option>${MW_STYLES.map(([id, l]) => `<option value="${id}">${l}</option>`).join('')}</select></div>`
   + NOTE('Setzt alle Regler der Milchstraße auf einen abgestimmten Look, danach frei einstellbar. „Astrofoto“ ist wie die Vorlage von ESO.');
+// Zwei Regler nebeneinander im Raster (User 01.11.2026): nur Paare mit gleichem Thema und keinem oder kurzem Hinweis; schmal einspaltig
+const HALF = (...rows) => rows.map(([k, h, w]) => [k, h, w, true]);
 // Zwischenüberschrift in einer Gruppe; zählt nicht als Einstellung
 const SUB = (t) => ['#', `<h5 class="b-subh">${t}</h5>`];
 const nRows = (g) => g.rows.filter(([k]) => k !== '#').length;
@@ -167,8 +169,8 @@ const WHERE = {
 const atOf = (x) => (typeof x === 'function' ? x() : x);
 // Reihenfolge: was im Bild ist (Bild, Himmel, Licht, Planeten), dann Bedienung
 const GROUPS = [
-  { id: 'look', icon: 'look', title: 'Bild', hero: true, rows: [['grade', LOOKS], ['exposure', RANGE('exposure', 'Belichtung', 0.25, 4, 0.05, '×')],
-    ['vig', RANGE('vig', 'Vignette', 0, 3, 0.05, '×')], ['bars', TOG('bars', 'Kinobalken 2,39:1')],
+  { id: 'look', icon: 'look', title: 'Bild', hero: true, rows: [['grade', LOOKS], ...HALF(['exposure', RANGE('exposure', 'Belichtung', 0.25, 4, 0.05, '×')],
+    ['vig', RANGE('vig', 'Vignette', 0, 3, 0.05, '×')]), ['bars', TOG('bars', 'Kinobalken 2,39:1')],
     ['barsH', RANGE('barsH', 'Höhe der Kinobalken', 0.5, 2, 0.05, '×') + NOTE('1× = Kinoformat 2,39:1. Beim Ziehen sind die Balken kurz zu sehen.')]] },
   { id: 'sky', icon: 'sky', title: 'Himmel', rows: [
     ['stars', TOG('stars', 'Sternhimmel') + NOTE('Hauptschalter für Sterne, Milchstraße und Tiefen Himmel: aus = reines Schwarz.'), 'sky'],
@@ -178,24 +180,24 @@ const GROUPS = [
     ['mwNear', TOG('mwNear', 'Magellansche Wolken und Andromeda'), 'mw'],
     ['mwSrc', PICK('mwSrc', 'Quelle der Milchstraße', [['model', 'Eigenes Modell'], ['photo', 'ESO-Foto']]) + NOTE('Das Foto (ESO/S. Brunier, CC BY 4.0) war die Vorlage und dient nur zum Vergleich – nur im Sonnensystem, wo die Lage am Himmel stimmt.'), 'solar'],
     SUB('Milchstraße · Aussehen'), ['', MW_STYLE, 'mw'],
-    ['mwGain', RANGE('mwGain', 'Helligkeit', 0, 6, 0.05, '×'), 'mw'], ['mwCon', RANGE('mwCon', 'Kontrast', 0.5, 3, 0.05, '×'), 'mw'],
+    ...HALF(['mwGain', RANGE('mwGain', 'Helligkeit', 0, 6, 0.05, '×'), 'mw'], ['mwCon', RANGE('mwCon', 'Kontrast', 0.5, 3, 0.05, '×'), 'mw'],
     ['mwBlack', RANGE('mwBlack', 'Schwarzpunkt', 0, 1, 0.05, '') + NOTE('Schneidet die schwachen Ränder des Bandes ab – der Himmel daneben wird dunkler.'), 'mw'],
     ['mwClar', RANGE('mwClar', 'Struktur', 0, 4, 0.05, '×') + NOTE('Lokaler Kontrast: hebt Sternwolken und Staubkanten gegen ihre Umgebung ab.'), 'mw'],
     ['mwSat', RANGE('mwSat', 'Sättigung', 0, 3, 0.05, '×'), 'mw'],
-    ['mwTemp', RANGE('mwTemp', 'Farbtemperatur', -1, 1, 0.05, '') + NOTE('Minus = kühler, bläulich · plus = wärmer, golden.'), 'mw'],
+    ['mwTemp', RANGE('mwTemp', 'Farbtemperatur', -1, 1, 0.05, '') + NOTE('Minus = kühler, bläulich · plus = wärmer, golden.'), 'mw']),
     SUB('Milchstraße · Aufbau'),
-    ['mwDust', RANGE('mwDust', 'Staubbahnen', 0, 4, 0.05, '×') + NOTE('Dunkelwolken vor dem Sternlicht: Großer Riss, Pfeifennebel, Kohlensack. 0× = Sterne ohne Staub.'), 'mw'],
+    ...HALF(['mwDust', RANGE('mwDust', 'Staubbahnen', 0, 4, 0.05, '×') + NOTE('Dunkelwolken vor dem Sternlicht: Großer Riss, Pfeifennebel, Kohlensack. 0× = Sterne ohne Staub.'), 'mw'],
     ['mwNeb', RANGE('mwNeb', 'Leuchtnebel (Hα)', 0, 6, 0.05, '×') + NOTE('Rot leuchtender Wasserstoff: Carina, Lagune, Nordamerika, Barnards Loop.'), 'mw'],
     ['mwCore', RANGE('mwCore', 'Kern (Bulge)', 0, 6, 0.05, '×'), 'mw'], ['mwGlow', RANGE('mwGlow', 'Leuchten des Bandes', 0, 6, 0.05, '×'), 'mw'],
     ['mwGrain', RANGE('mwGrain', 'Einzelsterne im Band', 0, 1, 0.05, '') + NOTE('Anteil des Bandes als einzelne feine Sterne statt Nebel – am deutlichsten beim Hineinzoomen.'), 'mw'],
-    ['mwWidth', RANGE('mwWidth', 'Dicke der Scheibe', 0.4, 3, 0.05, '×') + NOTE('Höhe von Sternen und Staub über der Ebene; das Modell wird neu berechnet.'), 'mw']] },
+    ['mwWidth', RANGE('mwWidth', 'Dicke der Scheibe', 0.4, 3, 0.05, '×') + NOTE('Höhe von Sternen und Staub über der Ebene; das Modell wird neu berechnet.'), 'mw'])] },
   { id: 'light', icon: 'sun', title: 'Licht &amp; Schatten', rows: [
-    ['sunK', RANGE('sunK', 'Sonnenlicht', 0.25, 4, 0.05, '×') + NOTE('Stärke des direkten Sonnenlichts auf Planeten und Monden.'), 'solar'],
+    ...HALF(['sunK', RANGE('sunK', 'Sonnenlicht', 0.25, 4, 0.05, '×') + NOTE('Stärke des direkten Sonnenlichts auf Planeten und Monden.'), 'solar'],
     ['shade', RANGE('shade', 'Nachtseite aufhellen', 0, 8, 0.25, '×') + NOTE('Restlicht auf der Schattenseite (schon aufgehellt, echt fast schwarz). 0× = ganz dunkel.'), 'solar'],
     ['shadow', RANGE('shadow', 'Schatten', 0, 1, 0.05, '×') + NOTE('Ringschatten, Wolkenschatten, Mond- und Planetenschatten bei Finsternissen. 0× = keine, 1× = volle Stärke.'), 'solar'],
     ['soft', RANGE('soft', 'Weiche Schattengrenze', 0, 4, 0.1, '×') + NOTE('Wie weit die Lufthülle Licht über die Tag-Nacht-Grenze streut; 0× = harte Kante.'), 'solar'],
     ['spec', RANGE('spec', 'Spiegelung der Ozeane', 0, 6, 0.1, '×') + NOTE('Glanzlicht der Sonne auf dem Meer der Erde.'), 'near'],
-    ['gloss', RANGE('gloss', 'Glanz der Oberflächen', 0, 4, 0.1, '×') + NOTE('Zusätzliches Glanzlicht auf Eis, Wolken und Gestein (künstlerisch). 0× = aus.'), 'solar'],
+    ['gloss', RANGE('gloss', 'Glanz der Oberflächen', 0, 4, 0.1, '×') + NOTE('Zusätzliches Glanzlicht auf Eis, Wolken und Gestein (künstlerisch). 0× = aus.'), 'solar']),
     ['rayleigh', TOG('rayleigh', 'Blaue Dämmerung am Erdrand (Rayleigh)'), 'near']] },
   { id: 'planets', icon: 'orbit', title: 'Planeten', rows: [
     ['axes', TOG('axes', 'Drehachsen der Planeten und Monde') + NOTE('Linie über Nord- und Südpol jedes Planeten und Mondes, neigt und dreht sich mit dem Körper. Nordpol eisblau, Südpol grau.'), 'bodies'],
@@ -203,13 +205,13 @@ const GROUPS = [
   { id: 'cam', icon: 'cam', title: 'Kamera &amp; Bewegung', rows: [['motion', PICK('motion', 'Bewegung', [['full', 'Voll'], ['calm', 'Ruhig'], ['off', 'Aus']], true) + NOTE('„Aus“ wirkt wie „Bewegung reduzieren“ im System: keine Fahrt von selbst, Wechsel als kurze Überblendung.')],
     SUB('Steuerung'),
     ['fovK', RANGE('fovK', 'Blickwinkel', 0.6, 1.6, 0.05, '×') + NOTE('Über 1× zeigt mehr vom Raum wie ein Weitwinkel, unter 1× rückt die Szene heran wie ein Teleobjektiv.')],
-    ['rotK', RANGE('rotK', 'Drehtempo', 0.25, 3, 0.05, '×') + NOTE('Wie weit die Kamera beim Ziehen mit Maus oder Finger dreht.')],
-    ['zoomK', RANGE('zoomK', 'Zoomtempo', 0.25, 3, 0.05, '×') + NOTE('Mausrad und Zoom mit zwei Fingern.')],
+    ...HALF(['rotK', RANGE('rotK', 'Drehtempo', 0.25, 3, 0.05, '×') + NOTE('Wie weit die Kamera beim Ziehen mit Maus oder Finger dreht.')],
+    ['zoomK', RANGE('zoomK', 'Zoomtempo', 0.25, 3, 0.05, '×') + NOTE('Mausrad und Zoom mit zwei Fingern.')]),
     ['inertia', PICK('inertia', 'Nachlauf', [['short', 'Kurz'], ['normal', 'Normal'], ['long', 'Lang']], true) + NOTE('Wie lange die Kamera nach dem Loslassen weitergleitet.')],
     SUB('Leerlauf-Fahrt'),
     ['cine', TOG('cine', 'Kamerafahrt im Leerlauf')],
-    ['cineDelay', RANGE('cineDelay', 'Start nach', 1, 30, 1, 's') + NOTE('Zeit ohne Eingabe, bis die Fahrt einsetzt.')],
-    ['cineK', RANGE('cineK', 'Tempo der Fahrt', 0.25, 4, 0.05, '×')],
+    ...HALF(['cineDelay', RANGE('cineDelay', 'Start nach', 1, 30, 1, 's') + NOTE('Zeit ohne Eingabe, bis die Fahrt einsetzt.')],
+      ['cineK', RANGE('cineK', 'Tempo der Fahrt', 0.25, 4, 0.05, '×')]),
     SUB('Flug zwischen Stationen'),
     ['dive', RANGE('dive', 'Flugdauer', 1, 15, 0.1, 's')],
     ['flyFx', RANGE('flyFx', 'Kino-Effekte im Flug', 0, 2, 0.05, '×') + NOTE('Blickwinkel weitet sich im schnellsten Teil, die Kamera neigt sich in die Kurve, der Rand dunkelt ab. 0× = ruhige Fahrt.')]] },
@@ -222,7 +224,7 @@ const GROUPS = [
     ['lensGhost', TOG('lensGhost', 'Farbiger Lichtfleck (Geisterbild)'), 'flareNs'],
     ['ghostMotion', TOG('ghostMotion', 'Lichtfleck wandert beim Schwenken') + NOTE('Wie in einem echten Objektiv wandert der Fleck beim Schwenken auf der Linie durch die Bildmitte.'), 'flareNs'],
     ['anamorphic', TOG('anamorphic', 'Waagrechter Lichtstreif (anamorph)'), 'flare']] },
-  { id: 'ui', icon: 'ui', title: 'Oberfläche', half: true, rows: [['panel', TOG('panel', 'Infotafel zeigen')], ['scaleCompare', TOG('scaleCompare', 'Maßstabs-Vergleich')], ['timeline', TOG('timeline', 'Zeitleiste der Station zeigen')],
+  { id: 'ui', icon: 'ui', title: 'Oberfläche', rows: [['panel', TOG('panel', 'Infotafel zeigen')], ['scaleCompare', TOG('scaleCompare', 'Maßstabs-Vergleich')], ['timeline', TOG('timeline', 'Zeitleiste der Station zeigen')],
     ['', TOG('', 'Grafiken bewegt', '', 'data-figs')],
     ['cursor', PICK('cursor', 'Mauszeiger', CURSORS) + NOTE('Nur mit Maus oder Touchpad. Bei Bewegung „Ruhig“ oder „Aus“ ohne Umlauf und Schweif.')],
     ['cursorAll', PICK('cursorAll', 'Mauszeiger gilt', [['scene', 'Nur Szene'], ['all', 'Überall']]) + NOTE('„Nur Szene“: über Panels und Suche der Zeiger des Systems. „Überall“: auch dort, nur in Textfeldern bleibt die Schreibmarke. Wirkt nicht bei Mauszeiger „System“.')]] },
@@ -237,7 +239,7 @@ const plural = (n, one, many) => `${n} ${n === 1 ? one : many}`;
 const JUMP = `<div class="cfg-jump" role="tablist" aria-label="Gruppen">${GROUPS.map((g, i) => `<button type="button" role="tab" class="cfg-tile" id="cfg-t${i}" data-jump="${i}" aria-controls="cfg-s${i}" aria-selected="false" tabindex="-1">${icon(g.icon, 'cfg-tile-ico')}<span>${g.title}</span></button>`).join('')}</div>`;
 const CARD = (g, i) => `<section class="b-card b-fold b-sec" id="cfg-s${i}" role="tabpanel" data-g="${g.id}" data-fold="${i}" aria-labelledby="cfg-h${i}" hidden>
   <h4 class="b-sec-h"><span class="b-name" id="cfg-h${i}">${g.title}</span><span class="b-count">${plural(nRows(g), 'Einstellung', 'Einstellungen')}<span data-na-n></span></span></h4>
-  <div class="b-body${g.half ? ' b-body--grid' : ''}" id="cfg-b${i}">${g.rows.map(([k, h, w]) => ROW(k, h, w)).join('')}</div></section>`;
+  <div class="b-body" id="cfg-b${i}">${g.rows.map(([k, h, w, half]) => ROW(k, h, w, half)).join('')}</div></section>`;
 // root = #cfg links am Rand, btn = Knopf „Allgemeine Einstellungen“, lay = Knopf „Station Einstellungen“ (beide unten links,
 // Vorschau 28.10.2026 Dock:B), st = Panel Station links
 export function mountSettings(root, btn, lay = document.getElementById('btn-lay'), st = document.getElementById('station')) {

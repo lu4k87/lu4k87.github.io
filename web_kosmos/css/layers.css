@@ -155,6 +155,14 @@ body.is-flying .tl, body.is-intro .tl { opacity: 0; pointer-events: none; }
 .cfg-pane .b-item > .b-dev { grid-column: 2; grid-row: 1; margin-top: calc((var(--row) - var(--rst)) / 2); }
 .cfg-pane .b-subh { margin: 10px 0 0; font: 600 14px var(--font); letter-spacing: 0.02em; }
 .cfg-pane .b-item + .b-item { padding-top: 5px; margin-top: 5px; }
+/* Regler-Paare (settings.js HALF, User 01.11.2026): zwei nebeneinander, alles andere über die volle Breite; schmal einspaltig.
+   Die zweite Hälfte übernimmt die Trennlinie der ersten (fehlt nach Zwischenüberschrift bzw. am Anfang der Gruppe) */
+.cfg-pane .b-body:not([hidden]) { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 18px; }
+.cfg-pane .b-body > * { grid-column: 1 / -1; }
+.cfg-pane .b-body > .b-half { grid-column: auto; }
+.cfg-pane .b-half :is(.cfg-note, .cfg-na) { text-align: left; }   /* Blocksatz reißt in der halben Spalte Lücken */
+.cfg-pane .b-body > :is(.b-subh + .b-half, .b-half:first-child) + .b-half { padding-top: 0; margin-top: 0; border-top: 0; }
+@container cfg (max-width: 440px) { .cfg-pane .b-body > .b-half { grid-column: 1 / -1; } }
 .b-reset--ico { justify-content: center; width: var(--rst); min-height: var(--rst); margin: 0; padding: 0; border: 0; border-radius: 4px; color: var(--accent); }
 .b-reset--ico:hover { background: rgba(var(--accent-rgb), 0.12); }
 .b-reset--ico .b-ico { width: 15px; height: 15px; }
