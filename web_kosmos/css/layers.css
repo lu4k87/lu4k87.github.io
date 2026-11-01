@@ -147,13 +147,15 @@ body.is-flying .tl, body.is-intro .tl { opacity: 0; pointer-events: none; }
 .lay-tab.has-dev .lay-tab-dot { display: block; }
 
 .lay-panel > .b-subh:first-child { margin-top: 2px; }
+/* Zwischenüberschrift in beiden Reitern gleich: Cyan, feine Linie bis zum Rand (Vorschau 01.11.2026 „Zwischenüberschriften“ Unter:C) */
+:is(#cfg, #station) .b-subh { display: flex; align-items: center; gap: 10px; margin: 16px 0 4px; font: 700 15px var(--font); letter-spacing: 0.01em; color: var(--accent); }
+:is(#cfg, #station) .b-subh::after { content: ""; flex: 1; height: 1px; background: rgba(var(--accent-rgb), 0.35); }
 .b-body { display: flex; flex-direction: column; padding: 6px 0 10px; }
 .b-body[hidden] { display: none; }
 /* Einstellung: Inhalt links, ↺ in eigener Spalte rechts auf Höhe der Kopfzeile – Spalte bleibt reserviert, damit nichts springt */
 .cfg-pane .b-item { display: grid; grid-template-columns: minmax(0, 1fr) var(--rst); column-gap: 6px; row-gap: 3px; align-items: start; }
 .cfg-pane .b-item > * { grid-column: 1; }
 .cfg-pane .b-item > .b-dev { grid-column: 2; grid-row: 1; margin-top: calc((var(--row) - var(--rst)) / 2); }
-.cfg-pane .b-subh { margin: 10px 0 0; font: 600 14px var(--font); letter-spacing: 0.02em; }
 .cfg-pane .b-item + .b-item { padding-top: 5px; margin-top: 5px; }
 /* Regler-Paare (settings.js HALF, User 01.11.2026): zwei nebeneinander, alles andere über die volle Breite; schmal einspaltig.
    Die zweite Hälfte übernimmt die Trennlinie der ersten (fehlt nach Zwischenüberschrift bzw. am Anfang der Gruppe) */
@@ -219,7 +221,6 @@ body.is-flying .tl, body.is-intro .tl { opacity: 0; pointer-events: none; }
 }
 #station .lay-panel > * { min-width: 0; }
 #station .lay-panel > :is(.st-title, .b-subh, .lay-hint, .zg, .b-wide) { grid-column: 1 / -1; }
-#station .b-subh { font-size: 16px; font-weight: 700; letter-spacing: 0.01em; color: var(--accent); margin: 14px 0 6px; grid-column: 1 / -1; }
 #station .cfg-label { font-size: 14.5px; font-weight: 600; line-height: 1.35; color: var(--ink); display: inline-flex; align-items: center; gap: 6px; }
 .lay-param-ico { width: 16px; height: 16px; color: var(--accent); flex: none; vertical-align: -2px; }
 
