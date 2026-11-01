@@ -320,7 +320,6 @@ const tabBtn = (i, on) => {
   const ico = z ? `<span class="st-play" data-rail-play aria-hidden="true">${PLAY}</span>` : icon(tabIcon(gs[i].title), 'cfg-tile-ico');
   return `<button type="button" role="tab" class="cfg-tile st-tab lay-tab" id="lay-t${tid(i)}" data-ltab="${i}" aria-controls="lay-p${tid(i)}" aria-selected="${on}" tabindex="${on ? 0 : -1}">${ico}<span class="st-tab-name">${esc(name)}</span>${n ? `<span class="st-tab-n">${n}</span>` : ''}<span class="lay-tab-dot" aria-hidden="true"></span></button>`;
 };
-const stageHead = (name, n) => `<h3 class="st-title">${esc(name)}${n ? `<span class="st-title-n">${n}</span>` : ''}</h3>`;
 
 function gearHtml(layers) {
   gs = groups(layers);
@@ -329,8 +328,8 @@ function gearHtml(layers) {
   tabs = [...(shows.length ? [-1] : []), ...gs.map((g, i) => (isPlay(g) ? -1 : i)).filter((i) => i >= 0)];
   const saved = (openStore[currentId] || [])[0], cur = tabs.includes(saved) ? saved : tabs[0];
   const rail = `<div class="cfg-jump st-rail" role="tablist" aria-label="Gruppen der Station">${tabs.map((i) => tabBtn(i, i === cur)).join('')}</div>`;
-  const panels = tabs.map((i) => `<div class="lay-panel b-body" id="lay-p${tid(i)}" role="tabpanel" aria-labelledby="lay-t${tid(i)}"${i === cur ? '' : ' hidden'}>${i < 0 ? stageHead('Ereignisse', evN()) + showHtml(shows) : stageHead(gs[i].title, count(gs[i])) + tabBody(gs[i])}</div>`).join('');
-  return `${rail}<div class="st-stage lay-scroll">${panels}</div><div class="cfg-foot"><span class="cfg-scope">Diese Station · <span data-lay-sum></span></span>${devBar()}</div>`;
+  const panels = tabs.map((i) => `<div class="lay-panel b-body" id="lay-p${tid(i)}" role="tabpanel" aria-labelledby="lay-t${tid(i)}"${i === cur ? '' : ' hidden'}>${i < 0 ? showHtml(shows) : tabBody(gs[i])}</div>`).join('');
+  return `${rail}<div class="st-stage lay-scroll">${panels}</div><div class="cfg-foot">${devBar()}</div>`;
 }
 // Eintrag wählen (Klick, ↑/↓, ←/→, Pos1/Ende) und merken; Bühne beginnt oben
 function pickTab(i, focus) {
@@ -359,8 +358,6 @@ function render() {
     gearEl.innerHTML = layers ? gearHtml(layers) : '<p class="cfg-note">Diese Station hat keine eigenen Einstellungen.</p>';
     if (!layers) { gs = []; tabs = []; }
     onInfo({ title: st ? st.title : '…', n: layers ? layers.length : 0, groups: tabs.length });
-    const sum = gearEl.querySelector('[data-lay-sum]');
-    if (sum) sum.textContent = gearEl.closest('.station').dataset.laySum || '';
   }
   if (stripEl) {
     const l = (allOf(currentId) || []).find((x) => x.type === 'play');

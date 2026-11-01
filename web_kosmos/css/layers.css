@@ -10,7 +10,7 @@
 #cfg-global { flex: 1 1 auto; min-height: 0; overflow: auto; overscroll-behavior: contain; align-content: start; padding: 0 18px 12px; }
 .lay-scroll { min-height: 0; overflow: auto; overscroll-behavior: contain; padding: 12px 18px; }
 .cfg-foot { flex: none; display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 10px 18px 12px; border-top: 1px solid var(--line); }
-.cfg-scope { flex: 1 1 auto; min-width: 0; margin: 0; font-size: 12.5px; line-height: 1.4; color: var(--ink-soft); }
+.cfg-foot:not(:has(.b-devbar:not([hidden]))) { display: none; }   /* Fuß nur mit „n geändert · Alle zurücksetzen“ (Kachel:C) */
 .bento { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-flow: row dense; gap: 10px; align-items: start; }
 .bento > [hidden] { display: none; }
 .cfg-pane { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; align-items: start; }
@@ -39,9 +39,8 @@
 .b-wide { grid-column: 1 / -1; }
 .b-card { display: flex; flex-direction: column; gap: 10px; min-width: 0; padding: 12px; border-radius: var(--radius); border: 1px solid var(--line); background: var(--glass-tile); box-shadow: var(--glass-tile-edge); }
 .b-head { display: flex; align-items: center; gap: 10px; }
-.b-head .b-count, .b-head .b-chip { margin-left: auto; }
+.b-head .b-chip { margin-left: auto; }
 .b-head h4 { margin: 0; font: 600 13.5px var(--font); }
-.b-count { font: 500 12px var(--mono); padding: 1px 7px; border-radius: 6px; border: 1px solid var(--line); color: var(--ink-soft); }
 .b-chip { font: 500 12px var(--mono); padding: 1px 8px; border-radius: 6px; background: var(--accent-soft); color: var(--accent); }
 .b-item { display: flex; flex-direction: column; gap: 8px; }
 .b-item + .b-item { padding-top: 8px; border-top: 1px solid rgba(255, 255, 255, 0.07); }
@@ -124,23 +123,40 @@ body.is-flying .tl, body.is-intro .tl { opacity: 0; pointer-events: none; }
 .cfg-tile:hover { background: rgba(255, 255, 255, 0.07); }
 .cfg-tile[aria-selected="true"] { color: var(--accent); border-color: rgba(var(--accent-rgb), 0.6); background: rgba(var(--accent-rgb), 0.12); }
 .cfg-tile:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
-/* 5 Spalten × 2 Zeilen statt 4 × 2 (User 29.10.2026): Kacheln etwas kleiner, Platz für bis zu 10 Gruppen – in Einstellungen (cfg) und
-   Panel Station (st); schmaler als 440 px bleibt es bei 4 (Platz für „Oberfläche“) */
+/* Alle Gruppen in einer Reihe kleiner Quadrate (Vorschau 01.11.2026 Kachel:A, ersetzt 5 × 2 vom 29.10.2026): 8 Spalten in
+   Einstellungen (cfg) und Panel Station (st, 5 Kacheln füllen 5 der 8 Spalten), Symbol 16 px, Name 10,5 px, Zahl 10 px, Kachel ≈ 55 px –
+   quadratisch bleibt Pflicht (User 29.10.2026: nie flache Knöpfe); unter 530 px Breite tragen 8 Spalten „Oberfläche“ nicht mehr
+   (tests/settings.py bei 480 px) → 440–529 px wie bisher 5 × 2, schmaler 4 × 2 */
 @container cfg (min-width: 440px) { .cfg-jump { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 5px; } .cfg-tile { gap: 5px; } .cfg-tile-ico { width: 20px; height: 20px; } }
 @container st (min-width: 440px) { .st-rail { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 5px; } .st-rail .cfg-tile { gap: 5px; } .st-rail .cfg-tile-ico { width: 20px; height: 20px; } }
-/* Wenig Höhe (Fenster ≈ 900 px mit Schublade unter der Stationsleiste): Kacheln bleiben quadratisch, nur kleiner – 6 statt 4 Spalten
-   wie die Reiter im Panel Station (29.10.2026), damit die Liste der Gruppe Platz behält; schmaler als 500 px bleibt es bei 4 (Platz für „Oberfläche“) */
-@container cfg (max-height: 600px) and (min-width: 500px) {
-  .cfg-jump { grid-template-columns: repeat(6, minmax(0, 1fr)); padding: 10px 18px; }
-  .cfg-tile { gap: 3px; padding: 4px 2px; }
-  .cfg-tile-ico { width: 18px; height: 18px; }
+@container cfg (min-width: 530px) {
+  .cfg-jump { grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 4px; padding: 8px 18px; }
+  .cfg-tile { gap: 3px; padding: 3px 2px; }
+  .cfg-tile-ico { width: 16px; height: 16px; }
+  .cfg-tile > span { font-size: 10.5px; line-height: 1.15; }
+  .cfg-tile .st-tab-n { font-size: 10px; }
 }
+@container st (min-width: 530px) {
+  .st-rail { grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 4px; padding: 8px 18px; }
+  .st-rail .cfg-tile { gap: 3px; padding: 3px 2px; }
+  .st-rail .cfg-tile-ico, .st-rail .st-play { width: 16px; height: 16px; }
+  .st-rail .st-tab-name { font-size: 10.5px; line-height: 1.15; }
+  .st-rail .st-tab-n { font-size: 10px; }
+}
+/* Zahl der Einstellungen in der Kachel (Kachel:C), Band über der Liste und Text im Fuß entfallen – Geltung und Summe stehen im Kopf */
+.cfg-jump .st-tab-n { color: var(--ink-soft); }
+.cfg-tile[aria-selected="true"] .st-tab-n { color: var(--accent); }
+.b-na-sum { margin: 10px 0 0; }
+.b-na-sum[hidden] { display: none; }
+/* Hinweis hinter ⓘ neben dem Namen (Zeile:A): Knopf 22 px, Text erst nach Klick */
+.b-info { display: inline-grid; place-items: center; width: 22px; height: 22px; margin: -4px 0 -4px 4px; padding: 0; border-radius: 50%; border: 0; background: none; color: var(--accent); vertical-align: middle; cursor: pointer; }
+.b-info svg { width: 15px; height: 15px; }
+.b-info:hover, .b-info[aria-expanded="true"] { background: rgba(var(--accent-rgb), 0.16); }
+.b-info:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
+.cfg-pane .b-item > .cfg-note[hidden] { display: none; }
 .b-sec { scroll-margin-top: 4px; }
 .b-sec[hidden] { display: none; }
 /* Überschrift der Gruppe als dezentes Band, trennt die Bereiche (User 28.10.2026) */
-.b-sec-h { display: flex; align-items: baseline; gap: 10px; margin: 14px 0 4px; padding: 8px 10px; border-radius: var(--radius); background: rgba(var(--accent-rgb), 0.07); }
-.b-sec-h .b-name { flex: 1 1 auto; font: 600 13.5px var(--font); }
-.b-sec-h .b-count { padding: 0; border: 0; font: 500 12px var(--mono); color: var(--ink-soft); }
 .b-list { display: flex; flex-direction: column; align-items: stretch; gap: 0; }
 .cfg-pane .b-card { padding: 0; gap: 0; border: 0; border-radius: 0; border-bottom: 1px solid var(--line); background: none; box-shadow: none; }
 .lay-tab-dot { display: none; position: absolute; top: 7px; right: 9px; width: 7px; height: 7px; border-radius: 50%; background: var(--accent); }
@@ -184,13 +200,6 @@ body.is-flying .tl, body.is-intro .tl { opacity: 0; pointer-events: none; }
    Icon über Kurzname, Zahl darunter), darunter die Bühne mit Titel + Inhalt der gewählten Gruppe über die volle Breite (scrollt allein),
    Fuß unten. Lage im Raster: kosmos.css .station (Breite --st-w) */
 #station { container: st / size; }
-/* wenig Höhe (Fenster ≈ 900 px, Panel unter 600 px): Kacheln bleiben quadratisch, nur kleiner – 6 statt 4 Spalten, damit die Bühne
-   lesbar bleibt (User 29.10.2026: nie flache Knöpfe); erst ab 500 px Breite wie in #cfg, schmaler zu eng für „Oberfläche“ */
-@container st (max-height: 600px) and (min-width: 500px) {
-  .st-rail { grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 5px; padding: 10px 18px; }
-  .st-rail .cfg-tile { gap: 4px; padding: 4px 3px; }
-  .st-rail .cfg-tile-ico { width: 20px; height: 20px; }
-}
 .st-head { flex: none; display: flex; align-items: center; gap: 12px; padding: 12px 14px 12px 18px; border-bottom: 1px solid var(--line); }
 .st-ico { width: 24px; height: 24px; flex: none; color: var(--accent); }
 .st-h { flex: 1 1 auto; min-width: 0; margin: 0; display: flex; flex-direction: column; gap: 2px; font: 700 18px/1.3 var(--font); overflow-wrap: anywhere; }

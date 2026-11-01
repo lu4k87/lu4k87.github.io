@@ -235,18 +235,34 @@ const N_GLOBAL = GROUPS.reduce((n, g) => n + nRows(g), 0);
 // „Alle zurücksetzen“ der Einstellungen
 const GLOBAL_KEYS = GROUPS.flatMap((g) => g.rows.map(([k]) => k)).filter((k) => k && k !== '#');
 const plural = (n, one, many) => `${n} ${n === 1 ? one : many}`;
-// Gruppen als quadratische Kacheln mit Icon (User 28.10.2026); darunter nur die gewählte Gruppe, Überschrift mit Zahl der Einstellungen
-const JUMP = `<div class="cfg-jump" role="tablist" aria-label="Gruppen">${GROUPS.map((g, i) => `<button type="button" role="tab" class="cfg-tile" id="cfg-t${i}" data-jump="${i}" aria-controls="cfg-s${i}" aria-selected="false" tabindex="-1">${icon(g.icon, 'cfg-tile-ico')}<span>${g.title}</span></button>`).join('')}</div>`;
-const CARD = (g, i) => `<section class="b-card b-fold b-sec" id="cfg-s${i}" role="tabpanel" data-g="${g.id}" data-fold="${i}" aria-labelledby="cfg-h${i}" hidden>
-  <h4 class="b-sec-h"><span class="b-name" id="cfg-h${i}">${g.title}</span><span class="b-count">${plural(nRows(g), 'Einstellung', 'Einstellungen')}<span data-na-n></span></span></h4>
+// Gruppen als quadratische Kacheln mit Icon und Zahl der Einstellungen (User 28.10.2026, Vorschau 01.11.2026 Kachel:C: Zahl in der
+// Kachel statt Band über der Liste); darunter nur die gewählte Gruppe
+const JUMP = `<div class="cfg-jump" role="tablist" aria-label="Gruppen">${GROUPS.map((g, i) => `<button type="button" role="tab" class="cfg-tile" id="cfg-t${i}" data-jump="${i}" aria-controls="cfg-s${i}" aria-selected="false" tabindex="-1">${icon(g.icon, 'cfg-tile-ico')}<span>${g.title}</span><span class="st-tab-n">${nRows(g)}</span></button>`).join('')}</div>`;
+const CARD = (g, i) => `<section class="b-card b-fold b-sec" id="cfg-s${i}" role="tabpanel" data-g="${g.id}" data-fold="${i}" aria-labelledby="cfg-t${i}" hidden>
+  <p class="cfg-note b-na-sum" data-na-n hidden></p>
   <div class="b-body" id="cfg-b${i}">${g.rows.map(([k, h, w, half]) => ROW(k, h, w, half)).join('')}</div></section>`;
 // root = #cfg links am Rand, btn = Knopf „Allgemeine Einstellungen“, lay = Knopf „Station Einstellungen“ (beide unten links,
 // Vorschau 28.10.2026 Dock:B), st = Panel Station links
+// Hinweistexte hinter einem ⓘ neben dem Namen (Vorschau 01.11.2026 Zeile:A): zu, bis der Knopf sie aufklappt; Zustand über aria-expanded
+const INFO_ICO = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 11v6M12 7.5v.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
+function infoButtons(root) {
+  root.querySelectorAll('.b-item > .cfg-note').forEach((note, i) => {
+    const label = note.parentElement.querySelector('.cfg-label');
+    if (!label) return;
+    note.id = note.id || `cfg-note-${i}`;
+    note.hidden = true;
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'b-info'; b.innerHTML = INFO_ICO;
+    b.setAttribute('aria-label', 'Hinweis'); b.setAttribute('aria-expanded', 'false'); b.setAttribute('aria-controls', note.id);
+    b.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); note.hidden = !note.hidden; b.setAttribute('aria-expanded', String(!note.hidden)); });
+    label.appendChild(b);
+  });
+}
 export function mountSettings(root, btn, lay = document.getElementById('btn-lay'), st = document.getElementById('station')) {
   root.innerHTML = `
     <header class="st-head">
       ${btn.querySelector('svg').outerHTML.replace('<svg ', '<svg class="st-ico" ')}
-      <h2 class="st-h" id="cfg-h"><span>Allgemeine Einstellungen</span><span class="st-n">gilt an allen Stationen</span></h2>
+      <h2 class="st-h" id="cfg-h"><span>Allgemeine Einstellungen</span><span class="st-n">gilt an allen Stationen · ${N_GLOBAL} Einstellungen</span></h2>
       <button type="button" class="icon-btn icon-btn--sm" id="btn-cfg-close" aria-label="Allgemeine Einstellungen schließen"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button>
     </header>
     <div class="cfg-view" id="cfg-v-gl">
@@ -254,8 +270,9 @@ export function mountSettings(root, btn, lay = document.getElementById('btn-lay'
       <div class="cfg-pane" id="cfg-global">
         <div class="b-main"><div class="b-list">${GROUPS.map(CARD).join('')}</div></div>
       </div>
-      <div class="cfg-foot"><span class="cfg-scope">gilt an allen Stationen · ${N_GLOBAL} Einstellungen</span>${devBar()}</div>
+      <div class="cfg-foot">${devBar()}</div>
     </div>`;
+  infoButtons(root);
   const glob = root.querySelector('#cfg-global'), vGl = root.querySelector('#cfg-v-gl');
   let applyNA = () => {};
   const info = ({ title, n }) => {
@@ -304,7 +321,8 @@ export function mountSettings(root, btn, lay = document.getElementById('btn-lay'
     });
     GROUPS.forEach((g, i) => {
       const sec = glob.querySelector(`#cfg-s${i}`), n = sec.querySelectorAll('.b-item.is-na').length, all = n === nRows(g);
-      sec.querySelector('[data-na-n]').textContent = !n ? '' : all ? ' · keine wirkt hier' : ` · ${n} ${n === 1 ? 'wirkt' : 'wirken'} hier nicht`;
+      const na = sec.querySelector('[data-na-n]');
+      na.hidden = !n; na.textContent = !n ? '' : all ? 'Keine Einstellung dieser Gruppe wirkt hier.' : `${n} ${n === 1 ? 'Einstellung wirkt' : 'Einstellungen wirken'} hier nicht.`;
       tiles[i].classList.toggle('is-na', all);
       if (all) tiles[i].setAttribute('aria-description', 'wirkt an dieser Station nicht'); else tiles[i].removeAttribute('aria-description');
     });
