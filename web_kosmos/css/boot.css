@@ -1,7 +1,7 @@
 /* Ladebild beim Aufruf der Seite (boot.js): Hintergrund in drei Looks, darauf der Kapitel-Titel (Text in index.html) in
    derselben Schrift wie der Titel jeder Station (.caption in kosmos.css); Titel genau in
-   der Bildmitte (User 27.10.2026), Fortschritt seit 01.11.2026 tiefer im unteren Drittel – das Ladebild deckt die
-   Seitenleiste zu. Fortschritt als Lichtlinie.
+   der Bildmitte (User 27.10.2026), Fortschritt unten am Rand (User 01.11.2026) – das Ladebild deckt die Seitenleiste
+   zu. Fortschritt als Lichtlinie.
    Bewegung nur über opacity/transform: läuft weiter, während der Hauptfaden Shader und Texturen vorbereitet. */
 .boot { position: fixed; inset: 0; z-index: 6; background: #000; transition: opacity 1.2s var(--ease-out), visibility 0s linear 1.2s; }
 .boot.is-done { opacity: 0; visibility: hidden; pointer-events: none; }
@@ -19,9 +19,11 @@ body.is-fatal .boot { display: none; }
 .boot .cap-n::after { animation: boot-line 2.4s var(--ease-out) 0.5s both; }
 .boot .cap-title { letter-spacing: 0.22em; padding-left: 0.22em; }
 
-/* Fortschritt tiefer im unteren Drittel (User 01.11.2026): der Titel bleibt allein in der Bildmitte, Lichtlinie,
-   Stand und „Reise starten“ hängen frei darunter und schieben ihn nicht */
-.boot-load { --d: 1.1s; position: absolute; top: 70%; left: 50%; translate: -50% 0; width: min(340px, calc(100% - 48px));
+/* Fortschritt unten mit Abstand zur Unterkante (User 01.11.2026): Lichtlinie, Stand und „Reise starten“ hängen frei am
+   unteren Rand; der Titel bleibt genau dort, wo er mit dem Block darunter stand (padding-bottom = früherer Platz des
+   Blocks: 16 Abstand + 29 Höhe + 14 Lücke) */
+.boot-cap { padding-bottom: 59px; }
+.boot-load { --d: 1.1s; position: absolute; bottom: 134px; left: 50%; translate: -50% 0; width: min(340px, calc(100% - 48px));
   display: grid; gap: 10px; }
 .boot-bar { position: relative; height: 1px; background: var(--line); }
 .boot-bar i { position: absolute; inset: 0; transform-origin: left center; transform: scaleX(var(--p, 0));
@@ -38,7 +40,7 @@ body.is-fatal .boot { display: none; }
 .boot-cap, .boot-look { transition: opacity 0.5s var(--ease-out); }
 .boot.is-leaving :is(.boot-cap, .boot-look) { opacity: 0; }
 
-/* Reise bereit: „Reise starten · Enter“ blendet mittig mit Abstand unter dem Ladebalken ein und atmet
+/* Reise bereit: „Reise starten · Enter“ blendet mittig mit Abstand unter dem Ladebalken ein (64 px über der Unterkante) und atmet
    leise; hängt am Ladeblock (absolut), damit Titel und Balken nicht aus der Bildmitte rutschen. Klick oder Enter startet */
 .boot-go { position: absolute; top: calc(100% + 36px); left: 50%; translate: -50% 0; padding: 8px 14px; border: 0; background: none;
   font: 400 13px/1.4 var(--mono); letter-spacing: 0.08em; color: var(--ink); white-space: nowrap; cursor: pointer;
@@ -68,6 +70,6 @@ body.is-fatal .boot { display: none; }
 }
 
 @media (max-width: 760px) {
-  .boot-cap { padding: 0 16px; }
+  .boot-cap { padding-inline: 16px; }
   .boot .cap-title { letter-spacing: 0.1em; padding-left: 0.1em; }
 }
