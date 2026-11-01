@@ -10,9 +10,12 @@
 // Detail (User 29.10.2026 „Qualität erhöhen, mehr Details“): Rauschen aus einer 3D-Textur statt gerechnet (ein Zugriff je
 // Oktave), dadurch 5–6 Oktaven, Fäden, Staubsäume mit Schatten zum Stern und höhere Auflösung im selben Zeitrahmen;
 // Ausgabe mit Catmull-Rom-Filter statt bilinear (schärfer hochgezogen).
-// Lichtpunkt (User 2026-11-01 „ruhiger, mehr Details und Effekte“): halbes Tempo für Strömung, Drehung, Wellen und
-// Teilchen, dafür über ~4 Bilder gemittelt; Lichtsaum am Staub, zweite Fadenlage, Farbflecken, Strahlenkranz, Kern; in
-// der Ausgabe Farbsaum am Lichtstreif, Beugungsstreben, Halo-Ring, langsames Atmen statt 0,8-Hz-Puls.
+// Lichtpunkt (User 2026-11-01 „ruhiger, mehr Details und Effekte“, zweimal): Tempo für Strömung, Drehung, Wellen und
+// Teilchen auf ~0,3× des Ausgangs, dafür über ~5 Bilder gemittelt; Lichtsaum am Staub, zweite Fadenlage, Farbflecken,
+// Strahlenkranz, Kern; in der Ausgabe Farbsaum am Lichtstreif, Beugungsstreben, Halo-Ring, langsames Atmen statt
+// 0,8-Hz-Puls. Richtung (User 2026-11-01 „Kamera durch den Wirbel“): alles strömt aus der Mitte nach außen an der
+// Kamera vorbei, dazu Lichtlanzen am Rand, vierte Teilchenlage, warme Schweife, Ringwellen, Hitzeflimmern am Kern,
+// langsame Kamerafahrt.
 
 export const LOOKS = { A: 'Nebel', B: 'Linse', C: 'Lichtpunkt' };
 
@@ -202,25 +205,29 @@ vec4 scene(vec2 uv) {
   return vec4(c * titleMask(uv, .6), 1.);
 }`;
 
-// C Verdichtung zum Lichtpunkt: Gas und Lichtteilchen strömen spiralig zur Bildmitte; je weiter das Laden, desto enger
-// die Spirale, desto heißer das Gas – bei 100 % bleibt der blaue Lichtpunkt, mit dem der Auftakt-Film beginnt. Feine
-// Stromfäden in zwei Lagen entlang der Spirale, dunkle Staubbahnen mit Lichtsaum zur Mitte hin (Staub davor wirft
-// Schatten), Flecken kühleren Gases, Strahlenkranz durch das Gas ab ~40 %, glühender Kern, drei Lagen Lichtteilchen.
-// Tempo (User 2026-11-01 „ruhiger“): Strömung, Drehung, Wellen und Teilchen auf etwa die Hälfte. Gas, Farbflecken
-// und Dichte-Mottling kommen aus einem Durchgang tfbm4 – kosten zusammen so viel wie vorher das Gas allein
+// C Flug durch den Wirbel zum Lichtpunkt (User 2026-11-01 „Lichtstrahlen andersrum, Kamera durch den Wirbel“): die
+// Kamera fliegt durch einen spiraligen Gastunnel auf den Lichtpunkt zu – Gas, Fäden, Staub, Teilchen und Lichtlanzen
+// kommen aus der Mitte und ziehen nach außen an der Kamera vorbei (Vorzeichen der Strömung umgekehrt, log-polar ⇒
+// außen schneller = Perspektive); je weiter das Laden, desto enger die Spirale, desto heißer das Gas – bei 100 % bleibt
+// der blaue Lichtpunkt, mit dem der Auftakt-Film beginnt. Ebenen: Stromfäden in zwei Lagen, dunkle Staubbahnen mit
+// Lichtsaum zur Mitte, Flecken kühleren Gases, zwei Ringwellen nach außen, Strahlenkranz ab ~40 %, glühender Kern mit
+// Hitzeflimmern, vier Lagen Lichtteilchen (Kopf blauweiß, Schweif warm), lange Lichtlanzen am Rand, langsame Kamerafahrt
+// (Atmen des Bildmaßstabs, Periode ~70 s). Tempo (User 2026-11-01 „ruhiger“, zweite Stufe): nochmals ~0,6× gegenüber
+// a0bd3ba. Gas, Farbflecken und Dichte-Mottling kommen aus einem Durchgang tfbm4
 const SCENE_C = `
 vec4 scene(vec2 uv) {
   float t = uT, P = uP;
+  uv *= 1. + .035 * sin(t * .09) + .012 * sin(t * .041 + 2.);
   float r = length(uv) + 1e-4, a = atan(uv.y, uv.x), lr = log(r);
-  float flow = t * (.05 + .13 * P);
-  float a2 = a + mix(.6, 2.6, P) * lr + t * .02;
+  float flow = t * (.03 + .08 * P);
+  float a2 = a + mix(.6, 2.6, P) * lr + t * .012;
   vec2 cs = vec2(cos(a2), sin(a2));
-  vec4 f4 = tfbm4(vec3(cs * 1.4, lr * 1.7 + flow), 6, .5);
-  float g = f4.x + .3 * tn(vec3(cs * 3., lr * 3.5 + flow * 1.3) + 9.).x;
+  vec4 f4 = tfbm4(vec3(cs * 1.4, lr * 1.7 - flow), 6, .5);
+  float g = f4.x + .3 * tn(vec3(cs * 3., lr * 3.5 - flow * 1.3) + 9.).x;
   float gas = smoothstep(-.1, .4, g) * clamp(.9 + .4 * f4.z, .5, 1.3);
-  float fil = pow(1. - abs(tn(vec3(cs * 5., lr * 7. + flow * 1.7) + 3.).y), 9.);
-  float fil2 = pow(1. - abs(tn(vec3(cs * 8., lr * 12. + flow * 2.1) + 13.).z), 14.);
-  vec3 dq = vec3(cs * 2.2, lr * 2.6 + flow * 1.1) + 17.;
+  float fil = pow(1. - abs(tn(vec3(cs * 5., lr * 7. - flow * 1.7) + 3.).y), 9.);
+  float fil2 = pow(1. - abs(tn(vec3(cs * 8., lr * 12. - flow * 2.1) + 13.).z), 14.);
+  vec3 dq = vec3(cs * 2.2, lr * 2.6 - flow * 1.1) + 17.;
   float dust = smoothstep(.05, .35, tfbm(dq, 4));
   float dustIn = smoothstep(.05, .35, tfbm(dq - vec3(0., 0., .14), 4));
   float rim = max(dust - dustIn, 0.);
@@ -231,25 +238,49 @@ vec4 scene(vec2 uv) {
   gc = mix(gc, vec3(.75, .92, 1.), smoothstep(.55, 1., heat));
   vec3 col = gc * (gas * 1.15 + fil * (.45 + gas) + fil2 * .4 * gas) * env * (1. - .6 * dust) * (1. - .4 * dustIn);
   col += vec3(.55, .78, 1.) * rim * env * 1.3;
-  float fl = .5 + .5 * tn(vec3(uv * 3.5, t * .015) + 40.).z;
+  float fl = .5 + .5 * tn(vec3(uv * 3.5, t * .009) + 40.).z;
   col += (vec3(.08, .03, .06) * fl + vec3(.02, .04, .08) * (1. - fl)) * (1. - P) * .6;
-  col += vec3(.15, .55, .85) * pow(.5 + .5 * sin(lr * 6. + t * .35), 12.) * .14 * P * exp(-r * 1.5);
-  float ray = pow(max(tn(vec3(cos(a) * 6., sin(a) * 6., t * .012) + 51.).x, 0.), 3.);
+  // Ringwellen laufen von der Mitte nach außen (zwei Abstände, leicht gegeneinander verdreht)
+  float wv = pow(.5 + .5 * sin(lr * 6. - t * .2), 12.) + .6 * pow(.5 + .5 * sin(lr * 3.5 - t * .13 + a * .5), 16.);
+  col += vec3(.15, .55, .85) * wv * .14 * P * exp(-r * 1.5) * (.6 + .4 * gas);
+  float ray = pow(max(tn(vec3(cos(a) * 6., sin(a) * 6., t * .007) + 51.).x, 0.), 3.);
   col += vec3(.5, .78, 1.) * ray * exp(-r * 2.4) * smoothstep(.35, .9, P) * (.35 + .65 * gas) * .8;
-  col += vec3(.8, .93, 1.) * exp(-r * r * 90.) * P * .6;
-  for (int k = 0; k < 3; k++) {
-    float N = k == 0 ? 70. : k == 1 ? 110. : 170.;
-    vec2 gg = vec2(a / 6.2832 * N, lr * 3. + t * (.1 + .4 * P) * (1. + float(k) * .35));
+  // Kern mit Hitzeflimmern: der Lichtpunkt bricht durch das Gas, das direkt davor strömt
+  float shm = .85 + .15 * tn(vec3(a * 2., r * 30., t * .3) + 77.).y;
+  col += vec3(.8, .93, 1.) * exp(-r * r * 90.) * P * .6 * shm;
+  // Lichtteilchen in vier Lagen: Kopf blauweiß, Schweif warm; Schweif wächst nach außen (nah = schnell)
+  float aw = a + .35 * lr * P;
+  for (int k = 0; k < 4; k++) {
+    float N = k == 0 ? 70. : k == 1 ? 110. : k == 2 ? 170. : 260.;
+    vec2 gg = vec2(aw / 6.2832 * N, lr * 3. - t * (.06 + .24 * P) * (1. + float(k) * .35));
     vec2 id = floor(gg), f = fract(gg) - .5;
     id.x = mod(id.x, N);
     float h = hash21(id + float(k) * 31.);
     if (h < .8) continue;
     vec2 off = (vec2(hash21(id + 5.), hash21(id + 9.)) - .5) * .6;
     vec2 q = f - off;
-    float tw = .75 + .25 * sin(t * 1.3 + h * 40.);
-    // kürzere Schweife als vorher (mix 60→14): bei halbem Tempo ziehen die Teilchen weniger nach
-    col += vec3(.7, .85, 1.) * exp(-(q.x * q.x * 260. + q.y * q.y * mix(70., 40., P))) * (h - .8) * 4. * tw * smoothstep(.02, .15, r) * (.4 + .6 * P) * (k == 2 ? .6 : 1.);
+    float tw = .75 + .25 * sin(t * .8 + h * 40.);
+    float len = mix(70., 40., P) / (1. + r * 1.5);
+    float head = exp(-(q.x * q.x * 260. + q.y * q.y * len * 4.));
+    float tail = exp(-(q.x * q.x * 260. + q.y * q.y * len)) * smoothstep(.0, .25, -q.y);
+    float wgt = (h - .8) * 4. * tw * smoothstep(.02, .15, r) * (.4 + .6 * P) * (k == 2 ? .6 : k == 3 ? .35 : 1.);
+    col += (vec3(.8, .92, 1.) * head + vec3(.9, .6, .4) * tail * .5) * wgt;
   }
+  // Lichtlanzen: lange dünne Strahlen, die am Rand an der Kamera vorbeiziehen (Warp-Tunnel), ab ~25 %
+  float lz = 0.;
+  for (int k = 0; k < 2; k++) {
+    float N = k == 0 ? 36. : 52.;
+    vec2 gg = vec2(aw / 6.2832 * N, lr * .9 - t * (.05 + .14 * P) * (1. + float(k) * .4) + float(k) * .37);
+    vec2 id = floor(gg), f = fract(gg) - .5;
+    id.x = mod(id.x, N);
+    float h = hash21(id + 57. + float(k) * 13.);
+    if (h < .86) continue;
+    float ox = (hash21(id + 21.) - .5) * .7;
+    float q = f.x - ox;
+    float along = smoothstep(-.5, -.1, f.y) * smoothstep(.5, .15, f.y);
+    lz += exp(-q * q * 900.) * along * (h - .86) * 7. * (.7 + .3 * sin(t * .6 + h * 50.));
+  }
+  col += vec3(.55, .8, 1.) * lz * smoothstep(.2, .9, r) * smoothstep(.25, .6, P) * (.5 + .5 * P) * .9;
   float tm = titleMask(uv, .3);
   return vec4(col * tm * tm, 1.);
 }`;
@@ -350,10 +381,10 @@ void main() {
     vec2 sd = uv + vec2(uT * .0008, 0.);
     c += (starLayer(sd, .016, 3., 1.) * .8 + starLayer(sd, .009, 13., .7) * .6) * titleMask(uv, .6) + spiky(sd, px);
   } else {
-    // Lichtpunkt (User 2026-11-01 „ruhiger, mehr Details“): wächst ab 55 %, atmet langsam (Periode 2,6 s, Δ 10 %) und
+    // Lichtpunkt (User 2026-11-01 „ruhiger, mehr Details“): wächst ab 55 %, atmet langsam (Periode 3,6 s, Δ 10 %) und
     // flackert kaum merklich statt bei 100 % mit 0,8 Hz zu pulsen; anamorpher Lichtstreif mit Farbsaum (Rot läuft weiter
     // als Blau), senkrechte Beugungsstrebe und zwei schwache Diagonalen, zarter Halo-Ring, dritte Sternlage weit hinten
-    float br = .5 - .5 * cos(uT * 2.4166);
+    float br = .5 - .5 * cos(uT * 1.745);
     float fk = .5 * snoise(vec3(uT * 1.8, 2.3, 7.)) + .25 * snoise(vec3(uT * 4.1, 6.1, 3.));
     float k = smoothstep(.55, 1., uP) * (.9 + .1 * br + .04 * fk);
     float d = length(uv) * px;
@@ -375,8 +406,8 @@ void main() {
 const MAX = { A: 0.75, B: 1, C: 0.9 };   // Anteil der Gerätepixel, in dem die Szene höchstens rechnet
 const T_STILL = 12, STILL_FRAMES = 32;
 // Anteil des neuen Bilds beim Mitteln in Bewegung: Nebel fährt langsam und hat feine Fäden → über ~5 Bilder mitteln
-// (kein Korngitter, kein sichtbares Nachziehen); Linse über ~3, Lichtpunkt (ruhiger, seit 2026-11-01) über ~4
-const BLEND = { A: 0.2, B: 0.3, C: 0.25 };
+// (kein Korngitter, kein sichtbares Nachziehen); Linse über ~3, Lichtpunkt (ruhiger, seit 2026-11-01) über ~5
+const BLEND = { A: 0.2, B: 0.3, C: 0.2 };
 
 function program(gl, fs) {
   const p = gl.createProgram();
