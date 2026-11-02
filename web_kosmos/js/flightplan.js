@@ -46,7 +46,8 @@ export const ZOOM = 22;
 // seitlich proportional zum Abstand: sie ziehen am Rand vorbei, die Mitte (Ziel) bleibt frei, die Kamera streift keine.
 // w = Gewicht der Etappe (länger als ein normaler Flug), z = Bereich der Abstände (unten in Vielfachen von 1/ZOOM: die
 // letzten sind vor der Ankunft vorbei), side/size = seitlicher Abstand und Durchmesser je Abstand, fade = Ein-/Ausblenden
-export const FLYBY = { w: 2.3, n: 110, z: [1.8, 0.9], side: [0.24, 0.85], size: [0.08, 0.19], fade: [0.06, 0.92] };
+// blur = Anteil der Zoom-Unschärfe auf dieser Fahrt (main.js; voll zieht sie den Strom zu Warp-Streifen)
+export const FLYBY = { w: 2.3, n: 75, z: [1.8, 0.9], side: [0.28, 0.9], size: [0.05, 0.13], fade: [0.12, 0.85], blur: 0.35 };
 export function flybyField(rand, zoom = ZOOM, n = FLYBY.n) {
   const lo = Math.log(FLYBY.z[0] / zoom), hi = Math.log(FLYBY.z[1]), [s0, s1] = FLYBY.side, [d0, d1] = FLYBY.size;
   return Array.from({ length: n }, (_, i) => {

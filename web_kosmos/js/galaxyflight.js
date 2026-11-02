@@ -159,7 +159,7 @@ export function galaxyAtlas() {
 // (jung klein, blau, klumpig → Spirale oder Ellipse); uFade = Dauer des Aufleuchtens nach der Geburt
 const GAL_VERT = /* glsl */ `
 attribute float aTile, aTile2, aBirth, aMature, aGain, aSize, aGrow; attribute vec3 aTint, aTint2;
-uniform float uT, uS, uFade, uMature, uStreak;
+uniform float uT, uS, uFade, uMature; uniform vec2 uNear;
 varying vec2 vUv; varying vec3 vTint; varying float vA, vTile, vTile2, vM;
 void main() {
   vUv = uv; vTile = aTile; vTile2 = aTile2;
@@ -167,18 +167,8 @@ void main() {
   vTint = mix(aTint, aTint2, vM);
   float k = mix(1.0, aGrow, vM);
   vec4 mv = viewMatrix * modelMatrix * instanceMatrix * vec4(position * k, 1.0);
-
-  // Dynamischer Vorbeiflug-Streak entlang der radialen Fluchtlinie (Kameraflugeffekt)
-  if (uStreak > 0.001) {
-    float zDist = max(0.03, -mv.z / (aSize * k * uS));
-    vec2 dir = normalize(mv.xy + vec2(1e-4));
-    float speed = clamp(length(mv.xy) / zDist, 0.0, 3.5);
-    float streak = speed * uStreak;
-    mv.xy += dir * dot(position.xy, dir) * streak * (aSize * k * uS);
-  }
-
-  // Echtes Vorbeifliegen: Galaxie bleibt bis zum Vorbeizug an der Kamera sichtbar
-  float near = smoothstep(0.03, 0.35, -mv.z / (aSize * k * uS));
+  // nah an der Kamera weich aus: uNear = Abstand in Durchmessern, ab dem sie ausblendet (Vorbeiflug früher, sonst erst dicht davor)
+  float near = smoothstep(uNear.x, uNear.y, -mv.z / (aSize * k * uS));
   vA = aGain * smoothstep(aBirth, aBirth + uFade, uT) * near;
   gl_Position = projectionMatrix * mv;
 }`;
@@ -203,7 +193,7 @@ export function galaxySprites(list, tex) {
       uGain: { value: 1 },
       uFade: { value: 0.1 },
       uMature: { value: 1 },
-      uStreak: { value: 0.0 },
+      uNear: { value: new THREE.Vector2(0.03, 0.35) },
     },
     transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, depthTest: false, side: THREE.DoubleSide,
   }), n);
@@ -276,15 +266,18 @@ export function glowPoints(list) {
 // ---------- Vorbeiflug: Gruppe mit Ursprung im Anker, +z zur Startpose der Kamera, Maßstab = Startabstand D ----------
 // begin() richtet das Feld an der Fahrt aus (die Kamera fährt auf der Achse auf den Anker zu), step(e) blendet über die
 // Etappe ein und aus, end() blendet es weg; w = Gewicht der Etappe für den Fahrplan (main.js planChain)
+// Helligkeit wie eine Leuchtkraftfunktion: die meisten schwach, wenige hell (keine überstrahlten Flecken); Tönung nah an
+// Weiß mit leichtem Gelb (reife Sternpopulationen), kein Warp-Streifen – ein Vorbeiflug in diesem Maßstab verschmiert nichts
 export function createFlyby(tex) {
   const rand = mulberry32(8);
   const list = flybyField(rand).map((g) => ({
-    pos: new THREE.Vector3(g.x, g.y, g.z), size: g.size, gain: 2.2 + rand() * 1.4,
+    pos: new THREE.Vector3(g.x, g.y, g.z), size: g.size, gain: 0.45 + 1.25 * rand() ** 3,
     tile: TILES.mature[Math.floor(rand() * TILES.mature.length)],
-    tint: blackbody(5000 + rand() * 2800),
+    tint: blackbody(5200 + rand() * 1500),
     ...flybyTurn(rand),
   }));
   const mesh = galaxySprites(list, tex), u = mesh.material.uniforms, group = new THREE.Group(), axis = new THREE.Vector3(0, 0, 1);
+  u.uNear.value.set(0.35, 1.6);
   group.add(mesh);
   group.visible = false;
   const dir = new THREE.Vector3();
@@ -298,13 +291,10 @@ export function createFlyby(tex) {
       group.scale.setScalar(D);
       u.uS.value = D;
       u.uGain.value = 0;
-      u.uStreak.value = 0;
       group.visible = true;
     },
     step(e) {
       u.uGain.value = sstep(0, FLYBY.fade[0], e) * (1 - sstep(FLYBY.fade[1], 1, e));
-      // Kameraflug-Dynamik: Vorbeiflug-Streak ist im schnellsten Flugteil (Mitte) am stärksten
-      u.uStreak.value = 0.22 * Math.sin(Math.PI * e);
     },
     end() { group.visible = false; },
   };

@@ -12,7 +12,7 @@ import { settings, onSettings, globalGrade, barsPeek } from './settings.js';
 import { createDeepSky } from './deepsky.js';
 import { attachSound, soundTo } from './sound.js';
 import { startQuality, createAuto, loadTexture, sceneTextures, releaseTextures } from './perf.js';
-import { ZOOM } from './flightplan.js';
+import { ZOOM, FLYBY } from './flightplan.js';
 import { TURN, planTurn, turnPose, turnPace, smoother } from './turn.js';
 import { createBoot } from './boot.js';
 import { createOpener } from './opener.js';
@@ -1008,6 +1008,7 @@ function stepTransition(dt) {
   tr.blur = still() ? 0 : 0.09 * Math.sin(Math.PI * p);
   tr.veil = still() ? 0 : Math.pow(Math.sin(Math.PI * e), 1.6);
   if (tr.same) { tr.veil *= SAME.veil; tr.blur *= SAME.veil; }   // erst nach dem Setzen dämpfen
+  if (tr.pass) tr.blur *= FLYBY.blur;
   if (!tr.captioned && e > 0.62 && state.queue.length === 0) { tr.captioned = true; hud.caption(tr.to.meta); }
   if (e >= 1) {
     const to = tr.to;
