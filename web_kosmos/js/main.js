@@ -659,11 +659,10 @@ function passPose(lv, A, down) {
 // selben Achsenkreuz, der Anker der äußeren liegt im Ursprung der inneren, Maßstab über unit. Iris und Zoom um je ZOOM passen
 // hier nicht: fliegt man aus der Nähe ab, zeigt die innere Kamera ihre Station winzig in der Mitte des schon großen äußeren
 // Bildes. Stattdessen sehen beide Kameras dasselbe und die Bilder blenden flächig über
-// min = Landung mindestens um diesen Faktor näher am Anker (hinein) bzw. weiter weg (hinaus) als der Abflug, veil = Anteil des
-// Lichtschleiers, blur = Anteil der Zoom-Unschärfe (User 02.11.2026: ferne Galaxien zogen als harte Striche durchs ganze Bild →
-// nur noch kurze Spuren, 0,3 → 0,12), fade = Überblendung über diesen Teil der Nähe p (die innere Station ist für die Nähe gebaut: von weit
+// min = Landung mindestens um diesen Faktor näher am Anker (hinein) bzw. weiter weg (hinaus) als der Abflug, veil = Anteil von
+// Lichtschleier und Zoom-Unschärfe, fade = Überblendung über diesen Teil der Nähe p (die innere Station ist für die Nähe gebaut: von weit
 // draußen liegt ihr Halo als blauer Dunst über der Galaxie, deshalb übernimmt sie erst nah dran)
-const SAME = { min: 2, veil: 0.3, blur: 0.12, fade: [0.4, 0.92], elev: THREE.MathUtils.degToRad(25), n: 64 };
+const SAME = { min: 2, veil: 0.3, fade: [0.4, 0.92], elev: THREE.MathUtils.degToRad(25), n: 64 };
 function sameSpace(outer, inner, anchor, turning) {
   const h = outer.hotspots.find((x) => x.to === inner.id);
   return h && h.same && !turning && !still() ? { k: outer.unit / inner.unit, a: anchor.clone(), n: h.plane || null } : null;
@@ -1008,7 +1007,7 @@ function stepTransition(dt) {
   tr.maskR = 0.05 * Math.pow(ZOOM, p) * smooth(0, 0.08, p);
   tr.blur = still() ? 0 : 0.09 * Math.sin(Math.PI * p);
   tr.veil = still() ? 0 : Math.pow(Math.sin(Math.PI * e), 1.6);
-  if (tr.same) { tr.veil *= SAME.veil; tr.blur *= SAME.blur; }   // erst nach dem Setzen dämpfen
+  if (tr.same) { tr.veil *= SAME.veil; tr.blur *= SAME.veil; }   // erst nach dem Setzen dämpfen
   if (!tr.captioned && e > 0.62 && state.queue.length === 0) { tr.captioned = true; hud.caption(tr.to.meta); }
   if (e >= 1) {
     const to = tr.to;

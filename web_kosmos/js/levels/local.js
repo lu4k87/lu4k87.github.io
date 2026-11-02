@@ -330,20 +330,16 @@ export function create(ctx) {
     home = { pos: g.position.clone().addScaledVector(n.addScaledVector(s, 0.8).normalize(), d), target: g.position.clone() };
   }
 
-  // Flug in die Milchstraße: Zwerggalaxien, SMC, LMC und die Gezeitenströme zögen dicht an der Kamera vorbei – sie blenden
-  // gleich zu Beginn der Fahrt weich aus und beim Hinausflug erst gegen Ende wieder ein; die fernen Hintergrund-Galaxien
-  // dimmen auf dimBack (User 02.11.2026: der Strom vorbeiziehender Galaxien dezenter) – k = Anteil des Bildes von Station 3
-  const PASS = { fade: [0.0, 0.2], dimBack: 0.4 };
+  // Flug in die Milchstraße: Zwerggalaxien, SMC und LMC zögen dicht an der Kamera vorbei – sie blenden zu Beginn der Fahrt aus
+  // und beim Hinausflug erst gegen Ende wieder ein (k = Anteil des Bildes von Station 3, Darstellung)
   const passing = [];
-  for (const g of [own, lmcG, gas, stellar]) g.traverse((o) => { if (o.material && o.material.uniforms && o.material.uniforms.uGain) passing.push([o.material.uniforms.uGain, o.material.uniforms.uGain.value]); });
-  const backGain = back.material.uniforms.uGain;
+  for (const g of [own, lmcG]) g.traverse((o) => { if (o.material && o.material.uniforms && o.material.uniforms.uGain) passing.push([o.material.uniforms.uGain, o.material.uniforms.uGain.value]); });
   let passK = 1;
   function flight(k) {
-    const g = 1 - THREE.MathUtils.smootherstep(k, PASS.fade[0], PASS.fade[1]);
+    const g = 1 - THREE.MathUtils.smoothstep(k, 0.03, 0.3);
     if (g === passK) return;
     passK = g;
     for (const [u, v] of passing) u.value = v * g;
-    backGain.value = 1 - (1 - PASS.dimBack) * (1 - g);
     own.visible = lmcG.visible = g > 0.002;
   }
 
